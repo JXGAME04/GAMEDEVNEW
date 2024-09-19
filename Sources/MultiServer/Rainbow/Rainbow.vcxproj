@@ -70,7 +70,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;RAINBOW_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
@@ -80,12 +80,10 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\debug\
-copy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
-md ..\..\..\bin\server\debug\
-copy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll</Command>
+      <Command>xcopy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
+xcopy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
+xcopy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
+xcopy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
