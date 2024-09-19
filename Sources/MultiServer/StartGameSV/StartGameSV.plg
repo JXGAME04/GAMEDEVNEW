@@ -1,0 +1,86 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: StartGameSV - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Release/StartGameSV.res" /d "NDEBUG" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\StartGameSV.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /I "..\Common" /I "..\Rainbow\Interface" /I "..\Heaven\Interface" /I "..\..\..\lib" /I "..\..\..\Headers" /I "..\..\Sword3PaySys\S3AccServer" /I "..\..\s3client\login" /I "..\..\RoleDBManager" /I "..\..\Core\src" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Release/StartGameSV.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\Application.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Common\Event.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\FilterTextLib.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\GamePlayer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\GameServer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\Intercessor.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\Network.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\PlayerCreator.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\SmartClient.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\StartGameSV.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP5.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /I "..\Common" /I "..\Rainbow\Interface" /I "..\Heaven\Interface" /I "..\..\..\lib" /I "..\..\..\Headers" /I "..\..\Sword3PaySys\S3AccServer" /I "..\..\s3client\login" /I "..\..\RoleDBManager" /I "..\..\Core\src" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Release/StartGameSV.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\StartGameSV\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP5.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:no /pdb:"Release/StartGameSV.pdb" /map:"Release/StartGameSV.map" /debug /machine:I386 /out:"Release/StartGameSV.exe" 
+.\Release\Application.obj
+.\Release\Event.obj
+.\Release\FilterTextLib.obj
+.\Release\GamePlayer.obj
+.\Release\GameServer.obj
+.\Release\Intercessor.obj
+.\Release\Network.obj
+.\Release\PlayerCreator.obj
+.\Release\SmartClient.obj
+.\Release\StartGameSV.obj
+.\Release\StdAfx.obj
+.\Release\StartGameSV.res
+..\..\..\Lib\release\common.lib
+..\..\..\Lib\release\engine.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+Application.cpp
+Event.cpp
+FilterTextLib.cpp
+GamePlayer.cpp
+GameServer.cpp
+Intercessor.cpp
+Network.cpp
+PlayerCreator.cpp
+SmartClient.cpp
+StartGameSV.cpp
+Generating Code...
+Linking...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8.bat" with contents
+[
+@echo off
+md ..\..\..\..\bin\client\release\
+copy release\StartGameSV.exe ..\..\..\..\bin\Server\StartGameSV.exe
+copy release\StartGameSV.exe ..\..\..\..\bin\Server\release\StartGameSV.exe
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8.bat"
+
+A subdirectory or file ..\..\..\..\bin\client\release\ already exists.
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+StartGameSV.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

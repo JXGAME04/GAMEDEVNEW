@@ -1,0 +1,67 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Goddess - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6B.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\Common\\" /I "..\Rainbow\Interface" /I "..\Heaven\Interface" /I "..\..\..\lib" /I "..\..\..\Headers" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/Goddess.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Goddess\ClientNode.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Goddess\DBBackup.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Goddess\Goddess.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Goddess\IDBRoleServer.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6B.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6C.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Goddess.pdb" /debug /machine:I386 /nodefaultlib:"libcmt.lib" /nodefaultlib:"msvcrt.lib" /nodefaultlib:"msvcrtd.lib" /out:"Debug/Goddess.exe" /pdbtype:sept 
+.\Debug\ClientNode.obj
+.\Debug\DBBackup.obj
+.\Debug\DBDumpLoad.obj
+.\Debug\DBTable.obj
+.\Debug\FilterTextLib.obj
+.\Debug\Goddess.obj
+.\Debug\IDBRoleServer.obj
+.\Debug\RoleNameFilter.obj
+.\Debug\StdAfx.obj
+.\Debug\Goddess.res
+..\..\..\Lib\debug\common.lib
+.\libdb41s.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6C.tmp"
+<h3>Output Window</h3>
+Compiling...
+ClientNode.cpp
+Generating Code...
+Compiling...
+DBBackup.cpp
+Goddess.cpp
+IDBRoleServer.cpp
+Generating Code...
+Linking...
+Creating command line "bscmake.exe /nologo /o"Debug/Goddess.bsc"  .\Debug\StdAfx.sbr .\Debug\ClientNode.sbr .\Debug\DBBackup.sbr .\Debug\DBDumpLoad.sbr .\Debug\DBTable.sbr .\Debug\FilterTextLib.sbr .\Debug\Goddess.sbr .\Debug\IDBRoleServer.sbr .\Debug\RoleNameFilter.sbr"
+Creating browse info file...
+<h3>Output Window</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6E.bat" with contents
+[
+@echo off
+md ..\..\..\..\bin\server\debug\
+copy debug\Goddess.exe ..\..\..\..\bin\Multiserver\Goddess.exe
+copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6E.bat"
+
+A subdirectory or file ..\..\..\..\bin\server\debug\ already exists.
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+Goddess.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

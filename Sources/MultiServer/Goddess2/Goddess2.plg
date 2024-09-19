@@ -1,0 +1,76 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Goddess2 - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Debug/Goddess2.res" /d "_DEBUG" "F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\Goddess2.rc"" 
+Creating temporary file "D:\temp\RSP5A.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/Goddess2.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\Goddess2.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\Goddess2Dlg.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\KSG_RoleProcess.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\DBBackup.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\DBDumpLoad.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\DBTable.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\FilterTextLib.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\IDBRoleServer.cpp"
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\RoleNameFilter.cpp"
+]
+Creating command line "cl.exe @D:\temp\RSP5A.tmp" 
+Creating temporary file "D:\temp\RSP5B.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/Goddess2.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\StdAfx.cpp"
+]
+Creating command line "cl.exe @D:\temp\RSP5B.tmp" 
+Creating temporary file "D:\temp\RSP5C.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:no /pdb:"Debug/Goddess2.pdb" /debug /machine:I386 /out:"Debug/Goddess2.exe" /pdbtype:sept 
+.\Debug\Goddess2.obj
+.\Debug\Goddess2Dlg.obj
+.\Debug\KSG_RoleProcess.obj
+.\Debug\StdAfx.obj
+.\Debug\DBBackup.obj
+.\Debug\DBDumpLoad.obj
+.\Debug\DBTable.obj
+.\Debug\FilterTextLib.obj
+.\Debug\IDBRoleServer.obj
+.\Debug\RoleNameFilter.obj
+.\Debug\Goddess2.res
+..\..\..\Lib\debug\common.lib
+..\..\..\Lib\release\common.lib
+.\src\libdb41s.lib
+]
+Creating command line "link.exe @D:\temp\RSP5C.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+Goddess2.cpp
+Goddess2Dlg.cpp
+F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src/IDBRoleServer.h(12) : fatal error C1083: Cannot open include file: 'S3DBInterface.h': No such file or directory
+KSG_RoleProcess.cpp
+F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\KSG_RoleProcess.cpp(26) : fatal error C1083: Cannot open include file: 'kprotocoldef.h': No such file or directory
+DBBackup.cpp
+F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\DBBackup.h(9) : fatal error C1083: Cannot open include file: 'S3DBInterface.h': No such file or directory
+DBDumpLoad.cpp
+DBTable.cpp
+FilterTextLib.cpp
+IDBRoleServer.cpp
+F:\DownLoads\SwordOnline\Sources\MultiServer\Goddess2\src\IDBRoleServer.h(12) : fatal error C1083: Cannot open include file: 'S3DBInterface.h': No such file or directory
+RoleNameFilter.cpp
+Generating Code...
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+Goddess2.exe - 4 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

@@ -1,0 +1,14 @@
+
+#if !defined(AFX_JXTEST1_H__9B3A1C7A_2C5C_486D_8E57_DEFC11099514__INCLUDED_)
+#define AFX_JXTEST1_H__9B3A1C7A_2C5C_486D_8E57_DEFC11099514__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "resource.h"
+
+
+#endif // !defined(AFX_JXTEST1_H__9B3A1C7A_2C5C_486D_8E57_DEFC11099514__INCLUDED_)
+
+int CheckConnect(int conn);

@@ -1,0 +1,49 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: SprConvert - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\Users\BAOAN2~1\AppData\Local\Temp\RSP9FF0.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/SprConvert.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"D:\Source Minh Phung\JX\swrod3\SwordOnline\Sources\sprcheck\FileEnumerate.cpp"
+"D:\Source Minh Phung\JX\swrod3\SwordOnline\Sources\sprcheck\SprConvert.cpp"
+]
+Creating command line "cl.exe @C:\Users\BAOAN2~1\AppData\Local\Temp\RSP9FF0.tmp" 
+Creating temporary file "C:\Users\BAOAN2~1\AppData\Local\Temp\RSPA001.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/SprConvert.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"D:\Source Minh Phung\JX\swrod3\SwordOnline\Sources\sprcheck\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\Users\BAOAN2~1\AppData\Local\Temp\RSPA001.tmp" 
+Creating temporary file "C:\Users\BAOAN2~1\AppData\Local\Temp\RSPA002.tmp" with contents
+[
+engine.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/SprConvert.pdb" /machine:I386 /out:"Release/SprConvert.exe" 
+".\Release\FileEnumerate.obj"
+".\Release\SprConvert.obj"
+".\Release\StdAfx.obj"
+]
+Creating command line "link.exe @C:\Users\BAOAN2~1\AppData\Local\Temp\RSPA002.tmp"
+<h3>Output Window</h3>
+Compiling...
+StdAfx.cpp
+Compiling...
+FileEnumerate.cpp
+SprConvert.cpp
+Generating Code...
+Linking...
+SprConvert.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: unsigned long __thiscall KPakFile::Read(void *,unsigned int)" (__imp_?Read@KPakFile@@QAEKPAXI@Z)
+SprConvert.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: int __thiscall KPakFile::Open(char const *)" (__imp_?Open@KPakFile@@QAEHPBD@Z)
+Release/SprConvert.exe : fatal error LNK1120: 2 unresolved externals
+Error executing link.exe.
+
+
+
+<h3>Results</h3>
+SprConvert.exe - 3 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

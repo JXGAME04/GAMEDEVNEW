@@ -1,0 +1,131 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Autoupdate - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Debug/Autoupdate.res" /d "_DEBUG" /d "_AFXDLL" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\Autoupdate.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP67F.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/Autoupdate.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\AnnuncePanel.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\Autoupdate.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\AutoupdateDlg.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\BitMapProgress.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\CQChildStatic.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\CQImageButton.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\CQStatic.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\DefaultProcess.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\GameOptionPanel.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\GdipButton.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\HyperlinkStatic.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\ItermProcess.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\ItermProcessTypeCheck.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\lientGameOptionProcess.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\RecordProcess.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\SiteDlg.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\StartDlg.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\webbrowser2.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP67F.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP680.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/Autoupdate.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Autoupdate\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP680.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP681.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:"Debug/Jxonline.pdb" /debug /machine:I386 /out:"Debug/Jxonline.exe" /pdbtype:sept 
+.\Debug\AnnuncePanel.obj
+.\Debug\Autoupdate.obj
+.\Debug\AutoupdateDlg.obj
+.\Debug\BitMapProgress.obj
+.\Debug\CQChildStatic.obj
+.\Debug\CQImageButton.obj
+.\Debug\CQStatic.obj
+.\Debug\DefaultProcess.obj
+.\Debug\GameOptionPanel.obj
+.\Debug\GdipButton.obj
+.\Debug\HyperlinkStatic.obj
+.\Debug\ItermProcess.obj
+.\Debug\ItermProcessTypeCheck.obj
+.\Debug\lientGameOptionProcess.obj
+.\Debug\RecordProcess.obj
+.\Debug\SiteDlg.obj
+.\Debug\StartDlg.obj
+.\Debug\StdAfx.obj
+.\Debug\webbrowser2.obj
+.\Debug\Autoupdate.res
+..\..\Lib\release\engine.lib
+..\..\Lib\debug\engine.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP681.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+AnnuncePanel.cpp
+Autoupdate.cpp
+AutoupdateDlg.cpp
+BitMapProgress.cpp
+CQChildStatic.cpp
+CQImageButton.cpp
+CQStatic.cpp
+DefaultProcess.cpp
+GameOptionPanel.cpp
+GdipButton.cpp
+HyperlinkStatic.cpp
+ItermProcess.cpp
+ItermProcessTypeCheck.cpp
+lientGameOptionProcess.cpp
+RecordProcess.cpp
+SiteDlg.cpp
+StartDlg.cpp
+webbrowser2.cpp
+Generating Code...
+Linking...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP683.tmp" with contents
+[
+/nologo /o"Debug/Autoupdate.bsc" 
+.\Debug\StdAfx.sbr
+.\Debug\AnnuncePanel.sbr
+.\Debug\Autoupdate.sbr
+.\Debug\AutoupdateDlg.sbr
+.\Debug\BitMapProgress.sbr
+.\Debug\CQChildStatic.sbr
+.\Debug\CQImageButton.sbr
+.\Debug\CQStatic.sbr
+.\Debug\DefaultProcess.sbr
+.\Debug\GameOptionPanel.sbr
+.\Debug\GdipButton.sbr
+.\Debug\HyperlinkStatic.sbr
+.\Debug\ItermProcess.sbr
+.\Debug\ItermProcessTypeCheck.sbr
+.\Debug\lientGameOptionProcess.sbr
+.\Debug\RecordProcess.sbr
+.\Debug\SiteDlg.sbr
+.\Debug\StartDlg.sbr
+.\Debug\webbrowser2.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP683.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP684.bat" with contents
+[
+@echo off
+copy debug\Jxonline.exe ..\..\..\bin\Client\Jxonline.exe
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP684.bat"
+
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+Jxonline.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

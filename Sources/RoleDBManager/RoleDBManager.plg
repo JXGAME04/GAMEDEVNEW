@@ -1,0 +1,86 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: RoleDBManager - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Release/RoleDBManager.res" /d "NDEBUG" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\RoleDBManager.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP30.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Release/RoleDBManager.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kdbprocessthread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kexception.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kroledbserver.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kroleinfomation.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\RoleDBManager.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KDBLoadThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KDBSaveThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KNetServiceThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\ServerMainLoopThread.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP30.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP31.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Release/RoleDBManager.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP31.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP32.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:no /pdb:"Release/RoleDBManager.pdb" /machine:I386 /out:"Release/RoleDBManager.exe" 
+.\Release\kdbprocessthread.obj
+.\Release\kexception.obj
+.\Release\kroledbserver.obj
+.\Release\kroleinfomation.obj
+.\Release\RoleDBManager.obj
+.\Release\StdAfx.obj
+.\Release\KDBLoadThread.obj
+.\Release\KDBSaveThread.obj
+.\Release\KNetServiceThread.obj
+.\Release\ServerMainLoopThread.obj
+.\Release\RoleDBManager.res
+..\..\Lib\S3DBInterface_d.lib
+..\..\Lib\Engine.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP32.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+kdbprocessthread.cpp
+C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\KProtocol.h(1168) : error C2371: 'S3DBI_RoleBaseInfo' : redefinition; different basic types
+        C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\s3dbinterface.h(324) : see declaration of 'S3DBI_RoleBaseInfo'
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KRoleInfomation.h(17) : fatal error C1083: Cannot open include file: 'CriticalSection.h': No such file or directory
+kexception.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kexception.cpp(21) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+kroledbserver.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\kroledbserver.cpp(337) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+kroleinfomation.cpp
+C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\KProtocol.h(1168) : error C2371: 'S3DBI_RoleBaseInfo' : redefinition; different basic types
+        C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\s3dbinterface.h(324) : see declaration of 'S3DBI_RoleBaseInfo'
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KRoleInfomation.h(17) : fatal error C1083: Cannot open include file: 'CriticalSection.h': No such file or directory
+RoleDBManager.cpp
+C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\KProtocol.h(1168) : error C2371: 'S3DBI_RoleBaseInfo' : redefinition; different basic types
+        C:\Source_G7VN\JX\SWROD3\SwordOnline\Headers\s3dbinterface.h(324) : see declaration of 'S3DBI_RoleBaseInfo'
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KRoleInfomation.h(17) : fatal error C1083: Cannot open include file: 'CriticalSection.h': No such file or directory
+KDBLoadThread.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KDBLoadThread.cpp(91) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+KDBSaveThread.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KDBSaveThread.cpp(114) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+KNetServiceThread.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\KNetServiceThread.cpp(24) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+ServerMainLoopThread.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBManager\ServerMainLoopThread.cpp(311) : fatal error C1010: unexpected end of file while looking for precompiled header directive
+Generating Code...
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+RoleDBManager.exe - 12 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

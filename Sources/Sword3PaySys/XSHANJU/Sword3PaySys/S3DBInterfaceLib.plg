@@ -1,0 +1,207 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: S3DBInterfaceLib - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP71.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Fp"S3DBInterfaceLib___Win32_Release/S3DBInterfaceLib.pch" /YX /Fo"S3DBInterfaceLib___Win32_Release/" /Fd"S3DBInterfaceLib___Win32_Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\GlobalFun.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3DBInterface.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PAccCardHistoryDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PAccount.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PAccountHabitusDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PAccountInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PCard.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PCardHistoryDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PCardInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnectionPool.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnector.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBSocketParser.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBSocketPool.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBSocketServer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipBaseInfo.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipBaseInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipEfficInfo.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipEfficInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipment.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipmentsDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipRequireInfo.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PEquipRequireInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PFightSkill.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PFightSkillDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PFriend.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PFriendListDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PLifeSkill.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PLifeSkillDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PManipulator.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PRelockAccount.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PRole.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PRoleInfoDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PRoleList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PRow.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PServerListDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableInfoCatch.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableObjList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTask.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTaskList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTaskListDAO.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP71.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP72.tmp" with contents
+[
+/nologo /out:"S3DBInterfaceLib___Win32_Release\S3DBInterfaceLib.lib" 
+.\S3DBInterfaceLib___Win32_Release\GlobalFun.obj
+.\S3DBInterfaceLib___Win32_Release\S3DBInterface.obj
+.\S3DBInterfaceLib___Win32_Release\S3PAccCardHistoryDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PAccount.obj
+.\S3DBInterfaceLib___Win32_Release\S3PAccountHabitusDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PAccountInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PCard.obj
+.\S3DBInterfaceLib___Win32_Release\S3PCardHistoryDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PCardInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBConnection.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBConnectionPool.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBConnector.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBSocketParser.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBSocketPool.obj
+.\S3DBInterfaceLib___Win32_Release\S3PDBSocketServer.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipBaseInfo.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipBaseInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipEfficInfo.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipEfficInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipment.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipmentsDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipRequireInfo.obj
+.\S3DBInterfaceLib___Win32_Release\S3PEquipRequireInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PFightSkill.obj
+.\S3DBInterfaceLib___Win32_Release\S3PFightSkillDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PFriend.obj
+.\S3DBInterfaceLib___Win32_Release\S3PFriendListDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PLifeSkill.obj
+.\S3DBInterfaceLib___Win32_Release\S3PLifeSkillDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PList.obj
+.\S3DBInterfaceLib___Win32_Release\S3PManipulator.obj
+.\S3DBInterfaceLib___Win32_Release\S3PRelockAccount.obj
+.\S3DBInterfaceLib___Win32_Release\S3PResult.obj
+.\S3DBInterfaceLib___Win32_Release\S3PRole.obj
+.\S3DBInterfaceLib___Win32_Release\S3PRoleInfoDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PRoleList.obj
+.\S3DBInterfaceLib___Win32_Release\S3PRow.obj
+.\S3DBInterfaceLib___Win32_Release\S3PServerListDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTableDAO.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTableInfoCatch.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTableObjList.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTask.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTaskList.obj
+.\S3DBInterfaceLib___Win32_Release\S3PTaskListDAO.obj
+..\RegExp\lib\RegExp.lib
+"..\mysql++-1.7.1-1-win32-vc++\lib\mysql++.lib"
+..\culib\lib\culib.lib
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP72.tmp"
+<h3>Output Window</h3>
+Compiling...
+GlobalFun.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\GlobalFun.cpp(470) : warning C4018: '<=' : signed/unsigned mismatch
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\GlobalFun.cpp(605) : error C2065: '_beginthreadex' : undeclared identifier
+S3DBInterface.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\s3pdbconnectionpool.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PAccCardHistoryDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PAccount.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PAccountHabitusDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PAccountInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PCard.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PCardHistoryDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PCardInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PDBConnection.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PDBConnectionPool.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnectionPool.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PDBConnector.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PDBSocketParser.cpp
+S3PDBSocketPool.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PDBSocketServer.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipBaseInfo.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipBaseInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipEfficInfo.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipEfficInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipment.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipmentsDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipRequireInfo.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PEquipRequireInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PFightSkill.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PFightSkillDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PFriend.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PFriendListDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PLifeSkill.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PLifeSkillDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PList.cpp
+S3PManipulator.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PRelockAccount.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PResult.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PRole.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PRoleInfoDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PRoleList.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PRow.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PServerListDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTableDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTableInfoCatch.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTableObjList.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTask.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PDBConnection.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTaskList.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PResult.h(13) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+S3PTaskListDAO.cpp
+C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\XSHANJU\Sword3PaySys\S3PTableDAO.h(15) : fatal error C1083: Cannot open include file: 'sqlplus.hh': No such file or directory
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+S3DBInterfaceLib.lib - 42 error(s), 1 warning(s)
+</pre>
+</body>
+</html>

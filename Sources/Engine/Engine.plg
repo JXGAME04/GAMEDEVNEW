@@ -1,0 +1,244 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Engine - Win32 OuRead Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP48.tmp" with contents
+[
+/nologo /MD /W3 /GX /Zi /O2 /I "include" /I "..\Pack\ucl-1.01\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "ENGINE_EXPORTS" /D "USE_STANDALONE_SPR" /Fp"Engine___Win32_OuRead_Release/Engine.pch" /YX"KWin32.h" /Fo"Engine___Win32_OuRead_Release/" /Fd"Engine___Win32_OuRead_Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KAutoMutex.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KEngine.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KFilePath.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KFindBinTree.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KGraphics.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\Kime.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KIniFile.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KLinkArray.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KLubCmpl_Blocker.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KMemClass1.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KPakFile.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KPakList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KPolyRelation.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KScriptCache.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KScriptList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KSortBinTree.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KStepLuaScript.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KTabFile.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KTabFileCtrl.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\KZipList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\Cryptography\EDOneTimePad.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Engine\Src\Text.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP48.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP49.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib comdlg32.lib ddraw.lib dsound.lib dxguid.lib winmm.lib wsock32.lib dinput8.lib /nologo /dll /incremental:no /pdb:"Engine___Win32_OuRead_Release/Engine.pdb" /map:"Engine___Win32_OuRead_Release/Engine.map" /debug /machine:I386 /out:"Engine___Win32_OuRead_Release/Engine.dll" /implib:"Engine___Win32_OuRead_Release/Engine.lib" 
+.\Engine___Win32_OuRead_Release\KAutoMutex.obj
+.\Engine___Win32_OuRead_Release\KAviFile.obj
+.\Engine___Win32_OuRead_Release\KBitmap.obj
+.\Engine___Win32_OuRead_Release\KBitmap16.obj
+.\Engine___Win32_OuRead_Release\KBitmapConvert.obj
+.\Engine___Win32_OuRead_Release\KBmp2Spr.obj
+.\Engine___Win32_OuRead_Release\KBmpFile.obj
+.\Engine___Win32_OuRead_Release\KBmpFile24.obj
+.\Engine___Win32_OuRead_Release\KCache.obj
+.\Engine___Win32_OuRead_Release\KCanvas.obj
+.\Engine___Win32_OuRead_Release\KCodec.obj
+.\Engine___Win32_OuRead_Release\KCodecLzo.obj
+.\Engine___Win32_OuRead_Release\KColors.obj
+.\Engine___Win32_OuRead_Release\KDDraw.obj
+.\Engine___Win32_OuRead_Release\KDebug.obj
+.\Engine___Win32_OuRead_Release\KDError.obj
+.\Engine___Win32_OuRead_Release\KDInput.obj
+.\Engine___Win32_OuRead_Release\KDrawBase.obj
+.\Engine___Win32_OuRead_Release\KDrawBitmap.obj
+.\Engine___Win32_OuRead_Release\KDrawBitmap16.obj
+.\Engine___Win32_OuRead_Release\KDrawFade.obj
+.\Engine___Win32_OuRead_Release\KDrawFont.obj
+.\Engine___Win32_OuRead_Release\KDrawSprite.obj
+.\Engine___Win32_OuRead_Release\KDrawSpriteAlpha.obj
+.\Engine___Win32_OuRead_Release\KDSound.obj
+.\Engine___Win32_OuRead_Release\KEicScript.obj
+.\Engine___Win32_OuRead_Release\KEicScriptSet.obj
+.\Engine___Win32_OuRead_Release\KEngine.obj
+.\Engine___Win32_OuRead_Release\KEvent.obj
+.\Engine___Win32_OuRead_Release\KFile.obj
+.\Engine___Win32_OuRead_Release\KFileCopy.obj
+.\Engine___Win32_OuRead_Release\KFileDialog.obj
+.\Engine___Win32_OuRead_Release\KFilePath.obj
+.\Engine___Win32_OuRead_Release\KFindBinTree.obj
+.\Engine___Win32_OuRead_Release\KFont.obj
+.\Engine___Win32_OuRead_Release\KGifFile.obj
+.\Engine___Win32_OuRead_Release\KGraphics.obj
+.\Engine___Win32_OuRead_Release\KHashList.obj
+.\Engine___Win32_OuRead_Release\KHashNode.obj
+.\Engine___Win32_OuRead_Release\KHashTable.obj
+.\Engine___Win32_OuRead_Release\Kime.obj
+.\Engine___Win32_OuRead_Release\KIniFile.obj
+.\Engine___Win32_OuRead_Release\KJpgFile.obj
+.\Engine___Win32_OuRead_Release\KKeyboard.obj
+.\Engine___Win32_OuRead_Release\KLinkArray.obj
+.\Engine___Win32_OuRead_Release\KList.obj
+.\Engine___Win32_OuRead_Release\KLuaScript.obj
+.\Engine___Win32_OuRead_Release\KLuaScriptSet.obj
+.\Engine___Win32_OuRead_Release\KLubCmpl_Blocker.obj
+.\Engine___Win32_OuRead_Release\KMemBase.obj
+.\Engine___Win32_OuRead_Release\KMemClass.obj
+.\Engine___Win32_OuRead_Release\KMemClass1.obj
+.\Engine___Win32_OuRead_Release\KMemManager.obj
+.\Engine___Win32_OuRead_Release\KMemStack.obj
+.\Engine___Win32_OuRead_Release\KMessage.obj
+.\Engine___Win32_OuRead_Release\KMouse.obj
+.\Engine___Win32_OuRead_Release\KMp3Music.obj
+.\Engine___Win32_OuRead_Release\KMp4Audio.obj
+.\Engine___Win32_OuRead_Release\KMp4Movie.obj
+.\Engine___Win32_OuRead_Release\KMp4Video.obj
+.\Engine___Win32_OuRead_Release\KMpgMusic.obj
+.\Engine___Win32_OuRead_Release\KMsgNode.obj
+.\Engine___Win32_OuRead_Release\KMusic.obj
+.\Engine___Win32_OuRead_Release\KMutex.obj
+.\Engine___Win32_OuRead_Release\KNode.obj
+.\Engine___Win32_OuRead_Release\KOctree.obj
+.\Engine___Win32_OuRead_Release\KOctreeNode.obj
+.\Engine___Win32_OuRead_Release\KPakData.obj
+.\Engine___Win32_OuRead_Release\KPakFile.obj
+.\Engine___Win32_OuRead_Release\KPakList.obj
+.\Engine___Win32_OuRead_Release\KPakTool.obj
+.\Engine___Win32_OuRead_Release\KPalette.obj
+.\Engine___Win32_OuRead_Release\KPcxFile.obj
+.\Engine___Win32_OuRead_Release\KPolygon.obj
+.\Engine___Win32_OuRead_Release\KPolyRelation.obj
+.\Engine___Win32_OuRead_Release\KRandom.obj
+.\Engine___Win32_OuRead_Release\KSafeList.obj
+.\Engine___Win32_OuRead_Release\KScanDir.obj
+.\Engine___Win32_OuRead_Release\KScript.obj
+.\Engine___Win32_OuRead_Release\KScriptCache.obj
+.\Engine___Win32_OuRead_Release\KScriptList.obj
+.\Engine___Win32_OuRead_Release\KScriptSet.obj
+.\Engine___Win32_OuRead_Release\KSG_MD5_String.obj
+.\Engine___Win32_OuRead_Release\KSG_StringProcess.obj
+.\Engine___Win32_OuRead_Release\KSortBinTree.obj
+.\Engine___Win32_OuRead_Release\KSortList.obj
+.\Engine___Win32_OuRead_Release\KSoundCache.obj
+.\Engine___Win32_OuRead_Release\KSprite.obj
+.\Engine___Win32_OuRead_Release\KSpriteCache.obj
+.\Engine___Win32_OuRead_Release\KSpriteCodec.obj
+.\Engine___Win32_OuRead_Release\KSpriteMaker.obj
+.\Engine___Win32_OuRead_Release\KStepLuaScript.obj
+.\Engine___Win32_OuRead_Release\KStrBase.obj
+.\Engine___Win32_OuRead_Release\KStrList.obj
+.\Engine___Win32_OuRead_Release\KStrNode.obj
+.\Engine___Win32_OuRead_Release\KTabFile.obj
+.\Engine___Win32_OuRead_Release\KTabFileCtrl.obj
+.\Engine___Win32_OuRead_Release\KTgaFile32.obj
+.\Engine___Win32_OuRead_Release\KThread.obj
+.\Engine___Win32_OuRead_Release\KTimer.obj
+.\Engine___Win32_OuRead_Release\KVideo.obj
+.\Engine___Win32_OuRead_Release\KWavCodec.obj
+.\Engine___Win32_OuRead_Release\KWavFile.obj
+.\Engine___Win32_OuRead_Release\KWavMusic.obj
+.\Engine___Win32_OuRead_Release\KWavSound.obj
+.\Engine___Win32_OuRead_Release\KWin32.obj
+.\Engine___Win32_OuRead_Release\KWin32App.obj
+.\Engine___Win32_OuRead_Release\KWin32Wnd.obj
+.\Engine___Win32_OuRead_Release\KZipCodec.obj
+.\Engine___Win32_OuRead_Release\KZipData.obj
+.\Engine___Win32_OuRead_Release\KZipFile.obj
+.\Engine___Win32_OuRead_Release\KZipList.obj
+.\Engine___Win32_OuRead_Release\md5.obj
+.\Engine___Win32_OuRead_Release\stdafx.obj
+.\Engine___Win32_OuRead_Release\XPackFile.obj
+.\Engine___Win32_OuRead_Release\EDOneTimePad.obj
+.\Engine___Win32_OuRead_Release\Text.obj
+.\Engine___Win32_OuRead_Release\alloc.obj
+.\Engine___Win32_OuRead_Release\io.obj
+.\Engine___Win32_OuRead_Release\n2b_99.obj
+.\Engine___Win32_OuRead_Release\n2b_d.obj
+.\Engine___Win32_OuRead_Release\n2b_ds.obj
+.\Engine___Win32_OuRead_Release\n2b_to.obj
+.\Engine___Win32_OuRead_Release\n2d_99.obj
+.\Engine___Win32_OuRead_Release\n2d_d.obj
+.\Engine___Win32_OuRead_Release\n2d_ds.obj
+.\Engine___Win32_OuRead_Release\n2d_to.obj
+.\Engine___Win32_OuRead_Release\n2e_99.obj
+.\Engine___Win32_OuRead_Release\n2e_d.obj
+.\Engine___Win32_OuRead_Release\n2e_ds.obj
+.\Engine___Win32_OuRead_Release\n2e_to.obj
+.\Engine___Win32_OuRead_Release\ucl_crc.obj
+.\Engine___Win32_OuRead_Release\ucl_dll.obj
+.\Engine___Win32_OuRead_Release\ucl_init.obj
+.\Engine___Win32_OuRead_Release\ucl_ptr.obj
+.\Engine___Win32_OuRead_Release\ucl_str.obj
+.\Engine___Win32_OuRead_Release\ucl_util.obj
+..\..\Lib\release\JpgLib.lib
+..\..\Lib\release\LuaLibDll.lib
+..\..\Lib\release\mp3lib.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP49.tmp"
+<h3>Output Window</h3>
+Compiling...
+KAutoMutex.cpp
+KEngine.cpp
+KFilePath.cpp
+KFindBinTree.cpp
+KGraphics.cpp
+Kime.cpp
+KIniFile.cpp
+KIniFile 当前不支持 KeyName 为中文! by Romandou
+KLinkArray.cpp
+KLubCmpl_Blocker.cpp
+KMemClass1.cpp
+KPakFile.cpp
+KPakList.cpp
+KPolyRelation.cpp
+KScriptCache.cpp
+KScriptList.cpp
+KSortBinTree.cpp
+KStepLuaScript.cpp
+KTabFile.cpp
+KTabFileCtrl.cpp
+KZipList.cpp
+EDOneTimePad.cpp
+Text.cpp
+Linking...
+   Creating library Engine___Win32_OuRead_Release/Engine.lib and object Engine___Win32_OuRead_Release/Engine.exp
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4D.bat" with contents
+[
+@echo off
+md ..\..\lib\release
+copy Engine___Win32_OuRead_Release\Engine.lib ..\..\lib\release\engine.lib
+md ..\..\..\bin\client\release\
+copy Engine___Win32_OuRead_Release\engine.dll ..\..\..\bin\client\engine.dll
+copy Engine___Win32_OuRead_Release\engine.dll ..\..\..\bin\client\release\engine.dll
+copy Engine___Win32_OuRead_Release\engine.pdb ..\..\..\bin\client\release\engine.pdb
+copy Engine___Win32_OuRead_Release\engine.map ..\..\..\bin\client\release\engine.map
+md ..\..\..\bin\server\release\
+copy Engine___Win32_OuRead_Release\Engine.dll ..\..\..\bin\server\engine.dll
+copy Engine___Win32_OuRead_Release\Engine.dll ..\..\..\bin\server\release\engine.dll
+copy Engine___Win32_OuRead_Release\Engine.pdb ..\..\..\bin\server\release\engine.pdb
+copy Engine___Win32_OuRead_Release\Engine.map ..\..\..\bin\server\release\engine.map
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4D.bat"
+
+A subdirectory or file ..\..\lib\release already exists.
+        1 file(s) copied.
+A subdirectory or file ..\..\..\bin\client\release\ already exists.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+Engine.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

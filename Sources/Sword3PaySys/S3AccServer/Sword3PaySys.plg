@@ -1,0 +1,86 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Sword3PaySys - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Debug/Sword3PaySys.res" /d "_DEBUG" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\Sword3PaySys.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\..\Headers" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/Sword3PaySys.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\GlobalFun.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\KThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\LogFile.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\main.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3P_MSSQLServer_Result.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PAccount.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PDB_MSSQLServer_Connection.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PDBConnectionPool.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PDBConVBC.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PDBSocketPool.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\S3PResultVBC.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP4.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP5.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\..\Headers" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/Sword3PaySys.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3AccServer\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP5.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Ws2_32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Sword3PaySys.pdb" /debug /machine:I386 /out:"Debug/Sword3PaySys.exe" /pdbtype:sept 
+.\Debug\GlobalFun.obj
+.\Debug\KThread.obj
+.\Debug\LogFile.obj
+.\Debug\main.obj
+.\Debug\S3P_MSSQLServer_Result.obj
+.\Debug\S3PAccount.obj
+.\Debug\S3PDB_MSSQLServer_Connection.obj
+.\Debug\S3PDBConnectionPool.obj
+.\Debug\S3PDBConVBC.obj
+.\Debug\S3PDBSocketPool.obj
+.\Debug\S3PResultVBC.obj
+.\Debug\StdAfx.obj
+.\Debug\Sword3PaySys.res
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+GlobalFun.cpp
+KThread.cpp
+LogFile.cpp
+main.cpp
+S3P_MSSQLServer_Result.cpp
+S3PAccount.cpp
+S3PDB_MSSQLServer_Connection.cpp
+S3PDBConnectionPool.cpp
+S3PDBConVBC.cpp
+S3PDBSocketPool.cpp
+S3PResultVBC.cpp
+Linking...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8.bat" with contents
+[
+@echo off
+md ..\..\..\..\bin\client\debug\
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\MultiServer\Sword3PaySys.exe
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\debug\Sword3PaySys.exe
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8.bat"
+
+A subdirectory or file ..\..\..\..\bin\client\debug\ already exists.
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+Sword3PaySys.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

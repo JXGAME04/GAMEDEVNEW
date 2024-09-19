@@ -1,0 +1,238 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "kingJX\0"
+            VALUE "FileDescription", "StartGameSV\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "StartGameSV\0"
+            VALUE "LegalCopyright", "Copyright ? 2021\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "StartGameSV.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "StartGameSV\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DLG_LOGIN DIALOGEX 0, 0, 214, 95
+STYLE DS_SYSMODAL | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Login"
+FONT 8, "Tahoma", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,103,73,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,157,73,50,14
+    EDITTEXT        IDC_EDIT_USERNAME,51,7,155,12,ES_AUTOHSCROLL | NOT 
+                    WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_EDIT_PASSWORD,51,23,155,12,ES_PASSWORD | 
+                    ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_EDIT_LOGONTO_IP,88,46,64,12,ES_CENTER | ES_LOWERCASE | 
+                    ES_AUTOHSCROLL | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        IDC_EDIT_LOGONTO_PORT,174,46,26,12,ES_CENTER | 
+                    ES_AUTOHSCROLL | ES_NUMBER | NOT WS_BORDER,
+                    WS_EX_STATICEDGE
+    LTEXT           "User name :",IDC_STATIC,7,7,42,12,SS_CENTERIMAGE
+    LTEXT           "Password :",IDC_STATIC,7,23,42,12,SS_CENTERIMAGE
+    LTEXT           "Log on to :",IDC_STATIC,7,39,42,12,SS_CENTERIMAGE
+    RTEXT           "A.S.",IDC_STATIC,55,46,15,12,SS_CENTERIMAGE
+    GROUPBOX        " Server ",IDC_STATIC,51,36,155,28
+    RTEXT           "IP :",IDC_STATIC,73,46,12,12,SS_CENTERIMAGE
+    RTEXT           "Port :",IDC_STATIC,153,46,19,12,SS_CENTERIMAGE
+    ICON            IDI_ICON1,IDC_STATIC,7,67,20,20
+END
+
+IDD_DLG_INTERCESSOR DIALOG DISCARDABLE  0, 0, 463, 119
+STYLE DS_SETFOREGROUND | DS_CENTER | WS_MINIMIZEBOX | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "StartGameSV contact skype lengoctuan.dl"
+FONT 8, "Tahoma"
+BEGIN
+    PUSHBUTTON      "1.S3RelayServer",IDC_BUTTON1,9,25,62,14
+    PUSHBUTTON      "3.Goddess",IDC_BUTTON2,150,25,55,14,WS_DISABLED
+    PUSHBUTTON      "5.S3Relay",IDC_BUTTON3,267,25,64,14,WS_DISABLED
+    PUSHBUTTON      "4.Bishop",IDC_BUTTON4,210,25,53,14,WS_DISABLED
+    PUSHBUTTON      "6.GameServer",IDC_BUTTON5,336,25,64,14,WS_DISABLED
+    PUSHBUTTON      "2.Sword3Paysys",IDC_BUTTON6,76,25,70,14,WS_DISABLED
+    LTEXT           "Start step 1 to 6",IDC_STATIC,8,9,56,8
+    LTEXT           "1. S3RelayServer: ...",IDC_STATIC1,8,47,70,8
+    LTEXT           "2. Sword3Paysys: ...",IDC_STATIC2,8,58,69,8
+    LTEXT           "3. Goodes: ...",IDC_STATIC3,8,70,46,8
+    LTEXT           "4. Bishop: ...",IDC_STATIC4,8,81,43,8
+    LTEXT           "5. S3Relay: ...",IDC_STATIC5,8,93,48,8
+    LTEXT           "6. GameServer: ...",IDC_STATIC6,8,104,62,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_LOCK                ICON    DISCARDABLE     "res\\lock.ico"
+IDI_ICON1               ICON    DISCARDABLE     "res\\bebo_32.ico"
+IDI_ICON2               ICON    DISCARDABLE     "res\\bebo_16.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DLG_LOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 207
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_DLG_INTERCESSOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 456
+        BOTTOMMARGIN, 112
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NAMEPSWD_ERROR      "123"
+    IDS_NETWORK_ERROR       "456"
+    IDS_APP_TITLE           "StartGameSV"
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDRBS_ACCEL1 ACCELERATORS MOVEABLE PURE 
+BEGIN
+    "S",            IDBS_START_MODE,        VIRTKEY, CONTROL
+    "E",            IDBS_OK_MODE,           VIRTKEY, CONTROL
+    "Q",            IDBS_QUIT_MODE,         VIRTKEY, CONTROL
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

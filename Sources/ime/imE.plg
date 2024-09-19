@@ -1,0 +1,46 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: imE - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP52C.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/imE.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ime\ime.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ime\maintest.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP52C.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP52D.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib engine.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/imE.pdb" /debug /machine:I386 /out:"Debug/imE.exe" /pdbtype:sept 
+.\Debug\ime.obj
+.\Debug\maintest.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP52D.tmp"
+<h3>Output Window</h3>
+Compiling...
+ime.cpp
+maintest.cpp
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(17) : error C2146: syntax error : missing ';' before identifier 'm_Mouse'
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(17) : error C2501: 'KMouse' : missing storage-class or type specifiers
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(17) : error C2501: 'm_Mouse' : missing storage-class or type specifiers
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(18) : error C2146: syntax error : missing ';' before identifier 'm_Keyboard'
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(18) : error C2501: 'KKeyboard' : missing storage-class or type specifiers
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.h(18) : error C2501: 'm_Keyboard' : missing storage-class or type specifiers
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.cpp(29) : error C2660: 'Load' : function does not take 1 parameters
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.cpp(51) : error C2065: 'm_Keyboard' : undeclared identifier
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.cpp(51) : error C2228: left of '.UpdateState' must have class/struct/union type
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.cpp(52) : error C2065: 'm_Mouse' : undeclared identifier
+c:\source_g7vn\jx\swrod3\swordonline\sources\ime\maintest.cpp(52) : error C2228: left of '.UpdateState' must have class/struct/union type
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+imE.exe - 11 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

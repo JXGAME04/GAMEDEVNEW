@@ -1,0 +1,84 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: RoleDBServer - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Debug/RoleDBServer.res" /d "_DEBUG" /d "_AFXDLL" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\RoleDBServer.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP38.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\MultiServer\Heaven\Interface" /I "..\..\Lib\\" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\KException.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\MainFrm.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\RoleDBServer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\RoleDBServerDoc.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\RoleDBServerView.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\KDBProcessThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\KRoleDBServer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\KRoleInfomation.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\KRoleBlockProcess.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP38.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP39.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\MultiServer\Heaven\Interface" /I "..\..\Lib\\" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fp"Debug/RoleDBServer.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\RoleDBServer\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP39.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3A.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:"Debug/RoleDBServer.pdb" /debug /machine:I386 /out:"C:\Source_G7VN\JX\swrod3\bin\Server\RoleDBServer.exe" /pdbtype:sept 
+.\Debug\KException.obj
+.\Debug\MainFrm.obj
+.\Debug\RoleDBServer.obj
+.\Debug\RoleDBServerDoc.obj
+.\Debug\RoleDBServerView.obj
+.\Debug\StdAfx.obj
+.\Debug\KDBProcessThread.obj
+.\Debug\KRoleDBServer.obj
+.\Debug\KRoleInfomation.obj
+.\Debug\KRoleBlockProcess.obj
+.\Debug\RoleDBServer.res
+..\..\Lib\S3DBInterface_d.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3A.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+KException.cpp
+MainFrm.cpp
+RoleDBServer.cpp
+RoleDBServerDoc.cpp
+RoleDBServerView.cpp
+KDBProcessThread.cpp
+c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1179) : error C2011: 'TProcessData' : 'struct' type redefinition
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(358) : error C2039: 'szRoleName' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(365) : error C2039: 'nArmorType' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(366) : error C2039: 'nHelmType' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(367) : error C2039: 'nLevel' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(368) : error C2039: 'nSex' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kdbprocessthread.cpp(369) : error C2039: 'nWeaponType' : is not a member of 'RoleBaseInfo'
+        c:\source_g7vn\jx\swrod3\swordonline\headers\kprotocol.h(1160) : see declaration of 'RoleBaseInfo'
+KRoleDBServer.cpp
+c:\source_g7vn\jx\swrod3\swordonline\sources\roledbserver\kroledbserver.cpp(90) : error C2660: 'SendPackToClient' : function does not take 0 parameters
+KRoleInfomation.cpp
+KRoleBlockProcess.cpp
+Generating Code...
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+RoleDBServer.exe - 8 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: PackNew - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "D:\temp\RSP68.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\PackNew.cpp"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ZPackFile.cpp"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\alloc.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\io.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2b_99.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2b_d.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2b_ds.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2b_to.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2d_99.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2d_d.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2d_ds.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2d_to.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2e_99.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2e_d.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2e_ds.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\n2e_to.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_crc.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_dll.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_init.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_ptr.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_str.c"
+"F:\DownLoads\SwordOnline\Sources\PackCombo\PackNew\ucl-1.01\src\ucl_util.c"
+]
+Creating command line "cl.exe @D:\temp\RSP68.tmp" 
+Creating temporary file "D:\temp\RSP69.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/PackNew.pdb" /debug /machine:I386 /out:"Debug/PackNew.exe" /pdbtype:sept 
+.\Debug\PackNew.obj
+.\Debug\ZPackFile.obj
+.\Debug\alloc.obj
+.\Debug\io.obj
+.\Debug\n2b_99.obj
+.\Debug\n2b_d.obj
+.\Debug\n2b_ds.obj
+.\Debug\n2b_to.obj
+.\Debug\n2d_99.obj
+.\Debug\n2d_d.obj
+.\Debug\n2d_ds.obj
+.\Debug\n2d_to.obj
+.\Debug\n2e_99.obj
+.\Debug\n2e_d.obj
+.\Debug\n2e_ds.obj
+.\Debug\n2e_to.obj
+.\Debug\ucl_crc.obj
+.\Debug\ucl_dll.obj
+.\Debug\ucl_init.obj
+.\Debug\ucl_ptr.obj
+.\Debug\ucl_str.obj
+.\Debug\ucl_util.obj
+]
+Creating command line "link.exe @D:\temp\RSP69.tmp"
+<h3>Output Window</h3>
+Compiling...
+PackNew.cpp
+f:\downloads\swordonline\sources\packcombo\packnew\packnew.cpp(10) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+ZPackFile.cpp
+f:\downloads\swordonline\sources\packcombo\packnew\zpackfile.h(5) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+Generating Code...
+Compiling...
+alloc.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+io.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+n2b_99.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2_99.ch(30) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+n2b_d.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2b_d.c(133) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2b_ds.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2b_d.c(133) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2b_to.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2b_to.c(34) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2d_99.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2_99.ch(30) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+n2d_d.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2d_d.c(138) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2d_ds.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2d_d.c(138) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2d_to.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2d_to.c(34) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2e_99.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2_99.ch(30) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+n2e_d.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2e_d.c(141) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2e_ds.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2e_d.c(141) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+n2e_to.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\n2e_to.c(34) : fatal error C1083: Cannot open include file: 'ucl/ucl.h': No such file or directory
+ucl_crc.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+ucl_dll.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+ucl_init.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+ucl_ptr.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+ucl_str.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+ucl_util.c
+f:\downloads\swordonline\sources\packcombo\packnew\ucl-1.01\src\ucl_conf.h(39) : fatal error C1083: Cannot open include file: 'ucl/uclconf.h': No such file or directory
+Generating Code...
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+PackNew.exe - 22 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

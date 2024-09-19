@@ -1,0 +1,87 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Bishop - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP63.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\Common" /I "..\Rainbow\Interface" /I "..\Heaven\Interface" /I "..\..\..\lib" /I "..\..\..\Headers" /I "..\..\Sword3PaySys\S3AccServer" /I "..\..\s3client\login" /I "..\..\RoleDBManager" /I "..\..\Core\src" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/Bishop.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\Application.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\Bishop.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\GamePlayer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\GameServer.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\Intercessor.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\MultiServer\Bishop\PlayerCreator.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP63.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP64.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Bishop.pdb" /debug /machine:I386 /out:"Debug/Bishop.exe" /pdbtype:sept 
+.\Debug\Application.obj
+.\Debug\Bishop.obj
+.\Debug\Event.obj
+.\Debug\FilterTextLib.obj
+.\Debug\GamePlayer.obj
+.\Debug\GameServer.obj
+.\Debug\Intercessor.obj
+.\Debug\Network.obj
+.\Debug\PlayerCreator.obj
+.\Debug\SmartClient.obj
+.\Debug\StdAfx.obj
+.\Debug\Bishop.res
+..\..\..\Lib\debug\common.lib
+..\..\..\Lib\debug\engine.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP64.tmp"
+<h3>Output Window</h3>
+Compiling...
+Application.cpp
+Generating Code...
+Compiling...
+Bishop.cpp
+GamePlayer.cpp
+GameServer.cpp
+Intercessor.cpp
+PlayerCreator.cpp
+Generating Code...
+Linking...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP66.tmp" with contents
+[
+/nologo /o"Debug/Bishop.bsc" 
+.\Debug\StdAfx.sbr
+.\Debug\Application.sbr
+.\Debug\Bishop.sbr
+.\Debug\Event.sbr
+.\Debug\FilterTextLib.sbr
+.\Debug\GamePlayer.sbr
+.\Debug\GameServer.sbr
+.\Debug\Intercessor.sbr
+.\Debug\Network.sbr
+.\Debug\PlayerCreator.sbr
+.\Debug\SmartClient.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP66.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP67.bat" with contents
+[
+@echo off
+md ..\..\..\..\bin\server\debug\
+copy debug\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe
+copy debug\Bishop.exe ..\..\..\..\bin\multiserver\debug\Bishop.exe
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP67.bat"
+
+A subdirectory or file ..\..\..\..\bin\server\debug\ already exists.
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+Bishop.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

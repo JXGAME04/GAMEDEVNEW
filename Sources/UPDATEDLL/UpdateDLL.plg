@@ -1,0 +1,170 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: UpdateDLL - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x804 /fo"Release/UpdateDLL.res" /d "NDEBUG" /d "_AFXDLL" "C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\UpdateDLL.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP7F.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I "./" /I "./src/" /I ".." /D "_XP_WIN32_MFC_" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_WINDLL" /D "_AFXDLL" /Fp"Release/UpdateDLL.pch" /YX"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\MsgWnd.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP7F.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP80.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I "./" /I "./src/" /D "_XP_WIN32_MFC_" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_WINDLL" /D "_AFXDLL" /Fp"Release/UpdateDLL.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP80.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP81.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I "./" /I "./src/" /D "_XP_WIN32_MFC_" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_WINDLL" /D "_AFXDLL" /Fp"Release/UpdateDLL.pch" /YX"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\UpdateDLL.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\UpdateDLLImplement.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\UpdateExport.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\bufsocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\BusyThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\CheckThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\CRC32.C"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\DgmSocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\downloadfile.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\downnotify.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\ftpdownload.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\GenKAVMoveProgram.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\getfilesversion.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\getproxysetting.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\GetVersion.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\Global.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\httpdownload.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\InetStruct.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\IpSocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\KCloseProgramMgr.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\LoadHostList.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\PingSocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\PingThread.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\ProcessIndex.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\proxyutility.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\PublicFun.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\RawSocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\SaveLog.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\sockspacket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\stmsocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\tcpsocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\UdpSocket.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\UpdateData.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\UpdatePublic.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\usercheck.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\UPDATEDLL\src\wndnotify.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP81.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP82.tmp" with contents
+[
+KavPublicR.lib ApLib.lib Ws2_32.lib Version.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"Release/UpdateDLL.pdb" /map:"Release/UpdateDLL.map" /debug /machine:I386 /nodefaultlib:"LIBCMT.lib" /def:".\UpdateDLL.def" /out:"Release/UpdateDLL.dll" /implib:"Release/UpdateDLL.lib" 
+.\Release\MsgWnd.obj
+.\Release\StdAfx.obj
+.\Release\UpdateDLL.obj
+.\Release\UpdateDLLImplement.obj
+.\Release\UpdateExport.obj
+.\Release\bufsocket.obj
+.\Release\BusyThread.obj
+.\Release\CheckThread.obj
+.\Release\CRC32.OBJ
+.\Release\DgmSocket.obj
+.\Release\downloadfile.obj
+.\Release\downnotify.obj
+.\Release\ftpdownload.obj
+.\Release\GenKAVMoveProgram.obj
+.\Release\getfilesversion.obj
+.\Release\getproxysetting.obj
+.\Release\GetVersion.obj
+.\Release\Global.obj
+.\Release\httpdownload.obj
+.\Release\InetStruct.obj
+.\Release\IpSocket.obj
+.\Release\KCloseProgramMgr.obj
+.\Release\LoadHostList.obj
+.\Release\PingSocket.obj
+.\Release\PingThread.obj
+.\Release\ProcessIndex.obj
+.\Release\proxyutility.obj
+.\Release\PublicFun.obj
+.\Release\RawSocket.obj
+.\Release\SaveLog.obj
+.\Release\sockspacket.obj
+.\Release\stmsocket.obj
+.\Release\tcpsocket.obj
+.\Release\UdpSocket.obj
+.\Release\UpdateData.obj
+.\Release\UpdatePublic.obj
+.\Release\usercheck.obj
+.\Release\wndnotify.obj
+.\Release\UpdateDLL.res
+..\..\Lib\Release\ExpandPackageStaticLib.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP82.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+MsgWnd.cpp
+Compiling...
+UpdateDLL.cpp
+UpdateDLLImplement.cpp
+UpdateExport.cpp
+bufsocket.cpp
+BusyThread.cpp
+CheckThread.cpp
+CRC32.C
+DgmSocket.cpp
+downloadfile.cpp
+downnotify.cpp
+ftpdownload.cpp
+GenKAVMoveProgram.cpp
+getfilesversion.cpp
+getproxysetting.cpp
+GetVersion.cpp
+Global.cpp
+httpdownload.cpp
+InetStruct.cpp
+IpSocket.cpp
+KCloseProgramMgr.cpp
+LoadHostList.cpp
+PingSocket.cpp
+PingThread.cpp
+ProcessIndex.cpp
+proxyutility.cpp
+PublicFun.cpp
+RawSocket.cpp
+SaveLog.cpp
+sockspacket.cpp
+stmsocket.cpp
+tcpsocket.cpp
+UdpSocket.cpp
+UpdateData.cpp
+UpdatePublic.cpp
+usercheck.cpp
+wndnotify.cpp
+Linking...
+   Creating library Release/UpdateDLL.lib and object Release/UpdateDLL.exp
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP86.bat" with contents
+[
+@echo off
+copy release\UpdateDLL.dll ..\..\..\bin\Client\UpdateDLL.dll
+copy release\UpdateDLL.dll ..\..\..\bin\Client\release\UpdateDLL.dll
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP86.bat"
+
+        1 file(s) copied.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+UpdateDLL.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

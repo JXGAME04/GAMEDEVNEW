@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="DLL Source Files">
+      <UniqueIdentifier>{0c9ae71f-3d32-4612-b4e4-845ba662b294}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="DLL Header Files">
+      <UniqueIdentifier>{e38d07c9-effb-4135-9f8e-e8e93d0070bc}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="IOCPServer">
+      <UniqueIdentifier>{e27c1de1-3dc5-4544-ad95-d26bc2fa2895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IOCPServer\Source Files">
+      <UniqueIdentifier>{114ccd3f-dc8e-4d0b-9191-834985dc2762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IOCPServer\Header Files">
+      <UniqueIdentifier>{09371085-7e52-4571-aa95-f4f14a2d3fc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{5d48b84b-414f-4110-8d9a-4a6fba1a7074}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{591b260b-2c09-42e2-a008-efdd7b712841}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\Debug">
+      <UniqueIdentifier>{07c9ea06-95b2-4adf-9154-6eb201a62431}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\Release">
+      <UniqueIdentifier>{84240359-1f4c-4343-92e0-3c9481b6f2e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{821a6a06-b0bf-4444-b8a1-b5ff1b970ae2}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Heaven.cpp">
+      <Filter>DLL Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerStage.cpp">
+      <Filter>IOCPServer\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\IServer.cpp">
+      <Filter>DLL Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerStage.h">
+      <Filter>IOCPServer\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\HeavenInterface.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\IServer.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\Lib\debug\common.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\release\common.lib">
+      <Filter>Lib\Release</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Interface.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Heaven.def">
+      <Filter>DLL Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,61 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: ExpandPackageStaticLib - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP45.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Fp"Release/ExpandPackageStaticLib.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\BlockSource.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\DataPointFromStream.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\DataSource.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\ExpandPackage.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\Interval.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\Package.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\PackageFileHead.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\ExpandPackage2.0\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP45.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP46.tmp" with contents
+[
+/nologo /out:"Release\ExpandPackageStaticLib.lib" 
+.\Release\BlockSource.obj
+.\Release\DataPointFromStream.obj
+.\Release\DataSource.obj
+.\Release\ExpandPackage.obj
+.\Release\Interval.obj
+.\Release\Package.obj
+.\Release\PackageFileHead.obj
+.\Release\StdAfx.obj
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP46.tmp"
+<h3>Output Window</h3>
+Compiling...
+BlockSource.cpp
+DataPointFromStream.cpp
+DataSource.cpp
+ExpandPackage.cpp
+Interval.cpp
+Package.cpp
+PackageFileHead.cpp
+StdAfx.cpp
+Creating library...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP47.bat" with contents
+[
+@echo off
+copy Release\ExpandPackageStaticLib.lib ..\..\lib\Release\ExpandPackageStaticLib.lib
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP47.bat"
+
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+ExpandPackageStaticLib.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

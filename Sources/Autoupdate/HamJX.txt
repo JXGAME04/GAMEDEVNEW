@@ -1,0 +1,208 @@
+===========================================================================================================================================
+:::::||===\::::||\::::||:IIIIIIIIII:::::::::::::::Tine : 11:59:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::||::.\\:::||\\:::||:::::||:::::::::::::::::Date : 30/7/2008:::::::::::::::::::::::M?i chi ti?t xin liên h? : ::::::::::::::::::::::::::
+:::::||:::.\\::||:\\::||:::::||:::::master::::::::::::::::::::::::::::::::::::::::::::::::::::::::::thalamkedocthan@yahoo.com::::::::::::::
+:::::||::::.\\:||::\\:||:::::||::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::||::::.:||||:::\\||:::::||::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::||:::.://:||::::\||:::::||:::::::::::::Need Help ?::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::||:::.//::||:::::||:::::||::::::::::::::::Find me in Clbgamesvn.com  Yeah !!!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::||___//:::||:::::||:::::||::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+===========================================================================================================================================
+HELP : N?U KHÓ Ð?C HÃY COPY VÀO WROD Ð? XEM...
+
+===========================================================================================================================================
+=============================HÀM H? TR? TRONG JXOFFLINE T?P 1==============================================================================
+===========================================================================================================================================
+======S? HÀM TRONG LIST : 72 HÀM PH? BI?N CÓ UPDATE========================================================================================
+===========================================================================================================================================
+Say	--Nói chuy?n có s? l?a ch?n
+Talk	--Nói chuy?n ko có s? l?a ch?n
+GetTaskTemp & SetTaskTemp 	---Hàm d?t nhi?m v? t?c th?i khi thoát nhân v?t m?t tác d?ng
+Include		---Thêm du?ng d?n d?n file .lua mình mu?n
+AddGlobalNews		]
+AddGlobalTimeNews	]
+AddGlobalCountNews	]	---Thêm thông báo trên màn hình
+AddLocalNews		]
+AddLocalTimeNews	]
+AddLocalCountNews	]
+AddRepute		---Thêm danh v?ng
+GetRepute		---Ki?m tra danh v?ng
+GetTask & SetTask	---Thi?t d?t làm nhi?m v? t?n t?i mãi khi b?n SetTask nó v? l?i 0
+Msg2Player		---g?i tin nh?n t?i ngu?i choi don l?
+Msg2Team		---g?i tin nh?n t?i ngu?i trong m?t d?i
+Msg2SubWorld		---G?i tin nh?n t?i c? Server dang choi
+Msg2Region		---Chua th? nên ko bít hình nhu nh?n vào 1 c?m Server
+Msg2GM			---Nh?n tin t?i GM
+Msg2IP			---Cái này là nh?n tin t?i Ip hoi l? ph?i không hu?ng d?n lun c?u trúc là Msg2IP(IP, ID, StrInfo)
+DropItem		---Hàm Drop Item trong Game cung khá m?i c?u trúc dây DropItem(NpcId, tên ho?c ID item)
+AddItem			---Hàm AddItem
+AddEventItem		---Hàm Add item trong QuestKey AddEventItem(tên ho?c Id item)
+DelItem			---Xóa Item
+HaveItem		---Ki?m tra có Item không
+GetItemCount		---Ð?m Item GetItemCount(tên ho?c id item)
+AddMagic		---Thêm skill
+DelMagic		---Xóa skill
+HaveMagic		---Ki?m tra skill có không
+GetMagicLevel		---Ki?m tra nâng skill dc bao nhiu
+AddLeadExp		---Thêm kinh nghi?m cho qu?n lý t? d?i [m?c lãnh d?o]
+GetLeadLevel		---Ki?m tra kinh nghi?m c?a qu?n lý t? d?i
+SetFightState		---Thi?t l?p tr?ng thái n?u = 1 chi?n d?u ngoài thành có th? th? d?a phù,n?u = 0 thì trong thành
+GetFightState		---Ki?m tra tr?ng thái
+AddNpc			---Thêm NPC c?u trúc cu		]
+SetNpcScript		---thi?t l?p script cho NPC	] hai cái này d?u có trong hàm phát tri?n c?a Akari r?i AddNPCEx
+GetFaction		---Ki?m tra môn phái
+SetFaction		---Thi?t l?p môn phái vào settings\faction d? xem tên môn phái
+GetExp			---ki?m tra kinh nghi?m
+AddOwnExp		---Thêm kinh nghi?m riêng 1 ngu?i
+AddExp			---Hàm này dó gi? hình nhu các b?n chua rõ ho?t d?ng c?a nó có 2 d?ng AddExp(kinh nghi?m) --thêm kinh nghi?m
+									AddExp(kinh nghi?m,d?ng c?p cho phép,kinh nghi?m t? d?i dc hu?ng)
+RestoreLife		---Bom d?y máu l?i
+RestoreMana		---Bom d?y Mana l?i
+RestoreStamina		---Bom d?y th? l?c l?i
+GetSex			---Ki?m tra gi?i tính
+GetName			---Ki?m tra tên
+GetSeries		---Ki?m tra h?
+GetCash			---Ki?m tra ti?n trong ngu?i
+Pay			---L?y ti?n
+Earn			---Thêm ti?n vào ngu?i
+PrePay			---Tr? l?i ti?n
+ExeScript		---Ch?y file script ch? d?nh
+OpenBox			---M? ruong
+AddTermini		---t?o di?m nh? nhung noi di qua
+GetRank			---Ki?m tra danh hi?u
+SetRank			---Ð?t danh hi?u xem trong Settings\Rankings
+GetServerName		---Xem tên Server dang ch?y
+AddNote			---Thêm dòng nh?c nh? 
+AddProp			---Cho thêm di?m ti?m nang
+AddMagicPoint		---Cho thêm di?m k? nang
+GetPlayerCount		---Ð?m xem có bao nhiêu ngu?i dang choi trong Server
+KickOutSelf		---T? d?ng thoát nhân v?t r?i vào l?i
+GetLucky		---Ki?m tra may m?n
+GetEng			---Ki?m tra n?i l?c
+GetDex			---Ki?m tra thân pháp
+GetStrg			---Ki?m tra s?c m?nh
+GetVit			---Ki?m tra sinh l?c
+Sale			---Shop
+UseTownPortal		---Bi?n v? thành = th? d?a phù
+SetCurCamp & SetCamp	---Hàm d?t màu cho tên d? di PK
+
+======================================END==================================================================================================
+---------------H?T T?P 1 HÀM H? TR? JXOFFLINE---------------------------TR?N B? 2 T?P-------------------------------------------------------
+===========================================================================================================================================
+BIÊN SO?N    	: DNTmaster
+NHÀ XU?T B?N 	: T?i Nhà
+S? B?N QUY?N	: Không có vì chia s? cho m?i ngu?i
+LIÊN H?		: thalamkedocthan@yahoo.com
+T?P 2 S? T?NG RIÊNG CHO M?T S? NGU?I NH?T Ð?NH [CHO NH?NG NGU?I B?N C?A TÔI TIN TU?NG]
+===========================================================================================================================================
+
+		   	       ...:::TEAM DEVJX IN VIETNAM:::...
+                                     ...:::DNTmaster:::...
+			       ...:::TEAM DEVJX IN VIETNAM:::...
+===================================================================================================================================================
+
+function main(sel)	]
+a= GetStrg()		]
+b = GetDex()		]
+c = GetVit()		]	ham khong cho nang f3 nua
+d = GetEng()		]
+Str = a + b + c + d - 100]
+AddProp(-Str)		]	
+end;			]
+
+SetTimer(Th?i gian,th? t? file trong TimerTask) ---th?i gian tính b?ng giây ví d? : 60 giây = 60*18 ---Ðu?c kh?i d?ng b?ng hàm function OnTimer()StopTimer() ---T?t hàm SetTimer() cho vào lúc mình mu?n nó s? d?ng l?i
+GetTimerId() ---Chua xài bao gi? nhung cho ID th?i gian vào nó ch?y
+GetWorldPos() ---L?y t?a d? trong Maps dang d?ng
+SubWorldID2Idx(id c?a Map) ---Ki?m tra xem Map có m? chua
+DelNpc(id NPC) ---Xóa NPC dã Add thêm 
+Cách làm : themNPC = AddNPC(......) mu?n xóa con dó dùng 
+DelNPC(themNPC) là dã dc xóa
+GetColdR() ---Ki?m tra kháng Bang c?a NV
+SetColdR(s?) ---Cài d?t kháng cho NV
+GetFireR() l?a ]
+SetFireR() ]
+GetLightR() lôi ] ---gi?ng hàm Bang
+SetLightR() ]
+GetPoisonR() d?c ]
+SetPoisonR() ]
+GetPhyR() phòng th? v?t lý ]
+SetPhyR() ]
+GetDefend() ---Ki?m tra né tránh
+GetSex() ---ki?m tra gi?i tính = 0 là nam = 1 là n?
+GetSeries() ---Ki?m tra ngu hành
+GetUUID() ---L?y ID c?a Nhân v?t
+GetRestAP() ---Ki?m tra Ti?m Nang chua nâng
+GetRestSP() ---ki?m tra di?m K? nang chua nâng
+AttackNpc() ---Hàm NPC h? tr? C?u trúc hàm 
+AttackNpc(ID NPC,sát thuong v?t lý,bang,h?a,di?n,d?c)
+KillNpc(id npc) ---gi?t NPC xài gi?ng cái 
+DelNPCKillPlayer() ---gi?t ch?t ngu?i choi
+SetNpcCurCamp() ---Cài d?t tr?ng thái c?a NPC = 6 là Talk, = 5 là quái
+GetCityCount() --- d?m các thành th? không nó trong file nào c?a 
+SettingsGetCity() ---L?y tên thành th? dang d?ng
+GetWharfName() ]
+GetWharfCount() ]---Liên quan d?n file WharfPrice.txt và Wharf.txt
+GetWharfPrice() ]
+GetWharf() ]
+GetWharfPos() ]
+GetSkillId() ---Ki?m tra skill trong skill list
+SetSkillLevel() ---Cài d?t di?m skill chua xài th?
+SetChatFlag() ---Không bi?t
+GetMissionV() và SetMissionV() gi?ng SetTask nhung có tác d?ng d?n c? Server
+GetGlbMissionV() và SetGlbMissionV() m?nh hon hàm 
+SetMissionV()
+----------------------------Hàm dùng cho Mission------------------------------------OpenMission(th? t? file) m?
+RunMission(th? t? file) ch?y ---Các file lua trong settings\task\mission.txt
+CloseMission(th? t? file) dóng
+GetMSRestTime(th? t? file,th?i gian) --- dùng cho hàm Mission
+GetMSIdxGroup(th? t? file,id Player) ---ki?m tra nhómAddMSPlayer() ---thêm ngu?i vào Mission dang di?n ra
+DelMSPlayer() ---Xóa kh?i Mission
+GetNextPlayer() ---l?y nhân v?t ti?p theo
+PIdx2MSDIdx() ---ki?m tra nhân v?t gì dó ko bít chua xài
+MSDIdx2PIdx(th? t? file,l?i nh?n) ---nh?n tin t?i ngu?i dang trong 
+MissionNpcIdx2PIdx() ---chuy?n t? NPC sang ngu?i choi ko bít là gì
+GetMSPlayerCount(th? t? file,phe = 1 ho?c 2) ---d?m s? ngu?i dang làm Mission
+RevivalAllNpc() ---Ph?c h?i l?i toàn b? 
+NPCSetPMParam() và 
+GetPMParam() ---cài d?t ti?n trinh làm 
+MissionMsg2MSGroup("l?i nh?n",phe = 1 ho?c 2) g?i tin nh?n t?i phe lâu quá ko xài ko nh? dúng ko
+Msg2MSAll() ---nh?n tin t?i toàn b? ngu?i dang trong
+MissionMsg2MSPlayer() ---nh?n tin t?i 1 ngu?i dang làm mission
+---------------------------------------------------------------------------------------SetDeathScript() ---cài script cho nhân v?t khi ch?t
+Death() ---gi?t NPC
+HideNpc(tên hay id c?a NPC,th?i gian ?n) ---gi?u NPC
+SetLogoutRV() ---khôi ph?c cho nhân v?t khi thoát ko chua xài bao gi?
+SetCreateTeam() ---t?o t? d?
+iGetPK() và SetPK(s?) thi?t l?p PK
+ShowLadder(s? ladder,ladderid,ladderid,...) ko bít tác d?ng
+OpenTong() ---M? T?ng Kim
+SetPunish(s?) ---- =0 có nghia ko làm xong nhi?m v? dc s? b? ph?t
+SwearBrother(s?) ----t?o b?ng h?u
+MakeEnemy(tên) ---t?o k? thù
+RollbackSkill() ---khôi ph?c skill dùng trong t?y t?yU
+pdateSkill() ---c?p nh?t l?i skill
+GetExtPoint() và PayExtPoint() ko hi?u
+StartMissionTimer(id tùy ý,th? t? file TimerTask,th?i gian*18)
+
+*các hàm dùng cho nhân v?t*:
+-GetTaskTemp(),SetTaskTemp(): gi?ng nhu hàm GetTask() và SetTask() nhung s? m?t hi?u l?c khi thoãt nhân v?t
+-IsCaptain(): ki?m tra xem có là ch? PT hay ko, tuong ?ng v?i giá tr? 0 và 1
+-GetTeam(): ID c?a d?i pt
+-GetTeamSize(): s? ngu?i trong d?i pt
+-LeaveTeam(): R?i nhóm
+-GetWorldPos(): tr? v? 3 giá tr? w,x,y v?i w : id maps ; x : to? d? x; y to? d? y
+-SetRevPos(x,y) : d?a di?m luu ruong (x,y xem trong file RevivePos.ini)
+-SetTempRevPos(w,x,y) : khi ch?t s? quay tr? l?i d?a di?m to? d? w,x,y
+*các hàm dùng cho xa phu*:
+-GetStationCount(): s? lu?ng thành th? thôn làng có trong file Station.txt
+-GetStationName(i): tên c?a thành th? ho?c thôn có id là i trong fie Station.txt
+-GetStationPos(i): to? d? di t?i thành th? ho?c thôn có id la i trong fie Station.txt
+-GetWayPointName(i): tên c?a maps luy?n công có id là i trong file WayPoint.txt
+-GetWayPointPos(i): to? d? di t?i maps luy?n công có id là i trong file WayPoint.txt
+*Các hàm dùng trong mission*:
+-GetMissionV(), SetMissionV(): gi?ng hàm GetTask và SetTask nhung dùng cho c? server
+-OpenMission(i) : m? mission có id là i trong file Task/missions.txt
+-SubWorldID2Idx: hàm này ki?m tra s? th? t? c?a maps nhân v?t dang d?ng, s? th? t? xem trong file WorldSet.ini
+* cac ham thoi gian
+SetTimer(a,b): c? sau a th?i gian thì ch?y file có th? t? b trong file TimerTask.txt nó s? ch?y mãi cho d?n khi g?p hàm StopTimer()
+StartMissionTimer(a,b,c): a: là id mission; c? sau c th?i gian thì ch?y file có th? t? b trong file TimerTask.txt

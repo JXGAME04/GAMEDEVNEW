@@ -1,0 +1,39 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: FilterText_StaticLib - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2.tmp" with contents
+[
+/nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "FILTERTEXT_STATICLIB" /FR"FilterText_StaticLib___Win32_Release/" /Fp"FilterText_StaticLib___Win32_Release/FilterText_StaticLib.pch" /YX /Fo"FilterText_StaticLib___Win32_Release/" /Fd"FilterText_StaticLib___Win32_Release/" /FD /c 
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\FilterText\FilterText.cpp"
+"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\FilterText\Regexp.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2.tmp" 
+Creating command line "link.exe -lib /nologo /out:"FilterText_StaticLib___Win32_Release\FilterText_StaticLib.lib"  .\FilterText_StaticLib___Win32_Release\FilterText.obj .\FilterText_StaticLib___Win32_Release\Regexp.obj "
+<h3>Output Window</h3>
+Compiling...
+FilterText.cpp
+Regexp.cpp
+Creating library...
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3.bat" with contents
+[
+@echo off
+md ..\..\lib\release
+copy FilterText_StaticLib___Win32_Release\FilterText_StaticLib.lib ..\..\lib\release\FilterText_StaticLib.lib
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP3.bat"
+
+A subdirectory or file ..\..\lib\release already exists.
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+FilterText_StaticLib.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
