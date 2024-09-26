@@ -101,7 +101,7 @@
     <Library Include="..\..\..\Lib\release\common.lib">
       <Filter>lib\release</Filter>
     </Library>
-    <Library Include="libdb41s.lib" />
+    <Library Include="libdb181sd.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

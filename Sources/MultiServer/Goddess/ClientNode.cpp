@@ -79,14 +79,14 @@ CClientNode::CClientNode( IServer *pServer, size_t id )
 {
 	ZeroMemory( m_theProcessArray, sizeof( m_theProcessArray ) );
 
-	m_theProcessArray[c2s_roleserver_getrolelist] = _QueryRoleList;
-	m_theProcessArray[c2s_roleserver_createroleinfo] = _CreateRole;
-	m_theProcessArray[c2s_roleserver_saveroleinfo] = _SaveRoleInfo;
-	m_theProcessArray[c2s_roleserver_deleteplayer] = _DelRole;
-	m_theProcessArray[c2s_roleserver_getroleinfo] = _GetRoleInfo;
-//	m_theProcessArray[c2s_extend] = _RelayExtend;
-	m_theProcessArray[c2s_gamestatistic] = _GetGameStat;
-	m_theProcessArray[c2s_roleserver_lock] = _LockOrUnlockRole;
+	m_theProcessArray[c2s_roleserver_getrolelist] = &CClientNode::_QueryRoleList;
+	m_theProcessArray[c2s_roleserver_createroleinfo] = &CClientNode::_CreateRole;
+	m_theProcessArray[c2s_roleserver_saveroleinfo] = &CClientNode::_SaveRoleInfo;
+	m_theProcessArray[c2s_roleserver_deleteplayer] = &CClientNode::_DelRole;
+	m_theProcessArray[c2s_roleserver_getroleinfo] = &CClientNode::_GetRoleInfo;
+//	m_theProcessArray[c2s_extend] = &CClientNode::_RelayExtend;
+	m_theProcessArray[c2s_gamestatistic] = &CClientNode::_GetGameStat;
+	m_theProcessArray[c2s_roleserver_lock] = &CClientNode::_LockOrUnlockRole;
 }
 
 CClientNode::~CClientNode()
@@ -357,6 +357,7 @@ void CClientNode::_CreateRole( const void *pData, size_t dataLength )
 	TProcessData *pPD = ( TProcessData * )pData;
 
 	int nResult = 0;
+	size_t pos = 0;
 
 	{{
 	extern CRoleNameFilter g_fltRoleName;
@@ -365,7 +366,7 @@ void CClientNode::_CreateRole( const void *pData, size_t dataLength )
 
 	if (pRoleData->BaseInfo.szName[0])
 	{
-		for (size_t pos = sizeof(pRoleData->BaseInfo.szName) - 1; pos >= 1; pos--)
+		for (pos = sizeof(pRoleData->BaseInfo.szName) - 1; pos >= 1; pos--)
 		{
 			if (!pRoleData->BaseInfo.szName[pos])
 				break;

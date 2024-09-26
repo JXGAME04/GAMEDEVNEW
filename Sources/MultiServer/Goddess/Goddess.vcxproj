@@ -116,7 +116,7 @@ copy release\Goddess.exe ..\..\..\..\bin\server\release\Goddess.exe</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Common\;..\Rainbow\Interface;..\Heaven\Interface;..\..\..\lib;..\..\..\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
@@ -127,6 +127,7 @@ copy release\Goddess.exe ..\..\..\..\bin\server\release\Goddess.exe</Command>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug\
@@ -155,6 +156,7 @@ copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe</Command>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;msvcrt.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>.\Debug\Goddess.exe</OutputFile>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -198,7 +200,7 @@ copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe</Command>
     <Library Include="..\..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="libdb41s.lib" />
+    <Library Include="libdb181sd.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

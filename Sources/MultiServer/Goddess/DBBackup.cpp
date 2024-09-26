@@ -50,10 +50,11 @@ CDBBackup::TRoleList* CDBBackup::GetMin(
 					const StatType aType)
 {//查找出列表中钱/级别（或其他）最少的一个元素
 	TRoleList* tmpData;
+	int i = 0;
 	tmpData = &aRoleList[0];
 	while(true)
 	{
-		for(int i=0;i<n;++i)
+		for(i=0;i<n;++i)
 		{
 			if(aRoleList[i].Name[0] == '\0')
 				return &aRoleList[i];
