@@ -335,7 +335,7 @@ BOOL KMyApp::GameInit()
             std::wcout << "found running process: " << processInfo.szExeFile;
             CloseHandle(processesSnapshot);
 
-			char* strCounterG="";
+			char strCounterG[32];
 			sprintf(strCounterG, "%s", processInfo.szExeFile);
 			//MessageBox(g_GetMainHWnd(), strCounterG, strCounterG, MB_ICONEXCLAMATION);
 		

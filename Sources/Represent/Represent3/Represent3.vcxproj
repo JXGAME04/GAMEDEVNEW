@@ -18,6 +18,7 @@
     <SccProjectName>"$/SwordOnline/Sources/Represent/Represent3", XVJAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{466D174E-48F1-4A1F-9368-2A4372DD9E37}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -134,12 +135,7 @@ copy Debug\Represent3.pdb ..\..\..\..\bin\client\debug\Represent3.pdb</Command>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\bin\client\release\
-copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll
-copy Release\Represent3.pdb ..\..\..\..\bin\client\Represent3.pdb
-copy Release\Represent3.map ..\..\..\..\bin\client\Represent3.map
-copy Release\Represent3.dll ..\..\..\..\bin\client\release\Represent3.dll
-copy Release\Represent3.pdb ..\..\..\..\bin\client\release\Represent3.pdb
-copy Release\Represent3.map ..\..\..\..\bin\client\release\Represent3.map</Command>
+copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -164,7 +160,7 @@ copy Release\Represent3.map ..\..\..\..\bin\client\release\Represent3.map</Comma
       <OutputFile>.\Release\Represent3.dll</OutputFile>
       <ImportLibrary>.\Release\Represent3.lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\..\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9dt.lib;d3d9.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3d9.lib;winmm.lib;dxguid.lib;ddraw.lib;GdiPlus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

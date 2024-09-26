@@ -1065,9 +1065,6 @@
     <Library Include="..\..\Lib\LuaLibDll.lib">
       <Filter>lib\debug</Filter>
     </Library>
-    <Library Include="..\..\Lib\debug\FilterText_StaticLib.lib">
-      <Filter>lib\debug</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Script1.rc" />

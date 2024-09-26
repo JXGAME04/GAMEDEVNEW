@@ -128,12 +128,7 @@ copy Debug\Represent2.dll ..\..\..\..\bin\client\debug\Represent2.dll</Command>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\bin\client\release\
-copy Release\Represent2.dll ..\..\..\..\bin\client\Represent2.dll
-copy Release\Represent2.pdb ..\..\..\..\bin\client\Represent2.pdb
-copy Release\Represent2.map ..\..\..\..\bin\client\Represent2.map
-copy Release\Represent2.dll ..\..\..\..\bin\client\release\Represent2.dll
-copy Release\Represent2.pdb ..\..\..\..\bin\client\release\Represent2.pdb
-copy Release\Represent2.map ..\..\..\..\bin\client\release\Represent2.map</Command>
+copy Release\Represent2.dll ..\..\..\..\bin\client\Represent2.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
