@@ -766,7 +766,8 @@ void KRepresentShell2::LookAt(int nX, int nY, int nZ)
 //##ModelId=3DCA0BAE00E4
 void KRepresentShell2::OutputText(int nFontId, const char* psText, int nCount, int nX, int nY, unsigned int Color, int nLineWidth, int nZ, unsigned int BorderColor)
 {
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	int i = 0;
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -783,7 +784,8 @@ void KRepresentShell2::OutputText(int nFontId, const char* psText, int nCount, i
 
 void KRepresentShell2::OutputVNText(int nFontId, char* psText, int nCount, int nX, int nY, unsigned int Color, int nLineWidth, int nZ, unsigned int BorderColor)
 {
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	int i = 0;
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -804,9 +806,10 @@ void KRepresentShell2::OutputVNText(int nFontId, char* psText, int nCount, int n
 int KRepresentShell2::OutputRichText(int nFontId, KOutputTextParam* pParam, 
 		const char* psText, int nCount, int nLineWidth)
 {
+	int i = 0;
 	if (pParam == NULL)
 		return 0;
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -836,9 +839,10 @@ int KRepresentShell2::LocateRichText(int nX, int nY,
 						int nFontId, KOutputTextParam* pParam, 
 						const char* psText, int nCount, int nLineWidth)
 {
+	int i = 0;
 	if (pParam == NULL)
 		return -1;
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
