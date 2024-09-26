@@ -19,6 +19,7 @@
 *.vsidx
 *.opendb
 *.db
+*.bak
 
 Sources/.vs/
 Sources/Backup/
