@@ -859,7 +859,8 @@ int KWndObjectMatrix::DropObject(int x, int y, bool bTestOnly)
 int KWndObjectMatrix::TryDropObjAtPos(const RECT& dor, KUiDraggedObject*& pOverlaped)
 {
 	pOverlaped = NULL;
-	for (int i = 0; i < m_nNumObjects; i++)
+	int i = 0;
+	for (i = 0; i < m_nNumObjects; i++)
 	{
 		KUiDraggedObject*	pHolded = &m_pObjects[i];
 		if (pHolded->DataX >= dor.right || pHolded->DataY >= dor.bottom ||

@@ -248,15 +248,17 @@ void KUiSkillTree::UpdateWndRect()
 // -------------------------------------------------------------------------
 void KUiSkillTree::UpdateData()
 {
+	int i = 0;
+	int j = 0;
 	m_nNumSkills = g_pCoreShell->GetGameData(
 		m_bLeft ? GDI_LEFT_ENABLE_SKILLS : GDI_RIGHT_ENABLE_SKILLS, (unsigned int)&m_Skills, 0);
 
-	for (int i = 0; i < SKILLTREE_SHORTCUT_SKILL_COUNT; i++)
+	for (i = 0; i < SKILLTREE_SHORTCUT_SKILL_COUNT; i++)
 	{
 		if (ms_ShortcutSkills[i].uGenre == CGOG_NOTHING ||
 			(!m_bLeft) != (!ms_ShortcutSkills[i].IS_LEFT_SKILL))
 			continue;
-		for (int j = 0; j < m_nNumSkills; j++)
+		for (j = 0; j < m_nNumSkills; j++)
 		{
 			if (ms_ShortcutSkills[i].uId == m_Skills[j].uId &&
 				ms_ShortcutSkills[i].uGenre == m_Skills[j].uGenre)

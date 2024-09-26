@@ -260,7 +260,8 @@ void KUiNewPlayer::OnClickButton(KWndWindow* pWnd)
 		OnCancel();
 	else
 	{
-		for (int i = 0; i < series_num; i++)
+		int i = 0;
+		for (i = 0; i < series_num; i++)
 		{
 			if (pWnd == m_propTypeInfoTable[i].pBtn)
 			{
@@ -345,8 +346,8 @@ void KUiNewPlayer::OnCancel()
 int KUiNewPlayer::GetInputInfo()
 {
 	int nLen = m_Name.GetText(m_Info.Name, sizeof(m_Info.Name), false);
-
-	for (int i = 0; i < nLen;)
+	int i = 0;
+	for (i = 0; i < nLen;)
 	{
 		unsigned char	cCode = (unsigned char)m_Info.Name[i];
 		if (cCode > 0x80)

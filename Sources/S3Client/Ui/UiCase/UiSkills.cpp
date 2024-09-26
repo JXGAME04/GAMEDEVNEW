@@ -48,7 +48,7 @@ void KUiFightSkillSubPage::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\"SCHEME_INI_FIGHT_SUB_PAGE, pScheme);
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_FIGHT_SUB_PAGE);
 	if (Ini.Load(Buff))
 	{
 		KWndPage::Init(&Ini, "Main");
@@ -202,7 +202,7 @@ void KUiFightSkillSub::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\"SCHEME_INI_FIGHT, pScheme);
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_FIGHT);
 	if (Ini.Load(Buff))
 	{
 		KWndPageSet::Init(&Ini, "Main");
@@ -254,7 +254,7 @@ void KUiFightSkill::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\"SCHEME_INI_FIGHT, pScheme);
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_FIGHT);
 	if (Ini.Load(Buff))
 	{
 		KWndPage::Init(&Ini, "Main");

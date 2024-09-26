@@ -298,7 +298,7 @@ int KUiBase::LoadScheme(const char* pScheme)
 
 	char	Buffer[128];
 
-	sprintf(Buffer, "%s\\"UI_PUBLIC_SETTING, m_CurSchemePath);
+	sprintf(Buffer, "%s\\%s", m_CurSchemePath, UI_PUBLIC_SETTING);
 	if (GetSchemePath(pScheme))
 	{
 		int			nCount, nId, i;
@@ -316,7 +316,7 @@ int KUiBase::LoadScheme(const char* pScheme)
 			}
 		}
 
-		sprintf(Buffer, "%s\\"UI_PUBLIC_SETTING, m_CurSchemePath);
+		sprintf(Buffer, "%s\\%s", m_CurSchemePath, UI_PUBLIC_SETTING);
 		Ini.Load(Buffer);
 
 		if (g_pRepresentShell && Ini.GetInteger(FONT_SECTION, "Count", 0, &nCount))

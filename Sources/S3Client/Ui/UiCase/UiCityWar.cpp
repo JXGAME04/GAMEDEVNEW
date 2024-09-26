@@ -78,10 +78,11 @@ KUiCityWar* KUiCityWar::GetIfVisible()
 
 void KUiCityWar::Initialize()
 {
+	int i = 0;
 	AddChild(&m_TitleTop1);
 	AddChild(&m_TitleTop2);
 
-	for(int i=0; i<NUM_T3; i++)
+	for(i=0; i<NUM_T3; i++)
 	{
 		AddChild(&m_table3[i]);
 		AddChild(&m_table3val[i]);
@@ -130,7 +131,8 @@ void KUiCityWar::LoadScheme(const char* pScheme)
 		m_TitleTop2.SetPosition(360, m_nTopInfoPos);
 
 		int table3Y = m_nTopInfoPos + 5;
-		for(int i=0; i<NUM_T3; i++)
+		int i = 0;
+		for(i=0; i<NUM_T3; i++)
 		{
 			m_table3[i].Init(&Ini, "YellowTxt");
 			sprintf(Buff2, "CellText_%d_1", i + 1);

@@ -419,7 +419,8 @@ int KUiFight::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 BOOL KUiFight::InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (m_MoveMpsList[i][0] == nSubWorldId && 
 			m_MoveMpsList[i][1] == nMpsX && 
@@ -914,7 +915,8 @@ void KUiFight::LoadFightSetting()
 		g_pCoreShell->OperationRequest(GOI_AUTO_PLAY,eAutoRightSkill,m_bAutoRightSkill);
 
 		char szKeyName[10];
-		for (int i = 0; i < enumSel_Support_Magic_Num; i ++)
+		int i = 0;
+		for (i = 0; i < enumSel_Support_Magic_Num; i ++)
 		{
 			sprintf(szKeyName, "SelMagic_%d", i);
 			pConfigFile->GetInteger("Fighting", szKeyName, 0, &m_CurrentSelMagic[i]);
@@ -1005,7 +1007,8 @@ void KUiFight::SaveFightSetting()
 			pConfigFile->WriteInteger("Fighting", "AutoRightSkill", 0);
 			
 		char szKeyName[10];
-		for (int i = 0; i < enumSel_Support_Magic_Num; i ++)
+		int i = 0;
+		for (i = 0; i < enumSel_Support_Magic_Num; i ++)
 		{
 			sprintf(szKeyName, "SelMagic_%d", i);
 			pConfigFile->WriteInteger("Fighting", szKeyName, m_CurrentSelMagic[i]);	

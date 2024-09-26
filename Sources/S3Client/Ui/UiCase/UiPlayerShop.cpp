@@ -111,7 +111,7 @@ void KUiPlayerShop::LoadScheme(const char* pScheme)
 	{		
 		char		Buff[128];
 		KIniFile	Ini;
-		sprintf(Buff, "%s\\"SCHEME_INI, pScheme);
+		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 		if (Ini.Load(Buff))
 		{
 			m_pSelf->KWndShowAnimate::Init(&Ini, "Main");

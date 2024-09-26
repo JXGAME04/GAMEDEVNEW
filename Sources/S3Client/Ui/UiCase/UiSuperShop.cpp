@@ -260,7 +260,7 @@ void KUiShoppingCart::LoadScheme(const char* pScheme)
 {	
 	char		Buff[128];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\"SCHEME_SHOPPING_INI, pScheme);
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_SHOPPING_INI);
 	if (Ini.Load(Buff))
 	{
 		KWndShowAnimate::Init(&Ini, "Main");
@@ -640,7 +640,8 @@ void KUiSuperShop::CloseWindow(bool bDestroy)
 
 void KUiSuperShop::Initialize()
 {
-	for (int i = 0; i < MAX_SUPERSHOP_PAGETAB; i ++)
+	int i = 0;
+	for (i = 0; i < MAX_SUPERSHOP_PAGETAB; i ++)
 	{
 		AddChild(&m_SellType[i]);
 		m_SellType[i].Hide();
@@ -671,7 +672,7 @@ void KUiSuperShop::LoadScheme(const char* pScheme)
 	{		
 		char		Buff[128];
 		KIniFile	Ini;
-		sprintf(Buff, "%s\\"SCHEME_INI, pScheme);
+		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 		if (Ini.Load(Buff))
 		{
 			m_pSelf->KWndShowAnimate::Init(&Ini, "Main");
@@ -752,6 +753,7 @@ void KUiSuperShop::UpdateShop(BuySellInfo* pBSinfo)
 
 void KUiSuperShop::SetSellTypeStart(int nStart)
 {
+	int i = 0;
 	m_NextBtn.Enable(true);
 	m_LastBtn.Enable(true);
 	
@@ -767,7 +769,7 @@ void KUiSuperShop::SetSellTypeStart(int nStart)
 		m_nSellTypeStart = 0;
 		m_LastBtn.Enable(false);
 	}
-	for (int i = m_nSellTypeStart; i < m_nStoreActive + m_nSellTypeStart; i ++)
+	for (i = m_nSellTypeStart; i < m_nStoreActive + m_nSellTypeStart; i ++)
 	{
 		char szName[80];
 		KTabFile	cTabFile;
@@ -1206,7 +1208,7 @@ void KUiDynamicShop::LoadScheme(const char* pScheme)
 	{		
 		char		Buff[128];
 		KIniFile	Ini;
-		sprintf(Buff, "%s\\"SCHEME_INI_VN, pScheme);
+		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_VN);
 		if (Ini.Load(Buff))
 		{
 			char szKey[16];

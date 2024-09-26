@@ -2614,7 +2614,8 @@ void KUiAutoPlayMove::LoadConfig()
 
 BOOL KUiAutoPlayMove::InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (m_MoveMpsTrain[i][0] == nSubWorldId && 
 			m_MoveMpsTrain[i][1] == nMpsX && 
@@ -3370,7 +3371,8 @@ void KUiAutoPlayMap::ProcessStationSelect(int nAction)
 
 BOOL KUiAutoPlayMap::InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (m_MoveMpsMap[i][0] == nSubWorldId && 
 			m_MoveMpsMap[i][1] == nMpsX && 
@@ -3778,7 +3780,8 @@ void KUiAutoPlayTeam::ProcessTeamPlayerName(int nAction)
 
 BOOL KUiAutoPlayTeam::InsertPlayerListTeam(char *playerName)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (strcmp(m_TeamPlayerList[i], playerName) == 0)
 		{
@@ -3997,7 +4000,8 @@ void KUiAutoPlayBlackItem::ProcessBlackItemName(int nAction)
 
 BOOL KUiAutoPlayBlackItem::InsertItemListBlack(char *ItemName)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (strcmp(m_BlackItemList[i], ItemName) == 0)
 		{

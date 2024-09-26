@@ -355,7 +355,8 @@ void KUiAutoParty::OnClickButton(KWndButton* pBtn)
 
 BOOL KUiAutoParty::InsertPlayerListTeam(char *playerName)
 {
-	for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
+	int i = 0;
+	for (i = 0; i < defMAX_AUTO_MOVEMPSL; i ++)
 	{
 		if (strcmp(m_MoveMpsList[i], playerName) == 0)
 		{

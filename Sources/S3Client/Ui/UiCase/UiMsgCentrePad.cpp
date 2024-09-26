@@ -2010,6 +2010,7 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 	m_BgShadowBtn   .Init(pIni, "ShadowBtn");
 	m_SizeBtn		.Init(pIni, "SizeBtn");
 	char	TabChat[16];
+	int nCh = 0;
 	for (int i = 0; i < MAX_CHAT_TAB; i++)
 	{
 		sprintf(TabChat, "TabButton_%d",i);
@@ -2155,7 +2156,7 @@ void KUiMsgCentrePad::LoadScheme(KIniFile* pIni)
 
 	SetAutoDelMsgInterval(SECOND_AUTODELMSG);
 	
-	for (int nCh = 0; nCh < MAX_CHANNELRESOURCE; nCh++)
+	for (nCh = 0; nCh < MAX_CHANNELRESOURCE; nCh++)
 	{
 		sprintf(ChName, "%s%d", "Channel", nCh);
 		if (pIni->GetString("Channels", ChName, "", m_ChannelsResource[nCh].cTitle, 32))

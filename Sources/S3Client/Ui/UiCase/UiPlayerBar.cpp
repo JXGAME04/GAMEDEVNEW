@@ -439,6 +439,7 @@ unsigned int s_NotCanFocusColor = 0;
 void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 {
 	_ASSERT(pIni);
+	int i = 0;
 	Init(pIni, $Main);
 
 	m_ChatBar  .Init(pIni, "InputBack");
@@ -446,7 +447,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_DateTime.Init(pIni, "DateTime");
 	
 	char	szBuffer[16];
-	for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+	for (i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
 	{
 		sprintf(szBuffer, "Item_%d", i);
 		m_pSelf->m_ImmediaItem[i].Init(pIni, szBuffer);
@@ -539,11 +540,12 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 
 void KUiPlayerBar::Initialize()
 {
+	int i = 0;
 	AddChild(&m_DateTime);
 	AddChild(&m_ChatBar);
 	AddChild(&m_ShorcutKeyBar);
 
-	for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+	for (i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
 	{
 		m_ImmediaItem[i].SetObjectGenre(CGOG_ITEM);
 		m_ImmediaItem[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
@@ -1273,8 +1275,8 @@ void KUiPlayerBar::OnObjPickedDropped(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDR
 		if(Obj.uGenre == CGOG_SKILL_FIGHT)
 			Drop.eContainer = UOC_IMMEDIA_SKILL;
 	}
-
-	for (int i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+	int i = 0;
+	for (i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
 	{
 		if (pWnd == (KWndWindow*)&m_ImmediaItem[i])
 		{

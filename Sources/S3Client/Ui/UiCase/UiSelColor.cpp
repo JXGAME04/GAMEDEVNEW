@@ -32,7 +32,7 @@ void KUiSelColor::LoadScheme(const char* pScheme)
 	int			i;
 	KIniFile	Ini;
 	char		Buffer[128], Value[4];
-	sprintf(Buffer, "%s\\"SCHEME_INI, pScheme);
+	sprintf(Buffer, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buffer) == FALSE)
 		return;
 

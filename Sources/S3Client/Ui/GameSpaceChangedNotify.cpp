@@ -568,7 +568,8 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 				//
 				DWORD nChannelID = -1;
 				int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
-				for (int n = 0; n < nChannelDataCount; n++)
+				int n = 0;
+				for (n = 0; n < nChannelDataCount; n++)
 				{
 					if (KUiMsgCentrePad::IsChannelType(n, KUiMsgCentrePad::ch_Screen))
 					{

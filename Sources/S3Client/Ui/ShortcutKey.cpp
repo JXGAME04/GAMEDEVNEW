@@ -1270,7 +1270,8 @@ int LuaSayPhrase(Lua_State * L)
 		DWORD nChannelID = -1;
 		//¸½½üÍæ¼Ò
 		int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
-		for (int n = 0; n < nChannelDataCount; n++)
+		int n = 0;
+		for (n = 0; n < nChannelDataCount; n++)
 		{
 			if (KUiMsgCentrePad::IsChannelType(n, KUiMsgCentrePad::ch_Screen))
 			{

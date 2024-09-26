@@ -74,6 +74,7 @@ KUiRankData* KUiRankData::GetIfVisible()
 
 void KUiRankData::Initialize()
 {	
+	int i = 0;
 	AddChild(&m_BattleWarTxt);
 	AddChild(&m_WinCondition);
 	AddChild(&m_WinConditionVal);
@@ -86,7 +87,7 @@ void KUiRankData::Initialize()
 	AddChild(&m_ObjNum);
 	AddChild(&m_SelfGrade);
 	
-	for (int i = 0; i < MAX_SELFINFO_ITEMNAME; i ++)
+	for (i = 0; i < MAX_SELFINFO_ITEMNAME; i ++)
 	{
 		AddChild(&m_SelfInfoItemName[i]);
 		AddChild(&m_SelfInfoObj[i]);
@@ -133,6 +134,7 @@ void KUiRankData::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
 	KIniFile	Ini;
+	int i = 0;
 
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 
@@ -153,7 +155,7 @@ void KUiRankData::LoadScheme(const char* pScheme)
 		Ini.GetInteger("TopPos", "LinePos2", 0, &m_nLinePos2);
 		Ini.GetInteger("TopPos", "TopTenPos", 0, &m_nTopTenPos);	
 		char szKey[6];
-		for (int i = 0; i < 2; i ++)
+		for (i = 0; i < 2; i ++)
 		{
 			sprintf(szKey, "%d", i);		
 			Ini.GetString("FactionName", szKey, "", m_szFaction[i], sizeof(m_szFaction[i]));
