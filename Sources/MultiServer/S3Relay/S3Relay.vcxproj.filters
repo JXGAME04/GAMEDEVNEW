@@ -332,11 +332,17 @@
     <Library Include="..\..\..\Lib\release\engine.lib">
       <Filter>Library\release</Filter>
     </Library>
-    <Library Include="libdb41s.lib">
+    <Library Include="..\Goddess\libdb181sd.lib">
       <Filter>Library</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\LuaLibDll.lib">
+      <Filter>Library\debug</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Lib\LuaLibDll.dll" />
   </ItemGroup>
 </Project>

@@ -83,8 +83,8 @@ const size_t max_packagesize = 1024 - 32;
 const DWORD breathe_interval = 1;
 
 
-const local_adapt = 0;
-const global_adapt = 1;
+const unsigned int local_adapt = 0;
+const unsigned int global_adapt = 1;
 
 
 

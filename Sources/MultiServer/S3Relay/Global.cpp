@@ -18,8 +18,8 @@
 
 
 
-const _localmask = 0x0000FFFF;
-const _localtag = 0x0000A8C0;
+const unsigned int _localmask = 0x0000FFFF;
+const unsigned int _localtag = 0x0000A8C0;
 
 
 const DWORD delay_reclient = 30000;
@@ -91,7 +91,7 @@ const char key_retryinterval[] = "retryinterval";
 
 /////////////////////////////////////////////////
 
-static gs_reclient_enable = FALSE;
+static bool gs_reclient_enable = FALSE;
 
 static UINT gs_timerRoot = 0;
 static UINT gs_timerGateway = 0;

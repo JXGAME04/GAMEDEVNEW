@@ -110,7 +110,7 @@ BOOL g_interrupt = FALSE;
 HWND g_mainwnd = NULL;
 HWND g_listwnd = NULL;
 
-static inline sLogProgram(BOOL bEnter)
+static inline void sLogProgram(BOOL bEnter)
 {
 	SYSTEMTIME systm;
 	::GetLocalTime(&systm);

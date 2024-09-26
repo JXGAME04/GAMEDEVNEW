@@ -115,7 +115,7 @@ copy release\S3Relay.exe ..\..\..\..\bin\server\release\S3Relay.exe</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_WORKMODE_SINGLETHREAD;_TESTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -125,11 +125,12 @@ copy release\S3Relay.exe ..\..\..\..\bin\server\release\S3Relay.exe</Command>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client\debug\
-copy debug\S3Relay.exe ..\..\..\..\bin\multiserver\S3Relay.exe
-copy debug\S3Relay.exe ..\..\..\..\bin\multiserver\debug\S3Relay.exe</Command>
+      <Command>md ..\..\..\..\bin\server\debug\
+copy debug\S3Relay.exe ..\..\..\..\bin\Server\S3Relay.exe
+copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -152,7 +153,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\multiserver\debug\S3Relay.exe</Command>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;msvcrt.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>.\Debug\S3Relay.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -267,13 +268,17 @@ copy debug\S3Relay.exe ..\..\..\..\bin\multiserver\debug\S3Relay.exe</Command>
     <Library Include="..\..\..\Lib\debug\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\..\Lib\LuaLibDll.lib" />
     <Library Include="..\..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="libdb41s.lib" />
+    <Library Include="..\Goddess\libdb181sd.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Lib\LuaLibDll.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

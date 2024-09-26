@@ -138,6 +138,7 @@ CTongControl::~CTongControl()
 
 BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 {
+	int i = 0;
 	// lay nsex tu day de fix 
 	if (m_nMemberPointSize <= 0 || !m_psMember)
 		return FALSE;
@@ -145,7 +146,7 @@ BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 		return FALSE;
 
 	// я╟ур©ун╩
-	for (int i = 0; i < m_nMemberPointSize; i++)
+	for (i = 0; i < m_nMemberPointSize; i++)
 	{
 		if (m_psMember[i].m_dwNameID == 0)
 			break;
@@ -983,6 +984,7 @@ BOOL	CTongControl::Kick(STONG_KICK_COMMAND *pKick, STONG_KICK_SYNC *pSync)
 	char	szName[32];
 	DWORD	dwNameID;
 	int		nKickPos;
+	int i = 0;
 	memcpy(szName, pKick->m_szName, sizeof(pKick->m_szName));
 	szName[31] = 0;
 	dwNameID = g_String2Id(szName);
@@ -1002,7 +1004,7 @@ BOOL	CTongControl::Kick(STONG_KICK_COMMAND *pKick, STONG_KICK_SYNC *pSync)
 	{
 		if (pKick->m_btPos >= defTONG_MAX_MANAGER)
 			return FALSE;
-		for (int i = 0; i < defTONG_MAX_MANAGER; i++)
+		for (i = 0; i < defTONG_MAX_MANAGER; i++)
 		{
 			if (m_dwManagerID[i] == dwNameID && strcmp(m_szManagerName[i], szName) == 0)
 				break;
@@ -1766,6 +1768,7 @@ BOOL CTongControl::DBChangeSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 		return FALSE;
 	
 	char	szTitle[32];
+	int i = 0;
 	memcpy(szTitle, pAccept->m_szTitle, sizeof(pAccept->m_szTitle));
 	szTitle[31] = 0;
 	if (!szTitle[0])
@@ -1804,7 +1807,7 @@ BOOL CTongControl::DBChangeSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 	if (!m_psMember || m_nMemberPointSize <= 0)
 		return FALSE;
 		rTRACE("title sex o s3relay 3");
-	for (int i = 0; i < this->m_nMemberPointSize; i++)
+	for (i = 0; i < this->m_nMemberPointSize; i++)
 	{
 		if (m_psMember[i].m_dwNameID == 0)
 			break;

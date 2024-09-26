@@ -410,7 +410,8 @@ BOOL	CTongSet::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 BOOL	CTongSet::InitFromDB()
 {
 	int		nTongNum;
-
+	int i = 0;
+	int j = 0;
 	nTongNum = g_cTongDB.GetTongCount();
 	if (nTongNum < 0)
 		return FALSE;
@@ -419,12 +420,10 @@ BOOL	CTongSet::InitFromDB()
 	CTongControl**	m_tmpTong;
 
 	m_tmpTong = (CTongControl**)new LPVOID[nTongNum];
-	for (int i = 0; i < nTongNum; i++)
+	for (i = 0; i < nTongNum; i++)
 	{
 		m_tmpTong[i] = NULL;
 	}
-
-/*	int i;*/
 	TTongList	*pList = new TTongList[nTongNum];
 	memset(pList, 0, sizeof(TTongList) * nTongNum);
 
@@ -470,7 +469,7 @@ BOOL	CTongSet::InitFromDB()
 		if (m_pcTong[i] && m_pcTong[i]->m_szName[0])
 		{
 			g_cTongDB.SearchTong(m_pcTong[i]->m_szName, *(m_pcTong[i]));
-			for (int j = 0;j < m_tmpTong[i]->m_nManagerNum;j++)
+			for (j = 0;j < m_tmpTong[i]->m_nManagerNum;j++)
 			{
 				m_pcTong[i]->DBInstate(m_tmpTong[i]->m_szManagerName[j],1);
 			}

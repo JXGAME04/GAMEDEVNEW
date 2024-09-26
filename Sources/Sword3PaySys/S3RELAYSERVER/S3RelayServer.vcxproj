@@ -155,6 +155,7 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\S3AccServer\S3PDB_MySQL_Connection.cpp" />
+    <ClCompile Include="..\S3AccServer\S3P_MSSQLServer_Result.cpp" />
     <ClCompile Include="..\S3AccServer\S3P_MySQL_Result.cpp" />
     <ClCompile Include="GlobalFun.cpp" />
     <ClCompile Include="KThread.cpp" />
@@ -164,9 +165,7 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
     <ClCompile Include="S3PDBConnectionPool.cpp" />
     <ClCompile Include="S3PDBConVBC.cpp" />
     <ClCompile Include="S3PDBSocketPool.cpp" />
-    <ClCompile Include="S3PDB_MSSQLServer_Connection.cpp" />
     <ClCompile Include="S3PResultVBC.cpp" />
-    <ClCompile Include="S3P_MSSQLServer_Result.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
@@ -176,6 +175,7 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\S3AccServer\S3PDB_MySQL_Connection.h" />
+    <ClInclude Include="..\S3AccServer\S3P_MSSQLServer_Result.h" />
     <ClInclude Include="..\S3AccServer\S3P_MySQL_Result.h" />
     <ClInclude Include="GlobalDTD.h" />
     <ClInclude Include="GlobalFun.h" />
@@ -187,9 +187,7 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
     <ClInclude Include="S3PDBConnectionPool.h" />
     <ClInclude Include="S3PDBConVBC.h" />
     <ClInclude Include="S3PDBSocketPool.h" />
-    <ClInclude Include="S3PDB_MSSQLServer_Connection.h" />
     <ClInclude Include="S3PResultVBC.h" />
-    <ClInclude Include="S3P_MSSQLServer_Result.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
