@@ -1,5 +1,5 @@
 /*
-** $Id: lua.h,v 1.79 2000/10/31 12:44:07 roberto Exp $
+** $Id: lua.h,v 1.79a 2000/10/31 12:44:07 roberto Exp $
 ** Lua - An Extensible Extension Language
 ** TeCGraf: Grupo de Tecnologia em Computacao Grafica, PUC-Rio, Brazil
 ** e-mail: lua@tecgraf.puc-rio.br
@@ -14,6 +14,7 @@
 
 /* definition of `size_t' */
 #include <stddef.h>
+
 
 #ifdef _LIB
 	#ifndef LUA_API
@@ -42,12 +43,11 @@
 #pragma message("Default extern")
 #endif
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
-#define LUA_VERSION	"Lua 4.0"
+#define LUA_VERSION	"Lua 4.0.1"
 #define LUA_COPYRIGHT	"Copyright (C) 1994-2000 TeCGraf, PUC-Rio"
 #define LUA_AUTHORS 	"W. Celes, R. Ierusalimschy & L. H. de Figueiredo"
 
@@ -82,10 +82,8 @@ extern "C" {
 #define LUA_ERRERR	5
 
 
-//##ModelId=3BA83F3A02ED
 typedef struct lua_State lua_State;
 
-//##ModelId=3BA83F3A02FD
 typedef int (*lua_CFunction) (lua_State *L);
 
 /*
@@ -119,12 +117,7 @@ LUA_API void  lua_remove (lua_State *L, int index);
 LUA_API void  lua_insert (lua_State *L, int index);
 LUA_API int   lua_stackspace (lua_State *L);
 
-/*
-** debug out functions
-*/
-LUA_API int	  lua_setdebugout(const char * , const char *);
-LUA_API void  lua_outoutmsg(const char * szoutmsg);
-LUA_API void  lua_outerrmsg(const char * szoutmsg);
+
 /*
 ** access functions (stack -> C)
 */
@@ -216,7 +209,6 @@ LUA_API int   lua_getn (lua_State *L, int index);
 LUA_API void  lua_concat (lua_State *L, int n);
 
 LUA_API void *lua_newuserdata (lua_State *L, size_t size);
-LUA_API int ldo (int (*f)(lua_State *l, const char *), const char *name) ;
 
 
 /* 
@@ -238,7 +230,16 @@ LUA_API int ldo (int (*f)(lua_State *l, const char *), const char *name) ;
 #define lua_isnil(L,n)		(lua_type(L,n) == LUA_TNIL)
 #define lua_isnull(L,n)		(lua_type(L,n) == LUA_TNONE)
 
-#define lua_getregistry(L)	lua_getref(L, LUA_REFREGISTRY)
+#define lua_getregistry(L)	lua_getref(L, LUA_REFREGISTRY)	
+
+//------------------脚本函数--------------------------------
+/*
+** debug out functions
+*/
+LUA_API int	  lua_setdebugout(const char * , const char *);
+LUA_API void  lua_outoutmsg(const char * szoutmsg);
+LUA_API void  lua_outerrmsg(const char * szoutmsg);
+
 
 //新加的API
 LUA_API int lua_compilebuffer(lua_State *L, const char *buff, size_t size, const char *name);//只对buffer经编绎，并不执行任何函数
@@ -256,7 +257,7 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_Create(nSize)				lua_open(nSize)
 #define Lua_Release(L)					lua_close(L)
 #define Lua_GetTopIndex(L)				lua_gettop(L)
-#define Lua_SetTopIndex(L,nIndex)		lua_settop(L,nIndex)
+#define Lua_SetTopIndex(L,nIndex)		lua_settop(L,-(nIndex))
 #define Lua_PushValue(L,nIndex)			lua_pushvalue(L,nIndex)
 #define Lua_RemoveValue(L,nIndex)		lua_remove(L,nIndex)
 #define Lua_InsertValue(L,nIndex)		lua_insert(L,nIndex)
@@ -267,7 +268,7 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_IsString(L,nIndex)			lua_isstring(L,nIndex)
 #define Lua_IsCFunction(L,nIndex)		lua_iscfunction(L,nIndex)
 #define Lua_IsTable(L,nIndex)			lua_istable(L,nIndex)
-#define Lua_GetValueTag(L,nIndex)		lua_tag(L,nIndex)
+#define Lua_GetValueTag(L,nIndex)		lua_tag(L,nIndex) //获取 表格
 #define Lua_IsEqual(L,index1,index2)	lua_equal(L,index1,index2)
 #define Lua_IsLessThan(L,index1,index2)	lua_lessthan(L,index1,index2)
 #define Lua_ValueToNumber(L,nIndex)		lua_tonumber(L,nIndex)
@@ -277,16 +278,18 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_ValueToUserData(L,nIndex)	lua_touserdata(L,nIndex)
 #define Lua_ValueToPoint(L,nIndex)		lua_topointer(L,nIndex)
 
+//#define Lua_ValueToTable(L,nIndex)		lua_totable(L,nIndex)
+
 /*
 ** push functions (C -> stack)
 */
 
-#define Lua_PushNil(L)					lua_pushnil(L)
-#define Lua_PushNumber(L,Number)		lua_pushnumber(L,Number)
+#define Lua_PushNil(L)					lua_pushnil(L)           //返回空
+#define Lua_PushNumber(L,Number)		lua_pushnumber(L,Number)     //返回数字
 #define Lua_PushLString(L,LString,Len)	lua_pushlstring(L,LString,Len)
-#define Lua_PushString(L,String)		lua_pushstring(L,String)
+#define Lua_PushString(L,String)		lua_pushstring(L,String)    //返回字符窜
 #define Lua_PushCClosure(L,Fun,N)		lua_pushcclosure(L,Fun,N)
-#define Lua_PushUserTag(L,PVoid,Tag)	lua_pushusertag(L,PVoid,Tag)
+#define Lua_PushUserTag(L,PVoid,Tag)	lua_pushusertag(L,PVoid,Tag) //返回表格
 
 #define Lua_GetGlobal(L,Valuename)		lua_getglobal(L,Valuename)
 #define Lua_GetTable(L,nIndex)			lua_gettable(L,nIndex)
@@ -324,7 +327,7 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_NewTag(L)					lua_newtag(L)
 #define Lua_CopyTagMethods(L,nTagTo,nTagFrom)	lua_copytagmethods(L,nTagTo,nTagFrom)
 #define Lua_SetTag(L,nTag)				lua_settag(L,nTag)
-#define	Lua_Error(L,cError)				lua_error(L,cError)u
+#define	Lua_Error(L,cError)				lua_error(L,cError)//u
 #define Lua_UnRef(L,nRef)				lua_unref(L,nRef)
 #define Lua_Next(L,nIndex)				lua_next(L,nIndex)
 #define Lua_GetN(L,nIndex)				lua_getn(L,nIndex)
@@ -332,6 +335,7 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_NewUserData(L,nSize)		lua_newuserdata(L,nSize)
 
 
+#define Lua_OpenAllLib(L)				 luaL_openlibs(L)
 #define Lua_OpenBaseLib(L)				 lua_baselibopen(L)
 #define Lua_OpenIOLib(L)				 lua_iolibopen(L)
 #define Lua_OpenStrLib(L)				 lua_strlibopen(L)
@@ -355,7 +359,7 @@ LUA_API void lua_gettopindex(lua_State *L , int * pindex);//获得当前的脚本堆栈顶
 #define Lua_CompileBuffer(L,pBUFF,nBuffSize,cBname)	lua_compilebuffer(L,pBUFF,nBuffSize,cBname)
 #define Lua_CompileFile(L,cFilename)		lua_compilefile(L,cFilename)
 #define Lua_Execute(L)				lua_execute(L)
-#define Lua_SafeBegin(L,pIndex)		lua_gettopindex(L,pIndex)
+#define Lua_SafeBegin(L)		    Lua_GetTopIndex(L)
 #define Lua_SafeEnd(L,nIndex)		Lua_SetTopIndex(L,nIndex)
 
 
@@ -369,6 +373,10 @@ LUA_API int Lua_SetTable_IntFromName(Lua_State * L, int nIndex, const char * szM
 LUA_API int Lua_SetTable_DoubleFromName(Lua_State * L, int nIndex, const char * szMemberName, double Number);
 LUA_API int Lua_GetValuesFromStack(Lua_State * L, char * cFormat , ...);
 
+
+
+
+LUALIB_API void luaL_openlibs (lua_State *L);
 LUALIB_API void lua_baselibopen (lua_State *L);
 LUALIB_API void lua_iolibopen (lua_State *L);
 LUALIB_API void lua_strlibopen (lua_State *L);
@@ -378,7 +386,7 @@ LUALIB_API void lua_dblibopen (lua_State *L);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif
 

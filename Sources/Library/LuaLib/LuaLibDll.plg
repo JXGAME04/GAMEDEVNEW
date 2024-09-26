@@ -1,0 +1,148 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: LuaLibDll - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP17E.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I ".\LuaLibDll\src" /I ".\src" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LUALIBDLL_EXPORTS" /Fp"Release/LuaLibDll.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lapi.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lcode.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\ldebug.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\ldo.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lfunc.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lgc.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\llex.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lmem.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lobject.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lparser.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lstate.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lstring.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\ltable.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\ltests.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\ltm.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lua.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\LuaExtend.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lundump.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lvm.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\lzio.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\lauxlib.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\lbaselib.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\ldblib.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\liolib.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\lmathlib.c"
+"E:\BaiduYunDownload\SwordOnline\Sources\Library\LuaLib\src\baselib\lstrlib.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP17E.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP17F.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"Release/LuaLibDll.pdb" /machine:I386 /out:"Release/LuaLibDll.dll" /implib:"Release/LuaLibDll.lib" 
+.\Release\lapi.obj
+.\Release\lcode.obj
+.\Release\ldebug.obj
+.\Release\ldo.obj
+.\Release\lfunc.obj
+.\Release\lgc.obj
+.\Release\llex.obj
+.\Release\lmem.obj
+.\Release\lobject.obj
+.\Release\lparser.obj
+.\Release\lstate.obj
+.\Release\lstring.obj
+.\Release\ltable.obj
+.\Release\ltests.obj
+.\Release\ltm.obj
+.\Release\lua.obj
+.\Release\LuaExtend.obj
+.\Release\lundump.obj
+.\Release\lvm.obj
+.\Release\lzio.obj
+.\Release\lauxlib.obj
+.\Release\lbaselib.obj
+.\Release\ldblib.obj
+.\Release\liolib.obj
+.\Release\lmathlib.obj
+.\Release\lstrlib.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP17F.tmp"
+<h3>Output Window</h3>
+Compiling...
+lapi.c
+Create LUA dllexport
+lcode.c
+Create LUA dllexport
+ldebug.c
+Create LUA dllexport
+ldo.c
+Create LUA dllexport
+lfunc.c
+Create LUA dllexport
+lgc.c
+Create LUA dllexport
+llex.c
+Create LUA dllexport
+lmem.c
+Create LUA dllexport
+lobject.c
+Create LUA dllexport
+lparser.c
+Create LUA dllexport
+lstate.c
+Create LUA dllexport
+lstring.c
+Create LUA dllexport
+ltable.c
+Create LUA dllexport
+ltests.c
+Create LUA dllexport
+ltm.c
+Create LUA dllexport
+lua.c
+Create LUA dllexport
+LuaExtend.c
+Create LUA dllexport
+lundump.c
+Create LUA dllexport
+lvm.c
+Create LUA dllexport
+lzio.c
+Create LUA dllexport
+lauxlib.c
+Create LUA dllexport
+lbaselib.c
+Create LUA dllexport
+ldblib.c
+Create LUA dllexport
+liolib.c
+Create LUA dllexport
+lmathlib.c
+Create LUA dllexport
+lstrlib.c
+Create LUA dllexport
+Linking...
+   Creating library Release/LuaLibDll.lib and object Release/LuaLibDll.exp
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP183.bat" with contents
+[
+@echo off
+copy Release\lualibdll.lib ..\..\..\Lib\lualibdll.lib
+copy Release\lualibdll.dll ..\..\..\Lib\lualibdll.dll
+copy Release\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy Release\lualibdll.lib ..\..\..\..\bin\server\lualibdll.lib
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP183.bat"
+
+已复制         1 个文件。
+已复制         1 个文件。
+已复制         1 个文件。
+已复制         1 个文件。
+
+
+
+<h3>Results</h3>
+LuaLibDll.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

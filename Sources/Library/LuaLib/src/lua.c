@@ -80,7 +80,7 @@ static void laction (int i) {
 }
 
 
- int ldo (int (*f)(lua_State *l, const char *), const char *name) {
+static int ldo (int (*f)(lua_State *l, const char *), const char *name) {
   int res;
   handler h = lreset();
   int top = lua_gettop(L);
@@ -94,33 +94,6 @@ static void laction (int i) {
   else if (res == LUA_ERRERR)
     fprintf(stderr, "lua: error in error message\n");
   return res;
-}
-FILE *sout = NULL;
-FILE *serr = NULL;
- //ByRomandou
-LUA_API int lua_setdebugout(const char * szoutfile, const char * szerrfile)
-{
-#ifdef _DEBUG
-	if (szoutfile)
-		sout = freopen( szoutfile, "a", stdout);
-	
-	if (szerrfile)
-		serr = freopen( szerrfile, "a", stderr );
-		
-	if (sout == NULL || serr == NULL)	return 0;
-	return 1;
-#endif
-	return 1;
-}
-
-LUA_API void lua_outerrmsg(const char * szerrmsg)
-{
-	fprintf(stderr, szerrmsg);
-}
-
-LUA_API void lua_outoutmsg(const char * szoutmsg)
-{
-	fprintf(stdout, szoutmsg);
 }
 
 
@@ -313,22 +286,11 @@ static int handle_argv (char *argv[], struct Options *opt) {
 
 
 static void getstacksize (int argc, char *argv[], struct Options *opt) {
-	FILE * pFile = NULL;
   if (argc >= 2 && argv[1][0] == '-' && argv[1][1] == 's') {
     int stacksize = atoi(&argv[1][2]);
     if (stacksize <= 0) {
       fprintf(stderr, "lua: invalid stack size ('%.20s')\n", &argv[1][2]);
-	  printf("LUA ERROR!!!!!!!!!!!!!!!!!!!!!!!!!! getstatcksize\n");
-	    printf("LUA ERROR!!!!!!!!!!!!!!!!!!!!!!!!!! getstatcksize\n");
-		  printf("LUA ERROR!!!!!!!!!!!!!!!!!!!!!!!!!! getstatcksize\n");
-		  
-		  if(pFile  = fopen( "c:\\luaerror1.txt", "wa" ))
-		  {	
-			  char szStr[] = "LUA ERROR!!!!!!!!!!!!!!!!!!!!!!!!!! getstatcksize\n";
-			  fwrite(szStr, sizeof(char ), strlen(szStr), pFile);
-			  fclose(pFile);
-		  }
-      //exit(EXIT_FAILURE);
+      exit(EXIT_FAILURE);
     }
     opt->stacksize = stacksize;
   }
@@ -341,6 +303,44 @@ static void register_getargs (char *argv[]) {
   lua_pushuserdata(L, argv);
   lua_pushcclosure(L, l_getargs, 1);
   lua_setglobal(L, "getargs");
+}
+//------------------------------------------------
+
+FILE *sout = NULL;
+FILE *serr = NULL;
+//ByRomandou
+LUA_API int lua_setdebugout(const char * szoutfile, const char * szerrfile)
+{
+#ifdef _DEBUG
+	if (szoutfile)
+		sout = freopen( szoutfile, "a", stdout);
+	
+	if (szerrfile)
+		serr = freopen( szerrfile, "a", stderr );
+	
+	if (sout == NULL || serr == NULL)	return 0;
+	return 1;
+#endif
+	return 1;
+}
+
+LUA_API void lua_outerrmsg(const char * szerrmsg)
+{
+	fprintf(stderr, szerrmsg);
+}
+
+LUA_API void lua_outoutmsg(const char * szoutmsg)
+{
+	fprintf(stdout, szoutmsg);
+}
+
+LUALIB_API void luaL_openlibs(lua_State *L) {
+	lua_baselibopen(L);
+	lua_iolibopen(L);
+	lua_strlibopen(L);
+	lua_mathlibopen(L);
+	lua_dblibopen(L);
+	/* add your libraries here */
 }
 
 

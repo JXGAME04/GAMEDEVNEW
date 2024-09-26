@@ -42,11 +42,11 @@ static int errormessage (lua_State *L) {
 ** open parts that may cause memory-allocation errors
 */
 static void f_luaopen (lua_State *L, void *ud) {
-  int stacksize = *(int *)ud;
+  int stacksize = *(int *)ud;		 //堆栈的大小 或 文件的大小
   if (stacksize == 0)
-    stacksize = DEFAULT_STACK_SIZE;
+     stacksize = DEFAULT_STACK_SIZE;	 //1024
   else
-    stacksize += LUA_MINSTACK;
+     stacksize += LUA_MINSTACK;
   L->gt = luaH_new(L, 10);  /* table of globals */
   luaD_init(L, stacksize);
   luaS_init(L);
@@ -54,7 +54,7 @@ static void f_luaopen (lua_State *L, void *ud) {
   luaT_init(L);
   lua_newtable(L);
   lua_ref(L, 1);  /* create registry */
-  lua_register(L, LUA_ERRORMESSAGE, errormessage);
+  lua_register(L,LUA_ERRORMESSAGE, errormessage);
 #ifdef LUA_DEBUG
   luaB_opentests(L);
   if (lua_state == NULL) lua_state = L;  /* keep first state to be opened */
@@ -65,7 +65,7 @@ static void f_luaopen (lua_State *L, void *ud) {
 
 LUA_API lua_State *lua_open (int stacksize) {
   lua_State *L = luaM_new(NULL, lua_State);
-  if (L == NULL) return NULL;  /* memory allocation error */
+  if (L == NULL) return NULL;  /// memory allocation error 
   L->stack = NULL;
   L->strt.size = L->udt.size = 0;
   L->strt.nuse = L->udt.nuse = 0;
@@ -82,20 +82,19 @@ LUA_API lua_State *lua_open (int stacksize) {
   L->refSize = 0;
   L->refFree = NONEXT;
   L->nblocks = sizeof(lua_State);
-  L->GCthreshold = MAX_INT;  /* to avoid GC during pre-definitions */
+  L->GCthreshold = MAX_INT;  // to avoid GC during pre-definitions 
   L->callhook = NULL;
   L->linehook = NULL;
   L->allowhooks = 1;
   L->errorJmp = NULL;
   if (luaD_runprotected(L, f_luaopen, &stacksize) != 0) {
-    /* memory allocation error: free partial state */
+    // memory allocation error: free partial state 
     lua_close(L);
     return NULL;
   }
   L->GCthreshold = 2*L->nblocks;
   return L;
 }
-
 
 LUA_API void lua_close (lua_State *L) {
   LUA_ASSERT(L != lua_state || lua_gettop(L) == 0, "garbage in C stack");

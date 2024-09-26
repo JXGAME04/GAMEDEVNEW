@@ -93,7 +93,7 @@ static int nups (StkId f) {
 int luaG_getline (int *lineinfo, int pc, int refline, int *prefi) {
   int refi;
   if (lineinfo == NULL || pc == -1)
-    return -1;  /* no line info or function is not active */
+    return -1;  // no line info or function is not active 
   refi = prefi ? *prefi : 0;
   if (lineinfo[refi] < 0)
     refline += -lineinfo[refi++]; 
@@ -119,7 +119,7 @@ int luaG_getline (int *lineinfo, int pc, int refline, int *prefi) {
   if (prefi) *prefi = refi;
   return refline;
 }
-
+ 
 
 static int currentpc (StkId f) {
   CallInfo *ci = infovalue(f);

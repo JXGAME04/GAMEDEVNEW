@@ -11,27 +11,31 @@
 //---------------------------------------------------------------------------
 #include "Lua.h"
 #include "Lualib.h"
-
-#define LUA_CREATE_ERROR 1
+/*
+#define LUA_CREATE_ERROR 1	               
 #define LUA_SCRIPT_LEN_ERROR 2
 #define LUA_SCRIPT_COMPILE_ERROR 3
 #define LUA_SCRIPT_EXECUTE_ERROR 4
-
-
 #define LUA_SCRIPT_NOT_NUMBER_ERROR 10
 #define LUA_SCRIPT_NOT_STRING_ERROR 11
 #define LUA_SCRIPT_NOT_TABLE_ERROR 12
-
-#define LUA_SCRIPT_STATES_IS_NULL 20
-
-
+#define LUA_SCRIPT_STATES_IS_NULL 20 
+*/
+#define LUA_CREATE_ERROR 1			 //创建错误
+#define LUA_SCRIPT_LEN_ERROR 2		 //大小出错
+#define LUA_SCRIPT_COMPILE_ERROR 3	 //编译出错
+#define LUA_SCRIPT_EXECUTE_ERROR 4	 //执行出错
+#define LUA_SCRIPT_NOT_NUMBER_ERROR 10	//不是数字出错
+#define LUA_SCRIPT_NOT_STRING_ERROR 11	//不是字符串
+#define LUA_SCRIPT_NOT_TABLE_ERROR 12	//不是表格
+#define LUA_SCRIPT_STATES_IS_NULL 20	//脚本为空
 
 #define Lua_CFunction					lua_CFunction
 #define Lua_State						lua_State
 #define Lua_Create(nSize)				lua_open(nSize)
 #define Lua_Release(L)					lua_close(L)
 #define Lua_GetTopIndex(L)				lua_gettop(L)
-#define Lua_SetTopIndex(L,nIndex)		lua_settop(L,nIndex)
+#define Lua_SetTopIndex(L,nIndex)		lua_settop(L,-(nIndex))
 #define Lua_PushValue(L,nIndex)			lua_pushvalue(L,nIndex)
 #define Lua_RemoveValue(L,nIndex)		lua_remove(L,nIndex)
 #define Lua_InsertValue(L,nIndex)		lua_insert(L,nIndex)
@@ -106,7 +110,7 @@
 #define Lua_Concat(L,nNum)				lua_concat(L,nNum)
 #define Lua_NewUserData(L,nSize)		lua_newuserdata(L,nSize)
 
-
+#define Lua_OpenAllLib(L)				 luaL_openlibs(L)
 #define Lua_OpenBaseLib(L)				 lua_baselibopen(L)
 #define Lua_OpenIOLib(L)				 lua_iolibopen(L)
 #define Lua_OpenStrLib(L)				 lua_strlibopen(L)
@@ -130,7 +134,7 @@
 #define Lua_CompileBuffer(L,pBUFF,nBuffSize,cBname)	lua_compilebuffer(L,pBUFF,nBuffSize,cBname)
 #define Lua_CompileFile(L,cFilename)		lua_compilefile(L,cFilename)
 #define Lua_Execute(L)				lua_execute(L)
-#define Lua_SafeBegin(L,pIndex)		lua_gettopindex(L,pIndex)
+#define Lua_SafeBegin(L)		    Lua_GetTopIndex(L)
 #define Lua_SafeEnd(L,nIndex)		Lua_SetTopIndex(L,nIndex)
 
 

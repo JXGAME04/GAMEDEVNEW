@@ -26,6 +26,7 @@
     <SccProjectName>"$/SwordOnline/Sources/Engine", BAAAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{3369323A-D27C-4D2B-8127-E8032E268804}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -80,8 +81,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
-    <IntDir>.\Debug\</IntDir>
+    <OutDir>.\ClientDebug\</OutDir>
+    <IntDir>.\ClientDebug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,15 +121,10 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\lib\debug
-copy debug\engine.lib ..\..\lib\debug\engine.lib
-md ..\..\..\bin\client\debug\
-copy debug\engine.dll ..\..\..\bin\client\engine.dll
-copy debug\engine.dll ..\..\..\bin\client\debug\engine.dll
-md ..\..\..\bin\server\debug\
-copy debug\engine.dll ..\..\..\bin\server\engine.dll
-copy debug\engine.dll ..\..\..\bin\server\debug\engine.dll
-copy debug\engine.dll ..\..\..\bin\multiserver\engine.dll</Command>
+      <Command>copy clientdebug\engine.lib ..\..\lib\debug\engine.lib
+copy clientdebug\engine.dll ..\..\..\bin\client\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -150,9 +146,10 @@ copy debug\engine.dll ..\..\..\bin\multiserver\engine.dll</Command>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\Engine.dll</OutputFile>
+      <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
       <ImportLibrary>.\Debug\Engine.lib</ImportLibrary>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -712,14 +709,11 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\debug\LuaLibDll.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">true</ExcludedFromBuild>
-    </Library>
     <Library Include="..\..\Lib\debug\mp3lib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\Lib\LuaLibDll.lib" />
     <Library Include="..\..\Lib\release\JpgLib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>

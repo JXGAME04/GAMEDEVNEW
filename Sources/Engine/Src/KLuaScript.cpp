@@ -39,7 +39,7 @@ KLuaScript::KLuaScript(void)
 // ²ÎÊý:	int StackSize
 // ·µ»Ø:	
 //---------------------------------------------------------------------------
-KLuaScript::KLuaScript(int StackSize = 0)
+KLuaScript::KLuaScript(int StackSize)
 {
 	m_LuaState				= Lua_Create(StackSize);
 

@@ -169,8 +169,7 @@ static int discharge (FuncState *fs, expdesc *var) {
 
 
 static void discharge1 (FuncState *fs, expdesc *var) {
-
-	discharge(fs, var);
+  discharge(fs, var);
  /* if it has jumps then it is already discharged */
   if (var->u.l.t == NO_JUMP && var->u.l.f  == NO_JUMP)
     luaK_setcallreturns(fs, 1);  /* call must return 1 value */

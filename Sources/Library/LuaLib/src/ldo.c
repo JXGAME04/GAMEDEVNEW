@@ -1,14 +1,17 @@
- /*
-** $Id: ldo.c,v 1.109 2000/10/30 12:38:50 roberto Exp $
+/*
+** $Id: ldo.c,v 1.109a 2000/10/30 12:38:50 roberto Exp $
 ** Stack and Call structure of Lua
 ** See Copyright Notice in lua.h
 */
+
+
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "lua.h"
+
 #include "ldebug.h"
 #include "ldo.h"
 #include "lgc.h"
@@ -192,6 +195,7 @@ void luaD_call (lua_State *L, StkId func, int nResults) {
     }
   }
   luaC_checkGC(L);
+  //luaD_checkstack
 }
 
 
@@ -206,15 +210,17 @@ struct CallS {  /* data to `f_call' */
 static void f_call (lua_State *L, void *ud) {
   struct CallS *c = (struct CallS *)ud;
   luaD_call(L, c->func, c->nresults);
+ // luaL_checkstack(L, n, "too many arguments");
+ // luaB_call(L, c->func, c->nresults);
 }
 
 
 LUA_API int lua_call (lua_State *L, int nargs, int nresults) {
-  StkId func = L->top - (nargs+1);  /* function to be called */
+  StkId func = L->top - (nargs+1);  /* function to be called 归零？=1 */
   struct CallS c;
   int status;
   c.func = func; c.nresults = nresults;
-  status = luaD_runprotected(L, f_call, &c);
+  status = luaD_runprotected(L,f_call, &c);
   if (status != 0)  /* an error occurred? */
     L->top = func;  /* remove parameters from the stack */
   return status;
@@ -241,7 +247,9 @@ static int protectedparser (lua_State *L, ZIO *z, int bin) {
   unsigned long old_blocks;
   int status;
   p.z = z; p.bin = bin;
-  luaC_checkGC(L);
+  /* before parsing, give a (good) chance to GC */
+  if (L->nblocks/8 >= L->GCthreshold/10)
+    luaC_collectgarbage(L);
   old_blocks = L->nblocks;
   status = luaD_runprotected(L, f_parser, &p);
   if (status == 0) {
@@ -271,10 +279,11 @@ static int parse_file (lua_State *L, const char *filename) {
   lua_pushstring(L, "@");
   lua_pushstring(L, (filename == NULL) ? "(stdin)" : filename);
   lua_concat(L, 2);
-  filename = lua_tostring(L, -1);  /* filename = '@'..filename */
-  lua_pop(L, 1);  /* OK: there is no GC during parser */
+  c = lua_gettop(L);
+  filename = lua_tostring(L, c);  /* filename = '@'..filename */
   luaZ_Fopen(&z, f, filename);
   status = protectedparser(L, &z, bin);
+  lua_remove(L, c);  /* remove `filename' from the stack */
   if (f != stdin)
     fclose(f);
   return status;
@@ -284,7 +293,7 @@ static int parse_file (lua_State *L, const char *filename) {
 LUA_API int lua_dofile (lua_State *L, const char *filename) {
   int status = parse_file(L, filename);
   if (status == 0)  /* parse OK? */
-    status = lua_call(L, 0, LUA_MULTRET);  /* call main */
+     status = lua_call(L, 0, LUA_MULTRET);  /* call main */
   return status;
 }
 
@@ -303,6 +312,11 @@ LUA_API int lua_dobuffer (lua_State *L, const char *buff, size_t size, const cha
   if (status == 0)  /* parse OK? */
     status = lua_call(L, 0, LUA_MULTRET);  /* call main */
   return status;
+}
+
+
+LUA_API int lua_dostring (lua_State *L, const char *str) {
+  return lua_dobuffer(L, str, strlen(str), str);
 }
 
 /*!*****************************************************************************
@@ -335,11 +349,6 @@ LUA_API int lua_execute(lua_State *L)
 	return status;
 }
 
-LUA_API int lua_dostring (lua_State *L, const char *str) {
-  return lua_dobuffer(L, str, strlen(str), str);
-}
-
-
 /*
 ** {======================================================
 ** Error-recover functions (based on long jumps)
@@ -368,6 +377,7 @@ static void message (lua_State *L, const char *s) {
 /*
 ** Reports an error, and jumps up to the available recovery label
 */
+
 LUA_API void lua_error (lua_State *L, const char *s) {
   if (s) message(L, s);
   luaD_breakrun(L, LUA_ERRRUN);
@@ -375,25 +385,14 @@ LUA_API void lua_error (lua_State *L, const char *s) {
 
 
 void luaD_breakrun (lua_State *L, int errcode) {
-	FILE  * pFile = NULL;
   if (L->errorJmp) {
     L->errorJmp->status = errcode;
     longjmp(L->errorJmp->b, 1);
   }
   else {
-    
-	  if (errcode != LUA_ERRMEM)
+    if (errcode != LUA_ERRMEM)
       message(L, "unable to recover; exiting\n");
-	
-	if((FILE *)pFile  = fopen( "c:\\luaerror.txt", "wa" ))
-	{	
-		char szStr[] = "LUA ERROR!!!!!!!!!!!!!!!!!!!!!!!!!! breakrun\n";
-		printf(szStr);
-		fwrite(szStr, sizeof(char ), strlen(szStr), pFile);
-		fclose(pFile);
-	}
-	
-//    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -406,8 +405,8 @@ int luaD_runprotected (lua_State *L, void (*f)(lua_State *, void *), void *ud) {
   lj.status = 0;
   lj.previous = L->errorJmp;  /* chain new error handler */
   L->errorJmp = &lj;
-  if (setjmp(lj.b) == 0)
-    (*f)(L, ud);
+  if (setjmp(lj.b) == 0)	  //异常捕抓
+    (*f)(L, ud);	          //没有错误就执行这个函数
   else {  /* an error occurred: restore the state */
     L->allowhooks = allowhooks;
     L->Cbase = oldCbase;

@@ -270,9 +270,6 @@ int Lua_GetValuesFromStack(Lua_State * L, char * cFormat, ...)
 				break;
 				
 			}
-			
-			
-
 			i ++;	
 		}
 		va_end(vlist);     		/* Reset variable arguments.      */

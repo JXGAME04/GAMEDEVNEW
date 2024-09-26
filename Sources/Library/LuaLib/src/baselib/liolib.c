@@ -11,13 +11,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "../lua.h"
+#include "lua.h"
 
-#include "../lauxlib.h"
-#include "../luadebug.h"
-#include "../lualib.h"
-//#include "errno.h"
-
+#include "lauxlib.h"
+#include "luadebug.h"
+#include "lualib.h"
 
 
 #ifndef OLD_ANSI
@@ -38,8 +36,6 @@
 #define errno		(-1)
 #endif
 
-//这个define调试时加的，以后要去掉！！！
-//#define errno		(-1)//Question
 
 
 #ifdef POPEN
@@ -565,10 +561,7 @@ static int setloc (lua_State *L) {
 
 
 static int io_exit (lua_State *L) {
-  printf("LUASCRIPT_ERROR!!!!!FROM io_exit!!!!!!111\n");
-  printf("LUASCRIPT_ERROR!!!!!FROM io_exit!!!!!!111\n");
-  printf("LUASCRIPT_ERROR!!!!!FROM io_exit!!!!!!111\n");
-//  exit(luaL_opt_int(L, 1, EXIT_SUCCESS));
+  exit(luaL_opt_int(L, 1, EXIT_SUCCESS));
   return 0;  /* to avoid warnings */
 }
 

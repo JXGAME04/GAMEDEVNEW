@@ -8,10 +8,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../lua.h"
+#include "lua.h"
 
-#include "../lauxlib.h"
-#include "../lualib.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 
 #undef PI
@@ -147,7 +147,6 @@ static int math_min (lua_State *L) {
       dmin = d;
   }
   lua_pushnumber(L, dmin);
-  n= lua_gettop(L);
   return 1;
 }
 

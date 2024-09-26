@@ -289,7 +289,7 @@ int	KIme::WndMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 
                 if (m_bNoLanguageChange)
                 {
-					static s_nInFlag = false;
+					static bool s_nInFlag = false;
 
 					if (s_nInFlag)
 						return false;

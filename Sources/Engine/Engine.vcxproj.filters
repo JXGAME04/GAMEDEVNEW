@@ -850,9 +850,6 @@
     <Library Include="..\..\Lib\debug\JpgLib.lib">
       <Filter>library files\Debug</Filter>
     </Library>
-    <Library Include="..\..\Lib\debug\LuaLibDll.lib">
-      <Filter>library files\Debug</Filter>
-    </Library>
     <Library Include="..\..\Lib\debug\mp3lib.lib">
       <Filter>library files\Debug</Filter>
     </Library>
@@ -864,6 +861,9 @@
     </Library>
     <Library Include="..\..\Lib\release\mp3lib.lib">
       <Filter>library files\release</Filter>
+    </Library>
+    <Library Include="..\..\Lib\LuaLibDll.lib">
+      <Filter>library files\Debug</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

@@ -80,10 +80,10 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>xcopy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
-xcopy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
-xcopy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-xcopy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll</Command>
+      <Command>copy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
+copy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
+copy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
+copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

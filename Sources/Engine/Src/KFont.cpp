@@ -432,6 +432,8 @@ void KFont::SetLine(int nLineW, int nLineH)
 void KFont::MakeText(LPSTR FileName)
 {
 	KFile File;
+	int j;
+	int i;
 
 	if (!File.Create(FileName))
 		return;
@@ -442,9 +444,9 @@ void KFont::MakeText(LPSTR FileName)
 	{
 		zbuf[190] = 0x0a0d;
 		// write font text
-		for (int i = 0x81; i <= 0xFE; i++)
+		for (i = 0x81; i <= 0xFE; i++)
 		{
-			for (int j = 0x40; j <= 0x7E; j++)
+			for (j = 0x40; j <= 0x7E; j++)
 				zbuf[j - 0x40] = (WORD)( (j << 8) + i);
 			for (j = 0x80; j <= 0xFE; j++)
 				zbuf[j - 0x41] = (WORD)( (j << 8) + i);
@@ -455,9 +457,9 @@ void KFont::MakeText(LPSTR FileName)
 	{
 		zbuf[94] = 0x0a0d;
 		// write font text
-		for (int i = 0; i < 94; i++)
+		for (i = 0; i < 94; i++)
 		{
-			for (int j = 0; j < 94; j++)
+			for (j = 0; j < 94; j++)
 				zbuf[j] = (WORD)((j + 0xa1) * 256 + i + 0xa1);
 			File.Write(zbuf, 95 * 2);
 		}

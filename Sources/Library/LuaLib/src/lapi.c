@@ -1,5 +1,5 @@
 /*
-** $Id: lapi.c,v 1.110 2000/10/30 12:50:09 roberto Exp $
+** $Id: lapi.c,v 1.110a 2000/10/30 12:50:09 roberto Exp $
 ** Lua API
 ** See Copyright Notice in lua.h
 */
@@ -69,19 +69,6 @@ LUA_API int lua_gettop (lua_State *L) {
   return (L->top - L->Cbase);
 }
 
-/*!*****************************************************************************
-// Function		: void lua_gettopindex
-// Purpose		: 
-// Return		: LUA_API  
-// Argumant		: lua_State *L
-// Argumant		: int * pindex
-// Comments		:
-// Author		: Romandou
-*****************************************************************************/
-LUA_API  void lua_gettopindex(lua_State *L , int * pindex)
-{
-	(*pindex) = L->top - L->Cbase;
-}
 
 LUA_API void lua_settop (lua_State *L, int index) {
   if (index >= 0)
@@ -488,7 +475,7 @@ LUA_API int lua_getn (lua_State *L, int index) {
   }
 }
 
-
+//Çå¶ÑÕ»
 LUA_API void lua_concat (lua_State *L, int n) {
   StkId top = L->top;
   luaV_strconc(L, n, top);
@@ -498,7 +485,7 @@ LUA_API void lua_concat (lua_State *L, int n) {
 
 
 LUA_API void *lua_newuserdata (lua_State *L, size_t size) {
-  TString *ts = luaS_newudata(L, size, NULL);
+  TString *ts = luaS_newudata(L, (size==0) ? 1 : size, NULL);
   tsvalue(L->top) = ts;
   ttype(L->top) = LUA_TUSERDATA;
   api_incr_top(L);

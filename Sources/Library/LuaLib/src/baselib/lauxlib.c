@@ -14,10 +14,10 @@
 ** With care, these functions can be used by other libraries.
 */
 
-#include "../lua.h"
+#include "lua.h"
 
-#include "../lauxlib.h"
-#include "../luadebug.h"
+#include "lauxlib.h"
+#include "luadebug.h"
 
 
 

@@ -39,7 +39,7 @@ KStepLuaScript::KStepLuaScript(void)
 // ²ÎÊý:	int StackSize
 // ·µ»Ø:	
 //---------------------------------------------------------------------------
-KStepLuaScript::KStepLuaScript(int StackSize = 0)
+KStepLuaScript::KStepLuaScript(int StackSize)
 {
 	m_CurLine			= 0;
 	m_BufLen			= 0;

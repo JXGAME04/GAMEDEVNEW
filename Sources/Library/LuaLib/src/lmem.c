@@ -133,9 +133,7 @@ void *luaM_growaux (lua_State *L, void *block, size_t nelems,
 */
 void *luaM_realloc (lua_State *L, void *block, lint32 size) {
   if (size == 0) {
-	//if (block == NULL) return NULL;
     free(block);  /* block may be NULL; that is OK for free */
-	block = NULL;
     return NULL;
   }
   else if (size >= MAX_SIZET)

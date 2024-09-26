@@ -71,7 +71,7 @@ typedef unsigned long lint32;  /* unsigned int with at least 32 bits */
 
 
 #ifndef DEFAULT_STACK_SIZE
-#define DEFAULT_STACK_SIZE      1024
+#define DEFAULT_STACK_SIZE      128//1024
 #endif
 
 
