@@ -105,13 +105,13 @@ bool CGameServer::Create()
 {
 	ZeroMemory( m_theProcessProtocolFun, sizeof( m_theProcessProtocolFun ) );
 
-	m_theProcessProtocolFun[c2s_registeraccount]  = _RegisterAccount;
-	m_theProcessProtocolFun[c2s_entergame] = _NotifyEnterGame;
-	m_theProcessProtocolFun[c2s_leavegame] = _NotifyLeaveGame;
-	m_theProcessProtocolFun[c2s_permitplayerlogin] = _NotifyPlayerLogin;
-	m_theProcessProtocolFun[c2s_updatemapinfo] = _UpdateMapID;
-	m_theProcessProtocolFun[c2s_updategameserverinfo] = _UpdateGameSvrInfo;
-	m_theProcessProtocolFun[c2s_requestsvrip] = _RequestSvrIP;
+	m_theProcessProtocolFun[c2s_registeraccount]  = &CGameServer::_RegisterAccount;
+	m_theProcessProtocolFun[c2s_entergame] = &CGameServer::_NotifyEnterGame;
+	m_theProcessProtocolFun[c2s_leavegame] = &CGameServer::_NotifyLeaveGame;
+	m_theProcessProtocolFun[c2s_permitplayerlogin] = &CGameServer::_NotifyPlayerLogin;
+	m_theProcessProtocolFun[c2s_updatemapinfo] = &CGameServer::_UpdateMapID;
+	m_theProcessProtocolFun[c2s_updategameserverinfo] = &CGameServer::_UpdateGameSvrInfo;
+	m_theProcessProtocolFun[c2s_requestsvrip] = &CGameServer::_RequestSvrIP;
 
 	/*
 	 * Query gameserver information

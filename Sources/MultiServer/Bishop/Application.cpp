@@ -4,6 +4,7 @@
 
 #include <process.h>
 #include <time.h>
+#include <shellapi.h>
 
 #include "GameServer.h"
 #include "GamePlayer.h"

@@ -283,7 +283,8 @@ bool CPlayerCreator::GetRoleDataFromIni(BYTE* pData, const char* szFileName)
 	char szSkillLevel[100];
 	nSkillCount						= cFile.ReadInteger(SECTION_FIGHTSKILLLIST, KEY_COUNT, 0);
 	TDBSkillData *pSkillData		= (TDBSkillData *)(pData + pRoleData->dwFSkillOffset);
-	for (int i = 0 ; i < nSkillCount; i ++, pSkillData ++)
+	int i = 0;
+	for (i = 0 ; i < nSkillCount; i ++, pSkillData ++)
 	{
 		int nSkillId = 0;
 		int nSkillLevel = 0;

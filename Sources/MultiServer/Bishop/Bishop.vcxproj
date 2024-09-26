@@ -18,6 +18,7 @@
     <SccProjectName>"$/SwordOnline/Sources/MultiServer/Bishop", HKSAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{45BFAAA2-EBD5-43F6-B90B-923982699DE4}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -57,7 +58,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\server</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -117,7 +118,7 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Common;..\Rainbow\Interface;..\Heaven\Interface;..\..\..\lib;..\..\..\Headers;..\..\Sword3PaySys\S3AccServer;..\..\s3client\login;..\..\RoleDBManager;..\..\Core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
@@ -128,11 +129,11 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\server\debug\
-copy debug\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe
-copy debug\Bishop.exe ..\..\..\..\bin\multiserver\debug\Bishop.exe</Command>
+      <Command>copy debug\Bishop.exe ..\..\..\..\bin\Server\Bishop.exe
+copy debug\Bishop.exe ..\..\..\..\bin\Server\debug\Bishop.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
