@@ -9,7 +9,8 @@
 
 #include "S3PDBConnectionPool.h"
 
-#include "S3PDB_MSSQLServer_Connection.h"
+//#include "S3PDB_MSSQLServer_Connection.h"
+#include "S3PDB_MySQL_Connection.h"
 #include "S3PAccount.h"
 
 S3PDBConnectionPool* S3PDBConnectionPool::m_pInstance = NULL;
@@ -167,7 +168,8 @@ void S3PDBConnectionPool::ReleaseInstance()
 
 BOOL S3PDBConnectionPool::CreateConnection(_LPDATABASEINFO pDatabase, S3PDBConVBC** ppInfo)
 {
-	S3PDBConVBC* pCon = new S3PDB_MSSQLServer_Connection();
+	//S3PDBConVBC* pCon = new S3PDB_MSSQLServer_Connection();
+	S3PDBConVBC* pCon = new S3PDB_MySQL_Connection();
 	if (pCon->OpenConnect(pDatabase))
 	{
 		*ppInfo = pCon;

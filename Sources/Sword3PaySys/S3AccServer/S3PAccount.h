@@ -19,7 +19,7 @@ class S3PDBConVBC;
 using namespace std;
 typedef std::list<KAccountUserTimeInfo> AccountTimeList;
 
-class S3PAccount  
+class S3PAccount
 {
 public:
 	S3PAccount();
@@ -27,7 +27,7 @@ public:
 
 	static int Login(S3PDBConVBC* pConn, const char* strAccName, const char* strPassword, DWORD ClientID, WORD& nExtPoint, DWORD& nLeftTime);
 	static int LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName);
-	static int Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, WORD nExtPoint);
+	static int Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, int nExtPoint);
 	static int ElapseTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, const DWORD dwDecSecond);
 	static int QueryTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, DWORD& dwSecond);
 	static int ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const char* strPassword, const DWORD Address, const short Port, const BYTE Mac[6], unsigned long& nGameID);
@@ -40,6 +40,7 @@ public:
 
 protected:
 	static int GetLeftSecondsOfDeposit(S3PDBConVBC* pConn, const char* strAccName, long& liLeft, long& liExp);
+	static int GetLockAccount(S3PDBConVBC* pConn, const char* strAccName, DWORD& nLeftTime);
 };
 
 #endif // !defined(AFX_S3PACCOUNT_H__7222E304_3E04_44D2_A3D1_E277BEF07235__INCLUDED_)

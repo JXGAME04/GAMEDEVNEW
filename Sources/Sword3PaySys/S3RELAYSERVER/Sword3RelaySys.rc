@@ -1,6 +1,5 @@
-//Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
-
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -11,15 +10,17 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (Simplified, PRC) resources
+
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-#ifdef _WIN32
-LANGUAGE 4, 2
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 #pragma code_page(936)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -28,27 +29,28 @@ LANGUAGE 4, 2
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_MAIN                ICON                    "Sword3RelaySys.ico"
 
-IDI_MAIN	       ICON    DISCARDABLE     "Sword3RelaySys.ico"
-IDI_SMALL		   ICON    DISCARDABLE     "Sword3RelaySys2.ico"
+IDI_SMALL               ICON                    "Sword3RelaySys2.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDC_S3RELAYSYS MENU DISCARDABLE
+IDC_S3RELAYSYS MENU
 BEGIN
     POPUP "&Manager"
     BEGIN
-		MENUITEM "&Clear Log",           IDM_CLEARLOG
-		MENUITEM "&Show Info",           IDM_SHOWINFO
-        MENUITEM "E&xit",                IDM_EXIT
+        MENUITEM "&Clear Log",                  IDM_CLEARLOG
+        MENUITEM "E&xit",                       IDM_EXIT
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About ...",           IDM_ABOUT
+        MENUITEM "&About ...",                  IDM_ABOUT
     END
+    MENUITEM "&Show Info",                  IDM_SHOWINFO
 END
 
 
@@ -57,7 +59,7 @@ END
 // Accelerator
 //
 
-IDC_S3PAYSYS ACCELERATORS MOVEABLE PURE
+IDC_S3PAYSYS ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -69,8 +71,8 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 230, 75
-STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG 22, 17, 230, 75
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "System"
 BEGIN
@@ -87,8 +89,7 @@ END
 // TEXTINCLUDE
 //
 
-
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
@@ -97,7 +98,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -106,6 +107,19 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,12 +127,36 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
-   IDC_S3RELAYSYS   "JXOnline-RelaySystem"
+    IDC_S3RELAYSYS          "JXOnline-RelaySystem"
 END
 
-#endif
+#endif    // Chinese (Simplified, PRC) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -9,7 +9,8 @@
 
 #include "S3PDBConnectionPool.h"
 
-#include "S3PDB_MSSQLServer_Connection.h"
+//#include "S3PDB_MSSQLServer_Connection.h"
+#include "../S3AccServer/S3PDB_MySQL_Connection.h"
 #include "S3PAccount.h"
 
 S3PDBConnectionPool* S3PDBConnectionPool::m_pInstance = NULL;
@@ -38,7 +39,7 @@ S3PDBConnectionPool::~S3PDBConnectionPool()
 	}
 }
 
-BOOL S3PDBConnectionPool::Init(const std::string &strINIPath, const std::string &strSection, DWORD dwConLimits)
+BOOL S3PDBConnectionPool::Init(const std::string& strINIPath, const std::string& strSection, DWORD dwConLimits)
 {
 	m_dwConLimits = dwConLimits;
 
@@ -48,35 +49,35 @@ BOOL S3PDBConnectionPool::Init(const std::string &strINIPath, const std::string 
 		TCHAR szDataBase[def_KEYNAMELEN];
 		TCHAR szUser[def_KEYNAMELEN];
 		TCHAR szPassword[def_KEYNAMELEN];
-		
+
 		DWORD dwLen =
 			KPIGetPrivateProfileString(strSection.c_str(),
-			def_SERVERKEYNAME,
-			"",
-			szServer,
-			def_KEYNAMELEN,
-			strINIPath.c_str() );
+				def_SERVERKEYNAME,
+				"",
+				szServer,
+				def_KEYNAMELEN,
+				strINIPath.c_str());
 		dwLen =
-			KPIGetPrivateProfileString( strSection.c_str(),
-			def_DATABASEKEYNAME,
-			"",
-			szDataBase,
-			def_KEYNAMELEN,
-			strINIPath.c_str() );
+			KPIGetPrivateProfileString(strSection.c_str(),
+				def_DATABASEKEYNAME,
+				"",
+				szDataBase,
+				def_KEYNAMELEN,
+				strINIPath.c_str());
 		dwLen =
-			KPIGetPrivateProfileString( strSection.c_str(),
-			def_USERKEYNAME,
-			"",
-			szUser,
-			def_KEYNAMELEN,
-			strINIPath.c_str() );
+			KPIGetPrivateProfileString(strSection.c_str(),
+				def_USERKEYNAME,
+				"",
+				szUser,
+				def_KEYNAMELEN,
+				strINIPath.c_str());
 		dwLen =
-			KPIGetPrivateProfileString( strSection.c_str(),
-			def_PASSWORDKEYNAME,
-			"",
-			szPassword,
-			def_KEYNAMELEN,
-			strINIPath.c_str() );
+			KPIGetPrivateProfileString(strSection.c_str(),
+				def_PASSWORDKEYNAME,
+				"",
+				szPassword,
+				def_KEYNAMELEN,
+				strINIPath.c_str());
 
 		_DATABASEINFO DBInfo;
 		DBInfo.strServer = szServer;
@@ -149,7 +150,7 @@ BOOL S3PDBConnectionPool::ReturnDBCon(S3PDBConVBC* pInfo)
 
 S3PDBConnectionPool* S3PDBConnectionPool::Instance()
 {
-	if ( NULL == m_pInstance )
+	if (NULL == m_pInstance)
 	{
 		m_pInstance = new S3PDBConnectionPool;
 	}
@@ -158,7 +159,7 @@ S3PDBConnectionPool* S3PDBConnectionPool::Instance()
 
 void S3PDBConnectionPool::ReleaseInstance()
 {
-	if ( NULL != m_pInstance )
+	if (NULL != m_pInstance)
 	{
 		delete m_pInstance;
 		m_pInstance = NULL;
@@ -167,7 +168,8 @@ void S3PDBConnectionPool::ReleaseInstance()
 
 BOOL S3PDBConnectionPool::CreateConnection(_LPDATABASEINFO pDatabase, S3PDBConVBC** ppInfo)
 {
-	S3PDBConVBC* pCon = new S3PDB_MSSQLServer_Connection();
+	//S3PDBConVBC* pCon = new S3PDB_MSSQLServer_Connection();
+	S3PDBConVBC* pCon = new S3PDB_MySQL_Connection();
 	if (pCon->OpenConnect(pDatabase))
 	{
 		*ppInfo = pCon;

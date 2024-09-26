@@ -30,7 +30,7 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 		return iRet;
 	}
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "select cIP, iPort, iid, cMemo from ServerList where (cServerName = '%s') and (cPassword COLLATE Chinese_PRC_CS_AS = '%s')", strAccName, strPassword);
+	sprintf(strSQL, "select cIP, iPort, iid, cMemo from ServerList where (cServerName = '%s') and (cPassword = '%s')", strAccName, strPassword);
 	S3PResultVBC* pResult = NULL;
 	if (pConn->QuerySql(strSQL, &pResult))
 	{
@@ -39,7 +39,7 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 		else
 		{
 			iRet = E_ADDRESS_OR_PORT;
-			if ((Address & 0x0000FFFF) == 0x0000a8c0)
+			if (Address == 0x100007f)
 			{
 				_variant_t clientid = 0L;
 				pResult->get_field_data(2, &clientid, sizeof(_variant_t));
@@ -54,12 +54,12 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 					pResult->get_field_data(3, &vaMac, sizeof(_variant_t)) &&
 					vaddr.vt == VT_BSTR && vaMac.vt == VT_BSTR)
 				{
-					DWORD addr = inet_addr((const char *)(_bstr_t)vaddr);
+					DWORD addr = inet_addr((const char*)(_bstr_t)vaddr);
 					char szmac[15];
-					sprintf(szmac, "%02X%02X-%02X%02X-%02X%02X", Mac[0], Mac[1], Mac[2], Mac[3],Mac[4], Mac[5]);
+					sprintf(szmac, "%02X%02X-%02X%02X-%02X%02X", Mac[0], Mac[1], Mac[2], Mac[3], Mac[4], Mac[5]);
 					szmac[14] = 0;
 					if (addr == Address &&
-						strcmpi((const char *)(_bstr_t)vaMac, szmac) == 0)
+						strcmpi((const char*)(_bstr_t)vaMac, szmac) == 0)
 					{
 						_variant_t gameid = 0L;
 						pResult->get_field_data(2, &gameid, sizeof(_variant_t));
@@ -70,7 +70,7 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 			}
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -146,7 +146,7 @@ int S3PAccount::GetAccountCount(S3PDBConVBC* pConn, DWORD nGameID, BOOL bOnline,
 		}
 	}
 	strwhere += strSQL;
-	
+
 	sprintf(strSQL, "select count(*) from Account_info %s", strwhere.c_str());
 	S3PResultVBC* pResult = NULL;
 	if (pConn->QuerySql(strSQL, &pResult))
@@ -158,10 +158,10 @@ int S3PAccount::GetAccountCount(S3PDBConVBC* pConn, DWORD nGameID, BOOL bOnline,
 			dwCount = count.lVal;
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
-	
+
 	return iRet;
 }
 
@@ -187,7 +187,7 @@ int S3PAccount::GetAccountGameID(S3PDBConVBC* pConn, const char* strAccName, DWO
 			iRet = ACTION_SUCCESS;
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -206,7 +206,7 @@ int S3PAccount::UnlockAccount(S3PDBConVBC* pConn, const char* strAccName)
 	S3PResultVBC* pResult = NULL;
 	if (pConn->Do(strSQL))
 		iRet = ACTION_SUCCESS;
-	
+
 	return iRet;
 }
 
@@ -222,7 +222,7 @@ int S3PAccount::FreezeAccount(S3PDBConVBC* pConn, const char* strAccName)
 	S3PResultVBC* pResult = NULL;
 	if (pConn->Do(strSQL))
 		iRet = ACTION_SUCCESS;
-	
+
 	return iRet;
 }
 
@@ -238,7 +238,7 @@ int S3PAccount::UnlockServer(S3PDBConVBC* pConn, unsigned long nGameID)
 	S3PResultVBC* pResult = NULL;
 	if (pConn->Do(strSQL))
 		iRet = ACTION_SUCCESS;
-	
+
 	return iRet;
 }
 
@@ -250,8 +250,7 @@ int S3PAccount::GetAccountsTime(S3PDBConVBC* pConn, DWORD ClientID, DWORD dwMinS
 		return iRet;
 	}
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "select datediff(second, getdate(), dEndDate), iLeftSecond, cAccName, datediff(second, getdate(), dLoginDate) from Account_Habitus where (iClientID = %d) and (dLoginDate is not null)", ClientID);
-	//View_AccountMoney
+	sprintf(strSQL, "select TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dEndDate))), iLeftSecond, cAccName, TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dLoginDate))) from View_AccountMoney where (iClientID = %d) and (dLoginDate is not null)", ClientID);
 	S3PResultVBC* pResult = NULL;
 	if (pConn->QuerySql(strSQL, &pResult))
 	{
@@ -281,7 +280,7 @@ int S3PAccount::GetAccountsTime(S3PDBConVBC* pConn, DWORD ClientID, DWORD dwMinS
 				liLeft += usesencond.lVal;
 			}
 			aReturn.nTime = max(0, liLeft);
-			memcpy(aReturn.Account, (const char *)_bstr_t(accname.bstrVal, true), LOGIN_USER_ACCOUNT_MAX_LEN);
+			memcpy(aReturn.Account, (const char*)_bstr_t(accname.bstrVal, true), LOGIN_USER_ACCOUNT_MAX_LEN);
 			aReturn.nReturn = ACTION_SUCCESS;
 			if (aReturn.nTime <= dwMinSecond)
 				List.push_back(aReturn);
@@ -289,7 +288,7 @@ int S3PAccount::GetAccountsTime(S3PDBConVBC* pConn, DWORD ClientID, DWORD dwMinS
 		}
 		iRet = ACTION_SUCCESS;
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -319,7 +318,7 @@ int S3PAccount::GetServerID(S3PDBConVBC* pConn, const char* strAccName, unsigned
 			iRet = ACTION_SUCCESS;	//Local network not check ip
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 

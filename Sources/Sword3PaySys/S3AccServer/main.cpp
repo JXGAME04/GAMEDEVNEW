@@ -52,7 +52,7 @@ void __stdcall ServerEventNotify(
 }
 
 
-static inline sLogProgram(BOOL bEnter)
+static inline void sLogProgram(BOOL bEnter)
 {
 	SYSTEMTIME systm;
 	::GetLocalTime(&systm);
@@ -386,7 +386,7 @@ int gTrace(LPCSTR fmt, ...)
 	if (g_listwnd == NULL)
 		return -1;
 
-	TCHAR tempbuff[256];
+	TCHAR tempbuff[1024];
 	g_cnt++;
 	sprintf(tempbuff, "%d >> ", g_cnt);
 	int n = strlen(tempbuff);

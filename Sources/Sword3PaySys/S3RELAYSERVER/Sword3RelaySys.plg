@@ -3,66 +3,60 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: Sword3RelaySys - Win32 Debug--------------------
+--------------------Configuration: Sword3RelaySys - Win32 Release--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6B.tmp" with contents
+Creating temporary file "C:\Users\Hoang\AppData\Local\Temp\RSP8A5.tmp" with contents
 [
-/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\Toolkits\mysql++-1.7.1-1-win32-vc++\include" /I "..\Toolkits\mysql\include" /I "..\..\..\Headers" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fp"Debug/Sword3RelaySys.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\GlobalFun.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\KThread.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\main.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3P_MSSQLServer_Result.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PAccount.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDB_MSSQLServer_Connection.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBConnectionPool.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBConVBC.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBSocketPool.cpp"
-"C:\Source_G7VN\JX\swrod3\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PResultVBC.cpp"
+/nologo /ML /W3 /GR /GX /O2 /I "..\regexp" /I "..\mysql++-1.7.1-1-win32-vc++\include" /I "..\mysql\include" /I "..\\" /I "d:\dx81sdk\include" /I "..\Toolkits\mysql++-1.7.1-1-win32-vc++\include" /I "..\Toolkits\mysql\include" /I "..\..\..\Headers" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/Sword3RelaySys.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\GlobalFun.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\KThread.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\main.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3P_MSSQLServer_Result.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PAccount.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDB_MSSQLServer_Connection.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBConnectionPool.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBConVBC.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PDBSocketPool.cpp"
+"F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3PResultVBC.cpp"
 ]
-Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6B.tmp" 
-Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6C.tmp" with contents
+Creating command line "cl.exe @C:\Users\Hoang\AppData\Local\Temp\RSP8A5.tmp" 
+Creating temporary file "C:\Users\Hoang\AppData\Local\Temp\RSP8A6.tmp" with contents
 [
-S3DBInterface.lib KLVideo.lib LuaLib.lib FilterText_StaticLib.lib Engine.lib Rainbow.lib IOCPServer.lib ESClient.lib Heaven.lib Ws2_32.lib Winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/Sword3RelaySys.pdb" /debug /machine:I386 /nodefaultlib:"LIBCD.lib" /out:"../../../../bin/client/Sword3RelaySys.exe" /pdbtype:sept 
-.\Debug\GlobalFun.obj
-.\Debug\KThread.obj
-.\Debug\main.obj
-.\Debug\S3P_MSSQLServer_Result.obj
-.\Debug\S3PAccount.obj
-.\Debug\S3PDB_MSSQLServer_Connection.obj
-.\Debug\S3PDBConnectionPool.obj
-.\Debug\S3PDBConVBC.obj
-.\Debug\S3PDBSocketPool.obj
-.\Debug\S3PResultVBC.obj
+Ws2_32.lib Winmm.lib /nologo /subsystem:console /incremental:no /pdb:"Release/Sword3RelaySys.pdb" /machine:I386 /nodefaultlib:"LIBCD.lib" /out:"../../../../bin/client/Sword3RelaySys.exe" 
+.\Release\GlobalFun.obj
+.\Release\KThread.obj
+.\Release\main.obj
+.\Release\S3P_MSSQLServer_Result.obj
+.\Release\S3PAccount.obj
+.\Release\S3PDB_MSSQLServer_Connection.obj
+.\Release\S3PDBConnectionPool.obj
+.\Release\S3PDBConVBC.obj
+.\Release\S3PDBSocketPool.obj
+.\Release\S3PResultVBC.obj
 ]
-Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP6C.tmp"
+Creating command line "link.exe @C:\Users\Hoang\AppData\Local\Temp\RSP8A6.tmp"
 <h3>Output Window</h3>
 Compiling...
 GlobalFun.cpp
+F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\GlobalFun.cpp(475) : warning C4018: '<=' : signed/unsigned mismatch
+F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\GlobalFun.cpp(613) : error C2065: '_beginthreadex' : undeclared identifier
 KThread.cpp
 main.cpp
 S3P_MSSQLServer_Result.cpp
+F:\SwordOnline\Sources\Sword3PaySys\S3RELAYSERVER\S3P_MSSQLServer_Result.cpp(96) : warning C4018: '<' : signed/unsigned mismatch
 S3PAccount.cpp
 S3PDB_MSSQLServer_Connection.cpp
 S3PDBConnectionPool.cpp
 S3PDBConVBC.cpp
 S3PDBSocketPool.cpp
 S3PResultVBC.cpp
-Linking...
-main.obj : error LNK2001: unresolved external symbol "public: __thiscall CLogFile::CLogFile(void)" (??0CLogFile@@QAE@XZ)
-main.obj : error LNK2001: unresolved external symbol "public: virtual __thiscall CLogFile::~CLogFile(void)" (??1CLogFile@@UAE@XZ)
-main.obj : error LNK2001: unresolved external symbol "public: int __thiscall CLogFile::Uninitialize(void)" (?Uninitialize@CLogFile@@QAEHXZ)
-main.obj : error LNK2001: unresolved external symbol "public: int __thiscall CLogFile::Initialize(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &,unsigned int)" (?Initialize@CLogFile@@QAEHABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@I@Z)
-main.obj : error LNK2001: unresolved external symbol "public: unsigned int __thiscall CLogFile::TraceLog(void const *,unsigned int)" (?TraceLog@CLogFile@@QAEIPBXI@Z)
-main.obj : error LNK2001: unresolved external symbol "public: unsigned long __thiscall CLogFile::EndBatch(void)" (?EndBatch@CLogFile@@QAEKXZ)
-main.obj : error LNK2001: unresolved external symbol "public: unsigned long __thiscall CLogFile::BeginBatch(void)" (?BeginBatch@CLogFile@@QAEKXZ)
-../../../../bin/client/Sword3RelaySys.exe : fatal error LNK1120: 7 unresolved externals
-Error executing link.exe.
+Error executing cl.exe.
 
 
 
 <h3>Results</h3>
-Sword3RelaySys.exe - 8 error(s), 0 warning(s)
+Sword3RelaySys.exe - 1 error(s), 2 warning(s)
 </pre>
 </body>
 </html>

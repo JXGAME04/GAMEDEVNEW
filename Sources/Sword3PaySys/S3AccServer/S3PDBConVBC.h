@@ -28,6 +28,7 @@ class S3PDBConVBC  : public K_CS
 {
 public:
 	virtual bool OpenConnect(_LPDATABASEINFO) = 0;
+	virtual bool Reconnect() = 0;
 	virtual void CloseConnect() = 0;
 	virtual bool QuerySql(const char* lpszSql, S3PResultVBC** ppResult) = 0;
 	virtual bool Do(const char* lpszSql) = 0;

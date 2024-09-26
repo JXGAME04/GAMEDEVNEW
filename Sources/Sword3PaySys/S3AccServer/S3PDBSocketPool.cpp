@@ -325,9 +325,9 @@ KGatewayDataProcess::KGatewayDataProcess()
 
 	memset(ProcessFunc, 0, sizeof(ProcessFunc));
 
-	ProcessFunc[c2s_accountlogin - c2s_accountbegin] = ProAccountLogin;
-	ProcessFunc[c2s_gamelogin - c2s_accountbegin] = ProGameLogin;
-	ProcessFunc[c2s_accountlogout - c2s_accountbegin] = ProAccountLogout;
+	ProcessFunc[c2s_accountlogin - c2s_accountbegin] = &KGatewayDataProcess::ProAccountLogin;
+	ProcessFunc[c2s_gamelogin - c2s_accountbegin] = &KGatewayDataProcess::ProGameLogin;
+	ProcessFunc[c2s_accountlogout - c2s_accountbegin] = &KGatewayDataProcess::ProAccountLogout;
 	ProcessFunc[c2s_gatewayverify - c2s_accountbegin] = NULL;
 	
 	m_Status = gdp_free;

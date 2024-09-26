@@ -471,7 +471,8 @@ DWORD KPIGetPrivateProfileString( LPCTSTR lpszAppName,		/* section name(Input) *
 						if ( NULL != lpszKeyValue )
 						{
 							dwRet = liKeyValueSize;
-							DWORD dwCopyLen = (long)dwSize <= liKeyValueSize ? dwSize : liKeyValueSize;//#okay roi
+							DWORD dwCopyLen =
+								dwSize <= (DWORD)liKeyValueSize ? dwSize : liKeyValueSize;
 							if ( NULL != lpszReturnedString )
 							{
 								memcpy( lpszReturnedString, lpszKeyValue, dwCopyLen );

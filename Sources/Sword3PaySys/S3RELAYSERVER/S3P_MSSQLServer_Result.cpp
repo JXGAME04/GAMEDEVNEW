@@ -93,7 +93,7 @@ bool S3P_MSSQLServer_Result::get_field_data(unsigned int nfieldindex, void* pDat
 	{
 		if (NULL != m_pResult && nsize == sizeof(VARIANT))
 		{
-			if (num_rows() > 0 && nfieldindex >= 0 && nfieldindex < (unsigned int)num_fields())//#okay roi
+			if (num_rows() > 0 && nfieldindex >= 0 && nfieldindex < (unsigned int)num_fields())
 			{
 				_variant_t varIndex;
 				varIndex = (long)nfieldindex;

@@ -70,9 +70,9 @@ bool S3PDB_MSSQLServer_Connection::OpenConnect(_LPDATABASEINFO lpDBIdentifier)
 			{
 				pCon->CursorLocation = adUseClient;
 				hr = pCon->Open(strSource.c_str(),
-								lpDBIdentifier->strUser.c_str(),
-								lpDBIdentifier->strPassword.c_str(),
-								adConnectUnspecified);
+					lpDBIdentifier->strUser.c_str(),
+					lpDBIdentifier->strPassword.c_str(),
+					adConnectUnspecified);
 				if (SUCCEEDED(hr))
 				{
 					m_pCon = pCon;
@@ -85,7 +85,7 @@ bool S3PDB_MSSQLServer_Connection::OpenConnect(_LPDATABASEINFO lpDBIdentifier)
 					bRet = true;
 				}
 			}
-			catch( _com_error &e )
+			catch (_com_error& e)
 			{
 				gTrace("[S3PDBConnectionPool::OpenConnect]COM error: %s", e.ErrorMessage());
 			}
@@ -119,17 +119,17 @@ bool S3PDB_MSSQLServer_Connection::Do(const char* lpszSql)
 					try
 					{
 						HRESULT hr =
-						pRes->Open(lpszSql,
-						_variant_t( (IDispatch*)(m_pCon), true),
-						adOpenDynamic,
-						adLockOptimistic,
-						adCmdText);
+							pRes->Open(lpszSql,
+								_variant_t((IDispatch*)(m_pCon), true),
+								adOpenDynamic,
+								adLockOptimistic,
+								adCmdText);
 						if (SUCCEEDED(hr))
 						{
 							bRet = TRUE;
 						}
 					}
-					catch (_com_error &e)
+					catch (_com_error& e)
 					{
 						gTrace("[S3PDB_MSSQLServer_Connection::Do COM error: %s", e.ErrorMessage());
 					}
@@ -139,10 +139,10 @@ bool S3PDB_MSSQLServer_Connection::Do(const char* lpszSql)
 			}
 		}
 	}
-	catch (_com_error &e)
-    {
+	catch (_com_error& e)
+	{
 		gTrace("[S3PDB_MSSQLServer_Connection::Do COM error: %s", e.ErrorMessage());
-    }
+	}
 
 	return bRet;
 }
@@ -157,8 +157,8 @@ bool S3PDB_MSSQLServer_Connection::DoSql(const char* lpszSql, _Recordset* pRes)
 		try
 		{
 			HRESULT hr =
-					pRes->Open(lpszSql,
-					_variant_t( (IDispatch*)(m_pCon), true),
+				pRes->Open(lpszSql,
+					_variant_t((IDispatch*)(m_pCon), true),
 					adOpenStatic,
 					adLockReadOnly,
 					adCmdText);
@@ -167,7 +167,7 @@ bool S3PDB_MSSQLServer_Connection::DoSql(const char* lpszSql, _Recordset* pRes)
 				bRet = TRUE;
 			}
 		}
-		catch ( _com_error &e )
+		catch (_com_error& e)
 		{
 #ifdef _DEBUG
 			gTrace("SQL Error: %s", lpszSql);

@@ -70,7 +70,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -78,6 +78,8 @@
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\client\debug
@@ -104,7 +106,8 @@ copy debug\S3RelayServer.exe ..\..\..\..\bin\Server\debug\S3RelayServer.exe</Com
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\S3RelayServer.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mysqlcppconn.lib;libmysql.lib;mysqlclient.lib;odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\lib\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,6 +154,8 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\S3AccServer\S3PDB_MySQL_Connection.cpp" />
+    <ClCompile Include="..\S3AccServer\S3P_MySQL_Result.cpp" />
     <ClCompile Include="GlobalFun.cpp" />
     <ClCompile Include="KThread.cpp" />
     <ClCompile Include="LogFile.cpp" />
@@ -170,6 +175,8 @@ copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe<
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\S3AccServer\S3PDB_MySQL_Connection.h" />
+    <ClInclude Include="..\S3AccServer\S3P_MySQL_Result.h" />
     <ClInclude Include="GlobalDTD.h" />
     <ClInclude Include="GlobalFun.h" />
     <ClInclude Include="KStdAfx.h" />

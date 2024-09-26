@@ -22,25 +22,23 @@
 
 #include "LogFile.h"
 
-
 const char log_directory[] = "relayserver_log";
 const size_t log_threshold = 1024 * 1024;
 
 static CLogFile gs_LogFile;
 
-
-typedef HRESULT ( __stdcall * pfnCreateServerInterface )(
-			REFIID	riid,
-			void	**ppv
-		);
+typedef HRESULT(__stdcall* pfnCreateServerInterface)(
+	REFIID	riid,
+	void** ppv
+	);
 
 void __stdcall ServerEventNotify(
-			LPVOID lpParam,
-			const unsigned long &ulnID,
-			const unsigned long &ulnEventType )
+	LPVOID lpParam,
+	const unsigned long& ulnID,
+	const unsigned long& ulnEventType)
 {
-	S3PDBSocketPool *pSocketPool = (S3PDBSocketPool *)lpParam;
-	switch( ulnEventType )
+	S3PDBSocketPool* pSocketPool = (S3PDBSocketPool*)lpParam;
+	switch (ulnEventType)
 	{
 	case enumClientConnectCreate:
 		pSocketPool->AddUserClientID(ulnID);
@@ -51,8 +49,7 @@ void __stdcall ServerEventNotify(
 	}
 }
 
-
-static inline sLogProgram(BOOL bEnter)
+static inline void sLogProgram(BOOL bEnter)
 {
 	SYSTEMTIME systm;
 	::GetLocalTime(&systm);
@@ -61,14 +58,13 @@ static inline sLogProgram(BOOL bEnter)
 
 	if (bEnter)
 		len = _stprintf(buff, "\r\n*\r\n***** S3RelayServer Start (@ %04d/%02d/%02d %02d:%02d:%02d.%03d) >>>>>\r\n*\r\n\r\n",
-						systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
+			systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
 	else
 		len = _stprintf(buff, "\r\n*\r\n***** S3RelayServer Stop (@ %04d/%02d/%02d %02d:%02d:%02d.%03d) <<<<<\r\n*\r\n\r\n",
-						systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
+			systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
 
 	gs_LogFile.TraceLog(buff, len * sizeof(TCHAR));
 }
-
 
 ATOM RegisterSysClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, int nLogTime);
@@ -76,12 +72,12 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 char g_szWindowClass[MAX_PATH];
 
 int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPSTR     lpCmdLine,
-                     int       nCmdShow)
+	HINSTANCE hPrevInstance,
+	LPSTR     lpCmdLine,
+	int       nCmdShow)
 {
 	TCHAR szExePath[MAX_PATH + 1];
-	KPIGetExePath( szExePath, MAX_PATH );
+	KPIGetExePath(szExePath, MAX_PATH);
 
 	TCHAR szLogDir[MAX_PATH + 1];
 	_tcscpy(szLogDir, szExePath);
@@ -89,11 +85,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	::CreateDirectory(szLogDir, NULL);
 	if (!gs_LogFile.Initialize(szLogDir, log_threshold))
 	{
-		::MessageBox(NULL, "Initializing LogFile fail", "error", MB_OK|MB_ICONERROR);
+		::MessageBox(NULL, "Initializing LogFile fail", "error", MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 	sLogProgram(TRUE);
-
 
 	TCHAR szINIPath[MAX_PATH + 1];
 	_tcscpy(szINIPath, szExePath);
@@ -143,8 +138,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		31,
 		szINIPath);
 	int nTimelog = atoi(szPort);
-	
-	IServer *pServer = NULL;
+
+	IServer* pServer = NULL;
 
 	HMODULE hModule = ::LoadLibrary("heaven.dll");
 
@@ -152,13 +147,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		pfnCreateServerInterface pFactroyFun = (pfnCreateServerInterface)GetProcAddress(hModule, "CreateInterface");
 
-		IServerFactory *pServerFactory = NULL;
+		IServerFactory* pServerFactory = NULL;
 
-		if (SUCCEEDED( pFactroyFun( IID_IServerFactory, reinterpret_cast< void ** >(&pServerFactory ))))
+		if (SUCCEEDED(pFactroyFun(IID_IServerFactory, reinterpret_cast<void**>(&pServerFactory))))
 		{
 			pServerFactory->SetEnvironment(snMaxPlayerCount, snPrecision, snMaxBuffer, snBufferSize);
 
-			pServerFactory->CreateServerInterface(IID_IIOCPServer, reinterpret_cast< void ** >(&pServer));
+			pServerFactory->CreateServerInterface(IID_IIOCPServer, reinterpret_cast<void**>(&pServer));
 
 			pServerFactory->Release();
 		}
@@ -174,8 +169,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		31,
 		szINIPath);
 	int nDBConns = atoi(szPort);
-	S3PDBConnectionPool * pConnectPool = S3PDBConnectionPool::Instance();
-	S3PDBSocketPool *pSocketPool = S3PDBSocketPool::Instance();
+	S3PDBConnectionPool* pConnectPool = S3PDBConnectionPool::Instance();
+	S3PDBSocketPool* pSocketPool = S3PDBSocketPool::Instance();
 
 	if (pServer == NULL)
 	{
@@ -200,15 +195,15 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	RegisterSysClass(hInstance);
 
-		// Perform application initialization:
-	if (InitInstance(hInstance, nCmdShow, nTimelog)) 
+	// Perform application initialization:
+	if (InitInstance(hInstance, nCmdShow, nTimelog))
 	{
 		//hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_S3RELAY);
 
 		// Main message loop:
-		while (GetMessage(&msg, NULL, 0, 0)) 
+		while (GetMessage(&msg, NULL, 0, 0))
 		{
-			//if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) 
+			//if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
@@ -218,7 +213,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	pSocketPool->Stop();
 
-Exit0:	
+Exit0:
 	S3PDBSocketPool::ReleaseInstance();
 	S3PDBConnectionPool::ReleaseInstance();
 
@@ -254,19 +249,19 @@ ATOM RegisterSysClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX); 
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= (WNDPROC)WndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_MAIN);
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName	= (LPCSTR)IDC_S3RELAYSYS;
-	wcex.lpszClassName	= g_szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = (WNDPROC)WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, (LPCTSTR)IDI_MAIN);
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = (LPCSTR)IDC_S3RELAYSYS;
+	wcex.lpszClassName = g_szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
 
 	return RegisterClassEx(&wcex);
 }
@@ -313,8 +308,8 @@ public:
 		::DeleteCriticalSection(&m_switchsect);
 	}
 
-	//WriteInfo可以多个线程使用
-	//其中nLen指内存长度
+	//WriteInfo can be used by multiple threads
+	//where nLen refers to the memory length
 	BOOL WriteInfo(BYTE* szInfo, DWORD nLen)
 	{
 		if (nLen <= 0 || szInfo == NULL)
@@ -335,8 +330,8 @@ public:
 		::LeaveCriticalSection(&m_switchsect);
 		return bCanAdd;
 	}
-	
-	//ReadInfo只能一个线程访问
+
+	//ReadInfo can only be accessed by one thread
 	BYTE* ReadInfo()
 	{
 		BYTE* pInfo = NULL;
@@ -368,11 +363,9 @@ public:
 	}
 };
 
-
 TwoFixBuffer g_TraceBuffer;
 HWND g_listwnd = NULL;
 long g_cnt = 0;
-
 
 int gTrace(LPCSTR fmt, ...)
 {
@@ -386,15 +379,15 @@ int gTrace(LPCSTR fmt, ...)
 	int n = strlen(tempbuff);
 
 	va_list marker;
-	va_start( marker, fmt );
+	va_start(marker, fmt);
 
 	_vstprintf(tempbuff + n, fmt, marker);
 
-	va_end( marker );
+	va_end(marker);
 
 	n = strlen(tempbuff);
 
-	g_TraceBuffer.WriteInfo((BYTE*)tempbuff, n + 1);	//带0写入
+	g_TraceBuffer.WriteInfo((BYTE*)tempbuff, n + 1);	//Write with 0
 	return 0;
 }
 
@@ -404,7 +397,7 @@ int gTimeStamp(char* sDest, char* pTail)
 	time_t curtm = ::time(NULL);
 	struct tm* ptm = localtime(&curtm);
 	return sprintf(sDest, "[%04d/%02d/%02d %02d:%02d:%02d]%s",
-			ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, pTail);
+		ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, pTail);
 }
 
 void gTraceLogFile(LPCTSTR pBuffer, long nLen)
@@ -454,7 +447,7 @@ void gShowTrace()
 			if (::SendMessage(g_listwnd, LB_ADDSTRING, 0, (LPARAM)pBuff) >= 0)
 				n++;
 
-			gTraceLogFile(pBuff, (*pMem) - 1);	//去0写文件
+			gTraceLogFile(pBuff, (*pMem) - 1);	//Go to 0 to write the file
 		}
 		else
 			break;
@@ -472,20 +465,20 @@ int g_nShowTime = 0;
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, int nLogTime)
 {
 	HWND hWnd;
- 
+
 	hWnd = CreateWindow(g_szWindowClass, g_szWindowClass, WS_OVERLAPPEDWINDOW,
-	  CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd)
 	{
-	  return FALSE;
+		return FALSE;
 	}
 
-	RECT rc = {0};
+	RECT rc = { 0 };
 	GetClientRect(hWnd, &rc);
-	g_listwnd = ::CreateWindow("ListBox", "Out", WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|LBS_NOINTEGRALHEIGHT, 0, 0, rc.right, rc.bottom, hWnd, NULL, hInstance, NULL);
+	g_listwnd = ::CreateWindow("ListBox", "Out", WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | LBS_NOINTEGRALHEIGHT, 0, 0, rc.right, rc.bottom, hWnd, NULL, hInstance, NULL);
 	if (!g_listwnd)
-	   return FALSE;
+		return FALSE;
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -501,18 +494,18 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
-		case WM_INITDIALOG:
-				return TRUE;
+	case WM_INITDIALOG:
+		return TRUE;
 
-		case WM_COMMAND:
-			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) 
-			{
-				EndDialog(hDlg, LOWORD(wParam));
-				return TRUE;
-			}
-			break;
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		break;
 	}
-    return FALSE;
+	return FALSE;
 }
 
 //
@@ -531,63 +524,62 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-	switch (message) 
+	switch (message)
 	{
-		case WM_COMMAND:
-			wmId    = LOWORD(wParam); 
-			wmEvent = HIWORD(wParam); 
-			// Parse the menu selections:
-			switch (wmId)
-			{
-				case IDM_ABOUT:
-				   DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
-				   break;
-				case IDM_EXIT:
-				   SendMessage(hWnd, WM_CLOSE, 0, 0);
-				   break;
-				case IDM_CLEARLOG:
-				   gClearTrace();
-				   break;
-				case IDM_SHOWINFO:
-					{
-						S3PDBSocketPool* p = S3PDBSocketPool::Instance();
-						if (p)
-							p->ShowAllClientInfo();
-					}
-					break;
-				default:
-				   return DefWindowProc(hWnd, message, wParam, lParam);
-			}
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDM_ABOUT:
+			DialogBox(g_hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
 			break;
-		case WM_PAINT:
-			hdc = BeginPaint(hWnd, &ps);
-			EndPaint(hWnd, &ps);
+		case IDM_EXIT:
+			SendMessage(hWnd, WM_CLOSE, 0, 0);
 			break;
-		case WM_DESTROY:
-			if (g_nShowTime)
-				KillTimer(hWnd, g_nShowTime);
-			PostQuitMessage(0);
+		case IDM_CLEARLOG:
+			gClearTrace();
 			break;
-		case WM_CLOSE:
-			if (::MessageBox(hWnd, "Are you sure ?", "warning", MB_YESNO) == IDYES)
-			{
-				DestroyWindow(hWnd);
-			}
-			break;
-		case WM_SIZE:
-			{
-				RECT rc;
-				GetClientRect(hWnd, &rc);
-				MoveWindow(g_listwnd, 0, 0, rc.right, rc.bottom, TRUE);
-			}
-			break;
-		case WM_TIMER:
-			if (wParam == 1)
-				gShowTrace();
-			break;
+		case IDM_SHOWINFO:
+		{
+			S3PDBSocketPool* p = S3PDBSocketPool::Instance();
+			if (p)
+				p->ShowAllClientInfo();
+		}
+		break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
-   }
-   return 0;
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		EndPaint(hWnd, &ps);
+		break;
+	case WM_DESTROY:
+		if (g_nShowTime)
+			KillTimer(hWnd, g_nShowTime);
+		PostQuitMessage(0);
+		break;
+	case WM_CLOSE:
+		if (::MessageBox(hWnd, "Are you sure ?", "warning", MB_YESNO) == IDYES)
+		{
+			DestroyWindow(hWnd);
+		}
+		break;
+	case WM_SIZE:
+	{
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+		MoveWindow(g_listwnd, 0, 0, rc.right, rc.bottom, TRUE);
+	}
+	break;
+	case WM_TIMER:
+		if (wParam == 1)
+			gShowTrace();
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
 }
-

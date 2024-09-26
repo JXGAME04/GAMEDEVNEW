@@ -10,7 +10,8 @@
 #include "S3PDBConVBC.h"
 #include "S3PResultVBC.h"
 #include "COMUtil.h"
-
+#include "GlobalFun.h"
+#include <time.h>
 S3PAccount::S3PAccount()
 {
 }
@@ -28,43 +29,13 @@ int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* st
 	{
 		return iRet;
 	}
-
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-	return iRet;
-	}
-
-	}
-
-	for (int j=0;j<strlen(strPassword);j++)
-	{
-
-	if (strPassword[j] < 48 ||
-		(strPassword[j] > 57 && strPassword[j] < 65) ||
-		(strPassword[j] > 90 && strPassword[j] < 97) ||
-		strPassword[j] > 122)
-	{
-	return iRet;
-	}
-
-	}
+	if (strcmp(strAccName, "')DELETE Account_Info --") == 0)
+		return iRet;
 
 	char strSQL[MAX_PATH];
-	char strSQL2[MAX_PATH];
-	sprintf(strSQL, "select iClientID from Account_info where (cAccName = '%s') and (cPassword COLLATE Chinese_PRC_CS_AS = '%s')", strAccName, strPassword);
-	sprintf(strSQL2, "select iClientID from Account_info where (cAccName = '%s')", strAccName);
-	
+	sprintf(strSQL, "select iClientID from Account_info where (cAccName = '%s') and (cPassword = '%s')", strAccName, strPassword);
 	S3PResultVBC* pResult = NULL;
-	S3PResultVBC* pResult2 = NULL;
-	
-	if (pConn->QuerySql(strSQL, &pResult) )
+	if (pConn->QuerySql(strSQL, &pResult))
 	{
 		if (pResult->num_rows() <= 0)
 			iRet = E_ACCOUNT_OR_PASSWORD;
@@ -76,61 +47,44 @@ int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* st
 			{
 				long iLeft = 0;
 				long iExp = 0;
-				if (GetLeftSecondsOfDeposit(pConn, strAccName, iLeft, iExp) == ACTION_SUCCESS && iLeft > 1800)	//最小剩余时间30分钟
+				if (pResult)
+					pResult->unuse();
+				if (GetLockAccount(pConn, strAccName, nLeftTime) == E_ACCOUNT_NODEPOSIT)	// khong dung DB
 				{
-					sprintf(strSQL, "update Account_info set iClientID = %d, dLoginDate = null where (cAccName = '%s')", ClientID, strAccName);
-					if (pConn->Do(strSQL))
-					{
-						iRet = ACTION_SUCCESS;
-						nExtPoint = iExp;
-						nLeftTime = iLeft;
-					}
+					iRet = E_ACCOUNT_ACCESSDENIED;
+				}
+				else if (GetLockAccount(pConn, strAccName, nLeftTime) == ACTION_SUCCESS)	// bi khoa Account
+				{
+					iRet = E_ACCOUNT_FREEZE;
 				}
 				else
 				{
-					iRet = E_ACCOUNT_NODEPOSIT;
+					if (GetLeftSecondsOfDeposit(pConn, strAccName, iLeft, iExp) == ACTION_SUCCESS && iLeft > 1800)	//30 minutes minimum remaining time
+					{
+						sprintf(strSQL, "update Account_info set iClientID = %d, dLoginDate = null where (cAccName = '%s')", ClientID, strAccName);
+						if (pConn->Do(strSQL))
+						{
+							iRet = ACTION_SUCCESS;
+							nExtPoint = iExp;
+							nLeftTime = iLeft;
+						}
+					}
+					else
+					{
+						iRet = E_ACCOUNT_NODEPOSIT;
+					}
 				}
 			}
 			else
 			{
-				long iLeftS = 0;
-				long iExp = 0;
-				long NumLogin = 0;
-				iRet = GetLeftSecondsOfDeposit(pConn, strAccName, iLeftS, iExp);
-				if (NumLogin == 0)
-				{
-					iRet = (GetGMID() == clientID.lVal) ? E_ACCOUNT_EXIST : E_ACCOUNT_EXIST;
-				}
-				else
-				{
-					iRet = ACTION_FAILED;
-				}
+				iRet = (GetGMID() == clientID.lVal) ? E_ACCOUNT_FREEZE : E_ACCOUNT_EXIST;
 			}
 		}
 	}
-	S3PResultVBC* pResult3 = NULL;
-					
-	if ( pConn->QuerySql(strSQL2, &pResult2))
-	{
-		if (pResult2->num_rows() > 1)
-		{
-			iRet = E_ACCOUNT_OR_PASSWORD;
-		//	char strSQL3[MAX_PATH];	
-		//	sprintf(strSQL3, "DELETE FROM Account_Info	WHERE (iid NOT IN (SELECT MIN(iid) FROM Account_Info GROUP BY cAccName))");
-		//	pConn->Do(strSQL3);		
-		}
-	}
 
-	
-	
 	if (pResult)
 		pResult->unuse();
-	if (pResult2)
-		pResult2->unuse();
-	if (pResult3)
-		pResult3->unuse();
 
-		
 	return iRet;
 }
 
@@ -142,20 +96,6 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 		return iRet;
 	}
 
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-	return iRet;
-	}
-
-	}
-
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
 	if (iRet == ACTION_SUCCESS)
@@ -163,8 +103,8 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 		if (NewClientID == ClientID)
 		{
 			char strSQL[MAX_PATH];
-			//dLoginDate is null 已经Login之后dLoginDate才会null
-			sprintf(strSQL, "update Account_info set dLoginDate = getdate() where (cAccName = '%s') and (iClientID = %d) and (dLoginDate is null)", strAccName, ClientID);
+			//dLoginDate is null, dLoginDate will be null after login
+			sprintf(strSQL, "update Account_info set dLoginDate = NOW() where (cAccName = '%s') and (iClientID = %d) and (dLoginDate is null)", strAccName, ClientID);
 			if (pConn->Do(strSQL))
 			{
 				iRet = ACTION_SUCCESS;
@@ -178,63 +118,46 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 	return iRet;
 }
 
-int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, WORD nExtPoint)
+int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccName, int nExtPoint)
 {
-
-
-	//Fix logout
 	int iRet = ACTION_FAILED;
-
 	if (NULL == pConn)
 	{
 		return iRet;
 	}
+	char strSQL[2 * MAX_PATH];
+	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))) where (TIME_TO_SEC(ABS(TIMEDIFF(dEndDate, NOW()))) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s') and (dLoginDate is not null)",
+		ClientID, GetGMID(), strAccName);
+	pConn->Do(strSQL);	//Points will be deducted, even if the account is frozen
 
-
-	for (int i=0;i<strlen(strAccName);i++)
+	if (nExtPoint != 0)
 	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-
-	return iRet;
+		//	sprintf(strSQL, "update Account_Habitus set nExtPoint = CASE WHEN nExtPoint - %d >= 0 THEN nExtPoint - %d WHEN nExtPoint - %d < 0 THEN 0 END where (datediff(second, getdate(), dEndDate) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s') and (dLoginDate is not null)",
+		//		nExtPoint, nExtPoint, nExtPoint, ClientID, GetGMID(), strAccName);
+		sprintf(strSQL, "EXEC Account_ExPoint '%s',%d", strAccName, nExtPoint);
+		pConn->Do(strSQL);	//Additional points will be deducted, even if the account is frozen
+		//Split into two sentences because the executed SQL has a length limit
 	}
-
-	}
-
-
-	char strSQL[2*MAX_PATH];
-	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - (datediff(second, dLoginDate, getdate())) where (datediff(second, getdate(), dEndDate) <= 0)",
-		 strAccName);
-	pConn->Do(strSQL);	//扣点,即使被的冻结帐户
-
 
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
 	if (iRet == ACTION_SUCCESS)
 	{
-//		if (NewClientID == ClientID)
-//		{
-			long iLeft = 0;
-			long iExp = 0;
-			//long NumLogin = 0;
-			if (GetLeftSecondsOfDeposit(pConn, strAccName, iLeft, iExp) == ACTION_SUCCESS && iLeft > 1800)	//最小剩余时间30分钟
-			sprintf(strSQL, "update Account_info set Account_info.iClientID = 0, Account_info.dLogoutDate = getdate() where (Account_info.cAccName = '%s') and (Account_info.iClientID = %d)",
-			strAccName, NewClientID);
+		if (NewClientID == ClientID)
+		{
+			sprintf(strSQL, "update Account_info set iClientID = 0, dLogoutDate = NOW() where (cAccName = '%s') and (iClientID = %d)",
+				strAccName, NewClientID);
 			if (pConn->Do(strSQL))
 			{
 				iRet = ACTION_SUCCESS;
 			}
 			else
 				iRet = ACTION_FAILED;
-//		}
-//		else if (NewClientID == GetGMID())
-//			iRet = ACTION_SUCCESS;
-//		else
-//			iRet = E_ACCOUNT_ACCESSDENIED;
+		}
+		else if (NewClientID == GetGMID())
+			iRet = ACTION_SUCCESS;
+		else
+			iRet = E_ACCOUNT_ACCESSDENIED;
 	}
 
 	return iRet;
@@ -247,29 +170,13 @@ int S3PAccount::ElapseTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAc
 	{
 		return iRet;
 	}
-
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-	
-	return iRet;
-	}
-
-	}
-
 	DWORD dwSecord = 0;
 	iRet = QueryTime(pConn, ClientID, strAccName, dwSecord);
 	if (iRet == ACTION_SUCCESS)
 	{
 		dwSecord = min(dwDecSecond, dwSecord);
 		char strSQL[MAX_PATH];
-		sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - %d where (cAccName = '%s') and (datediff(second, getdate(), dEndDate) <= 0)", dwSecord, strAccName);
+		sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - %d where (cAccName = '%s') and (TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dEndDate))) <= 0) and (iClientID = %d)", dwSecord, strAccName, ClientID);
 		if (pConn->Do(strSQL))
 		{
 			iRet = ACTION_SUCCESS;
@@ -288,21 +195,6 @@ int S3PAccount::QueryTime(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 	{
 		return iRet;
 	}
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-
-	return iRet;
-	}
-
-	}
-
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
 	if (iRet == ACTION_SUCCESS)
@@ -329,11 +221,8 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 	{
 		return iRet;
 	}
-
-	
-
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "select cIP, iPort, iid, cMemo from ServerList where (cServerName = '%s') and (cPassword COLLATE Chinese_PRC_CS_AS = '%s')", strAccName, strPassword);
+	sprintf(strSQL, "select cIP, iPort, iid, cMemo from ServerList where (cServerName = '%s') and (cPassword = '%s')", strAccName, strPassword);
 	S3PResultVBC* pResult = NULL;
 	if (pConn->QuerySql(strSQL, &pResult))
 	{
@@ -342,7 +231,7 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 		else
 		{
 			iRet = E_ADDRESS_OR_PORT;
-			if ((Address & 0x0000FFFF) == 0x0000a8c0)
+			if (Address == 0x100007f)
 			{
 				_variant_t clientid = 0L;
 				pResult->get_field_data(2, &clientid, sizeof(_variant_t));
@@ -357,12 +246,12 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 					pResult->get_field_data(3, &vaMac, sizeof(_variant_t)) &&
 					vaddr.vt == VT_BSTR && vaMac.vt == VT_BSTR)
 				{
-					DWORD addr = inet_addr((const char *)(_bstr_t)vaddr);
+					DWORD addr = inet_addr((const char*)(_bstr_t)vaddr);
 					char szmac[15];
 					sprintf(szmac, "%02X%02X-%02X%02X-%02X%02X", Mac[0], Mac[1], Mac[2], Mac[3], Mac[4], Mac[5]);
 					szmac[14] = 0;
 					if (addr == Address &&
-						strcmpi((const char *)(_bstr_t)vaMac, szmac) == 0)
+						strcmpi((const char*)(_bstr_t)vaMac, szmac) == 0)
 					{
 						_variant_t gameid = 0L;
 						pResult->get_field_data(2, &gameid, sizeof(_variant_t));
@@ -373,7 +262,7 @@ int S3PAccount::ServerLogin(S3PDBConVBC* pConn, const char* strAccName, const ch
 			}
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -388,9 +277,6 @@ int S3PAccount::GetServerID(S3PDBConVBC* pConn, const char* strAccName, unsigned
 	{
 		return iRet;
 	}
-
-
-
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select iid from ServerList where (cServerName = '%s')", strAccName);
 	S3PResultVBC* pResult = NULL;
@@ -406,7 +292,7 @@ int S3PAccount::GetServerID(S3PDBConVBC* pConn, const char* strAccName, unsigned
 			iRet = ACTION_SUCCESS;	//Local network not check ip
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -451,9 +337,9 @@ int S3PAccount::UnlockAll(S3PDBConVBC* pConn, DWORD ClientID)
 		return iRet;
 	}
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "update Account_info set Account_info.iClientID = 0, Account_info.dLogoutDate = getdate() where (Account_info.iClientID = %d)", ClientID);
+	sprintf(strSQL, "update Account_info set iClientID = 0, dLogoutDate = NOW() where (iClientID = %d)", ClientID);
 	pConn->Do(strSQL);
-	
+
 	return ACTION_SUCCESS;
 }
 
@@ -465,8 +351,7 @@ int S3PAccount::ElapseAll(S3PDBConVBC* pConn, DWORD ClientID)
 		return iRet;
 	}
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - (datediff(second, dLoginDate, getdate())) where (datediff(second, getdate(), dEndDate) <= 0) and (iClientID = %d) and (dLoginDate is not null)", ClientID);
-	//View_AccountMoney
+	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - (TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW())))) where (TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dEndDate))) <= 0) and (iClientID = %d) and (dLoginDate is not null)", ClientID);
 	pConn->Do(strSQL);
 
 	return ACTION_SUCCESS;
@@ -479,21 +364,6 @@ int S3PAccount::GetAccountGameID(S3PDBConVBC* pConn, const char* strAccName, DWO
 	{
 		return iRet;
 	}
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-	
-	return iRet;
-	}
-
-	}
-
 	char strSQL[MAX_PATH];
 	sprintf(strSQL, "select iClientID from Account_info where (cAccName = '%s')", strAccName);
 	S3PResultVBC* pResult = NULL;
@@ -509,7 +379,54 @@ int S3PAccount::GetAccountGameID(S3PDBConVBC* pConn, const char* strAccName, DWO
 			iRet = ACTION_SUCCESS;
 		}
 	}
-	
+
+	if (pResult)
+		pResult->unuse();
+
+	return iRet;
+}
+
+int S3PAccount::GetLockAccount(S3PDBConVBC* pConn,
+	const char* strAccName, DWORD& nLeftTime)
+{
+	int iRet = ACTION_FAILED;
+	int nLock;
+	if (NULL == pConn)
+	{
+		return iRet;
+	}
+	char strSQL[MAX_PATH];
+	sprintf(strSQL, "SELECT nLockTm FROM Account_Info WHERE cAccname = '%s'", strAccName);
+	S3PResultVBC* pResult = NULL;
+	if (pConn->QuerySql(strSQL, &pResult))
+	{
+		if (pResult->num_rows() <= 0)
+			iRet = E_ACCOUNT_ACCESSDENIED;
+		else
+		{
+			_variant_t lock = 0L;
+			pResult->get_field_data(0, &lock, sizeof(_variant_t));
+			nLock = lock.lVal;
+			time_t curtime;
+			time(&curtime);
+
+			if (nLock > (curtime - 1451581200))
+			{
+				iRet = ACTION_SUCCESS;
+				nLeftTime = (nLock - (curtime - 1451581200));
+			}
+			else
+			{
+				iRet = ACTION_FAILED;
+				nLeftTime = 0;
+			}
+		}
+	}
+	else
+	{
+		iRet = E_ACCOUNT_ACCESSDENIED;
+	}
+
 	if (pResult)
 		pResult->unuse();
 
@@ -517,38 +434,22 @@ int S3PAccount::GetAccountGameID(S3PDBConVBC* pConn, const char* strAccName, DWO
 }
 
 int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
-										const char* strAccName,
-										long& liLeft,
-										long& liExp)
+	const char* strAccName,
+	long& liLeft,
+	long& liExp)
 {
+	//khong tinh thoi gian choi
+	liLeft = 1000;
+	liExp = 1000;
+	return ACTION_SUCCESS;
 	int iRet = ACTION_FAILED;
 	if (NULL == pConn)
 	{
 		return iRet;
 	}
-
-
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-	
-	return iRet;
-	}
-
-	}
-
-
-
-
 	char strSQL[MAX_PATH];
-	sprintf(strSQL, "select datediff(second, getdate(), dEndDate), iLeftSecond, nExtPoint from Account_Habitus where (cAccname = '%s')", strAccName);
-	//View_AccountMoney
+	sprintf(strSQL, "select TIME_TO_SEC(ABS(TIMEDIFF(NOW(), dEndDate))), iLeftSecond, nExtPoint from Account_Habitus where (cAccname = '%s')", strAccName);
+	//sprintf(strSQL, "EXEC GetExPoint_Account '%s'", strAccName); // vi ko co thu tuc GetExPoint_Account nen gay ra loi;
 	S3PResultVBC* pResult = NULL;
 	if (pConn->QuerySql(strSQL, &pResult))
 	{
@@ -564,16 +465,17 @@ int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
 			pResult->get_field_data(2, &extPoint, sizeof(_variant_t));
 			liLeft = left.lVal;
 
-			if (diffDate.vt == VT_I4 && diffDate.lVal > 0)	//包月有效
+			if (diffDate.vt == VT_I4 && diffDate.lVal > 0)	//Valid for monthly subscription
 			{
 				liLeft += diffDate.lVal;
 			}
 
 			liExp = extPoint.lVal;
+
 			iRet = ACTION_SUCCESS;
 		}
 	}
-	
+
 	if (pResult)
 		pResult->unuse();
 
@@ -588,35 +490,6 @@ int S3PAccount::VerifyUserModifyPassword(S3PDBConVBC* pConn, DWORD ClientID, con
 		return iRet;
 	}
 
-
-	for (int i=0;i<strlen(strAccName);i++)
-	{
-
-	if (strAccName[i] < 48 ||
-		(strAccName[i] > 57 && strAccName[i] < 65) ||
-		(strAccName[i] > 90 && strAccName[i] < 97) ||
-		strAccName[i] > 122)
-	{
-
-	return iRet;
-	}
-
-	}
-
-	for (int j=0;j<strlen(strPassword);j++)
-	{
-
-	if (strPassword[j] < 48 ||
-		(strPassword[j] > 57 && strPassword[j] < 65) ||
-		(strPassword[j] > 90 && strPassword[j] < 97) ||
-		strPassword[j] > 122)
-	{
-	
-	return iRet;
-	}
-
-	}
-
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);
 	if (iRet == ACTION_SUCCESS)
@@ -625,7 +498,7 @@ int S3PAccount::VerifyUserModifyPassword(S3PDBConVBC* pConn, DWORD ClientID, con
 		{
 			char strSQL[MAX_PATH];
 			S3PResultVBC* pResult = NULL;
-			sprintf(strSQL, "select cAccName from Account_info where (cAccName = '%s') and (cSecPassword COLLATE Chinese_PRC_CS_AS = '%s')", strAccName, strPassword);
+			sprintf(strSQL, "select cAccName from Account_info where (cAccName = '%s') and (cSecPassword = '%s')", strAccName, strPassword);
 			if (pConn->QuerySql(strSQL, &pResult))
 			{
 				if (pResult->num_rows() <= 0)
@@ -635,7 +508,7 @@ int S3PAccount::VerifyUserModifyPassword(S3PDBConVBC* pConn, DWORD ClientID, con
 			}
 			else
 				iRet = ACTION_FAILED;
-			
+
 			if (pResult)
 				pResult->unuse();
 		}
