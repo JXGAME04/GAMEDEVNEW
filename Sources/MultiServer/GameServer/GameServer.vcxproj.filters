@@ -77,9 +77,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Lib\debug\engine.lib">
-      <Filter>Lib\debug</Filter>
-    </Library>
     <Library Include="..\..\..\Lib\debug\CoreServer.lib">
       <Filter>Lib\debug</Filter>
     </Library>
@@ -94,6 +91,9 @@
     </Library>
     <Library Include="..\..\..\Lib\release\common.lib">
       <Filter>Lib\release</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\debug\engine.lib">
+      <Filter>Lib\debug</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

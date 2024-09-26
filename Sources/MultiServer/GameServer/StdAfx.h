@@ -9,12 +9,13 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-
+#define WIN32_LEAN_AND_MEAN
 
 // TODO: reference additional headers your program requires here
 #pragma warning(disable : 4786)
 #ifndef _STANDALONE
 #include "windows.h"
+#include <iostream>
 #endif
 #include <winsock2.h>
 #include "KEngine.h"

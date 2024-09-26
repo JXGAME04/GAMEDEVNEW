@@ -125,6 +125,7 @@ copy Release\GameServer.map ..\..\..\..\bin\Server\release\GameServer.map</Comma
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug
@@ -148,7 +149,8 @@ copy debug\GameServer.exe ..\..\..\..\bin\Server\debug\GameServer.exe</Command>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>.\Debug\GameServer.exe</OutputFile>
-      <AdditionalDependencies>Engine.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 </AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,9 +188,7 @@ copy debug\GameServer.exe ..\..\..\..\bin\Server\debug\GameServer.exe</Command>
     <Library Include="..\..\..\Lib\debug\CoreServer.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\..\Lib\debug\engine.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </Library>
+    <Library Include="..\..\..\Lib\debug\engine.lib" />
     <Library Include="..\..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
