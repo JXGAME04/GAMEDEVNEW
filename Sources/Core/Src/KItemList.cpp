@@ -4365,7 +4365,8 @@ BOOL KItemList::GetIfActive()
 #ifndef _SERVER
 int KItemList::GetGoldColor(int nSet, int nId)
 {
-	for (int i = 0;i < itempart_num;i++)
+	int i = 0;
+	for (i = 0;i < itempart_num;i++)
 	{
 		if (Item[m_EquipItem[i]].GetSet() == nSet && Item[m_EquipItem[i]].GetSetId() == nId)
 		{

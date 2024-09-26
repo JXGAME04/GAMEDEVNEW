@@ -683,7 +683,7 @@ private:
 	void			OnButtonMove(int x, int y, int Key, MOUSE_BUTTON nButton);		// 处理鼠标键按下后移动
 	void			OnMouseMove(int x, int y);									// 处理鼠标移动
 	int				NetCommandPlayerTalk(BYTE* pProtocol);
-	friend			LuaInitStandAloneGame(Lua_State * L);
+	//friend			LuaInitStandAloneGame(Lua_State * L);
 #endif
 
 private:

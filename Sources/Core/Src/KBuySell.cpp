@@ -256,6 +256,7 @@ BOOL KBuySell::Buy(int nPlayerIdx, int nBuy, int nBuyIdx, BYTE nBuyNumber)
 	int nIdx = m_SellItem[nBuy][nBuyIdx];
 	int nWidth = m_Item[nIdx].GetWidth();
 	int nHeight = m_Item[nIdx].GetHeight();
+	int i = 0;
 
 	if (m_Item[nIdx].GetExpirePoint()) // h¹n sö dông
 	{
@@ -263,7 +264,7 @@ BOOL KBuySell::Buy(int nPlayerIdx, int nBuy, int nBuyIdx, BYTE nBuyNumber)
 	}
 
 	int nPrice = m_Item[nIdx].GetCurPrice();
-	for(int i = 0; i < nBuyNumber; i++)
+	for(i = 0; i < nBuyNumber; i++)
 	{
 		nItemIdx = ItemSet.AddI(&m_Item[nIdx]); // biÕn khai b¸o trªn ®Çu hµm ®Ó sö dông ghi log bªn d­íi
 

@@ -11,10 +11,11 @@
 TMissionLadderInfo* KMission::GetMin(TMissionLadderInfo* const aMSLDList,const int n)//add by phong kiÒu using tèng kim
 {
 	TMissionLadderInfo* tmpData;
+	int i = 0;
 	tmpData = &aMSLDList[0];
 	while(true)
 	{
-		for(int i=0;i<n;++i)
+		for(i=0;i<n;++i)
 		{
 			if(aMSLDList[i].Name[0] == '\0')
 			{

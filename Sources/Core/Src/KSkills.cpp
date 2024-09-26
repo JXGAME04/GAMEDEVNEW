@@ -2772,6 +2772,7 @@ void	KSkill::GetDesc(unsigned long ulSkillId, unsigned long ulCurLevel, char * p
 void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNextLevel/* = FALSE*/, BOOL bAddSkillDamage/* = FALSE*/, BOOL bEventSkill/* = FALSE*/)
 {
 	char pszInfo[SZBUFLEN_0];
+	int i = 0;
 	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SkillList.IsTempSkill(ulSkillId))
 	{
 		int nLevel = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SkillList.GetLevel(ulSkillId);
@@ -2799,7 +2800,7 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 		strcat(pszMsg, "\n");
 	}
 
-	for (int i  = 0; i < MAX_MISSLE_DAMAGEATTRIB; i ++) 
+	for (i  = 0; i < MAX_MISSLE_DAMAGEATTRIB; i ++) 
 	{
 		if (!(DamageAttribs + i)->nAttribType) continue; 
 		if ((DamageAttribs + i)->nAttribType == magic_seriesdamage_p && !bEventSkill) 

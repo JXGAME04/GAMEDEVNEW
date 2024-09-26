@@ -61,7 +61,7 @@ BOOL TextMsgProcessGMCmd(int nPlayerIdx, const char * pGMCmd, int nLen)
 {
 	if (nLen <= 0 || !pGMCmd) return FALSE;
 	char szCmd[20];
-	char * pStart = strstr(pGMCmd," ");
+	const char* pStart = strstr(pGMCmd, " ");
 	int nTempLen = nLen;
 	
 	if (NULL == pStart)

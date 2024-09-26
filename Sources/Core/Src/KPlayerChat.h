@@ -16,6 +16,8 @@
 #include	"KList.h"
 #endif
 
+#include <string>
+
 #ifdef _SERVER
 #define		MAX_FRIEND_TEAM				1	// 最大好友分组数
 #define		CHAT_SPEED					20	// 玩家多长时间能发一句话

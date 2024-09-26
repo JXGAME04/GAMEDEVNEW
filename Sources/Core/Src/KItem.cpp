@@ -874,6 +874,7 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 
 void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveAttrib)
 {
+	int i = 0;
 	char	szColor[item_number][32] = 
 	{
 		"",
@@ -1166,7 +1167,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcat(pszMsg, "  \n  ");
 	}
 
-	for (int i = 0; i < 7; i++)
+	for (i = 0; i < 7; i++)
 	{
 		if (!m_aryBaseAttrib[i].nAttribType)
 		{
@@ -1794,7 +1795,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if (m_CommonAttrib.LimitTime.bYear)
 	{
 		char sTmp[128];
-		const long thoigianhet = m_CommonAttrib.LimitTime.bYear;
+		const time_t thoigianhet = m_CommonAttrib.LimitTime.bYear;
 		if(thoigianhet > 0)
 		{
 			tm *ltm = localtime(&thoigianhet);

@@ -1937,6 +1937,7 @@ int LuaSale(Lua_State * L)//Sale(id)
 
 int LuaNewSale(Lua_State * L)
 {
+	int i = 0;
 	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex < 0) return 0;
 
@@ -1949,7 +1950,7 @@ int LuaNewSale(Lua_State * L)
 		nShopNum = MAX_SUPERSHOP_SHOPTAB;
 
 	int nShopId[MAX_SUPERSHOP_SHOPTAB];
-	for (int i= 0; i< nShopNum; i++)
+	for (i= 0; i< nShopNum; i++)
 		nShopId[i] = (int)Lua_ValueToNumber(L, 4+i) - 1;
 
 	for(i; i < MAX_SUPERSHOP_SHOPTAB; i++)

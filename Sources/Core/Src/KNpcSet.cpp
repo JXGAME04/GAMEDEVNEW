@@ -28,12 +28,13 @@ KNpcSet::KNpcSet()
 
 void KNpcSet::Init()
 {
+	int i = 0;
     GenRelationTable();
 
 	m_FreeIdx.Init(MAX_NPC);
 	m_UseIdx.Init(MAX_NPC);
 
-	for (int i = MAX_NPC - 1; i > 0; i--)
+	for (i = MAX_NPC - 1; i > 0; i--)
 	{
 		m_FreeIdx.Insert(i);
 		Npc[i].m_Node.m_nIndex = i;

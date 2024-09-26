@@ -227,7 +227,7 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 	m_bHavePicMap = false;
 	if (pSetting && pszScenePlaceRootPath)
 	{
-		sprintf(m_szEntireMapFile, "%s"PLACE_MAP_FILE_NAME_APPEND, pszScenePlaceRootPath);
+		sprintf(m_szEntireMapFile, "%s%s", pszScenePlaceRootPath, PLACE_MAP_FILE_NAME_APPEND);
 		m_bHavePicMap = g_FileExists(m_szEntireMapFile);
 		if (m_bHavePicMap)
 		{

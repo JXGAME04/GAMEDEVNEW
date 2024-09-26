@@ -18,6 +18,7 @@
 *.map
 *.vsidx
 *.opendb
+*.db
 
 Sources/.vs/
 Sources/Backup/

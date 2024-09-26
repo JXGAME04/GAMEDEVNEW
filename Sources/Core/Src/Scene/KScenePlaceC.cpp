@@ -239,6 +239,7 @@ KScenePlaceC::~KScenePlaceC()
 //##ModelId=3DCAAE3703A6
 void KScenePlaceC::ClosePlace()
 {
+	int i = 0;
 	if (m_szPlaceRootPath[0] == 0)
 		return;
 
@@ -253,7 +254,7 @@ void KScenePlaceC::ClosePlace()
 	EnterCriticalSection(&m_RegionListAdjustCritical);
 	EnterCriticalSection(&m_LoadCritical);
 	m_nFirstToLoadIndex = -1;
-	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
+	for (i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 		m_pInProcessAreaRegions[i] = NULL;
 	LeaveCriticalSection(&m_LoadCritical);
 	LeaveCriticalSection(&m_RegionListAdjustCritical);
@@ -1147,6 +1148,7 @@ void KScenePlaceC::ChangeProcessArea()
 {
 	KRUImage*	pImage = NULL;
 	RECT	rc;
+	int i = 0;
 	rc.left = (m_FocusRegion.x - 1) * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
 	rc.top  = (m_FocusRegion.y - 1) *  KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
 	rc.right  = rc.left + SPWP_PROCESS_RANGE * KScenePlaceRegionC::RWPP_AREGION_WIDTH;
@@ -1154,7 +1156,7 @@ void KScenePlaceC::ChangeProcessArea()
 
 	EnterCriticalSection(&m_ProcessCritical);
 	int h, v;
-	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
+	for (i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
 		if (m_pInProcessAreaRegions[i])
 		{
@@ -1417,8 +1419,8 @@ void KScenePlaceC::Preprocess()
 					dx = pObj->oEndPos.x - pObj->oPosition.x;
 					dy = pObj->oEndPos.y - pObj->oPosition.y;
 					int nLength2 = dx * dx + dy * dy;
-
-					for (unsigned int k = 0; k < nTotalLineObj; k++)
+					unsigned int k = 0;
+					for (k = 0; k < nTotalLineObj; k++)
 					{
 						if (nLength2 > pNodeList[k].nLength2)
 						{
