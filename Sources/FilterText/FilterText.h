@@ -1,7 +1,8 @@
 // -------------------------------------------------------------------------
-//	FilterText.h
-//	Fong Ki襲
-//	2021
+//	文件名		：	FilterText.h
+//	创建者		：	谢茂培 (Hsie)
+//	创建时间	：	2003-07-23 10:13:07
+//	功能描述	：	
 //
 // -------------------------------------------------------------------------
 #ifndef __FILTERTEXT_H__
@@ -42,10 +43,8 @@ struct ITextFilter : IUnknown
 
 extern "C" 
 FILTERTEXT_API HRESULT CreateTextFilter(ITextFilter** ppTextFilter);
-extern "C" 
-FILTERTEXT_API DWORD CreateTextFilter1();
-extern "C" 
-FILTERTEXT_API DWORD CreateTextFilter2(DWORD step);
+
+
 
 
 #endif // __FILTERTEXT_H__

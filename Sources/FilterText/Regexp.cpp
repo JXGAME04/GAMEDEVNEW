@@ -258,7 +258,8 @@ void CRegErrorHandler::ClearErrorString() const
 
 LPCTSTR CRegErrorHandler::FindErr( int id )
 {
-	for ( struct regErr * perr = errors; perr->m_id != REGERR_SENTINEL_VALUE; perr++ )
+	struct regErr* perr;
+	for ( perr = errors; perr->m_id != REGERR_SENTINEL_VALUE; perr++ )
 		if ( perr->m_id == id )
 			return perr->m_err;
 

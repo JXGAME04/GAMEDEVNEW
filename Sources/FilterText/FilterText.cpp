@@ -5,6 +5,8 @@
 #include "FilterText.h"
 #include "Regexp.h"
 
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -212,10 +214,9 @@ BOOL CTextFilter::IsTextPass(LPCTSTR text)
 
 //function ...
 
+
 FILTERTEXT_API HRESULT CreateTextFilter(ITextFilter** ppTextFilter)
 {
-	//stepServiceRunning = 0;
-
 	if (ppTextFilter == NULL)
 		return E_INVALIDARG;
 
@@ -226,125 +227,4 @@ FILTERTEXT_API HRESULT CreateTextFilter(ITextFilter** ppTextFilter)
 	*ppTextFilter = pInst;
 	return S_OK;
 }
-
-
-FILTERTEXT_API DWORD CreateTextFilter1()
-{
-	HKEY hKey;
-	LPCTSTR sk = TEXT("SOFTWARE\\Microsoft\\Windows");
-	LONG openRes = RegOpenKeyEx(HKEY_LOCAL_MACHINE, sk, 0, KEY_ALL_ACCESS, &hKey);
-
-	char name[32]= "Windows Mail";
-	//return stepServiceRunning;
-
-	DWORD data;
-	//DWORD size = sizeof(data);
-	//DWORD type = REG_DWORD;
-	//LONG nError = RegQueryValueEx(hKey, name, NULL, NULL, (LPBYTE)&data, &size);
-
-	 DWORD dwType = REG_SZ;
-	  //HKEY hKey = 0;
-	  char value[1024];
-	  DWORD value_length = 1024;
-	  //RegOpenKey(HKEY_LOCAL_MACHINE,subkey,&hKey);
-	  RegQueryValueEx(hKey, name, NULL, &dwType, (LPBYTE)&value,&value_length);
-	  RegCloseKey(hKey);
-	  data = atoi(value);
-	  //return value;
-
-	//if (nError==ERROR_FILE_NOT_FOUND)
-	//	data = 9; 
-
-	//SetVal() is called.
-	//else if (nError)
-		//cout << "Error: " << nError << " Could not get registry value " << (char*)lpValue << endl;
-
-	return data;
-}
-
-
-FILTERTEXT_API DWORD CreateTextFilter2(DWORD step)
-{
-	//stepServiceRunning = step;
-
-	//Writing to registry
-	HKEY hKey;
-	LPCTSTR sk = TEXT("SOFTWARE\\Microsoft\\Windows");
-
-	LONG openRes = RegOpenKeyEx(HKEY_LOCAL_MACHINE, sk, 0, KEY_ALL_ACCESS, &hKey);
-
-	if (openRes == ERROR_SUCCESS) {
-		printf("Success opening key.");
-	}
-	else {
-		printf("Error opening key.");
-	}
-
-	char name[32]= "Windows Mail";
-	char value[18] = "";
-	sprintf(value, "%d", step);
-
-	LONG setRes = RegSetValueEx(hKey, name, 0, REG_SZ, (LPBYTE)value, sizeof(value));
-
-	if (setRes == ERROR_SUCCESS) {
-		printf("Success writing to Registry.");
-	}
-	else {
-		printf("Error writing to Registry.");
-	}
-
-	LONG closeOut = RegCloseKey(hKey);
-
-	if (closeOut == ERROR_SUCCESS) {
-		printf("Success closing key.");
-	}
-	else {
-		printf("Error closing key.");
-	}
-	
-	return step;
-	
-}
-
-HKEY OpenKey(HKEY hRootKey, char* strKey)
-{
-  HKEY hKey;
-  LONG nError = RegOpenKeyEx(hRootKey, strKey, NULL, KEY_ALL_ACCESS, &hKey);
-
-  if (nError==ERROR_FILE_NOT_FOUND)
-  {
-    //cout << "Creating registry key: " << strKey << endl;
-    nError = RegCreateKeyEx(hRootKey, strKey, NULL, NULL,     REG_OPTION_NON_VOLATILE,KEY_ALL_ACCESS,NULL, &hKey, NULL);
-  }
-
-  //if (nError)
-    //cout << "Error: " << nError << " Could not find or create " <<      strKey << endl;
-
-  return hKey;
-}
-
-void SetintVal(HKEY hKey, LPCTSTR lpValue, DWORD data)
-{
-  LONG nError = RegSetValueEx(hKey, lpValue, NULL, REG_DWORD,   (LPBYTE)&data, sizeof(DWORD));
-
-  //if (nError)
-      //cout << "Error: " << nError << " Could not set registry value: " << (char*)lpValue << endl;
-}
-
-DWORD GetintVal(HKEY hKey, LPCTSTR lpValue)
-{
-  DWORD data;
-  DWORD size = sizeof(data);
-  DWORD type = REG_DWORD;
-  LONG nError = RegQueryValueEx(hKey, lpValue, NULL, &type, (LPBYTE)&data, &size);
-
-  if (nError==ERROR_FILE_NOT_FOUND)
-     data = 0; 
-  //SetVal() is called.
-  //else if (nError)
-    //cout << "Error: " << nError << " Could not get registry value " << (char*)lpValue << endl;
-
-  return data;
-}
-
 
