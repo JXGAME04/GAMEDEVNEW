@@ -10,7 +10,7 @@
 #include "d3d_shell.h"
 #include "d3d_device.h"
 #include "d3d_utils.h"
-#include "dxerr9.h"
+//#include "dxerr.h"
 
 #include "TextureRes.h"
 HWND	g_hWnd = NULL;
@@ -1813,6 +1813,7 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, int nX, 
 								  int nY, unsigned int Color, int nLineWidth, int nZ, unsigned int BorderColor)
 {
+	int i;
 	if(!psText || !psText[0])
 		return;
 
@@ -1821,7 +1822,7 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 	
 	Color |= 0xff000000;
 
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -1860,9 +1861,11 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 	if(m_bDeviceLost)
 		return;
 	
+	int i = 0;
+
 	Color |= 0xff000000;
 
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -1896,13 +1899,14 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam, 
 		const char* psText, int nCount, int nLineWidth)
 {
+	int i;
 	if(!pParam || !psText || !psText[0])
 		return 0;
 
 	if(m_bDeviceLost)
 		return 0;
 
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;
@@ -1931,7 +1935,9 @@ int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam,
 			pParam->nX = x;
 			pParam->nY = y;
 		}
-
+		if (!pParam->BorderColor)
+			m_FontTable[i].pFontObj->SetBorderColor(0xff000000);
+		else
 		m_FontTable[i].pFontObj->SetBorderColor(pParam->BorderColor);
 		m_FontTable[i].pFontObj->SetOutputSize(nFontId, nFontId + 1);
 		return tp.DrawTextLine(m_FontTable[i].pFontObj, nFontId, pParam);
@@ -1943,13 +1949,14 @@ int KRepresentShell3::LocateRichText(int nX, int nY,
 					int nFontId, KOutputTextParam* pParam, 
 					const char* psText, int nCount, int nLineWidth)
 {
+	int i;
 	if(!pParam || !psText || !psText[0])
 		return -1;
 
 	if(m_bDeviceLost)
 		return -1;
 
-	for (int i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
+	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)
 			break;

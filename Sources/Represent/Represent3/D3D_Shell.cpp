@@ -39,7 +39,8 @@ void CD3D_Shell::Reset()
 void CD3D_Shell::FreeAll()
 {
 	if (m_pD3D) {
-		uint32 iRefCnt = m_pD3D->Release(); } // assert(iRefCnt==0);
+		uint32 iRefCnt = m_pD3D->Release();
+	} // assert(iRefCnt==0);
 
 	Reset();
 }
@@ -85,18 +86,19 @@ bool CD3D_Shell::BuildDeviceList()
 				DisplayMode.Height	 = d3dDisplayMode.Height;
 				DisplayMode.Format	 = d3dDisplayMode.Format;
 
-				// 过滤掉太低的分辨率
+				// Filter out too low resolution
 				if (DisplayMode.Width < 640 || DisplayMode.Height < 480) continue;
-
+				uint32 m, f;
 				// 检查模式是否已经存在 (过滤掉因为刷新率不同而重复的模式)
-				for (uint32 m=0L; m<modes.size(); ++m) {
-					if ((modes[m].Width == DisplayMode.Width) && (modes[m].Height == DisplayMode.Height) && (modes[m].Format == DisplayMode.Format)) break; }
+				for (m = 0L; m < modes.size(); ++m) {
+					if ((modes[m].Width == DisplayMode.Width) && (modes[m].Height == DisplayMode.Height) && (modes[m].Format == DisplayMode.Format)) break;
+				}
 
 				// 如果发现了一个新的模式，将它加入列表
 				if (m == modes.size()) 
 				{
 					// 检查此模式的象素格式是否已经存在，如果不存在则加入列表
-					for (uint32 f=0; f<formats.size(); ++f)
+					for (f = 0; f < formats.size(); ++f)
 					{
 						if (DisplayMode.Format == formats[f]) break; 
 					}
@@ -153,9 +155,9 @@ bool CD3D_Shell::BuildDeviceList()
 				bConfirmedFormats.push_back(bConfirmed);
 				bCanDoHWTnL.push_back(bHWTnL);
 			}
-
+			uint32 m;
             // 将所有象素格式符合要求的显示模式加入到设备显示模式列表
-            for (uint32 m=0; m<modes.size(); ++m)
+			for (m = 0; m < modes.size(); ++m)
 			{
                 for (uint32 f=0; f<formats.size(); ++f)
 				{
@@ -194,7 +196,8 @@ bool CD3D_Shell::BuildDeviceList()
 		}
     
         // 发现了合适的设备, 将这个适配器加入列表
-        m_AdapterList.push_back(AdapterInfo); }
+		m_AdapterList.push_back(AdapterInfo);
+	}
 
     // Return an error if no compatible devices were found
     if (!m_AdapterList.size()) return false;
@@ -232,7 +235,9 @@ D3DModeInfo* CD3D_Shell::PickDefaultMode(D3DDeviceInfo* pDeviceInfo,uint32 iBitD
 			switch (iBitDepth) {
 			case 32 : if (itMode->Format != D3DFMT_X8R8G8B8 && itMode->Format != D3DFMT_R8G8B8)   continue; break;
 			case 24 : if (itMode->Format != D3DFMT_X8R8G8B8 && itMode->Format != D3DFMT_R8G8B8)   continue; break;
-			case 16 : if (itMode->Format != D3DFMT_R5G6B5   && itMode->Format != D3DFMT_X1R5G5B5) continue; break; } }
+			case 16: if (itMode->Format != D3DFMT_R5G6B5 && itMode->Format != D3DFMT_X1R5G5B5) continue; break;
+			}
+		}
 
 		return &(*itMode);
 	}

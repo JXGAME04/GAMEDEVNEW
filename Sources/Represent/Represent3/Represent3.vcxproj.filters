@@ -110,4 +110,7 @@
       <Filter>Lib\release</Filter>
     </Library>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
 
 #define DEFAULT_SCREENWIDTH		800				// 缺省屏幕宽度
 #define DEFAULT_SCREENHEIGHT	600				// 缺省屏幕高度
-#define DEFAULT_BITDEPTH		16				// 缺省位深度
+#define DEFAULT_BITDEPTH		32				// 缺省位深度
 
 #define MAX_TEXTURE_SIZE		1024			// 最大贴图尺寸
 #define MIN_TEXTURE_SIZE		8				// 最小贴图尺寸

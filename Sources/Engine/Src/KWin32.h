@@ -24,7 +24,9 @@
 	#ifdef _STANDALONE
 		#include <winsock2.h>
 	#endif
+#ifndef _WIN32_WINNT
 	#define _WIN32_WINNT  0x0400
+#endif
 	#include <windows.h>
 	#define DIRECTINPUT_VERSION 0x800
 //---------------------------------------------------------------------------
@@ -82,7 +84,7 @@ typedef struct _GUID {          // size is 16
     BYTE  Data4[8];
 } GUID;
 
-#define MAX_PATH 300
+#define MAX_PATH 1200
 #define CALLBACK
 #include <stdarg.h> 
 
@@ -120,6 +122,10 @@ typedef struct _GUID {          // size is 16
 #include <stdio.h>
 #include <stdlib.h>
 
+//#ifndef ENGINE_EXPORTS
+#if !defined(ENGINE_EXPORTS) && !defined(REPRESENT2_EXPORTS) && !defined(S3_CLIENT) && !defined(REPRESENT3_EXPORTS)
+#include <winsock2.h>
+#endif
 
 #ifndef ITOA
 #define ITOA(NUMBER)  #NUMBER
@@ -133,6 +139,12 @@ typedef struct _GUID {          // size is 16
 #define KSG_ATTENTION(MSG) __FILE__"("__TEXT_LINE__(__LINE__)") : ATTENTION "#MSG
 #endif
 
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lParam)	((INT)(SHORT)LOWORD(lParam))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lParam)	((INT)(SHORT)HIWORD(lParam))
+#endif
 
 //---------------------------------------------------------------------------
 #endif
