@@ -18,6 +18,7 @@
     <SccProjectName>"$/SwordOnline/Sources/Sword3PaySys/S3RELAYSERVER", DCTAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{B3EFEA00-EAF7-45F6-8765-AFE9726AB55D}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -52,12 +53,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\server</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\Release\</OutDir>
+    <OutDir>..\..\..\..\bin\server</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -84,7 +85,8 @@
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\client\debug
 copy debug\S3RelayServer.exe ..\..\..\..\bin\MultiServer\S3RelayServer.exe
-copy debug\S3RelayServer.exe ..\..\..\..\bin\Server\debug\S3RelayServer.exe</Command>
+copy debug\S3RelayServer.exe ..\..\..\..\bin\Server\debug\S3RelayServer.exe
+copy debug\S3RelayServer.exe ..\..\..\..\bin\Server\S3RelayServer.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

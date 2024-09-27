@@ -76,8 +76,9 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy debug\Sword3PaySys.exe ..\..\..\..\..\src-tinh-kiem-upvs\bin\Server\32bit\Sword3PaySys.exe
-copy debug\Sword3PaySys.exe ..\..\..\..\..\src-tinh-kiem-upvs\bin\Server\debug\Sword3PaySys.exe</Command>
+      <Command>md ..\..\..\..\bin\server\debug
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\MultiServer\Sword3PaySys.exe
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\debug\Sword3PaySys.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
