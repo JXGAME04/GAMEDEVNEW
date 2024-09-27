@@ -856,14 +856,14 @@
     <Library Include="..\..\Lib\release\JpgLib.lib">
       <Filter>library files\release</Filter>
     </Library>
-    <Library Include="..\..\Lib\release\LuaLibDll.lib">
-      <Filter>library files\release</Filter>
-    </Library>
     <Library Include="..\..\Lib\release\mp3lib.lib">
       <Filter>library files\release</Filter>
     </Library>
-    <Library Include="..\..\Lib\LuaLibDll.lib">
+    <Library Include="..\..\Lib\debug\lualibdll.lib">
       <Filter>library files\Debug</Filter>
+    </Library>
+    <Library Include="..\..\Lib\release\LuaLibDll.lib">
+      <Filter>library files\release</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

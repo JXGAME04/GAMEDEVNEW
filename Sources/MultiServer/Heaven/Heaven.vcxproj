@@ -79,12 +79,12 @@
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\debug\
-copy debug\heaven.dll ..\..\..\..\bin\client\heaven.dll
-copy debug\heaven.dll ..\..\..\..\bin\client\debug\heaven.dll
-md ..\..\..\bin\server\debug\
-copy debug\heaven.dll ..\..\..\..\bin\server\heaven.dll
-copy debug\heaven.dll ..\..\..\..\bin\server\debug\heaven.dll</Command>
+      <Command>md ..\..\..\bin\client\release\
+copy release\heaven.dll ..\..\..\..\bin\client\heaven.dll
+copy release\heaven.dll ..\..\..\..\bin\client\release\heaven.dll
+md ..\..\..\bin\server\release\
+copy release\heaven.dll ..\..\..\..\bin\server\heaven.dll
+copy release\heaven.dll ..\..\..\..\bin\server\release\heaven.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

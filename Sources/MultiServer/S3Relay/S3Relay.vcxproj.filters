@@ -335,14 +335,14 @@
     <Library Include="..\Goddess\libdb181sd.lib">
       <Filter>Library</Filter>
     </Library>
-    <Library Include="..\..\..\Lib\LuaLibDll.lib">
+    <Library Include="..\..\..\Lib\release\LuaLibDll.lib">
+      <Filter>Library\release</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\debug\lualibdll.lib">
       <Filter>Library\debug</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Lib\LuaLibDll.dll" />
   </ItemGroup>
 </Project>

@@ -155,7 +155,7 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>ClientDebug\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\CoreClient.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../../lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -177,6 +177,7 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
       <ObjectFileName>.\ClientRelease\</ObjectFileName>
       <ProgramDataBaseFileName>.\ClientRelease\</ProgramDataBaseFileName>
+      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\bin\client\release
@@ -211,7 +212,7 @@ copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../../lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../lib/release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -270,7 +271,7 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;msvcrt.lib;libcd.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>ServerDebug\CoreServer.dll</OutputFile>
       <ImportLibrary>.\ServerDebug\CoreServer.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../../lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -292,6 +293,7 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
       <ObjectFileName>.\ServerRelease\</ObjectFileName>
       <ProgramDataBaseFileName>.\ServerRelease\</ProgramDataBaseFileName>
+      <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\bin\server\release
@@ -327,272 +329,193 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <OutputFile>ServerRelease\CoreServer.dll</OutputFile>
       <ImportLibrary>.\ServerRelease\CoreServer.lib</ImportLibrary>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../lib/release/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\CoreDrawGameObj.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\CoreServerShell.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
-      
     </ClCompile>
     <ClCompile Include="Src\CoreShell.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\ImgRef.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\kautoai.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KBasPropTbl.CPP">
-      
     </ClCompile>
     <ClCompile Include="Src\KBuySell.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KCore.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KFaction.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KGMCommand.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KGMProcess.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
-      
     </ClCompile>
     <ClCompile Include="Src\KInventory.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KItem.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KItemChangeRes.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KItemGenerator.CPP">
-      
     </ClCompile>
     <ClCompile Include="Src\KItemList.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KItemSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KJXPathFinder.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KLadder.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KLittleMap.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KMagicDesc.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KMapMusic.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KMath.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KMission.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
-      
     </ClCompile>
     <ClCompile Include="Src\KMissle.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
-      
     </ClCompile>
     <ClCompile Include="Src\KMissleRes.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KMissleSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNewProtocolProcess.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
-      
     </ClCompile>
     <ClCompile Include="Src\KNpc.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcAI.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcAttribModify.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcDeathCalcExp.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcFindPath.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcGold.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcRes.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcResList.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcResNode.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KNpcTemplate.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KObj.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KObjSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KOption.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPartnerSkill.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayer.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerAuto.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerChat.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerDBFuns.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerFaction.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerFuYuan.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerMenuState.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerPartner.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerPK.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerReBorn.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerRepute.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerTask.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerTeam.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerTong.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KPlayerTrade.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KProtocol.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KProtocolProcess.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KRegion.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KScriptValueSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSellItem.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSkillList.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSkillManager.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSkills.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSkillSpecial.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSortScript.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSprControl.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSubWorld.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KSubWorldSet.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KTaskFuns.cpp">
       <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">false</TreatWarningAsError>
-      
     </ClCompile>
     <ClCompile Include="Src\KThiefSkill.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KViewItem.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KWeatherMgr.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\KWorldMsg.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\LuaFuns.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KIpotBranch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">Use</PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KIpotLeaf.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KIpoTree.cpp">
@@ -602,40 +525,32 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
       </PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KScenePlaceC.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KScenePlaceRegionC.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\KWeather.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\Scene\SceneMath.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">Use</PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Scene\ScenePlaceMapC.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\ScriptFuns.cpp">
-      
     </ClCompile>
     <ClCompile Include="Src\Skill.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
-      
     </ClCompile>
     <ClCompile Include="Src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">Create</PrecompiledHeader>
@@ -644,7 +559,6 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">KCore.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">KCore.h</PrecompiledHeaderFile>
-      
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">KCore.h</PrecompiledHeaderFile>
     </ClCompile>

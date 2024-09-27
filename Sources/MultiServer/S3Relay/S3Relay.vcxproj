@@ -77,6 +77,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\release\
@@ -103,7 +104,7 @@ copy release\S3Relay.exe ..\..\..\..\bin\server\release\S3Relay.exe</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\S3Relay.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;lualibdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -268,17 +269,15 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe</Command>
     <Library Include="..\..\..\Lib\debug\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\..\Lib\LuaLibDll.lib" />
+    <Library Include="..\..\..\Lib\debug\lualibdll.lib" />
     <Library Include="..\..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\..\Lib\release\LuaLibDll.lib" />
     <Library Include="..\Goddess\libdb181sd.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Lib\LuaLibDll.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

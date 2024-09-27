@@ -109,7 +109,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -157,16 +157,19 @@ copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll</Command>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <StringPooling>true</StringPooling>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>include;..\Pack\ucl-1.01\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;src%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Release\Engine.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\lib\release
@@ -205,6 +208,7 @@ copy release\engine.map ..\..\..\bin\server\release\engine.map</Command>
       <OutputFile>.\Release\Engine.dll</OutputFile>
       <ImportLibrary>.\Release\Engine.lib</ImportLibrary>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">
@@ -709,19 +713,16 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\Lib\debug\lualibdll.lib" />
     <Library Include="..\..\Lib\debug\mp3lib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\LuaLibDll.lib" />
     <Library Include="..\..\Lib\release\JpgLib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\release\LuaLibDll.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>
-    </Library>
+    <Library Include="..\..\Lib\release\LuaLibDll.lib" />
     <Library Include="..\..\Lib\release\mp3lib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>

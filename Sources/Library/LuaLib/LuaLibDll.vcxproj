@@ -135,8 +135,11 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy debug\lualibdll.lib ..\..\..\Lib\lualibdll.lib
-copy debug\lualibdll.dll ..\..\..\Lib\lualibdll.dll</Command>
+      <Command>copy debug\lualibdll.lib ..\..\..\Lib\debug\lualibdll.lib
+copy debug\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy debug\lualibdll.dll ..\..\..\..\bin\server\debug\lualibdll.dll
+copy debug\lualibdll.dll ..\..\..\..\bin\client\lualibdll.dll
+copy debug\lualibdll.dll ..\..\..\..\bin\client\debug\lualibdll.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -226,13 +229,11 @@ copy debug\lualibdll.dll ..\..\..\Lib\lualibdll.dll</Command>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy Release\lualibdll.dll ..\..\..\Lib\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\Lib\lualibdll.lib
-copy Release\lualibdll.dll ..\..\..\bin\server\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\bin\server\lualibdll.lib
-copy Release\lualibdll.dll ..\..\..\bin\client\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\bin\client\lualibdll.lib
-copy Release\lualibdll.lib ..\..\..\Lib\release\lualibdll.lib</Command>
+      <Command>copy Release\lualibdll.lib ..\..\..\Lib\Release\lualibdll.lib
+copy Release\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy Release\lualibdll.lib ..\..\..\..\bin\server\release\lualibdll.dll
+copy Release\lualibdll.dll ..\..\..\..\bin\client\lualibdll.dll
+copy Release\lualibdll.dll ..\..\..\..\bin\client\release\lualibdll.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

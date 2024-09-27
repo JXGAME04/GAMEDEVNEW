@@ -112,7 +112,7 @@ copy debug\Sword3PaySys.exe ..\..\..\..\..\src-tinh-kiem-upvs\bin\Server\debug\S
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\..\..\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Headers;C:\Program Files (x86)\MySQL\MySQL Server 5.7\include;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Release\Sword3PaySys.pch</PrecompiledHeaderOutputFile>
@@ -144,7 +144,8 @@ copy release\Sword3PaySys.exe ..\..\..\..\bin\Server\release\Sword3PaySys.exe</C
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\Sword3PaySys.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mysqlcppconn.lib;libmysql.lib;mysqlclient.lib;odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\lib\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
