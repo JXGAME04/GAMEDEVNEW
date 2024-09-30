@@ -18,6 +18,7 @@
     <SccProjectName>"$/SwordOnline/Sources/MultiServer/Goddess", KFTAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{AE17114A-B590-47E8-8133-42D0CF4EF2A0}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -57,7 +58,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\multiserver</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -133,7 +134,8 @@ copy release\Goddess.exe ..\..\..\..\bin\server\release\Goddess.exe</Command>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug\
 copy debug\Goddess.exe ..\..\..\..\bin\Multiserver\Goddess.exe
-copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe</Command>
+copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe
+copy debug\Goddess.exe ..\..\..\..\bin\server\Goddess.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -179,9 +181,11 @@ copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe</Command>
   <ItemGroup>
     <ClInclude Include="ClientNode.h" />
     <ClInclude Include="db.h" />
+    <ClInclude Include="db18.h" />
     <ClInclude Include="DBBackup.h" />
     <ClInclude Include="DBDumpLoad.h" />
     <ClInclude Include="DBTable.h" />
+    <ClInclude Include="db_cxx.h" />
     <ClInclude Include="FilterTextLib.h" />
     <ClInclude Include="IDBRoleServer.h" />
     <ClInclude Include="resource.h" />
@@ -198,10 +202,11 @@ copy debug\Goddess.exe ..\..\..\..\bin\server\debug\Goddess.exe</Command>
     <Library Include="..\..\..\Lib\debug\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\..\Lib\debug\libdb181sd.lib" />
     <Library Include="..\..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="libdb181sd.lib" />
+    <Library Include="..\..\..\Lib\release\libdb181s.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

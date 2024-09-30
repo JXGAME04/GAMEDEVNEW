@@ -1,4 +1,3 @@
-/* DO NOT EDIT: automatically built by dist/s_windows. */
 /*
  * Copyright (c) 1996, 2020 Oracle and/or its affiliates.  All rights reserved.
  *
@@ -23,52 +22,38 @@
 
 #ifndef	__NO_SYSTEM_INCLUDES
 #include <sys/types.h>
-#include <stddef.h>
+@inttypes_h_decl@
+@stdint_h_decl@
+@stddef_h_decl@
 #include <stdio.h>
+@unistd_h_decl@
+@thread_h_decl@
 #endif
 
-/*
- * Turn off inappropriate compiler warnings
- */
-#ifdef _MSC_VER
-/*
- * This warning is explicitly disabled in Visual C++ by default.
- * It is necessary to explicitly enable the /Wall flag to generate this
- * warning.
- * Since this is a shared include file it should compile without warnings
- * at the highest warning level, so third party applications can use
- * higher warning levels cleanly.
- *
- * 4820: 'bytes' bytes padding added after member 'member'
- *       The type and order of elements caused the compiler to
- *       add padding to the end of a struct.
- */
-#pragma warning(push)
-#pragma warning(disable: 4820)
-#endif /* _MSC_VER */
+@platform_header@
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-
-#undef __P
-#define	__P(protos)	protos
+@DB_CONST@
+@DB_PROTO1@
+@DB_PROTO2@
 
 /*
  * Berkeley DB version information.
  */
-#define	DB_VERSION_MAJOR	18
-#define	DB_VERSION_MINOR	1
-#define	DB_VERSION_PATCH	40
-#define	DB_VERSION_STRING	"Berkeley DB 18.1.40: (May 29, 2020)"
-#define	DB_VERSION_FULL_STRING	"Berkeley DB Release 18.1, library version 18.1.40: (May 29, 2020)"
+#define	DB_VERSION_MAJOR	@DB_VERSION_MAJOR@
+#define	DB_VERSION_MINOR	@DB_VERSION_MINOR@
+#define	DB_VERSION_PATCH	@DB_VERSION_PATCH@
+#define	DB_VERSION_STRING	@DB_VERSION_STRING@
+#define	DB_VERSION_FULL_STRING	@DB_VERSION_FULL_STRING@
 
 /*
  * These two version numbers are deprecated and will be removed in a future
  * release.  Until that time they are the same as the major and minor numbers.
  */
-#define	DB_VERSION_FAMILY	18
-#define	DB_VERSION_RELEASE	1
+#define	DB_VERSION_FAMILY	@DB_VERSION_MAJOR@
+#define	DB_VERSION_RELEASE	@DB_VERSION_MINOR@
 
 /*
  * !!!
@@ -85,21 +70,19 @@ extern "C" {
  */
 #ifndef	__BIT_TYPES_DEFINED__
 #define	__BIT_TYPES_DEFINED__
-typedef unsigned char u_int8_t;
-typedef short int16_t;
-typedef unsigned short u_int16_t;
-typedef int int32_t;
-typedef unsigned int u_int32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 u_int64_t;
+@u_int8_decl@
+@int16_decl@
+@u_int16_decl@
+@int32_decl@
+@u_int32_decl@
+@int64_decl@
+@u_int64_decl@
 #endif
 
-#ifndef _WINSOCKAPI_
-typedef unsigned char u_char;
-typedef unsigned int u_int;
-typedef unsigned long u_long;
-#endif
-typedef unsigned short u_short;
+@u_char_decl@
+@u_int_decl@
+@u_long_decl@
+@u_short_decl@
 
 /*
  * Missing ANSI types.
@@ -119,49 +102,35 @@ typedef unsigned short u_short;
  * get upset about that.  So far we haven't run on any machine where there's
  * no unsigned type the same size as a pointer -- here's hoping.
  */
-#if defined(_MSC_VER) && _MSC_VER < 1300
-typedef u_int32_t uintmax_t;
-#else
-typedef u_int64_t uintmax_t;
-#endif
-#ifdef _WIN64
-typedef u_int64_t uintptr_t;
-#else
-typedef u_int32_t uintptr_t;
-#endif
+@uintmax_t_decl@
+@uintptr_t_decl@
 
-/*
- * Windows defines off_t to long (i.e., 32 bits).  We need to pass 64-bit
- * file offsets, so we declare our own.
- */
-#define	off_t	__db_off_t
-typedef int64_t off_t;
-typedef int64_t db_off_t;
-#define DB_OFF_T_MAX INT64_MAX
-typedef int32_t pid_t;
+@FILE_t_decl@
+@off_t_decl@
+@db_off_t_decl@
+@db_off_t_max_decl@
+@pid_t_decl@
+@size_t_decl@
 #ifdef HAVE_MIXED_SIZE_ADDRESSING
 typedef u_int32_t db_size_t;
 #else
 typedef size_t db_size_t;
 #endif
-#ifdef _WIN64
-typedef int64_t ssize_t;
-#else
-typedef int32_t ssize_t;
-#endif
+@ssize_t_decl@
 #ifdef HAVE_MIXED_SIZE_ADDRESSING
 typedef int32_t db_ssize_t;
 #else
 typedef ssize_t db_ssize_t;
 #endif
+@time_t_decl@
 
 /*
  * Sequences are only available on machines with 64-bit integral types.
  */
-typedef int64_t db_seq_t;
+@db_seq_decl@
 
 /* Thread and process identification. */
-typedef u_int32_t db_threadid_t;
+@db_threadid_t_decl@
 
 /* Basic types that are exported or quasi-exported. */
 typedef	u_int32_t	db_pgno_t;	/* Page number type. */
@@ -1374,8 +1343,7 @@ struct __db_repmgr_conn_err {
 };
 
 /* Replication Manager socket. */
-#include <winsock2.h>
-typedef SOCKET DB_REPMGR_SOCKET;
+@socket_decl@
 
 /*******************************************************
  * Sequences.
@@ -3057,19 +3025,19 @@ typedef struct {
  * Translate NDBM calls into DB calls so that DB doesn't step on the
  * application's name space.
  */
-#define	dbm_clearerr(a)		__db_ndbm_clearerr(a)
-#define	dbm_close(a)		__db_ndbm_close(a)
-#define	dbm_delete(a, b)	__db_ndbm_delete(a, b)
-#define	dbm_dirfno(a)		__db_ndbm_dirfno(a)
-#define	dbm_error(a)		__db_ndbm_error(a)
-#define	dbm_fetch(a, b)		__db_ndbm_fetch(a, b)
-#define	dbm_firstkey(a)		__db_ndbm_firstkey(a)
-#define	dbm_nextkey(a)		__db_ndbm_nextkey(a)
-#define	dbm_open(a, b, c)	__db_ndbm_open(a, b, c)
-#define	dbm_pagfno(a)		__db_ndbm_pagfno(a)
-#define	dbm_rdonly(a)		__db_ndbm_rdonly(a)
+#define	dbm_clearerr(a)		__db_ndbm_clearerr@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_close(a)		__db_ndbm_close@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_delete(a, b)	__db_ndbm_delete@DB_VERSION_UNIQUE_NAME@(a, b)
+#define	dbm_dirfno(a)		__db_ndbm_dirfno@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_error(a)		__db_ndbm_error@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_fetch(a, b)		__db_ndbm_fetch@DB_VERSION_UNIQUE_NAME@(a, b)
+#define	dbm_firstkey(a)		__db_ndbm_firstkey@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_nextkey(a)		__db_ndbm_nextkey@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_open(a, b, c)	__db_ndbm_open@DB_VERSION_UNIQUE_NAME@(a, b, c)
+#define	dbm_pagfno(a)		__db_ndbm_pagfno@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbm_rdonly(a)		__db_ndbm_rdonly@DB_VERSION_UNIQUE_NAME@(a)
 #define	dbm_store(a, b, c, d) \
-	__db_ndbm_store(a, b, c, d)
+	__db_ndbm_store@DB_VERSION_UNIQUE_NAME@(a, b, c, d)
 
 /*
  * Translate DBM calls into DB calls so that DB doesn't step on the
@@ -3081,15 +3049,15 @@ typedef struct {
  * Definition of 'store' interface will cause macro conflict for modern
  * compiler with C++11 support, we will exclude this case here.
  */
-#define	dbminit(a)	__db_dbm_init(a)
-#define	dbmclose	__db_dbm_close
+#define	dbminit(a)	__db_dbm_init@DB_VERSION_UNIQUE_NAME@(a)
+#define	dbmclose	__db_dbm_close@DB_VERSION_UNIQUE_NAME@
 #if !defined(__cplusplus)
-#define	delete(a)	__db_dbm_delete(a)
-#define	store(a, b)	__db_dbm_store(a, b)
+#define	delete(a)	__db_dbm_delete@DB_VERSION_UNIQUE_NAME@(a)
+#define	store(a, b)	__db_dbm_store@DB_VERSION_UNIQUE_NAME@(a, b)
 #endif
-#define	fetch(a)	__db_dbm_fetch(a)
-#define	firstkey	__db_dbm_firstkey
-#define	nextkey(a)	__db_dbm_nextkey(a)
+#define	fetch(a)	__db_dbm_fetch@DB_VERSION_UNIQUE_NAME@(a)
+#define	firstkey	__db_dbm_firstkey@DB_VERSION_UNIQUE_NAME@
+#define	nextkey(a)	__db_dbm_nextkey@DB_VERSION_UNIQUE_NAME@(a)
 
 /*******************************************************
  * Hsearch historic interface.
@@ -3103,9 +3071,9 @@ typedef struct entry {
 	char *data;
 } ENTRY;
 
-#define	hcreate(a)	__db_hcreate(a)
-#define	hdestroy	__db_hdestroy
-#define	hsearch(a, b)	__db_hsearch(a, b)
+#define	hcreate(a)	__db_hcreate@DB_VERSION_UNIQUE_NAME@(a)
+#define	hdestroy	__db_hdestroy@DB_VERSION_UNIQUE_NAME@
+#define	hsearch(a, b)	__db_hsearch@DB_VERSION_UNIQUE_NAME@(a, b)
 
 #endif /* DB_DBM_HSEARCH */
 
@@ -3113,332 +3081,5 @@ typedef struct entry {
 }
 #endif
 
-/* Restore default compiler warnings */
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+@platform_footer@
 #endif /* !_DB_H_ */
-/* DO NOT EDIT: automatically built by dist/s_apiflags. */
-#define	DB_AGGRESSIVE				0x00000001
-#define	DB_ARCH_ABS				0x00000001
-#define	DB_ARCH_DATA				0x00000002
-#define	DB_ARCH_LOG				0x00000004
-#define	DB_ARCH_REMOVE				0x00000008
-#define	DB_AUTO_COMMIT				0x00000100
-#define	DB_BACKUP_CLEAN				0x00000002
-#define	DB_BACKUP_DEEP_COPY			0x00000008
-#define	DB_BACKUP_FILES				0x00000010
-#define	DB_BACKUP_NO_LOGS			0x00000020
-#define	DB_BACKUP_SINGLE_DIR			0x00000040
-#define	DB_BACKUP_UPDATE			0x00000080
-#define	DB_BOOTSTRAP_HELPER			0x00000001
-#define	DB_CDB_ALLDB				0x00000040
-#define	DB_CHKSUM				0x00000008
-#define	DB_CKP_INTERNAL				0x00000002
-#define	DB_CONVERT				0x00000001
-#define	DB_CREATE				0x00000001
-#define	DB_CURSOR_BULK				0x00000001
-#define	DB_CURSOR_TRANSIENT			0x00000008
-#define	DB_CXX_NO_EXCEPTIONS			0x00000002
-#define	DB_DATABASE_LOCKING			0x00000080
-#define	DB_DIRECT				0x00000020
-#define	DB_DIRECT_DB				0x00000200
-#define	DB_DSYNC_DB				0x00000400
-#define	DB_DUP					0x00000010
-#define	DB_DUPSORT				0x00000002
-#define	DB_DURABLE_UNKNOWN			0x00000040
-#define	DB_ENCRYPT				0x00000001
-#define	DB_ENCRYPT_AES				0x00000001
-#define	DB_EXCL					0x00000004
-#define	DB_EXTENT				0x00000100
-#define	DB_FAILCHK				0x00000010
-#define	DB_FAILCHK_ISALIVE			0x00000040
-#define	DB_FAST_STAT				0x00000001
-#define	DB_FCNTL_LOCKING			0x00001000
-#define	DB_FLUSH				0x00000002
-#define	DB_FORCE				0x00000001
-#define	DB_FORCESYNC				0x00000001
-#define	DB_FORCESYNCENV				0x00000002
-#define	DB_FOREIGN_ABORT			0x00000001
-#define	DB_FOREIGN_CASCADE			0x00000002
-#define	DB_FOREIGN_NULLIFY			0x00000004
-#define	DB_FREELIST_ONLY			0x00000001
-#define	DB_FREE_SPACE				0x00000002
-#define	DB_GROUP_CREATOR			0x00000002
-#define	DB_HOTBACKUP_IN_PROGRESS		0x00000800
-#define	DB_IGNORE_LEASE				0x00001000
-#define	DB_IMMUTABLE_KEY			0x00000002
-#define	DB_INIT_CDB				0x00000080
-#define	DB_INIT_LOCK				0x00000100
-#define	DB_INIT_LOG				0x00000200
-#define	DB_INIT_MPOOL				0x00000400
-#define	DB_INIT_MUTEX				0x00000800
-#define	DB_INIT_REP				0x00001000
-#define	DB_INIT_TXN				0x00002000
-#define	DB_INORDER				0x00000020
-#define	DB_INTERNAL_BLOB_DB			0x00002000
-#define	DB_INTERNAL_PERSISTENT_DB		0x00004000
-#define	DB_INTERNAL_TEMPORARY_DB		0x00008000
-#define	DB_JOIN_NOSORT				0x00000001
-#define	DB_LEGACY				0x00000004
-#define	DB_LOCAL_SITE				0x00000008
-#define	DB_LOCKDOWN				0x00004000
-#define	DB_LOCK_CHECK				0x00000001
-#define	DB_LOCK_IGNORE_REC			0x00000002
-#define	DB_LOCK_NOWAIT				0x00000004
-#define	DB_LOCK_RECORD				0x00000008
-#define	DB_LOCK_SET_TIMEOUT			0x00000010
-#define	DB_LOCK_SWITCH				0x00000020
-#define	DB_LOCK_UPGRADE				0x00000040
-#define	DB_LOG_AUTO_REMOVE			0x00000001
-#define	DB_LOG_CHKPNT				0x00000001
-#define	DB_LOG_COMMIT				0x00000004
-#define	DB_LOG_DIRECT				0x00000002
-#define	DB_LOG_DSYNC				0x00000004
-#define	DB_LOG_EXT_FILE				0x00000008
-#define	DB_LOG_BLOB				0x00000008
-#define	DB_LOG_IN_MEMORY			0x00000010
-#define	DB_LOG_NOCOPY				0x00000008
-#define	DB_LOG_NOSYNC				0x00000020
-#define	DB_LOG_NOT_DURABLE			0x00000010
-#define	DB_LOG_NO_DATA				0x00000002
-#define	DB_LOG_VERIFY_CAF			0x00000001
-#define	DB_LOG_VERIFY_DBFILE			0x00000002
-#define	DB_LOG_VERIFY_ERR			0x00000004
-#define	DB_LOG_VERIFY_FORWARD			0x00000008
-#define	DB_LOG_VERIFY_INTERR			0x00000010
-#define	DB_LOG_VERIFY_PARTIAL			0x00000020
-#define	DB_LOG_VERIFY_VERBOSE			0x00000040
-#define	DB_LOG_VERIFY_WARNING			0x00000080
-#define	DB_LOG_WRNOSYNC				0x00000020
-#define	DB_LOG_ZERO				0x00000040
-#define	DB_MPOOL_CREATE				0x00000001
-#define	DB_MPOOL_DIRTY				0x00000002
-#define	DB_MPOOL_DISCARD			0x00000001
-#define	DB_MPOOL_EDIT				0x00000004
-#define	DB_MPOOL_FREE				0x00000008
-#define	DB_MPOOL_LAST				0x00000010
-#define	DB_MPOOL_NEW				0x00000020
-#define	DB_MPOOL_NOFILE				0x00000001
-#define	DB_MPOOL_NOLOCK				0x00000004
-#define	DB_MPOOL_TRY				0x00000040
-#define	DB_MPOOL_UNLINK				0x00000002
-#define	DB_MULTIPLE				0x00000800
-#define	DB_MULTIPLE_KEY				0x00004000
-#define	DB_MULTIVERSION				0x00000008
-#define	DB_MUTEX_ALLOCATED			0x00000001
-#define	DB_MUTEX_LOCKED				0x00000002
-#define	DB_MUTEX_LOGICAL_LOCK			0x00000004
-#define	DB_MUTEX_OWNER_DEAD			0x00000020
-#define	DB_MUTEX_PROCESS_ONLY			0x00000008
-#define	DB_MUTEX_SELF_BLOCK			0x00000010
-#define	DB_MUTEX_SHARED				0x00000040
-#define	DB_NOERROR				0x00010000
-#define	DB_NOFLUSH				0x00001000
-#define	DB_NOLOCKING				0x00002000
-#define	DB_NOMMAP				0x00000010
-#define	DB_NOORDERCHK				0x00000002
-#define	DB_NOPANIC				0x00004000
-#define	DB_NOSYNC				0x00000001
-#define	DB_NO_AUTO_COMMIT			0x00020000
-#define	DB_NO_CHECKPOINT			0x00008000
-#define	DB_ODDFILESIZE				0x00000080
-#define	DB_ORDERCHKONLY				0x00000004
-#define	DB_OVERWRITE				0x00008000
-#define	DB_PANIC_ENVIRONMENT			0x00010000
-#define	DB_PRINTABLE				0x00000008
-#define	DB_PRIVATE				0x00010000
-#define	DB_PR_PAGE				0x00000010
-#define	DB_PR_RECOVERYTEST			0x00000020
-#define	DB_RDONLY				0x00000400
-#define	DB_RDWRMASTER				0x00040000
-#define	DB_READ_COMMITTED			0x00000400
-#define	DB_READ_UNCOMMITTED			0x00000200
-#define	DB_RECNUM				0x00000040
-#define	DB_RECOVER				0x00000002
-#define	DB_RECOVER_FATAL			0x00020000
-#define	DB_REGION_INIT				0x00020000
-#define	DB_REGISTER				0x00040000
-#define	DB_RENUMBER				0x00000080
-#define	DB_REPMGR_CONF_2SITE_STRICT		0x00000001
-#define	DB_REPMGR_CONF_DISABLE_POLL		0x00000002
-#define	DB_REPMGR_CONF_DISABLE_SSL		0x00000004
-#define	DB_REPMGR_CONF_ELECTIONS		0x00000008
-#define	DB_REPMGR_CONF_ENABLE_EPOLL		0x00000010
-#define	DB_REPMGR_CONF_FORWARD_WRITES		0x00000020
-#define	DB_REPMGR_CONF_PREFMAS_CLIENT		0x00000040
-#define	DB_REPMGR_CONF_PREFMAS_MASTER		0x00000080
-#define	DB_REPMGR_NEED_RESPONSE			0x00000001
-#define	DB_REPMGR_PEER				0x00000010
-#define	DB_REP_ANYWHERE				0x00000001
-#define	DB_REP_CLIENT				0x00000001
-#define	DB_REP_CONF_AUTOINIT			0x00000100
-#define	DB_REP_CONF_AUTOROLLBACK		0x00000200
-#define	DB_REP_CONF_BULK			0x00000400
-#define	DB_REP_CONF_DELAYCLIENT			0x00000800
-#define	DB_REP_CONF_ELECT_LOGLENGTH		0x00001000
-#define	DB_REP_CONF_INMEM			0x00002000
-#define	DB_REP_CONF_LEASE			0x00004000
-#define	DB_REP_CONF_NOWAIT			0x00008000
-#define	DB_REP_ELECTION				0x00000004
-#define	DB_REP_MASTER				0x00000002
-#define	DB_REP_NOBUFFER				0x00000002
-#define	DB_REP_PERMANENT			0x00000004
-#define	DB_REP_REREQUEST			0x00000008
-#define	DB_REVSPLITOFF				0x00000100
-#define	DB_RMW					0x00002000
-#define	DB_SALVAGE				0x00000040
-#define	DB_SA_SKIPFIRSTKEY			0x00000080
-#define	DB_SA_UNKNOWNKEY			0x00000100
-#define	DB_SEQ_DEC				0x00000001
-#define	DB_SEQ_INC				0x00000002
-#define	DB_SEQ_RANGE_SET			0x00000004
-#define	DB_SEQ_WRAP				0x00000008
-#define	DB_SEQ_WRAPPED				0x00000010
-#define	DB_SET_LOCK_TIMEOUT			0x00000001
-#define	DB_SET_MUTEX_FAILCHK_TIMEOUT		0x00000004
-#define	DB_SET_REG_TIMEOUT			0x00000008
-#define	DB_SET_TXN_NOW				0x00000010
-#define	DB_SET_TXN_TIMEOUT			0x00000002
-#define	DB_SHALLOW_DUP				0x00000100
-#define	DB_SLICED				0x00000800
-#define	DB_SNAPSHOT				0x00000200
-#define	DB_STAT_ALL				0x00000004
-#define	DB_STAT_ALLOC				0x00000008
-#define	DB_STAT_CLEAR				0x00000001
-#define	DB_STAT_LOCK_CONF			0x00000010
-#define	DB_STAT_LOCK_LOCKERS			0x00000020
-#define	DB_STAT_LOCK_OBJECTS			0x00000040
-#define	DB_STAT_LOCK_PARAMS			0x00000080
-#define	DB_STAT_MEMP_HASH			0x00000010
-#define	DB_STAT_MEMP_NOERROR			0x00000020
-#define	DB_STAT_SUBSYSTEM			0x00000002
-#define	DB_STAT_SUMMARY				0x00000010
-#define	DB_ST_DUPOK				0x00000200
-#define	DB_ST_DUPSET				0x00000400
-#define	DB_ST_DUPSORT				0x00000800
-#define	DB_ST_IS_RECNO				0x00001000
-#define	DB_ST_OVFL_LEAF				0x00002000
-#define	DB_ST_RECNUM				0x00004000
-#define	DB_ST_RELEN				0x00008000
-#define	DB_ST_TOPLEVEL				0x00010000
-#define	DB_SYSTEM_MEM				0x00080000
-#define	DB_THREAD				0x00000020
-#define	DB_TIME_NOTGRANTED			0x00040000
-#define	DB_TRUNCATE				0x00080000
-#define	DB_TXN_BULK				0x00000010
-#define	DB_TXN_DISPATCH				0x00000040
-#define	DB_TXN_FAMILY				0x00000080
-#define	DB_TXN_NOSYNC				0x00000001
-#define	DB_TXN_NOT_DURABLE			0x00000004
-#define	DB_TXN_NOWAIT				0x00000002
-#define	DB_TXN_SNAPSHOT				0x00000004
-#define	DB_TXN_SYNC				0x00000008
-#define	DB_TXN_WAIT				0x00000100
-#define	DB_TXN_WRITE_NOSYNC			0x00000020
-#define	DB_UNREF				0x00020000
-#define	DB_UPGRADE				0x00000002
-#define	DB_USE_ENVIRON				0x00000004
-#define	DB_USE_ENVIRON_ROOT			0x00000008
-#define	DB_VERB_BACKUP				0x00000001
-#define	DB_VERB_DEADLOCK			0x00000002
-#define	DB_VERB_FILEOPS				0x00000004
-#define	DB_VERB_FILEOPS_ALL			0x00000008
-#define	DB_VERB_MVCC				0x00000010
-#define	DB_VERB_RECOVERY			0x00000020
-#define	DB_VERB_REGISTER			0x00000040
-#define	DB_VERB_REPLICATION			0x00000080
-#define	DB_VERB_REPMGR_CONNFAIL			0x00000100
-#define	DB_VERB_REPMGR_MISC			0x00000200
-#define	DB_VERB_REPMGR_SSL_ALL			0x00000400
-#define	DB_VERB_REPMGR_SSL_CONN			0x00000800
-#define	DB_VERB_REPMGR_SSL_IO			0x00001000
-#define	DB_VERB_REP_ELECT			0x00002000
-#define	DB_VERB_REP_LEASE			0x00004000
-#define	DB_VERB_REP_MISC			0x00008000
-#define	DB_VERB_REP_MSGS			0x00010000
-#define	DB_VERB_REP_SYNC			0x00020000
-#define	DB_VERB_REP_SYSTEM			0x00040000
-#define	DB_VERB_REP_TEST			0x00080000
-#define	DB_VERB_SLICE				0x00100000
-#define	DB_VERB_WAITSFOR			0x00200000
-#define	DB_VERIFY				0x00000004
-#define	DB_VERIFY_PARTITION			0x00040000
-#define	DB_WRITECURSOR				0x00000010
-#define	DB_WRITELOCK				0x00000020
-#define	DB_WRITEOPEN				0x00100000
-#define	DB_XA_CREATE				0x00000001
-#define	DB_YIELDCPU				0x00080000
-
-/* DO NOT EDIT: automatically built by dist/s_include. */
-#ifndef	_DB_EXT_PROT_IN_
-#define	_DB_EXT_PROT_IN_
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-int db_copy __P((DB_ENV *, const char *, const char *, const char *));
-int db_create __P((DB **, DB_ENV *, u_int32_t));
-char *db_strerror __P((int));
-int db_env_set_func_assert __P((void (*)(const char *, const char *, int)));
-int db_env_set_func_close __P((int (*)(int)));
-int db_env_set_func_dirfree __P((void (*)(char **, int)));
-int db_env_set_func_dirlist __P((int (*)(const char *, char ***, int *)));
-int db_env_set_func_exists __P((int (*)(const char *, int *)));
-int db_env_set_func_free __P((void (*)(void *)));
-int db_env_set_func_fsync __P((int (*)(int)));
-int db_env_set_func_ftruncate __P((int (*)(int, off_t)));
-int db_env_set_func_ioinfo __P((int (*)(const char *, int, u_int32_t *, u_int32_t *, u_int32_t *)));
-int db_env_set_func_malloc __P((void *(*)(size_t)));
-int db_env_set_func_file_map __P((int (*)(DB_ENV *, char *, size_t, int, void **), int (*)(DB_ENV *, void *)));
-int db_env_set_func_region_map __P((int (*)(DB_ENV *, char *, size_t, int *, void **), int (*)(DB_ENV *, void *)));
-int db_env_set_func_pread __P((ssize_t (*)(int, void *, size_t, off_t)));
-int db_env_set_func_pwrite __P((ssize_t (*)(int, const void *, size_t, off_t)));
-int db_env_set_func_open __P((int (*)(const char *, int, ...)));
-int db_env_set_func_read __P((ssize_t (*)(int, void *, size_t)));
-int db_env_set_func_realloc __P((void *(*)(void *, size_t)));
-int db_env_set_func_rename __P((int (*)(const char *, const char *)));
-int db_env_set_func_seek __P((int (*)(int, off_t, int)));
-int db_env_set_func_unlink __P((int (*)(const char *)));
-int db_env_set_func_write __P((ssize_t (*)(int, const void *, size_t)));
-int db_env_set_func_yield __P((int (*)(u_long, u_long)));
-int db_env_create __P((DB_ENV **, u_int32_t));
-char *db_version __P((int *, int *, int *));
-char *db_full_version __P((int *, int *, int *, int *, int *));
-int log_compare __P((const DB_LSN *, const DB_LSN *));
-#if defined(DB_WIN32) && !defined(DB_WINCE)
-int db_env_set_win_security __P((SECURITY_ATTRIBUTES *sa));
-#endif
-int db_sequence_create __P((DB_SEQUENCE **, DB *, u_int32_t));
-#if DB_DBM_HSEARCH != 0
-int	 __db_ndbm_clearerr __P((DBM *));
-void	 __db_ndbm_close __P((DBM *));
-int	 __db_ndbm_delete __P((DBM *, datum));
-int	 __db_ndbm_dirfno __P((DBM *));
-int	 __db_ndbm_error __P((DBM *));
-datum __db_ndbm_fetch __P((DBM *, datum));
-datum __db_ndbm_firstkey __P((DBM *));
-datum __db_ndbm_nextkey __P((DBM *));
-DBM	*__db_ndbm_open __P((const char *, int, int));
-int	 __db_ndbm_pagfno __P((DBM *));
-int	 __db_ndbm_rdonly __P((DBM *));
-int	 __db_ndbm_store __P((DBM *, datum, datum, int));
-int	 __db_dbm_close __P((void));
-int	 __db_dbm_delete __P((datum));
-datum __db_dbm_fetch __P((datum));
-datum __db_dbm_firstkey __P((void));
-int	 __db_dbm_init __P((char *));
-datum __db_dbm_nextkey __P((datum));
-int	 __db_dbm_store __P((datum, datum));
-#endif
-#if DB_DBM_HSEARCH != 0
-int __db_hcreate __P((size_t));
-ENTRY *__db_hsearch __P((ENTRY, ACTION));
-void __db_hdestroy __P((void));
-#endif
-
-#if defined(__cplusplus)
-}
-#endif
-#endif /* !_DB_EXT_PROT_IN_ */

@@ -2,7 +2,7 @@
 #define DBTABLE_H
 //定义支持复制、事务处理的，多索引记录的数据表类
 
-#include "db.h"
+#include "db_cxx.h"
 #include "malloc.h"
 
 #define MAX_INDEX			16					//一个数据表最多的索引数目

@@ -285,14 +285,14 @@ void KUiNewPlayer::UpdateProperty()
 	for (int i = 0; i < series_num; i++)
 		((KWndButton*)m_propTypeInfoTable[i].pBtn)->CheckButton(i == m_Info.Attribute);
 
-	if (m_Info.Attribute == series_metal)	//N÷ hÖ kim nu he kim
+	if (m_Info.Attribute == series_metal)	//N?h?kim nu he kim
 	{
 		m_Male.Enable(true);
 		m_Info.Gender = OBJ_G_MALE;
 		m_Female.Enable(false);
 		SelGender();
 	}
-	else if (m_Info.Attribute == series_water)	//Nam hÖ thuû nam he thuy
+	else if (m_Info.Attribute == series_water)	//Nam h?thu?nam he thuy
 	{
 		m_Female.Enable(true);
 		m_Info.Gender = OBJ_G_FEMALE;

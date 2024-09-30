@@ -139,7 +139,8 @@
 copy debug\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
 copy debug\lualibdll.dll ..\..\..\..\bin\server\debug\lualibdll.dll
 copy debug\lualibdll.dll ..\..\..\..\bin\client\lualibdll.dll
-copy debug\lualibdll.dll ..\..\..\..\bin\client\debug\lualibdll.dll</Command>
+copy debug\lualibdll.dll ..\..\..\..\bin\client\debug\lualibdll.dll
+copy debug\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

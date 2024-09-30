@@ -58,7 +58,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\..\..\bin\server</OutDir>
+    <OutDir>..\..\..\..\bin\Multiserver</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -121,7 +121,7 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
       <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Common;..\Rainbow\Interface;..\Heaven\Interface;..\..\..\lib;..\..\..\Headers;..\..\Sword3PaySys\S3AccServer;..\..\s3client\login;..\..\RoleDBManager;..\..\Core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONSOLE_DEBUG;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\Bishop.pch</PrecompiledHeaderOutputFile>
@@ -133,7 +133,8 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
       <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy debug\Bishop.exe ..\..\..\..\bin\Server\Bishop.exe
+      <Command>copy debug\Bishop.exe ..\..\..\..\bin\Multiserver\Bishop.exe
+copy debug\Bishop.exe ..\..\..\..\bin\Server\Bishop.exe
 copy debug\Bishop.exe ..\..\..\..\bin\Server\debug\Bishop.exe</Command>
     </PostBuildEvent>
     <Midl>

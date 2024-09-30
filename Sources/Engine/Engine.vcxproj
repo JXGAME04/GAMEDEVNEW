@@ -124,7 +124,8 @@
       <Command>copy clientdebug\engine.lib ..\..\lib\debug\engine.lib
 copy clientdebug\engine.dll ..\..\..\bin\client\engine.dll
 copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll</Command>
+copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -172,14 +173,13 @@ copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll</Command>
       <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\lib\release
-copy release\engine.lib ..\..\lib\release\engine.lib
-md ..\..\..\bin\client\release\
+      <Command>copy release\engine.lib ..\..\lib\release\engine.lib
+
 copy release\engine.dll ..\..\..\bin\client\engine.dll
 copy release\engine.dll ..\..\..\bin\client\release\engine.dll
 copy release\engine.pdb ..\..\..\bin\client\release\engine.pdb
 copy release\engine.map ..\..\..\bin\client\release\engine.map
-md ..\..\..\bin\server\release\
+
 copy release\engine.dll ..\..\..\bin\server\engine.dll
 copy release\engine.dll ..\..\..\bin\server\release\engine.dll
 copy release\engine.pdb ..\..\..\bin\server\release\engine.pdb

@@ -19,7 +19,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -78,7 +78,8 @@
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug
 copy debug\Sword3PaySys.exe ..\..\..\..\bin\MultiServer\Sword3PaySys.exe
-copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\debug\Sword3PaySys.exe</Command>
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\debug\Sword3PaySys.exe
+copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\Sword3PaySys.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

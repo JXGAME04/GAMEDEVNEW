@@ -18,6 +18,7 @@
     <SccProjectName>"$/SwordOnline/Sources/MultiServer/S3Relay", BSSAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{CC45CE45-B351-4B32-AAC0-5BCF7D72E4FE}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -52,12 +53,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\Release\</OutDir>
+    <OutDir>..\..\..\..\bin\multiserver</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\multiserver</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -131,7 +132,8 @@ copy release\S3Relay.exe ..\..\..\..\bin\server\release\S3Relay.exe</Command>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug\
 copy debug\S3Relay.exe ..\..\..\..\bin\Server\S3Relay.exe
-copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe</Command>
+copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe
+copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -217,8 +219,10 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe</Command>
     <ClInclude Include="ChannelMgr.h" />
     <ClInclude Include="ChatConnect.h" />
     <ClInclude Include="ChatServer.h" />
+    <ClInclude Include="db18.h" />
     <ClInclude Include="DBConnect.h" />
     <ClInclude Include="DBTable.h" />
+    <ClInclude Include="db_cxx.h" />
     <ClInclude Include="DealRelay.h" />
     <ClInclude Include="DoScript.h" />
     <ClInclude Include="FilterTextLib.h" />
@@ -269,12 +273,13 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Server\debug\S3Relay.exe</Command>
     <Library Include="..\..\..\Lib\debug\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\..\Lib\debug\libdb181sd.lib" />
     <Library Include="..\..\..\Lib\debug\lualibdll.lib" />
     <Library Include="..\..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\..\Lib\release\libdb181s.lib" />
     <Library Include="..\..\..\Lib\release\LuaLibDll.lib" />
-    <Library Include="..\Goddess\libdb181sd.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

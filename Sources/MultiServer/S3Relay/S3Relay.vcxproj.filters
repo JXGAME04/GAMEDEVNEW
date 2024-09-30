@@ -316,6 +316,12 @@
     <ClInclude Include="..\..\..\Headers\KTongProtocol.h">
       <Filter>ProtocolHeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="db_cxx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="db18.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="S3Relay.ico">
@@ -332,14 +338,17 @@
     <Library Include="..\..\..\Lib\release\engine.lib">
       <Filter>Library\release</Filter>
     </Library>
-    <Library Include="..\Goddess\libdb181sd.lib">
-      <Filter>Library</Filter>
-    </Library>
     <Library Include="..\..\..\Lib\release\LuaLibDll.lib">
       <Filter>Library\release</Filter>
     </Library>
     <Library Include="..\..\..\Lib\debug\lualibdll.lib">
       <Filter>Library\debug</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\debug\libdb181sd.lib">
+      <Filter>Library\debug</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\release\libdb181s.lib">
+      <Filter>Library\release</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

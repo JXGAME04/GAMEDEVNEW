@@ -83,7 +83,8 @@
       <Command>copy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
 copy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
 copy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll</Command>
+copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll
+copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

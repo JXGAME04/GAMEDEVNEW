@@ -137,7 +137,8 @@ copy debug\heaven.dll ..\..\..\..\bin\client\heaven.dll
 copy debug\heaven.dll ..\..\..\..\bin\client\debug\heaven.dll
 md ..\..\..\bin\server\debug\
 copy debug\heaven.dll ..\..\..\..\bin\server\heaven.dll
-copy debug\heaven.dll ..\..\..\..\bin\server\debug\heaven.dll</Command>
+copy debug\heaven.dll ..\..\..\..\bin\server\debug\heaven.dll
+copy debug\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
