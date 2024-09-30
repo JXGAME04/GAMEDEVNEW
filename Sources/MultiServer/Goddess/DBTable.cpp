@@ -142,7 +142,7 @@ ZCursor *ZDBTable::_search(bool bKey, const char *key_ptr, int key_size, int ind
 	pkey.flags = DB_DBT_MALLOC;
 	key.data = (void *)key_ptr;
 	key.size = key_size;
-	DBC *dbcp;
+	DBC *dbcp = NULL;
 	if(!key_ptr || !key_size) {							//没有设定索引值，要求遍历数据库
 		if(index_db[index]->cursor(index_db[index], NULL, &dbcp, 0)) {
 			return NULL;

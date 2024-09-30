@@ -590,7 +590,7 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 	_ASSERT(pEncodedBuffer && (nParamLen == 0 || pParamBuffer != NULL));
 
 	int nEncodedSize = 0;
-	static char	Color[8];
+	static char	Color[13];
 	static char	szPic[MAXPICTOKENLEN];
 
 	switch(nCtrl)

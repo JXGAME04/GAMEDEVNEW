@@ -806,7 +806,7 @@ void KScenePlaceMapC::LoadSymbol(int nSubWorldID)
 
 	if (g_MapTraffic.IsSectionExist(szSectName))
 	{
-		char szKeyName[10];
+		char szKeyName[100];
 		for(int j = 0; j < defMAX_NUM_SYMBOL; j++)
 		{
 			m_SymbolMap[j].Release();

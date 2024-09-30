@@ -875,6 +875,7 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveAttrib)
 {
 	int i = 0;
+	char    TextLevel[256];
 	char	szColor[item_number][32] = 
 	{
 		"",
@@ -911,7 +912,6 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcpy(pszMsg, szColor[m_CommonAttrib.nItemGenre]);
 		if (m_CommonAttrib.nItemGenre == 0)
 		{
-			char    TextLevel[10];
 			int        LevelItem = m_CommonAttrib.nLevel;
 
 			if(LevelItem > 10)
@@ -955,7 +955,6 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcpy(pszMsg, szColor[m_CommonAttrib.nItemGenre]);
 		if (m_CommonAttrib.nItemGenre == 0)
 		{
-			char    TextLevel[10];
 			int        LevelItem = m_CommonAttrib.nLevel;
 
 			if(LevelItem > 10)
@@ -998,7 +997,6 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	//
 	if (m_CommonAttrib.nItemGenre == item_magicscript && m_CommonAttrib.nParticularType == 146) //Huyen tinh khoang thach
 	{
-		char    TextLevel[10];
 		sprintf(TextLevel, " [CÊp %d]", m_CommonAttrib.nLevel);
 		strcat(pszMsg, TextLevel);
 	}

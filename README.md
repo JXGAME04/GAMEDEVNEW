@@ -23,3 +23,9 @@ Paysys
 
 Note:
 cannot open include file 'afxres.h' -> install MFC for c++
+
+
+Windows server:
+Region Current lang for non Unicode program
+English -> char endode xyz
+Chinese -> char endode Chinese ok
