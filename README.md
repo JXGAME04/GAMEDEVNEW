@@ -1,5 +1,3 @@
-cannot open include file 'afxres.h' -> install MFC for c++
-
 Debug/Release build OK!
 
 Common 
@@ -22,3 +20,6 @@ S3relay
 Install Mysql connector 80, Mysql server 5.7. Check setting mysqlinclude/lib 
 S3PayRelay
 Paysys
+
+Note:
+cannot open include file 'afxres.h' -> install MFC for c++
