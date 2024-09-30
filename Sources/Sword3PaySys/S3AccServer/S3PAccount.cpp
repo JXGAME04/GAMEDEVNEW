@@ -439,8 +439,8 @@ int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
 	long& liExp)
 {
 	//khong tinh thoi gian choi
-	liLeft = 1000;
-	liExp = 1000;
+	liLeft = 10000;
+	liExp = 10000;
 	return ACTION_SUCCESS;
 	int iRet = ACTION_FAILED;
 	if (NULL == pConn)
