@@ -30,8 +30,8 @@ int KSG_StringSetValue(int t, int n, int p, int v)
 	if (p<1 || p>BLOCKNUM/t)return n;
 	char str[BLOCKNUM],str1[BLOCKNUM],str2[BLOCKNUM];
 	while(i<BLOCKNUM){str[i]='0';i++;}i=0;
-	itoa(n,str1,10);
-	itoa(v,str2,10);
+	_itoa(n,str1,10);
+	_itoa(v,str2,10);
 	l1 = strlen(str1);
 	l2 = strlen(str2);
 	str1[l1]='\0';
@@ -50,7 +50,7 @@ int KSG_StringGetValue(int t, int n, int p)
 	if (p<1 || p>BLOCKNUM/t)return n;
 	char str[BLOCKNUM],str1[BLOCKNUM],str2[BLOCKNUM];
 	while(i<BLOCKNUM){str[i]='0';i++;}i=0;
-	itoa(n,str1,10);
+	_itoa(n,str1,10);
 	l1=strlen(str1);
 	str1[l1]='\0';
 	memcpy(str+(BLOCKNUM-l1), str1, l1);

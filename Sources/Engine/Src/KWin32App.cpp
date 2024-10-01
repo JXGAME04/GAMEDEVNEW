@@ -78,9 +78,9 @@ KWin32App::KWin32App()
 BOOL KWin32App::Init(HINSTANCE hInstance,char *AppName)
 {
 	g_StrCpy(m_szClass, AppName);
-	strcat(m_szClass," Class");
+	strcat_s(m_szClass," Class");
 	g_StrCpy(m_szTitle, AppName);
-	strcat(m_szTitle," Title");
+	strcat_s(m_szTitle," Title");
 //#ifdef _DEBUG
 	{
 //		sout = freopen( "c:\\stdout1.txt", "a", stdout );

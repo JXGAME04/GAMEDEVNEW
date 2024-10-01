@@ -164,8 +164,8 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			KLineNode * pNewReturnLine = new KLineNode;
 			pNewLine->m_pLineMem = new KMemClass1;
 			pNewReturnLine->m_pLineMem = new KMemClass1;
-			sprintf(szNewReturnLabel, "\nLabel(\"ReturnLabel%d\");\n", ++ nReturnLabelNum  );
-			sprintf(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", ++ nLabelNum );
+			sprintf_s(szNewReturnLabel, "\nLabel(\"ReturnLabel%d\");\n", ++ nReturnLabelNum  );
+			sprintf_s(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", ++ nLabelNum );
 			char * Buf = (char *)pNewLine->m_pLineMem->Alloc(strlen(szNewLabel)+d);
 			strcpy(Buf,szNewLabel);
 			Buf = (char *)pNewReturnLine->m_pLineMem->Alloc(strlen(szNewReturnLabel)+d);
@@ -174,7 +174,7 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			pEndNode->m_pLine->InsertAfter((KNode*) pNewReturnLine);
 			m_Lines.AddTail((KNode*)pNewLine);
 			
-			sprintf(szNewLine, "%s Goto(\"AutoLabel%d\") end;\n", (char *)pNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum );
+			sprintf_s(szNewLine, "%s Goto(\"AutoLabel%d\") end;\n", (char *)pNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum );
 			szNewLine[pNode->m_pLine->m_pLineMem->GetMemLen() - 1] = ' ' ;
 			
 			KMemClass1 * pMem = new KMemClass1;
@@ -196,7 +196,7 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 
 			KLineNode * pGotoReturnNode = new KLineNode;
 			char szGotoReturn[100];
-			sprintf(szGotoReturn, "Goto(\"ReturnLabel%d\");\n", nReturnLabelNum  );
+			sprintf_s(szGotoReturn, "Goto(\"ReturnLabel%d\");\n", nReturnLabelNum  );
 			pGotoReturnNode->m_pLineMem =	 new KMemClass1;
 			char * Buff = (char * )pGotoReturnNode->m_pLineMem->Alloc(strlen(szGotoReturn)+d);
 			strcpy(Buff, szGotoReturn);
@@ -216,13 +216,13 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			KLineNode * pNewLine = new KLineNode;
 			pNewLine->m_pLineMem = new KMemClass1;
 						
-			sprintf(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", nLabelNum );
+			sprintf_s(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", nLabelNum );
 			
 			char * Buf = (char *)pNewLine->m_pLineMem->Alloc(strlen(szNewLabel)+d);
 			strcpy(Buf,szNewLabel);
 			m_Lines.AddTail((KNode*)pNewLine);
 			
-			sprintf(szNewLine, "%s Goto(\"AutoLabel%d\") end;\n", (char *)pNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum );
+			sprintf_s(szNewLine, "%s Goto(\"AutoLabel%d\") end;\n", (char *)pNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum );
 			szNewLine[pNode->m_pLine->m_pLineMem->GetMemLen() - 1] = ' ' ;
 			g_StrRep(szNewLine,"elseif", "if");
 			
@@ -246,7 +246,7 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 
 			KLineNode * pGotoReturnNode = new KLineNode;
 			char szGotoReturn[100];
-			sprintf(szGotoReturn, "Goto(\"ReturnLabel%d\");\n", nReturnLabelNum );
+			sprintf_s(szGotoReturn, "Goto(\"ReturnLabel%d\");\n", nReturnLabelNum );
 			pGotoReturnNode->m_pLineMem = new KMemClass1;
 			char * Buff = (char * )pGotoReturnNode->m_pLineMem->Alloc(strlen(szGotoReturn)+d);
 			strcpy(Buff, szGotoReturn);
@@ -278,9 +278,9 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			pNewElseLine->m_pLineMem =		new KMemClass1;
 			char							szNewElseLine[50];
 
-			sprintf(szNewReturnLabel, "\nLabel(\"ReturnLabel%d\");\n", nReturnLabelNum  );
-			sprintf(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", nLabelNum );
-			sprintf(szNewElseLine, "\nLabel(\"AutoLabel%d\");\n", ++nLabelNum);
+			sprintf_s(szNewReturnLabel, "\nLabel(\"ReturnLabel%d\");\n", nReturnLabelNum  );
+			sprintf_s(szNewLabel, "\nLabel(\"AutoLabel%d\");\n", nLabelNum );
+			sprintf_s(szNewElseLine, "\nLabel(\"AutoLabel%d\");\n", ++nLabelNum);
 			
 			char * Buf = (char *)pNewLine->m_pLineMem->Alloc(strlen(szNewLabel)+d);
 			strcpy(Buf,szNewLabel);
@@ -297,7 +297,7 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			m_Lines.AddTail((KNode*)pNewElseLine);
 			
 
-			sprintf(szNewLine, "%s Goto(\"AutoLabel%d\") else Goto(\"AutoLabel%d\") end;\n", (char *)pElseIfNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum - 1, nLabelNum );
+			sprintf_s(szNewLine, "%s Goto(\"AutoLabel%d\") else Goto(\"AutoLabel%d\") end;\n", (char *)pElseIfNode->m_pLine->m_pLineMem->GetMemPtr(), nLabelNum - 1, nLabelNum );
 			szNewLine[pElseIfNode->m_pLine->m_pLineMem->GetMemLen() - 1] = ' ' ;
 			g_StrRep(szNewLine,"elseif", "if");
 
@@ -333,7 +333,7 @@ BOOL KLubCmpl_Blocker::ExchangeCurLines()
 			KLineNode * pGotoReturnNode2 = new KLineNode;
 			
 			char szGotoReturn[100];
-			sprintf(szGotoReturn, "Goto(\"ReturnLabel%d\");\n",  nReturnLabelNum  );
+			sprintf_s(szGotoReturn, "Goto(\"ReturnLabel%d\");\n",  nReturnLabelNum  );
 			
 			pGotoReturnNode1->m_pLineMem = new KMemClass1;
 			pGotoReturnNode2->m_pLineMem = new KMemClass1;

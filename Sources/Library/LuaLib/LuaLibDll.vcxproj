@@ -234,7 +234,8 @@ copy debug\lualibdll.dll ..\..\..\Lib\lualibdll.dll</Command>
 copy Release\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
 copy Release\lualibdll.lib ..\..\..\..\bin\server\release\lualibdll.dll
 copy Release\lualibdll.dll ..\..\..\..\bin\client\lualibdll.dll
-copy Release\lualibdll.dll ..\..\..\..\bin\client\release\lualibdll.dll</Command>
+copy Release\lualibdll.dll ..\..\..\..\bin\client\release\lualibdll.dll
+copy Release\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

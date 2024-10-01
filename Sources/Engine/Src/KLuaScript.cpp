@@ -132,7 +132,7 @@ BOOL KLuaScript::Load(char * Filename)
 		char szTemp[200];
 		memset(szTemp, 0, sizeof(szTemp));
 
-		sprintf(szTemp, "Load Script %s 出现异常，请检查!!\n", Filename);
+		sprintf_s(szTemp, "Load Script %s An exception occurred, please check!!\n", Filename);
 		printf(szTemp);
 		WriteLogScriptErrorFile(szTemp);
 		return FALSE;
@@ -544,7 +544,7 @@ void KLuaScript::Exit()
 void KLuaScript::ScriptError(int Error)
 {
 	char lszErrMsg[200];
-	sprintf(lszErrMsg, "ScriptError %d. (%s) \n", Error, m_szScriptName);
+	sprintf_s(lszErrMsg, "ScriptError %d. (%s) \n", Error, m_szScriptName);
 	lua_outerrmsg(lszErrMsg);
 	WriteLogScriptErrorFile(lszErrMsg);
 	return;
@@ -560,7 +560,7 @@ void KLuaScript::ScriptError(int Error)
 void KLuaScript::ScriptError(int Error1 ,int Error2)
 {
 	char lszErrMsg[200];
-	sprintf(lszErrMsg, "ScriptError %d:[%d] (%s) \n", Error1, Error2, m_szScriptName);
+	sprintf_s(lszErrMsg, "ScriptError %d:[%d] (%s) \n", Error1, Error2, m_szScriptName);
 	lua_outerrmsg(lszErrMsg);
 	WriteLogScriptErrorFile(lszErrMsg);
 	return;
@@ -569,7 +569,7 @@ void KLuaScript::ScriptError(int Error1 ,int Error2)
 void KLuaScript::ScriptError(int Error1 ,int Error2, const char* cFuncName)
 {
 	char lszErrMsg[200];
-	sprintf(lszErrMsg, "ScriptError %d:[%d] Script Name: (%s) cFuncName:(%s) \n", Error1, Error2, m_szScriptName, cFuncName);
+	sprintf_s(lszErrMsg, "ScriptError %d:[%d] Script Name: (%s) cFuncName:(%s) \n", Error1, Error2, m_szScriptName, cFuncName);
 	lua_outerrmsg(lszErrMsg);
 	WriteLogScriptErrorFile(lszErrMsg);
 	return;
@@ -691,7 +691,7 @@ void KLuaScript::WriteLogScriptErrorFile(const char* szString)
 	::GetLocalTime(&systm);
 	TCHAR buff[64];
 	int len = 0;
-	sprintf(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
+	sprintf_s(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
 	FILE* pFile = fopen("ScriptError.log", "a");
 	fprintf(pFile, "%s \t %s\n", buff ,szString);
 	fclose(pFile);

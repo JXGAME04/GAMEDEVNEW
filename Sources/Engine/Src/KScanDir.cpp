@@ -136,9 +136,9 @@ void KScanFile::OutputFileName(LPSTR FileName)
 	char szPathName[MAXPATH];
 
 	GetCurrentDirectory(MAXPATH, szPathName);
-	strcat(szPathName, "\\");
-	strcat(szPathName, FileName);
-	strcat(szPathName, "\r\n");
+	strcat_s(szPathName, "\\");
+	strcat_s(szPathName, FileName);
+	strcat_s(szPathName, "\r\n");
 	fprintf(m_pFile, "%s", &szPathName[m_nPathLen]);
 }
 //---------------------------------------------------------------------------

@@ -61,7 +61,7 @@ BOOL KZipList::Open(LPSTR FileName)
 	Close();
 	while (m_nNumber < MAX_PAK)
 	{
-		sprintf(Key, "%d", m_nNumber);
+		sprintf_s(Key, "%d", m_nNumber);
 		if (!IniFile.GetString(Section, Key, "", PakFile, 32))
 			break;
 		if (!m_ZipFile[m_nNumber].Open(PakFile))

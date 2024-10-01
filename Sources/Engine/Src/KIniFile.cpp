@@ -1030,7 +1030,7 @@ void KIniFile::WriteInteger(
 {
 	char Buffer[32];
 
-	sprintf(Buffer, "%d", nValue);
+	sprintf_s(Buffer, "%d", nValue);
 	SetKeyValue(lpSection, lpKeyName, Buffer);
 }
 //---------------------------------------------------------------------------
@@ -1051,7 +1051,7 @@ void KIniFile::WriteInteger2(
 {
 	char Buffer[32];
 
-	sprintf(Buffer, "%d,%d", Value1, Value2);
+	sprintf_s(Buffer, "%d,%d", Value1, Value2);
 	SetKeyValue(lpSection, lpKeyName, Buffer);
 }
 //---------------------------------------------------------------------------
@@ -1070,7 +1070,7 @@ void KIniFile::WriteFloat(
 {
 	char Buffer[32];
 
-	sprintf(Buffer,"%f",fValue);
+	sprintf_s(Buffer,"%f",fValue);
 	SetKeyValue(lpSection, lpKeyName, Buffer);
 }
 //---------------------------------------------------------------------------
@@ -1091,7 +1091,7 @@ void KIniFile::WriteFloat2(
 {
 	char Buffer[32];
 
-	sprintf(Buffer, "%f,%f", fValue1, fValue2);
+	sprintf_s(Buffer, "%f,%f", fValue1, fValue2);
 	SetKeyValue(lpSection, lpKeyName, Buffer);
 }
 //---------------------------------------------------------------------------
@@ -1308,7 +1308,7 @@ void KIniFile::GetFloat3(LPCSTR lpSection, LPCSTR lpKeyName, float* pRect)
 
 	if (GetKeyValue(lpSection, lpKeyName, Buffer, sizeof(Buffer)))
 	{
-		sscanf(Buffer, "%f,%f,%f", &pRect[0], &pRect[1], &pRect[2]);
+		sscanf_s(Buffer, "%f,%f,%f", &pRect[0], &pRect[1], &pRect[2]);
 	}
 }
 
@@ -1318,7 +1318,7 @@ void KIniFile::GetFloat4(LPCSTR lpSection, LPCSTR lpKeyName, float* pRect)
 
 	if (GetKeyValue(lpSection, lpKeyName, Buffer, sizeof(Buffer)))
 	{
-		sscanf(Buffer, "%f,%f,%f,%f", &pRect[0], &pRect[1], &pRect[2], &pRect[3]);
+		sscanf_s(Buffer, "%f,%f,%f,%f", &pRect[0], &pRect[1], &pRect[2], &pRect[3]);
 	}
 }
 

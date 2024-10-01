@@ -129,16 +129,17 @@ copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\release\
+      <Command>md ..\..\..\..\bin\client\release\
 copy release\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
 copy release\Rainbow.dll ..\..\..\..\bin\client\release\Rainbow.dll
 copy release\Rainbow.pdb ..\..\..\..\bin\client\release\Rainbow.pdb
 copy release\Rainbow.map ..\..\..\..\bin\client\release\Rainbow.map
-md ..\..\..\bin\server\release\
+md ..\..\..\..\bin\server\release\
 copy release\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
 copy release\Rainbow.dll ..\..\..\..\bin\server\release\Rainbow.dll
 copy release\Rainbow.pdb ..\..\..\..\bin\server\release\Rainbow.pdb
-copy release\Rainbow.map ..\..\..\..\bin\server\release\Rainbow.map</Command>
+copy release\Rainbow.map ..\..\..\..\bin\server\release\Rainbow.map
+copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

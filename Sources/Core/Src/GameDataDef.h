@@ -1502,7 +1502,7 @@ enum Move_Mode
 };
 
 #define	MAX_SUPERSHOP_SHOPTAB 10
-typedef struct
+typedef struct BuySellInfoSTRUCT
 {
 	int		m_nCurShop;
 	int		m_nShopIdx[MAX_SUPERSHOP_SHOPTAB];

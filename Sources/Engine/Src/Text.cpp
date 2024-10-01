@@ -626,7 +626,7 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 			for (int i = 0; i < s_nColorCount; i++)
 			{
 #ifndef __linux
-				if (stricmp(Color,s_ColorTable[i].Token) == 0)
+				if (_stricmp(Color,s_ColorTable[i].Token) == 0)
 #else
 				if(strcasecmp(Color,s_ColorTable[i].Token) == 0)
 #endif
@@ -665,7 +665,7 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 			for (int i = 0; i < s_nColorCount; i++)
 			{
 #ifndef __linux
-				if (stricmp(Color,s_ColorTable[i].Token) == 0)
+				if (_stricmp(Color,s_ColorTable[i].Token) == 0)
 #else
 				if(strcasecmp(Color,s_ColorTable[i].Token) == 0)
 #endif

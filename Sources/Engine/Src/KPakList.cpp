@@ -141,7 +141,7 @@ bool KPakList::Open(const char* pPakListFile)
 
 			for (int i = 0; i < MAX_PAK; i++)
 			{
-				itoa(i, szKey, 10);
+				_itoa(i, szKey, 10);
 				if (!IniFile.GetString(SECTION, szKey, "", szBuffer, sizeof(szBuffer)))
 					break;
 				if (szBuffer[0] == 0)

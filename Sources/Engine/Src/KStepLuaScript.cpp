@@ -282,7 +282,7 @@ int KStepLuaScript::Active()
 	while(pNode)
 	{
 		char MsgFuncName[40];
-		sprintf(MsgFuncName, "On%s", (char *)pNode->szMessage);
+		sprintf_s(MsgFuncName, "On%s", (char *)pNode->szMessage);
 		if (!CallFunction(MsgFuncName, 0, "ds", (unsigned int)pNode->StateAddr,  pNode->szMsgData))
 		{
 			;
@@ -360,7 +360,7 @@ void	KStepLuaScript::GotoLabel( LPSTR szLabelName)
 	int nCurPos = m_FirstExecuteLine;
 	LPSTR lpByte = (LPSTR )m_Memory.GetMemPtr();
 	char szLabel[50];
-	sprintf(szLabel, "Label(\"%s\")",szLabelName);
+	sprintf_s(szLabel, "Label(\"%s\")",szLabelName);
 	
 	char * szindex = strstr(lpByte,szLabel);
 	

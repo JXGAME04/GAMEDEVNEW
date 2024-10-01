@@ -103,7 +103,7 @@ ENGINE_API void g_SetRootPath(LPSTR lpPathName)
 //		GetCurrentDirectory(MAXPATH, szRootPath);
 //#else
 		g_DebugLog("set path NULL\n");
-		getcwd(szRootPath, MAXPATH);
+		_getcwd(szRootPath, MAXPATH);
 //#endif
 	}
 

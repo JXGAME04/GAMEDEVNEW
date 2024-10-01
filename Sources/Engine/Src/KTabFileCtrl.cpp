@@ -115,9 +115,9 @@ BOOL	KTabFileCtrl::Save(LPSTR FileName)
 		{
 			TTabColNode * pNextNode = (TTabColNode*)pNode->GetNext();
 			if (pNextNode)
-				sprintf(szCol, "%s\t", pNode->m_Str);
+				sprintf_s(szCol, "%s\t", pNode->m_Str);
 			else 
-				sprintf(szCol,"%s",pNode->m_Str);
+				sprintf_s(szCol,"%s",pNode->m_Str);
 			File.Write(szCol, g_StrLen(szCol));
 			pNode = (TTabColNode*)pNode->GetNext();
 			
@@ -371,14 +371,14 @@ BOOL		KTabFileCtrl::WriteString(int nRow, int nColumn,  LPSTR lpString, DWORD dw
 BOOL		KTabFileCtrl::WriteInteger(int nRow, int nColumn, int nValue)
 {
 	char IntNum[1000];
-	sprintf(IntNum, "%d", nValue);
+	sprintf_s(IntNum, "%d", nValue);
 	return SetValue(nRow -1, nColumn -1, IntNum, g_StrLen(IntNum));
 }
 
 BOOL		KTabFileCtrl::WriteFloat(int nRow, int nColumn,float fValue)
 {
 	char FloatNum[1000];
-	sprintf(FloatNum,"%f",fValue);
+	sprintf_s(FloatNum,"%f",fValue);
 	return SetValue(nRow - 1, nColumn - 1, FloatNum, g_StrLen(FloatNum));
 }
 

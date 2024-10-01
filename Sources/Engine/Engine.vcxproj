@@ -183,7 +183,9 @@ copy release\engine.map ..\..\..\bin\client\release\engine.map
 copy release\engine.dll ..\..\..\bin\server\engine.dll
 copy release\engine.dll ..\..\..\bin\server\release\engine.dll
 copy release\engine.pdb ..\..\..\bin\server\release\engine.pdb
-copy release\engine.map ..\..\..\bin\server\release\engine.map</Command>
+copy release\engine.map ..\..\..\bin\server\release\engine.map
+
+copy release\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
