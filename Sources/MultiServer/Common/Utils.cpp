@@ -95,7 +95,7 @@ void Trace( const _tstring &progID, const _tstring &message )
 #ifdef _DEBUG
 	const _tstring msg = ToString(GetCurrentThreadId()) + _T(" [") + progID + _T("] ") + message + _T("\n");
 
-	cprintf( msg.c_str() );
+	_cprintf( msg.c_str() );
 #endif
 }
 
@@ -257,7 +257,7 @@ unsigned long net_aton( const char *pAddr )
 	unsigned long lnAddr = 0;
 	unsigned long lnSeg = 0;
 	int nPos = 0;
-
+	char* next_token;
 	if ( !pAddr )
 	{
 		return 0;
@@ -269,7 +269,7 @@ unsigned long net_aton( const char *pAddr )
 	memcpy( szAddr, pAddr, len );
 	szAddr[len] = '\0';
 
-	token = strtok( szAddr, seps );
+	token = strtok_s( szAddr, seps, &next_token);
 
 	while( token != NULL && nPos < 4 )
 	{
@@ -282,7 +282,7 @@ unsigned long net_aton( const char *pAddr )
 		/*
 		 * Get next token
 		 */
-		token = strtok( NULL, seps );
+		token = strtok_s( NULL, seps, &next_token);
 
 		nPos ++;
    }
@@ -296,7 +296,7 @@ const char *net_ntoa( unsigned long lnAddr )
 
 	unsigned long lnSeg = lnAddr;
 
-	sprintf( szAddr, 
+	sprintf_s( szAddr, 
 		"%u.%u.%u.%u", 
 		lnAddr & 0xFF,
 		( lnAddr >> 8 ) & 0xFF,
@@ -362,7 +362,7 @@ _tstring GetDateStamp()
 	
 	static TCHAR buffer[7];
 	
-	_stprintf(buffer, _T("%02d%02d%02d"),
+	sprintf_s(buffer, _T("%02d%02d%02d"),
 				systime.wDay,
 				systime.wMonth,
 				( 1900 + systime.wYear) % 100);
@@ -377,7 +377,7 @@ _tstring GetTimeStamp()
 	
 	static TCHAR buffer[9];
 	
-	_stprintf( buffer, _T("%02d:%02d:%02d"),
+	sprintf_s( buffer, _T("%02d:%02d:%02d"),
 			systime.wHour,
 			systime.wMinute,
 			systime.wSecond );
@@ -391,7 +391,7 @@ _tstring ToHex( BYTE c )
 	
 	const int val = c;
 	
-	_stprintf( hex, _T("%02X"), val );
+	sprintf_s( hex, _T("%02X"), val );
 	
 	return hex;
 }
@@ -637,7 +637,7 @@ bool GetLocalName( LPTSTR strName, UINT nSize )
 
 			if ( hp )
 			{
-				strcpy( strHost, hp->h_name );
+				strcpy_s( strHost, hp->h_name );
 			}
 
 			/*
@@ -717,7 +717,7 @@ bool GetLocalAddress( LPTSTR strAddress, UINT nSize, int nAdapter /* 0 */ )
 				/*
 				 * Create Address string
 				 */
-				sprintf( strHost, "%u.%u.%u.%u",
+				sprintf_s( strHost, "%u.%u.%u.%u",
 					( UINT )( ( ( PBYTE ) hp->h_addr_list[nAdapter])[0] ),
 					( UINT )( ( ( PBYTE ) hp->h_addr_list[nAdapter])[1] ),
 					( UINT )( ( ( PBYTE ) hp->h_addr_list[nAdapter])[2] ),
