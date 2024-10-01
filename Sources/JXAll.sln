@@ -33,14 +33,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Goddess", "MultiServer\Goddess\Goddess.vcxproj", "{AE17114A-B590-47E8-8133-42D0CF4EF2A0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Heaven", "MultiServer\Heaven\Heaven.vcxproj", "{04FADE57-C37E-4E36-9C9B-9291A99194E5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{255087A2-EE89-4BDD-B951-E37CC421007B} = {255087A2-EE89-4BDD-B951-E37CC421007B}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rainbow", "MultiServer\Rainbow\Rainbow.vcxproj", "{A855D1B6-C460-4C9F-828B-1A0A94B42F03}"
-	ProjectSection(ProjectDependencies) = postProject
-		{255087A2-EE89-4BDD-B951-E37CC421007B} = {255087A2-EE89-4BDD-B951-E37CC421007B}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Represent2", "Represent\Represent2\Represent2.vcxproj", "{7886AD1D-400C-4CBF-8699-7B0AA41CC3B7}"
 EndProject

@@ -23,7 +23,7 @@ CIniFile::CIniFile( LPCTSTR pFileName )
 {
 	ASSERT( pFileName );
 	
-	strcpy( m_szFileName, pFileName );
+	strcpy_s( m_szFileName, pFileName );
 }
 
 CIniFile::~CIniFile()
@@ -34,7 +34,7 @@ void CIniFile::SetFile( LPCTSTR pFileName )
 {
 	ASSERT( pFileName );
 	
-	strcpy( m_szFileName, pFileName );	
+	strcpy_s( m_szFileName, pFileName );	
 }
 
 int	 CIniFile::ReadInteger( LPCTSTR lpSectionName, LPCTSTR lpKeyName, int nDefault )
