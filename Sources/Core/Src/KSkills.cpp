@@ -2009,18 +2009,18 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 	}
 #endif
 	
-	int nSafeIndex = 1;
+	int nSafeIndex = 0;
 	pScript->SafeCallBegin(&nSafeIndex);
 	
 	for(int i = 0 ;  i  < MAXSKILLLEVELSETTINGNUM ; i ++)
 	{
-		char szSettingName[40];
-		char szSettingData[40];
+		char szSettingName[64] = { 0 };
+		char szSettingData[64] = { 0 };
 		sprintf(szSettingName, "LvlSetting%d", i + 1);
 		sprintf(szSettingData, "LvlData%d", i + 1);
 		
-		g_OrdinSkillsSetting.GetString(nRowId, szSettingName, "", szSettingNameValue, 100);
-		g_OrdinSkillsSetting.GetString(nRowId, szSettingData, "", szSettingDataValue, 100);
+		g_OrdinSkillsSetting.GetString(nRowId, szSettingName, "", szSettingNameValue, sizeof(szSettingNameValue));
+		g_OrdinSkillsSetting.GetString(nRowId, szSettingData, "", szSettingDataValue, sizeof(szSettingDataValue));
 		if (szSettingNameValue[0] == 0 	|| szSettingDataValue[0] == '0'	)
 		{
 			continue;
@@ -2054,6 +2054,7 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 		}
 		ParseString2MagicAttrib(nLevel, szSettingNameValue, szResult);
 	}
+	pScript->SafeCallBegin(&nSafeIndex);
 	pScript->SafeCallEnd(nSafeIndex);
 }
 
