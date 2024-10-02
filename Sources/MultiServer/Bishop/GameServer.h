@@ -89,6 +89,7 @@ public:
 	virtual size_t GetCapability() { return m_dwCapability; };
 	virtual size_t GetIP( BYTE cType ) { if ( INTERNET_IP == cType ) { return m_nServerIP_Internet; } return m_nServerIP_Intraner; };
 	virtual size_t GetIndentify() { return m_lnIdentityID; };
+	virtual size_t GetPort() { return m_nServerPort; };
 	
 protected:
 

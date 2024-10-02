@@ -172,7 +172,7 @@ void CHostConnect::Proc1_Relay_Data(const void* pData, size_t size)
  	RELAY_DATA* pRelayData = (RELAY_DATA*)pData;
 
 	assert (pRelayData->nFromIP == 0);
-	pRelayData->nFromIP = gGetHostIP(global_adapt);
+	pRelayData->nFromIP = g_RootClient.GetSvrIP(); //gGetHostIP(global_adapt);
 	pRelayData->nFromRelayID = GetID();
 
 	if (pRelayData->nToIP == 0)
@@ -180,7 +180,7 @@ void CHostConnect::Proc1_Relay_Data(const void* pData, size_t size)
 		//arrived
 		return;
 	}
-	else if (pRelayData->nToIP == gGetHostIP(global_adapt))
+	else if (pRelayData->nToIP == g_RootClient.GetSvrIP())  //from bishop
 	{
 		pRelayData->nToIP = 0;
 		if (g_HostServer.IsConnectReady(pRelayData->nToRelayID))
@@ -384,7 +384,7 @@ void CHostConnect::Proc2_Relay_AskWay_MapID(const void* pData, size_t size)
 	RELAY_ASKWAY_DATA* pAskWayData = (RELAY_ASKWAY_DATA*)pData;
 
 	assert(pAskWayData->nFromIP == 0);
-	pAskWayData->nFromIP = gGetHostIP(local_adapt);//gGetHostIP(global_adapt);
+	pAskWayData->nFromIP = g_RootClient.GetSvrIP();//gGetHostIP(global_adapt);
 	pAskWayData->nFromRelayID = GetID();
 	pAskWayData->seekRelayCount ++;
 

@@ -3055,6 +3055,7 @@ void KSwordOnLineSever::PlayerExchangeServer()
 			continue;
 		if (m_pCoreServerShell->IsPlayerExchangingServer(nIndex))
 		{
+			g_DebugLog("[KSwordOnLineSever::PlayerExchangeServer] Processing Player Server Switching %d\n", nIndex);
 			if (!m_pTransferClient)
 			{
 				tagNotifyPlayerExchange	npe;
@@ -3083,6 +3084,7 @@ void KSwordOnLineSever::PlayerExchangeServer()
 			{
 			case enumExchangeBegin:
 				{
+					g_DebugLog("[KSwordOnLineSever::PlayerExchangeServer] enumExchangeBegin %d\n", nIndex);
 					if (!SavePlayerData(nIndex, true))
 						continue;
 					RELAY_ASKWAY_DATA	*pRAD = (RELAY_ASKWAY_DATA *)szChar;
@@ -3301,7 +3303,7 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 	{
 		tagLogicLogin *pLL = ( tagLogicLogin * )pData;
 
-		//cout << "A client try to login..." << endl;//edit by phong kieu client try to login
+		cout << "A client try to login..." << endl;//edit by phong kieu client try to login
 
 		char* szHwID = "";
 		if(&pLL->sHWID[0])
@@ -3328,7 +3330,7 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 				if (m_pTongClient)
 					m_pTongClient->SendPackToServer((const void*)&sLogin, sizeof(sLogin));
 			}
-			//cout << "Found player " << nIdx << " is logging in system!" << endl;
+			cout << "Found player " << nIdx << " is logging in system!" << endl;
 			return nIdx;
 		}
 		else

@@ -466,6 +466,9 @@ bool CGameServer::_RequestSvrIP( const void *pData, size_t datalength )
 	if ( pGServer )
 	{
 		dwIP = pGServer->GetIP( pRSI->cIPType );
+#ifdef CONSOLE_DEBUG
+		cprintf("MapID %u Server IP %u Server Port %u\n", pRSI->dwMapID, dwIP, pGServer->GetPort());
+#endif
 	}
 
 	tagNotifySvrIp nsi;

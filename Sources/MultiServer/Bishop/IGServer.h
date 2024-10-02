@@ -27,6 +27,7 @@ public:
 	virtual size_t GetCapability() = 0;
 	virtual size_t GetIP( BYTE cType ) = 0;
 	virtual size_t GetIndentify() = 0;
+	virtual size_t GetPort() = 0;
 	
 	virtual bool AnalyzeRequire( const void *pData, size_t datalength ) = 0;
 
