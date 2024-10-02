@@ -826,14 +826,19 @@ BOOL CChannelMgr::SomeoneChat(DWORD srcIP, const tagPlusSrcInfo& SrcInfo, const 
 	//
 	SYSTEMTIME systm;
 	::GetLocalTime(&systm);
-	TCHAR buff[80];
+	TCHAR buff[1024];
 	sprintf(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
 	TCHAR logfilename[80];
 	memset(logfilename, 0, sizeof(logfilename));
 	sprintf(logfilename, "s3relay_log\\ChatSomeOne%02d_%02d_%04d.log", systm.wDay, systm.wMonth, systm.wYear);
 	FILE* pFile = fopen(logfilename, "a");
-	fprintf(pFile, "%s \t from [%s] \t to [%s] \t content [%s] \n", buff , srcrole.c_str(), pSomeoneChatCmd->someone, fkszLogChatM);
-	fclose(pFile);
+	if (pFile) {
+		fprintf(pFile, "%s \t from [%s] \t to [%s] \t content [%s] \n", buff, srcrole.c_str(), pSomeoneChatCmd->someone, fkszLogChatM);
+		fclose(pFile);
+	}
+	else {
+		dTRACE("[CChannelMgr::SomeoneChat]Can not create file %s", logfilename);
+	}
 	//
 	//dTRACE("Chat Someone: sentence %u [==>%s<==] Bs from [%s] to [%s]", pSomeoneChatCmd->sentlen, fkszLogChatM, srcrole.c_str(), pSomeoneChatCmd->someone);
 	//
