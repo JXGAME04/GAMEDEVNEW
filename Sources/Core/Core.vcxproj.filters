@@ -692,9 +692,6 @@
     <Library Include="..\..\Lib\release\common.lib">
       <Filter>Lib\Release</Filter>
     </Library>
-    <Library Include="..\..\Lib\debug\engine.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
     <Library Include="..\..\Lib\debug\common.lib">
       <Filter>Lib\Debug</Filter>
     </Library>
@@ -703,6 +700,9 @@
     </Library>
     <Library Include="Src\USBKey\EpsForJoLib.lib">
       <Filter>USBKey</Filter>
+    </Library>
+    <Library Include="..\..\Lib\debug\engine.lib">
+      <Filter>Lib\Debug</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

@@ -322,6 +322,7 @@ void KScenePlaceMapC::SetFocusPosition(int nX, int nY, bool bChangedRegion)
 
 void KScenePlaceMapC::FillCellsPicInfo()
 {
+#ifndef _SERVER
 	if (m_pEntireMap == NULL)
 	{
 		if (m_bHavePicMap)
@@ -443,6 +444,8 @@ void KScenePlaceMapC::FillCellsPicInfo()
 	}
 }
 
+#endif // _SERVER
+
 void KScenePlaceMapC::CalcPicLayout()
 {
 	POINT	ShowLTPos;
@@ -472,11 +475,14 @@ void KScenePlaceMapC::CalcPicLayout()
 //Çå³ý
 void KScenePlaceMapC::Free()
 {
+#ifndef _SERVER
 	if (m_pEntireMap)
 	{
 		release_image(m_pEntireMap);
 		m_pEntireMap = NULL;
 	}
+
+#endif // !_SERVER
 }
 
 //»æÖÆ

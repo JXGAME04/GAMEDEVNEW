@@ -803,7 +803,7 @@
        The target "CompileDesignTime" listed in a BeforeTargets attribute at "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VisualStudio\WebTools.Aspire\Microsoft.WebTools.Aspire.targets (44,11)" does not exist in the project, and will be ignored.
        The target "CompileDesignTime" listed in a BeforeTargets attribute at "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VisualStudio\WebTools.Aspire\Microsoft.WebTools.Aspire.targets (57,11)" does not exist in the project, and will be ignored.
        The target "CopyLocalFilesOutputGroup" listed in a BeforeTargets attribute at "H:\vcpkg\scripts\buildsystems\msbuild\vcpkg.targets (202,82)" does not exist in the project, and will be ignored.
-Build started 10/1/2024 10:13:33 AM.
+Build started 10/2/2024 11:05:15 AM.
 Logging verbosity is set to: Detailed.     1>Project "H:\vlus-upvs\SwordOnline\Sources\db-18.1.40\build_windows\VS15\db.vcxproj" on node 2 (Clean target(s)).
      1>Project file contains ToolsVersion="4.0". This toolset may be unknown or missing, in which case you may be able to resolve this by installing the appropriate version of MSBuild, or the build may have been forced to a particular ToolsVersion for policy reasons. Treating the project as if it had ToolsVersion="Current". For more information, please see http://go.microsoft.com/fwlink/?LinkId=293424.
        Target "EnableIntermediateOutputPathMismatchWarning" skipped, due to false condition; ('$(RestoreProjectStyle)' == 'PackageReference') was evaluated as ('' == 'PackageReference').
@@ -826,9 +826,7 @@ Logging verbosity is set to: Detailed.     1>Project "H:\vlus-upvs\SwordOnline\S
        Task "Warning" skipped, due to false condition; ( '$(EnableBaseIntermediateOutputPathMismatchWarning)' == 'true' And '$(_InitialBaseIntermediateOutputPath)' != '$(BaseIntermediateOutputPath)' And '$(BaseIntermediateOutputPath)' != '$(MSBuildProjectExtensionsPath)' ) was evaluated as ( '' == 'true' And 'obj\' != 'obj\' And 'obj\' != 'H:\vlus-upvs\SwordOnline\Sources\db-18.1.40\build_windows\VS15\obj\' ).
      1>Done building target "_CheckForInvalidConfigurationAndPlatform" in project "db.vcxproj".
      1>Target "_PrepareForClean" in file "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.BuildSteps.Targets" from project "H:\vlus-upvs\SwordOnline\Sources\db-18.1.40\build_windows\VS15\db.vcxproj" (target "Clean" depends on it):
-       Task "Delete"
-         Deleting file "./..\..\build_windows\Win32\Static Release\db\db.tlog\db.lastbuildstate".
-       Done executing task "Delete".
+       Task "Delete" skipped, due to false condition; (Exists($(LastBuildState))) was evaluated as (Exists(./..\..\build_windows\Win32\Static Release\db\db.tlog\db.lastbuildstate)).
      1>Done building target "_PrepareForClean" in project "db.vcxproj".
      1>Target "BeforeClean" in file "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Common.CurrentVersion.targets" from project "H:\vlus-upvs\SwordOnline\Sources\db-18.1.40\build_windows\VS15\db.vcxproj" (target "Clean" depends on it):
      1>Done building target "BeforeClean" in project "db.vcxproj".
@@ -857,6 +855,7 @@ Logging verbosity is set to: Detailed.     1>Project "H:\vlus-upvs\SwordOnline\S
        Task "MakeDir"
        Done executing task "MakeDir".
        Task "WriteLinesToFile"
+         Skipping write to file "./..\..\build_windows\Win32\Static Release\db\db.vcxproj.FileListAbsolute.txt" because content would not change.
        Done executing task "WriteLinesToFile".
      1>Done building target "CoreClean" in project "db.vcxproj".
        Target "_CleanMdbFiles" skipped, due to false condition; (Exists('$(TargetPath).mdb')) was evaluated as (Exists('H:\vlus-upvs\SwordOnline\Sources\db-18.1.40\build_windows\Win32\Static Release\libdb181s.lib.mdb')).
@@ -927,4 +926,4 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:00.05
+Time Elapsed 00:00:00.00

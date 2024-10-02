@@ -48,7 +48,7 @@ void luaD_checkstack (lua_State *L, int n) {
     }
     else {
       L->stack_last += EXTRA_STACK;  /* to be used by error message */
-      lua_error(L, "stack overflow");
+      lua_error(L, "stack Overflow");
     }
   }
 }

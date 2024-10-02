@@ -100,8 +100,8 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
-    <OutDir>.\ClientDebug\</OutDir>
-    <IntDir>.\ClientDebug\</IntDir>
+    <OutDir>.\EngineServerDebug\</OutDir>
+    <IntDir>.\EngineServerDebug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -130,21 +130,19 @@
       <MinimalRebuild>true</MinimalRebuild>
       <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <AssemblerListingLocation>.\ClientDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\ClientDebug\Engine.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\Debug\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <ObjectFileName>.\ClientDebug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\ClientDebug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
       <Command>copy clientdebug\engine.lib ..\..\lib\debug\engine.lib
 copy clientdebug\engine.dll ..\..\..\bin\client\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
+copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -167,7 +165,7 @@ copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
-      <ImportLibrary>.\Debug\Engine.lib</ImportLibrary>
+      <ImportLibrary>.\ClientDebug\Engine.lib</ImportLibrary>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
@@ -183,21 +181,20 @@ copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <MinimalRebuild>true</MinimalRebuild>
       <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <AssemblerListingLocation>.\EngineServerDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\EngineServerDebug\Engine.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\Debug\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <ObjectFileName>.\EngineServerDebug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\EngineServerDebug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy clientdebug\engine.lib ..\..\lib\debug\engine.lib
-copy clientdebug\engine.dll ..\..\..\bin\client\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll
-copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
+      <Command>md ..\..\lib\EngineServerDebug\
+copy .\EngineServerDebug\engine.lib ..\..\lib\debug\engine.lib
+copy EngineServerDebug\engine.dll ..\..\..\bin\server\engine.dll
+copy EngineServerDebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -219,8 +216,8 @@ copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
-      <ImportLibrary>.\Debug\Engine.lib</ImportLibrary>
+      <OutputFile>.\EngineServerDebug\Engine.dll</OutputFile>
+      <ImportLibrary>.\EngineServerDebug\Engine.lib</ImportLibrary>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
