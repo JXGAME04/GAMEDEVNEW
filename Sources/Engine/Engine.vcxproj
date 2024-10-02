@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Engine Server Debug|Win32">
+      <Configuration>Engine Server Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="OuRead Release|Win32">
       <Configuration>OuRead Release</Configuration>
       <Platform>Win32</Platform>
@@ -57,6 +61,12 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -79,8 +89,17 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\ClientDebug\</OutDir>
+    <IntDir>.\ClientDebug\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
     <OutDir>.\ClientDebug\</OutDir>
     <IntDir>.\ClientDebug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
@@ -111,6 +130,59 @@
       <MinimalRebuild>true</MinimalRebuild>
       <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy clientdebug\engine.lib ..\..\lib\debug\engine.lib
+copy clientdebug\engine.dll ..\..\..\bin\client\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\server\engine.dll
+copy clientdebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
+    </PostBuildEvent>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\Engine.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\Engine.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\ClientDebug\Engine.dll</OutputFile>
+      <ImportLibrary>.\Debug\Engine.lib</ImportLibrary>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SERVER;_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\Engine.pch</PrecompiledHeaderOutputFile>
@@ -443,7 +515,9 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\md5.cpp" />
     <ClCompile Include="Src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">kwin32.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">kwin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">kwin32.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OuRead Release|Win32'">Create</PrecompiledHeader>
@@ -455,11 +529,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\alloc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\io.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -467,11 +545,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2b_99.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2b_d.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -479,11 +561,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2b_ds.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2b_to.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -491,11 +577,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2d_99.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2d_d.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -503,11 +593,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2d_ds.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2d_to.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -515,11 +609,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2e_99.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2e_d.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -527,11 +625,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\n2e_ds.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\n2e_to.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -539,11 +641,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\ucl_crc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\ucl_dll.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -551,11 +657,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\ucl_init.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\ucl_ptr.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -563,11 +673,15 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     <ClCompile Include="Src\ucl\ucl_str.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\ucl\ucl_util.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">
       </PrecompiledHeader>
@@ -722,11 +836,13 @@ copy Engine___Win32_OutRead_Debug\Engine.dll ..\..\..\bin\server\debug\engine.dl
     </Library>
     <Library Include="..\..\Lib\release\JpgLib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\LuaLibDll.lib" />
     <Library Include="..\..\Lib\release\mp3lib.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='OutRead Debug|Win32'">true</ExcludedFromBuild>
     </Library>
   </ItemGroup>

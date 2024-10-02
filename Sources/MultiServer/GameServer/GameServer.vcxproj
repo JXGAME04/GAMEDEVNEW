@@ -153,7 +153,8 @@ copy debug\GameServer.exe ..\..\..\..\bin\Server\debug\GameServer.exe</Command>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>.\Debug\GameServer.exe</OutputFile>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 </AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>

@@ -273,6 +273,7 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <ImportLibrary>.\ServerDebug\CoreServer.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <HeapReserveSize>0xffffffff</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">

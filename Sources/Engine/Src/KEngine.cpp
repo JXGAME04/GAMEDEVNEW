@@ -22,7 +22,7 @@ BOOL g_InitEngine()
 
 	// set root path
 	g_SetRootPath(NULL);
-
+#ifndef _SERVER
 	// init ddraw
 	if (g_pDirectDraw)
 		if (!g_pDirectDraw->Init())
@@ -36,7 +36,7 @@ BOOL g_InitEngine()
 	// init dsound
 	if (g_pDirectSound)
 		g_pDirectSound->Init();
-
+#endif
 	return TRUE;
 }
 //---------------------------------------------------------------------------
@@ -47,11 +47,13 @@ BOOL g_InitEngine()
 //---------------------------------------------------------------------------
 void g_ExitEngine()
 {
+#ifndef _SERVER
 	if (g_pDirectDraw)
 		g_pDirectDraw->Exit();
 	if (g_pDirectInput)
 		g_pDirectInput->Exit();
 	if (g_pDirectSound)
 		g_pDirectSound->Exit();
+#endif // !_SERVER
 }
 //---------------------------------------------------------------------------
