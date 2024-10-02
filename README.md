@@ -6,12 +6,12 @@ Rainbow
 Lualibdll  
 db  
 
-Build Server:
-Engine (Engine Server Debug)
-Core (Server Debug)
-GameServer (Debug)
-Bishop
-Goddess
+Build Server:  
+Engine (Engine Server Debug)  
+Core (Server Debug)  
+GameServer (Debug)  
+Bishop  
+Goddess  
 Install Mysql connector 80, Mysql server 5.7. Check setting mysqlinclude/lib  
 S3PayRelay  
 Paysys  

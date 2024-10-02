@@ -167,7 +167,7 @@ BOOL S3PDBSocketPool::AddUserClientID(unsigned long uID)
 	while(*(pInfo + offset) != ':')
 		offset++;
 	offset += 2;	//skip : and blank
-	short Port = atoi(pInfo + offset);
+	unsigned short Port = atoi(pInfo + offset);
 
 	bool bError = false;
 

@@ -80,9 +80,14 @@ public:
 		return m_lParam;
 	}
 
-	_tstring GetConnectionDetails() const
+	char* GetConnectionDetails() const
 	{
-         return m_address;
+		const int length = m_address.length();
+		char* char_array = new char[length + 1];
+		strcpy(char_array, m_address.c_str());
+		//char* ip_address = strtok(char_array, " :");
+		//_tstring str = ip_address;
+		return char_array;
 	}
 
 private:
@@ -787,7 +792,7 @@ STDMETHODIMP_( const char * ) CIOCPServer::GetClientInfo(
 			
 			if ( pData )
 			{
-				return pData->GetConnectionDetails().c_str();
+				return pData->GetConnectionDetails();
 			}
 		}
 	}
