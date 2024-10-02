@@ -95,7 +95,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\server</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -137,6 +137,8 @@
     <PostBuildEvent>
       <Command>copy debug\lualibdll.lib ..\..\..\Lib\debug\lualibdll.lib
 copy debug\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy debug\lualibdll.map ..\..\..\..\bin\server\lualibdll.map
+copy debug\lualibdll.exp ..\..\..\..\bin\server\lualibdll.exp
 copy debug\lualibdll.dll ..\..\..\..\bin\server\debug\lualibdll.dll
 copy debug\lualibdll.dll ..\..\..\..\bin\client\lualibdll.dll
 copy debug\lualibdll.dll ..\..\..\..\bin\client\debug\lualibdll.dll

@@ -704,6 +704,9 @@
     <Library Include="..\..\Lib\debug\engine.lib">
       <Filter>Lib\Debug</Filter>
     </Library>
+    <Library Include="..\..\Lib\EngineServerDebug\engine.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Protocol.xls">
