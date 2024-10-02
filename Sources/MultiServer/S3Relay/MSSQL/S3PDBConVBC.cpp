@@ -5,8 +5,10 @@
 //	Modified	: 3/25/2003                //
 //                                         //
 //-----------------------------------------//
-#include "stdafx.h"
+//#include "StdAfx.h"
 #include "S3PDBConVBC.h"
+#include "GlobalFun.h"
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

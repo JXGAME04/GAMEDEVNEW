@@ -1,7 +1,7 @@
 // S3PDB_MSSQLServer_Connection.cpp: implementation of the S3PDB_MSSQLServer_Connection class.
 //
 //////////////////////////////////////////////////////////////////////
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "S3PDB_MSSQLServer_Connection.h"
 #include "S3P_MSSQLServer_Result.h"
 #include "../S3Relay.h"

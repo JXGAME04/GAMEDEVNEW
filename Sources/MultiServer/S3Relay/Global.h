@@ -71,7 +71,8 @@
 #include "MSSQL/GlobalFun.h"
 #include "MSSQL/ConnectDef.h"
 #include "MSSQL/S3PDBConVBC.h"
-#include "MSSQL/S3PDB_MSSQLServer_Connection.h"
+//#include "MSSQL/S3PDB_MSSQLServer_Connection.h"
+#include "MSSQL/S3PDB_MySQL_Connection.h"
 #include "MSSQL/S3PResultVBC.h"
 ////////////////////////////////////////////////////
 

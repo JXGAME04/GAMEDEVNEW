@@ -122,12 +122,13 @@ copy release\S3Relay.exe ..\..\..\..\bin\server\release\S3Relay.exe</Command>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\S3Relay.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\debug\
@@ -156,7 +157,8 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;msvcrt.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>.\Debug\S3Relay.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mysqlcppconn.lib;libmysql.lib;mysqlclient.lib;odbc32.lib;odbccp32.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\lib\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -184,8 +186,10 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClCompile Include="MSSQL\GlobalFun.cpp" />
     <ClCompile Include="MSSQL\S3PDBConVBC.cpp" />
     <ClCompile Include="MSSQL\S3PDB_MSSQLServer_Connection.cpp" />
+    <ClCompile Include="MSSQL\S3PDB_MySQL_Connection.cpp" />
     <ClCompile Include="MSSQL\S3PResultVBC.cpp" />
     <ClCompile Include="MSSQL\S3P_MSSQLServer_Result.cpp" />
+    <ClCompile Include="MSSQL\S3P_MySQL_Result.cpp" />
     <ClCompile Include="NetCenter.cpp" />
     <ClCompile Include="NetClient.cpp" />
     <ClCompile Include="NetConnect.cpp" />
@@ -243,8 +247,10 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClInclude Include="MSSQL\GlobalFun.h" />
     <ClInclude Include="MSSQL\S3PDBConVBC.h" />
     <ClInclude Include="MSSQL\S3PDB_MSSQLServer_Connection.h" />
+    <ClInclude Include="MSSQL\S3PDB_MySQL_Connection.h" />
     <ClInclude Include="MSSQL\S3PResultVBC.h" />
     <ClInclude Include="MSSQL\S3P_MSSQLServer_Result.h" />
+    <ClInclude Include="MSSQL\S3P_MySQL_Result.h" />
     <ClInclude Include="NetCenter.h" />
     <ClInclude Include="NetClient.h" />
     <ClInclude Include="NetConnect.h" />

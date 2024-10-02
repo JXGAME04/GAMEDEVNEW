@@ -1,9 +1,11 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "process.h"
 #include "time.h"
 #include "GlobalFun.h"
 
 #include "../LogFile.h"
+#include <tchar.h>
+#include <cassert>
 static CLogFile gs_LogFile;
 
 static const TCHAR szEnter1[] = "\r\n";

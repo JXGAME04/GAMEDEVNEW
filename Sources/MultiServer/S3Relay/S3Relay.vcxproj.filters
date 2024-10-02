@@ -165,6 +165,12 @@
     <ClCompile Include="TONGDB.CPP">
       <Filter>KTONG</Filter>
     </ClCompile>
+    <ClCompile Include="MSSQL\S3P_MySQL_Result.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MSSQL\S3PDB_MySQL_Connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="S3Relay.rc">
@@ -320,6 +326,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="db18.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MSSQL\S3P_MySQL_Result.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MSSQL\S3PDB_MySQL_Connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

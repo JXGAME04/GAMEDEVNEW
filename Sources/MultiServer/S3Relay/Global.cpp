@@ -217,7 +217,7 @@ BOOL gInitialize()
 		m_DatabaseInfo.strDataBase = m_szDataBase;
 		m_DatabaseInfo.strUser = m_szUser;
 		m_DatabaseInfo.strPassword = m_szPassword;
-		pConnectDB = new S3PDB_MSSQLServer_Connection();
+		pConnectDB = new S3PDB_MySQL_Connection();
 		if (pConnectDB->OpenConnect(&m_DatabaseInfo))
 		{
 			rTRACE("Connect Database Success!");

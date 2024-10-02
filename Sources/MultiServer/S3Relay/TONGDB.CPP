@@ -8,6 +8,7 @@
 #include "DBTable.h"
 #include "TongDB.h"
 #include "S3Relay.h"
+#include "COMUtil.h"
 
 CTongDB		g_cTongDB;
 
