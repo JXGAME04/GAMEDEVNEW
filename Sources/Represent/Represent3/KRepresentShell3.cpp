@@ -39,6 +39,7 @@ bool	g_bUse4444Texture = true;
 
 bool	g_bNonPow2Conditional = false;
 
+float g_fZoomFactor = 1.2f;
 bool Test3D()
 {
 	IDirectDraw7 *pDDraw7;
@@ -331,7 +332,7 @@ void KRepresentShell3::SetUpProjectionMatrix()
 	// 根据g_renderModel设置投影变换矩阵
 	float fAspect = (float)(g_nScreenWidth / g_nScreenHeight * 1.37);
 	if(g_renderModel == RenderModel3DOrtho)
-		D3DXMatrixOrthoLH(&m_matProj, 800, 600, 1.0f, 20000.0f );
+		D3DXMatrixOrthoLH(&m_matProj, 800*g_fZoomFactor, 600*g_fZoomFactor, 1.0f, 40000.0f );
 	else
 		D3DXMatrixPerspectiveFovLH( &m_matProj, D3DX_PI/24, fAspect, 1.0f, 20000.0f );
 	PD3DDEVICE->SetTransform( D3DTS_PROJECTION, &m_matProj );
@@ -1801,8 +1802,8 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 		m_vCamera1.y = fY;
 		m_vCamera1.z = fZ;
 		m_vCamera.x = fX;
-		m_vCamera.y = fY + 4000.0f;
-		m_vCamera.z = (float)(fZ + 4000.0f*0.58);
+		m_vCamera.y = fY + 4000.0f* g_fZoomFactor;
+		m_vCamera.z = (float)(fZ + 4000.0f*0.58* g_fZoomFactor);
 		D3DXMatrixLookAtLH( &m_matView, &m_vCamera,
 							&D3DXVECTOR3( fX, fY, fZ ), &D3DXVECTOR3( 0, 0, 1 ) );
 		PD3DDEVICE->SetTransform( D3DTS_VIEW,  &m_matView );
@@ -1843,8 +1844,9 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 			D3DXVec3Project(&vPos, &vPos, &viewportData, &m_matProj, &m_matView, NULL);
 			nX = (int)vPos.x, nY = (int)vPos.y;
 		}
-		else
+		else {
 			CoordinateTransform(nX, nY, nZ);
+		}
 	}
 	
 	m_FontTable[i].pFontObj->SetBorderColor(BorderColor);
@@ -1886,8 +1888,9 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 			D3DXVec3Project(&vPos, &vPos, &viewportData, &m_matProj, &m_matView, NULL);
 			nX = (int)vPos.x, nY = (int)vPos.y;
 		}
-		else
+		else {
 			CoordinateTransform(nX, nY, nZ);
+		}
 	}
 	
 	m_FontTable[i].pFontObj->SetBorderColor(BorderColor);
@@ -1929,8 +1932,9 @@ int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam,
 				D3DXVec3Project(&vPos, &vPos, &viewportData, &m_matProj, &m_matView, NULL);
 				x = (int)vPos.x, y = (int)vPos.y;
 			}
-			else
+			else {
 				CoordinateTransform(x, y, z);
+			}
 
 			pParam->nX = x;
 			pParam->nY = y;
@@ -1979,8 +1983,9 @@ int KRepresentShell3::LocateRichText(int nX, int nY,
 				D3DXVec3Project(&vPos, &vPos, &viewportData, &m_matProj, &m_matView, NULL);
 				x = (int)vPos.x, y = (int)vPos.y;
 			}
-			else
+			else {
 				CoordinateTransform(x, y, z);
+			}
 
 			pParam->nX = x;
 			pParam->nY = y;
@@ -2203,8 +2208,22 @@ void KRepresentShell3::D3DTerm()
 
 void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 {
-	nX = nX - m_nLeft;
-	nY = nY / 2 - m_nTop - ((nZ * 887) >> 10);
+	int tmpX = nX;
+	int tmpY = nY;
+	int deltaY = (nY / 2 - m_nTop - ((nZ * 887) >> 10));
+	nX = (nX - m_nLeft) / g_fZoomFactor;
+	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10)) / g_fZoomFactor;
+	nX += g_nScreenWidth /2 - g_nScreenWidth / 2 / g_fZoomFactor;
+	nY += g_nScreenHeight/2 - g_nScreenHeight / 2/ g_fZoomFactor;
+}
+
+void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
+{
+	int tmpX = nX;
+	int tmpY = nY;
+	int delta = (nX - m_nLeft);
+	nX = (nX - m_nLeft) / g_fZoomFactor;
+	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10)) / g_fZoomFactor;
 }
 
 void KRepresentShell3::DrawRect(int32 x1, int32 y1, int32 nWidth, int32 nHeight, DWORD color)

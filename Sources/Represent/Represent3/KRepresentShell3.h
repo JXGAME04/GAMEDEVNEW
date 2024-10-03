@@ -469,6 +469,8 @@ private:
         int& nY, 
         //## 传入三维坐标z分量
         int nZ);
+
+    void CoordinateTransformX(int& nX, int& nY, int nZ);
 	
 	// 根据g_renderModel设置投影变换矩阵
 	void SetUpProjectionMatrix();

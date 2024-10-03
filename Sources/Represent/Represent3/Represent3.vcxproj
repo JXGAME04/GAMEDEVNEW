@@ -53,7 +53,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
+    <OutDir>..\..\..\..\bin\client</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -84,11 +84,8 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\debug\
-copy Debug\Represent3.dll ..\..\..\..\bin\client\Represent3.dll
-copy Debug\Represent3.pdb ..\..\..\..\bin\client\Represent3.pdb
-copy Debug\Represent3.dll ..\..\..\..\bin\client\debug\Represent3.dll
-copy Debug\Represent3.pdb ..\..\..\..\bin\client\debug\Represent3.pdb</Command>
+      <Command>md ..\..\..\..\bin\client\debug\
+copy Debug\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
