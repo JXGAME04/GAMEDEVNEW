@@ -387,6 +387,7 @@ struct iRepresentShell
 										//用32bit数以0RGB的格式表示颜色，每个分量8bit。
 			unsigned int uCount			//颜色列表中颜色数的数目
 			) = 0;
+    virtual void setZoomFactor(float zoomFactorDelta) = 0; //set zoom factor
 };
 
 

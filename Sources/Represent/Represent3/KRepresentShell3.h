@@ -400,6 +400,7 @@ public:
 	{
 		return uCount;
 	}
+    virtual void setZoomFactor(float zoomFactorDelta); //set zoom factor
 
 private:
 	class KRSFontItem
@@ -442,6 +443,8 @@ private:
 	int m_nLightingAreaX;				// 当前9个区域左上角的x坐标
 	int m_nLightingAreaY;				// 当前9个区域左上角的y坐标
 	DWORD pLightingArray[LIGHTING_GRID_WIDTH * LIGHTING_GRID_HEIGHT];	// 光照图信息数组
+
+    float g_fZoomFactor; //Zoom factor
 
 	// 性能统计相关
 

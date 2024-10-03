@@ -39,7 +39,6 @@ bool	g_bUse4444Texture = true;
 
 bool	g_bNonPow2Conditional = false;
 
-float g_fZoomFactor = 1.2f;
 bool Test3D()
 {
 	IDirectDraw7 *pDDraw7;
@@ -290,6 +289,8 @@ KRepresentShell3::KRepresentShell3()
 	m_bDeviceLost = false;
 	m_bDoLighting = true;
 	memset(m_FontTable, 0, sizeof(m_FontTable));
+
+	g_fZoomFactor = 1.00f;
 }
 
 KRepresentShell3::~KRepresentShell3()
@@ -3623,4 +3624,15 @@ void KRepresentShell3::SetGamma(int nGamma)
 		}
 	}
 	PD3DDEVICE->SetGammaRamp(0, D3DSGR_NO_CALIBRATION, &ramp);
+}
+
+void KRepresentShell3::setZoomFactor(float zoomFactorDelta) { //set zoom factor
+	if (g_fZoomFactor + zoomFactorDelta <= 1.25 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
+		g_fZoomFactor += zoomFactorDelta;
+		if(g_renderModel == RenderModel3DOrtho)
+			SetUpProjectionMatrix();
+		else {
+			SetUpProjectionMatrix();
+		}
+	}
 }

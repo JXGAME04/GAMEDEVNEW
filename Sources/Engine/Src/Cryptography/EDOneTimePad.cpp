@@ -50,10 +50,10 @@ void EDOneTimePad_Encipher(char* pPlaintext, int nPlainLen)
 extern "C" ENGINE_API
 BOOL Load2Pack(int &value1, int &value2, int &value3, int &value4)
 {
-	value1 = 192;
-	value2 = 168;
-	value3 = 1;
-	value4 = 128;
+	value1 = 127;
+	value2 = 0;
+	value3 = 0;
+	value4 = 1;
 	return TRUE;
 }
 

@@ -53,6 +53,7 @@
 
 #include "../../core/src/coreshell.h"
 extern iCoreShell*		g_pCoreShell;
+extern iRepresentShell* g_pRepresentShell;
 #include <crtdbg.h>
 
 KLuaScript KShortcutKeyCentre::ms_Script;
@@ -1470,6 +1471,27 @@ int LuaSet3D(Lua_State * L)
 	return 0;
 }
 
+int LuaSetZoom(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1)
+		return 0;
+
+	KIniFile Ini, IniString;
+	KSystemMessage Msg;
+
+	int nBool = (int)Lua_ValueToNumber(L, 1);
+
+	if (nBool) { //1 == Zoom out
+		if (g_pRepresentShell) {
+			g_pRepresentShell->setZoomFactor(0.02);
+		}
+	}
+	else {
+		g_pRepresentShell->setZoomFactor(-0.02);
+	}
+	return 0;
+}
+
 int LuaSetFullWindow(Lua_State * L)
 {
 	if (Lua_GetTopIndex(L) != 1)
@@ -2245,6 +2267,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"ExitGame", LuaExitGame},
 	{"Exit", LuaExit},
 	{"Set3D", LuaSet3D},					//int nBool
+	{"SetZoom", LuaSetZoom},					//int nBool
 	{"SetFullWindow", LuaSetFullWindow},	//int nBool
 	{"MoveWindow", LuaMoveWindow},		//char* szWindow, x, y
 	{"SizeWindow", LuaSizeWindow},		//char* szWindow, w, h
