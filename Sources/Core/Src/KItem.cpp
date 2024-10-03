@@ -1085,8 +1085,8 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if (bShowPrice)
 	{
 		int nPrice = 0;
-		char pszTemp2[32];
-		char pszTemp[32];
+		char pszTemp2[128];
+		char pszTemp[128];
 		
 		nPrice = GetCurPrice();
 		strcat(pszMsg, szPriceColor[Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nMoneyUnit]);
