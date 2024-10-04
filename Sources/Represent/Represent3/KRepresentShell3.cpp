@@ -3627,6 +3627,10 @@ void KRepresentShell3::SetGamma(int nGamma)
 }
 
 void KRepresentShell3::setZoomFactor(float zoomFactorDelta) { //set zoom factor
+	if (zoomFactorDelta == 99) { //reset
+		g_fZoomFactor = 1;
+		SetUpProjectionMatrix();
+	}
 	if (g_fZoomFactor + zoomFactorDelta <= 1.25 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
 		g_fZoomFactor += zoomFactorDelta;
 		if(g_renderModel == RenderModel3DOrtho)

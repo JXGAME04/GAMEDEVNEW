@@ -1481,13 +1481,26 @@ int LuaSetZoom(Lua_State* L)
 
 	int nBool = (int)Lua_ValueToNumber(L, 1);
 
-	if (nBool) { //1 == Zoom out
+	if (nBool == 1) { //1 == Zoom out
 		if (g_pRepresentShell) {
 			g_pRepresentShell->setZoomFactor(0.02);
+			//if (g_pCoreShell) {
+			//	g_pCoreShell->Goto(16, 0);
+			//	g_pCoreShell->Goto(48, 0);
+			//}
+		}
+	}
+	else if (nBool == 0) {
+		if (g_pRepresentShell) {
+			g_pRepresentShell->setZoomFactor(-0.02);
+
+
 		}
 	}
 	else {
-		g_pRepresentShell->setZoomFactor(-0.02);
+		if (g_pRepresentShell) {
+			g_pRepresentShell->setZoomFactor(99);
+		}
 	}
 	return 0;
 }
