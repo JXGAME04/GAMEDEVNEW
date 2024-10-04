@@ -468,7 +468,7 @@ void MapToggleStatus()
 	{
 	}
 	else
-		MapSetMode(MINIMAP_M_NONE);
+		MapSetMode(MINIMAP_M_BRIEF_PIC);
 }
 
 MINIMAP_MODE MapGetMode()
