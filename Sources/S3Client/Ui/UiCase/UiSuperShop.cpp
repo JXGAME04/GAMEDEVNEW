@@ -374,14 +374,16 @@ void KUiShoppingCart::CartRelease(int nIndex)
 	FKGioHang m_GioHangNew;
 	memset(&m_GioHangNew, 0, sizeof(m_GioHangNew));
 	KUiSuperShop::GetCurGioHang(&m_GioHangNew);
-	m_GioHangNew.m_ListCount[nIndex] = 0;
-	memset(&m_GioHangNew.m_ListItemInfo[nIndex], 0, sizeof(m_GioHangNew.m_ListItemInfo[nIndex]));
-	memset(&m_GioHangNew.m_ListPriceInfo[nIndex], 0, sizeof(m_GioHangNew.m_ListPriceInfo[nIndex]));
-
-	if(nIndex == -1) // xo¸ toµn bé giá hµng
+	if (nIndex == -1) // xo¸ toµn bé giá hµng
 	{
 		m_GioHangNew.Clear();
 	}
+	else {
+		m_GioHangNew.m_ListCount[nIndex] = 0;
+		memset(&m_GioHangNew.m_ListItemInfo[nIndex], 0, sizeof(m_GioHangNew.m_ListItemInfo[nIndex]));
+		memset(&m_GioHangNew.m_ListPriceInfo[nIndex], 0, sizeof(m_GioHangNew.m_ListPriceInfo[nIndex]));
+	}
+
 	KUiSuperShop::UpdateGioHang(&m_GioHangNew);
 
 	int nFKBuyCount = 0;
