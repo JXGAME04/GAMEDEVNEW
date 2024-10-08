@@ -330,10 +330,10 @@ void KRepresentShell3::SetOption(RepresentOption eOption,	bool bOn)
 
 void KRepresentShell3::SetUpProjectionMatrix()
 {
-	// 根据g_renderModel设置投影变换矩阵
+	// Set the projection transformation matrix according to g_renderModel
 	float fAspect = (float)(g_nScreenWidth / g_nScreenHeight * 1.37);
 	if(g_renderModel == RenderModel3DOrtho)
-		D3DXMatrixOrthoLH(&m_matProj, 800*g_fZoomFactor, 600*g_fZoomFactor, 1.0f, 40000.0f );
+		D3DXMatrixOrthoLH(&m_matProj, 800*g_fZoomFactor, 600*g_fZoomFactor, 1.0f, 20000.0f );
 	else
 		D3DXMatrixPerspectiveFovLH( &m_matProj, D3DX_PI/24, fAspect, 1.0f, 20000.0f );
 	PD3DDEVICE->SetTransform( D3DTS_PROJECTION, &m_matProj );
@@ -936,10 +936,10 @@ void KRepresentShell3::DrawPlayer2D(int nPrimitiveCount, KRepresentUnit* pPrimit
 	RECT rcBound;
 	RECTFLOAT rcBound1;
 
-	// 取得主角所有部件的外包矩形
+	// Get the outer rectangle of all parts of the player
 	GetBoundBox2D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord, rcBound);
 
-	// 如果图素超出屏幕范围则不渲染
+	// If the pixel is outside the screen range, it will not be rendered
 	if(rcBound.right < 0 || rcBound.left > g_nScreenWidth || rcBound.bottom < 0 || rcBound.top > g_nScreenHeight)
 		return;
 
@@ -948,7 +948,7 @@ void KRepresentShell3::DrawPlayer2D(int nPrimitiveCount, KRepresentUnit* pPrimit
 	rcBound1.right = (float)(rcBound.right);
 	rcBound1.bottom = (float)(rcBound.bottom);
 
-	// 绘制主角类
+	// Draw the main character class
 	if(rcBound.right - rcBound.left <= SPR_PRERENDER_TEXSIZE1 
 		&& rcBound.bottom - rcBound.top <= SPR_PRERENDER_TEXSIZE1)
 	{
@@ -969,7 +969,7 @@ void KRepresentShell3::GetBoundBox2D(int nPrimitiveCount, KRepresentUnit* pPrimi
 	KRUImage* pTemp = (KRUImage*)pPrimitives;
 
 	bool bFirstOne = true;
-	// 所有图素的计算外包矩形
+	// Compute the bounding rectangle of all pixels
 	for (i = 0; i < nPrimitiveCount; i++, pTemp++)
 	{
 		TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(
@@ -2209,9 +2209,6 @@ void KRepresentShell3::D3DTerm()
 
 void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 {
-	int tmpX = nX;
-	int tmpY = nY;
-	int deltaY = (nY / 2 - m_nTop - ((nZ * 887) >> 10));
 	nX = (nX - m_nLeft) / g_fZoomFactor;
 	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10)) / g_fZoomFactor;
 	nX += g_nScreenWidth /2 - g_nScreenWidth / 2 / g_fZoomFactor;
@@ -2220,11 +2217,8 @@ void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 
 void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
 {
-	int tmpX = nX;
-	int tmpY = nY;
-	int delta = (nX - m_nLeft);
-	nX = (nX - m_nLeft) / g_fZoomFactor;
-	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10)) / g_fZoomFactor;
+	nX = (nX - m_nLeft);
+	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10));
 }
 
 void KRepresentShell3::DrawRect(int32 x1, int32 y1, int32 nWidth, int32 nHeight, DWORD color)
