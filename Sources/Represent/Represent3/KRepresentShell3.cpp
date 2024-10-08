@@ -3623,22 +3623,21 @@ void KRepresentShell3::SetGamma(int nGamma)
 void KRepresentShell3::setZoomFactor(float zoomFactorDelta) { //set zoom factor
 	if (zoomFactorDelta == 99) { //reset
 		g_fZoomFactor = 1;
-		SetUpProjectionMatrix();
 	}
-	if (g_fZoomFactor + zoomFactorDelta <= 1.25 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
+	else if (g_fZoomFactor + zoomFactorDelta <= 1.25 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
 		g_fZoomFactor += zoomFactorDelta;
-		if(g_renderModel == RenderModel3DOrtho)
-			SetUpProjectionMatrix();
-		else {
-			SetUpProjectionMatrix();
+	}
+	if (g_renderModel == RenderModel3DOrtho)
+		SetUpProjectionMatrix();
+	else {
+		SetUpProjectionMatrix();
 
-			m_vCamera.x = m_vCamera1.x;
-			m_vCamera.y = m_vCamera1.y + 4000.0f * g_fZoomFactor;
-			m_vCamera.z = (float)(m_vCamera1.z + 4000.0f * 0.58 * g_fZoomFactor);
-			D3DXMatrixLookAtLH(&m_matView, &m_vCamera,
-				&D3DXVECTOR3(m_vCamera1.x, m_vCamera1.y, m_vCamera1.z), &D3DXVECTOR3(0, 0, 1));
-			PD3DDEVICE->SetTransform(D3DTS_VIEW, &m_matView);
-			D3DXMatrixInverse(&m_matViewInverse, NULL, &m_matView);
-		}
+		m_vCamera.x = m_vCamera1.x;
+		m_vCamera.y = m_vCamera1.y + 4000.0f * g_fZoomFactor;
+		m_vCamera.z = (float)(m_vCamera1.z + 4000.0f * 0.58 * g_fZoomFactor);
+		D3DXMatrixLookAtLH(&m_matView, &m_vCamera,
+			&D3DXVECTOR3(m_vCamera1.x, m_vCamera1.y, m_vCamera1.z), &D3DXVECTOR3(0, 0, 1));
+		PD3DDEVICE->SetTransform(D3DTS_VIEW, &m_matView);
+		D3DXMatrixInverse(&m_matViewInverse, NULL, &m_matView);
 	}
 }
