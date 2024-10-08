@@ -1767,7 +1767,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	{
 		strcat(pszMsg, "  \n  ");
 		strcat(pszMsg, "<color=Yellow>");
-		char sOrice[40];
+		char sOrice[256];
 		if (m_CommonAttrib.uPrice < 10000)
 		{
 			sprintf(sOrice, "<color=White>Gi¸ niªm yÕt:<color> %d l­îng", m_CommonAttrib.uPrice);
