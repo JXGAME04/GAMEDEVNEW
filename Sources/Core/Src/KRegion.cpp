@@ -431,7 +431,7 @@ BOOL	KRegion::LoadServerNpc(int nSubWorld, KPakFile *pFile, DWORD dwDataSize)
 			pFile->Read(sNpcCell.szScript, sNpcCell.nScriptNameLen);
 			char* gRenameNpc = sNpcCell.szName;
 			RenameNpc(gRenameNpc);
-			strcpy(sNpcCell.szName, gRenameNpc);
+			//strcpy(sNpcCell.szName, gRenameNpc);
 			sNpcCell.szScript[sNpcCell.nScriptNameLen] = 0;
 		}
 		else

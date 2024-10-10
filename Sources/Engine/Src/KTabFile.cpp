@@ -73,10 +73,10 @@ BOOL KTabFile::Load(LPSTR FileName)
 }
 
 //---------------------------------------------------------------------------
-// 函数:	CreateTabOffset
-// 功能:	建立制作表符分隔文件的偏移表
-// 参数:	void
-// 返回:	void
+// Function: CreateTabOffset
+// Function: Create an offset table for tab-delimited files
+// Parameters: void
+// Return: void
 //---------------------------------------------------------------------------
 void KTabFile::CreateTabOffset()
 {
@@ -91,10 +91,10 @@ void KTabFile::CreateTabOffset()
 	Buffer	= (BYTE *)m_Memory.GetMemPtr();
 	nSize	= m_Memory.GetMemLen();
 
-	// 读第一行决定有多少列
+	// Read the first line to determine how many columns there are
 	while (*Buffer != 0x0d && *Buffer != 0x0a)
 	{
-		if (*Buffer == 0x09)
+		if (*Buffer == 0x09) //TAB
 		{
 			nWidth++;
 		}
@@ -103,13 +103,13 @@ void KTabFile::CreateTabOffset()
 	}
 	if (*Buffer == 0x0d && *(Buffer + 1) == 0x0a)
 	{
-		Buffer += 2;	// 0x0a跳过		
-		nOffset += 2;	// 0x0a跳过
+		Buffer += 2;	// skip newline		
+		nOffset += 2;	// skip newline
 	}
 	else
 	{
-		Buffer += 1;	// 0x0a跳过		
-		nOffset += 1;	// 0x0a跳过
+		Buffer += 1;	// skip newline		
+		nOffset += 1;	// skip newline
 	}
 	while(nOffset < nSize)
 	{
@@ -121,15 +121,15 @@ void KTabFile::CreateTabOffset()
 				break;
 		}
 		nHeight++;
-		if (*Buffer == 0x0d && *(Buffer + 1) == 0x0a)
+		if (nOffset+1 < nSize && *Buffer == 0x0d && *(Buffer + 1) == 0x0a)
 		{
-			Buffer += 2;	// 0x0a跳过		
-			nOffset += 2;	// 0x0a跳过
+			Buffer += 2;	// skip newline		
+			nOffset += 2;	// skip newline
 		}
 		else
 		{
-			Buffer += 1;	// 0x0a跳过		
-			nOffset += 1;	// 0x0a跳过
+			Buffer += 1;	// skip newline		
+			nOffset += 1;	// skip newline
 		}
 	}
 	m_Width		= nWidth;
@@ -146,7 +146,7 @@ void KTabFile::CreateTabOffset()
 		{
 			TabBuffer->dwOffset = nOffset;	
 			nLength = 0;
-			while(*Buffer != 0x09 && *Buffer != 0x0d && *Buffer != 0x0a && nOffset < nSize)
+			while(nOffset < nSize && *Buffer != 0x09 && *Buffer != 0x0d && *Buffer != 0x0a)
 			{
 				Buffer++;
 				nOffset++;
@@ -156,7 +156,7 @@ void KTabFile::CreateTabOffset()
 			nOffset++;
 			TabBuffer->dwLength = nLength;
 			TabBuffer++;
-			if (*(Buffer - 1) == 0x0a || *(Buffer - 1) == 0x0d)	//	本行已经结束了，虽然可能没到nWidth //for linux modified [wxb 2003-7-29]
+			if (nOffset >= nSize || *(Buffer - 1) == 0x0a || *(Buffer - 1) == 0x0d)	//	本行已经结束了，虽然可能没到nWidth //for linux modified [wxb 2003-7-29]
 			{
 				for (int k = j+1; k < nWidth; k++)
 				{
@@ -169,10 +169,10 @@ void KTabFile::CreateTabOffset()
 		}
 
 		//modified for linux [wxb 2003-7-29]
-		if (*(Buffer - 1) == 0x0d && *Buffer == 0x0a)
+		if (nOffset <= nSize && *(Buffer - 1) == 0x0d && *Buffer == 0x0a)
 		{
-			Buffer++;				// 0x0a跳过	
-			nOffset++;				// 0x0a跳过	
+			Buffer++;				// skip newline	
+			nOffset++;				// skip newline	
 		}
 	}
 }
