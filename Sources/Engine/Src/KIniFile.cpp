@@ -13,9 +13,9 @@
 #include "KFile.h"
 #include "KFilePath.h"
 #include "KPakFile.h"
-#ifndef _SERVER
+//#ifndef _SERVER
 #include "KCodec.h"
-#endif
+//#endif
 #include "KIniFile.h"
 #include <string.h>
 #include "KSG_StringProcess.h"
@@ -116,10 +116,10 @@ BOOL KIniFile::LoadPack(LPCSTR FileName)
 	KPakFile	File;
 	PVOID		PackBuf;
 	PVOID		DataBuf;
-#ifndef _SERVER
+//#ifndef _SERVER
 	KCodec*		pCodec;
 	TCodeInfo	CodeInfo;
-#endif
+//#endif
 	TPackHead	Header;
 
 	// check file name
@@ -142,12 +142,12 @@ BOOL KIniFile::LoadPack(LPCSTR FileName)
 		return FALSE;
 
 	// init codec
-#ifndef _SERVER
+//#ifndef _SERVER
 	pCodec = NULL;
 	g_InitCodec(&pCodec, Header.Method);
 	if (pCodec == NULL)
 		return FALSE;
-#endif
+//#endif
 	// allocate buffer for pack data
 	PackBuf = m_MemStack.Push(Header.PackLen);
 
@@ -158,7 +158,7 @@ BOOL KIniFile::LoadPack(LPCSTR FileName)
 	File.Read(PackBuf, Header.PackLen);
 
 	// decompress data
-#ifndef _SERVER
+//#ifndef _SERVER
 	CodeInfo.lpPack = (PBYTE)PackBuf;
 	CodeInfo.dwPackLen = Header.PackLen;
 	CodeInfo.lpData = (PBYTE)DataBuf;
@@ -170,7 +170,7 @@ BOOL KIniFile::LoadPack(LPCSTR FileName)
 		g_DebugLog("Ini file unpack fail : %s", FileName);
 		return FALSE;
 	}
-#endif
+//#endif
 	// check data length
 
 	// create ini link in memory
@@ -248,10 +248,10 @@ BOOL KIniFile::SavePack(LPCSTR FileName)
 	KFile		File;
 	PVOID		DataBuf;
 	PVOID		PackBuf;
-#ifndef _SERVER
+//#ifndef _SERVER
 	KCodec*		pCodec;
 	TCodeInfo	CodeInfo;
-#endif
+//#endif
 	TPackHead	Header;
 	LPSTR		pBuffer;
 	DWORD		dwLen;
@@ -296,15 +296,15 @@ BOOL KIniFile::SavePack(LPCSTR FileName)
 	Header.Method = g_nCodec; // CODEC_LZO = 2;
 
 	// init codec
-#ifndef _SERVER
+//#ifndef _SERVER
 	pCodec = NULL;
 	g_InitCodec(&pCodec, Header.Method);
 	if (pCodec == NULL)
 		return FALSE;
-#endif
+//#endif
 
 	// compress the data buffer
-#ifndef _SERVER
+//#ifndef _SERVER
 	CodeInfo.lpData = (PBYTE)DataBuf;
 	CodeInfo.lpPack = (PBYTE)PackBuf;
 	CodeInfo.dwDataLen = pBuffer - (LPCSTR)DataBuf;
@@ -313,7 +313,7 @@ BOOL KIniFile::SavePack(LPCSTR FileName)
 	g_FreeCodec(&pCodec, Header.Method);
 	Header.DataLen = CodeInfo.dwDataLen;
 	Header.PackLen = CodeInfo.dwPackLen;
-#endif
+//#endif
 
 	// create ini file
 	if (!File.Create((char*)FileName))

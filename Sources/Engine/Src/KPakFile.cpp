@@ -9,9 +9,9 @@
 #include "KWin32.h"
 #include "KFilePath.h"
 #include "KPakFile.h"
-#ifndef _SERVER
+//#ifndef _SERVER
 	#include "KPakList.h"
-#endif
+//#endif
 
 //---------------------------------------------------------------------------
 // 文件读取模式 0 = 优先从磁盘读取 1 = 优先从文件包读取
@@ -206,10 +206,10 @@ void release_image(KSGImageContent *pImage)
 //---------------------------------------------------------------------------
 KPakFile::KPakFile()
 {
-#ifndef _SERVER
+//#ifndef _SERVER
 	m_PackRef.nPackIndex = -1;
 	m_PackRef.uId = 0;
-#endif
+//#endif
 }
 
 //---------------------------------------------------------------------------
@@ -225,11 +225,11 @@ KPakFile::~KPakFile()
 //---------------------------------------------------------------------------
 bool KPakFile::IsFileInPak()
 {
-#ifndef _SERVER
+//#ifndef _SERVER
 	return (m_PackRef.nPackIndex >= 0 && m_PackRef.uId);
-#else
+//#else
 	return false;
-#endif
+//#endif
 }
 
 //---------------------------------------------------------------------------
@@ -246,12 +246,12 @@ BOOL KPakFile::Open(const char* pszFileName)
 	bool bOk = false;
 	Close();
 
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_nPakFileMode == 0)	//0=优先从磁盘读取
 	{
-#endif
+//#endif
 		bOk = (m_File.Open((char*)pszFileName) != FALSE);
-#ifndef _SERVER
+//#ifndef _SERVER
 		if (bOk == false && g_pPakList)
 		{
 			bOk = g_pPakList->FindElemFile(pszFileName, m_PackRef);
@@ -264,7 +264,7 @@ BOOL KPakFile::Open(const char* pszFileName)
 		if (bOk == false)
 			bOk = (m_File.Open((char*)pszFileName) != FALSE);
 	}
-#endif
+//#endif
 	return bOk;
 }
 
@@ -276,14 +276,14 @@ BOOL KPakFile::Open(const char* pszFileName)
 //---------------------------------------------------------------------------
 DWORD KPakFile::Read(void* pBuffer, unsigned int uSize)
 {
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_PackRef.nPackIndex >= 0)
 	{
 		if (g_pPakList->ElemFileRead(m_PackRef, pBuffer, uSize) == false)
 			uSize = 0;
 	}
 	else
-#endif
+//#endif
 	{
 		uSize = m_File.Read(pBuffer, uSize);
 	}
@@ -298,7 +298,7 @@ DWORD KPakFile::Read(void* pBuffer, unsigned int uSize)
 //---------------------------------------------------------------------------
 DWORD KPakFile::Seek(int nOffset, unsigned int uMethod)
 {
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_PackRef.nPackIndex >= 0)
 	{
 		if (uMethod == FILE_BEGIN)
@@ -314,7 +314,7 @@ DWORD KPakFile::Seek(int nOffset, unsigned int uMethod)
 		nOffset = m_PackRef.nOffset;
 	}
 	else
-#endif
+//#endif
 	{
 		nOffset = m_File.Seek(nOffset, uMethod);
 	}
@@ -328,11 +328,11 @@ DWORD KPakFile::Seek(int nOffset, unsigned int uMethod)
 DWORD KPakFile::Tell()
 {
 	int nOffset;
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_PackRef.nPackIndex >= 0)
 		nOffset = m_PackRef.nOffset;
 	else
-#endif
+//#endif
 		nOffset = m_File.Tell();
 	return nOffset;
 }
@@ -344,11 +344,11 @@ DWORD KPakFile::Tell()
 DWORD KPakFile::Size()
 {
 	unsigned int uSize;
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_PackRef.nPackIndex >= 0)
 		uSize = m_PackRef.nSize;
 	else
-#endif
+//#endif
 		uSize = m_File.Size();
 	return uSize;
 }
@@ -357,14 +357,14 @@ DWORD KPakFile::Size()
 //---------------------------------------------------------------------------
 void KPakFile::Close()
 {
-#ifndef _SERVER
+//#ifndef _SERVER
 	if (m_PackRef.nPackIndex >= 0)
 	{
 		m_PackRef.nPackIndex = -1;
 		m_PackRef.uId = 0;
 	}
 	else
-#endif
+//#endif
 	{
 		m_File.Close();
 	}

@@ -11,9 +11,9 @@
 //---------------------------------------------------------------------------
 #include "KFile.h"
 
-#ifndef _SERVER
+//#ifndef _SERVER
 #include "XPackFile.h"
-#endif
+//#endif
 
 //---------------------------------------------------------------------------
 ENGINE_API void g_SetPakFileMode(int nFileMode);
@@ -34,9 +34,9 @@ public:
 	BOOL		Save(const char* pszFileName);
 private:
 	KFile		m_File;			// 真实文件(不在包中)
-	#ifndef _SERVER
+	//#ifndef _SERVER
 		XPackElemFileRef	m_PackRef;
-	#endif
+	//#endif
 };
 
 //---------------------------------------------------------------------------
