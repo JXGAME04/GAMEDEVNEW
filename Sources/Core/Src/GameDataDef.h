@@ -829,7 +829,7 @@ enum SYS_MESSAGE_CONFIRM_TYPE
 
 struct KSystemMessage
 {
-	char			szMessage[64];	//消息文本
+	char			szMessage[128];	//消息文本
 	unsigned int	uReservedForUi;	//界面使用的数据域,core里填0即可
 	unsigned char	eType;			//消息分类取值来自枚举类型 SYS_MESSAGE_TYPE
 	unsigned char	byConfirmType;	//响应类型
