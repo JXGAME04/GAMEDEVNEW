@@ -219,7 +219,7 @@ struct TDBItemData
 	int iiduphong7;
 	int iiduphong8;
 	int iiduphong9;
-
+	int iBaiTanPrice; //gia bay ban
 };
 
 struct TDBFriendsData

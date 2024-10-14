@@ -1378,6 +1378,7 @@ void KProtocolProcess::s2cSyncItem(BYTE* pMsg)
 		Item[nIndex].SetMantle(pItemSync->m_Mantle); //#phi phong
 		Item[nIndex].SetParam(pItemSync->m_Param); //#sè lÇn sö dông item
 		Item[nIndex].SetItemGlowLight(pItemSync->m_GlowLight); //#ngo¹i trang vò khÝ ph¸t s¸ng
+		Item[nIndex].SetPrice(pItemSync->m_Price);
 		Player[CLIENT_PLAYER_INDEX].m_ItemList.AddKIL(nIndex, pItemSync->m_btPlace, pItemSync->m_btX, pItemSync->m_btY);
 	}
 	Player[CLIENT_PLAYER_INDEX].m_ItemList.UnlockOperation();

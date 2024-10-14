@@ -925,6 +925,7 @@ typedef struct
 	int				m_TimeE;
 	bool		m_bIsNew;
 	int			m_GlowLight; //ngo¹i trang
+	int			m_Price; //gia bay ban
 } ITEM_SYNC;
 
 typedef struct

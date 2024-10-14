@@ -351,6 +351,7 @@ bool CPlayerCreator::GetRoleDataFromIni(BYTE* pData, const char* szFileName)
 		pItemData->iiduphong7		= 0;
 		pItemData->iiduphong8		= 0;
 		pItemData->iiduphong9		= 0;
+		pItemData->iBaiTanPrice		= 0;
 		pItemData ++;
 	}
 

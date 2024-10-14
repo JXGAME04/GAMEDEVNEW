@@ -47,10 +47,10 @@ typedef struct
 	int		nSeries;				
 	char	szItemName[80];			
 	int 	nColor;
+	int		uPrice;		//gia bay ban
 #ifndef _SERVER
 	char	szImageName[80];		
-	char	szIntro[256];			
-	int		uPrice;
+	char	szIntro[256];	
 #endif
 	char	szScript[256];	
 	int		nNpcImage;				
@@ -264,9 +264,10 @@ public:
 	
 	BOOL	HaveMaigc(int nAttribe,int nValue1Min,int nValue1Max,int nValue2Min,int nValue2Max,int nValue3Min,int nValue3Max);
 	int		GetBaseMagicAttribType(int i = 0)  const { return m_aryBaseAttrib[i].nAttribType; };
-#ifndef _SERVER
+
 	void	SetPrice(int uPrice) {m_CommonAttrib.uPrice = uPrice;};
 	int		GetSetPrice() {return m_CommonAttrib.uPrice;};
+#ifndef _SERVER
 	void	PaintItem(int nX, int nY, bool bResize = false, bool bPaintStack = true, unsigned int sidx = 0);
 	void	GetDesc(char* pszMsg, bool bShowPrice = false, int nPriceScale = 1, int nActiveAttrib = 0);
 #endif

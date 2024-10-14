@@ -345,10 +345,9 @@ void KItem::operator = (const KBASICPROP_EQUIPMENT& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
-
-#ifndef _SERVER
 	pCA->uPrice = 0; 
 
+#ifndef _SERVER
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
 
@@ -389,8 +388,8 @@ void KItem::operator = (const KBASICPROP_MEDMATERIAL& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
@@ -439,8 +438,8 @@ void KItem::operator = (const KBASICPROP_MINE& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
@@ -489,8 +488,8 @@ void KItem::operator = (const KBASICPROP_QUEST& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
@@ -536,8 +535,8 @@ void KItem::operator = (const KBASICPROP_TOWNPORTAL& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
@@ -582,8 +581,8 @@ void KItem::operator = (const KBASICPROP_MEDICINE& sData)
 	pCA->LimitTime.bMonth = 0;
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);
 #endif
@@ -729,8 +728,8 @@ void KItem::operator = (const KBASICPROP_EQUIPMENT_GOLD& sData)
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
 	pCA->nGlowLight = 0;
+	pCA->uPrice =  0;
 #ifndef _SERVER
-	pCA->uPrice = 0; 
 
 	::strcpy(pCA->szImageName, sData.m_szImageName);
 	::strcpy(pCA->szIntro,	   sData.m_szIntro);

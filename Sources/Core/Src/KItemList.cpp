@@ -311,7 +311,7 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	}
 
 	m_Items[i].nIdx = nIdx;
-	m_Items[i].nPrice = 0;
+	m_Items[i].nPrice = Item[nIdx].m_CommonAttrib.uPrice;
 	m_FreeIdx.Remove(i);
 	m_UseIdx.Insert(i);
 
@@ -3702,6 +3702,7 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 	sItem.m_HInsuranceCourse = Item[nIdx].GetPlayerItemHLock();
 	sItem.m_TimeE = Item[nIdx].GetTime()->bYear;
 	sItem.m_bIsNew = m_bIsNew;
+	sItem.m_Price = Item[nIdx].m_CommonAttrib.uPrice;
 	if(nPlayerIndex)
 		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC));
 	else
@@ -4649,6 +4650,7 @@ void KItemList::SetPrice( int nIdx, int nPrice)
 	if (nPrice)
 	{
 		m_Items[nId].nPrice = nPrice;
+		Item[nGameId].m_CommonAttrib.uPrice = nPrice;
 	} 
 	else
 	{

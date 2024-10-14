@@ -593,6 +593,8 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		NewItem.SetItemGlowLight(pItemData->iiduphong3); //ngo¹i trang item ph¸t s¸ng
 		NewItem.SetExpTime(pItemData->iyear,pItemData->imonth,pItemData->iday,pItemData->ihour);
 
+		NewItem.m_CommonAttrib.uPrice = pItemData->iBaiTanPrice; //Load gia bay ban
+
 		pItemData ++;
 		
 		int nIndex = ItemSet.AddI(&NewItem);
@@ -903,6 +905,7 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->iiduphong1 = Item[nItemIndex].GetMantle(); //#phi phong
 		pItemData->iiduphong2 = Item[nItemIndex].GetParam(); //param sè lÇn sö dông item
 		pItemData->iiduphong3 = Item[nItemIndex].GetItemGlowLight(); //thay ®æi ngo¹i trang mò, ¸o, vò khÝ ph¸t s¸ng
+		pItemData->iBaiTanPrice = Item[nItemIndex].m_CommonAttrib.uPrice; //Luu gia bay ban cua Item
 		//*****************************************************************************
 		pItemData++;
 		nItemCount ++;
