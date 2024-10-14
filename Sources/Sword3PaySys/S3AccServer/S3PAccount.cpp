@@ -410,16 +410,18 @@ int S3PAccount::GetLockAccount(S3PDBConVBC* pConn,
 			time_t curtime;
 			time(&curtime);
 
-			if (nLock > (curtime - 1451581200))
+			if (nLock > (curtime - GetTickCount()))
 			{
 				iRet = ACTION_SUCCESS;
-				nLeftTime = (nLock - (curtime - 1451581200));
+				nLeftTime = (nLock - (curtime - GetTickCount()));
 			}
 			else
 			{
 				iRet = ACTION_FAILED;
 				nLeftTime = 0;
 			}
+			iRet = ACTION_FAILED;
+			nLeftTime = 0;
 		}
 	}
 	else
@@ -440,7 +442,7 @@ int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
 {
 	//khong tinh thoi gian choi
 	liLeft = 10000;
-	liExp = 10000;
+	liExp = 90000;
 	return ACTION_SUCCESS;
 	int iRet = ACTION_FAILED;
 	if (NULL == pConn)
