@@ -68,6 +68,8 @@ int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* st
 							nExtPoint = iExp;
 							nLeftTime = iLeft;
 						}
+						sprintf(strSQL, "update Account_habitus set iClientID = %d, dLoginDate = null where (cAccName = '%s')", ClientID, strAccName);
+						pConn->Do(strSQL);
 					}
 					else
 					{
@@ -111,6 +113,8 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 			}
 			else
 				iRet = ACTION_FAILED;
+			sprintf(strSQL, "update Account_habitus set dLoginDate = NOW() where (cAccName = '%s') and (iClientID = %d)", strAccName, ClientID);
+			pConn->Do(strSQL);
 		}
 		else
 			iRet = E_ACCOUNT_ACCESSDENIED;
@@ -126,8 +130,9 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 		return iRet;
 	}
 	char strSQL[2 * MAX_PATH];
-	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))) where (TIME_TO_SEC(ABS(TIMEDIFF(dEndDate, NOW()))) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s')",
-		ClientID, GetGMID(), strAccName);
+	sprintf(strSQL,
+		"update Account_Habitus set iLeftSecond = iLeftSecond - IF(dLoginDate IS NOT NULL, TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))), 0) where (iClientID = %d) and (cAccName = '%s')",
+		ClientID, strAccName);
 	pConn->Do(strSQL);	//Points will be deducted, even if the account is frozen
 
 	if (nExtPoint != 0)
@@ -153,6 +158,10 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 			}
 			else
 				iRet = ACTION_FAILED;
+
+			sprintf(strSQL, "update Account_habitus set iClientID = 0 where (cAccName = '%s') and (iClientID = %d)",
+				strAccName, NewClientID);
+			pConn->Do(strSQL);
 		}
 		else if (NewClientID == GetGMID())
 			iRet = ACTION_SUCCESS;
