@@ -61,7 +61,7 @@ int S3PAccount::Login(S3PDBConVBC* pConn, const char* strAccName, const char* st
 				{
 					if (GetLeftSecondsOfDeposit(pConn, strAccName, iLeft, iExp) == ACTION_SUCCESS && iLeft > 1800)	//30 minutes minimum remaining time
 					{
-						sprintf(strSQL, "update Account_info set iClientID = %d, dLoginDate = null where (cAccName = '%s')", ClientID, strAccName);
+						sprintf(strSQL, "update Account_info set iClientID = %d, dLoginDate = NOW() where (cAccName = '%s')", ClientID, strAccName);
 						if (pConn->Do(strSQL))
 						{
 							iRet = ACTION_SUCCESS;
@@ -104,7 +104,7 @@ int S3PAccount::LoginGame(S3PDBConVBC* pConn, DWORD ClientID, const char* strAcc
 		{
 			char strSQL[MAX_PATH];
 			//dLoginDate is null, dLoginDate will be null after login
-			sprintf(strSQL, "update Account_info set dLoginDate = NOW() where (cAccName = '%s') and (iClientID = %d) and (dLoginDate is null)", strAccName, ClientID);
+			sprintf(strSQL, "update Account_info set dLoginDate = NOW() where (cAccName = '%s') and (iClientID = %d)", strAccName, ClientID);
 			if (pConn->Do(strSQL))
 			{
 				iRet = ACTION_SUCCESS;
@@ -126,15 +126,15 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 		return iRet;
 	}
 	char strSQL[2 * MAX_PATH];
-	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))) where (TIME_TO_SEC(ABS(TIMEDIFF(dEndDate, NOW()))) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s') and (dLoginDate is not null)",
+	sprintf(strSQL, "update Account_Habitus set iLeftSecond = iLeftSecond - TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))) where (TIME_TO_SEC(ABS(TIMEDIFF(dEndDate, NOW()))) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s')",
 		ClientID, GetGMID(), strAccName);
 	pConn->Do(strSQL);	//Points will be deducted, even if the account is frozen
 
 	if (nExtPoint != 0)
 	{
-		//	sprintf(strSQL, "update Account_Habitus set nExtPoint = CASE WHEN nExtPoint - %d >= 0 THEN nExtPoint - %d WHEN nExtPoint - %d < 0 THEN 0 END where (datediff(second, getdate(), dEndDate) <= 0) and (iClientID = %d or iClientID = %d) and (cAccName = '%s') and (dLoginDate is not null)",
-		//		nExtPoint, nExtPoint, nExtPoint, ClientID, GetGMID(), strAccName);
-		sprintf(strSQL, "EXEC Account_ExPoint '%s',%d", strAccName, nExtPoint);
+			sprintf(strSQL, "update Account_Habitus set nExtPoint = CASE WHEN nExtPoint - %d >= 0 THEN nExtPoint - %d WHEN nExtPoint - %d < 0 THEN 0 END where (iClientID = %d or iClientID = %d) and (cAccName = '%s')",
+				nExtPoint, nExtPoint, nExtPoint, ClientID, GetGMID(), strAccName);
+		//sprintf(strSQL, "EXEC Account_ExPoint '%s',%d", strAccName, nExtPoint);
 		pConn->Do(strSQL);	//Additional points will be deducted, even if the account is frozen
 		//Split into two sentences because the executed SQL has a length limit
 	}
@@ -441,9 +441,9 @@ int S3PAccount::GetLeftSecondsOfDeposit(S3PDBConVBC* pConn,
 	long& liExp)
 {
 	//khong tinh thoi gian choi
-	liLeft = 10000;
-	liExp = 90000;
-	return ACTION_SUCCESS;
+	//liLeft = 10000;
+	//liExp = 90000;
+	//return ACTION_SUCCESS;
 	int iRet = ACTION_FAILED;
 	if (NULL == pConn)
 	{
