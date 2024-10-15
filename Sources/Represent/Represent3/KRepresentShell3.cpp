@@ -237,14 +237,14 @@ D3DXVECTOR3* WorldToScreen
 	return pOut;
 }
 
-// fd2,fd2目标区域，fs1,fs2原区域，点在原区域中的位置
-// 返回点在目标区域的位置
+// fd2,fd2 target area, fs1,fs2 original area, the position of the point in the original area
+// Return the position of the point in the target area
 inline float ChaZhi(float fd1, float fd2, float fs1, float fs2, float fs)
 {
 	return (fs - fs1) / (fs2 - fs1) * (fd2 - fd1) + fd1;
 }
 
-// 按fs相对于fs1和fs2的位置对v1和v2进行差值
+// Difference v1 and v2 according to the position of fs relative to fs1 and fs2
 inline D3DXVECTOR3 ChaZhi(D3DXVECTOR3 v1, D3DXVECTOR3 v2, float fs1, float fs2, float fs)
 {
 	return (v2 - v1) * (fs - fs1) / (fs2 - fs1) + v1;
@@ -284,6 +284,7 @@ KRepresentShell3::KRepresentShell3()
 	m_nTop = 0;
 	m_pPreRenderTexture128 = NULL;
 	m_pPreRenderTexture256 = NULL;
+	m_pPreRenderTexture512 = NULL;
 	m_pVB2D = NULL;
 	m_pVB3D = NULL;
 	m_bDeviceLost = false;
@@ -425,6 +426,9 @@ bool KRepresentShell3::InitDeviceObjects()
 	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE2, SPR_PRERENDER_TEXSIZE2, 1,
 								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture256, NULL)))
 		return false;
+	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE3, SPR_PRERENDER_TEXSIZE3, 1,
+								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture512, NULL)))
+		return false;
 	return true;
 }
 
@@ -441,6 +445,7 @@ void KRepresentShell3::DeleteDeviceObjects()
 
 	SAFE_RELEASE( m_pPreRenderTexture128 );
 	SAFE_RELEASE( m_pPreRenderTexture256 );
+	SAFE_RELEASE( m_pPreRenderTexture512 );
 	SAFE_RELEASE( m_pVB3D );
 	SAFE_RELEASE( m_pVB2D );
 	m_TextureResMgr.Free();
@@ -1056,9 +1061,13 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 		if (FAILED(m_pPreRenderTexture128->LockRect(0, &LockedRect, &rect, 0)))
 			return;
 	}
-	else
+	else if (nTexSize == SPR_PRERENDER_TEXSIZE2)
 	{
 		if (FAILED(m_pPreRenderTexture256->LockRect(0, &LockedRect, &rect, 0)))
+			return;
+	}
+	else {
+		if (FAILED(m_pPreRenderTexture512->LockRect(0, &LockedRect, &rect, 0)))
 			return;
 	}
 
@@ -1147,8 +1156,10 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 
 	if(nTexSize == SPR_PRERENDER_TEXSIZE1)
 		m_pPreRenderTexture128->UnlockRect(0);
-	else
+	else if (nTexSize == SPR_PRERENDER_TEXSIZE2)
 		m_pPreRenderTexture256->UnlockRect(0);
+	else
+		m_pPreRenderTexture512->UnlockRect(0);
 
 	if(FAILED(PD3DDEVICE->SetStreamSource( 0, m_pVB2D, 0, sizeof(VERTEX2D) )))
 		return;
@@ -1171,12 +1182,18 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 
 		PD3DDEVICE->SetTexture( 0, m_pPreRenderTexture128 );
 	}
-	else
+	else if (nTexSize == SPR_PRERENDER_TEXSIZE2)
 	{
 		fU2 = (float)nWidth / (float)SPR_PRERENDER_TEXSIZE2;
 		fV2 = (float)nHeight / (float)SPR_PRERENDER_TEXSIZE2;
 
 		PD3DDEVICE->SetTexture( 0, m_pPreRenderTexture256 );
+	}
+	else {
+		fU2 = (float)nWidth / (float)SPR_PRERENDER_TEXSIZE3;
+		fV2 = (float)nHeight / (float)SPR_PRERENDER_TEXSIZE3;
+
+		PD3DDEVICE->SetTexture(0, m_pPreRenderTexture512);
 	}
 
 	float ft1,ft2;
@@ -1432,18 +1449,18 @@ void KRepresentShell3::DrawPlayer3D(int nPrimitiveCount, KRepresentUnit* pPrimit
 	RECTFLOAT rcBound3D;
 	RECT rcBound2D;
 
-	// 计算非透视模式和透视模式的外包矩形
+	// Calculate the bounding rectangle for non-perspective mode and perspective mode
 	GetBoundBox2D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord, rcBound2D);
 	GetBoundBox3D(nPrimitiveCount, pPrimitives, rcBound3D);
 
-	// 如果图素超出屏幕范围则不渲染
+	// If the pixel is outside the screen range, it will not be rendered
 	if(rcBound3D.right < 0 || rcBound3D.left > g_nScreenWidth || rcBound3D.bottom < 0 || rcBound3D.top > g_nScreenHeight)
 		return;
 
-	if(rcBound3D.left - rcBound3D.right > 260 || rcBound3D.right - rcBound3D.left > 260)
+	if(rcBound3D.left - rcBound3D.right > 260 || rcBound3D.right - rcBound3D.left > 560)
 		return;
 
-	// 绘制主角类
+	// Draw the main character class
 	if(rcBound2D.right - rcBound2D.left <= SPR_PRERENDER_TEXSIZE1 
 		&& rcBound2D.bottom - rcBound2D.top <= SPR_PRERENDER_TEXSIZE1)
 	{
@@ -1454,6 +1471,12 @@ void KRepresentShell3::DrawPlayer3D(int nPrimitiveCount, KRepresentUnit* pPrimit
 		&& rcBound2D.bottom - rcBound2D.top <= SPR_PRERENDER_TEXSIZE2)
 	{
 		DrawSprOnTexture2D(nPrimitiveCount, pPrimitives, false, rcBound2D, rcBound3D, SPR_PRERENDER_TEXSIZE2, true);
+		g_ntest++;
+	}
+	else if (rcBound2D.right - rcBound2D.left <= SPR_PRERENDER_TEXSIZE3
+		&& rcBound2D.bottom - rcBound2D.top <= SPR_PRERENDER_TEXSIZE3)
+	{
+		DrawSprOnTexture2D(nPrimitiveCount, pPrimitives, false, rcBound2D, rcBound3D, SPR_PRERENDER_TEXSIZE3, true);
 		g_ntest++;
 	}
 }
@@ -2795,8 +2818,8 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 	if(nFrame >= pSprite->m_nFrameNum)
 		return;
 
-	// 在屏幕空间检测图素是否可见，如不可见则返回
-	// 这里还可以优化
+	//Check if the pixel is visible in screen space, and return if it is not visible
+	//This can also be optimized
 	D3DXVECTOR3 vPos1, vPos2, vPos3, vPos4;
 	D3DVIEWPORT9 viewportData = g_Device.GetViewport();
 	D3DXVec3Project(&vPos1, &param.m_pos[0], &viewportData, &m_matProj, &m_matView, NULL);
@@ -2819,11 +2842,12 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 
 	if(nRenderStyle != IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
 	{
-		// 不偏色，将颜色改为白
+		// No color cast, change the color to white
 		color = 0xffffffff;
 	}
 
-	// 根据贴图数目把矩形拆分成多个小矩形，计算坐标及纹理
+	// Split the rectangle into multiple small rectangles according to the number of textures, 
+	// calculate the coordinates and texture
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		bDraw[i] = true;
@@ -2833,7 +2857,8 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 		fV2 = (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameHeight /
 				(float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nHeight;
 
-		// 如果只画图素的一部分，则需要调整纹理坐标
+		// If you only draw part of the pixel, 
+		// you need to adjust the texture coordinates
 		if(rect)
 		{
 			float fRcX1, fRcY1, fRcX2, fRcY2;
@@ -2845,7 +2870,8 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 			fRcX2 = (float)rect->right, fRcY2 = (float)rect->bottom;
 			if(fRcX1 > fFrameX2	|| fRcX2 < fFrameX1	|| fRcY1 > fFrameY2	|| fRcY2 < fFrameY1)
 			{
-				// 如果这个面片的剪彩矩形在图素矩形之外则不画
+				// If the cutout rectangle of this patch is outside 
+				// the pixel rectangle, it will not be drawn.
 				bDraw[i] = false;
 				continue;
 			}
@@ -2910,7 +2936,7 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 
 	m_pVB3D->Unlock();
 
-	// 绘制多边形
+	// Draw polygons
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
@@ -2921,7 +2947,7 @@ void KRepresentShell3::DrawSpriteAlpha3D(RenderParam3D &param, int32 nFrame,
 		PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
 		if( nRenderStyle == IMAGE_RENDER_STYLE_BORDER )
 		{
-			// 选中加亮效果
+			// Select highlight effect
 			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE2X );
 			PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
 			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
@@ -3624,7 +3650,7 @@ void KRepresentShell3::setZoomFactor(float zoomFactorDelta) { //set zoom factor
 	if (zoomFactorDelta == 99) { //reset
 		g_fZoomFactor = 1;
 	}
-	else if (g_fZoomFactor + zoomFactorDelta <= 1.25 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
+	else if (g_fZoomFactor + zoomFactorDelta <= 1.10 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
 		g_fZoomFactor += zoomFactorDelta;
 	}
 	if (g_renderModel == RenderModel3DOrtho)

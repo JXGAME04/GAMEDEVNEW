@@ -16,8 +16,9 @@
 #include "TextureResMgr.h"
 
 #define VERTEX_BUFFER_SIZE	3000	// 顶点缓冲的尺寸 
-#define SPR_PRERENDER_TEXSIZE1 128	// 主角预渲染贴图尺寸
-#define SPR_PRERENDER_TEXSIZE2 256	// 主角预渲染贴图尺寸
+#define SPR_PRERENDER_TEXSIZE1 128	// The main character's pre-rendered texture size
+#define SPR_PRERENDER_TEXSIZE2 256	// The main character's pre-rendered texture size
+#define SPR_PRERENDER_TEXSIZE3 512	// The main character's pre-rendered texture size
 
 // 用于非透视渲染的顶点格式
 #define D3DFVF_VERTEX2D (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
@@ -431,6 +432,7 @@ private:
 
 	LPDIRECT3DTEXTURE9 m_pPreRenderTexture128;	// 预渲染主角的贴图指针
 	LPDIRECT3DTEXTURE9 m_pPreRenderTexture256;	// 预渲染主角的贴图指针
+    LPDIRECT3DTEXTURE9 m_pPreRenderTexture512;	// 预渲染主角的贴图指针
 	LPDIRECT3DVERTEXBUFFER9 m_pVB2D;	// 顶点Buffer
 	LPDIRECT3DVERTEXBUFFER9 m_pVB3D;	// 顶点Buffer
 	D3DXMATRIX m_matView;				// 世界坐标到摄像机坐标系的变换矩阵
