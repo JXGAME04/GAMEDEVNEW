@@ -131,7 +131,7 @@ copy Debug\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\release\
+      <Command>md ..\..\..\..\bin\client\release\
 copy Release\Represent3.dll ..\..\..\..\bin\client\Represent3.dll</Command>
     </PostBuildEvent>
     <Midl>
