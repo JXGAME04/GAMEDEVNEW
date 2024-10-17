@@ -990,6 +990,7 @@ void KSwordOnLineSever::MessageLoop()
 {
 	int i;
 	const char*		pChar = NULL;
+	const char*		pClientInfo = NULL;
 	unsigned int	uSize = 0;
 
 #ifndef _STANDALONE
@@ -1052,6 +1053,7 @@ void KSwordOnLineSever::MessageLoop()
 		while(m_pServer)
 		{
 			pChar = (const char*)m_pServer->GetPackFromClient(i, uSize);
+			pClientInfo = (const char*)m_pServer->GetClientInfo(i);
 			if (!pChar || 0 == uSize)
 				break;
 		
@@ -3291,9 +3293,27 @@ BOOL DirectoryExists(const char* dirName) {
   return (attribs & FILE_ATTRIBUTE_DIRECTORY);
 }
 
+std::string getIpFromClientInfo(const char* pClientInfo) {
+	std::string clientInfo(pClientInfo);
+	size_t colonPos = clientInfo.find(':');  // Find position of the colon
+
+	if (colonPos != std::string::npos) {
+		// Extract the substring before the colon, which is the IP part
+		return clientInfo.substr(0, colonPos);
+	}
+	else {
+		// If the format is wrong, return an empty string or handle error
+		return "";
+	}
+}
+
 int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char* pData, size_t dataLength)
 {
 	const char* pBuffer = pData;
+	const char*  pClientInfo = (const char*)m_pServer->GetClientInfo(lnID);
+	char szHwID[256];
+
+	std::string ip = getIpFromClientInfo(pClientInfo);
 
 	if (*pBuffer != c2s_logiclogin)
 	{
@@ -3305,10 +3325,15 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 
 		cout << "A client try to login..." << endl;//edit by phong kieu client try to login
 
-		char* szHwID = "";
 		if(&pLL->sHWID[0])
 		{
-			szHwID		= pLL->sHWID;	//get HWID from client
+			//get HWID from client
+			strcpy(szHwID, pLL->sHWID);
+			if (!ip.empty()) {
+				// Concatenate the IP to the end of sLogin.m_szNameszHwID
+				strncat(szHwID, " ", sizeof(szHwID) - strlen(szHwID) - 1);  // Add space before IP
+				strncat(szHwID, ip.c_str(), sizeof(szHwID) - strlen(szHwID) - 1);
+			}
 		}
 		else
 		{
@@ -3324,9 +3349,9 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 				STONG_GET_LOGIN_LIMIT_COMMAND	sLogin;	
 				sLogin.ProtocolFamily	= pf_tong;
 				sLogin.ProtocolID		= enumC2S_TONG_GET_LOGIN_LIMIT;
-				sLogin.m_dwParam		= 1;						//tham so 1
+				sLogin.m_dwParam		= 1;				//tham so 1
 				sLogin.m_dwTongNameID	= nIdx;				//tham so 2 //#mapping nIdx
-				strcpy(sLogin.m_szName, pLL->sHWID);	//tham so 3
+				strcpy(sLogin.m_szName, szHwID);		//tham so 3
 				if (m_pTongClient)
 					m_pTongClient->SendPackToServer((const void*)&sLogin, sizeof(sLogin));
 			}
