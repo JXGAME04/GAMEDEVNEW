@@ -424,8 +424,8 @@ BOOL	CTongSet::InitFromDB()
 	{
 		m_tmpTong[i] = NULL;
 	}
-	TTongList	*pList = new TTongList[nTongNum];
-	memset(pList, 0, sizeof(TTongList) * nTongNum);
+	TTongStruct*pList = new TTongStruct[nTongNum];
+	memset(pList, 0, sizeof(TTongStruct) * nTongNum);
 
 	int nGetNum = g_cTongDB.GetTongList(pList, nTongNum);
 	if (nGetNum <= 0)

@@ -85,12 +85,12 @@ CTongControl::CTongControl(int nCamp, char *lpszPlayerName, char *lpszTongName, 
 	memset(m_szLeagueTName, 0, sizeof(m_szLeagueTName));
 }
 
-CTongControl::CTongControl(TTongList sList)
+CTongControl::CTongControl(TTongStruct sList)
 {
-	m_nCamp			= 0;
-	m_dwMoney		= 0;
-	m_nCredit		= 0;
-	m_nLevel		= 0;
+	m_nCamp			= sList.nCamp;
+	m_dwMoney		= sList.dwMoney;
+	m_nCredit		= sList.nCredit;
+	m_nLevel		= sList.nLevel;
 	m_nDirectorNum	= 0;
 	m_nManagerNum	= 0;
 
@@ -105,7 +105,6 @@ CTongControl::CTongControl(TTongList sList)
 
 	m_dwMasterID = 0;
 	m_szMasterName[0] = 0;
-
 	memset(m_dwDirectorID, 0, sizeof(m_dwDirectorID));
 	memset(m_szDirectorName, 0, sizeof(m_szDirectorName));
 
@@ -128,6 +127,10 @@ CTongControl::CTongControl(TTongList sList)
 	m_nExpGuide = 0;
 	m_nCityGuide = 0;
 	memset(m_szLeagueTName, 0, sizeof(m_szLeagueTName));
+	strcpy(m_szMasterName, sList.szMasterName);
+
+	if (strlen(sList.szMasterName) > 0)
+		m_dwMasterID = g_String2Id(sList.szMasterName);
 }
 
 CTongControl::~CTongControl()

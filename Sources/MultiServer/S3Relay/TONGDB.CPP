@@ -108,6 +108,7 @@ bool CTongDB::ChangeTong(CTongControl& aTongControl)
 	strcpy(aTongStruct.szLeagueTName, aTongControl.m_szLeagueTName); //li猲 minh
 	//======== end add by Fong Kieu ========
 	strcpy(aTongStruct.szName, aTongControl.m_szName);
+	strcpy(aTongStruct.szMasterName, aTongControl.m_szMasterName);
 	strcpy(aTongStruct.szMasterTitle, aTongControl.m_szMasterTitle);
 	strcpy(aTongStruct.szNormalTitle, aTongControl.m_szNormalTitle);
 	strcpy(aTongStruct.szNormalBoyTitle, aTongControl.m_szNormalBoyTitle);
@@ -252,7 +253,7 @@ int CTongDB::GetTongCount()
 	return aCount;
 }
 
-int CTongDB::GetTongList(TTongList* aTongList, int aMaxNum)
+int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 {//取得帮会列表
 		int aCount = 0;
 	int aTongSize;
@@ -263,8 +264,9 @@ int CTongDB::GetTongList(TTongList* aTongList, int aMaxNum)
 	while(aResult)
 	{
 		TTongStruct* pTong = (TTongStruct*)aTongBuffer;
-		strcpy(aTongList[aCount].szName, pTong->szName);
+		//strcpy(aTongList[aCount].szName, pTong->szName);
 
+		memcpy(&aTongList[aCount], pTong, sizeof(TTongStruct));
 		int aMemCount = 0;
 		int aMemSize;
 		char* aMemBuffer;

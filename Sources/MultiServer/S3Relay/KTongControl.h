@@ -10,6 +10,36 @@
 #endif // _MSC_VER > 1000
 
 
+typedef struct
+{
+	int			nCamp;								// °ï»áÕóÓª
+	DWORD		dwMoney;								// °ï»á×Ê½ğ
+	int			nCredit;								// °ï»áÉùÍû
+	int			nLevel;								// ®¼ng cÊp bang héi
+	int			nRecruit;							//tr¹ng th¸i tuyÓn ng­êi
+
+	char		szName[defTONG_STR_LENGTH];			// °ï»áÃû
+	char		szPassword[defTONG_STR_LENGTH];		// °ï»áÃÜÂë
+
+	char		szMasterName[defTONG_STR_LENGTH];
+	char		szMasterTitle[defTONG_STR_LENGTH];	// °ïÖ÷³ÆºÅ
+	char		szDirectorTitle[defTONG_MAX_DIRECTOR][defTONG_STR_LENGTH];// ¸÷³¤ÀÏ³ÆºÅ
+	char		szManagerTitle[defTONG_MAX_MANAGER][defTONG_STR_LENGTH];	// ¸÷¶Ó³¤³ÆºÅ
+	char		szNormalTitle[defTONG_STR_LENGTH];	// °ï»á°ïÖÚ³ÆºÅ
+	char		szNormalBoyTitle[defTONG_STR_LENGTH];
+	char		szNormalGirlTitle[defTONG_STR_LENGTH];
+	//add by Fong KiÒu
+	//int			 nStatusGuide;			//tr¹ng th¸i tuyÓn ng­êi bang héi
+	char			szWayEdit[defTONG_STR_LENGTH];				//tiªu chİ bang héi
+	char			szNextTargetEdit[defTONG_STR_LENGTH];		//môc tiªu bang héi
+	int				  nExpGuide;		//®iÓm kinh nghiÖm bang héi
+	int				  nCityGuide;		//thµnh thŞ chiÕm lÜnh
+	//int				  nTongLevel;		//®¼ng cÊp bang héi
+	char			szLeagueTName[defTONG_STR_LENGTH];	//bang liªn minh
+	//end add by Fong KiÒu
+	int MemberCount;
+}TTongStruct;	//ÓÃ×÷´æÈëÊı¾İ¿âµÄ½á¹¹
+
 struct STONG_MEMBER
 {
 	DWORD	m_dwNameID;
@@ -31,7 +61,7 @@ public:
 	// ÓÃÓÚ´´½¨°ï»á
 	CTongControl(int nCamp, char *lpszPlayerName, char *lpszTongName, int nMasterSex);
 	// ÓÃÓÚÊı¾İ¿âÔØÈë°ï»áÊı¾İ
-	CTongControl(TTongList sList);
+	CTongControl(TTongStruct sList);
 	virtual ~CTongControl();
 
 private:
