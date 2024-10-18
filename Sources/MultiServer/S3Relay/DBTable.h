@@ -23,6 +23,7 @@ protected:
 	char *_search(bool bKey, const char *key_ptr, int key_size, int &size, int index);		//搜索指定记录
 	char *_next(bool bKey, int &size);															//下一个记录
 public:
+	bool bStop;
 	ZDBTable(const char *path, const char *name);			//环境目录和数据表的名字
 	virtual ~ZDBTable();
 	
@@ -47,13 +48,12 @@ public:
 	bool remove(const char *key_ptr, int key_size, int index = -1);
 	
 	//遍历纪录记录(by Fellow)
-	enum CursorPointer{cpFirst=10, cpCurrent=8, cpNext=19, cpLast=18};
-	char *GetRecord(int &size, CursorPointer cpMode, int index = -1);//取得按游标某一个数据
-	char *GetRecord_key(int &size, CursorPointer cpMode, int index = -1);	//取得按游标某一个数据的Key值
+	char *GetRecord(int &size, int cpMode, int index = -1);//取得按游标某一个数据
+	char *GetRecord_key(int &size, int cpMode, int index = -1);	//取得按游标某一个数据的Key值
 	
 	bool GetRecordEx(char* aBuffer, int &size,
 				char* aKeyBuffer, int &keysize,
-				CursorPointer cpMode, int index = -1);		//取得按游标某一个数据和key(新版函数)
+				int cpMode, int index = -1);		//取得按游标某一个数据和key(新版函数)
 };
 
 
@@ -84,12 +84,11 @@ public:
 	}
 
 	//遍历纪录记录(by Fellow)
-	enum CursorPointer{cpFirst=10, cpCurrent=8, cpNext=19, cpLast=18};
-	char *GetRecord(int &size, CursorPointer cpMode);//取得按游标某一个数据
-	char *GetRecord_key(int &size, CursorPointer cpMode);	//取得按游标某一个数据的Key值
+	char *GetRecord(int &size, int cpMode);//取得按游标某一个数据
+	char *GetRecord_key(int &size, int cpMode);	//取得按游标某一个数据的Key值
 	bool GetRecordEx(char* aBuffer, int &size,
 						   char* aKeyBuffer, int &keysize,
-						   CursorPointer cpMode);
+		int cpMode);
 
 	char *search_key(const char *key_ptr, int key_size, int &size) {		//搜索指定记录，返回主键值
 		return _search(true, key_ptr, key_size, size);		//搜索指定记录
@@ -98,4 +97,5 @@ public:
 		return _next(true, size);
 	}
 };
+#define MAX_RETRY	16
 #endif

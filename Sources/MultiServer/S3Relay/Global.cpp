@@ -389,6 +389,8 @@ BOOL gUninitialize()
 
 	try
 	{
+
+		g_cTongDB.Close();
 		//disable reclient timer
 		gOnOneClientCreate(oneclient_root);
 		gOnOneClientCreate(oneclient_gateway);
@@ -435,7 +437,6 @@ BOOL gUninitialize()
 
 		g_memory.Uninitialize();
 
-		g_cTongDB.Close();
 
 	}
 	catch (...)

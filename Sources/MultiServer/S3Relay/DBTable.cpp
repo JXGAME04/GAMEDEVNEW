@@ -24,7 +24,13 @@ ZDBTable::ZDBTable(const char *path, const char *name) {
 	
 	if(!db_env_create(&dbenv, 0)) {
 			dbenv->set_errpfx(dbenv, "index_db");
-			if(!dbenv->open(dbenv, env_path, DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL | DB_INIT_TXN | DB_RECOVER, 0)) {
+            dbenv->set_lg_regionmax(dbenv, 512 * 1024);
+            dbenv->set_lg_max(dbenv, 16 * 1024 * 1024);
+            dbenv->set_lg_bsize(dbenv, 2 * 1024 * 1024);
+            dbenv->set_cachesize(dbenv, 0, 64 * 1024 * 1024, 1);
+
+			if(!dbenv->open(dbenv, env_path, DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL | DB_INIT_TXN | DB_RECOVER | DB_THREAD | DB_PRIVATE, 0)) {
+				ret = dbenv->set_flags(dbenv, DB_AUTO_COMMIT | DB_TXN_NOSYNC, 1);
 				index_number = 0;
 				strcpy(table_name, name);
 				return;				//成功了
@@ -48,18 +54,19 @@ int ZDBTable::addIndex(GetIndexFunc func, bool isUnique) {
 
 bool ZDBTable::open() {
 	if(!dbenv) return false;
+	bStop = false;
 	char index_table_name[MAX_TABLE_NAME];
     int index;
 	int ret;
 	if(!db_create(&primary_db, dbenv, 0)) {
-		if(!primary_db->open(primary_db, NULL, table_name, NULL, DB_BTREE, DB_CREATE|DB_AUTO_COMMIT, 0664)) {	//打开主数据库
+		if(!primary_db->open(primary_db, NULL, table_name, NULL, DB_BTREE, DB_CREATE| DB_AUTO_COMMIT | DB_THREAD, 0664)) {	//打开主数据库
 			for(index = 0; index < index_number; index++) {
 				sprintf(index_table_name, "%s.%d", table_name, index);
 				if(!db_create(&index_db[index], dbenv, 0)) {
 					if(!is_index_unique[index]) {
 						if(index_db[index]->set_flags(index_db[index], DB_DUP | DB_DUPSORT)) break;
 					}
-					if(index_db[index]->open(index_db[index], NULL, index_table_name, NULL, DB_BTREE, DB_CREATE|DB_AUTO_COMMIT, 0664)) break;
+					if(index_db[index]->open(index_db[index], NULL, index_table_name, NULL, DB_BTREE, DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664)) break;
 					if(ret = primary_db->associate(primary_db, NULL, index_db[index], get_index_funcs[index], DB_AUTO_COMMIT)) {
 						index_db[index]->close(index_db[index], 0);
 						break;
@@ -82,18 +89,19 @@ void ZDBTable::close() {
 }
 
 bool ZDBTable::commit() {
-/*	if(!dbenv) return false;
+	if(!dbenv) return false;
 	int ret;
 	DB_TXN *tid;
 	if((ret = dbenv->txn_begin(dbenv, NULL, &tid, 0)) != 0) return false;
 	if((ret = primary_db->sync(primary_db, 0)) == 0) {
 		ret = tid->commit(tid, 0);
+		dbenv->txn_checkpoint(dbenv, 0, 0, 0);
 		if(!ret) return true;
 	}
 	else {
 		tid->abort(tid);
 		return false;
-	}*/
+	}
 	return true;
 }
 
@@ -106,10 +114,19 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
 	data.data = (void *)data_ptr;
 	data.size = data_size;
 	
-	if(!primary_db->put(primary_db, NULL, &key, &data, DB_AUTO_COMMIT)) {
+	int ret;
+	int retry = 0;
+RETRY:
+	ret = primary_db->put(primary_db, NULL, &key, &data, DB_AUTO_COMMIT);
+	if(ret == DB_LOCK_DEADLOCK && ++retry < MAX_RETRY) {
+		if(bStop) return false;
+		goto RETRY;
+	}
+	if(ret) return false;
+	else {
+		commit();
 		return true;
 	}
-	return false;
 }
 
 bool ZDBTable::remove(const char *key_ptr, int key_size, int index) {
@@ -118,10 +135,16 @@ bool ZDBTable::remove(const char *key_ptr, int key_size, int index) {
 	memset(&data, 0, sizeof(DBT));
 	key.data = (void *)key_ptr;
 	key.size = key_size;
-	if(!primary_db->del(primary_db, NULL, &key, DB_AUTO_COMMIT)) {
-		return true;
+	int ret;
+	int retry = 0;
+RETRY:
+	ret = primary_db->del(primary_db, NULL, &key, DB_AUTO_COMMIT);
+	if(ret == DB_LOCK_DEADLOCK && ++retry < MAX_RETRY) {
+		if(bStop) return false;
+		goto RETRY;
 	}
-	return false;
+	if(ret) return false;
+	else return true;
 }
 
 char *ZDBTable::_search(bool bKey, const char *key_ptr, int key_size, int &size, int index) {
@@ -213,7 +236,7 @@ char *ZDBTable::_next(bool bKey, int &size) {
 	return result;
 }
 
-char *ZDBTable::GetRecord(int &size, CursorPointer cpMode, int index )
+char *ZDBTable::GetRecord(int &size, int cpMode, int index )
 {//取得按游标某一个数据
 	if(!dbcp)
 	{//如果数据库指针没有初始化，先初始化dbcp
@@ -243,7 +266,7 @@ char *ZDBTable::GetRecord(int &size, CursorPointer cpMode, int index )
 }
 
 
-char *ZDBTable::GetRecord_key(int &size, CursorPointer cpMode, int index )
+char *ZDBTable::GetRecord_key(int &size, int cpMode, int index )
 {
 	if(!dbcp)
 	{//如果数据库指针没有初始化，先初始化dbcp
@@ -272,37 +295,76 @@ char *ZDBTable::GetRecord_key(int &size, CursorPointer cpMode, int index )
 	return result;
 }
 
-bool ZDBTable::GetRecordEx(char* aBuffer, int &size,
-						   char* aKeyBuffer, int &keysize,
-						   CursorPointer cpMode, int index)
-{//取得按游标某一个数据(新版函数)
-	if(!dbcp)
-	{//如果数据库指针没有初始化，先初始化dbcp
-		if(index_db[index]->cursor(index_db[index], NULL, &dbcp, 0))
-		{//初始化dbcp失败
+//bool ZDBTable::GetRecordEx(char* aBuffer, int &size,
+//						   char* aKeyBuffer, int &keysize,
+//						   CursorPointer cpMode, int index)
+//{//取得按游标某一个数据(新版函数)
+//	if(!dbcp)
+//	{//如果数据库指针没有初始化，先初始化dbcp
+//		if(index_db[index]->cursor(index_db[index], NULL, &dbcp, 0))
+//		{//初始化dbcp失败
+//			dbcp = NULL;
+//			return false;
+//		}
+//	}
+//	DBT key, data, pkey;
+//	memset(&key, 0, sizeof(key));
+//	memset(&data, 0, sizeof(data));
+//	memset(&pkey, 0, sizeof(pkey));
+//	
+//	if(dbcp->c_get(dbcp, &key, &data, cpMode)) {
+//			dbcp->c_close(dbcp);
+//			dbcp = NULL;
+//			return false;
+//		}
+//
+//	memmove(aBuffer, data.data, data.size);
+//	size = data.size;
+//	
+//	memmove(aKeyBuffer, key.data, key.size);
+//	keysize = key.size;
+//
+//	return true;
+//}
+
+bool ZDBTable::GetRecordEx(char* aBuffer, int& size,
+	char* aKeyBuffer, int& keysize,
+	int cpMode, int index)
+{
+	if (!dbcp)
+	{
+		// Create a cursor on the primary database
+		if (primary_db->cursor(primary_db, NULL, &dbcp, 0))
+		{
 			dbcp = NULL;
 			return false;
 		}
 	}
-	DBT key, data, pkey;
+
+	DBT key, data;
 	memset(&key, 0, sizeof(key));
 	memset(&data, 0, sizeof(data));
-	memset(&pkey, 0, sizeof(pkey));
-	
-	if(dbcp->c_get(dbcp, &key, &data, cpMode)) {
-			dbcp->c_close(dbcp);
-			dbcp = NULL;
-			return false;
-		}
+
+	if (dbcp->c_get(dbcp, &key, &data, cpMode) == DB_NOTFOUND) {
+		// No record found (e.g., table is empty or no more records)
+		return false;
+	}
+	else if (dbcp->c_get(dbcp, &key, &data, cpMode)) {
+		// Some other error occurred
+		dbcp->c_close(dbcp);
+		dbcp = NULL;
+		return false;
+	}
 
 	memmove(aBuffer, data.data, data.size);
 	size = data.size;
-	
+
 	memmove(aKeyBuffer, key.data, key.size);
 	keysize = key.size;
 
 	return true;
 }
+
 
 CDBTableReadOnly::CDBTableReadOnly(const char *path, const char *name) {
 #ifdef WIN32
@@ -318,14 +380,25 @@ CDBTableReadOnly::CDBTableReadOnly(const char *path, const char *name) {
 #endif
 	dbcp = NULL;//初始化游标（by Fellow）
 
-	if(!db_env_create(&dbenv, 0)) {
-			dbenv->set_errpfx(dbenv, "index_db");
-			if(!dbenv->open(dbenv, env_path, DB_USE_ENVIRON | DB_INIT_MPOOL, 0)) {
-				strcpy(table_name, name);
-				return;				//成功了
-			}
+	// Create the environment handle
+	if ((ret = db_env_create(&dbenv, 0)) == 0) {
+		dbenv->set_errpfx(dbenv, "index_db");
+		dbenv->set_lg_regionmax(dbenv, 512 * 1024);
+		dbenv->set_lg_max(dbenv, 16 * 1024 * 1024);
+		dbenv->set_lg_bsize(dbenv, 2 * 1024 * 1024);
+		dbenv->set_cachesize(dbenv, 0, 64 * 1024 * 1024, 1);
+
+		// Open the environment in read-only mode
+		if (!dbenv->open(dbenv, env_path, DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL | DB_INIT_TXN | DB_RECOVER | DB_THREAD | DB_PRIVATE, 0)) {
+			strcpy(table_name, name);
+			return; // Success
+		}
+
+		// In case of error, close the environment
 		dbenv->close(dbenv, 0);
 	}
+
+	// Set the environment pointer to NULL in case of failure
 	dbenv = NULL;
 }
 
@@ -406,7 +479,7 @@ char *CDBTableReadOnly::_next(bool bKey, int &size) {
 	return result;
 }
 
-char *CDBTableReadOnly::GetRecord(int &size, CursorPointer cpMode)
+char *CDBTableReadOnly::GetRecord(int &size, int cpMode)
 {
 	if(!dbcp)
 	{//如果数据库指针没有初始化，先初始化dbcp
@@ -435,7 +508,7 @@ char *CDBTableReadOnly::GetRecord(int &size, CursorPointer cpMode)
 	return result;
 }
 
-char *CDBTableReadOnly::GetRecord_key(int &size, CursorPointer cpMode)
+char *CDBTableReadOnly::GetRecord_key(int &size, int cpMode)
 {
 	if(!dbcp)
 	{//如果数据库指针没有初始化，先初始化dbcp
@@ -466,7 +539,7 @@ char *CDBTableReadOnly::GetRecord_key(int &size, CursorPointer cpMode)
 
 bool CDBTableReadOnly::GetRecordEx(char* aBuffer, int &size,
 						   char* aKeyBuffer, int &keysize,
-						   CursorPointer cpMode)
+						int cpMode)
 {//取得按游标某一个数据(新版函数)
 	if(!dbcp)
 	{//如果数据库指针没有初始化，先初始化dbcp

@@ -42,7 +42,7 @@ bool CTongDB::Open()
 	m_MemberTable->addIndex(get_TongName);
 	if(!m_MemberTable->open())
 	{
-		m_TongTable->close();
+		m_MemberTable->close();
 		return false;
 	}
 	m_MoneyTable = new ZDBTable("TongMoneyDB","MoneyTable");
@@ -79,6 +79,7 @@ bool CTongDB::OpenNew()
 
 void CTongDB::Close()
 {
+	m_TongTable->commit();
 	m_TongTable->close();
 	m_MemberTable->close();
 	m_MoneyTable->close();
@@ -241,11 +242,11 @@ int CTongDB::GetTongCount()
 	int aTongKeySize;
 	char aTongKeyBuffer[defTONG_STR_LENGTH];
 	char aTongBuffer[sizeof(TTongStruct)];
-	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,ZDBTable::cpFirst);
+	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_FIRST);
 	while(aResult)
 	{
 		aCount++;
-		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,ZDBTable::cpNext);
+		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT);
 	}
 
 	return aCount;
@@ -258,7 +259,7 @@ int CTongDB::GetTongList(TTongList* aTongList, int aMaxNum)
 	int aTongKeySize;
 	char aTongKeyBuffer[defTONG_STR_LENGTH];
 	char aTongBuffer[sizeof(TTongStruct)];
-	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,ZDBTable::cpFirst);
+	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,DB_FIRST);
 	while(aResult)
 	{
 		TTongStruct* pTong = (TTongStruct*)aTongBuffer;
@@ -281,7 +282,7 @@ int CTongDB::GetTongList(TTongList* aTongList, int aMaxNum)
 
 		aCount++;
 		if( aCount>= aMaxNum ) break;
-		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,ZDBTable::cpNext);
+		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT);
 	}
 
 	return aCount;
