@@ -263,7 +263,10 @@ RETRY:
 		goto RETRY;
 	}
 	if(ret) return false;
-	else return true;
+	else {
+		commit();
+		return true;
+	}
 }
 
 bool ZDBTable::_next(bool bKey, ZCursor* cursor) {
