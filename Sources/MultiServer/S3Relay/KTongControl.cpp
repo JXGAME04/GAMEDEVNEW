@@ -447,7 +447,7 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 	if (pInstate->m_btCurFigure == pInstate->m_btNewFigure && pInstate->m_btCurPos == pInstate->m_btNewPos)
 		return FALSE;
 
-	int		i, nOldPos, nNewPos;
+	int		i, nOldPos, nNewPos = 0;
 	DWORD	dwNameID;
 	char	szName[32];
 
@@ -1544,7 +1544,7 @@ BOOL CTongControl::DBInstate( char *lpszPlayerName, BYTE nSite)
 	if (!lpszPlayerName[0] || nSite > 4)
 		return FALSE;
 
-	int		i, nOldPos, nNewPos;
+	int		i, nOldPos, nNewPos = 0;
 	DWORD	dwNameID;
 	char	szName[32];
 
