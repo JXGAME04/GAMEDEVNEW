@@ -669,7 +669,7 @@ void CTongConnect::Proc1_Friend_AskAddFriend(const void* pData, size_t size)
 		return;
 
 	std::_tstring srcrole;
-	if (!g_HostServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
+	if (!g_TongServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
 		return;
 
 	std::_tstring dstrole(pAafCmd->dstrole);
@@ -732,7 +732,7 @@ void CTongConnect::Proc1_Friend_RepAddFriend(const void* pData, size_t size)
 		return;
 
 	std::_tstring srcrole;
-	if (!g_HostServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
+	if (!g_TongServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
 		return;
 
 	std::_tstring dstrole(pRafCmd->dstrole);
@@ -782,7 +782,7 @@ void CTongConnect::Proc1_Friend_GroupFriend(const void* pData, size_t size)
 	tagPlusSrcInfo* pSrcInfo = (tagPlusSrcInfo*)((BYTE*)pData + size) - 1;
 
 	std::_tstring srcrole;
-	if (!g_HostServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
+	if (!g_TongServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
 		return;
 
 	char* pGroupTag = (char*)(pGf + 1);
@@ -833,7 +833,7 @@ void CTongConnect::Proc1_Friend_EraseFriend(const void* pData, size_t size)
 		return;
 
 	std::_tstring srcrole;
-	if (!g_HostServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
+	if (!g_TongServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &srcrole, NULL))
 		return;
 
 	g_FriendMgr.PlayerDelFriend(srcrole, std::_tstring(pEf->friendrole));
@@ -845,7 +845,7 @@ void CTongConnect::Proc1_Friend_AskSyncFriendList(const void* pData, size_t size
 	tagPlusSrcInfo* pSrcInfo = (tagPlusSrcInfo*)((BYTE*)pData + size) - 1;
 
 	std::_tstring role;
-	if (!g_HostServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &role, NULL))
+	if (!g_TongServer.FindPlayerByIpParam(NULL, GetIP(), pSrcInfo->lnID, NULL, NULL, &role, NULL))
 		return;
 
 	g_FriendMgr.SomeoneSyncFriends(role, pSrcInfo->lnID, pSrcInfo->nameid, CNetConnectDup(*this), pAsfl->full, pAsfl->pckgid);

@@ -14,7 +14,7 @@
 #define		defTONG_MEMBER_SIZE_ADD			100		// ³ÉÔ±ÄÚ´æÃ¿´ÎÔö¼ÓµÄ´óÐ¡
 #define		defTONG_MASTER_TITLE        "Bang ch\xF1"          // "Bang chñ"
 #define		defTONG_DIRECTOR_TITLE      "Tr\xAD\xEBng l\xB7o"  // "Tr­ëng l·o"
-#define		defTONG_MANAGER_TITLE       "\xA7\xAD\xEAn ch\xF1"  // "§­êng chñ"
+#define		defTONG_MANAGER_TITLE       "\xA7\xAD\xEAng ch\xF1"  // "§­êng chñ"
 #define		defTONG_MEMBER_TITLE        "M\xABn \xD0\xCA"      // "M«n ®Ö"
 #define		defTONG_NAME_SAY_ON_CHANNEL "C\xABng b\xE8"        // "C«ng bè"
 
