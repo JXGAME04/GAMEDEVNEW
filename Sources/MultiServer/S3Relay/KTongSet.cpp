@@ -147,7 +147,8 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 		DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 		if (channid != -1)
 		{
-			sprintf(szMsg, "%s bﬁ lÁi lÀp bang.", m_pcTong[nPos]->m_szName);
+			//sprintf(szMsg, "%s bﬁ lÁi lÀp bang.", m_pcTong[nPos]->m_szName);
+			sprintf(szMsg, "%s b\xde l\xE7i l\xcbp bang.", m_pcTong[nPos]->m_szName);
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		}
 	}
@@ -201,7 +202,8 @@ int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 				DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 				if (channid != -1)
 				{
-					sprintf(szMsg, "%s Æ∑ gia nhÀp bang ph∏i, xin c∏c huynh Æ÷ chÿ gi∏o.", lpszPlayerName);
+					//sprintf(szMsg, "%s Æ∑ gia nhÀp bang ph∏i, xin c∏c huynh Æ÷ chÿ gi∏o.", lpszPlayerName);
+					sprintf(szMsg, "%s \xae\xB7 gia nh\xCbp bang ph\xB8i, xin c\xb8\x63 huynh \xae\xD6 ch\xD8 gi\xb8o.", lpszPlayerName);
 					g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 				}
 

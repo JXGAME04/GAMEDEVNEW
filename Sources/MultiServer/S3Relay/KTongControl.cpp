@@ -690,19 +690,20 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 	if (channid != -1)
 	{
 		if (pSync->m_szTitle[0])
-			sprintf(szMsg, "%s ®­îc b nhiÖm chøc v %s ", szName, pSync->m_szTitle);
+			//sprintf(szMsg, "%s ®­îc b nhiÖm chøc v %s ", szName, pSync->m_szTitle);
+			sprintf(szMsg, "%s \xAE\xAD\xEE\x63 b\xE6 nhi\xD6m ch\xF8\x63 v\xf4 %s.", szName, pSync->m_szTitle);
 		else
 		{
 			switch (pSync->m_btNewFigure)
 			{
 			case enumTONG_FIGURE_DIRECTOR:
-				sprintf(szMsg, "%s ®­îc phong chøc v %s ", szName, defTONG_DIRECTOR_TITLE);
+				sprintf(szMsg, "%s \xAE\xAD\xEE\x63 phong ch\xF8\x63 v\xf4 %s.", szName, defTONG_DIRECTOR_TITLE);
 				break;
 			case enumTONG_FIGURE_MANAGER:
-				sprintf(szMsg, "%s ®­îc phong chøc v %s ", szName, defTONG_MANAGER_TITLE);
+				sprintf(szMsg, "%s \xAE\xAD\xEE\x63 phong ch\xF8\x63 v\xf4 %s.", szName, defTONG_MANAGER_TITLE);
 				break;
 			case enumTONG_FIGURE_MEMBER:
-				sprintf(szMsg, "%s ®­îc phong chøc v M«n ®Ö ", szName);
+				sprintf(szMsg, "%s \xAE\xAD\xEE\x63 phong ch\xF8\x63 v\xf4 M\xABn \xAE\xD6.", szName);
 				break;
 			}
 		}
@@ -1090,7 +1091,8 @@ BOOL	CTongControl::Kick(STONG_KICK_COMMAND *pKick, STONG_KICK_SYNC *pSync)
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	if (channid != -1)
 	{
-		sprintf(szMsg, "%s bi trôc xuÊt khái bang héi ", szName);
+		//sprintf(szMsg, "%s bi trôc xuÊt khái bang héi ", szName);
+		sprintf(szMsg, "%s b\xde tr\xF4\x63 xu\xCAt kh\xE1i bang h\xE9i.", szName);
 		g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 	}
 
@@ -1191,7 +1193,8 @@ BOOL	CTongControl::Leave(STONG_LEAVE_COMMAND *pLeave, STONG_LEAVE_SYNC *pSync)
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	if (channid != -1)
 	{
-		sprintf(szMsg, "%s rêi khái bang ph¸i.", szName);
+		//sprintf(szMsg, "%s rêi khái bang ph¸i.", szName);
+		sprintf(szMsg, "%s r\xEAi kh\xE1i bang h\xE9i.", szName);
 		g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 	}
 
@@ -1399,7 +1402,8 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	if (channid != -1)
 	{
-		sprintf(szMsg, "%s chuyÓn nh­îng v tr %s cho %s", szOldMaster, defTONG_MASTER_TITLE, szName);
+		//sprintf(szMsg, "%s chuyÓn nh­îng v tr %s cho %s", szOldMaster, defTONG_MASTER_TITLE, szName);
+		sprintf(szMsg, "%s chuy\xD3n nh\xAD\xEEng v\xDe tr\xDD %s cho %s.", szOldMaster, defTONG_MASTER_TITLE, szName);
 		g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 	}
 
@@ -1702,7 +1706,7 @@ BOOL CTongControl::DBChangeTitle(STONG_ACCEPT_TITLE_COMMAND *pAccept)
 		if (strcmp(szTitle, m_szDirectorTitle[i]) == 0)
 			return FALSE;
 		strcpy(this->m_szDirectorTitle[i], szTitle);
-		sprintf(szMsg, "Thay ®æi danh hiÖu %s cho %s %s thµnh c«ng ", szTitle, defTONG_DIRECTOR_TITLE, m_szDirectorName[i]);
+		sprintf(szMsg, "Thay \xAE\xE6i danh hi\xD6u %s cho %s %s th\xb5nh c\xABng.", szTitle, defTONG_DIRECTOR_TITLE, m_szDirectorName[i]);
 	}
 	else if (pAccept->m_btFigure == enumTONG_FIGURE_MANAGER)
 	{
@@ -1718,7 +1722,9 @@ BOOL CTongControl::DBChangeTitle(STONG_ACCEPT_TITLE_COMMAND *pAccept)
 			return FALSE;
 
 		strcpy(this->m_szManagerTitle[i], szTitle);
-		sprintf(szMsg, "Thay ®æi danh hiÖu %s cho %s %s thµnh c«ng ", szTitle, defTONG_MANAGER_TITLE, m_szManagerName[i]);
+		//sprintf(szMsg, "Thay ®æi danh hiÖu %s cho %s %s thµnh c«ng ", szTitle, defTONG_MANAGER_TITLE, m_szManagerName[i]);
+		sprintf(szMsg, "Thay \xAE\xE6i danh hi\xD6u %s cho %s %s th\xb5nh c\xABng.", szTitle, defTONG_MANAGER_TITLE, m_szManagerName[i]);
+
 	}
 	else
 	{
@@ -1789,7 +1795,7 @@ BOOL CTongControl::DBChangeSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 			return FALSE;
 //		rTRACE("title sex o s3relay 1");			// no chay cai cho nay thoi chu chua doi dc, tiep theo thi e ko biet lam tiep
 		strcpy(this->m_szNormalGirlTitle, szTitle);
-		sprintf(szMsg, "Thay ®æi danh hiÖu n trong bang thµnh %s", szTitle);
+		sprintf(szMsg, "Thay \xAE\xE6i danh hi\xD6u n\xf7 trong bang th\xB5nh %s.", szTitle);
 	}
 	else
 	{
@@ -1797,7 +1803,8 @@ BOOL CTongControl::DBChangeSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 			return FALSE;
 		rTRACE("title sex o s3relay 2");
 		strcpy(this->m_szNormalBoyTitle, szTitle);
-		sprintf(szMsg, "Thay ®æi danh hiÖu nam trong bang thµnh %s", szTitle);
+		//sprintf(szMsg, "Thay ®æi danh hiÖu nam trong bang thµnh %s", szTitle);
+		sprintf(szMsg, "Thay \xAE\xE6i danh hi\xD6u nam trong bang th\xB5nh %s.", szTitle);
 	}
 
 	if (!m_psMember || m_nMemberPointSize <= 0)
@@ -1846,8 +1853,9 @@ BOOL	CTongControl::GetMasterTitle(char *lpszTitle)
 		return FALSE;
 	if (m_szMasterTitle[0])
 		strcpy(lpszTitle, m_szMasterTitle);
-	else
+	else {
 		strcpy(lpszTitle, defTONG_MASTER_TITLE);
+	}
 	return TRUE;
 }
 
@@ -1915,7 +1923,8 @@ BOOL CTongControl::ChangeMoney( STONG_MONEY_COMMAND* pMoney, STONG_MONEY_SYNC *S
 		Sync->m_dwMoney = m_dwMoney;
 		if(channid > 0)
 		{
-			sprintf(szMsg, "%s ®· cèng hiÕn cho bang %d l­îng ", pMoney->m_szName, pMoney->m_dwMoney);
+			//sprintf(szMsg, "%s ®· cèng hiÕn cho bang %d l­îng ", pMoney->m_szName, pMoney->m_dwMoney);
+			sprintf(szMsg, "%s \xAE\xB7 c\xe8ng hi\xCFn cho bang %d l\xAD\xEEng.", pMoney->m_szName, pMoney->m_dwMoney);
 			WriteLogFile(szMsg);
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		}
@@ -1930,7 +1939,8 @@ BOOL CTongControl::ChangeMoney( STONG_MONEY_COMMAND* pMoney, STONG_MONEY_SYNC *S
 		Sync->m_dwMoney = m_dwMoney;
 		if (channid != -1)
 		{
-			sprintf(szMsg, "%s ®· rót %d l­îng!!!", pMoney->m_szName, pMoney->m_dwMoney);
+			//sprintf(szMsg, "%s ®· rót %d l­îng!!!", pMoney->m_szName, pMoney->m_dwMoney);
+			sprintf(szMsg, "%s \xae\xB7 r\xF3t %d l\xAD\xEEng!!!", pMoney->m_szName, pMoney->m_dwMoney);
 			WriteLogFile(szMsg);
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		}
@@ -1946,7 +1956,8 @@ BOOL CTongControl::ChangeMoney( STONG_MONEY_COMMAND* pMoney, STONG_MONEY_SYNC *S
 		
 		if (channid != -1)
 		{
-			sprintf(szMsg, "%s ph¸t %d l­îng cho tÊt c bang.", pMoney->m_szName, pMoney->m_dwMoney);
+			//sprintf(szMsg, "%s ph¸t %d l­îng cho tÊt c bang.", pMoney->m_szName, pMoney->m_dwMoney);
+			sprintf(szMsg, "%s ph\xB8t %d l\xAD\xEEng cho t\xCAt c bang.", pMoney->m_szName, pMoney->m_dwMoney);
 			WriteLogFile(szMsg);
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		}
@@ -1988,7 +1999,8 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 
 		m_nLevel = pChange->m_nTongLevel;
 
-		sprintf(szMsg, "Bang héi thay ®æi ®¼ng cÊp thµnh %d.", pChange->m_nTongLevel);
+		//sprintf(szMsg, "Bang héi thay ®æi ®¼ng cÊp thµnh %d.", pChange->m_nTongLevel);
+		sprintf(szMsg, "Bang h\xE9i thay \xAE\xE6i \xae\xBCng c\xCAp th\xB5nh %d.", pChange->m_nTongLevel);
 
 		int i = 0;
 		
@@ -2119,7 +2131,8 @@ BOOL CTongControl::DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange)
 
 		strcpy(m_szWayEdit, pChange->m_szWayEdit);
 
-		sprintf(szMsg, "%s thay ®æi tiªu ch thµnh %s.", pChange->m_szName, pChange->m_szWayEdit);
+		//sprintf(szMsg, "%s thay ®æi tiªu ch thµnh %s.", pChange->m_szName, pChange->m_szWayEdit);
+		sprintf(szMsg, "%s thay \xae\xE6i ti\xAAu ch\xdd th\xB5nh %s.", pChange->m_szName, pChange->m_szWayEdit);
 
 		int i = 0;
 		
@@ -2250,8 +2263,8 @@ BOOL CTongControl::DBChangeTongNextTarget(STONG_CHANGE_NEXTTARGET_COMMAND *pChan
 
 		strcpy(m_szNextTargetEdit, pChange->m_szNextTarget);
 
-		sprintf(szMsg, "%s thay ®æi môc tiªu thµnh %s.", pChange->m_szName, pChange->m_szNextTarget);
-
+		//sprintf(szMsg, "%s thay ®æi môc tiªu thµnh %s.", pChange->m_szName, pChange->m_szNextTarget);
+		sprintf(szMsg, "%s thay \xae\xE6i m\xF4\x63 ti\xAAu th\xb5nh %s.", pChange->m_szName, pChange->m_szNextTarget);
 		int i = 0;
 		
 		{{
@@ -2382,9 +2395,11 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 		m_nRecruit = pChange->m_btRecruit;
 
 		if (pChange->m_btRecruit == 0)
-			sprintf(szMsg, "%s ®ãng ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			//sprintf(szMsg, "%s ®ãng ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			sprintf(szMsg, "%s x\xe3\x61 ch\xd5 \xae\xE9 tuy\xD3n th\xb5nh vi\xAAn bang.", pChange->m_szName);
 		else
-			sprintf(szMsg, "%s m ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			//sprintf(szMsg, "%s m ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			sprintf(szMsg, "%s \xae\x61ng ch\xd5 \xae\xE9 tuy\xD3n th\xb5nh vi\xAAn bang.", pChange->m_szName);
 
 		int i = 0;
 		
@@ -2543,11 +2558,12 @@ BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //tÝnh n¨ng 
 		g_cTongDB.ChangeMoney(tMoney);
 
 		if (pChange->m_btCamp == camp_justice)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch chÝnh ph¸i.", pChange->m_szName);
+			//sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch chÝnh ph¸i.", pChange->m_szName);
+			sprintf(szMsg, "%s thay \xae\xE6i phe bang th\xb5nh ch\xDdnh ph\xB8i.", pChange->m_szName);
 		else if (pChange->m_btCamp == camp_evil)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch t ph¸i.", pChange->m_szName);
+			sprintf(szMsg, "%s thay \xae\xE6i phe bang th\xb5nh t\xb5 ph\xB8i.", pChange->m_szName);
 		else if (pChange->m_btCamp == camp_balance)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch trung lËp.", pChange->m_szName);
+			sprintf(szMsg, "%s thay \xae\xE6i phe bang th\xb5nh trung l\xcbp.", pChange->m_szName);
 
 		int i = 0;
 		
