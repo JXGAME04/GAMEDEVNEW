@@ -56,16 +56,17 @@ bool CTongDB::Open()
 
 bool CTongDB::OpenNew()
 {
-	DeleteFile("TongDB");
-	DeleteFile("TongMemberDB");
-	m_TongTable = new ZDBTable("TongDB","TongTable");		//´ò¿ª°ï»á±í
-	if(!m_TongTable->open())return false;
+	//DeleteFile("TongDB");
+	//DeleteFile("TongMemberDB");
+	m_TongTable = new ZDBTable("TongDB","TongTable");		//Open the gang table
+	if(!m_TongTable->open())
+		return false;
 	
-	m_MemberTable = new ZDBTable("TongMemberDB","MemberTable");	//°ïÖÚ±í
+	m_MemberTable = new ZDBTable("TongMemberDB","MemberTable");	//Gang member table
 	m_MemberTable->addIndex(get_TongName);
 	if(!m_MemberTable->open())
 	{
-		m_TongTable->close();
+		m_MemberTable->close();
 		return false;
 	}
 	m_MoneyTable = new ZDBTable("TongMoneyDB","MoneyTable");
@@ -79,17 +80,25 @@ bool CTongDB::OpenNew()
 
 void CTongDB::Close()
 {
-	m_TongTable->commit();
-	m_TongTable->close();
-	m_MemberTable->close();
-	m_MoneyTable->close();
+	if (m_TongTable) {
+		m_TongTable->commit();
+		m_TongTable->close();
+	}
+	if (m_MemberTable) {
+		m_MemberTable->commit();
+		m_MemberTable->close();
+	}
+	if (m_MoneyTable) {
+		m_MoneyTable->commit();
+		m_MoneyTable->close();
+	}
 	delete m_TongTable;
 	delete m_MemberTable;
 	delete m_MoneyTable;
 }
 
 bool CTongDB::ChangeTong(CTongControl& aTongControl)
-{//´´½¨ºÍ¸Ä±ä°ïÅÉ
+{//Create and change gangs
 	bool aResult = true;
 	int aKeySize = strlen(aTongControl.m_szName) + 1;
 	int aSize = sizeof(TTongStruct);
@@ -101,7 +110,7 @@ bool CTongDB::ChangeTong(CTongControl& aTongControl)
 	aTongStruct.nLevel = aTongControl.m_nLevel;	//®¼ng cÊp
 	aTongStruct.nRecruit = aTongControl.m_nRecruit; //tr¹ng th¸i bang héi tuyÓn dông
 	//======== add by Fong Kieu ========
-	strcpy(aTongStruct.szWayEdit, aTongControl.m_szWayEdit);	//tiªu chÝ
+	strcpy(aTongStruct.szWayEdit, aTongControl.m_szWayEdit);	//tiªu ch
 	strcpy(aTongStruct.szNextTargetEdit, aTongControl.m_szNextTargetEdit); //môc tiªu
 	aTongStruct.nExpGuide = aTongControl.m_nExpGuide; //®iÓm
 	aTongStruct.nCityGuide = aTongControl.m_nCityGuide; //thµnh chiÕm lÜnh
@@ -128,7 +137,7 @@ bool CTongDB::ChangeTong(CTongControl& aTongControl)
 }
 
 bool CTongDB::DelTong(char* aTongName)
-{//É¾³ý°ïÅÉ
+{//Delete gang
 	bool aResult = true;
 	int aKeySize = strlen(aTongName) + 1;
 
@@ -143,13 +152,24 @@ bool CTongDB::DelTong(char* aTongName)
 }
 
 bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
-{//´ÓÊý¾Ý¿âÖÐÈ¡µÃ°ïÅÉ
+{//Get gang from database
 	bool aResult = true;
 	int aSize = sizeof(TTongStruct);
 	int aKeySize = strlen(aTongName) + 1;
-	char* aBuffer = m_TongTable->search(aTongName, aKeySize, aSize);
-	if(!aBuffer) 
-	return false;	//ÕÒ²»µ½°ïÅÉ
+	char* aBuffer;
+	ZCursor* cursor = m_TongTable->search(aTongName, aKeySize);
+
+	if (cursor)
+	{
+		aBuffer = cursor->data;
+	}
+	else
+	{
+		return false;	//Can't find gang
+	}
+
+	//if(!aBuffer) 
+	//	return false;	//Can't find gang
 
 	TTongStruct* pTongStruct = (TTongStruct*)aBuffer;
 	aTongControl.m_nCamp = pTongStruct->nCamp;
@@ -181,7 +201,17 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 	int aManagerNum = 0;
 	int aMemberNum = 0;
 
-	aBuffer = m_MemberTable->search(aTongName, aKeySize, aSize, 0);
+	m_TongTable->closeCursor(cursor);
+
+	cursor = m_MemberTable->search(aTongName, aKeySize, 0);
+
+	if (cursor)
+	{
+		aBuffer = cursor->data;
+		//m_MemberTable->closeCursor(cursor);
+	}
+
+
 	while(aBuffer)
 	{
 		TMemberStruct* pMemberStruct = (TMemberStruct*)aBuffer;
@@ -213,7 +243,10 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 			aMemberNum++;
 			break;
 		}
-		aBuffer = m_MemberTable->next(aSize);
+		if (!m_MemberTable->next(cursor)) {
+			break;
+		}
+		aBuffer = cursor->data; //get next
 	}
 	aTongControl.m_nDirectorNum = aDirectorNum;
 	aTongControl.m_nManagerNum = aManagerNum;
@@ -221,7 +254,16 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 
 	
 	aSize = sizeof(TMoneyStruct);
-	aBuffer = m_MoneyTable->search(aTongName,aKeySize,aSize);
+
+	cursor = m_MoneyTable->search(aTongName, aKeySize);
+
+	if (cursor)
+	{
+		aBuffer = cursor->data;
+	}
+	else
+		aBuffer = NULL;
+
 	int dwMoney = 0;
 	if (aBuffer)
 	{
@@ -231,13 +273,14 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 	
 	aTongControl.m_dwMoney = dwMoney;
 
-	delete [] aBuffer;
+	m_MemberTable->closeCursor(cursor);
+	//delete [] aBuffer;
 
 	return aResult;
 }
 
 int CTongDB::GetTongCount()
-{//È¡µÃÃÅÅÉÊý
+{//Get the number of sects
 	int aCount = 0;
 	int aTongSize;
 	int aTongKeySize;
@@ -254,8 +297,8 @@ int CTongDB::GetTongCount()
 }
 
 int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
-{//È¡µÃ°ï»áÁÐ±í
-		int aCount = 0;
+{//Get the list of guilds
+	int aCount = 0;
 	int aTongSize;
 	int aTongKeySize;
 	char aTongKeyBuffer[defTONG_STR_LENGTH];
@@ -264,20 +307,27 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 	while(aResult)
 	{
 		TTongStruct* pTong = (TTongStruct*)aTongBuffer;
-		//strcpy(aTongList[aCount].szName, pTong->szName);
+		strcpy(aTongList[aCount].szName, pTong->szName);
 
 		memcpy(&aTongList[aCount], pTong, sizeof(TTongStruct));
 		int aMemCount = 0;
 		int aMemSize;
 		char* aMemBuffer;
-		aMemBuffer = m_MemberTable->search(aTongKeyBuffer, aTongKeySize, aMemSize, 0);
+		//aMemBuffer = m_MemberTable->search(aTongKeyBuffer, aTongKeySize, aMemSize, 0);
+		ZCursor* cursor = m_MemberTable->search(aTongKeyBuffer, aTongKeySize, 0);
+
+		if (cursor)
+		{
+			aMemBuffer = cursor->data;
+		}
 		while(aMemBuffer)
 		{
 			TMemberStruct* pMember = (TMemberStruct*)aMemBuffer;
 			if(pMember->MemberClass == enumTONG_FIGURE_MEMBER)
 					aMemCount++;
-			delete [] aMemBuffer;
-			aMemBuffer = m_MemberTable->next(aMemSize);
+			//delete [] aMemBuffer;
+			if(!m_MemberTable->next(cursor)) break;
+			aMemBuffer = cursor->data;
 		}
 
 		aTongList[aCount].MemberCount = aMemCount;
@@ -291,12 +341,12 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 }
 
 bool CTongDB::ChangeMember(TMemberStruct aMember)
-{//Ôö¼Ó°ïÖÚ
+{//Add guild members
 	return m_MemberTable->add(aMember.szName, strlen(aMember.szName) + 1, (char*)(&aMember), sizeof(TMemberStruct));
 }
 
 bool CTongDB::DelMember(char* aMemberName)
-{//É¾³ý°ïÖÚ
+{//Delete guild members
 	int aKeySize = strlen(aMemberName) + 1;
 
 	return m_MemberTable->remove(aMemberName, aKeySize);

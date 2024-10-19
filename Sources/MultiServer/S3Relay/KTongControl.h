@@ -10,6 +10,14 @@
 #endif // _MSC_VER > 1000
 
 
+#define		defTONG_INIT_MEMBER_SIZE		100		// ³ÉÔ±ÄÚ´æ³õÊ¼»¯Ê±µÄ´óĞ¡
+#define		defTONG_MEMBER_SIZE_ADD			100		// ³ÉÔ±ÄÚ´æÃ¿´ÎÔö¼ÓµÄ´óĞ¡
+#define		defTONG_MASTER_TITLE			"Bang chñ"
+#define		defTONG_DIRECTOR_TITLE			"Tr­ëng l·o"
+#define		defTONG_MANAGER_TITLE			"§­êng chñ"
+#define		defTONG_MEMBER_TITLE			"M«n ®Ö"
+#define		defTONG_NAME_SAY_ON_CHANNEL		"C«ng bè"
+
 typedef struct
 {
 	int			nCamp;								// °ï»áÕóÓª

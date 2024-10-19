@@ -849,8 +849,13 @@ BOOL CFriendMgr::DB_LoadSomeone(const std::_tstring& someone, MEM_FRIENDRECORDLI
 	std::_tstring dbkey = NameToDBKey(someone);
 
 	int valsize = 0;
-	char* pValue = m_dbFriendRO.search(dbkey.data(), dbkey.size(), valsize);
-	if (!pValue)
+	char* pValue;
+	ZCursor * cursor = m_dbFriendRO.search(dbkey.data(), dbkey.size());
+	if (cursor) {
+		pValue = cursor->data;
+		m_dbFriendRO.closeCursor(cursor);
+	}
+	else
 		return TRUE;
 
 	DB_FRIENDRECORDLIST* pdbFriendList = (DB_FRIENDRECORDLIST*)pValue;

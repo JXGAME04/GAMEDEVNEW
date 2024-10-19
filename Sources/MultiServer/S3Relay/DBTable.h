@@ -9,6 +9,16 @@
 
 typedef int (*GetIndexFunc)(DB *, const DBT *, const DBT *, DBT *);
 
+typedef struct ZCursor {
+	bool bTravel;								//Whether to traverse
+	DBC* dbcp;									//Cursor currently used for traversal
+	int index;									//current index
+	char* key;
+	int key_size;
+	char* data;									//returned data
+	int size;									//data size
+}tagZCursor;
+
 class ZDBTable {
 	DB *primary_db;												//存放主键-数据的数据库
 	DB *index_db[MAX_INDEX];									//存放索引-主键的数据库
@@ -20,8 +30,8 @@ class ZDBTable {
 protected:
 	char env_path[MAX_TABLE_NAME];
 	DB_ENV *dbenv;												//数据库环境
-	char *_search(bool bKey, const char *key_ptr, int key_size, int &size, int index);		//搜索指定记录
-	char *_next(bool bKey, int &size);															//下一个记录
+	ZCursor *_search(bool bKey, const char *key_ptr, int key_size, int index);		//搜索指定记录
+	bool _next(bool bKey, ZCursor* cursor);															//下一个记录
 public:
 	bool bStop;
 	ZDBTable(const char *path, const char *name);			//环境目录和数据表的名字
@@ -33,27 +43,49 @@ public:
 	bool commit();												//基于事务的提交
 //基本记录操作
 	bool add(const char *key_ptr, int key_size, const char *data_ptr, int data_size);
-	char *search(const char *key_ptr, int key_size, int &size, int index = -1){
-		return _search(false, key_ptr, key_size, size, index);		//搜索指定记录
+	bool remove(const char* key_ptr, int key_size, int index = -1);
+
+	void closeCursor(ZCursor* cursor) {
+		if (!cursor) return;
+		if (cursor->bTravel) {
+			free(cursor->key);
+		}
+		free(cursor->data);
+
+		delete cursor;
 	}
-	char *next(int &size) {															//下一个记录
-		return _next(false, size);
+
+	ZCursor* first() {											//Traversing the database to get the first record
+		return _search(false, NULL, 0, -1);
 	}
-	char *search_key(const char *key_ptr, int key_size, int &size, int index = -1) {		//搜索指定记录，返回主键值
-		return _search(true, key_ptr, key_size, size, index);		//搜索指定记录
+
+	ZCursor* search(const char* key_ptr, int key_size, int index = -1) {
+		return _search(false, key_ptr, key_size, index);		//Search for specific records
 	}
-	char *next_key(int &size) {															//下一个记录，返回主键值
-		return _next(true, size);
+	bool next(ZCursor* cursor) {											//next record
+		return _next(false, cursor);
 	}
-	bool remove(const char *key_ptr, int key_size, int index = -1);
+	ZCursor* search_key(const char* key_ptr, int key_size, int index = -1) {	//Search for the specified record and return the primary key value
+		return _search(true, key_ptr, key_size, index);
+	}
+	bool next_key(ZCursor* cursor) {															//Next record, return the primary key value
+		return _next(true, cursor);
+	}
 	
 	//遍历纪录记录(by Fellow)
-	char *GetRecord(int &size, int cpMode, int index = -1);//取得按游标某一个数据
-	char *GetRecord_key(int &size, int cpMode, int index = -1);	//取得按游标某一个数据的Key值
+	ZCursor* GetRecord(int cpMode, int index = -1);//取得按游标某一个数据
+	ZCursor* GetRecord_key(int cpMode, int index = -1);	//取得按游标某一个数据的Key值
 	
-	bool GetRecordEx(char* aBuffer, int &size,
+	bool GetRecordEx(char* aBuffer, int& size,
 				char* aKeyBuffer, int &keysize,
 				int cpMode, int index = -1);		//取得按游标某一个数据和key(新版函数)
+
+	//Here are some maintenance operations
+	void deadlock() {						//remove deadlock
+		dbenv->lock_detect(dbenv, 0, DB_LOCK_DEFAULT, NULL);
+	}
+	void removeLog();						//clear log file
+
 };
 
 
@@ -67,8 +99,8 @@ class CDBTableReadOnly
 protected:
 	char env_path[MAX_TABLE_NAME];
 	DB_ENV *dbenv;												//数据库环境
-	char *_search(bool bKey, const char *key_ptr, int key_size, int &size);		//搜索指定记录
-	char *_next(bool bKey, int &size);							//下一个记录
+	ZCursor* _search(bool bKey, const char* key_ptr, int key_size, int index);		//搜索指定记录
+	//bool _next(bool bKey, ZCursor* cursor);							//下一个记录
 public:
 	CDBTableReadOnly(const char *path, const char *name);			//环境目录和数据表的名字
 	virtual ~CDBTableReadOnly();
@@ -76,26 +108,37 @@ public:
 	bool open();												//打开数据表
 	void close();												//关闭数据表
 //基本记录操作
-	char *search(const char *key_ptr, int key_size, int &size){
-		return _search(false, key_ptr, key_size, size);		//搜索指定记录
+	ZCursor* search(const char* key_ptr, int key_size, int index = -1) {
+		return _search(false, key_ptr, key_size, index);		//Search for specific records
 	}
-	char *next(int &size) {											//下一个记录
-		return _next(false, size);
+
+	void closeCursor(ZCursor* cursor) {
+		if (!cursor) return;
+		if (cursor->bTravel) {
+			free(cursor->key);
+		}
+		free(cursor->data);
+
+		delete cursor;
 	}
+
+
+	//bool next(ZCursor* cursor) {											//next record
+	//	return _next(false, cursor);
+	//}
 
 	//遍历纪录记录(by Fellow)
-	char *GetRecord(int &size, int cpMode);//取得按游标某一个数据
-	char *GetRecord_key(int &size, int cpMode);	//取得按游标某一个数据的Key值
-	bool GetRecordEx(char* aBuffer, int &size,
-						   char* aKeyBuffer, int &keysize,
-		int cpMode);
+	//ZCursor* GetRecord(int cpMode);//取得按游标某一个数据
+	//ZCursor* GetRecord_key(int cpMode);	//取得按游标某一个数据的Key值
+	//ZCursor* GetRecordEx(char* aKeyBuffer, int &keysize,
+	//	int cpMode);
 
-	char *search_key(const char *key_ptr, int key_size, int &size) {		//搜索指定记录，返回主键值
-		return _search(true, key_ptr, key_size, size);		//搜索指定记录
-	}
-	char *next_key(int &size) {															//下一个记录，返回主键值
-		return _next(true, size);
-	}
+	//ZCursor* search_key(const char* key_ptr, int key_size, int index = -1) {	//Search for the specified record and return the primary key value
+	//	return _search(true, key_ptr, key_size, index);
+	//}
+	//bool next_key(ZCursor* cursor) {															//Next record, return the primary key value
+	//	return _next(true, cursor);
+	//}
 };
 #define MAX_RETRY	16
 #endif

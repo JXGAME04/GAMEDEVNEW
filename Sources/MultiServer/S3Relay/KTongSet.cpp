@@ -7,11 +7,7 @@
 #include "TongDB.h"
 #include "KTongSet.h"
 #include "S3Relay.h"
-#define		defTONG_MASTER_TITLE			"Bang chñ"
-#define		defTONG_DIRECTOR_TITLE			"Tr­ëng l·o"
-#define		defTONG_MANAGER_TITLE			"§­êng chñ"
-#define		defTONG_MEMBER_TITLE			"M«n ®Ö"
-#define		defTONG_NAME_SAY_ON_CHANNEL		"C«ng bè"
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -61,13 +57,13 @@ void	CTongSet::DeleteAll()
 
 int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int nSex)
 {
-	// °ï»áÄ£¿é³ö´í
+	// Guild module error
 	if (!m_pcTong || m_nTongPointSize <= 0)
 		return enumTONG_CREATE_ERROR_ID10;
-	// Ãû×Ö×Ö·û´®³ö´í
+	// Name string error
 	if (!lpszPlayerName || !lpszTongName)
 		return enumTONG_CREATE_ERROR_ID11;
-	// Ãû×Ö×Ö·û´®¹ý³¤
+	// Name string too long
 	if (strlen(lpszTongName) >= defTONG_STR_LENGTH ||
 		strlen(lpszPlayerName) >= defTONG_STR_LENGTH)
 		return enumTONG_CREATE_ERROR_ID12;
@@ -78,17 +74,17 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 	dwTongNameID = g_String2Id(lpszTongName);
 	dwPlayerNameID = g_String2Id(lpszPlayerName);
 
-	// Ãû³Æ¼ì²â£¬ÊÇ·ñÓÐÍ¬ÃûµÄ°ïÖ÷»òÕßÍ¬ÃûµÄ°ï»á
+	// Name check, is there a guild leader or guild with the same name
 	for (i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && (m_pcTong[i]->m_dwNameID == dwTongNameID || m_pcTong[i]->m_dwMasterID == dwPlayerNameID))
 			break;
 	}
-	// °ï»áÍ¬Ãû´íÎó
+	// Guild same name error
 	if (i < m_nTongPointSize)
 		return enumTONG_CREATE_ERROR_ID13;
 
-	// ²éÕÒ¿ÕÎ»
+	// Find empty space
 	nPos = -1;
 	for (i = 0; i < m_nTongPointSize; i++)
 	{
@@ -98,16 +94,16 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 			break;
 		}
 	}
-	// ÏÖÓÐÖ¸Õë¿Õ¼äÒÑÂú£¬·ÖÅäÐÂµÄ¸ü´óµÄÖ¸Õë¿Õ¼ä
+	// Existing pointer space is full, allocate new larger pointer space
 	if (nPos < 0)
 	{
-		// ÁÙÊ±´æ´¢¾ÉµÄÖ¸Õë
+		// Temporarily store old pointer
 		CTongControl**	pTemp;
 		pTemp = (CTongControl**)new LPVOID[m_nTongPointSize];
 		for (i = 0; i < m_nTongPointSize; i++)
 			pTemp[i] = m_pcTong[i];
 
-		// ·ÖÅäÐÂµÄ¸ü´óµÄÖ¸Õë¿Õ¼ä£¬´óÐ¡ÊÇÔ­À´µÄÁ½±¶
+		// Allocate new larger pointer space, twice the size of the original
 		delete []m_pcTong;
 		m_pcTong = NULL;
 		m_pcTong = (CTongControl**)new LPVOID[m_nTongPointSize * 2];
@@ -120,9 +116,9 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 		nPos = m_nTongPointSize / 2;
 	}
 
-	// ²úÉúÒ»¸öÐÂµÄ°ï»á
+	// Generate a new guild
 	m_pcTong[nPos] = new CTongControl(nCamp, lpszPlayerName, lpszTongName, nSex);
-	// ²úÉúÊ§°Ü
+	// Generate failed
 	if (m_pcTong[nPos]->m_dwNameID == 0)
 	{
 		delete m_pcTong[nPos];
@@ -130,7 +126,7 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 		return enumTONG_CREATE_ERROR_ID14;
 	}
 
-	// ´æÅÌ£¬Êý¾Ý±£´æÖÁÊý¾Ý¿â
+	// Save, data saved to database
 	TMemberStruct	sMember;
 	sMember.MemberClass = enumTONG_FIGURE_MASTER;
 	sMember.nTitleIndex = 0;
@@ -140,8 +136,8 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 
 	try
 	{
-		g_cTongDB.ChangeTong(*m_pcTong[nPos]);
-		g_cTongDB.ChangeMember(sMember);
+		g_cTongDB.ChangeTong(*m_pcTong[nPos]); //save tong
+		g_cTongDB.ChangeMember(sMember);	   //save master only
 	}
 	catch (...)
 	{
@@ -160,7 +156,7 @@ int		CTongSet::Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int n
 }
 
 //----------------------------------------------------------------------
-//	¹¦ÄÜ£ºÌí¼ÓÒ»¸ö°ï»á³ÉÔ±£¬if return == 0 ³É¹¦ else return error id
+// Function: Add a guild member, if return == 0 success else return error id
 //----------------------------------------------------------------------
 int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 {
@@ -177,27 +173,28 @@ int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 
 	dwTongNameID = g_String2Id(lpszTongName);
 
-	// Ñ°ÕÒ°ï»á
+	// Find guild
 	for (i = 0; i < m_nTongPointSize; i++)
 	{
-		// ÕÒµ½ÁË
+		// Found
 		if (m_pcTong[i] && (m_pcTong[i]->m_dwNameID == dwTongNameID))
 		{
-			if (!m_pcTong[i]->AddMember(lpszPlayerName, nSex))			// khong truyen sex o day
-				return -1;
-			else
-			{
-				// ´æÅÌ£¬Êý¾Ý±£´æÖÁÊý¾Ý¿â
+			if (m_pcTong[i]->AddMember(lpszPlayerName, nSex))			// khong truyen sex o day
+			{	//Add member successful
+				// Save, data saved to database
 				TMemberStruct	sMember;
 				sMember.MemberClass = enumTONG_FIGURE_MEMBER;
 				sMember.nTitleIndex = 0;
 				strcpy(sMember.szTong, m_pcTong[i]->m_szName);
 				strcpy(sMember.szName, lpszPlayerName);
-//				int PlayerSex = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_SEX, 0, nPlayerIdx);
+				//				int PlayerSex = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_SEX, 0, nPlayerIdx);
 				sMember.nSex = nSex;					// dau ma, tai sao no ko truyen
-				g_cTongDB.ChangeMember(sMember);
-				rTRACE("gia tri nSex [CTongSet]: %d", nSex);		// khong truyen sex 
-				// ¸ø°ï»áÆµµÀ·¢ÏûÏ¢
+				if(g_cTongDB.ChangeMember(sMember))
+					rTRACE("Add a member to TongDB ok!");
+				else
+					rTRACE("Add a member to TongDB failed!");
+				rTRACE("gia tri nSex [CTongSet]: %d", nSex);		// khong truyen sex
+				// Send message to guild channel
 				char	szMsg[96];
 				sprintf(szMsg, "\\O%u", m_pcTong[i]->m_dwNameID);
 
@@ -210,6 +207,11 @@ int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 
 				return i;
 			}
+			else
+			{
+
+				return -1;
+			}
 		}
 	}
 
@@ -217,7 +219,7 @@ int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 }
 
 //----------------------------------------------------------------------
-//	¹¦ÄÜ£º»ñµÃ°ï»áÕóÓª
+// Function: Get guild faction
 //----------------------------------------------------------------------
 int		CTongSet::GetTongCamp(int nTongIdx)
 {
@@ -275,7 +277,7 @@ BOOL	CTongSet::GetTongHeadInfo(DWORD dwTongNameID, STONG_HEAD_INFO_SYNC *pInfo)
 	if (!m_pcTong || m_nTongPointSize <= 0 || dwTongNameID == 0)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Find guild
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == dwTongNameID)
@@ -294,7 +296,7 @@ BOOL	CTongSet::GetTongManagerInfo(STONG_GET_MANAGER_INFO_COMMAND *pApply, STONG_
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Find guild
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == (DWORD)pApply->m_nParam1)
@@ -313,7 +315,7 @@ BOOL	CTongSet::GetTongMemberInfo(STONG_GET_MEMBER_INFO_COMMAND *pApply, STONG_ME
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Find guild
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == (DWORD)pApply->m_nParam1)
@@ -332,7 +334,7 @@ BOOL	CTongSet::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *pSyn
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pInstate->m_dwTongNameID)
@@ -357,7 +359,7 @@ BOOL	CTongSet::Kick(STONG_KICK_COMMAND *pKick, STONG_KICK_SYNC *pSync)
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pKick->m_dwTongNameID)
@@ -376,7 +378,7 @@ BOOL	CTongSet::Leave(STONG_LEAVE_COMMAND *pLeave, STONG_LEAVE_SYNC *pSync)
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pLeave->m_dwTongNameID)
@@ -395,7 +397,7 @@ BOOL	CTongSet::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pAccept->m_dwTongNameID)
@@ -412,7 +414,7 @@ BOOL	CTongSet::InitFromDB()
 	int		nTongNum;
 	int i = 0;
 	int j = 0;
-	nTongNum = g_cTongDB.GetTongCount();
+	nTongNum = g_cTongDB.GetTongCount(); //get all exist Tong from DB
 	if (nTongNum < 0)
 		return FALSE;
 	if (nTongNum == 0)
@@ -427,7 +429,7 @@ BOOL	CTongSet::InitFromDB()
 	TTongStruct*pList = new TTongStruct[nTongNum];
 	memset(pList, 0, sizeof(TTongStruct) * nTongNum);
 
-	int nGetNum = g_cTongDB.GetTongList(pList, nTongNum);
+	int nGetNum = g_cTongDB.GetTongList(pList, nTongNum); //Reload all Tong information (no member detail info)
 	if (nGetNum <= 0)
 		return TRUE;
 
@@ -442,19 +444,20 @@ BOOL	CTongSet::InitFromDB()
 		}
 	}
 	Init();
-	g_cTongDB.Close();
-	g_cTongDB.OpenNew();
-	for (i = 0; i < nGetNum; i++)
-	{
-		if (m_tmpTong[i] && m_tmpTong[i]->m_szName[0])
-		{
-			Create(m_tmpTong[i]->m_nCamp,m_tmpTong[i]->m_szMasterName,m_tmpTong[i]->m_szName, m_tmpTong[i]->m_psMember[0].m_nSex);
-			for (int j = 0; j < m_tmpTong[i]->m_nMemberPointSize;j++)
-			{
-				AddMember(m_tmpTong[i]->m_psMember[j].m_szName,m_tmpTong[i]->m_szName, m_tmpTong[i]->m_psMember[j].m_nSex);
-			}
-		}
-	}
+	g_cTongDB.Close(); //close all DB
+	g_cTongDB.OpenNew(); //Del TongDB and TongMemberDB and open new one
+	//for (i = 0; i < nGetNum; i++)
+	//{
+	//	if (m_tmpTong[i] && m_tmpTong[i]->m_szName[0])
+	//	{
+	//		Create(m_tmpTong[i]->m_nCamp,m_tmpTong[i]->m_szMasterName,m_tmpTong[i]->m_szName, m_tmpTong[i]->m_psMember[0].m_nSex); //Create new Tong in memory based on info loaded from DB and save back to tongDB
+	//		for (int j = 0; j < m_tmpTong[i]->m_nMemberPointSize;j++)
+	//		{
+	//			AddMember(m_tmpTong[i]->m_psMember[j].m_szName,m_tmpTong[i]->m_szName, m_tmpTong[i]->m_psMember[j].m_nSex); //Readd member into new Tong in memory and save back to MemberDB
+	//		}
+	//	}
+	//}
+
 	for (i = 0; i < nGetNum; i++)
 	{
 		m_pcTong[i] = new CTongControl(pList[i]);
@@ -507,7 +510,7 @@ BOOL	CTongSet::GetLoginData(STONG_GET_LOGIN_DATA_COMMAND *pLogin, STONG_LOGIN_DA
 	if (!m_pcTong)
 		return FALSE;
 
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pLogin->m_dwTongNameID)
@@ -544,7 +547,7 @@ BOOL	CTongSet::AcceptTitle(STONG_ACCEPT_TITLE_COMMAND *pAccept)
 	if (!m_pcTong)
 		return FALSE;
 	
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pAccept->m_dwTongNameID)
@@ -569,7 +572,7 @@ BOOL CTongSet::AcceptSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 	if (!m_pcTong)
 		return FALSE;
 	
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pAccept->m_dwTongNameID)
@@ -594,7 +597,7 @@ BOOL CTongSet::ChangeMoney( STONG_MONEY_COMMAND *pMoney, STONG_MONEY_SYNC *Sync)
 	if (!m_pcTong)
 		return FALSE;
 	
-	// Ñ°ÕÒ°ï»á
+	// Looking for a gang
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == pMoney->m_dwTongNameID)

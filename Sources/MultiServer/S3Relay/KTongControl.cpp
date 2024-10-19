@@ -1,4 +1,4 @@
-// KTongControl.cpp: implementation of the CTongControl class.
+// khong chay tu day
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -7,16 +7,9 @@
 #include "KTongControl.h"
 #include "S3Relay.h"
 
-#define		defTONG_INIT_MEMBER_SIZE		100		// ³ÉÔ±ÄÚ´æ³õÊ¼»¯Ê±µÄ´óÐ¡
-#define		defTONG_MEMBER_SIZE_ADD			100		// ³ÉÔ±ÄÚ´æÃ¿´ÎÔö¼ÓµÄ´óÐ¡
-#define		defTONG_MASTER_TITLE			"Bang chñ"
-#define		defTONG_DIRECTOR_TITLE			"Tr­ëng l·o"
-#define		defTONG_MANAGER_TITLE			"§­êng chñ"
-#define		defTONG_MEMBER_TITLE			"M«n ®Ö"
-#define		defTONG_NAME_SAY_ON_CHANNEL		"C«ng bè"
 
 //////////////////////////////////////////////////////////////////////
-// Construction/Destruction
+// KTongControl.cpp: implementation of the CTongControl class.
 //////////////////////////////////////////////////////////////////////
 #include "stdio.h"
 void WriteLogFile(const char* szString)
@@ -142,28 +135,28 @@ CTongControl::~CTongControl()
 BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 {
 	int i = 0;
-	// lay nsex tu day de fix 
+	// Construction/Destruction
 	if (m_nMemberPointSize <= 0 || !m_psMember)
 		return FALSE;
 	if (!lpszPlayerName || strlen(lpszPlayerName) >= defTONG_STR_LENGTH)
 		return FALSE;
 
-	// Ñ°ÕÒ¿ÕÎ»
+	// lay nsex tu day de fix 
 	for (i = 0; i < m_nMemberPointSize; i++)
 	{
 		if (m_psMember[i].m_dwNameID == 0)
 			break;
 	}
-	// Ã»ÕÒ×Å£¬ÂúÁË£¬¿ª±ÙÒ»¿é¸ü´óµÄÄÚ´æ
+	// Search for an empty slot
 	if (i >= m_nMemberPointSize)
 	{
 		i = m_nMemberPointSize;
-		// ÔÝÊ±±¸·ÝÒ»ÏÂ
+		// Not found, full, open up a larger memory
 		STONG_MEMBER	*pTemp;
 		pTemp = (STONG_MEMBER*)new STONG_MEMBER[m_nMemberPointSize];
 		memcpy(pTemp, m_psMember, sizeof(STONG_MEMBER) * m_nMemberPointSize);
 
-		// ·ÖÅä¸ü´óµÄÄÚ´æ
+		// Back up temporarily
 		delete []m_psMember;
 		m_psMember = (STONG_MEMBER*)new STONG_MEMBER[m_nMemberPointSize + defTONG_MEMBER_SIZE_ADD];
 		memcpy(m_psMember, pTemp, sizeof(STONG_MEMBER) * m_nMemberPointSize);
@@ -173,7 +166,7 @@ BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 		delete []pTemp;
 	}
 
-	// Ôö¼ÓÒ»¸ö³ÉÔ±
+	// Allocate a larger memory
 	strcpy(m_psMember[i].m_szName, lpszPlayerName);
 	m_psMember[i].m_dwNameID = g_String2Id(lpszPlayerName);
 	m_psMember[i].m_nSex = nSex;
@@ -211,7 +204,7 @@ BOOL	CTongControl::GetTongHeadInfo(STONG_HEAD_INFO_SYNC *pInfo)
 	pInfo->m_btManagerNum = m_nManagerNum;
 	pInfo->m_dwMemberNum = m_nMemberNum;
 	strcpy(pInfo->m_szTongName, m_szName);
-	// ========= add by Fong KiÒu =========
+	// Add a member
 	pInfo->ms_nStatusGuide = m_nRecruit; //tr¹ng th¸i tuyÓn ng­êi bang héi
 	strcpy(pInfo->ms_szWayEdit, m_szWayEdit);
 	strcpy(pInfo->ms_szNextTargetEdit, m_szNextTargetEdit);
@@ -219,7 +212,7 @@ BOOL	CTongControl::GetTongHeadInfo(STONG_HEAD_INFO_SYNC *pInfo)
 	pInfo->ms_nCityGuide = m_nCityGuide;
 	pInfo->ms_nTongLevel = m_nLevel; //®¼ng cÊp bang héi
 	strcpy(pInfo->ms_szLeagueTName, m_szLeagueTName);
-	// ========= end add by Fong KiÒu =========
+	// ========= add by Fong KiÒu =========
 	pInfo->m_sMember[0].m_btFigure = enumTONG_FIGURE_MASTER;
 	pInfo->m_sMember[0].m_btPos = 0;
 	GetMasterTitle(pInfo->m_sMember[0].m_szTitle);
@@ -308,7 +301,7 @@ BOOL	CTongControl::GetTongManagerInfo(
 		nNeedNum = defTONG_ONE_PAGE_MAX_NUM;
 
 	pInfo->m_btCurNum = 0;
-	// ÕÒ¿ªÊ¼Î»ÖÃ
+	// ========= end add by Fong KiÒu =========
 	for (i = 0, j = 0; i < defTONG_MAX_MANAGER; i++)
 	{
 		if (j >= nStartNum)
@@ -319,7 +312,7 @@ BOOL	CTongControl::GetTongManagerInfo(
 	if (i >= defTONG_MAX_MANAGER || j < nStartNum)
 		return FALSE;
 
-	// ¿ªÊ¼¼ÇÂ¼Êý¾Ý
+	// Find the starting position
 	for (; i < defTONG_MAX_MANAGER; i++)
 	{
 		if (pInfo->m_btCurNum >= nNeedNum)
@@ -398,7 +391,7 @@ BOOL	CTongControl::GetTongMemberInfo(
 		nNeedNum = defTONG_ONE_PAGE_MAX_NUM;
 
 	pInfo->m_btCurNum = 0;
-	// ÕÒ¿ªÊ¼Î»ÖÃ
+	// Start recording data
 	for (i = 0, j = 0; i < m_nMemberPointSize; i++)
 	{
 		if (j >= nStartNum)
@@ -409,7 +402,7 @@ BOOL	CTongControl::GetTongMemberInfo(
 	if (i >= m_nMemberPointSize || j < nStartNum)
 		return FALSE;
 
-	// ¿ªÊ¼¼ÇÂ¼Êý¾Ý
+	// Find the starting position
 	for (; i < m_nMemberPointSize; i++)
 	{
 		if (pInfo->m_btCurNum >= nNeedNum)
@@ -580,8 +573,8 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 		if (!m_psMember)
 			return FALSE;
 		int		nPos = -1;
-
-		for (int i = 0; i < m_nMemberPointSize; i++)
+		int i = 0;
+		for (i = 0; i < m_nMemberPointSize; i++)
 		{
 			if (m_psMember[i].m_dwNameID != dwNameID)
 				continue;
@@ -689,7 +682,7 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 		}
 	}}
 
-	// Ïò°ï»áÆµµÀ·¢ÏûÏ¢£¬Ä³ÈË±»ÈÎÃü
+	// Start recording data
 	char	szMsg[96];
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 
@@ -697,26 +690,26 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 	if (channid != -1)
 	{
 		if (pSync->m_szTitle[0])
-			sprintf(szMsg, "%s ®­îc bæ nhiÖm chøc vÞ %s ", szName, pSync->m_szTitle);
+			sprintf(szMsg, "%s ®­îc b nhiÖm chøc v %s ", szName, pSync->m_szTitle);
 		else
 		{
 			switch (pSync->m_btNewFigure)
 			{
 			case enumTONG_FIGURE_DIRECTOR:
-				sprintf(szMsg, "%s ®­îc phong chøc vÞ %s ", szName, defTONG_DIRECTOR_TITLE);
+				sprintf(szMsg, "%s ®­îc phong chøc v %s ", szName, defTONG_DIRECTOR_TITLE);
 				break;
 			case enumTONG_FIGURE_MANAGER:
-				sprintf(szMsg, "%s ®­îc phong chøc vÞ %s ", szName, defTONG_MANAGER_TITLE);
+				sprintf(szMsg, "%s ®­îc phong chøc v %s ", szName, defTONG_MANAGER_TITLE);
 				break;
 			case enumTONG_FIGURE_MEMBER:
-				sprintf(szMsg, "%s ®­îc phong chøc vÞ M«n ®Ö ", szName);
+				sprintf(szMsg, "%s ®­îc phong chøc v M«n ®Ö ", szName);
 				break;
 			}
 		}
 		g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 	}
 
-	// ´æÅÌ£¬Êý¾Ý±£´æÖÁÊý¾Ý¿â
+	// Send a message to the guild channel, someone is appointed
 	TMemberStruct	sMember;
 	sMember.MemberClass = (TONG_MEMBER_FIGURE)pInstate->m_btNewFigure;
 	sMember.nTitleIndex = nNewPos;
@@ -939,7 +932,7 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 		}
 	}}
 
-	// Ïò°ï»áÆµµÀ·¢ÏûÏ¢£¬Ä³ÈË±»ÈÎÃü
+	// Save, save the data to the database
 	char	szMsg[96];
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 
@@ -967,7 +960,7 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 	}
 
 
-	// ´æÅÌ£¬Êý¾Ý±£´æÖÁÊý¾Ý¿â
+	// Send a message to the guild channel, someone is appointed
 	TMemberStruct	sMember;
 	sMember.MemberClass = (TONG_MEMBER_FIGURE)pInstate->m_btNewFigure;
 	sMember.nTitleIndex = pInstate->m_btNewPos;
@@ -1087,10 +1080,10 @@ BOOL	CTongControl::Kick(STONG_KICK_COMMAND *pKick, STONG_KICK_SYNC *pSync)
 		}
 	}}
 
-	// ´æÅÌ
+	// Save, save the data to the database
 	g_cTongDB.DelMember(szName);
 
-	// Ïò°ï»áÆµµÀ·¢ÏûÏ¢£¬Ä³ÈË±»Ìß³ö°ï»á
+	// Save
 	char	szMsg[96];
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 
@@ -1188,10 +1181,10 @@ BOOL	CTongControl::Leave(STONG_LEAVE_COMMAND *pLeave, STONG_LEAVE_SYNC *pSync)
 	}
 	pSync->m_btSuccessFlag = 1;
 
-	// ´æÅÌ
+	// Send a message to the guild channel, someone is kicked out of the guild
 	g_cTongDB.DelMember(szName);
 
-	// Í¨¹ý°ï»áÆµµÀ·¢²¼ÏûÏ¢£ºÄ³Ä³ÈËÅÑ°ï
+	// Save
 	char	szMsg[96];
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 
@@ -1218,7 +1211,7 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	strcpy(szOldMaster, this->m_szMasterName);
 	int nOldMasterSex = this->m_nMasterSex;
 
-	// ÄÜÁ¦²»¹»
+	// Publish a message through the guild channel: someone betrayed the guild
 	if (pAccept->m_btAcceptFalg == 0)
 	{
 		CNetConnectDup conndup;
@@ -1336,7 +1329,7 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	sChange.ProtocolID		= enumS2C_TONG_CHANGE_AS;
 	sChange.m_dwTongNameID	= this->m_dwNameID;
 
-	// ¸øÀÏ°ïÖ÷·¢ÏûÏ¢
+	// Not capable enough
 	DWORD nameid = 0;
 	unsigned long param = 0;
 	CNetConnectDup conndup1;
@@ -1355,7 +1348,7 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 		}
 	}
 
-	// ¸øÐÂ°ïÖ÷·¢ÏûÏ¢
+	// Send a message to the old guild leader
 	CNetConnectDup conndup2;
 	if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(szName), &conndup2, NULL, &nameid, &param))
 	{
@@ -1380,8 +1373,8 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 
 	g_TongServer.BroadPackage((const void*)&sMaster, sizeof(sMaster));
 
-	// ´æÅÌ
-	// ÐÂ°ïÖ÷
+	// Send a message to the new guild leader
+	// Save
 	TMemberStruct	sMember1;
 	sMember1.MemberClass = enumTONG_FIGURE_MASTER;
 	sMember1.nTitleIndex = 0;
@@ -1390,7 +1383,7 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	sMember1.nSex = nNewMasterSex;
 	g_cTongDB.ChangeMember(sMember1);
 
-	// ÀÏ°ïÖ÷
+	// New guild leader
 	TMemberStruct	sMember2;
 	sMember2.MemberClass = enumTONG_FIGURE_MEMBER;
 	sMember2.nTitleIndex = 0;
@@ -1399,14 +1392,14 @@ BOOL	CTongControl::AcceptMaster(STONG_ACCEPT_MASTER_COMMAND *pAccept)
 	sMember2.nSex = nOldMasterSex;
 	g_cTongDB.ChangeMember(sMember2);
 
-	// ÁÄÌìÆµµÀ·¢ÏûÏ¢
+	// Old guild leader
 	char	szMsg[96];
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	if (channid != -1)
 	{
-		sprintf(szMsg, "%s chuyÓn nh­îng vÞ trÝ %s cho %s", szOldMaster, defTONG_MASTER_TITLE, szName);
+		sprintf(szMsg, "%s chuyÓn nh­îng v tr %s cho %s", szOldMaster, defTONG_MASTER_TITLE, szName);
 		g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 	}
 
@@ -1616,7 +1609,7 @@ BOOL CTongControl::DBInstate( char *lpszPlayerName, BYTE nSite)
 	}
 
 
-	// ´æÅÌ£¬Êý¾Ý±£´æÖÁÊý¾Ý¿â
+	// Send a message to the chat channel
 	TMemberStruct	sMember;
 	if (nSite == enumTONG_FIGURE_DIRECTOR)
 	{
@@ -1690,7 +1683,7 @@ BOOL CTongControl::DBChangeTitle(STONG_ACCEPT_TITLE_COMMAND *pAccept)
 	if (dwNameID == 0)
 		return FALSE;
 	rTRACE("name id da > 0");
-	char	szMsg[96];			// chua co id kenh tong
+	char	szMsg[96];			// Save, save the data to the database
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	rTRACE("Kenh chat :%d",channid); 
@@ -1761,7 +1754,7 @@ BOOL CTongControl::DBChangeTitle(STONG_ACCEPT_TITLE_COMMAND *pAccept)
 		}
 	}}
 	g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
-	// thong bao len kenh chat
+	// chua co id kenh tong
 	return TRUE;
 }
 
@@ -1786,17 +1779,17 @@ BOOL CTongControl::DBChangeSexTitle(STONG_ACCEPT_SEX_TITLE_COMMAND *pAccept)
 	sprintf(szMsg, "\\O%u", m_dwNameID);
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 	
-	if (channid == -1)				// chua co id kenh chat bang
+	if (channid == -1)				// thong bao len kenh chat
 		return FALSE;
 	rTRACE("gioi tinh : %d",pAccept->m_btSex);
 	rTRACE("Danh hieu: %s - %s",m_szNormalGirlTitle, szTitle);
 	if (pAccept->m_btSex)
 	{
-		if (strcmp(m_szNormalGirlTitle, szTitle) == 0)// no chay cai cho nay thoi chu chua doi dc, tiep theo thi e ko biet lam tiep
+		if (strcmp(m_szNormalGirlTitle, szTitle) == 0)// chua co id kenh chat bang
 			return FALSE;
-//		rTRACE("title sex o s3relay 1");			// khong chay tu day
+//		rTRACE("title sex o s3relay 1");			// no chay cai cho nay thoi chu chua doi dc, tiep theo thi e ko biet lam tiep
 		strcpy(this->m_szNormalGirlTitle, szTitle);
-		sprintf(szMsg, "Thay ®æi danh hiÖu n÷ trong bang thµnh %s", szTitle);
+		sprintf(szMsg, "Thay ®æi danh hiÖu n trong bang thµnh %s", szTitle);
 	}
 	else
 	{
@@ -1953,7 +1946,7 @@ BOOL CTongControl::ChangeMoney( STONG_MONEY_COMMAND* pMoney, STONG_MONEY_SYNC *S
 		
 		if (channid != -1)
 		{
-			sprintf(szMsg, "%s ph¸t %d l­îng cho tÊt c¶ bang.", pMoney->m_szName, pMoney->m_dwMoney);
+			sprintf(szMsg, "%s ph¸t %d l­îng cho tÊt c bang.", pMoney->m_szName, pMoney->m_dwMoney);
 			WriteLogFile(szMsg);
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		}
@@ -2126,7 +2119,7 @@ BOOL CTongControl::DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange)
 
 		strcpy(m_szWayEdit, pChange->m_szWayEdit);
 
-		sprintf(szMsg, "%s thay ®æi tiªu chÝ thµnh %s.", pChange->m_szName, pChange->m_szWayEdit);
+		sprintf(szMsg, "%s thay ®æi tiªu ch thµnh %s.", pChange->m_szName, pChange->m_szWayEdit);
 
 		int i = 0;
 		
@@ -2389,9 +2382,9 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 		m_nRecruit = pChange->m_btRecruit;
 
 		if (pChange->m_btRecruit == 0)
-			sprintf(szMsg, "%s ®ãng chÕ ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			sprintf(szMsg, "%s ®ãng ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
 		else
-			sprintf(szMsg, "%s më chÕ ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
+			sprintf(szMsg, "%s m ch ®é tuyÓn thµnh viªn bang.", pChange->m_szName);
 
 		int i = 0;
 		
@@ -2495,7 +2488,7 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 	return FALSE;
 }
 
-BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //tÝnh n¨ng nµy ®· lµm ®­îc trªn tÊt c¶ c¸c gs
+BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //tÝnh n¨ng nµy ®· lµm ®­îc trªn tÊt c c¸c gs
 {
 	if (!pChange)
 		return FALSE;
@@ -2550,11 +2543,11 @@ BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //tÝnh n¨ng 
 		g_cTongDB.ChangeMoney(tMoney);
 
 		if (pChange->m_btCamp == camp_justice)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp chñ chÝnh ph¸i.", pChange->m_szName);
+			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch chÝnh ph¸i.", pChange->m_szName);
 		else if (pChange->m_btCamp == camp_evil)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp chñ tµ ph¸i.", pChange->m_szName);
+			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch t ph¸i.", pChange->m_szName);
 		else if (pChange->m_btCamp == camp_balance)
-			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp chñ trung lËp.", pChange->m_szName);
+			sprintf(szMsg, "%s thay ®æi phe bang thµnh lËp ch trung lËp.", pChange->m_szName);
 
 		int i = 0;
 		

@@ -21,7 +21,7 @@ public:
 
 private:
 	CTongControl**	m_pcTong;
-	int				m_nTongPointSize;		// 指针 m_pcTong 当前分配内存的大小(多少个)
+	int				m_nTongPointSize;		// Pointer m_pcTong currently allocated memory size (how many)
 
 public:
 	void			Init();
@@ -30,11 +30,11 @@ public:
 
 	BOOL			SearchOne(DWORD dwTongNameID, char *lpszName, STONG_ONE_LEADER_INFO *pInfo);
 
-	// 创建一个帮会
+	// Create a Guild
 	int				Create(int nCamp, char *lpszPlayerName, char *lpszTongName, int nSex = 0);
-	// 添加一个帮会成员，if return == 0 成功 else return error id
+	// Add a guild member, if return == 0 success else return error id
 	int				AddMember(char *lpszPlayerName, char *lpszTongName, int nSex = 0);
-	// 获得帮会阵营
+	// Get a guild faction
 	int				GetTongCamp(int nTongIdx);
 
 	BOOL			GetMasterName(int nTongIdx, char *lpszName);
