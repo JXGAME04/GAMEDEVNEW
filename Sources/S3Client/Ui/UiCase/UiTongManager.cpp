@@ -754,7 +754,8 @@ void KUiTongManager::UpdateBtnTheme(int nType, BOOL IsDissable)
 	case enumTONG_FIGURE_MANAGER:
 		m_BtnRecruit.Show();
 		m_BtnLeave.Show();
-
+		m_BtnCaptainList.Show();
+	    m_BtnMemberList.Show();
 	    m_BtnElderList.Show();
 		
 		m_DonateMoneyBtn.Enable(true);
@@ -766,7 +767,8 @@ void KUiTongManager::UpdateBtnTheme(int nType, BOOL IsDissable)
 
 	case enumTONG_FIGURE_MEMBER:
 		m_BtnLeave.Show();
-
+		m_BtnCaptainList.Show();
+	    m_BtnMemberList.Show();
 	    m_BtnElderList.Show();
 		
 		m_DonateMoneyBtn.Enable(true);

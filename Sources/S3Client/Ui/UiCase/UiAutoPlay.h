@@ -399,6 +399,9 @@ private:
 	KWndButton	m_FlAnnyPTCheckBox;
 	BOOL	m_bFlCaptainCheckBox;			//theo sau ®éi tr­ëng
 	BOOL	m_bFlAnnyPTCheckBox;
+	KWndEdit32			m_eFPS;
+	KWndText32			m_tFPS;
+	KWndText32 m_tFPSCheckBox;
 };
 
 //=KUiAutoPlayMap==========================================================================

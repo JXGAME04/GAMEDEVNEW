@@ -37,6 +37,7 @@
 #include "../../../Headers/KProtocolDef.h"
 #include "../../../Headers/KProtocol.h"
 #include "../../../Engine/src/KDebug.h"
+#include "../TrayMode.h"
 #include "malloc.h"
 
 #include "UiChatCentre.h"
@@ -54,6 +55,8 @@ extern iRepresentShell*	g_pRepresentShell;
 #define	SCHEME_INI_STATE_POS	"\\Ui\\StatePos.ini"
 #define	SEL_CHANNEL_MENU		1
 #define	SEL_PHRASE_MENU			2
+
+extern HINSTANCE    hInst;
 
 const char*		s_TimeName[12] =
 {
@@ -502,7 +505,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_WifiStatus.SetFrame(2);
 	m_Auto.Init(pIni, "Auto");
 	m_SwitchBtn .Init(pIni, "SwitchSizeBtn");
-
+    m_HideWindow.Init(pIni, "HideWindow");
 	pIni->GetInteger2("BuffPos", "XY", &nX, &nY);
 	pIni->GetInteger2("BuffPos", "End", &nBegin, &nEnd);
 
@@ -576,6 +579,7 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_Market);
 	AddChild(&m_WifiStatus);
 	AddChild(&m_Auto);	
+	AddChild(&m_HideWindow);		
 	
 	for (i = 0; i < MAX_BUTTON_STATE; i++)
 	{
@@ -655,6 +659,10 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		else if (uParam == (unsigned int)(KWndWindow*)&m_SwitchBtn)
 			OnSwitchSize();
+        else if (uParam == (unsigned int)(KWndWindow*)&m_HideWindow)
+		{
+			gTrayMode.HideNotify(hInst);			
+		}	
 		break;
 	case WND_N_LEFT_CLICK_ITEM:
 		if (nParam == (int)(KWndWindow*)&m_ImmediaSkill[0])

@@ -230,13 +230,13 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		bool isMasterName = false;
 		char szGTongMasterName[32];
 		memset(&szGTongMasterName, 0, sizeof(szGTongMasterName));
-		if(nChannelIndex == 4) 
+		if(nChannelIndex == 5) 
 		{
 			g_pCoreShell->GetGameData(GDI_IS_TONG_MASTER, (unsigned int)&szGTongMasterName, 0);
 			if(strcmp(szGTongMasterName, szSendName) == 0)
 				isMasterName = true;
 		}
-		uColor = m_ChannelsResource[m_pActivateChannel[nChannelIndex].ResourceIndex].uTextColor;
+		uColor = m_ChannelsResource[m_pActivateChannel[nChannelIndex].ResourceIndex].uTextColor;  // mau chat bang chñ
 		if(isMasterName == true)
 		{
 			uColor.Color_b.a = uColor.Color_b.a;

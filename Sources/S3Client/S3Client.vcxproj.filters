@@ -583,6 +583,7 @@
       <Filter>UI_072021</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Ui\TrayMode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ui\Elem\AutoLocateWnd.h">
@@ -1048,6 +1049,7 @@
       <Filter>UI_072021</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Ui\TrayMode.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\Lib\debug\engine.lib">

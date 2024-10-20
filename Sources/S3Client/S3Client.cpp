@@ -27,9 +27,9 @@
 //#include "AntiHack/ProtectBypassMainName/ProtectBypassMainName.h"
 #include "AntiHack/Splash/Splash.h"
 #include "Ui/UiCase/UiCapture.h"
-
+#include "Ui/TrayMode.h"
 //#include "stdafx.h"
-
+#include "Ui/UiCase/UiInit.h"
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>

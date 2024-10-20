@@ -224,6 +224,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\FilterTextLib.cpp" />
     <ClCompile Include="Ui\GameSpaceChangedNotify.cpp" />
     <ClCompile Include="Ui\ShortcutKey.cpp" />
+    <ClCompile Include="Ui\TrayMode.cpp" />
     <ClCompile Include="Ui\UiBase.cpp" />
     <ClCompile Include="Ui\UiCase\KUiKtc.cpp" />
     <ClCompile Include="Ui\UiCase\UiAddPoint.cpp" />
@@ -399,6 +400,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\Elem\WndWindow.h" />
     <ClInclude Include="Ui\FilterTextLib.h" />
     <ClInclude Include="Ui\ShortcutKey.h" />
+    <ClInclude Include="Ui\TrayMode.h" />
     <ClInclude Include="Ui\UiBase.h" />
     <ClInclude Include="Ui\UiCase\KUiKtc.h" />
     <ClInclude Include="Ui\UiCase\UiAddPoint.h" />

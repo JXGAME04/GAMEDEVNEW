@@ -90,6 +90,7 @@
 #include "UiCase/UiInformation3.h"
 #include "UiCase/UiNotice.h"
 #include "UiCase/UiTongAssignBox.h"
+#include "TrayMode.h"
 
 extern iCoreShell*		g_pCoreShell;
 extern iRepresentShell*	g_pRepresentShell;
@@ -321,7 +322,8 @@ void UiPaint(int nGameLoop)
 #endif
 
 	g_pRepresentShell->RepresentEnd();
-
+	if (g_pRepresentShell->FPSDelay > 0 && g_pRepresentShell->FPSDelay <= 200)
+	Sleep(g_pRepresentShell->FPSDelay);
 }
 
 int UiHeartBeat()

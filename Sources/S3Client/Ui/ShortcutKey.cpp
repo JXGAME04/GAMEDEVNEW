@@ -162,6 +162,7 @@ char* l_WindowList[] =
 	"rec",			//24 rec
 	"mapex", //25
 	"sevencity_war",//26
+	"openbox",//27
 };
 
 int FindWindow(const char* szname)
@@ -299,30 +300,9 @@ int LuaOpenWindow(Lua_State * L)
 			{
 				KUiRankData::OpenWindow();
 			}
-			/*if(KUiBattleReport::GetIfVisible())
-			{
-				KUiBattleReport::CloseWindow(false);
-			}
-			else
-			{
-				KUiBattleReport::OpenWindow();
-			}*/
 			break;
 		case 23:
 			{
-				/*KUiAuto *k = KUiAuto::GetUiAuto();
-				if (k->IsAuto == FALSE)
-				{
-					k->IsAuto = TRUE;
-					k->UpdateButton(TRUE);
-					k->OnStart();
-				}
-				else
-				{
-					k->IsAuto = FALSE;
-					k->UpdateButton(FALSE);
-					k->OnStop();
-				}*/
 				if(KUiAutoPlay::GetActive() == TRUE)
 				{
 					KUiAutoPlay::OnActive(TRUE);
@@ -353,6 +333,10 @@ int LuaOpenWindow(Lua_State * L)
 			{
 				KUiCityWar::OpenWindow();
 			}
+			break;
+		case 27:
+			KUiStoreBox::OpenWindow();
+			KUiItem::OpenWindow();
 			break;
 		}
 	}
@@ -772,7 +756,8 @@ namespace hotkey_str
 
 		std::string desc;
 
-		{{
+		{
+			{
 		for (size_t pos = 0; pos <= count_moditbl; pos++)
 		{
 			const char* szDesc = NULL;
@@ -794,7 +779,8 @@ namespace hotkey_str
 				desc += STR_DELIMITER;
 			desc += szDesc;
 		}
-		}}
+			}
+		}
 
 		return desc;
 	}

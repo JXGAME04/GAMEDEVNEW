@@ -171,6 +171,8 @@ private:
 	KWndButton		m_Market;
 	KWndButton		m_WifiStatus;
 	KWndButton		m_Auto;
+	KWndButton		m_HideWindow;	
+
 #define	MAX_BUTTON_STATE		20
 	KWndButton		m_StateImg[MAX_BUTTON_STATE];
 	KWndText32		m_StateLife[MAX_BUTTON_STATE];

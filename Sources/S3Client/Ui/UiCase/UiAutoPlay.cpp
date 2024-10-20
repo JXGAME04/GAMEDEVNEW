@@ -15,6 +15,9 @@
 #include "../../../Core/Src/CoreShell.h"
 #include "../UiBase.h"
 #include "UiSysMsgCentre.h"
+#include "../../../Represent/iRepresent/iRepresentShell.h"
+
+extern iRepresentShell*	g_pRepresentShell;
 
 extern iCoreShell*		g_pCoreShell;
 
@@ -1718,7 +1721,7 @@ char g_ArrayData2_Magic[defMAX_AUTO_FILTERL][2][64] =
 	"Gi¶m chËm(%)", 	"freezetimereduce_p",
 	"Gi¶m tróng ®éc(%)", "poisontimereduce_p",
 	"Gi¶m cho¸ng(%)", 	"stuntimereduce_p",
-	"Gi¶m th­¬ng(%)", 	"fasthitrecover_v",		//thêi gian phôc håi
+	"Thêi Gian Phôc Håi(%)", 	"fasthitrecover_v",		//thêi gian phôc håi
 	"Kü n¨ng vèn cã(®)", "allskill_v",
 };
 
@@ -2315,6 +2318,9 @@ void KUiAutoPlayMove::Initialize()
 	//
 	AddChild(&m_FlCaptainCheckBox);
 	AddChild(&m_FlAnnyPTCheckBox);
+	AddChild(&m_eFPS);
+	AddChild(&m_tFPSCheckBox);
+	AddChild(&m_tFPS);
 	
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
@@ -2361,6 +2367,11 @@ void KUiAutoPlayMove::LoadScheme(const char* pScheme)
 		//
 		m_FlCaptainCheckBox.Init(&Ini, "FlCaptainCheckBox");
 		m_FlAnnyPTCheckBox.Init(&Ini, "FlAnnyPTCheckBox");
+//		m_tFPS.SetText("Gi¶m FPS [1-200]");
+//		m_tFPS.Init(&Ini, "TFPS");
+		m_eFPS.Init(&Ini, "EFPS");
+		m_tFPSCheckBox.Init(&Ini, "FPSCheckBox");
+
 	}
 	UpdateData();
 }
@@ -2529,6 +2540,18 @@ void KUiAutoPlayMove::OnActive()
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_10, m_bTalkAnnyCheckBox, 0);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_11, m_bFlCaptainCheckBox, 0);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_12, m_bFlAnnyPTCheckBox, 0);
+
+		
+	 int fpsValue = m_eFPS.GetIntNumber();
+        if (fpsValue > 200)
+        {
+            m_eFPS.SetIntText(200);
+            fpsValue = 200;
+        }
+        if (fpsValue > 0 && fpsValue <= 200)
+        {
+            g_pRepresentShell->FPSDelay = fpsValue;
+        }
 	}
 	SaveConfig();
 }
@@ -2568,6 +2591,8 @@ void KUiAutoPlayMove::SaveConfig()
 		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_bTalkAnnyCheckBox", m_bTalkAnnyCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_bFlCaptainCheckBox", m_bFlCaptainCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_bFlAnnyPTCheckBox", m_bFlAnnyPTCheckBox);
+		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_eFPS", m_eFPS.GetIntNumber());
+		
 	}
 	g_UiBase.CloseAutoSettingFile(true);
 }
@@ -2608,6 +2633,7 @@ void KUiAutoPlayMove::LoadConfig()
 		pConfigFile->GetInteger("KUiAutoPlayMove", "m_bTalkAnnyCheckBox", 0, (int*)(&nTempValue)); m_bTalkAnnyCheckBox = nTempValue;
 		pConfigFile->GetInteger("KUiAutoPlayMove", "m_bFlCaptainCheckBox", 0, (int*)(&nTempValue)); m_bFlCaptainCheckBox = nTempValue;
 		pConfigFile->GetInteger("KUiAutoPlayMove", "m_bFlAnnyPTCheckBox", 0, (int*)(&nTempValue)); m_bFlAnnyPTCheckBox = nTempValue;
+		pConfigFile->GetInteger("KUiAutoPlayMove", "m_eFPS", 1, (int*)(&nTempValue)); m_eFPS.SetIntText(nTempValue);
 	}
 	g_UiBase.CloseAutoSettingFile(true);
 }
@@ -2719,10 +2745,16 @@ void KUiAutoPlayMove::ProcessPopUpFollow(int nAction)
 char g_ArraySelectStationOption[][64] = 
 {
 	"Trë l¹i ®Þa ®iÓm cò",
-	"N¬i ®· ®i qua 1",
-	"N¬i ®· ®i qua 2",
-	"N¬i ®· ®i qua 3",
-	"Kh«ng ®i ®©u c¶",
+	"Kháa lang ®éng",
+	"Sa m¹c mª cung",
+	"Tr­êng b¹ch s¬n",
+	"Sa m¹c 1",
+	"Sa m¹c 2",
+	"Sa m¹c 3",
+	"Tr­êng b¹ch B¾c",
+	"Tr­êng b¹ch Nam",
+	"Phong l¨ng ®é",
+	"M¹c cao quËt",
 };
 char g_ArraySelectBuyHPOption[][64] = 
 {
@@ -3114,11 +3146,14 @@ void KUiAutoPlayMap::OnActive()
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_11, m_bBuyToxicCheckBox, m_nBuyToxicEditBox);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_12, (unsigned int)&g_ArraySelectBuyToxicOption[m_BuyToxicTxtSelect], 0);
 		//
+		m_nBuyTownEditBox = m_BuyTownEditBox.GetIntNumber();
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_13, m_bBuyTownCheckBox, m_nBuyTownEditBox);
+
 		m_nKeepMoneyEditBox = m_KeepMoneyEditBox.GetIntNumber();
 		//
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_14, m_bMapRunPosCheckBox, m_nMapTxtId);
 		//
+	
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_15, m_bKeepMoneyCheckBox, m_nKeepMoneyEditBox);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_16, m_bGetFYCheckBox, 0);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MAP_17, m_bGoFarAwayCheckBox, m_GoFarAwayTxtSelect);
@@ -3338,7 +3373,7 @@ void KUiAutoPlayMap::ProcessBuyToxicSelect(int nAction)
 
 void KUiAutoPlayMap::PopUpStationSelect()
 {
-	int nActionDataCount = sizeof(g_ArraySelectStationOption) / 32;
+	int nActionDataCount = sizeof(g_ArraySelectStationOption) / sizeof(g_ArraySelectStationOption[0]);
 	struct KPopupMenuData* pSelUnitMenu = (KPopupMenuData*)malloc(MENU_DATA_SIZE(nActionDataCount));
 	if (pSelUnitMenu == NULL)
 		return;
@@ -3348,13 +3383,13 @@ void KUiAutoPlayMap::PopUpStationSelect()
 
 	for (int i = 0; i < nActionDataCount; i++)
 	{
-		if ((i == 0) || (i == 1) || (i == 2) || (i == 3))
-		{
-			strncpy(pSelUnitMenu->Items[i].szData, g_ArraySelectStationOption[i], 63);
+	//	if ((i == 0) || (i == 1) || (i == 2) || (i == 3))
+	//	{
+			strncpy(pSelUnitMenu->Items[i].szData, g_ArraySelectStationOption[i], sizeof(g_ArraySelectStationOption[i]));
 			pSelUnitMenu->Items[i].szData[sizeof(pSelUnitMenu->Items[i].szData) - 1] = 0;
 			pSelUnitMenu->Items[i].uDataLen = strlen(pSelUnitMenu->Items[i].szData);
 			pSelUnitMenu->nNumItem++;
-		}
+	//	}
 	}
 	int x, y;
 	m_GoFarAwayMenuDown.GetAbsolutePos(&x, &y);
@@ -3368,6 +3403,8 @@ void KUiAutoPlayMap::ProcessStationSelect(int nAction)
 	m_GoFarAwayTxtSelect = nAction;
 	m_GoFarAwayTxt.SetText(g_ArraySelectStationOption[m_GoFarAwayTxtSelect]);	
 }
+
+
 
 BOOL KUiAutoPlayMap::InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY)
 {
