@@ -35,6 +35,9 @@ public:
 	virtual LRESULT	MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 public:
 	void			SetMouseHoverTime(unsigned int uHoverTime);
+	BOOL			NotifiIconState(){return m_bNotifiIconState;};	
+public:
+	BOOL			m_bNotifiIconState;	
 private:
 	void			GenerateMsgHoverMsg();
 	unsigned int	m_uMouseHoverTimeSetting;

@@ -14,6 +14,7 @@
 #include "KWin32Wnd.h"
 #include "KWin32App.h"
 #include "KIme.h"
+#include "../../S3client/ui/TrayMode.h"
 //---------------------------------------------------------------------------
 static KWin32App* m_pWin32App = NULL;
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -49,6 +50,23 @@ LRESULT CALLBACK WndProc(
 						 WPARAM	wParam, 	// first message parameter 32bit
 						 LPARAM	lParam) 	// second message parameter 32bit
 {
+	switch(uMsg)
+	{
+	case TRAYMODE_ICON_MESSAGE:
+		{
+			switch(lParam)
+			{
+			case WM_LBUTTONUP:
+				{
+					ShowWindow(hWnd, SW_SHOW);
+					UpdateWindow(g_GetMainHWnd());
+					m_pWin32App->m_bNotifiIconState = TRUE;
+				}
+				break;
+			}
+		}
+		break;
+	}
 	return m_pWin32App->MsgProc(hWnd, uMsg, wParam, lParam);
 }
 //---------------------------------------------------------------------------
@@ -67,6 +85,7 @@ KWin32App::KWin32App()
 	m_uLastMouseStatus = 0;
 	m_nLastMousePos = 0;
 	m_uLastMouseStatus = 0;
+	m_bNotifiIconState = FALSE;	
 	m_pWin32App = this;
 }
 //---------------------------------------------------------------------------
