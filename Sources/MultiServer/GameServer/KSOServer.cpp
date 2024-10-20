@@ -322,8 +322,8 @@ KSwordOnLineSever::~KSwordOnLineSever()
 BOOL KSwordOnLineSever::InitServer(char * szParam)
 {
 	char nTempConfigPath[64];
-	sprintf(nTempConfigPath, "%s_cfg.ini", szParam);
-	sprintf(m_ParamName, "%s", szParam);
+	sprintf_s(nTempConfigPath, sizeof(nTempConfigPath), "%s_cfg.ini", szParam);
+	sprintf_s(m_ParamName, sizeof(m_ParamName), "%s", szParam);
 	printf("------InitServer:%s(%s)------\n",szParam,szParam);
 
 	m_bIsRunning = TRUE;
@@ -331,7 +331,6 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	g_SetFilePath("\\");
 	KIniFile iniFile;
 	iniFile.Load(nTempConfigPath); //iniFile.Load("ServerCfg.ini");
-
 	g_PakList.Open("\\package.ini");//edit by phong kieu load pack server open file maps.pak
 
 	iniFile.GetInteger("GameServer", "Port", 6666, &m_nServerPort);
@@ -1889,7 +1888,7 @@ void KSwordOnLineSever::DatabaseMessageProcess(const char* pData, size_t dataLen
 			TProcessData*	pPD = (TProcessData *)pData;
 			int nIndex = pPD->ulIdentity;
 			m_pCoreServerShell->SetSaveStatus(nIndex, SAVE_IDLE);
-			printf("=> Save Player Data finished(%d) <= \n", nIndex);
+//			printf("=> Save Player Data finished(%d) <= \n", nIndex);
 		}
 		break;
 	default:
@@ -2412,6 +2411,8 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 
 			if (protocoltype == c2s_extendchat)
 			{
+				if (dataLength < 0 || dataLength >= 255)
+				return;
 				CHAT_CHANNELCHAT_CMD* pEh = (CHAT_CHANNELCHAT_CMD*)pExPckg;
 				if (pEh->ProtocolType == chat_channelchat && pEh->channelid != 0)	
 				{
@@ -2949,7 +2950,8 @@ void KSwordOnLineSever::SavePlayerData()
 		//TRoleData* pData = (TRoleData *)m_pCoreServerShell->SavePlayerData(nIndex); 
 		if (m_pCoreServerShell->GetSaveStatus(nIndex) == SAVE_REQUEST)
 		{
-			SavePlayerData(nIndex, false);
+		if (!SavePlayerData(nIndex, false)) // fix loi xoa skill chuyen he kim 
+			continue;
 		}
 	}
 }
@@ -3177,9 +3179,8 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 		}
 		else if (m_pCoreServerShell->IsCharacterQuiting(nIndex))
 		{
-			SavePlayerData(nIndex, true);			
-//			if (!SavePlayerData(nIndex))
-//				continue;
+			if (!SavePlayerData(nIndex, true))
+				continue;
 
 			char	szName[32];
 			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
@@ -3323,7 +3324,7 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 	{
 		tagLogicLogin *pLL = ( tagLogicLogin * )pData;
 
-		cout << "A client try to login..." << endl;//edit by phong kieu client try to login
+		//cout << "A client try to login..." << endl;//edit by phong kieu client try to login
 
 		if(&pLL->sHWID[0])
 		{
@@ -3355,7 +3356,7 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 				if (m_pTongClient)
 					m_pTongClient->SendPackToServer((const void*)&sLogin, sizeof(sLogin));
 			}
-			cout << "Found player " << nIdx << " is logging in system!" << endl;
+			//cout << "Found player " << nIdx << " is logging in system!" << endl;
 			return nIdx;
 		}
 		else
