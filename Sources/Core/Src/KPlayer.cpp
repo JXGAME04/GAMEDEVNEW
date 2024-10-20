@@ -135,6 +135,7 @@ void	KPlayer::Release()
 	memset(m_MissionRank, 0, sizeof(m_MissionRank));
 	m_cAuto.Release(); //fkauto
 	m_cAutoMove.Reset();
+    Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 #endif
 	m_dwID = 0;
 	m_nIndex = 0;
@@ -416,18 +417,18 @@ void	KPlayer::Active()
 		Npc[m_nIndex].FkAutoSetBlur(FALSE); // fix lçi thiªn v­¬ng bang phï vÒ thµnh bÞ ¶o ¶nh
 	}
 	//
-	if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsAlive()) // nÕu player bÞ chÕt
+	/*if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsAlive()) // nÕu player bÞ chÕt
 	{
 		int	nSubWorld = Npc[m_nIndex].m_SubWorldIndex;
 		int nWID = SubWorld[nSubWorld].m_SubWorldID;
-		if (!(g_SubWorldSet.GetGameTime() % 18*2) && (nWID == 379 || nWID == 480 || nWID == 481 || nWID == 482 || nWID == 483 
+		if (!(g_SubWorldSet.GetGameTime() % 90)) && (nWID == 379 || nWID == 480 || nWID == 481 || nWID == 482 || nWID == 483 
 			|| nWID == 484 || nWID == 485 || nWID == 486 || nWID == 487 || nWID == 488 || nWID == 489 || nWID == 337 || nWID == 338
-			|| nWID == 339 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379
-			|| nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379 || nWID == 379)) //C¸c map ho¹t ®éng
+			|| nWID == 339 ))//C¸c map ho¹t ®éng
 		{
+			Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 			CoreDataChanged(GDCNI_FK_AUTO_SELECTUI, 0, 1); //tù ®éng bÊm vÒ thµnh d­ìng søc
 		}
-	}
+	}*/
 	//
 #endif
 
@@ -583,6 +584,7 @@ void KPlayer::OnButtonUp(int x, int y, MOUSE_BUTTON nButton)
 		}
 		if(g_ScenePlace.bPaintMode)
 		{
+            Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			g_ScenePlace.DirectFindPos(0, 0, FALSE, FALSE);//#toa do stop paint mode click chuot phai
 			g_ScenePlace.bPaintMode = 0;
 			KSystemMessage	sMsg;
@@ -981,8 +983,20 @@ void KPlayer::LoginTimeOut()
 
 BOOL KPlayer::Save()
 {
-	if (m_nIndex <= 0 && m_dwID == 0)
+	if (m_nIndex <= 0 && m_dwID == 0  || m_nNetConnectIdx==-1)
+	{
+		printf("Return %s o day 0\n",m_PlayerName);
 		return FALSE;
+	}
+
+
+	if (CheckTrading())
+	{
+		TRADE_DECISION_COMMAND	sTrade;
+		sTrade.ProtocolType = c2s_tradedecision;
+		sTrade.m_btDecision = 0;
+		TradeDecision((BYTE*)&sTrade);	
+	}
 	
 		/*	if (m_uMustSave != SAVE_IDLE)
 		return FALSE;
@@ -1483,6 +1497,10 @@ SendMsg:
 #ifdef _SERVER
 BOOL	KPlayer::AddTeamMember(BYTE* pProtocol)
 {
+	// ´íÎó¼ì²â(ÊÇ·ñ×é¶Ó¡¢ÊÇ·ñ¶Ó³¤¡¢¶ÓÎé¿ª·Å×´Ì¬¡¢¶ÓÔ±Êý¡¢Í³ÂÊÁ¦)
+	if (m_cTeam.m_nID<0 || m_cTeam.m_nID >=MAX_PLAYER)
+		return FALSE;
+
 	if ( !m_cTeam.m_nFlag ||
 		m_cTeam.m_nFigure != TEAM_CAPTAIN ||
 		!g_Team[m_cTeam.m_nID].IsOpen() ||
@@ -1520,6 +1538,7 @@ BOOL	KPlayer::AddTeamMember(BYTE* pProtocol)
 	if (g_Team[m_cTeam.m_nID].m_nMemNum >= MAX_TEAM_MEMBER || g_Team[m_cTeam.m_nID].CheckFull())
 	{
 		g_Team[m_cTeam.m_nID].SetTeamClose();
+		return FALSE;
 	}
 	// 
 	Player[nPlayer].m_cTeam.Release();
@@ -2387,8 +2406,14 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 		return;
 
 	int	nGetExp = 0;
+      int nxExpTanThu = 4;
+    if (Npc[m_nIndex].m_Level < 50)
+		nxExpTanThu = 30;
+	else if (Npc[m_nIndex].m_Level < 80)
+		nxExpTanThu = 25;
+	else if (Npc[m_nIndex].m_Level < 90)
+		nxExpTanThu = 10;
 	int	nSubLevel = Npc[m_nIndex].m_Level - nTarLevel;
-	
 	if(Npc[m_nIndex].m_Level >= nTarLevel )	// 
 	{
 		if (nSubLevel <= 9)
@@ -2416,13 +2441,14 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 			nGetExp = nGetExp * Npc[m_nIndex].m_CurrentExpEnhance / MAX_PERCENT;
 	}
 
+  
 #ifdef _SERVER
 	if (nGetExp <= 0)
 		nGetExp = 1;
 
 	if(g_ExpRate) //#x2 exp trong config
 	{
-		nGetExp = nGetExp * g_ExpRate;	
+		nGetExp = nGetExp * g_ExpRate * nxExpTanThu;	
 		m_nExp += nGetExp;
 	}
 	else
@@ -2679,6 +2705,7 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentManaToSkillEnhanceP	= 0;					//#khi noi cong day tang ky nang cong kich
 	Npc[m_nIndex].m_CurrentSorbDamageP	= 0;								//#triet tieu sat thuong
 	Npc[m_nIndex].m_CurrentExpEnhance	= 0;								//nh©n ®«i nh©n ba nh©n x2 ®iÓm kinh nghiÖm
+	Npc[m_nIndex].m_CurrentExpSkillsEnchance	= 1; // ExpSkills x2
 	
 	ReCalcEquip();
 	ReCalcState();
@@ -3485,12 +3512,17 @@ int	KPlayer::ThrowAwayItem()
 			return 0;
 		if ( !m_ItemList.Hand() )
 			return 0;
+		if ( m_cAuto.mfk_bActive && 
+			m_cAuto.m_bSortEquipment )
+			return 0;
+
 		PLAYER_THROW_AWAY_ITEM_COMMAND	sThrow;
 		sThrow.ProtocolType = c2s_playerthrowawayitem;
 		if (g_pClient)
 			g_pClient->SendPackToServer(&sThrow, sizeof(PLAYER_THROW_AWAY_ITEM_COMMAND));
 		return 1;
 	}
+	return 0;
 }
 #endif
 
@@ -5482,23 +5514,102 @@ void KPlayer::UseTownPortal()
 	Npc[m_nIndex].SetFightMode(0);
 }
 
-void KPlayer::BackToTownPortal()
+void KPlayer::BackToTownPortal(int nIdSubWorld)
 {
-	if (m_nPlayerIndex <= 0)
+	//
+	if (m_nPlayerIndex <= 0 || m_nPlayerIndex >= MAX_PLAYER)
 		return;
-	if (m_nIndex <= 0)
+
+	if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
 		return;
-	if (m_sPortalPos.m_nTime <= 0)
+
+	if (CheckTrading())
 		return;
+
 	if(!m_nLicReg) 
 		return;
 	
-	Npc[m_nIndex].ChangeWorld(m_sPortalPos.m_nSubWorldId, m_sPortalPos.m_nMpsX, m_sPortalPos.m_nMpsY);
+	if (nIdSubWorld <= 0)
+	{
+		if (m_sPortalPos.m_nTime <= 0)
+			return;
+
+		if (Npc[m_nIndex].ChangeWorld(m_sPortalPos.m_nSubWorldId, m_sPortalPos.m_nMpsX, m_sPortalPos.m_nMpsY))
+		{//fix disconect GS khi player lam cung mot luc;
 	m_sPortalPos.m_nSubWorldId = 0;
 	m_sPortalPos.m_nTime = 0;
 	m_sPortalPos.m_nMpsX = 0;
 	m_sPortalPos.m_nMpsY = 0;
 	Npc[m_nIndex].SetFightMode(TRUE);
+}
+	}
+	else
+	{
+		if (m_sPortalPos.m_nSubWorldId > 0 || m_sPortalPos.m_nTime > 0)
+		{ //fix disconect GS khi player lam cung mot luc;
+			return;
+		}
+		else
+		{
+			int nX, nY;
+			if (nIdSubWorld == 75)
+			{
+				nX = 53504;
+				nY = 107040;
+			}
+			else if (nIdSubWorld == 224)
+			{
+				nX = 54144;
+				nY = 100800;
+			}
+			else if (nIdSubWorld == 320)
+			{
+				nX = 36704;
+				nY = 100320;
+			}
+			else if (nIdSubWorld == 225)
+			{
+				nX = 50784;
+				nY = 102368;
+			}
+			else if (nIdSubWorld == 226)
+			{
+				nX = 54560;
+				nY = 104000;
+			}
+			else if (nIdSubWorld == 227)
+			{
+				nX = 50976;
+				nY = 103296;
+			}
+			else if (nIdSubWorld == 322)
+			{
+				nX = 50848;
+				nY = 101184;
+			}
+			else if (nIdSubWorld == 321)
+			{
+				nX = 30912;
+				nY = 73888;
+			}
+			else if (nIdSubWorld == 336)
+			{
+				nX = 35872;
+				nY = 101984;
+			}
+			else if (nIdSubWorld == 340)
+			{
+				nX = 59328;
+				nY = 109760;
+			}
+			Npc[m_nIndex].ChangeWorld(nIdSubWorld, nX, nY);
+			m_sPortalPos.m_nSubWorldId = 0;
+			m_sPortalPos.m_nTime = 0;
+			m_sPortalPos.m_nMpsX = 0;
+			m_sPortalPos.m_nMpsY = 0;
+			Npc[m_nIndex].SetFightMode(TRUE);
+		}
+	}
 }
 #endif
 
@@ -7134,12 +7245,13 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 #endif
 
 #ifdef _SERVER
-void	KPlayer::ResetProp()
+int	KPlayer::ResetProp()
 {
 		char szBaseInfo[80];
-		sprintf(szBaseInfo,"\\settings\\player\\newplayerini%02d.ini",Npc[m_nIndex].m_Series*2);
+		sprintf(szBaseInfo,"\\settings\\player\\newplayerini%02d.ini",Npc[m_nIndex].m_Series*2 + Npc[m_nIndex].m_nSex);
 		KIniFile BaseAttrib;
-		if(!BaseAttrib.Load(szBaseInfo)) return;
+		if(!BaseAttrib.Load(szBaseInfo)) return 0;
+
 		int nBaseStr, nBaseDex, nBaseVit, nBaseEn;
 		BaseAttrib.GetInteger("ROLE", "ipower", 0, &nBaseStr);
 		BaseAttrib.GetInteger("ROLE", "iagility", 0, &nBaseDex);
@@ -7164,13 +7276,20 @@ void	KPlayer::ResetProp()
 		m_nCurVitality = m_nVitality;
 		m_nCurEngergy = m_nEngergy;
 	
-		m_nAttributePoint += nStr + nDex + nVit + nEn;
+	//thiet lap hp,mp,tl max
+	Npc[m_nIndex].m_LifeMax =(Npc[m_nIndex].m_Level*PlayerSet.m_cLevelAdd.GetLifePerLevel(Npc[m_nIndex].m_Series));
+	Npc[m_nIndex].m_CurrentLifeMax = Npc[m_nIndex].m_LifeMax;
+	
+	
+	Npc[m_nIndex].m_ManaMax =(Npc[m_nIndex].m_Level*PlayerSet.m_cLevelAdd.GetManaPerLevel(Npc[m_nIndex].m_Series));
+	Npc[m_nIndex].m_CurrentManaMax = Npc[m_nIndex].m_ManaMax;
+	
+	Npc[m_nIndex].m_StaminaMax =(Npc[m_nIndex].m_Level*PlayerSet.m_cLevelAdd.GetStaminaPerLevel(Npc[m_nIndex].m_Series));
+	Npc[m_nIndex].m_CurrentStaminaMax = Npc[m_nIndex].m_StaminaMax;
 		
 		SetNpcAttackRating();
 		SetNpcDefence();
-		Npc[m_nIndex].AddBaseLifeMax(PlayerSet.m_cLevelAdd.GetLifePerVitality(Npc[m_nIndex].m_Series) * (-nVit));
-		Npc[m_nIndex].AddBaseStaminaMax(PlayerSet.m_cLevelAdd.GetStaminaPerVitality(Npc[m_nIndex].m_Series) * (-nVit));
-		Npc[m_nIndex].AddBaseManaMax(PlayerSet.m_cLevelAdd.GetManaPerEnergy(Npc[m_nIndex].m_Series) * (-nEn));
+
 		UpdataCurData();
 		SetNpcPhysicsDamage();
 		
@@ -7181,6 +7300,8 @@ void	KPlayer::ResetProp()
 		sSync.m_nCurPoint = 0;
 		sSync.m_nLeavePoint = m_nAttributePoint;
 		g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(PLAYER_ATTRIBUTE_SYNC));
+
+		return nStr + nDex + nVit + nEn;
 }
 #endif
 
@@ -8183,22 +8304,9 @@ void KPlayer::ServerBreakItem(DWORD dwItemID, int nNum, bool isbreakall)
 		Item[nIdx].SetStackNum(Item[nIdx].GetStackNum() - nNum);
 		m_ItemList.SyncItem(nIdx);
 		//
-		int nIndex = ItemSet.AddItemSet2(Item[nIdx].GetGenre(),
-								Item[nIdx].GetSeries(), 
-								Item[nIdx].GetLevel(), 
-								10, 
-								Item[nIdx].GetDetailType(), 
-								Item[nIdx].GetParticular(),
-								NULL, g_SubWorldSet.GetGameVersion(),
-								0,
-								nNum, 0, 0, 
-								Item[nIdx].GetTime() ->bYear
-								);
-		//
-		//Item[nIndex].SetStackNum(nNum);
-		//Item[nIndex].SetBindItem(Item[nIdx].GetBindItem()->btBindItem,Item[nIdx].GetBindItem()->uTime);
-		//Item[nIndex].SetTimeUse(Item[nIdx].GetTimeUse());
-		//
+		int nIndex = ItemSet.AddI(&Item[nIdx]);
+
+		Item[nIndex].SetStackNum(nNum);
 		if (nIndex <= 0) return;
 		//
 		int	nIdx = m_ItemList.Hand();

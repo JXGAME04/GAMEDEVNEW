@@ -52,18 +52,18 @@
 #define		MAX_REBORN_VALUE					100000
 #define		MSG_NON_SETTINGS		"Kh«ng thiÕt lËp"
 #define		TIMERTASK_SETTINGFILE	"\\settings\\TimerTask.txt"
-#define		TASKVALUE_X2_EXP		36	//x2 ®iÓm kinh nghiÖm c¸ nh©n chÕt kh«ng mÊt
+#define		TASKVALUE_X2_EXP		36	//x2 ®iÓm kinh nghiÖm c?nh©n chÕt kh«ng mÊt
 #define		TASKVALUE_STATTASK_HONOR		37	//lien dau
 #define		TASKVALUE_STATTASK_ACCUM		38 //tong kim
-#define		TASKVALUE_STATTASK_RESPECT		39	//diem uy danh tÝch luü c«ng tr¹ng
+#define		TASKVALUE_STATTASK_RESPECT		39	//diem uy danh tÝch lu?c«ng tr¹ng
 #define		TASKVALUE_STATTASK_REPUTE		73	//danh vong
 #define		TASKVALUE_STATTASK_FUYUAN		74	//phuc duyen khong dung
 #define		TASKVALUE_STATTASK_MATDOTHANBI		75//mat do than bi, son ha xa tac
 #define		TASKVALUE_DB_PLAYER_TITLE_ID 71 //#PlayerTitle
 #define		TASKVALUE_DB_PLAYER_TITLE_TIME	72 //#PlayerTitle
 #define		TASKVALUE_DANHQUAIDATAU 89
-#define		T_ANTI_HACK1 108 //add by phong kiÒu antihack	//®ãng ch­a sö dông
-#define		T_ANTI_HACK2 109	//®ãng ch­a sö dông
+#define		T_ANTI_HACK1 108 //add by phong kiÒu antihack	//®ãng ch­a s?dông
+#define		T_ANTI_HACK2 109	//®ãng ch­a s?dông
 
 #define		TASKVALUE_SAVEWAYPOINT_BEGIN 101
 #define		TASKVALUE_MAXWAYPOINT_COUNT 3
@@ -180,16 +180,16 @@ enum PAUTO_OPTION
 	eABanItem,
 	//ePickInFightState,//nhÆt ®å trong thµnh
 	eAutoRightSkill,//®¸nh chiªu bªn ph¶i
-	eAutoPTAll, //pt tÊt c¶
+	eAutoPTAll, //pt tÊt c?
 	enumcount,
 };
 
 enum ITEM_PART
 {
-	itempart_head = 0,	// Í· // mò
+	itempart_head = 0,	// Í· // m?
 	itempart_body,		// ÉíÌå //¸o
 	itempart_belt,		// Ñü´ø // ®ai l­ng
-	itempart_weapon,	// ÎäÆ÷ // vò khÝ
+	itempart_weapon,	// ÎäÆ÷ // v?kh?
 	itempart_foot,	//giµy
 	itempart_cuff, //bao tay
 	itempart_amulet, //d©y chuyÒn
@@ -257,7 +257,7 @@ typedef struct
 
 enum INVENTORY_ROOM
 {
-	room_equipment = 0,	// trang bÞ trªn ng­êi
+	room_equipment = 0,	// trang b?trªn ng­êi
 	room_repository,	// r­¬ng chøa ®å
 	room_exbox1,		// mo rong ruong 1
 	room_exbox2,		// mo rong ruong 2
@@ -358,7 +358,7 @@ enum ITEM_POSITION
 #define		MAX_RESIST		95
 #define		MAX_HIT_PERCENT	95
 #define		MIN_HIT_PERCENT	5
-#define		MAX_NPC_RECORDER_STATE 18 //fix by Fong KiÒu mÆc ®Þnh lµ 8
+#define		MAX_NPC_RECORDER_STATE 18 //fix by Fong KiÒu mÆc ®Þnh l?8
 #define		PLAYER_MOVE_DO_NOT_MANAGE_DISTANCE	5
 #define	NORMAL_NPC_PART_NO		5	
 #ifndef _SERVER
@@ -414,11 +414,11 @@ enum OBJ_GENDER
 
 enum NPCCAMP
 {
-	camp_begin,	// 0 ch÷ tr¾ng
+	camp_begin,	// 0 ch?tr¾ng
 	camp_justice, // 1 ch¸nh ph¸i
-	camp_evil, // 2 tµ ph¸i
+	camp_evil, // 2 t?ph¸i
 	camp_balance, // 3 trung lËp
-	camp_free,	// 4 mµu ®á s¸t thñ
+	camp_free,	// 4 mµu ®á s¸t th?
 	camp_animal, // 5 mµu hång admin
 	camp_event,		// 6 mµu hång admin
 	camp_audience, // 7
@@ -558,7 +558,7 @@ enum ITEMKIND
 {
 	normal_item = 0,	//®å tr¾ng
 	green_item,				//®å xanh
-	broken_item,			//®å bÞ háng
+	broken_item,			//®å b?háng
 	gold_item ,					//hoang kim
 	purple_item,				//do tim
 	platinum_item,			//bach kim
@@ -1026,7 +1026,17 @@ struct KUiPlayerLeaderShip
 	int		nLeaderShipExperienceFull;	
 };
 
-
+struct KUiPlayerPaintTeamMNG
+{
+	int		nCountS;
+	int		nWeightOffset;
+	int		nHeightOffset_life;
+	int		nHeightOffset_mana;
+	int		nOffSet_member;
+	int		nWid;
+	int		nHei_life;
+	int		nHei_mana;
+};
 
 struct FKUiObjectName //fkauto
 {
@@ -1237,8 +1247,8 @@ enum NPCKIND
 	kind_player,				//ng­êi ch¬i
 	kind_partner,				//b¹n ®ång hµnh
 	kind_dialoger,				//®èi tho¹i
-	kind_bird,					//bay kh«ng thÊy sö dông
-	kind_mouse,				//chuét kh«ng thÊy sö dông
+	kind_bird,					//bay kh«ng thÊy s?dông
+	kind_mouse,				//chuét kh«ng thÊy s?dông
     kind_num				//tèi ®a
 };
 
@@ -1339,16 +1349,16 @@ struct KMissionRecord
 
 #define		defTONG_MAX_DIRECTOR				7
 #define		defTONG_MAX_MANAGER					56
-#define		defTONG_ONE_PAGE_MAX_NUM			7
+#define		defTONG_ONE_PAGE_MAX_NUM			100
 #define		defTONG_STR_LENGTH					32
-#define		defTONG_NAME_MAX_LENGTH				16
+#define		defTONG_NAME_MAX_LENGTH				12
 
 enum TONG_MEMBER_FIGURE
 {
 	enumTONG_FIGURE_MEMBER,				// thµnh viªn
-	enumTONG_FIGURE_MANAGER,			// ®­êng chñ
+	enumTONG_FIGURE_MANAGER,			// ®­êng ch?
 	enumTONG_FIGURE_DIRECTOR,			// tr­ëng l·o
-	enumTONG_FIGURE_MASTER,				// bang chñ
+	enumTONG_FIGURE_MASTER,				// bang ch?
 	enumTONG_FIGURE_LEAGUE,				//lien minh
 	enumTONG_FIGURE_NUM,
 };
@@ -1409,10 +1419,10 @@ struct KTongInfo
 	int   nFigure;              //´ýÉ¾³ý
 	//===========add by Fong KiÒu 12/12/2021==========
 	int		nStatusGuide; //t×nh tr¹ng bang héi
-	char  szWayEdit[32];			// tiªu chÝ bang héi
+	char  szWayEdit[32];			// tiªu ch?bang héi
 	char  szNextTargetEdit[32];			// môc tiªu hiÖn thêi bang héi
 	int		nExpGuide; //®iÓm kinh nghiÖm bang héi
-	int		nCityGuide; //thµnh thÞ chiÕm h÷u
+	int		nCityGuide; //thµnh th?chiÕm h÷u
 	int		nTongLevel; //®¼ng cÊp bang héi
 	char  szLeagueTName[32];		//tªn bang héi liªn minh
 };
@@ -1526,7 +1536,7 @@ enum SELECT_FIGHT_OPTION
 };
 //End Fkauto
 
-#define MAX_ITEM_SPC								5		//max item trªn giá hµng
+#define MAX_ITEM_SPC								5		//max item trªn gi?hµng
 struct FKGioHang
 {
 	KUiObjAtContRegion	m_ListItemInfo[MAX_ITEM_SPC];

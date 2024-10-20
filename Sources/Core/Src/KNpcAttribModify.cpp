@@ -140,11 +140,30 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_randmove] = &KNpcAttribModify::RandMove;
 	ProcessFunc[magic_manatoskill_enhance] = &KNpcAttribModify::ManaToSkillEnhanceP;
 	ProcessFunc[magic_sorbdamage_p] = &KNpcAttribModify::SorbDamageP;
+	ProcessFunc[magic_expenhance_s] = &KNpcAttribModify::ExpSkillsEnhanceP;// Add magic x2 Skill
 }
 
 KNpcAttribModify::~KNpcAttribModify()
 {
 }
+
+
+
+
+void KNpcAttribModify::ExpSkillsEnhanceP(KNpc* pNpc, void* pData)// ExpSkills x2
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pNpc->IsPlayer())
+	{
+		if (pMagic->nValue[0] > 1)
+			pNpc->m_CurrentExpSkillsEnchance = 2; //truong hop su dung x2;
+
+		else
+			pNpc->m_CurrentExpSkillsEnchance = 1; // truong hop khong su dung x2;
+	}
+}
+
+
 
 void KNpcAttribModify::ModifyAttrib(KNpc* pNpc, void* pData)
 {

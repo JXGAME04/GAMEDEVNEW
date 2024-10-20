@@ -533,8 +533,8 @@ BOOL KSubWorld::LoadMap(int nId)
 	sprintf(szKeyName, "%d_NpcSeriesEarth", nId);
 	IniFile.GetInteger("List", szKeyName, 0, &m_NpcSeriesEarth);
 
-	g_SetFilePath("");
-	sprintf(szFileName, "\\maps\\%s.wor", szPathName);//edit by phong kieu load file wor
+	g_SetFilePath("\\maps");
+	sprintf(szFileName, "%s.wor", szPathName);//edit by phong kieu load file wor
 	if (!IniFile.Load(szFileName))
 	{
 		printf("===[szFileName is not exists: %s]",szFileName);
@@ -1431,6 +1431,42 @@ BOOL KSubWorld::CanPutObj(POINT pos)
 	return FALSE;
 }
 
+
+#ifdef _SERVER
+int	KSubWorld::DelAllNpcInWro()
+{
+	int nCount=0;
+	for (int i = 0; i < m_nTotalRegion; ++i)  
+	{	
+		nCount +=m_Region[i].DelAllNpc();   
+	}
+
+	KIndexNode* pNode = (KIndexNode *)m_NoneRegionNpcList.GetHead();
+	KIndexNode *pTmpNode = NULL;
+	while(pNode)
+	{//重生列表的	npc
+		pTmpNode = (KIndexNode *)pNode->GetNext();
+		int  nNpcIdx =	pNode->m_nIndex;
+		if  (nNpcIdx>0 && nNpcIdx < MAX_NPC && Npc[nNpcIdx].m_Kind!=kind_player)
+		{
+			if (Npc[nNpcIdx].m_RegionIndex>=0)
+			{
+			    //m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
+				Npc[nNpcIdx].m_Node.Remove();
+		        Npc[nNpcIdx].m_Node.Release();
+			}
+		    NpcSet.Remove(nNpcIdx);
+			nCount++;
+		}
+
+		pNode=pTmpNode;
+	}
+
+    return nCount;
+	
+}
+#endif
+
 #ifdef _SERVER
 BOOL KSubWorld::ExecuteScript(char * ScriptFileName, char * szFunName, int nParam)
 {
@@ -1498,8 +1534,12 @@ int	KSubWorld::RevivalAllNpc()
 		while(pNode)
 		{
 			int nNpcIdx = pNode->m_nIndex;
-			if (!Npc[nNpcIdx].IsPlayer())
+			if (!Npc[nNpcIdx].IsPlayer() && Npc[nNpcIdx].m_Kind!=kind_dialoger)
 			{
+              if (Npc[nNpcIdx].m_Doing == do_revive)
+                {
+                Npc[nNpcIdx].m_Doing = do_none;
+                }
 				Npc[nNpcIdx].ExecuteRevive();
 			}
 			pNode = (KIndexNode *)pNode->GetNext();	
@@ -1511,7 +1551,7 @@ int	KSubWorld::RevivalAllNpc()
 	while(pNode)
 	{
 		int nNpcIdx = pNode->m_nIndex;
-		if (!Npc[nNpcIdx].IsPlayer())
+		if (!Npc[nNpcIdx].IsPlayer() && Npc[nNpcIdx].m_Kind!=kind_dialoger)
 		{
 			Npc[nNpcIdx].m_Frames.nTotalFrame = 1;
 			Npc[nNpcIdx].m_Frames.nCurrentFrame = 0;

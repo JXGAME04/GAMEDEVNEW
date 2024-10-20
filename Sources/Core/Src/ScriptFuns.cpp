@@ -2385,6 +2385,17 @@ int LuaGetLocalDate(Lua_State * L)
 	return 0;
 }
 
+int LuaGetTimeByMiao(Lua_State * L)
+{
+	time_t rawtime;                  //¶¨ÒåÒ»¸ölong ÐÍ´æ·ÅÃëÊý
+	time (&rawtime);                 //¾àÀëÏÖÔÚµÄÊ±¼ä£¨Ãë£©
+	char nTimeInfo[32]={0};
+	sprintf(nTimeInfo,"%u",rawtime);
+	//printf("---²âÊÔÊ±¼ä:%s ----\n",nTimeInfo);
+	Lua_PushString(L,nTimeInfo);
+	return 1;
+}
+
 int LuaRepairItemGetNumCoin(Lua_State * L)//#do ben trang bi hong bang 0
 {
 	int nParamNum = Lua_GetTopIndex(L);
@@ -2797,7 +2808,56 @@ int LuaAddTrap(Lua_State * L)
 	Lua_PushNumber(L,1);
 	return 1;
 }
+int LuaAddObj(Lua_State * L)
+{
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 5)
+	{
+		Lua_PushNumber(L,0);
+		return 1;
+	}
 
+	int nObjID = (int)Lua_ValueToNumber(L,1);
+	if (nObjID <= 0 || nObjID >= ObjSet.m_cTabFile.GetHeight())
+	{
+		Lua_PushNumber(L,0);
+		return 1;
+	}
+	int nSubWorldIndex	= g_SubWorldSet.SearchWorld((int)Lua_ValueToNumber(L,2));
+
+	if (nSubWorldIndex == -1)
+		return 0;
+
+	KMapPos	Pos;
+
+	Pos.nSubWorld = nSubWorldIndex;
+	SubWorld[nSubWorldIndex].Mps2Map((int)Lua_ValueToNumber(L,3),(int)Lua_ValueToNumber(L,4), 
+	&Pos.nRegion, &Pos.nMapX, &Pos.nMapY, 
+	&Pos.nOffX, &Pos.nOffY);
+	KObjItemInfo	sInfo;
+	sInfo.m_nItemID = 0;
+	sInfo.m_nItemWidth = 0;
+	sInfo.m_nItemHeight = 0;
+	sInfo.m_nMoneyNum = 0;
+	sInfo.m_szName[0] = 0;
+	sInfo.m_nColorID = 0;
+	sInfo.m_nGenre = 0;
+	sInfo.m_nDetailType = 0;
+	sInfo.m_nMovieFlag = 1;
+	sInfo.m_nSoundFlag = 1;
+//	sInfo.m_bOverLook = 0;
+	int nObj = ObjSet.Add(nObjID, Pos, sInfo);
+	if (nObj <= 0) return 0;
+
+	Object[nObj].SetScriptFile((char *)Lua_ValueToString(L,5));
+	if (nParamNum > 5)
+		Object[nObj].SetImageDir((int)Lua_ValueToNumber(L,6));
+	if (nParamNum > 6)
+		Object[nObj].SetState((int)Lua_ValueToNumber(L,7));
+
+	Lua_PushNumber(L, nObj);
+    return 1;
+}
 int LuaAddObstacle(Lua_State * L) //#Set VËt C¶n
 {
 	if (Lua_GetTopIndex(L) < 4) 
@@ -2906,7 +2966,22 @@ int LuaReSetMask(Lua_State * L)
 	Npc[Player[nPlayerIndex].m_nIndex].m_MaskType = Item[nIdx].GetBaseMagic();
 	return 0;
 }
+int LuaRandomNew(Lua_State * L)
+{
 
+	int nMin = (int)Lua_ValueToNumber(L, 1);
+	int nMax = (int)Lua_ValueToNumber(L, 2);
+	if (nMin > nMax) 
+		return 0;
+
+
+	int grandommax = g_Random(nMax - nMin + 1 );
+	int nValue =  grandommax + nMin; 
+	//printf("Test: %d - %d - %d - %d\n",nMin,nMax,grandommax,nValue);
+	Lua_PushNumber(L, nValue);
+	
+	return 1;
+}
 int LuaSetPos(Lua_State * L)//SetPos(X,Y)
 {
 	int nParamCount = Lua_GetTopIndex(L);
@@ -2971,7 +3046,24 @@ int LuaGetNewWorldPos(Lua_State * L)//W,X,Y = GetWorldPos()
 	}
 	return 3;
 }
+int LuaGetNpcLevel(Lua_State * L)
+{	
+	if (Lua_GetTopIndex(L) < 1)
+	{
+		Lua_PushNil(L);
+		return 1; 
+	}
 
+	int nNpcIdx = (int)Lua_ValueToNumber(L,1);
+	if( (nNpcIdx <= 0) || (nNpcIdx >= MAX_NPC) )
+	{
+		Lua_PushNil(L);
+		return 1;
+	}
+
+	Lua_PushNumber(L, Npc[nNpcIdx].m_Level); 
+	return 1;
+}
 int LuaDropNpcMoney(Lua_State * L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -3018,6 +3110,38 @@ int LuaDropNpcMoney(Lua_State * L)
 
 	Lua_PushNumber(L,1);
 	return 1;
+}
+
+int LuaDropRateItem(Lua_State *L)
+{	
+    int nParamNum = Lua_GetTopIndex(L);
+    if (nParamNum < 6) // Increase the parameter check to 7
+        return 0;
+
+    int nPlayerIndex = GetPlayerIndex(L);
+    if (nPlayerIndex <= 0)
+        return 0;
+
+    int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
+    if (nNpcIndex <= 0)
+        return 0;
+
+    int nSubWorldIndex = 0;
+    int nX, nY;
+
+    Npc[nNpcIndex].GetMpsPos(&nX, &nY);
+    nSubWorldIndex = Npc[nNpcIndex].GetSubWorldIndex();
+
+    int nCount = (int)Lua_ValueToNumber(L, 2);
+    const char* pFileName = (char*)Lua_ValueToString(L, 3);
+    int nUnknow = (int)Lua_ValueToNumber(L, 4);
+    int nItemLevel = (int)Lua_ValueToNumber(L, 5);
+    int nItemSeries = (int)Lua_ValueToNumber(L, 6);
+   // int nLuck = (int)Lua_ValueToNumber(L, 7); // Add nLuck parameter
+
+    Npc[nNpcIndex].DropRateItem(nCount, pFileName, nUnknow, nItemLevel, nItemSeries, nPlayerIndex); //
+
+    return 0;
 }
 
 int LuaDropItem(Lua_State *L)//#lua drop item
@@ -4716,7 +4840,7 @@ int LuaAddNpc(Lua_State * L)
 
 
 
-/*
+
 int LuaGetNpcBoss(Lua_State * L)
 {
 	if (Lua_GetTopIndex(L) == 1 )
@@ -4732,7 +4856,7 @@ int LuaGetNpcBoss(Lua_State * L)
 	}
 	Lua_PushNumber(L,0);
 	return 1;
-}*/
+}
 
 
 int LuaSetNpcGoldBoss(Lua_State * L)
@@ -4763,14 +4887,15 @@ int LuaDelNpc(Lua_State * L)
 {
 	if (Lua_GetTopIndex(L) <= 0 ) return 0 ;
 	int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
-	if (nNpcIndex > 0)
+	if (nNpcIndex > 0 && nNpcIndex < MAX_NPC)
 	{
-		if (Npc[nNpcIndex].m_RegionIndex >= 0)
+		if (!Npc[nNpcIndex].IsPlayer() && Npc[nNpcIndex].m_SubWorldIndex>=0 && Npc[nNpcIndex].m_RegionIndex >= 0)
 		{
 			SubWorld[Npc[nNpcIndex].m_SubWorldIndex].m_Region[Npc[nNpcIndex].m_RegionIndex].RemoveNpc(nNpcIndex);
 			SubWorld[Npc[nNpcIndex].m_SubWorldIndex].m_Region[Npc[nNpcIndex].m_RegionIndex].DecRef(Npc[nNpcIndex].m_MapX, Npc[nNpcIndex].m_MapY, obj_npc);
-		}
 		NpcSet.Remove(nNpcIndex);
+	}
+
 	}
 	return 0;
 }
@@ -4879,10 +5004,24 @@ int LuaGetNpcSeries(Lua_State * L)
 
 int LuaSetNpcName(Lua_State * L)
 {
-	if (Lua_GetTopIndex(L) < 2 ) return 0;
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 1)
+		return 0 ;
+
 	int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
-	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC) return 0;
-	strcpy(Npc[nNpcIndex].Name, Lua_ValueToString(L,2));
+
+	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC)
+		return 0;
+
+	if (Lua_IsNumber(L,2))
+	{
+		KTabFile Replace;
+		Replace.Load(RENAME_NPC_SETTING_TABFILE);
+		Replace.GetString((int)Lua_ValueToNumber(L,2)+2, "targetname","", Npc[nNpcIndex].Name, sizeof(Npc[nNpcIndex].Name));
+	}
+	else if (Lua_IsString(L,2))
+		strcpy(Npc[nNpcIndex].Name, (char*)Lua_ValueToString(L,2));
+
 	return 0;
 }
 
@@ -5728,6 +5867,16 @@ int LuaSetViewTongOwnCity(Lua_State * L)
 	return 1;
 }
 
+int LuaGetTongFlag(Lua_State * L)
+{
+    int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+	{
+		Lua_PushNumber(L, Player[nPlayerIndex].m_cTong.m_nFlag);
+		return 1;
+	}
+	return 0;
+}
 int LuaGetTongInfo(Lua_State * L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -6135,7 +6284,17 @@ int LuaGetPlayerExp(Lua_State *L)
 		Lua_PushNil(L);
 	return 1;
 }
-
+int LuaGetNpcExpSkillsRate(Lua_State * L)//TamLTM expskills x2
+{	
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex < 0) 
+	{
+		Lua_PushNumber(L,0);
+		return 0;
+	}
+	Lua_PushNumber(L, Npc[Player[nPlayerIndex].m_nIndex].m_CurrentExpSkillsEnchance);
+	return 1;
+}
 int LuaModifyPlayerExp(Lua_State * L)//AddExp(200,10,0)
 {
 	int bAllTeamGet = 0;
@@ -6333,7 +6492,17 @@ int LuaGetPlayerSex(Lua_State * L)
 {
 	MacroFun_GetPlayerInfoInt(L , m_nSex);
 }
+int LuaSetPlayerSex(Lua_State * L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+	{
+		int nValue = (int)Lua_ValueToNumber(L,1);
+		Npc[Player[nPlayerIndex].m_nIndex].SetSex(nValue);
+	} 
+	return 0;
 
+}
 int LuaGetPlayerIndex(Lua_State * L)
 {
 	MacroFun_GetPlayerInfoInt(L , GetPlayerIdx());
@@ -8023,7 +8192,20 @@ lab_getmissionvalue:
 	Lua_PushNumber(L, nResultValue);
 	return 1;
 }
+int LuaSetGlobalMissionValue(Lua_State * L)
+{
+	int nParamCount = Lua_GetTopIndex(L);
+	if (nParamCount < 2) 
+		return 0;
+	
+	int nValueId = (int)Lua_ValueToNumber(L, 1);
+	int  szValue = (int)Lua_ValueToNumber(L, 2);
 
+	if (nValueId  < 0)
+		return 0;
+	g_GlobalMissionArray.SetMissionValue(nValueId, szValue);
+	return 0;
+}
 int LuaSetGlobalMission(Lua_State * L)// SetMissionValue(mapid/mapname, valueid, value)
 {
 	int nParamCount = Lua_GetTopIndex(L);
@@ -8051,6 +8233,23 @@ int LuaGetGlobalMissionValue(Lua_State * L)
 		goto lab_getglobalmissionvalue;
 	
 	nResultValue = g_GlobalMissionArray.GetMissionValue(nValueId);
+	
+lab_getglobalmissionvalue:
+	Lua_PushNumber(L, nResultValue);
+	return 1;
+}
+int LuaGetGlobalMissionValueC(Lua_State * L)
+{
+	int nResultValue = 0;
+	int nValueId = 0;
+	int nParamCount = Lua_GetTopIndex(L);
+	if (nParamCount < 1) 
+		goto lab_getglobalmissionvalue;
+	nValueId = (int)Lua_ValueToNumber(L, 1);
+	if (nValueId < 0)
+		goto lab_getglobalmissionvalue;
+	
+	nResultValue = g_GlobalMissionArray.GetMissionValueC(nValueId);
 	
 lab_getglobalmissionvalue:
 	Lua_PushNumber(L, nResultValue);
@@ -8159,6 +8358,17 @@ int LuaGetMissionName(Lua_State * L)
 		Lua_PushString(L, pMission->GetMissionName());
 		return 1;
 	}
+	return 0;
+}
+
+
+int LuaReLoadScript(Lua_State * L)
+{
+	if (Lua_GetTopIndex(L) < 1) 
+		return 0;
+
+	char * szScript = (char *)Lua_ValueToString(L, 1);
+	ReLoadScript(szScript);
 	return 0;
 }
 
@@ -8327,6 +8537,28 @@ int LuaAddMissionPlayer(Lua_State * L)
 	return 0;
 }
 
+int LuaDelAllNpcInWro(Lua_State * L)
+{
+//	int nSubWorldIndex = GetSubWorldIndex(L); //µØÍ¼
+	int nParamNum = Lua_GetTopIndex(L);
+    int ulCount=0;
+	int nSubWorldIndex;
+	if (nParamNum <=0)
+	{
+       nSubWorldIndex= GetSubWorldIndex(L);    //µØÍ¼ 
+       if (nSubWorldIndex >= 0) 
+	      ulCount=SubWorld[nSubWorldIndex].DelAllNpcInWro();
+	}
+	else if (Lua_IsNumber(L, 1))
+	{
+	   nSubWorldIndex = (int)Lua_ValueToNumber(L,1);
+       if (nSubWorldIndex >= 0) 
+		  ulCount=SubWorld[nSubWorldIndex].DelAllNpcInWro();	
+	}
+	Lua_PushNumber(L, ulCount);	
+	return 1;
+}
+
 int LuaRevivalAllNpc(Lua_State * L)
 {
 	int nSubWorldIndex = GetSubWorldIndex(L);
@@ -8466,7 +8698,7 @@ int LuaGetNextPlayer(Lua_State * L)//GetNextPlayer(mission, idx,group)
 		KMission * pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
 		if (pMission)
 		{
-			nResultIdx = pMission->GetNextPlayer(nIdx, nGroup, nPlayerIndex);
+			nResultIdx = pMission->GetNextPlayerC(nIdx, nGroup, nPlayerIndex);
 		}
 	}
 	
@@ -9226,6 +9458,28 @@ int LuaIncSkillExp(Lua_State * L)
 	return 0;
 }
 
+int LuaCheckItemEquipCS(Lua_State * L)
+{
+	int nNumberPrama = Lua_GetTopIndex(L);
+
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+
+	if (Player[nPlayerIndex].m_nIndex <= 0 || Player[nPlayerIndex].m_nIndex >= MAX_NPC) return 0;
+
+	if (nNumberPrama < 0)
+     return 0;
+
+	
+
+	int nCheck = Player[nPlayerIndex].m_ItemList.CheckItemEquipCS();
+
+	Lua_PushNumber(L, nCheck);
+   
+	return 1;
+}
+
+
 int LuaGetMagicPoint(Lua_State * L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -9237,7 +9491,18 @@ lab_getmagicpoint:
 	Lua_PushNumber(L, Player[nPlayerIndex].m_nSkillPoint);
 	return 1;
 }
+int LuaResetProp(Lua_State * L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
 
+	int nResult = 0;
+	if (nPlayerIndex > 0)
+		nResult = Player[nPlayerIndex].ResetProp();
+
+	Lua_PushNumber(L, nResult);
+	return 1;
+	
+}
 int LuaAddPropPoint(Lua_State * L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -9723,7 +9988,20 @@ int LuaSetNpcKind(Lua_State * L)
 	Npc[nNpcIndex].m_Kind = nKind;
 	return 0;
 }	
+int LuaSetNpcBoss2(Lua_State * L)
+{	
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 2)
+		return 0 ;
 
+	int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
+
+	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC)
+		return 0;
+
+	Npc[nNpcIndex].m_Type = (int)Lua_ValueToNumber(L, 2);
+	return 0;
+}
 
 
 
@@ -9871,10 +10149,14 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetPos",			LuaGetPos},			//GetPos() return x,y,subworldindex
 	{"GetWorldPos",		LuaGetNewWorldPos},	//W,X,Y = GetWorldPos()
 	{"NewWorld",		LuaEnterNewWorld},
+    {"RandomNew",			LuaRandomNew},	//SetTask(ÈÎÎñºÅ,Öµ):ÉèÖÃÈÎÎñÖµ
 	{"AddTrap",			LuaAddTrap},
+    {"AddObj",			LuaAddObj},
 	{"AddObstacle",			LuaAddObstacle}, //#Set VËt C¶n
 	{"DropItem",		LuaDropItem},		//DropItem
+	{"DropRateItem",		LuaDropRateItem},
 	{"DropNpcMoney",	LuaDropNpcMoney},
+	{"GetNpcLevel",			LuaGetNpcLevel},
 	{"AddItem",			LuaAddItem},		//AddItem(nItemClass, nDetailType, nParticualrType, nLevel, nSeries, nLuck, nItemLevel..6)
 	{"AddTimeItem",			LuaAddTimeItem},
 	{"AddGoldItem",			LuaAddGoldItem},
@@ -9918,6 +10200,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetMagicLevel",	LuaGetMagicLevel},	//GetMagicLevel
 	{"AddMagicPoint",	LuaAddMagicPoint},
 	{"GetMagicPoint",	LuaGetMagicPoint},
+	{"CheckItemEquipCS",LuaCheckItemEquipCS},
 	{"IncSkill",		LuaIncSkill},
 	{"IncSkillExp",		LuaIncSkillExp},
 	{"GetNpcExpRate",	LuaGetNpcExpRate},
@@ -9934,7 +10217,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"AddNpc",			LuaAddNpc},			//AddNpc
 	{"DelNpc",			LuaDelNpc},			//DelNpc(Npcid)
 	{"SetNpcBoss",	LuaSetNpcGoldBoss},
-//	{"GetNpcBoss",	LuaGetNpcBoss},
+	{"GetNpcBoss",	LuaGetNpcBoss},
 	{"SetNpcScript",	LuaSetNpcActionScript},	//SetNpcScript
 	{"SetNpcDropScript",LuaSetNpcDropScript},
 	{"SetNpcSeries",	LuaSetNpcSeries}, // //SetNpcSeries(npcid, series)
@@ -10000,6 +10283,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetExp",			LuaGetPlayerExp	},			//GetExp():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
 	{"GetNextExp",		LuaGetNextExp},			//GetExp():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
 	{"AddExp",			LuaModifyPlayerExp},		//AddExp(¾­ÑéÖµ£¬¶Ô·½µÈ¼¶£¬ÊÇ·ñ×é¶Ó¹²Ïí¾­ÑéÖµ)
+	{"GetNpcSkillsExpRate",		LuaGetNpcExpSkillsRate },			//GetExp2Skill():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
 	{"AddOwnExp",		LuaAddOwnExp	},			//AddOwnExp(Exp)£¬¸øÍæ¼ÒÖ±½Ó¼Ó¾­Ñé
 	{"AddSumExp",		LuaAddSumExp	},			
 	{"GetLife",			LuaGetPlayerLife},			//GetLife()»ñµÃÍæ¼ÒµÄÉúÃüÖµ
@@ -10010,6 +10294,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"RestoreStamina",	LuaRestorePlayerStamina},	//RestoreMana()»Ö¸´Íæ¼ÒµÄStamina
 	{"GetDefend",		LuaGetPlayerDefend},		//GetDefend()»ñµÃÍæ¼ÒµÄ·ÀÓùÁ¦
 	{"GetSex",			LuaGetPlayerSex},			//GetSex()»ñµÃÍæ¼ÒµÄÐÔ±ð
+	{"SetSex",          LuaSetPlayerSex},
 	{"GetSeries",		LuaGetPlayerSeries},		//GetSeries()»ñµÃÍæ¼ÒµÄÏµ0man/1woman
 	{"SetSeries",		LuaSetPlayerSeries},		//SetSeries(ÐÔ±ðºÅ)
 	{"GetName",			LuaGetPlayerName},			//GetName()»ñµÃÍæ¼ÒµÄÐÕÃû
@@ -10106,6 +10391,9 @@ TLua_Funcs GameScriptFuns[] =
 	{"SaveNow",			LuaSaveNow},
 	{"PaceBar",				LuaOpenTimeBox},
 	{"TimeBox",				LuaOpenTimeBox},
+	{"ReLoadScript", LuaReLoadScript},
+//	{"GetPramaItemIdx",LuaGetGetPramaItemIdx},
+
 	//------------------------------------------------
 	{"AddNote", LuaAddNote},
 	//-----------------Mission Script-----------------
@@ -10113,6 +10401,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetMissionS", LuaGetMissionString},
 	{"SetMission", LuaSetMission},//SetMissionV(Vid, Value)
 	{"GetGlbMissionV", LuaGetGlobalMissionValue	},
+	{"GetGlbMissionVC", LuaGetGlobalMissionValueC},
+	{"SetGlbMissionV", LuaSetGlobalMissionValue	},
 	{"SetGlbMission", LuaSetGlobalMission	},
 	{"OpenMission", LuaInitMission},//OpenMission(missionid)
 	{"RunMission", LuaRunMission},
@@ -10136,6 +10426,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetMSPlayerCount", LuaMissionPlayerCount},//GetMSPlayerCount(missionid, group = 0)
 	{"GetMSNpcCount", LuaMissionNpcCount},
 	{"RevivalAllNpc",	LuaRevivalAllNpc},
+	{"DelAllNpc",	      LuaDelAllNpcInWro},    //É¾³ýNPC
 	{"SetPMParam", LuaSetMissionPlayerParam }, //add by phong kiÒu using tèng kim
 	{"GetPMParam", LuaGetMissionPlayerParam},
 	{"Msg2MSGroup", LuaMissionMsg2Group},
@@ -10155,6 +10446,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"OpenTong",	LuaOpenTong},	//OpenTong()Í¨ÖªÍæ¼Ò´ò¿ª°ï»á½çÃæ
 	{"GetTongName",			LuaGetTongName},
 	{"GetTongInfo"	 ,	LuaGetTongInfo},
+	{"GetTongFlag",			LuaGetTongFlag},
 	{"SetViewTongOwnCity", LuaSetViewTongOwnCity},
 	{"SetThueTongOwnCity", LuaSetThueTongOwnCity},
 	{"SetPunish",	LuaSetDeathPunish},// SetPunish(0/1) 0±íÊ¾²»ÊÜÈÎºÎ³Í·£
@@ -10165,10 +10457,13 @@ TLua_Funcs GameScriptFuns[] =
 	{"UpdateSkill", LuaUpdateSkillList},
 	//-------------------------------------------------
 	{"AddProp",		LuaAddPropPoint},//¼ÓÍæ¼ÒÊôÐÔµã
+	{"AddPropPoint",LuaAddPropPoint},//¼ÓÍæ¼ÒÊôÐÔµã
+	{"ResetProp",		LuaResetProp},
 	{"GetProp",		LuaGetRestPropPoint },
 	{"GetTimeNow",		LuaGetTimeNow},
 	{"GetTimeZero",		LuaGetTimeZero},
 	{"GetLocalDate",		LuaGetLocalDate},
+	{"GetLocalDateEx", LuaGetTimeByMiao},
 	{"TabFile_Load",		LuaTabFile_Load},
 	{"TabFile_GetCell",		LuaTabFile_GetCell},
 	{"TabFile_GetRowCount",		LuaTabFile_GetRowCount},
@@ -10178,7 +10473,7 @@ TLua_Funcs GameScriptFuns[] =
     {"RANDOM",				LuaRANDOM},  // thªm hµm míi load npc theo tuyÖt thÕ 
 	{"RANDOMC",				LuaRANDOMC}, // thªm hµm míi load npc theo tuyÖt thÕ 
 	{"SetNpcKind",		LuaSetNpcKind}, // thªm hµm míi load npc theo tuyÖt thÕ 
-//	{"SetNpcBoss2",	LuaSetNpcBoss2},
+	{"SetNpcBoss2",	LuaSetNpcBoss2},
 //	{"IsBlueBoss",		LuaIsBlueBoss},
 #else 
 	{"PlaySound", LuaPlaySound}, //PlaySound(Sound);

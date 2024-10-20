@@ -424,7 +424,7 @@ public:
 	void			SetBaseDefence();
 	void			SetBaseResistData();
 	void			SetBaseSpeedAndRadius();
-	void			ResetProp();// tay tiem nang
+	int			ResetProp();// tay tiem nang
 	int				GetPhysicsSkillId(){return m_nPhysicsSkillID;};
 	void            CheckRideHorse(BOOL nFlagRide); // len xuong ngua
 	void			SetImageNpcId(int nNumber); // set hinh anh npc cho say new
@@ -561,7 +561,7 @@ public:
 	void			WaitForRemove();
 	void			LoginTimeOut();
 	void			UseTownPortal();
-	void			BackToTownPortal();
+	void			BackToTownPortal(int nIdSubWorld = 0);
 	void			GetLoginRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// 获取玩家登入重生点位置
 	void			GetDeathRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// 获取玩家死亡重生点位置
 	void			SetRevivalPos(int nSubWorld, int nRevalId);								// 设定玩家重生点ID

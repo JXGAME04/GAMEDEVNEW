@@ -788,6 +788,22 @@ int KItemList::FindSame(int nGameIdx)
 	return 0;
 }
 
+int KItemList::FindSame(DWORD dwID)
+{
+	int nIdx = 0;
+	while(1)
+	{
+		nIdx = m_UseIdx.GetNext(nIdx);
+		if (!nIdx)
+			break;
+
+		if (Item[m_Items[nIdx].nIdx].GetID() == dwID)
+			return nIdx;
+	}
+	return 0;
+}
+
+
 BOOL KItemList::Init(int nPlayerIdx)
 {
 	m_PlayerIdx = nPlayerIdx;
@@ -1961,7 +1977,10 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		return;
 	}
 #endif
-
+	//load 3 storebox by kinnox;
+	if(Npc[Player[m_PlayerIdx].m_nIndex].m_FightMode && DesPos->nPlace >= pos_repositoryroom && DesPos->nPlace <= pos_exbox3room)
+		return;
+	//end code
 	switch(SrcPos->nPlace)
 	{
 	case pos_hand:	//--------------------------- Tr猲 tay ------------------------------------
@@ -2171,7 +2190,9 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			return;
 		}
 
-		if (m_Hand && Item[m_Hand].CanStack(nEquipIdx1))
+	//	if (m_Hand)
+	//	{
+			if (Item[m_Hand].CanStack(nEquipIdx1, m_Hand))
 		{
 #ifdef _SERVER
 			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
@@ -2189,6 +2210,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			m_Room[room_repository].PlaceItem(SrcPos->nX, SrcPos->nY, nEquipIdx1, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight());
 			
 			return;
+	//		}
 		}
 		
 		if (Item[m_Hand].GetGenre() == item_task && Item[m_Hand].GetDetailType() == 238)//lam thuy tinh
@@ -2537,8 +2559,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			if (!m_Room[room_equipment].PickUpItem(nEquipIdx1, SrcPos->nX, SrcPos->nY, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight()))
 			return;
 		}
-
-		if (m_Hand && Item[m_Hand].CanStack(nEquipIdx1))
+		if (Item[m_Hand].CanStack(nEquipIdx1, m_Hand))
 		{
 #ifdef _SERVER
 			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
@@ -2556,6 +2577,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			m_Room[room_equipment].PlaceItem(SrcPos->nX, SrcPos->nY, nEquipIdx1, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight());
 			
 			return;
+		//	}
 		}
 
 		if (Item[m_Hand].GetGenre() == item_task && Item[m_Hand].GetDetailType() == 238)//lam thuy tinh
@@ -2719,9 +2741,9 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		if ( !Player[m_PlayerIdx].CheckTrading())	
 			return;
 #ifdef _SERVER
-		if (m_Hand && Item[m_Hand].GetGenre() == item_task)
+/*		if (m_Hand && Item[m_Hand].GetGenre() == item_task)
 		{
-			if (m_Hand && Item[m_Hand].GetIsTrade() == 0) 
+			if (m_Hand )//&& Item[m_Hand].GetIsTrade() == 0) 
 			{
 				SHOW_MSG_SYNC	sMsg;
 				sMsg.ProtocolType = s2c_msgshow;
@@ -2734,7 +2756,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			{
 				
 			}
-		}
+		}*/
 #endif
 		nEquipIdx1 = m_Room[room_trade].FindItem(SrcPos->nX, SrcPos->nY);
 		if (nEquipIdx1 < 0)
@@ -2806,7 +2828,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			return;
 		}
 		//if (m_Hand)
-		if (Item[m_Hand].CanStack(nEquipIdx1))
+		if (Item[m_Hand].CanStack(nEquipIdx1, m_Hand))
 		{
 #ifdef _SERVER
 			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
@@ -2875,7 +2897,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 
 		if (m_Hand)
 		{
-			if (Item[m_Hand].CanStack(nEquipIdx1))
+			if (Item[m_Hand].CanStack(nEquipIdx1, m_Hand))
 			{
 #ifdef _SERVER
 				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
@@ -3825,8 +3847,33 @@ BOOL	KItemList::TradeCheckCanPlace()
 	return TRUE;
 }
 #endif
-
 #ifdef _SERVER
+
+BOOL	KItemList::CheckItemEquipCS()
+{
+
+
+
+
+
+for (int i = 0; i < MAX_PLAYER_ITEM; i++)
+{
+int nIdx = m_Items[i].nIdx;
+int nPlace = m_Items[i].nPlace;
+int nItemGenre = Item[i].GetGenre();
+int nDetailType = Item[i].GetDetailType();
+
+	if (nIdx > 0 && nIdx < MAX_ITEM && nPlace == pos_equip && nItemGenre == 0 && nDetailType != 10)
+	{
+
+		return FALSE;
+		}
+	}
+	return TRUE;
+}
+#endif
+#ifdef _SERVER
+
 //--------------------------------------------------------------------------
 //	功能：判断一定长宽的物品能否放进物品栏 (为了服务器效率，本函数里面没有调用其他函数)
 //--------------------------------------------------------------------------

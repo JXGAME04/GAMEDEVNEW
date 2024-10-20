@@ -197,7 +197,7 @@ public:
 	int		GetGoldId() const { return m_CommonAttrib.nGoldId; };
 	int		GetBigSet() const { return m_CommonAttrib.nBigSet; };
 	int 	IsPurple();
-	BOOL	CanStack( int nOldIdx);
+	BOOL	CanStack(int nOldIdx, int Dest);
 	BOOL	CanStack();
 	int			Stack( int nIdx ); 
 	int			GetStackNum() const { return m_CommonAttrib.nStackNum; };
@@ -252,7 +252,7 @@ public:
 		else
 			return TRUE;
 	};
-
+	int		GetMaxStackNum() const { return m_CommonAttrib.nMaxStack; };
 	int		GetMantle(){ return m_CommonAttrib.nMantle; };
 	void	SetMantle(int n){m_CommonAttrib.nMantle = n;};
 

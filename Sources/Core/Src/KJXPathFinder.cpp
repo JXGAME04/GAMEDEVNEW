@@ -12,6 +12,7 @@
 #include <math.h>
 #include "KRegion.h"
 #include "KJXpathfinder.h"
+#include "Scene\KScenePlaceC.h"
 #include "Scene\ScenePlaceMapC.h"
 #endif
 
@@ -89,6 +90,7 @@ BOOL KJXPathFinder::Init(RECT* rc, KScenePlaceMapC* mapper)
 	m_bReady = TRUE;
 	return TRUE;
 }
+
 //Old loadmap
 //BOOL KJXPathFinder::LoadMap(RECT* rc, KScenePlaceMapC* mapper)
 //{
@@ -347,6 +349,8 @@ void KJXPathFinder::GetPath(int OldX, int OldY, std::vector<FindPathNode>& PathI
 		nLen++;
 		INT tempx = m_map[x][y].parent_x;
 		INT tempy = m_map[x][y].parent_y;
+		x = tempx;
+		y = tempy;
 		if (tempx < 0 || tempx >= m_nMapWidth)
 			x = 0;
 		else

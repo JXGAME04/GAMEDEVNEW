@@ -182,7 +182,7 @@ enum s2c_PROTOCOL
 	s2c_inputbox,
 	s2c_setobstacle,	//#Set VÀt C∂n
 	s2c_returncityowntong,
-	s2c_playerloginreplay, //fix by phong ki“u chuy”n gs bﬁ m t skill
+	s2c_playerloginreplay, //fix by phong ki“u chuy”n gs b?m t skill
 	s2c_openquestfinishdlg,
 	s2c_imagenpc,
 	s2c_opentrembleitem,
@@ -337,6 +337,8 @@ enum c2s_PROTOCOL
 	c2s_getcityowntong,
 	c2s_recoveritem,
 	c2s_playerthrowallitem,
+	c2s_aibacktotown,//AutoAI by quay lπi ;
+
 
 	_c2s_begin_relay = 250,
 	c2s_extend = _c2s_begin_relay,

@@ -122,6 +122,7 @@ private:
 	void	RandMove(KNpc* pNpc, void* pData);	
 	void	ManaToSkillEnhanceP(KNpc* pNpc, void* pData);	
 	void	SorbDamageP(KNpc* pNpc, void* pData);	
+	void	ExpSkillsEnhanceP(KNpc* pNpc, void* pData); // ExpSkills x2
 
 };
 extern KNpcAttribModify g_NpcAttribModify;

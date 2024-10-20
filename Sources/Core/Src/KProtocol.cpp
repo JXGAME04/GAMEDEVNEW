@@ -256,6 +256,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(GET_CITY_OWN_TONG),				// c2s_getcityowntong
 	sizeof(RECOVER_ITEM_COMMAND),				// c2s_recoveritem
 	sizeof(PLAYER_THROW_ALL_ITEM_COMMAND),		// c2s_playerthrowallitem
+	sizeof(C2SPLAYER_AI_BACKTOTOWN),			// c2s_aibacktotown
 
 #endif
 };
@@ -328,14 +329,14 @@ void SendClientCmdRequestNpc(int nID)
 
 void SendClientCmdSell(int nId)
 {
-	if (Player[CLIENT_PLAYER_INDEX].m_ItemList.IsLockOperation())
-		return;
+	//if (Player[CLIENT_PLAYER_INDEX].m_ItemList.IsLockOperation())
+	//	return;
 	PLAYER_SELL_ITEM_COMMAND PlayerSell;
 	PlayerSell.ProtocolType = c2s_playersellitem;
 	PlayerSell.m_ID = nId;
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&PlayerSell, sizeof(PLAYER_SELL_ITEM_COMMAND));
-	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
+//	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
 }
 
 void SendClientCmdAutoSell(int nId)
@@ -571,14 +572,14 @@ void SendClientCmdPlayerBuy(int nIdx, DWORD nPlayerId, int nPlace, int nX, int n
 		return;
 	PLAYER_TRADE_BUY_ITEM_COMMAND PlayerBuy;
 	PlayerBuy.ProtocolType = c2s_playertradebuyitem;
-	PlayerBuy.m_Idx = (BYTE)nIdx;
+	PlayerBuy.m_Idx = nIdx;  // s÷a chæ nµy 
 	PlayerBuy.m_PlayerId = nPlayerId;
 	PlayerBuy.m_Place = (BYTE)nPlace;
 	PlayerBuy.m_X = (BYTE)nX;
 	PlayerBuy.m_Y = (BYTE)nY;
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&PlayerBuy, sizeof(PLAYER_TRADE_BUY_ITEM_COMMAND));
-	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
+	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();  // lçi bµy b¸n mua kÝch nh×u lÇn lµ ko mua ®c n÷a ph¶i tho¸t game 
 }
 
 void SendClientCmdSetPrice(int nId, int nPrice)

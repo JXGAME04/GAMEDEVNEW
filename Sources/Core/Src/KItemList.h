@@ -40,6 +40,7 @@ public:
 	PlayerItem		  m_Items[MAX_PLAYER_ITEM];						
 	KInventory		 m_Room[room_num];
 	int					   FindSame(int nGameIdx);
+	int			FindSame(DWORD dwID);
 
 #ifdef _SERVER
 	BOOL        CheckItemInAll(int nIdx);//add by phong ki“u antihack
@@ -157,6 +158,7 @@ public:
 	void		CheckItemTime();
 	void		SyncItem(int nIdx, int nPlace = 0, int nX = 0, int nY = 0, int nPlayerIndex = 0, bool m_bIsNew = false);
 	void		InsertEquipment(int nIdx, bool bAutoStack = false);
+	BOOL		CheckItemEquipCS();
 #endif
 	int			PositionToIndex(int P, int i);
 #ifndef	_SERVER

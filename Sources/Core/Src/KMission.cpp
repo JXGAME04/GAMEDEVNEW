@@ -5,14 +5,16 @@
 #include "KSubWorld.h"
 #include "KSubWorldSet.h"
 #include "KRegion.h"
+#include "../../Engine/src/Text.h"   //ºóÀ´¼ÓµÄ
+#include "KMissionArray.h"
 
 #ifdef _SERVER
 
 TMissionLadderInfo* KMission::GetMin(TMissionLadderInfo* const aMSLDList,const int n)//add by phong kiÒu using tèng kim
 {
 	TMissionLadderInfo* tmpData;
-	int i = 0;
 	tmpData = &aMSLDList[0];
+	int i = 0;
 	while(true)
 	{
 		for(i=0;i<n;++i)
@@ -106,25 +108,13 @@ BOOL	KMission::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam)
 	return TRUE;
 }
 
+
 BOOL	KMission::StopMission()
 {
 	m_ulMissionId = 0;
+
 	unsigned long nTargetIndex = 0;
 	int nIdx = 0;
-	nIdx = GetNextNpc(nIdx, nTargetIndex);
-	while (nIdx)
-	{	
-		Npc[nTargetIndex].m_nMissionGroup = -1;
-		if (Npc[nTargetIndex].m_RegionIndex >= 0)
-		{
-			SubWorld[Npc[nTargetIndex].m_SubWorldIndex].m_Region[Npc[nTargetIndex].m_RegionIndex].RemoveNpc(nTargetIndex);
-			SubWorld[Npc[nTargetIndex].m_SubWorldIndex].m_Region[Npc[nTargetIndex].m_RegionIndex].DecRef(Npc[nTargetIndex].m_MapX, Npc[nTargetIndex].m_MapY, obj_npc);
-		}
-		NpcSet.Remove(nTargetIndex);
-		nIdx = GetNextNpc(nIdx, nTargetIndex);
-	}
-	nTargetIndex = 0;
-	nIdx = 0;
 	nIdx = GetNextPlayer(nIdx, nTargetIndex);
 	while (nIdx)
 	{	
@@ -170,13 +160,15 @@ BOOL	KMission::RemovePlayer(unsigned long ulPlayerIndex, unsigned long ulPlayerI
 {
 	if (ulPlayerIndex >= MAX_PLAYER || ulPlayerID == 0)
 		return 0;
-	//
+
 	TMissionPlayerInfo Info;
 	Info.m_ulPlayerIndex = ulPlayerIndex;
 	Info.m_ulPlayerID = ulPlayerID;
-	if (m_MissionPlayer.FindSame(&Info))
+	DWORD nTdataIdx = m_MissionPlayer.FindSame(&Info);
+	if (nTdataIdx)
 	{
 		Npc[Player[ulPlayerIndex].m_nIndex].m_nMissionGroup = -1;
+		Player[ulPlayerIndex].SendMSGroup();  
 		if (m_ulMissionId)
 		{
 			char szScript[MAX_PATH];
@@ -186,14 +178,14 @@ BOOL	KMission::RemovePlayer(unsigned long ulPlayerIndex, unsigned long ulPlayerI
 				ExecuteScript(szScript, "OnLeave", ulPlayerIndex);
 			}
 		}
-		m_MissionPlayer.Remove(&Info); //Fix by Fong KiÒu g¸n info tr­íc khi xo¸ khái mission ®Ó lÊy c¸c info save vµo task
+		m_MissionPlayer.Remove(nTdataIdx); //Fix by Fong KiÒu g¸n info tr­íc khi xo¸ khái mission ®Ó lÊy c¸c info save vµo task
 	}
 	return TRUE;
 };
 
 unsigned long	KMission::AddNpc(unsigned long ulNpcIndex, unsigned long ulNpcID, unsigned char ucNpcGroup, int ulJoinTime/* = 0*/)
 {
-	if (ulNpcIndex == 0 || ulNpcIndex > MAX_NPC || ulNpcID == 0) //#can kiem tra
+	if (ulNpcIndex == 0 || ulNpcIndex >= MAX_NPC || ulNpcID == 0) //#can kiem tra
 		return 0;
 	
 	unsigned long i = 0;
@@ -230,7 +222,7 @@ BOOL	KMission::RemoveNpc(unsigned long ulNpcIndex, unsigned long ulNpcID)
 	Info.m_ulNpcID = ulNpcID;
 	if (m_MissionNpc.Remove(&Info))
 	{
-		if (Npc[ulNpcIndex].m_RegionIndex >= 0)
+		if (Npc[ulNpcIndex].m_RegionIndex >= 0 && !Npc[ulNpcIndex].IsPlayer())
 		{
 			SubWorld[Npc[ulNpcIndex].m_SubWorldIndex].m_Region[Npc[ulNpcIndex].m_RegionIndex].RemoveNpc(ulNpcIndex);
 			SubWorld[Npc[ulNpcIndex].m_SubWorldIndex].m_Region[Npc[ulNpcIndex].m_RegionIndex].DecRef(Npc[ulNpcIndex].m_MapX, Npc[ulNpcIndex].m_MapY, obj_npc);
@@ -286,6 +278,55 @@ void KMission::SetPlayerParam(unsigned long ulIndex, int nParam, int nValue) //a
 			}
 		}
 	}
+};
+
+
+
+
+void KMission::UpRankAllParam(int nParam)
+{
+	if (m_bMissionLadder)
+	{
+	//	if(m_nLadderParam == nParam)
+	//	{
+			TMissionLadderSelfInfo tmpDataSelf;
+			memset(&tmpDataSelf, 0, sizeof(tmpDataSelf));
+			memset(&m_MissionLadder, 0, sizeof(m_MissionLadder));
+			int nIdx = 0,i=0;
+			unsigned long nPlayerIndex = 0;
+			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+			while (nIdx)
+			{	
+				TMissionLadderInfo* tmpData = GetMin(m_MissionLadder, MISSION_STATNUM);
+				if (tmpData->nParam[m_nLadderParam] < m_MissionPlayer.m_Data[nIdx].m_nParam[m_nLadderParam])
+				{
+					DataCopy(tmpData, &m_MissionPlayer.m_Data[nIdx]);
+				}
+				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+			}
+
+			ListSort(m_MissionLadder, MISSION_STATNUM);
+
+			memcpy(tmpDataSelf.szMissionName, m_szMissionName, strlen(m_szMissionName));
+			tmpDataSelf.nGlbParam[0] = this->GetGroupPlayerCount(m_nGlbLadderParam[0]);
+			tmpDataSelf.nGlbParam[1] = this->GetGroupPlayerCount(m_nGlbLadderParam[1]);
+			tmpDataSelf.nGlbParam[2] = this->GetTimerRestTimer(m_nGlbLadderParam[2]);
+
+			nIdx = 0;
+			nPlayerIndex = 0;
+			nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+			while (nIdx)
+			{	
+				tmpDataSelf.ucGroup = m_MissionPlayer.m_Data[nIdx].m_ucPlayerGroup;
+				for (i =0; i < MAX_MISSION_PARAM; i++)
+				{
+					tmpDataSelf.nParam[i] = m_MissionPlayer.m_Data[nIdx].m_nParam[i];
+				}
+				Player[nPlayerIndex].SendMSRank(&tmpDataSelf, m_MissionLadder);//chØ send vµo nh÷ng player trong MS
+				nIdx = GetNextPlayer(nIdx, nPlayerIndex);
+			}
+		}
+//	}
 };
 
 int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFile)

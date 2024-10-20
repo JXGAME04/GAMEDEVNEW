@@ -906,7 +906,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	
 	if (m_CommonAttrib.nEnChance)
 	{
-		char sItemName[64];
+		char sItemName[256];
 		sprintf(sItemName,"%s + %d",m_CommonAttrib.szItemName,m_CommonAttrib.nEnChance);
 		strcpy(pszMsg, szColor[m_CommonAttrib.nItemGenre]);
 		if (m_CommonAttrib.nItemGenre == 0)
@@ -1003,7 +1003,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType == 1083 || m_CommonAttrib.nParticularType == 1084)) //HÂi thµnh phÔ
 	{
 		strcat(pszMsg, "  \n  ");
-		char NumUse[32];
+		char NumUse[128];
 		sprintf(NumUse, " Cﬂn lπi <color=red> %d <color> l«n sˆ dÙng ", m_CommonAttrib.nParam);
 		strcat(pszMsg, NumUse);
 	}
@@ -1265,258 +1265,82 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcat(pszMsg, pszInfo);
 		strcat(pszMsg, "  \n  ");
 	}
-	//
-	if (m_CommonAttrib.nItemGenre == item_equip) // Ngu hanh Item Code by Dang Minh Vu (dammejx)
+    PlayerItem m_pItems = Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[Player[CLIENT_PLAYER_INDEX].m_ItemList.FindSame((DWORD)m_dwID)];
+	if (m_aryMagicAttrib[0].nAttribType && 
+		m_CommonAttrib.nItemGenre == item_equip && 
+		m_CommonAttrib.nDetailType < equip_horse )
 	{
-		if (m_CommonAttrib.nGoldId > 0)
+    if (m_pItems.nPlace == pos_equip)//m_CommonAttrib.nGoldId > 0)
 		{
-			switch(m_CommonAttrib.nDetailType)
-			{
-			case equip_meleeweapon:
-				{
+        char szBuff[64], szBuffer[64];
+        char szColor[64];
+		char pszKeyName[64];
+        sprintf(pszKeyName, "NeedSr%d", m_CommonAttrib.nSeries);
+        g_GameSetting.GetString("ActiveEquip", pszKeyName, "", szBuff, sizeof(szBuff));
+					
 					switch(m_CommonAttrib.nSeries)
 					{
 					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
+                strcpy(szColor, "<color=Earth>");
 						break;
 					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
+                strcpy(szColor, "<color=Water>");
 						break;
 					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
+                strcpy(szColor, "<color=Metal>");
 						break;
 					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
+                strcpy(szColor, "<color=Wood>");
 						break;
 					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
+                strcpy(szColor, "<color=Fire>");
+						break;
+            default:
+                strcpy(szColor, "<color=Yellow>");
 						break;
 					}
-					strcat(pszMsg, "cÒa d©y chuy“n vµ y phÙc Æ” k›ch t›nh ©m<color> \n");
-					break;
 					
-				}
-			case equip_rangeweapon:
-				{
-					switch(m_CommonAttrib.nSeries)
+        switch(m_CommonAttrib.nDetailType)
 					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa d©y chuy“n vµ y phÙc Æ” k›ch t›nh ©m<color>\n");
-					break;
-					
-				}
-			case  equip_armor:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa nh…n (d≠Ìi) vµ thæt l≠ng Æ” k›ch t›nh ©m<color>\n");
-					break;
-					
-				}
-			case equip_ring:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa ng‰c bÈi vµ bao tay Æ” k›ch t›nh ©m<color> \n");
-					break;
-					
-				}
+            case equip_meleeweapon:
+            case equip_rangeweapon:
+            case equip_armor:
+            case equip_ring:
 			case equip_amulet:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa nh…n (d≠Ìi) vµ thæt l≠ng Æ” k›ch t›nh ©m<color> \n");
-					break;
-					
-				}
 			case equip_boots:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa n„n vµ vÚ kh› Æ” k›ch t›nh ©m<color> \n");
-					break;
-					
-				}
 			case equip_belt:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					
-					strcat(pszMsg, "cÒa ng‰c bÈi vµ bao tay Æ” k›ch t›nh ©m<color> \n");
-					break;
-					
-				}
 			case equip_helm:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					
-					strcat(pszMsg, "cÒa d©y chuy“n vµ y phÙc Æ” k›ch t›nh ©m<color>\n");
-					break;
-					
-				}
 			case equip_cuff:
-				{
-					switch(m_CommonAttrib.nSeries)
-					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
-					}
-					strcat(pszMsg, "cÒa gi«y vµ nh…n (tr™n) Æ” k›ch t›nh ©m<color> \n");
-					break;
-				}
 			case equip_pendant:
 				{
-					switch(m_CommonAttrib.nSeries)
+                // ph©n bi÷t ring 1 vµ ring 2
+                if (m_pItems.nX == itempart_ring1)
+                    sprintf(pszKeyName, "NeedEq%d1", m_CommonAttrib.nDetailType);
+                else if (m_pItems.nX == itempart_ring2)
+                    sprintf(pszKeyName, "NeedEq%d2", m_CommonAttrib.nDetailType);
+                else
+                    sprintf(pszKeyName, "NeedEq%d", m_CommonAttrib.nDetailType);
+
+                if (pszKeyName[0] != '\0')
 					{
-					case series_metal:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Earth>ThÊ <color>");
-						break;
-					case series_wood:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Water>ThÒy <color>");
-						break;
-					case series_water:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Metal>Kim <color>");
-						break;
-					case series_fire:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Wood>MÈc <color>");
-						break;
-					case series_earth:
-						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
-						break;
+                    strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color>");
+                    strcat(pszMsg, szColor );
+                    strcat(pszMsg, szBuff);
+                    strcat(pszMsg, "<color=Yellow> cÒa ");
+                    g_GameSetting.GetString("ActiveEquip", pszKeyName, "", szBuffer, sizeof(szBuffer));
+                    strcat(pszMsg, szBuffer);
+                    strcat(pszMsg, " Æ” k›ch t›nh ©m<color>\n");
 					}
-					strcat(pszMsg, "cÒa nh…n (tr™n) vµ giµy Æ” k›ch t›nh ©m<color>\n");
 					break;
 				}
-				strcat(pszMsg, "\n");
+            default:
+                pszKeyName[0] = '\0';
 				break;		
 			}
 		}
-		else if (GetAttribType() || m_CommonAttrib.nPoint)
+}
+/*
+	if (GetAttribType() || m_CommonAttrib.nPoint)
 		{
 			switch(m_CommonAttrib.nDetailType)
 			{
@@ -1612,7 +1436,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 						strcat(pszMsg, "\n<color=Yellow> C«n h÷ <color=Fire>H·a <color>");
 						break;
 					}
-					strcat(pszMsg, "cÒa ng‰c bÈi vµ bao tay Æ” k›ch t›nh ©m<color> \n");
+                        strcat(pszMsg, "cÒa n„n vµ vÚ kh› Æ” k›ch t›nh ©m<color> \n");
 					break;
 					
 				}
@@ -1760,8 +1584,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 				break;		
 			}
 		}
-	}
-
+	}*/
 	if (m_CommonAttrib.uPrice > 0)
 	{
 		strcat(pszMsg, "  \n  ");
@@ -1792,34 +1615,43 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if (m_CommonAttrib.LimitTime.bYear)
 	{
 		char sTmp[128];
-		const time_t thoigianhet = m_CommonAttrib.LimitTime.bYear;
+        const long thoigianhet = m_CommonAttrib.LimitTime.bYear;
 		if(thoigianhet > 0)
 		{
-			tm *ltm = localtime(&thoigianhet);
-			int nam = 1900 + ltm->tm_year;
-			int thang = 1 + ltm->tm_mon;
-			int ngay =  ltm->tm_mday;
-			int gio = ltm->tm_hour;
-			int phut = ltm->tm_min;
-			int giay = ltm->tm_sec;
-			if(time(0) < thoigianhet)
+       
+            time_t timeValue = static_cast<time_t>(thoigianhet);
+            tm ltm = {};
+            localtime_s(&ltm, &timeValue);
+    
+            int nam = 1900 + ltm.tm_year;
+            int thang = 1 + ltm.tm_mon;
+            int ngay = ltm.tm_mday;
+            int gio = ltm.tm_hour;
+            int phut = ltm.tm_min;
+            int giay = ltm.tm_sec;
+    
+            if (time(0) < timeValue)
 			{
-				sprintf(sTmp,"<color=fire>ThÍi hπn sˆ dÙng: %02d:%02d:%02d %02d-%02d-%d<color>", gio, phut , giay, ngay, thang, nam);
+                snprintf(sTmp, sizeof(sTmp), "<color=fire>ThÍi hπn sˆ dÙng: %02d:%02d:%02d %02d-%02d-%d<color>", gio, phut, giay, ngay, thang, nam);
 			}
 			else
 			{
-				sprintf(sTmp,"<color=red>H’t hπn sˆ dÙng vÀt ph»m sœ bﬁ hÒy");
-				
+                snprintf(sTmp, sizeof(sTmp), "<color=red>H’t hπn sˆ dÙng vÀt ph»m sœ bﬁ hÒy");
 			}
-			strcat(pszMsg, "  \n  ");
-			strcat(pszMsg,sTmp);
+            
+            // Use strncat for safer concatenation
+            strncat(pszMsg, "  \n  ", sizeof(pszMsg) - strlen(pszMsg) - 1);
+            strncat(pszMsg, sTmp, sizeof(pszMsg) - strlen(pszMsg) - 1);
 		}
 	}
 
 	if(GetExpirePoint() > 0)
 	{
 		char sTmp[128];
-		sprintf(sTmp,"<color=fire>ThÍi hπn sˆ dÙng: %d giÍ. <color>", GetExpirePoint()/60);
+		int totalSeconds = GetExpirePoint();
+	    int days = totalSeconds / (60 * 60 * 24);      
+	    int hours = (totalSeconds % (60 * 60 * 24)) / (60 * 60);
+		sprintf(sTmp, "<color=fire>ThÍi hπn sˆ dÙng: %d Ngµy %d GiÍ . <color>", days, hours);
 		strcat(pszMsg, "  \n  ");
 		strcat(pszMsg,sTmp);
 	}
@@ -1930,7 +1762,7 @@ BOOL KItem::CanStack()
 	return FALSE;
 }
 
-BOOL KItem::CanStack( int nOldIdx )
+BOOL KItem::CanStack( int nOldIdx, int Dest)
 {
 	if (m_CommonAttrib.bStack)
 	{
@@ -1940,7 +1772,10 @@ BOOL KItem::CanStack( int nOldIdx )
 			&& m_CommonAttrib.nSeries == Item[nOldIdx].GetSeries()
 			&& m_CommonAttrib.nItemGenre != 1
 			&& m_CommonAttrib.LimitTime.bYear == Item[nOldIdx].GetTime()->bYear
-			&&Item[nOldIdx].GetStackNum() < Def_MAX_STACK_TIENDONG)
+			&& Item[nOldIdx].GetPlayerItemLock() == Item[Dest].GetPlayerItemLock() 
+			&& Item[nOldIdx].GetPlayerItemHLock() == Item[Dest].GetPlayerItemHLock()
+			&& Item[Dest].GetStackNum() < Item[Dest].GetMaxStackNum()
+			&& Item[nOldIdx].GetStackNum() < Item[nOldIdx].GetMaxStackNum())
 		{
 			return TRUE;
 		}

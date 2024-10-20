@@ -21,24 +21,24 @@ extern int g_PlayerTimerCallBackFun(void * pOwner, char * szScriptFileName);
 extern int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFileName);
 
 #define MAX_TIMER_PERMISSION		10
-#define MAX_PLAYER_MISSION			  200
-#define MAX_NPC_MISSION					   600
+#define MAX_PLAYER_MISSION			  120
+#define MAX_NPC_MISSION					   2000
 
 typedef struct 
 {
-	UINT m_ulPlayerIndex;
-	UINT m_ulPlayerID;
+	unsigned long m_ulPlayerIndex;
+	unsigned long m_ulPlayerID;
 	unsigned char m_ucPlayerGroup;
-	UINT m_ulJoinTime;
+	unsigned long m_ulJoinTime;
 	int			  m_nParam[MAX_MISSION_PARAM];
 }TMissionPlayerInfo;
 
 typedef struct 
 {
-	UINT m_ulNpcIndex;
-	UINT m_ulNpcID;
-	UINT m_ucNpcGroup;
-	UINT m_ulJoinTime;
+	unsigned long m_ulNpcIndex;
+	unsigned long m_ulNpcID;
+	unsigned long m_ucNpcGroup;
+	unsigned long m_ulJoinTime;
 }TMissionNpcInfo;
 
 template<class T , unsigned long ulSize>
@@ -111,7 +111,7 @@ public:
 typedef _KMissionPlayerArray<TMissionPlayerInfo, MAX_PLAYER_MISSION> KMissionPlayerArray;
 typedef _KMissionNpcArray<TMissionNpcInfo, MAX_NPC_MISSION> KMissionNpcArray;
 typedef KTimerFunArray <KTimerTaskFun, MAX_TIMER_PERMISSION, g_MissionTimerCallBackFun> KMissionTimerArray;
-#define MAX_MISSION_VALUE_COUNT 10
+#define MAX_MISSION_VALUE_COUNT 100
 
 class KMission
 {
@@ -133,12 +133,14 @@ public:
 			if (pTimer)
 			pTimer->SetOwner(this);
 		}
+//		memset(m_MissionValueC, 0, sizeof(m_MissionValueC));
 		memset(m_MissionValue, 0, sizeof(m_MissionValue));
 		m_ulMissionId = 0;
 		m_bMissionLadder = false;//add by phong kiÒu using tèng kim
 		m_szMissionName[0] = 0;
 		m_nLadderParam = 0;
 		memset(m_nGlbLadderParam, 0, sizeof(m_nGlbLadderParam));
+
 	};
 	BOOL	Activate();
 	
@@ -154,6 +156,7 @@ public:
 	
 	void	Init()
 	{
+//		memset(m_MissionValueC, 0, sizeof(m_MissionValueC));
 		memset(m_MissionValue, 0, sizeof(m_MissionValue));
 		m_ulMissionId = 0;
 		m_bMissionLadder = false;//add by phong kiÒu using tèng kim
@@ -249,7 +252,7 @@ public:
 		KPlayerChat::SendSystemInfo(1, ulPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, (char *) strMsg, strlen(strMsg));
 	};
 
-	unsigned long GetNextPlayer(unsigned long ulIdx, unsigned char ucGroup, unsigned long &ulPlayerIndex)
+	unsigned long GetNextPlayerC(unsigned long ulIdx, unsigned char ucGroup, unsigned long &ulPlayerIndex)
 	{
 		ulPlayerIndex = 0;
 		while(1)
@@ -294,6 +297,7 @@ public:
 		return 0;
 	}
 
+
 	unsigned long GetNextNpc(unsigned long ulIdx, unsigned long &ulNpcIndex)
 	{
 		ulNpcIndex = 0;
@@ -328,6 +332,9 @@ public:
 
 	unsigned long GetGroupPlayerCount (unsigned char ucGroup ) const 
 	{
+		//if (ucGroup == 0)
+		//return GetPlayerCount();
+
 		unsigned long ulPlayerCount = 0;
 		int nIdx = 0;
 		while(1)
@@ -423,6 +430,7 @@ public:
 	unsigned long	AddNpc(unsigned long ulNpcIndex, unsigned long ulNpcID, unsigned char ucNpcGroup, int ulJoinTime = 0);
 	BOOL	RemoveNpc(unsigned long ulNpcIndex, unsigned long ulNpcID = 0);
 	void 			SetPlayerParam(unsigned long ulIndex, int nParam, int nValue); //add by phong kiÒu using tèng kim
+    void    UpRankAllParam(int nParam);
 	unsigned long GetMissionPlayer_DataIndex(unsigned long ulPlayerIndex, unsigned long ulPlayerID)
 	{
 		if (ulPlayerIndex >= MAX_PLAYER_MISSION || ulPlayerID == 0)

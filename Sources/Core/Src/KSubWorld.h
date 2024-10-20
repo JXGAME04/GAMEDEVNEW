@@ -2,7 +2,7 @@
 #define	KWorldH
 
 #ifdef _SERVER
-#define	MAX_SUBWORLD	80//edit by phong kieu max maps mac dinh 80
+#define	MAX_SUBWORLD	180//edit by phong kieu max maps mac dinh 80
 #else
 #define	MAX_SUBWORLD	1
 #endif
@@ -112,6 +112,7 @@ public:
 	BOOL		SendSyncData(int nIdx, int nClient);
 	int			GetRegionIndex(int nRegionID);
 	int			FindNpcFromName(const char * szName);
+	int	        DelAllNpcInWro(); //删除该地图上的所有NPC
 	long	 CountAllNpc();
 	void		SetTrap(DWORD dwTrapId, int nMpsX, int nMpsY, int nRange); // AddTrap Fong Ki襲
 	void		SetObstacle(long value, int nMpsX, int nMpsY, int nRange); //#Set V藅 C秐

@@ -18,7 +18,10 @@
 #include	"KPlayerChat.h"
 #include	"Math.h"
 
+
+#include "KBuySell.h"
 extern KScenePlaceC	g_ScenePlace;
+
 
 KPlayerAuto::KPlayerAuto()
 {
@@ -29,9 +32,14 @@ KPlayerAuto::~KPlayerAuto()
 {
 	Release();
 }
-static bool bMoveToCalled = false; // Flag to track if MoveTo has been called
+
+BYTE checkOpenDialog = 0;
+int	nfkStepPos = 0;
+
+//int m_nReturnPortalSecH = 0;
 void KPlayerAuto::Release()
 {	
+	m_nTimeBackToMapTrain = 0;
 	// Trang thai auto
 	
 	this->mfk_btState		= FALSE;
@@ -108,6 +116,9 @@ void KPlayerAuto::Release()
 	//
 	this->m_RingTDPCheckBox = FALSE;
 	//
+
+//	m_nReturnPortalSecH = 3;
+
 	m_bAutoPickCheckBox = FALSE;			//------------NhÆt ®å --------------------
 	m_nAutoPickEditBox = 500;
 	m_bPickAllCheckBox = FALSE;
@@ -194,12 +205,18 @@ void KPlayerAuto::Release()
 	m_bSCountTeamCheckBox = FALSE;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ClearSzTeamMem();
 	m_bPTTongCheckBox = FALSE;
-	bMoveToCalled = false; // Flag to track if MoveTo has been called
+	m_nReturnPortalStep = Step_Training;
+	m_nCurReturnPortalSec = 0;
+	m_nCurReturnHieuThuoc = 0;
+	m_nCurReturnTapHoa = 0;
+	m_nCurReturnSuDo = 0;
+	m_nCurReturnMuaMau = 0;
+	m_ReturnSetpCountDown = 0;
+	m_AutoMoveTarget.x = 0;
+	m_AutoMoveTarget.y = 0;
 	//
 	ClearNpcArrLag();
 	//
-	m_AutoMoveTarget.x = 0;
-	m_AutoMoveTarget.y = 0;
 	InitFkAutoPos(false);
 
 }
@@ -220,13 +237,26 @@ void KPlayerAuto::InitFkAuto(BOOL m_bActive)
 	// Object
 	m_nObjectIndex  = 0;
 	m_nHitObject	= 0;
+	m_AutoMoveTarget.x = 0;
+	m_AutoMoveTarget.y = 0;
 	//
 	FkAutoMapSet_StepOne();
 	//
+
 	if(m_bActive)
 	{
-		AutoSendMsg("<color=green>khëi ®éng.<color>");
+		AutoSendMsg("<color=green>Khëi §éng AutoIngame.<color>");
+		AutoSendMsg("<color=green>PhÝm T¾t.<color>");
+		AutoSendMsg("<color=green>Më r­¬ng chøa ®å:<color>");
+		AutoSendMsg("<color=cyan>PhÝm Ctrl + Z<color>");
+		AutoSendMsg("<color=green>Zoom mµng h×nh:<color>");
+		AutoSendMsg("<color=cyan>Nhá: Ctrl - <color>");
+		AutoSendMsg("<color=cyan>To: Ctrl + <color>");
+		AutoSendMsg("<color=cyan>MÆc ®Þnh: Ctrl + 0 <color>");
+		AutoSendMsg("<color=green>HiÖn vËt phÈm:<color>");
+		AutoSendMsg("<color=cyan>Alt + C¸ch.<color>");
 		InitFkAutoPos(true);
+		m_MoveMapStep = 0;
 	}
 	else
 	{
@@ -238,186 +268,350 @@ void KPlayerAuto::InitFkAuto(BOOL m_bActive)
 
 void KPlayerAuto::InitFkAutoPos(bool b) 
 {
-    if (b) {
-        if (fk_autopos == NULL) 
+	if (b) {
+		if (fk_autopos == NULL)
 		{
-            fk_autopos = (FK_AUTO_POS*)malloc(FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
-        }
+			fk_autopos = (FK_AUTO_POS*)malloc(FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
+		}
 
         int count = 0;
-        memset(fk_autopos, 0, FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
+		memset(fk_autopos, 0, FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
 
-        fk_autopos[count].fk_mapID = 78;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
+		fk_autopos[count].fk_mapID = 78;	//t­¬ng d­¬ng
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 50880;
+	//	fk_autopos[count].fk_nY[0] = 103328;
+	//	fk_autopos[count].fk_nX[1] = 51456;
+	//	fk_autopos[count].fk_nY[1] = 103904;
         fk_autopos[count].fk_nX[0] = 51552;
-        fk_autopos[count].fk_nY[0] = 103840;
+		fk_autopos[count].fk_nY[0] = 103808;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 78;
-        fk_autopos[count].fk_npcType = NPC_GROCERY;
-        fk_autopos[count].fk_nX[0] = 52096;
+		fk_autopos[count].fk_npcType = NPC_GROCERY; //t¹p ho¸
+	//	fk_autopos[count].fk_nX[0] = 51456;
+	//	fk_autopos[count].fk_nY[0] = 103904; 
+	//	fk_autopos[count].fk_nX[1] = 52032;
+	//	fk_autopos[count].fk_nY[1] = 104512;
+		fk_autopos[count].fk_nX[0] = 52128;
         fk_autopos[count].fk_nY[0] = 104352;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 78;
-        fk_autopos[count].fk_npcType = NPC_STORE_BOX;
-        fk_autopos[count].fk_nX[0] = 50080;
-        fk_autopos[count].fk_nY[0] = 102976;
+		fk_autopos[count].fk_npcType = NPC_STORE_BOX; //r­¬ng
+	//	fk_autopos[count].fk_nX[0] = 52032;
+	//	fk_autopos[count].fk_nY[0] = 104512;
+	//	fk_autopos[count].fk_nX[1] = 50400;
+	//	fk_autopos[count].fk_nY[1] = 102848;
+	//	fk_autopos[count].fk_nX[2] = 50144;
+	//	fk_autopos[count].fk_nY[2] = 103104;
+		fk_autopos[count].fk_nX[0] = 49984;
+		fk_autopos[count].fk_nY[0] = 103040;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 78;
-        fk_autopos[count].fk_npcType = NPC_STATION;
+		fk_autopos[count].fk_npcType = NPC_STATION; //xa phu
+	//	fk_autopos[count].fk_nX[0] = 50304;
+	//	fk_autopos[count].fk_nY[0] = 102688;
+	//	fk_autopos[count].fk_nX[1] = 49280;
+	//	fk_autopos[count].fk_nY[1] = 101600;
         fk_autopos[count].fk_nX[0] = 48320;
-        fk_autopos[count].fk_nY[0] = 100512;
+		fk_autopos[count].fk_nY[0] = 100480; 
         count++;
-
+		//
+		fk_autopos[count].fk_mapID = 1;	//ph­îng t­êng
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 51232;
+	//	fk_autopos[count].fk_nY[0] = 102112;
+		fk_autopos[count].fk_nX[0] = 51232;
+		fk_autopos[count].fk_nY[0] = 102016;
+        count++;
+		//
         fk_autopos[count].fk_mapID = 1;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
-        fk_autopos[count].fk_nX[0] = 51264;
-        fk_autopos[count].fk_nY[0] = 102112;
+		fk_autopos[count].fk_npcType = NPC_GROCERY; //t¹p ho¸
+		fk_autopos[count].fk_nX[0] = 49920;
+		fk_autopos[count].fk_nY[0] = 102560; 
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 1;
-        fk_autopos[count].fk_npcType = NPC_GROCERY;
-        fk_autopos[count].fk_nX[0] = 49888;
-        fk_autopos[count].fk_nY[0] = 102528;
+		fk_autopos[count].fk_npcType = NPC_STORE_BOX; //r­¬ng
+	//	fk_autopos[count].fk_nX[0] = 50976;
+	//	fk_autopos[count].fk_nY[0] = 101824; 
+		fk_autopos[count].fk_nX[0] = 51008;
+		fk_autopos[count].fk_nY[0] = 101472; 
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 1;
-        fk_autopos[count].fk_npcType = NPC_STORE_BOX;
-        fk_autopos[count].fk_nX[0] = 50944;
-        fk_autopos[count].fk_nY[0] = 101440;
+		fk_autopos[count].fk_npcType = NPC_STATION; //xa phu
+	//	fk_autopos[count].fk_nX[0] = 50976;
+	//	fk_autopos[count].fk_nY[0] = 101792;
+	//	fk_autopos[count].fk_nX[1] = 48928;
+	//	fk_autopos[count].fk_nY[1] = 103744;
+	//	fk_autopos[count].fk_nX[2] = 48672;
+	//	fk_autopos[count].fk_nY[2] = 103392; 
+		fk_autopos[count].fk_nX[0] = 48576;
+		fk_autopos[count].fk_nY[0] = 103360; 
         count++;
-
-        fk_autopos[count].fk_mapID = 1;
-        fk_autopos[count].fk_npcType = NPC_STATION;
-        fk_autopos[count].fk_nX[0] = 48544;
-        fk_autopos[count].fk_nY[0] = 103296;
-        count++;
-
-        fk_autopos[count].fk_mapID = 11;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
+		//
+		fk_autopos[count].fk_mapID = 11;	//thµnh ®«
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 100800;
+	//	fk_autopos[count].fk_nY[0] = 162592;
+	//	fk_autopos[count].fk_nX[1] = 99808;
+	//	fk_autopos[count].fk_nY[1] = 163808;
+	//	fk_autopos[count].fk_nX[2] = 100416;
+	//	fk_autopos[count].fk_nY[2] = 164384;
         fk_autopos[count].fk_nX[0] = 100480;
-        fk_autopos[count].fk_nY[0] = 164320;
+		fk_autopos[count].fk_nY[0] = 164288;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 11;
-        fk_autopos[count].fk_npcType = NPC_GROCERY;
+		fk_autopos[count].fk_npcType = NPC_GROCERY; //t¹p ho¸
+	//	fk_autopos[count].fk_nX[0] = 100416;
+	//	fk_autopos[count].fk_nY[0] = 164384;
+	//	fk_autopos[count].fk_nX[1] = 99808;
+	//	fk_autopos[count].fk_nY[1] = 163808;
+	//	fk_autopos[count].fk_nX[2] = 99136;
+	//	fk_autopos[count].fk_nY[2] = 164448;
         fk_autopos[count].fk_nX[0] = 99040;
         fk_autopos[count].fk_nY[0] = 164352;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 11;
-        fk_autopos[count].fk_npcType = NPC_STORE_BOX;
+		fk_autopos[count].fk_npcType = NPC_STORE_BOX; //r­¬ng
+	//	fk_autopos[count].fk_nX[0] = 99872;
+	//	fk_autopos[count].fk_nY[0] = 163872;
         fk_autopos[count].fk_nX[0] = 100960;
-        fk_autopos[count].fk_nY[0] = 162464;
+		fk_autopos[count].fk_nY[0] = 162496; 
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 11;
-        fk_autopos[count].fk_npcType = NPC_STATION;
-        fk_autopos[count].fk_nX[0] = 96896;
-        fk_autopos[count].fk_nY[0] = 158752;
+		fk_autopos[count].fk_npcType = NPC_STATION; //xa phu
+	//	fk_autopos[count].fk_nX[0] = 100160;
+	//	fk_autopos[count].fk_nY[0] = 162240;
+	//	fk_autopos[count].fk_nX[1] = 96896;
+	//	fk_autopos[count].fk_nY[1] = 158752;
+		fk_autopos[count].fk_nX[0] = 96864;
+		fk_autopos[count].fk_nY[0] = 158656;
         count++;
-
-        fk_autopos[count].fk_mapID = 162;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
-        fk_autopos[count].fk_nX[0] = 47936;
-        fk_autopos[count].fk_nY[0] = 102720;
+		//
+		fk_autopos[count].fk_mapID = 162;	//®¹i lý
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 51968;
+	//	fk_autopos[count].fk_nY[0] = 101952;
+	//	fk_autopos[count].fk_nX[1] = 50848;
+	//	fk_autopos[count].fk_nY[1] = 100896;
+	//	fk_autopos[count].fk_nX[2] = 48448;
+	//	fk_autopos[count].fk_nY[2] = 103392;
+	//	fk_autopos[count].fk_nX[3] = 47872;
+	//	fk_autopos[count].fk_nY[3] = 102784;
+		fk_autopos[count].fk_nX[0] = 47968;
+		fk_autopos[count].fk_nY[0] = 102752;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 162;
-        fk_autopos[count].fk_npcType = NPC_GROCERY;
+		fk_autopos[count].fk_npcType = NPC_GROCERY; //t¹p ho¸
+	//	fk_autopos[count].fk_nX[0] = 48448;
+	//	fk_autopos[count].fk_nY[0] = 103392;
         fk_autopos[count].fk_nX[0] = 49152;
         fk_autopos[count].fk_nY[0] = 102432;
         count++;
+		//
+
 
         fk_autopos[count].fk_mapID = 162;
-        fk_autopos[count].fk_npcType = NPC_STORE_BOX;
+		fk_autopos[count].fk_npcType = NPC_STORE_BOX; //r­¬ng
+	//	fk_autopos[count].fk_nX[0] = 50944;
+	//	fk_autopos[count].fk_nY[0] = 100992;
+	//	fk_autopos[count].fk_nX[1] = 52032;
+	//	fk_autopos[count].fk_nY[1] = 101920;
+	//	fk_autopos[count].fk_nX[0] = 52096;
+	//	fk_autopos[count].fk_nY[0] = 100864;
+
+	//	fk_autopos[count].fk_nX[3] = 48448;
+	//	fk_autopos[count].fk_nY[3] = 103392;
+	//	fk_autopos[count].fk_nX[4] = 49216;
+	//	fk_autopos[count].fk_nY[4] = 102528;
+	//	fk_autopos[count].fk_nX[5] = 50944;
+	//	fk_autopos[count].fk_nY[5] = 100992;
+	//	fk_autopos[count].fk_nX[6] = 52032;
+	//	fk_autopos[count].fk_nY[6] = 101920;
         fk_autopos[count].fk_nX[0] = 52096;
         fk_autopos[count].fk_nY[0] = 100864;
         count++;
 
         fk_autopos[count].fk_mapID = 162;
-        fk_autopos[count].fk_npcType = NPC_STATION;
+		fk_autopos[count].fk_npcType = NPC_STATION; //xa phu
+	//	fk_autopos[count].fk_nX[0] = 52448;
+	//	fk_autopos[count].fk_nY[0] = 101216;
         fk_autopos[count].fk_nX[0] = 53376;
         fk_autopos[count].fk_nY[0] = 100032;
         count++;
-
-        fk_autopos[count].fk_mapID = 37;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
-        fk_autopos[count].fk_nX[0] = 56768;
-        fk_autopos[count].fk_nY[0] = 98912;
+		//
+		fk_autopos[count].fk_mapID = 37;	//biÖn kinh
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 56032;
+	//	fk_autopos[count].fk_nY[0] = 98336;
+	//	fk_autopos[count].fk_nX[1] = 56608;
+	//	fk_autopos[count].fk_nY[1] = 98880;
+		fk_autopos[count].fk_nX[0] = 56832;
+		fk_autopos[count].fk_nY[0] = 98880;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 37;
         fk_autopos[count].fk_npcType = NPC_GROCERY;
-        fk_autopos[count].fk_nX[0] = 57120;
-        fk_autopos[count].fk_nY[0] = 99264;
+	//	fk_autopos[count].fk_nX[0] = 56736;
+	//	fk_autopos[count].fk_nY[0] = 99040;
+	//	fk_autopos[count].fk_nX[1] = 57024;
+	//	fk_autopos[count].fk_nY[1] = 99360;
+		fk_autopos[count].fk_nX[0] = 57152;
+		fk_autopos[count].fk_nY[0] = 99232;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 37;
         fk_autopos[count].fk_npcType = NPC_STORE_BOX;
-        fk_autopos[count].fk_nX[0] = 55232;
-        fk_autopos[count].fk_nY[0] = 98560;
+	//	fk_autopos[count].fk_nX[0] = 57024;
+	//	fk_autopos[count].fk_nY[0] = 99360;
+	//	fk_autopos[count].fk_nX[1] = 56064;
+	//	fk_autopos[count].fk_nY[1] = 98336;
+	//	fk_autopos[count].fk_nX[2] = 55296;
+	//	fk_autopos[count].fk_nY[2] = 99136;
+	//	fk_autopos[count].fk_nX[3] = 54976;
+	//	fk_autopos[count].fk_nY[3] = 98752;
+		fk_autopos[count].fk_nX[0] = 55104;
+		fk_autopos[count].fk_nY[0] = 98592;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 37;
         fk_autopos[count].fk_npcType = NPC_STATION;
+	//	fk_autopos[count].fk_nX[0] = 54976;
+	//	fk_autopos[count].fk_nY[0] = 98752;
+	//	fk_autopos[count].fk_nX[1] = 55296;
+	//	fk_autopos[count].fk_nY[1] = 99136;
+	//	fk_autopos[count].fk_nX[2] = 52384;
+	//	fk_autopos[count].fk_nY[2] = 102144;
         fk_autopos[count].fk_nX[0] = 52192;
-        fk_autopos[count].fk_nY[0] = 102016;
+		fk_autopos[count].fk_nY[0] = 101920;
         count++;
-
-        fk_autopos[count].fk_mapID = 80;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
-        fk_autopos[count].fk_nX[0] = 56736;
+		//
+		fk_autopos[count].fk_mapID = 80;	//d­¬ng ch©u
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 56704;
+	//	fk_autopos[count].fk_nY[0] = 97728;
+	//	fk_autopos[count].fk_nX[1] = 56320;
+	//	fk_autopos[count].fk_nY[1] = 98240;
+	//	fk_autopos[count].fk_nX[2] = 56672;
+	//	fk_autopos[count].fk_nY[2] = 98656;
+		fk_autopos[count].fk_nX[0] = 56800;
         fk_autopos[count].fk_nY[0] = 98560;
         count++;
+		//
+        fk_autopos[count].fk_mapID = 80;
+		fk_autopos[count].fk_npcType = NPC_GROCERY;   // t¹p ho¸
+	//	fk_autopos[count].fk_nX[0] = 56320;
+	//	fk_autopos[count].fk_nY[0] = 98240;
+	//	fk_autopos[count].fk_nX[1] = 56864;
+	//	fk_autopos[count].fk_nY[1] = 97536;
+	//	fk_autopos[count].fk_nX[2] = 55968;
+	//	fk_autopos[count].fk_nY[2] = 96608;
+	//	fk_autopos[count].fk_nX[3] = 55008;
+	//	fk_autopos[count].fk_nY[3] = 97504;
+	//	fk_autopos[count].fk_nX[4] = 54400;
+	//	fk_autopos[count].fk_nY[4] = 96800;
+		fk_autopos[count].fk_nX[0] = 54464;
+		fk_autopos[count].fk_nY[0] = 96672;
+        count++;
+		//
 
         fk_autopos[count].fk_mapID = 80;
-        fk_autopos[count].fk_npcType = NPC_GROCERY;
-        fk_autopos[count].fk_nX[0] = 54432;
-        fk_autopos[count].fk_nY[0] = 96704;
+		fk_autopos[count].fk_npcType = NPC_STORE_BOX;  // r­¬ng 
+	//	fk_autopos[count].fk_nX[0] = 55008;
+	//	fk_autopos[count].fk_nY[0] = 97504;
+		//fk_autopos[count].fk_nX[0] = 56768;
+		//fk_autopos[count].fk_nY[0] = 97664;
+	//	fk_autopos[count].fk_nX[1] = 56128;
+	//	fk_autopos[count].fk_nY[1] = 96480;
+	//	fk_autopos[count].fk_nX[2] = 56192;
+	//	fk_autopos[count].fk_nY[2] = 96224;
+		
+	//	fk_autopos[count].fk_nX[3] = 56288;
+	//	fk_autopos[count].fk_nY[3] = 98144;
+	//	fk_autopos[count].fk_nX[4] = 56928;
+	//	fk_autopos[count].fk_nY[4] = 97504;
+	//	fk_autopos[count].fk_nX[5] = 55968;
+	//	fk_autopos[count].fk_nY[5] = 96416;
+		fk_autopos[count].fk_nX[0] = 56160;
+		fk_autopos[count].fk_nY[0] = 96192;
         count++;
 
-        fk_autopos[count].fk_mapID = 80;
-        fk_autopos[count].fk_npcType = NPC_STORE_BOX;
-        fk_autopos[count].fk_nX[0] = 56192;
-        fk_autopos[count].fk_nY[0] = 96224;
-        count++;
 
+		//
         fk_autopos[count].fk_mapID = 80;
         fk_autopos[count].fk_npcType = NPC_STATION;
-        fk_autopos[count].fk_nX[0] = 58400;
-        fk_autopos[count].fk_nY[0] = 98048;
+	//	fk_autopos[count].fk_nX[0] = 56128;
+	//	fk_autopos[count].fk_nY[0] = 96480;
+	//	fk_autopos[count].fk_nX[1] = 58144;
+	//	fk_autopos[count].fk_nY[1] = 98432;
+	//	fk_autopos[count].fk_nX[2] = 58528;
+	//	fk_autopos[count].fk_nY[2] = 98144;
+		fk_autopos[count].fk_nX[3] = 58400;
+		fk_autopos[count].fk_nY[3] = 98048;
         count++;
-
-        fk_autopos[count].fk_mapID = 176;
-        fk_autopos[count].fk_npcType = NPC_PHARMACIES;
+		//
+		fk_autopos[count].fk_mapID = 176;	//l©m an
+		fk_autopos[count].fk_npcType = NPC_PHARMACIES; //hiÖu thuèc
+	//	fk_autopos[count].fk_nX[0] = 50368;
+	//	fk_autopos[count].fk_nY[0] = 94240;
         fk_autopos[count].fk_nX[0] = 49440;
-        fk_autopos[count].fk_nY[0] = 94816;
+		fk_autopos[count].fk_nY[0] = 94784;
         count++;
-
+		//
         fk_autopos[count].fk_mapID = 176;
         fk_autopos[count].fk_npcType = NPC_GROCERY;
+	//	fk_autopos[count].fk_nX[0] = 49696;
+	//	fk_autopos[count].fk_nY[0] = 95264;
+	//	fk_autopos[count].fk_nX[1] = 43136;
+	//	fk_autopos[count].fk_nY[1] = 101696;
         fk_autopos[count].fk_nX[0] = 42880;
         fk_autopos[count].fk_nY[0] = 101344;
         count++;
-
+		//	
+		//m_bBuyTownCheckBox;
         fk_autopos[count].fk_mapID = 176;
         fk_autopos[count].fk_npcType = NPC_STORE_BOX;
-        fk_autopos[count].fk_nX[0] = 50368;
-        fk_autopos[count].fk_nY[0] = 93920;
+//		fk_autopos[count].fk_nX[0] = 43136;
+//		fk_autopos[count].fk_nY[0] = 101696;
+//		fk_autopos[count].fk_nX[1] = 49728;
+//		fk_autopos[count].fk_nY[1] = 95232;
+	//	fk_autopos[count].fk_nX[2] = 50464;
+	//	fk_autopos[count].fk_nY[2] = 94368;
+	//	fk_autopos[count].fk_nX[0] = 50368;
+	//	fk_autopos[count].fk_nY[0] = 93920;
+
+	//	fk_autopos[count].fk_nX[4] = 49760;
+	//	fk_autopos[count].fk_nY[4] = 95232;
+	//	fk_autopos[count].fk_nX[5] = 50432;
+	//	fk_autopos[count].fk_nY[5] = 94400;
+	//	fk_autopos[count].fk_nX[6] = 50176;
+	//	fk_autopos[count].fk_nY[6] = 94048;
+		fk_autopos[count].fk_nX[0] = 50304;
+		fk_autopos[count].fk_nY[0] = 93853;
         count++;
+		//
+
 
         fk_autopos[count].fk_mapID = 176;
         fk_autopos[count].fk_npcType = NPC_STATION;
+	//	fk_autopos[count].fk_nX[0] = 50720;
+	//	fk_autopos[count].fk_nY[0] = 94240;
         fk_autopos[count].fk_nX[0] = 51296;
         fk_autopos[count].fk_nY[0] = 93216;
         count++;
 
-    } else {
+	}
+	else {
         if (fk_autopos) {
-            memset(fk_autopos, 0, FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
+			memset(fk_autopos, 0, FKAUTO_MAX_POS * sizeof(FK_AUTO_POS));
             free(fk_autopos);
             fk_autopos = NULL;
         }
@@ -447,11 +641,13 @@ void KPlayerAuto::Active()
 {
 	if(!this->mfk_bActive)
 		return;
-	if(this->mfk_bPause)
+
+	if (Player[CLIENT_PLAYER_INDEX].CheckTrading())
 		return;
 
 	if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
 	{
+
 		FkDoAutoMap();
 
 		DoRestoreHP();	//phôc håi sl
@@ -459,46 +655,80 @@ void KPlayerAuto::Active()
 		DoRestoreMP(); //phôc håi nl
 
 		myCountDownTimerAutoMap();
+
+
+
 	}
 	else //ë ngoµi thµnh
 	{
 		if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsAlive()) // nÕu player bÞ chÕt
 		{
-			if (!(g_SubWorldSet.GetGameTime() % 90))
+
+			if (!(g_SubWorldSet.GetGameTime() % 90)) /*&& (nWID != 379 || nWID != 480 || nWID != 481 || nWID != 482 || nWID != 483
+				|| nWID != 484 || nWID !=485 || nWID!= 486 || nWID != 487 || nWID != 488 || nWID != 489 || nWID != 337 || nWID != 338
+				|| nWID != 339 ))*///C¸c map ho¹t ®éng
 			{
-				FkAutoMapSet_StepOne();
+				FkAutoMapSet_StepOne(); //fkauto
 				CoreDataChanged(GDCNI_FK_AUTO_SELECTUI, 0, 1); //tù ®éng bÊm vÒ thµnh d­ìng søc
-				return; //kh«ng thùc hiÖn c¸c lÖnh d­íi n÷a
 			}
 		} 
-
-		if (!(g_SubWorldSet.GetGameTime() % 90))
+		if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_death ||
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_revive ||
+			!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsCanInput())
+			return;
+		if (m_AutoMap_Status == AUTO_MAP_STATUS_RETURNKXD)
 		{
-			DoAutoX2();
-
-			DoAutoX2Skill();
-		} 
-		
-		if (!(g_SubWorldSet.GetGameTime() % 6))
-		{
-			FKAutoFilterEquip(); //läc ®å
-			FKAutoFilterBlackItem(); //läc black item
+			FkAutoMapSet_StepOne();
 		}
-
-		if (!(g_SubWorldSet.GetGameTime() % 2))
-		{
-			SortEquipment();
-		}
-
-		CheckState();
-
-		CheckAttackType();
-
-		DoShortKeyShortCut();
 
 		DoRestoreHP();	//phôc håi sl
 
 		DoRestoreMP(); //phôc håi nl
+
+
+		DoShortKeyShortCut();  // tæng h¬p chuyÓn skill buff bïa
+
+		if (this->mfk_bPause)
+		{
+            if (Npc[m_nIndexFocus].m_Type == boss_blue || Npc[m_nIndexFocus].m_Type == boss_gold)
+            return;
+
+			//ClearNpcArrLag();
+			m_AutoMoveTarget.x = 0;
+			m_AutoMoveTarget.y = 0;
+			m_nIndexFocus = 0;
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ClearSzTeamMem();
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
+			mfk_btState = STATE_WAITING_JOB;
+			return;
+		}
+		if(m_bUseExpCheckBox && Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpEnhance == 0) 
+				{
+					DoAutoX2();
+				}
+		if(m_bUseSkillCheckBox && Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance == 1)
+				{
+			DoAutoX2Skill();
+		} 
+		
+		
+		if (m_bFillterItemCheckBox)
+		{
+			FKAutoFilterEquip(); //läc ®å
+		}
+
+		if (m_bNPickBackLCheckBox)
+		{
+			FKAutoFilterBlackItem(); //läc black item
+		}
+
+		//		FkAutoMoveMapMps(); 
+
+		SortEquipment();
+
+		CheckState();
+
+		CheckAttackType();
 
 		Func_TwCheck(); //thæ ®Þa phï
 
@@ -506,30 +736,53 @@ void KPlayerAuto::Active()
 
 		DoRestoreToxic();//sö dông gi¶i ®éc
 
-		if (!(g_SubWorldSet.GetGameTime() % 30))
-		{
 			DoOpenHMPBag();
-		}
 
 		DoSortEquipment(); //kÝch ho¹t s¾p xÕp hµnh trang
 
 		myCountDownTimerRecover();
 		
-		if(mfk_btState == STATE_PICKUP_OBJ)
+		switch (mfk_btState)
 		{
-			DoActackObject();
-		} 
-		else if(mfk_btState == STATE_WAITING_JOB) // cã else ­u tiªn nhÆt ®å
+		case STATE_PICKUP_OBJ:
+			ItemPos sItemPos;
+			if (Object[m_nObjectIndex].m_nKind == Obj_Kind_Item)
 		{
-			ReturnMap();
+
+				if (Player[CLIENT_PLAYER_INDEX].m_ItemList.SearchPosition(Object[m_nObjectIndex].m_nItemWidth, Object[m_nObjectIndex].m_nItemHeight, &sItemPos) && sItemPos.nPlace == pos_equiproom)
+				{
+					DoAttackObject();
 		}
-		else if(mfk_btState == STATE_ATTACK_NPC)
+				else
+					mfk_btState = STATE_PICKUP_OBJ;
+			}
+			else if (Object[m_nObjectIndex].m_nKind == Obj_Kind_Money)
 		{
+				DoAttackObject();
+			}
+			break;
+
+		case STATE_WAITING_JOB:
+			ReturnMap();
+			break;
+
+		case STATE_ATTACK_NPC:
 			DoActackNpc();
+
 			if(!(g_SubWorldSet.GetGameTime() % 18))
+			{
 				AutoCheckNpcLag();
+			}
+
 			if(!(g_SubWorldSet.GetGameTime() % 180))
-				FkAutoDamnMonter();//qu©y qu¸i sau 10 gi©y
+			{
+				FkAutoDamnMonter(); // 
+			}
+			break;
+
+		default:
+
+			break;
 		}
 		//---Tæ ®éi
 		if (!(g_SubWorldSet.GetGameTime() % 2))
@@ -541,6 +794,107 @@ void KPlayerAuto::Active()
 		//
 		FkAutoIdleTalk();
 		//
+	}
+}
+
+void KPlayerAuto::BackMapTrain()
+{
+	int nMapID = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (nMapID == 337 || nMapID == 338 || nMapID == 339 ||
+		nMapID == 464 || nMapID == 465 || nMapID == 466 ||
+		nMapID == 467 || nMapID == 468 || nMapID == 469 ||
+		nMapID == 470 || nMapID == 380 || nMapID == 242 || nMapID == 208 || nMapID == 209 || nMapID == 372 || nMapID == 396 || nMapID == 397 || nMapID == 401 || nMapID == 403 || nMapID == 394)
+	{
+		//	m_MoveMapStep = 0; 
+		m_nTimeBackToMapTrain = 0;
+		return;
+	}
+
+	if (Player[CLIENT_PLAYER_INDEX].CheckTrading())
+	{
+		//	m_MoveMapStep = 0; 
+		m_nTimeBackToMapTrain = 0;
+		return;
+	}
+
+	if (Npc[CLIENT_PLAYER_INDEX].m_Doing == do_death ||
+		Npc[CLIENT_PLAYER_INDEX].m_Doing == do_revive || Npc[CLIENT_PLAYER_INDEX].m_Doing == do_hurt) // fix lag frame khi ve thanh by kinnox;
+		return;
+
+	/*	if (m_GoFarAwayTxtSelect <= 0 || Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode)
+		{
+			m_nTimeBackToMapTrain = 0;
+			return;
+		}*/
+
+
+
+
+	int nIDSubWorld = 0;
+	//m_MoveMapStep = 0; 
+	if (m_GoFarAwayTxtSelect > 0)
+	{
+		if (m_GoFarAwayTxtSelect == 1)
+		{
+			nIDSubWorld = 75;
+		}
+		else if (m_GoFarAwayTxtSelect == 2)
+		{
+			nIDSubWorld = 224;
+		}
+		else if (m_GoFarAwayTxtSelect == 3)
+		{
+			nIDSubWorld = 320;
+		}
+		else if (m_GoFarAwayTxtSelect == 4)
+		{
+			nIDSubWorld = 225;
+		}
+		else if (m_GoFarAwayTxtSelect == 5)
+		{
+			nIDSubWorld = 226;
+		}
+		else if (m_GoFarAwayTxtSelect == 6)
+		{
+			nIDSubWorld = 227;
+		}
+		else if (m_GoFarAwayTxtSelect == 7)
+		{
+			nIDSubWorld = 322;
+		}
+		else if (m_GoFarAwayTxtSelect == 8)
+		{
+			nIDSubWorld = 321;
+		}
+		else if (m_GoFarAwayTxtSelect == 9)
+		{
+			nIDSubWorld = 336;
+		}
+		else if (m_GoFarAwayTxtSelect == 10)
+		{
+			nIDSubWorld = 340;
+		}
+	}
+
+	if (m_nTimeBackToMapTrain <= 0)
+	{
+		m_nTimeBackToMapTrain = g_SubWorldSet.GetGameTime() + 20 * 20; // 30 giay len maps train
+	}
+	else
+	{
+		if (g_SubWorldSet.GetGameTime() - m_nTimeBackToMapTrain >= 0)
+		{
+			checkOpenDialog = 0;
+			m_MoveMapStep = 0;
+			m_nTimeBackToMapTrain = 0;
+			C2SPLAYER_AI_BACKTOTOWN AutoCmd;
+			AutoCmd.ProtocolType = c2s_aibacktotown;
+			AutoCmd.nIdSubWorld = nIDSubWorld;
+			AutoCmd.dwID = Player[CLIENT_PLAYER_INDEX].GetPlayerID();
+			AutoCmd.dwTimePacker = GetTickCount();
+			if (g_pClient)
+				g_pClient->SendPackToServer((BYTE*)&AutoCmd, sizeof(C2SPLAYER_AI_BACKTOTOWN));
+		}
 	}
 }
 
@@ -590,7 +944,7 @@ void KPlayerAuto::FkAutoIdleTalk()
 	if(!m_bTalkAnnyCheckBox)
 		return;
 
-	if (!(g_SubWorldSet.GetGameTime() % 600))
+	if (!(g_SubWorldSet.GetGameTime() %  1080))
 	{
 		BYTE fkIndex_Ran = g_Random(10);
 		char fk_cIdleTalk[Def_MAXLEN_STRING_CHAT];
@@ -661,6 +1015,10 @@ void KPlayerAuto::DoShortKeyShortCut()
 
 void KPlayerAuto::CheckAttackType()
 {
+	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return;
+
+	//end code
 	if(FkAutoMoveMapMps() == FALSE) //®ang ch¹y ra b·i kh«ng lµm bªn d­íi
 	{
 		m_nAttackType = ATTACK_TYPE_MAP_MPS;
@@ -731,7 +1089,14 @@ void KPlayerAuto::CheckAttackType()
 				m_nXLoopPosTxt = nX;	//cËp nhËt l¹i to¹ ®é x y
 				m_nYLoopPosTxt = nY;
 			}
+			m_nIndexFocus = 0;
+			AddNpc2ArrLag(m_nIndexFocus);		
+			mfk_btState = STATE_WAITING_JOB;
 			m_nAttackType = ATTACK_TYPE_FOLLOW_PEOPLE; //x¸c ®Þnh kiÓu ®ang theo sau
+		}
+		else
+		{
+			ClearNpcArrLag();
 		}
 	}
 	if(m_bConstPosCheckBox && m_MoveMpsTrain[0][0])
@@ -740,6 +1105,9 @@ void KPlayerAuto::CheckAttackType()
 
 BOOL KPlayerAuto::FkAutoMoveMapMps()
 {
+	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return FALSE;
+
 	if(!m_bMapRunPosCheckBox) //kh«ng sö dông ch¹y ra b·i
 		return TRUE;
 	//
@@ -794,16 +1162,37 @@ int KPlayerAuto::FkGetMoveMpsMapCount()
 
 void KPlayerAuto::CheckState()
 {
+	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return;
+
 	if(FkAutoMoveMapMps() == FALSE) //®ang ch¹y ra b·i kh«ng lµm bªn d­íi
 		return;
 
-	if (!(g_SubWorldSet.GetGameTime() % 9) && BuffSkill() == TRUE) // ®ang buff kh«ng lµm bªn d­íi
+
+	if ((g_SubWorldSet.GetGameTime() % 4 == 0) && BuffSkill() == TRUE) // 
+	{
+		ResetFocusAndState();
 		return;
+	}
 
 	RefreshObject();
-	//RefreshNpc(); //­u tiªn nhÆt ®å ®ãng l¹i
-	//if(m_bPickAllCheckBox)
-	DoActackObject();
+
+
+	ItemPos sItemPos;  //Obj_Kind_Money
+	if (Object[m_nObjectIndex].m_nKind == Obj_Kind_Item)
+	{
+		if (Player[CLIENT_PLAYER_INDEX].m_ItemList.SearchPosition(Object[m_nObjectIndex].m_nItemWidth, Object[m_nObjectIndex].m_nItemHeight, &sItemPos) && sItemPos.nPlace == pos_equiproom)
+		{
+			DoAttackObject();
+		}
+		else
+			mfk_btState = STATE_PICKUP_OBJ;
+	}
+	else if (Object[m_nObjectIndex].m_nKind == Obj_Kind_Money)
+	{
+		DoAttackObject();
+	}
+
 	
 	if(mfk_btState)
 		return;
@@ -835,13 +1224,17 @@ void KPlayerAuto::ReturnMap()
 		if (m_nXLoopPosTxt >= (x - 50) && m_nXLoopPosTxt <= (x + 50) 
 			&& m_nYLoopPosTxt >= (y - 50) && m_nYLoopPosTxt <= (y + 50)) //Quay vÒ ®iÓm cè ®Þnh trong ph¹m vi 50
 		{
+            Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			FkAutoShitDown();
 		}
 		else
 		{
-			if (!(g_SubWorldSet.GetGameTime() % 18)) //fix by phong kiÒu
+			// Move towards the target point with a certain interval
+			if (!(g_SubWorldSet.GetGameTime() % 4))
+			{
 				MoveTo(m_nXLoopPosTxt, m_nYLoopPosTxt);
 		}
+	}
 	}
 	else if(m_nAttackType == ATTACK_TYPE_FREE)//chÕ ®é tù do cËp nhËt l¹i to¹ ®é hiÖn t¹i cho ch¹y tiÕp
 	{
@@ -901,9 +1294,9 @@ BOOL KPlayerAuto::FkAutoMoveMps()
 		dZ = (int)sqrt((float)dX*dX+(float)dY*dY);
 		if (dZ>=64)
 		{
-			if (!(g_SubWorldSet.GetGameTime() % 18)) //fix by phong kiÒu
+			if (!(g_SubWorldSet.GetGameTime() % 9)) //fix by phong kiÒu
 			{
-				MoveTo(m_MoveMpsTrain[m_MoveStepTrain][1], m_MoveMpsTrain[m_MoveStepTrain][2]);
+				MoveToC(m_MoveMpsTrain[m_MoveStepTrain][1], m_MoveMpsTrain[m_MoveStepTrain][2]);
 				m_nXLoopPosTxt = m_MoveMpsTrain[m_MoveStepTrain][1]; //cËp nhËt l¹i to¹ ®é míi
 				m_nYLoopPosTxt = m_MoveMpsTrain[m_MoveStepTrain][2];
 			}
@@ -915,10 +1308,47 @@ BOOL KPlayerAuto::FkAutoMoveMps()
 	}
 	return FALSE;
 }
-/*
+
+bool CloseToTarget(POINT point1, POINT point2, int delta)
+{
+	int distance = sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2));
+
+	return distance <= delta;
+}
+
+void KPlayerAuto::MoveToC(int nX, int nY)
+{
+	POINT tmpPoint;
+	tmpPoint.x = nX;
+	tmpPoint.y = nY;
+
+
+	if (m_bIRMoveCheckBox && !Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_bRideHorse)
+	{
+		SendClientCmdRide(FALSE);
+	}
+
+	if (CloseToTarget(m_AutoMoveTarget, tmpPoint, 72)) //the same moving target, ignore
+		return;
+
+
+	m_AutoMoveTarget.x = nX;
+	m_AutoMoveTarget.y = nY;
+	KScenePlaceMapC* m_Map = g_ScenePlace.GetKScenePlaceMapC();
+
+	m_Map->AutoRunToB(nX, nY);
+}
+
 void KPlayerAuto::MoveTo(int nX, int nY) 
 {
     int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+
+	if (BuffSkill() == TRUE)
+	{
+		ResetFocusAndState();
+		return;
+	}
+
 
     if(m_bIRMoveCheckBox && !Npc[nIndex].m_bRideHorse) 
 	{
@@ -933,134 +1363,207 @@ void KPlayerAuto::MoveTo(int nX, int nY)
 
     
    bool isRunning = (Player[CLIENT_PLAYER_INDEX].m_RunStatus != 0);
-    Npc[nIndex].SendCommand(isRunning ? do_run : do_walk, nX, nY);
+
+
     if (isRunning) 
 	{
+        Npc[nIndex].SendCommand(do_run, nX, nY);
         SendClientCmdRun(nX, nY);
     }
 	else 
 	{
+      Npc[nIndex].SendCommand(do_run, nX, nY);
         SendClientCmdWalk(nX, nY);
     }
-
-
     Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
 }
-*/
 
-bool CloseToTarget(POINT point1, POINT point2, int delta)
-{
-	int distance = sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2));
-	g_DebugLog("Distance %d\n", distance);
-	return distance <= delta;
-}
 
-void KPlayerAuto::MoveTo(int nX, int nY)
+void KPlayerAuto::MoveToB(int nX, int nY) 
 {
 	POINT tmpPoint;
 	tmpPoint.x = nX;
 	tmpPoint.y = nY;
-
-	if (CloseToTarget(m_AutoMoveTarget, tmpPoint, 50)) //the same moving target, ignore
+	KScenePlaceMapC* m_Map = g_ScenePlace.GetKScenePlaceMapC();
+	if (m_bIRMoveCheckBox && !Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_bRideHorse) 
+    {
+        SendClientCmdRide(FALSE);
+    }
+	if (CloseToTarget(m_AutoMoveTarget, tmpPoint, 64)) //the same moving target, ignore
 		return;
-
 	m_AutoMoveTarget.x = nX;
 	m_AutoMoveTarget.y = nY;
 
-
-	KScenePlaceMapC* m_Map = g_ScenePlace.GetKScenePlaceMapC();
-
-	//m_Map->DirectFindPos(nX/16, nY/32, 1, true);
-	m_Map->AutoRunTo(nX / 16, nY / 32);
+	m_Map->AutoRunToB(nX, nY);
 }
 
 void KPlayerAuto::DoActackNpc()
 {
+	if( BuffSkill() == TRUE)
+	{
+		ResetFocusAndState();
+		return;
+    }
+
+    if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) 
+	{
+        return;
+    }
 	int nfkDistance = NpcSet.GetDistance(m_nIndexFocus, Player[CLIENT_PLAYER_INDEX].m_nIndex);
 	//
 	if(!Npc[m_nIndexFocus].IsAlive())
 	{
-		m_nIndexFocus = 0;
-		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
-		mfk_btState = STATE_WAITING_JOB;
+        ResetFocusAndState();
 		return;
 	}
 	
 	if(Npc[m_nIndexFocus].m_Kind == kind_normal && m_bFightDistanceSelect == 1 && nfkDistance <= m_nFightSelfDefValue &&
-		(Npc[m_nIndexFocus].m_Type == boss_blue ||  Npc[m_nIndexFocus].m_Type == boss_gold))//lùa chän tiÕp cËn tr¸nh boss xanh vµng
+       (Npc[m_nIndexFocus].m_Type == boss_blue || Npc[m_nIndexFocus].m_Type == boss_gold))
 	{
-		AutoMakeAwayNpc();//tr¸nh xa npc
-		m_nIndexFocus = 0;
-		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
-		mfk_btState = STATE_WAITING_JOB;
+        AutoMakeAwayNpc();
+        ResetFocusAndState();
 		return;
 	}
 
-	if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player && nfkDistance <= m_nFightSelfDefValue)//chÕ ®é tù vÖ //cã sö dông ph¹m vi tù vÖ
+    if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player && nfkDistance <= m_nFightSelfDefValue)
 	{
-		if(m_bFightSelfDefSelect == 0)//tr¸nh xa
+        switch (m_bFightSelfDefSelect) 
 		{
-			AutoMakeAwayNpc(); //tr¸nh xa npc
-			m_nIndexFocus = 0;
-			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
-			mfk_btState = STATE_WAITING_JOB;
+            case 0:
+                AutoMakeAwayNpc();
+                ResetFocusAndState();
+                return;
+            case 1:
+                DoUseTownPortal();
+                mySetValueCountDown(TIME_USE_TW, 18);
+                AutoSendMsg("<color=green>Thæ ®Þa phï khi bÞ ®å s¸t!<color>");
+                return;
+            case 2:
+                CoreDataChanged(GDCNI_S2C_EXIT_GAME, NULL, NULL);
+                return;
+            case 3:
+                if (Npc[m_nIndexFocus].m_HideState.nTime) 
+				{
+                    ResetFocusAndState();
 			return;
 		}
-		else if(m_bFightSelfDefSelect == 1)//thæ ®Þa phï
-		{
-			DoUseTownPortal();
-			mySetValueCountDown(TIME_USE_TW, 18);
-			AutoSendMsg("<color=green>Thæ ®Þa phï tù vÖ<color>");
-			return;
+                break;
 		}
-		else if(m_bFightSelfDefSelect == 2)//tho¸t game
-		{
-			CoreDataChanged(GDCNI_S2C_EXIT_GAME, NULL, NULL);
-			return;
-		}
-		else if(m_bFightSelfDefSelect == 3)//®¸nh tr¶
-		{
-			if(Npc[m_nIndexFocus].m_HideState.nTime)//fix by Phong KiÒu ®ang tµng h×nh kh«ng ®¸nh n÷a
-			{
-				m_nIndexFocus = 0;
-				mfk_btState = STATE_WAITING_JOB;
-				return;
-			}
-			//thùc hiÖn tiÕp lÖnh d­íi
-		}
-	}
-	//
-	int nFocusX = 0;
+    }
+
+    int nFocusX = 0;
 	int nFocusY = 0;
 	int nDistance = 0;
+
+
+
 	Npc[m_nIndexFocus].GetMpsPos(&nFocusX, &nFocusY);
 	nDistance = NpcSet.GetDistance(m_nIndexFocus, Player[CLIENT_PLAYER_INDEX].m_nIndex);
-	if (m_bFightDistance && nDistance > m_nFightDistance)//cã sö dông ph¹m vi tiÕp cËn
+	if(m_bFightDistanceSelect == 2 && m_bFightDistance && nDistance > m_nFightDistance && nDistance <= m_nFightRange)  // chÕ ®é t×m boss ®¸nh
 	{
-		if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player) //cã tù vÖ vµ môc tiªu lµ player
+		int nTeamCountBoss3 = 8; //
+		KUiPlayerItem* m_pPlayersList3 = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nTeamCountBoss3);
+
+		if (m_pPlayersList3 == NULL)
+		{	
+			return;
+		}
+
+		int nRetAroundBoss = NpcSet.GetAroundNpcBossMonster(m_pPlayersList3, nTeamCountBoss3, m_nFightRange);
+		if (nRetAroundBoss >= 1 && m_bFightDistanceSelect == 2 && nDistance <= m_nFightRange)
 		{
-			if (!(g_SubWorldSet.GetGameTime() % 18)) //fix by phong kiÒu
+
+			for (int i = 0; i < nRetAroundBoss && i < nTeamCountBoss3; i++)
+			{
+				int m_fkIndexFocus = m_pPlayersList3[i].nIndex;
+				if (m_fkIndexFocus)
+	{
+					m_nArrayFocus[i] = m_fkIndexFocus;
+				}
+			}
+		}
+
+		if (m_pPlayersList3)
+        {
+			memset(m_pPlayersList3, 0, sizeof(KUiPlayerItem) * nTeamCountBoss3);
+			free(m_pPlayersList3);
+			m_pPlayersList3 = NULL;
+		}
+}
+	if(m_bFightDistanceSelect == 2 && m_bFightDistance && nDistance > m_nFightDistance && nDistance <= m_nFightRange)//lùa chän tiÕp cËn tr¸nh boss xanh vµng
+	{
+			if (Npc[m_nIndexFocus].m_Type == boss_blue || Npc[m_nIndexFocus].m_Type == boss_gold)
+		{
 				MoveTo(nFocusX, nFocusY);
 		}
-		if( m_bFightCheckBox == TRUE && Npc[m_nIndexFocus].m_Kind == kind_normal) //cã tù ®¸nh vµ môc tiªu lµ npc
+        }
+	// m_nFightSelfDefValue ph¹m vi tù vÖ  600
+
+	//m_nFightDistance ph¹m vi tiÕp cËn 75
+
+	// m_nFightRange ph¹m vi tù ®¸nh 600
+	if (m_bFightSelfDef == TRUE && m_bFightSelfDefSelect == 3 && nDistance <= m_nFightSelfDefValue)  // chÕ ®é t×m ng­êi ®¸nh
+	{
+		int nTeamCountPlayer2 = 8; //
+		KUiPlayerItem* m_pPlayersList4 = (KUiPlayerItem*)malloc(sizeof(KUiPlayerItem) * nTeamCountPlayer2);
+
+		if (m_pPlayersList4 == NULL)
 		{
-			if(Npc[m_nIndexFocus].m_dwID) //fix lçi qu©y qu¸i kh«ng cã tªn
+    
+			return;
+		}
+
+		int nRetAround = NpcSet.GetAroundPlayerMonster(m_pPlayersList4, nTeamCountPlayer2, m_nFightRange);
+		if (nRetAround >= 1 && m_bFightSelfDef == TRUE && m_bFightSelfDefSelect == 3 && nDistance <= m_nFightSelfDefValue)
+		{
+   
+			for (int i = 0; i < nRetAround && i < nTeamCountPlayer2; i++)
 			{
-				if (!(g_SubWorldSet.GetGameTime() % 2)) //fix by phong kiÒu
-					MoveTo(nFocusX, nFocusY);
+				int m_fkIndexFocus = m_pPlayersList4[i].nIndex;
+				if (m_fkIndexFocus)
+				{
+					m_nArrayFocus[i] = m_fkIndexFocus;
+				}
 			}
-			else
-				ReturnMap();
+		}
+ 
+		if (m_pPlayersList4)
+		{
+			memset(m_pPlayersList4, 0, sizeof(KUiPlayerItem) * nTeamCountPlayer2);
+			free(m_pPlayersList4);
+			m_pPlayersList4 = NULL;
 		}
 	}
+
+
+	if (m_bFightDistance && nDistance > m_nFightDistance && nDistance <= m_nFightRange )//cã sö dông ph¹m vi tiÕp cËn
+	{	
+		if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player) //cã tù vÖ vµ môc tiªu lµ player
+			{
+                if (!(g_SubWorldSet.GetGameTime() % 2))
+			{
+					MoveTo(nFocusX, nFocusY);
+			}
+		}
+		if (m_bFightCheckBox == TRUE && Npc[m_nIndexFocus].m_Kind == kind_normal) //cã tù ®¸nh vµ môc tiªu lµ npc
+            {
+			if (Npc[m_nIndexFocus].m_dwID) //fix lçi qu©y qu¸i kh«ng cã tªn
+			{
+				if (!(g_SubWorldSet.GetGameTime() % 5))
+					MoveTo(nFocusX, nFocusY);
+		}
+			else
+				ReturnMap();
+	}
+    }
 	else
 	{
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind(); //In fight distance, clear path finder
-		if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player) //cã tù vÖ vµ môc tiªu lµ player
+		if (m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player) //cã tù vÖ vµ môc tiªu lµ player
 			FollowAtackNpc(m_nIndexFocus);
-		if( m_bFightCheckBox == TRUE && Npc[m_nIndexFocus].m_Kind == kind_normal) //cã tù ®¸nh vµ môc tiªu lµ npc
+		if (m_bFightCheckBox == TRUE && Npc[m_nIndexFocus].m_Kind == kind_normal) //cã tù ®¸nh vµ môc tiªu lµ npc
 		{
-			if(m_nArrayFocus[m_nArrayIndex]) //ch¹y tõng npc trong m¶ng qu©y
+			if (m_nArrayFocus[m_nArrayIndex]) //ch¹y tõng npc trong m¶ng qu©y
 			{
 				if(!(g_SubWorldSet.GetGameTime() % 2))
 				{
@@ -1077,6 +1580,12 @@ void KPlayerAuto::DoActackNpc()
 			}
 		}
 	}
+}
+void KPlayerAuto::ResetFocusAndState()
+{
+	m_nIndexFocus = 0;
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx = 0;
+	mfk_btState = STATE_WAITING_JOB;
 }
 
 void KPlayerAuto::AutoMakeAwayNpc()//tr¸nh xa npc
@@ -1122,7 +1631,11 @@ void KPlayerAuto::FollowAtackNpc(int nTargetIndex)
 	//
 	if (Player[CLIENT_PLAYER_INDEX].CheckTrading()) 
 		return;
-
+	if (BuffSkill() == TRUE)
+	{
+		ResetFocusAndState();
+		return;
+	}
 	int nSkillID = Player[CLIENT_PLAYER_INDEX].GetLeftSkill();
 	int nRSkillID = Player[CLIENT_PLAYER_INDEX].GetRightSkill();
 	int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
@@ -1219,6 +1732,7 @@ void KPlayerAuto::FollowAtackNpc(int nTargetIndex)
 	{
 		m_nIndexFocus = 0;
 		mfk_btState = STATE_WAITING_JOB;
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ClearSzTeamMem();
 	}
 }
 
@@ -1227,6 +1741,10 @@ void KPlayerAuto::RefreshNpc()
 	if(!m_bFightCheckBox && !m_bFightSelfDef)
 		return;
 	//
+	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return;
+
+
 	
 	if(m_bFMORCheckBox)//®¸nh qu¸i trªn ®­êng ®i cËp nhËt liªn tôc to¹ ®é x y
 	{
@@ -1259,28 +1777,34 @@ void KPlayerAuto::RefreshNpc()
 		ClearNpcArrLag();
 		mfk_btState		= STATE_WAITING_JOB;
 		m_nTimeRunNpc	= 0;
+		m_AutoMoveTarget.x = 0;
+		m_AutoMoveTarget.y = 0;
 	}
 }
 
 void KPlayerAuto::AutoCheckNpcLag()
 {
+  if (Npc[m_nIndexFocus].m_Type == boss_blue || Npc[m_nIndexFocus].m_Type == boss_gold)
+        return;
+
 	m_nTimeRunNpc++;
+
+
 	if(m_nLifeNpc != Npc[m_nIndexFocus].m_CurrentLife)
 	{
 		m_nTimeRunNpc = 0;
 		m_nLifeNpc = Npc[m_nIndexFocus].m_CurrentLife;
 	}
 
-	if(m_nTimeRunNpc >= 6)
+	const int MAX_TIME_RUN_NPC = 6;
+	if (m_nTimeRunNpc >= MAX_TIME_RUN_NPC)
 	{
 		int fk_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
-		//char szTemp[128];
-		//sprintf(szTemp, "<color=yellow> %s <color> bÞ lag", Npc[m_nIndexFocus].Name);
-		//AutoSendMsg(szTemp);
 		AddNpc2ArrLag(m_nIndexFocus);
 		m_nIndexFocus = 0;
 		Npc[fk_nIndex].m_nPeopleIdx = 0;
 		mfk_btState = STATE_WAITING_JOB;
+
 	}
 }
 
@@ -1318,6 +1842,9 @@ void KPlayerAuto::AddNpc2ArrLag(int nIdx)
 
 void	KPlayerAuto::RefreshObject()
 {
+	if (m_bSortEquipment)//khi ®ang xÕp ®å ko nhÆt
+		return;
+
 	if(!m_bAutoPickCheckBox)
 		return;
 	if (m_nObjectIndex == 0)
@@ -1389,7 +1916,7 @@ void	KPlayerAuto::RefreshObject()
 	}
 }
 
-void KPlayerAuto::DoActackObject()
+void KPlayerAuto::DoAttackObject()
 {
 	if (m_nObjectIndex == 0)
 		return;
@@ -1413,6 +1940,8 @@ void KPlayerAuto::DoActackObject()
 			MoveTo(nX2, nY2);
 			m_nTimeRunLag++;
 			AutoCheckObjectLag();
+			ClearNpcArrLag();
+            Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();  //switch to attack new NPC, clear path finder
 		}
 	}
 }
@@ -1424,6 +1953,7 @@ void KPlayerAuto::AutoCheckObjectLag()
 		Object[m_nObjectIndex].m_bAutoLag = TRUE;
 		m_nObjectIndex = 0;
 		mfk_btState = STATE_WAITING_JOB;
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();
 		//char szTemp[128];
 		//sprintf(szTemp, "<color=green> %s <color> bÞ lag", Object[m_nObjectIndex].m_szName);
 		//AutoSendMsg(szTemp);
@@ -1436,7 +1966,7 @@ void KPlayerAuto::AutoSendMsg(char* pszMsg)
 {
 	try
 	{
-		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "fkauto", pszMsg, strlen(pszMsg), TRUE);
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "Tù §éng", pszMsg, strlen(pszMsg), TRUE);
 	} 
 	catch(...){}
 }
@@ -1511,6 +2041,14 @@ void KPlayerAuto::DoUseItemHMPFCell()//c¾n m¸u khi ®Çy r­¬ng
 void KPlayerAuto::DoOpenHMPBag()
 {
 	if(!m_bOpenBagHPCheckBox)
+		return;
+
+	ItemPos	sItemPos;
+	if (!Player[CLIENT_PLAYER_INDEX].m_ItemList.SearchPosition(Object[m_nObjectIndex].m_nItemWidth, Object[m_nObjectIndex].m_nItemHeight, &sItemPos))
+		return;
+
+	int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map == 379 || Map == 480 || Map == 481 || Map == 482 || Map == 483 || Map == 484 || Map == 485 || Map == 486 || Map == 487 || Map == 488 || Map == 489 || Map == 337 || Map == 338 || Map == 339) // map kh«ng thÓ sö dông phï
 		return;
 
 	if(Player[CLIENT_PLAYER_INDEX].m_ItemList.CountCommonItem(0, item_medicine, 2) <= m_nOpenBagHPEditBox)//2 vua mau va mana
@@ -1762,6 +2300,17 @@ void KPlayerAuto::myCountDownTimerAutoMap()
 
 void	KPlayerAuto::Func_TwCheck()
 {
+
+	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_death ||
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_revive ||
+		!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsCanInput())
+		return;
+
+	if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return;
+	int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map == 379 || Map == 324 || Map == 480 || Map == 481 || Map == 482 || Map == 483 || Map == 484 || Map == 485 || Map == 486 || Map == 487 || Map == 488 || Map == 489 || Map == 337 || Map == 338 || Map == 339 || Map == 336) // map kh«ng thÓ sö dông phï
+		return;
 	if (myLockActionTabRecover(TIME_USE_TW))
 		return;
 
@@ -1875,11 +2424,14 @@ void KPlayerAuto::DoUseTownPortal()
 		{
 			if(!Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 1084))
 			{
+				if(!Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 437))
+				{
 				AutoSendMsg("<color=yellow>Kh«ng cã thæ ®Þa phï trong hµnh trang.<color>");
 				checkTDP = false;
 			}
 		}
 	}
+}
 	//
 	if(checkTDP && this->m_RingTDPCheckBox)//rung chu«ng khi thæ ®Þa phï
 	{
@@ -1895,6 +2447,10 @@ void KPlayerAuto::DoUseTownPortal()
 
 BOOL KPlayerAuto::BuffSkill()
 {
+
+	if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return FALSE;
+
 	BOOL _break = FALSE;
 	//
 	for (int i = 0; i < MAX_ARRAY_STATESKILL; i ++)
@@ -1935,11 +2491,17 @@ BOOL KPlayerAuto::BuffSkill()
 				int nghkRet = g_Team[0].GetMemberInfo(m_pPlayersList, nghkTeamCount);
 				for(int m = 0; m < nghkRet; m++)//add by phong kiÒu nga my buff m¸u cho tæ ®éi
 				{
+					int nX, nY;
+					Npc[nghkTeamCount].GetMpsPos(&nX, &nY);
+					int dZ = NpcSet.GetDistance(nghkTeamCount, Player[CLIENT_PLAYER_INDEX].m_nIndex);
+					if (dZ <= m_nFightRange && nX && nY) //kho¶ng c¸ch vµ c¸c th«ng tin hîp lÖ
+					{
 					if(m_pPlayersList[m].nPercenLife < m_nBuffEditBox)
 					{
 						Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SendCommand(do_skill, nSkillLifeReplenishID, -1, m_pPlayersList[m].nIndex);
 						SendClientCmdSkill(nSkillLifeReplenishID, -1, m_pPlayersList[m].uId);				
 					}
+				}
 				}
 				if(m_pPlayersList)
 				{
@@ -1959,7 +2521,7 @@ void KPlayerAuto::DoAutoX2()
 		return;
 	if(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpEnhance > 0) 
 		return;
-	if (Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 71))
+	if (Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 71) || Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 70) || Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 1182))
 	{
 		AutoSendMsg("Sö dông thµnh c«ng <color=yellow>Tiªn th¶o lé <color>");
 	}
@@ -1969,11 +2531,11 @@ void KPlayerAuto::DoAutoX2Skill()
 {
 	if(!m_bUseSkillCheckBox)
 		return;
-	if(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpEnhance > 0) 
+	if(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance > 1) 
 		return;
-	if (Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 1182))
+	if (Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 4822) || Player[CLIENT_PLAYER_INDEX].AutoUseItem(item_magicscript, 1, 4823))
 	{
-		AutoSendMsg("Sö dông thµnh c«ng <color=yellow>Tiªn th¶o lé ®Æc biÖt<color>");
+		AutoSendMsg("Sö dông thµnh c«ng <color=yellow>B¶o Tiªn Lé <color>");
 	}
 }
 
@@ -2144,7 +2706,9 @@ void KPlayerAuto::FKAutoFilterEquip()
 BOOL KPlayerAuto::IsRAPEquip(BYTE btDetail)
 {
 	if (btDetail == equip_ring || btDetail == equip_amulet || btDetail == equip_pendant)
+		{
 		return TRUE;
+		}	
 	return FALSE;
 }
 
@@ -2234,6 +2798,9 @@ void KPlayerAuto::DoSortEquipment() //kÝch ho¹t chÕ ®é xÕp hµnh trang
 
 void KPlayerAuto::SortEquipment() //s¾p xÕp hµnh trang
 {
+	if (!m_bSortBagCheckBox)
+		return;
+
 	if (m_bSortEquipment)
 	{
 		int nHand = Player[CLIENT_PLAYER_INDEX].m_ItemList.Hand();//dang o tren tay
@@ -2379,9 +2946,13 @@ void KPlayerAuto::DoAutoKickTeamOut()//Kick out thµnh viªn v¾ng mÆt
 
 void KPlayerAuto::DoAutoParty() //---tæ ®éi---
 {
+	if(!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_FightMode) //®ang ë trong thµnh
+		return;
 	if(!m_bAutoCTeamCheckBox)
 		return;
-	//
+	int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map == 379 || Map == 480 || Map == 481 || Map == 482 || Map == 483 || Map == 484 || Map == 485 || Map == 486 || Map == 487 || Map == 488 || Map == 489 || Map == 337 || Map == 338 || Map == 339) // map kh«ng thÓ sö dông phï
+		return;
 	Player[CLIENT_PLAYER_INDEX].m_cTeam.m_bAutoAccecpt = m_bPTAllCheckBox;	//bËt t¾t tù ®éng nhËn lêi mêi
 	Player[CLIENT_PLAYER_INDEX].m_cTeam.m_bAutoAccecptAll = m_bPTAllCheckBox; //bËt t¾t tù ®éng vµo tÊt c¶ c¸c nhãm
 	//
@@ -2488,40 +3059,106 @@ void KPlayerAuto::AutoParty()
 //--------------------fkauto End tæ ®éi ------------------
 
 //--------------------fkauto Begin trong thµnh ------------------
-BYTE checkOpenDialog = 0;
+
 KSystemMessage	sMsg;
-int	nfkStepPos = 0;
+
 //
+
+
 void KPlayerAuto::FkDoAutoMap()
 {
-	if (!(g_SubWorldSet.GetGameTime() % 10))
+  if (this->mfk_bPause)
+	{
+		m_AutoMoveTarget.x = 0;
+		m_AutoMoveTarget.y = 0;
+		return;
+	}
+
+
+	int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map == 324 || Map == 379)
+		return;
+
+
+	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_death ||
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing == do_revive ||
+		!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IsCanInput())
+		return;
+
+
+	if ((g_SubWorldSet.GetGameTime() % 5 == 0))
 	{
 		if(!m_bReturnCheckBox)
 			return;
-		//
+
+
 		if(!FkAutoMapCheckWorld())
 		{
-			AutoSendMsg("<color=yellow>vÒ 7 thµnh thÞ trung t©m më r­¬ng.<color>");
+			AutoSendMsg("<color=yellow>Auto ho¹t ®éng t¹i 7 thµnh thÞ.<color>");
 			return;
 		}
-		//nhÆt trong thµnh
+
+
 		if(m_bNoneFightCheckBox)
 		{
 			RefreshObject();
-			DoActackObject();
+			DoAttackObject();
 		}
 		
+
+		switch (m_AutoMap_Status)
+		{
+		case AUTO_MAP_STATUS_IDLE:
+		{
+			int m_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			m_AutoMap_Status = AUTO_MAP_STATUS_SELL;
+			nfkStepPos = 0;
+			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "ChuÈn bÞ...";
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+			//Npc[m_nIndex].SetChatInfo("Tù §éng", pMsgBuff, strlen(pMsgBuff));
+			break;
+		}
+		case AUTO_MAP_STATUS_SELL:
 		FkAutoMapSellItem();
+			break;
+		case AUTO_MAP_STATUS_GETMONEY:
 		FkAutoMapGetMoney();
+			break;
+		case AUTO_MAP_STATUS_REPAIR:
 		FkAutoMapRepairItem();
+			break;
+		case AUTO_MAP_STATUS_BUYITEM_MM:
 		FkAutoMapBuyItemMM();
+			break;
+		case AUTO_MAP_STATUS_BUYITEM_TDP:
+			//    if (KSG_GetCurSec() >= m_nCurReturnTapHoa)
 		FkAutoMapBuyItemTDP();
+			break;
+		case AUTO_MAP_STATUS_HOLDMONEY:
 		FkAutoMapHoldMoney();
+			break;
+		case AUTO_MAP_STATUS_STOREITEM:
 		FkAutoMapStoreItem();
+			break;
+		case AUTO_MAP_STATUS_RETURN:
 		FkAutoMapReturn();
+			break;
+		case AUTO_MAP_STATUS_RETURNKXD:
+		{
+			unsigned long currentTime3 = GetTickCount();
+			_snprintf(sMsg.szMessage, sizeof(sMsg.szMessage), "Kh«ng x¸c ®Þnh vÞ trÝ quay l¹i !! Trë l¹i map ®· thiÕt lËp !");
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(sMsg.szMessage);
+			if (currentTime3 >= m_nCurReturnMuaMau)
+			{
+				BackMapTrain();//Quay lai maps train sau khi chet;
+			}
+		}
+		break;
+		default:
+			break;
+		}
 	}
 }
-
 BOOL KPlayerAuto::FkAutoMapCheckWorld()
 {
 	int m_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
@@ -2548,35 +3185,27 @@ void KPlayerAuto::FkAutoMapSellItem()
 	{	
 		SendClientCmdRide(FALSE);
 	}
-	if(m_AutoMap_Status == AUTO_MAP_STATUS_IDLE)
-	{
-		m_AutoMap_Status = AUTO_MAP_STATUS_SELL;
-		nfkStepPos = 0;
-		mySetValueCountDown(TIME_AUTO_MAP, 18);
-		char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "chuÈn bÞ...";
-		Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
-	}
+
 	if(m_AutoMap_Status == AUTO_MAP_STATUS_SELL)
 	{
-		//Npc[m_nIndex].FkAutoSetBlur(FALSE); // fix lçi thiªn v­¬ng bang phï vÒ thµnh bÞ ¶o ¶nh
-		//
+
 		if(myLockActionTabRecover(TIME_AUTO_MAP))
-		{
 			return;
-		}
-		//if(m_bSellCheckBox || m_bRepairCheckBox || m_bBuyHPCheckBox || m_bBuyMPCheckBox || m_bBuyToxicCheckBox)
-		{
-			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "t×m hiÖu thuèc.";
-			Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+
+		char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "T×m hiÖu thuèc.";
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+		//	Npc[m_nIndex].SetChatInfo("Tù §éng", pMsgBuff, strlen(pMsgBuff));
+
 			if(FkAutoMapGotoPharmacies() == TRUE)//Check ch¹y ®Õn hiÖu thuèc// më shop //b¸n hÕn ®å
 			{
 				m_bCheck = TRUE;
 			}
-		}
-		//else
-		//	m_bCheck = TRUE;
 		if(m_bCheck)
+			{	
 			m_AutoMap_Status = AUTO_MAP_STATUS_GETMONEY;
+				checkOpenDialog = 0;
+		     	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+			}
 	}
 }
 
@@ -2591,12 +3220,12 @@ void KPlayerAuto::FkAutoMapGetMoney()
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			strcpy(sMsg.szMessage, "fkauto ®ang rót tiÒn.");
+			strcpy(sMsg.szMessage, "Auto ®ang rót tiÒn.");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 			//nÕu kho¸ r­¬ng th× më b»ng mËt khÈu thiÕt lËp trong auto
 			if(!Player[CLIENT_PLAYER_INDEX].m_CUnlocked)
 			{
-				strcpy(sMsg.szMessage, "fkauto ®ang më r­¬ng.");
+				strcpy(sMsg.szMessage, "Auto ®ang më r­¬ng.");
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				SendClientCPUnlockCmd(m_nPwdMoneyEditBox);
 			}
@@ -2612,8 +3241,12 @@ void KPlayerAuto::FkAutoMapGetMoney()
 		else
 			m_bCheck = TRUE;
 		if(m_bCheck)
+			{
 			m_AutoMap_Status = AUTO_MAP_STATUS_REPAIR;
+				Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+			}
 	}
+	//return;
 }
 
 void KPlayerAuto::FkAutoMapRepairItem()
@@ -2627,7 +3260,7 @@ void KPlayerAuto::FkAutoMapRepairItem()
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			strcpy(sMsg.szMessage, "fkauto ®ang söa ®å.");
+			strcpy(sMsg.szMessage, "Auto ®ang söa ®å.");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 			//
 			PlayerItem* pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetFirstItem();
@@ -2650,7 +3283,11 @@ void KPlayerAuto::FkAutoMapRepairItem()
 		else
 			m_bCheck = TRUE;
 		if(m_bCheck)
+			{
+			//checkOpenDialog = 0;
 			m_AutoMap_Status = AUTO_MAP_STATUS_BUYITEM_MM;
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+		    }
 	}
 }
 
@@ -2665,7 +3302,7 @@ void KPlayerAuto::FkAutoMapBuyItemMM()
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			strcpy(sMsg.szMessage, "fkauto ®ang m¸u mana gi¶i ®éc.");
+			strcpy(sMsg.szMessage, "Auto ®ang m¸u mana gi¶i ®éc.");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 			//
 			if(m_bBuyHPCheckBox && FkAutoCountItemName(pos_equiproom, m_BuyHPTxtSelect) < m_nBuyHPEditBox)
@@ -2683,9 +3320,9 @@ void KPlayerAuto::FkAutoMapBuyItemMM()
 		{
 			m_AutoMap_Status = AUTO_MAP_STATUS_BUYITEM_TDP;
 			CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -1); //®ãng shop
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			checkOpenDialog = 0;
 			nfkStepPos = 0;
-			bMoveToCalled = false; // Flag to track if MoveTo has been called
 		}
 	}
 }
@@ -2697,9 +3334,11 @@ void KPlayerAuto::FkAutoMapBuyItemTDP()
 	{
 		if(m_bBuyTownCheckBox)
 		{
-			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "®ang t×m t¹p ho¸.";
+			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "§ang t×m t¹p ho¸.";
 			int m_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
-			Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+			//Npc[m_nIndex].SetChatInfo("Tù §éng", pMsgBuff, strlen(pMsgBuff));
+
 			if(FkAutoMapGotoGroceryStore() == TRUE) //Check ch¹y ®Õn tiÖm t¹p ho¸// më shop
 			{
 				char m_BuyTownTxtSelect[64];
@@ -2725,9 +3364,9 @@ void KPlayerAuto::FkAutoMapBuyItemTDP()
 		{
 			m_AutoMap_Status = AUTO_MAP_STATUS_HOLDMONEY;
 			CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -1); //®ãng shop
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			checkOpenDialog = 0;
 			nfkStepPos = 0;
-			bMoveToCalled = false; // Flag to track if MoveTo has been called
 		}
 	}
 }
@@ -2740,8 +3379,8 @@ void KPlayerAuto::FkAutoMapHoldMoney()
 		//if(m_bKeepMoneyCheckBox) //check box cÊt tiÒn cã check
 		{
 			int m_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
-			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "®ang t×m r­¬ng.";
-			Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "§ang t×m r­¬ng.";
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
 			if(FkAutoMapGotoStoreBox() == TRUE)//ch¹y ®Õn r­¬ng // më r­¬ng // cÊt tiÒn
 			{
 				if(myLockActionTabRecover(TIME_AUTO_MAP))
@@ -2749,8 +3388,9 @@ void KPlayerAuto::FkAutoMapHoldMoney()
 				//
 				if(m_bKeepMoneyCheckBox && Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney() > m_nKeepMoneyEditBox*10000)
 				{
-					char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "®ang cÊt tiÒn.";
-					Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+					char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "§ang cÊt tiÒn.";
+					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+
 					//
 					Player[CLIENT_PLAYER_INDEX].m_ItemList.ExchangeMoney(room_equipment, room_repository, 
 					Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipmentMoney() - (m_nKeepMoneyEditBox*10000));
@@ -2766,8 +3406,8 @@ void KPlayerAuto::FkAutoMapHoldMoney()
 		if(m_bCheck)
 		{ 
 			m_AutoMap_Status = AUTO_MAP_STATUS_STOREITEM; //cÊt ®å
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			mySetValueCountDown(TIME_AUTO_MAP, 18);
-			bMoveToCalled = false; // Flag to track if MoveTo has been called
 		}
 	}
 }
@@ -2780,8 +3420,9 @@ void KPlayerAuto::FkAutoMapStoreItem()//cÊt ®å
 		if(m_bGetFYCheckBox)//checkbox cÊt ®å ®­îc tick
 		{
 			int m_nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
-			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "®ang cÊt ®å.";
-			Npc[m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+			char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "§ang cÊt ®å.";
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+			//			Npc[m_nIndex].SetChatInfo("Tù §éng", pMsgBuff, strlen(pMsgBuff));
 			//
 			if(myLockActionTabRecover(TIME_AUTO_MAP))
 				return;
@@ -2793,40 +3434,68 @@ void KPlayerAuto::FkAutoMapStoreItem()//cÊt ®å
 		}
 		else
 			m_bCheck = TRUE;
+
 		if(m_bCheck)
 		{
 			CoreDataChanged(GDCNI_FK_AUTO_ITEM, 0, -2); //®ãng r­¬ng
-			checkOpenDialog = 0;
 			m_AutoMap_Status = AUTO_MAP_STATUS_RETURN;
 			mySetValueCountDown(TIME_AUTO_MAP, 18);
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+			checkOpenDialog = 0;
 			nfkStepPos = 0;
-			bMoveToCalled = false; // Flag to track if MoveTo has been called
+			m_nCurReturnPortalSec = GetTickCount();
+			//m_GoFarAwayTxtSelect = 0;
 		}
 	}
 }
+int m_nReturnPortalSec = 10;
+
 
 void KPlayerAuto::FkAutoMapReturn()
 {
 	BOOL m_bCheck = FALSE;
 	if(m_AutoMap_Status == AUTO_MAP_STATUS_RETURN)
 	{
-		//if(m_bReturnCheckBox)
+		if (m_bGoFarAwayCheckBox && m_GoFarAwayTxtSelect >= 0)
 		{
-			if(FkAutoMapGotoStation() == TRUE)//ch¹y ®Õn xa phu quay l¹i b·i
+			unsigned long currentTime1 = GetTickCount();
+			unsigned long elapsed = currentTime1 - m_nCurReturnPortalSec; // 
+			unsigned long remainingTime = (m_nReturnPortalSec * 1000) > elapsed ? (m_nReturnPortalSec * 1000 - elapsed) / 1000 : 0;
+
+			_snprintf(sMsg.szMessage, sizeof(sMsg.szMessage), "Trë l¹i b·i %d gi©y", remainingTime);
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(sMsg.szMessage);
+		}
+
+		unsigned long currentTime2 = GetTickCount();
+
+		if (currentTime2 >= (m_nCurReturnPortalSec + m_nReturnPortalSec * 1000) && m_bGoFarAwayCheckBox && m_GoFarAwayTxtSelect >= 0)
+		{
+			C2SPLAYER_AI_BACKTOTOWN AutoCmd;
+			AutoCmd.ProtocolType = c2s_aibacktotown;
+			AutoCmd.nIdSubWorld = 0;
+			AutoCmd.dwID = Player[CLIENT_PLAYER_INDEX].GetPlayerID();
+			AutoCmd.dwTimePacker = GetTickCount();
+			if (g_pClient)
+				g_pClient->SendPackToServer((BYTE*)&AutoCmd, sizeof(C2SPLAYER_AI_BACKTOTOWN));
+			checkOpenDialog = 0;
+			FkAutoMapSet_StepOne();
+			m_nCurReturnMuaMau = currentTime2 + 5000; // time 5 gi©y
+			m_AutoMap_Status = AUTO_MAP_STATUS_RETURNKXD;
+
+		}
+
+		/* if(FkAutoMapGotoStation() == TRUE && m_GoFarAwayTxtSelect != 0)
 			{
-				char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "trë l¹i b·i train.";
-				Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+			 char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "Trë l¹i b·i.";
+			 Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("Tù ®éng", pMsgBuff, strlen(pMsgBuff));
 				m_bCheck = TRUE;
 				mySetValueCountDown(TIME_AUTO_MAP, 18);
-			}
-		}
-		//else
-		//	m_bCheck = TRUE;
+		 }*/
+
 		if(m_bCheck)
 		{
 			if(myLockActionTabRecover(TIME_AUTO_MAP))
 				return;
-			//
 			FkAutoMapSet_StepOne();
 		}
 	}
@@ -2859,11 +3528,11 @@ BOOL KPlayerAuto::FkAutoMapGotoPharmacies()//ch¹y ®Õn hiÖu thuèc
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
 					Player[CLIENT_PLAYER_INDEX].DialogNpc(nNpcIdx); //më diaglog
-					if(g_bUISelIntelActiveWithServer)
+					if (g_bUISelIntelActiveWithServer)
 						checkOpenDialog = 1;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
 				}
-				if(g_bUISelIntelActiveWithServer && checkOpenDialog == 1)
+				if (g_bUISelIntelActiveWithServer && checkOpenDialog == 1 && distance)
 				{
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
@@ -2871,7 +3540,7 @@ BOOL KPlayerAuto::FkAutoMapGotoPharmacies()//ch¹y ®Õn hiÖu thuèc
 					checkOpenDialog = 2;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
 				}
-				if(checkOpenDialog == 2)
+				if (checkOpenDialog == 2 && distance)
 				{
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
@@ -2881,17 +3550,24 @@ BOOL KPlayerAuto::FkAutoMapGotoPharmacies()//ch¹y ®Õn hiÖu thuèc
 						return TRUE;
 					}
 				}
+				return FALSE;
+			}
 			}
 		}
+
+	int dX1, dY1, dZ1;
+	dX1 = n1X - n2X;
+	dY1 = n1Y - n2Y;
+	dZ1 = (int)sqrt((float)dX1 * dX1 + (float)dY1 * dY1);
+	
+	if (dZ1>=64)
+	{	
+		MoveToB(n2X, n2Y);
 	}
-	//
-      if (!bMoveToCalled)
+	else
         {
-        
-			KScenePlaceMapC sceneMap;  // Create an instance if not static
-			sceneMap.AutoRunTo(n2X/16, n2Y/32);
-			//Player[CLIENT_PLAYER_INDEX].m_cAutoMove.AutoMoveTo(n2X, n2Y);
-            bMoveToCalled = true; // Set the flag to true after calling MoveTo
+		if(fk_autopos[pIndex].fk_nX[nfkStepPos + 1] > 0 && fk_autopos[pIndex].fk_nY[nfkStepPos + 1] > 0)
+			nfkStepPos++;
        }
     return FALSE;
 }
@@ -2912,7 +3588,7 @@ BOOL KPlayerAuto::FkAutoMapGotoGroceryStore()//ch¹y ®Õn tiÖm t¹p ho¸
 	if(NpcSet.GetDistanceMps(n1X, n1Y, n2X, n2Y) < 100)
 	{
 		int nNpcIdx;
-		if(fk_autopos[pIndex].fk_mapID == 80)//d­¬ng ch©u
+		if (fk_autopos[pIndex].fk_mapID == 1 || fk_autopos[pIndex].fk_mapID == 78)//d­¬ng ch©u
 			nNpcIdx = NpcSet.SearchName("T¹p Hãa");
 		else
 			nNpcIdx = NpcSet.SearchName("Chñ tiÖm t¹p hãa");
@@ -2922,16 +3598,16 @@ BOOL KPlayerAuto::FkAutoMapGotoGroceryStore()//ch¹y ®Õn tiÖm t¹p ho¸
 			int distance = NpcSet.GetDistance(nNpcIdx, m_nIndex);
 			if (distance <= Npc[nNpcIdx].m_DialogRadius)
 			{
-				if(distance && checkOpenDialog == 0)
+				if (distance && checkOpenDialog == 0)
 				{
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
 					Player[CLIENT_PLAYER_INDEX].DialogNpc(nNpcIdx); //më diaglog
-					if(g_bUISelIntelActiveWithServer)
+					if(g_bUISelIntelActiveWithServer && distance)
 						checkOpenDialog = 1;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
 				}
-				if(g_bUISelIntelActiveWithServer && checkOpenDialog == 1)
+				if (g_bUISelIntelActiveWithServer && checkOpenDialog == 1 && distance)
 				{
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
@@ -2939,23 +3615,30 @@ BOOL KPlayerAuto::FkAutoMapGotoGroceryStore()//ch¹y ®Õn tiÖm t¹p ho¸
 					checkOpenDialog = 2;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
 				}
-				if(checkOpenDialog == 2)
+				else if(checkOpenDialog == 2 && distance)
 				{
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
 
 					return TRUE;
 				}
+				return FALSE;
 			}
 		}
 	}
-  if (!bMoveToCalled)
+				
+	int dX, dY, dZ;
+	dX = n1X - n2X;
+	dY = n1Y - n2Y;
+	dZ = (int)sqrt((float)dX*dX+(float)dY*dY);
+	if (dZ >= 64)
         {
-            // Call AutoRunTo to find and set the path
-          //  MoveTo(n2X, n2Y);
-			KScenePlaceMapC sceneMap;  // Create an instance if not static
-			sceneMap.AutoRunTo(n2X/16, n2Y/32);
-            bMoveToCalled = true; // Set the flag to true after calling MoveTo
+		MoveToB(n2X, n2Y);
+	}
+	else
+	{
+		if(fk_autopos[pIndex].fk_nX[nfkStepPos + 1] > 0 && fk_autopos[pIndex].fk_nY[nfkStepPos + 1] > 0)
+			nfkStepPos++;
        }
 	return FALSE;
 }
@@ -2990,6 +3673,7 @@ BOOL KPlayerAuto::FkAutoMapGotoStoreBox()//ch¹y ®Õn r­¬ng // më r­¬ng
 					if(g_bUISelIntelActiveWithServer)
 						checkOpenDialog = 1;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
+                    
 				}
 				if(g_bUISelIntelActiveWithServer && checkOpenDialog == 1)
 				{
@@ -3005,6 +3689,7 @@ BOOL KPlayerAuto::FkAutoMapGotoStoreBox()//ch¹y ®Õn r­¬ng // më r­¬ng
 						return FALSE;
 					return TRUE;
 				}
+			//	return FALSE;
 			}
 		}
 	}
@@ -3013,13 +3698,14 @@ BOOL KPlayerAuto::FkAutoMapGotoStoreBox()//ch¹y ®Õn r­¬ng // më r­¬ng
     dX = n1X - n2X;
     dY = n1Y - n2Y;
     dZ = (int)sqrt((float)dX * dX + (float)dY * dY);
-     if (!bMoveToCalled)
+	if (dZ>=64)
+	{
+		MoveToB(n2X, n2Y);
+	}
+	else
         {
-            // Call AutoRunTo to find and set the path
-          //  MoveTo(n2X, n2Y);
-			KScenePlaceMapC sceneMap;  // Create an instance if not static
-			sceneMap.AutoRunTo(n2X/16, n2Y/32);
-            bMoveToCalled = true; // Set the flag to true after calling MoveTo
+		if(fk_autopos[pIndex].fk_nX[nfkStepPos + 1] > 0 && fk_autopos[pIndex].fk_nY[nfkStepPos + 1] > 0)
+			nfkStepPos++;
        }
 	return FALSE;
 }
@@ -3050,7 +3736,7 @@ BOOL KPlayerAuto::FkAutoMapGotoStation()//ch¹y ®Õn xa phu
 					if(myLockActionTabRecover(TIME_AUTO_MAP))
 						return FALSE;
 					Player[CLIENT_PLAYER_INDEX].DialogNpc(nNpcIdx); //më diaglog
-					if(g_bUISelIntelActiveWithServer)
+					if (g_bUISelIntelActiveWithServer)
 						checkOpenDialog = 1;
 					mySetValueCountDown(TIME_AUTO_MAP, 18);
 				}
@@ -3096,20 +3782,30 @@ BOOL KPlayerAuto::FkAutoMapGotoStation()//ch¹y ®Õn xa phu
 						checkOpenDialog = 0;
 						return TRUE;
 					}
+					return FALSE;
 				}
 			}
 		}
 	}
 	char pMsgBuff[Def_MAXLEN_STRING_CHAT] = "®ang t×m xa phu.";
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("fkauto", pMsgBuff, strlen(pMsgBuff));
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetSzTeamMem(pMsgBuff);
+	//Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("Tù §éng", pMsgBuff, strlen(pMsgBuff));
 	
-	 if (!bMoveToCalled)
+	int dX, dY, dZ;
+	dX = n1X - n2X;
+	dY = n1Y - n2Y;
+	dZ = (int)sqrt((float)dX*dX+(float)dY*dY);
+	if (dZ >= 64 && m_bGoFarAwayCheckBox && m_GoFarAwayTxtSelect != 0)
+	{
+		//	if (!(g_SubWorldSet.GetGameTime() % 9)) //fix by phong kiÒu
+		//	{
+		MoveToB(n2X, n2Y);
+		//	}
+	}
+	else
         {
-            // Call AutoRunTo to find and set the path
-          //  MoveTo(n2X, n2Y);
-			KScenePlaceMapC sceneMap;  // Create an instance if not static
-			sceneMap.AutoRunTo(n2X/16, n2Y/32);
-            bMoveToCalled = true; // Set the flag to true after calling MoveTo
+		if(fk_autopos[pIndex].fk_nX[nfkStepPos + 1] > 0 && fk_autopos[pIndex].fk_nY[nfkStepPos + 1] > 0)
+			nfkStepPos++;
        }
 	return FALSE;
 }
@@ -3120,6 +3816,7 @@ BOOL KPlayerAuto::FkAutoCheckItemSell(int nIdx)
 	|| Item[nIdx].GetPlayerItemHLock() > 0
 	|| Item[nIdx].GetPlayerItemLock() == -2
 	|| FkAutoCheckEquipMagic(nIdx) //vËt phÈm cã trong magic trong bé läc kh«ng b¸n
+		|| m_bRiAmPeCheckBox && IsRAPEquip(Item[nIdx].GetDetailType()) && Item[nIdx].GetLevel() >= m_nRiEditBox && Item[nIdx].GetLevel() <= m_nAmPeEditBox// gi÷ l¹i trang søc
 	|| Item[nIdx].GetGenre() == item_task
 	|| Item[nIdx].GetGenre() == item_medicine
 	|| Item[nIdx].GetGenre() == item_mine
@@ -3180,7 +3877,7 @@ BOOL KPlayerAuto::FkAutoCheckItemSellAll()
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
-	strcpy(sMsg.szMessage, "fkauto ®ang b¸n ®å.");
+	strcpy(sMsg.szMessage, "Auto Tù §éng b¸n ®å .");
 	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 	//
 	PlayerItem* pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetFirstItem();
@@ -3276,7 +3973,8 @@ BOOL KPlayerAuto::FKAutoCheckStoreItem(int nIdx)
 {
 	if(FkAutoCheckEquipMagic(nIdx) == TRUE)
 		return TRUE;
-	//
+	if (m_bRiAmPeCheckBox && IsRAPEquip(Item[nIdx].GetDetailType()) && Item[nIdx].GetLevel() >= m_nRiEditBox && Item[nIdx].GetLevel() <= m_nAmPeEditBox)  // thªm göi trang søc vµo r­¬ng
+		return TRUE;
 	if(Item[nIdx].GetGoldId())
 		return TRUE;
 	//
@@ -3319,9 +4017,17 @@ BOOL KPlayerAuto::FkAutoCheckEquipMagic(int nIdx)
 
 void KPlayerAuto::FkAutoMapSet_StepOne()
 {
+	m_nIndexFocus	= 0;
 	m_AutoMap_Status = AUTO_MAP_STATUS_IDLE;
 	mySetValueCountDown(TIME_AUTO_MAP, 0);
-	bMoveToCalled = false; // Flag to track if MoveTo has been called
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ClearSzTeamMem();
+	ClearNpcArrLag();
+	checkOpenDialog = 0;
+	nfkStepPos = 0;
+	m_AutoMoveTarget.x = 0;
+	m_AutoMoveTarget.y = 0;
+
+
 }
 //--------------------fkauto End trong thµnh ------------------
 

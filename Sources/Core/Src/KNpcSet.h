@@ -154,6 +154,8 @@ public:
 	void			GetAroundOpenCaptain(int nCamp);		
 	int				GetAroundPlayer(KUiPlayerItem *pList, int nCount);	
 	int				GetAroundNpcMonster(KUiPlayerItem *pList, int nCount, int nRange);//Add by phong ki“u using fkauto
+	int				GetAroundPlayerMonster(KUiPlayerItem* pList, int nCount, int nRange);//Add by phong ki“u using fkauto
+	int				GetAroundNpcBossMonster(KUiPlayerItem* pList, int nCount, int nRange);//Add by phong ki“u using fkauto
 	void			SetShowNameFlag(BOOL bFlag);
 	BOOL			CheckShowName();
 	void			SetShowChatFlag(BOOL bFlag);

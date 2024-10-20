@@ -37,8 +37,9 @@ private:
 	int			m_nObjectIndex;
 	BYTE	m_nAttackType;
 	POINT	m_AutoMoveTarget;
-
 public:
+
+	int				m_nTimeBackToMapTrain;
 	BOOL	m_bFightCheckBox;	//tù ®¸nh //--------------chiÕn ®Êu-------------------
 	short		m_nFightRange;
 	BYTE	m_bFightSelect;
@@ -203,7 +204,13 @@ public:
 	int			 m_nCoolDownSC2;	//thêi gian lu©n chuyÓn hot key 2
 	int			 m_nCoolDownSortRE;//thêi gian xÕp hµnh trang
 	int			 m_nCoolDownAutoMap; //thêi gian sö dông trong auto map
-
+	int				m_nReturnPortalStep;
+	int				m_nCurReturnPortalSec;
+	int	m_nCurReturnHieuThuoc;
+	int	m_nCurReturnTapHoa;
+	int	m_nCurReturnSuDo;
+	unsigned long	m_nCurReturnMuaMau;
+	unsigned int	m_ReturnSetpCountDown;
 private:
 	enum PLAYER_ATTACK_TYPE
 	{
@@ -243,10 +250,18 @@ private:
 	void		CheckAttackType();
 	void		DoShortKeyShortCut();
 	void		AutoMakeAwayNpc();//tr¸nh xa npc
+	void		AutoMakeNpc();//tr¸nh xa npc
+	void		ResetFocusAndState();
+
 	void		ReturnMap();
 	void		FkAutoDamnMonter();//qu©y qu¸i
 	void		FkAutoShitDown();
 	void		MoveTo(int x, int y);
+	void		MoveToB(int x, int y);
+	void		MoveToC(int x, int y);
+	void			BackMapTrain();
+	//	void		AutoRunTo(int x, int y);
+
 	BOOL	FkAutoMoveMps();
 	int			 FkGetMoveMpsTrainCount();
 	void		FkAutoIdleTalk();
@@ -264,7 +279,7 @@ private:
 	void		RefreshObject();
 	void		PlayerSetActackObject(int nIdx);
 	void		AutoCheckObjectLag();
-	void		DoActackObject();
+	void		DoAttackObject();
 	void		DoRestoreHP();
 	BOOL	DoUseHeath();
 	void		DoRestoreMP();
@@ -330,6 +345,7 @@ private:
 		AUTO_MAP_STATUS_HOLDMONEY,
 		AUTO_MAP_STATUS_STOREITEM,
 		AUTO_MAP_STATUS_RETURN,
+		AUTO_MAP_STATUS_RETURNKXD,
 	};
 public:
 	KPlayerAuto();

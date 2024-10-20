@@ -292,6 +292,8 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_getcityowntong] = &KProtocolProcess::c2sGetCityOwnTong;
 	ProcessFunc[c2s_recoveritem] = &KProtocolProcess::RecoverItemCommand;
 	ProcessFunc[c2s_playerthrowallitem] = &KProtocolProcess::c2sPlayerThrowAllItem;
+	ProcessFunc[c2s_aibacktotown] = &KProtocolProcess::c2sBackToTown;//Auto by quay l¹i;
+
 
 #endif
 }
@@ -5638,6 +5640,17 @@ void KProtocolProcess::PlayerCommand(int nIndex, BYTE* pProtocol)
 		break;
 	}
 }
+void KProtocolProcess::c2sBackToTown(int nIndex, BYTE* pProtocol)
+{
+	C2SPLAYER_AI_BACKTOTOWN* pInfo = (C2SPLAYER_AI_BACKTOTOWN*)pProtocol;
+	if (Player[nIndex].CheckTrading())
+		return;
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+		return;
+	Player[nIndex].BackToTownPortal(pInfo->nIdSubWorld);
+	return;
+}
+
 
 void KProtocolProcess::c2sSetImage(int nIndex, BYTE* pProtocol)
 {

@@ -112,7 +112,9 @@ void	KNpcTemplate::InitNpcBaseData(int nNpcTemplateId)
 	g_NpcSetting.GetInteger(nNpcTempRow, "Treasure", 1, &m_Treasure);
 
 	char szDropFile[128];
-	g_NpcSetting.GetString(nNpcTempRow, "DropRateFile", "", szDropFile, sizeof(szDropFile));
+	g_NpcSetting.GetString(nNpcTempRow, "DropRateFile", "", szDropFile, sizeof(szDropFile)); //"\\script\\global\\LuaNpcMonsters\\Droprate_normal.lua"
+	//strcpy(szDropFile, "\\script\\global\\LuaNpcMonsters\\Droprate_normal.lua");
+
 	strlwr(szDropFile);
 	strcpy(m_szDropRateFile, szDropFile);
 	KItemDropRateNode DropNode;
@@ -135,7 +137,7 @@ void	KNpcTemplate::InitNpcBaseData(int nNpcTemplateId)
 	m_AIMAXTime = (BYTE)nAIMaxTime;
 	g_NpcSetting.GetInteger(nNpcTempRow, "HitRecover", 0, &m_HitRecover);
 	g_NpcSetting.GetInteger(nNpcTempRow, "ReviveFrame", 2400, &m_ReviveFrame);	//Thêi gian håi sinh
-	m_ReviveFrame = m_ReviveFrame * 6; //T¨ng thêi gian phôc sinh chuÈn VNG qu¸i 9x 2 phót
+	m_ReviveFrame = m_ReviveFrame / 2; //T¨ng thêi gian phôc sinh chuÈn VNG qu¸i 9x 2 phót
 	char szLevelScript[MAX_PATH];
 	g_NpcSetting.GetString(nNpcTempRow, "LevelScript", "", szLevelScript, MAX_PATH);
 	if (!szLevelScript[0])
@@ -152,13 +154,15 @@ void	KNpcTemplate::InitNpcBaseData(int nNpcTemplateId)
 		m_dwLevelSettingScript = g_FileName2Id(szLevelScript);
 	}
 #else
+	
 	g_NpcSetting.GetInteger(nNpcTempRow, "ArmorType", 0, &m_ArmorType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "HelmType", 0, &m_HelmType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "WeaponType", 0, &m_WeaponType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "HorseType", -1, &m_HorseType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "RideHorse",0, &m_bRideHorse);
-	g_NpcSetting.GetString(nNpcTempRow, "ActionScript", "", ActionScript, sizeof(ActionScript));
+	g_NpcSetting.GetString(nNpcTempRow, "ActionScript", "", ActionScript, sizeof(ActionScript)); //\\script\\global\\LuaNpcMonsters\\Ondeath_normal.lua
 	g_NpcSetting.GetString(nNpcTempRow, "LevelScript", "", m_szLevelSettingScript, 100);
+
 #endif
 
 #ifdef _SERVER				
@@ -311,6 +315,7 @@ void KNpcTemplate::InitNpcLevelData(KTabFile * pKindFile, int nNpcTemplateId, KL
 		char szValue2[MAX_VALUE_LEN];
 		g_NpcSetting.GetString(nNpcTempRow, "Skill1",	"", szValue1, MAX_VALUE_LEN);
 		g_NpcSetting.GetString(nNpcTempRow, "Level1", "", szValue2, MAX_VALUE_LEN);
+		
 		if (szValue1[0] && szValue2[0])
 		{
 			int SkillID = GetNpcLevelDataFromScript(pLevelScript, "Skill1", nSeries, nLevel, szValue2);
@@ -534,6 +539,7 @@ int KNpcTemplate::GetNpcLevelDataFromScript(KLuaScript * pScript, char * szDataN
 
 int KNpcTemplate::GetNpcLevelDataFromScript(KLuaScript * pScript, char * szDataName,int nSerial, int nLevel, double nParam1, double nParam2, double nParam3)
 {
+
 	int nTopIndex = 0;
 	int nReturn = 0;
 	pScript->SafeCallBegin(&nTopIndex);
@@ -543,7 +549,13 @@ int KNpcTemplate::GetNpcLevelDataFromScript(KLuaScript * pScript, char * szDataN
 	pScript->SafeCallEnd(nTopIndex);
 	return nReturn;
 }
+#ifdef _SERVER
 
+KItemDropRate* KNpcTemplate::UpdateDropRate(const char* pszDropRateFile)
+{
+	return g_GenItemDropRate((char*)pszDropRateFile);
+}
+#endif
 int KNpcTemplate::SkillString2Id(char * szSkillString)
 {
 	if (!szSkillString[0]) return 0;

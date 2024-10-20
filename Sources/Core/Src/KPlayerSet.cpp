@@ -39,7 +39,8 @@ BOOL	KPlayerSet::Init()
 #ifdef _SERVER
 	m_nNumPlayer = 0;
 	m_ulNextSaveTime = 0;
-	m_ulMaxSaveTimePerPlayer = 60 * 20 * 30;	//(60 * 20 * 3) / 6; //edit by phong kieu thoi gian auto Save nhan vat
+	//m_ulMaxSaveTimePerPlayer = 60 * 20 * 30;	//(60 * 20 * 3) / 6; //edit by phong kieu thoi gian auto Save nhan vat
+	m_ulMaxSaveTimePerPlayer = 30 * 18;// * 30
 	m_ulDelayTimePerSave = m_ulMaxSaveTimePerPlayer / MAX_PLAYER;
 #endif
 
@@ -992,7 +993,27 @@ int		KPlayerSet::AttachPlayer(const unsigned long lnID, GUID* pGuid, char* sHWID
 	}
 	return 0;
 }
+void		KPlayerSet::RemoveAllPlayerLixianByAccount(char* szAccName)
+{
+	int nUseIdx = 1;
+	while (nUseIdx)
+	{
+		//	if (0 == memcmp(&Player[nUseIdx].m_AccoutName, szAccName, sizeof(char*)))
+		if (strcmpi(Player[nUseIdx].m_AccoutName, szAccName) == 0)
+		{
+			if (Player[nUseIdx].m_nLixian)//neu dang uy thac
+			{
+				Player[nUseIdx].m_nLixian = 0;
+				Player[nUseIdx].m_bIsQuiting = TRUE;
+				RemoveQuiting(nUseIdx);//edit by phong kieu Remove account dang uy thac
+			}
+		}
+		nUseIdx++;
 
+		if (nUseIdx >= MAX_PLAYER)
+			break;
+	}
+}
 
 int		KPlayerSet::GetPlayerIndexByGuid(GUID* pGuid)
 {

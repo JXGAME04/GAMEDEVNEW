@@ -2026,8 +2026,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_EXIT_GAME:
 		g_SubWorldSet.Close();
 		g_ScenePlace.ClosePlace();
+		Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 		break;
 	case GOI_GAMESPACE_DISCONNECTED:
+		Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 		g_SubWorldSet.Close();
 		break;
 	case GOI_TRADE_NPC_BUY:
@@ -4664,6 +4666,8 @@ int KCoreShell::TeamOperation(unsigned int uOper, unsigned int uParam, int nPara
 			if (uParam && nParam)
 			{
 				KUiPlayerItem *m_pPlayersList = (KUiPlayerItem*)uParam;
+			KUiPlayerPaintTeamMNG* nPainTMG = (KUiPlayerPaintTeamMNG*)nParam;
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].PaintTeamMNG(m_pPlayersList, nPainTMG);
 			}
 		}
 		break;
@@ -5567,7 +5571,7 @@ BOOL KCoreShell::AutoMove()
     INT nCurX, nCurY;
     Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
     BOOL nRet = FALSE;
-	int delta = 15;
+	int delta = 64;
    // if (!GetPaintMode())
       // return nRet;
     if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.empty())

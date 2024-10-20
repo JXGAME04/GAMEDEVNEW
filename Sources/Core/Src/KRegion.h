@@ -70,6 +70,7 @@ public:
 	// 载入服务器端地图上本 region 的 obj 数据
 	BOOL		LoadServerObj(int nSubWorld, KPakFile *pFile, DWORD dwDataSize);
 	void		RenameNpc(char* &sNpcCell);//edit by phong kieu khai bao ham rename NPC
+    int         DelAllNpc(int mSubWorldID=0);
 #endif
 
 #ifndef _SERVER
@@ -135,6 +136,7 @@ public:
 	void		RemoveObj(int nIdx);
 	BOOL		AddPlayer(int nIdx);
 	BOOL		RemovePlayer(int nIdx);
+    
 };
 
 //--------------------------------------------------------------------------

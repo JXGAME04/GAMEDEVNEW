@@ -497,7 +497,7 @@ BOOL KInventory::CheckSameItemType(int nGenre, int nDetail, int nParticular, int
 	return FALSE;
 }
 
-BOOL  KInventory::FindSameItemToSort(int nIdx, int *pnIdx, int *pnX, int *pnY)//#xu ly xep chong xö lý xÕp chång
+BOOL  KInventory::FindSameItemToSort(int nIdx, int *pnIdx, int *pnX, int *pnY)//#xu ly xep chong x?l?xÕp chång
 {
 	if (!m_pArray)
 		return FALSE;
@@ -516,7 +516,9 @@ BOOL  KInventory::FindSameItemToSort(int nIdx, int *pnIdx, int *pnX, int *pnY)//
 			&& Item[*pArray].GetLevel() == Item[nIdx].GetLevel()
 			&& Item[*pArray].GetParam() == Item[nIdx].GetParam()
 			&& Item[*pArray].GetTime()->bYear == Item[nIdx].GetTime()->bYear
-			&& Item[*pArray].GetStackNum() < Def_MAX_STACK_TIENDONG
+			&& Item[*pArray].GetPlayerItemLock() == Item[nIdx].GetPlayerItemLock()
+			&& Item[*pArray].GetPlayerItemHLock() == Item[nIdx].GetPlayerItemHLock()
+			&& Item[*pArray].GetStackNum() < Item[*pArray].GetMaxStackNum()
 			)
 		{
 			*pnIdx = *pArray;

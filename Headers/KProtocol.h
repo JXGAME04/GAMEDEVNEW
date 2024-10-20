@@ -42,6 +42,15 @@ typedef struct
 	
 } NPC_PLAYER_TYPE_NORMAL_SYNC;
                  
+
+typedef struct//AutoAI by quay l¹i;
+{
+	BYTE	ProtocolType;
+	DWORD	dwID;
+	DWORD	dwTimePacker;
+	DWORD   nIdSubWorld;
+}C2SPLAYER_AI_BACKTOTOWN;
+
 typedef struct
 {
 	BYTE	ProtocolType;

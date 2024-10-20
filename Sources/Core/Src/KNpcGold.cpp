@@ -80,7 +80,7 @@ void	KNpcGold::RecoverBackData()
 
 	Npc[m_nNpcIdx].m_SkillList.RemoveNpcSkill(defNPC_GOLD_SKILL_NO);
 	Npc[m_nNpcIdx].SetAuraSkill(0);
-	KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[Npc[m_nNpcIdx].m_SubWorldIndex].szNormalDropRate);
+	//KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[Npc[m_nNpcIdx].m_SubWorldIndex].szNormalDropRate);
 
 	if (m_nGoldType < boss_none || m_nGoldType >= NpcSet.m_cGoldTemplate.m_nEffectTypeNum)
 		return;
@@ -156,7 +156,7 @@ void	KNpcGold::RandChangeGold(unsigned int ran_Range, BYTE m_nGType)
 	{
 		NPC_GOLD_RATE_2 = ran_Range;
 	}
-	if (g_Random(500000) >=  (NPC_GOLD_RATE_2))//edit by phong kieu ti le boss xanh
+	if (g_Random(200000) >=  (NPC_GOLD_RATE_2))//edit by phong kieu ti le boss xanh
 		return;
 
 	if (NpcSet.m_cGoldTemplate.m_nEffectTypeNum <= 0)
@@ -195,11 +195,12 @@ void	KNpcGold::RandChangeGold(unsigned int ran_Range, BYTE m_nGType)
 		Npc[m_nNpcIdx].SetAuraSkill(pInfo->m_dwSkill5ID);
 	}
 	
-	KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[Npc[m_nNpcIdx].m_SubWorldIndex].szGoldenDropRate);
+	//KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[Npc[m_nNpcIdx].m_SubWorldIndex].szGoldenDropRate);
 
 	Npc[m_nNpcIdx].m_Experience					*= pInfo->m_nExp;
 	Npc[m_nNpcIdx].m_CurrentExperience		*= pInfo->m_nExp;
-	Npc[m_nNpcIdx].m_CurrentLifeMax				*= pInfo->m_nLife;
+	//Npc[m_nNpcIdx].m_CurrentLifeMax				*= pInfo->m_nLife;
+	Npc[m_nNpcIdx].m_CurrentLifeMax = (Npc[m_nNpcIdx].m_CurrentLifeMax / pInfo->m_nLife) * 5;
 	Npc[m_nNpcIdx].m_CurrentLifeReplenish		*= pInfo->m_nLifeReplenish;
 	Npc[m_nNpcIdx].m_CurrentAttackRating		*= pInfo->m_nAttackRating;
 	Npc[m_nNpcIdx].m_CurrentDefend				*= pInfo->m_nDefense;

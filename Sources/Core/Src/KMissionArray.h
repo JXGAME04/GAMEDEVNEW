@@ -10,6 +10,7 @@
 template <class T, size_t ulSize>
 class KMissionArray : public KLinkArrayTemplate<T,  ulSize>
 {
+	int	 m_MissionValueC[MAX_MISSIONARRAY_VALUE_COUNT];
 	char	m_MissionValue[MAX_MISSIONARRAY_VALUE_COUNT][16];
 public:
 	BOOL	Activate()
@@ -47,6 +48,19 @@ public:
 		if (m_MissionValue[ulValueId][0])
 			nResult = atoi(m_MissionValue[ulValueId]);
 		return nResult;
+	};
+	void SetMissionValue(unsigned long ulValueId, int szValue)
+	{
+		if (ulValueId >= MAX_MISSIONARRAY_VALUE_COUNT)
+			return ;
+		m_MissionValueC[ulValueId] = szValue;
+	};
+
+	int GetMissionValueC(unsigned long ulValueId) const
+	{
+		if (ulValueId >= MAX_MISSIONARRAY_VALUE_COUNT)
+			return 0;
+		return m_MissionValueC[ulValueId];
 	};
 
 	const char* GetMissionString(unsigned long ulValueId) const

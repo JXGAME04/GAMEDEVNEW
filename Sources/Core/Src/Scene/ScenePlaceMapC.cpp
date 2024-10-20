@@ -45,6 +45,9 @@ KScenePlaceMapC::KScenePlaceMapC()
 	memset(&m_ElemsList, 0, sizeof(m_ElemsList));
 	m_pEntireMap = NULL;
 	m_DirectPos.x = m_DirectPos.y = 0;
+#ifndef _SERVER
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+#endif
 }
 
 KScenePlaceMapC::~KScenePlaceMapC()
@@ -220,6 +223,9 @@ void KScenePlaceMapC::SetShowElemsFlag(unsigned int uShowElemsFlag)
 
 BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath)
 {
+#ifndef _SERVER
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();  //reset path finder when move to new map
+#endif
 	m_bPaintLine = FALSE;
 	if (Initialize() == false)
 		return FALSE;
@@ -1081,7 +1087,7 @@ void KScenePlaceMapC::DirectFindPos(int nX, int nY, BOOL bSync, BOOL bPaintLine)
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
 	sprintf(sMsg.szMessage, "->.");
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("Tù ®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("T?®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
 
 	AutoRunTo(nDesX, nDesY);
 }
@@ -1163,6 +1169,43 @@ BOOL KScenePlaceMapC::AutoRunTo(int nX, int nY)
 	time_t start_time = time(NULL);
 	g_JXPathFinder.GetPath(current.x, current.y, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind, start_time);
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin(), current);
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.end(), target);
+
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());
+	return true;
+}
+
+
+
+BOOL KScenePlaceMapC::AutoRunToB(int nX, int nY)
+{
+	FindPathNode current, target;
+	INT nCurX, nCurY;
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
+	current.x = nCurX;
+	current.y = nCurY;
+	target.x = nX;
+	target.y = nY;
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.x = 0;
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.y = 0;
+	const int TIMEOUT_SECONDS = 5; // Set your desired timeout
+
+
+
+	if (g_JXPathFinder.FindPath(current.x, current.y, target.x, target.y))
+	{
+
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+	}
+	else {
+
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+		return false;
+	}
+	time_t start_time = time(NULL);
+	g_JXPathFinder.GetPath(current.x, current.y, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind, start_time);
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin(), current);
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.end(), target);
 
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());
 	return true;

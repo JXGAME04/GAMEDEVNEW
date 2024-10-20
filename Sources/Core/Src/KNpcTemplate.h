@@ -111,6 +111,10 @@ public:
 	static void	   GenNpcDropRate(KNpc * npc, char* szDropFile);
 	static int	   GenNpcSeries(int n1, int K, int M, int T, int H, int TH);//Gen NPC H÷ theo tÿ l÷
 	KNpcTemplate(){	m_bHaveLoadedFromTemplate = FALSE;};
+#ifdef _SERVER
+	static KItemDropRate* UpdateDropRate(const char* pszDropRateFile);
+
+#endif
 };
 extern KNpcTemplate	* g_pNpcTemplate[MAX_NPCSTYLE][MAX_NPC_LEVEL][MAX_NPC_SERIES];
 #endif

@@ -167,6 +167,7 @@ public:
 	void	SetSaveBufferPtr(void* pData);
 	int		AttachPlayer(const unsigned long lnID, GUID* pGuid, char* sHWID);
 	int		GetPlayerIndexByGuid(GUID* pGuid);
+	void	RemoveAllPlayerLixianByAccount(char* szName);
 	BOOL	GetStopGameServer() { return m_bStopGameServer; }
 	void	SetStopGameServer(BOOL bSet) { m_bStopGameServer = bSet; }
 #endif

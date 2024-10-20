@@ -12,6 +12,7 @@
 
 #include <KLittleMap.h>
 
+
 enum SYMBOL_KIND
 {
 	MapDirect,
@@ -62,12 +63,15 @@ public:
 	void PaintFindPos(int nX, int nY, int nMpsX, int nMpsY);
 	void DirectFindPos(int nX, int nY, BOOL bSync, BOOL bPaintLine);
 	BOOL AutoRunTo(int nX, int nY);
+	BOOL AutoRunToB(int nX, int nY);
 	BOOL OnDirectMap(int nX, int nY);
 	void DoDirectMap(int nX, int nY);
 	POINT m_DirectPos; 
 
 	BYTE** GetbtBarrier();
 	BYTE* GetbtBarrier(int X, int Y);
+	int			m_nMapWidth;			// 地图长(region, m_sMapRect.right - m_sMapRect.left + 1)
+	int			m_nMapHeight;			// 地图宽(region, m_sMapRect.bottom - m_sMapRect.top + 1)
 
 private:
 	bool	Initialize();	//初始化
@@ -119,6 +123,8 @@ private:
 	KSGImageContent*	m_pEntireMap;
 
 	POINT	m_EntireMapLTPosition;	
+
+	POINT	m_EndMapLTPosition;	    //右下角场景坐标
 
 	POINT	m_FocusPosition;		
 	POINT	m_PicLoadedLTPosition;	

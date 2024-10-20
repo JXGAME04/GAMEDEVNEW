@@ -253,6 +253,7 @@ public:
 	void	c2sGetCityOwnTong(int nIndex, BYTE*pProtocol);
 	void	RecoverItemCommand(int nIndex, BYTE* pProtocol);
 	void	c2sPlayerThrowAllItem(int nIndex, BYTE* pProtocol);
+	void	c2sBackToTown(int nIndex, BYTE* pProtocol);
 
 #endif
 };

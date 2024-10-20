@@ -187,6 +187,22 @@ struct KItemDropRate
 };
 #endif
 
+
+
+#define MAX_PERCENTAGE 100
+#define MIN_PERCENTAGE 0
+#define EXTRA_WIDTH 2
+
+struct Color {
+    int r, g, b, a;
+};
+
+const Color RED_BAR = {205, 38, 38, 0};
+const Color BLUE_BAR = {30, 144, 255, 0};
+const Color GRAY_BAR = {128, 128, 128, 0};
+
+
+
 class KNpc
 {
 	friend class KNpcSet;
@@ -358,6 +374,7 @@ public:
 	int			 		m_CurrentStaticMagicShieldP;
 	int					m_CurrentExpEnhance;
 	int					m_CurrentSkillEnhancePercent;
+	int					m_CurrentExpSkillsEnchance;// ExpSkills x2
 	int					m_CurrentFiveElementsEnhance;
 	int					m_CurrentFiveElementsResist;
 	int					m_CurrentManaToSkillEnhanceP;					//#khi noi cong day tang ky nang cong kich
@@ -504,6 +521,12 @@ public:
 	int					m_nTongFlag;			// 
 #endif
 private:
+//	int m_nLucky; // 
+	void DrawLifeBar(int percentage, int baseX, int baseY, KUiPlayerPaintTeamMNG *config, int offsetMember, int halfWidth);
+    void DrawManaBar(int percentage, int baseX, int baseY, KUiPlayerPaintTeamMNG *config, int offsetMember, int halfWidth);
+    void DrawBar(int baseX, int baseY, int width, int heightOffset, int height, int offsetMember, int halfWidth, int percentage, const Color& color, KUiPlayerPaintTeamMNG *config);
+	INT m_nTargetX; // Member variable to store the X coordinate of the target position
+    INT m_nTargetY; 
 	int					m_LoopFrames;			// 
 	int					m_nPlayerIdx;
 	int					m_DeathFrame;			// 
@@ -659,6 +682,10 @@ public:
 	void				GetMpsPos(int * pPosX, int *pPosY);
 #ifndef _SERVER
 	VOID				ClientGotoPos(INT nX, INT nY, INT nMode = 0);	// nMode: 0.Auto; 1.Walk; 2.Run
+	INT					  GetMapDisX(INT nIdx1, INT nIdx2);
+	INT					  GetMapDisY(INT nIdx1, INT nIdx2);
+	 static INT GetDistance(INT nIdx1, INT nIdx2, bool isX);
+	 INT calculateMapDis(INT nIdx1, INT nIdx2, bool isX);
 #endif
 	BOOL				SetActiveSkill(int nSkillIdx);
 	void				SetAuraSkill(int nSkillID);
@@ -695,6 +722,7 @@ public:
 	void				AddCurManaMax(int nMana);
 	void				CalcCurLifeReplenish();		
 	void				SetSeries(int nSeries);
+	void	            SetSex(int nSex);
 	void				GetNpcCopyFromTemplate(int nNpcTemplateId,int nLevel, int nSeries);
 	void				SetPhysicsDamage(int nMinDamage, int nMaxDamage);	
 	void				SetReviveFrame(int nReviveFrame)	//Thêi gian håi sinh
@@ -752,6 +780,10 @@ public:
 	int					DeathCalcPKValue(int nKiller);
 	int					FindAroundPlayer(const char* Name);//add by phong kiÒu using vËn tiªu
 	BOOL			CheckPlayerAround(int nPlayerIdx);
+    int					GetMagicLevel(int nLuckySoDong, int mm);
+	int					GetLevelMagic(int nTotalLucky, int mmopt);
+    void				DropRateItem(int nCount, const char* pszFileName, int nUnknow, int nItemLevel, 
+								int nItemSeries, int nBelongIdx);
 #endif
 
 #ifndef _SERVER
@@ -766,7 +798,8 @@ public:
 	int					SetChatInfo(const char* Name, const char* pMsgBuff, unsigned short nMsgLength);
 	int					PaintLife(int nHeightOffset, bool bSelect);
 	int					PaintMana(int nHeightOffset);
-
+	int					PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPainTMG);
+	static int clamp(int val, int minVal, int maxVal);
 	void				DrawBorder();
 	int					DrawMenuState(int n);
 	void				DrawBlood();	

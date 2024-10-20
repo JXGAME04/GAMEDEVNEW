@@ -12,7 +12,7 @@
 #ifndef _SERVER
 #include <vector>
 #include <algorithm>
-
+#include "MyAssert.H"
 #include <KWin32.h>
 #include <ctime>
 

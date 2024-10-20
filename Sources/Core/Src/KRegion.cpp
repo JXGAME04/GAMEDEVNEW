@@ -232,7 +232,7 @@ TRAP_CLOSE:
 			//
 			if(g_NotAddNpcNormal) //Kh«ng add npc kind normal trong folder maps
 			{
-				if(sNpcCell.shKind == kind_dialoger)	//ChØ load c¸c npc ®èi tho¹i
+				if(sNpcCell.shKind != kind_dialoger)	//ChØ load c¸c npc ®èi tho¹i
 				{
 					NpcSet.AddNpcSet3(nSubWorld, &sNpcCell);	//Hµm add npc ë server load ë trong folder kh«ng pak
 				}
@@ -442,7 +442,7 @@ BOOL	KRegion::LoadServerNpc(int nSubWorld, KPakFile *pFile, DWORD dwDataSize)
 		//
 		if(g_NotAddNpcNormal) //Kh«ng add npc kind normal trong folder maps
 		{
-			if(sNpcCell.shKind == kind_dialoger)	//ChØ load c¸c npc ®èi tho¹i
+			if(sNpcCell.shKind != kind_dialoger)	//ChØ load c¸c npc ®èi tho¹i
 			{
 				NpcSet.AddNpcSet3(nSubWorld, &sNpcCell);	//Hµm add npc ë server load ë trong file pak
 			}
@@ -604,7 +604,44 @@ void	KRegion::LoadLittleMapData(int nX, int nY, char *lpszPath, BYTE *lpbtObstac
 	}
 }
 #endif
+#ifdef _SERVER 
+int KRegion::DelAllNpc(int mSubWorldID)
+{
+	KIndexNode *pNode = NULL;
+	KIndexNode *pTmpNode = NULL;
+	int	nCounter = 0;
+	pNode = (KIndexNode *)m_NpcList.GetHead();
+	while(pNode)
+	{
+		pTmpNode = (KIndexNode *)pNode->GetNext();
 
+		int nNpcIdx = pNode->m_nIndex;
+		if (nNpcIdx>0 && nNpcIdx<MAX_NPC && Npc[nNpcIdx].m_Kind!=kind_player && Npc[nNpcIdx].m_Doing != do_revive)
+		{
+			if (Npc[nNpcIdx].m_RegionIndex>=0  && mSubWorldID>0 && Npc[nNpcIdx].m_NpcSettingIdx==mSubWorldID)
+			{
+				   SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
+				   SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX,Npc[nNpcIdx].m_MapY, obj_npc);
+			}
+			else
+			{
+				if (Npc[nNpcIdx].m_RegionIndex>=0)
+				{
+					SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
+                    SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX,Npc[nNpcIdx].m_MapY, obj_npc);
+				}  
+			}
+
+			NpcSet.Remove(nNpcIdx);
+		    nCounter++;
+		}
+
+		pNode = pTmpNode;
+
+	}
+  return nCounter;
+}
+#endif
 void KRegion::Activate()
 {
     KIndexNode *pNode = NULL;

@@ -307,7 +307,8 @@ enum MAGIC_ATTRIB
 	magic_missle_exp_rev5,					//300
 	magic_missle_exp_end,					//301
 	magic_ignorenegativestate_p,			//302
-	magic_normal_end,						//303
+	magic_expenhance_s,						//303
+	magic_normal_end,						//304
 };
 
 extern const char MAGIC_ATTRIB_STRING[magic_normal_end + 1][100] ; 

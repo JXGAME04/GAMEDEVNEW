@@ -795,9 +795,11 @@ BOOL	KPlayerTong::ApplyInfo(int nInfoID, int nParam1, int nParam2, int nParam3, 
 	case enumTONG_APPLY_INFO_ID_MANAGER:
 		if (!m_nFlag)
 			break;
-		if (this->m_nFigure != enumTONG_FIGURE_MASTER &&
-			this->m_nFigure != enumTONG_FIGURE_DIRECTOR)
-			break;
+	/*	if (this->m_nFigure != enumTONG_FIGURE_MASTER &&
+			this->m_nFigure != enumTONG_FIGURE_DIRECTOR && 
+			this->m_nFigure != enumTONG_FIGURE_MANAGER &&
+			this->m_nFigure != enumTONG_FIGURE_MEMBER)
+			break;*/
 
 		sInfo.m_wLength = sizeof(sInfo) - 1 - sizeof(sInfo.m_szBuf);
 		if (g_pClient)
@@ -808,9 +810,11 @@ BOOL	KPlayerTong::ApplyInfo(int nInfoID, int nParam1, int nParam2, int nParam3, 
 	case enumTONG_APPLY_INFO_ID_MEMBER:
 		if (!m_nFlag)
 			break;
-		if (this->m_nFigure != enumTONG_FIGURE_MASTER &&
-			this->m_nFigure != enumTONG_FIGURE_DIRECTOR)
-			break;
+		/*	if (this->m_nFigure != enumTONG_FIGURE_MASTER &&
+			this->m_nFigure != enumTONG_FIGURE_DIRECTOR && 
+			this->m_nFigure != enumTONG_FIGURE_MANAGER &&
+			this->m_nFigure != enumTONG_FIGURE_MEMBER)
+			break;*/
 
 		sInfo.m_wLength = sizeof(sInfo) - 1 - sizeof(sInfo.m_szBuf);
 		if (g_pClient)
@@ -875,9 +879,9 @@ BOOL	KPlayerTong::CanGetManagerInfo(DWORD dwTongNameID)
 		return FALSE;
 	if (dwTongNameID != g_FileName2Id(this->m_szName))
 		return FALSE;
-	if (m_nFigure == enumTONG_FIGURE_MASTER || m_nFigure == enumTONG_FIGURE_DIRECTOR)
+	//if (m_nFigure == enumTONG_FIGURE_MASTER || m_nFigure == enumTONG_FIGURE_DIRECTOR)
+	//	return TRUE;
 		return TRUE;
-	return FALSE;
 }
 
 //-------------------------------------------------------------------------
@@ -889,9 +893,9 @@ BOOL	KPlayerTong::CanGetMemberInfo(DWORD dwTongNameID)
 		return FALSE;
 	if (dwTongNameID != g_FileName2Id(this->m_szName))
 		return FALSE;
-	if (m_nFigure == enumTONG_FIGURE_MASTER || m_nFigure == enumTONG_FIGURE_DIRECTOR)
+	//if (m_nFigure == enumTONG_FIGURE_MASTER || m_nFigure == enumTONG_FIGURE_DIRECTOR)
+	//	return TRUE;
 		return TRUE;
-	return FALSE;
 }
 
 #ifdef _SERVER

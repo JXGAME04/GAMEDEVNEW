@@ -345,7 +345,26 @@ int KNpcSet::AddNpcSet3(int nSubWorld, void* pNpcInfo)	//Hµm add npc ë server
 	KSPNpc*	pKSNpcInfo = (KSPNpc *)pNpcInfo;
 	int nMpsX = pKSNpcInfo->nPositionX;
 	int nMpsY = pKSNpcInfo->nPositionY;
+	int Map = SubWorld[nSubWorld].m_SubWorldID;
 	int	nNpcSettingIdxInfo = MAKELONG(pKSNpcInfo->nLevel, pKSNpcInfo->nTemplateID);
+	if(Map == 53 || Map == 20 || Map == 99 || Map == 101 || Map == 100 || Map == 121 || Map == 153 || Map == 174 || Map == 54 || Map == 175)
+		nNpcSettingIdxInfo = MAKELONG(10, pKSNpcInfo->nTemplateID);
+	if (Map == 21 || Map == 70 || Map == 2 || Map == 1 || Map == 78|| Map == 11|| Map == 162 || Map == 37 || Map == 80 || Map == 76)
+		nNpcSettingIdxInfo = MAKELONG(20, pKSNpcInfo->nTemplateID);
+	if (Map == 90 || Map == 92 )
+		nNpcSettingIdxInfo = MAKELONG(30, pKSNpcInfo->nTemplateID);
+	if (Map == 41 || Map == 122)
+		nNpcSettingIdxInfo = MAKELONG(40, pKSNpcInfo->nTemplateID);
+	if (Map == 125 || Map == 163)
+		nNpcSettingIdxInfo = MAKELONG(50, pKSNpcInfo->nTemplateID);
+	if (Map == 9 || Map == 56)
+		nNpcSettingIdxInfo = MAKELONG(60, pKSNpcInfo->nTemplateID);
+	if (Map == 319 || Map == 123)
+		nNpcSettingIdxInfo = MAKELONG(70, pKSNpcInfo->nTemplateID);
+	if (Map == 320 || Map == 224)
+		nNpcSettingIdxInfo = MAKELONG(80, pKSNpcInfo->nTemplateID);
+	if (Map == 225 || Map == 226 || Map == 227 || Map == 331 || Map == 332 || Map == 75 || Map == 93 || Map == 336 || Map == 340)
+		nNpcSettingIdxInfo = MAKELONG(90, pKSNpcInfo->nTemplateID);
 	//	---------------------Gen Serial cho qu¸i theo config ë MapList.txt------------------------------------	
 	pKSNpcInfo->cSeries = KNpcTemplate::GenNpcSeries(SubWorld[nSubWorld].m_NpcSeriesAuto, 
 	SubWorld[nSubWorld].m_NpcSeriesMetal, SubWorld[nSubWorld].m_NpcSeriesWood, 
@@ -361,6 +380,7 @@ int KNpcSet::AddNpcSet3(int nSubWorld, void* pNpcInfo)	//Hµm add npc ë server
 		Npc[nRet].m_Camp = pKSNpcInfo->cCamp;
 		Npc[nRet].m_CurrentCamp = pKSNpcInfo->cCamp;
 		Npc[nRet].m_Series = pKSNpcInfo->cSeries;
+		Npc[nRet].m_Type = pKSNpcInfo->bSpecialNpc;
 		pKSNpcInfo->bSpecialNpc = 1; //boss xanh
 		if (pKSNpcInfo->bSpecialNpc)
 		{
@@ -377,14 +397,20 @@ int KNpcSet::AddNpcSet3(int nSubWorld, void* pNpcInfo)	//Hµm add npc ë server
 				g_StrCpyLen(Npc[nRet].ActionScript, &pKSNpcInfo->szScript[1], sizeof(Npc[nRet].ActionScript));
 			else
 				g_StrCpyLen(Npc[nRet].ActionScript, pKSNpcInfo->szScript, sizeof(Npc[nRet].ActionScript));
-			//
+		
 			g_StrLower(Npc[nRet].ActionScript);
 			Npc[nRet].m_ActionScriptID = g_FileName2Id(Npc[nRet].ActionScript);
-			g_DebugLog("[Script]Npc %s,%d", Npc[nRet].ActionScript, Npc[nRet].m_ActionScriptID);
+			//g_DebugLog("[Script]Npc %s,%d", Npc[nRet].ActionScript, Npc[nRet].m_ActionScriptID);
 		}
 		else
 		{
 			Npc[nRet].m_ActionScriptID = 0;
+		}
+		if (Npc[nRet].m_ActionScriptID == 0)
+		{
+			g_GameSetting.GetString("NPC", "OnDeathScript", "", Npc[nRet].ActionScript, sizeof(Npc[nRet].ActionScript));
+			g_StrLower(Npc[nRet].ActionScript);
+			Npc[nRet].m_ActionScriptID = g_FileName2Id(Npc[nRet].ActionScript);
 		}
 	}
 	return nRet;
@@ -420,6 +446,7 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 
 	int nNpcSettingIdx = (short)HIWORD(nNpcSettingIdxInfo);// >> 7; //³ýÓÚ128
 	int nLevel = LOWORD(nNpcSettingIdxInfo);// & 0x7f; 
+
 	Npc[i].m_Index = i;
 	Npc[i].m_SkillList.m_nNpcIndex = i;
 	Npc[i].Load(nNpcSettingIdx, nLevel, nSeries); //Load npc viet them nSeries
@@ -432,11 +459,18 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 	Npc[i].m_uFindPathMaxTime = 0;
 	Npc[i].m_uLastFindPathTime = 0;
 
+
+
 #ifdef _SERVER
+	
 	if(SubWorld[nSubWorld].szNormalDropRate[0])	//edit by phong kieu load DropRate quai thuong
 	{
-		KNpcTemplate::GenNpcDropRate(&Npc[i], SubWorld[nSubWorld].szNormalDropRate);
+	g_GameSetting.GetString("NPC", "NormalDropRate", "", Npc[i].DropRateScript, sizeof(Npc[i].DropRateScript));
+	g_StrLower(Npc[i].DropRateScript);
+	Npc[i].m_DropRateScriptID = g_FileName2Id(Npc[i].DropRateScript);
+	//	KNpcTemplate::GenNpcDropRate(&Npc[i], SubWorld[nSubWorld].szNormalDropRate);
 	}
+	
 #endif
 	
 #ifndef _SERVER
@@ -462,6 +496,7 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 #ifndef _SERVER
 	Npc[i].m_dwRegionID = SubWorld[nSubWorld].m_Region[nRegion].m_RegionID;
 #endif
+
 
 	return i;
 }
@@ -846,7 +881,92 @@ int KNpcSet::GetAroundNpcMonster(KUiPlayerItem *pList, int nCount, int nRange)//
 	
 	return nNum;
 }
+int KNpcSet::GetAroundNpcBossMonster(KUiPlayerItem* pList, int nCount, int nRange)//Add by phong kiÒu using fkauto
+{
+	int nNum = 0;
+	//
+	if (!pList)
+		return 0;
+	//
+	int nIdx = 0;
+	while (nNum < nCount)
+	{
+		nIdx = m_UseIdx.GetNext(nIdx);
+		if (nIdx == 0)
+			break;
+		if (Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (!Npc[nIdx].IsAlive())
+			continue;
+		//
+		int nIndexPlayer = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		int nX1 = Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nXLoopPosTxt;
+		int nY1 = Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nYLoopPosTxt;
+		int nX2 = 0;
+		int nY2 = 0;
+		Npc[nIdx].GetMpsPos(&nX2, &nY2);
+		int nRangeNpc = GetDistanceMps(nX1, nY1, nX2, nY2);
+		if (nRangeNpc > nRange)
+			continue;
+		//
+		if (NpcSet.GetRelation(nIdx, nIndexPlayer) & relation_enemy)
+		{
+			if (Npc[nIdx].m_Type == boss_blue || Npc[nIdx].m_Type == boss_gold)
+			{
+				pList[nNum].nIndex = nIdx;
+				pList[nNum].uId = Npc[nIdx].m_dwID;
+				strcpy(pList[nNum].Name, Npc[nIdx].Name);
+				pList[nNum].nData = Npc[nIdx].GetMenuState();
+				nNum++;
+			}
+		}
+	}
 
+	return nNum;
+}
+int KNpcSet::GetAroundPlayerMonster(KUiPlayerItem* pList, int nCount, int nRange)//Add by phong kiÒu using fkauto
+{
+	int nNum = 0;
+	//
+	if (!pList)
+		return 0;
+	//
+	int nIdx = 0;
+	while (nNum < nCount)
+	{
+		nIdx = m_UseIdx.GetNext(nIdx);
+		if (nIdx == 0)
+			break;
+		if (Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (!Npc[nIdx].IsAlive())
+			continue;
+		//
+		int nIndexPlayer = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		int nX1 = Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nXLoopPosTxt;
+		int nY1 = Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nYLoopPosTxt;
+		int nX2 = 0;
+		int nY2 = 0;
+		Npc[nIdx].GetMpsPos(&nX2, &nY2);
+		int nRangeNpc = GetDistanceMps(nX1, nY1, nX2, nY2);
+		if (nRangeNpc > nRange)
+			continue;
+		//
+		if (NpcSet.GetRelation(nIdx, nIndexPlayer) & relation_enemy)
+		{
+			if (Npc[nIdx].m_Kind == kind_player)
+			{
+				pList[nNum].nIndex = nIdx;
+				pList[nNum].uId = Npc[nIdx].m_dwID;
+				strcpy(pList[nNum].Name, Npc[nIdx].Name);
+				pList[nNum].nData = Npc[nIdx].GetMenuState();
+				nNum++;
+			}
+		}
+	}
+
+	return nNum;
+}
 int	KNpcSet::GetAroundPlayer(KUiPlayerItem *pList, int nCount)
 {
 	int nNum = 0;
