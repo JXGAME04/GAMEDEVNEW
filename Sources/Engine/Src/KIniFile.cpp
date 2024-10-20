@@ -737,7 +737,7 @@ BOOL KIniFile::GetKeyValue(
 	DWORD	dwID;
 
 	// setup section name
-	char szSection[32] = "[";
+	char szSection[64] = "[";
 	if (pSection[0] != '[')
 	{
 		g_StrCat(szSection, pSection);
