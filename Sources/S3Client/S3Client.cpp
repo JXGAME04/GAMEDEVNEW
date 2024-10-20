@@ -234,7 +234,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 	    CSplash splash1(TEXT(".\\GameGuard/logo.bmp"), RGB(128, 128, 128));
 		splash1.ShowSplash();
-		Sleep(3000);
+		Sleep(SPLASH_TIME);
 		//  Close the splash screen
 		splash1.CloseSplash();
 	}

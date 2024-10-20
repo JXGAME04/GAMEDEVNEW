@@ -1624,7 +1624,7 @@ int Mouse_Action(Lua_State * L)
 	}
 	else
 		g_pCoreShell->LockObjectAction(0);
-
+	g_pCoreShell->ClearPathFinder();
 	g_pCoreShell->GotoWhere(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, 0);
 
 	return 0;
