@@ -113,6 +113,7 @@ public:
 	void SetPaintMode(BYTE nIndex);
 	int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam);//fkauto
 	BOOL AutoMove();
+	void ClearPathFinder();
 	void GotoWhereDirect(int x, int y, int mode);	//mode 0 is auto, 1 is walk, 2 is run
 };
 
@@ -5566,15 +5567,19 @@ BOOL KCoreShell::AutoMove()
     INT nCurX, nCurY;
     Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
     BOOL nRet = FALSE;
+	int delta = 15;
    // if (!GetPaintMode())
       // return nRet;
     if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.empty())
     {
-        if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.x == nCurX && Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.y == nCurY)
+		if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.x == nCurX && Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.y == nCurY) //in lag point, can not move
         {
             Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].AutoMoveStuckCount += 1;
             if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].AutoMoveStuckCount > 10) {
-                GotoWhereDirect(nCurX + 100, nCurY + 100, 0);
+				srand(static_cast<unsigned>(time(NULL)));
+				dX = rand() % 201 - 100; // [-100, 100]
+				dY = rand() % 201 - 100;
+				GotoWhereDirect(nCurX + dX, nCurY + dY, 0);
                 Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].AutoMoveStuckCount = 0;
             }
         }
@@ -5590,9 +5595,16 @@ BOOL KCoreShell::AutoMove()
         currentPoint.y = nCurY;
         dX = currentPoint.x & 0x1F;
         dY = currentPoint.y & 0x1F;
-        nextPoint.x = nextPoint.x + 0x10 - dX; // Anti-LAG
-        nextPoint.y = nextPoint.y + 0x10 - dY; // Anti-LAG
-        
+		//nextPoint.x = nextPoint.x + 0x10 - dX; // Anti-LAG
+		//nextPoint.y = nextPoint.y + 0x10 - dY; // Anti-LAG
+
+		if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.size() == 1) { // 1 point to move, the target point
+			g_DebugLog("1 target point left, running to %d, %d from Current %d, %d\n", nextPoint.x, nextPoint.y, currentPoint.x, currentPoint.y);
+			GotoWhereDirect(nextPoint.x, nextPoint.y, 0);
+			if (CloseToTarget(currentPoint, nextPoint, delta))
+				Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin()); //remove all point in path find
+			return false;
+		}
         if (g_JXPathFinder.GetNextStep(currentPoint, nextPoint, 2) == emKNEXTSTEP_RESULT_SUCCESS) 
         {
             // Go to next point in m_PathFind
@@ -5617,5 +5629,10 @@ BOOL KCoreShell::AutoMove()
         return FALSE; // Nothing in auto move path
 }
 
+void KCoreShell::ClearPathFinder() {
+	g_ScenePlace.bFlagMode = FALSE;
+	g_ScenePlace.bPaintMode = FALSE;
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();
+}
 
 #endif

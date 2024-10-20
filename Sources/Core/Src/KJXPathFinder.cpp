@@ -347,7 +347,13 @@ void KJXPathFinder::GetPath(int OldX, int OldY, std::vector<FindPathNode>& PathI
 		nLen++;
 		INT tempx = m_map[x][y].parent_x;
 		INT tempy = m_map[x][y].parent_y;
+		if (tempx < 0 || tempx >= m_nMapWidth)
+			x = 0;
+		else
 		x = tempx;
+		if (tempy < 0 || tempy >= m_nMapHeight) 
+			y = 0;
+		else
 		y = tempy;
 	}
 	if (nLen)

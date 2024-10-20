@@ -36,6 +36,8 @@ private:
 	int			m_nArrayIndex; //thø tù tõng con qu¸i trong m¶ng cÇn qu©y
 	int			m_nObjectIndex;
 	BYTE	m_nAttackType;
+	POINT	m_AutoMoveTarget;
+
 public:
 	BOOL	m_bFightCheckBox;	//tù ®¸nh //--------------chiÕn ®Êu-------------------
 	short		m_nFightRange;

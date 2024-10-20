@@ -405,6 +405,8 @@ public:
 		memset(m_szTeamMem, 0, sizeof(m_szTeamMem));
 	};
 	int					m_nTimeAbsent; //thêi gian v¾ng mÆt sö dông trong auto
+
+	void				ResetPathFind();
 #endif
 	char				m_szTongName[32];
 	char				m_szTongTitle[32];

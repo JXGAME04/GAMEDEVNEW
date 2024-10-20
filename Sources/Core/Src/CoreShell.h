@@ -1004,6 +1004,7 @@ struct _declspec (novtable) iCoreShell
 	virtual	void SetPaintMode(BYTE nIndex) = 0;
 	virtual int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;//fkauto
 	virtual BOOL AutoMove() = 0;
+	virtual void ClearPathFinder() = 0;
 };
 
 #ifndef CORE_EXPORTS

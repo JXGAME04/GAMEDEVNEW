@@ -533,8 +533,8 @@ BOOL KSubWorld::LoadMap(int nId)
 	sprintf(szKeyName, "%d_NpcSeriesEarth", nId);
 	IniFile.GetInteger("List", szKeyName, 0, &m_NpcSeriesEarth);
 
-	g_SetFilePath("\\maps");
-	sprintf(szFileName, "%s.wor", szPathName);//edit by phong kieu load file wor
+	g_SetFilePath("");
+	sprintf(szFileName, "\\maps\\%s.wor", szPathName);//edit by phong kieu load file wor
 	if (!IniFile.Load(szFileName))
 	{
 		printf("===[szFileName is not exists: %s]",szFileName);
@@ -1333,7 +1333,7 @@ void KSubWorld::RemovePlayer(int nRegion, int nIdx)
 	}
 }
 
-void KSubWorld::GetRandomObjPos(POINT& pos)// add by phong kiÒu r¬i item vÞ trÝ ngÉu nhiªn quanh to¹ ®é
+void KSubWorld::GetRandomObjPos(POINT& pos)// add by phong kiÒu r¬i item v?tr?ngÉu nhiªn quanh to?®é
 {
 	int i = g_Random(3);
 	POINT	posLocal = pos;

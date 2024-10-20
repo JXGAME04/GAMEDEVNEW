@@ -18,6 +18,8 @@
 #include	"KPlayerChat.h"
 #include	"Math.h"
 
+extern KScenePlaceC	g_ScenePlace;
+
 KPlayerAuto::KPlayerAuto()
 {
 	Release();
@@ -196,6 +198,8 @@ void KPlayerAuto::Release()
 	//
 	ClearNpcArrLag();
 	//
+	m_AutoMoveTarget.x = 0;
+	m_AutoMoveTarget.y = 0;
 	InitFkAutoPos(false);
 
 }
@@ -228,6 +232,7 @@ void KPlayerAuto::InitFkAuto(BOOL m_bActive)
 	{
 		AutoSendMsg("<color=cyan>kÕt thóc.<color>");
 		InitFkAutoPos(false);
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind(); //Stop all path finding using by Auto
 	}
 }
 
@@ -910,6 +915,7 @@ BOOL KPlayerAuto::FkAutoMoveMps()
 	}
 	return FALSE;
 }
+/*
 void KPlayerAuto::MoveTo(int nX, int nY) 
 {
     int nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
@@ -940,7 +946,33 @@ void KPlayerAuto::MoveTo(int nX, int nY)
 
     Player[CLIENT_PLAYER_INDEX].m_nSendMoveFrames = 0;
 }
+*/
 
+bool CloseToTarget(POINT point1, POINT point2, int delta)
+{
+	int distance = sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2));
+	g_DebugLog("Distance %d\n", distance);
+	return distance <= delta;
+}
+
+void KPlayerAuto::MoveTo(int nX, int nY)
+{
+	POINT tmpPoint;
+	tmpPoint.x = nX;
+	tmpPoint.y = nY;
+
+	if (CloseToTarget(m_AutoMoveTarget, tmpPoint, 50)) //the same moving target, ignore
+		return;
+
+	m_AutoMoveTarget.x = nX;
+	m_AutoMoveTarget.y = nY;
+
+
+	KScenePlaceMapC* m_Map = g_ScenePlace.GetKScenePlaceMapC();
+
+	//m_Map->DirectFindPos(nX/16, nY/32, 1, true);
+	m_Map->AutoRunTo(nX / 16, nY / 32);
+}
 
 void KPlayerAuto::DoActackNpc()
 {
@@ -1023,6 +1055,7 @@ void KPlayerAuto::DoActackNpc()
 	}
 	else
 	{
+		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind(); //In fight distance, clear path finder
 		if(m_bFightSelfDef == TRUE && Npc[m_nIndexFocus].m_Kind == kind_player) //cã tù vÖ vµ môc tiªu lµ player
 			FollowAtackNpc(m_nIndexFocus);
 		if( m_bFightCheckBox == TRUE && Npc[m_nIndexFocus].m_Kind == kind_normal) //cã tù ®¸nh vµ môc tiªu lµ npc
@@ -1033,6 +1066,7 @@ void KPlayerAuto::DoActackNpc()
 				{
 					m_nIndexFocus = m_nArrayFocus[m_nArrayIndex];
 					m_nArrayIndex++;
+					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();  //switch to attack new NPC, clear path finder
 				}
 			}
 			else //ch¹y hÕt m¶ng qu©y chuyÓn qua ®¸nh qu¸i

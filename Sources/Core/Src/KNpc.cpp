@@ -8573,4 +8573,8 @@ BOOL	KNpc::ExecuteScript2(char * ScriptFileName, char * szFunName, char *  szPar
 	DWORD dwScriptId = g_FileName2Id(ScriptFileName);
 	return ExecuteScript2(dwScriptId, szFunName, szParams1, szParams2);
 }
-
+#ifndef _SERVER
+void KNpc::ResetPathFind() {
+	m_PathFind.clear();
+}
+#endif
