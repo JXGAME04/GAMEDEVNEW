@@ -194,6 +194,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -383,22 +384,20 @@ copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SERVER;_DEBUG;WIN32;_WINDOWS;_USRDLL;ENGINE_EXPORTS;USE_STANDALONE_SPR;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\EngineServerDebug\</AssemblerListingLocation>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\EngineServerDebug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)\Engine.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KWin32.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\EngineServerDebug\</ObjectFileName>
-      <ProgramDataBaseFileName>.\EngineServerDebug\</ProgramDataBaseFileName>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\lib\EngineServerDebug\
-copy .\EngineServerDebug\engine.lib ..\..\lib\EngineServerDebug\engine.lib
-copy EngineServerDebug\engine.dll ..\..\..\bin\server\engine.dll
-copy EngineServerDebug\engine.pdb ..\..\..\bin\server\engine.pdb
-copy EngineServerDebug\engine.dll ..\..\..\bin\Multiserver\engine.dll
-copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
+      <Command>md "..\..\lib\x64\Engine Server Debug\"
+copy ".\\x64\Engine Server Debug\\engine.lib" "..\..\lib\\x64\Engine Server Debug\\engine.lib"
+copy ".\x64\Engine Server Debug\\engine.dll" "..\..\..\bin\server\engine.dll"
+copy ".\x64\Engine Server Debug\\engine.pdb" "..\..\..\bin\server\engine.pdb"</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -419,8 +418,8 @@ copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\EngineServerDebug\Engine.dll</OutputFile>
-      <ImportLibrary>.\EngineServerDebug\Engine.lib</ImportLibrary>
+      <OutputFile>$(IntDir)\Engine.dll</OutputFile>
+      <ImportLibrary>$(IntDir)\Engine.lib</ImportLibrary>
       <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;wsock32.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
