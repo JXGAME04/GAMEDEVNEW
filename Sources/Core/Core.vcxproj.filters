@@ -707,6 +707,15 @@
     <Library Include="..\..\Lib\EngineServerDebug\engine.lib">
       <Filter>Lib\Debug</Filter>
     </Library>
+    <Library Include="..\..\Lib\x64\lualibdll.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
+    <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
+    <Library Include="..\..\Lib\debug64\common.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Protocol.xls">
