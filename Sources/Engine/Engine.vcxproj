@@ -60,12 +60,14 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine Server Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -194,7 +196,9 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
       <Command>md ..\..\lib\EngineServerDebug\
 copy .\EngineServerDebug\engine.lib ..\..\lib\EngineServerDebug\engine.lib
 copy EngineServerDebug\engine.dll ..\..\..\bin\server\engine.dll
-copy EngineServerDebug\engine.dll ..\..\..\bin\Multiserver\engine.dll</Command>
+copy EngineServerDebug\engine.pdb ..\..\..\bin\server\engine.pdb
+copy EngineServerDebug\engine.dll ..\..\..\bin\Multiserver\engine.dll
+copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

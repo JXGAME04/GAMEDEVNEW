@@ -44,6 +44,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -56,6 +57,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -94,6 +96,7 @@
     <OutDir>.\ServerDebug\</OutDir>
     <IntDir>.\ServerDebug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>CoreServer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">
     <OutDir>.\ServerRelease\</OutDir>
@@ -243,7 +246,7 @@ md ..\..\lib\debug
 copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
 copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
 copy ServerDebug\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy ServerDebug\CoreServer.map ..\..\..\bin\server\debug\Coreserver.map
+copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
 copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\debug\Coreserver.pdb
 copy ServerDebug\CoreServer.dll ..\..\..\bin\server\debug\Coreserver.dll
 copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>

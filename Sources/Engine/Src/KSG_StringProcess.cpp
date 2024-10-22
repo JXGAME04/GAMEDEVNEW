@@ -25,38 +25,60 @@ int KSG_GetCurSec()
 #define BLOCKNUM 9
 int KSG_StringSetValue(int t, int n, int p, int v)
 {
-	if(v<0 || v>=(pow(10,t)))return n;
-	int r=0,l1=0,l2=0,i=0;
-	if (p<1 || p>BLOCKNUM/t)return n;
-	char str[BLOCKNUM],str1[BLOCKNUM],str2[BLOCKNUM];
-	while(i<BLOCKNUM){str[i]='0';i++;}i=0;
-	_itoa(n,str1,10);
-	_itoa(v,str2,10);
-	l1 = strlen(str1);
-	l2 = strlen(str2);
-	str1[l1]='\0';
-	if(l2<t){memmove(str2+(t-l2),str2,l2);while(l2<t){str2[i]='0';i++;l2++;}i=0;}
-	str2[l2]='\0';
-	memcpy(str+(BLOCKNUM-l1), str1, l1);
-	memcpy(str+((p*t)-t)+l2-t, str2, t-(l2-t));
-	str[BLOCKNUM]='\0';
-	r=atoi(str);
-	return r;
+    // Check if 'v' is within valid range
+    if (v < 0 || v >= (int)pow(10, t)) return n;
+
+    // Check if 'p' is a valid block position
+    if (p < 1 || p > BLOCKNUM / t) return n;
+
+    // Convert 'n' to a string and zero-pad it
+    char str[BLOCKNUM + 1] = { 0 }; // Use +1 to ensure null-termination
+    snprintf(str, BLOCKNUM + 1, "%09d", n); // Zero-padded string of 'n'
+
+    // Convert 'v' to a zero-padded string
+    char* str_v = (char*) malloc(t + 1); // String to hold the value of 'v'
+    if (!str_v) {
+        // If malloc fails, return the original number
+        return n;
+    }
+    snprintf(str_v, t + 1, "%0*d", t, v); // Ensure 'v' is padded to 't' digits
+
+    // Replace the appropriate block in 'str' with 'str_v'
+    int pos = (p - 1) * t; // Calculate the starting position for replacement
+    memcpy(str + pos, str_v, t); // Replace block in 'str'
+
+    // Convert the modified string back to an integer
+    int result = atoi(str);
+
+    free(str_v);
+    return result;
 }
 
 int KSG_StringGetValue(int t, int n, int p)
 {
-	int r=0,i=0,l1=0,c=0;
-	if (p<1 || p>BLOCKNUM/t)return n;
-	char str[BLOCKNUM],str1[BLOCKNUM],str2[BLOCKNUM];
-	while(i<BLOCKNUM){str[i]='0';i++;}i=0;
-	_itoa(n,str1,10);
-	l1=strlen(str1);
-	str1[l1]='\0';
-	memcpy(str+(BLOCKNUM-l1), str1, l1);
-	while(str[i]){if (p*t-t==i){while(c<t){str2[c]=str[i+c];c++;}str2[t]='\0';break;}i++;}
-	r=atoi(str2);
-	return r;
+    // Validate the block position
+    if (p < 1 || p > BLOCKNUM / t) return n;
+
+    // Convert the number to a zero-padded string
+    char str[BLOCKNUM + 1] = { 0 };  // +1 for null terminator
+    snprintf(str, BLOCKNUM + 1, "%09d", n);  // Convert 'n' to zero-padded string
+
+    // Calculate the position to extract from
+    int pos = (p - 1) * t;
+
+    // Extract 't' digits starting from position 'pos'
+    char* str_block = (char*)malloc(t + 1);// +1 for null terminator
+    if (!str_block) {
+        // If malloc fails, return the original number
+        return n;
+    }
+    strncpy(str_block, str + pos, t);  // Copy 't' digits into str_block
+
+    // Convert extracted block back to integer
+    int result = atoi(str_block);
+
+    free(str_block);
+    return result;
 }
 
 int KSG_StringGetInt(const char **ppcszString, int nDefaultValue)
