@@ -40,7 +40,8 @@ void g_DrawSpriteAlpha(void* node, void* canvas)
 	long nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
 	long nSprSkipPerLine = Clipper.left + Clipper.right;
 	int	 nAlpha;
-
+#ifdef _WIN64
+#else
 	__asm
 	{
         mov     eax, pPalette
@@ -551,6 +552,7 @@ void g_DrawSpriteAlpha(void* node, void* canvas)
         emms
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 void g_DrawSpriteAlpha(void* node, void* canvas, int nExAlpha)
@@ -592,6 +594,8 @@ void g_DrawSpriteAlpha(void* node, void* canvas, int nExAlpha)
 	WORD wAlpha = (WORD)nExAlpha;
 
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
 //---------------------------------------------------------------------------
@@ -1761,6 +1765,7 @@ loc_Draw_RightClip_End:
 loc_DrawSpriteAlpha_exit:
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 
@@ -1790,7 +1795,8 @@ void g_DrawSprite3LevelAlpha(void* node, void* canvas)
 	long nBuffNextLine = nPitch - Clipper.width * 2;// next line add
 	long nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
 	long nSprSkipPerLine = Clipper.left + Clipper.right;
-
+#ifdef _WIN64
+#else
 	__asm
 	{
         mov     eax, pPalette
@@ -2068,6 +2074,7 @@ void g_DrawSprite3LevelAlpha(void* node, void* canvas)
         emms
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 /*void g_DrawSpriteAlpha_OLD(void* node, void* canvas)

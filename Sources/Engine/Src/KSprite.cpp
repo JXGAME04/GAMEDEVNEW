@@ -434,6 +434,9 @@ int KSprite::NextFrame(int nFrame)
 int	KSprite::GetPixelAlpha(int nFrame, int x, int y)
 {
 	int	nAlpha = 0;
+
+#ifdef _WIN64
+#else
 	if (nFrame >= 0 && nFrame < m_nFrames)
 	{
 		SPRFRAME* pFrame = (SPRFRAME*)(m_pSprite + m_pOffset[nFrame].Offset);
@@ -484,6 +487,7 @@ int	KSprite::GetPixelAlpha(int nFrame, int x, int y)
 			}
 		}
 	}
+#endif
 	return nAlpha;
 }
 

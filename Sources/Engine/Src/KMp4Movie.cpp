@@ -10,6 +10,7 @@
 #include "KDebug.h"
 #include "KMemBase.h"
 #include "KKeyboard.h"
+#ifndef _WIN64
 #include "KMp4Movie.h"
 //---------------------------------------------------------------------------
 // º¯Êý:	Open
@@ -125,3 +126,4 @@ void KMp4Movie::WaitForEnd()
 	}
 }
 //---------------------------------------------------------------------------
+#endif

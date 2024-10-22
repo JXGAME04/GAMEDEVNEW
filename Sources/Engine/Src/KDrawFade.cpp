@@ -18,8 +18,8 @@
 //---------------------------------------------------------------------------
 void g_DrawFade(void* node, void* canvas)
 {
-	KDrawNode* pNode = (KDrawNode *)node;
-	KCanvas* pCanvas = (KCanvas *)canvas;
+	KDrawNode* pNode = (KDrawNode*)node;
+	KCanvas* pCanvas = (KCanvas*)canvas;
 
 	long nX = pNode->m_nX;// x coord
 	long nY = pNode->m_nY;// y coord
@@ -42,7 +42,7 @@ void g_DrawFade(void* node, void* canvas)
 		return;
 
 	// 计算屏幕下一行的偏移
-	long ScreenOffset = nPitch - Clipper.width /2 * 4;//4的倍数
+	long ScreenOffset = nPitch - Clipper.width / 2 * 4;//4的倍数
 
 	// setup local var
 	DWORD dwRGBMask1, dwRGBMask2;
@@ -57,12 +57,14 @@ void g_DrawFade(void* node, void* canvas)
 		dwRGBMask2 = 0xf81f07e0;
 	}
 
+#ifdef _WIN64
+#else
 	__asm
 	{
-//---------------------------------------------------------------------------
-// 计算 EDI 指向屏幕起点的偏移量 (以字节计)
-// edi = nPitch * Clipper.y + Clipper.x * 2 + lpBuffer
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		// 计算 EDI 指向屏幕起点的偏移量 (以字节计)
+		// edi = nPitch * Clipper.y + Clipper.x * 2 + lpBuffer
+		//---------------------------------------------------------------------------
 		mov		eax, nPitch
 		mov		ebx, Clipper.y
 		mul		ebx
@@ -71,53 +73,54 @@ void g_DrawFade(void* node, void* canvas)
 		add     eax, ebx
 		mov		edi, lpBuffer
 		add		edi, eax
-//---------------------------------------------------------------------------
-// 开始循环 
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		// 开始循环
+		//---------------------------------------------------------------------------
 		mov		ecx, Clipper.height
 
-loc_DrawFade_Loop1:
+		loc_DrawFade_Loop1 :
 		push	ecx
-		// 取得宽度
-		mov		ecx, Clipper.width
-		// 一次计算两个点
-		shr		ecx, 1
+			// 取得宽度
+			mov		ecx, Clipper.width
+			// 一次计算两个点
+			shr		ecx, 1
 
-loc_DrawFade_Loop2:
-		// 取操作数
-		mov		eax, [edi]
-		mov		ebx, eax
-		// 留下 _g1_r2_b2
-		and		eax, dwRGBMask1
-		// 留下 r1_b1_g2_
-		and		ebx, dwRGBMask2
-		// _g1_r2_b2 * nAlpha
-		imul	eax, nAlpha
-		// _g1_r2_b2 / 32
-		shr		eax, 5
-		// r1_b1_g2_ / 32, 为防止溢出,先除再乘
-		shr		ebx, 5
-		// r1_b1_g2_ * nAlpha
-		imul	ebx, nAlpha
-		// 留下 _g1_r2_b2
-		and		eax, dwRGBMask1
-		// 留下 r1_b1_g2_
-		and		ebx, dwRGBMask2
-		// 得到最后结果
-		or		eax, ebx
-		// 赋值
-		mov		[edi], eax
-		// 指针后移
-		add		edi, 4
-		// 循环继续本行
-		dec		ecx
-		jnz		loc_DrawFade_Loop2
-		// 循环下一行象素
-		add		edi, ScreenOffset
-		pop		ecx
-		dec		ecx
-		jnz		loc_DrawFade_Loop1
+			loc_DrawFade_Loop2 :
+			// 取操作数
+			mov		eax, [edi]
+			mov		ebx, eax
+			// 留下 _g1_r2_b2
+			and eax, dwRGBMask1
+			// 留下 r1_b1_g2_
+			and ebx, dwRGBMask2
+			// _g1_r2_b2 * nAlpha
+			imul	eax, nAlpha
+			// _g1_r2_b2 / 32
+			shr		eax, 5
+			// r1_b1_g2_ / 32, 为防止溢出,先除再乘
+			shr		ebx, 5
+			// r1_b1_g2_ * nAlpha
+			imul	ebx, nAlpha
+			// 留下 _g1_r2_b2
+			and eax, dwRGBMask1
+			// 留下 r1_b1_g2_
+			and ebx, dwRGBMask2
+			// 得到最后结果
+			or eax, ebx
+			// 赋值
+			mov[edi], eax
+			// 指针后移
+			add		edi, 4
+			// 循环继续本行
+			dec		ecx
+			jnz		loc_DrawFade_Loop2
+			// 循环下一行象素
+			add		edi, ScreenOffset
+			pop		ecx
+			dec		ecx
+			jnz		loc_DrawFade_Loop1
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 //---------------------------------------------------------------------------

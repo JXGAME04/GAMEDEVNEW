@@ -124,23 +124,8 @@ ENGINE_API void g_MemFree(LPVOID lpMem)
 // 返回:	void
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemCopy(PVOID lpDest, PVOID lpSrc, DWORD dwLen)
-{	
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		esi, lpSrc
-		mov		ecx, dwLen
-		mov     ebx, ecx
-		shr     ecx, 2
-		rep     movsd
-		mov     ecx, ebx
-		and     ecx, 3
-		rep     movsb
-	}
-#else
-     memcpy(lpDest, lpSrc, dwLen);
-#endif
+{
+	memcpy(lpDest, lpSrc, dwLen);
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryCopyMmx
@@ -152,35 +137,7 @@ ENGINE_API void g_MemCopy(PVOID lpDest, PVOID lpSrc, DWORD dwLen)
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemCopyMmx(PVOID lpDest, PVOID lpSrc, DWORD dwLen)
 {
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		esi, lpSrc
-		mov		ecx, dwLen
-		mov     ebx, ecx
-		shr     ecx, 3
-		jcxz	loc_copy_mmx2
-
-loc_copy_mmx1:
-
-		movq	mm0, [esi]
-		add		esi, 8
-		movq	[edi], mm0
-		add		edi, 8
-		dec		ecx
-		jnz		loc_copy_mmx1
-
-loc_copy_mmx2:
-
-		mov     ecx, ebx
-		and     ecx, 7
-		rep     movsb
-		emms
-	}
-#else
-     memcpy(lpDest, lpSrc, dwLen);
-#endif
+	memcpy(lpDest, lpSrc, dwLen);
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryComp
@@ -192,30 +149,8 @@ loc_copy_mmx2:
 //			FALSE	:	不同	
 //---------------------------------------------------------------------------
 ENGINE_API BOOL g_MemComp(PVOID lpDest, PVOID lpSrc, DWORD dwLen)
-{	
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		esi, lpSrc
-		mov		ecx, dwLen
-		mov     ebx, ecx
-		shr     ecx, 2
-		rep     cmpsd
-		jne		loc_not_equal
-		mov     ecx, ebx
-		and     ecx, 3
-		rep     cmpsb
-		jne		loc_not_equal
-	};
-	return TRUE;
-
-loc_not_equal:
-
-	return FALSE;
-#else
-     return (0 == memcmp(lpDest, lpSrc, dwLen));
-#endif
+{
+	return (0 == memcmp(lpDest, lpSrc, dwLen));
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryFill
@@ -227,26 +162,7 @@ loc_not_equal:
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, BYTE byFill)
 {
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		ecx, dwLen
-		mov		al, byFill
-		mov		ah, al
-		mov		bx, ax
-		shl		eax, 16
-		mov		ax, bx
-		mov		ebx, ecx
-		shr		ecx, 2
-		rep     stosd
-		mov     ecx, ebx
-		and		ecx, 3
-		rep     stosb
-	}
-#else
-     memset(lpDest, byFill, dwLen);
-#endif
+	memset(lpDest, byFill, dwLen);
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryFill
@@ -257,26 +173,8 @@ ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, BYTE byFill)
 // 返回:	void
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, WORD wFill)
-{	
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		ecx, dwLen
-		mov		ax, wFill
-		mov		bx, ax
-		shl		eax, 16
-		mov		ax, bx
-		mov		ebx, ecx
-		shr		ecx, 1
-		rep     stosd
-		mov     ecx, ebx
-		and		ecx, 1
-		rep     stosw
-	}
-#else
+{
      memset(lpDest, wFill & 0xff, dwLen);
-#endif
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryFill
@@ -287,18 +185,8 @@ ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, WORD wFill)
 // 返回:	void
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, DWORD dwFill)
-{	
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		ecx, dwLen
-		mov		eax, dwFill
-		rep     stosd
-	}
-#else
+{
      memset(lpDest, dwFill & 0xff, dwLen);
-#endif
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryZero
@@ -309,22 +197,7 @@ ENGINE_API void g_MemFill(PVOID lpDest, DWORD dwLen, DWORD dwFill)
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemZero(PVOID lpDest, DWORD dwLen)
 {
-#ifdef WIN32
-	__asm
-	{
-		mov		ecx, dwLen
-		mov		edi, lpDest
-		xor     eax, eax
-		mov		ebx, ecx
-		shr		ecx, 2
-		rep     stosd
-		mov     ecx, ebx
-		and		ecx, 3
-		rep     stosb
-	}
-#else
      memset(lpDest, 0, dwLen);
-#endif
 }
 //---------------------------------------------------------------------------
 // 函数:	MemoryXore
@@ -336,27 +209,9 @@ ENGINE_API void g_MemZero(PVOID lpDest, DWORD dwLen)
 //---------------------------------------------------------------------------
 ENGINE_API void g_MemXore(PVOID lpDest, DWORD dwLen, DWORD dwXor)
 {
-#ifdef WIN32
-	__asm
-	{
-		mov		edi, lpDest
-		mov		ecx, dwLen
-		mov		eax, dwXor
-		shr		ecx, 2
-		cmp		ecx, 0
-		jle		loc_xor_exit
-loc_xor_loop:
-		xor		[edi], eax
-		add		edi, 4
-		dec		ecx
-		jnz		loc_xor_loop
-loc_xor_exit:
-	}
-#else
      unsigned long *ptr = (unsigned long *)lpDest;
      while((long)dwLen > 0) {
        *ptr++ ^= dwXor;
        dwLen -= sizeof(unsigned long);
      }
-#endif
 }

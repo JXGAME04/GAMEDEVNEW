@@ -11,6 +11,7 @@
 #include "KDebug.h"
 #include "KMemBase.h"
 #include "KPakFile.h"
+#ifndef _WIN64
 #include "JpgLib.h"
 #include "KJpgFile.h"
 //---------------------------------------------------------------------------
@@ -69,3 +70,4 @@ BOOL KJpgFile::Load(LPSTR FileName, KBitmap16* lpBitmap, unsigned uRGBMask16)
 	return TRUE;
 }
 //---------------------------------------------------------------------------
+#endif

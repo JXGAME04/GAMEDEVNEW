@@ -9,6 +9,7 @@
 #include "KWin32.h"
 #include "KDebug.h"
 #include "KMemBase.h"
+#ifndef _WIN64
 #include "KMp4Audio.h"
 //---------------------------------------------------------------------------
 #define WAVE_FORMAT_MP3		85	// mp3 wave format tag value
@@ -75,3 +76,4 @@ DWORD KMp4Audio::Mp3FileSeek(LONG lOffset)
 	return m_AviFile.AudioSeek(lOffset);
 }
 //---------------------------------------------------------------------------
+#endif

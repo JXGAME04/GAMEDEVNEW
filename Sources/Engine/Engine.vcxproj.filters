@@ -865,6 +865,9 @@
     <Library Include="..\..\Lib\release\LuaLibDll.lib">
       <Filter>library files\release</Filter>
     </Library>
+    <Library Include="..\..\Lib\x64\lualibdll.lib">
+      <Filter>library files\Debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Src\DrawSpriteMP.inc">

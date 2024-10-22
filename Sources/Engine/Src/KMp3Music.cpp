@@ -10,6 +10,7 @@
 #include "KDebug.h"
 #include "KMemBase.h"
 #include "KFilePath.h"
+#ifndef _WIN64
 #include "mp3lib.h"
 #include "KMp3Music.h"
 //---------------------------------------------------------------------------
@@ -355,3 +356,4 @@ BOOL KMp3Music::Mp3FillBuffer()
 	return TRUE;
 }
 //---------------------------------------------------------------------------
+#endif

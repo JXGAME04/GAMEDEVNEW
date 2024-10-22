@@ -12,8 +12,8 @@
 
 void g_DrawBitmap16(void* node, void* canvas)
 {
-	KDrawNode* pNode = (KDrawNode *)node;
-	KCanvas* pCanvas = (KCanvas *)canvas;
+	KDrawNode* pNode = (KDrawNode*)node;
+	KCanvas* pCanvas = (KCanvas*)canvas;
 	// 对绘制区域进行裁剪
 	KClipper Clipper;
 	if (!pCanvas->MakeClip(pNode->m_nX, pNode->m_nY, pNode->m_nWidth, pNode->m_nHeight, &Clipper))
@@ -25,7 +25,7 @@ void g_DrawBitmap16(void* node, void* canvas)
 	void* pBuffer = pCanvas->LockCanvas(nPitch);
 	if (pBuffer == NULL)
 		return;
-	pBuffer = (char*)(pBuffer) + Clipper.y * nPitch;
+	pBuffer = (char*)(pBuffer)+Clipper.y * nPitch;
 	void* pBitmap = (char*)pNode->m_pBitmap;
 	int   nWidth = pNode->m_nWidth;
 
@@ -34,6 +34,8 @@ void g_DrawBitmap16(void* node, void* canvas)
 	long nBitmapOffset;
 
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
 		//使edi指向canvas绘制起点
@@ -76,32 +78,33 @@ void g_DrawBitmap16(void* node, void* canvas)
 			}
 		}
 
-		_4BYTE_ALIGN_COPY_:
+	_4BYTE_ALIGN_COPY_:
 		{
 			mov		nBitmapOffset, eax
-			_4BYTE_ALIGN_COPY_LINE_:
+				_4BYTE_ALIGN_COPY_LINE_ :
 			{
 				mov		eax, edx
-				mov		ecx, edi
-				shr		ecx, 1
-				and		ecx, 1
-				sub		eax, ecx
-				rep		movsw
-				mov		ecx, eax
-				shr		ecx, 1
-				rep		movsd
-				adc		ecx, ecx
-				rep		movsw
-				add		edi, nNextLine
-				add     esi, nBitmapOffset
-				dec		ebx
-				jne		_4BYTE_ALIGN_COPY_LINE_
-				jmp		_EXIT_WAY_
+					mov		ecx, edi
+					shr		ecx, 1
+					and ecx, 1
+					sub		eax, ecx
+					rep		movsw
+					mov		ecx, eax
+					shr		ecx, 1
+					rep		movsd
+					adc		ecx, ecx
+					rep		movsw
+					add		edi, nNextLine
+					add     esi, nBitmapOffset
+					dec		ebx
+					jne		_4BYTE_ALIGN_COPY_LINE_
+					jmp		_EXIT_WAY_
 			}
 		}
 	_EXIT_WAY_:
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -195,8 +198,8 @@ loc_DrawBitmap16_0001:
 //---------------------------------------------------------------------------
 void g_DrawBitmap16mmx(void* node, void* canvas)
 {
-	KDrawNode* pNode = (KDrawNode *)node;
-	KCanvas* pCanvas = (KCanvas *)canvas;
+	KDrawNode* pNode = (KDrawNode*)node;
+	KCanvas* pCanvas = (KCanvas*)canvas;
 
 	long nX = pNode->m_nX;// x coord
 	long nY = pNode->m_nY;// y coord
@@ -221,12 +224,14 @@ void g_DrawBitmap16mmx(void* node, void* canvas)
 	long BitmapOffset = nWidth * 2 - Clipper.width * 2;
 
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
-//---------------------------------------------------------------------------
-//  计算 EDI 指向屏幕起点的偏移量 (以字节计)
-//  edi = (nPitch*Clipper.y + nX)*2 + lpBuffer
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		//  计算 EDI 指向屏幕起点的偏移量 (以字节计)
+		//  edi = (nPitch*Clipper.y + nX)*2 + lpBuffer
+		//---------------------------------------------------------------------------
 		mov		eax, nPitch
 		mov		ebx, Clipper.y
 		mul		ebx
@@ -235,10 +240,10 @@ void g_DrawBitmap16mmx(void* node, void* canvas)
 		add     eax, ebx
 		mov		edi, lpBuffer
 		add		edi, eax
-//---------------------------------------------------------------------------
-//  初始化 ESI 指向图块数据起点 (跳过 Clipper.top 行图形数据)
-//  esi += (nWidth * Clipper.top + Clipper.left) * 2
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		//  初始化 ESI 指向图块数据起点 (跳过 Clipper.top 行图形数据)
+		//  esi += (nWidth * Clipper.top + Clipper.left) * 2
+		//---------------------------------------------------------------------------
 		mov		ecx, Clipper.top
 		mov		eax, nWidth
 		mul     ecx
@@ -246,40 +251,40 @@ void g_DrawBitmap16mmx(void* node, void* canvas)
 		add		eax, eax
 		mov		esi, lpBitmap
 		add     esi, eax
-//---------------------------------------------------------------------------
-// 以一次4个点的方式来绘制位图
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		// 以一次4个点的方式来绘制位图
+		//---------------------------------------------------------------------------
 		mov		edx, Clipper.height
 		mov		ebx, Clipper.width
 		mov		eax, 8
 
-loc_DrawBitmap16mmx_0001:
+		loc_DrawBitmap16mmx_0001:
 
 		mov		ecx, ebx
-		shr		ecx, 2
-        jz      loc_DrawBitmap16mmx_0003
+			shr		ecx, 2
+			jz      loc_DrawBitmap16mmx_0003
 
-loc_DrawBitmap16mmx_0002:
+			loc_DrawBitmap16mmx_0002 :
 
 		movq	mm0, [esi]
-		add		esi, eax
-		movq	[edi], mm0
-		add		edi, eax
-		dec		ecx
-		jnz		loc_DrawBitmap16mmx_0002
+			add		esi, eax
+			movq[edi], mm0
+			add		edi, eax
+			dec		ecx
+			jnz		loc_DrawBitmap16mmx_0002
 
-
-loc_DrawBitmap16mmx_0003:
+			loc_DrawBitmap16mmx_0003 :
 		mov		ecx, ebx
-		and		ecx, 3
-		rep		movsw
-		add     esi, BitmapOffset
-		add		edi, ScreenOffset
-		dec		edx
-		jnz		loc_DrawBitmap16mmx_0001
-		emms
+			and ecx, 3
+			rep		movsw
+			add     esi, BitmapOffset
+			add		edi, ScreenOffset
+			dec		edx
+			jnz		loc_DrawBitmap16mmx_0001
+			emms
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 //---------------------------------------------------------------------------
 // 函数:	DrawBitmap16win
@@ -289,8 +294,8 @@ loc_DrawBitmap16mmx_0003:
 //---------------------------------------------------------------------------
 void g_DrawBitmap16win(void* node, void* canvas)
 {
-	KDrawNode* pNode = (KDrawNode *)node;
-	KCanvas* pCanvas = (KCanvas *)canvas;
+	KDrawNode* pNode = (KDrawNode*)node;
+	KCanvas* pCanvas = (KCanvas*)canvas;
 
 	long nX = pNode->m_nX;// x coord
 	long nY = pNode->m_nY;// y coord
@@ -315,14 +320,15 @@ void g_DrawBitmap16win(void* node, void* canvas)
 	long BitmapOffset = nWidth * 2 + Clipper.width * 2;
 	long BitmapStarts = nWidth * (nHeight - 1) * 2;
 
-
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
-//---------------------------------------------------------------------------
-//  计算 EDI 指向屏幕起点的偏移量 (以字节计)
-//  edi = (nPitch*Clipper.y + nX)*2 + lpBuffer
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		//  计算 EDI 指向屏幕起点的偏移量 (以字节计)
+		//  edi = (nPitch*Clipper.y + nX)*2 + lpBuffer
+		//---------------------------------------------------------------------------
 		mov		eax, nPitch
 		mov		ebx, Clipper.y
 		mul		ebx
@@ -331,10 +337,10 @@ void g_DrawBitmap16win(void* node, void* canvas)
 		add     eax, ebx
 		mov		edi, lpBuffer
 		add		edi, eax
-//---------------------------------------------------------------------------
-//  初始化 ESI 指向图块数据起点 (跳过 Clipper.top 行图形数据)
-//  esi += (nWidth * Clipper.top + Clipper.left) * 2
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		//  初始化 ESI 指向图块数据起点 (跳过 Clipper.top 行图形数据)
+		//  esi += (nWidth * Clipper.top + Clipper.left) * 2
+		//---------------------------------------------------------------------------
 		mov		ecx, Clipper.top
 		mov		eax, nWidth
 		mul     ecx
@@ -344,39 +350,39 @@ void g_DrawBitmap16win(void* node, void* canvas)
 		mov		ebx, BitmapStarts
 		add		esi, ebx
 		sub     esi, eax
-//---------------------------------------------------------------------------
-// 以一次4个点的方式来绘制位图
-//---------------------------------------------------------------------------
+		//---------------------------------------------------------------------------
+		// 以一次4个点的方式来绘制位图
+		//---------------------------------------------------------------------------
 		mov		edx, Clipper.height
 		mov		ebx, Clipper.width
 		mov		eax, 8
 
-loc_DrawBitmap16win_0001:
+		loc_DrawBitmap16win_0001:
 
 		mov		ecx, ebx
-		shr		ecx, 2
-        jz      loc_DrawBitmap16win_0003
+			shr		ecx, 2
+			jz      loc_DrawBitmap16win_0003
 
-loc_DrawBitmap16win_0002:
+			loc_DrawBitmap16win_0002 :
 
 		movq	mm0, [esi]
-		movq	[edi], mm0
-		add		esi, eax
-		add		edi, eax
-		dec		ecx
-		jnz		loc_DrawBitmap16win_0002
+			movq[edi], mm0
+			add		esi, eax
+			add		edi, eax
+			dec		ecx
+			jnz		loc_DrawBitmap16win_0002
 
-loc_DrawBitmap16win_0003:
+			loc_DrawBitmap16win_0003 :
 		mov		ecx, ebx
-		and		ecx, 3
-		rep		movsw
-		sub     esi, BitmapOffset
-		add		edi, ScreenOffset
-		dec		edx
-		jnz		loc_DrawBitmap16win_0001
-		emms
+			and ecx, 3
+			rep		movsw
+			sub     esi, BitmapOffset
+			add		edi, ScreenOffset
+			dec		edx
+			jnz		loc_DrawBitmap16win_0001
+			emms
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 //---------------------------------------------------------------------------
-

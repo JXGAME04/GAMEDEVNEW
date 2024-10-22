@@ -40,6 +40,9 @@ void g_DrawSprite(void* node, void* canvas)
 	long nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
 	long nSprSkipPerLine = Clipper.left + Clipper.right;
 
+#ifdef _WIN64
+#else
+
 	__asm
 	{
 		//使edi指向buffer绘制起点,	(以字节计)	
@@ -373,6 +376,7 @@ void g_DrawSprite(void* node, void* canvas)
 		_EXIT_WAY_:
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -843,6 +847,8 @@ void g_DrawSpriteMixColor(void* node, void* canvas)
 	long nMask32 = pCanvas->m_nMask32;
 
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
 //---------------------------------------------------------------------------
@@ -1410,6 +1416,7 @@ loc_DrawSpriteMixColor_exit:
 
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1448,6 +1455,8 @@ void g_DrawSpriteWithColor(void* node, void* canvas)
     long nAlpha=pNode->m_nAlpha;
 	long nMask32 = pCanvas->m_nMask32;
 	// 绘制函数的汇编代码
+#ifdef _WIN64
+#else
 	__asm
 	{
 //---------------------------------------------------------------------------
@@ -2020,6 +2029,7 @@ loc_DrawSpriteWithColor_exit:
 
 	}
 	pCanvas->UnlockCanvas();
+#endif
 }
 
 static 	KMemClass	Buffer;

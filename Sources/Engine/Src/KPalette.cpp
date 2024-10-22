@@ -42,6 +42,8 @@ void g_Pal24ToPal16(KPAL24* pPal24, KPAL16* pPal16, int nColors)
 		//	_ASSERT(pPal24 && pPal16 && g_pDirectDraw && count > 0);
 		if (g_pDirectDraw->GetRGBBitMask16() == RGB_565)
 		{
+#ifdef _WIN64
+#else
 			_asm
 			{
 				mov		ecx, nColors
@@ -69,9 +71,13 @@ Start_Convert_565:
 					jg		Start_Convert_565
 				}
 			}
+
+#endif
 		}
 		else
 		{
+#ifdef _WIN64
+#else
 			_asm
 			{
 				mov		ecx, nColors
@@ -100,6 +106,7 @@ Start_Convert_555:
 					jg		Start_Convert_555
 				}
 			}
+#endif
 		}
 	}
 }
@@ -109,6 +116,9 @@ Start_Convert_555:
 //---------------------------------------------------------------------------
 void g_Pal16ToPal24(KPAL16* pPal16, KPAL24* pPal24, int nColors)
 {
+
+#ifdef _WIN64
+#else
 	if (pPal24 && pPal16 && nColors > 0)
 	{
 		//	_ASSERT(pPal24 && pPal16 && g_pDirectDraw && count > 0);
@@ -166,6 +176,7 @@ Start_Convert_555:
 			}
 		}
 	}
+#endif
 }
 
 //---------------------------------------------------------------------------

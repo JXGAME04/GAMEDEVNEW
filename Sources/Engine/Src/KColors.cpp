@@ -10,32 +10,44 @@
 #include "KDDraw.h"
 #include "KColors.h"
 //---------------------------------------------------------------------------
-ENGINE_API WORD (*g_RGB)(int nRed, int nGreen, int nBlue) = g_RGB565;
+ENGINE_API WORD(*g_RGB)(int nRed, int nGreen, int nBlue) = g_RGB565;
 //---------------------------------------------------------------------------
-// 函数:	Red
-// 功能:	返回一个色彩值的红色分量
-// 参数:	wColor	色彩值
-// 返回:	红色分量
+// Function: Red
+// Function: Returns the red component of a color value
+// Parameter: wColor color value
+// Return: red component
 //---------------------------------------------------------------------------
 ENGINE_API BYTE g_Red(WORD wColor)
 {
+#ifdef _WIN64
+	return static_cast<BYTE>((wColor >> 1) & 0x1F);
+#else
 	BYTE Red;
 	__asm
 	{
 		mov		ax, wColor
-		and		ax, 0x0031
+		and ax, 0x0031
 		mov		Red, al
 	}
 	return Red;
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	Red
-// 功能:	返回一个色彩值的绿色分量
-// 参数:	wColor	色彩值
-// 返回:	绿色分量
+// Function: Green
+// Function: Returns the green component of a color value
+// Parameter: wColor color value
+// Return: green component
 //---------------------------------------------------------------------------
 ENGINE_API BYTE g_Green(WORD wColor)
 {
+#ifdef _WIN64
+	long Mask16 = g_pDirectDraw->GetRGBBitMask16();
+	// Extract the green component by masking and shifting.
+	if (Mask16 == 0xFFFF)
+		return static_cast<BYTE>((wColor >> 5) & 0x07);
+	else
+		return static_cast<BYTE>((wColor >> 5) & 0x01);
+#else
 	long Mask16 = g_pDirectDraw->GetRGBBitMask16();
 	BYTE Green;
 	__asm
@@ -45,23 +57,32 @@ ENGINE_API BYTE g_Green(WORD wColor)
 		mov		edx, Mask16
 		cmp		edx, 0xffff
 		je		loc_Green_0001
-		and		ax, 0x0031
+		and ax, 0x0031
 
-loc_Green_0001:
+		loc_Green_0001:
 
-		and		ax, 0x0071
-		mov		Green, al
+		and ax, 0x0071
+			mov		Green, al
 	}
 	return Green;
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	Red
-// 功能:	返回一个色彩值的兰色分量
-// 参数:	wColor	色彩值
-// 返回:	兰色分量
+// Function: Blue
+// Function: Returns the blue component of a color value
+// Parameter: wColor color value
+// Return: blue component
 //---------------------------------------------------------------------------
 ENGINE_API BYTE g_Blue(WORD wColor)
 {
+#ifdef _WIN64
+	long Mask16 = g_pDirectDraw->GetRGBBitMask16();
+	// Extract the blue component by masking and shifting.
+	if (Mask16 == 0xFFFF)
+		return static_cast<BYTE>((wColor >> 10) & 0x1F);
+	else
+		return static_cast<BYTE>((wColor >> 1) & 0x1F);
+#else
 	long Mask16 = g_pDirectDraw->GetRGBBitMask16();
 	BYTE Blue;
 	__asm
@@ -73,144 +94,186 @@ ENGINE_API BYTE g_Blue(WORD wColor)
 		jne		loc_Blue_0001
 		shr		ax, 1
 
-loc_Blue_0001:
+		loc_Blue_0001:
 
-		and		ax, 0x0031
-		mov		Blue, al
+		and ax, 0x0031
+			mov		Blue, al
 	}
 	return Blue;
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	RGB
-// 功能:	返回一个DWORD色彩值
-// 参数:	red		红色分量
-//			green	绿色分量
-//			blue	蓝色分量
-// 返回:	色彩值
+// Function: RGB
+// Function: Return a DWORD color value
+// Parameters: red red component
+// green green component
+// blue blue component
+// Return: color value
 //---------------------------------------------------------------------------
 ENGINE_API WORD g_RGB555(int nRed, int nGreen, int nBlue)
 {
+#ifdef _WIN64
+	// Create a 16-bit color value by combining the red, green, and blue components.
+	return static_cast<WORD>(((nRed & 0x1F) << 10) | ((nGreen & 0x1F) << 5) | (nBlue & 0x1F));
+#else
 	WORD wColor;
 	__asm
 	{
-		xor		ecx, ecx
+		xor ecx, ecx
 		mov		ebx, 0xff
 		mov		eax, nRed
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 3
 		shl		eax, 10
-		or		ecx, eax
+		or ecx, eax
 		mov		eax, nGreen
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 3
 		shl		eax, 5
-		or		ecx, eax
+		or ecx, eax
 		mov		eax, nBlue
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 3
-		or		ecx, eax
+		or ecx, eax
 		mov		wColor, cx
 	}
 	return wColor;
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	RGB
-// 功能:	返回一个DWORD色彩值
-// 参数:	red		红色分量
-//			green	绿色分量
-//			blue	蓝色分量
-// 返回:	色彩值
+// Function: RGB
+// Function: Return a DWORD color value
+// Parameters: red red component
+// green green component
+// blue blue component
+// Return: color value
 //---------------------------------------------------------------------------
 ENGINE_API WORD g_RGB565(int nRed, int nGreen, int nBlue)
 {
+#ifdef _WIN64
+	// Create a 16-bit color value by combining the red, green, and blue components.
+	return static_cast<WORD>(((nRed & 0x1F) << 11) | ((nGreen & 0x3F) << 5) | (nBlue & 0x1F));
+#else
 	WORD wColor;
 	__asm
 	{
-		xor		ecx, ecx
+		xor ecx, ecx
 		mov		ebx, 0xff
 		mov		eax, nRed
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 3
 		shl		eax, 11
-		or		ecx, eax
+		or ecx, eax
 		mov		eax, nGreen
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 2
 		shl		eax, 5
-		or		ecx, eax
+		or ecx, eax
 		mov		eax, nBlue
-		and		eax, ebx
+		and eax, ebx
 		shr		eax, 3
-		or		ecx, eax
+		or ecx, eax
 		mov		wColor, cx
 	}
 	return wColor;
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	555 To 565
-// 功能:	555格式转化为565格式
-// 参数:	nWidth      宽度
-//			nHeight	    高度
-//			lpBitmap	位图
-// 返回:	void
+// Function: 555 To 565
+// Function: Convert 555 format to 565 format
+// Parameter: nWidth width
+// nHeight height
+// lpBitmap bitmap
+// Return: void
 //---------------------------------------------------------------------------
 void g_555To565(int nWidth, int nHeight, void* lpBitmap)
 {
+#ifdef _WIN64
+	WORD* pBitmap = static_cast<WORD*>(lpBitmap);
+
+	for (int y = 0; y < nHeight; y++)
+	{
+		for (int x = 0; x < nWidth; x++)
+		{
+			// Convert 555 to 565 format.
+			WORD color555 = *pBitmap;
+			WORD color565 = g_RGB565(g_Red(color555), g_Green(color555), g_Blue(color555));
+			*pBitmap = color565;
+			pBitmap++;
+		}
+	}
+#else
 	__asm
 	{
 		mov		esi, lpBitmap
 		mov		edx, nHeight
 
-loc_555to565_loop1:
+		loc_555to565_loop1 :
 		mov		ecx, nWidth
 
-loc_555to565_loop2:
+			loc_555to565_loop2 :
 		mov		ax, [esi]
-		mov		bx, ax
-		shr		ax, 5
-		shl		ax, 6
-		and		bx, 0x001f
-		or		ax, bx
-		mov		[esi], ax
-		add		esi, 2
-		dec		ecx
-		jnz		loc_555to565_loop2
-		dec		edx
-		jnz		loc_555to565_loop1
+			mov		bx, ax
+			shr		ax, 5
+			shl		ax, 6
+			and bx, 0x001f
+			or ax, bx
+			mov[esi], ax
+			add		esi, 2
+			dec		ecx
+			jnz		loc_555to565_loop2
+			dec		edx
+			jnz		loc_555to565_loop1
 	}
+#endif
 }
 //---------------------------------------------------------------------------
-// 函数:	565 To 555
-// 功能:	565格式转化为555格式
-// 参数:	nWidth      宽度
-//			nHeight	    高度
-//			lpBitmap	位图
-// 返回:	void
+// Function: 565 To 555
+// Function: Convert 565 format to 555 format
+// Parameter: nWidth width
+// nHeight height
+// lpBitmap bitmap
+// Return: void
 //---------------------------------------------------------------------------
 void g_565To555(int nWidth, int nHeight, void* lpBitmap)
 {
+#ifdef _WIN64
+	WORD* pBitmap = static_cast<WORD*>(lpBitmap);
+
+	for (int y = 0; y < nHeight; y++)
+	{
+		for (int x = 0; x < nWidth; x++)
+		{
+			// Convert 565 to 555 format.
+			WORD color565 = *pBitmap;
+			WORD color555 = g_RGB555(g_Red(color565), g_Green(color565), g_Blue(color565));
+			*pBitmap = color555;
+			pBitmap++;
+		}
+	}
+#else
 	__asm
 	{
 		mov		esi, lpBitmap
 		mov		edx, nHeight
 
-loc_565to555_loop1:
+		loc_565to555_loop1 :
 		mov		ecx, nWidth
 
-loc_565to555_loop2:
+			loc_565to555_loop2 :
 		mov		ax, [esi]
-		mov		bx, ax
-		shr		ax, 6
-		shl		ax, 5
-		and		bx, 0x001f
-		or		ax, bx
-		mov		[esi], ax
-		add		esi, 2
-		dec		ecx
-		jnz		loc_565to555_loop2
-		dec		edx
-		jnz		loc_565to555_loop1
+			mov		bx, ax
+			shr		ax, 6
+			shl		ax, 5
+			and bx, 0x001f
+			or ax, bx
+			mov[esi], ax
+			add		esi, 2
+			dec		ecx
+			jnz		loc_565to555_loop2
+			dec		edx
+			jnz		loc_565to555_loop1
 	}
+#endif
 }
 //---------------------------------------------------------------------------
-
