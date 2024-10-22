@@ -503,7 +503,10 @@ void KFont3::GetFontSize(int* pWidth, int* pHeight)
 //设置绘制时字符边缘的颜色，如alpha为0表示字符边缘不单独处理
 void KFont3::SetBorderColor(unsigned int uColor)
 {
-	ms_uBorderColor = uColor;
+	if (!uColor)
+		ms_uBorderColor = 0xff000000;	// veg load font ne, vien den chu~
+	else
+		ms_uBorderColor = uColor;
 }
 
 //设置字符绘制缩进
