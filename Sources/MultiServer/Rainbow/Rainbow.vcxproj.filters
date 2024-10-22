@@ -64,6 +64,9 @@
     <Library Include="..\..\..\Lib\release\common.lib">
       <Filter>Lib\release</Filter>
     </Library>
+    <Library Include="..\..\..\Lib\debug64\common.lib">
+      <Filter>Lib\debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Rainbow.def">

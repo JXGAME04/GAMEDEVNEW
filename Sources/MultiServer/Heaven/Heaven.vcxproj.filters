@@ -64,6 +64,9 @@
     <Library Include="..\..\..\Lib\release\common.lib">
       <Filter>Lib\Release</Filter>
     </Library>
+    <Library Include="..\..\..\Lib\debug64\common.lib">
+      <Filter>Lib\Debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Interface.txt" />
