@@ -30,13 +30,21 @@
 //{
 	void _trace(char *fmt, ...);
 
-	#ifndef ASSERT
-		#define ASSERT(x) { if ( !( x ) ) _asm{ int 0x03 } }
-	#endif
+#ifndef ASSERT
+#ifdef _WIN64
+#define ASSERT(x) { if (!(x)) __debugbreak(); }
+#else
+#define ASSERT(x) { if (!(x)) _asm { int 0x03 } }
+#endif
+#endif
 
-	#ifndef VERIFY
-	#define VERIFY(x) { if ( !( x ) ) _asm{ int 0x03 } }
-	#endif
+#ifndef VERIFY
+#ifdef _WIN64
+#define VERIFY(x) { if (!(x)) __debugbreak(); }
+#else
+#define VERIFY(x) { if (!(x)) _asm { int 0x03 } }
+#endif
+#endif
 //}
 #else
 //{

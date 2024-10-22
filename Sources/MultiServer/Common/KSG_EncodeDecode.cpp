@@ -37,6 +37,9 @@ int KSG_DecodeEncode(size_t uSize, unsigned char *pbyBuf, unsigned *puKey)
 
 int KSG_DecodeEncode_ASM(size_t uSize, unsigned char *pbyBuf, unsigned *puKey)
 {
+#ifdef _WIN64
+    return KSG_DecodeEncode(uSize, pbyBuf, puKey);
+#elif WIN32
     __asm mov eax, [uSize]
     __asm mov esi, [puKey]
     __asm mov edi, [pbyBuf]
@@ -77,4 +80,5 @@ int KSG_DecodeEncode_ASM(size_t uSize, unsigned char *pbyBuf, unsigned *puKey)
     __asm mov [esi], edx
 
     return true;
+#endif
 }

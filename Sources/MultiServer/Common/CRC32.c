@@ -218,7 +218,7 @@ unsigned CRC32_C(unsigned CRC, const void *pvBuf, int nLen)
 //unsigned CRC32_ASM(unsigned CRC, const void *pvBuf, int nLen)
 unsigned CRC32(unsigned CRC, const void *pvBuf, int nLen)
 {
-#ifndef WIN32
+#ifdef _WIN64
 	return CRC32_C(CRC, pvBuf, nLen);
 #else
     unsigned RetCode = 0;
