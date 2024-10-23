@@ -990,7 +990,7 @@ void KSwordOnLineSever::MessageLoop()
 	int i;
 	const char*		pChar = NULL;
 	const char*		pClientInfo = NULL;
-	unsigned int	uSize = 0;
+	size_t	uSize = 0;
 
 #ifndef _STANDALONE
 	CCriticalSection::Owner locker( g_csFlow );
@@ -3445,7 +3445,7 @@ void KSwordOnLineSever::ExitAllPlayer()
 
 	int lnID;
 	const char*	pData;
-	unsigned int	uSize;
+	size_t	uSize;
 	tagLeaveGame	sLeaveGame;	
 
 	sLeaveGame.cProtocol = c2s_leavegame;

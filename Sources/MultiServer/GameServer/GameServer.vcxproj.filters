@@ -95,6 +95,15 @@
     <Library Include="..\..\..\Lib\debug\engine.lib">
       <Filter>Lib\debug</Filter>
     </Library>
+    <Library Include="..\..\..\Lib\x64\Engine Server Debug\engine.lib">
+      <Filter>Lib\debug</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\debug64\CoreServer.lib">
+      <Filter>Lib\debug</Filter>
+    </Library>
+    <Library Include="..\..\..\Lib\debug64\common.lib">
+      <Filter>Lib\debug</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
