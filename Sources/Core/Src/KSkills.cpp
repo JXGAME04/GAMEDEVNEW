@@ -1034,7 +1034,7 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 					Missle[nMissleIndex].m_nDirIndex		= g_Dir2DirIndex(nDir, MaxMissleDir);
 					CreateMissle(nLauncher, m_nChildSkillId, nMissleIndex);
 					Missle[nMissleIndex].m_nFollowNpcIdx	= pSkillParam->nTargetId;
-					if (pSkillParam->nTargetId)
+					if (pSkillParam->nTargetId > 0)
 						Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 					Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 					Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;
@@ -1149,7 +1149,7 @@ int		KSkill::CastLine(TOrdinSkillParam *pSkillParam, int nDir, int nRefPX, int n
 			Missle[nMissleIndex].m_nDirIndex		= nDirIndex;
 			CreateMissle(nLauncher, m_nChildSkillId, nMissleIndex);
 			Missle[nMissleIndex].m_nFollowNpcIdx	= pSkillParam->nTargetId;
-			if (pSkillParam->nTargetId)
+			if (pSkillParam->nTargetId > 0)
 				Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 			Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 			Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;
@@ -1250,7 +1250,7 @@ int		KSkill::CastExtractiveLineMissle(TOrdinSkillParam* pSkillParam,  int nDir,i
 			}
 			
 			Missle[nMissleIndex].m_nFollowNpcIdx	= pSkillParam->nTargetId;
-			if (pSkillParam->nTargetId)
+			if (pSkillParam->nTargetId > 0)
 				Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 			Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 			Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;
@@ -1382,7 +1382,7 @@ int KSkill::CastWall(TOrdinSkillParam * pSkillParam,  int nDir , int nRefPX , in
 			Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;
 			CreateMissle(nLauncher, m_nChildSkillId, nMissleIndex);
 			Missle[nMissleIndex].m_nFollowNpcIdx	= pSkillParam->nTargetId;
-			if (pSkillParam->nTargetId)
+			if (pSkillParam->nTargetId > 0)
 				Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 			Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 			Missle[nMissleIndex].m_nLauncher		= nLauncher;
@@ -1494,7 +1494,7 @@ int		KSkill::CastCircle(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 			CreateMissle(nLauncher, m_nChildSkillId, nMissleIndex);
 			
 			Missle[nMissleIndex].m_nFollowNpcIdx	= pSkillParam->nTargetId;
-			if (pSkillParam->nTargetId)
+			if (pSkillParam->nTargetId > 0)
 				Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 			Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 			Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;
@@ -1585,7 +1585,7 @@ int		KSkill::CastSpread(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 	{
 		int nTargetId = pSkillParam->nTargetId;
 		int nDistance = 0;
-		int nDesX, nDesY;
+		int nDesX = 0, nDesY = 0;
 		if (Npc[nTargetId].m_Index > 0 && Npc[nTargetId].m_SubWorldIndex >= 0) 
 			SubWorld[Npc[nTargetId].m_SubWorldIndex].Map2Mps(Npc[nTargetId].m_RegionIndex, Npc[nTargetId].m_MapX, Npc[nTargetId].m_MapY, Npc[nTargetId].m_OffX, Npc[nTargetId].m_OffY, &nDesX, &nDesY);
 		
@@ -1658,7 +1658,7 @@ int		KSkill::CastSpread(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 			Missle[nMissleIndex].m_nDirIndex		= g_Dir2DirIndex(nCurSubDir, MaxMissleDir);
 			CreateMissle(nLauncher, m_nChildSkillId, nMissleIndex);
 			Missle[nMissleIndex].m_nFollowNpcIdx	= nTargetId;
-			if (pSkillParam->nTargetId)
+			if (pSkillParam->nTargetId > 0)
 				Missle[nMissleIndex].m_dwFollowNpcID	= Npc[pSkillParam->nTargetId].m_dwID;
 			Missle[nMissleIndex].m_dwBornTime		= SubWorld[nSubWorldId].m_dwCurrentTime;
 			Missle[nMissleIndex].m_nSubWorldId		= nSubWorldId;

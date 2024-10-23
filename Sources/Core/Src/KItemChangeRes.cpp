@@ -31,7 +31,7 @@ BOOL KItemChangeRes::Init()
 
 int	KItemChangeRes::GetWeaponRes(int nDetail, int nParti, int nLevel)
 {
-	int nRet;
+	int nRet = 0;
 	if (nLevel == 0)
 	{
 		m_MeleeWeapon.GetInteger(2, 2, 2, &nRet);

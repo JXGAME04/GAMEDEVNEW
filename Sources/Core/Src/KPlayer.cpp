@@ -5551,7 +5551,7 @@ void KPlayer::BackToTownPortal(int nIdSubWorld)
 		}
 		else
 		{
-			int nX, nY;
+			int nX = 0, nY = 0;
 			if (nIdSubWorld == 75)
 			{
 				nX = 53504;

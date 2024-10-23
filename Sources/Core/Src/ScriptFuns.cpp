@@ -4058,7 +4058,7 @@ int LuaGetItemCount(Lua_State * L)
 		int nPlayerIndex = GetPlayerIndex(L);
 		if (nPlayerIndex > 0)
 		{
-			int nItemNature, nItemGenre, nDetailType, nParticularType, nLevel, nSeries, Place = pos_equiproom;
+			int nItemNature = 0, nItemGenre = 0, nDetailType = 0, nParticularType = 0, nLevel = 0, nSeries = 0, Place = pos_equiproom;
 			nItemNature = nItemGenre = nDetailType = nLevel = nSeries = -1;
 
 			nItemNature = (int)Lua_ValueToNumber(L, 1);

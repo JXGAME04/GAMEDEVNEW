@@ -476,7 +476,7 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <AdditionalIncludeDirectories>..\engine\src;..\..\Headers;..\engine\include;..\Network;Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_SERVER;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\x64\ServerDebug\</AssemblerListingLocation>
@@ -486,7 +486,7 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
       <ObjectFileName>.\x64\ServerDebug\</ObjectFileName>
       <ProgramDataBaseFileName>.\x64\ServerDebug\</ProgramDataBaseFileName>
-      <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 </AdditionalOptions>
+      <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 /w34262 /w34459 /w34469</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>

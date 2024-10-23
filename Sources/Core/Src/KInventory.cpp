@@ -334,7 +334,7 @@ BOOL	KInventory::FindEmptyPlace(int nWidth, int nHeight, POINT *pPos)
 	if (!pPos || nWidth <= 0 || nHeight <= 0 || nWidth > m_nWidth || nHeight > m_nHeight)
 		return FALSE;
 
-	int		i, j, nIdx, a, b, nFind;
+	int		i = 0, j = 0, nIdx = 0, a = 0, b = 0, nFind = 0;
 	for (i = 0; i < m_nHeight - nHeight + 1; i++)
 	{
 		for (j = 0; j < m_nWidth - nWidth + 1; )

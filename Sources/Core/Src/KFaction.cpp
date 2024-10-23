@@ -21,7 +21,7 @@ BOOL	KFaction::Init()
 	char		szSection[80], szBuffer[32];
 	char		szSeries[series_num][16] = {"金", "木", "水", "火", "土"};
 	char		szCamp[camp_num][16] = {"新手", "正派", "邪派", "中立", "杀手", "野兽", "路人"};
-	int			i, j, k, nArrayPos;
+	int			i = 0, j = 0, k = 0, nArrayPos = 0;
 
 	for (i = 0; i < MAX_FACTION; i++)
 	{

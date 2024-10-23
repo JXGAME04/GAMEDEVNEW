@@ -275,7 +275,13 @@ void KNpc::Init()
 	m_bHaveLoadedFromTemplate = FALSE;
 	m_bClientOnly = FALSE;
 	m_bWaitingPlayerFeedBack	= false;
-	m_btTryExecuteScriptTimes	= 0;	
+	m_btTryExecuteScriptTimes	= 0;
+	memset(Owner, 0, sizeof(Owner));
+	m_CurrentRangeDmgRetPercent = 0;
+	m_CurrentMeleeDmgRetPercent = 0;
+	m_CurrentMeleeDmgRet = 0;
+	m_CurrentRangeDmgRet = 0;
+	m_CurrentReturnResPercent = 0;
 }
 
 ISkill* KNpc::GetActiveSkill()
@@ -6826,7 +6832,7 @@ void KNpc::DeathPunish(int nMode, int nBelongPlayer)
 
 			if (Player[m_nPlayerIdx].m_nExp >= 0) //fix by phong kiÒu nh©n vËt chÕt mµ céng thªm exp v× v­ît miÒn kiÓu int
 			{
-				double nSubExp;
+				double nSubExp = 0;
 				if (m_Level <= 10)
 					nSubExp = PlayerSet.m_cLevelAdd.GetLevelExp(m_Level)/5;
 				else if (m_Level <= 50)
