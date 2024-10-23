@@ -508,7 +508,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		return FALSE;
 	}
 
-	m_pCoreServerShell->OperationRequest(SSOI_LAUNCH, (unsigned int)pCloneServer, 0);
+	m_pCoreServerShell->OperationRequest(SSOI_LAUNCH, (intptr_t)pCloneServer, 0);
 
 	/*
 	 * Connect to database
@@ -1113,7 +1113,7 @@ void KSwordOnLineSever::ChatMessageProcess(const char *pChar, size_t nSize)
 	case chat_everyone:
 		{{
 		CHAT_EVERYONE* pCeo = (CHAT_EVERYONE*)pChar;
-		m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (unsigned int)(pCeo + 1), pCeo->wChatLength);
+		m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (intptr_t)(pCeo + 1), pCeo->wChatLength);
 		}}
 		break;
 	default:
@@ -1203,7 +1203,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				memcpy(sSuccess.m_szTongName, pSync->m_szTongName, pSync->m_btTongNameLength);
 				sSuccess.m_szTongName[pSync->m_btTongNameLength] = 0;
 
-				if (m_pCoreServerShell->OperationRequest(SSOI_TONG_CREATE, (unsigned int)&sSuccess, 0))
+				if (m_pCoreServerShell->OperationRequest(SSOI_TONG_CREATE, (intptr_t)&sSuccess, 0))
 				{
 				}
 				else
@@ -1238,7 +1238,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				memcpy(sAdd.m_szTitleName, pSync->m_szTitleName, sizeof(sAdd.m_szTitleName));
 				memcpy(sAdd.m_szTongName, pSync->m_szTongName, sizeof(sAdd.m_szTongName));
 
-				if (m_pCoreServerShell->OperationRequest(SSOI_TONG_ADD, (unsigned int)&sAdd, 0))
+				if (m_pCoreServerShell->OperationRequest(SSOI_TONG_ADD, (intptr_t)&sAdd, 0))
 				{
 				}
 				else
@@ -1366,7 +1366,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				sInstated.m_btPos = pSync->m_btPos;
 				memcpy(sInstated.m_szName, pSync->m_szName, sizeof(pSync->m_szName));
 				memcpy(sInstated.m_szTitle, pSync->m_szTitle, sizeof(pSync->m_szTitle));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_INSTATED, (unsigned int)&sInstated, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_INSTATED, (intptr_t)&sInstated, 0);
 			}
 			break;
 
@@ -1435,7 +1435,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				sKicked.m_btFigure = pSync->m_btFigure;
 				sKicked.m_btPos = pSync->m_btPos;
 				memcpy(sKicked.m_szName, pSync->m_szName, sizeof(pSync->m_szName));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_KICKED, (unsigned int)&sKicked, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_KICKED, (intptr_t)&sKicked, 0);
 			}
 			break;
 
@@ -1446,7 +1446,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				sLeave.m_nPlayerIdx = pSync->m_dwParam;
 				sLeave.m_bSuccessFlag = pSync->m_btSuccessFlag;
 				memcpy(sLeave.m_szName, pSync->m_szName, sizeof(pSync->m_szName));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_LEAVE, (unsigned int)&sLeave, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_LEAVE, (intptr_t)&sLeave, 0);
 			}
 			break;
 
@@ -1464,7 +1464,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 
 				int nRet = 0;
 				if (m_pCoreServerShell)
-					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_MASTER_POWER, (unsigned int)&sCheck, 0);
+					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_MASTER_POWER, (intptr_t)&sCheck, 0);
 
 				STONG_ACCEPT_MASTER_COMMAND	sAccept;
 
@@ -1532,7 +1532,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				memcpy(sChange.m_szTitle, pAs->m_szTitle, sizeof(pAs->m_szTitle));
 				// 新帮主的名字
 				memcpy(sChange.m_szName, pAs->m_szName, sizeof(pAs->m_szName));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_AS, (unsigned int)&sChange, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_AS, (intptr_t)&sChange, 0);
 			}
 			break;
 
@@ -1542,7 +1542,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				STONG_SERVER_TO_CORE_CHANGE_MASTER	sChange;
 				sChange.m_dwTongNameID = pMaster->m_dwTongNameID;
 				memcpy(sChange.m_szName, pMaster->m_szName, sizeof(pMaster->m_szName));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MASTER, (unsigned int)&sChange, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MASTER, (intptr_t)&sChange, 0);
 			}
 			break;
 
@@ -1561,7 +1561,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				memcpy(sLogin.m_szTitle, pLogin->m_szTitle, sizeof(pLogin->m_szTitle));
 				memcpy(sLogin.m_szMaster, pLogin->m_szMaster, sizeof(pLogin->m_szMaster));
 				memcpy(sLogin.m_szName, pLogin->m_szName, sizeof(pLogin->m_szName));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_LOGIN, (unsigned int)&sLogin, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_LOGIN, (intptr_t)&sLogin, 0);
 			}
 			break;
 		case enumS2C_TONG_LOGIN_LIMIT:
@@ -1571,7 +1571,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				{
 					DWORD nIdx = pLogin->m_dwTongNameID;
 					char	szName[32];
-					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIdx);
+					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIdx);
 					cout << "=> Acc [" << szName << "] HWID [" << pLogin->m_szName << "] limit login <=" << endl;
 					m_pCoreServerShell->RemovePlayerForLimit(nIdx);
 				}
@@ -1626,7 +1626,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				
 				int nRet = 0;
 				if (m_pCoreServerShell)
-					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_TITLE_POWER, (unsigned int)&sCheck, 0);
+					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_TITLE_POWER, (intptr_t)&sCheck, 0);
 				STONG_ACCEPT_TITLE_COMMAND	sAccept;
 				sAccept.ProtocolFamily	= pf_tong;
 				sAccept.ProtocolID		= enumC2S_TONG_ACCEPT_TITLE;
@@ -1653,7 +1653,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				STONG_SERVER_TO_CORE_BE_CHANGED_TITLE	sSync;
 				sSync.m_nPlayerIdx = m_pGameStatus[pSync->m_dwParam].nPlayerIndex;
 				memcpy(sSync.m_szTitle, pSync->m_szTitle, sizeof(pSync->m_szTitle));
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_TITLE, (unsigned int)&sSync, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_TITLE, (intptr_t)&sSync, 0);
 			}
 			break;
 		case enumS2C_TONG_MONEY_SAVE:
@@ -1667,7 +1667,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				pChange.m_nPlayerIdx = pMoney->m_dwParam;
 				if (pChange.m_nPlayerIdx <= 0)
 					break;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (unsigned int)&pChange, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (intptr_t)&pChange, 0);
 			}
 			break;
 			
@@ -1682,7 +1682,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				pChange.m_nPlayerIdx = pMoney->m_dwParam;
 				if (pChange.m_nPlayerIdx <= 0)
 					break;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (unsigned int)&pChange, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (intptr_t)&pChange, 0);
 			}
 			break;
 			
@@ -1697,7 +1697,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				pChange.m_nPlayerIdx = pMoney->m_dwParam;
 				if (pChange.m_nPlayerIdx <= 0)
 					break;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (unsigned int)&pChange, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MONEY, (intptr_t)&pChange, 0);
 			}
 			break;
 			
@@ -1709,7 +1709,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				STONG_SERVER_TO_CORE_BE_CHANGED_CAMP	sSync;
 				sSync.m_nPlayerIdx = m_pGameStatus[pSync->m_dwParam].nPlayerIndex;
 				sSync.m_nCamp = pSync->m_btCamp;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_CAMP, (unsigned int)&sSync, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_CAMP, (intptr_t)&sSync, 0);
 			}
 			break;
 
@@ -1721,7 +1721,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				STONG_SERVER_TO_CORE_BE_CHANGED_RECRUIT	sSync;
 				sSync.m_nPlayerIdx = m_pGameStatus[pSync->m_dwParam].nPlayerIndex;
 				sSync.m_nRecruit = pSync->m_btRecruit;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_RECRUIT, (unsigned int)&sSync, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_RECRUIT, (intptr_t)&sSync, 0);
 			}
 			break;
 
@@ -1733,7 +1733,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				STONG_SERVER_TO_CORE_BE_CHANGED_LEVEL	sSync;
 				sSync.m_nPlayerIdx = m_pGameStatus[pSync->m_dwParam].nPlayerIndex;
 				sSync.m_nLevel = pSync->m_nTongLevel;
-				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_LEVEL, (unsigned int)&sSync, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_LEVEL, (intptr_t)&sSync, 0);
 			}
 			break;
 
@@ -2193,7 +2193,7 @@ void KSwordOnLineSever::TransferSmallPackProcess(const void *pData, size_t dataL
 				sLeaveGame.cProtocol = c2s_leavegame;
 				sLeaveGame.cCmdType = HOLDACC_LEAVEGAME;
 				char	szName[32];
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
 				sLeaveGame.nExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINTCHANGED, nIndex, 0);
 				strcpy((char *)sLeaveGame.szAccountName, (char *)szName);
 				if(m_pGatewayClient)
@@ -2214,7 +2214,7 @@ void KSwordOnLineSever::TransferSmallPackProcess(const void *pData, size_t dataL
 					m_pTongClient->SendPackToServer(&lg2, sizeof(tagLeaveGame2));
 
 				char	szName_2[32];
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szName_2, nIndex);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 				cout << "=> Acc [" << sLeaveGame.szAccountName << "] Nhan Vat [" << szName_2 << "] thoat game exchangein <=" << endl;//edit by phong kieu leave game
 				m_pGameStatus[lnID].nExchangeStatus = enumExchangeCleaning;
 				m_pGameStatus[lnID].nPlayerIndex = 0;
@@ -2234,7 +2234,7 @@ void KSwordOnLineSever::TransferSmallPackProcess(const void *pData, size_t dataL
 				tagRoleEnterGame reg;
 				reg.ProtocolType = c2s_roleserver_lock;
 				reg.bLock = true;
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)reg.Name, nIndex);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)reg.Name, nIndex);
 				if (m_pDatabaseClient)
 					m_pDatabaseClient->SendPackToServer((const void *)&reg, sizeof(tagRoleEnterGame));
 
@@ -2481,8 +2481,8 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 			tagEnterGame eg;
 			eg.cProtocol = c2s_entergame;
 
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)eg.szAccountName, nIndex);
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_HWID, (unsigned int)eg.szHWID, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)eg.szAccountName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_HWID, (intptr_t)eg.szHWID, nIndex);
 			
 			if (m_pGatewayClient)
 				m_pGatewayClient->SendPackToServer( ( const void * )&eg, sizeof( tagEnterGame ) );
@@ -2493,7 +2493,7 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 			strcpy(( char * )eg2.szAccountName, (char *)eg.szAccountName);
 			strcpy(( char * )eg2.szHWID, (char *)eg.szHWID);
 			eg2.dwNameID = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ID, nIndex, 0);
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)eg2.szCharacterName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)eg2.szCharacterName, nIndex);
 			eg2.lnID = lnID;
 			eg2.nSelServer = m_ServerNo;
 			if (m_pTransferClient)
@@ -2520,7 +2520,7 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 				DWORD	dwTongNameID = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_TONG_NAMEID, 0, nPlayerIdx);
 				char	szName[32];
 				szName[0] = 0;
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szName, nPlayerIdx);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName, nPlayerIdx);
 				if (dwTongNameID > 0 && szName[0])
 				{
 					STONG_GET_LOGIN_DATA_COMMAND	sLogin;
@@ -2723,10 +2723,10 @@ void KSwordOnLineSever::GatewaySmallPackProcess(const void *pData, size_t dataLe
 	case s2c_querymapinfo:
 		{
 			tagUpdateMapID *pUMI;
-			int	sMapID[250];				//edit by phong kieu fix loi load map lon hon 80 chinh lai so 250 mac dinh 80
+			int	*sMapID[1000];				//edit by phong kieu fix loi load map lon hon 80 chinh lai so 250 mac dinh 80
 			
-			int nMapCount = m_pCoreServerShell->GetGameData(SGDI_LOADEDMAP_ID, (unsigned int)&sMapID, sizeof(sMapID));
-			pUMI = ( tagUpdateMapID * )new BYTE[ nMapCount * sizeof(int) + sizeof( tagUpdateMapID ) ];	//Fix kieu char thanh kieu int
+			int nMapCount = m_pCoreServerShell->GetGameData(SGDI_LOADEDMAP_ID, (intptr_t)&sMapID, sizeof(sMapID));
+			pUMI = ( tagUpdateMapID * )new int[ nMapCount * sizeof(int) + sizeof( tagUpdateMapID ) ];	//Fix kieu char thanh kieu int
 			memset( pUMI, 0, nMapCount * sizeof(int) + sizeof( tagUpdateMapID ) );									//Fix kieu char thanh kieu int
 			
 			pUMI->cProtocol = c2s_updatemapinfo;
@@ -2781,7 +2781,7 @@ void KSwordOnLineSever::GatewayBoardCastProcess(const char* pData, size_t dataLe
 	{
 	case AP_WARNING_ALL_PLAYER_QUIT:
 		{
-			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (unsigned int)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
+			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (intptr_t)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
 			// TODO: Save Player and ExitGame when time out
 			printf("ALL_PLAYER_QUIT\n");
 			SetRunningStatus(FALSE);
@@ -2790,14 +2790,14 @@ void KSwordOnLineSever::GatewayBoardCastProcess(const char* pData, size_t dataLe
 		break;
 	case AP_NOTIFY_GAMESERVER_SAFECLOSE:
 		{
-			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (unsigned int)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
+			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (intptr_t)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
 			printf("Safe close server\n");
 			SetRunningStatus(FALSE);
 		}
 		break;
 	case AP_NOTIFY_ALL_PLAYER:
 		{
-			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (unsigned int)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
+			m_pCoreServerShell->OperationRequest(SSOI_BROADCASTING, (intptr_t)pGatewayBroadCast->szData, strlen(pGatewayBroadCast->szData));
 		}
 		break;
 	default:
@@ -3075,7 +3075,7 @@ void KSwordOnLineSever::PlayerExchangeServer()
 				tagRoleEnterGame reg;
 				reg.ProtocolType = c2s_roleserver_lock;
 				reg.bLock = true;
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)reg.Name, nIndex);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)reg.Name, nIndex);
 				if (m_pDatabaseClient)
 					m_pDatabaseClient->SendPackToServer((const void *)&reg, sizeof(tagRoleEnterGame));
 
@@ -3156,7 +3156,7 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 		if (m_pCoreServerShell->IsPlayerLoginTimeOut(nIndex))
 		{
 			char	szName[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
 			sLeaveGame.nExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINTCHANGED, nIndex, 0);
 			strcpy((char *)sLeaveGame.szAccountName, (char *)szName);
 			if(m_pGatewayClient)
@@ -3172,7 +3172,7 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 				m_pTongClient->SendPackToServer(&lg2, sizeof(tagLeaveGame2));
 
 			char	szName_2[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szName_2, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 			cout << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game login timeout <=" << endl;//edit by phong kieu leave game
 			m_pCoreServerShell->RemovePlayerLoginTimeOut(nIndex);
 
@@ -3183,7 +3183,7 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 				continue;
 
 			char	szName[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
 			sLeaveGame.nExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINTCHANGED, nIndex, 0);
 			strcpy((char *)sLeaveGame.szAccountName, (char *)szName);
 			if(m_pGatewayClient)
@@ -3198,14 +3198,14 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 				m_pTongClient->SendPackToServer(&lg2, sizeof(tagLeaveGame2));
 			
 			char	szName_2[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szName_2, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 			m_pCoreServerShell->RemoveQuitingPlayer(nIndex);
 			cout << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game character quiting <=" << endl;
 		}
 		else if(m_pCoreServerShell->GetCharacterLixian(nIndex) == 1) //#uy thac
 		{
 			char	szName[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
 			//sLeaveGame.nExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINTCHANGED, nIndex, 0);
 			//strcpy((char *)sLeaveGame.szAccountName, (char *)szName);
 			//m_pGatewayClient->SendPackToServer(&sLeaveGame, sizeof(tagLeaveGame)); //th玭g b竜 cho bishop ng l筰
@@ -3218,7 +3218,7 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 				m_pTongClient->SendPackToServer(&lg2, sizeof(tagLeaveGame2));
 
 			char	szName_2[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szName_2, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 			m_pCoreServerShell->SetCharacterLixianCompleted(nIndex);
 			cout << "=> Account [" << lg2.szAccountName << "] Player [" << szName_2 << "] thoat game uy thac <=" << endl;
 		}
@@ -3482,7 +3482,7 @@ void KSwordOnLineSever::ExitAllPlayer()
 		{
 			char	szName[32];
 	
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nIndex);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
 			sLeaveGame.nExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINTCHANGED, nIndex, 0);
 
 			strcpy((char *)sLeaveGame.szAccountName, (char *)szName);
@@ -3754,7 +3754,7 @@ void KSwordOnLineSever::TransferLoseWayMessageProcess(const char *pData, size_t 
 		tagRoleEnterGame reg;
 		reg.ProtocolType = c2s_roleserver_lock;
 		reg.bLock = true;
-		m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)reg.Name, nIndex);
+		m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)reg.Name, nIndex);
 		if (m_pDatabaseClient)
 			m_pDatabaseClient->SendPackToServer((const void *)&reg, sizeof(tagRoleEnterGame));
 
@@ -3791,14 +3791,14 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			// 创建帮会条件检测
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CREATE, (unsigned int)&sApply, 0);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CREATE, (intptr_t)&sApply, 0);
 			// 创建帮会条件成立
 			if (nRet == 0)
 			{
 				char	szPlayerName[32];
 				STONG_CREATE_COMMAND	sCreate;
 
-				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szPlayerName, nPlayerIdx);
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szPlayerName, nPlayerIdx);
 				sCreate.ProtocolFamily = pf_tong;
 				sCreate.ProtocolID = enumC2S_TONG_CREATE;
 				sCreate.m_btCamp = pApply->m_btCamp;
@@ -3840,7 +3840,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			sAdd.m_nPlayerIdx = nPlayerIdx;
 			sAdd.m_dwNpcID = pApply->m_dwNpcID;
 			if (m_pCoreServerShell)
-				m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_ADD, (unsigned int)&sAdd, 0);
+				m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_ADD, (intptr_t)&sAdd, 0);
 		}
 		break;
 	case enumTONG_COMMAND_ID_ACCEPT_ADD:
@@ -3854,7 +3854,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				sRefuse.m_nSelfIdx = nPlayerIdx;
 				sRefuse.m_nTargetIdx = pAccept->m_nPlayerIdx;
 				sRefuse.m_dwNameID = pAccept->m_dwNameID;
-				m_pCoreServerShell->OperationRequest(SSOI_TONG_REFUSE_ADD, (unsigned int)&sRefuse, 0);
+				m_pCoreServerShell->OperationRequest(SSOI_TONG_REFUSE_ADD, (intptr_t)&sRefuse, 0);
 				break;
 			}
 			else
@@ -3867,7 +3867,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 
 				int		nRet = FALSE;
 				if (m_pCoreServerShell)
-					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHECK_ADD_CONDITION, (unsigned int)szTongName, (unsigned int)&sAdd);
+					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHECK_ADD_CONDITION, (intptr_t)szTongName, (unsigned int)&sAdd);
 				// 向 relay 申请添加帮众
 				if (nRet)
 				{
@@ -3875,7 +3875,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 					STONG_ADD_MEMBER_COMMAND	sTong;
 
 					szPlayerName[0] = 0;
-					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (unsigned int)szPlayerName, sAdd.m_nTargetIdx);
+					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szPlayerName, sAdd.m_nTargetIdx);
 
 					int PlayerSex = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_SEX, 0, sAdd.m_nTargetIdx);
 
@@ -3916,7 +3916,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				sGet.m_nParam3 = pInfo->m_nParam3;
 				sGet.m_szName[0] = 0;
 				if (m_pCoreServerShell)
-					m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (unsigned int)&sGet, 0);
+					m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (intptr_t)&sGet, 0);
 				break;
 			case enumTONG_APPLY_INFO_ID_MASTER:
 				break;
@@ -3932,7 +3932,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 					sGet.m_nParam3 = pInfo->m_nParam3;
 					sGet.m_szName[0] = 0;
 					if (m_pCoreServerShell)
-						nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (unsigned int)&sGet, 0);
+						nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (intptr_t)&sGet, 0);
 					if (nRet == 0)
 						break;
 
@@ -3957,7 +3957,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 					sGet.m_nParam3 = pInfo->m_nParam3;
 					sGet.m_szName[0] = 0;
 					if (m_pCoreServerShell)
-						nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (unsigned int)&sGet, 0);
+						nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (intptr_t)&sGet, 0);
 					if (nRet == 0)
 						break;
 
@@ -3986,7 +3986,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 					sGet.m_szName[0] = 0;
 
 					if (m_pCoreServerShell)
-						dwTongNameID = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (unsigned int)&sGet, 0);
+						dwTongNameID = m_pCoreServerShell->GetGameData(SGDI_TONG_GET_INFO, (intptr_t)&sGet, 0);
 					if (dwTongNameID == 0)
 						break;
 
@@ -4010,7 +4010,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_INSTATE_POWER, (unsigned int)pApply, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_INSTATE_POWER, (intptr_t)pApply, nPlayerIdx);
 			if (nRet == 0)
 				break;
 
@@ -4038,7 +4038,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_KICK_POWER, (unsigned int)pKick, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_KICK_POWER, (intptr_t)pKick, nPlayerIdx);
 			if (nRet == 0)
 				break;
 
@@ -4062,7 +4062,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_LEAVE_POWER, (unsigned int)pLeave, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_LEAVE_POWER, (intptr_t)pLeave, nPlayerIdx);
 			if (nRet == 0)
 				break;
 
@@ -4086,7 +4086,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MASTER_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_MASTER_POWER, (intptr_t)pChange, nPlayerIdx);
 			if (nRet == 0)
 				break;
 
@@ -4111,7 +4111,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			int nRet = 0;
 			g_DebugLog("BH da qua day");
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_TITLE_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_TITLE_POWER, (intptr_t)pChange, nPlayerIdx);
 			g_DebugLog("BH da qua day 2");
 			if (nRet == 0)
 				break;
@@ -4136,7 +4136,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_SEX_TITLE_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_SEX_TITLE_POWER, (intptr_t)pChange, nPlayerIdx);
 			if (nRet == 0)
 				break;
 			
@@ -4159,7 +4159,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (intptr_t)pChange, nPlayerIdx);
 			if (nRet == 0)
 				break;
 			
@@ -4181,7 +4181,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (intptr_t)pChange, nPlayerIdx);
 			if (nRet == 0)
 				break;
 			
@@ -4203,7 +4203,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			int nRet = 0;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_MONEY_POWER, (intptr_t)pChange, nPlayerIdx);
 			if (nRet == 0)
 				break;
 			
@@ -4226,7 +4226,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_CAMP, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_CAMP, (intptr_t)pChange, nPlayerIdx);
 			
 			if (nRet == 0)
 			{
@@ -4267,7 +4267,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				break;
 			
 			char	szName[32];
-			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (unsigned int)szName, nPlayerIdx);
+			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nPlayerIdx);
 			int m_ExtPoint = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_EXTPOINT, nPlayerIdx, 0);
 			if(m_ExtPoint != pExt->m_nExtPoint)
 			{
@@ -4297,7 +4297,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_RECRUIT, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_RECRUIT, (intptr_t)pChange, nPlayerIdx);
 			
 			if (nRet == 0)
 			{
@@ -4338,7 +4338,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_LEVEL, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_LEVEL, (intptr_t)pChange, nPlayerIdx);
 			
 			if (nRet == 0)
 			{
@@ -4368,7 +4368,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_WAYEDIT, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_WAYEDIT, (intptr_t)pChange, nPlayerIdx);
 			
 			if (nRet == 0)
 			{
@@ -4398,7 +4398,7 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 			
 			int nRet = 0xff;
 			if (m_pCoreServerShell)
-				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_NEXTTARGET, (unsigned int)pChange, nPlayerIdx);
+				nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_APPLY_CHANGE_NEXTTARGET, (intptr_t)pChange, nPlayerIdx);
 			
 			if (nRet == 0)
 			{

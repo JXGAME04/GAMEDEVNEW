@@ -161,7 +161,7 @@ void	LoadScriptInDirectory(LPSTR lpszRootDir, LPSTR lpszSubDir)
 #ifdef WIN32
 	if(chdir(szRealDir)) return;
 	_finddata_t FindData;
-	long dir = _findfirst("*.*", &FindData);
+	intptr_t dir = _findfirst("*.*", &FindData);
 	while(dir != -1) {
 		if(strcmp(FindData.name, ".") == 0 || strcmp(FindData.name, "..") == 0)	{
 			if(_findnext(dir, &FindData)) break;

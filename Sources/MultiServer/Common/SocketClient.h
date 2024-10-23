@@ -62,12 +62,12 @@ protected:
 		const _tstring &addressToConnectServer,
 		unsigned short portToConnectServer,
 		size_t maxFreeBuffers,
-		size_t bufferSize /* = 1024 */
+		size_t bufferSize  = 1024*5 
 		);
 	
 	CSocketClient(
 		size_t maxFreeBuffers,
-		size_t bufferSize /* = 1024 */
+		size_t bufferSize  = 1024*5 
 		);
 	
 	void ReleaseBuffers();

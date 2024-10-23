@@ -2,7 +2,7 @@
 #define	KWorldH
 
 #ifdef _SERVER
-#define	MAX_SUBWORLD	180//edit by phong kieu max maps mac dinh 80
+#define	MAX_SUBWORLD	1000//edit by phong kieu max maps mac dinh 80
 #else
 #define	MAX_SUBWORLD	1
 #endif
@@ -135,8 +135,12 @@ private:
 };
 
 #ifndef TOOLVERSION
-extern KSubWorld	SubWorld[MAX_SUBWORLD];
+	#ifdef _SERVER
+	extern KSubWorld* SubWorld;
+	#else
+	extern KSubWorld	SubWorld[MAX_SUBWORLD];
+	#endif
 #else 
-extern CORE_API KSubWorld	SubWorld[MAX_SUBWORLD];
+	extern CORE_API KSubWorld	SubWorld[MAX_SUBWORLD];
 #endif
 #endif

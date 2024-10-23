@@ -23,9 +23,14 @@
 #include "KSubWorld.h"
 
 #ifndef TOOLVERSION
-KSubWorld	SubWorld[MAX_SUBWORLD];
+	#ifdef _SERVER
+	KSubWorld* SubWorld = new KSubWorld[MAX_SUBWORLD];
+
+	#else
+	KSubWorld	SubWorld[MAX_SUBWORLD];
+	#endif
 #else 
-CORE_API KSubWorld	SubWorld[MAX_SUBWORLD];
+	CORE_API KSubWorld	SubWorld[MAX_SUBWORLD];
 #endif
 
 #define		defLOGIC_CELL_WIDTH			32

@@ -30,6 +30,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -83,7 +84,6 @@
     </ClCompile>
     <PostBuildEvent>
       <Command>md ..\..\..\..\bin\server\release\
-copy release\Bishop.exe ..\..\..\..\bin\server\Bishop.exe
 copy release\Bishop.exe ..\..\..\..\bin\server\release\Bishop.exe
 copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
     </PostBuildEvent>
@@ -134,7 +134,6 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
     </ClCompile>
     <PostBuildEvent>
       <Command>copy debug\Bishop.exe ..\..\..\..\bin\Multiserver\Bishop.exe
-copy debug\Bishop.exe ..\..\..\..\bin\Server\Bishop.exe
 copy debug\Bishop.exe ..\..\..\..\bin\Server\debug\Bishop.exe</Command>
     </PostBuildEvent>
     <Midl>

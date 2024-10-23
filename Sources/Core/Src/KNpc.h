@@ -18,7 +18,7 @@ class KSkill;
 #endif
 //---------------------------------------------------------------------------
 #ifdef	_SERVER
-#define		MAX_NPC				50000 //max npc tai server 16384
+#define		MAX_NPC				98000 //max npc tai server 16384
 #else
 #define		MAX_NPC				256				//max npc tai client la 256
 #endif
@@ -827,10 +827,12 @@ public:
 	int			m_nFrame;
 	
 };
-#ifndef TOOLVERSION
-extern KNpc Npc[MAX_NPC];
-#else
+#ifdef _SERVER
+extern KNpc* Npc;
+#elif TOOLVERSION
 extern CORE_API KNpc Npc[MAX_NPC];
+#else
+extern KNpc Npc[MAX_NPC];
 #endif
 
 #endif

@@ -73,10 +73,10 @@ public:
 	void RecoverPlayerExchange(int nIndex);
 	int  AddCharacter(int nExtPoint, int nChangeExtPoint, void* pBuffer, GUID* pGuid);
 	int	 AddTempTaskValue(int nIndex, const char* pData);
-	int	 OperationRequest(unsigned int uOper, unsigned int uParam, int nParam);
+	int	 OperationRequest(unsigned int uOper, intptr_t uParam, int nParam);
 	int	 GetConnectInfo(KCoreConnectInfo* pInfo);
 	//BOOL ValidPingTime(int nIndex);
-	int	 GetGameData(unsigned int uDataId, unsigned int uParam, int nParam);
+	int	 GetGameData(unsigned int uDataId, intptr_t uParam, int nParam);
 	int  Breathe();
 	void Release();
 	void SetSaveStatus(int nIndex, UINT uStatus);
@@ -248,7 +248,7 @@ void CoreServerShell::RemoveQuitingPlayer(int nIndex)
 //		  int nParam --> 依据uDataId的取值情况而定
 //	返回：依据uDataId的取值情况而定。
 //--------------------------------------------------------------------------
-int	CoreServerShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nParam)
+int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nParam)
 {
 	int nRet = 0;
 	switch(uDataId)
@@ -303,13 +303,15 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, unsigned int uParam, int 
 		if (uParam)
 		{
 			int i;
-			int nMax = nParam;
+			int nMax = nParam / sizeof(int32_t);;
 			if(nMax < MAX_SUBWORLD) nMax = MAX_SUBWORLD;
 			for (i = 0; i < nMax; i++)
 			{
 				if (SubWorld[i].m_SubWorldID != -1)
 				{
-					((int *)uParam)[i] = (int)SubWorld[i].m_SubWorldID;//edit by phong kieu fix loi load map lon hon 255
+					((int32_t *)uParam)[i] = (int)SubWorld[i].m_SubWorldID;//edit by phong kieu fix loi load map lon hon 255
+					//int32_t tmp = static_cast<int32_t>(SubWorld[i].m_SubWorldID);
+					//reinterpret_cast<int32_t*>(uParam)[i] = tmp;
 				}
 				else
 				{
@@ -917,7 +919,7 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, unsigned int uParam, int 
 //		  int nParam --> 依据uOperId的取值情况而定
 //	返回：如果成功发送操作请求，函数返回非0值，否则返回0值。
 //--------------------------------------------------------------------------
-int	CoreServerShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
+int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int nParam)
 {
 	int nRet = 1;
 	switch(uOper)
@@ -1065,7 +1067,8 @@ bool CoreServerShell::CheckProtocolSize(const char* pChar, int nSize)
 	{
 		wCheckSize = g_nProtocolSize[nProtocol - c2s_gameserverbegin - 1];
 	}
-	if (wCheckSize != nSize)
+	if (wCheckSize != nSize && wCheckSize != nSize + 4) //4 bytes difference between 32bit client and 64bit server
+														//this is temporary check
 	{
 		g_DebugLog("[error]网络接收协议大小不匹配");
 #ifndef _WIN32

@@ -205,10 +205,10 @@ struct iCoreServerShell
 	virtual void RecoverPlayerExchange(int nIndex) = 0;
 	virtual int  AddCharacter(int nExtPoint, int nChangeExtPoint, void* pBuffer, GUID* pGuid) = 0;
 	virtual int	 AddTempTaskValue(int nIndex, const char* pData) = 0;
-	virtual int	 OperationRequest(unsigned int uOper, unsigned int uParam, int nParam) = 0;
+	virtual int	 OperationRequest(unsigned int uOper, intptr_t uParam, int nParam) = 0;
 	virtual int	 GetConnectInfo(KCoreConnectInfo* pInfo) = 0;
 //	virtual	BOOL ValidPingTime(int nIndex) = 0;
-	virtual int	 GetGameData(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
+	virtual int	 GetGameData(unsigned int uDataId, intptr_t uParam, int nParam) = 0;
 	virtual int  Breathe() = 0;
 	virtual void Release() = 0;
 	virtual void SetSaveStatus(int nIndex, UINT uStatus) = 0;

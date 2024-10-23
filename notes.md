@@ -13,3 +13,4 @@ solution: Build Engine with new profile (Engine Server Debug with _SERVER prepro
 
 cannot open include file 'afxres.h' -> install MFC for c++ 
 
+Chuyen map chua load -> chuyen server -> doi trang thai chuyen server -> bi. ket.

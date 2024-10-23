@@ -62,7 +62,7 @@ protected:
 	CSocketServer(	
 			size_t maxFreeSockets,
 			size_t maxFreeBuffers,
-			size_t bufferSize = 1024,
+			size_t bufferSize = 1024*5,
 			size_t numThreads = 0,
 			bool useSequenceNumbers = true,
 			bool postZeroByteReads = false);

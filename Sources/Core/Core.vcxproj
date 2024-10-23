@@ -439,12 +439,6 @@ copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
     <PostBuildEvent>
       <Command>md ..\..\..\bin\server\debug
 md ..\..\lib\debug
-copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
-copy ServerDebug\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\debug\Coreserver.pdb
-copy ServerDebug\CoreServer.dll ..\..\..\bin\server\debug\Coreserver.dll
 copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
     </PostBuildEvent>
     <Midl>

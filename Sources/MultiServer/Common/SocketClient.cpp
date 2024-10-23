@@ -32,7 +32,7 @@ CSocketClient::CSocketClient(
 		const _tstring &addressToConnectServer,
 		unsigned short portToConnectServer,
 		size_t maxFreeBuffers,
-		size_t bufferSize /* = 1024 */
+		size_t bufferSize//  = 1024*5 
 		)
 	  : CIOBuffer::Allocator(bufferSize, maxFreeBuffers),
 		m_address(addressToConnectServer),
@@ -44,7 +44,7 @@ CSocketClient::CSocketClient(
 
 CSocketClient::CSocketClient(
 		size_t maxFreeBuffers,
-		size_t bufferSize /* = 1024 */
+		size_t bufferSize//  = 1024*5 
 		)
 	: CIOBuffer::Allocator(bufferSize, maxFreeBuffers),
 	m_port(0),

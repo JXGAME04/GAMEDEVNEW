@@ -17,6 +17,7 @@ KSubWorldSet::KSubWorldSet()
 {
 	m_nLoopRate = 0;
 	m_nGameVersion = ITEM_VERSION;
+	m_nMapLoaded = 0;
 #ifndef _SERVER
 	m_dwPing = 0;
 #endif
@@ -53,7 +54,7 @@ BOOL KSubWorldSet::Load(LPSTR szFileName)//edit by phong kieu Load Maps LoadMaps
 	
 	for (int i = 0; i < nWorldCount; i++)
 	{
-		sprintf((char*)szKeyName, "World%02d", i);
+		sprintf((char*)szKeyName, "World%03d", i);
 		IniFile.GetInteger("World", szKeyName, 1000, &nWorldID);
 #ifdef _SERVER
 		SubWorld[i].m_nIndex = i;
@@ -72,6 +73,7 @@ BOOL KSubWorldSet::Load(LPSTR szFileName)//edit by phong kieu Load Maps LoadMaps
 #endif
 	}
 	printf("====== Total Map loaded : [%d] \n",maploaded);
+	m_nMapLoaded = maploaded;
 	printf("====== Map load failed  : [%d] \n",mapfailed);
 	printf("====== Npc loaded  : [%ld] \n", totalNpcLoaded);
 	return TRUE;

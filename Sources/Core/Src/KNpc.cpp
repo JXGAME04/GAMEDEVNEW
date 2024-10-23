@@ -93,8 +93,11 @@ extern KLuaScript		*g_pNpcLevelScript;
 
 #define	CONREGION(x)		SubWorld[m_SubWorldIndex].m_Region[CURREGION.m_nConnectRegion[x]]
 #define	CONREGIONIDX(x)		CURREGION.m_nConnectRegion[x]
-
+#ifndef _SERVER
 KNpc	Npc[MAX_NPC];
+#else
+KNpc* Npc = new KNpc[MAX_NPC];
+#endif
 KNpcTemplate	* g_pNpcTemplate[MAX_NPCSTYLE][MAX_NPC_LEVEL][MAX_NPC_SERIES];
 
 KNpc::KNpc()

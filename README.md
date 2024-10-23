@@ -1,15 +1,15 @@
 Debug/Release build OK!
 
-Common  
-Heaven  
-Rainbow  
-Lualibdll  
+Common (Win32/64)  
+Heaven (Win32/64)  
+Rainbow (Win32/64)  
+Lualibdll (Win32/64)  
 db  
 
 Build Server:  
-Engine (Engine Server Debug)  
-Core (Server Debug)  
-GameServer (Debug)  
+Engine (Engine Server Debug Win32/64)  
+Core (Server Debug 64)  
+GameServer (Debug 64)  
 Bishop  
 Goddess  
 Install Mysql connector 80, Mysql server 5.7. Check setting mysqlinclude/lib  

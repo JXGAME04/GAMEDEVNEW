@@ -240,6 +240,7 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 			m_EntireMapLTPosition.x = -1;
 			pSetting->GetInteger2(PLACE_MAP_SAVE_SECTION, "MapLTRegionIndex",
 				(int*)&m_EntireMapLTPosition.x, (int*)m_EntireMapLTPosition.y);
+				//(int*)&m_EntireMapLTPosition.x, (int*)&m_EntireMapLTPosition.y);
 			if (m_EntireMapLTPosition.x == -1)
 			{
 				RECT	rc;
@@ -1087,7 +1088,7 @@ void KScenePlaceMapC::DirectFindPos(int nX, int nY, BOOL bSync, BOOL bPaintLine)
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
 	sprintf(sMsg.szMessage, "->.");
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("T?®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("Tù ®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
 
 	AutoRunTo(nDesX, nDesY);
 }

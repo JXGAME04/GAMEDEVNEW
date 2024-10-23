@@ -423,7 +423,7 @@ bool CGameServer::_UpdateMapID( const void *pData, size_t datalength )
 	tagUpdateMapID *pUMI = ( tagUpdateMapID * )pData;
 
 	int  nMapCount = pUMI->cMapCount;
-	int *pMapID = pUMI->szMapID;				//edit by phong kieu fix loi load map lon hon 255
+	int *pMapID = (int*)pUMI->szMapID;				//edit by phong kieu fix loi load map lon hon 255
 
 	while ( --nMapCount >= 0 )
 	{

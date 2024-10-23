@@ -102,7 +102,7 @@ public:
 	int				AddNpcSet2(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int nMpsX, int nMpsY);
 
 #ifdef _SERVER
-	int				AddNpcSet3(int nSubWorld, void* pNpcInfo);	//Hµm add npc ë server
+	int				AddNpcSet3(int nSubWorld, void* pNpcInfo);	//Hµm add npc ?server
 #endif
 
 	void			Remove(int nIdx);

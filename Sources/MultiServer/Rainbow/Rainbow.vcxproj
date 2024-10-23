@@ -30,6 +30,7 @@
     <SccProjectName>"$/SwordOnline/Sources/MultiServer/Rainbow", EVNAAAAA</SccProjectName>
     <SccLocalPath>.</SccLocalPath>
     <ProjectGuid>{A855D1B6-C460-4C9F-828B-1A0A94B42F03}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -99,6 +100,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -129,8 +131,6 @@
     <PostBuildEvent>
       <Command>copy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
 copy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll
 copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
@@ -170,18 +170,15 @@ copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;RAINBOW_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Debug\Rainbow.pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>.\Debug\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>.\x64\Debug\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\x64\Debug\Rainbow.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy debug\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\client\debug\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\server\debug\Rainbow.dll
-copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
+      <Command>copy .\x64\Debug\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
+copy .\x64\Debug\Rainbow.dll ..\..\..\..\bin\server\debug64\Rainbow.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -202,8 +199,8 @@ copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\Rainbow.dll</OutputFile>
-      <ImportLibrary>.\Debug\Rainbow.lib</ImportLibrary>
+      <OutputFile>.\x64\Debug\Rainbow.dll</OutputFile>
+      <ImportLibrary>.\x64\Debug\Rainbow.lib</ImportLibrary>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Rainbow.def</ModuleDefinitionFile>
     </Link>

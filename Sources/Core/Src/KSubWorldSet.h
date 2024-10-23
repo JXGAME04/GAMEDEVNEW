@@ -13,6 +13,7 @@ class CORE_API KSubWorldSet
 {
 public:
 	int		m_nLoopRate;		//
+	int		m_nMapLoaded;
 	
 #ifndef _SERVER
 	KMapMusic	m_cMusic;

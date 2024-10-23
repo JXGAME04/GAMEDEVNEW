@@ -2804,6 +2804,8 @@ int LuaAddTrap(Lua_State * L)
 	int nMpsX = (int)Lua_ValueToNumber(L, 2);
 	int nMpsY = (int)Lua_ValueToNumber(L, 3);
 	DWORD nTrapID = (DWORD)g_FileName2Id((char *)Lua_ValueToString(L,4));
+	if (nSubWorldIndex < 0 || nSubWorldIndex > MAX_SUBWORLD)
+		return 1;
 	SubWorld[nSubWorldIndex].SetTrap(nTrapID, nMpsX, nMpsY, nRange);
 	Lua_PushNumber(L,1);
 	return 1;

@@ -343,8 +343,6 @@ copy clientdebug\engine.dll ..\..\..\bin\client\debug\engine.dll</Command>
     <PostBuildEvent>
       <Command>md ..\..\lib\EngineServerDebug\
 copy .\EngineServerDebug\engine.lib ..\..\lib\EngineServerDebug\engine.lib
-copy EngineServerDebug\engine.dll ..\..\..\bin\server\engine.dll
-copy EngineServerDebug\engine.pdb ..\..\..\bin\server\engine.pdb
 copy EngineServerDebug\engine.dll ..\..\..\bin\Multiserver\engine.dll
 copy EngineServerDebug\engine.pdb ..\..\..\bin\Multiserver\engine.pdb</Command>
     </PostBuildEvent>
