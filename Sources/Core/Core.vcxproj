@@ -176,6 +176,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>CoreServer</TargetName>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">
     <OutDir>.\ServerRelease\</OutDir>
@@ -484,26 +485,26 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\engine\src;..\..\Headers;..\engine\include;..\Network;Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_SERVER;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\ServerDebug\</AssemblerListingLocation>
+      <AssemblerListingLocation>.\x64\ServerDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\ServerDebug\Core.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\x64\ServerDebug\CoreServer.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\ServerDebug\</ObjectFileName>
-      <ProgramDataBaseFileName>.\ServerDebug\</ProgramDataBaseFileName>
+      <ObjectFileName>.\x64\ServerDebug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ServerDebug\</ProgramDataBaseFileName>
       <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 </AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\server\debug
-md ..\..\lib\debug
-copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
-copy ServerDebug\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy ServerDebug\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerDebug\CoreServer.pdb ..\..\..\bin\server\debug\Coreserver.pdb
-copy ServerDebug\CoreServer.dll ..\..\..\bin\server\debug\Coreserver.dll
-copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
+      <Command>md ..\..\..\bin\server\debug64
+md ..\..\lib\debug64
+copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
+copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
+copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\debug64\Coreserver.pdb
+copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\debug64\Coreserver.dll
+copy .\x64\ServerDebug\\CoreServer.lib ..\..\lib\debug64\CoreServer.lib</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -525,8 +526,8 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;msvcrt.lib;libcd.lib;msvcrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <OutputFile>ServerDebug\CoreServer.dll</OutputFile>
-      <ImportLibrary>.\ServerDebug\CoreServer.lib</ImportLibrary>
+      <OutputFile>.\x64\ServerDebug\CoreServer.dll</OutputFile>
+      <ImportLibrary>.\x64\ServerDebug\CoreServer.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <HeapReserveSize>0xffffffff</HeapReserveSize>

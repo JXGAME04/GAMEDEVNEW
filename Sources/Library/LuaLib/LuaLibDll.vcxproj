@@ -100,7 +100,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -167,13 +167,14 @@ copy debug\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
       <OutputFile>.\Debug\LuaLibDll.dll</OutputFile>
       <ImportLibrary>.\Debug\LuaLibDll.lib</ImportLibrary>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
@@ -181,14 +182,17 @@ copy debug\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
       <AdditionalIncludeDirectories>.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LUALIBDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\x64\Debug\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Debug\LuaLibDll.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\x64\Debug\LuaLibDll.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\x64\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\x64\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy debug\lualibdll.lib ..\..\..\Lib\lualibdll.lib
-copy debug\lualibdll.dll ..\..\..\Lib\lualibdll.dll</Command>
+      <Command>md  ..\..\..\Lib\x64
+copy x64\debug\lualibdll.lib ..\..\..\Lib\x64\lualibdll.lib
+copy x64\debug\lualibdll.dll ..\..\..\Lib\x64\lualibdll.dll
+copy x64\debug\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy x64\debug\lualibdll.pdb ..\..\..\..\bin\server\lualibdll.pdb</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
