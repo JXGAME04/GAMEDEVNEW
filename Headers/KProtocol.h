@@ -920,7 +920,7 @@ struct tagUpdateMapID : public tagProtoHeader
 	 */
 	BYTE cReserve;
 
-	BYTE cMapCount;
+	int cMapCount;
 
 	int szMapID[0];	// C4200 warning	//edit by phong kieu fix loi load map lon hon 255
 };

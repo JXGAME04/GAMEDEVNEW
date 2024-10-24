@@ -422,7 +422,7 @@ bool CGameServer::_UpdateMapID( const void *pData, size_t datalength )
 {
 	tagUpdateMapID *pUMI = ( tagUpdateMapID * )pData;
 
-	int  nMapCount = pUMI->cMapCount;
+	int  nMapCount = (int)pUMI->cMapCount;
 	int *pMapID = (int*)pUMI->szMapID;				//edit by phong kieu fix loi load map lon hon 255
 
 	while ( --nMapCount >= 0 )
@@ -869,7 +869,9 @@ bool CGameServer::RegisterServer( UINT nID, IGServer *pGServer )
 
 		return result.second;
 	}
-
+#ifdef CONSOLE_DEBUG
+	cprintf("Add mapID %d for server %d\n", nID, pGServer->GetPort());
+#endif
 	return true;
 }
 
