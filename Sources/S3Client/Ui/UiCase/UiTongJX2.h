@@ -85,6 +85,10 @@ private:
 	KWndLabeledButton	m_FunBtn[14];			// nut hanh dong (bang s_sFunBtn)
 	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
 	KWndLabeledButton	m_BtnFun;				// nut mo trang (tren cua so chinh)
+	// trang Phuong tho theo blueprint
+	KWndText80			m_WsTxt[6];				// So khu/Hang toi da/Phi duy tri (Title+Txt)
+	KWndLabeledButton	m_WsBtn[6];				// Lap/Mo/Dong/Nang/Dat cap dung/Xoa
+	KWndLabeledButton	m_WsIcon[8];			// icon khu 1..7 (luoi deu)
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau

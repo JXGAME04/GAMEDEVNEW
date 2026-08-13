@@ -2259,6 +2259,29 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			pTong->btApplyCount--;
 			return 0;
 		}
+	case defTONG_JX2_COP_WS_SETLV:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 9001))
+				return 3;
+			int nType = pCmd->m_nParam1;
+			if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+				return 5;
+			sSendFieldCmd(dwTongID, sWsAttrField(nType, 4), (DWORD)pCmd->m_nParam2,
+				defTONG_JX2_OP_SET, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_WS_DEL:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 9001))
+				return 3;
+			int nType = pCmd->m_nParam1;
+			if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+				return 5;
+			for (int nAttr = 0; nAttr <= 5; nAttr++)
+				sSendFieldCmd(dwTongID, sWsAttrField(nType, nAttr), 0,
+					defTONG_JX2_OP_SET, dwParam);	// SET 0 = xoa khoa
+			return 0;
+		}
 	case defTONG_JX2_COP_MAP_SET:
 	case defTONG_JX2_COP_MAP_CREATE:
 	case defTONG_JX2_COP_MAP_DELETE:

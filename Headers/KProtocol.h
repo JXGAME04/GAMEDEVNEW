@@ -1690,6 +1690,8 @@ typedef struct
 #define defTONG_JX2_COP_MAP_CREATE	18	// tao ban do lanh dia bang
 #define defTONG_JX2_COP_MAP_DELETE	19
 #define defTONG_JX2_COP_STORE_OFFER	20	// cat nParam1 diem cong hien ca nhan vao quy du tru bang
+#define defTONG_JX2_COP_WS_SETLV	21	// nParam1 = khu, nParam2 = cap su dung
+#define defTONG_JX2_COP_WS_DEL		22	// nParam1 = khu (xoa toan bo field khu)
 
 typedef struct
 {

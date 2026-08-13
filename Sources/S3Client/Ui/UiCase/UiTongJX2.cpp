@@ -145,6 +145,24 @@ static const TJX2FunBtn s_sFunBtn[14] =
 	{"BtnLeaveTong",         "R\352i bang", 8},
 };
 
+// Trang Phuong tho: bind blueprint (Ws_*). Title co nhan TCVN3, Txt do render dien.
+static const TJX2FunTxt s_sWsTxt[6] =
+{
+	{"TitleWorkshopNum", "S\350 khu"},      {"TxtWorkshopNum", NULL},
+	{"TitleMaxRank", "H\271ng t\350i \256a"}, {"TxtMaxRank", NULL},
+	{"TitleServiceFee", "Ph\335 duy tr\327"}, {"TxtServiceFee", NULL},
+};
+static const char* s_szWsBtnSec[6] =
+{
+	"BtnLearnWorkshop", "BtnOpenWorkshop", "BtnCloseWorkshop",
+	"BtnUpgradeWorkshop", "BtnSetUseLevelWorkshop", "BtnDeleteWorkshop",
+};
+static const char* s_szWsBtnLbl[6] =
+{
+	"L\313p khu", "M\353 khu", "\247\343ng khu",
+	"N\251ng c\312p khu", "\247\306t c\312p d\357ng", "X\343a khu",
+};
+
 //////////////////////////////////////////////////////////////////////
 
 KUiTongJX2::KUiTongJX2()
@@ -247,6 +265,12 @@ void KUiTongJX2::Initialize()
 	for (i = 0; i < 4; i++)
 		AddChild(&m_FunSub[i]);
 	AddChild(&m_BtnFun);
+	for (i = 0; i < 6; i++)
+		AddChild(&m_WsTxt[i]);
+	for (i = 0; i < 6; i++)
+		AddChild(&m_WsBtn[i]);
+	for (i = 1; i <= 7; i++)
+		AddChild(&m_WsIcon[i]);
 	for (i = 0; i < 8; i++)
 		AddChild(&m_RecLbl[i]);
 	AddChild(&m_RecJiyu);
@@ -282,6 +306,14 @@ void KUiTongJX2::Initialize()
 	for (i = 0; i < 4; i++)
 		m_RecHD[i].SetLabel("0");
 	m_BtnFun.SetLabel("");	// sprite nut co chu san tren cua so chinh
+	for (i = 0; i < 6; i++)
+		m_WsBtn[i].SetLabel(s_szWsBtnLbl[i]);
+	for (i = 1; i <= 7; i++)
+	{
+		char szN[8];
+		sprintf(szN, "%d", i);
+		m_WsIcon[i].SetLabel(szN);
+	}
 	for (i = 0; i < 14; i++)
 		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
 	for (i = 0; i < 4; i++)
@@ -367,6 +399,23 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	{
 		sprintf(szSec, "Fun_BtnSubPage%d", i + 1);
 		ms_pSelf->m_FunSub[i].Init(&Ini, szSec);
+	}
+	for (i = 0; i < 6; i++)
+	{
+		sprintf(szSec, "Ws_%s", s_sWsTxt[i].szSec);
+		ms_pSelf->m_WsTxt[i].Init(&Ini, szSec);
+		if (s_sWsTxt[i].szLabel)
+			ms_pSelf->m_WsTxt[i].SetText(s_sWsTxt[i].szLabel);
+	}
+	for (i = 0; i < 6; i++)
+	{
+		sprintf(szSec, "Ws_%s", s_szWsBtnSec[i]);
+		ms_pSelf->m_WsBtn[i].Init(&Ini, szSec);
+	}
+	for (i = 1; i <= 7; i++)
+	{
+		sprintf(szSec, "Ws_Icon%d", i);
+		ms_pSelf->m_WsIcon[i].Init(&Ini, szSec);
 	}
 	ms_pSelf->m_BtnFun.Init(&Ini, "BtnFunUse");
 	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
@@ -582,6 +631,23 @@ void KUiTongJX2::SwitchPage(int nPage)
 		for (i = 0; i < 4; i++)
 			if (bFun) m_FunSub[i].Show(); else m_FunSub[i].Hide();
 	}
+	// bo control trang Phuong tho
+	{
+		int i;
+		BOOL bWs = (nPage == defTONG_JX2_PAGE_WS);
+		for (i = 0; i < 6; i++)
+			if (bWs) m_WsTxt[i].Show(); else m_WsTxt[i].Hide();
+		for (i = 0; i < 6; i++)
+		{
+			if (bWs) { m_WsBtn[i].Show(); m_WsBtn[i].Enable(true); }
+			else { m_WsBtn[i].Hide(); m_WsBtn[i].Enable(false); }
+		}
+		for (i = 1; i <= 7; i++)
+		{
+			if (bWs) { m_WsIcon[i].Show(); m_WsIcon[i].Enable(true); }
+			else { m_WsIcon[i].Hide(); m_WsIcon[i].Enable(false); }
+		}
+	}
 	// bo control trang chieu mo
 	{
 		int i;
@@ -654,9 +720,7 @@ void KUiTongJX2::SetupActions()
 	case TJX2_UI_PAGE_FUNUSE:
 		break;	// 2 trang nay dung bo nut rieng cua blueprint
 	case defTONG_JX2_PAGE_WS:
-		m_BtnAct[0].SetLabel("L\313p khu");
-		m_BtnAct[1].SetLabel("M\353 / \247\343ng");
-		m_BtnAct[2].SetLabel("N\251ng c\312p khu");
+		// dung bo nut blueprint (m_WsBtn); Act chi giu tuyet ky
 		m_BtnAct[3].SetLabel("\247\306t tuy\326t k\374");
 		m_BtnAct[4].SetLabel("H\361y tuy\326t k\374");
 		m_BtnAct[5].SetLabel("L\265m m\355i");
@@ -796,6 +860,39 @@ void KUiTongJX2::RenderMembers()
 
 void KUiTongJX2::RenderWorkshop()
 {
+	if (m_bHasWs)
+	{
+		TONG_JX2_WS_SYNC* pWs = (TONG_JX2_WS_SYNC*)m_byWs;
+		char szV[32];
+		int nNum = 0, nMax = 0, t;
+		for (t = 1; t <= 7; t++)
+		{
+			if (!pWs->m_sWs[t].btExist)
+				continue;
+			nNum++;
+			if ((int)pWs->m_sWs[t].wLevel > nMax)
+				nMax = pWs->m_sWs[t].wLevel;
+		}
+		sprintf(szV, "%d/7", nNum);
+		m_WsTxt[1].SetText(szV);
+		sprintf(szV, "%d", nMax);
+		m_WsTxt[3].SetText(szV);
+		if (m_bHasInfo)
+		{
+			sprintf(szV, "%u", ((TONG_JX2_INFO_SYNC*)m_byInfo)->m_dwMaintain);
+			m_WsTxt[5].SetText(szV);
+		}
+		// icon khu: khu dang chon danh dau *, khu chua lap danh dau so mo
+		for (t = 1; t <= 7; t++)
+		{
+			char szI[8];
+			if (t == m_nSel)
+				sprintf(szI, "*%d", t);
+			else
+				sprintf(szI, "%d%s", t, pWs->m_sWs[t].btExist ? "" : "-");
+			m_WsIcon[t].SetLabel(szI);
+		}
+	}
 	if (!m_bHasWs)
 		return;
 	TONG_JX2_WS_SYNC* p = (TONG_JX2_WS_SYNC*)m_byWs;
@@ -1137,6 +1234,47 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						OnAction(4);
 						m_nPage = nKeep;
 					}
+					break;
+				}
+				return 1;
+			}
+		}
+		{
+			int w;
+			for (w = 1; w <= 7; w++)
+			{
+				if (uParam == (unsigned int)&m_WsIcon[w])
+				{
+					m_nSel = w;
+					RenderWorkshop();
+					return 1;
+				}
+			}
+			for (w = 0; w < 6; w++)
+			{
+				if (uParam != (unsigned int)&m_WsBtn[w])
+					continue;
+				if (m_nSel < 1 || m_nSel > 7)
+					return 1;
+				switch (w)
+				{
+				case 0:
+					SendOp(defTONG_JX2_COP_WS_ADD, 0, m_nSel, 0, NULL);
+					break;
+				case 1:
+					SendOp(defTONG_JX2_COP_WS_OPEN, 0, m_nSel, 0, NULL);
+					break;
+				case 2:
+					SendOp(defTONG_JX2_COP_WS_CLOSE, 0, m_nSel, 0, NULL);
+					break;
+				case 3:
+					SendOp(defTONG_JX2_COP_WS_UP, 0, m_nSel, 0, NULL);
+					break;
+				case 4:
+					SendOp(defTONG_JX2_COP_WS_SETLV, 0, m_nSel, 10, NULL);
+					break;
+				case 5:
+					SendOp(defTONG_JX2_COP_WS_DEL, 0, m_nSel, 0, NULL);
 					break;
 				}
 				return 1;
