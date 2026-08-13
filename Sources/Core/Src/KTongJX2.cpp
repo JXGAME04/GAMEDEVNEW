@@ -2121,4 +2121,342 @@ int LuaTWS_ApplyUse(Lua_State* L)
 	return 1;
 }
 
+//////////////////////////////////////////////////////////////////////
+// DOT 3 - ham engine ma script bang hoi JX2 goi nhung JX1 chua co
+// (do tu 733 ham duoc goi trong script\tong Linux - xem jx2_tong_calls)
+//////////////////////////////////////////////////////////////////////
+
+// Vi cong hien nguoi choi (JX2 6.1 - tang NHAN VAT, tieu duoc), luu bang
+// bien nhiem vu ben (SaveVal) de song qua relog:
+#define defTASK_JX2_CONTRIBUTION	2801	// diem cong hien tieu duoc
+#define defTASK_JX2_WEEKLYOFFER		2802	// cong hien tuan nay (tran script tu kiem)
+#define defTASK_JX2_CUMULATEOFFER	2803	// cong hien tich luy tron doi
+#define defTASK_JX2_WEEKGOALOFFER	2804	// cong hien muc tieu tuan
+
+static int sPushSaveVal(Lua_State* L, int nTaskID)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)(int)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskID));
+	return 1;
+}
+
+// cong delta (am duoc, khong cho xuong duoi 0 -> tra 0 neu khong du)
+static int sAddSaveVal(Lua_State* L, int nTaskID)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nDelta = (int)Lua_ValueToNumber(L, 1);
+	int nCur = (int)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskID);
+	if (nDelta < 0 && nCur + nDelta < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Player[nPlayerIndex].m_cTask.SetSaveVal(nTaskID, (DWORD)(nCur + nDelta));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaJX2_GetContribution(Lua_State* L)	{ return sPushSaveVal(L, defTASK_JX2_CONTRIBUTION); }
+int LuaJX2_AddContribution(Lua_State* L)	{ return sAddSaveVal(L, defTASK_JX2_CONTRIBUTION); }
+int LuaJX2_GetWeeklyOffer(Lua_State* L)		{ return sPushSaveVal(L, defTASK_JX2_WEEKLYOFFER); }
+int LuaJX2_AddWeeklyOffer(Lua_State* L)		{ return sAddSaveVal(L, defTASK_JX2_WEEKLYOFFER); }
+int LuaJX2_GetCumulateOffer(Lua_State* L)	{ return sPushSaveVal(L, defTASK_JX2_CUMULATEOFFER); }
+int LuaJX2_AddCumulateOffer(Lua_State* L)	{ return sAddSaveVal(L, defTASK_JX2_CUMULATEOFFER); }
+int LuaJX2_GetWeekGoalOffer(Lua_State* L)	{ return sPushSaveVal(L, defTASK_JX2_WEEKGOALOFFER); }
+int LuaJX2_AddWeekGoalOffer(Lua_State* L)	{ return sAddSaveVal(L, defTASK_JX2_WEEKGOALOFFER); }
+
+// SetWeeklyOffer(n) - dat thang (engine JX2 dung khi don tuan)
+int LuaJX2_SetWeeklyOffer(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Player[nPlayerIndex].m_cTask.SetSaveVal(defTASK_JX2_WEEKLYOFFER,
+		(DWORD)(int)Lua_ValueToNumber(L, 1));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ---- thoi gian / tien ich ----
+
+// GetCurServerTime() -> giay epoch (script JX2 cong tru truc tiep 7*24*3600)
+int LuaJX2_GetCurServerTime(Lua_State* L)
+{
+	Lua_PushNumber(L, (double)time(NULL));
+	return 1;
+}
+
+// FormatTime2String(epoch) -> "YYYY-MM-DD HH:MM:SS"
+int LuaJX2_FormatTime2String(Lua_State* L)
+{
+	time_t tVal = Lua_IsNumber(L, 1) ? (time_t)Lua_ValueToNumber(L, 1) : time(NULL);
+	struct tm* pTm = localtime(&tVal);
+	char szBuf[32];
+	if (pTm)
+		sprintf(szBuf, "%04d-%02d-%02d %02d:%02d:%02d",
+			pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday,
+			pTm->tm_hour, pTm->tm_min, pTm->tm_sec);
+	else
+		szBuf[0] = 0;
+	Lua_PushString(L, szBuf);
+	return 1;
+}
+
+// FormatTime2Number(epoch) -> so YYYYMMDD
+int LuaJX2_FormatTime2Number(Lua_State* L)
+{
+	time_t tVal = Lua_IsNumber(L, 1) ? (time_t)Lua_ValueToNumber(L, 1) : time(NULL);
+	struct tm* pTm = localtime(&tVal);
+	int nNum = 0;
+	if (pTm)
+		nNum = (pTm->tm_year + 1900) * 10000 + (pTm->tm_mon + 1) * 100 + pTm->tm_mday;
+	Lua_PushNumber(L, nNum);
+	return 1;
+}
+
+// String2Id(sz) -> ma bam ten (cung cong thuc voi relay g_String2Id)
+int LuaJX2_String2Id(Lua_State* L)
+{
+	if (!Lua_IsString(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)g_FileName2Id((LPSTR)Lua_ValueToString(L, 1)));
+	return 1;
+}
+
+static void sJX2_ScriptLog(const char* pszFile, const char* pszText)
+{
+	if (!pszText)
+		return;
+	FILE* pFile = fopen(pszFile, "at");
+	if (!pFile)
+		return;
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	fprintf(pFile, "[%04d-%02d-%02d %02d:%02d:%02d] %s\n",
+		pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday,
+		pTm->tm_hour, pTm->tm_min, pTm->tm_sec, pszText);
+	fclose(pFile);
+}
+
+// OutputMsg(sz) - JX2 in console; JX1 ghi debug log + file
+int LuaJX2_OutputMsg(Lua_State* L)
+{
+	if (!Lua_IsString(L, 1))
+		return 0;
+	const char* psz = (const char*)Lua_ValueToString(L, 1);
+	g_DebugLog("[TONGJX2-script] %s", psz);
+	sJX2_ScriptLog("logs\\script_jx2.log", psz);
+	return 0;
+}
+
+// WriteLog(sz) - log chung cua script
+int LuaJX2_WriteLog(Lua_State* L)
+{
+	if (Lua_IsString(L, 1))
+		sJX2_ScriptLog("logs\\script_jx2.log", (const char*)Lua_ValueToString(L, 1));
+	return 0;
+}
+
+// WriteStringToFile(szPath, szText) - ghi noi (append)
+int LuaJX2_WriteStringToFile(Lua_State* L)
+{
+	if (!Lua_IsString(L, 1) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	FILE* pFile = fopen((const char*)Lua_ValueToString(L, 1), "ab");
+	if (!pFile)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	const char* psz = (const char*)Lua_ValueToString(L, 2);
+	fwrite(psz, 1, strlen(psz), pFile);
+	fclose(pFile);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// GlobalExecute(szLua) - JX2 chay cau lenh tren moi GameServer; JX1 mot GS -> chay ngay
+int LuaJX2_GlobalExecute(Lua_State* L)
+{
+	if (!Lua_IsString(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	lua_dostring(L, (const char*)Lua_ValueToString(L, 1));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SyncTaskValue(...) - JX2 day bien nhiem vu xuong client UI; JX1 chua co kenh nay
+int LuaJX2_SyncTaskValue(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// AskClientForNumber(...) - can hop nhap so phia client (lam o giai doan cua so)
+int LuaJX2_AskClientForNumber(Lua_State* L)
+{
+	Lua_PushNumber(L, -1);
+	return 1;
+}
+
+// ---- cap nguoi choi ve bang (doc ban sao JX2) ----
+
+static KTongJX2Member* sJX2_MyMember(Lua_State* L, KTongJX2Tong** ppTong)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (ppTong)
+		*ppTong = NULL;
+	if (nPlayerIndex <= 0)
+		return NULL;
+	KTongJX2Member* pMe = NULL;
+	KTongJX2Tong* pTong = sJX2_PlayerTong(nPlayerIndex, &pMe);
+	if (ppTong)
+		*ppTong = pTong;
+	return pMe;
+}
+
+// GetTong() -> nTongID cua ban than (0 = chua vao bang)
+int LuaJX2_GetTong(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	sJX2_MyMember(L, &pTong);
+	Lua_PushNumber(L, pTong ? (double)pTong->dwNameID : 0);
+	return 1;
+}
+
+// GetTongMemberID() -> NameID cua ban than trong bang (0 = chua vao bang)
+int LuaJX2_GetTongMemberID(Lua_State* L)
+{
+	KTongJX2Member* pMe = sJX2_MyMember(L, NULL);
+	Lua_PushNumber(L, pMe ? (double)pMe->dwNameID : 0);
+	return 1;
+}
+
+// GetTongFigure() -> 0..4 (-1 = chua vao bang)
+int LuaJX2_GetTongFigure(Lua_State* L)
+{
+	KTongJX2Member* pMe = sJX2_MyMember(L, NULL);
+	Lua_PushNumber(L, pMe ? (double)pMe->btFigure : -1);
+	return 1;
+}
+
+// CheckTongMasterPower() -> 1 neu la bang chu
+int LuaJX2_CheckTongMasterPower(Lua_State* L)
+{
+	KTongJX2Member* pMe = sJX2_MyMember(L, NULL);
+	Lua_PushNumber(L, (pMe && pMe->btFigure == 0) ? 1 : 0);
+	return 1;
+}
+
+// GetNpcTong(nNpcIdx) - NPC JX1 khong thuoc bang
+int LuaJX2_GetNpcTong(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// SetTongMaster(...) - doi bang chu qua script: JX1 dung flow cua so cu (chua ho tro)
+int LuaJX2_SetTongMaster(Lua_State* L)
+{
+	g_DebugLog("[TONGJX2-script] SetTongMaster: dung cua so doi chuc cua JX1");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// GetTongLogData() - JX2 doc so ghi chep engine; JX1 xem logs\tong_jx2.log
+int LuaJX2_GetTongLogData(Lua_State* L)
+{
+	Lua_PushString(L, (char*)"");
+	return 1;
+}
+
+// TongClaimWar(nTongID) - tuyen chien: dat WarState (field 11) + ghi su kien
+int LuaJX2_TongClaimWar(Lua_State* L)
+{
+	DWORD dwTongID = 0;
+	if (Lua_IsNumber(L, 1))
+		dwTongID = (DWORD)Lua_ValueToNumber(L, 1);
+	if (dwTongID == 0)
+	{
+		KTongJX2Tong* pTong = NULL;
+		sJX2_MyMember(L, &pTong);
+		if (pTong)
+			dwTongID = pTong->dwNameID;
+	}
+	if (!g_TongJX2.FindTong(dwTongID))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, 11, 1, defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, "Tuyen chien bang hoi", sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// GetTongMTask(wKey) / SetTongMTask(wKey, nVal) / AddTongMTask(wKey, nDelta)
+// = bien nhiem vu thanh vien cua CHINH MINH (JX2 2.2 - kho thu hai; JX1 hop nhat
+// vao kho thanh vien dong bo relay de khong lech nhau nhu JX2)
+int LuaJX2_GetTongMTask(Lua_State* L)
+{
+	KTongJX2Member* pMe = sJX2_MyMember(L, NULL);
+	WORD wKey = Lua_IsNumber(L, 1) ? (WORD)Lua_ValueToNumber(L, 1) : 0;
+	Lua_PushNumber(L, (double)(int)g_TongJX2.GetMemberField(pMe, wKey));
+	return 1;
+}
+
+int LuaJX2_SetTongMTask(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMe = sJX2_MyMember(L, &pTong);
+	if (!pTong || !pMe || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendMemberFieldCmd(pTong->dwNameID, pMe->dwNameID,
+		(WORD)Lua_ValueToNumber(L, 1), (DWORD)Lua_ValueToNumber(L, 2),
+		defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaJX2_AddTongMTask(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMe = sJX2_MyMember(L, &pTong);
+	if (!pTong || !pMe || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendMemberFieldCmd(pTong->dwNameID, pMe->dwNameID,
+		(WORD)Lua_ValueToNumber(L, 1), (DWORD)(int)Lua_ValueToNumber(L, 2),
+		defTONG_JX2_OP_ADD, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
 #endif // _SERVER

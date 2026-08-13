@@ -11751,6 +11751,37 @@ extern int LuaTONGM_ApplySetLastOnlineDate(Lua_State* L);
 extern int LuaTONGM_ApplyAddRight(Lua_State* L);
 extern int LuaTONGM_ApplyDelRight(Lua_State* L);
 // ==== JX2 port dot 2 ====
+// ==== JX2 port dot 3: ham script Linux goi ma JX1 thieu ====
+extern int LuaJX2_AddContribution(Lua_State* L);
+extern int LuaJX2_AddCumulateOffer(Lua_State* L);
+extern int LuaJX2_AddTongMTask(Lua_State* L);
+extern int LuaJX2_AddWeekGoalOffer(Lua_State* L);
+extern int LuaJX2_AddWeeklyOffer(Lua_State* L);
+extern int LuaJX2_AskClientForNumber(Lua_State* L);
+extern int LuaJX2_CheckTongMasterPower(Lua_State* L);
+extern int LuaJX2_FormatTime2Number(Lua_State* L);
+extern int LuaJX2_FormatTime2String(Lua_State* L);
+extern int LuaJX2_GetContribution(Lua_State* L);
+extern int LuaJX2_GetCumulateOffer(Lua_State* L);
+extern int LuaJX2_GetCurServerTime(Lua_State* L);
+extern int LuaJX2_GetNpcTong(Lua_State* L);
+extern int LuaJX2_GetTong(Lua_State* L);
+extern int LuaJX2_GetTongFigure(Lua_State* L);
+extern int LuaJX2_GetTongLogData(Lua_State* L);
+extern int LuaJX2_GetTongMTask(Lua_State* L);
+extern int LuaJX2_GetTongMemberID(Lua_State* L);
+extern int LuaJX2_GetWeekGoalOffer(Lua_State* L);
+extern int LuaJX2_GetWeeklyOffer(Lua_State* L);
+extern int LuaJX2_GlobalExecute(Lua_State* L);
+extern int LuaJX2_OutputMsg(Lua_State* L);
+extern int LuaJX2_SetTongMTask(Lua_State* L);
+extern int LuaJX2_SetTongMaster(Lua_State* L);
+extern int LuaJX2_SetWeeklyOffer(Lua_State* L);
+extern int LuaJX2_String2Id(Lua_State* L);
+extern int LuaJX2_SyncTaskValue(Lua_State* L);
+extern int LuaJX2_TongClaimWar(Lua_State* L);
+extern int LuaJX2_WriteLog(Lua_State* L);
+extern int LuaJX2_WriteStringToFile(Lua_State* L);
 extern int LuaTONG_GetSelfCamp(Lua_State* L);
 extern int LuaTONG_GetCurCamp(Lua_State* L);
 extern int LuaTONG_GetExpLevel(Lua_State* L);
@@ -12383,6 +12414,41 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TONGM_ApplyAddRight",	LuaTONGM_ApplyAddRight },
 		{ "TONGM_ApplyDelRight",	LuaTONGM_ApplyDelRight },
 		// ==== JX2 port dot 2 ====
+		// ==== JX2 port dot 3: ham script Linux can ====
+		{ "GetContribution",	LuaJX2_GetContribution },
+		{ "AddContribution",	LuaJX2_AddContribution },
+		{ "GetWeeklyOffer",	LuaJX2_GetWeeklyOffer },
+		{ "AddWeeklyOffer",	LuaJX2_AddWeeklyOffer },
+		{ "SetWeeklyOffer",	LuaJX2_SetWeeklyOffer },
+		{ "GetCumulateOffer",	LuaJX2_GetCumulateOffer },
+		{ "AddCumulateOffer",	LuaJX2_AddCumulateOffer },
+		{ "GetWeekGoalOffer",	LuaJX2_GetWeekGoalOffer },
+		{ "AddWeekGoalOffer",	LuaJX2_AddWeekGoalOffer },
+		{ "GetCurServerTime",	LuaJX2_GetCurServerTime },
+		{ "GetSysCurrentTime",	LuaJX2_GetCurServerTime },
+		{ "GetCurrentTime",	LuaJX2_GetCurServerTime },
+		{ "FormatTime2String",	LuaJX2_FormatTime2String },
+		{ "FormatTime2Number",	LuaJX2_FormatTime2Number },
+		{ "String2Id",	LuaJX2_String2Id },
+		{ "OutputMsg",	LuaJX2_OutputMsg },
+		{ "WriteLog",	LuaJX2_WriteLog },
+		{ "WriteStringToFile",	LuaJX2_WriteStringToFile },
+		{ "GlobalExecute",	LuaJX2_GlobalExecute },
+		{ "SyncTaskValue",	LuaJX2_SyncTaskValue },
+		{ "AskClientForNumber",	LuaJX2_AskClientForNumber },
+		{ "GetTong",	LuaJX2_GetTong },
+		{ "GetCurrentTong",	LuaJX2_GetTong },
+		{ "GetTongMemberID",	LuaJX2_GetTongMemberID },
+		{ "GetTongFigure",	LuaJX2_GetTongFigure },
+		{ "CheckTongMasterPower",	LuaJX2_CheckTongMasterPower },
+		{ "GetNpcTong",	LuaJX2_GetNpcTong },
+		{ "SetTongMaster",	LuaJX2_SetTongMaster },
+		{ "GetTongLogData",	LuaJX2_GetTongLogData },
+		{ "TongClaimWar",	LuaJX2_TongClaimWar },
+		{ "GetTongNameByID",	LuaTONG_GetName },
+		{ "GetTongMTask",	LuaJX2_GetTongMTask },
+		{ "SetTongMTask",	LuaJX2_SetTongMTask },
+		{ "AddTongMTask",	LuaJX2_AddTongMTask },
 		{ "TONG_GetSelfCamp",	LuaTONG_GetSelfCamp },
 		{ "TONG_GetCurCamp",	LuaTONG_GetCurCamp },
 		{ "TONG_GetExpLevel",	LuaTONG_GetExpLevel },
