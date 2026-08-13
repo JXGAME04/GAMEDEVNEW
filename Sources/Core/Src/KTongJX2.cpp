@@ -2070,9 +2070,29 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 					strncpy(pOne->m_szName, pMember->szName, 31);
 					pOne->m_dwNameID = pMember->dwNameID;
 					pOne->m_btFigure = pMember->btFigure;
-					pOne->m_btOnline = sIsRoleOnlineLocal(pMember->szName) ? 1 : 0;
+					int nOnIdx = sFindPlayerIdxByNameID(pMember->dwNameID);
+					pOne->m_btOnline = (nOnIdx > 0) ? 1 : 0;
 					pOne->m_dwOffer = GetMemberField(pMember, 7);
 					pOne->m_wRights = sJX2_RightMask(pMember);
+					pOne->m_dwJoinTime = GetMemberField(pMember, 2);
+					pOne->m_dwWeekOffer = GetMemberField(pMember, 9);
+					if (nOnIdx > 0 && Player[nOnIdx].m_nIndex > 0)
+					{
+						// online: lay truc tiep + cap nhat cache de nguoi offline van xem duoc
+						pOne->m_btLevel = (BYTE)Npc[Player[nOnIdx].m_nIndex].m_Level;
+						pOne->m_btFaction = (BYTE)Player[nOnIdx].m_cFaction.m_nFirstAddFaction;
+						if (GetMemberField(pMember, 1010) != (DWORD)pOne->m_btLevel)
+							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 1010,
+								(DWORD)pOne->m_btLevel, defTONG_JX2_OP_SET, 0);
+						if (GetMemberField(pMember, 1011) != (DWORD)pOne->m_btFaction)
+							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 1011,
+								(DWORD)pOne->m_btFaction, defTONG_JX2_OP_SET, 0);
+					}
+					else
+					{
+						pOne->m_btLevel = (BYTE)GetMemberField(pMember, 1010);
+						pOne->m_btFaction = (BYTE)GetMemberField(pMember, 1011);
+					}
 					pSync->m_btCount++;
 				}
 				nIdx++;

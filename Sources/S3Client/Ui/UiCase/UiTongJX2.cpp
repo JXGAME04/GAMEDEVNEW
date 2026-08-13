@@ -54,6 +54,14 @@ static const char* s_szWsName[8] =
 	"", "Binh Giap", "Thien Cong", "Mat Na", "Thi Luyen", "Thien Y", "Le Vat", "Hoat Dong",
 };
 
+// ten 10 mon phai JX1 (id 1..10) - TCVN3
+static const char* s_szFaction[11] =
+{
+	"-", "Thi\325u L\251m", "Thi\252n V\255\254ng", "\247\255\352ng M\253n",
+	"Ng\362 \247\351c", "Nga My", "Th\363y Y\252n", "C\270i Bang",
+	"Thi\252n Nh\311n", "V\342 \247ang", "C\253n L\253n",
+};
+
 static const char* s_szFigure[5] =
 {
 	"Bang ch\361", "Tr\255\353ng l\267o", "\247\351i tr\255\353ng", "Bang ch\363ng", "An si",
@@ -911,8 +919,8 @@ void KUiTongJX2::RenderMembers()
 	TONG_JX2_MEMBER_SYNC* p = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 	char sz[120];
 	ClearRows();
-	sprintf(sz, "%s (%d-%d / tong %d)",
-		m_nPage == defTONG_JX2_PAGE_RIGHT ? "Bang chu + truong lao" : "Thanh vien",
+	// dong tieu de cot nhu ban Linux: Chuc vu / Ten / Mon phai - Cap / Cong hien
+	sprintf(sz, "Ch\370c v\364     T\252n              M\253n ph\270i-C\312p    C\350ng hi\325n  (%d-%d/%d)",
 		(int)p->m_wStart + 1, (int)p->m_wStart + p->m_btCount, (int)p->m_wTotal);
 	m_Row[0].SetText(sz);
 	int i;
@@ -941,11 +949,34 @@ void KUiTongJX2::RenderMembers()
 		}
 		else
 		{
-			sprintf(sz, "%s%-16s %-10s ch:%u %s", (i == m_nSel) ? "> " : "  ",
-				pM->m_szName, pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?",
-				pM->m_dwOffer, pM->m_btOnline ? "[ON]" : "");
+			sprintf(sz, "%s%-10s %-16s %-9s %3d  %6u %s", (i == m_nSel) ? "> " : "  ",
+				pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?", pM->m_szName,
+				pM->m_btFaction <= 10 ? s_szFaction[pM->m_btFaction] : "-",
+				(int)pM->m_btLevel, pM->m_dwOffer, pM->m_btOnline ? "[ON]" : "");
 		}
 		m_Row[i + 1].SetText(sz);
+	}
+	// dong chi tiet nguoi dang chon: ngay vao bang + cong hien tuan
+	if (m_nSel < (int)p->m_btCount)
+	{
+		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
+		char szJoin[40];
+		if (pSel->m_dwJoinTime)
+		{
+			long nDays = (long)((time(NULL) - (time_t)pSel->m_dwJoinTime) / 86400);
+			if (nDays < 0)
+				nDays = 0;
+			if (nDays == 0)
+				sprintf(szJoin, "h\253m nay");
+			else
+				sprintf(szJoin, "%ld ng\265y tr\255\355c", nDays);
+		}
+		else
+			strcpy(szJoin, "-");
+		sprintf(sz, "%.14s: V\265o bang %s, CH tu\307n %u, %s",
+			pSel->m_szName, szJoin, pSel->m_dwWeekOffer,
+			pSel->m_btOnline ? "dang online" : "offline");
+		m_Row[TJX2_UI_ROWS - 1].SetText(sz);
 	}
 	LoadChecksFromSel();
 }

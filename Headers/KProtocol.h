@@ -1762,6 +1762,10 @@ typedef struct
 	BYTE	m_btOnline;
 	DWORD	m_dwOffer;
 	WORD	m_wRights;
+	BYTE	m_btLevel;		// cap (online: truc tiep; offline: cache KV 1010)
+	BYTE	m_btFaction;	// mon phai 1..10 (cache KV 1011)
+	DWORD	m_dwJoinTime;	// KV 2 - thoi diem vao bang (epoch giay)
+	DWORD	m_dwWeekOffer;	// KV 9 - cong hien tuan nay
 } TONG_JX2_ONE_MEMBER;
 
 typedef struct
