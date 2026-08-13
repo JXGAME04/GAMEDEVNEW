@@ -28,6 +28,9 @@ public:
 
 	static KUiTongJX2*	OpenWindow();
 	static KUiTongJX2*	GetIfVisible();
+	// bam icon bang hoi tren thanh giao dien: dang mo -> dong; co bang -> mo
+	// cua so JX2; chua vao bang -> mo cua so cu (tao / xin vao bang)
+	static void			ToggleFromIcon();
 	static void			CloseWindow(bool bDestroy = true);
 	static void			LoadScheme(const char* pScheme);
 	// nhan goi TONG_JX2_*_SYNC nguyen ven; nLen < 0 = lenh MO cua so tu server

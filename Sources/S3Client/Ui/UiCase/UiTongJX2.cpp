@@ -16,6 +16,10 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 #include "../UiBase.h"
 
 #include "UiTongJX2.h"
+#include "../elem/wndedit.h"
+#include "../elem/wndlist2.h"
+#include "../elem/wndscrollbar.h"
+#include "UiTongManager.h"
 
 #include "../../Core/Src/KProtocol.h"
 #include "../../../Headers/KProtocolDef.h"
@@ -87,6 +91,21 @@ KUiTongJX2* KUiTongJX2::OpenWindow()
 		ms_pSelf->SwitchPage(defTONG_JX2_PAGE_INFO);
 	}
 	return ms_pSelf;
+}
+
+// Bam icon bang hoi: toggle. GTOI_TONG_JX2_VIEW tra 0 khi CHUA vao bang
+// (Core client kiem m_dwTongNameID) -> mo cua so cu de tao / xin vao bang.
+void KUiTongJX2::ToggleFromIcon()
+{
+	if (GetIfVisible())
+	{
+		CloseWindow(false);
+		return;
+	}
+	if (g_pCoreShell && g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0))
+		OpenWindow();
+	else
+		KUiTongManager::OpenWindow(NULL);
 }
 
 KUiTongJX2* KUiTongJX2::GetIfVisible()

@@ -9177,6 +9177,8 @@ int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nPara
 	// ==== JX2 port: cua so bang hoi kieu JX2 ====
 	if (uOper == GTOI_TONG_JX2_VIEW)
 	{
+		if (Player[CLIENT_PLAYER_INDEX].m_cTong.GetTongNameID() == 0)
+			return 0;	// chua vao bang -> UI mo cua so cu
 		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView((int)uParam, nParam);
 		return 1;
 	}

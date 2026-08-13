@@ -69,6 +69,7 @@
 #include "UiCase/UiPlayerBar.h"
 #include "UiCase/UiStrengthRank.h"
 #include "UiCase/UiTongManager.h"
+#include "UiCase/UiTongJX2.h"	// JX2 port
 #include "UiCase/UiTongCreateSheet.h"
 #include "UiCase/UiAuto.h"
 #include "UiCase/UiAutoPlay.h"
@@ -888,7 +889,7 @@ void Player_Faction::OnButtonClick()
 	if(KUiTongManager::GetIfVisible())
 		KUiTongManager::CloseWindow(false);
 	else
-		KUiTongManager::OpenWindow(NULL);
+		KUiTongJX2::ToggleFromIcon();	// JX2 port
 }
 const char*	Player_Faction::GetShortKey()
 {

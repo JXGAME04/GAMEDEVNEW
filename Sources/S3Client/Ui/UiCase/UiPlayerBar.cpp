@@ -18,6 +18,7 @@
 #include "UiMiniMap.h"
 #include "UiHelper.h"
 #include "UiTongManager.h"
+#include "UiTongJX2.h"	// JX2 port
 #include "UiAuto.h"
 #include "UiAutoPlay.h"
 #include "../Elem/MouseHover.h"
@@ -763,7 +764,7 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Team)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_TEAM);	
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Faction)
-			KUiTongManager::OpenWindow(NULL);				
+			KUiTongJX2::ToggleFromIcon();	// JX2 port: co bang -> cua so JX2, chua co -> cua so cu
 		else if (uParam == (unsigned int)(KWndWindow*)&m_SendBtn)
 			OnSend(false);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Run)
