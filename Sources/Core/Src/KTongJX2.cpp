@@ -2076,6 +2076,8 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 					pOne->m_wRights = sJX2_RightMask(pMember);
 					pOne->m_dwJoinTime = GetMemberField(pMember, 2);
 					pOne->m_dwWeekOffer = GetMemberField(pMember, 9);
+					pOne->m_dwLastActive = GetMemberField(pMember, 15);
+					pOne->m_dwWeekGoal = GetMemberField(pMember, 10);
 					if (nOnIdx > 0 && Player[nOnIdx].m_nIndex > 0)
 					{
 						// online: lay truc tiep + cap nhat cache de nguoi offline van xem duoc
@@ -2087,6 +2089,14 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 						if (GetMemberField(pMember, 1011) != (DWORD)pOne->m_btFaction)
 							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 1011,
 								(DWORD)pOne->m_btFaction, defTONG_JX2_OP_SET, 0);
+						DWORD dwNow = (DWORD)time(NULL);
+						if (dwNow > pOne->m_dwLastActive + 600)
+						{
+							// online: cap nhat moc hoat dong gan day (toi da 10 phut/lan)
+							sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 15,
+								dwNow, defTONG_JX2_OP_SET, 0);
+							pOne->m_dwLastActive = dwNow;
+						}
 					}
 					else
 					{

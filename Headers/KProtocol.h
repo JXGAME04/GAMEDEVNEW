@@ -1766,6 +1766,8 @@ typedef struct
 	BYTE	m_btFaction;	// mon phai 1..10 (cache KV 1011)
 	DWORD	m_dwJoinTime;	// KV 2 - thoi diem vao bang (epoch giay)
 	DWORD	m_dwWeekOffer;	// KV 9 - cong hien tuan nay
+	DWORD	m_dwLastActive;	// KV 15 - hoat dong gan day (epoch, cache khi online)
+	DWORD	m_dwWeekGoal;	// KV 10 - hoan thanh muc tieu tuan
 } TONG_JX2_ONE_MEMBER;
 
 typedef struct

@@ -84,6 +84,11 @@ private:
 	// trang Su dung chuc nang (blueprint trang chuc nang)
 	KWndImage			m_FunBg;
 	KWndText80			m_FunTxt[15];			// nhan + o so (bang s_sFunTxt)
+	KWndImage			m_FunTxtBg[15];			// khung do / thanh ong (Image cua section)
+	KWndText80			m_FunP[3];				// khoi Tin tuc ca nhan
+	KWndImage			m_FunPBg[2];			// khung + thanh ong cong hien ca nhan
+	KWndText80			m_MDet[7];				// panel XANH chi tiet thanh vien
+	KWndText80			m_RowDim[14];			// dong danh sach mau xam (offline)
 	KWndLabeledButton	m_FunBtn[14];			// nut hanh dong (bang s_sFunBtn)
 	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
 	KWndLabeledButton	m_BtnFun;				// nut mo trang (tren cua so chinh)
@@ -113,6 +118,8 @@ private:
 	int		m_bHasList;
 	int		m_bHasRecord;
 	int		m_nRcSub;				// 0 muc tieu tuan / 1 thong bao / 2 bang vu / 3 lich su
+	int		m_nFunMode;				// trang FunUse: 0 = Tin tuc (an nut), 1 = Su dung chuc nang
+	int		m_bMDet;				// dang hien panel chi tiet thanh vien
 };
 
 #endif // __UITONGJX2_H__
