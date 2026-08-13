@@ -132,6 +132,16 @@ int	g_nTongPCSize[defTONG_PROTOCOL_CLIENT_NUM] =
 	sizeof(STONG_BE_CHANGED_EXP_SYNC),						//enumS2C_TONG_BE_CHANGED_EXP
 	sizeof(STONG_BE_CHANGED_WAYEDIT_SYNC),					//enumS2C_TONG_BE_CHANGED_WAYEDIT
 	sizeof(STONG_BE_CHANGED_NEXTTARGET_SYNC),					//enumS2C_TONG_BE_CHANGED_NEXTTARGET
+	sizeof(STONG_FULL_SYNC),				// enumS2C_TONG_FULL (truoc day THIEU muc nay -> goi bi tu choi im lang)
+	// ==== JX2 port ====
+	sizeof(STONG_JX2_FIELD_COMMAND),			// enumS2C_TONG_JX2_FIELD_SYNC
+	sizeof(STONG_JX2_MONEY_COMMAND),			// enumS2C_TONG_JX2_MONEY_SYNC
+	sizeof(STONG_JX2_MEMBER_FIELD_COMMAND),	// enumS2C_TONG_JX2_MEMBER_FIELD_SYNC
+	sizeof(STONG_JX2_RIGHT_COMMAND),			// enumS2C_TONG_JX2_RIGHT_SYNC
+	-1,						// enumS2C_TONG_JX2_TONG_SYNC (bien dai)
+	-1,						// enumS2C_TONG_JX2_MEMBER_SYNC (bien dai)
+	sizeof(STONG_JX2_TONG_REMOVE_SYNC),		// enumS2C_TONG_JX2_TONG_REMOVE_SYNC
+	sizeof(STONG_JX2_SYNC_DONE),			// enumS2C_TONG_JX2_SYNC_DONE
 };
 
 #ifndef _STANDALONE
@@ -1326,6 +1336,18 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 
 		switch (pHeader->ProtocolID)
 		{
+		// ==== JX2 port: chuyen nguyen goi vao Core (KTongJX2Mgr) ====
+		case enumS2C_TONG_JX2_FIELD_SYNC:
+		case enumS2C_TONG_JX2_MONEY_SYNC:
+		case enumS2C_TONG_JX2_MEMBER_FIELD_SYNC:
+		case enumS2C_TONG_JX2_RIGHT_SYNC:
+		case enumS2C_TONG_JX2_TONG_SYNC:
+		case enumS2C_TONG_JX2_MEMBER_SYNC:
+		case enumS2C_TONG_JX2_TONG_REMOVE_SYNC:
+		case enumS2C_TONG_JX2_SYNC_DONE:
+			if (m_pCoreServerShell)
+				m_pCoreServerShell->OperationRequest(SSOI_TONG_JX2_SYNC, (intptr_t)pChar, (int)nSize);
+			break;
 		case enumS2C_TONG_CREATE_SUCCESS:
 			{
 				STONG_CREATE_SUCCESS_SYNC	*pSync = (STONG_CREATE_SUCCESS_SYNC*)pChar;

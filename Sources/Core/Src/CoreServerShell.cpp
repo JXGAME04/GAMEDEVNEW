@@ -13,6 +13,7 @@
 #include "KSubWorldSet.h"
 #include "KProtocolProcess.h"
 #include "KNewProtocolProcess.h"
+#include "KTongJX2.h"	// JX2 port
 #include "KPlayerSet.h"
 #include "KLadder.h"
 
@@ -997,6 +998,11 @@ int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int n
 		break;
 	case SSOI_RELOAD_WELCOME_MSG:
 		PlayerSet.ReloadWelcomeMsg();
+		break;
+
+	case SSOI_TONG_JX2_SYNC:	// JX2 port: goi dong bo bang hoi tu relay
+		if (uParam)
+			g_TongJX2.OnRelayPacket((const void*)uParam, nParam);
 		break;
 
 	// relay 帮会创建成功，通知 core 进行相应的处理

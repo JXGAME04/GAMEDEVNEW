@@ -11688,6 +11688,70 @@ int LuaPlaySprMovie(Lua_State* L)
 	return 0;
 }
 #endif
+#ifdef _SERVER
+// ==== JX2 port: ham bang hoi kieu JX2 (dinh nghia o KTongJX2.cpp) ====
+extern int LuaTONG_IsExist(Lua_State* L);
+extern int LuaTONG_GetName(Lua_State* L);
+extern int LuaTONG_Name2ID(Lua_State* L);
+extern int LuaTONG_GetTongCount(Lua_State* L);
+extern int LuaTONG_GetFirstTong(Lua_State* L);
+extern int LuaTONG_GetNextTong(Lua_State* L);
+extern int LuaTONG_GetTongByRoleName(Lua_State* L);
+extern int LuaTONG_GetMemberCount(Lua_State* L);
+extern int LuaTONG_GetOnlineCount(Lua_State* L);
+extern int LuaTONG_GetFirstMember(Lua_State* L);
+extern int LuaTONG_GetNextMember(Lua_State* L);
+extern int LuaTONG_GetMaster(Lua_State* L);
+extern int LuaTONG_GetTaskValue(Lua_State* L);
+extern int LuaTONG_GetUTaskValue(Lua_State* L);
+extern int LuaTONG_GetTaskTemp(Lua_State* L);
+extern int LuaTONG_SetTaskTemp(Lua_State* L);
+extern int LuaTONG_GetCredit(Lua_State* L);
+extern int LuaTONG_GetExp(Lua_State* L);
+extern int LuaTONG_GetUnionID(Lua_State* L);
+extern int LuaTONG_GetWarState(Lua_State* L);
+extern int LuaTONG_GetBuildFund(Lua_State* L);
+extern int LuaTONG_GetBuildLevel(Lua_State* L);
+extern int LuaTONG_GetWarBuildFund(Lua_State* L);
+extern int LuaTONG_GetMaintainFund(Lua_State* L);
+extern int LuaTONG_GetPerStandFund(Lua_State* L);
+extern int LuaTONG_GetStoredOffer(Lua_State* L);
+extern int LuaTONG_GetStoredBuildFund(Lua_State* L);
+extern int LuaTONG_GetDay(Lua_State* L);
+extern int LuaTONG_GetWeek(Lua_State* L);
+extern int LuaTONG_GetWeekBuildFund(Lua_State* L);
+extern int LuaTONG_GetWeekBuildUpper(Lua_State* L);
+extern int LuaTONG_GetTotalBuildFund(Lua_State* L);
+extern int LuaTONG_GetPauseState(Lua_State* L);
+extern int LuaTONG_GetTongMap(Lua_State* L);
+extern int LuaTONG_GetTongMapTemplate(Lua_State* L);
+extern int LuaTONG_GetTongMapBan(Lua_State* L);
+extern int LuaTONG_GetOccupyCityDay(Lua_State* L);
+extern int LuaTONG_GetMoney(Lua_State* L);
+extern int LuaTONG_GetStandFund(Lua_State* L);
+extern int LuaTONG_ApplySetTaskValue(Lua_State* L);
+extern int LuaTONG_ApplyAddTaskValue(Lua_State* L);
+extern int LuaTONG_ApplyAddUTaskValue(Lua_State* L);
+extern int LuaTONG_ApplySetMoney(Lua_State* L);
+extern int LuaTONG_ApplyAddMoney(Lua_State* L);
+extern int LuaTONGM_IsExist(Lua_State* L);
+extern int LuaTONGM_GetName(Lua_State* L);
+extern int LuaTONGM_GetFigure(Lua_State* L);
+extern int LuaTONGM_GetSex(Lua_State* L);
+extern int LuaTONGM_GetOnline(Lua_State* L);
+extern int LuaTONGM_GetOffer(Lua_State* L);
+extern int LuaTONGM_GetTaskValue(Lua_State* L);
+extern int LuaTONGM_GetUTaskValue(Lua_State* L);
+extern int LuaTONGM_CheckRight(Lua_State* L);
+extern int LuaTONGM_ApplySetTaskValue(Lua_State* L);
+extern int LuaTONGM_ApplyAddTaskValue(Lua_State* L);
+extern int LuaTONGM_ApplyAddOffer(Lua_State* L);
+extern int LuaTONGM_ApplySetRetireDate(Lua_State* L);
+extern int LuaTONGM_ApplySetLastOnlineDate(Lua_State* L);
+extern int LuaTONGM_ApplyAddRight(Lua_State* L);
+extern int LuaTONGM_ApplyDelRight(Lua_State* L);
+#endif
+
 TLua_Funcs GameScriptFuns[] =
 {
 	{"Say", LuaSelectUI},
@@ -12135,6 +12199,69 @@ TLua_Funcs GameScriptFuns[] =
 		{ "SetTongLevel",			LuaSetTongLevel },
 		{ "GetTongExp",			LuaGetTongExp },
 		{ "SetTongExp",			LuaSetTongExp },
+#ifdef _SERVER
+		// ==== JX2 port: bang hoi kieu JX2 (xem KTongJX2.cpp) ====
+		{ "TONG_IsExist",	LuaTONG_IsExist },
+		{ "TONG_GetName",	LuaTONG_GetName },
+		{ "TONG_Name2ID",	LuaTONG_Name2ID },
+		{ "TONG_GetTongCount",	LuaTONG_GetTongCount },
+		{ "TONG_GetFirstTong",	LuaTONG_GetFirstTong },
+		{ "TONG_GetNextTong",	LuaTONG_GetNextTong },
+		{ "TONG_GetTongByRoleName",	LuaTONG_GetTongByRoleName },
+		{ "TONG_GetMemberCount",	LuaTONG_GetMemberCount },
+		{ "TONG_GetOnlineCount",	LuaTONG_GetOnlineCount },
+		{ "TONG_GetFirstMember",	LuaTONG_GetFirstMember },
+		{ "TONG_GetNextMember",	LuaTONG_GetNextMember },
+		{ "TONG_GetMaster",	LuaTONG_GetMaster },
+		{ "TONG_GetTaskValue",	LuaTONG_GetTaskValue },
+		{ "TONG_GetUTaskValue",	LuaTONG_GetUTaskValue },
+		{ "TONG_GetTaskTemp",	LuaTONG_GetTaskTemp },
+		{ "TONG_SetTaskTemp",	LuaTONG_SetTaskTemp },
+		{ "TONG_GetCredit",	LuaTONG_GetCredit },
+		{ "TONG_GetExp",	LuaTONG_GetExp },
+		{ "TONG_GetUnionID",	LuaTONG_GetUnionID },
+		{ "TONG_GetWarState",	LuaTONG_GetWarState },
+		{ "TONG_GetBuildFund",	LuaTONG_GetBuildFund },
+		{ "TONG_GetBuildLevel",	LuaTONG_GetBuildLevel },
+		{ "TONG_GetWarBuildFund",	LuaTONG_GetWarBuildFund },
+		{ "TONG_GetMaintainFund",	LuaTONG_GetMaintainFund },
+		{ "TONG_GetPerStandFund",	LuaTONG_GetPerStandFund },
+		{ "TONG_GetStoredOffer",	LuaTONG_GetStoredOffer },
+		{ "TONG_GetStoredBuildFund",	LuaTONG_GetStoredBuildFund },
+		{ "TONG_GetDay",	LuaTONG_GetDay },
+		{ "TONG_GetWeek",	LuaTONG_GetWeek },
+		{ "TONG_GetWeekBuildFund",	LuaTONG_GetWeekBuildFund },
+		{ "TONG_GetWeekBuildUpper",	LuaTONG_GetWeekBuildUpper },
+		{ "TONG_GetTotalBuildFund",	LuaTONG_GetTotalBuildFund },
+		{ "TONG_GetPauseState",	LuaTONG_GetPauseState },
+		{ "TONG_GetTongMap",	LuaTONG_GetTongMap },
+		{ "TONG_GetTongMapTemplate",	LuaTONG_GetTongMapTemplate },
+		{ "TONG_GetTongMapBan",	LuaTONG_GetTongMapBan },
+		{ "TONG_GetOccupyCityDay",	LuaTONG_GetOccupyCityDay },
+		{ "TONG_GetMoney",	LuaTONG_GetMoney },
+		{ "TONG_GetStandFund",	LuaTONG_GetStandFund },
+		{ "TONG_ApplySetTaskValue",	LuaTONG_ApplySetTaskValue },
+		{ "TONG_ApplyAddTaskValue",	LuaTONG_ApplyAddTaskValue },
+		{ "TONG_ApplyAddUTaskValue",	LuaTONG_ApplyAddUTaskValue },
+		{ "TONG_ApplySetMoney",	LuaTONG_ApplySetMoney },
+		{ "TONG_ApplyAddMoney",	LuaTONG_ApplyAddMoney },
+		{ "TONGM_IsExist",	LuaTONGM_IsExist },
+		{ "TONGM_GetName",	LuaTONGM_GetName },
+		{ "TONGM_GetFigure",	LuaTONGM_GetFigure },
+		{ "TONGM_GetSex",	LuaTONGM_GetSex },
+		{ "TONGM_GetOnline",	LuaTONGM_GetOnline },
+		{ "TONGM_GetOffer",	LuaTONGM_GetOffer },
+		{ "TONGM_GetTaskValue",	LuaTONGM_GetTaskValue },
+		{ "TONGM_GetUTaskValue",	LuaTONGM_GetUTaskValue },
+		{ "TONGM_CheckRight",	LuaTONGM_CheckRight },
+		{ "TONGM_ApplySetTaskValue",	LuaTONGM_ApplySetTaskValue },
+		{ "TONGM_ApplyAddTaskValue",	LuaTONGM_ApplyAddTaskValue },
+		{ "TONGM_ApplyAddOffer",	LuaTONGM_ApplyAddOffer },
+		{ "TONGM_ApplySetRetireDate",	LuaTONGM_ApplySetRetireDate },
+		{ "TONGM_ApplySetLastOnlineDate",	LuaTONGM_ApplySetLastOnlineDate },
+		{ "TONGM_ApplyAddRight",	LuaTONGM_ApplyAddRight },
+		{ "TONGM_ApplyDelRight",	LuaTONGM_ApplyDelRight },
+#endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);
 		{"MakeEnemy",	LuaMakeEnemy}, //½á³ð MakeEnemy(enemyname)

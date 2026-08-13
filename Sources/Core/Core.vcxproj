@@ -763,6 +763,12 @@
     </ClCompile>
     <ClCompile Include="Src\KMissleSet.cpp">
     </ClCompile>
+    <ClCompile Include="Src\KTongJX2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Src\KNewProtocolProcess.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
@@ -1053,6 +1059,8 @@
     <ClInclude Include="Src\KMissleMagicAttribsData.h" />
     <ClInclude Include="Src\KMissleRes.h" />
     <ClInclude Include="Src\KMissleSet.h" />
+    <ClInclude Include="Src\KTongJX2.h">
+    </ClInclude>
     <ClInclude Include="Src\KNewProtocolProcess.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>

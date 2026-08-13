@@ -225,6 +225,11 @@ struct iCoreServerShell
 	virtual void SetExtPoint(int nIndex, int nExtPoint) = 0;
 };
 
+// ==== JX2 port: ma thao tac chuyen goi dong bo bang hoi tu KSOServer vao Core ====
+// Dat NGOAI enum SERVER_OPERATION_INDEX de khong dung cham gia tri cu.
+// uParam = con tro goi pf_tong enumS2C_TONG_JX2_*, nParam = kich thuoc goi.
+#define SSOI_TONG_JX2_SYNC		0x4A583201
+
 #ifndef CORE_EXPORTS
 
 #ifndef __linxu
