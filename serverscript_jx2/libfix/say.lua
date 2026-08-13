@@ -66,14 +66,16 @@ function strfill(str_org, n_len, n_style, str_space)
 	str_space = totext(str_space, " ")
 	n_len = tonum(n_len)
 	str_org = totext(str_org)
-	PushString(str_org)
+	-- JX1: Lua thuan thay stack chuoi engine JX2
 	if (n_style == 1) then
 --		/*
 --		while (strlen(str_org) < n_len) do
 --			str_org = str_org..str_space
 --		end
 --		*/
-		RightFillString(n_len, str_space)
+		while (strlen(str_org) < n_len) do
+			str_org = str_org..str_space
+		end
 	elseif (n_style == 2) then
 --		/*
 --		local b_left = 1
@@ -86,17 +88,26 @@ function strfill(str_org, n_len, n_style, str_space)
 --			b_left = not b_left
 --		end
 --		*/
-		AroundFillString(n_len, str_space)
+		local b_left = 1
+		while (strlen(str_org) < n_len) do
+			if b_left then
+				str_org = str_space..str_org
+			else
+				str_org = str_org..str_space
+			end
+			b_left = not b_left
+		end
 	else
 --		/*
 --		while (strlen(str_org) < n_len) do
 --			str_org = str_space..str_org
 --		end
 --		*/
-		LeftFillString(n_len, str_space)
+		while (strlen(str_org) < n_len) do
+			str_org = str_space..str_org
+		end
 	end
-	-- return str_org
-	return PopString()
+	return str_org
 end
 
 --返回定长文本，<color...>、<enter>标签不算长度

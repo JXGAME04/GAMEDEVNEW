@@ -51,12 +51,11 @@ function join(tb, sep)
 --	end
 --	*/
 	if (getn(tb) > 0) then
-		PushString(tb[1])
+		-- JX1: Lua thuan thay stack chuoi engine JX2
+		str = tostring(tb[1])
 		for i = 2, getn(tb) do
-			AppendString(sep)
-			AppendString(tb[i])
+			str = str..sep..tostring(tb[i])
 		end
-		str = PopString()
 	end
 	return str
 end
@@ -108,11 +107,12 @@ function totext(org, str_default)
 		end
 		-- return str .. totext(tb_bra[2])
 		tb_str[getn(tb_str) + 1] = totext(tb_bra[2])
-		PushString(tb_str[1])
+		-- JX1: Lua thuan thay stack chuoi engine JX2
+		local strAll = tb_str[1]
 		for i = 2, getn(tb_str) do
-			AppendString(tb_str[i])
+			strAll = strAll..tb_str[i]
 		end
-		return PopString()
+		return strAll
 	elseif (orgtype == "function") then
 		return totext(org(), str_default)
 	else

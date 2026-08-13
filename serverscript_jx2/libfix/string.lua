@@ -53,8 +53,6 @@ function replace(str,pattern,s)
 	end
 	return str
 	-- (bo 3 dong PushString/ReplaceString/PopString)
-	ReplaceString(pattern, s)
-	return PopString()
 end
 --========函数定义==================================--
 --函数原形：split(str,splitor)
@@ -127,12 +125,11 @@ function join(tb, str_sep)
 	end
 	local str = ""
 	if (getn(tb) > 0) then
-		PushString(tb[1])
+		-- JX1: Lua thuan thay stack chuoi engine JX2
+		str = tostring(tb[1])
 		for i = 2, getn(tb) do
-			AppendString(str_sep)
-			AppendString(tb[i])
+			str = str..str_sep..tostring(tb[i])
 		end
-		str = PopString()
 	end
 	return str
 end
@@ -166,9 +163,16 @@ function trim(str)
 --	end
 --	return strsub(str,start,last)
 --	*/
-	PushString(str)
-	TrimString()
-	return PopString()
+	-- JX1: dung Lua thuan thay ham engine JX2
+	local nStart, nLast = strfind(str, "%S+.*%S+")
+	if (nStart == nil or nLast == nil) then
+		local s1 = strfind(str, "%S")
+		if (s1 == nil) then
+			return ""
+		end
+		return strsub(str, s1, s1)
+	end
+	return strsub(str, nStart, nLast)
 end
 
 ---RGB数字转换成16进制表示的字符串
