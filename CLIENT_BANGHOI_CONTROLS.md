@@ -1,0 +1,390 @@
+# DANH MUC CONTROL 15 CUA SO BANG HOI BAN LINUX (trich tu blueprint ui3_1024)
+
+## 帮会创建单.ini
+- [Main] L=422 T=230 W=180 H=141 img=帮会信息修改底图.spr txt=-
+- [ImgTitle] L=0 T=0 W=180 H=141 img=帮会信息修改底图.spr txt=-
+- [TxtTongName] L=1 T=35 W=74 H=15 img=- txt=Bang h閕
+- [EditTongName] L=78 T=35 W=80 H=13 img=- txt=-
+- [TxtTongCamp] L=1 T=58 W=90 H=15 img=- txt=Phe ph竔 bang h閕
+- [BtnOrder] L=76 T=58 W=27 H=15 img=帮派创建-正派.spr txt=-
+- [BtnChaos] L=132 T=58 W=27 H=15 img=帮派创建-邪派.spr txt=-
+- [BtnNatural] L=104 T=58 W=27 H=15 img=帮派创建-中立.spr txt=-
+- [BtnDone] L=4 T=119 W=86 H=18 img=帮派创建-确定.spr txt=-
+- [BtnCancel] L=90 T=119 W=86 H=18 img=帮派创建-取消.spr txt=-
+- [ErrorBox] L=15 T=84 W=143 H=24 img=- txt=
+
+## 帮会发钱界面.ini
+- [Main] L=310 T=200 W=180 H=231 img=发放界面底图.spr txt=-
+- [Settings] L=? T=? W=? H=? img=- txt=-
+- [ImgTitle] L=23 T=4 W=180 H=30 img=发放界面标题_银两.spr txt=-
+- [TxtDirector] L=2 T=35 W=54 H=13 img=- txt=Tr�雗g L穙
+- [EditDirector] L=56 T=35 W=77 H=13 img=- txt=-
+- [TxtManager] L=2 T=59 W=56 H=13 img=- txt=чi tr�雗g
+- [EditManager] L=56 T=59 W=77 H=13 img=- txt=-
+- [TxtMember] L=2 T=83 W=56 H=13 img=- txt=е t�
+- [EditMember] L=56 T=83 W=77 H=13 img=- txt=-
+- [BtnDirectorTotal] L=135 T=34 W=39 H=15 img=发放银两-总数单人切换.spr txt=-
+- [BtnManagerTotal] L=135 T=58 W=39 H=15 img=发放银两-总数单人切换.spr txt=-
+- [BtnMemberTotal] L=135 T=82 W=39 H=15 img=发放银两-总数单人切换.spr txt=-
+- [BtnTotalMember] L=7 T=107 W=166 H=14 img=- txt=-
+- [TextDescription] L=10 T=158 W=166 H=50 img=- txt=
+- [BtnConfirm] L=4 T=210 W=86 H=18 img=帮派创建-确定.spr txt=-
+- [BtnCancel] L=90 T=210 W=86 H=18 img=帮派创建-取消.spr txt=-
+
+## 帮会改造系统.ini
+- [T鎛g thuy誸 minh] L=? T=? W=? H=? img=- txt=-
+- [Giao di謓 bang h閕] L=? T=? W=? H=? img=- txt=-
+- [Tin t鴆 bang h閕] L=? T=? W=? H=? img=- txt=-
+- [S� d鬾g ch鴆 n╪g] L=? T=? W=? H=? img=- txt=-
+- [T竎 Ph�阯g bang h閕] L=? T=? W=? H=? img=- txt=-
+- [Nh藅 k� bang h閕] L=? T=? W=? H=? img=- txt=-
+- [Tin t鴆 bang h閕] L=? T=? W=? H=? img=- txt=-
+- [T筸 d鮪g t竎 ph�阯g] L=? T=? W=? H=? img=- txt=-
+- [H� th鑞g s秐 xu蕋] L=? T=? W=? H=? img=- txt=-
+- [K� n╪g bang h閕] L=? T=? W=? H=? img=- txt=-
+- [K� x秓 thao t竎] L=? T=? W=? H=? img=- txt=-
+- [Gi髉 �� t礽 ch輓h bang h閕] L=0 T=0 W=800 H=600 img=帮会财富帮助.spr txt=-
+- [H譶h m鑙 quan h� gi鱝 bang ch髇g v� bang h閕] L=0 T=0 W=800 H=600 img=帮众与帮会的关系图.spr txt=-
+- [H譶h m鑙 quan h� gi鱝 bang h閕 v� t竎 ph�阯g] L=0 T=0 W=800 H=600 img=帮会与作坊关系图.spr txt=-
+- [Gi髉 �� t礽 ch輓h c� nh﹏] L=0 T=0 W=800 H=600 img=个人财富帮助.spr txt=-
+
+## 帮会功能使用页面.ini
+- [Main] L=18 T=52 W=565 H=387 img=功能使用界面.spr txt=-
+- [TitleTongInfo] L=2 T=2 W=250 H=16 img=- txt=Tin t鴆
+- [TitleTongName] L=2 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtTongName] L=71 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TitleTongUnion] L=140 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtTongUnion] L=209 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TitleBuildLevel] L=2 T=40 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBuildLevel] L=130 T=40 W=26 H=16 img=文字框-2个字.spr txt=-
+- [BtnUpgradeBuildLevel] L=161 T=37 W=98 H=16 img=通用按钮.spr txt=-
+- [TitleTotalOffer] L=2 T=59 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTotalOffer] L=130 T=59 W=98 H=16 img=文字框-8个字.spr txt=-
+- [TitleLiveness] L=2 T=59 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtLiveness] L=130 T=59 W=98 H=16 img=文字框-8个字.spr txt=-
+- [BtnAssignTongOffer] L=234 T=59 W=25 H=15 img=通用按钮1字版.spr txt=-
+- [TitleTongMoney] L=2 T=78 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTongMoney] L=130 T=78 W=98 H=16 img=文字框-8个字.spr txt=-
+- [BtnGetTongMoney] L=234 T=78 W=25 H=15 img=通用按钮1字版.spr txt=-
+- [BtnAssignTongMoney] L=259 T=78 W=25 H=15 img=通用按钮1字版.spr txt=-
+- [BtnTransformMoney] L=284 T=78 W=40 H=15 img=通用按钮1字版.spr txt=-
+- [TitleBuildFund] L=2 T=97 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBuildFund] L=130 T=97 W=98 H=16 img=进度条.spr txt=-
+- [BtnTransformBuildFund] L=234 T=97 W=40 H=15 img=通用按钮1字版.spr txt=-
+- [TitleBattleFund] L=2 T=117 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBattleFund] L=130 T=117 W=98 H=16 img=文字框-8个字.spr txt=-
+- [TitleStoredBuildFund] L=2 T=136 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtStoredBuildFund] L=130 T=136 W=98 H=16 img=文字框-8个字.spr txt=-
+- [BtnSubPage1] L=50 T=157 W=35 H=15 img=帮会作坊分页按钮-一页.spr txt=-
+- [BtnSubPage2] L=90 T=157 W=35 H=15 img=帮会作坊分页按钮-二页.spr txt=-
+- [BtnSubPage3] L=130 T=157 W=35 H=15 img=帮会作坊分页按钮-三页.spr txt=-
+- [BtnSubPage4] L=170 T=157 W=35 H=15 img=帮会作坊分页按钮-四页.spr txt=-
+- [ImgSubPageMask] L=2 T=171 W=222 H=80 img=- txt=-
+- [BtnRecruit] L=13 T=176 W=60 H=20 img=帮会信息-招人按钮.spr txt=-
+- [BtnForceToRetire] L=113 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnDemise] L=13 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnKickOut] L=213 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnDepose] L=13 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [Btn_DispenseOffer] L=113 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnChangeMaleTitle] L=213 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnChangeFemaleTitle] L=13 T=227 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnChangeTitle] L=113 T=227 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnChangeCamp] L=13 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnCreateTongMap] L=113 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnConfigureTongMap] L=213 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnTongStunt] L=13 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnTongChallenge] L=13 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnTongDetect] L=113 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnCreateUnion] L=13 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnApplyJionUnion] L=113 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnAcceptUnionReq] L=213 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnLeaveUnion] L=213 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnKickUnionTong] L=13 T=202 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnAppointMinister] L=13 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnFireMinister] L=113 T=176 W=98 H=20 img=通用按钮.spr txt=-
+- [TxtPersonalInfo] L=0 T=258 W=250 H=16 img=- txt=Tin t鴆 c� nh﹏
+- [TitlePersonalOffer] L=2 T=282 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtPersonalOffer] L=130 T=282 W=98 H=16 img=进度条.spr txt=-
+- [BtnStorePersonalOffer] L=231 T=282 W=20 H=15 img=通用按钮1字版.spr txt=-
+- [TitleTongMoney2] L=2 T=302 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTongMoney2] L=130 T=302 W=98 H=16 img=文字框-8个字.spr txt=-
+- [TitleBuildFund2] L=2 T=322 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBuildFund2] L=130 T=322 W=98 H=16 img=文字框-8个字.spr txt=-
+- [BtnStoreBuildFund] L=231 T=322 W=20 H=15 img=通用按钮1字版.spr txt=-
+- [BtnStoreTongMoney] L=231 T=302 W=20 H=15 img=通用按钮1字版.spr txt=-
+- [BtnLeaveTong] L=18 T=355 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnRetire] L=130 T=355 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnHelp] L=7 T=368 W=60 H=20 img=帮会信息-帮会帮助.spr txt=-
+- [TxtRank] L=325 T=1 W=40 H=16 img=- txt=H筺g
+- [TxtTitle] L=377 T=1 W=64 H=16 img=- txt=T猲
+- [TxtType] L=450 T=1 W=64 H=16 img=- txt=lo筰 h譶h
+- [MemberList] L=323 T=15 W=212 H=340 img=- txt=-
+- [BtnPrevPage] L=325 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnNextPage] L=396 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnJump] L=466 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [TitlePage] L=550 T=367 W=16 H=16 img=- txt=-
+- [EditBoxDestPage] L=537 T=367 W=20 H=16 img=- txt=-
+- [BtnOnlinePriority] L=325 T=343 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [TitleName] L=? T=? W=? H=? img=- txt=-
+- [BtnMemberSortMenu] L=472 T=343 W=64 H=20 img=查询列表.spr txt=-
+- [BtnTongSortMenu] L=349 T=343 W=64 H=20 img=查询列表.spr txt=-
+
+## 帮会基础信息页面.ini
+- [Main] L=18 T=52 W=565 H=387 img=帮会分页-帮会信息.spr txt=-
+- [TitleTongInfo] L=2 T=2 W=250 H=16 img=- txt=Tin t鴆
+- [TitleTongName] L=2 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtTongName] L=71 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TitleMaster] L=140 T=20 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtMaster] L=209 T=20 W=98 H=16 img=文字框-8个字.spr txt=-
+- [TitleLeague] L=2 T=40 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtLeague] L=71 T=40 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TitleCamp] L=140 T=40 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtCamp] L=209 T=40 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TitleBuildLevel] L=2 T=78 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBuildLevel] L=130 T=79 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleMemberNum] L=162 T=59 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtMemberNum] L=231 T=59 W=32 H=16 img=文字框-3个字.spr txt=-
+- [TitleServiceFee] L=90 T=78 W=64 H=16 img=文字框-4个字.spr txt=-
+- [TxtServiceFee] L=145 T=78 W=76 H=16 img=文字框-4个字.spr txt=-
+- [TitleStandFund] L=2 T=155 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtStandFund] L=130 T=155 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleTongLevel] L=2 T=59 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTongLevel] L=130 T=59 W=26 H=16 img=文字框-2个字.spr txt=-
+- [TitleTongCapital] L=2 T=97 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTongCapital] L=130 T=97 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleBuildFund] L=2 T=117 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBuildFund] L=130 T=117 W=100 H=16 img=进度条.spr txt=-
+- [TitleBattleFund] L=2 T=136 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtBattleFund] L=130 T=136 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleLiveness] L=2 T=97 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtLiveness] L=130 T=97 W=60 H=16 img=文字框-10个字.spr txt=-
+- [TitleMyLiveness] L=2 T=117 W=128 H=16 img=文字框-10个字.spr txt=-
+- [TxtMyLiveness] L=130 T=117 W=100 H=16 img=文字框-10个字.spr txt=-
+- [TitleDailyCost] L=2 T=136 W=128 H=16 img=文字框-10个字.spr txt=-
+- [TxtDailyCost] L=130 T=136 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleTotalOffer] L=2 T=174 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtTotalOffer] L=130 T=174 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitleStoredBuildFund] L=2 T=193 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtStoredBuildFund] L=130 T=193 W=100 H=16 img=文字框-8个字.spr txt=-
+- [TitlePersonalInfo] L=0 T=232 W=250 H=16 img=- txt=Tin t鴆 c� nh﹏
+- [TitlePersonalOffer] L=2 T=260 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtPersonalOffer] L=130 T=260 W=98 H=16 img=进度条.spr txt=-
+- [TitleWeeklyOffer] L=2 T=280 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtWeeklyOffer] L=130 T=280 W=98 H=16 img=文字框-8个字.spr txt=-
+- [TxtHelpTitle] L=0 T=306 W=250 H=16 img=- txt=Gi髉 ��
+- [TxtHelp] L=3 T=332 W=250 H=45 img=- txt=
+- [TxtRank] L=325 T=1 W=40 H=16 img=- txt=H筺g
+- [TxtTitle] L=377 T=1 W=64 H=16 img=- txt=T猲
+- [TxtType] L=450 T=1 W=122 H=16 img=- txt=lo筰 h譶h
+- [MemberList] L=323 T=15 W=212 H=340 img=- txt=-
+- [BtnPrevPage] L=325 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnNextPage] L=396 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnJump] L=466 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [TitlePage] L=550 T=367 W=16 H=16 img=- txt=-
+- [EditBoxDestPage] L=537 T=367 W=20 H=16 img=- txt=-
+- [BtnOnlinePriority] L=325 T=343 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [TitleName] L=? T=? W=? H=? img=- txt=-
+- [BtnMemberSortMenu] L=472 T=343 W=64 H=20 img=查询列表.spr txt=-
+- [BtnFreshTongLiveness] L=260 T=97 W=25 H=15 img=文字框-3个字.spr txt=-
+
+## 帮会记录页面.ini
+- [Main] L=18 T=52 W=565 H=387 img=帮会记录底图.spr txt=-
+- [EventType] L=? T=? W=? H=? img=- txt=-
+- [BtnWeekDaily] L=3 T=1 W=141 H=15 img=分页按钮.spr txt=-
+- [BtnAnnounce] L=143 T=1 W=141 H=15 img=分页按钮.spr txt=-
+- [BtnTongAffair] L=285 T=1 W=141 H=15 img=分页按钮.spr txt=-
+- [BtnTongHistory] L=425 T=1 W=141 H=15 img=分页按钮.spr txt=-
+- [RecordList] L=5 T=25 W=541 H=310 img=- txt=-
+- [RecordList_List] L=0 T=0 W=541 H=310 img=- txt=-
+- [RecordList_Scroll] L=543 T=0 W=13 H=290 img=- txt=-
+- [RecordList_Scroll_Btn] L=0 T=0 W=13 H=27 img=通用拖动条.spr txt=-
+- [AnnounceEditor] L=5 T=25 W=535 H=310 img=- txt=-
+- [EditorScroll] L=548 T=34 W=13 H=290 img=- txt=-
+- [EditorScroll_Btn] L=0 T=0 W=13 H=27 img=通用拖动条.spr txt=-
+- [BtnLeaveWord] L=361 T=363 W=64 H=20 img=帮会记录-留言.spr txt=-
+- [BtnEditAnnounce] L=66 T=363 W=64 H=20 img=帮会记录-编辑.spr txt=-
+
+## 帮会列表窗口.ini
+- [Main] L=50 T=45 W=120 H=463 img=查询别帮.spr txt=-
+- [BtnClose] L=4 T=442 W=112 H=18 img=- txt=-
+- [MemberList] L=6 T=25 W=108 H=380 img=- txt=-
+- [BtnPrevPage] L=1 T=419 W=98 H=20 img=- txt=-
+- [BtnNextPage] L=59 T=419 W=98 H=20 img=- txt=-
+
+## 帮会权限分配页面.ini
+- [Main] L=18 T=52 W=565 H=387 img=帮会分页-功能分配.spr txt=-
+- [BtnSubPage_0] L=18 T=8 W=99 H=16 img=文字框-8个字.spr txt=-
+- [BtnSubPage_1] L=118 T=8 W=99 H=16 img=文字框-8个字.spr txt=-
+- [BtnDepose] L=7 T=29 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnChangeCamp] L=131 T=29 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnChangeTitle] L=7 T=55 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnKickOut] L=131 T=55 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnRecordEvent] L=7 T=80 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnLeagueManage] L=131 T=80 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnUpgradeBuildLevel] L=7 T=105 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnForceToRetire] L=131 T=105 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnMapManagement] L=7 T=130 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnWorkshopManagement] L=131 T=130 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnFundManagement] L=7 T=29 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnWeekGoalManagement] L=131 T=29 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnCityManagement] L=7 T=55 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnStuntManagement] L=131 T=55 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnSelectAll] L=14 T=355 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [BtnDistribute] L=146 T=355 W=98 H=20 img=通用按钮.spr txt=-
+- [TxtRank] L=325 T=1 W=40 H=16 img=- txt=H筺g
+- [TxtTitle] L=377 T=1 W=64 H=16 img=- txt=T猲
+- [TxtType] L=450 T=1 W=64 H=16 img=- txt=lo筰 h譶h
+- [MemberList] L=323 T=15 W=212 H=340 img=- txt=-
+- [BtnPrevPage] L=325 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnNextPage] L=396 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnJump] L=466 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [TitlePage] L=550 T=367 W=16 H=16 img=- txt=-
+- [EditBoxDestPage] L=537 T=367 W=20 H=16 img=- txt=-
+- [BtnOnlinePriority] L=325 T=343 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [TitleName] L=? T=? W=? H=? img=- txt=-
+- [BtnMemberSortMenu] L=472 T=343 W=64 H=20 img=查询列表.spr txt=-
+
+## 帮会委任大臣.ini
+- [Main] L=310 T=100 W=260 H=138 img=职位任命.spr txt=-
+- [BtnConfirm] L=24 T=116 W=98 H=18 img=帮派创建-确定.spr txt=-
+- [BtnCancel] L=138 T=116 W=98 H=18 img=帮派创建-取消.spr txt=-
+- [TitlePlayerName] L=8 T=34 W=57 H=14 img=- txt=Nh﹏ v藅
+- [TitlePositionName] L=8 T=59 W=57 H=14 img=- txt=Quan ch鴆
+- [PlayerName] L=70 T=34 W=170 H=13 img=- txt=-
+- [Official_A] L=62 T=59 W=64 H=13 img=- txt=-
+- [Official_B] L=126 T=59 W=64 H=13 img=- txt=-
+- [Official_C] L=190 T=59 W=64 H=13 img=- txt=-
+- [ErrorBox] L=12 T=81 W=233 H=24 img=- txt=
+
+## 帮会招募页面.ini
+- [Main] L=18 T=52 W=566 H=387 img=帮会分页-人员招募.spr txt=-
+- [JiyuTitle] L=8 T=166 W=80 H=16 img=- txt=Tin nh緉 bang h閕:
+- [Jiyu] L=8 T=200 W=270 H=200 img=- txt=-
+- [ZhaoMuTitle] L=2 T=2 W=221 H=16 img=- txt=Tin t鴆 chi猽 m� bang h閕
+- [QingXiangTitle] L=8 T=58 W=80 H=16 img=- txt=Khuynh h�韓g ch� y誹 bang h閕:
+- [QingXiangBtn] L=140 T=58 W=130 H=20 img=- txt=-
+- [QingXiangMenu] L=? T=? W=? H=? img=- txt=-
+- [HuoDongTitle] L=8 T=78 W=80 H=16 img=- txt=Ho箃 �閚g ch� y誹 bang h閕:
+- [HuoDongMenu] L=? T=? W=? H=? img=- txt=-
+- [HuoDongBtn1] L=140 T=78 W=130 H=20 img=- txt=-
+- [HuoDongBtn2] L=140 T=98 W=130 H=20 img=- txt=-
+- [HuoDongBtn3] L=140 T=118 W=130 H=20 img=- txt=-
+- [HuoDongBtn4] L=140 T=138 W=130 H=20 img=- txt=-
+- [AutoAcceptTitle] L=8 T=300 W=300 H=16 img=- txt=Cao h琻 ______c蕄 t� �閚g nh藀 bang
+- [AutoAcceptLevel] L=65 T=300 W=60 H=16 img=- txt=-
+- [RefuseLevelTitle] L=8 T=320 W=300 H=16 img=- txt=T� ch鑙 gamer d�韎______ c蕄 xin nh藀 bang
+- [RefuseLevel] L=120 T=320 W=210 H=16 img=- txt=-
+- [Save] L=35 T=360 W=150 H=23 img=保存招募信息按钮.spr txt=-
+- [ApplyTitle] L=290 T=2 W=221 H=16 img=- txt=Danh s竎h th祅h vi猲 xin gia nh藀 bang h閕
+- [ApplyerName] L=300 T=25 W=200 H=16 img=- txt=T猲 gamer xin gia nh藀             Ъng c蕄
+- [ApplyerList] L=290 T=40 W=212 H=400 img=- txt=-
+- [AcceptApply] L=300 T=345 W=100 H=20 img=空白按钮.spr txt=-
+- [RefuseApply] L=420 T=345 W=100 H=20 img=空白按钮.spr txt=-
+- [LastPage] L=300 T=365 W=100 H=20 img=空白按钮.spr txt=-
+- [NextPage] L=420 T=365 W=100 H=20 img=空白按钮.spr txt=-
+
+## 帮会职位任命.ini
+- [Main] L=310 T=100 W=260 H=138 img=职位任命.spr txt=-
+- [TitlePlayerName] L=8 T=34 W=57 H=14 img=- txt=Th祅h vi猲
+- [PlayerName] L=70 T=34 W=170 H=13 img=- txt=-
+- [TitlePositionName] L=8 T=59 W=57 H=14 img=- txt=Ch鴆 v�
+- [BtnMember] L=190 T=59 W=64 H=13 img=- txt=-
+- [BtnManager] L=126 T=59 W=64 H=13 img=- txt=-
+- [BtnDirector] L=62 T=59 W=64 H=13 img=- txt=-
+- [ErrorBox] L=12 T=81 W=233 H=24 img=- txt=
+- [BtnConfirm] L=24 T=116 W=98 H=18 img=帮派创建-确定.spr txt=-
+- [BtnCancel] L=138 T=116 W=98 H=18 img=帮派创建-取消.spr txt=-
+- [List] L=7 T=84 W=186 H=140 img=- txt=-
+- [ListScroll] L=196 T=84 W=13 H=140 img=- txt=-
+- [ListScroll_Btn] L=0 T=0 W=13 H=27 img=通用拖动条.spr txt=-
+
+## 帮会指派称号.ini
+- [Main] L=310 T=258 W=180 H=84 img=称号修改.spr txt=-
+- [Target] L=0 T=0 W=0 H=0 img=- txt=-
+- [EditTitle] L=32 T=35 W=117 H=14 img=- txt=-
+- [Confirm] L=4 T=62 W=86 H=18 img=帮派创建-确定.spr txt=-
+- [Cancel] L=90 T=62 W=86 H=18 img=帮派创建-取消.spr txt=-
+
+## 帮会主窗口.ini
+- [Main] L=211 T=80 W=602 H=463 img=帮会主窗口.spr txt=-
+- [BtnBaseInfo] L=22 T=25 W=90 H=20 img=帮会信息按钮.spr txt=-
+- [BtnZhaoMu] L=116 T=25 W=90 H=20 img=人员招募按钮.spr txt=-
+- [BtnOtherZhaoMu] L=116 T=25 W=90 H=20 img=人员招募按钮.spr txt=-
+- [BtnWorkshop] L=209 T=25 W=90 H=20 img=帮会作坊按钮.spr txt=-
+- [BtnFunUse] L=303 T=25 W=105 H=20 img=功能使用按钮.spr txt=-
+- [BtnRightManage] L=398 T=25 W=90 H=20 img=功能分配按钮.spr txt=-
+- [BtnTongRecord] L=491 T=25 W=90 H=20 img=帮会记录按钮.spr txt=-
+- [BtnClose] L=430 T=442 W=126 H=18 img=帮会按钮-关闭.spr txt=-
+- [BtnTongList] L=301 T=442 W=102 H=18 img=帮会列表按钮.spr txt=-
+- [BtnTongHelp] L=562 T=3 W=18 H=18 img=帮会帮助按钮.spr txt=-
+- [BtnRefresh] L=172 T=442 W=102 H=18 img=帮会按钮-刷新.spr txt=-
+- [BtnEnterMap] L=20 T=442 W=102 H=18 img=帮会按钮-进入本帮.spr txt=-
+
+## 帮会作坊信息页面.ini
+- [Main] L=18 T=52 W=565 H=387 img=帮会分页-帮会作坊.spr txt=-
+- [TitleWorkshopNum] L=2 T=279 W=99 H=16 img=文字框-8个字.spr txt=-
+- [TxtWorkshopNum] L=102 T=279 W=36 H=16 img=文字框-3个字.spr txt=-
+- [TitleMaxRank] L=138 T=279 W=99 H=16 img=文字框-8个字.spr txt=-
+- [TxtMaxRank] L=238 T=279 W=38 H=16 img=文字框-3个字.spr txt=-
+- [TitleServiceFee] L=2 T=299 W=122 H=16 img=文字框-10个字.spr txt=-
+- [TxtServiceFee] L=125 T=299 W=64 H=16 img=文字框-4个字.spr txt=-
+- [BtnLearnWorkshop] L=5 T=322 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnOpenWorkshop] L=105 T=322 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnCloseWorkshop] L=205 T=322 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnUpgradeWorkshop] L=5 T=348 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnSetUseLevelWorkshop] L=105 T=348 W=98 H=20 img=通用按钮.spr txt=-
+- [BtnDeleteWorkshop] L=205 T=348 W=98 H=20 img=通用按钮.spr txt=-
+- [WarnInfo] L=? T=? W=? H=? img=- txt=-
+- [TxtRank] L=325 T=1 W=40 H=16 img=- txt=H筺g
+- [TxtTitle] L=377 T=1 W=64 H=16 img=- txt=T猲
+- [TxtType] L=450 T=1 W=64 H=16 img=- txt=lo筰 h譶h
+- [MemberList] L=323 T=15 W=212 H=340 img=- txt=-
+- [BtnPrevPage] L=325 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnNextPage] L=396 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [BtnJump] L=466 T=364 W=70 H=20 img=通用按钮5字版.spr txt=-
+- [TitlePage] L=550 T=367 W=16 H=16 img=- txt=-
+- [EditBoxDestPage] L=537 T=367 W=20 H=16 img=- txt=-
+- [BtnOnlinePriority] L=325 T=343 W=110 H=20 img=功能勾选按钮加长版.spr txt=-
+- [TitleName] L=? T=? W=? H=? img=- txt=-
+- [BtnMemberSortMenu] L=472 T=343 W=64 H=20 img=查询列表.spr txt=-
+
+## 其它帮会招募页面.ini
+- [Main] L=18 T=52 W=566 H=387 img=帮会分页-查看人员招募.spr txt=-
+- [Name1] L=100 T=3 W=240 H=16 img=- txt=T猲 bang h閕
+- [Info1] L=8 T=30 W=240 H=16 img=- txt=Tin t鴆 bang h閕
+- [QingXiangTitle1] L=8 T=100 W=80 H=16 img=- txt=Khuynh h�韓g bang h閕
+- [HuoDongTitle1] L=8 T=115 W=80 H=16 img=- txt=Ho箃 �閚g bang h閕
+- [QingXiang1] L=95 T=100 W=220 H=16 img=- txt=N閕 dung khuynh h�韓g
+- [HuoDong1] L=95 T=115 W=170 H=16 img=- txt=N閕 dung ho箃 �閚g
+- [JiYu1] L=8 T=50 W=260 H=16 img=- txt=Tin nh緉 bang h閕
+- [LookBtn1] L=3 T=158 W=100 H=20 img=空白按钮.spr txt=-
+- [ApplyBtn1] L=144 T=158 W=100 H=20 img=空白按钮.spr txt=-
+- [Name2] L=360 T=3 W=80 H=16 img=- txt=T猲 bang h閕
+- [Info2] L=300 T=30 W=240 H=16 img=- txt=Tin t鴆 bang h閕
+- [QingXiangTitle2] L=300 T=100 W=80 H=16 img=- txt=Khuynh h�韓g bang h閕
+- [HuoDongTitle2] L=300 T=115 W=80 H=16 img=- txt=Ho箃 �閚g bang h閕:
+- [QingXiang2] L=385 T=100 W=80 H=16 img=- txt=N閕 dung khuynh h�韓g
+- [HuoDong2] L=385 T=115 W=170 H=16 img=- txt=N閕 dung ho箃 �閚g
+- [JiYu2] L=300 T=50 W=260 H=16 img=- txt=Tin nh緉 bang h閕
+- [LookBtn2] L=300 T=158 W=100 H=20 img=空白按钮.spr txt=-
+- [ApplyBtn2] L=430 T=158 W=100 H=20 img=空白按钮.spr txt=-
+- [Name3] L=100 T=183 W=80 H=16 img=- txt=T猲 bang h閕
+- [Info3] L=8 T=210 W=240 H=16 img=- txt=Tin t鴆 bang h閕
+- [QingXiangTitle3] L=8 T=280 W=80 H=16 img=- txt=Khuynh h�韓g bang h閕
+- [HuoDongTitle3] L=8 T=295 W=80 H=16 img=- txt=Ho箃 �閚g bang h閕:
+- [QingXiang3] L=95 T=280 W=80 H=16 img=- txt=N閕 dung khuynh h�韓g
+- [HuoDong3] L=95 T=295 W=170 H=16 img=- txt=N閕 dung ho箃 �閚g
+- [JiYu3] L=8 T=230 W=260 H=16 img=- txt=Tin nh緉 bang h閕
+- [LookBtn3] L=3 T=340 W=100 H=20 img=空白按钮.spr txt=-
+- [ApplyBtn3] L=124 T=340 W=100 H=20 img=空白按钮.spr txt=-
+- [Name4] L=400 T=183 W=80 H=16 img=- txt=T猲 bang h閕
+- [Info4] L=300 T=210 W=240 H=16 img=- txt=Tin t鴆 bang h閕
+- [QingXiangTitle4] L=300 T=280 W=80 H=16 img=- txt=Khuynh h�韓g bang h閕
+- [HuoDongTitle4] L=300 T=295 W=80 H=16 img=- txt=Ho箃 �閚g bang h閕:
+- [QingXiang4] L=385 T=280 W=80 H=16 img=- txt=N閕 dung khuynh h�韓g
+- [HuoDong4] L=385 T=295 W=170 H=16 img=- txt=N閕 dung ho箃 �閚g
+- [JiYu4] L=300 T=230 W=260 H=16 img=- txt=Tin nh緉 bang h閕
+- [LookBtn4] L=300 T=340 W=100 H=20 img=空白按钮.spr txt=-
+- [ApplyBtn4] L=420 T=340 W=100 H=20 img=空白按钮.spr txt=-
+- [LastPage] L=124 T=365 W=100 H=20 img=空白按钮.spr txt=-
+- [NextPage] L=340 T=365 W=100 H=20 img=空白按钮.spr txt=-
