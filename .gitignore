@@ -45,7 +45,8 @@ Hybrid/
 JBin/
 Release/
 ServerDebug/
-ServerRelease/vcpkg_installed/
+ServerRelease/
+vcpkg_installed/
 Template/
 x64/
 EngineServerDebug/
