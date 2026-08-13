@@ -47,6 +47,47 @@ git push -u gamedevnew master:main
 
 ---
 
+## 3b. ⚠️ ĐÍNH CHÍNH LỚN (13/08, sau khi workflow 26 agent chạy xong)
+
+> Phân tích đầy đủ: **`D:\GAMEDEVNEW\BANGHOI_JX2_PHANTICH.md`** (91KB, 1.122 dòng, 17 mục, có sơ đồ mermaid). Đọc file đó để biết chi tiết từng hàm.
+
+**🔴 LỖI PHẠM VI GỐC — có 4 CÂY SCRIPT, không phải 2.** Mọi khảo sát trước chỉ đọc `server1\script` và một phần `gateway\s3relay\script`. Cây bị bỏ sót chính là **bộ máy đồng hồ của bang hội**:
+
+| Cây | Đường dẫn | Ai chạy |
+|---|---|---|
+| GameServer | `D:\ServerLinux\server1\script` | `jx_linux_y` |
+| Relay – logic bang | `D:\ServerLinux\gateway\s3relay\script` | `s3relay_y` |
+| **Relay – HẸN GIỜ (bị sót)** | `D:\ServerLinux\gateway\s3relay\relaysetting\task` | `s3relay_y` |
+| Client | `D:\ServerLinux\Patch\script` | `game_y.exe` |
+
+Cây `relaysetting\task` chứa: `tong_maintain.lua` (bảo trì ngày), `tong_init.lua`, `tongwar.lua`, `tongcastle.lua`, `tong_claimwar.lua`, `cleartongdata.lua`, `tongcontribution_clean_once.lua`, `tong_disciple.lua`, `tong_collectgoods.lua`…
+
+**Các kết luận bị BÁC BỎ:**
+
+1. ❌ *"`TONG_ApplyMaintain` không nơi nào gọi"* → **SAI**. `relaysetting\task\tong_maintain.lua:21` gọi cho **từng bang**, `TaskInterval(1440)` + `TaskTime(0,0)` = mỗi 24h lúc 00:00.
+2. ❌ *"`[MoneyToExp]` đã chết"* → **SAI, nó SỐNG trên Relay**. Hàm `s3relay_y!0x80c3508`, chu kỳ **750 giây** (`relaysetting\tongset.ini:14`). Quỹ bang → kinh nghiệm bang → cấp bang → **`[LevelUnionNum]`** (`tongset.ini:206-307`: cấp 0-40 = 3 bang, 41-49 = 5, 50-69 = 6, 70-89 = 7, 90-100 = 8) → quy mô liên minh → **quyền công thành**. Sai vì chỉ quét GameServer.
+3. ❌ *"`TONG_Apply*` ghi dữ liệu"* → **SAI**. Cờ `+0x14 = 0` khiến lớp Apply **nhảy qua toàn bộ nhánh ghi**. Ghi thật do lớp Result làm khi Relay trả lời (bộ điều phối `0x81b7930`), hook mang hậu tố **`_G_2`** chứ không phải `_G_1`.
+4. ⚠️ **Quyền hạn là `std::set<DWORD>`, KHÔNG phải bitmask.** Nguy hiểm: bang chủ (`Figure=0`) **hoặc THIẾU trường Figure** đều được trả 1 ngay ⇒ **dữ liệu hỏng = toàn quyền**. Hạ chức khỏi Trưởng lão **XOÁ SẠCH** set quyền (`0x81abcc9`).
+5. ⚠️ Cổng **`tbSecurityLock:CheckTong` đứng TRƯỚC mọi kiểm quyền** trong `GiveRight`/`AddRight` — nơi cần nhìn đầu tiên khi báo lỗi "bang chủ không giao được quyền".
+6. ⚠️ **Lệnh GM giải tán bang VÔ HIỆU ở tầng engine**: `0x80d0a50` kiểm `[0x82e1cec]` vốn **vĩnh viễn = 0** (không script nào gọi `SetCouldDisbandTong`). Sửa script cũng vô ích.
+7. ✅ Xác nhận **`LG_/LGM_` là "xã đoàn / chiến đội"** (社团/战队), đăng ký thành module Lua tên `"LEAGUE"` — **KHÔNG phải liên minh bang**. Liên minh thật là **`KTongUnion`**, thuần Relay: rời liên minh **chờ 3 ngày** mới vào được liên minh mới; **chỉ Minh chủ được công thành**.
+8. ⚠️ **Không có kho bang** — NPC "rương bang hội" chỉ gọi `OpenBox()` (rương cá nhân).
+9. ⚠️ Thiếu hàng `StuntID=6` trong `tongstunt_setting.txt` là gốc lỗi `TB_STUNTID_INFO[6].skillid = nil` (`tong.lua:311-313`) — **lỗi dữ liệu**, không phải lỗi vòng lặp.
+
+**Phạm vi còn thiếu (chưa ai dịch ngược):**
+- **29 hàm `TWS_`** (công phường) — chưa đụng hàm nào.
+- **52 hàm cấp NHÂN VẬT nằm NGOÀI 178 hàm** (`CreateTong`, `GetTongName`, `GetJoinTongTime`, `GMTongDismiss`, `TongClaimWar`, `RenameTong`, `SetCouldDisbandTong`…) — **46 hàm chưa ai mở**. Riêng `GetJoinTongTime` được dùng ở **23 file** (điều kiện "vào bang bao lâu" của Cổ Tháp, Thành Bảo, Công Thành, Olympic…).
+- ~13.000 dòng script hoạt động bang (Cổ Tháp / Thành Bảo / Công Thành / Thất Thành / Thủ thành) và chat kênh bang.
+
+**🔴 BA CÂU HỎI TREO, ưu tiên cao:**
+1. **Điều kiện LẬP BANG nằm ở đâu?** Đã loại trừ: `[TongCreate]` chết ở cả 2 nhị phân server; `tong_check_create` **không xuất hiện trong BẤT KỲ nhị phân nào** của cả 3 cây (kể cả `game_y.exe`); `CreateTong(1)` chỉ có trong script GM. **Chưa biết cái gì chặn người chơi thường.** Ảnh hưởng trực tiếp tới chống spam bang.
+2. **Lỗ hổng "rời bang → vào lại" bơm quỹ.** `MEMBER_ADD_R` cộng 60/40% cống hiến mang theo mà `MEMBER_REMOVE_R` không trừ lại. Chưa kiểm 2 lớp có thể triệt tiêu (`cleartongdata.lua`, `tongcontribution_clean_once.lua`). **Phải thực nghiệm**: rời bang → vào lại → đo `TONG_GetStoredBuildFund` trước/sau.
+3. **Ba công tắc `SetCouldDisbandTong/KickTong/QuitTong` đang gác thao tác nào?** Cả 3 biến vĩnh viễn = 0. Chưa rõ `0x80d0e50` và `0x80d3b90` gác gì — nếu gác "đuổi thành viên"/"tự rời bang" thì đây là lời giải engine-level cho các báo lỗi lâu nay bị quy nhầm cho Lua.
+
+**📌 BÀI HỌC PHƯƠNG PHÁP:** bang hội **không sống ở GameServer**. Kết luận "biến X đã chết" chỉ dựa trên `jx_linux_y` là **sai phương pháp** — phải quét cả `s3relay_y`. Hai tầng đã mắc đúng lỗi này.
+
+---
+
 ## 4. KẾT QUẢ KHẢO SÁT — PHÍA JX2 (bản mẫu)
 
 - `D:\ServerLinux` **là JX2 / Kiếm Thế**, KHÔNG phải JX1. Bằng chứng: đường dẫn build `code.kingsoft.com/jx2` trong binary.
