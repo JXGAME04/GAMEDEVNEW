@@ -1393,6 +1393,10 @@ void KUiTongJX2::RenderRecruit()
 	int i;
 	char sz[120];
 	ClearRows();
+	// ve danh sach thanh vien TRUOC ca cong thoat som: goi MEMBER_SYNC co the
+	// ve truoc RECRUIT_SYNC, neu thoat som thi panel phai bi de trang
+	if (m_bHasMember)
+		RenderMembers(5);
 	if (!m_bHasRecruit)
 		return;
 	if (g_pCoreShell)
@@ -1415,10 +1419,7 @@ void KUiTongJX2::RenderRecruit()
 		m_nRecHD[i] = p->m_btAct[i] % TJX2_HD_NUM;
 		m_RecHD[i].SetLabel(s_szRecHD[m_nRecHD[i]]);
 	}
-	// Danh sach thanh vien ve TRUOC (day xuong 5 dong), sau do moi ghi danh
-	// sach don xin len 5 dong dau -> don khong con bi ClearRows xoa mat nua.
-	if (m_bHasMember)
-		RenderMembers(5);
+	// (danh sach thanh vien da ve o dau ham, day xuong 5 dong)
 	{
 		int nTotal = (int)p->m_btApplyCount;
 		int nShow;
