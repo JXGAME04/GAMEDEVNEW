@@ -4052,6 +4052,33 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 	switch (((STONG_PROTOCOL_HEAD*)pData)->m_btMsgId)
 	{
 	// …Í«Î¥¥Ω®∞Ôª·
+	// ==== JX2 port: cua so bang hoi kieu JX2 ====
+	case enumTONG_COMMAND_ID_JX2VIEW:
+	{
+		TONG_JX2VIEW_COMMAND* pView = (TONG_JX2VIEW_COMMAND*)pData;
+		if (dataLength < sizeof(TONG_JX2VIEW_COMMAND))
+			break;
+		BYTE byOut[2048];
+		int nLen = 0;
+		if (m_pCoreServerShell)
+			nLen = m_pCoreServerShell->GetGameData(SGDI_TONG_JX2VIEW, (intptr_t)byOut,
+				(intptr_t)(((unsigned)nPlayerIdx & 0xFFFF) | (((unsigned)pView->m_btPage & 0xF) << 16) | (((unsigned)pView->m_wStart & 0xFFF) << 20)));
+		if (nLen > 0 && m_pServer)
+		{
+			int nNetID = m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NETID, nPlayerIdx, 0);
+			if (nNetID >= 0)
+				m_pServer->PackDataToClient(nNetID, byOut, nLen);
+		}
+	}
+	break;
+	case enumTONG_COMMAND_ID_JX2OP:
+	{
+		if (dataLength < sizeof(TONG_JX2OP_COMMAND))
+			break;
+		if (m_pCoreServerShell)
+			m_pCoreServerShell->GetGameData(SGDI_TONG_JX2OP, (intptr_t)pData, nPlayerIdx);
+	}
+	break;
 	case enumTONG_COMMAND_ID_APPLY_CREATE:
 		{
 			TONG_APPLY_CREATE_COMMAND	*pApply = (TONG_APPLY_CREATE_COMMAND*)pData;

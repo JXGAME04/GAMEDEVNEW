@@ -483,6 +483,7 @@ enum
 	enumTONG_SYNC_ID_CHANGE_CAMP_FAIL,
 	enumTONG_SYNC_ID_CHANGE_CAMP,
 	enumTONG_SYNC_ID_CHANGE_RECRUIT,
+	enumTONG_SYNC_ID_JX2,	// JX2 port: du lieu trang bang hoi (bien dai theo trang)
 
 	enumTONG_SYNC_ID_NUM,
 };
@@ -510,6 +511,8 @@ enum
 	enumTONG_COMMAND_ID_APPLY_CHANGE_LEVEL,
 	enumTONG_COMMAND_ID_APPLY_CHANGE_WAYEDIT,
 	enumTONG_COMMAND_ID_APPLY_CHANGE_NEXTTARGET,
+	enumTONG_COMMAND_ID_JX2VIEW,	// JX2 port: xin du lieu trang bang hoi
+	enumTONG_COMMAND_ID_JX2OP,		// JX2 port: thao tac bang hoi tu cua so
 	enumTONG_COMMAND_ID_NUM,
 };
 

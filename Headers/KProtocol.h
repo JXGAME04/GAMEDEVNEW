@@ -1658,6 +1658,121 @@ typedef struct
 	BYTE	m_btMsgId;
 } STONG_PROTOCOL_HEAD;
 
+// ==== JX2 port: xem/thao tac du lieu bang hoi kieu JX2 tu cua so client ====
+#define defTONG_JX2_PAGE_INFO		0
+#define defTONG_JX2_PAGE_MEMBER	1
+#define defTONG_JX2_PAGE_RIGHT		2	// danh sach truong lao + mat na quyen
+#define defTONG_JX2_PAGE_WS			3	// tac phuong
+#define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
+#define defTONG_JX2_RIGHT_COUNT	12
+// thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001
+
+#define defTONG_JX2_COP_KICK		0	// dwTarget = thanh vien
+#define defTONG_JX2_COP_ADDRIGHT	1	// nParam1 = RightID, dwTarget = truong lao
+#define defTONG_JX2_COP_DELRIGHT	2
+#define defTONG_JX2_COP_SETANN		3	// m_szText = thong bao
+#define defTONG_JX2_COP_DONATE		4	// nParam1 = so VAN quyen gop
+#define defTONG_JX2_COP_WS_ADD		5	// nParam1 = loai khu 1..7
+#define defTONG_JX2_COP_WS_OPEN	6
+#define defTONG_JX2_COP_WS_CLOSE	7
+#define defTONG_JX2_COP_WS_UP		8
+#define defTONG_JX2_COP_SETSTUNT	9	// nParam1 = StuntID (0 = huy)
+#define defTONG_JX2_COP_UPGRADE	10
+#define defTONG_JX2_COP_DEGRADE	11
+#define defTONG_JX2_COP_GRANT		12	// nParam1 = offer, dwTarget = thanh vien
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_COMMAND_ID_JX2VIEW
+	BYTE	m_btPage;
+	WORD	m_wStart;	// trang MEMBER: chi so bat dau
+} TONG_JX2VIEW_COMMAND;
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_COMMAND_ID_JX2OP
+	BYTE	m_btOp;	// defTONG_JX2_COP_*
+	DWORD	m_dwTarget;
+	int	m_nParam1;
+	int	m_nParam2;
+	char	m_szText[128];
+} TONG_JX2OP_COMMAND;
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_SYNC_ID_JX2
+	BYTE	m_btPage;	// defTONG_JX2_PAGE_INFO
+	char	m_szTongName[32];
+	char	m_szMaster[32];
+	BYTE	m_btCamp;
+	int	m_nLevel;	// field 13
+	int	m_nExp;	// field 6
+	__int64	m_nMoney;	// field 3/4
+	DWORD	m_dwBuildFund;	// 12
+	DWORD	m_dwWeekBuild;	// 41
+	DWORD	m_dwWeekUpper;	// 42
+	DWORD	m_dwWarFund;	// 15
+	DWORD	m_dwMaintain;	// 16
+	DWORD	m_dwPerStand;	// 17
+	DWORD	m_dwStoredOffer;	// 18
+	DWORD	m_dwStoredBuild;	// 19
+	int	m_nDay;	// 20
+	int	m_nWeek;	// 21
+	DWORD	m_dwStuntID;	// 1101
+	DWORD	m_dwStuntOn;	// 1102
+	WORD	m_wMemberTotal;
+	BYTE	m_btMyFigure;
+	DWORD	m_dwMyOffer;
+	WORD	m_wMyRights;	// mat na 12 quyen cua ban than
+	char	m_szAnnounce[128];
+} TONG_JX2_INFO_SYNC;
+
+typedef struct
+{
+	char	m_szName[32];
+	DWORD	m_dwNameID;
+	BYTE	m_btFigure;
+	BYTE	m_btOnline;
+	DWORD	m_dwOffer;
+	WORD	m_wRights;
+} TONG_JX2_ONE_MEMBER;
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;
+	BYTE	m_btPage;	// PAGE_MEMBER hoac PAGE_RIGHT
+	WORD	m_wStart;
+	WORD	m_wTotal;
+	BYTE	m_btCount;
+	TONG_JX2_ONE_MEMBER	m_sMember[defTONG_JX2_VIEW_MEMBERS];
+} TONG_JX2_MEMBER_SYNC;
+
+typedef struct
+{
+	BYTE	btExist;
+	BYTE	btOpen;
+	WORD	wLevel;
+	DWORD	dwOutput;
+	DWORD	dwUseLevel;
+} TONG_JX2_ONE_WS;
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;
+	BYTE	m_btPage;	// PAGE_WS
+	TONG_JX2_ONE_WS	m_sWs[8];	// dung chi so 1..7
+} TONG_JX2_WS_SYNC;
+
 typedef struct
 {
 	int		m_nPlayerIdx;

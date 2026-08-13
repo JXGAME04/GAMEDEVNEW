@@ -358,6 +358,12 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t
 			break;
 		}
 		break;
+	case SGDI_TONG_JX2VIEW:	// JX2 port
+		return g_TongJX2.BuildClientView((int)(nParam & 0xFFFF),
+			(int)((nParam >> 16) & 0xF), (int)((nParam >> 20) & 0xFFF),
+			(void*)uParam, 2048);
+	case SGDI_TONG_JX2OP:	// JX2 port
+		return g_TongJX2.DoClientOp((int)nParam, (const void*)uParam);
 	case SGDI_CHARACTER_NETID:
 		if (uParam)
 		{

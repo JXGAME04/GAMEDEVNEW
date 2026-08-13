@@ -55,6 +55,12 @@ public:
 
 	// Nhan goi pf_tong enumS2C_TONG_JX2_* tu relay (chuyen qua KSOServer -> CoreServerShell)
 	void	OnRelayPacket(const void* pData, int nSize);
+
+	// Phuc vu cua so client JX2 (SGDI_TONG_JX2VIEW / SGDI_TONG_JX2OP):
+	// dung goi TONG_JX2_*_SYNC vao pOut tu ban sao -> tra so byte (0 = loi)
+	int		BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pOut, int nOutSize);
+	// thao tac tu cua so (kiem quyen theo bang ID JX2 roi push len relay) -> 0 = ok
+	int		DoClientOp(int nPlayerIdx, const void* pCmd);
 };
 
 extern KTongJX2Mgr g_TongJX2;

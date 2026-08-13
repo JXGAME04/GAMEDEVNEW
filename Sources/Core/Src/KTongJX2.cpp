@@ -20,6 +20,8 @@
 #include "KPlayer.h"
 #include "KPlayerSet.h"
 #include "KProtocolProcess.h"
+#include <KProtocol.h>
+#include <KProtocolDef.h>
 #include <KTongProtocol.h>
 #include "KNewProtocolProcess.h"
 #include "KTongJX2.h"
@@ -1792,6 +1794,314 @@ int LuaTWS_ApplyDegrade(Lua_State* L)
 int LuaTWS_ApplyMaintain(Lua_State* L)
 {
 	Lua_PushNumber(L, g_TongJX2.FindTong(sArgTongID(L)) ? 1 : 0);
+	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Phuc vu cua so client JX2 (goi tu KSOServer qua GetGameData)
+//////////////////////////////////////////////////////////////////////
+
+static const DWORD s_dwJX2RightList[defTONG_JX2_RIGHT_COUNT] =
+	{1000, 1003, 1101, 1901, 1902, 2001, 2004, 2005, 2006, 2007, 3001, 9001};
+
+static WORD sJX2_RightMask(KTongJX2Member* pMember)
+{
+	if (!pMember)
+		return 0;
+	if (pMember->btFigure == 0)
+		return 0xFFFF;	// bang chu: moi quyen (dung JX2 13.2)
+	WORD wMask = 0;
+	for (int i = 0; i < defTONG_JX2_RIGHT_COUNT; i++)
+	{
+		if (pMember->setRight.count(s_dwJX2RightList[i]))
+			wMask |= (WORD)(1 << i);
+	}
+	return wMask;
+}
+
+// bang + ho so thanh vien cua nguoi choi nPlayerIdx (theo ten nhan vat)
+static KTongJX2Tong* sJX2_PlayerTong(int nPlayerIdx, KTongJX2Member** ppMe)
+{
+	if (ppMe)
+		*ppMe = NULL;
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return NULL;
+	DWORD dwTongID = Player[nPlayerIdx].m_cTong.GetTongNameID();
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(dwTongID);
+	if (!pTong)
+		return NULL;
+	if (ppMe)
+	{
+		DWORD dwMyID = g_FileName2Id(Player[nPlayerIdx].m_PlayerName);
+		*ppMe = g_TongJX2.FindMember(pTong, dwMyID);
+	}
+	return pTong;
+}
+
+int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pOut, int nOutSize)
+{
+	if (!pOut)
+		return 0;
+	KTongJX2Member* pMe = NULL;
+	KTongJX2Tong* pTong = sJX2_PlayerTong(nPlayerIdx, &pMe);
+	if (!pTong)
+		return 0;
+
+	switch (nPage)
+	{
+	case defTONG_JX2_PAGE_INFO:
+		{
+			if (nOutSize < (int)sizeof(TONG_JX2_INFO_SYNC))
+				return 0;
+			TONG_JX2_INFO_SYNC* pSync = (TONG_JX2_INFO_SYNC*)pOut;
+			memset(pSync, 0, sizeof(TONG_JX2_INFO_SYNC));
+			pSync->ProtocolType = s2c_extendtong;
+			pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+			pSync->m_btPage = defTONG_JX2_PAGE_INFO;
+			strncpy(pSync->m_szTongName, pTong->szName, 31);
+			pSync->m_btCamp = pTong->btCamp;
+			pSync->m_nLevel = (int)GetField(pTong->dwNameID, 13);
+			pSync->m_nExp = (int)GetField(pTong->dwNameID, 6);
+			pSync->m_nMoney = ((__int64)GetField(pTong->dwNameID, 4) << 32)
+				| (__int64)GetField(pTong->dwNameID, 3);
+			pSync->m_dwBuildFund = GetField(pTong->dwNameID, 12);
+			pSync->m_dwWeekBuild = GetField(pTong->dwNameID, 41);
+			pSync->m_dwWeekUpper = GetField(pTong->dwNameID, 42);
+			pSync->m_dwWarFund = GetField(pTong->dwNameID, 15);
+			pSync->m_dwMaintain = GetField(pTong->dwNameID, 16);
+			pSync->m_dwPerStand = GetField(pTong->dwNameID, 17);
+			pSync->m_dwStoredOffer = GetField(pTong->dwNameID, 18);
+			pSync->m_dwStoredBuild = GetField(pTong->dwNameID, 19);
+			pSync->m_nDay = (int)GetField(pTong->dwNameID, 20);
+			pSync->m_nWeek = (int)GetField(pTong->dwNameID, 21);
+			pSync->m_dwStuntID = GetField(pTong->dwNameID, defTONGTSK_STUNT_ID);
+			pSync->m_dwStuntOn = GetField(pTong->dwNameID, defTONGTSK_STUNT_ENABLED);
+			pSync->m_wMemberTotal = (WORD)pTong->mapMember.size();
+			pSync->m_btMyFigure = pMe ? pMe->btFigure : 3;
+			pSync->m_dwMyOffer = GetMemberField(pMe, 7);
+			pSync->m_wMyRights = sJX2_RightMask(pMe);
+			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
+			pSync->m_szAnnounce[127] = 0;
+			// tim ten bang chu
+			std::map<DWORD, KTongJX2Member>::iterator it;
+			for (it = pTong->mapMember.begin(); it != pTong->mapMember.end(); ++it)
+			{
+				if (it->second.btFigure == 0)
+				{
+					strncpy(pSync->m_szMaster, it->second.szName, 31);
+					break;
+				}
+			}
+			pSync->m_wLength = sizeof(TONG_JX2_INFO_SYNC) - 1;
+			return (int)sizeof(TONG_JX2_INFO_SYNC);
+		}
+
+	case defTONG_JX2_PAGE_MEMBER:
+	case defTONG_JX2_PAGE_RIGHT:
+		{
+			if (nOutSize < (int)sizeof(TONG_JX2_MEMBER_SYNC))
+				return 0;
+			TONG_JX2_MEMBER_SYNC* pSync = (TONG_JX2_MEMBER_SYNC*)pOut;
+			memset(pSync, 0, sizeof(TONG_JX2_MEMBER_SYNC));
+			pSync->ProtocolType = s2c_extendtong;
+			pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+			pSync->m_btPage = (BYTE)nPage;
+			pSync->m_wStart = (WORD)nStart;
+
+			int nIdx = 0;
+			std::map<DWORD, KTongJX2Member>::iterator it;
+			for (it = pTong->mapMember.begin(); it != pTong->mapMember.end(); ++it)
+			{
+				KTongJX2Member* pMember = &it->second;
+				// trang RIGHT: chi liet ke bang chu + truong lao
+				if (nPage == defTONG_JX2_PAGE_RIGHT && pMember->btFigure > 1)
+					continue;
+				if (nIdx < nStart)
+				{
+					nIdx++;
+					continue;
+				}
+				if (pSync->m_btCount < defTONG_JX2_VIEW_MEMBERS)
+				{
+					TONG_JX2_ONE_MEMBER* pOne = &pSync->m_sMember[pSync->m_btCount];
+					strncpy(pOne->m_szName, pMember->szName, 31);
+					pOne->m_dwNameID = pMember->dwNameID;
+					pOne->m_btFigure = pMember->btFigure;
+					pOne->m_btOnline = sIsRoleOnlineLocal(pMember->szName) ? 1 : 0;
+					pOne->m_dwOffer = GetMemberField(pMember, 7);
+					pOne->m_wRights = sJX2_RightMask(pMember);
+					pSync->m_btCount++;
+				}
+				nIdx++;
+			}
+			pSync->m_wTotal = (WORD)nIdx;
+			pSync->m_wLength = sizeof(TONG_JX2_MEMBER_SYNC) - 1;
+			return (int)sizeof(TONG_JX2_MEMBER_SYNC);
+		}
+
+	case defTONG_JX2_PAGE_WS:
+		{
+			if (nOutSize < (int)sizeof(TONG_JX2_WS_SYNC))
+				return 0;
+			TONG_JX2_WS_SYNC* pSync = (TONG_JX2_WS_SYNC*)pOut;
+			memset(pSync, 0, sizeof(TONG_JX2_WS_SYNC));
+			pSync->ProtocolType = s2c_extendtong;
+			pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+			pSync->m_btPage = defTONG_JX2_PAGE_WS;
+			for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
+			{
+				WORD wBase = (WORD)(defTONG_JX2_WS_ATTR_BASE + t * 10);
+				pSync->m_sWs[t].btExist = GetField(pTong->dwNameID, wBase) ? 1 : 0;
+				pSync->m_sWs[t].btOpen = GetField(pTong->dwNameID, (WORD)(wBase + 1)) ? 1 : 0;
+				pSync->m_sWs[t].wLevel = (WORD)GetField(pTong->dwNameID, (WORD)(wBase + 2));
+				pSync->m_sWs[t].dwOutput = GetField(pTong->dwNameID, (WORD)(wBase + 3));
+				pSync->m_sWs[t].dwUseLevel = GetField(pTong->dwNameID, (WORD)(wBase + 4));
+			}
+			pSync->m_wLength = sizeof(TONG_JX2_WS_SYNC) - 1;
+			return (int)sizeof(TONG_JX2_WS_SYNC);
+		}
+	}
+	return 0;
+}
+
+// co quyen (theo mat na 12 quyen) hoac la bang chu
+static BOOL sJX2_HasRight(KTongJX2Member* pMe, DWORD dwRightID)
+{
+	if (!pMe)
+		return TRUE;	// dung JX2 13.2: khong co ho so -> coi nhu bang chu
+	if (pMe->btFigure == 0)
+		return TRUE;
+	return pMe->setRight.count(dwRightID) ? TRUE : FALSE;
+}
+
+int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
+{
+	if (!pData || nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 1;
+	const TONG_JX2OP_COMMAND* pCmd = (const TONG_JX2OP_COMMAND*)pData;
+	KTongJX2Member* pMe = NULL;
+	KTongJX2Tong* pTong = sJX2_PlayerTong(nPlayerIdx, &pMe);
+	if (!pTong)
+		return 2;
+	DWORD dwTongID = pTong->dwNameID;
+	DWORD dwParam = (DWORD)nPlayerIdx;
+	BOOL bMaster = (pMe == NULL || pMe->btFigure == 0);
+
+	switch (pCmd->m_btOp)
+	{
+	case defTONG_JX2_COP_KICK:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 1901))
+				return 3;
+			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
+			if (!pTarget || pTarget->btFigure <= 1)
+				return 4;	// JX2: cam duoi bang chu / truong lao
+			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_KICK, 0, 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_ADDRIGHT:
+	case defTONG_JX2_COP_DELRIGHT:
+		{
+			// JX2 4.4: nguoi thao tac = bang chu hoac co quyen 1000; dich PHAI la truong lao
+			if (!bMaster && !sJX2_HasRight(pMe, 1000))
+				return 3;
+			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
+			if (!pTarget || pTarget->btFigure != 1)
+				return 4;
+			sSendRightCmd(dwTongID, pCmd->m_dwTarget, (DWORD)pCmd->m_nParam1,
+				pCmd->m_btOp == defTONG_JX2_COP_ADDRIGHT ? 1 : 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_SETANN:
+		{
+			if (!bMaster)
+				return 3;
+			char szText[128];
+			memcpy(szText, pCmd->m_szText, sizeof(szText));
+			szText[127] = 0;
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_ANNOUNCE, szText, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_DONATE:
+		{
+			int nVan = pCmd->m_nParam1;
+			if (nVan <= 0 || nVan > 10000)
+				return 5;
+			if (!Player[nPlayerIdx].Pay(nVan * 10000))
+				return 6;	// khong du tien
+			sSendFieldCmd(dwTongID, 12, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
+			sSendFieldCmd(dwTongID, 41, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
+			sSendMoneyCmd(dwTongID, (__int64)nVan * 10000, defTONG_JX2_OP_ADD, dwParam);
+			if (pMe)
+				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 7, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
+			char szLog[160];
+			sprintf(szLog, "%s quyen %d van vao quy kien thiet", Player[nPlayerIdx].m_PlayerName, nVan);
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_WS_ADD:
+	case defTONG_JX2_COP_WS_OPEN:
+	case defTONG_JX2_COP_WS_CLOSE:
+	case defTONG_JX2_COP_WS_UP:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 9001))
+				return 3;
+			int nType = pCmd->m_nParam1;
+			if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+				return 5;
+			WORD wBase = (WORD)(defTONG_JX2_WS_ATTR_BASE + nType * 10);
+			BOOL bExist = GetField(dwTongID, wBase) != 0;
+			if (pCmd->m_btOp == defTONG_JX2_COP_WS_ADD)
+			{
+				if (bExist)
+					return 7;
+				sSendFieldCmd(dwTongID, wBase, 1, defTONG_JX2_OP_SET, dwParam);
+				sSendFieldCmd(dwTongID, (WORD)(wBase + 2), 1, defTONG_JX2_OP_SET, dwParam);
+				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
+				return 0;
+			}
+			if (!bExist)
+				return 7;
+			if (pCmd->m_btOp == defTONG_JX2_COP_WS_OPEN)
+				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
+			else if (pCmd->m_btOp == defTONG_JX2_COP_WS_CLOSE)
+				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 0, defTONG_JX2_OP_SET, dwParam);
+			else
+				sSendFieldCmd(dwTongID, (WORD)(wBase + 2), 1, defTONG_JX2_OP_ADD, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_SETSTUNT:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 2006))
+				return 3;
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_SET_STUNT, pCmd->m_nParam1, 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_UPGRADE:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 2001))
+				return 3;
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_UPGRADE, 0, 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_DEGRADE:
+		{
+			if (!bMaster)
+				return 3;
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_DEGRADE, 0, 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_GRANT:
+		{
+			if (!bMaster)
+				return 3;
+			if (pCmd->m_nParam1 <= 0)
+				return 5;
+			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_DIST_MEMBER,
+				pCmd->m_nParam1, 0, dwParam);
+			return 0;
+		}
+	}
 	return 1;
 }
 

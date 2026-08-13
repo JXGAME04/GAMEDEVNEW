@@ -229,6 +229,11 @@ struct iCoreServerShell
 // Dat NGOAI enum SERVER_OPERATION_INDEX de khong dung cham gia tri cu.
 // uParam = con tro goi pf_tong enumS2C_TONG_JX2_*, nParam = kich thuoc goi.
 #define SSOI_TONG_JX2_SYNC		0x4A583201
+// GetGameData: dung trang du lieu cua so JX2 (uParam = buffer 2KB;
+// nParam: bit 0-15 playerIdx, 16-19 page, 20-31 start) -> tra so byte
+#define SGDI_TONG_JX2VIEW		0x4A583202
+// GetGameData: thao tac cua so JX2 (uParam = TONG_JX2OP_COMMAND*, nParam = playerIdx)
+#define SGDI_TONG_JX2OP			0x4A583203
 
 #ifndef CORE_EXPORTS
 
