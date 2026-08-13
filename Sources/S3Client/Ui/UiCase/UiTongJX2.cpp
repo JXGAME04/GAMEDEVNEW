@@ -451,6 +451,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_Bot[2].Init(&Ini, "Bot_Other");
 	ms_pSelf->m_Bot[3].Init(&Ini, "Bot_Close");
 	ms_pSelf->m_RecToggle.Init(&Ini, "Rec_ToggleRecruit");
+	ms_pSelf->m_RecToggle.SetLabel("\247\343ng/m\353 tuy\323n");
 	for (i = 0; i < 32; i++)
 	{
 		sprintf(szSec, "Info_%s", s_sInfoCtl[i].szSec);
@@ -467,7 +468,13 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	{
 		sprintf(szSec, "Rec_%s", s_sRecLbl[i].szSec);
 		ms_pSelf->m_RecLbl[i].Init(&Ini, szSec);
-		ms_pSelf->m_RecLbl[i].SetText(s_sRecLbl[i].szLabel);
+		char szTx[96];
+		szTx[0] = 0;
+		Ini.GetString(szSec, "Text", "", szTx, sizeof(szTx));
+		if (szTx[0])
+			ms_pSelf->m_RecLbl[i].SetText(szTx);
+		else
+			ms_pSelf->m_RecLbl[i].SetText(s_sRecLbl[i].szLabel);
 	}
 	ms_pSelf->m_FunBg.Init(&Ini, "Fun_PageBg");
 	for (i = 0; i < 15; i++)
@@ -475,7 +482,13 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		sprintf(szSec, "Fun_%s", s_sFunTxt[i].szSec);
 		ms_pSelf->m_FunTxtBg[i].Init(&Ini, szSec);	// khung do / thanh ong cua blueprint
 		ms_pSelf->m_FunTxt[i].Init(&Ini, szSec);
-		if (s_sFunTxt[i].szLabel)
+		// nhan lay NGUYEN VAN tu ini blueprint (Label= cua khung chu)
+		char szLbl[64];
+		szLbl[0] = 0;
+		Ini.GetString(szSec, "Label", "", szLbl, sizeof(szLbl));
+		if (szLbl[0])
+			ms_pSelf->m_FunTxt[i].SetText(szLbl);
+		else if (s_sFunTxt[i].szLabel)
 			ms_pSelf->m_FunTxt[i].SetText(s_sFunTxt[i].szLabel);
 	}
 	ms_pSelf->m_FunP[0].Init(&Ini, "Fun_TxtPersonalInfo");
@@ -904,6 +917,28 @@ void KUiTongJX2::SwitchPage(int nPage)
 				m_Info[i].Hide();
 		}
 	}
+	// tab SANG dung trang dang mo (nut tab la checkbox sprite)
+	{
+		int nTabOn = -1;
+		if (nPage == TJX2_UI_PAGE_FUNUSE && m_nFunMode == 0) nTabOn = 0;
+		else if (nPage == TJX2_UI_PAGE_RECRUIT) nTabOn = 1;
+		else if (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT) nTabOn = 2;
+		else if (nPage == defTONG_JX2_PAGE_WS) nTabOn = 3;
+		else if (nPage == 4) nTabOn = 4;
+		for (int t = 0; t < TJX2_UI_TABS; t++)
+			m_BtnTab[t].CheckButton(t == nTabOn ? 1 : 0);
+		m_BtnFun.CheckButton(nPage == TJX2_UI_PAGE_FUNUSE && m_nFunMode == 1 ? 1 : 0);
+	}
+	// nut phan trang danh sach chi hien o trang co danh sach thanh vien
+	{
+		BOOL bPg = (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT ||
+			nPage == TJX2_UI_PAGE_FUNUSE || nPage == defTONG_JX2_PAGE_WS ||
+			nPage == TJX2_UI_PAGE_TONGLIST);
+		if (bPg) { m_BtnPrev.Show(); m_BtnPrev.Enable(true); m_BtnNext.Show(); m_BtnNext.Enable(true); }
+		else { m_BtnPrev.Hide(); m_BtnPrev.Enable(false); m_BtnNext.Hide(); m_BtnNext.Enable(false); }
+		m_BtnList.Hide();	// trung chuc nang voi nut day Xem tin Bang khac
+		m_BtnList.Enable(false);
+	}
 	RepositionRows();
 	ClearRows();
 	SetupActions();
@@ -1080,6 +1115,12 @@ void KUiTongJX2::RenderMembers()
 	// panel XANH chi tiet nguoi dang chon (nhu ban Linux, hien o moi trang co danh sach)
 	if (m_bMDet && m_nSel < (int)p->m_btCount)
 	{
+		// vung panel (dong 4..11) de trong cho chu xanh khoi chong len danh sach
+		for (int nCl = 4; nCl <= 11 && nCl < TJX2_UI_ROWS; nCl++)
+		{
+			m_Row[nCl].SetText("");
+			m_RowDim[nCl].SetText("");
+		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
 		char szT[64];
 		m_MDet[0].SetText(pSel->m_szName);
@@ -1296,7 +1337,7 @@ void KUiTongJX2::RenderFunUse()
 	TONG_JX2_INFO_SYNC* p = (TONG_JX2_INFO_SYNC*)m_byInfo;
 	char sz[120];
 	m_FunTxt[2].SetText(p->m_szTongName);
-	m_FunTxt[4].SetText("-");
+	m_FunTxt[4].SetText(p->m_szMaster);
 	sprintf(sz, "%d    Nh\251n s\350 %d", p->m_nLevel, (int)p->m_wMemberTotal);
 	m_FunTxt[6].SetText(sz);
 	sprintf(sz, "%u", p->m_dwStoredOffer);
