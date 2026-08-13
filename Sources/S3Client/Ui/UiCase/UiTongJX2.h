@@ -50,12 +50,17 @@ private:
 	void	ClearRows();
 	void	SetupActions();
 	void	OnAction(int nIdx);
+	void	RepositionRows();		// bo cuc dong theo trang (trai / panel danh sach phai)
+	void	LoadChecksFromSel();	// nap o kiem tu mat na quyen cua nguoi dang chon
+	void	ApplyRights();			// PHAN QUYEN: gui them/thu theo o kiem da doi
 
 private:
 	static KUiTongJX2*	ms_pSelf;
 
 	KWndButton			m_BtnClose;
 	KWndImage			m_PageBg[TJX2_UI_TABS];	// nen phan trang (帮会分页-*) tung tab
+	KWndLabeledButton	m_Chk[12];				// luoi o kiem 12 quyen (trang Phan phoi)
+	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
