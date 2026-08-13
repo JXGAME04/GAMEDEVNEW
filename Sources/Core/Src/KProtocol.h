@@ -2351,6 +2351,10 @@ typedef struct
 #define defTONG_JX2_PAGE_MEMBER	1
 #define defTONG_JX2_PAGE_RIGHT		2	// danh sach truong lao + mat na quyen
 #define defTONG_JX2_PAGE_WS			3	// tac phuong
+#define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
+#define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
+#define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
+#define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	12
 // thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001
@@ -2369,6 +2373,12 @@ typedef struct
 #define defTONG_JX2_COP_DEGRADE	11
 #define defTONG_JX2_COP_GRANT		12	// nParam1 = offer, dwTarget = thanh vien
 #define defTONG_JX2_COP_SET_FIGURE	13	// nParam1 = figure moi (1 t.lao / 2 d.truong / 3 b.chung)
+#define defTONG_JX2_COP_SAVE_RECRUIT	14	// szText = van an; nParam1 = khuynh huong + 4 hoat dong (4 bit/muc); nParam2 = cap tu nhan + cap tu choi (8 bit/muc)
+#define defTONG_JX2_COP_ACCEPT_APPLY	15	// dwTarget = NameID nguoi xin
+#define defTONG_JX2_COP_REFUSE_APPLY	16
+#define defTONG_JX2_COP_SAVE_RECRUIT	14	// szText = van an; nParam1 = khuynh huong + 4 hoat dong (4 bit/muc); nParam2 = cap tu nhan + cap tu choi (8 bit/muc)
+#define defTONG_JX2_COP_ACCEPT_APPLY	15	// dwTarget = NameID nguoi xin
+#define defTONG_JX2_COP_REFUSE_APPLY	16
 
 typedef struct
 {
@@ -2462,6 +2472,29 @@ typedef struct
 	BYTE	m_btPage;	// PAGE_WS
 	TONG_JX2_ONE_WS	m_sWs[8];	// dung chi so 1..7
 } TONG_JX2_WS_SYNC;
+
+typedef struct
+{
+	char	m_szName[32];
+	DWORD	m_dwNameID;
+	WORD	m_wLevel;
+} TONG_JX2_ONE_APPLY;
+
+// Trang chieu mo: van an + khuynh huong/hoat dong (field 60..66) + danh sach don xin
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_SYNC_ID_JX2
+	BYTE	m_btPage;	// defTONG_JX2_PAGE_RECRUIT
+	char	m_szRecruit[128];	// van an chieu mo (STR kind 3)
+	BYTE	m_btTendency;	// field 60
+	BYTE	m_btAct[4];	// field 61..64
+	BYTE	m_btAutoLv;	// field 65: du cap nay tu dong nhan (0 = tat)
+	BYTE	m_btRefuseLv;	// field 66: tu choi duoi cap nay (0 = tat)
+	BYTE	m_btApplyCount;
+	TONG_JX2_ONE_APPLY	m_sApply[defTONG_JX2_APPLY_MAX];
+} TONG_JX2_RECRUIT_SYNC;
 
 typedef struct
 {

@@ -256,13 +256,19 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 			if (nSize < (int)sizeof(STONG_JX2_STRING_COMMAND))
 				return;
 			STONG_JX2_STRING_COMMAND* pCmd = (STONG_JX2_STRING_COMMAND*)pData;
-			if (pCmd->m_btKind != defTONG_JX2_STR_ANNOUNCE)
-				return;
 			KTongJX2Tong* pTong = FindTong(pCmd->m_dwTongNameID);
 			if (!pTong)
 				return;
-			memcpy(pTong->szAnnounce, pCmd->m_szText, sizeof(pTong->szAnnounce));
-			pTong->szAnnounce[sizeof(pTong->szAnnounce) - 1] = 0;
+			if (pCmd->m_btKind == defTONG_JX2_STR_ANNOUNCE)
+			{
+				memcpy(pTong->szAnnounce, pCmd->m_szText, sizeof(pTong->szAnnounce));
+				pTong->szAnnounce[sizeof(pTong->szAnnounce) - 1] = 0;
+			}
+			else if (pCmd->m_btKind == defTONG_JX2_STR_RECRUIT)
+			{
+				memcpy(pTong->szRecruit, pCmd->m_szText, sizeof(pTong->szRecruit));
+				pTong->szRecruit[sizeof(pTong->szRecruit) - 1] = 0;
+			}
 		}
 		break;
 
@@ -325,6 +331,38 @@ static void sSendRightCmd(DWORD dwTongID, DWORD dwMemberID, DWORD dwRightID, BYT
 	sCmd.m_btAdd = btAdd;
 	sCmd.m_dwParam = dwParam;
 	g_NewProtocolProcess.PushMsgInTong((const void*)&sCmd, sizeof(sCmd));
+}
+
+// Tim index nguoi choi online theo NameID (0 = khong online tren GS nay)
+static int sFindPlayerIdxByNameID(DWORD dwNameID)
+{
+	int nIndex = PlayerSet.GetFirstPlayer();
+	while (nIndex > 0)
+	{
+		if (g_FileName2Id(Player[nIndex].m_PlayerName) == dwNameID)
+			return nIndex;
+		nIndex = PlayerSet.GetNextPlayer();
+	}
+	return 0;
+}
+
+// Gui goi them thanh vien kieu JX1 goc len relay (theo mau ACCEPT_ADD trong KSOServer)
+static void sJX2_SendAddMember(KTongJX2Tong* pTong, int nJoinIdx)
+{
+	STONG_ADD_MEMBER_COMMAND sAdd;
+	memset(&sAdd, 0, sizeof(sAdd));
+	sAdd.ProtocolFamily = pf_tong;
+	sAdd.ProtocolID = enumC2S_TONG_ADD_MEMBER;
+	sAdd.m_dwParam = (DWORD)nJoinIdx;
+	sAdd.m_dwPlayerNameID = g_FileName2Id(Player[nJoinIdx].m_PlayerName);
+	sAdd.m_btSex = (BYTE)Npc[Player[nJoinIdx].m_nIndex].m_nSex;
+	sAdd.m_btTongNameLength = (BYTE)strlen(pTong->szName);
+	sAdd.m_btPlayerNameLength = (BYTE)strlen(Player[nJoinIdx].m_PlayerName);
+	memcpy(sAdd.m_szBuffer, pTong->szName, sAdd.m_btTongNameLength);
+	memcpy(&sAdd.m_szBuffer[sAdd.m_btTongNameLength], Player[nJoinIdx].m_PlayerName, sAdd.m_btPlayerNameLength);
+	sAdd.m_wLength = (WORD)(sizeof(STONG_ADD_MEMBER_COMMAND) - sizeof(sAdd.m_szBuffer)
+		+ sAdd.m_btTongNameLength + sAdd.m_btPlayerNameLength);
+	g_NewProtocolProcess.PushMsgInTong((const void*)&sAdd, (int)sAdd.m_wLength);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1961,6 +1999,36 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_wLength = sizeof(TONG_JX2_WS_SYNC) - 1;
 			return (int)sizeof(TONG_JX2_WS_SYNC);
 		}
+
+	case defTONG_JX2_PAGE_RECRUIT:
+		{
+			if (nOutSize < (int)sizeof(TONG_JX2_RECRUIT_SYNC))
+				return 0;
+			TONG_JX2_RECRUIT_SYNC* pSync = (TONG_JX2_RECRUIT_SYNC*)pOut;
+			memset(pSync, 0, sizeof(TONG_JX2_RECRUIT_SYNC));
+			pSync->ProtocolType = s2c_extendtong;
+			pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+			pSync->m_btPage = defTONG_JX2_PAGE_RECRUIT;
+			memcpy(pSync->m_szRecruit, pTong->szRecruit, sizeof(pSync->m_szRecruit));
+			pSync->m_szRecruit[sizeof(pSync->m_szRecruit) - 1] = 0;
+			pSync->m_btTendency = (BYTE)GetField(pTong->dwNameID, 60);
+			pSync->m_btAct[0] = (BYTE)GetField(pTong->dwNameID, 61);
+			pSync->m_btAct[1] = (BYTE)GetField(pTong->dwNameID, 62);
+			pSync->m_btAct[2] = (BYTE)GetField(pTong->dwNameID, 63);
+			pSync->m_btAct[3] = (BYTE)GetField(pTong->dwNameID, 64);
+			pSync->m_btAutoLv = (BYTE)GetField(pTong->dwNameID, 65);
+			pSync->m_btRefuseLv = (BYTE)GetField(pTong->dwNameID, 66);
+			for (int a = 0; a < (int)pTong->btApplyCount && a < defTONG_JX2_APPLY_MAX; a++)
+			{
+				memcpy(pSync->m_sApply[a].m_szName, pTong->szApplyName[a], 32);
+				pSync->m_sApply[a].m_szName[31] = 0;
+				pSync->m_sApply[a].m_dwNameID = pTong->dwApplyID[a];
+				pSync->m_sApply[a].m_wLevel = pTong->wApplyLevel[a];
+				pSync->m_btApplyCount++;
+			}
+			pSync->m_wLength = sizeof(TONG_JX2_RECRUIT_SYNC) - 1;
+			return (int)sizeof(TONG_JX2_RECRUIT_SYNC);
+		}
 	}
 	return 0;
 }
@@ -2116,7 +2184,137 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 				pCmd->m_nParam1, 0, dwParam);
 			return 0;
 		}
+	case defTONG_JX2_COP_SAVE_RECRUIT:
+		{
+			// quyen thu nhan 1901 hoac bang chu (JX2)
+			if (!bMaster && !sJX2_HasRight(pMe, 1901))
+				return 3;
+			char szText[128];
+			memcpy(szText, pCmd->m_szText, sizeof(szText));
+			szText[127] = 0;
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_RECRUIT, szText, dwParam);
+			sSendFieldCmd(dwTongID, 60, (DWORD)(pCmd->m_nParam1 & 15), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 61, (DWORD)((pCmd->m_nParam1 >> 4) & 15), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 62, (DWORD)((pCmd->m_nParam1 >> 8) & 15), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 63, (DWORD)((pCmd->m_nParam1 >> 12) & 15), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 64, (DWORD)((pCmd->m_nParam1 >> 16) & 15), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 65, (DWORD)(pCmd->m_nParam2 & 255), defTONG_JX2_OP_SET, dwParam);
+			sSendFieldCmd(dwTongID, 66, (DWORD)((pCmd->m_nParam2 >> 8) & 255), defTONG_JX2_OP_SET, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_ACCEPT_APPLY:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 1901))
+				return 3;
+			int a;
+			for (a = 0; a < (int)pTong->btApplyCount; a++)
+			{
+				if (pTong->dwApplyID[a] == pCmd->m_dwTarget)
+					break;
+			}
+			if (a >= (int)pTong->btApplyCount)
+				return 4;
+			int nJoinIdx = sFindPlayerIdxByNameID(pCmd->m_dwTarget);
+			if (nJoinIdx <= 0 || Player[nJoinIdx].m_nIndex <= 0 ||
+				Player[nJoinIdx].m_cTong.m_nFlag)
+				return 5;	// nguoi xin khong online / da co bang
+			sJX2_SendAddMember(pTong, nJoinIdx);
+			for (; a < (int)pTong->btApplyCount - 1; a++)
+			{
+				memcpy(pTong->szApplyName[a], pTong->szApplyName[a + 1], 32);
+				pTong->dwApplyID[a] = pTong->dwApplyID[a + 1];
+				pTong->wApplyLevel[a] = pTong->wApplyLevel[a + 1];
+			}
+			pTong->btApplyCount--;
+			char szLog[160];
+			sprintf(szLog, "%s duyet %s vao bang", Player[nPlayerIdx].m_PlayerName,
+				Player[nJoinIdx].m_PlayerName);
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_REFUSE_APPLY:
+		{
+			if (!bMaster && !sJX2_HasRight(pMe, 1901))
+				return 3;
+			int a;
+			for (a = 0; a < (int)pTong->btApplyCount; a++)
+			{
+				if (pTong->dwApplyID[a] == pCmd->m_dwTarget)
+					break;
+			}
+			if (a >= (int)pTong->btApplyCount)
+				return 4;
+			for (; a < (int)pTong->btApplyCount - 1; a++)
+			{
+				memcpy(pTong->szApplyName[a], pTong->szApplyName[a + 1], 32);
+				pTong->dwApplyID[a] = pTong->dwApplyID[a + 1];
+				pTong->wApplyLevel[a] = pTong->wApplyLevel[a + 1];
+			}
+			pTong->btApplyCount--;
+			return 0;
+		}
 	}
+	return 1;
+}
+
+// TONG_ApplyJoin(nTongID) - nguoi choi xin vao bang: du cap tu-nhan thi vao thang,
+// khong thi vao danh sach cho duyet cua trang chieu mo. Tra: 2 vao thang / 1 da ghi
+// don / 0 that bai / -1 bi tu choi vi duoi cap.
+int LuaTONG_ApplyJoin(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nPlayerIndex = GetPlayerIndex(L);
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(dwTongID);
+	if (!pTong || nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0 ||
+		Player[nPlayerIndex].m_cTong.m_nFlag)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nLevel = Npc[Player[nPlayerIndex].m_nIndex].m_Level;
+	DWORD dwRefuse = g_TongJX2.GetField(dwTongID, 66);
+	if (dwRefuse && nLevel < (int)dwRefuse)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	DWORD dwAuto = g_TongJX2.GetField(dwTongID, 65);
+	if (dwAuto && nLevel >= (int)dwAuto)
+	{
+		sJX2_SendAddMember(pTong, nPlayerIndex);
+		Lua_PushNumber(L, 2);
+		return 1;
+	}
+	DWORD dwMyID = g_FileName2Id(Player[nPlayerIndex].m_PlayerName);
+	int a;
+	for (a = 0; a < (int)pTong->btApplyCount; a++)
+	{
+		if (pTong->dwApplyID[a] == dwMyID)
+		{
+			Lua_PushNumber(L, 1);	// da nop don truoc do
+			return 1;
+		}
+	}
+	if (pTong->btApplyCount >= 8)
+	{
+		Lua_PushNumber(L, 0);	// danh sach cho da day
+		return 1;
+	}
+	a = pTong->btApplyCount;
+	memset(pTong->szApplyName[a], 0, 32);
+	strncpy(pTong->szApplyName[a], Player[nPlayerIndex].m_PlayerName, 31);
+	pTong->dwApplyID[a] = dwMyID;
+	pTong->wApplyLevel[a] = (WORD)nLevel;
+	pTong->btApplyCount++;
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_GetApplyCount(nTongID) -> so don dang cho duyet
+int LuaTONG_GetApplyCount(Lua_State* L)
+{
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(sArgTongID(L));
+	Lua_PushNumber(L, pTong ? (double)pTong->btApplyCount : 0);
 	return 1;
 }
 

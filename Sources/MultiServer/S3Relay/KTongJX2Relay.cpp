@@ -32,6 +32,7 @@ void CTongControl::JX2_Reset()
 	memset(m_dwJX2FieldVal, 0, sizeof(m_dwJX2FieldVal));
 	m_mapJX2Member.clear();
 	memset(m_szJX2Announce, 0, sizeof(m_szJX2Announce));
+	memset(m_szJX2Recruit, 0, sizeof(m_szJX2Recruit));
 	memset(m_szJX2Event, 0, sizeof(m_szJX2Event));
 	memset(m_szJX2History, 0, sizeof(m_szJX2History));
 	m_nJX2EventHead = 0;
@@ -276,6 +277,7 @@ void CTongControl::JX2_SaveToStruct(TTongStruct* pStruct)
 	memcpy(pStruct->wJX2FieldKey, m_wJX2FieldKey, sizeof(pStruct->wJX2FieldKey));
 	memcpy(pStruct->dwJX2FieldVal, m_dwJX2FieldVal, sizeof(pStruct->dwJX2FieldVal));
 	memcpy(pStruct->szJX2Announce, m_szJX2Announce, sizeof(pStruct->szJX2Announce));
+	memcpy(pStruct->szJX2Recruit, m_szJX2Recruit, sizeof(pStruct->szJX2Recruit));
 	memcpy(pStruct->szJX2Event, m_szJX2Event, sizeof(pStruct->szJX2Event));
 	memcpy(pStruct->szJX2History, m_szJX2History, sizeof(pStruct->szJX2History));
 	pStruct->nJX2EventHead = m_nJX2EventHead;
@@ -296,6 +298,8 @@ void CTongControl::JX2_LoadFromStruct(const TTongStruct* pStruct)
 	memcpy(m_dwJX2FieldVal, pStruct->dwJX2FieldVal, sizeof(m_dwJX2FieldVal));
 	memcpy(m_szJX2Announce, pStruct->szJX2Announce, sizeof(m_szJX2Announce));
 	m_szJX2Announce[defTONG_JX2_ANNOUNCE_LEN - 1] = 0;
+	memcpy(m_szJX2Recruit, pStruct->szJX2Recruit, sizeof(m_szJX2Recruit));
+	m_szJX2Recruit[defTONG_JX2_ANNOUNCE_LEN - 1] = 0;
 	memcpy(m_szJX2Event, pStruct->szJX2Event, sizeof(m_szJX2Event));
 	memcpy(m_szJX2History, pStruct->szJX2History, sizeof(m_szJX2History));
 	m_nJX2EventHead = pStruct->nJX2EventHead;
@@ -573,6 +577,18 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 						break;
 					pConn->SendPackage(byBuffer, nBytes);
 				}
+			}
+			if (pTong->m_szJX2Recruit[0])
+			{
+				// van an chieu mo khong nam trong TONG_SYNC - gui rieng 1 goi STRING_SYNC
+				STONG_JX2_STRING_COMMAND sStr;
+				memset(&sStr, 0, sizeof(sStr));
+				sStr.ProtocolFamily = pf_tong;
+				sStr.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+				sStr.m_dwTongNameID = pTong->m_dwNameID;
+				sStr.m_btKind = defTONG_JX2_STR_RECRUIT;
+				memcpy(sStr.m_szText, pTong->m_szJX2Recruit, sizeof(sStr.m_szText));
+				pConn->SendPackage(&sStr, sizeof(sStr));
 			}
 			dwCount++;
 		}
@@ -973,6 +989,10 @@ BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
 	case defTONG_JX2_STR_ANNOUNCE:
 		memset(m_szJX2Announce, 0, sizeof(m_szJX2Announce));
 		strncpy(m_szJX2Announce, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
+		return TRUE;
+	case defTONG_JX2_STR_RECRUIT:
+		memset(m_szJX2Recruit, 0, sizeof(m_szJX2Recruit));
+		strncpy(m_szJX2Recruit, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
 		return TRUE;
 	case defTONG_JX2_STR_EVENT:
 		memset(m_szJX2Event[m_nJX2EventHead], 0, defTONG_JX2_RECORD_LEN);
@@ -1501,7 +1521,7 @@ void JX2_ProcString(CTongConnect* pConn, const void* pData)
 	if (!pTong->JX2_SetString(pCmd->m_btKind, szText))
 		return;
 	g_cTongDB.ChangeTong(*pTong);
-	if (pCmd->m_btKind == defTONG_JX2_STR_ANNOUNCE)
+	if (pCmd->m_btKind == defTONG_JX2_STR_ANNOUNCE || pCmd->m_btKind == defTONG_JX2_STR_RECRUIT)
 	{
 		STONG_JX2_STRING_COMMAND sSync = *pCmd;
 		sSync.ProtocolFamily = pf_tong;

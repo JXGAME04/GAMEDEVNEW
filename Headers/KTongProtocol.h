@@ -843,6 +843,8 @@ struct STONG_GET_EXTPOINT_SYNC : EXTEND_HEADER
 #define defTONG_JX2_STR_ANNOUNCE	0	// thong bao bang (dong bo toi GS)
 #define defTONG_JX2_STR_EVENT		1	// so su kien (chi luu tren relay)
 #define defTONG_JX2_STR_HISTORY	2	// so lich su (chi luu tren relay)
+#define defTONG_JX2_STR_RECRUIT	3	// van an chieu mo (dong bo toi GS)
+#define defTONG_JX2_STR_RECRUIT	3	// van an chieu mo (dong bo toi GS)
 #define defTONG_JX2_ANNOUNCE_LEN	128
 #define defTONG_JX2_RECORD_LEN		96
 #define defTONG_JX2_RECORD_NUM		16

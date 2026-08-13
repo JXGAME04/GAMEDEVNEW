@@ -58,6 +58,7 @@ typedef struct
 	char		szJX2History[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];	// so lich su (vong)
 	int			nJX2EventHead;
 	int			nJX2HistoryHead;
+	char		szJX2Recruit[defTONG_JX2_ANNOUNCE_LEN];	// van an chieu mo (them CUOI - ban ghi cu van doc duoc)
 }TTongStruct;	//用作存入数据库的结构
 
 struct STONG_MEMBER
@@ -196,6 +197,7 @@ public:
 	WORD	m_wJX2FieldKey[defTONG_JX2_MAX_FIELDS];
 	DWORD	m_dwJX2FieldVal[defTONG_JX2_MAX_FIELDS];
 	char	m_szJX2Announce[defTONG_JX2_ANNOUNCE_LEN];
+	char	m_szJX2Recruit[defTONG_JX2_ANNOUNCE_LEN];	// van an chieu mo (JX2 STR kind 3)
 	char	m_szJX2Event[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];
 	char	m_szJX2History[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];
 	int	m_nJX2EventHead;

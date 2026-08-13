@@ -11718,6 +11718,8 @@ int LuaPlaySprMovie(Lua_State* L)
 // ==== JX2 port: ham bang hoi kieu JX2 (dinh nghia o KTongJX2.cpp) ====
 extern int LuaTONG_IsExist(Lua_State* L);
 extern int LuaTONG_GetName(Lua_State* L);
+extern int LuaTONG_ApplyJoin(Lua_State* L);
+extern int LuaTONG_GetApplyCount(Lua_State* L);
 extern int LuaTONG_Name2ID(Lua_State* L);
 extern int LuaTONG_GetTongCount(Lua_State* L);
 extern int LuaTONG_GetFirstTong(Lua_State* L);
@@ -12382,6 +12384,8 @@ TLua_Funcs GameScriptFuns[] =
 		// ==== JX2 port: bang hoi kieu JX2 (xem KTongJX2.cpp) ====
 		{ "TONG_IsExist",	LuaTONG_IsExist },
 		{ "TONG_GetName",	LuaTONG_GetName },
+	{ "TONG_ApplyJoin",	LuaTONG_ApplyJoin },
+	{ "TONG_GetApplyCount",	LuaTONG_GetApplyCount },
 		{ "TONG_Name2ID",	LuaTONG_Name2ID },
 		{ "TONG_GetTongCount",	LuaTONG_GetTongCount },
 		{ "TONG_GetFirstTong",	LuaTONG_GetFirstTong },

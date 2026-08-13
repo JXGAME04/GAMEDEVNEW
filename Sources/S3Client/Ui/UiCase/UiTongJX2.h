@@ -15,6 +15,7 @@ Description : Cua so bang hoi kieu JX2 (5 trang: thong tin / thanh vien /
 #include "../elem/wndlabeledbutton.h"
 #include "../elem/wndimage.h"
 #include "../elem/wndtext.h"
+#include "../elem/wndedit.h"
 
 #define TJX2_UI_ROWS		14
 #define TJX2_UI_TABS		5
@@ -44,6 +45,7 @@ private:
 	void	SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText);
 	void	SwitchPage(int nPage);
 	void	RenderInfo();
+	void	RenderRecruit();
 	void	RenderMembers();
 	void	RenderWorkshop();
 	void	RenderAnnounce();
@@ -66,6 +68,16 @@ private:
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndText80			m_Info[32];				// trang Tin tuc: field nguyen van blueprint
+	// trang Chieu mo (blueprint trang chieu mo - nhan giu NGUYEN VAN byte TCVN3)
+	KWndText80			m_RecLbl[8];			// 8 nhan tinh
+	KWndEdit512			m_RecJiyu;				// van an chieu mo
+	KWndEdit32			m_RecAuto;				// cap tu dong nhan
+	KWndEdit32			m_RecRefuse;			// tu choi duoi cap
+	KWndLabeledButton	m_RecQX;				// khuynh huong (xoay vong 0..9)
+	KWndLabeledButton	m_RecHD[4];				// 4 hoat dong chu yeu
+	KWndLabeledButton	m_RecSave;				// luu (sprite co chu san)
+	KWndLabeledButton	m_RecAccept, m_RecDeny;	// duyet / tu choi don
+	KWndLabeledButton	m_RecPrev, m_RecNext;
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau
@@ -74,7 +86,10 @@ private:
 	unsigned char	m_byInfo[512];
 	unsigned char	m_byMember[1024];
 	unsigned char	m_byWs[256];
+	unsigned char	m_byRecruit[512];
 	int		m_bHasInfo, m_bHasMember, m_bHasWs;
+	int		m_bHasRecruit;
+	int		m_nRecQX, m_nRecHD[4];	// gia tri menu dang chon (gui khi bam Luu)
 };
 
 #endif // __UITONGJX2_H__

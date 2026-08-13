@@ -169,8 +169,10 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 		return false;	//Can't find gang
 	}
 
-	// FIX bay-2: tu choi ban ghi lech co sizeof(TTongStruct) (khac phien ban struct)
-	if (cursor->size != (int)sizeof(TTongStruct))
+	// FIX bay-2: tu choi ban ghi lech co sizeof(TTongStruct) (khac phien ban struct);
+	// rieng ban ghi thieu duoi szJX2Recruit (phien ban truoc) van nhan, phan thieu = 0
+	if (cursor->size != (int)sizeof(TTongStruct) &&
+		cursor->size != (int)(sizeof(TTongStruct) - sizeof(((TTongStruct*)0)->szJX2Recruit)))
 	{
 		m_TongTable->closeCursor(cursor);
 		return false;
@@ -179,7 +181,10 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 	//if(!aBuffer) 
 	//	return false;	//Can't find gang
 
-	TTongStruct* pTongStruct = (TTongStruct*)aBuffer;
+	TTongStruct aFullRec;
+	memset(&aFullRec, 0, sizeof(aFullRec));
+	memcpy(&aFullRec, aBuffer, cursor->size);
+	TTongStruct* pTongStruct = &aFullRec;
 	aTongControl.m_nCamp = pTongStruct->nCamp;
 	aTongControl.m_nRecruit = pTongStruct->nRecruit; // tuyÓn dông
 	strcpy(aTongControl.m_szName, pTongStruct->szName);
@@ -315,7 +320,8 @@ int CTongDB::GetTongCount()
 	while(aResult)
 	{
 		// FIX bay-2: chi dem ban ghi dung co TTongStruct (lech co = khac phien ban struct)
-		if (aTongSize == (int)sizeof(TTongStruct))
+		if (aTongSize == (int)sizeof(TTongStruct) ||
+			aTongSize == (int)(sizeof(TTongStruct) - sizeof(((TTongStruct*)0)->szJX2Recruit)))
 			aCount++;
 		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT,
 			-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
@@ -336,16 +342,18 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 	while(aResult)
 	{
 		// FIX bay-2: bo qua ban ghi lech co (khac phien ban struct), khong duoc doc bay
-		if (aTongSize != (int)sizeof(TTongStruct))
+		if (aTongSize != (int)sizeof(TTongStruct) &&
+			aTongSize != (int)(sizeof(TTongStruct) - sizeof(((TTongStruct*)0)->szJX2Recruit)))
 		{
 			aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT,
 				-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
 			continue;
 		}
 		TTongStruct* pTong = (TTongStruct*)aTongBuffer;
+		// ban ghi cu ngan hon: xoa trang truoc roi chep dung aTongSize byte
+		memset(&aTongList[aCount], 0, sizeof(TTongStruct));
+		memcpy(&aTongList[aCount], pTong, aTongSize);
 		strcpy(aTongList[aCount].szName, pTong->szName);
-
-		memcpy(&aTongList[aCount], pTong, sizeof(TTongStruct));
 		int aMemCount = 0;
 		int aMemSize;
 		char* aMemBuffer;

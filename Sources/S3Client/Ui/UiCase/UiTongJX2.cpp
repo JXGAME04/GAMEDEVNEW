@@ -95,6 +95,21 @@ static const char* s_szChkLabel[12] =
 	"Tuy\326t k\374", "Tuy\252n chi\325n", "Ng\251n qu\374", "T\270c ph\255\352ng",
 };
 
+// Nhan trang Chieu mo: NGUYEN VAN byte TCVN3 tu blueprint (Text= cua tung section)
+struct TJX2RecLbl { const char* szSec; const char* szLabel; };
+static const TJX2RecLbl s_sRecLbl[8] =
+{
+	{"JiyuTitle",       "Tin nh\276n bang h\351i:"},
+	{"ZhaoMuTitle",     "Tin t\370c chi\252u m\351 bang h\351i"},
+	{"QingXiangTitle",  "Khuynh h\255\355ng ch\361 y\325u bang h\351i:"},
+	{"HuoDongTitle",    "Ho\271t \256\351ng ch\361 y\325u bang h\351i:"},
+	{"AutoAcceptTitle", "Cao h\254n ______c\312p t\371 \256\351ng nh\313p bang"},
+	{"RefuseLevelTitle","T\365 ch\350i gamer d\255\355i______ c\312p xin nh\313p bang"},
+	{"ApplyTitle",      "Danh s\270ch th\265nh vi\252n xin gia nh\313p bang h\351i"},
+	{"ApplyerName",     "T\252n gamer xin gia nh\313p             \247\274ng c\312p"},
+};
+#define TJX2_UI_PAGE_RECRUIT	5	// trang UI chieu mo (goi server PAGE_RECRUIT)
+
 //////////////////////////////////////////////////////////////////////
 
 KUiTongJX2::KUiTongJX2()
@@ -105,6 +120,10 @@ KUiTongJX2::KUiTongJX2()
 	m_bHasInfo = 0;
 	m_bHasMember = 0;
 	m_bHasWs = 0;
+	m_bHasRecruit = 0;
+	m_nRecQX = 0;
+	memset(m_nRecHD, 0, sizeof(m_nRecHD));
+	memset(m_byRecruit, 0, sizeof(m_byRecruit));
 	memset(m_byInfo, 0, sizeof(m_byInfo));
 	memset(m_byMember, 0, sizeof(m_byMember));
 	memset(m_byWs, 0, sizeof(m_byWs));
@@ -185,6 +204,19 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_BtnAct[i]);
 	AddChild(&m_BtnPrev);
 	AddChild(&m_BtnNext);
+	for (i = 0; i < 8; i++)
+		AddChild(&m_RecLbl[i]);
+	AddChild(&m_RecJiyu);
+	AddChild(&m_RecAuto);
+	AddChild(&m_RecRefuse);
+	AddChild(&m_RecQX);
+	for (i = 0; i < 4; i++)
+		AddChild(&m_RecHD[i]);
+	AddChild(&m_RecSave);
+	AddChild(&m_RecAccept);
+	AddChild(&m_RecDeny);
+	AddChild(&m_RecPrev);
+	AddChild(&m_RecNext);
 	AddChild(&m_BtnClose);
 
 	char Scheme[256];
@@ -198,6 +230,14 @@ void KUiTongJX2::Initialize()
 	m_BtnNext.SetLabel(">");
 	for (i = 0; i < 12; i++)
 		m_Chk[i].SetLabel(s_szChkLabel[i]);
+	m_RecSave.SetLabel("");	// sprite da co chu VN
+	m_RecAccept.SetLabel("\247\345ng \375");
+	m_RecDeny.SetLabel("T\365 ch\350i");
+	m_RecPrev.SetLabel("Trang tr\255\355c");
+	m_RecNext.SetLabel("Trang sau");
+	m_RecQX.SetLabel("0");
+	for (i = 0; i < 4; i++)
+		m_RecHD[i].SetLabel("0");
 
 	Wnd_AddWindow(this);
 }
@@ -256,6 +296,25 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		sprintf(szSec, "RowSel%d", i);
 		ms_pSelf->m_BtnRowSel[i].Init(&Ini, szSec);
 	}
+	for (i = 0; i < 8; i++)
+	{
+		sprintf(szSec, "Rec_%s", s_sRecLbl[i].szSec);
+		ms_pSelf->m_RecLbl[i].Init(&Ini, szSec);
+		ms_pSelf->m_RecLbl[i].SetText(s_sRecLbl[i].szLabel);
+	}
+	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
+	ms_pSelf->m_RecAuto.Init(&Ini, "Rec_AutoAcceptLevel");
+	ms_pSelf->m_RecRefuse.Init(&Ini, "Rec_RefuseLevel");
+	ms_pSelf->m_RecQX.Init(&Ini, "Rec_QingXiangBtn");
+	ms_pSelf->m_RecHD[0].Init(&Ini, "Rec_HuoDongBtn1");
+	ms_pSelf->m_RecHD[1].Init(&Ini, "Rec_HuoDongBtn2");
+	ms_pSelf->m_RecHD[2].Init(&Ini, "Rec_HuoDongBtn3");
+	ms_pSelf->m_RecHD[3].Init(&Ini, "Rec_HuoDongBtn4");
+	ms_pSelf->m_RecSave.Init(&Ini, "Rec_Save");
+	ms_pSelf->m_RecAccept.Init(&Ini, "Rec_AcceptApply");
+	ms_pSelf->m_RecDeny.Init(&Ini, "Rec_RefuseApply");
+	ms_pSelf->m_RecPrev.Init(&Ini, "Rec_LastPage");
+	ms_pSelf->m_RecNext.Init(&Ini, "Rec_NextPage");
 	ms_pSelf->m_BtnPrev.Init(&Ini, "BtnPrev");
 	ms_pSelf->m_BtnNext.Init(&Ini, "BtnNext");
 	ms_pSelf->m_BtnClose.Init(&Ini, "BtnClose");
@@ -265,6 +324,10 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 
 void KUiTongJX2::RequestPage(int nPage, int nStart)
 {
+	if (nPage == TJX2_UI_PAGE_RECRUIT)
+		nPage = defTONG_JX2_PAGE_RECRUIT;
+	else if (nPage == 4)
+		nPage = defTONG_JX2_PAGE_INFO;	// trang thong bao dung du lieu INFO
 	if (g_pCoreShell)
 		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, (unsigned int)nPage, nStart);
 }
@@ -307,6 +370,8 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 			ms_pSelf->m_bHasInfo = 1;
 			if (ms_pSelf->m_nPage == defTONG_JX2_PAGE_INFO)
 				ms_pSelf->RenderInfo();
+			else if (ms_pSelf->m_nPage == 4)
+				ms_pSelf->RenderAnnounce();
 		}
 		break;
 	case defTONG_JX2_PAGE_MEMBER:
@@ -327,6 +392,15 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 			ms_pSelf->m_bHasWs = 1;
 			if (ms_pSelf->m_nPage == defTONG_JX2_PAGE_WS)
 				ms_pSelf->RenderWorkshop();
+		}
+		break;
+	case defTONG_JX2_PAGE_RECRUIT:
+		if (nLen <= (int)sizeof(ms_pSelf->m_byRecruit))
+		{
+			memcpy(ms_pSelf->m_byRecruit, pData, nLen);
+			ms_pSelf->m_bHasRecruit = 1;
+			if (ms_pSelf->m_nPage == TJX2_UI_PAGE_RECRUIT)
+				ms_pSelf->RenderRecruit();
 		}
 		break;
 	}
@@ -353,6 +427,13 @@ void KUiTongJX2::RepositionRows()
 			m_BtnRowSel[i].SetPosition(341, 68 + i * 24);
 			m_BtnRowSel[i].Enable(true);
 		}
+		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
+		{
+			// vung danh sach don xin (blueprint ApplyerList 290,40 doi +18/+52)
+			m_Row[i].SetPosition(310, 96 + i * 24);
+			m_BtnRowSel[i].SetPosition(310, 96 + i * 24);
+			m_BtnRowSel[i].Enable(i < 8);
+		}
 		else
 		{
 			m_Row[i].SetPosition(30, 64 + i * 23);
@@ -368,9 +449,18 @@ void KUiTongJX2::SwitchPage(int nPage)
 	m_nPage = nPage;
 	m_nStart = 0;
 	m_nSel = (nPage == defTONG_JX2_PAGE_WS) ? 1 : 0;
-	// hien dung nen phan trang cua tab nay
+	// hien dung nen phan trang cua TAB (trang UI 5 = tab 1 chieu mo;
+	// trang thanh vien/quyen hop nhat = tab 2)
 	{
-		int nBg = (nPage >= 0 && nPage < TJX2_UI_TABS) ? nPage : 0;
+		int nBg = 0;
+		if (nPage == TJX2_UI_PAGE_RECRUIT)
+			nBg = 1;
+		else if (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT)
+			nBg = 2;
+		else if (nPage == defTONG_JX2_PAGE_WS)
+			nBg = 3;
+		else if (nPage == 4)
+			nBg = 4;
 		for (int i = 0; i < TJX2_UI_TABS; i++)
 		{
 			if (i == nBg)
@@ -383,11 +473,29 @@ void KUiTongJX2::SwitchPage(int nPage)
 	{
 		for (int i = 0; i < 12; i++)
 		{
-			if (nPage == defTONG_JX2_PAGE_RIGHT)
+			if (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT)
 				m_Chk[i].Show();
 			else
 				m_Chk[i].Hide();
 		}
+	}
+	// bo control trang chieu mo
+	{
+		int i;
+		BOOL bRec = (nPage == TJX2_UI_PAGE_RECRUIT);
+		for (i = 0; i < 8; i++)
+			if (bRec) m_RecLbl[i].Show(); else m_RecLbl[i].Hide();
+		if (bRec) m_RecJiyu.Show(); else m_RecJiyu.Hide();
+		if (bRec) m_RecAuto.Show(); else m_RecAuto.Hide();
+		if (bRec) m_RecRefuse.Show(); else m_RecRefuse.Hide();
+		if (bRec) m_RecQX.Show(); else m_RecQX.Hide();
+		for (i = 0; i < 4; i++)
+			if (bRec) m_RecHD[i].Show(); else m_RecHD[i].Hide();
+		if (bRec) m_RecSave.Show(); else m_RecSave.Hide();
+		if (bRec) m_RecAccept.Show(); else m_RecAccept.Hide();
+		if (bRec) m_RecDeny.Show(); else m_RecDeny.Hide();
+		if (bRec) m_RecPrev.Show(); else m_RecPrev.Hide();
+		if (bRec) m_RecNext.Show(); else m_RecNext.Hide();
 	}
 	// field Tin tuc chi hien o trang Tin tuc (trang nay khong dung Row)
 	{
@@ -404,7 +512,9 @@ void KUiTongJX2::SwitchPage(int nPage)
 	SetupActions();
 	if (nPage == 4)
 		RenderAnnounce();	// trang thong bao dung du lieu INFO
-	RequestPage(nPage == 4 ? defTONG_JX2_PAGE_INFO : nPage, 0);
+	else if (nPage == TJX2_UI_PAGE_RECRUIT)
+		RenderRecruit();
+	RequestPage(nPage, 0);
 }
 
 void KUiTongJX2::SetupActions()
@@ -426,19 +536,17 @@ void KUiTongJX2::SetupActions()
 		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	case defTONG_JX2_PAGE_MEMBER:
+	case defTONG_JX2_PAGE_RIGHT:
+		// trang quan thanh vien HOP NHAT (danh sach + o kiem quyen nhu JX2)
 		m_BtnAct[0].SetLabel("\247u\346i ng\255\352i");
 		m_BtnAct[1].SetLabel("Ph\270t c\350ng hi\325n");
 		m_BtnAct[2].SetLabel("BN Tr\255\353ng l\267o");
 		m_BtnAct[3].SetLabel("BN \247\351i tr\255\353ng");
 		m_BtnAct[4].SetLabel("H\271 Bang ch\363ng");
-		m_BtnAct[5].SetLabel("L\265m m\355i");
+		m_BtnAct[5].SetLabel("Ph\251n quy\322n");
 		break;
-	case defTONG_JX2_PAGE_RIGHT:
-		m_BtnAct[0].SetLabel("Ch\344n t\312t c\266");
-		m_BtnAct[1].SetLabel("B\341 ch\344n");
-		m_BtnAct[2].SetLabel("Ph\251n quy\322n");
-		m_BtnAct[5].SetLabel("L\265m m\355i");
-		break;
+	case TJX2_UI_PAGE_RECRUIT:
+		break;	// trang chieu mo dung bo nut rieng cua blueprint
 	case defTONG_JX2_PAGE_WS:
 		m_BtnAct[0].SetLabel("L\313p khu");
 		m_BtnAct[1].SetLabel("M\353 / \247\343ng");
@@ -660,6 +768,39 @@ void KUiTongJX2::RenderAnnounce()
 	m_Row[5].SetText("Chi bang chu duoc dat / xoa thong bao.");
 }
 
+// Trang chieu mo: do du lieu RECRUIT_SYNC vao khung blueprint
+void KUiTongJX2::RenderRecruit()
+{
+	int i;
+	char sz[120];
+	ClearRows();
+	if (!m_bHasRecruit)
+		return;
+	TONG_JX2_RECRUIT_SYNC* p = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
+	m_RecJiyu.SetText(p->m_szRecruit);
+	sprintf(sz, "%d", (int)p->m_btAutoLv);
+	m_RecAuto.SetText(sz);
+	sprintf(sz, "%d", (int)p->m_btRefuseLv);
+	m_RecRefuse.SetText(sz);
+	m_nRecQX = p->m_btTendency % 10;
+	sprintf(sz, "%d", m_nRecQX);
+	m_RecQX.SetLabel(sz);
+	for (i = 0; i < 4; i++)
+	{
+		m_nRecHD[i] = p->m_btAct[i] % 10;
+		sprintf(sz, "%d", m_nRecHD[i]);
+		m_RecHD[i].SetLabel(sz);
+	}
+	if (p->m_btApplyCount == 0)
+		m_Row[0].SetText("(ch\255a c\343 \256\254n xin v\265o bang)");
+	for (i = 0; i < (int)p->m_btApplyCount && i < defTONG_JX2_APPLY_MAX; i++)
+	{
+		sprintf(sz, "%s%-16s  c\312p %d", (i == m_nSel) ? "> " : "  ",
+			p->m_sApply[i].m_szName, (int)p->m_sApply[i].m_wLevel);
+		m_Row[i].SetText(sz);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 void KUiTongJX2::OnAction(int nIdx)
@@ -703,6 +844,7 @@ void KUiTongJX2::OnAction(int nIdx)
 		break;
 
 	case defTONG_JX2_PAGE_MEMBER:
+	case defTONG_JX2_PAGE_RIGHT:
 		if (nIdx == 0 && dwTarget)
 			SendOp(defTONG_JX2_COP_KICK, dwTarget, 0, 0, NULL);
 		else if (nIdx == 1 && dwTarget)
@@ -714,28 +856,7 @@ void KUiTongJX2::OnAction(int nIdx)
 		else if (nIdx == 4 && dwTarget)
 			SendOp(defTONG_JX2_COP_SET_FIGURE, dwTarget, 3, 0, NULL);
 		else if (nIdx == 5)
-		{
-			if (m_bHasMember && pM->m_btCount)
-				m_nSel = (m_nSel + 1) % pM->m_btCount;
-			RenderMembers();
-		}
-		break;
-
-	case defTONG_JX2_PAGE_RIGHT:
-		if (nIdx == 0)
-		{
-			for (int b = 0; b < 12; b++)
-				m_Chk[b].CheckButton(1);
-		}
-		else if (nIdx == 1)
-		{
-			for (int b = 0; b < 12; b++)
-				m_Chk[b].CheckButton(0);
-		}
-		else if (nIdx == 2)
 			ApplyRights();
-		else if (nIdx == 5)
-			RequestPage(m_nPage, m_nStart);
 		break;
 
 	case defTONG_JX2_PAGE_WS:
@@ -782,11 +903,17 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		{
 			int i;
+			// tab -> trang UI: tab1 = chieu mo (JX2), tab2 = quan thanh vien
+			static const int s_nTabPage[TJX2_UI_TABS] =
+			{
+				defTONG_JX2_PAGE_INFO, TJX2_UI_PAGE_RECRUIT,
+				defTONG_JX2_PAGE_MEMBER, defTONG_JX2_PAGE_WS, 4,
+			};
 			for (i = 0; i < TJX2_UI_TABS; i++)
 			{
 				if (uParam == (unsigned int)&m_BtnTab[i])
 				{
-					SwitchPage(i == 4 ? 4 : i);
+					SwitchPage(s_nTabPage[i]);
 					return 1;
 				}
 			}
@@ -819,9 +946,78 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 							RenderWorkshop();
 						}
 					}
+					else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
+					{
+						if (i < 8)
+						{
+							m_nSel = i;
+							RenderRecruit();
+						}
+					}
 					return 1;
 				}
 			}
+		}
+		if (uParam == (unsigned int)&m_RecQX)
+		{
+			char szN[8];
+			m_nRecQX = (m_nRecQX + 1) % 10;
+			sprintf(szN, "%d", m_nRecQX);
+			m_RecQX.SetLabel(szN);
+			return 1;
+		}
+		{
+			int r;
+			for (r = 0; r < 4; r++)
+			{
+				if (uParam == (unsigned int)&m_RecHD[r])
+				{
+					char szN[8];
+					m_nRecHD[r] = (m_nRecHD[r] + 1) % 10;
+					sprintf(szN, "%d", m_nRecHD[r]);
+					m_RecHD[r].SetLabel(szN);
+					return 1;
+				}
+			}
+		}
+		if (uParam == (unsigned int)&m_RecSave)
+		{
+			// thu thap noi dung trang chieu mo -> COP_SAVE_RECRUIT
+			char szJiyu[256];
+			char szNum[16];
+			int nAuto = 0, nRefuse = 0;
+			szJiyu[0] = 0;
+			m_RecJiyu.GetText(szJiyu, sizeof(szJiyu), false);
+			szNum[0] = 0;
+			m_RecAuto.GetText(szNum, sizeof(szNum), false);
+			nAuto = atoi(szNum);
+			szNum[0] = 0;
+			m_RecRefuse.GetText(szNum, sizeof(szNum), false);
+			nRefuse = atoi(szNum);
+			if (nAuto < 0) nAuto = 0;
+			if (nAuto > 200) nAuto = 200;
+			if (nRefuse < 0) nRefuse = 0;
+			if (nRefuse > 200) nRefuse = 200;
+			szJiyu[127] = 0;
+			int nP1 = (m_nRecQX & 15) | ((m_nRecHD[0] & 15) << 4) | ((m_nRecHD[1] & 15) << 8)
+				| ((m_nRecHD[2] & 15) << 12) | ((m_nRecHD[3] & 15) << 16);
+			int nP2 = (nAuto & 255) | ((nRefuse & 255) << 8);
+			SendOp(defTONG_JX2_COP_SAVE_RECRUIT, 0, nP1, nP2, szJiyu);
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_RecAccept || uParam == (unsigned int)&m_RecDeny)
+		{
+			TONG_JX2_RECRUIT_SYNC* pR = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
+			if (m_bHasRecruit && m_nSel >= 0 && m_nSel < (int)pR->m_btApplyCount)
+				SendOp(uParam == (unsigned int)&m_RecAccept ?
+					defTONG_JX2_COP_ACCEPT_APPLY : defTONG_JX2_COP_REFUSE_APPLY,
+					pR->m_sApply[m_nSel].m_dwNameID, 0, 0, NULL);
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_RecPrev || uParam == (unsigned int)&m_RecNext)
+		{
+			RequestPage(m_nPage, 0);	// danh sach don toi da 8 - lam moi
+			return 1;
 		}
 		if (uParam == (unsigned int)&m_BtnPrev)
 		{
