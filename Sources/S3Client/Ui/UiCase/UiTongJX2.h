@@ -46,6 +46,7 @@ private:
 	void	SwitchPage(int nPage);
 	void	RenderInfo();
 	void	RenderRecruit();
+	void	RenderFunUse();
 	void	RenderMembers();
 	void	RenderWorkshop();
 	void	RenderAnnounce();
@@ -78,6 +79,12 @@ private:
 	KWndLabeledButton	m_RecSave;				// luu (sprite co chu san)
 	KWndLabeledButton	m_RecAccept, m_RecDeny;	// duyet / tu choi don
 	KWndLabeledButton	m_RecPrev, m_RecNext;
+	// trang Su dung chuc nang (blueprint trang chuc nang)
+	KWndImage			m_FunBg;
+	KWndText80			m_FunTxt[15];			// nhan + o so (bang s_sFunTxt)
+	KWndLabeledButton	m_FunBtn[14];			// nut hanh dong (bang s_sFunBtn)
+	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
+	KWndLabeledButton	m_BtnFun;				// nut mo trang (tren cua so chinh)
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau

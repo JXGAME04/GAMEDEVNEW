@@ -1665,8 +1665,6 @@ typedef struct
 #define defTONG_JX2_PAGE_WS			3	// tac phuong
 #define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
 #define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
-#define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
-#define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	12
 // thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001
@@ -1688,9 +1686,10 @@ typedef struct
 #define defTONG_JX2_COP_SAVE_RECRUIT	14	// szText = van an; nParam1 = khuynh huong + 4 hoat dong (4 bit/muc); nParam2 = cap tu nhan + cap tu choi (8 bit/muc)
 #define defTONG_JX2_COP_ACCEPT_APPLY	15	// dwTarget = NameID nguoi xin
 #define defTONG_JX2_COP_REFUSE_APPLY	16
-#define defTONG_JX2_COP_SAVE_RECRUIT	14	// szText = van an; nParam1 = khuynh huong + 4 hoat dong (4 bit/muc); nParam2 = cap tu nhan + cap tu choi (8 bit/muc)
-#define defTONG_JX2_COP_ACCEPT_APPLY	15	// dwTarget = NameID nguoi xin
-#define defTONG_JX2_COP_REFUSE_APPLY	16
+#define defTONG_JX2_COP_MAP_SET		17	// nParam1 = map id (quyen 2004)
+#define defTONG_JX2_COP_MAP_CREATE	18	// tao ban do lanh dia bang
+#define defTONG_JX2_COP_MAP_DELETE	19
+#define defTONG_JX2_COP_STORE_OFFER	20	// cat nParam1 diem cong hien ca nhan vao quy du tru bang
 
 typedef struct
 {

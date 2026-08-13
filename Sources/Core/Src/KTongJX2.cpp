@@ -333,6 +333,12 @@ static void sSendRightCmd(DWORD dwTongID, DWORD dwMemberID, DWORD dwRightID, BYT
 	g_NewProtocolProcess.PushMsgInTong((const void*)&sCmd, sizeof(sCmd));
 }
 
+#define defTASK_JX2_CONTRIBUTION	2801	// diem cong hien tieu duoc
+#define defTASK_JX2_WEEKLYOFFER		2802	// cong hien tuan nay (tran script tu kiem)
+#define defTASK_JX2_CUMULATEOFFER	2803	// cong hien tich luy tron doi
+#define defTASK_JX2_WEEKGOALOFFER	2804	// cong hien muc tieu tuan
+
+// (defTASK_JX2_* dung o DoClientOp)
 // Tim index nguoi choi online theo NameID (0 = khong online tren GS nay)
 static int sFindPlayerIdxByNameID(DWORD dwNameID)
 {
@@ -2253,6 +2259,37 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			pTong->btApplyCount--;
 			return 0;
 		}
+	case defTONG_JX2_COP_MAP_SET:
+	case defTONG_JX2_COP_MAP_CREATE:
+	case defTONG_JX2_COP_MAP_DELETE:
+		{
+			// quyen lanh dia 2004 hoac bang chu
+			if (!bMaster && !sJX2_HasRight(pMe, 2004))
+				return 3;
+			BYTE btOp = defTONG_JX2_TOP_SET_MAP;
+			if (pCmd->m_btOp == defTONG_JX2_COP_MAP_CREATE)
+				btOp = defTONG_JX2_TOP_CREATE_MAP;
+			else if (pCmd->m_btOp == defTONG_JX2_COP_MAP_DELETE)
+				btOp = defTONG_JX2_TOP_DELETE_MAP;
+			sSendTongOp(dwTongID, 0, btOp, pCmd->m_nParam1, pCmd->m_nParam2, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_STORE_OFFER:
+		{
+			// cat cong hien ca nhan (vi SaveVal 2801) vao quy du tru bang (field 18)
+			int nVal = pCmd->m_nParam1;
+			if (nVal <= 0 || nVal > 100000)
+				return 5;
+			int nCur = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(defTASK_JX2_CONTRIBUTION);
+			if (nCur < nVal)
+				return 6;	// khong du cong hien
+			Player[nPlayerIdx].m_cTask.SetSaveVal(defTASK_JX2_CONTRIBUTION, (DWORD)(nCur - nVal));
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_CONTRIBUTE, nVal, 0, dwParam);
+			char szLog[160];
+			sprintf(szLog, "%s cat %d cong hien vao quy du tru", Player[nPlayerIdx].m_PlayerName, nVal);
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			return 0;
+		}
 	}
 	return 1;
 }
@@ -2341,10 +2378,7 @@ int LuaTWS_ApplyUse(Lua_State* L)
 
 // Vi cong hien nguoi choi (JX2 6.1 - tang NHAN VAT, tieu duoc), luu bang
 // bien nhiem vu ben (SaveVal) de song qua relog:
-#define defTASK_JX2_CONTRIBUTION	2801	// diem cong hien tieu duoc
-#define defTASK_JX2_WEEKLYOFFER		2802	// cong hien tuan nay (tran script tu kiem)
-#define defTASK_JX2_CUMULATEOFFER	2803	// cong hien tich luy tron doi
-#define defTASK_JX2_WEEKGOALOFFER	2804	// cong hien muc tieu tuan
+// (defTASK_JX2_* don len truoc DoClientOp - xem tren)
 
 static int sPushSaveVal(Lua_State* L, int nTaskID)
 {

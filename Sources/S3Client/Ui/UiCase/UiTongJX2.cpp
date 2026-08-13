@@ -109,6 +109,41 @@ static const TJX2RecLbl s_sRecLbl[8] =
 	{"ApplyerName",     "T\252n gamer xin gia nh\313p             \247\274ng c\312p"},
 };
 #define TJX2_UI_PAGE_RECRUIT	5	// trang UI chieu mo (goi server PAGE_RECRUIT)
+// Trang Su dung chuc nang: bind nguyen van section blueprint (Fun_<ten goc>).
+#define TJX2_UI_PAGE_FUNUSE	6
+struct TJX2FunTxt { const char* szSec; const char* szLabel; };	// szLabel NULL = o du lieu
+static const TJX2FunTxt s_sFunTxt[15] =
+{
+	{"TitleTongInfo", "Tin t\370c"},
+	{"TitleTongName", "T\252n bang"},        {"TxtTongName", NULL},
+	{"TitleTongUnion", "Li\252n minh"},      {"TxtTongUnion", NULL},
+	{"TitleBuildLevel", "C\312p ki\325n thi\325t"}, {"TxtBuildLevel", NULL},
+	{"TitleTotalOffer", "T\346ng c\350ng hi\325n"}, {"TxtTotalOffer", NULL},
+	{"TitleTongMoney", "Ng\251n qu\374"},    {"TxtTongMoney", NULL},
+	{"TitleBuildFund", "Qu\374 ki\325n thi\325t"}, {"TxtBuildFund", NULL},
+	{"TitleBattleFund", "Qu\374 chi\325n b\336"},  {"TxtBattleFund", NULL},
+};
+// 3 o cuoi khoi trai + khoi ca nhan dung chung m_FunTxt? khong du cho - gop vao bang nut du lieu:
+struct TJX2FunBtn { const char* szSec; const char* szLabel; int nAct; };
+// nAct: 0 nang cap bang / 1 phat cong hien / 2 duoi / 3 truat chuc / 4 chieu mo
+//       5 tao lanh dia / 6 xoa lanh dia / 7 cat cong hien / 8 roi bang / -1 chua mo
+static const TJX2FunBtn s_sFunBtn[14] =
+{
+	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
+	{"BtnAssignTongOffer",   "Ph\270t", 1},
+	{"BtnGetTongMoney",      "Nh\313n", -1},
+	{"BtnAssignTongMoney",   "Ph\270t", -1},
+	{"BtnTransformMoney",    "\247\346i", -1},
+	{"BtnRecruit",           "", 4},
+	{"BtnKickOut",           "\247u\346i ng\255\352i", 2},
+	{"BtnDepose",            "Tru\312t ch\370c", 3},
+	{"Btn_DispenseOffer",    "Ph\270t c\350ng hi\325n", 1},
+	{"BtnCreateTongMap",     "T\271o l\267nh \256\336a", 5},
+	{"BtnConfigureTongMap",  "", -1},
+	{"BtnTongStunt",         "", -1},
+	{"BtnStorePersonalOffer","C\312t", 7},
+	{"BtnLeaveTong",         "R\352i bang", 8},
+};
 
 //////////////////////////////////////////////////////////////////////
 
@@ -204,6 +239,14 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_BtnAct[i]);
 	AddChild(&m_BtnPrev);
 	AddChild(&m_BtnNext);
+	AddChild(&m_FunBg);
+	for (i = 0; i < 15; i++)
+		AddChild(&m_FunTxt[i]);
+	for (i = 0; i < 14; i++)
+		AddChild(&m_FunBtn[i]);
+	for (i = 0; i < 4; i++)
+		AddChild(&m_FunSub[i]);
+	AddChild(&m_BtnFun);
 	for (i = 0; i < 8; i++)
 		AddChild(&m_RecLbl[i]);
 	AddChild(&m_RecJiyu);
@@ -238,6 +281,11 @@ void KUiTongJX2::Initialize()
 	m_RecQX.SetLabel("0");
 	for (i = 0; i < 4; i++)
 		m_RecHD[i].SetLabel("0");
+	m_BtnFun.SetLabel("");	// sprite nut co chu san tren cua so chinh
+	for (i = 0; i < 14; i++)
+		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
+	for (i = 0; i < 4; i++)
+		m_FunSub[i].SetLabel("");
 
 	Wnd_AddWindow(this);
 }
@@ -302,6 +350,25 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		ms_pSelf->m_RecLbl[i].Init(&Ini, szSec);
 		ms_pSelf->m_RecLbl[i].SetText(s_sRecLbl[i].szLabel);
 	}
+	ms_pSelf->m_FunBg.Init(&Ini, "Fun_PageBg");
+	for (i = 0; i < 15; i++)
+	{
+		sprintf(szSec, "Fun_%s", s_sFunTxt[i].szSec);
+		ms_pSelf->m_FunTxt[i].Init(&Ini, szSec);
+		if (s_sFunTxt[i].szLabel)
+			ms_pSelf->m_FunTxt[i].SetText(s_sFunTxt[i].szLabel);
+	}
+	for (i = 0; i < 14; i++)
+	{
+		sprintf(szSec, "Fun_%s", s_sFunBtn[i].szSec);
+		ms_pSelf->m_FunBtn[i].Init(&Ini, szSec);
+	}
+	for (i = 0; i < 4; i++)
+	{
+		sprintf(szSec, "Fun_BtnSubPage%d", i + 1);
+		ms_pSelf->m_FunSub[i].Init(&Ini, szSec);
+	}
+	ms_pSelf->m_BtnFun.Init(&Ini, "BtnFunUse");
 	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
 	ms_pSelf->m_RecAuto.Init(&Ini, "Rec_AutoAcceptLevel");
 	ms_pSelf->m_RecRefuse.Init(&Ini, "Rec_RefuseLevel");
@@ -328,6 +395,13 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		nPage = defTONG_JX2_PAGE_RECRUIT;
 	else if (nPage == 4)
 		nPage = defTONG_JX2_PAGE_INFO;	// trang thong bao dung du lieu INFO
+	else if (nPage == TJX2_UI_PAGE_FUNUSE)
+	{
+		// trang chuc nang can CA thong tin bang CA danh sach thanh vien
+		if (g_pCoreShell)
+			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0);
+		nPage = defTONG_JX2_PAGE_MEMBER;
+	}
 	if (g_pCoreShell)
 		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, (unsigned int)nPage, nStart);
 }
@@ -372,6 +446,8 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 				ms_pSelf->RenderInfo();
 			else if (ms_pSelf->m_nPage == 4)
 				ms_pSelf->RenderAnnounce();
+			else if (ms_pSelf->m_nPage == TJX2_UI_PAGE_FUNUSE)
+				ms_pSelf->RenderFunUse();
 		}
 		break;
 	case defTONG_JX2_PAGE_MEMBER:
@@ -381,7 +457,8 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 			memcpy(ms_pSelf->m_byMember, pData, nLen);
 			ms_pSelf->m_bHasMember = 1;
 			if (ms_pSelf->m_nPage == defTONG_JX2_PAGE_MEMBER ||
-				ms_pSelf->m_nPage == defTONG_JX2_PAGE_RIGHT)
+				ms_pSelf->m_nPage == defTONG_JX2_PAGE_RIGHT ||
+				ms_pSelf->m_nPage == TJX2_UI_PAGE_FUNUSE)
 				ms_pSelf->RenderMembers();
 		}
 		break;
@@ -418,7 +495,8 @@ void KUiTongJX2::ClearRows()
 void KUiTongJX2::RepositionRows()
 {
 	int i;
-	BOOL bList = (m_nPage == defTONG_JX2_PAGE_MEMBER || m_nPage == defTONG_JX2_PAGE_RIGHT);
+	BOOL bList = (m_nPage == defTONG_JX2_PAGE_MEMBER || m_nPage == defTONG_JX2_PAGE_RIGHT ||
+		m_nPage == TJX2_UI_PAGE_FUNUSE);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 	{
 		if (bList)
@@ -453,7 +531,9 @@ void KUiTongJX2::SwitchPage(int nPage)
 	// trang thanh vien/quyen hop nhat = tab 2)
 	{
 		int nBg = 0;
-		if (nPage == TJX2_UI_PAGE_RECRUIT)
+		if (nPage == TJX2_UI_PAGE_FUNUSE)
+			nBg = -1;	// trang chuc nang dung nen rieng m_FunBg
+		else if (nPage == TJX2_UI_PAGE_RECRUIT)
 			nBg = 1;
 		else if (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT)
 			nBg = 2;
@@ -478,6 +558,29 @@ void KUiTongJX2::SwitchPage(int nPage)
 			else
 				m_Chk[i].Hide();
 		}
+	}
+	// bo control trang chuc nang
+	{
+		int i;
+		BOOL bFun = (nPage == TJX2_UI_PAGE_FUNUSE);
+		if (bFun) m_FunBg.Show(); else m_FunBg.Hide();
+		for (i = 0; i < 15; i++)
+			if (bFun) m_FunTxt[i].Show(); else m_FunTxt[i].Hide();
+		for (i = 0; i < 14; i++)
+		{
+			if (bFun && s_sFunBtn[i].nAct >= 0)
+			{
+				m_FunBtn[i].Show();
+				m_FunBtn[i].Enable(true);
+			}
+			else
+			{
+				m_FunBtn[i].Hide();
+				m_FunBtn[i].Enable(false);
+			}
+		}
+		for (i = 0; i < 4; i++)
+			if (bFun) m_FunSub[i].Show(); else m_FunSub[i].Hide();
 	}
 	// bo control trang chieu mo
 	{
@@ -514,6 +617,8 @@ void KUiTongJX2::SwitchPage(int nPage)
 		RenderAnnounce();	// trang thong bao dung du lieu INFO
 	else if (nPage == TJX2_UI_PAGE_RECRUIT)
 		RenderRecruit();
+	else if (nPage == TJX2_UI_PAGE_FUNUSE)
+		RenderFunUse();
 	RequestPage(nPage, 0);
 }
 
@@ -546,7 +651,8 @@ void KUiTongJX2::SetupActions()
 		m_BtnAct[5].SetLabel("Ph\251n quy\322n");
 		break;
 	case TJX2_UI_PAGE_RECRUIT:
-		break;	// trang chieu mo dung bo nut rieng cua blueprint
+	case TJX2_UI_PAGE_FUNUSE:
+		break;	// 2 trang nay dung bo nut rieng cua blueprint
 	case defTONG_JX2_PAGE_WS:
 		m_BtnAct[0].SetLabel("L\313p khu");
 		m_BtnAct[1].SetLabel("M\353 / \247\343ng");
@@ -801,6 +907,27 @@ void KUiTongJX2::RenderRecruit()
 	}
 }
 
+// Trang Su dung chuc nang: do so lieu INFO vao cac o Txt cua blueprint
+void KUiTongJX2::RenderFunUse()
+{
+	if (!m_bHasInfo)
+		return;
+	TONG_JX2_INFO_SYNC* p = (TONG_JX2_INFO_SYNC*)m_byInfo;
+	char sz[120];
+	m_FunTxt[2].SetText(p->m_szTongName);
+	m_FunTxt[4].SetText("-");
+	sprintf(sz, "%d", p->m_nLevel);
+	m_FunTxt[6].SetText(sz);
+	sprintf(sz, "%u", p->m_dwStoredOffer);
+	m_FunTxt[8].SetText(sz);
+	sprintf(sz, "%.0f", (double)p->m_nMoney);
+	m_FunTxt[10].SetText(sz);
+	sprintf(sz, "%u (tu\307n %u/%u)", p->m_dwBuildFund, p->m_dwWeekBuild, p->m_dwWeekUpper);
+	m_FunTxt[12].SetText(sz);
+	sprintf(sz, "%u", p->m_dwWarFund);
+	m_FunTxt[14].SetText(sz);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 void KUiTongJX2::OnAction(int nIdx)
@@ -956,6 +1083,63 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					}
 					return 1;
 				}
+			}
+		}
+		if (uParam == (unsigned int)&m_BtnFun)
+		{
+			SwitchPage(TJX2_UI_PAGE_FUNUSE);
+			return 1;
+		}
+		{
+			int f;
+			for (f = 0; f < 14; f++)
+			{
+				if (uParam != (unsigned int)&m_FunBtn[f])
+					continue;
+				TONG_JX2_MEMBER_SYNC* pFM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
+				DWORD dwFT = 0;
+				if (m_bHasMember && m_nSel < (int)pFM->m_btCount)
+					dwFT = pFM->m_sMember[m_nSel].m_dwNameID;
+				switch (s_sFunBtn[f].nAct)
+				{
+				case 0:
+					SendOp(defTONG_JX2_COP_UPGRADE, 0, 0, 0, NULL);
+					break;
+				case 1:
+					if (dwFT)
+						SendOp(defTONG_JX2_COP_GRANT, dwFT, 10, 0, NULL);
+					break;
+				case 2:
+					if (dwFT)
+						SendOp(defTONG_JX2_COP_KICK, dwFT, 0, 0, NULL);
+					break;
+				case 3:
+					if (dwFT)
+						SendOp(defTONG_JX2_COP_SET_FIGURE, dwFT, 3, 0, NULL);
+					break;
+				case 4:
+					SwitchPage(TJX2_UI_PAGE_RECRUIT);
+					break;
+				case 5:
+					SendOp(defTONG_JX2_COP_MAP_CREATE, 0, 0, 0, NULL);
+					break;
+				case 6:
+					SendOp(defTONG_JX2_COP_MAP_DELETE, 0, 0, 0, NULL);
+					break;
+				case 7:
+					SendOp(defTONG_JX2_COP_STORE_OFFER, 0, 10, 0, NULL);
+					break;
+				case 8:
+					{
+						// muon duong roi bang cua trang Tin tuc (OnAction xet m_nPage)
+						int nKeep = m_nPage;
+						m_nPage = defTONG_JX2_PAGE_INFO;
+						OnAction(4);
+						m_nPage = nKeep;
+					}
+					break;
+				}
+				return 1;
 			}
 		}
 		if (uParam == (unsigned int)&m_RecQX)
