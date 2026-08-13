@@ -132,6 +132,9 @@ void KUiTongJX2::CloseWindow(bool bDestroy)
 void KUiTongJX2::Initialize()
 {
 	int i;
+	// nen phan trang add TRUOC de chu/nut ve de len tren
+	for (i = 0; i < TJX2_UI_TABS; i++)
+		AddChild(&m_PageBg[i]);
 	for (i = 0; i < TJX2_UI_TABS; i++)
 		AddChild(&m_BtnTab[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
@@ -172,6 +175,11 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 
 	char szSec[32];
 	int i;
+	for (i = 0; i < TJX2_UI_TABS; i++)
+	{
+		sprintf(szSec, "PageBg%d", i);
+		ms_pSelf->m_PageBg[i].Init(&Ini, szSec);
+	}
 	for (i = 0; i < TJX2_UI_TABS; i++)
 	{
 		sprintf(szSec, "Tab%d", i);
@@ -276,6 +284,17 @@ void KUiTongJX2::SwitchPage(int nPage)
 	m_nPage = nPage;
 	m_nStart = 0;
 	m_nSel = (nPage == defTONG_JX2_PAGE_WS) ? 1 : 0;
+	// hien dung nen phan trang cua tab nay
+	{
+		int nBg = (nPage >= 0 && nPage < TJX2_UI_TABS) ? nPage : 0;
+		for (int i = 0; i < TJX2_UI_TABS; i++)
+		{
+			if (i == nBg)
+				m_PageBg[i].Show();
+			else
+				m_PageBg[i].Hide();
+		}
+	}
 	ClearRows();
 	SetupActions();
 	if (nPage == 4)

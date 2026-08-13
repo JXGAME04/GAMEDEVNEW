@@ -55,6 +55,7 @@ private:
 	static KUiTongJX2*	ms_pSelf;
 
 	KWndButton			m_BtnClose;
+	KWndImage			m_PageBg[TJX2_UI_TABS];	// nen phan trang (帮会分页-*) tung tab
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
