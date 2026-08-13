@@ -1853,6 +1853,40 @@ int LuaTalkUI2(Lua_State* L)
 	return 0;
 }
 
+// JX2 port: script bang hoi Linux goi \script\tong\... va \script\lib\...
+// nhung cay that nam o scriptjx2\ (ngoai script\ vi GS tu chay moi .lua trong
+// script\ luc boot). Neu file khong ton tai -> thu duong scriptjx2 tuong ung.
+static void sJX2RemapScriptPath(char* szFull)
+{
+	FILE* f = fopen(szFull, "rb");
+	if (f)
+	{
+		fclose(f);
+		return;
+	}
+	static const char* szFrom[2] = { "script\\tong\\", "script\\lib\\" };
+	static const char* szTo[2]   = { "scriptjx2\\tong_vn\\", "scriptjx2\\lib\\" };
+	char szBuf[MAX_PATH * 2];
+	for (int k = 0; k < 2; k++)
+	{
+		char* p = strstr(szFull, szFrom[k]);
+		if (!p)
+			continue;
+		int nHead = (int)(p - szFull);
+		memcpy(szBuf, szFull, nHead);
+		szBuf[nHead] = 0;
+		strcat(szBuf, szTo[k]);
+		strcat(szBuf, p + strlen(szFrom[k]));
+		f = fopen(szBuf, "rb");
+		if (f)
+		{
+			fclose(f);
+			strcpy(szFull, szBuf);
+			return;
+		}
+	}
+}
+
 int LuaIncludeFile(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) <= 0) return 0;
@@ -1900,11 +1934,61 @@ int LuaIncludeFile(Lua_State* L)
 #endif
 		}
 		strlwr(lszCurrentDirectory + nLen);
+		sJX2RemapScriptPath(lszCurrentDirectory);	// JX2 port
 		lua_dofile(L, lszCurrentDirectory);
 		return 0;
 	}
 	else
 		return 0;
+}
+
+// IncludeLib("TEN_MODULE") cua script JX2 -> nap file lib tuong ung o scriptjx2.
+// Module la nhan rieng cua engine JX2; module khong co trong bang thi bo qua im lang.
+int LuaIncludeLib(Lua_State* L)
+{
+	static const char* szMod[14] = {
+		"TONG", "FILE", "LOG", "STRING", "BASIC", "COMMON", "SAY",
+		"PLAYER", "AWARD", "TIMERLIST", "TOPLIST", "MAPDB", "GB_TASK", "FILESYS",
+	};
+	static const char* szFile[14] = {
+		"scriptjx2\\tong_vn\\tong_header.lua", "scriptjx2\\lib\\file.lua",
+		"scriptjx2\\lib\\log.lua", "scriptjx2\\lib\\string.lua",
+		"scriptjx2\\lib\\basic.lua", "scriptjx2\\lib\\common.lua",
+		"scriptjx2\\lib\\say.lua", "scriptjx2\\lib\\player.lua",
+		"scriptjx2\\lib\\award.lua", "scriptjx2\\lib\\timerlist.lua",
+		"scriptjx2\\lib\\toplist.lua", "scriptjx2\\lib\\mapdb.lua",
+		"scriptjx2\\lib\\gb_taskfuncs.lua", "scriptjx2\\lib\\file.lua",
+	};
+	if (Lua_GetTopIndex(L) <= 0 || !Lua_IsString(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	const char* pszName = lua_tostring(L, 1);
+	for (int k = 0; k < 14; k++)
+	{
+		if (strcmp(pszName, szMod[k]) != 0)
+			continue;
+		char szPath[MAX_PATH * 2];
+		g_GetRootPath(szPath);
+		int nL = (int)strlen(szPath);
+		if (nL > 0 && (szPath[nL - 1] == '\\' || szPath[nL - 1] == '/'))
+			szPath[nL - 1] = 0;
+		strcat(szPath, "\\");
+		strcat(szPath, szFile[k]);
+		lua_dofile(L, szPath);
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// vung phat hanh (script JX2 phan nhanh cn_ib/vn) - ban VN co dinh
+int LuaGetProductRegion(Lua_State* L)
+{
+	Lua_PushString(L, (char*)"vn");
+	return 1;
 }
 
 int LuaGetTaskValue(Lua_State* L)
@@ -11947,6 +12031,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetBit",	LuaSetBit},
 	{"SetByte",	LuaSetByte},
 	{"Include",LuaIncludeFile},
+	{"IncludeLib",LuaIncludeLib},		// JX2 port
+	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
 	{"AddGlobalNews",LuaAddGlobalNews},
 	{"AddGlobalTimeNews",LuaAddGlobalTimeNews},

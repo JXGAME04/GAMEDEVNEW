@@ -111,6 +111,7 @@ static const TJX2RecLbl s_sRecLbl[8] =
 #define TJX2_UI_PAGE_RECRUIT	5	// trang UI chieu mo (goi server PAGE_RECRUIT)
 // Trang Su dung chuc nang: bind nguyen van section blueprint (Fun_<ten goc>).
 #define TJX2_UI_PAGE_FUNUSE	6
+#define TJX2_UI_PAGE_TONGLIST	7	// danh sach bang (mo duoc khi CHUA vao bang)
 struct TJX2FunTxt { const char* szSec; const char* szLabel; };	// szLabel NULL = o du lieu
 static const TJX2FunTxt s_sFunTxt[15] =
 {
@@ -131,8 +132,8 @@ static const TJX2FunBtn s_sFunBtn[14] =
 {
 	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
 	{"BtnAssignTongOffer",   "Ph\270t", 1},
-	{"BtnGetTongMoney",      "Nh\313n", -1},
-	{"BtnAssignTongMoney",   "Ph\270t", -1},
+	{"BtnGetTongMoney",      "Nh\313n", 9},
+	{"BtnAssignTongMoney",   "Ph\270t", 10},
 	{"BtnTransformMoney",    "\247\346i", -1},
 	{"BtnRecruit",           "Chi\252u m\351", 4},
 	{"BtnKickOut",           "\247u\346i ng\255\352i", 2},
@@ -180,6 +181,8 @@ KUiTongJX2::KUiTongJX2()
 	m_bHasWs = 0;
 	m_bHasRecruit = 0;
 	m_bHasRecord = 0;
+	m_bHasList = 0;
+	memset(m_byList, 0, sizeof(m_byList));
 	m_nRcSub = 2;	// mac dinh Bang vu (so su kien)
 	memset(m_byRecord, 0, sizeof(m_byRecord));
 	m_nRecQX = 0;
@@ -222,7 +225,13 @@ void KUiTongJX2::ToggleFromIcon()
 	if (g_pCoreShell && g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0))
 		OpenWindow();
 	else
-		KUiTongCreateSheet::OpenWindow();	// chua vao bang -> don TAO BANG (he cu chi con vai tro nay)
+	{
+		// chua vao bang: mo cua so JX2 trang Danh sach bang (xem + xin gia nhap);
+		// nut Tao bang tren trang nay mo don tao bang he cu
+		KUiTongJX2* pWnd = OpenWindow();
+		if (pWnd)
+			pWnd->SwitchPage(TJX2_UI_PAGE_TONGLIST);
+	}
 }
 
 KUiTongJX2* KUiTongJX2::GetIfVisible()
@@ -284,6 +293,7 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_RcEditor);
 	AddChild(&m_RcLeaveWord);
 	AddChild(&m_RcSave);
+	AddChild(&m_BtnList);
 	for (i = 0; i < 8; i++)
 		AddChild(&m_RecLbl[i]);
 	AddChild(&m_RecJiyu);
@@ -331,6 +341,7 @@ void KUiTongJX2::Initialize()
 		m_RcSub[i].SetLabel(s_szRcSub[i]);
 	m_RcLeaveWord.SetLabel("L\255u l\352i");
 	m_RcSave.SetLabel("S\366a th\253ng b\270o");
+	m_BtnList.SetLabel("");	// sprite nut co san chu
 	for (i = 0; i < 14; i++)
 		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
 	for (i = 0; i < 4; i++)
@@ -441,6 +452,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_RcEditor.Init(&Ini, "Rc_AnnounceEditor");
 	ms_pSelf->m_RcLeaveWord.Init(&Ini, "Rc_BtnLeaveWord");
 	ms_pSelf->m_RcSave.Init(&Ini, "Rc_BtnEditAnnounce");
+	ms_pSelf->m_BtnList.Init(&Ini, "BtnTongList");
 	ms_pSelf->m_BtnFun.Init(&Ini, "BtnFunUse");
 	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
 	ms_pSelf->m_RecAuto.Init(&Ini, "Rec_AutoAcceptLevel");
@@ -478,6 +490,8 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0);
 		nPage = defTONG_JX2_PAGE_MEMBER;
 	}
+	else if (nPage == TJX2_UI_PAGE_TONGLIST)
+		nPage = defTONG_JX2_PAGE_TONGLIST;
 	if (g_pCoreShell)
 		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, (unsigned int)nPage, nStart);
 }
@@ -547,6 +561,15 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 				ms_pSelf->RenderWorkshop();
 		}
 		break;
+	case defTONG_JX2_PAGE_TONGLIST:
+		if (nLen <= (int)sizeof(ms_pSelf->m_byList))
+		{
+			memcpy(ms_pSelf->m_byList, pData, nLen);
+			ms_pSelf->m_bHasList = 1;
+			if (ms_pSelf->m_nPage == TJX2_UI_PAGE_TONGLIST)
+				ms_pSelf->RenderTongList();
+		}
+		break;
 	case defTONG_JX2_PAGE_RECORD:
 		if (nLen <= (int)sizeof(ms_pSelf->m_byRecord))
 		{
@@ -596,6 +619,12 @@ void KUiTongJX2::RepositionRows()
 			m_Row[i].SetPosition(25, 79 + i * 22);
 			m_BtnRowSel[i].SetPosition(25, 79 + i * 22);
 			m_BtnRowSel[i].Enable(false);
+		}
+		else if (m_nPage == TJX2_UI_PAGE_TONGLIST)
+		{
+			m_Row[i].SetPosition(40, 70 + i * 24);
+			m_BtnRowSel[i].SetPosition(40, 70 + i * 24);
+			m_BtnRowSel[i].Enable(i >= 1 && i <= 10);
 		}
 		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 		{
@@ -744,6 +773,8 @@ void KUiTongJX2::SwitchPage(int nPage)
 		RenderRecruit();
 	else if (nPage == TJX2_UI_PAGE_FUNUSE)
 		RenderFunUse();
+	else if (nPage == TJX2_UI_PAGE_TONGLIST)
+		RenderTongList();
 	RequestPage(nPage, 0);
 }
 
@@ -778,6 +809,11 @@ void KUiTongJX2::SetupActions()
 	case TJX2_UI_PAGE_RECRUIT:
 	case TJX2_UI_PAGE_FUNUSE:
 		break;	// 2 trang nay dung bo nut rieng cua blueprint
+	case TJX2_UI_PAGE_TONGLIST:
+		m_BtnAct[0].SetLabel("Xin gia nh\313p");
+		m_BtnAct[1].SetLabel("T\271o bang");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
+		break;
 	case defTONG_JX2_PAGE_WS:
 		// dung bo nut blueprint (m_WsBtn); Act chi giu tuyet ky
 		m_BtnAct[3].SetLabel("\247\306t tuy\326t k\374");
@@ -1108,6 +1144,27 @@ void KUiTongJX2::RenderRecord()
 		m_Row[i].SetText(p->m_szLine[i]);
 }
 
+// Danh sach bang toan may chu (xem/xin gia nhap - mo duoc khi chua vao bang)
+void KUiTongJX2::RenderTongList()
+{
+	int i;
+	char sz[120];
+	ClearRows();
+	m_Row[0].SetText("T\252n bang           Bang ch\361        C\312p  TV");
+	if (!m_bHasList)
+		return;
+	TONG_JX2_TONGLIST_SYNC* p = (TONG_JX2_TONGLIST_SYNC*)m_byList;
+	if (p->m_btCount == 0)
+		m_Row[2].SetText("(ch\255a c\343 bang h\351i n\265o)");
+	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_LIST_ROWS; i++)
+	{
+		sprintf(sz, "%s%-18s %-14s %3d %4d", (i == m_nSel) ? "> " : "  ",
+			p->m_sTong[i].m_szName, p->m_sTong[i].m_szMaster,
+			(int)p->m_sTong[i].m_btLevel, (int)p->m_sTong[i].m_wMember);
+		m_Row[i + 1].SetText(sz);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 
 void KUiTongJX2::OnAction(int nIdx)
@@ -1195,6 +1252,18 @@ void KUiTongJX2::OnAction(int nIdx)
 		else if (nIdx == 5)
 			RequestPage(defTONG_JX2_PAGE_INFO, 0);
 		break;
+	case TJX2_UI_PAGE_TONGLIST:
+		if (nIdx == 0)
+		{
+			TONG_JX2_TONGLIST_SYNC* pL = (TONG_JX2_TONGLIST_SYNC*)m_byList;
+			if (m_bHasList && m_nSel < (int)pL->m_btCount)
+				SendOp(defTONG_JX2_COP_APPLY_JOIN, pL->m_sTong[m_nSel].m_dwNameID, 0, 0, NULL);
+		}
+		else if (nIdx == 1)
+			KUiTongCreateSheet::OpenWindow();	// don tao bang he cu
+		else if (nIdx == 5)
+			RequestPage(m_nPage, m_nStart);
+		break;
 	}
 }
 
@@ -1261,6 +1330,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 							RenderRecruit();
 						}
 					}
+					else if (m_nPage == TJX2_UI_PAGE_TONGLIST)
+					{
+						if (i >= 1)
+						{
+							m_nSel = i - 1;
+							RenderTongList();
+						}
+					}
 					return 1;
 				}
 			}
@@ -1268,6 +1345,11 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == (unsigned int)&m_BtnFun)
 		{
 			SwitchPage(TJX2_UI_PAGE_FUNUSE);
+			return 1;
+		}
+		if (uParam == (unsigned int)&m_BtnList)
+		{
+			SwitchPage(TJX2_UI_PAGE_TONGLIST);
 			return 1;
 		}
 		{
@@ -1308,6 +1390,13 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					break;
 				case 7:
 					SendOp(defTONG_JX2_COP_STORE_OFFER, 0, 10, 0, NULL);
+					break;
+				case 9:
+					SendOp(defTONG_JX2_COP_DRAW_MONEY, 0, 10, 0, NULL);	// rut 10 van
+					break;
+				case 10:
+					if (dwFT)
+						SendOp(defTONG_JX2_COP_PAY_MEMBER, dwFT, 10, 0, NULL);	// phat 10 van
 					break;
 				case 8:
 					{

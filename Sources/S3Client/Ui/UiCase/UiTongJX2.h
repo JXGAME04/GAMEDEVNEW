@@ -48,6 +48,7 @@ private:
 	void	RenderRecruit();
 	void	RenderFunUse();
 	void	RenderRecord();
+	void	RenderTongList();
 	void	RenderMembers();
 	void	RenderWorkshop();
 	void	RenderAnnounce();
@@ -94,6 +95,7 @@ private:
 	KWndLabeledButton	m_RcSub[4];				// Muc tieu tuan/Thong bao/Bang vu/Lich su
 	KWndEdit512			m_RcEditor;				// khung sua thong bao
 	KWndLabeledButton	m_RcLeaveWord, m_RcSave;
+	KWndLabeledButton	m_BtnList;				// nut Danh sach bang tren cua so chinh
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau
@@ -107,6 +109,8 @@ private:
 	int		m_bHasRecruit;
 	int		m_nRecQX, m_nRecHD[4];	// gia tri menu dang chon (gui khi bam Luu)
 	unsigned char	m_byRecord[1300];
+	unsigned char	m_byList[800];
+	int		m_bHasList;
 	int		m_bHasRecord;
 	int		m_nRcSub;				// 0 muc tieu tuan / 1 thong bao / 2 bang vu / 3 lich su
 };

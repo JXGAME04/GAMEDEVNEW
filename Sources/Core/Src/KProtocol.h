@@ -2354,6 +2354,8 @@ typedef struct
 #define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
 #define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
 #define defTONG_JX2_PAGE_RECORD	5	// trang nhat ky (wStart = 0 su kien / 1 lich su)
+#define defTONG_JX2_PAGE_TONGLIST	6	// danh sach bang (KHONG can thuoc bang; wStart phan trang)
+#define defTONG_JX2_LIST_ROWS		10
 #define defTONG_JX2_RECORD_LINES	12	// so dong gui moi goi
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	12
@@ -2383,6 +2385,9 @@ typedef struct
 #define defTONG_JX2_COP_WS_SETLV	21	// nParam1 = khu, nParam2 = cap su dung
 #define defTONG_JX2_COP_WS_DEL		22	// nParam1 = khu (xoa toan bo field khu)
 #define defTONG_JX2_COP_LEAVE_WORD	23	// szText = loi nhan ghi vao so su kien
+#define defTONG_JX2_COP_APPLY_JOIN	24	// dwTarget = NameID bang muon xin vao (KHONG can thuoc bang)
+#define defTONG_JX2_COP_PAY_MEMBER	25	// dwTarget = thanh vien, nParam1 = so VAN phat tu ngan quy
+#define defTONG_JX2_COP_DRAW_MONEY	26	// bang chu rut nParam1 VAN ve tui
 
 typedef struct
 {
@@ -2512,6 +2517,29 @@ typedef struct
 	char	m_szAnnounce[128];
 	char	m_szLine[defTONG_JX2_RECORD_LINES][96];
 } TONG_JX2_RECORD_SYNC;
+
+typedef struct
+{
+	char	m_szName[32];
+	char	m_szMaster[32];
+	DWORD	m_dwNameID;
+	BYTE	m_btCamp;
+	BYTE	m_btLevel;
+	WORD	m_wMember;
+} TONG_JX2_ONE_TONG;
+
+// Danh sach bang hoi toan may chu (xem + xin gia nhap tu ben ngoai)
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_SYNC_ID_JX2
+	BYTE	m_btPage;	// defTONG_JX2_PAGE_TONGLIST
+	WORD	m_wStart;
+	WORD	m_wTotal;
+	BYTE	m_btCount;
+	TONG_JX2_ONE_TONG	m_sTong[defTONG_JX2_LIST_ROWS];
+} TONG_JX2_TONGLIST_SYNC;
 
 typedef struct
 {

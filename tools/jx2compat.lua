@@ -104,3 +104,172 @@ function WriteErrTB(t, sz) WriteLog("[ERR] "..sz) return 1 end
 function WriteWar(sz)      WriteLog("[WAR] "..sz) return 1 end
 function WriteWarTB(t, sz) WriteLog("[WAR] "..sz) return 1 end
 function WriteTongMoneyChangeLog(sz) WriteLog("[TIEN-BANG] "..sz) return 1 end
+
+-- ==== He LEAGUE JX2 (lien-GS) thu gon cho mot GS ====
+-- obj tam dung de dang ky; so dang ky that TJX_LG_REG[mod|ten]; gia tri nhiem vu
+-- persist qua gb_SetTask/gb_GetTask (module "LG"/"LGM") de song qua restart.
+TJX_LG_TMP = {}
+TJX_LG_NEXT = 1
+TJX_LGM_TMP = {}
+TJX_LGM_NEXT = 1
+TJX_LG_REG = {}
+
+function LG_CreateLeagueObj()
+	local id = TJX_LG_NEXT
+	TJX_LG_NEXT = id + 1
+	TJX_LG_TMP[id] = {nMod = 0, szName = "", members = {}}
+	return id
+end
+
+function LG_FreeLeagueObj(id)
+	TJX_LG_TMP[id] = nil
+	return 1
+end
+
+function LG_SetLeagueInfo(id, nMod, szName)
+	local o = TJX_LG_TMP[id]
+	if (o == nil) then
+		return 0
+	end
+	o.nMod = nMod
+	o.szName = szName
+	return 1
+end
+
+function LG_GetLeagueInfo(lid)
+	local r = TJX_LG_REG[lid]
+	if (r == nil) then
+		return 0, ""
+	end
+	return r.nMod, r.szName
+end
+
+function LGM_CreateMemberObj()
+	local id = TJX_LGM_NEXT
+	TJX_LGM_NEXT = id + 1
+	TJX_LGM_TMP[id] = {szName = ""}
+	return id
+end
+
+function LGM_SetMemberInfo(mid, szName, nP, nMod, szModName)
+	local m = TJX_LGM_TMP[mid]
+	if (m == nil) then
+		return 0
+	end
+	m.szName = szName
+	return 1
+end
+
+function LG_AddMemberToObj(id, mid)
+	local o = TJX_LG_TMP[id]
+	local m = TJX_LGM_TMP[mid]
+	if (o == nil or m == nil) then
+		return 0
+	end
+	tinsert(o.members, m.szName)
+	return 1
+end
+
+-- dang ky league: chuyen obj tam vao so; callback OnCreate (neu co) goi ngay
+function LG_ApplyAddLeague(id, szScript, szFunc)
+	local o = TJX_LG_TMP[id]
+	if (o == nil) then
+		return 0
+	end
+	local key = o.nMod.."|"..o.szName
+	if (TJX_LG_REG[key] == nil) then
+		TJX_LG_REG[key] = {nMod = o.nMod, szName = o.szName, members = {}}
+	end
+	local r = TJX_LG_REG[key]
+	local i = 1
+	while (o.members[i] ~= nil) do
+		tinsert(r.members, o.members[i])
+		i = i + 1
+	end
+	return 1
+end
+
+function LG_ApplyRemoveLeague(nMod, szName)
+	TJX_LG_REG[nMod.."|"..szName] = nil
+	return 1
+end
+
+function LG_GetLeagueObj(nMod, szName)
+	local key = nMod.."|"..szName
+	if (TJX_LG_REG[key] ~= nil) then
+		return key
+	end
+	return -1
+end
+
+function LG_GetLeagueTask(lid, nTaskID)
+	if (lid == -1 or lid == nil) then
+		return 0
+	end
+	return gb_GetTask("LG", lid.."|"..nTaskID)
+end
+
+function LG_ApplySetLeagueTask(nMod, szName, nTaskID, nValue)
+	return gb_SetTask("LG", nMod.."|"..szName.."|"..nTaskID, nValue)
+end
+
+function LG_ApplyAppendLeagueTask(nMod, szName, nTaskID, nDelta)
+	local k = nMod.."|"..szName.."|"..nTaskID
+	return gb_SetTask("LG", k, gb_GetTask("LG", k) + nDelta)
+end
+
+function LG_GetFirstLeague(nMod)
+	local k, v = next(TJX_LG_REG, nil)
+	while (k ~= nil) do
+		if (v.nMod == nMod) then
+			return k
+		end
+		k, v = next(TJX_LG_REG, k)
+	end
+	return -1
+end
+
+function LG_GetNextLeague(nMod, lid)
+	local bFound = 0
+	local k, v = next(TJX_LG_REG, nil)
+	while (k ~= nil) do
+		if (bFound == 1 and v.nMod == nMod) then
+			return k
+		end
+		if (k == lid) then
+			bFound = 1
+		end
+		k, v = next(TJX_LG_REG, k)
+	end
+	return -1
+end
+
+function LGM_ApplyAddMember(lid, szMember)
+	local r = TJX_LG_REG[lid]
+	if (r == nil) then
+		return 0
+	end
+	tinsert(r.members, szMember)
+	return 1
+end
+
+function LG_GetMemberTask(lid, szMember, nTaskID)
+	return gb_GetTask("LGM", lid.."|"..szMember.."|"..nTaskID)
+end
+
+function LG_ApplySetMemberTask(lid, szMember, nTaskID, nValue)
+	return gb_SetTask("LGM", lid.."|"..szMember.."|"..nTaskID, nValue)
+end
+
+function LG_ApplyAppendMemberTask(lid, szMember, nTaskID, nDelta)
+	local k = lid.."|"..szMember.."|"..nTaskID
+	return gb_SetTask("LGM", k, gb_GetTask("LGM", k) + nDelta)
+end
+
+-- ==== Phuong tho: cua so duc JX2 chua co tren JX1 -> bao ro ====
+CURRENCYTYPE_CONTRIBUTION = 2
+
+function FoundryItem(nType)
+	Say("Chuc nang DUC/CHE cua phuong tho se mo o ban cap nhat sau.", 0)
+	return 0
+end
