@@ -65,6 +65,7 @@ private:
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
 	KWndText80			m_Row[TJX2_UI_ROWS];
+	KWndText80			m_Info[32];				// trang Tin tuc: field nguyen van blueprint
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau

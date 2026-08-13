@@ -59,6 +59,34 @@ static const char* s_szFigure[5] =
 	"Bang ch\361", "Tr\255\353ng l\267o", "\247\351i tr\255\353ng", "Bang ch\363ng", "An si",
 };
 
+// Trang Tin tuc: bind NGUYEN VAN section blueprint 帮会基础信息页面.ini
+// (Info_<ten section>); nhan Title dat chuoi TCVN3, Txt do RenderInfo dien.
+struct TJX2InfoCtl
+{
+	const char* szSec;		// ten section goc trong blueprint
+	const char* szLabel;	// nhan TCVN3 (NULL = o du lieu)
+};
+static const TJX2InfoCtl s_sInfoCtl[32] =
+{
+	{"TitleTongInfo",    "Th\253ng tin bang h\351i"},
+	{"TitleTongName",    "T\252n bang"},        {"TxtTongName",    NULL},
+	{"TitleMaster",      "Bang ch\361"},        {"TxtMaster",      NULL},
+	{"TitleLeague",      "Li\252n minh"},       {"TxtLeague",      NULL},
+	{"TitleCamp",        "Phe ph\270i"},        {"TxtCamp",        NULL},
+	{"TitleTongLevel",   "C\312p bang"},        {"TxtTongLevel",   NULL},
+	{"TitleMemberNum",   "Th\265nh vi\252n"},   {"TxtMemberNum",   NULL},
+	{"TitleTongCapital", "Ng\251n qu\374 bang"},{"TxtTongCapital", NULL},
+	{"TitleBuildFund",   "Qu\374 ki\325n thi\325t"},{"TxtBuildFund", NULL},
+	{"TitleBattleFund",  "Qu\374 chi\325n b\336"},{"TxtBattleFund", NULL},
+	{"TitleServiceFee",  "Ph\335 duy tr\327"},  {"TxtServiceFee",  NULL},
+	{"TitleStandFund",   "Tr\356 c\312p"},      {"TxtStandFund",   NULL},
+	{"TitleTotalOffer",  "Qu\374 d\371 tr\367"},{"TxtTotalOffer",  NULL},
+	{"TitleStoredBuildFund", "Ki\325n thi\325t d\371 tr\367"},{"TxtStoredBuildFund", NULL},
+	{"TitlePersonalInfo","Th\253ng tin c\270 nh\251n"},
+	{"TitlePersonalOffer","C\350ng hi\325n"},   {"TxtPersonalOffer", NULL},
+	{"TitleLiveness",    "Kinh nghi\326m bang"},{"TxtLiveness",    NULL},
+};
+
 // nhan 12 o kiem quyen (cung thu tu mat na s_dwRightId) - TCVN3 co dau
 static const char* s_szChkLabel[12] =
 {
@@ -149,6 +177,8 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_BtnTab[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_Row[i]);
+	for (i = 0; i < 32; i++)
+		AddChild(&m_Info[i]);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_BtnRowSel[i]);
 	for (i = 0; i < TJX2_UI_ACTS; i++)
@@ -213,6 +243,13 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	{
 		sprintf(szSec, "Chk%d", i);
 		ms_pSelf->m_Chk[i].Init(&Ini, szSec);
+	}
+	for (i = 0; i < 32; i++)
+	{
+		sprintf(szSec, "Info_%s", s_sInfoCtl[i].szSec);
+		ms_pSelf->m_Info[i].Init(&Ini, szSec);
+		if (s_sInfoCtl[i].szLabel)
+			ms_pSelf->m_Info[i].SetText(s_sInfoCtl[i].szLabel);
 	}
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 	{
@@ -352,6 +389,16 @@ void KUiTongJX2::SwitchPage(int nPage)
 				m_Chk[i].Hide();
 		}
 	}
+	// field Tin tuc chi hien o trang Tin tuc (trang nay khong dung Row)
+	{
+		for (int i = 0; i < 32; i++)
+		{
+			if (nPage == defTONG_JX2_PAGE_INFO)
+				m_Info[i].Show();
+			else
+				m_Info[i].Hide();
+		}
+	}
 	RepositionRows();
 	ClearRows();
 	SetupActions();
@@ -421,6 +468,39 @@ void KUiTongJX2::RenderInfo()
 	TONG_JX2_INFO_SYNC* p = (TONG_JX2_INFO_SYNC*)m_byInfo;
 	char sz[120];
 	ClearRows();
+	if (m_nPage == defTONG_JX2_PAGE_INFO)
+	{
+		// do du lieu vao dung cac o Txt* cua blueprint (chi so theo s_sInfoCtl)
+		static const char* szCamp[3] = {"Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+		m_Info[2].SetText(p->m_szTongName);
+		m_Info[4].SetText(p->m_szMaster);
+		sprintf(sz, "%u", (unsigned)0);
+		m_Info[6].SetText("-");
+		m_Info[8].SetText(p->m_btCamp < 3 ? szCamp[p->m_btCamp] : "-");
+		sprintf(sz, "%d", p->m_nLevel);
+		m_Info[10].SetText(sz);
+		sprintf(sz, "%d", (int)p->m_wMemberTotal);
+		m_Info[12].SetText(sz);
+		sprintf(sz, "%.0f", (double)p->m_nMoney);
+		m_Info[14].SetText(sz);
+		sprintf(sz, "%u  (tu\307n %u/%u)", p->m_dwBuildFund, p->m_dwWeekBuild, p->m_dwWeekUpper);
+		m_Info[16].SetText(sz);
+		sprintf(sz, "%u", p->m_dwWarFund);
+		m_Info[18].SetText(sz);
+		sprintf(sz, "%u", p->m_dwMaintain);
+		m_Info[20].SetText(sz);
+		sprintf(sz, "%u", p->m_dwPerStand);
+		m_Info[22].SetText(sz);
+		sprintf(sz, "%u", p->m_dwStoredOffer);
+		m_Info[24].SetText(sz);
+		sprintf(sz, "%u", p->m_dwStoredBuild);
+		m_Info[26].SetText(sz);
+		sprintf(sz, "%u", p->m_dwMyOffer);
+		m_Info[29].SetText(sz);
+		sprintf(sz, "%d", p->m_nExp);
+		m_Info[31].SetText(sz);
+		return;
+	}
 	sprintf(sz, "Bang: %s   Bang chu: %s", p->m_szTongName, p->m_szMaster);
 	m_Row[0].SetText(sz);
 	sprintf(sz, "Cap bang: %d   Kinh nghiem: %d   Thanh vien: %d", p->m_nLevel, p->m_nExp, (int)p->m_wMemberTotal);
