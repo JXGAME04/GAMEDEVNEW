@@ -94,6 +94,28 @@ enumTONG_SYNC_ID_JX2,          // bien dai: {S2C_TONG_HEAD, btPage, payload tran
 - Dang ky compile: `S3Client.vcxproj` (ClCompile/ClInclude, mau `<ClCompile Include="Ui\UiCase\UiTongManager.cpp">`).
 - Build kiem: Core "Client Release|Win32" + S3Client "Release|Win32" + (server khong doi van build lai de chac).
 
+## 6B. DAY NOI DA XAC MINH THEM (Unit 1 da xong o commit 3c12b82)
+
+- 🔴 `KProtocol.h` co HAI ban: `Sources/Core/Src/` (BAN SONG - include path co `src`
+  truoc `..\..\Headers`) va `Headers/` (ban phu) -> sua giao thuc client PHAI va CA HAI.
+  `KProtocolDef.h` chi co o `Headers/`.
+- Client GUI lenh (mau `KPlayerTong.cpp:125-140`):
+  `sApply.m_btMsgId = enumTONG_COMMAND_ID_*;` ... `g_pClient->SendPackToServer(&sApply, sApply.m_wLength + 1);`
+  (m_wLength = sizeof - 1; ProtocolType xem cung ham mau).
+- GDCNI khai bao trong `Sources/Core/Src/CoreShell.h:405-430` (GDCNI_TONG_INFO :411,
+  GDCNI_TONG_MEMBER_LIST :416, GDCNI_TONG_ACTION_RESULT :423) — them GDCNI_TONG_JX2
+  o CUOI enum do. Phat: `CoreDataChanged(GDCNI_TONG_JX2, (unsigned int)pSync, nPage)`
+  tu case `enumTONG_SYNC_ID_JX2` trong `s2cExtendTong` (KProtocolProcess.cpp:4254).
+  Mau phat: `KProtocolProcess.cpp:4416` (GDCNI_TONG_INFO).
+- Ben nhan UI: tim noi consume GDCNI_TONG_INFO trong S3Client (dispatcher goi
+  `KUiTongManager::TongInfoArrive`) — dat case GDCNI_TONG_JX2 canh do, goi
+  `KUiTongJX2Main::DataArrive(page, pSync)`.
+- Unit 1 DA XONG: GS tra loi JX2VIEW tu ban sao (BuildClientView), nhan JX2OP
+  (DoClientOp, 13 thao tac kiem quyen). Con lai (Unit 2): case s2cExtendTong +
+  GDCNI + ham gui trong KPlayerTong.cpp (phia #ifndef _SERVER) + lop cua so
+  KUiTongJX2Main (5 trang) + UiTongJX2.ini + dang ky S3Client.vcxproj + nut mo
+  (UiPlayerBar.cpp:766 canh nut bang cu) + build S3Client Release|Win32.
+
 ## 7. VIEC TAO BANG + SCRIPT TRON GOI (server da san sang)
 
 - Tao bang: flow JX1 nguyen ban (NPC -> UiTongCreateSheet -> APPLY_CREATE ->
