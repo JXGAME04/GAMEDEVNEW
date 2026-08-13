@@ -70,6 +70,10 @@ private:
 	KWndLabeledButton	m_RtApply;				// Phan quyen (BtnDistribute)
 	KWndLabeledButton	m_Bot[4];				// 4 nut day: Vao bang nay/Tao moi/Xem tin/Dong
 	KWndText80			m_ColHdr[3];			// tieu de cot Hang/Thanh vien/Chuc vu
+	KWndText80			m_MList[14];			// danh sach thanh vien (MOI TAB, tach khoi m_Row)
+	KWndImage			m_WsIconBg[8];			// nen icon khu (sprite nen goc)
+	KWndImage			m_WsIconSel;			// khung chon khu (sprite chon goc)
+	KWndText80			m_Fun2[13];				// hang bo sung tab Tin tuc theo anh mau
 	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo)
 	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];

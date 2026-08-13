@@ -2439,6 +2439,7 @@ typedef struct
 	DWORD	m_dwMyOffer;
 	WORD	m_wMyRights;	// mat na 12 quyen cua ban than
 	char	m_szSelf[32];	// ten nhan vat dang xem (phuc vu roi bang)
+	DWORD	m_dwMyWeekOffer;	// cong hien tuan cua ban than (member KV 9)
 	char	m_szAnnounce[128];
 } TONG_JX2_INFO_SYNC;
 

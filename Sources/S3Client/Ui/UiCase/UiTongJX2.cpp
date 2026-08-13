@@ -302,6 +302,13 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_RtApply);
 	for (i = 0; i < 3; i++)
 		AddChild(&m_ColHdr[i]);
+	for (i = 0; i < TJX2_UI_ROWS; i++)
+		AddChild(&m_MList[i]);
+	for (i = 1; i <= 7; i++)
+		AddChild(&m_WsIconBg[i]);
+	AddChild(&m_WsIconSel);
+	for (i = 0; i < 13; i++)
+		AddChild(&m_Fun2[i]);
 	for (i = 0; i < 4; i++)
 		AddChild(&m_Bot[i]);
 	AddChild(&m_RecToggle);
@@ -452,6 +459,32 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_Bot[3].Init(&Ini, "Bot_Close");
 	ms_pSelf->m_RecToggle.Init(&Ini, "Rec_ToggleRecruit");
 	ms_pSelf->m_RecToggle.SetLabel("\247\343ng/m\353 tuy\323n");
+	{
+		static const char* s_szF2[13] = {
+			"Fun2_TitleLeague", "Fun2_TxtLeague", "Fun2_TitleCamp", "Fun2_TxtCamp",
+			"Fun2_TitleRank", "Fun2_TxtRank", "Fun2_TitleNum", "Fun2_TxtNum",
+			"Fun2_Van1", "Fun2_Van2", "Fun2_Help", "Fun2_TitleWeek", "Fun2_TxtWeek",
+		};
+		for (i = 0; i < 13; i++)
+		{
+			ms_pSelf->m_Fun2[i].Init(&Ini, s_szF2[i]);
+			char szL2[64];
+			szL2[0] = 0;
+			Ini.GetString(s_szF2[i], "Label", "", szL2, sizeof(szL2));
+			if (szL2[0])
+				ms_pSelf->m_Fun2[i].SetText(szL2);
+		}
+		for (i = 1; i <= 7; i++)
+		{
+			sprintf(szSec, "Ws_IconBg%d", i);
+			ms_pSelf->m_WsIconBg[i].Init(&Ini, szSec);
+		}
+		ms_pSelf->m_WsIconSel.Init(&Ini, "Ws_IconSel");
+		for (i = 0; i < TJX2_UI_ROWS; i++)
+			ms_pSelf->m_MList[i].SetPosition(341, 68 + i * 24);
+		for (i = 1; i <= 7; i++)
+			ms_pSelf->m_WsIcon[i].SetLabel("");	// bo so - da co hinh nen
+	}
 	for (i = 0; i < 32; i++)
 	{
 		sprintf(szSec, "Info_%s", s_sInfoCtl[i].szSec);
@@ -507,6 +540,9 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	{
 		sprintf(szSec, "RowDim%d", i);
 		ms_pSelf->m_RowDim[i].Init(&Ini, szSec);
+		sprintf(szSec, "Row%d", i);
+		ms_pSelf->m_MList[i].Init(&Ini, szSec);	// muon font/mau sang cua Row
+		ms_pSelf->m_MList[i].SetPosition(341, 68 + i * 24);
 	}
 	for (i = 0; i < 14; i++)
 	{
@@ -592,6 +628,12 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		if (g_pCoreShell)
 			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_MEMBER, 0);
 	}
+	else if (nPage == TJX2_UI_PAGE_RECRUIT || nPage == 4)
+	{
+		// moi tab deu hien danh sach thanh vien (yeu cau chu game)
+		if (g_pCoreShell)
+			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_MEMBER, 0);
+	}
 	if (g_pCoreShell)
 		g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, (unsigned int)nPage, nStart);
 }
@@ -648,10 +690,8 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 		{
 			memcpy(ms_pSelf->m_byMember, pData, nLen);
 			ms_pSelf->m_bHasMember = 1;
-			if (ms_pSelf->m_nPage == defTONG_JX2_PAGE_MEMBER ||
-				ms_pSelf->m_nPage == defTONG_JX2_PAGE_RIGHT ||
-				ms_pSelf->m_nPage == TJX2_UI_PAGE_FUNUSE ||
-				ms_pSelf->m_nPage == defTONG_JX2_PAGE_WS)
+			if (ms_pSelf->m_nPage != TJX2_UI_PAGE_TONGLIST &&
+				ms_pSelf->m_nPage != defTONG_JX2_PAGE_INFO)
 				ms_pSelf->RenderMembers();
 		}
 		break;
@@ -702,6 +742,7 @@ void KUiTongJX2::ClearRows()
 	{
 		m_Row[i].SetText("");
 		m_RowDim[i].SetText("");
+		m_MList[i].SetText("");
 	}
 	for (int d = 0; d < 7; d++)
 		m_MDet[d].SetText("");
@@ -737,10 +778,10 @@ void KUiTongJX2::RepositionRows()
 		}
 		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 		{
-			// vung danh sach don xin (blueprint ApplyerList 290,40 doi +18/+52)
-			m_Row[i].SetPosition(310, 96 + i * 24);
-			m_BtnRowSel[i].SetPosition(310, 96 + i * 24);
-			m_BtnRowSel[i].Enable(i < 8);
+			// don xin (5 dong dau panel phai), thanh vien hien phia duoi
+			m_Row[i].SetPosition(341, 68 + i * 24);
+			m_BtnRowSel[i].SetPosition(341, 68 + i * 24);
+			m_BtnRowSel[i].Enable(i >= 1 && i <= 4);
 		}
 		else if (m_nPage == defTONG_JX2_PAGE_WS)
 		{
@@ -811,6 +852,8 @@ void KUiTongJX2::SwitchPage(int nPage)
 		}
 		for (i = 0; i < 3; i++)
 			if (bFun) m_FunP[i].Show(); else m_FunP[i].Hide();
+		for (i = 0; i < 13; i++)
+			if (bFun) m_Fun2[i].Show(); else m_Fun2[i].Hide();
 		for (i = 0; i < 2; i++)
 			if (bFun) m_FunPBg[i].Show(); else m_FunPBg[i].Hide();
 		// nhom nut giua theo sub-page (cac nut hanh dong deu thuoc sub 1 tru map)
@@ -845,7 +888,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 	{
 		int i;
 		BOOL bL = (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT ||
-			nPage == TJX2_UI_PAGE_FUNUSE || nPage == defTONG_JX2_PAGE_WS);
+			nPage == TJX2_UI_PAGE_FUNUSE || nPage == defTONG_JX2_PAGE_WS ||
+			nPage == TJX2_UI_PAGE_RECRUIT || nPage == 4);
+		for (i = 0; i < TJX2_UI_ROWS; i++)
+			if (bL) m_MList[i].Show(); else m_MList[i].Hide();
 		for (i = 0; i < TJX2_UI_ROWS; i++)
 			if (bL) m_RowDim[i].Show(); else m_RowDim[i].Hide();
 		for (i = 0; i < 7; i++)
@@ -869,9 +915,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 		}
 		for (i = 1; i <= 7; i++)
 		{
-			if (bWs) { m_WsIcon[i].Show(); m_WsIcon[i].Enable(true); }
-			else { m_WsIcon[i].Hide(); m_WsIcon[i].Enable(false); }
+			if (bWs) { m_WsIcon[i].Show(); m_WsIcon[i].Enable(true); m_WsIconBg[i].Show(); }
+			else { m_WsIcon[i].Hide(); m_WsIcon[i].Enable(false); m_WsIconBg[i].Hide(); }
 		}
+		if (bWs) m_WsIconSel.Show(); else m_WsIconSel.Hide();
 	}
 	// bo control trang Nhat ky
 	{
@@ -960,6 +1007,7 @@ void KUiTongJX2::SetupActions()
 	{
 		m_BtnAct[i].SetLabel("");
 		m_BtnAct[i].Enable(false);
+		m_BtnAct[i].Hide();	// hang nut cu da BO - khong ve khung rong nua
 	}
 	switch (m_nPage)
 	{
@@ -1069,7 +1117,7 @@ void KUiTongJX2::RenderMembers()
 	// tieu de 3 cot nhu ban Linux: Hang / Thanh vien / Chuc vu
 	sprintf(sz, "H\271ng  Th\265nh vi\252n        Ch\370c v\364      (%d-%d/%d)",
 		(int)p->m_wStart + 1, (int)p->m_wStart + p->m_btCount, (int)p->m_wTotal);
-	m_Row[0].SetText(sz);
+	m_MList[0].SetText(sz);
 	int i;
 	for (i = 0; i < (int)p->m_btCount && i + 1 < TJX2_UI_ROWS; i++)
 	{
@@ -1103,12 +1151,12 @@ void KUiTongJX2::RenderMembers()
 		// online: chu sang (m_Row); offline: chu xam (m_RowDim)
 		if (pM->m_btOnline)
 		{
-			m_Row[i + 1].SetText(sz);
+			m_MList[i + 1].SetText(sz);
 			m_RowDim[i + 1].SetText("");
 		}
 		else
 		{
-			m_Row[i + 1].SetText("");
+			m_MList[i + 1].SetText("");
 			m_RowDim[i + 1].SetText(sz);
 		}
 	}
@@ -1118,7 +1166,7 @@ void KUiTongJX2::RenderMembers()
 		// vung panel (dong 4..11) de trong cho chu xanh khoi chong len danh sach
 		for (int nCl = 4; nCl <= 11 && nCl < TJX2_UI_ROWS; nCl++)
 		{
-			m_Row[nCl].SetText("");
+			m_MList[nCl].SetText("");
 			m_RowDim[nCl].SetText("");
 		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
@@ -1192,15 +1240,12 @@ void KUiTongJX2::RenderWorkshop()
 			sprintf(szV, "%u", ((TONG_JX2_INFO_SYNC*)m_byInfo)->m_dwMaintain);
 			m_WsTxt[5].SetText(szV);
 		}
-		// icon khu: khu dang chon danh dau *, khu chua lap danh dau so mo
-		for (t = 1; t <= 7; t++)
+		// khung chon dat len icon khu dang chon (hinh nen do m_WsIconBg ve)
+		if (m_nSel >= 1 && m_nSel <= 7)
 		{
-			char szI[8];
-			if (t == m_nSel)
-				sprintf(szI, "*%d", t);
-			else
-				sprintf(szI, "%d%s", t, pWs->m_sWs[t].btExist ? "" : "-");
-			m_WsIcon[t].SetLabel(szI);
+			int nX = (m_nSel <= 4) ? 46 + (m_nSel - 1) * 64 : 78 + (m_nSel - 5) * 64;
+			int nY = (m_nSel <= 4) ? 112 : 166;
+			m_WsIconSel.SetPosition(nX, nY);
 		}
 	}
 	ClearRows();	// trang phuong tho khong dung danh sach chu (giong ban Linux)
@@ -1319,13 +1364,25 @@ void KUiTongJX2::RenderRecruit()
 		sprintf(sz, "%d", m_nRecHD[i]);
 		m_RecHD[i].SetLabel(sz);
 	}
-	if (p->m_btApplyCount == 0)
-		m_Row[0].SetText("(ch\255a c\343 \256\254n xin v\265o bang)");
-	for (i = 0; i < (int)p->m_btApplyCount && i < defTONG_JX2_APPLY_MAX; i++)
+	sprintf(sz, "== \247\254n xin v\265o bang (%d) ==", (int)p->m_btApplyCount);
+	m_Row[0].SetText(sz);
+	for (i = 0; i < (int)p->m_btApplyCount && i < 4; i++)
 	{
 		sprintf(sz, "%s%-16s  c\312p %d", (i == m_nSel) ? "> " : "  ",
 			p->m_sApply[i].m_szName, (int)p->m_sApply[i].m_wLevel);
-		m_Row[i].SetText(sz);
+		m_Row[i + 1].SetText(sz);
+	}
+	// member list hien tu dong 6 tro xuong (MList do RenderMembers phu trach
+	// - trang nay chi de trong 5 dong dau cua MList cho khoi don)
+	if (m_bHasMember)
+		RenderMembers();
+	for (i = 0; i < 5 && i < TJX2_UI_ROWS; i++)
+	{
+		if (m_nPage == TJX2_UI_PAGE_RECRUIT)
+		{
+			m_MList[i].SetText("");
+			m_RowDim[i].SetText("");
+		}
 	}
 }
 
@@ -1338,8 +1395,19 @@ void KUiTongJX2::RenderFunUse()
 	char sz[120];
 	m_FunTxt[2].SetText(p->m_szTongName);
 	m_FunTxt[4].SetText(p->m_szMaster);
-	sprintf(sz, "%d    Nh\251n s\350 %d", p->m_nLevel, (int)p->m_wMemberTotal);
-	m_FunTxt[6].SetText(sz);
+	sprintf(sz, "%d", p->m_nLevel);
+	m_FunTxt[6].SetText(sz);	// Dang cap kien thiet
+	m_Fun2[1].SetText("-");	// Lien minh
+	{
+		static const char* szC[3] = {"Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+		m_Fun2[3].SetText(p->m_btCamp < 3 ? szC[p->m_btCamp] : "-");
+	}
+	sprintf(sz, "%d", p->m_nLevel);
+	m_Fun2[5].SetText(sz);	// Dang cap
+	sprintf(sz, "%d", (int)p->m_wMemberTotal);
+	m_Fun2[7].SetText(sz);	// Nhan so
+	sprintf(sz, "%u", p->m_dwMyWeekOffer);
+	m_Fun2[12].SetText(sz);	// Cong hien tuan (ca nhan)
 	sprintf(sz, "%u", p->m_dwStoredOffer);
 	m_FunTxt[8].SetText(sz);
 	sprintf(sz, "%.0f", (double)p->m_nMoney);
@@ -1572,9 +1640,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					}
 					else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 					{
-						if (i < 8)
+						if (i >= 1 && i <= 4)
 						{
-							m_nSel = i;
+							m_nSel = i - 1;
 							RenderRecruit();
 						}
 					}

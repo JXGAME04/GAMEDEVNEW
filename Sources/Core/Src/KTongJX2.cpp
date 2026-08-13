@@ -2039,6 +2039,7 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_dwMyOffer = GetMemberField(pMe, 7);
 			pSync->m_wMyRights = sJX2_RightMask(pMe);
 			strncpy(pSync->m_szSelf, Player[nPlayerIdx].m_PlayerName, 31);
+			pSync->m_dwMyWeekOffer = GetMemberField(pMe, 9);
 			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
 			pSync->m_szAnnounce[127] = 0;
 			// tim ten bang chu
