@@ -47,6 +47,7 @@ private:
 	void	RenderInfo();
 	void	RenderRecruit();
 	void	RenderFunUse();
+	void	RenderRecord();
 	void	RenderMembers();
 	void	RenderWorkshop();
 	void	RenderAnnounce();
@@ -89,6 +90,10 @@ private:
 	KWndText80			m_WsTxt[6];				// So khu/Hang toi da/Phi duy tri (Title+Txt)
 	KWndLabeledButton	m_WsBtn[6];				// Lap/Mo/Dong/Nang/Dat cap dung/Xoa
 	KWndLabeledButton	m_WsIcon[8];			// icon khu 1..7 (luoi deu)
+	// trang Nhat ky theo blueprint trang ghi chep
+	KWndLabeledButton	m_RcSub[4];				// Muc tieu tuan/Thong bao/Bang vu/Lich su
+	KWndEdit512			m_RcEditor;				// khung sua thong bao
+	KWndLabeledButton	m_RcLeaveWord, m_RcSave;
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau
@@ -101,6 +106,9 @@ private:
 	int		m_bHasInfo, m_bHasMember, m_bHasWs;
 	int		m_bHasRecruit;
 	int		m_nRecQX, m_nRecHD[4];	// gia tri menu dang chon (gui khi bam Luu)
+	unsigned char	m_byRecord[1300];
+	int		m_bHasRecord;
+	int		m_nRcSub;				// 0 muc tieu tuan / 1 thong bao / 2 bang vu / 3 lich su
 };
 
 #endif // __UITONGJX2_H__

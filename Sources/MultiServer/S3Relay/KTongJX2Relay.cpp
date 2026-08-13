@@ -590,6 +590,29 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 				memcpy(sStr.m_szText, pTong->m_szJX2Recruit, sizeof(sStr.m_szText));
 				pConn->SendPackage(&sStr, sizeof(sStr));
 			}
+			{
+				// gui so su kien + lich su (ring cu -> moi de GS append dung thu tu)
+				STONG_JX2_STRING_COMMAND sStr;
+				int r;
+				for (r = 0; r < defTONG_JX2_RECORD_NUM * 2; r++)
+				{
+					BOOL bHist = (r >= defTONG_JX2_RECORD_NUM);
+					int nIdx = r % defTONG_JX2_RECORD_NUM;
+					int nHead = bHist ? pTong->m_nJX2HistoryHead : pTong->m_nJX2EventHead;
+					const char* pszLine = bHist ?
+						pTong->m_szJX2History[(nHead + nIdx) % defTONG_JX2_RECORD_NUM] :
+						pTong->m_szJX2Event[(nHead + nIdx) % defTONG_JX2_RECORD_NUM];
+					if (!pszLine[0])
+						continue;
+					memset(&sStr, 0, sizeof(sStr));
+					sStr.ProtocolFamily = pf_tong;
+					sStr.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+					sStr.m_dwTongNameID = pTong->m_dwNameID;
+					sStr.m_btKind = bHist ? defTONG_JX2_STR_HISTORY : defTONG_JX2_STR_EVENT;
+					strncpy(sStr.m_szText, pszLine, defTONG_JX2_RECORD_LEN - 1);
+					pConn->SendPackage(&sStr, sizeof(sStr));
+				}
+			}
 			dwCount++;
 		}
 	}
@@ -1521,7 +1544,7 @@ void JX2_ProcString(CTongConnect* pConn, const void* pData)
 	if (!pTong->JX2_SetString(pCmd->m_btKind, szText))
 		return;
 	g_cTongDB.ChangeTong(*pTong);
-	if (pCmd->m_btKind == defTONG_JX2_STR_ANNOUNCE || pCmd->m_btKind == defTONG_JX2_STR_RECRUIT)
+	// dong bo MOI loai chuoi toi GS (announce/recruit ghi de, event/history append ring)
 	{
 		STONG_JX2_STRING_COMMAND sSync = *pCmd;
 		sSync.ProtocolFamily = pf_tong;

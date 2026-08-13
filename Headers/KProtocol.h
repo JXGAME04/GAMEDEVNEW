@@ -1665,6 +1665,8 @@ typedef struct
 #define defTONG_JX2_PAGE_WS			3	// tac phuong
 #define defTONG_JX2_PAGE_RECRUIT	4	// trang chieu mo nguoi vao bang
 #define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
+#define defTONG_JX2_PAGE_RECORD	5	// trang nhat ky (wStart = 0 su kien / 1 lich su)
+#define defTONG_JX2_RECORD_LINES	12	// so dong gui moi goi
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	12
 // thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001
@@ -1692,6 +1694,7 @@ typedef struct
 #define defTONG_JX2_COP_STORE_OFFER	20	// cat nParam1 diem cong hien ca nhan vao quy du tru bang
 #define defTONG_JX2_COP_WS_SETLV	21	// nParam1 = khu, nParam2 = cap su dung
 #define defTONG_JX2_COP_WS_DEL		22	// nParam1 = khu (xoa toan bo field khu)
+#define defTONG_JX2_COP_LEAVE_WORD	23	// szText = loi nhan ghi vao so su kien
 
 typedef struct
 {
@@ -1808,6 +1811,19 @@ typedef struct
 	BYTE	m_btApplyCount;
 	TONG_JX2_ONE_APPLY	m_sApply[defTONG_JX2_APPLY_MAX];
 } TONG_JX2_RECRUIT_SYNC;
+
+// Trang nhat ky: 12 dong so (moi nhat truoc), kem thong bao de sua
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;	// enumTONG_SYNC_ID_JX2
+	BYTE	m_btPage;	// defTONG_JX2_PAGE_RECORD
+	BYTE	m_btKind;	// 0 su kien / 1 lich su
+	BYTE	m_btCount;
+	char	m_szAnnounce[128];
+	char	m_szLine[defTONG_JX2_RECORD_LINES][96];
+} TONG_JX2_RECORD_SYNC;
 
 typedef struct
 {

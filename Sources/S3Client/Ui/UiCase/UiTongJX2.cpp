@@ -163,6 +163,11 @@ static const char* s_szWsBtnLbl[6] =
 	"N\251ng c\312p khu", "\247\306t c\312p d\357ng", "X\343a khu",
 };
 
+static const char* s_szRcSub[4] =
+{
+	"M\364c ti\252u tu\307n", "Th\253ng b\270o", "Bang v\364", "L\336ch s\366",
+};
+
 //////////////////////////////////////////////////////////////////////
 
 KUiTongJX2::KUiTongJX2()
@@ -174,6 +179,9 @@ KUiTongJX2::KUiTongJX2()
 	m_bHasMember = 0;
 	m_bHasWs = 0;
 	m_bHasRecruit = 0;
+	m_bHasRecord = 0;
+	m_nRcSub = 2;	// mac dinh Bang vu (so su kien)
+	memset(m_byRecord, 0, sizeof(m_byRecord));
 	m_nRecQX = 0;
 	memset(m_nRecHD, 0, sizeof(m_nRecHD));
 	memset(m_byRecruit, 0, sizeof(m_byRecruit));
@@ -271,6 +279,11 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_WsBtn[i]);
 	for (i = 1; i <= 7; i++)
 		AddChild(&m_WsIcon[i]);
+	for (i = 0; i < 4; i++)
+		AddChild(&m_RcSub[i]);
+	AddChild(&m_RcEditor);
+	AddChild(&m_RcLeaveWord);
+	AddChild(&m_RcSave);
 	for (i = 0; i < 8; i++)
 		AddChild(&m_RecLbl[i]);
 	AddChild(&m_RecJiyu);
@@ -314,6 +327,10 @@ void KUiTongJX2::Initialize()
 		sprintf(szN, "%d", i);
 		m_WsIcon[i].SetLabel(szN);
 	}
+	for (i = 0; i < 4; i++)
+		m_RcSub[i].SetLabel(s_szRcSub[i]);
+	m_RcLeaveWord.SetLabel("L\255u l\352i");
+	m_RcSave.SetLabel("S\366a th\253ng b\270o");
 	for (i = 0; i < 14; i++)
 		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
 	for (i = 0; i < 4; i++)
@@ -417,6 +434,13 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		sprintf(szSec, "Ws_Icon%d", i);
 		ms_pSelf->m_WsIcon[i].Init(&Ini, szSec);
 	}
+	ms_pSelf->m_RcSub[0].Init(&Ini, "Rc_BtnWeekDaily");
+	ms_pSelf->m_RcSub[1].Init(&Ini, "Rc_BtnAnnounce");
+	ms_pSelf->m_RcSub[2].Init(&Ini, "Rc_BtnTongAffair");
+	ms_pSelf->m_RcSub[3].Init(&Ini, "Rc_BtnTongHistory");
+	ms_pSelf->m_RcEditor.Init(&Ini, "Rc_AnnounceEditor");
+	ms_pSelf->m_RcLeaveWord.Init(&Ini, "Rc_BtnLeaveWord");
+	ms_pSelf->m_RcSave.Init(&Ini, "Rc_BtnEditAnnounce");
 	ms_pSelf->m_BtnFun.Init(&Ini, "BtnFunUse");
 	ms_pSelf->m_RecJiyu.Init(&Ini, "Rec_Jiyu");
 	ms_pSelf->m_RecAuto.Init(&Ini, "Rec_AutoAcceptLevel");
@@ -443,7 +467,10 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 	if (nPage == TJX2_UI_PAGE_RECRUIT)
 		nPage = defTONG_JX2_PAGE_RECRUIT;
 	else if (nPage == 4)
-		nPage = defTONG_JX2_PAGE_INFO;	// trang thong bao dung du lieu INFO
+	{
+		nPage = defTONG_JX2_PAGE_RECORD;
+		nStart = (m_nRcSub == 3) ? 1 : 0;	// lich su / su kien
+	}
 	else if (nPage == TJX2_UI_PAGE_FUNUSE)
 	{
 		// trang chuc nang can CA thong tin bang CA danh sach thanh vien
@@ -520,6 +547,15 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 				ms_pSelf->RenderWorkshop();
 		}
 		break;
+	case defTONG_JX2_PAGE_RECORD:
+		if (nLen <= (int)sizeof(ms_pSelf->m_byRecord))
+		{
+			memcpy(ms_pSelf->m_byRecord, pData, nLen);
+			ms_pSelf->m_bHasRecord = 1;
+			if (ms_pSelf->m_nPage == 4)
+				ms_pSelf->RenderRecord();
+		}
+		break;
 	case defTONG_JX2_PAGE_RECRUIT:
 		if (nLen <= (int)sizeof(ms_pSelf->m_byRecruit))
 		{
@@ -553,6 +589,13 @@ void KUiTongJX2::RepositionRows()
 			m_Row[i].SetPosition(341, 68 + i * 24);
 			m_BtnRowSel[i].SetPosition(341, 68 + i * 24);
 			m_BtnRowSel[i].Enable(true);
+		}
+		else if (m_nPage == 4)
+		{
+			// vung RecordList cua blueprint (5,25 doi +18/+52), 14 dong buoc 22
+			m_Row[i].SetPosition(25, 79 + i * 22);
+			m_BtnRowSel[i].SetPosition(25, 79 + i * 22);
+			m_BtnRowSel[i].Enable(false);
 		}
 		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 		{
@@ -648,6 +691,22 @@ void KUiTongJX2::SwitchPage(int nPage)
 			else { m_WsIcon[i].Hide(); m_WsIcon[i].Enable(false); }
 		}
 	}
+	// bo control trang Nhat ky
+	{
+		int i;
+		BOOL bRc = (nPage == 4);
+		for (i = 0; i < 4; i++)
+		{
+			if (bRc) { m_RcSub[i].Show(); m_RcSub[i].Enable(true); }
+			else { m_RcSub[i].Hide(); m_RcSub[i].Enable(false); }
+		}
+		BOOL bEd = (bRc && m_nRcSub == 1);
+		if (bEd) m_RcEditor.Show(); else m_RcEditor.Hide();
+		if (bEd) { m_RcSave.Show(); m_RcSave.Enable(true); }
+		else { m_RcSave.Hide(); m_RcSave.Enable(false); }
+		if (bRc) { m_RcLeaveWord.Show(); m_RcLeaveWord.Enable(true); }
+		else { m_RcLeaveWord.Hide(); m_RcLeaveWord.Enable(false); }
+	}
 	// bo control trang chieu mo
 	{
 		int i;
@@ -680,7 +739,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 	ClearRows();
 	SetupActions();
 	if (nPage == 4)
-		RenderAnnounce();	// trang thong bao dung du lieu INFO
+		RenderRecord();
 	else if (nPage == TJX2_UI_PAGE_RECRUIT)
 		RenderRecruit();
 	else if (nPage == TJX2_UI_PAGE_FUNUSE)
@@ -725,10 +784,7 @@ void KUiTongJX2::SetupActions()
 		m_BtnAct[4].SetLabel("H\361y tuy\326t k\374");
 		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
-	case 4:	// thong bao
-		m_BtnAct[0].SetLabel("\247\306t th\253ng b\270o");
-		m_BtnAct[1].SetLabel("X\343a th\253ng b\270o");
-		m_BtnAct[5].SetLabel("L\265m m\355i");
+	case 4:	// nhat ky - dung bo nut rieng cua blueprint
 		break;
 	}
 	for (i = 0; i < TJX2_UI_ACTS; i++)
@@ -1025,6 +1081,33 @@ void KUiTongJX2::RenderFunUse()
 	m_FunTxt[14].SetText(sz);
 }
 
+// Trang Nhat ky: 4 muc con - thong bao co khung sua; bang vu/lich su doc ring
+void KUiTongJX2::RenderRecord()
+{
+	int i;
+	ClearRows();
+	if (m_nRcSub == 1)
+	{
+		// muc Thong bao: khung sua + noi dung hien tai
+		if (m_bHasRecord)
+			m_RcEditor.SetText(((TONG_JX2_RECORD_SYNC*)m_byRecord)->m_szAnnounce);
+		return;
+	}
+	if (m_nRcSub == 0)
+	{
+		// muc tieu tuan: hien tu du lieu INFO (WeekGoal o field 22..28 - xem #17)
+		m_Row[0].SetText("M\364c ti\252u tu\307n xem trong bang th\253ng tin.");
+		return;
+	}
+	if (!m_bHasRecord)
+		return;
+	TONG_JX2_RECORD_SYNC* p = (TONG_JX2_RECORD_SYNC*)m_byRecord;
+	if (p->m_btCount == 0)
+		m_Row[0].SetText("(ch\255a c\343 b\266n ghi)");
+	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_RECORD_LINES; i++)
+		m_Row[i].SetText(p->m_szLine[i]);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 void KUiTongJX2::OnAction(int nIdx)
@@ -1236,6 +1319,37 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					}
 					break;
 				}
+				return 1;
+			}
+		}
+		{
+			int rc;
+			for (rc = 0; rc < 4; rc++)
+			{
+				if (uParam == (unsigned int)&m_RcSub[rc])
+				{
+					m_nRcSub = rc;
+					SwitchPage(4);
+					return 1;
+				}
+			}
+			if (uParam == (unsigned int)&m_RcSave)
+			{
+				char szAnn[256];
+				szAnn[0] = 0;
+				m_RcEditor.GetText(szAnn, sizeof(szAnn), false);
+				szAnn[127] = 0;
+				SendOp(defTONG_JX2_COP_SETANN, 0, 0, 0, szAnn);
+				return 1;
+			}
+			if (uParam == (unsigned int)&m_RcLeaveWord)
+			{
+				char szWord[256];
+				szWord[0] = 0;
+				m_RcEditor.GetText(szWord, sizeof(szWord), false);
+				szWord[127] = 0;
+				if (szWord[0])
+					SendOp(defTONG_JX2_COP_LEAVE_WORD, 0, 0, 0, szWord);
 				return 1;
 			}
 		}

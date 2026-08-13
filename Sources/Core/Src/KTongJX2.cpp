@@ -269,6 +269,18 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 				memcpy(pTong->szRecruit, pCmd->m_szText, sizeof(pTong->szRecruit));
 				pTong->szRecruit[sizeof(pTong->szRecruit) - 1] = 0;
 			}
+			else if (pCmd->m_btKind == defTONG_JX2_STR_EVENT)
+			{
+				memset(pTong->szEvent[pTong->nEventHead], 0, 96);
+				strncpy(pTong->szEvent[pTong->nEventHead], pCmd->m_szText, 95);
+				pTong->nEventHead = (pTong->nEventHead + 1) % 16;
+			}
+			else if (pCmd->m_btKind == defTONG_JX2_STR_HISTORY)
+			{
+				memset(pTong->szHistory[pTong->nHistoryHead], 0, 96);
+				strncpy(pTong->szHistory[pTong->nHistoryHead], pCmd->m_szText, 95);
+				pTong->nHistoryHead = (pTong->nHistoryHead + 1) % 16;
+			}
 		}
 		break;
 
@@ -2006,6 +2018,36 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			return (int)sizeof(TONG_JX2_WS_SYNC);
 		}
 
+	case defTONG_JX2_PAGE_RECORD:
+		{
+			if (nOutSize < (int)sizeof(TONG_JX2_RECORD_SYNC))
+				return 0;
+			TONG_JX2_RECORD_SYNC* pSync = (TONG_JX2_RECORD_SYNC*)pOut;
+			memset(pSync, 0, sizeof(TONG_JX2_RECORD_SYNC));
+			pSync->ProtocolType = s2c_extendtong;
+			pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+			pSync->m_btPage = defTONG_JX2_PAGE_RECORD;
+			pSync->m_btKind = (nStart == 1) ? 1 : 0;
+			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
+			pSync->m_szAnnounce[sizeof(pSync->m_szAnnounce) - 1] = 0;
+			{
+				// doc ring tu MOI -> CU
+				int nHead = pSync->m_btKind ? pTong->nHistoryHead : pTong->nEventHead;
+				for (int r = 1; r <= 16 && pSync->m_btCount < defTONG_JX2_RECORD_LINES; r++)
+				{
+					const char* pszLine = pSync->m_btKind ?
+						pTong->szHistory[(nHead - r + 32) % 16] :
+						pTong->szEvent[(nHead - r + 32) % 16];
+					if (!pszLine[0])
+						continue;
+					strncpy(pSync->m_szLine[pSync->m_btCount], pszLine, 95);
+					pSync->m_btCount++;
+				}
+			}
+			pSync->m_wLength = sizeof(TONG_JX2_RECORD_SYNC) - 1;
+			return (int)sizeof(TONG_JX2_RECORD_SYNC);
+		}
+
 	case defTONG_JX2_PAGE_RECRUIT:
 		{
 			if (nOutSize < (int)sizeof(TONG_JX2_RECRUIT_SYNC))
@@ -2257,6 +2299,19 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 				pTong->wApplyLevel[a] = pTong->wApplyLevel[a + 1];
 			}
 			pTong->btApplyCount--;
+			return 0;
+		}
+	case defTONG_JX2_COP_LEAVE_WORD:
+		{
+			// moi thanh vien duoc luu loi vao so su kien
+			char szWord[128];
+			memcpy(szWord, pCmd->m_szText, sizeof(szWord));
+			szWord[127] = 0;
+			if (!szWord[0])
+				return 5;
+			char szLine[160];
+			sprintf(szLine, "%s: %.90s", Player[nPlayerIdx].m_PlayerName, szWord);
+			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLine, dwParam);
 			return 0;
 		}
 	case defTONG_JX2_COP_WS_SETLV:

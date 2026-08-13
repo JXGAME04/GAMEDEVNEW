@@ -41,6 +41,10 @@ struct KTongJX2Tong
 	char	szApplyName[8][32];
 	DWORD	dwApplyID[8];
 	WORD	wApplyLevel[8];
+	char	szEvent[16][96];					// so su kien (ring, = RECORD_NUM/LEN)
+	char	szHistory[16][96];
+	int		nEventHead;
+	int		nHistoryHead;
 	DWORD	dwWsNpc[8];							// NPC cong trinh tac phuong (cuc bo GS, khong dong bo)
 };
 
