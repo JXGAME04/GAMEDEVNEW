@@ -124,6 +124,63 @@ void TReplaceText(char* pBuffer, const char* pszName1, const char* pszName2)
 }
 
 extern "C" ENGINE_API
+int EGetBit(int nIntValue, int nBitNumber)
+{
+	int nBitValue = 0;
+
+	if (nBitNumber >= 32 || nBitNumber <= 0)
+		return nIntValue;
+
+	nBitValue = (nIntValue & (1 << (nBitNumber - 1))) != 0;
+
+	return nBitValue;
+}
+
+extern "C" ENGINE_API
+int ESetBit(int nIntValue, int nBitNumber, int nBitValue)
+{
+
+	nBitValue = (nBitValue == 1);
+
+	if (nBitNumber > 32 || nBitNumber <= 0) //32?
+		return nIntValue;
+
+	nIntValue = (nIntValue | (1 << (nBitNumber - 1)));
+
+	return nIntValue;
+}
+
+
+extern "C" ENGINE_API
+int  ESetByte(int nIntValue, int nByteNumber, int nByteValue)
+{
+	BYTE* pByte = NULL;
+
+	nByteValue = (nByteValue & 0xff);
+
+	if (nByteNumber > 4 || nByteNumber <= 0) ///4
+		return nIntValue;
+
+	pByte = (BYTE*)&nIntValue;
+	*(pByte + (nByteNumber - 1)) = (BYTE)nByteValue;
+	//nIntValue = (nIntValue | (0xff << ((nByteNumber - 1) * 8) )) ;
+	//Lua_PushNumber(L, nIntValue);
+	return nIntValue;
+}
+extern "C" ENGINE_API
+int  EGetByte(int nIntValue, int nByteNumber)
+{
+	int nByteValue = 0;
+
+	if (nByteNumber > 4 || nByteNumber <= 0)
+		return nByteValue;
+
+	nByteValue = (nIntValue & (0xff << ((nByteNumber - 1) * 8))) >> ((nByteNumber - 1) * 8);
+	//Lua_PushNumber(L, nByteValue);
+	return nByteValue;
+}
+
+extern "C" ENGINE_API
 unsigned int TGetColor(const char* pColor)
 {
 	if (pColor == NULL)
@@ -1484,21 +1541,36 @@ int TGetEncodedTextEffectCtrls(const char* pBuffer, int nSkipCount, KTP_CTRL& Ct
 extern "C" ENGINE_API
 int TEnterTextFromCharArray(const char* pBuffer, char* szIntroEnter, int nCount)
 {
-    unsigned int LinePos=0; 
-    int Line_Break_Pos=0;
-    int Line_Break=nCount;
-	int LineEnter= 0;
-	while (LinePos < strlen(pBuffer))
+	if (!pBuffer || !szIntroEnter || nCount <= 0)
+		return -1; // Error: Invalid input.
+
+	size_t bufferLength = strlen(pBuffer); // Compute the length once
+	unsigned int LinePos = 0;
+	int Line_Break_Pos = 0;
+	int Line_Break = nCount;
+	int LineEnter = 0;
+
+	// Copy characters while checking buffer bounds
+	while (LinePos < bufferLength && LineEnter < 256 - 1) // Reserve space for '\0'
 	{
 		szIntroEnter[LineEnter++] = pBuffer[LinePos];
-		if (Line_Break_Pos > Line_Break && pBuffer[LinePos]==' ')
+
+		// Insert line break at appropriate position
+		if (Line_Break_Pos >= Line_Break && pBuffer[LinePos] == ' ')
 		{
-			szIntroEnter[LineEnter++] = '\n';
-			Line_Break_Pos=0;
+			if (LineEnter < 256 - 1) { // Ensure space for '\n'
+				szIntroEnter[LineEnter++] = '\n';
+				Line_Break_Pos = 0;
+			}
+			else {
+				break; // Avoid overflow.
+			}
 		}
-         LinePos++;
-         Line_Break_Pos++;
+		LinePos++;
+		Line_Break_Pos++;
 	}
 
-	return Line_Break_Pos;
+	szIntroEnter[min(LineEnter, 255)] = '\0'; // Null-terminate the output buffer.
+
+	return LineEnter; // Return the number of characters written to szIntroEnter.
 }

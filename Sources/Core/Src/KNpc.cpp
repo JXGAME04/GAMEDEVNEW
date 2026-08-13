@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+Ôªø//-----------------------------------------------------------------------
 //	Sword3 KNpc.cpp
 //-----------------------------------------------------------------------
 #include "KCore.h"
@@ -9,6 +9,7 @@
 #include "KObjSet.h"
 #include "KMath.h"
 #include "KPlayer.h"
+#include "KPlayerSet.h"
 #include "KNpc.h"
 #include "GameDataDef.h"
 #include "KSubWorldSet.h"
@@ -36,15 +37,17 @@
 #include "CoreUseNameDef.h"
 #include "KSubWorld.h"
 #include "Scene/ObstacleDef.h"
+#include "Scene/SceneDataDef.h"
 #include "KThiefSkill.h"
 #ifdef _STANDALONE
 #include "KThiefSkill.cpp"
 #endif
+#include <KItemChangeRes.h>
 
 #ifndef max
 #define max(a,b)    (((a) > (b)) ? (a) : (b))
 #endif
-
+#include <MapHandler.h>
 extern KLuaScript		*g_pNpcLevelScript;
 
 #define	ATTACKACTION_EFFECT_PERCENT		60
@@ -55,11 +58,17 @@ extern KLuaScript		*g_pNpcLevelScript;
 #define		SHOW_CHAT_WIDTH				24
 #define		SHOW_CHAT_COLOR				0xffffffff
 #define		SHOW_BLOOD_COLOR			0x00ff0000
-#define		defMAX_SHOW_BLOOD_TIME		200
-#define		defSHOW_BLOOD_MOVE_SPEED	1
+#define		SHOW_BLOOD_COLOR_MISS			0x00ff00ff
+#define		SHOW_BLOOD_COLOR_CRIT		0x00ffd24d
+#define		SHOW_BLOOD_COLOR_ABSORB_LIFE		0x0000ff00
+#define		SHOW_BLOOD_COLOR_ABSORB_MANA		0x000000ff
+#define		SHOW_BLOOD_COLOR_ABSORB_STAMINA		0x00d2ebdb
+#define		defMAX_SHOW_BLOOD_TIME		40
+#define		defSHOW_BLOOD_MOVE_SPEED	7
 #define		SHOW_LIFE_WIDTH				40
 #define		SHOW_LIFE_HEIGHT			3
 #define		SHOW_SPACE_HEIGHT			5
+#define		FIND_PATH_DISTANCE		1
 #define FRAME2TIME							18
 #define	GAME_UPDATE_TIME		10
 #define	GAME_SYNC_LOSS			100
@@ -106,6 +115,17 @@ KNpc::KNpc()
 	m_AiSkillRadiusLoadFlag = 0;
 #endif
 	Init();
+
+}
+
+inline DWORD KNpc::GetId() const
+{
+	return m_dwID;
+}
+
+inline int KNpc::GetKind() const
+{
+	return m_Kind;
 }
 
 void KNpc::Init()
@@ -147,7 +167,8 @@ void KNpc::Init()
 	ZeroMemory(m_szTongTitle, sizeof(m_szTongTitle));
 	ZeroMemory(m_szTeamMem, sizeof(m_szTeamMem));
 	m_nFigure = -1;
-	m_nTimeAbsent = 0; //thÍi gian væng m∆t sˆ dÙng trong auto
+	m_nTimeAbsent = 0; //th√™i gian v¬æng m√Üt s√∂ d√¥ng trong auto
+	m_StandSyncTime = 0;
 #endif
 	m_CurrentLife = 100;			
 	m_CurrentLifeMax = 100;		
@@ -170,7 +191,7 @@ void KNpc::Init()
 	m_CurrentCastSpeed = 0;		
 	m_CurrentVisionRadius = 40;	
 	m_CurrentAttackRadius = 30;	
-	m_CurrentHitRecover = 0;		//thÍi gian phÙc hÂi
+	m_CurrentHitRecover = 0;		//th√™i gian ph√¥c h√•i
 	m_CurrentAddPhysicsDamage = 0;	
 	m_CurrentAddPhysicsMagic = 0;
 	m_Dir = 0;					
@@ -186,10 +207,11 @@ void KNpc::Init()
 	m_BaiTan = 0;
 	m_MaskType = 0;						//#mat na
 	m_MaskMark = 0;
+	m_bMaskFeature = TRUE;
 	m_btHonorId = 0;					//#danh hieu
 	ZeroMemory(ShopName,32);
 	//m_RideState = 0;
-	m_nProtectedTime = 0;				//vong tron bat tu, vﬂng trﬂn b t tˆ
+	m_nProtectedTime = 0;				//vong tron bat tu, v√üng tr√ün b√ät t√∂
 	ZeroMemory(Name, 32);		
 	m_NpcSettingIdx = 0;		
 	m_CorpseSettingIdx = 0;		// Body
@@ -202,6 +224,7 @@ void KNpc::Init()
 	m_btRankId					= 0;
 	m_btRankBattleId			= 0; //#RankBattle
 	m_btPlayerTitle				= 0; //#PlayerTitle
+	ZeroMemory(m_szGameTitle, sizeof(m_szGameTitle));
 	//ZeroMemory(MateName, sizeof(MateName)); //#MateName
 	m_nMissionGroup = -1;
 	m_ExItemId					= 0; // hanh trang
@@ -210,6 +233,7 @@ void KNpc::Init()
 	nRepute						= 0;//danh vong
 	nFuYuan						= 0;//phuc duyen
 	nPKValue					= 0;
+	m_byMantleLevel				= 0;
 	m_ImagePlayer				= 0;
 	nReBorn						= 0;
 	nFirstFaction				= -1;
@@ -244,16 +268,20 @@ void KNpc::Init()
 	m_AIMAXTime					= 25;
 	m_NextAITime				= 0;
 	m_ProcessState				= 1;
-	m_ReviveFrame				= 100;					//ThÍi gian hÂi sinh
+	m_ReviveFrame				= 100;					//Th√™i gian h√•i sinh
 	m_bExchangeServer			= FALSE;
 	m_bActivateFlag				= FALSE;
 	m_FightMode					= 0;
 	m_OldFightMode				= 0;
+	m_bNoReloadAttr				= FALSE;
+
 #ifdef _SERVER
 	m_pDropRate					= NULL;
 	m_nTimeIdleValue		= 0;
 	m_nTimeIdleCounter		 = 0;
-	m_nTime_Ignorenegativestate = 0;	//3 gi©y loπi b· trπng th∏i d? th≠Íng xu t ¯ b t di‘m
+	m_nTime_Ignorenegativestate = 0;	//3 gi¬©y lo¬πi b√° tr¬πng th¬∏i d√û th¬≠√™ng xu√ät √∏ b√ät di√îm
+	m_nCurPKPunishState = 0;
+	m_lastSyncTime = 0;
 #endif
 
 #ifndef _SERVER
@@ -270,6 +298,7 @@ void KNpc::Init()
 	memset(m_szBloodNo, 0, sizeof(m_szBloodNo));
 	m_nTongFlag					= 0;
 #endif
+
 	m_nLastPoisonDamageIdx = 0;
 	m_nLastDamageIdx = 0;
 	m_bHaveLoadedFromTemplate = FALSE;
@@ -282,6 +311,105 @@ void KNpc::Init()
 	m_CurrentMeleeDmgRet = 0;
 	m_CurrentRangeDmgRet = 0;
 	m_CurrentReturnResPercent = 0;
+	m_CurrentActiveRadius = 0;
+	m_CurrentTreasure = 0;
+	m_CurrentPoisonDamageReturn = 0;
+	m_nFigure = 0;
+	m_ActiveRadius = 0;
+	m_Treasure = 0;
+	m_nCurrentMeleeSkill = 0;
+	m_nCurrentMeleeTime = 0;
+	m_AiMode = 0;
+	m_AiAddLifeTime = 0;
+	m_HeadImage = 0;
+	m_nTargetX = 0;
+	m_nTargetY = 0;
+	m_StandFrame1 = 0;
+	m_JumpFirstSpeed = 0;
+	m_XFactor = 0;
+	m_YFactor = 0;
+	m_SpecialSkillStep = 0;
+	m_nTime = 0;
+	m_nTotalFrame = 0;
+	m_nFrame = 0;
+	m_CurrentExperience = 0;
+	m_Type = 0;
+	m_ClientDoing = cdo_stand;
+	m_nStature = 0;
+	m_Recruit = 0;
+	m_ActiveAuraID = 0;
+	m_CurrentFireResist = 0;
+	m_CurrentColdResist = 0;
+	m_CurrentPoisonResist = 0;
+	m_CurrentLightResist = 0;
+	m_CurrentPhysicsResist = 0;
+	m_CurrentFireResistMax = 0;
+	m_CurrentColdResistMax = 0;
+	m_CurrentPoisonResistMax = 0;
+	m_CurrentLightResistMax = 0;
+	m_CurrentPhysicsResistMax = 0;
+	m_CurrentSlowMissle = 0;
+	m_CurrentDamageReduce = 0;
+	m_CurrentElementDamageReduce = 0;
+	m_CurrentDamage2Mana = 0;
+	m_CurrentManaPerEnemy = 0;
+	m_CurrentLifeStolen = 0;
+	m_CurrentManaStolen = 0;
+	m_CurrentStaminaStolen = 0;
+	m_CurrentDeadlyStrikeEnhanceP = 0;
+	m_CurrentFatallyStrikeEnhanceP = 0;
+	m_CurrentFatallyStrikeResP = 0;
+	m_CurrentBlindEnemy = 0;
+	m_CurrentPiercePercent = 0;
+	m_CurrentFreezeTimeReducePercent = 0;
+	m_CurrentPoisonTimeReducePercent = 0;
+	m_CurrentStunTimeReducePercent = 0;
+	m_CurrentReturnSkillPercent = 0;
+	m_CurrentIgnoreSkillPercent = 0;
+	m_CurrentPoisonDamageReturnPercent = 0;
+	m_CurrentIgnoreNegativeStateP = 0;
+	m_CurrentFireEnhance = 0;
+	m_CurrentColdEnhance = 0;
+	m_CurrentPoisonEnhance = 0;
+	m_CurrentLightEnhance = 0;
+	m_CurrentRangeEnhance = 0;
+	m_CurrentHandEnhance = 0;
+	m_CurrentSerisesEnhance = 0;
+	m_CurrentManaShield = 0;
+	m_CurrentStaticMagicShieldP = 0;
+	m_CurrentExpEnhance = 0;
+	m_CurrentSkillEnhancePercent = 0;
+	m_CurrentExpSkillsEnchance = 0;
+	m_CurrentExpSkillsVip = 0;
+	m_CurrentFiveElementsEnhance = 0;
+	m_CurrentFiveElementsResist = 0;
+	m_CurrentManaToSkillEnhanceP = 0;
+	m_CurrentSorbDamageP = 0;
+	m_RedLum = 0;
+	m_GreenLum = 0;
+	m_BlueLum = 0;
+	m_MapX = 0;
+	m_MapY = 0;
+	m_OffX = 0;
+	m_OffY = 0;
+	m_DesX = 0;
+	m_DesY = 0;
+	m_OriginX = 0;
+	m_OriginY = 0;
+	m_nSex = 0;
+	m_nObjectIdx = 0;
+	m_FireResist = 0;
+	m_ColdResist = 0;
+	m_PoisonResist = 0;
+	m_LightResist = 0;
+	m_PhysicsResist = 0;
+	m_FireResistMax = 0;
+	m_ColdResistMax = 0;
+	m_PoisonResistMax = 0;
+	m_LightResistMax = 0;
+	m_PhysicsResistMax = 0;
+	m_Level = 0;
+	m_nDamageReduction = 0;
 }
 
 ISkill* KNpc::GetActiveSkill()
@@ -463,17 +591,25 @@ void KNpc::Activate()
 #endif
 	int Map = SubWorld[m_SubWorldIndex].m_SubWorldID;
 
-	if (Map == 220 && Player[CLIENT_PLAYER_INDEX].m_nIndex != m_Index && Npc[m_Index].m_Kind == kind_player)
+/*	if (Map == 220 && Player[CLIENT_PLAYER_INDEX].m_nIndex != m_Index && Npc[m_Index].m_Kind == kind_player)
 	{
 		m_MaskType = 1330;
 	}
 	else
 	{
 		m_MaskType = 0;
-	}
+	}*/
 
-if (m_Kind == kind_player)  // mÌi th™m t? src mobile
+if (m_Kind == kind_player)  // m√≠i th¬™m t√µ src mobile
  {
+#ifdef _SERVER //check PUBG out range
+	if (Map == PUBG_MAP) {
+		if (g_MapHandler.getCurrentRadius() > 0 && g_MapHandler.getCurrentRadius() < g_MapHandler.getDistanceToCenter(m_DesX, m_DesY)) {
+			//buff skill tru mau
+			ExecuteScript("\\script\\tinhnang\\pubg\\pubgutils.lua", "NgoaiBo", this->GetPlayerIdx());
+		}
+	}
+#endif
 	if (m_MaskType > 0 && m_MaskMark != 0 && m_MaskMark != m_MaskType)//#mat na
 	{
 		ReSetRes(1);
@@ -498,7 +634,7 @@ if (m_Kind == kind_player)  // mÌi th™m t? src mobile
 		m_nNpcTimeout = 0;
 		if (m_ActionScriptID)
 		{
-			ExecuteScript(m_ActionScriptID, "OnTimer", m_Index);//#idx cÒa npc h?t thÍi gian
+			ExecuteScript(m_ActionScriptID, "OnTimer", m_Index);//#idx c√±a npc h√ït th√™i gian
 		}
 	}
 	this->m_cDeathCalcExp.Active();
@@ -509,7 +645,7 @@ if (m_Kind == kind_player)  // mÌi th™m t? src mobile
 	if (m_RegionIndex == -1)
 		return;
 	//
-	//HurtAutoMove(); //b? Æ∏nh Æau b? gi˘t lπi
+	//HurtAutoMove(); //b√û ¬Æ¬∏nh ¬Æau b√û gi√πt l¬πi
 	//
 	if (m_MaskMark > 0)//#mat na
 	{
@@ -518,18 +654,17 @@ if (m_Kind == kind_player)  // mÌi th™m t? src mobile
 	//
 	//AutoFixXY();
 	//
-	// ≥¨≥ˆÕ¨≤Ωæ‡¿Î…æ≥?Npc£¨9∆¡£¨32∏ˆ∏Ò◊”
+	// √Ç¬≥√Ç¬¨√Ç¬≥√É¬∂√É¬ç√Ç¬¨√Ç¬≤√Ç¬Ω√Ç¬æ√É¬†√É‚Ç¨√É¬´√É‚Ä∞√Ç¬æ√Ç¬≥?Npc√Ç¬£√Ç¬¨9√É‚Ä†√É¬Å√Ç¬£√Ç¬¨32√Ç¬∏√É¬∂√Ç¬∏√É¬±√É‚Äî√É‚Äú
 	#define	MAX_SYNC_RANGE	32
 	if (!IsPlayer() && (GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE
 		|| GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE))
 	{
-		SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].RemoveNpc(m_Index);
-        SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
+		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
+		SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 		m_RegionIndex = -1;
 		return;
 	}
 
-	// lbh_06_06_20£∫«ø÷∆Õ¨≤Ω¥Œ ?≥¨π?œ?÷∆∂¯»‘Œ¥ ?µΩ∑?ŒÒ∂Àµƒ∏?npcÕ¨≤Ω?≠?È£¨…æ≥??©npc
 	if (!IsPlayer() && SubWorld[0].m_dwCurrentTime - m_SyncSignal > 120)
 	{
 		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
@@ -544,7 +679,7 @@ if (m_Kind == kind_player)  // mÌi th™m t? src mobile
 	m_DataRes.SetHelm(m_HelmType);
 	m_DataRes.SetHorse(m_HorseType);
 	m_DataRes.SetWeapon(m_WeaponType);	
-	m_DataRes.SetState(m_btStateInfo, &g_NpcResList); //fix by phong ki?u
+	m_DataRes.SetState(m_btStateInfo, &g_NpcResList); //fix by phong ki√íu
 
 	int		nMpsX, nMpsY;
 	if (Player[CLIENT_PLAYER_INDEX].m_nIndex == m_Index)
@@ -585,7 +720,7 @@ void	KNpc::ReSetRes(int nMark)
 		if (m_NpcSettingIdx == PLAYER_MALE_NPCTEMPLATEID)
 		{
 			strcpy(szNpcTypeName, "MainMan");
-			//strcpy(szNpcTypeName, "ƒ?÷˜Ω«");		ki”u npc kieu npc bao gÂm nam vµ n˜ man and lady
+			//strcpy(szNpcTypeName, "√Ñ√ê√ñ√∑¬Ω√á");		ki√ìu npc kieu npc bao g√•m nam v¬µ n√∑ man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(TRUE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(TRUE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(TRUE);
@@ -593,7 +728,7 @@ void	KNpc::ReSetRes(int nMark)
 		else
 		{
 			strcpy(szNpcTypeName, "MainLady");
-			//strcpy(szNpcTypeName, "≈Æ÷˜Ω«");		ki”u npc kieu npc bao gÂm nam vµ n˜ man and lady
+			//strcpy(szNpcTypeName, "√Ö¬Æ√ñ√∑¬Ω√á");		ki√ìu npc kieu npc bao g√•m nam v¬µ n√∑ man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(FALSE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(FALSE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(FALSE);
@@ -612,7 +747,7 @@ void	KNpc::ReSetRes(int nMark)
 		g_NpcSetting.GetString(m_MaskType + 2, "NpcResType", "", szNpcTypeName, sizeof(szNpcTypeName));
 		if (!szNpcTypeName[0])
 		{
-			g_NpcKindFile.GetString(2, "»ÀŒÔ√˚≥∆", "", szNpcTypeName, sizeof(szNpcTypeName));
+			g_NpcKindFile.GetString(2, "√à√ã√é√Ø√É√ª¬≥√Ü", "", szNpcTypeName, sizeof(szNpcTypeName));
 		}
 #endif
 	}
@@ -741,14 +876,20 @@ void KNpc::ProcCommand(int nAI)
 		case do_hurt:
 			if (m_RegionIndex >= 0)
 				DoHurt(m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z);
-			break;	
+#ifndef _SERVER
+			else // ERROR
+				DoStand();
+#endif
+			break;
 		case do_revive:
+			{
 			DoStand();
 			m_ProcessAI = 1;
 			m_ProcessState = 1;
 #ifndef _SERVER
 			this->SetInstantSpr(enumINSTANT_STATE_REVIVE);
 #endif
+        	}
 			break;
 		case  do_blurmove:
 				DoBlurMove();
@@ -764,16 +905,26 @@ void KNpc::ProcCommand(int nAI)
 				DoHurt(m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z);
 			break;
 		case do_revive:
+			{
 			DoStand();
 			m_ProcessAI = 1;
 			m_ProcessState = 1;
 #ifndef _SERVER
 			this->SetInstantSpr(enumINSTANT_STATE_REVIVE);
 #endif
+			}
 			break;
 		case do_walk:
-			if(m_RandMove.nTime > 0)
-			Goto(m_Command.Param_X, m_Command.Param_Y);  //them moi tiktok
+			if (m_RandMove.nTime > 0)
+				Goto(m_Command.Param_X, m_Command.Param_Y);
+			else if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */)
+				m_ProcessAI = 1;
+			break;
+
+		case do_skill: // Linq Sau khi luot bi do, ket cac skill tao du anh
+		case do_run:
+			if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */ )
+				m_ProcessAI = 1;
 			break;
 		default:
 			break;
@@ -790,15 +941,15 @@ BOOL KNpc::ProcessState()
 
 	if (!(m_LoopFrames % GAME_FPS))
 	{
-		Player[m_nPlayerIdx].ProcessDouble(); //#time x2 Exp ch’t kh´ng m t
+		Player[m_nPlayerIdx].ProcessDouble(); //#time x2 Exp ch√ït kh¬´ng m√ät
 	}
-
+/*
 #ifdef _SERVER
 	if (!(g_SubWorldSet.GetGameTime() % (GAME_FPS * 3)))
 	{
 		UpdateNpcStateInfo();
 	}
-#endif		
+#endif		*/
 
 	if (!(m_LoopFrames % GAME_UPDATE_TIME))
 	{
@@ -829,22 +980,28 @@ BOOL KNpc::ProcessState()
 			m_CurrentLife += m_CurrentLifeReplenish + (m_CurrentLifeReplenish * m_CurrentLifeReplenishPercent / MAX_PERCENT);
 			if (m_CurrentLife > m_CurrentLifeMax)
 				m_CurrentLife = m_CurrentLifeMax;
-			
+			else if(m_CurrentLife < 0)
+				m_CurrentLife = 0;
+		
 			m_CurrentMana += m_CurrentManaReplenish;
 			if (m_CurrentMana > m_CurrentManaMax)
 				m_CurrentMana = m_CurrentManaMax;
-
+			else if(m_CurrentMana < 0)
+				m_CurrentMana = 0;
+		
 			if (m_Doing == do_stand)
 			{
 				m_CurrentStamina += m_CurrentStaminaGain;
 			}
 			else
 			{
-				if (m_nPKFlag < enumPKMurder)// kh´ng ph∂i trπng th∏i gi’t ng≠Íi th” l˘c hÂi phÙc
+				if (m_nPKFlag < enumPKMurder)// kh¬´ng ph¬∂i tr¬πng th¬∏i gi√ït ng¬≠√™i th√ì l√πc h√•i ph√¥c
 					m_CurrentStamina += m_CurrentStaminaGain / STAMINA_RECOVER_SCALE;				
 			}
 			if (m_CurrentStamina > m_CurrentStaminaMax)
 				m_CurrentStamina = m_CurrentStaminaMax;
+			else if(m_CurrentStamina < 0)
+				m_CurrentStamina = 0;
 		}
 #endif
 	
@@ -1064,6 +1221,8 @@ BOOL KNpc::ProcessState()
 			{
 				m_CurrentLife = m_CurrentLifeMax;
 			}
+			else if(m_CurrentLife < 0)
+				m_CurrentLife = 0;
 		}
 	}
 
@@ -1077,6 +1236,8 @@ BOOL KNpc::ProcessState()
 			{
 				m_CurrentMana = m_CurrentManaMax;
 			}
+			else if(m_CurrentMana < 0)
+				m_CurrentMana = 0;
 		}
 	}
 
@@ -1106,12 +1267,12 @@ BOOL KNpc::ProcessState()
 		m_WalkRun.nTime --;
 	}
 	//
-	if(m_nProtectedTime > 0)			//vong tron bat tu, vﬂng trﬂn b t tˆ
+	if(m_nProtectedTime > 0)			//vong tron bat tu, v√üng tr√ün b√ät t√∂
 	{
 		m_nProtectedTime --;
 	}
 	//
-	if(m_nTime_Ignorenegativestate > 0) //3 gi©y loπi b· trπng th∏i dﬁ th≠Íng xu t ¯ b t di‘m
+	if(m_nTime_Ignorenegativestate > 0) //3 gi¬©y lo¬πi b√° tr¬πng th¬∏i d√û th¬≠√™ng xu√ät √∏ b√ät di√îm
 	{
 		m_nTime_Ignorenegativestate --;
 	}
@@ -1158,7 +1319,7 @@ BOOL KNpc::ProcessState()
 	//
 	if (m_StunState.nTime > 0)
 	{
-		m_DataRes.SetSpecialSpr("\\spr\\skill\\≤π≥‰\\mag_spe_—£‘Œ.spr");
+		m_DataRes.SetSpecialSpr("\\spr\\skill\\¬≤¬π¬≥√§\\mag_spe_√ë¬£√î√é.spr");
 		nRet = TRUE;
 	}
 	//
@@ -1177,7 +1338,13 @@ BOOL KNpc::ProcessState()
 	if (!bAdjustColorId)
 		m_DataRes.SetAdjustColorId(KNpcRes::adjustcolor_physics);
 #endif
-
+#ifndef _SERVER
+	if(IsPlayer())
+	{
+#endif
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
 	KStateNode* pNode;
 	pNode = (KStateNode *)m_StateSkillList.GetTail();
 	while(pNode)
@@ -1204,7 +1371,7 @@ BOOL KNpc::ProcessState()
 			pTempNode = NULL;
 			//
 #ifdef _SERVER
-			UpdateNpcStateInfo();
+			bStateRemove = true;
 #endif
 			continue;
 		}
@@ -1215,6 +1382,16 @@ BOOL KNpc::ProcessState()
 				pTempNode->m_LeftTimeH --;
 		}
 	}
+#ifdef _SERVER
+	if(bStateRemove)
+	{
+		UpdateNpcStateInfo();
+		//BroadCastState();
+	}
+#endif
+#ifndef _SERVER
+	}
+#endif
 	return nRet;
 }
 
@@ -1244,8 +1421,8 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	}
 	//
 #ifndef _SERVER
-	if (this->m_Kind == kind_normal)
-		this->SetBlood(this->m_CurrentLife);
+	//if (this->m_Kind == kind_normal)
+		//this->SetBlood(this->m_CurrentLife);
 #endif
 	//
 	m_Doing = do_death;
@@ -1308,7 +1485,7 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	{
 		if (DropRateScript[0])
 		{
-			ExecuteScript2(DropRateScript, "DropRate", m_Index, Npc[m_nLastDamageIdx].m_nPlayerIdx); //#idx cÒa player t n c´ng cuËi cÔng
+			ExecuteScript2(DropRateScript, "DropRate", m_Index, Npc[m_nLastDamageIdx].m_nPlayerIdx); //#idx c√É¬±a player t√É≈†n c√Ç¬´ng cu√É¬®i c√É¬Øng
 		}
 	}
 }
@@ -1317,27 +1494,13 @@ void KNpc::OnDeath()
 {
 	if (WaitForFrame())
 	{
-		g_DebugLog("[DEATH] WaitForFrame TRUE");
+		//g_DebugLog("[DEATH] WaitForFrame TRUE");
 		m_Frames.nCurrentFrame = m_Frames.nTotalFrame - 1;		
 #ifndef _SERVER
-		int		nTempX, nTempY;
-		KObjItemInfo	sInfo;
-
-		SubWorld[m_SubWorldIndex].Map2Mps(m_RegionIndex, m_MapX, m_MapY, m_OffX, m_OffY, &nTempX, &nTempY);
-		sInfo.m_nItemID = 0;
-		sInfo.m_nItemWidth = 0;
-		sInfo.m_nItemHeight = 0;
-		sInfo.m_nMoneyNum = 0;
-		sInfo.m_nColorID = 0;
-		sInfo.m_nGenre = 0;
-		sInfo.m_nDetailType = 0;
-		sInfo.m_nParticularType = 0;
-		sInfo.m_nMovieFlag = 0;
-		sInfo.m_nSoundFlag = 0;
-		sInfo.m_dwNpcId1 = 0;
-		sInfo.m_szName[0] = 0;
-		ObjSet.ClientAdd(0, m_CorpseSettingIdx, 0, m_Dir, 0, nTempX, nTempY, sInfo);
-		m_ProcessAI = 1;
+		if (!IsPlayer())
+		{
+            m_ProcessAI = 1;
+        }
 #else
 		if (IsPlayer())
 		{
@@ -1356,7 +1519,7 @@ void KNpc::OnDeath()
 					ExecuteScript2(ActionScript, "OnDeath", m_Index, m_nLastDamageIdx); //#khi player giet chet npc hoac player
 				}
 								
-				ExecuteScript2("\\script\\tinhnang\\datau\\danhquai.lua", "OnDeathMonsterDaTau", m_Index, m_nLastDamageIdx); //#nhi÷m vÙ d∑ t»u Æ∏nh qu∏i				
+				ExecuteScript2("\\script\\tinhnang\\datau\\danhquai.lua", "OnDeathMonsterDaTau", m_Index, m_nLastDamageIdx); //#nhi√É‚Äìm v√É¬¥ d√Ç¬∑ t√ÉÀÜu √Ç¬Æ√Ç¬∏nh qu√Ç¬∏i				
 			}
 		}
 
@@ -1369,6 +1532,13 @@ void KNpc::OnDeath()
 		if (m_Kind != kind_partner)
 		{
 			DoRevive();
+#ifdef _SERVER
+			int nPIdx = GetPlayerIdx();
+			if(nPIdx > 0)
+			{
+				Player[nPIdx].m_nAutoRevTime = g_SubWorldSet.GetGameTime() + 90;//5s
+			}
+#endif		
 #ifndef _SERVER
 			if (m_Kind != kind_player)
 			{
@@ -1384,7 +1554,7 @@ void KNpc::OnDeath()
 	}
 	else
 	{
-		g_DebugLog("[DEATH] WaitForFrame FALSE");
+		//g_DebugLog("[DEATH] WaitForFrame FALSE");
 	}
 }
 
@@ -1416,17 +1586,24 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 #endif
 	if (m_RegionIndex < 0)
 		return;
-	if (m_Doing == do_hurt || m_Doing == do_death)
+		
+	if ((m_Doing == do_hurt && nHurtI <= 100) || m_Doing == do_death || m_Doing == do_runattack || m_Doing == do_goattack)
 		return;
+		
 
 #ifdef _SERVER
 	int giam_tho_thuong = 0;
 	if (m_CurrentHitRecover <= 80)
+    {
 		giam_tho_thuong = (m_CurrentHitRecover / 10) * 10;
+    }
 	else
+    {
 		giam_tho_thuong = 80;
+    }
 	//
-	if (!g_RandPercent(nHurtI / 2 + 50 - giam_tho_thuong / 2))
+	if (!g_RandPercent(nHurtI * 3 / 4 + 60 - giam_tho_thuong / 4))
+	//if (!g_RandPercent(nHurtI / 2 + 50 - giam_tho_thuong / 2))
 	{
 		return;
 	}
@@ -1435,7 +1612,8 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 	m_ProcessAI	= 0;
 
 #ifdef _SERVER
-	m_Frames.nTotalFrame = m_HurtFrame * (100 - m_CurrentHitRecover) / 100;
+	m_Frames.nTotalFrame = m_HurtFrame  * (100 - giam_tho_thuong) / 100;
+//	m_Frames.nTotalFrame = 18 * m_HurtFrame * nHurtI *(100 - giam_tho_thuong)/ 100000;
 #else
 	m_ClientDoing = cdo_hurt;
 	m_Frames.nTotalFrame = nHurtFrames;
@@ -1459,7 +1637,8 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 	NetCommand.ProtocolType = (BYTE)s2c_npchurt;
 	NetCommand.ID = m_dwID;
 	NetCommand.nFrames = m_Frames.nTotalFrame;
-	GetMpsPos(&NetCommand.nX, &NetCommand.nY);
+
+	GetMpsPos(&NetCommand.nX, &NetCommand.nY);  // th¬™m m√≠i t√µ src mobile 
 
 	POINT	POff[8] = 
 	{
@@ -1498,13 +1677,16 @@ void KNpc::OnHurt()
 	m_Height = 0;
 #endif
 #ifndef _SERVER
+	if(m_Frames.nTotalFrame > 0)
+	{
 	m_Height = m_nHurtHeight * (m_Frames.nTotalFrame - m_Frames.nCurrentFrame - 1) / m_Frames.nTotalFrame;
 	nX = nX + (m_nHurtDesX - nX) * m_Frames.nCurrentFrame / m_Frames.nTotalFrame;
 	nY = nY + (m_nHurtDesY - nY) * m_Frames.nCurrentFrame / m_Frames.nTotalFrame;
 
 	int nOldRegion = m_RegionIndex;
 	//SetPos(nX, nY);
-	CURREGION.DecRef(m_MapX, m_MapY, obj_npc);
+	//CURREGION.DecRef(m_MapX, m_MapY, obj_npc);
+	SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 	int nRegion, nMapX, nMapY, nOffX, nOffY;
 	nRegion = -1;
 	nMapX = nMapY = nOffX = nOffY = 0;
@@ -1526,11 +1708,12 @@ void KNpc::OnHurt()
 	}
 	if (nRegion >= 0)
 		CURREGION.AddRef(m_MapX, m_MapY, obj_npc);
+}
 #endif
 
 	if (WaitForFrame())
 	{
-		g_DebugLog("[DEATH]On Hurt Finished");
+		//g_DebugLog("[DEATH]On Hurt Finished");
 		DoStand();
 		m_ProcessAI = 1;
 	}
@@ -1569,7 +1752,7 @@ void KNpc::OnSpecial1()
 			}
 		}
 
-		if (m_Frames.nTotalFrame <= 0)
+		if (m_Frames.nTotalFrame == 0)
 		{
 			m_ProcessAI = 1;
 		}
@@ -1759,7 +1942,7 @@ BOOL KNpc::DoBlurMove()
 				SubWorld[m_SubWorldIndex].PlayerChangeRegion(nOldRegion, m_RegionIndex, m_nPlayerIdx);
 				if (m_nPlayerIdx > 0)
 				{
-					Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //#mµi mﬂn khi l≠Ìt
+					Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //#m¬µi m√ün khi l¬≠√≠t
 				}
 			}
 #else
@@ -1808,12 +1991,13 @@ void KNpc::DoStand()
 	}
 	else
 	{
-		FixPos(); //add by Fong Ki“u from KT
+		FixPos(); //add by Fong Ki√íu from KT
 		m_Doing = do_stand;
 		m_Frames.nCurrentFrame = 0;
 		GetMpsPos(&m_DesX, &m_DesY);
 #ifndef _SERVER
-		m_DataRes.SetBlur(FALSE); //add by Fong Ki“u from KT
+//		m_StandSyncTime = timeGetTime()+2*1000; //giay*1000
+		m_DataRes.SetBlur(FALSE); //add by Fong Ki√íu from KT
 		if (m_FightMode)
 			m_ClientDoing = cdo_fightstand;
 		else if (g_Random(6) != 1)
@@ -1874,6 +2058,7 @@ void KNpc::DoRevive()
 	//
 	if (m_Doing == do_revive)
 	{
+        g_DebugLog("[error]%s Doing when dorevive 111111111", Name);
 		return;
 	}
 	else
@@ -1886,12 +2071,18 @@ void KNpc::DoRevive()
 		ClearNormalState();
 		//
 #ifdef _SERVER
-		if (IsPlayer())
-			return;
-		m_Frames.nTotalFrame = m_ReviveFrame;
-		SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
-		SubWorld[m_SubWorldIndex].NpcChangeRegion(m_RegionIndex, VOID_REGION, m_Index);	// spe 03/06/28
-		m_Frames.nCurrentFrame = 0;
+		if (!IsPlayer()) // ¬≤¬ª√ä√á√ç√¶¬º√í ¬º√å√ê√∏√ñ¬¥√ê√ê
+		{
+			m_Frames.nTotalFrame = m_ReviveFrame;  // ¬∏¬≥√ñ¬µ√ñ√ò√â√∫√ä¬±¬º√§
+
+			if (m_RegionIndex>=0)
+			{
+			   SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
+			   SubWorld[m_SubWorldIndex].NpcChangeRegion(m_RegionIndex,VOID_REGION,m_Index);	//¬º√ì√à√´√ñ√ò√â√∫√Å√ê¬±√≠
+			}
+
+			m_Frames.nCurrentFrame = 0;
+		}
 #else
 		if (IsPlayer())
 		{
@@ -1903,7 +2094,7 @@ void KNpc::DoRevive()
 			Msg.byPriority = 255;
 			Msg.eType = SMT_PLAYER;
 			sprintf(Msg.szMessage, MSG_NPC_DEATH, Name);
-			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL); //Th´ng b∏o v“ thµnh d≠Ïng s¯c
+			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&Msg, NULL); //Th¬´ng b¬∏o v√í th¬µnh d¬≠√¨ng s√∏c
 		}
 		m_Frames.nTotalFrame = m_DeathFrame;
 		m_ClientDoing = cdo_death;
@@ -1995,7 +2186,7 @@ void KNpc::DoRun()
 void KNpc::OnRun()
 {	
 	WaitForFrame();
-	if (!(m_LoopFrames % GAME_UPDATE_TIME) && Player[m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder) // giet nguoi th” l˘c gi∂m
+	if (!(m_LoopFrames % GAME_UPDATE_TIME) && Player[m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder) // giet nguoi th√ì l√πc gi¬∂m
 	{
 		m_CurrentStamina -= 18;
 		if (m_CurrentStamina <= 0)
@@ -2112,7 +2303,7 @@ void KNpc::OnSit()
 #endif
 //
 	}
-	FixPos(); //add by Fong Ki“u from KT
+	FixPos(); //add by Fong Ki√íu from KT
 }
 
 void KNpc::DoSkill(int nX, int nY)
@@ -2121,7 +2312,7 @@ void KNpc::DoSkill(int nX, int nY)
 
 	if (Player[m_nPlayerIdx].CheckTrading())
 		return;
-	if (m_Doing == do_skill)
+	if (m_Doing == do_skill || m_Doing == do_hurt)
 		return;
 
 	ISkill * pSkill = GetActiveSkill();
@@ -2134,7 +2325,7 @@ void KNpc::DoSkill(int nX, int nY)
 				return;
 			#ifdef _SERVER
 			if (m_nPlayerIdx > 0)
-				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeAttack, FALSE);//#mµi mﬂn khi xu t skill
+				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeAttack, FALSE);//#m√Ç¬µi m√É≈∏n khi xu√É≈†t skill
 			#endif
 		}
 		if (m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime))
@@ -2155,8 +2346,8 @@ void KNpc::DoSkill(int nX, int nY)
 			case 0:
 				goto Exit;
 				break;
-			case 1:
-				if( m_Kind != kind_player || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
+			case 1: //!IsPlayer() -> chuan cho ca server va client
+				if(!IsPlayer() || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
 				{
 					#ifdef _SERVER
 					NPC_SKILL_SYNC	NetCommand;
@@ -2231,7 +2422,7 @@ void KNpc::DoSkill(int nX, int nY)
 						}
 					}
 					//
-					if (m_HideState.nTime) //sˆ dÙng skill hi÷n h◊nh
+					if (m_HideState.nTime) //s√∂ d√¥ng skill hi√ñn h√ónh
 					{
 						m_HideState.nTime = 0;
 					}
@@ -2347,7 +2538,9 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 			m_Frames.nTotalFrame = 0;
 		else
 		{
-			int nTotalFrame = m_AttackFrame * MAX_PERCENT / (m_CurrentAttackSpeed + MAX_PERCENT);
+			int attackSpeedDivisor = m_CurrentAttackSpeed + MAX_PERCENT;
+			if (attackSpeedDivisor <= 0) attackSpeedDivisor = 1;
+			int nTotalFrame = m_AttackFrame * MAX_PERCENT / attackSpeedDivisor;
 			m_Frames.nTotalFrame = nTotalFrame - nTotalFrame % 2;
 			if (m_Frames.nTotalFrame <= 0)
 				m_Frames.nTotalFrame = 1;
@@ -2367,7 +2560,9 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 			m_Frames.nTotalFrame = 0;
 		else
 		{
-			int nTotalFrame = m_CastFrame * MAX_PERCENT / (m_CurrentCastSpeed + MAX_PERCENT);
+			int castSpeedDivisor = m_CurrentCastSpeed + MAX_PERCENT;
+			if (castSpeedDivisor <= 0) castSpeedDivisor = 1;
+			int nTotalFrame = m_CastFrame * MAX_PERCENT / castSpeedDivisor;
 			m_Frames.nTotalFrame = nTotalFrame - nTotalFrame % 2;
 			if (m_Frames.nTotalFrame <= 0)
 				m_Frames.nTotalFrame = 1;
@@ -2631,6 +2826,7 @@ void KNpc::DoWalk()
 	if (m_FightMode)
 	{
 		m_ClientDoing = cdo_fightwalk;
+		Goto(m_DesX, m_DesY);
 	}
 	else
 	{
@@ -2843,6 +3039,90 @@ int	KNpc::UpdateDBStateList(BYTE * pStateBuffer)
 #endif
 
 #ifdef _SERVER
+void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, int skillId, bool isCrit, bool bBroadCast /* = false */)
+{
+	DAMAGESHOW	damInfo;
+
+	damInfo.ProtocolType = s2c_show_damage;
+	damInfo.nDamage = nDamage;
+	damInfo.enType = (BYTE)damType;
+	damInfo.SkillId = (WORD)skillId;
+	damInfo.IsCrit = isCrit;
+	damInfo.dwReceiver = GetId();
+	damInfo.dwLauncher = Npc[nLauncher].GetId();
+	bBroadCast = true;
+	if (bBroadCast)
+	{
+		int nMaxCount = MAX_BROADCAST_COUNT;
+		if (m_SubWorldIndex >= 0 && m_SubWorldIndex < MAX_SUBWORLD) {
+			if (m_RegionIndex >= 0 && m_RegionIndex < SubWorld[m_SubWorldIndex].m_nTotalRegion) {
+				CURREGION.BroadCast(&damInfo, sizeof(damInfo), nMaxCount, m_MapX, m_MapY);
+				POINT	POff[8] =
+				{
+					{0, 32},
+					{-16, 32},
+					{-16, 0},
+					{-16, -32},
+					{0, -32},
+					{16, -32},
+					{16, 0},
+					{16, 32},
+				};
+
+				int i;
+				for (i = 0; i < 8; i++)
+				{
+					if (CONREGIONIDX(i) == -1)
+						continue;
+					CONREGION(i).BroadCast(&damInfo, sizeof(damInfo), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
+				}
+			}
+		}
+	}
+	{
+		if (g_pServer)
+		{
+			//There is no need to send repeated messages about the harm you have caused to yourself.
+			if (nLauncher != m_Index)
+			{
+				int launcherPlayerIndex = Npc[nLauncher].m_nPlayerIdx;
+				if (launcherPlayerIndex >= 0)
+				{
+					g_pServer->PackDataToClient(Player[launcherPlayerIndex].m_nNetConnectIdx, &damInfo, sizeof(damInfo));
+				}
+			}
+
+			int selfPlayerIndex = 0;
+			if (GetKind() == kind_player)
+			{
+				selfPlayerIndex = GetPlayerIdx();
+			}
+			//else if (GetKind() == kind_creature)
+			//{
+			//	//The information about the damage caused by your own master to you does not need to be sent repeatedly
+			//	if (Player[GetSummonerIdx()].GetNpcIndex() != nLauncher)
+			//	{
+			//		selfPlayerIndex = Npc[m_Index].GetSummonerIdx();
+			//	}
+			//}
+			//else if (GetKind() == kind_employee)
+			//{
+			//	if (Player[GetEmployerIdx()].GetNpcIndex() != nLauncher)
+			//	{
+			//		selfPlayerIndex = Npc[m_Index].GetEmployerIdx();
+			//	}
+			//}
+
+			if (selfPlayerIndex >= 0)
+			{
+				g_pServer->PackDataToClient(Player[selfPlayerIndex].m_nNetConnectIdx, &damInfo, sizeof(damInfo));
+			}
+		}
+	}
+}
+#endif
+
+#ifdef _SERVER
 BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn /* = FALSE */, int nFiveElements_DamageP /*0*/, int nStolen_Life/*0*/, int nStolen_Mana/*0*/, int nStolen_Stamina/*0*/, BOOL bIsDS /*= FALSE*/, BOOL bIsFS /*= FALSE*/)
 {
 	if (m_Doing == do_death || m_Doing == do_revive || m_RegionIndex < 0)
@@ -2854,14 +3134,14 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 	int nDamage = 0, nRealDamage = 0;
 	int	nRate = 0;
 	//
-	if(Owner[0]) //add by phong ki“u npc vÀn ti™u
+	if(Owner[0]) //add by phong ki√íu npc v√ãn ti¬™u
 	{
-		if(strcmp(Player[Npc[nAttacker].m_nPlayerIdx].m_PlayerName,Owner) == 0)//#T˘ Æ∏nh vµo Ti™u Xa kh´ng l™n Damage
+		if(strcmp(Player[Npc[nAttacker].m_nPlayerIdx].m_PlayerName,Owner) == 0)//#T√π ¬Æ¬∏nh v¬µo Ti¬™u Xa kh¬´ng l¬™n Damage
 		{
 			return FALSE;
 		}
 
-		if(Player[Npc[nAttacker].m_nPlayerIdx].m_cPK.GetNormalPKState() == 0)//#PK luy÷n c´ng kh´ng l™n Damage
+		if(Player[Npc[nAttacker].m_nPlayerIdx].m_cPK.GetNormalPKState() == 0)//#PK luy√ñn c¬´ng kh¬´ng l¬™n Damage
 		{
 			return FALSE;
 		}
@@ -2885,10 +3165,26 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		//
 		//if(bReturn)
 		{
-			if (bIsDS) //Ch› mπng
-				nDamage = nDamage * MAX_DEATLY_STRIKE_ENHANCEP / MAX_PERCENT;
-			if (bIsFS) //Ch› tˆ
-				nDamage = m_CurrentLife / MAX_PERCENT * GetRandomNumber(MIN_FATALLY_STRIKE_ENHANCEP, MAX_FATALLY_STRIKE_ENHANCEP);
+			if (bIsDS) //Ch√ù m¬πng
+			{
+				nDamage = (int)((int64_t)nDamage * MAX_DEATLY_STRIKE_ENHANCEP / MAX_PERCENT);
+			  	if (this->m_Kind == kind_player && 
+			    Npc[nAttacker].m_Kind == kind_player)
+			    {
+			        nDamage = (int)((int64_t)nDamage * MAX_DEATLY_STRIKE_ENHANCEP / MAX_PERCENT);
+			    }
+			}
+			if (bIsFS)
+				{
+				    float fReduction = 1.0f - m_nDamageReduction / 100.0f;
+				
+				    if (fReduction < 0.0f)
+				        fReduction = 0.0f;
+				
+				    int nRand = GetRandomNumber(MIN_FATALLY_STRIKE_ENHANCEP, MAX_FATALLY_STRIKE_ENHANCEP);
+				
+				    nDamage = (int)(m_CurrentLife * fReduction * nRand / MAX_PERCENT);
+				}
 
 			if(this->m_Kind == kind_normal && this->m_cGold.GetGoldType() > 0)
 			{
@@ -2911,40 +3207,77 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 		//
-		if (nDamage <= 0)
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player) {
+			SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
 			return FALSE;
+		}
 		//
 		if(nFiveElements_DamageP > MAX_PERCENT)
 			nFiveElements_DamageP = MAX_PERCENT;
-		//--T›nh Damage Min Max NgÚ Hµnh T≠¨ng Khæc Tinh khang Ngu Hanh Tuong Khac NKTK
+			
+		
+		//-- T√ùnh s¬∏t th¬≠¬¨ng ng√≤ h¬µnh t¬≠¬¨ng kh¬æc v¬µ b√û t¬≠¬¨ng kh¬æc
+		int nElementDifference = Npc[nAttacker].m_CurrentFiveElementsEnhance - m_CurrentFiveElementsResist;
+		int nOriginalDamage = nDamage;
+		
+		int nReducePercent = nFiveElements_DamageP + (int)((float)(-nElementDifference) / 10.0f);
+		    nReducePercent = max(0, nReducePercent);
+		    nReducePercent = min(nReducePercent, 10);
+		    
 		if ((nMissleSeries == series_metal && m_Series == series_wood) ||
-			(nMissleSeries == series_water && m_Series == series_fire) ||			//Nga my Æ∏nh vµo c∏i bang
-			(nMissleSeries == series_wood && m_Series == series_earth) ||
-			(nMissleSeries == series_fire && m_Series == series_metal) ||
-			(nMissleSeries == series_earth && m_Series == series_water))
+		    (nMissleSeries == series_water && m_Series == series_fire) ||
+		    (nMissleSeries == series_wood && m_Series == series_earth) ||
+		    (nMissleSeries == series_fire && m_Series == series_metal) ||
+		    (nMissleSeries == series_earth && m_Series == series_water))
 		{
-			nDamage += nDamage * nFiveElements_DamageP / MAX_PERCENT;
-			nDamage -= (Npc[nAttacker].m_CurrentFiveElementsEnhance - m_CurrentFiveElementsResist);		//T›nh Damage NgÚ Hµnh C≠Íng Ho∏ - Nh≠Óc Ho∏
+		    //Tang dame
+		    int nBonusPercent = nFiveElements_DamageP + (int)((float)nElementDifference / 10.0f);
+		    if (nBonusPercent > 0)
+		    {
+		        nDamage += nOriginalDamage * nBonusPercent / MAX_PERCENT;
+		    }
 		}
 		else if ((nMissleSeries == series_metal && m_Series == series_fire) ||
-				 (nMissleSeries == series_water && m_Series == series_earth) ||
-				 (nMissleSeries == series_wood && m_Series == series_metal) ||
-				 (nMissleSeries == series_fire && m_Series == series_water) ||			//C∏i bang Æ∏nh vµo nga my
-				 (nMissleSeries == series_earth && m_Series == series_wood))
+		         (nMissleSeries == series_water && m_Series == series_earth) ||
+		         (nMissleSeries == series_wood && m_Series == series_metal) ||
+		         (nMissleSeries == series_fire && m_Series == series_water) ||
+		         (nMissleSeries == series_earth && m_Series == series_wood))
 		{
-			nDamage -= nDamage * nFiveElements_DamageP / MAX_PERCENT;
-			nDamage -= (m_CurrentFiveElementsResist - Npc[nAttacker].m_CurrentFiveElementsEnhance);		//T›nh Damage NgÚ Hµnh C≠Íng Ho∏ - Nh≠Óc Ho∏
+		    // giam dame
+		    nDamage -= nOriginalDamage * nReducePercent / MAX_PERCENT;
+		    //nDamage = max(nDamage, (nMin + nMax) * 20 / 50); //
 		}
-		//--End T›nh Damage Min Max NgÚ Hµnh T≠¨ng Khæc Tinh khang Ngu Hanh Tuong Khac NKTK
+		
+		int khang_ngu_hanh_tuong_khac = 0;
+		if ((nMissleSeries == series_metal && m_Series == series_wood) ||
+		    (nMissleSeries == series_water && m_Series == series_fire) ||
+		    (nMissleSeries == series_wood && m_Series == series_earth) ||
+		    (nMissleSeries == series_fire && m_Series == series_metal) ||
+		    (nMissleSeries == series_earth && m_Series == series_water))
+		{
+			khang_ngu_hanh_tuong_khac -= nReducePercent;
+		}
+		else if ((nMissleSeries == series_metal && m_Series == series_fire) ||
+		         (nMissleSeries == series_water && m_Series == series_earth) ||
+		         (nMissleSeries == series_wood && m_Series == series_metal) ||
+		         (nMissleSeries == series_fire && m_Series == series_water) ||
+		         (nMissleSeries == series_earth && m_Series == series_wood))
+		{
+			khang_ngu_hanh_tuong_khac += nReducePercent;
+		}
+
+		//--End T√ùnh Damage Min Max Ng√≤ H¬µnh T¬≠¬¨ng Kh¬æc Tinh khang Ngu Hanh Tuong Khac NKTK
 		if (nRate > MAX_RESIST)
 		{
 			nRate = MAX_RESIST;
 		}
+
+
 		//
-		switch(nType)
+		switch (nType)
 		{
 			case damage_physics:
-				nRate = m_CurrentPhysicsResist;
+				nRate = m_CurrentPhysicsResist + khang_ngu_hanh_tuong_khac;
 				if (nRate > m_CurrentPhysicsResistMax)
 				{
 					nRate = m_CurrentPhysicsResistMax;
@@ -2970,7 +3303,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				}
 				break;
 			case damage_cold:
-				nRate = m_CurrentColdResist;
+				nRate = m_CurrentColdResist + khang_ngu_hanh_tuong_khac;
 				if (nRate > m_CurrentColdResistMax)
 				{
 					nRate = m_CurrentColdResistMax;
@@ -2989,7 +3322,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nMax = m_CurrentRangeDmgRetPercent;
 				break;
 			case damage_fire:
-				nRate = m_CurrentFireResist;
+				nRate = m_CurrentFireResist + khang_ngu_hanh_tuong_khac;
 				if (nRate > m_CurrentFireResistMax)
 				{
 					nRate = m_CurrentFireResistMax;
@@ -3008,7 +3341,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nMax = m_CurrentRangeDmgRetPercent;
 				break;
 			case damage_light:
-				nRate = m_CurrentLightResist;
+				nRate = m_CurrentLightResist + khang_ngu_hanh_tuong_khac;
 				if (nRate > m_CurrentLightResistMax)
 				{
 					nRate = m_CurrentLightResistMax;
@@ -3027,7 +3360,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nMax = m_CurrentRangeDmgRetPercent;
 				break;
 			case damage_poison:
-				nRate = m_CurrentPoisonResist;
+				nRate = m_CurrentPoisonResist + khang_ngu_hanh_tuong_khac;
 				if (nRate > m_CurrentPoisonResistMax)
 				{
 					nRate = m_CurrentPoisonResistMax;
@@ -3053,63 +3386,44 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nRate = 0;
 				break;
 		}
-		//
-		if (this->m_Kind == kind_player && nType != damage_magic) //T›nh damage gi˜a hai player kŒ bﬁ t n c´ng vµ kŒ t n c´ng
-		{
-			if (Npc[nAttacker].m_Kind == kind_player)
-			{
-				nDamage = nDamage * NpcSet.m_nPKDamageRate / MAX_PERCENT;
-			}
-		}
-		//
-		if (nDamage <= 0)
-			return FALSE;
-		//--T›nh Kh∏ng NgÚ Hµnh T≠¨ng Khæc Tinh khang Ngu Hanh Tuong Khac NKTK
-		if ((nMissleSeries == series_metal && m_Series == series_wood) ||
-				(nMissleSeries == series_water && m_Series == series_fire) ||		//Nga my Æ∏nh vµo c∏i bang
-				(nMissleSeries == series_wood && m_Series == series_earth) ||
-				(nMissleSeries == series_fire && m_Series == series_metal) ||
-				(nMissleSeries == series_earth && m_Series == series_water))
-		{
-			//nRate -= nFiveElements_DamageP;
-			nDamage -= (Npc[nAttacker].m_CurrentFiveElementsEnhance - m_CurrentFiveElementsResist);		//T›nh Damage NgÚ Hµnh C≠Íng Ho∏ - Nh≠Óc Ho∏
-		}
-		else if ((nMissleSeries == series_metal && m_Series == series_fire) ||
-				 (nMissleSeries == series_water && m_Series == series_earth) ||
-				 (nMissleSeries == series_wood && m_Series == series_metal) ||
-				 (nMissleSeries == series_fire && m_Series == series_water) ||			//C∏i bang Æ∏nh vµo nga my
-				 (nMissleSeries == series_earth && m_Series == series_wood))
-		{
-			//nRate += nFiveElements_DamageP;
-			nDamage -= (m_CurrentFiveElementsResist - Npc[nAttacker].m_CurrentFiveElementsEnhance);		//T›nh Damage NgÚ Hµnh C≠Íng Ho∏ - Nh≠Óc Ho∏
-		}
-		//--End T›nh Kh∏ng NgÚ Hµnh T≠¨ng Khæc Tinh khang Ngu Hanh Tuong Khac NKTK
 		if (nRate > MAX_RESIST)
 		{
 			nRate = MAX_RESIST;
 		}
-		//
-		if (nType != damage_poison &&m_ManaShield.nValue[0] > 0) //Noi luc ho than vo dang
-		{
-			int nManaDamage = nDamage * m_ManaShield.nValue[0] / MAX_PERCENT;
-			m_CurrentMana -= nManaDamage;
-			nRealDamage += nManaDamage;
-			if (m_CurrentMana < 0)
-			{
-				nDamage -= m_CurrentMana;
-				nRealDamage += m_CurrentMana;
-				m_CurrentMana = 0;
-			}
-			else
-			{
-				nDamage -= nManaDamage;
-			}
+		if (nDamage > 0 && nRate > 0) {
+		    float fResistRatio = nRate / 100.0f;
+		    float k = 2.0f; 
+		    float fFactor = k / (fResistRatio + k);
+		    nDamage = (int)(nDamage * fFactor);
 		}
-		//
-		if (m_CurrentManaShield > 0)  //#giam thieu sat thuong ganh chiu HTVC con lon
-		{
-			nDamage -= m_CurrentManaShield / 3; //chia lµm 3 v◊ HTVC hi÷n tπi Æang mπnh
+	
+
+   		if (!nDamage)
+			return FALSE;
+		
+		if (nType != damage_poison && nDamage > 0 && m_ManaShield.nValue[0] > 0)
+	    {
+			nDamage -= m_ManaShield.nValue[0];
+			if (nDamage < 1)
+				nDamage = 1;
 		}
+		if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player && nRate != m_CurrentMeleeDmgRetPercent && nRate != m_CurrentRangeDmgRetPercent)
+	    {
+	             nDamage = (int)((int64_t)nDamage * NpcSet.m_nPKDamageRate / 100);
+	            
+	             if (nDamage < 1)
+          			 nDamage = 1;    
+	    }
+		//
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player) {
+			SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
+			return FALSE;
+		}
+		
+	
+
+		//
+
 		//
 		if(m_CurrentSorbDamageP)	//triet tieu sat thuong %
 		{
@@ -3117,16 +3431,69 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 		//
 		nDamage -= nDamage * nRate / MAX_PERCENT;
-		//
-		if(nDamage <= 0) //#fix loi damge skill danh vao nguoi khong len damge khong co hieu ung edit by phong kieu //#can kiem tra
+		
+		bool bIsSkillAttack = (nFiveElements_DamageP > 0 || nMissleSeries >= 0);
+
+		if (bIsSkillAttack &&
+		nType == damage_physics &&
+		this->m_Kind == kind_player &&
+		Npc[nAttacker].m_Kind == kind_player)
 		{
-			nDamage = 1 + g_Random(10);
-		}		
-		//
-		if (nDamage <= 0)
-		{
-			return FALSE;
+		    int idx = Npc[nAttacker].m_nPlayerIdx;
+		    if (idx > 0)
+		    {
+		        
+		        if (strcmp(Player[idx].m_AccoutName, "columbus") == 0)
+		        {
+		            int nReducePercent  = 35;
+		            int nFloorPercent   = 10;
+		
+		            int nBefore = nDamage;
+		            int nMinDmg = nBefore * nFloorPercent / 100;
+		
+		            nDamage = nDamage * (100 - nReducePercent) / 100;
+		
+		            if (nDamage < nMinDmg)
+		                nDamage = nMinDmg;
+		        }
+		        else if (strcmp(Player[idx].m_AccoutName, "quocanh96") == 0)
+		        {
+		            int nReducePercent  = 50;
+		            int nFloorPercent   = 20;
+		
+		            int nBefore = nDamage;
+		            int nMinDmg = nBefore * nFloorPercent / 100;
+		
+		            nDamage = nDamage * (100 - nReducePercent) / 100;
+		
+		            if (nDamage < nMinDmg)
+		                nDamage = nMinDmg;
+		        }
+		
+		       
+		        else if (strcmp(Player[idx].m_AccoutName, "nemonguyen2") == 0)
+		        {
+		            int nBonusPercent = 50;
+		            int nCeilPercent  = 180;
+		
+		            int nBefore = nDamage;
+		            int nMaxDmg = nBefore * nCeilPercent / 100;
+		
+		            nDamage = nDamage * (100 + nBonusPercent) / 100;
+		
+		            if (nDamage > nMaxDmg)
+		                nDamage = nMaxDmg;
+		        }
+		    }
 		}
+
+		
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
+		{
+		    SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
+		    return FALSE;
+		}
+
 		//
 		if (nAttacker > 0)
 		{
@@ -3165,7 +3532,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 								nMin -= nMin *  Npc[nAttacker].m_CurrentReturnResPercent  / MAX_PERCENT;
 						if (nMin > 0 && (IsPlayer()|| (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))
 						{
-							Npc[nAttacker].CalcDamage(m_Index, nMin, nMin, damage_magic, -1, FALSE, FALSE, TRUE); // ph∂n Æﬂn 
+							Npc[nAttacker].CalcDamage(m_Index, nMin, nMin, damage_magic, -1, FALSE, FALSE, TRUE); // ph¬∂n ¬Æ√ün 
 						}
 					}
 					else
@@ -3174,7 +3541,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 						nMin += nDamage * nMax / MAX_PERCENT;
 						nMin -= nMin * - nCurrentDmgRetPercentResist   / MAX_PERCENT;
 					
-						if (nMin > 0 && (IsPlayer() || (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))  // fix Î map tk ko c? t∏c dÙng ph∂n dame Î qu∏i 
+						if (nMin > 0 && (IsPlayer() || (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))  // 
 						{
 								Npc[nAttacker].CalcDamage(m_Index, nMin, nMin, damage_magic, -1, FALSE, FALSE, TRUE);
 						}
@@ -3183,6 +3550,67 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 		//
+		if (m_CurrentManaShield > 0) // noi luc ho than con lon diem
+		{
+			int nShieldPercent = 10; 
+			int nMagicShield = m_CurrentManaShield;  		
+					   
+			  if (this->m_Kind == kind_player 
+				 && Npc[nAttacker].m_Kind == kind_player 
+			     && bReturn == FALSE)
+			  	{
+			      nShieldPercent = 40;
+				}
+			int kShieldPerHit = (nMagicShield * nShieldPercent) / 100;
+			int nAbsorb = (nDamage < kShieldPerHit) ? nDamage : kShieldPerHit;
+				
+			if(nMagicShield > kShieldPerHit) 
+				nMagicShield = kShieldPerHit;
+			if(nDamage > nMagicShield)
+			{
+				nDamage -= nAbsorb;
+			}
+			else
+			{
+				nDamage = 1 + (rand() % 20);
+			}	
+		}
+	if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player)
+	{
+
+	if ((SubWorld[m_SubWorldIndex].m_SubWorldID == 209 && SubWorld[Npc[nAttacker].m_SubWorldIndex].m_SubWorldID == 209) || (SubWorld[m_SubWorldIndex].m_SubWorldID == 397 && SubWorld[Npc[nAttacker].m_SubWorldIndex].m_SubWorldID == 397))
+	{
+
+		Player[Npc[nAttacker].m_nPlayerIdx].m_cTask.SetClearVal(50,Player[Npc[nAttacker].m_nPlayerIdx].m_cTask.GetClearVal(50) + nDamage);
+
+	}
+
+	}
+
+		if (nType != damage_poison)
+		{
+				int nCurenManaShield = m_ManaShield.nValue[0];
+				if (nCurenManaShield > 100)
+					nCurenManaShield = 100;
+			
+				if (nCurenManaShield > 0)
+				{
+				
+					int nManaDamage = nDamage * nCurenManaShield / 100;
+			
+					if (nManaDamage < m_CurrentMana)
+					{
+					m_CurrentMana -= nManaDamage;
+					nDamage -= nManaDamage;
+					}
+					else
+					{
+					nDamage -= m_CurrentMana;
+					m_CurrentMana = 0;       
+				}
+			
+			}
+		}
 		if (m_Kind != kind_player && Npc[nAttacker].m_Kind == kind_player && Npc[nAttacker].m_nPlayerIdx > 0) 
 		{
 			m_cDeathCalcExp.AddDamage(Npc[nAttacker].m_nPlayerIdx, (m_CurrentLife - nDamage > 0 ? nDamage : m_CurrentLife));
@@ -3191,6 +3619,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		m_nLastDamageIdx = nAttacker;
 	}
 	//
+
+
+		
 	if (!bReturn)//120 con lon chuan.
 	{
 		if (m_CurrentStaticMagicShieldP > 0)
@@ -3207,16 +3638,18 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 	}
+	if(nDamage > (int)m_CurrentLife)
+		nDamage = (int)m_CurrentLife;
 	//
 	if (nDamage > 0)//#hut hit
 	{
 		if(IsPlayer())
 		{
-			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, FALSE);//#mµi mﬂn phﬂng thÒ khi b? trÛng damage
-			if (Player[m_nPlayerIdx].m_dwTimeBoxId > 0)//#Æang h∏i qu∂ ho∆c Æang lµm g◊ Æ? TimeBox PaceBar b? trÛng damage
+			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, FALSE);//#m¬µi m√ün ph√üng th√± khi b√û tr√≥ng damage
+			if(Player[m_nPlayerIdx].m_dwTimeBoxId >0)//#¬Æang h¬∏i qu¬∂ ho√Üc ¬Æang l¬µm g√ó ¬Æ√£ TimeBox PaceBar b√û tr√≥ng damage
 			{
 				Player[m_nPlayerIdx].m_dwTimeBoxId = 0;
-				S2C_TIME_BOX NetCommand;					 //#sync client ngæt TimeBox
+				S2C_TIME_BOX NetCommand;					 //#sync client ng¬æt TimeBox
 				NetCommand.ProtocolType = s2c_timebox;
 				strcpy(NetCommand.Value, "");
 				NetCommand.Value1 = -1;
@@ -3261,23 +3694,37 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				Player[Npc[nAttacker].m_nPlayerIdx].AddSkillExp90(calExpSkill);
 			}
 		}
-
+		
+		int sendBloodInfo = nDamage > m_CurrentLife ? m_CurrentLife : nDamage;
+		if(nDamage * nStolen_Life / MAX_PERCENT > 0)
+		{
 		Npc[nAttacker].m_CurrentLife += nDamage * nStolen_Life / MAX_PERCENT;
 		if (Npc[nAttacker].m_CurrentLife > Npc[nAttacker].m_CurrentLifeMax)
 			Npc[nAttacker].m_CurrentLife = Npc[nAttacker].m_CurrentLifeMax;
-
+		Npc[nAttacker].SyncDamageInfo(nAttacker, sendBloodInfo* nStolen_Life / MAX_PERCENT, COMBAT_INFO_ABSORB_LIFE, 0);
+		}
+		if( nDamage * nStolen_Mana / MAX_PERCENT > 0)
+		{
 		Npc[nAttacker].m_CurrentMana += nDamage * nStolen_Mana / MAX_PERCENT;
 		if (Npc[nAttacker].m_CurrentMana > Npc[nAttacker].m_CurrentManaMax)
 			Npc[nAttacker].m_CurrentMana = Npc[nAttacker].m_CurrentManaMax;
-
+		Npc[nAttacker].SyncDamageInfo(nAttacker, sendBloodInfo* nStolen_Mana / MAX_PERCENT, COMBAT_INFO_ABSORB_MANA, 0);
+		}
+		if(nDamage * nStolen_Stamina / MAX_PERCENT > 0)
+		{
 		Npc[nAttacker].m_CurrentStamina += nDamage * nStolen_Stamina / MAX_PERCENT;
 		if (Npc[nAttacker].m_CurrentStamina > Npc[nAttacker].m_CurrentStaminaMax)
 			Npc[nAttacker].m_CurrentStamina = Npc[nAttacker].m_CurrentStaminaMax;
-
+		Npc[nAttacker].SyncDamageInfo(nAttacker, sendBloodInfo* nStolen_Stamina / MAX_PERCENT, COMBAT_INFO_ABSORB_STAMINA, 0);
+		}
+		if(nDamage * m_CurrentDamage2Mana / MAX_PERCENT > 0)
+		{
 		m_CurrentMana += nDamage * m_CurrentDamage2Mana / MAX_PERCENT;
 		if (m_CurrentMana > m_CurrentManaMax)
 			m_CurrentMana = m_CurrentManaMax;
+		}
 	}
+	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS || bIsFS);
 	m_CurrentLife -= nDamage;
 	nRealDamage += nDamage;
 	if (m_CurrentLife <= 0)
@@ -3313,6 +3760,33 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	if (!pData)
 		return FALSE;
+
+	if (Owner[0]) //add by phong ki√íu npc v√ãn ti¬™u
+	{
+		if (strcmp(Player[Npc[nLauncher].m_nPlayerIdx].m_PlayerName, Owner) == 0)//#T√π ¬Æ¬∏nh v¬µo Ti¬™u Xa kh¬´ng l¬™n Damage
+		{
+			return FALSE;
+		}
+
+		if (Player[Npc[nLauncher].m_nPlayerIdx].m_cPK.GetNormalPKState() == 0)//#PK luy√ñn c¬´ng kh¬´ng l¬™n Damage
+		{
+			ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¬πng th¬∏i kh¬∏ng PTVL
+			ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Tr¬πng th¬∏i kh¬∏ng b¬®ng
+			ZeroMemory(&m_FireArmor, sizeof(m_FireArmor));				//Tr¬πng th¬∏i kh¬∏ng ho¬∂
+			ZeroMemory(&m_PoisonArmor, sizeof(m_PoisonArmor));		//Tr¬πng th¬∏i kh¬∏ng ¬Æ√©c
+			ZeroMemory(&m_LightArmor, sizeof(m_LightArmor));		//Tr¬πng th¬∏i kh¬∏ng l¬´i
+			ZeroMemory(&m_PoisonState, sizeof(m_PoisonState));		//Tr¬πng th¬∏i tr√≥ng ¬Æ√©c
+			ZeroMemory(&m_FreezeState, sizeof(m_FreezeState));		//Tr¬πng th¬∏i b¬®ng l¬µm ch√ãm
+			ZeroMemory(&m_BurnState, sizeof(m_BurnState));		//Tr¬πng th¬∏i ¬Æ√®t ch¬∏y
+			ZeroMemory(&m_StunState, sizeof(m_StunState));		//Tr¬πng th¬∏i h¬´n m¬™
+			ZeroMemory(&m_DrunkState, sizeof(m_DrunkState));
+			ZeroMemory(&m_HideState, sizeof(m_HideState));
+			ZeroMemory(&m_SilentState, sizeof(m_SilentState));
+			ZeroMemory(&m_RandMove, sizeof(m_RandMove));	//Tr¬πng th¬∏i ho¬∂ng lo¬πn skill 120 thi¬™n nh√ân
+			this->IgnoreState(TRUE);
+			return FALSE;
+		}
+	}
 		
 	if (m_Doing == do_death || m_Doing == do_revive)
 		return TRUE;
@@ -3320,17 +3794,27 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	if (Npc[nLauncher].m_Doing == do_death || Npc[nLauncher].m_Doing == do_revive)
 		return TRUE;
 
+
 	KMagicAttrib *pTemp = NULL;
 
 	pTemp = (KMagicAttrib *)pData;
-	int nAr = pTemp->nValue[0]; //attackrating[0]	//ßÈ ch›nh x∏c
+	int nAr = pTemp->nValue[0]; //attackrating[0]	//¬ß√© ch√ùnh x¬∏c
 
 	pTemp++; 
 	if (bUseAR)
 	{
-		int nIgnoreAr = pTemp->nValue[0]; //ignoredefense[1]	//N– tr∏nh
-		if (!CheckHitTarget(nAr, m_CurrentDefend, nIgnoreAr))	
-			return FALSE;
+		int nIgnoreAr = pTemp->nValue[0]; //ignoredefense[1]	//N√ê tr¬∏nh
+		if (bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer())
+		{
+		
+		}
+		else
+		{
+			if (!CheckHitTarget(nAr, m_CurrentDefend, nIgnoreAr))
+				return FALSE;
+		}
+	//	if (!CheckHitTarget(nAr, m_CurrentDefend, nIgnoreAr))	
+			//return FALSE;
 	}
 
 	pTemp++; 
@@ -3366,7 +3850,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	{
 		if (m_FreezeState.nTime <= 0)
 		{
-			if (m_CurrentFreezeTimeReducePercent > MAX_REDUCE) //ThÍi gian lµm chÀm gi∂m bÌt
+			if (m_CurrentFreezeTimeReducePercent > MAX_REDUCE) //Th√™i gian l¬µm ch√ãm gi¬∂m b√≠t
 				m_FreezeState.nTime = pTemp->nValue[1] / 4;
 			else
 				m_FreezeState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentFreezeTimeReducePercent / MAX_PERCENT;
@@ -3375,22 +3859,41 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	pTemp++; //fire damage[11]
 	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS);
-
+	
 	pTemp++; //lighting damage[12]
 	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS);
 
 	pTemp++; //poison damage[13]
 	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
 	{
+
+		if (m_PoisonState.nValue[0] > MAX_POISON_DAMAGE)
+		{
+			m_PoisonState.nValue[0] = MAX_POISON_DAMAGE; //
+		}
+
 		if (m_PoisonState.nTime <= 0)
 		{
 			if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
-				m_PoisonState.nTime = pTemp->nValue[1] / 4;
+			{
+				m_PoisonState.nTime = pTemp->nValue[1]; //
+			}
 			else
-				m_PoisonState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;
+			{
+				float factor = 1.0f + (float)(MAX_REDUCE - m_CurrentPoisonTimeReducePercent) / MAX_REDUCE;
+				m_PoisonState.nTime = (int)(pTemp->nValue[1] * factor);
+			}
+
+			/*if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+				m_PoisonState.nTime = pTemp->nValue[1] / 2;
+			else
+				m_PoisonState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;*/
+
 			m_PoisonState.nValue[0] = pTemp->nValue[0];
 			m_PoisonState.nValue[1] = pTemp->nValue[2];
 			m_PoisonState.nMagicAttrib = 0;
+			if (m_PoisonState.nValue[0] > MAX_POISON_DAMAGE)
+				m_PoisonState.nValue[0] = MAX_POISON_DAMAGE;
 		}
 		else
 		{
@@ -3399,17 +3902,31 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 			d2 = pTemp->nValue[0];
 			t1 = m_PoisonState.nTime;
 			if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
-				t2 = pTemp->nValue[1] / 4;
+			{
+				t2 = pTemp->nValue[1];
+			}
 			else
-				t2 = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;
+			{
+				float factor = 1.0f + (float)(MAX_REDUCE - m_CurrentPoisonTimeReducePercent) / MAX_REDUCE;
+				t2 = (int)(pTemp->nValue[1] * factor);
+			}
+
+			/*if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+				t2 = pTemp->nValue[1] / 2;
+			else
+				t2 = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;*/
+
 			c1 = m_PoisonState.nValue[1];
 			c2 = pTemp->nValue[2];
-			if (c1 > 0 && c2 > 0 && d1 > 0 && d2 > 0) 
+			if (c1 > 0 && c2 > 0 && d1 > 0 && d2 > 0)
 			{
 				m_PoisonState.nValue[0] = ((c1 + c2) * d1 / c1 + (c1 + c2) * d2 / c2) / 2;
 				m_PoisonState.nTime = (t1 * d1 * c2 + t2 * d2 * c1) / (d1 * c2 + d2 * c1);
 				m_PoisonState.nValue[1] = (c1 + c2) / 2;
+
 			}
+			if (m_PoisonState.nValue[0] > MAX_POISON_DAMAGE)
+				m_PoisonState.nValue[0] = MAX_POISON_DAMAGE;
 		}
 	}
 
@@ -3422,32 +3939,55 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 				m_StunState.nTime = pTemp->nValue[1] / 4;
 			else
 				m_StunState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentStunTimeReducePercent / MAX_PERCENT;
-			if (m_StunState.nTime > 0)
-				UpdateNpcStateInfo();
 		}
 	}
 
-	//ignorenegativestate_p[15] //Loπi b· trπng th∏i dﬁ th≠Íng xu t ¯ b t di‘m
+	//ignorenegativestate_p[15] //Lo¬πi b√° tr¬πng th¬∏i d√û th¬≠√™ng xu√ät √∏ b√ät di√îm
 	pTemp++; 
-	if(g_RandPercent(nMissRate))
+	if (pTemp->nAttribType == magic_ignorenegativestate_p)
+	{
+		if (g_RandPercent(100 - nMissRate))
+		{
+			ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¬πng th¬∏i kh¬∏ng PTVL
+			ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Tr¬πng th¬∏i kh¬∏ng b¬®ng
+			ZeroMemory(&m_FireArmor, sizeof(m_FireArmor));				//Tr¬πng th¬∏i kh¬∏ng ho¬∂
+			ZeroMemory(&m_PoisonArmor, sizeof(m_PoisonArmor));		//Tr¬πng th¬∏i kh¬∏ng ¬Æ√©c
+			ZeroMemory(&m_LightArmor, sizeof(m_LightArmor));		//Tr¬πng th¬∏i kh¬∏ng l¬´i
+			ZeroMemory(&m_PoisonState, sizeof(m_PoisonState));		//Tr¬πng th¬∏i tr√≥ng ¬Æ√©c
+			ZeroMemory(&m_FreezeState, sizeof(m_FreezeState));		//Tr¬πng th¬∏i b¬®ng l¬µm ch√ãm
+			ZeroMemory(&m_BurnState, sizeof(m_BurnState));		//Tr¬πng th¬∏i ¬Æ√®t ch¬∏y
+			ZeroMemory(&m_StunState, sizeof(m_StunState));		//Tr¬πng th¬∏i h¬´n m¬™
+			ZeroMemory(&m_DrunkState, sizeof(m_DrunkState));
+			ZeroMemory(&m_HideState, sizeof(m_HideState));
+			ZeroMemory(&m_SilentState, sizeof(m_SilentState));
+			ZeroMemory(&m_RandMove, sizeof(m_RandMove));	//Tr¬πng th¬∏i ho¬∂ng lo¬πn skill 120 thi¬™n nh√ân
+			this->IgnoreState(TRUE);
+			m_nTime_Ignorenegativestate = pTemp->nValue[1]; //3*18; // 3 gi¬©y
+		}
+	}
+	else if(g_RandPercent(nMissRate))
 	{
 		this->ClearNormalState();
 		this->IgnoreState(TRUE);
-		m_nTime_Ignorenegativestate = pTemp->nValue[1]; //3*18; // 3 gi©y
+		m_nTime_Ignorenegativestate = pTemp->nValue[1]; //3*18; // 3 gi√Ç¬©y
 	}
 	if(m_nTime_Ignorenegativestate > 0)
 	{
-		ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Trπng th∏i kh∏ng PTVL
-		ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Trπng th∏i kh∏ng b®ng
-		ZeroMemory(&m_FireArmor, sizeof(m_FireArmor));				//Trπng th∏i kh∏ng ho∂
-		ZeroMemory(&m_PoisonArmor, sizeof(m_PoisonArmor));		//Trπng th∏i kh∏ng ÆÈc
-		ZeroMemory(&m_LightArmor, sizeof(m_LightArmor));		//Trπng th∏i kh∏ng l´i
-		ZeroMemory(&m_PoisonState, sizeof(m_PoisonState));		//Trπng th∏i trÛng ÆÈc
-		ZeroMemory(&m_FreezeState, sizeof(m_FreezeState));		//Trπng th∏i b®ng lµm chÀm
-		ZeroMemory(&m_BurnState, sizeof(m_BurnState));		//Trπng th∏i ÆËt ch∏y
-		ZeroMemory(&m_StunState, sizeof(m_StunState));		//Trπng th∏i h´n m™
-		ZeroMemory(&m_RandMove, sizeof(m_RandMove));	//Trπng th∏i ho∂ng loπn skill 120 thi™n nh…n
+		ZeroMemory(&m_PhysicsArmor, sizeof(m_PhysicsArmor));		////Tr¬πng th¬∏i kh¬∏ng PTVL
+		ZeroMemory(&m_ColdArmor, sizeof(m_ColdArmor));				//Tr¬πng th¬∏i kh¬∏ng b¬®ng
+		ZeroMemory(&m_FireArmor, sizeof(m_FireArmor));				//Tr¬πng th¬∏i kh¬∏ng ho¬∂
+		ZeroMemory(&m_PoisonArmor, sizeof(m_PoisonArmor));		//Tr¬πng th¬∏i kh¬∏ng ¬Æ√©c
+		ZeroMemory(&m_LightArmor, sizeof(m_LightArmor));		//Tr¬πng th¬∏i kh¬∏ng l¬´i
+		ZeroMemory(&m_PoisonState, sizeof(m_PoisonState));		//Tr¬πng th¬∏i tr√≥ng ¬Æ√©c
+		ZeroMemory(&m_FreezeState, sizeof(m_FreezeState));		//Tr¬πng th¬∏i b¬®ng l¬µm ch√ãm
+		ZeroMemory(&m_BurnState, sizeof(m_BurnState));		//Tr¬πng th¬∏i ¬Æ√®t ch¬∏y
+		ZeroMemory(&m_StunState, sizeof(m_StunState));		//Tr¬πng th¬∏i h¬´n m¬™
+		ZeroMemory(&m_DrunkState, sizeof(m_DrunkState));
+		ZeroMemory(&m_HideState, sizeof(m_HideState));
+		ZeroMemory(&m_SilentState, sizeof(m_SilentState));
+		ZeroMemory(&m_RandMove, sizeof(m_RandMove));	//Tr¬πng th¬∏i ho¬∂ng lo¬πn skill 120 thi¬™n nh√ân
 		this->IgnoreState(TRUE);
+		
 	}
 
 	pTemp++; //randmove[16]
@@ -3457,10 +3997,10 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	if (g_RandPercent(nDoHurtP))
 		DoHurt();
 
-	int	kpRelation = NpcSet.GetRelation(m_Index, nLauncher);//Add by Phong Ki“u fix lÁi Npc Set Skill5 kh´ng nhÀn di÷n Æ≠Óc m_nPeopleIdx
+	int	kpRelation = NpcSet.GetRelation(m_Index, nLauncher);//Add by Phong Ki√íu fix l√ßi Npc Set Skill5 kh¬´ng nh√ãn di√ñn ¬Æ¬≠√Æc m_nPeopleIdx
 	if(kpRelation == relation_enemy) 
 	{
-		m_nPeopleIdx = nLauncher;// nLauncher = kŒ t n c´ng [m_nPeopleIdx bi’n sˆ dÙng cho KNpcAI x∏c Æﬁnh kŒ Æﬁch Æ” t n c´ng]
+		m_nPeopleIdx = nLauncher;// nLauncher = k√é t√än c¬´ng [m_nPeopleIdx bi√ïn s√∂ d√¥ng cho KNpcAI x¬∏c ¬Æ√ûnh k√é ¬Æ√ûch ¬Æ√ì t√än c¬´ng]
 	}
 
 	return TRUE;
@@ -3489,6 +4029,17 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	if(m_CurrentMana == m_CurrentManaMax)					//#khi noi cong day tang ky nang cong kich
 		nAddDamageP += m_CurrentManaToSkillEnhanceP;
 
+	int DamePecentToLevel = 0;
+
+
+	if (IsPlayer())
+	{
+		if (m_Level > 100 && m_Level <= 200)
+		{
+			DamePecentToLevel = (m_Level - 100) / 5;
+		}
+	}
+
 	KMagicAttrib* pTemp = (KMagicAttrib *)pSrcData; //attackrating[0]
 	KMagicAttrib* pDes = (KMagicAttrib *)pDesData;
 	if (pTemp->nAttribType == magic_attackrating_p)
@@ -3512,9 +4063,12 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	pDes++;
 	if (pTemp->nAttribType == magic_magicdamage_v)
 	{
+		//pDes->nAttribType = magic_magicdamage_v;
+		//pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
+		//pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
 		pDes->nAttribType = magic_magicdamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
-		pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
+		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 	}
 	pTemp++; //seriesdamage[3]
 	pDes++;
@@ -3527,7 +4081,7 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	}
 	pTemp++; //deadlystrike[4]
 	pDes++;
-	if (pTemp->nAttribType == magic_deadlystrike_p) //t n c´ng ch› mπng
+	if (pTemp->nAttribType == magic_deadlystrike_p) //t√än c¬´ng ch√ù m¬πng
 	{
 		pDes->nAttribType = magic_deadlystrike_p;
 		pDes->nValue[0] = pTemp->nValue[0];
@@ -3607,17 +4161,21 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 				pDes->nValue[2] += nMaxDamage * m_CurrentHandEnhance / MAX_PERCENT;
 			}
 		}
+		
 	}
 	else if (pTemp->nAttribType == magic_physicsdamage_v)
 	{
 		pDes->nAttribType = magic_physicsdamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
-		pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
+		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 
 		if (!bIsPhysical)
 	    {
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0] + m_CurrentAddPhysicsMagic;
 			pDes->nValue[2] += m_PhysicsMagic.nValue[2] + m_CurrentAddPhysicsMagic;
+
+			pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / MAX_PERCENT;
+			pDes->nValue[2] += (pDes->nValue[2] * DamePecentToLevel) / MAX_PERCENT;
 	    }
 	}
 	pTemp++; //cold damage[10]
@@ -3625,54 +4183,92 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	if (pTemp->nAttribType == magic_colddamage_v)
 	{
 		pDes->nAttribType = magic_colddamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 		pDes->nValue[1] = pTemp->nValue[1] + m_CurrentColdEnhance;
-		pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 	
 		if (!bIsPhysical)
 		{
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0] + m_CurrentColdMagic.nValue[0];
 			pDes->nValue[1] = max(pDes->nValue[1], m_CurrentColdMagic.nValue[1] + m_CurrentColdEnhance);
 			pDes->nValue[2] += m_PhysicsMagic.nValue[0] + m_CurrentColdMagic.nValue[2];
+			if (nSkillID == 337 || nSkillID == 380)
+			{
+			    float fBonus = 2.0f; // 0.5f = +50% s√°t thuong
+			
+			    pDes->nValue[0] = (int)(pDes->nValue[0] * (1.0f + fBonus));
+			    pDes->nValue[2] = (int)(pDes->nValue[2] * (1.0f + fBonus));
+			}
+
+			pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / MAX_PERCENT;
+			pDes->nValue[2] += (pDes->nValue[2] * DamePecentToLevel) / MAX_PERCENT;
+	
 		}	
 	}
 	if (bIsPhysical)
 	{
 		pDes->nValue[0] += m_CurrentColdDamage.nValue[0];
 		pDes->nValue[1] = max(pDes->nValue[1], m_CurrentColdDamage.nValue[1] + m_CurrentColdEnhance);
-		pDes->nValue[2] += m_CurrentColdDamage.nValue[2];		
+		pDes->nValue[2] += m_CurrentColdDamage.nValue[2];
 	}
 	pTemp++; //fire damage[11]
 	pDes++;
 	if (pTemp->nAttribType == magic_firedamage_v)
 	{
 		pDes->nAttribType = magic_firedamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
-		pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT * m_CurrentFireEnhance / MAX_PERCENT;
+		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT * m_CurrentFireEnhance / MAX_PERCENT;
+
 
 		if (!bIsPhysical)
 		{
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0] + m_CurrentFireMagic.nValue[0];
 			pDes->nValue[2] += m_PhysicsMagic.nValue[2] + m_CurrentFireMagic.nValue[2];
+			if (nSkillID == 362 || nSkillID == 357)
+				{
+				    const float bonusRate = 1.0f; // +100% so voi st hien tai
+				    pDes->nValue[0] += (int)(pDes->nValue[0] * bonusRate);
+				    pDes->nValue[2] += (int)(pDes->nValue[2] * bonusRate);
+				}
+			pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / MAX_PERCENT;
+			pDes->nValue[2] += (pDes->nValue[2] * DamePecentToLevel) / MAX_PERCENT;
 		} 
+	
 	}
 	if (bIsPhysical)
 	{
-		pDes->nValue[0] += m_CurrentFireDamage.nValue[0];
-		pDes->nValue[2] += m_CurrentFireDamage.nValue[2];
+		pDes->nValue[0] += m_CurrentFireDamage.nValue[0] + m_CurrentFireDamage.nValue[0] * m_CurrentFireEnhance / MAX_PERCENT;
+		pDes->nValue[2] += m_CurrentFireDamage.nValue[2] + m_CurrentFireDamage.nValue[2] * m_CurrentFireEnhance / MAX_PERCENT;
+		if (nSkillID == 359)
+		{
+		    const float bonusRate = 1.0f; // +100% so voi st hien tai
+		    pDes->nValue[0] += (int)(pDes->nValue[0] * bonusRate);
+		    pDes->nValue[2] += (int)(pDes->nValue[2] * bonusRate);
+		}
 	}
+	
 	pTemp++; //lighting damage[12]
 	pDes++;
 	if (pTemp->nAttribType == magic_lightingdamage_v)
 	{
 		pDes->nAttribType = magic_lightingdamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[2] - pTemp->nValue[0]) * m_CurrentLightEnhance / MAX_PERCENT;
-		pDes->nValue[2] = pTemp->nValue[2] + (pTemp->nValue[2] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + (pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT - pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT) * m_CurrentLightEnhance / MAX_PERCENT;
+		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 
 		if (!bIsPhysical)
 		{
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0] + m_CurrentLightMagic.nValue[0];
 			pDes->nValue[2] += m_PhysicsMagic.nValue[2] + m_CurrentLightMagic.nValue[2];
+			if (nSkillID == 365 || nSkillID == 375)
+			{
+				const float bonusRate = 2.0f; // +50% so voi st hien tai
+		 		pDes->nValue[0] += (int)(pDes->nValue[0] * bonusRate);
+		    	pDes->nValue[2] += (int)(pDes->nValue[2] * bonusRate);
+			}
+
+			pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / MAX_PERCENT;
+			pDes->nValue[2] += (pDes->nValue[2] * DamePecentToLevel) / MAX_PERCENT;
+	
 		}
 	
 	}
@@ -3680,27 +4276,58 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	{
 		pDes->nValue[0] += m_CurrentLightDamage.nValue[0];
 		pDes->nValue[2] += m_CurrentLightDamage.nValue[2];
+		
+		if (nSkillID == 372 ) // CLD
+		{
+		    const float bonusRate = 1.8f; // +100% so voi st hien tai
+		    pDes->nValue[0] += (int)(pDes->nValue[0] * bonusRate);
+		    pDes->nValue[2] += (int)(pDes->nValue[2] * bonusRate);
+		}
+		if (nSkillID == 368) // VD Kiem
+		{
+		    const float bonusRate = 0.2f; // +100% so voi st hien tai
+		    pDes->nValue[0] += (int)(pDes->nValue[0] * bonusRate);
+		    pDes->nValue[2] += (int)(pDes->nValue[2] * bonusRate);
+		}
 	}
 	pTemp++; //poison damage[13]
 	pDes++;
 	if (pTemp->nAttribType == magic_poisondamage_v)
 	{
+
 		pDes->nAttribType = magic_poisondamage_v;
-		pDes->nValue[0] = pTemp->nValue[0] + (pTemp->nValue[0] * nAddDamageP / MAX_PERCENT);
+		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT;
 		pDes->nValue[1] = pTemp->nValue[1];
 		pDes->nValue[2] = pTemp->nValue[2] * (MAX_PERCENT - m_CurrentPoisonEnhance) / MAX_PERCENT;
+
 		if (pDes->nValue[2] <= 0)
 			pDes->nValue[2] = 1;
 
 		if (!bIsPhysical)
 		{
 			g_NpcAttribModify.MixPoisonDamage(pDes, &m_CurrentPoisonMagic);
+			pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / 100;
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0];
 			pDes->nValue[2] += m_PhysicsMagic.nValue[2];
+
+			/*if (nSkillID == 353)
+			{
+				float fBonus = 0.50f; //
+				pDes->nValue[0] = (int)(pDes->nValue[0] * (1.0f + fBonus));
+				pDes->nValue[2] = (int)(pDes->nValue[2] * (1.0f + fBonus));
+			}*/
 		}
 	}
 	if (bIsPhysical)
+	{
 		g_NpcAttribModify.MixPoisonDamage(pDes, &m_CurrentPoisonDamage);
+		/*if (nSkillID == 355)
+		{
+			float fBonus = 1.00f; //
+			pDes->nValue[0] = (int)(pDes->nValue[0] * (1.0f + fBonus));
+			pDes->nValue[2] = (int)(pDes->nValue[2] * (1.0f + fBonus));
+		}*/
+	}
 	pTemp++; //stun[14]
 	pDes++;
 	if (pTemp->nAttribType == magic_stun_p)
@@ -3732,9 +4359,8 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 
 void KNpc::ServeMove(int MoveSpeed)
 {
-	if (m_Doing != do_walk && m_Doing != do_run && m_Doing != do_hurt && m_Doing != do_runattack)
+	if (m_Doing != do_walk && m_Doing != do_run && m_Doing != do_hurt && m_Doing != do_runattack && m_Doing != do_goattack)
 		return;
-
 	if (MoveSpeed <= 0)
 		return;
 
@@ -3772,7 +4398,7 @@ void KNpc::ServeMove(int MoveSpeed)
 	}
 	else if (nRet == 0)
 	{
-		DoStand(); //Æ¯ng lπi
+		DoStand(); //√Ç¬Æ√É¬∏ng l√Ç¬πi
 		return;
 	}
 	else if (nRet == -1)
@@ -3809,8 +4435,8 @@ void KNpc::ServeMove(int MoveSpeed)
 
 	m_OffX += x;
 	m_OffY += y;
-//	¥¶¿ÌNPCµƒ◊¯±Í±‰ª√
-//	CELLWIDTH°¢CELLHEIGHT°¢OffX°¢OffYæ˘ «∑≈¥Û¡À1024±∂
+//	√Ç¬¥√Ç¬¶√É‚Ç¨√É¬≠NPC√Ç¬µ√É‚Äû√É‚Äî√É¬∏√Ç¬±√É¬™√Ç¬±√É¬§√Ç¬ª√É∆í
+//	CELLWIDTH√Ç¬°√Ç¬¢CELLHEIGHT√Ç¬°√Ç¬¢OffX√Ç¬°√Ç¬¢OffY√Ç¬æ√É¬π√É≈†√É‚Ä°√Ç¬∑√É‚Ä¶√Ç¬¥√É¬≥√É¬Å√É‚Äπ1024√Ç¬±√Ç¬∂
 
 	if (!m_bClientOnly)
 		CURREGION.DecRef(m_MapX, m_MapY, obj_npc);
@@ -3864,7 +4490,7 @@ void KNpc::ServeMove(int MoveSpeed)
 			CURREGION.AddRef(m_MapX, m_MapY, obj_npc);
 	}
 
-	if (m_RegionIndex == -1)	// ≤ªø…ƒ‹“∆∂ØµΩ-1 Region£¨»Áπ˚≥ˆœ÷’‚÷÷«Èøˆ£¨ª÷∏¥‘≠◊¯±Í
+	if (m_RegionIndex == -1)	// √Ç¬≤√Ç¬ª√Ç¬ø√É‚Ä∞√É‚Äû√É≈ì√É‚Äô√É‚Ä†√Ç¬∂√Ç¬Ø√Ç¬µ√Ç¬Ω-1 Region√Ç¬£√Ç¬¨√ÉÀÜ√É¬ß√Ç¬π√É¬ª√Ç¬≥√É¬∂√É¬è√É‚Äì√É‚Ä¢√É¬¢√É‚Äì√É‚Äì√É‚Ä°√É¬©√Ç¬ø√É¬∂√Ç¬£√Ç¬¨√Ç¬ª√É‚Äì√Ç¬∏√Ç¬¥√É‚Äù√Ç¬≠√É‚Äî√É¬∏√Ç¬±√É¬™
 	{
 		m_RegionIndex = nOldRegion;
 		m_MapX = nOldMapX;
@@ -3884,12 +4510,15 @@ void KNpc::ServeMove(int MoveSpeed)
 			SubWorld[m_SubWorldIndex].PlayerChangeRegion(nOldRegion, m_RegionIndex, m_nPlayerIdx);
 			if (m_nPlayerIdx > 0)
 			{
-				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //mµi mﬂn khi di chuy”n
+				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //m√Ç¬µi m√É≈∏n khi di chuy√É‚Äún
 			}
 		}
 #else
-		SubWorld[0].NpcChangeRegion(SubWorld[0].m_Region[nOldRegion].m_RegionID, SubWorld[0].m_Region[m_RegionIndex].m_RegionID, m_Index);
-		m_dwRegionID = SubWorld[0].m_Region[m_RegionIndex].m_RegionID;
+		if (m_RegionIndex >= 0)
+		{
+			SubWorld[0].NpcChangeRegion(SubWorld[0].m_Region[nOldRegion].m_RegionID, SubWorld[0].m_Region[m_RegionIndex].m_RegionID, m_Index);
+			m_dwRegionID = SubWorld[0].m_Region[m_RegionIndex].m_RegionID;
+		}
 #endif
 	}
 }
@@ -3995,7 +4624,7 @@ void KNpc::ServeJump(int nSpeed)
 			SubWorld[m_SubWorldIndex].PlayerChangeRegion(nOldRegion, m_RegionIndex, m_nPlayerIdx);
 			if (m_nPlayerIdx > 0)
 			{
-				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //#mµi mﬂn khi nh∂y
+				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeMove, FALSE); //#m√Ç¬µi m√É≈∏n khi nh√Ç¬∂y
 			}
 		}
 #else
@@ -4046,15 +4675,29 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 		if ((m_CurrentStamina < 18 && m_nPKFlag == enumPKMurder) || (m_CurrentStamina < 8 && m_nPKFlag == enumPKTongWar)) //#chua hoan thien
 			cmd = do_walk;
 	}
-
+#ifdef _SERVER
+	if (cmd == do_revive)
+	{
+	    m_ProcessAI = 1;
+	    m_ProcessState = 1;
+		DoStand();
+		return;
+	}
+#endif
 	m_Command.CmdKind = cmd;
 	m_Command.Param_X = x;
 	m_Command.Param_Y = y;
 	m_Command.Param_Z = z;
 }
 
+NPC_COMMAND KNpc::GetCommand()
+{
+	return m_Command;
+}
+
 BOOL KNpc::NewPath(int nMpsX, int nMpsY)
 {
+
 	m_DesX = nMpsX;
 	m_DesY = nMpsY;
 	return TRUE;
@@ -4070,6 +4713,10 @@ BOOL KNpc::NewJump(int nMpsX, int nMpsY)
 	GetMpsPos(&nX, &nY);
 
 	if (nX == nMpsX && nY == nMpsY)
+		return FALSE;
+
+	int nRangeCheckL = (nX - nMpsX) * (nX - nMpsX) + (nY - nMpsY) * (nY - nMpsY);
+	if (nRangeCheckL <= 32 * 32)
 		return FALSE;
 
 	int nDir = g_GetDirIndex(nX, nY, nMpsX, nMpsY);
@@ -4136,7 +4783,7 @@ BOOL KNpc::NewJump(int nMpsX, int nMpsY)
 
 VOID KNpc::FixPos()
 {
-	// Àƒ…·ŒÂ»Î¬‘»•∫Û ÆŒª
+	// √ã√Ñ√â√°√é√•√à√´√Ç√î√à¬•¬∫√≥√ä¬Æ√é¬ª
 	m_OffX = (m_OffX + 512) & (~1023);
 	m_OffY = (m_OffY + 512) & (~1023);
 }
@@ -4209,6 +4856,9 @@ BOOL KNpc::Cost(NPCATTRIB nType, int nCost, BOOL bOnlyCheckCanCast)
 		}
 		else
 		{
+#ifndef _SERVER	//client khong can` tru`
+			return TRUE;
+#endif
 			if (!bOnlyCheckCanCast)
 				*pSource -= nCurCost;
 			return TRUE;
@@ -4349,6 +4999,7 @@ BOOL KNpc::OnJump()
 	ServeJump(m_CurrentJumpSpeed);
 	if (WaitForFrame())
 	{
+		FixPos();
 		DoStand();
 		m_ProcessAI	= 1;
 		return FALSE;
@@ -4395,7 +5046,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		if (nNpcSettingIdx == PLAYER_MALE_NPCTEMPLATEID)
 		{
 			strcpy(szNpcTypeName, "MainMan");
-			//strcpy(szNpcTypeName, "ƒ–÷˜Ω«"); //ki”u npc kieu npc bao gÂm nam vµ n˜ man and lady
+			//strcpy(szNpcTypeName, "√Ñ√ê√ñ√∑¬Ω√á"); //ki√ìu npc kieu npc bao g√•m nam v¬µ n√∑ man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(TRUE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(TRUE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(TRUE);
@@ -4403,7 +5054,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		else
 		{
 			strcpy(szNpcTypeName, "MainLady");
-			//strcpy(szNpcTypeName, "≈Æ÷˜Ω«"); ki”u npc kieu npc bao gÂm nam vµ n˜ man and lady
+			//strcpy(szNpcTypeName, "√Ö¬Æ√ñ√∑¬Ω√á"); ki√ìu npc kieu npc bao g√•m nam v¬µ n√∑ man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(FALSE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(FALSE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(FALSE);
@@ -4423,7 +5074,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		g_NpcSetting.GetString(nNpcSettingIdx + 2, "NpcResType", "", szNpcTypeName, sizeof(szNpcTypeName));
 		if (!szNpcTypeName[0])//khong tim thay npc gan mac dinh ten npc dau tien
 		{
-			g_NpcKindFile.GetString(2, "»ÀŒÔ√˚≥∆", "", szNpcTypeName, sizeof(szNpcTypeName));
+			g_NpcKindFile.GetString(2, "√à√ã√é√Ø√É√ª¬≥√Ü", "", szNpcTypeName, sizeof(szNpcTypeName));
 		}
 		//g_NpcSetting.GetString(nNpcSettingIdx + 2, "DescName", "", DescName, sizeof(DescName));
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "AIMode", 12, &m_AiMode);
@@ -4434,7 +5085,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "AIParam5", 12, &m_AiParam[4]);
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "AIParam6", 12, &m_AiParam[5]);
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "AIParam7", 12, &m_AiParam[6]);
-		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "ActiveRadius", 12, &m_ActiveRadius);		//B∏n k›nh hoπt ÆÈng
+		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "ActiveRadius", 12, &m_ActiveRadius);		//B√Ç¬∏n k√É¬ùnh ho√Ç¬πt √Ç¬Æ√É¬©ng
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "ClientOnly", 0, &m_bClientOnly);
 		if (m_AiMode == 11 || m_AiMode == 12 || m_AiMode == 17)
 			m_AiParam[6] = m_AiMode;
@@ -4501,14 +5152,7 @@ INT	KNpc::GetMapDisY(INT nIdx1, INT nIdx2)
 
 VOID KNpc::ClientGotoPos(INT nX, INT nY, INT nMode /* = 0 */)
 {
-	// »Áπ˚ Õ∑≈µƒ ««·π¶£¨‘Ú»°œ˚œ¬“ª¥Œµƒ∂Ø◊˜£¨∑¿÷π«·π¶¡¨–¯∞¥£¨÷–Õæ≤ªƒ‹»°œ˚«·π¶µƒŒ Ã‚
-	//if (m_nNextActiveSkillId == 10)
-	//{
-	//	m_nNextActiveSkillId = 0;
-	//	m_nNextActiveSkillPosX = 0;
-	//	m_nNextActiveSkillPosY = 0;
-	//}
-	//m_cMoveQueue.Clear();
+
 
 	INT nOrgX, nOrgY;
 	GetMpsPos(&nOrgX, &nOrgY);
@@ -4623,8 +5267,48 @@ BOOL KNpc::SetPlayerIdx(int nIdx)
 	return TRUE;
 }
 
+void KNpc::SwitchMaskFeature()
+{
+	m_bMaskFeature = !m_bMaskFeature;
 #ifdef _SERVER
-BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player tı Server v“ Client 1 l«n
+	int nIdx = Player[m_nPlayerIdx].m_ItemList.GetEquipment(itempart_mask);
+	if (m_bMaskFeature)
+	{
+		if (nIdx && !Player[m_nPlayerIdx].m_ItemList.GetMaskLock())
+			m_MaskType = 0;
+	}
+	else
+	{
+		if (nIdx && !Player[m_nPlayerIdx].m_ItemList.GetMaskLock())
+		{
+			switch (Item[nIdx].m_CommonAttrib.nItemNature)
+			{
+			case NATURE_GOLD:
+				m_MaskType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+				break;
+			case NATURE_PLATINA:
+				break;
+			default:
+				g_MaskChangeRes.GetInteger(Item[nIdx].GetParticular() + 2, 2, 0, &m_MaskType);
+				break;
+			}
+		}
+	}
+#endif
+
+#ifdef _SERVER
+	S2C_PLAYER_SYNC	sMsg;
+	sMsg.ProtocolType = s2c_playersync;
+	sMsg.m_wLength = sizeof(S2C_PLAYER_SYNC) - 1;
+	sMsg.m_lpBuf = 0;
+	sMsg.m_wMsgID = enumS2C_PLAYERSYNC_ID_MASKFEATURE;
+	g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, &sMsg, sMsg.m_wLength + 1);
+#endif
+}
+
+
+#ifdef _SERVER
+BOOL KNpc::SendSyncData(int nClient)	//Sync npc v¬µ player to Server v? Client 1 l√án
 {
 	BOOL	bRet = FALSE;
 	NPC_SYNC	NpcSync;
@@ -4662,8 +5346,8 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player tı Server v“ Client 1 
 	NpcSync.m_WalkSpeed			= m_WalkSpeed;
 	NpcSync.m_CurrentRunSpeed	= m_CurrentRunSpeed;
 	NpcSync.m_RunSpeed			= m_RunSpeed;
-	NpcSync.m_CurrentHitRecover = m_CurrentHitRecover;		//thÍi gian phÙc hÂi
-	NpcSync.m_HitRecover		= m_HitRecover;		//thÍi gian phÙc hÂi
+	NpcSync.m_CurrentHitRecover = m_CurrentHitRecover;		//th√™i gian ph√¥c h√•i
+	NpcSync.m_HitRecover		= m_HitRecover;		//th√™i gian ph√¥c h√•i
 	NpcSync.MissionGroup		= (int)m_nMissionGroup;//#NpcMissionGroup
 	strcpy(NpcSync.m_szName, Name);
 	NpcSync.m_wLength			= sizeof(NPC_SYNC) - 1 - sizeof(NpcSync.m_szName) + strlen(NpcSync.m_szName);
@@ -4709,10 +5393,11 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player tı Server v“ Client 1 
 		PlayerSync.CUnlocked		= (BYTE)Player[m_nPlayerIdx].m_CUnlocked;//sync trang thai dong mo khoa ruong
 		PlayerSync.ExItemID			= (BYTE)m_ExItemId; // hanh trang
 		PlayerSync.ExBoxID			= (BYTE)m_ExBoxId; // ruong mo rong
-		PlayerSync.RankInWorld		= (int)Player[m_nPlayerIdx].m_nWorldStat; //x’p hπng th’ giÌi
+		PlayerSync.RankInWorld		= (int)Player[m_nPlayerIdx].m_nWorldStat; //x√ïp h¬πng th√ï gi√≠i
 		PlayerSync.Repute			= (int)Player[m_nPlayerIdx].m_cTask.GetSaveVal(TASKVALUE_STATTASK_REPUTE);
 		PlayerSync.FuYuan			= (int)Player[m_nPlayerIdx].m_cFuYuan.GetFuYuanValue();
 		PlayerSync.PKValue			= (BYTE)Player[m_nPlayerIdx].m_cPK.GetPKValue();
+		PlayerSync.MantleLevel		= (BYTE)m_byMantleLevel;
 		PlayerSync.ReBorn			= (BYTE)Player[m_nPlayerIdx].m_cReBorn.GetReBornValue();
 		PlayerSync.nFirstFaction			= (BYTE)Player[m_nPlayerIdx].GetFirstAddFaction();
 		PlayerSync.m_btSomeFlag		= 0;
@@ -4729,6 +5414,9 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player tı Server v“ Client 1 
 		PlayerSync.TongFigure = Player[m_nPlayerIdx].m_cTong.GetFigure();
 		PlayerSync.TongRecruit = Player[m_nPlayerIdx].m_cTong.GetRecruit();
 		PlayerSync.ImagePlayer		= (BYTE)Player[m_nPlayerIdx].m_ImagePlayer;
+		UpdateGameTitle(); // ensure m_szGameTitle is updated
+		strcpy(PlayerSync.GameTitle, m_szGameTitle);
+		memcpy(PlayerSync.bMeridianLevel, Player[m_nPlayerIdx].m_cMeridian.getMeridian(), sizeof(PlayerSync.bMeridianLevel));
 		if (SUCCEEDED(g_pServer->PackDataToClient(nClient, (BYTE*)&PlayerSync, sizeof(PLAYER_SYNC))))
 		{
 			//printf("Packing player sync data ok...\n");//edit by phong kieu sync data ok
@@ -4743,7 +5431,7 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player tı Server v“ Client 1 
 	return bRet;
 }
 
-void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
+void KNpc::NormalSync() //Sync npc min li¬™n t√¥c t√µ server v√í client
 {
 	if (m_Doing == do_revive || m_Doing == do_death || !m_Index || m_RegionIndex < 0)
 		return;
@@ -4780,7 +5468,7 @@ void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
 	//if (m_ForbidAttack.nTime > 0)
 	//	NpcSync.State |= STATE_FBDATK;
 	NpcSync.m_bySeries			= (BYTE)m_Series;
-	NpcSync.m_nProtectedTime = m_nProtectedTime;			//vong tron bat tu, vﬂng trﬂn b t tˆ
+	NpcSync.m_nProtectedTime = m_nProtectedTime;			//vong tron bat tu, v√üng tr√ün b√ät t√∂
 	NpcSync.m_CurrentLife		= m_CurrentLife;
 	NpcSync.m_CurrentLifeMax	= m_CurrentLifeMax;
 	NpcSync.m_LifeMax			= m_LifeMax;
@@ -4829,8 +5517,9 @@ void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
 		PlayerSync.HelmType		= (BYTE)m_HelmType;
 		PlayerSync.ArmorType	= (BYTE)m_ArmorType;
 		PlayerSync.WeaponType	= (BYTE)m_WeaponType;
-		PlayerSync.MantleType		= (BYTE)m_MantleType; 
-		PlayerSync.MaskType			= m_MaskType;		//#mat na
+		PlayerSync.MantleType	= (BYTE)m_MantleType; 
+		PlayerSync.MaskType		= m_MaskType;		//#mat na
+		PlayerSync.HonorID		= (BYTE)m_btHonorId;	//#HonorID
 		if(m_bRideHorse)						//edit by phong kieu len xuong ngua
         {
             PlayerSync.HorseType        = (BYTE)m_HorseType;
@@ -4847,11 +5536,12 @@ void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
 		PlayerSync.CUnlocked	= (BYTE)Player[m_nPlayerIdx].m_CUnlocked;//sync trang thai dong mo khoa ruong
 		PlayerSync.ExItemID		= (BYTE)m_ExItemId; // hanh trang
 		PlayerSync.ExBoxID		= (BYTE)m_ExBoxId; // ruong mo rong
-		PlayerSync.RankInWorld		= (int)Player[m_nPlayerIdx].m_nWorldStat; //x’p hπng th’ giÌi
+		PlayerSync.RankInWorld		= (int)Player[m_nPlayerIdx].m_nWorldStat; //x√ïp h¬πng th√ï gi√≠i
 		PlayerSync.Repute			= (int)Player[m_nPlayerIdx].m_cTask.GetSaveVal(TASKVALUE_STATTASK_REPUTE);
 		PlayerSync.FuYuan			= (int)Player[m_nPlayerIdx].m_cFuYuan.GetFuYuanValue();
 		PlayerSync.PKValue			= (BYTE)Player[m_nPlayerIdx].m_cPK.GetPKValue();
-		PlayerSync.ReBorn			= (BYTE)Player[m_nPlayerIdx].m_cReBorn.GetReBornValue();
+		PlayerSync.MantleLevel		= (BYTE)m_byMantleLevel;
+		PlayerSync.ReBorn			= (BYTE)Player[m_nPlayerIdx].m_cReBorn.GetReBornNum();
 		PlayerSync.nFirstFaction			= (BYTE)Player[m_nPlayerIdx].GetFirstAddFaction();
 		PlayerSync.m_btSomeFlag		= 0;
 		if (!Player[m_nPlayerIdx].m_cPK.GetNormalPKState())
@@ -4869,6 +5559,9 @@ void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
 		PlayerSync.TongFigure = Player[m_nPlayerIdx].m_cTong.GetFigure();
 		PlayerSync.TongRecruit = Player[m_nPlayerIdx].m_cTong.GetRecruit();
 		PlayerSync.ImagePlayer		= (BYTE)Player[m_nPlayerIdx].m_ImagePlayer;
+		UpdateGameTitle(); // ensure m_szGameTitle is updated
+		strcpy(PlayerSync.GameTitle, m_szGameTitle);
+		memcpy(PlayerSync.bMeridianLevel, Player[m_nPlayerIdx].m_cMeridian.getMeridian(), sizeof(PlayerSync.bMeridianLevel));
 		int nMaxCount = MAX_PLAYER;	//MAX_BROADCAST_COUNT;
 		CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
 		for (j = 0; j < 8; j++)
@@ -4886,6 +5579,10 @@ void KNpc::NormalSync() //Sync npc min li™n tÙc tı server v“ client
 		sSync.m_dwMapY = nMpsY;
 		sSync.m_wOffX = m_OffX;
 		sSync.m_wOffY = m_OffY;
+	//	sSync.m_byDoing = m_Doing;
+	//	sSync.MapID = SubWorld[m_SubWorldIndex].m_SubWorldID;
+   	//	sSync.m_nEquipCount = Player[m_nPlayerIdx].m_ItemList.CountItemInAll();
+
 		g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(sSync));
 		//------------------------------------------------------End SYNC 3-------------------------------
 	}
@@ -4978,7 +5675,7 @@ void	KNpc::PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff)
     m_ImageSeries.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
     m_ImageSeries.uImage = 0;
     m_ImageSeries.nISPosition = IMAGE_IS_POSITION_INIT;
-    m_ImageSeries.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT; //xem Î ch’ ÆÈ 3d
+    m_ImageSeries.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT; //xem √É¬´ ch√É‚Ä¢ √Ç¬Æ√É¬© 3d
     strcpy(m_ImageSeries.szImage, m_nImageSeries);
     m_ImageSeries.oPosition.nX = nX + nFontSize * g_StrLen(szName) / 4 + 5;
     m_ImageSeries.oPosition.nY = nY; 
@@ -4996,10 +5693,57 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	}
 	KIniFile pIni;
 	KTabFile pTab;
-	nFontSize = 14;
+	nFontSize = 13;
 	char Buff[128], cbBuffer[32];
-	int nMpsX, nMpsY, nMX, nMY, nNumFrames;
+	int nMpsX, nMpsY, nMX, nMY, nNumFrames,  nXX, nYY;
 	GetMpsPos(&nMpsX, &nMpsY);
+	if(KNpc::g_DrawVision && m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+	{
+		KRULine		Line;
+		Line.oPosition.nZ = Line.oEndPos.nZ = 0;
+		int nVision = KNpc::g_DrawVisionSkill;
+		int i;
+		Line.Color.Color_dw = 0xfff08000;
+		for( i=0;i<64;++i)
+		{
+			if(i < 63)
+			{
+				Line.oPosition.nX = nMpsX + ((nVision * g_DirCos(i, 64)) >> 10);
+				Line.oPosition.nY = nMpsY + ((nVision * g_DirSin(i, 64)) >> 10);
+				Line.oEndPos.nX = nMpsX + ((nVision * g_DirCos(i+1, 64)) >> 10);
+				Line.oEndPos.nY = nMpsY + ((nVision * g_DirSin(i+1, 64)) >> 10);
+			}
+			else
+			{
+				Line.oPosition.nX = nMpsX + ((nVision * g_DirCos(i, 64)) >> 10);
+				Line.oPosition.nY = nMpsY + ((nVision * g_DirSin(i, 64)) >> 10);
+				Line.oEndPos.nX = nMpsX + ((nVision * g_DirCos(0, 64)) >> 10);
+				Line.oEndPos.nY = nMpsY + ((nVision * g_DirSin(0, 64)) >> 10);
+			}
+			g_pRepresent->DrawPrimitives(1, &Line, RU_T_LINE, 0);
+		}
+		nVision = KNpc::g_DrawVision;
+		Line.Color.Color_dw = 0xff00f000;
+		for( i=0;i<64;++i)
+		{
+			if(i < 63)
+			{
+				Line.oPosition.nX = nMpsX + ((nVision * g_DirCos(i, 64)) >> 10);
+				Line.oPosition.nY = nMpsY + ((nVision * g_DirSin(i, 64)) >> 10);
+				Line.oEndPos.nX = nMpsX + ((nVision * g_DirCos(i+1, 64)) >> 10);
+				Line.oEndPos.nY = nMpsY + ((nVision * g_DirSin(i+1, 64)) >> 10);
+			}
+			else
+			{
+				Line.oPosition.nX = nMpsX + ((nVision * g_DirCos(i, 64)) >> 10);
+				Line.oPosition.nY = nMpsY + ((nVision * g_DirSin(i, 64)) >> 10);
+				Line.oEndPos.nX = nMpsX + ((nVision * g_DirCos(0, 64)) >> 10);
+				Line.oEndPos.nY = nMpsY + ((nVision * g_DirSin(0, 64)) >> 10);
+			}
+			g_pRepresent->DrawPrimitives(1, &Line, RU_T_LINE, 0);
+		}
+	}
+	
 	DWORD	dwColor;
 	int nX, nY;
 	int nMW = 0;
@@ -5008,18 +5752,19 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	int pColor[6] = 
 	{
 		0xff000000,
-		0xff009f00, //mµu xanh l∏
-		0xff6495ED, //mµu xanh d≠¨ng
-		0xffc829ef, //mµu t›m
-		0xffffd100, //mµu vµng
-		0xffff6b00, //mµu cam
+		0xff009f00, //m¬µu xanh l¬∏
+		0xff6495ED, //m¬µu xanh d¬≠¬¨ng
+		0xffc829ef, //m¬µu t√ùm
+		0xffffd100, //m¬µu v¬µng
+		0xffff6b00, //m¬µu cam
 	};
 	
 	if (m_Kind == kind_player)
 	{
+		
 		switch(m_CurrentCamp)
 		{
-		case camp_begin: // 0 mµu træng
+		case camp_begin: // 0 m¬µu tr¬æng
 			dwColor = 0xffffffff;
 			break;
 		case camp_justice:	//1 chinh phai
@@ -5034,10 +5779,10 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		case camp_free: //4 sat thu
 			dwColor = 0xff000000 | (255 << 16);
 			break;
-		case camp_animal: // 5 mµu træng
+		case camp_animal: // 5 m¬µu tr¬æng
 			dwColor = 0xffffffff; 
 			break;
-		case camp_event: // 6 mµu hÂng
+		case camp_event: // 6 m¬µu h√•ng
 			dwColor = 0xff000000 | (238 << 16) | (18 << 8) | 137;
 			break;
 		default:
@@ -5047,37 +5792,42 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		
 
 		char	szString[128];
-		if (SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID == 220 && m_nPlayerIdx != CLIENT_PLAYER_INDEX)
+		if (SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID == 209 && m_nPlayerIdx != CLIENT_PLAYER_INDEX)
 		{
-			strcpy(szString, "Nh©n S¸ V‚ L©m");
+			strcpy(szString, "Nh¬©n S√º V√¢ L¬©m");
 		}
 		else
 		{
-		strcpy(szString, Name);
+			strcpy(szString, Name);
 		}
 		if (m_FreezeState.nTime || m_PoisonState.nTime || m_FrozenAction.nTime || m_StunState.nTime)
 		{
 			strcat(szString, "(");
 			if (m_FreezeState.nTime)
-				strcat(szString, "B®ng");
+				strcat(szString, "B¬®ng");
 			if (m_PoisonState.nTime)
-				strcat(szString, "ßÈc");
+				strcat(szString, "¬ß√©c");
 			if (m_FrozenAction.nTime)
-				strcat(szString, "M™");
+				strcat(szString, "M¬™");
 			if (m_StunState.nTime)
-				strcat(szString, "Cho∏ng");
+				strcat(szString, "Cho¬∏ng");
 			if(m_HideState.nTime > 0)
-				strcat(szString, "»n");
+				strcat(szString, "√àn");
 
 			strcat(szString, ")");
 		}
-		g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);
+	
+		nXX = nMpsX - nFontSize * g_StrLen(szString) / 4 + ((m_byMantleLevel > 0 && m_byMantleLevel <= MAX_ITEM_LEVELFF) ? 40 : 0);
+		nYY = nMpsY;
+		g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nXX, nYY, dwColor, 0, nHeightOff, dwBorderColor);
+		if (m_byMantleLevel>0 && (m_byMantleLevel <= MAX_ITEM_LEVELFF))
+			nXX = PaintMantle(nHeightOff, nFontSize, nXX, nYY);
 		nHeightOffset += nFontSize + 1;
 
 		nX = nMpsX - nFontSize*g_StrLen(Name)/4;
 		nY = nMpsY;
 		//
-	/*	if (m_szTeamMem[0])//Vœ th´ng tin t? auto l™n Æ«u nh©n vÀt
+	/*	if (m_szTeamMem[0])//V√è th¬´ng tin t√µ auto l¬™n ¬Æ√áu nh¬©n v√ãt
 		{
 			sprintf(m_szTongName, "%s", m_szTeamMem);
 		}*/
@@ -5085,14 +5835,26 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		char szUpperLine[64];  // 
 		int yOffset = nMpsY - 60;  // 
 		int smallerFontSize = 12;
-		if (m_szTongTitle[0] == 0 || NULL == m_szTongTitle)// || m_szTeamMem[0])
-			yOffset = nMpsY - 30;
+		if (m_szGameTitle[0] &&   m_szTongName[0] && (m_btPlayerTitle || m_btRankBattleId))
+		{
+		    yOffset = nMpsY - 120;
+		}
+		else if (m_szGameTitle[0] &&
+		        (m_szTongName[0] || m_btPlayerTitle || m_btRankBattleId))
+		{
+		    yOffset = nMpsY - 90;
+		}
+		else if (m_szGameTitle[0] &&
+		        (m_szTongTitle == NULL || m_szTongTitle[0] == 0))
+		{
+		    yOffset = nMpsY - 50;
+		}
 
-		if (m_btPlayerTitle || m_btRankBattleId)
-			yOffset = nMpsY - 80;
+				
+		
 
 		if (m_szTeamMem[0])
-		{
+		{	
 			//		DWORD dwWhiteColor = 0xFFFFFFFF;
 			strcpy(szUpperLine, m_szTeamMem); //
 			g_pRepresent->OutputText(smallerFontSize, szUpperLine, KRF_ZERO_END, nMpsX - smallerFontSize * g_StrLen(szUpperLine) / 4, yOffset, dwColor, 0, nHeightOff, dwBorderColor);
@@ -5105,34 +5867,65 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			if(m_szTongTitle[0] == 0 || NULL == m_szTongTitle)
 			{
 				strcpy(szTong, m_szTongName);
-				//	if(!m_szTeamMem[0])//fix by phong ki?u kh´ng vœ TongFigure khi hi”n th? th´ng tin auto
-				//	{
+			//	if(!m_szTeamMem[0])//fix by phong ki√íu kh¬´ng v√è TongFigure khi hi√ìn th√û th¬´ng tin auto
+			//	{
 					switch(m_nFigure)
 					{
 					case enumTONG_FIGURE_MEMBER:
-					strcat(szTong, " M´n ß÷ ");
+						strcat(szTong, "[M¬´n ¬ß√ñ]");
 						break;
 					case enumTONG_FIGURE_MANAGER:
-					strcat(szTong, " ß≠Íng ChÒ ");
+						strcat(szTong, "[¬ß¬≠√™ng Ch√±]");
 						break;
 					case enumTONG_FIGURE_DIRECTOR:
-					strcat(szTong, " Tr≠Îng L∑o ");
+						strcat(szTong, "[Tr¬≠√´ng L¬∑o]");
 						break;
 					case enumTONG_FIGURE_MASTER:
-					strcat(szTong, " Bang ChÒ ");
+						strcat(szTong, "[Bang Ch√±]");
 						break;
 					}
 				}
 			else
 			{
-				//	if(!m_szTeamMem[0])//fix by phong ki?u kh´ng vœ TongTitle khi hi”n th? th´ng tin auto
-					sprintf(szTong, "%s %s ", m_szTongName, m_szTongTitle);
+				if (SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID == 209)
+				{
+					sprintf(szTong,"");
+				}
+				else
+				{
+					sprintf(szTong, "[%s] %s", m_szTongName, m_szTongTitle);
+				}
 				//	else
 				//		strcpy(szTong, m_szTongName); 
 			}
 			//	g_pRepresent->OutputText(nFontSize, szTong, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szTong) / 4, yOffset, dwColor, 0, nHeightOff, dwBorderColor);
-			g_pRepresent->OutputText(nFontSize, szTong, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szTong) / 4, nMpsY - 30, dwColor, 0, nHeightOff, dwBorderColor);
+			g_pRepresent->OutputText(nFontSize, szTong, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szTong) / 4, nMpsY -24, dwColor, 0, nHeightOff, dwBorderColor);
 			nHeightOffset += nFontSize + 1;
+		}
+		if (m_szGameTitle[0])
+		{
+			int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+			
+			
+			if (Map != 209)
+    		{
+				int nLineStep = (int)((nFontSize + 2) * 1.6f);
+				nYY -= (int)((nFontSize + 2) * 2.0f);
+				DWORD dwGreenColor = 0xFF00FF00; // M?u xanh l? (ARGB: alpha=255, red=0, green=255, blue=0) - RGB(0, 255, 0)
+	   			if (m_btPlayerTitle || m_btRankBattleId)
+				{
+	        	nYY -= nLineStep;
+	   			}
+				if (m_szTongName[0])
+				{
+	       		 nYY -= nLineStep;
+	   			}
+
+				g_pRepresent->OutputText(nFontSize, m_szGameTitle, KRF_ZERO_END,
+					nMpsX - nFontSize * g_StrLen(m_szGameTitle) / 4, nYY,
+					dwGreenColor, 0, nHeightOff, dwBorderColor);
+				nHeightOffset += nFontSize + 1;
+			}
 		}
 		//m_btHonorId = 20;
 		if(m_btHonorId > 0)	 //#danh hieu
@@ -5144,7 +5937,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			pTab.GetString(cbBuffer, "HONORLINK", "",Buff,sizeof(Buff));
 			pTab.GetInteger(cbBuffer, "HONORX", 0, &nMX);
 			pTab.GetInteger(cbBuffer, "HONORY", 0, &nMY);
-			pTab.GetInteger(cbBuffer, "TOTALFRAME", 0, &nNumFrames);
+			pTab.GetInteger(cbBuffer, "TOTALFRAME", 1, &nNumFrames);
 			pTab.GetInteger(cbBuffer, "WIGTH", 0, &nMW);
 			pTab.Clear();
 
@@ -5158,7 +5951,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			strcpy(RURank.szImage, Buff);
 			RURank.nFrame = g_SubWorldSet.GetGameTime() / 2 % nNumFrames;
 
-			RURank.oPosition.nX = nX - nMX;
+			RURank.oPosition.nX = nMpsX - nMX;
 			RURank.oPosition.nY = nY - nMY;
 			RURank.oPosition.nZ = nHeightOffset;
 			g_pRepresent->DrawPrimitives(1, &RURank, RU_T_IMAGE, 0);		
@@ -5181,7 +5974,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImage.nISPosition = IMAGE_IS_POSITION_INIT;
 			RUIconImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
 			strcpy(RUIconImage.szImage, Buff);
-			RUIconImage.oPosition.nX = nMpsX + (nFontSize*g_StrLen(Name)/4) + 10 + (m_btHonorId > 0 ? 10 : 0);
+			RUIconImage.oPosition.nX = nMpsX + (nFontSize*g_StrLen(Name)/4) + 10 + (m_btHonorId > 0 ? 10 : 0) + (nReBorn > 0 ? 10 : 0);
 			RUIconImage.oPosition.nY = nY + 20;
 			RUIconImage.oPosition.nZ = nHeightOff;
 			RUIconImage.nFrame = 0;
@@ -5255,6 +6048,10 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			{
 				strcpy(RUIconImage.szImage, sOut10);
 			}
+			else if (nReBorn > 10)	// neu hon 10 thi hien thi 10
+			{
+				strcpy(RUIconImage.szImage, sOut10);
+			}
 			if (m_bRideHorse)
 			{
 				RUIconImage.oPosition.nY = nMpsY-(nHeightOff*1.48) - 22;
@@ -5263,12 +6060,16 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			{
 				RUIconImage.oPosition.nY = nMpsY-(nHeightOff*1.48) - 12;
 			}
-
-			RUIconImage.oPosition.nX = nMpsX - nFontSize * g_StrLen(Name) / 4 - 15;
+	
+			RUIconImage.oPosition.nX = nMpsX
+			    - (nFontSize * g_StrLen(Name) / 4)  
+			    - 10                                
+			    - (m_btHonorId > 0 ? 10 : 0)
+				- ((m_byMantleLevel > 0 && m_byMantleLevel <= MAX_ITEM_LEVELFF) ? 40 : 0);
 			RUIconImage.oPosition.nY = nMpsY - 8;
 			RUIconImage.oPosition.nZ = nHeightOff - 12;
 			RUIconImage.nFrame = (SubWorld[0].m_dwCurrentTime * 10 / 18) % 10;
-			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);			
+			g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);	
 			//RUIconImage.oPosition.nZ = 0;
 				//RUIconImage.nFrame = m_nFrame;
 			//	g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, FALSE);			
@@ -5297,20 +6098,20 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 
 			nX = nMpsX - nFontSize*g_StrLen(szString)/4;
 			nY = nMpsY - 24;
-			if (m_szTongName[0] || m_szTeamMem[0])
+			if (m_szTongName[0])
 				nY -= 30;
 			g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nX, nY, dwColor, 0, nHeightOff, dwBorderColor);
 			nHeightOffset += nFontSize + 1;
 		}
 
-		if (m_BaiTan) //#bµy b∏n
+		if (m_BaiTan) //#b¬µy b¬∏n
 		{
 			int	nMpsX, nMpsY;
 			GetMpsPos(&nMpsX, &nMpsY);
 			int nWid = nFontSize * g_StrLen(ShopName) / 2 + 10;
 			int nHei = nFontSize + 12;
 				
-			char*sOutm = "\\Spr\\Ui3\\∞⁄ÃØ\\∞⁄ÃØÕ∑∂•Ãı£≠÷–.spr"; //Head
+			char*sOutm = "\\Spr\\Ui3\\¬∞√öÃÄ¬Ø\\¬∞√öÃÄ¬Ø√ç¬∑¬∂¬•ÃÄ∆°¬£¬≠√ñƒê.spr"; //Head
 			KRUImage RUIconImageR;
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
@@ -5329,16 +6130,22 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 				g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
 			}
 
-			if ((m_btPlayerTitle || m_btRankBattleId) && (m_szTongName[0] || m_szTeamMem[0]))//#PlayerTitle
+			if (m_szGameTitle[0] && (m_btPlayerTitle || m_btRankBattleId) && (m_szTongName[0] || m_szTeamMem[0]))//#PlayerTitle
+				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 134, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
+			else if ((m_btPlayerTitle || m_btRankBattleId) && (m_szTongName[0] || m_szTeamMem[0]))
+				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 110, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
+			else if (m_szGameTitle[0] && ((m_szTongName[0] || m_szTeamMem[0])|| (m_btPlayerTitle || m_btRankBattleId)))
 				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 110, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
 			else  if (m_szTongName[0] || m_szTeamMem[0])
 				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 88, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
 			else if (m_btPlayerTitle || m_btRankBattleId)
 				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 88, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
+			else if (m_szGameTitle[0])
+				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 88, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
 			else
 				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 62, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
 
-			char* sOutR = "\\Spr\\Ui3\\∞⁄ÃØ\\∞⁄ÃØÕ∑∂•Ãı£≠”“.spr";	//Head
+			char* sOutR = "\\Spr\\Ui3\\¬∞√öÃÄ¬Ø\\¬∞√öÃÄ¬Ø√ç¬∑¬∂¬•ÃÄ∆°¬£¬≠√ìÃâ.spr";	//Head
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
 			RUIconImageR.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
@@ -5352,7 +6159,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImageR.nFrame = 0;
 			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
 			
-			char* sOutL = "\\Spr\\Ui3\\∞⁄ÃØ\\∞⁄ÃØÕ∑∂•Ãı£≠◊Û.spr";	//Head
+			char* sOutL = "\\Spr\\Ui3\\¬∞√öÃÄ¬Ø\\¬∞√öÃÄ¬Ø√ç¬∑¬∂¬•ÃÄ∆°¬£¬≠√ó√≥.spr";	//Head
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
 			RUIconImageR.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
@@ -5423,29 +6230,29 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 
 		char	szString[128];
 		strcpy(szString, Name);
-		/*if (m_FreezeState.nTime || m_PoisonState.nTime || m_FrozenAction.nTime || m_StunState.nTime)//ch˜ hi÷u ¯ng qu∏i khi bﬁ trÛng Æﬂn kh´ng vœ n˜a
+		/*if (m_FreezeState.nTime || m_PoisonState.nTime || m_FrozenAction.nTime || m_StunState.nTime)//ch√∑ hi√ñu √∏ng qu¬∏i khi b√û tr√≥ng ¬Æ√ün kh¬´ng v√è n√∑a
 		{
 			strcat(szString, "("); 
 			if (m_FreezeState.nTime)
-				strcat(szString, "B®ng");
+				strcat(szString, "B¬®ng");
 			if (m_PoisonState.nTime)
-				strcat(szString, "ßÈc");
+				strcat(szString, "¬ß√©c");
 			if (m_FrozenAction.nTime)
-				strcat(szString, "M™");
+				strcat(szString, "M¬™");
 			if (m_StunState.nTime)
-				strcat(szString, "Cho∏ng");
+				strcat(szString, "Cho¬∏ng");
 			if(m_HideState.nTime > 0)
-				strcat(szString, "»n");
+				strcat(szString, "√àn");
 			strcat(szString, ")");
 		}*/
-		
-		//g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);
-	//	nHeightOffset += nFontSize + 1;
-	//	PaintSeriesNpc(Name, nFontSize, nHeightOff);
-        char szDebuger[80];
-		sprintf(szDebuger, "%s[%d][%d][%d]", Name,  m_CurrentLife, m_Experience * 2,m_Level );
-		g_pRepresent->OutputText(nFontSize, szDebuger, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szDebuger) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);
+	
+		g_pRepresent->OutputText(nFontSize, szString, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(Name) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);	
+		nHeightOffset += nFontSize + 1;
 		PaintSeriesNpc(Name, nFontSize, nHeightOff);
+        //char szDebuger[80];
+		//sprintf(szDebuger, "%s[%d][%d][%d]", Name,  m_CurrentLife, m_Experience * 2,m_Level );
+		//g_pRepresent->OutputText(nFontSize, szDebuger, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(szDebuger) / 4, nMpsY, dwColor, 0, nHeightOff, dwBorderColor);
+		//PaintSeriesNpc(Name, nFontSize, nHeightOff);
 		/*if (m_Series > -1)
 		{
 			memset(Buff, 0, sizeof(Buff));
@@ -5460,7 +6267,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
 			RUIconImage.uImage = 0;
 			RUIconImage.nISPosition = IMAGE_IS_POSITION_INIT;
-			RUIconImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;	//xem Î ch’ ÆÈ 3d
+			RUIconImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;	//xem √É¬´ ch√É‚Ä¢ √Ç¬Æ√É¬© 3d
 			strcpy(RUIconImage.szImage, Buff);
 			RUIconImage.oPosition.nX = nMpsX + nFontSize * g_StrLen(Name) / 4 + 5;
 			RUIconImage.oPosition.nY = nMpsY; 
@@ -5518,8 +6325,8 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			"NpcID:%d Life:%d\n"
 			"RegionIndex:%d Pos1:%d,%d Offset:%d, %d\n"
 			"RegionID:%d Pos2:%d,%d\n"
-			"CR_NpcNumber:%d\n"		//Npc trong cÔng region
-			"AR_NpcNumber:\n"			//Npc Î c∏c 8 region l©n cÀn vµ Î gi˜a Æang Æ¯ng
+			"CR_NpcNumber:%d\n"		//Npc trong c√Øng region
+			"AR_NpcNumber:\n"			//Npc √´ c¬∏c 8 region l¬©n c√ãn v¬µ √´ gi√∑a ¬Æang ¬Æ√∏ng
 			"%02d,%02d,%02d\n"
 			"%02d,%02d,%02d\n"
 			"%02d,%02d,%02d",
@@ -5540,10 +6347,30 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	return nHeightOffset;
 }
 
+int KNpc::PaintMantle(int nHeightOff, int nFontSize, int nMpsX, int nMpsY)
+{
+	KRUImage RUIconImage;
+	RUIconImage.nType = ISI_T_SPR;
+	RUIconImage.Color.Color_b.a = 255;
+	RUIconImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	RUIconImage.uImage = 0;
+	RUIconImage.nISPosition = IMAGE_IS_POSITION_INIT;
+	RUIconImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+	strcpy(RUIconImage.szImage, PlayerSet.m_szFortuneRankPic[m_byMantleLevel]);
+	KImageParam	Param;
+	g_pRepresent->GetImageParam(RUIconImage.szImage, &Param, ISI_T_SPR);
+	RUIconImage.oPosition.nX = nMpsX - Param.nWidth;
+	RUIconImage.oPosition.nY = nMpsY - Param.nHeight/2 - 4;
+	RUIconImage.oPosition.nZ = nHeightOff;
+	RUIconImage.nFrame = g_SubWorldSet.GetGameTime() % Param.nNumFrames;
+	g_pRepresent->DrawPrimitives(1, &RUIconImage, RU_T_IMAGE, 0);
+
+	return RUIconImage.oPosition.nX;
+}
 int	KNpc::PaintChat(int nHeightOffset)
 {
-	if (m_Kind != kind_player)
-		return nHeightOffset;
+	//if (m_Kind != kind_player)
+	//	return nHeightOffset;
 	if (m_nChatContentLen <= 0)
 		return nHeightOffset;
 	if (m_nChatNumLine <= 0)
@@ -5595,7 +6422,7 @@ int	KNpc::PaintChat(int nHeightOffset)
 #include "../../Engine/Src/Text.h"
 int	KNpc::SetChatInfo(const char* Name, const char* pMsgBuff, unsigned short nMsgLength)
 {
-	if(nMsgLength >= 90)//edit by phong kieu xu ly chat lon hon 90 ky tu
+	if(nMsgLength >= 128)//edit by phong kieu xu ly chat lon hon 90 ky tu
 	{
 		nMsgLength = 15;
 	}
@@ -5639,12 +6466,13 @@ int	KNpc::SetChatInfo(const char* Name, const char* pMsgBuff, unsigned short nMs
 
 			memset(m_szChatBuffer, 0, sizeof(m_szChatBuffer));
 			m_nChatContentLen = MAX_SENTENCE_LENGTH;
+			int maxLine = 3;
 			TGetLimitLenEncodedString(szChatBuffer, nOffset, nFontSize, SHOW_CHAT_WIDTH,
-				m_szChatBuffer, m_nChatContentLen, 2, true);
+				m_szChatBuffer, m_nChatContentLen, maxLine, true);
 
 			m_nChatNumLine = TGetEncodedTextLineCount(m_szChatBuffer, m_nChatContentLen, SHOW_CHAT_WIDTH, m_nChatFontWidth, nFontSize, 0, 0, true);
-			if (m_nChatNumLine >= 2)
-				m_nChatNumLine = 2;
+			if (m_nChatNumLine >= maxLine)
+				m_nChatNumLine = maxLine;
 			m_nCurChatTime = IR_GetCurrentTime();
 			return true;
 		}
@@ -5828,10 +6656,85 @@ int	KNpc::PaintMana(int nHeightOffset)
 	return nHeightOffset + nHei;
 }
 
+int KNpc::PaintTargetInfo(KUiPlayerItem* m_pPlayersList, KUiPlayerPaintTeamMNG* nPainTMG)
+{
+	for (int i = 0; i < nPainTMG->nCountS; i++)
+	{
+		int verDistance = 33;
+		int nWid = 120;// nPainTMG->nWid;//58;
+		int nHei_life = nPainTMG->nHei_life;//7;
+		int nHei_mana = nPainTMG->nHei_mana;//4;
+
+		int nWeightOffset = nPainTMG->nWeightOffset; //253;
+		int nHeightOffset_life = nPainTMG->nHeightOffset_life; //179;
+		int nHeightOffset_mana = nPainTMG->nHeightOffset_mana; //175;
+		int nOffSet_member = i * nPainTMG->nOffSet_member; //38; // offset tinh bang px
+
+		KRUShadow	Blood;
+		int nX = m_pPlayersList[i].nPercenLife;
+		if (nX > 100) //#fix thanh mau, mana
+			nX = 100;
+		if (nX < 0)
+			nX = 0;
+		//real life
+		Blood.Color.Color_b.r = 205;
+		Blood.Color.Color_b.g = 38;
+		Blood.Color.Color_b.b = 38;
+		Blood.Color.Color_b.a = 0;
+		Blood.oPosition.nX = 420;
+		Blood.oPosition.nY = 65 + i * verDistance - 10;
+		if (i <= 2)
+			nHei_life = 6;
+		Blood.oPosition.nZ = nHeightOffset_life + nHei_life - nOffSet_member;
+		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX / 100;
+		Blood.oEndPos.nY = 75 + i * verDistance - 10; 
+		Blood.oEndPos.nZ = nHeightOffset_life - nOffSet_member;
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+
+		//background
+		Blood.Color.Color_b.r = 128;
+		Blood.Color.Color_b.g = 128;
+		Blood.Color.Color_b.b = 128;
+		Blood.oPosition.nX = Blood.oEndPos.nX;
+		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * (100 - nX) / 100;
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+
+		int nX_mana = 0;
+		if (nX_mana > 100)
+			nX_mana = 100;
+
+		////real mana
+		//Blood.Color.Color_b.r = 30;
+		//Blood.Color.Color_b.g = 144;
+		//Blood.Color.Color_b.b = 255;
+		//Blood.Color.Color_b.a = 0;
+		//Blood.oPosition.nX = 46 + 530; 
+		//Blood.oPosition.nY = 68 + i * verDistance - 10; 
+		//if (i <= 2)
+		//	nHei_mana = 3;
+		//Blood.oPosition.nZ = nHeightOffset_mana + nHei_mana - nOffSet_member;
+		//Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX_mana / 100;
+		//Blood.oEndPos.nY = 71 + i * verDistance - 10; 
+		//Blood.oEndPos.nZ = nHeightOffset_mana - nOffSet_member;
+		//g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+
+		////background
+		//Blood.Color.Color_b.r = 128;
+		//Blood.Color.Color_b.g = 128;
+		//Blood.Color.Color_b.b = 128;
+		//Blood.oPosition.nX = Blood.oEndPos.nX;
+		//Blood.oEndPos.nX = Blood.oPosition.nX + 2 + nWid * (100 - nX_mana) / 100;
+		//g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+	}
+
+	return 1;
+}
+
 int KNpc::PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPainTMG)
 {
 	for(int i=0; i < nPainTMG->nCountS; i++)
 	{
+		int verDistance = 33;
 		int	nMpsX = 53457;
 		int nMpsY = 104208;
 		GetMpsPos(&nMpsX, &nMpsY);
@@ -5850,48 +6753,55 @@ int KNpc::PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPa
 			nX = 100;
 		if(nX < 0)
 			nX = 0;
+		//real life
 		Blood.Color.Color_b.r = 205;
 		Blood.Color.Color_b.g = 38;
 		Blood.Color.Color_b.b = 38;
 		Blood.Color.Color_b.a = 0;
-		Blood.oPosition.nX = nMpsX - nWeightOffset - nWid / 2;
-		Blood.oPosition.nY = nMpsY;
+		Blood.oPosition.nX = 46;// nMpsX - nWeightOffset - nWid / 2;
+		Blood.oPosition.nY = 62 + i * verDistance;// nMpsY;
 		if(i <= 2)
 			nHei_life = 6;
 		Blood.oPosition.nZ = nHeightOffset_life + nHei_life - nOffSet_member;
 		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX / 100;
-		Blood.oEndPos.nY = nMpsY;
+		Blood.oEndPos.nY = 67 + i * verDistance; // nMpsY; 
 		Blood.oEndPos.nZ = nHeightOffset_life - nOffSet_member;
-		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+
+		//background
 		Blood.Color.Color_b.r = 128;
 		Blood.Color.Color_b.g = 128;
 		Blood.Color.Color_b.b = 128;
 		Blood.oPosition.nX = Blood.oEndPos.nX;
 		Blood.oEndPos.nX = Blood.oPosition.nX+ 2 + nWid * (100-nX) / 100;
-		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
 
 		int nX_mana = m_pPlayersList[i].nPercenMana;
 		if(nX_mana > 100)
 			nX_mana = 100;
+
+		//real mana
 		Blood.Color.Color_b.r = 30;
 		Blood.Color.Color_b.g = 144;
 		Blood.Color.Color_b.b = 255;
 		Blood.Color.Color_b.a = 0;
-		Blood.oPosition.nX = nMpsX - nWeightOffset - nWid / 2;
-		Blood.oPosition.nY = nMpsY;
+		Blood.oPosition.nX = 46; // nMpsX - nWeightOffset - nWid / 2;
+		Blood.oPosition.nY = 68 + i * verDistance; // nMpsY;
 		if(i <= 2)
 			nHei_mana = 3;
 		Blood.oPosition.nZ = nHeightOffset_mana + nHei_mana - nOffSet_member;
 		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nX_mana / 100;
-		Blood.oEndPos.nY = nMpsY;
+		Blood.oEndPos.nY = 71 + i * verDistance; // nMpsY;
 		Blood.oEndPos.nZ = nHeightOffset_mana - nOffSet_member;
-		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE);
+
+		//background
 		Blood.Color.Color_b.r = 128;
 		Blood.Color.Color_b.g = 128;
 		Blood.Color.Color_b.b = 128;
 		Blood.oPosition.nX = Blood.oEndPos.nX;
 		Blood.oEndPos.nX = Blood.oPosition.nX+ 2 + nWid * (100-nX_mana) / 100;
-		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, TRUE );
 	}
 
 	return 1;
@@ -5917,7 +6827,7 @@ void KNpc::Paint()
 		}
 	}
 
-	if (Option.GetLow(LowEstPlayer))//add by phong ki“u low npc low player
+	if (Option.GetLow(LowEstPlayer))//add by phong ki√É‚Äôu low npc low player
 	{
 		if (m_Kind == kind_player) 
 		{
@@ -5949,6 +6859,7 @@ void KNpc::Paint()
 		nHeight += 10;
 	if (m_szTongName[0] && (m_btPlayerTitle || m_btRankBattleId))
 		nHeight += 20;
+
 	//End add by Fong Kieu
 	DrawMenuState(nHeight);
 }
@@ -6057,8 +6968,20 @@ void	KNpc::RemoveRes()
 {
 	m_DataRes.Remove(m_Index);
 }
-#endif
 
+
+void KNpc::AddSkillEffect(int nSkillID, int nLevel, int nTime)
+{
+	KSkill * pSkillActive = (KSkill *) g_SkillManager.GetSkill(nSkillID,nLevel);
+   if (pSkillActive)
+	{
+	KMagicAttrib* pMagicAttrib = pSkillActive->GetStateAttribs();
+	int pMagicAttribNum = pSkillActive->GetAppendSkillNum();
+	SetStateSkillEffect(m_Index, nSkillID, nLevel, pMagicAttrib, pMagicAttribNum, nTime, TRUE);
+	}
+				
+}
+#endif
 void	KNpc::SetSeries(int nSeries)
 {
 	if (nSeries >= series_metal && nSeries < series_num)
@@ -6072,6 +6995,8 @@ void	KNpc::SetSex(int nSex)
 	 return;
     m_nSex = nSex;
 }
+
+
 void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pData, int nDataNum, int nTime/* = -1*/, BOOL bOverLook/* = FALSE*/)
 {
 	if (nLevel <= 0 || nSkillID <= 0) return ;
@@ -6079,7 +7004,7 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 
 		int Map = SubWorld[m_SubWorldIndex].m_SubWorldID;
 
-	if ((Map == 220) && nLauncher != m_Index)
+	if ((Map == 209) && nLauncher != m_Index)
 	{
 		if (nSkillID == 206 || nSkillID == 208 || nSkillID == 93 || nSkillID == 207 || nSkillID == 281 || nSkillID == 292 || nSkillID == 476
 		|| nSkillID == 171 || nSkillID == 173 || nSkillID == 178  || nSkillID == 202 || nSkillID == 332)
@@ -6096,7 +7021,7 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 	if (nDataNum >= MAX_SKILL_STATE)
 	nDataNum = MAX_SKILL_STATE;
 #ifdef _SERVER
-	if (pData && nDataNum >= 0)
+	if (IsPlayer() && pData && nDataNum >= 0)
 	{
 		STATE_EFFECT_SYNC	Sync;
 		Sync.ProtocolType = s2c_syncstateeffect;
@@ -6115,7 +7040,7 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 	pNode = (KStateNode *)m_StateSkillList.GetTail();
 	while(pNode)
 	{
-		if (pNode->m_SkillID == nSkillID) //N’u Æ∑ c„ skill tr™n ng≠Íi
+		if (pNode->m_SkillID == nSkillID) //N√ïu ¬Æ¬∑ c√£ skill tr¬™n ng¬≠√™i
 		{
 			if (pNode->m_Level == nLevel)
 			{
@@ -6123,10 +7048,18 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 					pNode->m_LeftTime = pNode->m_LeftTimeH;
 				else
 					pNode->m_LeftTime = nTime;
+				if(nTime == -1)
+					pNode->m_LeftTime = nTime;
 				pNode->m_bOverLook = bOverLook;
 				pNode->m_bTempStateGraphics = FALSE;
+				if (nTime == 0) {
+					pNode->m_LeftTime = nTime;
+					memset(pNode->m_State, 0, sizeof(pNode->m_State));
+					pNode->m_Level = 0;
+					pNode->m_SkillID = 0;
+				}
 			}
-			else if (pNode->m_Level < nLevel) //xˆ l˝ l y level skill cao h¨n
+			else if (pNode->m_Level < nLevel) //x√∂ l√Ω l√äy level skill cao h¬¨n
 			{
 				pNode->m_LeftTimeH = nTime;
 				pTemp = (KMagicAttrib *)pData;
@@ -6141,12 +7074,12 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 					pTemp++;
 				}
 			}
-			return; //k’t thÛc kh´ng lµm b™n d≠Ìi
+			return; //k√ït th√≥c kh¬´ng l¬µm b¬™n d¬≠√≠i
 		}
 		pNode = (KStateNode *)pNode->GetPrev();
 	}
 	//
-	pNode = new KStateNode;	//Th™m mÌi skill vµo ng≠Íi
+	pNode = new KStateNode;	//Th¬™m m√≠i skill v¬µo ng¬≠√™i
 	pNode->m_SkillID = nSkillID;
 	pNode->m_Level = nLevel;
 	pNode->m_LeftTime = nTime;
@@ -6169,10 +7102,13 @@ void KNpc::SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pD
 		pNode->m_State[i].nValue[2] = -pTemp->nValue[2];
 		pTemp++;
 	}
-	AddStateSkillList(pNode);
-	//
-#ifdef _SERVER
-	UpdateNpcStateInfo();
+	m_StateSkillList.AddTail(pNode);
+#ifdef _SERVER	
+	if (pNode->m_StateGraphics) 
+	{
+		UpdateNpcStateInfo();
+		//BroadCastState();
+	}
 #endif
 }
 
@@ -6531,6 +7467,7 @@ BOOL KNpc::OnJumpAttack()
 					pOrdinSkill->Cast(m_Index, m_SkillParam1, m_SkillParam2);
                 }
 			}
+			FixPos();
 			DoStand();
 			m_ProcessAI = 1;
 			m_SpecialSkillStep = 0;
@@ -6566,11 +7503,11 @@ BOOL KNpc::CheckHitTarget(int nAR, int nDf, int nIngore/* = 0*/)
 		nPercent = MIN_HIT_PERCENT;
 
 	BOOL bRet = g_RandPercent(nPercent);
-//	g_DebugLog("[ ˝÷µ]AttackRating %d : Defense %d: RandomPercent (%d, %d)", nAR, nDf, nPercent, bRet);
+//	g_DebugLog("[√É≈†√É¬Ω√É‚Äì√Ç¬µ]AttackRating %d : Defense %d: RandomPercent (%d, %d)", nAR, nDf, nPercent, bRet);
 	return bRet;
 }
 
-BOOL KNpc::CheckHitTarget2(int nAR, int nDf, int nIngore/* = 0*/) //ßÈ ch›nh x∏c
+BOOL KNpc::CheckHitTarget2(int nAR, int nDf, int nIngore/* = 0*/) //¬ß√© ch√ùnh x¬∏c
 {
 	int nDefense = 0;
 	if (nIngore < MAX_PERCENT)
@@ -6594,26 +7531,6 @@ BOOL KNpc::CheckHitTarget2(int nAR, int nDf, int nIngore/* = 0*/) //ßÈ ch›nh x∏c
 
 	BOOL bRet = g_RandPercent(nPercent);
 	return bRet;
-}
-
-void KNpc::AddStateSkillList(KStateNode * pNewNode)
-{
-	BOOL bFound = FALSE;
-	KStateNode	*pNode;
-	pNode = (KStateNode*)m_StateSkillList.GetTail();
-	while (pNode)
-	{	
-		if (pNode->m_SkillID == pNewNode->m_SkillID)
-		{
-			bFound = TRUE;
-			break;	
-		}
-		pNode = (KStateNode*)pNode->GetPrev();
-	}
-	// Neu nhu tim thay thi thoat
-	if (bFound)
-		return;
-	m_StateSkillList.AddTail(pNewNode);
 }
 
 void KNpc::GetNpcCopyFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
@@ -6644,7 +7561,7 @@ void KNpc::GetNpcCopyFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 #else
 		
 		KLuaScript LevelScript;
-		if (!g_pNpcTemplate[nNpcTemplateId][0][0]->m_szLevelSettingScript[0])//kh´ng c„ script l y script m∆c Æﬁnh
+		if (!g_pNpcTemplate[nNpcTemplateId][0][0]->m_szLevelSettingScript[0])//kh¬´ng c√£ script l√äy script m√Üc ¬Æ√ûnh
 			pLevelScript = g_pNpcLevelScript;
 		else
 		{
@@ -6686,7 +7603,8 @@ void	KNpc::LoadDataFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 	m_WalkFrame =	pNpcTemp->m_WalkFrame;
 	m_RunFrame =	pNpcTemp->m_RunFrame;
 	m_HurtFrame =	pNpcTemp->m_HurtFrame;
-	m_WalkSpeed =	pNpcTemp->m_WalkSpeed;
+	if(!m_bNoReloadAttr)
+		m_WalkSpeed =	pNpcTemp->m_WalkSpeed;
 	m_StandFrame =  pNpcTemp->m_StandFrame;
 	m_StandFrame1 = pNpcTemp->m_StandFrame1;
 
@@ -6700,7 +7618,8 @@ void	KNpc::LoadDataFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 	{
 		m_AttackFrame =	pNpcTemp->m_AttackFrame;
 		m_CastFrame =	pNpcTemp->m_CastFrame;
-		m_RunSpeed =	pNpcTemp->m_RunSpeed;
+		if (!m_bNoReloadAttr)
+			m_RunSpeed =	pNpcTemp->m_RunSpeed;
 #ifndef _SERVER
 		m_HorseType				= pNpcTemp->m_HorseType;
 		m_bRideHorse			= pNpcTemp->m_bRideHorse;
@@ -6730,7 +7649,7 @@ void	KNpc::LoadDataFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 			KSkill	*pSkill;
 			for (i = 1; i < MAX_NPC_USE_SKILL + 1; i++)
 			{
-				int tSkillId = 53; int tSkillLevel = 1;	//add by phong ki“u fix bug skill id bªng 0 vµ skilllevel = 0
+				int tSkillId = 53; int tSkillLevel = 1;	//add by phong ki√íu fix bug skill id b¬ªng 0 v¬µ skilllevel = 0
 				if(m_SkillList.m_Skills[i].SkillId > 0)
 				{
 					tSkillId = m_SkillList.m_Skills[i].SkillId;
@@ -6741,7 +7660,7 @@ void	KNpc::LoadDataFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 				}
 				pSkill = (KSkill*)g_SkillManager.GetSkill(tSkillId, tSkillLevel); //end add
 
-				//pSkill = (KSkill*)g_SkillManager.GetSkill(m_SkillList.m_Skills[i].SkillId, m_SkillList.m_Skills[i].CurrentSkillLevel); //m∆c Æﬁnh src
+				//pSkill = (KSkill*)g_SkillManager.GetSkill(m_SkillList.m_Skills[i].SkillId, m_SkillList.m_Skills[i].CurrentSkillLevel); //m√Üc ¬Æ√ûnh src
 				if (!pSkill)
 					continue;
 				nTempRadius = pSkill->GetAttackRadius();
@@ -6756,15 +7675,17 @@ void	KNpc::LoadDataFromTemplate(int nNpcTemplateId, int nLevel, int nSeries)
 		m_LightResistMax		= pNpcTemp->m_LightResistMax;
 		m_PoisonResistMax		= pNpcTemp->m_PoisonResistMax;
 		m_PhysicsResistMax		= pNpcTemp->m_PhysicsResistMax;
-		m_ActiveRadius			= pNpcTemp->m_ActiveRadius;		//B∏n k›nh hoπt ÆÈng
+		m_ActiveRadius			= pNpcTemp->m_ActiveRadius;		//B¬∏n k√ùnh ho¬πt ¬Æ√©ng
 		m_VisionRadius			= pNpcTemp->m_VisionRadius;
 		m_AIMAXTime				= pNpcTemp->m_AIMAXTime;
-		m_HitRecover			= pNpcTemp->m_HitRecover;
 		m_ReviveFrame			= pNpcTemp->m_ReviveFrame;
 		m_Experience			= pNpcTemp->m_Experience;
 		m_CurrentExperience		= m_Experience;
-		m_LifeMax					= pNpcTemp->m_LifeMax;
-		m_LifeReplenish			= pNpcTemp->m_LifeReplenish;
+		if (!m_bNoReloadAttr) {
+			m_HitRecover = pNpcTemp->m_HitRecover;
+			m_LifeMax = pNpcTemp->m_LifeMax;
+			m_LifeReplenish = pNpcTemp->m_LifeReplenish;
+		}
 		m_AttackRating			= pNpcTemp->m_AttackRating;
 		m_Defend				= pNpcTemp->m_Defend;
 		//
@@ -6828,9 +7749,9 @@ void KNpc::DeathPunish(int nMode, int nBelongPlayer)
 	{
 		if (nMode == enumDEATH_MODE_NPC_KILL)
 		{
-			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, TRUE);//#mµi mﬂn  phﬂng thÒ
-
-			if (Player[m_nPlayerIdx].m_nExp >= 0) //fix by phong ki“u nh©n vÀt ch’t mµ cÈng th™m exp v◊ v≠Ót mi“n ki”u int
+			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, TRUE);//#m¬µi m√ün  ph√üng th√±
+   
+			if (Player[m_nPlayerIdx].m_nExp >= 0) //fix by phong ki√íu nh¬©n v√ãt ch√ït m¬µ c√©ng th¬™m exp v√ó v¬≠√Æt mi√ín ki√ìu int
 			{
 				double nSubExp = 0;
 				if (m_Level <= 10)
@@ -6875,7 +7796,7 @@ void KNpc::DeathPunish(int nMode, int nBelongPlayer)
 
 		else //if (nMode == enumDEATH_MODE_PLAYER_PUNISH)
 		{
-			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, TRUE);//#mµi mﬂn  phﬂng thÒ
+			Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeDefend, TRUE);//#m√Ç¬µi m√É≈∏n  ph√É≈∏ng th√É¬±
 			int		nPKValue;
 			nPKValue = Player[this->m_nPlayerIdx].m_cPK.GetPKValue();
 			if (nPKValue < 0)
@@ -6945,7 +7866,7 @@ void KNpc::DeathPunish(int nMode, int nBelongPlayer)
 			}
 		}
 	}
-	else if (nBelongPlayer > 0 && m_pDropRate && !g_NotAddNpcNormal) //sˆ dÙng khi load npc normal trong file pak hoac folder load npc bªng script th◊ kh´ng sˆ dÙng
+	else if (nBelongPlayer > 0 && m_pDropRate && !g_NotAddNpcNormal) //s√É¬∂ d√É¬¥ng khi load npc normal trong file pak hoac folder load npc b√Ç¬ªng script th√É‚Äî kh√Ç¬´ng s√É¬∂ d√É¬¥ng
 	{
 		for (int i = 0; i < m_CurrentTreasure; i++)
 		{
@@ -6968,23 +7889,32 @@ void KNpc::RestoreLiveData(int nDamage)
 
 void KNpc::RestoreDamage2Life(int nDamage) //edit by phong kieu hut mau
 { 
+	if((nDamage*m_CurrentLifeStolen/100) > 0)
+	{
     m_CurrentLife = m_CurrentLife + (nDamage*m_CurrentLifeStolen/100); 
     if (m_CurrentLife >= m_CurrentLifeMax) 
         m_CurrentLife = m_CurrentLifeMax; 
+	}
 }
 
 void KNpc::RestoreDamage2Mana(int nDamage) //edit by phong kieu hut mana
 {
+	if( (nDamage*m_CurrentManaStolen/100) > 0)
+	{
 	m_CurrentMana = m_CurrentMana + (nDamage*m_CurrentManaStolen/100); 
 	if (m_CurrentMana >= m_CurrentManaMax) 
         m_CurrentMana = m_CurrentManaMax; 
+	}
 }
 
 void KNpc::RestoreDamage2Stamina(int nDamage)//edit by phong kieu hut the luc
 {	
+	if( (nDamage*m_CurrentStaminaStolen/100) > 0)
+	{
 	m_CurrentStamina = m_CurrentStamina + (nDamage*m_CurrentStaminaStolen/100);
 	if(m_CurrentStamina >= m_CurrentStaminaMax)
 		m_CurrentStamina = m_CurrentStaminaMax;
+	}
 }
 
 void	KNpc::PlayerDeadCreateMoneyObj(int nMoneyNum)
@@ -7046,7 +7976,8 @@ void KNpc::LoseMoney(int nBelongPlayer)//danh quai roi tien
 
 int KNpc::DropItemFromLuaScript(int nBelongPlayer, int nGenre, int nDetail, int nParticular, int nSeries, int nLevel, int nLuck, int* pnMagicLevel, int nTimeBelong)
 {
-	int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion());
+	int nXOpt = ItemSet.genXOpt(nLuck);
+	int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion(), 0, 1,0,0,0,0,0,0,0,0,nXOpt);
 	if (nIdx <= 0)
 		return -1;
 
@@ -7105,9 +8036,68 @@ int KNpc::DropItemFromLuaScript(int nBelongPlayer, int nGenre, int nDetail, int 
 	return nIdx;
 }
 
+//DropPUBGItemFromLuaScript
+int KNpc::DropPUBGItemFromLuaScript(int nKind, int nGenre, int nDetail, int nParticular, int nSeries, int nLevel, int nLuck, int* pnMagicLevel, int nTimeBelong)
+{
+	if (nKind != NATURE_GOLD && nKind != NATURE_PLATINA) //only drop gold or platina
+		return -1;
+	int nXOpt = ItemSet.genXOpt(nLuck);
+	int nIdx = ItemSet.Add(nKind, nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion(), 0, nXOpt);
+	/*Add(IN int nItemNature, int nItemGenre, int nSeries,
+	int nLevel, int nLuck, int nDetailType,
+		int nParticularType, int* pnMagicLevel, int nVersion, UINT nRandomSeed, int nMaxOptMultiply)*/
+	if (nIdx <= 0)
+		return -1;
+
+	int		nX, nY;
+	POINT	ptLocal;
+	KMapPos	Pos;
+
+	GetMpsPos(&nX, &nY);
+	ptLocal.x = nX;
+	ptLocal.y = nY;
+	SubWorld[m_SubWorldIndex].GetFreeObjPos(ptLocal);
+
+	Pos.nSubWorld = m_SubWorldIndex;
+	SubWorld[m_SubWorldIndex].Mps2Map(ptLocal.x, ptLocal.y,
+		&Pos.nRegion, &Pos.nMapX, &Pos.nMapY,
+		&Pos.nOffX, &Pos.nOffY);
+
+	int nObj;
+	KObjItemInfo sInfo;
+	sInfo.m_nItemID = nIdx;
+	sInfo.m_nItemWidth = Item[nIdx].GetWidth();
+	sInfo.m_nItemHeight = Item[nIdx].GetHeight();
+	sInfo.m_nMoneyNum = 0;
+	char szNameTemp[OBJ_NAME_LENGHT];
+	if (Item[nIdx].GetGenre() != item_equip && Item[nIdx].GetStackNum() > 1)
+	{
+		sprintf(szNameTemp, "%s x %d", Item[nIdx].GetName(), Item[nIdx].GetStackNum());
+		strcpy(sInfo.m_szName, szNameTemp);
+	}
+	else
+		strcpy(sInfo.m_szName, Item[nIdx].GetName());
+	sInfo.m_nColorID = Item[nIdx].GetColorItem();
+	sInfo.m_nGenre = Item[nIdx].GetGenre();
+	sInfo.m_nDetailType = Item[nIdx].GetDetailType();
+	sInfo.m_nParticularType = Item[nIdx].GetParticular();
+	sInfo.m_nMovieFlag = 1;
+	sInfo.m_nSoundFlag = 1;
+	sInfo.m_dwNpcId1 = 0;
+	nObj = ObjSet.Add(Item[nIdx].GetObjIdx(), Pos, sInfo);
+	if (nObj == -1)
+	{
+		ItemSet.Remove(nIdx);
+	}
+	else
+	{
+		Object[nObj].SetItemBelong(-1);
+	}
+	return nIdx;
+}
 void KNpc::LoseSingleItem(int nBelongPlayer)//danh quai roi do roi item
 {
-	int MAX_MAGIC_LEVEL = 6; //t®ng lµm 4 giai Æoπn 6->8->9->10
+	int MAX_MAGIC_LEVEL = 6; //t√Ç¬®ng l√Ç¬µm 4 giai √Ç¬Æo√Ç¬πn 6->8->9->10
 	if (!m_pDropRate)
 		return;
 
@@ -7117,7 +8107,7 @@ void KNpc::LoseSingleItem(int nBelongPlayer)//danh quai roi do roi item
 	int nRand = g_Random(m_pDropRate->nMaxRandRate);
 	int nCheckRand = 0;	
 
-	int i;
+	int i, j;
 	for (i = 0; i < m_pDropRate->nCount; i++)
 	{
 		if (nRand >= nCheckRand && nRand < nCheckRand + m_pDropRate->pItemParam[i].nRate)
@@ -7160,11 +8150,11 @@ void KNpc::LoseSingleItem(int nBelongPlayer)//danh quai roi do roi item
 	}
 	
 	nLevel = g_Random(nMaxLevel - nMinLevel) + nMinLevel;
-	if(nLevel > 10) //max level item lµ 10
+	if(nLevel > 10) //max level item l√Ç¬µ 10
 	{
 		nLevel = 10;
 	}
-	//add by phong ki“u r¨i ÆÂ xanh theo magiclevel
+	//add by phong ki√É‚Äôu r√Ç¬¨i √Ç¬Æ√É¬• xanh theo magiclevel
 	int nMagicLevel = 0;
 	if(nLuck >= 0 && nLuck <= 10)
 	{
@@ -7207,7 +8197,7 @@ void KNpc::LoseSingleItem(int nBelongPlayer)//danh quai roi do roi item
 	}
 	//
 	BOOL bSkip = FALSE;
-	for (int j = 0; j < 6; j++)
+	for (j = 0; j < 6; j++)
 	{
 		if (!bSkip)
 		{
@@ -7226,8 +8216,8 @@ void KNpc::LoseSingleItem(int nBelongPlayer)//danh quai roi do roi item
 			pnMagicLevel[j] = 0;
 		}
 	}
-
-	int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion());
+	int nXOpt = ItemSet.genXOpt(nLuck);
+	int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion(), 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, nXOpt);
 
 	if (nIdx <= 0)
 		return;
@@ -7316,7 +8306,7 @@ void KNpc::Revive()
 		}
 		if (ActionScript[0])
 		{
-			ExecuteScript(ActionScript, "OnRevive", m_Index);	// monster #idx cÒa npc khi hÂi sinh
+			ExecuteScript(ActionScript, "OnRevive", m_Index);	// monster #idx c√É¬±a npc khi h√É¬•i sinh
 		}
 	}
 #endif
@@ -7360,10 +8350,10 @@ void	KNpc::SendDataToNearRegion(void* pBuffer, DWORD dwSize)
 
 #ifdef	_SERVER
 
-int	KNpc::FindAroundPlayer(const char* Name)//add by phong ki“u using vÀn ti™u
+int	KNpc::FindAroundPlayer(const char* Name)//add by phong ki√É‚Äôu using v√É‚Äπn ti√Ç¬™u
 {
 	int nNpc = 0;
-	if (Name[0] <= 0 || m_RegionIndex < 0)
+	if (Name[0] == 0 || m_RegionIndex < 0)
 		return nNpc;
 	nNpc = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].SearchNpcName(Name);
 	if (nNpc)
@@ -7628,128 +8618,530 @@ int KNpc::GetLevelMagic(int nTotalLucky, int mmopt)
     }
 }
 
-void KNpc::DropRateItem(int nCount, const char* pszFileName, int nUnknown, int nItemLevel, int nItemSeries, int nBelongIdx) 
-{	
-    if (nCount <= 0 || nBelongIdx <= 0 || nBelongIdx >= MAX_PLAYER || !pszFileName || !pszFileName[0]) 
-        return;
-   // KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[.m_SubWorldIndex].szNormalDropRate);
-    KItemDropRate* m_pDropRate = KNpcTemplate::UpdateDropRate((char*)pszFileName);
-    if (!m_pDropRate || m_pDropRate->nMaxItemLevelScale <= 0 || m_pDropRate->nMinItemLevelScale <= 0)
-        return;
+void KNpc::DropRateItem(int nCount, const char* pszFileName, int nUnknown, int nItemLevel, int nItemSeries, int nBelongIdx)
+{
+	if (nCount <= 0 || nBelongIdx <= 0 || nBelongIdx >= MAX_PLAYER || !pszFileName || !pszFileName[0])
+		return;
+	// KNpcTemplate::GenNpcDropRate(&Npc[m_nNpcIdx],SubWorld[.m_SubWorldIndex].szNormalDropRate);
+	KItemDropRate* m_pDropRate = KNpcTemplate::UpdateDropRate((char*)pszFileName);
+	if (!m_pDropRate || m_pDropRate->nMaxItemLevelScale <= 0 || m_pDropRate->nMinItemLevelScale <= 0)
+		return;
 
-    int nRand, nCheckRand = 0;
-    int nGenre, nSeries, nLuck, nDetail, nParticular, nLevel, pnMagicLevel[6];
-    int nX, nY;
-    POINT ptLocal;
-    KMapPos Pos;
-    int nObj;
-    KObjItemInfo sInfo;
-    int j = 0;
-    GetMpsPos(&nX, &nY);
+	int nRand, nCheckRand = 0;
+	int nGenre, nSeries, nLuck, nDetail, nParticular, nLevel, nLevelMagic, pnMagicLevel[MAX_ITEM_MAGICLEVEL];
+	int nX, nY;
 
-    while (j < nCount) 
-    {
-        nRand = g_Random(m_pDropRate->nMaxRandRate);
-        nCheckRand = 0;
-        
-        for (int i = 0; i < m_pDropRate->nCount; i++) 
-        {
-            if (nRand >= nCheckRand && nRand < nCheckRand + m_pDropRate->pItemParam[i].nRate) 
-            {
-                nGenre = m_pDropRate->pItemParam[i].nGenre;
-                nDetail = m_pDropRate->pItemParam[i].nDetailType;
-                nParticular = m_pDropRate->pItemParam[i].nParticulType;
-                nSeries = nItemSeries;
-                nLuck = Player[nBelongIdx].m_nCurLucky;
-			
-                int nMaxLevel = max(m_pDropRate->nMaxItemLevel, m_pDropRate->nMinItemLevel);
-                int nMinLevel = min(m_pDropRate->nMaxItemLevel, m_pDropRate->nMinItemLevel);
-                int nMaxLevelMagic = max(m_pDropRate->nMaxItemLevelScale, m_pDropRate->nMinItemLevelScale);
-                int nMinLevelMagic = min(m_pDropRate->nMaxItemLevelScale, m_pDropRate->nMinItemLevelScale);
+	POINT ptLocal;
+	KMapPos Pos;
+	int nObj;
+	KObjItemInfo sInfo;
+	int j = 0;
+	GetMpsPos(&nX, &nY);
 
-                if (g_RandPercent(nLuck / 10)) 
-                    nLevel = nMaxLevel;  
-                else if (g_RandPercent(nLuck / 2 + 50)) 
-                    nLevel = g_Random(nMaxLevel + 1 - nMinLevel) + nMinLevel;
-                else 
-                    nLevel = nMinLevel;  
+	while (j < nCount)
+	{
+		nRand = g_Random(m_pDropRate->nMaxRandRate);
+		nCheckRand = 0;
 
-                int nLuckySoDong = max(0, static_cast<int>(floor(nLuck / 2.0)));
-                int nTotalLucky = Player[nBelongIdx].m_nCurLucky;
-				if(this->m_cGold.GetGoldType() == 1) // boss xanh
+		for (int i = 0; i < m_pDropRate->nCount; i++)
+		{
+			if (nRand >= nCheckRand && nRand < nCheckRand + m_pDropRate->pItemParam[i].nRate)
+			{
+				nGenre = m_pDropRate->pItemParam[i].nGenre;
+				nDetail = m_pDropRate->pItemParam[i].nDetailType;
+				nParticular = m_pDropRate->pItemParam[i].nParticulType;
+				nSeries = nItemSeries;
+				nLuck = Player[nBelongIdx].m_nCurLucky;
+
+				int nMaxLevel = max(m_pDropRate->nMaxItemLevel, m_pDropRate->nMinItemLevel);
+				int nMinLevel = min(m_pDropRate->nMaxItemLevel, m_pDropRate->nMinItemLevel);
+				int nMaxLevelMagic = max(m_pDropRate->nMaxItemLevelScale, m_pDropRate->nMinItemLevelScale);
+				int nMinLevelMagic = min(m_pDropRate->nMaxItemLevelScale, m_pDropRate->nMinItemLevelScale);
+
+				if (g_RandPercent(nLuck / 10))
+					nLevel = nMaxLevel;
+				else if (g_RandPercent(nLuck / 2 + 50))
+					nLevel = g_Random(nMaxLevel + 1 - nMinLevel) + nMinLevel;
+				else
+					nLevel = nMinLevel;
+
+				int nLuckySoDong = 0;
+				int nTotalLucky = 0;
+				int nSlMagicTT = 0;
+				if (this->m_cGold.GetGoldType() == 1) // boss xanh
 				{
-					nLuckySoDong = max(0, static_cast<int>(floor(nLuck / 2.0)) + 5);
-					nTotalLucky = Player[nBelongIdx].m_nCurLucky + 10;
+					nLuckySoDong = nLuck + 5;
+					nTotalLucky = nLuck + 10;
 				}
-				if (this->m_cGold.m_nGoldType >= defNPC_GOLD_TYE) // boss v‡ng
+				else if (this->m_cGold.m_nGoldType >= defNPC_GOLD_TYE) // boss v√É¬†ng
 				{
-					nLuckySoDong = max(0, static_cast<int>(floor(nLuck / 2.0)) + 10);
-					nTotalLucky = Player[nBelongIdx].m_nCurLucky + 20;
+					nLuckySoDong = nLuck + 10;
+					nTotalLucky = nLuck + 20;
 				}
-                int nSlMagicTT = GetMagicLevel(nLuckySoDong, g_Random(100));
-				
-                for (int k = 0; k < 6; k++) 
-                {
-                    if (k < nSlMagicTT) 
-                    {
-                        int nLevelMagic = GetLevelMagic(nTotalLucky, rand() % 100);
-                        pnMagicLevel[k] = (nLevelMagic > nLevel && nLevel < 6) ? nLevel : nLevelMagic;
-                    } 
-                    else 
-                    {
-                        pnMagicLevel[k] = 0;
-                    }
-                }
+				else
+					nLuckySoDong = nTotalLucky = nLuck;
+					
+				if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsVip == 2)
+					{
+					nLuckySoDong = nLuck + 150;
+					nTotalLucky = nLuck + 200;
+					}
+				else
+					nLuckySoDong = nTotalLucky = nLuck;
 
-                int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion());
-                if (nIdx <= 0 || nIdx >= MAX_ITEM)
-                    continue;
+				printf("Debug: Lucky: %d - Dong: %d\n", nTotalLucky, nLuckySoDong);
 
-                GetMpsPos(&nX, &nY);
-                ptLocal.x = nX;
-                ptLocal.y = nY;
-                SubWorld[m_SubWorldIndex].GetFreeObjPos(ptLocal);
-                Pos.nSubWorld = m_SubWorldIndex;
-                SubWorld[m_SubWorldIndex].Mps2Map(ptLocal.x, ptLocal.y, 
-                    &Pos.nRegion, &Pos.nMapX, &Pos.nMapY, 
-                    &Pos.nOffX, &Pos.nOffY);
+				int mm = g_Random(100);  // Ngau nhien 0 - 99
+				if (nLuckySoDong < 2) // Neu may man >= 0, < 2
+				{
+					if (mm < 15)  // 15%
+						nSlMagicTT = 3;   // 3 dong
+					else if (mm < 45)  // 30%
+						nSlMagicTT = 2; // 2 dong
+					else if (mm < 75)  // 30%
+						nSlMagicTT = 1; // 1 dong
+					else  // 25%
+						nSlMagicTT = 0; // 0 dong
+				}
+				else if (nLuckySoDong < 6)
+				{
+					if (mm < 5)
+						nSlMagicTT = 4;
+					else if (mm < 20)
+						nSlMagicTT = 3;
+					else if (mm < 53)
+						nSlMagicTT = 2;
+					else if (mm < 78)
+						nSlMagicTT = 1;
+					else
+						nSlMagicTT = 0;
+				}
+				else if (nLuckySoDong < 10)
+				{
+					if (mm < 10)
+						nSlMagicTT = 4;
+					else if (mm < 25)
+						nSlMagicTT = 3;
+					else if (mm < 62)
+						nSlMagicTT = 2;
+					else if (mm < 87)
+						nSlMagicTT = 2;
+					else
+						nSlMagicTT = 1;
+				}
+				else if (nLuckySoDong < 14)
+				{
+					if (mm < 5)
+						nSlMagicTT = 5;
+					else if (mm < 20)
+						nSlMagicTT = 4;
+					else if (mm < 35)
+						nSlMagicTT = 3;
+					else if (mm < 75)
+						nSlMagicTT = 2;
+					else
+						nSlMagicTT = 1;
+				}
+				else if (nLuckySoDong < 18)
+				{
+					if (mm < 10)
+						nSlMagicTT = 5;
+					else if (mm < 25)
+						nSlMagicTT = 4;
+					else if (mm < 50)
+						nSlMagicTT = 3;
+					else if (mm < 90)
+						nSlMagicTT = 2;
+					else
+						nSlMagicTT = 1;
+				}
+				else if (nLuckySoDong < 22)
+				{
+					if (mm < 10)
+						nSlMagicTT = 5;
+					else if (mm < 30)
+						nSlMagicTT = 4;
+					else if (mm < 55)
+						nSlMagicTT = 3;
+					else if (mm < 90)
+						nSlMagicTT = 2;
+					else
+						nSlMagicTT = 1;
+				}
+				else if (nLuckySoDong < 26)
+				{
+					if (mm < 5)
+						nSlMagicTT = 6;
+					else if (mm < 15)
+						nSlMagicTT = 5;
+					else if (mm < 35)
+						nSlMagicTT = 4;
+					else if (mm < 60)
+						nSlMagicTT = 3;
+					else if (mm < 90)
+						nSlMagicTT = 2;
+					else
+						nSlMagicTT = 1;
+				}
+				else if (nLuckySoDong < 30)
+				{
+					if (mm < 5)
+						nSlMagicTT = 6;
+					else if (mm < 20)
+						nSlMagicTT = 5;
+					else if (mm < 45)
+						nSlMagicTT = 4;
+					else if (mm < 80)
+						nSlMagicTT = 3;
+					else
+						nSlMagicTT = 2;
+				}
+				else if (nLuckySoDong < 34)
+				{
+					if (mm < 7)
+						nSlMagicTT = 6;
+					else if (mm < 27)
+						nSlMagicTT = 5;
+					else if (mm < 52)
+						nSlMagicTT = 4;
+					else if (mm < 87)
+						nSlMagicTT = 3;
+					else
+						nSlMagicTT = 2;
+				}
+				else if (nLuckySoDong >= 100)
+				{
+					if (mm < 30)
+						nSlMagicTT = 5;
+					else
+						nSlMagicTT = 6;
+				}
+				else
+				{
+					if (mm < 15)
+						nSlMagicTT = 6;
+					else if (mm < 30)
+						nSlMagicTT = 5;
+					else if (mm < 65)
+						nSlMagicTT = 4;
+					else
+						nSlMagicTT = 4;
+				}
 
-                
-                sInfo.m_nItemID = nIdx;
-                sInfo.m_nItemWidth = Item[nIdx].GetWidth();
-                sInfo.m_nItemHeight = Item[nIdx].GetHeight();
-                sInfo.m_nMoneyNum = 0;
-                if (Item[nIdx].GetGenre() != item_equip && Item[nIdx].GetStackNum() > 1)
-                {
-                    sprintf(sInfo.m_szName, "%s x %d", Item[nIdx].GetName(), Item[nIdx].GetStackNum());
-                }
-                else 
-                {
-                    strcpy(sInfo.m_szName, Item[nIdx].GetName());
-                }
-                sInfo.m_nColorID = Item[nIdx].GetColorItem();
-                sInfo.m_nGenre = Item[nIdx].GetGenre();
-                sInfo.m_nDetailType = Item[nIdx].GetDetailType();
-                sInfo.m_nParticularType = Item[nIdx].GetParticular();
-                sInfo.m_nMovieFlag = 1;
-                sInfo.m_nSoundFlag = 1;
-                sInfo.m_dwNpcId1 = 0;
 
-                nObj = ObjSet.Add(Item[nIdx].GetObjIdx(), Pos, sInfo);
-                if (nObj == -1)
-                {
-                    ItemSet.Remove(nIdx);
-                }
-                else
-                {
-                    Object[nObj].SetItemBelong(nBelongIdx > 0 ? nBelongIdx : -1);
-                }
-                j++;
-                break;
-            }
-            nCheckRand += m_pDropRate->pItemParam[i].nRate;
-        }
-    }
+				BOOL	bSkip = FALSE;
+				for (int j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
+				{
+					if (!bSkip)
+					{
+
+						if (j < nSlMagicTT)
+						{
+
+
+
+							int mmopt = g_Random(100);
+							if (nTotalLucky < 4) // Neu may man < 4
+							{
+								if (mmopt < 10) // 10%
+									nLevelMagic = 1;  // Level opt = 1
+								else if (mmopt < 30) // 20%
+									nLevelMagic = 2;
+								else if (mmopt < 70) // 40%
+									nLevelMagic = 3;
+								else if (mmopt < 90) // 20%
+									nLevelMagic = 4;
+								else	                        // 10%
+									nLevelMagic = 5;
+							}
+							else if (nTotalLucky < 8)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 1;
+								else if (mmopt < 25)
+									nLevelMagic = 2;
+								else if (mmopt < 65)
+									nLevelMagic = 3;
+								else if (mmopt < 85)
+									nLevelMagic = 4;
+								else if (mmopt < 95)
+									nLevelMagic = 5;
+								else
+									nLevelMagic = 6;
+							}
+							else if (nTotalLucky < 12)
+							{
+								if (mmopt < 10)
+									nLevelMagic = 2;
+								else if (mmopt < 40)
+									nLevelMagic = 3;
+								else if (mmopt < 75)
+									nLevelMagic = 4;
+								else if (mmopt < 90)
+									nLevelMagic = 5;
+								else
+									nLevelMagic = 6;
+							}
+							else if (nTotalLucky < 16)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 2;
+								else if (mmopt < 25)
+									nLevelMagic = 3;
+								else if (mmopt < 60)
+									nLevelMagic = 4;
+								else if (mmopt < 80)
+									nLevelMagic = 5;
+								else if (mmopt < 95)
+									nLevelMagic = 6;
+								else
+									nLevelMagic = 6;
+							}
+							else if (nTotalLucky < 20)
+							{
+								if (mmopt < 10)
+									nLevelMagic = 3;
+								else if (mmopt < 30)
+									nLevelMagic = 4;
+								else if (mmopt < 50)
+									nLevelMagic = 5;
+								else if (mmopt < 75)
+									nLevelMagic = 6;
+								else
+									nLevelMagic = 6;
+							}
+							else if (nTotalLucky < 24)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 3;
+								else if (mmopt < 20)
+									nLevelMagic = 4;
+								else if (mmopt < 40)
+									nLevelMagic = 5;
+								else if (mmopt < 60)
+									nLevelMagic = 6;
+								else if (mmopt < 80)
+									nLevelMagic = 7;
+								else
+									nLevelMagic = 8;
+							}
+							else if (nTotalLucky < 28)
+							{
+								if (mmopt < 15)
+									nLevelMagic = 4;
+								else if (mmopt < 40)
+									nLevelMagic = 5;
+								else if (mmopt < 70)
+									nLevelMagic = 6;
+								else if (mmopt < 85)
+									nLevelMagic = 7;
+								else	if (mmopt < 95)
+									nLevelMagic = 8;
+								else
+									nLevelMagic = 9;
+							}
+							else if (nTotalLucky < 32)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 4;
+								else if (mmopt < 20)
+									nLevelMagic = 5;
+								else if (mmopt < 40)
+									nLevelMagic = 6;
+								else if (mmopt < 60)
+									nLevelMagic = 7;
+								else if (mmopt < 80)
+									nLevelMagic = 8;
+								else if (mmopt < 97)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 9;
+							}
+							else if (nTotalLucky < 36)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 5;
+								else if (mmopt < 25)
+									nLevelMagic = 6;
+								else if (mmopt < 55)
+									nLevelMagic = 7;
+								else if (mmopt < 75)
+									nLevelMagic = 8;
+								else if (mmopt < 96)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 9;
+							}
+							else if (nTotalLucky < 40)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 5;
+								else if (mmopt < 30)
+									nLevelMagic = 6;
+								else if (mmopt < 50)
+									nLevelMagic = 7;
+								else if (mmopt < 70)
+									nLevelMagic = 8;
+								else if (mmopt < 95)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 44)
+							{
+								if (mmopt < 15)
+									nLevelMagic = 6;
+								else if (mmopt < 35)
+									nLevelMagic = 7;
+								else if (mmopt < 55)
+									nLevelMagic = 8;
+								else if (mmopt < 94)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 48)
+							{
+								if (mmopt < 10)
+									nLevelMagic = 6;
+								else if (mmopt < 30)
+									nLevelMagic = 7;
+								else if (mmopt < 50)
+									nLevelMagic = 8;
+								else if (mmopt < 90)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 52)
+							{
+								if (mmopt < 5)
+									nLevelMagic = 6;
+								else if (mmopt < 25)
+									nLevelMagic = 7;
+								else if (mmopt < 45)
+									nLevelMagic = 8;
+								else if (mmopt < 88)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 56)
+							{
+								if (mmopt < 20)
+									nLevelMagic = 7;
+								else if (mmopt < 40)
+									nLevelMagic = 8;
+								else if (mmopt < 85)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 60)
+							{
+								if (mmopt < 15)
+									nLevelMagic = 7;
+								else if (mmopt < 35)
+									nLevelMagic = 8;
+								else if (mmopt < 80)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky < 120)
+							{
+								if (mmopt < 40)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else if (nTotalLucky >= 150)
+							{
+								if (mmopt < 20)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+							else
+							{
+								if (mmopt < 10)
+									nLevelMagic = 7;
+								else if (mmopt < 30)
+									nLevelMagic = 8;
+								else if (mmopt < 70)
+									nLevelMagic = 9;
+								else
+									nLevelMagic = 10;
+							}
+
+
+							if (nLevelMagic > nLevel && nLevel < 6)
+								pnMagicLevel[j] = nLevel;
+							else
+								pnMagicLevel[j] = nLevelMagic;
+
+						}
+						else
+						{
+							pnMagicLevel[j] = 0;
+							bSkip = TRUE;
+						}
+					}
+					else
+					{
+						pnMagicLevel[j] = 0;
+					}
+				}
+				int nXOpt = ItemSet.genXOpt(nLuck);
+				int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular, pnMagicLevel, g_SubWorldSet.GetGameVersion(), 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, nXOpt);
+				if (nIdx <= 0 || nIdx >= MAX_ITEM)
+					continue;
+
+				GetMpsPos(&nX, &nY);
+				ptLocal.x = nX;
+				ptLocal.y = nY;
+				SubWorld[m_SubWorldIndex].GetFreeObjPos(ptLocal);
+				Pos.nSubWorld = m_SubWorldIndex;
+				SubWorld[m_SubWorldIndex].Mps2Map(ptLocal.x, ptLocal.y,
+					&Pos.nRegion, &Pos.nMapX, &Pos.nMapY,
+					&Pos.nOffX, &Pos.nOffY);
+
+
+				sInfo.m_nItemID = nIdx;
+				sInfo.m_nItemWidth = Item[nIdx].GetWidth();
+				sInfo.m_nItemHeight = Item[nIdx].GetHeight();
+				sInfo.m_nMoneyNum = 0;
+				if (Item[nIdx].GetGenre() != item_equip && Item[nIdx].GetStackNum() > 1)
+				{
+					sprintf(sInfo.m_szName, "%s x %d", Item[nIdx].GetName(), Item[nIdx].GetStackNum());
+				}
+				else
+				{
+					strcpy(sInfo.m_szName, Item[nIdx].GetName());
+				}
+				sInfo.m_nColorID = Item[nIdx].GetColorItem();
+				sInfo.m_nGenre = Item[nIdx].GetGenre();
+				sInfo.m_nDetailType = Item[nIdx].GetDetailType();
+				sInfo.m_nParticularType = Item[nIdx].GetParticular();
+				sInfo.m_nMovieFlag = 1;
+				sInfo.m_nSoundFlag = 1;
+				sInfo.m_dwNpcId1 = 0;
+
+				nObj = ObjSet.Add(Item[nIdx].GetObjIdx(), Pos, sInfo);
+				if (nObj == -1)
+				{
+					ItemSet.Remove(nIdx);
+				}
+				else
+				{
+					Object[nObj].SetItemBelong(nBelongIdx > 0 ? nBelongIdx : -1);
+				}
+				j++;
+				break;
+			}
+			nCheckRand += m_pDropRate->pItemParam[i].nRate;
+		}
+	}
 }
 
 #endif
@@ -7825,29 +9217,33 @@ void KNpc::UpdateNpcStateInfo()
 	//
 	if (m_ActiveAuraID)
 	{
-		if (m_SkillList.GetLevel(m_ActiveAuraID) > 0)
+		int nLevel = m_SkillList.GetCurrentLevel(m_ActiveAuraID);
+		if (nLevel > 0)
 		{
-			KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_ActiveAuraID, 1);
+			int nSpecialID = 0;
+			KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_ActiveAuraID, nLevel);
 			if (pOrdinSkill)
-			{
-				if (pOrdinSkill->GetStateSpecailId())
-					AddStateInfo(pOrdinSkill->GetStateSpecailId());
-				//
+            {
+				if (nSpecialID = pOrdinSkill->GetStateSpecailId())
+					m_btStateInfo[i++] = nSpecialID;
 				if(pOrdinSkill->GetAppendSkillNum())
 				{
 					for( j = 0; j < pOrdinSkill->GetAppendSkillNum(); j++)
 					{
-						if(m_SkillList.GetLevel(pOrdinSkill->GetAppendSkillId(j)) <= 0)
-							continue;
-						pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(pOrdinSkill->GetAppendSkillId(j), 1);
-						if (pOrdinSkill)
+						int nChildId = pOrdinSkill->GetAppendSkillId(j);
+						nLevel = m_SkillList.GetCurrentLevel(nChildId);
+						if(nLevel > 0)
 						{
-							if (pOrdinSkill->GetStateSpecailId())
-								AddStateInfo(pOrdinSkill->GetStateSpecailId());
+							KSkill * pChildSkill = (KSkill *) g_SkillManager.GetSkill(nChildId, nLevel);
+							if(pChildSkill)
+							{
+								if (nSpecialID = pChildSkill->GetStateSpecailId())
+									m_btStateInfo[i++] = nSpecialID;
+							}
 						}
 					}
 				}
-			}
+            }
 		}
 	}
 	//
@@ -7859,38 +9255,8 @@ void KNpc::UpdateNpcStateInfo()
 		}
 		pNode = (KStateNode*)pNode->GetPrev();
 	}
-	//
-	for (i; i < MAX_SKILL_STATE; i++)
-	{
-		m_btStateInfo[i] = 0;
-	}
 }
 
-void KNpc::AddStateInfo(int nID)
-{	
-	// Tim xem da ton tai chua
-	BOOL bEC = FALSE;
-	int i = 0;
-	for (i = 0; i < MAX_NPC_RECORDER_STATE; i++)
-	{
-		if (m_btStateInfo[i] == nID)
-		{
-			bEC = TRUE;
-			break;
-		}
-	}
-	if (bEC == TRUE)//Ton tai roi khong add nua
-		return;
-	// Tim vi tri Emty de add vao
-	for (i = 0; i < MAX_NPC_RECORDER_STATE; i++)
-	{
-		if (m_btStateInfo[i] == 0)
-			break;
-	}
-	if (i == MAX_NPC_RECORDER_STATE)
-		i = 0;
-	m_btStateInfo[i] = nID;
-}
 
 #endif
 
@@ -7913,6 +9279,10 @@ void	KNpc::ClearNpcState()
 	{
 		pTempNode = pNode;
 		pNode = (KStateNode*) pNode->GetPrev();
+		pTempNode->m_bOverLook = 0;
+		pTempNode->m_LeftTime = 0;
+		pTempNode->m_SkillID = 0;
+		memset(pTempNode->m_State, 0, sizeof(pTempNode->m_State));
 		pTempNode->Remove();
 		delete pTempNode;
 	}
@@ -7921,6 +9291,17 @@ void	KNpc::ClearNpcState()
 
 void	KNpc::RestoreNpcBaseInfo()
 {
+	int nmPlayerIdx = 0;
+
+	if (m_Kind == kind_player)
+	{//?????
+#ifdef _SERVER
+		nmPlayerIdx = GetPlayerIdx();
+#else
+		nmPlayerIdx = CLIENT_PLAYER_INDEX;
+#endif
+
+	}
 	m_CurrentCamp = m_Camp;
 	m_ActiveSkillID = 0;
 	m_ActiveAuraID = 0;
@@ -7943,15 +9324,17 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentStaminaGain	= m_StaminaGain;
 	m_CurrentStaminaLoss	= m_StaminaLoss;
 
-	memset(&m_CurrentFireDamage, 0, sizeof(m_CurrentFireDamage));
-	memset(&m_CurrentColdDamage, 0, sizeof(m_CurrentColdDamage));
-	memset(&m_CurrentLightDamage, 0, sizeof(m_CurrentLightDamage));
-	memset(&m_CurrentPoisonDamage, 0, sizeof(m_CurrentPoisonDamage));
+	if (!m_bNoReloadAttr) {
+		memset(&m_CurrentFireDamage, 0, sizeof(m_CurrentFireDamage));
+		memset(&m_CurrentColdDamage, 0, sizeof(m_CurrentColdDamage));
+		memset(&m_CurrentLightDamage, 0, sizeof(m_CurrentLightDamage));
+		memset(&m_CurrentPoisonDamage, 0, sizeof(m_CurrentPoisonDamage));
 
-	memset(&m_CurrentFireMagic, 0, sizeof(m_CurrentFireMagic));
-	memset(&m_CurrentColdMagic, 0, sizeof(m_CurrentColdMagic));
-	memset(&m_CurrentLightMagic, 0, sizeof(m_CurrentLightMagic));
-	memset(&m_CurrentPoisonMagic, 0, sizeof(m_CurrentPoisonMagic));
+		memset(&m_CurrentFireMagic, 0, sizeof(m_CurrentFireMagic));
+		memset(&m_CurrentColdMagic, 0, sizeof(m_CurrentColdMagic));
+		memset(&m_CurrentLightMagic, 0, sizeof(m_CurrentLightMagic));
+		memset(&m_CurrentPoisonMagic, 0, sizeof(m_CurrentPoisonMagic));
+	}
 
 	m_CurrentAttackRating	= m_AttackRating;
 	m_CurrentDefend			= m_Defend;
@@ -7972,9 +9355,48 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentAttackSpeed	= m_AttackSpeed;
 	m_CurrentCastSpeed		= m_CastSpeed;
 	m_CurrentVisionRadius	= m_VisionRadius;
-	m_CurrentActiveRadius	= m_ActiveRadius;	//B∏n k›nh hoπt ÆÈng
-	m_CurrentHitRecover		= m_HitRecover;		//thÍi gian phÙc hÂi
+	m_CurrentActiveRadius	= m_ActiveRadius;	//B¬∏n k√ùnh ho¬πt ¬Æ√©ng
+	m_CurrentHitRecover		= m_HitRecover;		//th√™i gian ph√¥c h√•i
 	m_CurrentTreasure		= m_Treasure;
+
+	if (m_Kind == kind_player)
+	{//?????
+		int nCurbei = 0;
+
+		/*int nFomoidx=GetCurFuMoIdx();
+
+		if 	(nFomoidx>-1)
+		{
+			if (GetCurFoMoSkllLevel(nFomoidx)>=5) //?????????
+			{
+				nCurbei=GetCurFoMoSkllLevel(nFomoidx)/5;
+			}
+		}
+		*/
+		int nTempVal_life = 0;
+		int nTempVal_fangyu = 0;
+		m_CurrentLifeMax = m_LifeMax * (100 + nTempVal_life + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornLifeMaxVal() + nCurbei * 50) / 100;
+		//TakeTrader(m_LifeMax*(100+Player[nmPlayerIdx].m_cReBorn.GetReBornNum()*50+nCurbei*50),100);
+		//m_LifeMax*(100+Player[nmPlayerIdx].m_cReBorn.GetReBornNum()*50+nCurbei*50)/100;
+		m_CurrentManaMax = m_ManaMax * (100 + nTempVal_life + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornLifeMaxVal() + nCurbei * 50) / 100;
+		//TakeTrader(m_ManaMax*(100+Player[nmPlayerIdx].m_cReBorn.GetReBornNum()*50+nCurbei*50),100);
+		//m_ManaMax*(100+Player[nmPlayerIdx].m_cReBorn.GetReBornNum()*50+nCurbei*50)/100;//????????????
+		m_CurrentFireResistMax = m_FireResistMax + nTempVal_fangyu + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornFanYuMaxVal(); //200
+		m_CurrentColdResistMax = m_ColdResistMax + nTempVal_fangyu + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornFanYuMaxVal();
+		m_CurrentPoisonResistMax = m_PoisonResistMax + nTempVal_fangyu + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornFanYuMaxVal();
+		m_CurrentLightResistMax = m_LightResistMax + nTempVal_fangyu + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornFanYuMaxVal();
+		m_CurrentPhysicsResistMax = m_PhysicsResistMax + nTempVal_fangyu + Player[nmPlayerIdx].m_cReBorn.GetReBornNum() * Player[nmPlayerIdx].m_cReBorn.GetReBornFanYuMaxVal();
+	}
+	else
+	{
+		m_CurrentLifeMax = m_LifeMax;
+		m_CurrentManaMax = m_ManaMax;//????????????
+		m_CurrentFireResistMax = m_FireResistMax; //200
+		m_CurrentColdResistMax = m_ColdResistMax;
+		m_CurrentPoisonResistMax = m_PoisonResistMax;
+		m_CurrentLightResistMax = m_LightResistMax;
+		m_CurrentPhysicsResistMax = m_PhysicsResistMax;
+	}
 
 	m_CurrentDamage2Mana	= 0;
 	m_CurrentManaPerEnemy	= 0;
@@ -7988,7 +9410,7 @@ void	KNpc::RestoreNpcBaseInfo()
 
 	m_CurrentBlindEnemy		= 0;
 	m_CurrentPiercePercent	= 0;
-	m_CurrentFreezeTimeReducePercent	= 0;	//ThÍi gian lµm chÀm gi∂m bÌt
+	m_CurrentFreezeTimeReducePercent	= 0;	//Th√™i gian l¬µm ch√ãm gi¬∂m b√≠t
 	m_CurrentPoisonTimeReducePercent	= 0;
 	m_CurrentStunTimeReducePercent		= 0;
 	m_CurrentIgnoreNegativeStateP = 0;
@@ -7998,6 +9420,7 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentLightEnhance	= 0;
 	m_CurrentRangeEnhance	= 0;
 	m_CurrentHandEnhance	= 0;
+	m_CurrentExpSkillsVip = 0;
     m_CurrentExpSkillsEnchance = 1; // ExpSkills x2
 	m_CurrentReturnSkillPercent = 0;
 	m_CurrentIgnoreSkillPercent = 0;
@@ -8121,13 +9544,13 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 {
 	int nTargetSubWorld = g_SubWorldSet.SearchWorld(dwSubWorldID);
 
-	//if (!IsPlayer()) return 0; //B· Æi vÀn ti™u Æang c«n
+	//if (!IsPlayer()) return 0; //B√É¬° √Ç¬Æi v√É‚Äπn ti√Ç¬™u √Ç¬Æang c√É‚Ä°n
 	
 	if (-1 == nTargetSubWorld)
 	{
 		//if (m_SubWorldIndex >= 0)
 		//	SubWorld[m_SubWorldIndex].m_MissionArray.RemovePlayer(m_nPlayerIdx, Player[m_nPlayerIdx].m_dwID);
-		TobeExchangeServer(dwSubWorldID, nX, nY);
+		//TobeExchangeServer(dwSubWorldID, nX, nY);
 		g_DebugLog("MapID %d haven't been loaded!", dwSubWorldID);
 		return 0;
 	}
@@ -8150,7 +9573,7 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 	
 	//if (m_SubWorldIndex >= 0)
 	//	SubWorld[m_SubWorldIndex].m_MissionArray.RemovePlayer(m_nPlayerIdx, Player[m_nPlayerIdx].m_dwID);
-
+    
 	if (m_SubWorldIndex >= 0 && m_RegionIndex >= 0)
 	{
 		SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].RemoveNpc(m_Index);
@@ -8177,9 +9600,10 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 	SubWorld[nTargetSubWorld].m_Region[nRegion].AddRef(m_MapX, m_MapY, obj_npc);
 	DoStand();
 	m_ProcessAI = 1;
-
+    
 	if (IsPlayer())
 	{
+        
 		SubWorld[nTargetSubWorld].SendSyncData(m_Index, Player[m_nPlayerIdx].m_nNetConnectIdx);
 		SubWorld[nSourceSubWorld].RemovePlayer(nSourceRegion, m_nPlayerIdx);
 		SubWorld[nTargetSubWorld].AddPlayer(nRegion, m_nPlayerIdx);
@@ -8229,8 +9653,81 @@ BOOL KNpc::IsAlive()
 	return TRUE;
 }
 
+void KNpc::ForceClearStateSkillEffect() {
+	KStateNode* pNode;
+	pNode = (KStateNode*)m_StateSkillList.GetTail();
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
+	while (pNode)
+	{
+		KStateNode* pTempNode = pNode;
+		pNode = (KStateNode*)pNode->GetPrev();
+		if (pTempNode)
+		{
+			for (int i = 0; i < MAX_SKILL_STATE; i++)
+			{
+				if (pTempNode->m_State[i].nAttribType)
+					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
+			}
+			_ASSERT(pTempNode != NULL);
+			pTempNode->Remove();
+			delete pTempNode;
+#ifdef _SERVER
+			bStateRemove = true;
+#endif
+			pTempNode = NULL;
+			continue;
+		}
+	}
+#ifdef _SERVER
+	if(bStateRemove)
+		UpdateNpcStateInfo();
+#endif
+}
+
+void KNpc::ForceClearStateSkillEffect(int nSkillId)
+{
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
+	KStateNode* pNode;
+	pNode = (KStateNode*)m_StateSkillList.GetTail();
+	while (pNode)
+	{
+		KStateNode* pTempNode = pNode;
+		pNode = (KStateNode*)pNode->GetPrev();
+		if (nSkillId != pTempNode->m_SkillID)
+			continue;
+		//
+		if (pTempNode)
+		{
+			for (int i = 0; i < MAX_SKILL_STATE; i++)
+			{
+				if (pTempNode->m_State[i].nAttribType)
+					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
+			}
+			_ASSERT(pTempNode != NULL);
+			pTempNode->Remove();
+			delete pTempNode;
+#ifdef _SERVER
+			bStateRemove = true;
+#endif
+			pTempNode = NULL;
+			continue;
+		}
+	}
+#ifdef _SERVER
+	if(bStateRemove)
+		UpdateNpcStateInfo();
+#endif
+}
+
 void KNpc::ClearStateSkillEffect()
 {
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
 	KStateNode* pNode;
 	pNode = (KStateNode *)m_StateSkillList.GetTail();
 	while(pNode)
@@ -8239,7 +9736,7 @@ void KNpc::ClearStateSkillEffect()
 		pNode = (KStateNode *)pNode->GetPrev();
 		//
 		//pNode->m_LeftTime = nTime;
-		if (pTempNode->m_bOverLook)	//Kh´ng xo∏ nh˜ng skill c? OverLook
+		if (pTempNode->m_bOverLook)	//Kh√Ç¬´ng xo√Ç¬∏ nh√É¬∑ng skill c? OverLook
 			continue;
 
 		if (pTempNode->m_LeftTime == -1)	
@@ -8256,13 +9753,54 @@ void KNpc::ClearStateSkillEffect()
 			pTempNode->Remove();
 			delete pTempNode;
 #ifdef _SERVER
-			UpdateNpcStateInfo();
+			bStateRemove = true;
 #endif
 			pTempNode = NULL;
 			continue;
 		}
 	}
+#ifdef _SERVER
+	if(bStateRemove)
+		UpdateNpcStateInfo();
+#endif
 }
+
+
+void KNpc::ClearStateSkillEffect(int nSkillId)
+{
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
+	KStateNode* pNode;
+	pNode = (KStateNode*)m_StateSkillList.GetTail();
+	while (pNode)
+	{
+		KStateNode* pTempNode = pNode;
+		pNode = (KStateNode*)pNode->GetPrev();
+		if (nSkillId != pTempNode->m_SkillID)
+			continue;
+		//
+			for (int i = 0; i < MAX_SKILL_STATE; i++)
+			{
+				if (pTempNode->m_State[i].nAttribType)
+					ModifyAttrib(m_Index, &pTempNode->m_State[i]);
+			}
+			_ASSERT(pTempNode != NULL);
+			
+			pTempNode->Remove();
+			delete pTempNode;
+			pTempNode = NULL;
+#ifdef _SERVER
+			bStateRemove = true;
+#endif
+			continue;
+	}
+#ifdef _SERVER
+	if(bStateRemove)
+		UpdateNpcStateInfo();
+#endif
+}
+
 
 void KNpc::ClearNormalState()
 {
@@ -8316,13 +9854,12 @@ void KNpc::CheckTrap()
 
 void KNpc::SetFightMode(BOOL bFightMode)
 {
-	g_DebugLog("[DEATH]SetMode:%d", bFightMode);
-	m_FightMode = bFightMode;
-
 #ifdef _SERVER
 	if (this->m_Kind == kind_player)
 		Player[this->m_nPlayerIdx].m_cPK.CloseAll();
 #endif
+
+	m_FightMode = bFightMode;
 }
 
 void KNpc::TurnTo(int nIdx)
@@ -8364,8 +9901,11 @@ void KNpc::ReCalcStateEffect()
 	}
 }
 
-void KNpc::IgnoreState(BOOL bNegative) //B· qua trπng th∏i
+void KNpc::IgnoreState(BOOL bNegative) //B√° qua tr¬πng th¬∏i
 {
+#ifdef _SERVER
+	bool bStateRemove = false;
+#endif
 	KStateNode* pNode;
 	pNode = (KStateNode *)m_StateSkillList.GetTail();
 	while(pNode)
@@ -8373,7 +9913,7 @@ void KNpc::IgnoreState(BOOL bNegative) //B· qua trπng th∏i
 		KStateNode* pTempNode = pNode;
 		pNode = (KStateNode *)pNode->GetPrev();
 		//
-		if (pTempNode->m_bOverLook)	//Kh´ng xo∏ nh˜ng skill c„ OverLook
+		if (pTempNode->m_bOverLook)	//Kh¬´ng xo¬∏ nh√∑ng skill c√£ OverLook
 			continue;
 		//
 		if (pTempNode->m_LeftTime >= 0)
@@ -8381,6 +9921,9 @@ void KNpc::IgnoreState(BOOL bNegative) //B· qua trπng th∏i
 			if(bNegative)
 			{
 				KSkill * pSkill = (KSkill *) g_SkillManager.GetSkill(pTempNode->m_SkillID, pTempNode->m_Level);
+				if (!pSkill)
+					continue;
+
 				if (!pSkill->IsTargetOnly() && !pSkill->IsTargetEnemy())
 					continue;
 			}
@@ -8399,13 +9942,15 @@ void KNpc::IgnoreState(BOOL bNegative) //B· qua trπng th∏i
 			pTempNode = NULL;
 			//
 #ifdef _SERVER
-			UpdateNpcStateInfo();
+			bStateRemove = true;
 #endif
 			continue;
 		}
 	}
 	//
 #ifdef _SERVER
+	if(bStateRemove)
+		UpdateNpcStateInfo();
 	IGNORE_STATE_SYNC	Sync; 
 	Sync.ProtocolType = s2c_ignorestate;
 	Sync.bNegative = bNegative;
@@ -8637,12 +10182,12 @@ void KNpc::ProcNetCommand(NPCCMD cmd, int x /* = 0 */, int y /* = 0 */, int z /*
 		if (m_RegionIndex >= 0)
 			DoHurt(x, y, z);
 		break;
-	case do_revive:  //?æ◊≈£ø
+	case do_revive:  //?√Ç¬æ√É‚Äî√É‚Ä¶√Ç¬£√Ç¬ø
 		{
 		DoStand();
 		m_ProcessAI = 1;
 		m_ProcessState = 1;
-		SetInstantSpr(enumINSTANT_STATE_REVIVE); // Õ∑≈?ª∏ˆ÷ÿ…˙µƒÀ≤º‰?ÿ?ß	
+		SetInstantSpr(enumINSTANT_STATE_REVIVE); //√É≈†√É¬ç√Ç¬∑√É‚Ä¶?√Ç¬ª√Ç¬∏√É¬∂√É‚Äì√ÉÀú√É‚Ä∞√É¬∫√Ç¬µ√É‚Äû√É‚Äπ√Ç¬≤√Ç¬º√É¬§?√ÉÀú?√Ç¬ß	
 		}
 		break;
 	case do_stand:
@@ -8665,11 +10210,13 @@ void	KNpc::ClearBlood(int i)
 	m_nBloodAlpha[i]	= 0;
 	m_nBloodTime[i]		= 0;
 	m_szBloodNo[i][0]	= 0;
+	m_nBloodColor[i]	= 0;
+	m_nBloodFontSize[i]	= 0;
 }
 #endif
 
 #ifndef _SERVER
-void	KNpc::SetBlood(int nNo) //nh∂y Damage khi Æ∏nh vµo NPC
+void	KNpc::SetBlood(int nNo) //nh√Ç¬∂y Damage khi √Ç¬Æ√Ç¬∏nh v√Ç¬µo NPC
 {
 	if (nNo <= 0)
 		return;
@@ -8689,32 +10236,247 @@ void	KNpc::SetBlood(int nNo) //nh∂y Damage khi Æ∏nh vµo NPC
 #endif
 
 #ifndef _SERVER
+#define DAMAGE_INFO_TOTAL_FRAME 100
+#define MAX_DAMAGE_INFO_TEXT_WIDTH 50
+#define DAMAGE_INFO_TEXT_CHAR_WIDTH 10
+#define DAMAGE_INFO_TEXT_HEIGHT 30
+#define DAMAGE_INFO_TEXT_RANDOM_X 150
+#define DAMAGE_INFO_TEXT_RANDOM_Y 100
+#define DAMAGE_INFO_TEXT_BASIC_OFFSET_Y 200
+
+int ComputeFrameFromTime(int tick) {
+	if (tick < 0) tick = 0;
+	if (tick > defMAX_SHOW_BLOOD_TIME) tick = defMAX_SHOW_BLOOD_TIME;
+
+	int half = defMAX_SHOW_BLOOD_TIME / 2; // 20
+
+	if (tick <= half) {
+		// 0 ? 4
+		return (tick * 4) / half;
+	}
+	else {
+		// 4 ? 0
+		return ((defMAX_SHOW_BLOOD_TIME - tick) * 4) / half;
+	}
+}
+
 int	KNpc::PaintBlood(int nHeightOffset)
 {
-	for (int i = 0;i < 5;i++)
-	{
+	int addbloodspace = 50;
+	auto RenderBlood = [&](int i) {
 		if (!m_szBloodNo[i][0])
-			continue;
-		
-		int	nHeightOff = (int)(nHeightOffset + (defMAX_SHOW_BLOOD_TIME - m_nBloodTime[i]) * defSHOW_BLOOD_MOVE_SPEED / 3);
-		int nFontSize = 16;
-		DWORD	dwColor = SHOW_BLOOD_COLOR | (m_nBloodAlpha[i] << 24);
-		int		nMpsX, nMpsY;
+			return;
+
+		int nHeightOff = (int)(nHeightOffset + (defMAX_SHOW_BLOOD_TIME - m_nBloodTime[i]) * defSHOW_BLOOD_MOVE_SPEED / 3);
+		DWORD dwColor = m_nBloodColor[i] | (m_nBloodAlpha[i] << 24); // Apply alpha to color
+		int nMpsX, nMpsY;
 		GetMpsPos(&nMpsX, &nMpsY);
-		g_pRepresent->OutputText(nFontSize, m_szBloodNo[i], KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(m_szBloodNo[i]) / 4, nMpsY, dwColor, 0, nHeightOff);
-		
+
+		KRUImage pImage;
+		int damage = atoi(m_szBloodNo[i]);
+		if (damage == 0 && strcmp(m_szBloodNo[i], (const char*)"MISS"))
+			goto NOTHING;
+		if (m_nBloodColor[i] == SHOW_BLOOD_COLOR) {
+			pImage.oPosition.nX = nMpsX;// +info.PosX;
+			pImage.oPosition.nY = nMpsY - nHeightOffset + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;// -info.PosY;
+			pImage.oPosition.nZ = nHeightOff;
+			pImage.Color.Color_b.a = 255;
+			pImage.uImage = 0;
+			pImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			pImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			pImage.nType = 1;
+			sprintf(pImage.szImage, "%s", "\\spr\\blood\\damage.spr");
+			do {
+				pImage.nFrame = (unsigned short)(damage % 10);
+				damage /= 10;
+				pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+				g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+			} while (damage > 0);
+			pImage.nFrame = 10;
+			pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+			g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+		}
+		else if (m_nBloodColor[i] == SHOW_BLOOD_COLOR_CRIT) {
+			int frameSize = ComputeFrameFromTime(m_nBloodTime[i]);
+			KRUImage minusImage;
+			// Prepare minus sign image
+			sprintf(minusImage.szImage, "\\spr\\blood\\-.spr");
+			minusImage.uImage = 0;
+			minusImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			minusImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			minusImage.nType = 1;
+			minusImage.nFrame = frameSize;
+			minusImage.Color.Color_b.a = 255;
+			minusImage.oPosition.nY = nMpsY - nHeightOffset + 20 + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;
+			minusImage.oPosition.nZ = nHeightOff;
+			// Step 1: Prepare digit images before the damage loop
+			KRUImage digitImages[10];
+			for (int d = 0; d < 10; ++d) {
+				sprintf(digitImages[d].szImage, "\\spr\\blood\\%d.spr", d);
+				digitImages[d].uImage = 0;
+				digitImages[d].bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+				digitImages[d].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+				digitImages[d].nType = 1;
+				digitImages[d].nFrame = frameSize;
+				digitImages[d].Color.Color_b.a = 255;
+				digitImages[d].oPosition.nY = nMpsY - nHeightOffset + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;
+				digitImages[d].oPosition.nZ = nHeightOff;
+			}
+
+			// Step 2: Extract digits (right-to-left)
+			std::vector<int> digits;
+			int temp = damage;
+			if (temp == 0) digits.push_back(0);
+			while (temp > 0) {
+				digits.push_back(temp % 10);
+				temp /= 10;
+			}
+
+			// Step 3: Draw from right to left
+			int currentX = nMpsX-15;
+			for (int digit : digits) {
+				KRUImage pImage = digitImages[digit]; // copy template
+				pImage.oPosition.nX = currentX;
+				currentX -= DAMAGE_INFO_TEXT_CHAR_WIDTH + 5;
+				g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+			}
+			minusImage.oPosition.nX = currentX;
+			g_pRepresent->DrawPrimitives(1, &minusImage, RU_T_IMAGE, FALSE);
+		}
+		else if (m_nBloodColor[i] == SHOW_BLOOD_COLOR_ABSORB_LIFE) {
+			pImage.oPosition.nX = nMpsX;// +info.PosX;
+			pImage.oPosition.nY = nMpsY - nHeightOffset + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;// -info.PosY;
+			pImage.oPosition.nZ = nHeightOff;
+			pImage.Color.Color_b.a = 255;
+			pImage.uImage = 0;
+			pImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			pImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			pImage.nType = 1;
+			sprintf(pImage.szImage, "%s", "\\spr\\blood\\heal.spr"); //green
+			do {
+				pImage.nFrame = (unsigned short)(damage % 10);
+				damage /= 10;
+				pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+				g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+			} while (damage > 0);
+			pImage.nFrame = 10;
+			pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+			g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+		}
+		else if (m_nBloodColor[i] == SHOW_BLOOD_COLOR_ABSORB_MANA) {
+			pImage.oPosition.nX = nMpsX;// +info.PosX;
+			pImage.oPosition.nY = nMpsY - nHeightOffset + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;// -info.PosY;
+			pImage.oPosition.nZ = nHeightOff;
+			pImage.Color.Color_b.a = 255;
+			pImage.uImage = 0;
+			pImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			pImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			pImage.nType = 1;
+			sprintf(pImage.szImage, "%s", "\\spr\\blood\\healmana.spr"); //blue
+			do {
+				pImage.nFrame = (unsigned short)(damage % 10);
+				damage /= 10;
+				pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+				g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+			} while (damage > 0);
+			pImage.nFrame = 10;
+			pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+			g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+		}
+		else if (m_nBloodColor[i] == SHOW_BLOOD_COLOR_MISS) {
+			pImage.oPosition.nX = nMpsX;// +info.PosX;
+			pImage.oPosition.nY = nMpsY - nHeightOffset + addbloodspace;// -DAMAGE_INFO_TEXT_BASIC_OFFSET_Y;// -info.PosY;
+			pImage.oPosition.nZ = nHeightOff;
+			pImage.Color.Color_b.a = 255;
+			pImage.uImage = 0;
+			pImage.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+			pImage.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+			pImage.nType = 1;
+			sprintf(pImage.szImage, "%s", "\\spr\\blood\\miss.spr");
+			pImage.nFrame = 0;
+			pImage.oPosition.nX -= DAMAGE_INFO_TEXT_CHAR_WIDTH;
+			g_pRepresent->DrawPrimitives(1, &pImage, RU_T_IMAGE, FALSE);
+		}
+NOTHING :
 		m_nBloodTime[i]--;
 		if (m_nBloodTime[i] <= 0)
 		{
 			ClearBlood(i);
-			continue;
+			return;
 		}
-		m_nBloodAlpha[i]++;
-		if (m_nBloodAlpha[i] > 31)
-		m_nBloodAlpha[i] = 31;
+	};
+
+	// First pass: Render non-critical hits
+	for (int i = 0; i < 5; i++)
+	{
+		if (m_nBloodColor[i] != SHOW_BLOOD_COLOR_CRIT)
+		{
+			RenderBlood(i);
+		}
+	}
+
+	// Second pass: Render critical hits
+	for (int i = 0; i < 5; i++)
+	{
+		if (m_nBloodColor[i] == SHOW_BLOOD_COLOR_CRIT)
+		{
+			RenderBlood(i);
+		}
 	}
 
 	return nHeightOffset;
+}
+
+void	KNpc::SetBlood2(DAMAGESHOW* Damage)
+{
+	if (Damage->nDamage <= 0 && Damage->enType != COMBAT_INFO_DODGE)
+		return;
+	int i;
+	for (i = 0; i < 5; i++)
+	{
+		if (!m_szBloodNo[i][0])
+			break;
+	}
+	if (i == 5)
+		i = 0;
+	m_nBloodNo[i] = Damage->nDamage;
+	if (Damage->enType == COMBAT_INFO_DAMAGE_LIFE) {
+		if (Damage->IsCrit) {
+			m_nBloodColor[i] = SHOW_BLOOD_COLOR_CRIT;
+			m_nBloodFontSize[i] = 16;
+		}
+		else {
+			m_nBloodColor[i] = SHOW_BLOOD_COLOR;
+			m_nBloodFontSize[i] = 12;
+		}
+	}
+	else if (Damage->enType == COMBAT_INFO_ABSORB_LIFE) {
+		m_nBloodColor[i] = SHOW_BLOOD_COLOR_ABSORB_LIFE;
+		m_nBloodFontSize[i] = 14;
+	}
+	else if (Damage->enType == COMBAT_INFO_ABSORB_MANA) {
+		m_nBloodColor[i] = SHOW_BLOOD_COLOR_ABSORB_MANA;
+		m_nBloodFontSize[i] = 14;
+	}
+	else if (Damage->enType == COMBAT_INFO_ABSORB_STAMINA) {
+		m_nBloodColor[i] = SHOW_BLOOD_COLOR_ABSORB_STAMINA;
+		m_nBloodFontSize[i] = 14;
+	}
+	else if (Damage->enType == COMBAT_INFO_DODGE) {
+		m_nBloodColor[i] = SHOW_BLOOD_COLOR_MISS;
+		m_nBloodFontSize[i] = 14;
+		m_nBloodAlpha[i] = 0;
+		m_nBloodTime[i] = defMAX_SHOW_BLOOD_TIME;
+		sprintf(m_szBloodNo[i], "MISS");
+		return;
+	}
+
+	m_nBloodAlpha[i] = 0;
+	m_nBloodTime[i] = defMAX_SHOW_BLOOD_TIME;
+	if (Damage->IsCrit)
+		sprintf(m_szBloodNo[i], "%d", Damage->nDamage);
+	else
+		sprintf(m_szBloodNo[i], "%d", Damage->nDamage);
 }
 #endif
 
@@ -9134,6 +10896,85 @@ BOOL	KNpc::ExecuteScript2(char * ScriptFileName, char * szFunName, char *  szPar
 #ifndef _SERVER
 void KNpc::ResetPathFind()
 {
-	m_PathFind.clear();
+	g_ScenePlace.RemoveFlag();       
 }
+/*
+void KNpc::OnRunByFPS(int nStep)
+{
+	if(m_CurrentRunSpeed <= 0 || nStep <= 0)
+		return;
+	int nSpeed = m_CurrentRunSpeed;
+	if(nSpeed > 32)
+		nSpeed = 32;
+	int nTrueSpeed = (int)nSpeed/nStep;
+	int nAddPerStep = (int)nSpeed % nStep;
+	if(m_nPosShiftStep < nAddPerStep)
+		nTrueSpeed++;
+	m_nPosShiftStep++;
+	if(m_nPosShiftStep >= nStep)
+		m_nPosShiftStep = 0;
+	ServeMove(nTrueSpeed);
+}
+
+void KNpc::OnWalkByFPS(int nStep)
+{
+	if(m_CurrentWalkSpeed <= 0 || nStep <= 0)
+		return;
+	int nSpeed = m_CurrentWalkSpeed;
+	if(nSpeed > 32)
+		nSpeed = 32;
+	int nTrueSpeed = (int)nSpeed/nStep;
+	int nAddPerStep = (int)nSpeed % nStep;
+	if(m_nPosShiftStep < nAddPerStep)
+		nTrueSpeed++;
+	m_nPosShiftStep++;
+	if(m_nPosShiftStep >= nStep)
+		m_nPosShiftStep = 0;
+	ServeMove(nTrueSpeed);
+}
+*/
 #endif
+
+void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
+{
+	if (!IsPlayer() || m_nPlayerIdx <= 0)
+	{
+		m_szGameTitle[0] = 0;
+		return;
+	}
+	
+		
+	const char* FactionName[] = {
+		"Thi√ïu L¬©m",
+		"Thi¬™n V¬≠¬¨ng Bang",
+		"¬ß¬≠√™ng M¬´n",
+		"Ng√± ¬ß√©c",
+		"Nga My",
+		"Th√≥y Y¬™n",
+		"C¬∏i Bang",
+		"Thi¬™n Nh√ân",
+		"V√¢ ¬ßang",
+		"C¬´n L¬´n"
+	};
+
+	int nFaction = Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo();
+	int nLevel = m_Level;
+
+	if (nLevel > 0)
+	{
+		const char* szFactionName;
+		if (nFaction >= 0 && nFaction <= 9)
+		{
+			szFactionName = FactionName[nFaction];
+			sprintf(m_szGameTitle, "%s/Lv:%d", szFactionName, nLevel);
+		}
+		else
+		{
+			sprintf(m_szGameTitle, "Lv:%d", nLevel);
+		}
+	}
+	else
+	{
+		m_szGameTitle[0] = 0;
+	}
+}

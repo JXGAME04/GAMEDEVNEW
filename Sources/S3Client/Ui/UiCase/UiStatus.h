@@ -39,6 +39,7 @@ private:
 	KUiStatus() {}
 	~KUiStatus() {}
 	void	Initialize();								//	
+	void	SwitchExpand(BOOL bShow);
 	void	UseRemainPoint(UI_PLAYER_ATTRIBUTE type, int numpoint);	//升级某项属性 //void	UseRemainPoint(UI_PLAYER_ATTRIBUTE type);	//升级某项属性
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	//窗口函数
 	void	LoadScheme(class KIniFile* pIni);			//载入界面方案
@@ -81,6 +82,12 @@ private:
 	KWndButton	m_Bind;
 	KWndButton	m_UnBind;
 	KWndButton	m_BtnLock;
+	KWndButton	m_BtnSet1;
+	KWndButton	m_BtnSet2;
+
+	KWndButton	m_EquipExpandBtn;
+	KWndImage	m_EquipExpandImg;
+	KWndButton	m_MaskFeature;
 
 	//
 	KWndObjectBox	m_EquipBox[_ITEM_COUNT];

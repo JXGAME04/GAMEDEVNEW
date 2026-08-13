@@ -111,7 +111,7 @@ int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCH
 	BOOL bOwndumpFile = FALSE;
 	HANDLE hDumpFile = hFile;
 	MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-	typedef BOOL(WINAPI * MiniDumpWriteDumpT) (
+	typedef BOOL(WINAPI* MiniDumpWriteDumpT) (
 		HANDLE,
 		DWORD,
 		HANDLE,
@@ -122,50 +122,50 @@ int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCH
 		);
 
 	MiniDumpWriteDumpT pfnMiniDumpWriteDump = NULL;
-	HMODULE hdbgHelp  = LoadLibrary("DbgHelp.dll");
+	HMODULE hdbgHelp = LoadLibrary("DbgHelp.dll");
 
-	if(hdbgHelp)
+	if (hdbgHelp)
 		pfnMiniDumpWriteDump = (MiniDumpWriteDumpT)GetProcAddress(hdbgHelp, "MiniDumpWriteDump");
 
-	if(pfnMiniDumpWriteDump)
+	if (pfnMiniDumpWriteDump)
 	{
-		if(hDumpFile == NULL || hDumpFile == INVALID_HANDLE_VALUE)
+		if (hDumpFile == NULL || hDumpFile == INVALID_HANDLE_VALUE)
 		{
-			TCHAR szFileName[MAX_PATH] = {0};
+			TCHAR szFileName[MAX_PATH] = { 0 };
 			TCHAR* szVersion = "v1.0";
-			TCHAR dwBufferSize = MAX_PATH;
 			SYSTEMTIME stLocalTime;
 			GetLocalTime(&stLocalTime);
 
 			CreateDirectory("DumpInfo", NULL);
-			wsprintf(szFileName, "DumpInfo\\%s-%s-%04d%02d%02d-%02d%02d%02d-%ld%ld.dmp"
-				, "gs", szVersion, 
+			wsprintf(szFileName, "DumpInfo\\%s-%s-%04d%02d%02d-%02d%02d%02d-%ld%ld.dmp",
+				pwAppName, szVersion,
 				stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
 				stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
 				GetCurrentProcessId(), GetCurrentThreadId());
 
-			hDumpFile = CreateFile(szFileName, GENERIC_READ | GENERIC_WRITE, 
+			hDumpFile = CreateFile(szFileName, GENERIC_READ | GENERIC_WRITE,
 				FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 
 			bOwndumpFile = TRUE;
 			OutputDebugString(szFileName);
 		}
 
-		if(hDumpFile != INVALID_HANDLE_VALUE)
+		if (hDumpFile != INVALID_HANDLE_VALUE)
 		{
 			ExpParam.ThreadId = GetCurrentThreadId();
 			ExpParam.ExceptionPointers = lpExceptionPointer;
 			ExpParam.ClientPointers = FALSE;
 
-			pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-				hDumpFile, MiniDumpWithDataSegs, (lpExceptionPointer ? &ExpParam : NULL), NULL, NULL);
+			pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+				hDumpFile, MiniDumpWithFullMemory, // Full dump type
+				(lpExceptionPointer ? &ExpParam : NULL), NULL, NULL);
 
-			if(bOwndumpFile)
+			if (bOwndumpFile)
 				CloseHandle(hDumpFile);
 		}
 	}
 
-	if(hdbgHelp != NULL)
+	if (hdbgHelp != NULL)
 		FreeLibrary(hdbgHelp);
 
 	return EXCEPTION_EXECUTE_HANDLER;

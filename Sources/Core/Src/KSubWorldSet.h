@@ -36,7 +36,7 @@ public:
 	void	Close();
 // Server
 #ifdef _SERVER
-	void	GetRevivalPosFromId(DWORD dwSubWorldId, int nRevivalId, POINT* pPos);
+	bool	GetRevivalPosFromId(DWORD dwSubWorldId, int nRevivalId, POINT* pPos);
 #endif
 // Client
 #ifndef _SERVER

@@ -153,7 +153,7 @@ int	KNpcFindPath::GetDir(int nXpos,int nYpos, int nDir, int nDestX, int nDestY, 
 				return 1;
 			}
 		}
-		m_nFindTimes = 0;
+		//m_nFindTimes = 0;
 		return 0;
 	}
 	
@@ -163,8 +163,8 @@ int	KNpcFindPath::GetDir(int nXpos,int nYpos, int nDir, int nDestX, int nDestY, 
 		if (m_nFindTimer >= m_nMaxTimeLong)
 		{
 			m_nFindState = 0;
-			m_nFindTimes = 0;
-			m_nFindTimer = 0;
+			//m_nFindTimes = 0;
+			//m_nFindTimer = 0;
 			return 0;
 		}
 		m_nFindTimer++;
@@ -191,7 +191,7 @@ int	KNpcFindPath::GetDir(int nXpos,int nYpos, int nDir, int nDestX, int nDestY, 
 				}
 			}
 			m_nFindState = 0;
-			m_nFindTimes = 0;
+			//m_nFindTimes = 0;
 			m_nFindTimer = 0;
 			return 0;
 		}
@@ -216,14 +216,14 @@ int	KNpcFindPath::GetDir(int nXpos,int nYpos, int nDir, int nDestX, int nDestY, 
 				}
 			}
 			m_nFindState = 0;
-			m_nFindTimes = 0;
+			//m_nFindTimes = 0;
 			m_nFindTimer = 0;
 			return 0;
 		}
 	}
 
 	m_nFindState = 0;
-	m_nFindTimes = 0;
+	//m_nFindTimes = 0;
 	m_nFindTimer = 0;
 	return 0;
 }

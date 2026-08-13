@@ -29,7 +29,7 @@ private:
 	int		m_nTitleLen;
 	int     m_nMaxLineLen;
 	int     m_nTitleLineNum;
-	char    m_ObjTitle[1024];
+	char    m_ObjTitle[2048];
 	int		m_ImageWidth;
 	int		m_ImageHeight;
 	int		m_BorderPieces; //vien` khung

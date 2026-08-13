@@ -19,7 +19,7 @@ using OnlineGameLib::Win32::CPackager;
 using OnlineGameLib::Win32::ToString;
 using OnlineGameLib::Win32::_tstring;
 
-CBuffer::Allocator						CGameServer::m_theGlobalAllocator( 1024 * 96, 200 );
+CBuffer::Allocator						CGameServer::m_theGlobalAllocator(1024 * 128, 500);
 
 CCriticalSection						CGameServer::m_csMapIDAction;
 CGameServer::stdMapIDConvert			CGameServer::m_theMapIDConvert;

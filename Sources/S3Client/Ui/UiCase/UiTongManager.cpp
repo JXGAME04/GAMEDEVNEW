@@ -311,7 +311,7 @@ void KUiTongManager::PaintWindow()
 		g_pRepresentShell->DrawPrimitives(1, &RectCamp, RU_T_RECT, true);
 	}*/
 }
-
+extern int SCREEN_WIDTH;
 void KUiTongManager::LoadScheme(const char* pScheme)
 {
 	if(ms_pSelf)
@@ -322,7 +322,13 @@ void KUiTongManager::LoadScheme(const char* pScheme)
 
 		if(Ini.Load(Buff))
 		{
-			ms_pSelf->Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024) {
+				ms_pSelf->Init(&Ini, "Main1024");
+			}
+			else {
+				ms_pSelf->Init(&Ini, "Main");
+			}
+			
 			ms_pSelf->m_TongBg.Init(&Ini, "TongBg");
 			ms_pSelf->m_TongName.Init(&Ini, "TextTongName");
 	        ms_pSelf->m_MasterName.Init(&Ini, "TextMasterName");

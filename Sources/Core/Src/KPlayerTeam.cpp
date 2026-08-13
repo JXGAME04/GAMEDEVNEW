@@ -150,6 +150,13 @@ void	KPlayerTeam::ReceiveInvite(TEAM_INVITE_ADD_SYNC *pInvite)
 		sMsg.byPriority = 3;
 		sMsg.byParamSize = sizeof(KUiPlayerItem);
 		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+		if(Player[CLIENT_PLAYER_INDEX].m_sExtAuto.uUnFightTime)
+		{
+			ExtAutoTeamRecv s;
+			s.uTime = timeGetTime();
+			strcpy(s.szName, szName);
+			Player[CLIENT_PLAYER_INDEX].m_mAutoTeamRecv[pInvite->m_nIdx] = s;
+		}
 	}
 }
 #endif

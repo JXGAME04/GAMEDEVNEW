@@ -73,7 +73,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\Common;..\Rainbow\Interface;..\Heaven\Interface;..\..\..\lib;..\..\..\Headers;..\..\Sword3PaySys\S3AccServer;..\..\s3client\login;..\..\RoleDBManager;..\..\Core\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONSOLE_DEBUG;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Release\Bishop.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -83,8 +83,8 @@
       <AdditionalOptions>/source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\server\release\
-copy release\Bishop.exe ..\..\..\..\bin\server\release\Bishop.exe
+      <Command>md ..\..\..\..\bin\multiserver\release\
+copy release\Bishop.exe ..\..\..\..\bin\multiserver\release\Bishop.exe
 copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
     </PostBuildEvent>
     <Midl>
@@ -107,7 +107,7 @@ copy release\Bishop.exe ..\..\..\..\bin\multiserver\Bishop.exe</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\Bishop.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\release\engine.lib;..\..\..\Lib\release\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -156,7 +156,7 @@ copy debug\Bishop.exe ..\..\..\..\bin\Server\debug\Bishop.exe</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\Bishop.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\debug\common.lib;..\..\..\Lib\debug\engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -198,20 +198,6 @@ copy debug\Bishop.exe ..\..\..\..\bin\Server\debug\Bishop.exe</Command>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\lock.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\..\Lib\debug\common.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </Library>
-    <Library Include="..\..\..\Lib\debug\engine.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </Library>
-    <Library Include="..\..\..\Lib\release\common.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </Library>
-    <Library Include="..\..\..\Lib\release\engine.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

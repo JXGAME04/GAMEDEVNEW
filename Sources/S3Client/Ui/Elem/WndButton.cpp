@@ -208,6 +208,8 @@ int KWndButton::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			SetFrame((m_Flag & WNDBTN_F_DOWN) ? m_nDownFrame : m_nUpFrame);
 		if (g_MouseOver.IsMoseHoverWndObj((void*)(KWndWindow*)this, 0))
 			g_MouseOver.CancelMouseHoverInfo();
+		if (g_MouseOverCompare.IsMoseHoverWndObj((void*)(KWndWindow*)this, 0))
+			g_MouseOverCompare.CancelMouseHoverInfo();
 		KWndWindow::WndProc(uMsg, uParam, nParam);
 		break;
 	case WM_MOUSEHOVER:

@@ -36,7 +36,11 @@ static struct UE_CTRL_MAP
 	{ UIEP_FOOT,		"Shoes"		},	//装备-鞋子
 	{ UIEP_HORSE,		"Horse"		},	//装备-马
 	{ UIEP_MASK,		"Mask"		},
-	{ UIEP_FIFONG,		"FiFong"	},
+	{ UIEP_FIFONG,		"Mantle"	},
+	{ UIEP_SIGNET,		"Signet"	},	//装备-马
+	{ UIEP_SHIPIN,		"Shipin"	},	//装备-马
+	{ UIEP_HOODS,		"Hoods"		},	//装备-马
+	{ UIEP_CLOAK,		"Cloak"		},	//装备-马
 };
 
 KUiParadeItem* KUiParadeItem::GetIfVisible()
@@ -105,9 +109,19 @@ void KUiParadeItem::Initialize()
 		m_EquipBox[i].SetContainerId((int)UOC_EQUIPTMENT);
 	}
 
+	AddChild(&m_EquipExpandBtn);
+	SwitchExpand(TRUE);
 	AddChild(&m_Close);
 
 	Wnd_AddWindow(this);
+}
+
+void KUiParadeItem::SwitchExpand(BOOL bShow)
+{
+	m_EquipExpandBtn.CheckButton(bShow);
+	bShow ? m_EquipExpandImg.Show() : m_EquipExpandImg.Hide();
+	for (int i = UIEP_FIFONG; i < _ITEM_COUNT; i++)
+		bShow ? m_EquipBox[i].Show() : m_EquipBox[i].Hide();
 }
 
 void KUiParadeItem::LoadScheme(const char* pScheme)
@@ -147,6 +161,9 @@ void KUiParadeItem::LoadScheme(class KIniFile* pIni)
 	{
 		m_EquipBox[i].Init(pIni, CtrlItemMap[i].pIniSection);
 	}
+
+	m_EquipExpandBtn.Init(pIni, "EquipExpandBtn");
+	m_EquipExpandImg.Init(pIni, "EquipExpandImg");
 
 	m_Avatar  .Init(pIni, "VAvatar");
 	if (m_Dest.nTeamID == 1)

@@ -10,6 +10,9 @@
 #include "KNpcTemplate.h"
 #include "KPlayerSet.h"
 #include "KPlayer.h"
+#include <thread>
+#include <vector>
+#include <chrono>
 
 KSubWorldSet g_SubWorldSet;
 
@@ -80,11 +83,13 @@ BOOL KSubWorldSet::Load(LPSTR szFileName)//edit by phong kieu Load Maps LoadMaps
 }
 
 int nActiveRegionCount;
+extern ThreadPool pool;
 
 void KSubWorldSet::MainLoop()
 {
 	m_nLoopRate++;
-
+	if (m_nLoopRate < 0)
+		m_nLoopRate = 0;
 #ifndef _SERVER
 	//if (!(m_nLoopRate % 20))
 	//	SendClientCmdPing();
@@ -96,13 +101,27 @@ void KSubWorldSet::MainLoop()
 //		g_GlobalMissionArray.Activate();
 #endif
 	nActiveRegionCount = 0;
+	
+
+	std::atomic<int> activeSubworlds(0);
+	auto start = std::chrono::high_resolution_clock::now();
 	for (int i = 0; i < MAX_SUBWORLD; i++)
 	{
-		SubWorld[i].Activate();
+		if (SubWorld[i].m_SubWorldID >= 0)
+		{
+			SubWorld[i].Activate();
 #ifndef _SERVER
-		NpcSet.CheckBalance();
+			NpcSet.CheckBalance();
 #endif
+		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+//	if (duration > 10000)
+	//	printf("SubWorlds Activate Time: %lld microseconds\n", duration);
+	// Wait until all tasks are done
+	//while (activeSubworlds > 0)
+	//	std::this_thread::yield();
 
 //	if ((m_nLoopRate % 100) == 0)
 //		printf("Region:%d:%d\n", m_nLoopRate, nActiveRegionCount);
@@ -113,11 +132,16 @@ void KSubWorldSet::MainLoop()
 
 void KSubWorldSet::MessageLoop()
 {
-	
+#ifdef _SERVER
 	for (int i = 0; i < MAX_SUBWORLD; i++)
 	{
-		SubWorld[i].MessageLoop();
+		if (SubWorld[i].m_SubWorldID >= 0)
+			SubWorld[i].MessageLoop();
 	}
+#else
+	if (SubWorld[0].m_SubWorldID >= 0)
+		SubWorld[0].MessageLoop();
+#endif
 }
 
 BOOL KSubWorldSet::SendMessage(int nSubWorldID, DWORD dwMsgType, int nParam1, int nParam2, int nParam3)
@@ -147,7 +171,8 @@ void KSubWorldSet::Close()
 	Player[CLIENT_PLAYER_INDEX].m_ItemList.RemoveAll();
 	Player[CLIENT_PLAYER_INDEX].m_cTeam.Release();
 	//Player[CLIENT_PLAYER_INDEX].m_cAuto.Release();
-	Player[CLIENT_PLAYER_INDEX].m_cAutoMove.Reset();
+	//Player[CLIENT_PLAYER_INDEX].m_cAutoMove.Reset();
+	Player[CLIENT_PLAYER_INDEX].m_nIndex = 0;
 	g_Team[0].Release();
 	m_cMusic.Stop();
 #endif
@@ -161,33 +186,38 @@ void KSubWorldSet::Paint()
 #endif
 
 #ifdef _SERVER
-void KSubWorldSet::GetRevivalPosFromId(DWORD dwSubWorldId, int nRevivalId, POINT* pPos)
+bool KSubWorldSet::GetRevivalPosFromId(DWORD dwSubWorldId, int nRevivalId, POINT* pPos)
 {
 	if (!pPos)
-		return;
+		return false;
 
 	KIniFile IniFile;
-	char	szKeyName[32];
-	char	szSection[32];
 	
 	g_SetFilePath(SETTING_PATH);
-	IniFile.Load("RevivePos.ini");
+	if(!IniFile.Load("RevivePos.ini"))
+		return false;
+	char	szKeyName[32];
+	char	szSection[32];
 	sprintf(szSection, "%d", dwSubWorldId);
 	sprintf(szKeyName, "%d", nRevivalId);
 	
 	int nX = 0;//51200;
 	int nY = 0;//102400;
-	IniFile.GetInteger2(szSection, szKeyName, &nX, &nY);
-	if (nRevivalId < 1 || (nX == 0 && nY == 0))
+	/*if (nRevivalId < 1 || (nX == 0 && nY == 0))
 	{
 		int nMin = 0;
 		int nMax = 0;
 		IniFile.GetInteger2(szSection, "region", &nMin, &nMax);
 		sprintf(szKeyName, "%d", nMin);
 		IniFile.GetInteger2(szSection, szKeyName, &nX, &nY);
-	}
-	
+	}*/
+	char szTemp[32];
+	IniFile.GetString(szSection, szKeyName, "", szTemp, sizeof(szTemp));
+	if(!szTemp[0])
+		return false;
+	IniFile.GetInteger2(szSection, szKeyName, &nX, &nY);
 	pPos->x = nX;
 	pPos->y = nY;
+	return true;
 }
 #endif

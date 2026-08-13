@@ -25,6 +25,8 @@ void _settypeitemcolor(int type,unsigned char &a,unsigned char &r,unsigned char 
 		break;
 	case ebachkim:a=r=g=zcol;b=255;//sang bac,chua tim ra mau
 		break;
+	case eblue:a = g = b = zcol; r = 0;//xanh
+		break;
 	case ethan:a=r=g=zcol;b=0;
 		break;
 	}
@@ -355,21 +357,22 @@ void DrawBorder(int &zpos,unsigned char &zdir,unsigned char &ztimedelay,int x,in
 	}
 }
 unsigned int l_BlueBorder[] =
-{    
-    0x0a00002d,
-    0x0a000032,
-    0x0a000037,
-    0x0a00003c,
-    0x0a000041,
-    0x0a000046,
-    0x0a00004b,
-    0x0a000050,
-    0x0a000055,
-    0x0a00005a,
-    0x0a00005f,
-    0x0a000064,
-    0x0a000069,
-};    
+{
+	0x0a002d2d,
+	0x0a003232,
+	0x0a003737,
+	0x0a003c3c,
+	0x0a004141,
+	0x0a004646,
+	0x0a004b4b,
+	0x0a005050,
+	0x0a005555,
+	0x0a005a5a,
+	0x0a005f5f,
+	0x0a006464,
+	0x0a006969,
+};
+
 
 unsigned int l_PurpleBorder[] =
 {    
@@ -405,6 +408,25 @@ unsigned int l_GoldBorder[] =
     0x0a696900,    
 };
 
+unsigned int l_PlatinaBorder[] =
+{
+	0x0a1a1a1a,
+	0x0a2d2d2d,
+	0x0a404040,
+	0x0a535353,
+	0x0a666666,
+	0x0a797979,
+	0x0a8c8c8c,
+	0x0a9f9f9f,
+	0x0ab2b2b2,
+	0x0ac5c5c5,
+	0x0ad8d8d8,
+	0x0aebebeb,
+	0x0affffff,
+};
+
+
+
 void DrawBorder2(BOOL &bCountFrame, unsigned short &nFrame, unsigned long &ulTimeDelay, int nX, int nY, int nWidth, int nHeight, int nType)
 {    
     KRURect        Rect;
@@ -420,6 +442,9 @@ void DrawBorder2(BOOL &bCountFrame, unsigned short &nFrame, unsigned long &ulTim
         case ehoangkim:
             Rect.Color.Color_dw = l_GoldBorder[nFrame];
             break;
+		case ebachkim:
+			Rect.Color.Color_dw = l_PlatinaBorder[nFrame];
+			break;
         default:
             return;
             break;
@@ -452,6 +477,9 @@ void DrawBorder2(BOOL &bCountFrame, unsigned short &nFrame, unsigned long &ulTim
             case ehoangkim:
                 Rect.Color.Color_dw = l_GoldBorder[nFrame];
                 break;
+			case ebachkim:
+				Rect.Color.Color_dw = l_PlatinaBorder[nFrame];
+				break;
             default:
                 return;
 				break;

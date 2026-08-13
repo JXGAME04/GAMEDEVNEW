@@ -25,7 +25,7 @@ private:
 #ifdef _SERVER
 	void			ProcessAIFollow();
 #endif
-/*	void			ProcessAIType1();
+	void			ProcessAIType1();
 	void			ProcessAIType2();
 	void			ProcessAIType3();
 	void			ProcessAIType4();
@@ -34,7 +34,7 @@ private:
 	void			ProcessAIType7();
 	void			ProcessAIType8();
 	void			ProcessAIType9();
-	void			ProcessAIType10();*/
+	void			ProcessAIType10();
 	void			ProcessAIType01();		// 普通主动类1
 	void			ProcessAIType02();		// 普通主动类2
 	void			ProcessAIType03();		// 普通主动类3

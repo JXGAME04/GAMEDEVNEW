@@ -163,7 +163,17 @@ void KNetConnectAgent::DisconnectClient()
 		m_pClient = NULL;
 	}
 }
+std::string GenerateRandomString(size_t length) {
+	const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	const size_t max_index = (sizeof(charset) - 1);
+	std::string randomString;
 
+	for (size_t i = 0; i < length; ++i) {
+		randomString += charset[rand() % max_index];
+	}
+
+	return randomString;
+}
 int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned short uPort, GUID* pGuid)
 {
 	
@@ -201,22 +211,31 @@ int KNetConnectAgent::ConnectToGameSvr(const unsigned char* pIpAddress, unsigned
 	char* szHwID;
 	if (GetCurrentHwProfile(&hwProfileInfo))
 	{
-		szHwID = hwProfileInfo.szHwProfileGuid;
+		std::string hwIDStr = hwProfileInfo.szHwProfileGuid;
+	//	hwIDStr += "-";   // mo gioi han log vao game
+	//	hwIDStr += GenerateRandomString(8); // mo gioi han log vao game
+
+		szHwID = new char[hwIDStr.length() + 1]; 
+		std::strcpy(szHwID, hwIDStr.c_str()); 
+
 	}
 	if(szHwID[0])
 	{
 		strcpy(ll.sHWID, szHwID);
 	}
 	//end send HWID to server
-	if (FAILED(m_pGameSvrClient->SendPackToServer(&ll, sizeof(tagLogicLogin))))
+	if (FAILED(m_pGameSvrClient->SendPackToServer(&ll, sizeof(tagLogicLogin)))) {
+		if(szHwID[0])
+			delete[] szHwID;
 		return false;
+	}
 
 	if (g_pCoreShell)
 		g_pCoreShell->SetClient(m_pGameSvrClient);
-
+	if (szHwID[0])
+		delete[] szHwID;
 	return true;
 }
-
 void KNetConnectAgent::DisconnectGameSvr()
 {
 	if (m_bIsClientConnecting == false)
@@ -408,7 +427,7 @@ bool KNetConnectAgent::ProcessSwitchGameSvrMsg(void* pMsgData)
 			UiOnGameServerConnected();
 			Wnd_GameSpaceHandleInput(false);
 			UpdateClientRequestTime(true);//UpdateClientRequestTime(false);//mac dinh fix by phong kiÒu 8 gs
-			//g_bDisconnect = true; //nÕu kh«ng ®­îc thö ph­¬ng ¸n nµy kÕt nèi l¹i tõ ®Çu nh­ login khi chuyÓn gs
+			//g_bDisconnect = true; //nÕu kh«ng ®­îc th?ph­¬ng ¸n nµy kÕt nèi l¹i t?®Çu nh?login khi chuyÓn gs
 			//g_NetConnectAgent.TobeDisconnect();
 			return true;
 		}

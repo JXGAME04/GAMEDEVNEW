@@ -211,7 +211,7 @@ private:
 	{
 	public:
 
-		explicit CDataQueue( size_t bufferSize = 1024 * 64, size_t maxFreeBuffers = 1 );
+		explicit CDataQueue( size_t bufferSize = 1024 * 128, size_t maxFreeBuffers = 1 );
 		
 		~CDataQueue();
 

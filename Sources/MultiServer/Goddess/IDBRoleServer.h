@@ -13,6 +13,8 @@
 
 BOOL InitDBInterface( size_t nMaxRoleCount );
 
+void MergeDB();
+
 void ReleaseDBInterface();
 
 void *GetRoleInfo( char * pRoleBuffer, char * strUser, int &nBufLen );

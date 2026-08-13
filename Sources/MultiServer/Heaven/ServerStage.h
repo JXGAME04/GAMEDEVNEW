@@ -82,8 +82,8 @@ public:
 		size_t maxFreeSockets,
 		size_t maxFreeBuffers,
 		size_t maxFreeBuffers_Cache,
-		size_t bufferSize_Cache = 8192,
-		size_t bufferSize = 1024*5,
+		size_t bufferSize_Cache = 8192*2,
+		size_t bufferSize = 1024*10,
 		size_t numThreads = 0 );
 
 	virtual ~CIOCPServer();

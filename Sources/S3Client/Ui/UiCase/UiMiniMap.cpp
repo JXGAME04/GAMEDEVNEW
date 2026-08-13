@@ -26,7 +26,7 @@
 extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*			g_pCoreShell;
 extern IInlinePicEngineSink *g_pIInlinePicSink;
-
+extern int SCREEN_WIDTH;
 #define	SCHEME_INI_SMALL	"UiMiniMapSmall.ini"
 #define	SCHEME_INI_BIG		"UiMiniMapBig.ini"
 #define	SCHEME_INI_NOPIC			"UiMiniMapNotPic.ini"
@@ -51,10 +51,11 @@ extern IInlinePicEngineSink *g_pIInlinePicSink;
 KUiMiniMap*			KUiMiniMap::ms_pSelf = NULL;
 static MINIMAP_MODE	s_eMapMode = MINIMAP_M_NONE;
 static MINIMAP_MODE	s_eMapOldMode = MINIMAP_M_BRIEF_PIC;
-
+static BOOL	m_bFlagging = FALSE;
 KUiMiniMap::KUiMiniMap()
 {
 	m_OldPos.x = NOT_DRAGING_MAP;
+	m_szFlagImage[0] = 0;
 }
 
 KUiMiniMap* KUiMiniMap::OpenWindow()
@@ -132,6 +133,16 @@ void KUiMiniMap::LoadScheme(const char* pScheme)
 		if (Ini.Load(szBuf))
 		{
 			ms_pSelf->LoadScheme(&Ini);
+			if (SCREEN_WIDTH == 1024)
+			{
+				int nX, nY;
+				int dX, dY;
+				dX = 1024 - 800;
+				ms_pSelf->GetPosition(&nX, &nY);
+				ms_pSelf->SetPosition(nX + dX, nY);
+				ms_pSelf->Hide();
+				ms_pSelf->Show();
+			}
 		}
 	}
 }
@@ -154,7 +165,13 @@ void KUiMiniMap::LoadScheme(KIniFile* pIni)
 	pIni->GetInteger("MapRect", "Top",    0, (int*)&m_MapPos.y);
 	pIni->GetInteger("MapRect", "Width",  0, (int*)&m_MapSize.cx);
 	pIni->GetInteger("MapRect", "Height", 0, (int*)&m_MapSize.cy);
-
+	if(!m_szFlagImage[0])
+	{
+		pIni->GetString("BtnFlag", "FlagImage", "", m_szFlagImage, sizeof(m_szFlagImage));
+		pIni->GetInteger("BtnFlag", "FlagOffset", 14, &m_nFlagOffset);
+		if (g_pCoreShell)
+			g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_MAP_FLAGIMG, (unsigned int)&m_szFlagImage, m_nFlagOffset);
+	}
 	if (IsVisible() && g_pCoreShell)
 	{
 		g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_MAP_SHOWING,
@@ -177,12 +194,13 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			MapSetMode(MINIMAP_M_CAVELIST_MAP);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_FlagBtn)
 		{
-			BOOL bFlag = g_pCoreShell->GetFlagMode();
+			/*BOOL bFlag = g_pCoreShell->GetFlagMode();
 			g_pCoreShell->SetFlagMode(!bFlag);
 			if(bFlag)
 				g_pCoreShell->SetPaintMode(0);
 			else
-				g_pCoreShell->SetPaintMode(1);
+				g_pCoreShell->SetPaintMode(1);*/
+			m_bFlagging = !m_bFlagging;
 		}
 		else if (uParam == (unsigned int)(KWndWindow*)&m_ScenePos)
 		{
@@ -202,7 +220,31 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 		}
 		break;
-	case WM_LBUTTONDOWN: 
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_LBUTTONDBLCLK:
+	case WM_MOUSEHOVER:
+		{
+			int nCursorX, nCursorY;
+			Wnd_GetCursorPos(&nCursorX, &nCursorY);
+			int nX = m_MapPos.x + m_nAbsoluteLeft;
+			int nY = m_MapPos.y + m_nAbsoluteTop;
+			if(nCursorX >= nX && nCursorX < nX + m_MapSize.cx
+			&& nCursorY >= nY && nCursorY < nY + m_MapSize.cy)
+			{
+				if(uMsg == WM_LBUTTONDOWN)
+				{
+					if(m_bFlagging)
+						m_bFlagging = FALSE;
+					g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_FLAG_ON_TARGET,
+						nCursorX - nX, nCursorY - nY);
+				}
+			}
+			else
+				Wnd_TransmitInputToGameSpace(uMsg, uParam, nParam);
+			break;
+		}
+	/*case WM_LBUTTONDOWN: 
 		break;
 	case WM_LBUTTONUP://toa do
 		{ 	
@@ -233,7 +275,7 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			Wnd_SwitchCursor(MOUSE_CURSOR_NORMAL);
 			Wnd_TransmitInputToGameSpace(uMsg, uParam, nParam);
 		}
-		break;
+		break;*/
 	case WND_N_CHILD_MOVE:
 		if (uParam == (unsigned int)(KWndWindow*)&m_SceneName ||
 			uParam == (unsigned int)(KWndWindow*)&m_ScenePos ||
@@ -259,6 +301,8 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		Wnd_GetCursorPos((int *)&m_OldPos.x, (int *)&m_OldPos.y);
 		break;
 	case WM_MOUSEMOVE:
+	{
+		int nCursorX, nCursorY;
 		Wnd_GetCursorPos(&nCursorX, &nCursorY);	
 		if(IS_DRAGING_MAP && (uParam & MK_RBUTTON))
 		{
@@ -270,20 +314,23 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_OldPos.y   =  nCursorY;
 			MapScroll(uParam & MK_CONTROL);
 		}
-		else if (g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_DIRECT_MAP, nCursorX, nCursorY))
-			Wnd_SwitchCursor(MOUSE_CURSOR_PICK);
 		else
 		{
-			Wnd_SwitchCursor(MOUSE_CURSOR_NORMAL);
+			int nX = m_MapPos.x + m_nAbsoluteLeft;
+			int nY = m_MapPos.y + m_nAbsoluteTop;
+			if(nCursorX >= nX && nCursorX < nX + m_MapSize.cx
+			&& nCursorY >= nY && nCursorY < nY + m_MapSize.cy)
+				break;
 			Wnd_TransmitInputToGameSpace(uMsg, uParam, nParam);
 		}
 		break;
+	}
 	case WM_RBUTTONUP:
 		if (IS_DRAGING_MAP && ((uParam & MK_CONTROL) == 0) && g_pCoreShell)
 			g_pCoreShell->SceneMapOperation(GSMOI_SCENE_FOLLOW_WITH_MAP, 0, 0);
 		StopScrollMap();
 		break;
-	case WND_M_OTHER_WORK_RESULT:
+	/*case WND_M_OTHER_WORK_RESULT:
 		if (nParam > 0)
 		{
 			int x=0,y=0,i=0;
@@ -306,7 +353,7 @@ int KUiMiniMap::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			g_pCoreShell->SetPaintMode(1);
 			g_pCoreShell->DirectFindPos(x, y, FALSE, TRUE);
 		}
-		break;
+		break;*/
 	default:
 		nRet = KWndWindow::WndProc(uMsg, uParam, nParam);
 		break;
@@ -355,6 +402,23 @@ void KUiMiniMap::PaintWindow()
 			rect.oEndPos.nX += m_MapSize.cx;
 			rect.oEndPos.nY += m_MapSize.cy;
 			g_pRepresentShell->DrawPrimitives(1, &rect, RU_T_RECT, true);
+			if(m_bFlagging)
+			{
+				KRUImage	Img;
+				strcpy(Img.szImage, m_szFlagImage);
+				Img.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+				Img.nType = ISI_T_SPR;
+				Img.uImage = 0;
+				Img.nISPosition = IMAGE_IS_POSITION_INIT;
+				Img.bRenderFlag = 0;
+				Img.nFrame = 0;
+				Img.oPosition.nZ = 0;
+				int nCursorX, nCursorY;
+				Wnd_GetCursorPos(&nCursorX, &nCursorY);
+				Img.oPosition.nX = nCursorX;
+				Img.oPosition.nY = nCursorY - m_nFlagOffset;
+				g_pRepresentShell->DrawPrimitives(1, &Img, RU_T_IMAGE, true);
+			}
 		}
 	}
 }
@@ -365,12 +429,13 @@ void KUiMiniMap::Breathe()
 	{
 		MapMoveBack();
 	}
+	/*
 	int nCursorX, nCursorY;	
 	if (g_pCoreShell->GetFlagMode())
 	{
 		Wnd_GetCursorPos(&nCursorX, &nCursorY);	
 		g_pCoreShell->DirectFindPos(nCursorX, nCursorY, TRUE, FALSE);
-	}
+	}*/
 
 	if (g_pCoreShell && g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 	{
@@ -380,7 +445,7 @@ void KUiMiniMap::Breathe()
 	{
 		m_LockBtn.CheckButton(1);
 	}
-	g_pCoreShell->AutoMove();
+	//g_pCoreShell->AutoMove();
 
 }
 
@@ -392,7 +457,7 @@ void KUiMiniMap::UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo)
 		strcpy(ms_pSelf->m_szMapName,pInfo->szSceneName);
 
 		ms_pSelf->m_MpsID = pInfo->nSceneId;
-		ms_pSelf->m_MpsX = pInfo->nScenePos0/8;
+		/*ms_pSelf->m_MpsX = pInfo->nScenePos0/8;
 		ms_pSelf->m_MpsY = pInfo->nScenePos1/8;
 				
 		char Buff[16];
@@ -408,8 +473,39 @@ void KUiMiniMap::UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo)
 		else
 			sprintf(Buff, s_eMapMode == MINIMAP_M_BRIEF_NOT_PIC?defMSG_FORMAT_SCENEPOS:defMSG_FORMAT_SCENEPOSF, ms_pSelf->m_MpsX, ms_pSelf->m_MpsY);
 			
-		ms_pSelf->m_ScenePos.SetText(Buff);		
+		ms_pSelf->m_ScenePos.SetText(Buff);		*/
+		char szBuf[64];
+		int nCursorX, nCursorY;
+		Wnd_GetCursorPos(&nCursorX, &nCursorY);
+		int nX = ms_pSelf->m_MapPos.x + ms_pSelf->m_nAbsoluteLeft;
+		int nY = ms_pSelf->m_MapPos.y + ms_pSelf->m_nAbsoluteTop;
+		if(m_bFlagging && (nCursorX >= nX && nCursorX < nX + ms_pSelf->m_MapSize.cx
+		&& nCursorY >= nY && nCursorY < nY + ms_pSelf->m_MapSize.cy))
+		{
+			nCursorX -= nX;
+			nCursorY -= nY;
+			int nParam = (nCursorX << 16) | nCursorY;
+			nCursorX = g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_GET_FLAGPOS, 0, nParam);
+			nCursorY = g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_GET_FLAGPOS, 1, nParam);
+			if(s_eMapMode == MINIMAP_M_BRIEF_NOT_PIC)
+			sprintf(szBuf, defMSG_FORMAT_SCENEPOS, nCursorX, nCursorY);
+			else
+			sprintf(szBuf, defMSG_FORMAT_SCENEPOSF, nCursorX, nCursorY);
+		}
+		else
+		{
+			if(s_eMapMode == MINIMAP_M_BRIEF_NOT_PIC)
+			sprintf(szBuf, defMSG_FORMAT_SCENEPOS, pInfo->nScenePos0 / 8, pInfo->nScenePos1 / 8);
+			else
+			sprintf(szBuf, defMSG_FORMAT_SCENEPOSF, pInfo->nScenePos0 / 8, pInfo->nScenePos1 / 8);
+		}
+		ms_pSelf->m_ScenePos.SetText(szBuf);
 	}
+}
+
+void KUiMiniMap::Unflagging()
+{
+	m_bFlagging = FALSE;
 }
 
 void KUiMiniMap::Show()

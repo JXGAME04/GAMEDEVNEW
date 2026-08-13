@@ -96,6 +96,7 @@ BEGIN
     LTEXT           "Backup Thread Status",IDC_LAB_BACKUP_STATUS,250,68,108,
                     10
     PUSHBUTTON      "Manual Backup",IDC_BTN_BACKUP_MANUAL,333,89,62,15
+    PUSHBUTTON      "Gop Database",IDC_BTN_MERGE,255,109,62,15
     PUSHBUTTON      "Restart",IDC_RESTART,311,131,84,13
     LISTBOX         IDC_OUTPUT,7,156,394,73,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
                     WS_VSCROLL | WS_TABSTOP

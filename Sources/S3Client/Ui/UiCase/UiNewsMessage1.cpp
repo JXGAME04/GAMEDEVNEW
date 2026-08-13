@@ -212,7 +212,7 @@ void KUiNewsMessage1::Initialize()
 
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
-
+extern int SCREEN_WIDTH;
 /*********************************************************************************
 *功能：载入界面方案
 **********************************************************************************/
@@ -225,7 +225,14 @@ void KUiNewsMessage1::LoadScheme(const char* pszScheme)
 		KIniFile	Ini;
 		if (Ini.Load(szBuf))
 		{
-			m_pSelf->Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024)
+			{
+				m_pSelf->Init(&Ini, "Main1024");
+			}
+			else
+			{
+				m_pSelf->Init(&Ini, "Main");
+			}
 			Ini.GetInteger("Main", "IndentH",	0, &m_pSelf->m_nIndentH);
 			Ini.GetInteger("Main", "IndentV",   0, &m_pSelf->m_nIndentV);
 			Ini.GetInteger("Main", "Font",      0, &m_pSelf->m_nFontSize);

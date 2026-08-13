@@ -1,5 +1,5 @@
 /*****************************************************************************************
-//  表现模块的对外接口的三维版本实现。
+//  卤铆脧脰脛拢驴茅碌脛露脭脥芒陆脫驴脷碌脛脠媒脦卢掳忙卤戮脢碌脧脰隆拢
 //	Copyright : Kingsoft 2002
 //	Author	:   cp(Chenpeng)
 //	CreateTime:	2003-3-4
@@ -53,13 +53,13 @@ bool Test3D()
 	pDDraw7->GetCaps(&hel_ddcaps, &hal_ddcpas);
 	pDDraw7->Release();
 
-	// 如果显存小于32兆则返回假
+	// 脠莽鹿没脧脭麓忙脨隆脫脷32脮脳脭貌路碌禄脴录脵
 	if(hel_ddcaps.dwVidMemTotal < 33554432)
 		return false;
 
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus (&stat);
-	// 如果物理内存小于128兆则返回假
+	// 脠莽鹿没脦茂脌铆脛脷麓忙脨隆脫脷128脮脳脭貌路碌禄脴录脵
 	if(stat.dwTotalPhys < 134217728)
 		return false;
 
@@ -79,7 +79,7 @@ static inline DWORD ARGBToDWORD(DWORD a, DWORD r, DWORD g, DWORD b)
 	return (a<<24) | (r<<16) | (g<<8) | b;
 }
 
-// 将color1用color2做偏色
+// 陆芦color1脫脙color2脳枚脝芦脡芦
 static inline DWORD ScaleColor(DWORD color1, DWORD color2)
 {
 	DWORD a1, r1, g1, b1, a2, r2, g2, b2;
@@ -104,7 +104,7 @@ static inline DWORD ScaleColor(DWORD color1, DWORD r, DWORD g, DWORD b)
 	return ARGBToDWORD(a1, r1, g1, b1);
 }
 
-// inline函数放在文件的前部，可以使得Release版本效率更高
+// inline潞炉脢媒路脜脭脷脦脛录镁碌脛脟掳虏驴拢卢驴脡脪脭脢鹿碌脙Release掳忙卤戮脨搂脗脢赂眉赂脽
 inline unsigned int KRepresentShell3::GetPoint3dLighting(D3DXVECTOR3& v)
 {
 	if(!m_bDoLighting)
@@ -119,7 +119,7 @@ inline unsigned int KRepresentShell3::GetPoint3dLighting(D3DXVECTOR3& v)
         return pLightingArray[0];
         
 	return pLightingArray[
-		// 这里不能写成uY * LIGHTING_GRID_WIDTH / LIGHTING_GRID_SIZEY,因为uY / LIGHTING_GRID_SIZEY这一步舍去小数部分是必须的
+		// 脮芒脌茂虏禄脛脺脨麓鲁脡uY * LIGHTING_GRID_WIDTH / LIGHTING_GRID_SIZEY,脪貌脦陋uY / LIGHTING_GRID_SIZEY脮芒脪禄虏陆脡谩脠楼脨隆脢媒虏驴路脰脢脟卤脴脨毛碌脛
         (uY / LIGHTING_GRID_SIZEY * LIGHTING_GRID_WIDTH) +
         (uX / LIGHTING_GRID_SIZEX)
     ];
@@ -170,62 +170,117 @@ static WORD g_A8ToA4[256] =
     0xf000,0xf000,0xf000,0xf000,0xf000,0xf000,0xf000,0xf000
 };
 
-// 将spr数据转换到A4R4G4B4缓冲区
+// 陆芦spr脢媒戮脻脳陋禄禄碌陆A4R4G4B4禄潞鲁氓脟酶
 void RenderToA4R4G4B4(
-    WORD* pDest, uint32 nPitch, PBYTE pData,
-    RECT &rect, uint32 nWidth, uint32 nHeight, 
-    WORD* pPalette
+	WORD* pDest, uint32 nPitch, PBYTE pData,
+	RECT& rect, uint32 nWidth, uint32 nHeight,
+	WORD* pPalette
 )
 {
-	uint32 nPixelCount = 0;							// 总字节计数
+	uint32 nPixelCount = 0;
 	uint32 nTotlePixel = nWidth * nHeight;
-    uint32 nNextWidth = nWidth;
+	uint32 nNextWidth = nWidth;
 	uint32 pixelNum;
-	BYTE *pTexLine = (BYTE*)pDest;					// 贴图每一行数据
+	BYTE* pTexLine = (BYTE*)pDest;
 	pTexLine += rect.top * nPitch + rect.left * 2;
-	BYTE *pLine = pTexLine;
-	for(;;)
+	BYTE* pLine = pTexLine;
+
+	for (;;)
 	{
 		pixelNum = *pData++;
 		nPixelCount += pixelNum;
-        uint32 alpha = *pData++;
-		uint32 uAlpha = g_A8ToA4[alpha];
 
+		uint32 alpha = *pData++;
+		uint32 uAlpha = g_A8ToA4[alpha]; // 
 		if (uAlpha == 0)
 		{
+
 			pLine += pixelNum * 2;
-            if (alpha != 0)
-                pData += pixelNum;    
+			if (alpha != 0)
+				pData += pixelNum;
 		}
 		else
 		{
 			while (pixelNum--)
 			{
-				*((WORD*)pLine) = uAlpha | pPalette[*pData++];
+				WORD* pCurrentPixel = (WORD*)pLine;
+
+
+				uint32 destAlpha = (*pCurrentPixel) & 0xF000;
+				uint32 destColor = (*pCurrentPixel) & 0x0FFF;
+
+
+				uint32 srcColor = pPalette[*pData] & 0x0FFF;
+				uint32 srcAlpha = uAlpha >> 12; //
+				uint32 invAlpha = 15 - srcAlpha;
+
+
+				uint32 destR = (destColor >> 8) & 0xF;
+				uint32 destG = (destColor >> 4) & 0xF;
+				uint32 destB = destColor & 0xF;
+
+				uint32 srcR = (srcColor >> 8) & 0xF;
+				uint32 srcG = (srcColor >> 4) & 0xF;
+				uint32 srcB = srcColor & 0xF;
+
+				uint32 blendedR, blendedG, blendedB;
+
+
+				if (srcAlpha > 12)
+				{
+					blendedR = srcR;
+					blendedG = srcG;
+					blendedB = srcB;
+				}
+				else
+				{
+
+					blendedR = (srcR * srcAlpha + destR * invAlpha) / 15;
+					blendedG = (srcG * srcAlpha + destG * invAlpha) / 15;
+					blendedB = (srcB * srcAlpha + destB * invAlpha) / 15;
+
+
+					blendedR = min(blendedR + 1, 15);
+					blendedG = min(blendedG + 1, 15);
+					blendedB = min(blendedB + 1, 15);
+				}
+
+
+				uint32 blendedColor = ((blendedR & 0xF) << 8) |
+					((blendedG & 0xF) << 4) |
+					(blendedB & 0xF);
+
+
+				uint32 finalAlpha = (uAlpha > destAlpha) ? uAlpha : destAlpha;
+
+
+				*pCurrentPixel = (finalAlpha & 0xF000) | blendedColor;
+
+				pData++;
 				pLine += 2;
 			}
 		}
 
-		// 如果一帧数据解完则停止
+
 		if (nPixelCount >= nNextWidth)
-        {
+		{
 			pLine = pTexLine = pTexLine + nPitch;
-            nNextWidth += nWidth;
-        }
+			nNextWidth += nWidth;
+		}
 
 		assert(nPixelCount <= nTotlePixel);
-		if(nPixelCount >= nTotlePixel)
+		if (nPixelCount >= nTotlePixel)
 			break;
 	}
 }
 
-// 渲染窗口的窗口函数
+// 盲脰脠戮麓掳驴脷碌脛麓掳驴脷潞炉脢媒
 LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
     return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
 
-// 将世界坐标转换到屏幕坐标
+// 陆芦脢脌陆莽脳酶卤锚脳陋禄禄碌陆脝脕脛禄脳酶卤锚
 D3DXVECTOR3* WorldToScreen
     ( D3DXVECTOR3 *pOut, CONST D3DXVECTOR3 *pV, CONST D3DVIEWPORT9 *pViewport,
       CONST D3DXMATRIX *pProjection, CONST D3DXMATRIX *pView, CONST D3DXMATRIX *pWorld)
@@ -250,24 +305,24 @@ inline D3DXVECTOR3 ChaZhi(D3DXVECTOR3 v1, D3DXVECTOR3 v2, float fs1, float fs2, 
 	return (v2 - v1) * (fs - fs1) / (fs2 - fs1) + v1;
 }
 
-//=========测试模块性能，判断是否推荐使用===============
+//=========虏芒脢脭脛拢驴茅脨脭脛脺拢卢脜脨露脧脢脟路帽脥脝录枚脢鹿脫脙===============
 extern "C" __declspec(dllexport)
 bool RepresentIsModuleRecommended()
 {
 	return Test3D();
 }
 
-//=========创建一个iRepresentShell接口的实例===============
+//=========麓麓陆篓脪禄赂枚iRepresentShell陆脫驴脷碌脛脢碌脌媒===============
 extern "C" __declspec(dllexport)
 iRepresentShell* CreateRepresentShell()
 {
 	return (new KRepresentShell3);
 }
 
-IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//嵌入式图片的处理接口[wxb 2003-6-20]
+IInlinePicEngineSink* g_pIInlinePicSinkRP = NULL;	//脟露脠毛脢陆脥录脝卢碌脛麓娄脌铆陆脫驴脷[wxb 2003-6-20]
 HRESULT KRepresentShell3::AdviseRepresent(IInlinePicEngineSink* pSink)
 {
-	assert(NULL == g_pIInlinePicSinkRP);	//一般不会挂接两次
+	assert(NULL == g_pIInlinePicSinkRP);	//脪禄掳茫虏禄禄谩鹿脪陆脫脕陆麓脦
 	g_pIInlinePicSinkRP = pSink;
 	return S_OK;
 }
@@ -313,13 +368,13 @@ void KRepresentShell3::SetOption(RepresentOption eOption,	bool bOn)
 	{
 	case DYNAMICLIGHT:
 		if(bOn)
-			m_bDoLighting = true;
+			m_bDoLighting = false;
 		else
 			m_bDoLighting = false;
 		break;
 	case PERSPECTIVE:
 		{	if(bOn)
-				g_renderModel = RenderModel3DPerspective;
+				g_renderModel = RenderModel3DOrtho;
 			else
 				g_renderModel = RenderModel3DOrtho;
 
@@ -334,7 +389,7 @@ void KRepresentShell3::SetUpProjectionMatrix()
 	// Set the projection transformation matrix according to g_renderModel
 	float fAspect = (float)(g_nScreenWidth / g_nScreenHeight * 1.37);
 	if(g_renderModel == RenderModel3DOrtho)
-		D3DXMatrixOrthoLH(&m_matProj, 800*g_fZoomFactor, 600*g_fZoomFactor, 1.0f, 20000.0f );
+		D3DXMatrixOrthoLH(&m_matProj, g_nScreenWidth *g_fZoomFactor, g_nScreenHeight *g_fZoomFactor, 1.0f, 20000.0f );
 	else
 		D3DXMatrixPerspectiveFovLH( &m_matProj, D3DX_PI/24, fAspect, 1.0f, 20000.0f );
 	PD3DDEVICE->SetTransform( D3DTS_PROJECTION, &m_matProj );
@@ -369,7 +424,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	pDeviceInfo = g_D3DShell.PickDefaultDev(&pAdapterInfo);
 	if (!pDeviceInfo)
 	{
-		// 无法找到合适的D3D设备
+		// 脦脼路篓脮脪碌陆潞脧脢脢碌脛D3D脡猫卤赂
 		D3DTerm();
 		g_DebugLog("[D3DRender]Can't find any d3d devices to use!");
 		return false; 
@@ -378,13 +433,13 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 	pModeInfo = g_D3DShell.PickDefaultMode(pDeviceInfo,DEFAULT_BITDEPTH);
 	if (!pModeInfo)
 	{
-		// 无法找到合适的显示模式
+		// 脦脼路篓脮脪碌陆潞脧脢脢碌脛脧脭脢戮脛拢脢陆
 		D3DTerm();
 		g_DebugLog("[D3DRender]Can't find an appropriate display mode!");
 		return false;
 	}
 
-	// 创建设备
+	// 麓麓陆篓脡猫卤赂
 	if (!g_Device.CreateDevice(pAdapterInfo,pDeviceInfo,pModeInfo))
 	{
 		D3DTerm();
@@ -392,7 +447,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 		return false;
 	}
 
-	// 设置显示模式
+	// 脡猫脰脙脧脭脢戮脛拢脢陆
 	if (!Reset(nWidth, nHeight, bFullScreen))
 		return false;
 	g_DebugLog("[D3DRender]Device reset ok!");
@@ -411,7 +466,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 
 	SetGamma(50);
 
-	// 初始化Gdi+
+	// 鲁玫脢录禄炉Gdi+
 	InitGdiplus();
 
 	return true;
@@ -419,7 +474,7 @@ bool KRepresentShell3::Create(int nWidth, int nHeight, bool bFullScreen)
 
 bool KRepresentShell3::InitDeviceObjects()
 {
-	// 创建预渲染主角的贴图
+	// 麓麓陆篓脭陇盲脰脠戮脰梅陆脟碌脛脤霉脥录
 	if (FAILED(PD3DDEVICE->CreateTexture(SPR_PRERENDER_TEXSIZE1, SPR_PRERENDER_TEXSIZE1, 1,
 								0, D3DFMT_A4R4G4B4, D3DPOOL_MANAGED, &m_pPreRenderTexture128, NULL)))
 		return false;
@@ -474,7 +529,7 @@ bool KRepresentShell3::RestoreDeviceObjects()
 	int i;
 	if(!m_pVB2D)
 	{
-		// 创建非透视状态使用的顶点缓冲区
+		// 麓麓陆篓路脟脥赂脢脫脳麓脤卢脢鹿脫脙碌脛露楼碌茫禄潞鲁氓脟酶
 		if( FAILED(PD3DDEVICE->CreateVertexBuffer( VERTEX_BUFFER_SIZE*sizeof(VERTEX2D),
 						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING, 
 						D3DFVF_VERTEX2D, D3DPOOL_DEFAULT, &m_pVB2D, NULL)))
@@ -483,7 +538,7 @@ bool KRepresentShell3::RestoreDeviceObjects()
 
 	if((g_renderModel == RenderModel3DOrtho || g_renderModel == RenderModel3DPerspective) && !m_pVB3D)
 	{
-		// 创建透视状态使用的顶点缓冲区
+		// 麓麓陆篓脥赂脢脫脳麓脤卢脢鹿脫脙碌脛露楼碌茫禄潞鲁氓脟酶
 		if( FAILED(PD3DDEVICE->CreateVertexBuffer( VERTEX_BUFFER_SIZE*sizeof(VERTEX3D),
 						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING, 
 						D3DFVF_VERTEX3D, D3DPOOL_DEFAULT, &m_pVB3D, NULL)))
@@ -501,12 +556,12 @@ bool KRepresentShell3::RestoreDeviceObjects()
 	if(!m_TextureResMgr.RestoreDeviceObjects())
 		return false;
 
-	// 设置渲染状态
-	// 使用Alpha混合
+	// 脡猫脰脙盲脰脠戮脳麓脤卢
+	// 脢鹿脫脙Alpha禄矛潞脧
 	PD3DDEVICE->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
     PD3DDEVICE->SetRenderState( D3DRS_SRCBLEND,   D3DBLEND_SRCALPHA );
     PD3DDEVICE->SetRenderState( D3DRS_DESTBLEND,  D3DBLEND_INVSRCALPHA );
-	// 关闭Alpha测试
+	// 鹿脴卤脮Alpha虏芒脢脭
     PD3DDEVICE->SetRenderState( D3DRS_ALPHATESTENABLE,  FALSE );
     PD3DDEVICE->SetRenderState( D3DRS_FILLMODE,   D3DFILL_SOLID );
     PD3DDEVICE->SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
@@ -517,22 +572,22 @@ bool KRepresentShell3::RestoreDeviceObjects()
     PD3DDEVICE->SetRenderState( D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE );
     PD3DDEVICE->SetRenderState( D3DRS_FOGENABLE,        FALSE );
 	PD3DDEVICE->SetRenderState( D3DRS_LIGHTING,FALSE );
-	// 设置贴图渲染阶段0
-	// 设置颜色混合模式
+	// 脡猫脰脙脤霉脥录盲脰脠戮陆脳露脦0
+	// 脡猫脰脙脩脮脡芦禄矛潞脧脛拢脢陆
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
-	// 设置Alpha混合模式
+	// 脡猫脰脙Alpha禄矛潞脧脛拢脢陆
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
-	// 设置过滤模式
+	// 脡猫脰脙鹿媒脗脣脛拢脢陆
 	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
     PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
 
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
     PD3DDEVICE->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE );
-	// 关闭0以上的贴图渲染阶段
+	// 鹿脴卤脮0脪脭脡脧碌脛脤霉脥录盲脰脠戮陆脳露脦
     PD3DDEVICE->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
     PD3DDEVICE->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
 
@@ -540,12 +595,12 @@ bool KRepresentShell3::RestoreDeviceObjects()
 
 	if(g_renderModel == RenderModel3DPerspective || g_renderModel == RenderModel3DOrtho)
 	{
-		// 设置世界坐标变换矩阵
+		// 脡猫脰脙脢脌陆莽脳酶卤锚卤盲禄禄戮脴脮贸
 		D3DXMATRIX matWorld;
 		D3DXMatrixIdentity( &matWorld );
 		PD3DDEVICE->SetTransform( D3DTS_WORLD, &matWorld );
 
-		// 设置投影变换矩阵
+		// 脡猫脰脙脥露脫掳卤盲禄禄戮脴脮贸
 		SetUpProjectionMatrix();
 		PD3DDEVICE->SetTransform( D3DTS_PROJECTION, &m_matProj );
 	}
@@ -569,7 +624,7 @@ bool KRepresentShell3::Reset(int nWidth, int nHeight, bool bFullScreen)
 
 	if (!pModeInfo)
 	{
-		// 无法找到合适的显示模式
+		// 脦脼路篓脮脪碌陆潞脧脢脢碌脛脧脭脢戮脛拢脢陆
 		D3DTerm();
 		g_DebugLog("[D3DRender]Can't find an appropriate display mode!");
 		return false;
@@ -577,7 +632,7 @@ bool KRepresentShell3::Reset(int nWidth, int nHeight, bool bFullScreen)
 
 	if (!g_Device.SetMode(pModeInfo))
 	{
-		// 无法设置合适的显示模式
+		// 脦脼路篓脡猫脰脙潞脧脢脢碌脛脧脭脢戮脛拢脢陆
 		D3DTerm();
 		g_DebugLog("[D3DRender]Can't find an appropriate display mode!");
 		return false;
@@ -623,7 +678,7 @@ bool KRepresentShell3::CreateAFont(const char* pszFontFile, CHARACTER_CODE_SET C
 
 	if (pszFontFile[0] == '#')
 	{
-		//共享已经打开的字库
+		//鹿虏脧铆脪脩戮颅麓貌驴陋碌脛脳脰驴芒
 		int nShareWithId = atoi(pszFontFile + 1);
 		for (int j = 0; j < RS2_MAX_FONT_ITEM_NUM; j++)
 		{
@@ -825,8 +880,8 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 				int	nY2 = pTemp->oEndPos.nY;
 				if (!bSinglePlaneCoord)
 				{
-					CoordinateTransform(nX1, nY1, pTemp->oPosition.nZ);
-					CoordinateTransform(nX2, nY2, pTemp->oEndPos.nZ);	// No nEndZ? Must be Single Plane Coord?
+					CoordinateTransformX(nX1, nY1, pTemp->oPosition.nZ);
+					CoordinateTransformX(nX2, nY2, pTemp->oEndPos.nZ);	// No nEndZ? Must be Single Plane Coord?
 				}
 				DrawRect(nX1, nY1, nX2 - nX1, nY2 - nY1, D3DCOLOR_ARGB(255 - (pTemp->Color.Color_b.a<<3), 
 					(DWORD)pTemp->Color.Color_b.r, (DWORD)pTemp->Color.Color_b.g, (DWORD)pTemp->Color.Color_b.b));
@@ -840,7 +895,7 @@ void KRepresentShell3::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 
 void KRepresentShell3::DrawImage2D(int nPrimitiveCount, KRepresentUnit* pPrimitives, int bSinglePlaneCoord)
 {
-	// 判断是否主角类
+	// 脜脨露脧脢脟路帽脰梅陆脟脌脿
 	if(nPrimitiveCount >= 4)
 	{
 		DrawPlayer2D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord);
@@ -921,7 +976,7 @@ void KRepresentShell3::DrawImage2DStretch(int nPrimitiveCount, KRepresentUnit* p
 
 	for (i = 0; i < nPrimitiveCount; i++, pTemp++)
 	{	
-		// 只处理ISI_T_BITMAP16类资源
+		// 脰禄麓娄脌铆ISI_T_BITMAP16脌脿脳脢脭麓
 		if(pTemp->nType != ISI_T_BITMAP16)
 			break;
 
@@ -1033,8 +1088,8 @@ void KRepresentShell3::GetBoundBox2D(int nPrimitiveCount, KRepresentUnit* pPrimi
 	}
 }
 
-void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* pPrimitives, 
-						int bSinglePlaneCoord, RECT &rcBound, RECTFLOAT &rcRenderBound,int nTexSize, bool bLighting)
+void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* pPrimitives,
+	int bSinglePlaneCoord, RECT& rcBound, RECTFLOAT& rcRenderBound, int nTexSize, bool bLighting)
 {
 	int i;
 	RECT rect;
@@ -1044,19 +1099,19 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 	uint32 nHeight = rcBound.bottom - rcBound.top;
 	unsigned int alpha = (((DWORD)pTemp->Color.Color_b.a) << 24);
 	unsigned int color = 0x00404040 | alpha;
-//	unsigned int color = 0xff404040;
+	//	unsigned int color = 0xff404040;
 	bool bLightGet = false;
-
-	if(nWidth == 0 || nHeight == 0)
+	bool sprNew = false;
+	if (nWidth == 0 || nHeight == 0)
 		return;
 
 	D3DLOCKED_RECT LockedRect;
 	rect.left = rect.top = 0;
 	rect.right = nWidth;
 	rect.bottom = nHeight;
-	
-	// 根据绘制区域不同大小锁定不同的贴图
-	if(nTexSize == SPR_PRERENDER_TEXSIZE1)
+
+	// 赂霉戮脻禄忙脰脝脟酶脫貌虏禄脥卢麓贸脨隆脣酶露篓虏禄脥卢碌脛脤霉脥录
+	if (nTexSize == SPR_PRERENDER_TEXSIZE1)
 	{
 		if (FAILED(m_pPreRenderTexture128->LockRect(0, &LockedRect, &rect, 0)))
 			return;
@@ -1071,27 +1126,36 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 			return;
 	}
 
-	// 清空贴图
+	// 脟氓驴脮脤霉脥录
 	BYTE* p = (BYTE*)LockedRect.pBits;
 	int nLen = (rect.right - rect.left) * 2;
-	for(i = 0; i < rect.bottom - rect.top; i++)
+	for (i = 0; i < rect.bottom - rect.top; i++)
 	{
 		memset(p, 0, nLen);
 		p += LockedRect.Pitch;
 	}
 
-	for(i = 0; i < nPrimitiveCount; i++, pTemp++)
+	for (i = 0; i < nPrimitiveCount; i++, pTemp++)
 	{
-		TextureResSpr* pSprite = (TextureResSpr *)m_TextureResMgr.GetImage(
-			pTemp->szImage,	pTemp->uImage,
+		TextureResSpr* pSprite = (TextureResSpr*)m_TextureResMgr.GetImage(
+			pTemp->szImage, pTemp->uImage,
 			pTemp->nISPosition, pTemp->nFrame, pTemp->nType, false);
 		if (!pSprite || pTemp->nFrame >= pSprite->m_nFrameNum)
 			continue;
+		if (pSprite->m_bNew) {
+			sprNew = true;
+			PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 
-		if(!bLightGet)
+			// Destination blend: D3DBLEND_ONE (add the destination color as is)
+			PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+
+			// Blend operation: D3DBLENDOP_ADD (add the source and destination colors)
+			PD3DDEVICE->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+		}
+		if (!bLightGet)
 		{
 			bLightGet = true;
-			if(bLighting && m_bDoLighting)
+			if (bLighting && m_bDoLighting)
 			{
 				D3DXVECTOR3 v;
 				v.x = (float)(pTemp->oPosition.nX);
@@ -1100,9 +1164,9 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 				color = (GetPoint3dLighting(v) & 0x00ffffff) | alpha;
 			}
 
-			if(pTemp->bRenderStyle == IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
+			if (pTemp->bRenderStyle == IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
 			{
-				// 处理偏色
+				// 麓娄脌铆脝芦脡芦
 				color = ScaleColor(color, pTemp->Color.Color_b.r, pTemp->Color.Color_b.g, pTemp->Color.Color_b.b);
 			}
 		}
@@ -1113,7 +1177,7 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 		int nY = pTemp->oPosition.nY;
 		if (!bSinglePlaneCoord)
 			CoordinateTransform(nX, nY, pTemp->oPosition.nZ);
-		
+
 		if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT)
 		{
 #define CENTERX		160
@@ -1131,7 +1195,7 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 				nY -= CENTERY;
 			}
 		}
-		
+
 		if (!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_FRAME_DRAW))
 		{
 			nX += pSprite->m_pFrameInfo[pTemp->nFrame].nOffX;
@@ -1142,31 +1206,31 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 		rect.right = rect.left + pSprite->m_pFrameInfo[pTemp->nFrame].nWidth;
 		rect.bottom = rect.top + pSprite->m_pFrameInfo[pTemp->nFrame].nHeight;
 
-		assert(pSprite->m_pFrameInfo[pTemp->nFrame].pRawData);
-		if(pSprite->m_pFrameInfo[pTemp->nFrame].pRawData)
+		//assert(pSprite->m_pFrameInfo[pTemp->nFrame].pRawData);
+		if (pSprite->m_pFrameInfo[pTemp->nFrame].pRawData)
 		{
-			// 将spr原始数据直接转换到A4R4G4B4的贴图上
+			// 陆芦spr脭颅脢录脢媒戮脻脰卤陆脫脳陋禄禄碌陆A4R4G4B4碌脛脤霉脥录脡脧
 			RenderToA4R4G4B4((WORD*)LockedRect.pBits, LockedRect.Pitch,
-				pSprite->m_pFrameInfo[pTemp->nFrame].pRawData, rect, 
-				pSprite->m_pFrameInfo[pTemp->nFrame].nWidth, 
+				pSprite->m_pFrameInfo[pTemp->nFrame].pRawData, rect,
+				pSprite->m_pFrameInfo[pTemp->nFrame].nWidth,
 				pSprite->m_pFrameInfo[pTemp->nFrame].nHeight,
 				pSprite->m_pPal16);
 		}
 	}
 
-	if(nTexSize == SPR_PRERENDER_TEXSIZE1)
+	if (nTexSize == SPR_PRERENDER_TEXSIZE1)
 		m_pPreRenderTexture128->UnlockRect(0);
 	else if (nTexSize == SPR_PRERENDER_TEXSIZE2)
 		m_pPreRenderTexture256->UnlockRect(0);
 	else
 		m_pPreRenderTexture512->UnlockRect(0);
 
-	if(FAILED(PD3DDEVICE->SetStreamSource( 0, m_pVB2D, 0, sizeof(VERTEX2D) )))
+	if (FAILED(PD3DDEVICE->SetStreamSource(0, m_pVB2D, 0, sizeof(VERTEX2D))))
 		return;
-	PD3DDEVICE->SetFVF( D3DFVF_VERTEX2D );
+	PD3DDEVICE->SetFVF(D3DFVF_VERTEX2D);
 
 	VERTEX2D* pvb;
-	m_pVB2D->Lock( 0, 4*sizeof(VERTEX2D), (void**)&pvb, 0 );
+	m_pVB2D->Lock(0, 4 * sizeof(VERTEX2D), (void**)&pvb, 0);
 
 	float fX1, fY1, fX2, fY2;
 	fX1 = rcRenderBound.left;
@@ -1175,19 +1239,19 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 	fY2 = rcRenderBound.bottom;
 
 	float fU2, fV2;
-	if(nTexSize == SPR_PRERENDER_TEXSIZE1)
+	if (nTexSize == SPR_PRERENDER_TEXSIZE1)
 	{
 		fU2 = (float)nWidth / (float)SPR_PRERENDER_TEXSIZE1;
 		fV2 = (float)nHeight / (float)SPR_PRERENDER_TEXSIZE1;
 
-		PD3DDEVICE->SetTexture( 0, m_pPreRenderTexture128 );
+		PD3DDEVICE->SetTexture(0, m_pPreRenderTexture128);
 	}
 	else if (nTexSize == SPR_PRERENDER_TEXSIZE2)
 	{
 		fU2 = (float)nWidth / (float)SPR_PRERENDER_TEXSIZE2;
 		fV2 = (float)nHeight / (float)SPR_PRERENDER_TEXSIZE2;
 
-		PD3DDEVICE->SetTexture( 0, m_pPreRenderTexture256 );
+		PD3DDEVICE->SetTexture(0, m_pPreRenderTexture256);
 	}
 	else {
 		fU2 = (float)nWidth / (float)SPR_PRERENDER_TEXSIZE3;
@@ -1196,52 +1260,57 @@ void KRepresentShell3::DrawSprOnTexture2D(int nPrimitiveCount, KRepresentUnit* p
 		PD3DDEVICE->SetTexture(0, m_pPreRenderTexture512);
 	}
 
-	float ft1,ft2;
+	float ft1, ft2;
 	ft1 = 0.5f / (float)SPR_PRERENDER_TEXSIZE2;
 	ft2 = 0.5f / (float)SPR_PRERENDER_TEXSIZE2;
 
-	pvb[0].position = D3DXVECTOR4( fX1,fY1, 100, 1 );
-	pvb[0].color    = color;
-    pvb[0].tu       = 0.0f + ft1;
-    pvb[0].tv       = 0.0f + ft2;
+	pvb[0].position = D3DXVECTOR4(fX1, fY1, 100, 1);
+	pvb[0].color = color;
+	pvb[0].tu = 0.0f + ft1;
+	pvb[0].tv = 0.0f + ft2;
 
-	pvb[1].position = D3DXVECTOR4( fX2,fY1, 100, 1 );
-    pvb[1].color    = color;
-    pvb[1].tu       = fU2 - ft1;
-    pvb[1].tv       = 0.0f + ft2;
+	pvb[1].position = D3DXVECTOR4(fX2, fY1, 100, 1);
+	pvb[1].color = color;
+	pvb[1].tu = fU2 - ft1;
+	pvb[1].tv = 0.0f + ft2;
 
-	pvb[2].position = D3DXVECTOR4( fX1,fY2, 100, 1 );
-    pvb[2].color    = color;
-    pvb[2].tu       = 0.0f + ft1;
-    pvb[2].tv       = fV2 - ft2;
+	pvb[2].position = D3DXVECTOR4(fX1, fY2, 100, 1);
+	pvb[2].color = color;
+	pvb[2].tu = 0.0f + ft1;
+	pvb[2].tv = fV2 - ft2;
 
-	pvb[3].position = D3DXVECTOR4( fX2,fY2, 100, 1 );
-    pvb[3].color    = color;
-    pvb[3].tu       = fU2 - ft1;
-    pvb[3].tv       = fV2 - ft2;
+	pvb[3].position = D3DXVECTOR4(fX2, fY2, 100, 1);
+	pvb[3].color = color;
+	pvb[3].tu = fU2 - ft1;
+	pvb[3].tv = fV2 - ft2;
 
 	m_pVB2D->Unlock();
 
-	if(cRenderStyle == IMAGE_RENDER_STYLE_BORDER)
-		PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_ADD );
+	if (cRenderStyle == IMAGE_RENDER_STYLE_BORDER)
+		PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_ADD);
 	else
-		PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE4X );
+		PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE4X);
 
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
+	PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 
-	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+	PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 
-	PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
+	PD3DDEVICE->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 
-	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	PD3DDEVICE->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+	PD3DDEVICE->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	PD3DDEVICE->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+	PD3DDEVICE->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	PD3DDEVICE->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+	if (sprNew) {
+		PD3DDEVICE->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	}
 }
 
-// 为和2D模式大小一致，特定的spr缩放一个比例
+// 脦陋潞脥2D脛拢脢陆麓贸脨隆脪禄脰脗拢卢脤脴露篓碌脛spr脣玫路脜脪禄赂枚卤脠脌媒
 #define SCALE_RATE_SPRITE_WIDTH	 1.05f
 #define SCALE_RATE_SPRITE_HEIGHT 1.12f
 
@@ -1250,7 +1319,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 	if(uGenre != RU_T_IMAGE && uGenre != RU_T_IMAGE_4)
 		return;
 
-	// 判断是否主角类
+	// 脜脨露脧脢脟路帽脰梅陆脟脌脿
 	if(nPrimitiveCount >= 4)
 	{
 		DrawPlayer3D(nPrimitiveCount, pPrimitives, bSinglePlaneCoord);
@@ -1265,7 +1334,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 		return;
 
 	PD3DDEVICE->SetFVF( D3DFVF_VERTEX3D );
-	// 由于是透视模式，将过滤方式设为D3DTEXF_LINEAR防止贴图抖动
+	// 脫脡脫脷脢脟脥赂脢脫脛拢脢陆拢卢陆芦鹿媒脗脣路陆脢陆脡猫脦陋D3DTEXF_LINEAR路脌脰鹿脤霉脥录露露露炉
 	if(g_renderModel == RenderModel3DPerspective)
 	{
 		PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
@@ -1296,9 +1365,18 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 				if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 					break;
 
+				if (pSprite->m_bNew) {
+					PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+
+					// Destination blend: D3DBLEND_ONE (add the destination color as is)
+					PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+
+					// Blend operation: D3DBLENDOP_ADD (add the source and destination colors)
+					PD3DDEVICE->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+				}
 				if(uGenre != RU_T_IMAGE_4)
 				{
-					// 矩形图素
+					// 戮脴脨脦脥录脣脴
 					if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT)
 					{
 #define CENTERX		160
@@ -1352,7 +1430,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					
 					if(fZ1 == fZ3)
 					{
-						// 水平图素
+						// 脣庐脝陆脥录脣脴
 						renderParam.m_pos[0] = D3DXVECTOR3( fX1,fY1, fZ1 );
 						renderParam.m_pos[1] = D3DXVECTOR3( fX3,fY1, fZ1 );
 						renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
@@ -1360,7 +1438,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					}
 					else
 					{
-						// 垂直图素
+						// 麓鹿脰卤脥录脣脴
 						renderParam.m_pos[0] = D3DXVECTOR3( fX1,fY1, fZ1 );
 						renderParam.m_pos[1] = D3DXVECTOR3( fX3,fY3, fZ1 );
 						renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
@@ -1376,7 +1454,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 				}
 				else
 				{
-					// 平行四边形图素
+					// 脝陆脨脨脣脛卤脽脨脦脥录脣脴
 					KRUImage4 *pTemp4 = (KRUImage4*)pTemp;
 					fX2 = (float)pTemp4->oSecondPos.nX;
 					fY2 = (float)pTemp4->oSecondPos.nY;
@@ -1403,7 +1481,13 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					else
 						DrawSpriteAlpha3D(renderParam, pTemp->nFrame, pSprite, pTemp->Color.Color_dw, pTemp->bRenderStyle, &rc);
 				}
+				if(pSprite->m_bNew){
+					PD3DDEVICE->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+					PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+					PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+				}
 			}
+
 			break;
 		case ISI_T_BITMAP16:
 			{
@@ -1414,7 +1498,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 					break;
 				if(fZ1 == fZ3)
 				{
-					// 水平图素
+					// 脣庐脝陆脥录脣脴
 					renderParam.m_pos[0] = D3DXVECTOR3( fX1,fY1, fZ1 );
 					renderParam.m_pos[1] = D3DXVECTOR3( fX3,fY1, fZ1 );
 					renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
@@ -1422,7 +1506,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 				}
 				else
 				{
-					// 垂直图素
+					// 麓鹿脰卤脥录脣脴
 					renderParam.m_pos[0] = D3DXVECTOR3( fX1,fY1, fZ1 );
 					renderParam.m_pos[1] = D3DXVECTOR3( fX3,fY3, fZ1 );
 					renderParam.m_pos[2] = D3DXVECTOR3( fX3,fY3, fZ3 );
@@ -1436,7 +1520,7 @@ void KRepresentShell3::DrawImage3D(unsigned int uGenre, int nPrimitiveCount, KRe
 			break;
 		}
 	}
-	// 恢复缺省过滤模式
+	// 禄脰赂麓脠卤脢隆鹿媒脗脣脛拢脢陆
 	if(g_renderModel == RenderModel3DPerspective)
 	{
 		PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
@@ -1487,7 +1571,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 	KRUImage* pTemp = (KRUImage*)pPrimitives;
 
 	bool bFirstOne = true;
-	// 所有图素的计算外包矩形
+	// 脣霉脫脨脥录脣脴碌脛录脝脣茫脥芒掳眉戮脴脨脦
 	for (i = 0; i < nPrimitiveCount; i++, pTemp++)
 	{
 		D3DXVECTOR3 v1,v2;
@@ -1507,7 +1591,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 		if(!(pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT) && (pTemp->oEndPos.nX == 0 || pTemp->oEndPos.nY == 0))
 			continue;
 
-		// 矩形图素
+		// 戮脴脨脦脥录脣脴
 		if (pTemp->bRenderFlag & RUIMAGE_RENDER_FLAG_REF_SPOT)
 		{
 #define CENTERX		160
@@ -1550,7 +1634,7 @@ void KRepresentShell3::GetBoundBox3D(int nPrimitiveCount, KRepresentUnit* pPrimi
 			v2.z -= fYOff;
 		}
 
-		// 将坐标转化到屏幕空间
+		// 陆芦脳酶卤锚脳陋禄炉碌陆脝脕脛禄驴脮录盲
 		D3DXVECTOR3 vPos1, vPos2;
 		D3DVIEWPORT9 viewportData = g_Device.GetViewport();
 		
@@ -1686,7 +1770,7 @@ void KRepresentShell3::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 	pOldSurface->Release();
 }
 
-//## 清除图形数据
+//## 脟氓鲁媒脥录脨脦脢媒戮脻
 void KRepresentShell3::ClearImageData(const char* pszImage, unsigned int uImage, short nImagePosition)
 {
 	if(!pszImage || !pszImage[0])
@@ -1727,7 +1811,7 @@ void KRepresentShell3::FreeImage(const char* pszImage)
 	m_TextureResMgr.FreeImage(pszImage);
 }
 
-void* KRepresentShell3::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuffInfo* pInfo)
+void* KRepresentShell3::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuffInfo* pInfo, int nType)
 {
 	if(!pszImage || !pszImage[0])
 		return NULL;
@@ -1821,7 +1905,7 @@ void KRepresentShell3::LookAt(int nX, int nY, int nZ)
 		float fX = (float)nX;
 		float fY = (float)nY;
 		float fZ = (float)nZ;
-		// 摄像机后退，抬高成30度角
+		// 脡茫脧帽禄煤潞贸脥脣拢卢脤搂赂脽鲁脡30露脠陆脟
 		m_vCamera1.x = fX;
 		m_vCamera1.y = fY;
 		m_vCamera1.z = fZ;
@@ -1860,7 +1944,7 @@ void KRepresentShell3::OutputText(int nFontId, const char* psText, int nCount, i
 
 	if(nZ != TEXT_IN_SINGLE_PLANE_COORD)
 	{
-		// 将3D坐标转化为屏幕坐标
+		// 陆芦3D脳酶卤锚脳陋禄炉脦陋脝脕脛禄脳酶卤锚
 		if(m_dwWindowStyle == RenderModel3DPerspective)
 		{
 			D3DXVECTOR3 vPos((float)(nX), (float)(nY), (float)(nZ));
@@ -1904,7 +1988,7 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 
 	if(nZ != TEXT_IN_SINGLE_PLANE_COORD)
 	{
-		// 将3D坐标转化为屏幕坐标
+		// 陆芦3D脳酶卤锚脳陋禄炉脦陋脝脕脛禄脳酶卤锚
 		if(m_dwWindowStyle == RenderModel3DPerspective)
 		{
 			D3DXVECTOR3 vPos((float)(nX), (float)(nY), (float)(nZ));
@@ -1922,7 +2006,7 @@ void KRepresentShell3::OutputVNText(int nFontId, char* psText, int nCount, int n
 	m_FontTable[i].pFontObj->OutputText(psText, nCount, nX, nY, Color, nLineWidth);
 }
 
-//## 输出文字。
+//## 脢盲鲁枚脦脛脳脰隆拢
 int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam, 
 		const char* psText, int nCount, int nLineWidth)
 {
@@ -1948,7 +2032,7 @@ int KRepresentShell3::OutputRichText(int nFontId, KOutputTextParam* pParam,
 			y = pParam->nY;
 			z = pParam->nZ;
 
-			// 将3D坐标转化为屏幕坐标
+			// 陆芦3D脳酶卤锚脳陋禄炉脦陋脝脕脛禄脳酶卤锚
 			if(m_dwWindowStyle == RenderModel3DPerspective)
 			{
 				D3DXVECTOR3 vPos((float)x, (float)y, (float)z);
@@ -1999,7 +2083,7 @@ int KRepresentShell3::LocateRichText(int nX, int nY,
 			y = pParam->nY;
 			z = pParam->nZ;
 
-			// 将3D坐标转化为屏幕坐标
+			// 陆芦3D脳酶卤锚脳陋禄炉脦陋脝脕脛禄脳酶卤锚
 			if(m_dwWindowStyle == RenderModel3DPerspective)
 			{
 				D3DXVECTOR3 vPos((float)x, (float)y, (float)z);
@@ -2094,10 +2178,10 @@ bool KRepresentShell3::RepresentBegin(int bClear, unsigned int Color)
 		return false;
     }
 
-	// 清除背景
+	// 脟氓鲁媒卤鲁戮掳
 	PD3DDEVICE->Clear( 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,0,0), 1.0f, 0L );
 
-	// 开始性能统计
+	// 驴陋脢录脨脭脛脺脥鲁录脝
 	m_TextureResMgr.StartProfile();
 
 /*	float fAngleAdd = 0.03f;
@@ -2160,10 +2244,10 @@ void KRepresentShell3::RepresentEnd()
 
 	char cc[200];
 
-	// 终止性能统计
+	// 脰脮脰鹿脨脭脛脺脥鲁录脝
 	m_TextureResMgr.EndProfile();
 
-	// 生成并显示统计信息
+	// 脡煤鲁脡虏垄脧脭脢戮脥鲁录脝脨脜脧垄
 	m_TextureResMgr.GetProfileString(cc, 200);
 	KOutputTextParam param;
 	param.Color = 0xffff;
@@ -2184,42 +2268,44 @@ void KRepresentShell3::RepresentEnd()
 
 //	OutputText(nFontId, cc, strlen(cc), 600, 20, 0xffffffff, 800);
 
-	// 完成3D渲染
+	// 脥锚鲁脡3D盲脰脠戮
 	g_Device.End3D();
-	// 交换页面
+	// 陆禄禄禄脪鲁脙忙
 	PD3DDEVICE->Present(NULL,NULL,NULL,NULL);
 }
 
-void KRepresentShell3::ViewPortCoordToSpaceCoord( int& nX, int& nY, int  nZ )
+void KRepresentShell3::ViewPortCoordToSpaceCoord(int& nX, int& nY, int nZ)
 {
-	if(g_renderModel == RenderModel3DPerspective)
+	if (g_renderModel == RenderModel3DPerspective || g_renderModel == RenderModel3DOrtho)
 	{
-		D3DVIEWPORT9 viewportData = g_Device.GetViewport();
-		D3DXVECTOR3 vPos((2.0f * (float)nX / viewportData.Width - 1.0f) / m_matProj._11, 
-					(1.0f - 2.0f * (float)nY / viewportData.Height) / m_matProj._22, 1.0f);
-		D3DXVECTOR3 vOut1, vOut2;
-		
-		// 鼠标确定的选择射线的方向向量
-		vOut2.x  = vPos.x*m_matViewInverse._11 + vPos.y*m_matViewInverse._21 + vPos.z*m_matViewInverse._31;
-        vOut2.y  = vPos.x*m_matViewInverse._12 + vPos.y*m_matViewInverse._22 + vPos.z*m_matViewInverse._32;
-        vOut2.z  = vPos.x*m_matViewInverse._13 + vPos.y*m_matViewInverse._23 + vPos.z*m_matViewInverse._33;
+		D3DVIEWPORT9 vp = g_Device.GetViewport();
 
-		// 摄像机位置
-		vOut1.x = m_matViewInverse._41;
-        vOut1.y = m_matViewInverse._42;
-        vOut1.z = m_matViewInverse._43;
+		D3DXVECTOR3 screenNear((float)nX, (float)nY, 0.0f);
+		D3DXVECTOR3 screenFar((float)nX, (float)nY, 1.0f);
+		D3DXVECTOR3 worldNear, worldFar;
 
-		vOut1 = vOut1 - vOut2 * ((vOut1.z - nZ) / vOut2.z);
+		D3DXVec3Unproject(&worldNear, &screenNear, &vp, &m_matProj, &m_matView, nullptr);
+		D3DXVec3Unproject(&worldFar, &screenFar, &vp, &m_matProj, &m_matView, nullptr);
 
-		nX = (int)vOut1.x;
-		nY = (int)vOut1.y;
+		D3DXVECTOR3 dir = worldFar - worldNear;
+
+		if (fabs(dir.z) < 1e-6f)  // Avoid division by near-zero
+			return;
+
+		float t = (nZ - worldNear.z) / dir.z;
+		D3DXVECTOR3 worldHit = worldNear + dir * t;
+
+		nX = static_cast<int>(worldHit.x);
+		nY = static_cast<int>(worldHit.y);
 	}
 	else
 	{
+		// Legacy 2D logic (if you're using map rendering or UI mode)
 		nX = nX + m_nLeft;
 		nY = (nY + m_nTop + ((nZ * 887) >> 10)) * 2;
 	}
 }
+
 
 void KRepresentShell3::D3DTerm()
 {
@@ -2232,16 +2318,60 @@ void KRepresentShell3::D3DTerm()
 
 void KRepresentShell3::CoordinateTransform( int& nX, int& nY, int nZ)
 {
-	nX = (nX - m_nLeft) / g_fZoomFactor;
-	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10)) / g_fZoomFactor;
-	nX += g_nScreenWidth /2 - g_nScreenWidth / 2 / g_fZoomFactor;
-	nY += g_nScreenHeight/2 - g_nScreenHeight / 2/ g_fZoomFactor;
+	// 1) grab current viewport
+	D3DVIEWPORT9 vp;
+	PD3DDEVICE->GetViewport(&vp);
+
+	// 2) build a world漏\space vector for your point
+	D3DXVECTOR3 worldPos((float)nX, (float)nY, (float)nZ);
+
+	// 3) prepare an identity world matrix (no extra world transform)
+	D3DXMATRIX matWorld;
+	D3DXMatrixIdentity(&matWorld);
+
+	// 4) project it into screen space
+	D3DXVECTOR3 screenPos;
+	D3DXVec3Project(
+		&screenPos,
+		&worldPos,
+		&vp,
+		&m_matProj,    // your projection matrix
+		&m_matView,    // your view matrix (from LookAt)
+		&matWorld      // identity world matrix
+	);
+
+	// 5) write back pixel coords (rounding for safety)
+	nX = int(screenPos.x + 0.5f);
+	nY = int(screenPos.y + 0.5f);
 }
 
 void KRepresentShell3::CoordinateTransformX(int& nX, int& nY, int nZ)
 {
-	nX = (nX - m_nLeft);
-	nY = (nY / 2 - m_nTop - ((nZ * 887) >> 10));
+	// 1) grab current viewport
+	D3DVIEWPORT9 vp;
+	PD3DDEVICE->GetViewport(&vp);
+
+	// 2) build a world漏\space vector for your point
+	D3DXVECTOR3 worldPos((float)nX, (float)nY, (float)nZ);
+
+	// 3) prepare an identity world matrix (no extra world transform)
+	D3DXMATRIX matWorld;
+	D3DXMatrixIdentity(&matWorld);
+
+	// 4) project it into screen space
+	D3DXVECTOR3 screenPos;
+	D3DXVec3Project(
+		&screenPos,
+		&worldPos,
+		&vp,
+		&m_matProj,    // your projection matrix
+		&m_matView,    // your view matrix (from LookAt)
+		&matWorld      // identity world matrix
+	);
+
+	// 5) write back pixel coords (rounding for safety)
+	nX = int(screenPos.x + 0.5f);
+	nY = int(screenPos.y + 0.5f);
 }
 
 void KRepresentShell3::DrawRect(int32 x1, int32 y1, int32 nWidth, int32 nHeight, DWORD color)
@@ -2460,7 +2590,7 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 	fX2 = fX1 + (float)nWidth;
 	fY2 = fY1 + (float)nHeight;
 
-	// 如果图素超出屏幕范围则不渲染
+	// 脠莽鹿没脥录脣脴鲁卢鲁枚脝脕脛禄路露脦搂脭貌虏禄盲脰脠戮
 	if(fX2 < 0 || fX1 > g_nScreenWidth || fY2 < 0 || fY1 > g_nScreenHeight)
 		return;
 
@@ -2470,11 +2600,11 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 
 	if(nRenderStyle != IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
 	{
-		// 不偏色，将颜色改为白
+		// 虏禄脝芦脡芦拢卢陆芦脩脮脡芦赂脛脦陋掳脳
 		color = 0xffffffff;
 	}
 
-	// 根据贴图数目把矩形拆分成多个小矩形，计算坐标及纹理
+	// 赂霉戮脻脤霉脥录脢媒脛驴掳脩戮脴脨脦虏冒路脰鲁脡露脿赂枚脨隆戮脴脨脦拢卢录脝脣茫脳酶卤锚录掳脦脝脌铆
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		float fU2, fV2;
@@ -2517,7 +2647,7 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 
 	m_pVB2D->Unlock();
 
-	// 绘制多边形
+	// 禄忙脰脝露脿卤脽脨脦
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
@@ -2528,7 +2658,7 @@ void KRepresentShell3::DrawSpriteAlpha(int32 nX, int32 nY, int32 nWidth, int32 n
 		
 		if( nRenderStyle == IMAGE_RENDER_STYLE_BORDER )
 		{
-			// 选中加亮效果
+			// 脩隆脰脨录脫脕脕脨搂鹿没
 			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE2X );
 			PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, i*4, 2 );
 			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
@@ -2556,7 +2686,7 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 	fX2 = fX1 + (float)nWidth;
 	fY2 = fY1 + (float)nHeight;
 
-	// 如果图素超出屏幕范围则不渲染
+	// 脠莽鹿没脥录脣脴鲁卢鲁枚脝脕脛禄路露脦搂脭貌虏禄盲脰脠戮
 	if(fX2 < 0 || fX1 > g_nScreenWidth || fY2 < 0 || fY1 > g_nScreenHeight)
 		return;
 
@@ -2566,7 +2696,7 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 
 	bool bDraw[4];
 
-	// 根据贴图数目把矩形拆分成多个小矩形，计算坐标及纹理
+	// 赂霉戮脻脤霉脥录脢媒脛驴掳脩戮脴脨脦虏冒路脰鲁脡露脿赂枚脨隆戮脴脨脦拢卢录脝脣茫脳酶卤锚录掳脦脝脌铆
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		float fU1, fV1, fU2, fV2, u2, v2;
@@ -2587,7 +2717,7 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 		fRcX2 = (float)rect.right, fRcY2 = (float)rect.bottom;
 		if(fRcX1 > x2 || fRcX2 < x1 || fRcY1 > y2 || fRcY2 < y1)
 		{
-			// 如果这个面片的剪彩矩形在图素矩形之外则不画
+			// 脠莽鹿没脮芒赂枚脙忙脝卢碌脛录么虏脢戮脴脨脦脭脷脥录脣脴戮脴脨脦脰庐脥芒脭貌虏禄禄颅
 			bDraw[i] = false;
 			continue;
 		}
@@ -2630,7 +2760,7 @@ void KRepresentShell3::DrawSpritePartAlpha(int32 nX, int32 nY, int32 nWidth, int
 
 	m_pVB2D->Unlock();
 
-	// 绘制多边形
+	// 禄忙脰脝露脿卤脽脨脦
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
@@ -2787,7 +2917,7 @@ void KRepresentShell3::DrawBitmap163DLighting(RenderParam3D &param, TextureResBm
 	if(FAILED(m_pVB3D->Lock( 0, VERTEX_BUFFER_SIZE*sizeof(VERTEX3D), (void**)&pvb, 0 )))
 		return;
 
-	// 生成网格，计算亮度
+	// 脡煤鲁脡脥酶赂帽拢卢录脝脣茫脕脕露脠
 	uint32 nCount  = BuildMesh3D(vbSrc, pvb, VERTEX_BUFFER_SIZE, 0xffffffff);
 
 	m_pVB3D->Unlock();
@@ -2966,8 +3096,8 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 	if(nFrame >= pSprite->m_nFrameNum)
 		return;
 
-	// 在屏幕空间检测图素是否可见，如不可见则返回
-	// 这里还可以优化
+	// 脭脷脝脕脛禄驴脮录盲录矛虏芒脥录脣脴脢脟路帽驴脡录没拢卢脠莽虏禄驴脡录没脭貌路碌禄脴
+	// 脮芒脌茂禄鹿驴脡脪脭脫脜禄炉
 	D3DXVECTOR3 vPos1, vPos2, vPos3, vPos4;
 	D3DVIEWPORT9 viewportData = g_Device.GetViewport();
 	D3DXVec3Project(&vPos1, &param.m_pos[0], &viewportData, &m_matProj, &m_matView, NULL);
@@ -2991,11 +3121,11 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 	bool bDraw[4];
 	if(nRenderStyle != IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST)
 	{
-		// 不偏色，将颜色改为白
+		// 虏禄脝芦脡芦拢卢陆芦脩脮脡芦赂脛脦陋掳脳
 		color = 0xffffffff;
 	}
 
-	// 根据贴图数目把矩形拆分成多个小矩形，计算坐标及纹理
+	// 赂霉戮脻脤霉脥录脢媒脛驴掳脩戮脴脨脦虏冒路脰鲁脡露脿赂枚脨隆戮脴脨脦拢卢录脝脣茫脳酶卤锚录掳脦脝脌铆
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		bDraw[i] = true;
@@ -3005,7 +3135,7 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 		fV2 = (float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nFrameHeight /
 				(float)pSprite->m_pFrameInfo[nFrame].texInfo[i].nHeight;
 
-		// 如果只画图素的一部分，则需要调整纹理坐标
+		// 脠莽鹿没脰禄禄颅脥录脣脴碌脛脪禄虏驴路脰拢卢脭貌脨猫脪陋碌梅脮没脦脝脌铆脳酶卤锚
 		if(rect)
 		{
 			float fRcX1, fRcY1, fRcX2, fRcY2;
@@ -3017,7 +3147,7 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 			fRcX2 = (float)rect->right, fRcY2 = (float)rect->bottom;
 			if(fRcX1 > fFrameX2	|| fRcX2 < fFrameX1	|| fRcY1 > fFrameY2	|| fRcY2 < fFrameY1)
 			{
-				// 如果这个面片的剪彩矩形在图素矩形之外则不画
+				// 脠莽鹿没脮芒赂枚脙忙脝卢碌脛录么虏脢戮脴脨脦脭脷脥录脣脴戮脴脨脦脰庐脥芒脭貌虏禄禄颅
 				bDraw[i] = false;
 				continue;
 			}
@@ -3078,14 +3208,14 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 		vbSrc[3].tu       = fU1+ft1;
 		vbSrc[3].tv       = fV2-ft2;
 
-		// 生成网格，计算亮度
+		// 脡煤鲁脡脥酶赂帽拢卢录脝脣茫脕脕露脠
 		nStripLen[i] = BuildMesh3D(vbSrc, pvb, VERTEX_BUFFER_SIZE, color);
 		pvb += nStripLen[i];
 	}
 
 	m_pVB3D->Unlock();
 
-	// 绘制多边形
+	// 禄忙脰脝露脿卤脽脨脦
 	int nBase = 0;
 	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
 	PD3DDEVICE->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
@@ -3099,7 +3229,7 @@ void KRepresentShell3::DrawSpriteAlpha3DLighting(RenderParam3D &param, int32 nFr
 		
 		if( nRenderStyle == IMAGE_RENDER_STYLE_BORDER )
 		{
-			// 选中加亮效果
+			// 脩隆脰脨录脫脕脕脨搂鹿没
 			PD3DDEVICE->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_ADD );
 			PD3DDEVICE->DrawPrimitive( D3DPT_TRIANGLESTRIP, nBase, nStripLen[i] - 2 );
 		}
@@ -3120,8 +3250,8 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 
 	if(pvbSrc[0].position.z == pvbSrc[2].position.z)
 	{
-		VERTEX3D vt1 = pvbSrc[0];						// 扫描的前一行顶点
-		VERTEX3D vt2 = pvbSrc[0];						// 扫描的后一行顶点
+		VERTEX3D vt1 = pvbSrc[0];						// 脡篓脙猫碌脛脟掳脪禄脨脨露楼碌茫
+		VERTEX3D vt2 = pvbSrc[0];						// 脡篓脙猫碌脛潞贸脪禄脨脨露楼碌茫
 		float ftuAdd, ftvAdd;
 		bool bAllDone = false;
 		
@@ -3131,7 +3261,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 		while(1)
 		{
 			vt1 = vt2;
-			// 计算后一行起点
+			// 录脝脣茫潞贸脪禄脨脨脝冒碌茫
 			vt2.position.y += MESH_GRID_SIZE;
 			vt2.tv += ftvAdd;
 			if(vt2.position.y >= pvbSrc[2].position.y)
@@ -3140,7 +3270,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 				vt2.tv = pvbSrc[2].tv;
 				bAllDone = true;
 			}
-			// 从左到右创建一行三角形条带
+			// 麓脫脳贸碌陆脫脪麓麓陆篓脪禄脨脨脠媒陆脟脨脦脤玫麓酶
 			while(1)
 			{
 				SetPoint3dLighting(pvbDes[nCount++], vt2, color);
@@ -3164,7 +3294,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 				break;
 			
 			vt1 = vt2;
-			// 计算后一行起点
+			// 录脝脣茫潞贸脪禄脨脨脝冒碌茫
 			vt2.position.y += MESH_GRID_SIZE;
 			vt2.tv += ftvAdd;
 			if(vt2.position.y >= pvbSrc[2].position.y)
@@ -3173,7 +3303,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 				vt2.tv = pvbSrc[2].tv;
 				bAllDone = true;
 			}
-			// 从右到左创建一行三角形条带
+			// 麓脫脫脪碌陆脳贸麓麓陆篓脪禄脨脨脠媒陆脟脨脦脤玫麓酶
 			while(1)
 			{
 				SetPoint3dLighting(pvbDes[nCount++], vt1, color);
@@ -3199,8 +3329,8 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 	}
 	else
 	{
-		VERTEX3D vt1 = pvbSrc[0];						// 扫描的前一行顶点
-		VERTEX3D vt2 = pvbSrc[0];						// 扫描的后一行顶点
+		VERTEX3D vt1 = pvbSrc[0];						// 脡篓脙猫碌脛脟掳脪禄脨脨露楼碌茫
+		VERTEX3D vt2 = pvbSrc[0];						// 脡篓脙猫碌脛潞贸脪禄脨脨露楼碌茫
 		float ftuAdd, ftvAdd;
 		D3DXVECTOR3 fvAdd;
 		float fEndZ1, fEndZ2;
@@ -3213,7 +3343,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 		while(1)
 		{
 			vt1 = vt2;
-			// 计算后一行起点
+			// 录脝脣茫潞贸脪禄脨脨脝冒碌茫
 			vt2.position += fvAdd;
 			vt2.tu += ftuAdd;
 			if(abs((int)(vt2.position.x - pvbSrc[0].position.x)) >=
@@ -3224,7 +3354,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 			}
 			fEndZ1 = vt1.position.z - (pvbSrc[0].position.z - pvbSrc[3].position.z);
 			fEndZ2 = vt2.position.z - (pvbSrc[0].position.z - pvbSrc[3].position.z);
-			// 从上到下创建一行三角形条带
+			// 麓脫脡脧碌陆脧脗麓麓陆篓脪禄脨脨脠媒陆脟脨脦脤玫麓酶
 			while(1)
 			{
 				SetPoint3dLighting(pvbDes[nCount++], vt1, color);
@@ -3248,7 +3378,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 				break;
 			
 			vt1 = vt2;
-			// 计算后一行起点
+			// 录脝脣茫潞贸脪禄脨脨脝冒碌茫
 			vt2.position += fvAdd;
 			vt2.tu += ftuAdd;
 			if(abs((int)(vt2.position.x - pvbSrc[3].position.x)) >=
@@ -3259,7 +3389,7 @@ uint32 KRepresentShell3::BuildMesh3D(VERTEX3D *pvbSrc, VERTEX3D* pvbDes, uint32 
 			}
 			fEndZ1 = vt1.position.z + (pvbSrc[0].position.z - pvbSrc[3].position.z);
 			fEndZ2 = vt2.position.z + (pvbSrc[0].position.z - pvbSrc[3].position.z);
-			// 从右到左创建一行三角形条带
+			// 麓脫脫脪碌陆脳贸麓麓陆篓脪禄脨脨脠媒陆脟脨脦脤玫麓酶
 			while(1)
 			{
 				SetPoint3dLighting(pvbDes[nCount++], vt2, color);
@@ -3496,7 +3626,7 @@ void KRepresentShell3::RIO_CopySprToBufferAlpha(TextureResSpr* pSprite, int32 nF
 
 	m_pVB2D->Unlock();
 
-	// 绘制多边形
+	// 禄忙脰脝露脿卤脽脨脦
 	for(i=0; i<pSprite->m_pFrameInfo[nFrame].nTexNum; i++)
 	{
 		LPDIRECT3DTEXTURE9 pTex = pSprite->GetTexture(nFrame, i);
@@ -3544,7 +3674,7 @@ bool KRepresentShell3::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 		nDesktopWidth = mode.Width;
 		nDesktopHeight = mode.Height;
 
-		// 如果窗口客户区超出屏幕则返回
+		// 脠莽鹿没麓掳驴脷驴脥禄搂脟酶鲁卢鲁枚脝脕脛禄脭貌路碌禄脴
 		if(ptLT.x >= nDesktopWidth || ptLT.y >= nDesktopHeight || ptRB.x <= 0 || ptRB.y <= 0)
 			return false;
 		if(ptLT.x < 0)
@@ -3570,13 +3700,13 @@ bool KRepresentShell3::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 	}
 
 	BYTE *pData;
-	// 创建用于存放截图的Surface
+	// 麓麓陆篓脫脙脫脷麓忙路脜陆脴脥录碌脛Surface
 	IDirect3DSurface9* pSurface = NULL;
 	if(FAILED(PD3DDEVICE->CreateOffscreenPlainSurface(nDesktopWidth, nDesktopHeight, 
 												D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM , &pSurface, NULL)))
 		goto error;
 
-	// 获取屏幕截图
+	// 禄帽脠隆脝脕脛禄陆脴脥录
 	if(FAILED(PD3DDEVICE->GetFrontBufferData(0, pSurface)))
     	goto error;
 
@@ -3590,10 +3720,10 @@ bool KRepresentShell3::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 	pData = ((BYTE*)lockedRect.pBits) + nPicOffY * nDesktopWidth * 4 + nPicOffX * 4;
 	BOOL bRet;
 	if(eType == SCRFILETYPE_BMP)
-		// 保存24位bmp文件
+		// 卤拢麓忙24脦禄bmp脦脛录镁
 		bRet = KBmpFile24::SaveBuffer32((char*)pszName, pData, nDesktopWidth*4, nPicWidth, nPicHeight);
 	else
-		// 保存24位jpg文件
+		// 卤拢麓忙24脦禄jpg脦脛录镁
 		bRet = SaveBufferToJpgFile32((char*)pszName, pData, nDesktopWidth*4, nPicWidth, nPicHeight, nQuality);
 	if(!bRet)
 	{
@@ -3615,7 +3745,7 @@ void KRepresentShell3::SetGamma(int nGamma)
 	if(nGamma < 0 || nGamma > 100)
 		return;
 
-	// 把nGamma变为-100到100
+	// 掳脩nGamma卤盲脦陋-100碌陆100
 	nGamma = nGamma * 2 - 100;
 
 	D3DGAMMARAMP ramp;
@@ -3650,7 +3780,7 @@ void KRepresentShell3::setZoomFactor(float zoomFactorDelta) { //set zoom factor
 	if (zoomFactorDelta == 99) { //reset
 		g_fZoomFactor = 1;
 	}
-	else if (g_fZoomFactor + zoomFactorDelta <= 1.10 && g_fZoomFactor + zoomFactorDelta >= 0.75) {
+	else if (g_fZoomFactor + zoomFactorDelta <= 5.10 && g_fZoomFactor + zoomFactorDelta >= 0.15) {
 		g_fZoomFactor += zoomFactorDelta;
 	}
 	if (g_renderModel == RenderModel3DOrtho)

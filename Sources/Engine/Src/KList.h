@@ -28,6 +28,7 @@ public:
 	KNode* RemoveTail(void); // 删除最后一个节点
 	BOOL IsEmpty(void); // 是否是个空的链表
 	LONG GetNodeCount(void);
+	int m_nNodeCount;
 };
 //---------------------------------------------------------------------------
 
@@ -41,6 +42,7 @@ inline KList::KList(void)
 {
 	m_ListHead.m_pNext = &m_ListTail;
 	m_ListTail.m_pPrev = &m_ListHead;
+	m_nNodeCount = 0;
 }
 //-------------------------------------------------------------------------
 // 函数:	IsEmpty
@@ -80,6 +82,7 @@ inline KNode* KList::GetTail(void)
 //---------------------------------------------------------------------------
 inline void KList::AddHead(KNode *pNode)
 {
+	m_nNodeCount++;
 	m_ListHead.InsertAfter(pNode);
 }
 //-------------------------------------------------------------------------
@@ -90,6 +93,7 @@ inline void KList::AddHead(KNode *pNode)
 //---------------------------------------------------------------------------
 inline void KList::AddTail(KNode *pNode)
 {
+	m_nNodeCount++;
 	m_ListTail.InsertBefore(pNode);
 }
 //-------------------------------------------------------------------------
@@ -101,8 +105,10 @@ inline void KList::AddTail(KNode *pNode)
 inline KNode* KList::RemoveHead(void)
 {
 	KNode* pNode = m_ListHead.GetNext();
-	if (pNode)
+	if (pNode) {
 		pNode->Remove();
+		m_nNodeCount--;
+	}
 	return pNode;
 }
 //-------------------------------------------------------------------------
@@ -114,8 +120,10 @@ inline KNode* KList::RemoveHead(void)
 inline KNode* KList::RemoveTail(void)
 {
 	KNode* pNode = m_ListTail.GetPrev();
-	if (pNode)
+	if (pNode) {
 		pNode->Remove();
+		m_nNodeCount--;
+	}
 	return pNode;
 }
 //-------------------------------------------------------------------------

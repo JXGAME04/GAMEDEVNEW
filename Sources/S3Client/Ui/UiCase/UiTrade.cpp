@@ -216,7 +216,7 @@ void KUiTrade::OnChangedTakewithItem(KUiObjAtRegion* pObj, int bAdd)
 {
 	if (pObj)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		//UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		KUiDraggedObject Obj;
 		Obj.uGenre = pObj->Obj.uGenre;
 		Obj.uId = pObj->Obj.uId;
@@ -228,6 +228,7 @@ void KUiTrade::OnChangedTakewithItem(KUiObjAtRegion* pObj, int bAdd)
 			m_TakewithItemsBox.AddObject(&Obj, 1);
 		else
 			m_TakewithItemsBox.RemoveObject(&Obj);
+		UiSoundPlayItem(Obj.uId);
 	}
 	else
 		UpdateTakewithItems();
@@ -244,7 +245,7 @@ void KUiTrade::OnSelfChangedItem(KUiObjAtRegion* pObj, int bAdd)
 	}
 	else
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		//UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		KUiDraggedObject	obj;
 		obj.uGenre = pObj->Obj.uGenre;
 		obj.uId = pObj->Obj.uId;
@@ -256,6 +257,7 @@ void KUiTrade::OnSelfChangedItem(KUiObjAtRegion* pObj, int bAdd)
 			m_SelfItemsBox.AddObject(&obj, 1);
 		else
 			m_SelfItemsBox.RemoveObject(&obj);
+		UiSoundPlayItem(obj.uId);
 	}
 }
 

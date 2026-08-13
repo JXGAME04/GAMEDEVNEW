@@ -20,7 +20,8 @@
 #include "../../ENGINE/Src/KSG_MD5_String.h"
 
 #define	SCHEME_INI_LOGIN		"UiLogin.ini"
-
+#include "../../core/src/coreshell.h"
+extern iCoreShell*		g_pCoreShell;
 KUiLogin* KUiLogin::m_pSelf = NULL;
 
 //--------------------------------------------------------------------------
@@ -36,6 +37,30 @@ KUiLogin::KUiLogin()
 //--------------------------------------------------------------------------
 KUiLogin::~KUiLogin()
 {
+}
+
+KUiLogin* KUiLogin::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
+
+void KUiLogin::AutoLgNextStep(const char* pszAccount, const char* pszPassword)
+{
+	KSG_PASSWORD Password;
+	strcpy(Password.szPassword, pszPassword);
+	for (int i = 0; i < (int)strlen(Password.szPassword); ++i)
+	{
+		if(Password.szPassword[i] != -1)
+		Password.szPassword[i] = ~Password.szPassword[i];
+	}
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (int)pszAccount);
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (int)&Password.szPassword);
+	g_LoginLogic.AccountLogin(pszAccount, Password);
+	KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_ROLE_LIST_READY);
+	CloseWindow(false);
 }
 
 //--------------------------------------------------------------------------
@@ -109,7 +134,7 @@ void KUiLogin::Initialize()
 
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -120,13 +145,19 @@ void KUiLogin::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_LOGIN);
 	if (Ini.Load(Buff))
 	{
-		KWndShowAnimate::Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024) {
+			KWndShowAnimate::Init(&Ini, "Main1024");
+			Ini.GetString("Main1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
+		else {
+			KWndShowAnimate::Init(&Ini, "Main");
+			Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
 		m_Account .Init(&Ini, "Account");
 		m_PassWord.Init(&Ini, "Password");
 		m_Login   .Init(&Ini, "Login");
 		m_Cancel  .Init(&Ini, "Cancel");
 		m_RememberAccount.Init(&Ini, "Remember");
-		Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
 	}
 }
 
@@ -324,7 +355,8 @@ void KUiLogin::OnLogin()
         Password.szPassword[sizeof(Password.szPassword) - 1] = '\0';
 
         #endif
-
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETACC, (int)&szAccount);
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETPASS, (int)&Password.szPassword);
 		g_LoginLogic.AccountLogin(szAccount, Password);
 		KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_ROLE_LIST_READY);
 		memset(&szPassword, 0, sizeof(szPassword));	

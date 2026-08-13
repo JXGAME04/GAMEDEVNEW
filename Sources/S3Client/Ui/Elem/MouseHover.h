@@ -27,7 +27,7 @@ public:
 	void	UpdateCursorPos(int nX, int nY);		//鼠标的位置更新了
 	void	OnWndClosed(void* pWnd);
 private:
-	void	Update(int nX, int nY);
+	void	Update(int nX, int nY, bool compare = false);
 private:
 	int		m_nImgWidth;	        //图形水平长度
 	int		m_nImgHeight;	        //图形垂直高度
@@ -68,6 +68,7 @@ private:
 };
 
 extern KMouseOver	g_MouseOver;
+extern KMouseOver	g_MouseOverCompare;
 
 void SetHoverObjDescColor(unsigned int uColor);
 void SetMouseHoverObjectDesc(void* pWnd, int nObj, unsigned int uGenre,

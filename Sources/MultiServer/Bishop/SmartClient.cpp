@@ -29,7 +29,7 @@ CSmartClient::CSmartClient()
 	, m_pClient( NULL )
 	, m_hwndContain( NULL )
 	, m_nSvrPort( 0 )
-	, m_theAllocator( 1024, 500 )
+	, m_theAllocator(1024 * 128, 500)
 {
 }
 

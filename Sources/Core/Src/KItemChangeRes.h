@@ -20,6 +20,10 @@ private:
 	KTabFile	m_Helm;
 	KTabFile	m_Horse;
 	KTabFile	m_Gold;
+	KTabFile	m_Gold2;
+	KTabFile	m_Platina;
+	KTabFile	m_Hoods;
+	KTabFile	m_Cloak;
 public:
 	BOOL		Init();
 	int			GetWeaponRes(int nDetail, int nParti, int nLevel);
@@ -27,6 +31,10 @@ public:
 	int			GetHelmRes(int nParti, int nLevel);
 	int			GetHorseRes(int nParti, int nLevel);
 	int			GetGoldItemRes(int nGoldId);
+	int			GetHoodsRes(int nParti);
+	int			GetCloakRes(int nParti);
+	int			GetGoldItemRes(int nDetail, int nRow, unsigned int uFlash = 0);
+	int			GetPlatinaItemRes(int nDetail, int nRow, unsigned int uFlash = 0);
 };
 
 extern KItemChangeRes	g_ItemChangeRes;

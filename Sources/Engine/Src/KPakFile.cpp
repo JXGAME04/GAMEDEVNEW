@@ -106,7 +106,7 @@ SPRFRAME* SprGetFrame(SPRHEAD* pSprHeader, int nFrame)
 	SPRFRAME*	pFrame = NULL;
 	if (pSprHeader && g_pPakList)
 	{
-		int nPakIndex = (short)pSprHeader->Reserved[PAK_INDEX_STORE_IN_RESERVED];
+		int nPakIndex = (WORD)pSprHeader->Reserved[PAK_INDEX_STORE_IN_RESERVED];
 		if (nPakIndex >= 0)
 			pFrame = g_pPakList->GetSprFrame(nPakIndex, pSprHeader, nFrame);
 	}
@@ -118,7 +118,7 @@ void SprReleaseFrame(SPRFRAME* pFrame)
     if (pFrame)
 		free(pFrame);
 }
-
+#ifndef _WIN64
 #include "JpgLib.h"
 #include "KDDraw.h"
 
@@ -198,7 +198,7 @@ void release_image(KSGImageContent *pImage)
     if (pImage)
         free (pImage);
 }
-
+#endif
 #endif
 
 //---------------------------------------------------------------------------

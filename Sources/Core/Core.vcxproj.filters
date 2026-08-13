@@ -88,6 +88,12 @@
     <Filter Include="AUTO_FY_REPUP_REBORN">
       <UniqueIdentifier>{6342106b-dfba-4d43-9bb9-9e16c59fdefb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BauCua">
+      <UniqueIdentifier>{79a89354-68dc-4e82-baf9-284c1d3fb6ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GiftCode Manager">
+      <UniqueIdentifier>{4fc3daaa-25ec-4fe1-b380-7418366828cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\KPartnerSkill.cpp">
@@ -351,6 +357,17 @@
     <ClCompile Include="Src\KJXPathFinder.cpp" />
     <ClCompile Include="Src\KLittleMap.cpp" />
     <ClCompile Include="Src\stdafx.cpp" />
+    <ClCompile Include="KMeridian.cpp" />
+    <ClCompile Include="Src\BauCua.cpp">
+      <Filter>BauCua</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\base64.cpp" />
+    <ClCompile Include="Src\MapHandler.cpp">
+      <Filter>CORE_WORLD</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GiftCodeManager.cpp">
+      <Filter>GiftCode Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\KPartnerSkill.h">
@@ -670,6 +687,17 @@
     </ClInclude>
     <ClInclude Include="Src\KJXPathFinder.h" />
     <ClInclude Include="Src\KLittleMap.h" />
+    <ClInclude Include="KMeridian.h" />
+    <ClInclude Include="Src\BauCua.h">
+      <Filter>BauCua</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\base64.h" />
+    <ClInclude Include="Src\MapHandler.h">
+      <Filter>CORE_WORLD</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\GiftCodeManager.h">
+      <Filter>GiftCode Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Src\PlayerPartnerÎÄµµ.txt">
@@ -686,40 +714,19 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\Lib\release\engine.lib">
-      <Filter>Lib\Release</Filter>
-    </Library>
-    <Library Include="..\..\Lib\release\common.lib">
-      <Filter>Lib\Release</Filter>
-    </Library>
-    <Library Include="..\..\Lib\debug\common.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
     <Library Include="Src\USBKey\EP1KDL20.LIB">
       <Filter>USBKey</Filter>
     </Library>
     <Library Include="Src\USBKey\EpsForJoLib.lib">
       <Filter>USBKey</Filter>
     </Library>
-    <Library Include="..\..\Lib\debug\engine.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\EngineServerDebug\engine.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\x64\lualibdll.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\debug64\common.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Protocol.xls">
       <Filter>KPROTOCOL</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg.json" />
   </ItemGroup>
 </Project>

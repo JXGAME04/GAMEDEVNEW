@@ -144,11 +144,11 @@ enum MAGIC_ATTRIB
 	magic_stealmanaenhance_p,				//137
 	magic_stealstaminaenhance_p,			//138
 	magic_allskill_v,						//139
-	magic_addphysicsmagic_v,				//140
-	magic_addcoldmagic_v,					//141
-	magic_addfiremagic_v,					//142
-	magic_addlightingmagic_v,				//143
-	magic_addpoisonmagic_v,					//144
+	magic_metalskill_v,						//168
+	magic_woodskill_v,						//169
+	magic_waterskill_v,						//170
+	magic_fireskill_v,						//171
+	magic_earthskill_v,						//172
 	magic_knockbackenhance_p,				//145
 	magic_deadlystrikeenhance_p,			//146
 	magic_stunenhance_p,					//147
@@ -172,11 +172,11 @@ enum MAGIC_ATTRIB
 	magic_magicenhance_p,					//165
 	magic_attackratingenhance_v,			//166
 	magic_attackratingenhance_p,			//167
-	magic_metalskill_v,						//168
-	magic_woodskill_v,						//169
-	magic_waterskill_v,						//170
-	magic_fireskill_v,						//171
-	magic_earthskill_v,						//172
+	magic_addphysicsmagic_v,				//168
+	magic_addcoldmagic_v,					//169
+	magic_addfiremagic_v,					//170
+	magic_addlightingmagic_v,				//171
+	magic_addpoisonmagic_v,					//172
 	magic_fatallystrikeres_p,				//173		//thªm tÊn c«ng chÝ tö
 	magic_dynamicmagicshield_v,				//174
 	magic_staticmagicshield_p,				//175
@@ -308,6 +308,7 @@ enum MAGIC_ATTRIB
 	magic_missle_exp_end,					//301
 	magic_ignorenegativestate_p,			//302
 	magic_expenhance_s,						//303
+	magic_expvip,						//304
 	magic_normal_end,						//304
 };
 

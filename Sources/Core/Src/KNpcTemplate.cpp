@@ -138,6 +138,8 @@ void	KNpcTemplate::InitNpcBaseData(int nNpcTemplateId)
 	g_NpcSetting.GetInteger(nNpcTempRow, "HitRecover", 0, &m_HitRecover);
 	g_NpcSetting.GetInteger(nNpcTempRow, "ReviveFrame", 2400, &m_ReviveFrame);	//Thêi gian håi sinh
 	m_ReviveFrame = m_ReviveFrame / 2; //T¨ng thêi gian phôc sinh chuÈn VNG qu¸i 9x 2 phót
+	
+
 	char szLevelScript[MAX_PATH];
 	g_NpcSetting.GetString(nNpcTempRow, "LevelScript", "", szLevelScript, MAX_PATH);
 	if (!szLevelScript[0])
@@ -154,14 +156,17 @@ void	KNpcTemplate::InitNpcBaseData(int nNpcTemplateId)
 		m_dwLevelSettingScript = g_FileName2Id(szLevelScript);
 	}
 #else
-	
+
+
 	g_NpcSetting.GetInteger(nNpcTempRow, "ArmorType", 0, &m_ArmorType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "HelmType", 0, &m_HelmType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "WeaponType", 0, &m_WeaponType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "HorseType", -1, &m_HorseType);
 	g_NpcSetting.GetInteger(nNpcTempRow, "RideHorse",0, &m_bRideHorse);
-	g_NpcSetting.GetString(nNpcTempRow, "ActionScript", "", ActionScript, sizeof(ActionScript)); //\\script\\global\\LuaNpcMonsters\\Ondeath_normal.lua
+	g_NpcSetting.GetString(nNpcTempRow, "ActionScript", "", ActionScript, sizeof(ActionScript)); 
 	g_NpcSetting.GetString(nNpcTempRow, "LevelScript", "", m_szLevelSettingScript, 100);
+
+
 
 #endif
 
@@ -444,64 +449,104 @@ void KNpcTemplate::InitNpcLevelData(KTabFile * pKindFile, int nNpcTemplateId, KL
 		if(m_PhysicsResist ==0) m_PhysicsResist = 10;
 		
 		g_NpcSetting.GetString(nNpcTempRow, "AIMode", "2", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiMode = GetNpcLevelDataFromScript(pLevelScript, "AIMode", nSeries, nLevel, szValue1);
-			if(m_AiMode == 0) m_AiMode = atoi(szValue1);
+			if (m_AiMode == 0) m_AiMode = atoi(szValue1);
 		}
 
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam1", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[0] = GetNpcLevelDataFromScript(pLevelScript, "AIParam1", nSeries, nLevel, szValue1);
-			if(m_AiParam[0] == 0) m_AiParam[0] = atoi(szValue1);
+			if (m_AiParam[0] == 0) m_AiParam[0] = atoi(szValue1);
 		}
 
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam2", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[1] = GetNpcLevelDataFromScript(pLevelScript, "AIParam2", nSeries, nLevel, szValue1);
-			if(m_AiParam[1] == 0) m_AiParam[1] = atoi(szValue1);
+			if (m_AiParam[1] == 0) m_AiParam[1] = atoi(szValue1);
 		}
 
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam3", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[2] = GetNpcLevelDataFromScript(pLevelScript, "AIParam3", nSeries, nLevel, szValue1);
-			if(m_AiParam[2] == 0) m_AiParam[2] = atoi(szValue1);
+			if (m_AiParam[2] == 0) m_AiParam[2] = atoi(szValue1);
 		}
 
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam4", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[3] = GetNpcLevelDataFromScript(pLevelScript, "AIParam4", nSeries, nLevel, szValue1);
-			if(m_AiParam[3] == 0) m_AiParam[3] = atoi(szValue1);
+			if (m_AiParam[3] == 0) m_AiParam[3] = atoi(szValue1);
 		}
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam5", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[4] = GetNpcLevelDataFromScript(pLevelScript, "AIParam5", nSeries, nLevel, szValue1);
-			if(m_AiParam[4] == 0) m_AiParam[4] = atoi(szValue1);
+			if (m_AiParam[4] == 0) m_AiParam[4] = atoi(szValue1);
 		}
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam6", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[5] = GetNpcLevelDataFromScript(pLevelScript, "AIParam6", nSeries, nLevel, szValue1);
-			if(m_AiParam[5] == 0) m_AiParam[5] = atoi(szValue1);
+			if (m_AiParam[5] == 0) m_AiParam[5] = atoi(szValue1);
 		}
 		g_NpcSetting.GetString(nNpcTempRow, "AIParam7", "12", szValue1, MAX_VALUE_LEN);
-		if(szValue1[0])
+		if (szValue1[0])
 		{
-			if(strlen(szValue1) < 3) sprintf(szValue1, "%s|0", szValue1);
+			if (strlen(szValue1) < 3) {
+				char temp[sizeof(szValue1)]; // Ensure temp is large enough to hold the result
+				snprintf(temp, sizeof(temp), "%s|0", szValue1);
+				strncpy(szValue1, temp, sizeof(szValue1) - 1);
+				szValue1[sizeof(szValue1) - 1] = '\0'; // Ensure null-termination
+			}
 			m_AiParam[6] = GetNpcLevelDataFromScript(pLevelScript, "AIParam7", nSeries, nLevel, szValue1);
-			if(m_AiParam[6] == 0) m_AiParam[6] = atoi(szValue1);
+			if (m_AiParam[6] == 0) m_AiParam[6] = atoi(szValue1);
 		}
 		
 #endif

@@ -298,7 +298,8 @@ BOOL KTabFile::GetInteger(LPSTR szRow, LPSTR szColumn, int nDefault, int *pnValu
 {
 	int		nRow, nColumn;
 	char	Buffer[32];
-
+	if (szRow == NULL)
+		return FALSE;
 	nRow = FindRow(szRow);
 	nColumn = FindColumn(szColumn);
 	if (GetValue(nRow - 1, nColumn - 1, Buffer, sizeof(Buffer)))

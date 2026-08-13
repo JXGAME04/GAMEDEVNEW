@@ -14,6 +14,15 @@
 #include "KWin32Wnd.h"
 #include "KDDraw.h"
 //#include "KMouse.h"
+// 
+int WND_INIT_WIDTH = 800;
+int WND_INIT_HEIGHT = 600;
+
+void SetEngineResolution(int width, int height)
+{
+	WND_INIT_WIDTH = width;
+	WND_INIT_HEIGHT = height;
+}
 //---------------------------------------------------------------------------
 ENGINE_API KDirectDraw* g_pDirectDraw = NULL;
 //---------------------------------------------------------------------------
@@ -52,6 +61,7 @@ KDirectDraw::~KDirectDraw()
 //---------------------------------------------------------------------------
 void KDirectDraw::Mode(BOOL bFullScreen, int nWidth, int nHeight)
 {
+	SetEngineResolution(nWidth, nHeight);
 	m_dwScreenMode   = bFullScreen? FULLSCREEN : WINDOWMODE;
 	m_dwScreenWidth  = nWidth;
 	m_dwScreenHeight = nHeight;
@@ -189,8 +199,9 @@ BOOL KDirectDraw::CreateDirectDraw()
 		memset(&dsd, 0, sizeof(dsd));
 		dsd.dwSize = sizeof(dsd);
 		if (m_lpDirectDraw->GetDisplayMode(&dsd) != DD_OK ||
-			(dsd.ddpfPixelFormat.dwRGBBitCount != 15 &&
-				dsd.ddpfPixelFormat.dwRGBBitCount != 16))
+			(//dsd.ddpfPixelFormat.dwRGBBitCount != 15 &&
+				dsd.ddpfPixelFormat.dwRGBBitCount != 16
+				&& dsd.ddpfPixelFormat.dwRGBBitCount != 32))
 		{
 			return FALSE;
 		}

@@ -847,29 +847,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\Lib\debug\JpgLib.lib">
-      <Filter>library files\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\debug\mp3lib.lib">
-      <Filter>library files\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\release\JpgLib.lib">
-      <Filter>library files\release</Filter>
-    </Library>
-    <Library Include="..\..\Lib\release\mp3lib.lib">
-      <Filter>library files\release</Filter>
-    </Library>
-    <Library Include="..\..\Lib\debug\lualibdll.lib">
-      <Filter>library files\Debug</Filter>
-    </Library>
-    <Library Include="..\..\Lib\release\LuaLibDll.lib">
-      <Filter>library files\release</Filter>
-    </Library>
-    <Library Include="..\..\Lib\x64\lualibdll.lib">
-      <Filter>library files\Debug</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="Src\DrawSpriteMP.inc">
       <Filter>source files</Filter>
     </CustomBuild>

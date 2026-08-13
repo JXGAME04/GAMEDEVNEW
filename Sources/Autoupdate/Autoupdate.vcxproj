@@ -11,8 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <SccProjectName>"$/Utility/Sources/Autoupdate", BPIAAAAA</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
     <Keyword>MFCProj</Keyword>
     <ProjectGuid>{05405028-7080-4573-B1F1-2578AF5CD5C9}</ProjectGuid>
   </PropertyGroup>

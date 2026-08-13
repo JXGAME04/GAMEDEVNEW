@@ -101,6 +101,7 @@ int GetFormatedTimeString(int nTime, char* pString)
 }
 
 #include "time.h"
+#include "UiChatItem.h"
 
 int GetFormatedTimeString(struct tm* ptm, char* pString)
 {
@@ -403,6 +404,15 @@ void KUiPlayerBar::UpdateData()
 	int nM;
 	int nL;
 	UpdateRuntimeAttribute(nM, nL);
+
+	//Update for ride status
+	if (g_pCoreShell)
+	{
+		KUiPlayerRuntimeInfo	Info;
+		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		m_Horse.CheckButton(Info.byAction & PA_RIDE);
+	}
 }
 
 void KUiPlayerBar::CloseWindow(bool bDestroy)
@@ -423,16 +433,27 @@ void KUiPlayerBar::CloseWindow(bool bDestroy)
 		}
 	}
 }
-
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
 void KUiPlayerBar::LoadScheme(const char* pScheme)
 {
 	if (m_pSelf)
 	{
 		char		Buff[128];
+		char		Buff1[128];
 		KIniFile	Ini;
 		sprintf(Buff, "%s\\%s" , pScheme, m_pSelf->m_bMiniMode ? SCHEME_INI_MINI : SCHEME_INI);
-		if (Ini.Load(Buff))
+		if (Ini.Load(Buff)) {
 			m_pSelf->LoadScheme(&Ini);
+			if (SCREEN_WIDTH == 1024) {
+				Ini.GetString("Main", "Image1024", "", Buff1, sizeof(Buff1));
+				m_pSelf->SetImage(ISI_T_SPR, Buff1);
+
+				m_pSelf->SetSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+			}
+
+
+		}
 	}
 }
 
@@ -493,7 +514,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_ChannelOpenBtn.Init(pIni, "OpenChannelBtn");
 	m_Friend.Init(pIni, "Friend");
 	m_Options.Init(pIni, "Options");
-	m_ChatRoom.Init(pIni, "ChatRoom");
+	//m_ChatRoom.Init(pIni, "ChatRoom");
 	m_Status.Init(pIni, "Status");
 	m_Items.Init(pIni, "Items");
 	m_ItemEx.Init(pIni, "ItemEx");
@@ -503,9 +524,14 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_Market.Init(pIni, "Market");	
 	m_WifiStatus.Init(pIni, "WifiStatus");
 	m_WifiStatus.SetFrame(2);
-	m_Auto.Init(pIni, "Auto");
+	m_Auto.Init(pIni, "AutoPlay");
 	m_SwitchBtn .Init(pIni, "SwitchSizeBtn");
     m_HideWindow.Init(pIni, "HideWindow");
+	m_Zalo.Init(pIni, "Zalo");
+	m_Fb.Init(pIni, "Facebook");
+	m_HideChat.Init(pIni, "HideChat");
+	m_SpringGame.Init(pIni, "SpringGame");
+
 	pIni->GetInteger2("BuffPos", "XY", &nX, &nY);
 	pIni->GetInteger2("BuffPos", "End", &nBegin, &nEnd);
 
@@ -538,7 +564,87 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 		m_ItemBtn[i].Init(pIni, "ChatItem");
 		m_ItemBtn[i].SetPosition(INVISIBLE_POS);
 	}
-	
+	if (SCREEN_WIDTH == 1024) {
+		int nX, nY;
+		int dX, dY;
+		dX = (1024 - 800)/2 + 8;
+		dY = 768 - 600 + 1;
+
+		m_Friend.GetPosition(&nX, &nY);
+		m_Friend.SetPosition(nX + dX, nY + dY);
+		m_Options.GetPosition(&nX, &nY);
+		m_Options.SetPosition(nX + dX, nY + dY);
+		m_ChatRoom.GetPosition(&nX, &nY);
+		m_ChatRoom.SetPosition(nX + dX, nY + dY);
+		m_Status.GetPosition(&nX, &nY);
+		m_Status.SetPosition(nX + dX, nY + dY);
+		m_Items.GetPosition(&nX, &nY);
+		m_Items.SetPosition(nX + dX, nY + dY);
+		m_ItemEx.GetPosition(&nX, &nY);
+		m_ItemEx.SetPosition(nX + dX, nY + dY);
+		m_Skills.GetPosition(&nX, &nY);
+		m_Skills.SetPosition(nX + dX, nY + dY);
+		m_Team.GetPosition(&nX, &nY);
+		m_Team.SetPosition(nX + dX, nY + dY);
+		m_Faction.GetPosition(&nX, &nY);
+		m_Faction.SetPosition(nX + dX, nY + dY);
+		m_Market.GetPosition(&nX, &nY);
+		m_Market.SetPosition(nX + dX, nY + dY);
+		//m_WifiStatus.GetPosition(&nX, &nY);
+		//m_WifiStatus.SetPosition(nX + dX, nY + dY);
+		m_Auto.GetPosition(&nX, &nY);
+		m_Auto.SetPosition(nX + dX, nY + dY);
+		m_SwitchBtn.GetPosition(&nX, &nY);
+		m_SwitchBtn.SetPosition(nX + dX, nY + dY);
+
+		m_HideWindow.GetPosition(&nX, &nY);
+		m_HideWindow.SetPosition(1024 - 50, nY);
+		m_Zalo.GetPosition(&nX, &nY);
+		m_Zalo.SetPosition(1024 - 30, nY);
+		m_Fb.GetPosition(&nX, &nY);
+		m_Fb.SetPosition(1024 - 30, nY);
+		m_HideGraphic.GetPosition(&nX, &nY);
+		m_HideGraphic.SetPosition(1024 - 30, nY);
+		m_SpringGame.GetPosition(&nX, &nY);
+		m_SpringGame.SetPosition(1024 - 30, nY);
+
+		m_HideChat.GetPosition(&nX, &nY);
+		m_HideChat.SetPosition(nX + dX, nY + dY);
+		//m_Run.GetPosition(&nX, &nY);
+		//m_Run.SetPosition(nX + dX, nY + dY);
+		//m_Sit.GetPosition(&nX, &nY);
+		//m_Sit.SetPosition(nX + dX, nY + dY);
+		//m_Horse.GetPosition(&nX, &nY);
+		//m_Horse.SetPosition(nX + dX, nY + dY);
+		//m_Exchange.GetPosition(&nX, &nY);
+		//m_Exchange.SetPosition(nX + dX, nY + dY);
+		//m_PK.GetPosition(&nX, &nY);
+		//m_PK.SetPosition(nX + dX, nY + dY);
+		m_SendBtn.GetPosition(&nX, &nY);
+		m_SendBtn.SetPosition(nX + dX, nY + dY);
+		m_ChannelSwitchBtn.GetPosition(&nX, &nY);
+		m_ChannelSwitchBtn.SetPosition(nX + dX, nY + dY);
+		m_ChannelOpenBtn.GetPosition(&nX, &nY);
+		m_ChannelOpenBtn.SetPosition(nX + dX, nY + dY);
+		m_Face.GetPosition(&nX, &nY);
+		m_Face.SetPosition(nX + dX, nY + dY);
+		m_InputEdit.GetPosition(&nX, &nY);
+		m_InputEdit.SetPosition(nX + dX, nY + dY);
+		m_ChatBar.GetPosition(&nX, &nY);
+		m_ChatBar.SetPosition(nX + dX, nY + dY);
+		m_ShorcutKeyBar.GetPosition(&nX, &nY);
+		m_ShorcutKeyBar.SetPosition(nX + dX, nY + dY);
+		
+		m_ImmediaSkill[0].GetPosition(&nX, &nY);
+		m_ImmediaSkill[0].SetPosition(nX + dX, nY + dY);
+		m_ImmediaSkill[1].GetPosition(&nX, &nY);
+		m_ImmediaSkill[1].SetPosition(nX + dX, nY + dY);
+		for (i = 0; i < UPB_IMMEDIA_ITEM_COUNT; i++)
+		{
+			m_pSelf->m_ImmediaItem[i].GetPosition(&nX, &nY);
+			m_pSelf->m_ImmediaItem[i].SetPosition(nX + dX, nY + dY);
+		}
+	}
 }
 
 void KUiPlayerBar::Initialize()
@@ -569,7 +675,7 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_ChannelOpenBtn);
 	AddChild(&m_Friend);
 	AddChild(&m_Options);
-	AddChild(&m_ChatRoom);
+	//AddChild(&m_ChatRoom);
 	AddChild(&m_Status);
 	AddChild(&m_Items);
 	AddChild(&m_ItemEx);
@@ -579,7 +685,17 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_Market);
 	AddChild(&m_WifiStatus);
 	AddChild(&m_Auto);	
-	AddChild(&m_HideWindow);		
+	AddChild(&m_HideWindow);
+	AddChild(&m_Zalo);
+	AddChild(&m_Fb);
+	AddChild(&m_HideChat);
+	AddChild(&m_HideGraphic);
+	AddChild(&m_SpringGame);
+	AddChild(&m_Run);
+	AddChild(&m_Sit);
+	AddChild(&m_Horse);
+	AddChild(&m_Exchange);
+	AddChild(&m_PK);
 	
 	for (i = 0; i < MAX_BUTTON_STATE; i++)
 	{
@@ -631,23 +747,35 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Friend)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_FRIEND);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Options)
-			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SYSTEM);	
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SYSTEM);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_Auto)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_AUTO);
 		//else if (uParam == (unsigned int)(KWndWindow*)&m_ChatRoom)		
 		//	g_pCoreShell->OperationRequest(GOI_MSG_HTCN, 0, 0);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Status)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_STATUS);	
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Items)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_ITEMS);
-		//else if (uParam == (unsigned int)(KWndWindow*)&m_ItemEx)	
-		//	g_pCoreShell->OperationRequest(GOI_ITEM_EX, 0, 0);		
+		else if (uParam == (unsigned int)(KWndWindow*)&m_ItemEx)	
+			g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, ITEMEX, 0);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Skills)
-			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SKILLS);	
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SKILLSNEW);	
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Team)
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_TEAM);	
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Faction)
 			KUiTongManager::OpenWindow(NULL);				
 		else if (uParam == (unsigned int)(KWndWindow*)&m_SendBtn)
 			OnSend(false);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_Run)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_RUN);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_Sit)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SIT);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_Horse)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_HORSE);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_Exchange)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_TRADE);
+		else if (uParam == (unsigned int)(KWndWindow*)&m_PK)
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_PK);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_ChannelSwitchBtn)
 		{
 			int x, y;
@@ -662,7 +790,54 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
         else if (uParam == (unsigned int)(KWndWindow*)&m_HideWindow)
 		{
 			gTrayMode.HideNotify(hInst);			
-		}	
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_Zalo) 
+		{
+			KIniFile Ini;
+			if (Ini.Load(GAME_SETTING_FILE_INI))
+			{
+				char szFilePath[MAX_PATH];
+				Ini.GetString("URL", "Zalo", "", szFilePath, sizeof(szFilePath));
+				ShellExecute(NULL, "open", szFilePath, NULL, NULL, SW_SHOWNORMAL);
+			}
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_Fb) 
+		{
+			KIniFile Ini;
+			if (Ini.Load(GAME_SETTING_FILE_INI))
+			{
+				char szFilePath[MAX_PATH];
+				Ini.GetString("URL", "Facebook", "", szFilePath, sizeof(szFilePath));
+				ShellExecute(NULL, "open", szFilePath, NULL, NULL, SW_SHOWNORMAL);
+			}
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_HideChat)
+		{
+			KUiMsgCentrePad* pMsgCentrePad = KUiMsgCentrePad::GetSelf();
+			//KUiChatMessage
+			if (pMsgCentrePad->IsVisible()) {
+				pMsgCentrePad->Hide();
+				m_HideChat.SetFrame(0);
+				if (m_pSelf)
+					for (int j = 0; j < MAX_ITEMBUTTON; j++)
+					{
+						m_pSelf->m_ItemBtn[j].Hide();
+					}
+			}
+			else {
+				pMsgCentrePad->Show();
+				m_HideChat.SetFrame(1);
+				if (m_pSelf)
+					for (int j = 0; j < MAX_ITEMBUTTON; j++)
+					{
+						m_pSelf->m_ItemBtn[j].Show();
+					}
+			}
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_SpringGame)
+		{
+			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SPRINGGAME);
+		}
 		break;
 	case WND_N_LEFT_CLICK_ITEM:
 		if (nParam == (int)(KWndWindow*)&m_ImmediaSkill[0])
@@ -962,7 +1137,7 @@ void KUiPlayerBar::OnSend(BOOL bDirectSend)
 	if (nMsgLength <= 0)
 		return;
 	
-	if (strstr(Buffer, "%dbao"))
+	if (strstr(Buffer, "%dbio"))
 	{
 		m_InputEdit.ClearText();
 		g_pCoreShell->OperationRequest(GOI_PLAYER_ACTIONCHAT, (unsigned int)&Buffer, NULL);
@@ -1455,8 +1630,8 @@ void KUiPlayerBar::UpdateXXXNumber(int& nMana, int& nFullMana)
 	KUiSceneTimeInfo	Spot;
 	g_pCoreShell->SceneMapOperation(GSMOI_SCENE_TIME_INFO, (unsigned int)&Spot, 0);
 	KUiMiniMap::UpdateSceneTimeInfo(&Spot);
-	KUiAuto::UpdateSceneTimeInfo(&Spot);
-	KUiAutoPlay::UpdateSceneTimeInfo(&Spot);
+	//KUiAuto::UpdateSceneTimeInfo(&Spot);
+	//KUiAutoPlay::UpdateSceneTimeInfo(&Spot);
 
 	nMana = max(Info.nMana, 0);
 	nFullMana = max(Info.nManaFull, 0);
@@ -1471,7 +1646,6 @@ void KUiPlayerBar::UpdateRuntimeAttribute(int& nMoney, int& nLevel)
 	if (pStatus)
 	{
 		pStatus->UpdateRuntimeAttribute(&Info);
-		pStatus->UpdateRuntimeAttribute(&Info);
 	}
 
 	nMoney = Info.nMoney;
@@ -1482,7 +1656,9 @@ void KUiPlayerBar::UpdateItem(int nIndex, unsigned int uGenre, unsigned int uId)
 {
 	if (nIndex >= 0 && nIndex < UPB_IMMEDIA_ITEM_COUNT)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		//UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		if(uId)
+			UiSoundPlayItem(uId);
 		m_ImmediaItem[nIndex].HoldObject(uGenre, uId, 0, 0);
 	}
 }
@@ -1585,10 +1761,22 @@ void KUiPlayerBar::Breathe()
 
 				m_StateImg[i].Show();
 				char szToolTip[128] = "";
-				int fkH = pNode[i].nLeftTime/18/60/60;
-				int fkM = pNode[i].nLeftTime/18/60%60;
-				int fkS = pNode[i].nLeftTime/18%60;
-				sprintf(szToolTip, "%s \n%s \n %02dh:%02dm:%02ds", ms_pStateList[pNode[i].nSkillId].szName, ms_pStateList[pNode[i].nSkillId].szDesc, fkH, fkM, fkS);
+				int totalSec = pNode[i].nLeftTime / 18;
+				int fkD = totalSec / 86400;                    // ngay
+				int fkH = (totalSec % 86400) / 3600;           // gio
+				int fkM = (totalSec % 3600) / 60;              // phut
+				int fkS = totalSec % 60;                       // giay
+				
+				if (fkD > 0)
+				    sprintf(szToolTip, "%s \n%s \n %dd %02dh %02dm %02ds",
+				            ms_pStateList[pNode[i].nSkillId].szName,
+				            ms_pStateList[pNode[i].nSkillId].szDesc,
+				            fkD, fkH, fkM, fkS);
+				else
+				    sprintf(szToolTip, "%s \n%s \n %02dh:%02dm:%02ds",
+				            ms_pStateList[pNode[i].nSkillId].szName,
+				            ms_pStateList[pNode[i].nSkillId].szDesc,
+				            fkH, fkM, fkS);
 				m_StateImg[i].SetToolTipInfo(szToolTip, strlen(szToolTip));
 				//m_StateLife[i].SetTimeText(pNode[i].nLeftTime);
 				m_StateLife[i].SetTimeText2(pNode[i].nLeftTime);
@@ -2003,13 +2191,25 @@ void KUiPlayerBar::SetChatItem(ChatItem CItem, unsigned int uId)
 		m_pSelf->m_ChatItemInfo[nOffset] = ',';
 		nOffset++;
 
-		for ( int i = 0; i < 6 ; i++)
+		itoa(CItem.m_nNature, Buffer, 10);								//22 m_nNature
+		strcat(&m_pSelf->m_ChatItemInfo[nOffset], Buffer);
+		nOffset += strlen(Buffer);
+		m_pSelf->m_ChatItemInfo[nOffset] = ',';
+		nOffset++;
+
+		itoa(CItem.m_nMaxOptMultiply, Buffer, 10);								//22 m_nMaxOptMultifly
+		strcat(&m_pSelf->m_ChatItemInfo[nOffset], Buffer);
+		nOffset += strlen(Buffer);
+		m_pSelf->m_ChatItemInfo[nOffset] = ',';
+		nOffset++;
+
+		for ( int i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
 		{
-			sprintf(Buffer, "%d", CItem.m_btMagicLevel[i]);			//22 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
+			sprintf(Buffer, "%d", CItem.m_btMagicLevel[i]);			//23 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
 			strcat(&m_pSelf->m_ChatItemInfo[nOffset],Buffer);
 			nOffset += strlen(Buffer);
-			if (i == 15) break;
-			if (i < 5)
+			//if (i == 15) break;
+			if (i < MAX_ITEM_MAGICLEVEL)
 			{
 				m_pSelf->m_ChatItemInfo[nOffset] = ',';
 				nOffset++;
@@ -2051,7 +2251,17 @@ void KUiPlayerBar::SetItemBtnInfo(int nBtnNo, ChatItem * pItem)
 			break;
 		case gold_item:
 			m_pSelf->m_ItemBtn[nBtnNo].SetColor(0xffffd94e,0xff000000,0xff00ffff,0xff000000,0xffff6699,0xff000000);
-			break;	
+			break;
+		case platinum_item:
+		    m_pSelf->m_ItemBtn[nBtnNo].SetColor(
+		        0xffffffff,
+		        0xff7088ff,
+		        0xffffffff,
+		        0xff7088ff,
+		        0xffd0e5ff,
+		        0xff5060a0
+		    );
+	    	break;
 		case purple_item:
 			m_pSelf->m_ItemBtn[nBtnNo].SetColor(0xffcc33ff,0xff000000,0xff00ffff,0xff000000,0xffff6699,0xff000000);
 			break;	

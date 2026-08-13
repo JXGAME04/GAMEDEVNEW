@@ -265,11 +265,11 @@ void	KLittleMap::SetHaveLoad(int nX, int nY)
 		return;
 	if (m_pbyLoadFlag) {
 		m_pbyLoadFlag[(nY - m_sMapRect.top) * m_nMapWidth + nX - m_sMapRect.left] = 1;
-#ifdef _DEBUG
-		char szDebugString[128];
-		sprintf(szDebugString, "Loaded region %d\n", (nY - m_sMapRect.top) * m_nMapWidth + nX - m_sMapRect.left);
-		g_DebugLog(szDebugString);
-#endif
+// #ifdef _DEBUG
+		// char szDebugString[128];
+		// sprintf(szDebugString, "Loaded region %d\n", (nY - m_sMapRect.top) * m_nMapWidth + nX - m_sMapRect.left);
+		// g_DebugLog(szDebugString);
+// #endif
 	}
 }
 

@@ -10,6 +10,9 @@
 #include "UiItem.h"
 #include "UiGetMoney.h"
 #include "UiStoreBox.h"
+#include "UiExBox1.h"
+#include "UiExBox2.h"
+#include "UiExBox3.h"
 #include "UiTradeConfirmWnd.h"
 #include "UiBreakItem.h"
 #include "UiShop.h"
@@ -180,16 +183,19 @@ void KUiItem::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 		Obj.DataY = pItem->Region.v;
 		Obj.DataW = pItem->Region.Width;
 		Obj.DataH = pItem->Region.Height;
-		if (bAdd)
+
+		if (Obj.uId)
+			UiSoundPlayItem(Obj.uId);
+		if (bAdd) {
 			m_ItemBox.AddObject(&Obj, 1);
+		}
 		else
 			m_ItemBox.RemoveObject(&Obj);
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
 	}
 	else
 		UpdateData();
 }
-
+extern int SCREEN_WIDTH;
 void KUiItem::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -197,7 +203,11 @@ void KUiItem::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_ITEM);
 	if (m_pSelf && Ini.Load(Buff))
 	{
-		m_pSelf->Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			m_pSelf->Init(&Ini, "Main1024");
+		else
+			m_pSelf->Init(&Ini, "Main");
+		
 		m_pSelf->m_Money.Init(&Ini, "Money");
 		m_pSelf->m_FkCoinValue.Init(&Ini, "FkCoinValue");
 		//m_pSelf->m_FkCoinLable.Init(&Ini, "FkCoinLable");
@@ -246,10 +256,51 @@ void KUiItem::OnClickItem(KUiDraggedObject* pItem, bool bDoImmed)
 		}
 		else if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
 		{
-			if (KUiStoreBox::GetIfVisible())
-				g_pCoreShell->OperationRequest(GOI_RCLICK_MOVE_ITEM, (unsigned int)(&Obj), UOC_ITEM_TAKE_WITH);
+			if (KUiExBox1::GetIfVisible())
+			{
+				unsigned int uParam[2];
+				uParam[0] = Obj.Obj.uId;
+				uParam[1] = pos_equiproom;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uParam, pos_exbox1room);
+			}
+			else if (KUiExBox2::GetIfVisible())
+			{
+				unsigned int uParam[2];
+				uParam[0] = Obj.Obj.uId;
+				uParam[1] = pos_equiproom;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uParam, pos_exbox2room);
+			}
+			else if (KUiExBox3::GetIfVisible())
+			{
+				unsigned int uParam[2];
+				uParam[0] = Obj.Obj.uId;
+				uParam[1] = pos_equiproom;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uParam, pos_exbox3room);
+			}
+			else if (KUiStoreBox::GetIfVisible())
+			{
+				unsigned int uParam[2];
+				uParam[0] = Obj.Obj.uId;
+				uParam[1] = pos_equiproom;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uParam, pos_repositoryroom);
+			}
 			else
-				g_pCoreShell->OperationRequest(GOI_USE_ITEM, (unsigned int)(&Obj), UOC_ITEM_TAKE_WITH);
+			{
+				if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) == 1)
+				Obj.Region.Width = pos_equip;
+				else
+				Obj.Region.Width = pos_equipback;
+				g_pCoreShell->OperationRequest(GOI_USE_ITEM,
+					(unsigned int)(&Obj), UOC_ITEM_TAKE_WITH);
+			}
+
+				//if (Obj.Obj.uId)
+				//	UiSoundPlayItem(Obj.Obj.uId);
+			//}
 		}
 		else
 		{

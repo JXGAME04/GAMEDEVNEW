@@ -37,27 +37,100 @@ extern  const KScript * g_GetScript(DWORD dwScriptId);
 
 KSkill::KSkill()
 {
-	m_nFlySkillId =  m_nCollideSkillId = m_nVanishedSkillId = 0;
-	
-    m_nImmediateAttribsNum = m_nStateAttribsNum = m_nMissleAttribsNum = m_nDamageAttribsNum = m_nAppendSkillNum =0;
+	m_nFlySkillId = m_nCollideSkillId = m_nVanishedSkillId = 0;
+
+	m_nImmediateAttribsNum = m_nStateAttribsNum = m_nMissleAttribsNum = m_nDamageAttribsNum = m_nAppendSkillNum = 0;
 	m_nSkillCostType = attrib_mana_v;
-    m_nWaitTime = 0;
+	m_nWaitTime = 0;
 	m_nEquiptLimited = 0;
 	m_nDoHurtP = 1;
-	m_szMagicSkillDesc[0] = 0;
+	memset(m_szMagicSkillDesc, 0, sizeof(m_szMagicSkillDesc));
 	m_nIsExpSkill = FALSE;
 	m_bSkillReduceResist = FALSE;
 	m_bSkillLifeReplenish = FALSE;
 	memset(m_nAppendSkillId, 0, sizeof(m_nAppendSkillId));
 #ifndef _SERVER
 	m_szSkillDesc[0] = 0;
-	m_szManPreCastSoundFile[0] = 0;
-	m_szFMPreCastSoundFile[0] = 0;
+	memset(m_szManPreCastSoundFile, 0, sizeof(m_szManPreCastSoundFile));
+	memset(m_szFMPreCastSoundFile, 0, sizeof(m_szFMPreCastSoundFile));
 #else
 	m_dwSkillLevelUpScriptID = 0;
 	m_dwSkillLevelDataScriptId = 0;
 #endif
-	
+	m_bMustBeHit = FALSE;
+
+
+	m_ulLevel = 0;
+
+#ifndef _SERVER
+	memset(m_szSkillIcon, 0, sizeof(m_szSkillIcon));
+	memset(m_szPreCastEffectFile, 0, sizeof(m_szPreCastEffectFile));
+
+	m_eLRSkillInfo = static_cast<eSkillLRInfo>(0); // Assuming 0 is the default
+#endif
+
+	m_usReqLevel = 0;
+	m_nCharClass = 0;
+	m_eSkillStyle = static_cast<eSKillStyle>(0); // Assuming 0 is the default
+	m_nSkillTime = 0;
+	m_bClientSend = FALSE;
+	m_bHaveLoad = FALSE;
+	m_nInteruptTypeWhenMove = 0;
+	m_bHeelAtParent = FALSE;
+	m_nCharActionId = cdo_none; // Assuming 0 is the default
+	m_bIsAura = FALSE;
+	m_bIsPassivity = FALSE;
+	m_bIsMelee = FALSE;
+	nId = 0;
+	m_bUseAttackRate = FALSE;
+	m_bTargetOnly = FALSE;
+	m_bTargetEnemy = FALSE;
+	m_bTargetAlly = FALSE;
+	m_bTargetObj = FALSE;
+	m_bTargetNoNpc = FALSE;
+	m_bTargetSelf = FALSE;
+	m_eRelation = 0;
+	memset(m_szName, 0, sizeof(m_szName));
+	m_nAttrib = 0;
+	m_nId = 0;
+	m_bBaseSkill = FALSE;
+	m_bByMissle = FALSE;
+	m_bIsPhysical = FALSE;
+	m_nCost = 0;
+	m_nMinTimePerCast = 0;
+	m_nMinTimePerCastOnHorse = 0;
+	m_nChildSkillNum = 0;
+	m_eMisslesForm = static_cast<eMisslesForm>(0); // Assuming 0 is the default
+	m_nValue1 = 0;
+	m_nValue2 = 0;
+	m_nEventSkillLevel = 0;
+
+	m_eMissleFollowKind = static_cast<eMissleFollowKind>(0); // Assuming 0 is the default
+	m_nFollowKindIndex = 0;
+	m_dwFollowKindID = 0;
+	m_nChildSkillId = 0;
+	m_nChildSkillLevel = 0;
+	m_bFlyingEvent = FALSE;
+	m_bStartEvent = FALSE;
+	m_bCollideEvent = FALSE;
+	m_bVanishedEvent = FALSE;
+	m_nFlyEventTime = 0;
+	m_nStartSkillId = 0;
+	m_bMustBeHit = FALSE;
+	m_eMisslesGenerateStyle = static_cast<eMisslesGenerateStyle>(0); // Assuming 0 is the default
+	m_nMisslesGenerateData = 0;
+	m_nMaxShadowNum = 0;
+	m_bNeedShadow = FALSE;
+	m_nAttackRadius = 0;
+	m_nStateSpecialId = 0;
+	m_nMaxTimes = 0;
+	m_nShowEvent = 0;
+	m_nHorseLimited = 0;
+	memset(m_nAppendSkillId, 0, sizeof(m_nAppendSkillId));
+	m_nSeries = 0;
+	m_nShowAddition = 0;
+
+	m_nAddSkillDamageNum = 0;
 }
 
 KSkill::~KSkill()
@@ -251,7 +324,10 @@ relationisvalid:
 			if(nParam1 == -1)
 			{
 				distance = NpcSet.GetDistance(nLauncher, nParam2);
-				if (distance > GetAttackRadius())
+#ifndef _SERVER				
+				if (distance > GetAttackRadius()*0.8)
+#endif
+				if (distance > GetAttackRadius() + 20)
 					return -1;
 			}
 			else
@@ -262,6 +338,9 @@ relationisvalid:
 					int nLauncherX, nLauncherY;
 					Npc[nLauncher].GetMpsPos(&nLauncherX, &nLauncherY);
 					distance = g_GetDistance(nLauncherX, nLauncherY, nParam1, nParam2);
+#ifndef _SERVER				
+					if (distance > GetAttackRadius() * 0.8)
+#endif
 					if (distance > GetAttackRadius())
 					{
 #ifndef _SERVER
@@ -629,7 +708,7 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 					if (nDir >= MaxMissleDir) nDir -= MaxMissleDir;
 					SkillParam.nLauncher = pMissle->m_nLauncher;
 					SkillParam.nParent = nLauncher;
-					SkillParam.nParent = SKILL_SLT_Missle;
+					SkillParam.eParentType = SKILL_SLT_Missle;
 					SkillParam.nTargetId = pMissle->m_nFollowNpcIdx;
 					CastWall(&SkillParam,  nDir, nRefPX, nRefPY);
 				}break;
@@ -887,7 +966,12 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 			{
 			case SKILL_SLT_Npc:
 				{
-					nTargetId		= Param2PCoordinate(nLauncher,nParam1, nParam2, &nDesPX, &nDesPY);
+					SubWorld[Npc[nLauncher].m_SubWorldIndex].Map2Mps(
+				    Npc[nLauncher].m_RegionIndex,
+				    Npc[nLauncher].m_MapX, Npc[nLauncher].m_MapY,
+				    Npc[nLauncher].m_OffX, Npc[nLauncher].m_OffY,
+				    &nSrcPX, &nSrcPY);
+					nTargetId		= nTargetId = Param2PCoordinate(nLauncher, nParam1, nParam2, &nDesPX, &nDesPY, eLauncherType);
 					nDirIndex		= g_GetDirIndex(nSrcPX, nSrcPY, nDesPX, nDesPY);
 					nDir			= g_DirIndex2Dir(nDirIndex, MaxMissleDir);
 					SkillParam.nLauncher = nLauncher;
@@ -1083,10 +1167,13 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 		}
 exit:	
 #ifdef _SERVER
-		if (pNewMagicAttribsData)
-			if (pNewMagicAttribsData->GetRef() == 0)
-				delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+        if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    }
 #endif
+
 			return nCastMissleNum;
 }
 
@@ -1201,10 +1288,13 @@ int		KSkill::CastLine(TOrdinSkillParam *pSkillParam, int nDir, int nRefPX, int n
 	
 exit:	
 #ifdef _SERVER
-	if (pNewMagicAttribsData)
-		if (pNewMagicAttribsData->GetRef() == 0)
-			delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+        if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    }
 #endif
+
 		return nCastMissleNum;
 }
 
@@ -1314,10 +1404,13 @@ int		KSkill::CastExtractiveLineMissle(TOrdinSkillParam* pSkillParam,  int nDir,i
 	
 exit:	
 #ifdef _SERVER
-	if (pNewMagicAttribsData)
-		if (pNewMagicAttribsData->GetRef() == 0)
-			delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+        if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    }
 #endif
+
 		
 		return nCastMissleNum;
 		
@@ -1434,10 +1527,13 @@ int KSkill::CastWall(TOrdinSkillParam * pSkillParam,  int nDir , int nRefPX , in
 	
 exit:	
 #ifdef _SERVER
-	if (pNewMagicAttribsData)
-		if (pNewMagicAttribsData->GetRef() == 0)
-			delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+       if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    } 
 #endif
+
 		return nCastMissleNum;
 }
 
@@ -1547,10 +1643,13 @@ int		KSkill::CastCircle(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 
 exit:	
 #ifdef _SERVER
-	if (pNewMagicAttribsData)
-		if (pNewMagicAttribsData->GetRef() == 0)
-			delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+        if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    }
 #endif
+
 		
 		return nCastMissleNum;
 }
@@ -1705,10 +1804,13 @@ int		KSkill::CastSpread(TOrdinSkillParam * pSkillParam, int nDir, int nRefPX, in
 	}
 exit:	
 #ifdef _SERVER
-	if (pNewMagicAttribsData)
-		if (pNewMagicAttribsData->GetRef() == 0)
-			delete pNewMagicAttribsData;
+    if (pNewMagicAttribsData)
+    {
+        if (pNewMagicAttribsData->GetRef() == 0)
+            delete pNewMagicAttribsData;
+    }
 #endif
+
 		
 		return nCastMissleNum;
 }
@@ -2054,7 +2156,7 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 		}
 		ParseString2MagicAttrib(nLevel, szSettingNameValue, szResult);
 	}
-	pScript->SafeCallBegin(&nSafeIndex);
+	//pScript->SafeCallBegin(&nSafeIndex);
 	pScript->SafeCallEnd(nSafeIndex);
 }
 
@@ -2189,24 +2291,53 @@ BOOL KSkill::CastInitiativeSkill(int nLauncher, int nParam1, int nParam2, int nW
 lab_processdamage:			
 	
 	KMissleMagicAttribsData * pAttribsData = CreateMissleMagicAttribsData(nLauncher);
-	if (pAttribsData) 
-	{
-		if (Npc[nParam2].ReceiveDamage(nLauncher, -1, m_bIsPhysical, m_bIsMelee, pAttribsData->m_pDamageMagicAttribs, m_bUseAttackRate, m_nDoHurtP, 0))
-		{		
-			if (pAttribsData->m_nStateMagicAttribsNum > 0)
-				Npc[nParam2].SetStateSkillEffect(nLauncher, m_nId, m_ulLevel, pAttribsData->m_pStateMagicAttribs, pAttribsData->m_nStateMagicAttribsNum, pAttribsData->m_pStateMagicAttribs[0].nValue[1]);
-			
-			if (pAttribsData->m_nImmediateMagicAttribsNum > 0)
-				Npc[nParam2].SetImmediatelySkillEffect(nLauncher, pAttribsData->m_pImmediateAttribs, pAttribsData->m_nImmediateMagicAttribsNum);
-		}
-		return TRUE;
-	}
-	if (pAttribsData->DelRef() == 0)
-		delete pAttribsData;
-#endif //_SERVER
-	return TRUE;
-}
+	
+	if (!pAttribsData)
+    	return FALSE;
+    
+	BOOL bHit = FALSE;
 
+    if (Npc[nParam2].ReceiveDamage(
+            nLauncher,
+            -1,
+            m_bIsPhysical,
+            m_bIsMelee,
+            pAttribsData->m_pDamageMagicAttribs,
+            m_bUseAttackRate,
+            m_nDoHurtP,
+            0))
+    {
+        bHit = TRUE;
+
+        if (pAttribsData->m_nStateMagicAttribsNum > 0)
+        {
+            Npc[nParam2].SetStateSkillEffect(
+                nLauncher,
+                m_nId,
+                m_ulLevel,
+                pAttribsData->m_pStateMagicAttribs,
+                pAttribsData->m_nStateMagicAttribsNum,
+                pAttribsData->m_pStateMagicAttribs[0].nValue[1]);
+        }
+
+        if (pAttribsData->m_nImmediateMagicAttribsNum > 0)
+        {
+            Npc[nParam2].SetImmediatelySkillEffect(
+                nLauncher,
+                pAttribsData->m_pImmediateAttribs,
+                pAttribsData->m_nImmediateMagicAttribsNum);
+        }
+    }
+
+    if (pAttribsData->DelRef() == 0)
+        delete pAttribsData;
+
+    return bHit;
+
+#else
+    return FALSE;
+#endif
+}
 BOOL KSkill::CastPassivitySkill(int nLauncher, int nParam1, int nParam2, int nWaitTime)  const 
 {
 #ifdef _SERVER
@@ -2218,6 +2349,7 @@ BOOL KSkill::CastPassivitySkill(int nLauncher, int nParam1, int nParam2, int nWa
 #endif
 	return TRUE;
 }
+
 
 BOOL	KSkill::ParseString2MagicAttrib(unsigned long ulLevel, char * szMagicAttribName, char * szValue)  
 {
@@ -2446,7 +2578,8 @@ BOOL	KSkill::ParseString2MagicAttrib(unsigned long ulLevel, char * szMagicAttrib
 					m_nDamageAttribsNum ++;
 					break;
 				}
-				//return TRUE;
+				if (i == magic_steallife_p || i == magic_stealmana_p || i == magic_stealstamina_p)
+					return TRUE;
 			}
 			//
 			if(i==magic_ignorenegativestate_p) //ignorenegativestate_p[15]
@@ -2787,7 +2920,7 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 				if (nNextExp)
 				{
 					float fPer = (float)(nExp * MAX_PERCENT) / nNextExp;
-					sprintf(pszInfo, "Møc ®é luyÖn: %0.2f%%", fPer); 
+					sprintf(pszInfo, "<color=25,141,250>Møc ®é luyÖn: %0.2f%%<color>", fPer); 
 					strcat(pszMsg, pszInfo); 
 					strcat(pszMsg, "\n");
 				}
@@ -2848,7 +2981,16 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 		sprintf(pszInfo,"Ph¹m vi hiÖu qu¶: %d\n", nAttackRadius);
 		strcat(pszMsg,pszInfo);
 	}
-
+	for (i = 0; i < MAX_MISSLE_DAMAGEATTRIB; i++)
+	{
+		if (!(DamageAttribs + i)->nAttribType) continue;
+		if ((DamageAttribs + i)->nAttribType == magic_ignoredefense_p && !bEventSkill)
+		{
+			sprintf(pszInfo, "Bá qua nÐ tr¸nh: %d%%", (DamageAttribs + i)->nValue[0]);  //fix hien thi bo qua ne tranh TamLTM;
+			strcat(pszMsg, pszInfo);
+			strcat(pszMsg, "\n");
+		}
+	}
 	/*for (i  = 0; i < m_nImmediateAttribsNum; i ++)
 	{
 		if (!m_ImmediateAttribs[i].nAttribType || 

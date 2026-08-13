@@ -69,16 +69,16 @@ class KUiPlayerBar : protected KWndImage
 {
 public:
 
-	static KUiPlayerBar* OpenWindow();					
-	static KUiPlayerBar* GetIfVisible();				
-	static void			CloseWindow(bool bDestroy);		
+	static KUiPlayerBar* OpenWindow();
+	static KUiPlayerBar* GetIfVisible();
+	static void			CloseWindow(bool bDestroy);
 	static void			LoadScheme(const char* pScheme);
 	static	void		LoadSchemeTeamMNG(const char* pScheme);
 	static void			InputNameMsg(char bChannel, const char* szName, bool bFocus);
 	static int			FindRecentPlayer(const char* szName);
 	static int          AddRecentPlayer(const char* szName);
-	static char*        GetRecentPlayerName(int nIndex);
-	static const char*	SelfName()
+	static char* GetRecentPlayerName(int nIndex);
+	static const char* SelfName()
 	{
 		if (m_pSelf)
 			return m_pSelf->m_szSelfName;
@@ -171,7 +171,18 @@ private:
 	KWndButton		m_Market;
 	KWndButton		m_WifiStatus;
 	KWndButton		m_Auto;
-	KWndButton		m_HideWindow;	
+	KWndButton		m_HideWindow;
+	KWndButton		m_Zalo;
+	KWndButton		m_Fb;
+	KWndButton		m_HideChat;
+	KWndButton		m_HideGraphic;
+	KWndButton		m_SpringGame;
+	KWndButton		m_Run;
+	KWndButton		m_Sit;
+	KWndButton		m_Horse;
+	KWndButton		m_Exchange;
+	KWndButton		m_PK;
+	bool			m_bHideGraphic;
 
 #define	MAX_BUTTON_STATE		20
 	KWndButton		m_StateImg[MAX_BUTTON_STATE];

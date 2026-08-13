@@ -22,6 +22,7 @@ static HANDLE hRemoveLogThread = NULL;
 
 HWND hListOutput = NULL;	
 
+FILE* fLog = fopen("goddess_log.txt", "a+t");
 int get_account(DB *db, const DBT *pkey, const DBT *pdata, DBT *ikey) 
 {
 	memset( ikey, 0, sizeof( DBT ) );
@@ -93,8 +94,267 @@ BOOL InitDBInterface( size_t nMaxRoleCount )
 	return FALSE;
 }
 
+#include <process.h>
+HANDLE m_hMThread = NULL;
+
+static unsigned int __stdcall MThreadFunction( void *pV )
+{
+	int nCount = 0;
+	char cTailAdd = 16;//ky tu dac biet them vao khi trung ten, < 32
+	char cMergeNum1 = 'S';
+	char cMergeNum2 = '4';//cMergeNum1 = '0', cMergeNum2 = '1' =>lan gop thu' 01
+	char aStr[128];
+	ZDBTable * db_table1 = new ZDBTable( "database1", "roledb" );
+	db_table1->addIndex( get_account );
+	if ( !db_table1->open() )
+	{
+		db_table1->commit();
+		db_table1->removeLog();
+		db_table1->close();
+		delete db_table1;
+		
+		sprintf(aStr, "Open database1 failed");
+		AddOutputString(hListOutput,aStr);
+		return 0L;
+	}
+	Sleep(1);
+	ZDBTable * db_table2 = new ZDBTable( "database2", "roledb" );
+	db_table2->addIndex( get_account );
+	if ( !db_table2->open() )
+	{
+		db_table1->commit();
+		db_table1->removeLog();
+		db_table1->close();
+		delete db_table1;
+		
+		db_table2->commit();
+		db_table2->removeLog();
+		db_table2->close();
+		delete db_table2;
+		
+		sprintf(aStr, "Open database2 failed");
+		AddOutputString(hListOutput,aStr);
+		return 0L;
+	}
+	Sleep(1);
+	map< string, size_t> mapSameAcc;
+	ZCursor *cursor1 = db_table1->first();
+	while(cursor1)
+	{
+		++nCount;
+		TRoleData* pRoleData = (TRoleData*)cursor1->data;
+		ZCursor *acccursor = db_table2->search( pRoleData->BaseInfo.caccname, strlen( pRoleData->BaseInfo.caccname ) + 1, 0 );
+		if(acccursor)
+		{
+			db_table2->closeCursor(acccursor);
+			mapSameAcc[string(pRoleData->BaseInfo.caccname)] = 1;
+		}
+		db_table->add( pRoleData->BaseInfo.szName, strlen( pRoleData->BaseInfo.szName ) + 1, cursor1->data, cursor1->size );
+		if(!db_table1->next(cursor1)) break;
+		if(!(nCount%100))
+		{
+			sprintf(aStr, "Processing DB1Role [%d]", nCount);
+			AddOutputString(hListOutput,aStr);
+			Sleep(1);
+		}
+	}
+	Sleep(1);
+	char TempName[32];
+	char szTempRole[65536];
+	ZCursor *cursor2 = db_table2->first();
+	while(cursor2)
+	{
+		++nCount;
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test0_1[%d] [%d]",cursor2->size,nCount);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		//if(nCount == 2139)
+		//{
+		//	if(!db_table2->next(cursor2)) break;
+		//	continue;
+		//}
+		memcpy(szTempRole, cursor2->data, cursor2->size);
+		TRoleData* pRoleData = (TRoleData*)szTempRole;
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test0_2[%d] [%s]",strlen(pRoleData->BaseInfo.szName), pRoleData->BaseInfo.szName);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		strcpy(TempName, pRoleData->BaseInfo.szName);
+		ZCursor * samecursor = db_table1->search(TempName, strlen( TempName ) + 1 );
+		if(samecursor)
+		{
+			db_table1->closeCursor(samecursor);
+			int nLen = strlen( TempName );
+			TempName[nLen] = cTailAdd;
+			TempName[nLen+1] = cMergeNum1;
+			TempName[nLen+2] = cMergeNum2;
+			TempName[nLen+3] = 0;
+		}
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test_1[%d] [%s]",strlen(TempName), TempName);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		strcpy(pRoleData->BaseInfo.szName, TempName);
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test_2[%u] [%s]",pRoleData->dwDataLen,TempName);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		DWORD	dwCRC = 0;
+		dwCRC = CRC32(dwCRC, szTempRole, pRoleData->dwDataLen - 4);
+		*(DWORD*)&szTempRole[pRoleData->dwDataLen - 4] = dwCRC;
+		db_table->add( TempName, strlen( TempName ) + 1, szTempRole, cursor2->size );
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test_3 [%s]",TempName);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		if(!db_table2->next(cursor2)) break;
+		//if(nCount > 2100)
+		//{
+		//	sprintf(aStr, "Test_4 [%s]",TempName);
+		//	AddOutputString(hListOutput,aStr);
+		//	Sleep(1);
+		//}
+		if(!(nCount%100))
+		{
+			sprintf(aStr, "Processing DB2Role [%d]", nCount);
+			AddOutputString(hListOutput,aStr);
+			Sleep(1);
+		}
+	}
+	Sleep(1);
+	struct sRole
+	{
+		char name[32];
+		int level;
+		sRole()
+		{
+			level = 0;
+		}
+	};
+	vector<string> vDelRole;
+	map< string, size_t>::iterator it = mapSameAcc.begin();
+	while (it != mapSameAcc.end())
+	{
+		string s = (*it).first;
+		strcpy(TempName, s.c_str());
+		int rcount = 0;
+		sRole aryRolesPerAcc[6];
+		ZCursor *acccursor = db_table->search( TempName, strlen( TempName ) + 1, 0 );
+		while(acccursor)
+		{
+			TRoleData *pRoleData = (TRoleData *)acccursor->data;
+			if(rcount > 0)
+			{
+				int i;
+				for(i=0;i<rcount;++i)
+				{
+					if(pRoleData->BaseInfo.ifightlevel > aryRolesPerAcc[i].level)
+					{
+						memmove(&aryRolesPerAcc[i+1], &aryRolesPerAcc[i], sizeof(sRole)*(rcount-i));
+						aryRolesPerAcc[i].level = pRoleData->BaseInfo.ifightlevel;
+						strcpy(aryRolesPerAcc[i].name, pRoleData->BaseInfo.szName);
+						break;
+					}
+				}
+				if(i >= rcount)
+				{
+					aryRolesPerAcc[i].level = pRoleData->BaseInfo.ifightlevel;
+					strcpy(aryRolesPerAcc[i].name, pRoleData->BaseInfo.szName);
+				}
+			}
+			else
+			{
+				aryRolesPerAcc[0].level = pRoleData->BaseInfo.ifightlevel;
+				strcpy(aryRolesPerAcc[0].name, pRoleData->BaseInfo.szName);
+			}
+			++rcount;
+			if(!db_table->next(acccursor)) break;
+		}
+		if(rcount > 3)
+		{
+			for(int i=3;i<rcount;++i)
+			{
+				vDelRole.push_back(string(aryRolesPerAcc[i].name));
+			}
+		}
+		it++;
+	}
+	Sleep(1);
+	for(size_t i=0;i<vDelRole.size();++i)
+	{
+		strcpy(TempName, vDelRole[i].c_str());
+		db_table->remove( TempName, strlen( TempName ) + 1 );
+		sprintf(aStr, "Removing Role [%u][%s]", i, TempName);
+		AddOutputString(hListOutput,aStr);
+		Sleep(1);
+	}
+	db_table1->commit();
+	db_table1->removeLog();
+	db_table1->close();
+	delete db_table1;
+	
+	db_table2->commit();
+	db_table2->removeLog();
+	db_table2->close();
+	delete db_table2;
+	AddOutputString(hListOutput,"Merging Data Done");
+	return 0L;
+}
+
+void MergeDB()
+{
+	if ( m_hMThread )
+	{
+		DWORD result = ::WaitForSingleObject( m_hMThread, 50000 );
+		
+		if ( result == WAIT_TIMEOUT )
+		{
+			::TerminateThread( m_hMThread, ( DWORD )( -2 ) );
+		}
+		
+		if ( m_hMThread )
+		{
+			::CloseHandle( m_hMThread );
+			m_hMThread = NULL;
+		}
+	}
+	unsigned int threadID = 0;
+	m_hMThread = (HANDLE)::_beginthreadex(0,
+			0,
+			MThreadFunction,
+			NULL,
+			0,
+			&threadID );
+}
+
 void ReleaseDBInterface()		//释放数据库引擎
 {
+	if ( m_hMThread )
+	{
+		DWORD result = ::WaitForSingleObject( m_hMThread, 50000 );
+		
+		if ( result == WAIT_TIMEOUT )
+		{
+			::TerminateThread( m_hMThread, ( DWORD )( -2 ) );
+		}
+		
+		if ( m_hMThread )
+		{
+			::CloseHandle( m_hMThread );
+			m_hMThread = NULL;
+		}
+	}
 	if ( db_table )
 	{
 		db_table->commit();
@@ -119,7 +379,7 @@ void ReleaseDBInterface()		//释放数据库引擎
 //[wxb 2003-7-23]
 void SetRoleInfoForGM(int nInfoID, char* pRoleBuffer, char* strUser, int nBufLen)
 {
-	char* aBuffer = new char[64 * 1024];
+	char* aBuffer = new char[64 * 1024 * 5];
 	TRoleData* pRoleData = NULL;
 	int size;
 
@@ -212,7 +472,7 @@ int	SaveRoleInfo( char * pRoleBuffer, const char *strUser, BOOL bAutoInsertWhenN
 	AddOutputString(hListOutput,aStr);
 	//===============
 
-	if(pRoleData->dwDataLen >= 64 * 1024) return 0;//64K
+	if(pRoleData->dwDataLen >= 64 * 1024 * 5) return 0;//64K
 
 	if(bAutoInsertWhenNoExistUser)
 	{
@@ -466,13 +726,26 @@ bool GetGameStat(TGAME_STAT_DATA* aStatData)
 
 void AddOutputString(HWND hListCtrl, char* aStr)
 {
-	if ( hListCtrl && ::IsWindow( hListCtrl ) )
+	if (hListCtrl && ::IsWindow(hListCtrl))
 	{
-		int nCount = ::SendMessage( hListCtrl, LB_GETCOUNT, 0, 0 );
-		if(nCount >= 100)
+		int nCount = ::SendMessage(hListCtrl, LB_GETCOUNT, 0, 0);
+		if (nCount >= 100)
 		{
-			::SendMessage( hListCtrl, LB_DELETESTRING, 100, 0 );
+			::SendMessage(hListCtrl, LB_DELETESTRING, 100, 0);
 		}
-		int nIndex = ::SendMessage( hListCtrl, LB_INSERTSTRING, 0, ( LPARAM )aStr );
+		int nIndex = ::SendMessage(hListCtrl, LB_INSERTSTRING, 0, (LPARAM)aStr);
+	}
+
+	// Write to log file with timestamp
+	if (fLog)
+	{
+		// Get current time
+		time_t now = time(nullptr);
+		struct tm* tm_info = localtime(&now);
+		char timeStr[32];
+		strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
+
+		fprintf(fLog, "[%s] %s\n", timeStr, aStr);
+		fflush(fLog);
 	}
 }

@@ -398,6 +398,7 @@ void KUiChatCentre::CloseWindow(bool bDestroy)
 		}
 	}
 }
+extern int SCREEN_WIDTH;
 
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
@@ -409,8 +410,18 @@ void KUiChatCentre::LoadScheme(const char* pScheme)
 		char		Buff[128];
 		KIniFile	Ini;
 		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
-		if (Ini.Load(Buff))
+		if (Ini.Load(Buff)) {
 			m_pSelf->LoadScheme(&Ini);
+			if (SCREEN_WIDTH == 1024) {
+				int nX, nY;
+				int dX, dY;
+				dX = 0;// (1024 - 800) / 2 + 8;
+				dY = 768 - 600 + 1;
+
+				m_pSelf->GetPosition(&nX, &nY);
+				m_pSelf->SetPosition(nX + dX, nY + dY);
+			}
+		}
 	}
 }
 

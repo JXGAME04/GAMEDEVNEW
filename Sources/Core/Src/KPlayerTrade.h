@@ -19,8 +19,11 @@ class KTrade
 	friend class KPlayer;
 public:
 	int			m_nIsTrading;						// 是否正在交易 0 没有 1 正在交易
+	int			m_nIsGambling;
 	int			m_nTradeDest;						// 服务器端记的是 player index 客户端记的是 npc id
 	int			m_nTradeState;						// 是否已经点了ok 0 没有 1 点了
+	int			m_nGambleState;
+	BYTE		m_btGambleChoose;
 	int			m_nTradeLock;						// 是否锁定 0 没有 1 已经锁定
 
 #ifdef _SERVER
@@ -39,12 +42,16 @@ public:
 public:
 	KTrade();
 	void		Release();
-	BOOL		StartTrade(int nDest, int nEquipMoney = 0, int nRepositoryMoney = 0);
+	void		Reset();
+	BOOL		StartTrade(int nDest, int nEquipMoney = 0, int nRepositoryMoney = 0); 
+	BOOL		StartGamble(int nDest, int nEquipMoney = 0, int nRepositoryMoney = 0);
 	void		Lock(BOOL bFlag);
 
 #ifndef _SERVER
 	void		SetTradeState(int nSelfLock, int nDestLock, int nSelfStateOk, int nDestStateOk);
+	void		SetGambleState(int nSelfLock, int nDestLock, int nSelfStateOk, int nDestStateOk);
 	static void		ReplyInvite(int nDestIdx, int nReply);
+	static void		ReplyGambleInvite(int nDestIdx, int nReply);
 #endif
 
 };

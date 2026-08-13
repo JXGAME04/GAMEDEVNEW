@@ -42,6 +42,7 @@ enum
 	enumC2S_UPDATE_EXTPOINT,
 	enumC2S_TONG_GET_LOGIN_LIMIT,		//#limit account 
 	enumC2S_TONG_CHANGE_LEVEL,
+	enumC2S_TONG_CHANGE_EXP,
 	enumC2S_TONG_CHANGE_WAYEDIT,
 	enumC2S_TONG_CHANGE_NEXTTARGER,
 	enumC2S_TONG_NUM,					// 数量
@@ -79,8 +80,10 @@ enum
 	enumS2C_TONG_BE_CHANGED_RECRUIT,
 	enumS2C_TONG_LOGIN_LIMIT,				 //#limit account 
 	enumS2C_TONG_BE_CHANGED_LEVEL,
+	enumS2C_TONG_BE_CHANGED_EXP,
 	enumS2C_TONG_BE_CHANGED_WAYEDIT,
 	enumS2C_TONG_BE_CHANGED_NEXTTARGET,
+	enumS2C_TONG_FULL,
 	enumS2C_TONG_NUM,					// 数量
 };
 //-------------------------- tong protocol end --------------------------
@@ -278,6 +281,9 @@ struct STONG_ADD_MEMBER_SUCCESS_SYNC : EXTEND_HEADER
 	char	m_szTongName[32];
 	char	m_szMasterName[32];
 	char	m_szTitleName[32];
+	int		m_nTongLevel;
+	int		m_nTongExp;
+	BOOL	m_nIsFull;
 };
 
 struct STONG_ADD_MEMBER_FAIL_SYNC : EXTEND_HEADER
@@ -454,6 +460,16 @@ struct STONG_BE_CHANGED_LEVEL_SYNC : EXTEND_HEADER		// changetitle
 	int		m_nTongLevel;
 };
 
+struct STONG_BE_CHANGED_EXP_SYNC : EXTEND_HEADER		// changetitle
+{
+	DWORD	m_dwParam;			//	changetitle
+	BYTE	m_btFigure;
+	BYTE	m_btPos;
+	char	m_szName[32];
+	char	m_szTitle[32];
+	int		m_nTongExp;
+};
+
 struct STONG_BE_CHANGED_WAYEDIT_SYNC : EXTEND_HEADER		// changetitle
 {
 	DWORD	m_dwParam;			//	changetitle
@@ -564,7 +580,7 @@ struct STONG_CHANGE_RECRUIT_COMMAND : EXTEND_HEADER		// changetitle
 	BYTE	m_btRecruit;
 };
 
-struct STONG_CHANGE_LEVEL_COMMAND : EXTEND_HEADER		// changetitle
+struct STONG_CHANGE_LEVEL_COMMAND : EXTEND_HEADER		// changeLevel
 {
 	DWORD	m_dwParam;
 	DWORD	m_dwTongNameID;
@@ -573,6 +589,17 @@ struct STONG_CHANGE_LEVEL_COMMAND : EXTEND_HEADER		// changetitle
 	char	m_szName[32];
 	char	m_szTitle[32];
 	int		m_nTongLevel;
+};
+
+struct STONG_CHANGE_EXP_COMMAND : EXTEND_HEADER		// changeExp
+{
+	DWORD	m_dwParam;
+	DWORD	m_dwTongNameID;
+	BYTE	m_btFigure;
+	BYTE	m_btPos;
+	char	m_szName[32];
+	char	m_szTitle[32];
+	int		m_nTongExp;
 };
 
 struct STONG_CHANGE_WAYEDIT_COMMAND : EXTEND_HEADER		// changetitle
@@ -734,6 +761,9 @@ struct STONG_LOGIN_DATA_SYNC : EXTEND_HEADER
 	char	m_szName[32];
 	int		m_btRecruit;
 	DWORD	m_nMoney;
+	int		m_nLevel;
+	int		m_nExp;
+	bool	m_bIsFull;
 };
 
 struct STONG_MONEY_COMMAND : EXTEND_HEADER
@@ -751,6 +781,14 @@ struct STONG_MONEY_SYNC : EXTEND_HEADER
 	char	m_szName[32];
 	DWORD	m_nMoney;
 	DWORD	m_dwMoney;
+};
+
+struct STONG_FULL_SYNC : EXTEND_HEADER
+{
+	DWORD	m_dwParam;
+	DWORD	m_dwTongNameID;
+	char	m_szName[32];
+	BOOL	m_bIsFull;
 };
 
 struct STONG_UPDATE_EXTPOINT_COMMAND : EXTEND_HEADER

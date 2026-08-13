@@ -19,12 +19,14 @@
 #include "KRelayProtocol.h"
 #include "KProtocolDef.h"
 #include "UIGame.h"
+#include "UiFlashMessage.h"
 
 #define		SEL_CHANNEL_MENU		1
 
 extern iCoreShell*		g_pCoreShell;
 extern iRepresentShell*	g_pRepresentShell;
 
+extern int SCREEN_WIDTH;
 int VerticalSplitTwoWindow(KWndWindow* pLeft, KWndWindow* pRight, int nAt)
 {
 	if (pLeft == NULL || pRight == NULL)
@@ -258,6 +260,28 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		if (m_ChannelsResource[m_pActivateChannel[nChannelIndex].ResourceIndex].szSoundFileName[0] != 0)
 			UiSoundPlay(m_ChannelsResource[m_pActivateChannel[nChannelIndex].ResourceIndex].szSoundFileName);
 	}
+	//check TongKim kill message
+	// ®¸nh träng th­¬ng
+	//KUiNewsMessage::MessageArrival((KNewsMessage*)uParam, (SYSTEMTIME*)nParam);
+	if (pMsgBuff != nullptr && strstr(pMsgBuff, "®¸nh träng th­¬ng") != nullptr)
+	{
+		// Construct KNewsMessage on the stack and populate from pMsgBuff
+		KNewsMessage newsMsg;
+		memset(&newsMsg, 0, sizeof(newsMsg));
+		// Copy safely into newsMsg.sMsg (assumes sMsg is a char array member)
+		int tmpSize = strlen(pMsgBuff) > sizeof(newsMsg.sMsg)? sizeof(newsMsg.sMsg)-1: strlen(pMsgBuff)-1;
+		strncpy(newsMsg.sMsg, pMsgBuff, tmpSize);
+		newsMsg.sMsg[tmpSize] = '\0';
+		newsMsg.nMsgLen = static_cast<int>(strlen(newsMsg.sMsg));
+		// set other fields on newsMsg if required, e.g. newsMsg.nType = NEWSMESSAGE_NORMAL;
+		newsMsg.nType = NEWSMESSAGE_NORMAL;
+		// Build SYSTEMTIME for nParam
+		SYSTEMTIME sysTime;
+		::GetLocalTime(&sysTime);
+
+		// Call MessageArrival with pointers
+		KUiFlashMessage::MessageArrival(&newsMsg, &sysTime);
+	}
 
 	if (pMsgBuff[0] != '\t' &&	bName)
 	{
@@ -309,7 +333,10 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 			while(j < nMsgLength)
 			 {
 				 uMsgLen2++;
-				 if(*pszCheck2 == ']' && nCount == NUM_INFO_ITEM_CHAT) {bOk = TRUE; break;}
+				 if(*pszCheck2 == ']' && nCount == NUM_INFO_ITEM_CHAT) {
+					 bOk = TRUE; 
+					 break;
+				 }
 				 //[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26] // doc tu tu se hieu thoi, cai nay de, phan gia tri nhat thi chi co cho nay
 				 if(*pszCheck2 == ',') nCount++;
 				 pszCheck2++;
@@ -430,7 +457,7 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		pszCheck1++;
 		nLeng++;
 	}
-	CItem.m_dwRandomSeed = atoi(szNum);			//9 m_dwRandomSeed
+	CItem.m_dwRandomSeed = strtoul(szNum, NULL, 10);			//9 m_dwRandomSeed
 	ZeroMemory(szNum, sizeof(szNum));
 	nLeng = 0;
 	pszCheck1++;
@@ -575,8 +602,31 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		nLeng++;
 	}
 	CItem.m_HLock = atoi(szNum);		//21 m_HLock
+	ZeroMemory(szNum, sizeof(szNum));
+	nLeng = 0;
+	pszCheck1++;
 
-	for (i = 0; i < 6 ; i++)
+	while (1)
+	{
+		if (*pszCheck1 == ',') break;
+		szNum[nLeng] = (*pszCheck1);
+		pszCheck1++;
+		nLeng++;
+	}
+	CItem.m_nNature = atoi(szNum);		//22 m_nNature
+
+	nLeng = 0;
+	pszCheck1++;
+	while (1)
+	{
+		if (*pszCheck1 == ',') break;
+		szNum[nLeng] = (*pszCheck1);
+		pszCheck1++;
+		nLeng++;
+	}
+	CItem.m_nMaxOptMultiply = atoi(szNum);		//22 m_nMaxOptMultiply
+
+	for (i = 0; i < MAX_ITEM_MAGICLEVEL ; i++)
 	{
 		ZeroMemory(szNum, sizeof(szNum));
 		nLeng = 0;
@@ -889,7 +939,7 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 		pszCheck1++;
 		nLeng++;
 	}
-	CItem.m_dwRandomSeed = atoi(szNum);			//9 m_dwRandomSeed
+	CItem.m_dwRandomSeed = strtoul(szNum, NULL, 10);			//9 m_dwRandomSeed
 	ZeroMemory(szNum, sizeof(szNum));
 	nLeng = 0;
 	pszCheck1++;
@@ -1034,8 +1084,31 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 		nLeng++;
 	}
 	CItem.m_HLock = atoi(szNum);				//21 m_HLock
+	ZeroMemory(szNum, sizeof(szNum));
+	nLeng = 0;
+	pszCheck1++;
 
-	for (i = 0; i < 6 ; i++)
+	while (1)
+	{
+		if (*pszCheck1 == ',') break;
+		szNum[nLeng] = (*pszCheck1);
+		pszCheck1++;
+		nLeng++;
+	}
+	CItem.m_nNature = atoi(szNum);				//22 m_nNature
+
+	nLeng = 0;
+	pszCheck1++;
+	while (1)
+	{
+		if (*pszCheck1 == ',') break;
+		szNum[nLeng] = (*pszCheck1);
+		pszCheck1++;
+		nLeng++;
+	}
+	CItem.m_nMaxOptMultiply = atoi(szNum);				//23 m_nMaxOptMultiply
+
+	for (i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
 	{
 		ZeroMemory(szNum, sizeof(szNum));
 		nLeng = 0;
@@ -1047,7 +1120,7 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 			pszCheck1++;
 			nLeng++;
 		}
-		CItem.m_btMagicLevel[i] = atoi(szNum);		//22 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
+		CItem.m_btMagicLevel[i] = atoi(szNum);		//23 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
 	}
 
 	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);
@@ -1218,9 +1291,17 @@ void KUiMsgCentrePad::OpenChannel(char* channelName, DWORD nChannelID, BYTE cost
 		{
 			ChannelName[0];
 			if (m_pSelf->m_ChannelsResource[n].cFormatName[0] == 0)
-				return;
+				continue;
 			if (!m_pSelf->ReplaceSpecialField(ChannelName, m_pSelf->m_ChannelsResource[n].cFormatName))
 				continue;
+			if (strcmp(channelName, "\\M1") == 0) { //Tong
+				if(strcmp(m_pSelf->m_ChannelsResource[n].cTitle, "CH_SONG") != 0)
+					continue;
+			}
+			if (strcmp(channelName, "\\M2") == 0) { //Kim
+				if(strcmp(m_pSelf->m_ChannelsResource[n].cTitle, "CH_JIN") != 0)
+					continue;
+			}
 			if (ChannelName[0] == 0)
 				continue;
 			if (strcmp(channelName, ChannelName) == 0)
@@ -1291,6 +1372,7 @@ static char s_keys [][__X_NAME_LEN_] =
 	"Team#",
 	"Faction#",
 	"Tong#",
+	"Msgr#",
 	"\\S",
 	"GM",
 };
@@ -1301,9 +1383,10 @@ bool KUiMsgCentrePad::ReplaceSpecialField(char* szDest, char* szSrc)
 	{
 		"",
 		"",
+		"",
+		"",
+		"",
 		""
-		"",
-		"",
 	};
 
 	KUiPlayerTeam	Team;
@@ -1324,6 +1407,10 @@ bool KUiMsgCentrePad::ReplaceSpecialField(char* szDest, char* szSrc)
 	if (self.nCurTong != 0)
 	{
 		sprintf(s_keyDests[2], "%u", self.nCurTong);
+	}
+	if (self.nMissionGroup >= 0)
+	{
+		sprintf(s_keyDests[3], "%d", self.nMissionGroup);
 	}
 
 	int nKeySize = sizeof(s_keys) / __X_NAME_LEN_;
@@ -1406,6 +1493,7 @@ void KUiMsgCentrePad::CloseSelfChannel(SelfChannel type)
 		case ch_Team:
 		case ch_Faction:
 		case ch_Tong:
+		case ch_Msgr:
 		case ch_Screen:
 			{
 				m_pSelf->CloseActivateChannel(m_pSelf->FindActivateChannelIndexByKey(s_keys[type]));
@@ -1435,6 +1523,7 @@ bool KUiMsgCentrePad::IsChannelType(int nChannelIndex, SelfChannel type)
 		case ch_Team:
 		case ch_Faction:
 		case ch_Tong:
+		case ch_Msgr:
 		case ch_Screen:
 		case ch_GM:
 			{
@@ -1933,7 +2022,6 @@ void KUiMsgCentrePad::Breathe()
 		m_uLastDelMsgTime = IR_GetCurrentTime();
 	}
 }
-
 void KUiMsgCentrePad::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -1942,8 +2030,21 @@ void KUiMsgCentrePad::LoadScheme(const char* pScheme)
 	{
 		sprintf(Buff, "%s\\%s", pScheme,
 			(m_pSelf->m_bDockLeftSide ? SCHEME_INI_LEFT : SCHEME_INI_RIGHT));
-		if (Ini.Load(Buff))
+		if (Ini.Load(Buff)) {
 			m_pSelf->LoadScheme(&Ini);
+			if (SCREEN_WIDTH == 1024) {
+				int nX, nY;
+				int dX, dY;
+				dX = 0;
+				dY = 768 - 600;
+
+				m_pSelf->GetPosition(&nX, &nY);
+				m_pSelf->SetPosition(nX + dX, nY + dY);
+				m_pSelf->m_Sys.GetPosition(&nX, &nY);
+				m_pSelf->m_Sys.SetPosition(nX + dX, nY + dY);
+				m_pSelf->m_nMaxBottomPos = m_pSelf->m_nMaxBottomPos + 768 - 600;
+			}
+		}
 	}
 }
 

@@ -249,7 +249,7 @@ void KUiPlayerShop::UpdateItem()
 			for (int i = 0; i < nCount; i++)
 			{
 				//m_ItemsBox.AddObject((KUiDraggedObject *)&m_pObjsList[i], 1);
-				UpdateItem1(&m_pObjsList[i], true);
+				UpdateItem1(&m_pObjsList[i], 2);
 			}
 		}
 		m_nCount = nCount;
@@ -259,7 +259,13 @@ void KUiPlayerShop::UpdateItem1(KUiObjAtRegion* pItem, int bAdd)			// fix vong s
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		bool open = false;
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if (open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -273,6 +279,8 @@ void KUiPlayerShop::UpdateItem1(KUiObjAtRegion* pItem, int bAdd)			// fix vong s
 				m_ItemsBox.AddObject(&Obj, 1);
 			else
 				m_ItemsBox.RemoveObject(&Obj);
+			if (!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 	}
 	else

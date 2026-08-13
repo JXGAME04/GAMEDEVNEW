@@ -6,13 +6,13 @@ class CORE_API KInventory
 	friend	class	KItemList;
 
 private:
-	int*	m_pArray;
 	int		m_nMoney;
 	int		m_nWidth;
 	int		m_nHeight;
 	int		m_nXu;
 
 public:
+	int* m_pArray;
 	KInventory();
     ~KInventory();
 
@@ -41,5 +41,6 @@ public:
 	int				  CalcSameItemType(int nGenre, int nDetail, int nParticular, int nLevel);
 	BOOL		 FindSameItemToSort(int nIdx, int *pnIdx, int *pnX, int *pnY);
 	void			 FindSameItemName(int nIdx, int pnIdx[]);
+	int*	GetArray() {return m_pArray;};
 };
 #endif //KInventoryH

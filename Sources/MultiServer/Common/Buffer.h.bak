@@ -46,7 +46,6 @@
 
 namespace OnlineGameLib {
 namespace Win32 {
-
 /*
  * CBuffer class
  */
@@ -107,7 +106,7 @@ private:
 private:
 
 	static void *operator new( size_t objSize, size_t bufferSize );
-	static void operator delete( void *pObj, size_t bufferSize );
+			static void operator delete(void* pObj/*, size_t bufferSize*/);
       
 	CBuffer( Allocator &allocator, size_t size );
 	~CBuffer();
@@ -117,7 +116,6 @@ private:
 	 */
 	CBuffer( const CBuffer &rhs );
 	CBuffer &operator=( const CBuffer &rhs );
-	
 };
 
 /*
@@ -169,7 +167,6 @@ private:
 	 */
 	Allocator( const Allocator &rhs );
 	Allocator &operator=( const Allocator &rhs );
-
 };
 
 /*
@@ -178,8 +175,11 @@ private:
 class CPackager
 {
 public:
-
-	CPackager( size_t bufferSize = 65536 /* 1024*64 */, size_t maxFreeBuffers = 16 );
+#ifdef _WIN64
+	CPackager( size_t bufferSize = 655360 /* 1024*64*10 */, size_t maxFreeBuffers = 16 );
+#else
+	CPackager(size_t bufferSize = 1024 * 128, size_t maxFreeBuffers = 16);
+#endif
 	virtual ~CPackager();
 
 	/*

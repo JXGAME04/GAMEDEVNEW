@@ -37,6 +37,12 @@ public:
 	// Get a guild faction
 	int				GetTongCamp(int nTongIdx);
 
+	int				GetTongLevel(int nTongIdx);
+
+	int				GetTongExp(int nTongIdx);
+
+	BOOL			GetTongFull(int nTongIdx);
+
 	BOOL			GetMasterName(int nTongIdx, char *lpszName);
 
 	BOOL			GetMemberTitle(int nTongIdx, char *lpszTitle, int nSex);
@@ -72,6 +78,8 @@ public:
 	BOOL			UpdateExtPoint(STONG_UPDATE_EXTPOINT_COMMAND *pChange);
 
 	BOOL				ChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange);
+
+	BOOL				ChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange);
 
 	BOOL				ChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange);
 

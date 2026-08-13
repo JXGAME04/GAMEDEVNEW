@@ -12,5 +12,6 @@
 void g_DrawBitmap16(void* node, void* canvas);
 void g_DrawBitmap16mmx(void* node, void* canvas);
 void g_DrawBitmap16win(void* node, void* canvas);
+void g_DrawBitmap16mmx_32b(void* node, void* canvas);
 //---------------------------------------------------------------------------
 #endif

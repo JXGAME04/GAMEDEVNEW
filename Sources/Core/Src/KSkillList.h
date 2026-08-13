@@ -2,7 +2,9 @@
 #define	KSkillListH
 //#include "Windows.h"
 #include "GameDataDef.h"
-
+#ifndef _SERVER
+#include "ipc_shared.h"
+#endif
 
 typedef struct tagNpcSkill
 {
@@ -35,6 +37,7 @@ public:
 public:
 	KSkillList();
 	~KSkillList();
+	void RemoveAllSkill();
 	int			Add(int nSkillID, int nLevel = 1, int nExp = 0, BOOL bTempSkill = FALSE, int nMaxTimes = 0, int RemainTimes = 0);
 	void		Remove(int nSkillID)
 	{
@@ -131,6 +134,7 @@ public:
 	int			GetNextSkillAura(int nIndex = 0);
 	int			GetNextAllSkill(int nIndex = 0);
 	int			FindSkillLifeReplenish();
+	int			GetAllSkillByType(IPCSkillInfo* pSkillList);
 #endif
 	BOOL		IsBaseSkill(int nSkillId);
 	void		AllSkillV(int nSkillId, int nLevel);

@@ -104,6 +104,9 @@ public:
     void		DrawSpriteMixColor(int nX, int nY, int nWidth, int nHeight, void* lpSprite, void* lpPalette,int nColor,int nAlpha);
     void		DrawSpriteWithColor(int nX, int nY, int nWidth, int nHeight, void* lpSprite, void* lpPalette,int nColor,int nAlpha);
 	void		DrawSpriteAlpha(int nX, int nY, int nWidth, int nHeight, void* lpSprite, void* lpPalette, int nExAlpha);
+	void		DrawSpriteBlendColor(int nX, int nY, int nWidth, int nHeight, void* lpSprite, void* lpPalette,
+					int nAlpha, UINT nColor, int nMode = 0, BOOL bScreenMode = FALSE);
+	void		DrawAlphaRecImage(int nX, int nY, int nWidth, int nHeight, void* lpBitmap, int nAlpha, int bOpa);
 	void		DrawSpriteBorder(int nX, int nY, int nWidth, int nHeight, int nColor, void* lpSprite);
 	void		DrawSprite3LevelAlpha(int nX, int nY, int nWidth, int nHeight, void* lpSprite, void* lpPalette);
 	void		DrawFont(int nX, int nY, int nWidth, int nHeight, int nColor, int nAlpha,void* lpFont);
@@ -117,6 +120,22 @@ public:
     void        Clear(int nX, int nY, int nWidth, int nHeight, int nColor);
     void        DotClear(int nX, int nY, int nWidth, int nHeight, int nColor);
     void        ClearAlpha(int nX, int nY, int nWidth, int nHeight, int nColor,int nAlpha);
+
+    //DrawPrimitives;
+    void		DrawSpriteScreenMMX( 
+						 BYTE byInputAlpha, 
+						 DWORD dwMask32, 
+						 void* pBuffer, 
+						 INT width, 
+						 INT height, 
+						 INT nPitch, 
+						 INT nX, 
+						 INT nY, 
+						 void* pPalette, 
+						 void* pSprite, 
+						 INT nWidth, 
+						 INT nHeight, 
+						 const RECT* pSrcRect );//DrawPrimitives;
 };
 
 

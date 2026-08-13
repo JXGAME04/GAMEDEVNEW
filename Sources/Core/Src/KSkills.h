@@ -161,6 +161,7 @@ public:
 	const char *		GetPreCastEffectFile() const{	 return m_szPreCastEffectFile;};
 	const char *		GetPreCastSoundFile(BOOL bIsFeMale) const{ return bIsFeMale? m_szFMPreCastSoundFile: m_szManPreCastSoundFile;};
 	const char *		GetSkillIcon() {return m_szSkillIcon;};
+	BOOL				IsNeedDownHorse() {return (m_nHorseLimited == 1);};
 #endif
 
 	const char * GetSkillName(){return m_szName;};

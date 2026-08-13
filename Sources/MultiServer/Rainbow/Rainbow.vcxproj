@@ -109,6 +109,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -155,7 +156,7 @@ copy debug\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\Rainbow.dll</OutputFile>
       <ImportLibrary>.\Debug\Rainbow.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\debug\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Rainbow.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -201,7 +202,7 @@ copy .\x64\Debug\Rainbow.dll ..\..\..\..\bin\server\debug64\Rainbow.dll</Command
       <SubSystem>Console</SubSystem>
       <OutputFile>.\x64\Debug\Rainbow.dll</OutputFile>
       <ImportLibrary>.\x64\Debug\Rainbow.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\debug64\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Rainbow.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -256,7 +257,7 @@ copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\Rainbow.dll</OutputFile>
       <ImportLibrary>.\Release\Rainbow.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\release\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Rainbow.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -271,23 +272,15 @@ copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;RAINBOW_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Release\Rainbow.pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>.\Release\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>.\x64\Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\x64\Release\Rainbow.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client\release\
-copy release\Rainbow.dll ..\..\..\..\bin\client\Rainbow.dll
-copy release\Rainbow.dll ..\..\..\..\bin\client\release\Rainbow.dll
-copy release\Rainbow.pdb ..\..\..\..\bin\client\release\Rainbow.pdb
-copy release\Rainbow.map ..\..\..\..\bin\client\release\Rainbow.map
-md ..\..\..\..\bin\server\release\
-copy release\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
-copy release\Rainbow.dll ..\..\..\..\bin\server\release\Rainbow.dll
-copy release\Rainbow.pdb ..\..\..\..\bin\server\release\Rainbow.pdb
-copy release\Rainbow.map ..\..\..\..\bin\server\release\Rainbow.map
-copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
+      <Command>copy .\x64\release\Rainbow.dll ..\..\..\..\bin\server\Rainbow.dll
+copy .\x64\release\Rainbow.dll ..\..\..\..\bin\server\release\Rainbow.dll
+copy .\x64\release\Rainbow.pdb ..\..\..\..\bin\server\release\Rainbow.pdb</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -301,16 +294,16 @@ copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\Rainbow.bsc</OutputFile>
+      <OutputFile>.\x64\Release\Rainbow.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\Rainbow.dll</OutputFile>
-      <ImportLibrary>.\Release\Rainbow.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\Release\Rainbow.dll</OutputFile>
+      <ImportLibrary>.\x64\Release\Rainbow.lib</ImportLibrary>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\release64\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Rainbow.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -328,11 +321,7 @@ copy release\Rainbow.dll ..\..\..\..\bin\Multiserver\Rainbow.dll</Command>
     <ClInclude Include="Interface\RainbowInterface.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Lib\debug64\common.lib" />
-    <Library Include="..\..\..\Lib\debug\common.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </Library>
+    <Library Include="..\..\..\Lib\release64\common.lib" />
     <Library Include="..\..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

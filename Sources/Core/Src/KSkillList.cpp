@@ -223,6 +223,17 @@ void KSkillList::AllSkillV(int nSkillId, int nLevel)
 				m_Skills[i].AddLevel += nLevel;
 				m_Skills[i].CurrentSkillLevel += nLevel;
 			}
+			if (nLevel < 0) {
+				//Clear state skill id in m_StateSkillList
+				Npc[m_nNpcIndex].ClearStateSkillEffect(m_Skills[i].SkillId);
+
+			}
+			KSkill* pOrdinSkill = (KSkill*)g_SkillManager.GetSkill(m_Skills[i].SkillId, m_Skills[i].CurrentSkillLevel);
+
+			if (pOrdinSkill && pOrdinSkill->GetSkillStyle() == SKILL_SS_PassivityNpcState)
+			{
+				pOrdinSkill->Cast(m_nNpcIndex, -1, m_nNpcIndex);
+			}
 		}
 		else
 		{
@@ -288,6 +299,18 @@ void KSkillList::AllSkillV(int nSkillId, int nLevel)
 			{
 				m_Skills[i].AddLevel += nLevel;
 				m_Skills[i].CurrentSkillLevel += nLevel;
+				
+				if (nLevel < 0) {
+					//Clear state skill id in m_StateSkillList
+					Npc[m_nNpcIndex].ClearStateSkillEffect(m_Skills[i].SkillId);
+
+				}
+				KSkill* pOrdinSkill = (KSkill*)g_SkillManager.GetSkill(m_Skills[i].SkillId, m_Skills[i].CurrentSkillLevel);
+
+				if (pOrdinSkill && pOrdinSkill->GetSkillStyle() == SKILL_SS_PassivityNpcState)
+				{
+					pOrdinSkill->Cast(m_nNpcIndex, -1, m_nNpcIndex);
+				}
 			}
 		}
 	}
@@ -382,6 +405,30 @@ BOOL KSkillList::SetTempSkill(int nIdx, BOOL bTempSkill)
 
 	m_Skills[nIdx].TempSkill = bTempSkill;
 	return TRUE;
+}
+
+//̉Æ³ưÈ«²¿¼¼ÄÜ
+void KSkillList::RemoveAllSkill()
+{
+	//	int i = FindSame(nSkillID);
+	for (int i = 0; i < MAX_NPCSKILL; ++i)
+	{
+		if (m_Skills[i].SkillId > 0 && m_Skills[i].SkillId != 1 && m_Skills[i].SkillId != 2 && m_Skills[i].SkillId != 53 && m_Skills[i].SkillId != 400 && m_Skills[i].SkillId != 210)  //!CheckNoSkill("NoCanXiSui",m_Skills[i].SkillId)
+		{
+			m_Skills[i].CurrentSkillLevel = 0;
+			m_Skills[i].SkillId = 0;
+			m_Skills[i].SkillLevel = 0;
+			//m_Skills[i].mAddPoint = 0;
+			//m_Skills[i].EnChance = 0;   //ºóÀ´̀í¼ÓµÄ
+			//m_Skills[i].nTempEnChance = 0;
+			//m_Skills[i].nSkillStyle = -1;
+			m_Skills[i].NextCastTime = 0;
+			//m_Skills[i].NextHorseCastTime = 0;
+			//m_Skills[i].nEquiptLimited = 0;
+			//m_Skills[i].nExpSkill = 0;
+			//m_Skills[i].nCurSkillExp = 0;
+		}
+	}
 }
 
 int KSkillList::Add(int nSkillID, int nSkillLevel, int nSkillExp, BOOL bTempSkill, int nMaxTimes, int RemainTimes)
@@ -923,6 +970,51 @@ int KSkillList::GetAddSkillDamage(int nSkillID)
 }  
 
 #ifndef _SERVER
+
+int KSkillList::GetAllSkillByType(IPCSkillInfo* pSkillList)
+{
+	if (!pSkillList) return 0;
+	memset(pSkillList, 0, sizeof(IPCSkillInfo) * defSKILLNUMGET);
+	int nCount = 1;
+	pSkillList->nId = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetCurActiveWeaponSkill();
+	ISkill * pISkill = NULL;
+	KSkill * pOrdinSkill = (KSkill * )g_SkillManager.GetSkill(
+									pSkillList->nId, 1);
+	strcpy(pSkillList->szName, pOrdinSkill->GetSkillName());
+	for (int i = 1; i < MAX_NPCSKILL; ++i)
+	{
+		if (m_Skills[i].SkillId && m_Skills[i].SkillLevel > 0)
+		{
+			pISkill = g_SkillManager.GetSkill(m_Skills[i].SkillId, m_Skills[i].SkillLevel);
+			if (!pISkill)
+				continue;
+			pOrdinSkill = (KSkill * ) pISkill;
+			eSkillStyle eStyle = (eSkillStyle)pISkill->GetSkillStyle();
+			if(eStyle == SKILL_SS_Missles || eStyle == SKILL_SS_Melee
+				|| eStyle == SKILL_SS_InitiativeNpcState)
+			{
+				if (pOrdinSkill->IsBase())
+					continue;
+			}
+			else
+				continue;
+			
+			IPCSkillInfo * pSkill = pSkillList + nCount;
+			pSkill->nStyle = pISkill->GetSkillStyle();
+			pSkill->nId = m_Skills[i].SkillId;
+			pSkill->bLR = pOrdinSkill->GetSkillLRInfo();
+			pSkill->bState = (pOrdinSkill->GetStateSpecailId()>0)?1:0;
+			pSkill->bAlly = pOrdinSkill->IsTargetEnemy()?0:1;
+			pSkill->bAura = pOrdinSkill->IsAura();
+			strcpy(pSkill->szName, pOrdinSkill->GetSkillName());
+			++nCount;
+			if (nCount >= defSKILLNUMGET)
+				break;
+		}
+	}
+	return nCount;
+}
+
 int KSkillList::GetNextSkillState(int nIndex)
 {
 	if (nIndex > 0)

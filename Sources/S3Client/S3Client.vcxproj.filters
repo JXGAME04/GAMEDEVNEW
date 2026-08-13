@@ -127,6 +127,21 @@
     <Filter Include="UI_072021">
       <UniqueIdentifier>{40e345f1-096a-4642-8a58-d52c6f6e1599}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BASE_ELEMENT_CASE\UICase\UITEAM\Team">
+      <UniqueIdentifier>{fece8424-a940-4d84-83ae-81883b7dd7c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BASE_ELEMENT_CASE\UICase\GAMBLE">
+      <UniqueIdentifier>{9ae215f2-71cf-4af1-bcaf-0fee1e92bfbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BASE_ELEMENT_CASE\UICase\UI_MERIDIAN">
+      <UniqueIdentifier>{178fb316-4c0a-4f32-9134-61975bc4ccbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BASE_ELEMENT_CASE\UICase\UISpringGame">
+      <UniqueIdentifier>{97dffa3b-e5cb-479e-9cbf-31fe9cff0370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BASE_ELEMENT_CASE\UICase\UI_NEW_MESS\FLASH_MESS">
+      <UniqueIdentifier>{3df2b70c-2872-4b2d-b8ef-8e7ab007e87f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ui\Elem\AutoLocateWnd.cpp">
@@ -584,6 +599,31 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Ui\TrayMode.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTeamManager2.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UITEAM\Team</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiTargetInfo.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\PLAYERBAR</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiGamble.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\GAMBLE</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiMeridian.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UI_MERIDIAN</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\Elem\WndLine.cpp">
+      <Filter>BASE_ELEMENT_CASE\Element</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiSkillsNew.cpp" />
+    <ClCompile Include="Ui\UiCase\SpringGame.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UISpringGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\GourdCrabFishTigerLogic.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UISpringGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Ui\UiCase\UiFlashMessage.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase\UI_NEW_MESS\FLASH_MESS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ui\Elem\AutoLocateWnd.h">
@@ -1050,6 +1090,28 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="Ui\TrayMode.h" />
+    <ClInclude Include="Ui\UiCase\UiTeamManager2.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\UITEAM\Team</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\UiCase\UiTargetInfo.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\PLAYERBAR</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\UiCase\UiGamble.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\GAMBLE</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\UiCase\UiMeridian.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\UI_MERIDIAN</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\Elem\WndLine.h">
+      <Filter>BASE_ELEMENT_CASE\Element</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\UiCase\UiSkillsNew.h" />
+    <ClInclude Include="Ui\UiCase\SpringGame.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\UISpringGame</Filter>
+    </ClInclude>
+    <ClInclude Include="Ui\GourdCrabFishTigerLogic.h">
+      <Filter>BASE_ELEMENT_CASE\UICase\UISpringGame</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\Lib\debug\engine.lib">
@@ -1064,8 +1126,14 @@
     <Library Include="..\..\Lib\release\CoreClient.lib">
       <Filter>lib\release</Filter>
     </Library>
-    <Library Include="..\..\Lib\LuaLibDll.lib">
+    <Library Include="..\..\Lib\debug\FilterText_StaticLib.lib">
       <Filter>lib\debug</Filter>
+    </Library>
+    <Library Include="..\..\Lib\debug\lualibdll.lib">
+      <Filter>lib\debug</Filter>
+    </Library>
+    <Library Include="..\..\Lib\release\LuaLibDll.lib">
+      <Filter>lib\release</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

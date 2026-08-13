@@ -31,5 +31,10 @@ public:
 		if(pNode) return pNode[nIdx].nPrev; 
 		else return 0;
 	}
+
+    int GetRandomNode() const {
+					if (!pNode || nCount <= 0) return 0;
+					return rand() % nCount;
+    }
 };
 #endif

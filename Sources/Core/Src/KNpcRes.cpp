@@ -89,11 +89,15 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, 0, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, 0, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, 0, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, 0, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, 0, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, 0, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, 0, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, 0, 0, true));
 		}
 		// »Áπ˚¥À≤øº˛≤ª¥Ê‘⁄£¨∂‘”¶µƒŒƒº˛√˚∂ºÃÓø’
 		else
 		{
 			m_cNpcImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 
@@ -115,7 +119,7 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 		this->m_cNpcShadow.Release();
 	}
 
-	for (i = 0; i < 18; i++)
+	for (i = 0; i < MAX_SKILL_STATE; i++)
 	{
 		m_cStateSpr[i].Release();
 	}
@@ -240,6 +244,16 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 					}
 				}
 			}
+			if (m_cNpcEffectImage[i].CheckExist())
+			{
+				KImageParam	sImage;
+				if (g_pRepresent->GetImageParam(m_cNpcEffectImage[i].m_szName, &sImage, ISI_T_SPR))
+				{
+					m_cNpcEffectImage[i].m_nTotalDir = sImage.nNumFramesGroup;
+					m_cNpcEffectImage[i].m_nTotalFrame = sImage.nNumFrames;
+					m_cNpcEffectImage[i].m_nTotalDir > 1 ? m_cNpcEffectImage[i].SetCurFrame(nCurFrameNo) : m_cNpcEffectImage[i].GetNextFrame();
+				}
+			}
 		}
 	}
 	else
@@ -251,6 +265,13 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 
 		for (i = 0; i < MAX_PART; i++)
 		{
+			if (m_cNpcEffectImage[i].CheckExist())
+			{
+				if (m_cNpcEffectImage[i].SetCurDir64(nDir))
+				{
+					m_cNpcEffectImage[i].GetNextFrame();
+				}
+			}
 			if ( !m_cNpcImage[i].CheckExist() )
 				continue;
 			if ( m_cNpcImage[i].SetCurDir64(nDir) )
@@ -309,10 +330,30 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 	m_cDrawFile[nPos].oPosition.nZ = 0;//nScreenZ;
 	nPos++;
 
-	for ( i = 12; i < 18; i++)
+	int tmp = -1;
+	int tmp1 = -1;
+	int tmp2 = -1;
+	int tmp3 = -1;
+	for (i = 12; i < 18; i++)
 	{
 		if (m_cStateSpr[i].m_nID && !Option.GetLow(LowMissle))//add by phong ki“u xˆ l˝ kh´ng vœ skill hi÷u ¯ng d≠Ìi ch©n
 		{
+			//if (m_cStateSpr[i].m_nID == 56) {
+			//	tmp = i;
+			//	continue;
+			//}
+			//if (strstr(m_cStateSpr[i].m_SprContrul.m_szName, "em_10") != NULL) {
+			//	tmp3 = i;
+			//	continue;
+			//}
+			//if (strstr(m_cStateSpr[i].m_SprContrul.m_szName, "em_09") != NULL) {
+			//	tmp2 = i;
+			//	continue;
+			//}
+			//if (strstr(m_cStateSpr[i].m_SprContrul.m_szName, "em_08") != NULL) {
+			//	tmp1 = i;
+			//	continue;
+			//}
 			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 			m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 			m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
@@ -322,7 +363,77 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			nPos++;
 		}
 	}
+	/*if (tmp1 != -1 && tmp2 != -1 && tmp3 != -1 && tmp != -1) {
+		strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp].m_SprContrul.m_szName);
+		m_cDrawFile[nPos].uImage = m_cStateSpr[tmp].m_SprContrul.m_dwNameID;
+		m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp].m_SprContrul.m_nCurFrame;
+		m_cDrawFile[nPos].oPosition.nX = nScreenX;
+		m_cDrawFile[nPos].oPosition.nY = nScreenY;
+		m_cDrawFile[nPos].oPosition.nZ = 0;
+		nPos++;
 
+		//strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp1].m_SprContrul.m_szName);
+		//m_cDrawFile[nPos].uImage = m_cStateSpr[tmp1].m_SprContrul.m_dwNameID;
+		//m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp1].m_SprContrul.m_nCurFrame;
+		//m_cDrawFile[nPos].oPosition.nX = nScreenX;
+		//m_cDrawFile[nPos].oPosition.nY = nScreenY;
+		//m_cDrawFile[nPos].oPosition.nZ = 0;
+		//nPos++;
+
+		strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp3].m_SprContrul.m_szName);
+		m_cDrawFile[nPos].uImage = m_cStateSpr[tmp3].m_SprContrul.m_dwNameID;
+		m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp3].m_SprContrul.m_nCurFrame;
+		m_cDrawFile[nPos].oPosition.nX = nScreenX;
+		m_cDrawFile[nPos].oPosition.nY = nScreenY;
+		m_cDrawFile[nPos].oPosition.nZ = 0;
+		nPos++;
+
+		//strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp2].m_SprContrul.m_szName);
+		//m_cDrawFile[nPos].uImage = m_cStateSpr[tmp2].m_SprContrul.m_dwNameID;
+		//m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp2].m_SprContrul.m_nCurFrame;
+		//m_cDrawFile[nPos].oPosition.nX = nScreenX;
+		//m_cDrawFile[nPos].oPosition.nY = nScreenY;
+		//m_cDrawFile[nPos].oPosition.nZ = 0;
+		//nPos++;
+	}
+	else {
+		if (tmp1 != -1) {
+			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp1].m_SprContrul.m_szName);
+			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp1].m_SprContrul.m_dwNameID;
+			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp1].m_SprContrul.m_nCurFrame;
+			m_cDrawFile[nPos].oPosition.nX = nScreenX;
+			m_cDrawFile[nPos].oPosition.nY = nScreenY;
+			m_cDrawFile[nPos].oPosition.nZ = 0;
+			nPos++;
+		}
+		if (tmp3 != -1) {
+			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp3].m_SprContrul.m_szName);
+			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp3].m_SprContrul.m_dwNameID;
+			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp3].m_SprContrul.m_nCurFrame;
+			m_cDrawFile[nPos].oPosition.nX = nScreenX;
+			m_cDrawFile[nPos].oPosition.nY = nScreenY;
+			m_cDrawFile[nPos].oPosition.nZ = 0;
+			nPos++;
+		}
+		if (tmp2 != -1) {
+			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp2].m_SprContrul.m_szName);
+			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp2].m_SprContrul.m_dwNameID;
+			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp2].m_SprContrul.m_nCurFrame;
+			m_cDrawFile[nPos].oPosition.nX = nScreenX;
+			m_cDrawFile[nPos].oPosition.nY = nScreenY;
+			m_cDrawFile[nPos].oPosition.nZ = 0;
+			nPos++;
+		}
+		if (tmp != -1) {
+			strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[tmp].m_SprContrul.m_szName);
+			m_cDrawFile[nPos].uImage = m_cStateSpr[tmp].m_SprContrul.m_dwNameID;
+			m_cDrawFile[nPos].nFrame = m_cStateSpr[tmp].m_SprContrul.m_nCurFrame;
+			m_cDrawFile[nPos].oPosition.nX = nScreenX;
+			m_cDrawFile[nPos].oPosition.nY = nScreenY;
+			m_cDrawFile[nPos].oPosition.nZ = 0;
+			nPos++;
+		}
+	}*/
 	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu); //vœ hi÷u ¯ng d≠Ìi ch©n
 	nPos = 0;
 
@@ -370,6 +481,34 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 					else
 						m_cDrawFile[i].Color.Color_b.a = 255;
 				}
+				strcpy(m_cDrawFile[nPos].szImage, m_cNpcEffectImage[m_nSortTable[i]].m_szName);
+				m_cDrawFile[nPos].uImage = m_cNpcEffectImage[m_nSortTable[i]].m_dwNameID;
+				m_cDrawFile[nPos].nFrame = m_cNpcEffectImage[m_nSortTable[i]].m_nCurFrame;
+				m_cDrawFile[nPos].oPosition.nX = nScreenX;
+				m_cDrawFile[nPos].oPosition.nY = nScreenY;
+				m_cDrawFile[nPos].oPosition.nZ = nScreenZ;
+				nPos++;
+			}
+		}
+		g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);
+		nPos = 0;
+		for (i = 0; i < MAX_PART; i++)
+		{
+			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
+			{
+				if (m_ulAdjustColorId > 0 && m_ulAdjustColorId <= g_ulAdjustColorCount)
+				{
+					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
+					m_cDrawFile[i].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
+				}
+				else
+				{
+					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+					if (Npc[nNpcIdx].m_HideState.nTime)
+						m_cDrawFile[i].Color.Color_b.a = START_BLUR_ALPHA;
+					else
+						m_cDrawFile[i].Color.Color_b.a = 255;
+				}
 
 				strcpy(m_cDrawFile[nPos].szImage, m_cNpcImage[m_nSortTable[i]].m_szName);
 				m_cDrawFile[nPos].uImage = m_cNpcImage[m_nSortTable[i]].m_dwNameID;
@@ -384,7 +523,7 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 
 	g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);
 	nPos = 0;
-
+	bool gb_skill_150_draw = true;
 	for (i = 6; i < 12; i++)
 	{
 		if (m_cStateSpr[i].m_nID)
@@ -392,6 +531,11 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 			if (m_cStateSpr[i].m_SprContrul.m_nCurFrame < m_cStateSpr[i].m_nBackStart || 
 				m_cStateSpr[i].m_SprContrul.m_nCurFrame >= m_cStateSpr[i].m_nBackEnd)
 			{
+				if (strstr(m_cStateSpr[i].m_SprContrul.m_szName, "em") != NULL  //skill quanh nguoi nga mi
+					|| strstr(m_cStateSpr[i].m_SprContrul.m_szName, "others\\c.spr") != NULL //skill quanh nguoi thieu lam
+					|| strstr(m_cStateSpr[i].m_SprContrul.m_szName, "haoquang\\tim.spr") != NULL //skill quanh nguoi thieu lam
+					|| strstr(m_cStateSpr[i].m_SprContrul.m_szName, "kl_06") != NULL) // skill quanh nguoi con lon
+					gb_skill_150_draw = false;
 				strcpy(m_cDrawFile[nPos].szImage, m_cStateSpr[i].m_SprContrul.m_szName);
 				m_cDrawFile[nPos].uImage = m_cStateSpr[i].m_SprContrul.m_dwNameID;
 				m_cDrawFile[nPos].nFrame = m_cStateSpr[i].m_SprContrul.m_nCurFrame;
@@ -408,16 +552,33 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 
 	if (m_cSpecialSpr.m_szName[0])
 	{
-		strcpy(m_cDrawFile[nPos].szImage, m_cSpecialSpr.m_szName);
-		m_cDrawFile[nPos].uImage = m_cSpecialSpr.m_dwNameID;
-		m_cDrawFile[nPos].nFrame = m_cSpecialSpr.m_nCurFrame;
-		m_cDrawFile[nPos].oPosition.nX = nScreenX;
-		m_cDrawFile[nPos].oPosition.nY = nScreenY;
-		int nHeightOff = 0;
-		if (m_bRideHorse && !Npc[nNpcIdx].m_MaskType)
-			nHeightOff += 38;
-		m_cDrawFile[nPos].oPosition.nZ = nScreenZ + nHeightOff;
-		nPos++;
+		if (strstr(m_cSpecialSpr.m_szName, "gb_150_shichengjiulong_a.spr") != NULL) //Drawing gb_150_shichengjiulong_a.spr
+		{
+			if (gb_skill_150_draw) {
+				strcpy(m_cDrawFile[nPos].szImage, m_cSpecialSpr.m_szName);
+				m_cDrawFile[nPos].uImage = m_cSpecialSpr.m_dwNameID;
+				m_cDrawFile[nPos].nFrame = m_cSpecialSpr.m_nCurFrame;
+				m_cDrawFile[nPos].oPosition.nX = nScreenX;
+				m_cDrawFile[nPos].oPosition.nY = nScreenY;
+				int nHeightOff = 0;
+				if (m_bRideHorse && !Npc[nNpcIdx].m_MaskType)
+					nHeightOff += 38;
+				m_cDrawFile[nPos].oPosition.nZ = nScreenZ + nHeightOff;
+				nPos++;
+			}
+		}
+		else {
+			strcpy(m_cDrawFile[nPos].szImage, m_cSpecialSpr.m_szName);
+			m_cDrawFile[nPos].uImage = m_cSpecialSpr.m_dwNameID;
+			m_cDrawFile[nPos].nFrame = m_cSpecialSpr.m_nCurFrame;
+			m_cDrawFile[nPos].oPosition.nX = nScreenX;
+			m_cDrawFile[nPos].oPosition.nY = nScreenY;
+			int nHeightOff = 0;
+			if (m_bRideHorse && !Npc[nNpcIdx].m_MaskType)
+				nHeightOff += 38;
+			m_cDrawFile[nPos].oPosition.nZ = nScreenZ + nHeightOff;
+			nPos++;
+		}
 	}
 
 	if (m_cFrameSpr.m_szName[0])
@@ -451,6 +612,8 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 				nHeightOff += 38;
 			if (Npc[nNpcIdx].m_MaskType)//#mat na
 				nHeightOff += 22;
+			if (Npc[nNpcIdx].m_szGameTitle)
+				nHeightOff += 19;  // GameTitle (faction level text) - third text line
 			if(nScreenZ == 0) 
 				nScreenZ = 22; //fix by phong ki“u 23/08/2020
 			m_cDrawFile[nPos].oPosition.nZ = nScreenZ + nHeightOff;
@@ -585,7 +748,7 @@ BOOL	KNpcRes::SetArmor(int nArmorType, int nMantleType)
 		else
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 4; i < MAX_BODY_PART_SECT * 4 + MAX_BODY_PART_SECT; i++)
@@ -646,7 +809,7 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 		if (IgnoreShowRes())
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 		else
 		{
@@ -675,6 +838,7 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 				else
 				{
 					m_cNpcImage[i].Release();
+					m_cNpcEffectImage[i].Release();
 				}
 			}
 			else
@@ -686,7 +850,7 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 		else
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 2; i < MAX_BODY_PART_SECT * 2 + MAX_BODY_PART_SECT; i++)
@@ -694,7 +858,7 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 		if (IgnoreShowRes())
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 		else
 		{
@@ -703,13 +867,13 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 				m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer));
 				m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0));
 
-				//m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer),true);
-				//m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0,true));
+				m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer),true);
+				m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0,true));
 			}
 			else
 			{
 				m_cNpcImage[i].Release();
-				//m_cNpcEffectImage[i].Release();
+				m_cNpcEffectImage[i].Release();
 			}
 		}
 	}
@@ -720,13 +884,13 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0));
 
-			//m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer),true);
-			//m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0,true));
+			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer),true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0,true));
 		}
 		else
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 4; i < MAX_BODY_PART_SECT * 4 + MAX_BODY_PART_SECT; i++)
@@ -734,7 +898,7 @@ BOOL	KNpcRes::SetWeapon(int nWeaponType)
 		if (IgnoreShowRes())
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 		else
 		{
@@ -775,10 +939,14 @@ BOOL	KNpcRes::SetHorse(int nHorseType)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0, true));
 		}
 		else
 		{
 			m_cNpcImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	return TRUE;
@@ -844,6 +1012,9 @@ BOOL	KNpcRes::SetAction(int nDoing)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0, true));
 		}
 		else
 		{
@@ -856,6 +1027,9 @@ BOOL	KNpcRes::SetAction(int nDoing)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0, true));
 		}
 		else
 		{
@@ -867,7 +1041,7 @@ BOOL	KNpcRes::SetAction(int nDoing)
 		if (IgnoreShowRes())
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 		else
 		{
@@ -923,7 +1097,7 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 		}
 		else
 		{
-			m_cNpcImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 1; i < MAX_BODY_PART_SECT * 1 + MAX_BODY_PART_SECT; i++)
@@ -936,6 +1110,7 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 		else
 		{
 			m_cNpcImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 2; i < MAX_BODY_PART_SECT * 2 + MAX_BODY_PART_SECT; i++)
@@ -944,10 +1119,14 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0, true));
 		}
 		else
 		{
 			m_cNpcImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 	}
 	for (i = MAX_BODY_PART_SECT * 3; i < MAX_BODY_PART_SECT * 3 + MAX_BODY_PART_SECT; i++)
@@ -956,6 +1135,9 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 		{
 			m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer));
 			m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0));
+
+			m_pcResNode->GetFileName(i, m_nAction, m_nWeaponType, "", szBuffer, sizeof(szBuffer), true);
+			m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nWeaponType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nWeaponType, 0, true));
 		}
 		else
 		{
@@ -967,7 +1149,7 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 		if (IgnoreShowRes())
 		{
 			m_cNpcImage[i].Release();
-			//m_cNpcEffectImage[i].Release();
+			m_cNpcEffectImage[i].Release();
 		}
 		else
 		{
@@ -976,10 +1158,14 @@ BOOL	KNpcRes::SetRideHorse(BOOL bRideHorse)
 				nCurMantle = m_nMantleType-PREFIX_MANTLE_LEVEL;
 				m_pcResNode->GetFileName(i, m_nAction, nCurMantle, "", szBuffer, sizeof(szBuffer));
 				m_cNpcImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, nCurMantle, MAX_PART), m_pcResNode->GetTotalDirs(i, m_nAction, nCurMantle, MAX_PART), m_pcResNode->GetInterval(i, m_nAction, nCurMantle, 0));
+
+				m_pcResNode->GetFileName(i, m_nAction, m_nHorseType, "", szBuffer, sizeof(szBuffer), true);
+				m_cNpcEffectImage[i].SetSprFile(szBuffer, m_pcResNode->GetTotalFrames(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetTotalDirs(i, m_nAction, m_nHorseType, MAX_PART, true), m_pcResNode->GetInterval(i, m_nAction, m_nHorseType, 0, true));
 			}
 			else
 			{
 				m_cNpcImage[i].Release();
+				m_cNpcEffectImage[i].Release();
 			}
 		}
 	}

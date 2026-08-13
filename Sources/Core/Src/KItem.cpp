@@ -18,6 +18,7 @@
 #include <time.h>
 #include "../../Engine/Src/Text.h"
 #endif
+#include <unordered_map>
 
 #define	BUY_SELL_SCALE		4
 
@@ -26,19 +27,25 @@ int GetRandomNumber(int nMin, int nMax);
 
 KItem::KItem()
 {
-	::memset(&m_CommonAttrib,    0, sizeof(m_CommonAttrib));
-	::memset(m_aryBaseAttrib,    0, sizeof(m_aryBaseAttrib));
+	Reset();
+}
+
+void KItem::Reset() {
+	::memset(&m_CommonAttrib, 0, sizeof(m_CommonAttrib));
+	::memset(m_aryBaseAttrib, 0, sizeof(m_aryBaseAttrib));
 	::memset(m_aryRequireAttrib, 0, sizeof(m_aryRequireAttrib));
-	::memset(m_aryMagicAttrib,   0, sizeof(m_aryMagicAttrib));
-	::memset(&m_GeneratorParam,	 0, sizeof(m_GeneratorParam));
+	::memset(m_aryMagicAttrib, 0, sizeof(m_aryMagicAttrib));
+	::memset(&m_GeneratorParam, 0, sizeof(m_GeneratorParam));
 	m_nCurrentDur = -1;
 	nExpPointSec = 0;
+	InsuranceCourse = 0;
+	m_MaxOptMultiply = 1;
+	m_bHorseScaleOnly = false;
 #ifndef _SERVER
-	::memset(&m_Image,   0, sizeof(KRUImage));
+	::memset(&m_Image, 0, sizeof(KRUImage));
 #endif
 	m_nIndex = 0;
 }
-
 KItem::~KItem()
 {
 }
@@ -52,102 +59,271 @@ void* KItem::GetRequirement(IN int nReq)
 	return &m_aryRequireAttrib[nReq];
 }
 
-void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */) const
+int KItem::ApplyScalingMethod(float baseValue, int type) const{
+	if (type == 111 || type == 135 || type == 246 || type == 247) { //111=toc do di chuyen
+		return baseValue;
+	}
+	switch (g_xMethod) { //use global, change setting will change x method for all items.
+	case LOGARITHMIC:
+		return std::log(1 + m_MaxOptMultiply) * baseValue;
+	case SQUARE_ROOT:
+		return std::sqrt(m_MaxOptMultiply) * baseValue;
+	case SIGMOID: {
+		float k = 0.1f;
+		float c = 5.0f;
+		return baseValue * (1.0f / (1.0f + std::exp(-k * (m_MaxOptMultiply - c))));
+	}
+	case EXPONENTIAL_DECAY: {
+		float k = 0.5f;
+		return baseValue * (1 - std::exp(-k * m_MaxOptMultiply));
+	}
+	case POLYNOMIAL: {
+		float b = 0.8f;
+		return baseValue * std::pow(m_MaxOptMultiply, b);
+	}
+	default:
+		return baseValue; // Fallback (no scaling)
+	}
+}
+
+void KItem::SetScalingMethod(XMethod method) {
+	switch (method) {
+	default:
+		m_xMethod = method;
+	}
+}
+
+/******************************************************************************
+Function: Apply the magic on the item to the NPC
+Entry	: pNPC: pointer to NPC, nMagicAcive: number of opened hidden attributes
+Exit 	: Magic is applied.
+The specific work is completed by the member functions of KNpc.
+No member variables of the KItem object itself are modified
+******************************************************************************/
+void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, IN int nMagicActiveE /* = 0 */) const
 {
 	_ASSERT(this != NULL);
 	_ASSERT(nMagicActive >= 0);
 
 	int nCount = nMagicActive;
+	int nCountE = nMagicActiveE;
 	int i;
 
-	for (i = 0; i < sizeof(m_aryBaseAttrib)/sizeof(m_aryBaseAttrib[0]); i++)
+	float fScale = 1.0f;
+
+	if (m_CommonAttrib.nDetailType == equip_horse)
+		fScale = m_fHorseScale;
+	
+
+	// ----------------- Base attribute -----------------
+	for (i = 0; i < sizeof(m_aryBaseAttrib) / sizeof(m_aryBaseAttrib[0]); i++)
 	{
-		const KItemNormalAttrib* pAttrib;
-		pAttrib = &(m_aryBaseAttrib[i]);
+		const KItemNormalAttrib* pAttrib = &(m_aryBaseAttrib[i]);
 		if (INVALID_ATTRIB != pAttrib->nAttribType)
 		{
-			pNPC->ModifyAttrib(pNPC->m_Index, (void *)pAttrib);
+			if (m_CommonAttrib.nDetailType == equip_horse &&
+			pAttrib->nAttribType == 139 && m_bHorseScaleOnly)
+			{
+				continue;
+			}
+			KItemNormalAttrib AddAttrib = *pAttrib;
+
+			AddAttrib.nValue[0] = ScaleValue(AddAttrib.nValue[0], fScale);
+			AddAttrib.nValue[1] = ScaleValue(AddAttrib.nValue[1], fScale);
+			AddAttrib.nValue[2] = ScaleValue(AddAttrib.nValue[2], fScale);
+
+			pNPC->ModifyAttrib(pNPC->m_Index, (void*)&AddAttrib);
 		}
 	}
-	for (i = 0; i < sizeof(m_aryMagicAttrib)/sizeof(m_aryMagicAttrib[0]); i++)
+
+	// ----------------- Magic attribute -----------------
+	for (i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
 	{
-		const KItemNormalAttrib* pAttrib;
-		pAttrib = &(m_aryMagicAttrib[i]);
+		const KItemNormalAttrib* pAttrib = &(m_aryMagicAttrib[i]);
 
 		if (INVALID_ATTRIB != pAttrib->nAttribType)
 		{
-			if (i & 1)						
+			if (i >= MAX_ITEM_NORMAL_MAGICATTRIB)
 			{
-				if (nCount > 0)
+				// Hidden magic (nCountE)
+				if (nCountE > 0)
 				{
-					pNPC->ModifyAttrib(pNPC->m_Index, (void *)pAttrib);
-					nCount--;
+					KItemNormalAttrib ModifiedAttrib;
+					ModifiedAttrib.nAttribType = pAttrib->nAttribType;
+					for (int j = 0; j < 2; j++)
+					{
+						int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+						ModifiedAttrib.nValue[j] = ScaleValue(base, fScale);
+
+
+					}
+					ModifiedAttrib.nValue[2] = ScaleValue(pAttrib->nValue[2], fScale);
+
+					pNPC->ModifyAttrib(pNPC->m_Index, (void*)&ModifiedAttrib);
+					nCountE--;
 				}
 			}
 			else
 			{
-				pNPC->ModifyAttrib(pNPC->m_Index, (void *)pAttrib);
+				if (i & 1)    // suffix
+				{
+					if (nCount > 0)
+					{
+						KItemNormalAttrib ModifiedAttrib;
+						ModifiedAttrib.nAttribType = pAttrib->nAttribType;
+						for (int j = 0; j < 2; j++)
+						{
+							int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+							ModifiedAttrib.nValue[j] = ScaleValue(base, fScale);
+
+
+						}
+						ModifiedAttrib.nValue[2] = ScaleValue(pAttrib->nValue[2], fScale);
+
+						pNPC->ModifyAttrib(pNPC->m_Index, (void*)&ModifiedAttrib);
+						nCount--;
+					}
+				}
+				else
+				{
+					KItemNormalAttrib ModifiedAttrib;
+					ModifiedAttrib.nAttribType = pAttrib->nAttribType;
+					for (int j = 0; j < 2; j++)
+					{
+						int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+						ModifiedAttrib.nValue[j] = ScaleValue(base, fScale);
+
+					}
+					ModifiedAttrib.nValue[2] = ScaleValue(pAttrib->nValue[2], fScale);
+
+					pNPC->ModifyAttrib(pNPC->m_Index, (void*)&ModifiedAttrib);
+				}
 			}
 		}
 	}
 }
 
-void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */) const
+
+
+
+/******************************************************************************
+Function: Remove the magic on the item from the NPC
+Entry	: pNPC: pointer to NPC, nMagicAcive: number of opened hidden attributes
+Exit 	: Magic is applied.
+The specific work is completed by the member functions of KNpc.
+No member variables of the KItem object itself are modified
+******************************************************************************/
+void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, IN int nMagicActiveE  /* = 0 */) const
 {
 	_ASSERT(this != NULL);
 	_ASSERT(nMagicActive >= 0);
 
 	int nCount = nMagicActive;
-	int	i;
+	int nCountE = nMagicActiveE;
+
+	float fScale = 1.0f;
+
 	
-	// »ù´¡ÊôÐÔµ÷ÕûNPC
-	for (i = 0; i < sizeof(m_aryBaseAttrib)/sizeof(m_aryBaseAttrib[0]); i++)
+	fScale = m_fHorseScale;
+
+	/* ------------------------------
+	   REMOVE BASE ATTRIBUTES
+	   ------------------------------ */
+	for (int i = 0; i < sizeof(m_aryBaseAttrib) / sizeof(m_aryBaseAttrib[0]); i++)
 	{
-		const KItemNormalAttrib* pAttrib;
-		pAttrib = &(m_aryBaseAttrib[i]);
+		const KItemNormalAttrib* pAttrib = &(m_aryBaseAttrib[i]);
 		if (INVALID_ATTRIB != pAttrib->nAttribType)
 		{
+			if (m_CommonAttrib.nDetailType == equip_horse &&
+			pAttrib->nAttribType == 139)
+			{
+				continue;
+			}
 			KItemNormalAttrib RemoveAttrib;
 			RemoveAttrib.nAttribType = pAttrib->nAttribType;
-			RemoveAttrib.nValue[0] = -pAttrib->nValue[0];
-			RemoveAttrib.nValue[1] = -pAttrib->nValue[1];
-			RemoveAttrib.nValue[2] = -pAttrib->nValue[2];
-			pNPC->ModifyAttrib(pNPC->m_Index, (void *)&RemoveAttrib);
+
+			RemoveAttrib.nValue[0] = -ScaleValue(pAttrib->nValue[0], fScale);
+			RemoveAttrib.nValue[1] = -ScaleValue(pAttrib->nValue[1], fScale);
+			RemoveAttrib.nValue[2] = -ScaleValue(pAttrib->nValue[2], fScale);
+
+		//	RemoveAttrib.nValue[0] = -(int)(pAttrib->nValue[0] * fScale);
+		//	RemoveAttrib.nValue[1] = -(int)(pAttrib->nValue[1] * fScale);
+		//	RemoveAttrib.nValue[2] = -(int)(pAttrib->nValue[2] * fScale);
+
+			pNPC->ModifyAttrib(pNPC->m_Index, (void*)&RemoveAttrib);
 		}
 	}
 
-	for (i = 0; i < sizeof(m_aryMagicAttrib)/sizeof(m_aryMagicAttrib[0]); i++)
+	/* ------------------------------
+	   REMOVE MAGIC ATTRIBUTES
+	   ------------------------------ */
+	for (int i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
 	{
-		const KItemNormalAttrib* pAttrib;
-		pAttrib = &(m_aryMagicAttrib[i]);
+		const KItemNormalAttrib* pAttrib = &(m_aryMagicAttrib[i]);
+		if (INVALID_ATTRIB == pAttrib->nAttribType)
+			continue;
 
-		if (INVALID_ATTRIB != pAttrib->nAttribType)		// TODO: Îª -1 ¶¨ÒåÒ»¸ö³£Á¿?
+		KItemNormalAttrib RemoveAttrib;
+		RemoveAttrib.nAttribType = pAttrib->nAttribType;
+
+		// Hidden magic
+		if (i >= MAX_ITEM_NORMAL_MAGICATTRIB)
 		{
-			KItemNormalAttrib RemoveAttrib;
-			if (i & 1)						// ÎªÆæÊý£¬ÊÇºó×º£¨i´ÓÁã¿ªÊ¼£©
+			if (nCountE > 0)
+			{
+				for (int j = 0; j < 2; j++)
+				{
+					int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+					RemoveAttrib.nValue[j] = -ScaleValue(base, fScale);
+				}
+				RemoveAttrib.nValue[2] = -ScaleValue(pAttrib->nValue[2], fScale);
+
+				pNPC->ModifyAttrib(pNPC->m_Index, (void*)&RemoveAttrib);
+				nCountE--;
+			}
+		}
+		else
+		{
+			// suffix (odd index)
+			if (i & 1)
 			{
 				if (nCount > 0)
 				{
-					RemoveAttrib.nAttribType = pAttrib->nAttribType;
-					RemoveAttrib.nValue[0] = -pAttrib->nValue[0];
-					RemoveAttrib.nValue[1] = -pAttrib->nValue[1];
-					RemoveAttrib.nValue[2] = -pAttrib->nValue[2];
-					pNPC->ModifyAttrib(pNPC->m_Index, (void *)&RemoveAttrib);
+					for (int j = 0; j < 2; j++)
+					{
+						int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+						RemoveAttrib.nValue[j] = -ScaleValue(base, fScale);
+					}
+					RemoveAttrib.nValue[2] = -ScaleValue(pAttrib->nValue[2], fScale);
+
+					pNPC->ModifyAttrib(pNPC->m_Index, (void*)&RemoveAttrib);
 					nCount--;
 				}
 			}
-			else
+			else    // prefix
 			{
-				RemoveAttrib.nAttribType = pAttrib->nAttribType;
-				RemoveAttrib.nValue[0] = -pAttrib->nValue[0];
-				RemoveAttrib.nValue[1] = -pAttrib->nValue[1];
-				RemoveAttrib.nValue[2] = -pAttrib->nValue[2];
-				pNPC->ModifyAttrib(pNPC->m_Index, (void *)&RemoveAttrib);
+				for (int j = 0; j < 2; j++)
+				{
+					int base = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+					RemoveAttrib.nValue[j] = -ScaleValue(base, fScale);
+				}
+				RemoveAttrib.nValue[2] = -ScaleValue(pAttrib->nValue[2], fScale);
+
+				pNPC->ModifyAttrib(pNPC->m_Index, (void*)&RemoveAttrib);
 			}
 		}
 	}
 }
 
+
+
+/******************************************************************************
+Function: Apply the Nth hidden magic attribute on the item to the NPC
+Entry	: pNPC: pointer to NPC
+Exit 	: Magic is applied.
+			The specific work is completed by the member functions of KNpc.
+			No member variables of the KItem object itself are modified
+******************************************************************************/
 void KItem::ApplyHiddenMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive) const
 {
 	_ASSERT(this != NULL);
@@ -158,10 +334,22 @@ void KItem::ApplyHiddenMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive) cons
 	pAttrib = &(m_aryMagicAttrib[(nMagicActive << 1) - 1]);	
 	if (-1 != pAttrib->nAttribType)
 	{
-		pNPC->ModifyAttrib(pNPC->m_Index, (void *)pAttrib);
+		KItemNormalAttrib ModifiedAttrib;
+		ModifiedAttrib.nAttribType = pAttrib->nAttribType;
+		for (int j = 0; j < 2; j++) {
+			ModifiedAttrib.nValue[j] = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+		}
+		ModifiedAttrib.nValue[2] = pAttrib->nValue[2];
+		pNPC->ModifyAttrib(pNPC->m_Index, (void*)&ModifiedAttrib);
 	}
 }
-
+/******************************************************************************
+Function: Remove the Nth hidden magic attribute on the item from the NPC
+Entry	: pNPC: pointer to NPC, nMagicActive: nth magic attribute
+Exit 	: Magic removed.
+The specific work is completed by the member functions of KNpc.
+No member variables of the KItem object itself are modified
+******************************************************************************/
 void KItem::RemoveHiddenMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive) const
 {
 	_ASSERT(this != NULL);
@@ -174,13 +362,21 @@ void KItem::RemoveHiddenMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive) c
 	{
 		KItemNormalAttrib RemoveAttrib;
 		RemoveAttrib.nAttribType = pAttrib->nAttribType;
-		RemoveAttrib.nValue[0] = -pAttrib->nValue[0];
-		RemoveAttrib.nValue[1] = -pAttrib->nValue[1];
-		RemoveAttrib.nValue[2] = -pAttrib->nValue[2];
-		pNPC->ModifyAttrib(pNPC->m_Index, (void *)&RemoveAttrib);
+		for (int j = 0; j < 2; j++) {
+			RemoveAttrib.nValue[j] -= ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+		}
+		RemoveAttrib.nValue[2] -= pAttrib->nValue[2];
+		pNPC->ModifyAttrib(pNPC->m_Index, (void*)&RemoveAttrib);
 	}
 }
-
+/******************************************************************************
+Function: According to the data in the configuration file, assign initial values to each item
+Entry	: pData: gives data from the configuration file
+Exit 	: Returns non-zero on success, and the following member variables are evaluated:
+			m_CommonAttrib,m_aryBaseAttrib,m_aryRequireAttrib
+			Returns zero on failure
+Description: CBR: Common,Base,Require
+******************************************************************************/
 BOOL KItem::SetAttrib_CBR(IN const KBASICPROP_EQUIPMENT* pData)
 {
 	_ASSERT(pData != NULL);
@@ -206,6 +402,36 @@ BOOL KItem::SetAttrib_CBR(IN const KBASICPROP_EQUIPMENT_GOLD* pData)
 	{
 		//SetAttrib_Common(pData);
 		*this = *pData;		
+		SetAttrib_Base(pData->m_aryPropBasic);
+		SetAttrib_Req(pData->m_aryPropReq);
+		bEC = TRUE;
+	}
+	return bEC;
+}
+
+BOOL KItem::SetAttrib_CBR(IN const KBASICPROP_EQUIPMENT_GOLD2* pData)
+{
+	_ASSERT(pData != NULL);
+
+	BOOL bEC = FALSE;
+	if (pData)
+	{
+		*this = *pData;		// Operator overloading
+		SetAttrib_Base(pData->m_aryPropBasic);
+		SetAttrib_Req(pData->m_aryPropReq);
+		bEC = TRUE;
+	}
+	return bEC;
+}
+
+BOOL KItem::SetAttrib_CBR(IN const KBASICPROP_EQUIPMENT_PLATINA* pData)
+{
+	_ASSERT(pData != NULL);
+
+	BOOL bEC = FALSE;
+	if (pData)
+	{
+		*this = *pData;		// Operator overloading
 		SetAttrib_Base(pData->m_aryPropBasic);
 		SetAttrib_Req(pData->m_aryPropReq);
 		bEC = TRUE;
@@ -249,16 +475,23 @@ BOOL KItem::SetAttrib_Req(const KEQCP_REQ* pReq)
 	return TRUE;
 }
 
+/******************************************************************************
+Function: According to the incoming data, assign an initial value to the magic attribute of the item
+Entry	: pMA: Give data
+Exit 	: Returns non-zero on success, and the following member variables are evaluated:
+			m_aryMagicAttrib
+			Returns zero on failure
+******************************************************************************/
 BOOL KItem::SetAttrib_MA(IN const KItemNormalAttrib* pMA)
 {
 	if (NULL == pMA)
-		{ _ASSERT(FALSE); return FALSE; }
-
+	{
+		_ASSERT(FALSE); return FALSE;
+	}
 	for (int i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
 	{
 		m_aryMagicAttrib[i] = pMA[i];
-		
-		if (m_aryMagicAttrib[i].nAttribType == magic_indestructible_b) //#kh«ng thÓ ph¸ huû
+		if (m_aryMagicAttrib[i].nAttribType == magic_indestructible_b)
 		{
 			SetDurability(-1);
 		}
@@ -266,10 +499,19 @@ BOOL KItem::SetAttrib_MA(IN const KItemNormalAttrib* pMA)
 	return TRUE;
 }
 
+/******************************************************************************
+Function: According to the incoming data, assign an initial value to the magic attribute of the item
+Entry	: pMA: Give data
+Exit 	: Returns non-zero on success, and the following member variables are evaluated:
+		m_aryMagicAttrib
+		Returns zero on failure
+******************************************************************************/
 BOOL KItem::SetAttrib_MA(IN const KMACP* pMA)
 {
 	if (NULL == pMA)
-		{ _ASSERT(FALSE); return FALSE; }
+	{
+		_ASSERT(FALSE); return FALSE;
+	}
 
 	for (int i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
 	{
@@ -279,9 +521,9 @@ BOOL KItem::SetAttrib_MA(IN const KMACP* pMA)
 		pDst = &(m_aryMagicAttrib[i]);
 
 		pDst->nAttribType = pSrc->nPropKind;
-		pDst->nValue[0] =  ::GetRandomNumber(pSrc->aryRange[0].nMin, pSrc->aryRange[0].nMax);
-		pDst->nValue[1] =  ::GetRandomNumber(pSrc->aryRange[1].nMin, pSrc->aryRange[1].nMax);
-		pDst->nValue[2] =  ::GetRandomNumber(pSrc->aryRange[2].nMin, pSrc->aryRange[2].nMax);
+		pDst->nValue[0] = ::GetRandomNumber(pSrc->aryRange[0].nMin, pSrc->aryRange[0].nMax);
+		pDst->nValue[1] = ::GetRandomNumber(pSrc->aryRange[1].nMin, pSrc->aryRange[1].nMax);
+		pDst->nValue[2] = ::GetRandomNumber(pSrc->aryRange[2].nMin, pSrc->aryRange[2].nMax);
 	}
 	return TRUE;
 }
@@ -765,9 +1007,119 @@ BOOL KItem::Gen_Equipment_Unique(const KBASICPROP_EQUIPMENT* pEqu,
 	return TRUE;
 }*/
 
+
+void KItem::operator = (const KBASICPROP_EQUIPMENT_PLATINA& sData)
+{
+	KItemCommonAttrib* pCA = &m_CommonAttrib;
+	pCA->bTemp = FALSE;
+	pCA->BackLocal.Release();
+	pCA->nItemNature = NATURE_PLATINA;
+	pCA->nItemGenre = sData.m_nItemGenre;
+	pCA->nDetailType = sData.m_nDetailType;
+	pCA->nParticularType = sData.m_nParticularType;
+	pCA->nObjIdx = sData.m_nObjIdx;
+	pCA->nPrice = sData.m_nPrice;
+	pCA->nNewPrice = sData.m_nPrice;
+	pCA->bNewArrival = FALSE;
+	pCA->nLevel = sData.m_nLevel;
+	pCA->nSeries = sData.m_nSeries;
+	pCA->bShortKey = FALSE;
+	pCA->nWidth = sData.m_nWidth;
+	pCA->nHeight = sData.m_nHeight;
+	pCA->nStackNum = 1;
+	pCA->nMaxStack = 1;
+	pCA->nExpirePoint = 0;
+	pCA->nRow = -1;
+	pCA->nGroup = sData.m_nGroup;
+	pCA->nSetID = sData.m_nSetID;
+	pCA->nNeedToActive1 = sData.m_nNeedToActive1;
+	pCA->nNeedToActive2 = sData.m_nNeedToActive2;
+	pCA->nMantle = 0;
+	pCA->uFlash = 0;
+	pCA->nUpgradeLvl = 0;
+	pCA->nPhysicVal = 0;
+	pCA->nMagicVal = 0;
+	pCA->bLockSell = FALSE;
+	pCA->bLockTrade = FALSE;
+	pCA->bLockDrop = FALSE;
+	pCA->nParam = -1;
+	pCA->nFortune = 0;
+	pCA->nExpireTime = 0;
+	pCA->LockItem.Clear();
+	::strcpy(pCA->szItemName, sData.m_szName);
+	::memset(pCA->szScript, 0, sizeof(pCA->szScript));
+#ifndef _SERVER
+	::strcpy(pCA->szImageName, sData.m_szImageName);
+	::strcpy(pCA->szIntro, sData.m_szIntro);
+	m_Image.Color.Color_b.a = 255;
+	m_Image.nFrame = 0;
+	m_Image.nISPosition = IMAGE_IS_POSITION_INIT;
+	m_Image.nType = ISI_T_SPR;
+	::strcpy(m_Image.szImage, pCA->szImageName);
+	m_Image.uImage = 0;
+#endif
+}
+
+void KItem::operator = (const KBASICPROP_EQUIPMENT_GOLD2& sData)
+{
+	KItemCommonAttrib* pCA = &m_CommonAttrib;
+	pCA->bTemp = FALSE;
+	pCA->BackLocal.Release();
+	pCA->nItemNature = NATURE_GOLD;
+	pCA->nItemGenre = sData.m_nItemGenre;
+	pCA->nDetailType = sData.m_nDetailType;
+	pCA->nParticularType = sData.m_nParticularType;
+	pCA->nObjIdx = sData.m_nObjIdx;
+	pCA->nPrice = sData.m_nPrice;
+	pCA->nNewPrice = sData.m_nPrice;
+	pCA->bNewArrival = FALSE;
+	pCA->nLevel = sData.m_nLevel;
+	pCA->nSeries = sData.m_nSeries;
+	pCA->bShortKey = FALSE;
+	pCA->nWidth = sData.m_nWidth;
+	pCA->nHeight = sData.m_nHeight;
+	pCA->nStackNum = 1;
+	pCA->nMaxStack = 1;
+	pCA->nExpirePoint = 0;
+	pCA->nRow = -1;
+	pCA->nGroup = sData.m_nGroup;
+	pCA->nSet = sData.m_nGroup; //goldequip min number items in set to active >=1
+	pCA->nSetNum = sData.m_nNeedToActive2; //goldequip number items in set >=1
+	pCA->nSetID = sData.m_nSetID;
+	pCA->nSetIDNo = sData.m_nSetIDNo;
+	//pCA->nNeedToActive1 = sData.m_nNeedToActive1;
+	//pCA->nNeedToActive2 = sData.m_nNeedToActive2;
+	pCA->nMantle = 0;
+	pCA->uFlash = 0;
+	pCA->nUpgradeLvl = 0;
+	pCA->nPhysicVal = 0;
+	pCA->nMagicVal = 0;
+	pCA->bLockSell = FALSE;
+	pCA->bLockTrade = FALSE;
+	pCA->bLockDrop = FALSE;
+	pCA->nParam = -1;
+	pCA->nFortune = 0;
+	pCA->nExpireTime = 0;
+	pCA->LockItem.Clear();
+	::strcpy(pCA->szItemName, sData.m_szName);
+	::memset(pCA->szScript, 0, sizeof(pCA->szScript));
+#ifndef _SERVER
+	::strcpy(pCA->szImageName, sData.m_szImageName);
+	::strcpy(pCA->szIntro, sData.m_szIntro);
+	m_Image.Color.Color_b.a = 255;
+	m_Image.nFrame = 0;
+	m_Image.nISPosition = IMAGE_IS_POSITION_INIT;
+	m_Image.nType = ISI_T_SPR;
+	::strcpy(m_Image.szImage, pCA->szImageName);
+	m_Image.uImage = 0;
+#endif
+}
+
+
 void KItem::Remove()
 {
 	m_nIndex = 0;
+	Reset();
 }
 
 BOOL KItem::SetBaseAttrib(IN const KItemNormalAttrib* pAttrib)
@@ -798,10 +1150,12 @@ BOOL KItem::SetMagicAttrib(IN const KItemNormalAttrib* pAttrib)
 {
 	return SetAttrib_MA(pAttrib);
 }
-
+//------------------------------------------------ ------------------
+// Wear, the return value indicates the remaining durability
+//------------------------------------------------ ------------------
 int KItem::Abrade(IN const int nAbradeP, IN const int nRange)//#mµi mßn
 {
-	if (m_nCurrentDur == -1 || nRange == 0)	
+	if (m_nCurrentDur == -1 || nRange == 0)	// Never wear out
 		return -1;
 
 	if(nAbradeP > 0)
@@ -809,7 +1163,7 @@ int KItem::Abrade(IN const int nAbradeP, IN const int nRange)//#mµi mßn
 
 	if(m_nCurrentDur > 0)
 	{
-		if (g_Random(nRange) == 0) //#mµi mßn theo tham sè nRange
+		if (g_Random(nRange) == 0) //#mµi mßn theo tham sè nRange 
 			m_nCurrentDur--;
 	}
 	if (m_nCurrentDur <= 0)
@@ -832,11 +1186,11 @@ void KItem::PaintItem(int nX, int nY, bool bResize/* = false*/, bool bPaintStack
 	//
 	if(GetDurability() == 0)
 	{
-		m_CommonAttrib.nWidth = 1;
-		m_CommonAttrib.nHeight = 1;
-		strcpy(m_Image.szImage, BROKEN_ITEM_SPR); //Côc s¾t cuc sat
-		m_Image.oPosition.nX = nX - 1; //VÏ l¹i vÞ trÝ Icon
-		m_Image.oPosition.nY = nY - 2;
+		//m_CommonAttrib.nWidth = 1;
+		//m_CommonAttrib.nHeight = 1;
+		//strcpy(m_Image.szImage, BROKEN_ITEM_SPR); //Côc s¾t cuc sat
+		//m_Image.oPosition.nX = nX - 1; //VÏ l¹i vÞ trÝ Icon
+		//m_Image.oPosition.nY = nY - 2;
 	}
 	//
 	if(sidx > 0)
@@ -999,6 +1353,10 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		sprintf(TextLevel, " [CÊp %d]", m_CommonAttrib.nLevel);
 		strcat(pszMsg, TextLevel);
 	}
+	//if (m_MaxOptMultiply >= 1) {
+		//sprintf(TextLevel, " [x%d Thuéc TÝnh]", m_MaxOptMultiply);
+		//strcat(pszMsg, TextLevel);
+	//}
 	//
 	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType == 1083 || m_CommonAttrib.nParticularType == 1084)) //Håi thµnh phï
 	{
@@ -1010,7 +1368,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	//
 	strcat(pszMsg, "  \n  ");
 
-	if(InsuranceCourse == -2)//#kho¸ vÜnh viÔn
+	if(InsuranceCourse == LOCK_STATE_FOREVER)//#kho¸ vÜnh viÔn
 	{
 		strcat(pszMsg, "<color=Green>VËt phÈm nµy ®uîc kho¸ vÜnh viÔn");
 		strcat(pszMsg, "\r\n");
@@ -1028,14 +1386,14 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 				DWORD g_conlai = p_conlai / 60;
 				if(g_conlai > 1)
 				{
-					char szPrice2[32];
+					char szPrice2[64];
 					sprintf(szPrice2, "<color=Green>Thêi gian chê më kho¸ : %d giê", g_conlai);
 					strcat(pszMsg, szPrice2);
 					strcat(pszMsg, "  \n  ");
 				}
 				else if(p_conlai > 1)
 				{
-					char szPrice2[32];
+					char szPrice2[64];
 					sprintf(szPrice2, "<color=Green>Thêi gian chê më kho¸ : %d phót", p_conlai);
 					strcat(pszMsg, szPrice2);
 					strcat(pszMsg, "  \n  ");
@@ -1056,7 +1414,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	/*
 	if (bShowPrice && nPriceScale > 0)
 	{
-		char szPrice[32];
+		char szPrice[64];
 		if (m_CommonAttrib.nPrice / nPriceScale < 10000)
 			sprintf(szPrice, "<color=White>Gi¸: %d l­îng<color>", m_CommonAttrib.nPrice / nPriceScale);
 		else
@@ -1084,7 +1442,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if (bShowPrice)
 	{
 		int nPrice = 0;
-		char pszTemp2[128];
+		char pszTemp2[256];
 		char pszTemp[128];
 		
 		nPrice = GetCurPrice();
@@ -1126,7 +1484,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcat(pszMsg, "  <color=White>Thuéc tÝnh Ngò hµnh: <color=Fire>Háa  ");
 		break;
 	case series_earth:
-		strcat(pszMsg, "  <color=White>Thuéc tÝnh Ngò hµnh: <color=Earth>Thæ  ");
+		strcat(pszMsg, "  <color=White>Thuéc tÝnh Ngò hµnh: <color=Earth>Thæ ");
 		break;
 	}
 
@@ -1158,7 +1516,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 
 	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType >= 199 && m_CommonAttrib.nParticularType <= 204))
 	{
-		char szLevel[32];
+		char szLevel[128];
 		sprintf(szLevel, " <color=White>PhÈm chÊt thuéc tÝnh:<color> <color=Blue>%d<color>", m_CommonAttrib.nLevel);
 		strcat(pszMsg, szLevel);
 		strcat(pszMsg, "  \n  ");
@@ -1229,7 +1587,14 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 			}
 			continue;
 		}
-		char* pszInfo = (char *)g_MagicDesc.GetDesc(&m_aryMagicAttrib[i]);
+		const KItemNormalAttrib* pAttrib;
+		pAttrib = &(m_aryMagicAttrib[i]);
+		KItemNormalAttrib ModifiedAttrib = *pAttrib;
+		for (int j = 0; j < 2; j++) {
+			ModifiedAttrib.nValue[j] = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+		}
+		ModifiedAttrib.nValue[2] = pAttrib->nValue[2];
+		char* pszInfo = (char *)g_MagicDesc.GetDesc((void*) & ModifiedAttrib);
 		if (!pszInfo || !pszInfo[0])
 		continue;
 		if ((i & 1) == 0)
@@ -1688,6 +2053,885 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		}
 	}
 }
+int KItem::GetQuality()
+{
+	if (GetGenre() == item_equip)
+	{
+		if (m_nCurrentDur == 0)
+			return equip_damage;
+		else
+		{
+			switch (m_CommonAttrib.nItemNature)
+			{
+			case NATURE_GOLD:
+				return equip_gold;
+			case NATURE_PLATINA:
+				return equip_platina;
+			case NATURE_VIOLET:
+				return equip_violet;
+			}
+		}
+		if (m_CommonAttrib.nPoint > 0)
+			return NATURE_VIOLET;
+		if (m_aryMagicAttrib[0].nAttribType)
+			return equip_magic;
+		if (m_CommonAttrib.nGoldId)
+		{
+			return equip_gold;
+		}
+	}
+	return equip_normal;
+}
+void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActiveAttrib, int nGoldActiveAttrib)
+{
+	if (m_CommonAttrib.nGoldId || m_CommonAttrib.nPoint > 0 || m_CommonAttrib.nItemGenre > item_equip)
+		return GetDesc(pszMsg, bShowPrice, 1, nActiveAttrib); //call old getdesc
+	char pszKeyName[16];
+	char pszTemp[256];
+	char pszTemp2[256];
+
+	memset(pszKeyName, 0, sizeof(pszKeyName));
+	memset(pszTemp, 0, sizeof(pszTemp));
+	memset(pszTemp2, 0, sizeof(pszTemp2));
+
+	switch (this->GetQuality())
+	{
+	case equip_normal:
+		strcat(pszMsg, "<color=255,255,255>");
+		break;
+	case equip_magic:
+		strcat(pszMsg, "<color=100,100,255>");
+		break;
+	case equip_damage:
+		strcat(pszMsg, "<color=255,0,66>");
+		break;
+	case equip_violet:
+		strcat(pszMsg, "<color=170,30,255>");
+		break;
+	case equip_gold:
+		strcat(pszMsg, "<color=255,255,0>");
+		break;
+	case equip_platina:
+		strcat(pszMsg, "<bclr=100,100,255><color=255,255,0>");
+		break;
+	}
+	strcat(pszMsg, m_CommonAttrib.szItemName);
+
+	if (m_CommonAttrib.nItemGenre == item_equip)
+	{
+		if (m_CommonAttrib.nItemNature == NATURE_PLATINA)
+		{
+			sprintf(pszTemp, " +%d", m_CommonAttrib.nLevel);
+		}
+		else if (m_CommonAttrib.nDetailType <= equip_horse)
+		{
+			if (m_CommonAttrib.nLevel > MAX_ITEM_LEVEL)
+			{
+				if (m_CommonAttrib.nLevel < MAX_ITEM_LEVEL * 10)
+				{
+					if (m_CommonAttrib.nLevel % MAX_ITEM_LEVEL == 0)
+						sprintf(pszTemp, " [cÊp %d]", m_CommonAttrib.nLevel / (m_CommonAttrib.nLevel / MAX_ITEM_LEVEL));
+					else
+						sprintf(pszTemp, " [cÊp %d]", m_CommonAttrib.nLevel % MAX_ITEM_LEVEL);
+				}
+				else if (m_CommonAttrib.nLevel < MAX_ITEM_LEVEL * 100)
+				{
+					if (m_CommonAttrib.nLevel % 100 == 0)
+						sprintf(pszTemp, " [cÊp %d]", m_CommonAttrib.nLevel / (m_CommonAttrib.nLevel / MAX_ITEM_LEVEL * 10));
+					else
+						sprintf(pszTemp, " [cÊp %d]", m_CommonAttrib.nLevel % MAX_ITEM_LEVEL * 10);
+				}
+			}
+			else if (m_CommonAttrib.nLevel > MIN_ITEM_LEVEL)
+				sprintf(pszTemp, " [cÊp %d]", m_CommonAttrib.nLevel);
+		}
+		if (pszTemp[0])
+			strcat(pszMsg, pszTemp);
+	}
+	if (m_MaxOptMultiply >= 1) {
+		sprintf(pszTemp, "[x%d Thuéc TÝnh]", m_MaxOptMultiply);
+		strcat(pszMsg, pszTemp);
+	}
+	strcat(pszMsg, "<bclr=0,0,0><color>");
+	//strcat(pszMsg, "  \n  ");
+	//if (InsuranceCourse == -2)//#kho¸ vÜnh viÔn
+	//{
+	//	strcat(pszMsg, "<color=Green>VËt phÈm nµy ®uîc kho¸ vÜnh viÔn");
+	//	strcat(pszMsg, "\r\n");
+	//}
+
+	//if (InsuranceCourse > 0)//#h¹n sö dông
+	//{
+	//	if (InsuranceHourCourse > 0)
+	//	{
+	//		time_t baygio = time(0);
+	//		int s_conlai = InsuranceHourCourse - baygio;
+	//		if (s_conlai > 0)
+	//		{
+	//			DWORD p_conlai = s_conlai / 60;
+	//			DWORD g_conlai = p_conlai / 60;
+	//			if (g_conlai > 1)
+	//			{
+	//				char szPrice2[64];
+	//				sprintf(szPrice2, "<color=Green>Thêi gian chê më kho¸ : %d giê", g_conlai);
+	//				strcat(pszMsg, szPrice2);
+	//				strcat(pszMsg, "  \n  ");
+	//			}
+	//			else if (p_conlai > 1)
+	//			{
+	//				char szPrice2[64];
+	//				sprintf(szPrice2, "<color=Green>Thêi gian chê më kho¸ : %d phót", p_conlai);
+	//				strcat(pszMsg, szPrice2);
+	//				strcat(pszMsg, "  \n  ");
+	//			}
+	//		}
+	//		else
+	//		{
+	//			strcat(pszMsg, "<color=Green>Hoµn tÊt thêi gian chê më kho¸.\r\n");
+	//		}
+	//	}
+	//	else
+	//	{
+	//		strcat(pszMsg, "<color=Green>VËt phÈm nµy ®uîc kho¸ b¶o hiÓm");
+	//		strcat(pszMsg, "\r\n");
+	//	}
+	//}
+
+	char szPriceColor[moneyunit_num][32] =
+	{
+		"<color=255,255,255>",
+		"<color=255,90,0>",
+		"<color=255,219,74>",
+		"<color=255,219,74>",
+		"<color=0,255,0>",
+		"<color=0,255,0>",
+		"<color=255,90,0>",
+	};
+	if (bShowPrice)
+	{
+		int nPrice = 0;
+		if (bPriceScale)
+		{
+			nPrice = GetSalePrice();
+			strcat(pszMsg, szPriceColor[moneyunit_money]);
+			sprintf(pszTemp2, "%d", moneyunit_money);
+		}
+		else
+		{
+			nPrice = GetCurPrice();
+			strcat(pszMsg, szPriceColor[Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nMoneyUnit]);
+			sprintf(pszTemp2, "%d", Player[CLIENT_PLAYER_INDEX].m_BuyInfo.m_nMoneyUnit);
+		}
+		strcat(pszMsg, "\n");
+		strcpy(pszTemp, "Gi c: ");
+		strcat(pszMsg, pszTemp);
+
+		g_GameSetting.GetString("MoneyUnit", pszTemp2, "", pszTemp, sizeof(pszTemp));
+		sprintf(pszTemp2, "%d %s<color=255,255,255>", nPrice, pszTemp);
+		strcat(pszMsg, pszTemp2);
+	}
+
+	pszTemp2[0] = 0;
+	switch (m_CommonAttrib.LockItem.nState)
+	{
+	case LOCK_STATE_CHARACTER:
+		sprintf(pszTemp2, "<color=0,255,0>VËt phÈm ®Ýnh kÌm theo nh©n vËt<color>");
+		break;
+	case LOCK_STATE_FOREVER:
+		sprintf(pszTemp2, "<color=0,255,0>VËt phÈm nµy ®· khãa b¶o hiÓm vÜnh viÔn<color>");
+		break;
+	case LOCK_STATE_LOCK:
+		sprintf(pszTemp2, "<color=0,255,0>VËt phÈm nµy ®· khãa b¶o hiÓm<color>");
+		break;
+	case LOCK_STATE_UNLOCK:
+        if (m_CommonAttrib.LockItem.dwLockTime == 0) {
+    			strcpy(pszTemp2, "<color=0,255,0>VËt phÈm nµy ®· khãa t¹m thêi<color>");
+    		}
+    	else if (m_CommonAttrib.LockItem.dwLockTime > KSG_GetCurSec())
+		{
+			time_t nowtime = m_CommonAttrib.LockItem.dwLockTime;
+			struct tm* timeinfo = localtime(&nowtime);
+			strcpy(pszTemp, "<color=0,255,0>Thêi gian m khãa: %H:%M:%S %d-%m-%Y<color>");
+			strftime(pszTemp2, sizeof(pszTemp2), pszTemp, timeinfo);
+		}
+		break;
+	}
+	if (pszTemp2[0])
+	{
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, pszTemp2);
+	}
+
+	sprintf(pszKeyName, "%d", m_CommonAttrib.nSeries);
+	g_GameSetting.GetString("Elements", pszKeyName, "", pszTemp, sizeof(pszTemp));
+	if (pszTemp[0])
+	{
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, pszTemp);
+	}
+
+	if (m_CommonAttrib.szIntro[0])
+	{
+		char szIntro[SZBUFLEN_512];
+
+		int offset = 0, nL = 0, nS = 0;
+		int nStrL = sprintf(szIntro, "%s", m_CommonAttrib.szIntro);
+		while (szIntro[offset] != 0)
+		{
+			if (szIntro[offset] == '<')
+			{
+				if (szIntro[offset + 1] == 'e' &&
+					szIntro[offset + 2] == 'n' &&
+					szIntro[offset + 3] == 't' &&
+					szIntro[offset + 4] == 'e' &&
+					szIntro[offset + 5] == 'r' &&
+					szIntro[offset + 6] == '>')
+					nL = 0;
+				if (szIntro[offset + 1] == 'c' &&
+					szIntro[offset + 2] == 'o' &&
+					szIntro[offset + 3] == 'l' &&
+					szIntro[offset + 4] == 'o' &&
+					szIntro[offset + 5] == 'r')
+				{
+					if (szIntro[offset + 6] == '>')
+						nL -= 6;
+					else
+					{
+						int k;
+						for (k = 0; k < 12; k++)
+						{
+							if (szIntro[offset + 6 + k] == '>')
+								break;
+						}
+						nL -= 6 + k;
+					}
+				}
+				if (szIntro[offset + 1] == 'b' &&
+					szIntro[offset + 2] == 'c' &&
+					szIntro[offset + 3] == 'l' &&
+					szIntro[offset + 4] == 'r')
+				{
+					if (szIntro[offset + 5] == '>')
+						nL -= 5;
+					else
+					{
+						if (szIntro[offset + 5] == '=')
+						{
+							int k;
+							for (k = 0; k < 12; k++)
+							{
+								if (szIntro[offset + 5 + k] == '>')
+									break;
+							}
+							nL -= 5 + k;
+						}
+					}
+				}
+			}
+
+			if (nL == 32 && (offset + 7) < nStrL)
+			{
+				while (offset + nS < nStrL && szIntro[offset + nS] < 0 || (szIntro[offset + nS] > 32 && szIntro[offset + nS] < 126))
+					nS++;
+				if (nS >= 6)
+				{
+					memmove(&szIntro[offset + nS + 6], &szIntro[offset + nS], nStrL - offset + nS);
+					memcpy(&szIntro[offset + nS], "<enter>", 7);
+					offset += 7 + nS;
+					nStrL += 6;
+				}
+				else
+				{
+					memmove(&szIntro[offset + 7], &szIntro[offset], nStrL - offset + 1);
+					memcpy(&szIntro[offset + nS], "<enter>", 7);
+					offset += 7 + nS;
+					nStrL += 7;
+				}
+				nL = 0;
+				nS = 0;
+			}
+			offset++;
+			nL++;
+		}
+		if (strlen(szIntro) > (SZBUFLEN_1 - 1))
+			szIntro[SZBUFLEN_1 - 1] = 0;
+
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, szIntro);
+	}
+	if (m_CommonAttrib.nItemGenre == item_equip)
+	{
+		/*if (m_aryBaseAttrib[0].nAttribType > 0 ||
+			m_aryRequireAttrib[0].nAttribType > 0 ||
+			m_aryMagicAttrib[0].nAttribType > 0)*/
+		strcat(pszMsg, "\n\n");
+	}
+	else
+		strcat(pszMsg, "\n");
+
+	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType >= 199 && m_CommonAttrib.nParticularType <= 204))
+	{
+		if (m_GeneratorParam.nLuck)
+		{
+			KTabFile MagicTab;
+
+			MagicTab.Load(MAGICATTRIB_LVINDEX_FILE);
+
+			sprintf(pszKeyName, "%d", m_GeneratorParam.nLuck);
+
+			MagicTab.GetString(pszKeyName, "DESC", "", pszTemp, sizeof(pszTemp));
+			strcat(pszMsg, "<color=100,100,255>Thuéc tÝnh: ");
+			strcat(pszMsg, pszTemp);
+			strcat(pszMsg, "\n");
+			MagicTab.GetString(pszKeyName, "FIT_EQUIP", "", pszTemp, sizeof(pszTemp));
+			strcat(pszMsg, "<color=255,219,74>Lo¹i trang b c th kh¶m n¹m: ");
+			strcat(pszMsg, pszTemp);
+			strcat(pszMsg, "<color=255,255,255>");
+			strcat(pszMsg, "\n");
+		}
+
+		if (m_CommonAttrib.nLevel)
+		{
+			sprintf(pszTemp, "<color=100,100,255>PhÈm chÊt thuéc tÝnh: <color=255,255,0>%d<color=255,255,255>", m_CommonAttrib.nLevel);
+			strcat(pszMsg, pszTemp);
+		}
+	}
+
+	bool bActiveAllAttrib = true;
+	int i = 0;
+	for (i = 0; i < 7; i++)
+	{
+		if (!m_aryBaseAttrib[i].nAttribType)
+		{
+			continue;
+		}
+		if (m_aryBaseAttrib[i].nAttribType == magic_durability_v)
+		{
+			if (GetDurability() == -1)
+				sprintf(pszTemp, "<color=255,255,0>Kh«ng thÓ ph¸ hñy<color=255,255,255>");
+			else
+				sprintf(pszTemp, "§é bÒn: %3d / %3d", GetDurability(), GetMaxDurability());
+			strcat(pszMsg, pszTemp);
+		}
+		else
+		{
+			char* pszTemp2 = (char*)g_MagicDesc.GetDesc(&m_aryBaseAttrib[i]);
+			if (!pszTemp2 || !pszTemp2[0])
+				continue;
+			strcat(pszMsg, pszTemp2);
+		}
+		strcat(pszMsg, "\n");
+	}
+	for (i = 0; i < 6; i++)
+	{
+		if (!m_aryRequireAttrib[i].nAttribType)
+			continue;
+
+		char* pszTemp2 = (char*)g_MagicDesc.GetDesc(&m_aryRequireAttrib[i]);
+		if (!pszTemp2 || !pszTemp2[0])
+			continue;
+
+		if (Player[CLIENT_PLAYER_INDEX].m_ItemList.EnoughAttrib(&m_aryRequireAttrib[i]))
+			strcat(pszMsg, "<color=255,255,255>");
+		else
+			strcat(pszMsg, "<color=255,0,0>");
+
+		strcat(pszMsg, pszTemp2);
+		strcat(pszMsg, "\n");
+	}
+
+	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		if (!m_aryMagicAttrib[i].nAttribType)
+		{
+			if (m_CommonAttrib.nItemNature == NATURE_VIOLET)
+			{
+				if (i < m_GeneratorParam.nLuck)
+				{
+					if (i == MAX_ITEM_NORMAL_MAGICATTRIB)
+						strcat(pszMsg, "\n");
+					strcat(pszMsg, "<color=255,255,0>Ch­a kh¶m n¹m<color=255,255,255>");
+					strcat(pszMsg, "\n");
+				}
+			}
+			continue;
+		}
+		const KItemNormalAttrib* pAttrib;
+		pAttrib = &(m_aryMagicAttrib[i]);
+		KItemNormalAttrib ModifiedAttrib = *pAttrib;
+		for (int j = 0; j < 2; j++) {
+			ModifiedAttrib.nValue[j] = ApplyScalingMethod(pAttrib->nValue[j], pAttrib->nAttribType);
+		}
+		ModifiedAttrib.nValue[2] = pAttrib->nValue[2];
+		char* pszTemp2 = (char*)g_MagicDesc.GetDesc(&ModifiedAttrib);
+		if (!pszTemp2 || !pszTemp2[0])
+			continue;
+		if (i == MAX_ITEM_NORMAL_MAGICATTRIB && m_aryMagicAttrib[i].nAttribType)
+			strcat(pszMsg, "\n");
+
+		if (i < MAX_ITEM_NORMAL_MAGICATTRIB)
+		{
+			if ((i & 1) == 0)
+			{
+				switch (m_CommonAttrib.nItemNature)
+				{
+				case NATURE_GOLD:
+				case NATURE_PLATINA:
+					strcat(pszMsg, "<color=255,255,0>");
+					break;
+				case NATURE_VIOLET:
+					strcat(pszMsg, "<color=170,30,255>");
+					break;
+				default:
+					strcat(pszMsg, "<color=99,101,255>");
+					break;
+				}
+			}
+			else
+			{
+				if ((i >> 1) < nActiveAttrib)
+				{
+					switch (m_CommonAttrib.nItemNature)
+					{
+					case NATURE_GOLD:
+					case NATURE_PLATINA:
+						strcat(pszMsg, "<color=255,255,0>");
+						break;
+					case NATURE_VIOLET:
+						strcat(pszMsg, "<color=170,30,255>");
+						break;
+					default:
+						strcat(pszMsg, "<color=100,100,255>");
+						break;
+					}
+				}
+				else
+				{
+					switch (m_CommonAttrib.nItemNature)
+					{
+					case NATURE_GOLD:
+					case NATURE_PLATINA:
+						strcat(pszMsg, "<color=123,125,90>");
+						break;
+					case NATURE_VIOLET:
+						strcat(pszMsg, "<color=170,135,184>");
+						break;
+					default:
+						strcat(pszMsg, "<color=120,120,120>");
+						break;
+					}
+					bActiveAllAttrib = false;
+				}
+			}
+		}
+		else
+		{
+			if (nGoldActiveAttrib)
+			{
+				switch (m_CommonAttrib.nItemNature)
+				{
+				case NATURE_GOLD:
+					strcat(pszMsg, "<color=255,0,255>");
+					break;
+				case NATURE_PLATINA:
+					strcat(pszMsg, "<color=255,94,0>");
+					break;
+				case NATURE_VIOLET:
+					strcat(pszMsg, "<color=170,30,255>");
+					break;
+				default:
+					strcat(pszMsg, "<color=100,100,255>");
+					break;
+				}
+				nGoldActiveAttrib--;
+			}
+			else
+			{
+				switch (m_CommonAttrib.nItemNature)
+				{
+				case NATURE_GOLD:
+					strcat(pszMsg, "<color=169,19,215>");
+					break;
+				case NATURE_PLATINA:
+					strcat(pszMsg, "<color=189,70,2>");
+					break;
+				case NATURE_VIOLET:
+					strcat(pszMsg, "<color=170,135,184>");
+					break;
+				default:
+					strcat(pszMsg, "<color=120,120,120>");
+					break;
+				}
+			}
+		}
+		strcat(pszMsg, pszTemp2);
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, "<color=255,255,255>");
+	}
+	if (m_CommonAttrib.uPrice > 0)
+	{
+		strcat(pszMsg, "  \n  ");
+		strcat(pszMsg, "<color=Yellow>");
+		char sOrice[256];
+		if (m_CommonAttrib.uPrice < 10000)
+		{
+			sprintf(sOrice, "<color=White>Gi¸ niªm yÕt:<color> %d l­îng", m_CommonAttrib.uPrice);
+		}
+		else
+		{
+			if (m_CommonAttrib.uPrice % 10000 == 0)
+			{
+				sprintf(sOrice, "<color=White>Gi¸ niªm yÕt:<color> %d v¹n l­îng", m_CommonAttrib.uPrice / 10000);
+			}
+			else
+			{
+				sprintf(sOrice, "<color=White>Gi¸ niªm yÕt:<color> %d v¹n %d l­îng", m_CommonAttrib.uPrice / 10000, m_CommonAttrib.uPrice % 10000);
+			}
+		}
+		strcat(pszMsg, sOrice);
+		strcat(pszMsg, "  \n  ");
+		strcat(pszMsg, "  \n  ");
+	}
+	if (m_CommonAttrib.LimitTime.bYear)
+	{
+		char sTmp[128];
+		const long thoigianhet = m_CommonAttrib.LimitTime.bYear;
+		if (thoigianhet > 0)
+		{
+
+			time_t timeValue = static_cast<time_t>(thoigianhet);
+			tm ltm = {};
+			localtime_s(&ltm, &timeValue);
+
+			int nam = 1900 + ltm.tm_year;
+			int thang = 1 + ltm.tm_mon;
+			int ngay = ltm.tm_mday;
+			int gio = ltm.tm_hour;
+			int phut = ltm.tm_min;
+			int giay = ltm.tm_sec;
+
+			if (time(0) < timeValue)
+			{
+				snprintf(sTmp, sizeof(sTmp), "<color=fire>Thêi h¹n sö dông: %02d:%02d:%02d %02d-%02d-%d<color>", gio, phut, giay, ngay, thang, nam);
+			}
+			else
+			{
+				snprintf(sTmp, sizeof(sTmp), "<color=red>HÕt h¹n sö dông vËt phÈm sÏ b~ hñy");
+			}
+
+			// Use strncat for safer concatenation
+			strncat(pszMsg, "  \n  ", sizeof(pszMsg) - strlen(pszMsg) - 1);
+			strncat(pszMsg, sTmp, sizeof(pszMsg) - strlen(pszMsg) - 1);
+		}
+	}
+	if (m_CommonAttrib.nExpireTime > KSG_GetCurSec())
+	{
+		time_t nowtime = m_CommonAttrib.nExpireTime + 1451581200;
+		struct tm* timeinfo = localtime(&nowtime);
+		strcpy(pszTemp, "<color=255,90,0>Thêi h¹n s dông: %H:%M:%S %d-%m-%Y<color>");
+		strftime(pszTemp2, sizeof(pszTemp2), pszTemp, timeinfo);
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, pszTemp2);
+		strcat(pszMsg, "\n");
+	}
+
+	if (m_CommonAttrib.nExpirePoint)
+	{
+		time_t nowtime = m_CommonAttrib.nExpirePoint + (KSG_GetCurSec() + 1451581200);
+		struct tm* timeinfo = localtime(&nowtime);
+		strcpy(pszTemp, "<color=255,90,0>Thêi h¹n s dông: %H:%M:%S %d-%m-%Y<color>");
+		strftime(pszTemp2, sizeof(pszTemp2), pszTemp, timeinfo);
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, pszTemp2);
+		strcat(pszMsg, "\n");
+	}
+	PlayerItem m_pItems = Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[Player[CLIENT_PLAYER_INDEX].m_ItemList.FindSame(m_dwID)];
+
+	if (!bActiveAllAttrib &&
+		m_aryMagicAttrib[0].nAttribType &&
+		m_CommonAttrib.nItemGenre == item_equip &&
+		m_CommonAttrib.nDetailType < equip_horse
+		)
+	{
+		if (m_pItems.nPlace == pos_equip)
+		{
+			char szBuff[32], szBuffer[32];
+
+			sprintf(pszKeyName, "NeedSr%d", m_CommonAttrib.nSeries);
+			g_GameSetting.GetString("ActiveEquip", pszKeyName, "", szBuff, sizeof(szBuff));
+			if (m_pItems.nX == itempart_ring1)
+				sprintf(pszKeyName, "NeedEq%d1", m_CommonAttrib.nDetailType);
+			else if (m_pItems.nX == itempart_ring2)
+				sprintf(pszKeyName, "NeedEq%d2", m_CommonAttrib.nDetailType);
+			else
+				sprintf(pszKeyName, "NeedEq%d", m_CommonAttrib.nDetailType);
+			g_GameSetting.GetString("ActiveEquip", pszKeyName, "", szBuffer, sizeof(szBuffer));
+
+			sprintf(pszTemp, "<color=Yellow>CÇn hÖ %s cña %s ®Ó kÝch ho¹t thuéc tÝnh ©m<color>", szBuff, szBuffer);
+			strcat(pszMsg, "\n");
+			strcat(pszMsg, pszTemp);
+			strcat(pszMsg, "\n<color=255,255,255>");
+		}
+	}
+	if (m_CommonAttrib.nItemNature == NATURE_GOLD)
+	{
+		BOOL bFlag = FALSE;
+		KTabFile TabFile;
+
+		if (m_CommonAttrib.nItemNature == NATURE_GOLD)
+			bFlag = TabFile.Load(TABFILE_GOLDITEM_FULL_N);
+		else
+			bFlag = TabFile.Load(PLATINA_EQUIP_FILE);
+		if (bFlag)
+		{
+			if (m_CommonAttrib.nDetailType < itempart_horse)
+				strcat(pszMsg, "\n");
+
+			int i, j, k;
+			if (m_CommonAttrib.nSetIDNo != -1) {
+				for (i = 0; i < 10; i++)
+				{
+					TabFile.GetInteger(m_CommonAttrib.nRow + 3 - m_CommonAttrib.nSetIDNo + i, 53, 0, &j); //get group -> j, Group column 53
+					if (j == m_CommonAttrib.nGroup)
+					{
+						TabFile.GetString(m_CommonAttrib.nRow + 3 - m_CommonAttrib.nSetIDNo + i, 1, "", pszTemp, sizeof(pszTemp)); //Name column 1
+						bFlag = FALSE;
+						if (m_pItems.nPlace > pos_hand) //Check all item in equip that in the set or not
+						{
+							for (k = 0; k < MAX_PLAYER_ITEM; k++)
+							{
+								if ((Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetGroup() == m_CommonAttrib.nGroup) &&
+									(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetSetID() == m_CommonAttrib.nSetID) &&
+									(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetSetIDNo() == i + 1))
+								{
+									if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip) { //priority in equip
+										bFlag = TRUE;
+										break;
+									}
+									else {
+										bFlag = TRUE; //have item but not equip
+									}
+								}
+							}
+							if (bFlag)
+							{
+								if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip)
+									strcat(pszMsg, "<color=247,195,90>");  //active in equip
+								else
+									strcat(pszMsg, "<color=0,255,0>");		//in another room
+							}
+							else
+								strcat(pszMsg, "<color=35,172,35>");		//Not exist
+						}
+						else
+							strcat(pszMsg, "<color=0,201,0>");
+
+						strcat(pszMsg, pszTemp);
+						int len = strlen(pszMsg);
+						strcat(pszMsg, "\n<color=255,255,255>");
+					}
+				}
+			}
+			else { //Item without setID
+				for (i = -10; i < 10; i++)
+				{
+					TabFile.GetInteger(m_CommonAttrib.nRow + 3 + i, 53, 0, &j); //get group -> j, Group column 53
+					if (j == m_CommonAttrib.nGroup)
+					{
+						TabFile.GetString(m_CommonAttrib.nRow + 3 + i, 1, "", pszTemp, sizeof(pszTemp)); //Name column 1
+						if (strncmp(m_CommonAttrib.szItemName, pszTemp, 7) != 0) //temp fix
+							continue;
+						bFlag = FALSE;
+						if (m_pItems.nPlace > pos_hand) //Check all item in equip that in the set or not
+						{
+							for (k = 0; k < MAX_PLAYER_ITEM; k++)
+							{
+								if (Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetGroup() == m_CommonAttrib.nGroup &&
+									strcmp(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].m_CommonAttrib.szItemName, pszTemp) == 0)
+								{
+									if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip) { //priority in equip
+										bFlag = TRUE;
+										break;
+									}
+									else {
+										bFlag = TRUE; //have item but not equip
+									}
+								}
+							}
+							if (bFlag)
+							{
+								if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip)
+									strcat(pszMsg, "<color=247,195,90>");  //active in equip
+								else
+									strcat(pszMsg, "<color=0,255,0>");		//in another room
+							}
+							else
+								strcat(pszMsg, "<color=35,172,35>"); //Khong co
+						}
+						else
+							strcat(pszMsg, "<color=0,201,0>"); //error
+
+						strcat(pszMsg, pszTemp);
+						int len = strlen(pszMsg);
+						strcat(pszMsg, "\n<color=255,255,255>");
+					}
+				}
+			}
+		}
+	}
+	else if (m_CommonAttrib.nItemNature == NATURE_PLATINA)
+	{
+		BOOL bFlag = FALSE;
+		KTabFile TabFile;
+
+		if (m_CommonAttrib.nItemNature == NATURE_GOLD)
+			bFlag = TabFile.Load(TABFILE_GOLDITEM_FULL_N);
+		else
+			bFlag = TabFile.Load(PLATINA_EQUIP_FILE);
+		if (bFlag)
+		{
+			if (m_CommonAttrib.nDetailType < itempart_horse)
+				strcat(pszMsg, "\n");
+
+			int i, j, k;
+			if (m_CommonAttrib.nSetIDNo >= 1) {
+				for (i = -10; i < 10; i++)
+				{
+					TabFile.GetInteger(m_CommonAttrib.nRow + 3 - m_CommonAttrib.nSetNum + i, 59, 0, &j); //get group -> j, Group column 59
+					if (j == m_CommonAttrib.nGroup)
+					{
+						TabFile.GetString(m_CommonAttrib.nRow + 3 + i, 1, "", pszTemp, sizeof(pszTemp)); //Name column 1
+						bFlag = FALSE;
+						if (m_pItems.nPlace > pos_hand) //Check all item in equip that in the set or not
+						{
+							for (k = 0; k < MAX_PLAYER_ITEM; k++)
+							{
+								if ((Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetGroup() == m_CommonAttrib.nGroup) &&
+									(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetSetID() == m_CommonAttrib.nSetID) &&
+									(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetSetIDNo() == i + 1))
+								{
+									bFlag = TRUE; //have item but not equip
+									break;
+								}
+								else if(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetGroup() == m_CommonAttrib.nGroup
+									&& Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetObjIdx() != m_CommonAttrib.nObjIdx)
+								{
+									bFlag = TRUE; //have item but not equip
+									break;
+								}
+							}
+							if (bFlag)
+							{
+								if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip)
+									strcat(pszMsg, "<color=247,195,90>");  //active in equip
+								else
+									strcat(pszMsg, "<color=0,255,0>");		//in another room
+							}
+							else
+								strcat(pszMsg, "<color=35,172,35>");		//Not exist
+						}
+						else
+							strcat(pszMsg, "<color=0,201,0>");
+
+						strcat(pszMsg, pszTemp);
+						int len = strlen(pszMsg);
+						strcat(pszMsg, "\n<color=255,255,255>");
+					}
+				}
+			}
+			else { //Item without setID
+				for (i = -10; i < 10; i++)
+				{
+					TabFile.GetInteger(m_CommonAttrib.nRow + 3 + i, 59, 0, &j); //get group -> j, Group column 53
+					if (j == m_CommonAttrib.nGroup)
+					{
+						TabFile.GetString(m_CommonAttrib.nRow + 3 + i, 1, "", pszTemp, sizeof(pszTemp)); //Name column 1
+						if (strncmp(m_CommonAttrib.szItemName, pszTemp, 10) != 0) //temp fix
+							continue;
+						bFlag = FALSE;
+						if (m_pItems.nPlace > pos_hand) //Check all item in equip that in the set or not
+						{
+							for (k = 0; k < MAX_PLAYER_ITEM; k++)
+							{
+								if (Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].GetGroup() == m_CommonAttrib.nGroup &&
+									strcmp(Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nIdx].m_CommonAttrib.szItemName, pszTemp) == 0)
+								{
+									if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip) { //priority in equip
+										bFlag = TRUE;
+										break;
+									}
+									else {
+										bFlag = TRUE; //have item but not equip
+									}
+								}
+							}
+							if (bFlag)
+							{
+								if (Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[k].nPlace == pos_equip)
+									strcat(pszMsg, "<color=247,195,90>");  //active in equip
+								else
+									strcat(pszMsg, "<color=0,255,0>");		//in another room
+							}
+							else
+								strcat(pszMsg, "<color=35,172,35>"); //Khong co
+						}
+						else
+							strcat(pszMsg, "<color=0,201,0>"); //error
+
+						strcat(pszMsg, pszTemp);
+						int len = strlen(pszMsg);
+						strcat(pszMsg, "\n<color=255,255,255>");
+					}
+				}
+			}
+		}
+		}
+	KLuaScript* pScript = NULL;
+	g_SetFilePath("\\");
+	//Load Lua script
+	KLuaScript Script;
+	Script.Init();
+	if (Script.Load(m_CommonAttrib.szScript))
+	{
+		pScript = &Script;
+		int nSafeIndex = 1;
+		nSafeIndex = pScript->SafeCallBegin();
+
+		pScript->CallFunction("GetDesc", 1, "d", Player[CLIENT_PLAYER_INDEX].m_ItemList.SearchID(GetID()));
+		if (Lua_IsString(pScript->m_LuaState, Lua_GetTopIndex(pScript->m_LuaState)) == 1)
+		{
+			strcat(pszMsg, "<color=255,255,255>\n");
+			strcat(pszMsg, (char*)Lua_ValueToString(pScript->m_LuaState, Lua_GetTopIndex(pScript->m_LuaState)));
+			strcat(pszMsg, "\n<color=255,255,255>");
+		}
+		nSafeIndex = pScript->SafeCallBegin();
+		pScript->SafeCallEnd(nSafeIndex);
+	}
+
+	if (m_CommonAttrib.nFortune)
+	{
+		sprintf(pszTemp2, "<color=255,255,0>Tr s tµi ph binh gi¸p:<color> <color=0,255,0>%d<color>", m_CommonAttrib.nFortune);
+
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, pszTemp2);
+		strcat(pszMsg, "\n<color=255,255,255>");
+	}
+
+	if ((/*Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PTrade.nTrade || */bShowPrice) &&
+		m_CommonAttrib.nTradePrice)
+	{
+		strcat(pszMsg, "\n");
+		strcat(pszMsg, "<color=255,255,255>Gi niªm yÕt: <color=255,255,0>");
+		if (m_CommonAttrib.nTradePrice < MONEY_FLOOR)
+			sprintf(pszTemp, "%d l­îng", m_CommonAttrib.nTradePrice);
+		else if ((m_CommonAttrib.nTradePrice % MONEY_FLOOR) == 0)
+			sprintf(pszTemp, "%d v¹n l­îng", m_CommonAttrib.nTradePrice / MONEY_FLOOR);
+		else
+			sprintf(pszTemp, "%d v¹n %d l­îng", m_CommonAttrib.nTradePrice / MONEY_FLOOR, m_CommonAttrib.nTradePrice % MONEY_FLOOR);
+		strcat(pszMsg, pszTemp);
+	}
+	strcat(pszMsg, "");
+}
 #endif
 
 int KItem::GetMaxDurability()
@@ -1730,7 +2974,7 @@ int KItem::GetRepairPrice()
 		return 0;
 
 	if(GetGoldId())//neu do hoang kim gia sua gap 5 lan
-		return (m_CommonAttrib.nPrice * ItemSet.m_sRepairParam.nPriceScale / 100 * (nMaxDur - m_nCurrentDur) / nMaxDur * (ItemSet.m_sRepairParam.nMagicScale + nSumMagic) / ItemSet.m_sRepairParam.nMagicScale) * 5;
+		return (m_CommonAttrib.nPrice * ItemSet.m_sRepairParam.nPriceScale / 100 * (nMaxDur - m_nCurrentDur) / nMaxDur * (ItemSet.m_sRepairParam.nMagicScale + nSumMagic) / ItemSet.m_sRepairParam.nMagicScale) * 2;
 
 	return m_CommonAttrib.nPrice * ItemSet.m_sRepairParam.nPriceScale / 100 * (nMaxDur - m_nCurrentDur) / nMaxDur * (ItemSet.m_sRepairParam.nMagicScale + nSumMagic) / ItemSet.m_sRepairParam.nMagicScale;
 }
@@ -1875,6 +3119,14 @@ void KItem::SetExpTime( int bYear,BYTE bMonth,BYTE bDay,BYTE bHour )
 	}
 }
 
+BOOL KItem::CanShortKey()
+{
+	if (m_CommonAttrib.nWidth != 1 || m_CommonAttrib.nHeight != 1)
+		return FALSE;
+
+	return m_CommonAttrib.bShortKey;
+}
+
 BOOL KItem::HaveMaigc( int nAttribe,int nValue1Min,int nValue1Max,int nValue2Min,int nValue2Max,int nValue3Min,int nValue3Max )
 {
 	for (int i = 0;i < 6;i++)
@@ -1927,7 +3179,7 @@ int KItem::GetSalePrice()
 
 BYTE KItem::GetKind()
 {
-	if (GetGoldId())
+	if (GetGoldId() || GetNature() >= NATURE_GOLD)
 	{
 		return gold_item;
 	}
@@ -1947,9 +3199,13 @@ BYTE KItem::GetKind()
 
 int KItem::GetColorItem()
 {
-	if (GetGoldId())
+	if (GetGoldId() || GetNature() == NATURE_GOLD)
 	{
 		return gold_item;
+	}
+	if (GetNature() == NATURE_PLATINA)
+	{
+		return platinum_item;
 	}
 	else if (IsPurple())
 	{

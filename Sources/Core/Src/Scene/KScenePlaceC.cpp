@@ -39,7 +39,7 @@ static bool		l_bPrerenderGround = true;
 		((v) - m_FocusRegion.y) * ((v) - m_FocusRegion.y) <= (range * range) )
 
 #define GET_IN_PROCESS_AREA_REGION(h, v)		\
-	( m_pInProcessAreaRegions[((v) - m_FocusRegion.y + 1) * SPWP_PROCESS_RANGE + (h) - m_FocusRegion.x + 1])
+	( m_pInProcessAreaRegions[((v) - m_FocusRegion.y + 2) * SPWP_PROCESS_RANGE + (h) - m_FocusRegion.x + 2])
 
 //***********************************************************************************************
 // EnvironmentLightÀàµÄÊµÏÖ
@@ -210,7 +210,7 @@ KScenePlaceC::KScenePlaceC()
 	for (int i = 0; i < SPWP_MAX_NUM_REGIONS; i++)
 		m_pRegions[i] = &m_RegionObjs[i];
 	memset(&m_pInProcessAreaRegions, 0, sizeof(m_pInProcessAreaRegions));
-	memset(&m_RegionGroundImages, 0, sizeof(m_RegionGroundImages));
+	//memset(&m_RegionGroundImages, 0, sizeof(m_RegionGroundImages));
 	m_nNumGroundImagesAvailable = 0;
 
 	m_bRenderGround = false;
@@ -427,11 +427,21 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 		{
 			KRUImage* pImage = &m_RegionGroundImages[m_nNumGroundImagesAvailable];
 			pImage->bRenderStyle = IMAGE_RENDER_STYLE_OPACITY;
-			pImage->nType = ISI_T_BITMAP16;
 			sprintf(pImage->szImage, "_*PlaceGround*_#~%d~#_", i);
+			if(g_pRepresent->IsRep3D())
+			{
+			pImage->nType = ISI_T_BITMAP16;
 			pImage->uImage = g_pRepresent->CreateImage(
 				pImage->szImage, KScenePlaceRegionC::RWPP_AREGION_WIDTH,
 				KScenePlaceRegionC::RWPP_AREGION_HEIGHT / 2, ISI_T_BITMAP16);
+			}
+			else
+			{
+			pImage->nType = ISI_T_DRAWINGRC;
+			pImage->uImage = g_pRepresent->CreateImage(
+				pImage->szImage, KScenePlaceRegionC::RWPP_AREGION_WIDTH,
+				KScenePlaceRegionC::RWPP_AREGION_HEIGHT / 2, ISI_T_DRAWINGRC);
+			}
 			if (pImage->uImage)
 				m_nNumGroundImagesAvailable ++;
 		}
@@ -780,9 +790,9 @@ void KScenePlaceC::LoadProcess()
 				EnterCriticalSection(&m_LoadCritical);
 				pRegion->Load(m_szPlaceRootPath);
 				LeaveCriticalSection(&m_LoadCritical);
-				g_DebugLog("[Scene]Enter ARegionLoaded");
+			//	g_DebugLog("[Scene]Enter ARegionLoaded");
 				ARegionLoaded(pRegion);
-				g_DebugLog("[Scene]Leave ARegionLoaded");
+			//	g_DebugLog("[Scene]Leave ARegionLoaded");
 			}
 		}
         else if (dwRetCode == WAIT_TIMEOUT)
@@ -793,7 +803,7 @@ void KScenePlaceC::LoadProcess()
             if (m_nFirstToLoadIndex >= 0)
                 continue;   // ËµÃ÷»¹ÔÚ¼ÓÔØ¹ý³ÌÖÐ
 
-            g_DebugLog("[Scene]Process Preload SPR");
+            //g_DebugLog("[Scene]Process Preload SPR");
 
             PreLoadProcess();
         }
@@ -1094,6 +1104,7 @@ void KScenePlaceC::Paint()
 
 	//========
 #ifdef SWORDONLINE_SHOW_DBUG_INFO
+	//g_bShowObstacle = true;
 	if (g_bShowObstacle)
 	{
 		for (i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
@@ -1104,7 +1115,7 @@ void KScenePlaceC::Paint()
 			}
 		}
 	}
-
+//	g_bShowGameInfo = true;
 	if (g_bShowGameInfo)
 	{
 		KRUShadow	Shadow;
@@ -1161,7 +1172,7 @@ void KScenePlaceC::ChangeProcessArea()
 		if (m_pInProcessAreaRegions[i])
 		{
 			m_pInProcessAreaRegions[i]->GetRegionIndex(h, v);
-			if (INSIDE_AREA(h, v, 1) == 0)
+			if (INSIDE_AREA(h, v, 3) == 0)
 				m_pInProcessAreaRegions[i]->LeaveProcessArea();
 			m_pInProcessAreaRegions[i] = NULL;
 		}
@@ -1175,7 +1186,7 @@ void KScenePlaceC::ChangeProcessArea()
 	for (i = 0; i < nNum; i++)
 	{
 		m_pRegions[i]->GetRegionIndex(h, v);
-		if (INSIDE_AREA(h, v, 1))
+		if (INSIDE_AREA(h, v, 3))
 		{
 			GET_IN_PROCESS_AREA_REGION(h, v) = m_pRegions[i];
 			pImage = m_pRegions[i]->GetPrerenderGroundImage();
@@ -1394,6 +1405,9 @@ void KScenePlaceC::Preprocess()
 		{
 			pNode1->pObjs = (KIpotBuildinObj*)pObj->pBrother;
 			pObj->pBrother = NULL;
+			if (pObj->oEndPos.x == pObj->oPosition.x) {
+				pObj->oEndPos.x = -1;
+			}
 			m_ObjectsTree.AddBranch(pObj);
 		}
 		delete pNode1;	
@@ -1561,7 +1575,7 @@ void KScenePlaceC::ARegionLoaded(KScenePlaceRegionC* pRegion)
 
 	KRUImage* pImage = NULL;
 	pRegion->GetRegionIndex(h, v);
-	if (INSIDE_AREA(h, v, 1))
+	if (INSIDE_AREA(h, v, 3))
 	{
 		EnterCriticalSection(&m_ProcessCritical);
 		if (l_bPrerenderGround)
@@ -1825,6 +1839,16 @@ void KScenePlaceC::PaintMap(int nX, int nY)
 	m_Map.PaintMap(nX, nY);
 }
 
+void KScenePlaceC::PaintMapPoint(int nX, int nY)
+{
+	m_Map.PaintAPoint(nX, nY);
+}
+
+void KScenePlaceC::PaintPUBGCircle(int nX, int nY, int Radius)
+{
+	m_Map.PaintCircle(nX, nY, Radius);
+
+}
 void KScenePlaceC::SetMapParam(unsigned int uShowElems, int nSize)
 {
 	m_Map.SetShowElemsFlag(uShowElems);
@@ -1971,7 +1995,7 @@ BOOL KScenePlaceC::PaintBackGround() //add by phong kiÒu h×nh nÒn hoa s¬n
 	{
 		for (int i = 0; i < m_nBackGroundImages; i++)
 		{
-			if ((m_FocusRegion.x > BGArea[i].left	|| BGArea[i].left == 0	) && //debug to¹ ®é t¹i ®©y ®Æt breakpoint
+			if ((m_FocusRegion.x > BGArea[i].left	|| BGArea[i].left == 0	) && //debug to?®é t¹i ®©y ®Æt breakpoint
 				(m_FocusRegion.y < BGArea[i].bottom || BGArea[i].bottom == 0) && 
 				(m_FocusRegion.x < BGArea[i].right	|| BGArea[i].right == 0	) && 
 				(m_FocusRegion.y > BGArea[i].top	|| BGArea[i].top == 0)	)

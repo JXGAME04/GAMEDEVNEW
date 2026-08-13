@@ -8,6 +8,12 @@
 #define	REQUEST_EQUIP_ITEM		1
 #define	REQUEST_EAT_MEDICINE	2
 
+enum
+{
+	enable_trade = 1,
+	enable_gamble = 2,
+};
+
 typedef struct
 {
 	int		nPlace;
@@ -23,6 +29,7 @@ private:
 	int			m_HandSkill;
 	int			m_nBackHand;
 	int			m_EquipItem[itempart_num];
+	int			m_AltEquipmentItem[itempart_num];
 	int			m_TrembleItem[compoundpart_num];
 
 	PlayerItem	m_sBackItems[MAX_PLAYER_ITEM];				
@@ -30,11 +37,14 @@ private:
 	static int	ms_ActivedEquip[itempart_num][MAX_ITEM_ACTIVE];	
 	KLinkArray	m_FreeIdx;
 	KLinkArray	m_UseIdx;
-	int				  m_nListCurIdx;								
+	int				  m_nListCurIdx;
+	int m_nGoldEquipSuiteID;
 	BOOL		 m_bActiveSet;
 	BOOL		 m_nMaskLock;	//#mat na
+	int			m_nItemsCount;		// so luong item
 #ifndef _SERVER
 	BOOL		m_bLockOperation;
+	int 		m_nLockTimeout;
 #endif
 public:
 	PlayerItem		  m_Items[MAX_PLAYER_ITEM];						
@@ -42,17 +52,19 @@ public:
 	int					   FindSame(int nGameIdx);
 	int			FindSame(DWORD dwID);
 
+	//implement function that count items in all room
+	int			CountItemInAll();
 #ifdef _SERVER
 	BOOL        CheckItemInAll(int nIdx);//add by phong kiÒu antihack
 	int 			  FindNumberInAll(int nIdx);
 #endif	
-
+	int			GetEquipPlace(int nType);						
 private:
 	int			FindFree();
-	int			GetEquipPlace(int nType);						
 	BOOL		Fit(int nIdx, int nPlace);						
 	BOOL		Fit(KItem* pItem, int nPlace);
-	int			GetEquipEnhance(int nPlace);					
+	int			GetEquipEnhance(int nPlace);
+	int			GetGoldEquipEnhance(int nPlace);
 	int			GetActiveEquipPlace(int nPlace, int nCount);	
 	void		InfectionNextEquip(int nPlace, BOOL bEquip = FALSE);
 	BOOL		FindSameDetailTypeInEquipment(int nGenre, int nDetail, int nParticular, int *pnIdx, int *pnX, int *pnY);
@@ -66,8 +78,18 @@ public:
 	KItemList();
 	~KItemList();
 	int			Init(int nIdx);
-	int			GetEquipment(int nIdx) { return m_EquipItem[nIdx]; }
-	int			GetActiveAttribNum(int nIdx);			
+	int			GetEquipment(int nIdx) { 
+		if(nIdx >=0 && nIdx < itempart_num)
+			return m_EquipItem[nIdx];
+		return 0;
+	}
+	int			GetAltEquipment(int nIdx) {
+		if (nIdx >= 0 && nIdx < itempart_num)
+			return m_AltEquipmentItem[nIdx];
+		return 0;
+	}
+	int			GetActiveAttribNum(int nIdx);
+	int			GetGoldActiveAttribNum(int nIdx);
 	int			GetWeaponType();							
 	int			GetWeaponParticular();					
 	void		GetWeaponDamage(int* nMin, int* nMax);		
@@ -84,7 +106,7 @@ public:
 	BOOL		EatMecidine(int nIdx);							
 	PlayerItem*	GetFirstItem();
 	PlayerItem*	GetNextItem();
-	int			SearchID(int nID);
+	int			SearchID(int nID, int* pRetPlace = NULL, int* pRetX = NULL, int* pRetY = NULL);
 	void		ExchangeMoney(int nSrcRoom, int DesRoom, int nMoney);
 	void		ExchangeItem(ItemPos* SrcPos,ItemPos* DesPos);
 	BOOL	SetLockItem(int ItemIdx, int lock);
@@ -92,8 +114,8 @@ public:
 	int			GetMoneyAmount();					
 	int			GetEquipmentMoney();			
 	int			GetTradeMoney();				
-	BOOL		AddMoney(int nRoom, int nMoney);
-	BOOL		CostMoney(int nMoney);
+	BOOL		AddMoney(int nRoom, int nMoney, bool Gamble = false);
+	BOOL		CostMoney(int nMoney, bool Gamble = false);
 	BOOL		DecMoney(int nMoney);
 	void		SetMoney(int nMoney1, int nMoney2, int nMoney3);
 	void		SetRoomMoney(int nRoom, int nMoney);
@@ -113,6 +135,7 @@ public:
 	void		BackupTrade();
 	void		RecoverTrade();
 	void		StartTrade();
+	void		RestartTrade();
 	int			GetItemNum(int nGenre, int nDetailType, int nParticular, int nLevel); // dem so item cung loai
 	int			CountCommonItem(int nItemNature, int nItemGenre, int nDetailType = -1, int nParticularType = -1, int nLevel = -1, int nSeries = -1,  int Place = pos_equiproom); //#edit by Fong Kieu 07/06/2021
 	int			CalcFreeItemCellCount(int nWidth, int nHeight, int nRoom);
@@ -124,12 +147,17 @@ public:
 	void		UnTrembleItem(int nIdx, int nPlace = -1);					
 	int			GetTrembleItem(int nIdx) { return m_TrembleItem[nIdx]; }
 	BOOL		GetIfActive();
+	BOOL		GetIfActive(int nItemIdx);
 	BOOL		GetMaskLock() {return m_nMaskLock;};	//#mat na
-	void		SetMaskLock(BOOL bFlag);// mat na
+	void		SetMaskLock(BOOL bFlag);
+	BOOL		IsEnoughToActive();
+	BOOL		CheckCanPlaceInEquipment(int nWidth, int nHeight, int *pnX, int *pnY, int nRoom = room_equipment);
+	// mat na
 #ifdef	_SERVER
 	void		Abrade(int nType, BOOL isDeathPunish); //#mai mon
 	void		TradeMoveMoney(int nMoney);	
-	void		SendMoneySync();		
+	void		GambleMoveMoney(int nMoney);
+	void		SendMoneySync(bool Gamble = false);		
 	BOOL		IsItemExist(int nGern,int nDetailType,int nPar,int nSerise = 5,int nLevel = 0);
 	BOOL		DelExistItem(int nGern,int nDetailType,int nPar,int nSerise = 5,int nLevel = 0);
 	BOOL		IsTaskItemExist(int nDetailType, BYTE bType = 1);
@@ -141,7 +169,6 @@ public:
 	BOOL		IsGoldItemExist(int nDetailType);
 	void		    GetTradeRoomItemInfo();		
 	BOOL		TradeCheckCanPlace();			
-	BOOL		CheckCanPlaceInEquipment(int nWidth, int nHeight, int *pnX, int *pnY);
 	BOOL		EatMecidine(int nPlace, int nX, int nY);		
 	BOOL		AutoMoveMedicine(int nItemIdx, int nSrcX, int nSrcY, int nDestX, int nDestY);
 	void		AutoLoseItemFromEquipmentRoom(int nRate);
@@ -157,10 +184,12 @@ public:
 	int			GetPrice(int nGameIdx);
 	void		CheckItemTime();
 	void		SyncItem(int nIdx, int nPlace = 0, int nX = 0, int nY = 0, int nPlayerIndex = 0, bool m_bIsNew = false);
+	void		SyncItemMagicAttrib(int nIdx);
 	void		InsertEquipment(int nIdx, bool bAutoStack = false);
 	BOOL		CheckItemEquipCS();
 #endif
 	int			PositionToIndex(int P, int i);
+	void UnEquipSuitExtSkill(int nSkillID, int nNpcIdx);
 #ifndef	_SERVER
 	int				 UseItem(int nIdx);					
 	int				 ChangeItemInPlayer(int nIdx);//edit by phong kieu mac trang bi vao nguoi
@@ -169,7 +198,18 @@ public:
 	void			RemoveAllInOneRoom(int nRoom);
 	void			LockOperation();										
 	void			UnlockOperation();
-	BOOL		IsLockOperation() { return m_bLockOperation; };
+	//improve IsLockOperation with a timeout
+	BOOL		IsLockOperation() { 
+		if (m_nLockTimeout > 0)
+		{
+			if (GetTickCount() - m_nLockTimeout > 3000) //1s
+			{
+				m_bLockOperation = FALSE;
+				m_nLockTimeout = 0;
+			}
+		}
+		return m_bLockOperation; 
+	};
 	int				 GetSameDetailItemNum(int nImmediatePos);
 	int				 GetGoldColor(int nSet,int nId);
 	BOOL		AutoUseItem(int nGenre, int nDetailType, int nParticular, int nPlayerIndex);	

@@ -134,7 +134,7 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 		"update Account_Habitus set iLeftSecond = iLeftSecond - IF(dLoginDate IS NOT NULL, TIME_TO_SEC(ABS(TIMEDIFF(dLoginDate, NOW()))), 0) where (iClientID = %d) and (cAccName = '%s')",
 		ClientID, strAccName);
 	pConn->Do(strSQL);	//Points will be deducted, even if the account is frozen
-
+	/*
 	if (nExtPoint != 0)
 	{
 			sprintf(strSQL, "update Account_Habitus set nExtPoint = CASE WHEN nExtPoint - %d >= 0 THEN nExtPoint - %d WHEN nExtPoint - %d < 0 THEN 0 END where (iClientID = %d or iClientID = %d) and (cAccName = '%s')",
@@ -142,7 +142,7 @@ int S3PAccount::Logout(S3PDBConVBC* pConn, DWORD ClientID, const char* strAccNam
 		//sprintf(strSQL, "EXEC Account_ExPoint '%s',%d", strAccName, nExtPoint);
 		pConn->Do(strSQL);	//Additional points will be deducted, even if the account is frozen
 		//Split into two sentences because the executed SQL has a length limit
-	}
+	}*/
 
 	DWORD NewClientID = 0;
 	iRet = GetAccountGameID(pConn, strAccName, NewClientID);

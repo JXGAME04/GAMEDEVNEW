@@ -43,7 +43,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\..\..\bin\server</OutDir>
+    <OutDir>..\..\..\..\bin\multiserver</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -123,9 +123,7 @@ copy debug\Sword3PaySys.exe ..\..\..\..\bin\Server\Sword3PaySys.exe</Command>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client\release\
-copy release\Sword3PaySys.exe ..\..\..\..\bin\Server\Sword3PaySys.exe
-copy release\Sword3PaySys.exe ..\..\..\..\bin\Server\release\Sword3PaySys.exe</Command>
+      <Command>copy release\Sword3PaySys.exe ..\..\..\..\bin\multiserver\Sword3PaySys.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

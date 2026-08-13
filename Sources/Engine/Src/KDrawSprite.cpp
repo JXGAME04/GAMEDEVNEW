@@ -19,15 +19,16 @@
 //---------------------------------------------------------------------------
 void g_DrawSprite(void* node, void* canvas)
 {
+#ifndef _WIN64
 	KDrawNode* pNode = (KDrawNode *)node;
 	KCanvas* pCanvas = (KCanvas *)canvas;
 	
-	// 对绘制区域进行裁剪
+	// ????????óò??DD2???
 	KClipper Clipper;
 	if (pCanvas->MakeClip(pNode->m_nX, pNode->m_nY, pNode->m_nWidth, pNode->m_nHeight, &Clipper) == 0)
 		return;
 
-	// pBuffer指向屏幕绘制行的头一个像点处 
+	// pBuffer???ò?á??????DDμ?í·ò?????μ?′| 
 	int nPitch;
 	void* pBuffer = pCanvas->LockCanvas(nPitch);
 	if (pBuffer == NULL)
@@ -35,23 +36,19 @@ void g_DrawSprite(void* node, void* canvas)
 	pBuffer = (char*)(pBuffer) + Clipper.y * nPitch;
 	void* pPalette	= pNode->m_pPalette;// palette pointer
 	void* pSprite = pNode->m_pBitmap;	// sprite pointer
-	long nMask32 = pCanvas->m_nMask32;	// rgb mask32
-	long nBuffNextLine = nPitch - Clipper.width * 2;// next line add
-	long nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
-	long nSprSkipPerLine = Clipper.left + Clipper.right;
-
-#ifdef _WIN64
-#else
+	int nBuffNextLine = nPitch - Clipper.width * 2;// next line add
+	int nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
+	int nSprSkipPerLine = Clipper.left + Clipper.right;
 
 	__asm
 	{
-		//使edi指向buffer绘制起点,	(以字节计)	
+		//ê1edi???òbuffer?????eμ?,	(ò?×??ú??)	
 		mov		edi, pBuffer
 		mov		eax, Clipper.x
 		add		edi, eax
 		add		edi, eax
 
-		//使esi指向图块数据起点,(跳过nSprSkip个像点的图形数据)
+		//ê1esi???òí??éêy?Y?eμ?,(ì?1ynSprSkip????μ?μ?í?D?êy?Y)
 		mov		esi, pSprite
 		//_SkipSpriteAheadContent_:
 		{
@@ -88,7 +85,7 @@ void g_DrawSprite(void* node, void* canvas)
 
 		//_DrawFullLineSection_:
 		{
-			//因为sprite不会跨行压缩，则运行到此处edx必为0，如sprite会跨行压缩则_DrawFullLineSection_需改			
+			//òò?asprite2??á??DD?1??￡??ò??DDμ?′?′|edx±??a0￡?è?sprite?á??DD?1???ò_DrawFullLineSection_Dè??			
 			_DrawFullLineSection_Line_:
 			{
 				mov		edx, Clipper.width
@@ -169,7 +166,7 @@ void g_DrawSprite(void* node, void* canvas)
 			_DrawPartLineSection_LineSkip_:
 			{
 				add		edi, nBuffNextLine
-				//跳过nSprSkipPerLine像素的sprite内容
+				//ì?1ynSprSkipPerLine????μ?sprite?úèY
 				mov		eax, edx
 				mov		edx, nSprSkipPerLine
 				or		eax, eax
@@ -199,7 +196,7 @@ void g_DrawSprite(void* node, void* canvas)
 			_DrawPartLineSection_LineLocal_Alpha_:
 			{
 				sub		edx, eax
-				jle		_DrawPartLineSection_LineLocal_Alpha_Part_		//不能全画这eax个相同alpha值的像点，后面有点已经超出区域
+				jle		_DrawPartLineSection_LineLocal_Alpha_Part_		//2??üè??-?aeax???àí?alpha?μμ???μ?￡?oó??óDμ?ò??-3?3???óò
 
 				mov		ecx, eax
 				mov     ebx, pPalette
@@ -225,7 +222,7 @@ void g_DrawSprite(void* node, void* canvas)
 				dec		Clipper.height
 				jz		_EXIT_WAY_
 				neg		edx
-				mov		ebx, 255	//如果想要确切的原ebx(alpha)值可以在前头push ebx，此处pop获得
+				mov		ebx, 255	//è?1???òaè·?Dμ??-ebx(alpha)?μ?éò??ú?°í·push ebx￡?′?′|pop??μ?
 				jmp		_DrawPartLineSection_LineSkip_
 			}
 		}
@@ -254,7 +251,7 @@ void g_DrawSprite(void* node, void* canvas)
 			_DrawPartLineSection_SkipLeft_LineSkip_:
 			{
 				add		edi, nBuffNextLine
-				//跳过nSprSkipPerLine像素的sprite内容
+				//ì?1ynSprSkipPerLine????μ?sprite?úèY
 				mov		edx, nSprSkipPerLine
 				_DrawPartLineSection_SkipLeft_LineSkipLocal_:
 				{
@@ -278,7 +275,7 @@ void g_DrawSprite(void* node, void* canvas)
 			}
 			_DrawPartLineSection_SkipLeft_LineLocal_Alpha_:
 			{
-				sub		edx, eax		;先把eax减了，这样後面就可以不需要保留eax了
+				sub		edx, eax
 				mov		ecx, eax						
 				mov     ebx, pPalette
 				_DrawPartLineSection_SkipLeft_CopyPixel_:
@@ -318,7 +315,7 @@ void g_DrawSprite(void* node, void* canvas)
 			_DrawPartLineSection_SkipRight_LineSkip_:
 			{
 				add		edi, nBuffNextLine
-				//跳过nSprSkipPerLine像素的sprite内容
+				//ì?1ynSprSkipPerLine????μ?sprite?úèY
 				mov		eax, edx
 				mov		edx, nSprSkipPerLine
 				or		eax, eax
@@ -345,7 +342,7 @@ void g_DrawSprite(void* node, void* canvas)
 			_DrawPartLineSection_SkipRight_LineLocal_Alpha_:
 			{
 				sub		edx, eax
-				jle		_DrawPartLineSection_SkipRight_LineLocal_Alpha_Part_		//不能全画这eax个相同alpha值的像点，后面有点已经超出区域
+				jle		_DrawPartLineSection_SkipRight_LineLocal_Alpha_Part_		//2??üè??-?aeax???àí?alpha?μμ???μ?￡?oó??óDμ?ò??-3?3???óò
 
 				mov		ecx, eax				
 				mov     ebx, pPalette
@@ -367,13 +364,370 @@ void g_DrawSprite(void* node, void* canvas)
 					loop	_DrawPartLineSection_SkipRight_CopyPixel_Part_
 				}
 				neg		edx
-				mov		ebx, 255	//如果想要确切的原ebx(alpha)值可以在前头push ebx，此处pop获得
+				mov		ebx, 255	//è?1???òaè·?Dμ??-ebx(alpha)?μ?éò??ú?°í·push ebx￡?′?′|pop??μ?
 				dec		Clipper.height
 				jg		_DrawPartLineSection_SkipRight_LineSkip_
 				jmp		_EXIT_WAY_
 			}
 		}
 		_EXIT_WAY_:
+	}
+	pCanvas->UnlockCanvas();
+#endif
+}
+
+void g_DrawSprite32b(void* node, void* canvas)
+{
+#ifndef _WIN64
+	KDrawNode* pNode = (KDrawNode *)node;
+	KCanvas* pCanvas = (KCanvas *)canvas;
+	
+	// ????????óò??DD2???
+	KClipper Clipper;
+	if (pCanvas->MakeClip(pNode->m_nX, pNode->m_nY, pNode->m_nWidth, pNode->m_nHeight, &Clipper) == 0)
+		return;
+
+	// pBuffer???ò?á??????DDμ?í·ò?????μ?′| 
+	int nPitch;
+	void* pBuffer = pCanvas->LockCanvas(nPitch);
+	if (pBuffer == NULL)
+		return;
+	pBuffer = (char*)(pBuffer) + Clipper.y * nPitch;
+	void* pPalette	= pNode->m_pPalette;// palette pointer
+	void* pSprite = pNode->m_pBitmap;	// sprite pointer
+	int nBuffNextLine = nPitch - Clipper.width * 4;// next line add
+	int nSprSkip = pNode->m_nWidth * Clipper.top + Clipper.left;
+	int nSprSkipPerLine = Clipper.left + Clipper.right;
+
+	__asm
+	{
+		//?i ??n pBuffer + Clipper.y * nPitch + Clipper.x*4
+		mov		edi, pBuffer
+		mov		eax, Clipper.x
+		imul	eax, 4
+		add		edi, eax
+
+		//d÷ li?u sprite
+		mov		esi, pSprite
+		//_SkipSpriteAheadContent_:
+		{
+			mov		edx, nSprSkip
+			or		edx, edx
+			jz		_SkipSpriteAheadContentEnd_
+
+			_SkipSpriteAheadContentLocalStart_:
+			{	//??c sè l-?ng ?ióm eax vμ alpha ebx (2 bytes)
+				read_alpha_2_ebx_run_length_2_eax
+				or		ebx, ebx
+				jnz		_SkipSpriteAheadContentLocalAlpha_
+				sub		edx, eax
+				jg		_SkipSpriteAheadContentLocalStart_
+				neg		edx	//edx <= 0 sè l-?ng v-?t qu? c?a nSprSkip
+				jmp		_SkipSpriteAheadContentEnd_
+
+				_SkipSpriteAheadContentLocalAlpha_://n?u alpha > 0 th× esi+
+				{
+					add		esi, eax
+					sub		edx, eax
+					jg		_SkipSpriteAheadContentLocalStart_
+					add		esi, edx	//edx <= 0 tr? l1i esi ptr 
+					neg		edx
+					jmp		_SkipSpriteAheadContentEnd_
+				}
+			}
+		}
+		_SkipSpriteAheadContentEnd_:
+		mov		eax, nSprSkipPerLine
+		or		eax, eax
+		jnz		_DrawPartLineSection_	//if (nSprSkipPerLine) goto _DrawPartLineSection_
+
+		//_DrawFullLineSection_:
+		{
+			//v? full spr kh?ng èn ph?n nμo			
+			_DrawFullLineSection_Line_:
+			{
+				mov		edx, Clipper.width
+				_DrawFullLineSection_LineLocal_:
+				{	//??c sè l-?ng ?ióm eax vμ alpha ebx (2 bytes)
+					read_alpha_2_ebx_run_length_2_eax
+					or		ebx, ebx
+					jnz		_DrawFullLineSection_LineLocal_Alpha_
+					lea     edi, [edi + eax * 4]//nh?y edi qua sè l-?ng ?ióm eax
+					sub		edx, eax
+					jg		_DrawFullLineSection_LineLocal_
+
+					add		edi, nBuffNextLine
+					dec		Clipper.height
+					jnz		_DrawFullLineSection_Line_
+					jmp		_EXIT_WAY_
+				
+					_DrawFullLineSection_LineLocal_Alpha_:
+					{
+						sub		edx, eax
+						mov		ecx, eax
+						mov     ebx, pPalette
+						_DrawFullLineSection_CopyPixel_:
+						{
+							copy_pixel_use_eax_32b
+							dec     ecx
+                            jnz     _DrawFullLineSection_CopyPixel_
+						}
+						or		edx, edx
+						jnz		_DrawFullLineSection_LineLocal_
+
+						add		edi, nBuffNextLine
+						dec		Clipper.height
+						jnz		_DrawFullLineSection_Line_
+						jmp		_EXIT_WAY_
+					}
+				}
+			}
+		}
+
+		_DrawPartLineSection_:
+		{
+			mov		eax, Clipper.left
+			or		eax, eax
+			jz		_DrawPartLineSection_SkipRight_Line_
+
+			mov		eax, Clipper.right
+			or		eax, eax
+			jz		_DrawPartLineSection_SkipLeft_Line_
+		}
+
+		_DrawPartLineSection_Line_:
+		{
+			mov		eax, edx
+			mov		edx, Clipper.width
+			or		eax, eax
+			jnz		_DrawPartLineSection_LineLocal_CheckAlpha_
+			_DrawPartLineSection_LineLocal_:
+			{
+				read_alpha_2_ebx_run_length_2_eax
+				_DrawPartLineSection_LineLocal_CheckAlpha_:
+				or		ebx, ebx
+				jnz		_DrawPartLineSection_LineLocal_Alpha_
+				lea     edi, [edi + eax * 4]//nh?y edi qua sè l-?ng ?ióm eax
+				sub		edx, eax
+				jg		_DrawPartLineSection_LineLocal_
+
+				dec		Clipper.height
+				jz		_EXIT_WAY_
+
+				lea     edi, [edi + edx * 4]//nh?y edi qua sè l-?ng ?ióm edx
+				neg		edx
+			}
+			
+			_DrawPartLineSection_LineSkip_:
+			{
+				add		edi, nBuffNextLine
+				mov		eax, edx
+				mov		edx, nSprSkipPerLine
+				or		eax, eax
+				jnz		_DrawPartLineSection_LineSkipLocal_CheckAlpha_
+				_DrawPartLineSection_LineSkipLocal_:
+				{
+					read_alpha_2_ebx_run_length_2_eax
+					
+					_DrawPartLineSection_LineSkipLocal_CheckAlpha_:
+					or		ebx, ebx
+					jnz		_DrawPartLineSection_LineSkipLocal_Alpha_
+					sub		edx, eax
+					jg		_DrawPartLineSection_LineSkipLocal_
+					neg		edx
+					jmp		_DrawPartLineSection_Line_
+					_DrawPartLineSection_LineSkipLocal_Alpha_:
+					{
+						add		esi, eax
+						sub		edx, eax
+						jg		_DrawPartLineSection_LineSkipLocal_
+						add		esi, edx
+						neg		edx
+						jmp		_DrawPartLineSection_Line_
+					}
+				}
+			}
+			_DrawPartLineSection_LineLocal_Alpha_:
+			{
+				sub		edx, eax
+				jle		_DrawPartLineSection_LineLocal_Alpha_Part_		//2??üè??-?aeax???àí?alpha?μμ???μ?￡?oó??óDμ?ò??-3?3???óò
+
+				mov		ecx, eax
+				mov     ebx, pPalette
+
+				_DrawPartLineSection_CopyPixel_:
+				{
+					copy_pixel_use_eax_32b
+					dec ecx
+					jnz	_DrawPartLineSection_CopyPixel_
+				}
+				jmp		_DrawPartLineSection_LineLocal_
+			}
+			_DrawPartLineSection_LineLocal_Alpha_Part_:
+			{
+				add		eax, edx
+				mov		ecx, eax
+				mov     ebx, pPalette
+				_DrawPartLineSection_CopyPixel_Part_:
+				{
+					copy_pixel_use_eax_32b
+					dec ecx
+					jnz	_DrawPartLineSection_CopyPixel_Part_
+				}
+			
+				dec		Clipper.height
+				jz		_EXIT_WAY_
+				neg		edx
+				mov		ebx, 255	//è?1???òaè·?Dμ??-ebx(alpha)?μ?éò??ú?°í·push ebx￡?′?′|pop??μ?
+				jmp		_DrawPartLineSection_LineSkip_
+			}
+		}
+
+		_DrawPartLineSection_SkipLeft_Line_:
+		{
+			mov		eax, edx
+			mov		edx, Clipper.width
+			or		eax, eax
+			jnz		_DrawPartLineSection_SkipLeft_LineLocal_CheckAlpha_
+			_DrawPartLineSection_SkipLeft_LineLocal_:
+			{
+				read_alpha_2_ebx_run_length_2_eax
+				_DrawPartLineSection_SkipLeft_LineLocal_CheckAlpha_:
+				or		ebx, ebx
+				jnz		_DrawPartLineSection_SkipLeft_LineLocal_Alpha_
+				lea     edi, [edi + eax * 4]//nh?y edi qua sè l-?ng ?ióm eax
+				sub		edx, eax
+				jg		_DrawPartLineSection_SkipLeft_LineLocal_
+
+				dec		Clipper.height
+				jz		_EXIT_WAY_
+			}
+			
+			_DrawPartLineSection_SkipLeft_LineSkip_:
+			{
+				add		edi, nBuffNextLine
+				//ì?1ynSprSkipPerLine????μ?sprite?úèY
+				mov		edx, nSprSkipPerLine
+				_DrawPartLineSection_SkipLeft_LineSkipLocal_:
+				{
+					read_alpha_2_ebx_run_length_2_eax
+					or		ebx, ebx
+					jnz		_DrawPartLineSection_SkipLeft_LineSkipLocal_Alpha_
+					sub		edx, eax
+					jg		_DrawPartLineSection_SkipLeft_LineSkipLocal_
+					neg		edx
+					jmp		_DrawPartLineSection_SkipLeft_Line_
+					_DrawPartLineSection_SkipLeft_LineSkipLocal_Alpha_:
+					{
+						add		esi, eax
+						sub		edx, eax
+						jg		_DrawPartLineSection_SkipLeft_LineSkipLocal_
+						add		esi, edx
+						neg		edx
+						jmp		_DrawPartLineSection_SkipLeft_Line_
+					}
+				}
+			}
+			_DrawPartLineSection_SkipLeft_LineLocal_Alpha_:
+			{
+				sub		edx, eax		//?è°?eax??á?￡??a?ùáá???í?éò?2?Dèòa±￡á?eaxá?
+				mov		ecx, eax						
+				mov     ebx, pPalette
+				_DrawPartLineSection_SkipLeft_CopyPixel_:
+				{
+					copy_pixel_use_eax_32b
+					dec ecx
+					jnz	_DrawPartLineSection_SkipLeft_CopyPixel_
+				}
+				or		edx, edx
+				jnz		_DrawPartLineSection_SkipLeft_LineLocal_
+				dec		Clipper.height
+				jg		_DrawPartLineSection_SkipLeft_LineSkip_
+				jmp		_EXIT_WAY_
+			}
+		}
+
+		_DrawPartLineSection_SkipRight_Line_:
+		{
+			mov		edx, Clipper.width
+			_DrawPartLineSection_SkipRight_LineLocal_:
+			{
+				read_alpha_2_ebx_run_length_2_eax
+				or		ebx, ebx
+				jnz		_DrawPartLineSection_SkipRight_LineLocal_Alpha_
+				lea     edi, [edi + eax * 4]//nh?y edi qua sè l-?ng ?ióm eax
+				sub		edx, eax
+				jg		_DrawPartLineSection_SkipRight_LineLocal_
+
+				dec		Clipper.height
+				jz		_EXIT_WAY_
+
+				lea     edi, [edi + edx * 4]//nh?y edi qua sè l-?ng ?ióm edx
+				neg		edx
+			}
+			
+			_DrawPartLineSection_SkipRight_LineSkip_:
+			{
+				add		edi, nBuffNextLine
+				//ì?1ynSprSkipPerLine????μ?sprite?úèY
+				mov		eax, edx
+				mov		edx, nSprSkipPerLine
+				or		eax, eax
+				jnz		_DrawPartLineSection_SkipRight_LineSkipLocal_CheckAlpha_
+				_DrawPartLineSection_SkipRight_LineSkipLocal_:
+				{
+					read_alpha_2_ebx_run_length_2_eax
+					
+					_DrawPartLineSection_SkipRight_LineSkipLocal_CheckAlpha_:
+					or		ebx, ebx
+					jnz		_DrawPartLineSection_SkipRight_LineSkipLocal_Alpha_
+					sub		edx, eax
+					jg		_DrawPartLineSection_SkipRight_LineSkipLocal_
+					jmp		_DrawPartLineSection_SkipRight_Line_
+					_DrawPartLineSection_SkipRight_LineSkipLocal_Alpha_:
+					{
+						add		esi, eax
+						sub		edx, eax
+						jg		_DrawPartLineSection_SkipRight_LineSkipLocal_
+						jmp		_DrawPartLineSection_SkipRight_Line_
+					}
+				}
+			}
+			_DrawPartLineSection_SkipRight_LineLocal_Alpha_:
+			{
+				sub		edx, eax
+				jle		_DrawPartLineSection_SkipRight_LineLocal_Alpha_Part_		//2??üè??-?aeax???àí?alpha?μμ???μ?￡?oó??óDμ?ò??-3?3???óò
+
+				mov		ecx, eax				
+				mov     ebx, pPalette
+				_DrawPartLineSection_SkipRight_CopyPixel_:
+				{
+					copy_pixel_use_eax_32b
+					dec ecx
+					jnz	_DrawPartLineSection_SkipRight_CopyPixel_
+				}
+				jmp		_DrawPartLineSection_SkipRight_LineLocal_
+			}
+			_DrawPartLineSection_SkipRight_LineLocal_Alpha_Part_:
+			{
+				add		eax, edx
+				mov		ecx, eax
+				mov     ebx, pPalette
+				_DrawPartLineSection_SkipRight_CopyPixel_Part_:
+				{
+					copy_pixel_use_eax_32b
+					dec ecx
+					jnz	_DrawPartLineSection_SkipRight_CopyPixel_Part_
+				}
+				neg		edx
+				mov		ebx, 255	//è?1???òaè·?Dμ??-ebx(alpha)?μ?éò??ú?°í·push ebx￡?′?′|pop??μ?
+				dec		Clipper.height
+				jg		_DrawPartLineSection_SkipRight_LineSkip_
+				jmp		_EXIT_WAY_
+			}
+		}
+		_EXIT_WAY_:
+		emms
 	}
 	pCanvas->UnlockCanvas();
 #endif

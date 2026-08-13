@@ -45,4 +45,11 @@ Hybrid/
 JBin/
 Release/
 ServerDebug/
-ServerRelease/
+ServerRelease/vcpkg_installed/
+Template/
+x64/
+EngineServerDebug/
+EngineServerRelease/
+Lib/debug64/
+Lib/release64/
+Lib/x64/

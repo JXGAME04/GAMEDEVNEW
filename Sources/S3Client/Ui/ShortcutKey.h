@@ -14,12 +14,15 @@
 #define SCK_SHORTCUT_MARKET "Open([[market]])" //edit by phong kieu add button market ky tran cac
 #define SCK_SHORTCUT_FRIEND "Open([[friend]])"
 #define SCK_SHORTCUT_SYSTEM "Open([[system]])"
+#define SCK_SHORTCUT_AUTO "Open([[auto]])"
 #define SCK_SHORTCUT_ITEMS	"Open([[items]])"
 #define SCK_SHORTCUT_STATUS "Open([[status]])"
 #define SCK_SHORTCUT_MAP	"Open([[map]])"
 #define SCK_SHORTCUT_SKILLS	"Open([[skills]])"
+#define SCK_SHORTCUT_SKILLSNEW	"Open([[skillsnew]])"
 #define SCK_SHORTCUT_TEAM	"Open([[team]])"
 #define SCK_SHORTCUT_OPTIONS "Open([[options]])"
+#define SCK_SHORTCUT_SPRINGGAME	"Open([[springgame]])"
 
 #define SCK_SHORTCUT_SIT	"Switch([[sit]])"
 #define SCK_SHORTCUT_RUN	"Switch([[run]])"

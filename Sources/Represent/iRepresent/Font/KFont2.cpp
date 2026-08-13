@@ -11,7 +11,7 @@
 #include "../../../Engine/Src/KEngine.h"
 #include "../../../Engine/Src/Text.h"
 #include "../../../Engine/Src/KColors.h"
-
+#include "../../../Engine/Src/KDebug.h"
 /*!*****************************************************************************
 // Purpose		:  构造函数
 *****************************************************************************/
@@ -125,10 +125,10 @@ void KFont2::OutputText(const char* pszText, int nCount/*= KF_ZERO_END*/,
 	KRColor		c;
 	c.Color_dw = nColor;
 	int			sColor = g_RGB(c.Color_b.r, c.Color_b.g, c.Color_b.b);
-
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+		sColor = nColor;
 	if (nLineWidth < m_nOutputWidth + m_nOutputWidth)
 		nLineWidth = 0; //不做自动换行处理
-
 	while (nPos < nCount)
 	{
 		//*********phan doan va xu ly nhan vat 字符的判断与处理  edit by phong kieu hien thi ngon ngu tieng viet*********
@@ -176,9 +176,16 @@ void KFont2::SetBorderColor(unsigned int uColor)
 {
 //	if (uColor & 0xff000000)
 //	{		
+if(g_pDirectDraw->GetRGBBitCount() != 32)
+{
 		KRColor		c;
 		c.Color_dw = uColor;
 		m_nBorderColor = g_RGB(c.Color_b.r, c.Color_b.g, c.Color_b.b);
+}
+else
+{
+	m_nBorderColor = uColor;
+}
 //		m_nDrawBorderWithDeffColor = true;
 //	}
 //	else

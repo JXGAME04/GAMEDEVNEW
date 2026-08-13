@@ -26,10 +26,10 @@ extern iCoreShell*		g_pCoreShell;
 
 KUiCompoundItem* KUiCompoundItem::m_pSelf = NULL;
 
-#define 	SCHEME_INI_SHEET			"UiComItemSheet.ini"
-#define 	SCHEME_INI_COMPE			"UiComPoundItem.ini"
-#define 	SCHEME_INI_BUILD			"UiBuildItem.ini"
-#define 	SCHEME_INI_OUTIN			"UiOutInItem.ini"
+#define 	SCHEME_INI_SHEET			"khamnam/Khamnammain.ini"
+#define 	SCHEME_INI_COMPE			"khamnam/Tinhluyen.ini"
+#define 	SCHEME_INI_BUILD			"khamnam/Chetao.ini"
+#define 	SCHEME_INI_OUTIN			"khamnam/Lay.ini"
 #define		SEL_COM_MENU				1
 #define		MAX_SPR_FRAME				25
 #define		CASH_COMPOUND				5000			
@@ -140,7 +140,7 @@ KUiCompoundItem* KUiCompoundItem::OpenWindow()
 			KUiItem::OpenWindow();
 		else
 			UiSoundPlay(UI_SI_WND_OPENCLOSE);
-		Wnd_GameSpaceHandleInput(false);
+		//Wnd_GameSpaceHandleInput(false);
 	}
 	return m_pSelf;
 }

@@ -35,6 +35,7 @@ int	g_nTongPSSize[defTONG_PROTOCOL_SERVER_NUM] =
 	sizeof(STONG_UPDATE_EXTPOINT_COMMAND),		// enumC2S_UPDATE_EXTPOINT
 	sizeof(STONG_GET_LOGIN_LIMIT_COMMAND),		// enumC2S_TONG_GET_LOGIN_LIMIT
 	sizeof(STONG_CHANGE_LEVEL_COMMAND),		// enumC2S_TONG_CHANGE_LEVEL
+	sizeof(STONG_CHANGE_EXP_COMMAND),		// enumC2S_TONG_CHANGE_EXP
 	sizeof(STONG_CHANGE_WAYEDIT_COMMAND),		// enumC2S_TONG_CHANGE_WAYEDIT
 	sizeof(STONG_CHANGE_NEXTTARGET_COMMAND),		// enumC2S_TONG_CHANGE_NEXTTARGET
 };
@@ -301,6 +302,9 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 				sSync.m_dwPlayerNameID = pAdd->m_dwPlayerNameID;
 				sSync.m_dwParam = pAdd->m_dwParam;
 				sSync.m_btCamp = g_cTongSet.GetTongCamp(nRet);
+				sSync.m_nTongLevel = g_cTongSet.GetTongLevel(nRet);
+				sSync.m_nTongExp = g_cTongSet.GetTongExp(nRet);
+				sSync.m_nIsFull = g_cTongSet.GetTongFull(nRet);
 				g_cTongSet.GetMasterName(nRet, sSync.m_szMasterName);
 				g_cTongSet.GetMemberTitle(nRet, sSync.m_szTitleName, pAdd->m_btSex);
 				strcpy(sSync.m_szTongName, szTongName);
@@ -464,7 +468,7 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 			pSync.ProtocolID					= enumS2C_TONG_LOGIN_LIMIT;
 			pSync.num_login						= 	g_HostServer.CountLoginByHWID(NULL, pLogin->m_szName);
 			pSync.m_dwTongNameID		= pLogin->m_dwTongNameID; //#mapping nIdx
-			strcpy(pSync.m_szName, pLogin->m_szName);				//#mapping sHWID
+			strcpy_s(pSync.m_szName, pLogin->m_szName);				//#mapping sHWID
 			this->SendPackage((const void *)&pSync, sizeof(pSync));
 		}
 		break;
@@ -584,6 +588,12 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 			g_cTongSet.ChangeTongLevel(pTongChange);
 		}
 		break;
+	case enumC2S_TONG_CHANGE_EXP:
+	{
+		STONG_CHANGE_EXP_COMMAND* pTongChange = (STONG_CHANGE_EXP_COMMAND*)pData;
+		g_cTongSet.ChangeTongExp(pTongChange);
+	}
+	break;
 	case enumC2S_TONG_CHANGE_WAYEDIT:
 		{
 			STONG_CHANGE_WAYEDIT_COMMAND	*pTongChange = (STONG_CHANGE_WAYEDIT_COMMAND*)pData;

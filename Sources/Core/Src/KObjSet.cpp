@@ -267,7 +267,7 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 		sItemInfo.m_nDetailType = 0;
 		sItemInfo.m_nParticularType = 0;
 	}
-	if (sItemInfo.m_szName[0] && strlen(sItemInfo.m_szName) < 64)
+	//if (sItemInfo.m_szName[0] && strlen(sItemInfo.m_szName) < 64)
 		strcpy(Object[nAddNo].m_szName, sItemInfo.m_szName);
 
 	OBJ_ADD_SYNC	cObjAdd;
@@ -282,7 +282,10 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 	cObjAdd.m_nXpos = nTempX;
 	cObjAdd.m_nYpos = nTempY;
 	cObjAdd.m_nMoneyNum = sItemInfo.m_nMoneyNum;
-	cObjAdd.m_nItemID = sItemInfo.m_nItemID;
+	if(sItemInfo.m_nItemID > 0)
+		cObjAdd.m_nItemID = Item[sItemInfo.m_nItemID].GetID();
+	else
+		cObjAdd.m_nItemID = 0;
 	cObjAdd.m_btItemWidth = sItemInfo.m_nItemWidth;
 	cObjAdd.m_btItemHeight = sItemInfo.m_nItemHeight;
 	cObjAdd.m_btColorID = sItemInfo.m_nColorID;
@@ -492,7 +495,7 @@ int		KObjSet::ClientAdd(int nID, int nDataID, int nState, int nDir, int nCurFram
 	if (sInfo.m_szName[0])
 		strcpy(Object[nAddIndex].m_szName, sInfo.m_szName);
 #ifdef _DEBUG
-	g_DebugLog("Obj:%x, %d, %d", SubWorld[0].m_Region[nRegion].m_RegionID, nMapX, nMapY);
+	//g_DebugLog("Obj:%x, %d, %d", SubWorld[0].m_Region[nRegion].m_RegionID, nMapX, nMapY);
 #endif
 	SubWorld[0].m_Region[nRegion].AddObj(nAddIndex);// m_WorldMessage.Send(GWM_OBJ_ADD, nRegion, nAddIndex);
 	return nAddIndex;
@@ -1209,3 +1212,8 @@ int	KObjSet::AutoGetObjNear(int nX1, int nY1, int nDistance, int nPickOption /*=
 	return nIndexReturn;
 }
 #endif
+
+int KObjSet::GetNext(int nIdx)
+{
+	return m_UseIdx.GetNext(nIdx);
+}

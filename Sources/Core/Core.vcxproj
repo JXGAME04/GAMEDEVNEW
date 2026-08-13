@@ -185,10 +185,32 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>CoreServer</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
@@ -200,7 +222,7 @@
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;SWORDONLINE_SHOW_DBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\ClientDebug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\ClientDebug\Core.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\ClientDebug\CoreClient.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
       <ObjectFileName>.\ClientDebug\</ObjectFileName>
@@ -209,15 +231,17 @@
       <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 </AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\debug
-md ..\..\lib\debug
-copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
-copy ClientDebug\CoreClient.map ..\..\..\bin\client\CoreClient.map
-copy ClientDebug\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
-copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\debug\CoreClient.pdb
-copy ClientDebug\CoreClient.map ..\..\..\bin\client\debug\CoreClient.map
-copy ClientDebug\CoreClient.dll ..\..\..\bin\client\debug\CoreClient.dll
-copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
+      <Command>
+        md ..\..\..\bin\client\debug
+        md ..\..\lib\debug
+        copy ClientDebug\Core.pdb ..\..\..\bin\client\CoreClient.pdb
+        copy ClientDebug\CoreClient.map ..\..\..\bin\client\CoreClient.map
+        copy ClientDebug\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
+        copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\debug\CoreClient.pdb
+        copy ClientDebug\CoreClient.map ..\..\..\bin\client\debug\CoreClient.map
+        copy ClientDebug\CoreClient.dll ..\..\..\bin\client\debug\CoreClient.dll
+        copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -242,7 +266,7 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
       <OutputFile>ClientDebug\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientDebug\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">
@@ -267,15 +291,17 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
       <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 </AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\debug
-md ..\..\lib\debug
-copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
-copy ClientDebug\CoreClient.map ..\..\..\bin\client\CoreClient.map
-copy ClientDebug\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
-copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\debug\CoreClient.pdb
-copy ClientDebug\CoreClient.map ..\..\..\bin\client\debug\CoreClient.map
-copy ClientDebug\CoreClient.dll ..\..\..\bin\client\debug\CoreClient.dll
-copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
+      <Command>
+        md ..\..\..\bin\client\debug
+        md ..\..\lib\debug
+        copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
+        copy ClientDebug\CoreClient.map ..\..\..\bin\client\CoreClient.map
+        copy ClientDebug\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
+        copy ClientDebug\CoreClient.pdb ..\..\..\bin\client\debug\CoreClient.pdb
+        copy ClientDebug\CoreClient.map ..\..\..\bin\client\debug\CoreClient.map
+        copy ClientDebug\CoreClient.dll ..\..\..\bin\client\debug\CoreClient.dll
+        copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -304,15 +330,15 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level2</WarningLevel>
       <AdditionalIncludeDirectories>..\engine\src;..\engine\include;..\Network;..\..\Headers;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;SWORDONLINE_SHOW_DBUG_INFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\ClientRelease\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\ClientRelease\Core.pch</PrecompiledHeaderOutputFile>
@@ -323,15 +349,17 @@ copy ClientDebug\CoreClient.lib ..\..\lib\debug\CoreClient.lib</Command>
       <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\release
-md ..\..\lib\release
-copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
-copy ClientRelease\CoreClient.map ..\..\..\bin\client\CoreClient.map
-copy ClientRelease\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
-copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\release\CoreClient.pdb
-copy ClientRelease\CoreClient.map ..\..\..\bin\client\release\CoreClient.map
-copy ClientRelease\CoreClient.dll ..\..\..\bin\client\release\CoreClient.dll
-copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
+      <Command>
+        md ..\..\..\bin\client\release
+        md ..\..\lib\release
+        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
+        copy ClientRelease\CoreClient.map ..\..\..\bin\client\CoreClient.map
+        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
+        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\release\CoreClient.pdb
+        copy ClientRelease\CoreClient.map ..\..\..\bin\client\release\CoreClient.map
+        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\release\CoreClient.dll
+        copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -356,7 +384,7 @@ copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
       <OutputFile>ClientRelease\CoreClient.dll</OutputFile>
       <ImportLibrary>.\ClientRelease\CoreClient.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Shlwapi.lib;Winmm.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">
@@ -380,15 +408,17 @@ copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
       <AdditionalOptions>/source-charset:windows-1258 /execution-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\client\release
-md ..\..\lib\release
-copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
-copy ClientRelease\CoreClient.map ..\..\..\bin\client\CoreClient.map
-copy ClientRelease\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
-copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\release\CoreClient.pdb
-copy ClientRelease\CoreClient.map ..\..\..\bin\client\release\CoreClient.map
-copy ClientRelease\CoreClient.dll ..\..\..\bin\client\release\CoreClient.dll
-copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
+      <Command>
+        md ..\..\..\bin\client\release
+        md ..\..\lib\release
+        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\CoreClient.pdb
+        copy ClientRelease\CoreClient.map ..\..\..\bin\client\CoreClient.map
+        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\CoreClient.dll
+        copy ClientRelease\CoreClient.pdb ..\..\..\bin\client\release\CoreClient.pdb
+        copy ClientRelease\CoreClient.map ..\..\..\bin\client\release\CoreClient.map
+        copy ClientRelease\CoreClient.dll ..\..\..\bin\client\release\CoreClient.dll
+        copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -437,9 +467,11 @@ copy ClientRelease\CoreClient.lib ..\..\lib\release\CoreClient.lib</Command>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\server\debug
-md ..\..\lib\debug
-copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
+      <Command>
+        md ..\..\..\bin\server\debug
+        md ..\..\lib\debug
+        copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -490,15 +522,17 @@ copy ServerDebug\CoreServer.lib ..\..\lib\debug\CoreServer.lib</Command>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\server\debug64
-md ..\..\lib\debug64
-copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
-copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\debug64\Coreserver.pdb
-copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\debug64\Coreserver.dll
-copy .\x64\ServerDebug\\CoreServer.lib ..\..\lib\debug64\CoreServer.lib</Command>
+      <Command>
+        md ..\..\..\bin\server\debug64
+        md ..\..\lib\debug64
+        copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+        copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
+        copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
+        copy .\x64\ServerDebug\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+        copy .\x64\ServerDebug\\CoreServer.pdb ..\..\..\bin\server\debug64\Coreserver.pdb
+        copy .\x64\ServerDebug\\CoreServer.dll ..\..\..\bin\server\debug64\Coreserver.dll
+        copy .\x64\ServerDebug\\CoreServer.lib ..\..\lib\debug64\CoreServer.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -523,7 +557,7 @@ copy .\x64\ServerDebug\\CoreServer.lib ..\..\lib\debug64\CoreServer.lib</Command
       <OutputFile>.\x64\ServerDebug\CoreServer.dll</OutputFile>
       <ImportLibrary>.\x64\ServerDebug\CoreServer.lib</ImportLibrary>
       <AdditionalLibraryDirectories>../../lib/debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Winmm.lib;Shlwapi.lib;ws2_32.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <HeapReserveSize>0xffffffff</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
@@ -548,15 +582,17 @@ copy .\x64\ServerDebug\\CoreServer.lib ..\..\lib\debug64\CoreServer.lib</Command
       <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\server\release
-md ..\..\lib\release
-copy ServerRelease\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
-copy ServerRelease\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy ServerRelease\CoreServer.map ..\..\..\bin\server\release\Coreserver.map
-copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\release\Coreserver.pdb
-copy ServerRelease\CoreServer.dll ..\..\..\bin\server\release\Coreserver.dll
-copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
+      <Command>
+        md ..\..\..\bin\server\release
+        md ..\..\lib\release
+        copy ServerRelease\CoreServer.map ..\..\..\bin\server\Coreserver.map
+        copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
+        copy ServerRelease\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
+        copy ServerRelease\CoreServer.map ..\..\..\bin\server\release\Coreserver.map
+        copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\release\Coreserver.pdb
+        copy ServerRelease\CoreServer.dll ..\..\..\bin\server\release\Coreserver.dll
+        copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -592,28 +628,30 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <WarningLevel>Level2</WarningLevel>
-      <AdditionalIncludeDirectories>..\engine\src;..\engine\include;..\Network;..\..\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\engine\src;..\..\Headers;..\engine\include;..\Network;Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_SERVER;WIN32;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\ServerRelease\</AssemblerListingLocation>
+      <AssemblerListingLocation>.\x64\ServerRelease\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\ServerRelease\Core.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\x64\ServerRelease\Core.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>KCore.h</PrecompiledHeaderFile>
-      <ObjectFileName>.\ServerRelease\</ObjectFileName>
-      <ProgramDataBaseFileName>.\ServerRelease\</ProgramDataBaseFileName>
+      <ObjectFileName>.\x64\ServerRelease\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\ServerRelease\</ProgramDataBaseFileName>
       <AdditionalOptions>/execution-charset:windows-1258 /source-charset:windows-1258 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\bin\server\release
-md ..\..\lib\release
-copy ServerRelease\CoreServer.map ..\..\..\bin\server\Coreserver.map
-copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
-copy ServerRelease\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
-copy ServerRelease\CoreServer.map ..\..\..\bin\server\release\Coreserver.map
-copy ServerRelease\CoreServer.pdb ..\..\..\bin\server\release\Coreserver.pdb
-copy ServerRelease\CoreServer.dll ..\..\..\bin\server\release\Coreserver.dll
-copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
+      <Command>
+        md ..\..\..\bin\server\release64
+        md ..\..\lib\release64
+        copy .\x64\ServerRelease\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+        copy .\x64\ServerRelease\\CoreServer.pdb ..\..\..\bin\server\Coreserver.pdb
+        copy .\x64\ServerRelease\\CoreServer.dll ..\..\..\bin\server\Coreserver.dll
+        copy .\x64\ServerRelease\\CoreServer.map ..\..\..\bin\server\Coreserver.map
+        copy .\x64\ServerRelease\\CoreServer.pdb ..\..\..\bin\server\release64\Coreserver.pdb
+        copy .\x64\ServerRelease\\CoreServer.dll ..\..\..\bin\server\release64\Coreserver.dll
+        copy .\x64\ServerRelease\\CoreServer.lib ..\..\lib\release64\CoreServer.lib
+      </Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -634,13 +672,16 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>ServerRelease\CoreServer.dll</OutputFile>
-      <ImportLibrary>.\ServerRelease\CoreServer.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\ServerRelease\CoreServer.dll</OutputFile>
+      <ImportLibrary>.\x64\ServerRelease\CoreServer.lib</ImportLibrary>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../lib/release/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KMeridian.cpp" />
+    <ClCompile Include="Src\base64.cpp" />
+    <ClCompile Include="Src\BauCua.cpp" />
     <ClCompile Include="Src\CoreDrawGameObj.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -659,6 +700,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Src\GiftCodeManager.cpp" />
     <ClCompile Include="Src\ImgRef.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -837,6 +879,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Src\MapHandler.cpp" />
     <ClCompile Include="Src\Scene\KIpotBranch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">Use</PrecompiledHeader>
@@ -926,6 +969,9 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
     <ClInclude Include="..\..\Headers\KProtocol.h" />
     <ClInclude Include="..\..\Headers\KProtocolDef.h" />
     <ClInclude Include="..\..\Lib\S3DBInterface.h" />
+    <ClInclude Include="KMeridian.h" />
+    <ClInclude Include="Src\base64.h" />
+    <ClInclude Include="Src\BauCua.h" />
     <ClInclude Include="Src\CoreDrawGameObj.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -963,6 +1009,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Src\GiftCodeManager.h" />
     <ClInclude Include="Src\ImgRef.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -1061,6 +1108,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
     <ClInclude Include="Src\KWeatherMgr.h" />
     <ClInclude Include="Src\KWorldMsg.h" />
     <ClInclude Include="Src\LuaFuns.h" />
+    <ClInclude Include="Src\MapHandler.h" />
     <ClInclude Include="Src\MsgGenreDef.h" />
     <ClInclude Include="Src\MyAssert.H" />
     <ClInclude Include="Src\Scene\KIpotBranch.h">
@@ -1129,7 +1177,9 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
     <CustomBuild Include="Protocol.xls" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\Lib\debug64\common.lib" />
+    <Library Include="..\..\Lib\debug64\common.lib">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
+    </Library>
     <Library Include="..\..\Lib\debug\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
@@ -1137,7 +1187,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Release|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\debug\engine.lib" />
-    <Library Include="..\..\Lib\EngineServerDebug\engine.lib" />
+    <Library Include="..\..\Lib\release64\common.lib" />
     <Library Include="..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
@@ -1151,6 +1201,7 @@ copy ServerRelease\CoreServer.lib ..\..\lib\release\CoreServer.lib</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\x64\Engine Server Debug\engine.lib" />
+    <Library Include="..\..\Lib\x64\Engine Server Release\engine.lib" />
     <Library Include="..\..\Lib\x64\lualibdll.lib" />
     <Library Include="Src\USBKey\EP1KDL20.LIB" />
     <Library Include="Src\USBKey\EpsForJoLib.lib" />

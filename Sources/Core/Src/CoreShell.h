@@ -6,6 +6,57 @@
 *****************************************************************************************/
 
 #pragma once
+enum AUTOOPERATION_INDEX
+{
+	ATYPE_PUMPLIFE = 0,
+	ATYPE_PUMPMANA,
+	ATYPE_TP_CHECKLIFE,
+	ATYPE_TP_CHECKMANA,
+	ATYPE_TP_LIFEGONE,
+	ATYPE_TP_MANAGONE,
+	ATYPE_TP_FULLITEM,
+	ATYPE_TP_FULLMONEY,
+	ATYPE_TP_DMGITEM,
+	ATYPE_CLEAR,
+	ATYPE_CHECKTIME,
+	ATYPE_TP_EXIT,
+	ATYPE_DISEXIT,
+	ATYPE_CANCHAT,
+	ATYPE_EATLIFEFULL,
+	ATYPE_EATPOISON,
+	ATYPE_EATEXPX2,
+	ATYPE_EATSKILLX2,
+	ATYPE_BASEBUFF,
+	ATYPE_OPENBAG,
+	ATYPE_CLBUFF,
+	ATYPE_SUPPORTBUFF,
+	ATYPE_LEFTSKILL,
+	ATYPE_RIGHTSKILL,
+	ATYPE_CHANGEAURA,
+	ATYPE_FIGHT,
+	ATYPE_RESETNPCID,
+	ATYPE_PKFIGHT,
+	ATYPE_ISFIGHTMODE,
+	ATYPE_DRAWVISION,
+	ATYPE_PICKUPSET,
+	ATYPE_GETITEMNAME,
+	ATYPE_PICKUP,
+	ATYPE_FILTER,
+	ATYPE_ARRANGEITEM,
+	ATYPE_ARRANGEBOX,
+	ATYPE_GETAROUNDNAME,
+	ATYPE_PTPROC,
+	ATYPE_PTINVITE,
+	ATYPE_PTJOIN,
+	ATYPE_REPAIRF,
+	ATYPE_RETURN,
+	ATYPE_RESETMOVE,
+	ATYPE_MOVE,
+	ATYPE_SETSELSV1,
+	ATYPE_SETSELSV2,
+	ATYPE_SETACC,
+	ATYPE_SETPASS,
+};
 
 enum GAMEDATA_INDEX
 {
@@ -43,7 +94,7 @@ enum GAMEDATA_INDEX
 
 	// from now on, flying add this item, get the information whether
 	// a player can ride a horse.
-	GDI_PLAYER_CAN_RIDE,		//Ö÷½ÇÊÇ·ñ¿ÉÒÔÆïÂíÂí
+	GDI_GET_PLAYERNPC_INDEX,		//GDI_PLAYER_CAN_RIDE
 	//nRet = (int)bCanRide		ÊÇ·ñ¿ÉÒÔ
 	//0 - ²»¿ÉÒÔÆïÂíÅ¶
 	//1 - ¿ÉÒÔÅ¶
@@ -66,6 +117,8 @@ enum GAMEDATA_INDEX
 	//			KUiObjAtRegion::Region::v ±íÊ¾ÊôÓÚÄÄ¸öÎ»ÖÃµÄ×°±¸,ÆäÖµÎªÃ·¾ÙÀàÐÍ
 	//			UI_EQUIPMENT_POSITIONµÄÈ¡ÖµÖ®Ò»¡£Çë²Î¿´UI_EQUIPMENT_POSITIONµÄ×¢ÊÍ¡£
 	//Return =  ÆäÖµ±íÊ¾pInfoÊý×éÖÐµÄÇ°¶àÉÙ¸öKUiObjAtRegion½á¹¹±»Ìî³äÁËÓÐÐ§µÄÊý¾Ý¡£
+
+	GDI_EQUIPMENT_SETNUM,
 
 	GDI_TRADE_NPC_ITEM,			//npcÁÐ³öÀ´½»Ò×µÄÎïÆ·
 	//uParam = (KUiObjAtContRegion*) pInfo -> KUiObjAtContRegion½á¹¹Êý×éµÄÖ¸Õë£¬KUiObjAtContRegion
@@ -225,7 +278,18 @@ enum GAMEDATA_INDEX
 
 	GDI_ITEM_EQUIP_ROOM_LIST,
 
-	GDI_PLAYER_HOLD_FKCOIN,		//add by phong kiÒu sè xu ng­êi trªn player
+	GDI_PLAYER_HOLD_FKCOIN,		//add by phong kiÒu s?xu ng­êi trªn player
+
+	NPC_OI_TARGET_INFO, //get target info for showing in client
+
+	GDI_PLAYER_MERIDIAN,			//get Meridian info, return meridian level array
+
+	GDI_ITEM_EQUIP_SAME_GERNE,  //get item with same gerne with id in equip
+
+	GDI_GAMBLE_OPER_DATA, //OTT Data related to trading operations
+	//uParam = (UI_GAMBLE_OPER_DATA)eOper For specific meaning, see UI_TRADE_OPER_DATA
+	//nParam The specific application and meaning are determined by the value of uParam, see the description of UI_TRADE_OPER_DATA
+	//Return The specific meaning is determined by the value of uParam, see the description of UI_TRADE_OPER_DATA
 };
 
 enum GAMEDATA_CHANGED_NOTIFY_INDEX
@@ -273,6 +337,17 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_TRADE_OPER_DATA,		//½»Ò×²Ù×÷Ïà¹ØµÄ(×´Ì¬)Êý¾Ý·¢Éú±ä»¯
 	//uParam = (const char*) pInfoText ÌáÊ¾µÄÎÄ×Ö£¬Èç"¶Ô·½½â³ýËø¶¨"µÈ
 	GDCNI_TRADE_END,			//½»Ò×½áÊø
+	GDCNI_GAMBLE_START,			//ÓëÍæ¼Ò½»Ò×¿ªÊ¼
+	GDCNI_GAMBLE_RESET,
+	GDCNI_GAMBLE_RESULT,
+	//uParam = (KUiPlayerItem*) pPlayer¶Ô·½µÄÐÅÏ¢
+	GDCNI_GAMBLE_DESIRE_ITEM,	//¶Ô·½Ôö¼õÏë½»Ò×µÄÎïÆ·
+	//uParam = (KUiObjAtRegion*) pObject -> ÎïÆ·ÐÅÏ¢£¬ÆäÖÐ×ø±êÐÅÏ¢ÎªÔÚ½»Ò×½çÃæÖÐµÄ×ø±ê
+	//nParam = bAdd -> 0Öµ±íÊ¾¼õÉÙ£¬1Öµ±íÊ¾Ôö¼Ó
+	//Remark : Èç¹ûÎïÆ·ÊÇ½ðÇ®µÄ»°£¬ÔòKUiObjAtRegion::Obj::uId±íÊ¾°Ñ½ðÇ®¶îµ÷ÕûÎªÕâ¸öÖµ£¬ÇÒnParamÎÞÒâÒå¡£
+	GDCNI_GAMBLE_OPER_DATA,		//½»Ò×²Ù×÷Ïà¹ØµÄ(×´Ì¬)Êý¾Ý·¢Éú±ä»¯
+	//uParam = (const char*) pInfoText ÌáÊ¾µÄÎÄ×Ö£¬Èç"¶Ô·½½â³ýËø¶¨"µÈ
+	GDCNI_GAMBLE_END,			//½»Ò×½áÊø
 	//nParam = (int)(bool)bTraded	ÊÇ·ñ½øÐÐÁË½»Ò×
 	GDCNI_NPC_TRADE,			
 	//nParam = (bool)bStart	ÊÇ·ñ½»Ò×Îª½»Ò×¿ªÊ¼£¬Èç¹ûÈ¡Öµ·ÇÕæ±íÊ¾½»Ò×£¨¹Ø±Õ£©½áÊø
@@ -401,7 +476,7 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 
 	GDCNI_SWITCHING_MAPMODE,
 
-	GDCNI_PLAYER_LOGIN_REPLAY, //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
+	GDCNI_PLAYER_LOGIN_REPLAY, //fix by phong kiÒu chuyÓn gs b?mÊt skill
 
 	GDCNI_FINISH_QUEST_DLG,
 
@@ -428,6 +503,14 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_USE_SHORCUT_SKILL,
 
 	GDCNI_AUTO_HOTKEY_CAST_B,
+
+	GDCNI_PLAYER_MERIDIAN_SYNC,
+
+	GDCNI_PLAYER_BAUCUA_RESULT_SYNC,
+		
+	GDCNI_EXIT_GAME,
+	
+	GDCNI_UI_ACT, //connect to s3client (ext auto)
 };
 
 enum GAMEDEBUGCONTROL
@@ -501,6 +584,27 @@ enum GAMEOPERATION_INDEX
 	
 	GOI_TRADE_CANCEL,			//½»Ò×È¡Ïû
 
+	GOI_GAMBLE_INVITE_RESPONSE,	//´ðÓ¦/¾Ü¾ø½»Ò×ÇëÇó
+	//uParam = (KUiPlayerItem*)pRequestPlayer ·¢³öÇëÇóµÄÍæ¼Ò
+	//nParam = (int)(bool)bAccept ÊÇ·ñ½ÓÊÜÇëÇó
+
+	GOI_GAMBLE_DESIRE_ITEM,		//Ôö¼õÒ»¸öÓûÂô³öµÄÎïÆ·
+	//uParam = (KUiObjAtRegion*) pObject -> ÎïÆ·ÐÅÏ¢£¬ÆäÖÐ×ø±êÐÅÏ¢ÎªÔÚ½»Ò×½çÃæÖÐµÄ×ø±ê
+	//nParam = bAdd -> 0Öµ±íÊ¾¼õÉÙ£¬1Öµ±íÊ¾Ôö¼Ó
+	//Remark : Èç¹ûÎïÆ·ÊÇ½ðÇ®µÄ»°£¬ÔòKUiObjAtRegion::Obj::uId±íÊ¾°Ñ½ðÇ®¶îµ÷ÕûÎªÕâ¸öÖµ£¬ÇÒnParamÎÞÒâÒå¡£
+
+	GOI_GAMBLE_WILLING,			//giao dich giao dÞch
+	//uParam = (const char*)pszTradMsg ¹ØÓÚ½»Ò×ÏûÏ¢Ò»¾ä»°£¬µ±bWillingÎªtrueÊ±ÓÐÐ§
+	//nParam = (int)(bool)bWilling ÊÇ·ñÆÚ´ý½»Ò×(½ÐÂô)
+
+	GOI_GAMBLE_LOCK,				//Ëø¶¨½»Ò×
+	//nParam = (int)(bool)bLock ÊÇ·ñËø¶¨
+
+	GOI_GAMBLE,					//½»Ò×
+	//nParam = (int)(bool)bTrading
+
+	GOI_GAMBLE_CANCEL,			//½»Ò×È¡Ïû
+
 	//============================
 	GOI_TRADE_NPC_BUY,
 	//uParam = (KUiGameObject*)pObj -> ÎïÆ·ÐÅÏ¢
@@ -513,7 +617,7 @@ enum GAMEOPERATION_INDEX
 
 	GOI_TRADE_NPC_CLOSE,		//½áÊø½»Ò×
 
-	GOI_DROP_ITEM_QUERY,		//²éÑ¯ÊÇ·ñ¿ÉÒÔ¶ªÄ³¸ö¶«Î÷µ½ÓÎÏ·´°¿Ú
+	GOI_AUTOPLAY_ACTION,		//GOI_DROP_ITEM_QUERY
 	//uParam = (KUiGameObject*)pObject -> ÎïÆ·ÐÅÏ¢
 	//nParam = ±»ÍÏ¶¯¶«Î÷µÄµ±Ç°×ø±ê£¨¾ø¶Ô×ø±ê£©£¬ºá×ø±êÔÚµÍ16Î»£¬×Ý×ø±êÔÚ¸ß16Î»¡£(ÏñËØµã×ø±ê)
 	//Return = ÊÇ·ñ¿ÉÒÔ·ÅÏÂ
@@ -616,6 +720,8 @@ enum GAMEOPERATION_INDEX
 	
 	GOI_CP_LOCK,		//close ruong
 
+	GOI_CP_SWITCH_EQUIPSET,
+
 	GOI_CP_CHANGE,		//doi mk ruong
 	
 	GOI_CP_RESET,		//reset mk ruong
@@ -668,21 +774,43 @@ enum GAMEOPERATION_INDEX
 
 	GOI_RECOVER_ITEM,
 
-	GAUTO_AUTO_PT_PLAYERTEAM,//qu¶n lý tæ ®éi
+	GAUTO_AUTO_PT_PLAYERTEAM,//qu¶n l?t?®éi
 
-	GAUTO_AUTO_MOVETPSID, //ch¹y to¹ ®é ra b·i train
+	GAUTO_AUTO_MOVETPSID, //ch¹y to?®é ra b·i train
 	
 	GAUTO_AUTO_MOVETPSX,
 	
 	GAUTO_AUTO_MOVETPSY,
 
-	GAUTO_AUTO_BLACK_ITEM, //qu¶n lý vËt phÈm ®en
+	GAUTO_AUTO_BLACK_ITEM, //qu¶n l?vËt phÈm ®en
 
 	GDI_THROW_ALL_ITEM,
 
-	GOI_RCLICK_MOVE_ITEM,
+	GOI_EXCHANGEITEM,
 
 	GOI_SUPPERSHOP_TRADE_NPC_BUY,
+
+	GOI_DRAW_TARGET_INFO,
+
+	GOI_SET_PLAYER_MERIDIAN, //Set meridian
+
+	GOI_BAUCUA,
+	
+	GOI_MASKFEATURE,
+
+	GOI_PROCFRAME_BREATHE,
+
+	GOI_PROCFRAME_POSSHIFT,
+
+	GDCNI_GIVE,
+
+	GDCNI_RANKDATA,
+
+	GDCNI_ENCHASE,
+
+	GDCNI_INPUT,
+	
+
 };
 
 //=========================================================
@@ -720,6 +848,11 @@ enum GAME_SCENE_MAP_OPERATION_INDEX
 	GSMOI_IS_SCENE_DIRECT_MAP,
 
 	GSMOI_IS_SCENE_DO_DIRECT_MAP,
+	GSMOI_SCENE_MAP_FLAG_ON_TARGET,
+	GSMOI_IS_SCENE_MAP_FLAGIMG,
+	GSMOI_SCENE_MAP_REMOVE_FLAG,
+	GSMOI_SCENE_MAP_GET_FLAGPOS,
+	GSMOI_SCENE_MAP_TG_COORD,
 };
 
 //=========================================================
@@ -874,7 +1007,7 @@ enum GAME_AUTOPLAY_OPERATION_INDEX //add by phong kiÒu using fkauto
 	AUTOPLAY_OI_OBJ_4,
 	AUTOPLAY_OI_OBJ_5,
 	AUTOPLAY_OI_OBJ_6, 
-	AUTOPLAY_OI_OBJ_7,//gi÷ trang søc
+	AUTOPLAY_OI_OBJ_7,//gi?trang søc
 	AUTOPLAY_OI_OBJ_8,
 	AUTOPLAY_OI_OBJ_9,
 	AUTOPLAY_OI_OBJ_10,
@@ -910,7 +1043,7 @@ enum GAME_AUTOPLAY_OPERATION_INDEX //add by phong kiÒu using fkauto
 	AUTOPLAY_OI_MAP_15,
 	AUTOPLAY_OI_MAP_16,
 	AUTOPLAY_OI_MAP_17,
-	AUTOPLAY_OI_TEAM_1,//--tæ ®éi--
+	AUTOPLAY_OI_TEAM_1,//--t?®éi--
 	AUTOPLAY_OI_TEAM_2,
 	AUTOPLAY_OI_TEAM_3,
 	AUTOPLAY_OI_TEAM_4,
@@ -923,8 +1056,8 @@ enum GAME_AUTOPLAY_OPERATION_INDEX //add by phong kiÒu using fkauto
 
 struct IClientCallback
 {
-	virtual void CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
-	virtual void ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc) = 0;
+	virtual int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam) = 0;
+	virtual void ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc, bool isNpcChat = false, bool isShowMsgPad = false) = 0;
 	virtual void MSNMessageArrival(char* szSourceName, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc) = 0;
 	virtual void NotifyChannelID(char* ChannelName, DWORD channelid, BYTE cost) = 0;
 	virtual void FriendInvite(char* roleName) = 0;
@@ -932,6 +1065,7 @@ struct IClientCallback
 	virtual void FriendStatus(char* roleName, BYTE state) = 0;
 	virtual void FriendInfo(char* roleName, char* unitName, char* groupname, BYTE state) = 0;
 	virtual void AddPeople(char* unitName, char* roleName) = 0;
+	virtual void SendDataToTool(const void * const pData, const size_t &datalength) = 0;
 };
 
 struct _declspec (novtable) iCoreShell
@@ -946,6 +1080,7 @@ struct _declspec (novtable) iCoreShell
 	virtual int ChatSpecialPlayer(void* pPlayer, const char* pMsgBuff, unsigned short nMsgLength) = 0;
 	virtual void ApplyAddTeam(void* pPlayer) = 0;
 	virtual void TradeApplyStart(void* pPlayer) = 0;
+	virtual void GambleApplyStart(void* pPlayer) = 0;
 	virtual int UseSkill(int x, int y, int nSkillID) = 0;
 	virtual int UseSkillCastB(int x, int y, int nSkillID, int nNpcIdx) = 0;
 	virtual int LockSomeoneUseSkill(int nTargetIndex, int nSkillID) = 0;
@@ -1003,8 +1138,9 @@ struct _declspec (novtable) iCoreShell
 	virtual	BYTE GetPaintMode() = 0;
 	virtual	void SetPaintMode(BYTE nIndex) = 0;
 	virtual int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam) = 0;//fkauto
-	virtual BOOL AutoMove() = 0;
-	virtual void ClearPathFinder() = 0;
+	//virtual BOOL AutoMove() = 0;
+//	virtual void ClearPathFinder() = 0;
+	virtual int CheckMapLoiDai() = 0;
 };
 
 #ifndef CORE_EXPORTS
@@ -1013,7 +1149,7 @@ struct _declspec (novtable) iCoreShell
 
 #else
 
-	void	CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
-
+	int	CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam);
+	void SendDataToTool(const void * const pData, const size_t &datalength);
 #endif
 

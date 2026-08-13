@@ -21,6 +21,7 @@
 #include "KNpc.h"
 #include "KSkills.h"
 #include "KPlayerDef.h"
+#include "../KMeridian.h"
 
 #define		MAX_ANSWERNUM					50
 #define		PLAYER_LIFE_REPLENISH			0
@@ -38,6 +39,7 @@
 #define		AUTO_COUNT_LAG					50
 #define		AUTO_TIME_RESET_LAG				10000
 #define		MAX_ARRAY_STATESKILL			3
+#define		BASE_FANGYU_ALL_MAX			    75        //?????
 
 enum	UIInfo 
 {
@@ -101,7 +103,138 @@ class KEquipmentArray
 public:
 	KLinkArray	m_Link;
 	int		FindSame(int nIdx);
+	int		FindSameGerne(int nGerne);
 };
+
+#ifndef _SERVER
+
+struct ExtAuto
+{
+	UINT uLTime1;
+	UINT uLTime2;
+	UINT uMTime1;
+	UINT uMTime2;
+	UINT uUnFightTime;
+	UINT uChatTime;
+	UINT uPoisonTime;
+	UINT uExp2Time;
+	UINT uSkillExp2Time;
+	UINT uBaseBuffTime;
+	UINT uOpenBagTime;
+	UINT uCLBuffTime;
+	int  nAuraTime;
+	BOOL bChangeAura;
+	BOOL bPrevFightState;
+	BOOL bJustTP;
+	BOOL bJustDis;
+	UINT uNpcID;
+	UINT uFDelayTime;
+	UINT uHorseTime;
+	int  nOldLife;
+	UINT uChSkillTime;
+	BOOL bChSkill;
+	int  nCurObjID;
+	int  nCurObjLoop;
+	BOOL bLBObjDown;
+	UINT uFtNextTime;
+	UINT umObjIncId;
+	UINT uARTimeItem;
+	UINT uARTimeBox;
+	UINT uTNextProc;
+	UINT uTNextInvite;
+	UINT uTNextJoin;
+	UINT uTNextLeave;
+	UINT uTNextRemove;
+	UINT uTNextRepair;
+	UINT uTNextReturn;
+	int	 nHomeStep;
+	int	 nSubStep;
+	int  nCurShop;
+	UINT uSyncTime;
+	UINT uTFollMove1;
+	UINT uTFollMove2;
+	UINT uTOutMove;
+	int  nCurMoveRet;
+	int  nCoordStep;
+	int  nTempX;
+	int  nTempY;
+	UINT uTJustMove;
+	BOOL bReachDes;
+	int  nCurEncircle;
+	UINT uTEncircle;
+	autoCoord sEncircle[9];
+	ExtAuto()
+	{
+		uLTime1 = 0;
+		uLTime2 = 0;
+		uMTime1 = 0;
+		uMTime2 = 0;
+		uUnFightTime = 0;
+		uChatTime = 0;
+		uPoisonTime = 0;
+		uExp2Time = 0;
+		uSkillExp2Time = 0;
+		uBaseBuffTime = 0;
+		uOpenBagTime = 0;
+		uCLBuffTime = 0;
+		nAuraTime = 0;
+		bChangeAura = 0;
+		bPrevFightState = 0;
+		bJustTP = 0;
+		bJustDis = 0;
+		uNpcID = 0;
+		uFDelayTime = 0;
+		nOldLife = 0;
+		uHorseTime = 0;
+		uChSkillTime = 0;
+		bChSkill = 0;
+		nCurObjID = 0;
+		nCurObjLoop = 0;
+		bLBObjDown = 0;
+		uFtNextTime = 0;
+		umObjIncId = 0;
+		uARTimeItem = 0;
+		uARTimeBox = 0;
+		uTNextProc = 0;
+		uTNextInvite = 0;
+		uTNextJoin = 0;
+		uTNextLeave = 0;
+		uTNextRemove = 0;
+		uTNextRepair = 0;
+		uTNextReturn = 0;
+		nHomeStep = 0;
+		nSubStep = 0;
+		nCurShop = 0;
+		uSyncTime = 0;
+		uTFollMove1 = 0;
+		uTFollMove2 = 0;
+		uTOutMove = 0;
+		nCurMoveRet = 0;
+		nCoordStep = 0;
+		nTempX = 0;
+		nTempY = 0;
+		bReachDes = FALSE;
+		uTEncircle = 0;
+		uTJustMove = 0;
+	}
+};
+
+struct ExtAutoObjTime
+{
+	UINT nTotalTime;
+	UINT nPickTime;
+	UINT nID;
+	short nChecked;
+	short bItem;
+};
+
+struct ExtAutoTeamRecv
+{
+	UINT uTime;
+	char szName[32];
+};
+
+#endif
 
 #ifdef TOOLVERSION
 class CORE_API KPlayer
@@ -138,10 +271,17 @@ private:
 	KCacheNode *	m_pLastScriptCacheNode;
 
 public:
+
+	int m_nMeridianStrength;
+	int m_nMeridianDexterity;
+	int m_nMeridianVitality;
+	int m_nMeridianEngergy;
+	int 			m_nActiveEquipNum;			//bo trang bi dang kich hoat
 #ifdef _SERVER
 	PLAYER_EXCHANGE_POS		m_sExchangePos;
 	KTimerTaskFun	m_TimerTask;
 	BOOL			m_bIsQuiting;
+	BOOL			m_bForeQuit;
 	BYTE			m_nLixian;											//#uy thac
 	UINT			m_uMustSave;
 	DWORD			m_ulLastSaveTime;
@@ -150,7 +290,7 @@ public:
 	void*			m_pStatusLoadPlayerInfo;	//¼ÓÔØÍæ¼ÒÐÅÏ¢Ê±ÓÃ
 	BYTE*			m_pCurStatusOffset;			//¶þ½øÖÆÊ±£¬¼ÇÂ¼¶Áµ½Ö¸ÕëÎ»ÖÃÁË
 	BOOL			m_bFinishLoading;			//Íê³É¼ÓÔØ
-	BYTE			m_SaveBuffer[64 * 1024];	//±£´æ»º³å 
+	BYTE			m_SaveBuffer[64 * 1024 * 5];	//±£´æ»º³å 
 	int				m_nLastNetOperationTime;	//×îºóÒ»´ÎÍøÂç²Ù×÷Ê±¼ä
 	BOOL			m_bSleepMode;
 	KList			m_PlayerWayPointList;		//
@@ -159,14 +299,22 @@ public:
 	int				m_nPrePayMoney;
 	int				m_nTimeRide;//edit by phong kieu len xuong ngua
 	bool		m_nLicReg;
+	char			m_szTaskExcuteFun[32];
 	enum
 	{
 		FF_CHAT = 0x01,
 	};
 	int				m_nForbiddenFlag;			// ½ûÖ¹±êÖ¾
+	BOOL 			m_bEnableSave;
+	int				m_nArrangeTimeItem;
+	int				m_nArrangeTimeBox;
+	int				m_nCmpArrayItem[EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT];
+	int				m_nCmpArrayBox[EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT];
+	int				m_nCmpArrayExBox[EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT];
 #endif
 
 #ifndef _SERVER 
+	KEquipmentArray	m_sListEquipment;
     int                m_nImageNpcID; //id npc 
 #endif 
 
@@ -228,6 +376,7 @@ public:
 	KPlayerFuYuan	m_cFuYuan;						// phuc duyen
 	KPlayerReBorn	m_cReBorn;						// trung sinh
 	KPlayerTong		m_cTong;					
+	KMeridian		m_cMeridian;					//Kinh mach
 #ifndef _SERVER
 	KPlayerAuto		m_cAuto;			//fkauto
 	KAutoMove		m_cAutoMove;
@@ -249,18 +398,28 @@ public:
 //	DWORD			m_dwOutOfDateFeedBackTime;	
 	BYTE			m_btTryExecuteScriptTimes;	
 	//char			m_CurScriptName[128];
-	int				m_nWorldStat;						//xÕp h¹ng thÕ giíi
+	int				m_nWorldStat;						//xÕp h¹ng th?giíi
 	int				m_nSectStat;
 	int				m_nTimeChangePK;
 // auto playgame
 	BOOL			m_bPriorityUseMouse;
+	BOOL			m_bSpeedControl;
+#ifndef _SERVER
+	ExtAuto			m_sExtAuto;
+	std::map<UINT, UINT>	m_mAutoExcludeNpcID;
+	std::map<int, ExtAutoObjTime>		m_mAutoIDObj;
+	std::map<UINT, UINT>	m_mAutoIDTeam;
+	std::map<int, ExtAutoTeamRecv>	m_mAutoTeamRecv;
+	std::vector<UINT>	m_vAutoTeamKick;
+#else
+	int				m_nAutoRevTime;
+#endif
 private:	
 	BOOL			m_bActiveAuto;
 #ifndef _SEVER
 	BOOL			m_bSortEquipment;
 	int				m_nReturnPortalStep;
 	int				m_nCurReturnPortalSec;
-	KEquipmentArray	m_sListEquipment;
 	int				m_nTimeCheckFollowPeopleIdx;
 	int				m_nTimePriorityUseMouse;
 	int				m_LifeAuto;
@@ -293,7 +452,7 @@ public:
 	char			m_FollowPeopleName[32];
 	BOOL			m_bAutoParty;
 	BOOL			m_bActiveAutoParty;
-	BOOL			m_bAutoAccecptAll;//tù ®éng mêi tÊt c¶
+	BOOL			m_bAutoAccecptAll;//t?®éng mêi tÊt c?
 	BOOL			m_bAutoMove;
 	BOOL			m_bPickItem;
 	BYTE			m_btPickUpKind;
@@ -304,10 +463,10 @@ public:
 	BOOL			m_bActiveSwitchAura;
 	int 			m_AutoLifeReplenishP; //nga my buff theo phÇn tr¨m m¸u
 	BOOL 			m_AutoLifeReplenish;
-	BOOL			m_AutoBuffTeam; //nga my buff m¸u cho tæ ®éi
+	BOOL			m_AutoBuffTeam; //nga my buff m¸u cho t?®éi
 	int				m_MoveMps[defMAX_AUTO_MOVEMPSL][3];
 	int				m_MoveStep;
-	char				m_AutoPT_PlayerList[defMAX_AUTO_MOVEMPSL][32];//qu¶n lý tæ ®éi
+	char				m_AutoPT_PlayerList[defMAX_AUTO_MOVEMPSL][32];//qu¶n l?t?®éi
 	BOOL			m_AutoMove;
 	BOOL			m_bFilterEquipment;
 	int				m_FilterMagic[defMAX_AUTO_FILTERL][2];
@@ -352,7 +511,7 @@ public:
 	BOOL			m_bReturnPortal;
 	BOOL			m_Auto_TuiDuocPham;
 	BOOL			m_Auto_BanItem;
-	BOOL			m_bSaveJewelry;//gi÷ trang søc
+	BOOL			m_bSaveJewelry;//gi?trang søc
 	//BOOL			m_Auto_PickInFightState;//nhÆt trong thµnh
 	BOOL			m_Auto_SkillRight;
 	BOOL			m_bSortEquipment_Active;
@@ -380,15 +539,15 @@ public:
 	void			GetFactionValueName(char *lpszName, int nSize);	// »ñµÃµ±Ç°ÃÅÅÉÃû³Æ not end
 	int				GetFactionNo();
 	void			ChatFriendOnLine(DWORD dwID, int nFriendIdx);// »ñµÃÍ¨ÖªÄ³ºÃÓÑÉÏÏßÁË
-	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, int nParam = 0);
-	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, char * szParams);
-	BOOL			ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams);
-	BOOL			ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam);
+	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, int nParam = 0, bool bGlobal = true);
+	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, char * szParams, bool bGlobal = true);
+	BOOL			ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams, bool bGlobal = true);
+	BOOL			ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, bool bGlobal = true);
 
-	BOOL			ExecuteScript2(char * ScriptFileName, char * szFunName, int nParam1 = 0, int nParam2 = 0);
-	BOOL			ExecuteScript2(char * ScriptFileName, char * szFunName, char * szParams1, char * szParams2);
-	BOOL			ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParams1, char *  szParams2);
-	BOOL			ExecuteScript2(DWORD dwScriptId,  char * szFunName, int nParam1, int nParam2);
+	BOOL			ExecuteScript2(char * ScriptFileName, char * szFunName, int nParam1 = 0, int nParam2 = 0, bool bGlobal = true);
+	BOOL			ExecuteScript2(char * ScriptFileName, char * szFunName, char * szParams1, char * szParams2, bool bGlobal = true);
+	BOOL			ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParams1, char *  szParams2, bool bGlobal=true);
+	BOOL			ExecuteScript2(DWORD dwScriptId,  char * szFunName, int nParam1, int nParam2, bool bGlobal = true);
 
 	BOOL			ExecuteScript3(char * ScriptFileName, char * szFunName, int nParam1 = 0, int nParam2 = 0, int nParam3 = 0);
 	BOOL			ExecuteScript3(char * ScriptFileName, char * szFunName, char * szParams1, char * szParams2, char * szParams3);
@@ -414,8 +573,10 @@ public:
 	void			LevelUp();								// ÉýÒ»¼¶
 	void			AddLeadExp(int nExp);					// Ôö¼ÓÍ³ÂÊÁ¦¾­Ñé
 	void			UpdataCurData();
+	void			ReCalcTongBenefit();					//Recalculate Tong Benefit for Members
 	void			ReCalcEquip();							// ÖØÐÂ¼ÆËãÉíÉÏµÄ×°±¸
 	void			ReCalcState();							// ÖØÐÂ¼ÆËãÉíÉÏµÄ×´Ì¬
+	void			ReCalcMeridian();
 	void			ChangePlayerCamp(int nCamp);			// ¸Ä±äÍæ¼ÒÕóÓª
 	void			Revive(int nType);						// ÖØÉú	
 	BOOL			CheckTrading();
@@ -440,11 +601,11 @@ public:
 	};
 	void 			ProcessDouble(); //#time x2 Exp chÕt kh«ng mÊt
 #ifndef _SERVER
-	void		   SortEquipment();
-	void		   SetSortEquipment(BOOL bFlag);
+	void			SortEquipment();
+	void			SetSortEquipment(BOOL bFlag);
 	void			AutoFllowPeople(int h, int k);
-	BOOL		CheckEquip(BYTE btDetail);
-	BOOL		CheckEquipMagic(int nIdx);
+	BOOL			CheckEquip(BYTE btDetail);
+	BOOL			CheckEquipMagic(int nIdx);
 	BOOL			ReturnFromPortal();
 	BOOL			InventoryItem();
 	BOOL			AutoSellItem();
@@ -492,8 +653,8 @@ public:
 	void			SendChat(KUiMsgParam *pMsg, char *lpszSentence);// 
 	void			ApplyAddBaseAttribute(int nAttribute, int nNo);// ¶Ó³¤Ïò·þÎñÆ÷ÉêÇëÔö¼ÓËÄÏîÊôÐÔÖÐÄ³Ò»ÏîµÄµãÊý(0=Strength 1=Dexterity 2=Vitality 3=Engergy)
 	BOOL			ApplyAddSkillLevel(int nSkillID, int nAddPoint);// 
-	BOOL			ApplyUseItem(int nItemID, ItemPos SrcPos);	// 
-	BOOL			ApplyAutoMoveItem(int nItemID, ItemPos SrcPos); // chuyÓn item tõ hµnh trang vµo r­¬ng
+	BOOL			ApplyUseItem(int nItemID, ItemPos SrcPos, int nTargetPos=0);	// 
+	BOOL			ApplyAutoMoveItem(int nItemID, ItemPos SrcPos); // chuyÓn item t?hµnh trang vµo r­¬ng
 	void			PickUpObj(int nObjIndex);					// 
 	void			ObjMouseClick(int nObjIndex);				// 
 	void			MoveItem(ItemPos DownPos, ItemPos UpPos);	// DownPos UpPos
@@ -507,6 +668,12 @@ public:
 	BOOL			TradeMoveMoney(int nMoney);						
 	void			TradeDecision(int nDecision);				// if nDecision == 0   if nDecision == 1   if nDecision == 2 
 	void			TradeApplyLock(int nLockOrNot);				// 
+	void			GambleApplyOpen(char* lpszSentence, int nLength);
+	void			GambleApplyClose();
+	void			GambleApplyStart(int nNpcIdx);
+	BOOL			GambleMoveMoney(int nMoney);
+	void			GambleDecision(int nDecision, BYTE btChoose = -1);				// if nDecision == 0   if nDecision == 1   if nDecision == 2 
+	void			GambleApplyLock(int nLockOrNot);
 	void			SetChatCurChannel(int nChannelNo);			// 
 	void			TeamInviteAdd(DWORD dwNpcID);				// 
 	void			SetLeftSkill(int nSkillID);
@@ -518,13 +685,17 @@ public:
 	void			s2cApplyAddTeam(BYTE* pProtocol);			
 	void			s2cTradeChangeState(BYTE* pMsg);
 	void			s2cTradeMoneySync(BYTE* pMsg);
-	void			s2cTradeDecision(BYTE* pMsg);				
+	void			s2cTradeDecision(BYTE* pMsg);	
+	void			s2cGambleChangeState(BYTE* pMsg);
+	void			s2cGambleMoneySync(BYTE* pMsg);
+	void			s2cGambleDecision(BYTE* pMsg);
 	void			SyncCurPlayer(BYTE* pMsg);
 	void			s2cLevelUp(BYTE* pMsg);
 	void			s2cGetCurAttribute(BYTE* pMsg);
 	void			s2cSetExp(double nExp);
 	void			s2cSyncMoney(BYTE* pMsg);
 	void			s2cTradeApplyStart(BYTE* pMsg);
+	void			s2cGambleApplyStart(BYTE* pMsg);
 	void			CheckObject(int nIdx);
 	BOOL			AutoUseItem(int nGenre, int nDetailType, int nParticular);
 	BOOL			AutoCheckItem(int nGenre, int nDetailType, int nParticular);
@@ -532,9 +703,13 @@ public:
 	{
 		m_nExtPoint = nChangePoint;
 	}
+	int				FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSelBoss,
+					BOOL bTGNpc = TRUE, const short* pSerOrder = NULL, BOOL bFoll = FALSE,
+					int nPointX = 0, int nPointY = 0);
 #endif
 
 	int				GetExtPoint();
+	void			SwitchEquipSet(int setnum);
 
 #ifdef _SERVER
 	void			AddSkillExp120(int nExp);
@@ -562,6 +737,7 @@ public:
 	void			LoginTimeOut();
 	void			UseTownPortal();
 	void			BackToTownPortal(int nIdSubWorld = 0);
+	void			c2sSetMeridian(SetMeridianData Data);
 	void			GetLoginRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// »ñÈ¡Íæ¼ÒµÇÈëÖØÉúµãÎ»ÖÃ
 	void			GetDeathRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// »ñÈ¡Íæ¼ÒËÀÍöÖØÉúµãÎ»ÖÃ
 	void			SetRevivalPos(int nSubWorld, int nRevalId);								// Éè¶¨Íæ¼ÒÖØÉúµãID
@@ -612,7 +788,9 @@ public:
 	BOOL			ServerPickUpItem(BYTE* pProtocol);		// ÊÕµ½¿Í»§¶ËÏûÏ¢Êó±êµã»÷Ä³¸öobj¼ðÆð×°±¸»ò½ðÇ®
 	void			EatItem(BYTE* pProtocol);				// ÊÕµ½¿Í»§¶ËÏûÏ¢³ÔÒ©
 	void			ServerMoveItem(BYTE* pProtocol);		// ÊÕµ½¿Í»§¶ËÏûÏ¢ÒÆ¶¯ÎïÆ·
-	void			ServerThrowAwayItem(BYTE* pProtocol);	// 
+	void			ServerThrowAwayItem(BYTE* pProtocol);
+	void ServerThrowAllItem();
+	// 
 	void			ServerThrowAllItem(BYTE* pProtocol);
 	void			ChatSetTakeChannel(BYTE* pProtocol);	// ÊÕµ½¿Í»§¶ËÏûÏ¢Éè¶¨ÁÄÌì¶©ÔÄÆµµÀ
 	void			ChatTransmitApplyAddFriend(BYTE* pProtocol);// ÊÕµ½¿Í»§¶ËÇëÇó×ª·¢ÁÄÌìÌí¼ÓºÃÓÑÐÅÏ¢
@@ -629,6 +807,13 @@ public:
 	void			TradeDecision(BYTE* pProtocol);			// 
 	void			c2sTradeReplyStart(BYTE* pProtocol);
 	void			SyncTradeState();						// 
+	void			GambleApplyOpen(BYTE* pProtocol);		// 
+	void			GambleApplyClose(BYTE* pProtocol);		// 
+	void			GambleApplyStart(BYTE* pProtocol);		// 
+	void			GambleMoveMoney(BYTE* pProtocol);
+	void			GambleDecision(BYTE* pProtocol);			// 
+	void			c2sGambleReplyStart(BYTE* pProtocol);
+	void			SyncGambleState();
 	void			SendEquipItemInfo(int nTargetPlayer);	// 
 	void			RecoveryBox(DWORD dwID, int nX, int nY);
 	void			GetCityOwnTong();
@@ -652,6 +837,15 @@ public:
 	void			Change_PK_Status(int nId);
 	void			SendMSGroup();
 	void			SendMSRank(TMissionLadderSelfInfo* SelfData, TMissionLadderInfo* RankData);
+	void SetEnablePlayerSave(bool enable)
+	{
+		m_bEnableSave = enable;
+	}
+	bool IsPlayerSaveEnabled() const
+	{
+		return m_bEnableSave;
+	}
+	int			AutoArrangeItem(int nType = 0);
 #endif
 
 private:
@@ -722,10 +916,10 @@ public:
 	BOOL			GetNewPlayerFromIni(KIniFile * pIniFile, BYTE * pRoleBuffer);
 	int				UpdateDBPlayerInfo(BYTE * pPlayerInfo);
 	int				DeletePlayer(char * szPlayerName = NULL);
-	void			LaunchPlayer();
+	int			LaunchPlayer();
 	void			LaunchPlayer2(bool value);
-	BOOL			Pay(int nMoney);
-	BOOL			Earn(int nMoney);
+	BOOL			Pay(int nMoney, bool Gamble = false);
+	BOOL			Earn(int nMoney, bool Gamble = false);
 	void			DialogNpc(BYTE * pProtocol);
 	int				AddTempTaskValue(void* pData);
 #endif

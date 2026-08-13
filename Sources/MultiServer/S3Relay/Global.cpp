@@ -86,6 +86,7 @@ const char key_buffersize[] = "buffersize";
 const char key_account[] = "account";
 const char key_password[] = "password";
 const char key_retryinterval[] = "retryinterval";
+const char key_capsize[] = "tongcap";
 
 
 

@@ -48,7 +48,9 @@ static struct KWndStation
 	KWndWindow*		pGameSpaceWnd;	
 	unsigned char	bGameSpaceNotHandleInput;
 	bool			bPaintGameSpace;
-
+	BOOL			bLBtnDown;
+	UINT			uPKKeyDown;
+	BOOL			bPKKeyDown;
 	KWndStation()
 	{
 		pFocusWnd        = NULL;
@@ -69,6 +71,9 @@ static struct KWndStation
 		DragInfo.DraggedObj.uId = 0;
 		ScreenSize.cx = 0;
 		ScreenSize.cy = 0;
+		bLBtnDown = FALSE;
+		uPKKeyDown = 0;
+		bPKKeyDown = FALSE;
 	}
 }	s_WndStation;
 
@@ -119,6 +124,7 @@ void Wnd_RenderWindows()
 	}
 	KPopupMenu::PaintMenu();
 	g_MouseOver.PaintMouseHoverInfo();
+	g_MouseOverCompare.PaintMouseHoverInfo();
 
 	if (WND_SHOW_MOUSE_OVER_WND && s_WndStation.pMouseOverWnd)
 		s_WndStation.pMouseOverWnd->PaintDebugInfo();
@@ -269,6 +275,8 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			x = LOWORD(nParam);
 			y = HIWORD(nParam);
+			if(uMsg == WM_LBUTTONUP)
+				s_WndStation.bLBtnDown = FALSE;
 		}
 		else
 		{
@@ -310,6 +318,7 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 			if (pTopWnd != s_WndStation.pMouseOverWnd)
 			{
 				g_MouseOver.CancelMouseHoverInfo();
+				g_MouseOverCompare.CancelMouseHoverInfo();
 				KWndWindow* pOverParent = NULL;
 				if (s_WndStation.pMouseOverWnd)
 				{
@@ -361,6 +370,13 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 	}
 	else
 	{//====´¦ÀíÆäËûÏûÏ¢£¨ÆäÊµ¶¼ÊÇ¼üÅÌÊäÈëÏûÏ¢£©====
+		if(uMsg == WM_KEYUP)
+		{
+			if(uParam == s_WndStation.uPKKeyDown)
+			{
+				s_WndStation.bPKKeyDown = FALSE;
+			}
+		}
 		if (KPopupMenu::HandleInput(uMsg, uParam, nParam))
 			return;
 
@@ -370,6 +386,17 @@ void Wnd_ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam)
 		{
 			s_WndStation.pExclusiveWnd[0]->WndProc(uMsg, uParam, nParam);
 			return;
+		}
+		if(uMsg == WM_KEYDOWN)
+		{
+			if(uParam == s_WndStation.uPKKeyDown
+			&& !(GetKeyState(VK_CONTROL) & 0x8000)
+			&& !(GetKeyState(VK_SHIFT) & 0x8000)
+			&& !(GetKeyState(VK_MENU) & 0x8000)
+			)
+			{
+				s_WndStation.bPKKeyDown = TRUE;
+			}
 		}
 		if (uMsg == WM_KEYDOWN || (uMsg == WM_KEYUP && uParam == VK_SNAPSHOT))
 		{
@@ -558,7 +585,7 @@ void Wnd_ReleaseCapture()
 }
 
 //--------------------------------------------------------------------------
-//	//ChØ hiÖn thÞ UI trªn cïng c¸c ui d­íi kho¸ hÕt
+//	//Ch?hiÖn th?UI trªn cïng c¸c ui d­íi kho?hÕt
 //--------------------------------------------------------------------------
 void Wnd_SetExclusive(KWndWindow* pWnd)
 {
@@ -639,4 +666,28 @@ void Wnd_GetScreenSize(int& nWidth, int& nHeight)
 void	Wnd_RestoreCursor()
 {
 	s_WndStation.Cursor.RestoreCursor();
+}
+
+void Wnd_LButtonDown()
+{
+	s_WndStation.bLBtnDown = TRUE;
+}
+
+BOOL Wnd_IsLButtonDown()
+{
+	return s_WndStation.bLBtnDown;
+}
+
+void Wnd_SetPKKey(UINT uKey)
+{
+	if(uKey != s_WndStation.uPKKeyDown)
+	{
+		s_WndStation.uPKKeyDown = uKey;
+		s_WndStation.bPKKeyDown = FALSE;
+	}
+}
+
+BOOL Wnd_IsPKKeyDown()
+{
+	return s_WndStation.bPKKeyDown;
 }

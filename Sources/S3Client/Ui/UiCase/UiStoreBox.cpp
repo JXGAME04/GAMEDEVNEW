@@ -104,7 +104,7 @@ void KUiStoreBox::UpdateData()
 	{
 		g_pCoreShell->GetGameData(GDI_ITEM_IN_STORE_BOX, (unsigned int)pObjs, nCount);//单线程执行，nCount值不变
 		for (int i = 0; i < nCount; i++)
-			UpdateItem(&pObjs[i], true);
+			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
 		pObjs = NULL;
 	}
@@ -120,9 +120,15 @@ void KUiStoreBox::Breathe()
 
 void KUiStoreBox::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 {
+	bool open = false;
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if(open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -136,9 +142,12 @@ void KUiStoreBox::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 				m_ItemBox.AddObject(&Obj, 1);
 			else
 				m_ItemBox.RemoveObject(&Obj);
+			if(!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 		else
 		{
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 			m_nMoney = pItem->Obj.uId;
 			//m_Money.SetIntText(m_nMoney);
 			m_Money.SetMoneyText(m_nMoney);
@@ -147,7 +156,7 @@ void KUiStoreBox::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 	else
 		UpdateData();
 }
-
+extern int SCREEN_WIDTH;
 void KUiStoreBox::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -155,7 +164,12 @@ void KUiStoreBox::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_ITEM);
 	if (m_pSelf && Ini.Load(Buff))
 	{
-		m_pSelf->Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			m_pSelf->Init(&Ini, "Main1024");
+		else
+			m_pSelf->Init(&Ini, "Main");
+
+		
 		m_pSelf->m_Money.Init(&Ini, "Money");
 		m_pSelf->m_GetMoneyBtn.Init(&Ini, "GetMoneyBtn");
 		m_pSelf->m_CloseBtn.Init(&Ini, "CloseBtn");
@@ -171,6 +185,19 @@ int KUiStoreBox::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {
 	switch(uMsg)
 	{
+		case WND_N_RIGHT_CLICK_ITEM:
+		{
+			if (g_UiBase.GetStatus() == UIS_S_IDLE)
+			{
+				KUiDraggedObject* pItem = (KUiDraggedObject*)uParam;
+				unsigned int uPr[2];
+				uPr[0] = pItem->uId;
+				uPr[1] = pos_repositoryroom;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uPr, pos_equiproom);
+			}
+		}
+		break;
 	case WND_N_ITEM_PICKDROP:
 		if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 		{

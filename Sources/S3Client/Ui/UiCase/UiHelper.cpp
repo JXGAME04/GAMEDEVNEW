@@ -108,7 +108,7 @@ int KUiHelper::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	}
 	return nResult;
 }
-
+extern int SCREEN_WIDTH;
 void KUiHelper::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -117,37 +117,61 @@ void KUiHelper::LoadScheme(const char* pScheme)
 
 	if (InitFile.Load(Buff))
 	{
-		switch(ms_nImgFrame)
-		{
-		case KEYBOARD_FRAME:
-			InitFile.GetString("Main", "KeyboardImage", "", Buff, sizeof(Buff));
-			if(Buff[0])
-				InitFile.WriteString("Main", "Image", Buff);
-			break;
-		case WUXING_INTERFIX_FRAME:
-			InitFile.GetString("Main", "WuxingImage", "", Buff, sizeof(Buff));
-			if(Buff[0])
-				InitFile.WriteString("Main", "Image", Buff);
-			break;
-		case INTERFACE_FRAME:
-			break;
-		default:
-			break;
+		if (SCREEN_WIDTH == 1024) {
+			switch (ms_nImgFrame)
+			{
+			case KEYBOARD_FRAME:
+				InitFile.GetString("Main1024", "KeyboardImage", "", Buff, sizeof(Buff));
+				if (Buff[0])
+					InitFile.WriteString("Main1024", "Image", Buff);
+				break;
+			case WUXING_INTERFIX_FRAME:
+				InitFile.GetString("Main1024", "WuxingImage", "", Buff, sizeof(Buff));
+				if (Buff[0])
+					InitFile.WriteString("Main1024", "Image", Buff);
+				break;
+			case INTERFACE_FRAME:
+				break;
+			default:
+				break;
+			}
+			Init(&InitFile, "Main1024");
 		}
-		Init(&InitFile, "Main");
+		else {
+			switch (ms_nImgFrame)
+			{
+			case KEYBOARD_FRAME:
+				InitFile.GetString("Main", "KeyboardImage", "", Buff, sizeof(Buff));
+				if (Buff[0])
+					InitFile.WriteString("Main", "Image", Buff);
+				break;
+			case WUXING_INTERFIX_FRAME:
+				InitFile.GetString("Main", "WuxingImage", "", Buff, sizeof(Buff));
+				if (Buff[0])
+					InitFile.WriteString("Main", "Image", Buff);
+				break;
+			case INTERFACE_FRAME:
+				break;
+			default:
+				break;
+			}
+			Init(&InitFile, "Main");
+		}
 	}
 	return;
 }
 
 bool UiCloseWndsInGame(bool bAll);
-
+extern int SCREEN_WIDTH;
 void KUiHelper::Show()
 {
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
-	KUiHeaderControlBar::DefaultScheme(Scheme);
-	KUiToolsControlBar::DefaultScheme(Scheme);
-	KUiMsgCentrePad::DefaultScheme(Scheme);
+	if (SCREEN_WIDTH == 800) {
+		KUiHeaderControlBar::DefaultScheme(Scheme);
+		KUiToolsControlBar::DefaultScheme(Scheme);
+		KUiMsgCentrePad::DefaultScheme(Scheme);
+	}
 	KUiMsgCentrePad::HideAllMessage();
 	MapSetMode(MINIMAP_M_BRIEF_PIC);
 	KUiMiniMap::LoadScheme(Scheme);

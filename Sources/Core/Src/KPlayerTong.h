@@ -25,6 +25,8 @@ public:
 	int			m_nApplyTo;			// playerindex
 	DWORD		m_dwMoney;
 	int			m_nTongLevel;
+	int			m_nTongExp;
+	bool		m_bIsFull;	// tong is full
 
 public:
 	char		m_szMasterName[32];	
@@ -45,8 +47,11 @@ public:
 	int			GetCamp() {return m_nCamp;};
 	int			GetFigure() {return m_nFigure;};
 	DWORD		GetTongMoney() {return m_dwMoney;};	
-	int				GetRecruit() {return m_nRecruit;};
-	int				GetTongLevel() {return m_nTongLevel;};
+	int			GetRecruit() {return m_nRecruit;};
+	int			GetTongLevel() {return m_nTongLevel;}
+	void		SetTongLevel(int nLevel) { m_nTongLevel = nLevel; }
+	int			GetTongExp() { return m_nTongExp; }
+	void		SetTongExp(int nExp) { m_nTongExp = nExp; };
 	BOOL		CanGetManagerInfo(DWORD dwTongNameID);
 	BOOL		CanGetMemberInfo(DWORD dwTongNameID);
 
@@ -118,6 +123,7 @@ public:
 	void		BeChangedTitle(STONG_SERVER_TO_CORE_BE_CHANGED_TITLE *pSync);
 	BOOL		CheckMoneyPower(TONG_APPLY_SAVE_COMMAND *pSave);
 	void		ChangeMoney(DWORD dwMoney);
+	void		ChangeFullStatus(bool bIsFull);
 	int			CheckChangeCampCondition(TONG_APPLY_CHANGE_CAMP_COMMAND *pChange);
 	void		BeChangedCamp(STONG_SERVER_TO_CORE_BE_CHANGED_CAMP *pSync);
 	void		BeChangedRecruit(STONG_SERVER_TO_CORE_BE_CHANGED_RECRUIT *pSync);

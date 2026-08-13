@@ -83,7 +83,12 @@ void KUiShoppingCart::Breathe()
 
 	for(int i = 0; i < MAX_ITEM_SPC; i++)
 	{
-		m_GoodsInfo_CountEdit[i].SetIntText(m_GioHangNew.m_ListCount[i]);
+		if(m_GoodsInfo_CountEdit[i].GetIntNumber() > 0)
+			m_GioHangNew.m_ListCount[i] = m_GoodsInfo_CountEdit[i].GetIntNumber();
+
+		else if(m_GioHangNew.m_ListCount[i] >= 1)
+			m_GoodsInfo_CountEdit[i].SetIntText(m_GioHangNew.m_ListCount[i]);
+
 		m_GoodsInfo_TotalPrice[i].SetMoneyUnitPrice(m_GioHangNew.m_ListPriceInfo[i].nCurPrice, m_PriceInfo.nMoneyUnit);
 		if(m_GioHangNew.m_ListCount[i] > 0)
 		{
@@ -93,6 +98,7 @@ void KUiShoppingCart::Breathe()
 		m_GoodsInfo_GoodsName[i].SetText(m_GioHangNew.m_ListPriceInfo[i].szItemName);
 	}
 
+	KUiSuperShop::UpdateGioHang(&m_GioHangNew);
 	m_TotalCostValueText.SetMoneyUnitPrice(m_nOwnValue, m_PriceInfo.nMoneyUnit); // hiÖn cã
 	m_TotalSaveValueText.SetMoneyUnitPrice(m_nTotalCostValue, m_PriceInfo.nMoneyUnit);	//ph¶i tr¶
 	m_OwnValueText.SetMoneyUnitPrice(m_nOwnValue - m_nTotalCostValue, m_PriceInfo.nMoneyUnit);	//cßn l¹i
@@ -110,6 +116,9 @@ void KUiShoppingCart::AddCount(int nIndex)
 	int nNumber = m_GoodsInfo_CountEdit[nIndex].GetIntNumber();
 	nNumber ++;
 
+	if (nNumber > 500)
+		nNumber = 500;
+
 	m_nBuyValue = nNumber;
 	char	szBuff1[16], szBuff2[16];
 	itoa(m_nBuyValue, szBuff1, 10);
@@ -121,7 +130,7 @@ void KUiShoppingCart::AddCount(int nIndex)
 	FKGioHang m_GioHangNew;
 	memset(&m_GioHangNew, 0, sizeof(m_GioHangNew));
 	KUiSuperShop::GetCurGioHang(&m_GioHangNew);
-	m_GioHangNew.m_ListCount[nIndex] = m_GioHangNew.m_ListCount[nIndex] + 1;
+	m_GioHangNew.m_ListCount[nIndex] = m_nBuyValue;
 	KUiSuperShop::UpdateGioHang(&m_GioHangNew);
 }
 
@@ -153,6 +162,9 @@ void KUiShoppingCart::DelCount(int nIndex)
 void KUiShoppingCart::OnCheckInput()
 {	
 	int nNumber = m_GoodsInfo_CountEdit[0].GetIntNumber();
+	if (nNumber > 500)
+		nNumber = 500;
+
 	m_nBuyValue = nNumber;
 	
 	char	szBuff1[16], szBuff2[16];
@@ -1069,6 +1081,10 @@ bool KUiSuperShop::PutItem(KUiObjAtContRegion* pObj, KUiItemBuySelInfo* pPriceIn
 			{
 				checkExists = true;
 				m_pSelf->m_GioHang.m_ListCount[i] = m_pSelf->m_GioHang.m_ListCount[i] + 1;
+
+				if (m_pSelf->m_GioHang.m_ListCount[i] > 500)
+					m_pSelf->m_GioHang.m_ListCount[i] = 500;
+
 				icardnull = i;
 				break;
 			}
@@ -1400,7 +1416,7 @@ void KUiDynamicShop::SetPage(int nIndex)
 		for (int i = 0; i < m_nObjCount; i++)
 		{
 			if (m_pObjsList[i].nContainer == nIndex)
-				UpdateItem(&m_pObjsList[i], true);
+				UpdateItem(&m_pObjsList[i], 2);
 		}
 		m_nCurrentPage = nIndex;
 	}
@@ -1425,7 +1441,13 @@ void KUiDynamicShop::UpdateItem(KUiObjAtContRegion* pItem, int bAdd)
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		bool open = false;
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if (open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -1439,6 +1461,8 @@ void KUiDynamicShop::UpdateItem(KUiObjAtContRegion* pItem, int bAdd)
 				m_ItemsBox.AddObject(&Obj, 1);
 			else
 				m_ItemsBox.RemoveObject(&Obj);
+			if (!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 	}
 	else

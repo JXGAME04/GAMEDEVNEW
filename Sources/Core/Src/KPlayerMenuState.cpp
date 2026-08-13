@@ -140,6 +140,22 @@ void	KPlayerMenuState::SetState(int nPlayerIdx, int nState, char *lpszSentence/*
 			Npc[Player[nPlayerIdx].m_nIndex].SendDataToNearRegion((LPVOID)&sSync, sSync.m_wLength + 1);
 		}
 		break;
+	case PLAYER_MENU_STATE_GAMBLING:
+	{
+		GAMBLE_CHANGE_STATE_SYNC	sState;
+		sState.ProtocolType = s2c_gamblechangestate;
+		sState.m_btState = 2;
+		sState.m_dwNpcID = dwDestNpcID;
+		g_pServer->PackDataToClient(Player[nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sState, sizeof(GAMBLE_CHANGE_STATE_SYNC));
+
+		NPC_SET_MENU_STATE_SYNC	sSync;
+		sSync.ProtocolType = s2c_npcsetmenustate;
+		sSync.m_btState = PLAYER_MENU_STATE_GAMBLING;
+		sSync.m_wLength = sizeof(NPC_SET_MENU_STATE_SYNC) - 1 - sizeof(sSync.m_szSentence);
+		sSync.m_dwID = Npc[Player[nPlayerIdx].m_nIndex].m_dwID;
+		Npc[Player[nPlayerIdx].m_nIndex].SendDataToNearRegion((LPVOID)&sSync, sSync.m_wLength + 1);
+	}
+	break;
 	}
 }
 #endif
@@ -169,6 +185,15 @@ void	KPlayerMenuState::RestoreBackupState(int nPlayerIdx)
 			this->SetState(nPlayerIdx, PLAYER_MENU_STATE_TRADEOPEN, szBuffer, strlen(szBuffer));
 		}
 		break;
+	case PLAYER_MENU_STATE_GAMBLING:
+	{
+		char	szBuffer[MAX_SENTENCE_LENGTH];
+		memcpy(szBuffer, m_szBackSentence, sizeof(szBuffer));
+		this->m_nState = PLAYER_MENU_STATE_NORMAL;
+		this->m_szSentence[0] = 0;
+		this->SetState(nPlayerIdx, PLAYER_MENU_STATE_NORMAL, szBuffer, strlen(szBuffer));
+	}
+	break;
 	}
 }
 #endif
@@ -190,7 +215,7 @@ BOOL	KPlayerMenuStateGraph::Init()
 		return FALSE;
 
 	m_szName[0][0] = 0;
-	for (int i = 1; i < PLAYER_MENU_STATE_NUM; i++)
+	for (int i = 1; i <= PLAYER_MENU_STATE_NUM+1; i++)
 	{
 		cFile.GetString(i + 1, 2, "", m_szName[i], sizeof(m_szName[i]));
 	}

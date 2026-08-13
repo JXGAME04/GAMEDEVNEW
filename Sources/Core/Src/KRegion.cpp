@@ -17,6 +17,7 @@
 #include "Scene/SceneDataDef.h"
 #include "KRegion.h"
 #include "MyAssert.H"
+#include <chrono>
 
 KRegion::KRegion()
 {
@@ -25,13 +26,17 @@ KRegion::KRegion()
 	m_nActive		= 0;
 	m_nNpcSyncCounter = 0;
 	m_nObjSyncCounter = 0;
+	m_nNpcSyncCursor  = 0;
 	m_nWidth		= 0;
 	m_nHeight		= 0;
 	ZeroMemory(m_nConnectRegion, 8 * sizeof(int));
 	memset(m_nConRegionID, -1, sizeof(m_nConRegionID));
 	m_pNpcRef		= NULL;
 	m_pObjRef		= NULL;
+	m_pObstacleRef	= NULL;
 	m_pMslRef		= NULL;
+	m_nRegionX		= 0;
+	m_nRegionY		= 0;
 #ifdef _SERVER
 	memset(m_dwTrap, 0, sizeof(m_dwTrap));
 #endif
@@ -45,6 +50,8 @@ KRegion::~KRegion()
 		delete [] m_pNpcRef;
 	if (m_pObjRef)
 		delete [] m_pObjRef;
+	if(m_pObstacleRef)
+		delete [] m_pObstacleRef;
 }
 
 BOOL KRegion::Init(int nWidth, int nHeight)
@@ -64,6 +71,12 @@ BOOL KRegion::Init(int nWidth, int nHeight)
 		return FALSE;
 	ZeroMemory(m_pObjRef, nWidth * nHeight);
 
+	if (!m_pObstacleRef)
+		m_pObstacleRef = new BYTE[nWidth * nHeight];
+	if (!m_pObstacleRef)
+		return FALSE;
+	ZeroMemory(m_pObstacleRef, nWidth * nHeight);
+
 	if (!m_pMslRef)
 		m_pMslRef = new BYTE[nWidth * nHeight];
 	if (!m_pMslRef)
@@ -71,6 +84,15 @@ BOOL KRegion::Init(int nWidth, int nHeight)
 	ZeroMemory(m_pMslRef, nWidth * nHeight);
 	
 	return TRUE;
+}
+
+void KRegion::ClearRefGrid()
+{
+    if (m_pNpcRef)
+        ZeroMemory(m_pNpcRef, m_nWidth * m_nHeight);
+
+    if (m_pMslRef)
+        ZeroMemory(m_pMslRef, m_nWidth * m_nHeight);
 }
 
 BOOL KRegion::Load(int nX, int nY)
@@ -157,8 +179,8 @@ BOOL KRegion::LoadObject(int nSubWorld, int nX, int nY)
 		LoadServerNpc(nSubWorld, &cData, sElemFile[REGION_NPC_FILE_INDEX].uLength);
 		
 		// Object
-		cData.Seek(dwHeadSize + sElemFile[REGION_OBJ_FILE_INDEX].uOffset, FILE_BEGIN);
-		LoadServerObj(nSubWorld, &cData, sElemFile[REGION_OBJ_FILE_INDEX].uLength);
+	//	cData.Seek(dwHeadSize + sElemFile[REGION_OBJ_FILE_INDEX].uOffset, FILE_BEGIN);
+	//	LoadServerObj(nSubWorld, &cData, sElemFile[REGION_OBJ_FILE_INDEX].uLength);
 
 gotoCLOSE:
 		cData.Close();
@@ -605,7 +627,7 @@ void	KRegion::LoadLittleMapData(int nX, int nY, char *lpszPath, BYTE *lpbtObstac
 }
 #endif
 #ifdef _SERVER 
-int KRegion::DelAllNpc(int mSubWorldID)
+int KRegion::DelAllNpc(int mSubWorldID, char* szName)
 {
 	KIndexNode *pNode = NULL;
 	KIndexNode *pTmpNode = NULL;
@@ -618,22 +640,24 @@ int KRegion::DelAllNpc(int mSubWorldID)
 		int nNpcIdx = pNode->m_nIndex;
 		if (nNpcIdx>0 && nNpcIdx<MAX_NPC && Npc[nNpcIdx].m_Kind!=kind_player && Npc[nNpcIdx].m_Doing != do_revive)
 		{
-			if (Npc[nNpcIdx].m_RegionIndex>=0  && mSubWorldID>0 && Npc[nNpcIdx].m_NpcSettingIdx==mSubWorldID)
-			{
-				   SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
-				   SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX,Npc[nNpcIdx].m_MapY, obj_npc);
-			}
-			else
-			{
-				if (Npc[nNpcIdx].m_RegionIndex>=0)
+			if (szName == NULL || (szName != NULL && strcmp(szName, Npc[nNpcIdx].Name) == 0)) {
+				if (Npc[nNpcIdx].m_RegionIndex >= 0 && mSubWorldID > 0 && Npc[nNpcIdx].m_NpcSettingIdx == mSubWorldID)
 				{
 					SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
-                    SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX,Npc[nNpcIdx].m_MapY, obj_npc);
-				}  
-			}
+					SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+				}
+				else
+				{
+					if (Npc[nNpcIdx].m_RegionIndex >= 0)
+					{
+						SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].RemoveNpc(nNpcIdx);
+						SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+					}
+				}
 
-			NpcSet.Remove(nNpcIdx);
-		    nCounter++;
+				NpcSet.Remove(nNpcIdx);
+				nCounter++;
+			}
 		}
 
 		pNode = pTmpNode;
@@ -646,33 +670,46 @@ void KRegion::Activate()
 {
     KIndexNode *pNode = NULL;
     KIndexNode *pTmpNode = NULL;
+	const int kNpcSyncChunkSize = 5;  // Number of NPCs to sync per frame
+	int npcCount = m_NpcList.GetNodeCount();
 
     int nCounter = 0;
 
     pNode = (KIndexNode *)m_NpcList.GetHead();
+	int currentIndex = 0;
+	int synced = 0;
 
-    while (pNode)
-    {
-        pTmpNode = (KIndexNode *)pNode->GetNext();
-        int nNpcIdx = pNode->m_nIndex;
-        if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
-        {
+	while (pNode)
+	{
+		int nNpcIdx = pNode->m_nIndex;
+		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
+		{
 #ifdef _SERVER
-            if ((nCounter == m_nNpcSyncCounter / 2) && (m_nNpcSyncCounter & 1))
-            {
-                Npc[nNpcIdx].NormalSync();
-            }
-            nCounter++;
+			if ((nCounter == m_nNpcSyncCounter / 2) && (m_nNpcSyncCounter & 1))
+			{
+				Npc[nNpcIdx].NormalSync();
+			}
+			nCounter++;
+			// Do NormalSync() if this NPC is in current chunk
+			if (synced < kNpcSyncChunkSize)
+			{
+				// Calculate actual sync index using round robin logic
+				int syncIndex = (m_nNpcSyncCursor + synced) % npcCount;
+				if (currentIndex == syncIndex)
+				{
+					Npc[nNpcIdx].NormalSync();
+					synced++;
+				}
+			}
 #endif
-            Npc[nNpcIdx].Activate();
-        }
-        pNode = pTmpNode;
-    }
-    m_nNpcSyncCounter++;
-    if (m_nNpcSyncCounter > m_NpcList.GetNodeCount() * 2)
-    {
-        m_nNpcSyncCounter = 0;
-    }
+			// Always activate
+			Npc[nNpcIdx].Activate();
+			currentIndex++;
+		}
+		pNode = (KIndexNode*)pNode->GetNext();
+	}
+	// Move sync cursor forward
+	m_nNpcSyncCursor = (m_nNpcSyncCursor + kNpcSyncChunkSize) % (npcCount > 0 ? npcCount : 1);
 
     nCounter = 0;
     KIndexNode *pObjNode = NULL;
@@ -694,6 +731,8 @@ void KRegion::Activate()
         if (pObjNode->m_nIndex > 0)
         {
 #endif
+       if (pObjNode->m_nIndex >= 0 && pObjNode->m_nIndex < MAX_OBJECT)
+         {
             try
             {
                 Object[pObjNode->m_nIndex].Activate();
@@ -707,6 +746,7 @@ void KRegion::Activate()
                 }
 #endif
                 ObjSet.Remove(pObjNode->m_nIndex);
+               }
             }
         }
         pObjNode = pObjTmpNode;
@@ -826,6 +866,8 @@ void KRegion::AddObj(int nIdx)
 	if (Object[nIdx].m_nMapX >= 0 && Object[nIdx].m_nMapY >= 0)
 	{
 		AddRef(Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, obj_object);
+		if (Object[nIdx].m_nKind == Obj_Kind_Obstacle)
+			AddRef(Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, obj_obstacle);
 	}
 }
 
@@ -852,6 +894,8 @@ void KRegion::RemoveObj(int nIdx)
 	if (Object[nIdx].m_nMapX > 0 && Object[nIdx].m_nMapY > 0)
 	{
 		DecRef(Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, obj_object);
+		if(Object[nIdx].m_nKind == Obj_Kind_Obstacle)
+			DecRef(Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, obj_obstacle);
 	}
 }
 
@@ -982,24 +1026,23 @@ BYTE	KRegion::GetBarrierMin(int nGridX, int nGridY, int nOffX, int nOffY, BOOL b
 int KRegion::GetRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 {
 	int nRet = 0;
-	//
-	if (nMapX >= m_nWidth || nMapY >= m_nHeight || nMapX < 0 || nMapY < 0) 
+	int index = nMapY * m_nWidth + nMapX;
+	if (nMapX >= m_nWidth || nMapY >= m_nHeight || index < 0)
 		return 0;
-	//
-	//if(m_nWidth > REGION_GRID_WIDTH) m_nWidth = REGION_GRID_WIDTH;
-	//
-	//if(m_nHeight > REGION_GRID_HEIGHT) m_nHeight = REGION_GRID_HEIGHT;
-	//
+
 	switch(nType)
 	{
 	case obj_npc:
-		nRet = (int)m_pNpcRef[nMapY * m_nWidth + nMapX];
+		nRet = (int)m_pNpcRef[index];
 		break;
 	case obj_object:
-		nRet = (int)m_pObjRef[nMapY * m_nWidth + nMapX];
+		nRet = (int)m_pObjRef[index];
+		break;
+	case obj_obstacle:
+		nRet = (int)m_pObstacleRef[index];
 		break;
 	case obj_missle:
-		nRet = (int)m_pMslRef[nMapY * m_nWidth + nMapX];
+		nRet = (int)m_pMslRef[index];
 		break;
 	default:
 		break;
@@ -1009,16 +1052,12 @@ int KRegion::GetRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 
 BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 {
+	if (nMapX >= m_nWidth || nMapY >= m_nHeight || nMapX < 0 || nMapY < 0  || m_nWidth < 0 || m_nHeight < 0 )
+		return FALSE;
+
 	BYTE* pBuffer = NULL;
 	int nRef = 0;
-	//
-	if (nMapX >= m_nWidth || nMapY >= m_nHeight || nMapX < 0 || nMapY < 0) 
-		return FALSE;
-	//
-	//if(m_nWidth > REGION_GRID_WIDTH) m_nWidth = REGION_GRID_WIDTH;
-	//
-	//if(m_nHeight > REGION_GRID_HEIGHT) m_nHeight = REGION_GRID_HEIGHT;
-	//
+		
 	switch(nType)
 	{
 	case obj_npc:
@@ -1026,6 +1065,9 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 		break;
 	case obj_object:
 		pBuffer = m_pObjRef;
+		break;
+	case obj_obstacle:
+		pBuffer = m_pObstacleRef;
 		break;
 	case obj_missle:
 		pBuffer = m_pObjRef;
@@ -1035,14 +1077,18 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 	}
 	if (pBuffer)
 	{
-		nRef = (int)pBuffer[nMapY * m_nWidth + nMapX];
+		int index = nMapY * m_nWidth + nMapX;
+		if (index >= m_nWidth * m_nHeight || index < 0)
+			return FALSE;
+		__try {
+			nRef = (int)pBuffer[index];
+		} __except (EXCEPTION_EXECUTE_HANDLER) {
+			return FALSE;
+		}
 		if (nRef == 255)
 			return FALSE;
-		else
-		{
-			pBuffer[nMapY * m_nWidth + nMapX]++;
-			return TRUE;
-		}
+		pBuffer[index]++;
+		return TRUE;
 	}
 	else
 	{
@@ -1052,16 +1098,12 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 
 BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 {
+	if (nMapX >= m_nWidth || nMapY >= m_nHeight || nMapX < 0 || nMapY < 0  || m_nWidth < 0 || m_nHeight < 0)
+		return FALSE;
+
 	BYTE* pBuffer = NULL;
 	int nRef = 0;
-	//
-	if (nMapX >= m_nWidth || nMapY >= m_nHeight || nMapX < 0 || nMapY < 0) 
-		return FALSE;
-	//
-	//if(m_nWidth > REGION_GRID_WIDTH) m_nWidth = REGION_GRID_WIDTH;
-	//
-	//if(m_nHeight > REGION_GRID_HEIGHT) m_nHeight = REGION_GRID_HEIGHT;
-	//	
+
 	switch(nType)
 	{
 	case obj_npc:
@@ -1070,25 +1112,30 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 	case obj_object:
 		pBuffer = m_pObjRef;
 		break;
+	case obj_obstacle:
+		pBuffer = m_pObstacleRef;
+		break;
 	case obj_missle:
 		pBuffer = m_pObjRef;
 		break;
 	default:
 		break;
 	}
+
 	if (pBuffer)
 	{
-		nRef = (int)pBuffer[nMapY * m_nWidth + nMapX];
-		if (nRef == 0)
-		{
-//			_ASSERT(0);
+		int index = nMapY * m_nWidth + nMapX;
+        if (index >= m_nWidth * m_nHeight || index < 0)
+        	return FALSE;
+		__try {
+			nRef = (int)pBuffer[index];
+		} __except (EXCEPTION_EXECUTE_HANDLER) {
 			return FALSE;
 		}
-		else
-		{
-			pBuffer[nMapY * m_nWidth + nMapX]--;
-			return TRUE;
-		}
+		if (nRef == 0)
+			return FALSE;
+		pBuffer[index]--;
+		return TRUE;
 	}
 	else
 	{
@@ -1096,12 +1143,17 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 	}
 }
 
+
 BOOL KRegion::AddPlayer(int nIdx)
 {
 	if (nIdx > 0 && nIdx < MAX_PLAYER)
 	{
-		_ASSERT(Player[nIdx].m_Node.m_Ref == 0);
-		if (Player[nIdx].m_Node.m_Ref == 0)
+		if (Player[nIdx].m_Node.m_Ref)
+		{
+			printf("[ERROR!] AddPlayer: %d, m_Ref: %d\n", nIdx, Player[nIdx].m_Node.m_Ref);
+			_ASSERT(FALSE);
+		}
+		else
 		{
 			m_PlayerList.AddTail(&Player[nIdx].m_Node);
 			Player[nIdx].m_Node.AddRef();
@@ -1273,6 +1325,10 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	#define	MAX_SYNC_RANGE	32//25
 	KIndexNode *pNode = NULL;
 
+	//if (m_PlayerList.IsEmpty())
+	if (m_PlayerList.m_nNodeCount <= 0)
+		return;
+
 	pNode = (KIndexNode *)m_PlayerList.GetHead();
 	while(pNode && nMaxCount > 0)
 	{
@@ -1439,7 +1495,11 @@ void KRegion::Close()		// 清除Region中的几个链表（所指向的内容没有被清除）
 	if (m_pObjRef)
 	{
 		ZeroMemory(m_pObjRef, m_nWidth * m_nHeight);
-	}
+    }
+	if (m_pObstacleRef)
+    {
+		ZeroMemory(m_pObstacleRef, m_nWidth * m_nHeight);
+    }
 	if (m_pMslRef)
 	{
 		ZeroMemory(m_pMslRef, m_nWidth * m_nHeight);

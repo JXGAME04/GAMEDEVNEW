@@ -61,6 +61,7 @@ void KUiHeaderControlBar::Initialize()
 	AddChild(&m_RankWorldText);
 }
 
+extern int SCREEN_WIDTH;
 //载入界面方案
 void KUiHeaderControlBar::LoadScheme(const char* pScheme)
 {
@@ -71,13 +72,18 @@ void KUiHeaderControlBar::LoadScheme(const char* pScheme)
 		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 		if (Ini.Load(Buff))
 		{
-			m_pSelf->Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024) {
+				m_pSelf->Init(&Ini, "Main1024");
+			}
+			else
+			{
+				m_pSelf->Init(&Ini, "Main");
+			}
 			m_pSelf->m_LevelText.Init(&Ini,"LevelText");
 			m_pSelf->m_RankWorldText.Init(&Ini,"RankWorldText");
 		}
 	}
 }
-
 //重新初始化界面
 void KUiHeaderControlBar::DefaultScheme(const char* pScheme)
 {

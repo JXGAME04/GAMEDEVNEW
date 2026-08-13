@@ -172,6 +172,8 @@ void KUiNewPlayer::SelGender()
 		m_propTypeInfoTable[m_Info.Attribute].szFemaleSound);
 }
 
+extern int SCREEN_WIDTH;
+
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -182,8 +184,14 @@ void KUiNewPlayer::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_NEWPLAYER);
 	if (Ini.Load(Buff))
 	{
-		Init(&Ini, "NewPlayer");
-		Ini.GetString("NewPlayer", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		if (SCREEN_WIDTH == 1024) {
+			Init(&Ini, "NewPlayer1024");
+			Ini.GetString("NewPlayer1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
+		else {
+			Init(&Ini, "NewPlayer");
+			Ini.GetString("NewPlayer", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
 		Ini.GetString("NewPlayer", "PlayerImgPrefix", "", m_szPlayerImgPrefix, sizeof(m_szPlayerImgPrefix));
 
 		m_Male  .Init(&Ini, "Male");

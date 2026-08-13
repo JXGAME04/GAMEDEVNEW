@@ -162,16 +162,20 @@ BOOL	KNpcResNode::Init(char *lpszNpcName, CActionName *cActionName, CActionName 
 					}
 				}
 #else
+				ZeroMemory(szBuf, sizeof(szBuf));
 				g_UnitePathAndName(RES_INI_FILE_PATH, m_nSectInfo[i].szSectResName, szBuf);
 				if ( !SectFile.Load(szBuf) )
 					continue;
+				ZeroMemory(szBuf, sizeof(szBuf));
 				g_UnitePathAndName(RES_INI_FILE_PATH, m_nSectInfo[i].szSectSprInfoName, szBuf);
 				if ( !SectInfoFile.Load(szBuf))
 					continue;
 				if(i >= MAX_BODY_PART_SECT * 2 && i < MAX_BODY_PART_SECT * 3 + MAX_BODY_PART_SECT)
 				{
+					ZeroMemory(szBuf, sizeof(szBuf));
 					g_UnitePathAndName(RES_INI_FILE_PATH, m_nSectInfo[i].szSectEffectName, szBuf);
 					SectEffectFile.Load(szBuf);
+					ZeroMemory(szBuf, sizeof(szBuf));
 					g_UnitePathAndName(RES_INI_FILE_PATH, m_nSectInfo[i].szSectEffectInfoName, szBuf);
 					SectEffectInfoFile.Load(szBuf);
 				}
@@ -257,6 +261,7 @@ BOOL	KNpcResNode::Init(char *lpszNpcName, CActionName *cActionName, CActionName 
 		if (szNoHorseTableName[0])
 		{
 //			g_SetFilePath(RES_INI_FILE_PATH);
+			ZeroMemory(szBuf, sizeof(szBuf));
 			g_UnitePathAndName(RES_INI_FILE_PATH, szNoHorseTableName, szBuf);
 			if ( NoHorseFile.Load(szBuf) )
 			{
@@ -278,6 +283,7 @@ BOOL	KNpcResNode::Init(char *lpszNpcName, CActionName *cActionName, CActionName 
 		if (szOnHorseTableName[0])
 		{
 //			g_SetFilePath(RES_INI_FILE_PATH);
+			ZeroMemory(szBuf, sizeof(szBuf));
 			g_UnitePathAndName(RES_INI_FILE_PATH, szOnHorseTableName, szBuf);
 			if ( OnHorseFile.Load(szBuf) )
 			{
@@ -455,11 +461,11 @@ BOOL	KNpcResNode::CheckPartExist(int nPartNo)
 //---------------------------------------------------------------------------
 // 功能:	获得某个部件的某个装备在某个动作下的 spr 文件名
 //---------------------------------------------------------------------------
-BOOL	KNpcResNode::GetFileName(int nPartNo, int nActionNo, int nEquipNo, char *lpszDefault, char *lpszGetName, int nStrLen)
+BOOL	KNpcResNode::GetFileName(int nPartNo, int nActionNo, int nEquipNo, char *lpszDefault, char *lpszGetName, int nStrLen, bool bEffect)
 {
 	if (nPartNo < 0 || nPartNo >= MAX_PART)
 		return FALSE;
-	if ( m_cResInfo[nPartNo].GetName(nActionNo, nEquipNo, "", lpszGetName, nStrLen) )
+	if (m_cResInfo[nPartNo].GetName(nActionNo, nEquipNo, "", lpszGetName, nStrLen, bEffect))
 		return TRUE;
 	return FALSE;
 }
@@ -467,34 +473,34 @@ BOOL	KNpcResNode::GetFileName(int nPartNo, int nActionNo, int nEquipNo, char *lp
 //---------------------------------------------------------------------------
 // 功能:	获得某个部件的某个装备在某个动作下的 spr 文件信息
 //---------------------------------------------------------------------------
-int		KNpcResNode::GetInterval(int nPartNo, int nActionNo, int nEquipNo, int nDefault)
+int		KNpcResNode::GetInterval(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect/* = false*/)
 {
 	if (nPartNo < 0 || nPartNo >= MAX_PART)
 		return nDefault;
 
-	return m_cResInfo[nPartNo].GetInterval(nActionNo, nEquipNo, nDefault);
+	return m_cResInfo[nPartNo].GetInterval(nActionNo, nEquipNo, nDefault, bEffect);
 }
 
 //---------------------------------------------------------------------------
 // 功能:	获得某个部件的某个装备在某个动作下的 spr 文件信息
 //---------------------------------------------------------------------------
-int		KNpcResNode::GetTotalFrames(int nPartNo, int nActionNo, int nEquipNo, int nDefault)
+int		KNpcResNode::GetTotalFrames(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect/* = false*/)
 {
 	if (nPartNo < 0 || nPartNo >= MAX_PART)
 		return nDefault;
 
-	return m_cResInfo[nPartNo].GetTotalFrames(nActionNo, nEquipNo, nDefault);
+	return m_cResInfo[nPartNo].GetTotalFrames(nActionNo, nEquipNo, nDefault, bEffect);
 }
 
 //---------------------------------------------------------------------------
 // 功能:	获得某个部件的某个装备在某个动作下的 spr 文件信息
 //---------------------------------------------------------------------------
-int		KNpcResNode::GetTotalDirs(int nPartNo, int nActionNo, int nEquipNo, int nDefault)
+int		KNpcResNode::GetTotalDirs(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect/* = false*/)
 {
 	if (nPartNo < 0 || nPartNo >= MAX_PART)
 		return nDefault;
 
-	return m_cResInfo[nPartNo].GetTotalDirs(nActionNo, nEquipNo, nDefault);
+	return m_cResInfo[nPartNo].GetTotalDirs(nActionNo, nEquipNo, nDefault, bEffect);
 }
 
 //---------------------------------------------------------------------------
@@ -598,6 +604,7 @@ BOOL	CActionName::Init(char *lpszFileName)
 	int			i;
 
 //	g_SetFilePath(RES_INI_FILE_PATH);
+	ZeroMemory(szBuf, sizeof(szBuf));
 	g_UnitePathAndName(RES_INI_FILE_PATH, lpszFileName, szBuf);
 	if ( !cTabFile.Load(szBuf) )
 		return FALSE;
@@ -1096,6 +1103,7 @@ BOOL	CSortTable::GetTable(char *lpszFileName, CActionName *cActionName, int nPar
 	KIniFile	SortIni;
 
 //	g_SetFilePath(RES_INI_FILE_PATH);
+	ZeroMemory(szBuf, sizeof(szBuf));
 	g_UnitePathAndName(RES_INI_FILE_PATH, lpszFileName, szBuf);
 	if ( !SortIni.Load(szBuf) )
 		return FALSE;

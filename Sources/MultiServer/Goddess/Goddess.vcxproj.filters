@@ -101,20 +101,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Lib\debug\common.lib">
-      <Filter>lib\debug</Filter>
-    </Library>
-    <Library Include="..\..\..\Lib\release\common.lib">
-      <Filter>lib\release</Filter>
-    </Library>
-    <Library Include="..\..\..\Lib\debug\libdb181sd.lib">
-      <Filter>lib\debug</Filter>
-    </Library>
-    <Library Include="..\..\..\Lib\release\libdb181s.lib">
-      <Filter>lib\release</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
 </Project>

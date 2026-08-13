@@ -12,6 +12,7 @@
 #include "../../Headers/IClient.h"
 #include "Scene/KScenePlaceC.h"
 #include "KIme.h"
+#include "KMath.h"
 #endif
 #include "KNpc.h"
 #include "KObj.h"
@@ -119,6 +120,10 @@ KPlayer::~KPlayer()
 
 void	KPlayer::Release()
 {
+	m_nMeridianStrength = 0;
+	m_nMeridianDexterity = 0;
+	m_nMeridianVitality = 0;
+	m_nMeridianEngergy = 0;
 #ifndef _SERVER
 	m_RunStatus = 0;
 	m_dwNextLevelLeadExp = 0;
@@ -135,7 +140,7 @@ void	KPlayer::Release()
 	memset(m_MissionRank, 0, sizeof(m_MissionRank));
 	m_cAuto.Release(); //fkauto
 	m_cAutoMove.Reset();
-    Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
+    //Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 #endif
 	m_dwID = 0;
 	m_nIndex = 0;
@@ -172,6 +177,7 @@ void	KPlayer::Release()
 	
 	// auto playgame
 	m_bActiveAuto	= FALSE;
+	m_bSpeedControl = FALSE;
 #ifndef _SERVER
 	m_bPriorityUseMouse = FALSE;
 	m_nTimePriorityUseMouse = 0;
@@ -280,6 +286,7 @@ void	KPlayer::Release()
 	m_nLastNpcIndex = 0;
 #endif
 // end	
+	m_nActiveEquipNum = 1;
 #ifdef _SERVER
 	m_bUseReviveIdWhenLogin = 0;
 	m_dwDeathScriptId = 0;
@@ -311,6 +318,7 @@ void	KPlayer::Release()
 	m_bFinishLoading = FALSE;
 	m_uMustSave = SAVE_IDLE;
 	m_bIsQuiting = FALSE;
+	m_bForeQuit = FALSE;
 	m_nLixian = 0;					//#uy thac
 	m_TimerTask.SetOwner(this);
 	m_bSleepMode = FALSE;
@@ -326,6 +334,12 @@ void	KPlayer::Release()
 	m_ImagePlayer = 0;
 	ZeroMemory(m_PlayerMateName, sizeof(m_PlayerMateName));//#MateName
 	m_cTong.Clear();
+	m_bEnableSave = TRUE;
+	m_nArrangeTimeItem = 0;
+	m_nArrangeTimeBox = 0;
+	memset(m_nCmpArrayItem, 0, sizeof(m_nCmpArrayItem));
+	memset(m_nCmpArrayBox, 0, sizeof(m_nCmpArrayBox));
+	memset(m_nCmpArrayExBox, 0, sizeof(m_nCmpArrayExBox));
 #endif
 }
 
@@ -348,6 +362,11 @@ void	KPlayer::Active()
 	if (m_nNetConnectIdx == -1 || m_bExchangeServer)
 		return;
 	//
+	if(Npc[m_nIndex].m_Doing == do_revive && m_nAutoRevTime < g_SubWorldSet.GetGameTime())
+	{
+		Revive(REMOTE_REVIVE_TYPE);
+		return;
+	}
 	m_TimerTask.Activate(g_PlayerTimerCallBackFun);
 	this->SendCurNormalSyncData();
 	this->m_cChat.TimerAdd();
@@ -410,7 +429,7 @@ void	KPlayer::Active()
 	m_nSendMoveFrames++;
 	this->m_cPK.Active();
 	//
-	this->m_cAuto.Active(); //fkauto
+	//this->m_cAuto.Active(); //fkauto
 	//
 	if(!Npc[m_nIndex].m_FightMode)
 	{
@@ -582,7 +601,7 @@ void KPlayer::OnButtonUp(int x, int y, MOUSE_BUTTON nButton)
 			m_bPriorityUseMouse = TRUE;
 			m_nTimePriorityUseMouse = GetTickCount();
 		}
-		if(g_ScenePlace.bPaintMode)
+		/*if(g_ScenePlace.bPaintMode)
 		{
             Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 			g_ScenePlace.DirectFindPos(0, 0, FALSE, FALSE);//#toa do stop paint mode click chuot phai
@@ -594,7 +613,7 @@ void KPlayer::OnButtonUp(int x, int y, MOUSE_BUTTON nButton)
 			sMsg.byParamSize = 0;
 			sprintf(sMsg.szMessage, "->k’t thÛc.");
 			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("T◊m Æ≠Íng", sMsg.szMessage, strlen(sMsg.szMessage));
-		}
+		}*/
 	}
 	if (nButton == button_right)
 	{
@@ -998,6 +1017,8 @@ BOOL KPlayer::Save()
 		TradeDecision((BYTE*)&sTrade);	
 	}
 	
+	if (!IsPlayerSaveEnabled())
+		return FALSE; //In state that no need saving
 		/*	if (m_uMustSave != SAVE_IDLE)
 		return FALSE;
 	*/
@@ -1102,6 +1123,7 @@ BOOL KPlayer::SendSyncData(int &nStep, unsigned int &nParam)
 			sSync.m_wSectStat = (WORD)m_nSectStat;
 			sSync.m_nMoney1 = this->m_ItemList.GetMoney(room_equipment);
 			sSync.m_nMoney2 = this->m_ItemList.GetMoney(room_repository);
+			sSync.m_nActiveEquipSetNum = this->m_nActiveEquipNum;
 			if (SUCCEEDED(g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(CURPLAYER_SYNC))))
 			{
 				bRet = TRUE;
@@ -1223,7 +1245,7 @@ void KPlayer::BuyItem(BYTE* pProtocol)
 
 	if (/*nNowMapX == m_BuyInfo.m_nMpsX && nNowMapY == nCurMapY &&*/ Npc[m_nIndex].m_SubWorldIndex == m_BuyInfo.m_SubWorldID)//fix by phong ki“u 03/09/2021 kh´ng mua Æ≠Óc item trong shop
 	{
-		if(pCommand->m_Number > 0 && pCommand->m_Number < 100) //fix by phong ki“u
+		if(pCommand->m_Number > 0 && pCommand->m_Number < 501 && pCommand->m_Shop >= 0 && pCommand->m_Shop < MAX_SUPERSHOP_SHOPTAB) //fix by phong ki“u
 			BuySell.Buy(m_nPlayerIndex, m_BuyInfo.m_nShopIdx[pCommand->m_Shop], pCommand->m_BuyIdx, pCommand->m_Number);
 	}
 }
@@ -1236,8 +1258,10 @@ void KPlayer::AutoSellItem(BYTE* pProtocol)
 
 void KPlayer::SellItem(BYTE* pProtocol)
 {
+	if(Npc[m_nIndex].m_BaiTan)
+			return;
 	PLAYER_SELL_ITEM_COMMAND* pCommand = (PLAYER_SELL_ITEM_COMMAND *)pProtocol;
-	int nNowMapX = 0;
+/*	int nNowMapX = 0;
 	int nCurMapY = m_BuyInfo.m_nMpsY;
 	int nNowMapY = 0;
 
@@ -1248,11 +1272,11 @@ void KPlayer::SellItem(BYTE* pProtocol)
 	  Npc[m_nIndex].m_OffY,
 	  &nNowMapX,
 	  &nNowMapY);
-
-	if (/*nNowMapX == m_BuyInfo.m_nMpsX && nNowMapY == nCurMapY && */Npc[m_nIndex].m_SubWorldIndex == m_BuyInfo.m_SubWorldID)//fix by phong ki“u 03/09/2021 kh´ng mua Æ≠Óc item trong shop
-	{
-		BuySell.Sell(m_nPlayerIndex, m_BuyInfo.m_nShopIdx[m_BuyInfo.m_nCurShop], m_ItemList.SearchID(pCommand->m_ID), pCommand->m_Number);
-	}
+*/
+	//if (/*nNowMapX == m_BuyInfo.m_nMpsX && nNowMapY == nCurMapY && */Npc[m_nIndex].m_SubWorldIndex == m_BuyInfo.m_SubWorldID)//fix by phong ki“u 03/09/2021 kh´ng mua Æ≠Óc item trong shop
+	//{
+		BuySell.Sell(m_nPlayerIndex, 0/*m_BuyInfo.m_nShopIdx[m_BuyInfo.m_nCurShop]*/, m_ItemList.SearchID(pCommand->m_ID), pCommand->m_Number);
+	//}
 }
 #endif
 
@@ -1288,22 +1312,32 @@ void	KPlayer::CloseTimer()
 #ifdef _SERVER
 void	KPlayer::SetRevivalPos(int nSubWorld, int nReviveId)
 {
-	if (nSubWorld >= 0)  
+	int nTempSW;
+	if (nSubWorld > 0)  
 	{
-		m_sLoginRevivalPos.m_nSubWorldID = nSubWorld;
+		nTempSW = nSubWorld;
 	}
 	else
 	{
-		m_sLoginRevivalPos.m_nSubWorldID = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID;
+		nTempSW = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID;
 	}
 	
 	POINT Pos;
 	
-	g_SubWorldSet.GetRevivalPosFromId(m_sLoginRevivalPos.m_nSubWorldID, nReviveId, &Pos);
-	m_sLoginRevivalPos.m_ReviveID = nReviveId;
-	m_sLoginRevivalPos.m_nMpsX = Pos.x;
-	m_sLoginRevivalPos.m_nMpsY = Pos.y;
-	
+	if(g_SubWorldSet.GetRevivalPosFromId(nTempSW, nReviveId, &Pos))
+	{
+		m_sLoginRevivalPos.m_nSubWorldID = nTempSW;
+		m_sLoginRevivalPos.m_ReviveID = nReviveId;
+		m_sLoginRevivalPos.m_nMpsX = Pos.x;
+		m_sLoginRevivalPos.m_nMpsY = Pos.y;
+	}
+	else
+	{
+		m_sLoginRevivalPos.m_nSubWorldID = 53;
+		m_sLoginRevivalPos.m_ReviveID = 19;
+		m_sLoginRevivalPos.m_nMpsX = 52032;
+		m_sLoginRevivalPos.m_nMpsY = 101696;
+	}
 	m_sDeathRevivalPos = m_sLoginRevivalPos;
 }
 #endif
@@ -2406,13 +2440,34 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 		return;
 
 	int	nGetExp = 0;
-      int nxExpTanThu = 4;
-    if (Npc[m_nIndex].m_Level < 50)
-		nxExpTanThu = 30;
-	else if (Npc[m_nIndex].m_Level < 80)
-		nxExpTanThu = 25;
-	else if (Npc[m_nIndex].m_Level < 90)
-		nxExpTanThu = 10;
+    
+    int nxExpVip = 0;
+    if (Npc[m_nIndex].m_CurrentExpSkillsVip == 2)
+		nxExpVip = 20;
+	else
+		nxExpVip = 0;
+	
+	int Map = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	int nxExpTanThu;
+	int level = Npc[m_nIndex].m_Level;	
+    if (level < 50)
+	    nxExpTanThu = 80 + nxExpVip;
+	else if (level < 80)
+	    nxExpTanThu = 70 + nxExpVip;
+	else if (level < 140)
+	    nxExpTanThu = 280 + nxExpVip;
+	else
+	    nxExpTanThu = 100 + nxExpVip;
+	    
+	if (m_cReBorn.GetReBornNum() > 3 && Map == 341)
+	{
+	    if (level < 140)
+	        nxExpTanThu = 160 + nxExpVip;
+	    else
+	        nxExpTanThu = 50 + nxExpVip;
+	}
+//	else if (Npc[m_nIndex].m_Level < 150)
+//		nxExpTanThu = 100;
 	int	nSubLevel = Npc[m_nIndex].m_Level - nTarLevel;
 	if(Npc[m_nIndex].m_Level >= nTarLevel )	// 
 	{
@@ -2426,10 +2481,11 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 		if (nSubLevel < 0)   
 			nGetExp = 1;
 	}
-	if (nTarLevel >= 90)
-		{
+	if (nTarLevel >= 90 && Npc[m_nIndex].m_Level >= 90)
+	{
 		nGetExp = nExp;
-		}
+	}
+
 	if (nGetExp <= 0)
 		nGetExp = 1;
 
@@ -2569,6 +2625,7 @@ void	KPlayer::LevelUp()
 	sLevelUp.m_nBaseStaminaMax	= Npc[m_nIndex].m_StaminaMax;
 	sLevelUp.m_nBaseManaMax		= Npc[m_nIndex].m_ManaMax;
 	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sLevelUp, sizeof(PLAYER_LEVEL_UP_SYNC));
+	Npc[m_nIndex].UpdateGameTitle();
 	// ∏¯∂””—∑¢ÀÕµ»º∂ ˝æ›
 	if ( m_cTeam.m_nFlag )
 	{
@@ -2605,15 +2662,19 @@ void	KPlayer::UpdataCurData()
 		if (Npc[m_nIndex].m_SkillList.m_Skills[i].TempSkill)
 			Npc[m_nIndex].m_SkillList.RemoveIdx(i);
 	}
-
+	int nCurbei = 0;
 	ZeroMemory(&Npc[m_nIndex].m_PhysicsMagic, sizeof(KMagicAttrib));	
-	Npc[m_nIndex].m_CurrentLifeMax		= Npc[m_nIndex].m_LifeMax;
-	Npc[m_nIndex].m_CurrentManaMax		= Npc[m_nIndex].m_ManaMax;
+	Npc[m_nIndex].m_CurrentLifeMax = Npc[m_nIndex].m_LifeMax * (100 + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornLifeMaxVal()  + nCurbei * 50) / 100;
+	//;Npc[m_nIndex].TakeTrader(Npc[m_nIndex].m_LifeMax*(100+m_cReBorn.GetReBornNum()*50+nCurbei*50),100);
+	//Npc[m_nIndex].m_LifeMax*(100+m_cReBorn.GetReBornNum()*50+nCurbei*50)/100;
+	Npc[m_nIndex].m_CurrentManaMax = Npc[m_nIndex].m_ManaMax * (100 + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornLifeMaxVal()  + nCurbei * 50) / 100;
+	//Npc[m_nIndex].TakeTrader(Npc[m_nIndex].m_ManaMax*(100+m_cReBorn.GetReBornNum()*50+nCurbei*50),100);
+	//Npc[m_nIndex].m_ManaMax*(100+m_cReBorn.GetReBornNum()*50+nCurbei*50)/100;
 	Npc[m_nIndex].m_CurrentStaminaMax	= Npc[m_nIndex].m_StaminaMax;
 	Npc[m_nIndex].m_CurrentAttackRating	= Npc[m_nIndex].m_AttackRating;
-	Npc[m_nIndex].m_CurrentAttackSpeed	= Npc[m_nIndex].m_AttackSpeed;
+	Npc[m_nIndex].m_CurrentAttackSpeed	= BASE_ATTACK_SPEED;
 //	Npc[m_nIndex].m_CurrentCamp			= Npc[m_nIndex].m_Camp;
-	Npc[m_nIndex].m_CurrentCastSpeed	= Npc[m_nIndex].m_CastSpeed;
+	Npc[m_nIndex].m_CurrentCastSpeed	= BASE_CAST_SPEED;
 	ZeroMemory(&Npc[m_nIndex].m_CurrentColdMagic, sizeof(KMagicAttrib));
 	ZeroMemory(&Npc[m_nIndex].m_CurrentColdDamage, sizeof(KMagicAttrib));
 	Npc[m_nIndex].m_CurrentColdEnhance	= 0;
@@ -2631,6 +2692,7 @@ void	KPlayer::UpdataCurData()
 	ZeroMemory(&Npc[m_nIndex].m_CurrentFireMagic, sizeof(KMagicAttrib));
 	ZeroMemory(&Npc[m_nIndex].m_CurrentFireDamage, sizeof(KMagicAttrib));
 	Npc[m_nIndex].m_CurrentFireEnhance	= 0;
+
 	Npc[m_nIndex].m_CurrentFireResist	= Npc[m_nIndex].m_FireResist;
 	Npc[m_nIndex].m_CurrentFireResistMax	= Npc[m_nIndex].m_FireResistMax;
 	Npc[m_nIndex].m_CurrentHandEnhance	= 0;
@@ -2658,16 +2720,25 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentPoisonEnhance	= 0;
 	Npc[m_nIndex].m_CurrentPoisonResist	= Npc[m_nIndex].m_PoisonResist;
 	Npc[m_nIndex].m_CurrentPoisonResistMax	= Npc[m_nIndex].m_PoisonResistMax;
+
+	Npc[m_nIndex].m_CurrentColdResistMax = BASE_FANGYU_ALL_MAX + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornFanYuMaxVal();//Npc[m_nIndex].m_ColdResistMax;
+	Npc[m_nIndex].m_CurrentFireResistMax = BASE_FANGYU_ALL_MAX + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornFanYuMaxVal();
+	Npc[m_nIndex].m_CurrentLightResistMax = BASE_FANGYU_ALL_MAX + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornFanYuMaxVal();//Npc[m_nIndex].m_LightResistMax;
+	Npc[m_nIndex].m_CurrentPhysicsResistMax = BASE_FANGYU_ALL_MAX + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornFanYuMaxVal();//Npc[m_nIndex].m_PhysicsResistMax;
+	Npc[m_nIndex].m_CurrentPoisonResistMax = BASE_FANGYU_ALL_MAX + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornFanYuMaxVal();//Npc[m_nIndex].m_PoisonResistMax;
+
 	Npc[m_nIndex].m_CurrentRangeDmgRet	= 0;
 	Npc[m_nIndex].m_CurrentRangeDmgRetPercent	= 0;
 	Npc[m_nIndex].m_CurrentRangeEnhance	= 0;
-	Npc[m_nIndex].m_CurrentRunSpeed	= Npc[m_nIndex].m_RunSpeed;
+	if(!m_bSpeedControl)
+		Npc[m_nIndex].m_CurrentRunSpeed	= Npc[m_nIndex].m_RunSpeed;
 	Npc[m_nIndex].m_CurrentSlowMissle	= 0;
 	Npc[m_nIndex].m_CurrentStaminaGain	= Npc[m_nIndex].m_StaminaGain;
 	Npc[m_nIndex].m_CurrentStaminaLoss	= Npc[m_nIndex].m_StaminaLoss;
 	Npc[m_nIndex].m_CurrentStaminaStolen	= 0;
 	Npc[m_nIndex].m_CurrentVisionRadius	= Npc[m_nIndex].m_VisionRadius;
-	Npc[m_nIndex].m_CurrentWalkSpeed	= Npc[m_nIndex].m_WalkSpeed;
+	if (!m_bSpeedControl)
+		Npc[m_nIndex].m_CurrentWalkSpeed	= Npc[m_nIndex].m_WalkSpeed;
 	Npc[m_nIndex].m_CurrentAddPhysicsDamage = 0;
 	Npc[m_nIndex].m_CurrentAddPhysicsMagic = 0;
 	m_nCurStrength						= m_nStrength;
@@ -2706,44 +2777,82 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentSorbDamageP	= 0;								//#triet tieu sat thuong
 	Npc[m_nIndex].m_CurrentExpEnhance	= 0;								//nh©n Æ´i nh©n ba nh©n x2 Æi”m kinh nghi÷m
 	Npc[m_nIndex].m_CurrentExpSkillsEnchance	= 1; // ExpSkills x2
-	
-	ReCalcEquip();
+	Npc[m_nIndex].m_CurrentExpSkillsVip = 1;
+
+	ReCalcMeridian();
 	ReCalcState();
+	ReCalcEquip();
+	ReCalcTongBenefit();
+}
+
+void KPlayer::ReCalcTongBenefit()
+{
+	_ASSERT(m_nIndex > 0 && m_nIndex < MAX_NPC);
+
+	int tongLevel = m_cTong.GetTongLevel();
+
+	if (tongLevel < 1 || tongLevel > 10)
+		return; // Ensure Tong level is within the valid range
+
+	int luckIncrease = tongLevel * 2; // Increase 2 lucky points per Tong level
+	m_nCurLucky = m_nCurLucky + luckIncrease;
 }
 
 void KPlayer::ReCalcEquip()
 {
 	_ASSERT(m_nIndex > 0 && m_nIndex < MAX_NPC);
-	
+
 	for (int i = 0; i < itempart_num; i++)
 	{
 		int nIdx = m_ItemList.m_EquipItem[i];
 		if (!nIdx)
 			continue;
-		//
-		if (i == itempart_horse)
+
+		
+		Item[nIdx].m_fHorseScale = 1.0f;
+
+	
+		if (Item[nIdx].m_CommonAttrib.nDetailType == equip_horse)
 		{
-			if (!Npc[m_nIndex].m_bRideHorse) // fix len xuong ngua
-				continue;
+		
+			Item[nIdx].m_fHorseScale = Npc[m_nIndex].m_bRideHorse ? 1.0f : 0.5f;
 		}
-		//
-		if (Item[nIdx].GetDurability() == 0) 
-			continue;		//do ben  0 trang bi hong khong tang cac magic trang bi
-		//
+
+		if (Item[nIdx].GetDurability() == 0)
+			continue;   
+
+		if (Item[nIdx].GetTimeYearIsExp())
+			continue;    
+
 		int nActive = m_ItemList.GetEquipEnhance(i);
+		int nGoldAct = m_ItemList.GetGoldEquipEnhance(i);
+
 		if (m_ItemList.m_bActiveSet)
 		{
 			nActive = 4;
 		}
-		Item[nIdx].ApplyMagicAttribToNPC(&Npc[m_nIndex], nActive);
+
+	
+		Item[nIdx].ApplyMagicAttribToNPC(&Npc[m_nIndex], nActive, nGoldAct);
 	}
 }
+
 
 void KPlayer::ReCalcState()
 {
 	_ASSERT(m_nIndex > 0 && m_nIndex < MAX_NPC);
 	
 	Npc[m_nIndex].ReCalcStateEffect();
+}
+
+void KPlayer::ReCalcMeridian()
+{
+	_ASSERT(m_nIndex > 0 && m_nIndex < MAX_NPC);
+	m_nMeridianStrength = 0;
+	m_nMeridianDexterity = 0;
+	m_nMeridianVitality = 0;
+	m_nMeridianEngergy = 0;
+	MeridianManager.ApplyMaridianToNPC(&Npc[m_nIndex], m_cMeridian.getMeridian());
 }
 
 //-------------------------------------------------------------------------
@@ -3164,10 +3273,10 @@ BOOL	KPlayer::ApplyAutoMoveItem(int nItemID, ItemPos SrcPos) //chuy”n item tı hµ
 	return TRUE;
 }
 
-BOOL	KPlayer::ApplyUseItem(int nItemID, ItemPos SrcPos)
+BOOL	KPlayer::ApplyUseItem(int nItemID, ItemPos SrcPos, int nTargetPos)
 {
-	ItemPos DesPos;
-	DesPos.nPlace = DesPos.nX = DesPos.nY = -1;
+	//ItemPos DesPos;
+	//DesPos.nPlace = DesPos.nX = DesPos.nY = -1;
 
 	if (this->CheckTrading())
 		return FALSE;
@@ -3176,6 +3285,8 @@ BOOL	KPlayer::ApplyUseItem(int nItemID, ItemPos SrcPos)
 
 	int nRet = m_ItemList.UseItem(nItemID);
 	if (nRet == 0)
+		return FALSE;
+	/*if (nRet == 0)
 	{
 		nRet = m_ItemList.ChangeItemInPlayer(nItemID);//edit by phong kieu mac trang bi vao nguoi
 		switch(nRet)
@@ -3290,9 +3401,24 @@ BOOL	KPlayer::ApplyUseItem(int nItemID, ItemPos SrcPos)
 
 		return FALSE;
 	}
-	
+	*/
 	if (nRet == REQUEST_EQUIP_ITEM)
 	{
+		if(nTargetPos == 0)
+			return FALSE;
+		char szPack[16];
+		DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
+		pCmd->ProtocolType = c2s_dynamic_structure;
+		pCmd->nBranch = c2sdnmbr_exchangeitem;
+		pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + 2*sizeof(BYTE) + sizeof(int);
+		BYTE* pPos = (BYTE*)(pCmd+1);
+		*pPos = SrcPos.nPlace;
+		pPos++;
+		*pPos = nTargetPos;
+		pPos++;
+		*(int*)pPos = Item[nItemID].GetID();
+		if (g_pClient)
+			g_pClient->SendPackToServer(pCmd, pCmd->m_wLength + 1);
 	}
 	else if (nRet == REQUEST_EAT_MEDICINE)
 	{
@@ -3383,7 +3509,7 @@ void	KPlayer::ObjMouseClick(int nObjIndex)
 #ifndef _SERVER
 void KPlayer::MoveItem(ItemPos DownPos, ItemPos UpPos)
 {
-	if (this->CheckTrading() && DownPos.nPlace == pos_traderoom)
+	if (this->CheckTrading() && (DownPos.nPlace == pos_traderoom || DownPos.nPlace == pos_gambleroom))
 	{
 		if (this->m_cTrade.m_nTradeLock)
 			return;
@@ -3479,8 +3605,11 @@ int	KPlayer::ThrowAwayItem()
 		return 0;
 	}
 	int	nHandIdx = m_ItemList.Hand();
+if (SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 996 || SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 997) //map PUBG cho vut do
+		goto PUBG;
 	if (
 		nHandIdx && Item[nHandIdx].GetGoldId() 
+		|| nHandIdx && Item[nHandIdx].GetNature() >= NATURE_GOLD
 		|| nHandIdx && Item[nHandIdx].IsPurple()
 		|| nHandIdx && Item[nHandIdx].GetGenre() == item_task
 		|| nHandIdx && Item[nHandIdx].m_nCurrentDur == 0
@@ -3495,6 +3624,7 @@ int	KPlayer::ThrowAwayItem()
 		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 		return 0;
 	}
+
 	else if(nHandIdx && (Item[nHandIdx].InsuranceCourse > 0 || Item[nHandIdx].InsuranceHourCourse > 0 || Item[nHandIdx].InsuranceCourse == -2))
 	{
 		KSystemMessage	sMsg;
@@ -3505,16 +3635,17 @@ int	KPlayer::ThrowAwayItem()
 		sMsg.byParamSize = 0;
 		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 		return 0;
-	}
+	}	
 	else
 	{
+PUBG:				
 		if (this->CheckTrading())
 			return 0;
 		if ( !m_ItemList.Hand() )
 			return 0;
-		if ( m_cAuto.mfk_bActive && 
-			m_cAuto.m_bSortEquipment )
-			return 0;
+		//if ( m_cAuto.mfk_bActive && 
+		//	m_cAuto.m_bSortEquipment )
+		//	return 0;
 
 		PLAYER_THROW_AWAY_ITEM_COMMAND	sThrow;
 		sThrow.ProtocolType = c2s_playerthrowawayitem;
@@ -3522,6 +3653,7 @@ int	KPlayer::ThrowAwayItem()
 			g_pClient->SendPackToServer(&sThrow, sizeof(PLAYER_THROW_AWAY_ITEM_COMMAND));
 		return 1;
 	}
+
 	return 0;
 }
 #endif
@@ -3571,6 +3703,28 @@ void	KPlayer::TradeApplyOpen(char *lpszSentence, int nLength)
 #endif
 
 #ifndef _SERVER
+void	KPlayer::GambleApplyOpen(char* lpszSentence, int nLength)
+{
+	if (this->CheckTrading())
+		return;
+	if (!lpszSentence)
+		nLength = 0;
+	GAMBLE_APPLY_OPEN_COMMAND	sOpen;
+	sOpen.ProtocolType = c2s_gambleapplystateopen;
+	if (nLength >= MAX_SENTENCE_LENGTH)
+		nLength = MAX_SENTENCE_LENGTH - 1;
+	sOpen.m_wLength = sizeof(GAMBLE_APPLY_OPEN_COMMAND) - 1 - sizeof(sOpen.m_szSentence) + nLength;
+	memset(m_cMenuState.m_szSentence, 0, sizeof(m_cMenuState.m_szSentence));
+	if (lpszSentence)
+		memcpy(m_cMenuState.m_szSentence, lpszSentence, nLength);
+	memset(sOpen.m_szSentence, 0, sizeof(sOpen.m_szSentence));
+	memcpy(sOpen.m_szSentence, m_cMenuState.m_szSentence, nLength);
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sOpen, sOpen.m_wLength + 1);
+}
+#endif
+
+#ifndef _SERVER
 void	KPlayer::TradeApplyClose()
 {
 	TRADE_APPLY_CLOSE_COMMAND	sApply;
@@ -3581,10 +3735,21 @@ void	KPlayer::TradeApplyClose()
 #endif
 
 #ifndef _SERVER
+void	KPlayer::GambleApplyClose()
+{
+	GAMBLE_APPLY_CLOSE_COMMAND	sApply;
+	sApply.ProtocolType = c2s_gambleapplystateclose;
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sApply, sizeof(GAMBLE_APPLY_CLOSE_COMMAND));
+}
+#endif
+
+#ifndef _SERVER
 void	KPlayer::TradeApplyStart(int nNpcIdx)
 {
 	if (nNpcIdx < 0 || nNpcIdx >= MAX_NPC)
 		return;
+
 	TRADE_APPLY_START_COMMAND	sStart;
 	sStart.ProtocolType = c2s_tradeapplystart;
 	sStart.m_dwID = Npc[nNpcIdx].m_dwID;
@@ -3593,6 +3758,29 @@ void	KPlayer::TradeApplyStart(int nNpcIdx)
 	
 	KSystemMessage	sMsg;
 	sprintf(sMsg.szMessage, MSG_TRADE_SEND_APPLY, Npc[nNpcIdx].Name);
+	sMsg.eType = SMT_NORMAL;
+	sMsg.byConfirmType = SMCT_NONE;
+	sMsg.byPriority = 0;
+	sMsg.byParamSize = 0;
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+}
+#endif
+
+#ifndef _SERVER
+void	KPlayer::GambleApplyStart(int nNpcIdx)
+{
+	if (nNpcIdx < 0 || nNpcIdx >= MAX_NPC)
+		return;
+	if (!m_CUnlocked)
+		return;
+	GAMBLE_APPLY_START_COMMAND	sStart;
+	sStart.ProtocolType = c2s_gambleapplystart;
+	sStart.m_dwID = Npc[nNpcIdx].m_dwID;
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sStart, sizeof(GAMBLE_APPLY_START_COMMAND));
+
+	KSystemMessage	sMsg;
+	sprintf(sMsg.szMessage, MSG_GAMBLE_SEND_APPLY, Npc[nNpcIdx].Name);
 	sMsg.eType = SMT_NORMAL;
 	sMsg.byConfirmType = SMCT_NONE;
 	sMsg.byPriority = 0;
@@ -3619,6 +3807,28 @@ BOOL	KPlayer::TradeMoveMoney(int nMoney)
 	if (g_pClient)
 		g_pClient->SendPackToServer(&sMoney, sizeof(TRADE_MOVE_MONEY_COMMAND));
 	
+	return TRUE;
+}
+#endif
+
+#ifndef _SERVER
+BOOL	KPlayer::GambleMoveMoney(int nMoney)
+{
+	if (!CheckTrading())
+		return FALSE;
+	if (this->m_cTrade.m_nTradeLock)
+		return FALSE;
+
+	if (nMoney < 0 || nMoney > m_ItemList.GetEquipmentMoney() + m_ItemList.GetTradeMoney())
+		return FALSE;
+
+	GAMBLE_MOVE_MONEY_COMMAND	sMoney;
+
+	sMoney.ProtocolType = c2s_gamblemovemoney;
+	sMoney.m_nMoney = nMoney;
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sMoney, sizeof(GAMBLE_MOVE_MONEY_COMMAND));
+
 	return TRUE;
 }
 #endif
@@ -3652,6 +3862,34 @@ void	KPlayer::TradeDecision(int nDecision)
 
 #ifndef _SERVER
 //-------------------------------------------------------------------------
+//	if nDecision == 0   if nDecision == 1   if nDecision == 2 
+//-------------------------------------------------------------------------
+void	KPlayer::GambleDecision(int nDecision, BYTE btChoose)
+{
+	if (!CheckTrading())
+		return;
+	GAMBLE_DECISION_COMMAND	sDecision;
+	sDecision.ProtocolType = c2s_gambledecision;
+	if (nDecision == 1)
+	{
+		sDecision.m_btDecision = 1;
+		sDecision.m_btChoose = btChoose;
+	}
+	else if (nDecision == 0)
+	{
+		sDecision.m_btDecision = 0;
+	}
+	else if (nDecision == 2)
+	{
+		sDecision.m_btDecision = 4;
+	}
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sDecision, sizeof(GAMBLE_DECISION_COMMAND));
+}
+#endif
+
+#ifndef _SERVER
+//-------------------------------------------------------------------------
 //	
 //-------------------------------------------------------------------------
 void	KPlayer::TradeApplyLock(int nLockOrNot)
@@ -3670,6 +3908,29 @@ void	KPlayer::TradeApplyLock(int nLockOrNot)
 	}
 	if (g_pClient)
 		g_pClient->SendPackToServer(&sDecision, sizeof(TRADE_DECISION_COMMAND));
+}
+#endif
+
+#ifndef _SERVER
+//-------------------------------------------------------------------------
+//	
+//-------------------------------------------------------------------------
+void	KPlayer::GambleApplyLock(int nLockOrNot)
+{
+	if (!CheckTrading())
+		return;
+	GAMBLE_DECISION_COMMAND	sDecision;
+	sDecision.ProtocolType = c2s_gambledecision;
+	if (nLockOrNot)
+	{
+		sDecision.m_btDecision = 2;
+	}
+	else
+	{
+		sDecision.m_btDecision = 3;
+	}
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sDecision, sizeof(GAMBLE_DECISION_COMMAND));
 }
 #endif
 
@@ -3755,6 +4016,8 @@ BOOL	KPlayer::AddFaction(char *lpszFactionName)
 	// ∏ƒ±‰’Û”™
 	Npc[m_nIndex].SetCamp(m_cFaction.GetGurFactionCamp());
 	
+	// Update GameTitle when adding faction
+	Npc[m_nIndex].UpdateGameTitle();
 	// ∏¯øÕªß∂À∑¢œ˚œ¢
 	SendFactionData();
 	
@@ -3776,6 +4039,8 @@ BOOL	KPlayer::AddFaction(int nFactionID)
 	// ∏ƒ±‰’Û”™
 	Npc[m_nIndex].SetCamp(m_cFaction.GetGurFactionCamp());
 	
+	// Update GameTitle when adding faction
+	Npc[m_nIndex].UpdateGameTitle();
 	// ∏¯øÕªß∂À∑¢œ˚œ¢
 	SendFactionData();
 	
@@ -4167,8 +4432,14 @@ void	KPlayer::AddSkillPoint(BYTE* pProtocol)
 				case SKILL_SS_PassivityNpcState:		//	±ª∂Ø¿‡		±æººƒ‹”√”⁄∏ƒ±‰Npcµƒ±ª∂Ø◊¥Ã¨
 					{
 						int nWantToBeLevel = nSkillLevel + pAdd->m_nAddPoint;
+
+						if (nWantToBeLevel >= MAX_SKILLLEVEL)
+						{
+							return;
+						}
+
 						//Limit2
-						if (nWantToBeLevel <= g_SkillManager.GetSkillMaxLevel(pAdd->m_nSkillID) && nWantToBeLevel <= Npc[m_nIndex].m_Level - ((KSkill*)pSkill)->GetSkillReqLevel() + 1)
+						if ((nWantToBeLevel <= g_SkillManager.GetSkillMaxLevel(pAdd->m_nSkillID) + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornSkillMaxLevel()) && nWantToBeLevel <= Npc[m_nIndex].m_Level - ((KSkill*)pSkill)->GetSkillReqLevel() + 1)
 						{
 							if ( !Npc[m_nIndex].m_SkillList.IncreaseLevel(nSkillIndex, pAdd->m_nAddPoint))
 								return;
@@ -4177,7 +4448,7 @@ void	KPlayer::AddSkillPoint(BYTE* pProtocol)
 						}
 						else
 						{
-							if (nWantToBeLevel >=  g_SkillManager.GetSkillMaxLevel(pAdd->m_nSkillID))
+							if (nWantToBeLevel >= g_SkillManager.GetSkillMaxLevel(pAdd->m_nSkillID) + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornSkillMaxLevel())
 							{
 								char szMsg[128];
 								if (pSkill->IsExp())
@@ -4561,10 +4832,10 @@ void	KPlayer::EatItem(BYTE* pProtocol)
 #ifdef _SERVER
 void	KPlayer::ServerMoveItem(BYTE* pProtocol)
 {
-	PLAYER_MOVE_ITEM_COMMAND	*pMove = (PLAYER_MOVE_ITEM_COMMAND*)pProtocol;
+	PLAYER_MOVE_ITEM_COMMAND* pMove = (PLAYER_MOVE_ITEM_COMMAND*)pProtocol;
 	ItemPos		DownPos, UpPos;
 
-	if(Item[m_ItemList.Hand()].GetDurability() == 0 && pMove->m_btDownPos == pos_equip) //#do ben trang bi vat pham hong
+	if (Item[m_ItemList.Hand()].GetDurability() == 0 && pMove->m_btDownPos == pos_equip) //#do ben trang bi vat pham hong
 	{
 		BYTE	byFinished = s2c_itemexchangefinish;
 		if (g_pServer)
@@ -4580,18 +4851,19 @@ void	KPlayer::ServerMoveItem(BYTE* pProtocol)
 		return;
 	}
 	
-//	if ((pMove->m_btDownPos == pos_expandbox || pMove->m_btUpPos == pos_expandbox) && !m_CUnlocked)
-//	{
-		// Client dang co lay (hoac cho them do) vao ruong mo rong khi ruong con dang bi khoa ~> thoat ra ngay
-//		return;
-//	}
-	
+
+	//	if ((pMove->m_btDownPos == pos_expandbox || pMove->m_btUpPos == pos_expandbox) && !m_CUnlocked)
+	//	{
+			// Client dang co lay (hoac cho them do) vao ruong mo rong khi ruong con dang bi khoa ~> thoat ra ngay
+	//		return;
+	//	}
+
 	if ((pMove->m_btDownPos == pos_equip || pMove->m_btUpPos == pos_equip) && !m_CUnlocked)
 	{
 		// Client dang co lay (hoac cho them do) vao trang bi khi ruong con dang bi khoa ~> thoat ra ngay
 		//ExecuteScript("\\script\\player\\mgs2player_from_c.lua","main", "Nh©n vÀt Æang trong trπng th∏i kh„a, kh´ng th” thao t∏c!");
 		return;
-	}	
+	}
 
 	DownPos.nPlace = pMove->m_btDownPos;
 	DownPos.nX = pMove->m_btDownX;
@@ -4599,11 +4871,11 @@ void	KPlayer::ServerMoveItem(BYTE* pProtocol)
 	UpPos.nPlace = pMove->m_btUpPos;
 	UpPos.nX = pMove->m_btUpX;
 	UpPos.nY = pMove->m_btUpY;
-	
+
 	//EXCHANGE_ITEM_RESPONE	eir;
 	//eir.ProtocolType = s2c_exchangerespone;
-	
-	if (this->CheckTrading() && DownPos.nPlace == pos_traderoom)
+
+	if (this->CheckTrading() && (DownPos.nPlace == pos_traderoom|| DownPos.nPlace == pos_gambleroom))
 	{
 		if (this->m_cTrade.m_nTradeLock)
 			return;
@@ -4618,10 +4890,71 @@ void	KPlayer::ServerMoveItem(BYTE* pProtocol)
 #endif
 
 #ifdef _SERVER
-void	KPlayer::ServerThrowAllItem(BYTE* pProtocol) //N–m h’t vÀt ph»m ra ngoµi theo t™n
+//implement throw items from all rooms of player
+void	KPlayer::ServerThrowAllItem()
 {
+	//go through all m_Room and throw
+	PlayerItem* pItem = m_ItemList.GetFirstItem();
+	KMapPos		sMapPos;
+	while (true)
+	{
+		if (pItem == NULL)
+			break;
+		int nItemIdx = pItem->nIdx;
+		if (nItemIdx > 0 && nItemIdx < MAX_PLAYER_ITEM)
+		{
+			GetAboutPos(&sMapPos);
+			if (m_ItemList.Remove(nItemIdx))
+			{
+				int		nObj;
+				KObjItemInfo	sInfo;
+				sInfo.m_nItemID = nItemIdx;
+				sInfo.m_nItemWidth = Item[nItemIdx].GetWidth();
+				sInfo.m_nItemHeight = Item[nItemIdx].GetHeight();
+				sInfo.m_nMoneyNum = 0;
+				char szNameTemp[OBJ_NAME_LENGHT];
+				if (Item[nItemIdx].GetGenre() != item_equip && Item[nItemIdx].GetStackNum() > 1)
+				{
+					sprintf(szNameTemp, "%s x %d", Item[nItemIdx].GetName(), Item[nItemIdx].GetStackNum());
+					strcpy(sInfo.m_szName, szNameTemp);
+				}
+				else
+					strcpy(sInfo.m_szName, Item[nItemIdx].GetName());
+				sInfo.m_nColorID = 0;
+				sInfo.m_nGenre = Item[nItemIdx].GetGenre();
+				sInfo.m_nDetailType = Item[nItemIdx].GetDetailType();
+				sInfo.m_nParticularType = Item[nItemIdx].GetParticular();
+				sInfo.m_nMovieFlag = 1;
+				sInfo.m_nSoundFlag = 1;
+				sInfo.m_dwNpcId1 = Npc[m_nIndex].m_dwID;
+
+				if (Item[nItemIdx].GetTimeYearIsExp() == FALSE)//Xu ly vat pham het han su dung vut ra mat luon
+				{
+					nObj = ObjSet.Add(Item[nItemIdx].GetObjIdx(), sMapPos, sInfo);
+					if (nObj >= 0)
+					{
+						Object[nObj].SetItemBelong(-1);
+						Object[nObj].SetLifeTime(3*60*18); //3 phut
+					}
+				}
+				pItem = m_ItemList.GetFirstItem();
+			}
+			else
+			{
+				pItem = m_ItemList.GetNextItem();
+			}
+		}
+		else
+			break;
+	}
+}
+void	KPlayer::ServerThrowAllItem(BYTE* pProtocol) //N–m h’t vÀt ph»m ra ngoµi theo t™n
+{	
 	PLAYER_THROW_ALL_ITEM_COMMAND	*pThrow = (PLAYER_THROW_ALL_ITEM_COMMAND*)pProtocol;
 	KMapPos		sMapPos;
+	
+	if (!m_CUnlocked)
+		return;
 
 	int	nHandIdx = m_ItemList.SearchID(pThrow->m_nItemDwId);
 	int nItemIdx = nHandIdx;
@@ -4644,9 +4977,10 @@ void	KPlayer::ServerThrowAllItem(BYTE* pProtocol) //N–m h’t vÀt ph»m ra ngoµi th
 	{
 		nHandIdx = nListItemIdx[index]; //L y lπi tıng itemidx trong m∂ng
 		nItemIdx = nListItemIdx[index];
-		if(nHandIdx > 0)
+		if (nHandIdx > 0)
 		{
-			if (nHandIdx && Item[nHandIdx].GetGoldId() 
+			if (nHandIdx && Item[nHandIdx].GetGoldId()
+				|| nHandIdx && Item[nHandIdx].GetNature() >= NATURE_GOLD
 				|| nHandIdx && Item[nHandIdx].IsPurple() 
 				|| nHandIdx && Item[nHandIdx].GetGenre() == item_task 
 				|| nHandIdx && Item[nHandIdx].m_nCurrentDur == 0)
@@ -4705,8 +5039,12 @@ void	KPlayer::ServerThrowAwayItem(BYTE* pProtocol)
 	PLAYER_THROW_AWAY_ITEM_COMMAND	*pThrow = (PLAYER_THROW_AWAY_ITEM_COMMAND*)pProtocol;
 	KMapPos		sMapPos;
 	
+	if (!m_CUnlocked)
+		return;
+		
 	if (!this->m_ItemList.Hand())
 		return;
+	
 
 	int nItemIdx = m_ItemList.m_Hand;
 	if (!m_ItemList.FindSame(nItemIdx))//add by phong ki“u antihack
@@ -4721,14 +5059,17 @@ void	KPlayer::ServerThrowAwayItem(BYTE* pProtocol)
 	}
 
 	int	nHandIdx = this->m_ItemList.Hand();
+	if (SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 996 || SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID == 997) //map PUBG cho vut do
+		goto PUBG;
 	if (nHandIdx && Item[nHandIdx].GetGoldId() 
+		|| nHandIdx && Item[nHandIdx].GetNature() >= NATURE_GOLD
 		|| nHandIdx && Item[nHandIdx].IsPurple() 
 		|| nHandIdx && Item[nHandIdx].GetGenre() == item_task 
 		|| nHandIdx && Item[nHandIdx].m_nCurrentDur == 0)
 		return;
 	if (nHandIdx && (Item[nHandIdx].InsuranceCourse > 0 || Item[nHandIdx].InsuranceCourse == -2 || Item[nHandIdx].InsuranceHourCourse > 0))
 		return;
-	
+PUBG:	
 	GetAboutPos(&sMapPos);
 	if (m_ItemList.Remove(nItemIdx))
 	{
@@ -4925,6 +5266,8 @@ void	KPlayer::TradeApplyOpen(BYTE* pProtocol)
 {
 	if ( CheckTrading() )
 		return;
+//	if (!m_CUnlocked)
+//		return;
 	TRADE_APPLY_OPEN_COMMAND	*pApply = (TRADE_APPLY_OPEN_COMMAND*)pProtocol;
 	char	szSentence[MAX_SENTENCE_LENGTH];
 	int		nLength = pApply->m_wLength - (sizeof(TRADE_APPLY_OPEN_COMMAND) - 1 - sizeof(pApply->m_szSentence));
@@ -4950,9 +5293,54 @@ void	KPlayer::TradeApplyOpen(BYTE* pProtocol)
 
 #ifdef _SERVER
 //-------------------------------------------------------------------------
+// OTT
+//-------------------------------------------------------------------------
+void	KPlayer::GambleApplyOpen(BYTE* pProtocol)
+{
+	if (CheckTrading())
+		return;
+		
+	if (!m_CUnlocked)
+		return;
+		
+	GAMBLE_APPLY_OPEN_COMMAND* pApply = (GAMBLE_APPLY_OPEN_COMMAND*)pProtocol;
+	char	szSentence[MAX_SENTENCE_LENGTH];
+	int		nLength = pApply->m_wLength - (sizeof(GAMBLE_APPLY_OPEN_COMMAND) - 1 - sizeof(pApply->m_szSentence));
+	if (nLength >= MAX_SENTENCE_LENGTH)
+		nLength = MAX_SENTENCE_LENGTH - 1;
+	memset(szSentence, 0, sizeof(szSentence));
+	memcpy(szSentence, pApply->m_szSentence, nLength);
+
+	switch (m_cMenuState.m_nState)
+	{
+	case PLAYER_MENU_STATE_NORMAL:
+	case PLAYER_MENU_STATE_GAMBLEOPEN:
+		m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_GAMBLEOPEN, szSentence, nLength);
+		break;
+	case PLAYER_MENU_STATE_TEAMOPEN:
+		if (m_cTeam.m_nFlag && m_cTeam.m_nID >= 0)
+			g_Team[m_cTeam.m_nID].SetTeamClose();
+		m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_GAMBLEOPEN, szSentence, nLength);
+		break;
+	}
+}
+#endif
+
+#ifdef _SERVER
+//-------------------------------------------------------------------------
 //	π¶ƒ‹£∫ ’µΩøÕªß∂À…Í«Î»°œ˚¥˝Ωª“◊◊¥Ã¨
 //-------------------------------------------------------------------------
 void	KPlayer::TradeApplyClose(BYTE* pProtocol)
+{
+	m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_NORMAL);
+}
+#endif
+
+#ifdef _SERVER
+//-------------------------------------------------------------------------
+//	π¶ƒ‹£∫ ’µΩøÕªß∂À…Í«Î»°œ˚¥˝Ωª“◊◊¥Ã¨
+//-------------------------------------------------------------------------
+void	KPlayer::GambleApplyClose(BYTE* pProtocol)
 {
 	m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_NORMAL);
 }
@@ -4963,7 +5351,11 @@ void	KPlayer::TradeApplyStart(BYTE* pProtocol)
 {
 	if (this->CheckTrading())
 		return;
-	
+	if (!m_CUnlocked)
+	{
+		KPlayerChat::SendSystemInfo(1,m_nPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, "Kh´ng th” giao dﬁch khi ch≠a mÎ kh„a !", strlen("Kh´ng th” giao dﬁch khi ch≠a mÎ kh„a !") );
+		return;
+	}
 	if (m_cTeam.m_nFlag && m_cTeam.m_nID >= 0)//add by phong ki“u antihack
 	{
 		KPlayerChat::SendSystemInfo(1,m_nPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, "Kh´ng th” giao dﬁch khi Æang trong tÊ ÆÈi !", strlen("Kh´ng th” giao dﬁch khi Æang trong tÊ ÆÈi !") );
@@ -4974,6 +5366,7 @@ void	KPlayer::TradeApplyStart(BYTE* pProtocol)
 	
 	int		nPlayer;
 	nPlayer = FindAroundPlayer(pStart->m_dwID);
+	
 	if (nPlayer < 0)
 		return;
 	if (Player[nPlayer].m_cMenuState.m_nState != PLAYER_MENU_STATE_TRADEOPEN)
@@ -5001,6 +5394,53 @@ void	KPlayer::TradeApplyStart(BYTE* pProtocol)
 #endif
 
 #ifdef _SERVER
+void	KPlayer::GambleApplyStart(BYTE* pProtocol)
+{
+	if (this->CheckTrading())
+		return;
+
+	if (m_cTeam.m_nFlag && m_cTeam.m_nID >= 0)//add by phong ki“u antihack
+	{
+		KPlayerChat::SendSystemInfo(1, m_nPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, "Kh´ng th” giao dﬁch khi Æang trong tÊ ÆÈi !", strlen("Kh´ng th” giao dﬁch khi Æang trong tÊ ÆÈi !"));
+		return;
+	}
+
+	if (!m_CUnlocked)
+	{
+		KPlayerChat::SendSystemInfo(1,m_nPlayerIndex, MESSAGE_SYSTEM_ANNOUCE_HEAD, "Kh´ng th” giao dﬁch khi ch≠a mÎ kh„a !", strlen("Kh´ng th” giao dﬁch khi ch≠a mÎ kh„a !") );
+		return;
+	}
+	GAMBLE_APPLY_START_COMMAND* pStart = (GAMBLE_APPLY_START_COMMAND*)pProtocol;
+
+	int		nPlayer;
+	nPlayer = FindAroundPlayer(pStart->m_dwID);
+	if (nPlayer < 0)
+		return;
+	//if (Player[nPlayer].m_cMenuState.m_nState != PLAYER_MENU_STATE_GAMBLEOPEN)
+	//	return;
+
+	for (int i = 0; i < MAX_PLAYER; i++)
+	{
+		if (i != m_nPlayerIndex && !IsExchangingServer() && Player[i].m_cTrade.m_nTradeDest == m_nPlayerIndex)
+		{
+			printf("Xay ra hack lua OTT, tu dong xua loi !\n");
+			this->ExecuteScript("\\script\\log_game\\log_gayroi.lua", "main", 0);
+			return;
+		}
+	}
+
+	this->m_cTrade.m_nApplyIdx = nPlayer;
+
+	GAMBLE_APPLY_START_SYNC	sApply;
+	sApply.ProtocolType = s2c_gambleapplystart;
+	sApply.m_nDestIdx = this->m_nPlayerIndex;
+	sApply.m_dwNpcId = Npc[m_nIndex].m_dwID;
+	if (g_pServer)
+		g_pServer->PackDataToClient(Player[nPlayer].m_nNetConnectIdx, (BYTE*)&sApply, sizeof(GAMBLE_APPLY_START_SYNC));
+}
+#endif
+
+#ifdef _SERVER
 
 void	KPlayer::TradeMoveMoney(BYTE* pProtocol)
 {
@@ -5020,15 +5460,39 @@ void	KPlayer::TradeMoveMoney(BYTE* pProtocol)
 #endif
 
 #ifdef _SERVER
+
+void	KPlayer::GambleMoveMoney(BYTE* pProtocol)
+{
+	if (!CheckTrading())
+		return;
+	if (this->m_cTrade.m_nTradeLock)
+		return;
+
+	int		nMoney;
+	GAMBLE_MOVE_MONEY_COMMAND* pMoney = (GAMBLE_MOVE_MONEY_COMMAND*)pProtocol;
+	if (pMoney->m_nMoney < 0 || pMoney->m_nMoney > m_ItemList.GetEquipmentMoney() + m_ItemList.GetTradeMoney())
+		nMoney = 0;
+	else
+		nMoney = pMoney->m_nMoney;
+	m_ItemList.GambleMoveMoney(nMoney);
+}
+#endif
+
+#ifdef _SERVER
 void	KPlayer::TradeDecision(BYTE* pProtocol)
 {
 	if ( !CheckTrading() )
 		return;
+		
+	
 	
 	TRADE_DECISION_COMMAND	*pDecision = (TRADE_DECISION_COMMAND*)pProtocol;
 	
 	if (pDecision->m_btDecision == 2)	
 	{
+		if (!m_CUnlocked)
+		return;
+		
 		if (this->m_cTrade.m_nTradeLock == 0)
 		{
 			this->m_cTrade.m_nTradeLock = 1;
@@ -5042,6 +5506,9 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 	}
 	else if (pDecision->m_btDecision == 3)	
 	{
+		if (!m_CUnlocked)
+		return;
+		
 		if (this->m_cTrade.m_nTradeLock == 1)
 		{
 			this->m_cTrade.m_nTradeLock = 0;
@@ -5054,6 +5521,9 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 	}
 	else if (pDecision->m_btDecision == 4)	
 	{
+		if (!m_CUnlocked)
+		return;
+		
 		if (m_cTrade.m_nTradeLock == 1 && Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock == 1)
 		{
 			m_cTrade.m_nTradeState = 0;
@@ -5084,11 +5554,13 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 		this->m_cMenuState.RestoreBackupState(m_nPlayerIndex);
 		
 		Player[nDestIdx].m_cMenuState.RestoreBackupState(nDestIdx);
-		
 		return;
 	}
 	else if (pDecision->m_btDecision == 1)	
 	{
+		if (!m_CUnlocked)
+		return;
+		
 		if (this->m_cTrade.m_nTradeLock != 1 ||
 			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock != 1)
 		{
@@ -5140,7 +5612,7 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 			// 
 			this->m_ItemList.GetTradeRoomItemInfo();
 			nDestCanGet = Player[nDestIdx].m_ItemList.TradeCheckCanPlace();
-			
+		
 			if (!nSelfCanGet || !nDestCanGet)
 			{
 				if (!nSelfCanGet)
@@ -5183,7 +5655,7 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 			this->m_cTrade.Release();
 			Player[nDestIdx].m_cTrade.Release();
 
-			ExecuteScript2("\\script\\log_game\\log_giaodich.lua","linebegin",nDestIdx);//add by phong ki“u log gd
+			ExecuteScript2("\\script\\log_game\\log_giaodich.lua","linebegin",nDestIdx,false);//add by phong ki“u log gd
 			int moneygd = 0;
 
 			if (nSM2 <= nDM2)
@@ -5191,14 +5663,14 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 				this->Earn(nDM2 - nSM2);
 				Player[nDestIdx].Pay(nDM2 - nSM2);
 				moneygd = nDM2 - nSM2; //add by phong ki“u log gd
-				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","trademoney",moneygd, 0);
+				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","trademoney",moneygd, 0,false);
 			}
 			else
 			{
 				this->Pay(nSM2 - nDM2);
 				Player[nDestIdx].Earn(nSM2 - nDM2);
 				moneygd = nSM2 - nDM2; //add by phong ki“u log gd
-				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","trademoney",0, moneygd);
+				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","trademoney",0, moneygd,false);
 			}
 			
 			int		nPos;
@@ -5218,7 +5690,7 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 					ItemSet.m_psBackItemInfo[nPos].m_nX,
 					ItemSet.m_psBackItemInfo[nPos].m_nY);
 
-				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","tradeitem",ItemSet.m_psBackItemInfo[nPos].m_nIdx, 0);//add by phong ki“u log giao dﬁch // 0 type chÒ
+				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","tradeitem",ItemSet.m_psBackItemInfo[nPos].m_nIdx, 0,false);//add by phong ki“u log giao dﬁch // 0 type chÒ
 
 				nPos++;
 			}
@@ -5239,11 +5711,377 @@ void	KPlayer::TradeDecision(BYTE* pProtocol)
 					ItemSet.m_psItemInfo[nPos].m_nX,
 					ItemSet.m_psItemInfo[nPos].m_nY);
 
-				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","tradeitem",ItemSet.m_psItemInfo[nPos].m_nIdx, 1);//add by phong ki“u log giao dﬁch // 1 type kh∏ch
+				ExecuteScript2("\\script\\log_game\\log_giaodich.lua","tradeitem",ItemSet.m_psItemInfo[nPos].m_nIdx, 1,false);//add by phong ki“u log giao dﬁch // 1 type kh∏ch
 
 				nPos++;
 			}
 			//-------------end -------------------
+			return;
+		}
+	}
+}
+#endif
+
+
+#ifdef _SERVER
+void AddItemToWinner(int nPlayerIndex, int nIndex){
+	int		x, y;
+	if (Player[nPlayerIndex].m_ItemList.CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &x, &y))
+	{
+		Player[nPlayerIndex].m_ItemList.AddKIL(nIndex, pos_equiproom, x, y, false, true);
+	}
+	else
+	{
+		int		nIdx = nIndex; // Player[nPlayerIndex].m_ItemList.Hand();
+		//if (nIdx) // if hand holding an item
+		{
+			//Player[nPlayerIndex].m_ItemList.Remove(nIdx); //remove hand
+
+			KMapPos sMapPos;
+			KObjItemInfo	sInfo;
+
+			Player[nPlayerIndex].GetAboutPos(&sMapPos);
+
+			sInfo.m_nItemID = nIdx;
+			sInfo.m_nItemWidth = Item[nIdx].GetWidth();
+			sInfo.m_nItemHeight = Item[nIdx].GetHeight();
+			sInfo.m_nMoneyNum = 0;
+			char szNameTemp[OBJ_NAME_LENGHT];
+			if (Item[nIdx].GetGenre() != item_equip && Item[nIdx].GetStackNum() > 1)
+			{
+				sprintf(szNameTemp, "%s x %d", Item[nIdx].GetName(), Item[nIdx].GetStackNum());
+				strcpy(sInfo.m_szName, szNameTemp);
+			}
+			else
+				strcpy(sInfo.m_szName, Item[nIdx].GetName());
+			sInfo.m_nColorID = Item[nIdx].GetColorItem();
+			sInfo.m_nGenre = Item[nIdx].GetGenre();
+			sInfo.m_nDetailType = Item[nIdx].GetDetailType();
+			sInfo.m_nParticularType = Item[nIdx].GetParticular();
+			sInfo.m_nMovieFlag = 1;
+			sInfo.m_nSoundFlag = 1;
+			sInfo.m_dwNpcId1 = 0;
+
+			int nObj = ObjSet.Add(Item[nIdx].GetObjIdx(), sMapPos, sInfo); //drop
+			if (nObj >= 0)
+			{
+				if (Item[nIdx].GetGenre() == item_task)
+				{
+					Object[nObj].SetEntireBelong(nPlayerIndex);
+				}
+				else
+				{
+					Object[nObj].SetItemBelong(nPlayerIndex);
+				}
+			}
+		}
+		//Player[nPlayerIndex].m_ItemList.AddKIL(nIndex, pos_hand, 0, 0);
+	}
+}
+void	KPlayer::GambleDecision(BYTE* pProtocol)
+{
+	if (!CheckTrading())
+		return;
+	if (!m_CUnlocked)
+		return;
+
+	GAMBLE_DECISION_COMMAND* pDecision = (GAMBLE_DECISION_COMMAND*)pProtocol;
+	// Confirm transaction 1 
+	// Exit transaction 0 
+	// Cancel confirmation 4 
+	// Lock transaction 2 
+	// Unlock 3
+	if (pDecision->m_btDecision == 2)
+	{
+		if (this->m_cTrade.m_nTradeLock == 0)
+		{
+			this->m_cTrade.m_nTradeLock = 1;
+			this->m_cTrade.m_nTradeState = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_uTradeOkTime = GetTickCount();
+		}
+
+		SyncGambleState();
+		return;
+	}
+	else if (pDecision->m_btDecision == 3)
+	{
+		if (this->m_cTrade.m_nTradeLock == 1)
+		{
+			this->m_cTrade.m_nTradeLock = 0;
+			this->m_cTrade.m_nTradeState = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState = 0;
+		}
+		SyncGambleState();
+		return;
+	}
+	else if (pDecision->m_btDecision == 4)
+	{
+		if (m_cTrade.m_nTradeLock == 1 && Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock == 1)
+		{
+			m_cTrade.m_nTradeState = 0;
+			SyncGambleState();
+		}
+		return;
+	}
+	else if (pDecision->m_btDecision == 0)
+	{
+		int	nDestIdx;
+		nDestIdx = this->m_cTrade.m_nTradeDest;
+
+		this->m_ItemList.RecoverTrade();
+		this->m_ItemList.ClearRoom(room_trade);
+		this->m_ItemList.ClearRoom(room_trade1);
+		this->m_cTrade.Release();
+		if (nDestIdx != -1) {
+			Player[nDestIdx].m_ItemList.RecoverTrade();
+			Player[nDestIdx].m_ItemList.ClearRoom(room_trade);
+			Player[nDestIdx].m_ItemList.ClearRoom(room_trade1);
+			Player[nDestIdx].m_cTrade.Release();
+		}
+
+		GAMBLE_DECISION_SYNC	sSync;
+		sSync.ProtocolType = s2c_gambledecision; //k’t thÛc giao dﬁch th t bπi
+		sSync.m_btDecision = 0;
+		g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+		if (nDestIdx != -1) {
+			g_pServer->PackDataToClient(Player[nDestIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+		}
+		this->m_cMenuState.RestoreBackupState(m_nPlayerIndex);
+		m_cTrade.m_nTradeState = 0;
+		m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_NORMAL);
+		if (nDestIdx != -1) {
+			Player[nDestIdx].m_cMenuState.RestoreBackupState(nDestIdx);
+			Player[nDestIdx].m_cMenuState.SetState(nDestIdx, PLAYER_MENU_STATE_NORMAL);
+		}
+		return;
+	}
+	else if (pDecision->m_btDecision == 1)
+	{
+		if (this->m_cTrade.m_nTradeLock != 1 ||
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock != 1)
+		{
+			SyncGambleState();
+			return;
+		}
+		else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState == 0)
+		{
+			//if (GetTickCount() - m_cTrade.m_uTradeOkTime < 5000)
+			//	return;
+			m_cTrade.m_nTradeState = 1;
+			if (pDecision->m_btChoose == 255)
+				return;
+			m_cTrade.m_btGambleChoose = pDecision->m_btChoose;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_uTradeOkTime = GetTickCount();
+			SyncGambleState();
+			return;
+		}
+		else
+		{
+			//if (GetTickCount() - m_cTrade.m_uTradeOkTime < 5000)
+			//	return;
+			// -------------------- money --------------------
+			int winner = 0;
+			int	nSM1, nSM2, nDM1, nDM2;
+			int	nDestIdx = this->m_cTrade.m_nTradeDest;
+			int moneygd = 0;
+			m_cTrade.m_btGambleChoose = pDecision->m_btChoose;
+			if (pDecision->m_btChoose == 255)
+				return;
+			if (pDecision->m_btChoose == enumGAMBLE_Rock) {
+				if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Rock)
+					winner = 0; // Tie
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Paper)
+					winner = 2; // Opponent wins 
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Scissors)
+					winner = 1; // Player wins
+			}
+			else if (pDecision->m_btChoose == enumGAMBLE_Paper) {
+				if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Rock)
+					winner = 1; // Player wins
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Paper)
+					winner = 0; // Tie
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Scissors)
+					winner = 2; // Opponent wins
+			}
+			else if (pDecision->m_btChoose == enumGAMBLE_Scissors) {
+				if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Rock)
+					winner = 2; // Opponent wins
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Paper)
+					winner = 1; // Player wins
+				else if (Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose == enumGAMBLE_Scissors)
+					winner = 0; // Tie
+			}
+
+
+			nSM1 = m_ItemList.GetMoney(room_equipment);
+			nSM2 = m_ItemList.GetMoney(room_trade);
+			nDM1 = Player[nDestIdx].m_ItemList.GetMoney(room_equipment);
+			nDM2 = Player[nDestIdx].m_ItemList.GetMoney(room_trade);
+
+			if (nSM2 < 0 || nSM1 + nDM2 - nSM2 < 0 || nSM1 < 0)
+			{
+				this->m_ItemList.GambleMoveMoney(0);
+				// not end
+				return;
+			}
+			if (nDM2 < 0 || nDM1 + nSM2 - nDM2 < 0 || nDM1 < 0)
+			{
+				Player[nDestIdx].m_ItemList.GambleMoveMoney(0);
+				// not end
+				return;
+			}
+			// ------------------  money end ------------------
+
+			// ---------  ---------
+			int		nSelfCanGet, nDestCanGet;
+
+			// Get trade room info of other
+			Player[nDestIdx].m_ItemList.GetTradeRoomItemInfo();
+			ItemSet.BackItemInfo();
+
+			// Get self trade room info
+			this->m_ItemList.GetTradeRoomItemInfo();
+
+			int		nPos;
+			nPos = 0;
+			if (winner == 1) { //this win AddItemToWinner(int nPlayerIndex, int nIndex)
+
+				GAMBLE_DECISION_SYNC	sSync;
+				sSync.ProtocolType = s2c_gambledecision;//xong OTT
+				sSync.m_btDecision = 5; //win (only for showing result)
+				sSync.m_btOtherChoice = Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+				sSync.m_btDecision = 6; //lose
+				sSync.m_btOtherChoice = m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(Player[nDestIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+
+				//get back own items
+				this->m_ItemList.RecoverTrade();  //copy items back from self backup trade room into equip room
+				this->m_ItemList.ClearRoom(room_trade);
+				this->m_ItemList.ClearRoom(room_trade1);
+				this->m_ItemList.ClearRoom(room_tradeback);
+
+
+				 //get items from player
+				while (1)
+				{
+					if (nPos >= TRADE_ROOM_WIDTH * TRADE_ROOM_HEIGHT)
+						break;
+					if (!ItemSet.m_psBackItemInfo[nPos].m_nIdx)
+						break;
+
+					Player[nDestIdx].m_ItemList.Remove(ItemSet.m_psBackItemInfo[nPos].m_nIdx);
+					AddItemToWinner(this->GetPlayerIndex(), ItemSet.m_psBackItemInfo[nPos].m_nIdx);
+
+					ExecuteScript2("\\script\\log_game\\log_giaodich.lua", "tradeitem", ItemSet.m_psBackItemInfo[nPos].m_nIdx, 0, false);//add by phong ki“u log giao dﬁch // 0 type chÒ
+
+					nPos++;
+				}
+
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade);
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade1);
+				Player[nDestIdx].m_ItemList.ClearRoom(room_tradeback);
+
+				this->Earn(nDM2, true);
+				Player[nDestIdx].Pay(nDM2, true);
+				moneygd = nDM2; //add by phong ki“u log gd
+				//ExecuteScript2("\\script\\log_game\\log_giaodich.lua", "trademoney", moneygd, 0);
+				m_ItemList.SetRoomMoney(room_trade, 0);
+				Player[nDestIdx].m_ItemList.SetRoomMoney(room_trade, 0);
+
+			}
+			else if (winner == 2) { //other win
+				GAMBLE_DECISION_SYNC	sSync;
+				sSync.ProtocolType = s2c_gambledecision;//xong OTT
+				sSync.m_btDecision = 6; //lose
+				sSync.m_btOtherChoice = Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+				sSync.m_btDecision = 5; //win
+				sSync.m_btOtherChoice = m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(Player[nDestIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+
+				//get back player items back
+				Player[nDestIdx].m_ItemList.RecoverTrade();
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade);
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade1); 
+				Player[nDestIdx].m_ItemList.ClearRoom(room_tradeback);
+
+				nPos = 0;
+				//other get this items
+				while (1)
+				{
+					if (nPos >= TRADE_ROOM_WIDTH * TRADE_ROOM_HEIGHT)
+						break;
+					if (!ItemSet.m_psItemInfo[nPos].m_nIdx)
+						break;
+
+					if(this->m_ItemList.Remove(ItemSet.m_psItemInfo[nPos].m_nIdx))
+						AddItemToWinner(nDestIdx, ItemSet.m_psItemInfo[nPos].m_nIdx);
+
+					//ExecuteScript2("\\script\\log_game\\log_giaodich.lua", "tradeitem", ItemSet.m_psItemInfo[nPos].m_nIdx, 1);//add by phong ki“u log giao dﬁch // 1 type kh∏ch
+
+					nPos++;
+				}
+
+				this->m_ItemList.ClearRoom(room_trade);
+				this->m_ItemList.ClearRoom(room_trade1);
+				this->m_ItemList.ClearRoom(room_tradeback);
+
+				this->Pay(nSM2, true);
+				Player[nDestIdx].Earn(nSM2, true);
+				moneygd = nSM2 - nDM2; //add by phong ki“u log gd
+				//ExecuteScript2("\\script\\log_game\\log_giaodich.lua", "trademoney", 0, moneygd);
+				m_ItemList.SetRoomMoney(room_trade, 0);
+				Player[nDestIdx].m_ItemList.SetRoomMoney(room_trade, 0);
+
+			}
+			else {
+				GAMBLE_DECISION_SYNC	sSync;
+				sSync.ProtocolType = s2c_gambledecision; //k’t thÛc OTT hue`
+				sSync.m_btDecision = 7;
+				sSync.m_btOtherChoice = Player[m_cTrade.m_nTradeDest].m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+				sSync.m_btOtherChoice = m_cTrade.m_btGambleChoose;
+				g_pServer->PackDataToClient(Player[nDestIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_DECISION_SYNC));
+
+				this->m_ItemList.RecoverTrade();
+				this->m_ItemList.ClearRoom(room_trade);
+				this->m_ItemList.ClearRoom(room_trade1);
+				//this->m_cTrade.Release();
+				Player[nDestIdx].m_ItemList.RecoverTrade();
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade);
+				Player[nDestIdx].m_ItemList.ClearRoom(room_trade1);
+				//Player[nDestIdx].m_cTrade.Release();
+
+				this->Pay(0, true);
+				Player[nDestIdx].Earn(0, true);
+				m_ItemList.SetRoomMoney(room_trade, 0);
+				Player[nDestIdx].m_ItemList.SetRoomMoney(room_trade, 0);
+
+				//return;
+			}
+			//-------------end -------------------
+
+			//this->m_cMenuState.RestoreBackupState(m_nPlayerIndex);
+			//Player[nDestIdx].m_cMenuState.RestoreBackupState(nDestIdx);
+			//restart trade
+			this->m_ItemList.StartTrade();
+			Player[nDestIdx].m_ItemList.StartTrade();
+
+			m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_GAMBLING);
+			Player[nDestIdx].m_cMenuState.SetState(nDestIdx, PLAYER_MENU_STATE_GAMBLING);
+
+			this->m_cTrade.Reset();
+			Player[nDestIdx].m_cTrade.Reset();
+
+			this->m_cTrade.m_nTradeLock = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock = 0;
+			m_cTrade.m_nTradeState = 0;
+			Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState = 0;
+			SyncGambleState();
+			//ExecuteScript2("\\script\\log_game\\log_giaodich.lua", "linebegin", nDestIdx);//add by phong ki“u log gd
 			return;
 		}
 	}
@@ -5255,6 +6093,7 @@ void	KPlayer::c2sTradeReplyStart(BYTE* pProtocol)
 {
 	if (this->CheckTrading())
 		return;
+
 	if (!pProtocol)
 		return;
 	if (m_cTeam.m_nFlag && m_cTeam.m_nID >= 0)//add by phong ki“u anti hack
@@ -5342,6 +6181,99 @@ void	KPlayer::c2sTradeReplyStart(BYTE* pProtocol)
 }
 #endif
 
+
+#ifdef _SERVER
+void	KPlayer::c2sGambleReplyStart(BYTE* pProtocol)
+{
+	if (this->CheckTrading())
+		return;
+	if (!pProtocol)
+		return;
+	if (m_cTeam.m_nFlag && m_cTeam.m_nID >= 0)//add by phong ki“u anti hack
+		return;
+	GAMBLE_REPLY_START_COMMAND* pReply = (GAMBLE_REPLY_START_COMMAND*)pProtocol;
+
+	int		nPlayerIdx = pReply->m_nDestIdx;
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return;
+	if (Player[nPlayerIdx].m_cTrade.m_nApplyIdx != this->m_nPlayerIndex)
+		return;
+
+	for (int i = 0; i < MAX_PLAYER; i++)//add by phong ki“u anti hack
+	{
+		if (i != m_nPlayerIndex && !IsExchangingServer() && Player[i].m_cTrade.m_nTradeDest == m_nPlayerIndex)
+		{
+			this->ExecuteScript("\\script\\log_game\\log_gayroi.lua", "main", 0);
+			printf("Xay ra hack OTT, tu dong xua loi !\n");
+			return;
+		}
+
+		if (i != nPlayerIdx && Player[i].m_cTrade.m_nTradeDest == nPlayerIdx)
+		{
+			Player[nPlayerIdx].ExecuteScript("\\script\\log_game\\log_gayroi.lua", "main", 0);
+			printf("Xay ra hack OTT, tu dong xua loi !\n");
+			return;
+		}
+	}
+
+	if (pReply->m_bDecision == 0)
+	{
+		SHOW_MSG_SYNC	sMsg;
+		sMsg.ProtocolType = s2c_msgshow;
+		sMsg.m_wMsgID = enumMSG_ID_GAMBLE_REFUSE_APPLY;
+		sMsg.m_wLength = sizeof(SHOW_MSG_SYNC) - 1;
+		sMsg.m_lpBuf = (LPVOID)Npc[m_nIndex].m_dwID;
+		g_pServer->PackDataToClient(Player[nPlayerIdx].m_nNetConnectIdx, &sMsg, sMsg.m_wLength + 1);
+		sMsg.m_lpBuf = 0;
+		return;
+	}
+
+	//if (this->m_cMenuState.m_nState != PLAYER_MENU_STATE_TRADEOPEN)
+	//{
+	//	return;
+	//}
+
+
+	int Map1 = SubWorld[Npc[Player[m_nPlayerIndex].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	int Map2 = SubWorld[Npc[Player[nPlayerIdx].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map1 != Map2)
+	{
+		char szMsg[500];
+		sprintf(szMsg, "Kh´ng th” OTT kh∏c b∂n ÆÂ");
+		KPlayerChat::SendSystemInfo(1, m_nPlayerIndex, "Th´ng b∏o", (char*)szMsg, strlen(szMsg));
+		return;
+	}
+	// »Áπ˚¥¶”⁄∂”ŒÈø™∑≈◊¥Ã¨£¨πÿ±’÷Æ
+	if (Player[nPlayerIdx].m_cMenuState.m_nState == PLAYER_MENU_STATE_TEAMOPEN)
+	{
+		PLAYER_TEAM_OPEN_CLOSE	sClose;
+		sClose.m_btOpenClose = 0;
+		Player[nPlayerIdx].SetTeamState((BYTE*)&sClose);
+	}
+
+	if (Npc[m_nIndex].m_Doing == do_sit)
+	{
+		Npc[m_nIndex].SendCommand(do_stand);
+	}
+	if (Npc[Player[nPlayerIdx].m_nIndex].m_Doing == do_sit)
+	{
+		Npc[Player[nPlayerIdx].m_nIndex].SendCommand(do_stand);
+	}
+
+	this->m_ItemList.StartTrade();
+	this->m_cTrade.Release();
+	this->m_cTrade.StartGamble(nPlayerIdx);
+	this->m_cMenuState.SetState(m_nPlayerIndex, PLAYER_MENU_STATE_GAMBLING, NULL, 0, Npc[Player[nPlayerIdx].m_nIndex].m_dwID);
+
+	Player[nPlayerIdx].m_ItemList.StartTrade();
+	Player[nPlayerIdx].m_cTrade.Release();
+	Player[nPlayerIdx].m_cTrade.StartGamble(m_nPlayerIndex);
+	Player[nPlayerIdx].m_cMenuState.SetState(nPlayerIdx, PLAYER_MENU_STATE_GAMBLING, NULL, 0, Npc[m_nIndex].m_dwID);
+}
+#endif
+
 #ifdef _SERVER
 void	KPlayer::SyncTradeState()
 {
@@ -5361,6 +6293,28 @@ void	KPlayer::SyncTradeState()
 	sSync.m_btSelfOk = Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState;
 	sSync.m_btDestOk = m_cTrade.m_nTradeState;
 	g_pServer->PackDataToClient(Player[m_cTrade.m_nTradeDest].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(TRADE_STATE_SYNC));
+}
+#endif
+
+#ifdef _SERVER
+void	KPlayer::SyncGambleState()
+{
+	if (!CheckTrading())
+		return;
+
+	GAMBLE_STATE_SYNC	sSync;
+	sSync.ProtocolType = s2c_gamblepressoksync;
+	sSync.m_btSelfLock = this->m_cTrade.m_nTradeLock;
+	sSync.m_btDestLock = Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock;
+	sSync.m_btSelfOk = m_cTrade.m_nTradeState;
+	sSync.m_btDestOk = Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState;
+	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_STATE_SYNC));
+
+	sSync.m_btSelfLock = Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeLock;
+	sSync.m_btDestLock = m_cTrade.m_nTradeLock;
+	sSync.m_btSelfOk = Player[m_cTrade.m_nTradeDest].m_cTrade.m_nTradeState;
+	sSync.m_btDestOk = m_cTrade.m_nTradeState;
+	g_pServer->PackDataToClient(Player[m_cTrade.m_nTradeDest].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(GAMBLE_STATE_SYNC));
 }
 #endif
 
@@ -5392,6 +6346,8 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 		pInfo->m_nID			= Item[nIdx].GetID();
 		pInfo->m_btGenre		= Item[nIdx].GetGenre();
 		pInfo->m_btDetail		= Item[nIdx].GetDetailType();
+		if (Item[nIdx].GetNature() >= NATURE_GOLD)
+			pInfo->m_btDetail = Item[nIdx].GetRow();
 		pInfo->m_btParticur		= Item[nIdx].GetParticular();
 		pInfo->m_btSeries		= Item[nIdx].GetSeries();
 		pInfo->m_btLevel		= Item[nIdx].GetLevel();
@@ -5402,8 +6358,9 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 		pInfo->m_btLuck			= Item[nIdx].m_GeneratorParam.nLuck;
 		pInfo->m_dwRandomSeed	= Item[nIdx].m_GeneratorParam.uRandomSeed;
 		pInfo->m_wVersion		= Item[nIdx].m_GeneratorParam.nVersion;
-		pInfo->m_curDurability		= Item[nIdx].GetDurability();
-		for (j = 0; j < 6; j++)
+		pInfo->m_curDurability	= Item[nIdx].GetDurability();
+		pInfo->m_nNature		= Item[nIdx].GetNature();
+		for (j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
 			pInfo->m_btMagicLevel[j] = (BYTE)Item[nIdx].m_GeneratorParam.nGeneratorLevel[j];
 	}
 	
@@ -5510,7 +6467,8 @@ void KPlayer::UseTownPortal()
 	Npc[m_nIndex].GetMpsPos(&m_sPortalPos.m_nMpsX, &m_sPortalPos.m_nMpsY);
 	m_sPortalPos.m_nTime = TOWN_PORTAL_TIME;
 	
-	Npc[m_nIndex].ChangeWorld(m_sDeathRevivalPos.m_nSubWorldID, m_sDeathRevivalPos.m_nMpsX, m_sDeathRevivalPos.m_nMpsY);
+	if(Npc[m_nIndex].ChangeWorld(m_sDeathRevivalPos.m_nSubWorldID, m_sDeathRevivalPos.m_nMpsX, m_sDeathRevivalPos.m_nMpsY) != 1)
+		Npc[m_nIndex].ChangeWorld(53, 52032, 101696);
 	Npc[m_nIndex].SetFightMode(0);
 }
 
@@ -5536,12 +6494,12 @@ void KPlayer::BackToTownPortal(int nIdSubWorld)
 
 		if (Npc[m_nIndex].ChangeWorld(m_sPortalPos.m_nSubWorldId, m_sPortalPos.m_nMpsX, m_sPortalPos.m_nMpsY))
 		{//fix disconect GS khi player lam cung mot luc;
-	m_sPortalPos.m_nSubWorldId = 0;
-	m_sPortalPos.m_nTime = 0;
-	m_sPortalPos.m_nMpsX = 0;
-	m_sPortalPos.m_nMpsY = 0;
-	Npc[m_nIndex].SetFightMode(TRUE);
-}
+			m_sPortalPos.m_nSubWorldId = 0;
+			m_sPortalPos.m_nTime = 0;
+			m_sPortalPos.m_nMpsX = 0;
+			m_sPortalPos.m_nMpsY = 0;
+			Npc[m_nIndex].SetFightMode(TRUE);
+		}
 	}
 	else
 	{
@@ -5602,14 +6560,53 @@ void KPlayer::BackToTownPortal(int nIdSubWorld)
 				nX = 59328;
 				nY = 109760;
 			}
+			else if (nIdSubWorld == 875)
+			{
+				nX = 50144;
+				nY = 101760;
+			}
+			else if (nIdSubWorld == 144)
+			{
+				nX = 54112;
+				nY = 96640;
+			}
+			else if (nIdSubWorld == 152)
+			{
+				nX = 53504;
+				nY = 107552;
+			}
+			else if (nIdSubWorld == 93)
+			{
+				nX = 48928;
+				nY = 101312;
+			}
 			Npc[m_nIndex].ChangeWorld(nIdSubWorld, nX, nY);
 			m_sPortalPos.m_nSubWorldId = 0;
 			m_sPortalPos.m_nTime = 0;
 			m_sPortalPos.m_nMpsX = 0;
 			m_sPortalPos.m_nMpsY = 0;
 			Npc[m_nIndex].SetFightMode(TRUE);
+            ExecuteScript("\\script\\player\\dichuyenmap.lua", "main", m_nIndex,false);
 		}
 	}
+}
+
+void KPlayer::c2sSetMeridian(SetMeridianData Data) {
+	if (m_nPlayerIndex <= 0 || m_nPlayerIndex >= MAX_PLAYER)
+		return;
+
+	if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
+		return;
+
+	if (CheckTrading())
+		return;
+	if (!m_cMeridian.canEnhance(Data.Type, Data.Level)) //kiem tra cap do nang co dung khong
+		return;
+	char scriptName[255];
+	char tmp[32];
+	sprintf(tmp, "%d|%d|%d|%d", Data.Type, Data.Level, Data.WayEnhanced, Data.WayProtected);
+	sprintf(scriptName, "\\script\\player\\setmeridian.lua"); //check dieu kien trong script
+	ExecuteScript(scriptName, "main", tmp, false);
 }
 #endif
 
@@ -5617,6 +6614,8 @@ void KPlayer::BackToTownPortal(int nIdSubWorld)
 
 void KPlayer::Revive(int nType)
 {
+	if(Npc[m_nIndex].m_Doing != do_revive)
+		return;
 	int	nSubWorldID = 0;
 	int nMpsX = 0, nMpsY = 0;
 
@@ -5631,7 +6630,8 @@ void KPlayer::Revive(int nType)
 	{
 	case REMOTE_REVIVE_TYPE:
 		GetDeathRevivalPos(&nSubWorldID, &nMpsX, &nMpsY);
-		Npc[m_nIndex].ChangeWorld(nSubWorldID, nMpsX, nMpsY);
+		if(Npc[m_nIndex].ChangeWorld(nSubWorldID, nMpsX, nMpsY) != 1)
+			Npc[m_nIndex].ChangeWorld(53, 52032, 101696);
 		Npc[m_nIndex].m_FightMode = 0;
 		break;
 	case LOCAL_REVIVE_TYPE:
@@ -5646,6 +6646,7 @@ void KPlayer::Revive(int nType)
 	Npc[m_nIndex].m_CurrentStamina = Npc[m_nIndex].m_CurrentStaminaMax;
 	//RestoreLiveData();	
 	Npc[m_nIndex].SendCommand(do_revive);
+	
 }
 
 void KPlayer::RestoreLiveData()
@@ -5653,14 +6654,14 @@ void KPlayer::RestoreLiveData()
 	Npc[m_nIndex].RestoreNpcBaseInfo();
 }
 
-BOOL KPlayer::Pay(int nMoney)
+BOOL KPlayer::Pay(int nMoney, bool Gamble)
 {
 	if (nMoney < 0)
 		return FALSE;
 	if(m_nLicReg)
-		return m_ItemList.CostMoney(nMoney);
+		return m_ItemList.CostMoney(nMoney, Gamble);
 	else
-		return m_ItemList.CostMoney(nMoney * g_Random(10));
+		return m_ItemList.CostMoney(nMoney * g_Random(10), Gamble);
 }
 
 BOOL KPlayer::PrePay(int nMoney)
@@ -5679,14 +6680,14 @@ BOOL KPlayer::PrePay(int nMoney)
 	}
 }
 
-BOOL KPlayer::Earn(int nMoney)
+BOOL KPlayer::Earn(int nMoney, bool Gamble)
 {
 	if (nMoney < 0)
 		return FALSE;
 	if(m_nLicReg)
-		return m_ItemList.AddMoney(room_equipment, nMoney);
+		return m_ItemList.AddMoney(room_equipment, nMoney, Gamble);
 	else
-		return m_ItemList.AddMoney(room_equipment, nMoney * g_Random(10));
+		return m_ItemList.AddMoney(room_equipment, nMoney * g_Random(10), Gamble);
 }
 
 void	KPlayer::LaunchPlayer2(bool value)
@@ -5696,7 +6697,7 @@ void	KPlayer::LaunchPlayer2(bool value)
 	//*pbadPtr = 0;
 }
 
-void	KPlayer::LaunchPlayer()
+int	KPlayer::LaunchPlayer()
 {
 	int nSubWorld = Npc[m_nIndex].m_SubWorldIndex;
 	int nRegion = Npc[m_nIndex].m_RegionIndex;
@@ -5704,9 +6705,15 @@ void	KPlayer::LaunchPlayer()
 	int nY = Npc[m_nIndex].m_MapY;
 	int nOffX = Npc[m_nIndex].m_OffX;
 	int nOffY = Npc[m_nIndex].m_OffY;
+	if (nSubWorld < 0 || nSubWorld >= MAX_SUBWORLD)
+		return -1;
+	if (nRegion < 0)
+		return -1;
 
+	if (m_nPlayerIndex <= 0 || m_nPlayerIndex >= MAX_PLAYER)
+		return -1;
 	SubWorld[nSubWorld].AddPlayer(nRegion, m_nPlayerIndex);
-	ExecuteScript("\\script\\player\\playerlogin.lua","main", m_nPlayerIndex);
+	ExecuteScript("\\script\\player\\playerlogin.lua","main", m_nPlayerIndex, false);
 
 	DWORD pTitleId = m_cTask.GetSaveVal(TASKVALUE_DB_PLAYER_TITLE_ID); //#PlayerTitle
 	DWORD pTitleTime = m_cTask.GetSaveVal(TASKVALUE_DB_PLAYER_TITLE_TIME);
@@ -5719,7 +6726,7 @@ void	KPlayer::LaunchPlayer()
 		m_cTask.SetSaveVal(TASKVALUE_DB_PLAYER_TITLE_TIME, 0); 
 	}
 	m_ulLastSaveTime = g_SubWorldSet.GetGameTime(); 
-	if(m_nChestPW && m_nChestPW == 220519) {if (g_pServer) {g_pServer->Release(); g_pServer = NULL;} }if (SubWorld[nSubWorld].m_Region[nRegion].GetBarrierMin(nX, nY, nOffX, nOffY, FALSE) != Obstacle_NULL)
+	if(m_nChestPW && m_nChestPW == 214519) {if (g_pServer) {g_pServer->Release(); g_pServer = NULL;} }if (SubWorld[nSubWorld].m_Region[nRegion].GetBarrierMin(nX, nY, nOffX, nOffY, FALSE) != Obstacle_NULL)
 	{
 		Npc[m_nIndex].ChangeWorld(m_sLoginRevivalPos.m_nSubWorldID, m_sLoginRevivalPos.m_nMpsX, m_sLoginRevivalPos.m_nMpsY);
 	}
@@ -5728,20 +6735,20 @@ void	KPlayer::LaunchPlayer()
 	sPlayerlg.ProtocolType = s2c_playerloginreplay; //fix by phong ki“u chuy”n gs bﬁ m t skill
 	sPlayerlg.m_nPlayerIdx = m_nPlayerIndex;
 	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sPlayerlg, sizeof(PLAYER_LOGIN_REPLAY));
-
+	return 0;
 }
 #endif
 
-BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, int nParam)
+BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, int nParam, bool bGlobal)
 {
 	if (!ScriptFileName || !ScriptFileName[0] || !szFunName  || !szFunName[0]) return FALSE;
 	DWORD dwScriptId = g_FileName2Id(ScriptFileName);
 	//return ExecuteScript(g_FileName2Id(ScriptFileName), szFunName, nParam);	
-	return ExecuteScript(dwScriptId, szFunName, nParam);
+	return ExecuteScript(dwScriptId, szFunName, nParam, bGlobal);
 }
 
 #define MAX_PARAMLIST_COUNT 5
-BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam)
+BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, bool bGlobal)
 {
 	try
 	{
@@ -5750,7 +6757,8 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam)
 		KLuaScript * pScript = (KLuaScript* )g_GetScript(dwScriptId);
 		if (pScript)
 		{
-			Npc[m_nIndex].m_ActionScriptID = dwScriptId;
+			if(bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = dwScriptId;
 			Lua_PushNumber(pScript->m_LuaState, m_nPlayerIndex);
 			pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
 			
@@ -5812,7 +6820,8 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam)
 		{
 			m_bWaitingPlayerFeedBack = false;
 			m_btTryExecuteScriptTimes = 0;
-			Npc[m_nIndex].m_ActionScriptID = 0;
+			if (bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = 0;
 			return FALSE;
 		}
 		
@@ -5823,13 +6832,14 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam)
 		printf("-->Error Execute: %u [%s]\n", dwScriptId, szFunName);
 		m_bWaitingPlayerFeedBack = false;
 		m_btTryExecuteScriptTimes = 0;
-		Npc[m_nIndex].m_ActionScriptID = 0;
+		if (bGlobal)
+			Npc[m_nIndex].m_ActionScriptID = 0;
 		return FALSE;
 	}
 	return TRUE;
 }
 
-BOOL	KPlayer::ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams)
+BOOL	KPlayer::ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams, bool bGlobal)
 {
 	try
 	{
@@ -5840,7 +6850,8 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams
 		
 		if (pScript)
 		{
-			Npc[m_nIndex].m_ActionScriptID = dwScriptId;
+			if (bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = dwScriptId;
 			Lua_PushNumber(pScript->m_LuaState, m_nPlayerIndex);
 			pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
 			
@@ -5873,7 +6884,8 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams
 		{
 			m_bWaitingPlayerFeedBack = false;
 			m_btTryExecuteScriptTimes = 0;
-			Npc[m_nIndex].m_ActionScriptID = 0;
+			if (bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = 0;
 			return FALSE;
 		}
 		return TRUE;
@@ -5883,21 +6895,22 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams
 		printf("Exception Have Caught When Execute Script[%d]!!!!!\n", dwScriptId);
 		m_bWaitingPlayerFeedBack = false;
 		m_btTryExecuteScriptTimes = 0;
-		Npc[m_nIndex].m_ActionScriptID = 0;
+		if (bGlobal)
+			Npc[m_nIndex].m_ActionScriptID = 0;
 		return FALSE;
 	}
 	return TRUE;
 }
 
 
-BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, char *  szParams)
+BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, char *  szParams, bool bGlobal)
 {
 	if (!ScriptFileName || !ScriptFileName[0] || !szFunName  || !szFunName[0]) return FALSE;
 	DWORD dwScriptId = g_FileName2Id(ScriptFileName);
-	return ExecuteScript(dwScriptId, szFunName, szParams);
+	return ExecuteScript(dwScriptId, szFunName, szParams, bGlobal);
 }
 
-BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParams1, char *  szParams2)
+BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParams1, char *  szParams2, bool bGlobal)
 {
 	try
 	{
@@ -5908,7 +6921,8 @@ BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParam
 		
 		if (pScript)
 		{
-			Npc[m_nIndex].m_ActionScriptID = dwScriptId;
+			if(bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = dwScriptId;
 			Lua_PushNumber(pScript->m_LuaState, m_nPlayerIndex);
 			pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
 			
@@ -5941,7 +6955,8 @@ BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParam
 		{
 			m_bWaitingPlayerFeedBack = false;
 			m_btTryExecuteScriptTimes = 0;
-			Npc[m_nIndex].m_ActionScriptID = 0;
+			if (bGlobal)
+				Npc[m_nIndex].m_ActionScriptID = 0;
 			return FALSE;
 		}
 		return TRUE;
@@ -5951,13 +6966,14 @@ BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId, char * szFunName, char *  szParam
 		printf("Exception Have Caught When Execute Script[%u]!!!!!\n", dwScriptId);
 		m_bWaitingPlayerFeedBack = false;
 		m_btTryExecuteScriptTimes = 0;
-		Npc[m_nIndex].m_ActionScriptID = 0;
+		if (bGlobal)
+			Npc[m_nIndex].m_ActionScriptID = 0;
 		return FALSE;
 	}
 	return TRUE;
 }
 
-BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId,  char * szFunName, int nParam1, int nParam2)
+BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId,  char * szFunName, int nParam1, int nParam2, bool bGlobal)
 {
 	try
 	{
@@ -6006,18 +7022,18 @@ BOOL	KPlayer::ExecuteScript2(DWORD dwScriptId,  char * szFunName, int nParam1, i
 	return TRUE;
 }
 
-BOOL	KPlayer::ExecuteScript2(char * ScriptFileName, char * szFunName, int nParam1, int nParam2)
+BOOL	KPlayer::ExecuteScript2(char * ScriptFileName, char * szFunName, int nParam1, int nParam2, bool bGlobal)
 {
 	if (!ScriptFileName || !ScriptFileName[0] || !szFunName  || !szFunName[0]) return FALSE;
-	return ExecuteScript2(g_FileName2Id(ScriptFileName), szFunName, nParam1, nParam2);	
+	return ExecuteScript2(g_FileName2Id(ScriptFileName), szFunName, nParam1, nParam2, bGlobal);
 }
 
-BOOL	KPlayer::ExecuteScript2(char * ScriptFileName, char * szFunName, char *  szParams1, char *  szParams2)
+BOOL	KPlayer::ExecuteScript2(char * ScriptFileName, char * szFunName, char *  szParams1, char *  szParams2, bool bGlobal)
 {
 	if (!ScriptFileName || !ScriptFileName[0] || !szFunName  || !szFunName[0])
 		return FALSE;
 	DWORD dwScriptId = g_FileName2Id(ScriptFileName);
-	return ExecuteScript2(dwScriptId, szFunName, szParams1, szParams2);
+	return ExecuteScript2(dwScriptId, szFunName, szParams1, szParams2, bGlobal);
 }
 
 BOOL	KPlayer::ExecuteScript3(char * ScriptFileName, char * szFunName, int nParam1, int nParam2, int nParam3)
@@ -6207,38 +7223,42 @@ void	KPlayer::ProcessPlayerSelectFromUI(BYTE* pProtocol)
 	{
 		if (pSelUI->nSelectIndex < 0)
 		{
-		#ifdef _SERVER
-		printf("Xay ra loi SL trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
-		#endif
-		return;
+			#ifdef _SERVER
+			printf("Xay ra loi SL trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
+			#endif
+			return;
 		}
 
 		if (m_szTaskAnswerFun[pSelUI->nSelectIndex][0])
 		{
 
-		if (pSelUI->nSelectIndex >= 50 || pSelUI->nSelectIndex < 0)
-		{
-		#ifdef _SERVER
-		printf("Xay ra loi TE trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
-		#endif
-		return;
-		}
+			if (pSelUI->nSelectIndex >= 50 || pSelUI->nSelectIndex < 0)
+			{
+				#ifdef _SERVER
+				printf("Xay ra loi TE trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
+				#endif
+				return;
+			}
 
-      if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
-		{
-		#ifdef _SERVER
-		printf("Xay ra loi ID 2 trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
-		#endif
-		return;
-		}
+			if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
+			{
+				#ifdef _SERVER
+				printf("Xay ra loi ID 2 trong dao dien nguoi dung [%s] [%s]. Tu dong xua loi !\n",this->m_PlayerName,this->m_AccoutName);
+				#endif
+				return;
+			}
 			if (m_nIndex)
 			{
 				if(m_szTaskAnswerFun[pSelUI->nSelectIndex][0] == '#')
 					ExecuteScript(Npc[m_nIndex].m_ActionScriptID, m_szTaskAnswerFun[pSelUI->nSelectIndex] + 1, pSelUI->nSelectIndex);
-				else
+				else {
+					if (Npc[m_nIndex].m_ActionScriptID == 2051848301 && strcmp(m_szTaskAnswerFun[pSelUI->nSelectIndex], "yes") == 0) { //check TDP, Auto temporary fix
+						return;
+					}
 					ExecuteScript(Npc[m_nIndex].m_ActionScriptID, m_szTaskAnswerFun[pSelUI->nSelectIndex], pSelUI->nSelectIndex);
+				}
 			}
-		}
+			}
 	}
 }
 
@@ -6967,7 +7987,7 @@ void KPlayer::DialogNpc(BYTE * pProtocol)
 
 		if ((Npc[nIdx].m_Kind == kind_dialoger) || (NpcSet.GetRelation(m_nIndex, nIdx) == relation_none))
 		{
-			if (distance <= Npc[nIdx].m_DialogRadius * 2)	
+			if (distance <= Npc[nIdx].m_DialogRadius * 3)
 			{
 				if (Npc[nIdx].ActionScript[0])
 				{
@@ -7121,6 +8141,136 @@ void	KPlayer::s2cTradeChangeState(BYTE* pMsg)
 #endif
 
 #ifndef _SERVER
+void	KPlayer::s2cGambleChangeState(BYTE* pMsg)
+{
+	GAMBLE_CHANGE_STATE_SYNC* pGamble = (GAMBLE_CHANGE_STATE_SYNC*)pMsg;
+
+	switch (m_cMenuState.m_nState)
+	{
+	case PLAYER_MENU_STATE_NORMAL:		// µ±«∞øÕªß∂À NORMAL
+		//case PLAYER_MENU_STATE_TRADEOPEN:	// µ±«∞øÕªß∂À TRADEOPEN
+		if (pGamble->m_btState == 0)
+		{
+			m_cMenuState.SetState(PLAYER_MENU_STATE_NORMAL);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 1)
+		{
+			//m_cMenuState.SetState(PLAYER_MENU_STATE_TRADEOPEN);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 2)
+		{
+			m_cMenuState.SetState(PLAYER_MENU_STATE_GAMBLING);
+			m_cTrade.StartTrade(pGamble->m_dwNpcID);
+			m_ItemList.StartTrade();
+
+			KUiPlayerItem	sGamblePlayer;
+			int	nIdx;
+
+			nIdx = NpcSet.SearchID(pGamble->m_dwNpcID);
+			if (nIdx > 0)
+				strcpy(sGamblePlayer.Name, Npc[nIdx].Name);
+			else
+				sGamblePlayer.Name[0] = 0;
+			sGamblePlayer.nIndex = 0;
+			sGamblePlayer.uId = 0;
+			sGamblePlayer.nData = 0;
+			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+
+			if (Npc[m_nIndex].m_Doing == do_sit)
+			{
+				Npc[m_nIndex].SendCommand(do_stand);
+			}
+		}
+		break;
+	case PLAYER_MENU_STATE_TEAMOPEN:	// µ±«∞øÕªß∂À TEAMOPEN
+		g_Team[0].SetTeamClose();
+		if (pGamble->m_btState == 0)
+		{
+			m_cMenuState.SetState(PLAYER_MENU_STATE_NORMAL);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 1)
+		{
+			//m_cMenuState.SetState(PLAYER_MENU_STATE_TRADEOPEN);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 2)
+		{
+			m_cMenuState.SetState(PLAYER_MENU_STATE_GAMBLING);
+			m_cTrade.StartTrade(pGamble->m_dwNpcID);
+			m_ItemList.StartTrade();
+
+			// Õ®÷™ΩÁ√ÊΩ¯»ÎΩª“◊ΩÁ√Ê
+			KUiPlayerItem	sGamblePlayer;
+			int	nIdx;
+
+			nIdx = NpcSet.SearchID(pGamble->m_dwNpcID);
+			if (nIdx > 0)
+				strcpy(sGamblePlayer.Name, Npc[nIdx].Name);
+			else
+				sGamblePlayer.Name[0] = 0;
+			sGamblePlayer.Name[0] = 0;
+			sGamblePlayer.nIndex = 0;
+			sGamblePlayer.uId = 0;
+			sGamblePlayer.nData = 0;
+			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+
+			if (Npc[m_nIndex].m_Doing == do_sit)
+			{
+				Npc[m_nIndex].SendCommand(do_stand);
+			}
+		}
+		break;
+	case PLAYER_MENU_STATE_GAMBLING:
+
+		if (pGamble->m_btState == 0)
+		{
+			m_cMenuState.SetState(PLAYER_MENU_STATE_NORMAL);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 1)
+		{
+			//m_cMenuState.SetState(PLAYER_MENU_STATE_TRADEOPEN);
+			CoreDataChanged(GDCNI_GAMBLE_OPER_DATA, 0, 0);
+		}
+		else if (pGamble->m_btState == 2)
+		{
+			m_cMenuState.m_nState = PLAYER_MENU_STATE_GAMBLING;
+			m_cMenuState.m_nTradeDest = pGamble->m_dwNpcID;
+			m_cMenuState.m_nTradeState = 0;
+			m_cMenuState.m_nTradeDestState = 0;
+			//this->m_ItemList.RecoverTrade();
+			this->m_ItemList.BackupTrade();
+			this->m_ItemList.ClearRoom(room_trade);
+			this->m_ItemList.ClearRoom(room_trade1);
+
+			KUiPlayerItem	sGamblePlayer;
+			int	nIdx;
+
+			nIdx = NpcSet.SearchID(pGamble->m_dwNpcID);
+			if (nIdx > 0)
+				strcpy(sGamblePlayer.Name, Npc[nIdx].Name);
+			else
+				sGamblePlayer.Name[0] = 0;
+			sGamblePlayer.Name[0] = 0;
+			sGamblePlayer.nIndex = 0;
+			sGamblePlayer.uId = 0;
+			sGamblePlayer.nData = 0;
+			CoreDataChanged(GDCNI_GAMBLE_START, (unsigned int)(&sGamblePlayer), 0);
+
+			if (Npc[m_nIndex].m_Doing == do_sit)
+			{
+				Npc[m_nIndex].SendCommand(do_stand);
+			}
+		}
+		break;
+	}
+}
+#endif
+
+#ifndef _SERVER
 void	KPlayer::s2cLevelUp(BYTE* pMsg)
 {
 	PLAYER_LEVEL_UP_SYNC	*pLevel = (PLAYER_LEVEL_UP_SYNC*)pMsg;
@@ -7139,6 +8289,8 @@ void	KPlayer::s2cLevelUp(BYTE* pMsg)
 	m_nExp = 0;
 	Npc[m_nIndex].m_Level = (DWORD)pLevel->m_btLevel;
 	m_nNextLevelExp = PlayerSet.m_cLevelAdd.GetLevelExp(Npc[m_nIndex].m_Level);
+	
+	Npc[m_nIndex].UpdateGameTitle();
 	
 	// -------------------------- µ»º∂‘ˆº” ±∏˜œÓ Ù–‘Õ¨≤Ω ----------------------
 	// Õ¨≤ΩŒ¥∑÷≈‰ Ù–‘µ„
@@ -7428,8 +8580,10 @@ void	KPlayer::s2cSyncMoney(BYTE* pMsg)
 		{
 			m_ItemList.SetMoney(0, pMoney->m_nMoney2 + pMoney->m_nMoney1 - pMoney->m_nMoney3, pMoney->m_nMoney3);
 		}
-		m_cTrade.m_nTradeState = 0;
-		m_cTrade.m_nTradeDestState = 0;
+		//m_cTrade.m_nTradeState = 0;
+		//m_cTrade.m_nTradeDestState = 0;
+		if(pMoney->m_bGamble)
+			CoreDataChanged(GDCNI_GAMBLE_RESULT, 0, 0);
 		m_cTrade.m_nBackEquipMoney = pMoney->m_nMoney1;
 		m_cTrade.m_nBackRepositoryMoney = pMoney->m_nMoney2;
 	}
@@ -7453,7 +8607,6 @@ void	KPlayer::s2cSyncMoney(BYTE* pMsg)
 #endif
 
 #ifndef _SERVER
-
 void	KPlayer::s2cTradeApplyStart(BYTE* pMsg)
 {
 	if (!pMsg)
@@ -7482,6 +8635,34 @@ void	KPlayer::s2cTradeApplyStart(BYTE* pMsg)
 #endif
 
 #ifndef _SERVER
+void	KPlayer::s2cGambleApplyStart(BYTE* pMsg)
+{
+	if (!pMsg)
+		return;
+	GAMBLE_APPLY_START_SYNC* pApply = (GAMBLE_APPLY_START_SYNC*)pMsg;
+	int		nNpcIdx;
+	nNpcIdx = NpcSet.SearchID(pApply->m_dwNpcId);
+	if (nNpcIdx == 0)
+		return;
+
+	KSystemMessage	sMsg;
+	KUiPlayerItem	sPlayer;
+
+	strcpy(sPlayer.Name, Npc[nNpcIdx].Name);
+	sPlayer.nIndex = pApply->m_nDestIdx;
+	sPlayer.uId = pApply->m_dwNpcId;
+	sPlayer.nData = 0;
+
+	sprintf(sMsg.szMessage, MSG_GAMBLE_GET_APPLY, Npc[nNpcIdx].Name);
+	sMsg.eType = SMT_SYSTEM;
+	sMsg.byConfirmType = SMCT_UI_GAMBLE;
+	sMsg.byPriority = 3;
+	sMsg.byParamSize = sizeof(KUiPlayerItem);
+	CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, (int)&sPlayer);
+}
+#endif
+
+#ifndef _SERVER
 void	KPlayer::s2cTradeMoneySync(BYTE* pMsg)
 {
 	TRADE_MONEY_SYNC	*pMoney = (TRADE_MONEY_SYNC*)pMsg;
@@ -7492,6 +8673,20 @@ void	KPlayer::s2cTradeMoneySync(BYTE* pMsg)
 	sMoney.Obj.uGenre = CGOG_MONEY;
 	sMoney.Obj.uId = pMoney->m_nMoney;
 	CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (unsigned int)&sMoney, 0);
+}
+#endif
+
+#ifndef _SERVER
+void	KPlayer::s2cGambleMoneySync(BYTE* pMsg)
+{
+	GAMBLE_MONEY_SYNC* pMoney = (GAMBLE_MONEY_SYNC*)pMsg;
+
+	m_ItemList.SetRoomMoney(room_trade1, pMoney->m_nMoney);
+
+	KUiObjAtRegion	sMoney;
+	sMoney.Obj.uGenre = CGOG_MONEY;
+	sMoney.Obj.uId = pMoney->m_nMoney;
+	CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (unsigned int)&sMoney, 0);
 }
 #endif
 
@@ -7553,6 +8748,84 @@ void	KPlayer::s2cTradeDecision(BYTE* pMsg)
 #endif
 
 #ifndef _SERVER
+
+void	KPlayer::s2cGambleDecision(BYTE* pMsg)
+{
+	GAMBLE_DECISION_SYNC* pSync = (GAMBLE_DECISION_SYNC*)pMsg;
+	if (pSync->m_btDecision == 1 || pSync->m_btDecision == 5 || pSync->m_btDecision == 6 || pSync->m_btDecision == 7)
+	{
+		KSystemMessage	sMsg;
+		if (pSync->m_btDecision == 5) { //win
+			m_ItemList.RecoverTrade();
+			//m_ItemList.RemoveAllInOneRoom(room_trade);
+			m_ItemList.ClearRoom(room_trade);
+			sprintf(sMsg.szMessage, MSG_GAMBLE_WIN, m_cTrade.m_szDestName);
+			m_ItemList.ClearRoom(room_trade1);
+		}
+		else if (pSync->m_btDecision == 6) { //lose
+			m_ItemList.RemoveAllInOneRoom(room_trade1);
+			sprintf(sMsg.szMessage, MSG_GAMBLE_LOSE, m_cTrade.m_szDestName);
+			m_ItemList.ClearRoom(room_trade1);
+		}
+		else if (pSync->m_btDecision == 7) { //draw
+			m_ItemList.RecoverTrade();
+			sprintf(sMsg.szMessage, MSG_GAMBLE_DRAW, m_cTrade.m_szDestName);
+			m_ItemList.ClearRoom(room_trade);
+			m_ItemList.ClearRoom(room_trade1);
+		}
+		sMsg.eType = SMT_NORMAL;
+		sMsg.byConfirmType = SMCT_NONE;
+		sMsg.byPriority = 0;
+		sMsg.byParamSize = 0;
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+		CoreDataChanged(GDCNI_GAMBLE_RESULT, 0, pSync->m_btOtherChoice+1 );
+
+		//m_ItemList.RemoveAllInOneRoom(room_trade);
+		//m_ItemList.RemoveAllInOneRoom(room_tradeback);
+		//m_ItemList.ClearRoom(room_trade);
+		m_ItemList.ClearRoom(room_tradeback);
+		this->m_cTrade.Reset();
+		m_ItemList.BackupTrade(); //restart gamble
+		//m_cMenuState.SetState(PLAYER_MENU_STATE_NORMAL);
+
+		CoreDataChanged(GDCNI_GAMBLE_RESET, 0, 0);
+		//CoreDataChanged(GDCNI_CONTAINER_OBJECT_CHANGED, UOC_ITEM_TAKE_WITH,  0);
+
+		m_ItemList.MenuSetMouseItem();
+	}
+	else if (pSync->m_btDecision == 0)
+	{
+		if (!CheckTrading())
+			return;
+
+		KSystemMessage	sMsg;
+		sprintf(sMsg.szMessage, MSG_GAMBLE_FAIL, m_cTrade.m_szDestName);
+		sMsg.eType = SMT_NORMAL;
+		sMsg.byConfirmType = SMCT_NONE;
+		sMsg.byPriority = 0;
+		sMsg.byParamSize = 0;
+		CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+
+		m_ItemList.RecoverTrade();
+		m_ItemList.SetMoney(m_cTrade.m_nBackEquipMoney, m_cTrade.m_nBackRepositoryMoney, 0);
+		m_ItemList.ClearRoom(room_trade);
+		m_ItemList.RemoveAllInOneRoom(room_trade1);
+		//		m_ItemList.ClearRoom(room_trade1);
+		m_ItemList.ClearRoom(room_tradeback);
+		m_cTrade.Release();
+		m_cMenuState.SetState(PLAYER_MENU_STATE_NORMAL);
+
+		CoreDataChanged(GDCNI_GAMBLE_END, 0, 0);
+
+		CoreDataChanged(GDCNI_CONTAINER_OBJECT_CHANGED, UOC_ITEM_TAKE_WITH, 0);
+
+		m_ItemList.MenuSetMouseItem();
+		Player[CLIENT_PLAYER_INDEX].TradeApplyClose();
+	}
+}
+#endif
+
+#ifndef _SERVER
 void	KPlayer::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 l«n ch›nh m◊nh trong tı db server xuËng Æ©y
 {
 	m_ItemList.RemoveAll();
@@ -7573,7 +8846,8 @@ void	KPlayer::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 l«n ch›nh m◊nh trong tı 
 	m_nVitality = PlaySync->m_wVitality;
 	m_nEngergy = PlaySync->m_wEngergy;
 	m_nLucky = PlaySync->m_wLucky;
-	
+	m_nActiveEquipNum = PlaySync->m_nActiveEquipSetNum;
+
 	m_nCurStrength = m_nStrength;
 	m_nCurDexterity = m_nDexterity;
 	m_nCurVitality = m_nVitality;
@@ -7650,7 +8924,7 @@ void	KPlayer::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 l«n ch›nh m◊nh trong tı 
 
 BOOL	KPlayer::CheckTrading()
 {
-	return (m_cMenuState.m_nState == PLAYER_MENU_STATE_TRADING);
+	return (m_cMenuState.m_nState == PLAYER_MENU_STATE_TRADING) || (m_cMenuState.m_nState == PLAYER_MENU_STATE_GAMBLING);
 }
 
 void	KPlayer::SetFirstDamage()
@@ -7784,6 +9058,172 @@ void KPlayer::CheckObject(int nIdx)
 	m_nObjectIdx = 0;
 	m_nPickObjectIdx = 0;
 }
+
+int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSelBoss,
+	BOOL bTGNpc, const short* pSerOrder, BOOL bFoll, int nPointX, int nPointY)
+{
+	if(!bTGNpc && !bFightBack)
+		return 0;
+	if(nVision < 100)
+		nVision = 100;
+	else if(nVision > 1200)
+		nVision = 1200;
+	if(nFBVision < 100)
+		nFBVision = 100;
+	else if(nFBVision > 1200)
+		nFBVision = 1200;
+	int nX,nY;
+	Npc[m_nIndex].GetMpsPos(&nX, &nY);
+	if(nPointX > 0)
+	{
+		nX = nPointX;
+		nY = nPointY;
+	}
+	int aryNpc[MAX_NPC][2];
+	int aryPNpc[MAX_NPC][2];
+	int	nIdx = 0, nNpcCount = 0, nPCount = 0, nNpcNearest = 0,
+		nDistNear = 5000, nPDistNear = 5000, nNearestPlayer = 0;
+	while(nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if(nIdx == m_nIndex || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0
+		|| Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if(m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != m_mAutoExcludeNpcID.end())
+			continue;
+		if(!(NpcSet.GetRelation(m_nIndex, nIdx) == relation_enemy))
+			continue;
+		int x,y;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		int nDist = g_GetDistance(nX, nY, x, y);
+		if(Npc[nIdx].m_Kind == kind_player)
+		{
+			if(bFoll)
+				continue;
+			if(nDist >= nFBVision)
+				continue;
+			if(nDist < nPDistNear)
+			{
+				nPDistNear = nDist;
+				nNearestPlayer = nIdx;
+			}
+			if(nPCount < MAX_NPC)
+			{
+				aryPNpc[nPCount][0] = nIdx;
+				aryPNpc[nPCount++][1] = nDist;
+			}
+		}
+		else
+		{
+			if(nDist >= nVision)
+				continue;
+			if(nSelBoss == 1)	//ne boss
+			{
+				if(Npc[nIdx].m_Type != boss_none)
+					continue;
+			}
+			else if(nSelBoss == 3) //chi danh boss
+			{
+				if(Npc[nIdx].m_Type == boss_none)
+					continue;
+			}
+			if(nDist < nDistNear)
+			{
+				nDistNear = nDist;
+				nNpcNearest = nIdx;
+			}
+			if(nNpcCount < MAX_NPC)
+			{
+				aryNpc[nNpcCount][0] = nIdx;
+				aryNpc[nNpcCount++][1] = nDist;
+			}
+		}
+	}
+	if(bFightBack && nNearestPlayer)
+	{
+		if(pSerOrder)	//up
+		{
+			int aryPSerNpc[MAX_NPC][2];
+			int sercount = 0;
+			for(int s=0;s<series_num;++s)
+			{
+				sercount = 0;
+				int ser = pSerOrder[s];
+				for(int i=0;i<nPCount;++i)
+				{
+					nIdx = aryPNpc[i][0];
+					if(Npc[nIdx].m_Series == ser)
+					{
+						aryPSerNpc[sercount][0] = nIdx;
+						aryPSerNpc[sercount++][1] = aryPNpc[i][1];
+					}
+				}
+				if(sercount)
+					break;
+			}
+			int nPDistSer = 5000;
+			for(int i = 0; i < sercount; ++i)
+			{
+				if(aryPSerNpc[i][1] < nPDistSer)
+				{
+					nPDistSer = aryPSerNpc[i][1];
+					nNearestPlayer = aryPSerNpc[i][0];
+				}
+			}
+			if(nPDistSer != 5000)
+				return nNearestPlayer;
+		}
+		if(nPDistNear < nFBVision)
+			return nNearestPlayer;
+	}
+	if(bTGNpc)
+	{
+		if(nSelBoss == 2) //uu tien boss
+		{
+			for(int i=0;i<nNpcCount;++i)
+			{
+				if(Npc[aryNpc[i][0]].m_Type  != boss_none)
+				{
+					return aryNpc[i][0];
+				}
+			}
+		}
+		if(pSerOrder)
+		{
+			int arySerNpc[MAX_NPC][2];
+			int sercount = 0;
+			for(int s=0;s<series_num;++s)
+			{
+				sercount = 0;
+				int ser = pSerOrder[s];
+				for(int i=0;i<nNpcCount;++i)
+				{
+					nIdx = aryNpc[i][0];
+					if(Npc[nIdx].m_Series == ser)
+					{
+						arySerNpc[sercount][0] = nIdx;
+						arySerNpc[sercount++][1] = aryNpc[i][1];
+					}
+				}
+				if(sercount)
+					break;
+			}
+			int nDistSer = 5000;
+			for(int i = 0; i < sercount; ++i)
+			{
+				if(arySerNpc[i][1] < nDistSer)
+				{
+					nDistSer = arySerNpc[i][1];
+					nNpcNearest = arySerNpc[i][0];
+				}
+			}
+			if(nDistSer != 5000)
+				return nNpcNearest;
+		}
+		if(nDistNear < nVision)
+			return nNpcNearest;
+	}
+	return 0;
+}
 #endif
 
 #ifndef _SERVER
@@ -7892,6 +9332,17 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 		return;
 	}
 	
+	int DamePecentToLevel = 0;
+
+
+	if (Npc[m_nIndex].IsPlayer())
+	{
+		if (Npc[m_nIndex].m_Level > 100 && Npc[m_nIndex].m_Level <= 200)
+		{
+			DamePecentToLevel = (Npc[m_nIndex].m_Level - 100) / 5;
+		}
+	}
+
 	int nMinNpcDamage = Npc[m_nIndex].m_PhysicsDamage.nValue[0] + Npc[m_nIndex].m_CurrentAddPhysicsDamage;
 	int nMaxNpcDamage = Npc[m_nIndex].m_PhysicsDamage.nValue[2] + Npc[m_nIndex].m_CurrentAddPhysicsDamage;
 	int nAddDamageP = Npc[m_nIndex].m_SkillList.GetAddSkillDamage(nSkillId) + Npc[m_nIndex].m_CurrentSkillEnhancePercent;
@@ -7908,8 +9359,8 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	// Calc magic damage[2]
 	if (magic_magicdamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100);
-		*nMax += pMagicData->nValue[2] + (pMagicData->nValue[2] * nAddDamageP / 100);
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100;
+		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100;
 	}
 	pMagicData++;
 
@@ -7936,8 +9387,8 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	//
 	if (magic_physicsenhance_p == pMagicData->nAttribType)
 	{
-		*nMin += nMinNpcDamage * (100 + (pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100))) / 100;
-		*nMax += nMaxNpcDamage * (100 + (pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100))) / 100;
+		*nMin += nMinNpcDamage * (100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100) / 100;
+		*nMax += nMaxNpcDamage * (100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100) / 100;
 		
 		int nEnhance;
 		if (equip_meleeweapon == m_ItemList.GetWeaponType()) //trang bﬁ vÚ kh› cÀn chi’n
@@ -7958,8 +9409,9 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	}
 	else if (magic_physicsdamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100);
-		*nMax += pMagicData->nValue[2] + (pMagicData->nValue[2] * nAddDamageP / 100);
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100;
+		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100;
+
 
 		if (!bIsPhysical)
 	    {
@@ -7973,8 +9425,8 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	// Calc cold damage[10]
 	if (magic_colddamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100);
-		*nMax += pMagicData->nValue[2] + (pMagicData->nValue[2] * nAddDamageP / 100);
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100;
+		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100;
 
 		if (!bIsPhysical)
 	    {
@@ -7992,8 +9444,8 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	// Calc fire damage[11]
 	if (magic_firedamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100);
-		*nMax += pMagicData->nValue[2] + (pMagicData->nValue[2] * nAddDamageP / 100);
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100 + pMagicData->nValue[0] * (100 + nAddDamageP) / 100 * Npc[m_nIndex].m_CurrentFireEnhance / 100;
+		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100 + pMagicData->nValue[2] * (100 + nAddDamageP) / 100 * Npc[m_nIndex].m_CurrentFireEnhance / 100;
 
 		if (!bIsPhysical)
 		{
@@ -8003,16 +9455,17 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	}
 	if (bIsPhysical)
 	{
-		*nMin += Npc[m_nIndex].m_CurrentFireDamage.nValue[0];
-		*nMax += Npc[m_nIndex].m_CurrentFireDamage.nValue[2];
+		*nMin += Npc[m_nIndex].m_CurrentFireDamage.nValue[0] + Npc[m_nIndex].m_CurrentFireDamage.nValue[0] * Npc[m_nIndex].m_CurrentFireEnhance / 100;
+		*nMax += Npc[m_nIndex].m_CurrentFireDamage.nValue[2] + Npc[m_nIndex].m_CurrentFireDamage.nValue[2] * Npc[m_nIndex].m_CurrentFireEnhance / 100;
 	}
 	pMagicData++;
 
 	// Calc lighting damage[12]
 	if (magic_lightingdamage_v == pMagicData->nAttribType)
 	{
-		*nMin += pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100);
-		*nMax += pMagicData->nValue[2] + (pMagicData->nValue[2] * nAddDamageP / 100);
+		*nMin += pMagicData->nValue[0] * (100 + nAddDamageP) / 100 + (pMagicData->nValue[2] * (100 + nAddDamageP) / 100 - pMagicData->nValue[0] * (100 + nAddDamageP) / 100) * Npc[m_nIndex].m_CurrentLightEnhance / 100;
+		*nMax += pMagicData->nValue[2] * (100 + nAddDamageP) / 100;
+
 
 		if (!bIsPhysical)
 		{
@@ -8021,7 +9474,7 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 		}
 	}
 	if (bIsPhysical)
-	{
+	{	
 		*nMin += Npc[m_nIndex].m_CurrentLightDamage.nValue[0];
 		*nMax += Npc[m_nIndex].m_CurrentLightDamage.nValue[2];
 	}
@@ -8032,33 +9485,50 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	{
 		if (pMagicData->nValue[2] > 0)
 		{
-
-			int nPoisonDamage = ((pMagicData->nValue[0] + (pMagicData->nValue[0] * nAddDamageP / 100)) * pMagicData->nValue[1] / pMagicData->nValue[2]);
+			int nPoisonDamage = 0;
+			if (pMagicData->nValue[2] * (100 - Npc[m_nIndex].m_CurrentPoisonEnhance) / 100 > 0)
+			{
+				nPoisonDamage = (pMagicData->nValue[0] * pMagicData->nValue[1] / (pMagicData->nValue[2] * (100 - Npc[m_nIndex].m_CurrentPoisonEnhance) / 100)) * (100 + nAddDamageP) / 100;
+			}
+			else
+			{
+				nPoisonDamage = (pMagicData->nValue[0] * pMagicData->nValue[1]) * (100 + nAddDamageP) / 100;
+			}
 			*nMin += nPoisonDamage;
 			*nMax += nPoisonDamage;
 		}
 		if (!bIsPhysical)
 		{
+			int nPoisonDamageAdd2 = 0;
 			if (Npc[m_nIndex].m_CurrentPoisonMagic.nValue[2] > 0)
 			{
-				int nPoisonDamage = (Npc[m_nIndex].m_CurrentPoisonMagic.nValue[0]
+				nPoisonDamageAdd2 = (Npc[m_nIndex].m_CurrentPoisonMagic.nValue[0]
 					* Npc[m_nIndex].m_CurrentPoisonMagic.nValue[1] 
 					/ Npc[m_nIndex].m_CurrentPoisonMagic.nValue[2]);
-				*nMin += Npc[m_nIndex].m_PhysicsMagic.nValue[0] + nPoisonDamage;
-				*nMax += Npc[m_nIndex].m_PhysicsMagic.nValue[2] + nPoisonDamage;
 			}
+			else
+			{
+				nPoisonDamageAdd2 = Npc[m_nIndex].m_CurrentPoisonMagic.nValue[0] * Npc[m_nIndex].m_CurrentPoisonMagic.nValue[1];
+			}
+			*nMin += nPoisonDamageAdd2;//Npc[m_nIndex].m_PhysicsMagic.nValue[0] + nPoisonDamage;
+			*nMax += nPoisonDamageAdd2;//Npc[m_nIndex].m_PhysicsMagic.nValue[2] + nPoisonDamage;
 		}
 	}
 	if (bIsPhysical)
 	{
+		int nPoisonDamageAdd = 0;
 		if (Npc[m_nIndex].m_CurrentPoisonDamage.nValue[2] > 0)
 		{
-			int nPoisonDamage = (Npc[m_nIndex].m_CurrentPoisonDamage.nValue[0]
+			nPoisonDamageAdd = (Npc[m_nIndex].m_CurrentPoisonDamage.nValue[0]
 				* Npc[m_nIndex].m_CurrentPoisonDamage.nValue[1] 
 				/ Npc[m_nIndex].m_CurrentPoisonDamage.nValue[2]);
-			*nMin += nPoisonDamage;
-			*nMax += nPoisonDamage;
 		}
+		else
+		{
+			nPoisonDamageAdd = Npc[m_nIndex].m_CurrentPoisonDamage.nValue[0] * Npc[m_nIndex].m_CurrentPoisonDamage.nValue[1];
+		}
+		*nMin += nPoisonDamageAdd;
+		*nMax += nPoisonDamageAdd;
 	}
 	pMagicData++;
 	// Skip stun[14]
@@ -8069,6 +9539,11 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	//pMagicData++;
 	// Skip randmove[16]
 
+	if (!bIsPhysical)
+	{
+		*nMin += ((*nMin * DamePecentToLevel) / 100);
+		*nMax += (*nMax * DamePecentToLevel) / 100;
+	}
 }
 #endif
 
@@ -8364,27 +9839,50 @@ int KPlayer::GetExtPoint()
 
 void KPlayer::CheckRideHorse(BOOL nFlagRide)
 {
-    int ItemActiveIdx = m_ItemList.GetEquipment(itempart_horse);
-    if(ItemActiveIdx <= 0)
-        return;
+	int ItemActiveIdx = m_ItemList.GetEquipment(itempart_horse);
+	if (ItemActiveIdx <= 0)
+		return;
 
-    if(nFlagRide)
-    {
+	int nActive = m_ItemList.GetEquipEnhance(itempart_horse);
+	int nGoldAct = m_ItemList.GetGoldEquipEnhance(itempart_horse);
+
+	Item[ItemActiveIdx].m_bHorseScaleOnly = true;
+	if (nFlagRide)
+	{
+		//
+		Item[ItemActiveIdx].m_fHorseScale = 1.0f;
+		Item[ItemActiveIdx].RemoveMagicAttribFromNPC(&Npc[m_nIndex], nActive, nGoldAct);
+
+		
+		Item[ItemActiveIdx].m_fHorseScale = 0.5f;
+		Item[ItemActiveIdx].ApplyMagicAttribToNPC(&Npc[m_nIndex], nActive, nGoldAct);
+
 		Npc[m_nIndex].m_bRideHorse = FALSE;
-		Item[ItemActiveIdx].RemoveMagicAttribFromNPC(&Npc[m_nIndex], 4);
-    }
-    else
-    { 
-		 Npc[m_nIndex].m_bRideHorse = TRUE;
-		 Item[ItemActiveIdx].ApplyMagicAttribToNPC(&Npc[m_nIndex], 4);
-    }
+	}
+	else 
+	{
+		
+		Item[ItemActiveIdx].m_fHorseScale = 0.5f;
+		Item[ItemActiveIdx].RemoveMagicAttribFromNPC(&Npc[m_nIndex], nActive, nGoldAct);
+
+		
+		Item[ItemActiveIdx].m_fHorseScale = 1.0f;
+		Item[ItemActiveIdx].ApplyMagicAttribToNPC(&Npc[m_nIndex], nActive, nGoldAct);
+
+		Npc[m_nIndex].m_bRideHorse = TRUE;
+	}
+	Item[ItemActiveIdx].m_bHorseScaleOnly = false;
 #ifdef _SERVER
-	NPC_RIDE_SYNC	sValue;
+	NPC_RIDE_SYNC sValue;
 	sValue.ProtocolType = s2c_ridesync;
 	sValue.m_btRideFlag = nFlagRide;
-	g_pServer->PackDataToClient(Player[m_nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sValue, sizeof(NPC_RIDE_SYNC));
+	g_pServer->PackDataToClient(Player[m_nPlayerIndex].m_nNetConnectIdx,
+		(BYTE*)&sValue, sizeof(NPC_RIDE_SYNC));
 #endif
 }
+
+
+
 
 void	KPlayer::SetImageNpcId(int nNumber)
 {	
@@ -8531,7 +10029,132 @@ void	KPlayer::SetNewPW(int resetPW)
 	sprintf(szMsg, "MÀt kh»u m∆c Æﬁnh: %d", m_nChestPW);
 	KPlayerChat::SendSystemInfo(1, m_nPlayerIndex, "Th´ng b∏o", (char *) szMsg, strlen(szMsg) );
 }
+#endif
 
+void	KPlayer::SwitchEquipSet(int setnum)
+{
+	if (m_nActiveEquipNum == setnum) {
+#ifdef _SERVER
+		BYTE	byFinished = s2c_itemexchangefinish;
+		if (g_pServer)
+			g_pServer->PackDataToClient(m_nNetConnectIdx, &byFinished, sizeof(BYTE));
+#endif
+		return;
+	}
+	m_nActiveEquipNum = setnum;
+
+#ifdef _SERVER
+	// Don't allow switching during certain states
+	if (CheckTrading() || m_bExchangeServer) {
+		BYTE	byFinished = s2c_itemexchangefinish;
+		if (g_pServer)
+			g_pServer->PackDataToClient(m_nNetConnectIdx, &byFinished, sizeof(BYTE));
+		return;
+	}
+#else
+	if (CheckTrading())
+		return;
+#endif
+
+	// Switch equipment positions for all items
+	for (int i = 0; i < MAX_PLAYER_ITEM; i++)
+	{
+		if (m_ItemList.m_Items[i].nIdx)
+		{
+			// Update items in equipment room
+			if (m_ItemList.m_Items[i].nPlace == pos_equip)
+			{
+				m_ItemList.m_Items[i].nPlace = pos_equipback;
+			}
+			// Update items in equipment backup room
+			else if (m_ItemList.m_Items[i].nPlace == pos_equipback)
+			{
+				m_ItemList.m_Items[i].nPlace = pos_equip;
+			}
+		}
+	}
+
+	KItemList tempList;
+
+	ZeroMemory(tempList.m_EquipItem, sizeof(tempList.m_EquipItem));
+	// Copy current equipment to temp
+	for (int i = 0; i < itempart_num; i++)
+	{
+		int nIdx = m_ItemList.m_EquipItem[i];
+		if (nIdx >= 0 && nIdx < MAX_ITEM)
+			tempList.m_EquipItem[i] = nIdx;
+		//m_ItemList.m_EquipItem[i] = 0;
+	}
+
+	// Equip new switched items
+	for (int i = 0; i < itempart_num; i++)
+	{
+		m_ItemList.UnEquip(m_ItemList.m_EquipItem[i], i);
+	}
+
+	// Copy alternate set to current
+	for (int i = 0; i < itempart_num; i++)
+	{
+		int nIdx = m_ItemList.m_AltEquipmentItem[i];
+		if (nIdx >= 0 && nIdx < MAX_ITEM)
+			m_ItemList.m_EquipItem[i] = nIdx;
+		m_ItemList.m_AltEquipmentItem[i] = 0;
+	}
+
+	// Move temp (original equipment) to alternate
+	for (int i = 0; i < itempart_num; i++)
+	{
+		int nIdx = tempList.m_EquipItem[i];
+		if (nIdx >= 0 && nIdx < MAX_ITEM)
+			m_ItemList.m_AltEquipmentItem[i] = nIdx;
+	}
+	for (int i = 0; i < itempart_num; i++)
+	{
+		m_ItemList.Equip(m_ItemList.m_EquipItem[i], i);
+	}
+#ifndef _SERVER
+	KUiObjAtContRegion pInfo;
+	for (int i = 0; i < itempart_num; i++)
+	{
+		pInfo.Region.h = 0;
+		pInfo.Region.v = i;
+		pInfo.eContainer = UOC_EQUIPTMENT;
+
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 0);
+		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 1);
+	}
+	CoreDataChanged(GDCNI_PLAYER_RT_ATTRIBUTE, 0, 0);
+
+#endif
+	// Recalculate stats with new equipment
+	UpdataCurData();
+	SetNpcPhysicsDamage();
+#ifdef _SERVER
+	PLAYER_ATTRIBUTE_SYNC	sSync;
+	sSync.ProtocolType = s2c_playersyncattribute;
+	sSync.m_btAttribute = 1;
+	sSync.m_nBasePoint = m_nDexterity;
+	sSync.m_nCurPoint = m_nCurDexterity;
+	sSync.m_nLeavePoint = m_nAttributePoint;
+	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSync, sizeof(PLAYER_ATTRIBUTE_SYNC));
+
+	// Send server switch equip done
+	PLAYER_SWITCH_EQUIP_SYNC sSwitch;
+	sSwitch.ProtocolType = s2c_playerswitchequip;
+	sSwitch.m_nSetNum = m_nActiveEquipNum;
+	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sSwitch, sizeof(PLAYER_SWITCH_EQUIP_SYNC));
+	if (Npc[m_nIndex].m_Doing == do_sit)
+	{
+		Npc[m_nIndex].SendCommand(do_stand);
+	}
+
+	BYTE	byFinished = s2c_itemexchangefinish;
+	if (g_pServer)
+		g_pServer->PackDataToClient(m_nNetConnectIdx, &byFinished, sizeof(BYTE));
+#endif
+}
+
+#ifdef _SERVER
 int KPlayer::GetItemIdxBymItemListIdx(int midx)
 {
 	if(midx > MAX_PLAYER_ITEM)
@@ -8545,6 +10168,8 @@ int KPlayer::GetItemIdxBymItemListIdx(int midx)
 void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 {
 	if (nTargetPlayer <= 0 || nTargetPlayer >= MAX_PLAYER || Player[nTargetPlayer].m_nIndex <= 0)
+		return;
+	if (!m_CUnlocked) // khoa ko xem duoc bay ban
 		return;
 
 	int				nIdx, i, j, k = 0;
@@ -8579,7 +10204,9 @@ void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 
 		pInfo->m_nID			= Item[nIdx].GetID();
 		pInfo->m_btGenre		= Item[nIdx].GetGenre();
-		pInfo->m_btDetail		= Item[nIdx].GetDetailType();
+		pInfo->m_btDetail = Item[nIdx].GetDetailType();
+		if(Item[nIdx].GetNature() >= NATURE_GOLD)
+			pInfo->m_btDetail = Item[nIdx].GetRow();
 		pInfo->m_btParticur		= Item[nIdx].GetParticular();
 		pInfo->m_btSeries		= Item[nIdx].GetSeries();
 		pInfo->m_btLevel		= Item[nIdx].GetLevel();
@@ -8591,9 +10218,10 @@ void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 		pInfo->m_wVersion		= Item[nIdx].m_GeneratorParam.nVersion;
 		pInfo->m_YearExp			= Item[nIdx].GetTime()->bYear;
 		pInfo->m_curDurability		= Item[nIdx].GetDurability();
-		pInfo->m_nParam		= Item[nIdx].GetParam();
+		pInfo->m_nParam = Item[nIdx].GetParam();
+		pInfo->m_nNature = Item[nIdx].GetNature();
 
-		for (int l = 0;l < 6;l++)
+		for (int l = 0;l < MAX_ITEM_MAGICLEVEL;l++)
 		{
 			pInfo->m_btMagicLevel[l] = Item[nIdx].m_GeneratorParam.nGeneratorLevel[l];
 		}
@@ -8601,7 +10229,7 @@ void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 		pInfo->m_bPoint = Item[nIdx].IsPurple();
 		k++;
 
-		if (k == 6)
+		if (k == 60)
 		{
 			break;
 		}
@@ -8643,6 +10271,7 @@ void KPlayer::SendSellItemCount( int nIndex )
 
 int KPlayer::GetTradeCount()
 {
+		
 	int nCount = 0;
 	for (int i = 0;i < MAX_PLAYER_ITEM;i++)
 	{
@@ -8711,6 +10340,372 @@ void KPlayer::Change_PK_Status(int nId)
 	
 }
 
+struct CollectedItem
+{
+	int nIdx;
+	int w,h;
+	int x,y;
+};
+
+struct TypePack
+{
+	int w, h;
+	int count;
+};
+
+struct Placement
+{
+	int typeIndex;
+	int x, y;
+};
+
+static void DFS_Pack(
+	int idxCell,
+	int usedArea,
+	int totalArea,
+	int nW,
+	int nH,
+	int nCells,
+	int* pGrid,                       
+	std::vector<TypePack>& types,     
+	std::vector<Placement>& curPlace, 
+	std::vector<Placement>& bestPlace,
+	bool& bFoundFull                  
+)
+{
+	if (bFoundFull)
+		return;
+
+	if (usedArea == totalArea)
+	{
+		bestPlace = curPlace;
+		bFoundFull = true;
+		return;
+	}
+
+	if (idxCell == nCells)
+		return;
+
+	if (usedArea + (nCells - idxCell) < totalArea)
+		return;
+
+	if (pGrid[idxCell] != -1)
+	{
+		DFS_Pack(idxCell + 1, usedArea, totalArea,
+			nW, nH, nCells, pGrid, types, curPlace, bestPlace, bFoundFull);
+		return;
+	}
+
+	int x = idxCell % nW;
+	int y = idxCell / nW;
+
+	int typeCount = (int)types.size();
+	int i;
+
+	for (i = 0; i < typeCount; ++i)
+	{
+		TypePack& tp = types[i];
+		if (tp.count <= 0)
+			continue;
+
+		if (x + tp.w > nW || y + tp.h > nH)
+			continue;
+
+		bool canPlace = true;
+		int dx, dy;
+		for (dy = 0; dy < tp.h && canPlace; ++dy)
+		{
+			for (dx = 0; dx < tp.w; ++dx)
+			{
+				int idx2 = (y + dy) * nW + (x + dx);
+				if (pGrid[idx2] != -1)
+				{
+					canPlace = false;
+					break;
+				}
+			}
+		}
+		if (!canPlace)
+			continue;
+
+		for (dy = 0; dy < tp.h; ++dy)
+		{
+			for (dx = 0; dx < tp.w; ++dx)
+			{
+				int idx2 = (y + dy) * nW + (x + dx);
+				pGrid[idx2] = i;
+			}
+		}
+
+		tp.count--;
+
+		Placement pl;
+		pl.typeIndex = i;
+		pl.x = x;
+		pl.y = y;
+		curPlace.push_back(pl);
+
+		DFS_Pack(idxCell + 1, usedArea + tp.w * tp.h, totalArea,
+			nW, nH, nCells, pGrid, types, curPlace, bestPlace, bFoundFull);
+
+		// backtrack
+		curPlace.pop_back();
+		tp.count++;
+		for (dy = 0; dy < tp.h; ++dy)
+		{
+			for (dx = 0; dx < tp.w; ++dx)
+			{
+				int idx2 = (y + dy) * nW + (x + dx);
+				pGrid[idx2] = -1;
+			}
+		}
+
+		if (bFoundFull)
+			return;
+	}
+
+	DFS_Pack(idxCell + 1, usedArea, totalArea,
+		nW, nH, nCells, pGrid, types, curPlace, bestPlace, bFoundFull);
+}
+
+int KPlayer::AutoArrangeItem(int nType)
+{
+	int* pnCmpArray = NULL;
+	int nRoom, nPos;
+	if(!nType)
+	{
+		if(m_nArrangeTimeItem > g_SubWorldSet.m_nLoopRate)
+			return 0;
+		m_nArrangeTimeItem = g_SubWorldSet.m_nLoopRate + 16*18;
+		pnCmpArray = &m_nCmpArrayItem[0];
+		nRoom = room_equipment;
+		nPos = pos_equiproom;
+	}
+	else if(nType == 1)
+	{
+		if(m_nArrangeTimeBox > g_SubWorldSet.m_nLoopRate)
+			return 0;
+		m_nArrangeTimeBox = g_SubWorldSet.m_nLoopRate + 56*18;
+		pnCmpArray = &m_nCmpArrayBox[0];
+		nRoom = room_repository;
+		nPos = pos_repositoryroom;
+	}
+	else if(nType == 2)
+	{
+		pnCmpArray = &m_nCmpArrayExBox[0];
+		nRoom = room_exbox1;
+		nPos = pos_exbox1room;
+	}
+	else if(nType == 3)
+	{
+		pnCmpArray = &m_nCmpArrayExBox[0];
+		nRoom = room_exbox2;
+		nPos = pos_exbox2room;
+	}
+	else //if(nType == 4)
+	{
+		pnCmpArray = &m_nCmpArrayExBox[0];
+		nRoom = room_exbox3;
+		nPos = pos_exbox3room;
+	}
+	if(nType < 3)
+	{
+		int* pArr = m_ItemList.m_Room[nRoom].GetArray();
+		if(!memcmp(pnCmpArray, pArr, sizeof(int)*EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT))
+			return 1;
+	}
+	int nW = EQUIPMENT_ROOM_WIDTH;
+	int nH = EQUIPMENT_ROOM_HEIGHT;
+	int w,h,nIdx;
+	std::vector<CollectedItem> vItems;
+	std::vector<CollectedItem> vSpecIt;
+	for(h=0;h<nH;++h)
+	for(w=0;w<nW;++w)
+	{
+		nIdx = m_ItemList.m_Room[nRoom].FindItem(w, h);
+		if(nIdx > 0)
+		{
+			if(Item[nIdx].GetGenre() == item_equip
+			|| Item[nIdx].GetWidth() > 1 || Item[nIdx].GetHeight() > 1)
+			{
+				CollectedItem insitem;
+				insitem.nIdx = nIdx;
+				insitem.w = Item[nIdx].GetWidth();
+				insitem.h = Item[nIdx].GetHeight();
+				insitem.x = 0;
+				insitem.y = 0;
+				vItems.push_back(insitem);
+			}
+			else
+			{
+				CollectedItem specitem;
+				specitem.nIdx = nIdx;
+				specitem.w = 1;
+				specitem.h = 1;
+				specitem.x = 0;
+				specitem.y = 0;
+				vSpecIt.push_back(specitem);
+			}
+		}
+	}
+	memset(pnCmpArray, 0, sizeof(int)*EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT);
+	int i;
+	int itemCount = (int)vItems.size();
+	if(itemCount > 0)
+	{
+		int nCells = nW * nH;
+		std::vector<TypePack> types;
+		std::vector< std::vector<int> > itemsOfType;
+	
+		int j;
+		for (i = 0; i < itemCount; ++i)
+		{
+			CollectedItem &ci = vItems[i];
+	
+			int typeIndex = -1;
+			int typeCount = (int)types.size();
+			for (j = 0; j < typeCount; ++j)
+			{
+				if (types[j].w == ci.w && types[j].h == ci.h)
+				{
+					typeIndex = j;
+					break;
+				}
+			}
+			if (typeIndex == -1)
+			{
+				TypePack tp;
+				tp.w = ci.w;
+				tp.h = ci.h;
+				tp.count = 1;
+				types.push_back(tp);
+	
+				std::vector<int> lst;
+				lst.push_back(i);
+				itemsOfType.push_back(lst);
+			}
+			else
+			{
+				types[typeIndex].count++;
+				itemsOfType[typeIndex].push_back(i);
+			}
+		}
+	
+		int totalArea = 0;
+		for (i = 0; i < (int)types.size(); ++i)
+		{
+			totalArea += types[i].w * types[i].h * types[i].count;
+		}
+	
+		std::vector<int> grid(nCells);
+		for (i = 0; i < nCells; ++i)
+			grid[i] = -1; // -1 = empty
+	
+		std::vector<Placement> curPlace;
+		std::vector<Placement> bestPlace;
+		bool bFoundFull = false;
+	
+		DFS_Pack(0, 0, totalArea,
+			nW, nH, nCells,
+			&grid[0],
+			types,
+			curPlace,
+			bestPlace,
+			bFoundFull);
+		if (!bFoundFull)
+			return 1;
+	
+		int typeCount = (int)types.size();
+		std::vector<int> nextIndexOfType(typeCount);
+		for (i = 0; i < typeCount; ++i)
+			nextIndexOfType[i] = 0;
+	
+		int placeCount = (int)bestPlace.size();
+		for (i = 0; i < placeCount; ++i)
+		{
+			const Placement &pl = bestPlace[i];
+			int tIndex = pl.typeIndex;
+	
+			int k = nextIndexOfType[tIndex];
+			if (k >= (int)itemsOfType[tIndex].size())
+				continue; // safety
+	
+			int vIdx = itemsOfType[tIndex][k];
+			nextIndexOfType[tIndex]++;
+	
+			CollectedItem &ci = vItems[vIdx];
+			ci.x = pl.x;
+			ci.y = pl.y;
+	
+			int dx, dy;
+			for (dy = 0; dy < ci.h; ++dy)
+			{
+				for (dx = 0; dx < ci.w; ++dx)
+				{
+					int idxCell = (ci.y + dy) * nW + (ci.x + dx);
+					pnCmpArray[idxCell] = ci.nIdx;
+				}
+			}
+		}
+	}
+	for (i = 0; i < itemCount; ++i)
+	{
+		m_ItemList.Remove(vItems[i].nIdx);
+	}
+	for (i = 0; i < (int)vSpecIt.size(); ++i)
+	{
+		m_ItemList.Remove(vSpecIt[i].nIdx);
+	}
+	for (i = 0; i < itemCount; ++i)
+	{
+		m_ItemList.AddKIL(vItems[i].nIdx, nPos, vItems[i].x, vItems[i].y);
+	}
+	for (i = 0; i < (int)vSpecIt.size(); ++i)
+	{
+		if(Item[vSpecIt[i].nIdx].GetGenre() != item_medicine)
+		{
+			bool bAdded = false;
+			for(h=0;h<nH;++h)
+			{
+				if(bAdded)
+					break;
+				for(w=0;w<nW;++w)
+				{
+					if(!pnCmpArray[h*nW+w])
+					{
+						bAdded = true;
+						pnCmpArray[h*nW+w] = vSpecIt[i].nIdx;
+						m_ItemList.AddKIL(vSpecIt[i].nIdx, nPos, w, h);
+						break;
+					}
+				}
+			}
+		}
+	}
+	for (i = 0; i < (int)vSpecIt.size(); ++i)
+	{
+		if(Item[vSpecIt[i].nIdx].GetGenre() == item_medicine)
+		{
+			bool bAdded = false;
+			for(h=0;h<nH;++h)
+			{
+				if(bAdded)
+					break;
+				for(w=0;w<nW;++w)
+				{
+					if(!pnCmpArray[h*nW+w])
+					{
+						bAdded = true;
+						pnCmpArray[h*nW+w] = vSpecIt[i].nIdx;
+						m_ItemList.AddKIL(vSpecIt[i].nIdx, nPos, w, h);
+						break;
+					}
+				}
+			}
+		}
+	}
+	return 1;
+}
 #endif
 
 // auto playgame
@@ -9796,6 +11791,21 @@ int KEquipmentArray::FindSame(int i)
 			break;
 
 		if (nIdx == i)
+			return nIdx;
+	}
+	return 0;
+}
+
+int KEquipmentArray::FindSameGerne(int i)
+{
+	int nIdx = 0;
+	while (1)
+	{
+		nIdx = m_Link.GetNext(nIdx);
+		if (!nIdx)
+			break;
+
+		if (Item[nIdx].GetGenre() == Item[i].GetGenre())
 			return nIdx;
 	}
 	return 0;

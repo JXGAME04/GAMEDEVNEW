@@ -136,7 +136,7 @@ bool CDBLoad::SearchData(char* key, char *aData, size_t& size)
 {//搜索数据
 	GotoHead();		//把文件指针移动到文件头
 
-	char aBuffer[64 * 1024] = {0};
+	char aBuffer[64 * 1024 * 5] = {0};
 	char aKeyBuffer[32] = {0};
 	size_t asize,akeysize;
 

@@ -4,7 +4,7 @@
 // Add by Fong KiÒu in 2020.7.1 PHIEN BAN GAME 127 Phiªn b¶n game
 #define USE_KPROTOCOL_VERSION   1
 //#undef USE_KPROTOCOL_VERSION
-#define KPROTOCOL_EXPIRATION_DATE   20250430 // y/m/d
+#define KPROTOCOL_EXPIRATION_DATE   20261230 // y/m/d
 #define KPROTOCOL_VERSION   20240430
 
 /*
@@ -105,6 +105,7 @@ enum s2c_PROTOCOL
 	s2c_removeitem,
 	s2c_syncmoney,
 	s2c_playermoveitem,
+	s2c_playerswitchequip,
 	s2c_scriptaction,
 	s2c_chatapplyaddfriend,
 	s2c_chataddfriend,
@@ -118,12 +119,16 @@ enum s2c_PROTOCOL
 	s2c_chatfriendoffline,
 	s2c_syncrolelist,
 	s2c_tradechangestate,
+	s2c_gamblechangestate,
 	s2c_npcsetmenustate,
 	s2c_trademoneysync,
 	s2c_tradedecision,
+	s2c_gamblemoneysync,
+	s2c_gambledecision,
 	s2c_chatscreensingleerror,
 	s2c_teaminviteadd,
 	s2c_tradepressoksync,
+	s2c_gamblepressoksync,
 	s2c_ping,
 	s2c_npcsit,
 	s2c_opensalebox,
@@ -134,6 +139,7 @@ enum s2c_PROTOCOL
 	s2c_playerrevive,
 	s2c_requestnpcfail,
 	s2c_tradeapplystart,
+	s2c_gambleapplystart,
 	s2c_rolenewdelresponse,	//tagNewDelRoleResponse
 	s2c_ItemAutoMove,
 	s2c_itemexchangefinish,
@@ -189,6 +195,14 @@ enum s2c_PROTOCOL
 	s2c_opencompounditem,
 	s2c_syncrankdata,	//add by phong kiÒu using tèng kim
 	s2c_syncrankdata2,
+	s2c_show_damage,
+	s2c_syncmagic,
+	s2c_syncmeridian,
+	s2c_syncbaucuaresult,
+	s2c_syncbaucuainfo,
+	s2c_playersync,
+	s2c_removeallitem,
+//	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM
 	s2c_extend = 250,
@@ -249,7 +263,7 @@ enum c2s_PROTOCOL
 	c2s_npcskill,
 	c2s_npcjump,
 	c2s_npctalk,
-	c2s_npchurt,
+	c2s_dynamic_structure,
 	c2s_npcdeath,
 	c2s_playertalk,
 	c2s_teamapplyinfo,
@@ -287,6 +301,11 @@ enum c2s_PROTOCOL
 	c2s_tradeapplystart,
 	c2s_trademovemoney,
 	c2s_tradedecision,
+	c2s_gambleapplystateopen,
+	c2s_gambleapplystateclose,
+	c2s_gambleapplystart,
+	c2s_gamblemovemoney,
+	c2s_gambledecision,
 	c2s_dialognpc,
 	c2s_teaminviteadd,
 	c2s_changeauraskill,
@@ -297,6 +316,7 @@ enum c2s_PROTOCOL
 	c2s_storemoney,
 	c2s_playerrevive,
 	c2s_tradereplystart,
+	c2s_gamblereplystart,
 	c2s_pkapplychangenormalflag,
 	c2s_pkapplyenmity,
 	c2s_viewequip,
@@ -306,6 +326,7 @@ enum c2s_PROTOCOL
 	c2s_npcride,		//edit by phong kieu khai bao len xuong ngua
 	c2s_cpunlock,		//mo ruong
 	c2s_cplock,			//khoa ruong
+	c2s_cpswitchequipset,
 	c2s_cpchange,		//doi mk ruong
 	c2s_cpreset,		//reset mk ruong
 	c2s_playersetprice,	//ban hang
@@ -338,6 +359,9 @@ enum c2s_PROTOCOL
 	c2s_recoveritem,
 	c2s_playerthrowallitem,
 	c2s_aibacktotown,//AutoAI by quay l¹i ;
+	c2s_setmeridian,
+	c2s_baucua,
+
 
 
 	_c2s_begin_relay = 250,

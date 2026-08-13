@@ -165,7 +165,7 @@ void KUiSelNativePlace::LoadList(int nPlaceId)
 	}
 	m_nLastSelPlace = 0;
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -175,15 +175,22 @@ void KUiSelNativePlace::LoadScheme(const char* pScheme)
 	KIniFile	Ini;
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_SELSERV);
 	if (Ini.Load(Buff))
-	{
-		KWndShowAnimate::Init(&Ini, "Main");
+	{	
+		if (SCREEN_WIDTH == 1024)
+		{
+			KWndShowAnimate::Init(&Ini, "Main1024");
+			Ini.GetString("Main1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
+		else {
+			Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+			KWndShowAnimate::Init(&Ini, "Main");
+		}
 		m_List     .Init(&Ini, "List");
 		m_PlaceImg	.Init(&Ini, "PlaceImg");
 		m_Ok	   .Init(&Ini, "OK");
 		m_Cancel   .Init(&Ini, "Cancel");
 		m_PlaceDesc.Init(&Ini, "PlaceDescText");
 
-		Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
 	}
 }
 

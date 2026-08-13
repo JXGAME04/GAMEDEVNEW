@@ -68,6 +68,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(ITEM_REMOVE_SYNC),				// s2c_removeitem
 	sizeof(PLAYER_MONEY_SYNC),				// s2c_syncmoney
 	sizeof(PLAYER_MOVE_ITEM_SYNC),			// s2c_playermoveitem
+	sizeof(PLAYER_SWITCH_EQUIP_SYNC),		// s2c_playerswitchequip
 	-1,										// s2c_playershowui
 	sizeof(CHAT_APPLY_ADD_FRIEND_SYNC),		// s2c_chatapplyaddfriend
 	sizeof(CHAT_ADD_FRIEND_SYNC),			// s2c_chataddfriend
@@ -81,12 +82,16 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(CHAT_FRIEND_OFFLINE_SYNC),		// s2c_chatfriendoffline
 	sizeof(ROLE_LIST_SYNC),					// s2c_syncrolelist
 	sizeof(TRADE_CHANGE_STATE_SYNC),		// s2c_tradechangestate
+	sizeof(GAMBLE_CHANGE_STATE_SYNC),		// s2c_gameblechangestate
 	-1, // NPC_SET_MENU_STATE_SYNC			   s2c_npcsetmenustate
 	sizeof(TRADE_MONEY_SYNC),				// s2c_trademoneysync
 	sizeof(TRADE_DECISION_SYNC),			// s2c_tradedecision
+	sizeof(GAMBLE_MONEY_SYNC),				// s2c_gamblemoneysync
+	sizeof(GAMBLE_DECISION_SYNC),			// s2c_gambledecision
 	-1, // sizeof(CHAT_SCREENSINGLE_ERROR_SYNC)s2c_chatscreensingleerror
 	-1,	// sizeof(TEAM_INVITE_ADD_SYNC)		   s2c_teaminviteadd
 	sizeof(TRADE_STATE_SYNC),				// s2c_tradepressoksync
+	sizeof(GAMBLE_STATE_SYNC),				// s2c_gamblepressoksync
 	sizeof(PING_COMMAND),					// s2c_ping
 	sizeof(NPC_SIT_SYNC),					// s2c_npcsit
 	sizeof(SALE_BOX_SYNC),					// s2c_opensalebox
@@ -97,6 +102,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(NPC_REVIVE_SYNC),				// s2c_playerrevive
 	sizeof(NPC_REQUEST_FAIL),				// s2c_requestnpcfail
 	sizeof(TRADE_APPLY_START_SYNC),			// s2c_tradeapplystart
+	sizeof(GAMBLE_APPLY_START_SYNC),		// s2c_gambleapplystart
 	sizeof(tagNewDelRoleResponse),			// s2c_rolenewdelresponse
 	sizeof(ITEM_AUTO_MOVE_SYNC),			// s2c_ItemAutoMove
 	sizeof(BYTE),							// s2c_itemexchangefinish
@@ -145,13 +151,21 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(S2C_INPUT_BOX),					// s2c_inputbox 
 	sizeof(S2C_SET_OBSTACLE),					// s2c_setobstacle  //#Set VËt C¶n
 	sizeof(RETURN_CITY_OWN_TONG),					// s2c_returncityowntong 
-	sizeof(PLAYER_LOGIN_REPLAY),					// s2c_playerloginreplay  //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
+	sizeof(PLAYER_LOGIN_REPLAY),					// s2c_playerloginreplay  //fix by phong kiÒu chuyÓn gs b?mÊt skill
 	sizeof(QUEST_FINISH_DLG_SYNC),			// s2c_openquestfinishdlg
 	sizeof(IMAGENPC_VALUE_SYNC),			// s2c_imagenpc
-	sizeof(OPEN_TREMBLEITEM),							// s2c_opentrembleitem
+	sizeof(OPEN_TREMBLEITEM),				// s2c_opentrembleitem
 	sizeof(BYTE),							// s2c_opencompounditem
 	sizeof(PLAYER_MISSION_RANKDATA),		// s2c_syncrankdata
 	sizeof(PLAYER_MISSION_RANKDATA2),		// s2c_syncrankdata2
+	sizeof(DAMAGESHOW),						// s2c_show_damage
+	sizeof(ITEM_SYNC_MAGIC),				// s2c_syncmagic
+	sizeof(MERIDIAN_SYNC),				// s2c_syncmeridian
+	sizeof(BAUCUA_RESULT_SYNC),				// s2c_syncbaucuaresult
+	sizeof(BAUCUA_INFO_SYNC),				// s2c_syncbaucuainfo
+	sizeof(S2C_PLAYER_SYNC),				// s2c_playersync
+	sizeof(ITEM_REMOVE_SYNC),				// s2c_removeallitem
+	-1,				//s2c_dynamic_structure
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,
@@ -169,7 +183,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(NPC_SKILL_COMMAND),	//	c2s_npcskill,
 	sizeof(NPC_JUMP_COMMAND),	//	c2s_npcjump,
 	-1,							//	c2s_npctalk,
-	-1,							//	c2s_npchurt,
+	-1,							//	c2s_dynamic_structure//c2s_npchurt,
 	-1,							//	c2s_npcdeath,
 	-1,							//	c2s_playertalk,
 	sizeof(PLAYER_APPLY_TEAM_INFO),				// c2s_teamapplyinfo,
@@ -207,6 +221,11 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(TRADE_APPLY_START_COMMAND),			// c2s_tradeapplystart
 	sizeof(TRADE_MOVE_MONEY_COMMAND),			// c2s_trademovemoney
 	sizeof(TRADE_DECISION_COMMAND),				// c2s_tradedecision
+	-1, // GAMBLE_APPLY_OPEN_COMMAND				// c2s_gambleapplystateopen
+	sizeof(GAMBLE_APPLY_CLOSE_COMMAND),			// c2s_gambleapplystateclose
+	sizeof(GAMBLE_APPLY_START_COMMAND),			// c2s_gambleapplystart
+	sizeof(GAMBLE_MOVE_MONEY_COMMAND),			// c2s_gamblemovemoney
+	sizeof(GAMBLE_DECISION_COMMAND),				// c2s_gambledecision
 	sizeof(PLAYER_DIALOG_NPC_COMMAND),			// c2s_dialognpc
 	sizeof(TEAM_INVITE_ADD_COMMAND),			// c2s_teaminviteadd
 	sizeof(SKILL_CHANGEAURASKILL_COMMAND),		// c2s_changeauraskill
@@ -217,6 +236,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(STORE_MONEY_COMMAND),				// c2s_storemoney
 	sizeof(NPC_REVIVE_COMMAND),					// c2s_playerrevive
 	sizeof(TRADE_REPLY_START_COMMAND),			// c2s_tradereplystart
+	sizeof(GAMBLE_REPLY_START_COMMAND),			// c2s_gamblereplystart
 	sizeof(PK_APPLY_NORMAL_FLAG_COMMAND),		// c2s_pkapplychangenormalflag
 	sizeof(PK_APPLY_ENMITY_COMMAND),			// c2s_pkapplyenmity
 	sizeof(VIEW_EQUIP_COMMAND),					// c2s_viewequip
@@ -225,6 +245,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(NPC_RIDE_COMMAND),					// edit by phong kieu len xuong ngua
 	sizeof(PLAYER_REQUEST_CP_UNLOCK),			// c2s_cpunlock
 	sizeof(PLAYER_REQUEST_CP_LOCK),				// c2s_cplock
+	sizeof(PLAYER_REQUEST_SWITCH_EQUIP_SET),	// c2s_cpswitchequipset
 	sizeof(PLAYER_REQUEST_CP_CHANGE),			// c2s_cpchange
 	sizeof(PLAYER_REQUEST_CP_RESET),			// c2s_cpreset
 	sizeof(PLAYER_SET_PRICE),
@@ -257,6 +278,8 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(RECOVER_ITEM_COMMAND),				// c2s_recoveritem
 	sizeof(PLAYER_THROW_ALL_ITEM_COMMAND),		// c2s_playerthrowallitem
 	sizeof(C2SPLAYER_AI_BACKTOTOWN),			// c2s_aibacktotown
+	sizeof(SETMERIDIAN_DATA),			// c2s_setmeridian
+	sizeof(BAUCUA_DATA),					// c2s_baucua
 
 #endif
 };
@@ -351,7 +374,7 @@ void SendClientCmdAutoSell(int nId)
 	//Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
 }
 
-void SendClientCmdBuy(int nShop, int nBuyIdx, BYTE nNumber, int bSupperS)
+void SendClientCmdBuy(int nShop, int nBuyIdx, int  nNumber, int bSupperS)
 {
 	if (Player[CLIENT_PLAYER_INDEX].m_ItemList.IsLockOperation() && !bSupperS)
 	{
@@ -362,14 +385,14 @@ void SendClientCmdBuy(int nShop, int nBuyIdx, BYTE nNumber, int bSupperS)
 	PlayerBuy.ProtocolType = c2s_playerbuyitem;
 	PlayerBuy.m_Shop = nShop;
 	PlayerBuy.m_BuyIdx = (BYTE)nBuyIdx;
-	PlayerBuy.m_Number = (BYTE)nNumber;
+	PlayerBuy.m_Number = nNumber;
 	//
 	if (g_pClient)
 	{
 		g_pClient->SendPackToServer((BYTE*)&PlayerBuy, sizeof(PLAYER_BUY_ITEM_COMMAND));
 	}
 	//
-	if(!bSupperS) // chØ thùc hiÖn víi SHOP th­êng
+	if(!bSupperS) // ch?thùc hiÖn víi SHOP th­êng
 	{
 		Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
 	}
@@ -516,6 +539,17 @@ void SendClientCPLockCmd()
 		g_pClient->SendPackToServer((BYTE*)&LockCmd, sizeof(PLAYER_REQUEST_CP_LOCK));
 }
 
+void SendClientSwitchEquipSetCmd(int setnum)
+{
+	PLAYER_REQUEST_SWITCH_EQUIP_SET SwitchEquipSetCmd;
+
+	SwitchEquipSetCmd.ProtocolType = c2s_cpswitchequipset;
+	SwitchEquipSetCmd.byte_setnum = setnum;// 1 or 2
+	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)&SwitchEquipSetCmd, sizeof(PLAYER_REQUEST_SWITCH_EQUIP_SET));
+
+}
 void SendClientCPChangeCmd(int oldPW, int newPW)
 {
 	PLAYER_REQUEST_CP_CHANGE ChangePWCmd;
@@ -572,14 +606,14 @@ void SendClientCmdPlayerBuy(int nIdx, DWORD nPlayerId, int nPlace, int nX, int n
 		return;
 	PLAYER_TRADE_BUY_ITEM_COMMAND PlayerBuy;
 	PlayerBuy.ProtocolType = c2s_playertradebuyitem;
-	PlayerBuy.m_Idx = nIdx;  // s÷a chæ nµy 
+	PlayerBuy.m_Idx = nIdx;  // s÷a ch?nµy 
 	PlayerBuy.m_PlayerId = nPlayerId;
 	PlayerBuy.m_Place = (BYTE)nPlace;
 	PlayerBuy.m_X = (BYTE)nX;
 	PlayerBuy.m_Y = (BYTE)nY;
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&PlayerBuy, sizeof(PLAYER_TRADE_BUY_ITEM_COMMAND));
-	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();  // lçi bµy b¸n mua kÝch nh×u lÇn lµ ko mua ®c n÷a ph¶i tho¸t game 
+	Player[CLIENT_PLAYER_INDEX].m_ItemList.LockOperation();  // lçi bµy b¸n mua kÝch nh×u lÇn l?ko mua ®c n÷a ph¶i tho¸t game 
 }
 
 void SendClientCmdSetPrice(int nId, int nPrice)
@@ -673,8 +707,8 @@ void SendClientCmdInputBox(BYTE Value1,int nNum,char* szAction,char*szFunc)
 	C2S_PLAYER_INPUT_INFO pInput;
 	pInput.ProtocolType = c2s_inputinfo;
 	pInput.nType = Value1;
-	strcpy(pInput.nValue,szFunc);
-	strcpy(pInput.nAction,szAction);
+	strncpy(pInput.nValue, szFunc, sizeof(pInput.nValue));
+	strncpy(pInput.nAction, szAction, sizeof(pInput.nAction));
 	pInput.nNum = nNum;
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&pInput, sizeof(C2S_PLAYER_INPUT_INFO));
@@ -719,6 +753,25 @@ void SendClientActionChatCmd(char* zString)
 	strcpy(GetStringCmd.szString,zString);
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&GetStringCmd, sizeof(GET_STRING));
+}
+
+void SendClientSetMeridian(char* Data) {
+	SETMERIDIAN_DATA SetMeridianData;
+
+	SetMeridianData.ProtocolType = c2s_setmeridian;
+	memcpy((void *)&SetMeridianData.Data, Data, sizeof(SetMeridianData.Data));
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)&SetMeridianData, sizeof(SETMERIDIAN_DATA));
+}
+
+void SendClientBaucua(char* Data)
+{
+	BAUCUA_DATA BauCuaData;
+
+	BauCuaData.ProtocolType = c2s_baucua;
+	memcpy((void*)&BauCuaData.Data, Data, sizeof(BauCuaData.Data));
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)&BauCuaData, sizeof(BAUCUA_DATA));
 }
 
 void SendClientCPSetImageCmd(int ID)

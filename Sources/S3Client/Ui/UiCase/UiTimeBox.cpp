@@ -94,7 +94,7 @@ void KUiTimeBox::Initialize()
 	LoadScheme(Scheme);
 	Wnd_AddWindow(this);
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	load ngoai ini
 //--------------------------------------------------------------------------
@@ -107,7 +107,15 @@ void KUiTimeBox::LoadScheme(const char* pScheme)
 		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 		if (Ini.Load(Buff))
 		{
-			m_pSelf->Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024)
+			{
+				m_pSelf->Init(&Ini, "Main1024");
+			}
+			else
+			{
+				m_pSelf->Init(&Ini, "Main");
+			}
+			//m_pSelf->Init(&Ini, "Main");
 			m_pSelf->m_Title.Init(&Ini, "Text");
 			m_pSelf->m_Time.Init(&Ini, "Time");
 			m_pSelf->m_Image.Init(&Ini, "Image");			

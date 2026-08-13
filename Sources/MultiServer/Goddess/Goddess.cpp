@@ -472,7 +472,7 @@ BOOL CALLBACK MainWndProc( HWND hwnd,
 		::SetDlgItemInt( hwnd, IDC_EDIT_PORT, g_nServerPort, FALSE );
 		::SetDlgItemInt( hwnd, IDC_EDIT_MAXNUM_ROLE, g_nMaxRoleCount, FALSE );
 		::SetDlgItemInt( hwnd, IDC_EDIT_BACKUP_SLEEP_TIME, g_BackupSleepTime, FALSE );
-		
+		::EnableWindow( GetDlgItem( hwnd, IDC_BTN_MERGE ), FALSE );
 		::SetTimer( hwnd, g_nIDEvent, g_nElapse, NULL );
 		
 		return TRUE;
@@ -561,6 +561,10 @@ BOOL CALLBACK MainWndProc( HWND hwnd,
 								"Information",MB_OK | MB_ICONEXCLAMATION);
 
 			break;
+		case IDC_BTN_MERGE:
+			::EnableWindow( GetDlgItem( hwnd, IDC_BTN_MERGE ), FALSE );
+			MergeDB();
+			break;
 		case IDC_RESTART:
 			CClientNode::End();
 			ReleaseDBInterface();
@@ -633,6 +637,7 @@ BOOL CALLBACK MainWndProc( HWND hwnd,
 			&dwThreadId);		// returns the thread identifier 
 */
 		::SetWindowText( hwnd, "Goddess - [Enable]" );
+		::EnableWindow( GetDlgItem( hwnd, IDC_BTN_MERGE ), TRUE );
 		}
 		break;
 

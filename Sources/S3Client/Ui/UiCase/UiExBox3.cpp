@@ -119,7 +119,7 @@ void KUiExBox3::UpdateData()
 	{
 		g_pCoreShell->GetGameData(GDI_ITEM_IN_EX_BOX3, (unsigned int)pObjs, nCount);//单线程执行，nCount值不变
 		for (int i = 0; i < nCount; i++)
-			UpdateItem(&pObjs[i], true);
+			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
 		pObjs = NULL;
 	}
@@ -132,7 +132,13 @@ void KUiExBox3::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		bool open = false;
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if (open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -146,6 +152,8 @@ void KUiExBox3::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 				m_ItemBoxBa.AddObject(&Obj, 1);
 			else
 				m_ItemBoxBa.RemoveObject(&Obj);
+			if (!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 		/*else
 		{
@@ -190,6 +198,19 @@ int KUiExBox3::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {
 	switch(uMsg)
 	{
+		case WND_N_RIGHT_CLICK_ITEM:
+		{
+			if (g_UiBase.GetStatus() == UIS_S_IDLE)
+			{
+				KUiDraggedObject* pItem = (KUiDraggedObject*)uParam;
+				unsigned int uPr[2];
+				uPr[0] = pItem->uId;
+				uPr[1] = pos_exbox3room;
+				g_pCoreShell->OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uPr, pos_equiproom);
+			}
+		}
+		break;
 	case WND_N_ITEM_PICKDROP:
 				if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 				{
@@ -197,7 +218,7 @@ int KUiExBox3::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					break;
 				}
 				g_pCoreShell->OperationRequest(GOI_PLAYER_ACTION, CN_GH, 0);
-					break;
+				break;
 	case WND_N_BUTTON_CLICK:
 		if (uParam == (unsigned int)(KWndWindow*)&m_CloseBtn)
 			CloseWindow();

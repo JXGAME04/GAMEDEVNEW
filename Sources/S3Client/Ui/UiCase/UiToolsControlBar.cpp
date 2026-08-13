@@ -15,6 +15,8 @@
 #include "../ShortcutKey.h"
 #include "../../../core/src/coreshell.h"
 #include "../../../Engine/src/KDebug.h"
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
 extern iCoreShell*		g_pCoreShell;
 
 #define	SCHEME_INI		"UiToolsControlBar.ini"
@@ -59,9 +61,10 @@ void KUiToolsControlBar::Initialize()
 	LoadScheme(Scheme);
 
 	m_Style &= ~WND_S_VISIBLE;
-	Wnd_AddWindow(this, WL_TOPMOST);
+	Wnd_AddWindow(this, WL_NORMAL);
 }
-
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
 void KUiToolsControlBar::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -72,6 +75,15 @@ void KUiToolsControlBar::LoadScheme(const char* pScheme)
 		if (Ini.Load(Buff))
 		{
 			m_pSelf->Init(&Ini, "Main");
+		}
+		if (SCREEN_WIDTH == 1024) {
+			int nX, nY;
+			int dX, dY;
+			dX = (1024 - 800) / 2 + 8;
+			dY = 768 - 600 + 1;
+
+			m_pSelf->GetPosition(&nX, &nY);
+			m_pSelf->SetPosition(nX + dX, nY + dY);
 		}
 	}
 }

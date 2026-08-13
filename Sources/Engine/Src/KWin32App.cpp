@@ -15,6 +15,7 @@
 #include "KWin32App.h"
 #include "KIme.h"
 #include "../../S3client/ui/TrayMode.h"
+#include <ipc_shared.h>
 //---------------------------------------------------------------------------
 static KWin32App* m_pWin32App = NULL;
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -34,6 +35,24 @@ ENGINE_API FILE *serr = NULL;
 //MOUSE_EVENT_HAPPEND	--> 有鼠标活动事件
 //MOUSE_HOVER_MSG_SENT	--> 无鼠标活动事件的持续时间超过了设定的时间限制，已发送了WM_NCMOUSEHOVER消息
 //其他值				--> 无鼠标活动事件的持续时间未超过设定的时间限制，此值表示无鼠标活动的开始时间
+
+bool IsWindows8OrGreater()
+{
+	typedef LONG(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+	if (hMod) {
+		RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
+		if (fxPtr != nullptr) {
+			RTL_OSVERSIONINFOW rovi = { 0 };
+			rovi.dwOSVersionInfoSize = sizeof(rovi);
+			if (fxPtr(&rovi) == 0) {
+				return (rovi.dwMajorVersion > 6) ||
+					(rovi.dwMajorVersion == 6 && rovi.dwMinorVersion >= 2);
+			}
+		}
+	}
+	return false; // default to "not Windows 8 or greater"
+}
 
 //---------------------------------------------------------------------------
 // 函数:	WndProc
@@ -101,19 +120,19 @@ BOOL KWin32App::Init(HINSTANCE hInstance,char *AppName)
 	g_StrCpy(m_szTitle, AppName);
 	strcat_s(m_szTitle," Title");
 //#ifdef _DEBUG
-	{
+	//{
 //		sout = freopen( "c:\\stdout1.txt", "a", stdout );
 //		serr = freopen( "c:\\stderr1.txt", "a", stderr );
 //		if (sout == NULL || serr == NULL)
 //			return 0;
-	}
+	//}
 //#endif
 	if (!InitClass(hInstance))
 		return FALSE;
 
 	if (!InitWindow(hInstance))
 		return FALSE;
-
+	m_gTimer.Start();
 	return GameInit();
 }
 //---------------------------------------------------------------------------
@@ -149,6 +168,19 @@ BOOL KWin32App::InitClass(HINSTANCE hInstance)
 //---------------------------------------------------------------------------
 BOOL KWin32App::InitWindow(HINSTANCE hInstance)
 {
+	int widthOffset, heightOffset;
+
+	// Check if we are running on Windows 8 or newer
+	if (IsWindows8OrGreater())
+	{
+		widthOffset = 16;
+		heightOffset = 38;
+	}
+	else
+	{
+		widthOffset = 6;
+		heightOffset = 25;
+	}
 	HWND hWnd = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		m_szClass,
@@ -183,7 +215,9 @@ BOOL KWin32App::InitWindow(HINSTANCE hInstance)
 void KWin32App::Run()
 {
 	MSG	Msg;
-
+	DWORD nInterval = 1000/60;
+	//DWORD nInterval = 1000 / 45; 
+	DWORD nNextElapse = m_gTimer.GetElapse() + nInterval;
 	while (TRUE)
 	{
 		if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE))
@@ -198,10 +232,30 @@ void KWin32App::Run()
 		}
 		else if (m_bActive || m_bMultiGame)
 		{
-			GenerateMsgHoverMsg();
-			if (!GameLoop())
+			DWORD nCurElapse = m_gTimer.GetElapse();
+			if(nNextElapse > nCurElapse)
 			{
-				PostMessage(g_GetMainHWnd(), WM_CLOSE, 0, 0);
+				DWORD nWait = nNextElapse-nCurElapse;
+				if(nWait > nInterval)
+					nWait = nInterval;
+				if(MsgWaitForMultipleObjects (0, NULL, FALSE, nWait, QS_ALLEVENTS) == WAIT_TIMEOUT)
+				{
+					nNextElapse = nCurElapse + nWait + nInterval;
+					GenerateMsgHoverMsg();
+					if (!GameLoop())
+					{
+						PostMessage(g_GetMainHWnd(), WM_CLOSE, 0, 0);
+					}
+				}
+			}
+			else
+			{
+				nNextElapse = nCurElapse + nInterval;
+				GenerateMsgHoverMsg();
+				if (!GameLoop())
+				{
+					PostMessage(g_GetMainHWnd(), WM_CLOSE, 0, 0);
+				}
 			}
 		}
 		else
@@ -257,6 +311,12 @@ BOOL KWin32App::GameExit()
 //---------------------------------------------------------------------------
 LRESULT KWin32App::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (uMsg == g_uTaskbarCreated) {// Explorer restart
+        if (g_bTrayActive) {
+            AddTrayIcon(hWnd, g_szTip);
+        }
+        return TRUE;
+    }
 	switch (uMsg)
 	{
 	case WM_CLOSE:
@@ -267,6 +327,27 @@ LRESULT KWin32App::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WMAPP_TRAY:
+        switch (LOWORD(lParam)) {
+        case WM_LBUTTONUP:
+        case WM_LBUTTONDBLCLK:
+			g_bTrayActive = FALSE;
+            NOTIFYICONDATAA nid;
+			memset(&nid, 0, sizeof(nid));
+			nid.cbSize = sizeof(nid);
+			nid.hWnd = hWnd;
+			nid.uID = ID_TRAYICON;
+			Shell_NotifyIcon(NIM_DELETE, &nid);
+            ShowWindow(hWnd, SW_RESTORE);
+			SetForegroundWindow(hWnd);
+			IPCHideGame s;
+			s.CmdID = PRG_REPISHIDE;
+			s.Size = sizeof(IPCHideGame);
+			s.bHide = FALSE;
+			AppSendInfoToTool(&s, sizeof(IPCHideGame));
+            break;
+        }
+        return 0;
 	case WM_SETCURSOR:
 		if (m_bShowMouse == FALSE && m_bActive &&
 			LOWORD(lParam) == HTCLIENT)

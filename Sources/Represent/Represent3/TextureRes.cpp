@@ -3,6 +3,8 @@
 #include "d3d_utils.h"
 #include "TextureRes.h"
 #include "JpgLib.h"
+#include <cstdint>
+#include <new>
 
 inline void RenderToA4R4G4B4(WORD* pDest, BYTE* pSrc, int width, int height, BYTE* pPalette)
 {
@@ -335,6 +337,7 @@ void TextureResSpr::ResetVar()
 
 	m_nTexMemUsed = 0;
 	m_bLastFrameUsed = false;
+	m_bNew = false;
 }
 
 // 创建内存资源
@@ -359,6 +362,23 @@ bool TextureResSpr::LoadImage(char* szImage, uint32 nType)
 	return true;
 }
 
+// LCG parameters
+static uint32_t LCG_Next(uint32_t& state) {
+	const uint32_t a = 1103515245;
+	const uint32_t c = 12345;
+	const uint32_t m = 1u << 31;
+	state = (a * state + c) % m;
+	return (state >> 16) & 0xFF;
+}
+void DecryptPalette(KPAL24* palette, int numColors, BYTE xorKey) {
+	uint32_t state = xorKey;  // Use Reserved[3] as the initial seed
+	uint8_t* palBytes = reinterpret_cast<uint8_t*>(palette);
+
+	// Decrypt each byte of the palette using the XOR key stream generated from LCG
+	for (size_t i = 0; i < numColors * sizeof(KPAL24); ++i) {
+		palBytes[i] ^= LCG_Next(state);  // XOR each byte with the generated value
+	}
+}
 bool TextureResSpr::LoadSprFile(char* szImage)
 {
 	assert(szImage);
@@ -382,6 +402,18 @@ bool TextureResSpr::LoadSprFile(char* szImage)
 	m_pPal24 = new KPAL24[pHeader->Colors];
 	memcpy(m_pPal24, palette, pHeader->Colors * sizeof(KPAL24));
 
+	// Extract XOR seed from Reserved[3]
+	BYTE paletteXorKey = static_cast<BYTE>(pHeader->Reserved[3] & 0xFF);
+	if (paletteXorKey) {
+		// Allocate and decrypt palette
+		memcpy(m_pPal24, palette, pHeader->Colors * sizeof(KPAL24));
+		DecryptPalette(m_pPal24, pHeader->Colors, paletteXorKey);
+	}
+	else {
+		// No decryption needed, just copy the palette
+		memcpy(m_pPal24, palette, pHeader->Colors * sizeof(KPAL24));
+	}
+
 	m_pPal16 = new WORD[pHeader->Colors];
 	for(i=0; i<pHeader->Colors ; i++)
 	{
@@ -396,6 +428,7 @@ bool TextureResSpr::LoadSprFile(char* szImage)
 	m_nDirections	= pHeader->Directions;
 	m_nInterval		= pHeader->Interval;
 	m_nFrameNum		= pHeader->Frames;
+	m_bNew			= (pHeader->Reserved[1] == 1);
 	if(m_nFrameNum == 0)
 		goto error;
 
@@ -501,7 +534,13 @@ void TextureResSpr::CreateTexture16Bit(const char* szImage, int32 nFrame)
 
 	SplitTexture(nFrame);
 
-	BYTE *pTempData = new BYTE[m_pFrameInfo[nFrame].nWidth * m_pFrameInfo[nFrame].nHeight * 2];
+	BYTE *pTempData = NULL;
+	try {
+		pTempData = new BYTE[m_pFrameInfo[nFrame].nWidth * m_pFrameInfo[nFrame].nHeight * 2];
+	}
+	catch (const std::bad_alloc&) {
+		return;
+	}
 	if(!pTempData)
 		return;
 

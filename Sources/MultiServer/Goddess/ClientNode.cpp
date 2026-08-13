@@ -74,7 +74,7 @@ CBuffer *CClientNode::CDataQueue::Get()
 
 CClientNode::CClientNode( IServer *pServer, size_t id )
 			: m_nIndentity( id ) 
-			, m_theAllocator( 1024 * 64, 3 )
+			, m_theAllocator( 1024 * 64 * 5, 3 )
 			, m_pServer( pServer )
 {
 	ZeroMemory( m_theProcessArray, sizeof( m_theProcessArray ) );
@@ -373,10 +373,26 @@ void CClientNode::_CreateRole( const void *pData, size_t dataLength )
 		}
 		if (pos >= 1)
 		{
-			if (g_fltRoleName.IsTextPass(pRoleData->BaseInfo.szName))
-				nResult = SaveRoleInfo( &pPD->pDataBuffer[1], NULL, TRUE );
-			else
+			bool bFailName = false;
+			for(int i=0;i<(int)strlen(pRoleData->BaseInfo.szName);++i)
+			{
+				if((BYTE)pRoleData->BaseInfo.szName[i] <= 32)
+				{
+					bFailName = true;
+					break;
+				}
+			}
+			if(bFailName)
+			{
 				nResult = -1;
+			}
+			else
+			{
+				if (g_fltRoleName.IsTextPass(pRoleData->BaseInfo.szName))
+					nResult = SaveRoleInfo( &pPD->pDataBuffer[1], NULL, TRUE );
+				else
+					nResult = -1;
+			}
 		}
 	}
 	}}

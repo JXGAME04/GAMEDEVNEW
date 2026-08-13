@@ -77,5 +77,9 @@ KWndWindow*	Wnd_GetFocusWnd();								//»ñÈ¡ÊäÈë½¹µã´°¿Ú
 void		Wnd_SetCapture(KWndWindow* pWnd);				//ÉèÖÃ¸ú×ÙÊó±ê¶¯×÷´°¿Ú
 void		Wnd_ReleaseCapture();							//ÊÍ·Å´°¿Ú¶ÔÊó±ê¶¯×÷µÄ¸ú×Ù
 //----´¦Àí´°¿Ú¶ÀÕ¼----
-void		Wnd_SetExclusive(KWndWindow* pWnd);				//ChØ hiÖn thŞ UI trªn cïng c¸c ui d­íi kho¸ hÕt
+void		Wnd_SetExclusive(KWndWindow* pWnd);				//Ch?hiÖn th?UI trªn cïng c¸c ui d­íi kho?hÕt
 void		Wnd_ReleaseExclusive(KWndWindow* pWnd);			//ÊÍ·Å´°¿ÚµÄ¶ÀÕ¼×´Ì¬
+void		Wnd_LButtonDown();
+BOOL		Wnd_IsLButtonDown();
+void		Wnd_SetPKKey(UINT uKey);
+BOOL		Wnd_IsPKKeyDown();

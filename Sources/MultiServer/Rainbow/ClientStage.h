@@ -55,7 +55,7 @@ public:
 	CGameClient( size_t maxFreeBuffers, 
 		size_t maxFreeBuffers_Cache,
 		size_t bufferSize_Cache = 8192,
-		size_t bufferSize = 1024*5 );	
+		size_t bufferSize = 1024*10 );	
 	
 	virtual ~CGameClient();
 

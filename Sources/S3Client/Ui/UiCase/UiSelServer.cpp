@@ -19,6 +19,8 @@
 
 #define	SCHEME_INI_SELSERV				"UiSelServer.ini"	//#file ini ui design
 #define	$LOGIN			"Login"
+#include "../../core/src/coreshell.h"
+extern iCoreShell*		g_pCoreShell;
 
 KUiSelServer* KUiSelServer::m_pSelf = NULL;
 
@@ -56,6 +58,27 @@ KUiSelServer::~KUiSelServer()
 		free(m_pServList);
 		m_pServList = NULL;
 	}
+}
+
+KUiSelServer* KUiSelServer::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
+
+void KUiSelServer::AutoLgNextStep(int nSelGroup, int nSelServer)
+{
+	if (m_bSelRegion)
+	{
+		m_List.SetCurSel(nSelGroup);
+	}
+	else
+	{
+		m_List.SetCurSel(nSelServer);
+	}
+	OnLogin();
 }
 
 //--------------------------------------------------------------------------
@@ -147,7 +170,7 @@ void KUiSelServer::GetList()
 		}
 	}
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -158,13 +181,19 @@ void KUiSelServer::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_SELSERV);
 	if (Ini.Load(Buff))
 	{
-		KWndShowAnimate::Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024) {
+			Ini.GetString("Main1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+			KWndShowAnimate::Init(&Ini, "Main1024");
+		}
+		else {
+			KWndShowAnimate::Init(&Ini, "Main");
+			Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
 		m_List     .Init(&Ini, "List");
 		m_ScrollBar.Init(&Ini, "Scroll");
 		m_Login    .Init(&Ini, "Login");
 		m_Cancel   .Init(&Ini, "Cancel");
 
-		Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
 	}
 }
 
@@ -278,6 +307,8 @@ void KUiSelServer::OnLogin()
 		}
 		else
 		{
+			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETSELSV1, m_nRegionIndex);
+			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SETSELSV2, nSelServer);
 	        g_LoginLogic.SetAccountServer(m_pServList[nSelServer]);
 			g_LoginLogic.CreateConnection(m_pServList[nSelServer].Address);
 			KUiConnectInfo::OpenWindow(CI_MI_CONNECTING, LL_S_WAIT_INPUT_ACCOUNT);

@@ -64,10 +64,13 @@ void KItemSet::Init()
 #endif
 	KIniFile	IniFile;
 	IniFile.Load(ITEM_ABRADE_FILE);
-//	Î¬ÐÞ¼Û¸ñ
+//	Repair price
 	IniFile.GetInteger("Repair", "ItemPriceScale", 100, &m_sRepairParam.nPriceScale);
 	IniFile.GetInteger("Repair", "MagicPriceScale", 10, &m_sRepairParam.nMagicScale);
-//	¹¥»÷Ä¥Ëð
+	IniFile.GetInteger("Repair", "GoldPriceScale", 10, &m_sRepairParam.nGoldScale);
+	IniFile.GetInteger("Repair", "PlatinaPriceScale", 10, &m_sRepairParam.nPlatinaScale);
+	IniFile.GetInteger("Repair", "WarningBaseline", 10, &m_sRepairParam.nWarningBaseline);
+//	Attack Wear
 	IniFile.GetInteger("Attack", "Weapon", 256, &m_nItemAbradeRate[enumAbradeAttack][itempart_weapon]);
 	IniFile.GetInteger("Attack", "Head", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_head]);
 	IniFile.GetInteger("Attack", "Body", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_body]);
@@ -79,7 +82,8 @@ void KItemSet::Init()
 	IniFile.GetInteger("Attack", "Ring2", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_ring2]);
 	IniFile.GetInteger("Attack", "Pendant", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_pendant]);
 	IniFile.GetInteger("Attack", "Horse", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_horse]);
-// ·ÀÓùÄ¥Ëð
+	IniFile.GetInteger("Attack", "Mask", 0, &m_nItemAbradeRate[enumAbradeAttack][itempart_mask]);
+// Protection against wear and tear
 	IniFile.GetInteger("Defend", "Weapon", 0, &m_nItemAbradeRate[enumAbradeDefend][itempart_weapon]);
 	IniFile.GetInteger("Defend", "Head", 64, &m_nItemAbradeRate[enumAbradeDefend][itempart_head]);
 	IniFile.GetInteger("Defend", "Body", 64, &m_nItemAbradeRate[enumAbradeDefend][itempart_body]);
@@ -91,7 +95,7 @@ void KItemSet::Init()
 	IniFile.GetInteger("Defend", "Ring2", 0, &m_nItemAbradeRate[enumAbradeDefend][itempart_ring2]);
 	IniFile.GetInteger("Defend", "Pendant", 0, &m_nItemAbradeRate[enumAbradeDefend][itempart_pendant]);
 	IniFile.GetInteger("Defend", "Horse", 0, &m_nItemAbradeRate[enumAbradeDefend][itempart_horse]);
-// ÒÆ¶¯Ä¥Ëð
+// Mobile wear
 	IniFile.GetInteger("Move", "Weapon", 0, &m_nItemAbradeRate[enumAbradeMove][itempart_weapon]);
 	IniFile.GetInteger("Move", "Head", 0, &m_nItemAbradeRate[enumAbradeMove][itempart_head]);
 	IniFile.GetInteger("Move", "Body", 0, &m_nItemAbradeRate[enumAbradeMove][itempart_body]);
@@ -167,7 +171,7 @@ int KItemSet::AddI(KItem* pItem)
 }
 
 int KItemSet::AddGoldItem(IN int nId , IN int* pnMagicLevel , IN int nSeries,IN int nEnChance, 
-						  int nYear, int nMonth, int nDay, int nHour, int bLock, int sLock)
+						  int nYear, int nMonth, int nDay, int nHour, int bLock, int sLock, int nMaxOptMultiply)
 {
 	int i = FindFree();
 	
@@ -177,7 +181,8 @@ int KItemSet::AddGoldItem(IN int nId , IN int* pnMagicLevel , IN int nSeries,IN 
 	KItem*	pItem = &Item[i];
 
 	ItemGen.GetGoldItemByIndex(nId,pItem,pnMagicLevel,nSeries,nEnChance);
-
+	/*int x = ::GetRandomNumber(1, g_MaxOptMultiply);*/
+	pItem->SetMaxOptMultiply(nMaxOptMultiply);
 #ifdef _SERVER
 	SetID(i);
 #endif
@@ -192,7 +197,7 @@ int KItemSet::AddGoldItem(IN int nId , IN int* pnMagicLevel , IN int nSeries,IN 
 int KItemSet::AddItemSet2(int nItemGenre, int nSeries, int nLevel, int nLuck, int nDetailType/*=-1*/, 
 						  int nParticularType/*=-1*/, int* pnMagicLevel, int nVersion/*=0*/, 
 						  UINT nRandomSeed, int nStackNum, int nEnChance, int nPoint, int nYear, int nMonth, int nDay, 
-						  int nHour, int bLock, int sLock)
+						  int nHour, int bLock, int sLock, int nMaxOptMultiply)
 {
 	int i = FindFree();
 	
@@ -200,13 +205,13 @@ int KItemSet::AddItemSet2(int nItemGenre, int nSeries, int nLevel, int nLuck, in
 		return 0;
 
 	KItem*	pItem = &Item[i];
-
 	pItem->m_GeneratorParam.nVersion = nVersion;
 	pItem->m_GeneratorParam.uRandomSeed = nRandomSeed;
 	switch(nItemGenre)
 	{
 	case item_equip:			
 		ItemGen.Gen_Equipment(nDetailType, nParticularType, nSeries, nLevel, pnMagicLevel, nLuck, nVersion, pItem, nEnChance, nPoint);
+		pItem->SetMaxOptMultiply(nMaxOptMultiply);
 		break;
 	case item_medicine:			
 		ItemGen.Gen_Medicine(nDetailType, nParticularType, nLevel, nVersion, pItem, nStackNum);
@@ -284,4 +289,51 @@ int KItemSet::GetAbradeRange(IN int nType, IN int nPart)
 		return 0;
 
 	return m_nItemAbradeRate[nType][nPart];
+}
+
+/*!*********************************************************************************
+// Function : KItemSet::Add
+// Purpose :
+// Return : int array number
+// Argumant : int item type (equipment? medicine? ore?...)
+// Argumant : int magic level (for equipment, it is general equipment, blue equipment, bright gold, etc....)
+// Argumant : int five elements attribute
+// Argumant : int level
+// Argumant : int luck value
+// Comments :
+// Author : Spe
+*************************************************************************/
+int KItemSet::Add(IN int nItemNature, int nItemGenre, int nSeries,
+	int nLevel, int nLuck, int nDetailType/*=-1*/,
+	int nParticularType/*=-1*/, int* pnMagicLevel, int nVersion/*=0*/, UINT nRandomSeed, int nMaxOptMultiply)
+{
+
+	if (nItemGenre == item_equip)	
+	{		// Equipment
+		int i = FindFree();
+
+		if (i == 0)
+			return 0;
+
+		KItem* pItem = &Item[i];
+		pItem->m_GeneratorParam.nVersion = nVersion;
+		pItem->m_GeneratorParam.uRandomSeed = nRandomSeed;
+
+		ItemGen.Gen_Equipment(nItemNature, nDetailType, nParticularType, nSeries, nLevel, pnMagicLevel, nLuck, nVersion, pItem);
+		pItem->SetMaxOptMultiply(nMaxOptMultiply);
+	#ifdef _SERVER
+		SetID(i);
+	#endif
+		m_FreeIdx.Remove(i);
+		m_UseIdx.Insert(i);
+		return i;
+	}
+	else
+		return AddItemSet2(nItemGenre, nSeries, nLevel, nLuck, nDetailType,
+			nParticularType, pnMagicLevel, nVersion,
+			nRandomSeed);
+}
+
+int KItemSet::UpgradePlatinaEquip(int Version, KItem* Item) {
+	return ItemGen.UpgradePlatinaEquip(Version, Item);
 }

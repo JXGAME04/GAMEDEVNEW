@@ -38,6 +38,20 @@ enum UIINT_BUTTON
 	UIB_EXIT_GAME,
 };
 
+KUiInit* KUiInit::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
+
+void KUiInit::AutoLgNextStep()
+{
+	if (KUiSelServer::OpenWindow())
+		CloseWindow();
+}
+
 KUiInit* KUiInit::OpenWindow(bool bStartMusic, bool bJustLaunched)
 {
 	if (m_pSelf == NULL)
@@ -151,6 +165,7 @@ void KUiInit::StopTitleMusic()
 	}
 }
 
+extern int SCREEN_WIDTH;
 void KUiInit::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -165,6 +180,25 @@ void KUiInit::LoadScheme(const char* pScheme)
 //		m_AutoLogin.	Init(&Ini, "AutoLogin");
 		m_ExitGame.		Init(&Ini, "ExitGame");
 		Ini.GetString("Main", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		if (SCREEN_WIDTH == 1024) {
+			Ini.GetString("Main1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+			int nX, nY;
+			int dX, dY;
+			dX = (1024 - 800)/2;
+			dY = (768 - 600) / 2;
+			m_pSelf->Init(&Ini, "Main1024");
+			m_pSelf->Hide();
+			m_pSelf->Show();
+			m_EnterGame.GetPosition(&nX, &nY);
+			m_EnterGame.SetPosition(nX + dX, nY + dY);
+			m_GameConfig.GetPosition(&nX, &nY);
+			m_GameConfig.SetPosition(nX + dX, nY + dY);
+			m_DesignerList.GetPosition(&nX, &nY);
+			m_DesignerList.SetPosition(nX + dX, nY + dY);
+			m_ExitGame.GetPosition(&nX, &nY);
+			m_ExitGame.SetPosition(nX + dX, nY + dY);
+
+		}
 	}	
 }
 

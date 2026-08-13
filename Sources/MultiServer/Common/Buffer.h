@@ -175,8 +175,11 @@ private:
 class CPackager
 {
 public:
-
-	CPackager( size_t bufferSize = 65536 /* 1024*64 */, size_t maxFreeBuffers = 16 );
+//#ifdef _WIN64
+//	CPackager( size_t bufferSize = 655360 /* 1024*64*10 */, size_t maxFreeBuffers = 16 );
+//#else
+	CPackager(size_t bufferSize = 1024 * 128, size_t maxFreeBuffers = 16);
+//#endif
 	virtual ~CPackager();
 
 	/*

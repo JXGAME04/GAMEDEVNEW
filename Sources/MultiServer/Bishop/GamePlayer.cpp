@@ -17,6 +17,7 @@
 
 #include "time.h"
 #include "KStdAfx.h"
+#include <cctype>
 
 using OnlineGameLib::Win32::Output;
 using OnlineGameLib::Win32::CException;
@@ -28,7 +29,7 @@ using OnlineGameLib::Win32::CBuffer;
 using OnlineGameLib::Win32::CPackager;
 using OnlineGameLib::Win32::net_aton;
 
-CBuffer::Allocator	CGamePlayer::m_theGlobalAllocator( 1024 * 64, 1000 );
+CBuffer::Allocator	CGamePlayer::m_theGlobalAllocator(1024 * 128, 500);
 
 LONG				CGamePlayer::m_slnIdentityCounts = 0;
 LONG				CGamePlayer::m_lnWorkingCounts = 0;
@@ -291,6 +292,7 @@ CGamePlayer::CGamePlayer( UINT nIdentityID /*  = ( UINT )( -1 ) */ )
 
 CGamePlayer::~CGamePlayer()
 {
+	_ClearTaskQueue(); // Ensure all data queues are emptied
 	{
 		CCriticalSection::Owner locker( CGamePlayer::m_csMapSP );
 
@@ -759,7 +761,23 @@ UINT CGamePlayer::WaitForAccPwd()
 		KLoginAccountInfo* pLAI = ( KLoginAccountInfo * )( pRetBuffer->GetBuffer() + 1/* size of a protocol byte */ );
 
 		UINT nNextTask = enumError;
+		
+        //Check if Account has upper characters in it
+        bool hasUpper = false;
+        for (size_t i = 0; i < sizeof(pLAI->Account) && pLAI->Account[i] != '\0'; ++i) {
+			if (std::isupper(static_cast<unsigned char>(pLAI->Account[i]))) {
+				hasUpper = true;
+				break;
+			}
+        }
+        if (hasUpper)
+        {
+			UINT nQueryResult = LOGIN_A_LOGIN | LOGIN_R_ACCOUNT_OR_PASSWORD_ERROR;
 
+			_VerifyAccount_ToPlayer(nQueryResult, 0);
+			m_pPlayerServer->ShutdownClient(m_lnIdentityID);
+			goto END;
+        }
 		const char *pAccName	= pLAI->Account;
 		const char *pAccPwd		= pLAI->Password.szPassword;//ganlei
 
@@ -778,7 +796,7 @@ UINT CGamePlayer::WaitForAccPwd()
 
             if (nCheckProtocolVersion)
             {
-                // Èç¹ûÐ­Òé°æ±¾ÏàÍ¬£¬¼ÌÐøÅÐ¶ÏÕËºÅ
+                // Èç¹ûÐ­?é°æ±¾ÏàÍ¬£¬¼`ÐøÅÐ¶ÏOËºÅ
                 if (pAccName[0]) 
 		        {
 			        nNextTask = enumToNextTask;
@@ -790,16 +808,16 @@ UINT CGamePlayer::WaitForAccPwd()
             }
             else
             {
-                // Èç¹ûÐ­Òé°æ±¾²»Í¬£¬¾ÍÌáÊ¾ÓÃ»§³ö´í£¬ÐèÒªÉý¼¶µ½ÐÂ°æ±¾
+                // Èç¹ûÐ­?é°æ±¾²»Í¬£¬¾Í`áÊ¾ÓA»§³ö´í£¬Ðè?ªÉu¼¶µ½ÐÂ°æ±¾
       		    UINT nQueryResult = LOGIN_A_LOGIN | LOGIN_R_INVALID_PROTOCOLVERSION;
 
                 _VerifyAccount_ToPlayer(nQueryResult, 0);
 
-                // ÊÇ·ñÐèÒªÍæ¼Ò¶Ï¿ª? ÐèÒª½øÒ»²½È·ÈÏ
-    			//m_pPlayerServer->ShutdownClient( m_lnIdentityID ); // ¶Ï¿ªÍæ¼Ò
+                // ÊÇ·ñÐè?ªÍæ¼?¶Ï¿ª? Ðè?ª½ø?»²½È·ÈÏ
+    			//m_pPlayerServer->ShutdownClient( m_lnIdentityID ); // ¶Ï¿ªÍæ¼?
             }
         }
-
+END:
 		SAFE_RELEASE( pRetBuffer );
 		m_theDataQueue[enumOwnerPlayer].Detach( c2s_login );
 
@@ -998,6 +1016,7 @@ bool CGamePlayer::_VerifyAccount_ToPlayer( UINT nQueryResult, unsigned long nLef
 	/*
 	 * Account
 	 */
+
 	size_t used = sizeof( lai.Account );
 	used = ( used > m_sAccountName.length() ) ? m_sAccountName.length() : ( used - 1 );
 
@@ -1640,35 +1659,36 @@ bool CGamePlayer::_SyncRoleInfo_ToGameServer( const void *pData, size_t dataLeng
 	
 	const TRoleData *pRoleData = ( const TRoleData * )( pData );
 
-	IGServer *pGServer = NULL;
-	if (pRoleData->BaseInfo.cUseRevive) // sö dông ®iÓm håi sinh
-		pGServer = CGameServer::QueryServer( pRoleData->BaseInfo.irevivalid ); // ®iÓm håi sinh
-	else
-		pGServer = CGameServer::QueryServer( pRoleData->BaseInfo.ientergameid );
+	if (strcmp(m_sAccountName.c_str(), pRoleData->BaseInfo.caccname) == 0) {
+		IGServer* pGServer = NULL;
+		if (pRoleData->BaseInfo.cUseRevive) // sö dông ®iÓm håi sinh
+			pGServer = CGameServer::QueryServer(pRoleData->BaseInfo.irevivalid); // ®iÓm håi sinh
+		else
+			pGServer = CGameServer::QueryServer(pRoleData->BaseInfo.ientergameid);
 
 #ifdef	CONSOLE_DEBUG
-	printf( "pRoleData->BaseInfo.cUseRevive = %d ...\n",  pRoleData->BaseInfo.cUseRevive);
-	printf( "pRoleData->BaseInfo.irevivalid = %d ...\n", pRoleData->BaseInfo.irevivalid);
-	printf( "pRoleData->BaseInfo.ientergameid = %d ...\n", pRoleData->BaseInfo.ientergameid);
+		printf("pRoleData->BaseInfo.cUseRevive = %d ...\n", pRoleData->BaseInfo.cUseRevive);
+		printf("pRoleData->BaseInfo.irevivalid = %d ...\n", pRoleData->BaseInfo.irevivalid);
+		printf("pRoleData->BaseInfo.ientergameid = %d ...\n", pRoleData->BaseInfo.ientergameid);
 #endif
 
-	if ( pGServer )
-	{
-		ASSERT( pRoleData->BaseInfo.szName[0] != '\0' );
+		if (pGServer)
+		{
+			ASSERT(pRoleData->BaseInfo.szName[0] != '\0');
 
-		CGamePlayer::Add( ( const char * )pRoleData->BaseInfo.szName,
-				( IPlayer * )this );
-		
-		pGServer->Attach( m_sAccountName.c_str() );
+			CGamePlayer::Add((const char*)pRoleData->BaseInfo.szName,
+				(IPlayer*)this);
 
-		m_nAttachServerID = pGServer->GetID();
+			pGServer->Attach(m_sAccountName.c_str());
 
-		m_theDataQueue[enumOwnerPlayer].Empty();
+			m_nAttachServerID = pGServer->GetID();
 
-		ok = pGServer->DispatchTask( CGameServer::enumSyncRoleInfo, pData, dataLength, max(m_nExtPoint, 0));
-		m_nExtPoint = -1;	//ÓÃÍê¾ÍÇåµô
+			m_theDataQueue[enumOwnerPlayer].Empty();
+
+			ok = pGServer->DispatchTask(CGameServer::enumSyncRoleInfo, pData, dataLength, max(m_nExtPoint, 0));
+			m_nExtPoint = -1;	//ÓAÍê¾ÍÇåµô
+		}
 	}
-
 	return ok;
 }
 

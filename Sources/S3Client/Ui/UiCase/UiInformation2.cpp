@@ -83,6 +83,8 @@ void KUiInformation2::Initialize()
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
+extern int SCREEN_WIDTH;
+
 void KUiInformation2::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -90,7 +92,10 @@ void KUiInformation2::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buff))
 	{
-		KWndShowAnimate::Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			KWndShowAnimate::Init(&Ini, "Main1024");
+		else
+			KWndShowAnimate::Init(&Ini, "Main");
 		m_Information .Init(&Ini, "Info");
 		m_OKBtn.Init(&Ini, "OK");
 	}

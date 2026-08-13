@@ -100,7 +100,7 @@ private:
 	int					m_nLastPosH;		//上次文字绘制后的后续坐标水平值
 	int					m_nLastPosV;		//上次文字绘制后的后续坐标垂直值
 
-	unsigned short		m_nBorderColor;
+	unsigned int		m_nBorderColor;
 	short				m_nDrawBorderWithDeffColor;
 
 	void*				m_pDevice;			//绘制设备指针

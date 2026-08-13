@@ -23,7 +23,8 @@ CIOBuffer::CIOBuffer( Allocator &allocator, size_t size )
 	m_buffer_ptr = new BYTE[ size ];
 
 	memset( this, 0, sizeof( OVERLAPPED ) );
-
+	m_wsabuf.buf = NULL;
+	m_wsabuf.len = 0;
 	Empty();
 }
 
@@ -34,7 +35,7 @@ CIOBuffer::~CIOBuffer()
 
 void CIOBuffer::Empty()
 {
-	m_wsabuf.buf = reinterpret_cast< char * >( m_buffer_ptr );
+	m_wsabuf.buf = reinterpret_cast<char*>(m_buffer_ptr);
 	m_wsabuf.len = m_size;
 
 	m_used = 0;
@@ -53,7 +54,7 @@ void *CIOBuffer::operator new( size_t objectSize, size_t /* bufferSize */ )
 	return pMem;
 }
 
-		void CIOBuffer::operator delete(void* pObject /* bufferSize*/)
+void CIOBuffer::operator delete(void* pObject /* bufferSize*/)
 {
 	SAFE_DELETE_ARRAY( pObject );
 }
@@ -90,9 +91,9 @@ void CIOBuffer::AddData( const char * const pData, size_t dataLength )
 {
 	if (dataLength > m_size - m_used)
 	{
-		DEBUG_ONLY( Message( "CIOBuffer::AddData - Not enough space in buffer!" ) );
-		
-		throw CException( _T("CIOBuffer::AddData"), _T("Not enough space in buffer Common") );
+		//DEBUG_ONLY( Message( "CIOBuffer::AddData - Not enough space in buffer!" ) );	
+		//throw CException( _T("CIOBuffer::AddData"), _T("Not enough space in buffer") );
+		return;
 	}
 
 	memcpy( m_buffer_ptr + m_used, pData, dataLength );
@@ -117,7 +118,8 @@ void CIOBuffer::Release()
 		/*
 		 * Error! double release
 		 */
-		throw CException( _T("CIOBuffer::Release()"), _T("m_ref is already zero") );
+		//throw CException( _T("CIOBuffer::Release()"), _T("m_ref is already zero") );
+		return;
 	}
 
 	if ( 0 == ::InterlockedDecrement( &m_ref ) )
@@ -177,7 +179,7 @@ CIOBuffer *CIOBuffer::Allocator::Allocate()
 		OnBufferCreated();
 	}
 
-	m_activeList.PushNode( pBuffer );
+	//m_activeList.PushNode( pBuffer );
 	
 	OnBufferAllocated();
 	
@@ -188,7 +190,8 @@ void CIOBuffer::Allocator::Release( CIOBuffer *pBuffer )
 {
 	if ( !pBuffer )
 	{
-		throw CException( _T("CIOBuffer::Allocator::Release()"), _T("pBuffer is null") );
+		//throw CException( _T("CIOBuffer::Allocator::Release()"), _T("pBuffer is null") );
+		return;
 	}
 	
 	CCriticalSection::Owner lock( m_criticalSection );

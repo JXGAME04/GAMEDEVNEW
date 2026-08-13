@@ -122,7 +122,7 @@ private:
 	/*
 	 * Loader balance information
 	 */
-
+    unsigned int m_maxConnectionsPerIP; // Maximum allowed connections per IP
 	
 };
 

@@ -455,7 +455,7 @@ STDMETHODIMP CClientFactory::CreateClientInterface( REFIID riid, void** ppv )
 	{		
 		const size_t bufferSize = ( m_bufferSize > 0 ) ? m_bufferSize : ( 1024 * 4 );
 
-		CGameClient *pObject = new CGameClient( 2, 2, bufferSize, 1024*5 );
+		CGameClient *pObject = new CGameClient( 2, 2, bufferSize, 1024*10 );
 
 		*ppv = reinterpret_cast< void * > ( dynamic_cast< IClient * >( pObject ) );
 

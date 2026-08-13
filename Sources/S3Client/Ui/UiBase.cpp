@@ -83,6 +83,8 @@ KUiBase::KUiBase()
 	m_Status = UIS_S_IDLE;
 	m_pUiAutoSettingFile = NULL;
 	m_pUiGameSettingFile = NULL;
+	m_bUseGlobalAutoSetting = FALSE;
+	memset(m_zsGlobalFilename, 0, sizeof(m_zsGlobalFilename));
 }
 
 KUiBase::~KUiBase()
@@ -384,6 +386,7 @@ void KUiBase::LoadSchemeForEachWnd()
 	KUiSysMsgCentre::LoadScheme(m_CurSchemePath);
 	KUiMiniMap::LoadScheme(m_CurSchemePath);
 	g_MouseOver.LoadScheme(m_CurSchemePath);
+	g_MouseOverCompare.LoadScheme(m_CurSchemePath);
 	g_UiInformation.LoadScheme(m_CurSchemePath);
 	g_UiInformation2.LoadScheme(m_CurSchemePath);
 	KPopupMenu::LoadTheme(m_CurSchemePath);
@@ -485,38 +488,94 @@ int KUiBase::GetCurSchemePath(char* pBuffer, int nSize)
 	return false;
 }
 
-KIniFile*	KUiBase::GetAutoSettingFile()
-{	
+KIniFile* KUiBase::GetAutoSettingFile()
+{
 	if (m_pUiAutoSettingFile == NULL && m_UserAccountId[0])
 	{
 		m_pUiAutoSettingFile = new KIniFile;
 		if (m_pUiAutoSettingFile)
 		{
-			char	FileName[128];
-			sprintf(FileName, "%s\\%s\\%s", UI_USER_DATA_FOLDER, m_UserAccountId, UI_AUTO_SETTING_FILE);
+			char FileName[256];
+
+			if (m_bUseGlobalAutoSetting)
+			{
+				if (m_zsGlobalFilename[0])
+					sprintf(FileName, "%s\\Global\\%s", UI_USER_DATA_FOLDER, m_zsGlobalFilename);
+				else
+					sprintf(FileName, "%s\\Global\\%s", UI_USER_DATA_FOLDER, UI_AUTO_SETTING_FILE);
+			}
+			else
+			{
+				sprintf(FileName, "%s\\%s\\%s", UI_USER_DATA_FOLDER, m_UserAccountId, UI_AUTO_SETTING_FILE);
+			}
+
 			m_pUiAutoSettingFile->Load(FileName);
 		}
 	}
 	return m_pUiAutoSettingFile;
 }
 
+
+void KUiBase::SetGlobalConfigFile(bool bGlobal)
+{
+	m_bUseGlobalAutoSetting = bGlobal;
+}
+
+void KUiBase::SetGlobalConfigFilename(char* zsGlobalFilename)
+{
+	strcpy_s(m_zsGlobalFilename, sizeof(m_zsGlobalFilename), zsGlobalFilename);
+}
+
+char* KUiBase::GetGlobalConfigFilename()
+{
+	return m_zsGlobalFilename;
+}
+
+
 void KUiBase::CloseAutoSettingFile(bool bSave)
 {
 	if (m_pUiAutoSettingFile)
 	{
 		if (bSave && m_UserAccountId[0])
-		{			
-			char	FileName[128];
-			sprintf(FileName, "%s\\%s", UI_USER_DATA_FOLDER, m_UserAccountId);
-			g_CreatePath(FileName);
-			strcat(FileName, "\\");
-			strcat(FileName, UI_AUTO_SETTING_FILE);			
-			m_pUiAutoSettingFile->Save(FileName);
+		{
+			char szPath[256];
+
+			
+			if (m_bUseGlobalAutoSetting)
+			{
+				if (m_zsGlobalFilename[0])
+				{
+					sprintf(szPath, "%s\\Global", UI_USER_DATA_FOLDER);
+					g_CreatePath(szPath);
+					strcat(szPath, "\\");
+					strcat(szPath, m_zsGlobalFilename);
+					m_pUiAutoSettingFile->Save(szPath);
+				}
+				else
+				{
+					sprintf(szPath, "%s\\Global", UI_USER_DATA_FOLDER);
+					g_CreatePath(szPath);
+					strcat(szPath, "\\");
+					strcat(szPath, UI_AUTO_SETTING_FILE);
+					m_pUiAutoSettingFile->Save(szPath);
+				}
+			}
+
+		
+			sprintf(szPath, "%s\\%s", UI_USER_DATA_FOLDER, m_UserAccountId);
+			g_CreatePath(szPath);
+			strcat(szPath, "\\");
+			strcat(szPath, UI_AUTO_SETTING_FILE);
+			m_pUiAutoSettingFile->Save(szPath);
 		}
-		delete(m_pUiAutoSettingFile);
+
+		delete m_pUiAutoSettingFile;
 		m_pUiAutoSettingFile = NULL;
 	}
 }
+
+
+
 
 KIniFile*	KUiBase::GetGameSettingFile()
 {

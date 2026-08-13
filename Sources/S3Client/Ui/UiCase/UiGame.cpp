@@ -28,8 +28,9 @@
 #include "../Elem/Wnds.h"
 
 #include "../ShortcutKey.h"
+#include "../../S3Client.h"
 #include "CommCtrl.h"
-
+#include "UiMiniMap.h"
 extern iCoreShell*		g_pCoreShell;
 extern KUiChatPhrase    g_UiChatPhrase;
 
@@ -50,6 +51,12 @@ int KUiGameSpace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		{
+			if(uMsg == WM_LBUTTONDOWN)
+			{
+				Wnd_LButtonDown();
+				KUiMiniMap::Unflagging();
+				g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_REMOVE_FLAG, 0, 0);
+			}
 			int nModifier = 0;
 			if (uParam & MK_CONTROL)
 				nModifier |= HOTKEYF_CONTROL;
@@ -62,6 +69,37 @@ int KUiGameSpace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 
 			if (KShortcutKeyCentre::HandleMouseInput(uMsg == WM_LBUTTONDOWN ? VK_LBUTTON : VK_RBUTTON, nModifier, LOWORD(nParam), HIWORD(nParam)))
 				bDefault = false;
+		}
+		break;
+	case WM_KEYDOWN:
+		if (g_pCoreShell)
+		{
+			if(uParam == 'F')
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0)) //AutoPK on-off
+				{
+					if (GetKeyState(VK_CONTROL) & 0x8000)
+					{
+						SharedState s;
+						s.CmdID = PRG_ONOFFPK;
+						s.Size = sizeof(SharedState);
+						SendInfoToTool(&s, sizeof(SharedState));
+					}
+				}
+			}
+			else if(uParam == 'A')
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0)) //Auto tick on-off
+				{
+					if (GetKeyState(VK_CONTROL) & 0x8000)
+					{
+						SharedState s;
+						s.CmdID = PRG_AUTOONOFF;
+						s.Size = sizeof(SharedState);
+						SendInfoToTool(&s, sizeof(SharedState));
+					}
+				}
+			}
 		}
 		break;
 	case WM_LBUTTONDBLCLK:
@@ -185,6 +223,13 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 {
 	if (pDest == NULL || pDest->Name[0] == 0)
 		return;
+
+	if (!g_pCoreShell)
+		return;
+
+	if (!g_pCoreShell->CheckMapLoiDai())
+		return;
+
 	switch(nAction)
 	{
 	case ACTION_CHAT:		//	0
@@ -208,6 +253,10 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 	case ACTION_TRADE:		//	2
 		if (g_pCoreShell && pDest->nData == PLAYER_MENU_STATE_TRADEOPEN && pDest->nIndex != -1)
 			g_pCoreShell->TradeApplyStart(pDest);
+		break;
+	case ACTION_GAMBLE:		//	2
+		if (g_pCoreShell && pDest->nIndex != -1)
+			g_pCoreShell->GambleApplyStart(pDest);
 		break;
 	case ACTION_JOINTEAM:	//	3
 		if (g_pCoreShell && pDest->nData == PLAYER_MENU_STATE_TEAMOPEN && pDest->nIndex != -1)
@@ -307,12 +356,13 @@ char g_ActionName[][32] =
 	"T╦n gиu",
 	"H╤o hВu",
 	"Giao dчch",
+	"O╫n t?t?",
 	"Nhкp ╝Иi",
-	"TФ ╝Иi",
+	"T?╝Иi",
 	"Theo sau",
 	"CУu s╦t",
 	"Tin tЬc",
-	"SФ ╝en",
+	"S?╝en",
 	"Bang hИi",
 }; //# thanh menu chuot trai + control len nguoi choi khac
 
@@ -347,6 +397,7 @@ void PopUpContextPeopleMenu(const KUiPlayerItem& SelectPlayer, int x, int y)
 	{
 		if ((i == ACTION_JOINTEAM && SelectPlayer.nIndex != -1 && SelectPlayer.nData == PLAYER_MENU_STATE_TEAMOPEN) ||	//"иЙгКхК╤с", ╤т╥╫н╢╢Р©╙╤снИй╠╡╩дэ╪схК
 			(i == ACTION_TRADE && SelectPlayer.nIndex != -1 && SelectPlayer.nData == PLAYER_MENU_STATE_TRADEOPEN) ||	//"╫╩рвнОф╥", ╤т╥╫н╢╢Р©╙╫╩рвй╠╡╩дэ╪схК
+			(i == ACTION_GAMBLE && SelectPlayer.nIndex != -1) ||
 			(i == ACTION_MAKEFRIEND && !KUiChatCentre::IsMyFriend((char*)SelectPlayer.Name)) || //"╪сн╙╨цся", ╤т╥╫ряйгнр╣д╨цсяй╠╡╩дэтыяШгК
 			(i == ACTION_INVITETEAM && SelectPlayer.uId != 0 && TeamInfo.nCaptainPower > 0)	||	//"яШгК╪схК", ╤снИ╡╩©ирт╪схкак╬м╡╩дэяШгК╪схК
 			(i == ACTION_FOLLOW && SelectPlayer.nIndex != -1) ||

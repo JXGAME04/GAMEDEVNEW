@@ -106,6 +106,7 @@ public:
 			adjustcolor_stun,			// 毒素伤害
 	};
 	KSprControl		m_cNpcImage[MAX_PART];				// 所有动作的所有spr文件名
+	KSprControl		m_cNpcEffectImage[MAX_PART];		
 	KSprControl		m_cNpcShadow;						// npc阴影
 	KStateSpr		m_cStateSpr[18];						// 状态特效，0 1 2 3 为头顶 4 5 6 7 为脚底  8 9 10 11为身上 n 18	//Head Foot
 	KSprControl		m_cSpecialSpr;						// 特殊的只播放一遍的随身spr文件

@@ -11,6 +11,7 @@
 //---------------------------------------------------------------------------
 void	g_DrawFont(void* node, void* canvas);
 void	g_DrawFontWithBorder(void* node, void* canvas);
+void	g_DrawFontWithBorder32b(void* node, void* canvas);
 void	g_DrawFontSolid(void* node, void* canvas);
 //---------------------------------------------------------------------------
 #endif

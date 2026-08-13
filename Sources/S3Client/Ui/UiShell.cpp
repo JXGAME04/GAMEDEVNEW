@@ -10,8 +10,8 @@
 #include "UiShell.h"
 #include "UiBase.h"
 //#include "../../../core/src/gamedatadef.h"
-#include "../../core/src/coreshell.h"
-
+//#include "../../core/src/coreshell.h"
+#include "../S3Client.h"
 #include "UiCase/UiInit.h"
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiInformation.h"
@@ -51,6 +51,7 @@
 #include "UiCase/UiTrade.h"
 #include "UiCase/UiTradeConfirmWnd.h"
 #include "UiCase/UiNewsMessage.h"
+#include "UiCase/UiFlashMessage.h"
 #include "UiCase/UiNewsMessage1.h"
 #include "UiCase/UiTrembleItem.h"
 #include "UiCase/UiBreakItem.h"
@@ -119,6 +120,9 @@ int			g_bDisconnect = false;
 	int				g_nShowDebugInfo = 0;//edit by phong kieu che do debug
 	int				g_nShowPingInfo = 0;	//show th«ng tin m¹ng vµ fps
 #endif
+#include "UiCase/UiSkillsNew.h"
+#include "UiCase/UiMeridian.h"
+#include "UiCase/SpringGame.h"
 
 #define DYNAMIC_LINK_REPRESENT_LIBRARY
 
@@ -187,7 +191,7 @@ int	UiInit()
 	Player_Exchange::RegisterSelfClass();
 	Player_PK::RegisterSelfClass();
 	Player_Faction::RegisterSelfClass();
-	Player_AutoPlay::RegisterSelfClass();
+//	Player_AutoPlay::RegisterSelfClass();
 	Player_ItemEx::RegisterSelfClass();
 	Player_Rec::RegisterSelfClass();
 	Player_Friend::RegisterSelfClass();
@@ -322,8 +326,8 @@ void UiPaint(int nGameLoop)
 #endif
 
 	g_pRepresentShell->RepresentEnd();
-	if (g_pRepresentShell->FPSDelay > 0 && g_pRepresentShell->FPSDelay <= 200)
-	Sleep(g_pRepresentShell->FPSDelay);
+	//if (g_pRepresentShell->FPSDelay > 0 && g_pRepresentShell->FPSDelay <= 200)
+	//Sleep(g_pRepresentShell->FPSDelay);
 }
 
 int UiHeartBeat()
@@ -413,6 +417,7 @@ void UiStartGame()
 	KUiHeaderControlBar::OpenWindow();
 	KUiToolsControlBar::OpenWindow();
 	KUiNewsMessage::OpenWindow();
+	KUiFlashMessage::OpenWindow();
 	KUiNewsMessage1::OpenWindow();
 	Wnd_ShowHideGameSpace(true);
 	g_UiBase.SetStatus(UIS_S_IDLE);
@@ -454,6 +459,7 @@ bool UiCloseWndsInGame(bool bAll)
 		if (KUiStatus::GetIfVisible() == NULL &&
 			KUiItem::GetIfVisible() == NULL &&
 			KUiSkills::GetIfVisible() == NULL &&
+			KUiSkillsNew::GetIfVisible() == NULL &&
 			KUiSkillTree::GetIfVisible() == NULL &&
 			KUiOptions::GetIfVisible() == NULL &&
 			KUiOptions2::GetIfVisible() == NULL &&
@@ -475,8 +481,8 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiRankData::GetIfVisible() == NULL &&
 			KUiCityWar::GetIfVisible() == NULL &&
 			KUiAffairItem::GetIfVisible() == NULL &&	// tra vat pham nhiem vu
-			KUiAuto::GetIfVisible()  == NULL &&
-			KUiAutoPlay::GetIfVisible()  == NULL &&
+		//	KUiAuto::GetIfVisible()  == NULL &&
+		//	KUiAutoPlay::GetIfVisible()  == NULL &&
 			KUiChooseFace::GetIfVisible()  == NULL &&
 			KUiSuperShop::GetIfVisible()  == NULL &&
 			KUiTrembleItem::GetIfVisible() == NULL &&
@@ -489,7 +495,10 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiNotice::GetIfVisible() == NULL &&
 			KUiTongAssignBox::GetIfVisible() == NULL &&
 			//KUiManage::GetIfVisible() ||
-			g_pCoreShell->GetPaintMode() == 0 && //#toa do
+			//g_pCoreShell->GetPaintMode() == 0 && //#toa do
+			KUiMeridian::GetIfVisible() == NULL &&
+			KUiSpringGame::GetIfVisible() == NULL &&
+			KUiSkillsNew::GetIfVisible() == NULL &&
 			(KUiMiniMap::GetIfVisible() == NULL || MapGetMode() == MINIMAP_M_BRIEF_NOT_PIC ||  MapGetMode() == MINIMAP_M_BRIEF_PIC)
 			)
 		{
@@ -514,6 +523,7 @@ bool UiCloseWndsInGame(bool bAll)
 		KUiBreakItem::CloseWindow(true);
 		MapSetMode(MINIMAP_M_NONE);
 		KUiNewsMessage::CloseWindow(TRUE);
+		KUiFlashMessage::CloseWindow(TRUE);
 		KUiNewsMessage1::CloseWindow(TRUE);
 		g_UiInformation.Close();
 		g_UiInformation2.Close();
@@ -522,14 +532,15 @@ bool UiCloseWndsInGame(bool bAll)
 	{
 		MapSetMode(MINIMAP_M_BRIEF_PIC);
 	}
-	if(g_pCoreShell->GetPaintMode()) //#toa do
+	/*if(g_pCoreShell->GetPaintMode()) //#toa do
 	{
 		g_pCoreShell->SetPaintMode(0);
-	}
+	}*/
 	KUiFaceSelector::CloseWindow(bAll);
 	KUiStatus::CloseWindow(bAll);
 	KUiItem::CloseWindow(bAll);
 	KUiSkills::CloseWindow(bAll);
+	KUiSkillsNew::CloseWindow(bAll);
 	KUiSkillTree::CloseWindow(bAll);
 	KUiOptions::CloseWindow();
 	KUiOptions2::CloseWindow();
@@ -551,8 +562,8 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiStrengthRank::CloseWindow();
 	KUiTongManager::CloseWindow();
 	KUiTongCreateSheet::CloseWindow();
-	KUiAuto::CloseWindow();
-	KUiAutoPlay::CloseWindow();
+//	KUiAuto::CloseWindow();
+//	KUiAutoPlay::CloseWindow();
 	//KUiCapture::CloseWindow();
 	KUiChooseFace::CloseWindow();
 	KUiSuperShop::CloseWindow(bAll);
@@ -569,6 +580,8 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiTrembleItem::CloseWindow(bAll);
 	KUiTongAssignBox::CloseWindow(bAll);
 	KUiBreakItem::CloseWindow(bAll);
+	KUiMeridian::CloseWindow();
+	KUiSpringGame::CloseWindow();
 	return true;
 }
 
@@ -893,14 +906,14 @@ void Player_AutoPlay::OnButtonClick()
 	{
 		KUiAuto::OpenWindow();
 	}*/
-	if(KUiAutoPlay::GetIfVisible())
+	/*if(KUiAutoPlay::GetIfVisible())
 	{
 		KUiAutoPlay::CloseWindow();
 	}
 	else
 	{
 		KUiAutoPlay::OpenWindow();
-	}
+	}*/
 }
 void Player_AutoPlay::UpdateData()
 {
@@ -909,11 +922,11 @@ void Player_AutoPlay::UpdateData()
 		/*if(KUiAuto::GetIfVisible())
 			CheckButton(1);
 		else
-			CheckButton(0);*/
+			CheckButton(0);
 		if(KUiAutoPlay::GetIfVisible())
 			CheckButton(1);
 		else
-			CheckButton(0);
+			CheckButton(0);*/
 	}
 }
 
@@ -1119,4 +1132,3 @@ const char*	Player_Options::GetShortKey()
 {
 	return KShortcutKeyCentre::GetKeyName(KShortcutKeyCentre::GetCommandKey(KShortcutKeyCentre::FindCommandByScript(SCK_SHORTCUT_SYSTEM)));
 }
-

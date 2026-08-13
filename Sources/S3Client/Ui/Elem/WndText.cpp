@@ -343,21 +343,31 @@ void KWndText::SetTimeText(int nNumber)
 
 void KWndText::SetTimeText2(int nNumber)
 {
-	char	Buff[64];
-	int		nLen;
-	if (m_pText)
-	{
-		if(nNumber >= 64800)
-			nLen = sprintf(Buff, "%dh", (nNumber/18/60/60) + 1);
-		else if (nNumber >= 1080)
-			nLen = sprintf(Buff, "%dm", (nNumber/18/60) + 1);
-		else if (nNumber >= 18)
-			nLen = sprintf(Buff, "%ds", nNumber/18);
-		else
-			nLen = sprintf(Buff, "N/A");
-		SetText(Buff, nLen);
-	}
+	char Buff[64];
+	int nLen;
+
+	if (!m_pText)
+		return;
+
+	int totalSec = nNumber / 18;
+
+	int d = totalSec / 86400;              
+	int h = (totalSec % 86400) / 3600;    
+	int m = (totalSec % 3600) / 60;        
+	int s = totalSec % 60;                
+
+	if (d > 0)
+		nLen = sprintf(Buff, "%dd %02dh %02dm %02ds", d, h, m, s);
+	else if (h > 0)
+		nLen = sprintf(Buff, "%02dh %02dm %02ds", h, m, s);
+	else if (m > 0)
+		nLen = sprintf(Buff, "%02dm %02ds", m, s);
+	else
+		nLen = sprintf(Buff, "%02ds", s);
+
+	SetText(Buff, nLen);
 }
+
 
 void KWndText::SetMoneyUnitText(int nMoneyUnit)
 {
@@ -420,7 +430,7 @@ void KWndText::SetFindIntText(int nNumber1, int nNumber2, char Separator, char F
 
 void KWndText::Set6IntText(int nNumber, char Separator)
 {
-	char	Buff[5];
+	char	Buff[16] = "";
 	int		nLen;
 	if (m_pText)
 	{

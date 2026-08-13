@@ -12,7 +12,7 @@
 int VerticalSplitTwoWindow(KWndWindow* pLeft, KWndWindow* pRight, int nAt);
 
 struct KUiMsgParam;
-#define MAX_CHANNELRESOURCE 10
+#define MAX_CHANNELRESOURCE 16
 
 struct KChannelResourceInfo
 {
@@ -110,6 +110,7 @@ public:
 		ch_Team = 0,
 		ch_Faction,
 		ch_Tong,
+		ch_Msgr,
 		ch_Screen,
 		ch_GM
 	};

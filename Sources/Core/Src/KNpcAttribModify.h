@@ -123,7 +123,7 @@ private:
 	void	ManaToSkillEnhanceP(KNpc* pNpc, void* pData);	
 	void	SorbDamageP(KNpc* pNpc, void* pData);	
 	void	ExpSkillsEnhanceP(KNpc* pNpc, void* pData); // ExpSkills x2
-
+	void	ExpSkillsVIP(KNpc* pNpc, void* pData); // VIP
 };
 extern KNpcAttribModify g_NpcAttribModify;
 #endif

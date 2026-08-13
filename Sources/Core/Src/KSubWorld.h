@@ -26,6 +26,36 @@ typedef KMissionArray <KMission , MAX_GLOBAL_MISSIONCOUNT> KGlobalMissionArray;
 extern KGlobalMissionArray g_GlobalMissionArray;
 #endif
 
+#ifndef _SERVER
+#define FINDPATH_VERSION	0	//t¡§ng lan ?¨® c?p nh?t d¡Â li?u map m¨ªi
+#define MAX_CELL		2400000
+struct VGridNode
+{
+	int parentId;
+	int connStart;
+    int connCount;
+	WORD x;
+	WORD y;
+	WORD obs;
+	BYTE w;
+	BYTE h;
+	VGridNode()
+	{
+		w = 1;
+		h = 1;
+		connStart = -1;
+		connCount = 0;
+	}
+};
+
+struct VGridNeighbour
+{
+    int toParentId;  // id to m_vNeighbour
+	int cost;
+};
+
+#endif
+
 #ifndef TOOLVERSION
 class KSubWorld
 #else
@@ -44,6 +74,9 @@ public:
 	int			m_ClientRegionIdx[MAX_REGION];
 	char		m_szMapPath[FILE_NAME_LENGTH];
 	//KLittleMap	m_cLittleMap;
+#endif
+#ifndef _SERVER
+    DWORD m_dwLastNpcCheck;
 #endif
 	char		szMapName[FILE_NAME_LENGTH];
 	char		szMapType[FILE_NAME_LENGTH];
@@ -76,20 +109,25 @@ public:
 #ifdef _SERVER
 	KWeatherMgr *m_pWeatherMgr;
 #endif
-private:
+#ifndef _SERVER
+	HANDLE  m_hLoadPathGrid;
+    volatile BOOL m_bStopThread;
+#endif
 public:
 	KSubWorld();
 	~KSubWorld();
 	void		Activate();
 	void		GetFreeObjPos(POINT& pos);
-	void		GetRandomObjPos(POINT& pos);	//add by phong kiÒu xö lý t¹m thay cho hµm GetFreeObjPos sau nµy fix ®­îc sö dông l¹i
+	void		GetRandomObjPos(POINT& pos);	//add by phong kiÒu x?l?t¹m thay cho hµm GetFreeObjPos sau nµy fix ®­îc s?dông l¹i
 	BOOL		CanPutObj(POINT pos);
+	BOOL		CanPutObjBarrier(POINT pos);
 	void		ObjChangeRegion(int nSrcRegionIdx, int nDesRegionIdx, int nObjIdx);
 	void		MissleChangeRegion(int nSrcRegionIdx, int nDesRegionIdx, int nObjIdx);
 	void		AddPlayer(int nRegion, int nIdx);
 	void		RemovePlayer(int nRegion, int nIdx);
 	void		Close();
 	int			GetDistance(int nRx1, int nRy1, int nRx2, int nRy2);						//
+	void		NewMap2Mps(int nR, int nX, int nY, int nDx, int nDy, int* nRx, int* nRy);
 	void		Map2Mps(int nR, int nX, int nY, int nDx, int nDy, int *nRx, int *nRy);		// 
 	static void Map2Mps(int nRx, int nRy, int nX, int nY, int nDx, int nDy, int *pnX, int *pnY);		// 
 	void		Mps2Map(int Rx, int Ry, int * nR, int * nX, int * nY, int *nDx, int * nDy);	// 
@@ -113,7 +151,11 @@ public:
 	int			GetRegionIndex(int nRegionID);
 	int			FindNpcFromName(const char * szName);
 	int	        DelAllNpcInWro(); //É¾³ý¸ÃµØÍ¼ÉÏµÄËùÓÐNPC
+	int DelAllNpcInWro(char* szName);
 	long	 CountAllNpc();
+	long	CountAllPlayer();
+	long	GetLastPlayerIndex(int nCurrentPlayerIndex);
+	std::vector<int> GetAllPlayerIndexes();
 	void		SetTrap(DWORD dwTrapId, int nMpsX, int nMpsY, int nRange); // AddTrap Fong KiÒu
 	void		SetObstacle(long value, int nMpsX, int nMpsY, int nRange); //#Set VËt C¶n
 	BOOL ExecuteScript(char * ScriptFileName, char * szFunName, int nParam);
@@ -125,12 +167,46 @@ public:
 	void		Paint();
 	void		Mps2Screen(int *Rx, int *Ry);
 	void		Screen2Mps(int *Rx, int *Ry);
+	void		ProcLoadPathGrid();
+	int			FindPath(int nX, int nY, bool bCheckNpc = false);
+	void		StopPath() {
+		m_nTargetX = 0;
+		m_nTargetY = 0;
+		m_nCurStep = 0;
+		m_vRetPath.clear();
+	};
+	bool HaveTarget(int& x, int& y)
+	{
+		x = m_nTargetX;
+		y = m_nTargetY;
+		if(m_vRetPath.size() > 0 && m_nTargetX > 0 && m_nTargetY > 0)
+			return true;
+		return false;
+	}
 #endif
 private:
 	void		LoadTrap();
 	void		ProcessMsg(KWorldMsgNode *pMsg);
 #ifndef _SERVER
 	void		LoadCell();
+	int			BlockHeuristic(int aId, int bId);
+	int			FindPath_Block(int startParentId, int goalParentId);
+	int			FindPath_NpcObs(int startParentId, int goalParentId);
+	int			FindFreeBlockAround(int nMainId, int nNearX, int nNearY);
+	int			m_nGridW;
+	int			m_nGridH;
+	int			m_nGridTotal;
+	int			m_nTargetX;
+	int			m_nTargetY;
+	int			m_nCurStep;
+	UINT		m_uStepDelayTime;
+	char		m_szPathName[FILE_NAME_LENGTH];
+	std::vector<VGridNeighbour> m_vNeighbour;
+	std::vector<int> m_vRetPath;
+	VGridNode	m_GridNode[MAX_CELL];
+	int		m_pTempCover[MAX_CELL];
+	BOOL	m_bHavePath;
+	BOOL	m_uPaintTime;
 #endif
 };
 

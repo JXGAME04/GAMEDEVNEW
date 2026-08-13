@@ -42,7 +42,7 @@ public:
 
 	void	Show();										
 	void	Hide();										
-
+	static void 		Unflagging();
 private:
 	KUiMiniMap();
 	~KUiMiniMap() {}
@@ -59,6 +59,8 @@ private:
 private:
 	static KUiMiniMap*	ms_pSelf;
 private:
+	char			m_szFlagImage[64];
+	int				m_nFlagOffset;
 	unsigned int	m_uShowElem;
 	POINT			m_MapPos;
 	SIZE			m_MapSize;
@@ -76,8 +78,6 @@ private:
 	int             m_nOffsetX;             
 	int             m_nOffsetY;             
 
-	int				m_MpsX;
-	int				m_MpsY;
 	DWORD			m_MpsID;
 	char 			m_szMapName[80];
 };

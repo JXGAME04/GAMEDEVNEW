@@ -102,7 +102,7 @@ void KUiConnectInfo::Initialize()
 	
 	Wnd_AddWindow(this, WL_NORMAL);
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -113,7 +113,12 @@ void KUiConnectInfo::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buff))
 	{
-		Init(&Ini, "RuningImgBg");
+		if (SCREEN_WIDTH == 1024) {
+			Init(&Ini, "RuningImgBg1024");
+		}
+		else {
+			Init(&Ini, "RuningImgBg");
+		}
 		m_ConfirmBtn.Init(&Ini, "ConfirmBtn");
 		m_InputPwdWnd.Init(&Ini, "Password");
 		m_DelRoleBtn.Init(&Ini, "DelRole");

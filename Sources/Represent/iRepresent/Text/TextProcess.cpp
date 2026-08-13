@@ -414,7 +414,7 @@ int KTextProcess::DrawTextLine(iFont* pFont, int nFontSize, KOutputTextParam* pP
 	TP_COLOR	PreBorderColor, CurBorderColor;
 
 	PreFontColor.Color_dw = CurFontColor.Color_dw = pParam->Color;
-	PreBorderColor.Color_dw = CurBorderColor.Color_dw = 0xff000000;
+	PreBorderColor.Color_dw = CurBorderColor.Color_dw = pParam->BorderColor;
 
 #define	_SET_CURRENT_COLOR(c)				\
 	{	PreFontColor = CurFontColor;				\

@@ -117,7 +117,7 @@ void KUiItemEX::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		//UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -131,12 +131,14 @@ void KUiItemEX::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 				m_ItemEX.AddObject(&Obj, 1);
 			else
 				m_ItemEX.RemoveObject(&Obj);
+			UiSoundPlayItem(Obj.uId);
 		}
+
 	}
 	else
 		UpdateData();
 }
-
+extern int SCREEN_WIDTH;
 // -------------------------------------------------------------------------
 // 功能	: 载入界面方案
 // -------------------------------------------------------------------------
@@ -147,7 +149,11 @@ void KUiItemEX::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_ITEM);
 	if (m_pSelf && Ini.Load(Buff))
 	{
-		m_pSelf->Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			m_pSelf->Init(&Ini, "Main1024");
+		else
+			m_pSelf->Init(&Ini, "Main");
+		
 		m_pSelf->m_CloseBtn.Init(&Ini, "CloseBtn");
 		m_pSelf->m_ItemEX.Init(&Ini, "ItemBoxEX");
 		m_pSelf->m_ItemEX.EnableTracePutPos(true);

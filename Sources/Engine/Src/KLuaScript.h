@@ -59,6 +59,7 @@ public:
 	BOOL RegisterFunctions( TLua_Funcs Funcs[], int n = 0 );
 	BOOL LoadBuffer(PBYTE pBuffer, DWORD dwLen );
 	void SafeCallBegin(int * pIndex);//记录当前堆栈栈顶位置，并保存到pIndex指向的数据中
+	int  SafeCallBegin();
 	void SafeCallEnd (int nIndex);//恢复至调用之前栈顶位置。
 	BOOL GetValuesFromStack(char * cFormat , ...);			
 	

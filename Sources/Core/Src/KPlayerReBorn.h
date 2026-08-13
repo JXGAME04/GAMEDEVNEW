@@ -11,40 +11,83 @@
 #define KPLAYERREBORN_H
 
 
-
-
 #ifdef _SERVER
-
+//服务器端
 class KPlayerReBorn
 {
 	friend class KPlayer;
 private:
-	int		m_nPlayerIndex;					
-	int		m_nReBornValue;
-	
+	int	   m_nPlayerIndex;
+	int	   m_nReBornValue;
+	int    m_nReBornLevel;		      //当前转生的等级
+	int    m_nReBornKeepQpiont;       //保留的潜能点
+	int	   m_nReBornKeepJpiont;       //保留的技能
+	int    m_nReBornSetSkillMaxLevel; //技能等级上限增加
+	int    m_nReBornSetFanYuMaxVal;   //防御上限增加
+	int    m_nReBornLifeMaxVal;       //生命上限增加
+	int    m_nCurPlyaerLvel;
+	int    m_nCurReBornNum;
+
+	int    GetReBornLevelRow(int nInLevel);
+
 public:
-	KPlayerReBorn();							
-	void	Init(int nPlayerIdx);			
-	void	SetReBornValue(int nValue);			
-	int		GetReBornValue();					
-	void	AddReBornValue(int nAdd);			
+	KPlayerReBorn();
+	void	Init(int nPlayerIdx);
+	void	SetReBornValue(int nValue);
+	int		GetReBornValue();
+	void	AddReBornValue(int nAdd, int nLevel);
+	int		GetReBornLevel() { return m_nReBornLevel; };
+	int		GetReBornKeepQpiont() { return m_nReBornKeepQpiont; };
+	int		GetReBornKeepJpiont() { return m_nReBornKeepJpiont; };
+	int		GetReBornSkillMaxLevel() { return m_nReBornSetSkillMaxLevel; };
+	int		GetReBornFanYuMaxVal() { return m_nReBornSetFanYuMaxVal; };
+	int		GetReBornLifeMaxVal() { return m_nReBornLifeMaxVal; };
+	int		GetReBornCurLevel() { return m_nCurPlyaerLvel; };
+	int		GetReBornNum() { return m_nCurReBornNum; };
+
+	//int     SetReBornByte(int nIntValue,int nByteNumber,int nByteValue);
+	//int     GetReBornByte(int nIntValue,int nByteNumber);
+
 };
 
 #endif
 
 #ifndef _SERVER
+//客户端
 class KPlayerReBorn
 {
 	friend class KPlayer;
 private:
-	int		m_nReBornValue;						// gia tri
-public:
-	void	SetReBornValue(int nValue);
-	void	AddReBornValue(int nAdd);	
-	int		GetReBornValue()	{return m_nReBornValue;}	
+	int	   m_nReBornValue;						//转生值  （记录转生次数,以及转生的等级,保留的技能点,潜能点）
+	int    m_nReBornLevel;		       //当前转生的等级
+	int    m_nReBornKeepQpiont;       //保留的潜能点
+	int	   m_nReBornKeepJpiont;       //保留的技能
+	int    m_nReBornSetSkillMaxLevel; //技能等级上限增加
+	int    m_nReBornSetFanYuMaxVal;   //防御上限增加
+	int    m_nReBornLifeMaxVal;       //生命上限增加
+	int    m_nCurPlyaerLvel;
+	int    m_nCurReBornNum;
 
-	
+
+
+public:
+	void	SetReBornValue(BYTE* pMsg);	  //int nValue
+	void	AddReBornValue(int nAdd);
+	int		GetReBornValue() { return m_nReBornValue; };
+	int		GetReBornLevel() { return m_nReBornLevel; };
+	int		GetReBornKeepQpiont() { return m_nReBornKeepQpiont; };
+	int		GetReBornKeepJpiont() { return m_nReBornKeepJpiont; };
+	int		GetReBornSkillMaxLevel() { return m_nReBornSetSkillMaxLevel; };
+	int		GetReBornFanYuMaxVal() { return m_nReBornSetFanYuMaxVal; };
+	int		GetReBornLifeMaxVal() { return m_nReBornLifeMaxVal; };
+	int		GetReBornCurLevel() { return m_nCurPlyaerLvel; };
+	int		GetReBornNum() { return m_nCurReBornNum; };
+	//int     SetReBornByte(int nIntValue,int nByteNumber,int nByteValue);
+	//int     GetReBornByte(int nIntValue,int nByteNumber);
+
 };
 #endif
+
+
 
 #endif

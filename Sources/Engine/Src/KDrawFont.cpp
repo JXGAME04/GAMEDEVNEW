@@ -9,6 +9,7 @@
 #include "KWin32.h"
 #include "KCanvas.h"
 #include "KDrawFont.h"
+#include "DrawSpriteMP.inc"
 //---------------------------------------------------------------------------
 // 函数:	DrawFont
 // 功能:	绘制带8级Alpha的字体
@@ -200,18 +201,18 @@ void g_DrawFont(void* node, void* canvas)
 //---------------------------------------------------------------------------
 void g_DrawFontWithBorder(void* node, void* canvas)
 {
-	KDrawNode* pNode = (KDrawNode*)node;
-	KCanvas* pCanvas = (KCanvas*)canvas;
-
-	long nX = pNode->m_nX;// x coord
-	long nY = pNode->m_nY;// y coord
-	long nWidth = pNode->m_nWidth;// width of font
-	long nHeight = pNode->m_nHeight;// height of font
-	long nColor = pNode->m_nColor;// color of font
-	long nBorderColor = pNode->m_nAlpha;// 边缘的颜色值
+#ifndef _WIN64
+	KDrawNode* pNode = (KDrawNode *)node;
+	KCanvas* pCanvas = (KCanvas *)canvas;
+	
+	int nX = pNode->m_nX;// x coord
+	int nY = pNode->m_nY;// y coord
+	int nWidth = pNode->m_nWidth;// width of font
+	int nHeight = pNode->m_nHeight;// height of font
+	int nColor = pNode->m_nColor;// color of font
+	int nBorderColor = pNode->m_nAlpha;// border color
 	void* lpFont = pNode->m_pBitmap;// font pointer
 
-	// 对绘制区域进行裁剪
 	KClipper Clipper;
 	if (!pCanvas->MakeClip(nX, nY, nWidth, nHeight, &Clipper))
 		return;
@@ -220,123 +221,494 @@ void g_DrawFontWithBorder(void* node, void* canvas)
 	void* lpBuffer = pCanvas->LockCanvas(nPitch);
 	if (lpBuffer == NULL)
 		return;
-
-	long nMask32 = pCanvas->m_nMask32;// RGB mask 32bit
-
-	// 计算屏幕下一行的偏移
-	long nNextLine = nPitch - Clipper.width * 2;
-
-#ifdef _WIN64
-#else
+	lpBuffer = (char*)(lpBuffer) + Clipper.y * nPitch + Clipper.x*2;
+	int nMask32 = pCanvas->m_nMask32;// RGB mask 32bit
+	int nNextLine = nPitch - Clipper.width * 2;
+	int nSprSkip = nWidth * Clipper.top + Clipper.left;
+	int nSprSkipPerLine = Clipper.left + Clipper.right;
+	int nAlpha = 31;
+	UINT nCheckColor = nColor & 0xf800;
+	if(nCheckColor == 0xf800)
+		nColor &= 0xf7ff;
+	nColor &= 0xffff;
+	int nBAlpha = 31;
+	nCheckColor = nBorderColor & 0xf800;
+	if(nCheckColor == 0xf800)
+		nBorderColor &= 0xf7ff;
+	nBorderColor &= 0xffff;
 	__asm
 	{
-		//---------------------------------------------------------------------------
-		// 计算 EDI 指向屏幕起点的偏移量 (以字节计)
-		// edi = nPitch * Clipper.y + nX * 2 + lpBuffer
-		//---------------------------------------------------------------------------
-		mov		eax, nPitch
-		mov		ebx, Clipper.y
-		mul		ebx
-		mov     ebx, Clipper.x
-		add		ebx, ebx
-		add     eax, ebx
+//---------------------------------------------------------------------------
+// §i ??n ??u ?ióm v? toμn c?c edi
+//---------------------------------------------------------------------------
 		mov 	edi, lpBuffer
-		add		edi, eax
-		//---------------------------------------------------------------------------
-		// 初始化 ESI 指向图块数据起点 (跳过 Clipper.top 行图形数据)
-		//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+// 3§i ??n ?ióm v? tran texture
+//---------------------------------------------------------------------------
 		mov		esi, lpFont
-		mov		ecx, Clipper.top
-		or ecx, ecx
-		jz		loc_DrawFont_0011
-		xor eax, eax
-
-		loc_DrawFont_0008 :
-
-		mov		edx, nWidth
-
-			loc_DrawFont_0009 :
-
-		mov     al, [esi]
-			inc     esi
-			and al, 0x1f
-			sub		edx, eax
-			jg		loc_DrawFont_0009
-			dec     ecx
-			jg  	loc_DrawFont_0008
-			//---------------------------------------------------------------------------
-			// jump acorrd Clipper.left, Clipper.right
-			//---------------------------------------------------------------------------
-		loc_DrawFont_0011:
-
-		mov		eax, Clipper.left
-			or eax, eax
-			jz		loc_DrawFont_0012
-			jmp		loc_DrawFont_exit
-
-			loc_DrawFont_0012 :
-
-		mov		eax, Clipper.right
-			or eax, eax
-			jz		loc_DrawFont_0100
-			jmp		loc_DrawFont_exit
-			//---------------------------------------------------------------------------
-			// Clipper.left  == 0
-			// Clipper.right == 0
-			//---------------------------------------------------------------------------
-		loc_DrawFont_0100:
-
-		mov		edx, Clipper.width
-
-			loc_DrawFont_0101 :
-
-		xor eax, eax
-			mov     al, [esi]
-			inc     esi
+		mov		edx, nSprSkip
+		or		edx, edx
+		jz		_SkipSpriteAheadContentEnd_
+		_SkipSpriteAheadContentLocalStart_:
+		{
+			movzx   eax, byte ptr[esi]
 			mov		ebx, eax
 			shr		ebx, 5
-			or ebx, ebx
-			jnz		loc_DrawFont_0102
-
-			add		edi, eax
-			add		edi, eax
+			inc     esi
+			and		eax, 0x1f
 			sub		edx, eax
-			jg		loc_DrawFont_0101
-			add		edi, nNextLine
-			dec		Clipper.height
-			jg		loc_DrawFont_0100
-			jmp		loc_DrawFont_exit
-
-			loc_DrawFont_0102 :
-		and eax, 0x1f
-			mov		ecx, eax
-			cmp		ebx, 7
-			mov		ebx, ecx
-			jl		DrawFrontWithBorder_DrawBorder
-
-			//绘制字符点
-			mov		eax, nColor
-			rep		stosw
-
-			sub		edx, ebx
-			jg		loc_DrawFont_0101
-			add		edi, nNextLine
-			dec		Clipper.height
-			jg		loc_DrawFont_0100
-			jmp		loc_DrawFont_exit
-
-			DrawFrontWithBorder_DrawBorder :		//绘制字符的边缘
+			jg		_SkipSpriteAheadContentLocalStart_
+			neg		edx
+		}
+_SkipSpriteAheadContentEnd_:
+		or		edx, edx
+		jz		loc_DrawFont_0100
+		mov		eax, edx
+		mov		edx, Clipper.width
+		jmp		_CheckRemainPixel
+loc_DrawFont_0100:
+		mov		edx, Clipper.width
+loc_DrawFont_0101:
+		xor		eax, eax
+		mov     al, [esi]
+		inc     esi
+		mov		ebx, eax
+		shr		ebx, 5
+		and		eax, 0x1f
+_CheckRemainPixel:
+		or		ebx, ebx
+		jnz		loc_DrawFont_0102
+		lea     edi, [edi + eax * 2]
+		sub		edx, eax
+		jg		loc_DrawFont_0101
+		lea     edi, [edi + edx * 2]
+		neg		edx
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+_DrawPartLineSection_LineSkip_:
+		add		edi, nNextLine
+		mov		eax, edx
+		mov		edx, nSprSkipPerLine
+		or		edx, edx
+		jz		loc_DrawFont_0100
+		or		eax, eax
+		jnz		_DrawPartLineSection_SkipRemainPixel
+_DrawPartLineSection_LineSkipLocal_:
+		movzx   eax, byte ptr[esi]
+		mov		ebx, eax
+		shr		ebx, 5
+		inc     esi
+		and		eax, 0x1f
+_DrawPartLineSection_SkipRemainPixel:
+		sub		edx, eax
+		jg		_DrawPartLineSection_LineSkipLocal_
+		neg		edx
+		jmp		_SkipSpriteAheadContentEnd_
+loc_DrawFont_0102:
+		sub		edx, eax
+		jl		_DrawFont_RemainPixel
+		cmp		ebx, 7
+		jl		DrawFrontWithBorder_DrawBorder
+		//mμu chYnh c?a font
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nAlpha
+		cmp		eax, 31
+		jge		_DrawFont_MaxAlpha
+		movd	mm2, nMask32
+		movd	mm3, nAlpha
+		movd	mm4, nColor
+_DrawFont_Color:
+		mix_2_pixel_color_alpha_font
+		dec		ecx
+		jnz		_DrawFont_Color
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_MaxAlpha:
+		mov		eax, nColor
+		mov		[edi], ax
+		add		edi, 2
+		dec		ecx
+		jnz		_DrawFont_MaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		//mμu viòn c?a font
+DrawFrontWithBorder_DrawBorder:
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nBAlpha
+		cmp		eax, 31
+		jge		_DrawFont_BorderMaxAlpha
+		movd	mm2, nMask32
+		movd	mm3, nBAlpha
+		movd	mm4, nBorderColor
+_DrawFont_Border:
+		mix_2_pixel_color_alpha_font
+		dec		ecx
+		jnz		_DrawFont_Border
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_BorderMaxAlpha:
 		mov		eax, nBorderColor
-			rep		stosw
+		mov		[edi], ax
+		add		edi, 2
+		dec		ecx
+		jnz		_DrawFont_BorderMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		
+_DrawFont_RemainPixel:
+		add		eax, edx
+		neg		edx
+		cmp		ebx, 7
+		jl		_DrawFont_RemainPixel_DrawBorder
+		//mμu chYnh c?a font
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nAlpha
+		cmp		eax, 31
+		jge		_DrawFont_RemainMaxAlpha
+		movd	mm2, nMask32
+		movd	mm3, nAlpha
+		movd	mm4, nColor
+_DrawFont_RemainColor:
+		mix_2_pixel_color_alpha_font
+		dec		ecx
+		jnz		_DrawFont_RemainColor
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_RemainMaxAlpha:
+		mov		eax, nColor
+		mov		[edi], ax
+		add		edi, 2
+		dec		ecx
+		jnz		_DrawFont_RemainMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		//mμu viòn c?a font
+_DrawFont_RemainPixel_DrawBorder:
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nBAlpha
+		cmp		eax, 31
+		jge		_DrawFont_RemainBorderMaxAlpha
+		movd	mm2, nMask32
+		movd	mm3, nBAlpha
+		movd	mm4, nBorderColor
+_DrawFont_RemainBorder:
+		mix_2_pixel_color_alpha_font
+		dec		ecx
+		jnz		_DrawFont_RemainBorder
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_RemainBorderMaxAlpha:
+		mov		eax, nBorderColor
+		mov		[edi], ax
+		add		edi, 2
+		dec		ecx
+		jnz		_DrawFont_RemainBorderMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+loc_DrawFont_exit:
+		emms
+	}
+	pCanvas->UnlockCanvas();
+#endif
 
-			sub		edx, ebx
-			jg		loc_DrawFont_0101
-			add		edi, nNextLine
-			dec		Clipper.height
-			jg		loc_DrawFont_0100
-			jmp		loc_DrawFont_exit
+}
 
-			loc_DrawFont_exit :
+void g_DrawFontWithBorder32b(void* node, void* canvas)
+{
+#ifndef _WIN64
+	KDrawNode* pNode = (KDrawNode *)node;
+	KCanvas* pCanvas = (KCanvas *)canvas;
+	
+	int nX = pNode->m_nX;// x coord
+	int nY = pNode->m_nY;// y coord
+	int nWidth = pNode->m_nWidth;// width of font
+	int nHeight = pNode->m_nHeight;// height of font
+	int nColor = pNode->m_nColor;// color of font
+	int nBorderColor = pNode->m_nAlpha;// ±??μμ???é??μ
+	void* lpFont = pNode->m_pBitmap;// font pointer
+
+	KClipper Clipper;
+	if (!pCanvas->MakeClip(nX, nY, nWidth, nHeight, &Clipper))
+		return;
+
+	int nPitch;
+	void* lpBuffer = pCanvas->LockCanvas(nPitch);
+	if (lpBuffer == NULL)
+		return;
+	lpBuffer = (char*)(lpBuffer) + Clipper.y * nPitch + Clipper.x*4;
+	int nNextLine = nPitch - Clipper.width * 4;
+	int nSprSkip = nWidth * Clipper.top + Clipper.left;
+	int nSprSkipPerLine = Clipper.left + Clipper.right;
+	int nAlpha = 255;
+	nColor &= 0xffffff;
+	int nBAlpha = 255;
+	nBorderColor &= 0xffffff;
+	int R,G,B,bR,bG,bB;
+	R = (nColor & 0xff0000) >> 16;
+	G = (nColor & 0xff00) >> 8;
+	B = (nColor & 0xff);
+	bR = (nBorderColor & 0xff0000) >> 16;
+	bG = (nBorderColor & 0xff00) >> 8;
+	bB = (nBorderColor & 0xff);
+	__asm
+	{
+//---------------------------------------------------------------------------
+// §i ??n ??u ?ióm v? toμn c?c edi
+//---------------------------------------------------------------------------
+		mov 	edi, lpBuffer
+//---------------------------------------------------------------------------
+// 3§i ??n ?ióm v? tran texture
+//---------------------------------------------------------------------------
+		mov		esi, lpFont
+		mov		edx, nSprSkip
+		or		edx, edx
+		jz		_SkipSpriteAheadContentEnd_
+		_SkipSpriteAheadContentLocalStart_:
+		{
+			movzx   eax, byte ptr[esi]
+			mov		ebx, eax
+			shr		ebx, 5
+			inc     esi
+			and		eax, 0x1f
+			sub		edx, eax
+			jg		_SkipSpriteAheadContentLocalStart_
+			neg		edx
+		}
+_SkipSpriteAheadContentEnd_:
+		or		edx, edx
+		jz		loc_DrawFont_0100
+		mov		eax, edx
+		mov		edx, Clipper.width
+		jmp		_CheckRemainPixel
+loc_DrawFont_0100:
+		mov		edx, Clipper.width
+loc_DrawFont_0101:
+		xor		eax, eax
+		mov     al, [esi]
+		inc     esi
+		mov		ebx, eax
+		shr		ebx, 5
+		and		eax, 0x1f
+_CheckRemainPixel:
+		or		ebx, ebx
+		jnz		loc_DrawFont_0102
+		lea     edi, [edi + eax * 4]
+		sub		edx, eax
+		jg		loc_DrawFont_0101
+		lea     edi, [edi + edx * 4]
+		neg		edx
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+_DrawPartLineSection_LineSkip_:
+		add		edi, nNextLine
+		mov		eax, edx
+		mov		edx, nSprSkipPerLine
+		or		edx, edx
+		jz		loc_DrawFont_0100
+		or		eax, eax
+		jnz		_DrawPartLineSection_SkipRemainPixel
+_DrawPartLineSection_LineSkipLocal_:
+		movzx   eax, byte ptr[esi]
+		mov		ebx, eax
+		shr		ebx, 5
+		inc     esi
+		and		eax, 0x1f
+_DrawPartLineSection_SkipRemainPixel:
+		sub		edx, eax
+		jg		_DrawPartLineSection_LineSkipLocal_
+		neg		edx
+		jmp		_SkipSpriteAheadContentEnd_
+loc_DrawFont_0102:
+		sub		edx, eax
+		jl		_DrawFont_RemainPixel
+		cmp		ebx, 7
+		jl		DrawFrontWithBorder_DrawBorder
+		//mμu chYnh c?a font
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nAlpha
+		cmp		eax, 254
+		jge		_DrawFont_MaxAlpha
+		movd	mm2, nAlpha
+		movd	mm3, R
+		movd	mm4, G
+		movd	mm5, B
+_DrawFont_Color:
+		mix_2_pixel_color_alpha_font_32
+		dec		ecx
+		jnz		_DrawFont_Color
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_MaxAlpha:
+		mov		eax, nColor
+		or		eax, 0xff000000
+		mov		[edi], eax
+		add		edi, 4
+		dec		ecx
+		jnz		_DrawFont_MaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		//mμu viòn c?a font
+DrawFrontWithBorder_DrawBorder:
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nBAlpha
+		cmp		eax, 254
+		jge		_DrawFont_BorderMaxAlpha
+		movd	mm2, nBAlpha
+		movd	mm3, bR
+		movd	mm4, bG
+		movd	mm5, bB
+_DrawFont_Border:
+		mix_2_pixel_color_alpha_font_32
+		dec		ecx
+		jnz		_DrawFont_Border
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_BorderMaxAlpha:
+		mov		eax, nBorderColor
+		or		eax, 0xff000000
+		mov		[edi], eax
+		add		edi, 4
+		dec		ecx
+		jnz		_DrawFont_BorderMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		or		edx, edx
+		jg		loc_DrawFont_0101
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		
+_DrawFont_RemainPixel:
+		add		eax, edx
+		neg		edx
+		cmp		ebx, 7
+		jl		_DrawFont_RemainPixel_DrawBorder
+		//mμu chYnh c?a font
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nAlpha
+		cmp		eax, 254
+		jge		_DrawFont_RemainMaxAlpha
+		movd	mm2, nAlpha
+		movd	mm3, R
+		movd	mm4, G
+		movd	mm5, B
+_DrawFont_RemainColor:
+		mix_2_pixel_color_alpha_font_32
+		dec		ecx
+		jnz		_DrawFont_RemainColor
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_RemainMaxAlpha:
+		mov		eax, nColor
+		or		eax, 0xff000000
+		mov		[edi], eax
+		add		edi, 4
+		dec		ecx
+		jnz		_DrawFont_RemainMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+		//mμu viòn c?a font
+_DrawFont_RemainPixel_DrawBorder:
+		mov		ecx, eax
+		movd	mm0, ebx
+		movd	mm1, edx
+		mov		eax, nBAlpha
+		cmp		eax, 254
+		jge		_DrawFont_RemainBorderMaxAlpha
+		movd	mm2, nBAlpha
+		movd	mm3, bR
+		movd	mm4, bG
+		movd	mm5, bB
+_DrawFont_RemainBorder:
+		mix_2_pixel_color_alpha_font_32
+		dec		ecx
+		jnz		_DrawFont_RemainBorder
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+_DrawFont_RemainBorderMaxAlpha:
+		mov		eax, nBorderColor
+		or		eax, 0xff000000
+		mov		[edi], eax
+		add		edi, 4
+		dec		ecx
+		jnz		_DrawFont_RemainBorderMaxAlpha
+		movd	ebx, mm0
+		movd	edx, mm1
+		dec		Clipper.height
+		jz		loc_DrawFont_exit
+		jmp		_DrawPartLineSection_LineSkip_
+loc_DrawFont_exit:
+		emms
 	}
 	pCanvas->UnlockCanvas();
 #endif

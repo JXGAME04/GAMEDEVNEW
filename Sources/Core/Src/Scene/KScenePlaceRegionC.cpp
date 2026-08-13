@@ -639,7 +639,7 @@ void KScenePlaceRegionC::PaintGroundDirect()
 	}
 
 	KRUImagePart	ImgPart;
-	ImgPart.Color.Color_dw = 0;
+	//ImgPart.Color.Color_dw = 0;
 	ImgPart.bRenderFlag = RUIMAGE_RENDER_FLAG_FRAME_DRAW;
 	ImgPart.bRenderStyle = IMAGE_RENDER_STYLE_3LEVEL;
 	ImgPart.nType = ISI_T_SPR;
@@ -675,7 +675,7 @@ void KScenePlaceRegionC::PaintGroundDirect()
 		else
 		{
 			strcpy(ImgPart.szImage, pObj->szImage);
-			ImgPart.nFrame = pObj->nFrame;				//®ang lçi chç nµy
+			ImgPart.nFrame = pObj->nFrame;				//®ang lçi ch?nµy
 			ImgPart.uImage = 0;
 			ImgPart.nISPosition = -1;
 		
@@ -725,9 +725,15 @@ void KScenePlaceRegionC::PaintGroundDirect()
 void KScenePlaceRegionC::PaintGround(BOOL bPrerenderGroundImg)//add by phong kiÒu h×nh nÒn hoa s¬n
 {
 	if (m_pPrerenderGroundImg && bPrerenderGroundImg)
+	{
+		//g_DebugLog("preren [%d][%x]", m_pPrerenderGroundImg->bRenderStyle, m_pPrerenderGroundImg->Color.Color_dw);
 		g_pRepresent->DrawPrimitives(1, m_pPrerenderGroundImg, RU_T_IMAGE, false);
+	}
 	else
+	{
+		g_DebugLog("direct");
 		PaintGroundDirect();
+	}
 }
 
 #ifdef SWORDONLINE_SHOW_DBUG_INFO
@@ -757,7 +763,7 @@ void KScenePlaceRegionC::PaintObstacle()
 			{
 				char	szDebugTrap[32];
 				sprintf(szDebugTrap, "%x", nTrap);
-				//g_pRepresent->OutputText(12, szDebugTrap, KRF_ZERO_END, nX, nY, 0xffffffff, 0, 0);
+				g_pRepresent->OutputText(12, szDebugTrap, KRF_ZERO_END, nX, nY, 0xffffffff, 0, 0);
 			}
 
 			int nIdx = SubWorld[0].FindRegion(MAKELONG(m_RegionIndex.x, m_RegionIndex.y));
@@ -768,7 +774,7 @@ void KScenePlaceRegionC::PaintObstacle()
 				if (nRef)
 				{
 					sprintf(szDebugNpcRef, "%d", nRef);
-					//g_pRepresent->OutputText(12, szDebugNpcRef, KRF_ZERO_END, nX, nY, 0xffffffff, 0, 0);
+					g_pRepresent->OutputText(12, szDebugNpcRef, KRF_ZERO_END, nX, nY, 0xffffffff, 0, 0);
 				}
 			}
 			long nType = (m_ObstacleInfo[i][j] >> 4) & 0x0000000f;
@@ -867,7 +873,7 @@ void KScenePlaceRegionC::PaintAboveHeadObj(KBuildinObj* pObj, RECT* pRepresentAr
 	//_ASSERT(pObj);
 
 	KRUImage4	Img;
-	Img.Color.Color_dw = 0;	
+	//Img.Color.Color_dw = 0;	
 	Img.bRenderStyle = IMAGE_RENDER_STYLE_3LEVEL;
 	Img.nType = ISI_T_SPR;
 	strcpy(Img.szImage, pObj->szImage);

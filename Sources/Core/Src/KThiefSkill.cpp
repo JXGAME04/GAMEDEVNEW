@@ -20,6 +20,40 @@ KThiefSkill ::KThiefSkill()
 	m_szSkillSound[0] = 0;
 #endif
 	m_nCost = 50;
+
+	m_bTargetEnemy = FALSE;
+	m_bTargetAlly = FALSE;
+	m_bTargetObj = FALSE;
+	m_bUseCostPercent = FALSE;
+
+	// Initialize skill name with an empty string
+	memset(m_szSkillName, 0, sizeof(m_szSkillName));
+
+#ifndef _SERVER
+	// Initialize skill icon path with an empty string
+	memset(m_szSkillIcon, 0, sizeof(m_szSkillIcon));
+
+	// Initialize skill description with an empty string
+	memset(m_szSkillDesc, 0, sizeof(m_szSkillDesc));
+
+	// Initialize target movie and parameters with empty strings
+	memset(m_szTargetMovie, 0, sizeof(m_szTargetMovie));
+	memset(m_szTargetMovieParam, 0, sizeof(m_szTargetMovieParam));
+
+	// Initialize skill sound with an empty string
+	memset(m_szSkillSound, 0, sizeof(m_szSkillSound));
+
+	// Initialize special skill file with an empty string
+	memset(m_szSkillSpecialFile, 0, sizeof(m_szSkillSpecialFile));
+#endif
+
+	// Initialize thief percent
+	m_nThiefPercent = 0;
+
+	// Initialize private variables
+	m_nThiefStyle = 0;
+	m_dwParam1 = 0;
+	m_dwParam2 = 0;
 }
 
 KThiefSkill::~KThiefSkill()

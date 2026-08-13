@@ -21,8 +21,8 @@ extern int g_PlayerTimerCallBackFun(void * pOwner, char * szScriptFileName);
 extern int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFileName);
 
 #define MAX_TIMER_PERMISSION		10
-#define MAX_PLAYER_MISSION			  120
-#define MAX_NPC_MISSION					   2000
+#define MAX_PLAYER_MISSION			  600
+#define MAX_NPC_MISSION					   5000
 
 typedef struct 
 {
@@ -77,8 +77,16 @@ public:
 		m_Data[ulIndex].m_nParam[nParam] = nValue;
 		if (nParam == MISSION_PARAM_AVAILABLE)
 		{
-			Npc[Player[m_Data[ulIndex].m_ulPlayerIndex].m_nIndex].m_nMissionGroup = nValue == MISSION_AVAILABLE_VALUE?(int)m_Data[ulIndex].m_ucPlayerGroup:-1;
-			Player[m_Data[ulIndex].m_ulPlayerIndex].SendMSGroup();
+			if (m_Data[ulIndex].m_ulPlayerIndex >= 0 && m_Data[ulIndex].m_ulPlayerIndex < MAX_PLAYER) {
+				if (Player[m_Data[ulIndex].m_ulPlayerIndex].m_nIndex >= 0 && Player[m_Data[ulIndex].m_ulPlayerIndex].m_nIndex < MAX_NPC) {
+					Npc[Player[m_Data[ulIndex].m_ulPlayerIndex].m_nIndex].m_nMissionGroup = nValue == MISSION_AVAILABLE_VALUE ? (int)m_Data[ulIndex].m_ucPlayerGroup : -1;
+					Player[m_Data[ulIndex].m_ulPlayerIndex].SendMSGroup();
+				}
+				else
+					return FALSE;
+			}
+			else
+				return FALSE;
 		}
 		return TRUE;
 	};
@@ -108,7 +116,7 @@ public:
 	};
 };
 
-typedef _KMissionPlayerArray<TMissionPlayerInfo, MAX_PLAYER_MISSION> KMissionPlayerArray;
+typedef _KMissionPlayerArray<TMissionPlayerInfo, MAX_PLAYER> KMissionPlayerArray;
 typedef _KMissionNpcArray<TMissionNpcInfo, MAX_NPC_MISSION> KMissionNpcArray;
 typedef KTimerFunArray <KTimerTaskFun, MAX_TIMER_PERMISSION, g_MissionTimerCallBackFun> KMissionTimerArray;
 #define MAX_MISSION_VALUE_COUNT 100
@@ -433,7 +441,7 @@ public:
     void    UpRankAllParam(int nParam);
 	unsigned long GetMissionPlayer_DataIndex(unsigned long ulPlayerIndex, unsigned long ulPlayerID)
 	{
-		if (ulPlayerIndex >= MAX_PLAYER_MISSION || ulPlayerID == 0)
+		if (ulPlayerIndex >= MAX_PLAYER || ulPlayerID == 0)
 			return 0;
 		TMissionPlayerInfo Info;
 		Info.m_ulPlayerIndex = ulPlayerIndex;

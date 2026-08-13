@@ -58,6 +58,8 @@ void	KPlayerTong::Clear()
 	m_szMasterName[0]	= 0;
 	m_nApplyTo			= 0;
 	m_nRecruit = 0;
+	m_nTongLevel = 0;
+	m_nTongExp = 0;
 }
 
 #ifndef _SERVER
@@ -510,7 +512,8 @@ BOOL	KPlayerTong::CheckAddCondition(int nPlayerIdx)
 	// 组队不能加入帮会
 	if (Player[nPlayerIdx].m_cTeam.m_nFlag)
 		return FALSE;
-
+	if(m_bIsFull)
+		return FALSE;
 	return TRUE;
 }
 #endif
@@ -957,6 +960,8 @@ void	KPlayerTong::SetSelfInfo(TONG_SELF_INFO_SYNC *pInfo)
 	this->m_nFigure = pInfo->m_btFigure;
 	this->m_nCamp = pInfo->m_btCamp;
 	this->m_dwMoney = pInfo->m_dwMoney;
+	this->m_nTongLevel = pInfo->m_nLevel;
+	this->m_nTongExp = pInfo->m_nExp;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Camp = m_nCamp;
 	if (Player[CLIENT_PLAYER_INDEX].m_cTeam.m_nFlag == 0)
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentCamp = m_nCamp;
@@ -1322,6 +1327,9 @@ void	KPlayerTong::Login(STONG_SERVER_TO_CORE_LOGIN *pLogin)
 	strcpy(m_szMasterName, pLogin->m_szMaster);
 	m_nRecruit = pLogin->m_nRecruit;
 	m_dwMoney = pLogin->m_nMoney;
+	m_nTongLevel = pLogin->m_nLevel;
+	m_nTongExp = pLogin->m_nExp;
+	m_bIsFull = pLogin->m_bIsFull;
 	Npc[Player[m_nPlayerIndex].m_nIndex].m_Camp = m_nCamp;
 	if (!Player[m_nPlayerIndex].m_cTeam.m_nFlag)
 		Npc[Player[m_nPlayerIndex].m_nIndex].m_CurrentCamp = m_nCamp;
@@ -1714,6 +1722,12 @@ void KPlayerTong::ChangeMoney(DWORD dwMoney)
 	m_dwMoney = dwMoney;
 	this->SendSelfInfo();
 }
+
+void KPlayerTong::ChangeFullStatus(bool bIsFull)
+{
+	m_bIsFull = bIsFull;
+	//this->SendSelfInfo();
+}
 #endif
 
 #ifndef _SERVER
@@ -2021,32 +2035,67 @@ int		KPlayerTong::CheckChangeNextTargetCondition(TONG_APPLY_CHANGE_NEXTTARGET_CO
 }
 #endif
 
+
 #ifdef _SERVER
-void	KPlayerTong::BeChangedCamp(STONG_SERVER_TO_CORE_BE_CHANGED_CAMP *pSync)
+static inline BOOL Tong_IsCampLockMap(int nSubWorldID)
 {
-	int nSubWorldIndex = Npc[Player[m_nPlayerIndex].m_nIndex].m_SubWorldIndex;
-	int nSubWorldID = SubWorld[nSubWorldIndex].m_SubWorldID;
-	if (nSubWorldID == ID_MAP_TONGKIM || nSubWorldID == ID_MAP_BAODANH_TONGKIM || 
-		nSubWorldID == ID_MAP_LIENDAU || nSubWorldID == ID_MAP_LIENDAU_CAOCAP || nSubWorldID == ID_MAP_BAODANH_LIENDAU ||
-		nSubWorldID == ID_MAP_CONGTHANH || nSubWorldID == ID_MAP_HAUPHUONG_CONG || nSubWorldID == ID_MAP_HAUPHUONG_THU)
+	return (nSubWorldID == ID_MAP_TONGKIM ||
+			nSubWorldID == ID_MAP_BAODANH_TONGKIM ||
+			nSubWorldID == ID_MAP_LIENDAU ||
+			nSubWorldID == ID_MAP_LIENDAU_CAOCAP ||
+			nSubWorldID == ID_MAP_BAODANH_LIENDAU ||
+			nSubWorldID == ID_MAP_CONGTHANH ||
+			nSubWorldID == ID_MAP_HAUPHUONG_CONG ||
+			nSubWorldID == ID_MAP_HAUPHUONG_THU);
+}
+void KPlayerTong::BeChangedCamp(STONG_SERVER_TO_CORE_BE_CHANGED_CAMP *pSync)
+{
+	if (!pSync)
 		return;
+	if (m_nPlayerIndex <= 0 || m_nPlayerIndex >= MAX_PLAYER)
+		return;
+
+	int nNpcIdx = Player[m_nPlayerIndex].m_nIndex;
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return;
+
+
 	if (pSync->m_nCamp != camp_justice && pSync->m_nCamp != camp_evil && pSync->m_nCamp != camp_balance)
 		return;
 
+	
 	if (pSync->m_nCamp == m_nCamp)
+	{
 		return;
-	
-	m_nCamp		= pSync->m_nCamp;
-	this->SendSelfInfo();//#can kiem tra
-	Npc[Player[m_nPlayerIndex].m_nIndex].m_Camp = m_nCamp;
-	Npc[Player[m_nPlayerIndex].m_nIndex].m_CurrentCamp = m_nCamp;
-	
-	TONG_CHANGE_CAMP_SYNC	sSync;
+	}
+
+	int nSubWorldIndex = Npc[nNpcIdx].m_SubWorldIndex;
+	int nSubWorldID = 0;
+	if (nSubWorldIndex >= 0)
+		nSubWorldID = SubWorld[nSubWorldIndex].m_SubWorldID;
+
+	BOOL bLockMap = Tong_IsCampLockMap(nSubWorldID);
+	m_nCamp = pSync->m_nCamp;
+	Npc[nNpcIdx].m_Camp = m_nCamp;
+
+
+	if (!bLockMap)
+	{
+		if (!Player[m_nPlayerIndex].m_cTeam.m_nFlag)
+		{
+			Npc[Player[m_nPlayerIndex].m_nIndex].m_Camp = m_nCamp;
+			Npc[Player[m_nPlayerIndex].m_nIndex].m_CurrentCamp = m_nCamp;
+		}
+	}
+
+	this->SendSelfInfo(); 
+
+	TONG_CHANGE_CAMP_SYNC sSync;
 	sSync.ProtocolType = s2c_extendtong;
 	sSync.m_wLength = sizeof(sSync) - 1;
 	sSync.m_btMsgId = enumTONG_SYNC_ID_CHANGE_CAMP;
-	sSync.m_btCamp = this->m_nCamp;
-	
+	sSync.m_btCamp = (BYTE)m_nCamp;
+
 	if (g_pServer)
 		g_pServer->PackDataToClient(Player[m_nPlayerIndex].m_nNetConnectIdx, &sSync, sSync.m_wLength + 1);
 }

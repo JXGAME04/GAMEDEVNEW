@@ -10,7 +10,7 @@
 #include "../Elem/WndMessage.h"
 #include "UiInformation.h"
 #include "../UiSoundSetting.h"
-
+#include "../../../core/src/GameDataDef.h"
 #define	SCHEME_INI	"UiInformation.ini"
 
 KUiInformation	g_UiInformation;
@@ -29,11 +29,26 @@ void UiCloseMessageBox()
 	g_UiInformation.Close();
 }
 
+bool PushReviveButton()
+{
+	return g_UiInformation.PushReviveButton();
+}
+
 KUiInformation::KUiInformation()
 {
 	m_pCallerWnd = NULL;
 	m_nOrigFirstBtnXPos = 0;
 	m_nCentreBtnXPos = 0;
+}
+
+bool KUiInformation::PushReviveButton()
+{
+	if(!IsVisible())
+		return false;
+	if(m_uCallerParam != SMCT_UI_RENASCENCE)
+		return false;
+	Hide(0);
+	return true;
 }
 
 void KUiInformation::Initialize()
@@ -45,7 +60,7 @@ void KUiInformation::Initialize()
 	m_Style &= ~WND_S_VISIBLE;
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
-
+extern int SCREEN_WIDTH;
 void KUiInformation::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -53,7 +68,10 @@ void KUiInformation::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buff))
 	{
-		KWndShowAnimate::Init(&Ini, "Main");
+		if(SCREEN_WIDTH == 1024)
+			KWndShowAnimate::Init(&Ini, "Main1024");
+		else
+			KWndShowAnimate::Init(&Ini, "Main");
 		m_Information .Init(&Ini, "Info");
 		m_FirstBtn .Init(&Ini, "FirstBtn");
 		m_SecondBtn.Init(&Ini, "SecondBtn");

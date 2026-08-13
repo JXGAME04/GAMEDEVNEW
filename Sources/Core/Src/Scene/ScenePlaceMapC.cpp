@@ -45,9 +45,14 @@ KScenePlaceMapC::KScenePlaceMapC()
 	memset(&m_ElemsList, 0, sizeof(m_ElemsList));
 	m_pEntireMap = NULL;
 	m_DirectPos.x = m_DirectPos.y = 0;
+	m_nPUBGX = 0;
+	m_nPUBGY = 0;
+	m_nSubWorldID = -1;
 #ifndef _SERVER
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();  //reset path finder when move to new map
+	//Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 #endif
+	m_nTargetX = -1;
 }
 
 KScenePlaceMapC::~KScenePlaceMapC()
@@ -223,8 +228,10 @@ void KScenePlaceMapC::SetShowElemsFlag(unsigned int uShowElemsFlag)
 
 BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath)
 {
+	m_nTargetX = -1;
 #ifndef _SERVER
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();  //reset path finder when move to new map
+	//Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 #endif
 	m_bPaintLine = FALSE;
 	if (Initialize() == false)
@@ -239,8 +246,8 @@ BOOL KScenePlaceMapC::Load(KIniFile* pSetting, const char* pszScenePlaceRootPath
 		{
 			m_EntireMapLTPosition.x = -1;
 			pSetting->GetInteger2(PLACE_MAP_SAVE_SECTION, "MapLTRegionIndex",
-				(int*)&m_EntireMapLTPosition.x, (int*)m_EntireMapLTPosition.y);
-				//(int*)&m_EntireMapLTPosition.x, (int*)&m_EntireMapLTPosition.y);
+				//(int*)&m_EntireMapLTPosition.x, (int*)m_EntireMapLTPosition.y);
+				(int*)&m_EntireMapLTPosition.x, (int*)&m_EntireMapLTPosition.y);
 			if (m_EntireMapLTPosition.x == -1)
 			{
 				RECT	rc;
@@ -341,12 +348,13 @@ void KScenePlaceMapC::FillCellsPicInfo()
 			{
 				g_pRepresent->ReleaseBitmapDataBuffer(
 						m_ElemsList[0][0].szImageName, pBuff);
-				unsigned int uMask16 = -1;
+				/*unsigned int uMask16 = -1;
 				if (Info.eFormat == BDBF_16BIT_555)
 					uMask16 = RGB_555;
 				else if (Info.eFormat == BDBF_16BIT_565)
 					uMask16 = RGB_565;
-				if (uMask16 >= 0)
+				if (uMask16 >= 0)*/
+					unsigned int uMask16 = RGB_565;
 					m_pEntireMap = get_jpg_image(m_szEntireMapFile, uMask16);
 			}			
 		}
@@ -514,7 +522,70 @@ void KScenePlaceMapC::PaintMap(int nX, int nY)
 				Npc[nNpcIdx].m_MapX * 2;
 			int nNpcY = HIWORD(Npc[nNpcIdx].m_dwRegionID) * MAP_A_REGION_NUM_MAP_PIXEL_V +
 				Npc[nNpcIdx].m_MapY;
-
+			if(m_nTargetX > 0)
+			{
+				KRULine		Line;
+				Line.Color.Color_dw = 0xff00ff00;
+				Line.oPosition.nX = nX + nNpcX - m_MapCoverArea.left;
+				Line.oPosition.nY = nY + nNpcY - m_MapCoverArea.top;
+				if(Line.oPosition.nX < nX)
+					Line.oPosition.nX = nX;
+				else if(Line.oPosition.nX >= nX + m_Size.cx)
+					Line.oPosition.nX = nX + m_Size.cx - 1;
+				if(Line.oPosition.nY < nY)
+					Line.oPosition.nY = nY;
+				else if(Line.oPosition.nY >= nY + m_Size.cy)
+					Line.oPosition.nY = nY + m_Size.cy - 1;
+				Line.oEndPos.nX = nX + m_nTargetX*2/MAP_A_REGION_NUM_MAP_PIXEL_H - m_MapCoverArea.left;
+				Line.oEndPos.nY = nY + m_nTargetY/MAP_A_REGION_NUM_MAP_PIXEL_V - m_MapCoverArea.top;
+				if(Line.oEndPos.nX < nX)
+					Line.oEndPos.nX = nX;
+				else if(Line.oEndPos.nX >= nX + m_Size.cx)
+					Line.oEndPos.nX = nX + m_Size.cx - 1;
+				if(Line.oEndPos.nY < nY)
+					Line.oEndPos.nY = nY;
+				else if(Line.oEndPos.nY >= nY + m_Size.cy)
+					Line.oEndPos.nY = nY + m_Size.cy - 1;
+				if(
+				(Line.oPosition.nX != Line.oEndPos.nX || Line.oPosition.nX != nX)
+				&& (Line.oPosition.nX != Line.oEndPos.nX || Line.oPosition.nX != nX + m_Size.cx - 1)
+				&& (Line.oPosition.nY != Line.oEndPos.nY || Line.oPosition.nY != nY)
+				&& (Line.oPosition.nY != Line.oEndPos.nY || Line.oPosition.nY != nY + m_Size.cy - 1)
+				)
+					g_pRepresent->DrawPrimitives(1, &Line, RU_T_LINE, true);
+				KRUImagePart	Img;
+				ZeroMemory(&Img, sizeof(KRUImagePart));
+				strcpy(Img.szImage, m_szFlagImage);
+				Img.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+				Img.Color.Color_dw = 0xff000000;
+				Img.nType = ISI_T_SPR;
+				Img.nISPosition = IMAGE_IS_POSITION_INIT;
+				Img.oPosition.nX = nX + m_nTargetX*2/MAP_A_REGION_NUM_MAP_PIXEL_H - m_MapCoverArea.left;
+				Img.oPosition.nY = nY - m_nFlagOffset + m_nTargetY/MAP_A_REGION_NUM_MAP_PIXEL_V - m_MapCoverArea.top;
+				Img.oImgRBPos.nX = m_nFlagOffset;
+				Img.oImgRBPos.nY = m_nFlagOffset;
+				if(Img.oPosition.nX < nX)
+				{
+					int nOff = nX - Img.oPosition.nX;
+					Img.oPosition.nX += nOff;
+					Img.oImgLTPos.nX += nOff;
+				}
+				else if(Img.oPosition.nX + m_nFlagOffset >= nX + m_Size.cx)
+				{
+					Img.oImgRBPos.nX -= Img.oPosition.nX + m_nFlagOffset - (nX + m_Size.cx - 1);
+				}
+				if(Img.oPosition.nY < nY)
+				{
+					int nOff = nY - Img.oPosition.nY;
+					Img.oPosition.nY += nOff;
+					Img.oImgLTPos.nY += nOff;
+				}
+				else if(Img.oPosition.nY + m_nFlagOffset >= nY + m_Size.cy)
+				{
+					Img.oImgRBPos.nY -= Img.oPosition.nY + m_nFlagOffset - (nY + m_Size.cy - 1);
+				}
+				g_pRepresent->DrawPrimitives(1, &Img, RU_T_IMAGE_PART, true);
+			}
 			if (nNpcX >= m_MapCoverArea.left && nNpcX < m_MapCoverArea.right &&
 				nNpcY >= m_MapCoverArea.top  && nNpcY < m_MapCoverArea.bottom)
 			{
@@ -528,10 +599,11 @@ void KScenePlaceMapC::PaintMap(int nX, int nY)
 				
 			}
 			
-			PaintFindPos(nX + m_DirectPos.x - m_MapCoverArea.left - 1, 
-				nY + m_DirectPos.y - m_MapCoverArea.top  - 1, 
-				nX + nNpcX - m_MapCoverArea.left - 1, 
-				nY + nNpcY - m_MapCoverArea.top  - 1);//»æ»­ÆìÖÄ
+			
+			//PaintFindPos(nX + m_DirectPos.x - m_MapCoverArea.left - 1, 
+			//	nY + m_DirectPos.y - m_MapCoverArea.top  - 1, 
+			//	nX + nNpcX - m_MapCoverArea.left - 1, 
+			//	nY + nNpcY - m_MapCoverArea.top  - 1);//»æ»­ÆìÖÄ
 			//----------------------------¿ªÊ¼Ñ°Â·
 			//if (g_ScenePlace.bPaintMode)  	//ÊÇ·ñ²åÆì,Ñ°Â·×´Ì¬
 			//{
@@ -544,11 +616,57 @@ void KScenePlaceMapC::PaintMap(int nX, int nY)
 
 			
 			//----draw auto pathing----
-			PaintAutoPath(nX, nY);
+			//PaintAutoPath(nX, nY);
+
+			//draw target point PUBG
+			if(m_nSubWorldID == PUBG_MAP)
+				PaintAPoint(m_nPUBGX, m_nPUBGY);
 		}
 	}
 }
+void KScenePlaceMapC::PaintAutoPath(int nX, int nY)
+{
+    int nPlayerIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+    const std::vector<FindPathNode>& path = Npc[nPlayerIndex].m_PathFind;
 
+    for (size_t i = 0; i < path.size(); ++i)
+    {
+        if (i % 3 != 0)
+            continue;
+
+        const FindPathNode& node = path[i];
+
+        int mapX = nX + node.x / 16 - m_MapCoverArea.left - 1;
+        int mapY = nY + node.y / 32 - m_MapCoverArea.top - 1;
+
+        if (mapX > m_MapPos.left && mapX < m_MapPos.right &&
+            mapY > m_MapPos.top && mapY < m_MapPos.bottom)
+        {
+            DWORD dwColor = 0x00FF1A; //
+            const int radius = 1;     //
+            const int segments = 8;   // 
+
+            for (int j = 0; j < segments; ++j)
+            {
+                float angle = 2.0f * 3.1415926f * j / segments;
+                int x = mapX + int(radius * cos(angle));
+                int y = mapY + int(radius * sin(angle));
+
+                KRUShadow dot;
+                dot.Color.Color_dw = dwColor;
+                dot.oPosition.nX = x;
+                dot.oPosition.nY = y;
+                dot.oEndPos.nX = x + 1;
+                dot.oEndPos.nY = y + 1;
+
+                g_pRepresent->DrawPrimitives(1, &dot, RU_T_SHADOW, true);
+            }
+        }
+    }
+}
+
+
+/* 
 void KScenePlaceMapC::PaintAutoPath(int nX, int nY) {
 	for (int i = 0; i < Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.size(); ++i) {
 		if (i % 3 == 0) { // Check if the index is a multiple of 3
@@ -576,6 +694,101 @@ void KScenePlaceMapC::PaintAutoPath(int nX, int nY) {
 			        //                    nX: %d, nY: %d\n\
 			        //                    node.x: %d, node.y: %d\n", FootSpot.oPosition.nX, FootSpot.oPosition.nY, nX, nY, node.x / 16, node.y / 32);
 			//}
+		}
+	}
+}*/
+
+//paint a footspot
+void KScenePlaceMapC::PaintAPoint(int nX, int nY) {
+	if (nX == 0 && nY == 0)
+		return;
+	m_nPUBGX = nX;
+	m_nPUBGY = nY;
+	FindPathNode node;
+	node.x = nX;
+	node.y = nY;
+	//if (node.x >= m_MapCoverArea.left && node.x < m_MapCoverArea.right &&
+	//	node.y >= m_MapCoverArea.top && node.y < m_MapCoverArea.bottom) {
+	KRUShadow FootSpot;
+	KRColor AutoMapSpotColor;
+	AutoMapSpotColor.Color_b.r = 0;
+	AutoMapSpotColor.Color_b.g = 255;
+	AutoMapSpotColor.Color_b.b = 26;
+	AutoMapSpotColor.Color_dw = 0x00FF1A;
+
+	FootSpot.Color.Color_dw = AutoMapSpotColor.Color_dw;
+	FootSpot.oPosition.nX = m_MapPos.left + node.x / 16 - m_MapCoverArea.left - 1;
+	FootSpot.oPosition.nY = m_MapPos.top + node.y / 32 - m_MapCoverArea.top - 1;
+	FootSpot.oEndPos.nX = FootSpot.oPosition.nX + 3;
+	FootSpot.oEndPos.nY = FootSpot.oPosition.nY + 3;
+	//if ((FootSpot.oPosition.nX > m_MapPos.left && FootSpot.oPosition.nY < m_MapPos.bottom)
+	//	&& (FootSpot.oPosition.nX < m_MapPos.right && FootSpot.oPosition.nY > m_MapPos.top))
+		//g_pRepresent->DrawPrimitives(1, &FootSpot, RU_T_SHADOW, true);
+	
+	KRUImage Image;
+	Image.nType = ISI_T_SPR;
+	Image.Color.Color_b.a = 255;
+	Image.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+	Image.uImage = 0;
+	Image.nFrame = 0;
+	Image.nISPosition = IMAGE_IS_POSITION_INIT;
+	Image.bRenderFlag = RUIMAGE_RENDER_FLAG_REF_SPOT;
+	Image.oPosition.nX = FootSpot.oPosition.nX + 3;
+	Image.oPosition.nY = FootSpot.oPosition.nY + 3;
+	Image.oPosition.nZ = 0;
+	
+	strcpy(Image.szImage, "\\spr\\ranktrungsinh\\saotrungsinh1.spr");
+	if ((FootSpot.oPosition.nX > m_MapPos.left && FootSpot.oPosition.nY < m_MapPos.bottom)
+		&& (FootSpot.oPosition.nX < m_MapPos.right && FootSpot.oPosition.nY > m_MapPos.top))
+		g_pRepresent->DrawPrimitives(1, &Image, RU_T_IMAGE, 1);
+	// Debug information
+	// g_DebugLog("FootSpot.oPosition.nX: %d, FootSpot.oPosition.nY: %d\n\
+			//                    nX: %d, nY: %d\n\
+			//                    node.x: %d, node.y: %d\n", FootSpot.oPosition.nX, FootSpot.oPosition.nY, nX, nY, node.x / 16, node.y / 32);
+	//}
+	if (m_nCurrentRadius)
+		PaintCircle(m_nPUBGX, m_nPUBGY, m_nCurrentRadius);
+}
+
+void KScenePlaceMapC::PaintCircle(int nX, int nY, int Radius)
+{
+	// Draw a circle of footspots centered at (nX, nY) with the given radius (in map coordinates)
+	// The circle will be approximated by plotting points at regular angle intervals
+
+	if (Radius <= 0)
+		return;
+	if (nX == 0 && nY == 0) {
+		nX = m_nPUBGX;
+		nY = m_nPUBGY;
+	}
+	m_nCurrentRadius = Radius;
+	const int kNumSegments = 64; // More segments = smoother circle, but lag
+	const float PI = 3.14159265f;
+
+	KRColor circleColor;
+	circleColor.Color_b.r = 255;
+	circleColor.Color_b.g = 255;
+	circleColor.Color_b.b = 0;
+	circleColor.Color_dw = 0xff0000; //color
+
+	for (int i = 0; i < kNumSegments; ++i)
+	{
+		float theta = (2.0f * PI * i) / kNumSegments;
+		int px = nX + static_cast<int>(Radius * cosf(theta));
+		int py = nY + static_cast<int>(Radius * sinf(theta));
+
+		KRUShadow FootSpot;
+		FootSpot.Color.Color_dw = circleColor.Color_dw;
+		FootSpot.oPosition.nX = m_MapPos.left + px / 16 - m_MapCoverArea.left - 1;
+		FootSpot.oPosition.nY = m_MapPos.top + py / 32 - m_MapCoverArea.top - 1;
+		FootSpot.oEndPos.nX = FootSpot.oPosition.nX + 3;
+		FootSpot.oEndPos.nY = FootSpot.oPosition.nY + 3;
+
+		// Only draw if inside map area
+		if ((FootSpot.oPosition.nX > m_MapPos.left && FootSpot.oPosition.nY < m_MapPos.bottom)
+			&& (FootSpot.oPosition.nX < m_MapPos.right && FootSpot.oPosition.nY > m_MapPos.top))
+		{
+			g_pRepresent->DrawPrimitives(1, &FootSpot, RU_T_SHADOW, true);
 		}
 	}
 }
@@ -816,7 +1029,7 @@ void KScenePlaceMapC::LoadSymbol(int nSubWorldID)
 {
 	char szSectName[10];
 	itoa(nSubWorldID, szSectName, 10);
-
+	m_nSubWorldID = nSubWorldID;
 	if (g_MapTraffic.IsSectionExist(szSectName))
 	{
 		char szKeyName[100];
@@ -968,6 +1181,47 @@ void KScenePlaceMapC::PaintSymbol(int nX)
 	}
 }
 
+void KScenePlaceMapC::FlagOnTarget(int x, int y)
+{
+	x += m_MapCoverArea.left;
+	y += m_MapCoverArea.top;
+	m_nTargetX = x*MAP_A_REGION_NUM_MAP_PIXEL_H/2;
+	m_nTargetY = y*MAP_A_REGION_NUM_MAP_PIXEL_V;
+	SubWorld[0].FindPath(m_nTargetX, m_nTargetY);
+}
+
+void KScenePlaceMapC::FlagOnCoord(int x, int y)
+{
+	m_nTargetX = x;
+	m_nTargetY = y;
+	SubWorld[0].FindPath(m_nTargetX, m_nTargetY);
+}
+
+void KScenePlaceMapC::RemoveFlag()
+{
+	m_nTargetX = -1;
+	SubWorld[0].StopPath();
+}
+
+void KScenePlaceMapC::SetFlagImage(const char* szImg, int nFlagOffset)
+{
+	strcpy(m_szFlagImage, szImg);
+	m_nFlagOffset = nFlagOffset;
+}
+
+int KScenePlaceMapC::GetCurFlagPos(unsigned int uYPos, int nPosParam)
+{
+	int x = (short)((nPosParam & 0xffff0000) >> 16);
+	int y = (short)(nPosParam & 0xffff);
+	x += m_MapCoverArea.left;
+	y += m_MapCoverArea.top;
+	if(uYPos)
+	{
+		return y/(MAP_A_REGION_NUM_MAP_PIXEL_V/2);
+	}
+	return x/(MAP_A_REGION_NUM_MAP_PIXEL_H/2);
+}
+
 void KScenePlaceMapC::PaintFindPos(int nX, int nY, int nDesX, int nDesY)
 {
 	if (!g_ScenePlace.bPaintMode)  	//ÊÇ·ñ²åÆì,Ñ°Â·×´Ì¬
@@ -1044,7 +1298,7 @@ void KScenePlaceMapC::PaintFindPos(int nX, int nY, int nDesX, int nDesY)
 			Image.oPosition.nX = nX;
 			Image.oPosition.nY = nY - 12;
 			Image.oPosition.nZ = 0;
-			g_pRepresent->DrawPrimitives(1, &Image, RU_T_IMAGE, 1);
+			g_pRepresent->DrawPrimitives(1, &Image, RU_T_IMAGE, 1); // hinh cot co 
 		}
 	}
 }
@@ -1088,7 +1342,7 @@ void KScenePlaceMapC::DirectFindPos(int nX, int nY, BOOL bSync, BOOL bPaintLine)
 	sMsg.byPriority = 0;
 	sMsg.byParamSize = 0;
 	sprintf(sMsg.szMessage, "->.");
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("Tù ®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SetChatInfo("T?®éng t×m ®­êng", sMsg.szMessage, strlen(sMsg.szMessage));
 
 	AutoRunTo(nDesX, nDesY);
 }
@@ -1143,7 +1397,7 @@ void KScenePlaceMapC::DoDirectMap(int nX, int nY)
 }
 
 BOOL KScenePlaceMapC::AutoRunTo(int nX, int nY)
-{
+{/*
 	FindPathNode current, target;
 	INT nCurX, nCurY;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
@@ -1155,15 +1409,11 @@ BOOL KScenePlaceMapC::AutoRunTo(int nX, int nY)
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.y = 0;
 	const int TIMEOUT_SECONDS = 5; // Set your desired timeout
 
-
-
-	if (g_JXPathFinder.FindPath(current.x, current.y, target.x, target.y)) 
+	if (g_JXPathFinder.FindPath(current.x, current.y, target.x, target.y))
 	{
-	
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 	}
 	else {
-
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 		return false;
 	}
@@ -1172,14 +1422,14 @@ BOOL KScenePlaceMapC::AutoRunTo(int nX, int nY)
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin(), current);
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.end(), target);
 
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());*/
 	return true;
 }
 
 
 
 BOOL KScenePlaceMapC::AutoRunToB(int nX, int nY)
-{
+{/*
 	FindPathNode current, target;
 	INT nCurX, nCurY;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
@@ -1190,25 +1440,36 @@ BOOL KScenePlaceMapC::AutoRunToB(int nX, int nY)
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.x = 0;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_AutoMoveTemp.y = 0;
 	const int TIMEOUT_SECONDS = 5; // Set your desired timeout
+	time_t start_time = time(NULL);
+	bool hasPath = false;
 
 
 
-	if (g_JXPathFinder.FindPath(current.x, current.y, target.x, target.y))
-	{
-
+	if (g_JXPathFinder.FindPath(current.x, current.y, target.x, target.y)) {
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
+		hasPath = true;
 	}
 	else {
-
+		srand(static_cast<unsigned>(time(NULL)));
+		int dX = rand() % 201 - 100; // [-100, 100]
+		int dY = rand() % 201 - 100;
+		int nDir = rand() % 63;
+#ifndef _SERVER
+		int nSpeed;
+		nSpeed = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentRunSpeed;
+		Player[CLIENT_PLAYER_INDEX].Walk(nDir, nSpeed);
+#endif
+	}
+	if (!hasPath) {
 		Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.clear();
 		return false;
 	}
-	time_t start_time = time(NULL);
+	start_time = time(NULL);
 	g_JXPathFinder.GetPath(current.x, current.y, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind, start_time);
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin(), current);
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.insert(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.end(), target);
 
-	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());
+	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.erase(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.begin());*/
 	return true;
 }
 

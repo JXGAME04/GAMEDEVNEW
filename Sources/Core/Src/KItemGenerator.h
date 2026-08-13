@@ -56,6 +56,14 @@ public:
 	BOOL GetGoldItemByRandom(IN int, OUT KItem*);
 	BOOL GetGoldItemByIndex(IN int, OUT KItem*, IN const int* , IN int ,IN int);
 
+	BOOL Gen_Equipment(IN int, IN int, IN int, IN int, IN int, IN const int*, IN int,
+		IN int, IN OUT KItem*);
+	BOOL Gen_ExistEquipment(IN int, IN int, IN int, IN int, IN int, IN const int*, IN int,
+		IN int, IN OUT KItem*);
+	BOOL Gen_GoldEquipment(IN int, IN const int*, IN int, OUT KItem*);
+	BOOL Gen_PlatinaEquipment(IN int, IN const int*, IN int, OUT KItem*, IN int);
+	BOOL UpgradePlatinaEquip(int nVersion, KItem* pKItem);
+
 // 以下是辅助函数
 private:
 	BOOL Gen_MagicAttrib(int, const int*, int, int, KItemNormalAttrib*, int nVersion);

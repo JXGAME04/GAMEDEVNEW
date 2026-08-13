@@ -64,6 +64,16 @@
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -112,7 +122,7 @@ copy debug\Game.exe ..\..\..\bin\client\Game.exe</Command>
       <SubSystem>Windows</SubSystem>
       <OutputFile>Debug/Game.exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\Lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FilterText_StaticLib.lib;odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -206,6 +216,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\Elem\WndImage.cpp" />
     <ClCompile Include="Ui\Elem\WndImagePart.cpp" />
     <ClCompile Include="Ui\Elem\WndLabeledButton.cpp" />
+    <ClCompile Include="Ui\Elem\WndLine.cpp" />
     <ClCompile Include="Ui\Elem\WndList.cpp" />
     <ClCompile Include="Ui\Elem\WndList2.cpp" />
     <ClCompile Include="Ui\Elem\WndMessageListBox.cpp" />
@@ -223,10 +234,12 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\Elem\WndWindow.cpp" />
     <ClCompile Include="Ui\FilterTextLib.cpp" />
     <ClCompile Include="Ui\GameSpaceChangedNotify.cpp" />
+    <ClCompile Include="Ui\GourdCrabFishTigerLogic.cpp" />
     <ClCompile Include="Ui\ShortcutKey.cpp" />
     <ClCompile Include="Ui\TrayMode.cpp" />
     <ClCompile Include="Ui\UiBase.cpp" />
     <ClCompile Include="Ui\UiCase\KUiKtc.cpp" />
+    <ClCompile Include="Ui\UiCase\SpringGame.cpp" />
     <ClCompile Include="Ui\UiCase\UiAddPoint.cpp" />
     <ClCompile Include="Ui\UiCase\UiAffairItem.cpp" />
     <ClCompile Include="Ui\UiCase\UiAuto.cpp" />
@@ -252,6 +265,8 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiFaceSelector.cpp" />
     <ClCompile Include="Ui\UiCase\UiFindPos.cpp" />
     <ClCompile Include="Ui\UiCase\UiFinishQuest.cpp" />
+    <ClCompile Include="Ui\UiCase\UiFlashMessage.cpp" />
+    <ClCompile Include="Ui\UiCase\UiGamble.cpp" />
     <ClCompile Include="Ui\UiCase\UiGame.cpp" />
     <ClCompile Include="Ui\UiCase\UiGetMoney.cpp" />
     <ClCompile Include="Ui\UiCase\UiGetNumber.cpp" />
@@ -273,6 +288,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiMapCave.cpp" />
+    <ClCompile Include="Ui\UiCase\UiMeridian.cpp" />
     <ClCompile Include="Ui\uicase\UiMiniMap.cpp" />
     <ClCompile Include="Ui\uicase\UiMsgCentrePad.cpp" />
     <ClCompile Include="Ui\UiCase\UiMsgSel.cpp" />
@@ -313,15 +329,18 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UIcase\UiShop.cpp" />
     <ClCompile Include="Ui\UiCase\UiShopGold.cpp" />
     <ClCompile Include="Ui\UiCase\UiSkills.cpp" />
+    <ClCompile Include="Ui\UiCase\UiSkillsNew.cpp" />
     <ClCompile Include="Ui\UiCase\UiSkillTree.cpp" />
     <ClCompile Include="Ui\UiCase\UiStatus.cpp" />
     <ClCompile Include="Ui\uicase\UiStoreBox.cpp" />
     <ClCompile Include="Ui\UiCase\UiStrengthRank.cpp" />
     <ClCompile Include="Ui\UiCase\UiSuperShop.cpp" />
     <ClCompile Include="Ui\UiCase\UiSysMsgCentre.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTargetInfo.cpp" />
     <ClCompile Include="Ui\UiCase\UiTaskDataFile.cpp" />
     <ClCompile Include="Ui\UiCase\UiTaskNote.cpp" />
     <ClCompile Include="Ui\UiCase\UiTeamManage.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTeamManager2.cpp" />
     <ClCompile Include="Ui\UiCase\UiTimeBox.cpp" />
     <ClCompile Include="ui\uicase\UiTongAssignBox.cpp" />
     <ClCompile Include="Ui\UiCase\UiTongChangeTitle.cpp" />
@@ -382,6 +401,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\Elem\WndImage.h" />
     <ClInclude Include="Ui\Elem\WndImagePart.h" />
     <ClInclude Include="Ui\Elem\WndLabeledButton.h" />
+    <ClInclude Include="Ui\Elem\WndLine.h" />
     <ClInclude Include="Ui\Elem\WndList.h" />
     <ClInclude Include="Ui\Elem\WndList2.h" />
     <ClInclude Include="Ui\Elem\WndMessage.h" />
@@ -399,10 +419,12 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\Elem\WndValueImage.h" />
     <ClInclude Include="Ui\Elem\WndWindow.h" />
     <ClInclude Include="Ui\FilterTextLib.h" />
+    <ClInclude Include="Ui\GourdCrabFishTigerLogic.h" />
     <ClInclude Include="Ui\ShortcutKey.h" />
     <ClInclude Include="Ui\TrayMode.h" />
     <ClInclude Include="Ui\UiBase.h" />
     <ClInclude Include="Ui\UiCase\KUiKtc.h" />
+    <ClInclude Include="Ui\UiCase\SpringGame.h" />
     <ClInclude Include="Ui\UiCase\UiAddPoint.h" />
     <ClInclude Include="Ui\UiCase\UiAffairItem.h" />
     <ClInclude Include="Ui\UiCase\UiAuto.h" />
@@ -428,6 +450,8 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiFaceSelector.h" />
     <ClInclude Include="Ui\UiCase\UiFindPos.h" />
     <ClInclude Include="Ui\UiCase\UiFinishQuest.h" />
+    <ClInclude Include="Ui\UiCase\UiFlashMessage.h" />
+    <ClInclude Include="Ui\UiCase\UiGamble.h" />
     <ClInclude Include="Ui\UiCase\UiGame.h" />
     <ClInclude Include="Ui\UiCase\UiGetMoney.h" />
     <ClInclude Include="Ui\UiCase\UiGetNumber.h" />
@@ -449,6 +473,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Ui\UiCase\UiMapCave.h" />
+    <ClInclude Include="Ui\UiCase\UiMeridian.h" />
     <ClInclude Include="Ui\uicase\UiMiniMap.h" />
     <ClInclude Include="Ui\UiCase\UiMsgCentrePad.h" />
     <ClInclude Include="Ui\UiCase\UiMsgSel.h" />
@@ -480,15 +505,18 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UIcase\UiShop.h" />
     <ClInclude Include="Ui\UiCase\UiShopGold.h" />
     <ClInclude Include="Ui\UiCase\UiSkills.h" />
+    <ClInclude Include="Ui\UiCase\UiSkillsNew.h" />
     <ClInclude Include="Ui\UiCase\UiSkillTree.h" />
     <ClInclude Include="Ui\UiCase\UiStatus.h" />
     <ClInclude Include="Ui\uicase\UiStoreBox.h" />
     <ClInclude Include="Ui\UiCase\UiStrengthRank.h" />
     <ClInclude Include="Ui\UiCase\UiSuperShop.h" />
     <ClInclude Include="Ui\UiCase\UiSysMsgCentre.h" />
+    <ClInclude Include="Ui\UiCase\UiTargetInfo.h" />
     <ClInclude Include="Ui\UiCase\UiTaskDataFile.h" />
     <ClInclude Include="Ui\UiCase\UiTaskNote.h" />
     <ClInclude Include="Ui\UiCase\UiTeamManage.h" />
+    <ClInclude Include="Ui\UiCase\UiTeamManager2.h" />
     <ClInclude Include="Ui\UiCase\UiTimeBox.h" />
     <ClInclude Include="ui\uicase\UiTongAssignBox.h" />
     <ClInclude Include="Ui\UiCase\UiTongChangeTitle.h" />
@@ -512,13 +540,17 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <Library Include="..\..\Lib\debug\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Library>
-    <Library Include="..\..\Lib\LuaLibDll.lib" />
+    <Library Include="..\..\Lib\debug\FilterText_StaticLib.lib" />
+    <Library Include="..\..\Lib\debug\lualibdll.lib">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </Library>
     <Library Include="..\..\Lib\release\CoreClient.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
     <Library Include="..\..\Lib\release\engine.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Library>
+    <Library Include="..\..\Lib\release\LuaLibDll.lib" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Script1.rc" />

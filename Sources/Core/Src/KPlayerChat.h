@@ -163,6 +163,7 @@ public:
 	static	void	MakeEnemy(char* szPlayer, char* szEnemy);
 	static	void	SendInfoToGM(char *lpszAccName, char *lpszRoleName, char *lpszSentence, int nSentenceLength);
 	static	void	SendInfoToIP(DWORD nIP, DWORD nID, char *lpszAccName, char *lpszRoleName, char *lpszSentence, int nSentenceLength);
+	static	void	NpcChat(int nNpcIdx, char* pMsg, int msgLen, bool nShowInMsgPad);
 #endif
 
 #ifndef _SERVER

@@ -21,6 +21,34 @@ public:
 	static void			LoadScheme(const char* pScheme);
 	static void			CloseWindow(bool bDestroy);
 	static void			OnClickAutoMsg(int nMsg);
+		static int			GetAnswerCount()
+	{
+		if(m_pSelf)
+		{
+			return m_pSelf->m_MsgScrollList.GetMessageListBox()->GetMsgCount();
+		}
+		return 0;
+	}
+	static void			SetMsgToGet(int nIndex)
+	{
+		if(m_pSelf)
+		{
+			m_pSelf->m_nMsgToGet = nIndex;
+		}
+	}
+	static void			GetMsg(char* szMsg)
+	{
+		szMsg[0] = 0;
+		if(m_pSelf)
+		{
+			int nCount = m_pSelf->m_MsgScrollList.GetMessageListBox()->GetMsgCount();
+			if(m_pSelf->m_nMsgToGet >= 0 && m_pSelf->m_nMsgToGet < nCount)
+			{
+				m_pSelf->m_MsgScrollList.GetMessageListBox()->GetOneMessage(m_pSelf->m_nMsgToGet, szMsg, 256, false);
+			}
+		}
+	}
+
 private:
 	KUiMsgSel() {}
 	~KUiMsgSel() {}
@@ -35,7 +63,7 @@ private:
 	static KUiMsgSel*	m_pSelf;
 	KScrollMessageListBox	m_MsgScrollList;
 	KWndText512			m_InfoText;
-
+	int m_nMsgToGet;
 	bool m_bAutoUp;
 	bool m_bAutoDown;
 	unsigned int	m_uLastScrollTime;

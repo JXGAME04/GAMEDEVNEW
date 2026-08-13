@@ -15,8 +15,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <SccProjectName>"$/KAV20/Platform/UpdateDLL", GBYBAAAA</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
     <Keyword>MFCProj</Keyword>
     <ProjectGuid>{706DAA67-426C-4BDE-BA2E-67C87DA381AA}</ProjectGuid>
   </PropertyGroup>

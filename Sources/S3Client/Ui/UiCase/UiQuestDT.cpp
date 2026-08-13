@@ -59,7 +59,7 @@ void KUiDaTau::Initialize()
 	LoadScheme(Scheme);
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
-
+extern int SCREEN_WIDTH;
 void KUiDaTau::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -67,7 +67,10 @@ void KUiDaTau::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, Quest1);
 	if (Ini.Load(Buff))
 	{
-		KWndShowAnimate::Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			KWndShowAnimate::Init(&Ini, "Main1024");
+		else
+			KWndShowAnimate::Init(&Ini, "Main");;
 		EXP	.Init(&Ini, "ExpBtn");
 		random.Init(&Ini, "RandomBtn");
 		money.Init(&Ini, "MoneyBtn");	

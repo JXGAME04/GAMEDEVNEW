@@ -17,7 +17,7 @@
 #endif
 
 #ifndef _SERVER
-KJXPathFinder g_JXPathFinder;
+//KJXPathFinder g_JXPathFinder;
 
 #define USE_MAX_OBSTACLE 0
 
@@ -347,8 +347,16 @@ void KJXPathFinder::GetPath(int OldX, int OldY, std::vector<FindPathNode>& PathI
 			break;
 		}
 		nLen++;
-		INT tempx = m_map[x][y].parent_x;
-		INT tempy = m_map[x][y].parent_y;
+		INT tempx = 0;
+		INT tempy = 0;
+		try {
+			tempx = m_map[x][y].parent_x;
+			tempy = m_map[x][y].parent_y;
+		}
+		catch (...) {
+			tempx = 0;
+			tempy = 0;
+		}
 		x = tempx;
 		y = tempy;
 		if (tempx < 0 || tempx >= m_nMapWidth)

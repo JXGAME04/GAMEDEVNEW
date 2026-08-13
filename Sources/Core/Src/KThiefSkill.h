@@ -75,6 +75,7 @@ public:
 	char			m_szSkillSpecialFile[MAX_PATH];
 	void			GetDesc(unsigned long ulSkillId, unsigned long ulCurLevel, char * pszMsg, int nOwnerIndex,  bool bNextLevelDesc);
 	const char *	GetSkillIcon();
+	BOOL			IsNeedDownHorse() {return FALSE;};
 #endif
 	
 	unsigned long	m_ulAttackRadius;

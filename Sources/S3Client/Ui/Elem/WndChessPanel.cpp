@@ -25,6 +25,7 @@
 
 extern iRepresentShell*	g_pRepresentShell;
 extern KMouseOver	g_MouseOver;
+extern KMouseOver	g_MouseOverCompare;
 
 KWndChessPanel* KWndChessPanel::m_pSelf = NULL;
 

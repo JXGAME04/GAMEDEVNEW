@@ -154,9 +154,13 @@ enum GAMEDATA_INDEX
 
 	SGDI_TONG_BE_CHANGED_LEVEL,
 
+	SGDI_TONG_BE_CHANGED_EXP,
+
 	SGDI_TONG_APPLY_CHANGE_WAYEDIT,
 
 	SGDI_TONG_APPLY_CHANGE_NEXTTARGET,
+
+	SGDI_TONG_CHANGE_FULL,
 
 };
 
@@ -185,10 +189,12 @@ struct iCoreServerShell
 	virtual void SendNetMsgToTong(IClient* pClient) = 0;
 	virtual void ProcessBroadcastMessage(const char* pChar, int nSize) = 0;
 	virtual void ProcessExecuteMessage(const char* pChar, int nSize) = 0;
+	virtual int GetClientNetConnectIdx(int nIndex) = 0;
 	virtual void ClientDisconnect(int nIndex) = 0;
 	virtual void RemoveQuitingPlayer(int nIndex) = 0;
 	virtual void* SavePlayerDataAtOnce(int nIndex) = 0;
 	virtual bool IsCharacterQuiting(int nIndex) = 0;
+	virtual bool IsCharacterNeedSave(int nIndex) = 0;
 	virtual BYTE GetCharacterLixian(int nIndex) = 0;									//#Uy thac
 	virtual void SetCharacterLixianCompleted(int nIndex) = 0;
 	virtual int SetCharacterLixianEnd(const char* pAccName) = 0;
@@ -196,7 +202,7 @@ struct iCoreServerShell
 	virtual bool PlayerDbLoading(int nPlayerIndex, int bSyncEnd, int& nStep, unsigned int& nParam) = 0;
 	virtual int  AttachPlayer(const unsigned long lnID, GUID* pGuid, char* sHWID) = 0;
 	virtual void GetPlayerIndexByGuid(GUID* pGuid, int* pnIndex, int* plnID) = 0;
-	virtual void AddPlayerToWorld(int nIndex) = 0;
+	virtual int AddPlayerToWorld(int nIndex) = 0;
 	virtual void AddPlayerToWorld2(int nIndex, bool value) = 0;
 	virtual void* PreparePlayerForExchange(int nIndex) = 0;
 	virtual void PreparePlayerForLoginFailed(int nIndex) = 0;
@@ -208,7 +214,7 @@ struct iCoreServerShell
 	virtual int	 OperationRequest(unsigned int uOper, intptr_t uParam, int nParam) = 0;
 	virtual int	 GetConnectInfo(KCoreConnectInfo* pInfo) = 0;
 //	virtual	BOOL ValidPingTime(int nIndex) = 0;
-	virtual int	 GetGameData(unsigned int uDataId, intptr_t uParam, int nParam) = 0;
+	virtual int	 GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t nParam) = 0;
 	virtual int  Breathe() = 0;
 	virtual void Release() = 0;
 	virtual void SetSaveStatus(int nIndex, UINT uStatus) = 0;

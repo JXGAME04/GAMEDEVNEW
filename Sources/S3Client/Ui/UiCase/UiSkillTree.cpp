@@ -307,7 +307,7 @@ int	KUiSkillTree::GetSkillAtPos(int x, int y)
 
 	return -1;
 }
-
+extern int SCREEN_WIDTH;
 // -------------------------------------------------------------------------
 // 功能		: 载入界面方案
 // -------------------------------------------------------------------------
@@ -319,8 +319,15 @@ void KUiSkillTree::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (m_pSelf && Ini.Load(Buff))
 	{
-		Ini.GetInteger2("Main", "LeftBtnPos", &m_pSelf->m_nLeftLeft, &m_pSelf->m_nLeftTop);
-		Ini.GetInteger2("Main", "RightBtnPos", &m_pSelf->m_nRightLeft, &m_pSelf->m_nRightTop);
+		if (SCREEN_WIDTH == 1024) {
+			Ini.GetInteger2("Main1024", "LeftBtnPos", &m_pSelf->m_nLeftLeft, &m_pSelf->m_nLeftTop);
+			Ini.GetInteger2("Main1024", "RightBtnPos", &m_pSelf->m_nRightLeft, &m_pSelf->m_nRightTop);
+		}
+		else {
+
+			Ini.GetInteger2("Main", "LeftBtnPos", &m_pSelf->m_nLeftLeft, &m_pSelf->m_nLeftTop);
+			Ini.GetInteger2("Main", "RightBtnPos", &m_pSelf->m_nRightLeft, &m_pSelf->m_nRightTop);
+		}
 		Ini.GetInteger2("Main", "BtnSize", &m_pSelf->m_nWidthPerSkill, &m_pSelf->m_nHeightPerSkill);
 		if (m_pSelf->m_nWidthPerSkill < 0)
 			m_pSelf->m_nWidthPerSkill = 1;

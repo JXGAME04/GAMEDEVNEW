@@ -34,6 +34,7 @@ private:
 	int			m_nIndexFocus;
 	int			m_nArrayFocus[8];//m¶ng qu¸i cÇn qu©y auto qu©y qu¸i quay quai
 	int			m_nArrayIndex; //thø tù tõng con qu¸i trong m¶ng cÇn qu©y
+	int			m_nArrayCount;
 	int			m_nObjectIndex;
 	BYTE	m_nAttackType;
 	POINT	m_AutoMoveTarget;
@@ -205,12 +206,27 @@ public:
 	int			 m_nCoolDownSortRE;//thêi gian xÕp hµnh trang
 	int			 m_nCoolDownAutoMap; //thêi gian sö dông trong auto map
 	int				m_nReturnPortalStep;
-	int				m_nCurReturnPortalSec;
+	int   m_nReturnPortalSec;
+	BOOL  m_bSentReturnPacket;
+	DWORD m_nWaitReturnResultTime;
+	DWORD				m_nCurReturnPortalSec;
 	int	m_nCurReturnHieuThuoc;
 	int	m_nCurReturnTapHoa;
 	int	m_nCurReturnSuDo;
 	unsigned long	m_nCurReturnMuaMau;
 	unsigned int	m_ReturnSetpCountDown;
+	unsigned int	m_nTaskTimeout;
+	bool	m_bDoingTask;
+	int		m_nBuyFailedCount;
+	POINT	m_IdlePlace;
+	unsigned int	m_nIdleTime;
+	unsigned int	m_nLagTime = 0;
+	unsigned int	m_nPickObjLagTime = 0;
+	unsigned int m_nPickupStartTime = 0;
+	int m_nPickupRetryCount = 0;
+	int m_nPickupLastObjectID = 0;
+	const int PICKUP_LAG_THRESHOLD_MS = 2000; // 2 seconds
+	const int PICKUP_MAX_RETRY = 3;
 private:
 	enum PLAYER_ATTACK_TYPE
 	{
@@ -259,6 +275,7 @@ private:
 	void		MoveTo(int x, int y);
 	void		MoveToB(int x, int y);
 	void		MoveToC(int x, int y);
+	int		TryCastDoanHonThich();
 	void			BackMapTrain();
 	//	void		AutoRunTo(int x, int y);
 
@@ -278,6 +295,8 @@ private:
 	// Check lag Object
 	void		RefreshObject();
 	void		PlayerSetActackObject(int nIdx);
+	void TrackPickupObject();
+	bool		AutoCheckObjectLagNew();
 	void		AutoCheckObjectLag();
 	void		DoAttackObject();
 	void		DoRestoreHP();
@@ -314,6 +333,7 @@ private:
 	void		FkAutoMapGetMoney();
 	void		FkAutoMapRepairItem();
 	void		FkAutoMapBuyItemMM();
+	void		FkAutoGotoNearPlace();
 	void		FkAutoMapBuyItemTDP();
 	void		FkAutoMapHoldMoney();
 	void		FkAutoMapStoreItem();
@@ -331,6 +351,8 @@ private:
 	BOOL	FkAutoCheckEquipMagic(int nIdx);//kiÓm tra item ®­îc phÐp b¸n theo magic
 public:
 	void		FkAutoMapSet_StepOne();
+	void		ResetPathFind();
+	
 	int			 AllItemNameEquipRoom(FKUiObjectName *pList, int nCount);
 private:
 	BYTE	m_AutoMap_Status;
@@ -347,12 +369,14 @@ private:
 		AUTO_MAP_STATUS_RETURN,
 		AUTO_MAP_STATUS_RETURNKXD,
 	};
+	int m_nDoanHonThichCanCastTime = 0;
 public:
 	KPlayerAuto();
 	~KPlayerAuto();
 	void		Release();
 	void		Active();
 	BOOL	IsActive() const { return mfk_btState; };
+	void		CheckIdle();
 	void		InitFkAuto(BOOL m_bActive);
 	void		PauseFkAuto(BOOL bPause);
 	void		InitFkAutoPos(bool b);
@@ -365,7 +389,7 @@ public:
 		NPC_STATION
 	};
 
-	#define	FKAUTO_MAX_POS	7*4
+	#define	FKAUTO_MAX_POS	8*4
 	struct FK_AUTO_POS
 	{
 		int		 fk_mapID;

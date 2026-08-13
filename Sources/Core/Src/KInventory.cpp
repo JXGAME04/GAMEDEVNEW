@@ -8,6 +8,8 @@ KInventory::KInventory()
 	m_pArray = NULL;
 	m_nWidth = 0;
 	m_nHeight = 0;
+	m_nXu = 0;
+	m_nMoney = 0;
 }
 
 KInventory::~KInventory()
@@ -127,7 +129,7 @@ BOOL	KInventory::PickUpItem(int nIdx, int nX, int nY, int nWidth, int nHeight)
 		{
 			if (m_pArray[j * m_nWidth + i] != nIdx)
 			{
-				_ASSERT(0);
+				//_ASSERT(0); // tat cai nay 
 				return FALSE;
 			}
 		}
@@ -536,7 +538,7 @@ void KInventory::FindSameItemName(int nIdx, int pnIdx[])
 	if (!m_pArray)
 		return;
 
-	int		*pArray = m_pArray;
+	int* pArray = m_pArray;
 	int		i, nSize = m_nWidth * m_nHeight;
 	int count = 0;
 	for (i = 0; i < nSize; i++, pArray++)
@@ -548,5 +550,6 @@ void KInventory::FindSameItemName(int nIdx, int pnIdx[])
 			pnIdx[count++] = *pArray;
 		}
 	}
+	if (count >= 60) return;
 	pnIdx[count] = nIdx;
 }

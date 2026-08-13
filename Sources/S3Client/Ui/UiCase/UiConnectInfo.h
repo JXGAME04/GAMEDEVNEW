@@ -37,6 +37,7 @@ enum LOGIN_BG_INFO_MSG_INDEX
 	CI_MI_INVALID_PASSWORD,		//20=输入的密码不正确。
 	CI_MI_ACCOUNT_FREEZE = 30,	//30=账号冻结
 	CI_MI_LOGIN_R_LIMIT_GAME = 45,//45 Game Login Limit!
+	CI_MI_INVALID_KYTU_DACBIET_INPUT = 46,	//46=ten tai khoan khong the chua ky tu dac biet
 
 };
 

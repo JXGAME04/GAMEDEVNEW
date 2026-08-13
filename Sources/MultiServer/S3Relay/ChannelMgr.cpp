@@ -33,6 +33,7 @@ const char key_defCost[]	= "defCost";
 const char sec_team[]		= "team";
 const char sec_faction[]	= "faction";
 const char sec_tong[]		= "tong";
+const char sec_msgr[]		= "msgr";
 const char sec_screen[]		= "screen";
 const char sec_broadcast[]	= "broadcast";
 const char key_escSpec[]	= "escSpec";
@@ -54,7 +55,7 @@ const char key_cost[]			= "cost";
 CChannelMgr::CChannelMgr()
 	: m_lastChannID(0), m_channidGM(-1),
 	m_chChannEsc(0), m_chChannSplt(0),
-	m_chChannTEAM(0), m_chChannFAC(0), m_chChannTONG(0), m_chChannSCRN(0),
+	m_chChannTEAM(0), m_chChannFAC(0), m_chChannTONG(0), m_chChannMSGR(0), m_chChannSCRN(0),
 	m_minTeamID(0), m_maxTeamID(-1), m_minFacID(0), m_maxFacID(-1), m_minTongID(0), m_maxTongID(-1),
 	m_defCost(0),
 	m_costTeam(0), m_costFac(0), m_costTong(0), m_costScrn(0), m_costBc(0)
@@ -78,6 +79,7 @@ BOOL CChannelMgr::Initialize()
 	m_chChannTEAM = gGetPrivateProfileCharEx(sec_team, key_escSpec, file_channcfg, defCHANN_TEAM);
 	m_chChannFAC  = gGetPrivateProfileCharEx(sec_faction, key_escSpec, file_channcfg, defCHANN_FAC);
 	m_chChannTONG = gGetPrivateProfileCharEx(sec_tong, key_escSpec, file_channcfg, defCHANN_TONG);
+	m_chChannMSGR = gGetPrivateProfileCharEx(sec_msgr, key_escSpec, file_channcfg, defCHANN_MSGR);
 	m_chChannSCRN = gGetPrivateProfileCharEx(sec_screen, key_escSpec, file_channcfg, defCHANN_SCRN);
 	m_chChannBC   = gGetPrivateProfileCharEx(sec_broadcast, key_escSpec, file_channcfg, defCHANN_BC);
 
@@ -87,12 +89,15 @@ BOOL CChannelMgr::Initialize()
 	m_maxFacID	= gGetPrivateProfileIntEx(sec_faction, key_maxID, file_channcfg, -1);
 	m_minTongID	= gGetPrivateProfileIntEx(sec_tong, key_minID, file_channcfg, 0);
 	m_maxTongID	= gGetPrivateProfileIntEx(sec_tong, key_maxID, file_channcfg, -1);
+	m_minMsgrID = gGetPrivateProfileIntEx(sec_msgr, key_minID, file_channcfg, 0);
+	m_maxMsgrID = gGetPrivateProfileIntEx(sec_msgr, key_maxID, file_channcfg, -1);
 
 	m_defCost = (BYTE)gGetPrivateProfileIntEx(sec_system, key_defCost, file_channcfg, 0);
 
 	m_costTeam = (BYTE)gGetPrivateProfileIntEx(sec_team, key_cost, file_channcfg, (INT)(UINT)m_defCost);
 	m_costFac  = (BYTE)gGetPrivateProfileIntEx(sec_faction, key_cost, file_channcfg, (INT)(UINT)m_defCost);
 	m_costTong = (BYTE)gGetPrivateProfileIntEx(sec_tong, key_cost, file_channcfg, (INT)(UINT)m_defCost);
+	m_costMsgr = (BYTE)gGetPrivateProfileIntEx(sec_msgr, key_cost, file_channcfg, (INT)(UINT)m_defCost);
 	m_costScrn = (BYTE)gGetPrivateProfileIntEx(sec_screen, key_cost, file_channcfg, (INT)(UINT)m_defCost);
 	m_costBc   = (BYTE)gGetPrivateProfileIntEx(sec_broadcast, key_cost, file_channcfg, (INT)(UINT)m_defCost);
 
@@ -162,6 +167,7 @@ BOOL CChannelMgr::Uninitialize()
 	m_costTeam = 0;
 	m_costFac  = 0;
 	m_costTong = 0;
+	m_costMsgr = 0;
 	m_costScrn = 0;
 	m_costBc   = 0;
 
@@ -172,6 +178,7 @@ BOOL CChannelMgr::Uninitialize()
 	m_chChannSplt = 0;
 	m_chChannTEAM = 0;
 	m_chChannFAC = 0;
+	m_chChannMSGR = 0;
 	m_chChannSCRN = 0;
 	m_chChannBC = 0;
 
@@ -181,6 +188,8 @@ BOOL CChannelMgr::Uninitialize()
 	m_maxFacID	= -1;
 	m_minTongID	= 0;
 	m_maxTongID	= -1;
+	m_minMsgrID = 0;
+	m_maxMsgrID = -1;
 
 	return TRUE;
 }
@@ -465,7 +474,8 @@ std::_tstring CChannelMgr::MakeChannelName(const std::_tstring& chann, DWORD ip)
 
 	if (chann[1] == m_chChannTEAM
 		|| chann[1] == m_chChannFAC
-		|| chann[1] == m_chChannTONG)
+		|| chann[1] == m_chChannTONG
+		|| chann[1] == m_chChannMSGR)
 	{
 		if (chann.size() <= 2)
 			return NULL_STR;
@@ -480,6 +490,8 @@ std::_tstring CChannelMgr::MakeChannelName(const std::_tstring& chann, DWORD ip)
 			return IsValidTongID(id) ? chann : NULL_STR;
 
 		if (ip == 0 || !IsValidTeamID(id))
+			return NULL_STR;
+		if (ip == 0 || !IsValidMsgrID(id))
 			return NULL_STR;
 
 		char buffer[16];
@@ -528,6 +540,13 @@ std::_tstring CChannelMgr::ReduceChannelName(const std::_tstring& chann)
 	{
 		return chann;
 	}
+	if (chann[1] == m_chChannMSGR)
+	{
+		int spltpos = chann.find_last_of(m_chChannSplt);
+		if (spltpos == -1)
+			return NULL_STR;
+		return std::_tstring(chann.c_str(), spltpos);
+	}
 	if (chann[1] == m_chChannSCRN
 		|| chann[1] == m_chChannBC)
 	{
@@ -568,6 +587,17 @@ DWORD CChannelMgr::ParseChannelName(const std::_tstring& chann, DWORD* pIP)
 	{
 		return _ttol(chann.c_str() + 2);
 	}
+	if (chann[1] == m_chChannMSGR)
+	{
+		int spltpos = chann.find_last_of(m_chChannSplt);
+		if (spltpos == -1)
+			return -1;
+		const char* tmp = chann.c_str() + spltpos + 1;
+		char* end;
+		if (pIP != NULL)
+			*pIP = strtoul(tmp, &end, 10);
+		return strtoul(tmp, &end, 10);
+	}
 	if (chann[1] == m_chChannSCRN
 		|| chann[1] == m_chChannBC)
 	{
@@ -590,6 +620,8 @@ BYTE CChannelMgr::GainPreCost(const std::_tstring& channel)
 			return m_costFac;
 		else if (channel[1] == m_chChannTONG)
 			return m_costTong;
+		else if (channel[1] == m_chChannMSGR)
+			return m_costMsgr;
 		else if (channel[1] == m_chChannSCRN)
 			return m_costScrn;
 		else if (channel[1] == m_chChannBC)
@@ -745,6 +777,14 @@ BOOL CChannelMgr::IsValidTeamID(DWORD idTeam)
 		return TRUE;
 
 	return idTeam >= m_minTeamID && idTeam <= m_maxTeamID;
+}
+
+BOOL CChannelMgr::IsValidMsgrID(DWORD idMsgr)
+{
+	if (m_minMsgrID > m_maxMsgrID)
+		return TRUE;
+
+	return idMsgr >= m_minMsgrID && idMsgr <= m_maxMsgrID;
 }
 
 BOOL CChannelMgr::IsValidFacID(DWORD idFac)
@@ -964,6 +1004,41 @@ BOOL CChannelMgr::ChannelChat(DWORD srcIP, const tagPlusSrcInfo& SrcInfo, const 
 				g_ChatServer.BroadPackage(pCr, pckgsize);
 
 				sent = TRUE;
+			}
+			else if (rChannInfo.channname[1] == m_chChannMSGR)
+			{
+				if (theID == -1 || channIP == 0)
+					return FALSE;
+
+				CHANNINFO& rChannInfo = (*itChannid).second;
+
+				CNetConnectDup connDup = g_ChatServer.FindChatConnectByIP(channIP);
+				if (connDup.IsValid())
+				{
+					pCr->TargetCls = tgtcls_msgr;
+					pCr->TargetID = theID;
+
+					connDup.SendPackage(pCr, pckgsize);
+
+					sent = TRUE;
+				}
+			}
+			else if (rChannInfo.channname[1] == m_chChannMSGR)
+			{
+				if (theID == -1)
+					return FALSE;
+
+
+				CNetConnectDup connDup = g_ChatServer.FindChatConnectByIP(channIP);
+				if (connDup.IsValid())
+				{
+					pCr->TargetCls = tgtcls_msgr;
+					pCr->TargetID = theID;
+
+					connDup.SendPackage(pCr, pckgsize);
+
+					sent = TRUE;
+				}
 			}
 			else if (rChannInfo.channname[1] == m_chChannSCRN
 				|| rChannInfo.channname[1] == m_chChannBC)
@@ -1673,13 +1748,29 @@ BOOL CChannelMgr::SayOnChannel(DWORD channid, BOOL filter, const std::_tstring& 
 			}
 			else if (rChannInfo.channname[1] == m_chChannTONG)
 			{
-				if (theID == -1)
+				if (theID == -1 || channIP == 0)
 					return FALSE;
 
 				pCr->TargetCls = tgtcls_tong;
 				pCr->TargetID = theID;
 
 				g_ChatServer.BroadPackage(pCr, pckgsize);
+			}
+			else if (rChannInfo.channname[1] == m_chChannMSGR)
+			{
+				if (theID == -1 || channIP == 0)
+					return FALSE;
+
+				CHANNINFO& rChannInfo = (*itChannid).second;
+
+				CNetConnectDup connDup = g_ChatServer.FindChatConnectByIP(channIP);
+				if (!connDup.IsValid())
+					return FALSE;
+
+				pCr->TargetCls = tgtcls_msgr;
+				pCr->TargetID = theID;
+
+				connDup.SendPackage(pCr, pckgsize);
 			}
 			else if (rChannInfo.channname[1] == m_chChannSCRN)
 			{

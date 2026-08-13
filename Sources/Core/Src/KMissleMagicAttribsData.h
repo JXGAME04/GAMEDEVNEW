@@ -19,11 +19,14 @@ public:
 	static	int m_nTotalCount;
 	#endif
 	*/
-private:
 	void Remove()
 	{
 		//	if (m_pStateMagicAttribs != NULL)		delete m_pStateMagicAttribs; 
-		if (m_pDamageMagicAttribs != NULL)		delete []m_pDamageMagicAttribs; 
+		if (m_pDamageMagicAttribs != NULL)
+		{
+			delete[] m_pDamageMagicAttribs;
+			m_pDamageMagicAttribs = NULL;
+		}
 	};
 	
 public:
@@ -55,12 +58,13 @@ public:
 	
 	int DelRef()
 	{
-	/*
-	#ifdef _DEBUG
-	--m_nTotalRef;
-	#endif
-		*/
-		return --nRef; 
+		if (nRef > 0)
+			return --nRef;
+		else
+		{
+			nRef = 0;
+			return nRef;
+		}
 	};
 	
 	~KMissleMagicAttribsData()

@@ -3,7 +3,7 @@
 //
 // File:	KBasPropTbl.h
 // Date:	2020.08.14
-// Code:	Fong Ki襲
+// Code:	Fong Ki
 // Desc:    header file. 
 //---------------------------------------------------------------------------
 
@@ -17,6 +17,23 @@
 
 #define		MAX_MAGIC_PREFIX	20
 #define		MAX_MAGIC_SUFFIX	20
+
+// 以下结构用于描述矿石的基本属性. 相关属性由配置文件(tab file)提供
+typedef struct
+{
+	char		m_szName[SZBUFLEN_0];		// 名称
+	int			m_nItemGenre;				// 道具种类
+	int			m_nDetailType;				// 具体类别
+	char		m_szImageName[SZBUFLEN_0];	// 界面中的动画文件名
+	int			m_nObjIdx;					// 对应物件索引
+	int			m_nWidth;					// 道具栏中所占宽度
+	int			m_nHeight;					// 道具栏中所占高度
+	char		m_szIntro[SZBUFLEN_1];		// 说明文字
+	char		m_szScript[SZBUFLEN_1];		// 说明文字
+	int			m_nPrice;					// 价格
+	BOOL		m_bShortKey;
+	int			m_nMaxStack;
+} KBASICPROP_EVENTITEM;
 
 typedef struct
 {
@@ -44,6 +61,45 @@ typedef struct
 	int			nValue;
 	int			nTime;
 } KMEDATTRIB;
+
+typedef struct
+{
+	int			mSuiteNo;
+	int			nActiveCount1;
+	int			nActiveCount2;
+} KSUITE_ACTIVE_COUNT;
+
+typedef struct
+{
+	//PlatinaItem	OldLevel	MaxDurability	Comment
+	int m_nPlatinaItem;
+	int m_nOldLevel;
+	int m_nMaxDurability;
+} KPLATINA_DURABILITY;
+
+typedef struct
+{
+	//AttributeType	Value1	Value2	Value3	Comment
+	int m_nAttributeType;
+	int m_nValue1;
+	int m_nValue2;
+	int m_nValue3;
+} KPLATINA_MAGICATTR;
+
+typedef struct
+{
+	//PlatinaItem	Level	SkillNo	ActiveRate	Rate1	MagicIdx1	Rate2	MagicIdx2	Rate3	MagicIdx3	Comment
+	int m_nPlatinaItem;
+	int m_nLevel;
+	int m_nSkillNo;
+	int m_nActiveRate;
+	int m_nRate1;
+	int m_nMagicIdx1;
+	int m_nRate2;
+	int m_nMagicIdx2;
+	int m_nRate3;
+	int m_nMagicIdx3;
+} KPLATINA_MAGICRATE;
 
 typedef struct
 {
@@ -165,13 +221,68 @@ typedef struct
 	int			m_nLevel;						
 	KEQCP_BASIC	m_aryPropBasic[7];			
 	KEQCP_REQ	m_aryPropReq[6];			
-	int			m_aryMagicAttribs[6];		
+	int			m_aryMagicAttribs[MAX_ITEM_MAGICATTRIB];
 	int			m_nId;						
 	int			m_nSet;						
 	int			m_nSetId;					
 	int			m_nSetNum;					
 	int			m_nUpSet;					
 } KBASICPROP_EQUIPMENT_GOLD;
+
+typedef struct
+{
+	char		m_szName[SZBUFLEN_0];		// 名称
+	int			m_nItemGenre;				// 道具种类 (武器? 药品? 矿石?)
+	int			m_nDetailType;				// 具体类别
+	int			m_nParticularType;			// 详细类别
+	char		m_szImageName[SZBUFLEN_0];	// 界面中的动画文件名
+	int			m_nObjIdx;					// 对应物件索引
+	int			m_nWidth;					// 物品栏宽度
+	int			m_nHeight;					// 物品栏高度
+	char		m_szIntro[SZBUFLEN_1];		// 说明文字
+	int			m_nSeries;					// 五行属性
+	int			m_nPrice;					// 价格
+	int			m_nLevel;					// 等级	
+	int			m_nStack;
+	KEQCP_BASIC	m_aryPropBasic[7];			// 基础属性
+	KEQCP_REQ	m_aryPropReq[6];			// 需求属性
+	int			m_aryMagicAttribs[MAX_ITEM_MAGICATTRIB];		// 魔法属性
+	int			m_nGroup;						// 所在套装
+	int			m_nSetID;					// 所属序号
+	int			m_nSetIDNo;
+	int			m_nNeedToActive1;					// 扩展套装
+	int			m_nNeedToActive2;					// 扩展套装
+} KBASICPROP_EQUIPMENT_GOLD2;
+
+// 以下结构用于描述唯一装备的初始属性. 相关数据由配置文件(tab file)提供
+typedef struct
+{
+	char		m_szName[SZBUFLEN_0];		// 名称
+	int			m_nItemGenre;				// 道具种类 (武器? 药品? 矿石?)
+	int			m_nDetailType;				// 具体类别
+	int			m_nParticularType;			// 详细类别
+	char		m_szImageName[SZBUFLEN_0];	// 界面中的动画文件名
+	int			m_nObjIdx;					// 对应物件索引
+	int			m_nWidth;					// 物品栏宽度
+	int			m_nHeight;					// 物品栏高度
+	char		m_szIntro[SZBUFLEN_1];		// 说明文字
+	int			m_nSeries;					// 五行属性
+	int			m_nPrice;					// 价格
+	int			m_nLevel;					// 等级	
+	int			m_nStack;
+	KEQCP_BASIC	m_aryPropBasic[7];			// 基础属性
+	KEQCP_REQ	m_aryPropReq[6];			// 需求属性
+	int			m_aryMagicAttribs_0[MAX_ITEM_MAGICATTRIB];		// 魔法属性
+	int			m_aryMagicAttribs_10[MAX_ITEM_MAGICATTRIB];		// 魔法属性
+	int			m_nGroup;						// 所在套装
+	int			m_nSetID;					// 所属序号
+	int			m_nBuffSkillLevel6;
+	int			m_nBuffSkillLevel10;
+	int			m_nExpandCode;
+	int			m_nSetIDNo;
+	int			m_nNeedToActive1;					// 扩展套装
+	int			m_nNeedToActive2;					// 扩展套装
+} KBASICPROP_EQUIPMENT_PLATINA;
 
 typedef struct
 {
@@ -275,6 +386,19 @@ protected:
 	virtual BOOL LoadRecord(int i, KTabFile* pTF);
 };
 
+class KBPT_Event : public KBasicPropertyTable
+{
+public:
+	KBPT_Event();
+	~KBPT_Event();
+
+public:
+	const KBASICPROP_EVENTITEM* GetRecord(IN int) const;
+	const KBASICPROP_EVENTITEM* FindRecord(IN int) const;
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
 class KBPT_Quest : public KBasicPropertyTable
 {
 public:
@@ -329,6 +453,23 @@ protected:
 	virtual BOOL LoadRecord(int i, KTabFile* pTF);
 };
 
+
+class KBPT_ClassSuite : public KBasicPropertyTable
+{
+public:
+	KBPT_ClassSuite();
+	~KBPT_ClassSuite();
+
+public:
+	const KSUITE_ACTIVE_COUNT* GetRecord(IN int) const;
+	const KSUITE_ACTIVE_COUNT* FindRecord(IN int) const;
+	void Init();
+	void Init_Ext();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+
+
+};
 class KBPT_Equipment : public KBasicPropertyTable
 {
 public:
@@ -354,6 +495,38 @@ public:
 	const KBASICPROP_EQUIPMENT_GOLD* FindRecord(IN int, IN int, IN int) const;
 	int GetRecordCount() const {return KBasicPropertyTable::NumOfEntries();};
 	void Init();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+class KBPT_Equipment_Gold2 : public KBasicPropertyTable
+{
+public:
+	KBPT_Equipment_Gold2();
+	virtual ~KBPT_Equipment_Gold2();
+
+public:
+	const KBASICPROP_EQUIPMENT_GOLD2* GetRecord(IN int) const;
+	const KBASICPROP_EQUIPMENT_GOLD2* FindRecord(IN int, IN int, IN int) const;
+	int GetRecordCount() const { return KBasicPropertyTable::NumOfEntries(); };
+	void Init();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+class KBPT_Equipment_Platina : public KBasicPropertyTable
+{
+public:
+	KBPT_Equipment_Platina();
+	virtual ~KBPT_Equipment_Platina();
+
+	// 以下是对外接口
+public:
+	const KBASICPROP_EQUIPMENT_PLATINA* GetRecord(IN int) const;
+	const KBASICPROP_EQUIPMENT_PLATINA* FindRecord(IN int, IN int, IN int) const;
+	int GetRecordCount() const { return KBasicPropertyTable::NumOfEntries(); };
+	void Init();
+	// 以下是辅助函数
 protected:
 	virtual BOOL LoadRecord(int i, KTabFile* pTF);
 };
@@ -412,6 +585,50 @@ protected:
 	void ReleaseMemory();
 };
 
+class KBPT_ClassPlatinaDurability : public KBasicPropertyTable
+{
+public:
+	KBPT_ClassPlatinaDurability();
+	~KBPT_ClassPlatinaDurability();
+
+public:
+	const KPLATINA_DURABILITY* GetRecord(IN int) const;
+	const KPLATINA_DURABILITY* FindRecord(IN int) const;
+	void Init();
+	void Init_Ext();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+class KBPT_ClassPlatinaMagicAttr : public KBasicPropertyTable
+{
+public:
+	KBPT_ClassPlatinaMagicAttr();
+	~KBPT_ClassPlatinaMagicAttr();
+
+public:
+	const KPLATINA_MAGICATTR* GetRecord(IN int) const;
+	const KPLATINA_MAGICATTR* FindRecord(IN int) const;
+	void Init();
+	void Init_Ext();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+class KBPT_ClassPlatinaMagicRate : public KBasicPropertyTable
+{
+public:
+	KBPT_ClassPlatinaMagicRate();
+	~KBPT_ClassPlatinaMagicRate();
+
+public:
+	const KPLATINA_MAGICRATE* GetRecord(IN int) const;
+	const KPLATINA_MAGICRATE* FindRecord(IN int, IN int, IN int) const;
+	void Init();
+	void Init_Ext();
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
 class KLibOfBPT
 {
 public:
@@ -422,6 +639,7 @@ protected:
 	KBPT_Medicine			m_BPTMedicine;
 	KBPT_TownPortal			m_BPTTownPortal;
 	KBPT_MagicScript		m_BPTMagicScript;
+	KBPT_Event				m_BPTEvent;
 	KBPT_Quest				m_BPTQuest;
 	KBPT_Mine				m_BPTMine;
 	KBPT_Equipment			m_BPTHorse;
@@ -437,9 +655,21 @@ protected:
 	KBPT_Equipment			m_BPTPendant;
 	KBPT_Equipment			m_BPTMask;	// mat na
 	KBPT_Equipment			m_BPTMantle; //phi phong
+	KBPT_Equipment			m_BPTSignet;
+	KBPT_Equipment			m_BPTShipin;
+	KBPT_Equipment			m_BPTHoods;
+	KBPT_Equipment			m_BPTCloak;
+
     KBPT_MagicAttrib_TF		m_BPTMagicAttrib;
 	// Add by flying
 	KBPT_Equipment_Gold		m_GoldItem;
+	KBPT_Equipment_Gold2	m_BPTGoldEquip;
+	KBPT_Equipment_Platina	m_BPTPlatinaEquip;
+	KBPT_ClassSuite			m_ActiveSuite;
+	KBPT_ClassSuite			m_ExtActiveSuite;
+	KBPT_ClassPlatinaDurability	m_PlatinaDurability;
+	KBPT_ClassPlatinaMagicAttr	m_PlatinaMagicAttrib;
+	KBPT_ClassPlatinaMagicRate	m_PlatinaMagicRate;
     // Add by Freeway Chen in 2003.5.30
     KBPT_ClassMAIT          m_CMAIT[MATF_PREFIXPOSFIX][MATF_CBDR][MATF_SERIES][MATF_LEVEL];
 	KBPT_ClassifiedMAT		m_CMAT[2][MATF_CBDR];
@@ -455,6 +685,13 @@ public:
 	// Add by flying on 2003.6.2
 	const KBASICPROP_EQUIPMENT_GOLD*	GetGoldItemRecord(IN int nIndex) const;
 	const int							GetGoldItemNumber() const;
+
+	const KBASICPROP_EQUIPMENT_GOLD2* GetGoldEquipRecord(IN int nIndex) const;
+	const int							GetGoldEquipNumber() const;
+
+	const KBASICPROP_EQUIPMENT_PLATINA* GetPlatinaEquipRecord(IN int nIndex) const;
+	const int							GetPlatinaEquipNumber() const;
+
 	const KBASICPROP_EQUIPMENT*	GetMeleeWeaponRecord(IN int) const;
 	const int					GetMeleeWeaponRecordNumber() const;
 	const KBASICPROP_EQUIPMENT*	GetRangeWeaponRecord(IN int) const;
@@ -491,7 +728,30 @@ public:
 	const int					GetMagicScriptRecordNumber() const;
 	const KBASICPROP_EQUIPMENT*	GetMantleRecord(IN int) const;//#phi phong
 	const int					GetMantleRecordNumber() const;
-
+	const KBASICPROP_EQUIPMENT* GetSignetRecord(IN int) const;
+	const int					GetSignetRecordNumber() const;
+	const KBASICPROP_EQUIPMENT* GetShipinRecord(IN int) const;
+	const int					GetShipinRecordNumber() const;
+	const KBASICPROP_EQUIPMENT* GetHoodsRecord(IN int) const;
+	const int					GetHoodsRecordNumber() const;
+	const KBASICPROP_EQUIPMENT* GetCloakRecord(IN int) const;
+	const int					GetCloakRecordNumber() const;
+	const KBASICPROP_EQUIPMENT_PLATINA* FindEquipmentUnique(IN int, IN int, IN int) const;
+	const KBASICPROP_MEDICINE* FindMedicine(IN int, IN int) const;
+	const KBASICPROP_EVENTITEM* GetEvent(IN int) const;
+	const int					GetEventRecordNumber() const;
+	 
+	const KSUITE_ACTIVE_COUNT* GetActiveSuiteRecord(IN int) const;
+	const KSUITE_ACTIVE_COUNT* GetExtActiveSuiteRecord(IN int) const;
+	const int GetActiveSuiteCount(IN int suiteID) const;
+	const int GetActiveSuiteRecordNumber() const;
+	const int GetExtActiveSuiteRecordNumber() const;
+	const KPLATINA_DURABILITY* GetPlatinaDurabilityRecord(IN int) const;
+	const int GetPlatinaDurabilityRecordNumber() const;
+	const KPLATINA_MAGICATTR* GetPlatinaMagicAttrRecord(IN int) const;
+	const int GetPlatinaMagicAttrRecordNumber() const;
+	const KPLATINA_MAGICRATE* GetPlatinaMagicRateFindRecord(IN int, IN int, IN int) const;
+	const int GetPlatinaMagicRateRecordNumber() const;
 // 	const KBASICPROP_EQUIPMENT_GOLD*	GetGoldRecord(IN int) const;
 // 	const int					GetGoldRecordNumber(IN int) const;
 
@@ -500,4 +760,7 @@ protected:
     // Add by Freeway Chen in 2003.5.30
     BOOL InitMAIT();
 };
+
+
+
 #endif		// #ifndef KBasPropTblH

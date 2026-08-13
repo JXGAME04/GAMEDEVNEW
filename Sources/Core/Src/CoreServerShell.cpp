@@ -36,6 +36,7 @@
 #include "KSubWorld.h"
 
 #include "malloc.h"
+#include <BauCua.h>
 
 class CoreServerShell : public iCoreServerShell
 {
@@ -53,10 +54,12 @@ public:
 	void SendNetMsgToTong(IClient* pClient);
 	void ProcessBroadcastMessage(const char* pChar, int nSize);
 	void ProcessExecuteMessage(const char* pChar, int nSize);
+	int GetClientNetConnectIdx(int nIndex);
 	void ClientDisconnect(int nIndex);
 	void RemoveQuitingPlayer(int nIndex);
 	void* SavePlayerDataAtOnce(int nIndex);
 	bool IsCharacterQuiting(int nIndex);
+	bool IsCharacterNeedSave(int nIndex);
 	BYTE GetCharacterLixian(int nIndex);						//#Uy thac
 	void SetCharacterLixianCompleted(int nIndex);
 	int SetCharacterLixianEnd(const char* pAccName);
@@ -64,7 +67,7 @@ public:
 	bool PlayerDbLoading(int nPlayerIndex, int bSyncEnd, int& nStep, unsigned int& nParam);
 	int AttachPlayer(const unsigned long lnID, GUID* pGuid, char* sHWID);
 	void GetPlayerIndexByGuid(GUID* pGuid, int* pnIndex, int* plnID);
-	void AddPlayerToWorld(int nIndex);
+	int AddPlayerToWorld(int nIndex);
 	void AddPlayerToWorld2(int nIndex, bool value);
 	void* PreparePlayerForExchange(int nIndex);
 	void PreparePlayerForLoginFailed(int nIndex);
@@ -76,7 +79,7 @@ public:
 	int	 OperationRequest(unsigned int uOper, intptr_t uParam, int nParam);
 	int	 GetConnectInfo(KCoreConnectInfo* pInfo);
 	//BOOL ValidPingTime(int nIndex);
-	int	 GetGameData(unsigned int uDataId, intptr_t uParam, int nParam);
+	int	 GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t nParam);
 	int  Breathe();
 	void Release();
 	void SetSaveStatus(int nIndex, UINT uStatus);
@@ -173,10 +176,10 @@ bool CoreServerShell::PlayerDbLoading(int nPlayerIndex, int bSyncEnd, int& nStep
 	return false;
 }
 
-void CoreServerShell::AddPlayerToWorld(int nIndex)
+int CoreServerShell::AddPlayerToWorld(int nIndex)
 {
 //	int nIndex = PlayerSet.FindClient(lnID);
-	Player[nIndex].LaunchPlayer();
+	return Player[nIndex].LaunchPlayer();
 }
 
 void CoreServerShell::AddPlayerToWorld2(int nIndex, bool value)
@@ -223,7 +226,14 @@ void CoreServerShell::ProcessExecuteMessage(const char* pChar, int nSize)
 {
 	g_NewProtocolProcess.ExecuteLocalServer(pChar, nSize);
 }
-
+int CoreServerShell::GetClientNetConnectIdx(int nIndex)
+{
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+	{
+		return -1;
+	}
+	return Player[nIndex].m_nNetConnectIdx;
+}
 void CoreServerShell::ClientDisconnect(int nIndex)
 {
 //	PlayerSet.Remove(nClient);
@@ -248,7 +258,7 @@ void CoreServerShell::RemoveQuitingPlayer(int nIndex)
 //		  int nParam --> 依据uDataId的取值情况而定
 //	返回：依据uDataId的取值情况而定。
 //--------------------------------------------------------------------------
-int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nParam)
+int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t nParam)
 {
 	int nRet = 0;
 	switch(uDataId)
@@ -380,7 +390,7 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			char	szTongName[defTONG_NAME_MAX_LENGTH + 2];
 
 			szTongName[sizeof(szTongName) - 1] = 0;
-			memcpy(szTongName, pApply->m_szTongName, sizeof(szTongName));
+			strcpy_s(szTongName, pApply->m_szTongName);
 			nPlayerIdx = pApply->m_nPlayerIdx;
 			nCamp = pApply->m_nCamp;
 
@@ -540,6 +550,7 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			if (Player[pKicked->m_nPlayerIdx].m_nIndex <= 0)
 				break;
 			Player[pKicked->m_nPlayerIdx].m_cTong.BeKicked(pKicked);
+			Player[pKicked->m_nPlayerIdx].UpdataCurData();
 		}
 		break;
 
@@ -570,6 +581,7 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			if (Player[pLeave->m_nPlayerIdx].m_nIndex <= 0)
 				break;
 			Player[pLeave->m_nPlayerIdx].m_cTong.Leave(pLeave);
+			Player[pLeave->m_nPlayerIdx].UpdataCurData();
 		}
 		break;
 
@@ -660,6 +672,17 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			if (Player[pLogin->m_dwParam].m_nIndex <= 0)
 				break;
 			Player[pLogin->m_dwParam].m_cTong.Login(pLogin);
+			Player[pLogin->m_dwParam].UpdataCurData();
+			//update full status
+			int nIdx = PlayerSet.GetFirstPlayer();
+			while (nIdx)
+			{
+				if (Player[nIdx].m_cTong.GetTongNameID() == Player[pLogin->m_dwParam].m_cTong.m_dwTongNameID)
+				{
+					Player[nIdx].m_cTong.ChangeFullStatus(pLogin->m_bIsFull);
+				}
+				nIdx = PlayerSet.GetNextPlayer();
+			}
 		}
 		break;
 		
@@ -819,6 +842,22 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			}
 		}
 		break;
+	case SGDI_TONG_CHANGE_FULL:
+		if (uParam)
+		{
+			STONG_SERVER_TO_CORE_FULL* pChange = (STONG_SERVER_TO_CORE_FULL*)uParam;
+			int nIdx;
+			nIdx = PlayerSet.GetFirstPlayer();
+			while (nIdx)
+			{
+				if (Player[nIdx].m_cTong.GetTongNameID() == pChange->m_dwTongNameID)
+				{
+					Player[nIdx].m_cTong.ChangeFullStatus(pChange->m_bIsFull);
+				}
+				nIdx = PlayerSet.GetNextPlayer();
+			}
+		}
+		break;
 	case SGDI_TONG_APPLY_CHANGE_CAMP:
 		if (uParam)
 		{
@@ -900,6 +939,29 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, int nPar
 			if (Player[pSync->m_nPlayerIdx].m_nIndex <= 0)
 				break;
 			Player[pSync->m_nPlayerIdx].m_cTong.BeChangedRecruit(pSync);
+		}
+		break;
+	case SGDI_TONG_BE_CHANGED_LEVEL:
+		if (uParam)
+		{
+			STONG_SERVER_TO_CORE_BE_CHANGED_LEVEL* pSync = (STONG_SERVER_TO_CORE_BE_CHANGED_LEVEL*)uParam;
+			if (pSync->m_nPlayerIdx <= 0 || pSync->m_nPlayerIdx >= MAX_PLAYER)
+				break;
+			if (Player[pSync->m_nPlayerIdx].m_nIndex <= 0)
+				break;
+			Player[pSync->m_nPlayerIdx].m_cTong.SetTongLevel(pSync->m_nLevel);
+			Player[pSync->m_nPlayerIdx].UpdataCurData();
+		}
+		break;
+	case SGDI_TONG_BE_CHANGED_EXP:
+		if (uParam)
+		{
+			STONG_SERVER_TO_CORE_BE_CHANGED_EXP* pSync = (STONG_SERVER_TO_CORE_BE_CHANGED_EXP*)uParam;
+			if (pSync->m_nPlayerIdx <= 0 || pSync->m_nPlayerIdx >= MAX_PLAYER)
+				break;
+			if (Player[pSync->m_nPlayerIdx].m_nIndex <= 0)
+				break;
+			Player[pSync->m_nPlayerIdx].m_cTong.SetTongExp(pSync->m_nExp);
 		}
 		break;
 	case SGDI_STOP_GAMESERVER:
@@ -991,6 +1053,9 @@ int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int n
 				pAdd->m_szTongName,
 				pAdd->m_szMasterName,
 				pAdd->m_szTitleName);
+			Player[pAdd->m_nPlayerIdx].m_cTong.SetTongLevel(pAdd->m_nTongLevel);
+			Player[pAdd->m_nPlayerIdx].m_cTong.SetTongExp(pAdd->m_nTongExp);
+			Player[pAdd->m_nPlayerIdx].UpdataCurData();
 		}
 		break;
 
@@ -1040,11 +1105,15 @@ int CoreServerShell::Breathe()
 			{
 				pTimeScript->CallFunction("RunTime", 0, "");
 			}
+		//	else if(aSysTime.wSecond % 5 == 0) {
+			//	pTimeScript->CallFunction("RunTimePUBG", 0, "");
+			//}
 		}
 	}
 
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();
+	g_BauCua.run();
 	return true;
 }
 
@@ -1110,6 +1179,16 @@ bool CoreServerShell::IsCharacterQuiting(int nIndex)
 	}	
 
 	return Player[nIndex].IsWaitingRemove();
+}
+
+//implement IsCharacterNeedSave
+bool CoreServerShell::IsCharacterNeedSave(int nIndex)
+{
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+	{
+		return FALSE;
+	}
+	return Player[nIndex].IsPlayerSaveEnabled();
 }
 
 BYTE CoreServerShell::GetCharacterLixian(int nIndex)//#uy thac
@@ -1410,7 +1489,33 @@ BOOL CoreServerShell::GroupChat(IClient* pClient, DWORD FromIP, unsigned long Fr
 #endif
 		}}
 		break;
+	case tgtcls_msgr:
+	{
+		{
+			size_t pckgsize = sizeof(tagExtendProtoHeader) + size;
+#ifdef WIN32
+			tagExtendProtoHeader* pExHeader = (tagExtendProtoHeader*)_alloca(pckgsize);
+#else
+			tagExtendProtoHeader* pExHeader = (tagExtendProtoHeader*)(new char[pckgsize]);
+#endif
+			pExHeader->ProtocolType = s2c_extendchat;
+			pExHeader->wLength = pckgsize - 1;
+			memcpy(pExHeader + 1, pData, size);
 
+			int nTargetIdx;
+			nTargetIdx = PlayerSet.GetFirstPlayer();
+			while (nTargetIdx)
+			{
+				if (Npc[Player[nTargetIdx].m_nIndex].m_nMissionGroup == tgtid)
+					g_pServer->PackDataToClient(Player[nTargetIdx].m_nNetConnectIdx, pExHeader, pckgsize);
+				nTargetIdx = PlayerSet.GetNextPlayer();
+			}
+#ifndef WIN32
+			delete ((char*)pExHeader);
+#endif
+		}
+	}
+	break;
 	case tgtcls_scrn:
 		{{
 //		int nMaxRelayPlayer = (1024 - 32 - sizeof(CHAT_GROUPMAN) - size) / sizeof(WORD);
@@ -1572,9 +1677,15 @@ BOOL CoreServerShell::PayForSpeech(int nIndex, int nType)
 {
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return FALSE;
+	
 
 	int	nMoney = 0;
 	int nNpcIdx = Player[nIndex].m_nIndex;
+	int Map = SubWorld[Npc[nNpcIdx].m_SubWorldIndex].m_SubWorldID;
+
+	if (Map == 209)
+		return FALSE;
+
 	if (nNpcIdx <= 0)
 		return FALSE;
 	if (Player[nIndex].m_nForbiddenFlag & KPlayer::FF_CHAT)	//c蕀 chat, cam chat

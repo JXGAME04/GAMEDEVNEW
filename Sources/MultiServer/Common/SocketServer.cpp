@@ -189,8 +189,9 @@ SOCKET CSocketServer::CreateListeningSocket( unsigned long address, unsigned sho
 	
 	if ( s == INVALID_SOCKET )
 	{
-		throw CWin32Exception( _T("CSocket::CreateListeningSocket()"), 
-					::WSAGetLastError() );
+		//throw CWin32Exception( _T("CSocket::CreateListeningSocket()"), ::WSAGetLastError());
+		printf("----CSocket::CreateListeningSocket()----\n");
+		return s;
 	}
 	
 	CSocket listeningSocket( s );
@@ -305,13 +306,6 @@ int CSocketServer::Run()
 			workers[i] = 0;
 		}  
 	}
-	catch( const CException &e )
-	{
-		OnError( _T("CSocketServer::Run() - Exception: ") + 
-			e.GetWhere() + 
-			_T(" - ") + 
-			e.GetMessage() );
-	}
 	catch(...)
 	{
 		OnError( _T("CSocketServer::Run() - Unexpected exception") );
@@ -330,11 +324,15 @@ CSocketServer::Socket *CSocketServer::AllocateSocket( SOCKET theSocket )
 	
 	if ( !m_freeList.Empty() )
 	{
+
 		pSocket = m_freeList.PopNode();
-		
-		pSocket->Attach( theSocket );
-		
-		pSocket->AddRef();
+		if (pSocket)
+		{
+			
+			pSocket->Attach( theSocket );
+			
+			pSocket->AddRef();
+		}
 	}
 	else
 	{
@@ -355,8 +353,9 @@ void CSocketServer::ReleaseSocket( Socket *pSocket )
 {
 	if ( !pSocket )
 	{
-		throw CException( _T("CSocketServer::ReleaseSocket()"),
-			_T("pSocket is null") );
+		//throw CException( _T("CSocketServer::ReleaseSocket()"),	_T("pSocket is null") );
+		printf("----CSocketServer::ReleaseSocket() pSocket is null----\n");
+		return;
 	}
 
 	CCriticalSection::Owner lock( m_listManipulationSection );
@@ -378,7 +377,7 @@ void CSocketServer::ReleaseSocket( Socket *pSocket )
 void CSocketServer::DestroySocket( Socket *pSocket )
 {
 	delete pSocket;
-
+    pSocket=NULL;
 	OnConnectionDestroyed();
 }
 
@@ -391,7 +390,8 @@ void CSocketServer::WriteCompleted( Socket * /*pSocket*/, CIOBuffer *pBuffer )
 {
 	if ( pBuffer->GetUsed() != pBuffer->GetWSABUF()->len )
 	{
-		OnError( _T("CSocketServer::WorkerThread::WriteCompleted - Socket write where not all data was written") );
+		//OnError( _T("CSocketServer::WorkerThread::WriteCompleted - Socket write where not all data was written") );
+		printf("--CSocketServer::WorkerThread::WriteCompleted - Socket write where not all data was written--\n");
 	}
 }
 
@@ -468,8 +468,9 @@ CSocketServer::Socket::Socket( CSocketServer &server,
 {
 	if ( !IsValid() )
 	{
-		throw CException( _T("CSocketServer::Socket::Socket()"), 
-			_T("Invalid socket") );
+		//throw CException( _T("CSocketServer::Socket::Socket()"), _T("Invalid socket") );
+		printf("--CSocketServer::Socket::Socket() Invalid socket---\n");
+		return;
 	}
 	
 	if ( useSequenceNumbers )
@@ -483,6 +484,7 @@ CSocketServer::Socket::~Socket()
 	try
 	{
 		delete m_pSequenceData;
+		m_pSequenceData=NULL;
 	}
 	catch(...)
 	{
@@ -494,8 +496,9 @@ void CSocketServer::Socket::Attach( SOCKET theSocket )
 {
 	if ( IsValid() )
 	{
-		throw CException( _T("CSocketServer::Socket::Attach()"), 
-			_T("Socket already attached"));
+        printf("--CSocketServer::Socket::Attach() Socket already attached---\n");
+		return;
+		//throw CException( _T("CSocketServer::Socket::Attach()"), _T("Socket already attached"));
 	}
 	
 	m_socket = theSocket;
@@ -728,7 +731,9 @@ bool CSocketServer::Socket::Read( CIOBuffer *pBuffer /* = 0 */, bool throwOnFail
 	{
 		if ( throwOnFailure )
 		{
-			throw CException( _T("CSocketServer::Socket::Read()"), _T("Socket is closed") );
+			//throw CException( _T("CSocketServer::Socket::Read()"), _T("Socket is closed") );
+			printf("--CSocketServer::Socket::Read() Socket is closed--\n");
+			return false;
 		}
 		else
 		{
@@ -771,7 +776,9 @@ bool CSocketServer::Socket::Write( const BYTE *pData, size_t dataLength, bool th
 			/*
 			 * Todo throw SocketClosedException();
 			 */
-			throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is closed") );
+			//throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is closed") );
+			printf("--CSocketServer::Socket::Write() Socket is closed--\n");
+			return false;
 		}
 		else
 		{
@@ -786,7 +793,9 @@ bool CSocketServer::Socket::Write( const BYTE *pData, size_t dataLength, bool th
 			/*
 			 * Todo throw SocketClosedException();
 			 */
-			throw CException(_T("CSocketServer::Socket::Write()"), _T("Socket is shutdown"));
+			//throw CException(_T("CSocketServer::Socket::Write()"), _T("Socket is shutdown"));
+			printf("--CSocketServer::Socket::Write() Socket is shutdown--\n");
+			return false;
 		}
 		else
 		{
@@ -813,7 +822,9 @@ bool CSocketServer::Socket::Write( CIOBuffer *pBuffer, bool throwOnFailure /* = 
 	{
 		if ( throwOnFailure )
 		{
-			throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is closed") );
+			//throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is closed") );
+			printf("--CSocketServer::Socket::Write() Socket is closed--\n");
+			return false;
 		}
 		else
 		{
@@ -825,7 +836,9 @@ bool CSocketServer::Socket::Write( CIOBuffer *pBuffer, bool throwOnFailure /* = 
 	{
 		if ( throwOnFailure )
 		{
-			throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is shutdown") );
+			//throw CException( _T("CSocketServer::Socket::Write()"), _T("Socket is shutdown") );
+			printf("--CSocketServer::Socket::Write() Socket is shutdown--\n");
+			return false;
 		}
 		else
 		{
@@ -965,7 +978,8 @@ int CSocketServer::WorkerThread::Run()
 				}
 				else if ( WSA_OPERATION_ABORTED != dwResult )
 				{
-					throw CWin32Exception( _T("CIOCompletionPort::GetStatus() - GetQueuedCompletionStatus"), dwResult );					
+					//throw CWin32Exception( _T("CIOCompletionPort::GetStatus() - GetQueuedCompletionStatus"), dwResult );
+					//printf("----CIOCompletionPort::GetStatus() - GetQueuedCompletionStatus----\n");
 				}
 			
 				DEBUG_ONLY( Output( _T("IOCP error - client connection dropped") ) );
@@ -992,16 +1006,10 @@ int CSocketServer::WorkerThread::Run()
 
 		}// while ( true )
 	}
-	catch( const CException &e )
-	{
-		m_server.OnError( _T("CSocketServer::WorkerThread::Run() - Exception: ") +
-					e.GetWhere() +
-					_T(" - ") + 
-					e.GetMessage() );
-	}
 	catch(...)
 	{
-		m_server.OnError( _T("CSocketServer::WorkerThread::Run() - Unexpected exception") );
+	//	m_server.OnError( _T("CSocketServer::WorkerThread::Run() - Unexpected exception") );
+		printf("----CSocketServer::WorkerThread::Run() - Unexpected exception----\n");
 	}
 	
 	return 0;

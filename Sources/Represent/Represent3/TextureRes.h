@@ -158,6 +158,7 @@ public:
 	KPAL24*		m_pPal24;					// 调色板
 	WORD*		m_pPal16;					// 4444调色板
 	int32		m_nFrameNum;				// 资源帧数
+	bool		m_bNew;
 
 	FrameToTexture*		m_pFrameInfo;		// 帧到铁图映射信息数组指针
 	char*		m_pHeader;					// spr头部信息，如果不为空意味着分帧压缩，否则为整体压缩

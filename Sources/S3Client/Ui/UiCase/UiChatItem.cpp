@@ -82,13 +82,13 @@ void KUiChatItem::CloseWindow()
 
 void KUiChatItem::SetInfomation(int nIdx)
 {
-	char	szTitle[1024];
+	char	szTitle[2048];
 	szTitle[0] = 0;
 	int	nLenTitle = 0;
 	m_nMaxLineLen = 0;
 	g_pCoreShell->GetGameData(GDI_CHAT_ITEM_DESC, (unsigned int)nIdx, (int)&szTitle);
 	nLenTitle = TEncodeText(szTitle, strlen(szTitle));
-	if (nLenTitle > 0 && szTitle[0] && nLenTitle <= 1024)
+	if (nLenTitle > 0 && szTitle[0] && nLenTitle <= 2048)
 	{
 		memcpy(m_ObjTitle, szTitle, nLenTitle);
 		m_nTitleLen = nLenTitle;
@@ -207,7 +207,7 @@ int KUiChatItem::Initialize()
 	
 	return true;
 }
-
+extern int SCREEN_WIDTH;
 void KUiChatItem::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -215,7 +215,10 @@ void KUiChatItem::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buff))
 	{
-		Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+			Init(&Ini, "Main1024");
+		else
+			Init(&Ini, "Main");
 		m_ItemImage.Init(&Ini, "ItemImage");
 		m_CancelBtn.Init(&Ini, "CancelBtn");
 	}

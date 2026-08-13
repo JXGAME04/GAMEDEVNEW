@@ -114,6 +114,7 @@ void KWndObjectBox::HoldObject(unsigned int uGenre, unsigned int uId, int nDataW
 		else
 		{
 			g_MouseOver.CancelMouseHoverInfo();
+			g_MouseOverCompare.CancelMouseHoverInfo();
 		}
 	}	
 }
@@ -195,7 +196,17 @@ void KWndObjectBox::PaintWindow()
 			{
 				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, m_nAbsoluteLeft, m_nAbsoluteTop, m_Width, m_Height, ehuyenkim);
 				DrawBorder(m_Object.m_posvs,m_Object.m_dirvs,m_Object.m_vs_lastframe,m_nAbsoluteLeft-1,m_nAbsoluteTop-1,m_Width+1,m_Height+1,((m_Width-12)+(m_Height-12))/2,ehuyenkim);
-			}		
+			}
+			else if (g_pCoreShell->GetNatureItem(m_Object.uId, m_Object.uGenre) == green_item)
+			{
+				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, m_nAbsoluteLeft, m_nAbsoluteTop, m_Width, m_Height, eblue);
+				DrawBorder(m_Object.m_posvs, m_Object.m_dirvs, m_Object.m_vs_lastframe, m_nAbsoluteLeft - 1, m_nAbsoluteTop - 1, m_Width + 1, m_Height + 1, ((m_Width - 12) + (m_Height - 12)) / 2, eblue);
+			}
+			else if (g_pCoreShell->GetNatureItem(m_Object.uId, m_Object.uGenre) == platinum_item)
+			{
+				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, m_nAbsoluteLeft, m_nAbsoluteTop, m_Width, m_Height, ebachkim);
+				DrawBorder(m_Object.m_posvs, m_Object.m_dirvs, m_Object.m_vs_lastframe, m_nAbsoluteLeft - 1, m_nAbsoluteTop - 1, m_Width + 1, m_Height + 1, ((m_Width - 12) + (m_Height - 12)) / 2, ebachkim);
+			}
 		}
 	}
 }
@@ -551,6 +562,21 @@ void KWndObjectMatrix::PaintWindow() // edit by phong kieu vong sang item
 				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ehuyenkim);
 				DrawBorder(pObj->m_posvs,pObj->m_dirvs,pObj->m_vs_lastframe,Shadow.oPosition.nX,Shadow.oPosition.nY,width,height,((width-12)+(height-12))/2,ehuyenkim);
 			}
+			else if (g_pCoreShell->GetNatureItem(pObj->uId, pObj->uGenre) == green_item)
+			{
+				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, eblue);
+				DrawBorder(pObj->m_posvs, pObj->m_dirvs, pObj->m_vs_lastframe, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ((width - 12) + (height - 12)) / 2, eblue);
+			}
+			else if (g_pCoreShell->GetNatureItem(pObj->uId, pObj->uGenre) == platinum_item)
+			{
+				DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ebachkim);
+				DrawBorder(pObj->m_posvs, pObj->m_dirvs, pObj->m_vs_lastframe, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ((width - 12) + (height - 12)) / 2, ebachkim);
+			}
+			//else if (g_pCoreShell->GetNatureItem(pObj->uId, pObj->uGenre) == broken_item)
+			//{
+			//	DrawBorder2(m_bCountFrame, m_nFrame, m_ulTimeDelay, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ehuyenkim);
+			//	DrawBorder(pObj->m_posvs, pObj->m_dirvs, pObj->m_vs_lastframe, Shadow.oPosition.nX, Shadow.oPosition.nY, width, height, ((width - 12) + (height - 12)) / 2, ehuyenkim);
+			//}
 		}
 	}
 	if (m_nPutPosX >= 0)
@@ -608,8 +634,10 @@ int KWndObjectMatrix::RemoveObject(KUiDraggedObject* pObject)
 			if (pHolded->DataX == pObject->DataX &&
 				pHolded->DataY == pObject->DataY)
 			{
-				if (g_MouseOver.IsMoseHoverWndObj(this, i))
+				if (g_MouseOver.IsMoseHoverWndObj(this, i)) {
 					g_MouseOver.CancelMouseHoverInfo();
+					g_MouseOverCompare.CancelMouseHoverInfo();
+				}
 				m_nNumObjects --;
 				for (; i < m_nNumObjects; i++)
 					m_pObjects[i] = m_pObjects[i + 1];
@@ -720,8 +748,10 @@ int KWndObjectMatrix::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 						m_pObjects[nObj].uId, m_nContainerId, x, y);
 				}
 			}
-			else
+			else {
 				g_MouseOver.CancelMouseHoverInfo();
+				g_MouseOverCompare.CancelMouseHoverInfo();
+			}
 			if ((m_Style & OBJCONT_S_TRACE_PUT_POS) && Wnd_GetDragObj(NULL))
 			{
 				DropObject(LOWORD(nParam), HIWORD(nParam), true);

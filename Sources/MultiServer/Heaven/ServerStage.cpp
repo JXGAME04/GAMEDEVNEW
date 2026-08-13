@@ -1032,7 +1032,7 @@ void CIOCPServer::ProcessCommand( Socket *pSocket, const CIOBuffer *pBuffer )
 	const BYTE *pData = pBuffer->GetBuffer();   
 	const size_t used = pBuffer->GetUsed();
 
-	ASSERT( used > s_len_protocol );
+	//ASSERT( used > s_len_protocol );
 
 	if ( used <= s_len_protocol )
 	{

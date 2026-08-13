@@ -428,7 +428,6 @@ void KWndList::PaintWindow()
 				nPaintX = x + nColumnWidth - nLen * m_nFontSize / 2;
 			else
 				nPaintX = x;
-
 			g_pRepresentShell->OutputText(m_nFontSize, pShowString, nLen, nPaintX, y,
 				uColor, 0, TEXT_IN_SINGLE_PLANE_COORD, uBorderColor);
 

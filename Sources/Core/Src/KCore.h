@@ -45,6 +45,13 @@
 #include "KScriptCache.h"
 #include "KSkillManager.h"
 #include "MyAssert.H"
+#include <vector>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <atomic>
 class ISkill ;
 #ifdef _SERVER
 #ifdef _STANDALONE
@@ -80,16 +87,20 @@ extern CORE_API int g_ScreenY;
 
 #define	NET_DEBUG
 extern CORE_API	KTabFile		g_OrdinSkillsSetting, g_MisslesSetting;
+extern CORE_API	KTabFile		g_MeridiantSetting;
 extern CORE_API	KTabFile		g_SkillLevelSetting;
 extern CORE_API	KTabFile		g_NpcSetting;
 extern CORE_API	KTabFile		g_NpcImageSetting;
-extern KTabFile					g_RankTabSetting;
+extern KTabFile					g_RankTabSetting, g_ReBornSetting;
+extern KTabFile					g_MaskChangeRes;
 extern KIniFile 				g_GameSetting;
 extern KIniFile 				g_MapTraffic;
 #ifdef _SERVER
 extern KLuaScript * 			pTimeScript;
 #endif
 
+extern int				g_MaxOptMultiply;
+extern int				g_xMethod;
 #ifdef _SERVER
 extern int		 		g_ExpRate;
 extern int		 		g_MoneyRate;
@@ -198,5 +209,70 @@ void g_SetClient(LPVOID pClient);
 extern IClient* g_pClient;
 //extern BOOL	g_bPingReply;
 #endif
+
+class ThreadPool {
+public:
+	ThreadPool(size_t threadCount) {
+		stop = false;
+		for (size_t i = 0; i < threadCount; ++i) {
+			workers.emplace_back([this]() {
+				while (true) {
+					std::function<void()> task;
+
+					{
+						std::unique_lock<std::mutex> lock(queueMutex);
+						condition.wait(lock, [this]() { return stop || !tasks.empty(); });
+
+						if (stop && tasks.empty())
+							return;
+
+						task = std::move(tasks.front());
+						tasks.pop();
+					}
+
+					task();
+				}
+				});
+		}
+	}
+
+	void enqueue(std::function<void()> task) {
+		{
+			std::unique_lock<std::mutex> lock(queueMutex);
+			tasks.push(std::move(task));
+		}
+		condition.notify_one();
+	}
+
+	void wait() {
+		while (true) {
+			std::unique_lock<std::mutex> lock(queueMutex);
+			if (tasks.empty())
+				break;
+			lock.unlock();
+			std::this_thread::yield();
+		}
+	}
+
+	~ThreadPool() {
+		{
+			std::unique_lock<std::mutex> lock(queueMutex);
+			stop = true;
+		}
+		condition.notify_all();
+		for (std::thread& worker : workers)
+			worker.join();
+	}
+
+private:
+	std::vector<std::thread> workers;
+	std::queue<std::function<void()>> tasks;
+	std::mutex queueMutex;
+	std::condition_variable condition;
+	bool stop;
+};
+
+const int THREAD_COUNT = std::thread::hardware_concurrency() > 0 ? std::thread::hardware_concurrency()/2 : 4; // Default to 4 if hardware concurrency is not available
+static ThreadPool pool(THREAD_COUNT);
 //---------------------------------------------------------------------------
 #endif

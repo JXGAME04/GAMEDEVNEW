@@ -211,7 +211,7 @@ unsigned long	KMission::AddNpc(unsigned long ulNpcIndex, unsigned long ulNpcID, 
 
 BOOL	KMission::RemoveNpc(unsigned long ulNpcIndex, unsigned long ulNpcID)
 {
-	if (ulNpcIndex >= MAX_NPC_MISSION)
+	if (ulNpcIndex >= MAX_NPC)
 		return 0;
 	//
 	if (ulNpcIndex == 0 || ulNpcID == 0) //#can kiem tra

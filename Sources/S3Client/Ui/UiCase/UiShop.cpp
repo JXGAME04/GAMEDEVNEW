@@ -92,7 +92,7 @@ void KUiShop::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
 }
-
+extern int SCREEN_WIDTH;
 void KUiShop::LoadScheme(const char* pScheme)
 {
 	if (m_pSelf)
@@ -102,7 +102,12 @@ void KUiShop::LoadScheme(const char* pScheme)
 		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 		if (Ini.Load(Buff))
 		{
-			m_pSelf->KWndShowAnimate::Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024){
+				m_pSelf->KWndShowAnimate::Init(&Ini, "Main1024");
+		}
+			else{
+				m_pSelf->KWndShowAnimate::Init(&Ini, "Main");
+		}
 			m_pSelf->m_ItemsBox.Init(&Ini, "ItemBox");
 			m_pSelf->m_BuyBtn.Init(&Ini, "BuyBtn");
 			m_pSelf->m_SellBtn.Init(&Ini, "SellBtn");
@@ -284,7 +289,7 @@ void KUiShop::SetPage(int nIndex)
 			if (m_pObjsList[i].nContainer == nIndex)
 			{
 				//m_ItemsBox.AddObject((KUiDraggedObject*)&m_pObjsList[i], 1);
-				UpdateItem1(&m_pObjsList[i], true);
+				UpdateItem1(&m_pObjsList[i], 2);
 			}
 		}
 		m_nCurrentPage = nIndex;
@@ -295,7 +300,13 @@ void KUiShop::UpdateItem1(KUiObjAtContRegion* pItem, int bAdd)
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		bool open = false;
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if (open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -309,6 +320,8 @@ void KUiShop::UpdateItem1(KUiObjAtContRegion* pItem, int bAdd)
 				m_ItemsBox.AddObject(&Obj, 1);
 			else
 				m_ItemsBox.RemoveObject(&Obj);
+			if (!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 	}
 }

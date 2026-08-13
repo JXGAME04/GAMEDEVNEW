@@ -12,6 +12,7 @@
 
 #define		TABFILE_PATH				"\\settings\\item"
 #define		TABFILE_MINE				"mine.txt"
+#define		TABFILE_EVENTITEM			"eventitem.txt"
 #define		TABFILE_TASK				"questkey.txt"
 #define		TABFILE_MEDICINE			"potion.txt"
 #define		TABFILE_MEDMATERIAL			"medmaterialbase.txt"
@@ -29,11 +30,21 @@
 #define		TABFILE_TOWNPORTAL			"TownPortal.txt"
 #define		TABFILE_MAGICSCRIPT			"Magicscript.txt"
 #define		TABFILE_EQUIPMENT_UNIQUE	"unique.txt"
-#define		TABFILE_MAGICATTRIB						"magicattrib.txt"
+#define		TABFILE_MAGICATTRIB			"magicattrib.txt"
 #define		TABFILE_GOLDITEM_O			"GoldItem.txt"
 #define		TABFILE_GOLDITEM_N			"goldequip.txt"
+#define		TABFILE_PLATINAEQUIP		"platinaequip.txt"
 #define		TABFILE_MASK				"Mask.txt"	// mat na
 #define		TABFILE_MANTLE				"Mantle.txt"//#phi phong
+#define		TABFILE_SIGNET				"Signet.txt"
+#define		TABFILE_SHIPIN				"Shipin.txt"
+#define		TABFILE_HOODS				"Hoods.txt"
+#define		TABFILE_CLOAK				"Cloak.txt"
+#define		TABFILE_SUITE				"suite_activate_count.txt"
+#define		TABFILE_EXT_SUITE			"ext_suite_activate_count.txt"
+#define		TABFILE_PLATINA_DURABILITY	"platina_durability.txt"
+#define		TABFILE_PLATINA_MAGICATTR	"platina_magicattr.txt"
+#define		TABFILE_PLATINA_MAGICRATE	"platina_magicrate.txt"
 
 typedef struct tagPROPINFO
 {
@@ -62,7 +73,11 @@ char*	TABFILE_EQUIPMENT[] =
 	TABFILE_PENDANT,		//"Pendant.txt",
 	TABFILE_HORSE,			//"Horse.txt",
 	TABFILE_MASK,			//"Mask.txt"	// mat na
-	TABFILE_MANTLE,		//"Mantle.txt" #phi phong
+	TABFILE_MANTLE,			//"Mantle.txt" #phi phong
+	TABFILE_SIGNET,			//"Signet.txt"
+	TABFILE_SHIPIN,			//"Shipin.txt"
+	TABFILE_HOODS,			//"Hoods.txt"
+	TABFILE_CLOAK,			//"Cloak.txt"
 };
 
 //int GetRandomNumber(int nMin, int nMax);
@@ -99,7 +114,7 @@ KLibOfBPT::~KLibOfBPT()
 
 BOOL KLibOfBPT::Init()
 {
-	KBasicPropertyTable*	paryBPT[] = {	
+	KBasicPropertyTable* paryBPT[] = {
 											&m_BPTMeleeWeapon,
 											&m_BPTRangeWeapon,
 											&m_BPTArmor,
@@ -113,27 +128,74 @@ BOOL KLibOfBPT::Init()
 											&m_BPTHorse,
 											&m_BPTMask,	// mat na
 											&m_BPTMantle,	//#phi phong
+											&m_BPTSignet,
+											&m_BPTShipin,
+											&m_BPTHoods,
+											&m_BPTCloak,
+											&m_BPTGoldEquip,
+											&m_BPTPlatinaEquip,
 											&m_GoldItem,
 											&m_BPTMedicine,
+											&m_BPTEvent,
 											&m_BPTQuest,
 											&m_BPTTownPortal,
 											&m_BPTMagicScript,
 											&m_BPTMine,
 											&m_BPTMagicAttrib,
+											&m_ActiveSuite,
+											&m_ExtActiveSuite,
+											&m_PlatinaDurability,
+											&m_PlatinaMagicRate,
+											&m_PlatinaMagicAttrib,
 										};
 
 	const int cbNumOfTables = sizeof(paryBPT)/sizeof(paryBPT[0]);
 	for (int i = 0; i < cbNumOfTables; i++)
 	{
-		if (i < 13)	
+		if (i < 17)	
 		{
 			KBPT_Equipment* pTemp = (KBPT_Equipment *)paryBPT[i];
 			pTemp->Init(i);
 		}
-		else if (i == 13)
+		else if (i == 19) //old golditem
 		{
 			KBPT_Equipment_Gold* pGTemp = (KBPT_Equipment_Gold *)paryBPT[i];
 			pGTemp->Init();
+		}
+		else if (i == 17)
+		{
+			KBPT_Equipment_Gold2* pTemp = (KBPT_Equipment_Gold2*)paryBPT[i];
+			pTemp->Init();
+		}
+		else if (i == 18)
+		{
+			KBPT_Equipment_Platina* pTemp = (KBPT_Equipment_Platina*)paryBPT[i];
+			pTemp->Init();
+		}
+		else if (i == 27) //active suite
+		{
+			KBPT_ClassSuite* pTemp = (KBPT_ClassSuite*)paryBPT[i];
+			pTemp->Init();
+		}
+		else if (i == 28) //ext active suite
+		{
+			KBPT_ClassSuite* pTemp = (KBPT_ClassSuite*)paryBPT[i];
+			pTemp->Init_Ext();
+		}
+		else if (i == 29) //platina durability
+		{
+			KBPT_ClassPlatinaDurability* pTemp = (KBPT_ClassPlatinaDurability*)paryBPT[i];
+			pTemp->Init();
+		}
+		else if (i == 30) //platina magic rate
+		{
+			KBPT_ClassPlatinaMagicRate* pTemp = (KBPT_ClassPlatinaMagicRate*)paryBPT[i];
+			pTemp->Init();
+		}
+		else if (i == 31) //platina magic attrib
+		{
+			KBPT_ClassPlatinaMagicAttr* pTemp = (KBPT_ClassPlatinaMagicAttr*)paryBPT[i];
+			pTemp->Init();
 		}
 
 		if (FALSE == paryBPT[i]->Load())
@@ -146,7 +208,12 @@ BOOL KLibOfBPT::Init()
 
 	return TRUE;
 }
-
+/**********************************************************************************
+Function: Create a four-dimensional array, use (prefix and suffix, item type, five elements, level)
+to determine the index value list of a magic attribute
+Entry: m_BPTMagicAttrib: contains all magic attributes read from the tab file
+Exit: The four-dimensional array m_CMAIT is filled with the corresponding index value list
+******************************************************************************/
 BOOL KLibOfBPT::InitMAIT()
 {
     int nResult = false;
@@ -295,6 +362,26 @@ BOOL KLibOfBPT::InitMALib()
 	}
 	bEC = TRUE;
 	return bEC;
+}
+
+const KBASICPROP_EQUIPMENT_GOLD2* KLibOfBPT::GetGoldEquipRecord(IN int nIndex) const
+{
+	return (KBASICPROP_EQUIPMENT_GOLD2*)m_BPTGoldEquip.GetRecord(nIndex);
+}
+
+const int KLibOfBPT::GetGoldEquipNumber() const
+{
+	return m_BPTGoldEquip.GetRecordCount();
+}
+
+const KBASICPROP_EQUIPMENT_PLATINA* KLibOfBPT::GetPlatinaEquipRecord(IN int nIndex) const
+{
+	return (KBASICPROP_EQUIPMENT_PLATINA*)m_BPTPlatinaEquip.GetRecord(nIndex);
+}
+
+const int KLibOfBPT::GetPlatinaEquipNumber() const
+{
+	return m_BPTPlatinaEquip.GetRecordCount();
 }
 
 // flying add here
@@ -531,6 +618,137 @@ const KBASICPROP_MINE* KLibOfBPT::GetMine(IN int i) const
 	return m_BPTMine.GetRecord(i);
 }
 
+const KBASICPROP_EQUIPMENT* KLibOfBPT::GetSignetRecord(IN int i) const
+{
+	return m_BPTSignet.GetRecord(i);
+}
+
+const int KLibOfBPT::GetSignetRecordNumber() const
+{
+	return m_BPTSignet.NumOfEntries();
+}
+
+const KBASICPROP_EQUIPMENT* KLibOfBPT::GetShipinRecord(IN int i) const
+{
+	return m_BPTShipin.GetRecord(i);
+}
+
+const int KLibOfBPT::GetShipinRecordNumber() const
+{
+	return m_BPTShipin.NumOfEntries();
+}
+
+const KBASICPROP_EQUIPMENT* KLibOfBPT::GetHoodsRecord(IN int i) const
+{
+	return m_BPTHoods.GetRecord(i);
+}
+
+const int KLibOfBPT::GetHoodsRecordNumber() const
+{
+	return m_BPTHoods.NumOfEntries();
+}
+
+const KBASICPROP_EQUIPMENT* KLibOfBPT::GetCloakRecord(IN int i) const
+{
+	return m_BPTCloak.GetRecord(i);
+}
+
+const KSUITE_ACTIVE_COUNT* KLibOfBPT::GetActiveSuiteRecord(IN int i) const
+{
+	return m_ActiveSuite.GetRecord(i);
+}
+
+const KSUITE_ACTIVE_COUNT* KLibOfBPT::GetExtActiveSuiteRecord(IN int i) const
+{
+	return m_ExtActiveSuite.GetRecord(i);
+}
+
+const int KLibOfBPT::GetActiveSuiteCount(IN int suiteID) const
+{
+	const KSUITE_ACTIVE_COUNT* tmp = m_ActiveSuite.FindRecord(suiteID);
+	if (tmp)
+		return tmp->nActiveCount1;
+	else
+		return 0;
+}
+
+const int KLibOfBPT::GetActiveSuiteRecordNumber() const
+{
+	return m_ActiveSuite.NumOfEntries();
+}
+
+const int KLibOfBPT::GetExtActiveSuiteRecordNumber() const
+{
+	return m_ExtActiveSuite.NumOfEntries();
+}
+
+const KPLATINA_DURABILITY* KLibOfBPT::GetPlatinaDurabilityRecord(IN int i) const
+{
+	return m_PlatinaDurability.GetRecord(i);
+}
+
+const int KLibOfBPT::GetPlatinaDurabilityRecordNumber() const
+{
+	return m_PlatinaDurability.NumOfEntries();
+}
+
+const KPLATINA_MAGICATTR* KLibOfBPT::GetPlatinaMagicAttrRecord(IN int i) const
+{
+	return m_PlatinaMagicAttrib.GetRecord(i);
+}
+
+const int KLibOfBPT::GetPlatinaMagicAttrRecordNumber() const
+{
+	return m_PlatinaMagicAttrib.NumOfEntries();
+}
+
+const KPLATINA_MAGICRATE* KLibOfBPT::GetPlatinaMagicRateFindRecord(IN int platinaItem, IN int level, IN int SkillNo) const
+{
+	return m_PlatinaMagicRate.FindRecord(platinaItem, level, SkillNo);
+}
+
+const int KLibOfBPT::GetPlatinaMagicRateRecordNumber() const
+{
+	return m_PlatinaMagicRate.NumOfEntries();
+}
+
+const int KLibOfBPT::GetCloakRecordNumber() const
+{
+	return m_BPTCloak.NumOfEntries();
+}
+
+const KBASICPROP_EQUIPMENT_PLATINA* KLibOfBPT::FindEquipmentUnique(IN int a, IN int b, IN int c) const
+{
+	return 0;// TODO:m_BPTEquipment_Unique.FindRecord(a, b, c);
+}
+/******************************************************************************
+	功能:	获取指定的药品的属性记录
+	入口:	nType: 药品的类型
+			nLevel: 药品的级别
+	出口:	成功时返回指向该记录的指针
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_MEDICINE* KLibOfBPT::FindMedicine(IN int nType, IN int nLevel) const
+{
+	return 0;//TODO: m_BPTMedicine.FindRecord(nType, nLevel);
+}
+
+/******************************************************************************
+	功能:	获取指定的矿石的属性记录
+	入口:	i: 指定矿石
+	出口:	成功时返回指向该记录的指针
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EVENTITEM* KLibOfBPT::GetEvent(IN int i) const
+{
+	return m_BPTEvent.GetRecord(i);
+}
+
+const int KLibOfBPT::GetEventRecordNumber() const
+{
+	return m_BPTEvent.NumOfEntries();
+}
+
 KBasicPropertyTable::KBasicPropertyTable()
 {
 	m_pBuf = NULL;
@@ -610,6 +828,80 @@ BOOL KBasicPropertyTable::Load()
 
 	bEC = TRUE;
 	return bEC;
+}
+
+//============================================================================
+KBPT_Event::KBPT_Event()
+{
+	m_nSizeOfEntry = sizeof(KBASICPROP_EVENTITEM);
+	::strcpy(m_szTabFile, TABFILE_EVENTITEM);
+}
+
+KBPT_Event::~KBPT_Event()
+{
+}
+
+BOOL KBPT_Event::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	KBASICPROP_EVENTITEM* pBuf = (KBASICPROP_EVENTITEM*)m_pBuf;
+	pBuf = pBuf + i;
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_CHAR,			pBuf->m_szName, sizeof(pBuf->m_szName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nItemGenre), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nDetailType), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szImageName, sizeof(pBuf->m_szImageName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nObjIdx), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nWidth), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nHeight), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szIntro, sizeof(pBuf->m_szIntro)},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szScript, sizeof(pBuf->m_szScript)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPrice), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_bShortKey), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMaxStack), 0},
+	};
+
+	// 逐个读入各项属性
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+/******************************************************************************
+	功能:	获取指定的矿石的属性
+	入口:	i: 要求获取第i项矿石的属性. 若为-1表示随机取一个
+	出口:	成功时返回指向该矿石属性的指针(一个KBASICPROP_EVENT结构)
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EVENTITEM* KBPT_Event::GetRecord(int i) const
+{
+	_ASSERT(this != NULL);
+
+	if (-1 == i)
+		i = ::GetRandomNumber(0, m_nNumOfEntries - 1);
+
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KBASICPROP_EVENTITEM*)m_pBuf) + i) : NULL;
+}
+
+
+const KBASICPROP_EVENTITEM* KBPT_Event::FindRecord(IN int nDetailType) const
+{
+	const KBASICPROP_EVENTITEM* pData = NULL;
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KBASICPROP_EVENTITEM* pMed;
+		pMed = GetRecord(i);
+		_ASSERT(NULL != pMed);
+		if (nDetailType == pMed->m_nDetailType)
+		{
+			pData = pMed;
+			break;
+		}
+	}
+	return pData;
 }
 
 KBPT_Mine::KBPT_Mine()
@@ -1115,6 +1407,74 @@ const KBASICPROP_EQUIPMENT* KBPT_Equipment::FindRecord( IN int nDetailType, IN i
 	return pData;
 }
 
+KBPT_ClassSuite::KBPT_ClassSuite()
+{
+	m_nSizeOfEntry = sizeof(KSUITE_ACTIVE_COUNT);
+}
+
+KBPT_ClassSuite::~KBPT_ClassSuite()
+{
+}
+
+void KBPT_ClassSuite::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_SUITE);
+}
+
+void KBPT_ClassSuite::Init_Ext()
+{
+	::strcpy(m_szTabFile, TABFILE_EXT_SUITE);
+}
+
+BOOL KBPT_ClassSuite::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	KSUITE_ACTIVE_COUNT* pBuf = (KSUITE_ACTIVE_COUNT*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->mSuiteNo), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->nActiveCount1), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->nActiveCount2), 0},
+	};
+
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KSUITE_ACTIVE_COUNT* KBPT_ClassSuite::GetRecord(IN int i) const
+{
+	_ASSERT(this != NULL);
+
+	if (-1 == i)
+		i = ::GetRandomNumber(0, m_nNumOfEntries - 1);
+
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KSUITE_ACTIVE_COUNT*)m_pBuf) + i) : NULL;
+}
+
+const KSUITE_ACTIVE_COUNT* KBPT_ClassSuite::FindRecord(IN int SuiteNo) const
+{
+	_ASSERT(this != NULL);
+
+	const KSUITE_ACTIVE_COUNT* pData = NULL;
+
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KSUITE_ACTIVE_COUNT* pEqu;
+		pEqu = GetRecord(i);
+		_ASSERT(NULL != pEqu);
+		if (SuiteNo == pEqu->mSuiteNo)
+		{
+			pData = pEqu;
+			break;
+		}
+	}
+	return pData;
+}
+
 KBPT_Equipment_Gold::KBPT_Equipment_Gold()
 {
 	m_nSizeOfEntry = sizeof(KBASICPROP_EQUIPMENT_GOLD);
@@ -1238,6 +1598,303 @@ void KBPT_Equipment_Gold::Init()
 {
 	::strcpy(m_szTabFile, TABFILE_GOLDITEM_O);
 }
+
+//============================================================================
+KBPT_Equipment_Gold2::KBPT_Equipment_Gold2()
+{
+	m_nSizeOfEntry = sizeof(KBASICPROP_EQUIPMENT_GOLD2);
+	// Copy the gold item information file's name into the buffer
+}
+
+KBPT_Equipment_Gold2::~KBPT_Equipment_Gold2()
+{
+	return;
+}
+
+BOOL KBPT_Equipment_Gold2::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	// 初始化
+	KBASICPROP_EQUIPMENT_GOLD2* pBuf = (KBASICPROP_EQUIPMENT_GOLD2*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_CHAR,			pBuf->m_szName, sizeof(pBuf->m_szName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nItemGenre), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nDetailType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nParticularType), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szImageName, sizeof(pBuf->m_szImageName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nObjIdx), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nWidth), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nHeight), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szIntro, sizeof(pBuf->m_szIntro)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSeries), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPrice), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nLevel), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nStack), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].sRange.nMax), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[0].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[0].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[1].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[1].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[2].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[2].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[3].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[3].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[4].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[4].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[5].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[5].nPara), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[0]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[1]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[2]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[3]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[4]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[5]), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nGroup), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSetID), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSetIDNo), 0},
+		//{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nNeedToActive1), 0},
+		//{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nNeedToActive2), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[6]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs[7]), 0},
+	};
+
+	// 逐个读入各项属性
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+/******************************************************************************
+	功能:	获取指定的装备的属性
+	入口:	i: 要求获取第i项装备的属性
+	出口:	成功时返回指向该装备属性的指针(一个KBASICPROP_EQUIPMENT结构)
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EQUIPMENT_GOLD2* KBPT_Equipment_Gold2::GetRecord(int i) const
+{
+	_ASSERT(this != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KBASICPROP_EQUIPMENT_GOLD2*)m_pBuf) + i) : NULL;
+}
+
+/******************************************************************************
+	功能:	获取指定的唯一装备属性记录
+	入口:	nDetailType: 具体类别
+			nParticularType: 详细类别
+			nLevel: 等级
+	出口:	成功时返回指向该记录的指针
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EQUIPMENT_GOLD2*
+KBPT_Equipment_Gold2::FindRecord(IN int nDetailType,
+	IN int nParticularType,
+	IN int nLevel) const
+{
+	_ASSERT(this != NULL);
+
+	const KBASICPROP_EQUIPMENT_GOLD2* pData = NULL;
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KBASICPROP_EQUIPMENT_GOLD2* pEqu;
+		pEqu = GetRecord(i);
+		_ASSERT(NULL != pEqu);
+		if (NULL == pEqu)
+			continue;
+		if (nDetailType == pEqu->m_nDetailType &&
+			nParticularType == pEqu->m_nParticularType &&
+			nLevel == pEqu->m_nLevel)
+		{
+			pData = pEqu;
+			break;
+		}
+	}
+	return pData;
+}
+
+void KBPT_Equipment_Gold2::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_GOLDITEM_N);
+}
+
+KBPT_Equipment_Platina::KBPT_Equipment_Platina()
+{
+	m_nSizeOfEntry = sizeof(KBASICPROP_EQUIPMENT_PLATINA);
+}
+
+KBPT_Equipment_Platina::~KBPT_Equipment_Platina()
+{
+	return;
+}
+
+BOOL KBPT_Equipment_Platina::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	// 初始化
+	KBASICPROP_EQUIPMENT_PLATINA* pBuf = (KBASICPROP_EQUIPMENT_PLATINA*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_CHAR,			pBuf->m_szName, sizeof(pBuf->m_szName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nItemGenre), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nDetailType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nParticularType), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szImageName, sizeof(pBuf->m_szImageName)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nObjIdx), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nWidth), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nHeight), 0},
+		{ PI_VARTYPE_CHAR,			pBuf->m_szIntro, sizeof(pBuf->m_szIntro)},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSeries), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPrice), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nLevel), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nStack), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[0].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[1].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[2].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[3].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[4].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[5].sRange.nMax), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].sRange.nMin), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropBasic[6].sRange.nMax), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[0].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[0].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[1].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[1].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[2].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[2].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[3].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[3].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[4].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[4].nPara), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[5].nType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryPropReq[5].nPara), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[0]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[0]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[1]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[1]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[2]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[2]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[3]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[3]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[4]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[4]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[5]), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_10[5]), 0},
+
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nGroup), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nBuffSkillLevel6), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nBuffSkillLevel10), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSetID), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSetIDNo), 0},
+		
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[6]), 0},
+		//pBuf->m_aryMagicAttribs_10[6] = pBuf->m_aryMagicAttribs_10[6];
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_aryMagicAttribs_0[7]), 0},
+		//pBuf->m_aryMagicAttribs_10[7] = pBuf->m_aryMagicAttribs_10[7];
+	};
+
+	// 逐个读入各项属性
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+/******************************************************************************
+	功能:	获取指定的装备的属性
+	入口:	i: 要求获取第i项装备的属性
+	出口:	成功时返回指向该装备属性的指针(一个KBASICPROP_EQUIPMENT结构)
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EQUIPMENT_PLATINA* KBPT_Equipment_Platina::GetRecord(int i) const
+{
+	_ASSERT(this != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KBASICPROP_EQUIPMENT_PLATINA*)m_pBuf) + i) : NULL;
+}
+
+/******************************************************************************
+	功能:	获取指定的唯一装备属性记录
+	入口:	nDetailType: 具体类别
+			nParticularType: 详细类别
+			nLevel: 等级
+	出口:	成功时返回指向该记录的指针
+			失败时返回NULL
+******************************************************************************/
+const KBASICPROP_EQUIPMENT_PLATINA*
+KBPT_Equipment_Platina::FindRecord(IN int nDetailType,
+	IN int nParticularType,
+	IN int nLevel) const
+{
+	_ASSERT(this != NULL);
+
+	const KBASICPROP_EQUIPMENT_PLATINA* pData = NULL;
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KBASICPROP_EQUIPMENT_PLATINA* pEqu;
+		pEqu = GetRecord(i);
+		_ASSERT(NULL != pEqu);
+		if (NULL == pEqu)
+			continue;
+		if (nDetailType == pEqu->m_nDetailType &&
+			nParticularType == pEqu->m_nParticularType &&
+			nLevel == pEqu->m_nLevel)
+		{
+			pData = pEqu;
+			break;
+		}
+	}
+	return pData;
+}
+
+void KBPT_Equipment_Platina::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINAEQUIP);
+}
+//============================================================================
 
 KBPT_MagicAttrib_TF::KBPT_MagicAttrib_TF()
 {
@@ -1463,4 +2120,206 @@ BOOL KBPT_ClassifiedMAT::GetAll(int* pnaryBuf, int* pnCount) const
 		bEC = TRUE;
 	}
 	return bEC;
+}
+
+KBPT_ClassPlatinaDurability::KBPT_ClassPlatinaDurability()
+{
+	m_nSizeOfEntry = sizeof(KPLATINA_DURABILITY);
+}
+
+KBPT_ClassPlatinaDurability::~KBPT_ClassPlatinaDurability()
+{
+}
+
+void KBPT_ClassPlatinaDurability::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_DURABILITY);
+}
+
+void KBPT_ClassPlatinaDurability::Init_Ext()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_DURABILITY);
+}
+
+BOOL KBPT_ClassPlatinaDurability::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	KPLATINA_DURABILITY* pBuf = (KPLATINA_DURABILITY*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPlatinaItem), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nOldLevel), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMaxDurability), 0},
+	};
+
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KPLATINA_DURABILITY* KBPT_ClassPlatinaDurability::GetRecord(IN int i) const
+{
+	_ASSERT(this != NULL);
+
+	if (-1 == i)
+		i = ::GetRandomNumber(0, m_nNumOfEntries - 1);
+
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KPLATINA_DURABILITY*)m_pBuf) + i) : NULL;
+}
+
+const KPLATINA_DURABILITY* KBPT_ClassPlatinaDurability::FindRecord(IN int PlatinaItem) const
+{
+	_ASSERT(this != NULL);
+
+	const KPLATINA_DURABILITY* pData = NULL;
+
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KPLATINA_DURABILITY* pEqu;
+		pEqu = GetRecord(i);
+		_ASSERT(NULL != pEqu);
+		if (PlatinaItem == pEqu->m_nPlatinaItem)
+		{
+			pData = pEqu;
+			break;
+		}
+	}
+	return pData;
+}
+
+//====
+KBPT_ClassPlatinaMagicAttr::KBPT_ClassPlatinaMagicAttr()
+{
+	m_nSizeOfEntry = sizeof(KPLATINA_MAGICATTR);
+}
+
+KBPT_ClassPlatinaMagicAttr::~KBPT_ClassPlatinaMagicAttr()
+{
+}
+
+void KBPT_ClassPlatinaMagicAttr::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_MAGICATTR);
+}
+
+void KBPT_ClassPlatinaMagicAttr::Init_Ext()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_MAGICATTR);
+}
+
+BOOL KBPT_ClassPlatinaMagicAttr::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	KPLATINA_MAGICATTR* pBuf = (KPLATINA_MAGICATTR*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nAttributeType), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue1), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue2), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue3), 0},
+	};
+
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KPLATINA_MAGICATTR* KBPT_ClassPlatinaMagicAttr::GetRecord(IN int i) const
+{
+	_ASSERT(this != NULL);
+
+	if (-1 == i)
+		i = ::GetRandomNumber(0, m_nNumOfEntries - 1);
+
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KPLATINA_MAGICATTR*)m_pBuf) + i) : NULL;
+}
+
+const KPLATINA_MAGICATTR* KBPT_ClassPlatinaMagicAttr::FindRecord(IN int i) const
+{
+	_ASSERT(this != NULL);
+
+	
+	return GetRecord(i);
+}
+
+//====
+KBPT_ClassPlatinaMagicRate::KBPT_ClassPlatinaMagicRate()
+{
+	m_nSizeOfEntry = sizeof(KPLATINA_MAGICRATE);
+}
+
+KBPT_ClassPlatinaMagicRate::~KBPT_ClassPlatinaMagicRate()
+{
+}
+
+void KBPT_ClassPlatinaMagicRate::Init()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_MAGICRATE);
+}
+
+void KBPT_ClassPlatinaMagicRate::Init_Ext()
+{
+	::strcpy(m_szTabFile, TABFILE_PLATINA_MAGICRATE);
+}
+
+BOOL KBPT_ClassPlatinaMagicRate::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+
+	KPLATINA_MAGICRATE* pBuf = (KPLATINA_MAGICRATE*)m_pBuf;
+	pBuf = pBuf + i;	// 读入的属性记在 pBuf 所指结构中
+	const PROPINFO	aryPI[] =
+	{
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPlatinaItem), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nLevel), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSkillNo), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nActiveRate), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nRate1), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMagicIdx1), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nRate2), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMagicIdx2), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nRate3), 0},
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMagicIdx3), 0},
+	};
+
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KPLATINA_MAGICRATE* KBPT_ClassPlatinaMagicRate::GetRecord(IN int i) const
+{
+	_ASSERT(this != NULL);
+
+	if (-1 == i)
+		i = ::GetRandomNumber(0, m_nNumOfEntries - 1);
+
+	_ASSERT(i >= 0 && i < m_nNumOfEntries);
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KPLATINA_MAGICRATE*)m_pBuf) + i) : NULL;
+}
+
+const KPLATINA_MAGICRATE* KBPT_ClassPlatinaMagicRate::FindRecord(IN int nPlatinaItem, IN int nLevel, IN int SkillNo) const
+{
+	_ASSERT(this != NULL);
+
+	const KPLATINA_MAGICRATE* pData = NULL;
+
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		const KPLATINA_MAGICRATE* pEqu;
+		pEqu = GetRecord(i);
+		_ASSERT(NULL != pEqu);
+		if (nPlatinaItem == pEqu->m_nPlatinaItem && nLevel == pEqu->m_nLevel && SkillNo == pEqu->m_nSkillNo)
+		{
+			pData = pEqu;
+			break;
+		}
+	}
+	return pData;
 }

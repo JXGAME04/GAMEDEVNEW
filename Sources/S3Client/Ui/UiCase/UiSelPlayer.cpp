@@ -49,6 +49,38 @@ KUiSelPlayer::KUiSelPlayer()
 		m_szSelPlayerSound[4][0] = 0;
 }
 
+KUiSelPlayer* KUiSelPlayer::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
+
+bool KUiSelPlayer::AutoLgNextStep(const char* pszName)
+{
+	if (m_nNumPlayer > 0)
+	{
+		int nSel = -1;
+		for (int i = 0; i < m_nNumPlayer; i++)
+		{
+			KRoleChiefInfo	Info;
+			g_LoginLogic.GetRoleInfo(i, &Info);
+			if(!strcmp(Info.Name, pszName))
+			{
+				nSel = i;
+				break;
+			}
+		}
+		if(nSel < 0)
+			return false;
+		OnSelectPlayer(nSel, false);
+		OnEnterGame();
+		return true;
+	}
+	return false;
+}
+
 //--------------------------------------------------------------------------
 //	功能：打开窗口，返回唯一的一个类对象实例
 //--------------------------------------------------------------------------
@@ -108,7 +140,7 @@ void KUiSelPlayer::Initialize()
 	// 注册本窗口
 	Wnd_AddWindow(this, WL_TOPMOST);
 }
-
+extern int SCREEN_WIDTH;
 // -------------------------------------------------------------------------
 // 函数		: KUiSelPlayer::LoadScheme
 // 功能		: 载入界面方案
@@ -120,8 +152,16 @@ void KUiSelPlayer::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_SELPLAYER);
 	if (Ini.Load(Buff))
 	{
-		Init(&Ini, "SelRole");	// 窗口背景数据
-		Ini.GetString("SelRole", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		if (SCREEN_WIDTH == 1024)
+		{
+			Init(&Ini, "SelRole1024");
+			Ini.GetString("SelRole1024", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
+		else
+		{
+			Init(&Ini, "SelRole");	// 窗口背景数据
+			Ini.GetString("SelRole", "LoginBg", "", m_szLoginBg, sizeof(m_szLoginBg));
+		}
 		Ini.GetString("SelRole", "PlayerImgPrefix", "", m_szPlayerImgPrefix, sizeof(m_szPlayerImgPrefix));
 
 		Buff[0] = '\0';	// 清空缓存

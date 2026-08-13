@@ -39,6 +39,7 @@ public:
 	void	SyncObjectTrap(BYTE* pMsg);
 	void	NetCommandWalk(BYTE* pMsg);
 	void	NetCommandRun(BYTE* pMsg);
+	//void	s2cDynamicStruct(BYTE* pMsg);
 	void	NetCommandJump(BYTE* pMsg);
 	void	NetCommandSkill(BYTE* pMsg);
 	void	NetCommandHurt(BYTE* pMsg);
@@ -71,6 +72,7 @@ public:
 	void	s2cSyncAllSkill(BYTE * pMsg);
 	void	s2cSyncMoney(BYTE* pMsg);
 	void	s2cMoveItem(BYTE* pMsg);
+	void	s2cSwitchEquip(BYTE* pMsg);
 	void	s2cRemoveItem(BYTE* pMsg);
 	void	s2cSyncItem(BYTE* pMsg);
 	void	SyncScriptAction(BYTE* pMsg);
@@ -87,13 +89,17 @@ public:
 	void	s2cChatFriendOffLine(BYTE* pMsg);
 	void	SyncEnd(BYTE* pMsg);
 	void	s2cTradeChangeState(BYTE* pMsg);
+	void	s2cGambleChangeState(BYTE* pMsg);
 	void	s2cNpcSetMenuState(BYTE* pMsg);
 	void	s2cTradeMoneySync(BYTE* pMsg);
 	void	s2cTradeDecision(BYTE* pMsg);
+	void	s2cGambleMoneySync(BYTE* pMsg);
+	void	s2cGambleDecision(BYTE* pMsg);
 	void	s2cPlayerExp(BYTE* pMsg);
 	void	s2cChatScreenSingleError(BYTE* pMsg);
 	void	s2cTeamInviteAdd(BYTE * pMsg);
 	void	s2cTradePressOkSync(BYTE * pMsg);
+	void	s2cGamblePressOkSync(BYTE* pMsg);
 	void	s2cPing(BYTE* pMsg);
 	void	s2cDirectlyCastSkill(BYTE * pMsg);
 	void	s2cShowMsg(BYTE * pMsg);
@@ -101,6 +107,7 @@ public:
 	void	PlayerRevive(BYTE* pMsg);
 	void	RequestNpcFail(BYTE* pMsg);
 	void	s2cTradeApplyStart(BYTE* pMsg);
+	void	s2cGambleApplyStart(BYTE* pMsg);
 	void	s2cItemAutoMove(BYTE* pMsg);
 	void	FinishedItemExchange(BYTE* pMsg);
 	void	s2cChangeWeather(BYTE* pMsg);
@@ -155,6 +162,12 @@ public:
 	void	s2cOpenCompoundItem(BYTE* pMsg);
 	void	s2cSyncRankData(BYTE* pMsg);
 	void	s2cSyncRankData2(BYTE* pMsg);
+	void	s2cShowDamage(BYTE* pMsg);
+	void	s2cSyncMagic(BYTE* pMsg);
+	void	s2cSyncMeridian(BYTE* pMsg);
+	void	s2cSyncBauCuaResult(BYTE* pMsg);
+	void	s2cPlayerSync(BYTE* pMsg);
+	void	s2cRemoveAllItem(BYTE* pMsg);
 	 
 	void	s2cExtend(BYTE* pMsg);
 	void	s2cExtendChat(BYTE* pMsg);
@@ -169,6 +182,7 @@ public:
 	void	NpcSkillCommand(int nIndex, BYTE* pProtocol);
 	void	NpcJumpCommand(int nIndex, BYTE* pProtocol);
 	void	NpcTalkCommand(int nIndex, BYTE* pProtocol);
+	void	c2sDynamicStruct(int nIndex, BYTE* pProtocol);
 	void	PlayerTalkCommand(int nIndex, BYTE* pProtocol);
 	void	PlayerApplyTeamInfo(int nIndex, BYTE* pProtocol);
 	void	PlayerApplyCreateTeam(int nIndex, BYTE* pProtocol);
@@ -204,6 +218,11 @@ public:
 	void	TradeApplyStart(int nIndex, BYTE* pProtocol);
 	void	TradeMoveMoney(int nIndex, BYTE* pProtocol);
 	void	TradeDecision(int nIndex, BYTE* pProtocol);
+	void	GambleApplyOpen(int nIndex, BYTE* pProtocol);
+	void	GambleApplyClose(int nIndex, BYTE* pProtocol);
+	void	GambleApplyStart(int nIndex, BYTE* pProtocol);
+	void	GambleMoveMoney(int nIndex, BYTE* pProtocol);
+	void	GambleDecision(int nIndex, BYTE* pProtocol);
 	void	DialogNpc(int nIndex, BYTE * pProtocol);
 	void	TeamInviteAdd(int nIndex, BYTE * pProtocol);
 	void	ChangeAuraSkill(int nIndex, BYTE * pProtocol);
@@ -214,6 +233,7 @@ public:
 	void	StoreMoneyCommand(int nIndex, BYTE* pProtocol);
 	void	NpcReviveCommand(int nIndex, BYTE* pProtocol);
 	void	c2sTradeReplyStart(int nIndex, BYTE* pProtocol);
+	void	c2sGambleReplyStart(int nIndex, BYTE* pProtocol); 
 	void	c2sPKApplyChangeNormalFlag(int nIndex, BYTE* pProtocol);
 	void	c2sPKApplyEnmity(int nIndex, BYTE* pProtocol);
 	void	c2sViewEquip(int nIndex, BYTE* pProtocol);
@@ -222,6 +242,7 @@ public:
 	void    NpcRideCommand(int nIndex, BYTE* pProtocol);//edit by phong kieu len xuong ngua
 	void	NpcCPUnlockCommand(int nIndex, BYTE* pProtocol);
 	void	NpcCPLockCommand(int nIndex, BYTE* pProtocol);
+	void	NpcSwitchEquipSet(int nIndex, BYTE* pProtocol);
 	void	NpcCPChangeCommand(int nIndex, BYTE* pProtocol);
 	void	NpcCPResetCommand(int nIndex, BYTE* pProtocol);
 	void	SetPrice(int nIndex, BYTE* pProtocol);
@@ -254,6 +275,8 @@ public:
 	void	RecoverItemCommand(int nIndex, BYTE* pProtocol);
 	void	c2sPlayerThrowAllItem(int nIndex, BYTE* pProtocol);
 	void	c2sBackToTown(int nIndex, BYTE* pProtocol);
+	void 	c2sSetMeridian(int nIndex, BYTE* pProtocol);
+	void 	c2sBauCua(int nIndex, BYTE* pProtocol);
 
 #endif
 };

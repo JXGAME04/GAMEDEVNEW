@@ -131,9 +131,7 @@ copy debug\S3RelayServer.exe ..\..\..\..\bin\Server\S3RelayServer.exe</Command>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;..\..\..\Headers;C:\Program Files %28x86%29\MySQL\MySQL Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client\release\
-copy release\S3RelayServer.exe ..\..\..\..\bin\Server\S3RelayServer.exe
-copy release\S3RelayServer.exe ..\..\..\..\bin\Server\release\S3RelayServer.exe</Command>
+      <Command>copy release\S3RelayServer.exe ..\..\..\..\bin\MultiServer\S3RelayServer.exe</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

@@ -12,6 +12,13 @@
 #include "../../Engine/Src/KCriticalSection.h"
 #include <ddraw.h>
 struct KImageParam;
+struct AlphaRecContent
+{
+	int				nWidth;
+	int				nHeight;
+	unsigned int	Data[1];
+};
+#define	CREATE_REC_CONTENT_SIZE(w, h)    ((unsigned)((&((AlphaRecContent *)0)->Data[0])) + w * h * 4)
 
 //## 无贴图的图形资源管理。
 //## 里面相同id的图形对象只存一个。

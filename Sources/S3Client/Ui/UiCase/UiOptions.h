@@ -59,7 +59,7 @@ private:
 	void	LoadScheme(KIniFile* pIni);
 	void	UpdateAllToggleBtn();
 	void	UpdateAllStatusImg();
-
+	void PaintWindow();
 private:
 	static KUiOptions* m_pSelf;
 private:

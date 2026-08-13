@@ -126,7 +126,7 @@ struct TRoleBaseInfo
 
 	int		ipduphong1; //#avatar player
 	int		ipduphong2; //#PKState
-	int		ipduphong3;
+	int		ipduphong3;	//itemset num
 	int		ipduphong4;
 	int		ipduphong5;
 	int		ipduphong6;
@@ -189,12 +189,7 @@ struct TDBItemData
 	int iseries;
 	int iequipversion;
 	int irandseed;
-	int iparam2;
-	int iparam3;
-	int iparam5;
-	int iparam4;
-	int iparam6;
-	int iparam1;
+	int iparam[MAX_ITEM_MAGICLEVEL];
 	int ilucky;
 	int iidentify;
 	int	idurability;
@@ -220,6 +215,14 @@ struct TDBItemData
 	int iiduphong8;
 	int iiduphong9;
 	int iBaiTanPrice; //gia bay ban
+	BOOL ilocksell;
+	BOOL ilocktrade;
+	BOOL ilockdrop;
+	BYTE imantle;
+	int ifortune;
+	DWORD iowner;
+	int	irow;
+	int iequipnaturecode;
 };
 
 struct TDBFriendsData

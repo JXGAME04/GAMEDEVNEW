@@ -12,6 +12,7 @@
 #include "UiCase/UiFaceSelector.h" //add by phong kiÒu
 #include "UiCase/UiStatus.h"
 #include "UiCase/UiTrade.h"
+#include "UiCase/UiGamble.h"
 #include "UiCase/UiSkills.h"
 #include "UiCase/UiItem.h"
 #include "UiCase/UiShop.h"
@@ -67,17 +68,23 @@
 #include "UiShell.h"
 
 #include "../../Engine/Src/Text.h"
+#include "UiCase/UiMeridian.h"
+#include "UiCase/UiRankData.h"
+#include "UiCase/UiSkillsNew.h"
+#include "UiCase/SpringGame.h"
 
 bool UiCloseWndsInGame(bool bAll);
 
-extern iCoreShell*		g_pCoreShell;
+extern iCoreShell* g_pCoreShell;
 
 void GameWorldTips(unsigned int uParam, int nParam);
 
-void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nParam)
+int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nParam)
 {
+	int nRet = 0;
 	KUiTrade* pTradeBar = NULL;
-	switch(uDataId)
+	KUiGamble* pGamble = NULL;
+	switch (uDataId)
 	{
 	case GDCNI_HOLD_OBJECT:
 		Wnd_DragFinished();
@@ -87,7 +94,7 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			Obj.uGenre = ((KUiObjAtRegion*)uParam)->Obj.uGenre;
 			Obj.uId = ((KUiObjAtRegion*)uParam)->Obj.uId;
 			Obj.DataW = ((KUiObjAtRegion*)uParam)->Region.Width;
-			Obj.DataH = ((KUiObjAtRegion*)uParam)->Region.Height;			
+			Obj.DataH = ((KUiObjAtRegion*)uParam)->Region.Height;
 			Wnd_DragBegin(&Obj, DrawDraggingGameObjFunc);
 		}
 		break;
@@ -103,9 +110,8 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 
 			if ((Info.nCurFaction >= 0) || 
 				(Info.nCurTong != 0) 
-				//|| 
-				//(Info.nMissionGroup >= 0) || 
-				//(Info.nRoomId >= 0)
+				|| (Info.nMissionGroup >= 0)
+				// || (Info.nRoomId >= 0)
 				)
 				KUiMsgCentrePad::QueryAllChannel();
 
@@ -115,8 +121,8 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			if (Info.nCurTong == 0)
 				KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Tong);
 
-			//if (Info.nMissionGroup < 0)
-			//	KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Msgr);
+			if (Info.nMissionGroup < 0)
+				KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Msgr);
 
 			//if (Info.nRoomId < 0)
 			//	KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Cr);	
@@ -127,6 +133,13 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			KUiStatus* pBar = KUiStatus::GetIfVisible();
 			if (pBar)
 				pBar->UpdateData();
+		}
+		break;
+	case GDCNI_PLAYER_MERIDIAN_SYNC:
+		{
+		KUiMeridian* pMeridian = KUiMeridian::GetIfVisible();
+		if (pMeridian)
+			pMeridian->UpdateMeridianLevel();
 		}
 		break;
 	case GDCNI_PLAYER_IMMED_ITEMSKILL://Ö÷½ÇµÄÁ¢¼´Ê¹ÓÃÎïÆ·ÓëÎä¹¦
@@ -150,9 +163,14 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			if (pObject->eContainer == UOC_ITEM_TAKE_WITH)
 			{
 				pTradeBar = KUiTrade::GetIfVisible();
+				pGamble = KUiGamble::GetIfVisible();
 				if (pTradeBar)
 				{
 					pTradeBar->OnChangedTakewithItem((KUiObjAtRegion*)uParam, nParam);
+				}
+				else if (pGamble)
+				{
+					pGamble->OnChangedTakewithItem((KUiObjAtRegion*)uParam, nParam);
 				}
 				else
 				{
@@ -203,6 +221,12 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 				if (pTrade)
 					pTrade->OnSelfChangedItem(pObject, nParam);
 			}
+			else if (pObject->eContainer == UOC_TO_BE_GAMBLE)
+			{
+				KUiGamble* pGamble = KUiGamble::GetIfVisible();
+				if (pGamble)
+					pGamble->OnSelfChangedItem(pObject, nParam);
+			}
 			else if (pObject->eContainer == UOC_AFFAIR_ITEM)
 			{
 				KUiAffairItem* pItem = KUiAffairItem::GetIfVisible();
@@ -224,7 +248,7 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 					Obj.uGenre = pObject->Obj.uGenre;
 					Obj.uId = pObject->Obj.uId;
 					Obj.DataW = pObject->Region.Width;
-					Obj.DataH = pObject->Region.Height;			
+					Obj.DataH = pObject->Region.Height;
 					Wnd_DragBegin(&Obj, DrawDraggingGameObjFunc);
 				}
 			}
@@ -252,13 +276,13 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			}
 		}
 		break;
-	case GDCNI_LIVE_SKILL_BASE:		
-		{
-			KUiSkills* pPad = KUiSkills::GetIfVisible();
-			if (pPad)
-				pPad->UpdateLiveBaseData();
-		}
-		break;
+	case GDCNI_LIVE_SKILL_BASE:
+	{
+		KUiSkills* pPad = KUiSkills::GetIfVisible();
+		if (pPad)
+			pPad->UpdateLiveBaseData();
+	}
+	break;
 	case GDCNI_FIGHT_SKILL_POINT:	
 		{
 			KUiSkills* pPad = KUiSkills::GetIfVisible();
@@ -266,22 +290,27 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			{
 				pPad->UpdateFightRemainPoint(nParam);
 			}
+			KUiSkillsNew* pPad1 = KUiSkillsNew::GetIfVisible();
+			if (pPad1)
+			{
+				pPad1->UpdateFightRemainPoint(nParam);
+			}
 		}
 		break;
-	case GDCNI_SKILL_CHANGE:			
+	case GDCNI_SKILL_CHANGE:
 		if (uParam)
 		{
 			KUiSkills::UpdateSkill((KUiSkillData*)uParam, nParam);
 		}
 		break;
-/*	case GDCNI_PLAYER_LEADERSHIP:	//Ö÷½ÇÍ³Ë§ÄÜÁ¦Ïà¹ØµÄÊý¾Ý·¢Éú±ä»¯
-		{
-			KUiManage* pBar = KUiManage::GetIfVisible();
-			if (pBar)
-				pBar->UpdateLeaderData();
-		}
-		break;	
-*/
+		/*	case GDCNI_PLAYER_LEADERSHIP:	//Ö÷½ÇÍ³Ë§ÄÜÁ¦Ïà¹ØµÄÊý¾Ý·¢Éú±ä»¯
+				{
+					KUiManage* pBar = KUiManage::GetIfVisible();
+					if (pBar)
+						pBar->UpdateLeaderData();
+				}
+				break;
+		*/
 	case GDCNI_TRADE_START:
 		if (uParam)
 		{
@@ -289,20 +318,58 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			KUiTrade::OpenWindow((KUiPlayerItem*)uParam);
 		}
 		break;
-	case GDCNI_TRADE_DESIRE_ITEM:	
+	case GDCNI_TRADE_DESIRE_ITEM:
 		pTradeBar = KUiTrade::GetIfVisible();
 		if (pTradeBar)
 			pTradeBar->OnOppositeChangedItem((KUiObjAtRegion*)uParam, nParam);
 		break;
-	case GDCNI_TRADE_OPER_DATA:		
+	case GDCNI_TRADE_OPER_DATA:
 		pTradeBar = KUiTrade::GetIfVisible();
 		if (pTradeBar)
 			pTradeBar->UpdateOperData();
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble)
+			pGamble->UpdateOperData();
 		break;
-	case GDCNI_TRADE_END:			
+	case GDCNI_TRADE_END:
 		pTradeBar = KUiTrade::GetIfVisible();
 		if (pTradeBar)
 			pTradeBar->UpdateTradeEnd(nParam);
+		break;
+	case GDCNI_GAMBLE_START:
+		if (uParam)
+		{
+			UiCloseWndsInGame(false);
+			KUiGamble::OpenWindow((KUiPlayerItem*)uParam);
+		}
+		break;
+	case GDCNI_GAMBLE_RESET:
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble)
+			pGamble->GambleResetWindow((KUiPlayerItem*)uParam);
+		break;
+	case GDCNI_GAMBLE_RESULT:
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble) {
+			if (nParam)
+				pGamble->setResult(nParam);
+			pGamble->OnChangedTakewithItem(NULL, 0); //reset takewith view
+		}
+		break;
+	case GDCNI_GAMBLE_DESIRE_ITEM:
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble)
+			pGamble->OnOppositeChangedItem((KUiObjAtRegion*)uParam, nParam);
+		break;
+	case GDCNI_GAMBLE_OPER_DATA:
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble)
+			pGamble->UpdateOperData();
+		break;
+	case GDCNI_GAMBLE_END:
+		pGamble = KUiGamble::GetIfVisible();
+		if (pGamble)
+			pGamble->UpdateTradeEnd(nParam);
 		break;
 	case GDCNI_NPC_TRADE:
 		if (nParam)
@@ -314,42 +381,52 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			KUiShop::CloseWindow();
 		break;
 	case GDCNI_NPC_TRADE_ITEM:
-		{
-			KUiShop* pShop = KUiShop::GetIfVisible();
-			if (pShop)
-				pShop->UpdateData();
-		}
-		break;
+	{
+		KUiShop* pShop = KUiShop::GetIfVisible();
+		if (pShop)
+			pShop->UpdateData();
+	}
+	break;
 	case GDCNI_QUESTION_CHOOSE:
-        {
-			if (nParam)
-				KUiMsgSel2::OpenWindow((KUiQuestionAndAnswer*)uParam, (KUiNpcSpr*)nParam);
-			else 
-				KUiMsgSel::OpenWindow((KUiQuestionAndAnswer*)uParam);
-        }
-		break;
+	{
+		if (nParam)
+		{
+			KUiMsgSel2::OpenWindow((KUiQuestionAndAnswer*)uParam, (KUiNpcSpr*)nParam);
+		}
+		else
+		{
+			KUiMsgSel::OpenWindow((KUiQuestionAndAnswer*)uParam);
+		}
+	}
+	break;
 	case GDCNI_QUESTION_CHOOSE_3:
+	{
+		if (uParam && nParam)
 		{
-			if (uParam && nParam) KUiMsgSel3::OpenWindow((KUiQuestionAndAnswer*) uParam, nParam);
+			KUiMsgSel3::OpenWindow((KUiQuestionAndAnswer*)uParam, nParam);
 		}
-		break;
+	}
+	break;
 	case GDCNI_QUESTION_CHOOSE_4:
+	{
+		if (uParam && nParam)
 		{
-			if (uParam && nParam) KUiMsgSel4::OpenWindow((KUiQuestionAndAnswer*) uParam, g_Random(nParam));
+			KUiMsgSel4::OpenWindow((KUiQuestionAndAnswer*)uParam, g_Random(nParam));
 		}
-		break;
+	}
+	break;
 	case GDCNI_GAME_START:
-		{
-			g_LoginLogic.NotifyToStartGame();
-			Wnd_GameSpaceHandleInput(true);
-			KUiMsgCentrePad::ReleaseActivateChannelAll();
-			KUiMsgCentrePad::QueryAllChannel();
-			KUiOptions2::LoadSetting(true, true);//add by phong kiÒu 24/08/2021
-		}
-		break;
+	{
+		g_LoginLogic.NotifyToStartGame();
+		Wnd_GameSpaceHandleInput(true);
+		KUiMsgCentrePad::ReleaseActivateChannelAll();
+		KUiMsgCentrePad::QueryAllChannel();
+		KUiOptions2::LoadSetting(true, true);//add by phong kiÒu 24/08/2021
+	}
+	break;
 	case GDCNI_SPEAK_WORDS:			//npc
-	//uParam = (KUiInformationParam*) pWordDataList Ö¸ÏòKUiInformationParam
-	//nParam = pWordDataList KUiInformationParam
+		//uParam = (KUiInformationParam*) pWordDataList Ö¸ÏòKUiInformationParam
+		//nParam = pWordDataList KUiInformationParam
 		if (uParam && nParam)
 			g_UiInformation2.SpeakWords((KUiInformationParam*)uParam, nParam);
 		break;
@@ -357,33 +434,33 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 		if (uParam)
 		{
 			KUiInformationParam* pInformation = (KUiInformationParam*)uParam;
-			KWndWindow*	pCaller = pInformation->bNeedConfirmNotify ? ((KWndWindow*)WND_GAMESPACE) : 0;
+			KWndWindow* pCaller = pInformation->bNeedConfirmNotify ? ((KWndWindow*)WND_GAMESPACE) : 0;
 			UIMessageBox2(pInformation->sInformation, pInformation->nInforLen, pInformation->sConfirmText, pCaller, 0);
 		}
 		break;
 	case GDCNI_CHAT_GROUP:
 		KUiChatCentre::UpdateData(UICC_U_ALL, 0, 0);
 		break;
-	case GDCNI_CHAT_FRIEND:		
+	case GDCNI_CHAT_FRIEND:
 		KUiChatCentre::UpdateData(UICC_U_GROUP, 0, nParam);
 		break;
-	case GDCNI_CHAT_FRIEND_STATUS:	
+	case GDCNI_CHAT_FRIEND_STATUS:
 		KUiChatCentre::UpdateData(UICC_U_FRIEND, uParam, nParam);
 		break;
 	case GDCNI_TEAM:
-		{
-			KUiTeamManage* pPad = KUiTeamManage::GetIfVisible();
-			if (pPad)
-				pPad->UpdateData((KUiPlayerTeam*)uParam);
-			if (uParam)
-				KUiMsgCentrePad::QueryAllChannel();
-			else
-				KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Team);
-		}
-		break;
-//	case GDCNI_TEAM_NEARBY_LIST:
-//		KUiTeamManage::UpdateNearbyTeams((KUiTeamItem*)uParam, nParam);
-//		break;
+	{
+		KUiTeamManage* pPad = KUiTeamManage::GetIfVisible();
+		if (pPad)
+			pPad->UpdateData((KUiPlayerTeam*)uParam);
+		if (uParam)
+			KUiMsgCentrePad::QueryAllChannel();
+		else
+			KUiMsgCentrePad::CloseSelfChannel(KUiMsgCentrePad::ch_Team);
+	}
+	break;
+	//	case GDCNI_TEAM_NEARBY_LIST:
+	//		KUiTeamManage::UpdateNearbyTeams((KUiTeamItem*)uParam, nParam);
+	//		break;
 	case GDCNI_SWITCH_CURSOR:
 		Wnd_SwitchCursor(nParam);
 		break;
@@ -400,14 +477,14 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 		KUiResetPass::OpenWindow();
 		break;
 	case GDCNI_S2C_EXIT_GAME:
-		{
-			g_pCoreShell->OperationRequest(GOI_EXIT_GAME, 0, 0);		
-			g_LoginLogic.ReturnToIdle();
-			UiEndGame();
-			KUiConnectInfo::CloseWindow(true);
-			KUiInit::OpenWindow(true, false);
-		}
-		break;
+	{
+		g_pCoreShell->OperationRequest(GOI_EXIT_GAME, 0, 0);
+		g_LoginLogic.ReturnToIdle();
+		UiEndGame();
+		KUiConnectInfo::CloseWindow(true);
+		KUiInit::OpenWindow(true, false);
+	}
+	break;
 	case GDCNI_SWITCHING_SCENEPLACE:
 		break;
 	case GDCNI_MISSION_RECORD:
@@ -425,32 +502,32 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 	case GDCNI_PLAYER_BRIEF_PROP:
 		GameWorldTips(uParam, nParam);
 		break;
-	case GDCNI_NEWS_MESSAGE:		
+	case GDCNI_NEWS_MESSAGE:
 		if (uParam)
 			KUiNewsMessage::MessageArrival((KNewsMessage*)uParam, (SYSTEMTIME*)nParam);
 		break;
-	case GDCNI_NEWS_MESSAGE_1:		
+	case GDCNI_NEWS_MESSAGE_1:
 		if (uParam)
 			KUiNewsMessage1::MessageArrival1((KNewsMessage1*)uParam, (SYSTEMTIME*)nParam);
 		break;
 	case GDCNII_RANK_INDEX_LIST_ARRIVE:
 		KUiStrengthRank::OpenWindow();
-		KUiStrengthRank::NewIndexArrive(uParam, (KRankIndex *)nParam);
+		KUiStrengthRank::NewIndexArrive(uParam, (KRankIndex*)nParam);
 		break;
 	case GDCNII_RANK_INFORMATION_ARRIVE:
-		KUiStrengthRank::NewRankArrive(uParam, (KRankMessage *)nParam);
+		KUiStrengthRank::NewRankArrive(uParam, (KRankMessage*)nParam);
 		break;
 	case GDCNI_TONG_INFO:
-		KUiTongManager::TongInfoArrive((KUiPlayerRelationWithOther *)uParam, (KTongInfo *)nParam);
+		KUiTongManager::TongInfoArrive((KUiPlayerRelationWithOther*)uParam, (KTongInfo*)nParam);
 		break;
 	case GDCNI_TONG_MEMBER_LIST:
-		KUiTongManager::NewDataArrive((KUiGameObjectWithName *)uParam, (KTongMemberItem *)nParam);
+		KUiTongManager::NewDataArrive((KUiGameObjectWithName*)uParam, (KTongMemberItem*)nParam);
 		break;
 	case GDCNI_TONG_ACTION_RESULT:
-		KUiTongManager::ResponseResult((KUiGameObjectWithName *)uParam, nParam);
+		KUiTongManager::ResponseResult((KUiGameObjectWithName*)uParam, nParam);
 		break;
 	case GDCNI_OPEN_TONG_CREATE_SHEET:
-		if(uParam)
+		if (uParam)
 			KUiTongCreateSheet::OpenWindow();
 		else
 			KUiTongCreateSheet::CloseWindow();
@@ -479,13 +556,13 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 		break;
 	case GDCNI_FINISH_QUEST_DLG:
 		//KUiFinishQuest::OpenWindow((char *)uParam, nParam);
-		if(nParam <= 4)
-			KUiDaTau::OpenWindow((char *)uParam, nParam);
+		if (nParam <= 4)
+			KUiDaTau::OpenWindow((char*)uParam, nParam);
 		else
-			KUiDaTau1::OpenWindow((char *)uParam, nParam);
+			KUiDaTau1::OpenWindow((char*)uParam, nParam);
 		break;
 	case GDCNI_OPEN_TREMBLE_ITEM:
-		if(uParam > 0)
+		if (uParam > 0)
 		{
 			KUiTrembleItem::OpenWindow();
 		}
@@ -498,161 +575,161 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 		KUiCompoundItem::OpenWindow();
 		break;
 	case GDCNI_PLAY_SOUND:
-		if(uParam)
+		if (uParam)
 		{
 			UiSoundPlay((char*)uParam);
 		}
 		break;
 	case GDCNI_AUTO_SET_HOTKEY:
-		{
-			if(uParam >= 0)
-				KUiSkillTree::HandleShortcutKey(uParam);
-		}
+	{
+		if (uParam >= 0)
+			KUiSkillTree::HandleShortcutKey(uParam);
+	}
 	case GDCNI_AUTO_SET_HOTKEY_DR:
-		{
-			if(uParam >= 0)
-				KUiSkillTree::DirectHandleShortcutKey(uParam);
-		}
-		break;
+	{
+		if (uParam >= 0)
+			KUiSkillTree::DirectHandleShortcutKey(uParam);
+	}
+	break;
 	case GDCNI_AUTO_HOTKEY_CAST_B:
-		{
-			if(uParam >= 0 && nParam > 0)
-				KUiSkillTree::DirectHandleShortcutKeyCastB(uParam, nParam);
-		}
-		break;
+	{
+		if (uParam >= 0 && nParam > 0)
+			KUiSkillTree::DirectHandleShortcutKeyCastB(uParam, nParam);
+	}
+	break;
 	case GDCNI_USE_SHORCUT_SKILL:
-		{
-			if(uParam >= 0)
-				KUiSkillTree::DirectSkillShortcutKey(uParam);
-		}
-		break;
+	{
+		if (uParam >= 0)
+			KUiSkillTree::DirectSkillShortcutKey(uParam);
+	}
+	break;
 	case GDCNI_FK_AUTO_ITEM:
+	{
+		if (nParam == 0 && uParam)	//b¸n
+			KUiItem::FkAutoSellItem(uParam);
+		else if (nParam == 1 && uParam) //söa
+			KUiItem::FkAutoRepairItem(uParam);
+		else if (nParam == 2 && uParam) //mua
+			KUiShop::FkAutoOnBuyItem(uParam);
+		else if (nParam == -1)	//®ãng shop
 		{
-			if(nParam == 0 && uParam)	//b¸n
-				KUiItem::FkAutoSellItem(uParam);
-			else if(nParam == 1 && uParam) //söa
-				KUiItem::FkAutoRepairItem(uParam);
-			else if(nParam == 2 && uParam) //mua
-				KUiShop::FkAutoOnBuyItem(uParam);
-			else if(nParam == -1)	//®ãng shop
-			{
-				if(KUiItem::GetIfVisible()) KUiItem::CloseWindow(true);
-				if(KUiShop::GetIfVisible()) KUiShop::CloseWindow();
-				if(KUiStatus::GetIfVisible()) KUiStatus::CloseWindow(true);
-			}
-			else if(nParam == -2) // ®ãng r­¬ng
-			{
-				if(KUiItem::GetIfVisible()) KUiItem::CloseWindow(true);
-				if(KUiStoreBox::GetIfVisible()) KUiStoreBox::CloseWindow();
-			}
+			if (KUiItem::GetIfVisible()) KUiItem::CloseWindow(true);
+			if (KUiShop::GetIfVisible()) KUiShop::CloseWindow();
+			if (KUiStatus::GetIfVisible()) KUiStatus::CloseWindow(true);
 		}
-		break;
+		else if (nParam == -2) // ®ãng r­¬ng
+		{
+			if (KUiItem::GetIfVisible()) KUiItem::CloseWindow(true);
+			if (KUiStoreBox::GetIfVisible()) KUiStoreBox::CloseWindow();
+		}
+	}
+	break;
 	case GDCNI_FK_AUTO_SELECTUI:
+	{
+		if (nParam == 0) //tù ®éng bÊm chän c¸c « ®èi tho¹i mua thuèc, mua thæ ®Þa phï, ®i xa phu
 		{
-			if(nParam == 0) //tù ®éng bÊm chän c¸c « ®èi tho¹i mua thuèc, mua thæ ®Þa phï, ®i xa phu
-			{
-				if(uParam >= 0) KUiMsgSel::OnClickAutoMsg(uParam);
-			}
-			else if(nParam == 1) // tù ®éng bÊm vÒ thµnh d­ìng søc
-			{
-				if(uParam >= 0) g_UiInformation.FkAutoHideClickBtn(uParam);
-			}
+			if (uParam >= 0) KUiMsgSel::OnClickAutoMsg(uParam);
 		}
-		break;
+		else if (nParam == 1) // tù ®éng bÊm vÒ thµnh d­ìng søc
+		{
+			if (uParam >= 0) g_UiInformation.FkAutoHideClickBtn(uParam);
+		}
+	}
+	break;
 	case GDCNI_FK_AUTO_TALK:
+	{
+		if (uParam)
 		{
-			if(uParam)
+			char* strMessage = (char*)uParam;
+			int nLen = strlen(strMessage);
+			//
+			DWORD nChannelID = -1;
+			int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
+			int n = 0;
+			for (n = 0; n < nChannelDataCount; n++)
 			{
-				char * strMessage = (char *)uParam;
-				int nLen = strlen(strMessage);
-				//
-				DWORD nChannelID = -1;
-				int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
-				int n = 0;
-				for (n = 0; n < nChannelDataCount; n++)
+				if (KUiMsgCentrePad::IsChannelType(n, KUiMsgCentrePad::ch_Screen))
 				{
-					if (KUiMsgCentrePad::IsChannelType(n, KUiMsgCentrePad::ch_Screen))
-					{
-						nChannelID = KUiMsgCentrePad::GetChannelID(n);
-						break;
-					}
+					nChannelID = KUiMsgCentrePad::GetChannelID(n);
+					break;
 				}
-				//
-				if (nChannelID != -1)
+			}
+			//
+			if (nChannelID != -1)
+			{
+				if (KUiPlayerBar::IsCanSendMessage(strMessage, nLen, KUiMsgCentrePad::GetChannelTitle(KUiMsgCentrePad::GetChannelIndex(nChannelID)), nChannelID))
 				{
-					if (KUiPlayerBar::IsCanSendMessage(strMessage, nLen, KUiMsgCentrePad::GetChannelTitle(KUiMsgCentrePad::GetChannelIndex(nChannelID)), nChannelID))
-					{
-						char Buffer[256];
-						nLen = KUiFaceSelector::ConvertFaceText(Buffer, strMessage, nLen);
-						nLen = TEncodeText(Buffer, nLen);
-						KUiMsgCentrePad::CheckChannel(n, true);
-						KUiPlayerBar::OnSendChannelMessage(nChannelID, Buffer, nLen);
-					}
+					char Buffer[256];
+					nLen = KUiFaceSelector::ConvertFaceText(Buffer, strMessage, nLen);
+					nLen = TEncodeText(Buffer, nLen);
+					KUiMsgCentrePad::CheckChannel(n, true);
+					KUiPlayerBar::OnSendChannelMessage(nChannelID, Buffer, nLen);
 				}
 			}
 		}
-		break;
+	}
+	break;
 	case GDCNI_VIEW_PLAYERSELLITEM:
 		KUiPlayerShop::OpenWindow((KUiPlayerItem*)uParam);
 		break;
 	case GDCNI_VIEW_PLAYERUPDATEITEM:
-		{
+	{
 		KUiPlayerShop* pShop = KUiPlayerShop::GetIfVisible();
 		if (pShop)
 		{
 			pShop->UpdateItem();
 		}
-		}
-		break;
+	}
+	break;
 	case GDCNI_CLOSE_BAITAN:
+	{
+		KUiPlayerShop* pShop = KUiPlayerShop::GetIfVisible();
+		if (pShop)
 		{
-			KUiPlayerShop* pShop = KUiPlayerShop::GetIfVisible();
-			if (pShop)
-			{
-				pShop->CloseWindow();
-			}
+			pShop->CloseWindow();
 		}
-		break;
+	}
+	break;
 	case GDCNI_UPDATE_BATTLE_BOX:
 		if (nParam)
-			KUiBattleReport::UpdateRankWorld((char *)uParam, nParam);
+			KUiBattleReport::UpdateRankWorld((char*)uParam, nParam);
 		else
 			KUiBattleReport::OpenWindow();
 		break;
 	case GDCNI_OPEN_AFFAIR_BOX:
-		{
-			KUiGiveBox* pInfo = (KUiGiveBox*)uParam;;
-			KUiAffairItem::OpenWindow(pInfo->szTitle, pInfo->szInitString, pInfo->szAction1);
-		}
-		break;
+	{
+		KUiGiveBox* pInfo = (KUiGiveBox*)uParam;;
+		KUiAffairItem::OpenWindow(pInfo->szTitle, pInfo->szInitString, pInfo->szAction1);
+	}
+	break;
 	case GDCNI_END_AFFAIR_BOX:
 		if (KUiAffairItem::GetIfVisible())
 			KUiAffairItem::CloseWindow(false);
 		break;
 	case GDCNI_OPEN_TALK_EX:
-		KUiInformation3::OpenWindow((char *)uParam,nParam);
+		KUiInformation3::OpenWindow((char*)uParam, nParam);
 		break;
 	case GDCNI_OPEN_INPUT:
-		KUiGetString2::OpenWindow((char *)uParam, (char *)nParam);
+		KUiGetString2::OpenWindow((char*)uParam, (char*)nParam);
 		break;
 	case GDCNI_OPEN_INPUT2:
-		KUiGetNumber::OpenWindow((char *)uParam, (char *)nParam);
+		KUiGetNumber::OpenWindow((char*)uParam, (char*)nParam);
 		break;
 	case GDCNI_PLAYER_LOGIN_REPLAY: //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
-		if(uParam)
+		if (uParam)
 		{
 			UiOnGameServerStartSyncEnd(true);
 		}
 		break;
 	case GDCNI_RETURN_CITY_OWN_TONG:
+	{
+		KUiWorldmap* worldmap = KUiWorldmap::GetIfVisible();
+		if (worldmap)
 		{
-			KUiWorldmap* worldmap = KUiWorldmap::GetIfVisible();
-			if(worldmap)
-			{
-				worldmap->SetCityOwnTong((char *)nParam);
-			}
+			worldmap->SetCityOwnTong((char*)nParam);
 		}
-		break;
+	}
+	break;
 	case GDCNI_SWITCHING_MAPMODE:
 		if (uParam)
 			MapSetMode(MINIMAP_M_BRIEF_PIC);
@@ -660,52 +737,142 @@ void CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPar
 			MapSetMode(MINIMAP_M_BRIEF_NOT_PIC);
 		break;
 	case GDCNI_OPEN_TIME_BOX:
+	{
+		KUiTimeBoxInfo* pInfo = (KUiTimeBoxInfo*)uParam;
+		if (pInfo->nTime == -1)
 		{
-			KUiTimeBoxInfo* pInfo = (KUiTimeBoxInfo*)uParam;
-			if(pInfo->nTime == -1)
+			if (KUiTimeBox::GetIfVisible())
 			{
-				if(KUiTimeBox::GetIfVisible())
-				{
-					KUiTimeBox::CloseWindow(false);
-					char szInfo[256];
-					int n = sprintf(szInfo, "BÞ gi¸n ®o¹n !!!");
-					KUiMsgCentrePad::SystemMessageArrival(szInfo, n);
-				}
-			}
-			else if(pInfo->nTime > 0)
-			{
-				KUiTimeBox::OpenWindow(pInfo->szTitle, pInfo->nTime, pInfo->szAction);
+				KUiTimeBox::CloseWindow(false);
+				char szInfo[256];
+				int n = sprintf(szInfo, "BÞ gi¸n ®o¹n !!!");
+				KUiMsgCentrePad::SystemMessageArrival(szInfo, n);
 			}
 		}
-		break;
+		else if (pInfo->nTime > 0)
+		{
+			KUiTimeBox::OpenWindow(pInfo->szTitle, pInfo->nTime, pInfo->szAction);
+		}
+	}
+	break;
 	case GDCNI_CHATROOM_UPDATE_INTERFACE:
 		//#chua hoan thien
 		break;
 	case GDCNI_SUPERSHOP:
+	{
+		if (nParam) //#type shop = 1 shop dynamic 0 lµ kú tr©n c¸c chuÈn VNG
 		{
-			if(nParam) //#type shop = 1 shop dynamic 0 lµ kú tr©n c¸c chuÈn VNG
-			{
-				if (!KUiDynamicShop::GetIfVisible())
-					KUiDynamicShop::OpenWindow((BuySellInfo*)uParam);
-			}
+			if (!KUiDynamicShop::GetIfVisible())
+				KUiDynamicShop::OpenWindow((BuySellInfo*)uParam);
+		}
+		else
+		{
+			if (KUiSuperShop::GetIfVisible())
+				KUiSuperShop::UpdateShop((BuySellInfo*)uParam);
 			else
-			{
-				if (KUiSuperShop::GetIfVisible())
-					KUiSuperShop::UpdateShop((BuySellInfo*)uParam);
-				else
-					KUiSuperShop::OpenWindow((BuySellInfo*)uParam);
+				KUiSuperShop::OpenWindow((BuySellInfo*)uParam);
+		}
+	}
+	break;
+	case GDCNI_EXIT_GAME:
+		if (g_pCoreShell)
+		{
+			g_pCoreShell->OperationRequest(GOI_EXIT_GAME, 0, 0);
+		}
+
+		//g_LoginLogic.ReturnToIdle();
+		UiEndGame();
+		KUiInit::OpenWindow(true, false);
+		break;
+	//case GDCNI_GIVE:
+	//	if (uParam && nParam)
+	//		KUiGive::OpenWindow((char*)uParam, (char*)nParam);
+	//	else
+	//	{
+	//		if (KUiGive::GetIfVisible())
+	//			KUiGive::CloseWindow(true);
+	//	}
+	//	break;
+	case GDCNI_RANKDATA:
+		KUiRankData::OpenWindow();
+		break;
+	case GDCNI_MSG_ARRIVAL:
+
+		break;
+	case GDCNI_PLAYER_BAUCUA_RESULT_SYNC:
+		if (nParam) {
+			BAUCUA_RESULT_SYNC* pBauCuaResultSync = (BAUCUA_RESULT_SYNC*)uParam;
+			if (pBauCuaResultSync->nResultType == BAUCUA_RESULT_DEPOSIT) {
+				if (pBauCuaResultSync->nResultValue == -1) //deposit failed
+				{
+					char szInfo[256];
+					int n = sprintf(szInfo, "N¹p xu kh«ng thµnh c«ng.");
+					KUiMsgCentrePad::SystemMessageArrival(szInfo, n);
+				}
+				else {
+					char szInfo[256];
+					int n = sprintf(szInfo, "N¹p thµnh c«ng %d xu.", pBauCuaResultSync->nResultValue);
+					KUiMsgCentrePad::SystemMessageArrival(szInfo, n);
+				}
+			}
+			else if (pBauCuaResultSync->nResultType == BAUCUA_RESULT_INFO) {
+				BAUCUA_INFO_SYNC* pBauCuaInfoSync = (BAUCUA_INFO_SYNC*)uParam;
+				KUiSpringGame* pBauCua = KUiSpringGame::GetIfVisible();
+				if (pBauCua) {
+					pBauCua->UpdateInfo(pBauCuaInfoSync->m_Status);
+				}
 			}
 		}
 		break;
-
+	case GDCNI_UI_ACT:
+		{
+			if(uParam == 0)
+			{
+				nRet = KUiMsgSel::GetIfVisible()?1:0;
+			}
+			else if(uParam == 1)
+			{
+				KUiMsgSel::CloseWindow(false);
+				g_UiInformation2.Close();
+			}
+			else if(uParam == 2)
+			{
+				nRet = KUiShop::GetIfVisible()?1:0;
+			}
+			else if(uParam == 3)
+			{
+				KUiItem::CloseWindow(false);
+				KUiStatus::CloseWindow(false);
+				KUiShop::CloseWindow();
+			}
+			else if(uParam == 4)
+			{
+				nRet = KUiMsgSel::GetAnswerCount();
+			}
+			else if(uParam == 5)
+			{
+				KUiMsgSel::SetMsgToGet(nParam);
+			}
+			else if(uParam == 6)
+			{
+				KUiMsgSel::GetMsg((char*)nParam);
+			}
+			break;
+		}
 	}
+	return nRet;
 }
 
 //////////////////////////////////////////////////////
 
-void KClientCallback::CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
+int KClientCallback::CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
 {
-	CoreDataChangedCallback(uDataId, uParam, nParam);
+	return CoreDataChangedCallback(uDataId, uParam, nParam);
+}
+
+void KClientCallback::SendDataToTool(const void * const pData, const size_t &datalength)
+{
+	SendInfoToTool(pData, datalength);
 }
 
 typedef std::map<std::string, std::string> BLACKLIST;
@@ -875,7 +1042,7 @@ void BlacklistNotify::SendNotifyDeleteFriend(const char* Unit, const char* Name)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void KClientCallback::ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc)
+void KClientCallback::ChannelMessageArrival(DWORD nChannelID, char* szSendName, const char* pMsgBuff, unsigned short nMsgLength, bool bSucc, bool bIsNpcChat, bool bIsShowMsgPad)
 {
 	if (!bSucc)
 	{
@@ -886,6 +1053,9 @@ void KClientCallback::ChannelMessageArrival(DWORD nChannelID, char* szSendName, 
 	}
 
 	int nIndex = -1;
+	char	Buffer2[1536];
+	memset(Buffer2, 0, sizeof(Buffer2));
+
 	if (nChannelID == -1)	//gm alias ID
 	{
 		int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
@@ -903,26 +1073,52 @@ void KClientCallback::ChannelMessageArrival(DWORD nChannelID, char* szSendName, 
 		if (nChannelID == -1)
 			return;
 	}
+	else if (bIsNpcChat) {
+		DWORD ntmpChannelID = -1;
+		int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
+		int n = 0;
+		for (n = 0; n < nChannelDataCount; n++)
+		{
+			if (KUiMsgCentrePad::IsChannelType(n, KUiMsgCentrePad::ch_Screen))
+			{
+				ntmpChannelID = KUiMsgCentrePad::GetChannelID(n);
+				nIndex = KUiMsgCentrePad::GetChannelIndex(ntmpChannelID);
+
+				nMsgLength = KUiFaceSelector::ConvertFaceText(Buffer2, pMsgBuff, nMsgLength + 1);
+				if(bIsShowMsgPad)
+					KUiMsgCentrePad::NewChannelMessageArrival(ntmpChannelID, szSendName, Buffer2, nMsgLength);
+				break;
+			}
+		}
+	}
 	else
 	{
 		nIndex = KUiMsgCentrePad::GetChannelIndex(nChannelID);
+
 		if (nIndex < 0)
 			return;
 
 		if (IsInBlackName(szSendName))
 			return;
 	}
-
-	KUiMsgCentrePad::NewChannelMessageArrival(nChannelID, szSendName, pMsgBuff, nMsgLength);
+	if (!bIsNpcChat) {
+		KUiMsgCentrePad::NewChannelMessageArrival(nChannelID, szSendName, pMsgBuff, nMsgLength);
+	}
+	else {
+		nMsgLength = TEncodeText(Buffer2, nMsgLength);
+	}
 
 	if (KUiMsgCentrePad::GetChannelSubscribe(nIndex) &&
 		KUiMsgCentrePad::IsChannelType(nIndex, KUiMsgCentrePad::ch_Screen))
 	{
 		KUiPlayerItem SelectPlayer;
 		int nKind = -1;
-		if (g_pCoreShell->FindSpecialNPC(szSendName, &SelectPlayer, nKind) && nKind == kind_player)
+		if (g_pCoreShell->FindSpecialNPC(szSendName, &SelectPlayer, nKind) && (nKind == kind_player || bIsNpcChat))
 		{
-			g_pCoreShell->ChatSpecialPlayer(&SelectPlayer, pMsgBuff, nMsgLength);
+			if(bIsNpcChat)
+				g_pCoreShell->ChatSpecialPlayer(&SelectPlayer, Buffer2, nMsgLength);
+			else
+				g_pCoreShell->ChatSpecialPlayer(&SelectPlayer, pMsgBuff, nMsgLength);
 		}
 	}
 }

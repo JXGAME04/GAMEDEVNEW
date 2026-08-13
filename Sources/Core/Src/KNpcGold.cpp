@@ -156,7 +156,7 @@ void	KNpcGold::RandChangeGold(unsigned int ran_Range, BYTE m_nGType)
 	{
 		NPC_GOLD_RATE_2 = ran_Range;
 	}
-	if (g_Random(200000) >=  (NPC_GOLD_RATE_2))//edit by phong kieu ti le boss xanh
+	if (g_Random(500000) >=  (NPC_GOLD_RATE_2))//edit by phong kieu ti le boss xanh
 		return;
 
 	if (NpcSet.m_cGoldTemplate.m_nEffectTypeNum <= 0)
@@ -201,7 +201,7 @@ void	KNpcGold::RandChangeGold(unsigned int ran_Range, BYTE m_nGType)
 	Npc[m_nNpcIdx].m_CurrentExperience		*= pInfo->m_nExp;
 	//Npc[m_nNpcIdx].m_CurrentLifeMax				*= pInfo->m_nLife;
 	Npc[m_nNpcIdx].m_CurrentLifeMax = (Npc[m_nNpcIdx].m_CurrentLifeMax / pInfo->m_nLife) * 5;
-	Npc[m_nNpcIdx].m_CurrentLifeReplenish		*= pInfo->m_nLifeReplenish;
+	Npc[m_nNpcIdx].m_CurrentLifeReplenish		/= pInfo->m_nLifeReplenish;
 	Npc[m_nNpcIdx].m_CurrentAttackRating		*= pInfo->m_nAttackRating;
 	Npc[m_nNpcIdx].m_CurrentDefend				*= pInfo->m_nDefense;
 	Npc[m_nNpcIdx].m_PhysicsDamage.nValue[0]	*= pInfo->m_nMinDamage;
@@ -226,13 +226,13 @@ void	KNpcGold::RandChangeGold(unsigned int ran_Range, BYTE m_nGType)
 		Npc[m_nNpcIdx].m_PhysicsMagic.nValue[2] = defNPC_GOLD_FIST_MAGIC_DAMGE;
 
 	Npc[m_nNpcIdx].m_PhysicsMagic.nValue[0]	*= pInfo->m_nMinDamage;
-	Npc[m_nNpcIdx].m_PhysicsMagic.nValue[2]	*= pInfo->m_nMaxDamage;
+	Npc[m_nNpcIdx].m_PhysicsMagic.nValue[2] *= pInfo->m_nMaxDamage;
 
-	Npc[m_nNpcIdx].m_CurrentFireMagic.nValue[0]	*= pInfo->m_nMinDamage;
-	Npc[m_nNpcIdx].m_CurrentFireMagic.nValue[2]	*= pInfo->m_nMaxDamage;
+	Npc[m_nNpcIdx].m_CurrentFireMagic.nValue[0] *= pInfo->m_nMinDamage;
+	Npc[m_nNpcIdx].m_CurrentFireMagic.nValue[2] *= pInfo->m_nMaxDamage;
 
-	Npc[m_nNpcIdx].m_CurrentColdMagic.nValue[0]	*= pInfo->m_nMinDamage;
-	Npc[m_nNpcIdx].m_CurrentColdMagic.nValue[2]	*= pInfo->m_nMaxDamage;
+	Npc[m_nNpcIdx].m_CurrentColdMagic.nValue[0] *= pInfo->m_nMinDamage;
+	Npc[m_nNpcIdx].m_CurrentColdMagic.nValue[2] *= pInfo->m_nMaxDamage;
 
 	Npc[m_nNpcIdx].m_CurrentLightMagic.nValue[0]	*= pInfo->m_nMinDamage;
 	Npc[m_nNpcIdx].m_CurrentLightMagic.nValue[2]	*= pInfo->m_nMaxDamage;

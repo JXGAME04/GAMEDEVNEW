@@ -17,6 +17,8 @@
 #include "../Elem/PopupMenu.h"
 #include "../UiSoundSetting.h"
 #include "../UiChatPhrase.h"
+#include "../../../Represent/iRepresent/iRepresentShell.h"
+extern iRepresentShell*	g_pRepresentShell;
 extern iCoreShell*	g_pCoreShell;
 
 #define SCHEME_INI_OPTION		"UiOptions.ini"
@@ -111,6 +113,49 @@ void KUiOptions::CloseWindow()
 	}
 }
 
+void KUiOptions::PaintWindow()
+{
+	KWndImage::PaintWindow();
+	/*static int nFrame = 0;
+	//static int nLoop = 0;
+	static unsigned int nCurrentTime = 0;
+	static int nTotalFrame = 0;
+	static unsigned int nInterval = 0;
+	if(nCurrentTime == 0)
+	{
+		KImageParam	sImage;
+		g_pRepresentShell->GetImageParam("\\spr\\Ui3\\UiItem\\UiItemMain.spr", &sImage, ISI_T_SPR);
+		nInterval = sImage.nInterval;
+		nCurrentTime = timeGetTime() + nInterval;
+		nTotalFrame = sImage.nNumFrames;
+	}
+	if(g_pRepresentShell)
+	{
+		KRUImage img;
+		strcpy(img.szImage, "\\spr\\Ui3\\UiItem\\UiItemMain.spr");
+		img.nType = ISI_T_SPR;
+		img.bRenderFlag = 0;
+		img.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;//IMAGE_RENDER_STYLE_ALPHA;
+		img.nFrame = nFrame;
+		img.nISPosition = IMAGE_IS_POSITION_INIT;
+		img.uImage = 0;
+		img.Color.Color_dw = 0xa0f0f000;
+		//img.Color.Color_b.a = 255;
+		img.oPosition.nX = 200;
+		img.oPosition.nY = 200;
+		g_pRepresentShell->DrawPrimitives(1, &img, RU_T_IMAGE, true);
+	}
+	if(nCurrentTime < timeGetTime())
+	{
+		nCurrentTime = timeGetTime() + nInterval;
+		++nFrame;
+		if(nFrame >= nTotalFrame)
+			nFrame = 0;
+	}*/
+	//g_pRepresentShell->OutputText(16, "ABCDE", 5, 200, 200, 0xff00ff00,0,TEXT_IN_SINGLE_PLANE_COORD,0xffffff00);
+	//g_pRepresentShell->OutputText(16, "ABCDE", 5, 200, 220, 0xffff00ff,0,TEXT_IN_SINGLE_PLANE_COORD,0xff00ff00);
+}
+
 void KUiOptions::Initialize()
 {
 	AddChild(&m_CloseBtn);
@@ -132,7 +177,7 @@ void KUiOptions::Initialize()
 
 	Wnd_AddWindow(this);
 }
-
+extern int SCREEN_WIDTH;
 void KUiOptions::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -141,7 +186,17 @@ void KUiOptions::LoadScheme(const char* pScheme)
 	if (m_pSelf && Ini.Load(Buff))
 	{
 		m_pSelf->LoadScheme(&Ini);
+		if (SCREEN_WIDTH == 1024) {
+			int nX, nY;
+			int dX, dY;
+			dX = (1024 - 800) / 2 + 8;
+			dY = 0;
+
+			m_pSelf->GetPosition(&nX, &nY);
+			m_pSelf->SetPosition(nX + dX, nY + dY);
+		}
 	}
+	
 }
 
 void KUiOptions::LoadScheme(KIniFile* pIni)

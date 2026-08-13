@@ -19,6 +19,7 @@ enum MOVE_OBJ_KIND
 {
 	obj_npc,
 	obj_object,
+	obj_obstacle,
 	obj_missle,
 };
 #ifndef TOOLVERSION
@@ -41,6 +42,7 @@ public:
 	int			m_nRegionY;							// 在世界中的位置Y（象素点）
 	int			m_nWidth;
 	int			m_nHeight;
+	int			m_nNpcSyncCursor; // Index in list, persistent across frames
 private:
 #ifdef _SERVER
 	long		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表
@@ -52,11 +54,13 @@ private:
 	BYTE*		m_pNpcRef;							// 每个格子上的NPC数目
 	BYTE*		m_pObjRef;							// 每个格子上的OBJ数目
 	BYTE*		m_pMslRef;							// 每个格子上的MISSLE数目
+	BYTE*		m_pObstacleRef;
 public:
 	KRegion();
 	~KRegion();
 	BOOL		Init(int nWidth, int nHeight);
 	BOOL		Load(int nX, int nY);
+	void ClearRefGrid();
 #ifdef _SERVER
 
 	// 载入服务器端地图上本region 的 object数据（包括npc、trap、box等）
@@ -70,7 +74,7 @@ public:
 	// 载入服务器端地图上本 region 的 obj 数据
 	BOOL		LoadServerObj(int nSubWorld, KPakFile *pFile, DWORD dwDataSize);
 	void		RenameNpc(char* &sNpcCell);//edit by phong kieu khai bao ham rename NPC
-    int         DelAllNpc(int mSubWorldID=0);
+	int         DelAllNpc(int mSubWorldID = 0, char* szName = NULL);
 #endif
 
 #ifndef _SERVER
@@ -104,6 +108,7 @@ public:
 		return TRUE;
 #endif
 	};
+	inline bool		IsInBounds(int nMapX, int nMapY) const;
 	int			GetRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
@@ -144,6 +149,9 @@ public:
 //--------------------------------------------------------------------------
 inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation)
 {
+	if (nMapX < 0 || nMapY < 0)
+		return 0;
+
 	if (m_pNpcRef[nMapY * m_nWidth + nMapX] == 0)
 		return 0;
 

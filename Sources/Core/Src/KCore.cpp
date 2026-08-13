@@ -38,6 +38,7 @@
 #include "KTaskFuns.h"
 #include "TaskDef.h"
 #include "LuaFuns.h"
+#include "GiftCodeManager.h"
 
 #ifndef WIN32 //add by phong ki“u
 #include <unistd.h>
@@ -87,7 +88,7 @@ BOOL g_bUISpeakActiveWithServer = FALSE;
 int	g_bUISelLastSelCount = 0;
 extern KTabFile g_StringResourseTabFile;
 KTabFile g_RankTabSetting;
-extern KJXPathFinder g_JXPathFinder;
+//extern KJXPathFinder g_JXPathFinder;
 #endif
 
 //#define DEBUGOPT_SCRIPT_MSG_FILEOUT
@@ -108,16 +109,20 @@ BOOL	 g_bPingReply;
 KSpriteCache	g_SpriteCache;
 #endif
 KTabFile		g_OrdinSkillsSetting, g_MisslesSetting;
+KTabFile		g_MeridiantSetting;
 KTabFile		g_SkillLevelSetting;
-KTabFile		g_NpcSetting;
+KTabFile		g_NpcSetting, g_ReBornSetting;
 KTabFile		g_NpcKindFile; //Npc
 int				g_nMeleeWeaponSkill[MAX_MELEEWEAPON_PARTICULARTYPE_NUM];
 int				g_nRangeWeaponSkill[MAX_RANGEWEAPON_PARTICULARTYPE_NUM];
 int				g_nHandSkill;
 
+KTabFile 		g_MaskChangeRes;
 KIniFile 		g_GameSetting;
 KIniFile 		g_MapTraffic;
 
+int				g_MaxOptMultiply = 1;
+int				g_xMethod = 1;
 #ifdef _SERVER
 int				g_ExpRate = 1;
 int				g_MoneyRate = 1;
@@ -223,6 +228,7 @@ CORE_API void g_InitCore(char * nParmName)
     }
 	ItemSet.Init();
 	ItemGen.Init();
+	MeridianManager.Init();
 #ifndef _SERVER
 	InitAdjustColorTab();
 	g_MagicDesc.Init();
@@ -234,6 +240,7 @@ CORE_API void g_InitCore(char * nParmName)
 	MissleSet.Init();
 	g_IniScriptEngine();
 	g_OrdinSkillsSetting.Load(SKILL_SETTING_FILE);
+	g_MeridiantSetting.Load(MERIDIAN_SETTING_FILE);
 	g_MisslesSetting.Load(MISSLES_SETTING_FILE);
 	g_NpcSetting.Load(NPC_SETTING_FILE);
 	InitGameSetting();
@@ -249,6 +256,15 @@ CORE_API void g_InitCore(char * nParmName)
 	}
 	
 #ifdef _SERVER
+	g_GiftCodeFanCungManager.LoadGiftCodes("dulieu\\giftcode\\giftcode_tuan_list.txt");
+	g_GiftCodeFanCungManager.LoadUsedCodes("dulieu\\giftcode\\giftcode_tuan_used.txt");
+	g_GiftCodeNewManager.LoadGiftCodes("dulieu\\giftcode\\giftcode_new_list.txt");
+	g_GiftCodeNewManager.LoadUsedCodes("dulieu\\giftcode\\giftcode_new_used.txt");
+	
+	if (!g_ReBornSetting.Load(GAME_REBORN_FILE))
+	{
+		printf(" g_ReBornSetting load error\n");
+	}
 	memset(g_TaskGlobalValue, 0, sizeof(g_TaskGlobalValue));
 	g_TeamSet.Init();
 
@@ -654,6 +670,8 @@ BOOL InitGameSetting()
 	}
 	if (g_GameSetting.Load(GAME_SETTING_FILE_INI))
 	{
+		g_GameSetting.GetInteger("ServerConfig", "MaxOptMultiply", 1, &g_MaxOptMultiply);
+		g_GameSetting.GetInteger("ServerConfig", "xMethod", 1, &g_xMethod);
 #ifdef _SERVER
 		g_GameSetting.GetInteger("ServerConfig", "ExpRate", 1, &g_ExpRate);
 		g_GameSetting.GetInteger("ServerConfig", "MoneyRate", 1, &g_MoneyRate);
@@ -683,6 +701,7 @@ int PositionToRoom(int Place)
 		case pos_repositoryroom:
 			return room_repository;
 		case pos_traderoom:
+		case pos_gambleroom:
 			return room_equipment;
 		case pos_trade1:
 			return room_equipment;

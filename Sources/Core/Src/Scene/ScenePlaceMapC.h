@@ -56,6 +56,10 @@ public:
 	void PaintMap(int nx, int ny);
 	void PaintAutoPath(int nX, int nY);
 
+	void PaintAPoint(int nX, int nY);
+
+	void PaintCircle(int nX, int nY, int Radius);
+
 	int	GetMapRect(RECT* pRect);
 
 	void PaintSymbol(int nX);
@@ -66,12 +70,19 @@ public:
 	BOOL AutoRunToB(int nX, int nY);
 	BOOL OnDirectMap(int nX, int nY);
 	void DoDirectMap(int nX, int nY);
+	void FlagOnTarget(int x, int y);
+	void FlagOnCoord(int x, int y);
+	void RemoveFlag();
+	void SetFlagImage(const char* szImg, int nFlagOffset);
+	int GetCurFlagPos(unsigned int uYPos, int nPosParam);
 	POINT m_DirectPos; 
 
 	BYTE** GetbtBarrier();
 	BYTE* GetbtBarrier(int X, int Y);
 	int			m_nMapWidth;			// 地图长(region, m_sMapRect.right - m_sMapRect.left + 1)
 	int			m_nMapHeight;			// 地图宽(region, m_sMapRect.bottom - m_sMapRect.top + 1)
+
+	int m_nSubWorldID = 0;
 
 private:
 	bool	Initialize();	//初始化
@@ -113,6 +124,13 @@ private:
 	};
 
 private:
+	char	m_szFlagImage[64];
+	int		m_nFlagOffset;
+	int				m_nTargetX;
+	int				m_nTargetY;
+	int m_nPUBGX = 0;
+	int m_nPUBGY = 0;
+	int m_nCurrentRadius = 0;
 	int		m_bHavePicMap;			
 	bool	m_bInited;				
 	int bFlag; // toa do

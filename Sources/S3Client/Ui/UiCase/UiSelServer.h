@@ -14,6 +14,8 @@ class KUiSelServer : protected KWndShowAnimate
 public:
 	static KUiSelServer* OpenWindow();				//打开窗口，返回唯一的一个类对象实例
 	static void			 CloseWindow(bool bDestroy);//关闭窗口
+	static KUiSelServer*		GetIfVisible();
+	void 				AutoLgNextStep(int nSelGroup, int nSelServer);
 private:
 	KUiSelServer();
 	~KUiSelServer();

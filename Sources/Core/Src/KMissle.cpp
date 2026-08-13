@@ -153,6 +153,108 @@ KMissle::KMissle()
 	m_btRedLum = m_btGreenLum = m_btBlueLum = 0xff;
 	m_usLightRadius = 50;
 #endif
+	m_bMustBeHit = FALSE;
+	memset(m_szMissleName, 0, sizeof(m_szMissleName));
+	m_nAction = 0;
+	m_bIsSlow = FALSE;
+	m_bClientSend = FALSE;
+	m_bRemoving = FALSE;
+	nId = 0;
+	m_eMoveKind = eMissleMoveKind::MISSLE_MMK_Stand;
+	m_eFollowKind = eMissleFollowKind::MISSLE_MFK_None;
+	m_nHeight = 0;
+	m_nHeightSpeed = 0;
+	m_nLifeTime = 0;
+	m_nSpeed = 0;
+	m_nSkillId = 0;
+	m_bRangeDamage = FALSE;
+	m_eRelation = 0;
+	m_bAutoExplode = FALSE;
+	m_bTargetSelf = FALSE;
+	m_bByMissle = FALSE;
+	m_nInteruptTypeWhenMove = 0;
+	m_bHeelAtParent = FALSE;
+	m_nLauncherSrcPX = 0;
+	m_nLauncherSrcPY = 0;
+	m_nCollideRange = 0;
+	m_nDamageRange = 0;
+	m_bCollideVanish = FALSE;
+	m_bCollideFriend = FALSE;
+	m_bCanSlow = FALSE;
+
+	m_bFlyEvent = FALSE;
+	m_nFlyEventTime = 0;
+	m_bSubEvent = FALSE;
+	m_bStartEvent = FALSE;
+	m_bCollideEvent = FALSE;
+	m_bVanishedEvent = FALSE;
+
+	m_bMustBeHit = FALSE;
+	m_nCurrentLife = 0;
+	m_nStartLifeTime = 0;
+	m_nCurrentMapX = 0;
+	m_nCurrentMapY = 0;
+	m_nCurrentMapZ = 0;
+	m_nXOffset = 0;
+	m_nYOffset = 0;
+	m_nRefPX = 0;
+	m_nRefPY = 0;
+
+	m_nDesMapX = 0;
+	m_nDesMapY = 0;
+	m_nDesRegion = 0;
+	m_bNeedReclaim = FALSE;
+
+	m_nDoHurtP = FALSE;
+
+	m_nXFactor = 0;
+	m_nYFactor = 0;
+	m_nLevel = 0;
+	m_nLastDoCollisionIdx = 0;
+
+	m_nFollowNpcIdx = 0;
+	m_dwFollowNpcID = 0;
+
+	m_nLauncher = 0;
+	m_dwLauncherId = 0;
+	m_nPKFlag = 0;
+	m_nParentMissleIndex = 0;
+
+	m_nCurrentSpeed = 0;
+	m_nZAcceleration = 0;
+	m_eMissleStatus = eMissleStatus::MS_DoWait;
+	m_nSubWorldId = 0;
+	m_nRegionId = 0;
+
+	m_nMaxDamage = 0;
+	m_nElementType = 0;
+	m_nMaxElementDamage = 0;
+	m_nElementTime = 0;
+	m_nElementInterval = 0;
+	m_nElementPerDamage = 0;
+	m_nParam1 = 0;
+	m_nParam2 = 0;
+	m_nParam3 = 0;
+
+	m_nDirIndex = 0;
+	m_nDir = 0;
+	m_nAngle = 0;
+	m_dwBornTime = 0;
+	m_bUseAttackRating = FALSE;
+
+#ifdef _SERVER
+	m_ulNextCalDamageTime = 0;
+#endif
+
+#ifndef _SERVER
+	m_bMultiShow = FALSE;
+	m_bFollowNpcWhenCollid = FALSE;
+	m_btRedLum = 0;
+	m_btGreenLum = 0;
+	m_btBlueLum = 0;
+	m_usLightRadius = 0;
+	m_SceneID = 0;
+#endif
 }
 
 void KMissle::Release()
@@ -167,8 +269,10 @@ void KMissle::Release()
 #endif
 #ifdef _SERVER
 	if (m_pMagicAttribsData)
-		if (m_pMagicAttribsData->DelRef() == 0)
+		if (m_pMagicAttribsData->DelRef() <= 0) {
+			m_pMagicAttribsData->Remove();
 			delete m_pMagicAttribsData;
+		}
 		m_pMagicAttribsData = NULL;
 #endif
 }

@@ -58,7 +58,7 @@
 #define		KIND_FILE_SECT5					"ResFilePath"
 
 //--------------------------- player  ------------------------------
-#define		FACTION_FILE					"\\settings\\faction\\ÃÅÅÉÉè¶¨.ini"
+#define		FACTION_FILE					"\\settings\\faction\\FactionInfo.ini"
 //--------------------------- player PK------------------------------
 #define		defPK_PUNISH_FILE				"\\settings\\npc\\player\\PKPunish.txt"
 //--------------------------- player  ------------------------------
@@ -101,16 +101,24 @@
 #define		CHANGERES_HORSE_FILE			"\\settings\\item\\HorseRes.txt"
 #define		CHANCERES_GOLD_FILE_O			"\\settings\\item\\GolditemRes.txt"
 #define		CHANCERES_GOLD_FILE_N				"\\settings\\item\\goldequipres.txt"
+#define		CHANCERES_PLATINA_FILE				"\\settings\\item\\platinaequipres.txt"
+#define		CHANGERES_MASK_FILE				"\\settings\\item\\MaskRes.txt"
+#define		CHANGERES_HOODS_FILE			"\\settings\\item\\HoodsRes.txt"
+#define		CHANGERES_CLOAK_FILE			"\\settings\\item\\CloakRes.txt"
 #define		TABFILE_GOLDITEM_FULL_O			"\\Settings\\Item\\GoldItem.txt"
+#define		PLATINA_EQUIP_FILE			"\\settings\\item\\platinaequip.txt"
 #define		TABFILE_GOLDITEM_FULL_N			"\\Settings\\Item\\goldequip.txt"
 #define		GOLD_EQUIP_MAGIC_FILE_N		"\\settings\\item\\magicattrib_ge.txt"
 #define		GOLD_EQUIP_MAGIC_FILE_O		"\\Settings\\Item\\GoldMagic.txt"
 #define		ITEM_ABRADE_FILE				"\\settings\\item\\AbradeRate.ini"
+#define		MAGICATTRIB_LEVEL_FILE		"\\settings\\item\\magicattriblevel.txt"
+#define		MAGICATTRIB_LVINDEX_FILE	"\\settings\\item\\magicattriblevel_index.txt"
 //--------------- npc skill missles  -------------
 #define		SKILL_SETTING_FILE				"\\settings\\Skills.txt"					//edit by phong kieu file lien quan den skill
 #define		MISSLES_SETTING_FILE			"\\settings\\Missles.txt"					//edit by phong kieu file lien quan den skill
 #define		NPC_SETTING_FILE				"\\settings\\NpcS.txt"
 #define		NPC_GOLD_TEMPLATE_FILE			"\\settings\\npc\\NpcGoldTemplate.txt"
+#define		MERIDIAN_SETTING_FILE			"\\settings\\meridian_level.txt"
 //---------------------------- object  ------------------------------
 #define		OBJ_DATA_FILE_NAME		"\\settings\\obj\\ObjData.txt"					//load thoi gian ton tai object khi roi ra dat trong file nay
 #define		MONEY_OBJ_FILE_NAME		"\\settings\\obj\\MoneyObj.txt"
@@ -142,6 +150,7 @@
 #define HONOR_SETTING_FILE				"\\settings\\HonorSetting.txt"
 #define QUESTITEM_TABFILE				"\\settings\\item\\questkey.txt"
 #define RENAME_NPC_SETTING_TABFILE		"\\settings\\NpcName.txt"		//edit by phong kieu load file rename npc
+#define GAME_REBORN_FILE                "\\Settings\\ReBorn\\rebornsetting.txt"
 //-----------------------------------------------------------
 #define TASK_MISSION_SETTING_TABFILE	"\\settings\\task\\missions.txt"
 #define 	GAME_SETTING_FILE_INI		"\\settings\\GameSetting.ini"
@@ -237,6 +246,7 @@
 #define		MSG_CAN_NOT_VIEW_ITEM			"B¹n kh«ng thÓ xem tin tøc ng­êi kh¸c"
 #define		MSG_ITEM_DAMAGED				"%s ®· bÞ h­"
 #define		MSG_ITEM_NEARLY_DAMAGED			"%s s¾p h­, h·y mau ®i söa"
+#define		MSG_ITEM_REPAIRED				"Tiªu tèn %d l­îng b¹c ®Ó söa chöa %s"
 #define		MSG_TRADE_STATE_OPEN			"B¹n hiÖn giê cã thÓ giao dÞch."
 #define		MSG_TRADE_STATE_CLOSE			"B¹n hiÖn giê kh«ng thÓ giao dÞch."
 #define		MSG_TRADE_SELF_LOCK				"B¹n bÞ kho¸ giao dÞch"
@@ -251,6 +261,24 @@
 #define		MSG_TRADE_GET_APPLY				"%s xin giao dÞch víi b¹n"
 #define		MSG_TRADE_REFUSE_APPLY			"%s tõ chèi giao dÞch"
 #define		MSG_TRADE_TASK_ITEM				"VËt phÈm kh«ng thÓ giao dÞch."
+#define		MSG_GAMBLE_STATE_OPEN			"B¹n hiÖn giê ca thÓ O¼n tï t×."
+#define		MSG_GAMBLE_STATE_CLOSE			"B¹n hiÖn giê kh«ng thÓ O¼n tï t×."
+#define		MSG_GAMBLE_SELF_LOCK				"B¹n b~ kho¸ O¼n tï t×"
+#define		MSG_GAMBLE_SELF_UNLOCK			"B¹n ®­îc më khaa O¼n tï t×"
+#define		MSG_GAMBLE_DEST_LOCK				"%s b~ kho¸ O¼n tï t×"
+#define		MSG_GAMBLE_DEST_UNLOCK			"%s ®­îc më khaa O¼n tï t×"
+#define		MSG_GAMBLE_SUCCESS				"B¹n vµ %s OTT thµnh c«ng"
+#define		MSG_GAMBLE_LOSE				"O¼n tï t× b¹n ®· thua"
+#define		MSG_GAMBLE_WIN				"O¼n tï t× b¹n ®· th¾ng"
+#define		MSG_GAMBLE_DRAW				"O¼n tï t× b¹n ®· hßa."
+#define		MSG_GAMBLE_FAIL					"B¹n vµ %s nghØ ch¬i O¼n tï t×"
+#define		MSG_GAMBLE_SELF_ROOM_FULL		"Kh«ng gian chøa ®å cña b¹n ®· ®Çy"
+#define		MSG_GAMBLE_DEST_ROOM_FULL		"Kh«ng gian chøa ®å cña %s ®· ®Çy"
+#define		MSG_GAMBLE_SEND_APPLY			"B¹n mêi %s O¼n tï t×."
+#define		MSG_GAMBLE_GET_APPLY				"%s xin O¼n tï t× víi b¹n"
+#define		MSG_GAMBLE_REFUSE_APPLY			"%s to chèi O¼n tï t×"
+#define		MSG_GAMBLE_TASK_ITEM				"VËt phÈm kh«ng thÓ O¼n tï t×."
+#define		MSG_GAMBLE_SEND_APPLY			"B¹n mêi %s O¼n tï t×."
 #define		MSG_PK_NORMAL_FLAG_OPEN			"B¹n ®ang ë tr¹ng th¸i chiÕn ®Êu!"
 #define		MSG_PK_NORMAL_FLAG_CLOSE		"B¹n ®ang ë tr¹ng th¸i luyÖn c«ng!"
 #define		MSG_PK_NORMAL_FLAG_DS			"B¹n ®ang trong tr¹ng th¸i giÕt ng­êi!"
@@ -373,6 +401,12 @@
 #define		MSG_CHATROOM_OPENGAME			"L­ît ch¬i míi ®­îc më, lÇn nµy ®Æt tèi ®a %d ®iÓm"
 #define		MSG_CHATROOM_REVERSE			"L­ît ch¬i cña phßng %s ®· kÕt thóc"
 
+enum enumGAMBLE {
+	enumGAMBLE_Rock = 0,
+	enumGAMBLE_Paper,
+	//enumGAMBLE_Sissors,
+	enumGAMBLE_Scissors,
+};
 enum enumMSG_ID
 {
 	enumMSG_ID_NONE = 0,
@@ -390,6 +424,10 @@ enum enumMSG_ID
 	enumMSG_ID_TRADE_DEST_ROOM_FULL,
 	enumMSG_ID_TRADE_REFUSE_APPLY,
 	enumMSG_ID_TRADE_TASK_ITEM,
+	enumMSG_ID_GAMBLE_SELF_ROOM_FULL,
+	enumMSG_ID_GAMBLE_DEST_ROOM_FULL,
+	enumMSG_ID_GAMBLE_REFUSE_APPLY,
+	enumMSG_ID_GAMBLE_TASK_ITEM,
 	enumMSG_ID_GET_ITEM,
 	enumMSG_ID_ITEM_DAMAGED,
 	enumMSG_ID_MONEY_CANNOT_PICKUP,

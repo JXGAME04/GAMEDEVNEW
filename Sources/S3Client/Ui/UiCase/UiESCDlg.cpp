@@ -111,7 +111,7 @@ int KUiESCDlg::Initialize()
 	
 	return true;
 }
-
+extern int SCREEN_WIDTH;
 void KUiESCDlg::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -119,7 +119,14 @@ void KUiESCDlg::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_INIT);
 	if (Ini.Load(Buff))
 	{
-		Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024)
+		{
+			Init(&Ini, "Main1024");
+		}
+		else
+		{
+			Init(&Ini, "Main");
+		}
 		m_ContinueGameBtn.Init(&Ini, "ContiumeGame");
 		m_OptionsBtn.Init(&Ini, "Options");
 		//m_ExitBtn.Init(&Ini, "CloseGame");

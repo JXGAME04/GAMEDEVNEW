@@ -774,7 +774,10 @@ void KCanvas::DrawPixelAlpha(int nX, int nY, int nColor, int nAlpha)
 /*	m_DrawList.AddTail(pNode);
 	SubAddNode(nX, nY, 1, 1, pNode);
 	SubChangedNode(nX, nY, 1, 1, pNode);*/
-	g_DrawPixelAlpha(&Node, this);
+		if(g_pDirectDraw->GetRGBBitCount() == 32)
+			g_DrawPixelAlpha32b(&Node, this);
+		else
+			g_DrawPixelAlpha(&Node, this);
 }
 //---------------------------------------------------------------------------
 // º¯Êý:	Draw line
@@ -854,6 +857,9 @@ void KCanvas::DrawSprite(int nX, int nY, int nWidth, int nHeight,
 /*	m_DrawList.AddTail(pNode);
 	SubAddNode(nX, nY, nWidth, nHeight, pNode);
 	SubChangedNode(nX, nY, nWidth, nHeight, pNode);*/
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+	g_DrawSprite32b(&Node, this);
+	else
 	g_DrawSprite(&Node, this);
 }
 
@@ -937,10 +943,113 @@ void KCanvas::DrawSpriteAlpha(int nX, int nY, int nWidth, int nHeight,
 /*	m_DrawList.AddTail(pNode);
 	SubAddNode(nX, nY, nWidth, nHeight, pNode);
 	SubChangedNode(nX, nY, nWidth, nHeight, pNode);*/
-	if (nExAlpha >= 31)
-		g_DrawSpriteAlpha(&Node, this);
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+	{
+		if (nExAlpha >= 254)
+			g_DrawSpriteAlpha32b(&Node, this);
+		else
+			g_DrawSpriteAlpha32b(&Node, this, nExAlpha);
+	}
 	else
-		g_DrawSpriteAlpha(&Node, this, nExAlpha);
+	{
+		if (nExAlpha >= 254)
+			g_DrawSpriteAlpha(&Node, this);
+		else
+			g_DrawSpriteAlpha(&Node, this, nExAlpha);
+	}
+
+}
+
+void KCanvas::DrawSpriteBlendColor(int nX, int nY, int nWidth, int nHeight,
+						 void* lpSprite, void* lpPalette, int nAlpha, UINT nColor, int nMode, BOOL bScreenMode)
+{
+	if(nAlpha == 0)
+		return;
+	KDrawNode	Node;
+	Node.m_pPrev = NULL;
+	Node.m_pNext = NULL;
+	Node.m_bChanged = m_bChanged;
+	Node.m_nX = nX;
+	Node.m_nY = nY;
+	Node.m_nWidth = nWidth;
+	Node.m_nHeight = nHeight;
+	Node.m_pBitmap = lpSprite;
+	Node.m_pPalette = lpPalette;
+	Node.m_nAlpha = nAlpha;
+	Node.m_nColor = nMode;
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+	{
+		if(bScreenMode)
+			g_DrawSpriteScreen32b(&Node, this, nColor);
+		else
+			g_DrawSpriteBlendColor32b(&Node, this, nColor);
+	}
+	else
+	{
+		if(bScreenMode)
+			g_DrawSpriteScreen(&Node, this, nColor);
+		else
+			g_DrawSpriteBlendColor(&Node, this, nColor);
+	}
+}
+
+void KCanvas::DrawAlphaRecImage(int nX, int nY, int nWidth, int nHeight, void* lpBitmap, int nAlpha, int bOpa)
+{
+	KDrawNode	Node;
+	Node.m_pPrev = NULL;
+	Node.m_pNext = NULL;
+	Node.m_bChanged = m_bChanged;
+	Node.m_nX = nX;
+	Node.m_nY = nY;
+	Node.m_nWidth = nWidth;
+	Node.m_nHeight = nHeight;
+	Node.m_pBitmap = lpBitmap;
+	Node.m_nAlpha = nAlpha;
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+	{
+		if(bOpa)
+			g_DrawOpaRecImage32b(&Node, this);
+		else
+			g_DrawAlphaRecImage32b(&Node, this);
+	}
+	else
+	{
+		if(bOpa)
+			g_DrawAlphaRecImageOpa(&Node, this);
+		else
+			g_DrawAlphaRecImage(&Node, this);
+	}
+}
+
+void KCanvas::DrawSpriteScreenMMX( 
+						 BYTE byInputAlpha, 
+						 DWORD dwMask32, 
+						 void* pBuffer, 
+						 INT width, 
+						 INT height, 
+						 INT nPitch, 
+						 INT nX, 
+						 INT nY, 
+						 void* pPalette, 
+						 void* pSprite, 
+						 INT nWidth, 
+						 INT nHeight, 
+						 const RECT* pSrcRect )//DrawPrimitives;
+{
+	DrawSpriteScreenBlendMMX( 
+						 byInputAlpha, 
+						 dwMask32, 
+						 pBuffer, 
+						 width, 
+						 height, 
+						 nPitch, 
+						 nX, 
+						 nY, 
+						 pPalette, 
+						 pSprite, 
+						 nWidth,  
+						 nHeight, 
+						 pSrcRect);
 }
 
 void KCanvas::DrawSpriteBorder(int nX, int nY, int nWidth, int nHeight, int nColor, void* lpSprite)
@@ -1017,7 +1126,10 @@ void KCanvas::DrawFontWithBorder(int nX, int nY, int nWidth, int nHeight, int nC
 	Node.m_pBitmap = lpFont;
 	Node.m_nAlpha =  nBorderColor;
 
-	g_DrawFontWithBorder(&Node, this);
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+		g_DrawFontWithBorder32b(&Node, this);
+	else
+		g_DrawFontWithBorder(&Node, this);
 }
 
 //---------------------------------------------------------------------------
@@ -1107,8 +1219,10 @@ void KCanvas::DrawBitmap16(int nX, int nY, int nWidth, int nHeight, void* lpBitm
 	
     //g_DrawBitmap16(&Node, this);
     
-    // Change by Freeway Chen in 2003.7.3
-	g_DrawBitmap16mmx(&Node, this);
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+		g_DrawBitmap16mmx_32b(&Node, this);
+	else
+		g_DrawBitmap16mmx(&Node, this);
 }
 //---------------------------------------------------------------------------
 // º¯Êý:	Draw bitmap on canvas
@@ -1222,7 +1336,10 @@ void KCanvas::ClearAlpha(int nX, int nY, int nWidth, int nHeight, int nColor,int
     Node.m_nColor = nColor;
 	Node.m_nAlpha = nAlpha;
 
-	g_ClearAlpha(&Node, this);
+	if(g_pDirectDraw->GetRGBBitCount() == 32)
+		g_ClearAlpha32b(&Node, this);
+	else
+		g_ClearAlpha(&Node, this);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

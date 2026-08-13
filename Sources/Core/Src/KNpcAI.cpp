@@ -926,6 +926,8 @@ int KNpcAI::GetNearestNpc(int nRelation)
                     int nRMx = nMapX + dx * i;
                     int nRMy = nMapY + dy * j;
                     int nSearchRegion = nRegion;
+					if (nSearchRegion == -1)
+						continue;
 
                     if (nRMx < 0)
                     {
@@ -937,6 +939,8 @@ int KNpcAI::GetNearestNpc(int nRelation)
                         nSearchRegion = SubWorld[nSubWorld].m_Region[nSearchRegion].m_nConnectRegion[6];
                         nRMx -= SubWorld[nSubWorld].m_nRegionWidth;
                     }
+					if (nSearchRegion == -1)
+						continue;
 
                     if (nRMy < 0)
                     {
@@ -1087,13 +1091,13 @@ void KNpcAI::FollowAttack(int i)
 	if ( distance == 0) 
 		distance = 1;
 
-#define	MINI_ATTACK_RANGE	32
-
-	if (distance <= MINI_ATTACK_RANGE)
-	{
-		KeepAttackRange(i, MINI_ATTACK_RANGE);
-		return;
-	}
+//#define	MINI_ATTACK_RANGE	32
+//
+//	if (distance <= MINI_ATTACK_RANGE)
+//	{
+//		KeepAttackRange(i, MINI_ATTACK_RANGE);
+//		return;
+//	}
 	// Attack Enemy
 	if (distance <= Npc[m_nIndex].m_CurrentAttackRadius && InEyeshot(i))
 	{
@@ -1130,7 +1134,7 @@ BOOL KNpcAI::InEyeshot(int nIdx)//trong t莔 quan s竧
 
 void KNpcAI::CommonAction()
 {
-	// 如果是对话类的NPC，就原地不动
+	// If it is a dialogue NPC, just stay where you are.
 	if (Npc[m_nIndex].m_Kind == kind_dialoger)
 	{
 		Npc[m_nIndex].SendCommand(do_stand);
@@ -1145,8 +1149,8 @@ void KNpcAI::CommonAction()
 	else
 	{
 		
-		nOffX = g_Random(Npc[m_nIndex].m_CurrentActiveRadius / 2);	//B竛 k輓h ho箃 ng
-		nOffY = g_Random(Npc[m_nIndex].m_CurrentActiveRadius / 2);	//B竛 k輓h ho箃 ng
+		nOffX = g_Random(Npc[m_nIndex].m_CurrentActiveRadius / 2);	//Active radius
+		nOffY = g_Random(Npc[m_nIndex].m_CurrentActiveRadius / 2);	//Active radius
 		if (nOffX & 1)
 		{
 			nOffX = - nOffX;
@@ -1156,7 +1160,18 @@ void KNpcAI::CommonAction()
 			nOffY = - nOffY;
 		}
 	}
-	Npc[m_nIndex].SendCommand(do_walk, Npc[m_nIndex].m_OriginX + nOffX, Npc[m_nIndex].m_OriginY + nOffY);
+	if (Npc[m_nIndex].IsCanInput()) { //Process AI command if AI type
+		int x, y;
+
+		Npc[m_nIndex].GetMpsPos(&x, &y);
+		int	nRange = g_GetDistance(Npc[m_nIndex].GetCommand().Param_X, Npc[m_nIndex].GetCommand().Param_Y, x, y);
+		if(nRange > 3)
+			Npc[m_nIndex].ProcCommand(1);
+		else
+			Npc[m_nIndex].SendCommand(do_stand);
+	}
+	else
+		Npc[m_nIndex].SendCommand(do_walk, Npc[m_nIndex].m_OriginX + nOffX, Npc[m_nIndex].m_OriginY + nOffY);
 }
 
 BOOL KNpcAI::KeepActiveRange()
@@ -1166,21 +1181,22 @@ BOOL KNpcAI::KeepActiveRange()
 	Npc[m_nIndex].GetMpsPos(&x, &y);
 	int	nRange = g_GetDistance(Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY, x, y);
 
-	// 发现超出活动范围，把当前活动范围缩小，避免在活动范围边缘来回晃。
-	if (Npc[m_nIndex].m_ActiveRadius < nRange)	//B竛 k輓h ho箃 ng
+	// If you find that you are beyond the activity range, narrow the current activity range
+	// to avoid swinging back and forth at the edge of the activity range.
+	if (Npc[m_nIndex].m_ActiveRadius < nRange)	//Active radius
 	{
 		Npc[m_nIndex].m_CurrentActiveRadius = Npc[m_nIndex].m_ActiveRadius / 2;
 	}
 
-	// 发现超出当前活动范围，往回走
-	if (Npc[m_nIndex].m_CurrentActiveRadius < nRange)	//B竛 k輓h ho箃 ng
+	// If you find that you are out of the current activity range, go back
+	if (Npc[m_nIndex].m_CurrentActiveRadius < nRange)	//Active radius
 	{
 		Npc[m_nIndex].SendCommand(do_walk, Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY);
 		return TRUE;
 	}
-	else	// 在当前活动范围内，恢复当前活动范围大小。
+	else	// In the current active range, restore the current active range size.
 	{
-		Npc[m_nIndex].m_CurrentActiveRadius = Npc[m_nIndex].m_ActiveRadius;	//B竛 k輓h ho箃 ng
+		Npc[m_nIndex].m_CurrentActiveRadius = Npc[m_nIndex].m_ActiveRadius;	//Active radius
 		return FALSE;
 	}
 }
@@ -1227,54 +1243,55 @@ void KNpcAI::Flee(int nIdx)
 }
 
 //------------------------------------------------------------------------------
-//	功能：普通主动类1
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1、2、3、4] 四种技能的使用概率，分别对应SkillList里的技能1 2 3 4
-//	m_AiParam[5、6] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Normal active class 1
+// m_AiParam[0] Patrol probability when there are no enemies
+// m_AiParam[1, 2, 3, 4] Probability of using four skills, corresponding to skills 1 2 3 4 in the SkillList
+// m_AiParam[5, 6] Probability of Standby and Patrol when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType01()
 {
 	int *pAIParam = Npc[m_nIndex].m_AiParam;
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	// 如果原本没有锁定敌人或者这个敌人跑太远，重新锁定敌人
+	// If the enemy is not locked or runs too far away, re-lock the enemy
 	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx) )
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
 
-	// 周围没有敌人，一定概率待机/巡逻
+	//There are no enemies around, with a certain probability of Standby/Patrol
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]: Patrol probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// Patrol
 			CommonAction();
 		}
 		return;
 	}
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is a 
+	// certain probability to choose Standby/Patrol/Approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[5])	// 待机
+		if (nRand < pAIParam[5])	// Standby
 			return;
-		if (nRand < pAIParam[5] + pAIParam[6])	// 巡逻
+		if (nRand < pAIParam[5] + pAIParam[6])	// Patrol
 		{
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[1])
@@ -1309,7 +1326,7 @@ void	KNpcAI::ProcessAIType01()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
@@ -1319,53 +1336,54 @@ void	KNpcAI::ProcessAIType01()
 
 
 //------------------------------------------------------------------------------
-//	功能：普通主动类2
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1] 剩余生命低于这个百分比的时候执行相应处理
-//	m_AiParam[2] 在m_AiParam[1]的情况出现的时候是否执行相应处理的概率
-//	m_AiParam[3] 在m_AiParam[1]的情况出现并决定要执行相应处理，使用回复技能的概率 对应SkillList里面的技能 1
-//	m_AiParam[4、5、6] 三种攻击技能的使用概率，分别对应SkillList里的技能 2 3 4
-//	m_AiParam[7、8] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Normal active class 2
+// m_AiParam[0] Patrol probability when there are no enemies
+// m_AiParam[1] Execute corresponding processing when the remaining health is lower than this percentage
+// m_AiParam[2] Probability of executing corresponding processing when the situation in m_AiParam[1] occurs
+// m_AiParam[3] Probability of using recovery skills when the situation in m_AiParam[1] occurs and decides to execute corresponding processing Corresponding to the skills in SkillList 1
+// m_AiParam[4, 5, 6] Probability of using three attack skills, corresponding to the skills in SkillList 2 3 4
+// m_AiParam[7, 8] Probability of Standby and Patrol when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType02()
 {
 	int *pAIParam = Npc[m_nIndex].m_AiParam;
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	// 如果原本没有锁定敌人或者这个敌人跑太远，重新锁定敌人
+	// If the enemy is not locked or runs too far away, re-lock the enemy
 	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx) )
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
 
-	// 周围没有敌人，一定概率待机/巡逻
+	// There are no enemies around, with a certain probability of Standby/Patrol
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]:Patrol Probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// Patrol
 			CommonAction();
 		}
 		return;
 	}
 
-	// 检测剩余生命是否符合条件，生命太少一定概率使用补血技能或逃跑
+	// Check whether the remaining life meets the conditions. If the life is too low,
+	// there is a certain probability of using blood replenishment skills or running away.
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[1])
 	{
-		if (g_RandPercent(pAIParam[2]))	// 是否使用补血技能或逃跑
+		if (g_RandPercent(pAIParam[2]))	// Whether to use blood-replenishing skills or escape
 		{
-			if (Npc[m_nIndex].m_AiAddLifeTime < pAIParam[9] && g_RandPercent(pAIParam[3]))	// 使用补血技能
+			if (Npc[m_nIndex].m_AiAddLifeTime < pAIParam[9] && g_RandPercent(pAIParam[3]))	// Use blood replenishment skills
 			{
 				Npc[m_nIndex].SetActiveSkill(1);
 				Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, m_nIndex);
 				Npc[m_nIndex].m_AiAddLifeTime++;
 				return;
 			}
-			else	// 逃跑
+			else	// Escape
 			{
 				Flee(nEnemyIdx);
 				return;
@@ -1373,23 +1391,23 @@ void	KNpcAI::ProcessAIType02()
 		}
 	}
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is a certain probability to choose Standby/Patrol/Approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[7])	// 待机
+		if (nRand < pAIParam[7])	// Standby
 			return;
-		if (nRand < pAIParam[7] + pAIParam[8])	// 巡逻
+		if (nRand < pAIParam[7] + pAIParam[8])	// Patrol
 		{
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[4])
@@ -1416,7 +1434,7 @@ void	KNpcAI::ProcessAIType02()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
@@ -1424,52 +1442,53 @@ void	KNpcAI::ProcessAIType02()
 }
 
 //------------------------------------------------------------------------------
-//	功能：普通主动类3
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1] 剩余生命低于这个百分比的时候执行相应处理
-//	m_AiParam[2] 在m_AiParam[1]的情况出现的时候是否执行相应处理的概率
-//	m_AiParam[3] 在m_AiParam[1]的情况出现并决定要执行相应处理，使用攻击技能的概率 对应SkillList里面的技能 1
-//	m_AiParam[4、5、6] 三种攻击技能的使用概率，分别对应SkillList里的技能 2 3 4
-//	m_AiParam[7、8] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Normal active class 3
+// m_AiParam[0] Patrol probability when there are no enemies
+// m_AiParam[1] Execute corresponding processing when the remaining health is lower than this percentage
+// m_AiParam[2] Probability of executing corresponding processing when the situation in m_AiParam[1] occurs
+// m_AiParam[3] Probability of using attack skills when the situation in m_AiParam[1] occurs and decides to execute corresponding processing Corresponding to the skills in SkillList 1
+// m_AiParam[4, 5, 6] Probability of using three attack skills, corresponding to the skills in SkillList 2 3 4
+// m_AiParam[7, 8] Probability of Standby and Patrol when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType03()
 {
 	int *pAIParam = Npc[m_nIndex].m_AiParam;
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	// 如果原本没有锁定敌人或者这个敌人跑太远，重新锁定敌人
+	// If the enemy is not locked or runs too far away, re-lock the enemy
 	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx) )
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
 
-	// 周围没有敌人，一定概率待机/巡逻
+	// There are no enemies around, with a certain probability of Standby/Patrol
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]:Patrol probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// Patrol
 			CommonAction();
 		}
 		return;
 	}
 
-	// 检测剩余生命是否符合条件，生命太少一定概率使用攻击技能或逃跑
+	// Check whether the remaining life meets the conditions. If the life is too low, 
+	// there is a certain probability of using attack skills or running away.
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[1])
 	{
-		if (g_RandPercent(pAIParam[2]))	// 是否使用攻击技能或逃跑
+		if (g_RandPercent(pAIParam[2]))	// Whether to use attack skills or escape
 		{
-			if (g_RandPercent(pAIParam[3]))	// 使用攻击技能
+			if (g_RandPercent(pAIParam[3]))	// Use attack skills
 			{
 				Npc[m_nIndex].SetActiveSkill(1);
 				FollowAttack(nEnemyIdx);
 				return;
 			}
-			else	// 逃跑
+			else	// Escape
 			{
 				Flee(nEnemyIdx);
 				return;
@@ -1477,23 +1496,23 @@ void	KNpcAI::ProcessAIType03()
 		}
 	}
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is a certain probability to choose Standby/Patrol/Approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[7])	// 待机
+		if (nRand < pAIParam[7])	// Standby
 			return;
-		if (nRand < pAIParam[7] + pAIParam[8])	// 巡逻
+		if (nRand < pAIParam[7] + pAIParam[8])	// Patrol
 		{
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[4])
@@ -1520,7 +1539,7 @@ void	KNpcAI::ProcessAIType03()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
@@ -1528,48 +1547,48 @@ void	KNpcAI::ProcessAIType03()
 }
 
 //------------------------------------------------------------------------------
-//	功能：普通被动类1
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1、2、3、4] 四种攻击技能的使用概率，分别对应SkillList里的技能 1 2 3 4
-//	m_AiParam[5、6] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Common passive class 1
+// m_AiParam[0] Patrol probability when there is no enemy
+// m_AiParam[1, 2, 3, 4] Probability of using four attack skills, corresponding to the skills in SkillList 1 2 3 4
+// m_AiParam[5, 6] Probability of Standby and Patrol when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType04()
 {
 	int *pAIParam = Npc[m_nIndex].m_AiParam;
 
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	// 是否受到攻击，否，一定概率选择待机/巡逻
+	// Is it under attack? If not, choose Standby/Patrol with a certain probability
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]:Patrol probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// Patrol
 			CommonAction();
 		}
 		return;
 	}
 
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is a certain probability to choose Standby/Patrol/Approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[5])	// 待机
+		if (nRand < pAIParam[5])	// Standby
 			return;
-		if (nRand < pAIParam[5] + pAIParam[6])	// 巡逻
+		if (nRand < pAIParam[5] + pAIParam[6])	// Patrol
 		{
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[1])
@@ -1604,7 +1623,7 @@ void	KNpcAI::ProcessAIType04()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
@@ -1612,47 +1631,47 @@ void	KNpcAI::ProcessAIType04()
 }
 
 //------------------------------------------------------------------------------
-//	功能：普通被动类2
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1] 剩余生命低于这个百分比的时候执行相应处理
-//	m_AiParam[2] 在m_AiParam[1]的情况出现的时候是否执行相应处理的概率
-//	m_AiParam[3] 在m_AiParam[1]的情况出现并决定要执行相应处理，使用回复技能的概率 对应SkillList里面的技能 1
-//	m_AiParam[4、5、6] 三种攻击技能的使用概率，分别对应SkillList里的技能 2 3 4
-//	m_AiParam[7、8] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Common passive class 2
+// m_AiParam[0] Probability of Patrol when there are no enemies
+// m_AiParam[1] Execute the corresponding action when the remaining health is lower than this percentage
+// m_AiParam[2] Probability of whether to execute the corresponding action when the situation in m_AiParam[1] occurs
+// m_AiParam[3] Probability of using the recovery skill when the situation in m_AiParam[1] occurs and the corresponding action is decided to be executed Corresponding to the skills in the SkillList 1
+// m_AiParam[4, 5, 6] Probability of using the three attack skills, corresponding to the skills in the SkillList 2 3 4
+// m_AiParam[7, 8] Probability of Standby and Patrol when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType05()
 {
 	int *pAIParam = Npc[m_nIndex].m_AiParam;
 
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	// 是否受到攻击，否，一定概率选择待机/巡逻
+	// 是否受到攻击，否，一定概率选择Standby/Patrol
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]:Patrol probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// Patrol
 			CommonAction();
 		}
 		return;
 	}
 
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
-	// 检测剩余生命是否符合条件，生命太少一定概率使用补血技能或逃跑
+	// Check whether the remaining life meets the conditions. If the life is too low, there is a certain probability of using blood replenishment skills or running away.
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[1])
 	{
-		if (g_RandPercent(pAIParam[2]))	// 是否使用补血技能或逃跑
+		if (g_RandPercent(pAIParam[2]))	// Whether to use blood-replenishing skills or escape
 		{
-			if (Npc[m_nIndex].m_AiAddLifeTime < pAIParam[9] && g_RandPercent(pAIParam[3]))	// 使用补血技能
+			if (Npc[m_nIndex].m_AiAddLifeTime < pAIParam[9] && g_RandPercent(pAIParam[3]))	// Use blood replenishment skills
 			{
 				Npc[m_nIndex].m_AiAddLifeTime++;
 				Npc[m_nIndex].SetActiveSkill(1);
 				Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, m_nIndex);
 				return;
 			}
-			else	// 逃跑
+			else	// Escape
 			{
 				Flee(nEnemyIdx);
 				return;
@@ -1660,23 +1679,23 @@ void	KNpcAI::ProcessAIType05()
 		}
 	}
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is a certain probability to choose Standby/Patrol/Approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[7])	// 待机
+		if (nRand < pAIParam[7])	// Standby
 			return;
-		if (nRand < pAIParam[7] + pAIParam[8])	// 巡逻
+		if (nRand < pAIParam[7] + pAIParam[8])	// Patrol
 		{
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[4])
@@ -1703,7 +1722,7 @@ void	KNpcAI::ProcessAIType05()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
@@ -1711,13 +1730,13 @@ void	KNpcAI::ProcessAIType05()
 }
 
 //------------------------------------------------------------------------------
-//	功能：普通被动类3
-//	m_AiParam[0] 无敌人时候的巡逻概率
-//	m_AiParam[1] 剩余生命低于这个百分比的时候执行相应处理
-//	m_AiParam[2] 在m_AiParam[1]的情况出现的时候是否执行相应处理的概率
-//	m_AiParam[3] 在m_AiParam[1]的情况出现并决定要执行相应处理，使用攻击技能的概率 对应SkillList里面的技能 1
-//	m_AiParam[4、5、6] 三种攻击技能的使用概率，分别对应SkillList里的技能 2 3 4
-//	m_AiParam[7、8] 看见敌人但比较远时，待机、巡逻的概率
+// Function: Common passive class 3
+// m_AiParam[0] Probability of patrolling when there are no enemies
+// m_AiParam[1] Execute corresponding processing when the remaining health is lower than this percentage
+// m_AiParam[2] Probability of executing corresponding processing when the situation in m_AiParam[1] occurs
+// m_AiParam[3] Probability of using attack skills when the situation in m_AiParam[1] occurs and decides to execute corresponding processing Corresponding to the skills in SkillList 1
+// m_AiParam[4, 5, 6] Probability of using three attack skills, corresponding to the skills in SkillList 2 3 4
+// m_AiParam[7, 8] Probability of waiting and patrolling when the enemy is seen but far away
 //------------------------------------------------------------------------------
 void	KNpcAI::ProcessAIType06()
 {
@@ -1729,12 +1748,12 @@ void	KNpcAI::ProcessAIType06()
 		Npc[m_nIndex].m_nPeopleIdx = 0;
 		 nEnemyIdx=0;
 	}
-	// 是否受到攻击，否，一定概率选择待机/巡逻
+	//Is it attacked? If not, it will choose standby/patrol with a certain probability.
 	if (nEnemyIdx <= 0)
 	{
-		// pAIParam[0]:巡逻概率
+		// pAIParam[0]:Patrol probability
 		if (pAIParam[0] > 0 && g_RandPercent(pAIParam[0]))
-		{	// 巡逻
+		{	// patrol
 			CommonAction();
 		}
 		return;
@@ -1746,22 +1765,23 @@ void	KNpcAI::ProcessAIType06()
 		nEnemyIdx=0;
 	}
 
-	// 是否已超过活动半径
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
-	// 检测剩余生命是否符合条件，生命太少一定概率使用攻击技能或逃跑
+	// Check whether the remaining life meets the conditions. 
+	// If the life is too low, there is a certain probability of using attack skills or running away.
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[1])
 	{
-		if (g_RandPercent(pAIParam[2]))	// 是否使用攻击技能或逃跑
+		if (g_RandPercent(pAIParam[2]))	// Whether to use attack skills or escape
 		{
-			if (g_RandPercent(pAIParam[3]))	// 使用攻击技能
+			if (g_RandPercent(pAIParam[3]))	// Use attack skills
 			{
 				Npc[m_nIndex].SetActiveSkill(1);
-				FollowAttack(nEnemyIdx);	// 向敌人靠近
+				FollowAttack(nEnemyIdx);	// Approach the enemy
 				return;
 			}
-			else	// 逃跑
+			else	// Escape
 			{
 				Flee(nEnemyIdx);
 				return;
@@ -1769,14 +1789,15 @@ void	KNpcAI::ProcessAIType06()
 		}
 	}
 
-	// 如果敌人在所有技能攻击范围之外，一定概率选择待机/巡逻/向敌人靠近
+	// If the enemy is out of the attack range of all skills, there is 
+	// a certain probability to choose to wait/patrol/approach the enemy
 	if (KNpcSet::GetDistanceSquare(m_nIndex, nEnemyIdx) > pAIParam[MAX_AI_PARAM - 1])
 	{
 		int		nRand;
 		nRand = g_Random(100);
-		if (nRand < pAIParam[7])	// 待机
+		if (nRand < pAIParam[7])	// Standby
 			return;
-		if (nRand < pAIParam[7] + pAIParam[8])	// 巡逻
+		if (nRand < pAIParam[7] + pAIParam[8])	// Patrol
 		{
 			CommonAction();
 			return;
@@ -1788,11 +1809,11 @@ void	KNpcAI::ProcessAIType06()
 			CommonAction();
 			return;
 		}
-		FollowAttack(nEnemyIdx);	// 向敌人靠近
+		FollowAttack(nEnemyIdx);	// Approach the enemy
 		return;
 	}
 
-	// 敌人在最大技能攻击范围之内，选择一种技能攻击
+	// When the enemy is within the maximum skill attack range, select a skill to attack
 	int		nRand;
 	nRand = g_Random(100);
 	if (nRand < pAIParam[4])
@@ -1819,51 +1840,69 @@ void	KNpcAI::ProcessAIType06()
 			return;
 		}
 	}
-	else	// 待机
+	else	// Standby
 	{
 		return;
 	}
 	FollowAttack(nEnemyIdx);
 }
 
-/*
-// 一般主动型
+
+//------------------------------------------------------------------------------
+// Function: Normal active class 1 variant (ProcessAIType1)
+// m_AiParam[0] - Health percentage threshold to consider using skill 1 (e.g. heal or special skill when low HP)
+// m_AiParam[1] - Probability (percent) to use skill 1 when HP is below threshold
+// m_AiParam[2], m_AiParam[3], m_AiParam[4] - Probabilities of using skills 2, 3, and 4 respectively during normal attack phase
+//
+// Description:
+// This AI process handles NPC actions including:
+// - Checking if NPC is outside its active radius (then skip further processing)
+// - Using skill 1 when health is below a threshold, based on a random chance
+// - Identifying and locking onto the nearest enemy if no current valid enemy
+// - Selecting one of skills 2, 3, or 4 to use based on weighted probabilities
+// - Falling back to a common default action if skill use fails or no skills are triggered
+// - Following and attacking the locked enemy if an attack skill was successfully activated
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType1()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
-	// 是否已超过活动半径
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+
+	// Check if NPC has moved outside its active radius; if so, skip action processing
 	if (KeepActiveRange())
 		return;
 
+	// If NPC's current life is below the threshold (pAIParam[0]), attempt to use skill 1 with chance pAIParam[1]
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[0])
 	{
 		if (g_RandPercent(pAIParam[1]))
 		{
+			// Set skill 1 active (usually healing or defensive skill) and send the command
 			Npc[m_nIndex].SetActiveSkill(1);
 			Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, m_nIndex);
 			return;
 		}
 	}
 
+	// Get currently locked enemy index
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
-	
-	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx) )
+
+	// If no valid enemy locked or enemy is no longer visible, find nearest enemy and lock it
+	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx))
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
-	
-	
 
-	if (nEnemyIdx > 0)
+	if (nEnemyIdx > 0)  // If an enemy is found
 	{
-		int		nRand;
-		nRand = g_Random(100);
+		int nRand = g_Random(100);
+
+		// Attempt to select skill 2, 3 or 4 based on weighted probabilities pAIParam[2], pAIParam[3], pAIParam[4]
 		if (nRand < pAIParam[2])
 		{
 			if (!Npc[m_nIndex].SetActiveSkill(2))
 			{
-				CommonAction();
+				CommonAction();  // fallback action if skill activation fails
 				return;
 			}
 		}
@@ -1884,64 +1923,87 @@ void KNpcAI::ProcessAIType1()
 			}
 		}
 
-//		if (g_RandPercent(pAIParam[2]))
-//		{
-//			Npc[m_nIndex].SetActiveSkill(2);
-//		}
-//		else if (g_RandPercent(pAIParam[3]))
-//		{
-//			Npc[m_nIndex].SetActiveSkill(3);
-//		}
-//		else if (g_RandPercent(pAIParam[4]))
-//		{
-//			Npc[m_nIndex].SetActiveSkill(4);
-//		}
+		// If none of the above triggered, check randomly for skill use again (probabilities pAIParam[2], [3], [4])
+		if (g_RandPercent(pAIParam[2]))
+		{
+			Npc[m_nIndex].SetActiveSkill(2);
+		}
+		else if (g_RandPercent(pAIParam[3]))
+		{
+			Npc[m_nIndex].SetActiveSkill(3);
+		}
+		else if (g_RandPercent(pAIParam[4]))
+		{
+			Npc[m_nIndex].SetActiveSkill(4);
+		}
 		else
 		{
-			CommonAction();
+			CommonAction();  // No skills used; fallback action
 			return;
 		}
+
+		// Follow and attack the locked enemy
 		FollowAttack(nEnemyIdx);
 		return;
 	}
+
+	// If no enemy found, do a default action (likely idle or patrol)
 	CommonAction();
 }
-*/
 
-/*
-// 一般被动型
+
+
+
+//------------------------------------------------------------------------------
+// Function: General passive AI (AI Type 2)
+// m_AiParam[0] Health percentage threshold to trigger special skill usage
+// m_AiParam[1] Probability to use skill 1 (likely a healing or defensive skill) when below health threshold
+// m_AiParam[2] Probability to use skill 2 (attack skill) when enemy is in range
+// m_AiParam[3] Probability to use skill 3 (attack skill) when enemy is in range
+// m_AiParam[4] Probability to use skill 4 (attack skill) when enemy is in range
+// Note: This AI type does not attempt to patrol or standby explicitly; it reacts mostly passively,
+//       only acting when health is low or enemy is detected within eyeshot.
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType2()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Check if NPC is outside its active range; if so, stop processing
 	if (KeepActiveRange())
 		return;
 
+	// If NPC's current health percentage is below threshold (pAIParam[0])...
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[0])
 	{
+		// ... with probability pAIParam[1], use skill 1 (likely a healing or defensive skill)
 		if (g_RandPercent(pAIParam[1]))
 		{
 			Npc[m_nIndex].SetActiveSkill(1);
 			Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, m_nIndex);
-			return;
+			return; // Exit after skill usage
 		}
 	}
 
+	// Get the current enemy target index
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
+
+	// If no valid enemy target or enemy is not within eyeshot, do nothing
 	if (nEnemyIdx <= 0 || !InEyeshot(nEnemyIdx))
 		return;
 
-	int		nRand;
-	nRand = g_Random(100);
+	// Generate random number 0-99 to decide which attack skill to use
+	int nRand = g_Random(100);
 
+	// Try skill 2 with probability pAIParam[2]
 	if (nRand < pAIParam[2])
 	{
 		if (!Npc[m_nIndex].SetActiveSkill(2))
 		{
-			CommonAction();
+			CommonAction(); // fallback if skill not usable
 			return;
 		}
 	}
+	// Else try skill 3 with probability pAIParam[3]
 	else if (nRand < pAIParam[2] + pAIParam[3])
 	{
 		if (!Npc[m_nIndex].SetActiveSkill(3))
@@ -1950,6 +2012,7 @@ void KNpcAI::ProcessAIType2()
 			return;
 		}
 	}
+	// Else try skill 4 with probability pAIParam[4]
 	else if (nRand < pAIParam[2] + pAIParam[3] + pAIParam[4])
 	{
 		if (!Npc[m_nIndex].SetActiveSkill(4))
@@ -1959,54 +2022,70 @@ void KNpcAI::ProcessAIType2()
 		}
 	}
 
-//	if (g_RandPercent(pAIParam[2]))
-//	{
-//		Npc[m_nIndex].SetActiveSkill(2);
-//	}
-//	else if (g_RandPercent(pAIParam[3]))
-//	{
-//		Npc[m_nIndex].SetActiveSkill(3);
-//	}
-//	else if (g_RandPercent(pAIParam[4]))
-//	{
-//		Npc[m_nIndex].SetActiveSkill(4);
-//	}
+	// If no skill chosen by above, try each skill with independent probabilities
+	if (g_RandPercent(pAIParam[2]))
+	{
+		Npc[m_nIndex].SetActiveSkill(2);
+	}
+	else if (g_RandPercent(pAIParam[3]))
+	{
+		Npc[m_nIndex].SetActiveSkill(3);
+	}
+	else if (g_RandPercent(pAIParam[4]))
+	{
+		Npc[m_nIndex].SetActiveSkill(4);
+	}
 	else
 	{
-		CommonAction();
+		CommonAction(); // fallback if no skill selected
 		return;
 	}
+
+	// If a skill was selected successfully, attack the enemy
 	FollowAttack(nEnemyIdx);
 
 	return;
 }
-*/
 
-/*
-// 一般逃跑型
+
+
+
+//------------------------------------------------------------------------------
+// Function: General Escape AI (Type 3)
+// m_AiParam[0] Health percentage threshold to trigger escape check
+// m_AiParam[1] Probability to trigger escape when health is below threshold
+// m_AiParam[2, 3, 4] Probability of using three different skills (Skill 1, Skill 2, Skill 3)
+// Note: Unlike AI Types 1 and 2, this AI has no explicit patrol or standby probabilities when no enemy is found.
+//       It focuses on escaping when health is low and skill usage probabilities when engaging.
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType3()
 {
 	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Check if NPC has exceeded its active range, stop processing if true
 	if (KeepActiveRange())
 		return;
 
-	int	nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
+	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
 
+	// If no enemy locked or enemy is out of sight, try to find nearest enemy and lock it
 	if (nEnemyIdx <= 0 || !InEyeshot(nEnemyIdx))
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
 
+	// If no enemy found after search, perform common default action (like idle or patrol)
 	if (nEnemyIdx <= 0)
 	{
 		CommonAction();
 		return;
 	}
-	
+
+	// Check if NPC health is below threshold to consider escape behavior
 	if (Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[0])
 	{
+		// With given probability, execute fleeing from enemy instead of fighting
 		if (g_RandPercent(pAIParam[1]))
 		{
 			Flee(nEnemyIdx);
@@ -2014,12 +2093,13 @@ void KNpcAI::ProcessAIType3()
 		}
 	}
 
-	int		nRand;
-	nRand = g_Random(100);
+	// Generate a random value for deciding skill usage
+	int nRand = g_Random(100);
 
+	// Attempt to use Skill 1, 2, or 3 based on cumulative probabilities in pAIParam[2..4]
 	if (nRand < pAIParam[2])
 	{
-		if (!Npc[m_nIndex].SetActiveSkill(1))
+		if (!Npc[m_nIndex].SetActiveSkill(1))  // If skill setting fails, do default action
 		{
 			CommonAction();
 			return;
@@ -2042,52 +2122,86 @@ void KNpcAI::ProcessAIType3()
 		}
 	}
 
-//	if (g_RandPercent(pAIParam[2]))
-///	{
-//		Npc[m_nIndex].SetActiveSkill(1);
-//	}
-//	else if (g_RandPercent(pAIParam[3]))
-//	{
-//		Npc[m_nIndex].SetActiveSkill(2);
-//	}
-//	else if (g_RandPercent(pAIParam[4]))
-//	{
-//		Npc[m_nIndex].SetActiveSkill(3);
-//	}
-	else
+	// If no skill was selected by the random value above, try individually by probability checks
+	if (g_RandPercent(pAIParam[2]))
+	{
+		Npc[m_nIndex].SetActiveSkill(1);
+	}
+	else if (g_RandPercent(pAIParam[3]))
+	{
+		Npc[m_nIndex].SetActiveSkill(2);
+	}
+	else if (g_RandPercent(pAIParam[4]))
+	{
+		Npc[m_nIndex].SetActiveSkill(3);
+	}
+	else  // If none chosen, perform default action
 	{
 		CommonAction();
 		return;
 	}
+
+	// After skill set, proceed to follow and attack the locked enemy
 	FollowAttack(nEnemyIdx);
 	return;
 }
-*/
 
-/*
-// 逃跑加强型
+
+
+
+//------------------------------------------------------------------------------
+// Function: Escape Plus (AI Type 4)
+// Description:
+//   This AI type adds an enhanced escape logic depending on the NPC's remaining
+//   health. It performs the following behaviors:
+//     - Reacquires the nearest enemy if the current one is invalid or out of range.
+//     - If no enemy is found, the NPC performs a common action (e.g., idle/patrol).
+//     - If the NPC's HP drops below a threshold (m_AiParam[0]), it may flee
+//       (based on probability m_AiParam[1]).
+//     - If HP is below another threshold (m_AiParam[2]), it may cast a healing or
+//       defensive skill (based on probability m_AiParam[3]).
+//     - If the above don't trigger, it will choose an offensive skill:
+//         + m_AiParam[4]: probability to use Skill 2
+//         + m_AiParam[5]: probability to use Skill 3
+//       If no skill is chosen, it performs a default action.
+//     - Attacks the current target if a skill is selected.
+//
+// Parameters:
+//   m_AiParam[0] - HP percent threshold to consider fleeing
+//   m_AiParam[1] - Probability of fleeing when HP is below threshold
+//   m_AiParam[2] - HP percent threshold to consider using skill 1 (e.g., heal/defense)
+//   m_AiParam[3] - Probability of using skill 1 when HP is below threshold
+//   m_AiParam[4] - Probability of using offensive skill 2
+//   m_AiParam[5] - Probability of using offensive skill 3
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType4()
 {
-	int*	pAIParam = Npc[m_nIndex].m_AiParam;
-	
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
+
+	// Check if NPC has exceeded its activity range
 	if (KeepActiveRange())
 		return;
 
-	int	nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
+	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
 
+	// Reacquire nearest enemy if current target is invalid or out of view
 	if (nEnemyIdx <= 0 || !InEyeshot(nEnemyIdx))
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = nEnemyIdx;
 	}
 
+	// If no enemy is found, perform a default action
 	if (nEnemyIdx <= 0)
 	{
 		CommonAction();
 		return;
 	}
-	
+
+	// Calculate current HP percentage
 	int nLifePercent = Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax;
+
+	// Case 1: HP is very low, consider fleeing
 	if (nLifePercent < pAIParam[0])
 	{
 		if (g_RandPercent(pAIParam[1]))
@@ -2096,6 +2210,8 @@ void KNpcAI::ProcessAIType4()
 			return;
 		}
 	}
+
+	// Case 2: HP is moderately low, consider using skill 1 (e.g., healing/defensive skill)
 	if (nLifePercent < pAIParam[2])
 	{
 		if (g_RandPercent(pAIParam[3]))
@@ -2106,6 +2222,7 @@ void KNpcAI::ProcessAIType4()
 		}
 	}
 
+	// Case 3: Choose an offensive skill to attack
 	if (g_RandPercent(pAIParam[4]))
 	{
 		Npc[m_nIndex].SetActiveSkill(2);
@@ -2119,35 +2236,50 @@ void KNpcAI::ProcessAIType4()
 		CommonAction();
 		return;
 	}
-	FollowAttack(nEnemyIdx);
-	return;
-}
-*/
 
-/*
-//	人多就跑型
+	// Attack the target
+	FollowAttack(nEnemyIdx);
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// Function: Normal active class 5 (AI for reacting to many enemies nearby)
+// m_AiParam[0] Threshold for number of enemies — if exceeded, may choose to flee
+// m_AiParam[1] Probability of fleeing when the number of enemies > m_AiParam[0]
+// m_AiParam[2] Probability of using skill 1
+// m_AiParam[3] Threshold for number of enemies — if fewer than or equal to this, may use skill 2
+// m_AiParam[4] Probability of using skill 2 when the number of enemies <= m_AiParam[3]
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType5()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Exit if the NPC is outside its allowed activity range
 	if (KeepActiveRange())
 		return;
 
 	int i = Npc[m_nIndex].m_nPeopleIdx;
 
+	// If no current target or target is out of sight, find the nearest enemy
 	if (!i || !InEyeshot(i))
 	{
 		i = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// If no enemies are found, perform a default action (standby or patrol)
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
 
+	// Count nearby enemies
 	int nEnemyNumber = GetNpcNumber(relation_enemy);
+
+	// If enemy count exceeds threshold and probability met, flee
 	if (nEnemyNumber > pAIParam[0])
 	{
 		if (g_RandPercent(pAIParam[1]))
@@ -2157,34 +2289,51 @@ void KNpcAI::ProcessAIType5()
 		}
 	}
 
+	// Attempt to use skill 1 with defined probability
 	if (g_RandPercent(pAIParam[2]))
 	{
 		Npc[m_nIndex].SetActiveSkill(1);
 	}
+	// If enemy count is low and probability met, use skill 2
 	else if (nEnemyNumber <= pAIParam[3] && g_RandPercent(pAIParam[4]))
 	{
 		Npc[m_nIndex].SetActiveSkill(2);
 	}
+	// Otherwise perform default action (e.g., patrol)
 	else
 	{
 		CommonAction();
 		return;
 	}
 
+	// Perform attack movement toward the target
 	FollowAttack(i);
-	return;
 }
-*/
 
-/*
-//	成群结队型
+
+
+
+//------------------------------------------------------------------------------
+// Function: Group-type AI behavior
+// Description:
+//   This AI type handles NPCs that consider nearby allies before deciding on a behavior.
+//   It dynamically switches between attacking, using skills, or fleeing based on 
+//   the number of nearby allies and random probabilities.
+// m_AiParam[0] - Minimum number of allies required to avoid fleeing
+// m_AiParam[1] - Probability to flee when allies are too few
+// m_AiParam[2] - Probability to use skill 1 regardless of ally number
+// m_AiParam[3] - Threshold of allies for possibly using skill 2
+// m_AiParam[4] - Probability to use skill 2 when ally threshold is met
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType6()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Check if NPC is still within the allowed active area
 	if (KeepActiveRange())
 		return;
 
+	// Try to maintain a target; reacquire if needed
 	int i = Npc[m_nIndex].m_nPeopleIdx;
 	if (!i || !InEyeshot(i))
 	{
@@ -2192,13 +2341,17 @@ void KNpcAI::ProcessAIType6()
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// If still no target, perform default action (e.g., idle or patrol)
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
 
+	// Count the number of nearby allies (neutral or friendly)
 	int nAllyNumber = GetNpcNumber(relation_none);
+
+	// If allies are fewer than required threshold, maybe flee
 	if (nAllyNumber <= pAIParam[0])
 	{
 		if (g_RandPercent(pAIParam[1]))
@@ -2207,52 +2360,67 @@ void KNpcAI::ProcessAIType6()
 			return;
 		}
 	}
-	
+
+	// Try using skill 1 with a certain probability
 	if (g_RandPercent(pAIParam[2]))
 	{
 		Npc[m_nIndex].SetActiveSkill(1);
 	}
+	// If enough allies are around, maybe use skill 2
 	else if (nAllyNumber > pAIParam[3] && g_RandPercent(pAIParam[4]))
 	{
 		Npc[m_nIndex].SetActiveSkill(2);
 	}
 	else
 	{
+		// Otherwise, default action (e.g., patrol or idle)
 		CommonAction();
 		return;
 	}
 
+	// Proceed to follow and attack the target
 	FollowAttack(i);
-	return;
 }
-*/
 
-/*
-// 挨打聚堆型
+
+
+
+//------------------------------------------------------------------------------
+// Function: Beaten group type (AI Type 7)
+// m_AiParam[0] If current HP% is below this value, consider running to an ally
+// m_AiParam[1] Probability of running to the nearest ally when the condition above is met
+// m_AiParam[2, 3, 4] Probability of using skills 1, 2, 3 respectively from the SkillList
+//------------------------------------------------------------------------------  
 void KNpcAI::ProcessAIType7()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Check if NPC should return due to moving out of the active area
 	if (KeepActiveRange())
 		return;
 
 	int i = Npc[m_nIndex].m_nPeopleIdx;
+
+	// If no enemy is currently targeted or enemy is out of sight, 
+	// search for nearest enemy
 	if (!i || !InEyeshot(i))
 	{
 		i = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// If still no enemy found, perform a default idle/patrol action
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
 
+	// Check if current HP is lower than threshold
 	int j = GetNearestNpc(relation_ally);
-
 	if (j && Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax < pAIParam[0])
 	{
+		// With given probability, move towards the nearest ally
 		if (g_RandPercent(pAIParam[1]))
 		{
 			int x, y;
@@ -2262,6 +2430,7 @@ void KNpcAI::ProcessAIType7()
 		}
 	}
 
+	// Try to use one of the active skills based on given probabilities
 	if (g_RandPercent(pAIParam[2]))
 	{
 		Npc[m_nIndex].SetActiveSkill(1);
@@ -2276,41 +2445,50 @@ void KNpcAI::ProcessAIType7()
 	}
 	else
 	{
+		// If no skill was used, perform a default idle/patrol action
 		CommonAction();
 		return;
 	}
+
+	// If skill is used, attack the current enemy
 	FollowAttack(i);
 	return;
 }
-*/
 
-/*
-//	主动送死型
+
+
+
+// Active suicide type
 void KNpcAI::ProcessAIType8()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// If the NPC is outside its allowed active range, stop further action
 	if (KeepActiveRange())
 		return;
 
 	int i = Npc[m_nIndex].m_nPeopleIdx;
 
+	// If no enemy is currently targeted or not in visible range, find the nearest enemy
 	if (!i || !InEyeshot(i))
 	{
 		i = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// If still no enemy is found, perform idle behavior (e.g., patrol/standby)
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
-	
+
+	// Decide action based on configured probabilities:
+	// m_AiParam[0]: walk towards enemy
+	// m_AiParam[1-3]: try to use skills 1-3
 	if (g_RandPercent(pAIParam[0]))
 	{
 		int x, y;
-
 		Npc[i].GetMpsPos(&x, &y);
 		Npc[m_nIndex].SendCommand(do_walk, x, y);
 	}
@@ -2328,86 +2506,126 @@ void KNpcAI::ProcessAIType8()
 	}
 	else
 	{
+		// If no condition is met, fallback to default idle behavior
 		CommonAction();
 		return;
 	}
-	FollowAttack(i);
-	return;
-}
-*/
 
-/*
-//	越战越勇型
+	// Always follow and try to attack the current enemy
+	FollowAttack(i);
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// Function: Normal active class 9 - "The more you fight, the braver you become."
+// Description: This AI becomes more aggressive as its HP decreases. It uses 
+// stronger skills with increasing probability when HP drops below certain thresholds.
+//
+// m_AiParam[0] Probability to use skill 1 (at any HP)
+// m_AiParam[1] HP threshold (%) to consider using skill 2
+// m_AiParam[2] Probability to use skill 2 if HP < m_AiParam[1]
+// m_AiParam[3] HP threshold (%) to consider using skill 3
+// m_AiParam[4] Probability to use skill 3 if HP < m_AiParam[3]
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType9()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Has the activity radius been exceeded?
 	if (KeepActiveRange())
 		return;
 
 	int i = Npc[m_nIndex].m_nPeopleIdx;
 
+	// If the enemy is not locked or runs too far away, re-lock the enemy
 	if (!i || !InEyeshot(i))
 	{
 		i = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// There are no enemies around, do nothing or fallback to idle behavior
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
-	
+
+	// Get current HP percentage
 	int nLifePercent = Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax;
 
+	// Skill 1: Attempt based on fixed probability, regardless of HP
 	if (g_RandPercent(pAIParam[0]))
 	{
 		Npc[m_nIndex].SetActiveSkill(1);
 	}
+	// Skill 2: If HP below threshold 1 and passes probability check
 	else if (nLifePercent < pAIParam[1] && g_RandPercent(pAIParam[2]))
 	{
 		Npc[m_nIndex].SetActiveSkill(2);
 	}
+	// Skill 3: If HP below threshold 2 and passes probability check
 	else if (nLifePercent < pAIParam[3] && g_RandPercent(pAIParam[4]))
 	{
 		Npc[m_nIndex].SetActiveSkill(3);
 	}
+	// No skill selected, fallback to normal action
 	else
 	{
 		CommonAction();
 		return;
 	}
+
+	// Attack the locked enemy
 	FollowAttack(i);
 	return;
 }
-*/
 
-/*
-//	逃跑不掉型
+
+
+
+//------------------------------------------------------------------------------
+// Function: Normal active class 10 (Escape behavior logic)
+// This AI prioritizes survival based on health thresholds, using skills or fleeing
+//
+// m_AiParam[0] Life percentage threshold to use skill 1
+// m_AiParam[1] Probability of using skill 1 when health is below m_AiParam[0]
+// m_AiParam[2] Life percentage threshold to use skill 2
+// m_AiParam[3] Probability of using skill 2 when health is below m_AiParam[2]
+// m_AiParam[4] Life percentage threshold to trigger escape behavior
+// m_AiParam[5] Probability of escaping when health is below m_AiParam[4]
+//------------------------------------------------------------------------------
 void KNpcAI::ProcessAIType10()
 {
-	int *pAIParam = Npc[m_nIndex].m_AiParam;
+	int* pAIParam = Npc[m_nIndex].m_AiParam;
 
+	// Has the activity radius been exceeded? If so, return
 	if (KeepActiveRange())
 		return;
 
+	// Get current enemy index
 	int i = Npc[m_nIndex].m_nPeopleIdx;
 
+	// If there's no current target or it's out of sight, acquire the nearest enemy
 	if (!i || !InEyeshot(i))
 	{
 		i = GetNearestNpc(relation_enemy);
 		Npc[m_nIndex].m_nPeopleIdx = i;
 	}
 
+	// If still no target is found, perform idle behavior and return
 	if (!i)
 	{
 		CommonAction();
 		return;
 	}
-	
+
+	// Calculate current health percentage
 	int nLifePercent = Npc[m_nIndex].m_CurrentLife * 100 / Npc[m_nIndex].m_CurrentLifeMax;
 
+	// Evaluate conditions to either use skill 1, skill 2, or flee
 	if (nLifePercent < pAIParam[0] && g_RandPercent(pAIParam[1]))
 	{
 		Npc[m_nIndex].SetActiveSkill(1);
@@ -2418,16 +2636,20 @@ void KNpcAI::ProcessAIType10()
 	}
 	else if (nLifePercent < pAIParam[4] && g_RandPercent(pAIParam[5]))
 	{
+		// If all conditions met for escape, run away
 		Flee(i);
 		return;
 	}
 	else
 	{
+		// Default fallback behavior
 		CommonAction();
 		return;
 	}
 
+	// Engage with the current target using the selected skill
 	FollowAttack(i);
 	return;
 }
-*/
+
+

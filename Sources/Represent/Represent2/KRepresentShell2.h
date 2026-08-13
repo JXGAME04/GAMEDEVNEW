@@ -239,7 +239,7 @@ public:
         //## 图形名
         const char* pszImage,
 		//用于获取图形数据缓冲区的相关信息数据，如果传入空指针，则忽略这些信息。
-		KBitmapDataBuffInfo* pInfo);
+		KBitmapDataBuffInfo* pInfo, int nType = 0);
 
 	//##释放对(通过GetBitmapDataBuffer调用获取得的)图形像点数据缓冲区的控制
 	void ReleaseBitmapDataBuffer(
@@ -464,6 +464,7 @@ public:
     virtual void setZoomFactor(float zoomFactorDelta) { //set zoom factor
 
     }
+	virtual bool IsRep3D() {return false;};
 private:
 
     //##ModelId=3DB68CEB0350

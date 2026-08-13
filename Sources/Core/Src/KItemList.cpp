@@ -39,7 +39,11 @@ int KItemList::ms_ActiveEquip[itempart_num][MAX_ITEM_ACTIVE] =
 	{ itempart_belt, itempart_ring2 },	//	itempart_pendant,
 	{ itempart_horse, itempart_horse },	//	itempart_horse,
 	{ itempart_mask, itempart_mask },	//	itempart_mask,
-	//{ itempart_fifong, itempart_fifong },	//	itempart_fifong,
+	{ itempart_mantle, itempart_mantle },	//	itempart_fifong,
+	{ itempart_signet, itempart_signet },	//	itempart_signet,
+	{ itempart_shipin, itempart_shipin },		//	itempart_shipin,
+	{ itempart_hoods, itempart_hoods },//	itempart_hoods,
+	{ itempart_cloak, itempart_cloak },//	itempart_cloak,
 };
 
 int KItemList::ms_ActivedEquip[itempart_num][MAX_ITEM_ACTIVE] =
@@ -57,12 +61,24 @@ int KItemList::ms_ActivedEquip[itempart_num][MAX_ITEM_ACTIVE] =
 	{ itempart_horse, itempart_horse },	//	itempart_horse,
 	{ itempart_mask, itempart_mask },	//	itempart_mask,
 	//{ itempart_fifong, itempart_fifong },	//	itempart_fifong,
+	{ itempart_mantle, itempart_mantle },//	itempart_mantle,
+	{ itempart_signet, itempart_signet },	//	itempart_signet,
+	{ itempart_shipin, itempart_shipin },		//	itempart_shipin,
+	{ itempart_hoods, itempart_hoods },//	itempart_hoods,
+	{ itempart_cloak, itempart_cloak },//	itempart_cloak,
 };
+
+int KItemList::CountItemInAll()
+{
+	// Count all items in the player's item list
+	return m_nItemsCount;
+}
 
 KItemList::KItemList()
 {
 	m_PlayerIdx = 0;
 	m_nListCurIdx = 0;
+	m_nItemsCount = 0;
 }
 
 KItemList::~KItemList()
@@ -223,6 +239,15 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		m_Items[i].nX = nX;
 		m_Items[i].nY = 0;
 		break;
+	case pos_equipback:
+		if (nX < 0 || nX >= itempart_num)
+			return 0;
+		if (m_AltEquipmentItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_equipback;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
 	case pos_equiproom://xu ly xep chong item cho nay
 		if (!m_Room[room_equipment].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
 			return 0;
@@ -320,6 +345,16 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		Equip(m_Items[i].nIdx, nX);
 	}
 
+	if (m_Items[i].nPlace == pos_equipback)
+	{
+		//restore alternative equip set
+		//int nItemListIdx = FindSame(m_Items[i].nIdx);
+		m_AltEquipmentItem[nX] = m_Items[i].nIdx;
+		//m_Items[nItemListIdx].nPlace = pos_equipback;
+		//m_Items[nItemListIdx].nX = nX;
+		//m_Items[nItemListIdx].nY = 0;
+	}
+
 	if (m_Items[i].nPlace == pos_tremble)		
 	{
 		CheckTrembleItem(m_Items[i].nIdx, nX);
@@ -331,6 +366,7 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 //		Player[m_PlayerIdx].m_uMustSave = SAVE_REQUEST;
 #endif
 
+	m_nItemsCount++;
 #ifndef _SERVER
 	KUiObjAtContRegion	pInfo;
 
@@ -348,7 +384,12 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		UIEP_WAIST_DECOR,
 		UIEP_HORSE,
 		UIEP_MASK,	// mat na
-		UIEP_FIFONG //#phi phong
+		UIEP_FIFONG, //#phi phong
+		UIEP_SIGNET,
+		UIEP_SHIPIN,
+		UIEP_HOODS,
+		UIEP_CLOAK,
+
 	};
 
 	int PartTrembleConvert[tremblepart_num] = 
@@ -428,20 +469,23 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		pInfo.eContainer = UOC_TREMBLE_ITEM;
 		break;
 	}
-	if (nPlace != pos_trade1)
-		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 1);
-	else
-	{
-		CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (DWORD)&pInfo, 1);
+	if (nPlace != pos_equipback) {
+		if (nPlace != pos_trade1)
+			CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo, 1);
+		else
+		{
+			CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (DWORD)&pInfo, 1);
+			CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (DWORD)&pInfo, 1);
+		}
 	}
 
 #ifdef _DEBUG
 	int nLoopIdx = 0;
 	nLoopIdx = m_UseIdx.GetNext(nLoopIdx);
-	g_DebugLog("[ITEM]Item Begin");
+	//g_DebugLog("[ITEM]Item Begin");
 	while(nLoopIdx)
 	{
-		g_DebugLog("[ITEM]ItemListIdx:%d, Item:%d, ItemId:%d", nLoopIdx, m_Items[nLoopIdx].nIdx, Item[m_Items[nLoopIdx].nIdx].GetID());
+	//	g_DebugLog("[ITEM]ItemListIdx:%d, Item:%d, ItemId:%d", nLoopIdx, m_Items[nLoopIdx].nIdx, Item[m_Items[nLoopIdx].nIdx].GetID());
 		nLoopIdx = m_UseIdx.GetNext(nLoopIdx);
 	}
 #endif
@@ -539,6 +583,7 @@ BOOL KItemList::Remove(int nGameIdx)
 			Item[m_Items[nIdx].nIdx].GetHeight());
 		break;
 	case pos_traderoom:
+	case pos_gambleroom:
 		m_Room[room_trade].PickUpItem(
 			nGameIdx,
 			m_Items[nIdx].nX,
@@ -601,7 +646,11 @@ BOOL KItemList::Remove(int nGameIdx)
 		UIEP_WAIST_DECOR,
 		UIEP_HORSE,
 		UIEP_MASK,	// mat na
-		UIEP_FIFONG //#phi phong
+		UIEP_FIFONG, //#phi phong
+		UIEP_SIGNET,
+		UIEP_SHIPIN,
+		UIEP_HOODS,
+		UIEP_CLOAK,
 	};
 
 	int PartTrembleConvert[tremblepart_num] = 
@@ -691,6 +740,7 @@ BOOL KItemList::Remove(int nGameIdx)
 	else
 	{
 		CoreDataChanged(GDCNI_TRADE_DESIRE_ITEM, (DWORD)&pInfo, 0);
+		CoreDataChanged(GDCNI_GAMBLE_DESIRE_ITEM, (DWORD)&pInfo, 0);
 	}
 #endif
 	m_Items[nIdx].nIdx = 0;
@@ -705,6 +755,7 @@ BOOL KItemList::Remove(int nGameIdx)
 	g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sRemove, sizeof(ITEM_REMOVE_SYNC));
 	//Player[m_PlayerIdx].m_uMustSave = SAVE_REQUEST;
 #endif
+	m_nItemsCount--;
 	return TRUE;
 }
 
@@ -819,6 +870,7 @@ BOOL KItemList::Init(int nPlayerIdx)
 //	m_Room[room_trade].Init(nWidth, nHeight);
 //	m_Room[room_tradeback].Init(nWidth, nHeight);
 	m_Room[room_equipment].Init(EQUIPMENT_ROOM_WIDTH, EQUIPMENT_ROOM_HEIGHT);
+	m_Room[room_equipmentback].Init(EQUIPMENT_ROOM_WIDTH, EQUIPMENT_ROOM_HEIGHT);
 	m_Room[room_repository].Init(REPOSITORY_ROOM_WIDTH, REPOSITORY_ROOM_HEIGHT);
 	m_Room[room_trade].Init(TRADE_ROOM_WIDTH, TRADE_ROOM_HEIGHT);
 	m_Room[room_exbox1].Init(REPOSITORY_ROOM_WIDTH, REPOSITORY_ROOM_HEIGHT); // ruong mo rong 1
@@ -835,6 +887,7 @@ BOOL KItemList::Init(int nPlayerIdx)
 #endif
 	ZeroMemory(m_EquipItem, sizeof(m_EquipItem));				// Íæ¼Ò×°±¸µÄµÀ¾ß£¨¶ÔÓ¦ÓÎÏ·ÊÀ½çÖÐµÀ¾ßÊý×éµÄË÷Òý£©
 	ZeroMemory(m_Items, sizeof(m_Items));						// Íæ¼ÒÓµÓÐµÄËùÓÐµÀ¾ß£¨°üÀ¨×°±¸×ÅµÄºÍÏä×ÓÀï·ÅµÄ£¬¶ÔÓ¦ÓÎÏ·ÊÀ½çÖÐµÀ¾ßÊý×éµÄË÷Òý£©
+	ZeroMemory(m_AltEquipmentItem, sizeof(m_AltEquipmentItem));
 	m_nListCurIdx = 0;											// GetFirstItem GetNextItem
 	
 	m_FreeIdx.Init(MAX_PLAYER_ITEM);
@@ -1021,6 +1074,8 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 				nType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetGoldId());
 			if (nType)
 				Npc[nNpcIdx].m_HelmType = nType;
+			else if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+				Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
 			else
 				Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetHelmRes(Item[nIdx].GetParticular(), Item[nIdx].GetLevel());
 		}
@@ -1033,6 +1088,8 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 			}
 			if (nType)
 				Npc[nNpcIdx].m_ArmorType = nType;
+			else if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+				Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
 			else
 				Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetArmorRes(Item[nIdx].GetParticular(), Item[nIdx].GetLevel());
 			nCurIdx = GetEquipment(itempart_mantle); //#phi phong
@@ -1052,8 +1109,47 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 
 		if (nType)
 			Npc[nNpcIdx].m_WeaponType = nType;
+		else if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD)
+			Npc[nNpcIdx].m_WeaponType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+		else if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+			Npc[nNpcIdx].m_WeaponType = g_ItemChangeRes.GetPlatinaItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow(), 1);
 		else
 			Npc[nNpcIdx].m_WeaponType = g_ItemChangeRes.GetWeaponRes(Item[nIdx].GetDetailType(), Item[nIdx].GetParticular(), Item[nIdx].GetLevel());
+		break;
+	//case itempart_mask:
+	//	if (!m_nMaskLock)
+	//	{
+	//		if (Npc[nNpcIdx].m_bMaskFeature)
+	//		{
+	//			Npc[nNpcIdx].m_MaskType = 0;
+	//		}
+	//		else
+	//		{
+	//			if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD)
+	//				Npc[nNpcIdx].m_MaskType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+	//			else
+	//				g_MaskChangeRes.GetInteger(Item[nIdx].GetParticular() + 2, 2, 0, &Npc[nNpcIdx].m_MaskType);
+	//		}
+	//	}
+	//	break;
+	case itempart_mantle:
+		Npc[nNpcIdx].m_byMantleLevel = Item[nIdx].GetLevel();
+		if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+			Npc[nNpcIdx].m_MantleType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+		else
+			Npc[nNpcIdx].m_MantleType = 0;
+		break;
+	case itempart_hoods:
+		if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+			Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+		else
+			Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetHoodsRes(Item[nIdx].GetParticular());
+		break;
+	case itempart_cloak:
+		if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+			Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow());
+		else
+			Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetCloakRes(Item[nIdx].GetParticular());
 		break;
 	case itempart_horse:
 		{
@@ -1062,6 +1158,8 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 			//
 			if (nType)
 				Npc[nNpcIdx].m_HorseType = nType;
+			else if (Item[nIdx].m_CommonAttrib.nItemNature == NATURE_GOLD || Item[nIdx].m_CommonAttrib.nItemNature == NATURE_PLATINA)
+				Npc[nNpcIdx].m_HorseType = g_ItemChangeRes.GetGoldItemRes(Item[nIdx].GetDetailType(), Item[nIdx].GetRow()); \
 			else
 				Npc[nNpcIdx].m_HorseType = g_ItemChangeRes.GetHorseRes(Item[nIdx].GetParticular(), Item[nIdx].GetLevel());
 			//
@@ -1090,7 +1188,7 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 
 //#ifdef _SERVER	because client need to show to menu
 	int nActive = GetEquipEnhance(nEquipPlace);
-	Item[nIdx].ApplyMagicAttribToNPC(&Npc[nNpcIdx], nActive);
+	//Item[nIdx].ApplyMagicAttribToNPC(&Npc[nNpcIdx], nActive);
 	InfectionNextEquip(nEquipPlace, TRUE);
 
 	if (itempart_weapon == nEquipPlace)
@@ -1101,7 +1199,14 @@ BOOL KItemList::Equip(int nIdx, int nPlace /* = -1 */)
 		Player[m_PlayerIdx].SetNpcDamageAttrib();
 	}
 	
-	GetIfActive();
+	if (GetIfActive()) {
+		bool bOverLook = FALSE;
+		int nSkillId = 1556; //FullSet
+		int nSkillLevel = 20;
+		int nTime = -1;
+		KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
+		pSkill->CastStateSkill(Player[m_PlayerIdx].m_nIndex, 0, 0, nTime, bOverLook);
+	}
 	Player[m_PlayerIdx].UpdataCurData();
 
 //#endif
@@ -1229,6 +1334,38 @@ BOOL KItemList::UnEquip(int nIdx, int nPos/* = -1*/)
 		if (!m_nMaskLock)
 			Npc[nNpcIdx].m_MaskType = 0;
 		break;
+	case itempart_mantle:
+		Npc[nNpcIdx].m_byMantleLevel = 0;
+		nCurIdx = GetEquipment(itempart_body);
+		if (Item[nCurIdx].GetMantle() > 0)
+			Npc[nNpcIdx].m_MantleType = Item[nCurIdx].GetMantle();
+		else
+			Npc[nNpcIdx].m_MantleType = 0;
+		break;
+	case itempart_cloak:
+		nCurIdx = GetEquipment(itempart_body);
+		if (nCurIdx)
+		{
+			if (Item[nCurIdx].m_CommonAttrib.nItemNature == NATURE_GOLD)
+				Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetGoldItemRes(Item[nCurIdx].GetDetailType(), Item[nCurIdx].GetRow());
+			else
+				Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetArmorRes(Item[nCurIdx].GetParticular(), Item[nCurIdx].GetLevel());
+		}
+		else
+			Npc[nNpcIdx].m_ArmorType = g_ItemChangeRes.GetArmorRes(0, 0);
+		break;
+	case itempart_hoods:
+		nCurIdx = GetEquipment(itempart_head);
+		if (nCurIdx)
+		{
+			if (Item[nCurIdx].m_CommonAttrib.nItemNature == NATURE_GOLD)
+				Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetGoldItemRes(Item[nCurIdx].GetDetailType(), Item[nCurIdx].GetRow());
+			else
+				Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetHelmRes(Item[nCurIdx].GetParticular(), Item[nCurIdx].GetLevel());
+		}
+		else
+			Npc[nNpcIdx].m_HelmType = g_ItemChangeRes.GetHelmRes(0, 0);
+		break;
 	default:
 		break;
 	}
@@ -1241,7 +1378,15 @@ BOOL KItemList::UnEquip(int nIdx, int nPos/* = -1*/)
 		Player[m_PlayerIdx].SetNpcDamageAttrib();
 	}	
 
-	GetIfActive();
+	if (!GetIfActive()) {
+		bool bOverLook = FALSE;
+		int nSkillId = 1556; //FullSet
+		int nSkillLevel = 20;
+		int nTime = 0;
+		KMagicAttrib DamageMagicAttribs[MAX_MISSLE_DAMAGEATTRIB];
+		memset(DamageMagicAttribs, 0, sizeof(DamageMagicAttribs));
+		Npc[Player[m_PlayerIdx].m_nIndex].SetStateSkillEffect(Player[m_PlayerIdx].m_nIndex, nSkillId, nSkillLevel, DamageMagicAttribs, 1, nTime, bOverLook);
+	}
 	Player[m_PlayerIdx].UpdataCurData();
 	return TRUE;
 }
@@ -1287,6 +1432,18 @@ int KItemList::GetEquipPlace(int nType)
 		break;
 	case equip_mantle://#phi phong
 		nRet = itempart_mantle;
+		break;
+	case equip_signet:
+		nRet = itempart_signet;
+		break;
+	case equip_shipin:
+		nRet = itempart_shipin;
+		break;
+	case equip_hoods:
+		nRet = itempart_hoods;
+		break;
+	case equip_cloak:
+		nRet = itempart_cloak;
 		break;
 	default:
 		break;
@@ -1358,6 +1515,22 @@ BOOL KItemList::Fit(int nIdx, int nPlace)
 		if (nPlace == itempart_mantle)
 			bRet = TRUE;
 		break;
+	case equip_signet:
+		if (nPlace == itempart_signet)
+			bRet = TRUE;
+		break;
+	case equip_shipin:
+		if (nPlace == itempart_shipin)
+			bRet = TRUE;
+		break;
+	case equip_hoods:
+		if (nPlace == itempart_hoods)
+			bRet = TRUE;
+		break;
+	case equip_cloak:
+		if (nPlace == itempart_cloak)
+			bRet = TRUE;
+		break;
 	}
 	return bRet;
 }
@@ -1417,6 +1590,22 @@ BOOL KItemList::Fit(KItem* pItem, int nPlace)
 		if (nPlace == itempart_mantle)
 			bRet = TRUE;
 		break;
+	case equip_signet:
+		if (nPlace == itempart_signet)
+			bRet = TRUE;
+		break;
+	case equip_shipin:
+		if (nPlace == itempart_shipin)
+			bRet = TRUE;
+		break;
+	case equip_hoods:
+		if (nPlace == itempart_hoods)
+			bRet = TRUE;
+		break;
+	case equip_cloak:
+		if (nPlace == itempart_cloak)
+			bRet = TRUE;
+		break;
 	}
 	return bRet;
 }
@@ -1451,6 +1640,55 @@ int KItemList::GetEquipEnhance(int nPlace)
 	return nRet;
 }
 
+int KItemList::GetGoldEquipEnhance(int nPlace)
+{
+	if (m_PlayerIdx <= 0)
+		return FALSE;
+
+	int nNpcIdx = Player[m_PlayerIdx].m_nIndex;
+
+	if (nPlace < 0 || nPlace >= itempart_num)
+	{
+		_ASSERT(0);
+		return 0;
+	}
+	int nRet = 0, nCnt = 0, nNum = 1;
+
+	if (nPlace >= itempart_horse || IsEnoughToActive())
+	{
+		nRet = MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB;
+	}
+	else
+	{
+		if (Item[m_EquipItem[nPlace]].m_CommonAttrib.nItemNature >= NATURE_GOLD)
+		{
+			nNum = Item[m_EquipItem[nPlace]].GetNeedToActive1();
+			int nGroup = Item[m_EquipItem[nPlace]].GetGroup();
+			int nSetID = Item[m_EquipItem[nPlace]].GetSetID();
+
+			for (int i = 0; i < itempart_horse; i++)
+			{
+				if (m_EquipItem[i] && Item[m_EquipItem[i]].m_CommonAttrib.nItemNature >= NATURE_GOLD)
+				{
+					if (i == itempart_ring1)
+					{
+						if (m_EquipItem[itempart_ring1] &&
+							m_EquipItem[itempart_ring2] &&
+							Item[m_EquipItem[itempart_ring1]].GetGroup() == nGroup &&
+							Item[m_EquipItem[itempart_ring1]].GetSetID() == nSetID)
+							continue;
+					}
+					if (Item[m_EquipItem[i]].GetGroup() == nGroup)
+						nCnt++;
+				}
+			}
+		}
+		nRet = (nCnt / nNum);
+	}
+
+	return nRet;
+}
+
 #ifdef _SERVER
 //Edit by phong kieu khoa bao hiem trang bi
 BOOL KItemList::SetLockItem(int ItemIdx, int lock)
@@ -1464,11 +1702,11 @@ BOOL KItemList::SetLockItem(int ItemIdx, int lock)
 	int nGameId = SearchID(ItemIdx);
 	if(lock == 1)
 	{
-		Player[m_PlayerIdx].ExecuteScript("\\script\\player\\binditem.lua","main", nGameId);
+		Player[m_PlayerIdx].ExecuteScript("\\script\\player\\binditem.lua","main", nGameId,false);
 	}
 	else
 	{
-		Player[m_PlayerIdx].ExecuteScript("\\script\\player\\unbinditem.lua","main", nGameId);
+		Player[m_PlayerIdx].ExecuteScript("\\script\\player\\unbinditem.lua","main", nGameId,false);
 	}
 	return TRUE;
 }
@@ -1527,18 +1765,27 @@ BOOL KItemList::EatMecidine(int nIdx)
 
 	else if (nGenre == item_magicscript)
 	{
-		Player[m_PlayerIdx].ExecuteScript(Item[nIdx].GetScript(),"main", nIdx);
+		char* ScriptFileName = Item[nIdx].GetScript();
+		bool bGlobal = true;
+		//check string "thodiaphu" exist in ScriptFileName
+		if (strstr(ScriptFileName, "thodiaphuvh.lua") != nullptr || 
+		strstr(ScriptFileName, "tuiduocpham.lua") != nullptr)
+		{
+			// "thodiaphuvh.lua" exists in ScriptFileName
+			bGlobal = false;
+		}
+		Player[m_PlayerIdx].ExecuteScript(Item[nIdx].GetScript(),"main", nIdx, bGlobal);
 	}
 	
 	else if (nGenre == item_townportal)
 	{
-		if (!Npc[Player[m_PlayerIdx].m_nIndex].IsAlive() || Npc[Player[m_PlayerIdx].m_nIndex].m_CurrentLife <= 0)//fix by phong kiÒu chÕt hoÆc m¸u nhá h¬n 0 kh«ng cho phï
+		if (!Npc[Player[m_PlayerIdx].m_nIndex].IsAlive() || Npc[Player[m_PlayerIdx].m_nIndex].m_CurrentLife <= 0)//fix by phong kiÒu chÕt hoÆc m¸u nh?h¬n 0 kh«ng cho ph?
 		{
 			return FALSE;
 		}
 		//fkauto
 #ifndef _SERVER
-		Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne();
+		//Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne();
 #endif
 		//
 		if (!Npc[Player[m_PlayerIdx].m_nIndex].m_FightMode)
@@ -1555,7 +1802,7 @@ BOOL KItemList::EatMecidine(int nIdx)
 			return FALSE;
 		}
 #ifdef _SERVER
-		Player[m_PlayerIdx].ExecuteScript("\\script\\item\\ib\\thodiafu.lua","main", nIdx);
+		Player[m_PlayerIdx].ExecuteScript("\\script\\item\\ib\\thodiafu.lua","main", nIdx,false);
 #endif
 	}
 
@@ -1583,9 +1830,8 @@ int KItemList::UseItem(int nIdx)
 	switch(Item[nIdx].GetGenre())
 	{
 	case item_equip:
-		break;
-/*		if (Equip(nNpcIdx, nIdx))
-			nRet = REQUEST_EQUIP_ITEM;*/
+		//if (Equip(nNpcIdx, nIdx))
+			nRet = REQUEST_EQUIP_ITEM;
 		break;
 	
 	case item_townportal:
@@ -1721,7 +1967,7 @@ BOOL KItemList::AutoCheckItem(int nGenre, int nDetailType, int nParticular)
 }
 #endif
 
-int	KItemList::SearchID(int nID)
+int	KItemList::SearchID(int nID, int* pRetPlace, int* pRetX, int* pRetY)
 {
 	if (m_PlayerIdx <= 0)
 		return 0;
@@ -1732,7 +1978,15 @@ int	KItemList::SearchID(int nID)
 		if (!nIdx)
 			break;
 		if (Item[m_Items[nIdx].nIdx].GetID() == (DWORD)nID)
+		{
+			if(pRetPlace)
+				*pRetPlace = m_Items[nIdx].nPlace;
+			if(pRetX)
+				*pRetX = m_Items[nIdx].nX;
+			if(pRetY)
+				*pRetY = m_Items[nIdx].nY;
 			return m_Items[nIdx].nIdx;
+		}
 	}
 	return 0;
 }
@@ -1798,7 +2052,7 @@ int KItemList::GetEquipmentXu()
 }
 
 
-BOOL KItemList::AddMoney(int nRoom, int nMoney)
+BOOL KItemList::AddMoney(int nRoom, int nMoney, bool Gamble)
 {
 	if (nRoom < 0 || nRoom >= room_num)
 		return FALSE;
@@ -1807,7 +2061,7 @@ BOOL KItemList::AddMoney(int nRoom, int nMoney)
 		return FALSE;
 
 #ifdef _SERVER
-	SendMoneySync();
+	SendMoneySync(Gamble);
 #endif
 
 	return TRUE;
@@ -1824,7 +2078,7 @@ BOOL KItemList::AddXu(int nRoom, int nXu)
 	return TRUE;
 }
 
-BOOL KItemList::CostMoney(int nMoney)
+BOOL KItemList::CostMoney(int nMoney, bool Gamble)
 {
 	if (nMoney > GetEquipmentMoney())
 		return FALSE;
@@ -1833,7 +2087,7 @@ BOOL KItemList::CostMoney(int nMoney)
 		return FALSE;
 
 #ifdef _SERVER
-	SendMoneySync();
+	SendMoneySync(Gamble);
 #endif
 
 	return TRUE;
@@ -1910,13 +2164,28 @@ void	KItemList::TradeMoveMoney(int nMoney)
 
 #ifdef _SERVER
 
-void	KItemList::SendMoneySync()
+void	KItemList::GambleMoveMoney(int nMoney)
+{
+	m_Room[room_trade].SetMoney(nMoney);
+	SendMoneySync();
+
+	GAMBLE_MONEY_SYNC	sMoney;
+	sMoney.ProtocolType = s2c_gamblemoneysync;
+	sMoney.m_nMoney = nMoney;
+	g_pServer->PackDataToClient(Player[Player[m_PlayerIdx].m_cTrade.m_nTradeDest].m_nNetConnectIdx, (BYTE*)&sMoney, sizeof(GAMBLE_MONEY_SYNC));
+}
+#endif
+
+#ifdef _SERVER
+
+void	KItemList::SendMoneySync(bool Gamble)
 {
 	PLAYER_MONEY_SYNC	sMoney;
 	sMoney.ProtocolType = s2c_syncmoney;
 	sMoney.m_nMoney1 = m_Room[room_equipment].GetMoney();
 	sMoney.m_nMoney2 = m_Room[room_repository].GetMoney();
 	sMoney.m_nMoney3 = m_Room[room_trade].GetMoney();
+	sMoney.m_bGamble = Gamble;
 	g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMoney, sizeof(PLAYER_MONEY_SYNC));
 }
 
@@ -1980,6 +2249,9 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 	//load 3 storebox by kinnox;
 	if(Npc[Player[m_PlayerIdx].m_nIndex].m_FightMode && DesPos->nPlace >= pos_repositoryroom && DesPos->nPlace <= pos_exbox3room)
 		return;
+	int Map = SubWorld[Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex].m_SubWorldID;
+	if (Map == 397 && DesPos->nPlace == pos_equiproomex)
+		return;
 	//end code
 	switch(SrcPos->nPlace)
 	{
@@ -1999,11 +2271,11 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			int nLevel = Npc[Player[m_PlayerIdx].m_nIndex].m_SkillList.GetLevel(nEquipIdx1);
 			int nAddLevel = Npc[Player[m_PlayerIdx].m_nIndex].m_SkillList.GetAddLevel(nEquipIdx1);
 			int nTotalLevel = nLevel + nAddLevel;
-			if(nLevel <= 0) //nh÷ng skill ch­a cã ®iÓm kh«ng cho lÊy ra
+			if(nLevel <= 0) //nh÷ng skill ch­a c?®iÓm kh«ng cho lÊy ra
 				return;
 
 			KSkill * pSkill = (KSkill *) g_SkillManager.GetSkill(nEquipIdx1, nTotalLevel);
-			if(pSkill) //chØ cho phÐp lÊy ra nh÷ng lo¹i skill chiÕn ®Êu vµ buff	//attr 1008 hç trî bÞ ®éng 1009 hç trî chñ ®éng
+			if(pSkill) //ch?cho phÐp lÊy ra nh÷ng lo¹i skill chiÕn ®Êu v?buff	//attr 1008 h?tr?b?®éng 1009 h?tr?ch?®éng
 			{
 				if(pSkill->IsAura() || pSkill->GetSkillId() == 709 || pSkill->GetSkillId() == 252 //skill kh«ng ®­îc phÐp
 					|| pSkill->GetSkillId() == 36 || pSkill->GetSkillId() == 630
@@ -2028,7 +2300,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 
-	case pos_immediacyskill: //--------------------------- ¤ phÝm t¾t 1 ®Õn 9 skill ------------------------------------
+	case pos_immediacyskill: //--------------------------- ?phÝm t¾t 1 ®Õn 9 skill ------------------------------------
 		if(m_HandSkill)
 		{
 #ifdef _SERVER
@@ -2037,7 +2309,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			int nLuck = -1;
 			int nDetailType = 13;
 			int nParticularType = m_HandSkill;
-			if (!m_Room[room_immediacy].CheckSameItemType(item_medicine, nDetailType, nParticularType, nLevel)) //ch­a tån t¹i th× míi add vµo «
+			if (!m_Room[room_immediacy].CheckSameItemType(item_medicine, nDetailType, nParticularType, nLevel)) //ch­a tån t¹i th?míi add vµo ?
 			{
 				int nIndex = ItemSet.AddItemSet2(item_medicine, nSeries, nLevel, nLuck, nDetailType, nParticularType, NULL);
 				if (nIndex)
@@ -2061,7 +2333,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 #endif
 		break;
 
-	case pos_equip:	//--------------------------- Trang bÞ trªn ng­êi ------------------------------------
+	case pos_equip:	//--------------------------- Trang b?trªn ng­êi ------------------------------------
 		if (Player[this->m_PlayerIdx].CheckTrading())	
 			return;
 		if (SrcPos->nX < 0 || SrcPos->nX >= itempart_num || DesPos->nX < 0 || DesPos->nX >= itempart_num)
@@ -2097,7 +2369,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 
-	case pos_immediacy:	//--------------------------- ¤ phÝm t¾t 1 ®Õn 9 ------------------------------------
+	case pos_immediacy:	//--------------------------- ?phÝm t¾t 1 ®Õn 9 ------------------------------------
 		if (Player[m_PlayerIdx].CheckTrading())	
 			return;
 		
@@ -2105,7 +2377,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		{
 			if (m_Room[room_immediacy].CheckSameItemType(Item[m_Hand].GetGenre(), Item[m_Hand].GetDetailType(), 
 				Item[m_Hand].GetParticular(), Item[m_Hand].GetLevel()))
-			{	//§· cã vËt phÈm cïng lo¹i trong «
+			{	//§· c?vËt phÈm cïng lo¹i trong ?
 #ifdef _SERVER
 				BYTE	byFinished = s2c_itemexchangefinish;
 				if (g_pServer)
@@ -2125,11 +2397,11 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			}
 		}
 
-		nEquipIdx1 = m_Room[room_immediacy].FindItem(SrcPos->nX, SrcPos->nY); //LÊy ItemIdx ®ang n»m trong « phÝm t¾t
+		nEquipIdx1 = m_Room[room_immediacy].FindItem(SrcPos->nX, SrcPos->nY); //LÊy ItemIdx ®ang n»m trong ?phÝm t¾t
 		if (nEquipIdx1 < 0)
 			return;
 		
-		if (nEquipIdx1)	//NÕu cã th× nhÊc nã lªn
+		if (nEquipIdx1)	//NÕu c?th?nhÊc n?lªn
 		{
 			if(nEquipIdx1 && Item[nEquipIdx1].IsFkItemSkill()) //item skill shorcut lÊy ra mÊt lu«n
 			{
@@ -2140,13 +2412,13 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				return;
 		}
 
-		if (m_Hand) //NÕu trªn tay cã
+		if (m_Hand) //NÕu trªn tay c?
 		{
 			if (m_Room[room_immediacy].PlaceItem(DesPos->nX, DesPos->nY, m_Hand, Item[m_Hand].GetWidth(), Item[m_Hand].GetHeight()) 
 					//&& Item[m_Hand].GetStackNum() <= 1
 					&& (Item[m_Hand].GetGenre() == item_medicine || Item[m_Hand].GetGenre() == item_townportal 
-					|| (Item[m_Hand].GetGenre() == item_magicscript && Item[m_Hand].GetBShortKey()))) //chØ cho phÐp bá c¸c vËt phÈm thuèc vµ thæ ®Þa phï
-			{	//Bá item xuèng « phÝm t¾t
+					|| (Item[m_Hand].GetGenre() == item_magicscript && Item[m_Hand].GetBShortKey()))) //ch?cho phÐp b?c¸c vËt phÈm thuèc v?th?®Þa ph?
+			{	//B?item xuèng ?phÝm t¾t
 				int nListIdx = FindSame(m_Hand);
 				m_Items[nListIdx].nPlace = pos_immediacy;
 				m_Items[nListIdx].nX = DesPos->nX;
@@ -2157,7 +2429,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
 #endif
 			}
-			else //th«ng b¸o vËt phÈm kh«ng thÓ bá vµo « phÝm t¾t
+			else //th«ng b¸o vËt phÈm kh«ng th?b?vµo ?phÝm t¾t
 			{
 				m_Room[room_immediacy].PlaceItem(SrcPos->nX, SrcPos->nY, nEquipIdx1, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight());
 				Player[m_PlayerIdx].ExecuteScript("\\script\\player\\mgs2player_from_c.lua","main", MSG_ITEM_NOT_STACK_IN_IMMEDIATE);
@@ -2229,6 +2501,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				int nVersion		= Item[nEquipIdx1].GetItemParam()->nVersion;
 				int	nGndrom			= Item[nEquipIdx1].GetItemParam()->uRandomSeed;
 				int nPoint			= Item[nEquipIdx1].IsPurple();
+				int nXOpt			= Item[nEquipIdx1].GetMaxOptMultiply();
 				
 				if (nEnChance >= 9)
 				{
@@ -2254,11 +2527,11 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 
 				if (nGoldId)
 				{
-					nIndex = ItemSet.AddGoldItem(nGoldId,nItemLevel,nSeries,nEnChance + 1);
+					nIndex = ItemSet.AddGoldItem(nGoldId,nItemLevel,nSeries,nEnChance + 1, 0, 0, 0, 0, 0, 0, nXOpt);
 				} 
 				else
 				{
-					nIndex = ItemSet.AddItemSet2(nItemClass,nSeries,nLevel,nLuck,nDetailType,nParticularType,nItemLevel, nVersion,nGndrom,1,nEnChance + 1,nPoint);
+					nIndex = ItemSet.AddItemSet2(nItemClass,nSeries,nLevel,nLuck,nDetailType,nParticularType,nItemLevel, nVersion,nGndrom,1,nEnChance + 1,nPoint,0,0,0,0,0,0, nXOpt);
 				}
 				
 				if (nIndex <= 0)
@@ -2360,7 +2633,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 	
-	case pos_exbox1room: //--------------------------- më réng r­¬ng 1 ------------------------------------
+	case pos_exbox1room: //--------------------------- m?réng r­¬ng 1 ------------------------------------
 		if (Player[m_PlayerIdx].CheckTrading())	
 			return;
 		nEquipIdx1 = m_Room[room_exbox1].FindItem(SrcPos->nX, SrcPos->nY);
@@ -2407,7 +2680,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 
-	case pos_exbox2room: //--------------------------- më réng r­¬ng 2 ------------------------------------
+	case pos_exbox2room: //--------------------------- m?réng r­¬ng 2 ------------------------------------
 		if (Player[m_PlayerIdx].CheckTrading())	
 			return;
 		nEquipIdx1 = m_Room[room_exbox2].FindItem(SrcPos->nX, SrcPos->nY);
@@ -2454,7 +2727,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 		
-	case pos_exbox3room: //--------------------------- më réng r­¬ng 3 ------------------------------------
+	case pos_exbox3room: //--------------------------- m?réng r­¬ng 3 ------------------------------------
 		if (Player[m_PlayerIdx].CheckTrading())	
 			return;
 		nEquipIdx1 = m_Room[room_exbox3].FindItem(SrcPos->nX, SrcPos->nY);
@@ -2502,7 +2775,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 		
-	case pos_equiproomex: //--------------------------- hµnh trang më réng------------------------------------
+	case pos_equiproomex: //--------------------------- hµnh trang m?réng------------------------------------
 		nEquipIdx1 = m_Room[room_equipmentex].FindItem(SrcPos->nX, SrcPos->nY);
 		if (nEquipIdx1 < 0)
 			return;
@@ -2596,6 +2869,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				int nVersion		= Item[nEquipIdx1].GetItemParam()->nVersion;
 				int	nGndrom			= Item[nEquipIdx1].GetItemParam()->uRandomSeed;
 				int nPoint			= Item[nEquipIdx1].IsPurple();
+				int nXOpt			= Item[nEquipIdx1].GetMaxOptMultiply();
 				int nItemLevel[6];
 				if (nEnChance >= 9)
 				{
@@ -2618,11 +2892,11 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 				
 				if (nGoldId)
 				{
-					nIndex = ItemSet.AddGoldItem(nGoldId,nItemLevel,nSeries,nEnChance + 1);
+					nIndex = ItemSet.AddGoldItem(nGoldId,nItemLevel,nSeries,nEnChance + 1, 0, 0, 0, 0, 0, 0, nXOpt);
 				} 
 				else
 				{
-					nIndex = ItemSet.AddItemSet2(nItemClass,nSeries,nLevel,nLuck,nDetailType,nParticularType,nItemLevel,nVersion,nGndrom,1,nEnChance + 1,nPoint);
+					nIndex = ItemSet.AddItemSet2(nItemClass,nSeries,nLevel,nLuck,nDetailType,nParticularType,nItemLevel,nVersion,nGndrom,1,nEnChance + 1,nPoint, 0, 0, 0, 0, 0, 0, nXOpt);
 				}
 				
 				if (nIndex <= 0)
@@ -2738,6 +3012,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		break;
 
 	case pos_traderoom:	//--------------------------- giao dÞch ------------------------------------
+	case pos_gambleroom:	//--------------------------- OTT ------------------------------------
 		if ( !Player[m_PlayerIdx].CheckTrading())	
 			return;
 #ifdef _SERVER
@@ -2772,7 +3047,7 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			if (m_Room[room_trade].PlaceItem(DesPos->nX, DesPos->nY, m_Hand, Item[m_Hand].GetWidth(), Item[m_Hand].GetHeight()))
 			{
 				int nListIdx = FindSame(m_Hand);
-				m_Items[nListIdx].nPlace = pos_traderoom;
+				m_Items[nListIdx].nPlace = SrcPos->nPlace;
 				m_Items[nListIdx].nX = DesPos->nX;
 				m_Items[nListIdx].nY = DesPos->nY;
 #ifdef _SERVER
@@ -3044,7 +3319,11 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			UIEP_WAIST_DECOR,
 			UIEP_HORSE,
 			UIEP_MASK,	// mat na
-			UIEP_FIFONG //#phi phong
+			UIEP_FIFONG, //#phi phong
+			UIEP_SIGNET,
+			UIEP_SHIPIN,
+			UIEP_HOODS,
+			UIEP_CLOAK,
 		};
 
 		int PartTrembleConvert[tremblepart_num] = 
@@ -3132,6 +3411,14 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo2.Region.v = DesPos->nY;
 			pInfo1.eContainer = UOC_TO_BE_TRADE;
 			pInfo2.eContainer = UOC_TO_BE_TRADE;
+			break;
+		case pos_gambleroom:
+			pInfo1.Region.h = SrcPos->nX;
+			pInfo1.Region.v = SrcPos->nY;
+			pInfo2.Region.h = DesPos->nX;
+			pInfo2.Region.v = DesPos->nY;
+			pInfo1.eContainer = UOC_TO_BE_GAMBLE;
+			pInfo2.eContainer = UOC_TO_BE_GAMBLE;
 			break;
 		case pos_give:
 			pInfo1.Region.h = SrcPos->nX;
@@ -3241,7 +3528,7 @@ BOOL	KItemList::AutoMoveItem(ItemPos SrcPos,ItemPos DesPos)
 					{
 						//Khong lam gi het
 					}
-					else//Fix lçi sö dông thæ ®Þa phï phÝm t¾t
+					else//Fix lçi s?dông th?®Þa ph?phÝm t¾t
 					{
 						_ASSERT(0);
 						return FALSE;
@@ -3331,7 +3618,7 @@ BOOL KItemList::EatMecidine(int nPlace, int nX, int nY)
 		nItemIdx = m_Room[room_immediacy].FindItem(nX, nY);
 		if (nItemIdx > 0)
 		{
-			if (Item[nItemIdx].GetGenre() == item_medicine || Item[nItemIdx].GetGenre() == item_townportal) //Fix lçi sö dông thæ ®Þa phï phÝm t¾t
+			if (Item[nItemIdx].GetGenre() == item_medicine || Item[nItemIdx].GetGenre() == item_townportal) //Fix lçi s?dông th?®Þa ph?phÝm t¾t
 			{
 				//Khong lam gi het
 			}
@@ -3343,7 +3630,7 @@ BOOL KItemList::EatMecidine(int nPlace, int nX, int nY)
 			int		nGenre, nDetailType, nParticular, nIdx, nXpos, nYpos;
 			BOOL	bEat;
 
-			nGenre = Item[nItemIdx].GetGenre();					//Fix lçi sö dông thæ ®Þa phï phÝm t¾t
+			nGenre = Item[nItemIdx].GetGenre();					//Fix lçi s?dông th?®Þa ph?phÝm t¾t
 			nDetailType = Item[nItemIdx].GetDetailType();
 			nParticular = Item[nItemIdx].GetParticular();
 
@@ -3389,6 +3676,7 @@ void	KItemList::ClearRoom(int nRoom)
 
 void	KItemList::ClearAll() //míi thªm vµo sau nµy
 {
+	m_nItemsCount = 0;
 	ClearRoom(room_equipment);
 	ClearRoom(room_repository);
 	ClearRoom(room_trade);
@@ -3410,6 +3698,7 @@ void	KItemList::ClearAll() //míi thªm vµo sau nµy
 	ZeroMemory(m_EquipItem, sizeof(m_EquipItem));
 	ZeroMemory(m_TrembleItem, sizeof(m_TrembleItem));
 	ZeroMemory(m_Items, sizeof(m_Items));
+	ZeroMemory(m_AltEquipmentItem, sizeof(m_AltEquipmentItem));
 
 	m_nListCurIdx = 0;
 	
@@ -3459,6 +3748,11 @@ void	KItemList::StartTrade()
 	BackupTrade();
 	ClearRoom(room_trade);
 	ClearRoom(room_trade1);
+}
+
+void	KItemList::RestartTrade()
+{
+	BackupTrade();
 }
 
 /*!*****************************************************************************
@@ -3698,24 +3992,31 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 {
 	ITEM_SYNC	sItem;
 	sItem.ProtocolType = s2c_syncitem;
+	sItem.m_bTemp = Item[nIdx].IsTemp();
+	sItem.m_dwOwner = Item[nIdx].GetOwner();
+	sItem.m_Nature = Item[nIdx].GetNature();
+	if (Item[nIdx].GetNature() >= NATURE_GOLD)
+		sItem.m_Detail = Item[nIdx].GetRow();
+	else
+		sItem.m_Detail = Item[nIdx].GetDetailType();
 	sItem.m_Point = Item[nIdx].IsPurple();
 	sItem.m_EnChance = Item[nIdx].GetEnChance();
 	sItem.m_GoldId = Item[nIdx].GetGoldId();
 	sItem.m_StackNum = Item[nIdx].GetStackNum();
 	sItem.m_ID = Item[nIdx].GetID();
 	sItem.m_Genre = Item[nIdx].GetGenre();
-	sItem.m_Detail = Item[nIdx].GetDetailType();
 	sItem.m_Particur = Item[nIdx].GetParticular();
 	sItem.m_Series = Item[nIdx].GetSeries();
 	sItem.m_Level = Item[nIdx].GetLevel();
 	sItem.m_Luck = Item[nIdx].m_GeneratorParam.nLuck;
+	sItem.m_BackLocal = *Item[nIdx].GetBackLocal();
 	sItem.m_btPlace = nPlace;
 	sItem.m_btX = nX;
 	sItem.m_btY = nY;
 	sItem.m_Mantle = Item[nIdx].GetMantle(); //#phi phong
-	sItem.m_Param = Item[nIdx].GetParam();	//#sè lÇn sö dông
+	sItem.m_Param = Item[nIdx].GetParam();	//#s?lÇn s?dông
 	sItem.m_GlowLight = Item[nIdx].GetItemGlowLight();	//#ngo¹i trang
-	for (int j = 0; j < 6; j++)
+	for (int j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
 		sItem.m_MagicLevel[j] = Item[nIdx].m_GeneratorParam.nGeneratorLevel[j];
 	sItem.m_RandomSeed = Item[nIdx].m_GeneratorParam.uRandomSeed;
 	sItem.m_Version = Item[nIdx].m_GeneratorParam.nVersion;
@@ -3724,12 +4025,33 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 	sItem.m_HInsuranceCourse = Item[nIdx].GetPlayerItemHLock();
 	sItem.m_TimeE = Item[nIdx].GetTime()->bYear;
 	sItem.m_bIsNew = m_bIsNew;
+	sItem.m_LockItem = *Item[nIdx].GetLock();
+	sItem.m_bLockSell = Item[nIdx].GetLockSell();
+	sItem.m_bLockTrade = Item[nIdx].GetLockTrade();
+	sItem.m_bLockDrop = Item[nIdx].GetLockDrop();
 	sItem.m_Price = Item[nIdx].m_CommonAttrib.uPrice;
+	sItem.m_Width = Item[nIdx].GetWidth();
+	sItem.m_Height = Item[nIdx].GetHeight();
+	sItem.m_Fortune = Item[nIdx].GetFortune();
+	sItem.m_ExpireTime = Item[nIdx].GetExpireTime();
+	sItem.m_MaxOptMultiply = Item[nIdx].GetMaxOptMultiply();
 	if(nPlayerIndex)
 		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC));
 	else
 		g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC));
 }
+
+void KItemList::SyncItemMagicAttrib(int nIdx)
+{
+	ITEM_SYNC_MAGIC sItem;
+	sItem.ProtocolType = s2c_syncmagic;
+	sItem.m_dwID = Item[nIdx].GetID();
+	memcpy(sItem.m_MagicLevel, Item[nIdx].m_GeneratorParam.nGeneratorLevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+	memcpy(sItem.m_MagicAttrib, Item[nIdx].m_aryMagicAttrib, sizeof(sItem.m_MagicAttrib));
+	if (g_pServer)
+		g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC_MAGIC));
+}
+
 #endif
 
 #ifdef _SERVER
@@ -3872,22 +4194,21 @@ int nDetailType = Item[i].GetDetailType();
 	return TRUE;
 }
 #endif
-#ifdef _SERVER
 
 //--------------------------------------------------------------------------
 //	¹¦ÄÜ£ºÅÐ¶ÏÒ»¶¨³¤¿íµÄÎïÆ·ÄÜ·ñ·Å½øÎïÆ·À¸ (ÎªÁË·þÎñÆ÷Ð§ÂÊ£¬±¾º¯ÊýÀïÃæÃ»ÓÐµ÷ÓÃÆäËûº¯Êý)
 //--------------------------------------------------------------------------
-BOOL	KItemList::CheckCanPlaceInEquipment(int nWidth, int nHeight, int *pnX, int *pnY)
+BOOL	KItemList::CheckCanPlaceInEquipment(int nWidth, int nHeight, int *pnX, int *pnY, int nRoom)
 {
 	if (nWidth <= 0 || nHeight <= 0 || !pnX || !pnY)
 		return FALSE;
 
-	_ASSERT(m_Room[room_equipment].m_pArray);
+	_ASSERT(m_Room[nRoom].m_pArray);
 
 	LPINT	pnTempRoom;
 	int		i, j, a, b, nNext;
 
-	pnTempRoom = m_Room[room_equipment].m_pArray;
+	pnTempRoom = m_Room[nRoom].m_pArray;
 
 	for (i = 0; i < EQUIPMENT_ROOM_HEIGHT - nHeight + 1; i++)
 	{
@@ -3918,7 +4239,6 @@ BOOL	KItemList::CheckCanPlaceInEquipment(int nWidth, int nHeight, int *pnX, int 
 
 	return FALSE;
 }
-#endif
 
 #ifdef _SERVER
 BOOL	KItemList::FindSameToRemove(int nItemNature, int nItemGenre, int nDetailType, int nItemParticular, int nLevel, int nSeries, int Place, int *pnIdx)
@@ -4036,6 +4356,7 @@ void KItemList::LockOperation()
 		_ASSERT(0);
 		return;
 	}
+	m_nLockTimeout = GetTickCount();
 	m_bLockOperation = TRUE;
 }
 #endif
@@ -4058,6 +4379,22 @@ int KItemList::GetActiveAttribNum(int nIdx)
 		if (nIdx == m_EquipItem[i])
 		{
 			return GetEquipEnhance(i);
+		}
+	}
+	return 0;
+}
+
+int KItemList::GetGoldActiveAttribNum(int nIdx)
+{
+	for (int i = 0; i < itempart_num; i++)
+	{
+		if (i >= itempart_horse && nIdx == m_EquipItem[i])
+		{
+			return MAX_ITEM_MAGICATTRIB / 2; //do tu` ngua. tro di kich 4 dong
+		}
+		if (nIdx == m_EquipItem[i])
+		{
+			return GetGoldEquipEnhance(i);
 		}
 	}
 	return 0;
@@ -4326,11 +4663,11 @@ void KItemList::Abrade(int nType, BOOL isDeathPunish) //#mµi mßn item
 				if (g_pServer)
 					g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, &sIDC, sizeof(ITEM_DURABILITY_CHANGE));
 			}
-			if (nDur == 0) //#trang bi hong thanh cuc sat trang bÞ háng thµnh côc s¾t
+			if (nDur == 0) //#trang bi hong thanh cuc sat trang b?háng thµnh côc s¾t
 			{
 				//
-				Item[nItemIdx].m_CommonAttrib.nWidth = 1; //®æi l¹i w = 1 h = 1
-				Item[nItemIdx].m_CommonAttrib.nHeight = 1;
+				//Item[nItemIdx].m_CommonAttrib.nWidth = 1; //®æi l¹i w = 1 h = 1
+				//Item[nItemIdx].m_CommonAttrib.nHeight = 1;
 				//
 				Remove(nItemIdx);
 				InsertEquipment(nItemIdx);
@@ -4363,7 +4700,7 @@ BOOL KItemList::GetIfActive()
 		nIdx1 = m_EquipItem[i];
 		if (!nIdx1 || Item[nIdx1].GetKind() != gold_item)
 			continue;
-		if (!nIdx1 || Item[nIdx1].GetLine() <= 0)
+		if (!nIdx1 || Item[nIdx1].GetLine() < 0)
 			continue;
 		
 		if (i == itempart_ring1)
@@ -4381,7 +4718,7 @@ BOOL KItemList::GetIfActive()
 				if (!nIdx2 || Item[nIdx1].GetKind() != gold_item)
 					continue;
 
-				if (Item[nIdx2].GetLine() <= 0)
+				if (Item[nIdx2].GetLine() < 0)
 					continue;
 				
 				if (j == itempart_ring1)
@@ -4398,7 +4735,9 @@ BOOL KItemList::GetIfActive()
 					}
 				}
 			}
-			if (nCountItemInGroup >= Item[nIdx1].GetSetNum())
+			if (nCountItemInGroup >= Item[nIdx1].GetSetNum()) //mac du do thi kich
+				bActive = 1;
+			if (nCountItemInGroup >= Item[nIdx1].GetSetNum()) //mac du do thi kich new goldequip TODO
 				bActive = 1;
 		}
 	}
@@ -4409,6 +4748,42 @@ BOOL KItemList::GetIfActive()
 	return m_bActiveSet;
 }
 
+BOOL KItemList::GetIfActive(int nItemIdx)
+{
+	int nNpcIdx = Player[m_PlayerIdx].m_nIndex;
+	int nIdx1 = 0;
+	int nIdx2 = 0;
+	int i = 0;
+	int j = 0;
+	int nCountItemInGroup = 0;
+	BOOL bActive = FALSE;
+	nCountItemInGroup = 1;
+	for (i = 0; i < itempart_num; i++)
+	{
+		nIdx1 = m_EquipItem[i];
+		if (!nIdx1 || Item[nIdx1].GetKind() != gold_item) //GOLD or PLATINA
+			continue;
+		if (!nIdx1 || Item[nIdx1].GetLine() < 0)
+			continue;
+
+		if (i == itempart_ring1)
+		{
+			if (Item[m_EquipItem[itempart_ring1]].GetLine() == Item[m_EquipItem[itempart_ring2]].GetLine())
+				continue;
+		}
+
+		if (Item[nIdx1].GetSet() == Item[nItemIdx].GetSet())
+		{
+			if (Item[nIdx1].GetLine() != Item[nIdx2].GetLine())
+			{
+				nCountItemInGroup++;
+			}
+			if (nCountItemInGroup >= Item[nIdx1].GetSetNum()) //mac du do thi kich
+				bActive = TRUE;
+		}
+	}
+	return bActive;
+}
 
 #ifndef _SERVER
 int KItemList::GetGoldColor(int nSet, int nId)
@@ -4521,7 +4896,8 @@ void KItemList::ChangeSpiritItem(int nIdx, int nLevelMagic)
 	for (int i = 0; i < 6; i ++)
 		nItemLevel[i] = nLevelMagic;
 
-	int nIndex = ItemSet.AddItemSet2(Item[nIdx].GetGenre(), Item[nIdx].GetSeries(), Item[nIdx].GetLevel(), 10, Item[nIdx].GetDetailType(), Item[nIdx].GetParticular(), nItemLevel, g_SubWorldSet.GetGameVersion());
+	int nIndex = ItemSet.AddItemSet2(Item[nIdx].GetGenre(), Item[nIdx].GetSeries(), Item[nIdx].GetLevel(), 10, 
+		Item[nIdx].GetDetailType(), Item[nIdx].GetParticular(), nItemLevel, g_SubWorldSet.GetGameVersion(), 0,1,0,0,0,0,0,0,0,0, Item[nIdx].GetMaxOptMultiply());
 	if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 	{
 		AddKIL(nIndex, pos_equiproom, nX, nY);
@@ -4807,6 +5183,51 @@ void KItemList::SetMaskLock( BOOL bFlag )//#mat na
 #endif
 }
 
+BOOL KItemList::IsEnoughToActive()
+{
+	int nArray[itempart_horse][3], nCnt = 0, nFlg = FALSE;
+	ZeroMemory(nArray, sizeof(nArray));
+
+	for (int i = 0; i < itempart_horse; i++)
+	{
+		nFlg = FALSE;
+		if (m_EquipItem[i] && Item[m_EquipItem[i]].m_CommonAttrib.nItemNature >= NATURE_GOLD)
+		{
+			if (i == itempart_ring1)
+			{
+				if (m_EquipItem[itempart_ring1] &&
+					m_EquipItem[itempart_ring2] &&
+					/*Item[m_EquipItem[itempart_ring1]].GetNature() == Item[m_EquipItem[itempart_ring2]].GetNature() && */
+					Item[m_EquipItem[itempart_ring1]].GetGroup() == Item[m_EquipItem[itempart_ring2]].GetGroup() &&
+					Item[m_EquipItem[itempart_ring1]].GetSetID() == Item[m_EquipItem[itempart_ring2]].GetSetID())
+					continue;
+			}
+			for (int j = 0; j < itempart_horse; j++)
+			{
+				if (/*nArray[j][0] == Item[m_EquipItem[i]].GetNature() && */
+					nArray[j][1] == Item[m_EquipItem[i]].GetGroup())
+				{
+					nArray[j][2]++;
+					nFlg = TRUE;
+					if (nArray[j][2] >= Item[m_EquipItem[i]].GetNeedToActive2())
+						return TRUE;
+				}
+			}
+			if (nFlg == FALSE)
+			{
+				nArray[nCnt][0] = Item[m_EquipItem[i]].GetNature();
+				nArray[nCnt][1] = Item[m_EquipItem[i]].GetGroup();
+				nArray[nCnt][2] = 1;
+
+				if (nArray[nCnt][2] >= Item[m_EquipItem[i]].GetNeedToActive2())
+					return TRUE;
+				nCnt++;
+			}
+		}
+	}
+	return FALSE;
+}
+
 #ifdef _SERVER
 BOOL KItemList::IsItemExist( int nGern,int nDetailType,int nPar,int nSerise,int nLevel )
 {
@@ -5090,7 +5511,7 @@ BOOL KItemList::CheckTrembleItem(int nIdx, int nPlace /* = -1 */)
 			{
 				return FALSE;
 			}
-			if(nDetail != 239)//tö thuû tinh
+			if(nDetail != 239)//t?thu?tinh
 			{
 				return FALSE;
 			}
@@ -5104,7 +5525,7 @@ BOOL KItemList::CheckTrembleItem(int nIdx, int nPlace /* = -1 */)
 			{
 				return FALSE;
 			}
-			if(nDetail != 240)//lôc thuû tinh
+			if(nDetail != 240)//lôc thu?tinh
 			{
 				return FALSE;
 			}
@@ -5247,7 +5668,10 @@ int KItemList::PositionToIndex(int P, int i)
 		switch (P)
 		{
 		case pos_equip:
-			return m_EquipItem[i];
+		{
+			if(i >= 0 && i < itempart_num)
+				return m_EquipItem[i];
+		}
 		}
 	}
 	return 0;

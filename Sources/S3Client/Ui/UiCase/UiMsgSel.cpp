@@ -36,6 +36,13 @@ KUiMsgSel* KUiMsgSel::OpenWindow(KUiQuestionAndAnswer* pContent)
 	return m_pSelf;
 }
 
+KUiMsgSel*	KUiMsgSel::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
 //--------------------------------------------------------------------------
 //	功能：关闭销毁窗口
 //--------------------------------------------------------------------------
@@ -73,7 +80,7 @@ int KUiMsgSel::Initialize()
 
 	return true;
 }
-
+extern int SCREEN_WIDTH;
 //--------------------------------------------------------------------------
 //	功能：载入窗口的界面方案
 //--------------------------------------------------------------------------
@@ -86,7 +93,12 @@ void KUiMsgSel::LoadScheme(const char* pScheme)
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI);
 	if (Ini.Load(Buff))
 	{
-		m_pSelf->Init(&Ini, "Main");
+		if (SCREEN_WIDTH == 1024) {
+				m_pSelf->Init(&Ini, "Main1024");
+		}
+		else {
+			m_pSelf->Init(&Ini, "Main");
+		}
 		m_pSelf->m_MsgScrollList.Init(&Ini, "Select");
 		m_pSelf->m_InfoText.Init(&Ini, "InfoText");
 	}
@@ -183,7 +195,13 @@ void KUiMsgSel::OnClickMsg(int nMsg)
 void KUiMsgSel::OnClickAutoMsg(int nMsg)
 {
 	CloseWindow(false);
-	m_pSelf->m_MsgScrollList.GetMessageListBox()->Clear();
+	if (!m_pSelf) {
+		g_pCoreShell->OperationRequest(GOI_QUESTION_CHOOSE, 0, nMsg);
+		return;
+	}
+	KWndMessageListBox* tmp = m_pSelf->m_MsgScrollList.GetMessageListBox();
+	if (tmp)
+		tmp->Clear();
 	g_pCoreShell->OperationRequest(GOI_QUESTION_CHOOSE, 0, nMsg);
 }
 

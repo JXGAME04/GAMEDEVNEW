@@ -31,6 +31,7 @@ enum
 	ACTION_CHAT = 0,					//要用Name	0
 	ACTION_MAKEFRIEND,					//要用Name	1
 	ACTION_TRADE,						//pDest->nData == PLAYER_MENU_STATE_TRADEOPEN && pDest->nIndex != -1	2
+	ACTION_GAMBLE,						//OTT
 	ACTION_JOINTEAM,					//pDest->nData == PLAYER_MENU_STATE_TEAMOPEN && pDest->nIndex != -1	3
 	ACTION_INVITETEAM,					//pDest->uId != 0	4
 	ACTION_FOLLOW,						//pDest->nIndex != -1	5

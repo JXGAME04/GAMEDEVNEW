@@ -134,7 +134,16 @@ public:
 	KNewPlayerAttribute		m_cNewPlayerAttribute;
 	KPlayerStamina			m_cPlayerStamina;
 	STONG_CREATE_PARAM		m_sTongParam;
-
+#ifndef _SERVER
+	char	m_szPassword[64];
+	char	m_szAccount[32];
+	short	m_nSelSvGroup;
+	short	m_nSelServer;
+//	char					m_szNationalEmblemPic[MAX_TONG_NATIONALEMBLEM][MAX_PATH];
+//	char					m_szViprankPic[MAX_ITEM_LEVEL+1][MAX_PATH];
+	char					m_szFortuneRankPic[MAX_ITEM_LEVELFF+1][MAX_PATH];
+//	char					m_szTranlifePic[MAX_TRANSLIFE_VALUE+1][MAX_PATH];
+#endif
 #ifdef _SERVER
 	KPK_DEATH_PUNISH_PARAM	m_sPKPunishParam[MAX_DEATH_PUNISH_PK_VALUE + 1];	// PK³Í·£²ÎÊý
 #endif
@@ -160,6 +169,11 @@ public:
 	void	AutoSave();
 	void	ProcessClientMessage(int nClient, const char* pChar, int nSize);
 	int		GetPlayerNumber() { return m_nNumPlayer; }
+
+
+	int		GetPlayerMaxNumber() { return m_nPlayerNumMax; }
+
+
 	BOOL	GetPlayerName(int nClient, char* szName);
 	BOOL	GetPlayerAccount(int nClient, char* szName);
 	BOOL	GetPlayerHWID(int nClient, char* szName);
@@ -186,6 +200,7 @@ private:
 
 private:
 	int		m_nNumPlayer;
+	int		m_nPlayerNumMax;
 #endif
 };
 

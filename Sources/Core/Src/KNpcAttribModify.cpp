@@ -7,6 +7,7 @@
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
+#include <KPlayerSet.h>
 
 KNpcAttribModify	g_NpcAttribModify;
 KNpcAttribModify::KNpcAttribModify()
@@ -141,14 +142,25 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_manatoskill_enhance] = &KNpcAttribModify::ManaToSkillEnhanceP;
 	ProcessFunc[magic_sorbdamage_p] = &KNpcAttribModify::SorbDamageP;
 	ProcessFunc[magic_expenhance_s] = &KNpcAttribModify::ExpSkillsEnhanceP;// Add magic x2 Skill
+	ProcessFunc[magic_expvip] = &KNpcAttribModify::ExpSkillsVIP;// VIP
 }
 
 KNpcAttribModify::~KNpcAttribModify()
 {
 }
 
+void KNpcAttribModify::ExpSkillsVIP(KNpc* pNpc, void* pData)// VIP
+{
+	KMagicAttrib* pMagic = (KMagicAttrib*)pData;
+	if (pNpc->IsPlayer())
+	{
+		if (pMagic->nValue[0] > 1)
+			pNpc->m_CurrentExpSkillsVip = 2; //truong hop su dung x2;
 
-
+		else
+			pNpc->m_CurrentExpSkillsVip = 1; // truong hop khong su dung x2;
+	}
+}
 
 void KNpcAttribModify::ExpSkillsEnhanceP(KNpc* pNpc, void* pData)// ExpSkills x2
 {
@@ -489,6 +501,8 @@ void KNpcAttribModify::AttackRatingP(KNpc* pNpc, void* pData)
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentAttackRating += pNpc->m_AttackRating * pMagic->nValue[0] / 100;
+	pNpc->m_CurrentAttackRating -= Player[pNpc->m_nPlayerIdx].m_nMeridianDexterity * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series);
+	pNpc->m_CurrentAttackRating += Player[pNpc->m_nPlayerIdx].m_nMeridianDexterity * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series) * (1.0f + (pMagic->nValue[0] / 2) / 100.0f);
 }
 
 void KNpcAttribModify::AttackRatingV(KNpc* pNpc, void* pData)
@@ -565,6 +579,9 @@ void KNpcAttribModify::DexterityV(KNpc* pNpc, void* pData)
 		return;;
 	if (pNpc->m_nPlayerIdx <= 0)
 		return;
+	if (pMagic->nValue[0] == pMagic->nValue[1] && pMagic->nValue[2] == 99887786) { //Merdian
+		Player[pNpc->m_nPlayerIdx].m_nMeridianDexterity += pMagic->nValue[0];
+	}
 	Player[pNpc->m_nPlayerIdx].ChangeCurDexterity(pMagic->nValue[0]);
 }
 
@@ -587,6 +604,9 @@ void KNpcAttribModify::EnergyV(KNpc* pNpc, void* pData)
 		return;
 	if (pNpc->m_nPlayerIdx <= 0)
 		return;
+	if (pMagic->nValue[0] == pMagic->nValue[1] && pMagic->nValue[2] == 99887786) { //Merdian
+		Player[pNpc->m_nPlayerIdx].m_nMeridianEngergy += pMagic->nValue[0];
+	}
 	Player[pNpc->m_nPlayerIdx].ChangeCurEngergy(pMagic->nValue[0]);
 }
 
@@ -626,6 +646,8 @@ void KNpcAttribModify::LifeMaxP(KNpc* pNpc, void* pData)
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentLifeMax += pNpc->m_LifeMax * pMagic->nValue[0] / 100;
+	pNpc->m_CurrentLifeMax -= Player[pNpc->m_nPlayerIdx].m_nMeridianVitality * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series);
+	pNpc->m_CurrentLifeMax += Player[pNpc->m_nPlayerIdx].m_nMeridianVitality * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series) * (1.0f + pMagic->nValue[0] / 100.0f);
 }
 
 void KNpcAttribModify::LifeMaxV(KNpc* pNpc, void* pData)
@@ -672,6 +694,8 @@ void KNpcAttribModify::ManaMaxP(KNpc* pNpc, void* pData)
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentManaMax += pNpc->m_ManaMax * pMagic->nValue[0] / 100;
+	pNpc->m_CurrentManaMax -= Player[pNpc->m_nPlayerIdx].m_nMeridianEngergy * PlayerSet.m_cLevelAdd.GetManaPerEnergy(pNpc->m_Series);
+	pNpc->m_CurrentManaMax += Player[pNpc->m_nPlayerIdx].m_nMeridianEngergy * PlayerSet.m_cLevelAdd.GetManaPerEnergy(pNpc->m_Series) * (1.0f+pMagic->nValue[0] / 100.0f);
 }
 
 void KNpcAttribModify::ManaMaxV(KNpc* pNpc, void* pData)
@@ -800,6 +824,8 @@ void KNpcAttribModify::StaminaMaxP(KNpc* pNpc, void* pData)
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentStaminaMax += pNpc->m_StaminaMax * pMagic->nValue[0] / 100;
+	pNpc->m_CurrentStaminaMax -= Player[pNpc->m_nPlayerIdx].m_nMeridianVitality * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series);
+	pNpc->m_CurrentStaminaMax += Player[pNpc->m_nPlayerIdx].m_nMeridianVitality * PlayerSet.m_cLevelAdd.GetLifePerVitality(pNpc->m_Series) * (1.0f + pMagic->nValue[0] / 100.0f);
 }
 
 void KNpcAttribModify::StaminaMaxV(KNpc* pNpc, void* pData)
@@ -846,6 +872,9 @@ void KNpcAttribModify::StrengthV(KNpc* pNpc, void* pData)
 		return;
 	if (pNpc->m_nPlayerIdx <= 0)
 		return;
+	if (pMagic->nValue[0] == pMagic->nValue[1] && pMagic->nValue[2] == 99887786) { //Merdian
+		Player[pNpc->m_nPlayerIdx].m_nMeridianStrength += pMagic->nValue[0];
+	}
 	Player[pNpc->m_nPlayerIdx].ChangeCurStrength(pMagic->nValue[0]);
 }
 
@@ -868,6 +897,9 @@ void KNpcAttribModify::VitalityV(KNpc* pNpc, void* pData)
 		return;
 	if (pNpc->m_nPlayerIdx <= 0)
 		return;
+	if (pMagic->nValue[0] == pMagic->nValue[1] && pMagic->nValue[2] == 99887786) { //Merdian
+		Player[pNpc->m_nPlayerIdx].m_nMeridianVitality += pMagic->nValue[0];
+	}
 	Player[pNpc->m_nPlayerIdx].ChangeCurVitality(pMagic->nValue[0]);
 }
 
@@ -1020,9 +1052,10 @@ void KNpcAttribModify::MixPoisonDamage(KMagicAttrib* pDes, KMagicAttrib* pSrc)
 
 void KNpcAttribModify::DynamicMagicShieldV( KNpc* pNpc, void* pData )//#giam thieu sat thuong ganh chiu HTVC con lon
 {
-	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	KMagicAttrib* pMagic = (KMagicAttrib*)pData;
 	pNpc->m_CurrentManaShield += pMagic->nValue[0];
 }
+
 
 void KNpcAttribModify::StaticMagicShieldP(KNpc* pNpc, void* pData)
 {

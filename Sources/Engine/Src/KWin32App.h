@@ -8,8 +8,11 @@
 //---------------------------------------------------------------------------
 #ifndef KWin32App_H
 #define KWin32App_H
+#include "KTimer.h"
 //---------------------------------------------------------------------------
 #define SWORD_ICON 101
+#define ID_TRAYICON 9998
+#define WMAPP_TRAY (WM_USER + 98)
 
 //---------------------------------------------------------------------------
 class ENGINE_API KWin32App
@@ -25,10 +28,12 @@ protected:
 	virtual	BOOL	GameInit();
 	virtual BOOL	GameLoop();
 	virtual BOOL	GameExit();
-	virtual int		HandleInput(UINT uMsg, WPARAM wParam, LPARAM lParam) { return 0; }
+	virtual int		HandleInput(UINT uMsg, WPARAM wParam, LPARAM lParam) { return 0; };
+	virtual void	AddTrayIcon(HWND hWnd, LPCSTR tip){};
+	virtual void	AppSendInfoToTool(const void * const pData, const size_t &datalength){};
 public:
 	KWin32App();
-	virtual BOOL	Init(HINSTANCE hInstance,char* AppName="Sword3");
+	virtual BOOL	Init(HINSTANCE hInstance,char* AppName="JXWC");
 	virtual void	Run();
 	virtual	void	ShowMouse(BOOL bShow);
 	virtual void	SetMultiGame(BOOL bMulti);
@@ -37,9 +42,13 @@ public:
 	void			SetMouseHoverTime(unsigned int uHoverTime);
 	BOOL			NotifiIconState(){return m_bNotifiIconState;};	
 public:
-	BOOL			m_bNotifiIconState;	
+	BOOL			m_bNotifiIconState;
+	UINT			g_uTaskbarCreated;
+	BOOL			g_bTrayActive;
+	char			g_szTip[64];
 private:
 	void			GenerateMsgHoverMsg();
+	KTimer			m_gTimer;
 	unsigned int	m_uMouseHoverTimeSetting;
 	unsigned int	m_uMouseHoverStartTime;
 	int				m_nLastMousePos;

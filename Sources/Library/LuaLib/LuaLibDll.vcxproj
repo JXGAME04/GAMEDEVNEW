@@ -95,7 +95,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\..\..\bin\server</OutDir>
+    <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -111,8 +111,8 @@
     <IncludePath>C:\Program Files\Microsoft Visual Studio 10.0\VC\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>.\Release\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>.\x64\Release\</OutDir>
+    <IntDir>.\x64\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>C:\Program Files\Microsoft Visual Studio 10.0\VC\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -189,8 +189,8 @@ copy debug\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
     </ClCompile>
     <PostBuildEvent>
       <Command>md  ..\..\..\Lib\x64
-copy x64\debug\lualibdll.lib ..\..\..\Lib\x64\lualibdll.lib
-copy x64\debug\lualibdll.dll ..\..\..\Lib\x64\lualibdll.dll
+copy x64\debug\lualibdll.lib ..\..\..\Lib\debug64\lualibdll.lib
+copy x64\debug\lualibdll.dll ..\..\..\Lib\debug64\lualibdll.dll
 copy x64\debug\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
 copy x64\debug\lualibdll.pdb ..\..\..\..\bin\server\lualibdll.pdb</Command>
     </PostBuildEvent>
@@ -277,21 +277,18 @@ copy Release\lualibdll.dll ..\..\..\..\bin\Multiserver\lualibdll.dll</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\LuaLibDll\src;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LUALIBDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <AssemblerListingLocation>.\x64\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Release\LuaLibDll.pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>.\Release\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\x64\Release\LuaLibDll.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy Release\lualibdll.dll ..\..\..\Lib\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\Lib\lualibdll.lib
-copy Release\lualibdll.dll ..\..\..\bin\server\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\bin\server\lualibdll.lib
-copy Release\lualibdll.dll ..\..\..\bin\client\lualibdll.dll
-copy Release\lualibdll.lib ..\..\..\bin\client\lualibdll.lib
-copy Release\lualibdll.lib ..\..\..\Lib\release\lualibdll.lib</Command>
+      <Command>copy x64\Release\lualibdll.dll ..\..\..\Lib\release64\lualibdll.dll
+copy x64\Release\lualibdll.lib ..\..\..\Lib\release64\lualibdll.lib
+copy x64\Release\lualibdll.dll ..\..\..\..\bin\server\lualibdll.dll
+copy x64\Release\lualibdll.lib ..\..\..\..\bin\server\lualibdll.lib</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -305,14 +302,14 @@ copy Release\lualibdll.lib ..\..\..\Lib\release\lualibdll.lib</Command>
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\LuaLibDll.bsc</OutputFile>
+      <OutputFile>.\x64\Release\LuaLibDll.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\LuaLibDll.dll</OutputFile>
-      <ImportLibrary>.\Release\LuaLibDll.lib</ImportLibrary>
+      <OutputFile>.\x64\Release\LuaLibDll.dll</OutputFile>
+      <ImportLibrary>.\x64\Release\LuaLibDll.lib</ImportLibrary>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
     </Link>

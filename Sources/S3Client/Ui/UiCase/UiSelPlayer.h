@@ -26,7 +26,8 @@ public:
 	static void			 CloseWindow();					//¹Ø±Õ´°¿Ú
 
 	static void	GetRoleImageName(char* pszName, const char* pszPrefix, unsigned char bGender, unsigned char bAttribute, int nIndex);
-
+	static KUiSelPlayer*	GetIfVisible();
+	bool 				AutoLgNextStep(const char* pszName);
 private:
 	KUiSelPlayer();
 	~KUiSelPlayer() {}

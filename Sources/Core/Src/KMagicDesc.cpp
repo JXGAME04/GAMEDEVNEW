@@ -151,11 +151,11 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"stealmanaenhance_p",				//137
 	"stealstaminaenhance_p",			//138
 	"allskill_v",						//139
-	"addphysicsmagic_v",				//140
-	"addcoldmagic_v",					//141
-	"addfiremagic_v",					//142
-	"addlightingmagic_v",				//143
-	"addpoisonmagic_v",					//144
+	"metalskill_v",						//140
+	"woodskill_v",						//141
+	"waterskill_v",						//142
+	"fireskill_v",						//143
+	"earthskill_v",						//144
 	"knockbackenhance_p",				//145
 	"deadlystrikeenhance_p",			//146
 	"stunenhance_p",					//147
@@ -179,11 +179,11 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"magicenhance_p",					//165
 	"attackratingenhance_v",			//166
 	"attackratingenhance_p",			//167
-	"metalskill_v",						//168
-	"woodskill_v",						//169
-	"waterskill_v",						//170
-	"fireskill_v",						//171
-	"earthskill_v",						//172
+	"addphysicsmagic_v",				//168
+	"addcoldmagic_v",					//169
+	"addfiremagic_v",					//170
+	"addlightingmagic_v",				//171
+	"addpoisonmagic_v",					//172
 	"fatallystrikeres_p",				//173		//thªm tÊn c«ng chÝ tö
 	"dynamicmagicshield_v",				//174
 	"staticmagicshield_p",				//175
@@ -314,7 +314,9 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"missle_exp_rev5",					//300
 	"missle_exp_end",					//301
 	"ignorenegativestate_p",			//302
-	"normal_end",						//303
+	"expenhance_s",						//303
+	"expvip",						//304
+	"normal_end",						//305
 };
 
 
@@ -482,7 +484,7 @@ const char* KMagicDesc::GetDesc(void *pData)
 				break;
 			case 'l':
 				{
-					char szMsg[80];
+					char szMsg[80] = "";;
 					KSkill * pSkill = NULL;
 					if (nValue > 0)
 					{

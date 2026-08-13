@@ -321,12 +321,7 @@ bool CPlayerCreator::GetRoleDataFromIni(BYTE* pData, const char* szFileName)
 		pItemData->ix				= cFile.ReadInteger(szSection, "ix", 0);
 		pItemData->iy				= cFile.ReadInteger(szSection, "iy", 0);
 		pItemData->ilocal			= cFile.ReadInteger(szSection, "ilocal", 0);
-		pItemData->iparam1			= cFile.ReadInteger(szSection, "iparam1", 0);
-		pItemData->iparam2			= cFile.ReadInteger(szSection, "iparam2", 0);
-		pItemData->iparam3			= cFile.ReadInteger(szSection, "iparam3", 0);
-		pItemData->iparam4			= cFile.ReadInteger(szSection, "iparam4", 0);
-		pItemData->iparam5			= cFile.ReadInteger(szSection, "iparam5", 0);
-		pItemData->iparam6			= cFile.ReadInteger(szSection, "iparam6", 0);
+		memset(pItemData->iparam, 0, sizeof(pItemData->iparam));
 		pItemData->iequipversion	= cFile.ReadInteger(szSection, "iequipversion", 0);
 		pItemData->irandseed		= cFile.ReadInteger(szSection, "irandseed", 0);
 		pItemData->ilucky			= cFile.ReadInteger(szSection, "ilucky", 0);

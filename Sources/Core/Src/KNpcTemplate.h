@@ -110,7 +110,76 @@ public:
 	static int		GetNpcLevelDataFromScript(KLuaScript * pScript, char * szDataName,int nSerial, int nLevel, double nParam1, double nParam2, double nParam3);
 	static void	   GenNpcDropRate(KNpc * npc, char* szDropFile);
 	static int	   GenNpcSeries(int n1, int K, int M, int T, int H, int TH);//Gen NPC H÷ theo tÿ l÷
-	KNpcTemplate(){	m_bHaveLoadedFromTemplate = FALSE;};
+	KNpcTemplate(){
+		memset(Name, 0, sizeof(Name));
+
+		// Initialize public member variables
+		m_Kind = 0;
+		m_Camp = 0;
+		m_Series = 0;
+		m_HeadImage = 0;
+		m_bClientOnly = 0;
+		m_CorpseSettingIdx = 0;
+		m_DeathFrame = 0;
+		m_WalkFrame = 0;
+		m_StandFrame = 0;
+		m_StandFrame1 = 0;
+		m_RunFrame = 0;
+		m_HurtFrame = 0;
+		m_WalkSpeed = 0;
+		m_AttackFrame = 0;
+		m_CastFrame = 0;
+		m_RunSpeed = 0;
+		m_LifeMax = 0;
+
+#ifdef _SERVER
+		m_dwLevelSettingScript = 0;
+		m_Treasure = 0;
+		m_AiMode = 0;
+		memset(m_AiParam, 0, sizeof(m_AiParam));
+		m_FireResistMax = 0;
+		m_ColdResistMax = 0;
+		m_LightResistMax = 0;
+		m_PoisonResistMax = 0;
+		m_PhysicsResistMax = 0;
+		m_ActiveRadius = 0;
+		m_VisionRadius = 0;
+		m_AIMAXTime = 0;
+		m_HitRecover = 0;
+		m_ReviveFrame = 0;
+		m_Experience = 0;
+		m_LifeReplenish = 0;
+		m_AttackRating = 0;
+		m_Defend = 0;
+		m_RedLum = 0;
+		m_GreenLum = 0;
+		m_BlueLum = 0;
+		m_FireResist = 0;
+		m_ColdResist = 0;
+		m_LightResist = 0;
+		m_PoisonResist = 0;
+		m_PhysicsResist = 0;
+		m_pItemDropRate = nullptr;
+		memset(m_szDropRateFile, 0, sizeof(m_szDropRateFile));
+#endif
+
+#ifndef _SERVER
+		m_ArmorType = 0;
+		m_HelmType = 0;
+		m_WeaponType = 0;
+		m_HorseType = 0;
+		m_bRideHorse = 0;
+		memset(ActionScript, 0, sizeof(ActionScript));
+		memset(m_szLevelSettingScript, 0, sizeof(m_szLevelSettingScript));
+#endif
+
+		m_NpcSettingIdx = 0;
+		memset(m_nSkillID, 0, sizeof(m_nSkillID));
+		memset(m_nSkillLevel, 0, sizeof(m_nSkillLevel));
+		m_bHaveLoadedFromTemplate = FALSE;
+		m_nStature = 0;
+		m_nLevel = 0;
+	};
 #ifdef _SERVER
 	static KItemDropRate* UpdateDropRate(const char* pszDropRateFile);
 

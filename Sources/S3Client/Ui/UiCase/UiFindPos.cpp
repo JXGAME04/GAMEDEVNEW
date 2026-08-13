@@ -136,13 +136,14 @@ void KUiFindPos::OnOK()
 	char	szBuffY[3];
 	szBuffY[0] = szBuff1[4]; szBuffY[1] = szBuff1[5]; szBuffY[2] = szBuff1[6];
 	PosY = atoi(szBuffY);
-
+/*
 	if (g_pCoreShell->GetFlagMode())
 	{
 		g_pCoreShell->SetFlagMode(false);
 	}
 	g_pCoreShell->SetPaintMode(1);
-	g_pCoreShell->DirectFindPos(PosX, PosY, FALSE, TRUE);
+	g_pCoreShell->DirectFindPos(PosX, PosY, FALSE, TRUE);*/
+	g_pCoreShell->SceneMapOperation(GSMOI_SCENE_MAP_TG_COORD, PosX*256, PosY*512);
 	char szBuff[32];//add by phong kiÒu save pos minimap
 	m_PosInput.GetText(szBuff, sizeof(szBuff), true);
 	SavePosSetting(szBuff);
@@ -179,7 +180,7 @@ int KUiFindPos::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 	case WND_N_BUTTON_CLICK:
 		if (uParam == (unsigned int)(KWndWindow*)&m_CancelBtn)
 		{
-			g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);// Click len nut cancel ~> dong hop thoai
+			//g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);// Click len nut cancel ~> dong hop thoai
 			CloseWindow();
 			nRet = 1;
 		}
@@ -197,7 +198,7 @@ int KUiFindPos::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		else if (uParam == VK_ESCAPE)
 		{
-			g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);
+			//g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);
 			CloseWindow();
 			nRet = 1;
 		}
@@ -214,7 +215,7 @@ int KUiFindPos::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		else if (nParam == VK_ESCAPE)
 		{
-			g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);
+			//g_pCoreShell->DirectFindPos(0, 0, TRUE, TRUE);
 			CloseWindow();
 			nRet = 1;
 		}

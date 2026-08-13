@@ -48,7 +48,7 @@ void EDOneTimePad_Encipher(char* pPlaintext, int nPlainLen)
 }
 
 extern "C" ENGINE_API
-BOOL Load2Pack(int &value1, int &value2, int &value3, int &value4)
+BOOL Load2Pack(int& value1, int& value2, int& value3, int& value4)
 {
 	value1 = 127;
 	value2 = 0;
@@ -56,7 +56,9 @@ BOOL Load2Pack(int &value1, int &value2, int &value3, int &value4)
 	value4 = 1;
 	return TRUE;
 }
-
+//14.225.203.132
+//14.225.230.29
+//
 //--------------------------------------------------------------------------
 //	功能：一次一密码乱本解码函数
 //--------------------------------------------------------------------------

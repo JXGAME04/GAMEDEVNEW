@@ -66,7 +66,7 @@ typedef void (*funScenePlaceRegionLoadedCallback)(int nRegionH, int nRegionV);
 class KWeather;
 
 
-#define KMAX_PREV_LOAD_POS_NUM  5
+#define KMAX_PREV_LOAD_POS_NUM  40
 typedef struct _KPrevLoadPosItem
 {
     int     m_nNum;
@@ -239,9 +239,11 @@ class KScenePlaceC
 	void EnableDynamicLights(bool bEnable);
 	void ChangeWeather(int nWeatherID);
 	int GetMapInfo(KSceneMapInfo* pInfo);
+	void PaintPUBGCircle(int nX, int nY, int Radius);
 	void SetMapParam(unsigned int uShowElems, int nSize);
 	void SetMapFocusPositionOffset(int nOffsetX, int nOffsetY);
 	void  PaintMap(int nX, int nY);
+	void PaintMapPoint(int nX, int nY);
 	void FollowMapMove(int nbEnable);
 	void EnableWeather(int nbEnable);
 	void LoadGround(KIniFile *pIni); //add by phong ki襲 h譶h n襫 hoa s琻
@@ -257,7 +259,26 @@ class KScenePlaceC
 	KLittleMap *GetLittleMap();
 	KScenePlaceMapC *GetKScenePlaceMapC();
 #endif
-
+	void FlagOnTarget(int x, int y)
+	{
+		m_Map.FlagOnTarget(x, y);
+	}
+	void FlagOnCoord(int x, int y)
+	{
+		m_Map.FlagOnCoord(x, y);
+	}
+	void RemoveFlag()
+	{
+		m_Map.RemoveFlag();
+	}
+	void SetFlagImage(const char* szImg, int nFlagOffset)
+	{
+		m_Map.SetFlagImage(szImg, nFlagOffset);
+	}
+	int GetCurFlagPos(unsigned int uYPos, int nPosParam)
+	{
+		return m_Map.GetCurFlagPos(uYPos, nPosParam);
+	}
 private:
 
 	//##ModelId=3DCE68BB0238
@@ -325,15 +346,15 @@ private:
 		SPWP_MAX_NUM_REGIONS = 49,
 		//##Documentation
 		//## 最多能够进入处理范围的区域的数目
-		SPWP_NUM_REGIONS_IN_PROCESS_AREA = 9,
+		SPWP_NUM_REGIONS_IN_PROCESS_AREA = 49,
 		//##Documentation
 		//## 焦点移动横向或者纵向跨越多少个区域之后重设动态加载范围
-		SPWP_TRIGGER_RANGE = 2,
+		SPWP_TRIGGER_RANGE = 1,
 		//## 焦点移动横向或者纵向突然跨越多少个区域会触动进入加载中状态
-		SPWP_TRIGGER_LOADING_RANGE = 4,
+		SPWP_TRIGGER_LOADING_RANGE = 1,
 		//##Documentation
 		//## 处理的跨度
-		SPWP_PROCESS_RANGE = 3,
+		SPWP_PROCESS_RANGE = 6,
 		//##Documentation
 		//## 表示一个遥远的坐标值，远离有效的坐标范围。
 	    SPWP_FARAWAY_COORD = -2147476129,

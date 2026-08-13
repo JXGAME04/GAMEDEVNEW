@@ -218,7 +218,7 @@ struct iRepresentShell
         //## 图形名
         const char* pszImage,
 		//用于获取图形数据缓冲区的相关信息数据，如果传入空指针，则忽略这些信息。
-		KBitmapDataBuffInfo* pInfo) = 0;
+		KBitmapDataBuffInfo* pInfo, int nType = 0) = 0;
 
 	//##释放对(通过GetBitmapDataBuffer调用获取得的)图形像点数据缓冲区的控制
 	virtual void ReleaseBitmapDataBuffer(
@@ -388,6 +388,9 @@ struct iRepresentShell
 			unsigned int uCount			//颜色列表中颜色数的数目
 			) = 0;
     virtual void setZoomFactor(float zoomFactorDelta) = 0; //set zoom factor
+
+    virtual void CoordinateTransform(int& nX, int& nY, int nZ) = 0;
+	virtual bool IsRep3D() = 0;
 };
 
 

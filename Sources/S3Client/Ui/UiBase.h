@@ -76,7 +76,12 @@ public:
 	void		ClosePrivateSettingFile(bool bSave);		//关闭打开当前账号的设置文件
 	KIniFile*	GetCommConfigFile();
 	void		CloseCommConfigFile();
-	KIniFile*	GetAutoSettingFile();					//打开打开当前账号的设置文件
+	KIniFile*	GetAutoSettingFile();
+	void		SetGlobalConfigFile(bool bGlobal);
+	void		SetGlobalConfigFilename(char* zsGlobalFilename);
+	char*		GetGlobalConfigFilename();
+	BOOL		GetGlobalConfigFile() { return m_bUseGlobalAutoSetting; }
+	//打开打开当前账号的设置文件
 	void		CloseAutoSettingFile(bool bSave);		//关闭打开当前账号的设置文件
 	KIniFile*	GetGameSettingFile();
 	void		CloseGameSettingFile();
@@ -109,6 +114,8 @@ private:
 	KIniFile*	m_pUiCommConfigFile;
 	KIniFile*	m_pUiAutoSettingFile;
 	KIniFile*	m_pUiGameSettingFile;
+	BOOL		m_bUseGlobalAutoSetting;
+	char		m_zsGlobalFilename[64];
 
 	typedef std::map<std::string, HANDLE> EVENTWNDLIST;
 	EVENTWNDLIST m_EventWndList;

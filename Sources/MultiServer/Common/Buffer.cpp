@@ -73,8 +73,8 @@ void CBuffer::AddData( const char * const pData, size_t dataLength )
 	if ( dataLength > m_size - m_used )
 	{
 		DEBUG_ONLY( Message( "CBuffer::AddData - Not enough space in buffer!" ) );
-
 		throw CException( _T("CBuffer::AddData"), _T("Not enough space in buffer Common") );
+		return;
 	}
 
 	memcpy( m_buffer_ptr + m_used, pData, dataLength );
@@ -175,6 +175,7 @@ CBuffer *CBuffer::Allocator::Allocate()
 	{
 		pBuffer = m_freeList.PopNode();
 		
+		if (pBuffer)
 		pBuffer->AddRef();
 	}
 	else
@@ -189,7 +190,7 @@ CBuffer *CBuffer::Allocator::Allocate()
 		OnBufferCreated();
 	}
 	
-	m_activeList.PushNode( pBuffer );
+	//m_activeList.PushNode( pBuffer );
 	
 	OnBufferAllocated();
 	

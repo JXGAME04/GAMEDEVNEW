@@ -30,6 +30,12 @@ KPlayerSet::KPlayerSet()
 	m_ulMaxSaveTimePerPlayer = 0;
 	m_bStopGameServer = FALSE;
 #endif
+#ifndef _SERVER
+//	memset(m_szNationalEmblemPic, 0, sizeof(m_szNationalEmblemPic));
+	memset(m_szFortuneRankPic, 0, sizeof(m_szFortuneRankPic));
+//	memset(m_szViprankPic, 0, sizeof(m_szViprankPic));
+//	memset(m_szTranlifePic, 0, sizeof(m_szTranlifePic));
+#endif
 }
 
 BOOL	KPlayerSet::Init()
@@ -38,6 +44,7 @@ BOOL	KPlayerSet::Init()
 	
 #ifdef _SERVER
 	m_nNumPlayer = 0;
+	m_nPlayerNumMax = 0;
 	m_ulNextSaveTime = 0;
 	//m_ulMaxSaveTimePerPlayer = 60 * 20 * 30;	//(60 * 20 * 3) / 6; //edit by phong kieu thoi gian auto Save nhan vat
 	m_ulMaxSaveTimePerPlayer = 30 * 18;// * 30
@@ -70,6 +77,7 @@ BOOL	KPlayerSet::Init()
 		Player[i].m_cFuYuan.Init(i);
 		Player[i].m_cReBorn.Init(i);
 		Player[i].m_cTask.Init(i); // task
+		Player[i].m_cMeridian.Init(i);
 #endif
 		Player[i].m_cTong.Init(i);
 		Player[i].m_ItemList.Init(i);
@@ -98,7 +106,32 @@ BOOL	KPlayerSet::Init()
 		cPKParam.GetInteger(i + 2, 7, 1, &m_sPKPunishParam[i].m_nAbradeP);
 	}
 #endif
-
+#ifndef _SERVER
+	char Buff[MAX_PATH];
+	for (i=1; i<=20;i++)
+	{
+	//	if(i<MAX_TONG_NATIONALEMBLEM)
+	//	{
+	//		sprintf(Buff, "Spr_%d", i);
+	//		g_GameSetting.GetString("NationalEmblem", Buff, "", m_szNationalEmblemPic[i], sizeof(m_szNationalEmblemPic[i]));	
+	//	}
+		if(i<(MAX_ITEM_LEVELFF+1))
+		{
+			sprintf(Buff, "Spr_%d", i);
+			g_GameSetting.GetString("FortuneRank", Buff, "", m_szFortuneRankPic[i], sizeof(m_szFortuneRankPic[i]));		
+		}
+	//	if(i<(MAX_TRANSLIFE_VALUE+1))
+	//	{
+	//		itoa(i, Buff, 10);
+	//		g_GameSetting.GetString("TransLife", Buff, "", m_szTranlifePic[i], sizeof(m_szTranlifePic[i]));
+	//	}
+	//	if(i<(MAX_VIPRANK_VALUE+1))
+	//	{
+	//		sprintf(Buff, "Spr_%d", i);
+	//		g_GameSetting.GetString("VipRank", Buff, "", m_szViprankPic[i], sizeof(m_szViprankPic[i]));
+	//	}
+	}
+#endif
 	// ????
 	KIniFile	cTongFile;
 	if (cTongFile.Load(defPLAYER_TONG_PARAM_FILE))
@@ -175,6 +208,7 @@ int KPlayerSet::Add(LPSTR szPlayerID, void* pGuid)
 
 	if (i)
 	{
+		Player[i].Release();
 		Player[i].m_dwID = dwID;
 		Player[i].m_nNetConnectIdx = -1;
 		Player[i].m_dwLoginTime = g_SubWorldSet.GetGameTime();
@@ -183,6 +217,13 @@ int KPlayerSet::Add(LPSTR szPlayerID, void* pGuid)
 		m_FreeIdx.Remove(i);
 		m_UseIdx.Insert(i);
 		m_nNumPlayer ++;
+
+
+		if (i > m_nPlayerNumMax)
+		{
+		m_nPlayerNumMax = i;
+		}
+
 		return i;
 	}
 	return 0;
@@ -321,24 +362,31 @@ void KPlayerSet::PrepareRemove(int nIndex)//#khi player dang xuat
 
 	Player[nIndex].m_cChat.OffLine(Player[nIndex].m_dwID);
 
-	Player[nIndex].ExecuteScript("\\script\\player\\playerlogout.lua","main", 0);
+	Player[nIndex].ExecuteScript("\\script\\player\\playerlogout.lua", "main", 0);
 	if (Player[nIndex].m_dwLogoutScriptID)
 		Player[nIndex].ExecuteScript(Player[nIndex].m_dwLogoutScriptID, "OnLogout", "");
 
 	int nSubWorld = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
 	if (nSubWorld >= 0)
 	{
-		SubWorld[nSubWorld].m_MissionArray.RemovePlayer(nIndex, Player[nIndex].m_dwID); 
+		SubWorld[nSubWorld].m_MissionArray.RemovePlayer(nIndex, Player[nIndex].m_dwID);
 	}
 
 	PLAYER_APPLY_LEAVE_TEAM	sLeaveTeam;
 	sLeaveTeam.ProtocolType = c2s_teamapplyleave;
 	Player[nIndex].LeaveTeam((BYTE*)&sLeaveTeam);
 
-	TRADE_DECISION_COMMAND	sTrade;
-	sTrade.ProtocolType = c2s_tradedecision;
-	sTrade.m_btDecision = 0;
-	Player[nIndex].TradeDecision((BYTE*)&sTrade);
+	if (Player[nIndex].m_cMenuState.m_nState != PLAYER_MENU_STATE_GAMBLING) {
+		TRADE_DECISION_COMMAND	sTrade;
+		sTrade.ProtocolType = c2s_tradedecision;
+		sTrade.m_btDecision = 0;
+		Player[nIndex].TradeDecision((BYTE*)&sTrade);
+	}
+
+	GAMBLE_DECISION_COMMAND	sGamble;
+	sGamble.ProtocolType = c2s_gambledecision;
+	sGamble.m_btDecision = 0;
+	Player[nIndex].GambleDecision((BYTE*)&sGamble);
 
 	Player[nIndex].m_cPK.CloseAll();
 
@@ -398,9 +446,10 @@ void KPlayerSet::PrepareExchange(int i)
 
 void KPlayerSet::RemoveQuiting(int nIndex)
 {
-	if (Player[nIndex].m_nNetConnectIdx == -1 || Player[nIndex].m_dwID == 0)
+	if (!Player[nIndex].m_bForeQuit && (Player[nIndex].m_nNetConnectIdx == -1 || Player[nIndex].m_dwID == 0))
 		return;
 
+	Player[nIndex].m_bForeQuit = FALSE;
 	if (Player[nIndex].IsWaitingRemove())
 	{
 		if (Player[nIndex].m_nIndex > 0)	// have npc
@@ -421,6 +470,7 @@ void KPlayerSet::RemoveQuiting(int nIndex)
 		Player[nIndex].m_cTong.Clear();
 
 		Player[nIndex].m_ItemList.RemoveAll();
+		Npc[Player[nIndex].m_nIndex].ClearNpcState();
 		Player[nIndex].m_dwID = 0;
 		Player[nIndex].m_nIndex = 0;
 		Player[nIndex].m_nNetConnectIdx = -1;
@@ -979,15 +1029,16 @@ int		KPlayerSet::AttachPlayer(const unsigned long lnID, GUID* pGuid, char* sHWID
 			{
 				Player[nUseIdx].m_nNetConnectIdx = lnID;
 				Player[nUseIdx].m_ulLastSaveTime = g_SubWorldSet.m_nLoopRate;
-				strcpy(Player[nUseIdx].m_nPlayerHWID, sHWID);
+				strncpy(Player[nUseIdx].m_nPlayerHWID, sHWID, sizeof(Player[nUseIdx].m_nPlayerHWID) - 1);
+				Player[nUseIdx].m_nPlayerHWID[sizeof(Player[nUseIdx].m_nPlayerHWID) - 1] = '\0';
 //				Player[nUseIdx].m_dwLoginTime = -1;
 				return nUseIdx;
 			}
-//			else
-//			{
-//				g_DebugLog("[error]Attach to a connected player named %s", Player[nUseIdx].m_PlayerName);
-//				return 0;
-//			}
+			else
+			{
+				g_DebugLog("[error]Player[nUseIdx].m_nNetConnectIdx == -1 but Attach to a connected player named %s", Player[nUseIdx].m_PlayerName);
+				//return 0;
+			}
 		}
 		nUseIdx = m_UseIdx.GetPrev(nUseIdx);
 	}

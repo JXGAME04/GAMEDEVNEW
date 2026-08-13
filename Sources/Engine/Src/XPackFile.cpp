@@ -461,6 +461,8 @@ int XPackFile::ElemFileRead(XPackElemFileRef& ElemRef, void* pBuffer, unsigned u
 					nResult = uSize;
 				else
 					nResult = ElemRef.nSize - ElemRef.nOffset;
+				if ((unsigned)nResult > uSize)
+					nResult = uSize;
 				memcpy(pBuffer, (char*)ms_ElemFileCache[ElemRef.nCacheIndex].pBuffer + ElemRef.nOffset, nResult);
 				ElemRef.nOffset += nResult;
 			}
@@ -528,7 +530,7 @@ SPRHEAD* XPackFile::GetSprHeader(XPackElemFileRef& ElemRef, SPROFFS*& pOffsetTab
 		{
 			if (bOk)
 			{
-				*((int*)&pSpr->Reserved[NODE_INDEX_STORE_IN_RESERVED]) = ElemRef.nElemIndex;
+				*((WORD*)&pSpr->Reserved[NODE_INDEX_STORE_IN_RESERVED]) = (WORD)ElemRef.nElemIndex;
 			}
 			else
 			{
@@ -547,7 +549,7 @@ SPRFRAME* XPackFile::GetSprFrame(SPRHEAD* pSprHeader, int nFrame)
 	if (pSprHeader && nFrame >= 0 && nFrame < pSprHeader->Frames)
 	{
 		EnterCriticalSection(&m_ReadCritical);
-		int nNodeIndex = *((int*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED]);
+		int nNodeIndex = *((WORD*)&pSprHeader->Reserved[NODE_INDEX_STORE_IN_RESERVED]);
 		if (nNodeIndex >= 0 && nNodeIndex < m_nElemFileCount)
 		{
 			long lCompressType = m_pIndexList[nNodeIndex].lCompressSizeFlag;

@@ -409,6 +409,7 @@ void KWndList2::OnMouseMove(int x, int y)
 	if (nIndex >= nCurNum)
 	{
 		g_MouseOver.CancelMouseHoverInfo();
+		g_MouseOverCompare.CancelMouseHoverInfo();
 		return;
 	}
 	if(m_nNodeList)

@@ -12,6 +12,10 @@
 
 #include "SmartClient.h"
 
+#include <fstream>
+#include <ctime>
+#include <sstream>
+
 using OnlineGameLib::Win32::CEvent;
 using OnlineGameLib::Win32::CCriticalSection;
 using OnlineGameLib::Win32::CPackager;
@@ -32,6 +36,7 @@ CIntercessor::CIntercessor( unsigned long lnMaxPlayerCount, CNetwork &theNetwork
 		, m_hStartupHelperThreadEvent( NULL, false, false, NULL /*"PM_HELPER_EVENT"*/ )
 		, m_theNetworkConfig( theNetworkConfig )
 		, m_lnMaxPlayerCount( lnMaxPlayerCount )
+	    , m_maxConnectionsPerIP(10)	// Default to 5 connections per IP
 {
 
 }
@@ -147,11 +152,49 @@ void __stdcall CIntercessor::DBRoleEventNotify( LPVOID lpParam,
 
 	try
 	{
-		pPlayerManager->_DBRoleEventNotify( ulnEventType );
+		pPlayerManager->_DBRoleEventNotify(ulnEventType);
 	}
-	catch(...)
+	catch (const std::exception& ex)
 	{
-		TRACE( "CIntercessor::DBRoleEventNotify exception!" );
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pPlayerManager
+			<< ", ulnEventType: " << ulnEventType
+			<< ", std::exception: " << ex.what()
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_DBRoleEventNotify.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor DBRoleEventNotify std::exception", MB_OK | MB_ICONERROR);
+	}
+	catch (...)
+	{
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pPlayerManager
+			<< ", ulnEventType: " << ulnEventType
+			<< ", Unknown exception in DBRoleEventNotify"
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_DBRoleEventNotify.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor DBRoleEventNotify exception", MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -183,11 +226,51 @@ void __stdcall CIntercessor::PlayerEventNotify( LPVOID lpParam,
 
 	try
 	{
-		pPlayerManager->_PlayerEventNotify( ulnID, ulnEventType );
+		pPlayerManager->_PlayerEventNotify(ulnID, ulnEventType);
 	}
-	catch(...)
+	catch (const std::exception& ex)
 	{
-		TRACE( "CIntercessor::PlayerEventNotify exception!" );
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pPlayerManager
+			<< ", ulnID: " << ulnID
+			<< ", ulnEventType: " << ulnEventType
+			<< ", std::exception: " << ex.what()
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_PlayerEventNotify.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor PlayerEventNotify std::exception", MB_OK | MB_ICONERROR);
+	}
+	catch (...)
+	{
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pPlayerManager
+			<< ", ulnID: " << ulnID
+			<< ", ulnEventType: " << ulnEventType
+			<< ", Unknown exception in PlayerEventNotify"
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_PlayerEventNotify.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor PlayerEventNotify exception", MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -199,14 +282,60 @@ void CIntercessor::_PlayerEventNotify( const unsigned long &ulnID,
 	switch ( ulnEventType )
 	{
 	case enumClientConnectCreate:
+	{
+		// Get the client's IP address
+		const char* clientIP = m_pPlayerServer->GetClientInfo(ulnID);
+		if (!clientIP)
 		{
-			IPlayer *pPlayer = m_thePlayers[ulnID];
-			
-			ASSERT( pPlayer );
-
-			pPlayer->Active();
+			TRACE("Failed to retrieve client IP for player ID: %lu", ulnID);
+			return;
 		}
-		break;
+
+		// Extract IP address from "IP:Port" format
+		std::string clientIPStr(clientIP);
+		size_t colonPos = clientIPStr.find(':');
+		if (colonPos == std::string::npos)
+		{
+			TRACE("Invalid client IP format: %s", clientIP);
+			return;
+		}
+
+		std::string ipAddress = clientIPStr.substr(0, colonPos);
+
+		// Count active connections from the same IP
+		int connectionCount = 0;
+		for (const auto& pair : m_thePlayers)
+		{
+			const auto& playerID = pair.first;
+			IPlayer* player = pair.second;
+			if (player && player->IsActive())
+			{
+				const char* existingIP = m_pPlayerServer->GetClientInfo(playerID);
+				if (existingIP)
+				{
+					std::string existingIPStr(existingIP);
+					size_t pos = existingIPStr.find(':');
+					if (pos != std::string::npos && existingIPStr.substr(0, pos) == ipAddress)
+					{
+						connectionCount++;
+					}
+				}
+			}
+		}
+
+		if (connectionCount >= m_maxConnectionsPerIP)
+		{
+			TRACE("Connection limit reached for IP: %s", ipAddress.c_str());
+			m_pPlayerServer->ShutdownClient(ulnID);
+			return;
+		}
+
+		// Activate the player
+		IPlayer* pPlayer = m_thePlayers[ulnID];
+		ASSERT(pPlayer);
+		pPlayer->Active();
+	}
+	break;
 
 	case enumClientConnectClose:
 		{
@@ -432,17 +561,56 @@ void CIntercessor::CleanNetwork()
 
 DWORD WINAPI CIntercessor::WorkingThreadFunction( void *pV )
 {
-	CIntercessor *pThis = reinterpret_cast< CIntercessor * >( pV );
+	CIntercessor* pThis = reinterpret_cast<CIntercessor*>(pV);
 
-	ASSERT( pThis );
+	ASSERT(pThis);
 
 	try
 	{
 		pThis->Working();
 	}
-	catch(...)
+	catch (const std::exception& ex)
 	{
-		::MessageBox( NULL, "Run a working thread is failed!", "CIntercessor class", MB_OK );
+		// Gather context
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pThis
+			<< ", m_lnMaxPlayerCount: " << pThis->m_lnMaxPlayerCount
+			<< ", std::exception: " << ex.what()
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_WorkingThread.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor std::exception", MB_OK | MB_ICONERROR);
+	}
+	catch (...)
+	{
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pThis
+			<< ", m_lnMaxPlayerCount: " << pThis->m_lnMaxPlayerCount
+			<< ", Unknown exception in WorkingThreadFunction"
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_WorkingThread.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor class", MB_OK | MB_ICONERROR);
 	}
 
 	return 0;
@@ -508,9 +676,48 @@ DWORD WINAPI CIntercessor::HelperThreadFunction( void *pV )
 	{
 		pThis->Helper();
 	}
-	catch(...)
+	catch (const std::exception& ex)
 	{
-		::MessageBox( NULL, "Startup a helper thread is failed!", "CIntercessor class", MB_OK );
+		// Gather context
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pThis
+			<< ", m_lnMaxPlayerCount: " << pThis->m_lnMaxPlayerCount
+			<< ", std::exception: " << ex.what()
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_HelperThread.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor HelperThread std::exception", MB_OK | MB_ICONERROR);
+	}
+	catch (...)
+	{
+		DWORD threadId = GetCurrentThreadId();
+		std::time_t now = std::time(nullptr);
+		char timeStr[64];
+		std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+		std::ostringstream oss;
+		oss << "[" << timeStr << "] "
+			<< "ThreadID: " << threadId
+			<< ", this: " << pThis
+			<< ", m_lnMaxPlayerCount: " << pThis->m_lnMaxPlayerCount
+			<< ", Unknown exception in HelperThreadFunction"
+			<< std::endl;
+
+		std::ofstream log("CIntercessor_HelperThread.log", std::ios::app);
+		log << oss.str();
+		log.close();
+
+		::MessageBoxA(NULL, oss.str().c_str(), "CIntercessor HelperThread exception", MB_OK | MB_ICONERROR);
 	}
 
 	return 0;

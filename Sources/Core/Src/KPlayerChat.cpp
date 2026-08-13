@@ -2030,6 +2030,24 @@ void KPlayerChat::SendInfoToIP(DWORD nIP, DWORD nID, char *lpszAccName, char *lp
 		delete ((char*)pExHeader);
 #endif
 }
+void KPlayerChat::NpcChat(int nNpcIdx, char* pMsg, int msgLen, bool nShowInMsgPad)
+{
+	if (!pMsg || msgLen <= 0)
+		return;
+	PLAYER_SEND_CHAT_SYNC	sChat;
+	sChat.ProtocolType = s2c_playersendchat;
+	sChat.m_btCurChannel = CHAT_CUR_CHANNEL_SCREEN;
+	sChat.m_btNameLen = strlen(Npc[nNpcIdx].Name);
+	sChat.m_btChatPrefixLen = 0;
+	sChat.m_wSentenceLen = msgLen;
+	sChat.m_dwSourceID = Npc[nNpcIdx].m_dwID;	// npc id
+	sChat.m_wLength = sizeof(PLAYER_SEND_CHAT_SYNC) - 1 - sizeof(sChat.m_szSentence) + sChat.m_btNameLen + sChat.m_btChatPrefixLen + sChat.m_wSentenceLen;
+	sChat.m_btIsShowMsgPad = nShowInMsgPad;
+	memcpy(&sChat.m_szSentence[0], Npc[nNpcIdx].Name, sChat.m_btNameLen);
+	memcpy(&sChat.m_szSentence[sChat.m_btNameLen + sChat.m_btChatPrefixLen], pMsg, sChat.m_wSentenceLen); // 可能需要根据玩家身份改动
+
+	Npc[nNpcIdx].SendDataToNearRegion((BYTE*)&sChat, sChat.m_wLength + 1);
+}
 #endif
 
 #ifdef _SERVER

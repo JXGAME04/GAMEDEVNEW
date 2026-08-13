@@ -45,7 +45,11 @@ static struct UE_CTRL_MAP
 	{ UIEP_FOOT,		"Shoes"		},	//装备-鞋子
 	{ UIEP_HORSE,		"Horse"		},	//装备-马
 	{ UIEP_MASK,		"Mask"		},
-	{ UIEP_FIFONG,		"FiFong"	},
+	{ UIEP_FIFONG,		"Mantle"	},
+	{ UIEP_SIGNET,		"Signet"	},	//Equipment-Horse
+	{ UIEP_SHIPIN,		"Shipin"	},	//Equipment-Horse
+	{ UIEP_HOODS,		"Hoods"		},	//Equipment-Horse
+	{ UIEP_CLOAK,		"Cloak"		},	//Equipment-Horse
 };
 
 KUiStatus* KUiStatus::GetIfVisible()
@@ -69,6 +73,10 @@ KUiStatus* KUiStatus::OpenWindow()
 		m_pSelf->UpdateData();
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
+		if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) == 1)
+			m_pSelf->m_BtnSet1.SetFrame(0);
+		else
+			m_pSelf->m_BtnSet2.SetFrame(0);
 	}
 	return m_pSelf;
 }
@@ -156,17 +164,32 @@ void KUiStatus::Initialize()
 		m_EquipBox[i].SetContainerId((int)UOC_EQUIPTMENT);
 	}
 
+	AddChild(&m_EquipExpandBtn);
+	AddChild(&m_MaskFeature);
+
 	AddChild(&m_OpenItemPad);
 	AddChild(&m_BtnLock);
+	AddChild(&m_BtnSet1);
+	AddChild(&m_BtnSet2);
 	AddChild(&m_Bind);
 	AddChild(&m_UnBind);
 	AddChild(&m_Close);
 
+	SwitchExpand(TRUE);
 	Wnd_AddWindow(this);
 
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
+}
+
+void KUiStatus::SwitchExpand(BOOL bShow)
+{
+	m_EquipExpandBtn.CheckButton(bShow);
+	bShow ? m_MaskFeature.Show() : m_MaskFeature.Hide();
+	bShow ? m_EquipExpandImg.Show() : m_EquipExpandImg.Hide();
+	for (int i = UIEP_FIFONG; i < _ITEM_COUNT; i++)
+		bShow ? m_EquipBox[i].Show() : m_EquipBox[i].Hide();
 }
 
 //--------------------------------------------------------------------------
@@ -183,16 +206,23 @@ void KUiStatus::LoadScheme(const char* pScheme)
 			m_pSelf->LoadScheme(&Ini);	
 	}
 }
-
+extern int SCREEN_WIDTH;
 void KUiStatus::LoadScheme(class KIniFile* pIni)
 {
 	if (g_pCoreShell->GetGameData(GDI_PLAYER_IS_MALE, 0, 0))
-	{
-		Init(pIni, "Male");
+	{;
+		if (SCREEN_WIDTH == 1024)
+			Init(pIni, "Male1024");
+		else
+			Init(pIni, "Male");
 	}
 	else
 	{
-		Init(pIni, "Female");
+		if (SCREEN_WIDTH == 1024)
+			Init(pIni, "Female1024");
+		else
+			Init(pIni, "Female");
+		
 	}
 
 	m_ChooseAvatar.Init(pIni, "ClickHere");
@@ -247,6 +277,8 @@ void KUiStatus::LoadScheme(class KIniFile* pIni)
 	m_ReBorn    .Init(pIni, "TrungSinh");
 	m_OpenItemPad.Init(pIni, "Item");
 	m_BtnLock.Init(pIni, "BtnLock");
+	m_BtnSet1.Init(pIni, "BtnSet1");
+	m_BtnSet2.Init(pIni, "BtnSet2");
 	m_Bind.Init(pIni, "BtnBind");
 	m_UnBind.Init(pIni, "BtnUnBind");
 
@@ -254,6 +286,10 @@ void KUiStatus::LoadScheme(class KIniFile* pIni)
 	{
 		m_EquipBox[i].Init(pIni, CtrlItemMap[i].pIniSection);
 	}
+
+	m_EquipExpandBtn.Init(pIni, "EquipExpandBtn");
+	m_EquipExpandImg.Init(pIni, "EquipExpandImg");
+	m_MaskFeature.Init(pIni, "MaskFeature");
 }
 
 void KUiStatus::Breathe()
@@ -374,6 +410,28 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				KUiUnlockBox::OpenWindow();
 			}
 		}
+		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnSet1)
+		{
+			if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) != 1) {
+				g_pCoreShell->OperationRequest(GOI_CP_SWITCH_EQUIPSET, 0, 1); //request switch equip set
+				m_BtnSet2.SetFrame(1);
+				UiSoundPlay(UI_SI_SWITCH_EQUIP);
+			}
+			m_BtnSet1.SetFrame(0);
+		}
+		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnSet2)
+		{
+			if (g_pCoreShell->GetGameData(GDI_EQUIPMENT_SETNUM, 0, 0) != 2) {
+				g_pCoreShell->OperationRequest(GOI_CP_SWITCH_EQUIPSET, 0, 2); //request switch equip set
+				m_BtnSet1.SetFrame(1);
+				UiSoundPlay(UI_SI_SWITCH_EQUIP);
+			}
+			m_BtnSet2.SetFrame(0);
+		}
+		else if (uParam == (unsigned int)(KWndWindow*)&m_EquipExpandBtn)
+			SwitchExpand(m_EquipExpandBtn.IsButtonChecked());
+		else if (uParam == (unsigned int)(KWndWindow*)&m_MaskFeature)
+			g_pCoreShell->OperationRequest(GOI_MASKFEATURE, 0, 0);
 		else if (m_nRemainPoint > numpoint)//else if (m_nRemainPoint > 0)
 		{
 			if (uParam == (unsigned int)(KWndWindow*)&m_AddStrength)
@@ -390,6 +448,16 @@ int KUiStatus::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				//UseRemainPoint(UIPA_ENERGY,numpoint);//UseRemainPoint(UIPA_ENERGY);
 		}
 		break;
+	case WND_N_RIGHT_CLICK_ITEM:
+		{
+			KUiDraggedObject* pItem = (KUiDraggedObject*)uParam;
+			KUiObjAtContRegion	Obj;
+			Obj.Obj.uGenre = pItem->uGenre;
+			Obj.Obj.uId = pItem->uId;
+			Obj.Region.Width = pos_equiproom;
+			if (g_UiBase.IsOperationEnable(UIS_O_USE_ITEM))
+				g_pCoreShell->OperationRequest(GOI_USE_ITEM, (unsigned int)(&Obj), UOC_EQUIPTMENT);
+		}break;
 	case WND_N_ITEM_PICKDROP:
 		if (g_pCoreShell->GetGameData(GDI_IS_CHEST_UNLOCKED, 0, 0))
 		{
@@ -482,6 +550,11 @@ void KUiStatus::UpdateData()
 {
 	UpdateAllEquips();
 	UpdateBaseData();
+
+	KUiPlayerAttribute	Info;
+	memset(&Info, 0, sizeof(KUiPlayerAttribute));
+	g_pCoreShell->GetGameData(GDI_PLAYER_RT_ATTRIBUTE, (unsigned int)&Info, 0);
+	UpdateRuntimeAttribute(&Info);
 }
 
 void KUiStatus::UpdateAllEquips()
@@ -640,6 +713,7 @@ void KUiStatus::OnEquiptChanged(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLA
 	{
 		//_ASSERT(i < _ITEM_COUNT);
 		g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT, pPickPos ? (unsigned int)&Pick : 0, pDropPos ? (int)&Drop : 0);
+		UiSoundPlayItem(Obj.uId);
 	}
 }
 

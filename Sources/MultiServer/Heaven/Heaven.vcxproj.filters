@@ -58,14 +58,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Lib\debug\common.lib">
-      <Filter>Lib\Debug</Filter>
-    </Library>
     <Library Include="..\..\..\Lib\release\common.lib">
       <Filter>Lib\Release</Filter>
     </Library>
-    <Library Include="..\..\..\Lib\debug64\common.lib">
-      <Filter>Lib\Debug</Filter>
+    <Library Include="..\..\..\Lib\release64\common.lib">
+      <Filter>Lib\Release</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

@@ -45,6 +45,7 @@ enum SCENE_FILE_INDEX
 #define REGION_OBJ_FILE_SERVER		"Obj_S.dat"
 #define REGION_OBJ_FILE_CLIENT		"Obj_C.dat"
 #define REGION_TRAP_FILE			"Trap.dat"				//事件点文件
+#define PUBG_MAP 996 //map id pubg
 
 #define	MAX_RESOURCE_FILE_NAME_LEN	128
 #define NOT_ABOVE_HEAD_OBJ			0xFFFF	//并非高空对象

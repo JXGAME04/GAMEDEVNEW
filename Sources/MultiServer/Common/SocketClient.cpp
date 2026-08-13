@@ -90,6 +90,11 @@ bool CSocketClient::StartConnections()
 		 */
 		m_connectSocket = CreateConnectionSocket( m_address, m_port );
 
+		if (INVALID_SOCKET == m_connectSocket )
+		{
+			return false;
+		}
+
 		if ( !WaitAndVerifyCipher() )
 		{
 			return false;
@@ -169,7 +174,8 @@ SOCKET CSocketClient::CreateConnectionSocket(
 	
 	if ( INVALID_SOCKET == s )
 	{
-		throw CWin32Exception( _T("CSocket::CreateListeningSocket()"), ::WSAGetLastError() );
+		//throw CWin32Exception( _T("CSocket::CreateListeningSocket()"), ::WSAGetLastError() );
+		return s;
 	}
 	
 	CSocket connectionSocket( s );
@@ -312,19 +318,6 @@ int CSocketClient::Run()
 			}
 			
 		} // while ( ... 		
-	}
-	catch( const CWin32Exception &e )
-	{
-		/*
-		 * Call to unqualified virtual function
-		 */
-		StopConnections();
-
-		OnError( _T("CSocketClient::Run() - Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage() );
-
-		_tstring sErrorInfo = e.GetMessage();
-
-		//DEBUG_ONLY( Message( sErrorInfo.c_str() ) );
 	}
 	catch(...)
 	{
@@ -551,7 +544,7 @@ void CSocketClient::Write( CIOBuffer *pBuffer )
 	} while ( true );	
 }
 
-static const DWORD g_dwTimeout = 1000;
+static const DWORD g_dwTimeout = 5;//1000
 
 bool CSocketClient::WaitAndVerifyCipher()
 {

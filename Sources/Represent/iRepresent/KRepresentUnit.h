@@ -88,6 +88,10 @@ struct KRUPoint : public KRepresentUnit
 	//##Documentation
 	//## 点的颜色
     KRColor	Color;
+	KRUPoint()
+	{
+		Color.Color_dw = 0xff000000;
+	}
 };
 
 //##ModelId=3DB3C020008B
@@ -100,6 +104,10 @@ struct KRULine : public KRepresentUnit
 	//##Documentation
 	//## 线的颜色
     KRColor	Color;
+	KRULine()
+	{
+		Color.Color_dw = 0xff000000;
+	}
 };
 
 typedef KRULine	KRURect;
@@ -178,6 +186,10 @@ struct KRUImage : public KRepresentUnit
     //##Documentation
     //## 绘制的图形帧索引
     short nFrame;
+	KRUImage()
+	{
+		Color.Color_dw = 0xff000000;
+	}
 };
 
 //##ModelId=3DB618EC02CC
@@ -264,6 +276,7 @@ enum KIS_IMAGE_TYPE
     //##Documentation
     //##  spr格式的带alpha压缩图形，若干帧
     ISI_T_SPR,
+	ISI_T_DRAWINGRC,
 };
 
 

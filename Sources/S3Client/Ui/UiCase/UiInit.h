@@ -16,7 +16,8 @@ public:
 	static void			CloseWindow();						
 	static void			PlayTitleMusic();
 	static void			StopTitleMusic();
-
+	static KUiInit*		GetIfVisible();
+	void 				AutoLgNextStep();
 private:
 	KUiInit() {}
 	~KUiInit() {}

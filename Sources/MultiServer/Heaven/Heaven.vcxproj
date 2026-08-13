@@ -100,6 +100,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\Debug\</OutDir>
@@ -157,7 +158,7 @@ copy release\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\Heaven.dll</OutputFile>
       <ImportLibrary>.\Release\Heaven.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\release\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Heaven.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -172,19 +173,15 @@ copy release\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HEAVEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Release\Heaven.pch</PrecompiledHeaderOutputFile>
-      <ObjectFileName>.\Release\</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>.\x64\Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\x64\Release\Heaven.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\x64\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\x64\Release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>md ..\..\..\..\bin\client\release\
-copy release\heaven.dll ..\..\..\..\bin\client\heaven.dll
-copy release\heaven.dll ..\..\..\..\bin\client\release\heaven.dll
-md ..\..\..\..\bin\server\release\
-copy release\heaven.dll ..\..\..\..\bin\server\heaven.dll
-copy release\heaven.dll ..\..\..\..\bin\server\release\heaven.dll
-copy release\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
+      <Command>md ..\..\..\..\bin\server\x64\release\
+copy x64\release\heaven.dll ..\..\..\..\bin\server\heaven.dll
+copy x64\release\heaven.dll ..\..\..\..\bin\server\x64\release\heaven.dll</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -198,16 +195,16 @@ copy release\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\Heaven.bsc</OutputFile>
+      <OutputFile>.\x64\Release\Heaven.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\Heaven.dll</OutputFile>
-      <ImportLibrary>.\Release\Heaven.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\Release\Heaven.dll</OutputFile>
+      <ImportLibrary>.\x64\Release\Heaven.lib</ImportLibrary>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\release64\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Heaven.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -259,7 +256,7 @@ copy debug\heaven.dll ..\..\..\..\bin\Multiserver\heaven.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\Heaven.dll</OutputFile>
       <ImportLibrary>.\Debug\Heaven.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\debug\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Heaven.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -307,7 +304,7 @@ copy x64\debug\heaven.dll ..\..\..\..\bin\server\debug64\heaven.dll</Command>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\x64\Debug\Heaven.dll</OutputFile>
       <ImportLibrary>.\x64\Debug\Heaven.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;..\..\..\Lib\debug64\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\Heaven.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -325,11 +322,7 @@ copy x64\debug\heaven.dll ..\..\..\..\bin\server\debug64\heaven.dll</Command>
     <ClInclude Include="ServerStage.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\Lib\debug64\common.lib" />
-    <Library Include="..\..\..\Lib\debug\common.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </Library>
+    <Library Include="..\..\..\Lib\release64\common.lib" />
     <Library Include="..\..\..\Lib\release\common.lib">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

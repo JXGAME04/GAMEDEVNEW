@@ -12,11 +12,11 @@
 
 #define		defTONG_INIT_MEMBER_SIZE		100		// ³ÉÔ±ÄÚ´æ³õÊ¼»¯Ê±µÄ´óÐ¡
 #define		defTONG_MEMBER_SIZE_ADD			100		// ³ÉÔ±ÄÚ´æÃ¿´ÎÔö¼ÓµÄ´óÐ¡
-#define		defTONG_MASTER_TITLE        "Bang ch\xF1"          // "Bang chñ"
-#define		defTONG_DIRECTOR_TITLE      "Tr\xAD\xEBng l\xB7o"  // "Tr­ëng l·o"
-#define		defTONG_MANAGER_TITLE       "\xA7\xAD\xEAng ch\xF1"  // "§­êng chñ"
-#define		defTONG_MEMBER_TITLE        "M\xABn \xD0\xCA"      // "M«n ®Ö"
-#define		defTONG_NAME_SAY_ON_CHANNEL "C\xABng b\xE8"        // "C«ng bè"
+#define		defTONG_MASTER_TITLE        "Bang Chñ"          // "Bang chñ"
+#define		defTONG_DIRECTOR_TITLE      "Tr­ëng L·o"  // "Tr­ëng l·o"
+#define		defTONG_MANAGER_TITLE       "§­êng Chñ"  // "§­êng chñ"
+#define		defTONG_MEMBER_TITLE        "M«n ®Ö"      // "M«n ®Ö"
+#define		defTONG_NAME_SAY_ON_CHANNEL "C«ng bè"        // "C«ng bè"
 
 
 typedef struct
@@ -82,6 +82,7 @@ private:
 	int			m_nDirectorNum;							// ³¤ÀÏÈËÊý
 	int			m_nManagerNum;							// ¶Ó³¤ÈËÊý
 	int			m_nMemberNum;							// °ïÖÚÈËÊý
+	BOOL		m_bIsFull;
 	BOOL	m_nRecruit;										//add by Fong Kieu tr¹ng th¸i ®ãng më bang
 	char		m_szWayEdit[defTONG_STR_LENGTH];		//tiªu chÝ bang héi
 	char		m_szNextTargetEdit[defTONG_STR_LENGTH];	//môc tiªu bang héi
@@ -109,16 +110,18 @@ private:
 
 	STONG_MEMBER	*m_psMember;
 	int				m_nMemberPointSize;
+
+	size_t m_nCapSize;
 	char		m_szNormalBoyTitle[defTONG_STR_LENGTH];
 	char		m_szNormalGirlTitle[defTONG_STR_LENGTH];
 	int			m_nMasterSex;
 	int			m_nDirectorSex[defTONG_MAX_DIRECTOR];
-	int			m_nManagerSex[defTONG_MAX_DIRECTOR];
+	int			m_nManagerSex[defTONG_MAX_MANAGER];
 
 public:
 	BOOL		SearchOne(char *lpszName, STONG_ONE_LEADER_INFO *pInfo);
 
-	BOOL		AddMember(char *lpszPlayerName, int nSex = 0);		// Ìí¼ÓÒ»¸ö³ÉÔ±
+	BOOL		AddMember(char *lpszPlayerName, int nSex = 0, bool fromAdd = false);		// Ìí¼ÓÒ»¸ö³ÉÔ±
 
 	BOOL		ChangePassword(char *lpOld, char *lpNew);	// ¸Ä±ä°ï»áÃÜÂë
 
@@ -161,6 +164,8 @@ public:
 	BOOL		DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange);
 
 	BOOL		DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange);
+
+	BOOL		DBChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange);
 
 	BOOL		DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange);
 

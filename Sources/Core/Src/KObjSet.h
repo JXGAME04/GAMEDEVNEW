@@ -44,7 +44,7 @@ typedef struct
 	int		m_nMovieFlag;
 	int		m_nSoundFlag;
 	int		m_dwNpcId1;
-	char	m_szName[64]; // fix rot vat pham dis game
+	char	m_szName[80]; // fix rot vat pham dis game
 } KObjItemInfo;
 
 class KObjSet
@@ -92,6 +92,7 @@ public:
 #endif
 	int		FindID(int nID);
 	int		FindName(char *lpszObjName); //fkauto
+	int		GetNext(int nIdx);
 private:
 	int		FindFree();
 	int		CheckClientKind(int nKind);

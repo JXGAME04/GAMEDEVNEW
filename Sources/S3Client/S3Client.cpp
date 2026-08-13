@@ -1,4 +1,4 @@
- // S3Client.cpp : Defines the entry point for the application.
+// S3Client.cpp : Defines the entry point for the application.
 
 #include "KWin32.h"
 #include "KCore.h"
@@ -35,7 +35,15 @@
 #include <tlhelp32.h>
 //#include <tchar.h>
 #include "Dbghelp.h"
-
+//for auto
+#include "Ui/UiCase/UiPlayerBar.h"
+#include "Ui/UiCase/UiMsgCentrePad.h"
+#include "Ui/UiCase/UiFaceSelector.h"
+#include "Ui/UiCase/UiInformation.h"
+#include "Ui/UiCase/UiSelServer.h"
+#include "Ui/UiCase/UiLogin.h"
+#include "Ui/UiCase/UiSelPlayer.h"
+#include "Ui/Elem/Wnds.h"
 #define ClientVersion
 KMyApp		MyApp;
 HINSTANCE	hInst;
@@ -52,26 +60,42 @@ CChatFilter g_ChatFilter;
 #define REPRESENT_MODULE_3			"Represent3.dll"
 #define CREATE_REPRESENT_SHELL_FUN	"CreateRepresentShell"
 #define	GAME_FPS			18							//khung hinh game chi so khung hinh tren giay mac dinh la 18 edit by phong kieu 60FPS tieu chuan game hien nay
+#define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
+//static int m_PaintStep = GAME_FPS / 18;
+//int gameNumber = 0; // Game number, initialized to 0
 //Represent
-struct iRepresentShell*	g_pRepresentShell = NULL;
+struct iRepresentShell* g_pRepresentShell = NULL;
 struct IInlinePicEngineSink* g_pIInlinePicSink = NULL;
-iCoreShell*				g_pCoreShell = NULL;
-KMusic*					g_pMusic = NULL;
+iCoreShell* g_pCoreShell = NULL;
+KMusic* g_pMusic = NULL;
 
 #define	DYNAMIC_LINK_REPRESENT_LIBRARY
 
 #ifdef DYNAMIC_LINK_REPRESENT_LIBRARY
-	static HMODULE		l_hRepresentModule = NULL;
-	int					g_bRepresent3 = false;
+static HMODULE		l_hRepresentModule = NULL;
+int					g_bRepresent3 = false;
 #endif
-	
+
 int					g_bScreen = true;
 char				g_szGameName[64] = "Vo Lam Truyen Ky";//tieu de tang them 64 bit game edit by phong kieu
 
 KClientCallback g_ClientCallback;
 
-#define	SCREEN_WIDTH	800 //edit by phong kieu chieu rong va cao UI game.exe
-#define SCREEN_HEIGHT	600
+// Default resolution values
+int SCREEN_WIDTH = 800;  // Default width
+int SCREEN_HEIGHT = 600; // Default height
+
+void LoadResolutionFromConfig() {
+	char configPath[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, configPath);
+	strcat(configPath, "\\");
+	strcat(configPath, CONFIG_FILE_PATH);
+
+	// Read width and height from the config file
+	SCREEN_WIDTH = GetPrivateProfileInt("Resolution", "Width", SCREEN_WIDTH, configPath);
+	SCREEN_HEIGHT = GetPrivateProfileInt("Resolution", "Height", SCREEN_HEIGHT, configPath);
+	std::cout << "Loaded Resolution: " << SCREEN_WIDTH << "x" << SCREEN_HEIGHT << std::endl;
+}
 
 /*
  * Add this macro by liupeng on 2003.3.20
@@ -82,13 +106,31 @@ KClientCallback g_ClientCallback;
 
 #pragma warning (disable: 4305)
 #pragma warning (disable: 4309)
+//auto
+const char* MMF_NAME_SERVER = "Local\\Auto_Name_MMFSV_";
+const char* MMF_NAME_CLIENT = "Local\\Auto_Name_MMFCL_";
+const char* EVT_CLRECV = "Local\\Auto_EventClientRecv_";
+const char* EVT_SVRECV = "Local\\Auto_EventServerRecv_";
+HANDLE g_hMap = NULL;
+SharedState* g_pState = NULL;
+HANDLE g_hEventRecv = NULL;
+HANDLE g_hRepMap = NULL;
+SharedState* g_pRepState = NULL;
+HANDLE g_hRepEvent = NULL;
+UINT g_CurNum = 0;
+UINT g_CurSize = 0;
+BYTE g_Buffer[SHARED_SIZE];
+static int g_DrawVision = 0;
+static UINT g_DrawVisionTime = 0;
+static int g_ALGStep = 0;
+static UINT g_AGLNextTime = 0;
 
 int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCHAR pwAppName)
 {
 	BOOL bOwndumpFile = FALSE;
 	HANDLE hDumpFile = hFile;
 	MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-	typedef BOOL(WINAPI * MiniDumpWriteDumpT) (
+	typedef BOOL(WINAPI* MiniDumpWriteDumpT) (
 		HANDLE,
 		DWORD,
 		HANDLE,
@@ -99,16 +141,16 @@ int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCH
 		);
 
 	MiniDumpWriteDumpT pfnMiniDumpWriteDump = NULL;
-	HMODULE hdbgHelp  = LoadLibrary("DbgHelp.dll");
+	HMODULE hdbgHelp = LoadLibrary("DbgHelp.dll");
 
-	if(hdbgHelp)
+	if (hdbgHelp)
 		pfnMiniDumpWriteDump = (MiniDumpWriteDumpT)GetProcAddress(hdbgHelp, "MiniDumpWriteDump");
 
-	if(pfnMiniDumpWriteDump)
+	if (pfnMiniDumpWriteDump)
 	{
-		if(hDumpFile == NULL || hDumpFile == INVALID_HANDLE_VALUE)
+		if (hDumpFile == NULL || hDumpFile == INVALID_HANDLE_VALUE)
 		{
-			TCHAR szFileName[MAX_PATH] = {0};
+			TCHAR szFileName[MAX_PATH] = { 0 };
 			TCHAR* szVersion = "v1.0";
 			TCHAR dwBufferSize = MAX_PATH;
 			SYSTEMTIME stLocalTime;
@@ -116,33 +158,33 @@ int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCH
 
 			CreateDirectory("DumpInfo", NULL);
 			wsprintf(szFileName, "DumpInfo\\%s-%s-%04d%02d%02d-%02d%02d%02d-%ld%ld.dmp"
-				, "client", szVersion, 
+				, "client", szVersion,
 				stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
 				stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
 				GetCurrentProcessId(), GetCurrentThreadId());
 
-			hDumpFile = CreateFile(szFileName, GENERIC_READ | GENERIC_WRITE, 
+			hDumpFile = CreateFile(szFileName, GENERIC_READ | GENERIC_WRITE,
 				FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 
 			bOwndumpFile = TRUE;
 			OutputDebugString(szFileName);
 		}
 
-		if(hDumpFile != INVALID_HANDLE_VALUE)
+		if (hDumpFile != INVALID_HANDLE_VALUE)
 		{
 			ExpParam.ThreadId = GetCurrentThreadId();
 			ExpParam.ExceptionPointers = lpExceptionPointer;
 			ExpParam.ClientPointers = FALSE;
 
-			pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
+			pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
 				hDumpFile, MiniDumpWithDataSegs, (lpExceptionPointer ? &ExpParam : NULL), NULL, NULL);
 
-			if(bOwndumpFile)
+			if (bOwndumpFile)
 				CloseHandle(hDumpFile);
 		}
 	}
 
-	if(hdbgHelp != NULL)
+	if (hdbgHelp != NULL)
 		FreeLibrary(hdbgHelp);
 
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -150,7 +192,7 @@ int GenerateMiniDump(HANDLE hFile, LPEXCEPTION_POINTERS lpExceptionPointer, PWCH
 
 LONG WINAPI ExeptionFillert(LPEXCEPTION_POINTERS lpExceptionInfo)
 {
-	if(IsDebuggerPresent())
+	if (IsDebuggerPresent())
 	{
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
@@ -159,9 +201,9 @@ LONG WINAPI ExeptionFillert(LPEXCEPTION_POINTERS lpExceptionInfo)
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPSTR     lpCmdLine,
-                     int       nCmdShow)
+	HINSTANCE hPrevInstance,
+	LPSTR     lpCmdLine,
+	int       nCmdShow)
 {
 	SetUnhandledExceptionFilter(ExeptionFillert);
 
@@ -172,67 +214,67 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	bool bOpenTracer = false;
 
-    while( lpCmdLine[0] == '-' || lpCmdLine[0] == '/' )
-    {
-        lpCmdLine++;
-		
-        switch ( *lpCmdLine++ )
-        {
+	while (lpCmdLine[0] == '-' || lpCmdLine[0] == '/')
+	{
+		lpCmdLine++;
+
+		switch (*lpCmdLine++)
+		{
 		case 'c':
-        case 'C':
-            bOpenTracer = true;
-            break;
-        }
-		
-        while( IS_SPACE( *lpCmdLine ) )
-        {
-            lpCmdLine++;
-        }
-    }
-	
-	if ( bOpenTracer ) 
+		case 'C':
+			bOpenTracer = true;
+			break;
+		}
+
+		while (IS_SPACE(*lpCmdLine))
+		{
+			lpCmdLine++;
+		}
+	}
+
+	if (bOpenTracer)
 	{
 		AllocConsole();
 	}
 
 #endif // End of this function
 
-	if(ANTI_DUMP_MEMORY)
+	if (ANTI_DUMP_MEMORY)
 	{
 		SystemProcessesScan();
 		ProtectionMainDumpMemory();
 	}
-	if(ANTI_DETECT_WINDOWS_TITLE)
+	if (ANTI_DETECT_WINDOWS_TITLE)
 	{
 		ThreadDetectWindowsTitle();
 	}
-	if(ANTI_DETECT_WINDOWS_TEXT)
+	if (ANTI_DETECT_WINDOWS_TEXT)
 	{
 		ThreadDetectWindowsText();
 	}
-	if(CHECKSUM_FILE)
+	if (CHECKSUM_FILE)
 	{
 		ThreadCheckSumCRC();
 	}
-	if(ANTI_DETECT_HIDE)
+	if (ANTI_DETECT_HIDE)
 	{
 		ThreadDetectHide();
 	}
-	if(ANTI_CLASS_NAME_SCAN)
+	if (ANTI_CLASS_NAME_SCAN)
 	{
 		ThreadWindowsClassName();
 	}
-	if(ANTI_EXIST_MAIN_NAME)
+	if (ANTI_EXIST_MAIN_NAME)
 	{
 		ThreadExistMainName();
 	}
-	if(ANTI_BYPASS_MAIN_NAME)
+	if (ANTI_BYPASS_MAIN_NAME)
 	{
 		//ThreadProtectBypassMainName();
 	}
-	if(PAINT_SPLASH)
+	if (PAINT_SPLASH)
 	{
-	    CSplash splash1(TEXT(".\\GameGuard/logo.bmp"), RGB(128, 128, 128));
+		CSplash splash1(TEXT(".\\GameGuard/logo.bmp"), RGB(128, 128, 128));
 		splash1.ShowSplash();
 		Sleep(SPLASH_TIME);
 		//  Close the splash screen
@@ -240,12 +282,14 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	}
 
 	hInst = hInstance;
+	LoadResolutionFromConfig();
+	SetEngineResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
 	if (MyApp.Init(hInstance))
 		MyApp.Run();
 
 #ifdef TRUE
 
-	if ( bOpenTracer )
+	if (bOpenTracer)
 	{
 		FreeConsole();
 	}
@@ -282,8 +326,29 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 		g_pRepresentShell = CreateRepresentShell();
 #endif
 	}
-	if(g_pRepresentShell->Create(nWidth, nHeight, bFullScreen != 0))
+	if (g_bRepresent3 && !bFullScreen)
 	{
+		RECT	rc = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 40 };
+		HWND	hWnd = g_GetMainHWnd();
+		DWORD	dwStyle = 0;
+		dwStyle = WS_VISIBLE | WS_SYSMENU | WS_OVERLAPPED |
+			WS_CAPTION | WS_MINIMIZEBOX;
+		SetWindowLong(hWnd, GWL_STYLE, dwStyle);
+		AdjustWindowRectEx(&rc,
+			dwStyle,
+			GetMenu(hWnd) != NULL,
+			GetWindowLong(hWnd, GWL_EXSTYLE));
+		SetWindowPos(hWnd,
+			HWND_NOTOPMOST,
+			0,
+			0,
+			rc.right - rc.left,
+			rc.bottom - rc.top,
+			SWP_NOACTIVATE);
+	}
+	if (g_pRepresentShell->Create(nWidth, nHeight, bFullScreen != 0))
+	{
+
 		return TRUE;
 	}
 	else
@@ -295,88 +360,113 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 
 #include <ctime>
 
-void gen_random(char *s, size_t len) {
-     for (size_t i = 0; i < len; ++i) {
-         int randomChar = rand()%(26+26+10);
-         if (randomChar < 26)
-             s[i] = 'a' + randomChar;
-         else if (randomChar < 26+26)
-             s[i] = 'A' + randomChar - 26;
-         else
-             s[i] = '0' + randomChar - 26 - 26;
-     }
-     s[len] = 0;
+void gen_random(char* s, size_t len) {
+	for (size_t i = 0; i < len; ++i) {
+		int randomChar = rand() % (26 + 26 + 10);
+		if (randomChar < 26)
+			s[i] = 'a' + randomChar;
+		else if (randomChar < 26 + 26)
+			s[i] = 'A' + randomChar - 26;
+		else
+			s[i] = '0' + randomChar - 26 - 26;
+	}
+	s[len] = 0;
 }
 
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <string>
+#include "Ui/UiCase/UiTeamManager2.h"
+#include "Ui/UiCase/UiTargetInfo.h"
 using namespace std;
+
+void KMyApp::AddTrayIcon(HWND hWnd, LPCSTR tip)
+{
+    NOTIFYICONDATAA nid;
+	memset(&nid, 0, sizeof(nid));
+    nid.cbSize = sizeof(nid);
+    nid.hWnd = hWnd;
+    nid.uID = ID_TRAYICON;
+    nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+    nid.uCallbackMessage = WMAPP_TRAY;
+    nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(SWORD_ICON));
+    strcpy(nid.szTip, tip);
+    Shell_NotifyIcon(NIM_ADD, &nid);
+}
+
+void KMyApp::AddTrayIconHide(HWND hWnd, LPCSTR tip)
+{
+	g_bTrayActive = TRUE;
+	strcpy(g_szTip, tip);
+	AddTrayIcon(hWnd, tip);
+	ShowWindow(hWnd, SW_HIDE);
+}
 
 BOOL KMyApp::GameInit()
 {
-    
+	g_bTrayActive = FALSE;
+	g_uTaskbarCreated = RegisterWindowMessageA("TaskbarCreated");
 
 	DWORD aPid = GetCurrentProcessId();
 	PROCESSENTRY32 processInfo;
-    processInfo.dwSize = sizeof(processInfo);
-    HANDLE processesSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-    if (processesSnapshot == INVALID_HANDLE_VALUE)
-    {
-      std::wcout  << "can't get a process snapshot ";
-      return 0;
-    }
+	processInfo.dwSize = sizeof(processInfo);
+	HANDLE processesSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+	if (processesSnapshot == INVALID_HANDLE_VALUE)
+	{
+		std::wcout << "can't get a process snapshot ";
+		return 0;
+	}
 
-    for(BOOL bok =Process32First(processesSnapshot, &processInfo);bok;  bok = Process32Next(processesSnapshot, &processInfo))
-    {
-        if( aPid == processInfo.th32ProcessID)
-        {
-            std::wcout << "found running process: " << processInfo.szExeFile;
-            CloseHandle(processesSnapshot);
+	for (BOOL bok = Process32First(processesSnapshot, &processInfo); bok; bok = Process32Next(processesSnapshot, &processInfo))
+	{
+		if (aPid == processInfo.th32ProcessID)
+		{
+			std::wcout << "found running process: " << processInfo.szExeFile;
+			CloseHandle(processesSnapshot);
 
 			char strCounterG[32];
 			sprintf(strCounterG, "%s", processInfo.szExeFile);
 			//MessageBox(g_GetMainHWnd(), strCounterG, strCounterG, MB_ICONEXCLAMATION);
-		
-			if(strcmp("Game.exe",strCounterG) != 0)
+
+			if (strcmp("Game.exe", strCounterG) != 0)
 			{
 				return FALSE;
 			}
-            //return processInfo.szExeFile;
-        }
+			//return processInfo.szExeFile;
+		}
 
-    }
-    //std::wcout << "no process with given pid" << aPid;
-    //CloseHandle(processesSnapshot);
-    //return std::wstring();
-	
+	}
+	//std::wcout << "no process with given pid" << aPid;
+	//CloseHandle(processesSnapshot);
+	//return std::wstring();
+
 
 	Error_SetErrorString("KMyApp::GameInit");
-    #ifdef KUI_USE_HARDWARE_MOUSE
-	
-    ShowMouse(TRUE);
-    
-    #else   // KUI_USE_HARDWARE_MOUSE
-	
-    ShowMouse(FALSE);
-    
-    #endif
+#ifdef KUI_USE_HARDWARE_MOUSE
+
+	ShowMouse(TRUE);
+
+#else   // KUI_USE_HARDWARE_MOUSE
+
+	ShowMouse(FALSE);
+
+#endif
 
 	g_SetRootPath(NULL);
 	g_SetFilePath("\\");
 
 	g_PakList.Open("\\package.ini");//edit by phong kieu
 
-	KIniFile*	pSetting = g_UiBase.GetCommConfigFile();
+	KIniFile* pSetting = g_UiBase.GetCommConfigFile();
 	if (pSetting)
 	{
 		pSetting->GetString("Main", "GameName", "Vo Lam Truyen Ky", g_szGameName, sizeof(g_szGameName));
-        SetWindowText(g_GetMainHWnd(), g_szGameName);
+		SetWindowText(g_GetMainHWnd(), g_szGameName);
 	}
 
 #ifdef _DEBUG
-	g_FindDebugWindow("#32770","DebugWin");
+	g_FindDebugWindow("#32770", "DebugWin");
 #endif
 
 	KIniFile	IniFile;
@@ -416,14 +506,14 @@ BOOL KMyApp::GameInit()
 			KUiCapture::SetRecPath(szRecPath);//Set Folder save file Rec video
 		}
 	}
-	
+
 
 	IniFile.Clear();
 
 	if (!g_libFilterText.Initialize()
 		|| !g_ChatFilter.Initialize())
 		return FALSE;
-
+	LoadResolutionFromConfig();
 	if (!InitRepresentShell(g_bScreen, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
 		return FALSE;
@@ -438,7 +528,7 @@ BOOL KMyApp::GameInit()
 
 	//[wxb 2003-6-23]
 	m_pInlinePicSink = new KInlinePicSink;
-    if (m_pInlinePicSink)
+	if (m_pInlinePicSink)
 	{
 		m_pInlinePicSink->Init(g_pRepresentShell);
 		_ASSERT(NULL == g_pIInlinePicSink);
@@ -464,7 +554,7 @@ BOOL KMyApp::GameInit()
 	g_pCoreShell->SetMusicInterface((KMusic*)&m_Music);
 	g_pCoreShell->SetCallDataChangedNofify(&g_ClientCallback);
 	g_pCoreShell->SetRepresentAreaSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	
+
 	g_pMusic = &m_Music;
 
 	if (g_NetConnectAgent.Initialize() == 0)
@@ -477,11 +567,13 @@ BOOL KMyApp::GameInit()
 	m_GameCounter = 0;
 
 	m_Timer.Start();
-	
+
 	SetMouseHoverTime(400);
 
-	if(UiStart())
+	if (UiStart())
 	{
+		if(!InitMapping())
+			return FALSE;
 		return TRUE;
 	}
 	else
@@ -539,44 +631,646 @@ BOOL KMyApp::GameExit()
 
 	g_ChatFilter.Uninitialize();
 	g_libFilterText.Uninitialize();
+//clear auto
+	if (g_pState) { UnmapViewOfFile(g_pState); g_pState = NULL; }
+	if (g_hMap) { CloseHandle(g_hMap); g_hMap = NULL; }
+    if (g_hEventRecv) { CloseHandle(g_hEventRecv); g_hEventRecv = NULL; }
+	if (g_pRepState) { UnmapViewOfFile(g_pRepState); g_pRepState = NULL; }
+	if (g_hRepMap) { CloseHandle(g_hRepMap); g_hRepMap = NULL; }
+    if (g_hRepEvent) { CloseHandle(g_hRepEvent); g_hRepEvent = NULL; }
 
 	return TRUE;
+}
+
+bool KMyApp::InitMapping()
+{
+	char Buffer[128];
+	UINT pid = GetCurrentProcessId();
+	sprintf(Buffer, "%s%u", MMF_NAME_SERVER, pid);
+	g_hMap = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, SHARED_SIZE, Buffer);
+    if (!g_hMap)
+		return false;
+	g_pState = (SharedState*)MapViewOfFile(g_hMap, FILE_MAP_ALL_ACCESS, 0,0,0);
+    if (!g_pState)
+		return false;
+    // init struct once
+	sprintf(Buffer, "%s%u", EVT_SVRECV, pid);
+    g_hEventRecv = CreateEvent(NULL, FALSE, FALSE, Buffer); // auto-reset
+	return true;
+}
+
+void SendInfoToTool(const void * const pData, const size_t &datalength)
+{
+	if(!g_pRepState || datalength <= 0)
+		return;
+	if(g_CurSize + datalength + sizeof(UINT) > SHARED_SIZE)
+		return;
+	memcpy(&g_Buffer[g_CurSize], pData, datalength);
+	g_CurSize += datalength;
+	++g_CurNum;
+}
+
+void KMyApp::AppSendInfoToTool(const void * const pData, const size_t &datalength)
+{
+	SendInfoToTool(pData, datalength);
+}
+
+void KMyApp::ExtAutoLogin(const IPCAutoLogin* pALg)
+{
+	if(!g_pCoreShell)
+		return;
+	if(g_ALGStep >= 100)
+		return;
+	KUiInit* pInit = NULL;
+	KUiSelServer* pSelsv = NULL;
+	if(pInit = KUiInit::GetIfVisible())
+	{
+		g_ALGStep = 1;
+		pInit->AutoLgNextStep();
+	}
+	else if(pSelsv = KUiSelServer::GetIfVisible())
+	{
+		g_ALGStep = 2;
+		pSelsv->AutoLgNextStep(pALg->nSelSvGroup, pALg->nSelServer);
+		if(!KUiSelServer::GetIfVisible())
+		{
+			g_AGLNextTime = timeGetTime() + 4000;
+		}
+	}
+	else if(g_ALGStep == 2)
+	{
+		KUiLogin* pLogin = NULL;
+		if(pLogin = KUiLogin::GetIfVisible())
+		{
+			g_ALGStep = 3;
+			pLogin->AutoLgNextStep(pALg->szAccount, pALg->szPassword);
+			g_AGLNextTime = timeGetTime() + 4000;
+		}
+		else if(g_AGLNextTime < timeGetTime())
+		{
+			g_ALGStep = 100;
+			PostQuitMessage(0);
+			return;
+		}
+	}
+	else if(g_ALGStep == 3)
+	{
+		KUiSelPlayer* pSelP = NULL;
+		if(pSelP = KUiSelPlayer::GetIfVisible())
+		{
+			g_ALGStep = 4;
+			g_AGLNextTime = timeGetTime() + 4000;
+			if(!pSelP->AutoLgNextStep(pALg->szName))
+			{
+				g_ALGStep = 100;
+				PostQuitMessage(0);
+				return;
+			}
+		}
+		else if(g_AGLNextTime < timeGetTime())
+		{
+			g_ALGStep = 100;
+			PostQuitMessage(0);
+			return;
+		}
+	}
+	else if(g_ALGStep == 4)
+	{
+		UINT uID;
+		g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, (unsigned int)&uID, 0);
+		if(uID == pALg->dwID)
+		{
+			g_ALGStep = 100;
+		}
+		else if(g_AGLNextTime < timeGetTime())
+		{
+			g_ALGStep = 100;
+			PostQuitMessage(0);
+			return;
+		}
+	}
+}
+
+void KMyApp::SendAllCommand()
+{
+	if(!g_pRepState || g_CurSize <= 0)
+		return;
+	*(UINT*)g_pRepState = g_CurNum;
+	memcpy((BYTE*)g_pRepState + sizeof(UINT), g_Buffer, g_CurSize);
+	g_CurSize = 0;
+	g_CurNum = 0;
+	SetEvent(g_hRepEvent);
+}
+
+void KMyApp::ExtAutoLoop(const autoData* pApData)
+{
+	if(!g_pCoreShell)
+		return;
+	Wnd_SetPKKey(pApData->uFKey);
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CHECKTIME, 0);
+	if(pApData->bRevive)
+	{
+		if(PushReviveButton())
+			return;
+	}
+	if(pApData->bOutWhenDis && !pApData->bOnPK)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DISEXIT, 0))
+		{
+			PostQuitMessage(0);
+			return;
+		}
+	}
+	if(pApData->bOutTimer && !pApData->bOnPK)
+	{
+    	SYSTEMTIME	sTime;
+		GetLocalTime(&sTime);
+		if(sTime.wHour == pApData->nHour && sTime.wMinute == pApData->nMinute)
+		{
+			PostQuitMessage(0);
+			return;
+		}
+	}
+	if(!g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
+		return;
+	if(pApData->bOutWhenTP && !pApData->bOnPK)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_EXIT, 0))
+		{
+			PostQuitMessage(0);
+			return;
+		}
+	}
+	int nParam[4];
+	if(pApData->bCheckiLife)
+	{
+		nParam[0] = pApData->nIlifeCell1;
+		nParam[1] = pApData->nIlifeCell2;
+		nParam[2] = pApData->nIlifeCell3;
+		if(nParam[2] < 200)
+			nParam[2] = 200;
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PUMPLIFE, (int)&nParam);
+	}
+	if(pApData->bCheckiMana)
+	{
+		nParam[0] = pApData->nImanaCell1;
+		nParam[1] = pApData->nImanaCell2;
+		nParam[2] = pApData->nImanaCell3;
+		if(nParam[2] < 200)
+			nParam[2] = 200;
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PUMPMANA, (int)&nParam);
+	}
+	if(pApData->bCheckTPLife)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKLIFE, pApData->nTPLife))
+			return;
+	}
+	if(pApData->bCheckTPMana)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKMANA, pApData->nTPMana))
+			return;
+	}
+	if(pApData->bCheckTPLifeGone)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_LIFEGONE, 0))
+			return;
+	}
+	if(pApData->bCheckTPManaGone)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_MANAGONE, 0))
+			return;
+	}
+	if(pApData->bCheckTPIBox)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLITEM, pApData->nTPiboxSel))
+			return;
+	}
+	if(pApData->bCheckTPMoney)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLMONEY, pApData->nTPMoney))
+			return;
+	}
+	if(pApData->bCheckTPIDmg)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_DMGITEM, pApData->nTPDmgItem))
+			return;
+	}
+	if(pApData->bChat)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CANCHAT, pApData->nChatChann))
+		{
+			char	Buffer[256];
+			int nMsgLength = KUiFaceSelector::ConvertFaceText(Buffer, pApData->szChat, strlen(pApData->szChat));
+			nMsgLength = TEncodeText(Buffer, nMsgLength);
+			if(pApData->nChatChann == 0)	//chat phu can
+			{
+				int nChannelDataCount = KUiMsgCentrePad::GetChannelCount();
+				for(int i=0;i<nChannelDataCount;++i)
+				{
+					if(KUiMsgCentrePad::IsChannelType(i, KUiMsgCentrePad::ch_Screen))
+					{
+						DWORD nChannelID = KUiMsgCentrePad::GetChannelID(i);
+						KUiPlayerBar::OnSendChannelMessage(
+							nChannelID, Buffer, nMsgLength);
+					}
+				}
+			}
+			else	//kenh the gioi
+			{
+				int i = KUiMsgCentrePad::GetChannelIndex("CH_WORLD");
+				if(i >= 0)
+				{
+					DWORD nChannelID = KUiMsgCentrePad::GetChannelID(i);
+					KUiPlayerBar::OnSendChannelMessage(
+						nChannelID, Buffer, nMsgLength);
+				}
+			}
+		}
+	}
+	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, Wnd_IsLButtonDown());
+	BOOL bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
+	if(bLaunch != 2)
+		bLaunch = 0;
+	if(pApData->bUseBuff && !bLaunch)
+	{
+		nParam[0] = pApData->nUseBuffVal;
+		nParam[1] = pApData->bPTBuff;
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_BASEBUFF, (int)&nParam);
+	}
+	if(pApData->bCLBuff && !bLaunch)
+	{
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CLBUFF, pApData->bCLBuffCamp);
+	}
+	if(pApData->nSkillIdSP1 && !bLaunch)
+	{
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SUPPORTBUFF, pApData->nSkillIdSP1);
+	}
+	if(pApData->nSkillIdSP2 && !bLaunch)
+	{
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SUPPORTBUFF, pApData->nSkillIdSP2);
+	}
+	if(pApData->nSkillIdSP3 && !bLaunch)
+	{
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SUPPORTBUFF, pApData->nSkillIdSP3);
+	}
+	if(!pApData->bOnPK)
+	{
+		if(pApData->nSkillIdL)
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_LEFTSKILL, pApData->nSkillIdL);
+		if(pApData->nSkillIdR)
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RIGHTSKILL, pApData->nSkillIdR);
+	}
+	else if(pApData->bDrawVision)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0))
+		{
+			g_DrawVision = pApData->nPKVision;
+			if(g_DrawVision < 100)
+				g_DrawVision = 100;
+			else if(g_DrawVision > 1200)
+				g_DrawVision = 1200;
+			g_DrawVisionTime = timeGetTime() + 250;
+		}
+	}
+	if(pApData->nSkillIdA1 || pApData->nSkillIdA2)
+	{
+		nParam[0] = pApData->nSkillIdA1;
+		nParam[1] = pApData->nSkillIdA2;
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CHANGEAURA, (int)&nParam);
+	}
+	if(!Wnd_IsLButtonDown())
+	{
+		if(pApData->bOnPK)
+		{
+			if(pApData->bUseFKey && !Wnd_IsPKKeyDown())
+				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
+			if(!bLaunch && (!pApData->bUseFKey || Wnd_IsPKKeyDown()))
+			bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pApData);
+		}
+		else
+		{
+			if(!bLaunch)
+			{
+				BOOL bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
+				if(!bMoving && pApData->bFight)
+				{
+					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)pApData);
+					if(bLaunch == 2)
+					{
+						PostQuitMessage(0);
+						return;
+					}
+					if(!bLaunch)
+						g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETMOVE, 0);
+				}
+			}
+		}
+	}
+	else if(pApData->bOnPK)
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
+	
+	if(pApData->bEatPoison)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_EATPOISON, 0))
+			return;
+	}
+	if(pApData->bEatLifeFull)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_EATLIFEFULL, 0))
+			return;
+	}
+	if(pApData->bEatExp)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_EATEXPX2, 0))
+			return;
+	}
+	if(pApData->bEatSkill)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_EATSKILLX2, 0))
+			return;
+	}
+	if(pApData->bOpenBag)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_OPENBAG, 0))
+			return;
+	}
+	if(pApData->bArrangeI)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ARRANGEITEM, 0))
+			return;
+	}
+	if(pApData->bArrangeB)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ARRANGEBOX, 0))
+			return;
+	}
+	if(!Wnd_IsLButtonDown())
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FILTER, (int)pApData))
+			return;
+	}
+	if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTPROC, (int)pApData))
+		return;
+	if(pApData->nSelInvitePt)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTINVITE, (int)pApData))
+			return;
+	}
+	if(pApData->nSelJoinPt)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTJOIN, (int)pApData))
+			return;
+	}
+	if(pApData->bFRepair)
+	{
+		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_REPAIRF, 0))
+			return;
+	}
+	if(pApData->bReturn && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
+	&& !Wnd_IsLButtonDown())
+	{
+		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RETURN, (int)pApData);
+	}
+}
+
+void KMyApp::ProcIpcCommand()
+{
+	if(!g_pState)
+		return;
+	if (WaitForSingleObject(g_hEventRecv, 0) == WAIT_OBJECT_0)
+	{
+		HWND hWnd = g_GetMainHWnd();
+		UINT uCount = *(UINT*)g_pState;
+		SharedState* p = (SharedState*)((BYTE*)g_pState + sizeof(UINT));
+		for(UINT c = 0; c<uCount; ++c)
+		{
+			switch(p->CmdID)
+			{
+			case PRT_CONNECT:
+			{
+				char Buffer[128];
+				UINT pid = GetCurrentProcessId();
+				sprintf(Buffer, "%s%u", MMF_NAME_CLIENT, pid);
+				g_hRepMap = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, Buffer);
+				g_pRepState = (SharedState*)MapViewOfFile(g_hRepMap, FILE_MAP_READ | FILE_MAP_WRITE, 0,0,0);
+				sprintf(Buffer, "%s%u", EVT_CLRECV, pid);
+				g_hRepEvent = OpenEventA(EVENT_MODIFY_STATE, FALSE, Buffer);
+				SharedState s;
+				s.CmdID = PRG_REPLYRECVED;
+				s.Size = sizeof(SharedState);
+				SendInfoToTool(&s, sizeof(SharedState));
+			}
+			break;
+			case PRT_GAMELOOP:
+			{
+				IPCGameLoop* pGL = (IPCGameLoop*)p;
+				ExtAutoLoop(&pGL->setting);
+			}
+			break;
+			case PRT_HIDEGAME:
+			{
+				IPCHideGame* pCmd = (IPCHideGame*)p;
+				if(pCmd->bHide)
+				{
+					if(g_bTrayActive)
+						break;
+					KUiPlayerBaseInfo	Info;
+					memset(&Info, 0, sizeof(KUiPlayerBaseInfo));
+					g_pCoreShell->GetGameData(GDI_PLAYER_BASE_INFO, (int)&Info, 0);
+					if(Info.Name[0])
+						AddTrayIconHide(hWnd, Info.Name);
+					else
+						AddTrayIconHide(hWnd, "< >");
+				}
+				else
+				{
+					if(!g_bTrayActive)
+						break;
+					g_bTrayActive = FALSE;
+					NOTIFYICONDATAA nid;
+					memset(&nid, 0, sizeof(nid));
+					nid.cbSize = sizeof(nid);
+					nid.hWnd = hWnd;
+					nid.uID = ID_TRAYICON;
+					Shell_NotifyIcon(NIM_DELETE, &nid);
+					ShowWindow(hWnd, SW_RESTORE);
+					SetForegroundWindow(hWnd);
+				}
+			}
+			break;
+			case PRT_ISHIDE:
+			{
+				IPCHideGame s;
+				s.CmdID = PRG_REPISHIDE;
+				s.Size = sizeof(IPCHideGame);
+				s.bHide = g_bTrayActive;
+				SendInfoToTool(&s, sizeof(IPCHideGame));
+			}
+			break;
+			case PRT_TICKSTART:
+			{
+				IPCHideGame* pCmd = (IPCHideGame*)p;
+				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CLEAR, pCmd->bHide);
+			}
+			break;
+			case PRT_RETONOFPK:
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
+				{
+					IPCHideGame* pCmd = (IPCHideGame*)p;
+					char szInfo[64];
+					if(pCmd->bHide)
+						strcpy(szInfo, "BËt chÕ ®é AutoPK");
+					else
+						strcpy(szInfo, "ChuyÓn vÒ luyÖn c«ng, t¾t AutoPK");
+					KUiMsgCentrePad::SystemMessageArrival(szInfo, strlen(szInfo));
+				}
+			}
+			break;
+			case PRT_RETAUTOONOF:
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
+				{
+					IPCHideGame* pCmd = (IPCHideGame*)p;
+					char szInfo[64];
+					if(pCmd->bHide)
+						strcpy(szInfo, "KÝch ho¹t Auto bªn ngoµi");
+					else
+						strcpy(szInfo, "Ng­ng ho¹t ®éng Auto bªn ngoµi");
+					KUiMsgCentrePad::SystemMessageArrival(szInfo, strlen(szInfo));
+				}
+			}
+			break;
+			case PRT_GETITEMNAME:
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
+				{
+					char szBuffer[4812];
+					SharedState* pN = (SharedState*)&szBuffer[0];
+					pN->CmdID = PRG_OPENNOPICK;
+					int* pCount = (int*)(pN+1);
+					char* pName = (char*)(pCount+1);
+					*pCount = g_pCoreShell->OperationRequest(
+						GOI_AUTOPLAY_ACTION, ATYPE_GETITEMNAME, (int)pName);
+					pN->Size = sizeof(SharedState) + sizeof(int) + (*pCount)*80;
+					SendInfoToTool(pN, pN->Size);
+				}
+			}
+			break;
+			case PRT_GETTEAMAROUND:
+			{
+				if(g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
+				{
+					char szBuffer[3232];
+					IPCHideGame* pCmd = (IPCHideGame*)p;
+					SharedState* pN = (SharedState*)&szBuffer[0];
+					pN->CmdID = PRG_TEAMNAMELIST;
+					int* pCount = (int*)(pN+1);
+					*pCount++ = pCmd->bHide;
+					char* pName = (char*)(pCount+1);
+					*pCount = g_pCoreShell->OperationRequest(
+						GOI_AUTOPLAY_ACTION, ATYPE_GETAROUNDNAME, (int)pName);
+					pN->Size = sizeof(SharedState) + sizeof(int)*2 + (*pCount)*32;
+					SendInfoToTool(pN, pN->Size);
+				}
+			}
+			break;
+			case PRT_ACTAUTOLG:
+			{
+				IPCAutoLogin* pCmd = (IPCAutoLogin*)p;
+				ExtAutoLogin(pCmd);
+			}
+			break;
+			case PRT_QUITGAME:
+			{
+				PostQuitMessage(0);
+				return;
+			}
+			break;
+			}
+			p = (SharedState*)((BYTE*)p + p->Size);
+		}
+	}
 }
 
 BOOL KMyApp::GameLoop()
 {
 	static int nGameFps = 0;
 	g_NetConnectAgent.Breathe();
-	
+	if(g_DrawVisionTime < timeGetTime())
+		g_DrawVision = 0;
+	ProcIpcCommand();
 	if (m_GameCounter * 1000 <= m_Timer.GetElapse() * GAME_FPS)
 	{
 		if (g_pCoreShell->Breathe() && UiHeartBeat())
 		{
 			//UiPaint(nGameFps); //Fix by kinnox cpu nhe hon nhiÒu l¾m
-			KUiCapture *kct = KUiCapture::GetUiCapture();
-			if(kct->m_bandiCaptureLibrary.IsCapturing())
+			KUiCapture* kct = KUiCapture::GetUiCapture();
+			if (kct->m_bandiCaptureLibrary.IsCapturing())
 			{
 				kct->m_bandiCaptureLibrary.Work(NULL);
 				TCHAR s[128];
 				INT msec = kct->m_bandiCaptureLibrary.GetCaptureTime();
 				//_stprintf(s, _T("%02d:%02d:%03d / %.1f MB"), msec/(60*1000), msec%(60*1000)/1000, msec%1000, kct->m_bandiCaptureLibrary.GetCaptureFileSize()/1024./1024.);
-				_stprintf(s, _T("[ %02d:%02d:%03d ]"), msec/(60*1000), msec%(60*1000)/1000, msec%1000);
+				_stprintf(s, _T("[ %02d:%02d:%03d ]"), msec / (60 * 1000), msec % (60 * 1000) / 1000, msec % 1000);
 				kct->SetRecTimmer(s);
 			}
 
+			int TickCountTMG = 0;
+			int TimeDelay_Update_TMG = 1000;
+			if (KUiTeamManager2::GetIfVisible() == NULL)
+			{
+				KUiTeamManager2::OpenWindow();
+			}
+			else
+			{
+				if (GetTickCount() - TickCountTMG > TimeDelay_Update_TMG)
+				{
+					TickCountTMG = GetTickCount();
+					KUiTeamManager2* kt2 = KUiTeamManager2::GetUiTeamManager();
+					kt2->UpdateData(NULL);
+				}
+			}
+			///
+
+			///UiTargetInfo
+			int TickCountTI = 0;
+			int TimeDelay_Update_TI = 1000;
+			if (KUiTargetInfo::GetIfVisible() == NULL)
+			{
+				KUiTargetInfo::OpenWindow();
+			}
+			else
+			{
+				if (GetTickCount() - TickCountTI > TimeDelay_Update_TI)
+				{
+					TickCountTI = GetTickCount();
+					KUiTargetInfo* ti = KUiTargetInfo::GetUiTargetInfo();
+					ti->UpdateData(NULL);
+				}
+			}
 			m_GameCounter++;
 			int	nElapse = m_Timer.GetElapse();
 			if (nElapse)
 				nGameFps = m_GameCounter * 1000 / nElapse;
+			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DRAWVISION, g_DrawVision);
+			UiPaint(nGameFps);//nhe hon
 		}
 		else
 		{
 			return false;
 		}
 	}
+	SendAllCommand();
+	if (MyApp.NotifiIconState())
+	{	
+		gTrayMode.ShowNotify();
+		MyApp.m_bNotifiIconState = FALSE;
+	}	
+	
 	if (m_GameCounter * 1000 >= m_Timer.GetElapse() * GAME_FPS)
 	{
-		UiPaint(nGameFps);
+		//UiPaint(nGameFps);
 		Sleep(1);
 	}
 	else if ((m_GameCounter % 8) == 0)
@@ -592,11 +1286,21 @@ int KMyApp::HandleInput(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	int nRet = 0;
 	if (uMsg != WM_CLOSE)
 	{
+		if (g_bRepresent3 && !g_bScreen)
+		{
+			if ((uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST && uMsg != WM_MOUSEWHEEL) || uMsg == WM_MOUSEHOVER)
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				y = y - y * 40 / (SCREEN_HEIGHT + 40);
+				lParam = x | (y << 16);
+			}
+		}
 		UiProcessInput(uMsg, wParam, lParam);
 	}
 	else if (g_bScreen == false && UiIsAlreadyQuit() == false)
 	{
-		KIniFile*	pSetting = g_UiBase.GetCommConfigFile();
+		KIniFile* pSetting = g_UiBase.GetCommConfigFile();
 		if (pSetting)
 		{
 			char	szMsg[128], szTitle[64];

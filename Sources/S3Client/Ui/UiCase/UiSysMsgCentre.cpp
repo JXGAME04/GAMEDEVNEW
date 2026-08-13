@@ -27,6 +27,7 @@
 #include <crtdbg.h>
 #include "UiChatCentre.h"
 #include "KTongProtocol.h"
+#include "UiSkillsNew.h"
 
 extern iCoreShell*		g_pCoreShell;
 extern iRepresentShell*	g_pRepresentShell;
@@ -132,10 +133,16 @@ void KUiSysMsgCentre::LoadScheme(const char* pScheme)
 			m_pSelf->LoadScheme(&Ini);
 	}
 }
-
+extern int SCREEN_WIDTH;
 void KUiSysMsgCentre::LoadScheme(KIniFile* pIni)
 {
-	KWndWindow::Init(pIni, "Main");
+	if (SCREEN_WIDTH == 1024)
+	{
+		KWndWindow::Init(pIni, "Main1024");
+	}
+	else {
+		KWndWindow::Init(pIni, "Main");
+	}
 	m_MsgTextWnd .Init(pIni, "MsgText");
 
 	char		szBuf[16];
@@ -276,6 +283,15 @@ void KUiSysMsgCentre::OnConfirmOperFinished(unsigned int uParam, int nSelAction)
 			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem));
 			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
 			g_pCoreShell->OperationRequest(GOI_TRADE_INVITE_RESPONSE,
+				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
+		}
+		break;
+	case SMCT_UI_GAMBLE:
+		if (m_pHandlingMsg)
+		{
+			//_ASSERT(m_pHandlingMsg->byParamSize >= sizeof(KUiPlayerItem));
+			pPlayer = (KUiPlayerItem*)(&m_pHandlingMsg[1]);
+			g_pCoreShell->OperationRequest(GOI_GAMBLE_INVITE_RESPONSE,
 				(unsigned int)pPlayer, (nSelAction == 0));	//nSelAction=0£º´ðÓ¦, nSelAction=1£º¾Ü¾ø
 		}
 		break;
@@ -554,13 +570,13 @@ void KUiSysMsgCentre::ConfirmMsg(KSystemMessage* pMsg, bool bImmedDel)
 		break;
 	case SMCT_UI_SKILLS:		
 		if (bImmedDel == false)
-			KUiSkills::OpenWindow();
+			KUiSkillsNew::OpenWindow();
 		break;
 	case SMCT_UI_ATTRIBUTE_SKILLS:
 		if (bImmedDel == false)
 		{
 			KUiStatus::OpenWindow();
-			KUiSkills::OpenWindow();
+			KUiSkillsNew::OpenWindow();
 		}
 		break;
 	case SMCT_UI_TEAM:			//´ò¿ª¶ÓÎé¹ÜÀíÃæ°å
@@ -608,6 +624,16 @@ void KUiSysMsgCentre::ConfirmMsg(KSystemMessage* pMsg, bool bImmedDel)
 		pPlayer = (KUiPlayerItem*)(&pMsg[1]);
 		sprintf(szBuf, "%s mêi giao dÞch.", pPlayer->Name);
 		pFirstBtnText = "§ång ý";
+		pSecBtnText = "Tõ chèi";
+		_ASSERT(m_pHandlingMsg == NULL);
+		m_pHandlingMsg = pMsg;
+		pMsg = NULL;
+		break;
+	case SMCT_UI_GAMBLE:
+		_ASSERT(pMsg->byParamSize >= sizeof(KUiPlayerItem));
+		pPlayer = (KUiPlayerItem*)(&pMsg[1]);
+		sprintf(szBuf, "%s mêi O¼n tï t×.", pPlayer->Name);
+		pFirstBtnText = "Ch¬i lu«n";
 		pSecBtnText = "Tõ chèi";
 		_ASSERT(m_pHandlingMsg == NULL);
 		m_pHandlingMsg = pMsg;

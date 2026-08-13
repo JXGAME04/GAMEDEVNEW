@@ -25,7 +25,7 @@ public:
 	KUiInformation();
 	//
 	void	FkAutoHideClickBtn(int nBtnIndex); //tù ®éng bÊm vÒ thµnh d­ìng søc
-
+	bool PushReviveButton();
 private:
 	void	Hide(int nBtnIndex);					//Òþ²Ø´°¿Ú
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);//´°¿Úº¯Êý
@@ -46,5 +46,5 @@ void UIMessageBox(const char* pMsg, KWndWindow* pCaller = 0,
 				  const char* pszSecondBtnText = 0,
 				  unsigned int uParam = 0);
 void UiCloseMessageBox();
-
+bool PushReviveButton();
 extern KUiInformation	g_UiInformation;

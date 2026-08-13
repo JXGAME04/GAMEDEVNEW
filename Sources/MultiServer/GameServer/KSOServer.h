@@ -1,6 +1,7 @@
 #ifndef KSOServerH
 #define	KSOServerH
 
+#include <unordered_map>
 #include <map>
 #include "KEngine.h"
 #include "IClient.h"
@@ -10,6 +11,7 @@
 #include "..\..\Core\src\CoreServerShell.h"
 #include "UsesWinsock.h"
 #include "Buffer.h"
+#include "GameServerLog.h"
 
 #include "../Engine/Src/KWin32.h"
 #include "../Engine/Src/KPakList.h"
@@ -25,6 +27,17 @@ using OnlineGameLib::Win32::CPackager;
 #include "IServer.h"
 #include "KTimer.h"
 #include "KTransferUnit.h"
+#include <KLinkArray.h>
+
+enum PLAYER_GAME_STATUS
+{
+	enumPlayerBegin = 0,
+	enumPlayerSyncEnd,
+	enumPlayerPlaying,
+	enumPlayerExchangingServer,
+	enumPlayerLixian,
+	enumPlayerNone,
+};
 
 enum NetStatus
 {
@@ -32,17 +45,29 @@ enum NetStatus
 	enumNetConnected,
 };
 
+
+enum PLAYER_EXCHANGE_STATUS
+{
+	enumExchangeBegin = 0,
+	enumExchangeSearchingWay,
+	enumExchangeWaitForGameSvrRespone,
+	enumExchangeCleaning,
+};
+
 struct GameStatus 
 {
 	GameStatus() 
 	{
-		nGameStatus = 0; 
-		nNetStatus = 0;
-		nExchangeStatus = 0;
+		nGameStatus = enumPlayerNone;
+		nNetStatus = enumNetUnconnect;
+		nExchangeStatus = enumExchangeCleaning;
 		nPlayerIndex = 0;
 		nSendPingTime = 0;
 		nReplyPingTime = 0;
 		nPingLoopCount = 0;
+		nNetidx = -1;
+		nErrorLoopCount = 0;
+
 	};
 	int					nPlayerIndex;
 	int					nGameStatus;
@@ -51,6 +76,8 @@ struct GameStatus
 	int					nSendPingTime;
 	int					nReplyPingTime;
 	int					nPingLoopCount;
+	int                 nNetidx;
+	unsigned int        nErrorLoopCount;
 } ;
 
 class KSwordOnLineSever
@@ -59,16 +86,18 @@ private:
 #ifdef _STANDALONE
 	ZBuffer *net_buffer;
 #endif
+	std::unordered_map<std::string, int> m_ipConnectionCount; // Add to class declaration
+	const int MAX_CONNECTIONS_PER_IP = 8; //account/IP
 	int					m_nMaxPlayerCount;
 	int					m_nPrecision;
 	static const int	m_snMaxBuffer;
 	static const int	m_snBufferSize;
 	int					m_nMaxPlayer;
 	int					m_nGameLoop;
+	int					m_nMaxGameStaus;
 	int					m_nGameDay;
 	int					m_pingCount;
 	int					m_nServerPort;
-	int					m_nGatewayPort;
 	int					m_nDatabasePort;
 	int					m_nTransferPort;
 	int					m_nChatPort;
@@ -77,7 +106,6 @@ private:
 	DWORD				m_dwInternetIp;
 	char				m_szInternetIP[16];
 	char				m_szIntranetIP[16];
-	char				m_szGatewayIP[16];
 	char				m_szDatabaseIP[16];
 	char				m_szTransferIP[16];
 	char				m_szChatIP[16];
@@ -88,21 +116,32 @@ private:
 //	BOOL				m_bSaveFlag;
 //	int					m_nSaveCount;
 	IServer*			m_pServer;
-	IClient*			m_pGatewayClient;
 	IClient*			m_pDatabaseClient;
 	IClient*			m_pTransferClient;
 	IClient*			m_pChatClient;
 	IClient*			m_pTongClient;
 	GameStatus*			m_pGameStatus;
+
+	KLinkArray m_FreeIdxNetStatus; // Available table
+	KLinkArray m_UseIdxNetStatus; // Used table
+	int m_nListCurIdx; // Used for GetFirstPlayer and GetNextPlayer
+
 	struct iCoreServerShell*	m_pCoreServerShell;
 	KTimer				m_Timer;
 	typedef std::map<DWORD, KTransferUnit*>	IP2CONNECTUNIT;
 	IP2CONNECTUNIT		m_mapIp2TransferUnit;
 	
 public:
+	IClient* m_pGatewayClient;
+	bool m_GatewayLost;
+	int					m_nGatewayPort;
+	char				m_szGatewayIP[16];
+	bool CanAcceptConnection(const std::string& ipAddress);
 	KSwordOnLineSever();
 	~KSwordOnLineSever();
-	KPakList			g_PakList;//edit by phong kieu khai bao bien gpacklist open file pack server maps.pak
+	KPakList			g_PakList;
+	void NotifyTeleWorker();
+	//edit by phong kieu khai bao bien gpacklist open file pack server maps.pak
 	BOOL				InitServer(char * szParam);
 	char					m_ParamName[64];
 	int							m_GsNumBer;
@@ -113,6 +152,9 @@ public:
 	void				SetNetStatus(const unsigned long lnID, NetStatus nStatus);
 	void				SetRunningStatus(BOOL bStatus);
 	void				Release();
+
+//	bool TryReconnectGateway(int maxRetries);
+
 private:
 	void				MessageLoop();
 	void				GatewayMessageProcess(const char* pChar, size_t nSize);

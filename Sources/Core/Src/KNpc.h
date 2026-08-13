@@ -22,7 +22,7 @@ class KSkill;
 #else
 #define		MAX_NPC				256				//max npc tai client la 256
 #endif
-#define		MAX_NPCSTYLE	2022
+#define		MAX_NPCSTYLE	3000
 #define		GAME_FPS						18
 #define		MAX_AI_PARAM					11
 #define		MAX_NPC_USE_SKILL				4
@@ -32,6 +32,8 @@ class KSkill;
 #define		STATE_HIDE		0x0008
 #define		STATE_FROZEN	0x0010
 #define		STATE_WALKRUN	0x0020
+#define MAX_POISON_DAMAGE 200000 //tæng dame ®éc giíi h¹n 
+#define MAX_FIRE_DAMAGE 50000 //tæng dame hoa sat giíi h¹n 
 
 enum NPCATTRIB
 {
@@ -129,6 +131,8 @@ struct KState
 	int	nMagicAttrib;
 	int	nValue[2];
 	int	nTime;
+
+	KState() : nMagicAttrib(0), nValue{ 0, 0 }, nTime(0) {}
 };
 
 struct	KSyncPos
@@ -207,7 +211,10 @@ class KNpc
 {
 	friend class KNpcSet;
 public:
-
+#ifdef _SERVER
+    int m_nLastSyncMapX;
+    int m_nLastSyncMapY;
+#endif
 	DWORD				m_dwID;					// NpcµÄID
 	int							m_Index;				// NpcµÄË÷Òý
 	KIndexNode			m_Node;					// Npc's Node
@@ -228,7 +235,9 @@ public:
 	BYTE				m_ImagePlayer;
 	BYTE				nReBorn;
 	BYTE				nFirstFaction;
+	BYTE				m_byMantleLevel;
 	int					m_nStature;				//Tall 
+	char				m_szGameTitle[64];		// Game title (e.g., "Faction Name - Title")
 	int					m_Recruit;
 	int					m_nNpcTimeout;
 	int					m_nNpcParam[MAX_NPCPARAM];
@@ -261,7 +270,7 @@ public:
 	KState				m_FireArmor;
 	KState				m_ManaShield;							//#noi luc ho than
 	//int					m_RideState;
-	int					  m_nProtectedTime;					//vong tron bat tu, vßng trßn bÊt tö
+	int					  m_nProtectedTime;					//vong tron bat tu, vßng trßn bÊt t?
 	void				SetProtectTime(int nTime){ m_nProtectedTime = nTime; };
 	int					  GetProtectTime(){ return m_nProtectedTime; }
 	KList				m_StateSkillList;		//Danh sach hieu ung skill tren nguoi cua NPC
@@ -317,8 +326,8 @@ public:
 	int					m_CurrentLightResistMax;	// NpcµÄµ±Ç°×î´óµç¿¹ÐÔ
 	int					m_CurrentPhysicsResistMax;	// NpcµÄµ±Ç°×î´óÎïÀí¿¹ÐÔ
 	//
-	float					m_CurrentWalkSpeed;		// NpcµÄµ±Ç°×ß¶¯ËÙ¶È
-	float					m_CurrentRunSpeed;		// NpcµÄµ±Ç°ÅÜ¶¯ËÙ¶È
+	float				m_CurrentWalkSpeed;		// NpcµÄµ±Ç°×ß¶¯ËÙ¶È
+	float				m_CurrentRunSpeed;		// NpcµÄµ±Ç°ÅÜ¶¯ËÙ¶È
 	int					m_CurrentJumpSpeed;		// NpcµÄµ±Ç°ÌøÔ¾ËÙ¶È
 	int					m_CurrentJumpFrame;		// NpcµÄµ±Ç°ÌøÔ¾Ö¡Êý
 	int					m_CurrentAttackSpeed;	// NpcµÄµ±Ç°¹¥»÷ËÙ¶È
@@ -375,6 +384,7 @@ public:
 	int					m_CurrentExpEnhance;
 	int					m_CurrentSkillEnhancePercent;
 	int					m_CurrentExpSkillsEnchance;// ExpSkills x2
+	int					m_CurrentExpSkillsVip;
 	int					m_CurrentFiveElementsEnhance;
 	int					m_CurrentFiveElementsResist;
 	int					m_CurrentManaToSkillEnhanceP;					//#khi noi cong day tang ky nang cong kich
@@ -391,11 +401,14 @@ public:
 	int					m_OriginX, m_OriginY;			// NpcµÄÔ­Ê¼×ø±ê
 	int					m_NextAITime;
 	BYTE				m_AIMAXTime;//NpcAI
-
+	BOOL				m_bNoReloadAttr;
+	int					m_nDamageReduction;
 #ifndef _SERVER
+	PLAYERTRADE			m_PTrade;
 	std::vector<FindPathNode> m_PathFind;
 	FindPathNode				m_AutoMoveTemp;
 	int AutoMoveStuckCount;
+	UINT				m_StandSyncTime;
 #endif
 
 
@@ -410,9 +423,10 @@ public:
 	char				ShopName[32];
 	int					m_MaskType;					//#mat na
 	int					m_MaskMark;					//#mat na
+	BOOL				m_bMaskFeature;				// Npc????
 	BYTE				m_btHonorId;			//#danh hieu
 #ifndef _SERVER
-	char				m_szTeamMem[64]; //hiÓn thÞ sè ng­êi trong nhãm sö dông paint th«ng t×n tõ auto lªn nh©n vËt
+	char				m_szTeamMem[64]; //hiÓn th?s?ng­êi trong nhãm s?dông paint th«ng t×n t?auto lªn nh©n vËt
 	void				SetSzTeamMem(char* s)
 	{
 		strcpy(m_szTeamMem, s);
@@ -421,7 +435,7 @@ public:
 	{
 		memset(m_szTeamMem, 0, sizeof(m_szTeamMem));
 	};
-	int					m_nTimeAbsent; //thêi gian v¾ng mÆt sö dông trong auto
+	int					m_nTimeAbsent; //thêi gian v¾ng mÆt s?dông trong auto
 
 	void				ResetPathFind();
 #endif
@@ -438,7 +452,7 @@ public:
 	char				DropRateScript[64];
 	DWORD				m_DropRateScriptID;
 	BYTE				m_nPKFlag;
-	int						m_nMissionGroup;
+	int					m_nMissionGroup;
 	int					m_MantleType;		//#phi phong
 	DWORD				m_TrapScriptID;			// NpcµÄµ±Ç°Trap½Å±¾ID;
 	int					m_nPeopleIdx;			// ¶ÔÏóÈËÎï
@@ -501,7 +515,8 @@ public:
 	//
 	int					m_nTimeIdleValue;
 	int					m_nTimeIdleCounter;
-	int					m_nTime_Ignorenegativestate;	//3 gi©y lo¹i bá tr¹ng th¸i dÞ th­êng xuÊt ø bÊt diÔm
+	int					m_nTime_Ignorenegativestate;	//3 gi©y lo¹i b?tr¹ng th¸i d?th­êng xuÊt ?bÊt diÔm
+	double				m_lastSyncTime;
 #endif
 
 #ifndef	_SERVER
@@ -519,6 +534,10 @@ public:
 	int					m_nHurtDesX;
 	int					m_nHurtDesY;
 	int					m_nTongFlag;			// 
+	int					m_nPosShiftStep;
+	BOOL				m_bProcPosShift;
+	static int			g_DrawVision;
+	static int			g_DrawVisionSkill;
 #endif
 private:
 //	int m_nLucky; // 
@@ -557,6 +576,8 @@ private:
 	int					m_ResDir;
 	KNpcRes				m_DataRes;
 	int					m_nBloodNo[5];
+	int					m_nBloodColor[5];
+	int					m_nBloodFontSize[5];
 	int					m_nBloodAlpha[5];
 	int					m_nBloodTime[5];
 	char				m_szBloodNo[5][32];
@@ -638,6 +659,7 @@ private:
 	void				PlayerDeadCreateMoneyObj(int nMoneyNum);	
 	void				UpdateNpcStateInfo();
 	void				AddStateInfo(int nID);
+	void				SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, int skillId, bool isCrit = false, bool bBroadCast = true);
 #endif
 
 #ifndef _SERVER
@@ -653,6 +675,8 @@ public:
 	{
 		m_ProcessAI = bVal;
 	}
+	DWORD				GetId() const;
+	int					GetKind() const;
 	int					GetMapX(void) const {return m_MapX;};
 	int					GetMapY(void) const {return m_MapY;};
 	int					GetMapZ(void) const {return m_MapZ;};
@@ -669,6 +693,7 @@ public:
 	void				SetFightMode(BOOL bFightMode);
 	void				TurnTo(int nIdx);
 	void				SendCommand(NPCCMD cmd, int x = 0, int y = 0, int z = 0);
+	NPC_COMMAND			GetCommand();
 	void				ProcCommand(int nAI);
 	ISkill* 			GetActiveSkill();
 	ISkill* 			GetActiveSkillAura();
@@ -686,6 +711,7 @@ public:
 	INT					  GetMapDisY(INT nIdx1, INT nIdx2);
 	 static INT GetDistance(INT nIdx1, INT nIdx2, bool isX);
 	 INT calculateMapDis(INT nIdx1, INT nIdx2, bool isX);
+     void                AddSkillEffect(int nSkillID, int nLevel, int nTime);
 #endif
 	BOOL				SetActiveSkill(int nSkillIdx);
 	void				SetAuraSkill(int nSkillID);
@@ -695,8 +721,15 @@ public:
 	void  				SetPlayerTitle(DWORD nRankId, DWORD nTime, DWORD overLook);//#PlayerTitle
 	void				SetCurPlayerTitle(DWORD nRankId,DWORD overLook);//#PlayerTitle
 	void				SetRankBattle(DWORD nRankId, int nTime, int overLook);//#RankBattle
+	void				UpdateGameTitle();		// Update GameTitle based on faction and level
 	void				SetStateSkillEffect(int nLauncher, int nSkillID, int nLevel, void *pData, int nDataNum, int nTime = -1, BOOL bOverLook = FALSE);	// Ö÷¶¯¸¨Öú¼¼ÄÜÓë±»¶¯¼¼ÄÜ
+
+	void				ForceClearStateSkillEffect();
+
+	void				ForceClearStateSkillEffect(int nSkillId);
+
 	void				ClearStateSkillEffect();
+	void				ClearStateSkillEffect(int nSkillId);
 	void				IgnoreState(BOOL bNegative);
 	void				ReCalcStateEffect();
 	void				ClearNormalState();
@@ -709,6 +742,7 @@ public:
 	void				RestoreState();
 	void				ClearNpcState();
 	BOOL				SetPlayerIdx(int nIdx);
+	void				SwitchMaskFeature();
 	void				DialogNpc(int nIndex);
 	void				Revive();
 	void				AddBaseLifeMax(int nLife);	
@@ -750,6 +784,7 @@ public:
 	inline int			   GetSubWorldIndex() {return m_SubWorldIndex;} //#lua drop item
 #ifdef	_SERVER
 	int					  DropItemFromLuaScript(int nBelongPlayer, int nGenre, int nDetail, int nParticular, int nSeries, int nLevel, int nLuck, int* pnMagicLevel, int nTimeBelong);
+	int					DropPUBGItemFromLuaScript(int nKind, int nGenre, int nDetail, int nParticular, int nSeries, int nLevel, int nLuck, int* pnMagicLevel, int nTimeBelong);
 	int					  UpdateDBStateList(BYTE *);
 	void				ExecuteRevive(){DoRevive();};
 	BOOL			SendSyncData(int nClient);						
@@ -786,6 +821,7 @@ public:
 								int nItemSeries, int nBelongIdx);
 #endif
 
+	BOOL			IsCanInput() { return m_ProcessAI; };
 #ifndef _SERVER
 	void				SetSleepMode(BOOL bSleep) { m_nSleepFlag = bSleep; m_DataRes.SetSleepState(bSleep);};
 	void				SetNpcState(BYTE* pNpcState);
@@ -795,15 +831,16 @@ public:
 	int					PaintInfo(int nHeightOffset, bool bSelect, int nFontSize = 12, DWORD	dwBorderColor = 0);
 	void				PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff);
 	int					PaintChat(int nHeightOffset);
+	int					PaintMantle(int nHeightOff, int nFontSize, int nMpsX, int nMpsY);
 	int					SetChatInfo(const char* Name, const char* pMsgBuff, unsigned short nMsgLength);
 	int					PaintLife(int nHeightOffset, bool bSelect);
 	int					PaintMana(int nHeightOffset);
-	int					PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPainTMG);
+	int					PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPainTMG); 
+	int					PaintTargetInfo(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPainTMG);
 	static int clamp(int val, int minVal, int maxVal);
 	void				DrawBorder();
 	int					DrawMenuState(int n);
 	void				DrawBlood();	
-	BOOL			IsCanInput() { return m_ProcessAI; };
 	void				SetMenuState(int nState, char *lpszSentence = NULL, int nLength = 0);	
 	int					GetMenuState();				
 	DWORD		SearchAroundID(DWORD dwID);	
@@ -816,10 +853,14 @@ public:
 	void				ClearBlood(int i);
 	void				SetBlood(int nNo);
 	int					PaintBlood(int nHeightOffset);	
+	void				SetBlood2(DAMAGESHOW* Damage);
 	BOOL				FindStateSkill(int nID);
 	void				HideRes(int nType, bool bFlag);
 	void				ChangeRecruit(int m_Recruit);
 	int				GetRecruit(){return m_Recruit;};
+	void			OnRunByFPS(int nStep);
+	void			OnWalkByFPS(int nStep);
+
 #endif
 
 	int			m_nTime;

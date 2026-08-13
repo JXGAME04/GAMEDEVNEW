@@ -12,6 +12,7 @@
 #include "UiCase/UiStatus.h"
 #include "UiCase/UiItem.h"
 #include "UiCase/UiSkills.h"
+#include "UiCase/UiSkillsNew.h"
 #include "UiCase/UiChannelSubscibe.h"
 #include "UiCase/UiPlayerBar.h"
 #include "UiCase/UiESCDlg.h"
@@ -33,15 +34,16 @@
 #include "UiCase/UiNewsMessage1.h"
 #include "UiCase/UiTongCreateSheet.h"
 #include "UiCase/uisysmsgcentre.h"
-#include "UiCase/UiAuto.h"
-#include "UiCase/UiAutoPlay.h"
+//#include "UiCase/UiAuto.h"
+//#include "UiCase/UiAutoPlay.h"
 #include "UiCase/UiItemEX.h"
 #include "UiCase/UiPK.h"
 #include "UiCase/UiBattleReport.h"
 #include "UiCase/UiRankData.h"
 #include "UiCase/UiCityWar.h"
 #include "Elem/SpecialFuncs.h"
-#include "UiCase/UiCapture.h"
+//#include "UiCase/UiCapture.h"
+#include "UiCase/SpringGame.h"
 //#include "UiCase/UiTeamManager2.h"
 #include "UiShell.h"
 
@@ -55,6 +57,7 @@
 extern iCoreShell*		g_pCoreShell;
 extern iRepresentShell* g_pRepresentShell;
 #include <crtdbg.h>
+#include "UiCase/UiMeridian.h"
 
 KLuaScript KShortcutKeyCentre::ms_Script;
 COMMAND_SETTING* KShortcutKeyCentre::ms_pCommands = NULL;
@@ -147,22 +150,25 @@ char* l_WindowList[] =
 	"leftskill",	//9 左手技能
 	"rightskill",	//10 右手技能
 	"commandline",	//11 命令行
-	"options",		//12 选项
+	//"options",		//12 选项
+	"meridian",
 	"statustool",	//13 状态工具条
 	"normaltool",	//14 常用工具条
 	"chatroom",		//15 聊天窗口
 	"newsmessage",  //16 新闻窗口
 	"debug",        //17 调试用的，搞好删掉...
-	"auto",			//18
+	"",			//18
 	"market",		//19
 	"tongkim",		//20
 	"itemex",		//21
 	"battlereport",//22 bang du lieu Tong Kim
-	"startstopauto",			//23
+	"",			//23
 	"rec",			//24 rec
 	"mapex", //25
 	"sevencity_war",//26
 	"openbox",//27
+	"skillsnew", //28
+	"springgame", //29
 };
 
 int FindWindow(const char* szname)
@@ -254,10 +260,15 @@ int LuaOpenWindow(Lua_State * L)
 				KUiSkillTree::OpenWindow(false);
 			break;
 		case 12: 
-			if (KUiOptions::GetIfVisible())
-				KUiOptions::CloseWindow();
+			//if (KUiOptions::GetIfVisible())
+			//	KUiOptions::CloseWindow();
+			//else
+			//	KUiOptions::OpenWindow();
+			//break;
+			if (KUiMeridian::GetIfVisible())
+				KUiMeridian::CloseWindow();
 			else
-				KUiOptions::OpenWindow();
+				KUiMeridian::OpenWindow();
 			break;
 		case 16: 
 			if (KUiNewsMessage::GetIfVisible())
@@ -272,14 +283,14 @@ int LuaOpenWindow(Lua_State * L)
 				KUiTongCreateSheet::OpenWindow();
 			break;
 		case 18: 
-			if(!KUiAutoPlay::GetIfVisible())
+			/*if(!KUiAutoPlay::GetIfVisible())
 			{
 				KUiAutoPlay::OpenWindow();
 			}
 			else
 			{
 				KUiAutoPlay::CloseWindow();
-			}
+			}*/
 			//if (KUiAuto::GetIfVisible())
 			//	KUiAuto::CloseWindow();
 			//else
@@ -302,7 +313,7 @@ int LuaOpenWindow(Lua_State * L)
 			}
 			break;
 		case 23:
-			{
+			{/*
 				if(KUiAutoPlay::GetActive() == TRUE)
 				{
 					KUiAutoPlay::OnActive(TRUE);
@@ -310,16 +321,16 @@ int LuaOpenWindow(Lua_State * L)
 				else
 				{
 					KUiAutoPlay::OnActive(FALSE);
-				}
+				}*/
 			}
 			break;
 		case 24:
-			{
-				if(KUiCapture::GetIfVisible()==FALSE)
-					KUiCapture::OpenWindow();
-				else
-					KUiCapture::CloseWindow();
-			}
+			//{
+				//if(KUiCapture::GetIfVisible()==FALSE)
+				//	KUiCapture::OpenWindow();
+				//else
+				//	KUiCapture::CloseWindow();
+			//}
 			break;
 		case 25:
 			MapSetMode(MINIMAP_M_BRIEF_PIC_BROWSEEX);
@@ -337,6 +348,18 @@ int LuaOpenWindow(Lua_State * L)
 		case 27:
 			KUiStoreBox::OpenWindow();
 			KUiItem::OpenWindow();
+			break;
+		case 28:
+			if (KUiSkillsNew::GetIfVisible())
+				KUiSkillsNew::CloseWindow(true);
+			else
+				KUiSkillsNew::OpenWindow();
+			break;
+		case 29:
+			if (KUiSpringGame::GetIfVisible())
+				KUiSpringGame::CloseWindow();
+			else
+				KUiSpringGame::OpenWindow();
 			break;
 		}
 	}
@@ -1610,7 +1633,7 @@ int Mouse_Action(Lua_State * L)
 	}
 	else
 		g_pCoreShell->LockObjectAction(0);
-	g_pCoreShell->ClearPathFinder();
+	//g_pCoreShell->ClearPathFinder();
 	g_pCoreShell->GotoWhere(KShortcutKeyCentre::ms_MouseX, KShortcutKeyCentre::ms_MouseY, 0);
 
 	return 0;

@@ -16,7 +16,7 @@
 #define SCRIPT_NPCID		"NpcId"	
 
 #ifdef _SERVER
-#define	MAX_PLAYER		600			//edit by phong kieu max_player server 1200 account vuot qua 499 loi tai day }TMissionPlayerInfo;
+#define	MAX_PLAYER		1500			//edit by phong kieu max_player server 1200 account vuot qua 499 loi tai day }TMissionPlayerInfo;
 #else
 #define	MAX_PLAYER		2	// Index 0 reserved
 #endif

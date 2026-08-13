@@ -31,6 +31,9 @@ CTongControl::CTongControl(int nCamp, char *lpszPlayerName, char *lpszTongName, 
 	m_nManagerNum	= 0;
 	m_nMemberNum	= 0;
 
+	m_nCapSize = gGetPrivateProfileIntEx("tong", "tongcap", "relay_config.ini", 0);
+	m_bIsFull = false;
+
 	m_dwNameID		= 0;
 	m_szName[0]		= 0;
 	m_szPassword[0]	= 0;
@@ -106,6 +109,8 @@ CTongControl::CTongControl(TTongStruct sList)
 
 	m_nMemberNum = sList.MemberCount;
 	m_nMemberPointSize = m_nMemberNum + defTONG_INIT_MEMBER_SIZE;
+	m_nCapSize = gGetPrivateProfileIntEx("tong", "tongcap", "relay_config.ini", 0);
+	m_bIsFull = false;
 	m_psMember = (STONG_MEMBER*)new STONG_MEMBER[m_nMemberPointSize];
 	memset(m_psMember, 0, sizeof(STONG_MEMBER) * m_nMemberPointSize);
 	m_szNormalBoyTitle[0] = 0;
@@ -132,7 +137,7 @@ CTongControl::~CTongControl()
 		delete []m_psMember;
 }
 
-BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
+BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex, bool fromAdd)
 {
 	int i = 0;
 	// Construction/Destruction
@@ -140,7 +145,8 @@ BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 		return FALSE;
 	if (!lpszPlayerName || strlen(lpszPlayerName) >= defTONG_STR_LENGTH)
 		return FALSE;
-
+	if (m_nMemberNum >= m_nCapSize && m_nCapSize > 0 && fromAdd)
+		return FALSE;
 	// lay nsex tu day de fix 
 	for (i = 0; i < m_nMemberPointSize; i++)
 	{
@@ -172,7 +178,9 @@ BOOL	CTongControl::AddMember(char *lpszPlayerName, int nSex)
 	m_psMember[i].m_nSex = nSex;
 	rTRACE("gia tri nSex [CTongControl]: %d", nSex);
 	m_nMemberNum++;
-
+	if (fromAdd) {
+		m_bIsFull = m_nMemberNum + m_nDirectorNum + m_nManagerNum >= m_nCapSize && m_nCapSize > 0;
+	}
 	return TRUE;
 }
 
@@ -447,7 +455,7 @@ BOOL	CTongControl::Instate(STONG_INSTATE_COMMAND *pInstate, STONG_INSTATE_SYNC *
 	if (pInstate->m_btCurFigure == pInstate->m_btNewFigure && pInstate->m_btCurPos == pInstate->m_btNewPos)
 		return FALSE;
 
-	int		i, nOldPos, nNewPos = 0;
+	int		i = 0, nOldPos = 0, nNewPos = 0;
 	DWORD	dwNameID;
 	char	szName[32];
 
@@ -1426,7 +1434,10 @@ BOOL	CTongControl::GetLoginData(STONG_GET_LOGIN_DATA_COMMAND *pLogin, STONG_LOGI
 	strcpy(pSync->m_szMaster, this->m_szMasterName);
 	strcpy(pSync->m_szName, pLogin->m_szName);
 	pSync->m_nMoney		= this->m_dwMoney;
-
+	pSync->m_nLevel = this->m_nLevel;
+	pSync->m_nExp = this->m_nExpGuide;
+	this->m_bIsFull = this->m_nMemberNum + this->m_nDirectorNum + this->m_nManagerNum >= this->m_nCapSize && this->m_nCapSize > 0;
+	pSync->m_bIsFull = this->m_bIsFull;
 	if (this->m_dwMasterID == dwNameID)
 	{
 		pSync->m_btFigure	= enumTONG_FIGURE_MASTER;
@@ -1992,7 +2003,7 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 	
 	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
 
-	if (pChange->m_btFigure == enumTONG_FIGURE_MASTER || pChange->m_btFigure == enumTONG_FIGURE_DIRECTOR)
+	//if (pChange->m_btFigure == enumTONG_FIGURE_MASTER || pChange->m_btFigure == enumTONG_FIGURE_DIRECTOR)
 	{
 		if (m_nLevel == pChange->m_nTongLevel)
 			return FALSE;
@@ -2097,6 +2108,150 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 				Sleep(5);
 			}
 		}
+		if (channid != -1)
+			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CTongControl::DBChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange)
+{
+	if (!pChange)
+		return FALSE;
+
+	DWORD dwNameID;
+	dwNameID = g_String2Id(m_szName);
+	if (dwNameID == 0)
+		return FALSE;
+
+	CNetConnectDup conndup;
+	CNetConnectDup tongconndup;
+	DWORD nameid = 0;
+	unsigned long param = 0;
+
+	char szMsg[96];
+	sprintf(szMsg, "\\O%u", m_dwNameID);
+
+	DWORD channid = g_ChannelMgr.GetChannelID(szMsg, 0);
+
+//	if (pChange->m_btFigure == enumTONG_FIGURE_MASTER || pChange->m_btFigure == enumTONG_FIGURE_DIRECTOR)
+	{
+		if (m_nExpGuide == pChange->m_nTongExp)
+			return FALSE;
+
+		m_nExpGuide = pChange->m_nTongExp;
+
+		sprintf(szMsg, "Bang héi thay ®æi kinh nghiÖm thµnh %d.", pChange->m_nTongExp);
+
+		int i = 0;
+
+		// Notify the master
+		{
+			{
+				if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(m_szMasterName), &conndup, NULL, &nameid, &param))
+				{
+					tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+					if (tongconndup.IsValid())
+					{
+						STONG_BE_CHANGED_EXP_SYNC sSync;
+						sSync.ProtocolFamily = pf_tong;
+						sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_EXP;
+						sSync.m_dwParam = param;
+						sSync.m_nTongExp = m_nExpGuide;
+						tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+					}
+					tongconndup.Clearup();
+				}
+				conndup.Clearup();
+			}
+		}
+
+		// Notify directors
+		for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+		{
+			if (m_dwDirectorID[i] == 0)
+				break;
+			{
+				{
+					if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(m_szDirectorName[i]), &conndup, NULL, &nameid, &param))
+					{
+						tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+						if (tongconndup.IsValid())
+						{
+							STONG_BE_CHANGED_EXP_SYNC sSync;
+							sSync.ProtocolFamily = pf_tong;
+							sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_EXP;
+							sSync.m_dwParam = param;
+							sSync.m_nTongExp = m_nExpGuide;
+							tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+						}
+						tongconndup.Clearup();
+					}
+					conndup.Clearup();
+				}
+			}
+			Sleep(5);
+		}
+
+		// Notify managers
+		for (i = 0; i < defTONG_MAX_MANAGER; i++)
+		{
+			if (m_dwManagerID[i] == 0)
+				break;
+			{
+				{
+					if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(m_szManagerName[i]), &conndup, NULL, &nameid, &param))
+					{
+						tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+						if (tongconndup.IsValid())
+						{
+							STONG_BE_CHANGED_EXP_SYNC sSync;
+							sSync.ProtocolFamily = pf_tong;
+							sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_EXP;
+							sSync.m_dwParam = param;
+							sSync.m_nTongExp = m_nExpGuide;
+							tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+						}
+						tongconndup.Clearup();
+					}
+					conndup.Clearup();
+				}
+			}
+			Sleep(5);
+		}
+
+		// Notify members
+		if (m_psMember && m_nMemberPointSize > 0)
+		{
+			for (i = 0; i < this->m_nMemberPointSize; i++)
+			{
+				if (m_psMember[i].m_dwNameID == 0)
+					break;
+
+				{
+					{
+						if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(m_psMember[i].m_szName), &conndup, NULL, &nameid, &param))
+						{
+							tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+							if (tongconndup.IsValid())
+							{
+								STONG_BE_CHANGED_EXP_SYNC sSync;
+								sSync.ProtocolFamily = pf_tong;
+								sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_EXP;
+								sSync.m_dwParam = param;
+								sSync.m_nTongExp = m_nExpGuide;
+								tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+							}
+							tongconndup.Clearup();
+						}
+						conndup.Clearup();
+					}
+				}
+				Sleep(5);
+			}
+		}
+
 		if (channid != -1)
 			g_ChannelMgr.SayOnChannel(channid, TRUE, std::string(), std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(szMsg));
 		return TRUE;

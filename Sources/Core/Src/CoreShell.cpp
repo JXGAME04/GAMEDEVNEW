@@ -35,14 +35,18 @@
 
 #include <cmath>
 #include "KJXPathFinder.h"
+#include "KMath.h"
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
 #define	MAX_TRADE_ITEM_WIDTH	2
 #define	MAX_TRADE_ITEM_HEIGHT	4
+#define	MAX_GAMBLE_ITEM_WIDTH	2
+#define	MAX_GAMBLE_ITEM_HEIGHT	4
 
 IClientCallback* l_pDataChangedNotifyFunc = 0;
-
+int KNpc::g_DrawVision;
+int KNpc::g_DrawVisionSkill;
 class KCoreShell : public iCoreShell
 {
 public:
@@ -56,6 +60,7 @@ public:
 	int ChatSpecialPlayer(void* pPlayer, const char* pMsgBuff, unsigned short nMsgLength);
 	void ApplyAddTeam(void* pPlayer);
 	void TradeApplyStart(void* pPlayer);
+	void GambleApplyStart(void* pPlayer);
 	int UseSkill(int x, int y, int nSkillID);
 	int UseSkillCastB(int x, int y, int nSkillID, int nNpcIdx);
 	int LockSomeoneUseSkill(int nTargetIndex, int nSkillID);
@@ -112,9 +117,339 @@ public:
 	BYTE GetPaintMode();
 	void SetPaintMode(BYTE nIndex);
 	int AutoPlayOperation(unsigned int uOper, unsigned int uParam, int nParam);//fkauto
-	BOOL AutoMove();
+	//BOOL AutoMove();
 	void ClearPathFinder();
 	void GotoWhereDirect(int x, int y, int mode);	//mode 0 is auto, 1 is walk, 2 is run
+	int	 CheckMapLoiDai();
+};
+
+struct sStation
+{
+	int x;
+	int y;
+};
+sStation s53MedList[] =	//thuoc
+{
+	{51150, 102700},
+};
+sStation s53ShopList[] = //tap hoa
+{
+	{51205, 101480},
+};
+sStation s53MoveList[] = //xa phu
+{
+	{50517, 103568},
+};
+sStation s53Center = {51892, 101854}; //khong can quan tam center
+//-----------
+sStation s20MedList[] =
+{
+	{111034, 197262},
+};
+sStation s20ShopList[] =
+{
+	{107837, 200166},
+};
+sStation s20MoveList[] =
+{
+	{110670, 195540},
+};
+sStation s20Center = {113435, 198520};
+//-----------
+sStation s99MedList[] =
+{
+	{51054, 103276},
+};
+sStation s99ShopList[] =
+{
+	{51405, 105034},
+};
+sStation s99MoveList[] =
+{
+	{52171, 105754},
+	{51440, 101176},
+};
+sStation s99Center = {52159, 102392};
+//-----------
+sStation s101MedList[] =
+{
+	{53734, 102290},
+};
+sStation s101ShopList[] =
+{
+	{52455, 100606},
+};
+sStation s101MoveList[] =
+{
+	{51942, 99132},
+};
+sStation s101Center = {54111, 100866};
+//-----------
+sStation s100MedList[] =
+{
+	{53038, 99966},
+};
+sStation s100ShopList[] =
+{
+	{52512, 100036},
+};
+sStation s100MoveList[] =
+{
+	{53707, 99260},
+	{51543, 99112},
+	{51307, 101368},
+	{55022, 102942},
+};
+sStation s100Center = {52759, 100768};
+//-----------
+sStation s121MedList[] =
+{
+	{61906, 145656},
+};
+sStation s121ShopList[] =
+{
+	{61266, 144794},
+};
+sStation s121MoveList[] =
+{
+	{61578, 141662},
+	{63385, 146996},
+};
+sStation s121Center = {62496, 144256};
+//-----------
+sStation s153MedList[] =
+{
+	{51224, 102696},
+};
+sStation s153ShopList[] =
+{
+	{52311, 103142},
+};
+sStation s153MoveList[] =
+{
+	{52181, 101696},
+	{53928, 103822},
+};
+sStation s153Center = {52180, 103726};
+//-----------
+sStation s174MedList[] =
+{
+	{50323, 104126},
+};
+sStation s174ShopList[] =
+{
+	{50127, 102480},
+};
+sStation s174MoveList[] =
+{
+	{52306, 102274},
+};
+sStation s174Center = {51571, 102806};
+//-----------
+sStation s01MedList[] =
+{
+	{51280, 102082},
+};
+sStation s01ShopList[] =
+{
+	{49902, 102572},
+};
+sStation s01MoveList[] =
+{
+	{48596, 103334},
+	{49892, 99436},
+	{52694, 101276},
+	{52640, 104736},
+};
+sStation s01Center = {51059, 102406};
+//-----------
+sStation s78MedList[] =
+{
+	{51584, 103800},
+};
+sStation s78ShopList[] =
+{
+	{52140, 104334},
+};
+sStation s78MoveList[] =
+{
+	{54146, 103434},
+	{51138, 108056},
+	{45996, 102746},
+	{48309, 100412},
+};
+sStation s78Center = {50499, 103440};
+//-----------
+sStation s11MedList[] =
+{
+	{100535, 164300},
+};
+sStation s11ShopList[] =
+{
+	{98992, 164338},
+};
+sStation s11MoveList[] =
+{
+	{102323, 166194},
+	{96480, 162976},
+	{96886, 158658},
+	{102176, 166080},
+};
+sStation s11Center = {100425, 162088};
+//-----------
+sStation s162MedList[] =
+{
+	{47983, 102686},
+};
+sStation s162ShopList[] =
+{
+	{49138, 102416},
+};
+sStation s162MoveList[] =
+{
+	{47032, 104606},
+	{53366, 100000},
+	{54355, 104858},
+};
+sStation s162Center = {50818, 100638};
+//-----------
+sStation s37MedList[] =
+{
+	{56804, 98886},
+};
+sStation s37ShopList[] =
+{
+	{57170, 99270},
+};
+sStation s37MoveList[] =
+{
+	{54561, 103124},
+	{52176, 101964},
+	{51024, 95796},
+	{59569, 93640},
+};
+sStation s37Center = {55757, 98198};
+//-----------
+sStation s80MedList[] =
+{
+	{56778, 98524},
+};
+sStation s80ShopList[] =
+{
+	{54484, 96666},
+};
+sStation s80MoveList[] =
+{
+	{53478, 95684},
+	{58383, 98012},
+	{55200, 102592},
+	{50970, 102168},
+};
+sStation s80Center = {56569, 97092};
+//-----------
+sStation s176MedList[] =
+{
+	{51725, 95238},
+	{49423, 94814},
+	{53938, 106180},
+	{47228, 107542},
+};
+sStation s176ShopList[] =
+{
+	{42868, 101256},
+};
+sStation s176MoveList[] =
+{
+	{43279, 96462},
+	{43889, 106572},
+	{54287, 105342},
+	{51250, 93178},
+};
+sStation s176Center = {50416, 94524};
+//-----------
+typedef std::vector<sStation>	StationVector;
+typedef std::map<int, StationVector> MapStation;
+static MapStation g_MedicineStation;
+static MapStation g_ShopStation;
+static MapStation g_MoveStation;
+typedef std::map<int, sStation> MapOneStation;
+static MapOneStation g_CenterStation;
+static int g_GoMapID[] = 
+{
+	875,
+	322,
+	321,
+	75,
+	225,
+	226,
+	227,
+	336,
+	340,
+	144,
+	93,
+	124,
+	152,
+	224,
+	198,
+	320,
+	181,
+	319,
+	123,
+	206,
+	79,
+	56,
+	166,
+	182,
+	164,
+	21,
+	167,
+	193,
+	170,
+	19,
+	7,
+};
+
+struct BOTTLE_CTRL_MAP
+{
+	int				nDetail;
+	int				nLevel;
+};
+
+static BOTTLE_CTRL_MAP g_LifeBottle[] =
+{
+	{0, 1},
+	{0, 2},
+	{0, 3},
+	{0, 4},
+	{0, 5},
+	{2, 1},
+	{2, 2},
+	{2, 3},
+	{2, 4},
+	{2, 5},
+};
+
+static BOTTLE_CTRL_MAP g_ManaBottle[] =
+{
+	{1, 1},
+	{1, 2},
+	{1, 3},
+	{1, 4},
+	{1, 5},
+	{2, 1},
+	{2, 2},
+	{2, 3},
+	{2, 4},
+	{2, 5},
+};
+
+static BOTTLE_CTRL_MAP g_PoisonBottle[] =
+{
+	{4, 1},
+	{4, 2},
+	{4, 3},
+	{4, 4},
+	{4, 5},
 };
 
 static KCoreShell	g_CoreShell;
@@ -126,13 +461,277 @@ extern "C" __declspec(dllexport)
 iCoreShell* CoreGetShell(char * nParmName)
 {
 	g_InitCore(nParmName);
+	//add auto station pos
+	int count,i;
+	count = sizeof(s53MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[53].push_back(s53MedList[i]);
+	}
+	count = sizeof(s53ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[53].push_back(s53ShopList[i]);
+	}
+	count = sizeof(s53MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[53].push_back(s53MoveList[i]);
+	}
+	g_CenterStation[53] = s53Center;
+	//---------
+	count = sizeof(s20MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[20].push_back(s20MedList[i]);
+	}
+	count = sizeof(s20ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[20].push_back(s20ShopList[i]);
+	}
+	count = sizeof(s20MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[20].push_back(s20MoveList[i]);
+	}
+	g_CenterStation[20] = s20Center;
+	//---------
+	count = sizeof(s99MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[99].push_back(s99MedList[i]);
+	}
+	count = sizeof(s99ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[99].push_back(s99ShopList[i]);
+	}
+	count = sizeof(s99MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[99].push_back(s99MoveList[i]);
+	}
+	g_CenterStation[99] = s99Center;
+	//---------
+	count = sizeof(s101MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[101].push_back(s101MedList[i]);
+	}
+	count = sizeof(s101ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[101].push_back(s101ShopList[i]);
+	}
+	count = sizeof(s101MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[101].push_back(s101MoveList[i]);
+	}
+	g_CenterStation[101] = s101Center;
+	//---------
+	count = sizeof(s100MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[100].push_back(s100MedList[i]);
+	}
+	count = sizeof(s100ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[100].push_back(s100ShopList[i]);
+	}
+	count = sizeof(s100MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[100].push_back(s100MoveList[i]);
+	}
+	g_CenterStation[100] = s100Center;
+	//---------
+	count = sizeof(s121MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[121].push_back(s121MedList[i]);
+	}
+	count = sizeof(s121ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[121].push_back(s121ShopList[i]);
+	}
+	count = sizeof(s121MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[121].push_back(s121MoveList[i]);
+	}
+	g_CenterStation[121] = s121Center;
+	//---------
+	count = sizeof(s153MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[153].push_back(s153MedList[i]);
+	}
+	count = sizeof(s153ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[153].push_back(s153ShopList[i]);
+	}
+	count = sizeof(s153MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[153].push_back(s153MoveList[i]);
+	}
+	g_CenterStation[153] = s153Center;
+	//---------
+	count = sizeof(s174MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[174].push_back(s174MedList[i]);
+	}
+	count = sizeof(s174ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[174].push_back(s174ShopList[i]);
+	}
+	count = sizeof(s174MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[174].push_back(s174MoveList[i]);
+	}
+	g_CenterStation[174] = s174Center;
+	//---------
+	count = sizeof(s01MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[1].push_back(s01MedList[i]);
+	}
+	count = sizeof(s01ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[1].push_back(s01ShopList[i]);
+	}
+	count = sizeof(s01MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[1].push_back(s01MoveList[i]);
+	}
+	g_CenterStation[1] = s01Center;
+	//---------
+	count = sizeof(s78MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[78].push_back(s78MedList[i]);
+	}
+	count = sizeof(s78ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[78].push_back(s78ShopList[i]);
+	}
+	count = sizeof(s78MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[78].push_back(s78MoveList[i]);
+	}
+	g_CenterStation[78] = s78Center;
+	//---------
+	count = sizeof(s11MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[11].push_back(s11MedList[i]);
+	}
+	count = sizeof(s11ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[11].push_back(s11ShopList[i]);
+	}
+	count = sizeof(s11MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[11].push_back(s11MoveList[i]);
+	}
+	g_CenterStation[11] = s11Center;
+	//---------
+	count = sizeof(s162MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[162].push_back(s162MedList[i]);
+	}
+	count = sizeof(s162ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[162].push_back(s162ShopList[i]);
+	}
+	count = sizeof(s162MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[162].push_back(s162MoveList[i]);
+	}
+	g_CenterStation[162] = s162Center;
+	//---------
+	count = sizeof(s37MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[37].push_back(s37MedList[i]);
+	}
+	count = sizeof(s37ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[37].push_back(s37ShopList[i]);
+	}
+	count = sizeof(s37MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[37].push_back(s37MoveList[i]);
+	}
+	g_CenterStation[37] = s37Center;
+	//---------
+	count = sizeof(s80MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[80].push_back(s80MedList[i]);
+	}
+	count = sizeof(s80ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[80].push_back(s80ShopList[i]);
+	}
+	count = sizeof(s80MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[80].push_back(s80MoveList[i]);
+	}
+	g_CenterStation[80] = s80Center;
+	//---------
+	count = sizeof(s176MedList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MedicineStation[176].push_back(s176MedList[i]);
+	}
+	count = sizeof(s176ShopList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_ShopStation[176].push_back(s176ShopList[i]);
+	}
+	count = sizeof(s176MoveList) / sizeof(sStation);
+	for (i = 0; i < count; ++i)
+	{
+		g_MoveStation[176].push_back(s176MoveList[i]);
+	}
+	g_CenterStation[176] = s176Center;
+	////////////
 	return &g_CoreShell;
 }
 
-void CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
+int CoreDataChanged(unsigned int uDataId, unsigned int uParam, int nParam)
 {
 	if (l_pDataChangedNotifyFunc)
-		l_pDataChangedNotifyFunc->CoreDataChanged(uDataId, uParam, nParam);
+		return l_pDataChangedNotifyFunc->CoreDataChanged(uDataId, uParam, nParam);
+	return 0;
+}
+
+void SendDataToTool(const void * const pData, const size_t &datalength)
+{
+	if (l_pDataChangedNotifyFunc)
+		l_pDataChangedNotifyFunc->SendDataToTool(pData, datalength);
 }
 
 void KCoreShell::Release()
@@ -336,7 +935,8 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			{
 			case CGOG_PLAYERSELLITEM:
 				{
-					Item[pObj->Obj.uId].GetDesc(pszDescript, true, BUY_SELL_SCALE);
+					//Item[pObj->Obj.uId].GetDesc(pszDescript, true, BUY_SELL_SCALE);
+					Item[pObj->Obj.uId].GetDesc(pszDescript, true, true, 0);
 				}
 				break;
 			case CGOG_ITEM:
@@ -344,7 +944,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					if (pObj->eContainer == UOC_EQUIPTMENT)
 					{
 						int nActive = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetActiveAttribNum(pObj->Obj.uId);
-						Item[pObj->Obj.uId].GetDesc(pszDescript, true, BUY_SELL_SCALE, nActive);
+						Item[pObj->Obj.uId].GetDesc(pszDescript, true, true, nActive);
 					}
 					else
 					{
@@ -353,11 +953,11 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 						int item_place = Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[item_index].nPlace;
 						if(money_unit == moneyunit_money && item_place == pos_equiproom)//#chØ hiÖn thØ gi¸ b¸n b»ng tiÒn v¹n
 						{
-							Item[pObj->Obj.uId].GetDesc(pszDescript, true, BUY_SELL_SCALE);
+							Item[pObj->Obj.uId].GetDesc(pszDescript, true, true, 0);
 						}
 						else
 						{
-							Item[pObj->Obj.uId].GetDesc(pszDescript, false);
+							Item[pObj->Obj.uId].GetDesc(pszDescript, false, false);
 						}
 					}
 				}
@@ -376,7 +976,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 
 					if (!pItem)
 						break;
-					pItem->GetDesc(pszDescript, true);
+					pItem->GetDesc(pszDescript, true, false);
 				}
 				break;
 			}
@@ -395,11 +995,14 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					if (pObj->eContainer == UOC_EQUIPTMENT)
 					{
 						int nActive = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetActiveAttribNum(pObj->Obj.uId);
-						if (Player[CLIENT_PLAYER_INDEX].m_ItemList.GetIfActive())
+						int nGoldActive = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetGoldActiveAttribNum(pObj->Obj.uId);
+						if (Player[CLIENT_PLAYER_INDEX].m_ItemList.GetIfActive()) //check if set is active
+						//if (Player[CLIENT_PLAYER_INDEX].m_ItemList.GetIfActive(pObj->Obj.uId)) //check if item is active
 						{
 							nActive = 4;
 						}
-						Item[pObj->Obj.uId].GetDesc(pszDescript, false, 1, nActive);
+						//Item[pObj->Obj.uId].GetDesc(pszDescript, false, 1, nActive);
+						Item[pObj->Obj.uId].GetDesc(pszDescript, false, false, nActive, nGoldActive);
 					}
 					else
 					{
@@ -412,7 +1015,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 							KSkill::GetDesc(nSkillId, nLevel, pszDescript, Player[CLIENT_PLAYER_INDEX].m_nIndex, false);
 						}
 						else
-							Item[pObj->Obj.uId].GetDesc(pszDescript);
+							Item[pObj->Obj.uId].GetDesc(pszDescript, false, false);
 					}
 
 					if(Item[pObj->Obj.uId].GetPlayerItemIsHoureOpen())//xu ly vat pham cho mo khoa bao hiem
@@ -501,19 +1104,19 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 
 					if (!pItem)
 						break;
-					pItem->GetDesc(pszDescript);
+					pItem->GetDesc(pszDescript, false, false);
 				}
 				break;
 			case CGOG_IME_ITEM:
 				{
 					if (pObj->Obj.uId <= 0)
 						return 0;
-					Item[pObj->Obj.uId].GetDesc(pszDescript);
+					Item[pObj->Obj.uId].GetDesc(pszDescript, false, false);
 				}
 				break;
 			case CGOG_PLAYERSELLITEM:
 				{
-					Item[pObj->Obj.uId].GetDesc(pszDescript);
+					Item[pObj->Obj.uId].GetDesc(pszDescript, false, false);
 				}
 				break;
 			}
@@ -529,6 +1132,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			{
 				nIndex = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 				pInfo->nCurFaction = Player[CLIENT_PLAYER_INDEX].m_cFaction.m_nCurFaction;
+				pInfo->nFirstAddFaction = Player[CLIENT_PLAYER_INDEX].m_cFaction.m_nFirstAddFaction;
 				pInfo->nCurTong = Player[CLIENT_PLAYER_INDEX].m_cTong.GetTongNameID();
 				pInfo->nMissionGroup = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nMissionGroup;
 			}
@@ -558,6 +1162,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				pInfo->nFuYuan = Npc[nIndex].nFuYuan;// phuc duyen
 				pInfo->nPKValue = Npc[nIndex].nPKValue; // PK
 				pInfo->nReBorn = Npc[nIndex].nReBorn; // trung sinh
+			//	pInfo->nReBorn = Player[nIndex].m_cReBorn.GetReBornCurLevel(); // trung sinh
 			}
 		}
 		break;
@@ -609,7 +1214,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			pInfo->nRepute = pNpc->nRepute;
 			//pInfo->nFuYuan = Player[CLIENT_PLAYER_INDEX].m_cFuYuan.GetFuYuanValue(); // phuc duyen
 			pInfo->nFuYuan = pNpc->nFuYuan;
-			pInfo->nReBorn = Player[CLIENT_PLAYER_INDEX].m_cReBorn.GetReBornValue(); // trung sinh
+			pInfo->nReBorn = Player[CLIENT_PLAYER_INDEX].m_cReBorn.GetReBornNum(); // trung sinh
 			pInfo->nRankInWorld = Player[CLIENT_PLAYER_INDEX].m_nWorldStat; //xÕp h¹ng thÕ giíi
 
 			Player[CLIENT_PLAYER_INDEX].GetEchoDamage(&pInfo->nKillMIN, &pInfo->nKillMAX, 0);				
@@ -619,6 +1224,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			pInfo->nMoveSpeed = pNpc->m_CurrentRunSpeed;				
 			pInfo->nAttackSpeed = pNpc->m_CurrentAttackSpeed;			
 			pInfo->nCastSpeed = pNpc->m_CurrentCastSpeed;
+			memcpy(pInfo->bMeridianLevel, Player[CLIENT_PLAYER_INDEX].m_cMeridian.getMeridian(), sizeof(pInfo->bMeridianLevel));
 
 			if (pNpc->m_CurrentPhysicsResistMax >= pNpc->m_CurrentPhysicsResist)
 			{
@@ -825,7 +1431,13 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 		nRet = Player[CLIENT_PLAYER_INDEX].m_cTask.GetSaveVal(TASKVALUE_STATTASK_XU);
 		break;
 
-	case GDI_PLAYER_CAN_RIDE:
+	case GDI_GET_PLAYERNPC_INDEX:
+		nRet = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		if (uParam)
+		{
+			UINT* pP = (UINT*)uParam;
+			*pP = Player[CLIENT_PLAYER_INDEX].m_dwID;
+		}
 		break;
 
 	case GDI_ITEM_TAKEN_WITH:
@@ -897,7 +1509,9 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				UIEP_NECK,		UIEP_FINGER1,
 				UIEP_FINGER2,	UIEP_WAIST_DECOR,
 				UIEP_HORSE,		UIEP_MASK,	// mat na
-				UIEP_FIFONG
+				UIEP_FIFONG, 	UIEP_SIGNET,
+				UIEP_SHIPIN,	UIEP_HOODS,
+				UIEP_CLOAK,
 			};
 
 			int nCount = 0;
@@ -925,6 +1539,9 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			nRet = nCount;
 		}
 		break;
+	case GDI_EQUIPMENT_SETNUM:
+		nRet = Player[CLIENT_PLAYER_INDEX].m_nActiveEquipNum;
+		break;
 	case GDI_PARADE_EQUIPMENT:
 		nRet = 0;
 		if (uParam)
@@ -941,7 +1558,9 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				UIEP_NECK,		UIEP_FINGER1,
 				UIEP_FINGER2,	UIEP_WAIST_DECOR,
 				UIEP_HORSE,		UIEP_MASK,
-				UIEP_FIFONG
+				UIEP_FIFONG,	UIEP_SIGNET,
+				UIEP_SHIPIN,	UIEP_HOODS,
+				UIEP_CLOAK,
 			};
 
 			int nCount = 0;
@@ -981,6 +1600,15 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 		{
 			nRet = (Player[CLIENT_PLAYER_INDEX].m_cMenuState.m_nState == PLAYER_MENU_STATE_TRADEOPEN);
 		}
+		break;
+	case GDI_GAMBLE_OPER_DATA:
+		if (uParam == UTOD_IS_LOCKED)
+			nRet = Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeLock;
+		else if (uParam == UGOD_IS_GAMBLING)
+			nRet = Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeState;
+		else if (uParam == UTOD_IS_OTHER_LOCKED)
+			nRet = Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeDestLock;
+
 		break;
 
 	case GDI_LIVE_SKILL_BASE:
@@ -1114,6 +1742,9 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					itempart_ring1,		itempart_ring2,
 					itempart_pendant,	itempart_foot,
 					itempart_horse, itempart_mask,
+					itempart_mantle,	itempart_signet,
+					itempart_shipin,	itempart_hoods,
+					itempart_cloak,
 				};
 
 				_ASSERT(pObj->eContainer < itempart_num);
@@ -1560,11 +2191,26 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					//Create ItemSet
 					if(m_sInfo->m_nID == 0)
 						return 0;
-					int nMagicParam[MAX_ITEM_MAGICLEVEL], nItemIdx;
+					int nMagicParam[MAX_ITEM_MAGICLEVEL], nItemIdx=0;
 					for (int j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
 						nMagicParam[j] = m_sInfo->m_btMagicLevel[j];
 					//
-					if (m_sInfo->m_nGoldId)
+					if (m_sInfo->m_nNature >= NATURE_GOLD) {
+						//IN int nItemNature, int nItemGenre, int nSeries,
+						//int nLevel, int nLuck, int nDetailType/*=-1*/,
+						//	int nParticularType/*=-1*/, int* pnMagicLevel, int nVersion/*=0*/, UINT nRandomSeed
+						nItemIdx = ItemSet.Add(m_sInfo->m_nNature,
+							m_sInfo->m_btGenre,
+							m_sInfo->m_btSeries,
+							m_sInfo->m_btLevel,
+							m_sInfo->m_btLuck,
+							m_sInfo->m_btDetail,
+							m_sInfo->m_btParticur,
+							nMagicParam,
+							m_sInfo->m_wVersion,
+							m_sInfo->m_dwRandomSeed);
+					}
+					else if (m_sInfo->m_nGoldId)
 					{
 							nItemIdx = ItemSet.AddGoldItem(
 							m_sInfo->m_nGoldId,
@@ -1598,6 +2244,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 						Item[nItemIdx].SetPlayerItemLock(m_sInfo->m_Lock);
 						Item[nItemIdx].SetPlayerItemHLock(m_sInfo->m_HLock);
 						Item[nItemIdx].SetDurability(m_sInfo->m_nDurability);
+						Item[nItemIdx].SetMaxOptMultiply(m_sInfo->m_nMaxOptMultiply);
 						nRet = nItemIdx;
 					}
 				}
@@ -1627,7 +2274,10 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			pInfo->m_nIdx = 0;
 			pInfo->m_nID			= Item[nIdx].GetID();
 			pInfo->m_btGenre		= Item[nIdx].GetGenre();
-			pInfo->m_btDetail		= Item[nIdx].GetDetailType();
+			if(Item[nIdx].GetNature() >= NATURE_GOLD && pInfo->m_btDetail != 99) //99 is flag indicate that called from SouldPlay
+				pInfo->m_btDetail = Item[nIdx].GetRow();
+			else
+				pInfo->m_btDetail = Item[nIdx].GetDetailType();
 			pInfo->m_btParticur		= Item[nIdx].GetParticular();
 			pInfo->m_btSeries		= Item[nIdx].GetSeries();
 			pInfo->m_btLevel		= Item[nIdx].GetLevel();
@@ -1637,12 +2287,20 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			pInfo->m_btLuck			= Item[nIdx].m_GeneratorParam.nLuck;
 			pInfo->m_dwRandomSeed	= Item[nIdx].m_GeneratorParam.uRandomSeed;
 			pInfo->m_wVersion		= Item[nIdx].m_GeneratorParam.nVersion;
-			pInfo->m_YearExp			= Item[nIdx].GetTime()->bYear;
-			pInfo->m_Lock					= Item[nIdx].GetPlayerItemLock();
-			pInfo->m_HLock					= Item[nIdx].GetPlayerItemHLock();
+			pInfo->m_YearExp		= Item[nIdx].GetTime()->bYear;
+			pInfo->m_Lock			= Item[nIdx].GetPlayerItemLock();
+			pInfo->m_HLock			= Item[nIdx].GetPlayerItemHLock();
+			pInfo->m_nNature		= Item[nIdx].GetNature();
+			pInfo->m_nMaxOptMultiply = Item[nIdx].GetMaxOptMultiply();
+			memset(pInfo->m_btMagicLevel, 0, sizeof(pInfo->m_btMagicLevel));
 			for (int i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
 			{
-				pInfo->m_btMagicLevel[i]		= Item[nIdx].m_GeneratorParam.nGeneratorLevel[i];
+				if (Item[nIdx].m_GeneratorParam.nGeneratorLevel[i] > 10) {
+					pInfo->m_btMagicLevel[i] = Item[nIdx].m_GeneratorParam.nGeneratorLevel[i];
+					pInfo->m_btMagicLevel[i+ MAX_ITEM_MAGICATTRIB] = (short)Item[nIdx].m_aryMagicAttrib[i].nValue[0];
+				}
+				else if (pInfo->m_btMagicLevel[i] == 0) //not set
+					pInfo->m_btMagicLevel[i] = Item[nIdx].m_GeneratorParam.nGeneratorLevel[i];
 			}
 			pInfo->m_bPoint = Item[nIdx].IsPurple();
 			pInfo->m_nDurability = Item[nIdx].GetDurability();
@@ -1654,7 +2312,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 		{
 			char* pszDescript = (char *)nParam;
 			pszDescript[0] = 0;
-			Item[uParam].GetDesc(pszDescript);
+			Item[uParam].GetDesc(pszDescript, false, false);
 		}
 		break;
 	case GDI_IS_TONG_MASTER:
@@ -1786,8 +2444,48 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				return nExBoxId;
 			break;
 		}
+#ifndef _SERVER
+	case NPC_OI_TARGET_INFO:
+	{
+		int idx = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nPeopleIdx;
+		int idx_hover = Player[CLIENT_PLAYER_INDEX].GetTargetNpc();
+		if (idx_hover)
+			idx = idx_hover;
+		if (idx) {
+			//having target
+			KUiTargetDetailInfo* pTargetInfo = (KUiTargetDetailInfo*)uParam;
+			strcpy_s(pTargetInfo->sTargetName, sizeof(pTargetInfo->sTargetName), Npc[idx].Name);
+			pTargetInfo->Series = Npc[idx].m_Series;
+			pTargetInfo->nLifePercent = (Npc[idx].m_CurrentLife * 100 / max(Npc[idx].m_CurrentLifeMax, 1));
+			nRet = 1;
+		}
+		break;
 	}
-
+	case GDI_PLAYER_MERIDIAN:
+	{
+		BYTE* tmp = Player[CLIENT_PLAYER_INDEX].m_cMeridian.getMeridian();
+		memcpy((void *)uParam, tmp, nParam);
+		nRet = 1;
+		break;
+	}
+	case GDI_ITEM_EQUIP_SAME_GERNE:
+	{
+		int itemIdx = nParam;
+		int i = 0;
+		nRet = -1;
+		for (i = 0; i < itempart_num; i++)
+		{
+			if (Item[itemIdx].GetGenre() == item_equip) {
+				if (Item[itemIdx].GetDetailType() == Item[Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipment(i)].GetDetailType()) {
+					nRet = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipment(i);
+					break;
+				}
+			}
+		}
+		break;
+	}
+	}
+#endif
 	return nRet;
 }
 
@@ -1801,6 +2499,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		break;
 	case GOI_CP_LOCK:						//khoa ruong
 		SendClientCPLockCmd();
+		break;
+	case GOI_CP_SWITCH_EQUIPSET:			//request switch equip set
+		SendClientSwitchEquipSetCmd(nParam);
 		break;
 	case GOI_CP_CHANGE:						//doi mk ruong
 		SendClientCPChangeCmd(uParam, nParam);
@@ -1882,6 +2583,17 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			int nIdx = pObject1->Obj.uId;	//Player[CLIENT_PLAYER_INDEX].m_ItemList.Hand();
 			if (nIdx > 0 && nIdx < MAX_ITEM)
 			{
+				if (!Player[CLIENT_PLAYER_INDEX].m_CUnlocked)
+				{
+					KSystemMessage	sMsg;
+					sprintf(sMsg.szMessage, "B¹n h·y më khãa b¶o vÖ míi cã thÓ thùc hiÖn ®­îc !");
+					sMsg.eType = SMT_NORMAL;
+					sMsg.byConfirmType = SMCT_NONE;
+					sMsg.byPriority = 0;
+					sMsg.byParamSize = 0;
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+					return 0;
+				}
 				if(Item[nIdx].GetPlayerItemLock() > 0 || Item[nIdx].GetPlayerItemHLock() >0 || Item[nIdx].GetPlayerItemLock() == -2)
 				{
 					KSystemMessage	sMsg;
@@ -1901,7 +2613,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GDI_PLAYER_TRADE:
 		{
 			char* sShopName = (char *)uParam;
-			
+			if (!Player[CLIENT_PLAYER_INDEX].m_CUnlocked)
+			{
+				KSystemMessage	sMsg;
+				sprintf(sMsg.szMessage, "B¹n h·y më khãa b¶o vÖ míi cã thÓ thùc hiÖn ®­îc !");
+				sMsg.eType = SMT_NORMAL;
+				sMsg.byConfirmType = SMCT_NONE;
+				sMsg.byPriority = 0;
+				sMsg.byParamSize = 0;
+				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				return 0;
+			}
+
 			if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_bRideHorse)
 			{
 				KSystemMessage	sMsg;
@@ -1987,7 +2710,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		}
 		break;
 	case GOI_PLAYER_RENASCENCE:
-		{
+		{/*
 			int nReviveType;
 			if (nParam)	// bBackTown
 			{
@@ -1996,7 +2719,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			else
 			{
 				nReviveType = LOCAL_REVIVE_TYPE;
-			}
+			}*/
 			SendClientCmdRevive();
 		}
 		break;
@@ -2026,10 +2749,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_EXIT_GAME:
 		g_SubWorldSet.Close();
 		g_ScenePlace.ClosePlace();
-		Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
+		//Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
 		break;
 	case GOI_GAMESPACE_DISCONNECTED:
-		Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
+		//Player[CLIENT_PLAYER_INDEX].m_cAuto.FkAutoMapSet_StepOne(); //fkauto
+		Player[CLIENT_PLAYER_INDEX].m_sExtAuto.nHomeStep = 0;
+		Player[CLIENT_PLAYER_INDEX].m_sExtAuto.nSubStep = 0;
 		g_SubWorldSet.Close();
 		break;
 	case GOI_TRADE_NPC_BUY:
@@ -2344,6 +3069,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				itempart_ring1,		itempart_ring2,
 				itempart_pendant,	itempart_foot,
 				itempart_horse, itempart_mask,
+				itempart_mantle,	itempart_signet,
+				itempart_shipin,	itempart_hoods,
+				itempart_cloak,
 			};
 			int PartTrembleConvert[tremblepart_num] = 
 			{
@@ -2418,6 +3146,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					break;
 				case UOC_TO_BE_TRADE:
 					P1.nPlace = pos_traderoom;
+					P1.nX = pObject1->Region.h;
+					P1.nY = pObject1->Region.v;
+					break;
+				case UOC_TO_BE_GAMBLE:
+					P1.nPlace = pos_gambleroom;
 					P1.nX = pObject1->Region.h;
 					P1.nY = pObject1->Region.v;
 					break;
@@ -2556,6 +3289,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					P2.nX = pObject2->Region.h;
 					P2.nY = pObject2->Region.v;
 					break;
+				case UOC_TO_BE_GAMBLE:
+					P2.nPlace = pos_gambleroom;
+					P2.nX = pObject2->Region.h;
+					P2.nY = pObject2->Region.v;
+					break;
 				case UOC_AFFAIR_ITEM: // pos tra vat pham nhiem vu
 					P2.nPlace = pos_affairitem;
 					P2.nX = pObject2->Region.h;
@@ -2580,6 +3318,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			if (!pObject2)
 			{
 				memcpy(&P2, &P1, sizeof(P1));
+			}
+			if(P1.nPlace == pos_equiproom)
+			{
+				Player[CLIENT_PLAYER_INDEX].m_sExtAuto.uFtNextTime = timeGetTime() + 5000;
 			}
 			Player[CLIENT_PLAYER_INDEX].MoveItem(P1, P2);
 		}
@@ -2624,8 +3366,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			}
 		}
 		break;
-	case GOI_RCLICK_MOVE_ITEM:
-		if(uParam)
+	case GOI_EXCHANGEITEM:
+		{
+		/*if(uParam)
 		{
 			KUiObjAtRegion* pInfo = (KUiObjAtRegion*) uParam;
 			int nPlace = nParam;
@@ -2647,6 +3390,28 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			{
 				Player[CLIENT_PLAYER_INDEX].ApplyAutoMoveItem(pInfo->Obj.uId, Pos);					
 			}
+		}*/
+
+			UINT* pParam = (UINT*)uParam;
+			int nItemID = *pParam;
+			int nSrcPos = *(pParam+1);
+			if(nItemID <= 0 || nItemID >= MAX_ITEM)
+				break;
+			if(nParam <= 0)
+				break;
+			char szPack[16];
+			DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
+			pCmd->ProtocolType = c2s_dynamic_structure;
+			pCmd->nBranch = c2sdnmbr_exchangeitem;
+			pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + 2*sizeof(BYTE) + sizeof(int);
+			BYTE* pPos = (BYTE*)(pCmd+1);
+			*pPos = nSrcPos;
+			pPos++;
+			*pPos = nParam;
+			pPos++;
+			*(int*)pPos = Item[nItemID].GetID();
+			if (g_pClient)
+				g_pClient->SendPackToServer(pCmd, pCmd->m_wLength + 1);
 		}
 		break;
 	case GOI_USE_ITEM:
@@ -2664,6 +3429,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			case UOC_IMMEDIA_ITEM:
 				Pos.nPlace = pos_immediacy;
 				break;
+			case UOC_EQUIPTMENT:
+				if(Player[CLIENT_PLAYER_INDEX].m_nActiveEquipNum == 1)
+				Pos.nPlace = pos_equip;
+				else
+				Pos.nPlace = pos_equipback;
+				break;
 			default:
 				Pos.nPlace = -1;
 				break;
@@ -2677,7 +3448,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				if(Pos.nPlace == pos_immediacy && Item[pInfo->Obj.uId].IsFkItemSkill())
 					CoreDataChanged(GDCNI_USE_SHORCUT_SKILL, Item[pInfo->Obj.uId].GetParticular(), 0);
 				else
-					Player[CLIENT_PLAYER_INDEX].ApplyUseItem(pInfo->Obj.uId, Pos);
+					Player[CLIENT_PLAYER_INDEX].ApplyUseItem(pInfo->Obj.uId, Pos, pInfo->Region.Width);
 			}
 		}
 		break;
@@ -2785,7 +3556,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			KTrade::ReplyInvite(((KUiPlayerItem*)uParam)->nIndex, nParam);
 		}
 		break;
-
+	case GOI_GAMBLE_INVITE_RESPONSE:
+		if (uParam)
+		{
+			KTrade::ReplyGambleInvite(((KUiPlayerItem*)uParam)->nIndex, nParam);
+		}
+		break;
 	case GOI_TRADE_DESIRE_ITEM:
 		if (uParam)
 		{
@@ -2795,7 +3571,15 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			Player[CLIENT_PLAYER_INDEX].TradeMoveMoney(pInfo->Obj.uId);
 		}
 		break;
-
+	case GOI_GAMBLE_DESIRE_ITEM:
+		if (uParam)
+		{
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+			if (pInfo->Obj.uGenre != CGOG_MONEY)
+				break;
+			Player[CLIENT_PLAYER_INDEX].GambleMoveMoney(pInfo->Obj.uId);
+		}
+		break;
 	case GOI_TRADE_WILLING: //giao dich giao dÞch
 		if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMenuState() == PLAYER_MENU_STATE_TRADEOPEN)
 		{
@@ -2806,7 +3590,16 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			Player[CLIENT_PLAYER_INDEX].TradeApplyOpen((char*)uParam, nParam);
 		}
 		break;
-
+	case GOI_GAMBLE_WILLING: //giao dich giao dÞch
+		//if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMenuState() == PLAYER_MENU_STATE_TRADEOPEN)
+		//{
+		//	Player[CLIENT_PLAYER_INDEX].TradeApplyClose();
+		//}
+		//else
+		//{
+		//	Player[CLIENT_PLAYER_INDEX].TradeApplyOpen((char*)uParam, nParam);
+		//}
+		break;
 	case GOI_TRADE_LOCK:
 		if ( !Player[CLIENT_PLAYER_INDEX].CheckTrading() )
 			break;
@@ -2815,7 +3608,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		else
 			Player[CLIENT_PLAYER_INDEX].TradeApplyLock(1);
 		break;
-
+	case GOI_GAMBLE_LOCK:
+		if (!Player[CLIENT_PLAYER_INDEX].CheckTrading())
+			break;
+		if (Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeLock)
+			Player[CLIENT_PLAYER_INDEX].GambleApplyLock(0);
+		else
+			Player[CLIENT_PLAYER_INDEX].GambleApplyLock(1);
+		break;
 	case GOI_TRADE:
 		if ( !Player[CLIENT_PLAYER_INDEX].CheckTrading() )
 			break;
@@ -2830,15 +3630,3855 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 			Player[CLIENT_PLAYER_INDEX].TradeDecision(2);		
 		}
 		break;
-
+	case GOI_GAMBLE:
+		if (!Player[CLIENT_PLAYER_INDEX].CheckTrading())
+			break;
+		if (Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeLock != 1 || Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeDestLock != 1)
+			break;
+		if (Player[CLIENT_PLAYER_INDEX].m_cTrade.m_nTradeState == 0)
+		{
+			Player[CLIENT_PLAYER_INDEX].GambleDecision(1, nParam);
+		}
+		else
+		{
+			Player[CLIENT_PLAYER_INDEX].GambleDecision(2);
+		}
+		break;
 	case GOI_TRADE_CANCEL:
 		if ( !Player[CLIENT_PLAYER_INDEX].CheckTrading() )
 			break;
 		Player[CLIENT_PLAYER_INDEX].TradeDecision(0);		
 		break;
+	case GOI_GAMBLE_CANCEL:
+		if (!Player[CLIENT_PLAYER_INDEX].CheckTrading())
+			break;
+		Player[CLIENT_PLAYER_INDEX].GambleDecision(0);
+		break;
+	case GOI_AUTOPLAY_ACTION:
+		{
+			nRet = 0;
+			int nNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			int nPlayerIdx = CLIENT_PLAYER_INDEX;
+			UINT uCurTime = timeGetTime();
+			switch(uParam)
+			{
+				case ATYPE_PUMPLIFE:
+				{
+					int* pValue = (int*)nParam;
+					if(Player[nPlayerIdx].m_sExtAuto.uLTime1 < uCurTime)
+					{
+						if(Npc[nNpcIdx].m_CurrentLife < Npc[nNpcIdx].m_CurrentLifeMax
+						 && Npc[nNpcIdx].m_CurrentLife < pValue[0])
+						{
+							Player[nPlayerIdx].m_sExtAuto.uLTime1 = uCurTime + pValue[2];
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 0 || nDetail == 2
+									|| (nDetail == 8 && Item[nIdx].GetLevel() == 4)))
+									{
+										ItemPos	Pos;
+										Pos.nPlace = pos_equiproom;
+										Pos.nX = j;
+										Pos.nY = i;
+										Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+										return 1;
+									}
+								}
+							}
+						}
+					}
+					if(Player[nPlayerIdx].m_sExtAuto.uLTime2 < uCurTime)
+					{
+						if(Npc[nNpcIdx].m_CurrentLife < Npc[nNpcIdx].m_CurrentLifeMax
+						 && Npc[nNpcIdx].m_CurrentLife < pValue[1])
+						{
+							Player[nPlayerIdx].m_sExtAuto.uLTime2 = uCurTime + pValue[2];
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 0 || nDetail == 2))
+									{
+										ItemPos	Pos;
+										Pos.nPlace = pos_equiproom;
+										Pos.nX = j;
+										Pos.nY = i;
+										Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+										return 1;
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_PUMPMANA:
+				{
+					int* pValue = (int*)nParam;
+					if(Player[nPlayerIdx].m_sExtAuto.uMTime1 < uCurTime)
+					{
+						if(Npc[nNpcIdx].m_CurrentMana < Npc[nNpcIdx].m_CurrentManaMax
+						 && Npc[nNpcIdx].m_CurrentMana < pValue[0])
+						{
+							Player[nPlayerIdx].m_sExtAuto.uMTime1 = uCurTime + pValue[2];
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 1 || nDetail == 2))
+									{
+										ItemPos	Pos;
+										Pos.nPlace = pos_equiproom;
+										Pos.nX = j;
+										Pos.nY = i;
+										Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+										return 1;
+									}
+								}
+							}
+						}
+					}
+					if(Player[nPlayerIdx].m_sExtAuto.uMTime2 < uCurTime)
+					{
+						if(Npc[nNpcIdx].m_CurrentMana < Npc[nNpcIdx].m_CurrentManaMax
+						 && Npc[nNpcIdx].m_CurrentMana < pValue[1])
+						{
+							Player[nPlayerIdx].m_sExtAuto.uMTime2 = uCurTime + pValue[2];
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 1 || nDetail == 2))
+									{
+										ItemPos	Pos;
+										Pos.nPlace = pos_equiproom;
+										Pos.nX = j;
+										Pos.nY = i;
+										Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+										return 1;
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_TP_CHECKLIFE:
+				case ATYPE_TP_CHECKMANA:
+				case ATYPE_TP_LIFEGONE:
+				case ATYPE_TP_MANAGONE:
+				case ATYPE_TP_FULLITEM:
+				case ATYPE_TP_FULLMONEY:
+				case ATYPE_TP_DMGITEM:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
 
-	case GOI_DROP_ITEM_QUERY:
-		//to do : waiting for...
+					static int aMap[42] = {387,388,389,390,391,392,393,394,395,375,386,416,511,995,44,197,208,209,210,211,213,223,
+														341,342,175,337,338,339,379,324,481,482,483,484,485,486,487,488,489,399,397,396};
+					for(int i=0;i<42;++i)
+					{
+						if(SubWorld[0].m_SubWorldID == aMap[i])
+							return 0;
+					}
+					bool bUseTP = false;
+					if(uParam == ATYPE_TP_CHECKLIFE && Npc[nNpcIdx].m_CurrentLife < nParam)
+						bUseTP = true;
+					else if(uParam == ATYPE_TP_CHECKMANA && Npc[nNpcIdx].m_CurrentMana < nParam)
+						bUseTP = true;
+					else if(uParam == ATYPE_TP_LIFEGONE)
+					{
+						bool bFound = false;
+						for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+						{
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 0 || nDetail == 2))
+									{
+										bFound = true;
+										break;
+									}
+								}
+							}
+							if(bFound)
+								break;
+						}
+						if(!bFound)
+							bUseTP = true;
+					}
+					else if(uParam == ATYPE_TP_MANAGONE)
+					{
+						bool bFound = false;
+						for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+						{
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									if(nGenre == item_medicine
+									&& (nDetail == 1 || nDetail == 2))
+									{
+										bFound = true;
+										break;
+									}
+								}
+							}
+							if(bFound)
+								break;
+						}
+						if(!bFound)
+							bUseTP = true;
+					}
+					else if(uParam == ATYPE_TP_FULLITEM)
+					{
+						int x, y;
+						if(nParam == 0)
+						{
+							if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+								bUseTP = true;
+						}
+						else if(nParam == 1)
+						{
+							if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(2, 2, &x, &y))
+								bUseTP = true;
+						}
+						else if(nParam == 2)
+						{
+							if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(2, 3, &x, &y))
+								bUseTP = true;
+						}
+						else if(nParam == 3)
+						{
+							if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(2, 4, &x, &y))
+								bUseTP = true;
+						}
+					}
+					else if(uParam == ATYPE_TP_FULLMONEY)
+					{
+						if(Player[nPlayerIdx].m_ItemList.GetMoney(room_equipment) > nParam*10000)
+							bUseTP = true;
+					}
+					else if(uParam == ATYPE_TP_DMGITEM)
+					{
+						if(nParam > 0)
+						{
+							for (int k = 0; k < itempart_horse; ++k)
+							{
+								int nIdx = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEquipment(k);
+								if(nIdx > 0)
+								{
+									int nDur = Item[nIdx].GetDurability();
+									if(nDur > 0 && nDur < nParam)
+									{
+										bUseTP = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+					if(bUseTP)
+					{
+						for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+						for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+						{
+							int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+							if(nIdx > 0)
+							{
+								int nGenre = Item[nIdx].GetGenre();
+								int nDetail = Item[nIdx].GetDetailType();
+								int nPart = Item[nIdx].GetParticular();
+								if(nGenre == item_townportal
+								|| (nGenre == item_magicscript && nDetail == 1 && (nPart == 437 || nPart == 1083 || nPart == 1084)))
+								{
+									Player[nPlayerIdx].m_sExtAuto.bJustTP = TRUE;
+									ItemPos	Pos;
+									Pos.nPlace = pos_equiproom;
+									Pos.nX = j;
+									Pos.nY = i;
+									Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+									return 1;
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_CLEAR:
+				{
+					g_ScenePlace.RemoveFlag();
+					Player[nPlayerIdx].m_mAutoExcludeNpcID.clear();
+					Player[nPlayerIdx].m_mAutoIDObj.clear();
+					Player[nPlayerIdx].m_mAutoIDTeam.clear();
+					Player[nPlayerIdx].m_mAutoTeamRecv.clear();
+					Player[nPlayerIdx].m_vAutoTeamKick.clear();
+					memset(&Player[nPlayerIdx].m_sExtAuto, 0, sizeof(ExtAuto));
+					Player[nPlayerIdx].m_sExtAuto.uChatTime = uCurTime + 5*1000;
+					if(!nParam && nNpcIdx > 0)
+					{
+						int nX, nY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						Npc[nNpcIdx].SendCommand(do_run, nX, nY);
+						SendClientCmdRun(nX, nY);
+					}
+					break;
+				}
+				case ATYPE_CHECKTIME:
+				{
+					if(!Player[nPlayerIdx].m_sExtAuto.uUnFightTime)
+					{
+						Player[nPlayerIdx].m_sExtAuto.uUnFightTime = uCurTime;
+						if(nNpcIdx > 0)
+							Player[nPlayerIdx].m_sExtAuto.bPrevFightState = Npc[nNpcIdx].m_FightMode;
+					}
+					else
+					{
+						if(nNpcIdx > 0)
+						{
+							Player[nPlayerIdx].m_sExtAuto.bJustDis = FALSE;
+							if(Player[nPlayerIdx].m_sExtAuto.bPrevFightState != Npc[nNpcIdx].m_FightMode)
+							{
+								Player[nPlayerIdx].m_sExtAuto.bPrevFightState = Npc[nNpcIdx].m_FightMode;
+								Player[nPlayerIdx].m_sExtAuto.uUnFightTime = uCurTime;
+								if(Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+								{
+									CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+									Player[nPlayerIdx].m_sExtAuto.bJustTP = FALSE;
+									Player[nPlayerIdx].m_sExtAuto.nTempX = 0;
+									Player[nPlayerIdx].m_sExtAuto.nTempY = 0;
+									Player[nPlayerIdx].m_sExtAuto.bReachDes = FALSE;
+									Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 8000;
+								}
+								else
+								{
+									Player[nPlayerIdx].m_sExtAuto.nHomeStep = 0;
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								}
+							}
+						}
+						else if(!Player[nPlayerIdx].m_sExtAuto.bJustDis)
+						{
+							Player[nPlayerIdx].m_sExtAuto.bJustDis = TRUE;
+							Player[nPlayerIdx].m_sExtAuto.uUnFightTime = uCurTime;
+						}
+					}
+					for (std::map<UINT,UINT>::iterator it = Player[nPlayerIdx].m_mAutoExcludeNpcID.begin();
+						it != Player[nPlayerIdx].m_mAutoExcludeNpcID.end();)
+					{
+						UINT uTime = it->second;
+						if(uTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_mAutoExcludeNpcID.erase(it++);
+						}
+						else
+						{
+							++it;
+						}
+					}
+					break;
+				}
+				case ATYPE_TP_EXIT:
+				{
+					if(Player[nPlayerIdx].m_sExtAuto.bJustTP && !Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+						return 1;
+					break;
+				}
+				case ATYPE_DISEXIT:
+				{
+					if(Player[nPlayerIdx].m_sExtAuto.bJustDis
+					|| (nNpcIdx > 0 && !Player[nPlayerIdx].m_sExtAuto.bPrevFightState))
+					{
+						if(uCurTime - Player[nPlayerIdx].m_sExtAuto.uUnFightTime > 14*60*1000)
+							return 1;
+					}
+					break;
+				}
+				case ATYPE_CANCHAT:
+				{
+					if(Player[nPlayerIdx].m_sExtAuto.uChatTime < uCurTime)
+					{
+						if(nParam == 0)
+							Player[nPlayerIdx].m_sExtAuto.uChatTime = uCurTime + 12*1000;
+						else
+							Player[nPlayerIdx].m_sExtAuto.uChatTime = uCurTime + 62*1000;
+						return 1;
+					}
+					break;
+				}
+				case ATYPE_EATLIFEFULL:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					int x, y;
+					if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(2, 3, &x, &y))
+					{
+						for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+						for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+						{
+							int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+							if(nIdx > 0)
+							{
+								int nGenre = Item[nIdx].GetGenre();
+								int nDetail = Item[nIdx].GetDetailType();
+								if(nGenre == item_medicine
+								&& (nDetail == 0 || nDetail == 1 || nDetail == 2 || nDetail == 4))
+								{
+									ItemPos	Pos;
+									Pos.nPlace = pos_equiproom;
+									Pos.nX = j;
+									Pos.nY = i;
+									Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+									return 1;
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_EATPOISON:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uPoisonTime < uCurTime)
+					{
+						Player[nPlayerIdx].m_sExtAuto.uPoisonTime = uCurTime + 500;
+						if(Npc[nNpcIdx].m_PoisonState.nTime > 0)
+						{
+						for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+						for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+						{
+							int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+							if(nIdx > 0)
+							{
+								int nGenre = Item[nIdx].GetGenre();
+								int nDetail = Item[nIdx].GetDetailType();
+								if(nGenre == item_medicine && nDetail == 4)
+								{
+									ItemPos	Pos;
+									Pos.nPlace = pos_equiproom;
+									Pos.nX = j;
+									Pos.nY = i;
+									Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+									return 1;
+								}
+							}
+						}}
+					}
+					break;
+				}
+				case ATYPE_EATEXPX2:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uExp2Time >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uExp2Time = uCurTime + 5000;
+					KStateNode* pNode = (KStateNode *)Npc[nNpcIdx].m_StateSkillList.GetHead();
+					while(pNode)
+					{
+						if(pNode->m_SkillID == 440)
+							return 0;
+						pNode = (KStateNode *)pNode->GetNext();
+					}
+					for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+					for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+						if(nIdx > 0)
+						{
+							int nGenre = Item[nIdx].GetGenre();
+							int nDetail = Item[nIdx].GetDetailType();
+							int nPart = Item[nIdx].GetParticular();
+							if(nGenre == item_magicscript && nDetail == 1
+							&& (nPart == 71 || nPart == 70 || nPart == 1182))
+							{
+								ItemPos	Pos;
+								Pos.nPlace = pos_equiproom;
+								Pos.nX = j;
+								Pos.nY = i;
+								Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+								return 1;
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_EATSKILLX2:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uSkillExp2Time >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uSkillExp2Time = uCurTime + 6000;
+					KStateNode* pNode = (KStateNode *)Npc[nNpcIdx].m_StateSkillList.GetHead();
+					while(pNode)
+					{
+						if(pNode->m_SkillID == 1555)
+							return 0;
+						pNode = (KStateNode *)pNode->GetNext();
+					}
+					for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+					for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+						if(nIdx > 0)
+						{
+							int nGenre = Item[nIdx].GetGenre();
+							int nDetail = Item[nIdx].GetDetailType();
+							int nPart = Item[nIdx].GetParticular();
+							if(nGenre == item_magicscript && nDetail == 1
+							&& (nPart == 4822 || nPart == 4823))
+							{
+								ItemPos	Pos;
+								Pos.nPlace = pos_equiproom;
+								Pos.nX = j;
+								Pos.nY = i;
+								Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+								return 1;
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_BASEBUFF:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uBaseBuffTime >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uBaseBuffTime = uCurTime + 500;
+					int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(93);
+					if(!nSkillIdx)
+						return 0;
+					int* pValue = (int*)nParam;
+					if((Npc[nNpcIdx].m_CurrentLife < Npc[nNpcIdx].m_CurrentLifeMax)
+					&& (Npc[nNpcIdx].m_CurrentLife <= Npc[nNpcIdx].m_CurrentLifeMax - pValue[0]))
+					{//Nga my buff minh truoc
+						Npc[nNpcIdx].SendCommand(do_skill, 93, -1, nNpcIdx);
+						SendClientCmdSkill(93, -1, Npc[nNpcIdx].m_dwID);
+						return 1;
+					}
+					if(pValue[1]) //buff pt sau
+					{
+						KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(93,
+											Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
+						if(!pSkill || !Player[nPlayerIdx].m_cTeam.m_nFlag)
+							return 0;
+						int nX, nY, dX, dY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						int nIndex = NpcSet.SearchID(g_Team[0].m_nCaptain);
+						if(nIndex > 0 && Npc[nIndex].m_RegionIndex >= 0) //buff doi truong
+						{
+							Npc[nIndex].GetMpsPos(&dX, &dY);
+							if(g_GetDistance(nX, nY, dX, dY) < pSkill->GetAttackRadius())
+							{
+								if((Npc[nIndex].m_CurrentLife < Npc[nIndex].m_CurrentLifeMax)
+								&& (Npc[nIndex].m_CurrentLife <= Npc[nIndex].m_CurrentLifeMax - pValue[0]))
+								{
+									Npc[nNpcIdx].SendCommand(do_skill, 93, -1, nIndex);
+									SendClientCmdSkill(93, -1, Npc[nIndex].m_dwID);
+									return 1;
+								}
+							}
+						}
+						for (int i = 0; i < MAX_TEAM_MEMBER; ++i) //buff mem
+						{
+							nIndex = NpcSet.SearchID(g_Team[0].m_nMember[i]);
+							if(nIndex > 0 && Npc[nIndex].m_RegionIndex >= 0)
+							{
+								Npc[nIndex].GetMpsPos(&dX, &dY);
+								if(g_GetDistance(nX, nY, dX, dY) < pSkill->GetAttackRadius())
+								{
+									if((Npc[nIndex].m_CurrentLife < Npc[nIndex].m_CurrentLifeMax)
+									&& (Npc[nIndex].m_CurrentLife <= Npc[nIndex].m_CurrentLifeMax - pValue[0]))
+									{
+										Npc[nNpcIdx].SendCommand(do_skill, 93, -1, nIndex);
+										SendClientCmdSkill(93, -1, Npc[nIndex].m_dwID);
+										return 1;
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_CLBUFF:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uCLBuffTime >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uCLBuffTime = uCurTime + 500;
+					int nX, nY;
+					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+					static int arID[3] = {171,173,178};
+					for(int k=0;k<3;++k)
+					{
+						int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(arID[k]);
+						if(!nSkillIdx)
+							continue;
+						KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(arID[k],
+											Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
+						if(!pSkill)
+							continue;
+						int nStateId = pSkill->GetStateSpecailId();
+						if(!nStateId)
+							continue;
+						int nSkillRad = pSkill->GetAttackRadius();
+						if(nParam)	//camp
+						{
+							int nIdx = 0;
+							int x,y;
+							while(nIdx = NpcSet.GetNextIdx(nIdx))
+							{
+								if(nIdx == nNpcIdx || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0
+								|| Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+									continue;
+								if(NpcSet.GetRelation(nNpcIdx, nIdx) == relation_enemy)
+									continue;
+								if(Npc[nIdx].m_Kind != kind_player)
+									continue;
+								if(Npc[nIdx].m_CurrentCamp != Npc[nNpcIdx].m_CurrentCamp)
+									continue;
+								Npc[nIdx].GetMpsPos(&x, &y);
+								int nDist = g_GetDistance(nX, nY, x, y);
+								if(nDist < nSkillRad)
+								{
+									bool bCastExist = false;
+									for(int s=0;s<MAX_SKILL_STATE;++s)
+									{
+										if(!Npc[nIdx].m_btStateInfo[s])
+											break;
+										if(Npc[nIdx].m_btStateInfo[s] == (BYTE)nStateId)
+										{
+											bCastExist = true;
+											break;
+										}
+									}
+									if(bCastExist)
+										continue;
+									Npc[nNpcIdx].SendCommand(do_skill, arID[k], -1, nIdx);
+									SendClientCmdSkill(arID[k], -1, Npc[nIdx].m_dwID);
+									return 1;
+								}
+							}
+						}
+						else	//team
+						{
+							int dX, dY;
+							int nIndex = NpcSet.SearchID(g_Team[0].m_nCaptain);
+							if(nIndex > 0 && Npc[nIndex].m_RegionIndex >= 0) //buff doi truong
+							{
+								Npc[nIndex].GetMpsPos(&dX, &dY);
+								if(g_GetDistance(nX, nY, dX, dY) < nSkillRad)
+								{
+									bool bCastExist = false;
+									for(int s=0;s<MAX_SKILL_STATE;++s)
+									{
+										if(!Npc[nIndex].m_btStateInfo[s])
+											break;
+										if(Npc[nIndex].m_btStateInfo[s] == (BYTE)nStateId)
+										{
+											bCastExist = true;
+											break;
+										}
+									}
+									if(!bCastExist)
+									{
+										Npc[nNpcIdx].SendCommand(do_skill, arID[k], -1, nIndex);
+										SendClientCmdSkill(arID[k], -1, Npc[nIndex].m_dwID);
+										return 1;
+									}
+								}
+							}
+							for (int i = 0; i < MAX_TEAM_MEMBER; ++i) //buff mem
+							{
+								nIndex = NpcSet.SearchID(g_Team[0].m_nMember[i]);
+								if(nIndex > 0 && Npc[nIndex].m_RegionIndex >= 0)
+								{
+									Npc[nIndex].GetMpsPos(&dX, &dY);
+									if(g_GetDistance(nX, nY, dX, dY) < nSkillRad)
+									{
+										bool bCastExist = false;
+										for(int s=0;s<MAX_SKILL_STATE;++s)
+										{
+											if(!Npc[nIndex].m_btStateInfo[s])
+												break;
+											if(Npc[nIndex].m_btStateInfo[s] == (BYTE)nStateId)
+											{
+												bCastExist = true;
+												break;
+											}
+										}
+										if(!bCastExist)
+										{
+											Npc[nNpcIdx].SendCommand(do_skill, arID[k], -1, nIndex);
+											SendClientCmdSkill(arID[k], -1, Npc[nIndex].m_dwID);
+											return 1;
+										}
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_OPENBAG:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uOpenBagTime >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uOpenBagTime = uCurTime + 3000;
+					if(Player[nPlayerIdx].m_ItemList.CountCommonItem(0, item_medicine, 2) <= 6)
+					{
+					for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+					for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+						if(nIdx > 0)
+						{
+							int nGenre = Item[nIdx].GetGenre();
+							int nDetail = Item[nIdx].GetDetailType();
+							int nPart = Item[nIdx].GetParticular();
+							if(nGenre == item_magicscript && nDetail == 1 && nPart == 4813)
+							{
+								ItemPos	Pos;
+								Pos.nPlace = pos_equiproom;
+								Pos.nX = j;
+								Pos.nY = i;
+								Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+								return 1;
+							}
+						}
+					}}
+					break;
+				}
+				case ATYPE_SUPPORTBUFF:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					KStateNode* pNode = (KStateNode *)Npc[nNpcIdx].m_StateSkillList.GetHead();
+					while(pNode)
+					{
+						if(pNode->m_SkillID == nParam)
+							return 0;
+						pNode = (KStateNode *)pNode->GetNext();
+					}
+					int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nParam);
+					if(!nSkillIdx)
+						return 0;
+					if(Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].NextCastTime > SubWorld[0].m_dwCurrentTime)
+						return 0;
+					Npc[nNpcIdx].SendCommand(do_skill, nParam, -1, nNpcIdx);
+					SendClientCmdSkill(nParam, -1, Npc[nNpcIdx].m_dwID);
+					return 1;
+				}
+				case ATYPE_LEFTSKILL:
+				{
+					if(Player[nPlayerIdx].GetLeftSkill() == nParam)
+						return 0;
+					KUiGameObject	Skill;
+					Skill.uGenre = CGOG_SKILL_FIGHT;
+					Skill.uId = nParam;
+					OperationRequest(GOI_SET_IMMDIA_SKILL,
+						(unsigned int)&Skill, 0);
+					return 1;
+				}
+				case ATYPE_RIGHTSKILL:
+				{
+					if(Player[nPlayerIdx].GetRightSkill() == nParam)
+						return 0;
+					KUiGameObject	Skill;
+					Skill.uGenre = CGOG_SKILL_FIGHT;
+					Skill.uId = nParam;
+					OperationRequest(GOI_SET_IMMDIA_SKILL,
+						(unsigned int)&Skill, 1);
+					return 1;
+				}
+				case ATYPE_CHANGEAURA:
+				{
+					int nTime = g_SubWorldSet.GetGameTime();
+					if(Player[nPlayerIdx].m_sExtAuto.nAuraTime > nTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.nAuraTime = nTime + 10;
+					int* pValue = (int*)nParam;
+					Player[nPlayerIdx].m_sExtAuto.bChangeAura = !Player[nPlayerIdx].m_sExtAuto.bChangeAura;
+					if(Player[nPlayerIdx].m_sExtAuto.bChangeAura)
+					{
+						if(pValue[0] <= 0 || Player[nPlayerIdx].GetRightSkill() == pValue[0])
+							return 0;
+						KUiGameObject	Skill;
+						Skill.uGenre = CGOG_SKILL_FIGHT;
+						Skill.uId = pValue[0];
+						OperationRequest(GOI_SET_IMMDIA_SKILL,
+							(unsigned int)&Skill, 1);
+					}
+					else
+					{
+						if(pValue[1] <= 0 || Player[nPlayerIdx].GetRightSkill() == pValue[1])
+							return 0;
+						KUiGameObject	Skill;
+						Skill.uGenre = CGOG_SKILL_FIGHT;
+						Skill.uId = pValue[1];
+						OperationRequest(GOI_SET_IMMDIA_SKILL,
+							(unsigned int)&Skill, 1);
+					}
+					return 1;
+				}
+				case ATYPE_FIGHT:
+				{
+					if(!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+						return 0;
+					const autoData* pApData = (autoData*)nParam;
+					int nX, nY, x, y;
+					BOOL bNewFound = FALSE;
+					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+					int nTGNpcIdx = 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uNpcID)
+					{
+						nTGNpcIdx = NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID);
+						if(!nTGNpcIdx || Npc[nTGNpcIdx].m_RegionIndex < 0
+						|| Npc[nTGNpcIdx].m_Doing == do_death || Npc[nTGNpcIdx].m_Doing == do_revive
+							|| !(NpcSet.GetRelation(nNpcIdx, nTGNpcIdx) == relation_enemy))
+							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+					}
+					if(!Player[nPlayerIdx].m_sExtAuto.uNpcID)
+					{
+						int Ox = 0,Oy = 0;
+						if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 1)
+						{
+							Ox = pApData->nPointX;
+							Oy = pApData->nPointY;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 2)
+						{
+							Ox = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x;
+							Oy = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 3)
+						{
+							Ox = Player[nPlayerIdx].m_sExtAuto.nTempX;
+							Oy = Player[nPlayerIdx].m_sExtAuto.nTempY;
+						}
+						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+						pApData->nVision, pApData->bFightBack, pApData->nFBVision,
+						pApData->nSelBoss, TRUE, NULL, pApData->bMoveFollow, Ox, Oy);
+						if(!nTGNpcIdx)
+						{
+							if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 2)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
+								if(Player[nPlayerIdx].m_sExtAuto.nCoordStep >= pApData->nCoordCount)
+									Player[nPlayerIdx].m_sExtAuto.nCoordStep = 0;
+								Player[nPlayerIdx].m_sExtAuto.bReachDes = FALSE;
+							}
+							Player[nPlayerIdx].m_sExtAuto.nTempX = 0;
+							Player[nPlayerIdx].m_sExtAuto.nTempY = 0;
+							return 0;
+						}
+						Player[nPlayerIdx].m_sExtAuto.uNpcID = Npc[nTGNpcIdx].m_dwID;
+						bNewFound = TRUE;
+					}
+					if(pApData->bSkipGoldboss)
+					{
+						if(Npc[nTGNpcIdx].m_Type == boss_gold)
+						{
+							Player[nPlayerIdx].
+								m_mAutoExcludeNpcID[Player[nPlayerIdx].m_sExtAuto.uNpcID]
+								= uCurTime + 30000;
+							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+							return 0;
+						}
+					}
+					if(pApData->nSelFHorse == 1)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
+							if(!Npc[nNpcIdx].m_bRideHorse)
+							{
+								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+							}
+						}
+					}
+					else if(pApData->nSelFHorse == 2)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
+							if(Npc[nNpcIdx].m_bRideHorse)
+							{
+								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+							}
+						}
+					}
+					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
+					int nDist = g_GetDistance(nX, nY, x, y);
+					if(Npc[nTGNpcIdx].m_Kind != kind_player)
+					{
+						if(bNewFound)
+						{
+							int nSpeed = Npc[nNpcIdx].m_CurrentRunSpeed;
+							if(nSpeed <= 0)
+								nSpeed = 10;
+							Player[nPlayerIdx].m_sExtAuto.uFDelayTime =
+								(UINT)(nDist/(float)nSpeed)*56 + 2500;
+							Player[nPlayerIdx].m_sExtAuto.uFDelayTime += uCurTime;
+							Player[nPlayerIdx].m_sExtAuto.nOldLife = Npc[nTGNpcIdx].m_CurrentLife;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.uFDelayTime < uCurTime)
+						{
+							if(Player[nPlayerIdx].m_sExtAuto.nOldLife == Npc[nTGNpcIdx].m_CurrentLife)
+							{
+								Player[nPlayerIdx].
+									m_mAutoExcludeNpcID[Player[nPlayerIdx].m_sExtAuto.uNpcID]
+									= uCurTime + 30000;
+								Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+								return 0;
+							}
+							else
+							{
+								Player[nPlayerIdx].m_sExtAuto.uFDelayTime = uCurTime + 2500;
+								Player[nPlayerIdx].m_sExtAuto.nOldLife = Npc[nTGNpcIdx].m_CurrentLife;
+							}
+						}
+					}
+					int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
+					if(pApData->nSkillIdC)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uChSkillTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uChSkillTime = uCurTime + 1000*pApData->nSkillCSec;
+							Player[nPlayerIdx].m_sExtAuto.bChSkill = !Player[nPlayerIdx].m_sExtAuto.bChSkill;
+						}
+						if(Player[nPlayerIdx].m_sExtAuto.bChSkill)
+						{
+							int nIdx = Npc[nNpcIdx].m_SkillList.FindSame(pApData->nSkillIdC);
+							if(nIdx && Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].NextCastTime
+									<= SubWorld[0].m_dwCurrentTime)
+								nMainSkill = pApData->nSkillIdC;
+						}
+					}
+					bool bChecked = false;
+					if(pApData->nSkillIdB && Npc[nTGNpcIdx].m_Kind == kind_normal && Npc[nTGNpcIdx].m_Type != boss_none)
+						nMainSkill = pApData->nSkillIdB;
+					if(pApData->nSkillIdLS)
+					{
+						int nAPerc = pApData->nSLSPerc;
+						if(nAPerc < 0)
+							nAPerc = 0;
+						else if(nAPerc > 100)
+							nAPerc = 100;
+						int nPPercent = (int)((double)Npc[nNpcIdx].m_CurrentLife
+										*100.0/Npc[nNpcIdx].m_CurrentLifeMax);
+						if(nPPercent < nAPerc)
+						{
+							bChecked = true;
+							nMainSkill = pApData->nSkillIdLS;
+						}
+					}
+					if(!bChecked && pApData->nSkillIdMS)
+					{
+						int nAPerc = pApData->nSMSPerc;
+						if(nAPerc < 0)
+							nAPerc = 0;
+						else if(nAPerc > 100)
+							nAPerc = 100;
+						int nPPercent = (int)((double)Npc[nNpcIdx].m_CurrentMana
+										*100.0/Npc[nNpcIdx].m_CurrentManaMax);
+						if(nPPercent < nAPerc)
+						{
+							bChecked = true;
+							nMainSkill = pApData->nSkillIdMS;
+						}
+					}
+					if(Npc[nTGNpcIdx].m_Kind == kind_player && pApData->bFightBack)
+					{
+						if(pApData->nSelFBack == 1)
+						{
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									int nGenre = Item[nIdx].GetGenre();
+									int nDetail = Item[nIdx].GetDetailType();
+									int nPart = Item[nIdx].GetParticular();
+									if(nGenre == item_townportal
+									|| (nGenre == item_magicscript && nDetail == 1 && (nPart == 437 || nPart == 1083 || nPart == 1084)))
+									{
+										Player[nPlayerIdx].m_sExtAuto.bJustTP = TRUE;
+										ItemPos	Pos;
+										Pos.nPlace = pos_equiproom;
+										Pos.nX = j;
+										Pos.nY = i;
+										Player[nPlayerIdx].ApplyUseItem(nIdx, Pos);
+										return 1;
+									}
+								}
+							}
+						}
+						else if(pApData->nSelFBack == 2)
+							return 2;
+						if(pApData->nSkillIdP)
+							nMainSkill = pApData->nSkillIdP;
+					}
+					int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nMainSkill);
+					if(!nSkillIdx)
+						return 0;
+					KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nMainSkill,
+										Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
+					if(!pSkill)
+						return 0;
+					if(pApData->nSelFHorse == 0)
+					{
+						if(pSkill->IsNeedDownHorse())
+						{
+							if(Npc[nNpcIdx].m_bRideHorse)
+								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+						}
+						else
+						{
+							if(!Npc[nNpcIdx].m_bRideHorse)
+								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+						}
+					}
+					int nSkillRadius = pSkill->GetAttackRadius();
+					if(pApData->bApproach)
+					{
+						int nNearDist = pApData->nNearDist;
+						if(nNearDist < 75)
+							nNearDist = 75;
+						if(nSkillRadius > nNearDist)
+							nSkillRadius = nNearDist;
+					}
+					g_ScenePlace.RemoveFlag();
+					if(nDist < nSkillRadius)
+					{
+						Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+						SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+					}
+					else
+					{
+						if (!Player[nPlayerIdx].m_RunStatus)
+						{
+							Npc[nNpcIdx].SendCommand(do_walk, x, y);
+							SendClientCmdWalk(x, y);
+						}
+						else
+						{
+							Npc[nNpcIdx].SendCommand(do_run, x, y);
+							SendClientCmdRun(x, y);
+						}
+					}
+					return 1;
+				}
+				case ATYPE_RESETNPCID:
+				{
+					Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+					return 0;
+				}
+				case ATYPE_ISFIGHTMODE:
+				{
+					return Player[nPlayerIdx].m_sExtAuto.bPrevFightState;
+				}
+				case ATYPE_DRAWVISION:
+				{
+					KNpc::g_DrawVision = nParam;
+					if(KNpc::g_DrawVision)
+					{
+						KNpc::g_DrawVisionSkill = KNpc::g_DrawVision;
+						int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
+						int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nMainSkill);
+						if(!nSkillIdx)
+							return 0;
+						KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nMainSkill,
+										Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
+						if(!pSkill)
+							return 0;
+						KNpc::g_DrawVisionSkill = pSkill->GetAttackRadius();
+					}
+					return 0;
+				}
+				case ATYPE_PKFIGHT:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					const autoData* pApData = (autoData*)nParam;
+					int nX, nY, x, y;
+					BOOL bNewFound = FALSE;
+					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+					int nTGNpcIdx = 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uNpcID)
+					{
+						nTGNpcIdx = NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID);
+						if(!nTGNpcIdx || Npc[nTGNpcIdx].m_RegionIndex < 0
+						|| Npc[nTGNpcIdx].m_Doing == do_death || Npc[nTGNpcIdx].m_Doing == do_revive
+							|| !(NpcSet.GetRelation(nNpcIdx, nTGNpcIdx) == relation_enemy))
+							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+					}
+					if(!Player[nPlayerIdx].m_sExtAuto.uNpcID)
+					{
+						if(pApData->nPriority)
+						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+						pApData->nPKVision, pApData->bPKPlayer,
+						pApData->nPKVision, 0, pApData->bPKNpc, &pApData->nSerPy[0]);
+						else
+						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+						pApData->nPKVision, pApData->bPKPlayer,
+						pApData->nPKVision, 0, pApData->bPKNpc);
+						if(!nTGNpcIdx)
+							return 0;
+						Player[nPlayerIdx].m_sExtAuto.uNpcID = Npc[nTGNpcIdx].m_dwID;
+						bNewFound = TRUE;
+					}
+					if(pApData->bPKDownHorse)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
+							if(Npc[nNpcIdx].m_bRideHorse)
+							{
+								OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+							}
+						}
+					}
+					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
+					int nDist = g_GetDistance(nX, nY, x, y);
+					int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
+					if(pApData->nSkillIdC)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uChSkillTime < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uChSkillTime = uCurTime + 1000*pApData->nSkillCSec;
+							Player[nPlayerIdx].m_sExtAuto.bChSkill = !Player[nPlayerIdx].m_sExtAuto.bChSkill;
+						}
+						if(Player[nPlayerIdx].m_sExtAuto.bChSkill)
+						{
+							int nIdx = Npc[nNpcIdx].m_SkillList.FindSame(pApData->nSkillIdC);
+							if(nIdx && Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].NextCastTime
+									<= SubWorld[0].m_dwCurrentTime)
+								nMainSkill = pApData->nSkillIdC;
+						}
+					}
+					bool bCastState = false;
+					if(pApData->nSkillIdCS1)
+					{
+						KSkill* pStateSkill = (KSkill*)g_SkillManager.GetSkill(pApData->nSkillIdCS1, 1);
+						if(pStateSkill)
+						{
+							int nStateId = pStateSkill->GetStateSpecailId();
+							if(nStateId)
+							{
+								bool bCastExist = false;
+								for(int s=0;s<MAX_SKILL_STATE;++s)
+								{
+									if(!Npc[nTGNpcIdx].m_btStateInfo[s])
+										break;
+									if(Npc[nTGNpcIdx].m_btStateInfo[s] == (BYTE)nStateId)
+									{
+										bCastExist = true;
+										break;
+									}
+								}
+								if(!bCastExist)
+								{
+									bCastState = true;
+									nMainSkill = pApData->nSkillIdCS1;
+								}
+							}
+						}
+					}
+					if(pApData->nSkillIdCS2 && !bCastState)
+					{
+						KSkill* pStateSkill = (KSkill*)g_SkillManager.GetSkill(pApData->nSkillIdCS2, 1);
+						if(pStateSkill)
+						{
+							int nStateId = pStateSkill->GetStateSpecailId();
+							if(nStateId)
+							{
+								bool bCastExist = false;
+								for(int s=0;s<MAX_SKILL_STATE;++s)
+								{
+									if(!Npc[nTGNpcIdx].m_btStateInfo[s])
+										break;
+									if(Npc[nTGNpcIdx].m_btStateInfo[s] == (BYTE)nStateId)
+									{
+										bCastExist = true;
+										break;
+									}
+								}
+								if(!bCastExist)
+								{
+									bCastState = true;
+									nMainSkill = pApData->nSkillIdCS2;
+								}
+							}
+						}
+					}
+					if(pApData->nSkillIdCS3 && !bCastState)
+					{
+						KSkill* pStateSkill = (KSkill*)g_SkillManager.GetSkill(pApData->nSkillIdCS3, 1);
+						if(pStateSkill)
+						{
+							int nStateId = pStateSkill->GetStateSpecailId();
+							if(nStateId)
+							{
+								bool bCastExist = false;
+								for(int s=0;s<MAX_SKILL_STATE;++s)
+								{
+									if(!Npc[nTGNpcIdx].m_btStateInfo[s])
+										break;
+									if(Npc[nTGNpcIdx].m_btStateInfo[s] == (BYTE)nStateId)
+									{
+										bCastExist = true;
+										break;
+									}
+								}
+								if(!bCastExist)
+								{
+									bCastState = true;
+									nMainSkill = pApData->nSkillIdCS3;
+								}
+							}
+						}
+					}
+					int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nMainSkill);
+					if(!nSkillIdx)
+						return 0;
+					KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nMainSkill,
+										Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
+					if(!pSkill)
+						return 0;
+					g_ScenePlace.RemoveFlag();
+					int nSkillRadius = pSkill->GetAttackRadius();
+					if(pApData->bPKFollowTG)
+					{
+						if(pApData->bPKAppr && !bCastState)
+						{
+							int nNearDist = pApData->nPKNearDist;
+							if(nNearDist < 75)
+								nNearDist = 75;
+							if(nSkillRadius > nNearDist)
+								nSkillRadius = nNearDist;
+						}
+						if(nDist < nSkillRadius)
+						{
+							Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+							SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+						}
+						else
+						{
+							if (!Player[nPlayerIdx].m_RunStatus)
+							{
+								Npc[nNpcIdx].SendCommand(do_walk, x, y);
+								SendClientCmdWalk(x, y);
+							}
+							else
+							{
+								Npc[nNpcIdx].SendCommand(do_run, x, y);
+								SendClientCmdRun(x, y);
+							}
+						}
+					}
+					else
+					{
+						if(nDist <= nSkillRadius)
+						{
+							Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
+							SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+						}
+						else
+						{
+							if(bCastState)
+								return 0;
+							int nOverDist = nDist - nSkillRadius;
+							nOverDist += nSkillRadius/2;
+							int nDir = g_GetDirIndex(x, y, nX, nY);
+							x = x + ((nOverDist * g_DirCos(nDir, 64)) >> 10);
+							y = y + ((nOverDist * g_DirSin(nDir, 64)) >> 10);
+							Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, x, y);
+							SendClientCmdSkill(nMainSkill, x, y);
+						}
+					}
+					return 1;
+				}
+				case ATYPE_PICKUPSET:
+				{
+					Player[nPlayerIdx].m_sExtAuto.bLBObjDown = nParam;
+					for (std::map<int,ExtAutoObjTime>::iterator itt = Player[nPlayerIdx].m_mAutoIDObj.begin();
+						itt != Player[nPlayerIdx].m_mAutoIDObj.end();)
+					{
+						ExtAutoObjTime s = itt->second;
+						if(uCurTime - s.nTotalTime >= 3*60000) //3 minutes
+						{
+							Player[nPlayerIdx].m_mAutoIDObj.erase(itt++);
+						}
+						else
+						{
+							++itt;
+						}
+					}
+					break;
+				}
+				case ATYPE_GETITEMNAME:
+				{
+					char* pName = (char*)nParam;
+					std::map<std::string, int> mapName;
+					for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+					for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+						if(nIdx > 0)
+						{
+							std::string str = Item[nIdx].GetName();
+							if(mapName.find(str) == mapName.end())
+							{
+								mapName[str] = 1;
+								strcpy(pName, Item[nIdx].GetName());
+								pName += 80;
+								++nRet;
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_PICKUP:
+				{
+					const autoData* pApData = (autoData*)nParam;
+					if(!pApData->bPickUp)
+						return 0;
+					if(!Npc[nNpcIdx].m_FightMode && !pApData->bCityPick)
+						return 0;
+					int nGameLoop = g_SubWorldSet.GetGameTime();
+					if(Player[nPlayerIdx].m_sExtAuto.nCurObjLoop == nGameLoop)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.nCurObjLoop = nGameLoop;
+					int i = ObjSet.GetNext(0);
+					int nX,nY,dX,dY;
+					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+					int nVision = 200;
+					while(i)
+					{
+						if(Object[i].m_nID > 0 &&
+						(Object[i].m_nKind == Obj_Kind_Item
+						|| Object[i].m_nKind == Obj_Kind_Money))
+						{
+							int nExist = -1;
+							for (std::map<int,ExtAutoObjTime>::iterator it = Player[nPlayerIdx].m_mAutoIDObj.begin();
+							it != Player[nPlayerIdx].m_mAutoIDObj.end();++it)
+							{
+								ExtAutoObjTime& s = it->second;
+								if((s.bItem && Object[i].m_nKind == Obj_Kind_Item
+								&& Object[i].m_nItemDataID == s.nID)
+								||
+								(!s.bItem && Object[i].m_nKind == Obj_Kind_Money
+								&& Object[i].m_nID == s.nID)
+								)
+								{
+									nExist = it->first;
+									break;
+								}
+							}
+							if(nExist >= 0)
+							{
+								ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+								if(s.nChecked >= 3 || s.nPickTime > uCurTime)
+								{
+									i = ObjSet.GetNext(i);
+									continue;
+								}
+							}
+							if(pApData->bNoPick && pApData->nNOPCount)
+							{
+								bool bCont = false;
+								for(int c=0;c < pApData->nNOPCount;++c)
+								{
+									if(!strcmp(Object[i].m_szName, pApData->szNOPName[c]))
+									{
+										bCont = true;
+										break;
+									}
+								}
+								if(bCont)
+								{
+									i = ObjSet.GetNext(i);
+									continue;
+								}
+							}
+							if(Object[i].m_nKind == Obj_Kind_Item)
+							{
+								if(pApData->nPickType == 1) //®Æc phÈm
+								{
+									if(Object[i].m_nGenre == item_equip)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+								}
+								else if(pApData->nPickType == 2) //®å mµu
+								{
+									if(Object[i].m_nGenre == item_equip
+									&& !Object[i].m_nColorID)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+								}
+								else if(pApData->nPickType == 3) //1 « mµu
+								{
+									if(Object[i].m_nItemWidth != 1 || Object[i].m_nItemHeight != 1)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+									if(Object[i].m_nGenre == item_equip
+									&& !Object[i].m_nColorID)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+								}
+								else if(pApData->nPickType == 4) //1-4 « mµu
+								{
+									if(Object[i].m_nItemWidth > 2 || Object[i].m_nItemHeight > 2)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+									if(Object[i].m_nGenre == item_equip
+									&& !Object[i].m_nColorID)
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+								}
+								else if(pApData->nPickType == 5) //tiÒn
+								{
+									i = ObjSet.GetNext(i);
+									continue;
+								}
+							}
+							Object[i].GetMpsPos(&dX,&dY);
+							if(g_GetDistance(nX, nY, dX, dY) < nVision)
+							{
+								int x, y;
+								if(Object[i].m_nKind == Obj_Kind_Money
+									|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+										Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y))
+								{
+									if(nExist < 0)
+									{
+										ExtAutoObjTime s;
+										s.nTotalTime = uCurTime;
+										s.nChecked = 1;
+										s.nPickTime = uCurTime + 120;
+										if(Object[i].m_nKind == Obj_Kind_Item)
+											s.nID = Object[i].m_nItemDataID;
+										else
+											s.nID = Object[i].m_nID;
+										s.bItem = (Object[i].m_nKind == Obj_Kind_Item);
+										Player[nPlayerIdx].m_mAutoIDObj[Player[nPlayerIdx].m_sExtAuto.umObjIncId++] = s;
+									}
+									else
+									{
+										ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+										s.nChecked++;
+										s.nPickTime = uCurTime + 120;
+									}
+									Player[nPlayerIdx].CheckObject(i);
+									nRet = 1;
+									break;
+								}
+							}
+						}
+						i = ObjSet.GetNext(i);
+					}
+					if(pApData->bFollowPick && !pApData->bOnPK && Npc[nNpcIdx].m_FightMode
+					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
+					{
+						if(pApData->bMoveFollow)
+						{
+							bool bFoundFol = false;
+							int nIdx = 0;
+							while (nIdx = NpcSet.GetNextIdx(nIdx))
+							{
+								if (Npc[nIdx].m_Kind != kind_player)
+									continue;
+								if (nIdx == Player[nPlayerIdx].m_nIndex)
+									continue;
+								if (Npc[nIdx].m_RegionIndex < 0)
+									continue;
+								if(!strcmp(pApData->szFollName, Npc[nIdx].Name))
+								{
+									bFoundFol = true;
+									break;
+								}
+							}
+							if(bFoundFol)
+								break;
+						}
+						int nFollowObj = 0;
+						if(Player[nPlayerIdx].m_sExtAuto.nCurObjID)
+						{
+							nFollowObj = ObjSet.FindID(Player[nPlayerIdx].m_sExtAuto.nCurObjID);
+							if(nFollowObj > 0)
+							{
+								int nExist = -1;
+								for (std::map<int,ExtAutoObjTime>::iterator it = Player[nPlayerIdx].m_mAutoIDObj.begin();
+								it != Player[nPlayerIdx].m_mAutoIDObj.end();++it)
+								{
+									ExtAutoObjTime& s = it->second;
+									if((s.bItem && Object[nFollowObj].m_nKind == Obj_Kind_Item
+									&& Object[nFollowObj].m_nItemDataID == s.nID)
+									||
+									(!s.bItem && Object[nFollowObj].m_nKind == Obj_Kind_Money
+									&& Object[nFollowObj].m_nID == s.nID)
+									)
+									{
+										nExist = it->first;
+										break;
+									}
+								}
+								if(nExist >= 0)
+								{
+									ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+									if(s.nChecked >= 3)
+									{
+										nFollowObj = 0;
+										Player[nPlayerIdx].m_sExtAuto.nCurObjID = 0;
+									}
+								}
+								if(nFollowObj > 0)
+								{
+									int x, y;
+									if(!(Object[nFollowObj].m_nKind == Obj_Kind_Money
+											|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+											Object[nFollowObj].m_nItemWidth, Object[nFollowObj].m_nItemHeight, &x, &y)))
+									{
+										nFollowObj = 0;
+										Player[nPlayerIdx].m_sExtAuto.nCurObjID = 0;
+									}
+								}
+							}
+						}
+						nVision = pApData->nPickVision;
+						if(nVision < 200)
+							nVision = 200;
+						else if(nVision > 800)
+							nVision = 800;
+						if(!nFollowObj)
+						{
+							i = ObjSet.GetNext(0);
+							while(i)
+							{
+								if(Object[i].m_nID > 0 &&
+								(Object[i].m_nKind == Obj_Kind_Item
+								|| Object[i].m_nKind == Obj_Kind_Money))
+								{
+									int x, y;
+									if(!(Object[i].m_nKind == Obj_Kind_Money
+											|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+											Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y)))
+									{
+										i = ObjSet.GetNext(i);
+										continue;
+									}
+									int nExist = -1;
+									for (std::map<int,ExtAutoObjTime>::iterator it = Player[nPlayerIdx].m_mAutoIDObj.begin();
+									it != Player[nPlayerIdx].m_mAutoIDObj.end();++it)
+									{
+										ExtAutoObjTime& s = it->second;
+										if((s.bItem && Object[i].m_nKind == Obj_Kind_Item
+										&& Object[i].m_nItemDataID == s.nID)
+										||
+										(!s.bItem && Object[i].m_nKind == Obj_Kind_Money
+										&& Object[i].m_nID == s.nID)
+										)
+										{
+											nExist = it->first;
+											break;
+										}
+									}
+									if(nExist >= 0)
+									{
+										ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+										if(s.nChecked >= 3)
+										{
+											i = ObjSet.GetNext(i);
+											continue;
+										}
+									}
+									if(pApData->bNoPick && pApData->nNOPCount)
+									{
+										bool bCont = false;
+										for(int c=0;c < pApData->nNOPCount;++c)
+										{
+											if(!strcmp(Object[i].m_szName, pApData->szNOPName[c]))
+											{
+												bCont = true;
+												break;
+											}
+										}
+										if(bCont)
+										{
+											i = ObjSet.GetNext(i);
+											continue;
+										}
+									}
+									if(Object[i].m_nKind == Obj_Kind_Item)
+									{
+										if(pApData->nPickType == 1) //®Æc phÈm
+										{
+											if(Object[i].m_nGenre == item_equip)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+										}
+										else if(pApData->nPickType == 2) //®å mµu
+										{
+											if(Object[i].m_nGenre == item_equip
+											&& !Object[i].m_nColorID)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+										}
+										else if(pApData->nPickType == 3) //1 « mµu
+										{
+											if(Object[i].m_nItemWidth != 1 || Object[i].m_nItemHeight != 1)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+											if(Object[i].m_nGenre == item_equip
+											&& !Object[i].m_nColorID)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+										}
+										else if(pApData->nPickType == 4) //1-4 « mµu
+										{
+											if(Object[i].m_nItemWidth > 2 || Object[i].m_nItemHeight > 2)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+											if(Object[i].m_nGenre == item_equip
+											&& !Object[i].m_nColorID)
+											{
+												i = ObjSet.GetNext(i);
+												continue;
+											}
+										}
+										else if(pApData->nPickType == 5) //tiÒn
+										{
+											i = ObjSet.GetNext(i);
+											continue;
+										}
+									}
+									Object[i].GetMpsPos(&dX,&dY);
+									if(g_GetDistance(nX, nY, dX, dY) < nVision)
+									{
+										if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet > 0)
+										{
+											int Ox = 0,Oy = 0;
+											if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 1)
+											{
+												Ox = pApData->nPointX;
+												Oy = pApData->nPointY;
+											}
+											else if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 2)
+											{
+												Ox = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x;
+												Oy = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y;
+											}
+											else if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 3)
+											{
+												Ox = Player[nPlayerIdx].m_sExtAuto.nTempX;
+												Oy = Player[nPlayerIdx].m_sExtAuto.nTempY;
+											}
+											int nFVision = pApData->nVision;
+											if(nFVision < 100)
+												nFVision = 100;
+											else if(nFVision > 1200)
+												nFVision = 1200;
+											int nDist = g_GetDistance(Ox, Oy, dX, dY);
+											if(nDist < nFVision)
+											{
+												nFollowObj = i;
+												Player[nPlayerIdx].m_sExtAuto.nCurObjID = Object[i].m_nID;
+												break;
+											}
+										}
+										else
+										{
+											nFollowObj = i;
+											Player[nPlayerIdx].m_sExtAuto.nCurObjID = Object[i].m_nID;
+											break;
+										}
+									}
+								}
+								i = ObjSet.GetNext(i);
+							}
+						}
+						if(nFollowObj)
+						{
+							g_ScenePlace.RemoveFlag();
+							Object[nFollowObj].GetMpsPos(&dX,&dY);
+							if (!Player[nPlayerIdx].m_RunStatus)
+							{
+								Npc[nNpcIdx].SendCommand(do_walk, dX, dY);
+								SendClientCmdWalk(dX, dY);
+							}
+							else
+							{
+								Npc[nNpcIdx].SendCommand(do_run, dX, dY);
+								SendClientCmdRun(dX, dY);
+							}
+							nRet = 2;
+						}
+					}
+					break;
+				}
+				case ATYPE_FILTER:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uFtNextTime >= uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uFtNextTime = uCurTime + 300;
+					const autoData* pApData = (autoData*)nParam;
+					if(!pApData->bFilter && !pApData->bPrize && !pApData->bLevel && !pApData->bSaveRing)
+						return 0;
+					int nIdx = Player[nPlayerIdx].m_ItemList.Hand();
+					if(nIdx)
+					{
+						bool bThrow = true;
+						if(Item[nIdx].GetGenre() != item_equip)
+							bThrow = false;
+						if(bThrow && Item[nIdx].GetColorItem() > green_item)
+							bThrow = false;
+						if(bThrow && Item[nIdx].GetDetailType() >= equip_horse)
+							bThrow = false;
+						if(bThrow && (Item[nIdx].GetPlayerItemLock() > 0 
+							|| Item[nIdx].GetPlayerItemHLock() > 0 
+							|| Item[nIdx].GetPlayerItemLock() == -2))
+							bThrow = false;
+						if(pApData->bPrize && bThrow)
+						{
+							int nPrize = Item[nIdx].GetSalePrice();
+							if(nPrize > pApData->nPrize)
+								bThrow = false;
+						}
+						if(pApData->bLevel && bThrow)
+						{
+							if(Item[nIdx].GetLevel() > pApData->nLevel)
+								bThrow = false;
+						}
+						if(pApData->bSaveRing && bThrow)
+						{
+							if((Item[nIdx].GetDetailType() == equip_ring
+							|| Item[nIdx].GetDetailType() == equip_amulet
+							|| Item[nIdx].GetDetailType() == equip_pendant)
+							&& Item[nIdx].GetLevel() > pApData->nSRLevel)
+								bThrow = false;
+						}
+						if(pApData->bFilter && pApData->nFtMaCount && bThrow)
+						{
+							for(int i=0;i<pApData->nFtMaCount;++i)
+							{
+								if(!bThrow)
+									break;
+								for(int m=0;m<6;++m)
+								{
+									if(Item[nIdx].m_aryMagicAttrib[m].nAttribType == 139)
+									{
+										bThrow = false;
+										break;
+									}
+									if(Item[nIdx].m_aryMagicAttrib[m].nAttribType == 0)
+										break;
+									if(pApData->nFtMagic[i][0] == Item[nIdx].m_aryMagicAttrib[m].nAttribType)
+									{
+										if(pApData->nFtMagic[i][0] == magic_indestructible_b
+										|| Item[nIdx].m_aryMagicAttrib[m].nValue[0] >= pApData->nFtMagic[i][1])
+										{
+											bThrow = false;
+											break;
+										}
+									}
+								}
+							}
+						}
+						if(bThrow)
+						{
+							int nExist = -1;
+							UINT uID = Item[nIdx].GetID();
+							for (std::map<int,ExtAutoObjTime>::iterator it = Player[nPlayerIdx].m_mAutoIDObj.begin();
+							it != Player[nPlayerIdx].m_mAutoIDObj.end();++it)
+							{
+								ExtAutoObjTime& s = it->second;
+								if(s.bItem && uID == s.nID)
+								{
+									nExist = it->first;
+									break;
+								}
+							}
+							if(nExist < 0)
+							{
+								ExtAutoObjTime s;
+								s.nTotalTime = uCurTime;
+								s.nChecked = 3;
+								s.nPickTime = uCurTime + 120;
+								s.nID = uID;
+								s.bItem = 1;
+								Player[nPlayerIdx].m_mAutoIDObj[Player[nPlayerIdx].m_sExtAuto.umObjIncId++] = s;
+							}
+							else
+							{
+								ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+								s.nTotalTime = uCurTime;
+								s.nChecked = 3;
+							}
+							Player[nPlayerIdx].ThrowAwayItem();
+							return 1;
+						}
+						int x, y;
+						if(Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+										Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y))
+						{
+							ItemPos	P1, P2;
+							P1.nPlace = P2.nPlace = pos_equiproom;
+							P1.nX = P2.nX = x;
+							P1.nY = P2.nY = y;
+							Player[nPlayerIdx].MoveItem(P1, P2);
+							return 1;
+						}
+					}
+					else
+					{
+						for(int h=0;h<EQUIPMENT_ROOM_HEIGHT;++h)
+						for(int w=0;w<EQUIPMENT_ROOM_WIDTH;++w)
+						{
+							nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(w, h);
+							if(nIdx > 0)
+							{
+								if(Item[nIdx].GetGenre() != item_equip)
+									continue;
+								if(Item[nIdx].GetColorItem() > green_item)
+									continue;
+								if(Item[nIdx].GetDetailType() >= equip_horse)
+									continue;
+								if(Item[nIdx].GetPlayerItemLock() > 0 
+									|| Item[nIdx].GetPlayerItemHLock() > 0 
+									|| Item[nIdx].GetPlayerItemLock() == -2)
+									continue;
+								if(pApData->bPrize)
+								{
+									int nPrize = Item[nIdx].GetSalePrice();
+									if(nPrize > pApData->nPrize)
+										continue;
+								}
+								if(pApData->bLevel)
+								{
+									if(Item[nIdx].GetLevel() > pApData->nLevel)
+										continue;
+								}
+								if(pApData->bSaveRing)
+								{
+									if((Item[nIdx].GetDetailType() == equip_ring
+									|| Item[nIdx].GetDetailType() == equip_amulet
+									|| Item[nIdx].GetDetailType() == equip_pendant)
+									&& Item[nIdx].GetLevel() > pApData->nSRLevel)
+										continue;
+								}
+								bool bPick = true;
+								if(pApData->bFilter && pApData->nFtMaCount)
+								{
+									for(int i=0;i<pApData->nFtMaCount;++i)
+									{
+										if(!bPick)
+											break;
+										for(int m=0;m<6;++m)
+										{
+											if(Item[nIdx].m_aryMagicAttrib[m].nAttribType == 139)
+											{
+												bPick = false;
+												break;
+											}
+											if(Item[nIdx].m_aryMagicAttrib[m].nAttribType == 0)
+												break;
+											if(pApData->nFtMagic[i][0] == Item[nIdx].m_aryMagicAttrib[m].nAttribType)
+											{
+												if(pApData->nFtMagic[i][0] == magic_indestructible_b
+												|| Item[nIdx].m_aryMagicAttrib[m].nValue[0] >= pApData->nFtMagic[i][1])
+												{
+													bPick = false;
+													break;
+												}
+											}
+										}
+									}
+								}
+								if(bPick && pApData->bSaveRing && pApData->bSellItem
+								&& !pApData->bFilter && !pApData->bPrize && !pApData->bLevel)
+									bPick = false;
+								if(bPick)
+								{
+									ItemPos	P1, P2;
+									P1.nPlace = P2.nPlace = pos_equiproom;
+									P1.nX = P2.nX = w;
+									P1.nY = P2.nY = h;
+									Player[nPlayerIdx].MoveItem(P1, P2);
+									return 1;
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_ARRANGEITEM:
+				{
+					if(!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uARTimeItem > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uARTimeItem = uCurTime + 20000;
+					DYNAMIC_COMMAND sCmd;
+					sCmd.ProtocolType = c2s_dynamic_structure;
+					sCmd.nBranch = c2sdnmbr_arrangeitem;
+					sCmd.m_wLength = sizeof(DYNAMIC_COMMAND) - 1;
+					if(g_pClient)
+					g_pClient->SendPackToServer(&sCmd, sCmd.m_wLength + 1);
+					return 1;
+				}
+				case ATYPE_ARRANGEBOX:
+				{
+					if(Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uARTimeBox > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uARTimeBox = uCurTime + 60000;
+					DYNAMIC_COMMAND sCmd;
+					sCmd.ProtocolType = c2s_dynamic_structure;
+					sCmd.nBranch = c2sdnmbr_arrangebox;
+					sCmd.m_wLength = sizeof(DYNAMIC_COMMAND) - 1;
+					if(g_pClient)
+					g_pClient->SendPackToServer(&sCmd, sCmd.m_wLength + 1);
+					return 1;
+				}
+				case ATYPE_GETAROUNDNAME:
+				{
+					char* pName = (char*)nParam;
+					int nIdx = 0;
+					while (nIdx = NpcSet.GetNextIdx(nIdx))
+					{
+						if (Npc[nIdx].m_Kind != kind_player)
+							continue;
+						if (nIdx == Player[nPlayerIdx].m_nIndex)
+							continue;
+						if (Npc[nIdx].m_RegionIndex < 0)
+							continue;
+						strcpy(pName, Npc[nIdx].Name);
+						pName += 32;
+						nRet++;
+						if(nRet >= 100)
+							break;
+					}
+					break;
+				}
+				case ATYPE_PTPROC:
+				{
+					if(Player[nPlayerIdx].m_sExtAuto.uTNextProc > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uTNextProc = uCurTime + 400;
+					for (std::map<UINT,UINT>::iterator it = Player[nPlayerIdx].m_mAutoIDTeam.begin();
+						it != Player[nPlayerIdx].m_mAutoIDTeam.end();)
+					{
+						UINT uTime = it->second;
+						if(uCurTime - uTime >= 15*1000) //15s
+						{
+							Player[nPlayerIdx].m_mAutoIDTeam.erase(it++);
+						}
+						else
+						{
+							++it;
+						}
+					}
+					for (std::map<int, ExtAutoTeamRecv>::iterator itt = Player[nPlayerIdx].m_mAutoTeamRecv.begin();
+						itt != Player[nPlayerIdx].m_mAutoTeamRecv.end();)
+					{
+						ExtAutoTeamRecv& s = itt->second;
+						if(uCurTime - s.uTime >= 1500) //1.5s
+						{
+							Player[nPlayerIdx].m_mAutoTeamRecv.erase(itt++);
+						}
+						else
+						{
+							++itt;
+						}
+					}
+					if(!Player[nPlayerIdx].m_vAutoTeamKick.empty())
+					{
+						UINT uNpcID = Player[nPlayerIdx].m_vAutoTeamKick.back();
+						Player[nPlayerIdx].m_vAutoTeamKick.pop_back();
+						Player[nPlayerIdx].TeamKickMember(uNpcID);
+						return 1;
+					}
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					const autoData* pApData = (autoData*)nParam;
+					int nLeavePtMem = pApData->nLeavePtMem;
+					UINT nLeavePtMin = pApData->nLeavePtMin;
+					UINT nRemovePtMin = pApData->nRemovePtMin;
+					if(nLeavePtMem < 2)
+						nLeavePtMem = 2;
+					else if(nLeavePtMem > 8)
+						nLeavePtMem = 8;
+					if(nLeavePtMin < 1)
+						nLeavePtMin = 1;
+					if(nRemovePtMin < 1)
+						nRemovePtMin = 1;
+					if(Player[nPlayerIdx].m_cTeam.m_nFlag)
+					{
+						if(!Player[nPlayerIdx].m_sExtAuto.uTNextLeave)
+							Player[nPlayerIdx].m_sExtAuto.uTNextLeave = uCurTime + nLeavePtMin*60000;
+						if(!Player[nPlayerIdx].m_sExtAuto.uTNextRemove)
+							Player[nPlayerIdx].m_sExtAuto.uTNextRemove = uCurTime + nRemovePtMin*60000;
+					}
+					if(pApData->bLeavePt)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uTNextLeave < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uTNextLeave = uCurTime + nLeavePtMin*60000;
+							if(!Player[nPlayerIdx].m_cTeam.m_nFlag)
+								return 0;
+							int nCount = 0;
+							int nIdx = NpcSet.SearchID(g_Team[0].m_nCaptain);
+							if(nIdx > 0 && Npc[nIdx].m_RegionIndex >= 0)
+								++nCount;
+							for (int i = 0; i < MAX_TEAM_MEMBER; ++i)
+							{
+								if(g_Team[0].m_nMember[i] > 0)
+								{
+									nIdx = NpcSet.SearchID(g_Team[0].m_nMember[i]);
+									if(nIdx > 0 && Npc[nIdx].m_RegionIndex >= 0)
+									{
+										++nCount;
+									}
+								}
+							}
+							if(nCount < nLeavePtMem)
+							{
+								Player[nPlayerIdx].LeaveTeam();
+								return 1;
+							}
+						}
+					}
+					if(pApData->bRemovePt)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uTNextRemove < uCurTime)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uTNextRemove = uCurTime + nRemovePtMin*60000;
+							if(!Player[nPlayerIdx].m_cTeam.m_nFlag
+							|| (int)Npc[nNpcIdx].m_dwID != g_Team[0].m_nCaptain)
+								return 0;
+							for (int i = 0; i < MAX_TEAM_MEMBER; ++i)
+							{
+								if(g_Team[0].m_nMember[i] > 0)
+								{
+									int nIdx = NpcSet.SearchID(g_Team[0].m_nMember[i]);
+									if(!nIdx || Npc[nIdx].m_RegionIndex < 0)
+									{
+										Player[nPlayerIdx].m_vAutoTeamKick.push_back(g_Team[0].m_nMember[i]);
+									}
+								}
+							}
+						}
+					}
+					break;
+				}
+				case ATYPE_PTINVITE:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uTNextInvite > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uTNextInvite = uCurTime + 600;
+					const autoData* pApData = (autoData*)nParam;
+					if(Player[nPlayerIdx].m_cTeam.m_nFlag)
+					{
+						if((int)Npc[nNpcIdx].m_dwID != g_Team[0].m_nCaptain)
+							return 0;
+						bool bFull = true;
+						for (int i = 0; i < MAX_TEAM_MEMBER; ++i)
+						{
+							if(g_Team[0].m_nMember[i] <= 0)
+							{
+								bFull = false;
+								break;
+							}
+						}
+						if(bFull)
+							return 0;
+					}
+					UINT nLeavePtMin = pApData->nLeavePtMin;
+					UINT nRemovePtMin = pApData->nRemovePtMin;
+					if(nLeavePtMin < 1)
+						nLeavePtMin = 1;
+					if(nRemovePtMin < 1)
+						nRemovePtMin = 1;
+					int nIdx = 0;
+					while (nIdx = NpcSet.GetNextIdx(nIdx))
+					{
+						if (Npc[nIdx].m_Kind != kind_player)
+							continue;
+						if (nIdx == Player[nPlayerIdx].m_nIndex)
+							continue;
+						if (Npc[nIdx].m_RegionIndex < 0)
+							continue;
+						if(Player[nPlayerIdx].m_mAutoIDTeam.find(Npc[nIdx].m_dwID)
+							!= Player[nPlayerIdx].m_mAutoIDTeam.end())
+							continue;
+						if(pApData->bJoinPtByList && pApData->nIJPtCount)
+						{	//chØ mêi cã tªn trong list
+							bool bNamefound = false;
+							for(int i=0;i<pApData->nIJPtCount;++i)
+							{
+								if(!strcmp(Npc[nIdx].Name, pApData->szIJPtName[i]))
+								{
+									bNamefound = true;
+									break;
+								}
+							}
+							if(!bNamefound)
+								continue;
+						}
+						if(!Player[nPlayerIdx].m_cTeam.m_nFlag)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uTNextLeave = uCurTime + nLeavePtMin*60000;
+							Player[nPlayerIdx].m_sExtAuto.uTNextRemove = uCurTime + nRemovePtMin*60000;
+							Player[nPlayerIdx].ApplyCreateTeam();
+						}
+						else
+						{
+							bool bFoundInTeam = false;
+							for (int i = 0; i < MAX_TEAM_MEMBER; ++i)
+							{
+								if((int)Npc[nIdx].m_dwID == g_Team[0].m_nMember[i])
+								{
+									bFoundInTeam = true;
+									break;
+								}
+							}
+							if(bFoundInTeam)
+								continue;
+						}
+						Player[nPlayerIdx].TeamInviteAdd(Npc[nIdx].m_dwID);
+						Player[nPlayerIdx].m_mAutoIDTeam[Npc[nIdx].m_dwID] = uCurTime;
+						nRet = 1;
+						break;
+					}
+					break;
+				}
+				case ATYPE_PTJOIN:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uTNextJoin > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uTNextJoin = uCurTime + 500;
+					const autoData* pApData = (autoData*)nParam;
+					if(Player[nPlayerIdx].m_cTeam.m_nFlag)
+						return 0;
+					UINT nLeavePtMin = pApData->nLeavePtMin;
+					if(nLeavePtMin < 1)
+						nLeavePtMin = 1;
+					for (std::map<int, ExtAutoTeamRecv>::iterator it
+							= Player[nPlayerIdx].m_mAutoTeamRecv.begin();
+						it != Player[nPlayerIdx].m_mAutoTeamRecv.end();)
+					{	//t×m trong list ®· mêi
+						ExtAutoTeamRecv& s = it->second;
+						int nIdx = 0;
+						while (nIdx = NpcSet.GetNextIdx(nIdx))
+						{
+							if (Npc[nIdx].m_Kind != kind_player)
+								continue;
+							if (nIdx == Player[nPlayerIdx].m_nIndex)
+								continue;
+							if (Npc[nIdx].m_RegionIndex < 0)
+								continue;
+							if(pApData->bJoinPtByList && pApData->nIJPtCount)
+							{	//nÕu nhËn theo list th× tra cã tªn
+								bool bNamefound = false;
+								for(int i=0;i<pApData->nIJPtCount;++i)
+								{
+									if(!strcmp(Npc[nIdx].Name, pApData->szIJPtName[i]))
+									{
+										bNamefound = true;
+										break;
+									}
+								}
+								if(!bNamefound)
+									continue;
+							}
+							if(!strcmp(Npc[nIdx].Name, s.szName))
+								break;
+						}
+						if(nIdx)
+						{
+							Player[nPlayerIdx].m_sExtAuto.uTNextLeave = uCurTime + nLeavePtMin*60000;
+							Player[nPlayerIdx].m_cTeam.ReplyInvite(it->first, 1);
+							Player[nPlayerIdx].m_mAutoTeamRecv.erase(it++);
+							return 1;
+						}
+						else
+						{
+							Player[nPlayerIdx].m_mAutoTeamRecv.erase(it++);
+						}
+					}
+					break;
+				}
+				case ATYPE_REPAIRF:
+				{
+					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uTNextRepair > uCurTime)
+						return 0;
+					Player[nPlayerIdx].m_sExtAuto.uTNextRepair = uCurTime + 1800;
+					int nRepairIdx = 0;
+					for (int k = 0; k < itempart_horse; ++k)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.GetEquipment(k);
+						if(nIdx > 0)
+						{
+							int nDur = Item[nIdx].GetDurability();
+							int nMaxDur = Item[nIdx].GetMaxDurability();
+							if(nDur > 0 && nMaxDur > 0 && nDur < nMaxDur)
+							{
+								nRepairIdx = nIdx;
+								break;
+							}
+						}
+					}
+					if(nRepairIdx)
+					{
+						int nMoney = Player[nPlayerIdx].m_ItemList.GetMoney(room_equipment);
+						int nRepair = Item[nRepairIdx].GetRepairPrice();
+						if(nMoney >= nRepair)
+						{
+							SendClientCmdRepair(Item[nRepairIdx].GetID());
+							return 1;
+						}
+					}
+					break;
+				}
+				case ATYPE_RETURN:
+				{
+					if(Player[nPlayerIdx].CheckTrading() || Npc[Player[nPlayerIdx].m_nIndex].m_BaiTan)
+						return 0;
+					if(Player[nPlayerIdx].m_sExtAuto.uTNextReturn > uCurTime)
+						return 0;
+					//g_DebugLog("homest [%d]",Player[nPlayerIdx].m_sExtAuto.nHomeStep);
+					Player[nPlayerIdx].m_sExtAuto.uTNextReturn = uCurTime + 300;
+					if(Player[nPlayerIdx].m_sExtAuto.uHorseTime < uCurTime)
+					{
+						Player[nPlayerIdx].m_sExtAuto.uHorseTime = uCurTime + 2000;
+						if(!Npc[nNpcIdx].m_bRideHorse)
+						{
+							OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+						}
+					}
+					const autoData* pApData = (autoData*)nParam;
+					if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 0)
+					{	//cÊt hoÆc qu¨ng mãn trªn tay nÕu cã
+						g_ScenePlace.RemoveFlag();
+						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						int nIdx = Player[nPlayerIdx].m_ItemList.Hand();
+						if(nIdx > 0)
+						{
+							int x, y;
+							if(Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+											Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y))
+							{
+								ItemPos	P1, P2;
+								P1.nPlace = P2.nPlace = pos_equiproom;
+								P1.nX = P2.nX = x;
+								P1.nY = P2.nY = y;
+								Player[nPlayerIdx].MoveItem(P1, P2);
+							}
+							else
+								Player[nPlayerIdx].ThrowAwayItem();
+							return 1;
+						}
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 1)
+					{	//b¸n r¸c
+						if(pApData->bSellItem)
+						{
+							int nSelIdx = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							{
+								if(nSelIdx)
+									break;
+								for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+								{
+									int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+									if(nIdx > 0)
+									{
+										if(Item[nIdx].GetGenre() != item_equip)
+											continue;
+										if(Item[nIdx].GetColorItem() > green_item)
+											continue;
+										if(Item[nIdx].GetPlayerItemLock() > 0 
+											|| Item[nIdx].GetPlayerItemHLock() > 0 
+											|| Item[nIdx].GetPlayerItemLock() == -2)
+											continue;
+										int nDetail = Item[nIdx].GetDetailType();
+										if(!pApData->bSellHorse)
+										{
+											if(nDetail >= equip_horse)
+												continue;
+											nSelIdx = nIdx;
+										}
+										else if(nDetail == equip_horse || nDetail == equip_mask)
+										{
+											nSelIdx = nIdx;
+											break;
+										}
+										else if(nDetail < equip_horse)
+										{
+											nSelIdx = nIdx;
+										}
+										if(nSelIdx)
+										{
+											if(pApData->bSaveRing)
+											{
+												if((nDetail == equip_ring
+												|| nDetail == equip_amulet
+												|| nDetail == equip_pendant)
+												&& Item[nSelIdx].GetLevel() > pApData->nSRLevel)
+												{
+													nSelIdx = 0;
+													continue;
+												}
+											}
+											if(!pApData->nSelSell && pApData->nFtMaCount)
+											{
+												bool bSave = false;
+												for(int k=0;k<pApData->nFtMaCount;++k)
+												{
+													if(bSave)
+														break;
+													for(int m=0;m<6;++m)
+													{
+														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 139)
+														{
+															bSave = true;
+															break;
+														}
+														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 0)
+															break;
+														if(pApData->nFtMagic[k][0] == Item[nSelIdx].m_aryMagicAttrib[m].nAttribType)
+														{
+															if(pApData->nFtMagic[k][0] == magic_indestructible_b
+															|| Item[nSelIdx].m_aryMagicAttrib[m].nValue[0] >= pApData->nFtMagic[k][1])
+															{
+																g_DebugLog("ma[%d][%d]", pApData->nFtMagic[k][0],pApData->nFtMagic[k][1]);
+																bSave = true;
+																break;
+															}
+														}
+													}
+												}
+												if(bSave)
+												{
+													nSelIdx = 0;
+													continue;
+												}
+											}
+										}
+									}
+								}
+							}
+							if(nSelIdx)
+							{
+								SendClientCmdSell(Item[nSelIdx].GetID());
+								return 1;
+							}
+							else
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						}
+						else
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 2)
+					{	//mËt khÈu
+						if(!Player[nPlayerIdx].m_CUnlocked)
+						{
+							SendClientCPUnlockCmd(atoi(pApData->szBoxPass));
+							return 1;
+						}
+						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 3)
+					{	//rót tiÒn
+						if(pApData->bWithdraw && pApData->nWDMoney)
+						{
+							int nWDMoney = pApData->nWDMoney*10000;
+							int nMoney = Player[nPlayerIdx].m_ItemList.GetMoney(room_repository);
+							if(nMoney < nWDMoney)
+								nWDMoney = nMoney;
+							OperationRequest(GOI_MONEY_INOUT_STORE_BOX, false, nWDMoney);
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							return 1;
+						}
+						else
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 4)
+					{	//söa ®å trong thµnh
+						int nRepairIdx = 0;
+						if(pApData->bRepair)
+						{
+							for (int k = 0; k < itempart_horse; ++k)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.GetEquipment(k);
+								if(nIdx > 0)
+								{
+									int nDur = Item[nIdx].GetDurability();
+									int nMaxDur = Item[nIdx].GetMaxDurability();
+									if(nDur > 0 && nMaxDur > 0 && nDur < nMaxDur)
+									{
+										nRepairIdx = nIdx;
+										break;
+									}
+								}
+							}
+						}
+						if(nRepairIdx)
+						{
+							int nMoney = Player[nPlayerIdx].m_ItemList.GetMoney(room_equipment);
+							int nRepair = Item[nRepairIdx].GetRepairPrice();
+							if(nMoney < nRepair)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 0;
+							}
+							SendClientCmdRepair(Item[nRepairIdx].GetID());
+							return 1;
+						}
+						else
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 5)
+					{	//cÊt ®å
+						if(pApData->bSaveItem && Player[nPlayerIdx].m_CUnlocked)
+						{
+							int nSaveIdx = 0, nDstPos = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							{
+								if(nSaveIdx)
+									break;
+								for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+								{
+									int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+									if(nIdx > 0)
+									{
+										if(Item[nIdx].GetGenre() != item_equip)
+											continue;
+										int x, y;
+										if(pApData->nSelStore == 0)
+										{
+											if(Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_repository))
+											{
+												nDstPos = pos_repositoryroom;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 1 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox1))
+											{
+												nDstPos = pos_exbox1room;
+												nSaveIdx = nIdx;
+												break;
+											}
+										}
+										else if(pApData->nSelStore == 1)
+										{
+											if(Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_repository))
+											{
+												nDstPos = pos_repositoryroom;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 1 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox1))
+											{
+												nDstPos = pos_exbox1room;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 2 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox2))
+											{
+												nDstPos = pos_exbox2room;
+												nSaveIdx = nIdx;
+												break;
+											}
+										}
+										else
+										{
+											if(Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_repository))
+											{
+												nDstPos = pos_repositoryroom;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 1 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox1))
+											{
+												nDstPos = pos_exbox1room;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 2 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox2))
+											{
+												nDstPos = pos_exbox2room;
+												nSaveIdx = nIdx;
+												break;
+											}
+											else if(Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId >= 3 && Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+												Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y, room_exbox3))
+											{
+												nDstPos = pos_exbox3room;
+												nSaveIdx = nIdx;
+												break;
+											}
+										}
+									}
+								}
+							}
+							if(nSaveIdx)
+							{
+								unsigned int uSrcPr[2];
+								uSrcPr[0] = nSaveIdx;
+								uSrcPr[1] = pos_equiproom;
+								OperationRequest(GOI_EXCHANGEITEM,
+								(unsigned int)&uSrcPr, nDstPos);
+								return 1;
+							}
+							else
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						}
+						else
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 6)
+					{	//mua thuèc
+						MapStation::iterator it = g_MedicineStation.find(SubWorld[0].m_SubWorldID);
+						if(it == g_MedicineStation.end())
+						{
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep = 100;
+							return 0;
+						}
+						if(!pApData->bBuyLife && !pApData->bBuyMana && !pApData->bBuyPois)
+						{
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							return 0;
+						}
+						int nX,nY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						StationVector& v = ( *it ).second;
+						if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 0)
+						{	//t×m shop
+							int i,j;
+							int nLNum = 0, nMNum = 0, nPNum = 0;
+							for( i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for( j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_LifeBottle[pApData->nBuyLifeSel].nDetail
+									&& Item[nIdx].GetLevel() == g_LifeBottle[pApData->nBuyLifeSel].nLevel)
+									{
+										++nLNum;
+									}
+									else if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_ManaBottle[pApData->nBuyManaSel].nDetail
+									&& Item[nIdx].GetLevel() == g_ManaBottle[pApData->nBuyManaSel].nLevel)
+									{
+										++nMNum;
+									}
+									else if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_PoisonBottle[pApData->nBuyPoisSel].nDetail
+									&& Item[nIdx].GetLevel() == g_PoisonBottle[pApData->nBuyPoisSel].nLevel)
+									{
+										++nPNum;
+									}
+								}
+							}
+							if((!pApData->bBuyLife || nLNum >= pApData->nBLNum)
+							&& (!pApData->bBuyMana || nMNum >= pApData->nBMNum)
+							&& (!pApData->bBuyPois || nPNum >= pApData->nBPNum))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 0;
+							}
+							int nDist = -1, nPos = 0;
+							for( i=0;i < (int)v.size();++i)
+							{
+								int nCurDist = g_GetDistance(nX, nY, v[i].x, v[i].y);
+								if(nDist < 0)
+									nDist = nCurDist;
+								if(nCurDist < nDist)
+								{
+									nPos = i;
+									nDist = nCurDist;
+								}
+							}
+							if(SubWorld[0].FindPath(v[nPos].x, v[nPos].y) > 0)
+							{
+								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
+						{	//trªn ®­êng quay l¹i trung t©m
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+							}
+							else
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								if(c.x != x || c.y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 2)
+						{	//trªn ®­êng ®Õn shop
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							else
+							{
+								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
+								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
+							int nDist = g_GetDistance(nX, nY, v[nPos].x, v[nPos].y);
+							if(nDist < 300)
+							{
+								if(CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+								{
+									++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+									return 0;
+								}
+								if(!Player[nPlayerIdx].m_sExtAuto.uSyncTime)
+								{
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+									return 0;
+								}
+								else if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								{
+									sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+									if(SubWorld[0].FindPath(c.x, c.y) > 0)
+									{
+										Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+										Player[nPlayerIdx].m_sExtAuto.nSubStep = 1;
+									}
+									return 0;
+								}
+								int nIdx = 0;
+								int dX,dY;
+								char szBuff[32];
+								while (nIdx = NpcSet.GetNextIdx(nIdx))
+								{
+									if (Npc[nIdx].m_Kind != kind_dialoger)
+										continue;
+									if (Npc[nIdx].m_RegionIndex < 0)
+										continue;
+									Npc[nIdx].GetMpsPos(&dX, &dY);
+									if(g_GetDistance(nX, nY, dX, dY) < 128)
+									{
+										strcpy(szBuff, Npc[nIdx].Name);
+										g_StrLower(szBuff);
+										if(strstr(szBuff, "d­îc") || strstr(szBuff, "thuèc")
+										|| strstr(szBuff, "thÇn y"))
+										{
+											Player[nPlayerIdx].DialogNpc(nIdx);
+											return 1;
+										}
+									}
+								}
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 3)
+						{	//lùa chän khung dialog
+							if(!CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+							OperationRequest(GOI_QUESTION_CHOOSE, 0, 0);
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 1;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 4)
+						{	//mua m¸u
+							if(!CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							if(!pApData->bBuyLife || pApData->nBLNum <= 0)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							int nBuyNum = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_LifeBottle[pApData->nBuyLifeSel].nDetail
+									&& Item[nIdx].GetLevel() == g_LifeBottle[pApData->nBuyLifeSel].nLevel)
+									{
+										++nBuyNum;
+									}
+								}
+							}
+							if(nBuyNum >= pApData->nBLNum)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							for(int b = 0; b < BuySell.GetWidth(); ++b)
+							{
+								KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop], b));
+								if(!pItem)
+									break;
+								if(pItem->GetGenre() == item_medicine
+								&& pItem->GetDetailType() == g_LifeBottle[pApData->nBuyLifeSel].nDetail
+								&& pItem->GetLevel() == g_LifeBottle[pApData->nBuyLifeSel].nLevel)
+								{
+									if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									int x,y;
+									if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+									return 1;
+								}
+							}
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 5)
+						{	//mua mana
+							if(!CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							if(!pApData->bBuyMana || pApData->nBMNum <= 0)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							int nBuyNum = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_ManaBottle[pApData->nBuyManaSel].nDetail
+									&& Item[nIdx].GetLevel() == g_ManaBottle[pApData->nBuyManaSel].nLevel)
+									{
+										++nBuyNum;
+									}
+								}
+							}
+							if(nBuyNum >= pApData->nBMNum)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							for(int b = 0; b < BuySell.GetWidth(); ++b)
+							{
+								KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop], b));
+								if(!pItem)
+									break;
+								if(pItem->GetGenre() == item_medicine
+								&& pItem->GetDetailType() == g_ManaBottle[pApData->nBuyManaSel].nDetail
+								&& pItem->GetLevel() == g_ManaBottle[pApData->nBuyManaSel].nLevel)
+								{
+									if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									int x,y;
+									if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+									return 1;
+								}
+							}
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 6)
+						{	//mua gi¶i ®éc
+							if(!CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							if(!pApData->bBuyPois || pApData->nBPNum <= 0)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							int nBuyNum = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_medicine
+									&& Item[nIdx].GetDetailType() == g_PoisonBottle[pApData->nBuyPoisSel].nDetail
+									&& Item[nIdx].GetLevel() == g_PoisonBottle[pApData->nBuyPoisSel].nLevel)
+									{
+										++nBuyNum;
+									}
+								}
+							}
+							if(nBuyNum >= pApData->nBPNum)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							for(int b = 0; b < BuySell.GetWidth(); ++b)
+							{
+								KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop], b));
+								if(!pItem)
+									break;
+								if(pItem->GetGenre() == item_medicine
+								&& pItem->GetDetailType() == g_PoisonBottle[pApData->nBuyPoisSel].nDetail
+								&& pItem->GetLevel() == g_PoisonBottle[pApData->nBuyPoisSel].nLevel)
+								{
+									if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									int x,y;
+									if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+									return 1;
+								}
+							}
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 7)
+						{
+							CoreDataChanged(GDCNI_UI_ACT, 3, 0);
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						}
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 7)
+					{	//mua phï
+						MapStation::iterator it = g_ShopStation.find(SubWorld[0].m_SubWorldID);
+						if(it == g_ShopStation.end())
+						{
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep = 100;
+							return 0;
+						}
+						if(!pApData->bBuyTP)
+						{
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							return 0;
+						}
+						int nX,nY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						StationVector& v = ( *it ).second;
+						if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 0)
+						{	//t×m shop
+							int i,j;
+							int nTPNum = 0;
+							for( i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for( j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_townportal)
+									{
+										++nTPNum;
+									}
+								}
+							}
+							if(!pApData->bBuyTP || nTPNum >= pApData->nBTPNum)
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 0;
+							}
+							int nDist = -1, nPos = 0;
+							for( i=0;i < (int)v.size();++i)
+							{
+								int nCurDist = g_GetDistance(nX, nY, v[i].x, v[i].y);
+								if(nDist < 0)
+									nDist = nCurDist;
+								if(nCurDist < nDist)
+								{
+									nPos = i;
+									nDist = nCurDist;
+								}
+							}
+							if(SubWorld[0].FindPath(v[nPos].x, v[nPos].y) > 0)
+							{
+								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
+						{	//trªn ®­êng quay l¹i trung t©m
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+							}
+							else
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								if(c.x != x || c.y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 2)
+						{	//trªn ®­êng ®Õn shop
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							else
+							{
+								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
+								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
+							int nDist = g_GetDistance(nX, nY, v[nPos].x, v[nPos].y);
+							if(nDist < 300)
+							{
+								if(CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+								{
+									++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+									return 0;
+								}
+								if(!Player[nPlayerIdx].m_sExtAuto.uSyncTime)
+								{
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+									return 0;
+								}
+								else if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								{
+									sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+									if(SubWorld[0].FindPath(c.x, c.y) > 0)
+									{
+										Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+										Player[nPlayerIdx].m_sExtAuto.nSubStep = 1;
+									}
+									return 0;
+								}
+								int nIdx = 0;
+								int dX,dY;
+								char szBuff[32];
+								while (nIdx = NpcSet.GetNextIdx(nIdx))
+								{
+									if (Npc[nIdx].m_Kind != kind_dialoger)
+										continue;
+									if (Npc[nIdx].m_RegionIndex < 0)
+										continue;
+									Npc[nIdx].GetMpsPos(&dX, &dY);
+									if(g_GetDistance(nX, nY, dX, dY) < 128)
+									{
+										strcpy(szBuff, Npc[nIdx].Name);
+										g_StrLower(szBuff);
+										if(strstr(szBuff, "t¹p h"))
+										{
+											Player[nPlayerIdx].DialogNpc(nIdx);
+											return 1;
+										}
+									}
+								}
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 3)
+						{	//lùa chän khung dialog
+							if(!CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+							OperationRequest(GOI_QUESTION_CHOOSE, 0, 0);
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 1;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 4)
+						{	//mua phï
+							if(!CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							if(!pApData->bBuyTP || pApData->nBTPNum <= 0)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							int nBuyNum = 0;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
+							{
+								int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+								if(nIdx > 0)
+								{
+									if(Item[nIdx].GetGenre() == item_townportal)
+									{
+										++nBuyNum;
+									}
+								}
+							}
+							if(nBuyNum >= pApData->nBTPNum)
+							{
+								++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+								return 0;
+							}
+							for(int b = 0; b < BuySell.GetWidth(); ++b)
+							{
+								KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop], b));
+								if(!pItem)
+									break;
+								if(pItem->GetGenre() == item_townportal)
+								{
+									if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									int x,y;
+									if(!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+									{
+										++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+										return 0;
+									}
+									SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+									return 1;
+								}
+							}
+							++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 5)
+						{
+							CoreDataChanged(GDCNI_UI_ACT, 3, 0);
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						}
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 8)
+					{	//gi÷ tiÒn
+						int nCurMoney = Player[nPlayerIdx].m_ItemList.GetEquipmentMoney();
+						if(!pApData->bHoldMoney || pApData->nHoldMoneyNum <= 0)
+						{
+							if(nCurMoney > 0)
+							{
+								OperationRequest(GOI_MONEY_INOUT_STORE_BOX, true, nCurMoney);
+								nRet = 1;
+							}
+						}
+						else
+						{
+							int nNeed = pApData->nHoldMoneyNum*10000;
+							nCurMoney -= nNeed;
+							if(nCurMoney > 0)
+							{
+								OperationRequest(GOI_MONEY_INOUT_STORE_BOX, true, nCurMoney);
+								nRet = 1;
+							}
+							else if(nCurMoney < 0)
+							{
+								OperationRequest(GOI_MONEY_INOUT_STORE_BOX, false, -nCurMoney);
+								nRet = 1;
+							}
+						}
+						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 9)
+					{	//®i xa phu
+						MapStation::iterator it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
+						if(it == g_MoveStation.end())
+						{
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep = 100;
+							return 0;
+						}
+						if(!pApData->bGoStation)
+						{
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+							return 0;
+						}
+						int nX,nY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						StationVector& v = ( *it ).second;
+						if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 0)
+						{	//t×m shop
+							int nDist = -1, nPos = 0;
+							for(int i=0;i < (int)v.size();++i)
+							{
+								int nCurDist = g_GetDistance(nX, nY, v[i].x, v[i].y);
+								if(nDist < 0)
+									nDist = nCurDist;
+								if(nCurDist < nDist)
+								{
+									nPos = i;
+									nDist = nCurDist;
+								}
+							}
+							if(SubWorld[0].FindPath(v[nPos].x, v[nPos].y) > 0)
+							{
+								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
+						{	//trªn ®­êng quay l¹i trung t©m
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+							}
+							else
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								if(c.x != x || c.y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 2)
+						{	//trªn ®­êng ®Õn shop
+							int x,y;
+							if(!SubWorld[0].HaveTarget(x, y))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							else
+							{
+								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
+								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
+								{
+									g_ScenePlace.RemoveFlag();
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									return 0;
+								}
+							}
+							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
+							int nDist = g_GetDistance(nX, nY, v[nPos].x, v[nPos].y);
+							if(nDist < 300)
+							{
+								if(CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+								{
+									++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+									return 0;
+								}
+								if(!Player[nPlayerIdx].m_sExtAuto.uSyncTime)
+								{
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+									return 0;
+								}
+								else if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+								{
+									sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+									if(SubWorld[0].FindPath(c.x, c.y) > 0)
+									{
+										Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000;
+										Player[nPlayerIdx].m_sExtAuto.nSubStep = 1;
+									}
+									return 0;
+								}
+								int nIdx = 0;
+								int dX,dY;
+								char szBuff[32];
+								while (nIdx = NpcSet.GetNextIdx(nIdx))
+								{
+									if (Npc[nIdx].m_Kind != kind_dialoger)
+										continue;
+									if (Npc[nIdx].m_RegionIndex < 0)
+										continue;
+									Npc[nIdx].GetMpsPos(&dX, &dY);
+									if(g_GetDistance(nX, nY, dX, dY) < 128)
+									{
+										strcpy(szBuff, Npc[nIdx].Name);
+										g_StrLower(szBuff);
+										if(strstr(szBuff, "xa phu"))
+										{
+											Player[nPlayerIdx].DialogNpc(nIdx);
+											return 1;
+										}
+									}
+								}
+							}
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 3)
+						{	//lùa chän khung dialog
+							if(!CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+							{
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								return 0;
+							}
+							char szBuff[256];
+							for(int i=0;i < CoreDataChanged(GDCNI_UI_ACT, 4, 0);++i)
+							{
+								CoreDataChanged(GDCNI_UI_ACT, 5, i);
+								CoreDataChanged(GDCNI_UI_ACT, 6, (int)&szBuff);
+								g_StrLower(szBuff);
+								if((pApData->nSelStation == 0 && strstr(szBuff, "l¹i"))
+								|| (pApData->nSelStation == 4 && strstr(szBuff, "n¬i lµm")))
+								{
+									CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+									OperationRequest(GOI_QUESTION_CHOOSE, 0, i);
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 2000;
+									return 1;
+								}
+								else if(pApData->nSelStation > 0 && pApData->nSelStation < 4
+								&& strstr(szBuff, "n¬i ®·"))
+								{
+									CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+									OperationRequest(GOI_QUESTION_CHOOSE, 0, i);
+									++Player[nPlayerIdx].m_sExtAuto.nSubStep;
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 2000;
+									return 1;
+								}
+							}
+							CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+							Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+							return 0;
+						}
+						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 4)
+						{	//lùa chän n¬i ®· ®i qua
+							if(CoreDataChanged(GDCNI_UI_ACT, 0, 0))
+							{
+								int nSel = pApData->nSelStation - 1;
+								if(nSel >= 0 && nSel < CoreDataChanged(GDCNI_UI_ACT, 4, 0))
+								{
+									CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+									OperationRequest(GOI_QUESTION_CHOOSE, 0, nSel);
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 2000;
+									return 1;
+								}
+								else
+								{
+									CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+									++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+									Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+									return 0;
+								}
+							}
+							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
+							{
+								CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+								Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+							}
+						}
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 10)
+					{	//®i b¶n ®å b»ng thÇn hµnh phï
+						if(g_MoveStation.find(SubWorld[0].m_SubWorldID) == g_MoveStation.end())
+						{
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep = 100;
+							return 0;
+						}
+						if(!pApData->bGoMap)
+						{
+							++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+							Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 3000;
+							return 0;
+						}
+						if(Player[nPlayerIdx].m_sExtAuto.uSyncTime > uCurTime)
+							return 0;
+						Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 1000;
+						//di chuyÓn b»ng THP
+						char szPack[16];
+						DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
+						pCmd->ProtocolType = c2s_dynamic_structure;
+						pCmd->nBranch = c2sdnmbr_movemapid;
+						pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + sizeof(int);
+						int* pMapID = (int*)(pCmd+1);
+						*pMapID = g_GoMapID[pApData->nSelMap];
+						if (g_pClient)
+							g_pClient->SendPackToServer(pCmd, pCmd->m_wLength + 1);
+						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+						Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 3000;
+						return 1;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 11)
+					{	//check cã ®øng gÇn tr¹m
+						if(Player[nPlayerIdx].m_sExtAuto.uSyncTime > uCurTime)
+							return 0;
+						MapStation::iterator it = g_MedicineStation.find(SubWorld[0].m_SubWorldID);
+						if(it == g_MedicineStation.end())
+						{
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep = 100;
+							return 0;
+						}
+						StationVector v = ( *it ).second;
+						int nX,nY;
+						Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+						int i;
+						for( i=0;i < (int)v.size();++i)
+						{
+							if(g_GetDistance(nX, nY, v[i].x, v[i].y) < 200)
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000 + g_Random(10)*1000;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 1;
+							}
+						}
+						it = g_ShopStation.find(SubWorld[0].m_SubWorldID);
+						v = ( *it ).second;
+						for( i=0;i < (int)v.size();++i)
+						{
+							if(g_GetDistance(nX, nY, v[i].x, v[i].y) < 200)
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000 + g_Random(10)*1000;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 1;
+							}
+						}
+						it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
+						v = ( *it ).second;
+						for( i=0;i < (int)v.size();++i)
+						{
+							if(g_GetDistance(nX, nY, v[i].x, v[i].y) < 200)
+							{
+								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+								SubWorld[0].FindPath(c.x, c.y);
+								Player[nPlayerIdx].m_sExtAuto.uSyncTime = uCurTime + 5000 + g_Random(10)*1000;
+								++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+								return 1;
+							}
+						}
+						Player[nPlayerIdx].m_sExtAuto.nHomeStep += 2;
+					}
+					else if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 12)
+					{	//®ang ch¹y vÒ trung t©m
+						int x,y;
+						if(!SubWorld[0].HaveTarget(x, y))
+						{
+							sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+							SubWorld[0].FindPath(c.x, c.y);
+						}
+						else
+						{
+							sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+							if(c.x != x || c.y != y)
+							{
+								g_ScenePlace.RemoveFlag();
+								SubWorld[0].FindPath(c.x, c.y);
+							}
+						}
+						if(Player[nPlayerIdx].m_sExtAuto.uSyncTime > uCurTime)
+							return 0;
+						g_ScenePlace.RemoveFlag();
+						++Player[nPlayerIdx].m_sExtAuto.nHomeStep;
+					}
+					break;
+				}
+				case ATYPE_RESETMOVE:
+				{
+					Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = 0;
+					break;
+				}
+				case ATYPE_MOVE:
+				{
+					Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 0;
+					if(!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+						return 0;
+					const autoData* pApData = (autoData*)nParam;
+					if(!pApData->bMoveFollow && !pApData->bAroundPoint && !pApData->bMoveCoord)
+						return 0;
+					if(pApData->bMoveFollow)
+					{
+						if(Player[nPlayerIdx].m_sExtAuto.uTFollMove2 > uCurTime)
+							return 0;
+						int nIdx = 0;
+						while (nIdx = NpcSet.GetNextIdx(nIdx))
+						{
+							if (Npc[nIdx].m_Kind != kind_player)
+								continue;
+							if (nIdx == Player[nPlayerIdx].m_nIndex)
+								continue;
+							if (Npc[nIdx].m_RegionIndex < 0)
+								continue;
+							if(!strcmp(pApData->szFollName, Npc[nIdx].Name))
+							{
+								int nDist = NpcSet.GetDistance(nNpcIdx, nIdx);
+								if((!pApData->bFight && nDist > 75) || (nDist > 75
+								&& (Player[nPlayerIdx].m_sExtAuto.uTFollMove1 > uCurTime
+								|| nDist > pApData->nFollowDist)))
+								{
+									g_ScenePlace.RemoveFlag();
+									if(pApData->bMoveUpHorse && !Npc[nNpcIdx].m_bRideHorse)
+									{
+										if(!pApData->bFight || Player[nPlayerIdx].FindTargetNpc(
+											pApData->nVision, pApData->bFightBack, pApData->nFBVision,
+											pApData->nSelBoss) <= 0)
+										OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+									}
+									int x,y;
+									Npc[nIdx].GetMpsPos(&x, &y);
+									if (!Player[nPlayerIdx].m_RunStatus)
+									{
+										Npc[nNpcIdx].SendCommand(do_walk, x, y);
+										SendClientCmdWalk(x, y);
+									}
+									else
+									{
+										Npc[nNpcIdx].SendCommand(do_run, x, y);
+										SendClientCmdRun(x, y);
+									}
+									if(nDist > pApData->nFollowDist)
+										Player[nPlayerIdx].m_sExtAuto.uTFollMove1 = uCurTime + nDist;
+									Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+									return 1;
+								}
+								else
+								{
+									Player[nPlayerIdx].m_mAutoExcludeNpcID.clear();
+									if(pApData->bFight)
+									Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = uCurTime + 1000;
+									else
+									Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = 0;
+								}
+								return 0;
+							}
+						}
+					}
+					if(pApData->bAroundPoint)
+					{
+						if(pApData->nMoveMapId == SubWorld[0].m_SubWorldID
+						&& pApData->nPointX > 0 && pApData->nPointY > 0)
+						{
+							Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 1;
+							int x,y;
+							Npc[nNpcIdx].GetMpsPos(&x, &y);
+							int nVision = pApData->nVision;
+							if(nVision < 100)
+								nVision = 100;
+							else if(nVision > 1200)
+								nVision = 1200;
+							int nDist = g_GetDistance(x, y, pApData->nPointX, pApData->nPointY);
+							if(nDist >= nVision || nDist > 75)
+							{
+								if(nDist >= nVision)
+								{
+									Player[nPlayerIdx].m_sExtAuto.uTOutMove = uCurTime + 1000;
+									Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+								}
+								else if(Player[nPlayerIdx].m_sExtAuto.uTOutMove < uCurTime)
+								{
+									g_ScenePlace.RemoveFlag();
+									return 0;
+								}
+								if(!SubWorld[0].HaveTarget(x, y))
+								{
+									SubWorld[0].FindPath(pApData->nPointX, pApData->nPointY);
+								}
+								else
+								{
+									if(pApData->nPointX != x || pApData->nPointY != y)
+									{
+										g_ScenePlace.RemoveFlag();
+										SubWorld[0].FindPath(pApData->nPointX, pApData->nPointY);
+									}
+								}
+								return 1;
+							}
+							else
+								g_ScenePlace.RemoveFlag();
+							return 0;
+						}
+					}
+					if(pApData->bMoveCoord)
+					{
+						if(pApData->nCoordCount > 0 && pApData->nMoveMapId == SubWorld[0].m_SubWorldID)
+						{
+							Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 2;
+							int nX,nY;
+							Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+							int nVision = pApData->nVision;
+							if(nVision < 100)
+								nVision = 100;
+							else if(nVision > 1200)
+								nVision = 1200;
+							if(Player[nPlayerIdx].m_sExtAuto.nCoordStep >= pApData->nCoordCount)
+								Player[nPlayerIdx].m_sExtAuto.nCoordStep = 0;
+							int nDist = g_GetDistance(nX, nY,
+								pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
+								pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+							if(pApData->bEncircle
+							&& Player[nPlayerIdx].m_sExtAuto.uTEncircle > uCurTime)
+							{
+								g_ScenePlace.RemoveFlag();
+								int x = Player[nPlayerIdx].m_sExtAuto.sEncircle[8].x;
+								int y = Player[nPlayerIdx].m_sExtAuto.sEncircle[8].y;
+								int nVS = pApData->nVision;
+								if(nVS < 600)
+									nVS = 600;
+								int nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+									nVS, pApData->bFightBack, pApData->nFBVision,
+									pApData->nSelBoss, TRUE, NULL, pApData->bMoveFollow, x, y);
+								if(nTGNpcIdx > 0)
+								{
+									UINT i = Player[nPlayerIdx].m_sExtAuto.nCurEncircle;
+									x = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].x;
+									y = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].y;
+									UINT uRemain = 9000 - (Player[nPlayerIdx].m_sExtAuto.uTEncircle - uCurTime);
+									if(g_GetDistance(nX, nY, x, y) < 64
+									|| uRemain > (i+1)*1000)
+									{
+										++i;
+										if(i >= 9)
+										{
+											Player[nPlayerIdx].m_sExtAuto.uTEncircle = 0;
+											return 1;
+										}
+										Player[nPlayerIdx].m_sExtAuto.nCurEncircle = i;
+										x = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].x;
+										y = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].y;
+									}
+									if (!Player[nPlayerIdx].m_RunStatus)
+									{
+										Npc[nNpcIdx].SendCommand(do_walk, x, y);
+										SendClientCmdWalk(x, y);
+									}
+									else
+									{
+										Npc[nNpcIdx].SendCommand(do_run, x, y);
+										SendClientCmdRun(x, y);
+									}
+									return 1;
+								}
+								else
+								{
+									Player[nPlayerIdx].m_sExtAuto.uTEncircle = 0;
+									return 1;
+								}
+							}
+							if(nDist >= nVision || nDist > 75)
+							{
+								if(!(pApData->bMoveKillMons && pApData->bFight)
+								|| !Player[nPlayerIdx].m_sExtAuto.nTempX)
+								{
+									if(nDist >= nVision)
+									{
+										Player[nPlayerIdx].m_sExtAuto.uTOutMove = uCurTime + 1000;
+										Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+									}
+									else if(Player[nPlayerIdx].m_sExtAuto.uTOutMove < uCurTime)
+									{
+										g_ScenePlace.RemoveFlag();
+										if(!pApData->bFight)
+										{
+											++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
+											if(Player[nPlayerIdx].m_sExtAuto.nCoordStep >= pApData->nCoordCount)
+												Player[nPlayerIdx].m_sExtAuto.nCoordStep = 0;
+											Player[nPlayerIdx].m_sExtAuto.nTempX = 0;
+											Player[nPlayerIdx].m_sExtAuto.nTempY = 0;
+											Player[nPlayerIdx].m_sExtAuto.bReachDes = FALSE;
+										}
+										return 0;
+									}
+									int x,y;
+									if(!SubWorld[0].HaveTarget(x, y))
+									{
+										SubWorld[0].FindPath(
+										pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
+										pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+										if(Npc[nNpcIdx].m_CurrentRunSpeed <= 6)
+											Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 10000;
+										else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 10)
+											Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 8000;
+										else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 20)
+											Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 6000;
+										else
+											Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 4000;
+									}
+									else
+									{
+										if(pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x != x
+										|| pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y != y)
+										{
+											g_ScenePlace.RemoveFlag();
+											SubWorld[0].FindPath(
+											pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
+											pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+											if(Npc[nNpcIdx].m_CurrentRunSpeed <= 6)
+												Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 10000;
+											else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 10)
+												Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 8000;
+											else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 20)
+												Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 6000;
+											else
+												Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 4000;
+										}
+									}
+								}
+								if(pApData->bMoveKillMons && pApData->bFight && nDist >= nVision)
+								{
+									if(!Player[nPlayerIdx].m_sExtAuto.nTempX)
+									{
+										if(Player[nPlayerIdx].m_sExtAuto.uTJustMove < uCurTime)
+										{
+											int nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+											pApData->nVision, pApData->bFightBack, pApData->nFBVision,
+											pApData->nSelBoss);
+											if(nTGNpcIdx > 0)
+											{
+												g_ScenePlace.RemoveFlag();
+												Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 3;
+												Player[nPlayerIdx].m_sExtAuto.nTempX = nX;
+												Player[nPlayerIdx].m_sExtAuto.nTempY = nY;
+												return 0;
+											}
+										}
+									}
+									else
+									{
+										Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 3;
+										return 0;
+									}
+								}
+								else
+								{
+									Player[nPlayerIdx].m_sExtAuto.nTempX = 0;
+									Player[nPlayerIdx].m_sExtAuto.nTempY = 0;
+								}
+								if(pApData->bMoveUpHorse)
+								{
+									if(nDist > 1500 && !Npc[nNpcIdx].m_bRideHorse)
+										OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
+								}
+								return 1;
+							}
+							else
+							{
+								g_ScenePlace.RemoveFlag();
+								if(!pApData->bFight)
+								{
+									++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
+									if(Player[nPlayerIdx].m_sExtAuto.nCoordStep >= pApData->nCoordCount)
+										Player[nPlayerIdx].m_sExtAuto.nCoordStep = 0;
+									Player[nPlayerIdx].m_sExtAuto.nTempX = 0;
+									Player[nPlayerIdx].m_sExtAuto.nTempY = 0;
+									Player[nPlayerIdx].m_sExtAuto.bReachDes = FALSE;
+								}
+								else if(pApData->bEncircle
+								&& !Player[nPlayerIdx].m_sExtAuto.bReachDes)
+								{
+									int x = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x;
+									int y = pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y;
+									int nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
+									pApData->nVision, pApData->bFightBack, pApData->nFBVision,
+									pApData->nSelBoss, TRUE, NULL, pApData->bMoveFollow, x, y);
+									if(nTGNpcIdx > 0)
+									{
+										Player[nPlayerIdx].m_sExtAuto.bReachDes = TRUE;
+										Player[nPlayerIdx].m_sExtAuto.nCurEncircle = 0;
+										Player[nPlayerIdx].m_sExtAuto.uTEncircle = uCurTime + 9000;
+										int i;
+										for(i = 0; i < 4; ++i)
+										{
+											Player[nPlayerIdx].m_sExtAuto.sEncircle[i].x =
+												x + ((500 * g_DirCos(i*15, 64)) >> 10);
+											Player[nPlayerIdx].m_sExtAuto.sEncircle[i].y =
+												y + ((500 * g_DirSin(i*15, 64)) >> 10);
+										}
+										for(i = 0; i < 4; ++i)
+										{
+											Player[nPlayerIdx].m_sExtAuto.sEncircle[i+4].x =
+												x + ((250 * g_DirCos(i*15, 64)) >> 10);
+											Player[nPlayerIdx].m_sExtAuto.sEncircle[i+4].y =
+												y + ((250 * g_DirSin(i*15, 64)) >> 10);
+										}
+										Player[nPlayerIdx].m_sExtAuto.sEncircle[8].x = x;
+										Player[nPlayerIdx].m_sExtAuto.sEncircle[8].y = y;
+										return 1;
+									}
+									Player[nPlayerIdx].m_sExtAuto.sEncircle[8].x = x;
+									Player[nPlayerIdx].m_sExtAuto.sEncircle[8].y = y;
+									return 1;
+								}
+							}
+							return 0;
+						}
+					}
+					break;
+				}
+				case ATYPE_SETSELSV1:
+				{
+					PlayerSet.m_nSelSvGroup = nParam;
+					break;
+				}
+				case ATYPE_SETSELSV2:
+				{
+					PlayerSet.m_nSelServer = nParam;
+					break;
+				}
+				case ATYPE_SETACC:
+				{
+					strcpy(PlayerSet.m_szAccount, (char*)nParam);
+					break;
+				}
+				case ATYPE_SETPASS:
+				{
+					strcpy(PlayerSet.m_szPassword, (char*)nParam);
+					for (int i = 0; i < strlen(PlayerSet.m_szPassword); ++i)
+					{
+						if(PlayerSet.m_szPassword[i] != -1)
+						PlayerSet.m_szPassword[i] = ~PlayerSet.m_szPassword[i];
+					}
+					break;
+				}
+			}
+		}
 		break;
 
 	case GOI_SEND_MSG:
@@ -3072,8 +7712,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		}
 		else if(uParam == OPTION_QUALITY_GIAMSKILL)
 		{
-			Option.SetLow(LowMissle, nParam);
+			Option.SetLow(LowEstMissle, nParam);
 		}
+	
 		break;
 
 	case GOI_VIEW_PLAYERITEM:
@@ -3603,7 +8244,70 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_DATAU1:
 		//SendClientDaTau1(uParam);
 		break;
-
+	case GOI_DRAW_TARGET_INFO:
+	{
+		if (uParam && nParam)
+		{
+			KUiPlayerItem* m_pPlayersList = (KUiPlayerItem*)uParam;
+			KUiPlayerPaintTeamMNG* nPainTMG = (KUiPlayerPaintTeamMNG*)nParam;
+			Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].PaintTargetInfo(m_pPlayersList, nPainTMG);
+		}
+	}
+	break;
+	case GOI_SET_PLAYER_MERIDIAN:
+	{
+		if (uParam)
+		{
+			SendClientSetMeridian((char*)uParam);
+		}
+	}
+	break;
+	case GOI_BAUCUA:
+	{
+		if (uParam)
+		{
+			SendClientBaucua((char*)uParam);
+		}
+	}
+	break;
+	case GOI_MASKFEATURE:
+	{
+		PLAYER_COMMAND	sMF;
+		sMF.ProtocolType = c2s_playercommand;
+		sMF.m_wMsgID = enumC2S_PLAYERCOMMAND_ID_MASKFEATURE;
+		sMF.m_wLength = sizeof(SHOW_MSG_SYNC) - 1;
+		sMF.m_lpBuf = 0;
+		g_pClient->SendPackToServer((BYTE*)&sMF, sMF.m_wLength + 1);
+	}
+	break;
+/*	case GOI_PROCFRAME_BREATHE:
+		if (uParam == 0)
+			g_ScenePlace.Breathe();
+		else if (uParam == 1)
+			g_SubWorldSet.MessageLoop();
+		break;
+	case GOI_PROCFRAME_POSSHIFT:
+	{
+		int nPerStep = uParam / nParam;
+		int	nIdx = 0;
+		while (nIdx = NpcSet.GetNextIdx(nIdx))
+		{
+			if (!Npc[nIdx].m_bProcPosShift || Npc[nIdx].m_RegionIndex < 0)
+				continue;
+			if (Npc[nIdx].m_Doing == do_run || Npc[nIdx].m_Doing == do_walk)
+			{
+				if (Npc[nIdx].m_Doing == do_run)
+					Npc[nIdx].OnRunByFPS(nPerStep);
+				else
+					Npc[nIdx].OnWalkByFPS(nPerStep);
+				Npc[nIdx].GetNpcRes()->SetAction(Npc[nIdx].m_ClientDoing);
+				int		nMpsX, nMpsY;
+				SubWorld[0].Map2Mps(Npc[nIdx].m_RegionIndex, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, &nMpsX, &nMpsY);
+				Npc[nIdx].GetNpcRes()->SetPos(nIdx, nMpsX, nMpsY, Npc[nIdx].m_Height, Player[CLIENT_PLAYER_INDEX].m_nIndex == nIdx);
+			}
+		}
+	}
+	break;*/
 	default:
 		nRet = 0;
 		break;
@@ -3616,6 +8320,16 @@ void KCoreShell::ProcessInput(unsigned int uMsg, unsigned int uParam, int nParam
 {
 	Player[CLIENT_PLAYER_INDEX].ProcessInputMsg(uMsg, uParam, nParam);
 }
+
+int KCoreShell::CheckMapLoiDai()
+{
+		int Map = SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID;
+		if (Map != 209)
+		return true;
+		
+	return false;
+}
+
 
 int KCoreShell::FindSelectNPC(int x, int y, int nRelation, bool bSelect, void* pReturn, int& nKind)
 {
@@ -3689,7 +8403,7 @@ int KCoreShell::ChatSpecialPlayer(void* pPlayer, const char* pMsgBuff, unsigned 
 		if (p->nIndex >= 0 && p->nIndex < MAX_NPC)
 		{
 			int nTalker = p->nIndex;
-			if (Npc[nTalker].m_Kind == kind_player && Npc[nTalker].m_dwID == p->uId)
+			if (Npc[nTalker].m_dwID == p->uId)
 			{
 				char * pszCheck1 = NULL;
 				char * pszCheck2 = NULL;
@@ -3727,7 +8441,7 @@ int KCoreShell::ChatSpecialPlayer(void* pPlayer, const char* pMsgBuff, unsigned 
 					return true;
 				}
 
-				if(nMsgLength >= 90)	//edit by phong kieu xu ly input lon hon 90 ky tu
+				if(nMsgLength >= 128)	//edit by phong kieu xu ly input lon hon 90 ky tu
 				{
 					Npc[nTalker].SetChatInfo(p->Name, "JX GiangHoKy", 15);
 					return true;
@@ -3761,6 +8475,18 @@ void KCoreShell::TradeApplyStart(void* pPlayer)
 		if (p->nIndex >= 0 && p->nIndex < MAX_NPC && !Player[CLIENT_PLAYER_INDEX].CheckTrading())
 		{
 			Player[CLIENT_PLAYER_INDEX].TradeApplyStart(p->nIndex);
+		}
+	}
+}
+
+void KCoreShell::GambleApplyStart(void* pPlayer)
+{
+	KUiPlayerItem* p = (KUiPlayerItem*)pPlayer;
+	if (p)
+	{
+		if (p->nIndex >= 0 && p->nIndex < MAX_NPC && !Player[CLIENT_PLAYER_INDEX].CheckTrading())
+		{
+			Player[CLIENT_PLAYER_INDEX].GambleApplyStart(p->nIndex);
 		}
 	}
 }
@@ -4118,6 +8844,42 @@ void KCoreShell::Turn(int nDir)
 
 int KCoreShell::ThrowAwayItem()
 {
+	if(Player[CLIENT_PLAYER_INDEX].m_sExtAuto.uUnFightTime)
+	{
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	int nIdx = Player[nPlayerIdx].m_ItemList.Hand();
+	if(nIdx > 0)
+	{
+		int nExist = -1;
+		UINT uID = Item[nIdx].GetID();
+		for (std::map<int,ExtAutoObjTime>::iterator it = Player[nPlayerIdx].m_mAutoIDObj.begin();
+		it != Player[nPlayerIdx].m_mAutoIDObj.end();++it)
+		{
+			ExtAutoObjTime& s = it->second;
+			if(s.bItem && uID == s.nID)
+			{
+				nExist = it->first;
+				break;
+			}
+		}
+		UINT uCurTime = timeGetTime();
+		if(nExist < 0)
+		{
+			ExtAutoObjTime s;
+			s.nTotalTime = uCurTime;
+			s.nChecked = 3;
+			s.nPickTime = uCurTime + 120;
+			s.nID = uID;
+			s.bItem = 1;
+			Player[nPlayerIdx].m_mAutoIDObj[Player[nPlayerIdx].m_sExtAuto.umObjIncId++] = s;
+		}
+		else
+		{
+			ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+			s.nTotalTime = uCurTime;
+			s.nChecked = 3;
+		}
+	}}
 	return Player[CLIENT_PLAYER_INDEX].ThrowAwayItem();
 }
 
@@ -4139,6 +8901,7 @@ void KCoreShell::DrawGameSpace()
 	if (g_pRepresent)
 	{
 		g_ScenePlace.Paint();
+		//SubWorld[0].Paint(); //xem obs debug
 		Player[CLIENT_PLAYER_INDEX].DrawSelectInfo();
 	}
 }
@@ -4389,6 +9152,21 @@ int	KCoreShell::SceneMapOperation(unsigned int uOper, unsigned int uParam, int n
 		break;
 	case GSMOI_IS_SCENE_DO_DIRECT_MAP:
 		g_ScenePlace.DoDirectMap((int)uParam, nParam);
+		break;
+	case GSMOI_SCENE_MAP_FLAG_ON_TARGET:
+		g_ScenePlace.FlagOnTarget(uParam, nParam);
+		break;
+	case GSMOI_IS_SCENE_MAP_FLAGIMG:
+		g_ScenePlace.SetFlagImage((char*)uParam, nParam);
+		break;
+	case GSMOI_SCENE_MAP_REMOVE_FLAG:
+		g_ScenePlace.RemoveFlag();
+		break;
+	case GSMOI_SCENE_MAP_GET_FLAGPOS:
+		nRet = g_ScenePlace.GetCurFlagPos(uParam, nParam);
+		break;
+	case GSMOI_SCENE_MAP_TG_COORD:
+		g_ScenePlace.FlagOnCoord(uParam, nParam);
 		break;
 	}
 	return nRet;
@@ -5003,7 +9781,14 @@ int KCoreShell::AutoPlayOperation(unsigned int uOper, unsigned int uParam, int n
 			break;
 		case AUTOPLAY_OI_DISTANCE_V:
 			{
-				Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nFightDistance = uParam;
+				int nLeftSkillID = Player[CLIENT_PLAYER_INDEX].GetLeftSkill();
+				int nLevel = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SkillList.GetCurrentLevel(nLeftSkillID);
+				//GetAttackRadius
+				ISkill* pISkill = g_SkillManager.GetSkill(nLeftSkillID, nLevel);
+				if(!pISkill)
+					break;
+				int nRange = pISkill->GetAttackRadius()*0.75;
+				Player[CLIENT_PLAYER_INDEX].m_cAuto.m_nFightDistance = min(uParam, nRange);
 			}
 			break;
 		case AUTOPLAY_OI_DISTANCE_S:
@@ -5562,6 +10347,7 @@ bool CloseToTarget(const FindPathNode& point1, const FindPathNode& point2, int d
 }
 
 #ifndef _SERVER
+/*
 BOOL KCoreShell::AutoMove()
 {
     FindPathNode nextPoint;
@@ -5571,7 +10357,7 @@ BOOL KCoreShell::AutoMove()
     INT nCurX, nCurY;
     Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].GetMpsPos(&nCurX, &nCurY);
     BOOL nRet = FALSE;
-	int delta = 64;
+	int delta = 32;
    // if (!GetPaintMode())
       // return nRet;
     if (!Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_PathFind.empty())
@@ -5637,6 +10423,6 @@ void KCoreShell::ClearPathFinder() {
 	g_ScenePlace.bFlagMode = FALSE;
 	g_ScenePlace.bPaintMode = FALSE;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].ResetPathFind();
-}
+}*/
 
 #endif

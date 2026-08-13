@@ -16,6 +16,7 @@
 #include "../UiBase.h"
 #include "UiSysMsgCentre.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"
+#include "UiGetString.h"
 
 extern iRepresentShell*	g_pRepresentShell;
 
@@ -51,6 +52,7 @@ KUiPlayerItem*	m_fkNearbyPlayersList;
 #define	SELECT_TYPE_MAP_BUY_HP					0x0016
 #define	SELECT_TYPE_MAP_BUY_MP					0x0017
 #define	SELECT_TYPE_MAP_BUY_TOXIC			0x0018
+#define SELECT_CONFIG_FILENAME				0x0019
 
 char g_ArraySelectFightOption[][64] = 
 {
@@ -1082,11 +1084,11 @@ void KUiAutoPlayFight::ProcessShortCut2(BYTE btSelect)
 	m_ShortcutOptTxt2.SetText(g_ArraySelectShortCut2Option[m_ShortcutOptSelect2]);	
 }
 
-void KUiAutoPlayFight::SaveConfig()
+void KUiAutoPlayFight::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayFight", "m_bFightCheckBox", m_bFightCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayFight", "m_nFightRange", m_nFightRange);
@@ -1184,12 +1186,12 @@ KUiAutoPlayRestore::KUiAutoPlayRestore()
 {
 	m_bReHPCheckBox = TRUE;
 	m_nReHPEditBox1 = 100;
-	m_nReHPEditBox2 = 200;
+	m_nReHPEditBox2 = 60;
 	m_nReHPEditBox3 = 3000;
 
 	m_bReMPCheckBox = TRUE;
 	m_nReMPEditBox1 = 100;
-	m_nReMPEditBox2 = 200;
+	m_nReMPEditBox2 = 60;
 	m_nReMPEditBox3 = 3000;
 
 	m_bTownHPVCheckBox = TRUE;
@@ -1616,11 +1618,11 @@ void KUiAutoPlayRestore::LoadConfig()
 	g_UiBase.CloseAutoSettingFile(true);
 }
 
-void KUiAutoPlayRestore::SaveConfig()
+void KUiAutoPlayRestore::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayRestore", "m_bReHPCheckBox", m_bReHPCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayRestore", "m_nReHPEditBox1", m_nReHPEditBox1);
@@ -2172,11 +2174,11 @@ void KUiAutoPlayPick::OnActive()
 	SaveConfig();
 }
 
-void KUiAutoPlayPick::SaveConfig()
+void KUiAutoPlayPick::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayPick", "m_bAutoPickCheckBox", m_bAutoPickCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayPick", "m_nAutoPickEditBox", m_nAutoPickEditBox);
@@ -2328,7 +2330,7 @@ void KUiAutoPlayMove::Initialize()
 
 	Wnd_AddWindow(this);
 }
-
+extern int SCREEN_WIDTH;
 void KUiAutoPlayMove::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -2541,7 +2543,7 @@ void KUiAutoPlayMove::OnActive()
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_11, m_bFlCaptainCheckBox, 0);
 		g_pCoreShell->AutoPlayOperation(AUTOPLAY_OI_MOVE_12, m_bFlAnnyPTCheckBox, 0);
 
-		
+	
 	 int fpsValue = m_eFPS.GetIntNumber();
         if (fpsValue > 200)
         {
@@ -2556,11 +2558,11 @@ void KUiAutoPlayMove::OnActive()
 	SaveConfig();
 }
 
-void KUiAutoPlayMove::SaveConfig()
+void KUiAutoPlayMove::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_bFollowCheckBox", m_bFollowCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayMove", "m_nFollowEditBox", m_nFollowEditBox);
@@ -2755,6 +2757,10 @@ char g_ArraySelectStationOption[][64] =
 	"Tr­êng b¹ch Nam",
 	"Phong l¨ng ®é",
 	"M¹c cao quËt",
+	"H¾c Sa ®éng",
+	"D­îc V­¬ng ®éng tÇng 4",
+	"TuyÕt B¸o §éng TÇng 8",
+	"TiÕn Cóc §éng",
 };
 char g_ArraySelectBuyHPOption[][64] = 
 {
@@ -3217,12 +3223,12 @@ void KUiAutoPlayMap::LoadConfig()
 	g_UiBase.CloseAutoSettingFile(true);
 }
 
-void KUiAutoPlayMap::SaveConfig()
+void KUiAutoPlayMap::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
 	int nTempValue = 0;
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayMap", "m_bReturnCheckBox", m_bReturnCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayMap", "m_bSellCheckBox", m_bSellCheckBox);
@@ -3463,7 +3469,7 @@ KUiAutoPlayTeam::KUiAutoPlayTeam()
 	m_bPTAllCheckBox = FALSE;
 	m_bDecAllInviCheckBox = FALSE;
 
-	strcpy(m_cTPlayerNameTxt, "FongÙKiÒu");
+	strcpy(m_cTPlayerNameTxt, "Ng¹oÙThÕ");
 	memset(m_TeamPlayerList, 0, sizeof(m_TeamPlayerList));
 
 	m_bLeaveTeamCheckBox = FALSE;
@@ -3693,12 +3699,12 @@ void KUiAutoPlayTeam::OnActive()
 	SaveConfig();
 }
 
-void KUiAutoPlayTeam::SaveConfig()
+void KUiAutoPlayTeam::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
 	int nTempValue = 0;
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlayTeam", "m_bAutoCTeamCheckBox", m_bAutoCTeamCheckBox);
 		pConfigFile->WriteInteger("KUiAutoPlayTeam", "m_bAlwayLeaderCheckBox", m_bAlwayLeaderCheckBox);
@@ -3739,7 +3745,7 @@ void KUiAutoPlayTeam::LoadConfig()
 		pConfigFile->GetInteger("KUiAutoPlayTeam", "m_bPTAllCheckBox", 0, (int*)(&nTempValue)); m_bPTAllCheckBox = nTempValue;
 		pConfigFile->GetInteger("KUiAutoPlayTeam", "m_bDecAllInviCheckBox", 0, (int*)(&nTempValue)); m_bDecAllInviCheckBox = nTempValue;
 		//
-		pConfigFile->GetString("KUiAutoPlayTeam", "m_cTPlayerNameTxt", "FongÙKiÒu", m_cTPlayerNameTxt, 64);
+		pConfigFile->GetString("KUiAutoPlayTeam", "m_cTPlayerNameTxt", "Ng?oTh?", m_cTPlayerNameTxt, 64);
 		char szKeyName[16];
 		for (int i = 0; i < defMAX_AUTO_MOVEMPSL; i++)
 		{
@@ -4085,12 +4091,12 @@ void KUiAutoPlayBlackItem::OnActive()
 	SaveConfig();
 }
 
-void KUiAutoPlayBlackItem::SaveConfig()
+void KUiAutoPlayBlackItem::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
 	int nTempValue = 0;
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		//
 		pConfigFile->WriteString("KUiAutoPlayBlackItem", "m_cBlackItemNameTxt", m_cBlackItemNameTxt);
@@ -4163,6 +4169,11 @@ KUiAutoPlay* KUiAutoPlay::OpenWindow()
 		UiSoundPlay(UI_SI_WND_OPENCLOSE);
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
+		if (g_UiBase.GetGlobalConfigFile()) {
+			m_pSelf->m_GlobalBtn.SetFrame(1);
+		}
+		else
+			m_pSelf->m_GlobalBtn.SetFrame(0);
 	}
 	return m_pSelf;
 }
@@ -4288,6 +4299,14 @@ void KUiAutoPlay::Initialize()
 	AddChild(&m_ActiveBtn);
 	AddChild(&m_CloseBtn);
 
+	AddChild(&m_GlobalBtn);
+	AddChild(&m_ConfigFileTxt);
+	AddChild(&m_ConfigFilenameTxt);
+	AddChild(&m_ConfigFileBtn);
+	//m_ConfigFileList.SetScrollbar(&m_ConfigFileList);
+	AddChild(&m_SaveGlobalConfigBtn);
+
+
 	Wnd_AddWindow(this);
 
 	char Scheme[256];
@@ -4308,9 +4327,14 @@ void KUiAutoPlay::LoadScheme(const char* pScheme)
 }
 
 void KUiAutoPlay::LoadScheme(class KIniFile* pIni)
-{	
-	Init(pIni, "Main");
-	m_AutoFightBtn.Init(pIni,"AutoFight"); //chiÕn ®Êu
+{
+	if (SCREEN_WIDTH == 1024) {
+		Init(pIni, "Main1024");
+	}
+	else {
+		Init(pIni, "Main");
+	}
+	m_AutoFightBtn.Init(pIni,"AutoFight"); //chiOn ®Êu
 	m_AutoRestoreBtn.Init(pIni,"AutoRestore"); //phôc håi
 	m_AutoPickBtn.Init(pIni,"AutoPick");	//nhÆt ®å
 	m_AutoMoveBtn.Init(pIni,"AutoMove"); //di chuyÓn
@@ -4319,10 +4343,89 @@ void KUiAutoPlay::LoadScheme(class KIniFile* pIni)
 	//m_AutoBlackItemBtn.Init(pIni,"AutoTeam"); //vËt phÈm ®en kh«ng add vµo
 	
 	m_ActiveBtn.Init(pIni,"ActiveBtn");
+	m_GlobalBtn.Init(pIni, "GlobalConfigBtn");
 	m_CloseBtn.Init(pIni,"CloseBtn");
+
+	m_ConfigFileTxt.Init(pIni, "ConfigFileTxt");
+	m_ConfigFilenameTxt.Init(pIni, "ConfigFilenameTxt");
+	m_ConfigFileBtn.Init(pIni, "ConfigFileBtn");
+	m_SaveGlobalConfigBtn.Init(pIni, "SaveGlobalConfigBtn");
 	//
 	UpdateData();
 }
+
+void KUiAutoPlay::PopupListConfigFile() {
+	const char* folderPath = "UserData\\Global\\*"; // Add wildcard to list files
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFind = FindFirstFile(folderPath, &findFileData);
+
+	if (hFind == INVALID_HANDLE_VALUE) {
+		return; // Directory not found or error
+	}
+
+	// Clear any existing file list and free memory
+	for (char* filename : m_FileList) {
+		free(filename);
+	}
+	m_FileList.clear();
+
+	int nActionDataCount = 1; // Start with 1 for the "No Settings" option
+
+	// Populate the file list and count files
+	do {
+		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			// Allocate memory for the filename and copy it
+			char* filename = (char*)malloc(strlen(findFileData.cFileName) + 1);
+			if (filename) {
+				strcpy(filename, findFileData.cFileName);
+				m_FileList.push_back(filename);
+			}
+			nActionDataCount++;
+		}
+	} while (FindNextFile(hFind, &findFileData) != 0);
+	FindClose(hFind);
+
+	struct KPopupMenuData* pSelUnitMenu = (KPopupMenuData*)malloc(MENU_DATA_SIZE(nActionDataCount));
+	if (pSelUnitMenu == NULL)
+		return;
+
+	KPopupMenu::InitMenuData(pSelUnitMenu, nActionDataCount);
+	pSelUnitMenu->nNumItem = 0;
+	pSelUnitMenu->usMenuFlag |= PM_F_AUTO_DEL_WHEN_HIDE;
+
+	// Add "No Settings" as the first item
+	strncpy(pSelUnitMenu->Items[0].szData, MSG_NON_SETTINGS, sizeof(MSG_NON_SETTINGS));
+	pSelUnitMenu->Items[0].uID = -1;
+	pSelUnitMenu->Items[0].szData[sizeof(pSelUnitMenu->Items[0].szData) - 1] = 0;
+	pSelUnitMenu->Items[0].uDataLen = strlen(pSelUnitMenu->Items[0].szData);
+	pSelUnitMenu->nNumItem++;
+
+	// Populate menu with file names and set uID as the index
+	for (size_t index = 0; index < m_FileList.size(); ++index) {
+		const char* fileName = m_FileList[index];
+		strncpy(pSelUnitMenu->Items[index + 1].szData, fileName, sizeof(pSelUnitMenu->Items[index + 1].szData) - 1);
+		pSelUnitMenu->Items[index + 1].szData[sizeof(pSelUnitMenu->Items[index + 1].szData) - 1] = 0;
+		pSelUnitMenu->Items[index + 1].uID = static_cast<int>(index); // Use the index as uID
+		pSelUnitMenu->Items[index + 1].uDataLen = strlen(pSelUnitMenu->Items[index + 1].szData);
+		pSelUnitMenu->nNumItem++;
+	}
+
+	int nX = 0, nY = 0;
+
+	m_ConfigFileBtn.GetAbsolutePos(&nX, &nY);
+	pSelUnitMenu->nX = nX;
+	pSelUnitMenu->nY = nY;
+
+	KPopupMenu::Popup(pSelUnitMenu, this, SELECT_CONFIG_FILENAME);
+}
+
+char* KUiAutoPlay::GetFilenameFromIndex(int index) {
+	if (index < 0 || index >= static_cast<int>(m_FileList.size())) {
+		return nullptr; // Invalid index
+	}
+	return m_FileList[index];
+}
+
 
 int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {
@@ -4333,6 +4436,39 @@ int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if(uParam == (unsigned int)&m_ActiveBtn)
 		{
 			OnActive(m_bActive);
+		}
+		else if (uParam == (unsigned int)&m_GlobalBtn)
+		{
+			g_UiBase.SetGlobalConfigFile(!g_UiBase.GetGlobalConfigFile());
+			if (g_UiBase.GetGlobalConfigFile()) {
+				m_GlobalBtn.CheckButton(true);
+			}
+			else
+				m_GlobalBtn.CheckButton(false);
+			OpenWindow();
+
+		}
+		else if (uParam == (unsigned int)&m_SaveGlobalConfigBtn)
+		{
+			char* tmp = g_UiBase.GetGlobalConfigFilename();
+			if (tmp[0]) {
+				m_AutoFightPad.SaveConfig(true);
+				m_AutoRestorePad.SaveConfig(true);
+				m_AutoPickPad.SaveConfig(true);
+				m_AutoMovePad.SaveConfig(true);
+				m_AutoMapPad.SaveConfig(true);
+				m_AutoTeamPad.SaveConfig(true);
+				m_AutoBlackItemPad.SaveConfig(true);
+				SaveConfig(true);
+			}
+			else {
+				//ask for file name
+				KUiGetString::OpenWindow("NhËp tªn tÖp", "", (KWndWindow*)this, UIITEM_WAIT_GETFILENAME, 1, 20);
+			}
+		}
+		else if (uParam == (unsigned int)(KWndWindow*)&m_ConfigFileBtn)//support1
+		{
+			PopupListConfigFile();
 		}
 		else if(uParam == (unsigned int)&m_CloseBtn)
 		{
@@ -4364,6 +4500,42 @@ int KUiAutoPlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		SaveConfig();
 		break;
+	case WND_M_MENUITEM_SELECTED:
+		if (uParam == (unsigned int)(KWndWindow*)this)
+		{
+			if (HIWORD(nParam) == SELECT_CONFIG_FILENAME)
+			{
+				short index = LOWORD(nParam);
+				char* filename = GetFilenameFromIndex(index);
+				if (index == -1) {
+					g_UiBase.SetGlobalConfigFilename("");
+					m_ConfigFilenameTxt.SetText(MSG_NON_SETTINGS);
+				}
+				else {
+					g_UiBase.SetGlobalConfigFilename(filename);
+					m_ConfigFilenameTxt.SetText(filename);
+					OpenWindow();
+				}
+			}
+		}
+	case WND_M_OTHER_WORK_RESULT:
+		if (uParam == UIITEM_WAIT_GETFILENAME)
+		{
+			if (nParam) {
+				char tmpStr[64];
+				sprintf_s(tmpStr, "%s.ini", (char*)nParam);
+				g_UiBase.SetGlobalConfigFilename(tmpStr);
+				m_ConfigFilenameTxt.SetText(tmpStr);
+				m_AutoFightPad.SaveConfig(true);
+				m_AutoRestorePad.SaveConfig(true);
+				m_AutoPickPad.SaveConfig(true);
+				m_AutoMovePad.SaveConfig(true);
+				m_AutoMapPad.SaveConfig(true);
+				m_AutoTeamPad.SaveConfig(true);
+				m_AutoBlackItemPad.SaveConfig(true);
+				SaveConfig(true);
+			}
+		}
 	default:
 		nRet = KWndPageSet::WndProc(uMsg, uParam, nParam);
 	}
@@ -4422,11 +4594,11 @@ void KUiAutoPlay::LoadConfig()
 	g_UiBase.CloseAutoSettingFile(true);
 }
 
-void KUiAutoPlay::SaveConfig()
+void KUiAutoPlay::SaveConfig(BOOL bGlobal)
 {
 	KIniFile* pConfigFile = NULL;
 	pConfigFile = g_UiBase.GetAutoSettingFile();
-	if (pConfigFile)
+	if (pConfigFile && (!g_UiBase.GetGlobalConfigFile() || bGlobal))
 	{
 		pConfigFile->WriteInteger("KUiAutoPlay", "m_nPadActive", m_nPadActive);
 	}

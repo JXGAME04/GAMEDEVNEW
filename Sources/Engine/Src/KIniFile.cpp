@@ -19,6 +19,58 @@
 #include "KIniFile.h"
 #include <string.h>
 #include "KSG_StringProcess.h"
+#include <openssl/aes.h>
+#include <openssl/rand.h>
+// Global encryption key (must be kept secure)
+void GetGlobalKey(unsigned char outKey[16])
+{
+	const unsigned char obfuscated[16] = {
+		'A' ^ 0x37, 'x' ^ 0x37, '9' ^ 0x37, 'V' ^ 0x37,
+		'L' ^ 0x37, 'N' ^ 0x37, 'g' ^ 0x37, 'a' ^ 0x37,
+		'o' ^ 0x37, 'T' ^ 0x37, 'h' ^ 0x37, 'e' ^ 0x37,
+		'2' ^ 0x37, '0' ^ 0x37, '2' ^ 0x37, '5' ^ 0x37
+	};
+	for (int i = 0; i < 16; ++i)
+		outKey[i] = obfuscated[i] ^ 0x37;
+}
+
+// Signature to identify encrypted INI files
+void GetSignature(unsigned char* outSig)
+{
+	const char obf[] = {
+		'E' ^ 0x55, 'N' ^ 0x55, 'C' ^ 0x55, 'R' ^ 0x55, 'Y' ^ 0x55,
+		'P' ^ 0x55, 'T' ^ 0x55, 'E' ^ 0x55, 'D' ^ 0x55, '_' ^ 0x55,
+		'I' ^ 0x55, 'N' ^ 0x55, 'I' ^ 0x55
+	};
+	for (int i = 0; i < 13; ++i)
+		outSig[i] = obf[i] ^ 0x55;
+	outSig[13] = '\0'; // Null-terminate the string
+}
+unsigned char g_GlobalKey[16];
+unsigned char SIGNATURE[14];
+
+const size_t SIGNATURE_SIZE = sizeof(SIGNATURE) - 1; // Exclude null terminator
+// Helper function to decrypt data using AES
+bool DecryptData(const unsigned char* encryptedData, size_t encryptedSize,
+	const unsigned char* key, unsigned char* output, size_t& outputSize) {
+	AES_KEY aesKey;
+	if (AES_set_decrypt_key(key, 128, &aesKey) != 0)
+		return false;
+
+	size_t numBlocks = encryptedSize / AES_BLOCK_SIZE;
+	for (size_t i = 0; i < numBlocks; ++i) {
+		AES_decrypt(encryptedData + (i * AES_BLOCK_SIZE), output + (i * AES_BLOCK_SIZE), &aesKey);
+	}
+
+	// Remove padding (PKCS#7)
+	unsigned char padding = output[encryptedSize - 1];
+	if (padding == 0 || padding > AES_BLOCK_SIZE) {
+		return true;
+	}
+
+	outputSize = encryptedSize - padding;
+	return true;
+}
 
 //---------------------------------------------------------------------------
 typedef struct {
@@ -99,9 +151,41 @@ BOOL KIniFile::Load(LPCSTR FileName)
 		File.Close();
 		return LoadPack(FileName);
 	}
+	GetSignature(SIGNATURE);
+	GetGlobalKey(g_GlobalKey);
+	// Check for the signature
+	if (dwSize > SIGNATURE_SIZE && memcmp(Buffer, SIGNATURE, SIGNATURE_SIZE) == 0) {
+		// Decrypt the file content
+		unsigned char* encryptedKey = (unsigned char*)Buffer + SIGNATURE_SIZE; // First part is the encrypted key
+		unsigned char* encryptedData = (unsigned char*)Buffer + SIGNATURE_SIZE + 16; // Remaining part is the encrypted data
+		size_t encryptedDataSize = dwSize - 16 - SIGNATURE_SIZE;
 
-	CreateIniLink(Buffer, dwSize);
+		unsigned char decryptedKey[16];
+		size_t decryptedKeySize = 0;
+		// Decrypt the key using the global key
+		if (!DecryptData(encryptedKey, 16, (const unsigned char*)g_GlobalKey, decryptedKey, decryptedKeySize)) {
+			g_DebugLog("Failed to decrypt the key for ini file: %s", FileName);
+			return FALSE;
+		}
 
+		unsigned char* decryptedData = new unsigned char[encryptedDataSize];
+		size_t decryptedDataSize = 0;
+
+		// Decrypt the INI data using the decrypted key
+		if (!DecryptData(encryptedData, encryptedDataSize, decryptedKey, decryptedData, decryptedDataSize)) {
+			g_DebugLog("Failed to decrypt ini file data: %s", FileName);
+			delete[] decryptedData;
+			return FALSE;
+		}
+		CreateIniLink(decryptedData, decryptedDataSize);
+		delete[] decryptedData;
+	}
+	else
+	{
+		// Create ini link in memory
+		CreateIniLink(Buffer, dwSize);
+	}
+	//CreateIniLink(Buffer, dwSize);
 	return TRUE;
 }
 //---------------------------------------------------------------------------
@@ -173,8 +257,42 @@ BOOL KIniFile::LoadPack(LPCSTR FileName)
 //#endif
 	// check data length
 
+	GetSignature(SIGNATURE);
+	GetGlobalKey(g_GlobalKey);
+	// Check for the signature
+	if (Header.DataLen > SIGNATURE_SIZE && memcmp(DataBuf, SIGNATURE, SIGNATURE_SIZE) == 0) {
+		// Decrypt the file content
+		unsigned char* encryptedKey = (unsigned char*)DataBuf + SIGNATURE_SIZE; // First part is the encrypted key
+		unsigned char* encryptedData = (unsigned char*)DataBuf + SIGNATURE_SIZE + 16; // Remaining part is the encrypted data
+		size_t encryptedDataSize = Header.DataLen - 16 - SIGNATURE_SIZE;
+
+		unsigned char decryptedKey[16];
+		size_t decryptedKeySize = 0;
+		// Decrypt the key using the global key
+		if (!DecryptData(encryptedKey, 16, (const unsigned char*)g_GlobalKey, decryptedKey, decryptedKeySize)) {
+			g_DebugLog("Failed to decrypt the key for ini file: %s", FileName);
+			return FALSE;
+		}
+
+		unsigned char* decryptedData = new unsigned char[encryptedDataSize];
+		size_t decryptedDataSize = 0;
+
+		// Decrypt the INI data using the decrypted key
+		if (!DecryptData(encryptedData, encryptedDataSize, decryptedKey, decryptedData, decryptedDataSize)) {
+			g_DebugLog("Failed to decrypt ini file data: %s", FileName);
+			delete[] decryptedData;
+			return FALSE;
+		}
+		CreateIniLink(decryptedData, decryptedDataSize);
+		delete[] decryptedData;
+	}
+	else
+	{
+		// Create ini link in memory
+		CreateIniLink(DataBuf, Header.DataLen);
+	}
 	// create ini link in memory
-	CreateIniLink(DataBuf, Header.DataLen);
+	//CreateIniLink(DataBuf, Header.DataLen);
 
 	return TRUE;
 }

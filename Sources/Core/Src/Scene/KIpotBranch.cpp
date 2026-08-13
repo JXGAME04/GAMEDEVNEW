@@ -93,7 +93,7 @@ void KIpotBranch::PaintABranchObject(KIpotBuildinObj* pObject,
 
 	KRUImage4	Image;
 	KBuildinObj* pBio = pObject->pBio;
-	Image.Color.Color_dw = 0;
+	//Image.Color.Color_dw = 0;
 	Image.bRenderFlag = RUIMAGE_RENDER_FLAG_FRAME_DRAW;
 	Image.bRenderStyle = IMAGE_RENDER_STYLE_3LEVEL;
 	Image.nType = ISI_T_SPR;
@@ -231,13 +231,16 @@ void KIpotBranch::AddAObject(KIpotBuildinObj* pBranchObj)
 //##ModelId=3DDACD580262
 void KIpotBranch::AddBranch(KIpotBuildinObj* pBranchObj)
 {
-	_ASSERT(pBranchObj && m_pFirstObject);
+	if(!pBranchObj || !m_pFirstObject)
+		return;
+	//_ASSERT(pBranchObj && m_pFirstObject);
 
 	POINT	poi, p1, p2;
 	p1 = pBranchObj->oPosition;
 	p2 = pBranchObj->oEndPos;
-
-	_ASSERT(p1.x != p2.x && m_oHeadPoint.x != m_oEndPoint.x);
+	if(p1.x == p2.x || m_oHeadPoint.x == m_oEndPoint.x)
+		return;
+	//_ASSERT(p1.x != p2.x && m_oHeadPoint.x != m_oEndPoint.x);
 
 	RELATION_ENUM eRelate;
 

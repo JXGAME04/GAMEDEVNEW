@@ -95,7 +95,7 @@ void KUiHelper2::CloseWindow(bool bDestory)
 		}
 	}
 }
-
+extern int SCREEN_WIDTH;
 void KUiHelper2::LoadScheme(const char* pScheme)
 {
 	if (m_pSelf)
@@ -105,7 +105,14 @@ void KUiHelper2::LoadScheme(const char* pScheme)
 		sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_HELP2);
 		if (Ini.Load(Buff))
 		{
-			m_pSelf->Init(&Ini, "Main");
+			if (SCREEN_WIDTH == 1024)
+			{
+				m_pSelf->Init(&Ini, "Main1024");
+			}
+			else
+			{
+				m_pSelf->Init(&Ini, "Main");
+			}
 			m_pSelf->m_BtnClose.Init(&Ini, "BtnClose");
 			m_pSelf->m_BtnPic.Init(&Ini, "BtnPic");
 			m_pSelf->m_BtnKeyboard.Init(&Ini,"BtnKeyboard");

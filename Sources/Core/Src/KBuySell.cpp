@@ -126,6 +126,7 @@ BOOL KBuySell::Init()
 					g_SubWorldSet.GetGameVersion(),
 					&m_Item[m_ItemNum],0,0);
 			}
+			m_Item[m_ItemNum].SetMaxOptMultiply(1); //buysell items x1
 			break;
 		case item_medicine:
 			ItemGen.Gen_Medicine(ItemGenerator.nDetailType, ItemGenerator.nParticularType, ItemGenerator.nLevel, g_SubWorldSet.GetGameVersion(), &m_Item[m_ItemNum], 1);
@@ -233,18 +234,18 @@ int KBuySell::GetItemIndex(int nShop, int nIndex)
 }
 
 #ifdef _SERVER
-BOOL KBuySell::Buy(int nPlayerIdx, int nBuy, int nBuyIdx, BYTE nBuyNumber)
+BOOL KBuySell::Buy(int nPlayerIdx, int nBuy, int nBuyIdx, int nBuyNumber)
 {
 	KASSERT(nPlayerIdx >= 0 && nPlayerIdx < MAX_PLAYER);
 	//
 	int nItemIdx = 0;
 	//
-	if (nBuy == -1)
+	if (nBuy < 0 || nBuy >= m_Height)
 	{
 		printf("BuySell: %s buy idx error!", Npc[Player[nPlayerIdx].m_nIndex].Name);
 		return FALSE;
 	}
-	if (nBuyIdx >= m_Width)
+	if (nBuyIdx < 0 || nBuyIdx >= m_Width)
 		return FALSE;
 
 	if (m_SellItem[nBuy][nBuyIdx] < 0 || m_SellItem[nBuy][nBuyIdx] >= m_ItemNum)
@@ -354,13 +355,13 @@ BOOL KBuySell::Sell(int nPlayerIdx, int nBuy, int nIdx, int nBuyNumber)
 			g_pServer->PackDataToClient(Player[nPlayerIdx].m_nNetConnectIdx, &sMsg, sMsg.m_wLength + 1);
 		return FALSE;
 	}	
-	
+/*
 	if (nBuy == -1)
 	{
 		printf("BuySell: %s buy idx error!", Npc[Player[nPlayerIdx].m_nIndex].Name);
 		return FALSE;
 	}
-
+*/
 	if (//Item[nIdx].GetGenre() == item_task || //Vat pham task event Item khong giao dich
 		Item[nIdx].GetPlayerItemLock() > 0 
 		|| Item[nIdx].GetPlayerItemHLock() > 0

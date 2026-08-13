@@ -138,7 +138,7 @@ void *CBuffer::operator new( size_t objectSize, size_t /* bufferSize */ )
 	return pMem;
 }
 
-void CBuffer::operator delete( void *pObject, size_t /* bufferSize */ )
+void CBuffer::operator delete( void *pObject/*, size_t /* bufferSize */)
 {
 	SAFE_DELETE_ARRAY( pObject );
 }

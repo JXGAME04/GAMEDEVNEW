@@ -23,5 +23,6 @@ struct KOutputTextParam
 		Color = 0;
 		nVertAlign = 0;	//È±Ê¡Îª¾ÓÖÐ
 		bPicPackInSingleLine = false;
+		BorderColor = 0;
 	}
 };

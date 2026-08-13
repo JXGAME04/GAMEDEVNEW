@@ -9,6 +9,7 @@
 #include "../iRepresent/KRepresentUnit.h"
 #include <crtdbg.h.>
 #include "../../Engine/Src/KColors.h"
+#include <cstdint>
 
 //文件名转化为字符串
 unsigned int KImageStore2::ImageNameToId(const char* pszName)
@@ -118,17 +119,21 @@ unsigned int KImageStore2::CreateImage(const char* pszName, int nWidth, int nHei
 {
 	unsigned int uImage = ImageNameToId(pszName);
 	KSGImageContent* pBitmap = NULL;
+	AlphaRecContent* pImg = NULL;
 	int nIdx;
 
 
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
 
-	if (nWidth > 0 && nHeight > 0 && uImage && nType == ISI_T_BITMAP16)
+	if (nWidth > 0 && nHeight > 0 && uImage && (nType == ISI_T_BITMAP16 || nType == ISI_T_DRAWINGRC))
 	{
 		if ((nIdx = FindImage(uImage, 0)) < 0 &&	//必须是不存在同id的图形
 			(m_nNumImages < m_nNumReserved || ExpandSpace()))	//有空间存放图形对象
 		{
-			pBitmap = (KSGImageContent *)malloc(KSG_IMAGE_CONTENT_SIZE(nWidth, nHeight));
+			if(nType == ISI_T_BITMAP16)
+				pBitmap = (KSGImageContent *)malloc(KSG_IMAGE_CONTENT_SIZE(nWidth, nHeight));
+			else
+				pImg = (AlphaRecContent *)malloc(CREATE_REC_CONTENT_SIZE(nWidth, nHeight));
 		}
 	}
 	
@@ -146,6 +151,25 @@ unsigned int KImageStore2::CreateImage(const char* pszName, int nWidth, int nHei
 		m_pObjectList[nIdx].bSingleFrameLoad = false;
 		m_pObjectList[nIdx].bType = ISI_T_BITMAP16;
 		m_pObjectList[nIdx].pObject = pBitmap;
+		m_pObjectList[nIdx].pFrames = NULL;
+		m_pObjectList[nIdx].uId = uImage;
+		m_pObjectList[nIdx].pSurface = NULL;
+		m_nNumImages++;
+	}
+	else if(pImg)
+	{
+		pImg->nWidth = nWidth;
+		pImg->nHeight = nHeight;
+
+		nIdx = - nIdx - 1;
+		for (int i = m_nNumImages; i > nIdx; i--)
+		{
+			m_pObjectList[i] = m_pObjectList[i - 1];
+		}
+		m_pObjectList[nIdx].bNotCacheable = true;
+		m_pObjectList[nIdx].bSingleFrameLoad = false;
+		m_pObjectList[nIdx].bType = ISI_T_DRAWINGRC;
+		m_pObjectList[nIdx].pObject = pImg;
 		m_pObjectList[nIdx].pFrames = NULL;
 		m_pObjectList[nIdx].uId = uImage;
 		m_pObjectList[nIdx].pSurface = NULL;
@@ -198,7 +222,7 @@ void* KImageStore2::GetExistedCreateBitmap(const char* pszImage, unsigned int uI
 	nImagePosition = FindImage(uImage, nImagePosition);
 	void* pObject = NULL;
 	if (nImagePosition >= 0 &&
-		m_pObjectList[nImagePosition].bType == ISI_T_BITMAP16 &&
+		(m_pObjectList[nImagePosition].bType == ISI_T_BITMAP16 || m_pObjectList[nImagePosition].bType == ISI_T_DRAWINGRC) &&
 		m_pObjectList[nImagePosition].bNotCacheable == true &&
 		m_pObjectList[nImagePosition].pObject)
 	{
@@ -716,10 +740,10 @@ void KImageStore2::FreeImageObject(_KISImageObj& ImgObject, int nFrame/*=-1*/)
 		{
 			if (ImgObject.pObject)
 			{
-				if (ImgObject.bNotCacheable == false)
-					release_image((KSGImageContent *)ImgObject.pObject);
+				if (ImgObject.bType == ISI_T_BITMAP16)
+					free((KSGImageContent *)ImgObject.pObject);
 				else
-					free(ImgObject.pObject);
+					free((AlphaRecContent *)ImgObject.pObject);
 				ImgObject.pObject = NULL;
 			}
 		}
@@ -728,6 +752,23 @@ void KImageStore2::FreeImageObject(_KISImageObj& ImgObject, int nFrame/*=-1*/)
 	}
 }
 
+// LCG parameters
+static uint32_t LCG_Next(uint32_t& state) {
+	const uint32_t a = 1103515245;
+	const uint32_t c = 12345;
+	const uint32_t m = 1u << 31;
+	state = (a * state + c) % m;
+	return (state >> 16) & 0xFF;
+}
+void DecryptPalette(KPAL24* palette, int numColors, BYTE xorKey) {
+	uint32_t state = xorKey;  // Use Reserved[3] as the initial seed
+	uint8_t* palBytes = reinterpret_cast<uint8_t*>(palette);
+
+	// Decrypt each byte of the palette using the XOR key stream generated from LCG
+	for (size_t i = 0; i < numColors * sizeof(KPAL24); ++i) {
+		palBytes[i] ^= LCG_Next(state);  // XOR each byte with the generated value
+	}
+}
 void* KImageStore2::LoadImage(const char* pszImageFile, _KISImageObj& ImgObj, int nFrame, void*& pFrameData)
 {
 	void* pRet = NULL;
@@ -782,15 +823,54 @@ void* KImageStore2::LoadImage(const char* pszImageFile, _KISImageObj& ImgObj, in
 					}
 				}
 			}
-			if (ImgObj.pObject)
+			char* palette = ((char*)pSprHeader);
+			palette += sizeof(SPRHEAD);
+			// setup palette pointer
+			KPAL24* pPal24;
+			pPal24 = new KPAL24[pSprHeader->Colors];
+
+			// Extract XOR seed from Reserved[3]
+			BYTE paletteXorKey = static_cast<BYTE>(pSprHeader->Reserved[3] & 0xFF);
+			if (paletteXorKey)
 			{
-				g_Pal24ToPal16((KPAL24*)(&pSprHeader[1]),
-					(KPAL16*)(&pSprHeader[1]), pSprHeader->Colors);
+				// Allocate and decrypt palette
+				memcpy(pPal24, palette, pSprHeader->Colors * sizeof(KPAL24));
+				DecryptPalette(pPal24, pSprHeader->Colors, paletteXorKey);
+				//palette = (char*)pPal24;
+				if (ImgObj.pObject)
+				{
+					if(g_pDirectDraw->GetRGBBitCount() != 32)
+					{
+						g_Pal24ToPal16(pPal24,
+						(KPAL16*)(&pSprHeader[1]), pSprHeader->Colors);
+					}
+					else
+					{
+						memcpy(&pSprHeader[1], pPal24,  pSprHeader->Colors * sizeof(KPAL24));
+					}
+					delete[] pPal24;
+				}
+				else
+				{
+					SprReleaseHeader(pSprHeader);
+					ImgObj.pcAdjustColorPalettes = NULL;
+				}
 			}
 			else
 			{
-				SprReleaseHeader(pSprHeader);
-				ImgObj.pcAdjustColorPalettes = NULL;
+				if (ImgObj.pObject)
+				{
+					if(g_pDirectDraw->GetRGBBitCount() != 32)	//ch? ?é 16bit míi c?n chuyón palette
+					{
+						g_Pal24ToPal16((KPAL24*)(&pSprHeader[1]),
+						(KPAL16*)(&pSprHeader[1]), pSprHeader->Colors);
+					}
+				}
+				else
+				{
+					SprReleaseHeader(pSprHeader);
+					ImgObj.pcAdjustColorPalettes = NULL;
+				}
 			}
 		}
 	}

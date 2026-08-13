@@ -55,6 +55,13 @@ KUiMsgSel2* KUiMsgSel2::OpenWindow(KUiQuestionAndAnswer* pContent, KUiNpcSpr *pI
     return m_pSelf;
 } 
 
+KUiMsgSel2*	KUiMsgSel2::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	else
+		return NULL;
+}
 //--------------------------------------------------------------------------
 //	功能：关闭销毁窗口
 //--------------------------------------------------------------------------

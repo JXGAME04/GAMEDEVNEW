@@ -22,6 +22,8 @@ public:
 	static KUiLogin* OpenWindow();				//打开窗口，返回唯一的一个类对象实例
 	static void		 CloseWindow(bool bDestroy);//关闭窗口
 	static bool		 IsValidPassword(const char* pszPassword, int nLen);
+	static KUiLogin*		GetIfVisible();
+	void 				AutoLgNextStep(const char* pszAccount, const char* pszPassword);
 private:
 	KUiLogin();
 	~KUiLogin();

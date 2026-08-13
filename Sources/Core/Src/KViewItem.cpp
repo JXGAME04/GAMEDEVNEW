@@ -61,7 +61,7 @@ void	KViewItem::GetData(BYTE* pMsg)
 	DeleteAll();
 
 	int	i, j;
-	int	nNpcIdx, nItemIdx, nMagicParam[6];
+	int	nNpcIdx, nItemIdx, nMagicParam[MAX_ITEM_MAGICLEVEL];
 	VIEW_EQUIP_SYNC		*pView = (VIEW_EQUIP_SYNC*)pMsg;
 	KUiPlayerItem	sPlayer;
 
@@ -88,9 +88,22 @@ void	KViewItem::GetData(BYTE* pMsg)
 	{
 		if (pView->m_sInfo[i].m_nID == 0)
 			continue;
-		for (j = 0; j < 6; j++)
+		for (j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
 			nMagicParam[j] = pView->m_sInfo[i].m_btMagicLevel[j];
-			if (pView->m_sInfo[i].m_nGoldId)
+
+			if (pView->m_sInfo[i].m_nNature >= NATURE_GOLD) {
+			nItemIdx = ItemSet.Add(pView->m_sInfo[i].m_nNature,
+				pView->m_sInfo[i].m_btGenre,
+				pView->m_sInfo[i].m_btSeries,
+				pView->m_sInfo[i].m_btLevel,
+				pView->m_sInfo[i].m_btLuck,
+				pView->m_sInfo[i].m_btDetail,
+				pView->m_sInfo[i].m_btParticur,
+				nMagicParam,
+				pView->m_sInfo[i].m_wVersion,
+				pView->m_sInfo[i].m_dwRandomSeed);
+			}
+			else if (pView->m_sInfo[i].m_nGoldId)
 			{
 				nItemIdx = ItemSet.AddGoldItem(
 					pView->m_sInfo[i].m_nGoldId,

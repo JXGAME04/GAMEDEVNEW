@@ -8,31 +8,42 @@
 
 #include "CoreObjGenreDef.h"
 #include "CoreUseNameDef.h"
+#include <iostream>
+#include <map>
+#include <vector>
 
 #define		ITEM_VERSION						1
-#define		Def_MAX_STACK_TIENDONG	100
+#define		Def_MAX_STACK_TIENDONG	500
 #define		Def_ID_XU_TIENDONG	417
 #define		Def_MAXLEN_STRING_CHAT		90
 #define		_CHAT_SCRIPT_OPEN
 #define		OBJ_NAME_LENGHT						64
 #define		MAX_TEAM_MEMBER						7		
 #define		MAX_SENTENCE_LENGTH					256
-#define		NUM_INFO_ITEM_CHAT					26				//26 th«ng tin ®­îc slipt trong string göi ®i
+#define		NUM_INFO_ITEM_CHAT					39				//26 th«ng tin ®­îc slipt trong string göi ®i
 #define		FILE_NAME_LENGTH					80
 #define		PLAYER_PICKUP_CLIENT_DISTANCE		75//63
 #define		defMAX_EXEC_OBJ_SCRIPT_DISTANCE		200
 #define		defMAX_PLAYER_SEND_MOVE_FRAME		5
 #define		PLAYER_PICKUP_SERVER_DISTANCE		40000
 #define		MAX_INT								0x7fffffff
+#define		MONEY_FLOOR							10000
 #define		STAMINA_RECOVER_SCALE	4
-#define 	MAX_ITEM_MAGICATTRIB		6
+#define 	MIN_ITEM_LEVEL				0
+#define 	MAX_ITEM_LEVEL				10
+#define 	MAX_ITEM_LEVELFF				20
+#define 	MAX_ITEM_GENERATORLEVEL		10
+#define 	MAX_ITEM_LUCK				10
+#define 	MAX_ITEM_MAGICATTRIB		8
+#define 	MAX_ITEM_MAGICLEVEL			MAX_ITEM_MAGICATTRIB * 2
+#define 	MAX_ITEM_NORMAL_MAGICATTRIB	6
 #define		defNPC_GOLD_TYE		16
 #define		defNPC_GOLD_SKILL_NO		5
 #define		defNPC_GOLD_FIST_MAGIC_DAMGE		20
 #define		POISON_DAMAGE_TIME				60
 #define		POISON_DAMAGE_INTERVAL			10
 #define		COLD_DAMAGE_TIME				60
-#define		MAX_DEATLY_STRIKE_ENHANCEP		200
+#define		MAX_DEATLY_STRIKE_ENHANCEP		100
 #define		MIN_FATALLY_STRIKE_ENHANCEP		30
 #define		MAX_FATALLY_STRIKE_ENHANCEP		50
 #define		DEF_DOWN_SKILLEXP90		50
@@ -50,12 +61,12 @@
 #define		MAX_REPUTE_VALUE					100000	
 #define		MAX_FUYUAN_VALUE					100000	
 #define		MAX_REBORN_VALUE					100000
-#define		MSG_NON_SETTINGS		"Kh«ng thiÕt lËp"
+#define		MSG_NON_SETTINGS		"Kh«ng ThiÕt LËp"
 #define		TIMERTASK_SETTINGFILE	"\\settings\\TimerTask.txt"
-#define		TASKVALUE_X2_EXP		36	//x2 ®iÓm kinh nghiÖm c?nh©n chÕt kh«ng mÊt
+#define		TASKVALUE_X2_EXP		36	//x2 ®iÓm kinh nghiÖm c¸ nh©n chÕt kh«ng mÊt
 #define		TASKVALUE_STATTASK_HONOR		37	//lien dau
 #define		TASKVALUE_STATTASK_ACCUM		38 //tong kim
-#define		TASKVALUE_STATTASK_RESPECT		39	//diem uy danh tÝch lu?c«ng tr¹ng
+#define		TASKVALUE_STATTASK_RESPECT		39	//diem uy danh tÝch luü c«ng tr¹ng
 #define		TASKVALUE_STATTASK_REPUTE		73	//danh vong
 #define		TASKVALUE_STATTASK_FUYUAN		74	//phuc duyen khong dung
 #define		TASKVALUE_STATTASK_MATDOTHANBI		75//mat do than bi, son ha xa tac
@@ -78,6 +89,8 @@
 #define MISSION_AVAILABLE_VALUE		1
 #define MAX_GLBMISSION_PARAM		3
 #define	MISSION_STATNUM				10 //add by phong kiÒu using Tèng kim battle 10 ng­êi top ten
+#define MAX_MERIDIAN 8
+#define MAX_MERIDIAN_LEVEL 32
 
 struct TMissionLadderSelfInfo
 {
@@ -180,16 +193,16 @@ enum PAUTO_OPTION
 	eABanItem,
 	//ePickInFightState,//nhÆt ®å trong thµnh
 	eAutoRightSkill,//®¸nh chiªu bªn ph¶i
-	eAutoPTAll, //pt tÊt c?
+	eAutoPTAll, //pt tÊt c¶
 	enumcount,
 };
 
 enum ITEM_PART
 {
-	itempart_head = 0,	// Í· // m?
+	itempart_head = 0,	// Í· // mò
 	itempart_body,		// ÉíÌå //¸o
 	itempart_belt,		// Ñü´ø // ®ai l­ng
-	itempart_weapon,	// ÎäÆ÷ // v?kh?
+	itempart_weapon,	// ÎäÆ÷ // vò khÝ
 	itempart_foot,	//giµy
 	itempart_cuff, //bao tay
 	itempart_amulet, //d©y chuyÒn
@@ -199,6 +212,10 @@ enum ITEM_PART
 	itempart_horse, // ngùa
 	itempart_mask,	// mat na
 	itempart_mantle,//#phi phong
+	itempart_signet,
+	itempart_shipin,
+	itempart_hoods,
+	itempart_cloak,
 	itempart_num,
 };
 
@@ -220,6 +237,11 @@ enum COMPOUND_PART
 	compoundpart_box1 = 0, 
 	compoundpart_box2,		
 	compoundpart_box3,		
+	compoundpart_box4,
+	compoundpart_box5,
+	compoundpart_box6,
+	compoundpart_box7,
+	compoundpart_box8,
 	compoundpart_num,
 };
 
@@ -248,16 +270,34 @@ enum FORGE_PART
 
 typedef struct
 {
+	BOOL	bIsSkill;
 	int		nIdx;
 	int		nPlace;
 	int		nX;
 	int		nY;
 	int		nPrice;
+	void	Release() {
+		bIsSkill = FALSE;
+		nIdx = 0;
+		nPlace = 0;
+		nX = 0;
+		nY = 0;
+	};
 } PlayerItem;
+
+enum LOCK_STATE
+{
+	LOCK_STATE_CHARACTER = -3,
+	LOCK_STATE_FOREVER = -2,
+	LOCK_STATE_LOCK,
+	LOCK_STATE_NORMAL,
+	LOCK_STATE_UNLOCK,
+};
 
 enum INVENTORY_ROOM
 {
-	room_equipment = 0,	// trang b?trªn ng­êi
+	room_equipment = 0,	// trang bÞ trªn ng­êi
+	room_equipmentback, // backup to switch equip
 	room_repository,	// r­¬ng chøa ®å
 	room_exbox1,		// mo rong ruong 1
 	room_exbox2,		// mo rong ruong 2
@@ -284,6 +324,7 @@ enum ITEM_POSITION
 	pos_exbox3room,		// mo rong ruong 3
 	pos_equiproomex,	// mo rong hanh trang
 	pos_traderoom,		// giao dich
+	pos_gambleroom,		// OTT
 	pos_trade1,			// 
 	pos_immediacy,		// o phim tat
 	pos_give,//
@@ -297,8 +338,31 @@ enum ITEM_POSITION
 	pos_enchase,		// Kham nam trang bi
 	pos_skilltakewith,	//skill phim tat index 21 moi nhac len
 	pos_immediacyskill, //skill phim tat index 22 khi dat xuong
+	pos_equipback,		// equip 2
 	pos_num,
 };
+
+// add combat info system
+enum COMBAT_INFO_TYPE
+{
+	DAMAGE_MISS,
+	DAMAGE_NORMAL,
+	DAMAGE_DEADSTRIKE,		// CHI MANG
+	DAMAGE_CURE,			// PHUC HOI
+	DAMAGE_POISON,			// DOC
+	COMBAT_INFO_DAMAGE_LIFE,
+	COMBAT_INFO_HEAL_LIFE,
+	COMBAT_INFO_DAMAGE_MANA,
+	COMBAT_INFO_HEAL_MANA,
+	COMBAT_INFO_DODGE,
+
+	COMBAT_INFO_ABSORB_LIFE,	// HUT SINH LUC
+	COMBAT_INFO_ABSORB_MANA,	// HUT NOI LUC
+	COMBAT_INFO_ABSORB_STAMINA,	// HUT THE LUC
+
+	COMBAT_INFO_SCORE_GET,      // 
+};
+// add end
 
 #define		AFFAIRITEM_ROOM_WIDTH		6
 #define		AFFAIRITEM_ROOM_HEIGHT		4
@@ -312,15 +376,20 @@ enum ITEM_POSITION
 #define		MAX_REPOSITORY_ITEM			(REPOSITORY_ROOM_WIDTH * REPOSITORY_ROOM_HEIGHT)
 #define		TRADE_ROOM_WIDTH			10
 #define		TRADE_ROOM_HEIGHT			4
+//----->Add by OTT
+#define		GAMBLE_ROOM_WIDTH			10
+#define		GAMBLE_ROOM_HEIGHT			4
+//<-----Add End
 #define		MAX_TRADE_ITEM				(TRADE_ROOM_WIDTH * TRADE_ROOM_HEIGHT)
 #define		MAX_TRADE1_ITEM				MAX_TRADE_ITEM
+#define		MAX_GAMBLE_ITEM				(GAMBLE_ROOM_WIDTH * GAMBLE_ROOM_HEIGHT)
 #define		IMMEDIACY_ROOM_WIDTH		9
 #define		IMMEDIACY_ROOM_HEIGHT		1
 #define		MAX_IMMEDIACY_ITEM			(IMMEDIACY_ROOM_WIDTH * IMMEDIACY_ROOM_HEIGHT)
 #define		MAX_PLAYER_ITEM_RESERVED	32
 //#define		MAX_PLAYER_ITEM				(MAX_EQUIPMENT_ITEM + MAX_REPOSITORY_ITEM + MAX_TRADE_ITEM + MAX_TRADE1_ITEM + MAX_IMMEDIACY_ITEM + itempart_num + MAX_HAND_ITEM + MAX_PLAYER_ITEM_RESERVED)
 #define		MAX_PLAYER_ITEM				(MAX_EQUIPMENT_ITEM + MAX_REPOSITORY_ITEM*5 + MAX_TRADE_ITEM + MAX_TRADE1_ITEM + MAX_IMMEDIACY_ITEM + itempart_num + MAX_AFFAIR_ITEM + MAX_HAND_ITEM + MAX_PLAYER_ITEM_RESERVED)
-#define		MAX_ITEM_MAGICLEVEL			8
+//#define		MAX_ITEM_MAGICLEVEL			8
 #define		MAX_NPC_LEVEL						120
 #define		MAX_NPC_SERIES						  6 
 #define		TIME_RIDE 5000 //edit by phong kieu thoi gian len xuong ngua
@@ -358,7 +427,7 @@ enum ITEM_POSITION
 #define		MAX_RESIST		95
 #define		MAX_HIT_PERCENT	95
 #define		MIN_HIT_PERCENT	5
-#define		MAX_NPC_RECORDER_STATE 18 //fix by Fong KiÒu mÆc ®Þnh l?8
+#define		MAX_NPC_RECORDER_STATE 18 //fix by Fong KiÒu mÆc ®Þnh lµ 8
 #define		PLAYER_MOVE_DO_NOT_MANAGE_DISTANCE	5
 #define	NORMAL_NPC_PART_NO		5	
 #ifndef _SERVER
@@ -414,11 +483,11 @@ enum OBJ_GENDER
 
 enum NPCCAMP
 {
-	camp_begin,	// 0 ch?tr¾ng
+	camp_begin,	// 0 ch÷ tr¾ng
 	camp_justice, // 1 ch¸nh ph¸i
-	camp_evil, // 2 t?ph¸i
+	camp_evil, // 2 tµ ph¸i
 	camp_balance, // 3 trung lËp
-	camp_free,	// 4 mµu ®á s¸t th?
+	camp_free,	// 4 mµu ®á s¸t thñ
 	camp_animal, // 5 mµu hång admin
 	camp_event,		// 6 mµu hång admin
 	camp_audience, // 7
@@ -513,9 +582,11 @@ struct KUiNpcSpr
     unsigned short         MaxFrame; 
 };
 
+#pragma pack(push, 1)  // fix loi post item sai opt
+
 typedef struct
 {
-	short		m_nID;				// ÎïÆ·µÄID
+	int		m_nID;				// ÎïÆ·µÄID
 	BYTE	m_btGenre;			// ÎïÆ·µÄÀàÐÍ
 	short		m_btDetail;			// ÎïÆ·µÄÀà±ð
 	short		m_btParticur;		// ÎïÆ·µÄÏêÏ¸Àà±ð
@@ -537,6 +608,8 @@ typedef struct
 	int		m_Lock;
 	int		m_HLock;
 	int		m_nDurability;
+	int		m_nNature; //goldequip
+	int		m_nMaxOptMultiply;
 } ChatItem;
 
 struct KOneMsgInfo
@@ -553,12 +626,13 @@ struct KOneMsgInfo
 	int			 nLen;					//ÐÅÏ¢³¤¶È
 	char		 Msg[1];				//ÐÅÏ¢µÄÄÚÈÝ
 };
+#pragma pack(pop) // fix loi post item sai opt
 
 enum ITEMKIND
 {
 	normal_item = 0,	//®å tr¾ng
 	green_item,				//®å xanh
-	broken_item,			//®å b?háng
+	broken_item,			//®å bÞ háng
 	gold_item ,					//hoang kim
 	purple_item,				//do tim
 	platinum_item,			//bach kim
@@ -588,13 +662,13 @@ enum EQUIPNATURE
 
 enum EQUIPLEVEL
 {
-	equip_normal = 0,		
-	equip_magic,			
-	equip_rare,				
-	equip_unique,			
-	equip_set,				
-	equip_number,	
-	equip_gold,				
+	equip_normal = 0,
+	equip_magic,
+	equip_damage,
+	equip_violet,
+	equip_gold,
+	equip_platina,
+	equip_number,
 };
 
 enum EQUIPDETAILTYPE
@@ -612,6 +686,10 @@ enum EQUIPDETAILTYPE
 	equip_horse,
 	equip_mask,	// mat na	// 11
 	equip_mantle, //#phi phong // 12
+	equip_signet, //13
+	equip_shipin, //14
+	equip_hoods, //15
+	equip_cloak, //16
 	equip_detailnum, 
 };
 
@@ -645,16 +723,18 @@ struct KUiRegion
 
 enum UIOBJECT_CONTAINER
 {
-	UOC_IN_HAND	= 1,		//ÊÖÖÐÄÃ×Å
+	UOC_IN_HAND = 1,		//ÊÖÖÐÄA×Å
 	UOC_GAMESPACE,			//ÓÎÏ·´°¿Ú
-	UOC_IMMEDIA_ITEM,		//¿ì½ÝÎïÆ·
-	UOC_IMMEDIA_SKILL,		//¿ì½ÝÎä¹¦0->ÓÒ¼üÎä¹¦£¬1,2...-> F1,F2...¿ì½ÝÎä¹¦
+	UOC_IMMEDIA_ITEM,		//¿´½UÎïÆ·
+	UOC_IMMEDIA_SKILL,		//¿´½UÎä¹¦0->Ó?¼üÎä¹¦£¬1,2...-> F1,F2...¿´½UÎä¹¦
 	UOC_ITEM_TAKE_WITH,		//ËæÉíÐ¯´ø
 	UOC_SKILL_TAKE_WITH,
-	UOC_TO_BE_TRADE,		//Òª±»ÂòÂô£¬ÂòÂôÃæ°åÉÏ
-	UOC_OTHER_TO_BE_TRADE,	//ÂòÂôÃæ°åÉÏ£¬±ðÈËÒªÂô¸ø×Ô¼ºµÄ£¬
+	UOC_TO_BE_TRADE,		//?ª±»Â?Âô£¬Â?ÂôAæ°åÉÏ
+	UOC_OTHER_TO_BE_TRADE,	//Â?ÂôAæ°åÉÏ£¬±dÈË?ªÂô¸ø×Ô¼ºµÄ£¬
+	UOC_TO_BE_GAMBLE,		//
+	UOC_OTHER_TO_BE_GAMBLE,	//
 	UOC_EQUIPTMENT,			//ÉíÉÏ×°±¸
-	UOC_NPC_SHOP,			//npcÂòÂô³¡Ëù
+	UOC_NPC_SHOP,			//npcÂ?Âô³¡Ëù
 	UOC_MARKET,
 	UOC_STORE_BOX,			//´¢ÎïÏä
 	UOC_EX_BOX1,
@@ -662,7 +742,7 @@ enum UIOBJECT_CONTAINER
 	UOC_EX_BOX3,
 	UOC_ITEM_EX,
 	UOC_SKILL_LIST,			//ÁÐ³öÈ«²¿ÓµÓÐ¼¼ÄÜµÄ´°¿Ú£¬¼¼ÄÜ´°¿Ú
-	UOC_SKILL_TREE,			//×ó¡¢ÓÒ¿ÉÓÃ¼¼ÄÜÊ÷
+	UOC_SKILL_TREE,			//×ó¡¢Ó?¿ÉÓA¼¼ÄÜÊ÷
 	UOC_ITEM_GIVE,
 	UOC_AFFAIR_ITEM,		// pos tra vat pham nhiem vu
 	UOC_TREMBLE_ITEM,		//Kham nam/nang cap trang bi xanh
@@ -672,6 +752,8 @@ enum UIOBJECT_CONTAINER
 	UOC_DISTILL_ITEM,		//Rut option trang bi
 	UOC_FORGE_ITEM,			//Che tao trang bi tim
 	UOC_ENCHASE_ITEM,		//Kham nam trang bi
+	UOC_GAMBLE_SELF,		//On the mutual gambling panel, you want to use it for gambling
+	UOC_GAMBLE_OTHER,		//On the mutual gambling panel, others use it for gambling
 };
 
 enum MONEYUNIT
@@ -696,6 +778,30 @@ enum UI_TRADE_OPER_DATA
 
 	UTOD_IS_OTHER_LOCKED,	
 
+};
+//----->Add by OTT
+enum UI_GAMBLE_OPER_DATA
+{
+	UGOD_IS_WILLING,
+	UGOD_IS_LOCKED, //Is it locked?
+	//Return: Returns the Boolean value of whether it is locked
+	UGOD_IS_GAMBLING, //Can it be waiting for gambling operation (whether gambling has been confirmed)
+	//Return: Returns whether it is waiting for trading operation (whether gambling has been confirmed)
+	UGOD_IS_OTHER_LOCKED, //Is the other party already locked?
+	//Return: Returns the Boolean value of whether the other party is already locked
+};
+//<-----Add End
+
+struct PLAYERTRADE
+{
+	char cName[32];
+	BOOL nTrade;
+	int nDest;
+	void Release() {
+		memset(cName, 0, sizeof(cName));
+		nTrade = FALSE;
+		nDest = 0;
+	};
 };
 
 struct KUiGiveBox           
@@ -825,6 +931,7 @@ enum SYS_MESSAGE_CONFIRM_TYPE
 	SMCT_DISCONNECT,		
 	SMCT_UI_TONG_JOIN_APPLY,
 	SMCT_UI_ASKASSEMBLE,	// Thong bao xac nhan kham trang bi xanh
+	SMCT_UI_GAMBLE,			//Agree or reject the gambling request,
 };
 
 struct KSystemMessage
@@ -876,6 +983,7 @@ struct KUiPlayerBaseInfo
 	int		nReBorn; // trung sinh
 	int		nPKValue; // pk
 	int		nMissionGroup;
+	int		nFirstAddFaction;
 };
 
 struct KUiItemShow
@@ -954,6 +1062,7 @@ struct KUiPlayerAttribute
 	int		nFuYuan; // phuc duyen
 	int		nReBorn; // trung sinh
 	int		nPKValue; // phuc duyen
+	BYTE	bMeridianLevel[MAX_MERIDIAN];
 };
 
 #define		RESIST_PLUS_SCALE		15		//Kh¸ng t¨ng thªm 75+
@@ -986,7 +1095,11 @@ enum UI_EQUIPMENT_POSITION
 	UIEP_FOOT = 9,		//½Å²È
 	UIEP_HORSE = 10,	//ÂíÆ¥
 	UIEP_MASK = 11,		// mat na
-	UIEP_FIFONG = 12 //#phi phong
+	UIEP_FIFONG = 12, //#phi phong
+	UIEP_SIGNET,
+	UIEP_SHIPIN,
+	UIEP_HOODS,
+	UIEP_CLOAK,
 };
 
 //==================================
@@ -1082,6 +1195,13 @@ struct KUiPlayerTeam
 	int				nCaptainPower;
 };
 
+struct KUiTargetDetailInfo
+{
+	char			sTargetName[32];
+	int				nLifePercent;
+	BYTE			Series;
+};
+
 //==================================
 //	Ä§·¨ÊôÐÔ
 //==================================
@@ -1091,6 +1211,9 @@ struct KMagicAttrib
 {
 	int				nAttribType;					//ÊôÐÔÀàÐÍ
 	int				nValue[3];						//ÊôÐÔ²ÎÊý
+//	int nMin; //luu gia tri min cua opt
+//	int nMax;  //luu gia tri max cua opt
+	//KMagicAttrib() { nValue[0] = nValue[1] = nValue[2] = nAttribType = nMin = nMax = 0; };
 	KMagicAttrib(){nValue[0] = nValue[1] = nValue[2] = nAttribType = 0;};
 };
 
@@ -1247,8 +1370,8 @@ enum NPCKIND
 	kind_player,				//ng­êi ch¬i
 	kind_partner,				//b¹n ®ång hµnh
 	kind_dialoger,				//®èi tho¹i
-	kind_bird,					//bay kh«ng thÊy s?dông
-	kind_mouse,				//chuét kh«ng thÊy s?dông
+	kind_bird,					//bay kh«ng thÊy sö dông
+	kind_mouse,				//chuét kh«ng thÊy sö dông
     kind_num				//tèi ®a
 };
 
@@ -1266,6 +1389,7 @@ enum	// Îï¼þÀàÐÍ
 	Obj_Kind_Trap,				// ÏÝÚå
 	Obj_Kind_Prop,				// Ð¡µÀ¾ß£¬¿ÉÖØÉú
 	Obj_Kind_Task,				// Obj nhiem vu
+	Obj_Kind_Obstacle,
 	Obj_Kind_Num,				// Îï¼þµÄÖÖÀàÊý
 };
 
@@ -1356,9 +1480,9 @@ struct KMissionRecord
 enum TONG_MEMBER_FIGURE
 {
 	enumTONG_FIGURE_MEMBER,				// thµnh viªn
-	enumTONG_FIGURE_MANAGER,			// ®­êng ch?
+	enumTONG_FIGURE_MANAGER,			// ®­êng chñ
 	enumTONG_FIGURE_DIRECTOR,			// tr­ëng l·o
-	enumTONG_FIGURE_MASTER,				// bang ch?
+	enumTONG_FIGURE_MASTER,				// bang chñ
 	enumTONG_FIGURE_LEAGUE,				//lien minh
 	enumTONG_FIGURE_NUM,
 };
@@ -1419,10 +1543,10 @@ struct KTongInfo
 	int   nFigure;              //´ýÉ¾³ý
 	//===========add by Fong KiÒu 12/12/2021==========
 	int		nStatusGuide; //t×nh tr¹ng bang héi
-	char  szWayEdit[32];			// tiªu ch?bang héi
+	char  szWayEdit[32];			// tiªu chÝ bang héi
 	char  szNextTargetEdit[32];			// môc tiªu hiÖn thêi bang héi
 	int		nExpGuide; //®iÓm kinh nghiÖm bang héi
-	int		nCityGuide; //thµnh th?chiÕm h÷u
+	int		nCityGuide; //thµnh thÞ chiÕm h÷u
 	int		nTongLevel; //®¼ng cÊp bang héi
 	char  szLeagueTName[32];		//tªn bang héi liªn minh
 };
@@ -1494,6 +1618,8 @@ struct KUiGameObjectWithName
 #define		defMAX_AUTO_FILTERL				40
 #define		defMAX_BUY_POTION				5
 #define		def_RETURN_FROM_PORTAL_STEP  5000
+#define		def_TASK_TIMEOUT  15000
+#define		def_MAX_IDLETIME  180000
 
 enum PickUpItem
 {
@@ -1536,7 +1662,7 @@ enum SELECT_FIGHT_OPTION
 };
 //End Fkauto
 
-#define MAX_ITEM_SPC								5		//max item trªn gi?hµng
+#define MAX_ITEM_SPC								5		//max item trªn giá hµng
 struct FKGioHang
 {
 	KUiObjAtContRegion	m_ListItemInfo[MAX_ITEM_SPC];
@@ -1552,4 +1678,98 @@ struct FKGioHang
 };
 
 //--------------------------end ----------------------
+
+
+
+struct KLockItem
+{
+	KLockItem() { Clear(); };
+	~KLockItem() { Clear(); };
+	short nState;
+	DWORD dwLockTime;
+	void Clear() {
+		nState = LOCK_STATE_NORMAL;
+		dwLockTime = 0;
+	};
+	BOOL IsLock() {
+		return (nState != LOCK_STATE_NORMAL);
+	};
+};
+
+struct SetMeridianData
+{
+	int WayProtected;
+	int WayEnhanced;
+	int Type;
+	int Level;
+};
+
+struct BauCuaData
+{
+	int nActionType;
+	int nBetType;		// 0: bau, 1: cua, 2: ca, 3: ga, 4: nai, 5: tom
+	int nMoney;		// so tien
+};
+
+
+enum class DiceFace {
+	DEER = 0,
+	GOURD,
+	ROOSTER,
+	FISH,
+	CRAB,
+	SHRIMP,
+	COUNT
+};
+
+enum baucua_actiontype
+{
+	BAUCUA_MAKE_HOST = 0,
+	BAUCUA_NO_HOST,
+	BAUCUA_DEPOSIT,
+	BAUCUA_WITHDRAW,
+	BAUCUA_BET,
+	BAUCUA_CANCEL_BET,
+	BAUCUA_GET_RESULT,
+	BAUCUA_GET_INFO,
+};
+
+enum baucua_resulttype
+{
+	BAUCUA_RESULT_DEPOSIT = 0,	// deposit result	
+	BAUCUA_RESULT_WITHDRAW,		// withdraw result
+	BAUCUA_RESULT_BET,			// bet result
+	BAUCUA_RESULT_CANCEL_BET,	// cancel bet result
+	BAUCUA_RESULT_ROUND_RESULT,	// get result
+	BAUCUA_RESULT_INFO,			// get info result
+};
+
+
+
+struct BauCuaStatus {
+	int playerDeposit;
+	std::string hostId;
+	int hostDeposit;
+	std::map<DiceFace, int> lastRoundBets; // last round total bets each dice face
+	std::map<DiceFace, int> currentBets; // this round total bets each dice face
+	std::map<DiceFace, int> playerCurrentBet; // this round player bets each dice face
+	int roundId;
+	std::string commitmentHash;
+	int remainingSeconds;
+	std::vector<DiceFace> lastDiceResult;
+};
+
+struct BauCuaStatusSend {
+	int playerDeposit;
+	char hostId[32];
+	int hostDeposit;
+	int lastRoundBets[6];
+	int currentBets[6];
+	int playerCurrentBet[6]; // this round player bets
+	int lastDiceResult[3];
+	int roundId;
+	char commitmentHash[32];
+	int remainingSeconds;
+};
+
 #endif

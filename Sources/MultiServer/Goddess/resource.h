@@ -16,7 +16,7 @@
 #define IDC_BUTTON1                     1010
 #define IDC_RESTART                     1010
 #define IDC_OUTPUT                      1011
-
+#define IDC_BTN_MERGE           		1012
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

@@ -14,11 +14,11 @@
 #define RGB_555 			0x7fff
 #define RGB_565 			0xffff
 
-#define	WND_INIT_WIDTH		800
-#define	WND_INIT_HEIGHT		600
+extern int WND_INIT_WIDTH;
+extern int WND_INIT_HEIGHT;
 
 #include "KMemBase.h"
-
+ENGINE_API void SetEngineResolution(int width, int height);
 //---------------------------------------------------------------------------
 class ENGINE_API KDirectDraw
 {

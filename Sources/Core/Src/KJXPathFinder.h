@@ -321,6 +321,6 @@ private:
 	FindPathNode	m_Stand;
 };
 
-extern KJXPathFinder g_JXPathFinder;
+//extern KJXPathFinder g_JXPathFinder;
 #endif
 #endif // __JX_PATH_FINDER_H__

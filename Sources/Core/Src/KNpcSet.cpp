@@ -24,6 +24,15 @@ KNpcSet	NpcSet;
 KNpcSet::KNpcSet()
 {
 	m_dwIDCreator = 1000;
+#ifdef _SERVER
+	m_nPKDamageRate = 0;
+	m_nLevelDistance = 0;
+	m_nNpcSpecialDamageRate = 0;
+	m_nKillerPKFactionAddPKValue = 0;
+	m_nFactionPKFactionAddPKValue = 0;
+	m_nEnmityAddPKValue = 0;
+	m_nBeKilledAddPKValue = 0;
+#endif
 }
 
 void KNpcSet::Init()
@@ -323,6 +332,7 @@ int		KNpcSet::AddClientNpc(int nTemplateID, int nRegionX, int nRegionY, int nMps
 	if (nRegion < 0)
 		return 0;
 	int nSeries = 0;
+
 	nNpcNo = this->AddNpcSet1(nNpcSettingIdxInfo, nSeries, 0, nRegion, nMapX, nMapY, nOffX, nOffY);//#can kiem tra
 	if (nNpcNo > 0)
 	{
@@ -347,24 +357,37 @@ int KNpcSet::AddNpcSet3(int nSubWorld, void* pNpcInfo)	//Hµm add npc ë server
 	int nMpsY = pKSNpcInfo->nPositionY;
 	int Map = SubWorld[nSubWorld].m_SubWorldID;
 	int	nNpcSettingIdxInfo = MAKELONG(pKSNpcInfo->nLevel, pKSNpcInfo->nTemplateID);
-	if(Map == 53 || Map == 20 || Map == 99 || Map == 101 || Map == 100 || Map == 121 || Map == 153 || Map == 174 || Map == 54 || Map == 175)
+
+	if (Map == 1 || Map == 2 || Map == 11 || Map == 13 || Map == 20 || Map == 25 || Map == 37 || Map == 45 || Map == 46 || Map == 47 || Map == 48 || Map == 50 || Map == 53
+		|| Map == 54 || Map == 59 || Map == 65 || Map == 73 || Map == 78 || Map == 80 || Map == 81 || Map == 82 || Map == 99 || Map == 100 || Map == 101 || Map == 103
+		|| Map == 111 || Map == 121 || Map == 131 || Map == 140 || Map == 153 || Map == 154 || Map == 162 || Map == 174 || Map == 176 || Map == 183 || Map == 190 || Map == 195)
 		nNpcSettingIdxInfo = MAKELONG(10, pKSNpcInfo->nTemplateID);
-	if (Map == 21 || Map == 70 || Map == 2 || Map == 1 || Map == 78|| Map == 11|| Map == 162 || Map == 37 || Map == 80 || Map == 76)
+
+	if (Map == 3 || Map == 7 || Map == 14 || Map == 19 || Map == 43 || Map == 44 || Map == 70 || Map == 71 || Map == 83 || Map == 115 || Map == 179)
 		nNpcSettingIdxInfo = MAKELONG(20, pKSNpcInfo->nTemplateID);
-	if (Map == 90 || Map == 92 )
+
+	if (Map == 4 || Map == 8 || Map == 22 || Map == 74 || Map == 77 || Map == 90 || Map == 92 || Map == 136 || Map == 141 || Map == 145 || Map == 146 || Map == 170 || Map == 193)
 		nNpcSettingIdxInfo = MAKELONG(30, pKSNpcInfo->nTemplateID);
-	if (Map == 41 || Map == 122)
+
+	if (Map == 5 || Map == 6 || Map == 21 || Map == 23 || Map == 28 || Map == 41 || Map == 91 || Map == 113 || Map == 122 || Map == 135 || Map == 167 || Map == 168 || Map == 171 || Map == 172 || Map == 173 || Map == 180)
 		nNpcSettingIdxInfo = MAKELONG(40, pKSNpcInfo->nTemplateID);
-	if (Map == 125 || Map == 163)
+
+	if (Map == 12 || Map == 24 || Map == 38 || Map == 39 || Map == 40 || Map == 42 || Map == 66 || Map == 67 || Map == 116 || Map == 125 || Map == 132 || Map == 147 || Map == 163 || Map == 164 || Map == 165 || Map == 178 || Map == 182 || Map == 194)
 		nNpcSettingIdxInfo = MAKELONG(50, pKSNpcInfo->nTemplateID);
-	if (Map == 9 || Map == 56)
+
+	if (Map == 26 || Map == 51 || Map == 52 || Map == 56 || Map == 68 || Map == 79 || Map == 114 || Map == 117 || Map == 118 || Map == 119 || Map == 126 || Map == 127 || Map == 128 || Map == 148 || Map == 158 || Map == 166 || Map == 196)
 		nNpcSettingIdxInfo = MAKELONG(60, pKSNpcInfo->nTemplateID);
-	if (Map == 319 || Map == 123)
+
+	if (Map == 9 || Map == 27 || Map == 55 || Map == 69 || Map == 72 || Map == 76 || Map == 94 || Map == 120 || Map == 123 || Map == 129 || Map == 130 || Map == 142 || Map == 149 || Map == 169 || Map == 206 || Map == 319)
 		nNpcSettingIdxInfo = MAKELONG(70, pKSNpcInfo->nTemplateID);
-	if (Map == 320 || Map == 224)
+
+	if (Map == 10 || Map == 143 || Map == 150 || Map == 151 || Map == 181 || Map == 198 || Map == 199 || Map == 200 || Map == 201 || Map == 202 || Map == 203 || Map == 204 || Map == 205 || Map == 207 || Map == 224 || Map == 320 || Map == 919 || Map == 920)
 		nNpcSettingIdxInfo = MAKELONG(80, pKSNpcInfo->nTemplateID);
-	if (Map == 225 || Map == 226 || Map == 227 || Map == 331 || Map == 332 || Map == 75 || Map == 93 || Map == 336 || Map == 340)
+
+	if (Map == 75 || Map == 93 || Map == 124 || Map == 144 || Map == 152 || Map == 225 || Map == 226 || Map == 227 || Map == 321 || Map == 322
+		|| Map == 340 || Map == 341 || Map == 342 || Map == 875 || Map == 917 || Map == 918 || Map == 921 || Map == 922 || Map == 923 || Map == 924 || Map == 336)
 		nNpcSettingIdxInfo = MAKELONG(90, pKSNpcInfo->nTemplateID);
+
 	//	---------------------Gen Serial cho qu¸i theo config ë MapList.txt------------------------------------	
 	pKSNpcInfo->cSeries = KNpcTemplate::GenNpcSeries(SubWorld[nSubWorld].m_NpcSeriesAuto, 
 	SubWorld[nSubWorld].m_NpcSeriesMetal, SubWorld[nSubWorld].m_NpcSeriesWood, 
@@ -394,23 +417,27 @@ int KNpcSet::AddNpcSet3(int nSubWorld, void* pNpcInfo)	//Hµm add npc ë server
 		if (pKSNpcInfo->szScript[0])
 		{
 			if (pKSNpcInfo->szScript[0] == '.')
+			{
 				g_StrCpyLen(Npc[nRet].ActionScript, &pKSNpcInfo->szScript[1], sizeof(Npc[nRet].ActionScript));
+			}
 			else
+			{
 				g_StrCpyLen(Npc[nRet].ActionScript, pKSNpcInfo->szScript, sizeof(Npc[nRet].ActionScript));
-		
+			}
+
 			g_StrLower(Npc[nRet].ActionScript);
 			Npc[nRet].m_ActionScriptID = g_FileName2Id(Npc[nRet].ActionScript);
-			//g_DebugLog("[Script]Npc %s,%d", Npc[nRet].ActionScript, Npc[nRet].m_ActionScriptID);
+		
 		}
 		else
 		{
 			Npc[nRet].m_ActionScriptID = 0;
 		}
-		if (Npc[nRet].m_ActionScriptID == 0)
+
+		if (Npc[nRet].m_Kind != kind_player && Npc[nRet].m_SubWorldIndex >= 0 && Npc[nRet].m_RegionIndex >= 0)
 		{
-			g_GameSetting.GetString("NPC", "OnDeathScript", "", Npc[nRet].ActionScript, sizeof(Npc[nRet].ActionScript));
-			g_StrLower(Npc[nRet].ActionScript);
-			Npc[nRet].m_ActionScriptID = g_FileName2Id(Npc[nRet].ActionScript);
+			char CreateScript[] = "\\script\\startgame\\npccreate.lua";
+			Npc[nRet].ExecuteScript(CreateScript, "OnCreate", nRet);
 		}
 	}
 	return nRet;
@@ -462,17 +489,20 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 
 
 #ifdef _SERVER
-	
-	if(SubWorld[nSubWorld].szNormalDropRate[0])	//edit by phong kieu load DropRate quai thuong
+
+	if (SubWorld[nSubWorld].szNormalDropRate[0])	//edit by phong kieu load DropRate quai thuong
 	{
-	g_GameSetting.GetString("NPC", "NormalDropRate", "", Npc[i].DropRateScript, sizeof(Npc[i].DropRateScript));
-	g_StrLower(Npc[i].DropRateScript);
-	Npc[i].m_DropRateScriptID = g_FileName2Id(Npc[i].DropRateScript);
-	//	KNpcTemplate::GenNpcDropRate(&Npc[i], SubWorld[nSubWorld].szNormalDropRate);
+		g_GameSetting.GetString("NPC", "NormalDropRate", "", Npc[i].DropRateScript, sizeof(Npc[i].DropRateScript));
+		g_StrLower(Npc[i].DropRateScript);
+		Npc[i].m_DropRateScriptID = g_FileName2Id(Npc[i].DropRateScript);
+
+
+		//	KNpcTemplate::GenNpcDropRate(&Npc[i], SubWorld[nSubWorld].szNormalDropRate);
 	}
-	
+
+
 #endif
-	
+
 #ifndef _SERVER
 	if (nRegion >= 0 && nRegion < 9)
 		Npc[i].m_dwRegionID = SubWorld[nSubWorld].m_Region[nRegion].m_RegionID;
@@ -496,7 +526,6 @@ int KNpcSet::AddNpcSet1(int nNpcSettingIdxInfo, int nSeries, int nSubWorld, int 
 #ifndef _SERVER
 	Npc[i].m_dwRegionID = SubWorld[nSubWorld].m_Region[nRegion].m_RegionID;
 #endif
-
 
 	return i;
 }
@@ -558,9 +587,9 @@ void KNpcSet::RemoveAll()
 	while(nIdx)
 	{
 		nIdx1 = m_UseIdx.GetNext(nIdx);
-		Npc[nIdx].ClearNpcState();
 		Npc[nIdx].m_SkillList.Clear();
 		Npc[nIdx].Remove();
+		Npc[nIdx].ClearNpcState();
 		m_FreeIdx.Insert(nIdx);
 		m_UseIdx.Remove(nIdx);
 		nIdx = nIdx1;
@@ -724,7 +753,8 @@ void KNpcSet::CheckBalance()
 				if (Npc[nIdx].m_RegionIndex >= 0)
 				{
 					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
-					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+                    if (Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive)
+    					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
 				}
 				Remove(nIdx);
 			}
@@ -757,7 +787,7 @@ void KNpcSet::CheckBalance()
 			
 			m_RequestUseIdx.Remove(nIdx);
 			m_RequestFreeIdx.Insert(nIdx);
-			g_DebugLog("[Request]Remove %d from %d on %d timeout", dwID, nIdx, SubWorld[0].m_dwCurrentTime);
+		//	g_DebugLog("[Request]Remove %d from %d on %d timeout", dwID, nIdx, SubWorld[0].m_dwCurrentTime);
 		}
 		nIdx = nTmpIdx;
 	}
@@ -1083,64 +1113,77 @@ void	KNpcSet::SetShowManaFlag(BOOL bFlag)
 #endif
 
 #ifndef _SERVER
-int KNpcSet::AutoGetNpcNear(int nX1, int nY1, int nRelation, int nRange, int ArrayLag[], int nSize, BOOL m_bFightCheckBox, BOOL m_bFightSelfDef)
+int KNpcSet::AutoGetNpcNear(int nX1, int nY1, int nRelation, int nRange,
+	int ArrayLag[], int nSize,
+	BOOL m_bFightCheckBox, BOOL m_bFightSelfDef)
 {
-	int nRangeMin = nRange;
-	int	nRangePlayer = 0;
-	int nIndexReturn = 0;
-
 	int nIndexPlayer = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+
+	// Track best candidates
+	int bestPlayerIdx = 0;
+	int bestPlayerDist = nRange + 1;   // anything beyond nRange is invalid
+
+	int bestNormalIdx = 0;
+	int bestNormalDist = nRange + 1;
+
+	// Walk through all valid NPC indices
 	int nIdx = 0;
-	while (1)
+	while ((nIdx = m_UseIdx.GetNext(nIdx)) != 0)
 	{
-		nIdx = m_UseIdx.GetNext(nIdx);
-		if (nIdx == 0)
-			break;
-		if (Npc[nIdx].m_RegionIndex < 0)
-			continue;
-		if (!Npc[nIdx].IsAlive())
-			continue;
+		auto& npc = Npc[nIdx];
 
-		int nX2 = 0;
-		int nY2 = 0;
-		Npc[nIdx].GetMpsPos(&nX2, &nY2);
-		int nRangeNpc = 0;
-		nRangeNpc = GetDistanceMps(nX1, nY1, nX2, nY2);
-		if (nRangeNpc > nRange)
+		// Skip out-of-region, dead, or lag-list
+		if (npc.m_RegionIndex < 0 || !npc.IsAlive())
 			continue;
-		
 		bool bLag = false;
-		int i = 0;
-		for (i = 0; i < nSize; i++)
-		{
-			if (ArrayLag[i] == nIdx)
-			{
-				bLag = true;
-				break;
-			}
-		}
-		if (bLag == true)
+		for (int i = 0; i < nSize; i++)
+			if (ArrayLag[i] == nIdx) { bLag = true; break; }
+		if (bLag)
 			continue;
 
-		if (NpcSet.GetRelation(nIdx, nIndexPlayer) & nRelation) 
+		// Check map-distance filter
+		int nX2, nY2;
+		npc.GetMpsPos(&nX2, &nY2);
+		int distMap = GetDistanceMps(nX1, nY1, nX2, nY2);
+		if (distMap > nRange)
+			continue;
+
+		// Relation check
+		if ((NpcSet.GetRelation(nIdx, nIndexPlayer) & nRelation) == 0)
+			continue;
+
+		// Compute real “game” distance from player
+		int distPlayer = GetDistance(nIdx, nIndexPlayer);
+
+		// 1) If we're allowed to fight other players, track the *closest* one
+		if (m_bFightSelfDef && npc.m_Kind == kind_player)
 		{
-			nRangePlayer = GetDistance(nIdx, nIndexPlayer);
-			if (nRangePlayer <= nRangeMin)
+			if (distPlayer < bestPlayerDist)
 			{
-				if(m_bFightCheckBox && Npc[nIdx].m_Kind == kind_normal)
-				{
-					nRangeMin = nRangePlayer;
-					nIndexReturn = nIdx;
-				}
-				if(m_bFightSelfDef && Npc[nIdx].m_Kind == kind_player) 
-				{
-					nRangeMin = nRangePlayer;
-					nIndexReturn = nIdx;
-				}
+				bestPlayerDist = distPlayer;
+				bestPlayerIdx = nIdx;
+			}
+			// even if we found one “close,” we keep looking for someone even closer
+			continue;
+		}
+
+		// 2) Otherwise (or as a fallback), if check-box is on, track the nearest normal NPC
+		if (m_bFightCheckBox && npc.m_Kind == kind_normal)
+		{
+			if (distPlayer < bestNormalDist)
+			{
+				bestNormalDist = distPlayer;
+				bestNormalIdx = nIdx;
 			}
 		}
 	}
-	return nIndexReturn;	
+
+	// Prefer returning a player if we found any; else return the best normal; else 0
+	if (bestPlayerIdx != 0)
+		return bestPlayerIdx;
+	if (bestNormalIdx != 0)
+		return bestNormalIdx;
+	return 0;
 }
 #endif
 
@@ -1314,7 +1357,7 @@ BOOL KNpcSet::InsertNpcRequest(DWORD dwID)
 	m_RequestNpc[nIndex].dwRequestTime = SubWorld[0].m_dwCurrentTime;
 	m_RequestFreeIdx.Remove(nIndex);
 	m_RequestUseIdx.Insert(nIndex);
-	g_DebugLog("[Request]Insert %d at %d on %d", dwID, nIndex, SubWorld[0].m_dwCurrentTime);
+	//g_DebugLog("[Request]Insert %d at %d on %d", dwID, nIndex, SubWorld[0].m_dwCurrentTime);
 
 	return TRUE;
 }
@@ -1334,7 +1377,7 @@ void KNpcSet::RemoveNpcRequest(DWORD dwID)
 
 	m_RequestUseIdx.Remove(nIndex);
 	m_RequestFreeIdx.Insert(nIndex);
-	g_DebugLog("[Request]Remove %d from %d on %d", dwID, nIndex, SubWorld[0].m_dwCurrentTime);
+	//g_DebugLog("[Request]Remove %d from %d on %d", dwID, nIndex, SubWorld[0].m_dwCurrentTime);
 }
 
 int KNpcSet::GetRequestIndex(DWORD dwID)
@@ -1375,6 +1418,8 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 	{	
 		if (!Npc[nId1].IsAlive() || !Npc[nId2].IsAlive())
 			return relation_none;
+	//	if (Npc[nId1].m_Kind == kind_player && Npc[nId2].m_Kind == kind_player && Npc[nId1].m_nPKFlag == enumPKMurder)
+		//	return relation_none;
 
 		NPC_RELATION nRelation =  (NPC_RELATION)m_RelationTable
 			[Npc[nId1].m_Kind]
@@ -1416,6 +1461,12 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 			)
 			return relation_enemy;
 
+		if (Npc[nId2].m_Kind == kind_player  && Npc[nId2].m_nPKFlag == enumPKMurder &&
+				Npc[nId1].m_FightMode && Npc[nId2].m_FightMode && 
+				Npc[nId2].m_CurrentCamp != camp_begin && 
+				Npc[nId1].m_CurrentCamp != camp_begin &&
+				Npc[nId2].m_CurrentCamp != Npc[nId1].m_CurrentCamp)
+				return relation_enemy;
 		if ((Npc[nId2].m_Kind == kind_player && Player[CLIENT_PLAYER_INDEX].m_cPK.GetNormalPKState() == enumPKMurder) || 
 				(Npc[nId2].m_Kind == kind_player && 
 				Npc[nId2].m_nPKFlag == enumPKMurder && 
@@ -1511,7 +1562,12 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 		if (Player[CLIENT_PLAYER_INDEX].m_cPK.GetEnmityPKState() == enumPK_ENMITY_STATE_PKING && 
 			Player[CLIENT_PLAYER_INDEX].m_cPK.GetEnmityPKAimNpcID() == Npc[nId1].m_dwID)
 			return relation_enemy;
-
+		if (Npc[nId1].m_Kind == kind_player  && Npc[nId1].m_nPKFlag == enumPKMurder &&
+				Npc[nId1].m_FightMode && Npc[nId2].m_FightMode && 
+				Npc[nId2].m_CurrentCamp != camp_begin && 
+				Npc[nId1].m_CurrentCamp != camp_begin &&
+				Npc[nId2].m_CurrentCamp != Npc[nId1].m_CurrentCamp)
+				return relation_enemy;
 		if ((Npc[nId1].m_Kind == kind_player && Player[CLIENT_PLAYER_INDEX].m_cPK.GetNormalPKState() == enumPKMurder) || 
 				(Npc[nId1].m_Kind == kind_player && 
 				Npc[nId1].m_nPKFlag == enumPKMurder && 
@@ -1623,7 +1679,12 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 			Player[Npc[nId1].m_nPlayerIdx].m_cPK.GetEnmityPKAim() == Npc[nId2].m_nPlayerIdx
 			)
 			return relation_enemy;
-
+		if ((Player[Npc[nId1].m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder || Player[Npc[nId2].m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder) &&
+				Npc[nId1].m_FightMode && Npc[nId2].m_FightMode && 
+				Npc[nId2].m_CurrentCamp != camp_begin && 
+				Npc[nId1].m_CurrentCamp != camp_begin &&
+				Npc[nId2].m_CurrentCamp != Npc[nId1].m_CurrentCamp)
+				return relation_enemy;
 		if ((Npc[nId2].m_Kind == kind_player && Player[Npc[nId1].m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder) ||
 				(Npc[nId2].m_Kind == kind_player && 
 				Player[Npc[nId1].m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder && 

@@ -400,6 +400,13 @@ void CDBBackup::Backup()
 	TStatData aStatData;//实时备份后产生的游戏统计数据
 	memset(&aStatData, 0, sizeof(TStatData));
 
+	// Open playerlist.txt for writing
+	char aPlayerListPath[MAX_PATH] = { 0 };
+	getcwd(aPlayerListPath, MAX_PATH);
+	strcat(aPlayerListPath, "\\playerlist.txt");
+	fstream aPlayerListFile(aPlayerListPath, ios::out);
+	aPlayerListFile << "szName\tcaccname\tifightlevel\tfightexp" << endl;
+
 	ZCursor *cursor = RunTable->first();
 	aLogFile<<"RunTable cursor Opened. Backup begin."<<endl;
 	while(cursor)
@@ -411,6 +418,12 @@ void CDBBackup::Backup()
 
 		TRoleList* tmpData;
 		TRoleData* pRoleData = (TRoleData*)cursor->data;
+
+		// Write player info to playerlist.txt
+		aPlayerListFile << pRoleData->BaseInfo.szName << "\t"
+			<< pRoleData->BaseInfo.caccname << "\t"
+			<< pRoleData->BaseInfo.ifightlevel << "\t"
+			<< pRoleData->BaseInfo.fightexp << endl;
 
 		//数据库记录统计（维护查看用）==========Add by Fellow,2003.08.26
 		char aDBSSect[32] = {0};
@@ -536,6 +549,7 @@ void CDBBackup::Backup()
 		
 		if(!RunTable->next(cursor))break;
 	}	
+	aPlayerListFile.close();
 	DBDump.Close();		//关闭备份数据库
 	aLogFile<<"DB Dump Finished."<<endl;
 	aLogFile<<"RunTable cursor closed."<<endl;

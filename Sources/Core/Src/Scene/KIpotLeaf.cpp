@@ -138,7 +138,7 @@ void KIpotLeaf_PaintNoneObjectLayer(KIpotLeaf* pLeaf, RECT* pRepresentArea, int 
 void KIpotBuildinObj::PaintABuildinObject(RECT* pRepresentArea)
 {
 	KRUImage4	Image;
-	Image.Color.Color_dw = 0;
+	//Image.Color.Color_dw = 0;
 	Image.nType = ISI_T_SPR;
 	Image.nFrame = pBio->nFrame;
 	Image.nISPosition = nISPosition;

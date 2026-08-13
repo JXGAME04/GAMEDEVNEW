@@ -21,10 +21,12 @@ KItemGenerator::KItemGenerator()
 KItemGenerator::~KItemGenerator()
 {
 }
-
+/**********************************************************************************
+Function: Data initialization. Read data from tab file
+******************************************************************************/
 BOOL KItemGenerator::Init()
 {
-	if (!m_BPTLib.Init())		// 此调用从若干的tab file中载入所有的初始属性
+	if (!m_BPTLib.Init())		//This call loads all initial properties from several tab files.
 		return FALSE;
 
 	for (int i = equip_meleeweapon; i < equip_detailnum - equip_meleeweapon; i++)
@@ -69,6 +71,18 @@ BOOL KItemGenerator::Init()
 			break;
 		case equip_mantle: // phi phong
 			m_EquipNumOfEntries[i] = m_BPTLib.GetMantleRecordNumber();
+			break;
+		case equip_signet:
+			m_EquipNumOfEntries[i] = m_BPTLib.GetSignetRecordNumber();
+			break;
+		case equip_shipin:
+			m_EquipNumOfEntries[i] = m_BPTLib.GetShipinRecordNumber();
+			break;
+		case equip_hoods:
+			m_EquipNumOfEntries[i] = m_BPTLib.GetHoodsRecordNumber();
+			break;
+		case equip_cloak:
+			m_EquipNumOfEntries[i] = m_BPTLib.GetCloakRecordNumber();
 			break;
 		}
 	}
@@ -184,6 +198,18 @@ BOOL KItemGenerator::Get_SizeItem(IN int nItemGenre, IN int nDetailType, IN int 
 					case equip_mantle:
 						pEqu = m_BPTLib.GetMantleRecord(i);
 						break;
+					case equip_signet:
+						pEqu = m_BPTLib.GetSignetRecord(i);
+						break;
+					case equip_shipin:
+						pEqu = m_BPTLib.GetShipinRecord(i);
+						break;
+					case equip_hoods:
+						pEqu = m_BPTLib.GetHoodsRecord(i);
+						break;
+					case equip_cloak:
+						pEqu = m_BPTLib.GetCloakRecord(i);
+						break;
 					default:
 						break;
 				}
@@ -266,20 +292,24 @@ BOOL KItemGenerator::Gen_Equipment(IN int nDetailType,
 #ifdef _SERVER	// 服务器版本
 	pItem->m_GeneratorParam.uRandomSeed = g_GetRandomSeed();
 	if (pnaryMALevel)
-		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * 6);
+		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICATTRIB);
 	else
-		ZeroMemory(pItem->m_GeneratorParam.nGeneratorLevel, sizeof(int) * 6);
+		ZeroMemory(pItem->m_GeneratorParam.nGeneratorLevel, sizeof(int) * MAX_ITEM_MAGICATTRIB);
 	pItem->m_GeneratorParam.nVersion = g_SubWorldSet.GetGameVersion();
 	pItem->m_GeneratorParam.nLuck = nLucky;
 #else
 	pItem->m_GeneratorParam.nLuck = nLucky;//edit by phong kieu fix khong get dc nluck t筰 client d蒼 n sai option  xanh chatitem
 	g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
 	if (pnaryMALevel)
-		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * 6);
+		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICATTRIB);
 #endif
 	int nGameVersion = pItem->m_GeneratorParam.nVersion;
 
-	const int i = nParticularType * 10 + nLevel - 1;
+	int i = 0;
+	if (nDetailType > equip_horse)
+		i = nParticularType;
+	else
+		i = nParticularType * 10 + nLevel - 1;
 	const KBASICPROP_EQUIPMENT* pEqu = NULL;
 	switch(nDetailType)
 	{
@@ -323,6 +353,7 @@ BOOL KItemGenerator::Gen_Equipment(IN int nDetailType,
 			pEqu = m_BPTLib.GetMantleRecord(i);
 			break;
 		default:
+			return bEC;
 			break;
 	}
 	if (NULL == pEqu)
@@ -338,14 +369,14 @@ BOOL KItemGenerator::Gen_Equipment(IN int nDetailType,
 	{
 		if (NULL == pnaryMALevel)
 			return TRUE;
-		KItemNormalAttrib	sMA[6];	
+		KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
 		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion);
 		if (bEC)
 			pItem->SetAttrib_MA(sMA);
 	}
 	else
 	{
-		KItemNormalAttrib sMA[6];
+		KItemNormalAttrib sMA[MAX_ITEM_MAGICATTRIB];
 		ZeroMemory(sMA,sizeof(sMA));
 		KTabFile tabMagicAttribe;
 		tabMagicAttribe.Load("\\Settings\\Item\\magicattrib.txt");
@@ -360,7 +391,7 @@ BOOL KItemGenerator::Gen_Equipment(IN int nDetailType,
 		}
 
 		int nType,nMax,nMin;
-		for (int j = 0;j < 6;j++)
+		for (int j = 0;j < MAX_ITEM_MAGICATTRIB;j++)
 		{
 			if (pItem->m_GeneratorParam.nGeneratorLevel[j] > 0 && j < nPoint)
 			{
@@ -392,7 +423,7 @@ BOOL KItemGenerator::Gen_Equipment(IN int nDetailType,
 	
 	return bEC;
 }
-
+/*
 BOOL KItemGenerator::Gen_MagicAttrib(
 									 int nType, const int* pnaryMALevel, int nSeriesReq, int nLucky,
 									 KItemNormalAttrib* pnaryMA, int nGameVersion)
@@ -540,7 +571,298 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 //Exit0:
 	return nResult;
 }
+*/
+BOOL KItemGenerator::Gen_MagicAttrib(
+	int nType, const int* pnaryMALevel, int nSeriesReq, int nLucky,
+	KItemNormalAttrib* pnaryMA, int nGameVersion
+)
+{
+	int nResult = false;
 
+	KBPT_ClassMAIT  SelectedMagicTable;
+	// 记录每一个记录选中的魔法属性，主要是为了最后将使用标志清除
+	KMAGICATTRIB_TABFILE* pMagicAttrTable[MAX_ITEM_MAGICLEVEL] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+	int i = 0;
+
+	_ASSERT(pnaryMALevel);
+	_ASSERT(pnaryMA);
+
+	if (pnaryMALevel[MAX_ITEM_MAGICATTRIB])
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			if (pnaryMALevel[i] <= 0)
+				break;
+			pnaryMA[i].nAttribType = pnaryMALevel[i];
+			pnaryMA[i].nValue[0] = LOWORD(pnaryMALevel[i + MAX_ITEM_MAGICATTRIB]);
+			pnaryMA[i].nValue[1] = -1;
+			pnaryMA[i].nValue[2] = HIWORD(pnaryMALevel[i + MAX_ITEM_MAGICATTRIB]);
+		}
+	}
+	else
+	{
+		for (i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
+		{
+			// 如果发现级别为零，表示不需要继续处理了，退出
+			if (pnaryMALevel[i] == 0)
+				break;
+			SelectedMagicTable.Clear();
+
+			// 根据前缀后缀、物品类型、五行需求、需求级别将所有符合条件的魔法属性项取出来
+			const KBPT_ClassMAIT* pCMITItem = m_BPTLib.GetCMIT(
+				1 - (i & 1),        // 前缀后缀
+				nType,              // 物品类型
+				nSeriesReq,         // 五行需求 
+				pnaryMALevel[i]     // 需求级别
+			);
+
+			_ASSERT(pCMITItem);
+			if (!pCMITItem)
+				break;
+
+			// 遍历符合条件的魔法属性，根据
+			// 1.是否已经使用，
+			// 2.运气值
+			// 3.是否有相同的“属性调整类别”
+			// 取出相应的项放在SelectedMagicTable中
+			int nCMITItemCount = pCMITItem->GetCount();
+			int j = 0;
+			int nDecide = GetRandomNumber(0, 100 - 1) / (1 + nLucky * 20 / 100);
+
+			for (j = 0; j < nCMITItemCount; j++)
+			{
+				// 根据索引值，取出相应的项
+				int nMAIndex = pCMITItem->Get(j);
+				KMAGICATTRIB_TABFILE* pMAItem = (KMAGICATTRIB_TABFILE*)m_BPTLib.GetMARecord(nMAIndex);
+				if (!pMAItem)
+				{
+					_ASSERT(pMAItem);
+					continue;
+				}
+
+				// 如果已经使用，跳过取下一个
+				if (pMAItem->m_nUseFlag)
+					continue;
+
+				// 如果运气不足，取下一个
+				if ((pMAItem->m_DropRate[nType]) <= nDecide)
+					continue;
+
+				if (pMAItem->m_MagicAttrib.nPropKind == 135)
+				{
+					if (GetRandomNumber(0, 79) != 0)
+						continue;
+				}
+
+				if (pMAItem->m_MagicAttrib.nPropKind == 114)
+				{
+					if (GetRandomNumber(0, 15) != 0)
+						continue;
+				}
+
+				if (pMAItem->m_MagicAttrib.nPropKind == 115)
+				{
+					if (GetRandomNumber(0, 12) != 0)
+						continue;
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 136)
+				{
+					if (GetRandomNumber(0, 19) != 0)
+						continue;
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 137)
+				{
+					if (GetRandomNumber(0, 14) != 0)
+						continue;
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 106)
+				{
+					if (GetRandomNumber(0, 14) != 0)
+						continue;
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 104) // phong thu vat ly				
+				{
+					if (GetRandomNumber(0, 14) != 0)
+						continue;
+				}
+
+				if (pMAItem->m_MagicAttrib.nPropKind == 106)
+				{
+					if (nLucky < 11 && nMAIndex > 237)
+						continue;
+
+					if (nLucky < 51 && nMAIndex > 238)
+						continue;
+
+					if (nLucky < 81 && nMAIndex > 239)
+						continue;
+
+				}
+
+				if (pMAItem->m_MagicAttrib.nPropKind == 114)
+				{
+					if (nLucky < 4 && nMAIndex > 54)
+						continue;
+
+					if (nLucky < 11 && nMAIndex > 55)
+						continue;
+
+					if (nLucky < 21 && nMAIndex > 56)
+						continue;
+
+					if (nLucky < 31 && nMAIndex > 57)
+						continue;
+
+					if (nLucky < 51 && nMAIndex > 58)
+						continue;
+
+					if (nLucky < 61 && nMAIndex > 59)
+						continue;
+
+					if (nLucky < 71 && nMAIndex > 60)
+						continue;
+
+					if (nLucky < 81 && nMAIndex > 61)
+						continue;
+
+					if (nLucky < 91 && nMAIndex > 62)
+						continue;
+
+					if (nLucky < 111 && nMAIndex > 63)
+						continue;
+
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 104)
+				{
+					if (nLucky < 11 && nMAIndex > 180)
+						continue;
+
+					if (nLucky < 31 && nMAIndex > 181)
+						continue;
+
+					if (nLucky < 51 && nMAIndex > 182)
+						continue;
+
+					if (nLucky < 61 && nMAIndex > 183)
+						continue;
+
+					if (nLucky < 81 && nMAIndex > 184)
+						continue;
+
+				}
+				if (pMAItem->m_MagicAttrib.nPropKind == 135)
+				{
+					if (nLucky < 4 && nMAIndex > 224)
+						continue;
+
+					if (nLucky < 11 && nMAIndex > 225)
+						continue;
+
+					if (nLucky < 21 && nMAIndex > 226)
+						continue;
+
+					if (nLucky < 31 && nMAIndex > 227)
+						continue;
+
+					if (nLucky < 51 && nMAIndex > 228)
+						continue;
+
+					if (nLucky < 61 && nMAIndex > 229)
+						continue;
+
+					if (nLucky < 71 && nMAIndex > 230)
+						continue;
+
+					if (nLucky < 81 && nMAIndex > 231)
+						continue;
+
+					if (nLucky < 91 && nMAIndex > 232)
+						continue;
+
+					if (nLucky < 111 && nMAIndex > 233)
+						continue;
+
+				}
+				// 检查是否已经有相同的“属性调整类别”
+				int k = 0;
+				for (k = 0; k < i; k++)
+				{
+					_ASSERT(pMagicAttrTable[k]);
+
+					if ((pMagicAttrTable[k]->m_MagicAttrib.nPropKind) == (pMAItem->m_MagicAttrib.nPropKind))
+						break;
+				}
+
+				// 如果发现 “属性调整类别”相同，说明已经有一个相同的值被选中，那么取下一个
+				if (k < i)
+					continue;
+
+				SelectedMagicTable.Insert(nMAIndex);
+			}
+
+			int nSelectedCount = SelectedMagicTable.GetCount();
+
+			if (nSelectedCount == 0)
+			{
+				// 如果没有满足条件的魔法属性，就退出
+				break;
+			}
+
+			// 如果发现满足条件的魔法属性，就设置
+			int nLuckyItemIndex = GetRandomNumber(0, nSelectedCount - 1);
+			KMAGICATTRIB_TABFILE* pMAItem = (KMAGICATTRIB_TABFILE*)m_BPTLib.GetMARecord(
+				SelectedMagicTable.Get(nLuckyItemIndex)
+			);
+
+			// 保存满足条件的魔法属性，以便在最后的时候将使用标志清除
+			pMagicAttrTable[i] = pMAItem;
+
+			_ASSERT(pMAItem);
+			_ASSERT(!(pMAItem->m_nUseFlag));     // 确定还没有使用
+
+			// 设置使用标志
+			pMAItem->m_nUseFlag = true;
+
+			pnaryMA[i].nAttribType = pMAItem->m_MagicAttrib.nPropKind;
+			pnaryMA[i].nValue[0] = GetRandomNumber(
+				pMAItem->m_MagicAttrib.aryRange[0].nMin,
+				pMAItem->m_MagicAttrib.aryRange[0].nMax
+			);
+			pnaryMA[i].nValue[1] = GetRandomNumber(
+				pMAItem->m_MagicAttrib.aryRange[1].nMin,
+				pMAItem->m_MagicAttrib.aryRange[1].nMax
+			);
+			pnaryMA[i].nValue[2] = GetRandomNumber(
+				pMAItem->m_MagicAttrib.aryRange[2].nMin,
+				pMAItem->m_MagicAttrib.aryRange[2].nMax
+			);
+
+		} // for 遍历需要取回的魔法属性表
+	}
+	for (NULL; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		// 清空剩下的项
+		pnaryMA[i].nAttribType = 0;
+		pnaryMA[i].nValue[0] = 0;
+		pnaryMA[i].nValue[1] = 0;
+		pnaryMA[i].nValue[2] = 0;
+	}
+
+	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		if (!pMagicAttrTable[i])
+			break;
+
+		_ASSERT(pMagicAttrTable[i]->m_nUseFlag);   // 确定已经使用
+
+		pMagicAttrTable[i]->m_nUseFlag = false;    // 设置为没用使用
+	}
+
+	nResult = true;
+	//Exit0:
+	return nResult;
+}
 BOOL KItemGenerator::GMA_GetAvaliableMA(int nType)
 {
 	for (int i = 0; i < 2; i++)		// 0: 前缀, 1: 后缀
@@ -548,7 +870,9 @@ BOOL KItemGenerator::GMA_GetAvaliableMA(int nType)
 		const KBPT_ClassifiedMAT* pCMAT;
 		pCMAT = m_BPTLib.GetCMAT(i, nType);
 		if (pCMAT == NULL)
-			{ _ASSERT(FALSE); return FALSE; }
+		{
+			_ASSERT(FALSE); return FALSE;
+		}
 		m_GMA_nCount[i] = NUMOFCMA;
 		pCMAT->GetAll((int*)m_GMA_naryMA[i], &(m_GMA_nCount[i]));
 	}
@@ -564,7 +888,9 @@ BOOL KItemGenerator::GMA_GetLevelAndDropRate(int nType)
 			const KMAGICATTRIB_TABFILE* pMATF;
 			pMATF = GetMARecord(m_GMA_naryMA[i][n]);
 			if (pMATF == NULL)
-				{ _ASSERT(FALSE); return FALSE; }
+			{
+				_ASSERT(FALSE); return FALSE;
+			}
 			m_GMA_naryLevel[i][n] = pMATF->m_nLevel;
 			m_GMA_naryDropRate[i][n] = pMATF->m_DropRate[nType];		
 		}
@@ -724,7 +1050,7 @@ BOOL KItemGenerator::GetGoldItemByIndex(IN int nIndex, OUT KItem * pItem, IN con
 
 	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
 	KTabFile MagicTab;
-	MagicTab.Load(GOLD_EQUIP_MAGIC_FILE_N);
+	MagicTab.Load(GOLD_EQUIP_MAGIC_FILE_O);
 	
 	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 	{
@@ -822,38 +1148,69 @@ BOOL KItemGenerator::GetEquipmentCommonAttrib(IN int nDetailType, IN int nPartic
 		break;
 	}
 	if (NULL == pEqu)
-		{ _ASSERT(FALSE); return FALSE; }
+	{
+		_ASSERT(FALSE); return FALSE;
+	}
 
 	pItem->SetAttrib_CBR(pEqu);
 	pItem->SetSeries(nSeries);
 	return TRUE;
 }
 
-BOOL KItemGenerator::Gen_ExistEquipment(IN int nDetailType,
-								   IN int nParticularType,
-								   IN int nSeriesReq,
-								   IN int nLevel,
-								   IN const int* pnaryMALevel,
-								   IN int nLucky,
-								   IN int nVersion,
-								   IN OUT KItem* pItem,
-								   IN int nEnChance,
-								   IN int nPoint)
+BOOL KItemGenerator::Gen_ExistEquipment(IN int nItemNature,
+										IN int nDetailType,
+										IN int nParticularType,
+										IN int nSeriesReq,
+										IN int nLevel,
+										IN const int* pnaryMALevel,
+										IN int nLucky,
+										IN int nVersion,
+										IN OUT KItem* pItem
+)
 {
 	_ASSERT(this != NULL);
 	_ASSERT(pItem != NULL);
 
-	BOOL bEC = FALSE;
-
+	pItem->m_CommonAttrib.nItemNature = nItemNature;
 	g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
-	if (pnaryMALevel)
-		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * 6);
-	int nGameVersion = pItem->m_GeneratorParam.nVersion;
-
-	const int i = nParticularType * 10 + nLevel - 1;
-	const KBASICPROP_EQUIPMENT* pEqu = NULL;
-	switch(nDetailType)
+	switch (nItemNature)
 	{
+	case NATURE_GOLD:
+	{
+		this->Gen_GoldEquipment(nDetailType, pnaryMALevel, nLucky, pItem);
+		pItem->SetRow(nDetailType);
+		return TRUE;
+	}
+	break;
+	case NATURE_PLATINA:
+	{
+		this->Gen_PlatinaEquipment(nDetailType, pnaryMALevel, nLucky, pItem, nLevel);
+		pItem->SetRow(nDetailType);
+		pItem->SetLevel(nLevel);
+		return TRUE;
+	}
+	break;
+	default:
+	{
+		BOOL bEC = FALSE;
+
+		g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
+		if (pnaryMALevel)
+			memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+		int nGameVersion = pItem->m_GeneratorParam.nVersion;
+
+		// 根据入口参数, 确定装备的基本数据
+		int i;
+		if (nDetailType > equip_horse)
+			i = nParticularType;
+		else
+			i = nParticularType * 10 + nLevel - 1;// 本公式由策划定义
+		// 详见SPE 2002年8月31日7:40
+		// email: 基础道具数值表
+		// 等级数据从1开始，所以要减回来
+		const KBASICPROP_EQUIPMENT* pEqu = NULL;
+		switch (nDetailType)
+		{
 		case equip_meleeweapon:
 			pEqu = m_BPTLib.GetMeleeWeaponRecord(i);
 			break;
@@ -887,78 +1244,63 @@ BOOL KItemGenerator::Gen_ExistEquipment(IN int nDetailType,
 		case equip_horse:
 			pEqu = m_BPTLib.GetHorseRecord(i);
 			break;
-		case equip_mask:	// mat na
+		case equip_mask:
 			pEqu = m_BPTLib.GetMaskRecord(i);
 			break;
 		case equip_mantle:
 			pEqu = m_BPTLib.GetMantleRecord(i);
 			break;
-		default:
+		case equip_signet:
+			pEqu = m_BPTLib.GetSignetRecord(i);
 			break;
-	}
-	if (NULL == pEqu)
-	{
-		_ASSERT(FALSE); 
-		return bEC; 
-	}
-
-	pItem->SetAttrib_CBR(pEqu);
-	pItem->SetSeries(nSeriesReq);
-
-	if (nPoint == 0)
-	{
+		case equip_shipin:
+			pEqu = m_BPTLib.GetShipinRecord(i);
+			break;
+		case equip_hoods:
+			pEqu = m_BPTLib.GetHoodsRecord(i);
+			break;
+		case equip_cloak:
+			pEqu = m_BPTLib.GetCloakRecord(i);
+			break;
+		default:
+			return bEC;
+			break;
+		}
+		if (NULL == pEqu)
+		{
+			_ASSERT(FALSE); return bEC;
+		}
+		// 运行至此的直接原因: 只有n种装备, 而上面 i 的值在[0,n-1]之外
+		// 检查3点: nParticularType 有误?
+		//			nLevel 有误?
+		//			原始的tab file有误导致 m_BPTLib.m_BPTEquipment 所
+		//			管理的数据有问题?
+		pItem->SetAttrib_CBR(pEqu);
+		if (nSeriesReq < series_metal)
+			pItem->SetSeries(::GetRandomNumber(series_metal, series_earth));
+		else
+			pItem->SetSeries(nSeriesReq);
+		const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pItem->GetGroup());
+		if (ActiveEquip) {
+			pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+			pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+		}
+		else {
+			pItem->SetNeedToActive1(-1);
+			pItem->SetNeedToActive2(-1);
+		}
 		if (NULL == pnaryMALevel)
-		return TRUE;
-		KItemNormalAttrib	sMA[6];	
+			return TRUE;
+		KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];	// 道具的魔法属性
 		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion);
 		if (bEC)
 			pItem->SetAttrib_MA(sMA);
-	}
-	else
-	{
-		KItemNormalAttrib sMA[6];
-		KTabFile tabMagicAttribe;
-		tabMagicAttribe.Load("\\Settings\\Item\\magicattrib.txt");
-		if (nLucky > 10)
-		{
-			nLucky = 10;
-		}
-		else if (nLucky < 0)
-		{
-			nLucky = 0;
-		}
-		pItem->m_GeneratorParam.nLuck = nLucky;
-		int nType,nMax,nMin;
-		for (int j = 0;j < 6;j++)
-		{
-			if (pItem->m_GeneratorParam.nGeneratorLevel[j] > 0 && j < nPoint)
-			{
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],5,0,&nType);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],6,0,&nMax);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],7,0,&nMin);
-				sMA[j].nAttribType = nType;
-				sMA[j].nValue[0] = nMax + ((nMin - nMax) * nLucky / 10);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],8,0,&nMax);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],9,0,&nMin);
-				sMA[j].nValue[1] = nMax + ((nMin - nMax) * nLucky / 10);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],10,0,&nMax);
-				tabMagicAttribe.GetInteger(pItem->m_GeneratorParam.nGeneratorLevel[j],11,0,&nMin);
-				sMA[j].nValue[2] = nMax + ((nMin - nMax) * nLucky / 10);
-				continue;
-			}
-			sMA[j].nAttribType = 0;
-			sMA[j].nValue[0] = 0;
-			sMA[j].nValue[1] = 0;
-			sMA[j].nValue[2] = 0;
-		}
-		pItem->SetAttrib_MA(sMA);
-		pItem->SetPoint(nPoint);
-		
-		tabMagicAttribe.Clear();
-	}
 
-	pItem->EnChance(nEnChance);
-	return bEC;
+		pItem->SetNature(nItemNature);
+		return bEC;
+	}
+	break;
+	}
 }
 
 BOOL KItemGenerator::Gen_Quest(IN int nDetailType, IN OUT KItem* pItem,IN int nStackNum)
@@ -1065,5 +1407,634 @@ BOOL KItemGenerator::Gen_TownPortal(IN OUT KItem* pItem)
 		return bEC;
 	}
 	*pItem = *pPortal;
+	return TRUE;
+}
+
+/**********************************************************************************
+Function: Generate random equipment
+Entry: nDetailType: Specific category, such as melee weapons, hidden weapons, etc.
+nParticularType: Detailed category
+nSeriesReq: Five elements attributes
+nLevel: Level
+pnaryMALevel: Magic attribute level array [6]
+nLucky: Luck value
+Exit: Returns non-zero when successful, and the relevant data is given in the object pointed to by pItem
+Returns zero when failed
+******************************************************************************/
+BOOL KItemGenerator::Gen_Equipment(IN int nItemNature,
+	IN int nDetailType,
+	IN int nParticularType,
+	IN int nSeriesReq,
+	IN int nLevel,
+	IN const int* pnaryMALevel,
+	IN int nLucky,
+	IN int nVersion,
+	IN OUT KItem* pItem)
+{
+	_ASSERT(this != NULL);
+	_ASSERT(pItem != NULL);
+
+	switch (nItemNature)
+	{
+	case NATURE_GOLD:
+	{
+		this->Gen_GoldEquipment(nDetailType, pnaryMALevel, nLucky, pItem);
+		pItem->SetRow(nDetailType);
+		return TRUE;
+	}
+	break;
+	case NATURE_PLATINA:
+	{
+		this->Gen_PlatinaEquipment(nDetailType, pnaryMALevel, nLucky, pItem, nLevel);
+		pItem->SetRow(nDetailType);
+		pItem->SetLevel(nLevel);
+		return TRUE;
+	}
+	break;
+	default:
+	{
+		BOOL bEC = FALSE;
+#ifdef _SERVER	// Server version
+		pItem->m_GeneratorParam.uRandomSeed = g_GetRandomSeed();
+		if (pnaryMALevel)
+			memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+		else
+			ZeroMemory(pItem->m_GeneratorParam.nGeneratorLevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+		pItem->m_GeneratorParam.nVersion = g_SubWorldSet.GetGameVersion();
+#else
+		g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
+		if (pnaryMALevel)
+			memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+#endif
+		pItem->m_GeneratorParam.nLuck = nLucky;
+		int nGameVersion = pItem->m_GeneratorParam.nVersion;
+
+		// According to the input parameters, determine the basic data of the equipment
+		int i;
+		if (nDetailType > equip_horse)
+			i = nParticularType;
+		else
+			i = nParticularType * 10 + nLevel - 1;	// This formula is defined by the planner
+													// For details, see SPE August 31, 2002 7:40
+													// email: Basic item value table
+													// Level data starts at 1, so it needs to be subtracted back
+		const KBASICPROP_EQUIPMENT* pEqu = NULL;
+		switch (nDetailType)
+		{
+		case equip_meleeweapon:
+			pEqu = m_BPTLib.GetMeleeWeaponRecord(i);
+			break;
+		case equip_rangeweapon:
+			pEqu = m_BPTLib.GetRangeWeaponRecord(i);
+			break;
+		case equip_armor:
+			pEqu = m_BPTLib.GetArmorRecord(i);
+			break;
+		case equip_helm:
+			pEqu = m_BPTLib.GetHelmRecord(i);
+			break;
+		case equip_boots:
+			pEqu = m_BPTLib.GetBootRecord(i);
+			break;
+		case equip_belt:
+			pEqu = m_BPTLib.GetBeltRecord(i);
+			break;
+		case equip_amulet:
+			pEqu = m_BPTLib.GetAmuletRecord(i);
+			break;
+		case equip_ring:
+			pEqu = m_BPTLib.GetRingRecord(i);
+			break;
+		case equip_cuff:
+			pEqu = m_BPTLib.GetCuffRecord(i);
+			break;
+		case equip_pendant:
+			pEqu = m_BPTLib.GetPendantRecord(i);
+			break;
+		case equip_horse:
+			pEqu = m_BPTLib.GetHorseRecord(i);
+			break;
+		case equip_mask:
+			pEqu = m_BPTLib.GetMaskRecord(i);
+			break;
+		case equip_mantle:
+			pEqu = m_BPTLib.GetMantleRecord(i);
+			break;
+		case equip_signet:
+			pEqu = m_BPTLib.GetSignetRecord(i);
+			break;
+		case equip_shipin:
+			pEqu = m_BPTLib.GetShipinRecord(i);
+			break;
+		case equip_hoods:
+			pEqu = m_BPTLib.GetHoodsRecord(i);
+			break;
+		case equip_cloak:
+			pEqu = m_BPTLib.GetCloakRecord(i);
+			break;
+		default:
+			return bEC;
+			break;
+		}
+		if (NULL == pEqu)
+		{
+			_ASSERT(FALSE); return bEC;
+		}
+		// Direct reason for running to this point: there are only n types of equipment, and the value of i above is outside [0,n-1]
+		// Check 3 points: nParticularType is wrong?
+		// nLevel is wrong?
+		// The original tab file is wrong, causing the data managed by m_BPTLib.m_BPTEquipment to be wrong?
+		pItem->SetAttrib_CBR(pEqu);
+		if (nSeriesReq < series_metal)
+			pItem->SetSeries(::GetRandomNumber(series_metal, series_earth));
+		else
+			pItem->SetSeries(nSeriesReq);
+		const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pItem->GetGroup());
+		pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+		pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+		if (NULL == pnaryMALevel)
+			return TRUE;
+
+		KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
+		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion);
+		if (bEC)
+			pItem->SetAttrib_MA(sMA);
+
+		pItem->SetNature(nItemNature);
+		return bEC;
+	}
+	break;
+	}
+}
+
+BOOL KItemGenerator::Gen_GoldEquipment(IN int nIndex, IN const int* pnaryMALevel, IN int nLucky, OUT KItem* pItem)
+{
+	int i = 0;
+	int j = 0;
+	int nCount = 0;
+
+	int nLuckMin = (int)LOWORD(nLucky);
+	int nLuckMax = (int)HIWORD(nLucky);
+
+	if (nLuckMin > MAX_ITEM_LUCK)
+		nLuckMin = MAX_ITEM_LUCK;
+
+	if (nLuckMin > nLuckMax)
+		nLuckMin = nLuckMax;
+
+	if (nLuckMax > MAX_ITEM_LUCK)
+		nLuckMax = MAX_ITEM_LUCK;
+
+#ifdef _SERVER	// 服务器版本
+	pItem->m_GeneratorParam.uRandomSeed = g_GetRandomSeed();
+	pItem->m_GeneratorParam.nVersion = g_SubWorldSet.GetGameVersion();
+#else
+	g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
+#endif
+	if (pnaryMALevel)
+		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+	else
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			pItem->m_GeneratorParam.nGeneratorLevel[i] = nLuckMin == nLuckMax ? nLuckMax : GetRandomNumber(nLuckMin, nLuckMax);
+			pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB] = 0;
+		}
+	}
+	pItem->m_GeneratorParam.nLuck = nLucky;
+
+	nCount = m_BPTLib.GetGoldEquipNumber();
+	const KBASICPROP_EQUIPMENT_GOLD2* pTemp = m_BPTLib.GetGoldEquipRecord(nIndex);
+	if (nIndex >= nCount)
+		return FALSE;
+	if (pTemp == NULL)
+		return FALSE;
+	pItem->SetAttrib_CBR((KBASICPROP_EQUIPMENT_GOLD2*)pTemp);
+	int setNum = m_BPTLib.GetActiveSuiteCount(pTemp->m_nGroup); //get number items in set
+	pItem->SetSetNum(setNum); //return nActiveCount1 => setNum
+	//pItem->SetSetId(setNum);
+
+	const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pTemp->m_nGroup);
+	
+	if (ActiveEquip != NULL) {
+		pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+		pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+	}
+	else {
+		pItem->SetNeedToActive1(0);
+		pItem->SetNeedToActive2(0);
+	}
+	
+
+	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
+
+	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB]) //custom magic already set 
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
+				break;
+			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
+			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+			sMA[i].nValue[1] = -1;
+			sMA[i].nValue[2] = HIWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+		}
+	}
+	else // load default value from config file
+	{
+		KTabFile MagicTab;
+		if (!MagicTab.Load(GOLD_EQUIP_MAGIC_FILE_N))
+			return FALSE;
+
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			const int* pSrc = &(pTemp->m_aryMagicAttribs[i]);
+			KItemNormalAttrib* pDst = &(sMA[i]);
+
+			int nType, nLow, nHigh;
+			MagicTab.GetInteger(*pSrc + 1, 5, 0, &nType);
+			pDst->nAttribType = nType;
+
+			for (int j = 0; j < 3; ++j)
+			{
+				int colLow = 6 + j * 2;
+				int colHigh = colLow + 1;
+
+				MagicTab.GetInteger(*pSrc + 1, colLow, 0, &nLow);
+				MagicTab.GetInteger(*pSrc + 1, colHigh, 0, &nHigh);
+
+				if (nHigh > nLow)
+					pDst->nValue[j] = nLow + GetRandomNumber(0, nHigh - nLow);
+				else
+					pDst->nValue[j] = nLow;
+			}
+
+			if (pDst->nAttribType <= 0)
+			{
+				pDst->nValue[0] = 0;
+				pDst->nValue[1] = 0;
+				pDst->nValue[2] = 0;
+			}
+		}
+		MagicTab.Clear();
+	}
+	for (NULL; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		// 清空剩下的项
+		sMA[i].nAttribType = 0;
+		sMA[i].nValue[0] = 0;
+		sMA[i].nValue[1] = 0;
+		sMA[i].nValue[2] = 0;
+	}
+	pItem->SetAttrib_MA(sMA);
+
+	return TRUE;
+}
+int GetMagicIdxWithHighestRate(const KPLATINA_MAGICRATE* pMagicRate) {
+	if (!pMagicRate) return -1; // Return an invalid index if pointer is null
+
+	int highestRate = pMagicRate->m_nRate1;
+	int highestIdx = pMagicRate->m_nMagicIdx1;
+
+	if (pMagicRate->m_nRate2 > highestRate) {
+		highestRate = pMagicRate->m_nRate2;
+		highestIdx = pMagicRate->m_nMagicIdx2;
+	}
+
+	if (pMagicRate->m_nRate3 > highestRate) {
+		highestRate = pMagicRate->m_nRate3;
+		highestIdx = pMagicRate->m_nMagicIdx3;
+	}
+
+	return highestIdx;
+}
+
+BOOL KItemGenerator::Gen_PlatinaEquipment(IN int nIndex, IN const int* pnaryMALevel, IN int nLucky, OUT KItem* pItem, IN int nLevel)
+{
+	int i = 0;
+	int j = 0;
+	int nCount = 0;
+	const float SCALE_PER_LEVEL = 0.05f;
+
+	int nLuckMin = (int)LOWORD(nLucky);
+	int nLuckMax = (int)HIWORD(nLucky);
+
+	if (nLuckMin > MAX_ITEM_LUCK)
+		nLuckMin = MAX_ITEM_LUCK;
+
+	if (nLuckMin > nLuckMax)
+		nLuckMin = nLuckMax;
+
+	if (nLuckMax > MAX_ITEM_LUCK)
+		nLuckMax = MAX_ITEM_LUCK;
+
+#ifdef _SERVER	// 服务器版本
+	pItem->m_GeneratorParam.uRandomSeed = g_GetRandomSeed();
+	pItem->m_GeneratorParam.nVersion = g_SubWorldSet.GetGameVersion();
+#else
+	g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
+#endif
+	if (pnaryMALevel)
+		memcpy(pItem->m_GeneratorParam.nGeneratorLevel, pnaryMALevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+	else
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			pItem->m_GeneratorParam.nGeneratorLevel[i] = nLuckMin == nLuckMax ? nLuckMax : GetRandomNumber(nLuckMin, nLuckMax);
+			pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB] = 0;
+		}
+	}
+	pItem->m_GeneratorParam.nLuck = nLucky;
+
+	nCount = m_BPTLib.GetPlatinaEquipNumber();
+	KBASICPROP_EQUIPMENT_PLATINA* pTemp = (KBASICPROP_EQUIPMENT_PLATINA*)m_BPTLib.GetPlatinaEquipRecord(nIndex);
+	if (nIndex >= nCount)
+		return FALSE;
+	if (pTemp == NULL)
+		return FALSE;
+	//magic_durability_v,						//31
+	if (nLevel > 5) {
+		for (i = 0; i < 7; i++)
+			if (pTemp->m_aryPropBasic[i].nType == magic_durability_v) {
+				pTemp->m_aryPropBasic[i].sRange.nMin *= 10;
+				pTemp->m_aryPropBasic[i].sRange.nMax *= 10;
+			}
+	}
+	pItem->SetAttrib_CBR((KBASICPROP_EQUIPMENT_PLATINA*)pTemp); //Set Base & Require Attributes
+	//reset durability
+	if (nLevel > 5) {
+		for (i = 0; i < 7; i++)
+			if (pTemp->m_aryPropBasic[i].nType == magic_durability_v) {
+				pTemp->m_aryPropBasic[i].sRange.nMin /= 10;
+				pTemp->m_aryPropBasic[i].sRange.nMax /= 10;
+			}
+	}
+	int setNum = m_BPTLib.GetActiveSuiteCount(pTemp->m_nGroup); //get number items in set
+	pItem->SetSetNum(setNum); //return nActiveCount1 => setNum
+	pItem->SetSetId(pTemp->m_nGroup);
+	//pItem->SetSetId(setNum);
+
+	const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pTemp->m_nGroup);
+	pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+	pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
+
+	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB])
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
+				break;
+			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
+			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+			sMA[i].nValue[1] = -1;
+			sMA[i].nValue[2] = HIWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+		}
+	}
+	else
+	{
+		KTabFile MagicTab;
+		if (!MagicTab.Load(GOLD_EQUIP_MAGIC_FILE_N))
+			return FALSE;
+
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			const int* pSrc = &(pTemp->m_aryMagicAttribs_0[i]);
+			KItemNormalAttrib* pDst = &(sMA[i]);
+
+			int nType;
+			if (!MagicTab.GetInteger(*pSrc + 1, 5, 0, &nType) || nType <= 0)
+				break;
+			pDst->nAttribType = nType;
+
+			for (int j = 0; j < 3; ++j)
+			{
+				int colLow = 6 + j * 2;
+				int colHigh = colLow + 1;
+				int nLow = 0, nHigh = 0;
+
+				MagicTab.GetInteger(*pSrc + 1, colLow, 0, &nLow);
+				MagicTab.GetInteger(*pSrc + 1, colHigh, 0, &nHigh);
+
+				// --- 1) Roll Gold value once ---
+				int goldVal = (nHigh > nLow)
+					? nLow + GetRandomNumber(0, nHigh - nLow)
+					: nLow;
+
+				if (nLevel == 0)
+				{
+					// exact Gold behavior at L0
+					pDst->nValue[j] = goldVal;
+				}
+				else
+				{
+					// --- 2) Compute its ratio in [nLow..nHigh] ---
+					float ratio = (nHigh > nLow)
+						? (float)(goldVal - nLow) / (float)(nHigh - nLow)
+						: 0.0f;
+
+					float scale = 1.0f;
+					float scaledMin = nLow * scale;
+					float scaledMax = nHigh * scale;
+					// --- 3) Scale min/max by level (exponential) ---
+					if (nType != magic_attackspeed_v && nType != magic_castspeed_v && nType != magic_allskill_v) {
+						scale = 1.0f + SCALE_PER_LEVEL * nLevel;
+						scaledMin = nLow * scale;
+						scaledMax = nHigh * scale;
+					}
+
+					// --- 4) Map ratio to [scaledMin..scaledMax] and round ---
+					float fVal = scaledMin + ratio * (scaledMax - scaledMin);
+					pDst->nValue[j] = (int)(fVal + 0.5f);
+				}
+			}
+		}
+		MagicTab.Clear();
+	}
+
+	for (NULL; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		// 清空剩下的项
+		sMA[i].nAttribType = 0;
+		sMA[i].nValue[0] = 0;
+		sMA[i].nValue[1] = 0;
+		sMA[i].nValue[2] = 0;
+	}
+	i = 6;
+	// chinh level xuat hien 2 dong thuoc tinh 7 8
+	if (nLevel >= 6) {
+		const KPLATINA_MAGICRATE* pMagicRate = m_BPTLib.GetPlatinaMagicRateFindRecord(nIndex, nLevel-1, 1); //skill no 1
+		if (pMagicRate) {
+			int tmpRate = GetMagicIdxWithHighestRate(pMagicRate)-1;
+			const KPLATINA_MAGICATTR* pMagicAttr = m_BPTLib.GetPlatinaMagicAttrRecord(tmpRate);
+			if (pMagicAttr) {
+				sMA[i].nAttribType = pMagicAttr->m_nAttributeType;
+				sMA[i].nValue[0] = pMagicAttr->m_nValue1;
+				sMA[i].nValue[1] = pMagicAttr->m_nValue2;
+				sMA[i].nValue[2] = pMagicAttr->m_nValue3;
+				i++;
+			}
+		}
+	}
+	if (nLevel >= 6) {
+		const KPLATINA_MAGICRATE* pMagicRate = m_BPTLib.GetPlatinaMagicRateFindRecord(nIndex, nLevel-1, 2);
+		if (pMagicRate) {
+			int tmpRate = GetMagicIdxWithHighestRate(pMagicRate) - 1;
+			const KPLATINA_MAGICATTR* pMagicAttr = m_BPTLib.GetPlatinaMagicAttrRecord(tmpRate);
+			if (pMagicAttr) {
+				sMA[i].nAttribType = pMagicAttr->m_nAttributeType;
+				sMA[i].nValue[0] = pMagicAttr->m_nValue1;
+				sMA[i].nValue[1] = pMagicAttr->m_nValue2;
+				sMA[i].nValue[2] = pMagicAttr->m_nValue3;
+				i++;
+			}
+		}
+	}
+
+	pItem->SetAttrib_MA(sMA);
+
+	return TRUE;
+}
+
+BOOL KItemGenerator::UpgradePlatinaEquip(int nVersion, KItem* pItem) {
+	int i = 0;
+	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
+	const float SCALE_PER_LEVEL = 0.05f;
+	int nLevel = 0;
+	g_RandomSeed(pItem->m_GeneratorParam.uRandomSeed);
+	if (pItem->GetNature() == NATURE_GOLD) {
+		pItem->SetNature(NATURE_PLATINA);
+		pItem->SetLevel(0); // reset level to 0 when upgrading from gold to platina
+	}
+	else {
+		nLevel = pItem->GetLevel() + 1;
+		if (nLevel > 10)
+			return FALSE;
+		pItem->SetLevel(nLevel);
+	}
+	//recalc all item magic
+	KBASICPROP_EQUIPMENT_PLATINA* pTemp = (KBASICPROP_EQUIPMENT_PLATINA*)m_BPTLib.GetPlatinaEquipRecord(pItem->GetIndex());
+	if (pTemp == NULL)
+		return FALSE;
+	//magic_durability_v,						//31
+	if (nLevel > 5) {
+		for (i = 0; i < 7; i++)
+			if (pItem->m_aryBaseAttrib[i].nAttribType == magic_durability_v) {
+				pItem->m_aryBaseAttrib[i].nValue[0] *= 10;
+			}
+	}
+
+	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB])
+	{
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
+				break;
+			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
+			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+			sMA[i].nValue[1] = -1;
+			sMA[i].nValue[2] = HIWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
+		}
+	}
+	else
+	{
+		KTabFile MagicTab;
+		if (!MagicTab.Load(GOLD_EQUIP_MAGIC_FILE_N))
+			return FALSE;
+
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			const int* pSrc = &(pTemp->m_aryMagicAttribs_0[i]);
+			KItemNormalAttrib* pDst = &sMA[i];
+
+			int nType;
+			if (!MagicTab.GetInteger(*pSrc + 1, 5, 0, &nType) || nType <= 0)
+				break;
+			pDst->nAttribType = nType;
+
+			for (int j = 0; j < 3; ++j)
+			{
+				int colLow = 6 + j * 2;
+				int colHigh = colLow + 1;
+				int nLow = 0, nHigh = 0;
+
+				MagicTab.GetInteger(*pSrc + 1, colLow, 0, &nLow);
+				MagicTab.GetInteger(*pSrc + 1, colHigh, 0, &nHigh);
+
+				// --- 1) Roll Gold value once ---
+				int goldVal = (nHigh > nLow)
+					? nLow + GetRandomNumber(0, nHigh - nLow)
+					: nLow;
+
+				if (nLevel == 0)
+				{
+					// exact Gold behavior at L0
+					pDst->nValue[j] = goldVal;
+				}
+				else
+				{
+					// --- 2) Compute its ratio in [nLow..nHigh] ---
+					float ratio = (nHigh > nLow)
+						? (float)(goldVal - nLow) / (float)(nHigh - nLow)
+						: 0.0f;
+
+					float scale = 1.0f;
+					float scaledMin = nLow * scale;
+					float scaledMax = nHigh * scale;
+					// --- 3) Scale min/max by level (exponential) ---
+					if (nType != magic_attackspeed_v && nType != magic_castspeed_v && nType != magic_allskill_v) {
+						scale = 1.0f + SCALE_PER_LEVEL * nLevel;
+						scaledMin = nLow * scale;
+						scaledMax = nHigh * scale;
+					}
+					// --- 4) Map ratio to [scaledMin..scaledMax] and round ---
+					float fVal = scaledMin + ratio * (scaledMax - scaledMin);
+					pDst->nValue[j] = (int)(fVal + 0.5f);
+				}
+			}
+		}
+		MagicTab.Clear();
+	}
+
+	for (NULL; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		// 清空剩下的项
+		sMA[i].nAttribType = 0;
+		sMA[i].nValue[0] = 0;
+		sMA[i].nValue[1] = 0;
+		sMA[i].nValue[2] = 0;
+	}
+	i = 6;
+	// chinh level xuat hien 2 dong thuoc tinh 7 8
+	if (nLevel >= 6) {
+		const KPLATINA_MAGICRATE* pMagicRate = m_BPTLib.GetPlatinaMagicRateFindRecord(pItem->GetIndex(), nLevel-1, 1); //skill no 1
+		if (pMagicRate) {
+			int tmpRate = GetMagicIdxWithHighestRate(pMagicRate) - 1;
+			const KPLATINA_MAGICATTR* pMagicAttr = m_BPTLib.GetPlatinaMagicAttrRecord(tmpRate);
+			if (pMagicAttr) {
+				sMA[i].nAttribType = pMagicAttr->m_nAttributeType;
+				sMA[i].nValue[0] = pMagicAttr->m_nValue1;
+				sMA[i].nValue[1] = pMagicAttr->m_nValue2;
+				sMA[i].nValue[2] = pMagicAttr->m_nValue3;
+				i++;
+			}
+		}
+	}
+	if (nLevel >= 6) {
+		const KPLATINA_MAGICRATE* pMagicRate = m_BPTLib.GetPlatinaMagicRateFindRecord(pItem->GetIndex(), nLevel-1, 2);
+		if (pMagicRate) {
+			int tmpRate = GetMagicIdxWithHighestRate(pMagicRate) - 1;
+			const KPLATINA_MAGICATTR* pMagicAttr = m_BPTLib.GetPlatinaMagicAttrRecord(tmpRate);
+			if (pMagicAttr) {
+				sMA[i].nAttribType = pMagicAttr->m_nAttributeType;
+				sMA[i].nValue[0] = pMagicAttr->m_nValue1;
+				sMA[i].nValue[1] = pMagicAttr->m_nValue2;
+				sMA[i].nValue[2] = pMagicAttr->m_nValue3;
+				i++;
+			}
+		}
+	}
+	pItem->SetAttrib_MA(sMA);
+
 	return TRUE;
 }

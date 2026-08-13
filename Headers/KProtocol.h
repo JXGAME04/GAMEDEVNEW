@@ -139,7 +139,7 @@ typedef struct
 typedef struct
 {
 	BYTE	ProtocolType;
-//	BYTE	ReviveType;
+	BYTE	ReviveType;
 } NPC_REVIVE_COMMAND;
 
 typedef struct
@@ -335,7 +335,7 @@ typedef struct PLAYER_SEND_CHAT_DATA_SYNC
 	WORD	m_wSentenceLen;		// ÁÄÌìÓï¾ä³¤¶È
 	DWORD	m_dwSourceID;		// 
 	char	m_szSentence[32 + CHAT_MSG_PREFIX_MAX_LEN + MAX_SENTENCE_LENGTH];	// ÁÄÌìÓï¾äÄÚÈİ
-	PLAYER_SEND_CHAT_DATA_SYNC() { memset(m_szSentence, 0, sizeof(m_szSentence)); };
+	PLAYER_SEND_CHAT_DATA_SYNC() { m_wLength = 0; m_btCurChannel = 0; m_btNameLen = 0; m_btChatPrefixLen = 0; m_wSentenceLen = 0; m_dwSourceID = 0; memset(m_szSentence, 0, sizeof(m_szSentence)); };
 } PLAYER_SEND_CHAT_SYNC;		// ¿Í»§¶ËÁÄÌìÄÚÈİ·¢ËÍ¸ø·şÎñÆ÷
 
 typedef struct
@@ -460,30 +460,58 @@ typedef struct
 
 typedef struct
 {
-	BYTE			ProtocolType;		// Ğ­ÒéÀàĞÍ
-	BOOL			m_bIsNew;
-	int				m_ID;				// ÎïÆ·µÄID
-	int			m_Genre;			// ÎïÆ·µÄÀàĞÍ
-	int			m_Detail;			// ÎïÆ·µÄÀà±ğ
-	int			m_Particur;			// ÎïÆ·µÄÏêÏ¸Àà±ğ
-	BYTE			m_Series;			// ÎïÆ·µÄÎåĞĞ
-	BYTE			m_Level;			// ÎïÆ·µÄµÈ¼¶
-	BYTE			m_btPlace;			// ×ø±ê
-	BYTE			m_btX;				// ×ø±ê
-	BYTE			m_btY;				// ×ø±ê
-	BYTE			m_Luck;				// MF
-	BYTE			m_MagicLevel[6];	// Éú³É²ÎÊı
-	WORD			m_Version;			// ×°±¸°æ±¾
-	WORD			m_Durability;		// ÄÍ¾Ã¶È
-	UINT			m_RandomSeed;		// Ëæ»úÖÖ×Ó
-	int				m_GoldId;			// »Æ½ğId
+	BYTE			ProtocolType;
+	int				m_ID;
+	int			m_Genre;
+	int			m_Detail;
+	int			m_Particur;
+	BYTE			m_Series;
+	BYTE			m_Level;
+	BYTE			m_btPlace;
+	BYTE			m_btX;
+	BYTE			m_btY;
+	BYTE			m_Luck;
+	int				m_MagicLevel[MAX_ITEM_MAGICLEVEL];
+	WORD			m_Version;
+	WORD			m_Durability;
+	UINT			m_RandomSeed;
+	int				m_GoldId;
 	int				m_StackNum;
 	BYTE			m_EnChance;
 	BYTE			m_Point;
-	KTime			m_Time;
 	int					m_InsuranceCourse;
 	int					m_HInsuranceCourse;
+	int				m_Mantle;
+	int			  m_Param;
+	int				m_TimeE;
+	bool		m_bIsNew;
+	int			m_GlowLight; //ngo¹i trang
+	int			m_Price; //gia bay ban
+	BOOL			m_bTemp;
+	DWORD			m_dwOwner;
+	BYTE			m_Nature;
+	PlayerItem		m_BackLocal;
+	int				m_ItemX;
+	int				m_ItemY;
+	KLockItem		m_LockItem;
+	BOOL			m_bLockSell;
+	BOOL			m_bLockTrade;
+	BOOL			m_bLockDrop;
+	int				m_Width;
+	int				m_Height;
+	int				m_Fortune;
+	int				m_ExpireTime;
+	int				m_MaxOptMultiply;
 } ITEM_SYNC;
+
+
+typedef struct
+{
+	BYTE	ProtocolType;
+	DWORD			m_dwID;
+	int				m_MagicLevel[MAX_ITEM_MAGICLEVEL];
+	KMagicAttrib	m_MagicAttrib[MAX_ITEM_MAGICATTRIB];
+} ITEM_SYNC_MAGIC;
 
 typedef struct
 {
@@ -503,7 +531,7 @@ typedef struct
 	BYTE			ProtocolType;		// Ğ­ÒéÀàĞÍ
 	int				m_Shop;
 	BYTE			m_BuyIdx;			// ÂòµÚ¼¸¸ö¶«Î÷
-	BYTE			m_Number;			// new add
+	int			m_Number;			// new add
 } PLAYER_BUY_ITEM_COMMAND;
 
 typedef struct
@@ -1515,7 +1543,7 @@ typedef struct
 	int		m_Lock;
 	int		m_HLock;
 	int		m_curDurability;//#do ben
-	int		m_nParam; //sè lÇn sö dông item
+	int		m_nParam; //s?lÇn s?dông item
 } SViewSellItemInfo;
 
 typedef struct
@@ -1591,7 +1619,7 @@ typedef struct
 } CHAT_SPECMAN;
 
 
-enum { tgtcls_team, tgtcls_fac, tgtcls_tong, tgtcls_scrn, tgtcls_bc};
+enum { tgtcls_team, tgtcls_fac, tgtcls_tong, tgtcls_msgr, tgtcls_scrn, tgtcls_bc };
 typedef struct
 {
 	BYTE	ProtocolType;
@@ -1683,6 +1711,9 @@ typedef struct
 	char	m_szTongName[32];
 	char	m_szMasterName[32];
 	char	m_szTitleName[32];
+	int		m_nTongLevel;
+	int 	m_nTongExp;
+	BOOL 	m_bIsFull;
 } STONG_SERVER_TO_CORE_ADD_SUCCESS;
 
 typedef struct
@@ -1725,6 +1756,12 @@ typedef struct		// changelevel
 	int		m_nPlayerIdx;
 	int		m_nLevel;
 } STONG_SERVER_TO_CORE_BE_CHANGED_LEVEL;
+
+typedef struct		// changeexp
+{
+	int		m_nPlayerIdx;
+	int		m_nTongExp;
+} STONG_SERVER_TO_CORE_BE_CHANGED_EXP;
 
 typedef struct
 {
@@ -1781,6 +1818,9 @@ typedef struct
 	char	m_szName[32];
 	int		m_nRecruit;
 	int		m_nMoney;
+	int		m_nLevel;
+	int		m_nExp;
+	bool m_bIsFull;
 } STONG_SERVER_TO_CORE_LOGIN;
 
 // Íæ¼ÒÉêÇë½¨Á¢°ï»á ÓÃÀ©Õ¹Ğ­Òé
@@ -1986,6 +2026,8 @@ typedef struct
 	char	m_szMaster[32];
 	DWORD	m_dwMoney;
 	int m_btRecruit;
+	int m_nLevel;
+	int m_nExp;
 } TONG_SELF_INFO_SYNC;
 
 typedef struct
@@ -2296,10 +2338,25 @@ typedef struct
 	int		m_nPlayerIdx;
 } STONG_SERVER_TO_CORE_MONEY;
 
+typedef struct
+{
+	DWORD	m_dwTongNameID;
+	BOOL	m_bIsFull;
+	BYTE		nType;
+	int		m_nPlayerIdx;
+} STONG_SERVER_TO_CORE_FULL;
+
+enum
+{
+	c2sdnmbr_arrangeitem,
+	c2sdnmbr_arrangebox,
+	c2sdnmbr_exchangeitem,
+	c2sdnmbr_movemapid,
+};
 // ÔÚµ÷ÓÃÕâÖ§º¯ÊıÖ®Ç°±ØĞëÅĞ¶ÏÊÇ·ñ´¦ÓÚ½»Ò××´Ì¬£¬Èç¹ûÕıÔÚ½»Ò×£¬²»ÄÜµ÷ÓÃÕâÖ§º¯Êı
 void SendClientCmdSell(int nID);
 // ÔÚµ÷ÓÃÕâÖ§º¯ÊıÖ®Ç°±ØĞëÅĞ¶ÏÊÇ·ñ´¦ÓÚ½»Ò××´Ì¬£¬Èç¹ûÕıÔÚ½»Ò×£¬²»ÄÜµ÷ÓÃÕâÖ§º¯Êı
-void SendClientCmdBuy(int nShop, int nBuyIdx, BYTE nNumber);
+void SendClientCmdBuy(int nShop, int nBuyIdx, int nNumber);
 // ÔÚµ÷ÓÃÕâÖ§º¯ÊıÖ®Ç°±ØĞëÅĞ¶ÏÊÇ·ñ´¦ÓÚ½»Ò××´Ì¬£¬Èç¹ûÕıÔÚ½»Ò×£¬²»ÄÜµ÷ÓÃÕâÖ§º¯Êı
 void SendClientCmdRun(int nX, int nY);
 // ÔÚµ÷ÓÃÕâÖ§º¯ÊıÖ®Ç°±ØĞëÅĞ¶ÏÊÇ·ñ´¦ÓÚ½»Ò××´Ì¬£¬Èç¹ûÕıÔÚ½»Ò×£¬²»ÄÜµ÷ÓÃÕâÖ§º¯Êı
@@ -2313,8 +2370,7 @@ void SendClientCmdQueryLadder(DWORD	dwLadderID);
 void SendClientCmdRequestNpc(int nID);
 void SendClientCmdJump(int nX, int nY);
 void SendClientCmdStoreMoney(int nDir, int nMoney);
-//void SendClientCmdRevive(int nReviveType);
-void SendClientCmdRevive();
+void SendClientCmdRevive(int nReviveType);
 void SendObjMouseClick(int nObjID, DWORD dwRegionID);
 void SendClientCmdRepair(DWORD dwID);
 void SendClientCmdAutoSell(int nId);

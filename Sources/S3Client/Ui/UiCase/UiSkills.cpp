@@ -170,7 +170,7 @@ void KUiFightSkillSubPage::PaintWindow()
 			unsigned int dwColor = 0; 
 			int nLevel = 0;
 			if (g_pCoreShell->GetSkillData(Obj.uId, &nLevel) == TRUE)
-				dwColor = 0xff3130ff;
+				dwColor = 0xff33ffff;
 			else
 				dwColor = m_SkillTextParam.Color;	
 			if (nLevel)

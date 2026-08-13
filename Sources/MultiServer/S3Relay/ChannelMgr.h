@@ -70,6 +70,7 @@ private:
 		defCHANN_TEAM	= 'T',
 		defCHANN_FAC	= 'F',
 		defCHANN_TONG	= 'O',
+		defCHANN_MSGR = 'M',
 		defCHANN_SCRN	= 'S',
 		defCHANN_BC		= 'B',
 	};
@@ -80,6 +81,7 @@ private:
 	TCHAR m_chChannTEAM;
 	TCHAR m_chChannFAC;
 	TCHAR m_chChannTONG;
+	TCHAR m_chChannMSGR;
 	TCHAR m_chChannSCRN;
 	TCHAR m_chChannBC;
 
@@ -97,6 +99,7 @@ private:
 	BOOL IsValidTeamID(DWORD idTeam);
 	BOOL IsValidFacID(DWORD idFac);
 	BOOL IsValidTongID(DWORD idTong);
+	BOOL IsValidMsgrID(DWORD idMsgr);
 
 private:
 	DWORD m_lastChannID;
@@ -132,12 +135,15 @@ private:
 	DWORD m_maxFacID;
 	DWORD m_minTongID;
 	DWORD m_maxTongID;
+	DWORD m_minMsgrID;
+	DWORD m_maxMsgrID;
 
 	BYTE m_defCost;
 
 	BYTE m_costTeam;
 	BYTE m_costFac;
 	BYTE m_costTong;
+	BYTE m_costMsgr;
 	BYTE m_costScrn;
 	BYTE m_costBc;
 

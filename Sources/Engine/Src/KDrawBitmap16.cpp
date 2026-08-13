@@ -286,6 +286,92 @@ void g_DrawBitmap16mmx(void* node, void* canvas)
 	pCanvas->UnlockCanvas();
 #endif
 }
+
+void g_DrawBitmap16mmx_32b(void* node, void* canvas)
+{
+#ifndef _WIN64
+	KDrawNode* pNode = (KDrawNode *)node;
+	KCanvas* pCanvas = (KCanvas *)canvas;
+
+	long nX = pNode->m_nX;// x coord
+	long nY = pNode->m_nY;// y coord
+	long nWidth = pNode->m_nWidth;// width of sprite
+	long nHeight = pNode->m_nHeight;// height of sprite
+	void* lpBitmap = pNode->m_pBitmap;// bitmap pointer
+	// t1o khung vu?ng trong ph1m vi khung game
+	KClipper Clipper;
+	if (!pCanvas->MakeClip(nX, nY, nWidth, nHeight, &Clipper))
+		return;
+	int nPitch;
+	void* lpBuffer = pCanvas->LockCanvas(nPitch);
+	if (lpBuffer == NULL)
+		return;
+	lpBuffer = (char*)(lpBuffer) + nPitch*Clipper.y + Clipper.x*4;
+	// kho?ng c?ch xuèng d?ng v? k? ti?p c?a canvas
+	int ScreenOffset = nPitch - Clipper.width * 4;
+
+	// kho?ng c?ch xuèng d?ng v? k? ti?p c?a bitmap
+	int BitmapOffset = nWidth * 2 - Clipper.width * 2;
+
+	__asm
+	{
+//---------------------------------------------------------------------------
+//  edi = lpBuffer + nPitch*Clipper.y + Clipper.x*4
+//---------------------------------------------------------------------------
+		mov		edi, lpBuffer
+//---------------------------------------------------------------------------
+//  esi = (nWidth * Clipper.top + Clipper.left) * 2
+//---------------------------------------------------------------------------
+		mov		ecx, Clipper.top
+		mov		eax, nWidth
+		mul     ecx
+		add     eax, Clipper.left
+		add		eax, eax
+		mov		esi, lpBitmap
+		add     esi, eax
+//---------------------------------------------------------------------------
+// cao, réng c?a khung v?
+//---------------------------------------------------------------------------
+		mov		edx, Clipper.height
+		mov		ebx, Clipper.width
+
+loc_DrawBitmap16mmx_0001:
+		mov		ecx, ebx
+
+loc_DrawBitmap16mmx_0002:
+		movzx	eax, word ptr[esi]
+		add		esi, 2
+		push	ebx
+		push	ecx
+		push	edx
+		mov		ebx,eax
+		and		ebx,0xf800
+		shl		ebx,8
+		mov		ecx,eax
+		and		ecx,0x7e0
+		shl		ecx,5
+		mov		edx,eax
+		and		edx,0x1f
+		shl		edx,3
+		or		ebx,ecx
+		or		ebx,edx
+		or		ebx,0xff000000
+		mov		[edi], ebx
+		add		edi, 4
+		pop		edx
+		pop		ecx
+		pop		ebx
+		dec		ecx
+		jnz		loc_DrawBitmap16mmx_0002
+
+		add     esi, BitmapOffset
+		add		edi, ScreenOffset
+		dec		edx
+		jnz		loc_DrawBitmap16mmx_0001
+	}
+	pCanvas->UnlockCanvas();
+#endif
+}
 //---------------------------------------------------------------------------
 // 函数:	DrawBitmap16win
 // 功能:	绘制16位色位图

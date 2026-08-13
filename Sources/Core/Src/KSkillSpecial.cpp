@@ -18,7 +18,7 @@ KList SpecialMovieList;
 KSkillSpecial::KSkillSpecial()
 {
 	m_nPX = m_nPY = m_nPZ = 0;
-	m_nNpcIndex = m_dwMatchID = 0;
+	m_dwMatchID = 0;
 	m_pSndNode = NULL;
 	m_RUImage.szImage[0] = 0;
 	m_RUImage.uImage = 0;
@@ -32,6 +32,21 @@ KSkillSpecial::KSkillSpecial()
 #ifdef TOOLVERSION
 	m_pSprNode = NULL;
 #endif
+
+	m_nRegionId = -1;
+	m_nCurrentMapX = 0;
+	m_nCurrentMapY = 0;
+	m_nCurrentMapZ = 0;
+	m_nXOffset = 0;
+	m_nYOffset = 0;
+	m_nCurDir = 0;
+	m_nNpcIndex = -1; 
+	m_dwMatchID = 0;
+	m_pMissleRes = nullptr; 
+	m_nBeginTime = 0;
+	m_nEndTime = 0;
+	m_bFollowMissle = FALSE;
+	m_eStatus = 0;
 };
 
 BOOL KSkillSpecial::Init()

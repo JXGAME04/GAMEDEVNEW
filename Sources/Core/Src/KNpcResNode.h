@@ -238,13 +238,13 @@ public:
 	// 判断某个部件是否存在
 	BOOL			CheckPartExist(int nPartNo);
 	// 获得某个部件的某个装备在某个动作下的 spr 文件名
-	BOOL			GetFileName(int nPartNo, int nActionNo, int nEquipNo, char *lpszDefault, char *lpszGetName, int nStrLen);
+	BOOL			GetFileName(int nPartNo, int nActionNo, int nEquipNo, char *lpszDefault, char *lpszGetName, int nStrLen, bool bEffect = false);
 	// 获得某个部件的某个装备在某个动作下的 spr 文件的帧间隔
-	int				GetInterval(int nPartNo, int nActionNo, int nEquipNo, int nDefault);
+	int				GetInterval(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect = false);
 	// 获得某个部件的某个装备在某个动作下的 spr 文件的总帧数
-	int				GetTotalFrames(int nPartNo, int nActionNo, int nEquipNo, int nDefault);
+	int				GetTotalFrames(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect = false);
 	// 获得某个部件的某个装备在某个动作下的 spr 文件的总方向数
-	int				GetTotalDirs(int nPartNo, int nActionNo, int nEquipNo, int nDefault);
+	int				GetTotalDirs(int nPartNo, int nActionNo, int nEquipNo, int nDefault, bool bEffect = false);
 	// 获得某武器某状态下的动作编号
 	int				GetActNo(int nDoing, int nEquipNo, BOOL bRideHorse);
 	// 从表格中得到一组排序信息

@@ -52,7 +52,7 @@ inline KNode::KNode(void)
 //---------------------------------------------------------------------------
 inline KNode* KNode::GetNext(void)
 {
-	if (m_pNext->m_pNext)
+	if (m_pNext && m_pNext->m_pNext)
 		return m_pNext;
 	return NULL;
 }

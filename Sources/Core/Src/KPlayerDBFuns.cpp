@@ -60,6 +60,8 @@ int KPlayer::LoadDBPlayerInfo(BYTE *pPlayerInfo, int &nStep, unsigned int &nPara
 				nRetValue = SendSyncData(nStep, nParam);
 			}
 		}
+
+	//	UpdataCurData();
 		break;
 	case STEP_FIGHT_SKILL_LIST:
 		if ((nRet = LoadPlayerFightSkillList(pPlayerInfo, m_pCurStatusOffset, nParam)) == 1)
@@ -81,6 +83,8 @@ int KPlayer::LoadDBPlayerInfo(BYTE *pPlayerInfo, int &nStep, unsigned int &nPara
 				nRetValue = SendSyncData(nStep, nParam);
 			}
 		}
+
+	//	UpdataCurData();
 		break;
 	case STEP_STATE_SKILL_LIST:
 		if ((nRet = LoadPlayerStateSkillList(pPlayerInfo, m_pCurStatusOffset, nParam)) == 1)
@@ -102,7 +106,8 @@ int KPlayer::LoadDBPlayerInfo(BYTE *pPlayerInfo, int &nStep, unsigned int &nPara
 				nRetValue = SendSyncData(nStep, nParam);
 			}
 		}
-		
+
+	//	UpdataCurData();
 		break;
 	case STEP_TASK_LIST:
 		//*************************************************		
@@ -162,6 +167,8 @@ int KPlayer::LoadDBPlayerInfo(BYTE *pPlayerInfo, int &nStep, unsigned int &nPara
 				nRetValue = SendSyncData(nStep, nParam);
 			}
 		}
+
+	//	UpdataCurData();
 		break;
 	case STEP_ITEM_LIST:
 		//*************************************************
@@ -185,6 +192,8 @@ int KPlayer::LoadDBPlayerInfo(BYTE *pPlayerInfo, int &nStep, unsigned int &nPara
 				nRetValue = SendSyncData(nStep, nParam);
 			}
 		}
+
+	//	UpdataCurData();
 		break;
 	default:
 		nStep = STEP_SYNC_END;
@@ -240,9 +249,18 @@ int	KPlayer::LoadPlayerBaseInfo(BYTE  * pRoleBuffer, BYTE * &pCurData, unsigned 
 	//---------------------------------------------------------------------------------------------
 label_retry:
 	POINT Pos;
-	g_SubWorldSet.GetRevivalPosFromId(m_sLoginRevivalPos.m_nSubWorldID, m_sLoginRevivalPos.m_ReviveID, &Pos);
-	m_sLoginRevivalPos.m_nMpsX = Pos.x;
-	m_sLoginRevivalPos.m_nMpsY = Pos.y;
+	if(g_SubWorldSet.GetRevivalPosFromId(m_sLoginRevivalPos.m_nSubWorldID, m_sLoginRevivalPos.m_ReviveID, &Pos))
+	{
+		m_sLoginRevivalPos.m_nMpsX = Pos.x;
+		m_sLoginRevivalPos.m_nMpsY = Pos.y;
+	}
+	else
+	{
+		m_sLoginRevivalPos.m_nSubWorldID = 53;
+		m_sLoginRevivalPos.m_ReviveID = 19;
+		m_sLoginRevivalPos.m_nMpsX = 52032;
+		m_sLoginRevivalPos.m_nMpsY = 101696;
+	}
 	//---------------------------------------------------------------------------------------------
 	PLAYER_REVIVAL_POS	tempPos;
 	BOOL bUseRevive = FALSE;
@@ -260,8 +278,8 @@ label_retry:
 		tempPos.m_nMpsX = pRoleData->BaseInfo.ientergamex;
 		tempPos.m_nMpsY = pRoleData->BaseInfo.ientergamey;
 	}
-
-	/*if(g_SubWorldSet.SearchWorld(tempPos.m_nSubWorldID) == -1 //neu player vao map khong co trong worldset thi load subworld dau tien
+/*
+	if(g_SubWorldSet.SearchWorld(tempPos.m_nSubWorldID) == -1 //neu player vao map khong co trong worldset thi load subworld dau tien
 		|| (pRoleData->BaseInfo.cUseRevive && (tempPos.m_nMpsX == 0 && tempPos.m_nMpsY ==0)) //neu player vao map pos x y = 0 load ®Çu tiªn
 		) 
 	{
@@ -269,16 +287,44 @@ label_retry:
 		tempPos.m_nSubWorldID = SubWorld[0].m_SubWorldID;
 		tempPos.m_nMpsX = Pos.x;
 		tempPos.m_nMpsY = Pos.y;
-	}*/
+	}
 
+	int nWorldIdx = g_SubWorldSet.SearchWorld(tempPos.m_nSubWorldID);
+
+	if (nWorldIdx < 0
+		|| (pRoleData->BaseInfo.cUseRevive &&
+			(tempPos.m_nMpsX <= 0 || tempPos.m_nMpsY <= 0)))
+	{
+		printf("[Fix] Invalid Map or Pos -> Move to map 53\n");
+
+		POINT Pos = { 0, 0 };
+
+	
+		g_SubWorldSet.GetRevivalPosFromId(53, 1, &Pos);
+
+		
+		if (Pos.x <= 0 || Pos.y <= 0)
+		{
+			Pos.x = 1614;   
+			Pos.y = 3206;
+		}
+
+		tempPos.m_nSubWorldID = 53;
+		tempPos.m_nMpsX = Pos.x;
+		tempPos.m_nMpsY = Pos.y;
+	}
+*/
 	int nSeries = pRoleData->BaseInfo.ifiveprop;
 	m_nIndex = NpcSet.AddNpcSet2(nSex, nSeries, g_SubWorldSet.SearchWorld(tempPos.m_nSubWorldID), tempPos.m_nMpsX, tempPos.m_nMpsY);
-	if(m_nIndex <= 0) 
+	if (m_nIndex <= 0)
 	{
-		printf("[Error!]AddNpc Error DBFuns.cpp");
 		if (pRoleData->BaseInfo.cUseRevive)
 		{
-			return -1;
+			printf("[Error!]AddNpc Error DBFuns.cpp wrongmapos\n");
+			m_nIndex = NpcSet.AddNpcSet2(nSex, nSeries, g_SubWorldSet.SearchWorld(53), 51200, 102400);
+			if(m_nIndex <= 0)
+				return -1;
+			pRoleData->BaseInfo.cIsExchange = 0;
 		}
 		else
 		{
@@ -331,7 +377,7 @@ label_retry:
 	pNpc->m_btRankId				= pRoleData->BaseInfo.isectrole;
 	pNpc->m_ExItemId				= pRoleData->BaseInfo.iexitemrole; // hanh trang
 	pNpc->m_ExBoxId					= pRoleData->BaseInfo.iexboxrole; // ruong mo rong
-	m_nWorldStat	= pRoleData->BaseInfo.nWorldStat;	//xÕp h¹ng thÕ giíi
+	m_nWorldStat	= pRoleData->BaseInfo.nWorldStat;	//xÕp h¹ng th?giíi
 	m_nSectStat		= pRoleData->BaseInfo.nSectStat;
 	m_nChestPW		= pRoleData->BaseInfo.ipassrole; 
 	SetChestPW(m_nChestPW);
@@ -341,6 +387,7 @@ label_retry:
 	nCashMoney		= pRoleData->BaseInfo.imoney;
 	nSaveMoney		= pRoleData->BaseInfo.isavemoney;
 	m_ItemList.SetMoney(nCashMoney, nSaveMoney,0);
+	m_nActiveEquipNum = pRoleData->BaseInfo.ipduphong3; //item set num
 
 	pNpc->m_Series	= pRoleData->BaseInfo.ifiveprop;
 	pNpc->m_Camp	= pRoleData->BaseInfo.iteam;
@@ -358,6 +405,8 @@ label_retry:
 	pNpc->RestoreNpcBaseInfo();
 	
 	pNpc->m_CurrentLife = pRoleData->BaseInfo.icurlife;
+	if(pNpc->m_CurrentLife < 0)
+		pNpc->m_CurrentLife = 1;
 	pNpc->m_CurrentMana = pRoleData->BaseInfo.icurinner;
 	pNpc->m_CurrentStamina = pRoleData->BaseInfo.icurstamina;
 
@@ -366,6 +415,9 @@ label_retry:
 	m_cRepute.SetReputeValue(pRoleData->BaseInfo.ireputevalue);
 	m_cFuYuan.SetFuYuanValue(pRoleData->BaseInfo.ifuyuanvalue);
 	m_cReBorn.SetReBornValue(pRoleData->BaseInfo.irebornvalue);
+	BYTE tmpMeridian[MAX_MERIDIAN];
+	memcpy(tmpMeridian, pRoleData->BaseInfo.szStringduphong2, sizeof(tmpMeridian));
+	m_cMeridian.setMeridian(tmpMeridian);
 
 	m_BuyInfo.Clear();
 	m_cMenuState.Release();
@@ -389,6 +441,7 @@ label_retry:
 	pNpc->m_HelmType = g_ItemChangeRes.GetHelmRes(0, 0);
 	pNpc->m_HorseType = g_ItemChangeRes.GetHorseRes(0, 0);
 	pNpc->m_bRideHorse = FALSE;
+	pNpc->m_btHonorId = pRoleData->BaseInfo.ipduphong4; //m_btHonorId
 	nParam = 1;
 	pCurData = (BYTE *)&pRoleData->pBuffer;
 	if (bUseRevive)
@@ -401,7 +454,7 @@ label_retry:
 		char szMapTypeTmp[32] = {0};
 		int nSubWorldIndexTemp = g_SubWorldSet.SearchWorld(pRoleData->BaseInfo.ientergameid);
 		strcpy(szMapTypeTmp, SubWorld[nSubWorldIndexTemp].szMapType);
-		if(strcmp(szMapTypeTmp,"City") == 0 || strcmp(szMapTypeTmp,"Capital") == 0 || strcmp(szMapTypeTmp,"Country") == 0) //thµnh thÞ // thñ ®« // th«n lµng add by tuanln
+		if(strcmp(szMapTypeTmp,"City") == 0 || strcmp(szMapTypeTmp,"Capital") == 0 || strcmp(szMapTypeTmp,"Country") == 0) //thµnh th?// th?®« // th«n lµng add by tuanln
 		{
 			pNpc->m_FightMode = 0;
 		}
@@ -410,8 +463,39 @@ label_retry:
 			pNpc->m_FightMode = 1;
 		}
 	}
+	UpdataCurData();
 	return 1;
 }
+static bool g_ExcludeLine[140] = { 0 };
+static bool g_ExcludeLineInit = false;
+
+void InitExcludeLines()
+{
+    if (g_ExcludeLineInit)
+        return;
+
+    int arr[] = {
+        0,5,10,15,20,25,
+        30,38,45,50,
+        60,65,70,75,
+        80,
+        93,95,
+        100,
+        110,115,
+        120,125,130
+    };
+
+    int nCount = sizeof(arr) / sizeof(int);
+    for (int i = 0; i < nCount; ++i)
+    {
+        int n = arr[i];
+        if (n >= 0 && n < 140)
+            g_ExcludeLine[n] = true;
+    }
+
+    g_ExcludeLineInit = true;
+}
+
 
 int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigned int &nParam)
 {
@@ -467,6 +551,7 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		
 		//**************************************************************
 		nItemClass	= pItemData->iequipclasscode;
+		NewItem.m_CommonAttrib.nItemNature		= pItemData->iequipnaturecode;
 		NewItem.m_CommonAttrib.nDetailType		= pItemData->idetailtype;
 		NewItem.m_CommonAttrib.nParticularType	= pItemData->iparticulartype;
 		NewItem.m_CommonAttrib.nLevel			= pItemData->ilevel;
@@ -477,15 +562,12 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		nItemX			= pItemData->ix;
 		nItemY			= pItemData->iy;
 		nLocal			= pItemData->ilocal;
+		NewItem.m_CommonAttrib.nRow = pItemData->irow;
+		memset(NewItem.m_GeneratorParam.nGeneratorLevel, 0, sizeof(NewItem.m_GeneratorParam.nGeneratorLevel));
+		memcpy(NewItem.m_GeneratorParam.nGeneratorLevel, pItemData->iparam, sizeof(NewItem.m_GeneratorParam.nGeneratorLevel));
 
 		//**************************************************************
 		//NewItem.SetID(dwItemID);
-		NewItem.m_GeneratorParam.nGeneratorLevel[0] = pItemData->iparam1;
-		NewItem.m_GeneratorParam.nGeneratorLevel[1] = pItemData->iparam2;
-		NewItem.m_GeneratorParam.nGeneratorLevel[2] = pItemData->iparam3;
-		NewItem.m_GeneratorParam.nGeneratorLevel[3] = pItemData->iparam4;
-		NewItem.m_GeneratorParam.nGeneratorLevel[4] = pItemData->iparam5;
-		NewItem.m_GeneratorParam.nGeneratorLevel[5] = pItemData->iparam6;
 		
 		NewItem.m_GeneratorParam.nVersion			= pItemData->iequipversion;
 		NewItem.m_GeneratorParam.uRandomSeed		= pItemData->irandseed;
@@ -498,6 +580,26 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 
 		NewItem.SetMantle(pItemData->iiduphong1);//#phi phong
 		BOOL bGetEquiptResult = 0;
+		InitExcludeLines();
+		int nLine = NewItem.GetLine();
+
+		if (NewItem.GetNature() >= NATURE_GOLD &&
+	    nLine >= 0 && nLine <= 139 &&
+	    !g_ExcludeLine[nLine])   // 
+		{
+		    bool bHasTime =
+		        (pItemData->iyear  != 0 ||
+		         pItemData->imonth != 0 ||
+		         pItemData->iday   != 0 ||
+		         pItemData->ihour  != 0);
+		
+		   
+		    if (!bHasTime && pItemData->ilockbh == 0)
+		    {
+		        pItemData->ilockbh = -2;
+		        NewItem.SetPlayerItemLock(pItemData->ilockbh);
+		    }
+		}
 
 		if (pItemData->iyear)
 		if (pItemData->iyear - 1900 < timeinfo->tm_year)
@@ -527,24 +629,29 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		switch(nItemClass)
 		{
 		case item_equip :			
-			if (!pItemData->igoldid)
+			if (!pItemData->igoldid) {
 				bGetEquiptResult = ItemGen.Gen_ExistEquipment(
-					NewItem.m_CommonAttrib.nDetailType, 
+					NewItem.m_CommonAttrib.nItemNature,
+					NewItem.m_CommonAttrib.nItemNature >= NATURE_GOLD ? NewItem.m_CommonAttrib.nRow : NewItem.m_CommonAttrib.nDetailType,
 					NewItem.m_CommonAttrib.nParticularType,
 					NewItem.m_CommonAttrib.nSeries,
-					NewItem.m_CommonAttrib.nLevel, 
-					NewItem.m_GeneratorParam.nGeneratorLevel, 
+					NewItem.m_CommonAttrib.nLevel,
+					NewItem.m_GeneratorParam.nGeneratorLevel,
 					NewItem.m_GeneratorParam.nLuck,
 					NewItem.m_GeneratorParam.nVersion,
-					&NewItem,
-					NewItem.m_CommonAttrib.nEnChance,
-					NewItem.m_CommonAttrib.nPoint);
+					&NewItem);
+
+				NewItem.SetPlayerItemLock(pItemData->ilockbh);
+				NewItem.SetPlayerItemHLock(pItemData->igiomokhoa);
+			}
 			else
 			bGetEquiptResult = ItemGen.GetGoldItemByIndex(NewItem.m_CommonAttrib.nGoldId,
 				&NewItem,
 				NewItem.m_GeneratorParam.nGeneratorLevel,
 				NewItem.m_CommonAttrib.nSeries,
 				NewItem.m_CommonAttrib.nEnChance);
+
+			NewItem.SetMaxOptMultiply(pItemData->iiduphong4);
 			break;
 		case item_medicine:			
 				bGetEquiptResult = ItemGen.Gen_Medicine(
@@ -589,8 +696,10 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 
 		//if (pItemData->idurability != 0)
 		NewItem.SetDurability(pItemData->idurability); //#do ben
-		NewItem.SetParam(pItemData->iiduphong2);//sè lÇn sö dông item
+		NewItem.SetParam(pItemData->iiduphong2);//s?lÇn s?dông item
 		NewItem.SetItemGlowLight(pItemData->iiduphong3); //ngo¹i trang item ph¸t s¸ng
+        NewItem.SetPlayerItemLock(pItemData->ilockbh);
+		NewItem.SetPlayerItemHLock(pItemData->igiomokhoa);
 		NewItem.SetExpTime(pItemData->iyear,pItemData->imonth,pItemData->iday,pItemData->ihour);
 
 		NewItem.m_CommonAttrib.uPrice = pItemData->iiduphong9; //Load gia bay ban
@@ -782,7 +891,7 @@ int	KPlayer::SavePlayerBaseInfo(BYTE * pRoleBuffer)
 	pRoleData->BaseInfo.isectrole = pNpc->m_btRankId;
 	pRoleData->BaseInfo.iexitemrole = pNpc->m_ExItemId; // hang trang
 	pRoleData->BaseInfo.iexboxrole = pNpc->m_ExBoxId; // ruong mo rong
-	pRoleData->BaseInfo.nWorldStat	= m_nWorldStat;	//xÕp h¹ng thÕ giíi
+	pRoleData->BaseInfo.nWorldStat	= m_nWorldStat;	//xÕp h¹ng th?giíi
 	pRoleData->BaseInfo.nSectStat	= m_nSectStat;
 	pRoleData->BaseInfo.ipassrole =  m_nChestPW;
 	
@@ -795,6 +904,7 @@ int	KPlayer::SavePlayerBaseInfo(BYTE * pRoleBuffer)
 	nCashMoney  = m_ItemList.GetMoney(room_equipment);
 	nSaveMoney	= m_ItemList.GetMoney(room_repository);
 	pRoleData->BaseInfo.imoney			= nCashMoney;
+	pRoleData->BaseInfo.ipduphong3		= m_nActiveEquipNum; //save equip set num
 	pRoleData->BaseInfo.isavemoney		= nSaveMoney;
 	pRoleData->BaseInfo.ifiveprop		= pNpc->m_Series;
 	pRoleData->BaseInfo.iteam			= pNpc->m_Camp;
@@ -846,8 +956,11 @@ int	KPlayer::SavePlayerBaseInfo(BYTE * pRoleBuffer)
 	pRoleData->BaseInfo.ireputevalue = m_cRepute.GetReputeValue();//Repute
 	pRoleData->BaseInfo.ifuyuanvalue = m_cFuYuan.GetFuYuanValue();//Fuyuan
 	pRoleData->BaseInfo.irebornvalue = m_cReBorn.GetReBornValue();// Reborn
+	pRoleData->BaseInfo.ipduphong4 = pNpc->m_btHonorId; //m_btHonorId
 	//
 	pRoleData->dwFSkillOffset = (BYTE * )pRoleData->pBuffer - (BYTE *)pRoleBuffer;
+	memcpy(pRoleData->BaseInfo.szStringduphong2, m_cMeridian.getMeridian(), MAX_MERIDIAN);
+
 	return 1;
 }
 
@@ -872,6 +985,7 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		
 		sprintf(szSection, "%s%d", SECTION_ITEM, nItemCount + 1);
 		//*****************************************************************
+		pItemData->iequipnaturecode = Item[nItemIndex].m_CommonAttrib.nItemNature;
 		pItemData->iequipclasscode =  Item[nItemIndex].m_CommonAttrib.nItemGenre;
 		pItemData->iequipcode =  Item[nItemIndex].GetID();
 		pItemData->idetailtype =  Item[nItemIndex].m_CommonAttrib.nDetailType;
@@ -883,12 +997,8 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->iy =  m_ItemList.m_Items[nIdx].nY;
 		pItemData->iequipversion = Item[nItemIndex].GetItemParam()->nVersion;
 		pItemData->irandseed = Item[nItemIndex].GetItemParam()->uRandomSeed;
-		pItemData->iparam1 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[0];
-		pItemData->iparam2 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[1];
-		pItemData->iparam3 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[2];
-		pItemData->iparam4 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[3];
-		pItemData->iparam5 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[4];
-		pItemData->iparam6 =  Item[nItemIndex].GetItemParam()->nGeneratorLevel[5];
+		memset(pItemData->iparam, 0, sizeof(pItemData->iparam));
+		memcpy(pItemData->iparam, Item[nItemIndex].GetItemParam()->nGeneratorLevel, sizeof(pItemData->iparam));
 		pItemData->ilucky = 	 Item[nItemIndex].GetItemParam()->nLuck;
 		pItemData->idurability = Item[nItemIndex].GetDurability();
 		pItemData->istacknum = Item[nItemIndex].GetStackNum();
@@ -903,9 +1013,17 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->ilockbh = Item[nItemIndex].GetPlayerItemLock();
 		pItemData->igiomokhoa = Item[nItemIndex].GetPlayerItemHLock();
 		pItemData->iiduphong1 = Item[nItemIndex].GetMantle(); //#phi phong
-		pItemData->iiduphong2 = Item[nItemIndex].GetParam(); //param sè lÇn sö dông item
-		pItemData->iiduphong3 = Item[nItemIndex].GetItemGlowLight(); //thay ®æi ngo¹i trang mò, ¸o, vò khÝ ph¸t s¸ng
+		pItemData->iiduphong2 = Item[nItemIndex].GetParam(); //param s?lÇn s?dông item
+		pItemData->iiduphong3 = Item[nItemIndex].GetItemGlowLight(); //thay ®æi ngo¹i trang m? ¸o, v?kh?ph¸t s¸ng
+		pItemData->iiduphong4 = Item[nItemIndex].GetMaxOptMultiply();
 		pItemData->iiduphong9 = Item[nItemIndex].m_CommonAttrib.uPrice; //Luu gia bay ban cua Item
+		pItemData->ilocksell = Item[nItemIndex].m_CommonAttrib.bLockSell;
+		pItemData->ilocktrade = Item[nItemIndex].m_CommonAttrib.bLockTrade;
+		pItemData->ilockdrop = Item[nItemIndex].m_CommonAttrib.bLockDrop;
+		pItemData->imantle = Item[nItemIndex].GetMantle();
+		pItemData->irow = Item[nItemIndex].GetRow();
+		pItemData->ifortune = Item[nItemIndex].GetFortune();
+		pItemData->iowner = Item[nItemIndex].GetOwner();
 		//*****************************************************************************
 		pItemData++;
 		nItemCount ++;

@@ -32,6 +32,7 @@ public:
 #ifndef _SERVER
 	virtual void			DrawSkillIcon(int x, int y, int Width, int Height) = 0;
 	virtual const char *	GetSkillIcon() = 0;
+	virtual BOOL			IsNeedDownHorse() {return FALSE;};
 #endif
 };
 

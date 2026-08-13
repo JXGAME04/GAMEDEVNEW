@@ -87,7 +87,7 @@ void KUiOptions2::Initialize()
 	m_pSelf->LoadScheme(Scheme);
 	Wnd_AddWindow(this);
 }
-
+extern int SCREEN_WIDTH;
 void KUiOptions2::LoadScheme(const char* pScheme)
 {
 	char		Buff[128];
@@ -96,6 +96,15 @@ void KUiOptions2::LoadScheme(const char* pScheme)
 	if (m_pSelf && Ini.Load(Buff))
 	{
 		m_pSelf->LoadScheme(&Ini);
+		if (SCREEN_WIDTH == 1024) {
+			int nX, nY;
+			int dX, dY;
+			dX = (1024 - 800) / 2 + 8;
+			dY = 0;
+
+			m_pSelf->GetPosition(&nX, &nY);
+			m_pSelf->SetPosition(nX + dX, nY + dY);
+		}
 	}
 }
 

@@ -31,6 +31,7 @@ private:
 	KUiParadeItem() {}
 	~KUiParadeItem() {}
 	void	Initialize();								//初始化	
+	void	SwitchExpand(BOOL bShow);
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	//窗口函数
 	void	LoadScheme(class KIniFile* pIni);			//载入界面方案
 	void	UpdateBaseData(KUiPlayerItem* pDest);							//更新基本数据（人名等不易变数据）
@@ -52,6 +53,10 @@ private:
 	KWndText32	m_PhucDuyen;
 	KWndText32	m_TrungSinh;
 	KWndText32	m_MateName;
+
+	KWndButton	m_EquipExpandBtn;
+	KWndImage	m_EquipExpandImg;
+	KWndButton	m_MaskFeature;
 
 	KWndObjectBox	m_EquipBox[_ITEM_COUNT];
 

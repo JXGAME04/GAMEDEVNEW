@@ -59,7 +59,10 @@ extern "C"
 {
 	unsigned int TGetColor(const char* pColor);
 	void TReplaceText(char* pBuffer, const char* pszKey, const char* pszText);
-	
+	int EGetBit(int nIntValue, int nBitNumber);
+	int ESetBit(int nIntValue, int nBitNumber, int nBitValue);
+	int EGetByte(int nIntValue, int nByteNumber);
+	int ESetByte(int nIntValue, int nByteNumber, int nByteValue);
 	const char* TGetSecondVisibleCharacterThisLine(const char* pCharacter, int nPos, int nLen);
 	
 	int TIsCharacterNotAlowAtLineHead(const char* pCharacter);

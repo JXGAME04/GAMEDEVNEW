@@ -175,7 +175,7 @@ bool CD3D_Shell::BuildDeviceList()
             // 选择一个800×600模式为缺省模式 (希望选择一个16位模式)
             for (m=0; m<Device.Modes.size(); ++m)
 			{
-                if (Device.Modes[m].Width==800 && Device.Modes[m].Height==600)
+                if ((Device.Modes[m].Width==800 || Device.Modes[m].Width == 1024)&& (Device.Modes[m].Height==600 || Device.Modes[m].Height == 768))
 				{
                     Device.iCurrentMode = m;
                     if (Device.Modes[m].Format == D3DFMT_R5G6B5 || Device.Modes[m].Format == D3DFMT_X1R5G5B5 || Device.Modes[m].Format == D3DFMT_A1R5G5B5)

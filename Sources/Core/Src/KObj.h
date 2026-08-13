@@ -151,7 +151,7 @@ public:
 	int			m_nBornTime;			// ÖØÉúµ¹¼ÆÊ±£¨box´ò¿ª×´Ì¬¾­¹ılifetime×Ô¶¯¹Ø±Õ£¬propÒşÉí×´Ì¬¾­¹ılifetime×Ô¶¯ÏÔÊ¾£©
 	int			m_nWaitTime;			// µÈ´ıÊ±¼ä£¨ÓÃÓÚobj trap£¬ÔİÊ±ÎŞÓÃ£©
 	OBJ_SKILL	m_cSkill;				// Îï¼şËù´øÄ§·¨¼¼ÄÜ£¨ÓÃÓÚobj trap£¬ÔİÊ±ÎŞÓÃ£©
-	char		m_szName[32];			// Îï¼şÃû³Æ
+	char		m_szName[80];			// Îï¼şÃû³Æ
 	char		m_szScriptName[80];		// Ëù´ø½Å±¾ÎÄ¼şÃû
 	DWORD		m_dwScriptID;			// Ëù´ø½Å±¾ÎÄ¼şID
 	int			m_nColorID;				// Îï¼şÃû×ÖÏÔÊ¾Ê±µÄÑÕÉ«id£¬¿Í»§¶ËÍ¨¹ı²é±íÕÒµ½ÏàÓ¦ÑÕÉ«
@@ -166,7 +166,7 @@ public:
 #ifdef _SERVER
 	int			m_nBelong;
 	int			m_nBelongTime;
-	BOOL		m_bPickExecute;//add by phong kiÒu object sö dông ngay
+	BOOL		m_bPickExecute;//add by phong kiÒu object s?dông ngay
 	ServerImage m_cImage;				
 #endif
 
@@ -232,7 +232,7 @@ public:
 	void		SetItemBelong(int nPlayerIdx);
 	void		SetItemBelong2(int nPlayerIdx, int nTime);
 	void		SetEntireBelong(int nPlayerIdx);
-	void		SetObjPickExecute(BOOL bFlag) {m_bPickExecute = (BOOL)bFlag;};//add by phong kiÒu object sö dông ngay
+	void		SetObjPickExecute(BOOL bFlag) {m_bPickExecute = (BOOL)bFlag;};//add by phong kiÒu object s?dông ngay
 	BOOL		GetObjPickExecute() {return m_bPickExecute;};
 #endif
 

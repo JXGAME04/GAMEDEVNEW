@@ -1317,7 +1317,10 @@ BOOL	KObj::SyncAdd(int nClient)
 	cObjAdd.m_nXpos = nTempX;
 	cObjAdd.m_nYpos = nTempY;
 	cObjAdd.m_nMoneyNum = m_nMoneyNum;
-	cObjAdd.m_nItemID = m_nItemDataID;
+	if(m_nItemDataID > 0)
+		cObjAdd.m_nItemID = Item[m_nItemDataID].GetID();
+	else
+		cObjAdd.m_nItemID = 0;
 	cObjAdd.m_btItemWidth = m_nItemWidth;
 	cObjAdd.m_btItemHeight = m_nItemHeight;
 	cObjAdd.m_btColorID = this->m_nColorID;

@@ -5,6 +5,7 @@
 #include "S3PDB_MSSQLServer_Connection.h"
 #include "S3P_MSSQLServer_Result.h"
 #include "../S3Relay.h"
+#include <cassert>
 
 WINOLEAPI  CoInitializeEx(LPVOID pvReserved, DWORD dwCoInit);
 

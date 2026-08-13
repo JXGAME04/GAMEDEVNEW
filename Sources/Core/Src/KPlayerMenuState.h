@@ -18,6 +18,8 @@ enum
 	PLAYER_MENU_STATE_TRADEOPEN,	//më giao dÞch
 	PLAYER_MENU_STATE_TRADING,	//®ang giao dÞch
 	PLAYER_MENU_STATE_IDLE,
+	PLAYER_MENU_STATE_GAMBLEOPEN,	//më OTT
+	PLAYER_MENU_STATE_GAMBLING,	//®ang OTT
 	PLAYER_MENU_STATE_NUM,
 };
 
@@ -59,7 +61,7 @@ public:
 class KPlayerMenuStateGraph
 {
 public:
-	char		m_szName[PLAYER_MENU_STATE_NUM][80];
+	char		m_szName[PLAYER_MENU_STATE_NUM+1][80];
 
 public:
 	BOOL		Init();

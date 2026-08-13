@@ -180,7 +180,7 @@ int		CTongSet::AddMember(char *lpszPlayerName, char *lpszTongName, int nSex)
 		// Found
 		if (m_pcTong[i] && (m_pcTong[i]->m_dwNameID == dwTongNameID))
 		{
-			if (m_pcTong[i]->AddMember(lpszPlayerName, nSex))			// khong truyen sex o day
+			if (m_pcTong[i]->AddMember(lpszPlayerName, nSex, true))			// khong truyen sex o day
 			{	//Add member successful
 				// Save, data saved to database
 				TMemberStruct	sMember;
@@ -236,6 +236,39 @@ int		CTongSet::GetTongCamp(int nTongIdx)
 	return -1;
 }
 
+int		CTongSet::GetTongLevel(int nTongIdx)
+{
+	if (!m_pcTong || m_nTongPointSize <= 0)
+		return -1;
+	if (nTongIdx < 0 || nTongIdx >= m_nTongPointSize)
+		return -1;
+
+	if (m_pcTong[nTongIdx])
+		return m_pcTong[nTongIdx]->m_nLevel;
+
+	return -1;
+}
+int CTongSet::GetTongExp(int nTongIdx)
+{
+	if (!m_pcTong || m_nTongPointSize <= 0)
+		return -1;
+	if (nTongIdx < 0 || nTongIdx >= m_nTongPointSize)
+		return -1;
+	if (m_pcTong[nTongIdx])
+		return m_pcTong[nTongIdx]->m_nExpGuide;
+	return -1;
+}
+
+BOOL CTongSet::GetTongFull(int nTongIdx)
+{
+	if (!m_pcTong || m_nTongPointSize <= 0)
+		return -1;
+	if (nTongIdx < 0 || nTongIdx >= m_nTongPointSize)
+		return -1;
+	if (m_pcTong[nTongIdx])
+		return m_pcTong[nTongIdx]->m_bIsFull;
+	return -1;
+}
 BOOL	CTongSet::GetMasterName(int nTongIdx, char *lpszName)
 {
 	if (!lpszName)
@@ -674,6 +707,28 @@ BOOL	CTongSet::ChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 		}
 	}
 	
+	return FALSE;
+}
+
+BOOL	CTongSet::ChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange)
+{
+	if (!pChange)
+		return FALSE;
+
+	if (!m_pcTong)
+		return FALSE;
+
+	for (int i = 0; i < m_nTongPointSize; i++)
+	{
+		if (m_pcTong[i] && (m_pcTong[i]->m_dwNameID == pChange->m_dwTongNameID))
+		{
+			if (m_pcTong[i]->DBChangeTongExp(pChange))
+			{
+				return g_cTongDB.ChangeTong(*m_pcTong[i]);
+			}
+		}
+	}
+
 	return FALSE;
 }
 

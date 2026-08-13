@@ -13,6 +13,7 @@
 #include "..\iRepresent\RepresentUtility.h"
 #include "..\..\engine\src\KWin32Wnd.h"
 #include "..\..\engine\src\KBmpFile24.h"
+#include "../../Engine/Src/KDebug.h"
 #include <assert.h>
 
 
@@ -151,7 +152,6 @@ unsigned int KRepresentShell2::CreateImage(const char* pszName, int nWidth, int 
 {
 	return m_ImageStore.CreateImage(pszName, nWidth, nHeight, nType);
 }
-
 //##ModelId=3DB69FE401DA
 void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
@@ -208,20 +208,67 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 
 						char* pPalette = GET_SPR_PALETTE(pSprHeader);
 
+						if (pPalette == NULL) {
+                            break;
+                        }
+						//
 						switch(pTemp->bRenderStyle)
 						{
 						case IMAGE_RENDER_STYLE_ALPHA:
 						case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
-							break;
 						case IMAGE_RENDER_STYLE_3LEVEL:
-							m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette);
+							if (pSprHeader->Reserved[1] ) 
+							{
+								//Drawprimitives by kinnox;
+								/*int nPitch = m_DirectDraw.GetScreenPitch();
+								void* pBuffer = m_Canvas.LockCanvas(nPitch);
+								//
+								if (!pBuffer == NULL)
+								{
+									m_Canvas.DrawSpriteScreenMMX((BYTE)(pTemp->Color.Color_b.a), (DWORD)m_Canvas.m_nMask32, pBuffer, m_Canvas.GetWidth(), m_Canvas.GetHeight(),
+									nPitch, nX, nY, pPalette, pFrame->Sprite, pFrame->Width, pFrame->Height, NULL);
+								}
+								else
+								{
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,	pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
+								}
+								m_Canvas.UnlockCanvas();*/
+								//guve
+									UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
 							break;
-						case IMAGE_RENDER_STYLE_OPACITY:
-							m_Canvas.DrawSprite(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette);
+							/*  
+						case IMAGE_RENDER_STYLE_3LEVEL:
+							if (pSprHeader->Reserved[1] == 1) 
+							{
+
+								//Drawprimitives
+								int nPitch = m_DirectDraw.GetScreenPitch();
+								void* pBuffer = m_Canvas.LockCanvas(nPitch);
+								//
+								if (pBuffer == NULL)
+								{
+									m_Canvas.DrawSpriteScreenMMX((BYTE)(pTemp->Color.Color_b.a), (DWORD)m_Canvas.m_nMask32, pBuffer, m_Canvas.GetWidth(), m_Canvas.GetHeight(),
+								nPitch, nX, nY, pPalette, pFrame->Sprite, pFrame->Width, pFrame->Height, NULL);
+								}
+								else
+								{
+									m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width, pFrame->Height,pFrame->Sprite, pPalette);	
+								}
+								m_Canvas.UnlockCanvas();
+								break;
+								//
+							}
+							else
+								m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width, pFrame->Height,pFrame->Sprite, pPalette);
+							break;*/
+						case IMAGE_RENDER_STYLE_OPACITY://duc. no alpha, no screen
+									m_Canvas.DrawSprite(nX, nY, pFrame->Width, pFrame->Height,pFrame->Sprite, pPalette);
 							break;
 						case IMAGE_RENDER_STYLE_BORDER:
 //							m_Canvas.DrawSpriteBorder(nX, nY, pFrame->Width, pFrame->Height,
@@ -230,9 +277,26 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 //								pFrame->Sprite);
 							break;
 						case IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST:
-							pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
+							//pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
+							UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+							if(pSprHeader->Reserved[1])
+							{
+								m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+									pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+							{
+								if(nColor == 0)
+								{
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
+								}
+								else
+								{
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor);
+								}
+							}
 							break;
 						}
 					}
@@ -251,6 +315,23 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 								CoordinateTransform(nX, nY, pTemp->oPosition.nZ);
 							m_Canvas.DrawBitmap16(nX, nY,
 								pBitmap->nWidth, pBitmap->nHeight, pBitmap->Data);
+						}
+					}
+					break;
+				case ISI_T_DRAWINGRC:
+					{
+						void* pFrame;
+						AlphaRecContent* pBitmap = (AlphaRecContent *)m_ImageStore.GetImage(
+							pTemp->szImage,	pTemp->uImage, pTemp->nISPosition,
+							0, ISI_T_DRAWINGRC, pFrame);
+						if (pBitmap)
+						{
+							int nX = pTemp->oPosition.nX;
+							int nY = pTemp->oPosition.nY;
+							if (bSinglePlaneCoord == false)
+								CoordinateTransform(nX, nY, pTemp->oPosition.nZ);
+							m_Canvas.DrawAlphaRecImage(nX, nY, pBitmap->nWidth, pBitmap->nHeight,
+								pBitmap->Data, pTemp->Color.Color_b.a, pTemp->bRenderStyle == IMAGE_RENDER_STYLE_OPACITY);
 						}
 					}
 					break;
@@ -307,13 +388,22 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 						{
 						case IMAGE_RENDER_STYLE_ALPHA:
 						case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
-							break;
 						case IMAGE_RENDER_STYLE_3LEVEL:
-							m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width,
-								pFrame->Height, pFrame->Sprite, pPalette);
+							if (pSprHeader->Reserved[1] ) 
+							{
+								//guve
+									UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
 							break;
+						//case IMAGE_RENDER_STYLE_3LEVEL:
+						//	m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width,
+						//		pFrame->Height, pFrame->Sprite, pPalette);
+						//	break;
 						case IMAGE_RENDER_STYLE_OPACITY:
 							m_Canvas.DrawSprite(nX, nY, pFrame->Width, pFrame->Height,
 								pFrame->Sprite, pPalette);
@@ -325,9 +415,30 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 //								pFrame->Sprite);
 							break;
 						case IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST:
-							pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
+							//pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
+							
+							//if(!pPalette)
+								//pPalette = GET_SPR_PALETTE(pSprHeader);
+							
+							UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+							if(pSprHeader->Reserved[1])
+							{
+								m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+									pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+							{
+								if(nColor == 0)
+								{
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
+								}
+								else
+								{
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor);
+								}
+							}
 							break;
 						}
 					}
@@ -394,21 +505,46 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 						{
 						case IMAGE_RENDER_STYLE_ALPHA:
 						case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
-							break;
 						case IMAGE_RENDER_STYLE_3LEVEL:
+							if (pSprHeader->Reserved[1] ) 
+							{
+								//guve
+									UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
+							break;
+						/*case IMAGE_RENDER_STYLE_3LEVEL:
 							m_Canvas.DrawSprite3LevelAlpha(nX, nY, pFrame->Width, pFrame->Height,
 								pFrame->Sprite, pPalette);
-							break;
+							break;*/
 						case IMAGE_RENDER_STYLE_OPACITY:
 							m_Canvas.DrawSprite(nX, nY, pFrame->Width, pFrame->Height,
 								pFrame->Sprite, pPalette);
 							break;
 						case IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST:
-							pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
-							m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
-								pFrame->Sprite, pPalette, pTemp->Color.Color_b.a / 8);
+							UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+							if(pSprHeader->Reserved[1])
+							{
+								m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+									pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor, 1, TRUE);
+							}
+							else
+							{
+								if(nColor == 0)
+								{
+									m_Canvas.DrawSpriteAlpha(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a);
+								}
+								else
+								{
+									m_Canvas.DrawSpriteBlendColor(nX, nY, pFrame->Width, pFrame->Height,
+										pFrame->Sprite, pPalette, pTemp->Color.Color_b.a, nColor);
+								}
+							}
 							break;
 						}
 					}
@@ -462,8 +598,8 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 				int nY = pTemp->oPosition.nY;
 				if (!bSinglePlaneCoord)
 					CoordinateTransform(nX, nY, pTemp->oPosition.nZ);				
-				m_Canvas.DrawPixel(nX, nY, g_RGB(pTemp->Color.Color_b.r,
-					pTemp->Color.Color_b.g, pTemp->Color.Color_b.b));
+				int nColor = pTemp->Color.Color_dw & 0xffffff;
+				m_Canvas.DrawPixelAlpha(nX, nY, nColor, pTemp->Color.Color_b.a);
 			}
 		}
 		break;
@@ -482,17 +618,8 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 					CoordinateTransform(nX1, nY1, pTemp->oPosition.nZ);
 					CoordinateTransform(nX2, nY2, pTemp->oEndPos.nZ);
 				}
-				if (pTemp->Color.Color_b.a >= 248)
-				{
-					m_Canvas.DrawLine(nX1, nY1, nX2, nY2, g_RGB(pTemp->Color.Color_b.r,
-						pTemp->Color.Color_b.g, pTemp->Color.Color_b.b));
-				}
-				else if (pTemp->Color.Color_b.a >= 8)
-				{
-					m_Canvas.DrawLineAlpha(nX1, nY1, nX2, nY2,
-						g_RGB(pTemp->Color.Color_b.r, pTemp->Color.Color_b.g, pTemp->Color.Color_b.b),
-						31 - pTemp->Color.Color_b.a / 8);
-				}
+				int nColor = pTemp->Color.Color_dw & 0xffffff;
+				m_Canvas.DrawLineAlpha(nX1, nY1, nX2, nY2, nColor, pTemp->Color.Color_b.a);
 			}
 		}
 		break;
@@ -511,12 +638,11 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 					CoordinateTransform(nX1, nY1, pTemp->oPosition.nZ);
 					CoordinateTransform(nX2, nY2, pTemp->oEndPos.nZ);
 				}
-				int	Color = g_RGB(pTemp->Color.Color_b.r,
-					pTemp->Color.Color_b.g, pTemp->Color.Color_b.b);
-				m_Canvas.DrawLine(nX1, nY1, nX2, nY1, Color);	//ÉÏ±ß
-				m_Canvas.DrawLine(nX1, nY2, nX2, nY2, Color);	//ÏÂ±ß
-				m_Canvas.DrawLine(nX1, nY1, nX1, nY2, Color);	//×ó±ß
-				m_Canvas.DrawLine(nX2, nY1, nX2, nY2, Color);	//ÓÒ±ß
+				int nColor = pTemp->Color.Color_dw & 0xffffff;
+				m_Canvas.DrawLineAlpha(nX1, nY1, nX2, nY1, nColor, pTemp->Color.Color_b.a);	//¨¦?¡À?
+				m_Canvas.DrawLineAlpha(nX1, nY2, nX2, nY2, nColor, pTemp->Color.Color_b.a);	//??¡À?
+				m_Canvas.DrawLineAlpha(nX1, nY1, nX1, nY2, nColor, pTemp->Color.Color_b.a);	//¡Á¨®¡À?
+				m_Canvas.DrawLineAlpha(nX2, nY1, nX2, nY2, nColor, pTemp->Color.Color_b.a);	//¨®¨°¡À?
 			}
 		}
 		break;
@@ -534,8 +660,14 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 					CoordinateTransform(nX1, nY1, pTemp->oPosition.nZ);
 					CoordinateTransform(nX2, nY2, pTemp->oEndPos.nZ);
 				}
-				m_Canvas.ClearAlpha(nX1, nY1, nX2 - nX1, nY2 - nY1, g_RGB(pTemp->Color.Color_b.r,
-					pTemp->Color.Color_b.g, pTemp->Color.Color_b.b), pTemp->Color.Color_b.a);
+				int nColor = pTemp->Color.Color_dw & 0xffffff;
+				if(pTemp->Color.Color_b.a < 32)
+				{
+					int nA = (32 - pTemp->Color.Color_b.a)*8;
+					if(nA > 255)
+						nA = 255;
+					m_Canvas.ClearAlpha(nX1, nY1, nX2 - nX1, nY2 - nY1, nColor, nA);
+				}
 			}
 		}
 		break;
@@ -578,7 +710,7 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 void KRepresentShell2::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit* pPrimitives, 
         unsigned int uGenre, const char* pszImage, unsigned int uImage, short& nImagePosition)
 {
-	KSGImageContent* pDestBitmap = (KSGImageContent*)m_ImageStore.GetExistedCreateBitmap(
+	AlphaRecContent* pDestBitmap = (AlphaRecContent*)m_ImageStore.GetExistedCreateBitmap(
 		pszImage, uImage, nImagePosition);
 
 	if (pDestBitmap == NULL)
@@ -626,21 +758,53 @@ void KRepresentShell2::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 					{
 					case IMAGE_RENDER_STYLE_ALPHA:
 					case IMAGE_RENDER_STYLE_ALPHA_NOT_BE_LIT:
-						RIO_CopySprToBufferAlpha(pFrame->Sprite, pFrame->Width, pFrame->Height,
-							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);
-						break;
 					case IMAGE_RENDER_STYLE_3LEVEL:
+							if(g_pDirectDraw->GetRGBBitCount() == 32)
+								RIO_CopySprToBufferAlpha32b(pFrame->Sprite, pFrame->Width, pFrame->Height,
+								(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+							else
+								RIO_CopySprToBufferAlpha(pFrame->Sprite, pFrame->Width, pFrame->Height,
+								(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+						break;
+					/*case IMAGE_RENDER_STYLE_3LEVEL:
 						RIO_CopySprToBuffer3LevelAlpha(pFrame->Sprite, pFrame->Width, pFrame->Height,
 							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);
-						break;
+						break;*/
 					case IMAGE_RENDER_STYLE_OPACITY:
-						RIO_CopySprToBuffer(pFrame->Sprite, pFrame->Width, pFrame->Height,
+						if(g_pDirectDraw->GetRGBBitCount() == 32)
+							RIO_CopySprToBuffer32b(pFrame->Sprite, pFrame->Width, pFrame->Height,
+							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+						else
+							RIO_CopySprToBuffer(pFrame->Sprite, pFrame->Width, pFrame->Height,
 							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);
 						break;
 					case IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST:
-						pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
+						/*pPalette = m_ImageStore.GetAdjustColorPalette(pTemp->nISPosition, pTemp->Color.Color_dw);
+						
+						if(!pPalette)
+							pPalette = GET_SPR_PALETTE(pSprHeader);
+						
 						RIO_CopySprToBufferAlpha(pFrame->Sprite, pFrame->Width, pFrame->Height,
-							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+							pPalette, pDestBuffer, nDestWidth, nDestHeight, nX, nY);*/
+							UINT nColor = pTemp->Color.Color_dw & 0xffffff;
+							if(nColor == 0)
+							{
+								if(g_pDirectDraw->GetRGBBitCount() == 32)
+									RIO_CopySprToBufferAlpha32b(pFrame->Sprite, pFrame->Width, pFrame->Height,
+									(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+								else
+									RIO_CopySprToBufferAlpha(pFrame->Sprite, pFrame->Width, pFrame->Height,
+									(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY);
+							}
+							else
+							{
+								if(g_pDirectDraw->GetRGBBitCount() == 32)
+									RIO_CopySprToBufferBlendColor32b((BYTE*)pFrame->Sprite, pFrame->Width, pFrame->Height,
+									(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY, pTemp->Color.Color_b.a, nColor);
+								else
+									RIO_CopySprToBufferBlendColor((BYTE*)pFrame->Sprite, pFrame->Width, pFrame->Height,
+									(BYTE*)pPalette, (BYTE*)pDestBuffer, nDestWidth, nDestHeight, nX, nY, pTemp->Color.Color_b.a, nColor);
+							}
 						break;
 					}						
 				}
@@ -653,7 +817,11 @@ void KRepresentShell2::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 							pTemp->nFrame, pTemp->nType, pFrame);
 					if (pBitmap)
 					{
-						RIO_CopyBitmap16ToBuffer(pBitmap->Data, pBitmap->nWidth, pBitmap->nHeight, pDestBitmap,
+						if(g_pDirectDraw->GetRGBBitCount() == 32)
+							RIO_CopyBitmap16ToBuffer32b(pBitmap->Data, pBitmap->nWidth, pBitmap->nHeight, (BYTE*)pDestBuffer,
+							nDestWidth, nDestHeight, pTemp->oPosition.nX, pTemp->oPosition.nY);
+						else
+							RIO_CopyBitmap16ToBuffer(pBitmap->Data, pBitmap->nWidth, pBitmap->nHeight, (BYTE*)pDestBuffer,
 							nDestWidth, nDestHeight, pTemp->oPosition.nX, pTemp->oPosition.nY);
 					}
 				}
@@ -672,7 +840,18 @@ void KRepresentShell2::ClearImageData(const char* pszImage, unsigned int uImage,
 	KSGImageContent* pBitmap = (KSGImageContent*)m_ImageStore.GetImage(
 			pszImage,	uImage, nImagePosition, 0, ISI_T_BITMAP16, pFrame);
 	if (pBitmap)
+	{
 		memset(pBitmap->Data, 0, 2 * pBitmap->nWidth * pBitmap->nHeight);
+	}
+	else
+	{
+		AlphaRecContent* pImg = (AlphaRecContent*)m_ImageStore.GetImage(
+			pszImage,	uImage, nImagePosition, 0, ISI_T_DRAWINGRC, pFrame);
+		if(pImg)
+		{
+			memset(pImg->Data, 0, 4 * pImg->nWidth * pImg->nHeight);
+		}
+	}
 }
 
 //##ModelId=3DCD8E9200E8
@@ -688,38 +867,53 @@ void KRepresentShell2::FreeImage(const char* pszImage)
 }
 
 //##ModelId=3DCD8FA900EE
-void* KRepresentShell2::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuffInfo* pInfo)
+void* KRepresentShell2::GetBitmapDataBuffer(const char* pszImage, KBitmapDataBuffInfo* pInfo, int nType)
 {
 	unsigned int uImage = 0;
 	short		nISPosition = -1;
 	void*		pBuffer = NULL;
 
 	LPDIRECTDRAWSURFACE pSurface;
-	KSGImageContent* pDestBitmap = (KSGImageContent *)m_ImageStore.GetImage(
-					pszImage, uImage, nISPosition, 0, ISI_T_BITMAP16, (void*&)pSurface);
-	if (pDestBitmap)
+	void* pBitmap = (KSGImageContent *)m_ImageStore.GetImage(
+					pszImage, uImage, nISPosition, 0, nType, (void*&)pSurface);
+	if(!pBitmap)
+		return pBuffer;
+	int nPitch;
+	if(nType == ISI_T_BITMAP16)
 	{
-		int nPitch = pDestBitmap->nWidth * 2;
-		pBuffer = pDestBitmap->Data;
-		if (pSurface)
+		nPitch = ((KSGImageContent*)pBitmap)->nWidth * 2;
+		pBuffer = ((KSGImageContent*)pBitmap)->Data;
+	}
+	else
+	{
+		nPitch = ((AlphaRecContent*)pBitmap)->nWidth * 4;
+		pBuffer = ((AlphaRecContent*)pBitmap)->Data;
+	}
+	if (pSurface)
+	{
+		DDSURFACEDESC	desc;
+		desc.dwSize = sizeof(desc);
+		if (pSurface->Lock(NULL, &desc, DDLOCK_WAIT, NULL) == DD_OK)
 		{
-			DDSURFACEDESC	desc;
-			desc.dwSize = sizeof(desc);
-			if (pSurface->Lock(NULL, &desc, DDLOCK_WAIT, NULL) == DD_OK)
-			{
-				pBuffer = desc.lpSurface;
-				nPitch = desc.lPitch;
-			}
+			pBuffer = desc.lpSurface;
+			nPitch = desc.lPitch;
 		}
-
-		 if (pInfo)
-		 {
-			pInfo->nWidth = pDestBitmap->nWidth;
-			pInfo->nHeight = pDestBitmap->nHeight;
-			pInfo->nPitch = nPitch;
-			pInfo->pData = pBuffer;
-			pInfo->eFormat = (m_DirectDraw.GetRGBBitMask16() == RGB_565) ? BDBF_16BIT_565 : BDBF_16BIT_555;
+	}
+	if (pInfo)
+	{
+		if(nType == ISI_T_BITMAP16)
+		{
+			pInfo->nWidth = ((KSGImageContent*)pBitmap)->nWidth;
+			pInfo->nHeight = ((KSGImageContent*)pBitmap)->nHeight;
 		}
+		else
+		{
+			pInfo->nWidth = ((AlphaRecContent*)pBitmap)->nWidth;
+			pInfo->nHeight = ((AlphaRecContent*)pBitmap)->nHeight;
+		}
+		pInfo->nPitch = nPitch;
+		pInfo->pData = pBuffer;
+		pInfo->eFormat = BDBF_16BIT_565;//(m_DirectDraw.GetRGBBitMask16() == RGB_565) ? BDBF_16BIT_565 : BDBF_16BIT_555;
 	}
 	return pBuffer;
 }
@@ -1096,6 +1290,7 @@ bool KRepresentShell2::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 	if((pSrc = (WORD*)m_DirectDraw.LockPrimaryBuffer()) == NULL)
 	{
 		delete[] pTemp;
+		pTemp = NULL; //them code 16/09/2023 by kinnox;
 		return false;
 	}
 	int nPitch = m_DirectDraw.GetScreenPitch();
@@ -1137,9 +1332,11 @@ bool KRepresentShell2::SaveScreenToFile(const char* pszName, ScreenFileType eTyp
 	if(!bRet)
 	{
 		delete[] pTemp;
+		pTemp = NULL; //them code 16/09/2023 by kinnox;
 		return false;
 	}
 
 	delete[] pTemp;
+	pTemp = NULL; //them code 16/09/2023 by kinnox;
 	return true;
 }

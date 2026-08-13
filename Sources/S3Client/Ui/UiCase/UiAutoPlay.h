@@ -14,6 +14,7 @@
 #include "../Elem/WndList.h"
 #include "../Elem/WndScrollBar.h"
 #include "../Elem/WndList2.h"
+#include <vector>
 
 //=KUiAutoPlayFight==========================================================================
 class KUiAutoPlayFight : public KWndPage
@@ -23,6 +24,7 @@ public:
 	void	Initialize();
 	void	OnActive();
 	void	LoadScheme(const char* pScheme);
+	void	SaveConfig(BOOL bGlobal = false);
 private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateData();
@@ -50,7 +52,6 @@ private:
 	void	ProcessShortCut1(BYTE btSelect);
 	void	PopupShortCut2Menu();
 	void	ProcessShortCut2(BYTE btSelect);
-	void	SaveConfig();
 	void	LoadConfig();
 private:
 	KWndButton	m_FightCheckBox; //checkbox tù ®¸nh
@@ -155,12 +156,12 @@ public:
 	void	Initialize();
 	void	OnActive();
 	void	LoadScheme(const char* pScheme);
+	void	SaveConfig(BOOL bGlobal = false);
 private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateData();
 	void	PopupFCellMenu();
 	void	ProcessFCell(BYTE btSelect);
-	void	SaveConfig();
 	void	LoadConfig();
 private:
 	KWndButton	m_ReHPCheckBox;	//b¬m SL
@@ -241,7 +242,8 @@ public:
 	KUiAutoPlayPick();
 	void	Initialize();
 	void	OnActive();
-	void	LoadScheme(const char* pScheme);	
+	void	LoadScheme(const char* pScheme);
+	void	SaveConfig(BOOL bGlobal = false);
 private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateData();
@@ -252,7 +254,6 @@ private:
 	void	SetFilterMagicList();
 	int 	FilterSameMagic(const char* szMagic);
 	int 	FindSameMagic(const char* szMagic);
-	void	SaveConfig();
 	void	LoadConfig();
 private:
 	//
@@ -341,11 +342,11 @@ public:
 	KUiAutoPlayMove();
 	void	Initialize();
 	void	OnActive();
-	void	LoadScheme(const char* pScheme);	
+	void	LoadScheme(const char* pScheme);
+	void	SaveConfig(BOOL bGlobal = false);
 private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateData();
-	void	SaveConfig();
 	void	LoadConfig();
 	BOOL	InsertMoveMpsList(int nSubWorldId, int nMpsX, int nMpsY);
 	void		SetMoveMpsList();
@@ -412,12 +413,12 @@ public:
 	void	Initialize();
 	void	OnActive();
 	void	LoadScheme(const char* pScheme);
+	void	SaveConfig(BOOL bGlobal = false);
 	KUiSceneTimeInfo	m_CurrentMps;
 private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateData();
 	void	LoadConfig();
-	void	SaveConfig();
 	void	PopUpBuyHPSelect();
 	void	ProcessBuyHPSelect(int nAction);
 	void	PopUpBuyMPSelect();
@@ -510,7 +511,7 @@ public:
 	void	Initialize();
 	void	OnActive();
 	void	LoadScheme(const char* pScheme);	
-	void	SaveConfig();
+	void	SaveConfig(BOOL bGlobal = false);
 	void	LoadConfig();
 	void	PopUpTeamPlayerName();
 	void	ProcessTeamPlayerName(int nAction);
@@ -569,7 +570,7 @@ public:
 	void	Initialize();
 	void	OnActive();
 	void	LoadScheme(const char* pScheme);	
-	void	SaveConfig();
+	void	SaveConfig(BOOL bGlobal = false);
 	void	LoadConfig();
 	void	PopUpBlackItemName();
 	void	ProcessBlackItemName(int nAction);
@@ -593,6 +594,7 @@ private:
 	KWndLabeledButton	m_BlackItemCloseBtn;
 };
 
+#define UIITEM_WAIT_GETFILENAME 1
 //=KUiAutoPlay==========================================================================
 class KUiAutoPlay : public KWndPageSet
 {
@@ -615,15 +617,18 @@ private:
 	KUiAutoPlay();
 	~KUiAutoPlay() {}
 	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);	
+	void	PopupListConfigFile();
+	char*	GetFilenameFromIndex(int index);
+	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	LoadScheme(class KIniFile* pIni);
 	void	ShowPage(int nSubPage);
 	void	UpdateData();
 	void	OnSave();
-	void	SaveConfig();
+	void	SaveConfig(BOOL bGlobal = false);
 	void	LoadConfig();
 private:
 	static KUiAutoPlay*	m_pSelf;
+	std::vector<char*> m_FileList;
 
 private:
 	KUiAutoPlayFight	m_AutoFightPad;//ChiÕn ®Êu
@@ -649,6 +654,13 @@ private:
 	
 	KWndLabeledButton	m_ActiveBtn;//kÝch ho¹t // dõng
 	KWndButton			m_CloseBtn;//®ãng UI autoplay
+	//Use global config file
+	KWndLabeledButton	m_GlobalBtn;
+	KWndText32			m_ConfigFileTxt;
+	KWndText32			m_ConfigFilenameTxt;
+	KWndButton			m_ConfigFileBtn;
+	KWndLabeledButton	m_SaveGlobalConfigBtn;
+	//KWndLabeledButton	m_LoadGlobalConfigBtn;
 
 private:
 	enum AUTOPLAY_SUBPAGE

@@ -198,7 +198,13 @@ void KUiAffairItem::UpdateItem( KUiObjAtRegion* pItem, int bAdd )
 {
 	if (pItem)
 	{
-		UiSoundPlay(UI_SI_PICKPUT_ITEM);
+		bool open = false;
+		if (bAdd == 2) {
+			open = true;
+			bAdd -= 1;
+		}
+		if (open)
+			UiSoundPlay(UI_SI_PICKPUT_ITEM);
 		if (pItem->Obj.uGenre != CGOG_MONEY)
 		{
 			KUiDraggedObject Obj;
@@ -212,6 +218,8 @@ void KUiAffairItem::UpdateItem( KUiObjAtRegion* pItem, int bAdd )
 				m_ItemBox.AddObject(&Obj, 1);
 			else
 				m_ItemBox.RemoveObject(&Obj);
+			if (!open)
+				UiSoundPlayItem(Obj.uId);
 		}
 	}
 	else
@@ -232,7 +240,7 @@ void KUiAffairItem::UpdateData()
 	{
 		g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, (unsigned int)pObjs, nCount);
 		for (int i = 0; i < nCount; i++)
-			UpdateItem(&pObjs[i], true);
+			UpdateItem(&pObjs[i], 2);
 		free(pObjs);
 		pObjs = NULL;
 	}
