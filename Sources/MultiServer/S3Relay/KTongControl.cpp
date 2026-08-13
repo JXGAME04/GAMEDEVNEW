@@ -2054,7 +2054,7 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 		
 		for (i = 0; i < defTONG_MAX_MANAGER; i++)
@@ -2078,7 +2078,7 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		if (m_psMember && m_nMemberPointSize > 0)
@@ -2105,7 +2105,7 @@ BOOL CTongControl::DBChangeTongLevel(STONG_CHANGE_LEVEL_COMMAND *pChange)
 					}
 					conndup.Clearup();
 				}}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 		if (channid != -1)
@@ -2191,7 +2191,7 @@ BOOL CTongControl::DBChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange)
 					conndup.Clearup();
 				}
 			}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		// Notify managers
@@ -2218,7 +2218,7 @@ BOOL CTongControl::DBChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange)
 					conndup.Clearup();
 				}
 			}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		// Notify members
@@ -2248,7 +2248,7 @@ BOOL CTongControl::DBChangeTongExp(STONG_CHANGE_EXP_COMMAND* pChange)
 						conndup.Clearup();
 					}
 				}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 
@@ -2330,7 +2330,7 @@ BOOL CTongControl::DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 		
 		for (i = 0; i < defTONG_MAX_MANAGER; i++)
@@ -2354,7 +2354,7 @@ BOOL CTongControl::DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		if (m_psMember && m_nMemberPointSize > 0)
@@ -2381,7 +2381,7 @@ BOOL CTongControl::DBChangeTongWayEdit(STONG_CHANGE_WAYEDIT_COMMAND *pChange)
 					}
 					conndup.Clearup();
 				}}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 		if (channid != -1)
@@ -2461,7 +2461,7 @@ BOOL CTongControl::DBChangeTongNextTarget(STONG_CHANGE_NEXTTARGET_COMMAND *pChan
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 		
 		for (i = 0; i < defTONG_MAX_MANAGER; i++)
@@ -2485,7 +2485,7 @@ BOOL CTongControl::DBChangeTongNextTarget(STONG_CHANGE_NEXTTARGET_COMMAND *pChan
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		if (m_psMember && m_nMemberPointSize > 0)
@@ -2512,7 +2512,7 @@ BOOL CTongControl::DBChangeTongNextTarget(STONG_CHANGE_NEXTTARGET_COMMAND *pChan
 					}
 					conndup.Clearup();
 				}}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 		if (channid != -1)
@@ -2597,7 +2597,7 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 		
 		for (i = 0; i < defTONG_MAX_MANAGER; i++)
@@ -2621,7 +2621,7 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		if (m_psMember && m_nMemberPointSize > 0)
@@ -2648,7 +2648,7 @@ BOOL CTongControl::DBChangeRecruit(STONG_CHANGE_RECRUIT_COMMAND *pChange)
 					}
 					conndup.Clearup();
 				}}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 		if (channid != -1)
@@ -2761,7 +2761,7 @@ BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //t›nh n®ng 
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 		
 		for (i = 0; i < defTONG_MAX_MANAGER; i++)
@@ -2785,7 +2785,7 @@ BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //t›nh n®ng 
 				}
 				conndup.Clearup();
 			}}
-			Sleep(5);
+			//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 		}
 
 		if (m_psMember && m_nMemberPointSize > 0)
@@ -2812,7 +2812,7 @@ BOOL CTongControl::DBChangeCamp(STONG_CHANGE_CAMP_COMMAND *pChange) //t›nh n®ng 
 					}
 					conndup.Clearup();
 				}}
-				Sleep(5);
+				//Sleep(5); // FIX bay-4: relay don luong, ngu 5ms x N thanh vien = treo ca relay
 			}
 		}
 		if (channid != -1)
