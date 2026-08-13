@@ -96,6 +96,7 @@ private:
 	KWndText80			m_WsTxt[6];				// So khu/Hang toi da/Phi duy tri (Title+Txt)
 	KWndLabeledButton	m_WsBtn[6];				// Lap/Mo/Dong/Nang/Dat cap dung/Xoa
 	KWndLabeledButton	m_WsIcon[8];			// icon khu 1..7 (luoi deu)
+	KWndText80			m_WsSel;				// dong chi tiet khu dang chon
 	// trang Nhat ky theo blueprint trang ghi chep
 	KWndLabeledButton	m_RcSub[4];				// Muc tieu tuan/Thong bao/Bang vu/Lich su
 	KWndEdit512			m_RcEditor;				// khung sua thong bao

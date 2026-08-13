@@ -27,6 +27,20 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 
 #define TONG_JX2_INI	"UiTongJX2.ini"
 
+// nhat ky chan doan cua so bang hoi (jx_tongjx2.log canh Game.exe)
+static void sTJX2Log(const char* fmt, ...)
+{
+	FILE* f = fopen("jx_tongjx2.log", "a");
+	if (!f)
+		return;
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(f, fmt, ap);
+	va_end(ap);
+	fprintf(f, "\n");
+	fclose(f);
+}
+
 extern iCoreShell* g_pCoreShell;
 extern int SCREEN_WIDTH;
 
@@ -126,7 +140,7 @@ static const TJX2FunTxt s_sFunTxt[15] =
 	{"TitleTongInfo", "Tin t\370c"},
 	{"TitleTongName", "T\252n bang"},        {"TxtTongName", NULL},
 	{"TitleTongUnion", "Li\252n minh"},      {"TxtTongUnion", NULL},
-	{"TitleBuildLevel", "C\312p ki\325n thi\325t"}, {"TxtBuildLevel", NULL},
+	{"TitleBuildLevel", "\247\274ng c\312p"}, {"TxtBuildLevel", NULL},
 	{"TitleTotalOffer", "T\346ng c\350ng hi\325n"}, {"TxtTotalOffer", NULL},
 	{"TitleTongMoney", "Ng\251n qu\374"},    {"TxtTongMoney", NULL},
 	{"TitleBuildFund", "Qu\374 ki\325n thi\325t"}, {"TxtBuildFund", NULL},
@@ -307,6 +321,7 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_WsBtn[i]);
 	for (i = 1; i <= 7; i++)
 		AddChild(&m_WsIcon[i]);
+	AddChild(&m_WsSel);
 	for (i = 0; i < 4; i++)
 		AddChild(&m_RcSub[i]);
 	AddChild(&m_RcEditor);
@@ -484,6 +499,9 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		sprintf(szSec, "Ws_Icon%d", i);
 		ms_pSelf->m_WsIcon[i].Init(&Ini, szSec);
 	}
+	ms_pSelf->m_WsSel.Init(&Ini, "Ws_TitleServiceFee");	// muon font/mau
+	ms_pSelf->m_WsSel.SetPosition(46, 226);
+	ms_pSelf->m_WsSel.SetSize(300, 16);
 	ms_pSelf->m_RcSub[0].Init(&Ini, "Rc_BtnWeekDaily");
 	ms_pSelf->m_RcSub[1].Init(&Ini, "Rc_BtnAnnounce");
 	ms_pSelf->m_RcSub[2].Init(&Ini, "Rc_BtnTongAffair");
@@ -515,6 +533,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 
 void KUiTongJX2::RequestPage(int nPage, int nStart)
 {
+	sTJX2Log("[REQ] trangUI=%d start=%d", nPage, nStart);
 	if (nPage == TJX2_UI_PAGE_RECRUIT)
 		nPage = defTONG_JX2_PAGE_RECRUIT;
 	else if (nPage == 4)
@@ -548,6 +567,7 @@ void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const
 	if (pszText)
 		strncpy(sOp.szText, pszText, sizeof(sOp.szText) - 1);
 	g_pCoreShell->TongOperation(GTOI_TONG_JX2_OP, (unsigned int)&sOp, 0);
+	sTJX2Log("[OP ] op=%d target=%u p1=%d p2=%d", nOp, (unsigned)dwTarget, nP1, nP2);
 	// xin lai trang sau khi thao tac (relay echo ve GS truoc khi minh hoi lai)
 	RequestPage(m_nPage, m_nStart);
 }
@@ -564,6 +584,7 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 		return;
 
 	int nPage = pData[4];	// {BYTE ProtocolType; WORD wLength; BYTE btMsgId;} + btPage
+	sTJX2Log("[SYN] trangSV=%d len=%d trangUI=%d", nPage, nLen, ms_pSelf->m_nPage);
 	switch (nPage)
 	{
 	case defTONG_JX2_PAGE_INFO:
@@ -757,6 +778,17 @@ void KUiTongJX2::SwitchPage(int nPage)
 		for (i = 0; i < 4; i++)
 			if (bBtn) m_FunSub[i].Show(); else m_FunSub[i].Hide();
 		m_bMDet = 0;
+	}
+	// lop chu xam (offline) + panel xanh chi tiet + dong chi tiet khu
+	{
+		int i;
+		BOOL bL = (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT ||
+			nPage == TJX2_UI_PAGE_FUNUSE);
+		for (i = 0; i < TJX2_UI_ROWS; i++)
+			if (bL) m_RowDim[i].Show(); else m_RowDim[i].Hide();
+		for (i = 0; i < 7; i++)
+			if (bL) m_MDet[i].Show(); else m_MDet[i].Hide();
+		if (nPage == defTONG_JX2_PAGE_WS) m_WsSel.Show(); else m_WsSel.Hide();
 	}
 	// bo control trang Phuong tho
 	{
@@ -1092,6 +1124,19 @@ void KUiTongJX2::RenderWorkshop()
 		}
 	}
 	ClearRows();	// trang phuong tho khong dung danh sach chu (giong ban Linux)
+	if (m_bHasWs && m_nSel >= 1 && m_nSel <= 7)
+	{
+		TONG_JX2_WS_SYNC* pW2 = (TONG_JX2_WS_SYNC*)m_byWs;
+		char szD[120];
+		if (pW2->m_sWs[m_nSel].btExist)
+			sprintf(szD, "Khu %d %s: c\312p %d [%s]  s\266n l\255\356ng %u  c\312p d\357ng %u",
+				m_nSel, s_szWsName[m_nSel], (int)pW2->m_sWs[m_nSel].wLevel,
+				pW2->m_sWs[m_nSel].btOpen ? "MO" : "DONG",
+				pW2->m_sWs[m_nSel].dwOutput, pW2->m_sWs[m_nSel].dwUseLevel);
+		else
+			sprintf(szD, "Khu %d %s: (ch\255a l\313p)", m_nSel, s_szWsName[m_nSel]);
+		m_WsSel.SetText(szD);
+	}
 }
 
 // nap trang thai 12 o kiem tu mat na quyen cua nguoi dang chon (trang Phan phoi)
@@ -1196,7 +1241,7 @@ void KUiTongJX2::RenderFunUse()
 	char sz[120];
 	m_FunTxt[2].SetText(p->m_szTongName);
 	m_FunTxt[4].SetText("-");
-	sprintf(sz, "%d", p->m_nLevel);
+	sprintf(sz, "%d    Nh\251n s\350 %d", p->m_nLevel, (int)p->m_wMemberTotal);
 	m_FunTxt[6].SetText(sz);
 	sprintf(sz, "%u", p->m_dwStoredOffer);
 	m_FunTxt[8].SetText(sz);
@@ -1264,6 +1309,7 @@ void KUiTongJX2::RenderTongList()
 
 void KUiTongJX2::OnAction(int nIdx)
 {
+	sTJX2Log("[ACT] idx=%d trangUI=%d sel=%d", nIdx, m_nPage, m_nSel);
 	TONG_JX2_MEMBER_SYNC* pM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 	DWORD dwTarget = 0;
 	if (m_bHasMember && m_nSel < (int)pM->m_btCount)

@@ -10,6 +10,7 @@
 // LUU Y: Core build voi PCH "Use" qua KCore.h - moi thu TRUOC dong include nay
 // deu bi compiler bo qua, nen KCore.h PHAI dung dau tien.
 #include "KCore.h"
+#include "KPlayerChat.h"
 #include "KWin32.h"
 
 #ifdef _SERVER
@@ -401,7 +402,7 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 	if (dwAuto && nLevel >= (int)dwAuto)
 	{
 		sJX2_SendAddMember(pTong, nPlayerIdx);
-		return 0;
+		return 7;	// vao thang - de vo boc bao 'da gia nhap'
 	}
 	DWORD dwMyID = g_FileName2Id(Player[nPlayerIdx].m_PlayerName);
 	int a;
@@ -2207,7 +2208,50 @@ static BOOL sJX2_HasRight(KTongJX2Member* pMe, DWORD dwRightID)
 	return pMe->setRight.count(dwRightID) ? TRUE : FALSE;
 }
 
+// Vo boc: goi than xu ly roi BAO KET QUA cho nguoi choi (he cu im lang lam
+// nguoi choi tuong nut khong chay)
 int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
+{
+	int nRet = DoClientOpBody(nPlayerIdx, pData);
+	if (nPlayerIdx > 0 && nPlayerIdx < MAX_PLAYER && pData)
+	{
+		const TONG_JX2OP_COMMAND* pCmd = (const TONG_JX2OP_COMMAND*)pData;
+		const char* pszMsg = NULL;
+		switch (nRet)
+		{
+		case 0:
+			if (pCmd->m_btOp == defTONG_JX2_COP_APPLY_JOIN)
+				pszMsg = "\247\267 g\366i \256\254n xin gia nh\313p, ch\352 bang h\351i duy\326t.";
+			else
+				pszMsg = "\247\267 th\371c hi\326n thao t\270c bang h\351i.";
+			break;
+		case 7:
+			pszMsg = "\247\267 gia nh\313p bang h\351i!";
+			break;
+		case 2:
+			pszMsg = "B\271n ch\255a v\265o bang h\351i.";
+			break;
+		case 3:
+			pszMsg = "B\271n kh\253ng c\343 quy\322n l\265m vi\326c n\265y.";
+			break;
+		case 4:
+			pszMsg = "Kh\253ng t\327m th\312y m\364c ti\252u.";
+			break;
+		case 5:
+			pszMsg = "Thao t\270c kh\253ng h\356p l\326 ho\306c m\364c ti\252u kh\253ng online.";
+			break;
+		case 6:
+			pszMsg = "Kh\253ng \256\361 ti\322n ho\306c t\265i nguy\252n.";
+			break;
+		}
+		if (pszMsg)
+			KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+				(char*)pszMsg, strlen(pszMsg));
+	}
+	return (nRet == 7) ? 0 : nRet;
+}
+
+int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 {
 	if (!pData || nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
 		return 1;

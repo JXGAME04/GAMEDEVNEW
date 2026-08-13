@@ -19,6 +19,7 @@
 #include "UiChatCentre.h"
 #include "UiFaceSelector.h"
 #include "UiTongManager.h"
+#include "UiTongJX2.h"
 #include "../UiChatPhrase.h"
 #include "../Elem/PopupMenu.h"
 #include "../../../Engine/src/Text.h"
@@ -289,7 +290,7 @@ void ProcessPeople(KUiPlayerItem* pDest, int nAction)
 		AddBlackList(pDest->Name, "");
 		break;
 	case ACTION_TONG:		//	9
-		KUiTongManager::OpenWindow(pDest->Name);
+		KUiTongJX2::ToggleFromIcon();	// he bang hoi JX2 thay cua so cu
 		break;
 	}
 }
