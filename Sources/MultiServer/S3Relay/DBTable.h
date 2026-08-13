@@ -78,7 +78,8 @@ public:
 	
 	bool GetRecordEx(char* aBuffer, int& size,
 				char* aKeyBuffer, int &keysize,
-				int cpMode, int index = -1);		//取得按游标某一个数据和key(新版函数)
+				int cpMode, int index = -1,
+				int nBufCap = 0, int nKeyCap = 0);		//取得按游标某一个数据和key(新版函数)
 
 	//Here are some maintenance operations
 	void deadlock() {						//remove deadlock

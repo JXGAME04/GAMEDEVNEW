@@ -417,7 +417,7 @@ ZCursor* ZDBTable::GetRecord_key(int cpMode, int index )
 }
 
 bool ZDBTable::GetRecordEx(char* aBuffer, int& size,
-	char* aKeyBuffer, int& keysize, int cpMode, int index)
+	char* aKeyBuffer, int& keysize, int cpMode, int index, int nBufCap, int nKeyCap)
 {
 	// Initialize cursor if it hasn't been created yet
 	if (!dbcp)
@@ -447,12 +447,22 @@ bool ZDBTable::GetRecordEx(char* aBuffer, int& size,
 	}
 
 	// Copy the key and data into the provided buffers
+	// FIX bay-2: khong chep qua suc chua buffer cua caller (nBufCap/nKeyCap = 0
+	// nghia la khong gioi han - giu tuong thich code cu). size/keysize van tra
+	// ve co THAT cua ban ghi de caller phat hien ban ghi lech phien ban struct.
+	{
+		int nCopy = (int)data.size;
+		if (nBufCap > 0 && nCopy > nBufCap)
+			nCopy = nBufCap;
+		memmove(aBuffer, data.data, nCopy);
+		size = data.size;
 
-	memmove(aBuffer, data.data, data.size);  // Copy the data into the buffer
-	size = data.size;  // Update the size with the actual data size
-
-	memmove(aKeyBuffer, key.data, key.size);  // Copy the key into the key buffer
-	keysize = key.size;  // Update the keysize with the actual key size
+		nCopy = (int)key.size;
+		if (nKeyCap > 0 && nCopy > nKeyCap)
+			nCopy = nKeyCap;
+		memmove(aKeyBuffer, key.data, nCopy);
+		keysize = key.size;
+	}
 
 	return true;  // Successfully retrieved a record
 }

@@ -168,6 +168,13 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 		return false;	//Can't find gang
 	}
 
+	// FIX bay-2: tu choi ban ghi lech co sizeof(TTongStruct) (khac phien ban struct)
+	if (cursor->size != (int)sizeof(TTongStruct))
+	{
+		m_TongTable->closeCursor(cursor);
+		return false;
+	}
+
 	//if(!aBuffer) 
 	//	return false;	//Can't find gang
 
@@ -210,10 +217,23 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 		aBuffer = cursor->data;
 		//m_MemberTable->closeCursor(cursor);
 	}
-
+	else
+	{
+		// FIX bay-2: khong co ban ghi thanh vien -> phai xoa con tro cu,
+		// neu khong while phia duoi doc lai vung nho da bi closeCursor free o tren
+		aBuffer = NULL;
+	}
 
 	while(aBuffer)
 	{
+		// FIX bay-2: bo qua ban ghi lech co TMemberStruct
+		if (cursor->size != (int)sizeof(TMemberStruct))
+		{
+			if (!m_MemberTable->next(cursor))
+				break;
+			aBuffer = cursor->data;
+			continue;
+		}
 		TMemberStruct* pMemberStruct = (TMemberStruct*)aBuffer;
 		switch(pMemberStruct->MemberClass)
 		{
@@ -265,7 +285,8 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 		aBuffer = NULL;
 
 	int dwMoney = 0;
-	if (aBuffer)
+	// FIX bay-2: chi tin ban ghi dung co TMoneyStruct
+	if (aBuffer && cursor->size == (int)sizeof(TMoneyStruct))
 	{
 		TMoneyStruct* pMoneyStruct = (TMoneyStruct*)aBuffer;
 		dwMoney = pMoneyStruct->m_dwMoney;
@@ -286,11 +307,15 @@ int CTongDB::GetTongCount()
 	int aTongKeySize;
 	char aTongKeyBuffer[defTONG_STR_LENGTH];
 	char aTongBuffer[sizeof(TTongStruct)];
-	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_FIRST);
+	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_FIRST,
+		-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
 	while(aResult)
 	{
-		aCount++;
-		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT);
+		// FIX bay-2: chi dem ban ghi dung co TTongStruct (lech co = khac phien ban struct)
+		if (aTongSize == (int)sizeof(TTongStruct))
+			aCount++;
+		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT,
+			-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
 	}
 
 	return aCount;
@@ -303,9 +328,17 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 	int aTongKeySize;
 	char aTongKeyBuffer[defTONG_STR_LENGTH];
 	char aTongBuffer[sizeof(TTongStruct)];
-	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize,DB_FIRST);
+	bool aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_FIRST,
+		-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
 	while(aResult)
 	{
+		// FIX bay-2: bo qua ban ghi lech co (khac phien ban struct), khong duoc doc bay
+		if (aTongSize != (int)sizeof(TTongStruct))
+		{
+			aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT,
+				-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
+			continue;
+		}
 		TTongStruct* pTong = (TTongStruct*)aTongBuffer;
 		strcpy(aTongList[aCount].szName, pTong->szName);
 
@@ -320,8 +353,20 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 		{
 			aMemBuffer = cursor->data;
 		}
+		else
+		{
+			// FIX bay-2: khong co ban ghi thanh vien -> aMemBuffer chua duoc khoi tao
+			aMemBuffer = NULL;
+		}
 		while(aMemBuffer)
 		{
+			// FIX bay-2: bo qua ban ghi lech co TMemberStruct
+			if (cursor->size != (int)sizeof(TMemberStruct))
+			{
+				if(!m_MemberTable->next(cursor)) break;
+				aMemBuffer = cursor->data;
+				continue;
+			}
 			TMemberStruct* pMember = (TMemberStruct*)aMemBuffer;
 			if(pMember->MemberClass == enumTONG_FIGURE_MEMBER)
 					aMemCount++;
@@ -334,7 +379,8 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 
 		aCount++;
 		if( aCount>= aMaxNum ) break;
-		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT);
+		aResult = m_TongTable->GetRecordEx(aTongBuffer, aTongSize, aTongKeyBuffer, aTongKeySize, DB_NEXT,
+			-1, (int)sizeof(aTongBuffer), (int)sizeof(aTongKeyBuffer));
 	}
 
 	return aCount;
