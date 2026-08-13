@@ -146,8 +146,11 @@ void KUiTongJX2::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
 
+	// tab dung anh 招募页vn cua ban Linux (chu Viet nung san trong anh) -> khong ve chu de
 	for (i = 0; i < TJX2_UI_TABS; i++)
-		m_BtnTab[i].SetLabel(s_szTabName[i]);
+		m_BtnTab[i].SetLabel("");
+	m_BtnPrev.SetLabel("<");
+	m_BtnNext.SetLabel(">");
 
 	Wnd_AddWindow(this);
 }
