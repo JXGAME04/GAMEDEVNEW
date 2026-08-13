@@ -633,28 +633,13 @@ int CTongServer::BroadcastPackage(const void* pData, size_t nSize)
 {
 	if (!pData || nSize == 0)
 		return 0;
-	// Thu ban sao ket noi trong khoa doc, gui ngoai khoa (theo mau FindTongConnectByIP)
-	std::vector<CNetConnectDup> vecConn;
-	{
-		AUTOLOCKREAD(m_lockIpMap);
-		for (IP2CONNECTMAP::iterator it = m_mapIp2Connect.begin(); it != m_mapIp2Connect.end(); ++it)
-		{
-			CTongConnect* pTongConn = it->second;
-			if (pTongConn)
-				vecConn.push_back(CNetConnectDup(*pTongConn));
-		}
-	}
-	int nSent = 0;
-	for (size_t i = 0; i < vecConn.size(); i++)
-	{
-		if (vecConn[i].IsValid())
-		{
-			vecConn[i].SendPackage(pData, nSize);
-			nSent++;
-		}
-		vecConn[i].Clearup();
-	}
-	return nSent;
+	// Phat qua ban do theo ID KET NOI cua lop co (m_mapId2Connect), KHONG dung
+	// m_mapIp2Connect: ban do do khoa bang DIA CHI IP, ma hai GameServer chay
+	// cung mot may (GameServer_cfg.ini va GameServer1_cfg.ini deu tro
+	// [Tong] Ip=127.0.0.1) se de len nhau - chi mot GS nhan duoc dong bo, GS con
+	// lai vinh vien khong biet bang hoi doi gi. m_mapIp2Connect van giu nguyen
+	// vi FindTongConnectByIP / FindPlayerByIpParam con can tra theo IP.
+	return CNetServer::BroadPackage(pData, nSize) ? 1 : 0;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -811,7 +796,9 @@ void JX2_ProcTongMoney(CTongConnect* pConn, const void* pData)
 	{
 		nNew = pTong->JX2_GetMoney64() + pCmd->m_nValue;
 		if (nNew < 0)
-			nNew = 0;
+			return;		// khong du tien: BO QUA lenh. Truoc day ket ve 0, tuc la
+						// khoan tru vuot muc bi xoa mat -> nguoi choi nhan duoc
+						// tien ma ngan quy khong bi tru du = TAO TIEN tu khong.
 	}
 	else
 		return;

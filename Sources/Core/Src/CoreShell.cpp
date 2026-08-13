@@ -9204,12 +9204,11 @@ int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nPara
 		}
 		break;
 	case GTOI_TONG_GET_RECRUIT:
-		if (uParam)
-		{
-			KUiPlayerItem	*pItem = (KUiPlayerItem*)uParam;
-			//nRet = Npc[pItem->nIndex].GetRecruit();
-			nRet = Player[CLIENT_PLAYER_INDEX].m_cTong.GetRecruit();
-		}
+		// Co tuyen nguoi la thuoc tinh cua BANG cua chinh minh, khong can
+		// tham so. Truoc day case nay boc trong if (uParam) nen cua so bang
+		// hoi JX2 (goi voi uParam = 0) LUON nhan 0 = "dang dong tuyen":
+		// nhan nut bao sai va khong bao gio dong lai duoc.
+		nRet = Player[CLIENT_PLAYER_INDEX].m_cTong.GetRecruit();
 		break;
 	case GTOI_TONG_RECRUIT:     
 		if (uParam)

@@ -206,6 +206,7 @@ KUiTongJX2::KUiTongJX2()
 {
 	m_nPage = defTONG_JX2_PAGE_INFO;
 	m_nStart = 0;
+	m_nRecStart = 0;
 	m_nSel = 0;
 	m_bHasInfo = 0;
 	m_bHasMember = 0;
@@ -606,6 +607,10 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 void KUiTongJX2::RequestPage(int nPage, int nStart)
 {
 	sTJX2Log("[REQ] trangUI=%d start=%d", nPage, nStart);
+	// nPage bi gan lai ben duoi thanh ma trang SERVER, nen moi so sanh theo ma
+	// trang UI phai dung ban sao nay - truoc day nhanh RECRUIT/RECORD nam sau
+	// phep gan nen KHONG BAO GIO chay (danh sach thanh vien khong duoc xin).
+	const int nUiPage = nPage;
 	if (nPage == TJX2_UI_PAGE_RECRUIT)
 		nPage = defTONG_JX2_PAGE_RECRUIT;
 	else if (nPage == 4)
@@ -628,7 +633,7 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		if (g_pCoreShell)
 			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_MEMBER, 0);
 	}
-	else if (nPage == TJX2_UI_PAGE_RECRUIT || nPage == 4)
+	if (nUiPage == TJX2_UI_PAGE_RECRUIT || nUiPage == 4)
 	{
 		// moi tab deu hien danh sach thanh vien (yeu cau chu game)
 		if (g_pCoreShell)
@@ -690,7 +695,11 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 		{
 			memcpy(ms_pSelf->m_byMember, pData, nLen);
 			ms_pSelf->m_bHasMember = 1;
-			if (ms_pSelf->m_nPage != TJX2_UI_PAGE_TONGLIST &&
+			// trang Chieu mo dung CHUNG panel phai voi danh sach don xin, nen
+			// phai ve lai ca trang (RenderMembers mot minh se de len khoi don)
+			if (ms_pSelf->m_nPage == TJX2_UI_PAGE_RECRUIT)
+				ms_pSelf->RenderRecruit();
+			else if (ms_pSelf->m_nPage != TJX2_UI_PAGE_TONGLIST &&
 				ms_pSelf->m_nPage != defTONG_JX2_PAGE_INFO)
 				ms_pSelf->RenderMembers();
 		}
@@ -739,8 +748,19 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 void KUiTongJX2::ClearRows()
 {
 	for (int i = 0; i < TJX2_UI_ROWS; i++)
-	{
 		m_Row[i].SetText("");
+	ClearMemberRows();
+}
+
+// Chi xoa panel danh sach ben PHAI (m_MList / m_RowDim / m_MDet), khong cham
+// m_Row cua noi dung trang dang ve. RenderMembers phai dung ham nay thay cho
+// ClearRows: truoc day RenderRecruit ghi danh sach don xin vao m_Row[0..4] roi
+// goi RenderMembers, ma RenderMembers mo dau bang ClearRows nen xoa trang lai
+// dung nhung dong vua ghi -> "xin vao bang khong hien de duyet".
+void KUiTongJX2::ClearMemberRows()
+{
+	for (int i = 0; i < TJX2_UI_ROWS; i++)
+	{
 		m_RowDim[i].SetText("");
 		m_MList[i].SetText("");
 	}
@@ -804,6 +824,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 {
 	m_nPage = nPage;
 	m_nStart = 0;
+	m_nRecStart = 0;
 	m_nSel = (nPage == defTONG_JX2_PAGE_WS) ? 1 : 0;
 	// hien dung nen phan trang cua TAB (trang UI 5 = tab 1 chieu mo;
 	// trang thanh vien/quyen hop nhat = tab 2)
@@ -1107,19 +1128,21 @@ void KUiTongJX2::RenderInfo()
 	}
 }
 
-void KUiTongJX2::RenderMembers()
+// nOffset = so dong dau panel phai da bi trang khac chiem (trang Chieu mo
+// giu 5 dong dau cho danh sach don xin vao bang)
+void KUiTongJX2::RenderMembers(int nOffset)
 {
 	if (!m_bHasMember)
 		return;
 	TONG_JX2_MEMBER_SYNC* p = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 	char sz[120];
-	ClearRows();
+	ClearMemberRows();
 	// tieu de 3 cot nhu ban Linux: Hang / Thanh vien / Chuc vu
 	sprintf(sz, "H\271ng  Th\265nh vi\252n        Ch\370c v\364      (%d-%d/%d)",
 		(int)p->m_wStart + 1, (int)p->m_wStart + p->m_btCount, (int)p->m_wTotal);
-	m_MList[0].SetText(sz);
+	m_MList[nOffset].SetText(sz);
 	int i;
-	for (i = 0; i < (int)p->m_btCount && i + 1 < TJX2_UI_ROWS; i++)
+	for (i = 0; i < (int)p->m_btCount && i + 1 + nOffset < TJX2_UI_ROWS; i++)
 	{
 		TONG_JX2_ONE_MEMBER* pM = &p->m_sMember[i];
 		if (m_nPage == defTONG_JX2_PAGE_RIGHT)
@@ -1151,13 +1174,13 @@ void KUiTongJX2::RenderMembers()
 		// online: chu sang (m_Row); offline: chu xam (m_RowDim)
 		if (pM->m_btOnline)
 		{
-			m_MList[i + 1].SetText(sz);
-			m_RowDim[i + 1].SetText("");
+			m_MList[i + 1 + nOffset].SetText(sz);
+			m_RowDim[i + 1 + nOffset].SetText("");
 		}
 		else
 		{
-			m_MList[i + 1].SetText("");
-			m_RowDim[i + 1].SetText(sz);
+			m_MList[i + 1 + nOffset].SetText("");
+			m_RowDim[i + 1 + nOffset].SetText(sz);
 		}
 	}
 	// panel XANH chi tiet nguoi dang chon (nhu ban Linux, hien o moi trang co danh sach)
@@ -1262,12 +1285,18 @@ void KUiTongJX2::RenderWorkshop()
 			sprintf(szD, "Khu %d %s: (ch\255a l\313p)", m_nSel, s_szWsName[m_nSel]);
 		m_WsSel.SetText(szD);
 	}
+	if (m_bHasMember)
+		RenderMembers();	// panel danh sach thanh vien ben phai (nhu ban Linux)
 }
 
 // nap trang thai 12 o kiem tu mat na quyen cua nguoi dang chon (trang Phan phoi)
 void KUiTongJX2::LoadChecksFromSel()
 {
-	if (m_nPage != defTONG_JX2_PAGE_RIGHT || !m_bHasMember)
+	// Tab "Phan phoi chuc nang" chay o ma trang MEMBER (bang s_nTabPage khong
+	// co PAGE_RIGHT) nen phai nhan CA HAI ma trang, neu khong thi o kiem khong
+	// bao gio nap trang thai va bam "Phan quyen" se THU SACH quyen truong lao.
+	if ((m_nPage != defTONG_JX2_PAGE_MEMBER && m_nPage != defTONG_JX2_PAGE_RIGHT) ||
+		!m_bHasMember)
 		return;
 	TONG_JX2_MEMBER_SYNC* pM = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 	WORD wMask = 0;
@@ -1364,25 +1393,33 @@ void KUiTongJX2::RenderRecruit()
 		sprintf(sz, "%d", m_nRecHD[i]);
 		m_RecHD[i].SetLabel(sz);
 	}
-	sprintf(sz, "== \247\254n xin v\265o bang (%d) ==", (int)p->m_btApplyCount);
-	m_Row[0].SetText(sz);
-	for (i = 0; i < (int)p->m_btApplyCount && i < 4; i++)
-	{
-		sprintf(sz, "%s%-16s  c\312p %d", (i == m_nSel) ? "> " : "  ",
-			p->m_sApply[i].m_szName, (int)p->m_sApply[i].m_wLevel);
-		m_Row[i + 1].SetText(sz);
-	}
-	// member list hien tu dong 6 tro xuong (MList do RenderMembers phu trach
-	// - trang nay chi de trong 5 dong dau cua MList cho khoi don)
+	// Danh sach thanh vien ve TRUOC (day xuong 5 dong), sau do moi ghi danh
+	// sach don xin len 5 dong dau -> don khong con bi ClearRows xoa mat nua.
 	if (m_bHasMember)
-		RenderMembers();
-	for (i = 0; i < 5 && i < TJX2_UI_ROWS; i++)
+		RenderMembers(5);
 	{
-		if (m_nPage == TJX2_UI_PAGE_RECRUIT)
+		int nTotal = (int)p->m_btApplyCount;
+		int nShow;
+		if (m_nRecStart >= nTotal)
+			m_nRecStart = 0;
+		nShow = nTotal - m_nRecStart;
+		if (nShow > 4)
+			nShow = 4;
+		if (nShow < 0)
+			nShow = 0;
+		sprintf(sz, "== \247\254n xin v\265o bang %d-%d/%d ==",
+			nTotal ? m_nRecStart + 1 : 0, m_nRecStart + nShow, nTotal);
+		m_Row[0].SetText(sz);
+		for (i = 0; i < nShow; i++)
 		{
-			m_MList[i].SetText("");
-			m_RowDim[i].SetText("");
+			TONG_JX2_ONE_APPLY* pA = &p->m_sApply[m_nRecStart + i];
+			sprintf(sz, "%s%-16s  c\312p %d",
+				(m_nRecStart + i == m_nSel) ? "> " : "  ",
+				pA->m_szName, (int)pA->m_wLevel);
+			m_Row[i + 1].SetText(sz);
 		}
+		if (!nTotal)
+			m_Row[1].SetText("  (ch\255a c\343 \256\254n n\265o)");
 	}
 }
 
@@ -1427,6 +1464,8 @@ void KUiTongJX2::RenderRecord()
 {
 	int i;
 	ClearRows();
+	if (m_bHasMember)
+		RenderMembers();	// panel danh sach thanh vien ben phai (nhu ban Linux)
 	if (m_nRcSub == 1)
 	{
 		// muc Thong bao: khung sua + noi dung hien tai
@@ -1642,7 +1681,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					{
 						if (i >= 1 && i <= 4)
 						{
-							m_nSel = i - 1;
+							m_nSel = m_nRecStart + i - 1;
 							RenderRecruit();
 						}
 					}
@@ -1675,7 +1714,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			{
 				if (uParam == (unsigned int)&m_Rt[q])
 				{
-					m_Rt[q].CheckButton(m_Rt[q].IsButtonChecked() ? 0 : 1);
+					// KHONG lat lai o kiem o day: nut co CheckBox=1 nen
+					// KWndButton::OnLBtnDown da tu lat truoc khi bao len
+					// (WndButton.cpp:314-323). Lat them lan nua = khong doi.
 					return 1;
 				}
 			}
@@ -1927,7 +1968,19 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)&m_RecPrev || uParam == (unsigned int)&m_RecNext)
 		{
-			RequestPage(m_nPage, 0);	// danh sach don toi da 8 - lam moi
+			// server gui du ca 8 don trong MOT goi -> lat trang ngay tren client
+			TONG_JX2_RECRUIT_SYNC* pR = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
+			if (uParam == (unsigned int)&m_RecPrev)
+			{
+				m_nRecStart -= 4;
+				if (m_nRecStart < 0)
+					m_nRecStart = 0;
+			}
+			else if (m_bHasRecruit && m_nRecStart + 4 < (int)pR->m_btApplyCount)
+				m_nRecStart += 4;
+			m_nSel = m_nRecStart;
+			if (m_bHasRecruit)
+				RenderRecruit();
 			return 1;
 		}
 		if (uParam == (unsigned int)&m_BtnPrev)

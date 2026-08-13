@@ -49,10 +49,11 @@ private:
 	void	RenderFunUse();
 	void	RenderRecord();
 	void	RenderTongList();
-	void	RenderMembers();
+	void	RenderMembers(int nOffset = 0);
 	void	RenderWorkshop();
 	void	RenderAnnounce();
 	void	ClearRows();
+	void	ClearMemberRows();	// chi xoa panel danh sach phai
 	void	SetupActions();
 	void	OnAction(int nIdx);
 	void	RepositionRows();		// bo cuc dong theo trang (trai / panel danh sach phai)
@@ -115,6 +116,7 @@ private:
 
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau
+	int		m_nRecStart;		// trang chieu mo: don xin dau tien dang ve
 	int		m_nSel;				// dong dang chon (trang TV/QH) / khu dang chon (TP)
 	// du lieu trang hien tai (ban chep goi sync gan nhat)
 	unsigned char	m_byInfo[512];

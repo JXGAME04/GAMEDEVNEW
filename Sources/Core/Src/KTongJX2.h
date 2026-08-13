@@ -41,6 +41,7 @@ struct KTongJX2Tong
 	char	szApplyName[8][32];
 	DWORD	dwApplyID[8];
 	WORD	wApplyLevel[8];
+	BYTE	btApplySex[8];						// nho gioi tinh de duyet duoc ca khi nguoi xin da thoat
 	char	szEvent[16][96];					// so su kien (ring, = RECORD_NUM/LEN)
 	char	szHistory[16][96];
 	int		nEventHead;
