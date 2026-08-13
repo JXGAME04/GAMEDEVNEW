@@ -31,6 +31,12 @@ typedef struct
 	TONG_MEMBER_FIGURE		MemberClass;			//帮众类型
 	int			nTitleIndex;					//帮众称号索引
 	int			nSex;
+	// ==== JX2 port: KV + quyen thanh vien (them o CUOI struct - theo bay-2) ====
+	int			nJX2FieldCount;
+	WORD		wJX2FieldKey[defTONG_JX2_MEMBER_FIELDS];
+	DWORD		dwJX2FieldVal[defTONG_JX2_MEMBER_FIELDS];
+	int			nJX2RightCount;
+	DWORD		dwJX2Right[defTONG_JX2_MEMBER_RIGHTS];
 }TMemberStruct;	//用作存入数据库的结构
 
 typedef struct
@@ -67,6 +73,11 @@ public:
 	bool DelMoney(char* aTongName);
 
 	bool UpdateExtPoint(char* szAccount, int nExtPoint);
+
+	// ==== JX2 port ====
+	void JX2_PreserveMemberTail(TMemberStruct* pMember);
+	bool JX2_UpdateMemberTail(const char* szName, const void* pJX2Data);
+	bool JX2_UpdateMemberClass(const char* szName, int nClass, int nTitleIdx);
 	int	 GetExtPoint(char* szAccount);
 };
 
