@@ -227,6 +227,7 @@ public:
 	const char*	JX2_Name() { return m_szName; }
 	BOOL	JX2_SetString(int nKind, const char* pszText);
 	BOOL	JX2_KickByNameID(DWORD dwNameID);
+	BOOL	JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure);
 	BOOL	JX2_Upgrade();
 	BOOL	JX2_Degrade();
 	void	JX2_DailyMaintain(int nTodayDay, int nWeekday);

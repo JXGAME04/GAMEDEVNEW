@@ -20,6 +20,7 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 #include "../elem/wndlist2.h"
 #include "../elem/wndscrollbar.h"
 #include "UiTongManager.h"
+#include "UiTongCreateSheet.h"
 
 #include "../../Core/Src/KProtocol.h"
 #include "../../../Headers/KProtocolDef.h"
@@ -105,7 +106,7 @@ void KUiTongJX2::ToggleFromIcon()
 	if (g_pCoreShell && g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_INFO, 0))
 		OpenWindow();
 	else
-		KUiTongManager::OpenWindow(NULL);
+		KUiTongCreateSheet::OpenWindow();	// chua vao bang -> don TAO BANG (he cu chi con vai tro nay)
 }
 
 KUiTongJX2* KUiTongJX2::GetIfVisible()
@@ -294,12 +295,15 @@ void KUiTongJX2::SetupActions()
 		m_BtnAct[1].SetLabel("Gop 100 van");
 		m_BtnAct[2].SetLabel("NANG CAP bang");
 		m_BtnAct[3].SetLabel("Ha cap bang");
-		m_BtnAct[4].SetLabel("Tuyet ky 1");
+		m_BtnAct[4].SetLabel("ROI KHOI BANG");
 		m_BtnAct[5].SetLabel("Lam moi");
 		break;
 	case defTONG_JX2_PAGE_MEMBER:
 		m_BtnAct[0].SetLabel("Duoi nguoi chon");
 		m_BtnAct[1].SetLabel("Phat 10 cong hien");
+		m_BtnAct[2].SetLabel("BN Truong lao");
+		m_BtnAct[3].SetLabel("BN Doi truong");
+		m_BtnAct[4].SetLabel("Ha Bang chung");
 		m_BtnAct[5].SetLabel("Chon >>");
 		break;
 	case defTONG_JX2_PAGE_RIGHT:
@@ -475,7 +479,23 @@ void KUiTongJX2::OnAction(int nIdx)
 		else if (nIdx == 3)
 			SendOp(defTONG_JX2_COP_DEGRADE, 0, 0, 0, NULL);
 		else if (nIdx == 4)
-			SendOp(defTONG_JX2_COP_SETSTUNT, 0, 1, 0, NULL);
+		{
+			// roi bang: dung duong hanh dong san co cua he cu (GTOI_TONG_ACTION)
+			if (g_pCoreShell && m_bHasInfo)
+			{
+				TONG_JX2_INFO_SYNC* pI = (TONG_JX2_INFO_SYNC*)m_byInfo;
+				KTongOperationParam sParam;
+				KTongMemberItem sMe;
+				memset(&sParam, 0, sizeof(sParam));
+				memset(&sMe, 0, sizeof(sMe));
+				sParam.eOper = TONG_ACTION_LEAVE;
+				sParam.nData[0] = pI->m_btMyFigure;
+				sParam.nData[1] = -1;
+				strncpy(sMe.Name, pI->m_szSelf, sizeof(sMe.Name) - 1);
+				g_pCoreShell->TongOperation(GTOI_TONG_ACTION, (unsigned int)&sParam, (int)&sMe);
+				CloseWindow(false);
+			}
+		}
 		else if (nIdx == 5)
 			RequestPage(m_nPage, m_nStart);
 		break;
@@ -485,6 +505,12 @@ void KUiTongJX2::OnAction(int nIdx)
 			SendOp(defTONG_JX2_COP_KICK, dwTarget, 0, 0, NULL);
 		else if (nIdx == 1 && dwTarget)
 			SendOp(defTONG_JX2_COP_GRANT, dwTarget, 10, 0, NULL);
+		else if (nIdx == 2 && dwTarget)
+			SendOp(defTONG_JX2_COP_SET_FIGURE, dwTarget, 1, 0, NULL);
+		else if (nIdx == 3 && dwTarget)
+			SendOp(defTONG_JX2_COP_SET_FIGURE, dwTarget, 2, 0, NULL);
+		else if (nIdx == 4 && dwTarget)
+			SendOp(defTONG_JX2_COP_SET_FIGURE, dwTarget, 3, 0, NULL);
 		else if (nIdx == 5)
 		{
 			if (m_bHasMember && pM->m_btCount)

@@ -689,6 +689,31 @@ bool CTongDB::JX2_UpdateMemberTail(const char* szName, const void* pJX2Data)
 		(char*)&sRec, (int)sizeof(TMemberStruct));
 }
 
+// Cap nhat chuc vu (MemberClass + nTitleIndex) cua ban ghi thanh vien,
+// giu nguyen moi phan con lai (doc-sua-ghi nhu JX2_UpdateMemberTail).
+bool CTongDB::JX2_UpdateMemberClass(const char* szName, int nClass, int nTitleIdx)
+{
+	if (!szName || !szName[0])
+		return false;
+	int nKeySize = (int)strlen(szName) + 1;
+	ZCursor* cursor = m_MemberTable->search((char*)szName, nKeySize);
+	if (!cursor)
+		return false;
+	if (cursor->size != (int)sizeof(TMemberStruct))
+	{
+		m_MemberTable->closeCursor(cursor);
+		return false;
+	}
+	TMemberStruct sRec;
+	memcpy(&sRec, cursor->data, sizeof(TMemberStruct));
+	m_MemberTable->closeCursor(cursor);
+
+	sRec.MemberClass = (TONG_MEMBER_FIGURE)nClass;
+	sRec.nTitleIndex = nTitleIdx;
+	return m_MemberTable->add(sRec.szName, (int)strlen(sRec.szName) + 1,
+		(char*)&sRec, (int)sizeof(TMemberStruct));
+}
+
 //////////////////////////////////////////////////////////////////////
 // Cac ham xu ly goi enumC2S_TONG_JX2_* (goi tu CTongConnect::Proc0_Tong)
 //////////////////////////////////////////////////////////////////////
@@ -1039,6 +1064,179 @@ BOOL CTongControl::JX2_KickByNameID(DWORD dwNameID)
 	return TRUE;
 }
 
+// Doi chuc vu thanh vien (thu tuc SetFigure JX2 0x81abb..):
+// - khong dung duoc voi bang chu (chuyen nhuong di duong rieng)
+// - dich 1 = truong lao (tran 7), 2 = doi truong (tran 56), 3 = bang chung
+// - JX2 4.5: ha khoi truong lao la XOA SACH danh sach quyen da giao
+BOOL CTongControl::JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure)
+{
+	if (dwNameID == 0 || dwNameID == m_dwMasterID)
+		return FALSE;
+	if (nNewFigure < 1 || nNewFigure > 3)
+		return FALSE;
+
+	char szName[64];
+	szName[0] = 0;
+	int nSex = 0;
+	int nOldFigure = -1;
+	int i;
+
+	// tim + go khoi cho cu
+	for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+	{
+		if (m_dwDirectorID[i] == dwNameID)
+		{
+			strncpy(szName, m_szDirectorName[i], 63);
+			szName[63] = 0;
+			nSex = m_nDirectorSex[i];
+			nOldFigure = 1;
+			break;
+		}
+	}
+	if (nOldFigure < 0)
+	{
+		for (i = 0; i < defTONG_MAX_MANAGER; i++)
+		{
+			if (m_dwManagerID[i] == dwNameID)
+			{
+				strncpy(szName, m_szManagerName[i], 63);
+				szName[63] = 0;
+				nSex = m_nManagerSex[i];
+				nOldFigure = 2;
+				break;
+			}
+		}
+	}
+	if (nOldFigure < 0 && m_psMember)
+	{
+		for (i = 0; i < m_nMemberPointSize; i++)
+		{
+			if (m_psMember[i].m_dwNameID == dwNameID)
+			{
+				strncpy(szName, m_psMember[i].m_szName, 63);
+				szName[63] = 0;
+				nSex = m_psMember[i].m_nSex;
+				nOldFigure = 3;
+				break;
+			}
+		}
+	}
+	if (nOldFigure < 0 || nOldFigure == nNewFigure || !szName[0])
+		return FALSE;
+
+	// kiem cho trong o dich TRUOC khi go cho cu
+	int nDest = -1;
+	if (nNewFigure == 1)
+	{
+		for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+		{
+			if (m_dwDirectorID[i] == 0)
+			{
+				nDest = i;
+				break;
+			}
+		}
+		if (nDest < 0)
+			return FALSE;	// du 7 truong lao
+	}
+	else if (nNewFigure == 2)
+	{
+		for (i = 0; i < defTONG_MAX_MANAGER; i++)
+		{
+			if (m_dwManagerID[i] == 0)
+			{
+				nDest = i;
+				break;
+			}
+		}
+		if (nDest < 0)
+			return FALSE;	// du 56 doi truong
+	}
+
+	// go khoi cho cu
+	if (nOldFigure == 1)
+	{
+		for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+		{
+			if (m_dwDirectorID[i] == dwNameID)
+			{
+				m_szDirectorName[i][0] = 0;
+				m_dwDirectorID[i] = 0;
+				m_nDirectorSex[i] = 0;
+				m_nDirectorNum--;
+				break;
+			}
+		}
+		// JX2 4.5: roi ghe truong lao -> mat trang moi quyen
+		JX2Member* pMem = JX2_GetMember(dwNameID, FALSE);
+		if (pMem)
+		{
+			pMem->nRightCount = 0;
+			memset(pMem->dwRight, 0, sizeof(pMem->dwRight));
+			g_cTongDB.JX2_UpdateMemberTail(szName, pMem);
+		}
+	}
+	else if (nOldFigure == 2)
+	{
+		for (i = 0; i < defTONG_MAX_MANAGER; i++)
+		{
+			if (m_dwManagerID[i] == dwNameID)
+			{
+				m_szManagerName[i][0] = 0;
+				m_dwManagerID[i] = 0;
+				m_nManagerSex[i] = 0;
+				m_nManagerNum--;
+				break;
+			}
+		}
+	}
+	else if (m_psMember)
+	{
+		for (i = 0; i < m_nMemberPointSize; i++)
+		{
+			if (m_psMember[i].m_dwNameID == dwNameID)
+			{
+				m_psMember[i].m_szName[0] = 0;
+				m_psMember[i].m_dwNameID = 0;
+				m_nMemberNum--;
+				break;
+			}
+		}
+	}
+
+	// dat vao cho moi
+	int nClass;
+	int nTitleIdx = 0;
+	if (nNewFigure == 1)
+	{
+		strncpy(m_szDirectorName[nDest], szName, defTONG_STR_LENGTH - 1);
+		m_szDirectorName[nDest][defTONG_STR_LENGTH - 1] = 0;
+		m_dwDirectorID[nDest] = dwNameID;
+		m_nDirectorSex[nDest] = nSex;
+		m_nDirectorNum++;
+		nClass = enumTONG_FIGURE_DIRECTOR;
+		nTitleIdx = nDest;
+	}
+	else if (nNewFigure == 2)
+	{
+		strncpy(m_szManagerName[nDest], szName, defTONG_STR_LENGTH - 1);
+		m_szManagerName[nDest][defTONG_STR_LENGTH - 1] = 0;
+		m_dwManagerID[nDest] = dwNameID;
+		m_nManagerSex[nDest] = nSex;
+		m_nManagerNum++;
+		nClass = enumTONG_FIGURE_MANAGER;
+		nTitleIdx = nDest;
+	}
+	else
+	{
+		AddMember(szName, nSex, false);
+		nClass = enumTONG_FIGURE_MEMBER;
+	}
+
+	g_cTongDB.JX2_UpdateMemberClass(szName, nClass, nTitleIdx);
+	return TRUE;
+}
+
 // dem tac phuong: attr0 (ton tai) / dem theo cap >= nMinLevel
 static int sJX2_CountWorkshop(CTongControl* pTong, int nMinLevel)
 {
@@ -1380,6 +1578,10 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		bOK = pTong->JX2_Distribute(pCmd->m_btOpCode, pCmd->m_dwMemberNameID,
 			pCmd->m_nParam1, pCmd->m_nParam2);
 		bMembersChanged = bOK && pCmd->m_btOpCode != defTONG_JX2_TOP_CONTRIBUTE;
+		break;
+	case defTONG_JX2_TOP_SET_FIGURE:
+		bOK = pTong->JX2_SetFigureByNameID(pCmd->m_dwMemberNameID, pCmd->m_nParam1);
+		bMembersChanged = bOK;
 		break;
 	case defTONG_JX2_TOP_FEATURE:
 		// doi ngoai hinh toan bang: can duong ve client - lam o giai doan cua so client

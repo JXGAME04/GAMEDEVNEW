@@ -2368,6 +2368,7 @@ typedef struct
 #define defTONG_JX2_COP_UPGRADE	10
 #define defTONG_JX2_COP_DEGRADE	11
 #define defTONG_JX2_COP_GRANT		12	// nParam1 = offer, dwTarget = thanh vien
+#define defTONG_JX2_COP_SET_FIGURE	13	// nParam1 = figure moi (1 t.lao / 2 d.truong / 3 b.chung)
 
 typedef struct
 {
@@ -2418,6 +2419,7 @@ typedef struct
 	BYTE	m_btMyFigure;
 	DWORD	m_dwMyOffer;
 	WORD	m_wMyRights;	// mat na 12 quyen cua ban than
+	char	m_szSelf[32];	// ten nhan vat dang xem (phuc vu roi bang)
 	char	m_szAnnounce[128];
 } TONG_JX2_INFO_SYNC;
 

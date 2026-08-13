@@ -1880,6 +1880,7 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_btMyFigure = pMe ? pMe->btFigure : 3;
 			pSync->m_dwMyOffer = GetMemberField(pMe, 7);
 			pSync->m_wMyRights = sJX2_RightMask(pMe);
+			strncpy(pSync->m_szSelf, Player[nPlayerIdx].m_PlayerName, 31);
 			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
 			pSync->m_szAnnounce[127] = 0;
 			// tim ten bang chu
@@ -2098,6 +2099,20 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			if (pCmd->m_nParam1 <= 0)
 				return 5;
 			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_DIST_MEMBER,
+				pCmd->m_nParam1, 0, dwParam);
+			return 0;
+		}
+	case defTONG_JX2_COP_SET_FIGURE:
+		{
+			// JX2 4.3: quyen quan ly 1101 (hoac bang chu); khong doi duoc bang chu
+			if (!bMaster && !sJX2_HasRight(pMe, 1101))
+				return 3;
+			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
+			if (!pTarget || pTarget->btFigure == 0)
+				return 4;
+			if (pCmd->m_nParam1 < 1 || pCmd->m_nParam1 > 3)
+				return 5;
+			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_SET_FIGURE,
 				pCmd->m_nParam1, 0, dwParam);
 			return 0;
 		}
