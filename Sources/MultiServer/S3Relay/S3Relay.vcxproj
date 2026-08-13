@@ -183,6 +183,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClCompile Include="HostServer.cpp" />
     <ClCompile Include="KThread.cpp" />
     <ClCompile Include="KTongControl.cpp" />
+    <ClCompile Include="KTongJX2Relay.cpp" />
     <ClCompile Include="KTongSet.cpp" />
     <ClCompile Include="Lock.cpp" />
     <ClCompile Include="LogFile.cpp" />
@@ -243,6 +244,7 @@ copy debug\S3Relay.exe ..\..\..\..\bin\Multiserver\S3Relay.exe</Command>
     <ClInclude Include="HostServer.h" />
     <ClInclude Include="KThread.h" />
     <ClInclude Include="KTongControl.h" />
+    <ClInclude Include="KTongJX2Relay.h" />
     <ClInclude Include="KTongSet.h" />
     <ClInclude Include="Lock.h" />
     <ClInclude Include="LogFile.h" />

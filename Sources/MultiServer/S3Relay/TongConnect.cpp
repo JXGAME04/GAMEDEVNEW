@@ -8,6 +8,7 @@
 #include "S3Relay.h"
 #include "Global.h"
 #include "malloc.h"
+#include "KTongJX2Relay.h"	// JX2 port
 
 //-------------------------- tong struct size ---------------------------
 int	g_nTongPSSize[defTONG_PROTOCOL_SERVER_NUM] = 
@@ -38,6 +39,11 @@ int	g_nTongPSSize[defTONG_PROTOCOL_SERVER_NUM] =
 	sizeof(STONG_CHANGE_EXP_COMMAND),		// enumC2S_TONG_CHANGE_EXP
 	sizeof(STONG_CHANGE_WAYEDIT_COMMAND),		// enumC2S_TONG_CHANGE_WAYEDIT
 	sizeof(STONG_CHANGE_NEXTTARGET_COMMAND),		// enumC2S_TONG_CHANGE_NEXTTARGET
+	sizeof(STONG_JX2_FIELD_COMMAND),			// enumC2S_TONG_JX2_FIELD
+	sizeof(STONG_JX2_MONEY_COMMAND),			// enumC2S_TONG_JX2_MONEY
+	sizeof(STONG_JX2_MEMBER_FIELD_COMMAND),	// enumC2S_TONG_JX2_MEMBER_FIELD
+	sizeof(STONG_JX2_RIGHT_COMMAND),			// enumC2S_TONG_JX2_RIGHT
+	sizeof(STONG_JX2_GET_FULL_COMMAND),		// enumC2S_TONG_JX2_GET_FULL
 };
 
 //------------------------- tong struct size end ---------------------------
@@ -62,6 +68,8 @@ CTongConnect::~CTongConnect()
 void CTongConnect::OnClientConnectCreate()
 {
 	rTRACE("tong connect create: %s", _ip2a(GetIP()));
+	// JX2 port: GS moi noi vao -> dump toan bo ban sao du lieu bang
+	g_cTongSet.JX2_SendFullDump(this);
 }
 
 void CTongConnect::OnClientConnectClose()
@@ -240,6 +248,22 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 
 	switch (pHeader->ProtocolID)
 	{
+	// ==== JX2 port ====
+	case enumC2S_TONG_JX2_FIELD:
+		JX2_ProcTongField(this, pData);
+		break;
+	case enumC2S_TONG_JX2_MONEY:
+		JX2_ProcTongMoney(this, pData);
+		break;
+	case enumC2S_TONG_JX2_MEMBER_FIELD:
+		JX2_ProcMemberField(this, pData);
+		break;
+	case enumC2S_TONG_JX2_RIGHT:
+		JX2_ProcRight(this, pData);
+		break;
+	case enumC2S_TONG_JX2_GET_FULL:
+		JX2_ProcGetFull(this);
+		break;
 	case enumC2S_TONG_CREATE:
 		{
 			char	szPlayerName[64], szTongName[64];

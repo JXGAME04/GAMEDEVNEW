@@ -9,6 +9,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <map>	// JX2 port
+
 
 #define		defTONG_INIT_MEMBER_SIZE		100		// 成员内存初始化时的大小
 #define		defTONG_MEMBER_SIZE_ADD			100		// 成员内存每次增加的大小
@@ -47,6 +49,10 @@ typedef struct
 	char			szLeagueTName[defTONG_STR_LENGTH];	//bang li猲 minh
 	//end add by Fong Ki襲
 	int MemberCount;
+	// ==== JX2 port: KV field cap bang (them o CUOI struct - theo bay-2) ====
+	int			nJX2FieldCount;
+	WORD		wJX2FieldKey[defTONG_JX2_MAX_FIELDS];
+	DWORD		dwJX2FieldVal[defTONG_JX2_MAX_FIELDS];
 }TTongStruct;	//用作存入数据库的结构
 
 struct STONG_MEMBER
@@ -171,6 +177,41 @@ public:
 
 	BOOL		DBChangeTongNextTarget(STONG_CHANGE_NEXTTARGET_COMMAND *pChange);
 	
+	// ==== JX2 port: du lieu KV + quyen (xem BANGHOI_JX2_PHANTICH.md) ====
+public:
+	struct JX2Member
+	{
+		int	nFieldCount;
+		WORD	wFieldKey[defTONG_JX2_MEMBER_FIELDS];
+		DWORD	dwFieldVal[defTONG_JX2_MEMBER_FIELDS];
+		int	nRightCount;
+		DWORD	dwRight[defTONG_JX2_MEMBER_RIGHTS];
+	};
+	int	m_nJX2FieldCount;
+	WORD	m_wJX2FieldKey[defTONG_JX2_MAX_FIELDS];
+	DWORD	m_dwJX2FieldVal[defTONG_JX2_MAX_FIELDS];
+	std::map<DWORD, JX2Member>	m_mapJX2Member;	// khoa = NameID thanh vien
+
+	void	JX2_Reset();
+	int	JX2_FindFieldIdx(WORD wKey);
+	DWORD	JX2_GetField(WORD wKey);
+	BOOL	JX2_SetField(WORD wKey, DWORD dwValue);
+	BOOL	JX2_AddField(WORD wKey, int nDelta, BOOL bUnsigned);
+	__int64	JX2_GetMoney64();
+	void	JX2_SetMoney64(__int64 nMoney);
+	JX2Member*	JX2_GetMember(DWORD dwNameID, BOOL bCreate);
+	DWORD	JX2_GetMemberField(DWORD dwNameID, WORD wKey);
+	BOOL	JX2_SetMemberField(DWORD dwNameID, WORD wKey, DWORD dwValue);
+	BOOL	JX2_AddMemberField(DWORD dwNameID, WORD wKey, int nDelta, BOOL bUnsigned);
+	BOOL	JX2_ChangeRight(DWORD dwNameID, DWORD dwRightID, BOOL bAdd);
+	BOOL	JX2_GetMemberName(DWORD dwNameID, char* pszOut, int nOutSize);
+	void	JX2_SaveToStruct(TTongStruct* pStruct);
+	void	JX2_LoadFromStruct(const TTongStruct* pStruct);
+	void	JX2_LoadMemberFromStruct(const void* pMemberRecord);
+	int	JX2_CollectMembers(struct JX2MemberBrief* pArr, int nMax);
+	int	JX2_BuildTongSync(void* pBuffer, int nBufSize, int nMemberTotal);
+	int	JX2_BuildMemberSync(void* pBuffer, int nBufSize,
+			const struct JX2MemberBrief* pArr, int nTotal, int* pnStartIdx, int nMaxPerPacket);
 };
 
 #endif // !defined(AFX_KTONGCONTROL_H__62D04F9A_67CD_419B_B475_BF0F8727A91E__INCLUDED_)

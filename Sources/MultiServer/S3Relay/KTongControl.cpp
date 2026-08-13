@@ -55,6 +55,7 @@ CTongControl::CTongControl(int nCamp, char *lpszPlayerName, char *lpszTongName, 
 	m_psMember = (STONG_MEMBER*)new STONG_MEMBER[defTONG_INIT_MEMBER_SIZE];
 	m_nMemberPointSize = defTONG_INIT_MEMBER_SIZE;
 	memset(m_psMember, 0, sizeof(STONG_MEMBER) * m_nMemberPointSize);
+	JX2_Reset();	// JX2 port: mang POD chua khoi tao
 
 	if (nCamp != camp_justice && nCamp != camp_evil && nCamp != camp_balance)
 		return;
@@ -125,6 +126,8 @@ CTongControl::CTongControl(TTongStruct sList)
 	m_nExpGuide = 0;
 	m_nCityGuide = 0;
 	memset(m_szLeagueTName, 0, sizeof(m_szLeagueTName));
+	JX2_Reset();	// JX2 port
+	JX2_LoadFromStruct(&sList);
 	strcpy(m_szMasterName, sList.szMasterName);
 
 	if (strlen(sList.szMasterName) > 0)

@@ -45,6 +45,12 @@ enum
 	enumC2S_TONG_CHANGE_EXP,
 	enumC2S_TONG_CHANGE_WAYEDIT,
 	enumC2S_TONG_CHANGE_NEXTTARGER,
+	// ==== JX2 port: cac lenh du lieu bang hoi kieu JX2 (chi them o CUOI, truoc _NUM) ====
+	enumC2S_TONG_JX2_FIELD,		// dat/cong field bang (KV)
+	enumC2S_TONG_JX2_MONEY,		// dat/cong ngan quy 64-bit (field 3/4)
+	enumC2S_TONG_JX2_MEMBER_FIELD,	// dat/cong field thanh vien
+	enumC2S_TONG_JX2_RIGHT,		// them/xoa quyen thanh vien
+	enumC2S_TONG_JX2_GET_FULL,	// GS xin dump toan bo du lieu JX2
 	enumC2S_TONG_NUM,					// 数量
 };
 
@@ -84,6 +90,15 @@ enum
 	enumS2C_TONG_BE_CHANGED_WAYEDIT,
 	enumS2C_TONG_BE_CHANGED_NEXTTARGET,
 	enumS2C_TONG_FULL,
+	// ==== JX2 port: dong bo du lieu bang hoi kieu JX2 ====
+	enumS2C_TONG_JX2_FIELD_SYNC,	// echo field bang (op=SET, gia tri sau khi ghi)
+	enumS2C_TONG_JX2_MONEY_SYNC,	// echo ngan quy 64-bit (gia tri tuyet doi)
+	enumS2C_TONG_JX2_MEMBER_FIELD_SYNC,	// echo field thanh vien
+	enumS2C_TONG_JX2_RIGHT_SYNC,	// echo quyen thanh vien
+	enumS2C_TONG_JX2_TONG_SYNC,	// dump 1 bang: thong tin + toan bo field
+	enumS2C_TONG_JX2_MEMBER_SYNC,	// dump <=4 thanh vien / goi
+	enumS2C_TONG_JX2_TONG_REMOVE_SYNC,	// bang bien mat khoi relay
+	enumS2C_TONG_JX2_SYNC_DONE,	// het dump toan cuc
 	enumS2C_TONG_NUM,					// 数量
 };
 //-------------------------- tong protocol end --------------------------
@@ -808,6 +823,100 @@ struct STONG_GET_EXTPOINT_SYNC : EXTEND_HEADER
 {
 	int 	m_nExtPoint;
 	DWORD	m_dwParam;
+};
+
+// ==== JX2 port: cau truc goi du lieu bang hoi kieu JX2 ====
+
+#define defTONG_JX2_OP_SET		0
+#define defTONG_JX2_OP_ADD		1	// cong CO dau
+#define defTONG_JX2_OP_ADDU	2	// cong KHONG dau
+
+// Suc chua luu tru phia relay/DB (mang them o CUOI TTongStruct/TMemberStruct)
+#define defTONG_JX2_MAX_FIELDS		96	// KV cap bang (field 1..48 + bien nhiem vu >=1002)
+#define defTONG_JX2_MEMBER_FIELDS	32	// KV cap thanh vien (khoa 1..16 + >=1001)
+#define defTONG_JX2_MEMBER_RIGHTS	32	// so quyen toi da moi thanh vien
+
+struct STONG_JX2_FIELD_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	WORD	m_wKey;
+	DWORD	m_dwValue;		// SET: gia tri moi; ADD/ADDU: so gia (ep kieu)
+	BYTE	m_btOp;			// defTONG_JX2_OP_*
+	DWORD	m_dwParam;		// player idx phia GS (0 = engine/script)
+};
+
+struct STONG_JX2_MONEY_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	__int64	m_nValue;		// SET: gia tri; ADD: so gia (am duoc)
+	BYTE	m_btOp;
+	DWORD	m_dwParam;
+};
+
+struct STONG_JX2_MEMBER_FIELD_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	DWORD	m_dwMemberNameID;
+	WORD	m_wKey;
+	DWORD	m_dwValue;
+	BYTE	m_btOp;
+	DWORD	m_dwParam;
+};
+
+struct STONG_JX2_RIGHT_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	DWORD	m_dwMemberNameID;
+	DWORD	m_dwRightID;
+	BYTE	m_btAdd;		// 1 = them, 0 = xoa
+	DWORD	m_dwParam;
+};
+
+struct STONG_JX2_GET_FULL_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwParam;
+};
+
+// Dump 1 bang (goi bien dai, m_wLength = tong kich thuoc goi).
+// Ngay sau struct: m_wFieldCount x { WORD wKey; DWORD dwValue; }
+struct STONG_JX2_TONG_SYNC : EXTEND_HEADER
+{
+	WORD	m_wLength;
+	DWORD	m_dwTongNameID;
+	char	m_szTongName[32];
+	BYTE	m_btCamp;
+	WORD	m_wMemberTotal;	// tong so thanh vien se toi qua MEMBER_SYNC
+	WORD	m_wFieldCount;
+};
+
+// 1 muc thanh vien trong goi MEMBER_SYNC; sau phan co dinh la
+// m_btFieldCount x {WORD,DWORD} roi m_btRightCount x DWORD
+struct STONG_JX2_ONE_MEMBER
+{
+	DWORD	m_dwMemberNameID;
+	char	m_szName[32];
+	BYTE	m_btFigure;	// 0 bang chu/1 truong lao/2 doi truong/3 bang chung/4 an si
+	BYTE	m_btSex;
+	BYTE	m_btFieldCount;
+	BYTE	m_btRightCount;
+};
+
+// Bo cuc: header + m_btCount x [STONG_JX2_ONE_MEMBER + fields + rights]
+struct STONG_JX2_MEMBER_SYNC : EXTEND_HEADER
+{
+	WORD	m_wLength;
+	DWORD	m_dwTongNameID;
+	BYTE	m_btCount;
+};
+
+struct STONG_JX2_TONG_REMOVE_SYNC : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+};
+
+struct STONG_JX2_SYNC_DONE : EXTEND_HEADER
+{
+	DWORD	m_dwTongCount;
 };
 
 //--------------------------- tong struct end ---------------------------

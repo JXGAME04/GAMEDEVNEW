@@ -131,6 +131,7 @@ bool CTongDB::ChangeTong(CTongControl& aTongControl)
 	{
 		strcpy(aTongStruct.szManagerTitle[i], aTongControl.m_szManagerTitle[i]);
 	}
+	aTongControl.JX2_SaveToStruct(&aTongStruct);	// JX2 port
 	aResult = m_TongTable->add(aTongControl.m_szName, aKeySize,(char*)(&aTongStruct), aSize);
 	
 	return aResult;
@@ -193,6 +194,7 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 	aTongControl.m_nExpGuide = pTongStruct->nExpGuide;
 	aTongControl.m_nCityGuide = pTongStruct->nCityGuide;
 	strcpy(aTongControl.m_szLeagueTName, pTongStruct->szLeagueTName); // ==== end add by Fong Kieu ===
+	aTongControl.JX2_LoadFromStruct(pTongStruct);	// JX2 port
 
 	int i;
 	for(i=0;i<defTONG_MAX_DIRECTOR;++i)
@@ -235,6 +237,7 @@ bool CTongDB::SearchTong(char* aTongName, CTongControl& aTongControl)
 			continue;
 		}
 		TMemberStruct* pMemberStruct = (TMemberStruct*)aBuffer;
+		aTongControl.JX2_LoadMemberFromStruct(pMemberStruct);	// JX2 port
 		switch(pMemberStruct->MemberClass)
 		{
 		case enumTONG_FIGURE_MASTER:
@@ -388,6 +391,8 @@ int CTongDB::GetTongList(TTongStruct* aTongList, int aMaxNum)
 
 bool CTongDB::ChangeMember(TMemberStruct aMember)
 {//Add guild members
+	// JX2 port: caller khong khoi tao phan duoi JX2 -> giu tu ban ghi cu / xoa trang
+	JX2_PreserveMemberTail(&aMember);
 	return m_MemberTable->add(aMember.szName, strlen(aMember.szName) + 1, (char*)(&aMember), sizeof(TMemberStruct));
 }
 

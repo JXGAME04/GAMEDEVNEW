@@ -41,6 +41,8 @@ public:
 	BOOL FindPlayerByRole(CTongConnect* pConn, const std::_tstring& role, CNetConnectDup* pConnDup, std::_tstring* pAcc, DWORD* pNameID, unsigned long* pParam, std::_tstring* pRealRole = NULL);
 public:
 	BOOL TraceInfo();
+	// ==== JX2 port: phat 1 goi toi MOI GameServer dang noi ====
+	int BroadcastPackage(const void* pData, size_t nSize);
 };
 
 #endif // !defined(AFX_TONGSERVER_H__01285A06_8149_4948_ABD4_175225328427__INCLUDED_)
