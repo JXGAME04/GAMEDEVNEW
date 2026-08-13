@@ -6776,6 +6776,32 @@ int LuaOpenTong(Lua_State* L)
 	return 0;
 }
 
+// JX2 port: script mo cua so bang hoi kieu JX2 tren client
+int LuaOpenTongJX2(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex < 0) return 0;
+
+	PLAYER_SCRIPTACTION_SYNC UiInfo;
+	UiInfo.m_bUIId = UI_OPENTONGJX2;
+	UiInfo.m_bOptionNum = 0;
+	UiInfo.m_nOperateType = SCRIPTACTION_UISHOW;
+	UiInfo.m_bParam1 = 0;
+	UiInfo.m_nBufferLen = sizeof(int);
+
+#ifndef _SERVER
+	UiInfo.m_bParam2 = 0;
+	Player[nPlayerIndex].DoScriptAction(&UiInfo);
+#else
+	UiInfo.m_bParam2 = 1;
+	UiInfo.ProtocolType = (BYTE)s2c_scriptaction;
+	UiInfo.m_wProtocolLong = sizeof(PLAYER_SCRIPTACTION_SYNC) - MAX_SCIRPTACTION_BUFFERNUM + UiInfo.m_nBufferLen - 1;
+	if (g_pServer)
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&UiInfo, UiInfo.m_wProtocolLong + 1);
+#endif
+	return 0;
+}
+
 int LuaGetTongName(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -12340,7 +12366,8 @@ TLua_Funcs GameScriptFuns[] =
 		//------------------------------------------------
 		{"ShowLadder", LuaShowLadder}, //ShowLadder(LadderCount, LadderId1,LadderId2,...);
 		//------------------------------------------------
-		{"OpenTong",	LuaOpenTong},	//OpenTong()通知玩家打开帮会界面
+		{"OpenTongJX2",	LuaOpenTongJX2},	// JX2 port
+	{"OpenTong",	LuaOpenTong},	//OpenTong()通知玩家打开帮会界面
 		{"GetTongName",			LuaGetTongName},
 		{"GetTongInfo"	 ,	LuaGetTongInfo},
 		{"GetTongFlag",			LuaGetTongFlag},

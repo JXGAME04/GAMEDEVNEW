@@ -53,6 +53,7 @@ enum	UIInfo
 	UI_NEWSINFO_1,
 	UI_PLAYMUSIC,
 	UI_OPENTONGUI,
+	UI_OPENTONGJX2,	// JX2 port: mo cua so bang hoi kieu JX2
 };
 
 enum

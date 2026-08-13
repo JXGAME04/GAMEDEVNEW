@@ -49,7 +49,8 @@ function main()
 	if (szAnn ~= nil and szAnn ~= "") then
 		msg = msg.."Thong bao: <color=green>"..szAnn.."<color><enter>"
 	end
-	Say(msg, 8,
+	Say(msg, 9,
+		"MO CUA SO BANG HOI (JX2)/tjx_openwin",
 		"Thong tin bang/tjx_info",
 		"Ngan quy - quyen gop/tjx_fund",
 		"Cong hien/tjx_offer",
@@ -475,4 +476,8 @@ function tjx_t777()
 	if (id == 0) then return end
 	TONG_ApplySetTaskValue(id, TJXM_TASKID, 777)
 	Msg2Player("Da gui SET TaskValue["..TJXM_TASKID.."] = 777.")
+end
+
+function tjx_openwin()
+	OpenTongJX2()
 end

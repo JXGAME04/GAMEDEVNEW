@@ -9174,6 +9174,19 @@ int	KCoreShell::SceneMapOperation(unsigned int uOper, unsigned int uParam, int n
 
 int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nParam)
 {
+	// ==== JX2 port: cua so bang hoi kieu JX2 ====
+	if (uOper == GTOI_TONG_JX2_VIEW)
+	{
+		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView((int)uParam, nParam);
+		return 1;
+	}
+	if (uOper == GTOI_TONG_JX2_OP && uParam)
+	{
+		KUiTongJX2Op* pOp = (KUiTongJX2Op*)uParam;
+		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_SendOp(pOp->nOp, pOp->dwTarget,
+			pOp->nParam1, pOp->nParam2, pOp->szText);
+		return 1;
+	}
 	int nRet = 0;
 	switch(uOper)
 	{

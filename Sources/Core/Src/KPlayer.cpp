@@ -7947,6 +7947,12 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					Player[CLIENT_PLAYER_INDEX].m_cTong.OpenCreateInterface();
 					break;
 				}
+			case UI_OPENTONGJX2:	// JX2 port
+				{
+					CoreDataChanged(GDCNI_TONG_JX2, 0, -1);
+					Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView(0, 0);
+					break;
+				}
 			}
 		} 
 		break;

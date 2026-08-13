@@ -34,6 +34,7 @@
 #include "UiCase/UiStrengthRank.h"
 #include "UiCase/UiTongManager.h"
 #include "UiCase/UiTongCreateSheet.h"
+#include "UiCase/UiTongJX2.h"	// JX2 port
 #include "UiCase/UiResetPass.h"
 #include "UiCase/UiExBox1.h"
 #include "UiCase/UiExBox2.h"
@@ -516,6 +517,9 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		break;
 	case GDCNII_RANK_INFORMATION_ARRIVE:
 		KUiStrengthRank::NewRankArrive(uParam, (KRankMessage*)nParam);
+		break;
+	case GDCNI_TONG_JX2:	// JX2 port
+		KUiTongJX2::DataArrive((unsigned char*)uParam, nParam);
 		break;
 	case GDCNI_TONG_INFO:
 		KUiTongManager::TongInfoArrive((KUiPlayerRelationWithOther*)uParam, (KTongInfo*)nParam);

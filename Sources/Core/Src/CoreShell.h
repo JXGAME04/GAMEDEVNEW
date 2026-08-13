@@ -897,7 +897,19 @@ enum GAME_TONG_OPERATION_INDEX
 	GTOI_TONG_MONEY_ACTION,
 
 	GTOI_TONG_GET_RECRUIT,
+	GTOI_TONG_JX2_VIEW,	// JX2 port: uParam = page (4 = trang thong bao dung INFO), nParam = start
+	GTOI_TONG_JX2_OP,		// JX2 port: uParam = (KUiTongJX2Op*)
 };
+
+// JX2 port: goi thao tac cua so bang hoi JX2 (UI -> Core -> GS)
+typedef struct
+{
+	int	nOp;	// defTONG_JX2_COP_* (KProtocol.h)
+	unsigned long	dwTarget;
+	int	nParam1;
+	int	nParam2;
+	char	szText[128];
+} KUiTongJX2Op;
 
 //=========================================================
 // Core外部客户对core的组队相关的操作请求的索引定义

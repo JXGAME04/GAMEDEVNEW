@@ -349,6 +349,8 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Ui\UiCase\UiTongGetString.cpp" />
+    <ClCompile Include="ui\uicase\UiTongJX2.cpp">
+    </ClCompile>
     <ClCompile Include="ui\uicase\UiTongManager.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
