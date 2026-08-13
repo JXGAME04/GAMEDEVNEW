@@ -64,7 +64,13 @@ private:
 
 	KWndButton			m_BtnClose;
 	KWndImage			m_PageBg[TJX2_UI_TABS];	// nen phan trang (帮会分页-*) tung tab
-	KWndLabeledButton	m_Chk[12];				// luoi o kiem 12 quyen (trang Phan phoi)
+	KWndLabeledButton	m_Chk[12];				// (bo dung - thay bang m_Rt)
+	KWndLabeledButton	m_Rt[14];				// 14 nut quyen blueprint (RightID doc tu ini)
+	KWndLabeledButton	m_RtAll;				// Chon tat ca
+	KWndLabeledButton	m_RtApply;				// Phan quyen (BtnDistribute)
+	KWndLabeledButton	m_Bot[4];				// 4 nut day: Vao bang nay/Tao moi/Xem tin/Dong
+	KWndText80			m_ColHdr[3];			// tieu de cot Hang/Thanh vien/Chuc vu
+	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo)
 	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
@@ -120,6 +126,8 @@ private:
 	int		m_bHasRecord;
 	int		m_nRcSub;				// 0 muc tieu tuan / 1 thong bao / 2 bang vu / 3 lich su
 	int		m_nFunMode;				// trang FunUse: 0 = Tin tuc (an nut), 1 = Su dung chuc nang
+	int		m_nFunSub;				// nhom nut 1..4 khi o che do Su dung chuc nang
+	DWORD	m_dwRtId[14];			// RightID cua tung nut quyen (doc tu ini)
 	int		m_bMDet;				// dang hien panel chi tiet thanh vien
 };
 

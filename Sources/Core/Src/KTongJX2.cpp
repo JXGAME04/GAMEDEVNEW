@@ -398,6 +398,21 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 	DWORD dwRefuse = g_TongJX2.GetField(dwTongID, 66);
 	if (dwRefuse && nLevel < (int)dwRefuse)
 		return 6;
+	{
+		// co dong/mo tuyen (he JX1 goc): moi thanh vien online cua bang deu giu
+		// m_nRecruit dong bo - tim 1 nguoi de doc; khong ai online thi cho nop don
+		int nChk = PlayerSet.GetFirstPlayer();
+		while (nChk > 0)
+		{
+			if (Player[nChk].m_cTong.GetTongNameID() == dwTongID)
+			{
+				if (!Player[nChk].m_cTong.GetRecruit())
+					return 8;	// bang dang DONG tuyen
+				break;
+			}
+			nChk = PlayerSet.GetNextPlayer();
+		}
+	}
 	DWORD dwAuto = g_TongJX2.GetField(dwTongID, 65);
 	if (dwAuto && nLevel >= (int)dwAuto)
 	{
@@ -2242,6 +2257,9 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			break;
 		case 6:
 			pszMsg = "Kh\253ng \256\361 ti\322n ho\306c t\265i nguy\252n.";
+			break;
+		case 8:
+			pszMsg = "Bang h\351i n\265y \256ang \256\343ng tuy\323n ng\255\352i.";
 			break;
 		}
 		if (pszMsg)
