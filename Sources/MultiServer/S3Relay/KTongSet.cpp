@@ -481,6 +481,18 @@ BOOL	CTongSet::InitFromDB()
 	Init();
 	g_cTongDB.Close(); //close all DB
 	g_cTongDB.OpenNew(); //Del TongDB and TongMemberDB and open new one
+
+	// FIX bay-1: DB co the chua nhieu hon defTONG_SET_INIT_POINT_NUM (16) bang.
+	// Init() vua reset m_pcTong ve 16 o, vong for phia duoi ghi nGetNum phan tu
+	// => TRAN HEAP khi nGetNum > 16. No mang con tro truoc khi ghi.
+	if (nGetNum > m_nTongPointSize)
+	{
+		delete []m_pcTong;
+		m_pcTong = (CTongControl**)new LPVOID[nGetNum];
+		m_nTongPointSize = nGetNum;
+		for (i = 0; i < m_nTongPointSize; i++)
+			m_pcTong[i] = NULL;
+	}
 	//for (i = 0; i < nGetNum; i++)
 	//{
 	//	if (m_tmpTong[i] && m_tmpTong[i]->m_szName[0])
