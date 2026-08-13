@@ -159,7 +159,30 @@ static const TJX2FunTxt s_sFunTxt[15] =
 struct TJX2FunBtn { const char* szSec; const char* szLabel; int nAct; };
 // nAct: 0 nang cap bang / 1 phat cong hien / 2 duoi / 3 truat chuc / 4 chieu mo
 //       5 tao lanh dia / 6 xoa lanh dia / 7 cat cong hien / 8 roi bang / -1 chua mo
-static const TJX2FunBtn s_sFunBtn[14] =
+// Menu trang Chieu mo - chep NGUYEN VAN tu ban thiet ke goc
+// D:\ServerLinux\Patch\ui\ui3_1024\<Chieu mo>.ini [QingXiangMenu] MenuItemCount=6
+// va [HuoDongMenu] MenuItemCount=11. Chi so 0 = chua chon (menu goc danh so tu 1).
+#define TJX2_QX_NUM		7
+static const char* s_szRecQX[TJX2_QX_NUM] =
+{
+	"(ch\255a ch\355n)",
+	"R\266nh m\355i ch\254i", "Th\335ch PK", "Tranh b\270",
+	"D\371 th\325 v\253 tranh", "T\335nh n\250ng PVE", "K\325t giao",
+};
+#define TJX2_HD_NUM		12
+static const char* s_szRecHD[TJX2_HD_NUM] =
+{
+	"(ch\255a ch\355n)",
+	"T\350ng Kim", "V\255\356t \266i", "\247\270nh Boss", "C\253ng Th\265nh",
+	"Phong L\250ng \256\351", "Nhi\326m v\364 D\267 T\310u", "Vi\252m \256\325",
+	"T\335n S\370", "M\351c Nh\251n", "V\342 l\251m li\252n \256\312u",
+	"Thi\252n Tr\327 M\313t C\266nh",
+};
+
+// 11 = gop tien ca nhan vao quy bang (COP_DONATE) - duong DUY NHAT de nguoi
+// choi gop tien; truoc day hang nut m_BtnAct bi an nen khong ai gop duoc.
+#define TJX2_FUN_BTNS	15
+static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 {
 	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
 	{"BtnAssignTongOffer",   "Ph\270t", 1},
@@ -175,6 +198,7 @@ static const TJX2FunBtn s_sFunBtn[14] =
 	{"BtnTongStunt",         "", -1},
 	{"BtnStorePersonalOffer","C\312t", 7},
 	{"BtnLeaveTong",         "R\352i bang", 8},
+	{"BtnStoreBuildFund",    "G\366i", 11},
 };
 
 // Trang Phuong tho: bind blueprint (Ws_*). Title co nhan TCVN3, Txt do render dien.
@@ -336,7 +360,7 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_FunP[i]);
 	for (i = 0; i < 14; i++)
 		AddChild(&m_RowDim[i]);
-	for (i = 0; i < 14; i++)
+	for (i = 0; i < TJX2_FUN_BTNS; i++)
 		AddChild(&m_FunBtn[i]);
 	for (i = 0; i < 4; i++)
 		AddChild(&m_FunSub[i]);
@@ -380,9 +404,9 @@ void KUiTongJX2::Initialize()
 		m_BtnTab[i].SetLabel("");
 	// m_BtnPrev/m_BtnNext: nhan tu ini (Label blueprint)
 	// nhan cac nut lay TRUC TIEP tu key Label trong ini (blueprint nung san)
-	m_RecQX.SetLabel("0");
+	m_RecQX.SetLabel(s_szRecQX[0]);
 	for (i = 0; i < 4; i++)
-		m_RecHD[i].SetLabel("0");
+		m_RecHD[i].SetLabel(s_szRecHD[0]);
 	m_BtnFun.SetLabel("");	// sprite nut co chu san tren cua so chinh
 	// m_WsBtn: nhan tu ini
 	for (i = 1; i <= 7; i++)
@@ -396,7 +420,7 @@ void KUiTongJX2::Initialize()
 	m_RcLeaveWord.SetLabel("L\255u l\352i");
 	m_RcSave.SetLabel("S\366a th\253ng b\270o");
 	m_BtnList.SetLabel("");	// sprite nut co san chu
-	for (i = 0; i < 14; i++)
+	for (i = 0; i < TJX2_FUN_BTNS; i++)
 		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
 	for (i = 0; i < 4; i++)
 		m_FunSub[i].SetLabel("");
@@ -545,7 +569,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		ms_pSelf->m_MList[i].Init(&Ini, szSec);	// muon font/mau sang cua Row
 		ms_pSelf->m_MList[i].SetPosition(341, 68 + i * 24);
 	}
-	for (i = 0; i < 14; i++)
+	for (i = 0; i < TJX2_FUN_BTNS; i++)
 	{
 		sprintf(szSec, "Fun_%s", s_sFunBtn[i].szSec);
 		ms_pSelf->m_FunBtn[i].Init(&Ini, szSec);
@@ -878,12 +902,12 @@ void KUiTongJX2::SwitchPage(int nPage)
 		for (i = 0; i < 2; i++)
 			if (bFun) m_FunPBg[i].Show(); else m_FunPBg[i].Hide();
 		// nhom nut giua theo sub-page (cac nut hanh dong deu thuoc sub 1 tru map)
-		static const int s_nFunBtnSub[14] =
-			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 0, 0 };
+		static const int s_nFunBtnSub[TJX2_FUN_BTNS] =
+			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 0, 0, 0 };
 			// 0 = luon hien khi mode nut (khoi tien/ca nhan/roi bang)
 			// 1 = sub nhan su (Recruit/KickOut/Depose/DispenseOffer)
 			// 2 = sub lanh dia (CreateTongMap/ConfigureTongMap/TongStunt)
-		for (i = 0; i < 14; i++)
+		for (i = 0; i < TJX2_FUN_BTNS; i++)
 		{
 			BOOL bShow = bBtn && s_sFunBtn[i].nAct >= 0 &&
 				(s_nFunBtnSub[i] == 0 || s_nFunBtnSub[i] == m_nFunSub);
@@ -1384,14 +1408,12 @@ void KUiTongJX2::RenderRecruit()
 	m_RecAuto.SetText(sz);
 	sprintf(sz, "%d", (int)p->m_btRefuseLv);
 	m_RecRefuse.SetText(sz);
-	m_nRecQX = p->m_btTendency % 10;
-	sprintf(sz, "%d", m_nRecQX);
-	m_RecQX.SetLabel(sz);
+	m_nRecQX = p->m_btTendency % TJX2_QX_NUM;
+	m_RecQX.SetLabel(s_szRecQX[m_nRecQX]);
 	for (i = 0; i < 4; i++)
 	{
-		m_nRecHD[i] = p->m_btAct[i] % 10;
-		sprintf(sz, "%d", m_nRecHD[i]);
-		m_RecHD[i].SetLabel(sz);
+		m_nRecHD[i] = p->m_btAct[i] % TJX2_HD_NUM;
+		m_RecHD[i].SetLabel(s_szRecHD[m_nRecHD[i]]);
 	}
 	// Danh sach thanh vien ve TRUOC (day xuong 5 dong), sau do moi ghi danh
 	// sach don xin len 5 dong dau -> don khong con bi ClearRows xoa mat nua.
@@ -1781,7 +1803,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		{
 			int f;
-			for (f = 0; f < 14; f++)
+			for (f = 0; f < TJX2_FUN_BTNS; f++)
 			{
 				if (uParam != (unsigned int)&m_FunBtn[f])
 					continue;
@@ -1817,6 +1839,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					break;
 				case 7:
 					SendOp(defTONG_JX2_COP_STORE_OFFER, 0, 10, 0, NULL);
+					break;
+				case 11:
+					// gop 10 van vao quy bang -> nhan diem cong hien ca nhan
+					SendOp(defTONG_JX2_COP_DONATE, 0, 10, 0, NULL);
 					break;
 				case 9:
 					SendOp(defTONG_JX2_COP_DRAW_MONEY, 0, 10, 0, NULL);	// rut 10 van
@@ -1912,10 +1938,8 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)&m_RecQX)
 		{
-			char szN[8];
-			m_nRecQX = (m_nRecQX + 1) % 10;
-			sprintf(szN, "%d", m_nRecQX);
-			m_RecQX.SetLabel(szN);
+			m_nRecQX = (m_nRecQX + 1) % TJX2_QX_NUM;
+			m_RecQX.SetLabel(s_szRecQX[m_nRecQX]);
 			return 1;
 		}
 		{
@@ -1924,10 +1948,8 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			{
 				if (uParam == (unsigned int)&m_RecHD[r])
 				{
-					char szN[8];
-					m_nRecHD[r] = (m_nRecHD[r] + 1) % 10;
-					sprintf(szN, "%d", m_nRecHD[r]);
-					m_RecHD[r].SetLabel(szN);
+					m_nRecHD[r] = (m_nRecHD[r] + 1) % TJX2_HD_NUM;
+					m_RecHD[r].SetLabel(s_szRecHD[m_nRecHD[r]]);
 					return 1;
 				}
 			}

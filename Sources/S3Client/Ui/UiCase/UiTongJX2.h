@@ -100,7 +100,7 @@ private:
 	KWndImage			m_FunPBg[2];			// khung + thanh ong cong hien ca nhan
 	KWndText80			m_MDet[7];				// panel XANH chi tiet thanh vien
 	KWndText80			m_RowDim[14];			// dong danh sach mau xam (offline)
-	KWndLabeledButton	m_FunBtn[14];			// nut hanh dong (bang s_sFunBtn)
+	KWndLabeledButton	m_FunBtn[15];			// nut hanh dong (bang s_sFunBtn)
 	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
 	KWndLabeledButton	m_BtnFun;				// nut mo trang (tren cua so chinh)
 	// trang Phuong tho theo blueprint

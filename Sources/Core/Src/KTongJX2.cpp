@@ -2396,7 +2396,15 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			sSendFieldCmd(dwTongID, 41, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
 			sSendMoneyCmd(dwTongID, (__int64)nVan * 10000, defTONG_JX2_OP_ADD, dwParam);
 			if (pMe)
+			{
+				// khoa 7 = cong hien tich luy; khoa 9 = muc tieu tuan nay;
+				// khoa 11 = cong hien tuan nay. Truoc day chi ghi khoa 7 nen o
+				// "Cong hien tuan" tren giao dien VINH VIEN bang 0 (client doc
+				// khoa 9 - xem BuildClientView m_dwMyWeekOffer / m_dwWeekOffer).
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 7, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
+				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 9, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
+				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 11, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
+			}
 			char szLog[160];
 			sprintf(szLog, "%s quyen %d van vao quy kien thiet", Player[nPlayerIdx].m_PlayerName, nVan);
 			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
