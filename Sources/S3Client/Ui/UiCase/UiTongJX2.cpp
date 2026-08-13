@@ -134,7 +134,7 @@ static const TJX2FunBtn s_sFunBtn[14] =
 	{"BtnGetTongMoney",      "Nh\313n", -1},
 	{"BtnAssignTongMoney",   "Ph\270t", -1},
 	{"BtnTransformMoney",    "\247\346i", -1},
-	{"BtnRecruit",           "", 4},
+	{"BtnRecruit",           "Chi\252u m\351", 4},
 	{"BtnKickOut",           "\247u\346i ng\255\352i", 2},
 	{"BtnDepose",            "Tru\312t ch\370c", 3},
 	{"Btn_DispenseOffer",    "Ph\270t c\350ng hi\325n", 1},
