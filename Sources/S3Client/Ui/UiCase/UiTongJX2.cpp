@@ -56,15 +56,15 @@ static const char* s_szWsName[8] =
 
 static const char* s_szFigure[5] =
 {
-	"Bang chu", "Truong lao", "Doi truong", "Bang chung", "An si",
+	"Bang ch\361", "Tr\255\353ng l\267o", "\247\351i tr\255\353ng", "Bang ch\363ng", "An si",
 };
 
-// nhan 12 o kiem quyen (cung thu tu mat na s_dwRightId)
+// nhan 12 o kiem quyen (cung thu tu mat na s_dwRightId) - TCVN3 co dau
 static const char* s_szChkLabel[12] =
 {
-	"Giao quyen", "Doi phe", "Quan ly", "Truc xuat",
-	"Thoai an", "Nang cap", "Lanh dia", "Muc tieu tuan",
-	"Tuyet ky", "Tuyen chien", "Ngan quy", "Tac phuong",
+	"Giao quy\322n", "\247\346i phe", "Qu\266n l\375", "Tr\364c xu\312t",
+	"Tho\270i \310n", "N\251ng c\312p", "L\267nh \256\336a", "M\364c ti\252u tu\307n",
+	"Tuy\326t k\374", "Tuy\252n chi\325n", "Ng\251n qu\374", "T\270c ph\255\352ng",
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -371,39 +371,39 @@ void KUiTongJX2::SetupActions()
 	switch (m_nPage)
 	{
 	case defTONG_JX2_PAGE_INFO:
-		m_BtnAct[0].SetLabel("Gop 10 van");
-		m_BtnAct[1].SetLabel("Gop 100 van");
-		m_BtnAct[2].SetLabel("NANG CAP bang");
-		m_BtnAct[3].SetLabel("Ha cap bang");
-		m_BtnAct[4].SetLabel("ROI KHOI BANG");
-		m_BtnAct[5].SetLabel("Lam moi");
+		m_BtnAct[0].SetLabel("G\343p 10 v\271n");
+		m_BtnAct[1].SetLabel("G\343p 100 v\271n");
+		m_BtnAct[2].SetLabel("N\251ng c\312p bang");
+		m_BtnAct[3].SetLabel("H\271 c\312p bang");
+		m_BtnAct[4].SetLabel("R\352i kh\341i bang");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	case defTONG_JX2_PAGE_MEMBER:
-		m_BtnAct[0].SetLabel("Duoi nguoi chon");
-		m_BtnAct[1].SetLabel("Phat 10 cong hien");
-		m_BtnAct[2].SetLabel("BN Truong lao");
-		m_BtnAct[3].SetLabel("BN Doi truong");
-		m_BtnAct[4].SetLabel("Ha Bang chung");
-		m_BtnAct[5].SetLabel("Lam moi");
+		m_BtnAct[0].SetLabel("\247u\346i ng\255\352i");
+		m_BtnAct[1].SetLabel("Ph\270t c\350ng hi\325n");
+		m_BtnAct[2].SetLabel("BN Tr\255\353ng l\267o");
+		m_BtnAct[3].SetLabel("BN \247\351i tr\255\353ng");
+		m_BtnAct[4].SetLabel("H\271 Bang ch\363ng");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	case defTONG_JX2_PAGE_RIGHT:
-		m_BtnAct[0].SetLabel("Chon tat ca");
-		m_BtnAct[1].SetLabel("Bo chon");
-		m_BtnAct[2].SetLabel("PHAN QUYEN");
-		m_BtnAct[5].SetLabel("Lam moi");
+		m_BtnAct[0].SetLabel("Ch\344n t\312t c\266");
+		m_BtnAct[1].SetLabel("B\341 ch\344n");
+		m_BtnAct[2].SetLabel("Ph\251n quy\322n");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	case defTONG_JX2_PAGE_WS:
-		m_BtnAct[0].SetLabel("Lap khu chon");
-		m_BtnAct[1].SetLabel("Mo / Dong");
-		m_BtnAct[2].SetLabel("Nang cap khu");
-		m_BtnAct[3].SetLabel("Dat tuyet ky khu");
-		m_BtnAct[4].SetLabel("Huy tuyet ky");
-		m_BtnAct[5].SetLabel("Lam moi");
+		m_BtnAct[0].SetLabel("L\313p khu");
+		m_BtnAct[1].SetLabel("M\353 / \247\343ng");
+		m_BtnAct[2].SetLabel("N\251ng c\312p khu");
+		m_BtnAct[3].SetLabel("\247\306t tuy\326t k\374");
+		m_BtnAct[4].SetLabel("H\361y tuy\326t k\374");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	case 4:	// thong bao
-		m_BtnAct[0].SetLabel("Dat TB mau");
-		m_BtnAct[1].SetLabel("Xoa thong bao");
-		m_BtnAct[5].SetLabel("Lam moi");
+		m_BtnAct[0].SetLabel("\247\306t th\253ng b\270o");
+		m_BtnAct[1].SetLabel("X\343a th\253ng b\270o");
+		m_BtnAct[5].SetLabel("L\265m m\355i");
 		break;
 	}
 	for (i = 0; i < TJX2_UI_ACTS; i++)
