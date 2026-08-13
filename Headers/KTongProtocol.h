@@ -51,6 +51,8 @@ enum
 	enumC2S_TONG_JX2_MEMBER_FIELD,	// dat/cong field thanh vien
 	enumC2S_TONG_JX2_RIGHT,		// them/xoa quyen thanh vien
 	enumC2S_TONG_JX2_GET_FULL,	// GS xin dump toan bo du lieu JX2
+	enumC2S_TONG_JX2_STRING,	// ghi chuoi: thong bao bang / so su kien / so lich su
+	enumC2S_TONG_JX2_TONG_OP,	// thao tac tong hop (init/upgrade/kick/stunt/map/phan phoi...)
 	enumC2S_TONG_NUM,					// 数量
 };
 
@@ -99,6 +101,7 @@ enum
 	enumS2C_TONG_JX2_MEMBER_SYNC,	// dump <=4 thanh vien / goi
 	enumS2C_TONG_JX2_TONG_REMOVE_SYNC,	// bang bien mat khoi relay
 	enumS2C_TONG_JX2_SYNC_DONE,	// het dump toan cuc
+	enumS2C_TONG_JX2_STRING_SYNC,	// echo thong bao bang toi moi GS
 	enumS2C_TONG_NUM,					// 数量
 };
 //-------------------------- tong protocol end --------------------------
@@ -832,9 +835,17 @@ struct STONG_GET_EXTPOINT_SYNC : EXTEND_HEADER
 #define defTONG_JX2_OP_ADDU	2	// cong KHONG dau
 
 // Suc chua luu tru phia relay/DB (mang them o CUOI TTongStruct/TMemberStruct)
-#define defTONG_JX2_MAX_FIELDS		96	// KV cap bang (field 1..48 + bien nhiem vu >=1002)
+#define defTONG_JX2_MAX_FIELDS		192	// KV cap bang (field 1..48 + bien nhiem vu >=1002 + tac phuong 20000+/30000+)
 #define defTONG_JX2_MEMBER_FIELDS	32	// KV cap thanh vien (khoa 1..16 + >=1001)
 #define defTONG_JX2_MEMBER_RIGHTS	32	// so quyen toi da moi thanh vien
+
+// Loai chuoi cua goi JX2_STRING
+#define defTONG_JX2_STR_ANNOUNCE	0	// thong bao bang (dong bo toi GS)
+#define defTONG_JX2_STR_EVENT		1	// so su kien (chi luu tren relay)
+#define defTONG_JX2_STR_HISTORY	2	// so lich su (chi luu tren relay)
+#define defTONG_JX2_ANNOUNCE_LEN	128
+#define defTONG_JX2_RECORD_LEN		96
+#define defTONG_JX2_RECORD_NUM		16
 
 struct STONG_JX2_FIELD_COMMAND : EXTEND_HEADER
 {
@@ -887,6 +898,7 @@ struct STONG_JX2_TONG_SYNC : EXTEND_HEADER
 	BYTE	m_btCamp;
 	WORD	m_wMemberTotal;	// tong so thanh vien se toi qua MEMBER_SYNC
 	WORD	m_wFieldCount;
+	char	m_szAnnounce[defTONG_JX2_ANNOUNCE_LEN];	// thong bao bang
 };
 
 // 1 muc thanh vien trong goi MEMBER_SYNC; sau phan co dinh la
@@ -917,6 +929,58 @@ struct STONG_JX2_TONG_REMOVE_SYNC : EXTEND_HEADER
 struct STONG_JX2_SYNC_DONE : EXTEND_HEADER
 {
 	DWORD	m_dwTongCount;
+};
+
+// (defTONG_JX2_STR_* / ANNOUNCE_LEN / RECORD_* da don len truoc khoi struct)
+
+// Bien nhiem vu bang do engine JX1 tu quan ly (>48, khong dung voi 1002..1047 cua script JX2)
+#define defTONGTSK_STUNT_ID		1101	// tuyet ky dang dat
+#define defTONGTSK_STUNT_ENABLED	1102	// tuyet ky con hieu luc (bao tri du tien)
+#define defTONGTSK_WEEK_WFCONSUME	1103	// thong ke chien bi tieu trong tuan
+#define defTONGTSK_LAST_WM_DAY		1104	// so-ngay (epoch) chay bao tri TUAN gan nhat
+#define defTONGTSK_LAST_M_DAY		1105	// so-ngay (epoch) chay bao tri NGAY gan nhat
+
+// Tac phuong (workshop) ma hoa vao dai field:
+//   thuoc tinh:  defTONG_JX2_WS_ATTR_BASE + nType*10 + attr (0=ton tai 1=mo 2=cap
+//                3=san luong ngay 4=cap su dung 5=bo cap su dung)
+//   bien nhiem vu: defTONG_JX2_WS_TASK_BASE + nType*1000 + key (key < 1000)
+#define defTONG_JX2_WS_ATTR_BASE	20000
+#define defTONG_JX2_WS_TASK_BASE	30000
+#define defTONG_JX2_WS_MAX_TYPE		7
+
+struct STONG_JX2_STRING_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	BYTE	m_btKind;		// defTONG_JX2_STR_*
+	char	m_szText[defTONG_JX2_ANNOUNCE_LEN];
+	DWORD	m_dwParam;
+};
+
+// Ma thao tac cua goi JX2_TONG_OP
+#define defTONG_JX2_TOP_INIT			0	// xoa trang du lieu JX2 cua bang
+#define defTONG_JX2_TOP_UPGRADE		1	// nang cap bang (field 13) theo tong_level_data
+#define defTONG_JX2_TOP_DEGRADE		2	// ha cap bang
+#define defTONG_JX2_TOP_MAINTAIN		3	// bao tri ngay (thuong do relay tu chay)
+#define defTONG_JX2_TOP_WEEKLY			4	// bao tri tuan (don WeekGoal -> LWeekGoal)
+#define defTONG_JX2_TOP_KICK			5	// duoi thanh vien (m_dwMemberNameID)
+#define defTONG_JX2_TOP_SET_STUNT		6	// dat tuyet ky (nParam1 = StuntID)
+#define defTONG_JX2_TOP_SET_MAP		7	// dat ban do bang (field 45; nParam1 = map)
+#define defTONG_JX2_TOP_CREATE_MAP		8	// tao ban sao ban do (field 45/46)
+#define defTONG_JX2_TOP_DELETE_MAP		9	// xoa ban do bang (xoa field 45/46)
+#define defTONG_JX2_TOP_CONTRIBUTE		10	// cong nParam1 vao quy du tru (field 18)
+#define defTONG_JX2_TOP_DIST_GROUP		11	// phat nParam1 cong hien cho ca nhom chuc vu nParam2
+#define defTONG_JX2_TOP_DIST_MEMBER	12	// phat nParam1 cong hien cho m_dwMemberNameID
+#define defTONG_JX2_TOP_ADD_OFFER_FIG	13	// cong nParam1 cong hien cho tung nguoi nhom nParam2 (AddOfferEx)
+#define defTONG_JX2_TOP_FEATURE		14	// doi ngoai hinh toan bang (nParam1 = feature, nParam2 = giay)
+
+struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	DWORD	m_dwMemberNameID;	// 0 neu khong dung
+	BYTE	m_btOpCode;		// defTONG_JX2_TOP_*
+	int	m_nParam1;
+	int	m_nParam2;
+	DWORD	m_dwParam;
 };
 
 //--------------------------- tong struct end ---------------------------

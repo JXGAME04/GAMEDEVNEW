@@ -9,6 +9,7 @@
 #include "../../Multiserver/Rainbow/Interface/IClient.h"
 
 #include "S3Relay.h"
+#include "KTongJX2Relay.h"	// JX2 port
 #include "Global.h"
 
 #include "time.h"
@@ -551,6 +552,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	//gTraceLogFile(tempbuff, strlen(tempbuff));
 
 	g_nShowTime = SetTimer(g_mainwnd, timer_log, elapse_log, NULL);
+	SetTimer(g_mainwnd, timer_tongjx2, 30000, NULL);	// JX2 port: tick 30s
 
 	//auto startup
 	::SendMessage(g_mainwnd, WM_COMMAND, MAKEWPARAM(IDM_STARTUP, 0), NULL);
@@ -743,6 +745,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case timer_gatewayclient:	gReOneClient(oneclient_gateway); break;
 			case timer_dbclient:		gReOneClient(oneclient_db); break;
 			case timer_friendudtdb: gFriendTimingUpdateDB(); break;
+			case timer_tongjx2: JX2_TimerTick(); break;	// JX2 port
 			default: break;
 			}
 			break;

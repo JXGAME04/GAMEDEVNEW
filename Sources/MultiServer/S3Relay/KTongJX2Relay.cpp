@@ -18,6 +18,8 @@
 #include "TongServer.h"
 #include "KTongJX2Relay.h"
 #include <vector>
+#include <stdio.h>
+#include <time.h>
 
 //////////////////////////////////////////////////////////////////////
 // CTongControl - phan du lieu JX2
@@ -29,6 +31,11 @@ void CTongControl::JX2_Reset()
 	memset(m_wJX2FieldKey, 0, sizeof(m_wJX2FieldKey));
 	memset(m_dwJX2FieldVal, 0, sizeof(m_dwJX2FieldVal));
 	m_mapJX2Member.clear();
+	memset(m_szJX2Announce, 0, sizeof(m_szJX2Announce));
+	memset(m_szJX2Event, 0, sizeof(m_szJX2Event));
+	memset(m_szJX2History, 0, sizeof(m_szJX2History));
+	m_nJX2EventHead = 0;
+	m_nJX2HistoryHead = 0;
 }
 
 // Tim vi tri khoa trong mang field cap bang; -1 = khong co
@@ -268,6 +275,11 @@ void CTongControl::JX2_SaveToStruct(TTongStruct* pStruct)
 	pStruct->nJX2FieldCount = m_nJX2FieldCount;
 	memcpy(pStruct->wJX2FieldKey, m_wJX2FieldKey, sizeof(pStruct->wJX2FieldKey));
 	memcpy(pStruct->dwJX2FieldVal, m_dwJX2FieldVal, sizeof(pStruct->dwJX2FieldVal));
+	memcpy(pStruct->szJX2Announce, m_szJX2Announce, sizeof(pStruct->szJX2Announce));
+	memcpy(pStruct->szJX2Event, m_szJX2Event, sizeof(pStruct->szJX2Event));
+	memcpy(pStruct->szJX2History, m_szJX2History, sizeof(pStruct->szJX2History));
+	pStruct->nJX2EventHead = m_nJX2EventHead;
+	pStruct->nJX2HistoryHead = m_nJX2HistoryHead;
 }
 
 void CTongControl::JX2_LoadFromStruct(const TTongStruct* pStruct)
@@ -282,6 +294,16 @@ void CTongControl::JX2_LoadFromStruct(const TTongStruct* pStruct)
 	m_nJX2FieldCount = nCount;
 	memcpy(m_wJX2FieldKey, pStruct->wJX2FieldKey, sizeof(m_wJX2FieldKey));
 	memcpy(m_dwJX2FieldVal, pStruct->dwJX2FieldVal, sizeof(m_dwJX2FieldVal));
+	memcpy(m_szJX2Announce, pStruct->szJX2Announce, sizeof(m_szJX2Announce));
+	m_szJX2Announce[defTONG_JX2_ANNOUNCE_LEN - 1] = 0;
+	memcpy(m_szJX2Event, pStruct->szJX2Event, sizeof(m_szJX2Event));
+	memcpy(m_szJX2History, pStruct->szJX2History, sizeof(m_szJX2History));
+	m_nJX2EventHead = pStruct->nJX2EventHead;
+	if (m_nJX2EventHead < 0 || m_nJX2EventHead >= defTONG_JX2_RECORD_NUM)
+		m_nJX2EventHead = 0;
+	m_nJX2HistoryHead = pStruct->nJX2HistoryHead;
+	if (m_nJX2HistoryHead < 0 || m_nJX2HistoryHead >= defTONG_JX2_RECORD_NUM)
+		m_nJX2HistoryHead = 0;
 }
 
 // Nap phan duoi JX2 cua 1 ban ghi thanh vien (goi tu CTongDB::SearchTong)
@@ -414,6 +436,7 @@ int CTongControl::JX2_BuildTongSync(void* pBuffer, int nBufSize, int nMemberTota
 	pSync->m_btCamp = (BYTE)m_nCamp;
 	pSync->m_wMemberTotal = (WORD)nMemberTotal;
 	pSync->m_wFieldCount = (WORD)m_nJX2FieldCount;
+	memcpy(pSync->m_szAnnounce, m_szJX2Announce, sizeof(pSync->m_szAnnounce));
 	BYTE* pOut = (BYTE*)(pSync + 1);
 	for (int i = 0; i < m_nJX2FieldCount; i++)
 	{
@@ -493,6 +516,15 @@ int CTongControl::JX2_BuildMemberSync(void* pBuffer, int nBufSize,
 //////////////////////////////////////////////////////////////////////
 // CTongSet - tra cuu + dump toan bo
 //////////////////////////////////////////////////////////////////////
+
+// Duyet mang con tro bang theo chi so: tra ve (CTongControl*)-1 khi het mang,
+// NULL khi o trong (de vong for cua bo hen gio khong can biet noi bo CTongSet)
+CTongControl* CTongSet::JX2_GetByIndex(int nIndex)
+{
+	if (!m_pcTong || nIndex < 0 || nIndex >= m_nTongPointSize)
+		return (CTongControl*)-1;
+	return m_pcTong[nIndex];
+}
 
 CTongControl* CTongSet::JX2_FindByNameID(DWORD dwTongNameID)
 {
@@ -800,4 +832,628 @@ void JX2_ProcRight(CTongConnect* pConn, const void* pData)
 void JX2_ProcGetFull(CTongConnect* pConn)
 {
 	g_cTongSet.JX2_SendFullDump(pConn);
+}
+
+//////////////////////////////////////////////////////////////////////
+// DOT 2 - bang cap, chuoi, so ghi chep, thao tac tong hop, bo hen gio
+//////////////////////////////////////////////////////////////////////
+
+// Bang cap bang (settings\tong\tong_level_data.txt). Thieu file thi dung
+// 6 dong mac dinh trich tu JX2 (BANGHOI_JX2_PHANTICH.md 5.1).
+struct JX2LevelRow
+{
+	int nWsUpperLv;		// tran cap tac phuong
+	int nMaxWsNum;		// so tac phuong toi da
+	int nWeekBuildUpper;// tran dong gop kien thiet / tuan
+	int nUpgradeFund;	// quy kien thiet can de len cap KE TIEP
+	int nUpWsNum;		// so tac phuong can co
+	int nUpHiWsNum;		// so tac phuong cap cao can co
+	int nUpHiWsLv;		// nguong "cap cao"
+};
+#define defJX2_MAX_LEVEL	64
+static JX2LevelRow s_sJX2Level[defJX2_MAX_LEVEL];
+static int s_nJX2LevelCount = 0;
+
+static void sJX2_LoadLevelTable()
+{
+	if (s_nJX2LevelCount > 0)
+		return;
+	// mac dinh 6 dong dau theo JX2
+	static const int nDef[6][8] = {
+		{0, 0, 0, 3360, 6720, 0, 0, 0},
+		{1, 3, 6, 3360, 21600, 3, 3, 3},
+		{2, 6, 6, 6720, 93600, 3, 3, 6},
+		{3, 8, 6, 10080, 205200, 4, 3, 8},
+		{4, 9, 8, 16800, 16800, 5, 3, 9},
+		{5, 10, 8, 25200, 350000, 5, 3, 10},
+	};
+	int i;
+	for (i = 0; i < 6; i++)
+	{
+		s_sJX2Level[i].nWsUpperLv = nDef[i][1];
+		s_sJX2Level[i].nMaxWsNum = nDef[i][2];
+		s_sJX2Level[i].nWeekBuildUpper = nDef[i][3];
+		s_sJX2Level[i].nUpgradeFund = nDef[i][4];
+		s_sJX2Level[i].nUpWsNum = nDef[i][5];
+		s_sJX2Level[i].nUpHiWsNum = nDef[i][6];
+		s_sJX2Level[i].nUpHiWsLv = nDef[i][7];
+	}
+	s_nJX2LevelCount = 6;
+
+	FILE* pFile = fopen("settings\\tong\\tong_level_data.txt", "rt");
+	if (!pFile)
+		return;
+	char szLine[512];
+	int nCount = 0;
+	while (fgets(szLine, sizeof(szLine), pFile))
+	{
+		int v[8];
+		if (szLine[0] == '/' || szLine[0] == '#' || szLine[0] == ';')
+			continue;
+		if (sscanf(szLine, "%d %d %d %d %d %d %d %d",
+			&v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7]) != 8)
+			continue;
+		int nLevel = v[0];
+		if (nLevel < 0 || nLevel >= defJX2_MAX_LEVEL)
+			continue;
+		s_sJX2Level[nLevel].nWsUpperLv = v[1];
+		s_sJX2Level[nLevel].nMaxWsNum = v[2];
+		s_sJX2Level[nLevel].nWeekBuildUpper = v[3];
+		s_sJX2Level[nLevel].nUpgradeFund = v[4];
+		s_sJX2Level[nLevel].nUpWsNum = v[5];
+		s_sJX2Level[nLevel].nUpHiWsNum = v[6];
+		s_sJX2Level[nLevel].nUpHiWsLv = v[7];
+		if (nLevel + 1 > nCount)
+			nCount = nLevel + 1;
+	}
+	fclose(pFile);
+	if (nCount > s_nJX2LevelCount)
+		s_nJX2LevelCount = nCount;
+	rTRACE("[TONGJX2] bang cap bang: %d dong", s_nJX2LevelCount);
+}
+
+// Phat lai anh chup 1 bang (TONG_SYNC + toan bo MEMBER_SYNC) toi MOI GameServer.
+// LUU Y: TONG_SYNC lam GS xoa danh sach thanh vien nen LUON phai kem MEMBER_SYNC.
+static void sJX2_BroadcastTong(CTongControl* pTong)
+{
+	if (!pTong)
+		return;
+	BYTE byBuffer[4096];
+	int nMemberTotal = pTong->JX2_CollectMembers(NULL, 0);
+	int nBytes = pTong->JX2_BuildTongSync(byBuffer, sizeof(byBuffer), nMemberTotal);
+	if (nBytes > 0)
+		g_TongServer.BroadcastPackage(byBuffer, nBytes);
+	if (nMemberTotal > 0)
+	{
+		std::vector<JX2MemberBrief> vecMember(nMemberTotal);
+		int nGot = pTong->JX2_CollectMembers(&vecMember[0], nMemberTotal);
+		int nStart = 0;
+		while (nStart < nGot)
+		{
+			nBytes = pTong->JX2_BuildMemberSync(byBuffer, sizeof(byBuffer),
+				&vecMember[0], nGot, &nStart, 4);
+			if (nBytes <= 0)
+				break;
+			g_TongServer.BroadcastPackage(byBuffer, nBytes);
+		}
+	}
+}
+
+BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
+{
+	if (!pszText)
+		return FALSE;
+	switch (nKind)
+	{
+	case defTONG_JX2_STR_ANNOUNCE:
+		memset(m_szJX2Announce, 0, sizeof(m_szJX2Announce));
+		strncpy(m_szJX2Announce, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
+		return TRUE;
+	case defTONG_JX2_STR_EVENT:
+		memset(m_szJX2Event[m_nJX2EventHead], 0, defTONG_JX2_RECORD_LEN);
+		strncpy(m_szJX2Event[m_nJX2EventHead], pszText, defTONG_JX2_RECORD_LEN - 1);
+		m_nJX2EventHead = (m_nJX2EventHead + 1) % defTONG_JX2_RECORD_NUM;
+		return TRUE;
+	case defTONG_JX2_STR_HISTORY:
+		memset(m_szJX2History[m_nJX2HistoryHead], 0, defTONG_JX2_RECORD_LEN);
+		strncpy(m_szJX2History[m_nJX2HistoryHead], pszText, defTONG_JX2_RECORD_LEN - 1);
+		m_nJX2HistoryHead = (m_nJX2HistoryHead + 1) % defTONG_JX2_RECORD_NUM;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+// Duoi thanh vien theo NameID. Dung luat JX2: chi duoi duoc doi truong (manager)
+// va bang chung (member) - khong duoi bang chu / truong lao.
+BOOL CTongControl::JX2_KickByNameID(DWORD dwNameID)
+{
+	if (dwNameID == 0 || dwNameID == m_dwMasterID)
+		return FALSE;
+	int i;
+	for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+	{
+		if (m_dwDirectorID[i] == dwNameID)
+			return FALSE;	// truong lao khong duoi duoc (JX2: cam Figure 0 va 1)
+	}
+	char szName[64];
+	szName[0] = 0;
+	BOOL bFound = FALSE;
+	for (i = 0; i < defTONG_MAX_MANAGER; i++)
+	{
+		if (m_dwManagerID[i] == dwNameID)
+		{
+			strncpy(szName, m_szManagerName[i], 63);
+			szName[63] = 0;
+			m_szManagerName[i][0] = 0;
+			m_dwManagerID[i] = 0;
+			m_nManagerNum--;
+			bFound = TRUE;
+			break;
+		}
+	}
+	if (!bFound && m_psMember)
+	{
+		for (i = 0; i < m_nMemberPointSize; i++)
+		{
+			if (m_psMember[i].m_dwNameID == dwNameID)
+			{
+				strncpy(szName, m_psMember[i].m_szName, 63);
+				szName[63] = 0;
+				m_psMember[i].m_szName[0] = 0;
+				m_psMember[i].m_dwNameID = 0;
+				m_nMemberNum--;
+				bFound = TRUE;
+				break;
+			}
+		}
+	}
+	if (!bFound)
+		return FALSE;
+
+	m_mapJX2Member.erase(dwNameID);
+	if (szName[0])
+	{
+		g_cTongDB.DelMember(szName);
+		// bao cho nguoi bi duoi neu dang online (di qua GS cua ho)
+		CNetConnectDup conndup;
+		DWORD nameid = 0;
+		unsigned long param = 0;
+		if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(szName), &conndup, NULL, &nameid, &param))
+		{
+			CNetConnectDup tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+			if (tongconndup.IsValid())
+			{
+				STONG_BE_KICKED_SYNC sSync;
+				sSync.ProtocolFamily = pf_tong;
+				sSync.ProtocolID = enumS2C_TONG_BE_KICKED;
+				sSync.m_dwParam = param;
+				sSync.m_btFigure = enumTONG_FIGURE_MEMBER;
+				sSync.m_btPos = 0;
+				strcpy(sSync.m_szName, szName);
+				tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+			}
+			tongconndup.Clearup();
+			conndup.Clearup();
+		}
+	}
+	return TRUE;
+}
+
+// dem tac phuong: attr0 (ton tai) / dem theo cap >= nMinLevel
+static int sJX2_CountWorkshop(CTongControl* pTong, int nMinLevel)
+{
+	int nCount = 0;
+	for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
+	{
+		WORD wBase = (WORD)(defTONG_JX2_WS_ATTR_BASE + t * 10);
+		if (pTong->JX2_GetField(wBase) == 0)
+			continue;
+		if (nMinLevel <= 0 || (int)pTong->JX2_GetField((WORD)(wBase + 2)) >= nMinLevel)
+			nCount++;
+	}
+	return nCount;
+}
+
+// Nang cap bang: kiem quy kien thiet (field 12) + so tac phuong theo bang cap;
+// du thi tru quy, field 13 + 1, cap nhat tran tuan (field 42).
+BOOL CTongControl::JX2_Upgrade()
+{
+	sJX2_LoadLevelTable();
+	int nLevel = (int)JX2_GetField(13);
+	int nNext = nLevel + 1;
+	if (nNext >= s_nJX2LevelCount)
+		return FALSE;
+	JX2LevelRow* pRow = &s_sJX2Level[nLevel];	// dieu kien ghi o dong cap HIEN TAI
+	if ((int)JX2_GetField(12) < pRow->nUpgradeFund)
+		return FALSE;
+	if (sJX2_CountWorkshop(this, 0) < pRow->nUpWsNum)
+		return FALSE;
+	if (sJX2_CountWorkshop(this, pRow->nUpHiWsLv) < pRow->nUpHiWsNum)
+		return FALSE;
+	JX2_AddField(12, -pRow->nUpgradeFund, FALSE);
+	JX2_SetField(13, (DWORD)nNext);
+	JX2_SetField(42, (DWORD)s_sJX2Level[nNext].nWeekBuildUpper);
+	return TRUE;
+}
+
+BOOL CTongControl::JX2_Degrade()
+{
+	sJX2_LoadLevelTable();
+	int nLevel = (int)JX2_GetField(13);
+	if (nLevel <= 0)
+		return FALSE;
+	nLevel--;
+	JX2_SetField(13, (DWORD)nLevel);
+	if (nLevel < s_nJX2LevelCount)
+		JX2_SetField(42, (DWORD)s_sJX2Level[nLevel].nWeekBuildUpper);
+	return TRUE;
+}
+
+// Bao tri TUAN (JX2 tong.lua:106-131): don WeekGoal (22-28) -> LWeekGoal (29-35),
+// xoa tuan moi; thanh vien: khoa 9 -> 10, 11 -> 12 roi xoa 9/11; Week + 1.
+void CTongControl::JX2_WeeklyMaintain(int nTodayDay)
+{
+	static const WORD wWeek[7] = {22, 23, 24, 25, 26, 27, 28};
+	static const WORD wLast[7] = {29, 30, 31, 32, 33, 34, 35};
+	int i;
+	for (i = 0; i < 7; i++)
+	{
+		JX2_SetField(wLast[i], JX2_GetField(wWeek[i]));
+		JX2_SetField(wWeek[i], 0);
+	}
+	JX2_SetField(36, 0);		// CurWeekGoalLevel
+	JX2_SetField(41, 0);		// WeekBuildFund
+	JX2_AddField(21, 1, TRUE);	// Week + 1
+	JX2_SetField(defTONGTSK_LAST_WM_DAY, (DWORD)nTodayDay);
+
+	// don so lieu tuan cua tung thanh vien (engine JX2 tu lam - 2.2)
+	std::map<DWORD, JX2Member>::iterator it;
+	for (it = m_mapJX2Member.begin(); it != m_mapJX2Member.end(); ++it)
+	{
+		DWORD dwID = it->first;
+		JX2_SetMemberField(dwID, 10, JX2_GetMemberField(dwID, 9));
+		JX2_SetMemberField(dwID, 12, JX2_GetMemberField(dwID, 11));
+		JX2_SetMemberField(dwID, 9, 0);
+		JX2_SetMemberField(dwID, 11, 0);
+		char szName[64];
+		if (JX2_GetMemberName(dwID, szName, sizeof(szName)))
+		{
+			JX2Member* pMem = JX2_GetMember(dwID, FALSE);
+			if (pMem)
+				g_cTongDB.JX2_UpdateMemberTail(szName, pMem);
+		}
+	}
+}
+
+// Bao tri NGAY (JX2 tong.lua:321-460, dang C++):
+// 1) tru chi phi duy tri (field 16) khoi ngan sach chien bi (field 15)
+// 2) tinh tro cap: field 17 = chi phi * 7 / so thanh vien (khong tinh an si)
+// 3) bao tri tuyet ky: du 6000 chien bi thi giu, thieu thi tat
+// 4) sang tuan (thu Hai / ngay 0 / du 7 ngay) thi chay bao tri tuan
+// 5) Day (field 20) + 1
+void CTongControl::JX2_DailyMaintain(int nTodayDay, int nWeekday)
+{
+	int nConsume = (int)JX2_GetField(16);
+	if (nConsume > 0)
+	{
+		int nWar = (int)JX2_GetField(15);
+		nWar -= nConsume;
+		if (nWar < 0)
+			nWar = 0;
+		JX2_SetField(15, (DWORD)nWar);
+		JX2_AddField(defTONGTSK_WEEK_WFCONSUME, nConsume, FALSE);
+	}
+	int nMembers = 0;
+	{
+		std::map<DWORD, JX2Member>::iterator it;
+		nMembers = (int)m_mapJX2Member.size();
+		if (nMembers <= 0)
+			nMembers = m_nMemberNum > 0 ? m_nMemberNum : 1;
+	}
+	if (nMembers > 0)
+		JX2_SetField(17, (DWORD)(nConsume * 7 / nMembers));
+
+	if (JX2_GetField(defTONGTSK_STUNT_ID) != 0)
+	{
+		int nWar = (int)JX2_GetField(15);
+		if (nWar >= 6000)
+		{
+			JX2_SetField(15, (DWORD)(nWar - 6000));
+			JX2_SetField(defTONGTSK_STUNT_ENABLED, 1);
+		}
+		else
+			JX2_SetField(defTONGTSK_STUNT_ENABLED, 0);
+	}
+
+	int nLastWeekly = (int)JX2_GetField(defTONGTSK_LAST_WM_DAY);
+	if (JX2_GetField(20) == 0 || nWeekday == 1 || nTodayDay - nLastWeekly >= 7)
+	{
+		if (nLastWeekly != nTodayDay)
+			JX2_WeeklyMaintain(nTodayDay);
+	}
+
+	JX2_SetField(defTONGTSK_LAST_M_DAY, (DWORD)nTodayDay);
+	JX2_AddField(20, 1, TRUE);	// Day + 1
+}
+
+// Quy bang -> kinh nghiem bang (JX2 [MoneyToExp], chu ky 750s - 5.4).
+// Cau hinh doc tu relay_config.ini muc [tongjx2], mac dinh theo so do JX2.
+void CTongControl::JX2_MoneyToExpTick()
+{
+	static int nMoneyLimit = -1;
+	static int nNormalMoney, nNormalExp, nMemberLimit, nMemberLimitMoney, nLimitMoney, nLimitExp;
+	if (nMoneyLimit < 0)
+	{
+		nMoneyLimit = gGetPrivateProfileIntEx("tongjx2", "MoneyLimit", "relay_config.ini", 1000000);
+		nNormalMoney = gGetPrivateProfileIntEx("tongjx2", "NormalMoney", "relay_config.ini", 5000);
+		nNormalExp = gGetPrivateProfileIntEx("tongjx2", "NormalExp", "relay_config.ini", 120);
+		nMemberLimit = gGetPrivateProfileIntEx("tongjx2", "NormalMemberLimit", "relay_config.ini", 100);
+		nMemberLimitMoney = gGetPrivateProfileIntEx("tongjx2", "NormalMemberLimitMoney", "relay_config.ini", 50);
+		nLimitMoney = gGetPrivateProfileIntEx("tongjx2", "LimitMoney", "relay_config.ini", 0);
+		nLimitExp = gGetPrivateProfileIntEx("tongjx2", "LimitExp", "relay_config.ini", 0);
+	}
+	__int64 nMoney = JX2_GetMoney64();
+	if (nMoney <= 0)
+		return;
+	int nExp = (int)JX2_GetField(6);
+	int nMembers = (int)m_mapJX2Member.size();
+	if (nMoney > nMoneyLimit)
+	{
+		__int64 nDec = nNormalMoney;
+		if (nMembers > nMemberLimit)
+			nDec += (__int64)nMemberLimitMoney * (nMembers - nMemberLimit);
+		nMoney -= nDec;
+		if (nMoney < 0)
+			nMoney = 0;
+		nExp += nNormalExp;
+	}
+	else
+	{
+		nMoney -= nLimitMoney;
+		if (nMoney < 0)
+			nMoney = 0;
+		nExp -= nLimitExp;
+		if (nExp < 0)
+			nExp = 0;
+	}
+	JX2_SetMoney64(nMoney);
+	JX2_SetField(6, (DWORD)nExp);
+}
+
+// Phan phoi cong hien (JX2 6.4)
+BOOL CTongControl::JX2_Distribute(int nOpCode, DWORD dwMemberNameID, int nOffer, int nFigure)
+{
+	if (nOffer <= 0)
+		return FALSE;
+	switch (nOpCode)
+	{
+	case defTONG_JX2_TOP_CONTRIBUTE:
+		JX2_AddField(18, nOffer, FALSE);
+		return TRUE;
+	case defTONG_JX2_TOP_DIST_MEMBER:
+		{
+			if ((int)JX2_GetField(18) < nOffer)
+				return FALSE;
+			if (!JX2_GetMember(dwMemberNameID, FALSE))
+				return FALSE;
+			JX2_AddField(18, -nOffer, FALSE);
+			JX2_AddMemberField(dwMemberNameID, 7, nOffer, FALSE);
+			char szName[64];
+			if (JX2_GetMemberName(dwMemberNameID, szName, sizeof(szName)))
+			{
+				JX2Member* pMem = JX2_GetMember(dwMemberNameID, FALSE);
+				if (pMem)
+					g_cTongDB.JX2_UpdateMemberTail(szName, pMem);
+			}
+			return TRUE;
+		}
+	case defTONG_JX2_TOP_DIST_GROUP:
+	case defTONG_JX2_TOP_ADD_OFFER_FIG:
+		{
+			// gom danh sach thanh vien thuoc nhom chuc vu
+			int nTotal = JX2_CollectMembers(NULL, 0);
+			if (nTotal <= 0)
+				return FALSE;
+			std::vector<JX2MemberBrief> vec(nTotal);
+			int nGot = JX2_CollectMembers(&vec[0], nTotal);
+			int nInGroup = 0;
+			int i;
+			for (i = 0; i < nGot; i++)
+			{
+				if ((int)vec[i].btFigure == nFigure)
+					nInGroup++;
+			}
+			if (nInGroup <= 0)
+				return FALSE;
+			if (nOpCode == defTONG_JX2_TOP_DIST_GROUP)
+			{
+				int nNeed = nOffer * nInGroup;
+				if ((int)JX2_GetField(18) < nNeed)
+					return FALSE;
+				JX2_AddField(18, -nNeed, FALSE);
+			}
+			for (i = 0; i < nGot; i++)
+			{
+				if ((int)vec[i].btFigure != nFigure)
+					continue;
+				JX2_AddMemberField(vec[i].dwNameID, 7, nOffer, FALSE);
+				JX2Member* pMem = JX2_GetMember(vec[i].dwNameID, FALSE);
+				if (pMem)
+					g_cTongDB.JX2_UpdateMemberTail(vec[i].szName, pMem);
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Proc goi dot 2
+//////////////////////////////////////////////////////////////////////
+
+void JX2_ProcString(CTongConnect* pConn, const void* pData)
+{
+	STONG_JX2_STRING_COMMAND* pCmd = (STONG_JX2_STRING_COMMAND*)pData;
+	CTongControl* pTong = g_cTongSet.JX2_FindByNameID(pCmd->m_dwTongNameID);
+	if (!pTong)
+		return;
+	char szText[defTONG_JX2_ANNOUNCE_LEN];
+	memcpy(szText, pCmd->m_szText, sizeof(szText));
+	szText[defTONG_JX2_ANNOUNCE_LEN - 1] = 0;
+	if (!pTong->JX2_SetString(pCmd->m_btKind, szText))
+		return;
+	g_cTongDB.ChangeTong(*pTong);
+	if (pCmd->m_btKind == defTONG_JX2_STR_ANNOUNCE)
+	{
+		STONG_JX2_STRING_COMMAND sSync = *pCmd;
+		sSync.ProtocolFamily = pf_tong;
+		sSync.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+		g_TongServer.BroadcastPackage(&sSync, sizeof(sSync));
+	}
+}
+
+void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
+{
+	STONG_JX2_TONG_OP_COMMAND* pCmd = (STONG_JX2_TONG_OP_COMMAND*)pData;
+	CTongControl* pTong = g_cTongSet.JX2_FindByNameID(pCmd->m_dwTongNameID);
+	if (!pTong)
+		return;
+
+	BOOL bOK = FALSE;
+	BOOL bMembersChanged = FALSE;
+	switch (pCmd->m_btOpCode)
+	{
+	case defTONG_JX2_TOP_INIT:
+		pTong->JX2_Reset();
+		bOK = TRUE;
+		bMembersChanged = TRUE;
+		break;
+	case defTONG_JX2_TOP_UPGRADE:
+		bOK = pTong->JX2_Upgrade();
+		break;
+	case defTONG_JX2_TOP_DEGRADE:
+		bOK = pTong->JX2_Degrade();
+		break;
+	case defTONG_JX2_TOP_MAINTAIN:
+	case defTONG_JX2_TOP_WEEKLY:
+		{
+			time_t tNow = time(NULL);
+			struct tm* pTm = localtime(&tNow);
+			struct tm sMid = *pTm;
+			sMid.tm_hour = 0; sMid.tm_min = 0; sMid.tm_sec = 0;
+			int nToday = (int)(mktime(&sMid) / 86400);
+			if (pCmd->m_btOpCode == defTONG_JX2_TOP_MAINTAIN)
+				pTong->JX2_DailyMaintain(nToday, pTm->tm_wday);
+			else
+				pTong->JX2_WeeklyMaintain(nToday);
+			bOK = TRUE;
+			bMembersChanged = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_KICK:
+		bOK = pTong->JX2_KickByNameID(pCmd->m_dwMemberNameID);
+		bMembersChanged = bOK;
+		break;
+	case defTONG_JX2_TOP_SET_STUNT:
+		pTong->JX2_SetField(defTONGTSK_STUNT_ID, (DWORD)pCmd->m_nParam1);
+		pTong->JX2_SetField(defTONGTSK_STUNT_ENABLED, pCmd->m_nParam1 ? 1 : 0);
+		bOK = TRUE;
+		break;
+	case defTONG_JX2_TOP_SET_MAP:
+		pTong->JX2_SetField(45, (DWORD)pCmd->m_nParam1);
+		bOK = TRUE;
+		break;
+	case defTONG_JX2_TOP_CREATE_MAP:
+		pTong->JX2_SetField(45, (DWORD)pCmd->m_nParam1);
+		pTong->JX2_SetField(46, (DWORD)pCmd->m_nParam1);
+		bOK = TRUE;
+		break;
+	case defTONG_JX2_TOP_DELETE_MAP:
+		pTong->JX2_SetField(45, 0);
+		pTong->JX2_SetField(46, 0);
+		bOK = TRUE;
+		break;
+	case defTONG_JX2_TOP_CONTRIBUTE:
+	case defTONG_JX2_TOP_DIST_GROUP:
+	case defTONG_JX2_TOP_DIST_MEMBER:
+	case defTONG_JX2_TOP_ADD_OFFER_FIG:
+		bOK = pTong->JX2_Distribute(pCmd->m_btOpCode, pCmd->m_dwMemberNameID,
+			pCmd->m_nParam1, pCmd->m_nParam2);
+		bMembersChanged = bOK && pCmd->m_btOpCode != defTONG_JX2_TOP_CONTRIBUTE;
+		break;
+	case defTONG_JX2_TOP_FEATURE:
+		// doi ngoai hinh toan bang: can duong ve client - lam o giai doan cua so client
+		rTRACE("[TONGJX2] ChangeAllMemberFeature(%s, %d, %d) - ghi nhan, chua doi hinh",
+			pTong->JX2_Name(), pCmd->m_nParam1, pCmd->m_nParam2);
+		bOK = TRUE;
+		break;
+	default:
+		return;
+	}
+
+	if (!bOK)
+		return;
+	g_cTongDB.ChangeTong(*pTong);
+	sJX2_BroadcastTong(pTong);
+	if (bMembersChanged)
+	{
+		// sJX2_BroadcastTong da gui kem danh sach thanh vien
+	}
+}
+
+// Tick 30 giay tu WM_TIMER cua cua so chinh relay (don luong - an toan voi g_cTongSet)
+void JX2_TimerTick()
+{
+	static time_t s_tLastM2E = 0;
+	static int s_nM2EInterval = -1;
+	if (s_nM2EInterval < 0)
+		s_nM2EInterval = gGetPrivateProfileIntEx("tongjx2", "TimeLong", "relay_config.ini", 750);
+
+	sJX2_LoadLevelTable();
+
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	struct tm sMid = *pTm;
+	sMid.tm_hour = 0; sMid.tm_min = 0; sMid.tm_sec = 0;
+	int nToday = (int)(mktime(&sMid) / 86400);
+	int nWeekday = pTm->tm_wday;	// 1 = thu Hai
+
+	BOOL bM2E = FALSE;
+	if (s_tLastM2E == 0)
+		s_tLastM2E = tNow;	// khong chay ngay khi vua bat relay
+	else if (tNow - s_tLastM2E >= s_nM2EInterval)
+	{
+		bM2E = TRUE;
+		s_tLastM2E = tNow;
+	}
+
+	int nMaintained = 0;
+	for (int i = 0; ; i++)
+	{
+		CTongControl* pTong = g_cTongSet.JX2_GetByIndex(i);
+		if (pTong == (CTongControl*)-1)
+			break;	// het mang
+		if (!pTong || !pTong->JX2_IsValid())
+			continue;
+
+		BOOL bChanged = FALSE;
+		if ((int)pTong->JX2_GetField(defTONGTSK_LAST_M_DAY) != nToday)
+		{
+			pTong->JX2_DailyMaintain(nToday, nWeekday);
+			bChanged = TRUE;
+			nMaintained++;
+		}
+		if (bM2E)
+		{
+			pTong->JX2_MoneyToExpTick();
+			bChanged = TRUE;
+		}
+		if (bChanged)
+		{
+			g_cTongDB.ChangeTong(*pTong);
+			sJX2_BroadcastTong(pTong);
+		}
+	}
+	if (nMaintained > 0)
+		rTRACE("[TONGJX2] bao tri ngay cho %d bang (ngay %d)", nMaintained, nToday);
 }

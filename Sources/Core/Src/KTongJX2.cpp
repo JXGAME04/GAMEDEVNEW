@@ -165,6 +165,8 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 			memcpy(sTong.szName, pSync->m_szTongName, sizeof(sTong.szName));
 			sTong.szName[31] = 0;
 			sTong.btCamp = pSync->m_btCamp;
+			memcpy(sTong.szAnnounce, pSync->m_szAnnounce, sizeof(sTong.szAnnounce));
+			sTong.szAnnounce[sizeof(sTong.szAnnounce) - 1] = 0;
 			sTong.mapField.clear();
 			// dump lai tu dau -> danh sach thanh vien se toi ngay sau goi nay
 			sTong.mapMember.clear();
@@ -244,6 +246,21 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 		{
 			m_bSynced = TRUE;
 			g_DebugLog("[TONGJX2] da nhan xong dump: %d bang", (int)m_mapTong.size());
+		}
+		break;
+
+	case enumS2C_TONG_JX2_STRING_SYNC:
+		{
+			if (nSize < (int)sizeof(STONG_JX2_STRING_COMMAND))
+				return;
+			STONG_JX2_STRING_COMMAND* pCmd = (STONG_JX2_STRING_COMMAND*)pData;
+			if (pCmd->m_btKind != defTONG_JX2_STR_ANNOUNCE)
+				return;
+			KTongJX2Tong* pTong = FindTong(pCmd->m_dwTongNameID);
+			if (!pTong)
+				return;
+			memcpy(pTong->szAnnounce, pCmd->m_szText, sizeof(pTong->szAnnounce));
+			pTong->szAnnounce[sizeof(pTong->szAnnounce) - 1] = 0;
 		}
 		break;
 
@@ -1021,6 +1038,775 @@ int LuaTONGM_ApplyDelRight(Lua_State* L)
 	}
 	sSendRightCmd(pTong->dwNameID, pMember->dwNameID,
 		(DWORD)Lua_ValueToNumber(L, 3), 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// DOT 2 - phan con lai cua 150 ham + 29 ham TWS_ (tac phuong)
+//////////////////////////////////////////////////////////////////////
+
+static void sSendStringCmd(DWORD dwTongID, BYTE btKind, const char* pszText, DWORD dwParam)
+{
+	STONG_JX2_STRING_COMMAND sCmd;
+	memset(&sCmd, 0, sizeof(sCmd));
+	sCmd.ProtocolFamily = pf_tong;
+	sCmd.ProtocolID = enumC2S_TONG_JX2_STRING;
+	sCmd.m_dwTongNameID = dwTongID;
+	sCmd.m_btKind = btKind;
+	if (pszText)
+		strncpy(sCmd.m_szText, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
+	sCmd.m_dwParam = dwParam;
+	g_NewProtocolProcess.PushMsgInTong((const void*)&sCmd, sizeof(sCmd));
+}
+
+static void sSendTongOp(DWORD dwTongID, DWORD dwMemberID, BYTE btOpCode, int nParam1, int nParam2, DWORD dwParam)
+{
+	STONG_JX2_TONG_OP_COMMAND sCmd;
+	sCmd.ProtocolFamily = pf_tong;
+	sCmd.ProtocolID = enumC2S_TONG_JX2_TONG_OP;
+	sCmd.m_dwTongNameID = dwTongID;
+	sCmd.m_dwMemberNameID = dwMemberID;
+	sCmd.m_btOpCode = btOpCode;
+	sCmd.m_nParam1 = nParam1;
+	sCmd.m_nParam2 = nParam2;
+	sCmd.m_dwParam = dwParam;
+	g_NewProtocolProcess.PushMsgInTong((const void*)&sCmd, sizeof(sCmd));
+}
+
+// ApplySet<X>(nTongID, nValue) voi field co dinh
+static int sApplySetFieldArg2(Lua_State* L, WORD wKey)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwValue = (DWORD)Lua_ValueToNumber(L, 2);
+	if (g_TongJX2.GetField(dwTongID, wKey) != dwValue)
+		sSendFieldCmd(dwTongID, wKey, dwValue, defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ApplyAdd<X>(nTongID, nDelta) voi field co dinh
+static int sApplyAddFieldArg2(Lua_State* L, WORD wKey, BOOL bUnsigned)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nDelta = (int)Lua_ValueToNumber(L, 2);
+	if (nDelta != 0)
+		sSendFieldCmd(dwTongID, wKey, (DWORD)nDelta,
+			bUnsigned ? defTONG_JX2_OP_ADDU : defTONG_JX2_OP_ADD, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+#define DEF_TONG_GETF(FuncName, nField) \
+	int LuaTONG_Get##FuncName(Lua_State* L) { return sPushField(L, nField); }
+#define DEF_TONG_SETF(FuncName, nField) \
+	int LuaTONG_ApplySet##FuncName(Lua_State* L) { return sApplySetFieldArg2(L, nField); }
+#define DEF_TONG_ADDF(FuncName, nField, bUns) \
+	int LuaTONG_ApplyAdd##FuncName(Lua_State* L) { return sApplyAddFieldArg2(L, nField, bUns); }
+
+// ---- getters theo bang field JX2 (2.1) ----
+DEF_TONG_GETF(SelfCamp, 1)
+DEF_TONG_GETF(CurCamp, 2)
+DEF_TONG_GETF(ExpLevel, 6)			// theo tai lieu: cung o field 6 voi GetExp
+DEF_TONG_GETF(Premium, 14)
+DEF_TONG_GETF(CurWeekGoalLevel, 36)
+DEF_TONG_GETF(WeekGoalEvent, 22)
+DEF_TONG_GETF(WeekGoalLevel, 23)
+DEF_TONG_GETF(WeekGoalTotal, 24)
+DEF_TONG_GETF(WeekGoalPlayer, 25)
+DEF_TONG_GETF(WeekGoalValue, 26)
+DEF_TONG_GETF(WeekGoalPriceTong, 27)
+DEF_TONG_GETF(WeekGoalPricePlayer, 28)
+DEF_TONG_GETF(LWeekGoalEvent, 29)
+DEF_TONG_GETF(LWeekGoalLevel, 30)
+DEF_TONG_GETF(LWeekGoalTotal, 31)
+DEF_TONG_GETF(LWeekGoalPlayer, 32)
+DEF_TONG_GETF(LWeekGoalValue, 33)
+DEF_TONG_GETF(LWeekGoalPriceTong, 34)
+DEF_TONG_GETF(LWeekGoalPricePlayer, 35)
+
+// ---- setters ----
+DEF_TONG_SETF(BuildFund, 12)
+DEF_TONG_SETF(CurWeekGoalLevel, 36)
+DEF_TONG_SETF(Day, 20)
+DEF_TONG_SETF(Week, 21)
+DEF_TONG_SETF(MaintainFund, 16)
+DEF_TONG_SETF(OccupyCityDay, 48)
+DEF_TONG_SETF(PauseState, 44)
+DEF_TONG_SETF(PerStandFund, 17)
+DEF_TONG_SETF(StoredBuildFund, 19)
+DEF_TONG_SETF(StoredOffer, 18)
+DEF_TONG_SETF(TotalBuildFund, 43)
+DEF_TONG_SETF(WarBuildFund, 15)
+DEF_TONG_SETF(WeekBuildFund, 41)
+DEF_TONG_SETF(WeekBuildUpper, 42)
+DEF_TONG_SETF(WeekGoalEvent, 22)
+DEF_TONG_SETF(WeekGoalLevel, 23)
+DEF_TONG_SETF(WeekGoalTotal, 24)
+DEF_TONG_SETF(WeekGoalPlayer, 25)
+DEF_TONG_SETF(WeekGoalValue, 26)
+DEF_TONG_SETF(WeekGoalPriceTong, 27)
+DEF_TONG_SETF(WeekGoalPricePlayer, 28)
+DEF_TONG_SETF(LWeekGoalEvent, 29)
+DEF_TONG_SETF(LWeekGoalLevel, 30)
+DEF_TONG_SETF(LWeekGoalTotal, 31)
+DEF_TONG_SETF(LWeekGoalPlayer, 32)
+DEF_TONG_SETF(LWeekGoalValue, 33)
+DEF_TONG_SETF(LWeekGoalPriceTong, 34)
+DEF_TONG_SETF(LWeekGoalPricePlayer, 35)
+DEF_TONG_SETF(TongMap, 45)
+DEF_TONG_SETF(TongMapBan, 47)
+
+// ---- adders (AddBuildFund/AddWarBuildFund/AddPerStandFund la cong KHONG dau - JX2 vfunc +0xb0) ----
+DEF_TONG_ADDF(BuildFund, 12, TRUE)
+DEF_TONG_ADDF(WarBuildFund, 15, TRUE)
+DEF_TONG_ADDF(PerStandFund, 17, TRUE)
+DEF_TONG_ADDF(Day, 20, TRUE)
+DEF_TONG_ADDF(Week, 21, TRUE)
+DEF_TONG_ADDF(StoredBuildFund, 19, FALSE)
+DEF_TONG_ADDF(StoredOffer, 18, FALSE)
+DEF_TONG_ADDF(TotalBuildFund, 43, FALSE)
+DEF_TONG_ADDF(WeekBuildFund, 41, FALSE)
+DEF_TONG_ADDF(WeekGoalValue, 26, FALSE)
+DEF_TONG_ADDF(LWeekGoalValue, 33, FALSE)
+
+// TONG_GetAnnouncement(nTongID) -> string (bo sung ngoai 150 - phuc vu cua so client)
+int LuaTONG_GetAnnouncement(Lua_State* L)
+{
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(sArgTongID(L));
+	Lua_PushString(L, pTong ? pTong->szAnnounce : (char*)"");
+	return 1;
+}
+
+// TONG_ApplySetAnnouncement(nTongID, szText) -> 0/1
+int LuaTONG_ApplySetAnnouncement(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendStringCmd(dwTongID, defTONG_JX2_STR_ANNOUNCE,
+		(const char*)Lua_ValueToString(L, 2), sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_ApplyAddEventRecord(nTongID, szText) / TONG_ApplyAddHistoryRecord(nTongID, szText)
+int LuaTONG_ApplyAddEventRecord(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT,
+		(const char*)Lua_ValueToString(L, 2), sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTONG_ApplyAddHistoryRecord(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendStringCmd(dwTongID, defTONG_JX2_STR_HISTORY,
+		(const char*)Lua_ValueToString(L, 2), sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_AddTaskTemp(nTongID, nIdx, nDelta) - bo dem cuc bo
+int LuaTONG_AddTaskTemp(Lua_State* L)
+{
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(sArgTongID(L));
+	int nIdx = -1;
+	if (Lua_IsNumber(L, 2))
+		nIdx = (int)Lua_ValueToNumber(L, 2);
+	if (!pTong || nIdx < 0 || nIdx > 255 || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	pTong->dwTaskTemp[nIdx] += (int)Lua_ValueToNumber(L, 3);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_WriteLog(szText) - ghi file logs\tong_jx2.log phia GameServer
+int LuaTONG_WriteLog(Lua_State* L)
+{
+	if (!Lua_IsString(L, 1))
+		return 0;
+	const char* pszText = (const char*)Lua_ValueToString(L, 1);
+	if (!pszText || !pszText[0])
+		return 0;
+	FILE* pFile = fopen("logs\\tong_jx2.log", "at");
+	if (!pFile)
+		pFile = fopen("tong_jx2.log", "at");
+	if (pFile)
+	{
+		time_t tNow = time(NULL);
+		struct tm* pTm = localtime(&tNow);
+		fprintf(pFile, "[%04d-%02d-%02d %02d:%02d:%02d] %s\n",
+			pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday,
+			pTm->tm_hour, pTm->tm_min, pTm->tm_sec, pszText);
+		fclose(pFile);
+	}
+	return 0;
+}
+
+// ---- nhom thao tac tong hop (vong doi / phan phoi / ban do / tuyet ky) ----
+
+static int sTongOpSimple(Lua_State* L, BYTE btOpCode)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, 0, btOpCode, 0, 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTONG_ApplyInit(Lua_State* L)			{ return sTongOpSimple(L, defTONG_JX2_TOP_INIT); }
+int LuaTONG_ApplyUpgrade(Lua_State* L)		{ return sTongOpSimple(L, defTONG_JX2_TOP_UPGRADE); }
+int LuaTONG_ApplyDegrade(Lua_State* L)		{ return sTongOpSimple(L, defTONG_JX2_TOP_DEGRADE); }
+int LuaTONG_ApplyMaintain(Lua_State* L)		{ return sTongOpSimple(L, defTONG_JX2_TOP_MAINTAIN); }
+int LuaTONG_ApplyWeeklyMaintain(Lua_State* L){ return sTongOpSimple(L, defTONG_JX2_TOP_WEEKLY); }
+int LuaTONG_ApplyDeleteMap(Lua_State* L)	{ return sTongOpSimple(L, defTONG_JX2_TOP_DELETE_MAP); }
+
+// TONG_ApplyKickMember(nTongID, member, nParam) / TONG_ApplyDeleteMember - duoi khoi bang
+static int sTongOpKick(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMember = sResolveMember(L, &pTong);
+	if (!pTong || !pMember)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(pTong->dwNameID, pMember->dwNameID, defTONG_JX2_TOP_KICK, 0, 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+int LuaTONG_ApplyKickMember(Lua_State* L)	{ return sTongOpKick(L); }
+int LuaTONG_ApplyDeleteMember(Lua_State* L)	{ return sTongOpKick(L); }
+
+// TONG_ApplySetStunt(nTongID, nStuntID)
+int LuaTONG_ApplySetStunt(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_SET_STUNT, (int)Lua_ValueToNumber(L, 2), 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_ApplyCreatMap(nTongID, nMapTemplate)
+int LuaTONG_ApplyCreatMap(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_CREATE_MAP, (int)Lua_ValueToNumber(L, 2), 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_ChangeAllMemberFeature(nTongID, nFeature, nGiay)
+int LuaTONG_ChangeAllMemberFeature(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nTime = 0;
+	if (Lua_IsNumber(L, 3))
+		nTime = (int)Lua_ValueToNumber(L, 3);
+	sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_FEATURE, (int)Lua_ValueToNumber(L, 2), nTime, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_ContributeOffer(nTongID, nExecutorID, nOffer) - cong vao quy du tru (field 18)
+int LuaTONG_ContributeOffer(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || Lua_GetTopIndex(L) < 3 || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nOffer = (int)Lua_ValueToNumber(L, 3);
+	if (nOffer <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, sArgMemberID(L, 2), defTONG_JX2_TOP_CONTRIBUTE, nOffer, 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_DistributeOfferToGroup(nTongID, nFigure, nOffer) - tru quy du tru, phat cho nhom
+int LuaTONG_DistributeOfferToGroup(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_DIST_GROUP,
+		(int)Lua_ValueToNumber(L, 3), (int)Lua_ValueToNumber(L, 2), sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONG_DistributeOfferToMember(nTongID, member, nOffer)
+int LuaTONG_DistributeOfferToMember(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMember = sResolveMember(L, &pTong);
+	if (!pTong || !pMember || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(pTong->dwNameID, pMember->dwNameID, defTONG_JX2_TOP_DIST_MEMBER,
+		(int)Lua_ValueToNumber(L, 3), 0, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ---- TONGM_ dot 2 ----
+
+#define DEF_TONGM_GETK(FuncName, nKey) \
+	int LuaTONGM_Get##FuncName(Lua_State* L) \
+	{ \
+		KTongJX2Member* pMember = sResolveMember(L, NULL); \
+		Lua_PushNumber(L, (double)(int)g_TongJX2.GetMemberField(pMember, nKey)); \
+		return 1; \
+	}
+
+DEF_TONGM_GETK(JoinTime, 2)
+DEF_TONGM_GETK(JoinDay, 3)
+DEF_TONGM_GETK(Money, 4)
+DEF_TONGM_GETK(LWeekGoalOffer, 10)
+DEF_TONGM_GETK(LWeeklyOffer, 12)
+DEF_TONGM_GETK(LastOnlineDate, 15)
+DEF_TONGM_GETK(RetireDate, 16)
+
+// TONGM_ApplySet<X>(nTongID, member, nValue) voi khoa co dinh
+static int sApplySetMemberKeyArg3(Lua_State* L, WORD wKey)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMember = sResolveMember(L, &pTong);
+	if (!pTong || !pMember || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, wKey,
+		(DWORD)Lua_ValueToNumber(L, 3), defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTONGM_ApplySetLWeekGoalOffer(Lua_State* L)	{ return sApplySetMemberKeyArg3(L, 10); }
+int LuaTONGM_ApplySetLWeeklyOffer(Lua_State* L)		{ return sApplySetMemberKeyArg3(L, 12); }
+
+// TONGM_ApplyAddUTaskValue(nTongID, member, wKey, nDelta) - cong khong dau
+int LuaTONGM_ApplyAddUTaskValue(Lua_State* L)
+{
+	KTongJX2Tong* pTong = NULL;
+	KTongJX2Member* pMember = sResolveMember(L, &pTong);
+	if (!pTong || !pMember || !Lua_IsNumber(L, 3) || !Lua_IsNumber(L, 4))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	WORD wKey = (WORD)Lua_ValueToNumber(L, 3);
+	DWORD dwDelta = (DWORD)Lua_ValueToNumber(L, 4);
+	if (dwDelta != 0)
+		sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, wKey, dwDelta,
+			defTONG_JX2_OP_ADDU, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TONGM_ApplyAddOfferEx(nTongID, nFigure, nOffer) - cong cong hien cho TUNG nguoi nhom chuc vu
+int LuaTONGM_ApplyAddOfferEx(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_ADD_OFFER_FIG,
+		(int)Lua_ValueToNumber(L, 3), (int)Lua_ValueToNumber(L, 2), sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// TWS_ - tac phuong (workshop), ma hoa vao dai field cua bang:
+//   thuoc tinh = defTONG_JX2_WS_ATTR_BASE + nType*10 + attr
+//   bien nhiem vu = defTONG_JX2_WS_TASK_BASE + nType*1000 + key (key < 1000)
+//////////////////////////////////////////////////////////////////////
+
+static int sWsType(Lua_State* L)
+{
+	if (!Lua_IsNumber(L, 2))
+		return 0;
+	int nType = (int)Lua_ValueToNumber(L, 2);
+	if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+		return 0;
+	return nType;
+}
+
+static WORD sWsAttrField(int nType, int nAttr)
+{
+	return (WORD)(defTONG_JX2_WS_ATTR_BASE + nType * 10 + nAttr);
+}
+
+static int sWsPushAttr(Lua_State* L, int nAttr)
+{
+	int nType = sWsType(L);
+	if (!nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)(int)g_TongJX2.GetField(sArgTongID(L), sWsAttrField(nType, nAttr)));
+	return 1;
+}
+
+// ApplySet attr voi gia tri o arg3
+static int sWsApplySetAttrArg3(Lua_State* L, int nAttr)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, nAttr),
+		(DWORD)Lua_ValueToNumber(L, 3), defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTWS_IsExist(Lua_State* L)
+{
+	int nType = sWsType(L);
+	Lua_PushNumber(L, (nType && g_TongJX2.GetField(sArgTongID(L), sWsAttrField(nType, 0))) ? 1 : 0);
+	return 1;
+}
+
+int LuaTWS_IsOpen(Lua_State* L)			{ return sWsPushAttr(L, 1); }
+int LuaTWS_GetLevel(Lua_State* L)		{ return sWsPushAttr(L, 2); }
+int LuaTWS_GetDayOutput(Lua_State* L)	{ return sWsPushAttr(L, 3); }
+int LuaTWS_GetUseLevel(Lua_State* L)	{ return sWsPushAttr(L, 4); }
+int LuaTWS_GetUseLevelSet(Lua_State* L)	{ return sWsPushAttr(L, 5); }
+
+int LuaTWS_GetType(Lua_State* L)
+{
+	int nType = sWsType(L);
+	if (nType && g_TongJX2.GetField(sArgTongID(L), sWsAttrField(nType, 0)))
+		Lua_PushNumber(L, nType);
+	else
+		Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaTWS_GetWorkshopCount(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nCount = 0;
+	for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
+	{
+		if (g_TongJX2.GetField(dwTongID, sWsAttrField(t, 0)))
+			nCount++;
+	}
+	Lua_PushNumber(L, nCount);
+	return 1;
+}
+
+int LuaTWS_GetFirstWorkshop(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
+	{
+		if (g_TongJX2.GetField(dwTongID, sWsAttrField(t, 0)))
+		{
+			Lua_PushNumber(L, t);
+			return 1;
+		}
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaTWS_GetNextWorkshop(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nCur = sWsType(L);
+	for (int t = nCur + 1; t >= 1 && t <= defTONG_JX2_WS_MAX_TYPE; t++)
+	{
+		if (g_TongJX2.GetField(dwTongID, sWsAttrField(t, 0)))
+		{
+			Lua_PushNumber(L, t);
+			return 1;
+		}
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaTWS_GetBuildingNpc(Lua_State* L)
+{
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(sArgTongID(L));
+	int nType = sWsType(L);
+	if (!pTong || !nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)pTong->dwWsNpc[nType]);
+	return 1;
+}
+
+// GS-cuc bo (NPC cong trinh chi co nghia tren GS dang giu ban do)
+int LuaTWS_SetBuildingNpc(Lua_State* L)
+{
+	KTongJX2Tong* pTong = g_TongJX2.FindTong(sArgTongID(L));
+	int nType = sWsType(L);
+	if (!pTong || !nType || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	pTong->dwWsNpc[nType] = (DWORD)Lua_ValueToNumber(L, 3);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+static WORD sWsTaskField(int nType, int nKey)
+{
+	return (WORD)(defTONG_JX2_WS_TASK_BASE + nType * 1000 + nKey);
+}
+
+int LuaTWS_GetTaskValue(Lua_State* L)
+{
+	int nType = sWsType(L);
+	int nKey = Lua_IsNumber(L, 3) ? (int)Lua_ValueToNumber(L, 3) : -1;
+	if (!nType || nKey < 0 || nKey >= 1000)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)(int)g_TongJX2.GetField(sArgTongID(L), sWsTaskField(nType, nKey)));
+	return 1;
+}
+
+int LuaTWS_GetUTaskValue(Lua_State* L)
+{
+	int nType = sWsType(L);
+	int nKey = Lua_IsNumber(L, 3) ? (int)Lua_ValueToNumber(L, 3) : -1;
+	if (!nType || nKey < 0 || nKey >= 1000)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)g_TongJX2.GetField(sArgTongID(L), sWsTaskField(nType, nKey)));
+	return 1;
+}
+
+static int sWsApplyTask(Lua_State* L, BYTE btOp)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	int nKey = Lua_IsNumber(L, 3) ? (int)Lua_ValueToNumber(L, 3) : -1;
+	if (!g_TongJX2.FindTong(dwTongID) || !nType || nKey < 0 || nKey >= 1000 || !Lua_IsNumber(L, 4))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsTaskField(nType, nKey),
+		(DWORD)Lua_ValueToNumber(L, 4), btOp, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTWS_ApplySetTaskValue(Lua_State* L)	{ return sWsApplyTask(L, defTONG_JX2_OP_SET); }
+int LuaTWS_ApplyAddTaskValue(Lua_State* L)	{ return sWsApplyTask(L, defTONG_JX2_OP_ADD); }
+int LuaTWS_ApplyAddUTaskValue(Lua_State* L)	{ return sWsApplyTask(L, defTONG_JX2_OP_ADDU); }
+
+int LuaTWS_ApplySetDayOutput(Lua_State* L)	{ return sWsApplySetAttrArg3(L, 3); }
+int LuaTWS_ApplySetUseLevel(Lua_State* L)	{ return sWsApplySetAttrArg3(L, 4); }
+int LuaTWS_ApplySetUseLevelSet(Lua_State* L){ return sWsApplySetAttrArg3(L, 5); }
+
+int LuaTWS_ApplyAddDayOutput(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 3),
+		(DWORD)(int)Lua_ValueToNumber(L, 3), defTONG_JX2_OP_ADD, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TWS_ApplyAdd(nTongID, nType) - lap tac phuong (ton tai = 1, cap = 1)
+int LuaTWS_ApplyAdd(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 0)))
+	{
+		Lua_PushNumber(L, 0);	// da co
+		return 1;
+	}
+	DWORD dwParam = sLuaPlayerParam(L);
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 0), 1, defTONG_JX2_OP_SET, dwParam);
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 2), 1, defTONG_JX2_OP_SET, dwParam);
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 1), 1, defTONG_JX2_OP_SET, dwParam);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// TWS_ApplyRemove(nTongID, nType) - do bo (xoa 6 thuoc tinh)
+int LuaTWS_ApplyRemove(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwParam = sLuaPlayerParam(L);
+	for (int a = 0; a <= 5; a++)
+		sSendFieldCmd(dwTongID, sWsAttrField(nType, a), 0, defTONG_JX2_OP_SET, dwParam);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+static int sWsSetOpen(Lua_State* L, DWORD dwValue)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (!g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 0)))
+	{
+		Lua_PushNumber(L, 0);	// chua lap
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 1), dwValue, defTONG_JX2_OP_SET, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTWS_ApplyOpen(Lua_State* L)	{ return sWsSetOpen(L, 1); }
+int LuaTWS_ApplyClose(Lua_State* L)	{ return sWsSetOpen(L, 0); }
+
+int LuaTWS_ApplyUpgrade(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType ||
+		!g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 0)))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 2), 1, defTONG_JX2_OP_ADD, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaTWS_ApplyDegrade(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if ((int)g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 2)) <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 2), (DWORD)-1, defTONG_JX2_OP_ADD, sLuaPlayerParam(L));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// bao tri tac phuong: chi phi da nam trong bao tri ngay cua bang
+int LuaTWS_ApplyMaintain(Lua_State* L)
+{
+	Lua_PushNumber(L, g_TongJX2.FindTong(sArgTongID(L)) ? 1 : 0);
+	return 1;
+}
+
+// su dung tac phuong: cong 1 vao san luong ngay
+int LuaTWS_ApplyUse(Lua_State* L)
+{
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || !nType ||
+		!g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 0)))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sSendFieldCmd(dwTongID, sWsAttrField(nType, 3), 1, defTONG_JX2_OP_ADDU, sLuaPlayerParam(L));
 	Lua_PushNumber(L, 1);
 	return 1;
 }

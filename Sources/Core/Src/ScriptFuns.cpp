@@ -11750,6 +11750,127 @@ extern int LuaTONGM_ApplySetRetireDate(Lua_State* L);
 extern int LuaTONGM_ApplySetLastOnlineDate(Lua_State* L);
 extern int LuaTONGM_ApplyAddRight(Lua_State* L);
 extern int LuaTONGM_ApplyDelRight(Lua_State* L);
+// ==== JX2 port dot 2 ====
+extern int LuaTONG_GetSelfCamp(Lua_State* L);
+extern int LuaTONG_GetCurCamp(Lua_State* L);
+extern int LuaTONG_GetExpLevel(Lua_State* L);
+extern int LuaTONG_GetPremium(Lua_State* L);
+extern int LuaTONG_GetCurWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_GetWeekGoalEvent(Lua_State* L);
+extern int LuaTONG_GetWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_GetWeekGoalTotal(Lua_State* L);
+extern int LuaTONG_GetWeekGoalPlayer(Lua_State* L);
+extern int LuaTONG_GetWeekGoalValue(Lua_State* L);
+extern int LuaTONG_GetWeekGoalPriceTong(Lua_State* L);
+extern int LuaTONG_GetWeekGoalPricePlayer(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalEvent(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalTotal(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalPlayer(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalValue(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalPriceTong(Lua_State* L);
+extern int LuaTONG_GetLWeekGoalPricePlayer(Lua_State* L);
+extern int LuaTONG_GetAnnouncement(Lua_State* L);
+extern int LuaTONG_ApplySetBuildFund(Lua_State* L);
+extern int LuaTONG_ApplySetCurWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_ApplySetDay(Lua_State* L);
+extern int LuaTONG_ApplySetWeek(Lua_State* L);
+extern int LuaTONG_ApplySetMaintainFund(Lua_State* L);
+extern int LuaTONG_ApplySetOccupyCityDay(Lua_State* L);
+extern int LuaTONG_ApplySetPauseState(Lua_State* L);
+extern int LuaTONG_ApplySetPerStandFund(Lua_State* L);
+extern int LuaTONG_ApplySetStoredBuildFund(Lua_State* L);
+extern int LuaTONG_ApplySetStoredOffer(Lua_State* L);
+extern int LuaTONG_ApplySetTotalBuildFund(Lua_State* L);
+extern int LuaTONG_ApplySetWarBuildFund(Lua_State* L);
+extern int LuaTONG_ApplySetWeekBuildFund(Lua_State* L);
+extern int LuaTONG_ApplySetWeekBuildUpper(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalEvent(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalTotal(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalPlayer(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalValue(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalPriceTong(Lua_State* L);
+extern int LuaTONG_ApplySetWeekGoalPricePlayer(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalEvent(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalLevel(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalTotal(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalPlayer(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalValue(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalPriceTong(Lua_State* L);
+extern int LuaTONG_ApplySetLWeekGoalPricePlayer(Lua_State* L);
+extern int LuaTONG_ApplySetTongMap(Lua_State* L);
+extern int LuaTONG_ApplySetTongMapBan(Lua_State* L);
+extern int LuaTONG_ApplySetAnnouncement(Lua_State* L);
+extern int LuaTONG_ApplySetStunt(Lua_State* L);
+extern int LuaTONG_ApplyAddBuildFund(Lua_State* L);
+extern int LuaTONG_ApplyAddWarBuildFund(Lua_State* L);
+extern int LuaTONG_ApplyAddPerStandFund(Lua_State* L);
+extern int LuaTONG_ApplyAddDay(Lua_State* L);
+extern int LuaTONG_ApplyAddWeek(Lua_State* L);
+extern int LuaTONG_ApplyAddStoredBuildFund(Lua_State* L);
+extern int LuaTONG_ApplyAddStoredOffer(Lua_State* L);
+extern int LuaTONG_ApplyAddTotalBuildFund(Lua_State* L);
+extern int LuaTONG_ApplyAddWeekBuildFund(Lua_State* L);
+extern int LuaTONG_ApplyAddWeekGoalValue(Lua_State* L);
+extern int LuaTONG_ApplyAddLWeekGoalValue(Lua_State* L);
+extern int LuaTONG_ApplyAddEventRecord(Lua_State* L);
+extern int LuaTONG_ApplyAddHistoryRecord(Lua_State* L);
+extern int LuaTONG_AddTaskTemp(Lua_State* L);
+extern int LuaTONG_WriteLog(Lua_State* L);
+extern int LuaTONG_ApplyInit(Lua_State* L);
+extern int LuaTONG_ApplyUpgrade(Lua_State* L);
+extern int LuaTONG_ApplyDegrade(Lua_State* L);
+extern int LuaTONG_ApplyMaintain(Lua_State* L);
+extern int LuaTONG_ApplyWeeklyMaintain(Lua_State* L);
+extern int LuaTONG_ApplyDeleteMap(Lua_State* L);
+extern int LuaTONG_ApplyKickMember(Lua_State* L);
+extern int LuaTONG_ApplyDeleteMember(Lua_State* L);
+extern int LuaTONG_ApplyCreatMap(Lua_State* L);
+extern int LuaTONG_ChangeAllMemberFeature(Lua_State* L);
+extern int LuaTONG_ContributeOffer(Lua_State* L);
+extern int LuaTONG_DistributeOfferToGroup(Lua_State* L);
+extern int LuaTONG_DistributeOfferToMember(Lua_State* L);
+extern int LuaTONGM_GetJoinTime(Lua_State* L);
+extern int LuaTONGM_GetJoinDay(Lua_State* L);
+extern int LuaTONGM_GetMoney(Lua_State* L);
+extern int LuaTONGM_GetLWeekGoalOffer(Lua_State* L);
+extern int LuaTONGM_GetLWeeklyOffer(Lua_State* L);
+extern int LuaTONGM_GetLastOnlineDate(Lua_State* L);
+extern int LuaTONGM_GetRetireDate(Lua_State* L);
+extern int LuaTONGM_ApplySetLWeekGoalOffer(Lua_State* L);
+extern int LuaTONGM_ApplySetLWeeklyOffer(Lua_State* L);
+extern int LuaTONGM_ApplyAddUTaskValue(Lua_State* L);
+extern int LuaTONGM_ApplyAddOfferEx(Lua_State* L);
+extern int LuaTWS_IsExist(Lua_State* L);
+extern int LuaTWS_IsOpen(Lua_State* L);
+extern int LuaTWS_GetType(Lua_State* L);
+extern int LuaTWS_GetLevel(Lua_State* L);
+extern int LuaTWS_GetWorkshopCount(Lua_State* L);
+extern int LuaTWS_GetFirstWorkshop(Lua_State* L);
+extern int LuaTWS_GetNextWorkshop(Lua_State* L);
+extern int LuaTWS_GetDayOutput(Lua_State* L);
+extern int LuaTWS_GetUseLevel(Lua_State* L);
+extern int LuaTWS_GetUseLevelSet(Lua_State* L);
+extern int LuaTWS_GetBuildingNpc(Lua_State* L);
+extern int LuaTWS_SetBuildingNpc(Lua_State* L);
+extern int LuaTWS_GetTaskValue(Lua_State* L);
+extern int LuaTWS_GetUTaskValue(Lua_State* L);
+extern int LuaTWS_ApplySetTaskValue(Lua_State* L);
+extern int LuaTWS_ApplyAddTaskValue(Lua_State* L);
+extern int LuaTWS_ApplyAddUTaskValue(Lua_State* L);
+extern int LuaTWS_ApplySetDayOutput(Lua_State* L);
+extern int LuaTWS_ApplyAddDayOutput(Lua_State* L);
+extern int LuaTWS_ApplySetUseLevel(Lua_State* L);
+extern int LuaTWS_ApplySetUseLevelSet(Lua_State* L);
+extern int LuaTWS_ApplyAdd(Lua_State* L);
+extern int LuaTWS_ApplyRemove(Lua_State* L);
+extern int LuaTWS_ApplyOpen(Lua_State* L);
+extern int LuaTWS_ApplyClose(Lua_State* L);
+extern int LuaTWS_ApplyUpgrade(Lua_State* L);
+extern int LuaTWS_ApplyDegrade(Lua_State* L);
+extern int LuaTWS_ApplyMaintain(Lua_State* L);
+extern int LuaTWS_ApplyUse(Lua_State* L);
 #endif
 
 TLua_Funcs GameScriptFuns[] =
@@ -12261,6 +12382,127 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TONGM_ApplySetLastOnlineDate",	LuaTONGM_ApplySetLastOnlineDate },
 		{ "TONGM_ApplyAddRight",	LuaTONGM_ApplyAddRight },
 		{ "TONGM_ApplyDelRight",	LuaTONGM_ApplyDelRight },
+		// ==== JX2 port dot 2 ====
+		{ "TONG_GetSelfCamp",	LuaTONG_GetSelfCamp },
+		{ "TONG_GetCurCamp",	LuaTONG_GetCurCamp },
+		{ "TONG_GetExpLevel",	LuaTONG_GetExpLevel },
+		{ "TONG_GetPremium",	LuaTONG_GetPremium },
+		{ "TONG_GetCurWeekGoalLevel",	LuaTONG_GetCurWeekGoalLevel },
+		{ "TONG_GetWeekGoalEvent",	LuaTONG_GetWeekGoalEvent },
+		{ "TONG_GetWeekGoalLevel",	LuaTONG_GetWeekGoalLevel },
+		{ "TONG_GetWeekGoalTotal",	LuaTONG_GetWeekGoalTotal },
+		{ "TONG_GetWeekGoalPlayer",	LuaTONG_GetWeekGoalPlayer },
+		{ "TONG_GetWeekGoalValue",	LuaTONG_GetWeekGoalValue },
+		{ "TONG_GetWeekGoalPriceTong",	LuaTONG_GetWeekGoalPriceTong },
+		{ "TONG_GetWeekGoalPricePlayer",	LuaTONG_GetWeekGoalPricePlayer },
+		{ "TONG_GetLWeekGoalEvent",	LuaTONG_GetLWeekGoalEvent },
+		{ "TONG_GetLWeekGoalLevel",	LuaTONG_GetLWeekGoalLevel },
+		{ "TONG_GetLWeekGoalTotal",	LuaTONG_GetLWeekGoalTotal },
+		{ "TONG_GetLWeekGoalPlayer",	LuaTONG_GetLWeekGoalPlayer },
+		{ "TONG_GetLWeekGoalValue",	LuaTONG_GetLWeekGoalValue },
+		{ "TONG_GetLWeekGoalPriceTong",	LuaTONG_GetLWeekGoalPriceTong },
+		{ "TONG_GetLWeekGoalPricePlayer",	LuaTONG_GetLWeekGoalPricePlayer },
+		{ "TONG_GetAnnouncement",	LuaTONG_GetAnnouncement },
+		{ "TONG_ApplySetBuildFund",	LuaTONG_ApplySetBuildFund },
+		{ "TONG_ApplySetCurWeekGoalLevel",	LuaTONG_ApplySetCurWeekGoalLevel },
+		{ "TONG_ApplySetDay",	LuaTONG_ApplySetDay },
+		{ "TONG_ApplySetWeek",	LuaTONG_ApplySetWeek },
+		{ "TONG_ApplySetMaintainFund",	LuaTONG_ApplySetMaintainFund },
+		{ "TONG_ApplySetOccupyCityDay",	LuaTONG_ApplySetOccupyCityDay },
+		{ "TONG_ApplySetPauseState",	LuaTONG_ApplySetPauseState },
+		{ "TONG_ApplySetPerStandFund",	LuaTONG_ApplySetPerStandFund },
+		{ "TONG_ApplySetStoredBuildFund",	LuaTONG_ApplySetStoredBuildFund },
+		{ "TONG_ApplySetStoredOffer",	LuaTONG_ApplySetStoredOffer },
+		{ "TONG_ApplySetTotalBuildFund",	LuaTONG_ApplySetTotalBuildFund },
+		{ "TONG_ApplySetWarBuildFund",	LuaTONG_ApplySetWarBuildFund },
+		{ "TONG_ApplySetWeekBuildFund",	LuaTONG_ApplySetWeekBuildFund },
+		{ "TONG_ApplySetWeekBuildUpper",	LuaTONG_ApplySetWeekBuildUpper },
+		{ "TONG_ApplySetWeekGoalEvent",	LuaTONG_ApplySetWeekGoalEvent },
+		{ "TONG_ApplySetWeekGoalLevel",	LuaTONG_ApplySetWeekGoalLevel },
+		{ "TONG_ApplySetWeekGoalTotal",	LuaTONG_ApplySetWeekGoalTotal },
+		{ "TONG_ApplySetWeekGoalPlayer",	LuaTONG_ApplySetWeekGoalPlayer },
+		{ "TONG_ApplySetWeekGoalValue",	LuaTONG_ApplySetWeekGoalValue },
+		{ "TONG_ApplySetWeekGoalPriceTong",	LuaTONG_ApplySetWeekGoalPriceTong },
+		{ "TONG_ApplySetWeekGoalPricePlayer",	LuaTONG_ApplySetWeekGoalPricePlayer },
+		{ "TONG_ApplySetLWeekGoalEvent",	LuaTONG_ApplySetLWeekGoalEvent },
+		{ "TONG_ApplySetLWeekGoalLevel",	LuaTONG_ApplySetLWeekGoalLevel },
+		{ "TONG_ApplySetLWeekGoalTotal",	LuaTONG_ApplySetLWeekGoalTotal },
+		{ "TONG_ApplySetLWeekGoalPlayer",	LuaTONG_ApplySetLWeekGoalPlayer },
+		{ "TONG_ApplySetLWeekGoalValue",	LuaTONG_ApplySetLWeekGoalValue },
+		{ "TONG_ApplySetLWeekGoalPriceTong",	LuaTONG_ApplySetLWeekGoalPriceTong },
+		{ "TONG_ApplySetLWeekGoalPricePlayer",	LuaTONG_ApplySetLWeekGoalPricePlayer },
+		{ "TONG_ApplySetTongMap",	LuaTONG_ApplySetTongMap },
+		{ "TONG_ApplySetTongMapBan",	LuaTONG_ApplySetTongMapBan },
+		{ "TONG_ApplySetAnnouncement",	LuaTONG_ApplySetAnnouncement },
+		{ "TONG_ApplySetStunt",	LuaTONG_ApplySetStunt },
+		{ "TONG_ApplyAddBuildFund",	LuaTONG_ApplyAddBuildFund },
+		{ "TONG_ApplyAddWarBuildFund",	LuaTONG_ApplyAddWarBuildFund },
+		{ "TONG_ApplyAddPerStandFund",	LuaTONG_ApplyAddPerStandFund },
+		{ "TONG_ApplyAddDay",	LuaTONG_ApplyAddDay },
+		{ "TONG_ApplyAddWeek",	LuaTONG_ApplyAddWeek },
+		{ "TONG_ApplyAddStoredBuildFund",	LuaTONG_ApplyAddStoredBuildFund },
+		{ "TONG_ApplyAddStoredOffer",	LuaTONG_ApplyAddStoredOffer },
+		{ "TONG_ApplyAddTotalBuildFund",	LuaTONG_ApplyAddTotalBuildFund },
+		{ "TONG_ApplyAddWeekBuildFund",	LuaTONG_ApplyAddWeekBuildFund },
+		{ "TONG_ApplyAddWeekGoalValue",	LuaTONG_ApplyAddWeekGoalValue },
+		{ "TONG_ApplyAddLWeekGoalValue",	LuaTONG_ApplyAddLWeekGoalValue },
+		{ "TONG_ApplyAddEventRecord",	LuaTONG_ApplyAddEventRecord },
+		{ "TONG_ApplyAddHistoryRecord",	LuaTONG_ApplyAddHistoryRecord },
+		{ "TONG_AddTaskTemp",	LuaTONG_AddTaskTemp },
+		{ "TONG_WriteLog",	LuaTONG_WriteLog },
+		{ "TONG_ApplyInit",	LuaTONG_ApplyInit },
+		{ "TONG_ApplyUpgrade",	LuaTONG_ApplyUpgrade },
+		{ "TONG_ApplyDegrade",	LuaTONG_ApplyDegrade },
+		{ "TONG_ApplyMaintain",	LuaTONG_ApplyMaintain },
+		{ "TONG_ApplyWeeklyMaintain",	LuaTONG_ApplyWeeklyMaintain },
+		{ "TONG_ApplyDeleteMap",	LuaTONG_ApplyDeleteMap },
+		{ "TONG_ApplyKickMember",	LuaTONG_ApplyKickMember },
+		{ "TONG_ApplyDeleteMember",	LuaTONG_ApplyDeleteMember },
+		{ "TONG_ApplyCreatMap",	LuaTONG_ApplyCreatMap },
+		{ "TONG_ChangeAllMemberFeature",	LuaTONG_ChangeAllMemberFeature },
+		{ "TONG_ContributeOffer",	LuaTONG_ContributeOffer },
+		{ "TONG_DistributeOfferToGroup",	LuaTONG_DistributeOfferToGroup },
+		{ "TONG_DistributeOfferToMember",	LuaTONG_DistributeOfferToMember },
+		{ "TONGM_GetJoinTime",	LuaTONGM_GetJoinTime },
+		{ "TONGM_GetJoinDay",	LuaTONGM_GetJoinDay },
+		{ "TONGM_GetMoney",	LuaTONGM_GetMoney },
+		{ "TONGM_GetLWeekGoalOffer",	LuaTONGM_GetLWeekGoalOffer },
+		{ "TONGM_GetLWeeklyOffer",	LuaTONGM_GetLWeeklyOffer },
+		{ "TONGM_GetLastOnlineDate",	LuaTONGM_GetLastOnlineDate },
+		{ "TONGM_GetRetireDate",	LuaTONGM_GetRetireDate },
+		{ "TONGM_ApplySetLWeekGoalOffer",	LuaTONGM_ApplySetLWeekGoalOffer },
+		{ "TONGM_ApplySetLWeeklyOffer",	LuaTONGM_ApplySetLWeeklyOffer },
+		{ "TONGM_ApplyAddUTaskValue",	LuaTONGM_ApplyAddUTaskValue },
+		{ "TONGM_ApplyAddOfferEx",	LuaTONGM_ApplyAddOfferEx },
+		{ "TWS_IsExist",	LuaTWS_IsExist },
+		{ "TWS_IsOpen",	LuaTWS_IsOpen },
+		{ "TWS_GetType",	LuaTWS_GetType },
+		{ "TWS_GetLevel",	LuaTWS_GetLevel },
+		{ "TWS_GetWorkshopCount",	LuaTWS_GetWorkshopCount },
+		{ "TWS_GetFirstWorkshop",	LuaTWS_GetFirstWorkshop },
+		{ "TWS_GetNextWorkshop",	LuaTWS_GetNextWorkshop },
+		{ "TWS_GetDayOutput",	LuaTWS_GetDayOutput },
+		{ "TWS_GetUseLevel",	LuaTWS_GetUseLevel },
+		{ "TWS_GetUseLevelSet",	LuaTWS_GetUseLevelSet },
+		{ "TWS_GetBuildingNpc",	LuaTWS_GetBuildingNpc },
+		{ "TWS_SetBuildingNpc",	LuaTWS_SetBuildingNpc },
+		{ "TWS_GetTaskValue",	LuaTWS_GetTaskValue },
+		{ "TWS_GetUTaskValue",	LuaTWS_GetUTaskValue },
+		{ "TWS_ApplySetTaskValue",	LuaTWS_ApplySetTaskValue },
+		{ "TWS_ApplyAddTaskValue",	LuaTWS_ApplyAddTaskValue },
+		{ "TWS_ApplyAddUTaskValue",	LuaTWS_ApplyAddUTaskValue },
+		{ "TWS_ApplySetDayOutput",	LuaTWS_ApplySetDayOutput },
+		{ "TWS_ApplyAddDayOutput",	LuaTWS_ApplyAddDayOutput },
+		{ "TWS_ApplySetUseLevel",	LuaTWS_ApplySetUseLevel },
+		{ "TWS_ApplySetUseLevelSet",	LuaTWS_ApplySetUseLevelSet },
+		{ "TWS_ApplyAdd",	LuaTWS_ApplyAdd },
+		{ "TWS_ApplyRemove",	LuaTWS_ApplyRemove },
+		{ "TWS_ApplyOpen",	LuaTWS_ApplyOpen },
+		{ "TWS_ApplyClose",	LuaTWS_ApplyClose },
+		{ "TWS_ApplyUpgrade",	LuaTWS_ApplyUpgrade },
+		{ "TWS_ApplyDegrade",	LuaTWS_ApplyDegrade },
+		{ "TWS_ApplyMaintain",	LuaTWS_ApplyMaintain },
+		{ "TWS_ApplyUse",	LuaTWS_ApplyUse },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

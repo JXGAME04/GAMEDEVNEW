@@ -35,6 +35,8 @@ struct KTongJX2Tong
 	std::map<WORD, DWORD>			mapField;
 	std::map<DWORD, KTongJX2Member>	mapMember;	// khoa = NameID thanh vien
 	DWORD	dwTaskTemp[256];					// bo dem cuc bo, KHONG dong bo (dung JX2)
+	char	szAnnounce[128];					// thong bao bang (= defTONG_JX2_ANNOUNCE_LEN)
+	DWORD	dwWsNpc[8];							// NPC cong trinh tac phuong (cuc bo GS, khong dong bo)
 };
 
 class KTongJX2Mgr

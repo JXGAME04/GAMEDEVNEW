@@ -29,6 +29,7 @@ public:
 	BOOL			InitFromDB();
 	// ==== JX2 port ====
 	CTongControl*	JX2_FindByNameID(DWORD dwTongNameID);
+	CTongControl*	JX2_GetByIndex(int nIndex);	// -1 = het mang, NULL = o trong
 	void			JX2_SendFullDump(class CNetConnect* pConn);
 
 	BOOL			SearchOne(DWORD dwTongNameID, char *lpszName, STONG_ONE_LEADER_INFO *pInfo);

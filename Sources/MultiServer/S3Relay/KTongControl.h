@@ -53,6 +53,11 @@ typedef struct
 	int			nJX2FieldCount;
 	WORD		wJX2FieldKey[defTONG_JX2_MAX_FIELDS];
 	DWORD		dwJX2FieldVal[defTONG_JX2_MAX_FIELDS];
+	char		szJX2Announce[defTONG_JX2_ANNOUNCE_LEN];	// thong bao bang
+	char		szJX2Event[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];	// so su kien (vong)
+	char		szJX2History[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];	// so lich su (vong)
+	int			nJX2EventHead;
+	int			nJX2HistoryHead;
 }TTongStruct;	//用作存入数据库的结构
 
 struct STONG_MEMBER
@@ -190,6 +195,11 @@ public:
 	int	m_nJX2FieldCount;
 	WORD	m_wJX2FieldKey[defTONG_JX2_MAX_FIELDS];
 	DWORD	m_dwJX2FieldVal[defTONG_JX2_MAX_FIELDS];
+	char	m_szJX2Announce[defTONG_JX2_ANNOUNCE_LEN];
+	char	m_szJX2Event[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];
+	char	m_szJX2History[defTONG_JX2_RECORD_NUM][defTONG_JX2_RECORD_LEN];
+	int	m_nJX2EventHead;
+	int	m_nJX2HistoryHead;
 	std::map<DWORD, JX2Member>	m_mapJX2Member;	// khoa = NameID thanh vien
 
 	void	JX2_Reset();
@@ -212,6 +222,17 @@ public:
 	int	JX2_BuildTongSync(void* pBuffer, int nBufSize, int nMemberTotal);
 	int	JX2_BuildMemberSync(void* pBuffer, int nBufSize,
 			const struct JX2MemberBrief* pArr, int nTotal, int* pnStartIdx, int nMaxPerPacket);
+	// dot 2:
+	BOOL	JX2_IsValid() { return m_szName[0] != 0; }
+	const char*	JX2_Name() { return m_szName; }
+	BOOL	JX2_SetString(int nKind, const char* pszText);
+	BOOL	JX2_KickByNameID(DWORD dwNameID);
+	BOOL	JX2_Upgrade();
+	BOOL	JX2_Degrade();
+	void	JX2_DailyMaintain(int nTodayDay, int nWeekday);
+	void	JX2_WeeklyMaintain(int nTodayDay);
+	void	JX2_MoneyToExpTick();
+	BOOL	JX2_Distribute(int nOpCode, DWORD dwMemberNameID, int nOffer, int nFigure);
 };
 
 #endif // !defined(AFX_KTONGCONTROL_H__62D04F9A_67CD_419B_B475_BF0F8727A91E__INCLUDED_)
