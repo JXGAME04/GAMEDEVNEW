@@ -1,13 +1,14 @@
 -- jx2compat.lua - lop tuong thich de chay script bang hoi JX2 (Linux) tren JX1.
--- CHEP VAO: bin\server\script\lib_jx2\jx2compat.lua
--- NAP TRUOC khi goi script tong_jx2: dofile("script/lib_jx2/jx2compat.lua")
+-- VI TRI: bin\server\scriptjx2\jx2compat.lua (NGOAI thu muc script\ vi GameServer
+-- tu quet chay moi .lua trong script\ luc khoi dong -> lib JX2 se bao loi mo coi)
+-- NAP TRUOC khi goi script tong_jx2: dofile("scriptjx2/jx2compat.lua")
 -- Cac ham C da co san (dot 3): GetCurServerTime, OutputMsg, WriteLog, String2Id,
 -- GetContribution/AddContribution/..., GetTong, GetTongFigure, GetTongMTask...
 
 -- ==== IncludeLib: JX2 la ham engine map theo TEN MODULE dang ky.
 -- JX1 dung bang tra duoi day; thieu module thi bao ro de biet duong bo sung.
-TJX_LIBROOT = "script/lib_jx2/"
-TJX_TONGROOT = "script/tong_jx2/"
+TJX_LIBROOT = "scriptjx2/lib/"
+TJX_TONGROOT = "scriptjx2/tong/"
 
 TJX_LIBMAP = {
 	TONG = { TJX_TONGROOT.."tong_header.lua" },
