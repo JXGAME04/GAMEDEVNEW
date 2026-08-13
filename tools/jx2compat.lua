@@ -8,7 +8,7 @@
 -- ==== IncludeLib: JX2 la ham engine map theo TEN MODULE dang ky.
 -- JX1 dung bang tra duoi day; thieu module thi bao ro de biet duong bo sung.
 TJX_LIBROOT = "scriptjx2/lib/"
-TJX_TONGROOT = "scriptjx2/tong/"
+TJX_TONGROOT = "scriptjx2/tong_vn/"	-- ban VN hoa (Patch); ban Trung goc o scriptjx2/tong/
 
 TJX_LIBMAP = {
 	TONG = { TJX_TONGROOT.."tong_header.lua" },
