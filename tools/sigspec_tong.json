@@ -1,0 +1,2237 @@
+[
+ {
+  "ham": "TONGM_ApplyAddOffer",
+  "dia_chi": "0x08198720",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplyAddOfferEx",
+  "dia_chi": "0x081909d0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplyAddRight",
+  "dia_chi": "0x08198600",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplyAddTaskValue",
+  "dia_chi": "0x081989a0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplyAddUTaskValue",
+  "dia_chi": "0x081988a0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplyDelRight",
+  "dia_chi": "0x081984e0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplySetLWeekGoalOffer",
+  "dia_chi": "0x08199740",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_ApplySetLWeeklyOffer",
+  "dia_chi": "0x08199b20",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_ApplySetLastOnlineDate",
+  "dia_chi": "0x08199360",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_ApplySetRetireDate",
+  "dia_chi": "0x08198f80",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_ApplySetTaskValue",
+  "dia_chi": "0x08198aa0",
+  "so_cho_goi": 8,
+  "so_tham_so": [
+   4
+  ],
+  "tham_so_pho_bien": 4,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "hang so",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_CheckRight",
+  "dia_chi": "0x081983b0",
+  "so_cho_goi": 8,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "ket qua ham",
+   "hang so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_GetFigure",
+  "dia_chi": "0x08199ec0",
+  "so_cho_goi": 27,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "ket qua ham"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetJoinDay",
+  "dia_chi": "0x0819a520",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "ket qua ham"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetJoinTime",
+  "dia_chi": "0x0819a660",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetLWeekGoalOffer",
+  "dia_chi": "0x081998c0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "ket qua ham"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetLWeeklyOffer",
+  "dia_chi": "0x08199ca0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetLastOnlineDate",
+  "dia_chi": "0x081994e0",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetMoney",
+  "dia_chi": "0x0819a3e0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetName",
+  "dia_chi": "0x08198d60",
+  "so_cho_goi": 39,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_GetOffer",
+  "dia_chi": "0x08198800",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_GetOnline",
+  "dia_chi": "0x08199db0",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetRetireDate",
+  "dia_chi": "0x08199100",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_GetSex",
+  "dia_chi": "0x0819a000",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1,
+   3
+  ]
+ },
+ {
+  "ham": "TONGM_GetTaskValue",
+  "dia_chi": "0x08198c80",
+  "so_cho_goi": 6,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "hang so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_GetUTaskValue",
+  "dia_chi": "0x08198ba0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONGM_IsExist",
+  "dia_chi": "0x08198350",
+  "so_cho_goi": 4,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_AddTaskTemp",
+  "dia_chi": "0x0818b280",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddBuildFund",
+  "dia_chi": "0x08194650",
+  "so_cho_goi": 17,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddDay",
+  "dia_chi": "0x081959d0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddEventRecord",
+  "dia_chi": "0x0818bfe0",
+  "so_cho_goi": 52,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddHistoryRecord",
+  "dia_chi": "0x0818c090",
+  "so_cho_goi": 10,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddLWeekGoalValue",
+  "dia_chi": "0x08195010",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddMoney",
+  "dia_chi": "0x0818be50",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddPerStandFund",
+  "dia_chi": "0x08193150",
+  "so_cho_goi": 5,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddStoredBuildFund",
+  "dia_chi": "0x08195a90",
+  "so_cho_goi": 7,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddStoredOffer",
+  "dia_chi": "0x08195c10",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddTaskValue",
+  "dia_chi": "0x08196450",
+  "so_cho_goi": 57,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "hang so",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddTotalBuildFund",
+  "dia_chi": "0x08194b90",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddUTaskValue",
+  "dia_chi": "0x0818ad50",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddWarBuildFund",
+  "dia_chi": "0x08194410",
+  "so_cho_goi": 11,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddWeek",
+  "dia_chi": "0x08195910",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddWeekBuildFund",
+  "dia_chi": "0x08194d10",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyAddWeekGoalValue",
+  "dia_chi": "0x08195550",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyCreatMap",
+  "dia_chi": "0x081905c0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyDegrade",
+  "dia_chi": "0x0818fcc0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyDeleteMap",
+  "dia_chi": "0x08190720",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyDeleteMember",
+  "dia_chi": "0x08190510",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyInit",
+  "dia_chi": "0x0818fac0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyKickMember",
+  "dia_chi": "0x08190310",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyMaintain",
+  "dia_chi": "0x0818fe40",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetAnnouncement",
+  "dia_chi": "0x0818c140",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetBuildFund",
+  "dia_chi": "0x08192cd0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetCurWeekGoalLevel",
+  "dia_chi": "0x08191ad0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetDay",
+  "dia_chi": "0x081926d0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalEvent",
+  "dia_chi": "0x08192010",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalLevel",
+  "dia_chi": "0x08191f50",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalPlayer",
+  "dia_chi": "0x08191dd0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalPricePlayer",
+  "dia_chi": "0x08191b90",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalPriceTong",
+  "dia_chi": "0x08191c50",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalTotal",
+  "dia_chi": "0x08191e90",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetLWeekGoalValue",
+  "dia_chi": "0x08191d10",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetMaintainFund",
+  "dia_chi": "0x08192850",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetMoney",
+  "dia_chi": "0x0818fa10",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetOccupyCityDay",
+  "dia_chi": "0x08192d90",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetPauseState",
+  "dia_chi": "0x081929d0",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetPerStandFund",
+  "dia_chi": "0x081917d0",
+  "so_cho_goi": 5,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetStoredBuildFund",
+  "dia_chi": "0x08192790",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetStoredOffer",
+  "dia_chi": "0x08192910",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetStunt",
+  "dia_chi": "0x081908f0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetTaskValue",
+  "dia_chi": "0x0818ae40",
+  "so_cho_goi": 85,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "hang so",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetTongMap",
+  "dia_chi": "0x08190670",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetTongMapBan",
+  "dia_chi": "0x0818af30",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetTotalBuildFund",
+  "dia_chi": "0x08191890",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWarBuildFund",
+  "dia_chi": "0x08192a90",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeek",
+  "dia_chi": "0x08192610",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekBuildFund",
+  "dia_chi": "0x08191a10",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekBuildUpper",
+  "dia_chi": "0x08191950",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalEvent",
+  "dia_chi": "0x08192550",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalLevel",
+  "dia_chi": "0x08192490",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalPlayer",
+  "dia_chi": "0x08192310",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalPricePlayer",
+  "dia_chi": "0x081920d0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalPriceTong",
+  "dia_chi": "0x08192190",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalTotal",
+  "dia_chi": "0x081923d0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplySetWeekGoalValue",
+  "dia_chi": "0x08192250",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyUpgrade",
+  "dia_chi": "0x0818fb40",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ApplyWeeklyMaintain",
+  "dia_chi": "0x0818fec0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ChangeAllMemberFeature",
+  "dia_chi": "0x081907a0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_ContributeOffer",
+  "dia_chi": "0x081968c0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_DistributeOfferToGroup",
+  "dia_chi": "0x08197f70",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_DistributeOfferToMember",
+  "dia_chi": "0x08197a70",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetBuildFund",
+  "dia_chi": "0x0818d560",
+  "so_cho_goi": 17,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetBuildLevel",
+  "dia_chi": "0x0818d600",
+  "so_cho_goi": 33,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetCredit",
+  "dia_chi": "0x0818c7b0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetCurCamp",
+  "dia_chi": "0x0818c670",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetCurWeekGoalLevel",
+  "dia_chi": "0x0818f2c0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetDay",
+  "dia_chi": "0x0818dec0",
+  "so_cho_goi": 17,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetExp",
+  "dia_chi": "0x0818c8f0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetExpLevel",
+  "dia_chi": "0x0818ca30",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetFirstMember",
+  "dia_chi": "0x08197880",
+  "so_cho_goi": 5,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetFirstTong",
+  "dia_chi": "0x0818a680",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   0
+  ],
+  "tham_so_pho_bien": 0,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalEvent",
+  "dia_chi": "0x0818ea00",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalLevel",
+  "dia_chi": "0x0818eb40",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalPlayer",
+  "dia_chi": "0x0818edc0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalPricePlayer",
+  "dia_chi": "0x0818f180",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalPriceTong",
+  "dia_chi": "0x0818f040",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalTotal",
+  "dia_chi": "0x0818ec80",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetLWeekGoalValue",
+  "dia_chi": "0x0818ef00",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetMaintainFund",
+  "dia_chi": "0x0818dc40",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetMaster",
+  "dia_chi": "0x08197ec0",
+  "so_cho_goi": 6,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "ket qua ham"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetMemberCount",
+  "dia_chi": "0x0818ff40",
+  "so_cho_goi": 32,
+  "so_tham_so": [
+   1,
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetMoney",
+  "dia_chi": "0x0818f900",
+  "so_cho_goi": 8,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetName",
+  "dia_chi": "0x0818ac80",
+  "so_cho_goi": 6,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetNextMember",
+  "dia_chi": "0x08197c10",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "bien",
+   "so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetNextTong",
+  "dia_chi": "0x0818b4c0",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetOccupyCityDay",
+  "dia_chi": "0x0818d380",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetOnlineCount",
+  "dia_chi": "0x0818fff0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetPauseState",
+  "dia_chi": "0x0818d9c0",
+  "so_cho_goi": 18,
+  "so_tham_so": [
+   1,
+   2
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien",
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetPerStandFund",
+  "dia_chi": "0x0818f860",
+  "so_cho_goi": 4,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetPremium",
+  "dia_chi": "0x0818d740",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetSelfCamp",
+  "dia_chi": "0x0818c530",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetStandFund",
+  "dia_chi": "0x0818cf10",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetStoredBuildFund",
+  "dia_chi": "0x0818dd80",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetStoredOffer",
+  "dia_chi": "0x0818db00",
+  "so_cho_goi": 4,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTaskTemp",
+  "dia_chi": "0x08190260",
+  "so_cho_goi": 6,
+  "so_tham_so": [
+   2
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "hang so"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTaskValue",
+  "dia_chi": "0x081900a0",
+  "so_cho_goi": 141,
+  "so_tham_so": [
+   2,
+   3
+  ],
+  "tham_so_pho_bien": 2,
+  "kieu_tham_so": [
+   "bien",
+   "hang so",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTongByRoleName",
+  "dia_chi": "0x0819a700",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   3
+  ]
+ },
+ {
+  "ham": "TONG_GetTongCount",
+  "dia_chi": "0x0818a6c0",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTongMap",
+  "dia_chi": "0x0818d060",
+  "so_cho_goi": 22,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTongMapBan",
+  "dia_chi": "0x0818d240",
+  "so_cho_goi": 5,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTongMapTemplate",
+  "dia_chi": "0x0818d1a0",
+  "so_cho_goi": 4,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetTotalBuildFund",
+  "dia_chi": "0x0818f680",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetUTaskValue",
+  "dia_chi": "0x08190180",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetUnionID",
+  "dia_chi": "0x0818cbf0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWarBuildFund",
+  "dia_chi": "0x0818d920",
+  "so_cho_goi": 12,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWarState",
+  "dia_chi": "0x0818cd30",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeek",
+  "dia_chi": "0x0818e000",
+  "so_cho_goi": 14,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekBuildFund",
+  "dia_chi": "0x0818f400",
+  "so_cho_goi": 5,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekBuildUpper",
+  "dia_chi": "0x0818f540",
+  "so_cho_goi": 0,
+  "so_tham_so": [],
+  "tham_so_pho_bien": null,
+  "kieu_tham_so": [],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalEvent",
+  "dia_chi": "0x0818e140",
+  "so_cho_goi": 3,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalLevel",
+  "dia_chi": "0x0818e280",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalPlayer",
+  "dia_chi": "0x0818e500",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalPricePlayer",
+  "dia_chi": "0x0818e8c0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalPriceTong",
+  "dia_chi": "0x0818e780",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalTotal",
+  "dia_chi": "0x0818e3c0",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_GetWeekGoalValue",
+  "dia_chi": "0x0818e640",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_IsExist",
+  "dia_chi": "0x08190890",
+  "so_cho_goi": 1,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   1
+  ]
+ },
+ {
+  "ham": "TONG_Name2ID",
+  "dia_chi": "0x0818b600",
+  "so_cho_goi": 16,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_SetTaskTemp",
+  "dia_chi": "0x0818b350",
+  "so_cho_goi": 6,
+  "so_tham_so": [
+   3
+  ],
+  "tham_so_pho_bien": 3,
+  "kieu_tham_so": [
+   "bien",
+   "hang so",
+   "bien"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ },
+ {
+  "ham": "TONG_WriteLog",
+  "dia_chi": "0x0818b5a0",
+  "so_cho_goi": 2,
+  "so_tham_so": [
+   1
+  ],
+  "tham_so_pho_bien": 1,
+  "kieu_tham_so": [
+   "ket qua ham"
+  ],
+  "so_tra_ve": [
+   0,
+   1
+  ]
+ }
+]
