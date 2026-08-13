@@ -4657,7 +4657,12 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					TONG_CHANGE_CAMP_SYNC	*pChange = (TONG_CHANGE_CAMP_SYNC*)pMsg;
 					Player[CLIENT_PLAYER_INDEX].m_cTong.ChangeCamp(pChange->m_btCamp);
 				}
-			case enumTONG_SYNC_ID_CHANGE_RECRUIT:
+			case enumTONG_SYNC_ID_JX2:	// JX2 port: chuyen nguyen goi len UI
+		{
+			CoreDataChanged(GDCNI_TONG_JX2, (unsigned int)pMsg, (int)pHead->m_wLength + 1);
+		}
+		break;
+		case enumTONG_SYNC_ID_CHANGE_RECRUIT:
 				{
 					TONG_CHANGE_RECRUIT_SYNC	*pChange = (TONG_CHANGE_RECRUIT_SYNC*)pMsg;
 					Player[CLIENT_PLAYER_INDEX].m_cTong.ChangeRecruit(pChange->m_btRecruit);

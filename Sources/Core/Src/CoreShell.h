@@ -511,6 +511,9 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_EXIT_GAME,
 	
 	GDCNI_UI_ACT, //connect to s3client (ext auto)
+	GDCNI_TONG_JX2,	// JX2 port: du lieu trang cua so bang hoi
+	//uParam = (BYTE*) goi TONG_JX2_*_SYNC nguyen ven (byte dau ProtocolType)
+	//nParam = kich thuoc goi
 };
 
 enum GAMEDEBUGCONTROL

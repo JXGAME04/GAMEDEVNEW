@@ -139,6 +139,36 @@ BOOL	KPlayerTong::ApplyCreateTong(int nCamp, char *lpszTongName)
 
 	return TRUE;
 }
+
+// ==== JX2 port: cua so bang hoi kieu JX2 (client) ====
+void KPlayerTong::JX2_RequestView(int nPage, int nStart)
+{
+	TONG_JX2VIEW_COMMAND sCmd;
+	sCmd.ProtocolType = c2s_extendtong;
+	sCmd.m_wLength = sizeof(TONG_JX2VIEW_COMMAND) - 1;
+	sCmd.m_btMsgId = enumTONG_COMMAND_ID_JX2VIEW;
+	sCmd.m_btPage = (BYTE)nPage;
+	sCmd.m_wStart = (WORD)nStart;
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sCmd, sCmd.m_wLength + 1);
+}
+
+void KPlayerTong::JX2_SendOp(int nOp, DWORD dwTarget, int nParam1, int nParam2, const char* pszText)
+{
+	TONG_JX2OP_COMMAND sCmd;
+	memset(&sCmd, 0, sizeof(sCmd));
+	sCmd.ProtocolType = c2s_extendtong;
+	sCmd.m_wLength = sizeof(TONG_JX2OP_COMMAND) - 1;
+	sCmd.m_btMsgId = enumTONG_COMMAND_ID_JX2OP;
+	sCmd.m_btOp = (BYTE)nOp;
+	sCmd.m_dwTarget = dwTarget;
+	sCmd.m_nParam1 = nParam1;
+	sCmd.m_nParam2 = nParam2;
+	if (pszText)
+		strncpy(sCmd.m_szText, pszText, sizeof(sCmd.m_szText) - 1);
+	if (g_pClient)
+		g_pClient->SendPackToServer(&sCmd, sCmd.m_wLength + 1);
+}
 #endif
 
 #ifndef _SERVER

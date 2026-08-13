@@ -43,6 +43,11 @@ public:
 	void		GetTongTitle(char *lpszGetTitle);
 	DWORD		GetTongNameID();
 	void		SetTongNameID(DWORD dwID) { m_dwTongNameID = dwID; };
+#ifndef _SERVER
+	// ==== JX2 port: cua so bang hoi kieu JX2 ====
+	void		JX2_RequestView(int nPage, int nStart);
+	void		JX2_SendOp(int nOp, DWORD dwTarget, int nParam1, int nParam2, const char* pszText);
+#endif
 	int			CheckIn() {return m_nFlag;};
 	int			GetCamp() {return m_nCamp;};
 	int			GetFigure() {return m_nFigure;};
