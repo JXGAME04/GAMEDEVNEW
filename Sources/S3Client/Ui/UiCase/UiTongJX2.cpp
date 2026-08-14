@@ -280,9 +280,12 @@ static const char* s_szWsBtnLbl[6] =
 	"N\251ng c\312p khu", "\247\306t c\312p d\357ng", "X\343a khu",
 };
 
+// Nhan 4 muc con trang Nhat ky - NGUYEN VAN khoa Label= cua ban thiet ke goc
+// (truoc day ta tu rut gon thanh "Thong bao" / "Bang vu" / "Lich su").
 static const char* s_szRcSub[4] =
 {
-	"M\364c ti\252u tu\307n", "Th\253ng b\270o", "Bang v\364", "L\336ch s\366",
+	"M\364c ti\252u tu\307n", "C\253ng c\270o bang h\351i",
+	"S\371 ki\326n bang h\351i", "L\336ch s\366 bang h\351i",
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -508,8 +511,9 @@ void KUiTongJX2::Initialize()
 	// chu ngay duoi tung icon (m_WsRank).
 	for (i = 0; i < 4; i++)
 		m_RcSub[i].SetLabel(s_szRcSub[i]);
-	m_RcLeaveWord.SetLabel("L\255u l\352i");
-	m_RcSave.SetLabel("S\366a th\253ng b\270o");
+	// KHONG SetLabel cho hai nut nay: section [Rc_BtnLeaveWord] va
+	// [Rc_BtnEditAnnounce] KHONG co khoa Label= trong khi cac nut khac deu co
+	// => sprite cua chung DA NUNG CHU SAN, ve them chu la chong chu.
 	m_BtnList.SetLabel("");	// sprite nut co san chu
 	for (i = 0; i < TJX2_FUN_BTNS; i++)
 		m_FunBtn[i].SetLabel(s_sFunBtn[i].szLabel);
@@ -578,10 +582,9 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		ms_pSelf->m_MJump.Init(&Ini, "Fun_BtnJump");
 		ms_pSelf->m_MPage.Init(&Ini, "Fun_TitlePage");
 		ms_pSelf->m_MPageEdit.Init(&Ini, "Fun_EditBoxDestPage");
-		// nhan nut sap xep = ten kieu dang chon, doc tu chinh menu trong ini
-		Ini.GetString("Fun_BtnMemberSortMenu", "Item_0", "", szH, sizeof(szH));
-		if (szH[0])
-			ms_pSelf->m_MSort.SetLabel(szH);
+		// KHONG SetLabel cho nut sap xep: section [Fun_BtnMemberSortMenu] khong
+		// co khoa Label= (khac cac nut ben canh) => sprite cua no da nung chu
+		// san, ve them chu la chong chu.
 		ms_pSelf->m_ColHdr[0].Init(&Ini, "Fun_TxtRank");
 		ms_pSelf->m_ColHdr[1].Init(&Ini, "Fun_TxtTitle");
 		ms_pSelf->m_ColHdr[2].Init(&Ini, "Fun_TxtType");
@@ -819,9 +822,13 @@ void KUiTongJX2::AskThenSendOp(const char* pszSection, const char* pszKey,
 	szMsg[0] = 0;
 	{
 		KIniFile Ini;
-		char szScheme[256];
+		char szScheme[256], szPath[300];
+		// GetCurSchemePath tra ve THU MUC - phai noi them ten file y het
+		// LoadScheme lam, neu khong Ini.Load luon that bai va moi hop xac nhan
+		// deu roi ve chuoi mac dinh.
 		g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
-		if (Ini.Load(szScheme))
+		sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
+		if (Ini.Load(szPath))
 			Ini.GetString(pszSection, pszKey, "", szMsg, sizeof(szMsg));
 	}
 	if (!szMsg[0])
@@ -1458,16 +1465,26 @@ void KUiTongJX2::RenderMembers(int nOffset)
 				pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?");
 		}
 
-		// online: chu sang (m_Row); offline: chu xam (m_RowDim)
-		if (pM->m_btOnline)
+		// MAU dung bang mau cua ban thiet ke goc ([Fun_MemberList]):
+		//   OnlineColor      236,238,111   (vang nhat)
+		//   OfflineColor       0,134,132   (xanh tham)
+		//   Online/OfflineSelColor 34,228,36 (xanh sang - dong dang chon)
+		// Truoc day ta dung 255,253,122 cho online va 120,120,120 (xam) cho
+		// offline nen khac han anh mau.
 		{
+			BOOL bSel = (m_nOrd[i] == m_nSel);
+			unsigned int uCol;
+			if (bSel)
+				uCol = 0xFF000000 | (34 << 16) | (228 << 8) | 36;
+			else if (pM->m_btOnline)
+				uCol = 0xFF000000 | (236 << 16) | (238 << 8) | 111;
+			else
+				uCol = 0xFF000000 | (0 << 16) | (134 << 8) | 132;
+			// ve tren MOT lop duy nhat (m_MList) va doi mau luc chay - lop
+			// m_RowDim chi con de trong
+			m_MList[i + nOffset].SetTextColor(uCol);
 			m_MList[i + nOffset].SetText(sz);
 			m_RowDim[i + nOffset].SetText("");
-		}
-		else
-		{
-			m_MList[i + nOffset].SetText("");
-			m_RowDim[i + nOffset].SetText(sz);
 		}
 	}
 	// panel XANH chi tiet nguoi dang chon (nhu ban Linux, hien o moi trang co danh sach)
@@ -2322,9 +2339,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_nSortMode = (m_nSortMode + 1) % 7;
 			{
 				KIniFile Ini;
-				char szScheme[256], szIt[16], szNm[64];
+				char szScheme[256], szPath[300], szIt[16], szNm[64];
 				g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
-				if (Ini.Load(szScheme))
+				sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
+				if (Ini.Load(szPath))
 				{
 					sprintf(szIt, "Item_%d", m_nSortMode);
 					Ini.GetString("Fun_BtnMemberSortMenu", szIt, "", szNm, sizeof(szNm));
