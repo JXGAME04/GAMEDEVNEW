@@ -80,9 +80,13 @@ static KJx2League* sFindLeague(int nType, const char* szName)
 {
 	if (!szName)
 		return NULL;
+	// khoa luu bi cat 63B (sStrCpy) -> khoa tra cuu phai cat y het,
+	// khong thi ten dai tao xong roi khong bao gio tim lai duoc (review E3)
+	char szKey[64];
+	sStrCpy(szKey, szName, sizeof(szKey));
 	for (TLgIt it = s_LeagueByLid.begin(); it != s_LeagueByLid.end(); ++it)
 	{
-		if (it->second->nType == nType && strcmp(it->second->szName, szName) == 0)
+		if (it->second->nType == nType && strcmp(it->second->szName, szKey) == 0)
 			return it->second;
 	}
 	return NULL;
@@ -98,9 +102,11 @@ static KJx2LgMember* sFindMember(KJx2League* pLg, const char* szName)
 {
 	if (!pLg || !szName)
 		return NULL;
+	char szKey[64];
+	sStrCpy(szKey, szName, sizeof(szKey));
 	for (size_t i = 0; i < pLg->vMembers.size(); i++)
 	{
-		if (strcmp(pLg->vMembers[i].szName, szName) == 0)
+		if (strcmp(pLg->vMembers[i].szName, szKey) == 0)
 			return &pLg->vMembers[i];
 	}
 	return NULL;
@@ -144,7 +150,7 @@ static void sLeagueLoad()
 	while (fgets(szLine, sizeof(szLine), f))
 	{
 		sChopEol(szLine);
-		if (szLine[0] == 'G')
+		if (szLine[0] == 'G' && szLine[1] == ' ')
 		{
 			int nType = 0, nTime = 0, nPos = 0;
 			if (sscanf(szLine + 2, "%d %d %n", &nType, &nTime, &nPos) >= 2 && nPos > 0)
@@ -157,8 +163,14 @@ static void sLeagueLoad()
 				s_LeagueByLid[pLg->nLid] = pLg;
 				pMem = NULL;
 			}
+			else
+			{
+				// dong G hong: cat neo de M/T/U phia sau khong dinh nham league truoc
+				pLg = NULL;
+				pMem = NULL;
+			}
 		}
-		else if (szLine[0] == 'M' && pLg)
+		else if (szLine[0] == 'M' && szLine[1] == ' ' && pLg)
 		{
 			int nJob = 0, nPos = 0;
 			if (sscanf(szLine + 2, "%d %n", &nJob, &nPos) >= 1 && nPos > 0)
@@ -170,13 +182,13 @@ static void sLeagueLoad()
 				pMem = &pLg->vMembers.back();
 			}
 		}
-		else if (szLine[0] == 'T' && pLg)
+		else if (szLine[0] == 'T' && szLine[1] == ' ' && pLg)
 		{
 			int nId = 0, nVal = 0;
 			if (sscanf(szLine + 2, "%d %d", &nId, &nVal) == 2)
 				pLg->mapTask[nId] = nVal;
 		}
-		else if (szLine[0] == 'U' && pMem)
+		else if (szLine[0] == 'U' && szLine[1] == ' ' && pMem)
 		{
 			int nId = 0, nVal = 0;
 			if (sscanf(szLine + 2, "%d %d", &nId, &nVal) == 2)
@@ -209,8 +221,17 @@ static void sLeagueSave()
 				fprintf(f, "U %d %d\n", t->first, t->second);
 		}
 	}
-	fclose(f);
-	MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+	// dia day/loi ghi: KHONG duoc de .tmp cut de len file tot (review E3)
+	BOOL bOk = !ferror(f);
+	if (fclose(f) != 0)
+		bOk = FALSE;
+	if (bOk)
+		MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+	else
+	{
+		DeleteFile(szTmp);
+		g_DebugLog((LPSTR)"KJx2League: GHI HONG jx2league.txt.tmp - giu file cu");
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -228,13 +249,16 @@ static void sRunCallback(const char* szScript, const char* szFunc,
 	{
 		if (*p >= 'A' && *p <= 'Z')
 			*p += 'a' - 'A';
+		else if (*p == '/')
+			*p = '\\';	// loader bam path dang '\' (KSortScript.cpp:161)
 	}
 	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
 	if (pScript)
 		pScript->CallFunction((char*)szFunc, 0, (char*)"dssd",
 			nType, (char*)(szName ? szName : ""), (char*)(szMember ? szMember : ""), nOk);
 	else
-		g_DebugLog((LPSTR)"KJx2League: callback script khong tim thay [%s]", szLow);
+		// %.60s: g_DebugLog dem 256B + vsprintf khong chan (review E3)
+		g_DebugLog((LPSTR)"KJx2League: callback script khong tim thay [%.60s]", szLow);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -632,7 +656,7 @@ static int sMemberTaskWrite(Lua_State* L, int bSet)
 			nOk = 1;
 		}
 		else
-			g_DebugLog((LPSTR)"KJx2League: member task ghi truot (type %d, lg [%s], mem [%s])",
+			g_DebugLog((LPSTR)"KJx2League: member task ghi truot (type %d, lg [%.60s], mem [%.60s])",
 				nType, szName, szMember);
 	}
 	if (Lua_GetTopIndex(L) >= 7 && Lua_IsString(L, 6) && Lua_IsString(L, 7))
@@ -714,7 +738,7 @@ int LuaLGM_ApplyAddMember(Lua_State* L)
 				nOk = 1;
 			}
 			else
-				g_DebugLog((LPSTR)"KJx2League: AddMember truot - league (type %d, [%s]) chua ton tai", nType, szLg);
+				g_DebugLog((LPSTR)"KJx2League: AddMember truot - league (type %d, [%.60s]) chua ton tai", nType, szLg);
 		}
 	}
 	if (Lua_GetTopIndex(L) >= 3 && Lua_IsString(L, 2) && Lua_IsString(L, 3))
@@ -773,9 +797,40 @@ int LuaLGM_FreeMemberObj(Lua_State* L)
 }
 
 //////////////////////////////////////////////////////////////////////
+// Helper C cho module engine khac (KJx2CityWar doc league 508) - khong qua Lua
+//////////////////////////////////////////////////////////////////////
+int KJx2League_GetLeagueTaskC(int nType, const char* szName, int nTaskId)
+{
+	sLeagueLoad();
+	KJx2League* pLg = sFindLeague(nType, szName);
+	if (!pLg)
+		return 0;
+	std::map<int, int>::iterator it = pLg->mapTask.find(nTaskId);
+	return (it == pLg->mapTask.end()) ? 0 : it->second;
+}
+
+int KJx2League_GetMemberCountC(int nType, const char* szName)
+{
+	sLeagueLoad();
+	KJx2League* pLg = sFindLeague(nType, szName);
+	return pLg ? (int)pLg->vMembers.size() : 0;
+}
+
+const char* KJx2League_GetMemberNameC(int nType, const char* szName, int nIndex)
+{
+	sLeagueLoad();
+	KJx2League* pLg = sFindLeague(nType, szName);
+	if (pLg && nIndex >= 0 && (size_t)nIndex < pLg->vMembers.size())
+		return pLg->vMembers[nIndex].szName;
+	return "";
+}
+
+//////////////////////////////////////////////////////////////////////
 // LG_ApplyDoScript - goc: relay chay szScript::szFunc(szParam) trong state relay.
-// Ta: thuc thi CUC BO dong bo trong state cua file dich (LoadAllScript da nap ca
-// \script\mission\citywar_global\ladder.lua bien the RELAY o duong that).
+// Ta: thuc thi CUC BO dong bo trong state cua file dich. YEU CAU DEPLOY (E5):
+// \script\mission\citywar_global\ladder.lua bien the RELAY (_RELAY_=1) phai duoc
+// chep vao cay script de LoadAllScript nap - chua chep thi moi DoScript nham no
+// roi vao nhanh g_DebugLog ben duoi (chet im lang - review E3).
 // Callback: fn(szLeagueName, szMemberName, nResult) - 3 doi
 // (wulin_final_match\createleague.lua:5).
 //////////////////////////////////////////////////////////////////////
@@ -796,6 +851,8 @@ int LuaLG_ApplyDoScript(Lua_State* L)
 		{
 			if (*p >= 'A' && *p <= 'Z')
 				*p += 'a' - 'A';
+			else if (*p == '/')
+				*p = '\\';
 		}
 		KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
 		if (pScript)
@@ -804,7 +861,7 @@ int LuaLG_ApplyDoScript(Lua_State* L)
 			nOk = pScript->CallFunction((char*)Lua_ValueToString(L, 5), 0, (char*)"s",
 				(void*)Lua_ValueToString(L, 6)) ? 1 : 0;
 		else
-			g_DebugLog((LPSTR)"KJx2League: DoScript khong tim thay [%s]", szLow);
+			g_DebugLog((LPSTR)"KJx2League: DoScript khong tim thay [%.60s]", szLow);
 	}
 	if (Lua_GetTopIndex(L) >= 8 && Lua_IsString(L, 7) && Lua_IsString(L, 8))
 	{
@@ -818,6 +875,8 @@ int LuaLG_ApplyDoScript(Lua_State* L)
 			{
 				if (*p >= 'A' && *p <= 'Z')
 					*p += 'a' - 'A';
+				else if (*p == '/')
+					*p = '\\';
 			}
 			KLuaScript* pCb = (KLuaScript*)g_GetScript(szLow);
 			if (pCb)
@@ -868,7 +927,7 @@ int LuaOpenGlbMission(Lua_State* L)
 		if (pScript)
 			nOk = pScript->CallFunction((char*)"InitMission", 0, (char*)"") ? 1 : 0;
 		else
-			g_DebugLog((LPSTR)"KJx2League: OpenGlbMission(%d) script chua nap [%s]", nMissionId, szScript);
+			g_DebugLog((LPSTR)"KJx2League: OpenGlbMission(%d) script chua nap [%.60s]", nMissionId, szScript);
 	}
 	Lua_PushNumber(L, nOk);
 	return 1;
@@ -885,8 +944,10 @@ int LuaStartGlbMSTimer(Lua_State* L)
 	t.nMissionId = (int)Lua_ValueToNumber(L, 1);
 	t.nTimerId = (int)Lua_ValueToNumber(L, 2);
 	double fFrames = Lua_ValueToNumber(L, 3);
-	if (fFrames < 18)
-		fFrames = 18;
+	if (!(fFrames >= 18))
+		fFrames = 18;			// bat ca NaN (NaN >= 18 la false)
+	if (fFrames > 31104000.0)
+		fFrames = 31104000.0;	// tran 20 ngay - giu duoi nua chu ky wrap GetTickCount
 	t.dwIntervalMs = (DWORD)(fFrames * 1000.0 / 18.0);
 	t.dwNextFire = GetTickCount() + t.dwIntervalMs;
 	// cung (mission,timer) = doi tan so (leaguematch schedule.lua:173-176 Stop roi Start)
@@ -959,7 +1020,7 @@ void KJx2GlbMission_Breathe()
 			if (pScript)
 				pScript->CallFunction((char*)"OnTimer", 0, (char*)"");
 			else
-				g_DebugLog((LPSTR)"KJx2League: GlbTimer %d script chua nap [%s]", nFire[k], szScript);
+				g_DebugLog((LPSTR)"KJx2League: GlbTimer %d script chua nap [%.60s]", nFire[k], szScript);
 		}
 	}
 }

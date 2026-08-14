@@ -6367,12 +6367,16 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
 }
 
+// DOT E (E3): tra chu thanh theo MAP NGUOI CHOI dang dung (het hardcode 78,
+// het doc SubWorld[-1] khi map 78 chua nap); chua vao map -> chuoi rong.
 void KPlayer::GetCityOwnTong()
 {
 	RETURN_CITY_OWN_TONG	sView;
 	sView.ProtocolType = s2c_returncityowntong;
-	int nTargetSubWorld = g_SubWorldSet.SearchWorld(78);//tuong duong
-	strcpy(sView.szTongName, SubWorld[nTargetSubWorld].m_CityOwnTong);
+	memset(sView.szTongName, 0, sizeof(sView.szTongName));
+	int nTargetSubWorld = (m_nIndex > 0) ? Npc[m_nIndex].GetSubWorldIndex() : -1;
+	if (nTargetSubWorld >= 0 && nTargetSubWorld < MAX_SUBWORLD)
+		strncpy(sView.szTongName, SubWorld[nTargetSubWorld].m_CityOwnTong, sizeof(sView.szTongName) - 1);
 	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
 }
 

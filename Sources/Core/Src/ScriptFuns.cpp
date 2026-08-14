@@ -6999,6 +6999,14 @@ int LuaGetTongName(Lua_State* L)
 	return 0;
 }
 
+// kho city (KJx2CityWar.cpp) - khai bao truoc diem dung
+extern BOOL KJx2CityWar_SetTaxByCity(int nCityID, int nTax);
+extern BOOL KJx2CityWar_SetOwnerByCity(int nCityID, const char* szOwnerRaw);
+
+// DOT E (E3): het hardcode map 78 + het ghi SubWorld[-1] khi map chua nap.
+// Duong ghi di qua kho KJx2CityWar (clamp 0..MaxExchangeTax, ghi MOI instance
+// cung map id, persist mirror). Tham so 2 tuy chon = id thanh 1..7,
+// mac dinh 5 (Tuong Duong, map 78) giu hanh vi cu.
 int LuaSetThueTongOwnCity(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -7007,12 +7015,16 @@ int LuaSetThueTongOwnCity(Lua_State* L)
 	if (nParamNum < 1)
 		return 0;
 	int nThue = (int)Lua_ValueToNumber(L, 1);
-	int nTargetSubWorld = g_SubWorldSet.SearchWorld(78);//tuong duong
-	if (SubWorld[nTargetSubWorld].m_CityTax != nThue)
-		SubWorld[nTargetSubWorld].m_CityTax = nThue;
+	int nCityID = 5;
+	if (nParamNum >= 2 && Lua_IsNumber(L, 2))
+		nCityID = (int)Lua_ValueToNumber(L, 2);
+	Lua_PushNumber(L, KJx2CityWar_SetTaxByCity(nCityID, nThue) ? 1 : 0);
 	return 1;
 }
 
+// DOT E (E3): het hardcode 78 + het strcpy khong gioi han vao m_CityOwnTong[32].
+// Doi 1 = TEN THO cua bang (kho tu dem " %s " khi ghi SubWorld - khac Lua cu
+// von tu format dem truoc); rong = xoa chu. Tham so 2 tuy chon = id thanh 1..7.
 int LuaSetViewTongOwnCity(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -7021,9 +7033,10 @@ int LuaSetViewTongOwnCity(Lua_State* L)
 	if (nParamNum < 1)
 		return 0;
 	const char* pszValue = (const char*)Lua_ValueToString(L, 1);
-	int nTargetSubWorld = g_SubWorldSet.SearchWorld(78);//tuong duong
-	if (strcmp(SubWorld[nTargetSubWorld].m_CityOwnTong, pszValue) != 0)
-		strcpy(SubWorld[nTargetSubWorld].m_CityOwnTong, pszValue);
+	int nCityID = 5;
+	if (nParamNum >= 2 && Lua_IsNumber(L, 2))
+		nCityID = (int)Lua_ValueToNumber(L, 2);
+	Lua_PushNumber(L, KJx2CityWar_SetOwnerByCity(nCityID, pszValue) ? 1 : 0);
 	return 1;
 }
 
@@ -12188,6 +12201,25 @@ extern int LuaLG_ApplyDoScript(Lua_State* L);
 extern int LuaOpenGlbMission(Lua_State* L);
 extern int LuaStartGlbMSTimer(Lua_State* L);
 extern int LuaStopGlbMSTimer(Lua_State* L);
+// ==== DOT E cong thanh JX2: nhom CITY 7 thanh (KJx2CityWar.cpp) ====
+extern int LuaGetCityOwner(Lua_State* L);
+extern int LuaGetCityWarBothSides(Lua_State* L);
+extern int LuaGetCityAreaName(Lua_State* L);
+extern int LuaGetCityArea(Lua_State* L);
+extern int LuaGetCitySummary(Lua_State* L);
+extern int LuaGetAllCitySummary(Lua_State* L);
+extern int LuaSyncCitySummary(Lua_State* L);
+extern int LuaOpenCityManageUI(Lua_State* L);
+extern int LuaHaveBeginWar(Lua_State* L);
+extern int LuaNotifyWarResult(Lua_State* L);
+extern int LuaAppointViceroy(Lua_State* L);
+extern int LuaAppointChallenger(Lua_State* L);
+extern int LuaIsSigningUp(Lua_State* L);
+extern int LuaNumOfSignUpTongs(Lua_State* L);
+extern int LuaGetSignUpTongName(Lua_State* L);
+extern int LuaDisabledChatCity(Lua_State* L);
+extern int LuaIsDisabledChatCity(Lua_State* L);
+extern int LuaCTC_JX2_SetCityState(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -12941,6 +12973,25 @@ TLua_Funcs GameScriptFuns[] =
 		{ "OpenGlbMission",	LuaOpenGlbMission },
 		{ "StartGlbMSTimer",	LuaStartGlbMSTimer },
 		{ "StopGlbMSTimer",	LuaStopGlbMSTimer },
+		// ==== DOT E cong thanh JX2: nhom CITY 7 thanh (KJx2CityWar) ====
+		{ "GetCityOwner",	LuaGetCityOwner },
+		{ "GetCityWarBothSides",	LuaGetCityWarBothSides },
+		{ "GetCityAreaName",	LuaGetCityAreaName },
+		{ "GetCityArea",	LuaGetCityArea },
+		{ "GetCitySummary",	LuaGetCitySummary },
+		{ "GetAllCitySummary",	LuaGetAllCitySummary },
+		{ "SyncCitySummary",	LuaSyncCitySummary },
+		{ "OpenCityManageUI",	LuaOpenCityManageUI },
+		{ "HaveBeginWar",	LuaHaveBeginWar },
+		{ "NotifyWarResult",	LuaNotifyWarResult },
+		{ "AppointViceroy",	LuaAppointViceroy },
+		{ "AppointChallenger",	LuaAppointChallenger },
+		{ "IsSigningUp",	LuaIsSigningUp },
+		{ "NumOfSignUpTongs",	LuaNumOfSignUpTongs },
+		{ "GetSignUpTongName",	LuaGetSignUpTongName },
+		{ "DisabledChatCity",	LuaDisabledChatCity },
+		{ "IsDisabledChatCity",	LuaIsDisabledChatCity },
+		{ "CTC_JX2_SetCityState",	LuaCTC_JX2_SetCityState },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

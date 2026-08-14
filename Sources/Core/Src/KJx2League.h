@@ -64,5 +64,11 @@ int LuaStartGlbMSTimer(Lua_State* L);      // (nMissionId, nTimerId, nIntervalFr
 int LuaStopGlbMSTimer(Lua_State* L);       // (nMissionId, nTimerId)
 void KJx2GlbMission_Breathe();             // goi tu CoreServerShell::Breathe moi tick (tu gioi han theo thoi gian)
 
+// helper C cho cac module engine khac (KJx2CityWar: IsSigningUp/NumOfSignUpTongs/
+// GetSignUpTongName doc league 508) - cung store voi cac ham Lua o tren
+int         KJx2League_GetLeagueTaskC(int nType, const char* szName, int nTaskId);  // 0 khi khong co
+int         KJx2League_GetMemberCountC(int nType, const char* szName);              // 0 khi khong co
+const char* KJx2League_GetMemberNameC(int nType, const char* szName, int nIndex);   // "" khi ngoai dai
+
 #endif // _SERVER
 #endif // KJX2LEAGUE_H

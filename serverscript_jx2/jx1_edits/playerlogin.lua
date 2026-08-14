@@ -122,11 +122,11 @@ end
 function UpdateCityOwnTongFromLua()
 	if(BANGHOI_DANHSACH ~= nil and BANGHOI_DANHSACH[1] ~= nil and BANGHOI_DANHSACH[1][2] ~= nil) then
 		local nTongName = BANGHOI_DANHSACH[1][2]
-		SetViewTongOwnCity(format(" %s ",nTongName))
+		-- DOT E (E3) NGAT (setter doi nghia, qua kho KJx2CityWar): SetViewTongOwnCity(format(" %s ",nTongName))
 		local nThue = BANGHOI_DANHSACH[1][5]
-		SetThueTongOwnCity(nThue)		
+		-- SetThueTongOwnCity(nThue)		
 	else
-		SetViewTongOwnCity("[v« hÖ]")
+		-- SetViewTongOwnCity("[v« hÖ]")
 	end	
 end
 
