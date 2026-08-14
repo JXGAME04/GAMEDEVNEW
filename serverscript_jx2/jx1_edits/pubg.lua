@@ -4,7 +4,7 @@ Include("\\script\\lib\\lib_task.lua")
 function OnTimer()
 	local nW,nX,nY = GetWorldPos()
 	if(nW == BIENKINHPUBGWAIT) then
-		local nRestTimeBD = GetMSRestTime(MS_PUBG,12)
+		local nRestTimeBD = GetMSRestTime(MS_PUBG,14)
 		if(nRestTimeBD > 18) then
 			Msg2Player(format("Con %d giay bat dau PUBG.",floor(nRestTimeBD/18)))
 		end
@@ -22,7 +22,7 @@ function OnMissionTimer()
 end;
 
 function ontime_pubg(nGlbMission, nMap)
-	StopMissionTimer(MS_PUBG,12)--tat hen gio so 12
+	StopMissionTimer(MS_PUBG,14)--tat hen gio so 12
 	SetGlbMission(nGlbMission, 0)--set lai chua dang ky cho lan sau
 	SubWorld = SubWorldID2Idx(BIENKINHPUBG)
 	print(SubWorld.. " "..GetMSPlayerCount(MS_PUBG).." "..MS_PUBG)

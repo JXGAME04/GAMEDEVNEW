@@ -431,6 +431,9 @@ int LuaLadder_GetLadderInfo(Lua_State* L)
 		return 0;
 	unsigned long uId = (unsigned long)Lua_ValueToNumber(L, 1);
 	int nRank = (int)Lua_ValueToNumber(L, 2);
+	// goc: rank ngoai 1..10 la FAIL (0 gia tri) - chi o TRONG dai moi tra ("",0,-1,0)
+	if (nRank < 1 || nRank > JX2LADDER_TOP || uId == 0)
+		return 0;
 	sLadderLoad();
 	if (uId > 0 && nRank >= 1 && nRank <= JX2LADDER_TOP)
 	{
