@@ -12087,6 +12087,7 @@ extern int LuaTWS_ApplyUpgrade(Lua_State* L);
 extern int LuaTWS_ApplyDegrade(Lua_State* L);
 extern int LuaTWS_ApplyMaintain(Lua_State* L);
 extern int LuaTWS_ApplyUse(Lua_State* L);
+extern int LuaTWS_MaintainAll(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -12785,6 +12786,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TWS_ApplyDegrade",	LuaTWS_ApplyDegrade },
 		{ "TWS_ApplyMaintain",	LuaTWS_ApplyMaintain },
 		{ "TWS_ApplyUse",	LuaTWS_ApplyUse },
+		{ "TWS_MaintainAll",	LuaTWS_MaintainAll },	// timerserver goi moi ngay
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

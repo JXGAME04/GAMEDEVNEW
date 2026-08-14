@@ -45,6 +45,22 @@ KTongJX2Tong* KTongJX2Mgr::FindTong(DWORD dwTongNameID)
 	return &it->second;
 }
 
+// duyet danh sach bang: 0 -> bang dau tien; tra 0 khi het
+DWORD KTongJX2Mgr::NextTongID(DWORD dwPrev)
+{
+	std::map<DWORD, KTongJX2Tong>::iterator it;
+	if (dwPrev == 0)
+		it = m_mapTong.begin();
+	else
+	{
+		it = m_mapTong.find(dwPrev);
+		if (it == m_mapTong.end())
+			return 0;
+		++it;
+	}
+	return (it == m_mapTong.end()) ? 0 : it->first;
+}
+
 KTongJX2Member* KTongJX2Mgr::FindMember(KTongJX2Tong* pTong, DWORD dwMemberNameID)
 {
 	if (!pTong || dwMemberNameID == 0)
@@ -3274,19 +3290,98 @@ int LuaTONG_GetApplyCount(Lua_State* L)
 	return 1;
 }
 
-// su dung tac phuong: cong 1 vao san luong ngay
+// Su dung tac phuong - VONG GOI THAT theo kien truc ban goc:
+//   use_g_*_ok (script da kiem phia GS) -> TWS_ApplyUse -> USE_R (tru tai
+//   nguyen bang, ban goc chay o relay) -> USE_G_2 (phat vat pham).
+// Ta 1 GameServer + relay khong co Lua nen chay ca hai chan NGAY TRONG
+// lua_State cua chinh script goi (L chua dung USE_R/USE_G_2 cua file do).
+// Truoc day ham nay NUOT lenh (khong goi gi) va cong nguoc +1 san luong
+// -> Le vat ket co chong double-click (TaskTemp 196) vinh vien.
 int LuaTWS_ApplyUse(Lua_State* L)
 {
 	DWORD dwTongID = sArgTongID(L);
 	int nType = sWsType(L);
+	int nArgc = Lua_GetTopIndex(L);
+	int nChose = (nArgc >= 3) ? (int)Lua_ValueToNumber(L, 3) : 0;
+	int nPass = (nArgc >= 3) ? 3 : 2;
 	if (!g_TongJX2.FindTong(dwTongID) || !nType ||
 		!g_TongJX2.GetField(dwTongID, sWsAttrField(nType, 0)))
 	{
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
-	sSendFieldCmd(dwTongID, sWsAttrField(nType, 3), 1, defTONG_JX2_OP_ADDU, sLuaPlayerParam(L));
+	// chan 1: USE_R - tu choi la dung, khong phat gi
+	Lua_GetGlobal(L, "USE_R");
+	if (lua_isnil(L, -1))
+	{
+		lua_settop(L, -2);
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)dwTongID);
+	Lua_PushNumber(L, (double)nType);
+	if (nPass >= 3)
+		Lua_PushNumber(L, (double)nChose);
+	Lua_Call(L, nPass, 1);
+	int nOk = (int)Lua_ValueToNumber(L, -1);
+	lua_settop(L, -2);
+	if (nOk != 1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	// chan 2: USE_G_2 - phat vat pham cho nguoi choi
+	Lua_GetGlobal(L, "USE_G_2");
+	if (lua_isnil(L, -1))
+		lua_settop(L, -2);
+	else
+	{
+		Lua_PushNumber(L, (double)dwTongID);
+		Lua_PushNumber(L, (double)nType);
+		if (nPass >= 3)
+			Lua_PushNumber(L, (double)nChose);
+		Lua_Call(L, nPass, 0);
+	}
 	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// Chay MAINTAIN_R cua tung khu cho MOI bang (sinh SAN LUONG NGAY - truoc
+// day luon 0 nen ca 3 khu deu bi gate "san luong < 100" chan). Ban goc do
+// relay hen gio goi; ta goi tu timerserver.lua moi ngay. Duong dan da
+// duoc g_IniScriptEngine nap san vao cay script (chu thuong).
+static const char* s_szWsScriptPath[8] = { "",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_bingjia.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_tiangong.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_mianju.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_shilian.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_tianyi.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_liwu.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_huodong.lua",
+};
+
+int LuaTWS_MaintainAll(Lua_State* L)
+{
+	int nRun = 0;
+	DWORD dwTong = g_TongJX2.NextTongID(0);
+	while (dwTong)
+	{
+		for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
+		{
+			if (!g_TongJX2.GetField(dwTong, sWsAttrField(t, 0)))
+				continue;
+			KLuaScript* pScript = (KLuaScript*)g_GetScript(s_szWsScriptPath[t]);
+			if (!pScript)
+				continue;
+			int nTop = 0;
+			pScript->SafeCallBegin(&nTop);
+			if (pScript->CallFunction("MAINTAIN_R", 0, "dd", (int)dwTong, t))
+				nRun++;
+			pScript->SafeCallEnd(nTop);
+		}
+		dwTong = g_TongJX2.NextTongID(dwTong);
+	}
+	Lua_PushNumber(L, (double)nRun);
 	return 1;
 }
 

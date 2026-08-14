@@ -53,7 +53,16 @@ unsigned long g_IniScriptEngine()
 	g_szCurScriptDir[0] = 0;
 	nCurrentScriptNum = 0;
 	g_ScriptBinTree.ClearList();
-	return LoadAllScript("\\script");
+	unsigned long nLoaded = LoadAllScript("\\script");
+#ifdef _SERVER
+	// JX2 port: script bang hoi nam NGOAI \script (o scriptjx2\) de khong
+	// bi chay lung tung luc boot chung. Nhung NPC lanh dia + bao tri tac
+	// phuong goi chung theo ScriptID (g_GetScript KHONG tu nap) nen phai
+	// co mat trong cay. Chi nap 2 thu muc can cho duong bam NPC/MAINTAIN_R.
+	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn\\npc");
+	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn\\workshop");
+#endif
+	return nLoaded;
 }
 
 const KScript * g_GetScript(DWORD dwScriptId)

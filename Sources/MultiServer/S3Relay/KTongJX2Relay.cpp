@@ -97,7 +97,13 @@ BOOL CTongControl::JX2_AddField(WORD wKey, int nDelta, BOOL bUnsigned)
 	if (bUnsigned)
 		dwNew = dwCur + (DWORD)nDelta;
 	else
-		dwNew = (DWORD)((int)dwCur + nDelta);
+	{
+		// kep am: tru qua so du -> 0, khong de wrap thanh DWORD khong lo
+		int nNew = (int)dwCur + nDelta;
+		if (nNew < 0)
+			nNew = 0;
+		dwNew = (DWORD)nNew;
+	}
 	return JX2_SetField(wKey, dwNew);
 }
 
@@ -188,7 +194,13 @@ BOOL CTongControl::JX2_AddMemberField(DWORD dwNameID, WORD wKey, int nDelta, BOO
 	if (bUnsigned)
 		dwNew = dwCur + (DWORD)nDelta;
 	else
-		dwNew = (DWORD)((int)dwCur + nDelta);
+	{
+		// kep am: tru qua so du -> 0, khong de wrap thanh DWORD khong lo
+		int nNew = (int)dwCur + nDelta;
+		if (nNew < 0)
+			nNew = 0;
+		dwNew = (DWORD)nNew;
+	}
 	return JX2_SetMemberField(dwNameID, wKey, dwNew);
 }
 
