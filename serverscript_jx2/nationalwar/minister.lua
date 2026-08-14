@@ -39,8 +39,10 @@ function nw_apply_duty_effect(nDuty)
 	if (nDuty == nil or nDuty < 1 or nDuty > 3) then
 		return 0
 	end
-	AddSkillState(NW_DUTY_STATE[nDuty], 1, 1, NW_STATE_TIME)
-	AddSkillState(NW_DUTY_SKILL[nDuty], 1, 0, NW_STATE_TIME)
+	-- ifMagic: 0 = chi gan TRANG THAI/hinh (hao quang), 1 = thi trien
+	-- that (ky nang co thuoc tinh) - phan bien M1 chi ra ban dau dao nguoc
+	AddSkillState(NW_DUTY_STATE[nDuty], 1, 0, NW_STATE_TIME)
+	AddSkillState(NW_DUTY_SKILL[nDuty], 1, 1, NW_STATE_TIME)
 	return 1
 end
 

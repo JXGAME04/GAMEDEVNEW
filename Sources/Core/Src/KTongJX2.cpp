@@ -2557,6 +2557,21 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				// vao quy kien thiet + quy tuan, phan VUOT chay sang quy du tru
 				// kien thiet (field 19). Truoc day ta cong thang, tran vo nghia.
 				DWORD dwUpper = GetField(dwTongID, 42);
+				// PHAN BIEN M2: field 42 chi duoc relay ghi khi THANG CAP nen
+				// bang chua tung thang cap co 42 = 0 -> tran vo hieu. Ban goc
+				// khong luu field ma tra bang cap moi lan: lam dung vay khi 0.
+				if (dwUpper == 0)
+				{
+					// cot WEEK_BUILD_UPPER cua tong_level_data.txt (cap 0-5)
+					static const DWORD dwWk[6] =
+						{3360, 3360, 6720, 10080, 16800, 25200};
+					int nBLv = (int)GetField(dwTongID, 13);
+					if (nBLv < 0)
+						nBLv = 0;
+					if (nBLv > 5)
+						nBLv = 5;
+					dwUpper = dwWk[nBLv];
+				}
 				DWORD dwWeek = GetField(dwTongID, 41);
 				int nIn = nVan;
 				int nOver = 0;
@@ -3110,7 +3125,18 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			int nType = pCmd->m_nParam1;
 			if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
 				return 5;
-			sSendFieldCmd(dwTongID, sWsAttrField(nType, 4), (DWORD)pCmd->m_nParam2,
+			// PHAN BIEN B2: attr4 (cap SU DUNG) moi la so gameplay doc
+			// (TWS_GetUseLevel) - de tu do la lach het rao phi/tran cua
+			// TOP_WS_OP. Ban goc ep UseLevel <= Level (workshop_head.lua:97).
+			int nUseLv = pCmd->m_nParam2;
+			int nRealLv = (int)GetField(dwTongID, sWsAttrField(nType, 2));
+			if (nUseLv < 1)
+				nUseLv = 1;
+			if (nUseLv > nRealLv)
+				nUseLv = nRealLv;
+			if (nUseLv < 1)
+				return 10;	// khu chua co cap
+			sSendFieldCmd(dwTongID, sWsAttrField(nType, 4), (DWORD)nUseLv,
 				defTONG_JX2_OP_SET, dwParam);
 			return 0;
 		}

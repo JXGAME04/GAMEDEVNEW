@@ -5867,11 +5867,59 @@ int LuaSetNpcActionScript(Lua_State* L)
 	// JX2 port: script bang hoi goi \script\tong\npc\... nhung cay that nam
 	// o scriptjx2\tong_vn\npc\. Dung dung ham remap cua LuaIncludeFile - no
 	// CHI doi khi duong goc khong ton tai nen khong dung toi NPC JX1 co san.
+	// PHAN BIEN B3: sJX2RemapScriptPath quyet dinh bang fopen, ma duong
+	// \script\... la TUONG DOI GOC O DIA (E:\script khong ton tai) nen ca
+	// hai fopen deu truot va ham tra ve KHONG DOI GI. Phai probe bang duong
+	// TUYET DOI (g_GetRootPath) roi luu lai dang TUONG DOI nhu moi NPC khac.
 	char szNpcScript[MAX_PATH * 2];
 	strncpy(szNpcScript, szScript, sizeof(szNpcScript) - 1);
 	szNpcScript[sizeof(szNpcScript) - 1] = 0;
-	sJX2RemapScriptPath(szNpcScript);
-	strcpy(Npc[nNpcIndex].ActionScript, szNpcScript);
+	if (szNpcScript[0] == '\\')
+	{
+		char szAbs[MAX_PATH * 2];
+		g_GetRootPath(szAbs);
+		int nRLen = (int)strlen(szAbs);
+		if (nRLen > 0 && (szAbs[nRLen - 1] == '\\' || szAbs[nRLen - 1] == '/'))
+			szAbs[nRLen - 1] = 0;
+		strcat(szAbs, "\\");
+		strcat(szAbs, szNpcScript + 1);
+		FILE* pProbe = fopen(szAbs, "rb");
+		if (pProbe)
+			fclose(pProbe);
+		else
+		{
+			// file goc khong co -> thu doi tien to nhu LuaIncludeFile
+			static const char* szF[2] = { "\\script\\tong\\", "\\script\\lib\\" };
+			static const char* szT[2] = { "\\scriptjx2\\tong_vn\\", "\\scriptjx2\\lib\\" };
+			for (int nSw = 0; nSw < 2; nSw++)
+			{
+				int nFL = (int)strlen(szF[nSw]);
+				if (strnicmp(szNpcScript, szF[nSw], nFL) != 0)
+					continue;
+				char szRel[MAX_PATH * 2];
+				strcpy(szRel, szT[nSw]);
+				strcat(szRel, szNpcScript + nFL);
+				g_GetRootPath(szAbs);
+				nRLen = (int)strlen(szAbs);
+				if (nRLen > 0 && (szAbs[nRLen - 1] == '\\' || szAbs[nRLen - 1] == '/'))
+					szAbs[nRLen - 1] = 0;
+				strcat(szAbs, "\\");
+				strcat(szAbs, szRel + 1);
+				pProbe = fopen(szAbs, "rb");
+				if (pProbe)
+				{
+					fclose(pProbe);
+					strncpy(szNpcScript, szRel, sizeof(szNpcScript) - 1);
+					szNpcScript[sizeof(szNpcScript) - 1] = 0;
+				}
+				break;
+			}
+		}
+	}
+	// ActionScript chi 80 byte - duong scriptjx2 dai nhat ~45 nen an toan,
+	// nhung van cat cho chac
+	strncpy(Npc[nNpcIndex].ActionScript, szNpcScript, sizeof(Npc[nNpcIndex].ActionScript) - 1);
+	Npc[nNpcIndex].ActionScript[sizeof(Npc[nNpcIndex].ActionScript) - 1] = 0;
 	Npc[nNpcIndex].m_ActionScriptID = g_FileName2Id(szNpcScript);
 	//
 	if (Npc[nNpcIndex].m_Kind == kind_normal)
