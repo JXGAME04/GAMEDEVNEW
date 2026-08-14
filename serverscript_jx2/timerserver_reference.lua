@@ -102,7 +102,7 @@ function pubg_runner(nHr,nMi)
 			if(IsMission(MS_PUBG) == 0) then
 				OpenMission(MS_PUBG)
 			end
-			StartMissionTimer(MS_PUBG,12, MSTIME_PUBG_BD*60*18)--nMissionId, nTimerId, nTimeInterval so phut de chinh thuc bat dau 10*60*18
+			StartMissionTimer(MS_PUBG,14, MSTIME_PUBG_BD*60*18)--nMissionId, nTimerId, nTimeInterval so phut de chinh thuc bat dau 10*60*18
 			print(format("===> Bao danh PUBG %d:%d Map[%d]<===", nHr, nMi, BIENKINHPUBG))
 		else
 			print(format("===> PUBG %d:%d chua mo Map[%d] <===", nHr, nMi, BIENKINHPUBG))
