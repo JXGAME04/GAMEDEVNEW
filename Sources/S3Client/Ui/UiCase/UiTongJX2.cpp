@@ -1095,6 +1095,11 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 		if (nLen <= (int)sizeof(ms_pSelf->m_byRecruit))
 		{
 			memcpy(ms_pSelf->m_byRecruit, pData, nLen);
+			// D5: dong bo con tro trang voi lat cat server vua gui - server
+			// day nguoc (PushViewTo) luon la trang 0, khong dong bo thi nut
+			// Trang ke nhay vot
+			ms_pSelf->m_nRecStart =
+				(int)((TONG_JX2_RECRUIT_SYNC*)ms_pSelf->m_byRecruit)->m_wApplyStart;
 			ms_pSelf->m_bHasRecruit = 1;
 			if (ms_pSelf->m_nPage == TJX2_UI_PAGE_RECRUIT)
 				ms_pSelf->RenderRecruit();

@@ -543,7 +543,8 @@ CTongControl* CTongSet::JX2_GetByIndex(int nIndex)
 }
 
 // khai bao truoc: dump-on-connect dung truoc khi dinh nghia
-static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam);
+static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam,
+	CNetConnect* pOnly = NULL);	// pOnly: chi gui 1 GS (dump-on-connect)
 
 CTongControl* CTongSet::JX2_FindByNameID(DWORD dwTongNameID)
 {
@@ -552,6 +553,19 @@ CTongControl* CTongSet::JX2_FindByNameID(DWORD dwTongNameID)
 	for (int i = 0; i < m_nTongPointSize; i++)
 	{
 		if (m_pcTong[i] && m_pcTong[i]->m_dwNameID == dwTongNameID)
+			return m_pcTong[i];
+	}
+	return NULL;
+}
+
+// tim bang theo TEN (m_pcTong la private nen phai la method)
+CTongControl* CTongSet::JX2_FindByName(const char* szTongName)
+{
+	if (!szTongName || !szTongName[0] || !m_pcTong || m_nTongPointSize <= 0)
+		return NULL;
+	for (int i = 0; i < m_nTongPointSize; i++)
+	{
+		if (m_pcTong[i] && strcmp(m_pcTong[i]->JX2_Name(), szTongName) == 0)
 			return m_pcTong[i];
 	}
 	return NULL;
@@ -580,7 +594,7 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 				pConn->SendPackage(byBuffer, nBytes);
 			// hang doi don xin vao bang (phat cho MOI GS - goi broadcast
 			// nho gon; GS khac nhan trung cung vo hai vi la anh chup day du)
-			sJX2_BroadcastZhaoMu(pTong, 0);
+			sJX2_BroadcastZhaoMu(pTong, 0, pConn);	// D11: chi GS vua noi
 
 			if (nMemberTotal > 0)
 			{
@@ -1763,7 +1777,8 @@ void JX2_ProcString(CTongConnect* pConn, const void* pData)
 
 // Phat hang doi don cua MOT bang toi moi GameServer (chia goi 16 don).
 // dwParam = chi so nguoi bam o GS goc (PushViewTo day nguoc trang).
-static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam)
+static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam,
+	CNetConnect* pOnly)
 {
 	if (!pTong)
 		return;
@@ -1794,7 +1809,10 @@ static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam)
 		int nLen = (int)(sizeof(sSync) - sizeof(sSync.m_sRec)
 			+ nThis * sizeof(STONG_JX2_ONE_APPLY_REC));
 		sSync.m_wLength = (WORD)nLen;
-		g_TongServer.BroadcastPackage(&sSync, nLen);
+		if (pOnly)
+			pOnly->SendPackage((PBYTE)&sSync, nLen);
+		else
+			g_TongServer.BroadcastPackage(&sSync, nLen);
 		nSent += nThis;
 	} while (nSent < nTotal);
 }
@@ -1805,6 +1823,20 @@ void JX2_ProcZhaoMu(CTongConnect* pConn, const void* pData)
 	CTongControl* pTong = g_cTongSet.JX2_FindByNameID(pCmd->m_dwTongNameID);
 	if (!pTong)
 		return;
+	char szOldTong[32];
+	szOldTong[0] = 0;
+	{
+		// D2: mot nguoi chi co MOT don toan cuc (khoa = ten) - phai biet
+		// don cu thuoc bang nao de (a) DEL khong xoa nham don bang khac,
+		// (b) ADD thay don thi phat lai hang doi cua BANG CU (het ma).
+		TZhaoMuStruct sOld;
+		if (g_cTongDB.GetZhaoMu(pCmd->m_sRec.szName, &sOld))
+			strncpy(szOldTong, sOld.szTong, 31);
+		szOldTong[31] = 0;
+	}
+	if (pCmd->m_btOp == defTONG_JX2_ZM_DEL &&
+		szOldTong[0] && strcmp(szOldTong, pTong->JX2_Name()) != 0)
+		return;	// don dang thuoc bang khac - bang nay khong duoc xoa
 	if (pCmd->m_btOp == defTONG_JX2_ZM_ADD)
 	{
 		TZhaoMuStruct sRec;
@@ -1820,6 +1852,14 @@ void JX2_ProcZhaoMu(CTongConnect* pConn, const void* pData)
 	else if (pCmd->m_btOp == defTONG_JX2_ZM_DEL)
 		g_cTongDB.DelZhaoMu(pCmd->m_sRec.szName);
 	sJX2_BroadcastZhaoMu(pTong, pCmd->m_dwParam);
+	if (pCmd->m_btOp == defTONG_JX2_ZM_ADD &&
+		szOldTong[0] && strcmp(szOldTong, pTong->JX2_Name()) != 0)
+	{
+		// don cu bi thay: bang cu cung phai duoc cap nhat (het don ma)
+		CTongControl* pOld = g_cTongSet.JX2_FindByName(szOldTong);
+		if (pOld)
+			sJX2_BroadcastZhaoMu(pOld, 0);
+	}
 }
 
 void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)

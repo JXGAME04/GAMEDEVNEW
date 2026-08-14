@@ -33,6 +33,7 @@ private:
 
 	void	Initialize();
 	void	ApplyMode();		// doi sprite tieu de + mo ta theo m_bMoney
+	void	UpdateDescription();	// mo ta + DON VI (luong)
 	void	OnConfirm();
 
 private:

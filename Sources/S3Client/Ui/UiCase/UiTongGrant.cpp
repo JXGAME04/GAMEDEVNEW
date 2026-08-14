@@ -135,11 +135,24 @@ void KUiTongGrant::ApplyMode()
 	const char* szImg = m_bMoney ? m_szImgMoney : m_szImgContribution;
 	if (szImg[0])
 		m_ImgTitle.SetImage(ISI_T_SPR, (char*)szImg, false);
-	m_TextDescription.SetText(m_BtnTotalMember.IsButtonChecked() ?
-		m_szForOnline : m_szForWhole);
+	UpdateDescription();
 	m_EditDirector.SetText("0");
 	m_EditManager.SetText("0");
 	m_EditMember.SetText("0");
+}
+
+// D4/D9: mo ta phai neu RO don vi LUONG (duong cu nhap theo VAN - nham
+// 10.000 lan) va che do tien luon CHI PHAT NGUOI ONLINE (Earn truc tiep)
+void KUiTongGrant::UpdateDescription()
+{
+	char szDesc[300];
+	const char* szScope = (m_bMoney || m_BtnTotalMember.IsButtonChecked()) ?
+		m_szForOnline : m_szForWhole;
+	if (m_bMoney)
+		sprintf(szDesc, "%s\n%s", szScope, "\247\254n v\336: L\255\356NG (kh\253ng ph\266i v\271n)");
+	else
+		strncpy(szDesc, szScope, sizeof(szDesc) - 1), szDesc[sizeof(szDesc) - 1] = 0;
+	m_TextDescription.SetText(szDesc);
 }
 
 void KUiTongGrant::OnConfirm()
@@ -193,8 +206,7 @@ int KUiTongGrant::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == (unsigned int)&m_BtnTotalMember)
 		{
 			m_BtnTotalMember.CheckButton(!m_BtnTotalMember.IsButtonChecked());
-			m_TextDescription.SetText(m_BtnTotalMember.IsButtonChecked() ?
-				m_szForOnline : m_szForWhole);
+			UpdateDescription();
 			return 1;
 		}
 		break;

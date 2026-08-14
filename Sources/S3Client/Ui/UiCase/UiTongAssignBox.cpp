@@ -310,13 +310,17 @@ void KUiTongAssignBox::ArrangeDataJX2(const char* szName, unsigned long dwNameID
 		sizeof(ms_pSelf->m_szTargetPlayerName) - 1);
 	ms_pSelf->m_szTargetPlayerName[sizeof(ms_pSelf->m_szTargetPlayerName) - 1] = 0;
 	ms_pSelf->m_TargetName.SetText(ms_pSelf->m_szTargetPlayerName);
-	// danh dau o kiem theo chuc hien tai (JX2 -> enum JX1 cua 3 nut)
-	if (nCurJX2Figure == 1)
-		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_DIRECTOR);
-	else if (nCurJX2Figure == 2)
-		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_MANAGER);
-	else
-		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_MEMBER);
+	// D12: ArrangeData (duong JX1) co the da Hide bot nut - che do JX2
+	// hien du 3 nut. D13: KHONG chon san chuc hien tai (guard -1 con tac
+	// dung; ban goc con AN nut chuc dang giu de khoi chon lai).
+	ms_pSelf->m_BtnElder.Show();
+	ms_pSelf->m_BtnCaptain.Show();
+	ms_pSelf->m_BtnPilgarlic.Show();
+	ms_pSelf->m_BtnElder.CheckButton(0);
+	ms_pSelf->m_BtnCaptain.CheckButton(0);
+	ms_pSelf->m_BtnPilgarlic.CheckButton(0);
+	ms_pSelf->m_nSelectFigure = -1;
+	(void)nCurJX2Figure;
 }
 
 

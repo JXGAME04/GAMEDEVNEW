@@ -279,6 +279,13 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 			KTongJX2Tong* pTong = FindTong(pCmd->m_dwTongNameID);
 			if (!pTong)
 				return;
+			// D3: kiem bien theo khuon MEMBER_SYNC - m_btCount la BYTE, phai
+			// khop do dai goi thuc va tran 16 rec/goi
+			if (pCmd->m_btCount > defTONG_JX2_ZM_PER_PACKET)
+				return;
+			if ((int)(sizeof(STONG_JX2_ZHAOMU_SYNC) - sizeof(pCmd->m_sRec)
+				+ pCmd->m_btCount * sizeof(STONG_JX2_ONE_APPLY_REC)) > nSize)
+				return;
 			// goi dau (start 0) = dung lai tu dau; cac goi sau noi tiep
 			if (pCmd->m_wStart == 0)
 				pTong->btApplyCount = 0;
@@ -3407,7 +3414,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 5;
 			// gom danh sach tung nhom (figure 1/2/3); online loc bang chi so
 			// Player cuc bo (dung cach TONG_JX2_ONE_MEMBER.m_btOnline lam)
-			DWORD dwIDs[3][128];
+			DWORD dwIDs[3][256];
 			int nCnt[3] = {0, 0, 0};
 			{
 				std::map<DWORD, KTongJX2Member>::iterator itM;
@@ -3418,7 +3425,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 						continue;
 					if ((bOnline || bMoney) && sFindPlayerIdxByNameID(itM->first) <= 0)
 						continue;	// ngan luong bat buoc online (Earn truc tiep)
-					if (nCnt[nFig - 1] < 128)
+					if (nCnt[nFig - 1] < 256)
 						dwIDs[nFig - 1][nCnt[nFig - 1]++] = itM->first;
 				}
 			}

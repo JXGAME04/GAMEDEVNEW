@@ -121,7 +121,7 @@ void CTongDB::Close()
 	delete m_MoneyTable;
 	if (m_ZhaoMuTable)
 	{
-		m_ZhaoMuTable->commit();
+			m_ZhaoMuTable->commit();	// flush truoc khi dong
 		m_ZhaoMuTable->close();
 		delete m_ZhaoMuTable;
 		m_ZhaoMuTable = NULL;
@@ -530,7 +530,7 @@ bool CTongDB::ChangeZhaoMu(const TZhaoMuStruct* pRec)
 		return false;
 	m_ZhaoMuTable->add((char*)pRec->szName, (int)strlen(pRec->szName) + 1,
 		(char*)pRec, sizeof(TZhaoMuStruct));
-	m_ZhaoMuTable->commit();
+	// (add/remove tu commit - DBTable.cpp:138/267; khong commit doi)
 	return true;
 }
 
@@ -539,7 +539,7 @@ bool CTongDB::DelZhaoMu(const char* szMemberName)
 	if (!m_ZhaoMuTable || !szMemberName || !szMemberName[0])
 		return false;
 	m_ZhaoMuTable->remove((char*)szMemberName, (int)strlen(szMemberName) + 1);
-	m_ZhaoMuTable->commit();
+	// (add/remove tu commit - DBTable.cpp:138/267; khong commit doi)
 	return true;
 }
 
@@ -561,9 +561,35 @@ int CTongDB::GetZhaoMuList(const char* szTong, TZhaoMuStruct* pOut, int nMax)
 				nCount++;
 		}
 		if (!m_ZhaoMuTable->next(cursor))
+		{
+			// PHAN BIEN D1: _next het ban ghi da c_close + DELETE cursor
+			// (DBTable.cpp:300-304) - goi closeCursor sau do la double-free
+			// lam SAP relay moi lan GS reconnect co don. NULL de nhanh
+			// closeCursor duoi chi chay cho loi ra "day nMax" (cursor song).
+			cursor = NULL;
 			break;
+		}
 	}
 	if (cursor)
 		m_ZhaoMuTable->closeCursor(cursor);
 	return nCount;
+}
+
+// Doc MOT don theo ten nguoi xin (khoa chinh). Tra false neu khong co.
+bool CTongDB::GetZhaoMu(const char* szMemberName, TZhaoMuStruct* pOut)
+{
+	if (!m_ZhaoMuTable || !szMemberName || !szMemberName[0] || !pOut)
+		return false;
+	ZCursor* cursor = m_ZhaoMuTable->search((char*)szMemberName,
+		(int)strlen(szMemberName) + 1);
+	if (!cursor)
+		return false;
+	bool bOK = false;
+	if (cursor->size == (int)sizeof(TZhaoMuStruct))
+	{
+		memcpy(pOut, cursor->data, sizeof(TZhaoMuStruct));
+		bOK = true;
+	}
+	m_ZhaoMuTable->closeCursor(cursor);
+	return bOK;
 }

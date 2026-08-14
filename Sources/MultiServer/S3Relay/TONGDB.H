@@ -90,6 +90,7 @@ public:
 	// ==== hang doi don xin vao bang (JX2) ====
 	bool ChangeZhaoMu(const TZhaoMuStruct* pRec);
 	bool DelZhaoMu(const char* szMemberName);
+	bool GetZhaoMu(const char* szMemberName, TZhaoMuStruct* pOut);
 	int  GetZhaoMuList(const char* szTong, TZhaoMuStruct* pOut, int nMax);
 
 	// ==== JX2 port ====
