@@ -1,0 +1,486 @@
+// KJx2SharedStore.cpp - xem KJx2SharedStore.h. DOT E cong thanh JX2.
+// Persist Ladder theo khuon tmp + MoveFileEx REPLACE (KIniFile::Save cat trang
+// file truoc khi ghi nen KHONG dung cho du lieu song - phan bien E ky thuat F6).
+
+// LUU Y: Core build voi PCH "Use" qua KCore.h - moi thu TRUOC dong include nay
+// deu bi compiler bo qua, nen KCore.h PHAI dung dau tien.
+#include "KCore.h"
+#include "KWin32.h"
+
+#ifdef _SERVER
+
+#include "KEngine.h"
+#include "KDebug.h"
+#include "LuaLib.h"
+#include "KJx2SharedStore.h"
+#include <map>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
+
+//////////////////////////////////////////////////////////////////////
+// 1) ObjBuffer
+//////////////////////////////////////////////////////////////////////
+#define JX2OB_BUF_SIZE 4096
+
+struct KJx2ObjBuffer
+{
+	unsigned char	Buf[JX2OB_BUF_SIZE];
+	int				nWrite;
+	int				nRead;
+};
+
+static std::map<int, KJx2ObjBuffer*>	s_OBMap;
+static int								s_nOBNextHandle = 0;
+
+static KJx2ObjBuffer* sOBGet(Lua_State* L, int nArg)
+{
+	if (!Lua_IsNumber(L, nArg))
+		return NULL;
+	int h = (int)Lua_ValueToNumber(L, nArg);
+	if (h <= 0)
+		return NULL;
+	std::map<int, KJx2ObjBuffer*>::iterator it = s_OBMap.find(h);
+	return (it == s_OBMap.end()) ? NULL : it->second;
+}
+
+static bool sOBWrite(KJx2ObjBuffer* p, const void* pData, int nLen)
+{
+	if (p->nWrite + nLen > JX2OB_BUF_SIZE)
+		return false;	// day - bo qua (goc buffer cung 4KB)
+	memcpy(p->Buf + p->nWrite, pData, nLen);
+	p->nWrite += nLen;
+	return true;
+}
+
+static bool sOBRead(KJx2ObjBuffer* p, void* pData, int nLen)
+{
+	if (p->nRead + nLen > p->nWrite)
+		return false;
+	memcpy(pData, p->Buf + p->nRead, nLen);
+	p->nRead += nLen;
+	return true;
+}
+
+int LuaOB_Create(Lua_State* L)
+{
+	KJx2ObjBuffer* p = new KJx2ObjBuffer;
+	if (!p)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	p->nWrite = 0;
+	p->nRead = 0;
+	int h = ++s_nOBNextHandle;
+	s_OBMap[h] = p;
+	Lua_PushNumber(L, h);
+	return 1;
+}
+
+int LuaOB_Release(Lua_State* L)
+{
+	if (Lua_IsNumber(L, 1))
+	{
+		int h = (int)Lua_ValueToNumber(L, 1);
+		std::map<int, KJx2ObjBuffer*>::iterator it = s_OBMap.find(h);
+		if (it != s_OBMap.end())
+		{
+			delete it->second;
+			s_OBMap.erase(it);
+			Lua_PushNumber(L, 1);
+			return 1;
+		}
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaOB_IsEmpty(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	// handle xau cung tinh la RONG (= 1) theo binary goc
+	Lua_PushNumber(L, (p == NULL || p->nRead >= p->nWrite) ? 1 : 0);
+	return 1;
+}
+
+int LuaOB_Clear(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	if (p)
+	{
+		p->nWrite = 0;
+		p->nRead = 0;
+	}
+	Lua_PushNumber(L, p ? 1 : 0);
+	return 1;
+}
+
+int LuaOB_Append(Lua_State* L)
+{
+	KJx2ObjBuffer* pDst = sOBGet(L, 1);
+	KJx2ObjBuffer* pSrc = sOBGet(L, 2);
+	int nOk = 0;
+	if (pDst && pSrc && sOBWrite(pDst, pSrc->Buf, pSrc->nWrite))
+		nOk = 1;
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaOB_Copy(Lua_State* L)
+{
+	KJx2ObjBuffer* pDst = sOBGet(L, 1);
+	KJx2ObjBuffer* pSrc = sOBGet(L, 2);
+	int nOk = 0;
+	if (pDst && pSrc)
+	{
+		memcpy(pDst->Buf, pSrc->Buf, JX2OB_BUF_SIZE);
+		pDst->nWrite = pSrc->nWrite;
+		pDst->nRead = pSrc->nRead;
+		nOk = 1;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaOB_PushByte(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int nOk = 0;
+	if (p && Lua_IsNumber(L, 2))
+	{
+		unsigned char b = (unsigned char)(int)Lua_ValueToNumber(L, 2);
+		nOk = sOBWrite(p, &b, 1) ? 1 : 0;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// PopByte HET du lieu phai tra NIL (objbuffer_head.lua:53 kiem "== nil")
+int LuaOB_PopByte(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	unsigned char b;
+	if (p && sOBRead(p, &b, 1))
+	{
+		Lua_PushNumber(L, b);
+		return 1;
+	}
+	return 0;
+}
+
+int LuaOB_PushInt(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int nOk = 0;
+	if (p && Lua_IsNumber(L, 2))
+	{
+		int n = (int)Lua_ValueToNumber(L, 2);
+		nOk = sOBWrite(p, &n, sizeof(int)) ? 1 : 0;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaOB_PopInt(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int n;
+	if (p && sOBRead(p, &n, sizeof(int)))
+	{
+		Lua_PushNumber(L, n);
+		return 1;
+	}
+	return 0;
+}
+
+int LuaOB_PushDouble(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int nOk = 0;
+	if (p && Lua_IsNumber(L, 2))
+	{
+		double f = Lua_ValueToNumber(L, 2);
+		nOk = sOBWrite(p, &f, sizeof(double)) ? 1 : 0;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaOB_PopDouble(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	double f;
+	if (p && sOBRead(p, &f, sizeof(double)))
+	{
+		Lua_PushNumber(L, f);
+		return 1;
+	}
+	return 0;
+}
+
+// Chuoi luu [int nLen][nLen byte] - dinh dang noi bo (2 dau deu la ta)
+int LuaOB_PushString(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int nOk = 0;
+	if (p && Lua_IsString(L, 2))
+	{
+		const char* sz = Lua_ValueToString(L, 2);
+		int nLen = (int)strlen(sz);
+		if (p->nWrite + (int)sizeof(int) + nLen <= JX2OB_BUF_SIZE)
+		{
+			sOBWrite(p, &nLen, sizeof(int));
+			sOBWrite(p, sz, nLen);
+			nOk = 1;
+		}
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaOB_PopString(Lua_State* L)
+{
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	int nLen;
+	if (p && sOBRead(p, &nLen, sizeof(int)))
+	{
+		if (nLen >= 0 && p->nRead + nLen <= p->nWrite && nLen < JX2OB_BUF_SIZE)
+		{
+			char szBuf[JX2OB_BUF_SIZE];
+			memcpy(szBuf, p->Buf + p->nRead, nLen);
+			szBuf[nLen] = 0;
+			p->nRead += nLen;
+			Lua_PushString(L, szBuf);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////
+// 2) Ladder - top 10 moi id, id > 10000, persist \settings\jx2ladder.txt
+//////////////////////////////////////////////////////////////////////
+struct KJx2LadderEntry
+{
+	char			szName[32];
+	__int64			i64Value;
+	int				nSect;
+	unsigned char	btGender;
+	unsigned char	btType;
+};
+
+#define JX2LADDER_TOP		10
+#define JX2LADDER_MIN_ID	10000
+#define JX2LADDER_FILE		"\\settings\\jx2ladder.txt"
+
+static std::map<unsigned long, std::vector<KJx2LadderEntry> >	s_LadderMap;
+static bool	s_bLadderLoaded = false;
+
+static void sLadderPath(char* szOut, bool bTmp)
+{
+	char szRoot[MAX_PATH];
+	g_GetRootPath(szRoot);
+	sprintf(szOut, "%s%s%s", szRoot, JX2LADDER_FILE, bTmp ? ".tmp" : "");
+}
+
+static void sLadderLoad()
+{
+	if (s_bLadderLoaded)
+		return;
+	s_bLadderLoaded = true;
+	char szPath[MAX_PATH];
+	sLadderPath(szPath, false);
+	FILE* f = fopen(szPath, "rb");
+	if (!f)
+		return;
+	char szLine[512];
+	unsigned long uCurId = 0;
+	while (fgets(szLine, sizeof(szLine), f))
+	{
+		if (szLine[0] == 'L')
+		{
+			uCurId = (unsigned long)atol(szLine + 2);
+		}
+		else if (szLine[0] == 'E' && uCurId > JX2LADDER_MIN_ID)
+		{
+			// E <value> <sect> <gender> <type> <name den het dong>
+			KJx2LadderEntry e;
+			memset(&e, 0, sizeof(e));
+			__int64 v = 0;
+			int nSect = -1, nGender = 0, nType = 0, nPos = 0;
+			if (sscanf(szLine + 2, "%I64d %d %d %d %n", &v, &nSect, &nGender, &nType, &nPos) >= 4 && nPos > 0)
+			{
+				char* szName = szLine + 2 + nPos;
+				int nLen = (int)strlen(szName);
+				while (nLen > 0 && (szName[nLen - 1] == '\n' || szName[nLen - 1] == '\r'))
+					szName[--nLen] = 0;
+				if (nLen > 0)
+				{
+					e.i64Value = v;
+					e.nSect = nSect;
+					e.btGender = (unsigned char)nGender;
+					e.btType = (unsigned char)nType;
+					strncpy(e.szName, szName, 31);
+					if (s_LadderMap[uCurId].size() < JX2LADDER_TOP)
+						s_LadderMap[uCurId].push_back(e);
+				}
+			}
+		}
+	}
+	fclose(f);
+}
+
+static void sLadderSave()
+{
+	char szTmp[MAX_PATH], szPath[MAX_PATH];
+	sLadderPath(szTmp, true);
+	sLadderPath(szPath, false);
+	FILE* f = fopen(szTmp, "wb");
+	if (!f)
+		return;
+	std::map<unsigned long, std::vector<KJx2LadderEntry> >::iterator it;
+	for (it = s_LadderMap.begin(); it != s_LadderMap.end(); ++it)
+	{
+		if (it->second.empty())
+			continue;
+		fprintf(f, "L %lu\n", it->first);
+		for (size_t i = 0; i < it->second.size(); i++)
+		{
+			KJx2LadderEntry& e = it->second[i];
+			fprintf(f, "E %I64d %d %d %d %s\n", e.i64Value, e.nSect,
+				(int)e.btGender, (int)e.btType, e.szName);
+		}
+	}
+	fclose(f);
+	MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+}
+
+// Ladder_NewLadder(id, szName, nValue [,nType][,nSect][,nGender]) - >=3 tham so, tra 0
+int LuaLadder_NewLadder(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 3 || !Lua_IsNumber(L, 1) || !Lua_IsString(L, 2) || !Lua_IsNumber(L, 3))
+		return 0;
+	unsigned long uId = (unsigned long)Lua_ValueToNumber(L, 1);
+	const char* szName = Lua_ValueToString(L, 2);
+	if (uId <= JX2LADDER_MIN_ID || !szName || !szName[0])
+		return 0;
+	sLadderLoad();
+	KJx2LadderEntry e;
+	memset(&e, 0, sizeof(e));
+	strncpy(e.szName, szName, 31);
+	e.i64Value = (__int64)Lua_ValueToNumber(L, 3);
+	e.btType = (nTop >= 4 && Lua_IsNumber(L, 4)) ? (unsigned char)(int)Lua_ValueToNumber(L, 4) : 0;
+	e.nSect = (nTop >= 5 && Lua_IsNumber(L, 5)) ? (int)Lua_ValueToNumber(L, 5) : -1;
+	e.btGender = (nTop >= 6 && Lua_IsNumber(L, 6)) ? (unsigned char)(int)Lua_ValueToNumber(L, 6) : 0;
+
+	std::vector<KJx2LadderEntry>& tb = s_LadderMap[uId];
+	// upsert theo ten
+	size_t i;
+	for (i = 0; i < tb.size(); i++)
+	{
+		if (strncmp(tb[i].szName, e.szName, 31) == 0)
+		{
+			tb[i] = e;
+			break;
+		}
+	}
+	if (i == tb.size())
+		tb.push_back(e);
+	// sap giam dan theo value (on dinh - giu thu tu cu khi bang diem)
+	for (size_t a = 1; a < tb.size(); a++)
+	{
+		KJx2LadderEntry t = tb[a];
+		int b = (int)a - 1;
+		while (b >= 0 && tb[b].i64Value < t.i64Value)
+		{
+			tb[b + 1] = tb[b];
+			b--;
+		}
+		tb[b + 1] = t;
+	}
+	if (tb.size() > JX2LADDER_TOP)
+		tb.resize(JX2LADDER_TOP);
+	sLadderSave();
+	return 0;
+}
+
+int LuaLadder_ClearLadder(Lua_State* L)
+{
+	if (!Lua_IsNumber(L, 1))
+		return 0;
+	unsigned long uId = (unsigned long)Lua_ValueToNumber(L, 1);
+	if (uId <= JX2LADDER_MIN_ID)
+		return 0;
+	sLadderLoad();
+	std::map<unsigned long, std::vector<KJx2LadderEntry> >::iterator it = s_LadderMap.find(uId);
+	if (it != s_LadderMap.end())
+	{
+		s_LadderMap.erase(it);
+		sLadderSave();
+	}
+	return 0;
+}
+
+// tra 4 gia tri; o trong -> ("", 0, -1, 0) - CHUOI RONG chu KHONG nil
+// (ladderfunlib.lua:20 kiem szName ~= nil luon dung - hanh vi goc)
+int LuaLadder_GetLadderInfo(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+		return 0;
+	unsigned long uId = (unsigned long)Lua_ValueToNumber(L, 1);
+	int nRank = (int)Lua_ValueToNumber(L, 2);
+	sLadderLoad();
+	if (uId > 0 && nRank >= 1 && nRank <= JX2LADDER_TOP)
+	{
+		std::map<unsigned long, std::vector<KJx2LadderEntry> >::iterator it = s_LadderMap.find(uId);
+		if (it != s_LadderMap.end() && (size_t)nRank <= it->second.size())
+		{
+			KJx2LadderEntry& e = it->second[nRank - 1];
+			Lua_PushString(L, e.szName);
+			Lua_PushNumber(L, (double)e.i64Value);
+			Lua_PushNumber(L, e.nSect);
+			Lua_PushNumber(L, e.btGender);
+			return 4;
+		}
+	}
+	Lua_PushString(L, (char*)"");
+	Lua_PushNumber(L, 0);
+	Lua_PushNumber(L, -1);
+	Lua_PushNumber(L, 0);
+	return 4;
+}
+
+//////////////////////////////////////////////////////////////////////
+// 3) GlbValue - kho int toan cuc trong RAM (nhu goc; khoa league_cityinfo
+//    duoc dat lai moi lan boot boi buildAllCityInfoLeague)
+//////////////////////////////////////////////////////////////////////
+static std::map<int, int>	s_GlbValueMap;
+
+int LuaSetGlbValue(Lua_State* L)
+{
+	if (Lua_IsNumber(L, 1) && Lua_IsNumber(L, 2))
+	{
+		s_GlbValueMap[(int)Lua_ValueToNumber(L, 1)] = (int)Lua_ValueToNumber(L, 2);
+		Lua_PushNumber(L, 1);
+	}
+	else
+		Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetGlbValue(Lua_State* L)
+{
+	int nVal = 0;
+	if (Lua_IsNumber(L, 1))
+	{
+		std::map<int, int>::iterator it = s_GlbValueMap.find((int)Lua_ValueToNumber(L, 1));
+		if (it != s_GlbValueMap.end())
+			nVal = it->second;
+	}
+	Lua_PushNumber(L, nVal);
+	return 1;
+}
+
+#endif // _SERVER

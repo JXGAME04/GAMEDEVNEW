@@ -12136,6 +12136,26 @@ extern int LuaTWS_ApplyMaintain(Lua_State* L);
 extern int LuaTWS_ApplyUse(Lua_State* L);
 extern int LuaTWS_MaintainAll(Lua_State* L);
 extern int LuaTONG_DailyMaintainAll(Lua_State* L);
+// ==== DOT E cong thanh JX2: kho chia se giua cac Lua state (KJx2SharedStore.cpp) ====
+extern int LuaOB_Create(Lua_State* L);
+extern int LuaOB_Release(Lua_State* L);
+extern int LuaOB_IsEmpty(Lua_State* L);
+extern int LuaOB_Clear(Lua_State* L);
+extern int LuaOB_Append(Lua_State* L);
+extern int LuaOB_Copy(Lua_State* L);
+extern int LuaOB_PushByte(Lua_State* L);
+extern int LuaOB_PopByte(Lua_State* L);
+extern int LuaOB_PushInt(Lua_State* L);
+extern int LuaOB_PopInt(Lua_State* L);
+extern int LuaOB_PushDouble(Lua_State* L);
+extern int LuaOB_PopDouble(Lua_State* L);
+extern int LuaOB_PushString(Lua_State* L);
+extern int LuaOB_PopString(Lua_State* L);
+extern int LuaLadder_NewLadder(Lua_State* L);
+extern int LuaLadder_ClearLadder(Lua_State* L);
+extern int LuaLadder_GetLadderInfo(Lua_State* L);
+extern int LuaSetGlbValue(Lua_State* L);
+extern int LuaGetGlbValue(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -12837,6 +12857,26 @@ TLua_Funcs GameScriptFuns[] =
 		{ "TWS_ApplyUse",	LuaTWS_ApplyUse },
 		{ "TWS_MaintainAll",	LuaTWS_MaintainAll },	// timerserver goi moi ngay
 		{ "TONG_DailyMaintainAll",	LuaTONG_DailyMaintainAll },
+		// ==== DOT E cong thanh JX2: ObjBuffer + Ladder + GlbValue (KJx2SharedStore) ====
+		{ "OB_Create",	LuaOB_Create },
+		{ "OB_Release",	LuaOB_Release },
+		{ "OB_IsEmpty",	LuaOB_IsEmpty },
+		{ "OB_Clear",	LuaOB_Clear },
+		{ "OB_Append",	LuaOB_Append },
+		{ "OB_Copy",	LuaOB_Copy },
+		{ "OB_PushByte",	LuaOB_PushByte },
+		{ "OB_PopByte",	LuaOB_PopByte },
+		{ "OB_PushInt",	LuaOB_PushInt },
+		{ "OB_PopInt",	LuaOB_PopInt },
+		{ "OB_PushDouble",	LuaOB_PushDouble },
+		{ "OB_PopDouble",	LuaOB_PopDouble },
+		{ "OB_PushString",	LuaOB_PushString },
+		{ "OB_PopString",	LuaOB_PopString },
+		{ "Ladder_NewLadder",	LuaLadder_NewLadder },
+		{ "Ladder_ClearLadder",	LuaLadder_ClearLadder },
+		{ "Ladder_GetLadderInfo",	LuaLadder_GetLadderInfo },
+		{ "SetGlbValue",	LuaSetGlbValue },
+		{ "GetGlbValue",	LuaGetGlbValue },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);
