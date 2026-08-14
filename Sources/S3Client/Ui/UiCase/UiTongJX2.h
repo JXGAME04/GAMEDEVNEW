@@ -16,6 +16,8 @@ Description : Cua so bang hoi kieu JX2 (5 trang: thong tin / thanh vien /
 #include "../elem/wndimage.h"
 #include "../elem/wndtext.h"
 #include "../elem/wndedit.h"
+#include "../elem/WndMessageListBox.h"
+#include "../elem/wndscrollbar.h"
 
 #define TJX2_UI_ROWS		16	// = defTONG_JX2_RECORD_LINES (nhat ky ve 16 dong)
 #define TJX2_UI_TABS		5
@@ -195,6 +197,10 @@ private:
 	int		m_nFunSub;				// nhom nut 1..4 khi o che do Su dung chuc nang
 	DWORD	m_dwRtId[14];			// RightID cua tung nut quyen (doc tu ini)
 	int		m_bMDet;
+	// NHAT KY: hop danh sach cuon dung chuan goc ([RecordList_List] cua
+	// blueprint trang nhat ky) - thay 16 dong m_Row tran khoi khung
+	KWndMessageListBox	m_RcList;
+	KWndScrollBar		m_RcScroll;
 	int		m_nMDetTop;		// y tuyet doi (trong cua so) cua dong dau panel
 	int		m_nMDetRows;	// so dong panel dang hien (0 = khong ve nen)
 				// dang hien panel chi tiet thanh vien

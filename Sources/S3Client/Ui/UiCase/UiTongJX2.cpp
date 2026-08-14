@@ -527,6 +527,9 @@ void KUiTongJX2::Initialize()
 	m_MShade.Hide();
 	for (i = 0; i < 7; i++)
 		AddChild(&m_MDet[i]);
+	AddChild(&m_RcList);
+	AddChild(&m_RcScroll);
+	m_RcList.SetScrollbar(&m_RcScroll);	// khuon UiFriendInterview.cpp:213
 	for (i = 0; i < 8; i++)
 		AddChild(&m_RecLbl[i]);
 	AddChild(&m_RecJiyu);
@@ -846,6 +849,8 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_RecDeny.Init(&Ini, "Rec_RefuseApply");
 	ms_pSelf->m_RecPrev.Init(&Ini, "Rec_LastPage");
 	ms_pSelf->m_RecNext.Init(&Ini, "Rec_NextPage");
+	ms_pSelf->m_RcList.Init(&Ini, "Rc_RecordList_List");
+	ms_pSelf->m_RcScroll.Init(&Ini, "Rc_RecordList_Scroll");	// tu nap _Btn
 	ms_pSelf->m_BtnPrev.Init(&Ini, "BtnPrev");
 	ms_pSelf->m_BtnNext.Init(&Ini, "BtnNext");
 	ms_pSelf->m_BtnClose.Init(&Ini, "BtnClose");
@@ -1370,6 +1375,8 @@ void KUiTongJX2::SwitchPage(int nPage)
 		m_bMDet = 0;
 		m_nMDetRows = 0;
 		m_MShade.Hide();
+		m_RcList.Hide();
+		m_RcScroll.Hide();
 	}
 	// lop chu xam (offline) + panel xanh chi tiet + dong chi tiet khu
 	{
@@ -2184,6 +2191,8 @@ void KUiTongJX2::RenderRecord()
 	if (m_nRcSub == 1)
 	{
 		// muc Thong bao: khung sua + noi dung hien tai
+		m_RcList.Hide();
+		m_RcScroll.Hide();
 		if (m_bHasRecord)
 			m_RcEditor.SetText(((TONG_JX2_RECORD_SYNC*)m_byRecord)->m_szAnnounce);
 		return;
@@ -2191,16 +2200,27 @@ void KUiTongJX2::RenderRecord()
 	if (m_nRcSub == 0)
 	{
 		// muc tieu tuan: hien tu du lieu INFO (WeekGoal o field 22..28 - xem #17)
+		m_RcList.Hide();
+		m_RcScroll.Hide();
 		m_Row[0].SetText("M\364c ti\252u tu\307n xem trong bang th\253ng tin.");
 		return;
 	}
 	if (!m_bHasRecord)
 		return;
 	TONG_JX2_RECORD_SYNC* p = (TONG_JX2_RECORD_SYNC*)m_byRecord;
+	// NHAT KY nam TRON trong khung + thanh keo (blueprint goc
+	// [RecordList_List] 541x310 + [RecordList_Scroll]) - thay 16 dong
+	// m_Row tran khoi khung (chu game bao).
+	m_RcList.Show();
+	m_RcScroll.Show();
+	m_RcList.Clear();
 	if (p->m_btCount == 0)
-		m_Row[0].SetText("(ch\255a c\343 b\266n ghi)");
+	{
+		const char* szNone = "(ch\255a c\343 b\266n ghi)";
+		m_RcList.AddOneMessage(szNone, (int)strlen(szNone));
+	}
 	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_RECORD_LINES; i++)
-		m_Row[i].SetText(p->m_szLine[i]);
+		m_RcList.AddOneMessage(p->m_szLine[i], (int)strlen(p->m_szLine[i]));
 }
 
 // Danh sach bang toan may chu (xem/xin gia nhap - mo duoc khi chua vao bang)
