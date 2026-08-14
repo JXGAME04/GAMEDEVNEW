@@ -1,6 +1,6 @@
 # BÀN GIAO BANG HỘI ĐỢT 12 (14/08/2026) — 4 đợt A/B/C/D + 3 lỗi UI + khung nhật ký
 
-Chuỗi commit: `d0c21b7` → `ef6c3b0` (28 commit). Khảo sát nền: `KHAOSAT_KHOILUONG_DOT12.md`.
+Chuỗi commit: `d0c21b7` → `1a8b703` (30 commit; chốt = bộ sửa phản biện đợt D: double-free relay D1, DEL xuyên bang D2, chặn biên gói D3, nhãn LƯỢNG D4). Khảo sát nền: `KHAOSAT_KHOILUONG_DOT12.md`.
 **PHẢI RESTART: GameServer + S3Relay + client cùng lúc** (gói RECRUIT/RECORD/ZHAOMU + TOP/COP mới).
 
 ## Đợt A — vá gấp + đại thần
