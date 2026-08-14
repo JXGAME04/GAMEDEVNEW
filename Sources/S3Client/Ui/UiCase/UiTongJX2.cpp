@@ -2551,7 +2551,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				else if (m_nPage == TJX2_UI_PAGE_OTHERZM)
 					RequestPage(m_nPage, m_nZmStart);	// lam moi trang 2x2
 				else
-					SwitchPage(TJX2_UI_PAGE_OTHERZM);
+					// dung vai tro goc cua [BtnEnterMap]: VAO BON BANG
+					// (nut "Xem tin Bang khac" da nam o m_Bot[2])
+					SendOp(defTONG_JX2_COP_ENTER_MAP, 0, 0, 0, NULL);
 				return 1;
 			}
 			if (uParam == (unsigned int)&m_Bot[1])

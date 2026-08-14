@@ -3065,6 +3065,41 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			sSendTongOp(dwTongID, 0, btOp, pCmd->m_nParam1, pCmd->m_nParam2, dwParam);
 			return 0;
 		}
+	case defTONG_JX2_COP_ENTER_MAP:
+		{
+			// "Vao bon bang": KHONG kiem quyen - moi thanh vien deu vao duoc
+			// lanh dia bang minh. Field 45 giu map bang (dat qua PublicMap /
+			// TONG_ApplySetTongMap). Ban goc chan khi dang o trang thai chien
+			// dau (tong_mix.lua:980 GetFightState).
+			DWORD dwMap = GetField(dwTongID, 45);
+			if (dwMap == 0)
+			{
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)"Bang h\351i ch\255a c\343 khu v\371c ri\252ng.",
+					(int)strlen("Bang h\351i ch\255a c\343 khu v\371c ri\252ng."));
+				return 20;
+			}
+			int nNpcIdx = Player[nPlayerIdx].m_nIndex;
+			if (nNpcIdx <= 0)
+				return 5;
+			if (Npc[nNpcIdx].m_FightMode == 1)
+			{
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)"Ch\330 c\343 th\323 \256i v\265o khu v\371c bang h\351i t\365 n\254i phi chi\325n \256\312u!",
+					(int)strlen("Ch\330 c\343 th\323 \256i v\265o khu v\371c bang h\351i t\365 n\254i phi chi\325n \256\312u!"));
+				return 20;
+			}
+			if (g_SubWorldSet.SearchWorld((int)dwMap) < 0)
+			{
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)"B\266n \256\345 khu v\371c bang h\351i ch\255a \256\255\356c n\271p tr\252n m\270y ch\361 n\265y.",
+					(int)strlen("B\266n \256\345 khu v\371c bang h\351i ch\255a \256\255\356c n\271p tr\252n m\270y ch\361 n\265y."));
+				return 20;
+			}
+			// diem vao mac dinh cua ban goc (aMapEnterPosDef trong addtongnpc.lua)
+			Npc[nNpcIdx].ChangeWorld((DWORD)dwMap, 1718 * 32, 3313 * 32);
+			return 20;
+		}
 	case defTONG_JX2_COP_STORE_OFFER:
 		{
 			// cat cong hien ca nhan (vi SaveVal 2801) vao quy du tru bang (field 18)

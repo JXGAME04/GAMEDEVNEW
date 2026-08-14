@@ -1710,6 +1710,7 @@ typedef struct
 #define defTONG_JX2_COP_UNION_KICK	33	// minh chu truc xuat (szText = ten bang)
 #define defTONG_JX2_COP_MINISTER_SET	34	// phong dai than: dwTarget = thanh vien, nParam1 = 1..3
 #define defTONG_JX2_COP_MINISTER_FIRE	35	// cach chuc dai than: nParam1 = 1..3
+#define defTONG_JX2_COP_ENTER_MAP	36	// vao lanh dia bang (khong tham so; field 45 = map cua bang)
 
 typedef struct
 {
