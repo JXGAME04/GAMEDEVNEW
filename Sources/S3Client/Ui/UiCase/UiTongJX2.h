@@ -38,6 +38,9 @@ public:
 	static void			DataArrive(unsigned char* pData, int nLen);
 
 	virtual int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	// ve nen panel chi tiet thanh vien (alpha-rect) TRUOC khi control con
+	// ve chu - ban goc dung SelBgColor cua [MemberList], khong co sprite
+	virtual void		PaintWindow();
 
 private:
 	void	Initialize();
@@ -180,7 +183,10 @@ private:
 	int		m_nFunMode;				// trang FunUse: 0 = Tin tuc (an nut), 1 = Su dung chuc nang
 	int		m_nFunSub;				// nhom nut 1..4 khi o che do Su dung chuc nang
 	DWORD	m_dwRtId[14];			// RightID cua tung nut quyen (doc tu ini)
-	int		m_bMDet;				// dang hien panel chi tiet thanh vien
+	int		m_bMDet;
+	int		m_nMDetTop;		// y tuyet doi (trong cua so) cua dong dau panel
+	int		m_nMDetRows;	// so dong panel dang hien (0 = khong ve nen)
+				// dang hien panel chi tiet thanh vien
 };
 
 #endif // __UITONGJX2_H__

@@ -22,7 +22,9 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 #include "UiTongManager.h"
 #include "UiTongCreateSheet.h"
 #include "UiTongGetString.h"
-#include "UiInformation.h"		// UIMessageBox - hop xac nhan truoc thao tac khong hoan tac duoc
+#include "UiInformation.h"
+#include "../../../Represent/iRepresent/iRepresentShell.h"	// KRUShadow + DrawPrimitives (ve nen panel)
+extern iRepresentShell*	g_pRepresentShell;	// khai bao nhu MouseHover.cpp:16 / PopupMenu.cpp:21		// UIMessageBox - hop xac nhan truoc thao tac khong hoan tac duoc
 
 #include "../../Core/Src/KProtocol.h"
 #include "../../../Headers/KProtocolDef.h"
@@ -351,6 +353,8 @@ KUiTongJX2::KUiTongJX2()
 	m_nFunMode = 0;
 	m_nFunSub = 1;
 	m_bMDet = 0;
+	m_nMDetTop = 0;
+	m_nMDetRows = 0;
 	memset(m_dwRtId, 0, sizeof(m_dwRtId));
 	memset(m_byRecord, 0, sizeof(m_byRecord));
 	m_nRecQX = 0;
@@ -1756,13 +1760,41 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		}
 	}
 	// panel XANH chi tiet nguoi dang chon (nhu ban Linux, hien o moi trang co danh sach)
+	m_nMDetRows = 0;
 	if (m_bMDet && m_nSel < (int)p->m_btCount)
 	{
-		// vung panel (dong 4..11) de trong cho chu xanh khoi chong len danh sach
-		for (int nCl = 4; nCl <= 11 && nCl < TJX2_UI_ROWS; nCl++)
+		// Ban goc: panel bung ra NGAY DUOI dong vua kich (khong phai o vi tri
+		// co dinh). m_nSel la chi so THANH VIEN, phai doi nguoc ra DONG hien
+		// thi qua m_nOrd (cung bang dung o vong ve ben tren).
+		int nRow = 0;
+		{
+			int q;
+			for (q = 0; q < nCnt; q++)
+				if (m_nOrd[q] == m_nSel)
+				{
+					nRow = q + nOffset;
+					break;
+				}
+		}
+		// 5 dong chi tiet nam ngay duoi dong do; neu cham day panel thi day
+		// len tren de khong tran ra ngoai khung danh sach (14 dong)
+		int nFirst = nRow + 1;
+		if (nFirst + 5 > TJX2_UI_ROWS)
+			nFirst = TJX2_UI_ROWS - 5;
+		if (nFirst < 1)
+			nFirst = 1;
+		for (int nCl = nFirst; nCl < nFirst + 5 && nCl < TJX2_UI_ROWS; nCl++)
 		{
 			m_MList[nCl].SetText("");
 			m_RowDim[nCl].SetText("");
+		}
+		{
+			// dat 5 o chu vao dung cho + ghi lai de PaintWindow ve nen
+			int k;
+			for (k = 0; k < 5; k++)
+				m_MDet[k].SetPosition(341, 68 + (nFirst + k) * 24);
+			m_nMDetTop = 68 + nFirst * 24;
+			m_nMDetRows = 5;
 		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
 		char szT[64];
@@ -1799,6 +1831,26 @@ void KUiTongJX2::RenderMembers(int nOffset)
 	sprintf(sz, "%d", m_nStart / defTONG_JX2_VIEW_MEMBERS + 1);
 	m_MPage.SetText(sz);
 	LoadChecksFromSel();
+}
+
+// Ve NEN panel chi tiet thanh vien roi moi de control con ve chu len tren.
+// Ban goc khong dung sprite (quet pak khong co anh nen nao cho panel) ma
+// dung mau nen cua chinh danh sach: [MemberList] SelBgColor=110,110,90 +
+// SelBgColorAlpha=100 (bon trang blueprint chep y het nhau). Quy uoc dong
+// goi alpha lay tu KWndMessageListBox: (255 - alpha) << 21.
+void KUiTongJX2::PaintWindow()
+{
+	KWndImage::PaintWindow();
+	if (!m_bMDet || m_nMDetRows <= 0 || !g_pRepresentShell)
+		return;
+	KRUShadow sBg;
+	sBg.oPosition.nX = m_nAbsoluteLeft + 341;
+	sBg.oPosition.nY = m_nAbsoluteTop + m_nMDetTop;
+	sBg.oEndPos.nX = sBg.oPosition.nX + 225;
+	sBg.oEndPos.nY = sBg.oPosition.nY + m_nMDetRows * 24;
+	sBg.Color.Color_dw = ((110 << 16) | (110 << 8) | 90) |
+		(((unsigned int)(255 - 100) << 21) & 0xff000000);
+	g_pRepresentShell->DrawPrimitives(1, &sBg, RU_T_SHADOW, true);
 }
 
 void KUiTongJX2::RenderWorkshop()
