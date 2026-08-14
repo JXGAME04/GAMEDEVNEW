@@ -81,7 +81,7 @@ private:
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
 	KWndText80			m_Row[TJX2_UI_ROWS];
-	KWndText80			m_Info[32];				// trang Tin tuc: field nguyen van blueprint
+	KWndText80			m_Info[29];				// trang Tin tuc: 29 o = TJX2_INFO_NUM
 	// trang Chieu mo (blueprint trang chieu mo - nhan giu NGUYEN VAN byte TCVN3)
 	KWndText80			m_RecLbl[8];			// 8 nhan tinh
 	KWndEdit512			m_RecJiyu;				// van an chieu mo

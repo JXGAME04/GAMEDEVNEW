@@ -2441,6 +2441,8 @@ typedef struct
 	char	m_szSelf[32];	// ten nhan vat dang xem (phuc vu roi bang)
 	DWORD	m_dwMyWeekOffer;	// cong hien tuan cua ban than (member KV 9)
 	char	m_szAnnounce[128];
+	int	m_nTongLevel;	// cap bang JX1 (KPlayerTong::GetTongLevel) - KHAC m_nLevel
+					// vi m_nLevel la field 13 = cap KIEN THIET
 } TONG_JX2_INFO_SYNC;
 
 typedef struct

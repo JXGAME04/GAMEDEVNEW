@@ -2073,6 +2073,8 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 			pSync->m_wMyRights = sJX2_RightMask(pMe);
 			strncpy(pSync->m_szSelf, Player[nPlayerIdx].m_PlayerName, 31);
 			pSync->m_dwMyWeekOffer = GetMemberField(pMe, 9);
+			// "Dang cap" bang (khac "Dang cap kien thiet" = m_nLevel field 13)
+			pSync->m_nTongLevel = Player[nPlayerIdx].m_cTong.GetTongLevel();
 			memcpy(pSync->m_szAnnounce, pTong->szAnnounce, sizeof(pSync->m_szAnnounce));
 			pSync->m_szAnnounce[127] = 0;
 			// tim ten bang chu

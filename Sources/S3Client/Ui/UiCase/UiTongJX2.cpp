@@ -88,26 +88,47 @@ struct TJX2InfoCtl
 	const char* szSec;		// ten section goc trong blueprint
 	const char* szLabel;	// nhan TCVN3 (NULL = o du lieu)
 };
-static const TJX2InfoCtl s_sInfoCtl[32] =
+// Trang "Tin tuc" = ban thiet ke BASEINFO (trang thong tin co ban) cua ban
+// Linux, KHONG phai FUNUSE (trang chuc nang) nhu phien truoc ket luan nham -
+// vi lay nham ban ve nen o thu hai cua hang 1 bi hieu la "Lien minh" va bi do
+// ten BANG CHU vao. Chi lay DUNG nhung hang co trong anh mau: ban goc con
+// 7 hang nua (ServiceFee/StandFund/BattleFund/StoredBuildFund/Liveness/
+// MyLiveness/DailyCost) va 3 trong so do CHONG TOA DO TUYET DOI voi hang dang
+// hien (Liveness trung khit Ngan quy, MyLiveness trung khit Ngan sach kien
+// thiet, ServiceFee giao Dang cap kien thiet) - nap ca 11 hang la chu de len nhau.
+#define TJX2_INFO_NUM	29
+static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 {
-	{"TitleTongInfo",    "Th\253ng tin bang h\351i"},
-	{"TitleTongName",    "T\252n bang"},        {"TxtTongName",    NULL},
-	{"TitleMaster",      "Bang ch\361"},        {"TxtMaster",      NULL},
-	{"TitleLeague",      "Li\252n minh"},       {"TxtLeague",      NULL},
-	{"TitleCamp",        "Phe ph\270i"},        {"TxtCamp",        NULL},
-	{"TitleTongLevel",   "C\312p bang"},        {"TxtTongLevel",   NULL},
-	{"TitleMemberNum",   "Th\265nh vi\252n"},   {"TxtMemberNum",   NULL},
-	{"TitleTongCapital", "Ng\251n qu\374 bang"},{"TxtTongCapital", NULL},
-	{"TitleBuildFund",   "Qu\374 ki\325n thi\325t"},{"TxtBuildFund", NULL},
-	{"TitleBattleFund",  "Qu\374 chi\325n b\336"},{"TxtBattleFund", NULL},
-	{"TitleServiceFee",  "Ph\335 duy tr\327"},  {"TxtServiceFee",  NULL},
-	{"TitleStandFund",   "Tr\356 c\312p"},      {"TxtStandFund",   NULL},
-	{"TitleTotalOffer",  "Qu\374 d\371 tr\367"},{"TxtTotalOffer",  NULL},
-	{"TitleStoredBuildFund", "Ki\325n thi\325t d\371 tr\367"},{"TxtStoredBuildFund", NULL},
-	{"TitlePersonalInfo","Th\253ng tin c\270 nh\251n"},
-	{"TitlePersonalOffer","C\350ng hi\325n"},   {"TxtPersonalOffer", NULL},
-	{"TitleLiveness",    "Kinh nghi\326m bang"},{"TxtLiveness",    NULL},
+	{"TitleTongInfo",     "Tin t\370c"},
+	{"TitleTongName",     "Bang h\351i"},          {"TxtTongName",      NULL},
+	{"TitleMaster",       "Bang ch\361"},          {"TxtMaster",        NULL},
+	{"TitleLeague",       "Li\252n minh"},         {"TxtLeague",        NULL},
+	{"TitleCamp",         "Phe"},                  {"TxtCamp",          NULL},
+	{"TitleTongLevel",    "\247\274ng c\312p"},    {"TxtTongLevel",     NULL},
+	{"TitleMemberNum",    "Nh\251n s\350"},        {"TxtMemberNum",     NULL},
+	{"TitleBuildLevel",   "\247\274ng c\312p ki\325n thi\325t"}, {"TxtBuildLevel", NULL},
+	{"TitleTongCapital",  "Ng\251n qu\374"},       {"TxtTongCapital",   NULL},
+	{"TitleBuildFund",    "Ng\251n s\270ch ki\325n thi\325t"}, {"TxtBuildFund", NULL},
+	{"TitleTotalOffer",   "C\350ng hi\325n d\371 tr\367"}, {"TxtTotalOffer", NULL},
+	{"TitlePersonalInfo", "Tin t\370c c\270 nh\251n"},
+	{"TitlePersonalOffer","C\350ng hi\325n c\270 nh\251n"}, {"TxtPersonalOffer", NULL},
+	{"TitleWeeklyOffer",  "C\350ng hi\325n tu\307n"}, {"TxtWeeklyOffer", NULL},
+	{"TxtHelpTitle",      "Gi\363p \256\354"},
+	{"Van1",              "v\271n l\255\356ng"},   {"Van2",             "v\271n l\255\356ng"},
 };
+// Chi so o GIA TRI de RenderInfo do so lieu vao (khop bang tren)
+#define TJX2_INFO_TONGNAME		2
+#define TJX2_INFO_MASTER		4
+#define TJX2_INFO_LEAGUE		6
+#define TJX2_INFO_CAMP			8
+#define TJX2_INFO_TONGLEVEL		10
+#define TJX2_INFO_MEMBERNUM		12
+#define TJX2_INFO_BUILDLEVEL	14
+#define TJX2_INFO_CAPITAL		16
+#define TJX2_INFO_BUILDFUND		18
+#define TJX2_INFO_TOTALOFFER	20
+#define TJX2_INFO_MYOFFER		23
+#define TJX2_INFO_WEEKOFFER		25
 
 // 14 nut quyen cua blueprint trang Phan phoi (RightID doc tu chinh ini)
 static const char* s_szRtSec[14] =
@@ -269,7 +290,7 @@ KUiTongJX2* KUiTongJX2::OpenWindow()
 	{
 		ms_pSelf->Show();
 		ms_pSelf->m_nFunMode = 0;
-		ms_pSelf->SwitchPage(TJX2_UI_PAGE_FUNUSE);	// trang Tin tuc kieu Linux
+		ms_pSelf->SwitchPage(defTONG_JX2_PAGE_INFO);	// trang Tin tuc (BASEINFO)
 	}
 	return ms_pSelf;
 }
@@ -478,10 +499,16 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_ColHdr[0].Init(&Ini, "Fun_TxtRank");
 	ms_pSelf->m_ColHdr[1].Init(&Ini, "Fun_TitleName");
 	ms_pSelf->m_ColHdr[2].Init(&Ini, "Fun_TxtTitle");
+	// 4 nut day theo anh mau. Section ini KHONG co khoa Label= nen phai dat o
+	// day, neu khong ca bon la nut TRANG TRON (chu game da chup duoc).
 	ms_pSelf->m_Bot[0].Init(&Ini, "Bot_Join");
+	ms_pSelf->m_Bot[0].SetLabel("V\265o bang n\265y");
 	ms_pSelf->m_Bot[1].Init(&Ini, "Bot_Create");
+	ms_pSelf->m_Bot[1].SetLabel("T\271o m\355i");
 	ms_pSelf->m_Bot[2].Init(&Ini, "Bot_Other");
+	ms_pSelf->m_Bot[2].SetLabel("Xem tin Bang kh\270c");
 	ms_pSelf->m_Bot[3].Init(&Ini, "Bot_Close");
+	ms_pSelf->m_Bot[3].SetLabel("\247\343ng");
 	ms_pSelf->m_RecToggle.Init(&Ini, "Rec_ToggleRecruit");
 	ms_pSelf->m_RecToggle.SetLabel("\247\343ng/m\353 tuy\323n");
 	{
@@ -510,7 +537,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		for (i = 1; i <= 7; i++)
 			ms_pSelf->m_WsIcon[i].SetLabel("");	// bo so - da co hinh nen
 	}
-	for (i = 0; i < 32; i++)
+	for (i = 0; i < TJX2_INFO_NUM; i++)
 	{
 		sprintf(szSec, "Info_%s", s_sInfoCtl[i].szSec);
 		ms_pSelf->m_Info[i].Init(&Ini, szSec);
@@ -624,6 +651,10 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_BtnPrev.Init(&Ini, "BtnPrev");
 	ms_pSelf->m_BtnNext.Init(&Ini, "BtnNext");
 	ms_pSelf->m_BtnClose.Init(&Ini, "BtnClose");
+	// [BtnClose] (430,442,126x18) de len [Bot_Close] (478,437) va [Bot_Other]
+	// (320,437) - hai nut cung lam mot viec. Giu cum 4 nut day theo anh mau.
+	ms_pSelf->m_BtnClose.Hide();
+	ms_pSelf->m_BtnClose.Enable(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -657,9 +688,10 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 		if (g_pCoreShell)
 			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_MEMBER, 0);
 	}
-	if (nUiPage == TJX2_UI_PAGE_RECRUIT || nUiPage == 4)
+	if (nUiPage == 4 || nUiPage == defTONG_JX2_PAGE_INFO)
 	{
-		// moi tab deu hien danh sach thanh vien (yeu cau chu game)
+		// trang Tin tuc va Nhat ky co panel danh sach thanh vien ben phai.
+		// Trang Chieu mo thi KHONG - ban goc khong hien danh sach thanh vien o do.
 		if (g_pCoreShell)
 			g_pCoreShell->TongOperation(GTOI_TONG_JX2_VIEW, defTONG_JX2_PAGE_MEMBER, 0);
 	}
@@ -719,12 +751,10 @@ void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
 		{
 			memcpy(ms_pSelf->m_byMember, pData, nLen);
 			ms_pSelf->m_bHasMember = 1;
-			// trang Chieu mo dung CHUNG panel phai voi danh sach don xin, nen
-			// phai ve lai ca trang (RenderMembers mot minh se de len khoi don)
+			// trang Chieu mo KHONG hien danh sach thanh vien -> bo qua
 			if (ms_pSelf->m_nPage == TJX2_UI_PAGE_RECRUIT)
-				ms_pSelf->RenderRecruit();
-			else if (ms_pSelf->m_nPage != TJX2_UI_PAGE_TONGLIST &&
-				ms_pSelf->m_nPage != defTONG_JX2_PAGE_INFO)
+				break;
+			if (ms_pSelf->m_nPage != TJX2_UI_PAGE_TONGLIST)
 				ms_pSelf->RenderMembers();
 		}
 		break;
@@ -822,10 +852,14 @@ void KUiTongJX2::RepositionRows()
 		}
 		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 		{
-			// don xin (5 dong dau panel phai), thanh vien hien phia duoi
-			m_Row[i].SetPosition(341, 68 + i * 24);
-			m_BtnRowSel[i].SetPosition(341, 68 + i * 24);
-			m_BtnRowSel[i].Enable(i >= 1 && i <= 4);
+			// Dat DUNG vung [Rec_ApplyerList] cua ban thiet ke goc:
+			// (308,92) rong 212 cao 400 -> 8 dong buoc 19px, con cach cum nut
+			// [Rec_AcceptApply] (Top=397) mot khoang an toan.
+			m_Row[i].SetPosition(310, 94 + i * 19);
+			m_Row[i].SetSize(210, 16);
+			m_BtnRowSel[i].SetPosition(308, 92 + i * 19);
+			m_BtnRowSel[i].SetSize(212, 19);
+			m_BtnRowSel[i].Enable(i < 8);
 		}
 		else if (m_nPage == defTONG_JX2_PAGE_WS)
 		{
@@ -932,9 +966,13 @@ void KUiTongJX2::SwitchPage(int nPage)
 	// lop chu xam (offline) + panel xanh chi tiet + dong chi tiet khu
 	{
 		int i;
+		// TJX2_UI_PAGE_RECRUIT KHONG nam trong danh sach: ban thiet ke goc cua
+		// trang Chieu mo khong co MemberList/TxtRank/TxtTitle/TxtType/
+		// BtnPrevPage/BtnNextPage/BtnJump/BtnOnlinePriority - panel phai cua
+		// trang do danh RIENG cho danh sach don xin ([ApplyerList]).
 		BOOL bL = (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT ||
 			nPage == TJX2_UI_PAGE_FUNUSE || nPage == defTONG_JX2_PAGE_WS ||
-			nPage == TJX2_UI_PAGE_RECRUIT || nPage == 4);
+			nPage == defTONG_JX2_PAGE_INFO || nPage == 4);
 		for (i = 0; i < TJX2_UI_ROWS; i++)
 			if (bL) m_MList[i].Show(); else m_MList[i].Hide();
 		for (i = 0; i < TJX2_UI_ROWS; i++)
@@ -943,8 +981,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 			if (bL) m_MDet[i].Show(); else m_MDet[i].Hide();
 		for (i = 0; i < 3; i++)
 			if (bL) m_ColHdr[i].Show(); else m_ColHdr[i].Hide();
-		if (nPage == TJX2_UI_PAGE_RECRUIT) { m_RecToggle.Show(); m_RecToggle.Enable(true); }
-		else { m_RecToggle.Hide(); m_RecToggle.Enable(false); }
+		// Nut dong/mo tuyen: ban thiet ke goc KHONG CO (JX2 chan nguoi xin bang
+		// hai nguong cap, khong bang cong tac), va no de len nut [Save].
+		m_RecToggle.Hide();
+		m_RecToggle.Enable(false);
 		if (nPage == defTONG_JX2_PAGE_WS) m_WsSel.Show(); else m_WsSel.Hide();
 	}
 	// bo control trang Phuong tho
@@ -1001,7 +1041,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 	}
 	// field Tin tuc chi hien o trang Tin tuc (trang nay khong dung Row)
 	{
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < TJX2_INFO_NUM; i++)
 		{
 			if (nPage == defTONG_JX2_PAGE_INFO)
 				m_Info[i].Show();
@@ -1088,35 +1128,39 @@ void KUiTongJX2::RenderInfo()
 	ClearRows();
 	if (m_nPage == defTONG_JX2_PAGE_INFO)
 	{
-		// do du lieu vao dung cac o Txt* cua blueprint (chi so theo s_sInfoCtl)
-		static const char* szCamp[3] = {"Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
-		m_Info[2].SetText(p->m_szTongName);
-		m_Info[4].SetText(p->m_szMaster);
-		sprintf(sz, "%u", (unsigned)0);
-		m_Info[6].SetText("-");
-		m_Info[8].SetText(p->m_btCamp < 3 ? szCamp[p->m_btCamp] : "-");
-		sprintf(sz, "%d", p->m_nLevel);
-		m_Info[10].SetText(sz);
+		// Do so lieu vao dung o gia tri cua ban thiet ke BASEINFO.
+		// LUU Y ma tran doanh: camp_justice = 1, camp_evil = 2, camp_balance = 3
+		// (GameDataDef.h) - KHONG phai 0/1/2. Truoc day tra bang bang chi so
+		// tho nen bang Chinh phai hien ra "Ta phai".
+		static const char* szCamp[4] =
+			{"", "Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+		m_Info[TJX2_INFO_TONGNAME].SetText(p->m_szTongName);
+		m_Info[TJX2_INFO_MASTER].SetText(p->m_szMaster);
+		// Lien minh: goi tin chua mang ten lien minh (server co field 10 =
+		// UnionID nhung BuildClientView chua doc) -> de TRONG dung anh mau,
+		// khong ghi "-" nua.
+		m_Info[TJX2_INFO_LEAGUE].SetText("");
+		m_Info[TJX2_INFO_CAMP].SetText(
+			(p->m_btCamp >= 1 && p->m_btCamp <= 3) ? szCamp[p->m_btCamp] : "");
+		sprintf(sz, "%d", p->m_nTongLevel);
+		m_Info[TJX2_INFO_TONGLEVEL].SetText(sz);
 		sprintf(sz, "%d", (int)p->m_wMemberTotal);
-		m_Info[12].SetText(sz);
+		m_Info[TJX2_INFO_MEMBERNUM].SetText(sz);
+		sprintf(sz, "%d", p->m_nLevel);		// field 13 = cap KIEN THIET
+		m_Info[TJX2_INFO_BUILDLEVEL].SetText(sz);
 		sprintf(sz, "%.0f", (double)p->m_nMoney);
-		m_Info[14].SetText(sz);
-		sprintf(sz, "%u  (tu\307n %u/%u)", p->m_dwBuildFund, p->m_dwWeekBuild, p->m_dwWeekUpper);
-		m_Info[16].SetText(sz);
-		sprintf(sz, "%u", p->m_dwWarFund);
-		m_Info[18].SetText(sz);
-		sprintf(sz, "%u", p->m_dwMaintain);
-		m_Info[20].SetText(sz);
-		sprintf(sz, "%u", p->m_dwPerStand);
-		m_Info[22].SetText(sz);
+		m_Info[TJX2_INFO_CAPITAL].SetText(sz);
+		// chi MOT so: o rong 100px, them "(tuan x/y)" la tran ra ngoai khung
+		sprintf(sz, "%u", p->m_dwBuildFund);
+		m_Info[TJX2_INFO_BUILDFUND].SetText(sz);
 		sprintf(sz, "%u", p->m_dwStoredOffer);
-		m_Info[24].SetText(sz);
-		sprintf(sz, "%u", p->m_dwStoredBuild);
-		m_Info[26].SetText(sz);
+		m_Info[TJX2_INFO_TOTALOFFER].SetText(sz);
 		sprintf(sz, "%u", p->m_dwMyOffer);
-		m_Info[29].SetText(sz);
-		sprintf(sz, "%d", p->m_nExp);
-		m_Info[31].SetText(sz);
+		m_Info[TJX2_INFO_MYOFFER].SetText(sz);
+		sprintf(sz, "%u", p->m_dwMyWeekOffer);
+		m_Info[TJX2_INFO_WEEKOFFER].SetText(sz);
+		if (m_bHasMember)
+			RenderMembers();	// panel danh sach thanh vien ben phai
 		return;
 	}
 	sprintf(sz, "Bang: %s   Bang chu: %s", p->m_szTongName, p->m_szMaster);
@@ -1393,19 +1437,11 @@ void KUiTongJX2::RenderRecruit()
 	int i;
 	char sz[120];
 	ClearRows();
-	// ve danh sach thanh vien TRUOC ca cong thoat som: goi MEMBER_SYNC co the
-	// ve truoc RECRUIT_SYNC, neu thoat som thi panel phai bi de trang
-	if (m_bHasMember)
-		RenderMembers(5);
+	// Trang Chieu mo KHONG hien danh sach thanh vien (ban thiet ke goc
+	// khong co MemberList/TxtRank/BtnPrevPage... o trang nay - chu game
+	// da xac nhan lai). Panel phai chi danh cho danh sach don xin.
 	if (!m_bHasRecruit)
 		return;
-	if (g_pCoreShell)
-	{
-		int nOpen = g_pCoreShell->TongOperation(GTOI_TONG_GET_RECRUIT, 0, 0);
-		m_RecToggle.SetLabel(nOpen ?
-			"\247ang m\353 tuy\323n - b\312m \256\323 \256\343ng" :
-			"\247ang \256\343ng tuy\323n - b\312m \256\323 m\353");
-	}
 	TONG_JX2_RECRUIT_SYNC* p = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
 	m_RecJiyu.SetText(p->m_szRecruit);
 	sprintf(sz, "%d", (int)p->m_btAutoLv);
@@ -1419,30 +1455,27 @@ void KUiTongJX2::RenderRecruit()
 		m_nRecHD[i] = p->m_btAct[i] % TJX2_HD_NUM;
 		m_RecHD[i].SetLabel(s_szRecHD[m_nRecHD[i]]);
 	}
-	// (danh sach thanh vien da ve o dau ham, day xuong 5 dong)
 	{
+		// KHONG ve them dong tieu de nao o day: ban thiet ke goc da co san HAI
+		// tieu de la [Rec_ApplyTitle] va [Rec_ApplyerName]. Dong "== Don xin
+		// vao bang X-Y/Z ==" ta tu them truoc day la tieu de THU BA, de len
+		// [Rec_ApplyerName] - dung cho "du thong tin" chu game noi.
+		// Server gui CA 8 don trong MOT goi nen ve het, khong can lat trang.
 		int nTotal = (int)p->m_btApplyCount;
-		int nShow;
-		if (m_nRecStart >= nTotal)
-			m_nRecStart = 0;
-		nShow = nTotal - m_nRecStart;
-		if (nShow > 4)
-			nShow = 4;
+		int nShow = nTotal;
+		m_nRecStart = 0;
+		if (nShow > 8)
+			nShow = 8;
 		if (nShow < 0)
 			nShow = 0;
-		sprintf(sz, "== \247\254n xin v\265o bang %d-%d/%d ==",
-			nTotal ? m_nRecStart + 1 : 0, m_nRecStart + nShow, nTotal);
-		m_Row[0].SetText(sz);
 		for (i = 0; i < nShow; i++)
 		{
-			TONG_JX2_ONE_APPLY* pA = &p->m_sApply[m_nRecStart + i];
-			sprintf(sz, "%s%-16s  c\312p %d",
-				(m_nRecStart + i == m_nSel) ? "> " : "  ",
+			TONG_JX2_ONE_APPLY* pA = &p->m_sApply[i];
+			// cot cap can theo tieu de [Rec_ApplyerName]: ten roi cap
+			sprintf(sz, "%s%-22s%d", (i == m_nSel) ? ">" : " ",
 				pA->m_szName, (int)pA->m_wLevel);
-			m_Row[i + 1].SetText(sz);
+			m_Row[i].SetText(sz);
 		}
-		if (!nTotal)
-			m_Row[1].SetText("  (ch\255a c\343 \256\254n n\265o)");
 	}
 }
 
@@ -1647,11 +1680,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		{
 			int i;
-			// tab -> trang UI: tab1 = chieu mo (JX2), tab2 = quan thanh vien
-			// Tab0 Tin tuc = trang FunUse che do THONG TIN (dung nhu ban Linux)
+			// Tab0 "Tin tuc" = trang BASEINFO (defTONG_JX2_PAGE_INFO). Truoc day
+			// tro nham vao FUNUSE nen ve ban thiet ke trang CHUC NANG: hang 1
+			// cua FUNUSE la [TongName][TongUnion] chu khong phai [TongName]
+			// [Master], nen ten bang chu roi vao o "Lien minh".
+			// Nut "Su dung chuc nang" (m_BtnFun) van mo TJX2_UI_PAGE_FUNUSE.
 			static const int s_nTabPage[TJX2_UI_TABS] =
 			{
-				TJX2_UI_PAGE_FUNUSE, TJX2_UI_PAGE_RECRUIT,
+				defTONG_JX2_PAGE_INFO, TJX2_UI_PAGE_RECRUIT,
 				defTONG_JX2_PAGE_MEMBER, defTONG_JX2_PAGE_WS, 4,
 			};
 			for (i = 0; i < TJX2_UI_TABS; i++)
@@ -1702,9 +1738,11 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					}
 					else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
 					{
-						if (i >= 1 && i <= 4)
+						// danh sach don bat dau ngay tu dong 0 (khong con
+						// dong tieu de tu sinh chiem cho)
+						if (i < 8)
 						{
-							m_nSel = m_nRecStart + i - 1;
+							m_nSel = i;
 							RenderRecruit();
 						}
 					}
@@ -1991,19 +2029,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)&m_RecPrev || uParam == (unsigned int)&m_RecNext)
 		{
-			// server gui du ca 8 don trong MOT goi -> lat trang ngay tren client
-			TONG_JX2_RECRUIT_SYNC* pR = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
-			if (uParam == (unsigned int)&m_RecPrev)
-			{
-				m_nRecStart -= 4;
-				if (m_nRecStart < 0)
-					m_nRecStart = 0;
-			}
-			else if (m_bHasRecruit && m_nRecStart + 4 < (int)pR->m_btApplyCount)
-				m_nRecStart += 4;
-			m_nSel = m_nRecStart;
-			if (m_bHasRecruit)
-				RenderRecruit();
+			// Server gui CA 8 don (tran) trong MOT goi va ta ve het 8 dong,
+			// nen khong con trang de lat. Hai nut nay lam moi danh sach.
+			RequestPage(m_nPage, 0);
 			return 1;
 		}
 		if (uParam == (unsigned int)&m_BtnPrev)
