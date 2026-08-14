@@ -72,7 +72,10 @@ private:
 	KWndLabeledButton	m_Bot[4];				// 4 nut day: Vao bang nay/Tao moi/Xem tin/Dong
 	KWndText80			m_ColHdr[3];			// tieu de cot Hang/Thanh vien/Chuc vu
 	KWndText80			m_MList[14];			// danh sach thanh vien (MOI TAB, tach khoi m_Row)
-	KWndImage			m_WsIconBg[8];			// nen icon khu (sprite nen goc)
+	KWndImage			m_WsIconBg[8];			// nen icon khu (sprite nen goc, 35x48)
+	KWndImage			m_WsIconHL[8];			// lop CAO SANG khi khu da lap (33x33)
+	KWndText80			m_WsRank[8];			// chu cap ngay duoi tung icon
+	KWndLabeledButton	m_WsSub[3];				// 3 nut trang con cua luoi khu
 	KWndImage			m_WsIconSel;			// khung chon khu (sprite chon goc)
 	KWndImage			m_WsArt;				// buc tranh nen 298x226 cua trang tac phuong
 	KWndText80			m_Fun2[13];				// hang bo sung tab Tin tuc theo anh mau
@@ -121,7 +124,10 @@ private:
 	int		m_nPage;			// defTONG_JX2_PAGE_*
 	int		m_nStart;			// trang thanh vien: chi so dau
 	int		m_nRecStart;		// trang chieu mo: don xin dau tien dang ve
-	int		m_nSel;				// dong dang chon (trang TV/QH) / khu dang chon (TP)
+	int		m_nSel;				// dong dang chon trong danh sach thanh vien
+	int		m_nSelWs;			// khu tac phuong dang chon (1..7) - TACH RIENG khoi
+								// m_nSel: dung chung khien o trang Phuong tho thanh
+								// vien thu 2 luon bi danh dau chon
 	// du lieu trang hien tai (ban chep goi sync gan nhat)
 	unsigned char	m_byInfo[512];
 	unsigned char	m_byMember[1024];
