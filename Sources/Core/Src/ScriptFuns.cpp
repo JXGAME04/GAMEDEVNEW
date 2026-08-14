@@ -2457,6 +2457,29 @@ int LuaOpenGiveBox(Lua_State* L)
 }
 
 KTabFile g_TabFileLib;
+// PHAN BIEN D1: mot o TabFile toan cuc lam workshop_setting.lua chet giua
+// file luc boot (nap 2 bang, bang sau DE bang truoc -> GetCell tra "" ->
+// tonumber = nil -> "table index is nil"; co ScriptError.log 13/08 lam
+// bang chung). Moi caller von DA truyen TEN bang (arg2 cua Load, arg1 cua
+// GetCell/GetRowCount/UnLoad - truoc gio bi bo qua) nen chi can TON TRONG
+// ten do. Goi 1 tham so / ten chua nap -> ve o toan cuc nhu cu.
+static std::map<std::string, KTabFile*> s_mapTabFiles;
+
+static KTabFile* sGetTabFileByName(Lua_State* L, int nArg)
+{
+	if (Lua_GetTopIndex(L) >= nArg && Lua_IsString(L, nArg))
+	{
+		const char* szName = lua_tostring(L, nArg);
+		if (szName && szName[0])
+		{
+			std::map<std::string, KTabFile*>::iterator it =
+				s_mapTabFiles.find(szName);
+			if (it != s_mapTabFiles.end())
+				return it->second;
+		}
+	}
+	return &g_TabFileLib;
+}
 int LuaTabFile_Load(Lua_State* L)
 {
 	int result = 0;
@@ -2469,7 +2492,27 @@ int LuaTabFile_Load(Lua_State* L)
 		if (Lua_IsString(L, 1))
 		{
 			szFileName = (char*)lua_tostring(L, 1);
-			v4 = g_TabFileLib.Load(szFileName);
+			KTabFile* pTab = &g_TabFileLib;
+			if (Lua_IsString(L, 2))
+			{
+				const char* szName = lua_tostring(L, 2);
+				if (szName && szName[0])
+				{
+					std::map<std::string, KTabFile*>::iterator it =
+						s_mapTabFiles.find(szName);
+					if (it == s_mapTabFiles.end())
+					{
+						pTab = new KTabFile;
+						s_mapTabFiles[szName] = pTab;	// song suot doi tien trinh
+					}
+					else
+					{
+						pTab = it->second;
+						pTab->Clear();	// nap lai cung ten = thay noi dung
+					}
+				}
+			}
+			v4 = pTab->Load(szFileName);
 			lua_pushnumber(L, (long double)v4);
 			result = 1;
 		}
@@ -2481,20 +2524,21 @@ int LuaTabFile_GetCell(Lua_State* L)
 {
 	int nParamNum = Lua_GetTopIndex(L);
 	char szString[128];
-	if (nParamNum >= 3 && g_TabFileLib.GetHeight())
+	KTabFile* pTabC = sGetTabFileByName(L, 1);
+	if (nParamNum >= 3 && pTabC->GetHeight())
 	{
 		if (Lua_IsNumber(L, 2) && Lua_IsNumber(L, 3))
 		{
 			int nRow = (int)Lua_ValueToNumber(L, 2);
 			int nColumn = (int)Lua_ValueToNumber(L, 3);
-			g_TabFileLib.GetString(nRow, nColumn, "", szString, sizeof(szString));
+			pTabC->GetString(nRow, nColumn, "", szString, sizeof(szString));
 		}
 		else if (Lua_IsNumber(L, 2) && Lua_IsString(L, 3))
 		{
 			int nRow = (int)Lua_ValueToNumber(L, 2);
 			char szColumn[32];
 			strcpy(szColumn, Lua_ValueToString(L, 3));
-			g_TabFileLib.GetString(nRow, szColumn, "", szString, sizeof(szString));
+			pTabC->GetString(nRow, szColumn, "", szString, sizeof(szString));
 		}
 		else if (Lua_IsString(L, 2) && Lua_IsString(L, 3))
 		{
@@ -2502,7 +2546,7 @@ int LuaTabFile_GetCell(Lua_State* L)
 			char szColumn[32];
 			strcpy(szRow, Lua_ValueToString(L, 2));
 			strcpy(szColumn, Lua_ValueToString(L, 3));
-			g_TabFileLib.GetString(szRow, szColumn, "", szString, sizeof(szString));
+			pTabC->GetString(szRow, szColumn, "", szString, sizeof(szString));
 		}
 		else
 			return 0;
@@ -2515,9 +2559,10 @@ int LuaTabFile_GetCell(Lua_State* L)
 
 int LuaTabFile_GetRowCount(Lua_State* L)
 {
-	if (g_TabFileLib.GetHeight())
+	KTabFile* pTabR = sGetTabFileByName(L, 1);
+	if (pTabR->GetHeight())
 	{
-		int nCount = g_TabFileLib.GetHeight();
+		int nCount = pTabR->GetHeight();
 		Lua_PushNumber(L, nCount);
 		return 1;
 	}
@@ -2527,9 +2572,10 @@ int LuaTabFile_GetRowCount(Lua_State* L)
 
 int LuaTabFile_UnLoad(Lua_State* L)
 {
-	if (g_TabFileLib.GetHeight())
+	KTabFile* pTabU = sGetTabFileByName(L, 1);
+	if (pTabU->GetHeight())
 	{
-		g_TabFileLib.Clear();
+		pTabU->Clear();
 		Lua_PushNumber(L, 1);
 		return 1;
 	}

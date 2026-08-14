@@ -1787,7 +1787,10 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			int nToday = (int)(mktime(&sMid) / 86400);
 			if (pCmd->m_btOpCode == defTONG_JX2_TOP_MAINTAIN)
 				pTong->JX2_DailyMaintain(nToday, pTm->tm_wday);
-			else
+			else if ((int)pTong->JX2_GetField(defTONGTSK_LAST_WM_DAY) != nToday)
+				// PHAN BIEN D2: khong dedup thi thu Hai don tuan HAI lan (tick
+				// relay 00h0x + TOP_WEEKLY tu Lua 06h05) -> thong ke tuan truoc
+				// cua thanh vien (khoa 10/12) bi de bang 6 gio dau tuan nay.
 				pTong->JX2_WeeklyMaintain(nToday);
 			bOK = TRUE;
 			bMembersChanged = TRUE;

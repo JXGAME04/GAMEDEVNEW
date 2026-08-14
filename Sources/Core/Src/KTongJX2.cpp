@@ -353,6 +353,31 @@ static void sSendFieldCmd(DWORD dwTongID, WORD wKey, DWORD dwValue, BYTE btOp, D
 	sCmd.m_dwValue = dwValue;
 	sCmd.m_btOp = btOp;
 	sCmd.m_dwParam = dwParam;
+	// PHAN BIEN D4: ap LAC QUAN vao ban sao ngay - script goc chay tren
+	// relay nen check-roi-tru la nguyen tu; ta gui lenh di xa thi lan doc
+	// ke tiep trong CUNG khung phai thay gia tri MOI (echo relay van la
+	// chan ly, se ghi de sau).
+	{
+		KTongJX2Tong* pOpt = g_TongJX2.FindTong(dwTongID);
+		if (pOpt)
+		{
+			DWORD dwCur = 0;
+			std::map<WORD, DWORD>::iterator itF = pOpt->mapField.find(wKey);
+			if (itF != pOpt->mapField.end())
+				dwCur = itF->second;
+			if (btOp == defTONG_JX2_OP_SET)
+				pOpt->mapField[wKey] = dwValue;
+			else if (btOp == defTONG_JX2_OP_ADDU)
+				pOpt->mapField[wKey] = dwCur + dwValue;
+			else
+			{
+				int nNew = (int)dwCur + (int)dwValue;
+				if (nNew < 0)
+					nNew = 0;	// khop kep am cua relay
+				pOpt->mapField[wKey] = (DWORD)nNew;
+			}
+		}
+	}
 	g_NewProtocolProcess.PushMsgInTong((const void*)&sCmd, sizeof(sCmd));
 }
 
@@ -1374,8 +1399,20 @@ DEF_TONG_SETF(TongMapBan, 47)
 DEF_TONG_ADDF(BuildFund, 12, TRUE)
 DEF_TONG_ADDF(WarBuildFund, 15, TRUE)
 DEF_TONG_ADDF(PerStandFund, 17, TRUE)
-DEF_TONG_ADDF(Day, 20, TRUE)
-DEF_TONG_ADDF(Week, 21, TRUE)
+// PHAN BIEN D2: field 20 (Day) / 21 (Week) do RELAY so huu doc quyen
+// (JX2_DailyMaintain/WeeklyMaintain) - ban goc tong.lua chay TREN relay
+// nen chi cong mot lan; ta chay tren GS ma van gui ADD thi Day +2/ngay,
+// Week +3/thu Hai. Hai ham nay thanh no-op co chu dich.
+int LuaTONG_ApplyAddDay(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+int LuaTONG_ApplyAddWeek(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
 DEF_TONG_ADDF(StoredBuildFund, 19, FALSE)
 DEF_TONG_ADDF(StoredOffer, 18, FALSE)
 DEF_TONG_ADDF(TotalBuildFund, 43, FALSE)
@@ -3393,7 +3430,14 @@ int LuaTWS_ApplyUse(Lua_State* L)
 	Lua_PushNumber(L, (double)nType);
 	if (nPass >= 3)
 		Lua_PushNumber(L, (double)nChose);
-	Lua_Call(L, nPass, 1);
+	// PHAN BIEN D3: USE_R loi runtime thi lua_call don sach stack va KHONG
+	// push ket qua - doc -1 luc do la doc nham THAM SO CUOI cua chinh minh
+	// (= 1 o cac khu 3 tham so) -> phat do MIEN PHI. Phai kiem status.
+	if (Lua_Call(L, nPass, 1) != 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
 	int nOk = (int)Lua_ValueToNumber(L, -1);
 	lua_settop(L, -2);
 	if (nOk != 1)
@@ -3411,7 +3455,8 @@ int LuaTWS_ApplyUse(Lua_State* L)
 		Lua_PushNumber(L, (double)nType);
 		if (nPass >= 3)
 			Lua_PushNumber(L, (double)nChose);
-		Lua_Call(L, nPass, 0);
+		if (Lua_Call(L, nPass, 0) != 0)
+			; // USE_G_2 loi: stack da duoc lua_call don, khong lam gi them
 	}
 	Lua_PushNumber(L, 1);
 	return 1;
