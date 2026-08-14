@@ -821,6 +821,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_BtnClose.Enable(false);
 	// trang 2x2 Xem tin Bang khac (section Ozm_* + PageBg5 sinh tu blueprint)
 	ms_pSelf->m_ZmBg.Init(&Ini, "PageBg5");
+	ms_pSelf->m_ZmBg.Enable(false);	// nen dac (Trans=0) AddChild cuoi - khong duoc nuot chuot
 	{
 		char szSec[28];
 		int z;
@@ -829,12 +830,15 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			sprintf(szSec, "Ozm_Name%d", z + 1);
 			ms_pSelf->m_ZmName[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmName[z].Enable(false);
+			ms_pSelf->m_ZmName[z].SetText("");	// xoa chu mau design-time (KWndText::Init doc Text=)
 			sprintf(szSec, "Ozm_Info%d", z + 1);
 			ms_pSelf->m_ZmInfo[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmInfo[z].Enable(false);
+			ms_pSelf->m_ZmInfo[z].SetText("");
 			sprintf(szSec, "Ozm_JiYu%d", z + 1);
 			ms_pSelf->m_ZmJiyu[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmJiyu[z].Enable(false);
+			ms_pSelf->m_ZmJiyu[z].SetText("");
 			sprintf(szSec, "Ozm_QingXiangTitle%d", z + 1);
 			ms_pSelf->m_ZmQxT[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmQxT[z].Enable(false);
@@ -842,6 +846,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			sprintf(szSec, "Ozm_QingXiang%d", z + 1);
 			ms_pSelf->m_ZmQx[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmQx[z].Enable(false);
+			ms_pSelf->m_ZmQx[z].SetText("");
 			sprintf(szSec, "Ozm_HuoDongTitle%d", z + 1);
 			ms_pSelf->m_ZmHdT[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmHdT[z].Enable(false);
@@ -850,6 +855,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			sprintf(szSec, "Ozm_HuoDong%d", z + 1);
 			ms_pSelf->m_ZmHd[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmHd[z].Enable(false);
+			ms_pSelf->m_ZmHd[z].SetText("");
 			sprintf(szSec, "Ozm_LookBtn%d", z + 1);
 			ms_pSelf->m_ZmLook[z].Init(&Ini, szSec);
 			sprintf(szSec, "Ozm_ApplyBtn%d", z + 1);

@@ -165,14 +165,14 @@ int KUiTongGetString::WndProc(unsigned int uMsg, unsigned int uParam, int nParam
 			nRet = 1;
 		}
 		break;
-/*	case WND_N_EDIT_SPECIAL_KEY_DOWN:
+	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_RETURN &&
 			uParam == (unsigned int)(KWndWindow*)&m_StringEdit)
 		{
 			OnOk();
 			return 1;
 		}
-		break;*/
+		break;
 	default:
 		return KWndImage::WndProc(uMsg, uParam, nParam);
 	}

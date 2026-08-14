@@ -2837,7 +2837,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 					sprintf(szLog, "%s ph\270t cho %s %.0f l\255\356ng",
 						Player[nPlayerIdx].m_PlayerName, Player[nTargetIdx].m_PlayerName, (double)nVan * 10000);
 				sJX2_Msg2Tong(pTong, szLog);
-				if (pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY ? (nVan >= 100) : (nVan > 100))
+				if (nVan >= 100)	// ca rut lan phat: nguong 100 van (khop prefill hop nhap)
 					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
 			return 0;

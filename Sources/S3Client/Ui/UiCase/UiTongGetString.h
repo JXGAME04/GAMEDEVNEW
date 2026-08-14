@@ -35,7 +35,7 @@ private:
 	static KUiTongGetString*	m_pSelf;
 	KWndText32			m_Title;
 	short				m_nMinLen, m_nMaxLen;
-	KWndText32			m_StringEdit;
+	KWndEdit32			m_StringEdit;	// PHAI la edit - KWndText32 khong nhan WM_CHAR (khong go duoc)
 	KWndButton			m_OkBtn;
 	KWndButton			m_CancelBtn;
 	KWndWindow*			m_pRequester;
