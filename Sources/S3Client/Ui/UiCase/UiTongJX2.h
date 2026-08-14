@@ -41,6 +41,7 @@ public:
 	// ve nen panel chi tiet thanh vien (alpha-rect) TRUOC khi control con
 	// ve chu - ban goc dung SelBgColor cua [MemberList], khong co sprite
 	virtual void		PaintWindow();
+	void				LoadFunMaskImage();	// nap anh ten trang con theo m_nFunSub
 
 private:
 	void	Initialize();

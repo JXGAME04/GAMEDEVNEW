@@ -24,7 +24,7 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 #include "UiTongGetString.h"
 #include "UiInformation.h"
 #include "../../../Represent/iRepresent/iRepresentShell.h"	// KRUShadow + DrawPrimitives (ve nen panel)
-extern iRepresentShell*	g_pRepresentShell;	// khai bao nhu MouseHover.cpp:16 / PopupMenu.cpp:21		// UIMessageBox - hop xac nhan truoc thao tac khong hoan tac duoc
+extern iRepresentShell*	g_pRepresentShell;	// khai bao nhu MouseHover.cpp:16 / PopupMenu.cpp:21
 
 #include "../../Core/Src/KProtocol.h"
 #include "../../../Headers/KProtocolDef.h"
@@ -1300,7 +1300,13 @@ void KUiTongJX2::SwitchPage(int nPage)
 		}
 		for (i = 0; i < 7; i++)
 			if (bFun) m_FunP[i].Show(); else m_FunP[i].Hide();
-		if (bBtn) m_FunMask.Show(); else m_FunMask.Hide();
+		if (bBtn)
+		{
+			LoadFunMaskImage();	// nap ngay khi vao trang, khong doi bam nut
+			m_FunMask.Show();
+		}
+		else
+			m_FunMask.Hide();
 		for (i = 0; i < 6; i++)
 			if (bFun) m_FunPBg[i].Show(); else m_FunPBg[i].Hide();
 		// nhom nut giua theo sub-page (cac nut hanh dong deu thuoc sub 1 tru map)
@@ -1350,6 +1356,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 			else { m_FunSub[i].Hide(); m_FunSub[i].Enable(false); }
 		}
 		m_bMDet = 0;
+		m_nMDetRows = 0;
 	}
 	// lop chu xam (offline) + panel xanh chi tiet + dong chi tiet khu
 	{
@@ -1623,7 +1630,10 @@ void KUiTongJX2::RenderInfo()
 void KUiTongJX2::RenderMembers(int nOffset)
 {
 	if (!m_bHasMember)
+	{
+		m_nMDetRows = 0;	// khong con du lieu -> khong ve nen panel
 		return;
+	}
 	TONG_JX2_MEMBER_SYNC* p = (TONG_JX2_MEMBER_SYNC*)m_byMember;
 	char sz[120];
 	ClearMemberRows();
@@ -1779,11 +1789,20 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		// 5 dong chi tiet nam ngay duoi dong do; neu cham day panel thi day
 		// len tren de khong tran ra ngoai khung danh sach (14 dong)
 		int nFirst = nRow + 1;
+		// Chi day panel len khi 5 dong that su tran khoi khung; va KHONG
+		// BAO GIO de no de len chinh dong vua kich (nFirst > nRow).
 		if (nFirst + 5 > TJX2_UI_ROWS)
 			nFirst = TJX2_UI_ROWS - 5;
+		if (nFirst <= nRow)
+			nFirst = nRow + 1;
 		if (nFirst < 1)
 			nFirst = 1;
-		for (int nCl = nFirst; nCl < nFirst + 5 && nCl < TJX2_UI_ROWS; nCl++)
+		if (nFirst > TJX2_UI_ROWS - 1)
+			nFirst = TJX2_UI_ROWS - 1;
+		int nDetRows = TJX2_UI_ROWS - nFirst;
+		if (nDetRows > 5)
+			nDetRows = 5;
+		for (int nCl = nFirst; nCl < nFirst + nDetRows; nCl++)
 		{
 			m_MList[nCl].SetText("");
 			m_RowDim[nCl].SetText("");
@@ -1792,9 +1811,9 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			// dat 5 o chu vao dung cho + ghi lai de PaintWindow ve nen
 			int k;
 			for (k = 0; k < 5; k++)
-				m_MDet[k].SetPosition(341, 68 + (nFirst + k) * 24);
+				m_MDet[k].SetPosition(341, 68 + (nFirst + (k < nDetRows ? k : nDetRows - 1)) * 24);
 			m_nMDetTop = 68 + nFirst * 24;
-			m_nMDetRows = 5;
+			m_nMDetRows = nDetRows;
 		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
 		char szT[64];
@@ -1831,6 +1850,27 @@ void KUiTongJX2::RenderMembers(int nOffset)
 	sprintf(sz, "%d", m_nStart / defTONG_JX2_VIEW_MEMBERS + 1);
 	m_MPage.SetText(sz);
 	LoadChecksFromSel();
+}
+
+// Nap anh TEN trang con (1..4) cho m_FunMask. Section Fun_ImgSubPageMask
+// cua ban thiet ke goc KHONG co khoa Image= ma co 4 khoa ImgSubPage1..4,
+// nen phai tu doc theo trang dang chon - neu chi doc luc bam nut thi khi
+// vua mo trang o do van TRONG (loi san phan bien bat).
+void KUiTongJX2::LoadFunMaskImage()
+{
+	KIniFile Ini;
+	char szScheme[256], szPath[300], szKey[24], szImg[128];
+	int nSub = m_nFunSub;
+	if (nSub < 1 || nSub > 4)
+		nSub = 1;
+	g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
+	sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
+	if (!Ini.Load(szPath))
+		return;
+	sprintf(szKey, "ImgSubPage%d", nSub);
+	Ini.GetString("Fun_ImgSubPageMask", szKey, "", szImg, sizeof(szImg));
+	if (szImg[0])
+		m_FunMask.SetImage(ISI_T_SPR, szImg, false);
 }
 
 // Ve NEN panel chi tiet thanh vien roi moi de control con ve chu len tren.
@@ -2507,21 +2547,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (uParam == (unsigned int)&m_FunSub[q])
 				{
 					m_nFunSub = q + 1;
-					{
-						// anh ten trang con doc thang tu ini (4 khoa ImgSubPage1-4
-						// cua chinh section Fun_ImgSubPageMask - ban thiet ke goc)
-						KIniFile Ini;
-						char szScheme[256], szPath[300], szKey[24], szImg[128];
-						g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
-						sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
-						if (Ini.Load(szPath))
-						{
-							sprintf(szKey, "ImgSubPage%d", m_nFunSub);
-							Ini.GetString("Fun_ImgSubPageMask", szKey, "", szImg, sizeof(szImg));
-							if (szImg[0])
-								m_FunMask.SetImage(ISI_T_SPR, szImg, false);
-						}
-					}
+					LoadFunMaskImage();
 					// radio: chi nut dang chon sang (xem ghi chu o m_RcSub)
 					for (int z = 0; z < 4; z++)
 						m_FunSub[z].CheckButton((z + 1 == m_nFunSub) ? 1 : 0);
