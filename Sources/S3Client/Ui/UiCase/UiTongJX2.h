@@ -143,6 +143,7 @@ private:
 	int		m_nAmtOp;			// op cho hop nhap so tien (-1 = khong co)
 	unsigned long m_dwAmtTarget;
 	int		m_nPendP1, m_nPendP2;
+	char	m_szPendText[32];	// chuoi kem thao tac dang cho xac nhan (ten bang...)
 	int		m_nSelWs;			// khu tac phuong dang chon (1..7) - TACH RIENG khoi
 								// m_nSel: dung chung khien o trang Phuong tho thanh
 								// vien thu 2 luon bi danh dau chon

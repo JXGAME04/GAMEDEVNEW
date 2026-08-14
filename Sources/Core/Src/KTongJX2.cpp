@@ -2949,6 +2949,8 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					szMsg, (int)strlen(szMsg));
 			}
+			// ghi don len relay (field 54) - minh chu chi duyet duoc bang DA xin
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_UNION_APPLY, (int)dwUid, 0, dwParam);
 			return 20;
 		}
 	case defTONG_JX2_COP_UNION_ACCEPT:

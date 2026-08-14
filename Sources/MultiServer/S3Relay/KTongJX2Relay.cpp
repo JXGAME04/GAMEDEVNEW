@@ -1643,14 +1643,15 @@ static void sJX2_SayTong(CTongControl* pTong, const char* pszMsg)
 // [LevelUnionNum] tongset.ini ban goc (doc byte tho :206-307):
 // cap bang minh chu 0-9 -> 3 bang, 10-29 -> 4, 30-49 -> 5, 50-69 -> 6,
 // 70-89 -> 7, 90+ -> 8.
-static int sJX2_UnionCap(int nLevel)
+static int sJX2_UnionCap(int nBuildLevel)
 {
-	if (nLevel >= 90) return 8;
-	if (nLevel >= 70) return 7;
-	if (nLevel >= 50) return 6;
-	if (nLevel >= 30) return 5;
-	if (nLevel >= 10) return 4;
-	return 3;
+	// [LevelUnionNum] goc chay theo cap bang 0-100 (3..8 bang); he ta chi
+	// co cap KIEN THIET JX2 0-5 (tong_level_data) dang van hanh -> anh xa
+	// giu dung khoang gia tri goc: cap 0->3 ... cap 5->8.
+	int nCap = 3 + nBuildLevel;
+	if (nCap < 3) nCap = 3;
+	if (nCap > 8) nCap = 8;
+	return nCap;
 }
 
 // Go mot bang khoi lien minh: xoa field 10, dong dau field 49 = now (luat
@@ -1811,7 +1812,10 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 				break;
 			CTongControl* pB = g_cTongSet.JX2_FindByNameID(g_String2Id(pCmd->m_szName));
 			if (!pB || pB == pTong)
+			{
+				sJX2_SayTong(pTong, "Kh\253ng t\327m th\312y bang n\265y!");
 				break;
+			}
 			if (pB->JX2_GetField(10) != 0)
 			{
 				// G_PLAYERTONG_12
@@ -1821,11 +1825,27 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			{
 				DWORD dwT49 = pB->JX2_GetField(49);
 				if (dwT49 && time(NULL) - (time_t)dwT49 <= 259199)
-					break;	// GS da bao con bao nhieu giay; relay chi chan
+				{
+					char szMsg[160];
+					sprintf(szMsg, "Bang h\351i %s r\352i li\252n minh ch\255a \256\361 3 ng\265y!", pB->JX2_Name());
+					sJX2_SayTong(pTong, szMsg);
+					break;
+				}
 			}
 			DWORD dwUid = pTong->JX2_GetField(10);
-			if (g_cTongSet.JX2_UnionMembers(dwUid, NULL, 0) >= sJX2_UnionCap(pTong->JX2_TongLevel()))
+			if (pB->JX2_GetField(54) != dwUid)
+			{
+				// bang B CHUA nop don xin vao lien minh nay - khong duoc ep
+				char szMsg[160];
+				sprintf(szMsg, "Bang h\351i %s ch\255a xin gia nh\313p li\252n minh c\361a b\346n bang!", pB->JX2_Name());
+				sJX2_SayTong(pTong, szMsg);
 				break;
+			}
+			if (g_cTongSet.JX2_UnionMembers(dwUid, NULL, 0) >= sJX2_UnionCap((int)pTong->JX2_GetField(13)))
+			{
+				sJX2_SayTong(pTong, "Li\252n minh \256\267 \256\361 s\350 bang theo c\312p bang minh ch\361!");
+				break;
+			}
 			if (pTong->JX2_GetMoney64() <= 999999)
 			{
 				sJX2_SayTong(pTong, "Li\252n minh th\312t b\271i! Ng\251n qu\374 bang h\351i li\252n minh kh\253ng \256\361!");
@@ -1839,6 +1859,7 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			pTong->JX2_SetMoney64(pTong->JX2_GetMoney64() - 1000000);
 			pB->JX2_SetMoney64(pB->JX2_GetMoney64() - 1000000);
 			pB->JX2_SetField(10, dwUid);
+			pB->JX2_SetField(54, 0);	// don da duoc duyet - xoa
 			strncpy(pB->JX2_LeagueName(), pTong->JX2_LeagueName(), 31);
 			pB->JX2_LeagueName()[31] = 0;
 			{
@@ -1910,10 +1931,11 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			if (!pTong->JX2_GetField(50))
 				break;
 			CTongControl* pB = g_cTongSet.JX2_FindByNameID(g_String2Id(pCmd->m_szName));
-			if (!pB || pB == pTong)
+			if (!pB || pB == pTong || pB->JX2_GetField(10) != pTong->JX2_GetField(10))
+			{
+				sJX2_SayTong(pTong, "Kh\253ng t\327m th\312y bang n\265y trong li\252n minh!");
 				break;
-			if (pB->JX2_GetField(10) != pTong->JX2_GetField(10))
-				break;
+			}
 			{
 				char szMsg[160];
 				CTongControl* apM[16];
@@ -1929,6 +1951,12 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			sJX2_UnionDetach(pB);
 			bOK = TRUE;
 		}
+		break;
+	case defTONG_JX2_TOP_UNION_APPLY:
+		// bang nay vua nop don xin vao lien minh nParam1 - luu de minh chu
+		// CHI duyet duoc bang da xin (chong ep bang khac vao + tru oan tien)
+		pTong->JX2_SetField(54, (DWORD)pCmd->m_nParam1);
+		bOK = TRUE;
 		break;
 	case defTONG_JX2_TOP_MINISTER:
 		{

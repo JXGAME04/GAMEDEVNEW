@@ -325,6 +325,7 @@ KUiTongJX2::KUiTongJX2()
 	m_bOnlineFirst = 0;
 	m_nSortMode = 0;
 	m_nPendOp = -1;
+	m_szPendText[0] = 0;
 	m_nAmtOp = -1;
 	m_dwAmtTarget = 0;
 	m_dwPendTarget = 0;
@@ -2251,8 +2252,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == TJX2_CONFIRM_ID)
 		{
 			if (nParam && m_nPendOp >= 0)
-				SendOp(m_nPendOp, m_dwPendTarget, m_nPendP1, m_nPendP2, NULL);
+				SendOp(m_nPendOp, m_dwPendTarget, m_nPendP1, m_nPendP2,
+					m_szPendText[0] ? m_szPendText : NULL);
 			m_nPendOp = -1;
+			m_szPendText[0] = 0;
 			return 1;
 		}
 		if (uParam == TJX2_UNAME_ID)
@@ -2260,6 +2263,16 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			if (nParam && m_nAmtOp >= 0)
 			{
 				const char* pszNm = (const char*)nParam;
+				if (pszNm[0] && m_nAmtOp == defTONG_JX2_COP_UNION_KICK)
+				{
+					// thao tac pha huy: hoi xac nhan (chuoi blueprint) roi moi gui
+					int nOpK = m_nAmtOp;
+					m_nAmtOp = -1;
+					strncpy(m_szPendText, pszNm, sizeof(m_szPendText) - 1);
+					m_szPendText[sizeof(m_szPendText) - 1] = 0;
+					AskThenSendOp("UnionStr", "StrUnionKickTong", nOpK, 0, 0, 0);
+					return 1;
+				}
 				if (pszNm[0])
 					SendOp(m_nAmtOp, m_dwAmtTarget, 0, 0, pszNm);
 			}
@@ -2272,6 +2285,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			if (nParam && m_nAmtOp >= 0)
 			{
 				int nAmt = atoi((const char*)nParam);
+				if (nAmt > 0 && m_nAmtOp == defTONG_JX2_COP_MINISTER_FIRE)
+				{
+					// cach chuc = pha huy: hoi xac nhan, slot mang trong nP1
+					int nOpF = m_nAmtOp;
+					m_nAmtOp = -1;
+					AskThenSendOp("UnionStr", "StrFireMinister", nOpF, 0, nAmt, 0);
+					return 1;
+				}
 				if (nAmt > 0)
 					SendOp(m_nAmtOp, m_dwAmtTarget, nAmt, 0, NULL);
 			}
@@ -2514,21 +2535,21 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					m_nAmtOp = defTONG_JX2_COP_UNION_CREATE;
 					m_dwAmtTarget = 0;
 					KUiTongGetString::OpenWindow("T\252n li\252n minh",
-						"", this, TJX2_UNAME_ID, 2, 20);
+						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 15:
 					// xin vao lien minh: nhap ten mot bang thuoc lien minh
 					m_nAmtOp = defTONG_JX2_COP_UNION_APPLY;
 					m_dwAmtTarget = 0;
 					KUiTongGetString::OpenWindow("T\252n bang thu\351c li\252n minh",
-						"", this, TJX2_UNAME_ID, 2, 20);
+						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 16:
 					// minh chu duyet: nhap ten bang xin vao
 					m_nAmtOp = defTONG_JX2_COP_UNION_ACCEPT;
 					m_dwAmtTarget = 0;
 					KUiTongGetString::OpenWindow("T\252n bang xin gia nh\313p",
-						"", this, TJX2_UNAME_ID, 2, 20);
+						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 17:
 					// roi / giai tan lien minh - hoi xac nhan nguyen van blueprint
@@ -2543,7 +2564,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					m_nAmtOp = defTONG_JX2_COP_UNION_KICK;
 					m_dwAmtTarget = 0;
 					KUiTongGetString::OpenWindow("T\252n bang mu\350n \256u\346i",
-						"", this, TJX2_UNAME_ID, 2, 20);
+						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 19:
 					// phong dai than cho THANH VIEN DANG CHON; nhap so chuc
