@@ -74,6 +74,7 @@ private:
 	KWndText80			m_MList[14];			// danh sach thanh vien (MOI TAB, tach khoi m_Row)
 	KWndImage			m_WsIconBg[8];			// nen icon khu (sprite nen goc)
 	KWndImage			m_WsIconSel;			// khung chon khu (sprite chon goc)
+	KWndImage			m_WsArt;				// buc tranh nen 298x226 cua trang tac phuong
 	KWndText80			m_Fun2[13];				// hang bo sung tab Tin tuc theo anh mau
 	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo)
 	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)

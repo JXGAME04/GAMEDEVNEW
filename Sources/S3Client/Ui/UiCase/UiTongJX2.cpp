@@ -346,6 +346,12 @@ void KUiTongJX2::Initialize()
 	// cung. Truoc day add sau m_BtnRowSel nen no trum kin panel danh sach:
 	// vua che danh sach thanh vien vua nuot cu bam (Trans=0 = dac).
 	AddChild(&m_FunBg);
+	// buc tranh nen trang Tac phuong: anh nen phan trang [PageBg3] co mot LO
+	// TRONG SUOT dung 298x226 tai (28,76), va khung cua so chinh cung trong
+	// suot cho do -> khong ve cai nay thi nhin XUYEN qua cua so ra canh game.
+	// Ban thiet ke goc de no o file RIENG (trang con tac phuong) nen tai lieu
+	// tra cuu bo sot, keo theo ta bo sot ca buc tranh.
+	AddChild(&m_WsArt);
 	for (i = 0; i < 14; i++)
 		AddChild(&m_Rt[i]);
 	AddChild(&m_RtAll);
@@ -553,6 +559,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			ms_pSelf->m_WsIconBg[i].Init(&Ini, szSec);
 		}
 		ms_pSelf->m_WsIconSel.Init(&Ini, "Ws_IconSel");
+		ms_pSelf->m_WsArt.Init(&Ini, "Ws_ArtBg");
 		for (i = 0; i < TJX2_UI_ROWS; i++)
 			ms_pSelf->m_MList[i].SetPosition(341, 68 + i * 24);
 		for (i = 1; i <= 7; i++)
@@ -1052,6 +1059,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 			else { m_WsIcon[i].Hide(); m_WsIcon[i].Enable(false); m_WsIconBg[i].Hide(); }
 		}
 		if (bWs) m_WsIconSel.Show(); else m_WsIconSel.Hide();
+		if (bWs) m_WsArt.Show(); else m_WsArt.Hide();
 	}
 	// bo control trang Nhat ky
 	{
