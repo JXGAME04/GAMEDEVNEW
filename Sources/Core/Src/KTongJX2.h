@@ -70,6 +70,7 @@ public:
 	// Phuc vu cua so client JX2 (SGDI_TONG_JX2VIEW / SGDI_TONG_JX2OP):
 	// dung goi TONG_JX2_*_SYNC vao pOut tu ban sao -> tra so byte (0 = loi)
 	int		BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pOut, int nOutSize);
+	void	PushViewTo(DWORD dwPlayerIdx, DWORD dwTongNameID, int nPage);
 	// thao tac tu cua so (kiem quyen theo bang ID JX2 roi push len relay) -> 0 = ok
 	int		DoClientOp(int nPlayerIdx, const void* pCmd);
 	int		DoClientOpBody(int nPlayerIdx, const void* pCmd);

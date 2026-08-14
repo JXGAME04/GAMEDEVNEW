@@ -993,7 +993,8 @@ void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const
 	// cua so mo lai moi thay. Ba lenh nay se tu hien khi doi tab / bam lam moi.
 	if (nOp != defTONG_JX2_COP_SAVE_RECRUIT &&
 		nOp != defTONG_JX2_COP_SETANN &&
-		nOp != defTONG_JX2_COP_LEAVE_WORD)
+		nOp != defTONG_JX2_COP_LEAVE_WORD &&
+		nOp != defTONG_JX2_COP_ADDRIGHT && nOp != defTONG_JX2_COP_DELRIGHT)
 		RequestPage(m_nPage, m_nStart);
 }
 

@@ -149,6 +149,9 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 				pMember->setRight.insert(pCmd->m_dwRightID);
 			else
 				pMember->setRight.erase(pCmd->m_dwRightID);
+			// day nguoc trang Thanh vien (mang mat na quyen) cho nguoi vua bam
+			PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID,
+				defTONG_JX2_PAGE_MEMBER);
 		}
 		break;
 
@@ -269,6 +272,9 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 			{
 				memcpy(pTong->szRecruit, pCmd->m_szText, sizeof(pTong->szRecruit));
 				pTong->szRecruit[sizeof(pTong->szRecruit) - 1] = 0;
+				// day nguoc trang Chieu mo cho nguoi vua bam Luu
+				PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID,
+					defTONG_JX2_PAGE_RECRUIT);
 			}
 			else if (pCmd->m_btKind == defTONG_JX2_STR_UNION)
 			{
@@ -293,6 +299,28 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 	default:
 		break;
 	}
+}
+
+// DOT9 #28: sau khi relay chot, day NGUOC trang vua doi cho dung nguoi da
+// bam. Client KHONG con phai tu xin lai (xin ngay sau khi gui = luon doc
+// duoc chuoi CU vi relay chua kip ghi + ban sao chua kip nhan echo).
+// Cau kiem bang: m_dwParam la chi so Player[] CUC BO cua GameServer goc,
+// tren GS khac do la nguoi khac - nen bat buoc doi chieu NameID bang.
+void KTongJX2Mgr::PushViewTo(DWORD dwPlayerIdx, DWORD dwTongNameID, int nPage)
+{
+	int nIdx = (int)dwPlayerIdx;
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+		return;
+	if (Player[nIdx].m_nIndex <= 0)
+		return;
+	if (Player[nIdx].m_cTong.GetTongNameID() != dwTongNameID)
+		return;	// nguoi o GS khac / da roi bang
+	if (!g_pServer)
+		return;
+	BYTE byOut[2048];
+	int nLen = BuildClientView(nIdx, nPage, 0, byOut, sizeof(byOut));
+	if (nLen > 0)
+		g_pServer->PackDataToClient(Player[nIdx].m_nNetConnectIdx, byOut, nLen);
 }
 
 //////////////////////////////////////////////////////////////////////
