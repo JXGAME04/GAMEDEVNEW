@@ -3305,6 +3305,121 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			sSendTongOp(dwTongID, 0, btOp, pCmd->m_nParam1, pCmd->m_nParam2, dwParam);
 			return 0;
 		}
+	case defTONG_JX2_COP_GRANT_GROUP:
+		{
+			// Phat theo CHUC VU (cua so blueprint phat ngan luong/cong hien):
+			// m_szText = "elder|captain|member", nParam1: bit0-2 = so nhap la
+			// TONG (chia deu) cho tung nhom, bit3 = chi nguoi online, bit4 =
+			// ngan luong (0 = diem cong hien du tru).
+			int nFlags = pCmd->m_nParam1;
+			BOOL bMoney = (nFlags & 16) != 0;
+			BOOL bOnline = (nFlags & 8) != 0;
+			if (bMoney)
+			{
+				// nhu COP_PAY_MEMBER: bang chu hoac quyen Ngan quy 3001
+				if (!bMaster && !sJX2_HasRight(pMe, 3001))
+					return 3;
+			}
+			else if (!bMaster)
+				return 3;	// phat cong hien: bang chu (nhu COP_GRANT)
+			long nIn[3] = {0, 0, 0};
+			{
+				char szT[64];
+				strncpy(szT, pCmd->m_szText, sizeof(szT) - 1);
+				szT[sizeof(szT) - 1] = 0;
+				sscanf(szT, "%ld|%ld|%ld", &nIn[0], &nIn[1], &nIn[2]);
+			}
+			if (nIn[0] < 0) nIn[0] = 0;
+			if (nIn[1] < 0) nIn[1] = 0;
+			if (nIn[2] < 0) nIn[2] = 0;
+			if (!nIn[0] && !nIn[1] && !nIn[2])
+				return 5;
+			// gom danh sach tung nhom (figure 1/2/3); online loc bang chi so
+			// Player cuc bo (dung cach TONG_JX2_ONE_MEMBER.m_btOnline lam)
+			DWORD dwIDs[3][128];
+			int nCnt[3] = {0, 0, 0};
+			{
+				std::map<DWORD, KTongJX2Member>::iterator itM;
+				for (itM = pTong->mapMember.begin(); itM != pTong->mapMember.end(); ++itM)
+				{
+					int nFig = (int)itM->second.btFigure;
+					if (nFig < 1 || nFig > 3)
+						continue;
+					if ((bOnline || bMoney) && sFindPlayerIdxByNameID(itM->first) <= 0)
+						continue;	// ngan luong bat buoc online (Earn truc tiep)
+					if (nCnt[nFig - 1] < 128)
+						dwIDs[nFig - 1][nCnt[nFig - 1]++] = itM->first;
+				}
+			}
+			// so moi dau tung nhom + tong can
+			__int64 nPer[3];
+			__int64 nNeed = 0;
+			int g;
+			for (g = 0; g < 3; g++)
+			{
+				if (nCnt[g] == 0 || nIn[g] == 0)
+				{
+					nPer[g] = 0;
+					continue;
+				}
+				nPer[g] = (nFlags & (1 << g)) ? (nIn[g] / nCnt[g]) : nIn[g];
+				nNeed += nPer[g] * nCnt[g];
+			}
+			if (nNeed <= 0)
+				return 5;
+			if (bMoney)
+			{
+				// don vi LUONG (blueprint: "Tong ngan quy phat ra: %u luong")
+				__int64 nCo = (__int64)GetField(dwTongID, 3) |
+					((__int64)GetField(dwTongID, 4) << 32);
+				if (nCo < nNeed)
+					return 6;	// (von cua bang hoi khong du)
+				sSendMoneyCmd(dwTongID, -nNeed, defTONG_JX2_OP_ADD, dwParam);
+				__int64 nLai = nCo - nNeed;
+				pTong->mapField[3] = (DWORD)(nLai & 0xFFFFFFFF);
+				pTong->mapField[4] = (DWORD)((nLai >> 32) & 0xFFFFFFFF);
+				for (g = 0; g < 3; g++)
+				{
+					for (int m = 0; m < nCnt[g] && nPer[g] > 0; m++)
+					{
+						int nRIdx = sFindPlayerIdxByNameID(dwIDs[g][m]);
+						if (nRIdx > 0)
+							Player[nRIdx].Earn((int)nPer[g]);
+					}
+				}
+			}
+			else
+			{
+				// diem cong hien: kho du tru field 18; relay tru tung phan khi
+				// nhan TOP_DIST_MEMBER - kiem tong truoc tren ban sao
+				if ((__int64)GetField(dwTongID, 18) < nNeed)
+					return 6;
+				pTong->mapField[18] = (DWORD)((__int64)GetField(dwTongID, 18) - nNeed);
+				for (g = 0; g < 3; g++)
+				{
+					for (int m = 0; m < nCnt[g] && nPer[g] > 0; m++)
+						sSendTongOp(dwTongID, dwIDs[g][m], defTONG_JX2_TOP_DIST_MEMBER,
+							(int)nPer[g], 0, dwParam);
+				}
+			}
+			// thong bao theo khuon goc (tong_mix.lua:339): tung nhom mot cau
+			{
+				static const char* szFig[3] =
+					{"Tr\255\353ng L\267o", "\247\351i tr\255\353ng", "\247\326 t\366"};
+				char szMsg[192];
+				for (g = 0; g < 3; g++)
+				{
+					if (nCnt[g] == 0 || nPer[g] <= 0)
+						continue;
+					sprintf(szMsg, "%s Th\265nh vi\252n tr\252n m\271ng %s(%d ng\255\352i)"
+						" \256\255\356c ph\251n ph\270t %d %s!",
+						pMe->szName, szFig[g], nCnt[g], (int)nPer[g],
+						bMoney ? "l\255\356ng" : "\256i\323m c\350ng hi\325n");
+					sJX2_Msg2Tong(pTong, szMsg);
+				}
+			}
+			return 0;
+		}
 	case defTONG_JX2_COP_ENTER_MAP:
 		{
 			// "Vao bon bang": KHONG kiem quyen - moi thanh vien deu vao duoc

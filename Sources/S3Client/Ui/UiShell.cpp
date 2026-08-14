@@ -92,6 +92,7 @@
 #include "UiCase/UiInformation3.h"
 #include "UiCase/UiNotice.h"
 #include "UiCase/UiTongAssignBox.h"
+#include "UiCase/UiTongGrant.h"
 #include "TrayMode.h"
 
 extern iCoreShell*		g_pCoreShell;
@@ -495,6 +496,7 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiInformation3::GetIfVisible() == NULL &&
 			KUiNotice::GetIfVisible() == NULL &&
 			KUiTongAssignBox::GetIfVisible() == NULL &&
+			KUiTongGrant::GetIfVisible() == NULL &&
 			//KUiManage::GetIfVisible() ||
 			//g_pCoreShell->GetPaintMode() == 0 && //#toa do
 			KUiMeridian::GetIfVisible() == NULL &&
@@ -580,6 +582,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiChatCentre::CloseWindow(bAll);
 	KUiTrembleItem::CloseWindow(bAll);
 	KUiTongAssignBox::CloseWindow(bAll);
+	KUiTongGrant::CloseWindow(bAll);
 	KUiBreakItem::CloseWindow(bAll);
 	KUiMeridian::CloseWindow();
 	KUiSpringGame::CloseWindow();

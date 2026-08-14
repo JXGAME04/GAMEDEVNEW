@@ -17,6 +17,7 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 
 #include "UiTongJX2.h"
 #include "UiTongAssignBox.h"	// cua so bo nhiem chuc vu (che do JX2)
+#include "UiTongGrant.h"	// cua so phat ngan luong / cong hien theo chuc vu
 #include "../elem/wndedit.h"
 #include "../elem/wndlist2.h"
 #include "../elem/wndscrollbar.h"
@@ -2662,8 +2663,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					SendOp(defTONG_JX2_COP_UPGRADE, 0, 0, 0, NULL);
 					break;
 				case 1:
-					if (dwFT)
-						SendOp(defTONG_JX2_COP_GRANT, dwFT, 10, 0, NULL);
+					// cua so PHAT theo chuc vu cua ban goc (truoc day hardcode
+					// phat 10 diem cho 1 nguoi dang chon - khong co hop thoai)
+					KUiTongGrant::OpenWindow(false);
 					break;
 				case 2:
 					// duoi nguoi khoi bang - khong hoan tac duoc, phai hoi truoc
@@ -2792,13 +2794,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
 					break;
 				case 10:
-					if (dwFT)
-					{
-						m_nAmtOp = defTONG_JX2_COP_PAY_MEMBER;
-						m_dwAmtTarget = dwFT;
-						KUiTongGetString::OpenWindow("Ph\270t ti\322n (v\271n)",
-							"100", this, TJX2_AMOUNT_ID, 1, 7);
-					}
+					// cua so PHAT NGAN LUONG theo chuc vu cua ban goc (truoc
+					// day chi phat duoc cho MOT nguoi dang chon)
+					KUiTongGrant::OpenWindow(true);
 					break;
 				case 8:
 					{

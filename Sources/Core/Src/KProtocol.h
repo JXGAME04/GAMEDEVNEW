@@ -2400,6 +2400,7 @@ typedef struct
 #define defTONG_JX2_COP_MINISTER_SET	34	// phong dai than: dwTarget = thanh vien, nParam1 = 1..3
 #define defTONG_JX2_COP_MINISTER_FIRE	35	// cach chuc dai than: nParam1 = 1..3
 #define defTONG_JX2_COP_ENTER_MAP	36	// vao lanh dia bang (khong tham so; field 45 = map cua bang)
+#define defTONG_JX2_COP_GRANT_GROUP	37	// phat theo CHUC VU: m_szText "e|c|m"; nParam1 bit0-2 tong-so tung nhom, bit3 chi-online, bit4 ngan luong
 
 typedef struct
 {

@@ -343,6 +343,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiTeamManager2.cpp" />
     <ClCompile Include="Ui\UiCase\UiTimeBox.cpp" />
     <ClCompile Include="ui\uicase\UiTongAssignBox.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTongGrant.cpp" />
     <ClCompile Include="Ui\UiCase\UiTongChangeTitle.cpp" />
     <ClCompile Include="ui\uicase\UiTongCreateSheet.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -521,6 +522,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiTeamManager2.h" />
     <ClInclude Include="Ui\UiCase\UiTimeBox.h" />
     <ClInclude Include="ui\uicase\UiTongAssignBox.h" />
+    <ClInclude Include="Ui\UiCase\UiTongGrant.h" />
     <ClInclude Include="Ui\UiCase\UiTongChangeTitle.h" />
     <ClInclude Include="ui\uicase\UiTongCreateSheet.h" />
     <ClInclude Include="Ui\UiCase\UiTongGetString.h" />
