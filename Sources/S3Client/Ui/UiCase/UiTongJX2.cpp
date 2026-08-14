@@ -519,6 +519,10 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_RcLeaveWord);
 	AddChild(&m_RcSave);
 	AddChild(&m_BtnList);
+	// nen mo phai nam TREN ten (m_MList da add truoc) va DUOI chu panel
+	AddChild(&m_MShade);
+	m_MShade.Enable(false);
+	m_MShade.Hide();
 	for (i = 0; i < 7; i++)
 		AddChild(&m_MDet[i]);
 	for (i = 0; i < 8; i++)
@@ -993,8 +997,7 @@ void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const
 	// cua so mo lai moi thay. Ba lenh nay se tu hien khi doi tab / bam lam moi.
 	if (nOp != defTONG_JX2_COP_SAVE_RECRUIT &&
 		nOp != defTONG_JX2_COP_SETANN &&
-		nOp != defTONG_JX2_COP_LEAVE_WORD &&
-		nOp != defTONG_JX2_COP_ADDRIGHT && nOp != defTONG_JX2_COP_DELRIGHT)
+		nOp != defTONG_JX2_COP_LEAVE_WORD)
 		RequestPage(m_nPage, m_nStart);
 }
 
@@ -1358,6 +1361,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 		}
 		m_bMDet = 0;
 		m_nMDetRows = 0;
+		m_MShade.Hide();
 	}
 	// lop chu xam (offline) + panel xanh chi tiet + dong chi tiet khu
 	{
@@ -1789,6 +1793,7 @@ void KUiTongJX2::RenderMembers(int nOffset)
 	// vien phia duoi KHONG bi day xuong, KHONG bi xoa. 6 dong noi dung
 	// theo dung anh mau; nen ve o PaintWindow (truoc chu).
 	m_nMDetRows = 0;
+	m_MShade.Hide();
 	if (m_bMDet && m_nSel < (int)p->m_btCount)
 	{
 		int nRow = 0;
@@ -1814,6 +1819,9 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		}
 		m_nMDetTop = 68 + nFirst * 14;
 		m_nMDetRows = 6;
+		m_MShade.SetPosition(341, m_nMDetTop);
+		m_MShade.SetSize(225, 6 * 14);
+		m_MShade.Show();
 		// mau tung dong nhu anh mau: 1 vang / 2-3 cam / 4-6 xanh ngoc
 		m_MDet[0].SetTextColor(0xFF000000 | (255 << 16) | (253 << 8) | 122);
 		m_MDet[1].SetTextColor(0xFF000000 | (218 << 16) | (139 << 8) | 77);
@@ -1899,26 +1907,24 @@ void KUiTongJX2::LoadFunMaskImage()
 		m_FunMask.SetImage(ISI_T_SPR, szImg, false);
 }
 
-// Ve NEN panel chi tiet thanh vien roi moi de control con ve chu len tren.
-// Ban goc khong dung sprite (quet pak khong co anh nen nao cho panel) ma
-// dung mau nen cua chinh danh sach: [MemberList] SelBgColor=110,110,90 +
-// SelBgColorAlpha=100 (bon trang blueprint chep y het nhau). Quy uoc dong
-// goi alpha lay tu KWndMessageListBox: (255 - alpha) << 21.
-void KUiTongJX2::PaintWindow()
+// Nen mo cho panel chi tiet - cua so CON nam giua m_MList (ten) va m_MDet
+// (chu) trong chuoi con nen dung thu tu: ten o duoi, nen mo o giua nhin
+// xuyen duoc, chu panel o tren. Mau xanh dam alpha ~150/255.
+void KTJX2Shade::PaintWindow()
 {
-	KWndImage::PaintWindow();
-	if (!m_bMDet || m_nMDetRows <= 0 || !g_pRepresentShell)
+	if (!g_pRepresentShell)
 		return;
 	KRUShadow sBg;
-	sBg.oPosition.nX = m_nAbsoluteLeft + 341;
-	sBg.oPosition.nY = m_nAbsoluteTop + m_nMDetTop;
-	sBg.oEndPos.nX = sBg.oPosition.nX + 225;
-	sBg.oEndPos.nY = sBg.oPosition.nY + m_nMDetRows * 14;
-	// nen MO MAU XANH nhin xuyen duoc (loi xac nhan cua chu game)
+	sBg.oPosition.nX = m_nAbsoluteLeft;
+	sBg.oPosition.nY = m_nAbsoluteTop;
+	sBg.oEndPos.nX = m_nAbsoluteLeft + m_Width;
+	sBg.oEndPos.nY = m_nAbsoluteTop + m_Height;
+	// quy uoc alpha cua KWndMessageListBox: (255 - alpha) << 21
 	sBg.Color.Color_dw = ((20 << 16) | (90 << 8) | 70) |
-		(((unsigned int)(255 - 100) << 21) & 0xff000000);
+		(((unsigned int)(255 - 150) << 21) & 0xff000000);
 	g_pRepresentShell->DrawPrimitives(1, &sBg, RU_T_SHADOW, true);
 }
+
 
 void KUiTongJX2::RenderWorkshop()
 {

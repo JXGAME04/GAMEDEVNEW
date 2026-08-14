@@ -1856,6 +1856,25 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		{
 			pTong->JX2_SetCamp(pCmd->m_nParam1);
 			pTong->JX2_BroadcastCampSync();
+			{
+				// ghi NHAT KY su kien (chu game bao doi phe khong thay hien):
+				// append ring + echo STRING_SYNC ve GS y nhu JX2_ProcString
+				// DUNG thu tu bang client UiTongJX2.cpp:1571: 1=Chinh 2=Ta 3=Trung lap
+				static const char* szCampNm[4] = {"?",
+					"Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+				char szEv[96];
+				sprintf(szEv, "Bang h\351i \256\267 \256\346i sang phe %s",
+					szCampNm[pCmd->m_nParam1]);
+				pTong->JX2_SetString(defTONG_JX2_STR_EVENT, szEv);
+				STONG_JX2_STRING_COMMAND sSync;
+				memset(&sSync, 0, sizeof(sSync));
+				sSync.ProtocolFamily = pf_tong;
+				sSync.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+				sSync.m_dwTongNameID = pCmd->m_dwTongNameID;
+				sSync.m_btKind = defTONG_JX2_STR_EVENT;
+				strncpy(sSync.m_szText, szEv, sizeof(sSync.m_szText) - 1);
+				g_TongServer.BroadcastPackage(&sSync, sizeof(sSync));
+			}
 			bOK = TRUE;
 		}
 		break;
@@ -2076,6 +2095,11 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 					break;
 				}
 				pTong->JX2_AddField(12, -nCost, FALSE);
+				{
+					char szMsg[128];
+					sprintf(szMsg, "\247\267 x\251y t\270c ph\255\352ng (chi %d ng\251n s\270ch ki\325n thi\325t)", nCost);
+					sJX2_SayTong(pTong, szMsg);
+				}
 				pTong->JX2_SetField(wBase, 1);
 				pTong->JX2_SetField((WORD)(wBase + 2), 1);	// cap 1
 				pTong->JX2_SetField((WORD)(wBase + 1), 1);	// mo
@@ -2103,6 +2127,8 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 						pTong->JX2_AddField(12, -nCost, FALSE);
 				}
 				pTong->JX2_SetField((WORD)(wBase + 1), (nAct == 1) ? 1 : 0);
+				sJX2_SayTong(pTong, (nAct == 1) ?
+					"\247\267 m\353 t\270c ph\255\352ng." : "\247\267 \256\343ng t\270c ph\255\352ng.");
 				bOK = TRUE;
 				break;
 			}

@@ -21,6 +21,16 @@ Description : Cua so bang hoi kieu JX2 (5 trang: thong tin / thanh vien /
 #define TJX2_UI_TABS		5
 #define TJX2_UI_ACTS		6
 
+// O mau alpha lam NEN cho panel chi tiet thanh vien. PHAI la cua so CON
+// (khong ve o PaintWindow cua cua so cha): anh nen trang m_PageBg* cung la
+// con va ve SAU cha, nen moi thu cha tu ve deu bi de mat - dung loi "chua
+// co nen xanh mo" chu game bao.
+class KTJX2Shade : public KWndWindow
+{
+public:
+	virtual void	PaintWindow();
+};
+
 class KUiTongJX2 : KWndImage
 {
 public:
@@ -38,9 +48,6 @@ public:
 	static void			DataArrive(unsigned char* pData, int nLen);
 
 	virtual int			WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
-	// ve nen panel chi tiet thanh vien (alpha-rect) TRUOC khi control con
-	// ve chu - ban goc dung SelBgColor cua [MemberList], khong co sprite
-	virtual void		PaintWindow();
 	void				LoadFunMaskImage();	// nap anh ten trang con theo m_nFunSub
 
 private:
@@ -121,6 +128,7 @@ private:
 	KWndImage			m_FunPBg[6];			// khung do + thanh ong cua 3 hang do
 	KWndImage			m_FunMask;				// anh ten trang con 1-4 (Fun_ImgSubPageMask)
 	KWndText80			m_MDet[7];				// panel XANH chi tiet thanh vien
+	KTJX2Shade			m_MShade;			// nen mo xanh cua panel chi tiet
 	KWndText80			m_RowDim[TJX2_UI_ROWS];			// dong danh sach mau xam (offline)
 	KWndLabeledButton	m_FunBtn[26];			// nut hanh dong (>= TJX2_FUN_BTNS = 24)
 	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
@@ -161,7 +169,7 @@ private:
 	int		m_bHasInfo, m_bHasMember, m_bHasWs;
 	int		m_bHasRecruit;
 	int		m_nRecQX, m_nRecHD[4];	// gia tri menu dang chon (gui khi bam Luu)
-	unsigned char	m_byRecord[1300];
+	unsigned char	m_byRecord[2048];	// RECORD_SYNC 16 dong ~1671B (1300 cu la VUT GOI -> nhat ky trong)
 	unsigned char	m_byList[800];
 	int		m_bHasList;
 	KWndImage		m_ZmBg;					// nen trang 2x2 Xem tin Bang khac
