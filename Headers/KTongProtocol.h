@@ -982,6 +982,7 @@ struct STONG_JX2_STRING_COMMAND : EXTEND_HEADER
 #define defTONG_JX2_TOP_UNION_KICK	20	// minh chu truc xuat bang m_szName
 #define defTONG_JX2_TOP_MINISTER	21	// dai than: nParam1 = 1 ThuaTuong/2 NguyenSoai/3 TienPhong -> field 50+slot; nParam2 = 1 phong / 0 cach
 #define defTONG_JX2_TOP_UNION_APPLY	22	// ghi field 54 = UnionID bang DANG XIN vao (nParam1) - minh chu chi duyet duoc bang da xin
+#define defTONG_JX2_TOP_WS_OP		23	// tac phuong: nParam1 = loai khu 1..7, nParam2 = 0 lap / 1 mo / 2 dong / 3 nang cap (relay kiem dieu kien + tru quy)
 
 struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 {

@@ -917,6 +917,71 @@ struct JX2LevelRow
 static JX2LevelRow s_sJX2Level[defJX2_MAX_LEVEL];
 static int s_nJX2LevelCount = 0;
 
+// Bang cap TAC PHUONG (settings\tong\workshop\workshop_level_data.txt):
+// LEVEL / UPGRADE_FUND / MAINTAIN_FUND / OPEN_FUND. He so tung khu lay tu
+// workshops.txt cot COEFFICIENT (Binh giap 1.4 / Thien Cong 1.0 / Mat na
+// 1.2 / Luyen tap 1.0 / Thien y 0.8 / Le vat 1.0 / Hoat dong 0.6).
+#define defJX2_MAX_WSLEVEL	16
+static int s_nJX2WsUpFund[defJX2_MAX_WSLEVEL];
+static int s_nJX2WsOpenFund[defJX2_MAX_WSLEVEL];
+static int s_nJX2WsLevelCount = 0;
+// x100 de tinh nguyen: 140 = 1.4
+static const int s_nJX2WsCoef[8] = {0, 140, 100, 120, 100, 80, 100, 60};
+
+static void sJX2_LoadWsLevelTable()
+{
+	if (s_nJX2WsLevelCount > 0)
+		return;
+	// mac dinh theo bang JX2 (dung khi thieu file)
+	static const int nDef[11][3] = {
+		{0, 400, 0}, {1, 800, 80}, {2, 1200, 160}, {3, 1920, 240},
+		{4, 2400, 384}, {5, 2880, 480}, {6, 6000, 576}, {7, 12000, 1200},
+		{8, 14400, 240}, {9, 30000, 2880}, {10, 2000000000, 6000},
+	};
+	int i;
+	for (i = 0; i < 11; i++)
+	{
+		s_nJX2WsUpFund[i] = nDef[i][1];
+		s_nJX2WsOpenFund[i] = nDef[i][2];
+	}
+	s_nJX2WsLevelCount = 11;
+	FILE* pFile = fopen("settings\\tong\\workshop\\workshop_level_data.txt", "rt");
+	if (!pFile)
+		return;
+	char szLine[512];
+	while (fgets(szLine, sizeof(szLine), pFile))
+	{
+		int nLv, nUp, nOpen;
+		float fMaintain;
+		if (sscanf(szLine, "%d %d %f %d", &nLv, &nUp, &fMaintain, &nOpen) != 4)
+			continue;
+		if (nLv < 0 || nLv >= defJX2_MAX_WSLEVEL)
+			continue;
+		s_nJX2WsUpFund[nLv] = nUp;
+		s_nJX2WsOpenFund[nLv] = nOpen;
+		if (nLv + 1 > s_nJX2WsLevelCount)
+			s_nJX2WsLevelCount = nLv + 1;
+	}
+	fclose(pFile);
+}
+
+// chi phi = floor(UPGRADE_FUND[cap dang co] * he so khu) - wsGetUpgradeCostFund
+static int sJX2_WsUpgradeCost(int nType, int nCurLevel)
+{
+	sJX2_LoadWsLevelTable();
+	if (nType < 1 || nType > 7 || nCurLevel < 0 || nCurLevel >= s_nJX2WsLevelCount)
+		return -1;
+	return (int)(((__int64)s_nJX2WsUpFund[nCurLevel] * s_nJX2WsCoef[nType]) / 100);
+}
+
+static int sJX2_WsOpenCost(int nType, int nCurLevel)
+{
+	sJX2_LoadWsLevelTable();
+	if (nType < 1 || nType > 7 || nCurLevel < 0 || nCurLevel >= s_nJX2WsLevelCount)
+		return -1;
+	return (int)(((__int64)s_nJX2WsOpenFund[nCurLevel] * s_nJX2WsCoef[nType]) / 100);
+}
+
 static void sJX2_LoadLevelTable()
 {
 	if (s_nJX2LevelCount > 0)
@@ -973,6 +1038,28 @@ static void sJX2_LoadLevelTable()
 	if (nCount > s_nJX2LevelCount)
 		s_nJX2LevelCount = nCount;
 	rTRACE("[TONGJX2] bang cap bang: %d dong", s_nJX2LevelCount);
+}
+
+// DOT9 #26: hai truong nay von duoc NAP ma KHONG AI DOC - do la ly do
+// "khong dem so khu" va "khong co tran cap".
+static int sJX2_WsUpperLevel(int nBuildLevel)
+{
+	sJX2_LoadLevelTable();
+	if (nBuildLevel < 0)
+		nBuildLevel = 0;
+	if (nBuildLevel >= s_nJX2LevelCount)
+		nBuildLevel = s_nJX2LevelCount - 1;
+	return s_sJX2Level[nBuildLevel].nWsUpperLv;
+}
+
+static int sJX2_WsMaxNum(int nBuildLevel)
+{
+	sJX2_LoadLevelTable();
+	if (nBuildLevel < 0)
+		nBuildLevel = 0;
+	if (nBuildLevel >= s_nJX2LevelCount)
+		nBuildLevel = s_nJX2LevelCount - 1;
+	return s_sJX2Level[nBuildLevel].nMaxWsNum;
 }
 
 // Phat lai anh chup 1 bang (TONG_SYNC + toan bo MEMBER_SYNC) toi MOI GameServer.
@@ -1950,6 +2037,104 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 			sJX2_SayTong(pB, "Minh ch\361 tr\364c xu\312t b\346n bang kh\341i li\252n minh!");
 			sJX2_UnionDetach(pB);
 			bOK = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_WS_OP:
+		{
+			// 4 dieu kien ban goc (workshop_logic.lua logicWorkShopLevelUp /
+			// logicWorkShopOpen / logicWorkShopLearn) + TRU QUY KIEN THIET that.
+			// Truoc day GS ghi thang field cap: mien phi, khong tran, vo han.
+			int nType = pCmd->m_nParam1;
+			int nAct = pCmd->m_nParam2;
+			if (nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+				break;
+			WORD wBase = (WORD)(defTONG_JX2_WS_ATTR_BASE + nType * 10);
+			int nBuildLv = (int)pTong->JX2_GetField(13);
+			int nFund = (int)pTong->JX2_GetField(12);
+			BOOL bExist = pTong->JX2_GetField(wBase) != 0;
+			int nCurLv = (int)pTong->JX2_GetField((WORD)(wBase + 2));
+			// dieu kien 3 ban goc: bang dang tam ngung thi cam moi thao tac
+			if (pTong->JX2_GetField(44) != 0)
+			{
+				sJX2_SayTong(pTong, "Bang h\351i \256ang t\271m ng\365ng ho\271t \256\351ng, kh\253ng th\323 thao t\270c t\270c ph\255\352ng!");
+				break;
+			}
+			if (nAct == 0)
+			{
+				// LAP KHU: chan so khu toi da theo cap kien thiet + tru phi
+				if (bExist)
+					break;
+				if (sJX2_CountWorkshop(pTong, 0) >= sJX2_WsMaxNum(nBuildLv))
+				{
+					sJX2_SayTong(pTong, "S\350 t\270c ph\255\352ng \256\267 \256\271t gi\355i h\271n theo \256\274ng c\312p ki\325n thi\325t bang!");
+					break;
+				}
+				int nCost = sJX2_WsUpgradeCost(nType, 0);
+				if (nCost < 0 || nFund < nCost)
+				{
+					sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 x\251y t\270c ph\255\352ng n\265y.");
+					break;
+				}
+				pTong->JX2_AddField(12, -nCost, FALSE);
+				pTong->JX2_SetField(wBase, 1);
+				pTong->JX2_SetField((WORD)(wBase + 2), 1);	// cap 1
+				pTong->JX2_SetField((WORD)(wBase + 1), 1);	// mo
+				// attr4 = UseLevel: ban goc doi >= 1 moi cho dung khu
+				pTong->JX2_SetField((WORD)(wBase + 4), 1);
+				bOK = TRUE;
+				break;
+			}
+			if (!bExist)
+				break;
+			if (nAct == 1 || nAct == 2)
+			{
+				// MO KHU ton phi OPEN_FUND (ban goc logicWorkShopOpen); DONG mien phi
+				if (nAct == 1)
+				{
+					if (pTong->JX2_GetField((WORD)(wBase + 1)) != 0)
+						break;	// dang mo roi
+					int nCost = sJX2_WsOpenCost(nType, nCurLv);
+					if (nCost < 0 || nFund < nCost)
+					{
+						sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361 \256\323 m\353 t\270c ph\255\352ng n\265y.");
+						break;
+					}
+					if (nCost > 0)
+						pTong->JX2_AddField(12, -nCost, FALSE);
+				}
+				pTong->JX2_SetField((WORD)(wBase + 1), (nAct == 1) ? 1 : 0);
+				bOK = TRUE;
+				break;
+			}
+			if (nAct == 3)
+			{
+				// NANG CAP: dieu kien 1 = tran cap theo WORKSHOP_UPPER_LEVEL cua
+				// cap kien thiet bang; dieu kien 2 = du quy. EP nToLevel =
+				// nCurLevel + 1 (ban goc co lo hong chi tru tien 1 cap).
+				int nToLv = nCurLv + 1;
+				if (nToLv > sJX2_WsUpperLevel(nBuildLv))
+				{
+					sJX2_SayTong(pTong, "T\270c ph\255\352ng n\265y \256\267 \256\271t \256\325n c\312p cao nh\312t, mu\350n n\251ng c\312p c\307n n\251ng \256\274ng c\312p ki\325n thi\325t tr\255\355c!");
+					break;
+				}
+				int nCost = sJX2_WsUpgradeCost(nType, nCurLv);
+				if (nCost < 0 || nFund < nCost)
+				{
+					sJX2_SayTong(pTong, "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361, kh\253ng th\323 n\251ng c\312p t\270c ph\255\352ng n\265y.");
+					break;
+				}
+				pTong->JX2_AddField(12, -nCost, FALSE);
+				pTong->JX2_SetField((WORD)(wBase + 2), (DWORD)nToLv);
+				if ((int)pTong->JX2_GetField((WORD)(wBase + 4)) < nToLv)
+					pTong->JX2_SetField((WORD)(wBase + 4), (DWORD)nToLv);
+				{
+					char szMsg[160];
+					sprintf(szMsg, "T\270c ph\255\352ng th\250ng l\252n c\312p %d (chi %d ng\251n s\270ch ki\325n thi\325t)", nToLv, nCost);
+					sJX2_SayTong(pTong, szMsg);
+				}
+				bOK = TRUE;
+				break;
+			}
 		}
 		break;
 	case defTONG_JX2_TOP_UNION_APPLY:

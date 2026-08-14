@@ -2553,6 +2553,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 	case defTONG_JX2_COP_WS_CLOSE:
 	case defTONG_JX2_COP_WS_UP:
 		{
+			// DOT9 #25/#26: 4 thao tac nay TRUOC DAY ghi thang field tren
+			// duong GS -> khong tran cap, khong tru quy, khong dem so khu
+			// (cap khu len VO HAN va MIEN PHI). Nay day sang RELAY - noi
+			// giu quy that - de kiem 4 dieu kien ban goc roi moi ghi.
 			if (!bMaster && !sJX2_HasRight(pMe, 9001))
 				return 3;
 			int nType = pCmd->m_nParam1;
@@ -2564,22 +2568,18 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				if (bExist)
 					return 9;	// khu DA CO san
-				sSendFieldCmd(dwTongID, wBase, 1, defTONG_JX2_OP_SET, dwParam);
-				sSendFieldCmd(dwTongID, (WORD)(wBase + 2), 1, defTONG_JX2_OP_SET, dwParam);
-				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
-				return 0;
 			}
-			// truoc day tra 7 nen BON nut Lap/Mo/Dong/Nang cap deu bao nham
-			// "Da gia nhap bang hoi!" - ma 7 la cua duong xin vao bang
-			if (!bExist)
+			else if (!bExist)
 				return 10;	// khu CHUA LAP
+			int nAct = 0;	// 0 lap / 1 mo / 2 dong / 3 nang cap
 			if (pCmd->m_btOp == defTONG_JX2_COP_WS_OPEN)
-				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
+				nAct = 1;
 			else if (pCmd->m_btOp == defTONG_JX2_COP_WS_CLOSE)
-				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 0, defTONG_JX2_OP_SET, dwParam);
-			else
-				sSendFieldCmd(dwTongID, (WORD)(wBase + 2), 1, defTONG_JX2_OP_ADD, dwParam);
-			return 0;
+				nAct = 2;
+			else if (pCmd->m_btOp == defTONG_JX2_COP_WS_UP)
+				nAct = 3;
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_WS_OP, nType, nAct, dwParam);
+			return 20;	// relay bao ket qua tren kenh chat bang
 		}
 	case defTONG_JX2_COP_SETSTUNT:
 		{
