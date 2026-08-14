@@ -254,7 +254,7 @@ static const char* s_szRecHD[TJX2_HD_NUM] =
 // 12 = doi phe bang hoi: KHONG can ma lenh JX2 moi - he JX1 da co san tron bo
 // duong day (ApplyTongChangeCamp kiem chuc vu + tru tien, relay co DBChangeCamp),
 // di y het cach nut "Roi bang" dang lam qua GTOI_TONG_ACTION.
-#define TJX2_FUN_BTNS	17
+#define TJX2_FUN_BTNS	24
 static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 {
 	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
@@ -275,6 +275,16 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 	{"BtnLeaveTong",         "R\352i bang", 8},
 	{"BtnStoreBuildFund",    "G\366i", 11},
 	{"BtnStoreTongMoney",    "G\366i", 13},	// nap ngan quy (MONEYFUND_ADD ban goc)
+	// trang con 3 - LIEN MINH (nhan nguyen van blueprint, ke ca loi go
+	// "li\252m" cua ban goc va dau cach dau nhan dai than)
+	{"BtnCreateUnion",       "L\313p li\252n minh", 14},
+	{"BtnApplyJionUnion",    "V\265o li\252m minh", 15},
+	{"BtnAcceptUnionReq",    "Gia nh\313p li\252n minh", 16},
+	{"BtnLeaveUnion",        "H\361y li\252n minh", 17},
+	{"BtnKickUnionTong",     "Tr\364c xu\312t", 18},
+	// trang con 4 - DAI THAN QUOC GIA
+	{"BtnAppointMinister",   " \361y nhi\326m \256\271i th\307n", 19},
+	{"BtnFireMinister",      " C\270ch ch\370c \256\271i th\307n", 20},
 };
 
 // Trang Phuong tho: bind blueprint (Ws_*). Title co nhan TCVN3, Txt do render dien.
@@ -898,6 +908,8 @@ void KUiTongJX2::RequestPage(int nPage, int nStart)
 #define TJX2_CONFIRM_ID		0x5701
 // hop nhap SO TIEN/DIEM cho 5 thao tac ngan quy (ban goc nguoi choi tu go so)
 #define TJX2_AMOUNT_ID		0x5703
+// hop nhap TEN (lien minh / bang) - gui nguyen chuoi qua szText
+#define TJX2_UNAME_ID		0x5704
 
 // Nho lai thao tac roi mo hop xac nhan. Chuoi nhac lay THANG tu ini (ban thiet ke
 // goc da chep san day du, truoc day khong dong ma nao doc toi).
@@ -1260,7 +1272,8 @@ void KUiTongJX2::SwitchPage(int nPage)
 		// nhom 2 = lanh dia + doi phe (dung nhom cua ban goc: BtnChangeCamp
 		// nam cung o Top=176 voi BtnCreateTongMap/BtnConfigureTongMap)
 		static const int s_nFunBtnSub[TJX2_FUN_BTNS] =
-			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0 };
+			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0,
+			  3, 3, 3, 3, 3, 4, 4 };
 			// 0 = luon hien khi mode nut (khoi tien/ca nhan/roi bang)
 			// 1 = sub nhan su (Recruit/KickOut/Depose/DispenseOffer)
 			// 2 = sub lanh dia (CreateTongMap/ConfigureTongMap/TongStunt)
@@ -1268,6 +1281,23 @@ void KUiTongJX2::SwitchPage(int nPage)
 		{
 			BOOL bShow = bBtn && s_sFunBtn[i].nAct >= 0 &&
 				(s_nFunBtnSub[i] == 0 || s_nFunBtnSub[i] == m_nFunSub);
+			if (bShow && s_sFunBtn[i].nAct >= 14 && s_sFunBtn[i].nAct <= 18 && m_bHasInfo)
+			{
+				// nut lien minh an/hien theo trang thai (blueprint dung chung o):
+				// chua vao: Lap + Xin vao; thanh vien: Huy(roi); minh chu:
+				// Duyet don + Truc xuat + Huy(giai tan)
+				TONG_JX2_INFO_SYNC* pIU = (TONG_JX2_INFO_SYNC*)m_byInfo;
+				BOOL bIn = (pIU->m_dwUnionID != 0);
+				BOOL bLead = (pIU->m_bUnionLeader != 0);
+				switch (s_sFunBtn[i].nAct)
+				{
+				case 14: bShow = !bIn; break;
+				case 15: bShow = !bIn; break;
+				case 16: bShow = bIn && bLead; break;
+				case 17: bShow = bIn; break;
+				case 18: bShow = bIn && bLead; break;
+				}
+			}
 			if (bShow)
 			{
 				m_FunBtn[i].Show();
@@ -1496,7 +1526,7 @@ void KUiTongJX2::RenderInfo()
 		// Lien minh: goi tin chua mang ten lien minh (server co field 10 =
 		// UnionID nhung BuildClientView chua doc) -> de TRONG dung anh mau,
 		// khong ghi "-" nua.
-		m_Info[TJX2_INFO_LEAGUE].SetText("");
+		m_Info[TJX2_INFO_LEAGUE].SetText(p->m_szUnionName[0] ? p->m_szUnionName : "");
 		m_Info[TJX2_INFO_CAMP].SetText(
 			(p->m_btCamp >= 1 && p->m_btCamp <= 3) ? szCamp[p->m_btCamp] : "");
 		sprintf(sz, "%d", p->m_nTongLevel);
@@ -1953,7 +1983,7 @@ void KUiTongJX2::RenderFunUse()
 	// O nay la "Lien minh" (TxtTongUnion) chu KHONG phai ten bang chu - ban
 	// thiet ke trang Chuc nang khong co o hien bang chu. Truoc day do nham
 	// p->m_szMaster vao day nen tren giao dien hien "Lien minh CaiBang".
-	m_FunTxt[4].SetText("-");
+	m_FunTxt[4].SetText(p->m_szUnionName[0] ? p->m_szUnionName : "-");
 	sprintf(sz, "%d", p->m_nLevel);
 	m_FunTxt[6].SetText(sz);	// Dang cap kien thiet
 	sprintf(sz, "%u", p->m_dwStoredOffer);
@@ -2219,6 +2249,17 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			m_nPendOp = -1;
 			return 1;
 		}
+		if (uParam == TJX2_UNAME_ID)
+		{
+			if (nParam && m_nAmtOp >= 0)
+			{
+				const char* pszNm = (const char*)nParam;
+				if (pszNm[0])
+					SendOp(m_nAmtOp, m_dwAmtTarget, 0, 0, pszNm);
+			}
+			m_nAmtOp = -1;
+			return 1;
+		}
 		if (uParam == TJX2_AMOUNT_ID)
 		{
 			// nParam = con tro chuoi so nguoi choi vua go trong hop nhap
@@ -2461,6 +2502,58 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					m_dwAmtTarget = 0;
 					KUiTongGetString::OpenWindow("G\343p ki\325n thi\325t (v\271n)",
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
+					break;
+				case 14:
+					// lap lien minh: nhap ten (<= 20 ky tu de vua hop nhap)
+					m_nAmtOp = defTONG_JX2_COP_UNION_CREATE;
+					m_dwAmtTarget = 0;
+					KUiTongGetString::OpenWindow("T\252n li\252n minh",
+						"", this, TJX2_UNAME_ID, 2, 20);
+					break;
+				case 15:
+					// xin vao lien minh: nhap ten mot bang thuoc lien minh
+					m_nAmtOp = defTONG_JX2_COP_UNION_APPLY;
+					m_dwAmtTarget = 0;
+					KUiTongGetString::OpenWindow("T\252n bang thu\351c li\252n minh",
+						"", this, TJX2_UNAME_ID, 2, 20);
+					break;
+				case 16:
+					// minh chu duyet: nhap ten bang xin vao
+					m_nAmtOp = defTONG_JX2_COP_UNION_ACCEPT;
+					m_dwAmtTarget = 0;
+					KUiTongGetString::OpenWindow("T\252n bang xin gia nh\313p",
+						"", this, TJX2_UNAME_ID, 2, 20);
+					break;
+				case 17:
+					// roi / giai tan lien minh - hoi xac nhan nguyen van blueprint
+					if (m_bHasInfo && ((TONG_JX2_INFO_SYNC*)m_byInfo)->m_bUnionLeader)
+						AskThenSendOp("UnionStr", "StrUnionDismiss",
+							defTONG_JX2_COP_UNION_LEAVE, 0, 0, 0);
+					else
+						AskThenSendOp("UnionStr", "StrUnionLeave",
+							defTONG_JX2_COP_UNION_LEAVE, 0, 0, 0);
+					break;
+				case 18:
+					m_nAmtOp = defTONG_JX2_COP_UNION_KICK;
+					m_dwAmtTarget = 0;
+					KUiTongGetString::OpenWindow("T\252n bang mu\350n \256u\346i",
+						"", this, TJX2_UNAME_ID, 2, 20);
+					break;
+				case 19:
+					// phong dai than cho THANH VIEN DANG CHON; nhap so chuc
+					if (dwFT)
+					{
+						m_nAmtOp = defTONG_JX2_COP_MINISTER_SET;
+						m_dwAmtTarget = dwFT;
+						KUiTongGetString::OpenWindow("Ch\370c: 1 TT / 2 NS / 3 TP",
+							"1", this, TJX2_AMOUNT_ID, 1, 1);
+					}
+					break;
+				case 20:
+					m_nAmtOp = defTONG_JX2_COP_MINISTER_FIRE;
+					m_dwAmtTarget = 0;
+					KUiTongGetString::OpenWindow("C\270ch ch\370c: 1 TT / 2 NS / 3 TP",
+						"1", this, TJX2_AMOUNT_ID, 1, 1);
 					break;
 				case 13:
 					// nap tien ca nhan vao NGAN QUY bang (MONEYFUND_ADD)

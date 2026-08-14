@@ -29,6 +29,7 @@ public:
 	BOOL			InitFromDB();
 	// ==== JX2 port ====
 	CTongControl*	JX2_FindByNameID(DWORD dwTongNameID);
+	int			JX2_UnionMembers(DWORD dwUnionID, CTongControl** ppOut, int nMax);	// liet ke bang thuoc lien minh (field 10)
 	CTongControl*	JX2_GetByIndex(int nIndex);	// -1 = het mang, NULL = o trong
 	void			JX2_SendFullDump(class CNetConnect* pConn);
 

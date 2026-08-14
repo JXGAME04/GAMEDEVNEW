@@ -234,6 +234,10 @@ public:
 	int			JX2_GetCamp() { return m_nCamp; }
 	void		JX2_BroadcastCampSync();	// phat BE_CHANGED_CAMP toi tung thanh vien online (nhu DBChangeCamp, khong dinh tien JX1)
 	BOOL	JX2_SetString(int nKind, const char* pszText);
+	void	JX2_SendUnionNameSync();	// phat STRING kind UNION (ten lien minh) toi moi GS
+	DWORD	JX2_NameID() { return m_dwNameID; }
+	int		JX2_TongLevel() { return m_nLevel; }
+	char*	JX2_LeagueName() { return m_szLeagueTName; }	// ten lien minh (char[32] cu, tai dung)
 	BOOL	JX2_KickByNameID(DWORD dwNameID);
 	BOOL	JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure);
 	BOOL	JX2_Upgrade();

@@ -36,7 +36,8 @@ struct KTongJX2Tong
 	std::map<DWORD, KTongJX2Member>	mapMember;	// khoa = NameID thanh vien
 	DWORD	dwTaskTemp[256];					// bo dem cuc bo, KHONG dong bo (dung JX2)
 	char	szAnnounce[128];					// thong bao bang (= defTONG_JX2_ANNOUNCE_LEN)
-	char	szRecruit[128];						// van an chieu mo (STR kind 3)
+	char	szRecruit[128];
+	char	szUnionName[32];				// ten lien minh (STR kind UNION)						// van an chieu mo (STR kind 3)
 	BYTE	btApplyCount;						// don xin vao bang (cuc bo GS, toi da 8)
 	char	szApplyName[8][32];
 	DWORD	dwApplyID[8];

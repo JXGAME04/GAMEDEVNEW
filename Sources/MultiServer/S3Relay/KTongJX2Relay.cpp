@@ -556,7 +556,7 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 		for (int i = 0; i < m_nTongPointSize; i++)
 		{
 			CTongControl* pTong = m_pcTong[i];
-			if (!pTong || !pTong->m_szName[0])
+			if (!pTong || !pTong->JX2_Name()[0])
 				continue;
 
 			int nMemberTotal = pTong->JX2_CollectMembers(NULL, 0);
@@ -577,6 +577,18 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 						break;
 					pConn->SendPackage(byBuffer, nBytes);
 				}
+			}
+			if (pTong->JX2_LeagueName()[0])
+			{
+				// ten lien minh: goi STRING kind UNION (GS giu vao szUnionName)
+				STONG_JX2_STRING_COMMAND sStr;
+				memset(&sStr, 0, sizeof(sStr));
+				sStr.ProtocolFamily = pf_tong;
+				sStr.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+				sStr.m_dwTongNameID = pTong->m_dwNameID;
+				sStr.m_btKind = defTONG_JX2_STR_UNION;
+				strncpy(sStr.m_szText, pTong->JX2_LeagueName(), sizeof(sStr.m_szText) - 1);
+				pConn->SendPackage(&sStr, sizeof(sStr));
 			}
 			if (pTong->m_szJX2Recruit[0])
 			{
@@ -1046,13 +1058,30 @@ void CTongControl::JX2_BroadcastCampSync()
 	}
 }
 
-BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
+// Phat ten lien minh hien tai (m_szLeagueTName) toi moi GS bang goi STRING
+// kind UNION - dung chung duong voi announce/recruit.
+void CTongControl::JX2_SendUnionNameSync()
+{
+	STONG_JX2_STRING_COMMAND sSync;
+	memset(&sSync, 0, sizeof(sSync));
+	sSync.ProtocolFamily = pf_tong;
+	sSync.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
+	sSync.m_dwTongNameID = m_dwNameID;
+	sSync.m_btKind = defTONG_JX2_STR_UNION;
+	strncpy(sSync.m_szText, m_szLeagueTName, sizeof(sSync.m_szText) - 1);
+	g_TongServer.BroadcastPackage(&sSync, sizeof(sSync));
+}
 
+BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
 {
 	if (!pszText)
 		return FALSE;
 	switch (nKind)
 	{
+	case defTONG_JX2_STR_UNION:
+		strncpy(m_szLeagueTName, pszText, sizeof(m_szLeagueTName) - 1);
+		m_szLeagueTName[sizeof(m_szLeagueTName) - 1] = 0;
+		return TRUE;
 	case defTONG_JX2_STR_ANNOUNCE:
 		memset(m_szJX2Announce, 0, sizeof(m_szJX2Announce));
 		strncpy(m_szJX2Announce, pszText, defTONG_JX2_ANNOUNCE_LEN - 1);
@@ -1576,6 +1605,67 @@ BOOL CTongControl::JX2_Distribute(int nOpCode, DWORD dwMemberNameID, int nOffer,
 // Proc goi dot 2
 //////////////////////////////////////////////////////////////////////
 
+// Liet ke cac bang co field 10 == dwUnionID (lien minh la TRANG THAI DAN XUAT
+// tu field cua tung bang: 10 = UnionID, 50 = co minh chu, 49 = gio roi;
+// ten luu o m_szLeagueTName - deu da nam trong TTongStruct nen khong can DB moi).
+int CTongSet::JX2_UnionMembers(DWORD dwUnionID, CTongControl** ppOut, int nMax)
+{
+	int nCount = 0;
+	if (!dwUnionID || !m_pcTong)
+		return 0;
+	for (int i = 0; i < m_nTongPointSize; i++)
+	{
+		CTongControl* pT = m_pcTong[i];
+		if (!pT || !pT->JX2_Name()[0])
+			continue;
+		if (pT->JX2_GetField(10) != dwUnionID)
+			continue;
+		if (ppOut && nCount < nMax)
+			ppOut[nCount] = pT;
+		nCount++;
+	}
+	return nCount;
+}
+
+// Noi tren kenh chat cua mot bang (nhu DBChangeCamp lam voi doi phe)
+static void sJX2_SayTong(CTongControl* pTong, const char* pszMsg)
+{
+	if (!pTong || !pszMsg || !pszMsg[0])
+		return;
+	char szCh[96];
+	sprintf(szCh, "\\O%u", pTong->JX2_NameID());
+	DWORD dwChann = g_ChannelMgr.GetChannelID(szCh, 0);
+	if (dwChann != (DWORD)-1)
+		g_ChannelMgr.SayOnChannel(dwChann, TRUE, std::string(),
+			std::string(defTONG_NAME_SAY_ON_CHANNEL), std::string(pszMsg));
+}
+
+// [LevelUnionNum] tongset.ini ban goc (doc byte tho :206-307):
+// cap bang minh chu 0-9 -> 3 bang, 10-29 -> 4, 30-49 -> 5, 50-69 -> 6,
+// 70-89 -> 7, 90+ -> 8.
+static int sJX2_UnionCap(int nLevel)
+{
+	if (nLevel >= 90) return 8;
+	if (nLevel >= 70) return 7;
+	if (nLevel >= 50) return 6;
+	if (nLevel >= 30) return 5;
+	if (nLevel >= 10) return 4;
+	return 3;
+}
+
+// Go mot bang khoi lien minh: xoa field 10, dong dau field 49 = now (luat
+// cho 3 ngay cua ban goc - GS kiem), xoa ten, luu DB + phat lai cho GS.
+static void sJX2_UnionDetach(CTongControl* pT)
+{
+	pT->JX2_SetField(10, 0);
+	pT->JX2_SetField(50, 0);
+	pT->JX2_SetField(49, (DWORD)time(NULL));
+	pT->JX2_LeagueName()[0] = 0;
+	g_cTongDB.ChangeTong(*pT);
+	sJX2_BroadcastTong(pT);
+	pT->JX2_SendUnionNameSync();
+}
+
 void JX2_ProcString(CTongConnect* pConn, const void* pData)
 {
 	STONG_JX2_STRING_COMMAND* pCmd = (STONG_JX2_STRING_COMMAND*)pData;
@@ -1678,6 +1768,176 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		{
 			pTong->JX2_SetCamp(pCmd->m_nParam1);
 			pTong->JX2_BroadcastCampSync();
+			bOK = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_UNION_CREATE:
+		{
+			// R1 ban goc (s3relay_y 0x80d4d70): ten <= 31 byte; chua o lien
+			// minh; khong trung ten bang/lien minh khac; MIEN PHI.
+			char szNm[32];
+			strncpy(szNm, pCmd->m_szName, sizeof(szNm) - 1);
+			szNm[sizeof(szNm) - 1] = 0;
+			if (!szNm[0] || pTong->JX2_GetField(10) != 0)
+				break;
+			DWORD dwUid = g_String2Id(szNm);
+			if (dwUid == 0 || g_cTongSet.JX2_FindByNameID(dwUid) ||
+				g_cTongSet.JX2_UnionMembers(dwUid, NULL, 0) > 0)
+			{
+				// MSG_TONG_CREATE_UNION_ERROR5
+				sJX2_SayTong(pTong, "\247\267 c\343 bang h\351i ho\306c li\252n minh bang h\351i tr\357ng t\252n n\265y! ");
+				break;
+			}
+			pTong->JX2_SetField(10, dwUid);
+			pTong->JX2_SetField(50, 1);
+			strncpy(pTong->JX2_LeagueName(), szNm, 31);
+			pTong->JX2_LeagueName()[31] = 0;
+			{
+				// G_TONG_CREATE_UNION (stringtable_relay.txt:93)
+				char szMsg[160];
+				sprintf(szMsg, "Bang ch\361 B\346n bang l\313p n\252n m\351t li\252n minh bang h\351i %s! ", szNm);
+				sJX2_SayTong(pTong, szMsg);
+			}
+			pTong->JX2_SendUnionNameSync();
+			bOK = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_UNION_JOIN:
+		{
+			// R2 ban goc (0x80d4ef8): pTong = bang MINH CHU duyet; m_szName =
+			// bang xin vao. Tran so bang theo cap minh chu; ngan quy MOI ben
+			// phai > 999999 luong va tru 100 van (1.000.000 luong) MOI ben.
+			if (!pTong->JX2_GetField(50) || !pTong->JX2_GetField(10))
+				break;
+			CTongControl* pB = g_cTongSet.JX2_FindByNameID(g_String2Id(pCmd->m_szName));
+			if (!pB || pB == pTong)
+				break;
+			if (pB->JX2_GetField(10) != 0)
+			{
+				// G_PLAYERTONG_12
+				sJX2_SayTong(pTong, "Th\265nh vi\252n c\361a li\252n minh bang h\351i n\265y kh\351ng th\323 gia nh\313p li\252n minh bang h\351i kh\270c");
+				break;
+			}
+			{
+				DWORD dwT49 = pB->JX2_GetField(49);
+				if (dwT49 && time(NULL) - (time_t)dwT49 <= 259199)
+					break;	// GS da bao con bao nhieu giay; relay chi chan
+			}
+			DWORD dwUid = pTong->JX2_GetField(10);
+			if (g_cTongSet.JX2_UnionMembers(dwUid, NULL, 0) >= sJX2_UnionCap(pTong->JX2_TongLevel()))
+				break;
+			if (pTong->JX2_GetMoney64() <= 999999)
+			{
+				sJX2_SayTong(pTong, "Li\252n minh th\312t b\271i! Ng\251n qu\374 bang h\351i li\252n minh kh\253ng \256\361!");
+				break;
+			}
+			if (pB->JX2_GetMoney64() <= 999999)
+			{
+				sJX2_SayTong(pTong, "Li\252n minh th\312t b\271i! Ng\251n qu\374 bang h\351i mu\350n li\252n minh kh\253ng \256\361!");
+				break;
+			}
+			pTong->JX2_SetMoney64(pTong->JX2_GetMoney64() - 1000000);
+			pB->JX2_SetMoney64(pB->JX2_GetMoney64() - 1000000);
+			pB->JX2_SetField(10, dwUid);
+			strncpy(pB->JX2_LeagueName(), pTong->JX2_LeagueName(), 31);
+			pB->JX2_LeagueName()[31] = 0;
+			{
+				char szMsg[220];
+				CTongControl* apM[16];
+				int nM = g_cTongSet.JX2_UnionMembers(dwUid, apM, 16);
+				int q;
+				// G_TONG_JOIN_SELFUNION toi cac bang thanh vien khac
+				sprintf(szMsg, "Bang h\351i %s gia nh\313p b\346n bang c\343 li\252n minh %s!", pB->JX2_Name(), pTong->JX2_LeagueName());
+				for (q = 0; q < nM && q < 16; q++)
+					if (apM[q] != pTong && apM[q] != pB)
+						sJX2_SayTong(apM[q], szMsg);
+				// G_TONG_JOIN_SELFUNION_MASTER (%d = 100 van)
+				sprintf(szMsg, "Bang h\351i %s gia nh\313p b\346n bang c\343 li\252n minh %s, b\346n bang b\336 kh\312u tr\365 %d v\271n trong ng\251n qu\374!", pB->JX2_Name(), pTong->JX2_LeagueName(), 100);
+				sJX2_SayTong(pTong, szMsg);
+				// G_TONG_JOIN_UNION
+				sprintf(szMsg, "B\346n bang ti\252u hao %d v\271n ng\251n qu\374, gia nh\313p li\252n minh %s!", 100, pTong->JX2_LeagueName());
+				sJX2_SayTong(pB, szMsg);
+			}
+			g_cTongDB.ChangeTong(*pB);
+			sJX2_BroadcastTong(pB);
+			pB->JX2_SendUnionNameSync();
+			bOK = TRUE;	// duoi ham luu + phat pTong (da tru tien)
+		}
+		break;
+	case defTONG_JX2_TOP_UNION_LEAVE:
+		{
+			DWORD dwUid = pTong->JX2_GetField(10);
+			if (!dwUid)
+				break;
+			if (pTong->JX2_GetField(50))
+			{
+				// minh chu rut = GIAI TAN (R3 subop 2 + tip nut ban goc)
+				CTongControl* apM[16];
+				int nM = g_cTongSet.JX2_UnionMembers(dwUid, apM, 16);
+				for (int q = 0; q < nM && q < 16; q++)
+				{
+					if (apM[q] == pTong)
+						continue;
+					// G_TONG_DISMISS_UNION
+					sJX2_SayTong(apM[q], "Minh ch\361 gi\266i t\270n li\252n minh bang h\351i!");
+					sJX2_UnionDetach(apM[q]);
+				}
+				sJX2_SayTong(pTong, "Minh ch\361 gi\266i t\270n li\252n minh bang h\351i!");
+			}
+			else
+			{
+				// bao cac bang con lai: G_TONG_LEAVE_UNION_ELSE
+				char szMsg[160];
+				CTongControl* apM[16];
+				int nM = g_cTongSet.JX2_UnionMembers(dwUid, apM, 16);
+				sprintf(szMsg, "Bang h\351i %s r\352i kh\341i li\252n minh c\361a b\346n bang!", pTong->JX2_Name());
+				for (int q = 0; q < nM && q < 16; q++)
+					if (apM[q] != pTong)
+						sJX2_SayTong(apM[q], szMsg);
+				// G_TONG_LEAVE_UNION (dau cach cuoi nguyen van)
+				sJX2_SayTong(pTong, "B\346n bang r\352i kh\341i bang h\351i li\252n minh! ");
+			}
+			pTong->JX2_SetField(10, 0);
+			pTong->JX2_SetField(50, 0);
+			pTong->JX2_SetField(49, (DWORD)time(NULL));
+			pTong->JX2_LeagueName()[0] = 0;
+			pTong->JX2_SendUnionNameSync();
+			bOK = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_UNION_KICK:
+		{
+			if (!pTong->JX2_GetField(50))
+				break;
+			CTongControl* pB = g_cTongSet.JX2_FindByNameID(g_String2Id(pCmd->m_szName));
+			if (!pB || pB == pTong)
+				break;
+			if (pB->JX2_GetField(10) != pTong->JX2_GetField(10))
+				break;
+			{
+				char szMsg[160];
+				CTongControl* apM[16];
+				int nM = g_cTongSet.JX2_UnionMembers(pTong->JX2_GetField(10), apM, 16);
+				// G_TONG_KICK_UNION_ELSE
+				sprintf(szMsg, "Minh ch\361 \256u\346i bang h\351i %s ra kh\341i li\252n minh!", pB->JX2_Name());
+				for (int q = 0; q < nM && q < 16; q++)
+					if (apM[q] != pB)
+						sJX2_SayTong(apM[q], szMsg);
+			}
+			// ban VN cua G_TONG_KICK_UNION con nguyen tieng Trung -> tu dich
+			sJX2_SayTong(pB, "Minh ch\361 tr\364c xu\312t b\346n bang kh\341i li\252n minh!");
+			sJX2_UnionDetach(pB);
+			bOK = TRUE;
+		}
+		break;
+	case defTONG_JX2_TOP_MINISTER:
+		{
+			// dai than quoc gia: field 51/52/53 = NameID nguoi giu chuc
+			// (1 Thua Tuong / 2 Nguyen Soai / 3 Tien Phong)
+			if (pCmd->m_nParam1 < 1 || pCmd->m_nParam1 > 3)
+				break;
+			pTong->JX2_SetField((WORD)(50 + pCmd->m_nParam1),
+				pCmd->m_nParam2 ? pCmd->m_dwMemberNameID : 0);
 			bOK = TRUE;
 		}
 		break;

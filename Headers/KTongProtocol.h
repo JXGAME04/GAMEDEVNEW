@@ -844,7 +844,7 @@ struct STONG_GET_EXTPOINT_SYNC : EXTEND_HEADER
 #define defTONG_JX2_STR_EVENT		1	// so su kien (chi luu tren relay)
 #define defTONG_JX2_STR_HISTORY	2	// so lich su (chi luu tren relay)
 #define defTONG_JX2_STR_RECRUIT	3	// van an chieu mo (dong bo toi GS)
-#define defTONG_JX2_STR_RECRUIT	3	// van an chieu mo (dong bo toi GS)
+#define defTONG_JX2_STR_UNION		4	// ten lien minh (dong bo toi GS, luu m_szLeagueTName)
 #define defTONG_JX2_ANNOUNCE_LEN	128
 #define defTONG_JX2_RECORD_LEN		96
 #define defTONG_JX2_RECORD_NUM		16
@@ -976,6 +976,11 @@ struct STONG_JX2_STRING_COMMAND : EXTEND_HEADER
 #define defTONG_JX2_TOP_FEATURE		14	// doi ngoai hinh toan bang (nParam1 = feature, nParam2 = giay)
 #define defTONG_JX2_TOP_SET_FIGURE	15	// doi chuc vu thanh vien (nParam1 = figure moi 1..3)
 #define defTONG_JX2_TOP_SET_CAMP	16	// doi phe bang hoi (nParam1 = 1 chinh / 2 ta / 3 trung lap)
+#define defTONG_JX2_TOP_UNION_CREATE	17	// lap lien minh (m_szName = ten lien minh)
+#define defTONG_JX2_TOP_UNION_JOIN	18	// minh chu duyet bang m_szName vao lien minh (tru 100 van MOI ben)
+#define defTONG_JX2_TOP_UNION_LEAVE	19	// roi lien minh; minh chu roi = giai tan (field 49 = now)
+#define defTONG_JX2_TOP_UNION_KICK	20	// minh chu truc xuat bang m_szName
+#define defTONG_JX2_TOP_MINISTER	21	// dai than: nParam1 = 1 ThuaTuong/2 NguyenSoai/3 TienPhong -> field 50+slot; nParam2 = 1 phong / 0 cach
 
 struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 {
@@ -985,6 +990,7 @@ struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 	int	m_nParam1;
 	int	m_nParam2;
 	DWORD	m_dwParam;
+	char	m_szName[32];	// ten lien minh / ten bang dich (them CUOI struct)
 };
 
 //--------------------------- tong struct end ---------------------------

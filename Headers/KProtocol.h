@@ -1703,6 +1703,13 @@ typedef struct
 #define defTONG_JX2_COP_DRAW_MONEY	26	// bang chu rut nParam1 VAN ve tui
 #define defTONG_JX2_COP_CHANGE_CAMP	27	// doi phe bang (nParam1 = 1 chinh / 2 ta / 3 trung lap)
 #define defTONG_JX2_COP_DEPOSIT_MONEY	28	// thanh vien nap nParam1 VAN vao ngan quy bang (MONEYFUND_ADD ban goc)
+#define defTONG_JX2_COP_UNION_CREATE	29	// bang chu lap lien minh (szText = ten; mien phi nhu ban goc)
+#define defTONG_JX2_COP_UNION_APPLY	30	// bang chu xin vao lien minh (szText = ten bang thuoc lien minh)
+#define defTONG_JX2_COP_UNION_ACCEPT	31	// minh chu duyet (szText = ten bang xin vao; tru 100 van moi ben)
+#define defTONG_JX2_COP_UNION_LEAVE	32	// roi lien minh (minh chu = giai tan); cho 3 ngay moi vao lai
+#define defTONG_JX2_COP_UNION_KICK	33	// minh chu truc xuat (szText = ten bang)
+#define defTONG_JX2_COP_MINISTER_SET	34	// phong dai than: dwTarget = thanh vien, nParam1 = 1..3
+#define defTONG_JX2_COP_MINISTER_FIRE	35	// cach chuc dai than: nParam1 = 1..3
 
 typedef struct
 {
@@ -1758,6 +1765,9 @@ typedef struct
 	char	m_szAnnounce[128];
 	int	m_nTongLevel;	// cap bang JX1 (KPlayerTong::GetTongLevel) - KHAC m_nLevel
 					// vi m_nLevel la field 13 = cap KIEN THIET
+	DWORD	m_dwUnionID;		// field 10 (0 = chua vao lien minh)
+	char	m_szUnionName[32];
+	BYTE	m_bUnionLeader;		// field 50 (bang minh chu)
 } TONG_JX2_INFO_SYNC;
 
 typedef struct
