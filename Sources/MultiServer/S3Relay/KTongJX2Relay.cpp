@@ -990,7 +990,64 @@ static void sJX2_BroadcastTong(CTongControl* pTong)
 	}
 }
 
+// Phat BE_CHANGED_CAMP cho tung thanh vien online sau khi doi phe kieu JX2.
+// Sao dung khuon DBChangeCamp (KTongControl.cpp:2728-2820) tru phan tien JX1:
+// thieu goi nay thi KPlayerTong::BeChangedCamp phia GS khong chay -> Npc camp
+// (server lan client) giu phe cu -> mau ten tren dau nhan vat khong doi.
+static void sJX2_SendCampSyncTo(const char* pszRole, int nCamp)
+{
+	if (!pszRole || !pszRole[0])
+		return;
+	CNetConnectDup conndup;
+	CNetConnectDup tongconndup;
+	DWORD nameid = 0;
+	unsigned long param = 0;
+	if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(pszRole), &conndup, NULL, &nameid, &param))
+	{
+		tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+		if (tongconndup.IsValid())
+		{
+			STONG_BE_CHANGED_CAMP_SYNC	sSync;
+			sSync.ProtocolFamily = pf_tong;
+			sSync.ProtocolID = enumS2C_TONG_BE_CHANGED_CAMP;
+			sSync.m_dwParam = param;
+			sSync.m_btCamp = (BYTE)nCamp;
+			tongconndup.SendPackage((const void *)&sSync, sizeof(sSync));
+		}
+		tongconndup.Clearup();
+	}
+	conndup.Clearup();
+}
+
+void CTongControl::JX2_BroadcastCampSync()
+{
+	int i;
+	sJX2_SendCampSyncTo(m_szMasterName, m_nCamp);
+	for (i = 0; i < defTONG_MAX_DIRECTOR; i++)
+	{
+		if (m_dwDirectorID[i] == 0)
+			break;
+		sJX2_SendCampSyncTo(m_szDirectorName[i], m_nCamp);
+	}
+	for (i = 0; i < defTONG_MAX_MANAGER; i++)
+	{
+		if (m_dwManagerID[i] == 0)
+			break;
+		sJX2_SendCampSyncTo(m_szManagerName[i], m_nCamp);
+	}
+	if (m_psMember && m_nMemberPointSize > 0)
+	{
+		for (i = 0; i < m_nMemberPointSize; i++)
+		{
+			if (m_psMember[i].m_dwNameID == 0)
+				break;
+			sJX2_SendCampSyncTo(m_psMember[i].m_szName, m_nCamp);
+		}
+	}
+}
+
 BOOL CTongControl::JX2_SetString(int nKind, const char* pszText)
+
 {
 	if (!pszText)
 		return FALSE;
@@ -1620,6 +1677,7 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		if (pCmd->m_nParam1 >= 1 && pCmd->m_nParam1 <= 3)
 		{
 			pTong->JX2_SetCamp(pCmd->m_nParam1);
+			pTong->JX2_BroadcastCampSync();
 			bOK = TRUE;
 		}
 		break;

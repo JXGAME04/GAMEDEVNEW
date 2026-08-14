@@ -232,6 +232,7 @@ public:
 	// tien JX1 m_dwMoney von luon bang 0 trong he JX2).
 	void		JX2_SetCamp(int nCamp) { if (nCamp >= 1 && nCamp <= 3) m_nCamp = nCamp; }
 	int			JX2_GetCamp() { return m_nCamp; }
+	void		JX2_BroadcastCampSync();	// phat BE_CHANGED_CAMP toi tung thanh vien online (nhu DBChangeCamp, khong dinh tien JX1)
 	BOOL	JX2_SetString(int nKind, const char* pszText);
 	BOOL	JX2_KickByNameID(DWORD dwNameID);
 	BOOL	JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure);
