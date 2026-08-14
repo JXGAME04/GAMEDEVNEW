@@ -2197,8 +2197,11 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 12:
 					{
 						// DOI PHE: xoay vong Chinh -> Ta -> Trung lap theo phe
-						// dang co, di duong JX1 co san (ApplyTongChangeCamp da
-						// tu kiem chuc vu va tru tien o ngan quy bang).
+						// dang co. Di lenh JX2 (COP_CHANGE_CAMP) chu KHONG di
+						// duong JX1: ca ba cong kiem tien cua duong JX1 deu doc
+						// tui tien m_dwMoney - tui do tach rieng khoi ngan quy
+						// JX2 va luon bang 0, nen bang co nhieu tien van bi bao
+						// "khong du tien".
 						int nCamp = 1;
 						if (m_bHasInfo)
 						{
@@ -2206,18 +2209,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 							nCamp = (pI->m_btCamp >= 1 && pI->m_btCamp <= 3) ?
 								(pI->m_btCamp % 3) + 1 : 1;
 						}
-						if (g_pCoreShell)
-						{
-							KTongOperationParam sParam;
-							KTongMemberItem sTg;
-							memset(&sParam, 0, sizeof(sParam));
-							memset(&sTg, 0, sizeof(sTg));
-							sParam.eOper = (nCamp == 1) ? TONG_ACTION_CHANGE_CAMP_JUSTIE :
-								((nCamp == 2) ? TONG_ACTION_CHANGE_CAMP_EVIL :
-								TONG_ACTION_CHANGE_CAMP_BALANCE);
-							g_pCoreShell->TongOperation(GTOI_TONG_ACTION,
-								(unsigned int)&sParam, (int)&sTg);
-						}
+						SendOp(defTONG_JX2_COP_CHANGE_CAMP, 0, nCamp, 0, NULL);
 					}
 					break;
 				case 9:

@@ -1613,6 +1613,16 @@ void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)
 		bOK = pTong->JX2_SetFigureByNameID(pCmd->m_dwMemberNameID, pCmd->m_nParam1);
 		bMembersChanged = bOK;
 		break;
+	case defTONG_JX2_TOP_SET_CAMP:
+		// Doi phe kieu JX2: GameServer da kiem quyen va TRU NGAN QUY JX2 roi,
+		// o day chi ghi phe. KHONG di qua CTongSet::ChangeCamp vi ham do kiem
+		// tui tien JX1 m_dwMoney (luon 0 trong he JX2) nen se tu choi.
+		if (pCmd->m_nParam1 >= 1 && pCmd->m_nParam1 <= 3)
+		{
+			pTong->JX2_SetCamp(pCmd->m_nParam1);
+			bOK = TRUE;
+		}
+		break;
 	case defTONG_JX2_TOP_FEATURE:
 		// doi ngoai hinh toan bang: can duong ve client - lam o giai doan cua so client
 		rTRACE("[TONGJX2] ChangeAllMemberFeature(%s, %d, %d) - ghi nhan, chua doi hinh",

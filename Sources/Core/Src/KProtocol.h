@@ -2388,6 +2388,7 @@ typedef struct
 #define defTONG_JX2_COP_APPLY_JOIN	24	// dwTarget = NameID bang muon xin vao (KHONG can thuoc bang)
 #define defTONG_JX2_COP_PAY_MEMBER	25	// dwTarget = thanh vien, nParam1 = so VAN phat tu ngan quy
 #define defTONG_JX2_COP_DRAW_MONEY	26	// bang chu rut nParam1 VAN ve tui
+#define defTONG_JX2_COP_CHANGE_CAMP	27	// doi phe bang (nParam1 = 1 chinh / 2 ta / 3 trung lap)
 
 typedef struct
 {

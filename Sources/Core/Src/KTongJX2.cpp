@@ -2636,6 +2636,41 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLine, dwParam);
 			return 0;
 		}
+	case defTONG_JX2_COP_CHANGE_CAMP:
+		{
+			// DOI PHE kieu JX2. KHONG dung duong JX1 (ApplyTongChangeCamp) vi ca
+			// BA cong kiem tien cua no deu doc tui tien JX1 m_dwMoney - tui do
+			// TACH RIENG khoi ngan quy JX2 (field 3/4) va luon bang 0, nen bang
+			// dang co rat nhieu tien van bi bao "khong du tien".
+			if (!bMaster && !sJX2_HasRight(pMe, 1003))
+				return 3;
+			int nCamp = pCmd->m_nParam1;
+			if (nCamp < 1 || nCamp > 3)
+				return 5;
+			if ((int)pTong->btCamp == nCamp)
+				return 5;	// dang o phe do roi
+			__int64 nGia = (__int64)PlayerSet.m_sTongParam.m_nMoneyChangeCamp;
+			__int64 nCo = (__int64)GetField(dwTongID, 3) |
+				((__int64)GetField(dwTongID, 4) << 32);
+			if (nCo < nGia)
+				return 6;	// ngan quy bang khong du
+			sSendMoneyCmd(dwTongID, -nGia, defTONG_JX2_OP_ADD, dwParam);
+			{
+				// tru ngay tren ban sao de bam lien tuc khong qua duoc phep kiem
+				__int64 nLai = nCo - nGia;
+				pTong->mapField[3] = (DWORD)(nLai & 0xFFFFFFFF);
+				pTong->mapField[4] = (DWORD)((nLai >> 32) & 0xFFFFFFFF);
+			}
+			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_SET_CAMP, nCamp, 0, dwParam);
+			{
+				static const char* szC[4] = {"", "Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+				char szLog[160];
+				sprintf(szLog, "%s \256\346i phe bang sang %s",
+					Player[nPlayerIdx].m_PlayerName, szC[nCamp]);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
+			return 0;
+		}
 	case defTONG_JX2_COP_PAY_MEMBER:
 	case defTONG_JX2_COP_DRAW_MONEY:
 		{

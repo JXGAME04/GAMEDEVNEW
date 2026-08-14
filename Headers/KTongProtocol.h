@@ -975,6 +975,7 @@ struct STONG_JX2_STRING_COMMAND : EXTEND_HEADER
 #define defTONG_JX2_TOP_ADD_OFFER_FIG	13	// cong nParam1 cong hien cho tung nguoi nhom nParam2 (AddOfferEx)
 #define defTONG_JX2_TOP_FEATURE		14	// doi ngoai hinh toan bang (nParam1 = feature, nParam2 = giay)
 #define defTONG_JX2_TOP_SET_FIGURE	15	// doi chuc vu thanh vien (nParam1 = figure moi 1..3)
+#define defTONG_JX2_TOP_SET_CAMP	16	// doi phe bang hoi (nParam1 = 1 chinh / 2 ta / 3 trung lap)
 
 struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 {

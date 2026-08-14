@@ -227,6 +227,11 @@ public:
 	// dot 2:
 	BOOL	JX2_IsValid() { return m_szName[0] != 0; }
 	const char*	JX2_Name() { return m_szName; }
+	// doi phe kieu JX2: GameServer da kiem quyen + tru ngan quy JX2 truoc khi
+	// goi, nen o day chi ghi. KHONG di CTongSet::ChangeCamp (ham do kiem tui
+	// tien JX1 m_dwMoney von luon bang 0 trong he JX2).
+	void		JX2_SetCamp(int nCamp) { if (nCamp >= 1 && nCamp <= 3) m_nCamp = nCamp; }
+	int			JX2_GetCamp() { return m_nCamp; }
 	BOOL	JX2_SetString(int nKind, const char* pszText);
 	BOOL	JX2_KickByNameID(DWORD dwNameID);
 	BOOL	JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure);
