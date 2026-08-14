@@ -1476,7 +1476,7 @@ void KUiTongJX2::RenderMembers(int nOffset)
 					case 1:
 					case 2:
 					case 3: nCmp = (int)p2->m_dwWeekOffer - (int)p1->m_dwWeekOffer; break;
-					case 4: nCmp = (int)p2->m_dwOffer - (int)p1->m_dwOffer; break;
+					case 4: nCmp = (p2->m_btFigure == 4 ? 1 : 0) - (p1->m_btFigure == 4 ? 1 : 0); break;	// Item_4 = An sy
 					case 5: nCmp = (int)p1->m_btFigure - (int)p2->m_btFigure; break;
 					case 6: nCmp = (int)p2->m_dwLastActive - (int)p1->m_dwLastActive; break;
 					default: nCmp = 0; break;
@@ -1514,9 +1514,42 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		}
 		else
 		{
+			// Cot 3 cua ban goc la "loai hinh" (TxtType): GIA TRI cua tieu
+			// chi sap xep dang chon, khong phai chuc vu co dinh - menu sort
+			// bi dong bang thu tu (chu thich cwm trong blueprint) chinh vi
+			// cot nay doi theo no.
+			char szV[40];
+			switch (m_nSortMode)
+			{
+			case 1:
+				{
+					long nDays = 1;
+					if (pM->m_dwJoinTime)
+						nDays = (long)((time(NULL) - (time_t)pM->m_dwJoinTime) / 86400) + 1;
+					if (nDays < 1)
+						nDays = 1;
+					sprintf(szV, "%.1f", (double)pM->m_dwOffer / (double)nDays);
+				}
+				break;
+			case 2:
+			case 3: sprintf(szV, "%u", pM->m_dwWeekOffer); break;
+			case 4: strcpy(szV, pM->m_btFigure == 4 ? "\310n s\374" : "-"); break;
+			case 5: strcpy(szV, pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?"); break;
+			case 6:
+				if (pM->m_dwLastActive)
+				{
+					time_t nTA = (time_t)pM->m_dwLastActive;
+					struct tm* pTA = localtime(&nTA);
+					sprintf(szV, "%02d-%02d %02d:%02d", pTA->tm_mday, pTA->tm_mon + 1,
+						pTA->tm_hour, pTA->tm_min);
+				}
+				else
+					strcpy(szV, "-");
+				break;
+			default: sprintf(szV, "%d", (int)pM->m_btLevel); break;
+			}
 			sprintf(sz, "%s%2d  %-16s %-12s", (m_nOrd[i] == m_nSel) ? ">" : " ",
-				(int)p->m_wStart + i + 1, pM->m_szName,
-				pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?");
+				(int)p->m_wStart + i + 1, pM->m_szName, szV);
 		}
 
 		// MAU dung bang mau cua ban thiet ke goc ([Fun_MemberList]):
@@ -1552,47 +1585,34 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
 		char szT[64];
-		m_MDet[0].SetText(pSel->m_szName);
-		sprintf(szT, " Danh hi\326u  %s",
+		// Panel = DUNG 5 truong cua ban goc, chuoi nguyen van khoi
+		// stringtable_client.txt:475-479 (G_STR_NAME / G_STR_TITLE /
+		// G_STR_CURRENT_LEVEL / G_STR_CURRENT_OFFER / G_STR_JION_TIME).
+		// "Danh hieu"/"danh hieu" la cach ban dia hoa goc dich 2 nhan
+		// khac nhau (zh: Ho ten / Xung hao) - giu nguyen van.
+		sprintf(szT, "Danh hi\326u  %s", pSel->m_szName);
+		m_MDet[0].SetText(szT);
+		sprintf(szT, "danh hi\326u  %s",
 			pSel->m_btFigure < 5 ? s_szFigure[pSel->m_btFigure] : "?");
 		m_MDet[1].SetText(szT);
+		sprintf(szT, "\247\274ng c\312p hi\326n t\271i  %d", (int)pSel->m_btLevel);
+		m_MDet[2].SetText(szT);
+		sprintf(szT, "\247i\323m c\350ng hi\325n hi\326n t\271i  %u", pSel->m_dwOffer);
+		m_MDet[3].SetText(szT);
 		struct tm* pTm;
 		time_t nT = (time_t)pSel->m_dwJoinTime;
 		if (nT)
 		{
 			pTm = localtime(&nT);
-			sprintf(szT, "Ng\265y gia nh\313p  %02d-%02d-%04d %02d:%02d",
+			sprintf(szT, "Th\352i gian nh\313p bang  %02d-%02d-%04d %02d:%02d",
 				pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
 				pTm->tm_hour, pTm->tm_min);
 		}
 		else
-			strcpy(szT, "Ng\265y gia nh\313p  -");
-		m_MDet[2].SetText(szT);
-		nT = (time_t)pSel->m_dwLastActive;
-		if (nT)
-		{
-			pTm = localtime(&nT);
-			sprintf(szT, "Ho\271t \256\351ng g\307n \256\251y  %02d-%02d-%04d %02d:%02d",
-				pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
-				pTm->tm_hour, pTm->tm_min);
-		}
-		else
-			strcpy(szT, "Ho\271t \256\351ng g\307n \256\251y  -");
-		m_MDet[3].SetText(szT);
-		sprintf(szT, "      C\350ng hi\325n tu\307n  %u", pSel->m_dwWeekOffer);
+			strcpy(szT, "Th\352i gian nh\313p bang  -");
 		m_MDet[4].SetText(szT);
-		{
-			long nDays = 1;
-			if (pSel->m_dwJoinTime)
-				nDays = (long)((time(NULL) - (time_t)pSel->m_dwJoinTime) / 86400) + 1;
-			if (nDays < 1)
-				nDays = 1;
-			sprintf(szT, "\247i\323m c\350ng hi\325n trung b\327nh h\265ng ng\265y  %.2f",
-				(double)pSel->m_dwOffer / (double)nDays);
-			m_MDet[5].SetText(szT);
-		}
-		sprintf(szT, "Ho\265n th\265nh m\364c ti\252u tu\307n  %u", pSel->m_dwWeekGoal);
-		m_MDet[6].SetText(szT);
+		m_MDet[5].SetText("");
+		m_MDet[6].SetText("");
 	}
 	// so trang dang xem (o [Fun_TitlePage] canh o nhap "Chuyen den")
 	sprintf(sz, "%d", m_nStart / defTONG_JX2_VIEW_MEMBERS + 1);
