@@ -19,6 +19,7 @@
 | `7d57cb1` | Vá tràn mảng `m_FunBtn[23]` → `[26]` (bảng nút lên 24 mục) — tự phát hiện khi rà soát |
 | `f8253fd` | Sàn phản biện 2×2 bắt 6 lỗi, sửa cả 6 — **lớn nhất: `KUiTongGetString` dùng `KWndText32` nên KHÔNG GÕ ĐƯỢC** (lỗi ngủ có sẵn của lớp, đổi sang `KWndEdit32` + mở lại nhánh Enter bị comment); gate PHÁT về `>=100`; ApplyBtn W=126 (21<21 vẫn cắt); JiYu H=48 (3 dòng lời nhắn); xóa chữ mẫu design-time (KWndText::Init đọc `Text=`); `m_ZmBg.Enable(false)` |
 | `65e1043` | `KWndEdit::GetText` 3 tham số (build gãy sau khi đổi lớp) |
+| `41ead8e` | Sàn phản biện LIÊN MINH bắt 4 lỗi, sửa cả 4 — **lớn nhất: duyệt không cần ĐƠN** (minh chủ ép bang bất kỳ vào + trừ oan 1 triệu → thêm field **54** = UnionID đang xin, TOP 22, relay chỉ duyệt bang ĐÃ xin); 5 đường từ chối im lặng ở relay giờ báo rõ; trần `[LevelUnionNum]` đọc nhầm cấp JX1 (1-9, thang 10-90 chết) → đọc cấp kiến thiết field 13 ánh xạ 0→3…5→8; Trục xuất/Cách chức qua HỘP XÁC NHẬN (2 khóa [UnionStr] hết chết); ô nhập tên 20→31 byte |
 
 ## 1. LIÊN MINH — MÔ HÌNH ĐÃ CHỌN (đọc trước khi đụng)
 
@@ -31,6 +32,7 @@
 | field **49** | Giờ rời liên minh (epoch) — luật **chờ 3 ngày** 259200s, gác ở GS | dịch ngược `jx_linux_y 0x80d0e50/0x80d18e0` |
 | field **50** | 1 = bang minh chủ | bổ sung của ta (ghi rõ) |
 | field **51/52/53** | NameID Thừa Tướng / Nguyên Soái / Tiên Phong | bổ sung của ta |
+| field **54** | UnionID bang này ĐANG XIN vào (minh chủ chỉ duyệt được bang đã xin) | bổ sung của ta (chống ép vào + trừ oan tiền) |
 | `m_szLeagueTName[32]` | TÊN liên minh (field legacy có sẵn, trước không ai ghi) | tái dụng theo gợi ý điều tra |
 
 Đồng bộ tên: `STRING kind UNION (defTONG_JX2_STR_UNION=4)` — relay phát khi đổi + dump khi GS nối.
