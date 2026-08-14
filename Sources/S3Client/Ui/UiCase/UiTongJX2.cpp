@@ -116,9 +116,15 @@ static const char* s_szFaction[11] =
 	"Thi\252n Nh\311n", "V\342 \247ang", "C\253n L\253n",
 };
 
+// Ten 5 chuc vu - NGUYEN VAN bang chuoi ban Linux (stringtable_client.txt:481-485).
+// Muc 0 va 3 cua ban goc CO dau cach o cuoi, giu de dung tung byte.
+// CAM dung enum TONG_MEMBER_FIGURE cua JX1 (GameDataDef.h) de danh chi so:
+// enum do co thu tu NGUOC (MEMBER=0 ... MASTER=3), con fork JX2 la
+// 0 = Bang chu ... 4 = An sy.
 static const char* s_szFigure[5] =
 {
-	"Bang ch\361", "Tr\255\353ng l\267o", "\247\351i tr\255\353ng", "Bang ch\363ng", "An si",
+	"Bang ch\361 ", "Tr\255\353ng L\267o", "\247\351i tr\255\353ng",
+	"\247\326 t\366 ", "\310n s\374",
 };
 
 // Trang Tin tuc: bind NGUYEN VAN section blueprint 帮会基础信息页面.ini
@@ -242,12 +248,16 @@ static const char* s_szRecHD[TJX2_HD_NUM] =
 
 // 11 = gop tien ca nhan vao quy bang (COP_DONATE) - duong DUY NHAT de nguoi
 // choi gop tien; truoc day hang nut m_BtnAct bi an nen khong ai gop duoc.
-#define TJX2_FUN_BTNS	15
+// 12 = doi phe bang hoi: KHONG can ma lenh JX2 moi - he JX1 da co san tron bo
+// duong day (ApplyTongChangeCamp kiem chuc vu + tru tien, relay co DBChangeCamp),
+// di y het cach nut "Roi bang" dang lam qua GTOI_TONG_ACTION.
+#define TJX2_FUN_BTNS	16
 static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 {
 	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
 	{"BtnAssignTongOffer",   "Ph\270t", 1},
-	{"BtnGetTongMoney",      "Nh\313n", 9},
+	{"BtnGetTongMoney",      "R\363t", 9},	// nguyen van ban goc; chuoi 4 byte
+											// "Nhan" cua ta bi nut rong 25px cat thanh "N.."
 	{"BtnAssignTongMoney",   "Ph\270t", 10},
 	{"BtnTransformMoney",    "\247\346i", -1},
 	{"BtnRecruit",           "Chi\252u m\351", 4},
@@ -255,6 +265,7 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 	{"BtnDepose",            "Tru\312t ch\370c", 3},
 	{"Btn_DispenseOffer",    "Ph\270t c\350ng hi\325n", 1},
 	{"BtnCreateTongMap",     "T\271o l\267nh \256\336a", 5},
+	{"BtnChangeCamp",       "\247\346i phe", 12},
 	{"BtnConfigureTongMap",  "", -1},
 	{"BtnTongStunt",         "", -1},
 	{"BtnStorePersonalOffer","C\312t", 7},
@@ -854,8 +865,15 @@ void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const
 		strncpy(sOp.szText, pszText, sizeof(sOp.szText) - 1);
 	g_pCoreShell->TongOperation(GTOI_TONG_JX2_OP, (unsigned int)&sOp, 0);
 	sTJX2Log("[OP ] op=%d target=%u p1=%d p2=%d", nOp, (unsigned)dwTarget, nP1, nP2);
-	// xin lai trang sau khi thao tac (relay echo ve GS truoc khi minh hoi lai)
-	RequestPage(m_nPage, m_nStart);
+	// Xin lai trang sau khi thao tac - NHUNG BO QUA voi cac lenh mang CHUOI.
+	// GameServer tra loi goi VIEW tu ban sao cuc bo, ma ban sao chi doi khi
+	// relay phat echo ve; xin lai ngay lap tuc thi chac chan van nhan chuoi CU
+	// va ghi de len o soan thao => nguoi choi tuong "khong luu duoc", phai dong
+	// cua so mo lai moi thay. Ba lenh nay se tu hien khi doi tab / bam lam moi.
+	if (nOp != defTONG_JX2_COP_SAVE_RECRUIT &&
+		nOp != defTONG_JX2_COP_SETANN &&
+		nOp != defTONG_JX2_COP_LEAVE_WORD)
+		RequestPage(m_nPage, m_nStart);
 }
 
 void KUiTongJX2::DataArrive(unsigned char* pData, int nLen)
@@ -1099,8 +1117,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 		for (i = 0; i < 2; i++)
 			if (bFun) m_FunPBg[i].Show(); else m_FunPBg[i].Hide();
 		// nhom nut giua theo sub-page (cac nut hanh dong deu thuoc sub 1 tru map)
+		// nhom 2 = lanh dia + doi phe (dung nhom cua ban goc: BtnChangeCamp
+		// nam cung o Top=176 voi BtnCreateTongMap/BtnConfigureTongMap)
 		static const int s_nFunBtnSub[TJX2_FUN_BTNS] =
-			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 0, 0, 0 };
+			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0 };
 			// 0 = luon hien khi mode nut (khoi tien/ca nhan/roi bang)
 			// 1 = sub nhan su (Recruit/KickOut/Depose/DispenseOffer)
 			// 2 = sub lanh dia (CreateTongMap/ConfigureTongMap/TongStunt)
@@ -1190,7 +1210,13 @@ void KUiTongJX2::SwitchPage(int nPage)
 		{
 			if (bRc) { m_RcSub[i].Show(); m_RcSub[i].Enable(true); }
 			else { m_RcSub[i].Hide(); m_RcSub[i].Enable(false); }
+			// Bat sang theo kieu RADIO. Nut co CheckBox=1 nen tu lat RIENG no,
+			// khong co logic nhom: luc moi mo KHONG nut nao sang (chu mau
+			// 77,77,77 tren nen toi = "chu den" chu game thay), bam qua lai thi
+			// NHIEU nut cung sang. Phai dat SAU Enable vi Enable cung doi khung.
 		}
+		for (i = 0; i < 4; i++)
+			m_RcSub[i].CheckButton((bRc && i == m_nRcSub) ? 1 : 0);
 		BOOL bEd = (bRc && m_nRcSub == 1);
 		if (bEd) m_RcEditor.Show(); else m_RcEditor.Hide();
 		if (bEd) { m_RcSave.Show(); m_RcSave.Enable(true); }
@@ -1657,7 +1683,11 @@ void KUiTongJX2::ApplyRights()
 	TONG_JX2_ONE_MEMBER* pOne = &pM->m_sMember[m_nSel];
 	if (pOne->m_btFigure != 1)
 	{
-		// chi truong lao nhan duoc quyen (bang chu mac dinh toan quyen)
+		// Chi TRUONG LAO nhan duoc quyen (bang chu mac dinh toan quyen).
+		// Truoc day return IM LANG nen chon bang chu / doi truong / de tu /
+		// an sy deu "bam khong thay gi xay ra".
+		UIMessageBox("Ch\330 c\343 th\323 ph\251n quy\322n cho Tr\255\353ng L\267o.",
+			this, "\247\343ng", NULL, 0);
 		return;
 	}
 	for (int b = 0; b < 14; b++)
@@ -2050,8 +2080,11 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			if (uParam == (unsigned int)&m_RtAll)
 			{
+				// nut co CheckBox=1 nen da TU LAT truoc khi bao len - doc lai
+				// trang thai do de BAT/TAT ca cum, truoc day chi bat mot chieu
+				int nAll = m_RtAll.IsButtonChecked() ? 1 : 0;
 				for (q = 0; q < 14; q++)
-					m_Rt[q].CheckButton(1);
+					m_Rt[q].CheckButton(nAll);
 				return 1;
 			}
 			if (uParam == (unsigned int)&m_RtApply)
@@ -2064,6 +2097,9 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (uParam == (unsigned int)&m_FunSub[q])
 				{
 					m_nFunSub = q + 1;
+					// radio: chi nut dang chon sang (xem ghi chu o m_RcSub)
+					for (int z = 0; z < 4; z++)
+						m_FunSub[z].CheckButton((z + 1 == m_nFunSub) ? 1 : 0);
 					SwitchPage(TJX2_UI_PAGE_FUNUSE);
 					return 1;
 				}
@@ -2157,6 +2193,32 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 11:
 					// gop 10 van vao quy bang -> nhan diem cong hien ca nhan
 					SendOp(defTONG_JX2_COP_DONATE, 0, 10, 0, NULL);
+					break;
+				case 12:
+					{
+						// DOI PHE: xoay vong Chinh -> Ta -> Trung lap theo phe
+						// dang co, di duong JX1 co san (ApplyTongChangeCamp da
+						// tu kiem chuc vu va tru tien o ngan quy bang).
+						int nCamp = 1;
+						if (m_bHasInfo)
+						{
+							TONG_JX2_INFO_SYNC* pI = (TONG_JX2_INFO_SYNC*)m_byInfo;
+							nCamp = (pI->m_btCamp >= 1 && pI->m_btCamp <= 3) ?
+								(pI->m_btCamp % 3) + 1 : 1;
+						}
+						if (g_pCoreShell)
+						{
+							KTongOperationParam sParam;
+							KTongMemberItem sTg;
+							memset(&sParam, 0, sizeof(sParam));
+							memset(&sTg, 0, sizeof(sTg));
+							sParam.eOper = (nCamp == 1) ? TONG_ACTION_CHANGE_CAMP_JUSTIE :
+								((nCamp == 2) ? TONG_ACTION_CHANGE_CAMP_EVIL :
+								TONG_ACTION_CHANGE_CAMP_BALANCE);
+							g_pCoreShell->TongOperation(GTOI_TONG_ACTION,
+								(unsigned int)&sParam, (int)&sTg);
+						}
+					}
 					break;
 				case 9:
 					SendOp(defTONG_JX2_COP_DRAW_MONEY, 0, 10, 0, NULL);	// rut 10 van
