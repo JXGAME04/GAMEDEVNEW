@@ -1022,10 +1022,15 @@ void KUiTongJX2::RepositionRows()
 		}
 		else if (m_nPage == TJX2_UI_PAGE_TONGLIST)
 		{
+			// ba cot that: ten bang | bang chu | cap / thanh vien
 			m_Row[i].SetPosition(40, 70 + i * 24);
-			m_Row[i].SetSize(540, 20);
+			m_Row[i].SetSize(160, 20);
+			m_MList[i].SetPosition(205, 70 + i * 24);
+			m_MList[i].SetSize(150, 20);
+			m_RowDim[i].SetPosition(365, 70 + i * 24);
+			m_RowDim[i].SetSize(140, 20);
 			m_BtnRowSel[i].SetPosition(40, 70 + i * 24);
-			m_BtnRowSel[i].SetSize(230, 20);
+			m_BtnRowSel[i].SetSize(470, 20);
 			m_BtnRowSel[i].Enable(i >= 1 && i <= 10);
 		}
 		else if (m_nPage == TJX2_UI_PAGE_RECRUIT)
@@ -1156,10 +1161,12 @@ void KUiTongJX2::SwitchPage(int nPage)
 		BOOL bL = (nPage == defTONG_JX2_PAGE_MEMBER || nPage == defTONG_JX2_PAGE_RIGHT ||
 			nPage == TJX2_UI_PAGE_FUNUSE || nPage == defTONG_JX2_PAGE_WS ||
 			nPage == defTONG_JX2_PAGE_INFO);
+		// trang Danh sach bang muon lai hai lop nay lam COT 2 va COT 3
+		BOOL bCol = (bL || nPage == TJX2_UI_PAGE_TONGLIST);
 		for (i = 0; i < TJX2_UI_ROWS; i++)
-			if (bL) m_MList[i].Show(); else m_MList[i].Hide();
+			if (bCol) m_MList[i].Show(); else m_MList[i].Hide();
 		for (i = 0; i < TJX2_UI_ROWS; i++)
-			if (bL) m_RowDim[i].Show(); else m_RowDim[i].Hide();
+			if (bCol) m_RowDim[i].Show(); else m_RowDim[i].Hide();
 		for (i = 0; i < 7; i++)
 			if (bL) m_MDet[i].Show(); else m_MDet[i].Hide();
 		for (i = 0; i < 3; i++)
@@ -1840,18 +1847,39 @@ void KUiTongJX2::RenderTongList()
 	int i;
 	char sz[120];
 	ClearRows();
-	m_Row[0].SetText("T\252n bang           Bang ch\361        C\312p  TV");
+	// Chia CO T THAT bang ba lop control rieng thay vi dem ky tu: font cua game
+	// la font TI LE nen dem "%-18s" khong bao gio thang hang (do la ly do anh
+	// chu game gui bi lech). m_Row = ten bang, m_MList = bang chu,
+	// m_RowDim = cap + so thanh vien; ca ba deu ranh o trang nay.
+	m_Row[0].SetTextColor(0xFF000000 | (255 << 16) | (237 << 8) | 165);
+	m_Row[0].SetText("T\252n bang");
+	m_MList[0].SetText("Bang ch\361");
+	m_RowDim[0].SetText("C\312p / Th\265nh vi\252n");
 	if (!m_bHasList)
 		return;
 	TONG_JX2_TONGLIST_SYNC* p = (TONG_JX2_TONGLIST_SYNC*)m_byList;
 	if (p->m_btCount == 0)
+	{
 		m_Row[2].SetText("(ch\255a c\343 bang h\351i n\265o)");
+		return;
+	}
 	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_LIST_ROWS; i++)
 	{
-		sprintf(sz, "%s%-18s %-14s %3d %4d", (i == m_nSel) ? "> " : "  ",
-			p->m_sTong[i].m_szName, p->m_sTong[i].m_szMaster,
-			(int)p->m_sTong[i].m_btLevel, (int)p->m_sTong[i].m_wMember);
+		// mau ten bang theo ban goc: 153,255,255 (xanh nhat) - truoc day ve
+		// mau vang cua section [Row0]
+		BOOL bSel = (i == m_nSel);
+		unsigned int uCol = bSel ?
+			(0xFF000000 | (34 << 16) | (228 << 8) | 36) :
+			(0xFF000000 | (153 << 16) | (255 << 8) | 255);
+		m_Row[i + 1].SetTextColor(uCol);
+		sprintf(sz, "%s%s", bSel ? "> " : "  ", p->m_sTong[i].m_szName);
 		m_Row[i + 1].SetText(sz);
+		m_MList[i + 1].SetTextColor(uCol);
+		m_MList[i + 1].SetText(p->m_sTong[i].m_szMaster);
+		sprintf(sz, "%d  /  %d", (int)p->m_sTong[i].m_btLevel,
+			(int)p->m_sTong[i].m_wMember);
+		m_RowDim[i + 1].SetTextColor(uCol);
+		m_RowDim[i + 1].SetText(sz);
 	}
 }
 
