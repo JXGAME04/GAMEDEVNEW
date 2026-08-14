@@ -2522,8 +2522,41 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 5;
 			if (!Player[nPlayerIdx].Pay(nVan * 10000))
 				return 6;	// khong du tien
-			sSendFieldCmd(dwTongID, 12, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
-			sSendFieldCmd(dwTongID, 41, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
+			{
+				// Tran quyen gop kien thiet MOI TUAN (field 42, relay ghi theo
+				// cot WEEK_BUILD_UPPER cua tong_level_data). Ban goc
+				// (tong_mix.lua:205-236) KHONG bo phan vuot: phan lot duoi tran
+				// vao quy kien thiet + quy tuan, phan VUOT chay sang quy du tru
+				// kien thiet (field 19). Truoc day ta cong thang, tran vo nghia.
+				DWORD dwUpper = GetField(dwTongID, 42);
+				DWORD dwWeek = GetField(dwTongID, 41);
+				int nIn = nVan;
+				int nOver = 0;
+				if (dwUpper > 0)
+				{
+					int nRoom = (int)dwUpper - (int)dwWeek;
+					if (nRoom < 0)
+						nRoom = 0;
+					if (nIn > nRoom)
+					{
+						nOver = nIn - nRoom;
+						nIn = nRoom;
+					}
+				}
+				if (nIn > 0)
+				{
+					sSendFieldCmd(dwTongID, 12, (DWORD)nIn, defTONG_JX2_OP_ADDU, dwParam);
+					sSendFieldCmd(dwTongID, 41, (DWORD)nIn, defTONG_JX2_OP_ADDU, dwParam);
+				}
+				if (nOver > 0)
+				{
+					// contribution_entry.lua:35 - bao ro phan vuot chuyen di dau
+					sSendFieldCmd(dwTongID, 19, (DWORD)nOver, defTONG_JX2_OP_ADDU, dwParam);
+					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+						(char*)"Ng\251n s\270ch ki\325n thi\325t nh\313n \256\255\356c v\255\356t qu\270 gi\355i h\271n tu\307n, ph\307n d\255 chuy\323n sang ng\251n s\270ch ki\325n thi\325t d\371 b\336.",
+						(int)strlen("Ng\251n s\270ch ki\325n thi\325t nh\313n \256\255\356c v\255\356t qu\270 gi\355i h\271n tu\307n, ph\307n d\255 chuy\323n sang ng\251n s\270ch ki\325n thi\325t d\371 b\336."));
+				}
+			}
 			// KHONG cong ngan quy (field 3/4) o day: ban goc MONEY2BUILDFUND chi
 			// cong quy kien thiet; ngan quy co duong nap rieng COP_DEPOSIT_MONEY.
 			// Truoc day cong ca hai = mot lan tra tien duoc ghi vao HAI tui.
@@ -2634,6 +2667,21 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			char szText[128];
 			memcpy(szText, pCmd->m_szText, sizeof(szText));
 			szText[127] = 0;
+			{
+				// Ban goc thu phi luu van an: [Main] SaveMessage cua trang chieu
+				// mo ghi ro "phai tru tien quy bang hoi 1000 van". Truoc day ta
+				// luu MIEN PHI.
+				__int64 nGia = (__int64)1000 * 10000;	// 1000 van = 10 trieu luong
+				__int64 nCo = (__int64)GetField(dwTongID, 3) |
+					((__int64)GetField(dwTongID, 4) << 32);
+				if (nCo < nGia)
+					return 6;	// ngan quy bang khong du
+				sSendMoneyCmd(dwTongID, -nGia, defTONG_JX2_OP_ADD, dwParam);
+				// tru ngay tren ban sao de bam lien tuc khong qua duoc phep kiem
+				__int64 nLai = nCo - nGia;
+				pTong->mapField[3] = (DWORD)(nLai & 0xFFFFFFFF);
+				pTong->mapField[4] = (DWORD)((nLai >> 32) & 0xFFFFFFFF);
+			}
 			sSendStringCmd(dwTongID, defTONG_JX2_STR_RECRUIT, szText, dwParam);
 			sSendFieldCmd(dwTongID, 60, (DWORD)(pCmd->m_nParam1 & 15), defTONG_JX2_OP_SET, dwParam);
 			sSendFieldCmd(dwTongID, 61, (DWORD)((pCmd->m_nParam1 >> 4) & 15), defTONG_JX2_OP_SET, dwParam);

@@ -501,7 +501,7 @@ void KUiTongJX2::Initialize()
 		AddChild(&m_FunTxt[i]);
 	for (i = 0; i < 7; i++)
 		AddChild(&m_FunP[i]);
-	for (i = 0; i < 14; i++)
+	for (i = 0; i < TJX2_UI_ROWS; i++)
 		AddChild(&m_RowDim[i]);
 	for (i = 0; i < TJX2_FUN_BTNS; i++)
 		AddChild(&m_FunBtn[i]);

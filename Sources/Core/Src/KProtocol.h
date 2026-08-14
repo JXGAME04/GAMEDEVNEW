@@ -2357,7 +2357,7 @@ typedef struct
 #define defTONG_JX2_PAGE_TONGLIST	6	// danh sach bang (KHONG can thuoc bang; wStart phan trang)
 #define defTONG_JX2_PAGE_OTHERZM	7	// trang 2x2 xem chieu mo bang khac (4 bang/goi; KHONG can thuoc bang)
 #define defTONG_JX2_LIST_ROWS		10
-#define defTONG_JX2_RECORD_LINES	12	// so dong gui moi goi
+#define defTONG_JX2_RECORD_LINES	16	// = defTONG_JX2_RECORD_NUM: ve du 16 dong ring	// so dong gui moi goi
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
 #define defTONG_JX2_RIGHT_COUNT	14	// 14 RightID ban goc (truoc 12, chua 1000/2007 khong co trong blueprint)
 // thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001

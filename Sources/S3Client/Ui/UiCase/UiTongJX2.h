@@ -17,7 +17,7 @@ Description : Cua so bang hoi kieu JX2 (5 trang: thong tin / thanh vien /
 #include "../elem/wndtext.h"
 #include "../elem/wndedit.h"
 
-#define TJX2_UI_ROWS		14
+#define TJX2_UI_ROWS		16	// = defTONG_JX2_RECORD_LINES (nhat ky ve 16 dong)
 #define TJX2_UI_TABS		5
 #define TJX2_UI_ACTS		6
 
@@ -79,7 +79,7 @@ private:
 	KWndLabeledButton	m_RtApply;				// Phan quyen (BtnDistribute)
 	KWndLabeledButton	m_Bot[4];				// 4 nut day: Vao bang nay/Tao moi/Xem tin/Dong
 	KWndText80			m_ColHdr[3];			// tieu de cot Hang/Thanh vien/Chuc vu
-	KWndText80			m_MList[14];			// danh sach thanh vien (MOI TAB, tach khoi m_Row)
+	KWndText80			m_MList[TJX2_UI_ROWS];			// danh sach thanh vien (MOI TAB, tach khoi m_Row)
 	KWndImage			m_WsIconBg[8];			// nen icon khu (sprite nen goc, 35x48)
 	KWndImage			m_WsIconHL[8];			// lop CAO SANG khi khu da lap (33x33)
 	KWndText80			m_WsRank[8];			// chu cap ngay duoi tung icon
@@ -121,7 +121,7 @@ private:
 	KWndImage			m_FunPBg[6];			// khung do + thanh ong cua 3 hang do
 	KWndImage			m_FunMask;				// anh ten trang con 1-4 (Fun_ImgSubPageMask)
 	KWndText80			m_MDet[7];				// panel XANH chi tiet thanh vien
-	KWndText80			m_RowDim[14];			// dong danh sach mau xam (offline)
+	KWndText80			m_RowDim[TJX2_UI_ROWS];			// dong danh sach mau xam (offline)
 	KWndLabeledButton	m_FunBtn[26];			// nut hanh dong (>= TJX2_FUN_BTNS = 24)
 	KWndLabeledButton	m_FunSub[4];			// 4 nut sub-page
 	KWndLabeledButton	m_BtnFun;				// nut mo trang (tren cua so chinh)
