@@ -77,9 +77,11 @@ kéo sập Tống Kim/bảo trì bang; **deploy timerserver.lua có hiệu lực
 ### 1.3 Script gốc: đặt Ở ĐƯỜNG THẬT (tự được nạp lúc boot — LoadAllScript quét đĩa đệ quy;
 trap/NPC trong map data gọi theo hash đường dẫn nên KHÔNG remap được; V8 xác nhận không cần cờ
 môi trường nào — _RELAY_/_GAMESERVER_ là local hardcode từng bản file). Nguồn:
-- `citywar_city\` = **citywar_city.zip nội bộ (33 entry) là CHUẨN** — có 4 file tuyen*.lua bản VN
-  khớp map 剑门关vn mà D:\ServerLinux KHÔNG có; làm bảng diff 3 chiều zip↔server1↔cây ta trước
-  khi chép; file mồ côi bản chế (zhongzhuan_map\yaoshang.lua) giữ + ngắt kích.
+- `citywar_city\` = **D:\ServerLinux\server1 GỐC là CHUẨN — KHÔNG dùng zip** (đảo E-PB4-15,
+  chốt 14/08 bằng quét ScriptID trap nhúng trong 292 region vn: map vn gọi ĐÚNG 8 trap gốc
+  ctrap1/1b/1c/2/2b/2c + trap1/trap2 tại đúng cụm tọa độ gốc, KHÔNG gọi tuyen* nào; zip là bản
+  ai đó dời tọa độ cho nửa map `剑门关` cũ — CS_CampPos1 zip (1280,2912)=cell v091/f080 nằm
+  NGOÀI rect vn). File mồ côi bản chế (zhongzhuan_map\yaoshang.lua) giữ + ngắt kích.
 - `citywar_global\` +7 file, `citywar_arena\` +7 file, `misc\league_cityinfo.lua`,
   `task\system\task_string.lua`, `lib\objbuffer_head.lua`, eventhead.lua... từ D:\ServerLinux\server1.
 - **2 bản ladder.lua khác nhau**: `missions\citywar_global\ladder.lua` (GS-side, được nạp) và
