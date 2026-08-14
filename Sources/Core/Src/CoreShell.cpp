@@ -9178,8 +9178,8 @@ int	KCoreShell::TongOperation(unsigned int uOper, unsigned int uParam, int nPara
 	if (uOper == GTOI_TONG_JX2_VIEW)
 	{
 		if (Player[CLIENT_PLAYER_INDEX].m_cTong.GetTongNameID() == 0 &&
-			uParam != defTONG_JX2_PAGE_TONGLIST)
-			return 0;	// chua vao bang -> chi duoc xem danh sach bang
+			uParam != defTONG_JX2_PAGE_TONGLIST && uParam != defTONG_JX2_PAGE_OTHERZM)
+			return 0;	// chua vao bang -> chi xem danh sach bang / chieu mo bang khac
 		Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView((int)uParam, nParam);
 		return 1;
 	}

@@ -2038,6 +2038,63 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 		pSync->m_wLength = sizeof(TONG_JX2_TONGLIST_SYNC) - 1;
 		return (int)sizeof(TONG_JX2_TONGLIST_SYNC);
 	}
+	if (nPage == defTONG_JX2_PAGE_OTHERZM)
+	{
+		// trang 2x2 xem chieu mo bang khac: KHONG can thuoc bang, 4 bang/goi
+		if (nOutSize < (int)sizeof(TONG_JX2_OTHERZM_SYNC))
+			return 0;
+		TONG_JX2_OTHERZM_SYNC* pSync = (TONG_JX2_OTHERZM_SYNC*)pOut;
+		memset(pSync, 0, sizeof(TONG_JX2_OTHERZM_SYNC));
+		pSync->ProtocolType = s2c_extendtong;
+		pSync->m_btMsgId = enumTONG_SYNC_ID_JX2;
+		pSync->m_btPage = defTONG_JX2_PAGE_OTHERZM;
+		pSync->m_wStart = (WORD)nStart;
+		int nIdx = 0;
+		std::map<DWORD, KTongJX2Tong>::iterator it;
+		for (it = m_mapTong.begin(); it != m_mapTong.end(); ++it)
+		{
+			KTongJX2Tong* pT = &it->second;
+			if (nIdx >= nStart && pSync->m_btCount < 4)
+			{
+				TONG_JX2_ONE_ZM* pOne = &pSync->m_sZM[pSync->m_btCount];
+				memcpy(pOne->m_szName, pT->szName, 32);
+				pOne->m_szName[31] = 0;
+				KTongJX2Member* pMaster = NULL;
+				std::map<DWORD, KTongJX2Member>::iterator im;
+				for (im = pT->mapMember.begin(); im != pT->mapMember.end(); ++im)
+				{
+					if (im->second.btFigure == 0)
+					{
+						pMaster = &im->second;
+						break;
+					}
+				}
+				if (pMaster)
+				{
+					memcpy(pOne->m_szMaster, pMaster->szName, 32);
+					pOne->m_szMaster[31] = 0;
+				}
+				pOne->m_dwNameID = pT->dwNameID;
+				pOne->m_btCamp = pT->btCamp;
+				pOne->m_btLevel = (BYTE)GetField(pT->dwNameID, 13);
+				pOne->m_wMember = (WORD)pT->mapMember.size();
+				pOne->m_btTendency = (BYTE)GetField(pT->dwNameID, 60);
+				pOne->m_btAct[0] = (BYTE)GetField(pT->dwNameID, 61);
+				pOne->m_btAct[1] = (BYTE)GetField(pT->dwNameID, 62);
+				pOne->m_btAct[2] = (BYTE)GetField(pT->dwNameID, 63);
+				pOne->m_btAct[3] = (BYTE)GetField(pT->dwNameID, 64);
+				pOne->m_btAutoLv = (BYTE)GetField(pT->dwNameID, 65);
+				pOne->m_btRefuseLv = (BYTE)GetField(pT->dwNameID, 66);
+				memcpy(pOne->m_szRecruit, pT->szRecruit, sizeof(pOne->m_szRecruit));
+				pOne->m_szRecruit[sizeof(pOne->m_szRecruit) - 1] = 0;
+				pSync->m_btCount++;
+			}
+			nIdx++;
+		}
+		pSync->m_wTotal = (WORD)nIdx;
+		pSync->m_wLength = sizeof(TONG_JX2_OTHERZM_SYNC) - 1;
+		return (int)sizeof(TONG_JX2_OTHERZM_SYNC);
+	}
 	if (!pTong)
 		return 0;
 
@@ -2300,6 +2357,24 @@ static void sJX2_NotifyApply(KTongJX2Tong* pTong, const char* pszMsg)
 	}
 }
 
+// Msg2Tong cua ban goc: phat mot dong he thong toi MOI thanh vien online
+// cua bang (tong_mix.lua goi VO DIEU KIEN truoc khi ghi so co nguong).
+static void sJX2_Msg2Tong(KTongJX2Tong* pTong, const char* pszMsg)
+{
+	if (!pTong || !pszMsg || !pszMsg[0])
+		return;
+	int nLen = (int)strlen(pszMsg);
+	int nIdx = PlayerSet.GetFirstPlayer();
+	while (nIdx > 0)
+	{
+		if (Player[nIdx].m_nIndex > 0 &&
+			Player[nIdx].m_cTong.GetTongNameID() == pTong->dwNameID)
+			KPlayerChat::SendSystemInfo(1, nIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+				(char*)pszMsg, nLen);
+		nIdx = PlayerSet.GetNextPlayer();
+	}
+}
+
 // Vo boc: goi than xu ly roi BAO KET QUA cho nguoi choi (he cu im lang lam
 // nguoi choi tuong nut khong chay)
 int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
@@ -2439,13 +2514,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 9, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 11, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 			}
-			if (nVan >= 100)
 			{
-				// nguyen van + nguong ghi so ban Linux (tong_mix.lua:242, gate
-				// :244 nOffer >= 1000000 luong = 100 van)
+				// nguyen van tong_mix.lua:242; Msg2Tong VO DIEU KIEN (:247),
+				// so su kien chi ghi khi >= 100 van (:244 nOffer >= 1000000 luong)
 				char szLog[160];
 				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d v\271n l\255\356ng v\265o ng\251n s\270ch ki\325n thi\325t bang", Player[nPlayerIdx].m_PlayerName, nVan);
-				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+				sJX2_Msg2Tong(pTong, szLog);
+				if (nVan >= 100)
+					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
 			return 0;
 		}
@@ -2723,10 +2799,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			}
 			Player[nTargetIdx].Earn(nVan * 10000);
 			// Nguyen van ban Linux, don vi LUONG (khong phai van): rut =
-			// tong_mix.lua:77, nguong ghi so :80 abs >= 1000000 luong = 100 van.
-			// "Phat tien cho thanh vien" khong co ham goc - mo phong mau :377
-			// ("%s phat cho %s %d diem cong hien du tru") doi sang luong.
-			if (nVan >= 100)
+			// tong_mix.lua:77 (Msg2Tong :79 VO DIEU KIEN, ghi so :80 khi
+			// abs >= 1000000 luong = 100 van). "Phat tien" khong co ham goc -
+			// mo phong mau :377, gate mau la > 100 (strict).
 			{
 				char szLog[160];
 				if (pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY)
@@ -2735,7 +2810,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				else
 					sprintf(szLog, "%s ph\270t cho %s %.0f l\255\356ng",
 						Player[nPlayerIdx].m_PlayerName, Player[nTargetIdx].m_PlayerName, (double)nVan * 10000);
-				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+				sJX2_Msg2Tong(pTong, szLog);
+				if (pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY ? (nVan >= 100) : (nVan > 100))
+					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
 			return 0;
 		}
@@ -2747,10 +2824,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			int nVan = pCmd->m_nParam1;
 			if (nVan <= 0 || nVan > 200000)
 				return 5;
+			// tong_mix.lua:101-105 chi co tran MOI LAN nap (2e9 luong =
+			// 200000 van, da chan bang nVan o tren) - KHONG co tran tong quy.
 			__int64 nCo = (__int64)GetField(dwTongID, 3) |
 				((__int64)GetField(dwTongID, 4) << 32);
-			if (nCo + (__int64)nVan * 10000 > (__int64)2000000000)
-				return 5;	// vuot tran ngan quy
 			if (!Player[nPlayerIdx].Pay(nVan * 10000))
 				return 6;	// khong du tien
 			sSendMoneyCmd(dwTongID, (__int64)nVan * 10000, defTONG_JX2_OP_ADD, dwParam);
@@ -2760,12 +2837,13 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				pTong->mapField[3] = (DWORD)(nMoi & 0xFFFFFFFF);
 				pTong->mapField[4] = (DWORD)((nMoi >> 32) & 0xFFFFFFFF);
 			}
-			if (nVan >= 100)
 			{
 				char szLog[160];
 				sprintf(szLog, "%s \256\267 \256\343ng g\343p %.0f l\255\356ng v\265o ng\251n qu\374 bang h\351i",
 					Player[nPlayerIdx].m_PlayerName, (double)nVan * 10000);
-				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+				sJX2_Msg2Tong(pTong, szLog);
+				if (nVan >= 100)
+					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
 			return 0;
 		}
@@ -2818,12 +2896,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 6;	// khong du cong hien
 			Player[nPlayerIdx].m_cTask.SetSaveVal(defTASK_JX2_CONTRIBUTION, (DWORD)(nCur - nVal));
 			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_CONTRIBUTE, nVal, 0, dwParam);
-			if (nVal >= 100)
 			{
-				// tong_mix.lua:297, nguong ghi so :298 nOffer >= 100
+				// tong_mix.lua:297 (Msg2Tong :301 vo dieu kien, ghi so :298
+				// khi nOffer >= 100)
 				char szLog[160];
 				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d \256i\323m c\350ng hi\325n v\265o ng\251n s\270ch c\350ng hi\325n bang", Player[nPlayerIdx].m_PlayerName, nVal);
-				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+				sJX2_Msg2Tong(pTong, szLog);
+				if (nVal >= 100)
+					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
 			return 0;
 		}

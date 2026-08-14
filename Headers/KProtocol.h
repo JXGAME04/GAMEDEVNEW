@@ -1667,6 +1667,7 @@ typedef struct
 #define defTONG_JX2_APPLY_MAX		8	// so don xin vao bang giu tren GS
 #define defTONG_JX2_PAGE_RECORD	5	// trang nhat ky (wStart = 0 su kien / 1 lich su)
 #define defTONG_JX2_PAGE_TONGLIST	6	// danh sach bang (KHONG can thuoc bang; wStart phan trang)
+#define defTONG_JX2_PAGE_OTHERZM	7	// trang 2x2 xem chieu mo bang khac (4 bang/goi; KHONG can thuoc bang)
 #define defTONG_JX2_LIST_ROWS		10
 #define defTONG_JX2_RECORD_LINES	12	// so dong gui moi goi
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
@@ -1863,6 +1864,35 @@ typedef struct
 	BYTE	m_btCount;
 	TONG_JX2_ONE_TONG	m_sTong[defTONG_JX2_LIST_ROWS];
 } TONG_JX2_TONGLIST_SYNC;
+
+// mot the tren trang "Xem tin Bang khac" 2x2 (blueprint: 4 the/goi)
+typedef struct
+{
+	char	m_szName[32];
+	char	m_szMaster[32];
+	DWORD	m_dwNameID;
+	BYTE	m_btCamp;
+	BYTE	m_btLevel;			// field 13 (cap kien thiet)
+	WORD	m_wMember;
+	BYTE	m_btTendency;		// field 60
+	BYTE	m_btAct[4];			// field 61..64
+	BYTE	m_btAutoLv;			// field 65
+	BYTE	m_btRefuseLv;		// field 66
+	char	m_szRecruit[128];	// van an chieu mo
+} TONG_JX2_ONE_ZM;
+
+// goi dong bo trang 2x2 (m_btPage = defTONG_JX2_PAGE_OTHERZM)
+typedef struct
+{
+	BYTE	ProtocolType;
+	WORD	m_wLength;
+	BYTE	m_btMsgId;
+	BYTE	m_btPage;
+	WORD	m_wStart;
+	WORD	m_wTotal;
+	BYTE	m_btCount;
+	TONG_JX2_ONE_ZM	m_sZM[4];
+} TONG_JX2_OTHERZM_SYNC;
 
 typedef struct
 {

@@ -52,6 +52,7 @@ private:
 	void	RenderFunUse();
 	void	RenderRecord();
 	void	RenderTongList();
+	void	RenderOtherZM();
 	void	RenderMembers(int nOffset = 0);
 	void	RenderWorkshop();
 	void	RenderAnnounce();
@@ -139,6 +140,8 @@ private:
 	// thao tac dang cho xac nhan (hop UIMessageBox tra ket qua qua WND_M_OTHER_WORK_RESULT)
 	int		m_nPendOp;			// -1 = khong co
 	unsigned long m_dwPendTarget;
+	int		m_nAmtOp;			// op cho hop nhap so tien (-1 = khong co)
+	unsigned long m_dwAmtTarget;
 	int		m_nPendP1, m_nPendP2;
 	int		m_nSelWs;			// khu tac phuong dang chon (1..7) - TACH RIENG khoi
 								// m_nSel: dung chung khien o trang Phuong tho thanh
@@ -154,6 +157,21 @@ private:
 	unsigned char	m_byRecord[1300];
 	unsigned char	m_byList[800];
 	int		m_bHasList;
+	KWndImage		m_ZmBg;					// nen trang 2x2 Xem tin Bang khac
+	KWndText80		m_ZmName[4];
+	KWndText80		m_ZmInfo[4];
+	KWndText512		m_ZmJiyu[4];			// loi nhan chieu mo (den 128 byte)
+	KWndText80		m_ZmQxT[4];
+	KWndText80		m_ZmQx[4];
+	KWndText80		m_ZmHdT[4];
+	KWndText512		m_ZmHd[4];				// 4 ten hoat dong noi chuoi
+	KWndLabeledButton	m_ZmLook[4];
+	KWndLabeledButton	m_ZmApply[4];
+	KWndLabeledButton	m_ZmPrev;
+	KWndLabeledButton	m_ZmNext;
+	unsigned char	m_byZM[900];
+	int		m_bHasZM;
+	int		m_nZmStart;
 	int		m_bHasRecord;
 	int		m_nRcSub;				// 0 muc tieu tuan / 1 thong bao / 2 bang vu / 3 lich su
 	int		m_nFunMode;				// trang FunUse: 0 = Tin tuc (an nut), 1 = Su dung chuc nang
