@@ -428,7 +428,7 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 	int nLevel = Npc[Player[nPlayerIdx].m_nIndex].m_Level;
 	DWORD dwRefuse = g_TongJX2.GetField(dwTongID, 66);
 	if (dwRefuse && nLevel < (int)dwRefuse)
-		return 6;
+		return 11;	// duoi nguong cap - truoc day tra 6 nen bao nham "khong du tien"
 	// KHONG dung co dong/mo tuyen cua he JX1 (m_nRecruit) o day nua:
 	//  - JX2 khong co cong tac do; viec chan nguoi xin lam bang HAI NGUONG CAP
 	//    (field 65 tu dong nhan / field 66 tu choi duoi cap), dung nhu trang
@@ -450,7 +450,7 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 	for (a = 0; a < (int)pTong->btApplyCount; a++)
 	{
 		if (pTong->dwApplyID[a] == dwMyID)
-			return 0;	// da co don
+			return 12;	// da nop don truoc do - truoc day tra 0 nen bao y het lan dau
 	}
 	if (pTong->btApplyCount >= 8)
 		return 5;
@@ -2317,6 +2317,9 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			else
 				pszMsg = "\247\267 th\371c hi\326n thao t\270c bang h\351i.";
 			break;
+		case 1:
+			pszMsg = "G\343i tin bang h\351i kh\253ng h\356p l\326.";
+			break;
 		case 7:
 			pszMsg = "\247\267 gia nh\313p bang h\351i!";
 			break;
@@ -2324,7 +2327,8 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			pszMsg = "B\271n ch\255a v\265o bang h\351i.";
 			break;
 		case 3:
-			pszMsg = "B\271n kh\253ng c\343 quy\322n l\265m vi\326c n\265y.";
+			// nguyen van ban Linux (MSG_TONG_NO_OPRIGHT)
+			pszMsg = "Kh\253ng c\343 quy\322n h\271n \256\323 th\371c hi\326n thao t\270c n\265y!";
 			break;
 		case 4:
 			pszMsg = "Kh\253ng t\327m th\312y m\364c ti\252u.";
@@ -2335,10 +2339,22 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 		case 6:
 			pszMsg = "Kh\253ng \256\361 ti\322n ho\306c t\265i nguy\252n.";
 			break;
-		case 8:
-			pszMsg = "Bang h\351i n\265y \256ang \256\343ng tuy\323n ng\255\352i.";
+		case 9:
+			// nguyen van ban Linux (workshop_head.lua)
+			pszMsg = "T\270c ph\255\352ng n\265y \256\267 c\343 r\345i!";
+			break;
+		case 10:
+			pszMsg = "Qu\375 bang d\255\352ng nh\255 ch\255a x\251y d\371ng T\270c Ph\255\352ng n\265y.";
+			break;
+		case 11:
+			// nguyen van ban Linux (MSG_TONG_AUTO_REFUSE_LEVEL)
+			pszMsg = "\247\274ng c\312p c\361a ng\255\254i qu\270 th\312p, bang h\351i n\265y t\365 ch\350i \256\322 ngh\336 gia nh\313p c\361a ng\255\254i";
+			break;
+		case 12:
+			pszMsg = "B\271n \256\267 g\366i \256\254n xin gia nh\313p bang h\351i n\265y r\345i, xin ch\352 duy\326t.";
 			break;
 		}
+
 		if (pszMsg)
 			KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 				(char*)pszMsg, strlen(pszMsg));
@@ -2441,14 +2457,16 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			if (pCmd->m_btOp == defTONG_JX2_COP_WS_ADD)
 			{
 				if (bExist)
-					return 7;
+					return 9;	// khu DA CO san
 				sSendFieldCmd(dwTongID, wBase, 1, defTONG_JX2_OP_SET, dwParam);
 				sSendFieldCmd(dwTongID, (WORD)(wBase + 2), 1, defTONG_JX2_OP_SET, dwParam);
 				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
 				return 0;
 			}
+			// truoc day tra 7 nen BON nut Lap/Mo/Dong/Nang cap deu bao nham
+			// "Da gia nhap bang hoi!" - ma 7 la cua duong xin vao bang
 			if (!bExist)
-				return 7;
+				return 10;	// khu CHUA LAP
 			if (pCmd->m_btOp == defTONG_JX2_COP_WS_OPEN)
 				sSendFieldCmd(dwTongID, (WORD)(wBase + 1), 1, defTONG_JX2_OP_SET, dwParam);
 			else if (pCmd->m_btOp == defTONG_JX2_COP_WS_CLOSE)
@@ -2549,6 +2567,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// ghi luon "Ngay gia nhap" (khoa 2) cho nguoi vua duoc duyet
 			sSendMemberFieldCmd(dwTongID, dwJoinID, 2, (DWORD)time(NULL),
 				defTONG_JX2_OP_SET, dwParam);
+			// bao cho CHINH NGUOI VUA DUOC NHAN (truoc day chi nhanh tu choi
+			// moi bao, nguoi duoc nhan khong he biet minh da vao bang)
+			if (nJoinIdx > 0 && Player[nJoinIdx].m_nIndex > 0)
+			{
+				const char* pszOK = "B\271n gia nh\313p bang h\351i!";
+				KPlayerChat::SendSystemInfo(1, nJoinIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)pszOK, strlen(pszOK));
+			}
 			for (; a < (int)pTong->btApplyCount - 1; a++)
 			{
 				memcpy(pTong->szApplyName[a], pTong->szApplyName[a + 1], 32);
@@ -2734,10 +2760,10 @@ int LuaTONG_ApplyJoin(Lua_State* L)
 	//  2 = vao thang / 1 = da vao danh sach cho / -1 = duoi cap bi tu choi / 0 = that bai
 	if (nRet == 7)
 		Lua_PushNumber(L, 2);
-	else if (nRet == 6)
-		Lua_PushNumber(L, -1);
-	else if (nRet == 0)
-		Lua_PushNumber(L, 1);
+	else if (nRet == 11)
+		Lua_PushNumber(L, -1);		// duoi nguong cap (truoc la ma 6)
+	else if (nRet == 0 || nRet == 12)
+		Lua_PushNumber(L, 1);		// 12 = da nop don truoc do
 	else
 		Lua_PushNumber(L, 0);
 	return 1;
