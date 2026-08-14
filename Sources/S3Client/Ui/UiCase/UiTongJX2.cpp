@@ -526,15 +526,17 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 		if (szH[0])
 			ms_pSelf->m_ColHdr[2].SetText(szH);
 	}
-	// 4 nut day theo anh mau. Section ini KHONG co khoa Label= nen phai dat o
-	// day, neu khong ca bon la nut TRANG TRON (chu game da chup duoc).
-	ms_pSelf->m_Bot[0].Init(&Ini, "Bot_Join");
+	// 4 nut day tro DUNG bon o cua ban thiet ke goc (toa do + sprite goc), thay
+	// cho 4 section Bot_* tu che truoc day (sprite "nut trang" tam DAC nen ra
+	// 4 thanh dai phang). Chu game da xac nhan nut thu 2 doc la "Lam moi" -
+	// khop [BtnRefresh] cua ban goc.
+	ms_pSelf->m_Bot[0].Init(&Ini, "BtnEnterMap");
 	ms_pSelf->m_Bot[0].SetLabel("V\265o bang n\265y");
-	ms_pSelf->m_Bot[1].Init(&Ini, "Bot_Create");
-	ms_pSelf->m_Bot[1].SetLabel("T\271o m\355i");
-	ms_pSelf->m_Bot[2].Init(&Ini, "Bot_Other");
+	ms_pSelf->m_Bot[1].Init(&Ini, "BtnRefresh");
+	ms_pSelf->m_Bot[1].SetLabel("L\265m m\355i");
+	ms_pSelf->m_Bot[2].Init(&Ini, "BtnTongList");
 	ms_pSelf->m_Bot[2].SetLabel("Xem tin Bang kh\270c");
-	ms_pSelf->m_Bot[3].Init(&Ini, "Bot_Close");
+	ms_pSelf->m_Bot[3].Init(&Ini, "BtnClose");
 	ms_pSelf->m_Bot[3].SetLabel("\247\343ng");
 	ms_pSelf->m_RecToggle.Init(&Ini, "Rec_ToggleRecruit");
 	ms_pSelf->m_RecToggle.SetLabel("\247\343ng/m\353 tuy\323n");
@@ -1060,6 +1062,9 @@ void KUiTongJX2::SwitchPage(int nPage)
 		}
 		if (bWs) m_WsIconSel.Show(); else m_WsIconSel.Hide();
 		if (bWs) m_WsArt.Show(); else m_WsArt.Hide();
+		// nhan nut day thu 2 doi theo trang (xem ghi chu o bo xu ly bam)
+		m_Bot[1].SetLabel(nPage == TJX2_UI_PAGE_TONGLIST ?
+			"T\271o m\355i" : "L\265m m\355i");
 	}
 	// bo control trang Nhat ky
 	{
@@ -1886,7 +1891,14 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			}
 			if (uParam == (unsigned int)&m_Bot[1])
 			{
-				KUiTongCreateSheet::OpenWindow();
+				// O nay cua ban goc la [BtnRefresh] = LAM MOI (chu game da xac
+				// nhan chu tren nut). Rieng o trang Danh sach bang - noi nguoi
+				// CHUA CO BANG di vao - van giu duong mo don tao bang, vi cum
+				// nut hanh dong da bi an va NPC tao bang dang tat tren may chu.
+				if (m_nPage == TJX2_UI_PAGE_TONGLIST)
+					KUiTongCreateSheet::OpenWindow();
+				else
+					RequestPage(m_nPage, m_nStart);
 				return 1;
 			}
 			if (uParam == (unsigned int)&m_Bot[2])
