@@ -53,6 +53,7 @@ enum
 	enumC2S_TONG_JX2_GET_FULL,	// GS xin dump toan bo du lieu JX2
 	enumC2S_TONG_JX2_STRING,	// ghi chuoi: thong bao bang / so su kien / so lich su
 	enumC2S_TONG_JX2_TONG_OP,	// thao tac tong hop (init/upgrade/kick/stunt/map/phan phoi...)
+	enumC2S_TONG_JX2_ZHAOMU,	// 33: GS bao relay them/xoa DON XIN VAO BANG
 	enumC2S_TONG_NUM,					// 数量
 };
 
@@ -102,6 +103,7 @@ enum
 	enumS2C_TONG_JX2_TONG_REMOVE_SYNC,	// bang bien mat khoi relay
 	enumS2C_TONG_JX2_SYNC_DONE,	// het dump toan cuc
 	enumS2C_TONG_JX2_STRING_SYNC,	// echo thong bao bang toi moi GS
+	enumS2C_TONG_JX2_ZHAOMU_SYNC,	// 42: relay phat hang doi don cua MOT bang (bien dai)
 	enumS2C_TONG_NUM,					// 数量
 };
 //-------------------------- tong protocol end --------------------------
@@ -993,6 +995,41 @@ struct STONG_JX2_TONG_OP_COMMAND : EXTEND_HEADER
 	int	m_nParam2;
 	DWORD	m_dwParam;
 	char	m_szName[32];	// ten lien minh / ten bang dich (them CUOI struct)
+};
+
+// ==== HANG DOI DON XIN VAO BANG o relay (song qua restart, lien GS) ====
+#define defTONG_JX2_ZM_ADD		0
+#define defTONG_JX2_ZM_DEL		1
+#define defTONG_JX2_ZM_PER_PACKET	16	// so don / goi sync
+
+struct STONG_JX2_ONE_APPLY_REC
+{
+	char	szName[32];
+	DWORD	dwNameID;
+	WORD	wLevel;
+	BYTE	btSex;
+	BYTE	btPad;
+};
+
+// GS -> relay: them / xoa mot don
+struct STONG_JX2_ZHAOMU_COMMAND : EXTEND_HEADER
+{
+	DWORD	m_dwTongNameID;
+	BYTE	m_btOp;			// defTONG_JX2_ZM_*
+	STONG_JX2_ONE_APPLY_REC	m_sRec;	// DEL chi can szName
+	DWORD	m_dwParam;
+};
+
+// relay -> GS: hang doi don cua MOT bang (bien dai: header + btCount x rec)
+struct STONG_JX2_ZHAOMU_SYNC : EXTEND_HEADER
+{
+	WORD	m_wLength;
+	DWORD	m_dwTongNameID;
+	WORD	m_wStart;
+	WORD	m_wTotal;
+	BYTE	m_btCount;
+	DWORD	m_dwParam;	// chi so nguoi bam ben GS goc (day nguoc trang)
+	STONG_JX2_ONE_APPLY_REC	m_sRec[defTONG_JX2_ZM_PER_PACKET];
 };
 
 //--------------------------- tong struct end ---------------------------

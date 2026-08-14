@@ -32,6 +32,16 @@ CTongDB::CTongDB()
 	memset(m_TongList,0,sizeof(TTongList) * MAX_TONG_COUNT);
 }
 
+// index phu cua bang don: theo TEN BANG (keo ca hang doi mot bang)
+int get_ZhaoMuTongName(DB *db, const DBT *pkey, const DBT *pdata, DBT *ikey)
+{
+	memset(ikey, 0, sizeof(DBT));
+	TZhaoMuStruct* pRec = (TZhaoMuStruct*)pdata->data;
+	ikey->data = pRec->szTong;
+	ikey->size = strlen(pRec->szTong) + 1;
+	return 0;
+}
+
 bool CTongDB::Open()
 {
 	m_TongTable = new ZDBTable("TongDB","TongTable");
@@ -49,6 +59,13 @@ bool CTongDB::Open()
 	if(!m_MoneyTable->open())
 	{
 		m_MoneyTable->close();
+		return false;
+	}
+	m_ZhaoMuTable = new ZDBTable("TongZhaoMuDB","ZhaoMuTable");
+	m_ZhaoMuTable->addIndex(get_ZhaoMuTongName);
+	if(!m_ZhaoMuTable->open())
+	{
+		m_ZhaoMuTable->close();
 		return false;
 	}
 	return true;
@@ -75,6 +92,13 @@ bool CTongDB::OpenNew()
 		m_MoneyTable->close();
 		return false;
 	}
+	m_ZhaoMuTable = new ZDBTable("TongZhaoMuDB","ZhaoMuTable");
+	m_ZhaoMuTable->addIndex(get_ZhaoMuTongName);
+	if(!m_ZhaoMuTable->open())
+	{
+		m_ZhaoMuTable->close();
+		return false;
+	}
 	return true;
 }
 
@@ -95,6 +119,13 @@ void CTongDB::Close()
 	delete m_TongTable;
 	delete m_MemberTable;
 	delete m_MoneyTable;
+	if (m_ZhaoMuTable)
+	{
+		m_ZhaoMuTable->commit();
+		m_ZhaoMuTable->close();
+		delete m_ZhaoMuTable;
+		m_ZhaoMuTable = NULL;
+	}
 }
 
 bool CTongDB::ChangeTong(CTongControl& aTongControl)
@@ -491,4 +522,48 @@ int CTongDB::GetExtPoint(char* szAccount)
 		return false;
 	}
 	return nExtPoint;
+}
+// ==== hang doi don xin vao bang (JX2) ====
+bool CTongDB::ChangeZhaoMu(const TZhaoMuStruct* pRec)
+{
+	if (!m_ZhaoMuTable || !pRec || !pRec->szName[0])
+		return false;
+	m_ZhaoMuTable->add((char*)pRec->szName, (int)strlen(pRec->szName) + 1,
+		(char*)pRec, sizeof(TZhaoMuStruct));
+	m_ZhaoMuTable->commit();
+	return true;
+}
+
+bool CTongDB::DelZhaoMu(const char* szMemberName)
+{
+	if (!m_ZhaoMuTable || !szMemberName || !szMemberName[0])
+		return false;
+	m_ZhaoMuTable->remove((char*)szMemberName, (int)strlen(szMemberName) + 1);
+	m_ZhaoMuTable->commit();
+	return true;
+}
+
+// keo toan bo don cua MOT bang qua index phu; loc ban ghi lech co (bat
+// buoc theo khuon GetTongList - ban ghi phien ban khac se gay doc rac)
+int CTongDB::GetZhaoMuList(const char* szTong, TZhaoMuStruct* pOut, int nMax)
+{
+	if (!m_ZhaoMuTable || !szTong || !pOut || nMax <= 0)
+		return 0;
+	int nCount = 0;
+	ZCursor* cursor = m_ZhaoMuTable->search((char*)szTong,
+		(int)strlen(szTong) + 1, 0);
+	while (cursor && nCount < nMax)
+	{
+		if (cursor->size == (int)sizeof(TZhaoMuStruct))
+		{
+			memcpy(&pOut[nCount], cursor->data, sizeof(TZhaoMuStruct));
+			if (strcmp(pOut[nCount].szTong, szTong) == 0)
+				nCount++;
+		}
+		if (!m_ZhaoMuTable->next(cursor))
+			break;
+	}
+	if (cursor)
+		m_ZhaoMuTable->closeCursor(cursor);
+	return nCount;
 }

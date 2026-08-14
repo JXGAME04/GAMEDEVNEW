@@ -46,6 +46,7 @@ int	g_nTongPSSize[defTONG_PROTOCOL_SERVER_NUM] =
 	sizeof(STONG_JX2_GET_FULL_COMMAND),		// enumC2S_TONG_JX2_GET_FULL
 	sizeof(STONG_JX2_STRING_COMMAND),		// enumC2S_TONG_JX2_STRING
 	sizeof(STONG_JX2_TONG_OP_COMMAND),		// enumC2S_TONG_JX2_TONG_OP
+	sizeof(STONG_JX2_ZHAOMU_COMMAND),		// enumC2S_TONG_JX2_ZHAOMU
 };
 
 //------------------------- tong struct size end ---------------------------
@@ -271,6 +272,9 @@ void CTongConnect::Proc0_Tong(const void* pData, size_t size)
 		break;
 	case enumC2S_TONG_JX2_TONG_OP:
 		JX2_ProcTongOp(this, pData);
+		break;
+	case enumC2S_TONG_JX2_ZHAOMU:
+		JX2_ProcZhaoMu(this, pData);
 		break;
 	case enumC2S_TONG_CREATE:
 		{

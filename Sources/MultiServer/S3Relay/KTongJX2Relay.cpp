@@ -542,6 +542,9 @@ CTongControl* CTongSet::JX2_GetByIndex(int nIndex)
 	return m_pcTong[nIndex];
 }
 
+// khai bao truoc: dump-on-connect dung truoc khi dinh nghia
+static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam);
+
 CTongControl* CTongSet::JX2_FindByNameID(DWORD dwTongNameID)
 {
 	if (!m_pcTong || m_nTongPointSize <= 0 || dwTongNameID == 0)
@@ -575,6 +578,9 @@ void CTongSet::JX2_SendFullDump(CNetConnect* pConn)
 			int nBytes = pTong->JX2_BuildTongSync(byBuffer, sizeof(byBuffer), nMemberTotal);
 			if (nBytes > 0)
 				pConn->SendPackage(byBuffer, nBytes);
+			// hang doi don xin vao bang (phat cho MOI GS - goi broadcast
+			// nho gon; GS khac nhan trung cung vo hai vi la anh chup day du)
+			sJX2_BroadcastZhaoMu(pTong, 0);
 
 			if (nMemberTotal > 0)
 			{
@@ -1753,6 +1759,67 @@ void JX2_ProcString(CTongConnect* pConn, const void* pData)
 		sSync.ProtocolID = enumS2C_TONG_JX2_STRING_SYNC;
 		g_TongServer.BroadcastPackage(&sSync, sizeof(sSync));
 	}
+}
+
+// Phat hang doi don cua MOT bang toi moi GameServer (chia goi 16 don).
+// dwParam = chi so nguoi bam o GS goc (PushViewTo day nguoc trang).
+static void sJX2_BroadcastZhaoMu(CTongControl* pTong, DWORD dwParam)
+{
+	if (!pTong)
+		return;
+	static TZhaoMuStruct sList[64];
+	int nTotal = g_cTongDB.GetZhaoMuList(pTong->JX2_Name(), sList, 64);
+	int nSent = 0;
+	do
+	{
+		STONG_JX2_ZHAOMU_SYNC sSync;
+		memset(&sSync, 0, sizeof(sSync));
+		sSync.ProtocolFamily = pf_tong;
+		sSync.ProtocolID = enumS2C_TONG_JX2_ZHAOMU_SYNC;
+		sSync.m_dwTongNameID = pTong->JX2_NameID();
+		sSync.m_wStart = (WORD)nSent;
+		sSync.m_wTotal = (WORD)nTotal;
+		sSync.m_dwParam = dwParam;
+		int nThis = nTotal - nSent;
+		if (nThis > defTONG_JX2_ZM_PER_PACKET)
+			nThis = defTONG_JX2_ZM_PER_PACKET;
+		for (int r = 0; r < nThis; r++)
+		{
+			strncpy(sSync.m_sRec[r].szName, sList[nSent + r].szName, 31);
+			sSync.m_sRec[r].dwNameID = sList[nSent + r].dwNameID;
+			sSync.m_sRec[r].wLevel = sList[nSent + r].wLevel;
+			sSync.m_sRec[r].btSex = sList[nSent + r].btSex;
+		}
+		sSync.m_btCount = (BYTE)nThis;
+		int nLen = (int)(sizeof(sSync) - sizeof(sSync.m_sRec)
+			+ nThis * sizeof(STONG_JX2_ONE_APPLY_REC));
+		sSync.m_wLength = (WORD)nLen;
+		g_TongServer.BroadcastPackage(&sSync, nLen);
+		nSent += nThis;
+	} while (nSent < nTotal);
+}
+
+void JX2_ProcZhaoMu(CTongConnect* pConn, const void* pData)
+{
+	STONG_JX2_ZHAOMU_COMMAND* pCmd = (STONG_JX2_ZHAOMU_COMMAND*)pData;
+	CTongControl* pTong = g_cTongSet.JX2_FindByNameID(pCmd->m_dwTongNameID);
+	if (!pTong)
+		return;
+	if (pCmd->m_btOp == defTONG_JX2_ZM_ADD)
+	{
+		TZhaoMuStruct sRec;
+		memset(&sRec, 0, sizeof(sRec));
+		strncpy(sRec.szTong, pTong->JX2_Name(), 31);
+		strncpy(sRec.szName, pCmd->m_sRec.szName, 31);
+		sRec.dwNameID = pCmd->m_sRec.dwNameID;
+		sRec.wLevel = pCmd->m_sRec.wLevel;
+		sRec.btSex = pCmd->m_sRec.btSex;
+		sRec.dwApplyTime = (unsigned long)time(NULL);
+		g_cTongDB.ChangeZhaoMu(&sRec);	// khoa = ten -> tu thay don cu
+	}
+	else if (pCmd->m_btOp == defTONG_JX2_ZM_DEL)
+		g_cTongDB.DelZhaoMu(pCmd->m_sRec.szName);
+	sJX2_BroadcastZhaoMu(pTong, pCmd->m_dwParam);
 }
 
 void JX2_ProcTongOp(CTongConnect* pConn, const void* pData)

@@ -2120,7 +2120,7 @@ void KUiTongJX2::RenderRecruit()
 		// Server gui CA 8 don trong MOT goi nen ve het, khong can lat trang.
 		int nTotal = (int)p->m_btApplyCount;
 		int nShow = nTotal;
-		m_nRecStart = 0;
+		// m_nRecStart giu nguyen - phan trang that (8 don/trang, relay 64)
 		if (nShow > 8)
 			nShow = 8;
 		if (nShow < 0)
@@ -2952,9 +2952,21 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)&m_RecPrev || uParam == (unsigned int)&m_RecNext)
 		{
-			// Server gui CA 8 don (tran) trong MOT goi va ta ve het 8 dong,
-			// nen khong con trang de lat. Hai nut nay lam moi danh sach.
-			RequestPage(m_nPage, 0);
+			// PHAN TRANG THAT: hang doi don gio nam o relay (toi 64 don),
+			// server cat lat 8 don/trang theo wStart va bao ve wApplyTotal.
+			TONG_JX2_RECRUIT_SYNC* pRp = (TONG_JX2_RECRUIT_SYNC*)m_byRecruit;
+			int nTotal = m_bHasRecruit ? (int)pRp->m_wApplyTotal : 0;
+			if (uParam == (unsigned int)&m_RecNext)
+			{
+				if (m_nRecStart + 8 < nTotal)
+					m_nRecStart += 8;
+			}
+			else if (m_nRecStart >= 8)
+				m_nRecStart -= 8;
+			else
+				m_nRecStart = 0;
+			m_nSel = -1;
+			RequestPage(m_nPage, m_nRecStart);
 			return 1;
 		}
 		// --- hang dieu khien duoi panel danh sach thanh vien ---

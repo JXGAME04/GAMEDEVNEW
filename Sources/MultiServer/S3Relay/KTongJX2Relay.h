@@ -24,6 +24,7 @@ void JX2_ProcRight(CTongConnect* pConn, const void* pData);
 void JX2_ProcGetFull(CTongConnect* pConn);
 void JX2_ProcString(CTongConnect* pConn, const void* pData);
 void JX2_ProcTongOp(CTongConnect* pConn, const void* pData);
+void JX2_ProcZhaoMu(CTongConnect* pConn, const void* pData);
 
 // Bo hen gio bang hoi (goi tu WM_TIMER cua so chinh relay, 30s/lan):
 // bao tri ngay 00:00 + quy -> kinh nghiem moi 750s ([tongjx2] relay_config.ini)

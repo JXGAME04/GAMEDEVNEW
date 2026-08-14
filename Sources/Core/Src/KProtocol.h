@@ -2528,6 +2528,8 @@ typedef struct
 	BYTE	m_btRefuseLv;	// field 66: tu choi duoi cap nay (0 = tat)
 	BYTE	m_btApplyCount;
 	TONG_JX2_ONE_APPLY	m_sApply[defTONG_JX2_APPLY_MAX];
+	WORD	m_wApplyStart;	// don dau tien trong goi (them CUOI struct)
+	WORD	m_wApplyTotal;	// tong don o relay
 } TONG_JX2_RECRUIT_SYNC;
 
 // Trang nhat ky: 12 dong so (moi nhat truoc), kem thong bao de sua

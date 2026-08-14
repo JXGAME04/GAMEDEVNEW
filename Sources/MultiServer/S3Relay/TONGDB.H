@@ -44,12 +44,25 @@ typedef struct
 	char		szTong[defTONG_STR_LENGTH];
 	DWORD		m_dwMoney;
 }TMoneyStruct;
+// Ban ghi don xin vao bang (JX2) - bang TongZhaoMuDB, khoa = ten nguoi
+// xin (moi nguoi toi da 1 don), index phu = ten bang de keo ca hang doi.
+typedef struct
+{
+	char	szTong[32];
+	char	szName[32];
+	unsigned long	dwNameID;
+	unsigned short	wLevel;
+	unsigned char	btSex;
+	unsigned long	dwApplyTime;
+} TZhaoMuStruct;
+
 class CTongDB  
 {
 private:
 	ZDBTable* m_TongTable;						//帮会数据表
 	ZDBTable* m_MemberTable;					//帮众数据表
 	ZDBTable* m_MoneyTable;
+	ZDBTable* m_ZhaoMuTable;	// don xin vao bang (JX2)
 	
 	TTongList m_TongList[MAX_TONG_COUNT];	//帮会列表
 	int m_TongListCount;						//帮会列表数
@@ -73,6 +86,11 @@ public:
 	bool DelMoney(char* aTongName);
 
 	bool UpdateExtPoint(char* szAccount, int nExtPoint);
+
+	// ==== hang doi don xin vao bang (JX2) ====
+	bool ChangeZhaoMu(const TZhaoMuStruct* pRec);
+	bool DelZhaoMu(const char* szMemberName);
+	int  GetZhaoMuList(const char* szTong, TZhaoMuStruct* pOut, int nMax);
 
 	// ==== JX2 port ====
 	void JX2_PreserveMemberTail(TMemberStruct* pMember);

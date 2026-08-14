@@ -143,6 +143,7 @@ int	g_nTongPCSize[defTONG_PROTOCOL_CLIENT_NUM] =
 	sizeof(STONG_JX2_TONG_REMOVE_SYNC),		// enumS2C_TONG_JX2_TONG_REMOVE_SYNC
 	sizeof(STONG_JX2_SYNC_DONE),			// enumS2C_TONG_JX2_SYNC_DONE
 	sizeof(STONG_JX2_STRING_COMMAND),		// enumS2C_TONG_JX2_STRING_SYNC
+	-1,						// enumS2C_TONG_JX2_ZHAOMU_SYNC (bien dai)
 };
 
 #ifndef _STANDALONE
@@ -1346,6 +1347,7 @@ void KSwordOnLineSever::TongMessageProcess(const char *pChar, size_t nSize)
 		case enumS2C_TONG_JX2_MEMBER_SYNC:
 		case enumS2C_TONG_JX2_TONG_REMOVE_SYNC:
 		case enumS2C_TONG_JX2_SYNC_DONE:
+		case enumS2C_TONG_JX2_ZHAOMU_SYNC:
 		case enumS2C_TONG_JX2_STRING_SYNC:
 			if (m_pCoreServerShell)
 				m_pCoreServerShell->OperationRequest(SSOI_TONG_JX2_SYNC, (intptr_t)pChar, (int)nSize);

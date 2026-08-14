@@ -39,10 +39,10 @@ struct KTongJX2Tong
 	char	szRecruit[128];				// van an chieu mo (STR kind 3)
 	char	szUnionName[32];				// ten lien minh (STR kind UNION)
 	BYTE	btApplyCount;						// don xin vao bang (cuc bo GS, toi da 8)
-	char	szApplyName[8][32];
-	DWORD	dwApplyID[8];
-	WORD	wApplyLevel[8];
-	BYTE	btApplySex[8];						// nho gioi tinh de duyet duoc ca khi nguoi xin da thoat
+	char	szApplyName[64][32];
+	DWORD	dwApplyID[64];
+	WORD	wApplyLevel[64];
+	BYTE	btApplySex[64];						// nho gioi tinh de duyet duoc ca khi nguoi xin da thoat
 	char	szEvent[16][96];					// so su kien (ring, = RECORD_NUM/LEN)
 	char	szHistory[16][96];
 	int		nEventHead;
