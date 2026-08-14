@@ -125,7 +125,7 @@ void KWndLabeledButton::PaintWindow()
 	if (g_pRepresentShell)
 	{
 		char	Buffer[32];
-		int nMaxLen = m_Width * 2 / m_nFontSize;
+		int nMaxLen = m_Width * 2 / m_nFontSize + 1;	// +1 dong bo WndList.cpp:377 / WndList2.cpp:635 - thieu +1 lam nhan dai dung bang suc chua bi cat thanh ".."
 		const char* pShowString = TGetLimitLenString(m_Label, -1, Buffer, nMaxLen);
 		if (pShowString)
 		{

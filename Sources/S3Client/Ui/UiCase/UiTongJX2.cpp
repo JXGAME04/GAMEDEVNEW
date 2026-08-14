@@ -268,7 +268,7 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 	{"BtnChangeCamp",       "\247\346i phe", 12},
 	{"BtnConfigureTongMap",  "", -1},
 	{"BtnTongStunt",         "", -1},
-	{"BtnStorePersonalOffer","C\312t", 7},
+	{"BtnStorePersonalOffer","G\366i", 7},	// nguyen van blueprint (Label=G\366i)
 	{"BtnLeaveTong",         "R\352i bang", 8},
 	{"BtnStoreBuildFund",    "G\366i", 11},
 	{"BtnStoreTongMoney",    "G\366i", 13},	// nap ngan quy (MONEYFUND_ADD ban goc)
@@ -2442,21 +2442,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)&m_MSort)
 		{
-			// xoay vong 7 kieu sap xep, nhan lay THANG tu menu trong ini
+			// xoay vong 7 kieu sap xep. KHONG SetLabel len nut: sprite
+			// "tra cuu danh sach" da nung san chu (section khong co Label=),
+			// ve chong len vua de chu vua bi cat ("Diem ..").
 			m_nSortMode = (m_nSortMode + 1) % 7;
-			{
-				KIniFile Ini;
-				char szScheme[256], szPath[300], szIt[16], szNm[64];
-				g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
-				sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
-				if (Ini.Load(szPath))
-				{
-					sprintf(szIt, "Item_%d", m_nSortMode);
-					Ini.GetString("Fun_BtnMemberSortMenu", szIt, "", szNm, sizeof(szNm));
-					if (szNm[0])
-						m_MSort.SetLabel(szNm);
-				}
-			}
 			if (m_bHasMember)
 				RenderMembers();
 			return 1;
