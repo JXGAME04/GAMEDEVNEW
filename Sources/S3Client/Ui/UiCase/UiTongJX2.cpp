@@ -251,7 +251,7 @@ static const char* s_szRecHD[TJX2_HD_NUM] =
 // 12 = doi phe bang hoi: KHONG can ma lenh JX2 moi - he JX1 da co san tron bo
 // duong day (ApplyTongChangeCamp kiem chuc vu + tru tien, relay co DBChangeCamp),
 // di y het cach nut "Roi bang" dang lam qua GTOI_TONG_ACTION.
-#define TJX2_FUN_BTNS	16
+#define TJX2_FUN_BTNS	17
 static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 {
 	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
@@ -271,6 +271,7 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 	{"BtnStorePersonalOffer","C\312t", 7},
 	{"BtnLeaveTong",         "R\352i bang", 8},
 	{"BtnStoreBuildFund",    "G\366i", 11},
+	{"BtnStoreTongMoney",    "G\366i", 13},	// nap ngan quy (MONEYFUND_ADD ban goc)
 };
 
 // Trang Phuong tho: bind blueprint (Ws_*). Title co nhan TCVN3, Txt do render dien.
@@ -1145,7 +1146,7 @@ void KUiTongJX2::SwitchPage(int nPage)
 		// nhom 2 = lanh dia + doi phe (dung nhom cua ban goc: BtnChangeCamp
 		// nam cung o Top=176 voi BtnCreateTongMap/BtnConfigureTongMap)
 		static const int s_nFunBtnSub[TJX2_FUN_BTNS] =
-			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0 };
+			{ 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0 };
 			// 0 = luon hien khi mode nut (khoi tien/ca nhan/roi bang)
 			// 1 = sub nhan su (Recruit/KickOut/Depose/DispenseOffer)
 			// 2 = sub lanh dia (CreateTongMap/ConfigureTongMap/TongStunt)
@@ -2241,6 +2242,10 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 11:
 					// gop 10 van vao quy bang -> nhan diem cong hien ca nhan
 					SendOp(defTONG_JX2_COP_DONATE, 0, 10, 0, NULL);
+					break;
+				case 13:
+					// nap 10 van tien ca nhan vao ngan quy bang
+					SendOp(defTONG_JX2_COP_DEPOSIT_MONEY, 0, 10, 0, NULL);
 					break;
 				case 12:
 					{

@@ -2426,7 +2426,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 6;	// khong du tien
 			sSendFieldCmd(dwTongID, 12, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
 			sSendFieldCmd(dwTongID, 41, (DWORD)nVan, defTONG_JX2_OP_ADDU, dwParam);
-			sSendMoneyCmd(dwTongID, (__int64)nVan * 10000, defTONG_JX2_OP_ADD, dwParam);
+			// KHONG cong ngan quy (field 3/4) o day: ban goc MONEY2BUILDFUND chi
+			// cong quy kien thiet; ngan quy co duong nap rieng COP_DEPOSIT_MONEY.
+			// Truoc day cong ca hai = mot lan tra tien duoc ghi vao HAI tui.
 			if (pMe)
 			{
 				// khoa 7 = cong hien tich luy; khoa 9 = muc tieu tuan nay;
@@ -2437,9 +2439,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 9, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 11, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 			}
-			char szLog[160];
-			sprintf(szLog, "%s quyen %d van vao quy kien thiet", Player[nPlayerIdx].m_PlayerName, nVan);
-			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			if (nVan >= 100)
+			{
+				// nguyen van + nguong ghi so ban Linux (tong_mix.lua:242, gate
+				// :244 nOffer >= 1000000 luong = 100 van)
+				char szLog[160];
+				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d v\271n l\255\356ng v\265o ng\251n s\270ch ki\325n thi\325t bang", Player[nPlayerIdx].m_PlayerName, nVan);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
 			return 0;
 		}
 	case defTONG_JX2_COP_WS_ADD:
@@ -2715,11 +2722,51 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				pTong->mapField[4] = (DWORD)((nLeft >> 32) & 0xFFFFFFFF);
 			}
 			Player[nTargetIdx].Earn(nVan * 10000);
-			char szLog[160];
-			sprintf(szLog, "%s %s %d van cho %s", Player[nPlayerIdx].m_PlayerName,
-				pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY ? "rut" : "phat",
-				nVan, Player[nTargetIdx].m_PlayerName);
-			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			// Nguyen van ban Linux, don vi LUONG (khong phai van): rut =
+			// tong_mix.lua:77, nguong ghi so :80 abs >= 1000000 luong = 100 van.
+			// "Phat tien cho thanh vien" khong co ham goc - mo phong mau :377
+			// ("%s phat cho %s %d diem cong hien du tru") doi sang luong.
+			if (nVan >= 100)
+			{
+				char szLog[160];
+				if (pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY)
+					sprintf(szLog, "%s \256\267 r\363t t\365 ng\251n qu\374 bang h\351i %.0f l\255\356ng",
+						Player[nPlayerIdx].m_PlayerName, (double)nVan * 10000);
+				else
+					sprintf(szLog, "%s ph\270t cho %s %.0f l\255\356ng",
+						Player[nPlayerIdx].m_PlayerName, Player[nTargetIdx].m_PlayerName, (double)nVan * 10000);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
+			return 0;
+		}
+	case defTONG_JX2_COP_DEPOSIT_MONEY:
+		{
+			// Nap tien ca nhan vao ngan quy bang = MONEYFUND_ADD ban goc
+			// (tong_mix.lua:96-108): moi thanh vien duoc nap, tran ngan quy
+			// nMax = 2000000000 luong (:101), ghi so khi >= 100 van (:80).
+			int nVan = pCmd->m_nParam1;
+			if (nVan <= 0 || nVan > 200000)
+				return 5;
+			__int64 nCo = (__int64)GetField(dwTongID, 3) |
+				((__int64)GetField(dwTongID, 4) << 32);
+			if (nCo + (__int64)nVan * 10000 > (__int64)2000000000)
+				return 5;	// vuot tran ngan quy
+			if (!Player[nPlayerIdx].Pay(nVan * 10000))
+				return 6;	// khong du tien
+			sSendMoneyCmd(dwTongID, (__int64)nVan * 10000, defTONG_JX2_OP_ADD, dwParam);
+			{
+				// cong ngay tren ban sao de o Ngan quy tren giao dien cap nhat
+				__int64 nMoi = nCo + (__int64)nVan * 10000;
+				pTong->mapField[3] = (DWORD)(nMoi & 0xFFFFFFFF);
+				pTong->mapField[4] = (DWORD)((nMoi >> 32) & 0xFFFFFFFF);
+			}
+			if (nVan >= 100)
+			{
+				char szLog[160];
+				sprintf(szLog, "%s \256\267 \256\343ng g\343p %.0f l\255\356ng v\265o ng\251n qu\374 bang h\351i",
+					Player[nPlayerIdx].m_PlayerName, (double)nVan * 10000);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
 			return 0;
 		}
 	case defTONG_JX2_COP_WS_SETLV:
@@ -2771,9 +2818,13 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 6;	// khong du cong hien
 			Player[nPlayerIdx].m_cTask.SetSaveVal(defTASK_JX2_CONTRIBUTION, (DWORD)(nCur - nVal));
 			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_CONTRIBUTE, nVal, 0, dwParam);
-			char szLog[160];
-			sprintf(szLog, "%s cat %d cong hien vao quy du tru", Player[nPlayerIdx].m_PlayerName, nVal);
-			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			if (nVal >= 100)
+			{
+				// tong_mix.lua:297, nguong ghi so :298 nOffer >= 100
+				char szLog[160];
+				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d \256i\323m c\350ng hi\325n v\265o ng\251n s\270ch c\350ng hi\325n bang", Player[nPlayerIdx].m_PlayerName, nVal);
+				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
+			}
 			return 0;
 		}
 	}
@@ -3115,7 +3166,20 @@ int LuaJX2_TongClaimWar(Lua_State* L)
 		return 1;
 	}
 	sSendFieldCmd(dwTongID, 11, 1, defTONG_JX2_OP_SET, sLuaPlayerParam(L));
-	sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, "Tuyen chien bang hoi", sLuaPlayerParam(L));
+	{
+		// Nguyen van tong.lua:742 (HAI dau cach sau "chu", KHONG cach truoc
+		// ten bang dich). Tham so 2 tuy chon = NameID bang bi tuyen chien.
+		const char* szDest = "";
+		if (Lua_IsNumber(L, 2))
+		{
+			KTongJX2Tong* pDest = g_TongJX2.FindTong((DWORD)Lua_ValueToNumber(L, 2));
+			if (pDest)
+				szDest = pDest->szName;
+		}
+		char szLog[160];
+		sprintf(szLog, "Bang ch\361  \256\267 tuy\252n chi\325n bang h\351i%s r\345i", szDest);
+		sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, sLuaPlayerParam(L));
+	}
 	Lua_PushNumber(L, 1);
 	return 1;
 }
