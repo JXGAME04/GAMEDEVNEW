@@ -186,7 +186,7 @@ void KUiTongGetString::OnOk()
 {
 	char	szString[32];
 
-	int nLen = m_StringEdit.GetText(szString, sizeof(szString));
+	int nLen = m_StringEdit.GetText(szString, sizeof(szString), false);
 	if (nLen >= m_nMinLen && nLen <= m_nMaxLen)
 	{
 		if (m_pRequester)
