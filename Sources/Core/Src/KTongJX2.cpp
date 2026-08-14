@@ -1958,8 +1958,12 @@ int LuaTWS_ApplyMaintain(Lua_State* L)
 // Phuc vu cua so client JX2 (goi tu KSOServer qua GetGameData)
 //////////////////////////////////////////////////////////////////////
 
+// 14 RightID DUNG THU TU ban goc (doc byte tho blueprint trang phan quyen;
+// bo 1000/2007 khong ton tai trong ban goc, them 1002/1004/1903/2003).
+// Thu tu nay = thu tu BIT tren day - client s_dwRightId PHAI trung khop.
 static const DWORD s_dwJX2RightList[defTONG_JX2_RIGHT_COUNT] =
-	{1000, 1003, 1101, 1901, 1902, 2001, 2004, 2005, 2006, 2007, 3001, 9001};
+	{1002, 1003, 1004, 1901, 1903, 1101, 2001,
+	 1902, 2004, 9001, 3001, 2005, 2003, 2006};
 
 static WORD sJX2_RightMask(KTongJX2Member* pMember)
 {
@@ -2490,8 +2494,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 	case defTONG_JX2_COP_ADDRIGHT:
 	case defTONG_JX2_COP_DELRIGHT:
 		{
-			// JX2 4.4: nguoi thao tac = bang chu hoac co quyen 1000; dich PHAI la truong lao
-			if (!bMaster && !sJX2_HasRight(pMe, 1000))
+			// JX2 4.4: nguoi thao tac = bang chu hoac co quyen 1002 (Bo nhiem -
+			// mien nhiem, dung nghia ban goc; 1000 khong co trong blueprint)
+			if (!bMaster && !sJX2_HasRight(pMe, 1002))
 				return 3;
 			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
 			if (!pTarget || pTarget->btFigure != 1)

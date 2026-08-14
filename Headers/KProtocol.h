@@ -1671,7 +1671,7 @@ typedef struct
 #define defTONG_JX2_LIST_ROWS		10
 #define defTONG_JX2_RECORD_LINES	12	// so dong gui moi goi
 #define defTONG_JX2_VIEW_MEMBERS	10	// so thanh vien moi goi trang MEMBER/RIGHT
-#define defTONG_JX2_RIGHT_COUNT	12
+#define defTONG_JX2_RIGHT_COUNT	14	// 14 RightID ban goc (truoc 12, chua 1000/2007 khong co trong blueprint)
 // thu tu 12 quyen trong mat na (bit i): 1000,1003,1101,1901,1902,2001,2004,2005,2006,2007,3001,9001
 
 #define defTONG_JX2_COP_KICK		0	// dwTarget = thanh vien

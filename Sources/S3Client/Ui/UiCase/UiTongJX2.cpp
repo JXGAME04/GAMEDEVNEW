@@ -53,16 +53,19 @@ static const char* s_szTabName[TJX2_UI_TABS] =
 	"Thong tin", "Thanh vien", "Quyen han", "Tac phuong", "Thong bao",
 };
 
-// ten 12 quyen theo thu tu mat na (KProtocol.h)
-static const char* s_szRightName[12] =
+// 14 quyen theo DUNG thu tu mat na ban goc (= s_dwJX2RightList server;
+// lech mot vi tri la phan quyen sai bit)
+static const char* s_szRightName[14] =
 {
-	"1000 giao quyen", "1003 doi phe", "1101 quan ly", "1901 duoi nguoi",
-	"1902 thoai an", "2001 nang cap", "2004 lanh dia", "2005 muc tieu tuan",
-	"2006 tuyet ky", "2007 tuyen chien", "3001 quy bang", "9001 tac phuong",
+	"B\346 nhi\326m - mi\324n nhi\326m", "\247\346i phe", "\247\346i t\252n",
+	"Tr\364c xu\312t", "Nh\313t k\375", "Qu\266n l\375 li\252n minh",
+	"Th\250ng c\312p", "Tho\270i \310n", "Khu v\371c", "T\270c ph\255\352ng",
+	"Ng\251n qu\374", "M\364c ti\252u tu\307n", "Th\265nh th\336", "K\374 n\250ng",
 };
-static const DWORD s_dwRightId[12] =
+static const DWORD s_dwRightId[14] =
 {
-	1000, 1003, 1101, 1901, 1902, 2001, 2004, 2005, 2006, 2007, 3001, 9001,
+	1002, 1003, 1004, 1901, 1903, 1101, 2001,
+	1902, 2004, 9001, 3001, 2005, 2003, 2006,
 };
 
 // Ten 7 khu tac phuong - chep NGUYEN VAN cot NAME cua bang du lieu ban
@@ -186,12 +189,13 @@ static const char* s_szRtSec[14] =
 	"BtnWeekGoalManagement", "BtnCityManagement", "BtnStuntManagement",
 };
 
-// nhan 12 o kiem quyen (cung thu tu mat na s_dwRightId) - TCVN3 co dau
-static const char* s_szChkLabel[12] =
+// nhan 14 o kiem quyen (cung thu tu mat na s_dwRightId) - TCVN3 co dau
+static const char* s_szChkLabel[14] =
 {
-	"Giao quy\322n", "\247\346i phe", "Qu\266n l\375", "Tr\364c xu\312t",
-	"Tho\270i \310n", "N\251ng c\312p", "L\267nh \256\336a", "M\364c ti\252u tu\307n",
-	"Tuy\326t k\374", "Tuy\252n chi\325n", "Ng\251n qu\374", "T\270c ph\255\352ng",
+	"B\346 nhi\326m", "\247\346i phe", "\247\346i t\252n", "Tr\364c xu\312t",
+	"Nh\313t k\375", "Li\252n minh", "Th\250ng c\312p", "Tho\270i \310n",
+	"Khu v\371c", "T\270c ph\255\352ng", "Ng\251n qu\374", "M\364c ti\252u tu\307n",
+	"Th\265nh th\336", "K\374 n\250ng",
 };
 
 // Nhan trang Chieu mo: NGUYEN VAN byte TCVN3 tu blueprint (Text= cua tung section)
@@ -1655,7 +1659,7 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			char szR[64];
 			szR[0] = 0;
 			int nR = 0;
-			for (int b = 0; b < 12 && nR < 4; b++)
+			for (int b = 0; b < defTONG_JX2_RIGHT_COUNT && nR < 4; b++)
 			{
 				if (pM->m_wRights & (1 << b))
 				{
@@ -1869,7 +1873,7 @@ void KUiTongJX2::LoadChecksFromSel()
 	for (int b = 0; b < 14; b++)
 	{
 		int nBit = -1;
-		for (int r = 0; r < 12; r++)
+		for (int r = 0; r < defTONG_JX2_RIGHT_COUNT; r++)
 			if (s_dwRightId[r] == m_dwRtId[b])
 				nBit = r;
 		m_Rt[b].CheckButton((nBit >= 0 && (wMask & (1 << nBit))) ? 1 : 0);
@@ -1898,11 +1902,11 @@ void KUiTongJX2::ApplyRights()
 	for (int b = 0; b < 14; b++)
 	{
 		int nBit = -1;
-		for (int r = 0; r < 12; r++)
+		for (int r = 0; r < defTONG_JX2_RIGHT_COUNT; r++)
 			if (s_dwRightId[r] == m_dwRtId[b])
 				nBit = r;
 		if (nBit < 0)
-			continue;	// quyen ngoai mat na 12 bit (1002/1004/1903/2003) - chua ho tro
+			continue;	// RightID la trong ini khong nam trong mat na 14 bit
 		int nWant = m_Rt[b].IsButtonChecked() ? 1 : 0;
 		int nHave = (pOne->m_wRights & (1 << nBit)) ? 1 : 0;
 		if (nWant == nHave)
