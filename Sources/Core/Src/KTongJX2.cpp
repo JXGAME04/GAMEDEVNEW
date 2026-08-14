@@ -440,6 +440,9 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 	if (dwAuto && nLevel >= (int)dwAuto)
 	{
 		sJX2_SendAddMember(pTong, nPlayerIdx);
+		// ghi luon "Ngay gia nhap" (khoa 2) - client hien o panel thanh vien
+		sSendMemberFieldCmd(dwTongID, g_FileName2Id(Player[nPlayerIdx].m_PlayerName),
+			2, (DWORD)time(NULL), defTONG_JX2_OP_SET, (DWORD)nPlayerIdx);
 		return 7;	// vao thang - de vo boc bao 'da gia nhap'
 	}
 	DWORD dwMyID = g_FileName2Id(Player[nPlayerIdx].m_PlayerName);
@@ -2155,6 +2158,17 @@ int KTongJX2Mgr::BuildClientView(int nPlayerIdx, int nPage, int nStart, void* pO
 						pOne->m_btLevel = (BYTE)GetMemberField(pMember, 1010);
 						pOne->m_btFaction = (BYTE)GetMemberField(pMember, 1011);
 					}
+					// "Ngay gia nhap" (khoa 2) truoc day KHONG CHO NAO GHI nen
+					// client luon hien dau gach, va con keo theo dong "Diem
+					// cong hien trung binh hang ngay" sai (so ngay bi ep = 1).
+					// Tu lanh: thay ai thieu thi dat mot lan, luu ben vung.
+					if (pOne->m_dwJoinTime == 0)
+					{
+						DWORD dwJoin = (DWORD)time(NULL);
+						sSendMemberFieldCmd(pTong->dwNameID, pMember->dwNameID, 2,
+							dwJoin, defTONG_JX2_OP_SET, 0);
+						pOne->m_dwJoinTime = dwJoin;
+					}
 					pSync->m_btCount++;
 				}
 				nIdx++;
@@ -2532,6 +2546,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 5;	// dang online va DA co bang khac
 			sJX2_SendAddMemberByName(pTong, szJoin, dwJoinID, btJoinSex,
 				(DWORD)(nJoinIdx > 0 ? nJoinIdx : 0));
+			// ghi luon "Ngay gia nhap" (khoa 2) cho nguoi vua duoc duyet
+			sSendMemberFieldCmd(dwTongID, dwJoinID, 2, (DWORD)time(NULL),
+				defTONG_JX2_OP_SET, dwParam);
 			for (; a < (int)pTong->btApplyCount - 1; a++)
 			{
 				memcpy(pTong->szApplyName[a], pTong->szApplyName[a + 1], 32);

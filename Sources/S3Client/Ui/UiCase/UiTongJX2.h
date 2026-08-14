@@ -43,6 +43,9 @@ private:
 	void	Initialize();
 	void	RequestPage(int nPage, int nStart);
 	void	SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText);
+	// hoi truoc khi lam: nho lai thao tac roi mo hop xac nhan
+	void	AskThenSendOp(const char* pszSection, const char* pszKey,
+				int nOp, unsigned long dwTarget, int nP1, int nP2);
 	void	SwitchPage(int nPage);
 	void	RenderInfo();
 	void	RenderRecruit();
@@ -78,12 +81,17 @@ private:
 	KWndLabeledButton	m_WsSub[3];				// 3 nut trang con cua luoi khu
 	KWndImage			m_WsIconSel;			// khung chon khu (sprite chon goc)
 	KWndImage			m_WsArt;				// buc tranh nen 298x226 cua trang tac phuong
-	KWndText80			m_Fun2[13];				// hang bo sung tab Tin tuc theo anh mau
 	KWndLabeledButton	m_RecToggle;			// dong/mo tuyen (trang chieu mo)
 	KWndButton			m_BtnRowSel[TJX2_UI_ROWS];	// vung bam chon dong (trong suot)
 	KWndLabeledButton	m_BtnTab[TJX2_UI_TABS];
 	KWndLabeledButton	m_BtnAct[TJX2_UI_ACTS];
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
+	// hang dieu khien duoi panel danh sach (blueprint co san, truoc chua noi day)
+	KWndLabeledButton	m_MOnline;			// o kiem "Hien thi tren mang"
+	KWndLabeledButton	m_MSort;			// nut menu sap xep (7 muc trong ini)
+	KWndLabeledButton	m_MJump;			// nut "Chuyen den"
+	KWndText80			m_MPage;			// so trang dang xem
+	KWndEdit32			m_MPageEdit;		// o nhap trang muon den
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndText80			m_Info[29];				// trang Tin tuc: 29 o = TJX2_INFO_NUM
 	KWndImage			m_InfoBg[29];			// khung nen do / thanh ong cua tung o
@@ -125,6 +133,13 @@ private:
 	int		m_nStart;			// trang thanh vien: chi so dau
 	int		m_nRecStart;		// trang chieu mo: don xin dau tien dang ve
 	int		m_nSel;				// dong dang chon trong danh sach thanh vien
+	int		m_bOnlineFirst;		// o kiem: dua nguoi dang tren mang len truoc
+	int		m_nSortMode;		// kieu sap xep dang chon (0..6 theo menu ini)
+	int		m_nOrd[10];			// thu tu HIEN THI -> chi so thanh vien trong goi
+	// thao tac dang cho xac nhan (hop UIMessageBox tra ket qua qua WND_M_OTHER_WORK_RESULT)
+	int		m_nPendOp;			// -1 = khong co
+	unsigned long m_dwPendTarget;
+	int		m_nPendP1, m_nPendP2;
 	int		m_nSelWs;			// khu tac phuong dang chon (1..7) - TACH RIENG khoi
 								// m_nSel: dung chung khien o trang Phuong tho thanh
 								// vien thu 2 luon bi danh dau chon
