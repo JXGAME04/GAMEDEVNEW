@@ -267,7 +267,8 @@ static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 											// "Nhan" cua ta bi nut rong 25px cat thanh "N.."
 	{"BtnAssignTongMoney",   "Ph\270t", 10},
 	{"BtnTransformMoney",    "\247\346i", -1},
-	{"BtnRecruit",           "Chi\252u m\351", 4},
+	{"BtnRecruit",           "Chi\252u m\351", 4},	// sprite goc -
+											// KHONG co trong pak -> ini dung 5
 	{"BtnKickOut",           "\247u\346i ng\255\352i", 2},
 	{"BtnDepose",            "Tru\312t ch\370c", 3},
 	{"Btn_DispenseOffer",    "Ph\270t c\350ng hi\325n", 1},
@@ -487,11 +488,14 @@ void KUiTongJX2::Initialize()
 	AddChild(&m_MPageEdit);
 	for (i = 0; i < 15; i++)
 		AddChild(&m_FunTxtBg[i]);
-	for (i = 0; i < 2; i++)
+	for (i = 0; i < 6; i++)
 		AddChild(&m_FunPBg[i]);
+	// anh ten trang con: AddChild TRUOC cum nut hanh dong (AddChild noi
+	// vao CUOI va ve theo thu tu do - them sau la de len tren, che nut)
+	AddChild(&m_FunMask);
 	for (i = 0; i < 15; i++)
 		AddChild(&m_FunTxt[i]);
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 7; i++)
 		AddChild(&m_FunP[i]);
 	for (i = 0; i < 14; i++)
 		AddChild(&m_RowDim[i]);
@@ -736,6 +740,21 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_FunP[1].SetText("C\350ng hi\325n c\270 nh\251n");
 	ms_pSelf->m_FunPBg[1].Init(&Ini, "Fun_TxtPersonalOffer");	// thanh ong
 	ms_pSelf->m_FunP[2].Init(&Ini, "Fun_TxtPersonalOffer");
+	// HAI HANG con lai cua khoi Tin tuc ca nhan - ban thiet ke goc CO du
+	// ba hang (Cong hien ca nhan / Ngan quy / Ngan sach kien thiet), moi
+	// hang = khung do + o so + nut Gui. Truoc day chi bind hang dau nen
+	ms_pSelf->m_FunPBg[2].Init(&Ini, "Fun_TitleTongMoney2");
+	ms_pSelf->m_FunP[3].Init(&Ini, "Fun_TitleTongMoney2");
+	ms_pSelf->m_FunP[3].SetText("Ng\251n qu\374");
+	ms_pSelf->m_FunPBg[3].Init(&Ini, "Fun_TxtTongMoney2");
+	ms_pSelf->m_FunP[4].Init(&Ini, "Fun_TxtTongMoney2");
+	ms_pSelf->m_FunPBg[4].Init(&Ini, "Fun_TitleBuildFund2");
+	ms_pSelf->m_FunP[5].Init(&Ini, "Fun_TitleBuildFund2");
+	ms_pSelf->m_FunP[5].SetText("Ng\251n s\270ch ki\325n thi\325t");
+	ms_pSelf->m_FunPBg[5].Init(&Ini, "Fun_TxtBuildFund2");
+	ms_pSelf->m_FunP[6].Init(&Ini, "Fun_TxtBuildFund2");
+	ms_pSelf->m_FunMask.Init(&Ini, "Fun_ImgSubPageMask");
+	ms_pSelf->m_FunMask.Enable(false);	// chi la anh nen, khong nuot chuot
 	for (i = 0; i < 7; i++)
 	{
 		sprintf(szSec, "MDet%d", i);
@@ -1275,9 +1294,10 @@ void KUiTongJX2::SwitchPage(int nPage)
 			if (bFun) { m_FunTxt[i].Show(); m_FunTxtBg[i].Show(); }
 			else { m_FunTxt[i].Hide(); m_FunTxtBg[i].Hide(); }
 		}
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < 7; i++)
 			if (bFun) m_FunP[i].Show(); else m_FunP[i].Hide();
-		for (i = 0; i < 2; i++)
+		if (bBtn) m_FunMask.Show(); else m_FunMask.Hide();
+		for (i = 0; i < 6; i++)
 			if (bFun) m_FunPBg[i].Show(); else m_FunPBg[i].Hide();
 		// nhom nut giua theo sub-page (cac nut hanh dong deu thuoc sub 1 tru map)
 		// nhom 2 = lanh dia + doi phe (dung nhom cua ban goc: BtnChangeCamp
@@ -2010,6 +2030,13 @@ void KUiTongJX2::RenderFunUse()
 	m_FunTxt[14].SetText(sz);
 	sprintf(sz, "%u", p->m_dwMyOffer);
 	m_FunP[2].SetText(sz);
+	// hai o so cua hai hang moi: dung chinh hai gia tri ma hai hang cung
+	// ten o khoi tren dang hien (Ngan quy = m_nMoney, Ngan sach kien thiet
+	// = m_dwBuildFund) - goi tin khong co truong tien rieng cua ca nhan
+	sprintf(sz, "%.0f", (double)p->m_nMoney);
+	m_FunP[4].SetText(sz);
+	sprintf(sz, "%u", p->m_dwBuildFund);
+	m_FunP[6].SetText(sz);
 	if (m_bHasMember)
 		RenderMembers();
 }
@@ -2428,6 +2455,21 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				if (uParam == (unsigned int)&m_FunSub[q])
 				{
 					m_nFunSub = q + 1;
+					{
+						// anh ten trang con doc thang tu ini (4 khoa ImgSubPage1-4
+						// cua chinh section Fun_ImgSubPageMask - ban thiet ke goc)
+						KIniFile Ini;
+						char szScheme[256], szPath[300], szKey[24], szImg[128];
+						g_UiBase.GetCurSchemePath(szScheme, sizeof(szScheme));
+						sprintf(szPath, "%s\\%s", szScheme, TONG_JX2_INI);
+						if (Ini.Load(szPath))
+						{
+							sprintf(szKey, "ImgSubPage%d", m_nFunSub);
+							Ini.GetString("Fun_ImgSubPageMask", szKey, "", szImg, sizeof(szImg));
+							if (szImg[0])
+								m_FunMask.SetImage(ISI_T_SPR, szImg, false);
+						}
+					}
 					// radio: chi nut dang chon sang (xem ghi chu o m_RcSub)
 					for (int z = 0; z < 4; z++)
 						m_FunSub[z].CheckButton((z + 1 == m_nFunSub) ? 1 : 0);

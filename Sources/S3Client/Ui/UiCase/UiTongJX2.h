@@ -112,8 +112,10 @@ private:
 	KWndImage			m_FunBg;
 	KWndText80			m_FunTxt[15];			// nhan + o so (bang s_sFunTxt)
 	KWndImage			m_FunTxtBg[15];			// khung do / thanh ong (Image cua section)
-	KWndText80			m_FunP[3];				// khoi Tin tuc ca nhan
-	KWndImage			m_FunPBg[2];			// khung + thanh ong cong hien ca nhan
+	KWndText80			m_FunP[7];				// khoi Tin tuc ca nhan: 1 tieu de + 3 hang
+											// (Cong hien ca nhan / Ngan quy / Ngan sach kien thiet)
+	KWndImage			m_FunPBg[6];			// khung do + thanh ong cua 3 hang do
+	KWndImage			m_FunMask;				// anh ten trang con 1-4 (Fun_ImgSubPageMask)
 	KWndText80			m_MDet[7];				// panel XANH chi tiet thanh vien
 	KWndText80			m_RowDim[14];			// dong danh sach mau xam (offline)
 	KWndLabeledButton	m_FunBtn[26];			// nut hanh dong (>= TJX2_FUN_BTNS = 24)
