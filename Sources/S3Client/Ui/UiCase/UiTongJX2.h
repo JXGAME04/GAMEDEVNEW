@@ -82,6 +82,9 @@ private:
 	KWndLabeledButton	m_BtnPrev, m_BtnNext;
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndText80			m_Info[29];				// trang Tin tuc: 29 o = TJX2_INFO_NUM
+	KWndImage			m_InfoBg[29];			// khung nen do / thanh ong cua tung o
+											// (KWndText KHONG doc khoa Image= -
+											// phai co lop KWndImage chay song song)
 	// trang Chieu mo (blueprint trang chieu mo - nhan giu NGUYEN VAN byte TCVN3)
 	KWndText80			m_RecLbl[8];			// 8 nhan tinh
 	KWndEdit512			m_RecJiyu;				// van an chieu mo
