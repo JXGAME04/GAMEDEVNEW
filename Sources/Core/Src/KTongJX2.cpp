@@ -3407,6 +3407,33 @@ int LuaJX2_GetTongLogData(Lua_State* L)
 	return 1;
 }
 
+// GetTongDuty() - chuc dai than quoc gia cua CHINH NGUOI GOI:
+// 0 khong co / 1 Thua Tuong / 2 Nguyen Soai / 3 Tien Phong.
+// Field 51/52/53 giu NameID nguoi dang giu tung chuc (dat boi COP 34/35).
+int LuaJX2_GetTongDuty(Lua_State* L)
+{
+	int nPlayerIdx = GetPlayerIndex(L);
+	int nRet = 0;
+	if (nPlayerIdx > 0 && nPlayerIdx < MAX_PLAYER)
+	{
+		DWORD dwTongID = Player[nPlayerIdx].m_cTong.GetTongNameID();
+		if (dwTongID)
+		{
+			DWORD dwMe = g_FileName2Id(Player[nPlayerIdx].m_PlayerName);
+			for (int nSlot = 1; nSlot <= 3 && dwMe; nSlot++)
+			{
+				if (g_TongJX2.GetField(dwTongID, (WORD)(50 + nSlot)) == dwMe)
+				{
+					nRet = nSlot;
+					break;
+				}
+			}
+		}
+	}
+	Lua_PushNumber(L, (double)nRet);
+	return 1;
+}
+
 // TongClaimWar(nTongID) - tuyen chien: dat WarState (field 11) + ghi su kien
 int LuaJX2_TongClaimWar(Lua_State* L)
 {

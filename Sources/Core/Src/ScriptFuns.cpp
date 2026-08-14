@@ -11329,6 +11329,23 @@ int LuaAddSkillState(Lua_State* L)
 	return 0;
 }
 
+// RemoveSkillState(nSkillId) - thu hoi mot trang thai skill dang gan tren
+// nhan vat (hao quang / ky nang dai than khi cach chuc). Ban goc JX2 co ham
+// cung ten; JX1 co san KNpc::ForceClearStateSkillEffect(nSkillId).
+int LuaRemoveSkillState(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0)
+		return 0;
+	if (Lua_GetTopIndex(L) < 1)
+		return 0;
+	int nSkillId = (int)Lua_ValueToNumber(L, 1);
+	if (nSkillId <= 0)
+		return 0;
+	Npc[Player[nPlayerIndex].m_nIndex].ForceClearStateSkillEffect(nSkillId);
+	return 0;
+}
+
 int LuaAddNpcSkillState(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 5)
@@ -11892,6 +11909,7 @@ extern int LuaJX2_SetWeeklyOffer(Lua_State* L);
 extern int LuaJX2_String2Id(Lua_State* L);
 extern int LuaJX2_SyncTaskValue(Lua_State* L);
 extern int LuaJX2_TongClaimWar(Lua_State* L);
+extern int LuaJX2_GetTongDuty(Lua_State* L);
 extern int LuaJX2_WriteLog(Lua_State* L);
 extern int LuaJX2_WriteStringToFile(Lua_State* L);
 extern int LuaTONG_GetSelfCamp(Lua_State* L);
@@ -12073,6 +12091,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PayExtPoint", LuaPayExtPoint},
 	{"IsMyItem",		LuaIsMyItem},
 	{"AddSkillState",	LuaAddSkillState},
+	{"RemoveSkillState",	LuaRemoveSkillState},
 	{"SetProtectTime",	LuaSetProtectTime}, //vong tron bat tu, vßng trßn bÊt t?
 	{"AddNpcSkillState",	LuaAddNpcSkillState},
 	{"IgnoreState",		LuaIgnoreState},
@@ -12562,6 +12581,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "SetTongMaster",	LuaJX2_SetTongMaster },
 		{ "GetTongLogData",	LuaJX2_GetTongLogData },
 		{ "TongClaimWar",	LuaJX2_TongClaimWar },
+		{ "GetTongDuty",	LuaJX2_GetTongDuty },
 		{ "GetTongNameByID",	LuaTONG_GetName },
 		{ "GetTongMTask",	LuaJX2_GetTongMTask },
 		{ "SetTongMTask",	LuaJX2_SetTongMTask },
