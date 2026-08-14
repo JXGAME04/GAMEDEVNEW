@@ -534,7 +534,7 @@ function LUP_GivePrice_OK(nWhich, num)
 		nBossFu = nBossFu - num
 		--Ω±¿¯’ŸªΩ∑˚
 		for i = 1,num do
-			AddItem(6,1,1022,10,0,0,0)
+			AddItem(6,1,1023,10,0,0,0)
 		end
 		local szMsg = GetName().."NhÀn ph«n th≠Îng th®ng c p bang hÈi: L÷nh bµi g‰i Boss c p 10"..num.."c∏i"
 		Msg2Tong(nTongID, szMsg)

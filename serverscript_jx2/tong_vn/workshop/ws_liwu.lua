@@ -145,7 +145,7 @@ function USE_G_2(nTongID, nWorkshopID)
 	end
 	AddContribution(-aLevelHongBaoPrice[nLevel]);
 	Msg2Player("B¹n tiªu tèn "..aLevelHongBaoPrice[nLevel].."®iÓm cèng hiÕn, nhËn ®­îc 1 c¸i bang héi thÇn bÝ hång bao!");
-	AddItem(6, 1, 1021, 1, 0, 0, 0);
+	AddItem(6, 1, 1022, 1, 0, 0, 0)	-- +1: bang item cua ta lech deu 1 ID (dieu tra dot C);
 end
 function cancel()
 end

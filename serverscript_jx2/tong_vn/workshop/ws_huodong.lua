@@ -154,7 +154,7 @@ function USE_G_2(nTongID, nWorkshopID, nUse)
 		local szMsg = GetName().." tiªu tèn "..aLevelLingPaiPrice[nLevel].." v¹n ng©n s¸ch kiÕn thiÕt bang ®Ó ®æi lÊy 1 lÖnh bµi gäi Boss cÊp "..nLevel.."!"
 		Msg2Tong(nTongID, szMsg)
 		TONG_ApplyAddEventRecord(nTongID, szMsg)
-		AddItem(6, 1, 1022, nLevel, 0, 0, 0);
+		AddItem(6, 1, 1023, nLevel, 0, 0, 0)	-- +1: bang item cua ta lech deu 1 ID (dieu tra dot C);
 	elseif (nUse == 2)then	
 		Sel_ZhaoDizhi(nTongID, nWorkshopID)	--ÕÐÄ¼µÜ×Ó
 	elseif (nUse == 3)then

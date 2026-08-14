@@ -1753,6 +1753,20 @@ int LuaTWS_GetWorkshopCount(Lua_State* L)
 int LuaTWS_GetFirstWorkshop(Lua_State* L)
 {
 	DWORD dwTongID = sArgTongID(L);
+	// dang goi 2 tham so (npc tong quan: TWS_GetFirstWorkshop(nTongID,
+	// eType)) phai ton trong LOAI KHU - truoc day bo qua nen bang co >=2
+	// phuong la moi NPC tong quan deu mo khu co so NHO NHAT (mo nham).
+	// Dang 1 tham so (tong.lua:346 duyet tat ca) giu nguyen hanh vi cu.
+	if (Lua_GetTopIndex(L) >= 2)
+	{
+		int nWant = (int)Lua_ValueToNumber(L, 2);
+		if (nWant >= 1 && nWant <= defTONG_JX2_WS_MAX_TYPE)
+		{
+			Lua_PushNumber(L,
+				g_TongJX2.GetField(dwTongID, sWsAttrField(nWant, 0)) ? nWant : 0);
+			return 1;
+		}
+	}
 	for (int t = 1; t <= defTONG_JX2_WS_MAX_TYPE; t++)
 	{
 		if (g_TongJX2.GetField(dwTongID, sWsAttrField(t, 0)))

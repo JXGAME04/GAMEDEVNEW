@@ -12089,9 +12089,33 @@ extern int LuaTWS_ApplyMaintain(Lua_State* L);
 extern int LuaTWS_ApplyUse(Lua_State* L);
 #endif
 
+// (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
+// lan server nen dinh nghia cung phai co o ca hai)
+// ---- stub cho script tac phuong JX2 (dieu tra dot C) ----
+// GetPartnerBagLevel/SetPartnerBagLevel: he tui hanh trang dong hanh cua
+// JX2 chua co tren JX1 - stub de menu 2 khu Le vat khong nil-crash.
+int LuaJX2_PartnerBagStub(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// ChangeNpcFeature(npc,a,b,figure): doi hinh toa xuong khi len cap -
+// JX1 chua co duong doi feature dong; stub no-op (chi mat hieu ung hinh).
+int LuaJX2_ChangeNpcFeatureStub(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+
 TLua_Funcs GameScriptFuns[] =
 {
 	{"Say", LuaSelectUI},
+	{"Describe", LuaSelectUI},	// script tac phuong JX2 dung Describe nhu Say
+	{"GetPartnerBagLevel", LuaJX2_PartnerBagStub},
+	{"SetPartnerBagLevel", LuaJX2_PartnerBagStub},
+	{"ChangeNpcFeature", LuaJX2_ChangeNpcFeatureStub},
 	{"SayNew", LuaSaySPR},
 	{"SayImg", LuaSelectImage},
 	{"Talk", LuaTalkUI},

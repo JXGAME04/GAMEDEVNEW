@@ -939,8 +939,8 @@ struct STONG_JX2_SYNC_DONE : EXTEND_HEADER
 #define defTONGTSK_STUNT_ID		1101	// tuyet ky dang dat
 #define defTONGTSK_STUNT_ENABLED	1102	// tuyet ky con hieu luc (bao tri du tien)
 #define defTONGTSK_WEEK_WFCONSUME	1103	// thong ke chien bi tieu trong tuan
-#define defTONGTSK_LAST_WM_DAY		1104	// so-ngay (epoch) chay bao tri TUAN gan nhat
-#define defTONGTSK_LAST_M_DAY		1105	// so-ngay (epoch) chay bao tri NGAY gan nhat
+#define defTONGTSK_LAST_WM_DAY		1292	// so-ngay (epoch) chay bao tri TUAN gan nhat
+#define defTONGTSK_LAST_M_DAY		1293	// 1104/1105 cu DE len WEEK_WSCONSUME/MONEYFUND2BF cua Lua; 1292/1293 sach	// so-ngay (epoch) chay bao tri NGAY gan nhat
 
 // Tac phuong (workshop) ma hoa vao dai field:
 //   thuoc tinh:  defTONG_JX2_WS_ATTR_BASE + nType*10 + attr (0=ton tai 1=mo 2=cap
