@@ -985,14 +985,34 @@ void KUiTongJX2::ClearMemberRows()
 void KUiTongJX2::RepositionRows()
 {
 	int i;
-	// LUU Y: nhanh Chieu mo doi ca KICH THUOC, nen MOI nhanh deu phai tu dat
-	// lai SetSize cua minh. Neu khong, ghe tab Chieu mo mot lan la cac tab khac
-	// bi ket kich thuoc 210x16 / 212x19 cho toi khi khoi dong lai Game.exe
-	// (OpenWindow chi LoadScheme dung lan dau).
+	// LUU Y: cac nhanh doi ca VI TRI lan KICH THUOC, ma LoadScheme chi chay
+	// dung mot lan -> dau moi vong lap phai TRA VE MAC DINH cho ca 4 mang
+	// truoc khi nhanh hien tai ghi de. Thieu buoc do la ghe mot tab mot lan
+	// la cac tab khac ket bo cuc cua tab do cho toi khi khoi dong lai Game.exe.
 	BOOL bList = (m_nPage == defTONG_JX2_PAGE_MEMBER || m_nPage == defTONG_JX2_PAGE_RIGHT ||
 		m_nPage == TJX2_UI_PAGE_FUNUSE);
 	for (i = 0; i < TJX2_UI_ROWS; i++)
 	{
+		// Mac dinh (bo cuc danh sach thanh vien) cho CA 4 mang, MOI vong:
+		// m_MList 540x20 theo [Row0], m_RowDim 225x16 theo [RowDim0],
+		// m_Row/m_BtnRowSel 230x20 tai (341,68+i*24). Nhanh nao can bo cuc
+		// khac thi ghi de ben duoi - khong nhanh nao duoc phep de mang o
+		// trang thai rieng cua minh sau khi roi trang.
+		m_Row[i].SetPosition(341, 68 + i * 24);
+		m_Row[i].SetSize(230, 20);
+		m_MList[i].SetPosition(341, 68 + i * 24);
+		m_MList[i].SetSize(540, 20);
+		m_RowDim[i].SetPosition(341, 68 + i * 24);
+		m_RowDim[i].SetSize(225, 16);
+		m_BtnRowSel[i].SetPosition(341, 68 + i * 24);
+		m_BtnRowSel[i].SetSize(230, 20);
+		// Mau chu cung la trang thai bi tung trang nhuom (RenderTongList doi
+		// m_Row sang xanh...) va khong tu tra lai - reset ve mau ini goc:
+		// [Row0] 255,253,122; [RowDim0] 120,120,120. Ham render nao can mau
+		// khac se tu SetTextColor truoc khi SetText nhu van lam.
+		m_Row[i].SetTextColor(0xFF000000 | (255 << 16) | (253 << 8) | 122);
+		m_MList[i].SetTextColor(0xFF000000 | (255 << 16) | (253 << 8) | 122);
+		m_RowDim[i].SetTextColor(0xFF000000 | (120 << 16) | (120 << 8) | 120);
 		if (bList)
 		{
 			m_Row[i].SetPosition(341, 68 + i * 24);
