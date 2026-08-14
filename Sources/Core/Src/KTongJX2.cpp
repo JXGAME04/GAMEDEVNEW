@@ -2577,6 +2577,46 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
 			if (!pTarget || pTarget->btFigure <= 1)
 				return 4;	// JX2: cam duoi bang chu / truong lao
+			// D-4: phat tien + tran ngay bang CHINH LUA GOC (tong_mix.lua):
+			// MEMBER_KICK_G_1 nFlag=2 (client da hoi xac nhan AskThenSendOp,
+			// tuong ung nhanh "da qua hop thoai" cua ban goc): tran
+			// MAX_KICK_COUNT/ngay + kiem du quy; roi MEMBER_KICK_R: tru 60%
+			// cong hien vao quy du tru (lan sang kien thiet khi thieu) + 40%
+			// vao chien bi + thong bao bang. Loi tu choi da duoc Lua nhan
+			// truc tiep cho nguoi bam (Msg2Player) -> return 20.
+			{
+				KLuaScript* pKick = (KLuaScript*)g_GetScript(
+					"\\scriptjx2\\tong_vn\\tong_mix.lua");
+				if (pKick)
+				{
+					// dung bo global nhu KPlayer::ExecuteScript de Msg2Player/
+					// Say trong Lua toi dung nguoi bam; ExecutorId = ban goc
+					Lua_PushNumber(pKick->m_LuaState, nPlayerIdx);
+					pKick->SetGlobalName(SCRIPT_PLAYERINDEX);
+					Lua_PushNumber(pKick->m_LuaState,
+						Npc[Player[nPlayerIdx].m_nIndex].m_SubWorldIndex);
+					pKick->SetGlobalName(SCRIPT_SUBWORLDINDEX);
+					Lua_PushNumber(pKick->m_LuaState, (double)pMe->dwNameID);
+					lua_setglobal(pKick->m_LuaState, "ExecutorId");
+					int nTop = 0;
+					int nOk = 0;
+					pKick->SafeCallBegin(&nTop);
+					if (pKick->CallFunction("MEMBER_KICK_G_1", 1, "ddd",
+						(int)dwTongID, (int)pCmd->m_dwTarget, 2))
+						nOk = (int)Lua_ValueToNumber(pKick->m_LuaState, -1);
+					pKick->SafeCallEnd(nTop);
+					if (nOk != 1)
+						return 20;
+					nOk = 0;
+					pKick->SafeCallBegin(&nTop);
+					if (pKick->CallFunction("MEMBER_KICK_R", 1, "ddd",
+						(int)dwTongID, (int)pCmd->m_dwTarget, 2))
+						nOk = (int)Lua_ValueToNumber(pKick->m_LuaState, -1);
+					pKick->SafeCallEnd(nTop);
+					if (nOk != 1)
+						return 20;
+				}
+			}
 			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_KICK, 0, 0, dwParam);
 			return 0;
 		}
@@ -3708,6 +3748,23 @@ int LuaJX2_GetTongLogData(Lua_State* L)
 {
 	Lua_PushString(L, (char*)"");
 	return 1;
+}
+
+// Msg2PlayerByName(szName, szMsg) - nhan he thong cho nguoi choi theo TEN
+// (tong_mix.lua MEMBER_KICK_R dung o duong tu choi). Offline thi bo qua.
+int LuaJX2_Msg2PlayerByName(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2)
+		return 0;
+	char* szName = (char*)Lua_ValueToString(L, 1);
+	char* szMsg = (char*)Lua_ValueToString(L, 2);
+	if (!szName || !szMsg || !szName[0] || !szMsg[0])
+		return 0;
+	int nIdx = sFindPlayerIdxByNameID(g_FileName2Id(szName));
+	if (nIdx > 0)
+		KPlayerChat::SendSystemInfo(1, nIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+			szMsg, (int)strlen(szMsg));
+	return 0;
 }
 
 // GetTongDuty() - chuc dai than quoc gia cua CHINH NGUOI GOI:

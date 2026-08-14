@@ -11965,6 +11965,7 @@ extern int LuaJX2_String2Id(Lua_State* L);
 extern int LuaJX2_SyncTaskValue(Lua_State* L);
 extern int LuaJX2_TongClaimWar(Lua_State* L);
 extern int LuaJX2_GetTongDuty(Lua_State* L);
+extern int LuaJX2_Msg2PlayerByName(Lua_State* L);
 extern int LuaJX2_WriteLog(Lua_State* L);
 extern int LuaJX2_WriteStringToFile(Lua_State* L);
 extern int LuaTONG_GetSelfCamp(Lua_State* L);
@@ -12663,6 +12664,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "GetTongLogData",	LuaJX2_GetTongLogData },
 		{ "TongClaimWar",	LuaJX2_TongClaimWar },
 		{ "GetTongDuty",	LuaJX2_GetTongDuty },
+		{ "Msg2PlayerByName",	LuaJX2_Msg2PlayerByName },
 		{ "GetTongNameByID",	LuaTONG_GetName },
 		{ "GetTongMTask",	LuaJX2_GetTongMTask },
 		{ "SetTongMTask",	LuaJX2_SetTongMTask },
