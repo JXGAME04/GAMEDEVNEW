@@ -32,6 +32,10 @@ public:
 	static void   LinkToMainWindow(                 //建立这个界面和主界面的关联
 		                      KWndWindow *pMain);
 
+	// Che do BANG HOI JX2: chon chuc roi gui COP_SET_FIGURE truc tiep
+	// (1 Truong lao / 2 Doi truong / 3 Bang chung), khong go lai ten.
+	static void   ArrangeDataJX2(const char* szName, unsigned long dwNameID,
+								int nCurJX2Figure);
 	static void   ArrangeData(                      //为任命案的书写安排数据
 		                      int nType, char* szTarName, char* szTarAgName, int nCurrentFigure, int nCurrentPosition = 0);
 
@@ -72,6 +76,8 @@ private:
 
 	char                     m_szAssign[64], m_szConfirm[8], m_szCancel[8];
 	int                      m_nSelectFigure;
+	bool                     m_bJX2Mode;
+	unsigned long            m_dwJX2Target;	// NameID muc tieu (che do JX2)
 
 	char                     m_szErrorNotSelectFigure[32];
 };

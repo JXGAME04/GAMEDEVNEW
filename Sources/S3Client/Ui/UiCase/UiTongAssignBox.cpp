@@ -19,6 +19,8 @@ Description : Bæ nhiÖm chøc vô bang héi
 #include "../../Core/Src/GameDataDef.h"
 
 #include "UiTongAssignBox.h"
+#include "UiTongJX2.h"	// cau noi SendOpStatic (che do JX2)
+#include "../../../Core/Src/KProtocol.h"	// defTONG_JX2_COP_*
 #include "UiInformation.h"
 #include "UiTongGetString.h"
 
@@ -34,6 +36,8 @@ KUiTongAssignBox* KUiTongAssignBox::ms_pSelf = NULL;
 
 KUiTongAssignBox::KUiTongAssignBox()
 {
+	m_bJX2Mode = false;
+	m_dwJX2Target = 0;
 	m_pMain = NULL;
 	m_nSelectFigure = -1;
 	m_szTargetPlayerName[0] = 0;
@@ -293,6 +297,28 @@ void KUiTongAssignBox::ArrangeData(int nType, char* szTarName, char* szTarAgName
 	}
 }
 
+// Che do JX2: khong can ten giang ho / hop go lai ten. nCurJX2Figure theo
+// he JX2 (0 bang chu / 1 truong lao / 2 doi truong / 3 bang chung / 4 an si).
+void KUiTongAssignBox::ArrangeDataJX2(const char* szName, unsigned long dwNameID,
+	int nCurJX2Figure)
+{
+	if (!ms_pSelf || !szName || !szName[0] || dwNameID == 0)
+		return;
+	ms_pSelf->m_bJX2Mode = true;
+	ms_pSelf->m_dwJX2Target = dwNameID;
+	strncpy(ms_pSelf->m_szTargetPlayerName, szName,
+		sizeof(ms_pSelf->m_szTargetPlayerName) - 1);
+	ms_pSelf->m_szTargetPlayerName[sizeof(ms_pSelf->m_szTargetPlayerName) - 1] = 0;
+	ms_pSelf->m_TargetName.SetText(ms_pSelf->m_szTargetPlayerName);
+	// danh dau o kiem theo chuc hien tai (JX2 -> enum JX1 cua 3 nut)
+	if (nCurJX2Figure == 1)
+		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_DIRECTOR);
+	else if (nCurJX2Figure == 2)
+		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_MANAGER);
+	else
+		ms_pSelf->UpdateCheckButton(enumTONG_FIGURE_MEMBER);
+}
+
 
 /*********************************************************************
 * ¹¦ÄÜ£ºCheck¹ÜÀíº¯Êý
@@ -344,6 +370,31 @@ void KUiTongAssignBox::PopupConfirmWindow(const char* pszInfo, unsigned int uHan
 **********************************************************************/
 void KUiTongAssignBox::OnConfirm()
 {
+	if (m_bJX2Mode)
+	{
+		// JX2: gui COP_SET_FIGURE (1 t.lao / 2 d.truong / 3 b.chung) - ban
+		// goc khong co buoc go lai ten; server kiem quyen 1101 lan nua.
+		if (m_nSelectFigure == -1)
+		{
+			m_TextError.SetText(m_szErrorNotSelectFigure);
+			return;
+		}
+		int nFig = 3;
+		if (m_nSelectFigure == enumTONG_FIGURE_DIRECTOR)
+			nFig = 1;
+		else if (m_nSelectFigure == enumTONG_FIGURE_MANAGER)
+			nFig = 2;
+		KUiTongJX2::SendOpStatic(defTONG_JX2_COP_SET_FIGURE, m_dwJX2Target,
+			nFig, 0, NULL);
+		if (m_pMain)
+		{
+			m_pMain->Show();
+			m_pMain = NULL;
+		}
+		m_bJX2Mode = false;
+		CloseWindow();
+		return;
+	}
 	if(m_nSelectFigure != -1)
 	{
 		PopupConfirmWindow(m_szAssign, RESULT_T_ASSIGN);

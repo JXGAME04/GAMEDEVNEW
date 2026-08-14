@@ -34,6 +34,8 @@ public:
 class KUiTongJX2 : KWndImage
 {
 public:
+	// cau noi cho cua so con (AssignBox/Grant) gui op khi khong co con tro this
+	static void	SendOpStatic(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText);
 	KUiTongJX2();
 	virtual ~KUiTongJX2();
 

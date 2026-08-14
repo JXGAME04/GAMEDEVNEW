@@ -16,6 +16,7 @@ Description : Cua so bang hoi kieu JX2 - hien du lieu ban sao GS (goi
 #include "../UiBase.h"
 
 #include "UiTongJX2.h"
+#include "UiTongAssignBox.h"	// cua so bo nhiem chuc vu (che do JX2)
 #include "../elem/wndedit.h"
 #include "../elem/wndlist2.h"
 #include "../elem/wndscrollbar.h"
@@ -974,6 +975,12 @@ void KUiTongJX2::AskThenSendOp(const char* pszSection, const char* pszKey,
 	m_nPendP1 = nP1;
 	m_nPendP2 = nP2;
 	UIMessageBox(szMsg, this, "X\270c nh\313n", "Hu\373 b\341", TJX2_CONFIRM_ID);
+}
+
+void KUiTongJX2::SendOpStatic(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText)
+{
+	if (ms_pSelf)
+		ms_pSelf->SendOp(nOp, dwTarget, nP1, nP2, pszText);
 }
 
 void KUiTongJX2::SendOp(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText)
@@ -2664,8 +2671,20 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						AskThenSendOp(NULL, NULL, defTONG_JX2_COP_KICK, dwFT, 0, 0);
 					break;
 				case 3:
-					if (dwFT)
-						SendOp(defTONG_JX2_COP_SET_FIGURE, dwFT, 3, 0, NULL);
+					// mo cua so BO NHIEM chuan goc (blueprint da port san o
+					// UiTongAssignBox0.ini): chon 1 trong 3 chuc. Truoc day nut
+					// nay chi HA xuong bang chung - khong co loi len chuc.
+					if (dwFT && m_bHasMember)
+					{
+						TONG_JX2_MEMBER_SYNC* pAB = (TONG_JX2_MEMBER_SYNC*)m_byMember;
+						if (m_nSel < (int)pAB->m_btCount)
+						{
+							KUiTongAssignBox::OpenWindow();
+							KUiTongAssignBox::ArrangeDataJX2(
+								pAB->m_sMember[m_nSel].m_szName, dwFT,
+								(int)pAB->m_sMember[m_nSel].m_btFigure);
+						}
+					}
 					break;
 				case 4:
 					SwitchPage(TJX2_UI_PAGE_RECRUIT);
