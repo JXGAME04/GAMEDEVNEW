@@ -107,12 +107,17 @@ function WriteTongMoneyChangeLog(sz) WriteLog("[TIEN-BANG] "..sz) return 1 end
 
 -- ==== He LEAGUE JX2 (lien-GS) thu gon cho mot GS ====
 -- obj tam dung de dang ky; so dang ky that TJX_LG_REG[mod|ten]; gia tri nhiem vu
--- persist qua gb_SetTask/gb_GetTask (module "LG"/"LGM") de song qua restart.
+-- nhiem vu giu trong RAM tien trinh (truoc day ghi qua gb_SetTask la persist AO:
 TJX_LG_TMP = {}
 TJX_LG_NEXT = 1
 TJX_LGM_TMP = {}
 TJX_LGM_NEXT = 1
 TJX_LG_REG = {}
+-- kho nhiem vu RIENG (khong dung chung gb_SetTask cua gb_taskfuncs.lua,
+-- neu khong LG_ApplySetLeagueTask <-> gb_SetTask goi vong nhau = de quy vo han
+-- khi nguoi choi binh chon ban do cong cong / bang len cap).
+TJX_LG_TASK = {}
+TJX_LGM_TASK = {}
 
 function LG_CreateLeagueObj()
 	local id = TJX_LG_NEXT
@@ -199,23 +204,33 @@ function LG_GetLeagueObj(nMod, szName)
 	if (TJX_LG_REG[key] ~= nil) then
 		return key
 	end
-	return -1
+	return 0
 end
 
 function LG_GetLeagueTask(lid, nTaskID)
-	if (lid == -1 or lid == nil) then
+	if (lid == 0 or lid == -1 or lid == nil) then
 		return 0
 	end
-	return gb_GetTask("LG", lid.."|"..nTaskID)
+	local v = TJX_LG_TASK[lid.."|"..nTaskID]
+	if (v == nil) then
+		return 0
+	end
+	return v
 end
 
 function LG_ApplySetLeagueTask(nMod, szName, nTaskID, nValue)
-	return gb_SetTask("LG", nMod.."|"..szName.."|"..nTaskID, nValue)
+	TJX_LG_TASK[nMod.."|"..szName.."|"..nTaskID] = nValue
+	return 1
 end
 
 function LG_ApplyAppendLeagueTask(nMod, szName, nTaskID, nDelta)
 	local k = nMod.."|"..szName.."|"..nTaskID
-	return gb_SetTask("LG", k, gb_GetTask("LG", k) + nDelta)
+	local cur = TJX_LG_TASK[k]
+	if (cur == nil) then
+		cur = 0
+	end
+	TJX_LG_TASK[k] = cur + nDelta
+	return 1
 end
 
 function LG_GetFirstLeague(nMod)
@@ -226,7 +241,7 @@ function LG_GetFirstLeague(nMod)
 		end
 		k, v = next(TJX_LG_REG, k)
 	end
-	return -1
+	return 0
 end
 
 function LG_GetNextLeague(nMod, lid)
@@ -241,7 +256,7 @@ function LG_GetNextLeague(nMod, lid)
 		end
 		k, v = next(TJX_LG_REG, k)
 	end
-	return -1
+	return 0
 end
 
 function LGM_ApplyAddMember(lid, szMember)
@@ -254,16 +269,26 @@ function LGM_ApplyAddMember(lid, szMember)
 end
 
 function LG_GetMemberTask(lid, szMember, nTaskID)
-	return gb_GetTask("LGM", lid.."|"..szMember.."|"..nTaskID)
+	local v = TJX_LGM_TASK[lid.."|"..szMember.."|"..nTaskID]
+	if (v == nil) then
+		return 0
+	end
+	return v
 end
 
 function LG_ApplySetMemberTask(lid, szMember, nTaskID, nValue)
-	return gb_SetTask("LGM", lid.."|"..szMember.."|"..nTaskID, nValue)
+	TJX_LGM_TASK[lid.."|"..szMember.."|"..nTaskID] = nValue
+	return 1
 end
 
 function LG_ApplyAppendMemberTask(lid, szMember, nTaskID, nDelta)
 	local k = lid.."|"..szMember.."|"..nTaskID
-	return gb_SetTask("LGM", k, gb_GetTask("LGM", k) + nDelta)
+	local cur = TJX_LGM_TASK[k]
+	if (cur == nil) then
+		cur = 0
+	end
+	TJX_LGM_TASK[k] = cur + nDelta
+	return 1
 end
 
 -- ==== Phuong tho: cua so duc JX2 chua co tren JX1 -> bao ro ====
