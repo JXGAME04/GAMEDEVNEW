@@ -39,12 +39,14 @@ function RunTime()
 		Msg2SubWorld("<color=blue>Ngµy míi ®· tíi, chóc c¸c b¹n mét ngµy míi may m¾n.<color>")
 		UpdateNgayMoiAllPlayer()
 	end
-	-- JX2: bao tri TAC PHUONG hang ngay - sinh san luong ngay cho 7 khu
-	if (nHr == 6) and (nMi == 5) and (g_nTWSMaintainDay ~= nDy) then
-		g_nTWSMaintainDay = nDy
-		if (TWS_MaintainAll ~= nil) then
-			local nRun = TWS_MaintainAll()
-			print("[TONGJX2] bao tri tac phuong: "..nRun.." khu")
+	-- JX2: bao tri BANG hang ngay bang chinh Lua goc (tong.lua MAINTAIN_R
+	-- + WEEKLY_MAINTAIN_R sang thu Hai): chi phi duy tri, tro cap, tam
+	-- ngung, san luong tac phuong, muc tieu tuan + chon muc tieu moi.
+	if (nHr == 6) and (nMi == 5) and (g_nTongMaintainDay ~= nDy) then
+		g_nTongMaintainDay = nDy
+		if (TONG_DailyMaintainAll ~= nil) then
+			local nRun = TONG_DailyMaintainAll(nDyfW)
+			print("[TONGJX2] bao tri bang: "..nRun)
 		end
 	end
 	-- if (nHr == 19) and (nMi == 00) then

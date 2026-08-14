@@ -59,8 +59,10 @@ unsigned long g_IniScriptEngine()
 	// bi chay lung tung luc boot chung. Nhung NPC lanh dia + bao tri tac
 	// phuong goi chung theo ScriptID (g_GetScript KHONG tu nap) nen phai
 	// co mat trong cay. Chi nap 2 thu muc can cho duong bam NPC/MAINTAIN_R.
-	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn\\npc");
-	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn\\workshop");
+	// nap TRON tong_vn (de quy ca npc\ + workshop\ + map\): tong.lua can
+	// cho bao tri ngay/tuan, tong_mix cho cac duong _G, npc/workshop cho
+	// duong bam NPC. KHONG nap rieng thu muc con nua de khoi trung ID.
+	nLoaded = LoadAllScript("\\scriptjx2\\tong_vn");
 #endif
 	return nLoaded;
 }
@@ -99,6 +101,14 @@ static BOOL LoadScriptToSortListA(char * szRelativeFile)
 	{
 		g_ScriptSet[nCurrentScriptNum].Init();
 		g_ScriptSet[nCurrentScriptNum].RegisterFunctions(GameScriptFuns, g_GetGameScriptFunNum());
+		// JX2 port: script trong scriptjx2\ boc toan than trong khoi
+		// "if MODEL_GAMESERVER == 1 ..." (tong.lua, tong_mix.lua...) -
+		// khong dat co truoc khi chay than file thi nap xong chi con vo.
+		if (strstr(szRelativeFile, "scriptjx2") != NULL)
+		{
+			Lua_PushNumber(g_ScriptSet[nCurrentScriptNum].m_LuaState, 1);
+			lua_setglobal(g_ScriptSet[nCurrentScriptNum].m_LuaState, "MODEL_GAMESERVER");
+		}
 		g_StrCpyLen(g_ScriptSet[nCurrentScriptNum].m_szScriptName, szRelativeFile, 100);
 		if (g_ScriptSet[nCurrentScriptNum].Load(szRelativeFile))
 		{

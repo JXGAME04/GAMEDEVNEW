@@ -1506,15 +1506,10 @@ BOOL CTongControl::JX2_Degrade()
 // xoa tuan moi; thanh vien: khoa 9 -> 10, 11 -> 12 roi xoa 9/11; Week + 1.
 void CTongControl::JX2_WeeklyMaintain(int nTodayDay)
 {
-	static const WORD wWeek[7] = {22, 23, 24, 25, 26, 27, 28};
-	static const WORD wLast[7] = {29, 30, 31, 32, 33, 34, 35};
-	int i;
-	for (i = 0; i < 7; i++)
-	{
-		JX2_SetField(wLast[i], JX2_GetField(wWeek[i]));
-		JX2_SetField(wWeek[i], 0);
-	}
-	JX2_SetField(36, 0);		// CurWeekGoalLevel
+	// Snapshot muc tieu tuan 22-28 -> 29-35 + co hoan thanh + CHON MUC TIEU
+	// MOI: gio do WEEKLY_MAINTAIN_R cua tong.lua lam (ma goc nguyen van,
+	// GS goi sang thu Hai). Relay chi giu phan "engine tu lam": don thanh
+	// vien + reset quy tuan + dem tuan/ngay.
 	JX2_SetField(41, 0);		// WeekBuildFund
 	JX2_AddField(21, 1, TRUE);	// Week + 1
 	JX2_SetField(defTONGTSK_LAST_WM_DAY, (DWORD)nTodayDay);
@@ -1546,37 +1541,10 @@ void CTongControl::JX2_WeeklyMaintain(int nTodayDay)
 // 5) Day (field 20) + 1
 void CTongControl::JX2_DailyMaintain(int nTodayDay, int nWeekday)
 {
-	int nConsume = (int)JX2_GetField(16);
-	if (nConsume > 0)
-	{
-		int nWar = (int)JX2_GetField(15);
-		nWar -= nConsume;
-		if (nWar < 0)
-			nWar = 0;
-		JX2_SetField(15, (DWORD)nWar);
-		JX2_AddField(defTONGTSK_WEEK_WFCONSUME, nConsume, FALSE);
-	}
-	int nMembers = 0;
-	{
-		std::map<DWORD, JX2Member>::iterator it;
-		nMembers = (int)m_mapJX2Member.size();
-		if (nMembers <= 0)
-			nMembers = m_nMemberNum > 0 ? m_nMemberNum : 1;
-	}
-	if (nMembers > 0)
-		JX2_SetField(17, (DWORD)(nConsume * 7 / nMembers));
-
-	if (JX2_GetField(defTONGTSK_STUNT_ID) != 0)
-	{
-		int nWar = (int)JX2_GetField(15);
-		if (nWar >= 6000)
-		{
-			JX2_SetField(15, (DWORD)(nWar - 6000));
-			JX2_SetField(defTONGTSK_STUNT_ENABLED, 1);
-		}
-		else
-			JX2_SetField(defTONGTSK_STUNT_ENABLED, 0);
-	}
+	// Tru chi phi duy tri + tro cap (17) + tam ngung: GIO do CHINH LUA GOC
+	// lam (tong.lua MAINTAIN_R chay tren GS, dot C) - relay khong tru nua
+	// de khoi TRU DOI. Tuyet ky 6000/ngay cung bo: ban goc thu theo TUAN
+	// trong Maintain_Stunt, se lam dung o dot tuyet ky.
 
 	int nLastWeekly = (int)JX2_GetField(defTONGTSK_LAST_WM_DAY);
 	if (JX2_GetField(20) == 0 || nWeekday == 1 || nTodayDay - nLastWeekly >= 7)

@@ -2005,10 +2005,41 @@ int LuaTWS_ApplyDegrade(Lua_State* L)
 	return 1;
 }
 
-// bao tri tac phuong: chi phi da nam trong bao tri ngay cua bang
+// Duong script tung khu (thu tu TYPE cua workshops.txt; chu thuong vi
+// bo nap boot g_StrLower duong dan truoc khi tinh ScriptID).
+static const char* s_szWsScriptPath[8] = { "",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_bingjia.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_tiangong.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_mianju.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_shilian.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_tianyi.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_liwu.lua",
+	"\\scriptjx2\\tong_vn\\workshop\\ws_huodong.lua",
+};
+
+// Bao tri tac phuong: goi MAINTAIN_R(nTongID, nWS) cua DUNG script khu
+// (tong.lua MAINTAIN_R goi ham nay cho tung khu - ban goc di qua relay,
+// ta chay truc tiep). Truoc day la no-op nen san luong ngay luon 0.
 int LuaTWS_ApplyMaintain(Lua_State* L)
 {
-	Lua_PushNumber(L, g_TongJX2.FindTong(sArgTongID(L)) ? 1 : 0);
+	DWORD dwTongID = sArgTongID(L);
+	int nType = sWsType(L);
+	if (!g_TongJX2.FindTong(dwTongID) || nType < 1 || nType > defTONG_JX2_WS_MAX_TYPE)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(s_szWsScriptPath[nType]);
+	if (!pScript)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nTop = 0;
+	pScript->SafeCallBegin(&nTop);
+	int nOk = pScript->CallFunction("MAINTAIN_R", 0, "dd", (int)dwTongID, nType) ? 1 : 0;
+	pScript->SafeCallEnd(nTop);
+	Lua_PushNumber(L, (double)nOk);
 	return 1;
 }
 
@@ -3350,15 +3381,6 @@ int LuaTWS_ApplyUse(Lua_State* L)
 // day luon 0 nen ca 3 khu deu bi gate "san luong < 100" chan). Ban goc do
 // relay hen gio goi; ta goi tu timerserver.lua moi ngay. Duong dan da
 // duoc g_IniScriptEngine nap san vao cay script (chu thuong).
-static const char* s_szWsScriptPath[8] = { "",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_bingjia.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_tiangong.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_mianju.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_shilian.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_tianyi.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_liwu.lua",
-	"\\scriptjx2\\tong_vn\\workshop\\ws_huodong.lua",
-};
 
 int LuaTWS_MaintainAll(Lua_State* L)
 {
@@ -3379,6 +3401,41 @@ int LuaTWS_MaintainAll(Lua_State* L)
 				nRun++;
 			pScript->SafeCallEnd(nTop);
 		}
+		dwTong = g_TongJX2.NextTongID(dwTong);
+	}
+	Lua_PushNumber(L, (double)nRun);
+	return 1;
+}
+
+// Bao tri NGAY + TUAN cua bang bang CHINH LUA GOC (tong.lua): tro cap,
+// tam ngung, chi phi duy tri, muc tieu tuan + chon muc tieu moi - tat ca
+// la ma nguyen van. Goi tu timerserver 06h05 (nWeekday: 1 = thu Hai ->
+// chay WEEKLY_MAINTAIN_R truoc). Ban goc do relay hen gio; phan relay
+// van giu: don thanh vien 9->10/11->12, reset 41, Week+1, Day+1.
+int LuaTONG_DailyMaintainAll(Lua_State* L)
+{
+	int nWeekday = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : -1;
+	KLuaScript* pScript = (KLuaScript*)g_GetScript("\\scriptjx2\\tong_vn\\tong.lua");
+	if (!pScript)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nRun = 0;
+	DWORD dwTong = g_TongJX2.NextTongID(0);
+	while (dwTong)
+	{
+		int nTop = 0;
+		if (nWeekday == 1)
+		{
+			pScript->SafeCallBegin(&nTop);
+			pScript->CallFunction("WEEKLY_MAINTAIN_R", 0, "d", (int)dwTong);
+			pScript->SafeCallEnd(nTop);
+		}
+		pScript->SafeCallBegin(&nTop);
+		if (pScript->CallFunction("MAINTAIN_R", 0, "d", (int)dwTong))
+			nRun++;
+		pScript->SafeCallEnd(nTop);
 		dwTong = g_TongJX2.NextTongID(dwTong);
 	}
 	Lua_PushNumber(L, (double)nRun);
