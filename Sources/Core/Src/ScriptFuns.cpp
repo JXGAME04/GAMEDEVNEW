@@ -5864,8 +5864,15 @@ int LuaSetNpcActionScript(Lua_State* L)
 		return 0;
 	//
 	char* szScript = (char*)Lua_ValueToString(L, 2);
-	strcpy(Npc[nNpcIndex].ActionScript, szScript);
-	Npc[nNpcIndex].m_ActionScriptID = g_FileName2Id((char*)Lua_ValueToString(L, 2));
+	// JX2 port: script bang hoi goi \script\tong\npc\... nhung cay that nam
+	// o scriptjx2\tong_vn\npc\. Dung dung ham remap cua LuaIncludeFile - no
+	// CHI doi khi duong goc khong ton tai nen khong dung toi NPC JX1 co san.
+	char szNpcScript[MAX_PATH * 2];
+	strncpy(szNpcScript, szScript, sizeof(szNpcScript) - 1);
+	szNpcScript[sizeof(szNpcScript) - 1] = 0;
+	sJX2RemapScriptPath(szNpcScript);
+	strcpy(Npc[nNpcIndex].ActionScript, szNpcScript);
+	Npc[nNpcIndex].m_ActionScriptID = g_FileName2Id(szNpcScript);
 	//
 	if (Npc[nNpcIndex].m_Kind == kind_normal)
 	{
