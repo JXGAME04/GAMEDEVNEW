@@ -14,6 +14,7 @@
 #include "KProtocolProcess.h"
 #include "KNewProtocolProcess.h"
 #include "KTongJX2.h"	// JX2 port
+#include "KJx2League.h"	// DOT E cong thanh: GLOBAL mission timer
 #include "KPlayerSet.h"
 #include "KLadder.h"
 
@@ -1122,6 +1123,8 @@ int CoreServerShell::Breathe()
 			//}
 		}
 	}
+
+	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
 
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();

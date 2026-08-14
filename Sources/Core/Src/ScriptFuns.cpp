@@ -12156,6 +12156,38 @@ extern int LuaLadder_ClearLadder(Lua_State* L);
 extern int LuaLadder_GetLadderInfo(Lua_State* L);
 extern int LuaSetGlbValue(Lua_State* L);
 extern int LuaGetGlbValue(Lua_State* L);
+// ==== DOT E cong thanh JX2: League/GlbMission engine-side (KJx2League.cpp) ====
+extern int LuaLG_CreateLeagueObj(Lua_State* L);
+extern int LuaLG_FreeLeagueObj(Lua_State* L);
+extern int LuaLG_SetLeagueInfo(Lua_State* L);
+extern int LuaLG_AddMemberToObj(Lua_State* L);
+extern int LuaLG_ApplyAddLeague(Lua_State* L);
+extern int LuaLG_ApplyRemoveLeague(Lua_State* L);
+extern int LuaLG_GetLeagueObj(Lua_State* L);
+extern int LuaLG_GetLeagueObjByRole(Lua_State* L);
+extern int LuaLG_GetFirstLeague(Lua_State* L);
+extern int LuaLG_GetNextLeague(Lua_State* L);
+extern int LuaLG_GetLeagueInfo(Lua_State* L);
+extern int LuaLG_GetLeagueCreateTime(Lua_State* L);
+extern int LuaLG_GetMemberCount(Lua_State* L);
+extern int LuaLG_GetMemberInfo(Lua_State* L);
+extern int LuaLG_GetMemberObj(Lua_State* L);
+extern int LuaLG_GetMemberJoinTime(Lua_State* L);
+extern int LuaLG_GetLeagueTask(Lua_State* L);
+extern int LuaLG_ApplySetLeagueTask(Lua_State* L);
+extern int LuaLG_ApplyAppendLeagueTask(Lua_State* L);
+extern int LuaLG_GetMemberTask(Lua_State* L);
+extern int LuaLG_ApplySetMemberTask(Lua_State* L);
+extern int LuaLG_ApplyAppendMemberTask(Lua_State* L);
+extern int LuaLGM_CreateMemberObj(Lua_State* L);
+extern int LuaLGM_SetMemberInfo(Lua_State* L);
+extern int LuaLGM_ApplyAddMember(Lua_State* L);
+extern int LuaLGM_ApplyRemoveMember(Lua_State* L);
+extern int LuaLGM_FreeMemberObj(Lua_State* L);
+extern int LuaLG_ApplyDoScript(Lua_State* L);
+extern int LuaOpenGlbMission(Lua_State* L);
+extern int LuaStartGlbMSTimer(Lua_State* L);
+extern int LuaStopGlbMSTimer(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -12877,6 +12909,38 @@ TLua_Funcs GameScriptFuns[] =
 		{ "Ladder_GetLadderInfo",	LuaLadder_GetLadderInfo },
 		{ "SetGlbValue",	LuaSetGlbValue },
 		{ "GetGlbValue",	LuaGetGlbValue },
+		// ==== DOT E cong thanh JX2: League + GLOBAL mission timer (KJx2League) ====
+		{ "LG_CreateLeagueObj",	LuaLG_CreateLeagueObj },
+		{ "LG_FreeLeagueObj",	LuaLG_FreeLeagueObj },
+		{ "LG_SetLeagueInfo",	LuaLG_SetLeagueInfo },
+		{ "LG_AddMemberToObj",	LuaLG_AddMemberToObj },
+		{ "LG_ApplyAddLeague",	LuaLG_ApplyAddLeague },
+		{ "LG_ApplyRemoveLeague",	LuaLG_ApplyRemoveLeague },
+		{ "LG_GetLeagueObj",	LuaLG_GetLeagueObj },
+		{ "LG_GetLeagueObjByRole",	LuaLG_GetLeagueObjByRole },
+		{ "LG_GetFirstLeague",	LuaLG_GetFirstLeague },
+		{ "LG_GetNextLeague",	LuaLG_GetNextLeague },
+		{ "LG_GetLeagueInfo",	LuaLG_GetLeagueInfo },
+		{ "LG_GetLeagueCreateTime",	LuaLG_GetLeagueCreateTime },
+		{ "LG_GetMemberCount",	LuaLG_GetMemberCount },
+		{ "LG_GetMemberInfo",	LuaLG_GetMemberInfo },
+		{ "LG_GetMemberObj",	LuaLG_GetMemberObj },
+		{ "LG_GetMemberJoinTime",	LuaLG_GetMemberJoinTime },
+		{ "LG_GetLeagueTask",	LuaLG_GetLeagueTask },
+		{ "LG_ApplySetLeagueTask",	LuaLG_ApplySetLeagueTask },
+		{ "LG_ApplyAppendLeagueTask",	LuaLG_ApplyAppendLeagueTask },
+		{ "LG_GetMemberTask",	LuaLG_GetMemberTask },
+		{ "LG_ApplySetMemberTask",	LuaLG_ApplySetMemberTask },
+		{ "LG_ApplyAppendMemberTask",	LuaLG_ApplyAppendMemberTask },
+		{ "LGM_CreateMemberObj",	LuaLGM_CreateMemberObj },
+		{ "LGM_SetMemberInfo",	LuaLGM_SetMemberInfo },
+		{ "LGM_ApplyAddMember",	LuaLGM_ApplyAddMember },
+		{ "LGM_ApplyRemoveMember",	LuaLGM_ApplyRemoveMember },
+		{ "LGM_FreeMemberObj",	LuaLGM_FreeMemberObj },
+		{ "LG_ApplyDoScript",	LuaLG_ApplyDoScript },
+		{ "OpenGlbMission",	LuaOpenGlbMission },
+		{ "StartGlbMSTimer",	LuaStartGlbMSTimer },
+		{ "StopGlbMSTimer",	LuaStopGlbMSTimer },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

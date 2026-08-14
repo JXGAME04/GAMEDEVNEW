@@ -113,8 +113,10 @@ Bộ hàm BẮT BUỘC đủ 13 (thiếu 1 là chết cả ObjBuffer):
 
 ## 7. HÀM ENGINE THIẾU PHÁT HIỆN THÊM (fact-check + phản biện, phải có trong E2-E4)
 
-- `StartGlbMSTimer(nMissionId, nHour?)` / `StopGlbMSTimer` — timer cho GLOBAL mission
-  (g_GlobalMissionArray ta chỉ có Set/Get value) — citywar_global/mission.lua:6,14 cần.
+- `StartGlbMSTimer(nMissionID, nTimerID, nIntervalFrames)` — 3 THAM SỐ, timer LẶP VÔ HẠN
+  (18 frame = 1 giây; citywar dùng (8, 18, 5*60*18) = 5 phút; đáo hạn chạy OnTimer() của
+  script TimerTask.txt[nTimerID]) / `StopGlbMSTimer(nMissionID, nTimerID)` — 2 tham số;
+  kèm `OpenGlbMission(id)` (autoexec gốc :142 — gọi InitMission() của missions.txt[id]).
 - `SetGlbValue/GetGlbValue` (id 840-846 league_cityinfo dùng) — kho global value engine, chưa đăng ký.
 - `SetMissionV/SetMissionS` — JX1 chỉ có `SetMission` + `GetMissionV/GetMissionS` → alias.
 - `SetNpcDeathScript` (11 call site — trụ/cổng chết; THIẾU LÀ TRẬN KHÔNG PHÂN THẮNG BẠI),
