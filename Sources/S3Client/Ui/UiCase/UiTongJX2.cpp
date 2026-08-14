@@ -1685,6 +1685,20 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			m_nOrd[b + 1] = nKey;
 		}
 	}
+	// Buoc dong 14px nhu ban mau (Font 12, [MemberList] goc 25 dong/340px
+	// = 13.6px) - mac dinh cua RepositionRows la 24px nen thua rong han
+	// anh mau. De o day (sau RepositionRows) de chi ap cho trang co danh
+	// sach thanh vien, cac trang khac giu 24.
+	for (i = 0; i < TJX2_UI_ROWS; i++)
+	{
+		m_MList[i].SetPosition(341, 68 + i * 14);
+		m_MList[i].SetSize(225, 13);
+		m_BtnRowSel[i].SetPosition(341, 68 + i * 14);
+		m_BtnRowSel[i].SetSize(225, 14);
+		// dong khong co thanh vien thi khong nhan chuot (m_nOrd[i] o do
+		// la gia tri cu - bam vao se chon nham nguoi)
+		m_BtnRowSel[i].Enable(i < nCnt);
+	}
 	for (i = 0; i < nCnt && i + nOffset < TJX2_UI_ROWS; i++)
 	{
 		TONG_JX2_ONE_MEMBER* pM = &p->m_sMember[m_nOrd[i]];
@@ -1770,13 +1784,13 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			m_RowDim[i + nOffset].SetText("");
 		}
 	}
-	// panel XANH chi tiet nguoi dang chon (nhu ban Linux, hien o moi trang co danh sach)
+	// Panel chi tiet nguoi dang chon - dung nhu ban mau chu game gui:
+	// LOP PHU nen mo mau xanh NHIN XUYEN duoc, de len danh sach; thanh
+	// vien phia duoi KHONG bi day xuong, KHONG bi xoa. 6 dong noi dung
+	// theo dung anh mau; nen ve o PaintWindow (truoc chu).
 	m_nMDetRows = 0;
 	if (m_bMDet && m_nSel < (int)p->m_btCount)
 	{
-		// Ban goc: panel bung ra NGAY DUOI dong vua kich (khong phai o vi tri
-		// co dinh). m_nSel la chi so THANH VIEN, phai doi nguoc ra DONG hien
-		// thi qua m_nOrd (cung bang dung o vong ve ben tren).
 		int nRow = 0;
 		{
 			int q;
@@ -1787,64 +1801,75 @@ void KUiTongJX2::RenderMembers(int nOffset)
 					break;
 				}
 		}
-		// 5 dong chi tiet nam ngay duoi dong do; neu cham day panel thi day
-		// len tren de khong tran ra ngoai khung danh sach (14 dong)
+		// 6 dong ngay duoi ten; nCnt <= 10 va 10 + 6 = 16 = TJX2_UI_ROWS
+		// nen khong bao gio tran khoi khung
 		int nFirst = nRow + 1;
-		// Chi day panel len khi 5 dong that su tran khoi khung; va KHONG
-		// BAO GIO de no de len chinh dong vua kich (nFirst > nRow).
-		if (nFirst + 5 > TJX2_UI_ROWS)
-			nFirst = TJX2_UI_ROWS - 5;
-		if (nFirst <= nRow)
-			nFirst = nRow + 1;
-		if (nFirst < 1)
-			nFirst = 1;
-		if (nFirst > TJX2_UI_ROWS - 1)
-			nFirst = TJX2_UI_ROWS - 1;
-		int nDetRows = TJX2_UI_ROWS - nFirst;
-		if (nDetRows > 5)
-			nDetRows = 5;
-		for (int nCl = nFirst; nCl < nFirst + nDetRows; nCl++)
-		{
-			m_MList[nCl].SetText("");
-			m_RowDim[nCl].SetText("");
-		}
-		{
-			// dat 5 o chu vao dung cho + ghi lai de PaintWindow ve nen
-			int k;
-			for (k = 0; k < 5; k++)
-				m_MDet[k].SetPosition(341, 68 + (nFirst + (k < nDetRows ? k : nDetRows - 1)) * 24);
-			m_nMDetTop = 68 + nFirst * 24;
-			m_nMDetRows = nDetRows;
-		}
 		TONG_JX2_ONE_MEMBER* pSel = &p->m_sMember[m_nSel];
-		char szT[64];
-		// Panel = DUNG 5 truong cua ban goc, chuoi nguyen van khoi
-		// stringtable_client.txt:475-479 (G_STR_NAME / G_STR_TITLE /
-		// G_STR_CURRENT_LEVEL / G_STR_CURRENT_OFFER / G_STR_JION_TIME).
-		// "Danh hieu"/"danh hieu" la cach ban dia hoa goc dich 2 nhan
-		// khac nhau (zh: Ho ten / Xung hao) - giu nguyen van.
-		sprintf(szT, "Danh hi\326u  %s", pSel->m_szName);
-		m_MDet[0].SetText(szT);
-		sprintf(szT, "danh hi\326u  %s",
-			pSel->m_btFigure < 5 ? s_szFigure[pSel->m_btFigure] : "?");
-		m_MDet[1].SetText(szT);
-		sprintf(szT, "\247\274ng c\312p hi\326n t\271i  %d", (int)pSel->m_btLevel);
-		m_MDet[2].SetText(szT);
-		sprintf(szT, "\247i\323m c\350ng hi\325n hi\326n t\271i  %u", pSel->m_dwOffer);
-		m_MDet[3].SetText(szT);
-		struct tm* pTm;
-		time_t nT = (time_t)pSel->m_dwJoinTime;
-		if (nT)
+		char szT[96];
+		int k;
+		for (k = 0; k < 6; k++)
 		{
-			pTm = localtime(&nT);
-			sprintf(szT, "Th\352i gian nh\313p bang  %02d-%02d-%04d %02d:%02d",
-				pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
-				pTm->tm_hour, pTm->tm_min);
+			m_MDet[k].SetPosition(341, 68 + (nFirst + k) * 14);
+			m_MDet[k].SetSize(225, 13);
 		}
-		else
-			strcpy(szT, "Th\352i gian nh\313p bang  -");
-		m_MDet[4].SetText(szT);
-		m_MDet[5].SetText("");
+		m_nMDetTop = 68 + nFirst * 14;
+		m_nMDetRows = 6;
+		// mau tung dong nhu anh mau: 1 vang / 2-3 cam / 4-6 xanh ngoc
+		m_MDet[0].SetTextColor(0xFF000000 | (255 << 16) | (253 << 8) | 122);
+		m_MDet[1].SetTextColor(0xFF000000 | (218 << 16) | (139 << 8) | 77);
+		m_MDet[2].SetTextColor(0xFF000000 | (218 << 16) | (139 << 8) | 77);
+		m_MDet[3].SetTextColor(0xFF000000 | (0 << 16) | (220 << 8) | 170);
+		m_MDet[4].SetTextColor(0xFF000000 | (0 << 16) | (220 << 8) | 170);
+		m_MDet[5].SetTextColor(0xFF000000 | (0 << 16) | (220 << 8) | 170);
+		// dong 1: Danh hieu <chuc vu>
+		sprintf(szT, "Danh hi\326u  %s",
+			pSel->m_btFigure < 5 ? s_szFigure[pSel->m_btFigure] : "?");
+		m_MDet[0].SetText(szT);
+		// dong 2: Ngay gia nhap dd-mm-yyyy hh:mm
+		{
+			time_t nT = (time_t)pSel->m_dwJoinTime;
+			if (nT)
+			{
+				struct tm* pTm = localtime(&nT);
+				sprintf(szT, "Ng\265y gia nh\313p  %02d-%02d-%04d %02d:%02d",
+					pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
+					pTm->tm_hour, pTm->tm_min);
+			}
+			else
+				strcpy(szT, "Ng\265y gia nh\313p  -");
+			m_MDet[1].SetText(szT);
+		}
+		// dong 3: Hoat dong gan day
+		{
+			time_t nT = (time_t)pSel->m_dwLastActive;
+			if (nT)
+			{
+				struct tm* pTm = localtime(&nT);
+				sprintf(szT, "Ho\271t \256\351ng g\307n \256\251y  %02d-%02d-%04d %02d:%02d",
+					pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
+					pTm->tm_hour, pTm->tm_min);
+			}
+			else
+				strcpy(szT, "Ho\271t \256\351ng g\307n \256\251y  -");
+			m_MDet[2].SetText(szT);
+		}
+		// dong 4: Cong hien tuan
+		sprintf(szT, "C\350ng hi\325n tu\307n  %u", pSel->m_dwWeekOffer);
+		m_MDet[3].SetText(szT);
+		// dong 5: Diem cong hien trung binh hang ngay = tich luy / so ngay
+		{
+			long nDays = 1;
+			if (pSel->m_dwJoinTime)
+				nDays = (long)((time(NULL) - (time_t)pSel->m_dwJoinTime) / 86400) + 1;
+			if (nDays < 1)
+				nDays = 1;
+			sprintf(szT, "\247i\323m c\350ng hi\325n trung b\327nh h\265ng ng\265y  %.2f",
+				(double)pSel->m_dwOffer / (double)nDays);
+			m_MDet[4].SetText(szT);
+		}
+		// dong 6: Hoan thanh muc tieu tuan
+		sprintf(szT, "Ho\265n th\265nh m\364c ti\252u tu\307n:  %u", pSel->m_dwWeekGoal);
+		m_MDet[5].SetText(szT);
 		m_MDet[6].SetText("");
 	}
 	// so trang dang xem (o [Fun_TitlePage] canh o nhap "Chuyen den")
@@ -1888,8 +1913,9 @@ void KUiTongJX2::PaintWindow()
 	sBg.oPosition.nX = m_nAbsoluteLeft + 341;
 	sBg.oPosition.nY = m_nAbsoluteTop + m_nMDetTop;
 	sBg.oEndPos.nX = sBg.oPosition.nX + 225;
-	sBg.oEndPos.nY = sBg.oPosition.nY + m_nMDetRows * 24;
-	sBg.Color.Color_dw = ((110 << 16) | (110 << 8) | 90) |
+	sBg.oEndPos.nY = sBg.oPosition.nY + m_nMDetRows * 14;
+	// nen MO MAU XANH nhin xuyen duoc (loi xac nhan cua chu game)
+	sBg.Color.Color_dw = ((20 << 16) | (90 << 8) | 70) |
 		(((unsigned int)(255 - 100) << 21) & 0xff000000);
 	g_pRepresentShell->DrawPrimitives(1, &sBg, RU_T_SHADOW, true);
 }
