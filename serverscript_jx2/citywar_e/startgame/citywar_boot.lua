@@ -13,6 +13,6 @@ function CityWar_Boot()
 	-- NPC bao danh cong thanh (infocenter.lua goc): goc JX2 dat o cac Tan Thu
 	-- Thon bang npc-data map cua HO - cay ta phai tu spawn (canh 2 NPC Ho Tro,
 	-- Ba Lang Huyen). Khong co NPC nay la KHONG CO CUA nop Khieu chien lenh.
-	local nIC = AddNpcEx1({1596},1,nil,53,1625*32,3170*32,"","\\script\\missions\\citywar_global\\infocenter.lua","Sø Gi¶ C«ng Thµnh",6)
+	local nIC = AddNpcEx1({1596},1,nil,53,1625*32,3170*32,"","\\script\\missions\\citywar_global\\sugia_congthanh.lua","Sø Gi¶ C«ng Thµnh",6)
 	WriteLog("[citywar] boot: league 4/508/509 + GlbMission 8 OK, NPC infocenter="..nIC)
 end
