@@ -12272,6 +12272,8 @@ extern int LuaBT_ClearPlayerData(Lua_State* L);
 extern int LuaBT_LeaveBattle(Lua_State* L);
 extern int LuaJx2SetMissionString(Lua_State* L);
 extern int LuaJx2GetMissionString(Lua_State* L);
+extern int LuaCTC_JX2_SetTax(Lua_State* L);
+extern int LuaCTC_JX2_GetTax(Lua_State* L);
 // ==== DOT E cong thanh JX2 (E4): ha tang tran (KJx2WarInfra.cpp) ====
 extern int LuaSetNpcDeathScript(Lua_State* L);
 extern int LuaClearMapNpc(Lua_State* L);
@@ -13164,6 +13166,9 @@ TLua_Funcs GameScriptFuns[] =
 		{ "BT_LeaveBattle",	LuaBT_LeaveBattle },
 		// RevID2WXY(world, revid) -> (world, x, y) = dung ham "Rev2Pos" san co
 		{ "RevID2WXY",	LuaGetPlayerRevivalPos },
+		// ==== DOT E (E7): thue qua thoai NPC quan thanh (khong protocol moi) ====
+		{ "CTC_JX2_SetTax",	LuaCTC_JX2_SetTax },
+		{ "CTC_JX2_GetTax",	LuaCTC_JX2_GetTax },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

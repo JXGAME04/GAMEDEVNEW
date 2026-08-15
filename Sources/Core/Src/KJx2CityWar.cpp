@@ -53,6 +53,7 @@ struct KJx2City
 	int		nTax;
 	int		nPriceParam;			// goc: -1 -> hien thi 10
 	int		nOccupyDate;			// yyyymmdd luc doi chu
+	int		nTaxSetDate;			// yyyymmdd lan dat thue gan nhat (1 lan/ngay - E7)
 };
 
 static KJx2City	s_Cities[JX2CW_CITY_MAX];
@@ -187,6 +188,14 @@ static void sLoadMirror()
 				s_Cities[nId].nOccupyDate = nDate;
 			}
 		}
+		else if (szLine[0] == 'D')
+		{
+			// 'D id yyyymmdd' - ngay dat thue gan nhat (E7; dong rieng de
+			// giu tuong thich nguoc voi mirror cu 5 truong dong C)
+			int nId = 0, nDate = 0;
+			if (sscanf(szLine + 2, "%d %d", &nId, &nDate) == 2 && nId >= 1 && nId <= 7)
+				s_Cities[nId].nTaxSetDate = nDate;
+		}
 		else if (szLine[0] == 'O' || szLine[0] == 'M' || szLine[0] == 'H')
 		{
 			int nId = 0, nPos = 0;
@@ -214,6 +223,8 @@ static void sSaveMirror()
 	{
 		KJx2City* p = &s_Cities[i];
 		fprintf(f, "C %d %d %d %d %d\n", i, p->nState, p->nTax, p->nPriceParam, p->nOccupyDate);
+		if (p->nTaxSetDate)
+			fprintf(f, "D %d %d\n", i, p->nTaxSetDate);
 		if (p->szOwnerTong[0])
 			fprintf(f, "O %d %s\n", i, p->szOwnerTong);
 		if (p->szMaster[0])
@@ -772,6 +783,62 @@ static int sArenaCreditWrite(Lua_State* L, int nMode)	// 0 set / 1 add / 2 sub
 int LuaSetArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 0); }
 int LuaAddArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 1); }
 int LuaReduceArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 2); }
+
+//////////////////////////////////////////////////////////////////////
+// E7 (khong protocol moi): dat thue qua thoai NPC quan thanh.
+// (nCityID, nTax) -> 0 OK / 1 khong phai Thai Thu / 2 ngoai khung gio
+// (StartSetTaxTime..EndSetTaxTime, goc 22h-23h) / 3 hom nay da dat
+// (TAXALREADYSET1) / 4 tham so sai. Goc mo UI 0xA3 - client ta khong co;
+// gating + kinh te y het goc, UI = menu thoai (deviation ghi ban giao).
+//////////////////////////////////////////////////////////////////////
+int LuaCTC_JX2_SetTax(Lua_State* L)
+{
+	sEnsureStore();
+	int nRet = 4;
+	int nPlayerIndex = GetPlayerIndex(L);
+	int n = sArgCity(L, 1);
+	if (n && nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+	{
+		int nTax = (int)Lua_ValueToNumber(L, 2);
+		KJx2City* p = &s_Cities[n];
+		if (nTax < 0 || nTax > s_nSettings[2])
+			nRet = 4;
+		else if (!p->szMaster[0] ||
+			strcmp(p->szMaster, Player[nPlayerIndex].m_PlayerName) != 0)
+			nRet = 1;
+		else
+		{
+			time_t t = time(NULL);
+			struct tm* pTm = localtime(&t);
+			int nHr = pTm ? pTm->tm_hour : -1;
+			if (nHr < s_nSettings[5] || nHr >= s_nSettings[6])
+				nRet = 2;
+			else if (p->nTaxSetDate == sToday())
+				nRet = 3;
+			else
+			{
+				p->nTax = nTax;
+				p->nTaxSetDate = sToday();
+				sSaveMirror();
+				sApplyCityToSubWorld(n);
+				g_DebugLog((LPSTR)"KJx2CityWar: Thai Thu [%.60s] dat thue thanh %d = %d",
+					Player[nPlayerIndex].m_PlayerName, n, nTax);
+				nRet = 0;
+			}
+		}
+	}
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// (nCityID) -> nTax hien tai (cho thoai quan thanh hien so)
+int LuaCTC_JX2_GetTax(Lua_State* L)
+{
+	sEnsureStore();
+	int n = sArgCity(L, 1);
+	Lua_PushNumber(L, n ? s_Cities[n].nTax : 0);
+	return 1;
+}
 
 //////////////////////////////////////////////////////////////////////
 // Cho ScriptFuns (de-hardcode setter map 78) + E7

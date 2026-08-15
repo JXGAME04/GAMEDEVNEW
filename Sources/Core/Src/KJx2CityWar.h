@@ -61,6 +61,10 @@ int LuaSetArenaCredits(Lua_State* L);     // (n)
 int LuaAddArenaCredits(Lua_State* L);     // (n)
 int LuaReduceArenaCredits(Lua_State* L);  // (n)
 
+// E7 (khong protocol moi): thue qua thoai NPC quan thanh
+int LuaCTC_JX2_SetTax(Lua_State* L);      // (1..7, nTax) -> 0 OK/1 quyen/2 gio/3 da dat/4 sai
+int LuaCTC_JX2_GetTax(Lua_State* L);      // (1..7) -> thue hien tai
+
 // mot lan sau khi map nap xong: nap config + mirror roi ghi vao KSubWorld
 void KJx2CityWar_Breathe();
 
