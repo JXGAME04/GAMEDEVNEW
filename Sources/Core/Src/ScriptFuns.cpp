@@ -1971,10 +1971,27 @@ int LuaIncludeLib(Lua_State* L)
 		return 1;
 	}
 	const char* pszName = lua_tostring(L, 1);
-	for (int k = 0; k < 14; k++)
+	// FIX stack-overflow boot 14/08: goc JX2 IncludeLib = REQUIRE-ONCE moi state;
+	// ta dofile moi lan goi nen lib tu-goi (file.lua:1 = IncludeLib("FILESYS"),
+	// tong_setting.lua:1 y het) de quy VO HAN ngay khi co diem goi FILESYS dau
+	// tien (citywar head.lua E5). Cam co global __INCLIB_<MOD> TRUOC khi dofile
+	// de chan ca tu-de-quy lan nap lai. Dong thoi sua tran vong lap 14 -> 20
+	// (6 module moi SETTING/BATTLE/RELAYLADDER/TITLE/LEAGUE/PARTNER bi cam).
+	for (int k = 0; k < 20; k++)
 	{
 		if (strcmp(pszName, szMod[k]) != 0)
 			continue;
+		char szFlag[64];
+		sprintf(szFlag, "__INCLIB_%s", szMod[k]);
+		Lua_GetGlobal(L, szFlag);
+		if (!lua_isnil(L, Lua_GetTopIndex(L)))
+		{
+			// da nap trong state nay roi
+			Lua_PushNumber(L, 1);
+			return 1;
+		}
+		Lua_PushNumber(L, 1);
+		Lua_SetGlobal(L, szFlag);
 		char szPath[MAX_PATH * 2];
 		g_GetRootPath(szPath);
 		int nL = (int)strlen(szPath);
