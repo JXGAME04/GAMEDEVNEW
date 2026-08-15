@@ -1223,19 +1223,43 @@ void KScenePlaceC::ChangeProcessArea()
 void KScenePlaceC::PrerenderGround(bool bForce)
 {
 	EnterCriticalSection(&m_RegionListAdjustCritical);
+	int	nFarBudget = 1;	// far off-screen regions: at most one per paint frame
+	int	nDeferred = 0;
 	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
 		if (m_pInProcessAreaRegions[i] == NULL)
 			continue;
-		if (m_pInProcessAreaRegions[i]->PrerenderGround(bForce) && bForce == false)
+		if (bForce)
 		{
-			// amortize: one region per paint frame. A full region prerender costs
-			// 10-40ms and used to hitch the frame right after a region finished
-			// loading. Keep the flag on so the next frames pick up the rest.
-			m_bRenderGround = true;
-			break;
+			m_pInProcessAreaRegions[i]->PrerenderGround(true);
+			continue;
 		}
+		POINT	RgIdx = m_pInProcessAreaRegions[i]->GetRegionIdx();
+		int	nDx = RgIdx.x - m_FocusRegion.x;
+		int	nDy = RgIdx.y - m_FocusRegion.y;
+		if (nDx < 0)
+			nDx = -nDx;
+		if (nDy < 0)
+			nDy = -nDy;
+		if (nDx <= 1 && nDy <= 1)
+		{
+			// on/near the screen (3x3 around the focus covers the whole view):
+			// always prerender right away, otherwise a map change shows stale
+			// ground under the player for a few frames
+			m_pInProcessAreaRegions[i]->PrerenderGround(false);
+		}
+		else if (nFarBudget > 0)
+		{
+			// amortize the far ones: a full region prerender costs 10-40ms and
+			// used to hitch the frame right after a region finished loading
+			if (m_pInProcessAreaRegions[i]->PrerenderGround(false))
+				nFarBudget--;
+		}
+		else
+			nDeferred++;
 	}
+	if (nDeferred && bForce == false)
+		m_bRenderGround = true;	// finish the remaining far regions on the next frames
 	LeaveCriticalSection(&m_RegionListAdjustCritical);
 }
 

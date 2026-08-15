@@ -250,6 +250,10 @@ class KScenePlaceRegionC
 
 	void AddGrundCoverObj(KSPRCoverGroundObj* pObj);
 
+  public:
+	// region grid coordinates (read-only accessor for the scene place)
+	POINT GetRegionIdx() const { return m_RegionIndex; }
+
   private:
 
 	unsigned int	m_Flag;
