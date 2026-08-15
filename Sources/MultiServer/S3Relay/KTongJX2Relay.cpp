@@ -95,7 +95,21 @@ BOOL CTongControl::JX2_AddField(WORD wKey, int nDelta, BOOL bUnsigned)
 	DWORD dwCur = JX2_GetField(wKey);
 	DWORD dwNew;
 	if (bUnsigned)
-		dwNew = dwCur + (DWORD)nDelta;
+	{
+		// FIX 14/08: nhanh khong dau TRUOC DAY khong kep am -> tru qua so du
+		// wrap thanh ~4,29 ty. Khong phai loi ly thuyet: script goc goi so am
+		// cho chinh 3 field nay moi ngay (scriptjx2\tong_vn\tong.lua:152 quy
+		// kien thiet, :274 va :380 quy chien bi, :517 chi phi lap tac phuong)
+		// nen bang nao co quy nho hon phi duy tri se bong thanh 4,29 ty.
+		// Van giu duoc pham vi khong dau khi CONG (den 4 ty), chi kep khi TRU.
+		if (nDelta < 0)
+		{
+			DWORD dwSub = (DWORD)(-nDelta);
+			dwNew = (dwCur > dwSub) ? (dwCur - dwSub) : 0;
+		}
+		else
+			dwNew = dwCur + (DWORD)nDelta;
+	}
 	else
 	{
 		// kep am: tru qua so du -> 0, khong de wrap thanh DWORD khong lo

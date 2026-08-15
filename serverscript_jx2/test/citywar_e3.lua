@@ -23,7 +23,7 @@ function CTCTestMenu()
 		"EP PHA 20h (khai chien)/E6Force20",
 		"EP PHA 0h (don ngay)/E6Force0",
 		"Sang TRANG 2/CTCTestMenu2",
-		"Thoi/OnCancel");
+		"Thoi/no");
 end
 
 function CTCTestMenu2()
@@ -38,7 +38,7 @@ function CTCTestMenu2()
 		"Goto 223 (cong vao phe CONG)/E5Goto223",
 		"Goto Su Gia Cong Thanh (Ba Lang Huyen)/E5GotoSuGia",
 		"Ve TRANG 1/CTCTestMenu",
-		"Thoi/OnCancel");
+		"Thoi/no");
 end
 
 -- Hop thoai client chi ve duoc ~6 DONG (goi tin 512B thi du) - dong dai bi
@@ -136,6 +136,7 @@ function E6Force18()
 	end
 	g_CTC6_D18 = nil;
 	CTC_JX2_Tick(TB_CTC6[n][1], 18, 0);
+	g_CTC6_D18 = nil;	-- dat lai de KHONG nuot pha that hom nay
 	E3ShowAll();
 end
 
@@ -147,6 +148,7 @@ function E6Force19()
 	end
 	g_CTC6_D19 = nil;
 	CTC_JX2_Tick(TB_CTC6[n][1], 19, 0);
+	g_CTC6_D19 = nil;	-- dat lai de KHONG nuot pha that hom nay
 	E3ShowAll();
 end
 
@@ -158,19 +160,21 @@ function E6Force20()
 	end
 	g_CTC6_D20 = nil;
 	CTC_JX2_Tick(TB_CTC6[n][2], 20, 0);
+	g_CTC6_D20 = nil;	-- dat lai de KHONG nuot pha that hom nay
 	E3ShowAll();
 end
 
 function E6Force0()
 	g_CTC6_D0 = nil;
 	CTC_JX2_Tick(0, 0, 0);
+	g_CTC6_D0 = nil;	-- dat lai de KHONG nuot pha that hom nay
 	E3ShowAll();
 end
 
 -- ==== trang 2 ====
 function E5GiveLenh()
 	for i = 1, 10 do
-		AddItem(6, 1, 1508, 1, 1, 1);
+		AddItem(6, 1, 1508, 1, 0, 0, 0);
 	end
 	Say("Da phat 10 Khieu chien lenh (6,1,1508). Mang den NPC Su Gia Cong Thanh (Ba Lang Huyen) de nop.", 1, "Tro ve/CTCTestMenu2");
 end

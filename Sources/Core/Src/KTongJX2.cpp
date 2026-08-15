@@ -404,7 +404,20 @@ static void sSendFieldCmd(DWORD dwTongID, WORD wKey, DWORD dwValue, BYTE btOp, D
 			if (btOp == defTONG_JX2_OP_SET)
 				pOpt->mapField[wKey] = dwValue;
 			else if (btOp == defTONG_JX2_OP_ADDU)
-				pOpt->mapField[wKey] = dwCur + dwValue;
+			{
+				// FIX 14/08: ban sao lac quan phai kep am Y HET relay
+				// (KTongJX2Relay.cpp:97). Neu khong, client hien ~4,29 ty trong
+				// khi relay da kep ve 0 -> hai con so lech nhau ca ngay.
+				// dwValue la (DWORD)nDelta nen doc lai dau bang (int).
+				int nSub = (int)dwValue;
+				if (nSub < 0)
+				{
+					DWORD dwSub = (DWORD)(-nSub);
+					pOpt->mapField[wKey] = (dwCur > dwSub) ? (dwCur - dwSub) : 0;
+				}
+				else
+					pOpt->mapField[wKey] = dwCur + dwValue;
+			}
 			else
 			{
 				int nNew = (int)dwCur + (int)dwValue;

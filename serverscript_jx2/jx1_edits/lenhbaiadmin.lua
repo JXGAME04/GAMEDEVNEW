@@ -29,8 +29,8 @@ Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
 -- Include("script\\global\\trangbixanh.lua")
 -- Include("script\\global\\trangbihoangkim.lua")
  -- Include("\\script\\startgame.lua")
-Include("script\\header\\testgame.lua")
-Include("\\script\\test\\citywar_e3.lua")	-- DOT E: bo test cong thanh (CTCTestMenu)
+Include("\\script\\header\\testgame.lua")
+Include("\\script\\test\\bangthanh_f.lua")	-- BO TEST bang hoi + cong thanh (TX_Root)
 
 ADMIN_SUPPORT_TEXT = "Chøc n¨ng hç trî qu¶n trÞ viªn"
 PLAYER_INFOMATION = "<sex> - Tªn: <color=pink>%s<color>.\n- Täa ®é: <color=gold>%s (%d/%d) (%d/%d)<color>.\n- PIndex: <color=green>%d<color>"
@@ -88,7 +88,7 @@ function chucnangadmin(itemIdx)
 		"Qu¶n lý m¸y chñ/system",
 		"Chøc n¨ng chÝnh/manager",
 		"Reload File /reloadfileEvent",
-		"Test cong thanh dot E/CTCTestMenu",
+		"Test bang hoi va cong thanh/TX_Root",
 		"NhËn trang bÞ Xanh/xanhtest",
 		--"LayBinhSiHieuPhu/LayBinhSiHieuPhu",
 		--"Demo Set Npc Time Idle/DemoSetNpcTimeIdle",
