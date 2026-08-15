@@ -10,7 +10,7 @@ Include("\\script\\tong\\tong_header.lua")
 Include("\\script\\tong\\workshop\\workshop_setting.lua")
 Include("\\script\\tong\\log.lua")
 if MODEL_RELAY == 1 then
-	Include("\\script\\gb_taskfuncs.lua")
+	Include("\\script\\lib\\gb_taskfuncs.lua")
 else
 	Include("\\script\\tong\\map\\map_management.lua")
 end

@@ -12,7 +12,11 @@ TASK_LP_ZONGGUANLEVEL = 1756;	--¼ÇÂ¼Ğ´¼öÊé×Ü¹ÜĞèÒªµÄ¼¶±ğ¡£
 TASK_LP_TIMESLIMIT = 2566--Ã¿ÌìÍê³É100´ÎÉÏÏŞ£ºbyte1£º´ÎÊı£»byte2£ºÈÕÆÚ£»byte3£ºÔÂ·İ
 --§iÒu chØnh nhiÖm vô r÷a pk - Modified by DinhHQ - 20110810
 --DAILY_MAX_TIMES = 2  -- ¸ü¸ÄÃ¿ÌìÍê³ÉÈÎÎñµÄÉÏÏŞÎª2´Î   by wangjingjun IB shop µ÷Õû
-DAILY_MAX_TIMES = 100
+-- FIX 14/08: tra ve GIA TRI GOC = 2 (dong comment ngay tren la ban goc;
+-- 100 la ban 'IB shop'). Voi 100 luot/ngay, ws_tianyi:283 AddOwnExp
+-- 300k-600k moi luot = VOI EXP ~60 trieu/ngay/nhan vat ngay sau khi
+-- chuoi lenh bai song lai (truoc day chuoi nay chet vi loi IL).
+DAILY_MAX_TIMES = 2
 PER_ASSIGNMENT_PK = 1 -- Ã¿¸öÈÎÎñ¼õÉÙpkÖµ1µã by wangjingjun IB shop µ÷Õû
 
 TASK_LP_IDX = {1747, 1748, 1749, 1750, 1751, 1752, 1753, 1754, 1755};--¼ÇÂ¼Ğ´¼öÊé×Ü¹ÜµÄ°ï»á¡£

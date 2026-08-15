@@ -1935,7 +1935,11 @@ int LuaIncludeFile(Lua_State* L)
 		}
 		strlwr(lszCurrentDirectory + nLen);
 		sJX2RemapScriptPath(lszCurrentDirectory);	// JX2 port
-		lua_dofile(L, lszCurrentDirectory);
+		// FIX 14/08 (A3): Include file KHONG TON TAI truoc day im lang tuyet
+		// doi (lua_dofile tra LUA_ERRFILE, khong nem loi, khong ghi log) ->
+		// khong the dung log de ket luan cay script sach.
+		if (lua_dofile(L, lszCurrentDirectory) != 0)
+			g_DebugLog((LPSTR)"[script] Include HONG: %.200s", lszCurrentDirectory);
 		return 0;
 	}
 	else
@@ -1999,10 +2003,20 @@ int LuaIncludeLib(Lua_State* L)
 			szPath[nL - 1] = 0;
 		strcat(szPath, "\\");
 		strcat(szPath, szFile[k]);
-		lua_dofile(L, szPath);
+		// A5 (14/08): nap HONG thi GO co - khong thi module bi cam VINH VIEN
+		// trong state do (co da cam TRUOC dofile de chan tu-de-quy).
+		if (lua_dofile(L, szPath) != 0)
+		{
+			Lua_PushNil(L);
+			Lua_SetGlobal(L, szFlag);
+			g_DebugLog((LPSTR)"[script] IncludeLib HONG: %.20s -> %.200s", szMod[k], szPath);
+		}
 		Lua_PushNumber(L, 1);
 		return 1;
 	}
+	// A4 (14/08): module KHONG co trong bang - truoc day bo qua IM LANG nen loi
+	// doi tu "no luc boot" sang "ham nil luc nguoi choi bam" (kho tim hon).
+	g_DebugLog((LPSTR)"[script] IncludeLib: module la [%.20s] - bo qua", pszName);
 	Lua_PushNumber(L, 0);
 	return 1;
 }
@@ -12377,6 +12391,12 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetByte",	LuaSetByte},
 	{"Include",LuaIncludeFile},
 	{"IncludeLib",LuaIncludeLib},		// JX2 port
+	// FIX 14/08: "IL" la ALIAS ngan cua IncludeLib trong script JX2 goc
+	// (tong_vn\tong_statistics.lua:4 IL("TONG"), workshop\ws_huodong.lua:1,
+	// global\titlefuncs.lua:1 IL("TITLE")...). Cay ta chua bao gio dinh nghia
+	// -> "attempt to call global 'IL'" lam cac file do nap DUT giua chung.
+	// Loi CO SAN tu dot C; truoc hom nay khong lo vi boot chet som hon o cho khac.
+	{"IL",LuaIncludeLib},
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
 	{"AddGlobalNews",LuaAddGlobalNews},

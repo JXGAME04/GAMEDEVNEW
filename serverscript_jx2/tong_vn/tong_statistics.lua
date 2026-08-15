@@ -11,7 +11,9 @@ function init_statics()
 	local nLevel;
 	local nDate = tonumber(GetLocalDate("%y%m%d"));
 	
---	if (nDate == GetGlbValue(GLB_UPDATEDATE)) then --如果已经更新过
+	-- FIX 14/08: bat lai chot 1 lan/ngay (goc). Bo comment thi moi cu bam
+	-- thoai 7 NPC tong quan / xa phu deu quet TOAN BO bang hoi.
+	if (nDate == GetGlbValue(GLB_UPDATEDATE)) then --如果已经更新过
 --		return
 --	end;
 	

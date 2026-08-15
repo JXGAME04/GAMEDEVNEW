@@ -141,6 +141,15 @@ function tong_tylp_turn()
 			break
 		end;
 	end;
+	-- FIX 14/08: vong for tren KHONG break khi nCount <= 0 (bang du cap
+	-- tac phuong nhung khong co trong T_STATICS -> get_workshop_count tra -1).
+	-- Truoc day roi thang xuong day: TRU cong hien 10/15/20 ma khong giao
+	-- nhiem vu, va ghi TASK_LP_COUNT = -1 lam "0 >= -1" o tongcolltask:37
+	-- thanh TRUE (nhan du thuong chi voi 1 thu).
+	if (nCount == nil or nCount <= 0) then
+		Say("Hi÷n ch≠a c„ Ph≠Íng tÊng qu∂n nµo phÔ hÓp Æ” giao nhi÷m vÙ, ng≠¨i quay lπi sau nh–!", 0);
+		return
+	end;
 	AddContribution(-1 * nConLimit);
 	Msg2Player("Sˆ dÙng <color=yellow>"..nConLimit.." Æi”m <color> cËng hi’n ÆÊi l y 1 l÷nh bµi nhi÷m vÙ c p <color=yellow>"..nLPLvl..".");
 	nt_SetTask(TASK_LP_ZONGGUANIDX, nWorkshopIdx);

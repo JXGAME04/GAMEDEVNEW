@@ -117,6 +117,12 @@ static BOOL LoadScriptToSortListA(char * szRelativeFile)
 		else
 		{
 			g_DebugLog("[脚本]加载脚本%s，出错，该脚本无法加载！！请检查！！", szRelativeFile);
+			// FIX 14/08: BO HAN slot nay. Load() tra FALSE ca khi than file
+			// loi luc chay (KLuaScript::Load -> ExecuteCode); truoc day
+			// nCurrentScriptNum KHONG tang nen file KE TIEP nap vao dung
+			// Lua state da chay do dang: bien toan cuc + head-guard cua file
+			// hong con nguyen -> Include cua file sau thanh no-op IM LANG.
+			nCurrentScriptNum++;
 			return FALSE;
 		}
 	}
