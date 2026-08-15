@@ -674,6 +674,8 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\x64\ServerRelease\CoreServer.dll</OutputFile>
       <ImportLibrary>.\x64\ServerRelease\CoreServer.lib</ImportLibrary>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\x64\ServerRelease\CoreServer.map</MapFileName>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;lualibdll.lib;Ws2_32.lib;Winmm.lib;Shlwapi.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../../lib/release/</AdditionalLibraryDirectories>
     </Link>

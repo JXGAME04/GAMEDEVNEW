@@ -467,8 +467,16 @@ BOOL KTabFile::GetValue(int nRow, int nColumn, LPSTR lpRString, DWORD dwSize)
 	}
 	else
 	{
-		memcpy(lpRString, Buffer, dwSize);
-		lpRString[dwSize] = 0;
+		// FIX 14/08 (crash 0xC0000409 luc boot): nhanh CAT chuoi ghi
+		// lpRString[dwSize] = TRAN DUNG 1 BYTE ra ngoai dem (o dai >= dwSize)
+		// -> de stack cookie -> __report_gsfailure. O thuc te gay crash: mo ta
+		// tuyet ky bang hoi (>=128 byte) doc bang dem szString[128] cua
+		// LuaTabFile_GetCell. Chua NUL trong dem nhu moi API chuoi khac.
+		if (dwSize > 0)
+		{
+			memcpy(lpRString, Buffer, dwSize - 1);
+			lpRString[dwSize - 1] = 0;
+		}
 	}
 
 	return TRUE;

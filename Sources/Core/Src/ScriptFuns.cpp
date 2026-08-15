@@ -2546,7 +2546,15 @@ int LuaTabFile_Load(Lua_State* L)
 int LuaTabFile_GetCell(Lua_State* L)
 {
 	int nParamNum = Lua_GetTopIndex(L);
-	char szString[128];
+	// FIX 14/08 (crash 0xC0000409 luc boot): dem 128 QUA NHO cho bang co o mo
+	// ta dai (mo ta tuyet ky bang hoi >= 128 byte), lai gap off-by-one cua
+	// KTabFile::GetValue (nhanh CAT ghi lpRString[dwSize] = TRAN 1 byte).
+	// => cap 2048 nhung chi bao voi engine 2047: byte thua nuot cu off-by-one,
+	// an toan KE CA khi Engine.lib chua build lai duoc (Engine.vcxproj hong
+	// san: thieu include ipc_shared.h). Ten hang/cot copy bang strncpy (chuoi
+	// Lua dai tuy y - strcpy vao [32] la lo tran thu hai trong chinh ham nay).
+	char szString[2048];
+	const DWORD dwCellMax = sizeof(szString) - 1;
 	KTabFile* pTabC = sGetTabFileByName(L, 1);
 	if (nParamNum >= 3 && pTabC->GetHeight())
 	{
@@ -2554,22 +2562,25 @@ int LuaTabFile_GetCell(Lua_State* L)
 		{
 			int nRow = (int)Lua_ValueToNumber(L, 2);
 			int nColumn = (int)Lua_ValueToNumber(L, 3);
-			pTabC->GetString(nRow, nColumn, "", szString, sizeof(szString));
+			pTabC->GetString(nRow, nColumn, "", szString, dwCellMax);
 		}
 		else if (Lua_IsNumber(L, 2) && Lua_IsString(L, 3))
 		{
 			int nRow = (int)Lua_ValueToNumber(L, 2);
-			char szColumn[32];
-			strcpy(szColumn, Lua_ValueToString(L, 3));
-			pTabC->GetString(nRow, szColumn, "", szString, sizeof(szString));
+			char szColumn[64];
+			strncpy(szColumn, Lua_ValueToString(L, 3), sizeof(szColumn) - 1);
+			szColumn[sizeof(szColumn) - 1] = 0;
+			pTabC->GetString(nRow, szColumn, "", szString, dwCellMax);
 		}
 		else if (Lua_IsString(L, 2) && Lua_IsString(L, 3))
 		{
-			char szRow[32];
-			char szColumn[32];
-			strcpy(szRow, Lua_ValueToString(L, 2));
-			strcpy(szColumn, Lua_ValueToString(L, 3));
-			pTabC->GetString(szRow, szColumn, "", szString, sizeof(szString));
+			char szRow[64];
+			char szColumn[64];
+			strncpy(szRow, Lua_ValueToString(L, 2), sizeof(szRow) - 1);
+			szRow[sizeof(szRow) - 1] = 0;
+			strncpy(szColumn, Lua_ValueToString(L, 3), sizeof(szColumn) - 1);
+			szColumn[sizeof(szColumn) - 1] = 0;
+			pTabC->GetString(szRow, szColumn, "", szString, dwCellMax);
 		}
 		else
 			return 0;
