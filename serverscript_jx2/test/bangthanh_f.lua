@@ -1028,15 +1028,27 @@ function TDT_Menu(a, b, c, d, e)
         "Tro ve/TX_Root2");
 end
 
+-- GetPlayerTitle tra NIL khi khong lay duoc nguoi choi (ScriptFuns.cpp:9504).
+-- Noi chuoi hoac so sanh voi nil la loi runtime -> luon di qua ham nay.
+function TDT_Jx1Cur()
+    local n = GetPlayerTitle();
+    if (n == nil) then
+        return 0;
+    end
+    return n;
+end
+
 function TDT_My(a, b, c, d, e)
     local tab = Title_GetTitleTab();
     if (tab == nil or getn(tab) == 0) then
         TX_Back("Chua so huu danh hieu nao.", "TDT_Menu");
         return
     end
-    local s = "Dang bat: "..Title_GetActiveTitle().."\n";
+    local s = "JX2 dang bat: "..Title_GetActiveTitle().."\n";
+    -- He JX1 moi la he CLIENT VE duoc chu tren dau. 0 = khong ve gi.
+    s = s.."JX1 tren dau: "..TDT_Jx1Cur().."\n";
     local i = 1;
-    while (i <= getn(tab) and i <= 4) do
+    while (i <= getn(tab) and i <= 3) do
         s = s..tab[i].." "..Title_GetTitleName(tab[i]).."\n";
         i = i + 1;
     end
@@ -1068,7 +1080,11 @@ function TDT_ViGo(n, b, c, d, e)
     end
     Title_AddTitle(152 + n, 0, 9999999);
     Title_ActiveTitle(152 + n);
-    TX_Back("Da cap va bat danh hieu "..(152 + n).."\n"..Title_GetTitleName(152 + n), "TDT_Menu");
+    SetTask(1122, 152 + n);
+    -- Bat ca he JX1 thi CLIENT moi ve duoc chu tren dau (KNpc.cpp:6078-6103).
+    -- Bang JX1 \settings\PlayerTitle.txt lech id 15 don vi so voi bang JX2.
+    SetPlayerTitle(167 + n, 567648000, 0);
+    TX_Back("Da cap va bat danh hieu.\nJX2 = "..(152 + n).." "..Title_GetTitleName(152 + n).."\nJX1 tren dau = "..TDT_Jx1Cur().." (cho "..(167 + n)..")\nNhin len dau nhan vat: phai thay chu vang.", "TDT_Menu");
 end
 
 function TDT_AddGo(nId, b, c, d, e)
@@ -1085,7 +1101,14 @@ function TDT_ActGo(nId, b, c, d, e)
         return
     end
     Title_ActiveTitle(nId);
-    TX_Back("Danh hieu dang bat: "..Title_GetActiveTitle(), "TDT_Menu");
+    SetTask(1122, nId);
+    -- Tat: chi go chu tren dau khi dang deo dung mot danh hieu Thai Thu
+    -- (168..174), de khong cuop mat danh hieu cua he khac.
+    local nCur = TDT_Jx1Cur();
+    if (nId == 0 and nCur >= 168 and nCur <= 174) then
+        RemovePlayerTitle();
+    end
+    TX_Back("JX2 dang bat: "..Title_GetActiveTitle().."\nJX1 tren dau: "..TDT_Jx1Cur(), "TDT_Menu");
 end
 
 function TDT_RmGo(nId, b, c, d, e)
@@ -1093,6 +1116,10 @@ function TDT_RmGo(nId, b, c, d, e)
         return
     end
     Title_RemoveTitle(nId);
+    local nCur = TDT_Jx1Cur();
+    if (nCur >= 168 and nCur <= 174) then
+        RemovePlayerTitle();
+    end
     TX_Back("Da go "..nId..". Bam Danh hieu cua TA de kiem.", "TDT_Menu");
 end
 

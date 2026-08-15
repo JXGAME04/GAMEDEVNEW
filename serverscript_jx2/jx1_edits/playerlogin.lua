@@ -10,6 +10,7 @@ Include("\\script\\log_game\\save_log.lua")
 Include("\\script\\tinhnang\\congthanhchien\\danhsach_bang.lua")
 Include("\\script\\player\\offline.lua")
 Include("\\script\\test\\event_rank.lua")
+Include("\\script\\global\\titlefuncs.lua")
 
 
 function main()
@@ -33,7 +34,7 @@ function main()
 		local itemIdx = AddItem(6,1,1271,0,0,0,0)
 		SetPlayerItemLock(itemIdx, -2) --kho∏ v‹nh vi‘n
 		end
-	if(GetAccount() == "hinodl") then 
+	if(GetAccount() == "thienho") then 
 		if GetItemCount(0,6,1,4814) < 1 then
 		local itemIdx = AddItem(6,1,4814,0,0,0,0)
 		SetPlayerItemLock(itemIdx, -2) --kho∏ v‹nh vi‘n
@@ -49,6 +50,9 @@ function main()
 	SetTask(TASK_NEWTHOREN7, 0) 
 	end
 LayExpUyThac()
+-- 14/08: bat lai danh hieu da chon o CA HAI he (JX2 de an buff,
+-- JX1 de client ve chu tren dau) - titlefuncs.lua:title_loginactive
+title_loginactive()
 LogDangNhap()
 
 
