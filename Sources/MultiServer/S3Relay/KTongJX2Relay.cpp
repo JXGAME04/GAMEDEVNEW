@@ -417,10 +417,14 @@ int CTongControl::JX2_CollectMembers(JX2MemberBrief* pArr, int nMax)
 		nCount++;
 	}
 	// bang chung - bo qua ai da liet ke o tren
+	if (m_psMember)
 	for (i = 0; i < m_nMemberPointSize; i++)
 	{
+		// 2A 15/08: khong duoc dung o TRONG dau tien - chinh viec thang chuc
+		// tao ra lo o giua mang (JX2_SetFigureByNameID xoa o cu roi AddMember
+		// vao o khac), nen 'break' lam danh sach thanh vien CUT tu do tro di.
 		if (m_psMember[i].m_dwNameID == 0)
-			break;
+			continue;
 		DWORD dwID = m_psMember[i].m_dwNameID;
 		BOOL bDup = FALSE;
 		if (dwID == m_dwMasterID)
@@ -1317,6 +1321,9 @@ BOOL CTongControl::JX2_KickByNameID(DWORD dwNameID)
 // - khong dung duoc voi bang chu (chuyen nhuong di duong rieng)
 // - dich 1 = truong lao (tran 7), 2 = doi truong (tran 56), 3 = bang chung
 // - JX2 4.5: ha khoi truong lao la XOA SACH danh sach quyen da giao
+// 2C 15/08: khai bao truoc - than ham nam duoi (sJX2_SayTong)
+static void sJX2_SayTong(CTongControl* pTong, const char* pszMsg);
+
 BOOL CTongControl::JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure)
 {
 	if (dwNameID == 0 || dwNameID == m_dwMasterID)
@@ -1386,7 +1393,11 @@ BOOL CTongControl::JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure)
 			}
 		}
 		if (nDest < 0)
-			return FALSE;	// du 7 truong lao
+		{
+			// 2C: nguyen van tong_mix.lua:646
+			sJX2_SayTong(this, "S\350 l\255\356ng tr\255\353ng l\267o \256\267 \256\271t gi\355i h\271n!");
+			return FALSE;
+		}
 	}
 	else if (nNewFigure == 2)
 	{
@@ -1399,7 +1410,11 @@ BOOL CTongControl::JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure)
 			}
 		}
 		if (nDest < 0)
-			return FALSE;	// du 56 doi truong
+		{
+			// 2C: nguyen van tong_mix.lua:653
+			sJX2_SayTong(this, "S\350 l\255\356ng \256\351i tr\255\353ng \256\267 \256\271t gi\355i h\271n!");
+			return FALSE;
+		}
 	}
 
 	// go khoi cho cu
@@ -1483,6 +1498,63 @@ BOOL CTongControl::JX2_SetFigureByNameID(DWORD dwNameID, int nNewFigure)
 	}
 
 	g_cTongDB.JX2_UpdateMemberClass(szName, nClass, nTitleIdx);
+
+	// 2C 15/08: bao THANH CONG - van goc relay stringtable_relay.txt:98-102
+	{
+		char szOk[160];
+		if (nClass == enumTONG_FIGURE_DIRECTOR)
+			sprintf(szOk, "%s \256\255\356c nh\313n ch\370c v\364 Tr\255\353ng l\267o!", szName);
+		else if (nClass == enumTONG_FIGURE_MANAGER)
+			sprintf(szOk, "%s \256\255\356c \256\266m nh\313n l\265 nh\343m tr\255\353ng", szName);
+		else
+			sprintf(szOk, "%s tr\353 v\322 l\265m bang ch\370ng", szName);
+		sJX2_SayTong(this, szOk);
+	}
+
+	// 2A 15/08: bao NGAY cho nguoi bi doi chuc vu - truoc day khong gui gi nen
+	// nhan/quyen JX1 cua ho giu gia tri cu toi khi dang nhap lai (chu game bao
+	// "doi xong phai out ra vao lai moi cap nhat"). Duong nay da chay that o
+	// KTongControl.cpp:653-690; GameServer nhan o KSOServer.cpp:1522 ->
+	// KPlayerTong::BeInstated -> SendSelfInfo.
+	// CHU Y: gui nClass (he JX1: MEMBER=0..MASTER=3) chu KHONG phai nNewFigure
+	// (he JX2 dem nguoc: 0=bang chu..3=bang chung). Gui nham = leo quyen.
+	if (szName[0])
+	{
+		CNetConnectDup conndup;
+		DWORD nameid = 0;
+		unsigned long param = 0;
+		if (g_TongServer.FindPlayerByRole(NULL, std::_tstring(szName), &conndup, NULL, &nameid, &param))
+		{
+			CNetConnectDup tongconndup = g_TongServer.FindTongConnectByIP(conndup.GetIP());
+			if (tongconndup.IsValid())
+			{
+				STONG_BE_INSTATED_SYNC sSync;
+				memset(&sSync, 0, sizeof(sSync));
+				sSync.ProtocolFamily = pf_tong;
+				sSync.ProtocolID = enumS2C_TONG_BE_INSTATED;
+				sSync.m_dwParam = param;
+				sSync.m_btFigure = (BYTE)nClass;
+				sSync.m_btPos = (BYTE)nTitleIdx;
+				strncpy(sSync.m_szName, szName, sizeof(sSync.m_szName) - 1);
+				// lay title y nhu GetLoginData (KTongControl.cpp:1876-1914)
+				switch (nClass)
+				{
+				case enumTONG_FIGURE_DIRECTOR:
+					GetDirectorTitle(sSync.m_szTitle, nTitleIdx);
+					break;
+				case enumTONG_FIGURE_MANAGER:
+					GetManagerTitle(sSync.m_szTitle, nTitleIdx);
+					break;
+				default:
+					GetMemberTitle(sSync.m_szTitle, nSex);
+					break;
+				}
+				tongconndup.SendPackage((const void*)&sSync, sizeof(sSync));
+			}
+			tongconndup.Clearup();
+			conndup.Clearup();
+		}
+	}
 	return TRUE;
 }
 
@@ -1508,15 +1580,37 @@ BOOL CTongControl::JX2_Upgrade()
 	sJX2_LoadLevelTable();
 	int nLevel = (int)JX2_GetField(13);
 	int nNext = nLevel + 1;
+	char szWhy[192];
+	// 2C 15/08: truoc day moi nhanh chi 'return FALSE' im lang, ma Core da tra 0
+	// tu truoc nen nguoi bam luon thay 'da thuc hien' = BAO THANH CONG GIA.
+	// Chuoi nguyen van UPGRADE_G_1 (scriptjx2\tong_vn\tong.lua:570-589).
 	if (nNext >= s_nJX2LevelCount)
+	{
+		sJX2_SayTong(this, "\247\274ng c\312p ki\325n thi\325t \256\267 \256\271t \256\325n c\312p cao nh\312t!");
 		return FALSE;
+	}
 	JX2LevelRow* pRow = &s_sJX2Level[nLevel];	// dieu kien ghi o dong cap HIEN TAI
 	if ((int)JX2_GetField(12) < pRow->nUpgradeFund)
+	{
+		sprintf(szWhy, "\247\274ng c\312p ki\325n thi\325t n\251ng l\252n c\312p ti\325p theo c\312n ng\251n s\270ch ki\325n thi\325t: %d v\271n (\256ang c\343 %d)",
+			pRow->nUpgradeFund, (int)JX2_GetField(12));
+		sJX2_SayTong(this, szWhy);
 		return FALSE;
+	}
 	if (sJX2_CountWorkshop(this, 0) < pRow->nUpWsNum)
+	{
+		sprintf(szWhy, "\247\323 n\251ng l\252n c\312p k\325 ti\325p c\312n ph\266i x\251y d\371ng %d T\270c Ph\255\352ng (\256ang c\343 %d)",
+			pRow->nUpWsNum, sJX2_CountWorkshop(this, 0));
+		sJX2_SayTong(this, szWhy);
 		return FALSE;
+	}
 	if (sJX2_CountWorkshop(this, pRow->nUpHiWsLv) < pRow->nUpHiWsNum)
+	{
+		sprintf(szWhy, "\247\274ng c\312p ki\325n thi\325t n\251ng l\252n c\312p ti\325p theo c\312n %d T\270c Ph\255\352ng \256\271t c\312p %d (\256ang c\343 %d)",
+			pRow->nUpHiWsNum, pRow->nUpHiWsLv, sJX2_CountWorkshop(this, pRow->nUpHiWsLv));
+		sJX2_SayTong(this, szWhy);
 		return FALSE;
+	}
 	JX2_AddField(12, -pRow->nUpgradeFund, FALSE);
 	JX2_SetField(13, (DWORD)nNext);
 	JX2_SetField(42, (DWORD)s_sJX2Level[nNext].nWeekBuildUpper);

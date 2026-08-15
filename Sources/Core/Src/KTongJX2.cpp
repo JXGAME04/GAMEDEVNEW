@@ -2620,16 +2620,20 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 		case 20:
 			break;	// handler da tu nhan tin rieng - khong in gi them
 		case 0:
+			// 2B 15/08: BO cau chung "Da thuc hien thao tac bang hoi." - do la
+			// chuoi nguoi port tu them, quet toan bo ban goc Linux (.lua + 3 bang
+			// chuoi) KHONG co cau tuong duong. Thanh cong thi ban goc hoac im
+			// lang hoac co cau RIENG cua tung thao tac.
 			if (pCmd->m_btOp == defTONG_JX2_COP_APPLY_JOIN)
-				pszMsg = "\247\267 g\366i \256\254n xin gia nh\313p, ch\352 bang h\351i duy\326t.";
-			else
-				pszMsg = "\247\267 th\371c hi\326n thao t\270c bang h\351i.";
+				// stringtable_core.txt:942 MSG_TONG_APPLY_ADD
+				pszMsg = "B\271n xin ph\320p gia nh\313p bang h\351i!";
 			break;
 		case 1:
 			pszMsg = "G\343i tin bang h\351i kh\253ng h\356p l\326.";
 			break;
 		case 7:
-			pszMsg = "\247\267 gia nh\313p bang h\351i!";
+			// stringtable_core.txt:947 MSG_TONG_ADD_SUCCESS
+			pszMsg = "B\271n gia nh\313p bang h\351i!";
 			break;
 		case 2:
 			pszMsg = "B\271n ch\255a v\265o bang h\351i.";
@@ -2639,13 +2643,41 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			pszMsg = "Kh\253ng c\343 quy\322n h\271n \256\323 th\371c hi\326n thao t\270c n\265y!";
 			break;
 		case 4:
-			pszMsg = "Kh\253ng t\327m th\312y m\364c ti\252u.";
+			// 2B: tach theo thao tac, nguyen van ban goc
+			if (pCmd->m_btOp == defTONG_JX2_COP_ADDRIGHT ||
+				pCmd->m_btOp == defTONG_JX2_COP_DELRIGHT)
+				// stringtable_core.txt:964 MSG_RIGHT_ASSIGN_NEED_DIRECTOR
+				pszMsg = "\247\350i ph\255\254ng kh\253ng ph\266i l\265 tr\255\353ng l\267o, kh\253ng th\323 ti\325p nh\313n quy\322n h\271n!";
+			else
+				// stringtable_core.txt:965 MSG_TONG_TARGET_NOTMEMBER
+				pszMsg = "\247\350i ph\255\254ng kh\253ng ph\266i l\265 th\265nh vi\252n bang h\351i!";
 			break;
 		case 5:
-			pszMsg = "Thao t\270c kh\253ng h\356p l\326 ho\306c m\364c ti\252u kh\253ng online.";
+			if (pCmd->m_btOp == defTONG_JX2_COP_SET_FIGURE)
+				// stringtable_core.txt:937 MSG_TONG_INSTATE_FAIL_ID2 (bo %s vi
+				// cho nay khong co san ten nguoi bi bo nhiem)
+				pszMsg = "\247\350i ph\255\254ng kh\253ng tr\371c tuy\325n, kh\253ng th\323 nhi\326m m\326nh";
+			else if (pCmd->m_btOp == defTONG_JX2_COP_GRANT)
+				// stringtable_core.txt:46 G_PLAYERTONG_17
+				pszMsg = "Ch\336 c\343 th\323 ph\270t ti\322n cho c\270c h\351i vi\252n tr\371c tuy\325n (online)";
+			else
+				pszMsg = "Thao t\270c kh\253ng h\356p l\326 ho\306c m\364c ti\252u kh\253ng online.";
 			break;
 		case 6:
-			pszMsg = "Kh\253ng \256\361 ti\322n ho\306c t\265i nguy\252n.";
+			// 2B: nguyen van tong_mix.lua ban goc, tach theo loai quy
+			if (pCmd->m_btOp == defTONG_JX2_COP_DONATE)
+				// tong_mix.lua:101
+				pszMsg = "Kh\253ng \256\361 ng\251n l\255\356ng!";
+			else if (pCmd->m_btOp == defTONG_JX2_COP_GRANT ||
+				pCmd->m_btOp == defTONG_JX2_COP_GRANT_GROUP)
+				// tong_mix.lua:164
+				pszMsg = "Ng\251n s\270ch bang h\351i kh\253ng \256\361";
+			else if (pCmd->m_btOp == defTONG_JX2_COP_UPGRADE)
+				// tong_mix.lua:197
+				pszMsg = "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361!";
+			else
+				// tong_mix.lua:354
+				pszMsg = "Ng\251n s\270ch c\363ng hi\325n kh\253ng \256\361!";
 			break;
 		case 9:
 			// nguyen van ban Linux (workshop_head.lua)
@@ -2892,7 +2924,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			if (!bMaster && !sJX2_HasRight(pMe, 2001))
 				return 3;
 			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_UPGRADE, 0, 0, dwParam);
-			return 0;
+			// 2C 15/08: relay tu bao ket qua (thanh cong hoac ly do thieu gi)
+			// tren kenh chat bang - vo boc KHONG duoc in them, neu khong se
+			// bao 'da thuc hien' gia ngay ca khi relay tu choi.
+			return 20;
 		}
 	case defTONG_JX2_COP_DEGRADE:
 		{
@@ -2927,7 +2962,8 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				return 5;
 			sSendTongOp(dwTongID, pCmd->m_dwTarget, defTONG_JX2_TOP_SET_FIGURE,
 				pCmd->m_nParam1, 0, dwParam);
-			return 0;
+			// 2C 15/08: relay tu bao (thanh cong / du 7 truong lao / du 56 doi truong)
+			return 20;
 		}
 	case defTONG_JX2_COP_SAVE_RECRUIT:
 		{
