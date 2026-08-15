@@ -1,0 +1,5 @@
+-- noop.lua - DOT E (E5): dich cua IncludeLib cho cac module ma ham da nam o C
+-- (SETTING / BATTLE / RELAYLADDER / TITLE / LEAGUE / PARTNER - xem KEHOACH 1.4).
+-- Goc JX2: IncludeLib nap module C cua engine; ta da dang ky LG_/BT_/Title_...
+-- lam ham C toan cuc nen file nay chi can ton tai de dofile khong loi.
+-- CAM tro LEAGUE vao jx2compat.lua - ban Lua se DE ham C (bay KEHOACH 1.4).
