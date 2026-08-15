@@ -5,15 +5,11 @@ Include([[\script\tong\workshop\tongcolltask.lua]]);
 
 function main()
 	local tabContent = {"Nh÷ng n¬i ®· ®i qua/WayPointFun", "Nh÷ng thµnh thÞ ®· ®i qua/want2station"};
-	if (GetMapType(SubWorld) == 1 and GetTask(TASK_LP_COUNT) ~= 0)then
-		local nTongID = GetMapParam(SubWorld, 0)
-		if (nTongID ~= 0)then
-			local _,b = GetTongName()
-			if (b ~= nTongID and TONG_GetTongMapBan(nTongID) == 1)then
-				tinsert(tabContent, "QuÝ bang ®· më cÊm ®Þa bang héi, phiÒn chuyÓn lêi ®Õn "..tab_Workshop[GetTask(TASK_LP_ZONGGUANIDX)].."Ph­êng tæng qu¶n gióp ta/chuanhua");
-			end
-		end
-	end
+-- 15/08: BO khoi kiem cam dia. GetMapType / GetMapParam KHONG TON TAI trong
+-- JX1 (grep toan bo Sources = 0 ket qua) nen NPC Xa phu chet ngay cau lenh
+-- dau tien, khong mo noi loi thoai - nhin nhu NPC cam.
+-- Khoi cu chi them 1 dong nhac 'quy bang da mo cam dia' (dong do co chu Viet
+-- nen so byte cao giam - CO CHU DICH). Luat cam dia von cung chua chay.
 
 	tinsert(tabContent, "§©u còng kh«ng muèn ®i!/OnCancel");
 	Say("<#>Xa phu: §¹i hiÖp muèn ®i ®©u?", getn(tabContent), tabContent)
