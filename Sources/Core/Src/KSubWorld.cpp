@@ -21,6 +21,7 @@
 #include "scene/KScenePlaceC.h"
 #include <queue>
 #include <algorithm>
+extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation drives the camera
 #endif
 #include "KSubWorld.h"
 
@@ -1714,7 +1715,12 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		}
 	}
 	
-	g_ScenePlace.SetFocusPosition(m_Region[nIdx].m_nRegionX, m_Region[nIdx].m_nRegionY, 0);
+	// While PaintFps interpolation drives the camera, a plain region change inside the
+	// same map must NOT touch the focus (it points at the region corner and would ping-pong
+	// with the interpolated focus, tearing the draw tree down 3x per border). Opening a
+	// new map still needs it: OpenPlace has just reset the whole scene.
+	if (bLoadNew || !g_bPaintInterpFocus)
+		g_ScenePlace.SetFocusPosition(m_Region[nIdx].m_nRegionX, m_Region[nIdx].m_nRegionY, 0);
 	m_ClientRegionIdx[0] = nIdx;
 
 	for (int i = 0; i < 8; i++)

@@ -2497,6 +2497,7 @@ static POINT	s_InterpFrom[MAX_NPC];
 static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
 static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
+BOOL	g_bPaintInterpFocus = FALSE;	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
 
 int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
 {
@@ -8294,6 +8295,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	// Shift the current tick position into "from", store the new tick position in "to".
 	// uParam = 1 when POSSHIFT will drive the drawing (PaintInterp on).
 	{
+		g_bPaintInterpFocus = (uParam != 0);
 		if (uParam == 0)
 			break;	// PaintInterp off: snapshot would never be consumed
 		int	nIdx = 0;
@@ -8360,17 +8362,25 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				continue;	// dung yen: tick da dat vi tri roi, khoi ton cong scene
 			int	nDrawX = s_InterpFrom[nIdx].x + (s_InterpTo[nIdx].x - s_InterpFrom[nIdx].x) * nAlpha / 1000;
 			int	nDrawY = s_InterpFrom[nIdx].y + (s_InterpTo[nIdx].y - s_InterpFrom[nIdx].y) * nAlpha / 1000;
-			BOOL bFocus = FALSE;
+			int	nFocusX0 = 0, nFocusY0 = 0, nFocusZ0 = 0;
+			if (bIsPlayer)
+				g_ScenePlace.GetFocusPosition(nFocusX0, nFocusY0, nFocusZ0);
+			Npc[nIdx].GetNpcRes()->SetPos(nIdx, nDrawX, nDrawY, Npc[nIdx].m_Height, bIsPlayer);
 			if (bIsPlayer)
 			{
-				// Only move the camera while the interpolated focus stays inside the scene
-				// region of the tick position. A region change tears down the draw tree
-				// (ClearPreprocess/Fell) and only Breathe() rebuilds it, so the crossing
-				// must keep happening at tick time - never at paint time.
-				bFocus = (nDrawX / KScenePlaceRegionC::RWPP_AREGION_WIDTH == s_InterpTo[nIdx].x / KScenePlaceRegionC::RWPP_AREGION_WIDTH &&
-					nDrawY / KScenePlaceRegionC::RWPP_AREGION_HEIGHT == s_InterpTo[nIdx].y / KScenePlaceRegionC::RWPP_AREGION_HEIGHT);
+				// Single writer: while interpolation is on, only POSSHIFT moves the camera
+				// (the logic tick and KSubWorld::LoadMap are muted through g_bPaintInterpFocus),
+				// so the focus follows the interpolated position with no backward snap.
+				// A region border crossing now happens at paint time and tears the draw tree
+				// down (ClearPreprocess/Fell), so rebuild it in the same frame. Measure the
+				// focus BEFORE and AFTER SetPos: every early-return inside SetFocusPosition
+				// (map drag mode, place not open, unchanged value) is then immune.
+				int	nFocusX1, nFocusY1, nFocusZ1;
+				g_ScenePlace.GetFocusPosition(nFocusX1, nFocusY1, nFocusZ1);
+				if (nFocusX0 / KScenePlaceRegionC::RWPP_AREGION_WIDTH != nFocusX1 / KScenePlaceRegionC::RWPP_AREGION_WIDTH ||
+					nFocusY0 / KScenePlaceRegionC::RWPP_AREGION_HEIGHT != nFocusY1 / KScenePlaceRegionC::RWPP_AREGION_HEIGHT)
+					g_ScenePlace.Breathe();	// focus really crossed a region border: rebuild the draw tree in the same frame
 			}
-			Npc[nIdx].GetNpcRes()->SetPos(nIdx, nDrawX, nDrawY, Npc[nIdx].m_Height, bFocus);
 		}
 	}
 	break;

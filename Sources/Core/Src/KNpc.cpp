@@ -49,6 +49,9 @@
 #endif
 #include <MapHandler.h>
 extern KLuaScript		*g_pNpcLevelScript;
+#ifndef _SERVER
+extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation drives the camera
+#endif
 
 #define	ATTACKACTION_EFFECT_PERCENT		60
 #define	MIN_DOMELEE_RANGE				20
@@ -685,7 +688,7 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	if (Player[CLIENT_PLAYER_INDEX].m_nIndex == m_Index)
 	{
 		SubWorld[0].Map2Mps(m_RegionIndex, m_MapX, m_MapY, m_OffX, m_OffY, &nMpsX, &nMpsY);
-		m_DataRes.SetPos(m_Index, nMpsX, nMpsY, m_Height, TRUE);
+		m_DataRes.SetPos(m_Index, nMpsX, nMpsY, m_Height, g_bPaintInterpFocus ? FALSE : TRUE);
 	}
 	else
 	{

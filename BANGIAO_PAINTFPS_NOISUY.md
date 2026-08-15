@@ -102,6 +102,16 @@ Nội suy thuần vẽ đạt cùng độ mượt, rủi ro bằng 0 với logic
 - Ô "LOOP/FPS" debug: FPS = nhịp vẽ thật, LOOP vẫn là fps logic (~18) — chỉ hiển thị.
 - Heap churn `KLightBase` trong `MoveObject` (LIGHT_PROP destroy/recreate) chạy dày hơn theo nhịp vẽ — chấp nhận ở 256 NPC trần client; muốn tối ưu thì sửa `KScenePlaceC::MoveObject` cập nhật tại chỗ (việc riêng).
 
+### Vá đợt 3+4 (15/08 chiều) — hết "giựt lùi 1 cái" khi chạy ~1 đoạn
+
+Người dùng test thực tế báo: *"mượt hơn trước nhưng di chuyển 1 đoạn thì bị giựt lùi 1 cái"* — chu kỳ đúng bằng biên region 512×1024. Nguyên nhân gốc: camera có **hai người ghi** — tick (`KNpc::Activate` bFocus=TRUE) đẩy focus tới `pos(N)`, và bất ngờ hơn: `KSubWorld::LoadMap:1717` ghi focus về **góc region đích** mỗi lần đổi region (LoadMap chạy cả khi cùng map, từ `NpcChangeRegion` trong `ServeMove`); POSSHIFT giữ camera chờ lerp qua biên rồi ghi giá trị lùi ~10px → giật lùi.
+
+Sửa **đơn-người-ghi** (`CoreShell.cpp`, `KNpc.cpp`, `KSubWorld.cpp`):
+- `g_bPaintInterpFocus` (gán từ uParam của BREATHE): khi nội suy bật, tick + `LoadMap` (chỉ nhánh cùng-map, `bLoadNew=false`) **không ghi camera nữa** — camera do duy nhất POSSHIFT điều khiển, bám lerp mượt tuyệt đối.
+- Vượt biên region giờ xảy ra tại paint → đo focus **trước/sau** `SetPos`, nếu region đổi thật thì gọi `g_ScenePlace.Breathe()` ngay trong khung đó (Fell→Preprocess trong cùng khung — không khung trắng). Đo *sau* nên miễn nhiễm mọi return-sớm của `SetFocusPosition` (kéo bản đồ Ctrl+rê, place chưa mở) — không thể Breathe lặp vô hạn.
+- Phản biện độc lập xác nhận: `m_bPreprocessEvent` được `ChangeProcessArea` set (42≥25) nên Breathe-tại-paint có Preprocess thật; không có đường treo 30s (`m_bLoading` chỉ chờ ~1 region từ đĩa — hành vi có sẵn của game); đổi map an toàn (`m_RegionIndex=-1` làm POSSHIFT bỏ qua player tới khi snapshot hợp lệ); Game.exe cũ + Core mới → cờ FALSE → nguyên hành vi cũ.
+- Đánh đổi còn lại (có sẵn của engine, không phải regression): mỗi lần qua biên vẫn có cú chờ nạp ~1 region từ đĩa như nguyên bản.
+
 ### Build cuối
 - `Sources\Core\ClientRelease\CoreClient.dll` + `Sources\S3Client\Release\Game.exe` — **Client Release|x86**, compile + link PASS (post-build copy vào `bin\` fail vì thư mục bị gitignore — không ảnh hưởng).
 - Repo trước đây **thiếu 10 cặp file nguồn UI** của S3Client (UiTeamManager2, UiTargetInfo, TrayMode, UiSkillsNew, UiGamble, UiMeridian, UiFlashMessage, SpringGame, GourdCrabFishTigerLogic, WndLine…) — đã chép từ cây gốc `E:\...\SOURCESUPDATE_KINHMACH_ONLTEST0608` vào repo để `Game.exe` build được từ D:. Cũng phải chép `Lib\debug64`, `Lib\release64`, `Lib\x64` (bị gitignore, checkout mới không có) từ cây gốc.
