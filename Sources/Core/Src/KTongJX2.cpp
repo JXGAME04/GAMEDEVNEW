@@ -2900,8 +2900,12 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 		}
 	case defTONG_JX2_COP_SET_FIGURE:
 		{
-			// JX2 4.3: quyen quan ly 1101 (hoac bang chu); khong doi duoc bang chu
-			if (!bMaster && !sJX2_HasRight(pMe, 1101))
+			// FIX 14/08: quyen dung la 1002 "Bo nhiem" (blueprint goc trang
+			// phan quyen ghi [BtnDepose] RightID=1002; client da dan nhan dung).
+			// Truoc day gate NHAM 1101 = LIEN MINH nen truong lao phai tich o
+			// "Lien minh" moi bo nhiem duoc. LUU Y VAN HANH: bang nao dang lam
+			// vay se mat quyen sau restart -> bang chu tich lai o "Bo nhiem".
+			if (!bMaster && !sJX2_HasRight(pMe, 1002))
 				return 3;
 			KTongJX2Member* pTarget = FindMember(pTong, pCmd->m_dwTarget);
 			if (!pTarget || pTarget->btFigure == 0)
@@ -3375,6 +3379,24 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// quyen lanh dia 2004 hoac bang chu
 			if (!bMaster && !sJX2_HasRight(pMe, 2004))
 				return 3;
+			// FIX 14/08 ("nut tao lanh dia chua hoat dong"): client gui
+			// COP_MAP_CREATE voi nParam1 = 0 (UiTongJX2.cpp SendOp(...,0,0,0)),
+			// truoc day chuyen thang len relay nen relay ghi field 45/46 = 0 =
+			// khong co lanh dia. Ban goc KHONG bam nut la xong: phai qua HOP
+			// THOAI chon khu vuc (MAP_CREAT_G_1 -> PublicMap/SelectMap/BrowseMap
+			// trong tong_vn\tong_mix.lua - da port san). Chi khi Lua chot lua
+			// chon no moi goi TONG_ApplyCreatMap/SetTongMap de day len relay.
+			// PHAI dung ExecuteScript2 (dat m_ActionScriptID) - neu dung khuon
+			// g_GetScript nhu COP_KICK thi dap an dang "/#PublicMap(...)" cua
+			// hop thoai KHONG dispatch duoc ve script.
+			if (pCmd->m_btOp == defTONG_JX2_COP_MAP_CREATE && pCmd->m_nParam1 == 0)
+			{
+				if (nPlayerIdx > 0 && Player[nPlayerIdx].m_nIndex > 0)
+					Player[nPlayerIdx].ExecuteScript2(
+						(char*)"\\scriptjx2\\tong_vn\\tong_mix.lua",
+						(char*)"MAP_CREAT_G_1", (int)dwTongID, 0);
+				return 20;	// 20 = im lang: hop thoai Lua tu noi chuyen voi nguoi bam
+			}
 			BYTE btOp = defTONG_JX2_TOP_SET_MAP;
 			if (pCmd->m_btOp == defTONG_JX2_COP_MAP_CREATE)
 				btOp = defTONG_JX2_TOP_CREATE_MAP;

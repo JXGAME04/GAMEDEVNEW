@@ -529,6 +529,29 @@ Say(nMainInfo, nSelCount, SelTab)
   Say("选择什么？", 2, "是/yes", "否/no");
   Say("选什么呀", 2, SelTab);
 */
+// FIX 14/08: noi dap an CO CHAN BIEN vao dem goi PLAYER_SCRIPTACTION_SYNC
+// (m_pContent[MAX_SCIRPTACTION_BUFFERNUM] nam tren STACK cua ham goi).
+// Ban cu dung sprintf(pContent, "%s|%s", pContent, pAnswer): vua khong chan
+// bien vua UB (nguon trung dich). Bang dau gia khieu chien lenh
+// (infocenter_head.lua) ~51 byte/bang => tu khoang 9 bang la vuot 512 va
+// SAP GameServer. pCur co the tro giua dem (nDataType 1 chua 4 byte id).
+static void sUiAppendAnswer(char* pBufStart, char* pCur, const char* pAdd)
+{
+	if (!pBufStart || !pCur || !pAdd)
+		return;
+	int nCap = MAX_SCIRPTACTION_BUFFERNUM - (int)(pCur - pBufStart);
+	if (nCap <= 1)
+		return;
+	int nLen = (int)strlen(pCur);
+	if (nLen + 1 >= nCap)
+		return;
+	pCur[nLen++] = '|';
+	pCur[nLen] = 0;
+	int nRoom = nCap - nLen - 1;
+	if (nRoom > 0)
+		strncat(pCur, pAdd, nRoom);
+}
+
 int LuaSelectUI(Lua_State* L)
 {
 	char* strMain = NULL;
@@ -597,7 +620,7 @@ int LuaSelectUI(Lua_State* L)
 	if (nDataType == 0)
 	{
 		if (strMain)
-			sprintf(UiInfo.m_pContent, "%s", strMain);
+			g_StrCpyLen(UiInfo.m_pContent, strMain, MAX_SCIRPTACTION_BUFFERNUM);
 		pContent = UiInfo.m_pContent;
 	}
 	else if (nDataType == 1)
@@ -640,12 +663,12 @@ int LuaSelectUI(Lua_State* L)
 		{
 			g_StrCpyLen(Player[nPlayerIndex].m_szTaskAnswerFun[i], pFunName + 1, sizeof(Player[nPlayerIndex].m_szTaskAnswerFun[0]));
 			*pFunName = 0;
-			sprintf(pContent, "%s|%s", pContent, pAnswer);
+			sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 		}
 		else
 		{
 			strcpy(Player[nPlayerIndex].m_szTaskAnswerFun[i], "main");
-			sprintf(pContent, "%s|%s", pContent, pAnswer);
+			sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 		}
 	}
 
@@ -741,7 +764,7 @@ int LuaSaySPR(Lua_State* L)//Say new
 	if (nDataType == 0)
 	{
 		if (strMain)
-			sprintf(UiInfo.m_pContent, "%s", strMain);
+			g_StrCpyLen(UiInfo.m_pContent, strMain, MAX_SCIRPTACTION_BUFFERNUM);
 		pContent = UiInfo.m_pContent;
 	}
 	else if (nDataType == 1)
@@ -784,12 +807,12 @@ int LuaSaySPR(Lua_State* L)//Say new
 		{
 			g_StrCpyLen(Player[nPlayerIndex].m_szTaskAnswerFun[i], pFunName + 1, sizeof(Player[nPlayerIndex].m_szTaskAnswerFun[0]));
 			*pFunName = 0;
-			sprintf(pContent, "%s|%s", pContent, pAnswer);
+			sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 		}
 		else
 		{
 			strcpy(Player[nPlayerIndex].m_szTaskAnswerFun[i], "main");
-			sprintf(pContent, "%s|%s", pContent, pAnswer);
+			sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 		}
 	}
 
@@ -913,7 +936,7 @@ int LuaSelectImage(Lua_State* L)
 	if (nDataType == 0)
 	{
 		if (strMain)
-			sprintf(UiInfo.m_pContent, "%s", strMain);
+			g_StrCpyLen(UiInfo.m_pContent, strMain, MAX_SCIRPTACTION_BUFFERNUM);
 		pContent = UiInfo.m_pContent;
 	}
 	else if (nDataType == 1)
@@ -979,12 +1002,12 @@ int LuaSelectImage(Lua_State* L)
 			{
 				g_StrCpyLen(Player[nPlayerIndex].m_szTaskAnswerFun[i], pFunName + 1, sizeof(Player[nPlayerIndex].m_szTaskAnswerFun[0]));
 				*pFunName = 0;
-				sprintf(pContent, "%s|%s", pContent, pAnswer);
+				sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 			}
 			else
 			{
 				strcpy(Player[nPlayerIndex].m_szTaskAnswerFun[i], "Main");
-				sprintf(pContent, "%s|%s", pContent, pAnswer);
+				sUiAppendAnswer(UiInfo.m_pContent, pContent, pAnswer);
 			}
 		}
 	}
@@ -1713,7 +1736,7 @@ int LuaAddNote(Lua_State* L)//AddNote(str/strid)
 	if (nDataType == 0)
 	{
 		if (strMain)
-			sprintf(UiInfo.m_pContent, "%s", strMain);
+			g_StrCpyLen(UiInfo.m_pContent, strMain, MAX_SCIRPTACTION_BUFFERNUM);
 		int nLen = strlen(strMain);
 		*(int*)(UiInfo.m_pContent + nLen) = nParam2;
 		UiInfo.m_nBufferLen = nLen + sizeof(int);
