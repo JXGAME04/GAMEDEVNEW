@@ -3,14 +3,29 @@
 > Test theo ĐÚNG THỨ TỰ dưới đây (mỗi bước phụ thuộc bước trước). Chuỗi commit: E1 `fcdb7f4` · E2 `bfe0817`/`f85a579` · E3 `3b5a92b` · E4 `60af727` · E5 `683cfaf` · E6 `948d7b4` · E7 `8f1cf7e`.
 > Công cụ chính: **NPC test** gắn script `\script\test\citywar_e3.lua` (14 nút: xem thành / appoint / kết trận / ép pha 18-19-20-0h / phát lệnh / xem điểm / test kho E2).
 
-## BƯỚC 0 — CHUẨN BỊ (bắt buộc đọc)
+## BƯỚC 0 — CHUẨN BỊ (cập nhật 14/08 tối — sau 5 hotfix)
 
-1. **Restart GameServer + S3Relay** như thường lệ. Binaries mới đã nằm sẵn `bin\server\Coreserver.dll` (relay + GameServer.exe + client Game.exe KHÔNG đổi — đợt E không đụng protocol).
-2. Client: chỉ cần `MapList.ini` mới (E1 đã chép cả PATCHFULL) — client cũ vào bình thường, chỉ cần file này để đi map 221-223.
-3. ⚠ **CHƯA thả `timerserver_CUTOVER.lua`** ở giai đoạn test tay. Chỉ thả khi muốn chạy LỊCH THẬT (mục E6-b). Mọi pha đều ép được bằng NPC test, không cần đồng hồ.
-4. Gắn NPC test: sửa 1 dòng NPC "Hỗ Trợ Test" trong `startgame.lua` (đổi đường script sang `\\script\\test\\citywar_e3.lua`) HOẶC thêm 1 dòng cạnh đó:
-   `AddNpcEx1({1596},1,nil,53,1619*32,3170*32,"","\\script\\test\\citywar_e3.lua","Test Cong Thanh",6)`
-5. Chuẩn bị 2 tài khoản + **2 bang** (mỗi bang có bang chủ online). Nhân vật test nên là THÀNH VIÊN BANG ≥5 NGÀY nếu muốn vào trận bằng đường "chính quy" (xem E4-trap); không thì dùng lệnh bài.
+1. **Restart GameServer + S3Relay.** Binary mới đã nằm sẵn `bin\server\Coreserver.dll` (bản 19:30).
+   Client **không đổi** (chỉ cần `MapList.ini` từ E1, PATCHFULL đã chép).
+2. **KHÔNG cần gắn NPC test nữa.** Toàn bộ bộ test nằm trong **LỆNH BÀI ADMIN**:
+   chuột phải Lệnh Bài Admin → mục **"Test cong thanh dot E"** → menu 2 trang.
+3. ⚠️ **CHƯA thả `timerserver_CUTOVER.lua`** khi còn test tay — mọi pha ép được bằng nút.
+4. Cần **2 bang** (mỗi bang có bang chủ). Người vào trận đường "chính quy" phải ở bang **≥5 ngày**;
+   không đủ thì dùng lệnh bài (mua ở NPC Sứ Giả) hoặc dùng nút Goto.
+5. Kiểm boot sạch: console có `[citywar] boot: league 4/508/509 + GlbMission 8 OK, NPC infocenter=<số>`;
+   **không còn** `attempt to call global 'IL'`; các dòng `[script] Include HONG: …` là **log mới có chủ đích**
+   (phơi ra Include hỏng vốn âm thầm) — chụp lại gửi tôi, không phải lỗi chặn.
+
+### Bảng nút trong Lệnh Bài Admin → "Test cong thanh dot E"
+
+| TRANG 1 — trận & pha | TRANG 2 — lệnh/kho/goto/title/thuế |
+|---|---|
+| Xem 7 thành (chủ / Thái Thú / war / signup) | Phát 10 Khiêu chiến lệnh (6-1-1508) |
+| Xem thành đang đứng | Xem điểm lệnh bang TA (league 508 + kho 538) |
+| AppointViceroy — bang TA lấy thành | Test kho C++ E2 (GlbValue/OB/Ladder/League) |
+| AppointChallenger — bang TA khiêu chiến | Xem thuế 7 thành |
+| Kết trận CÔNG thắng / THỦ thắng | Xem danh hiệu (Title) của TA |
+| Ép pha 18h / 19h / 20h / 0h | Goto 221 / 222 / 223 / Sứ Giả Công Thành |
 
 ## E1 — NỀN DỮ LIỆU + NGẮT HỆ CŨ (phiên trước, `fcdb7f4`)
 
@@ -105,3 +120,24 @@
 4. Điều kiện bang cấp ≥18 / ≥37 người: nếu bang test NHỎ vẫn báo danh được thì gate này thuộc phần gốc chưa cưỡng chế phía GS — báo lại để bổ sung.
 5. `SetPKFlag(0)` lúc rời trận tắt luôn chế độ PK tự bật của người chơi (THẤP-3).
 6. Nộp lệnh flow gốc kiểm GIỜ THẬT 18-19h (độc lập với cờ ép) — test nộp ngoài khung giờ bị chặn là ĐÚNG gốc.
+
+## E9 — TÍNH NĂNG BANG HỘI VỪA SỐNG LẠI (sau khi vá `IL`) — **BẮT BUỘC TEST**
+
+Chuỗi "lệnh bài nhiệm vụ" của tác phường **chưa từng chạy trên bất kỳ máy chủ nào** (kể cả bản gốc),
+nay mới sống. Đây là **tính năng mới**, không phải khôi phục.
+
+| # | Test | Kết quả đúng |
+|---|---|---|
+| 9.1 | NPC **Thiên Ý phòng** (tác phường) → "Ta muốn đổi nhiệm vụ" — với bang **có** trong bảng thống kê | Trừ đúng 10/15/20 cống hiến, giao nhiệm vụ kèm **số thư 1-9** |
+| 9.2 | Như trên nhưng bang **không** đủ điều kiện (chưa có bản đồ bang) | Báo "Hiện chưa có Phường tổng quản nào phù hợp…" — **KHÔNG trừ cống hiến** (trước khi vá: trừ mà không giao gì) |
+| 9.3 | Làm quá **2 lượt/ngày** | Bị chặn (trần gốc = 2; trước khi vá là 100 → vòi exp ~60 triệu/ngày) |
+| 9.4 | Cầm nhiệm vụ đi bản đồ bang **khác**, nói chuyện tổng quản | Nhận được thư (`add_a_juanshu`) |
+| 9.5 | Bấm thoại 7 NPC tổng quản / xa phu nhiều lần | Không quét lại toàn bộ bang mỗi lần (chốt 1 lần/ngày đã bật) |
+| 9.6 | Hồi quy: sản xuất công phường, học/mở/nâng/đóng xưởng, sản lượng ngày | Y như đợt 12 |
+
+## E10 — SAU MỖI LẦN SỬA SCRIPT (dành cho tôi, ghi để anh biết)
+
+```bash
+python tools_jx2/lint_lua_all.py
+```
+Kiểm cú pháp toàn cây bằng chính Lua 4.0 của game (2.704 file). Chỉ báo `LOI CU PHAP` mới là lỗi thật.
