@@ -1072,7 +1072,18 @@ void KScenePlaceC::Paint()
 	if (m_bRenderGround)
 	{
 		m_bRenderGround = false;
+		DWORD	dwPgT0 = timeGetTime();
 		PrerenderGround(false);
+		DWORD	dwPgMs = timeGetTime() - dwPgT0;
+		if (dwPgMs >= 15)
+		{
+			FILE* pPgLog = fopen("jx_paint.log", "a");
+			if (pPgLog)
+			{
+				fprintf(pPgLog, "[PGND] ms=%u\n", dwPgMs);
+				fclose(pPgLog);
+			}
+		}
 	}
 
 	EnterCriticalSection(&m_ProcessCritical);
@@ -1214,8 +1225,16 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 	EnterCriticalSection(&m_RegionListAdjustCritical);
 	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
-		if (m_pInProcessAreaRegions[i])
-			m_pInProcessAreaRegions[i]->PrerenderGround(bForce);
+		if (m_pInProcessAreaRegions[i] == NULL)
+			continue;
+		if (m_pInProcessAreaRegions[i]->PrerenderGround(bForce) && bForce == false)
+		{
+			// amortize: one region per paint frame. A full region prerender costs
+			// 10-40ms and used to hitch the frame right after a region finished
+			// loading. Keep the flag on so the next frames pick up the rest.
+			m_bRenderGround = true;
+			break;
+		}
 	}
 	LeaveCriticalSection(&m_RegionListAdjustCritical);
 }

@@ -211,7 +211,7 @@ bool KScenePlaceRegionC::PrerenderGround(bool bForce)
 {
 	if (g_pRepresent == NULL || m_pPrerenderGroundImg == NULL ||
 		(bForce == false && m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG))
-		return true;
+		return false;	// nothing to do (already prerendered / no image slot)
 
 	m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG = true;
 
