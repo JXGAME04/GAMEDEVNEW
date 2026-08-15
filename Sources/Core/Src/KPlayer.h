@@ -741,7 +741,11 @@ public:
 	void			c2sSetMeridian(SetMeridianData Data);
 	void			GetLoginRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// 获取玩家登入重生点位置
 	void			GetDeathRevivalPos(int *lpnSubWorld, int *lpnMpsX, int *lpnMpsY);		// 获取玩家死亡重生点位置
-	void			SetRevivalPos(int nSubWorld, int nRevalId);								// 设定玩家重生点ID
+	void			SetRevivalPos(int nSubWorld, int nRevalId);
+	// DOT E (E4): doc diem hoi sinh ben vung cho GetPlayerRev (member private,
+	// than inline trong class duoc phep tham chieu member khai bao sau)
+	int				GetLoginRevivalWorld() { return m_sLoginRevivalPos.m_nSubWorldID; }
+	int				GetLoginRevivalID() { return m_sLoginRevivalPos.m_ReviveID; }								// 设定玩家重生点ID
 	BOOL			Save();									// 保存玩家数据
 	BOOL			CanSave();
 	void			ProcessUser();

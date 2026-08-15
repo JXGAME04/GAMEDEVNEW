@@ -1946,11 +1946,14 @@ int LuaIncludeFile(Lua_State* L)
 // Module la nhan rieng cua engine JX2; module khong co trong bang thi bo qua im lang.
 int LuaIncludeLib(Lua_State* L)
 {
-	static const char* szMod[14] = {
+	// DOT E (E5): +6 module cong thanh - ham that da nam o C (LG_/BT_/Title_...),
+	// tro noop.lua chi de dofile khong loi. CAM tro LEAGUE vao jx2compat (de ham C).
+	static const char* szMod[20] = {
 		"TONG", "FILE", "LOG", "STRING", "BASIC", "COMMON", "SAY",
 		"PLAYER", "AWARD", "TIMERLIST", "TOPLIST", "MAPDB", "GB_TASK", "FILESYS",
+		"SETTING", "BATTLE", "RELAYLADDER", "TITLE", "LEAGUE", "PARTNER",
 	};
-	static const char* szFile[14] = {
+	static const char* szFile[20] = {
 		"scriptjx2\\tong_vn\\tong_header.lua", "scriptjx2\\lib\\file.lua",
 		"scriptjx2\\lib\\log.lua", "scriptjx2\\lib\\string.lua",
 		"scriptjx2\\lib\\basic.lua", "scriptjx2\\lib\\common.lua",
@@ -1958,6 +1961,9 @@ int LuaIncludeLib(Lua_State* L)
 		"scriptjx2\\lib\\award.lua", "scriptjx2\\lib\\timerlist.lua",
 		"scriptjx2\\lib\\toplist.lua", "scriptjx2\\lib\\mapdb.lua",
 		"scriptjx2\\lib\\gb_taskfuncs.lua", "scriptjx2\\lib\\file.lua",
+		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
+		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
+		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 	};
 	if (Lua_GetTopIndex(L) <= 0 || !Lua_IsString(L, 1))
 	{
@@ -12220,6 +12226,85 @@ extern int LuaGetSignUpTongName(Lua_State* L);
 extern int LuaDisabledChatCity(Lua_State* L);
 extern int LuaIsDisabledChatCity(Lua_State* L);
 extern int LuaCTC_JX2_SetCityState(Lua_State* L);
+// ==== DOT E cong thanh JX2 (E4): Arena idle + ArenaCredits (KJx2CityWar.cpp) ====
+extern int LuaIsArenaBegin(Lua_State* L);
+extern int LuaGetArenaBothSides(Lua_State* L);
+extern int LuaGetArenaCityArea(Lua_State* L);
+extern int LuaGetArenaLevel(Lua_State* L);
+extern int LuaGetArenaTargetCity(Lua_State* L);
+extern int LuaGetArenaTotalLevel(Lua_State* L);
+extern int LuaGetArenaTotalLevelByCity(Lua_State* L);
+extern int LuaGetArenaSchedule(Lua_State* L);
+extern int LuaGetArenaInfoByCity(Lua_State* L);
+extern int LuaNotifyArenaResult(Lua_State* L);
+extern int LuaGetCityWarTongCamp(Lua_State* L);
+extern int LuaGetArenaCredits(Lua_State* L);
+extern int LuaSetArenaCredits(Lua_State* L);
+extern int LuaAddArenaCredits(Lua_State* L);
+extern int LuaReduceArenaCredits(Lua_State* L);
+// ==== DOT E cong thanh JX2 (E4): danh hieu doc lap (KJx2Title.cpp) ====
+extern int LuaTitle_AddTitle(Lua_State* L);
+extern int LuaTitle_ActiveTitle(Lua_State* L);
+extern int LuaTitle_RemoveTitle(Lua_State* L);
+extern int LuaTitle_GetTitleInfo(Lua_State* L);
+extern int LuaTitle_GetTitleName(Lua_State* L);
+extern int LuaTitle_GetActiveTitle(Lua_State* L);
+extern int LuaTitle_GetTitleTab(Lua_State* L);
+// ==== DOT E cong thanh JX2 (E4): khung BT_ battle (KJx2Battle.cpp) ====
+extern int LuaBT_SetType2Task(Lua_State* L);
+extern int LuaBT_GetData(Lua_State* L);
+extern int LuaBT_SetData(Lua_State* L);
+extern int LuaBT_SetTypeBonus(Lua_State* L);
+extern int LuaBT_GetTypeBonus(Lua_State* L);
+extern int LuaBT_SetView(Lua_State* L);
+extern int LuaBT_SetMissionName(Lua_State* L);
+extern int LuaBT_SetGameData(Lua_State* L);
+extern int LuaBT_SetRestTime(Lua_State* L);
+extern int LuaBT_SortLadder(Lua_State* L);
+extern int LuaBT_GetTopTenInfo(Lua_State* L);
+extern int LuaBT_UpdateMemberCount(Lua_State* L);
+extern int LuaBT_ClearBattle(Lua_State* L);
+extern int LuaBT_BroadView(Lua_State* L);
+extern int LuaBT_BroadGameData(Lua_State* L);
+extern int LuaBT_BroadAllLadder(Lua_State* L);
+extern int LuaBT_BroadSelf(Lua_State* L);
+extern int LuaBT_ClearPlayerData(Lua_State* L);
+extern int LuaBT_LeaveBattle(Lua_State* L);
+extern int LuaJx2SetMissionString(Lua_State* L);
+extern int LuaJx2GetMissionString(Lua_State* L);
+// ==== DOT E cong thanh JX2 (E4): ha tang tran (KJx2WarInfra.cpp) ====
+extern int LuaSetNpcDeathScript(Lua_State* L);
+extern int LuaClearMapNpc(Lua_State* L);
+extern int LuaAddObstacleObj(Lua_State* L);
+extern int LuaClearObstacleObj(Lua_State* L);
+extern int LuaGetLoop(Lua_State* L);
+extern int LuaGetNpcSettingIdx(Lua_State* L);
+extern int LuaGetLastDiagNpc(Lua_State* L);
+extern int LuaSetPKFlag(Lua_State* L);
+extern int LuaForbidChangePK(Lua_State* L);
+extern int LuaDisabledUseTownP(Lua_State* L);
+extern int LuaRestoreOwnFeature(Lua_State* L);
+extern int LuaGetPlayerRev(Lua_State* L);
+extern int LuaSearchPlayer(Lua_State* L);
+extern int LuaGetJoinTongTime(Lua_State* L);
+extern int LuaGetTongMaster(Lua_State* L);
+extern int LuaAddTongExp(Lua_State* L);
+extern int LuaGetItemCountEx(Lua_State* L);
+extern int LuaDelItemEx(Lua_State* L);
+extern int LuaGetItemLife(Lua_State* L);
+extern int LuaGetItemProp(Lua_State* L);
+extern int LuaGiveItemUI(Lua_State* L);
+extern int LuaGetGiveItemUnit(Lua_State* L);
+extern int LuaRemoveItemByIndex(Lua_State* L);
+extern int LuaPushString(Lua_State* L);
+extern int LuaAppendString(Lua_State* L);
+extern int LuaReplaceString(Lua_State* L);
+extern int LuaPopString(Lua_State* L);
+extern int LuaNW_GetSealInfo(Lua_State* L);
+extern int LuaPARTNER_GetCurPartner(Lua_State* L);
+extern int LuaPARTNER_GetSettingIdx(Lua_State* L);
+extern int LuaSetSiegeVoitureParam(Lua_State* L);
+extern int LuaSetMangonelParam(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -12992,6 +13077,93 @@ TLua_Funcs GameScriptFuns[] =
 		{ "DisabledChatCity",	LuaDisabledChatCity },
 		{ "IsDisabledChatCity",	LuaIsDisabledChatCity },
 		{ "CTC_JX2_SetCityState",	LuaCTC_JX2_SetCityState },
+		// ==== DOT E cong thanh JX2 (E4): Arena idle + ArenaCredits ====
+		{ "IsArenaBegin",	LuaIsArenaBegin },
+		{ "GetArenaBothSides",	LuaGetArenaBothSides },
+		{ "GetArenaCityArea",	LuaGetArenaCityArea },
+		{ "GetArenaLevel",	LuaGetArenaLevel },
+		{ "GetArenaTargetCity",	LuaGetArenaTargetCity },
+		{ "GetArenaTotalLevel",	LuaGetArenaTotalLevel },
+		{ "GetArenaTotalLevelByCity",	LuaGetArenaTotalLevelByCity },
+		{ "GetArenaSchedule",	LuaGetArenaSchedule },
+		{ "GetArenaInfoByCity",	LuaGetArenaInfoByCity },
+		{ "NotifyArenaResult",	LuaNotifyArenaResult },
+		{ "GetCityWarTongCamp",	LuaGetCityWarTongCamp },
+		{ "GetArenaCredits",	LuaGetArenaCredits },
+		{ "SetArenaCredits",	LuaSetArenaCredits },
+		{ "AddArenaCredits",	LuaAddArenaCredits },
+		{ "ReduceArenaCredits",	LuaReduceArenaCredits },
+		// ==== DOT E cong thanh JX2 (E4): danh hieu doc lap ====
+		{ "Title_AddTitle",	LuaTitle_AddTitle },
+		{ "Title_ActiveTitle",	LuaTitle_ActiveTitle },
+		{ "Title_RemoveTitle",	LuaTitle_RemoveTitle },
+		{ "Title_GetTitleInfo",	LuaTitle_GetTitleInfo },
+		{ "Title_GetTitleName",	LuaTitle_GetTitleName },
+		{ "Title_GetActiveTitle",	LuaTitle_GetActiveTitle },
+		{ "Title_GetTitleTab",	LuaTitle_GetTitleTab },
+		// ==== DOT E cong thanh JX2 (E4): khung BT_ battle ====
+		{ "BT_SetType2Task",	LuaBT_SetType2Task },
+		{ "BT_GetData",	LuaBT_GetData },
+		{ "BT_SetData",	LuaBT_SetData },
+		{ "BT_SetTypeBonus",	LuaBT_SetTypeBonus },
+		{ "BT_GetTypeBonus",	LuaBT_GetTypeBonus },
+		{ "BT_SetView",	LuaBT_SetView },
+		{ "BT_SetMissionName",	LuaBT_SetMissionName },
+		{ "BT_SetGameData",	LuaBT_SetGameData },
+		{ "BT_SetRestTime",	LuaBT_SetRestTime },
+		{ "BT_SortLadder",	LuaBT_SortLadder },
+		{ "BT_GetTopTenInfo",	LuaBT_GetTopTenInfo },
+		{ "BT_UpdateMemberCount",	LuaBT_UpdateMemberCount },
+		{ "BT_ClearBattle",	LuaBT_ClearBattle },
+		{ "BT_BroadView",	LuaBT_BroadView },
+		{ "BT_BroadGameData",	LuaBT_BroadGameData },
+		{ "BT_BroadAllLadder",	LuaBT_BroadAllLadder },
+		{ "BT_BroadSelf",	LuaBT_BroadSelf },
+		// ==== DOT E cong thanh JX2 (E4): ha tang tran ====
+		{ "SetNpcDeathScript",	LuaSetNpcDeathScript },
+		{ "ClearMapNpc",	LuaClearMapNpc },
+		{ "AddObstacleObj",	LuaAddObstacleObj },
+		{ "ClearObstacleObj",	LuaClearObstacleObj },
+		{ "GetLoop",	LuaGetLoop },
+		{ "GetNpcSettingIdx",	LuaGetNpcSettingIdx },
+		{ "GetLastDiagNpc",	LuaGetLastDiagNpc },
+		{ "SetPKFlag",	LuaSetPKFlag },
+		{ "ForbidChangePK",	LuaForbidChangePK },
+		{ "DisabledUseTownP",	LuaDisabledUseTownP },
+		{ "RestoreOwnFeature",	LuaRestoreOwnFeature },
+		{ "GetPlayerRev",	LuaGetPlayerRev },
+		{ "SearchPlayer",	LuaSearchPlayer },
+		{ "GetJoinTongTime",	LuaGetJoinTongTime },
+		{ "GetTongMaster",	LuaGetTongMaster },
+		{ "AddTongExp",	LuaAddTongExp },
+		{ "GetItemCountEx",	LuaGetItemCountEx },
+		{ "DelItemEx",	LuaDelItemEx },
+		{ "GetItemLife",	LuaGetItemLife },
+		{ "GetItemProp",	LuaGetItemProp },
+		{ "GiveItemUI",	LuaGiveItemUI },
+		{ "GetGiveItemUnit",	LuaGetGiveItemUnit },
+		{ "RemoveItemByIndex",	LuaRemoveItemByIndex },
+		{ "PushString",	LuaPushString },
+		{ "AppendString",	LuaAppendString },
+		{ "ReplaceString",	LuaReplaceString },
+		{ "PopString",	LuaPopString },
+		{ "NW_GetSealInfo",	LuaNW_GetSealInfo },
+		{ "PARTNER_GetCurPartner",	LuaPARTNER_GetCurPartner },
+		{ "PARTNER_GetSettingIdx",	LuaPARTNER_GetSettingIdx },
+		{ "SetSiegeVoitureParam",	LuaSetSiegeVoitureParam },
+		{ "SetMangonelParam",	LuaSetMangonelParam },
+		// SetMissionV = LuaSetMission (m_MissionArray). SetMissionS/GetMissionS
+		// di KHO CHUOI RIENG (KJx2WarInfra) - phan bien E4 CHAN-5: JX1 dung
+		// chung mot mang cho so + chuoi nen SetMissionV(1,..) de mat ten bang
+		// thu cua mission.lua:87. GetMissionS dang ky lan 2 o day THANG ban cu
+		// (muc sau trong bang de len - tien le "GetLeadLevel" THAP-7).
+		{ "SetMissionV",	LuaSetMission },
+		{ "SetMissionS",	LuaJx2SetMissionString },
+		{ "GetMissionS",	LuaJx2GetMissionString },
+		{ "BT_ClearPlayerData",	LuaBT_ClearPlayerData },
+		{ "BT_LeaveBattle",	LuaBT_LeaveBattle },
+		// RevID2WXY(world, revid) -> (world, x, y) = dung ham "Rev2Pos" san co
+		{ "RevID2WXY",	LuaGetPlayerRevivalPos },
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

@@ -5756,6 +5756,9 @@ void KProtocolProcess::c2sInputCommand(int nIndex, BYTE* pProtocol)
 	}
 }
 
+// DOT E (E4): phien GiveItemUI JX2 (KJx2WarInfra.cpp) - tra -1 khi khong phai
+extern int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx);
+
 void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 {
 	if(!pProtocol) return;//add by phong kiÒu antihack
@@ -5771,7 +5774,14 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 		case 1:
 			if(Player[nIndex].m_dwGiveBoxId > 0)
 			{
-				Player[nIndex].ExecuteScript(Player[nIndex].m_dwGiveBoxId, Player[nIndex].m_szTaskExcuteFun, "");
+				// DOT E (E4): phien GiveItemUI JX2 - gom item pos_affairitem vao
+				// give-list roi goi callback dang fn(nCount); phien GiveBox JX1
+				// thuong (tra -1) giu nguyen duong cu fn("")
+				int nJx2Cnt = KJx2WarInfra_GiveBoxCollect(nIndex);
+				if (nJx2Cnt >= 0)
+					Player[nIndex].ExecuteScript(Player[nIndex].m_dwGiveBoxId, Player[nIndex].m_szTaskExcuteFun, nJx2Cnt);
+				else
+					Player[nIndex].ExecuteScript(Player[nIndex].m_dwGiveBoxId, Player[nIndex].m_szTaskExcuteFun, "");
 				Player[nIndex].m_dwGiveBoxId = 0;
 			}
 			break;

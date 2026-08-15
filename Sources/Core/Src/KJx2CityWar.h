@@ -40,6 +40,27 @@ int LuaDisabledChatCity(Lua_State* L);    // stub (0 call site) -> 1
 int LuaIsDisabledChatCity(Lua_State* L);  // stub (0 call site) -> 0
 int LuaCTC_JX2_SetCityState(Lua_State* L);// (1..7, nState 0..2) - ha tang cho tick 5 pha (E6) -> 1/0
 
+// nhom ARENA (E4) - nhanh VN loi dai CHET (binary goc khong dang ky
+// SignUpCityWarArena): dang ky DU de script nap/thoai khong loi, tra "chua co"
+int LuaIsArenaBegin(Lua_State* L);        // (0..7) -> 0
+int LuaGetArenaBothSides(Lua_State* L);   // (0..7) -> "",""
+int LuaGetArenaCityArea(Lua_State* L);    // (nArenaID) -> 0
+int LuaGetArenaLevel(Lua_State* L);       // () -> 0 (chua/xong)
+int LuaGetArenaTargetCity(Lua_State* L);  // () -> 0
+int LuaGetArenaTotalLevel(Lua_State* L);  // () -> 0
+int LuaGetArenaTotalLevelByCity(Lua_State* L); // (1..7) -> 0
+int LuaGetArenaSchedule(Lua_State* L);    // (1..7) -> ""
+int LuaGetArenaInfoByCity(Lua_State* L);  // (1..7[,nLevel]) -> ""
+int LuaNotifyArenaResult(Lua_State* L);   // (nArenaID, bSide1Win) -> 0 gia tri (nuot)
+int LuaGetCityWarTongCamp(Lua_State* L);  // (szTong) -> 1 thu / 2 cong / nil
+
+// ArenaCredits (E4): goc = task value id 3179 > MAX_TASK 3000 cua ta (im lang
+// vo hieu) -> remap id 2894 (da quet: khong script nao dung lam task value)
+int LuaGetArenaCredits(Lua_State* L);     // () -> so
+int LuaSetArenaCredits(Lua_State* L);     // (n)
+int LuaAddArenaCredits(Lua_State* L);     // (n)
+int LuaReduceArenaCredits(Lua_State* L);  // (n)
+
 // mot lan sau khi map nap xong: nap config + mirror roi ghi vao KSubWorld
 void KJx2CityWar_Breathe();
 

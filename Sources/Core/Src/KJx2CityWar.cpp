@@ -12,6 +12,8 @@
 #include "KDebug.h"
 #include "LuaLib.h"
 #include "KSubWorld.h"
+#include "KPlayerSet.h"
+#include "KPlayer.h"
 #include "KTongJX2.h"
 #include "KJx2League.h"
 #include "KJx2CityWar.h"
@@ -22,6 +24,14 @@
 // GetSubWorldIndex(L): doc global "SubWorld" cua state goi (ScriptFuns.cpp:476,
 // khong co khai bao trong header nao)
 extern int GetSubWorldIndex(Lua_State* L);
+// GetPlayerIndex: idiom KTongJX2.cpp:32 (cho nhom ArenaCredits)
+extern int GetPlayerIndex(Lua_State* L);
+// E6: doi chu thanh -> cap/thu Title Thai Thu (KJx2Title.cpp) + field 48
+// OccupyCityDay (KTongJX2.cpp - duong CITY_OCCUPY_R goc tong_mix.lua:1074-1082)
+extern void KJx2Title_GrantByName(const char* szPlayerName, int nTitleId);
+extern void KJx2Title_RevokeByName(const char* szPlayerName, int nTitleId);
+extern void KTongJX2_SetOccupyCityDayC(DWORD dwTongID, int nDay);
+extern DWORD KTongJX2_GetFieldC(DWORD dwTongID, WORD wKey);
 
 //////////////////////////////////////////////////////////////////////
 // Store
@@ -330,6 +340,27 @@ static int sCityByName(const char* szName)
 	return 0;
 }
 
+// E6: nghiep vu di kem DOI CHU thanh (goi tu AppointViceroy + NotifyWarResult
+// cong thang, SAU khi store da cap nhat, voi anh chup chu/CU truoc khi ghi de):
+// - Title Thai Thu id 152+city: THU cua cuu + CAP cho tan (DIEUTRA muc 1/4)
+// - field 48 OccupyCityDay: tan = TONG_GetDay (field 20) cua bang tan, cuu = 0
+//   (duong CITY_OCCUPY_R goc - tong_mix.lua:1074-1082)
+static void sOwnerChanged(int nCityID, const char* szOldOwner, const char* szOldMaster)
+{
+	KJx2City* p = &s_Cities[nCityID];
+	if (szOldMaster && szOldMaster[0])
+		KJx2Title_RevokeByName(szOldMaster, 152 + nCityID);
+	if (p->szMaster[0])
+		KJx2Title_GrantByName(p->szMaster, 152 + nCityID);
+	if (szOldOwner && szOldOwner[0] && strcmp(szOldOwner, p->szOwnerTong) != 0)
+		KTongJX2_SetOccupyCityDayC(g_FileName2Id((LPSTR)szOldOwner), 0);
+	if (p->szOwnerTong[0])
+	{
+		DWORD dwID = g_FileName2Id((LPSTR)p->szOwnerTong);
+		KTongJX2_SetOccupyCityDayC(dwID, (int)KTongJX2_GetFieldC(dwID, 20));
+	}
+}
+
 //////////////////////////////////////////////////////////////////////
 // Nhom ham Lua
 //////////////////////////////////////////////////////////////////////
@@ -466,9 +497,13 @@ int LuaNotifyWarResult(Lua_State* L)
 		KJx2City* p = &s_Cities[n];
 		if (bAttackerWin && p->szChallenger[0])
 		{
+			char szOldOwner[64], szOldMaster[64];
+			sStrCpy(szOldOwner, p->szOwnerTong, sizeof(szOldOwner));
+			sStrCpy(szOldMaster, p->szMaster, sizeof(szOldMaster));
 			sStrCpy(p->szOwnerTong, p->szChallenger, sizeof(p->szOwnerTong));
 			sMasterOfTong(p->szOwnerTong, p->szMaster, sizeof(p->szMaster));
 			p->nOccupyDate = sToday();
+			sOwnerChanged(n, szOldOwner, szOldMaster);
 		}
 		p->szChallenger[0] = 0;
 		p->nState = JX2CW_STATE_NORMAL;
@@ -492,6 +527,9 @@ int LuaAppointViceroy(Lua_State* L)
 		if (n && szTong && szTong[0])
 		{
 			KJx2City* p = &s_Cities[n];
+			char szOldOwner[64], szOldMaster[64];
+			sStrCpy(szOldOwner, p->szOwnerTong, sizeof(szOldOwner));
+			sStrCpy(szOldMaster, p->szMaster, sizeof(szOldMaster));
 			sStrCpy(p->szOwnerTong, szTong, sizeof(p->szOwnerTong));
 			sMasterOfTong(szTong, p->szMaster, sizeof(p->szMaster));
 			p->nOccupyDate = sToday();
@@ -499,6 +537,7 @@ int LuaAppointViceroy(Lua_State* L)
 			// (phan bien E3 #5 - khong don thi GetCityWarBothSides bat gia)
 			p->szChallenger[0] = 0;
 			p->nState = JX2CW_STATE_NORMAL;
+			sOwnerChanged(n, szOldOwner, szOldMaster);
 			sSaveMirror();
 			sApplyCityToSubWorld(n);
 			g_DebugLog((LPSTR)"KJx2CityWar: AppointViceroy thanh %d chu=[%s] thaithu=[%s]",
@@ -606,6 +645,133 @@ int LuaCTC_JX2_SetCityState(Lua_State* L)
 	Lua_PushNumber(L, nOk);
 	return 1;
 }
+
+//////////////////////////////////////////////////////////////////////
+// Nhom ARENA (E4) - idle nhu nhanh VN goc (DIEUTRA muc 2). Dang ky du de
+// script nap + NPC thoai duoc; moi gia tri = "chua bat dau".
+//////////////////////////////////////////////////////////////////////
+int LuaIsArenaBegin(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetArenaBothSides(Lua_State* L)
+{
+	Lua_PushString(L, (char*)"");
+	Lua_PushString(L, (char*)"");
+	return 2;
+}
+
+int LuaGetArenaCityArea(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetArenaLevel(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);	// 0 = chua bat dau / da xong
+	return 1;
+}
+
+int LuaGetArenaTargetCity(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetArenaTotalLevel(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetArenaTotalLevelByCity(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaGetArenaSchedule(Lua_State* L)
+{
+	Lua_PushString(L, (char*)"");	// call site duy nhat dem Say - "" an toan
+	return 1;
+}
+
+int LuaGetArenaInfoByCity(Lua_State* L)
+{
+	Lua_PushString(L, (char*)"");
+	return 1;
+}
+
+int LuaNotifyArenaResult(Lua_State* L)
+{
+	return 0;	// nuot nhu goc VN (loi dai khong chay)
+}
+
+// (szTongName) -> 1 = dang THU thanh co tran, 2 = dang CONG, nil = khong thuoc
+// tran nao (DIEUTRA muc 2: "1 so / nil")
+int LuaGetCityWarTongCamp(Lua_State* L)
+{
+	sEnsureStore();
+	if (Lua_IsString(L, 1))
+	{
+		const char* szTong = Lua_ValueToString(L, 1);
+		if (szTong && szTong[0])
+		{
+			for (int i = 1; i <= 7; i++)
+			{
+				if (s_Cities[i].nState == JX2CW_STATE_NORMAL)
+					continue;
+				if (strcmp(s_Cities[i].szOwnerTong, szTong) == 0)
+				{
+					Lua_PushNumber(L, 1);
+					return 1;
+				}
+				if (strcmp(s_Cities[i].szChallenger, szTong) == 0)
+				{
+					Lua_PushNumber(L, 2);
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;	// nil
+}
+
+//////////////////////////////////////////////////////////////////////
+// ArenaCredits (E4): task value nguoi choi, remap 3179 -> 2894
+// (MAX_TASK = 3000; 3179 se im lang vo hieu - KPlayerTask.cpp:69-81)
+//////////////////////////////////////////////////////////////////////
+#define JX2CW_ARENACREDIT_TASK 2894
+
+int LuaGetArenaCredits(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	Lua_PushNumber(L, (nPlayerIndex > 0) ?
+		Player[nPlayerIndex].m_cTask.GetSaveVal(JX2CW_ARENACREDIT_TASK) : 0);
+	return 1;
+}
+
+static int sArenaCreditWrite(Lua_State* L, int nMode)	// 0 set / 1 add / 2 sub
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		int nVal = (int)Lua_ValueToNumber(L, 1);
+		int nCur = Player[nPlayerIndex].m_cTask.GetSaveVal(JX2CW_ARENACREDIT_TASK);
+		int nNew = (nMode == 0) ? nVal : (nMode == 1) ? nCur + nVal : nCur - nVal;
+		if (nNew < 0)
+			nNew = 0;
+		Player[nPlayerIndex].m_cTask.SetSaveVal(JX2CW_ARENACREDIT_TASK, nNew);
+	}
+	return 0;
+}
+
+int LuaSetArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 0); }
+int LuaAddArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 1); }
+int LuaReduceArenaCredits(Lua_State* L)	{ return sArenaCreditWrite(L, 2); }
 
 //////////////////////////////////////////////////////////////////////
 // Cho ScriptFuns (de-hardcode setter map 78) + E7

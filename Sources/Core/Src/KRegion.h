@@ -127,7 +127,24 @@ public:
 	int			FindPlayer(DWORD dwId);
 	BOOL		CheckPlayerIn(int nPlayerIdx);
 	void		SetTrap(DWORD nTrapId, int nMapX, int nMapY);
-	void		SetObstacle(long value, int nSubWorld, int nMapX, int nMapY); //#Set VËt C¶n
+	void		SetObstacle(long value, int nSubWorld, int nMapX, int nMapY);
+	// DOT E (E4 fix CHAN-1): doc/ghi TRUC TIEP mot o vat can cho vat can dong
+	// cong thanh - SetObstacle o tren chi ghi khi o == 0 nen KHONG BAO GIO
+	// go duoc (value 0 khong de len 1); di kem luu-gia-tri-cu o KJx2WarInfra.
+#ifdef _SERVER
+	long		GetObstacleCell(int nMapX, int nMapY)
+	{
+		if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
+			return 0;
+		return m_Obstacle[nMapX][nMapY];
+	}
+	void		SetObstacleCell(int nMapX, int nMapY, long nValue)
+	{
+		if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
+			return;
+		m_Obstacle[nMapX][nMapY] = nValue;
+	}
+#endif //#Set VËt C¶n
 #endif
 
 #ifndef _SERVER
