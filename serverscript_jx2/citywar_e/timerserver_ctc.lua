@@ -112,46 +112,12 @@ function ctc6_endsignup(i, bToday)
 	end
 	local nlid = LG_GetLeagueObj(509, szCity)
 	if (nlid == nil or nlid == 0) then
-		AddLocalNews(format("B¸o danh c«ng thµnh chiÕn %s ®· b¾t ®Çu, c¸c bang héi ch­a chiÕm thµnh cÊp 18 trë lªn cã thÓ ®Õn c«ng thµnh quan t¹i c¸c T©n Thñ Th«n ®Ó b¸o danh tham gia.]])",TB_CITYWAR_ARRANGE[ncan][3]));
-		OutputMsg(format("C«ng thµnh chiÕn thµnh %s ®· b¾t ®Çu cho b¸o danh",TB_CITYWAR_ARRANGE[ncan][3]))
-	end;
-	
-end
-function cw_start_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,4) == 1) then
-			StartCityWar(ncan);
-	end;
-end
-
-function cw_endsignup_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,2) == 1) then
-		local nlid = LG_GetLeagueObj(LEAGUETYPE_CITYWAR_FIRST, TB_CITYWAR_ARRANGE[ncan][3]);
-		szWarCityName = TB_CITYWAR_ARRANGE[ncan][3]
-		if (FALSE(nlid)) then
-			OutputMsg(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh.",szWarCityName));
-			GlobalExecute(format("dw AddLocalNews([[C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh", szCity))
+		AddLocalNews(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh", szCity))
 		return 0
 	end
 	local szFirst = ctc6_randomchallenger(szCity)
 	if (szFirst == nil or szFirst == "") then
-		AddLocalNews(format("B¸o danh c«ng thµnh chiÕn %s ®· b¾t ®Çu, c¸c bang héi ch­a chiÕm thµnh cÊp 18 trë lªn cã thÓ ®Õn c«ng thµnh quan t¹i c¸c T©n Thñ Th«n ®Ó b¸o danh tham gia.]])",TB_CITYWAR_ARRANGE[ncan][3]));
-		OutputMsg(format("C«ng thµnh chiÕn thµnh %s ®· b¾t ®Çu cho b¸o danh",TB_CITYWAR_ARRANGE[ncan][3]))
-	end;
-	
-end
-function cw_start_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,4) == 1) then
-			StartCityWar(ncan);
-	end;
-end
-
-function cw_endsignup_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,2) == 1) then
-		local nlid = LG_GetLeagueObj(LEAGUETYPE_CITYWAR_FIRST, TB_CITYWAR_ARRANGE[ncan][3]);
-		szWarCityName = TB_CITYWAR_ARRANGE[ncan][3]
-		if (FALSE(nlid)) then
-			OutputMsg(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh.",szWarCityName));
-			GlobalExecute(format("dw AddLocalNews([[C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh", szCity))
+		AddLocalNews(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh", szCity))
 		return 0
 	end
 	local szOwner = GetCityOwner(i)
@@ -159,43 +125,7 @@ function cw_endsignup_fun(nweek,ncan)
 		AppointViceroy(szCity, szFirst)
 	else
 		AppointChallenger(szCity, szFirst)
-		AddLocalNews(format("B¸o danh c«ng thµnh chiÕn %s ®· b¾t ®Çu, c¸c bang héi ch­a chiÕm thµnh cÊp 18 trë lªn cã thÓ ®Õn c«ng thµnh quan t¹i c¸c T©n Thñ Th«n ®Ó b¸o danh tham gia.]])",TB_CITYWAR_ARRANGE[ncan][3]));
-		OutputMsg(format("C«ng thµnh chiÕn thµnh %s ®· b¾t ®Çu cho b¸o danh",TB_CITYWAR_ARRANGE[ncan][3]))
-	end;
-	
-end
-function cw_start_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,4) == 1) then
-			StartCityWar(ncan);
-	end;
-end
-
-function cw_endsignup_fun(nweek,ncan)
-	if (tonumber(date("%w")) == nweek and cw_CanStart(ncan,2) == 1) then
-		local nlid = LG_GetLeagueObj(LEAGUETYPE_CITYWAR_FIRST, TB_CITYWAR_ARRANGE[ncan][3]);
-		szWarCityName = TB_CITYWAR_ARRANGE[ncan][3]
-		if (FALSE(nlid)) then
-			OutputMsg(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh.",szWarCityName));
-			GlobalExecute(format("dw AddLocalNews([[C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh]])",szWarCityName));
-			return 0;
-		end
-		local szFirstTong = GetRandomChallenger(TB_CITYWAR_ARRANGE[ncan][3]);
-		if (FALSE(szFirstTong)) then
-			OutputMsg(format("C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh.",szWarCityName));
-			GlobalExecute(format("dw AddLocalNews([[C«ng thµnh chiÕn thµnh %s kh«ng cã bang héi nµo b¸o danh, tuÇn nµy v¹n sù th¸i b×nh]])",szWarCityName));
-			return 0;
-		end;
-		
-		if (GetCityOwner(ncan) == "" or GetCityOwner(ncan) == nil) then
-			--GlobalExecute("dw AppointViceroy([[³É¶¼]],[["..szFirstTong.."]])");
-			GlobalExecute(format("dwf \\script\\missions\\citywar_global\\citywar_function.lua citywar_appointviceroy([[%s]],[[%s]])",szWarCityName,szFirstTong));
-			--GlobalExecute(format("dw AddLocalNews([[%s °ï»á¾ºÍ¶³É¹¦£¬³ÉÎª³É¶¼³ÇÇøµÄÐÂ³ÇÖ÷]])", szFirstTong));
-			--OutputMsg(szFirstTong.."¾ºÍ¶³É¹¦£¬³ÉÎª³É¶¼³ÇÇøµÄ³ÇÖ÷¡£")
-		else
-			--GlobalExecute("dw AppointChallenger([[³É¶¼]],[["..szFirstTong.."]])");
-			GlobalExecute(format("dwf \\script\\missions\\citywar_global\\citywar_function.lua citywar_appointchallenger([[%s]],[[%s]])",szWarCityName,szFirstTong));
-			OutputMsg(format("%s tranh ®ua lÖnh bµi thµnh c«ng, trë thµnh bang héi khiªu chiÕn thµnh %s vµo ngµy mai.",szFirstTong,szWarCityName))
-			GlobalExecute(format("dw AddLocalNews([[Bang héi %s tranh ®ua lÖnh bµi thµnh c«ng, trë thµnh bang héi khiªu chiÕn thµnh %s", szFirst, szCity))
+		AddLocalNews(format("Bang héi %s tranh ®ua lÖnh bµi thµnh c«ng, trë thµnh bang héi khiªu chiÕn thµnh %s", szFirst, szCity))
 	end
 	LG_ApplySetLeagueTask(508, szCity, 1, 0)
 end
