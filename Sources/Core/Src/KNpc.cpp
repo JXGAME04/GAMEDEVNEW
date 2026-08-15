@@ -5122,6 +5122,16 @@ void KNpc::GetMpsPos(int *pPosX, int *pPosY)
 }
 
 #ifndef _SERVER
+// Drawn (interpolated) position - use ONLY in Paint* overlay code.
+// Identical to GetMpsPos when interpolation is off, because the logic tick
+// refreshes KNpcRes with the plain tick position every tick.
+void KNpc::GetDrawPos(int *pPosX, int *pPosY)
+{
+	m_DataRes.GetPos(pPosX, pPosY);
+}
+#endif
+
+#ifndef _SERVER
 #define VOID_DIS 0x7FFFFFFF
 INT	KNpc::GetMapDisX(INT nIdx1, INT nIdx2)
 {
@@ -5639,7 +5649,7 @@ void	KNpc::PaintSeriesNpc(char* szName, int nFontSize, int nHeightOff)
 	int nX, nY;
 	KRUImage	m_ImageSeries;
 	char*	m_nImageSeries;
-    GetMpsPos(&nX, &nY);
+    GetDrawPos(&nX, &nY);
 	switch(m_Series)
 	{
 		case 0:
@@ -5696,7 +5706,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	nFontSize = 13;
 	char Buff[128], cbBuffer[32];
 	int nMpsX, nMpsY, nMX, nMY, nNumFrames,  nXX, nYY;
-	GetMpsPos(&nMpsX, &nMpsY);
+	GetDrawPos(&nMpsX, &nMpsY);
 	if(KNpc::g_DrawVision && m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 	{
 		KRULine		Line;
@@ -6107,7 +6117,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		if (m_BaiTan) //#bµy b¸n
 		{
 			int	nMpsX, nMpsY;
-			GetMpsPos(&nMpsX, &nMpsY);
+			GetDrawPos(&nMpsX, &nMpsY);
 			int nWid = nFontSize * g_StrLen(ShopName) / 2 + 10;
 			int nHei = nFontSize + 12;
 				
@@ -6204,7 +6214,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	else if (bSelect)//ngu hanh quai
 	{	
 		int nX, nY;
-		GetMpsPos(&nX, &nY);
+		GetDrawPos(&nX, &nY);
 
 		switch(m_Type)
 		{
@@ -6282,7 +6292,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	{
 		char	szMsg[256];
 		int nPosX, nPosY;
-		GetMpsPos(&nPosX, &nPosY);
+		GetDrawPos(&nPosX, &nPosY);
 		sprintf(szMsg,
 			"NpcID:%d NpcIndex:%d Life:%d\n"
 			"RegionIndex:%d Pos1:%d,%d Offset:%d, %d\n"
@@ -6320,7 +6330,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			nCount[8] = RIGHTDOWNREGION.m_NpcList.GetNodeCount();
 		
 		int nPosX, nPosY;
-		GetMpsPos(&nPosX, &nPosY);
+		GetDrawPos(&nPosX, &nPosY);
 		sprintf(szMsg,
 			"NpcID:%d Life:%d\n"
 			"RegionIndex:%d Pos1:%d,%d Offset:%d, %d\n"
@@ -6391,7 +6401,7 @@ int	KNpc::PaintChat(int nHeightOffset)
 	nWidth += 6;	
 	nHeight += 5;
 
-	GetMpsPos(&nMpsX, &nMpsY);
+	GetDrawPos(&nMpsX, &nMpsY);
 	sParam.nX = nMpsX - nWidth / 2;
 	sParam.nY = nMpsY;
 	sParam.nZ = nHeightOffset + nHeight;
@@ -6500,7 +6510,7 @@ int	KNpc::PaintLife(int nHeightOffset, bool bSelect)
 		return nHeightOffset;*/
 
 	int	nMpsX, nMpsY;
-	GetMpsPos(&nMpsX, &nMpsY);
+	GetDrawPos(&nMpsX, &nMpsY);
 	int nWid = SHOW_LIFE_WIDTH;
 	int nHei = SHOW_LIFE_HEIGHT;
 	KRUShadow	Blood;
@@ -6610,7 +6620,7 @@ int	KNpc::PaintMana(int nHeightOffset)
 	return nHeightOffset;
 
 	int	nMpsX, nMpsY;
-	GetMpsPos(&nMpsX, &nMpsY);
+	GetDrawPos(&nMpsX, &nMpsY);
 	int nWid = 38;
 	int nHei = 5;
 	KRUShadow	Blood;
@@ -6737,7 +6747,7 @@ int KNpc::PaintTeamMNG(KUiPlayerItem *m_pPlayersList, KUiPlayerPaintTeamMNG *nPa
 		int verDistance = 33;
 		int	nMpsX = 53457;
 		int nMpsY = 104208;
-		GetMpsPos(&nMpsX, &nMpsY);
+		GetDrawPos(&nMpsX, &nMpsY);
 		int nWid = nPainTMG->nWid;//58;
 		int nHei_life = nPainTMG->nHei_life;//7;
 		int nHei_mana = nPainTMG->nHei_mana;//4;
@@ -10270,7 +10280,7 @@ int	KNpc::PaintBlood(int nHeightOffset)
 		int nHeightOff = (int)(nHeightOffset + (defMAX_SHOW_BLOOD_TIME - m_nBloodTime[i]) * defSHOW_BLOOD_MOVE_SPEED / 3);
 		DWORD dwColor = m_nBloodColor[i] | (m_nBloodAlpha[i] << 24); // Apply alpha to color
 		int nMpsX, nMpsY;
-		GetMpsPos(&nMpsX, &nMpsY);
+		GetDrawPos(&nMpsX, &nMpsY);
 
 		KRUImage pImage;
 		int damage = atoi(m_szBloodNo[i]);

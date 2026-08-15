@@ -239,7 +239,7 @@ void	CoreGetGameObjLightInfo(unsigned int uObjGenre, unsigned int uId, KLightInf
 	case CGOG_NPC:
 		if (uId > 0 && uId < MAX_NPC)
 		{
-			Npc[uId].GetMpsPos(&pLightInfo->oPosition.nX, &pLightInfo->oPosition.nY);
+			Npc[uId].GetDrawPos(&pLightInfo->oPosition.nX, &pLightInfo->oPosition.nY);
 			pLightInfo->oPosition.nZ = Npc[uId].m_Height;
 			pLightInfo->dwColor = 0;
 			if (Npc[uId].m_RedLum > 255)

@@ -2489,6 +2489,15 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 	return nRet;
 }
 
+// PaintFps interpolation state: paint clock runs faster than the 18-fps logic clock.
+// GOI_PROCFRAME_BREATHE (once per logic tick) writes these, GOI_PROCFRAME_POSSHIFT
+// (once per paint frame) reads them. Client only - this file is excluded from server builds.
+#define	PAINT_INTERP_SNAP_DIST	64	// pixels per tick; any bigger jump is a teleport, never interpolated
+static POINT	s_InterpFrom[MAX_NPC];
+static POINT	s_InterpTo[MAX_NPC];
+static DWORD	s_InterpNpcID[MAX_NPC];
+static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
+
 int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
 {
 	int nRet = 1;
@@ -8280,34 +8289,91 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		g_pClient->SendPackToServer((BYTE*)&sMF, sMF.m_wLength + 1);
 	}
 	break;
-/*	case GOI_PROCFRAME_BREATHE:
-		if (uParam == 0)
-			g_ScenePlace.Breathe();
-		else if (uParam == 1)
-			g_SubWorldSet.MessageLoop();
-		break;
-	case GOI_PROCFRAME_POSSHIFT:
+	case GOI_PROCFRAME_BREATHE:
+	// PaintFps interpolation: called once right after each logic tick.
+	// Shift the current tick position into "from", store the new tick position in "to".
+	// uParam = 1 when POSSHIFT will drive the drawing (PaintInterp on).
 	{
-		int nPerStep = uParam / nParam;
+		if (uParam == 0)
+			break;	// PaintInterp off: snapshot would never be consumed
 		int	nIdx = 0;
 		while (nIdx = NpcSet.GetNextIdx(nIdx))
 		{
-			if (!Npc[nIdx].m_bProcPosShift || Npc[nIdx].m_RegionIndex < 0)
-				continue;
-			if (Npc[nIdx].m_Doing == do_run || Npc[nIdx].m_Doing == do_walk)
+			if (Npc[nIdx].m_RegionIndex < 0)
 			{
-				if (Npc[nIdx].m_Doing == do_run)
-					Npc[nIdx].OnRunByFPS(nPerStep);
-				else
-					Npc[nIdx].OnWalkByFPS(nPerStep);
-				Npc[nIdx].GetNpcRes()->SetAction(Npc[nIdx].m_ClientDoing);
-				int		nMpsX, nMpsY;
-				SubWorld[0].Map2Mps(Npc[nIdx].m_RegionIndex, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, &nMpsX, &nMpsY);
-				Npc[nIdx].GetNpcRes()->SetPos(nIdx, nMpsX, nMpsY, Npc[nIdx].m_Height, Player[CLIENT_PLAYER_INDEX].m_nIndex == nIdx);
+				s_InterpValid[nIdx] = 0;
+				continue;
+			}
+			int		nMpsX, nMpsY;
+			SubWorld[0].Map2Mps(Npc[nIdx].m_RegionIndex, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, &nMpsX, &nMpsY);
+			if (s_InterpValid[nIdx] && s_InterpNpcID[nIdx] == Npc[nIdx].m_dwID)
+			{
+				s_InterpFrom[nIdx] = s_InterpTo[nIdx];
+			}
+			else
+			{
+				// slot moi hoac doi chu: chua co lich su, khong noi suy khung nay
+				s_InterpFrom[nIdx].x = nMpsX;
+				s_InterpFrom[nIdx].y = nMpsY;
+				s_InterpNpcID[nIdx] = Npc[nIdx].m_dwID;
+				s_InterpValid[nIdx] = 1;
+			}
+			s_InterpTo[nIdx].x = nMpsX;
+			s_InterpTo[nIdx].y = nMpsY;
+			int	nJumpX = s_InterpTo[nIdx].x - s_InterpFrom[nIdx].x;
+			int	nJumpY = s_InterpTo[nIdx].y - s_InterpFrom[nIdx].y;
+			if (nJumpX < 0)
+				nJumpX = -nJumpX;
+			if (nJumpY < 0)
+				nJumpY = -nJumpY;
+			if (nJumpX > PAINT_INTERP_SNAP_DIST || nJumpY > PAINT_INTERP_SNAP_DIST)
+			{
+				// teleport / yank: never smear across the map
+				s_InterpFrom[nIdx] = s_InterpTo[nIdx];
 			}
 		}
 	}
-	break;*/
+	break;
+	case GOI_PROCFRAME_POSSHIFT:
+		// PaintFps interpolation: called once per paint frame, right before UiPaint.
+		// uParam = alpha in [0..1000]: 0 = previous tick position, 1000 = current tick position.
+		// (nParam is unused, the alpha scale is fixed at 1000).
+		// Moves ONLY the drawn position (KNpcRes / scene tree / camera focus);
+		// logic coordinates (m_MapX/m_MapY/m_OffX/m_OffY) are never touched here.
+	{
+		int	nAlpha = (int)uParam;
+		if (nAlpha < 0)
+			nAlpha = 0;
+		if (nAlpha > 1000)
+			nAlpha = 1000;
+		int	nPlayerNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		int	nIdx = 0;
+		while (nIdx = NpcSet.GetNextIdx(nIdx))
+		{
+			if (Npc[nIdx].m_RegionIndex < 0 ||
+				!s_InterpValid[nIdx] || s_InterpNpcID[nIdx] != Npc[nIdx].m_dwID)
+				continue;
+			BOOL bIsPlayer = (nIdx == nPlayerNpcIdx);
+			if (!bIsPlayer &&
+				s_InterpFrom[nIdx].x == s_InterpTo[nIdx].x &&
+				s_InterpFrom[nIdx].y == s_InterpTo[nIdx].y)
+				continue;	// dung yen: tick da dat vi tri roi, khoi ton cong scene
+			int	nDrawX = s_InterpFrom[nIdx].x + (s_InterpTo[nIdx].x - s_InterpFrom[nIdx].x) * nAlpha / 1000;
+			int	nDrawY = s_InterpFrom[nIdx].y + (s_InterpTo[nIdx].y - s_InterpFrom[nIdx].y) * nAlpha / 1000;
+			BOOL bFocus = FALSE;
+			if (bIsPlayer)
+			{
+				// Only move the camera while the interpolated focus stays inside the scene
+				// region of the tick position. A region change tears down the draw tree
+				// (ClearPreprocess/Fell) and only Breathe() rebuilds it, so the crossing
+				// must keep happening at tick time - never at paint time.
+				bFocus = (nDrawX / KScenePlaceRegionC::RWPP_AREGION_WIDTH == s_InterpTo[nIdx].x / KScenePlaceRegionC::RWPP_AREGION_WIDTH &&
+					nDrawY / KScenePlaceRegionC::RWPP_AREGION_HEIGHT == s_InterpTo[nIdx].y / KScenePlaceRegionC::RWPP_AREGION_HEIGHT);
+			}
+			Npc[nIdx].GetNpcRes()->SetPos(nIdx, nDrawX, nDrawY, Npc[nIdx].m_Height, bFocus);
+		}
+	}
+	break;
 	default:
 		nRet = 0;
 		break;

@@ -62,6 +62,8 @@ CChatFilter g_ChatFilter;
 #define	GAME_FPS			18							//khung hinh game chi so khung hinh tren giay mac dinh la 18 edit by phong kieu 60FPS tieu chuan game hien nay
 #define CONFIG_FILE_PATH	"Config.ini"			//duong dan file config.ini
 //static int m_PaintStep = GAME_FPS / 18;
+static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
+static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
 //int gameNumber = 0; // Game number, initialized to 0
 //Represent
 struct iRepresentShell* g_pRepresentShell = NULL;
@@ -490,6 +492,15 @@ BOOL KMyApp::GameInit()
 	g_bRepresent3 = (g_bRepresent3 == 3);									//edit by phong kieu chi cho chay 2d mac dinh g_bRepresent3 == 3
 #endif
 
+	IniFile.GetInteger("Client", "PaintFps", 30, &g_nPaintFps);
+	if (g_nPaintFps < 0)
+		g_nPaintFps = 0;
+	if (g_nPaintFps > 60)
+		g_nPaintFps = 60;
+	IniFile.GetInteger("Client", "PaintInterp", 1, &g_nPaintInterp);
+	if (g_nPaintFps > 30)
+		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit
+
 	char	szPath[MAX_PATH];
 	if (IniFile.GetString("Client", "CapPath", "", szPath, sizeof(szPath)))
 	{
@@ -587,6 +598,9 @@ BOOL KMyApp::GameInit()
 
 BOOL KMyApp::GameExit()
 {
+	if (g_nPaintFps > 30)
+		timeEndPeriod(1);
+
 	if (m_pInlinePicSink)
 	{
 		//[wxb 2003-6-23]
@@ -1254,7 +1268,10 @@ BOOL KMyApp::GameLoop()
 			if (nElapse)
 				nGameFps = m_GameCounter * 1000 / nElapse;
 			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DRAWVISION, g_DrawVision);
-			UiPaint(nGameFps);//nhe hon
+			if (g_nPaintFps > 0)
+				g_pCoreShell->OperationRequest(GOI_PROCFRAME_BREATHE, (unsigned int)(g_nPaintInterp > 0 ? 1 : 0), 0);	// snapshot tick positions for paint interpolation
+			else
+				UiPaint(nGameFps);//nhe hon
 		}
 		else
 		{
@@ -1268,10 +1285,37 @@ BOOL KMyApp::GameLoop()
 		MyApp.m_bNotifiIconState = FALSE;
 	}	
 	
+	BOOL	bPainted = FALSE;
+	if (g_nPaintFps > 0)
+	{
+		// paint clock separated from the 18-fps logic clock (JX2 client PaintFps mechanism).
+		// wrap-safe: both DWORD products overflow together, their signed difference stays small
+		static DWORD s_PaintCounter = 0;
+		DWORD	nPaintElapse = m_Timer.GetElapse();
+		int	nPaintDelta = (int)(nPaintElapse * (DWORD)g_nPaintFps - s_PaintCounter * 1000);
+		if (nPaintDelta >= 0)
+		{
+			s_PaintCounter++;
+			if (nPaintDelta > 2000)	// behind by more than 2 paint frames (modal loop / map load): resync, never catch up
+				s_PaintCounter = nPaintElapse * (DWORD)g_nPaintFps / 1000;
+			if (g_nPaintInterp > 0 && m_GameCounter > 0)
+			{
+				// alpha 0..1000: how far the paint moment sits between the last and the next logic tick
+				int	nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
+				if (nAlpha < 0)
+					nAlpha = 0;
+				g_pCoreShell->OperationRequest(GOI_PROCFRAME_POSSHIFT, (unsigned int)nAlpha, 1000);
+			}
+			UiPaint(nGameFps);
+			bPainted = TRUE;
+		}
+	}
+
 	if (m_GameCounter * 1000 >= m_Timer.GetElapse() * GAME_FPS)
 	{
 		//UiPaint(nGameFps);
-		Sleep(1);
+		if (!bPainted)
+			Sleep(1);
 	}
 	else if ((m_GameCounter % 8) == 0)
 	{

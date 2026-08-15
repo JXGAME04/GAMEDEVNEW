@@ -850,6 +850,7 @@ public:
 	KNpcRes*			GetNpcRes(){return &m_DataRes;};
 	int						GetNpcPate();
 	int						GetNpcPatePeopleInfo();
+	void				GetDrawPos(int * pPosX, int *pPosY);	// drawn (interpolated) position - Paint* overlay code only
 	void				ClearBlood(int i);
 	void				SetBlood(int nNo);
 	int					PaintBlood(int nHeightOffset);	
