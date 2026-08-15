@@ -14,8 +14,8 @@ function init_statics()
 	-- FIX 14/08: bat lai chot 1 lan/ngay (goc). Bo comment thi moi cu bam
 	-- thoai 7 NPC tong quan / xa phu deu quet TOAN BO bang hoi.
 	if (nDate == GetGlbValue(GLB_UPDATEDATE)) then --如果已经更新过
---		return
---	end;
+		return
+	end;
 	
 	SetGlbValue(GLB_UPDATEDATE, nDate);
 	--将原来的表清空
