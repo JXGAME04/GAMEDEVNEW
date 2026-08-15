@@ -22,7 +22,7 @@ function CTCTestMenu()
 		"EP PHA 19h (boc tham)/E6Force19",
 		"EP PHA 20h (khai chien)/E6Force20",
 		"EP PHA 0h (don ngay)/E6Force0",
-		"Sang TRANG 2 (lenh/kho/goto/title/thue)/CTCTestMenu2",
+		"Sang TRANG 2/CTCTestMenu2",
 		"Thoi/OnCancel");
 end
 
@@ -41,13 +41,39 @@ function CTCTestMenu2()
 		"Thoi/OnCancel");
 end
 
+-- Hop thoai client chi ve duoc ~6 DONG (goi tin 512B thi du) - dong dai bi
+-- xuong hang an mat cho => chia 2 trang + rut gon (thanh trong chi 1 dau '-').
+function ctc_cityline(i)
+	local o, m = GetCityOwner(i);
+	local s = i.." <"..GetCityAreaName(i).."> ";
+	if (o == "") then
+		s = s.."-";
+	else
+		s = s..o.." / "..m;
+	end
+	if (HaveBeginWar(i) == 1) then
+		s = s.." [DANG DANH]";
+	end
+	if (IsSigningUp(i) == 1) then
+		s = s.." [bao danh]";
+	end
+	return s;
+end
+
 function E3ShowAll()
 	local s = "";
-	for i = 1, 7 do
-		local o, m = GetCityOwner(i);
-		s = s..i.." <"..GetCityAreaName(i).."> chu=["..o.."] thaithu=["..m.."] war="..HaveBeginWar(i).." signup="..IsSigningUp(i).."\n";
+	for i = 1, 4 do
+		s = s..ctc_cityline(i).."\n";
 	end
-	Say(s, 1, "Tro ve/CTCTestMenu");
+	Say(s, 2, "Xem tiep thanh 5-7/E3ShowAll2", "Tro ve/CTCTestMenu");
+end
+
+function E3ShowAll2()
+	local s = "";
+	for i = 5, 7 do
+		s = s..ctc_cityline(i).."\n";
+	end
+	Say(s, 2, "Xem lai thanh 1-4/E3ShowAll", "Tro ve/CTCTestMenu");
 end
 
 function E3ShowHere()
