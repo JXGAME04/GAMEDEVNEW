@@ -324,7 +324,13 @@ void KJx2CityWar_Breathe()
 	if (bChanged)
 		sSaveMirror();
 	for (int i = 1; i <= 7; i++)
+	{
 		sApplyCityToSubWorld(i);
+		// re-grant Title Thai Thu tu mirror (KEHOACH 1.2: title nam RAM,
+		// restart mat - ownership cap lai tu mirror luc boot)
+		if (s_Cities[i].szMaster[0])
+			KJx2Title_GrantByName(s_Cities[i].szMaster, 152 + i);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
