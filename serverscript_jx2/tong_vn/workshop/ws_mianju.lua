@@ -209,7 +209,7 @@ function TeamMaskMake(nFeature, nPrice, nItemIdx)
 	end	
 	Say("Tæng qu¶n DÞ dung ph­êng: MÆt n¹ ®éi ngò cã thÓ gióp cho tÊt c¶ thµnh viªn trong ®éi gièng nhau trong vßng 2 giê.",
 		1, "Xin ®a t¹, ta ®i thö ngay ®©y/cancel")		
-	local nIdx = AddItem(6,1,1108,1,0,0)
+	local nIdx = AddItem(6,1,1109,1,0,0)
 	SetSpecItemParam(nIdx, 1, nFeature)
 	SyncItem(nIdx)
 	AddContribution(-nPrice)
@@ -239,7 +239,7 @@ function TongMaskMake(nFeature, nPrice, nItemIdx)
 	end		
 	Say("Tæng qu¶n DÞ dung ph­êng: MÆt n¹ bang héi cã thÓ gióp cho tÊt c¶ bang chóng gièng nhau trong vßng 3 giê.",
 		1, "Xin ®a t¹, ta ®i thö ngay ®©y/cancel")
-	local nIdx = AddItem(6,1,1109,1,0,0)
+	local nIdx = AddItem(6,1,1110,1,0,0)
 	if (nIdx <= 0) then return end
 	SetSpecItemParam(nIdx, 1, nFeature)
 	SyncItem(nIdx)

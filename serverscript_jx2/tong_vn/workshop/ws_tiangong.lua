@@ -76,7 +76,7 @@ function tg_sure2xiulibao(nTongID, nWorkshopID)
 		Msg2Player("§iÓm cèng hiÕn c¸ nh©n kh«ng ®ñ, kh«ng thÓ sö dông chøc n¨ng nµy.")
 		return 0
 	end
-	local nItemIndex = AddItem(6,1,1084,1,1,0);
+	local nItemIndex = AddItem(6,1,1085,1,1,0);
 	local nTime = GetCurServerTime() + 7 * 24 * 60 * 60;
 	local nDate = FormatTime2Number(nTime);
 	local nYear = floor(nDate/100000000);

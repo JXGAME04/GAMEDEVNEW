@@ -128,7 +128,7 @@ function stunt_huangjinling1()
 	if (not IsTakeStunt(nTongID, TB_STUNT_HUANGJINLING.right)) then
 		return
 	end
-	if (AddItem(6, 1, 1107, 1, 1, 1) > 0) then
+	if (AddItem(6, 1, 1108, 1, 1, 1) > 0) then
 		TONG_ApplyAddTaskValue(nTongID, TONGTSK_CITYST_MEMLIMIT, -1)
 		--这两句在这里其实不必要
 		SetTask(TASKID_STUNT_LASTWEEK, TONG_GetTaskValue(nTongID, TONGTSK_STUNT_MAINPERIOD))
@@ -163,7 +163,7 @@ function stunt_lingshenli1()
 	if (not IsTakeStunt(nTongID, TB_STUNT_LINGSHENLI.right)) then
 		return
 	end
-	if (AddItem(6, 1, 1110, 1, 1, 1) > 0) then
+	if (AddItem(6, 1, 1111, 1, 1, 1) > 0) then
 		TONG_ApplyAddTaskValue(nTongID, TONGTSK_CITYST_MEMLIMIT, -1)
 		SetTask(TASKID_STUNT_LASTWEEK, TONG_GetTaskValue(nTongID, TONGTSK_STUNT_MAINPERIOD))
 		SetTask(TASKID_CITY_LASTDAY, getRelativeDay(nTongID))
@@ -328,7 +328,7 @@ function wsh_getwushuangshazhen()
 	SetTask(TASKID_CITY_LASTDAY, getRelativeDay(nTongID))
 	SetTask(TASKID_CITYST_TAKED, GetTask(TASKID_CITYST_TAKED) + 1)
 
-	local nItem = AddItem(6, 1, 1106, 1, 0, 0, 0); --得到一个 无双杀阵
+	local nItem = AddItem(6, 1, 1107, 1, 0, 0, 0); --得到一个 无双杀阵
 	
 	if (nItem > 0) then
 		SetSpecItemParam(nItem, 1, 120);
@@ -583,7 +583,7 @@ function fhy_getfenghuangyin()
 	SetTask(TASKID_CITY_LASTDAY, getRelativeDay(nTongID))
 	SetTask(TASKID_CITYST_TAKED, GetTask(TASKID_CITYST_TAKED) + 1)
 
-	AddItem(6, 1, 1105, 1, 0, 0, 0);
+	AddItem(6, 1, 1106, 1, 0, 0, 0);
 	totempole_dec("B筺 nh薾 頲 1 <color=yellow>Ph鬾g Ho祅g 蕁<color>.")
 	Msg2Player("Nh薾 th祅h c玭g 1<color=yellow>Ph鬾g Ho祅g 蕁<color>.");
 	
@@ -628,7 +628,7 @@ function stunt_wushenbless1()
 	if (not IsTakeStunt(nTongID, TB_STUNT_WUSHENBLESS.right)) then
 		return
 	end
-	local nItemIdx = AddItem(6, 1, 1264, 1, 1, 1);
+	local nItemIdx = AddItem(6, 1, 1269, 1, 1, 1);
 	if (nItemIdx > 0) then
 		local nlasttime = getExpiredTime2DayEnd() * 60;
 		local nlastday = 7 - tonumber(GetLocalDate("%w"));

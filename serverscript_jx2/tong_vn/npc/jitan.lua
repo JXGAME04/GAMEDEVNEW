@@ -548,7 +548,7 @@ function LUP_GivePrice_OK(nWhich, num)
 		local ntime = GetCurServerTime() + 7 * 24 * 3600;
 		local nTimeParam = tonumber(FormatTime2String("%y%m%d",ntime))	
 		for i = 1,num do
-			local idx = AddItem(6,1,1264,1,1,1)
+			local idx = AddItem(6,1,1269,1,1,1)
 			if idx > 0 then
 				SetSpecItemParam(idx, 1, ntime);
 				SetSpecItemParam(nItemIdx, 2, tonumber(FormatTime2String("%y",ntime)));
@@ -570,7 +570,7 @@ function LUP_GivePrice_OK(nWhich, num)
 		local ntime = tonumber(date("%y%m%d"));
 		--奖励高级辉煌之果
 		for i = 1,num do
-			local idx = AddItem(6,1,906,1,1,1)
+			local idx = AddItem(6,1,907,1,1,1)
 			if idx > 0 then
 				SetSpecItemParam(idx, 1, ntime);
 				SyncItem(idx)

@@ -151,7 +151,7 @@ function sl_sure2muren(nTongID, nWorkshopID)
 	
 	TWS_ApplyAddDayOutput(nTongID, nWorkshopID, -(VALUE_MUREN_CONTRIBUTION ))
 	
-	local nItemIndex = AddItem(6,1,1085,1,1,0)
+	local nItemIndex = AddItem(6,1,1086,1,1,0)
 	SetSpecItemParam(nItemIndex, 1, nTongID)
 	SetSpecItemParam(nItemIndex, 2, nUseLevel)
 	SyncItem(nItemIndex)
@@ -278,7 +278,7 @@ function USE_G_2(nTongID, nWorkshopID)
 	AddContribution(-nCost)
 	Msg2Player("B¹n tiªu tèn "..nCost.." ®iÓm cèng hiÕn!")
 	for i = 1, nCount do 
-		AddItem(6,1,1076,1,0,0)
+		AddItem(6,1,1077,1,0,0)
 	end
 	--AddSkillState(440, 1, 1, aLevelTime[nLevel] * 3600 * 18)
 	Msg2Player("B¹n ®¹t ®­îc"..nCount.." Tu th©n hoµn!")
