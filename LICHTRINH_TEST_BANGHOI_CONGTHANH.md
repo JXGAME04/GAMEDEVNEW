@@ -70,9 +70,9 @@ Bộ test này đã qua một vòng phản biện 24 tác nhân đối chiếu m
 | 3.1 | `Xem lanh dia` | bang mới: `f45=0 f46=0` | ra `MAP CHUA NAP` ⇒ báo số map |
 | 3.2 | `Chon khu vuc CHUNG` → `586` → `Xem lanh dia` | `f45=586`, **f46 vẫn 0** (đúng) | — |
 | 3.3 | `Vao lanh dia` | vào map 586: **7 toà xưởng cấp 1 + 3 Tế Đàn + Xa phu + Rương + 2 Tổng quản khu chiến đấu**. **KHÔNG** có 7 NPC "Tổng quản …phường" — đúng hiện trạng | thiếu toà xưởng ⇒ báo |
-| 3.4 | `Cap kien thiet + tuyet ky` → `Nang cap kien thiet` → đợi vài giây → `Xem lanh dia` | cấp 0 → 1 | báo thiếu quỹ ⇒ quay lại 2.2 nạp thêm |
-| 3.5 | Lặp: `NGAY +8` → `Nang cap` cho tới cấp 3 | lên được cấp 3 | — |
-| 3.6 | **Ghi lại xem có lên được cấp 3 không** | Bản port **đã bỏ 3 điều kiện gốc** (chờ 7 ngày, cấp 2→3 đòi lãnh địa riêng, cấp 4→5 đòi chiếm thành) nên **sẽ lên được** | đây là **chỗ lệch so với bản gốc đã biết**, cần anh xác nhận có muốn khôi phục 3 điều kiện không |
+| 3.4 | Bơm quỹ kiến thiết ≥ **6.720** (mục 2.2, bấm 1 lần là đủ) → `Cap kien thiet + tuyet ky` → `Nang cap kien thiet` → đợi vài giây → `Xem lanh dia` | cấp 0 → 1 | không đổi ⇒ quỹ kiến thiết chưa đủ 6.720 |
+| 3.5 | Thử `Nang cap kien thiet` lần nữa **ngay** | **KHÔNG lên cấp 2** — đúng, vì cấp 1→2 đòi 3 tác phường cấp 3. Không liên quan gì tới số Ngày | lên được cấp 2 ⇒ báo (trái phân tích) |
+| 3.6 | Ghi nhận: **điều kiện nâng cấp KHÔNG có mốc ngày**. Bản port đã bỏ 3 điều kiện gốc (chờ 7 ngày, cấp 2→3 đòi lãnh địa riêng, cấp 4→5 đòi chiếm thành). Muốn lên cấp 2 phải làm buổi 4 trước | — | cần anh quyết có khôi phục 3 điều kiện gốc không |
 | 3.7 | `Tuyet ky bang` — **chụp gửi tôi** | 4 khoá 1011 / 1014 / 1021 / 1036 | — |
 | 3.8 | `Tao lanh dia RIENG theo mau` → `Mau 587` → đợi → `Xem lanh dia` | `f45 = f46 = 587` | ra 0 hoặc 1 ⇒ báo |
 | 3.9 | `Vao lanh dia` (587) | vào map, chỉ NPC nền, **không có toà xưởng** — đúng hiện trạng | — |
@@ -105,6 +105,7 @@ Bộ test này đã qua một vòng phản biện 24 tác nhân đối chiếu m
 | 4.10 | `Thi luyen 4 (do lo)` và `Thien Y 5 (do lo)` | **đều KHÔNG ra đồ — đúng hiện trạng đã biết**; ghi lại khu nào **có trừ** cống hiến/sản lượng | khu nào **ra đồ** ⇒ báo (tốt hơn dự kiến) |
 | 4.11 | `Mo - dong - do bo - san luong` → `Bao tri khu 6` → `Xem khu 5-7` | sản lượng tăng | — |
 | 4.12 | Soi `scriptjx2\tong_vn\ScriptError.log` | dự kiến **có** lỗi của các khu hỏng | gửi nguyên file |
+| 4.13 | **Quay lại nâng cấp kiến thiết**: sau khi có ≥ 3 khu cấp ≥ 3 và quỹ kiến thiết ≥ 21.600 → `4 Lanh dia` → `Nang cap kien thiet` | cấp 1 → **2** | không lên ⇒ đếm lại số khu và cấp từng khu ở `Xem khu 1-4` |
 
 > Nút `SAN XUAT thu` **cố ý đi tắt**: không kiểm khung giờ 12h30–22h, không kiểm cờ chống spam, **không kiểm ô túi trống**. Vì vậy mục 4.6 (dọn túi) là bắt buộc, nếu không vật phẩm rơi mất. Muốn nghiệm thu khung giờ thật thì phải nói chuyện với NPC Tổng quản trong lãnh địa.
 >
