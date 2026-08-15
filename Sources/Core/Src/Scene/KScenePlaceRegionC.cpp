@@ -724,7 +724,7 @@ void KScenePlaceRegionC::PaintGroundDirect()
 //##ModelId=3DDBD8C80309
 void KScenePlaceRegionC::PaintGround(BOOL bPrerenderGroundImg)//add by phong kiÒu h×nh nÒn hoa s¬n
 {
-	if (m_pPrerenderGroundImg && bPrerenderGroundImg)
+	if (m_pPrerenderGroundImg && bPrerenderGroundImg && m_pPrerenderGroundImg->GROUND_IMG_OK_FLAG)
 	{
 		//g_DebugLog("preren [%d][%x]", m_pPrerenderGroundImg->bRenderStyle, m_pPrerenderGroundImg->Color.Color_dw);
 		g_pRepresent->DrawPrimitives(1, m_pPrerenderGroundImg, RU_T_IMAGE, false);

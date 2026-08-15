@@ -20,6 +20,8 @@
 #include "KWeather.h"
 #include "KWeatherMgr.h"
 
+extern int	g_nCorePaintLog;	// CoreShell.cpp: gate for frame-time probes inside Core
+
 
 #ifdef SWORDONLINE_SHOW_DBUG_INFO
 	bool		g_bShowGameInfo = false;	//是否显示游戏（场景）信息
@@ -1072,10 +1074,10 @@ void KScenePlaceC::Paint()
 	if (m_bRenderGround)
 	{
 		m_bRenderGround = false;
-		DWORD	dwPgT0 = timeGetTime();
+		DWORD	dwPgT0 = g_nCorePaintLog > 0 ? timeGetTime() : 0;
 		PrerenderGround(false);
-		DWORD	dwPgMs = timeGetTime() - dwPgT0;
-		if (dwPgMs >= 15)
+		DWORD	dwPgMs = g_nCorePaintLog > 0 ? timeGetTime() - dwPgT0 : 0;
+		if (g_nCorePaintLog > 0 && dwPgMs >= 15)
 		{
 			FILE* pPgLog = fopen("jx_paint.log", "a");
 			if (pPgLog)

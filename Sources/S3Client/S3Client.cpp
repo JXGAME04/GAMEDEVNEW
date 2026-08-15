@@ -1276,7 +1276,7 @@ BOOL KMyApp::GameLoop()
 				nGameFps = m_GameCounter * 1000 / nElapse;
 			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DRAWVISION, g_DrawVision);
 			if (g_nPaintFps > 0)
-				g_pCoreShell->OperationRequest(GOI_PROCFRAME_BREATHE, (unsigned int)(g_nPaintInterp > 0 ? 1 : 0), 0);	// snapshot tick positions for paint interpolation
+				g_pCoreShell->OperationRequest(GOI_PROCFRAME_BREATHE, (unsigned int)(g_nPaintInterp > 0 ? 1 : 0), g_nPaintLog);	// snapshot tick positions for paint interpolation
 			else
 				UiPaint(nGameFps);//nhe hon
 		}

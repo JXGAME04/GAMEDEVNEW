@@ -2497,7 +2497,8 @@ static POINT	s_InterpFrom[MAX_NPC];
 static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
 static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
-BOOL	g_bPaintInterpFocus = FALSE;	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
+BOOL	g_bPaintInterpFocus = FALSE;
+int	g_nCorePaintLog = 0;	// mirror of [Client] PaintLog for Core-side probes (set via GOI_PROCFRAME_BREATHE nParam)	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
 
 int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
 {
@@ -8296,6 +8297,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	// uParam = 1 when POSSHIFT will drive the drawing (PaintInterp on).
 	{
 		g_bPaintInterpFocus = (uParam != 0);
+		g_nCorePaintLog = nParam;
 		if (uParam == 0)
 			break;	// PaintInterp off: snapshot would never be consumed
 		int	nIdx = 0;
