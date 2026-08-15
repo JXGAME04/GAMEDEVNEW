@@ -4112,4 +4112,22 @@ int LuaJX2_AddTongMTask(Lua_State* L)
 	return 1;
 }
 
+//////////////////////////////////////////////////////////////////////
+// DOT E (E6): helper C cho KJx2CityWar khi doi chu thanh - ghi field 48
+// (OccupyCityDay) theo duong script goc CITY_OCCUPY_R (tong_mix.lua:1074-1082:
+// chu MOI = TONG_GetDay cua chinh bang do, chu CU = 0). Di qua sSendFieldCmd
+// nen co ap lac quan + echo relay nhu moi field khac.
+//////////////////////////////////////////////////////////////////////
+void KTongJX2_SetOccupyCityDayC(DWORD dwTongID, int nDay)
+{
+	if (!dwTongID || !g_TongJX2.FindTong(dwTongID))
+		return;
+	sSendFieldCmd(dwTongID, 48, (DWORD)nDay, defTONG_JX2_OP_SET, 0);
+}
+
+DWORD KTongJX2_GetFieldC(DWORD dwTongID, WORD wKey)
+{
+	return g_TongJX2.GetField(dwTongID, wKey);
+}
+
 #endif // _SERVER
