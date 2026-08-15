@@ -8379,7 +8379,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				g_ScenePlace.GetFocusPosition(nFocusX1, nFocusY1, nFocusZ1);
 				if (nFocusX0 / KScenePlaceRegionC::RWPP_AREGION_WIDTH != nFocusX1 / KScenePlaceRegionC::RWPP_AREGION_WIDTH ||
 					nFocusY0 / KScenePlaceRegionC::RWPP_AREGION_HEIGHT != nFocusY1 / KScenePlaceRegionC::RWPP_AREGION_HEIGHT)
+				{
 					g_ScenePlace.Breathe();	// focus really crossed a region border: rebuild the draw tree in the same frame
+					nRet = 2;	// report the crossing to the caller (frame-time probe)
+				}
 			}
 		}
 	}

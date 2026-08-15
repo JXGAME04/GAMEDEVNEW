@@ -64,6 +64,7 @@ CChatFilter g_ChatFilter;
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
+static int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
 //int gameNumber = 0; // Game number, initialized to 0
 //Represent
 struct iRepresentShell* g_pRepresentShell = NULL;
@@ -498,6 +499,7 @@ BOOL KMyApp::GameInit()
 	if (g_nPaintFps > 60)
 		g_nPaintFps = 60;
 	IniFile.GetInteger("Client", "PaintInterp", 1, &g_nPaintInterp);
+	IniFile.GetInteger("Client", "PaintLog", 0, &g_nPaintLog);
 	if (g_nPaintFps > 30)
 		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit
 
@@ -1210,6 +1212,11 @@ void KMyApp::ProcIpcCommand()
 BOOL KMyApp::GameLoop()
 {
 	static int nGameFps = 0;
+	// frame-time probe (PaintLog=1): where does a slow pass spend its time
+	DWORD	nLogT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
+	DWORD	nLogTick = 0, nLogPaint = 0;
+	int	nLogCross = 0;
+	DWORD	nLogCntBefore = m_GameCounter;
 	g_NetConnectAgent.Breathe();
 	if(g_DrawVisionTime < timeGetTime())
 		g_DrawVision = 0;
@@ -1285,6 +1292,8 @@ BOOL KMyApp::GameLoop()
 		MyApp.m_bNotifiIconState = FALSE;
 	}	
 	
+	if (g_nPaintLog > 0)
+		nLogTick = timeGetTime() - nLogT0;
 	BOOL	bPainted = FALSE;
 	if (g_nPaintFps > 0)
 	{
@@ -1304,13 +1313,16 @@ BOOL KMyApp::GameLoop()
 				int	nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
 				if (nAlpha < 0)
 					nAlpha = 0;
-				g_pCoreShell->OperationRequest(GOI_PROCFRAME_POSSHIFT, (unsigned int)nAlpha, 1000);
+				if (g_pCoreShell->OperationRequest(GOI_PROCFRAME_POSSHIFT, (unsigned int)nAlpha, 1000) == 2)
+					nLogCross = 1;
 			}
 			UiPaint(nGameFps);
 			bPainted = TRUE;
 		}
 	}
 
+	if (g_nPaintLog > 0 && bPainted)
+		nLogPaint = timeGetTime() - nLogT0 - nLogTick;
 	if (m_GameCounter * 1000 >= m_Timer.GetElapse() * GAME_FPS)
 	{
 		//UiPaint(nGameFps);
@@ -1320,6 +1332,44 @@ BOOL KMyApp::GameLoop()
 	else if ((m_GameCounter % 8) == 0)
 	{
 		Sleep(1);
+	}
+
+	if (g_nPaintLog > 0)
+	{
+		// pass >= 25ms is a visible hitch at 60fps; aggregate every 10s
+		static DWORD s_LogSum = 0, s_LogCnt = 0, s_LogMax = 0, s_LogSpk = 0, s_LogCross = 0, s_LogLast = 0;
+		DWORD	nLogTotal = timeGetTime() - nLogT0;
+		s_LogSum += nLogTotal;
+		s_LogCnt++;
+		if (nLogTotal > s_LogMax)
+			s_LogMax = nLogTotal;
+		if (nLogCross)
+			s_LogCross++;
+		if (nLogTotal >= 25)
+		{
+			s_LogSpk++;
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[SPIKE] t=%u total=%u logic=%u paint=%u tick=%d painted=%d cross=%d\n",
+					nLogT0, nLogTotal, nLogTick, nLogPaint, (int)(m_GameCounter != nLogCntBefore), (int)bPainted, nLogCross);
+				fclose(pLog);
+			}
+		}
+		if (s_LogLast == 0)
+			s_LogLast = nLogT0;
+		if (nLogT0 - s_LogLast >= 10000)
+		{
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[SUM] t=%u passes=%u avg=%u max=%u spikes=%u cross=%u\n",
+					nLogT0, s_LogCnt, s_LogCnt ? s_LogSum / s_LogCnt : 0, s_LogMax, s_LogSpk, s_LogCross);
+				fclose(pLog);
+			}
+			s_LogSum = s_LogCnt = s_LogMax = s_LogSpk = s_LogCross = 0;
+			s_LogLast = nLogT0;
+		}
 	}
 
 	return true;
