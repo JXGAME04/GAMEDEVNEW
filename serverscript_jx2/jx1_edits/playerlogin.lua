@@ -53,6 +53,17 @@ LayExpUyThac()
 -- 14/08: bat lai danh hieu da chon o CA HAI he (JX2 de an buff,
 -- JX1 de client ve chu tren dau) - titlefuncs.lua:title_loginactive
 title_loginactive()
+-- 15/08: dat lai VONG SANG bang hoi (skill-state 726-731, han 7 ngay).
+-- Trang thai chi nam trong RAM nen thoat game la mat; 3 khoa task thi luu DB.
+-- Khoa: 2349 id vong, 2350 moc het han, 1757 co da huy (ws_huodong.lua:5-7).
+local nGhRemain = GetTask(2350) - GetCurrentTime()
+if (nGhRemain > 0 and GetTask(1757) ~= 1) then
+	local nGhSkill = GetTask(2349)
+	if (nGhSkill >= 726 and nGhSkill <= 731) then
+		RemoveSkillState(nGhSkill)
+		AddSkillState(nGhSkill, 1, 0, nGhRemain * 18)
+	end
+end
 LogDangNhap()
 
 

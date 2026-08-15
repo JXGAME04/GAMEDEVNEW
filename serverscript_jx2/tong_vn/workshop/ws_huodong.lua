@@ -209,7 +209,7 @@ function delguanghuan(IsWantCancel)--去掉光环效果
 	end;
 	
 	for i = 726, 731 do
-		AddSkillState(i, 1, 0, 0);
+		RemoveSkillState(i);	-- 15/08: AddSkillState(...,0) bi ep thanh -1 = VINH VIEN
 	end;
 end;
 
@@ -225,6 +225,7 @@ function tong_gh_getagain(bExchangeIn, bPlayer)	--得到原有的光环；
 	
 	if (bPlayer == 1 or GetTask(TK_ISCANCEL) ~= 1) then
 		local nSkillID = GetTask(TK_GUANGHUAN);
+		RemoveSkillState(nSkillID);	-- go truoc de khong chong node cu
 		AddSkillState(nSkillID, 1, 0, nRemainSec * 18);
 		SetTask(TK_ISCANCEL, 0);
 	end;

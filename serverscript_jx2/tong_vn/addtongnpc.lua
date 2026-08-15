@@ -74,14 +74,14 @@ end
 citymap = {586,587,588,589,590,591,593,594,595,596,597};
 --µÚ¶þÁÐ±íÊ¾×ø±êÔÚ±íÖÐµÄÎ»ÖÃ
 citytong_npc={
---{198,1,"\\script\\tong\\npc\\bingjia_zongguan.lua","Tæng qu¶n Binh gi¸p ph­êng"},
---{200,2,"\\script\\tong\\npc\\tiangong_zongguan.lua","Tæng qu¶n Thiªn c«ng ph­êng"},
---{375,3,"\\script\\tong\\npc\\mianju_zongguan.lua","Tæng qu¶n DÞ dung ph­êng"},
+{198,1,"\\script\\tong\\npc\\bingjia_zongguan.lua","Tæng qu¶n Binh gi¸p ph­êng"},
+{200,2,"\\script\\tong\\npc\\tiangong_zongguan.lua","Tæng qu¶n Thiªn c«ng ph­êng"},
+{375,3,"\\script\\tong\\npc\\mianju_zongguan.lua","Tæng qu¶n DÞ dung ph­êng"},
 --remove this npc, by vng 20141029
---{455,4,"\\script\\tong\\npc\\tianyi_zongguan.lua","ÌìÒâ·»×Ü¹Ü"},
---{769,5,"\\script\\tong\\npc\\shilian_zongguan.lua","Tæng qu¶n ThÝ luyÖn ph­êng"},
---{377,6,"\\script\\tong\\npc\\liwu_zongguan.lua","Tæng qu¶n LÔ phÈm ph­êng"},
---{308,7,"\\script\\tong\\npc\\huodong_zongguan.lua","Tæng qu¶n Ho¹t ®éng ph­êng"},
+{455,4,"\\script\\tong\\npc\\tianyi_zongguan.lua","TÕng qu¢n Thiˆn « ph­êng"},
+{769,5,"\\script\\tong\\npc\\shilian_zongguan.lua","Tæng qu¶n ThÝ luyÖn ph­êng"},
+{377,6,"\\script\\tong\\npc\\liwu_zongguan.lua","Tæng qu¶n LÔ phÈm ph­êng"},
+{308,7,"\\script\\tong\\npc\\huodong_zongguan.lua","Tæng qu¶n Ho¹t ®éng ph­êng"},
 
 {235,8,"\\script\\tong\\npc\\tong_chefu.lua","Xa phu"},
 {625,9,"\\script\\tong\\npc\\tong_chuwuxiang.lua","R­¬ng chøa ®å"},
