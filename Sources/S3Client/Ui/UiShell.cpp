@@ -274,8 +274,11 @@ int UiStart()
 	return (KUiInit::OpenWindow(true, true) != NULL);
 }
 
+extern int	g_nPaintLog;	// S3Client.cpp: frame-time probe (PaintLog=1)
+
 void UiPaint(int nGameLoop)
 {
+	DWORD	nPdT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
 	if (g_pRepresentShell == NULL || 
 		g_pRepresentShell->RepresentBegin(false, 0) == false)
 	{
@@ -284,7 +287,9 @@ void UiPaint(int nGameLoop)
 		return;
 	}
 	
+	DWORD	nPdT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
 	Wnd_RenderWindows();
+	DWORD	nPdT2 = g_nPaintLog > 0 ? timeGetTime() : 0;
 
 //#ifdef _DEBUG
 	DWORD	dwPing = 0;
@@ -328,6 +333,22 @@ void UiPaint(int nGameLoop)
 #endif
 
 	g_pRepresentShell->RepresentEnd();
+	if (g_nPaintLog > 0)
+	{
+		// begin = RepresentBegin (lock surface), render = whole scene+UI (art loads live here),
+		// end = RepresentEnd (blt/flip - DWM/vsync stalls live here)
+		DWORD	nPdT3 = timeGetTime();
+		if (nPdT3 - nPdT0 >= 20)
+		{
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[PDET] begin=%u render=%u end=%u\n",
+					nPdT1 - nPdT0, nPdT2 - nPdT1, nPdT3 - nPdT2);
+				fclose(pLog);
+			}
+		}
+	}
 	//if (g_pRepresentShell->FPSDelay > 0 && g_pRepresentShell->FPSDelay <= 200)
 	//Sleep(g_pRepresentShell->FPSDelay);
 }

@@ -64,7 +64,7 @@ CChatFilter g_ChatFilter;
 //static int m_PaintStep = GAME_FPS / 18;
 static int	g_nPaintFps = 30;		// paint frames per second, config.ini [Client] PaintFps; 0 = paint locked to logic tick (legacy)
 static int	g_nPaintInterp = 1;		// config.ini [Client] PaintInterp; 1 = interpolate drawn NPC positions between logic ticks
-static int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
+int	g_nPaintLog = 0;		// config.ini [Client] PaintLog; 1 = write jx_paint.log frame-time probe
 //int gameNumber = 0; // Game number, initialized to 0
 //Represent
 struct iRepresentShell* g_pRepresentShell = NULL;
