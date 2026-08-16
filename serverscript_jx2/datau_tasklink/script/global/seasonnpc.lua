@@ -115,6 +115,9 @@ function Task_NewVersionAward()
 	if (nNum == 40 and nCancelNum) == 0 then
 		Msg2Player("H«m nay hoµn thµnh liªn tôc nhiÖm vô D· TÈu lÇn thø 40, nhËn ®­îc kinh nghiÖm thªm!");
 		tbAwardTemplet:GiveAwardByList({nExp_tl = 100000000}, "PhÇn th­ëng kinh nghiÖm khi hoµn thµnh nhiÖm vô D· TÈu h»ng ngµy")
+		-- [16/08/2026 chu game chot] du 40 nhiem vu/ngay khong huy: tang them 5 ruong (nhu ruong Linux)
+		tbAwardTemplet:GiveAwardByList({tbProp = {6, 1, 2383, 1, 0, 0}, nCount = 5}, "seasonnpc_40task_ruong")
+		Msg2Player("Hoan thanh 40 nhiem vu, nhan them 5 B¶o r­¬ng thÇn bÝ cña D· TÈu!");
 	end	
 	
 end
@@ -783,11 +786,13 @@ function Task_GiveAward()
 	-- [JX1 PORT 15/08/2026] item goc 6/1/2374 ben JX2 = "Bao ruong than bi cua Da Tau";
 	-- 6/1/2374 ben JX1 lai la "Bang bach kim" (vat lieu quy) -> phat nham la su co kinh te.
 	-- TAM KHOA moc-10 bang co DATAU_MOC10_BAT; chu game chon item ruong roi thay id + dat DATAU_MOC10_BAT = 1.
-	if (DATAU_MOC10_BAT == 1 and nTotalTaskNum ~= 0 and mod(nTotalTaskNum, 10) == 0 and GetTask(TKS_TASKLINK_SPITEM) ~= nTotalTaskNum) then
+	-- [16/08/2026 chu game chot] moc moi-10-nhiem-vu = 3x Boss Trieu Hoan Phu (6/1/1023).
+	-- (goc Linux phat 1 ruong 2374; ruong do = item 2383 ben JX1, gio la thuong moc-40)
+	if (nTotalTaskNum ~= 0 and mod(nTotalTaskNum, 10) == 0 and GetTask(TKS_TASKLINK_SPITEM) ~= nTotalTaskNum) then
 		SetTask(TKS_TASKLINK_SPITEM, nTotalTaskNum);
-		local tbItem = {tbProp = {6, 1, 2374, 1, 0, 0}}
+		local tbItem = {tbProp = {6, 1, 1023, 1, 0, 0}, nCount = 3}
 		tbAwardTemplet:GiveAwardByList(tbItem, "seasonnpc_10task")
-		Msg2Player(format("Chóc mõng ®¹i hiÖp ®· hoµn thµnh liªn tiÕp %d nhiÖm vô D· TÈu, nhËn ®­îc phÇn th­ëng %s!", 10, "B¶o r­¬ng thÇn bÝ cña D· TÈu"));
+		Msg2Player(format("Chóc mõng ®¹i hiÖp ®· hoµn thµnh liªn tiÕp %d nhiÖm vô D· TÈu, nhËn ®­îc phÇn th­ëng %s!", 10, "3 Boss TriÖu Ho¸n Phï"));
 	end
 
 	--tl_print ("¸øÁ´½±ÀøºÍ»·½±Àø·¢½±Íê±Ï£¡£¡£¡");
