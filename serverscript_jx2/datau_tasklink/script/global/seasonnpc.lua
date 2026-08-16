@@ -1135,3 +1135,191 @@ function _WriteCancelLog(nType, nTime, nCancel)
 
 end;
 
+
+
+-- [JX1 PORT] spawn Ba Lang Huyen co SetNpcTimer (tinh nang NPC noi chuyen cua he cu);
+-- ban goc khong co OnTimer -> them rong de khoi ScriptError moi lan timer no.
+function OnTimer()
+end;
+
+
+-- ============================================================================
+-- [JX1 PORT 16/08/2026] CUA SO THUONG 3 RUONG SPR CO SAN CUA JX1
+-- Client co 2 cua so (GameSpaceChangedNotify.cpp:561):
+--   nType <= 4 -> KUiDaTau  : nut [Exp][Money][Random] -> finish_exp/finish_money/quest_random
+--   nType >  4 -> KUiDaTau1 : nut [Point][Lucky][Item] -> finish_point/finish_lucky/finish_item
+-- Server dinh tuyen nut bam ve DUNG state hoi thoai nay (KProtocolProcess.cpp
+-- case 3/4 + OpenQuestFinish luu m_ActionScriptID). Vi vay dinh nghia Prise
+-- o day (de len ham C cung ten) de dung UI SPR thay hop thoai chu.
+-- Kinh te GIU NGUYEN: 3 phan thuong van boc bang cong thuc tasklink goc;
+-- nut bam chi goi lai dung ham goc (SelectAward_* / mySG) voi dung tham so.
+-- Bo 3 loai luon vua 1 cua so tru toi da 1 nut mang icon xap xi (phan
+-- thuong nhan duoc van dung nhu da boc).
+-- ============================================================================
+
+tbPriseMap = tbPriseMap or {}
+
+-- tach "nhan/icon/thamso/TenHam": lay 2 truong cuoi (thamso, TenHam)
+function Prise_Parse(szOpt)
+	local nLast = nil
+	local nPrev = nil
+	local nPos = 0
+	while 1 do
+		local nS = strfind(szOpt, "/", nPos + 1, 1)
+		if not nS then
+			break
+		end
+		nPrev = nLast
+		nLast = nS
+		nPos = nS
+	end
+	if not nLast or not nPrev then
+		return nil
+	end
+	return strsub(szOpt, nLast + 1), strsub(szOpt, nPrev + 1, nLast - 1)
+end
+
+-- "a,b,c,..." -> bang so (toi da 6, thieu = 0)
+function Prise_Params(szParam)
+	local tbNum = {}
+	local nPos = 0
+	while getn(tbNum) < 6 do
+		local nS = strfind(szParam, ",", nPos + 1, 1)
+		local szTok
+		if nS then
+			szTok = strsub(szParam, nPos + 1, nS - 1)
+			nPos = nS
+		else
+			szTok = strsub(szParam, nPos + 1)
+		end
+		tinsert(tbNum, tonumber(szTok) or 0)
+		if not nS then
+			break
+		end
+	end
+	while getn(tbNum) < 6 do
+		tinsert(tbNum, 0)
+	end
+	return tbNum
+end
+
+function Prise(szMsg, szOpt1, szOpt2, szOpt3)
+	local tbOpt = {szOpt1, szOpt2, szOpt3}
+	local tbAward = {}
+	local i, k
+	for i = 1, 3 do
+		if tbOpt[i] and tbOpt[i] ~= "" then
+			local szFn, szParam = Prise_Parse(tbOpt[i])
+			if szFn then
+				local szNut = ""
+				local nNhomA = 0
+				if szFn == "SelectAward_Exp" then
+					szNut = "finish_exp"
+					nNhomA = 1
+				elseif szFn == "SelectAward_Money" then
+					szNut = "finish_money"
+					nNhomA = 1
+				elseif szFn == "SelectAward_Change" then
+					szNut = "quest_random"
+					nNhomA = 1
+				elseif szFn == "mySG" then
+					szNut = "finish_item"
+				elseif szFn == "SelectAward_Cancel" then
+					szNut = "finish_lucky"
+				end
+				tinsert(tbAward, {szFn = szFn, tbP = Prise_Params(szParam), szNut = szNut, nNhomA = nNhomA})
+			end
+		end
+	end
+	if getn(tbAward) == 0 then
+		return
+	end
+	-- chon cua so theo da so nhom (3 loai phan biet -> toi da 1 nut lech icon)
+	local nA = 0
+	for i = 1, getn(tbAward) do
+		nA = nA + tbAward[i].nNhomA
+	end
+	local nType, tbNut
+	if nA >= 2 then
+		nType = 1
+		tbNut = {"finish_exp", "finish_money", "quest_random"}
+	else
+		nType = 5
+		tbNut = {"finish_point", "finish_lucky", "finish_item"}
+	end
+	-- gan nut: uu tien nut dung loai, phan thua vao nut trong
+	local tbMap = {}
+	local tbConLai = {}
+	for i = 1, getn(tbAward) do
+		local tbA = tbAward[i]
+		local bTuNhien = 0
+		for k = 1, 3 do
+			if tbNut[k] == tbA.szNut and not tbMap[tbA.szNut] then
+				bTuNhien = 1
+			end
+		end
+		if bTuNhien == 1 then
+			tbMap[tbA.szNut] = tbA
+		else
+			tinsert(tbConLai, tbA)
+		end
+	end
+	for i = 1, getn(tbConLai) do
+		for k = 1, 3 do
+			if not tbMap[tbNut[k]] then
+				tbMap[tbNut[k]] = tbConLai[i]
+				break
+			end
+		end
+	end
+	tbPriseMap[PlayerIndex] = tbMap
+	-- goi tin client m_szNotice chi 64 byte -> cat 60
+	local szShort = szMsg or ""
+	if strlen(szShort) > 60 then
+		szShort = strsub(szShort, 1, 60)
+	end
+	OpenQuestFinish(szShort, nType)
+end
+
+-- bo phat theo nut: tra ve dung ham goc voi dung tham so da boc
+function Prise_Chon(szNut)
+	local tbMap = tbPriseMap[PlayerIndex]
+	if not tbMap then
+		return
+	end
+	local tbA = tbMap[szNut]
+	if not tbA then
+		return
+	end
+	tbPriseMap[PlayerIndex] = nil
+	if tbA.szFn == "mySG" then
+		mySG(tbA.tbP[1], tbA.tbP[2], tbA.tbP[3], tbA.tbP[4], tbA.tbP[5], tbA.tbP[6])
+	elseif tbA.szFn == "SelectAward_Money" then
+		SelectAward_Money(tbA.tbP[1])
+	elseif tbA.szFn == "SelectAward_Exp" then
+		SelectAward_Exp(tbA.tbP[1])
+	elseif tbA.szFn == "SelectAward_Change" then
+		SelectAward_Change(tbA.tbP[1])
+	elseif tbA.szFn == "SelectAward_Cancel" then
+		SelectAward_Cancel(tbA.tbP[1])
+	end
+end
+
+function finish_exp()
+	Prise_Chon("finish_exp")
+end
+function finish_money()
+	Prise_Chon("finish_money")
+end
+function quest_random()
+	Prise_Chon("quest_random")
+end
+function finish_point()
+	Prise_Chon("finish_point")
+end
+function finish_lucky()
+	Prise_Chon("finish_lucky")
+end
+function finish_item()
+	Prise_Chon("finish_item")
+end

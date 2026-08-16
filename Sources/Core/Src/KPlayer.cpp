@@ -4764,6 +4764,26 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 					ObjSet.Remove(nObjIndex);
 				}
 			}*/
+			// [DA TAU 16/08/2026] khoi phuc hook nhat cuon Da Tau nhu ban goc Linux:
+			// nhat 205 (dia do chi) / 212 (mat chi) genre 6 = cong ngay vao bo dem
+			// nhiem vu (PickUp cua tasklink_goods*.lua, tu chia to doi), cuon KHONG
+			// vao tui. Khoi phuc tu khoi cu bi comment o tren (them return TRUE de
+			// khong roi xuong AddKIL voi object da go - loi cua khoi cu).
+			if (Object[nObjIndex].m_nGenre == 6 &&
+				(Object[nObjIndex].m_nParticularType == 205 || Object[nObjIndex].m_nParticularType == 212))
+			{
+				if (Object[nObjIndex].m_nParticularType == 205)
+					ExecuteScript((char*)"\script\item\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
+				else
+					ExecuteScript((char*)"\script\item\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+				Object[nObjIndex].SyncRemove(TRUE);
+				if (Object[nObjIndex].m_nRegionIdx >= 0)
+				{
+					SubWorld[Object[nObjIndex].m_nSubWorldID].m_Region[Object[nObjIndex].m_nRegionIdx].RemoveObj(nObjIndex);
+					ObjSet.Remove(nObjIndex);
+				}
+				return TRUE;
+			}
 			int nItemIdx = m_ItemList.AddKIL(Object[nObjIndex].m_nItemDataID, pPickUp->m_btPosType, pPickUp->m_btPosX, pPickUp->m_btPosY, false, true);
 			if (nItemIdx <= 0 || nItemIdx >= MAX_PLAYER_ITEM)
 			{
