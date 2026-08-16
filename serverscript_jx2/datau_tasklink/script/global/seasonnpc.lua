@@ -240,7 +240,9 @@ if (tl_gettaskcourse() == 2) then
 end
 
 	if ( myCanceled == 10) then
-		if (n < 605) then
+		-- [JX1 PORT 16/08/2026] goc Linux GetGameTime = GIAY (phat 605s ~ 10 phut);
+		-- JX1 GetGameTime = TICK 18/giay (KSubWorldSet.h:34 m_nLoopRate) -> quy doi 605*18.
+		if (n < 10890) then
 			Task_Punish()
 			return
 		else

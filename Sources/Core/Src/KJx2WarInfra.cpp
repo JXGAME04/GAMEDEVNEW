@@ -414,9 +414,13 @@ int LuaGetItemLife(Lua_State* L)
 }
 
 // (nItemIdx) -> genre, detail, particular (3 gia tri - sure_GiveTiaoZhanLing:227)
+// [DA TAU 16/08/2026] mo rong tra 6 gia tri (them level, series, luck):
+// seasonnpc.lua (Task_Accept_01/02) nhan 6 nhu binary JX2 goc; truoc day
+// chi tra 3 -> Level/nSeries = nil -> tl_checktask LUON truot (nil == so).
+// Caller cu nhan 3 gia tri khong anh huong (Lua bo phan thua).
 int LuaGetItemProp(Lua_State* L)
 {
-	int g = 0, d = 0, p = 0;
+	int g = 0, d = 0, p = 0, lv = 0, se = 0, lk = 0;
 	if (Lua_IsNumber(L, 1))
 	{
 		int nIdx = (int)Lua_ValueToNumber(L, 1);
@@ -425,12 +429,18 @@ int LuaGetItemProp(Lua_State* L)
 			g = Item[nIdx].GetGenre();
 			d = Item[nIdx].GetDetailType();
 			p = Item[nIdx].GetParticular();
+			lv = Item[nIdx].GetLevel();
+			se = Item[nIdx].GetSeries();
+			lk = Item[nIdx].m_GeneratorParam.nLuck;
 		}
 	}
 	Lua_PushNumber(L, g);
 	Lua_PushNumber(L, d);
 	Lua_PushNumber(L, p);
-	return 3;
+	Lua_PushNumber(L, lv);
+	Lua_PushNumber(L, se);
+	Lua_PushNumber(L, lk);
+	return 6;
 }
 
 //////////////////////////////////////////////////////////////////////

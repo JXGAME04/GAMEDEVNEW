@@ -1996,12 +1996,18 @@ int LuaC_Random(Lua_State* L)
 	return 1;
 }
 
-// SetRandSeed(nSeed) - dat seed RNG engine (KRandom g_RandomSeed).
+// SetRandSeed(nSeed) -> seed CU. [FIX 16/08] tasklink_award.lua:55 luu
+// _nSeed = SetRandSeed(...) roi khoi phuc SetRandSeed(_nSeed); ban dau khong
+// tra gi -> _nSeed = nil -> moi lan boc thuong dat seed LCG TOAN SERVER = 0
+// (g_Random dung chung boi GetRandomNumber - KCore.h:200) -> ngau nhien toan
+// cuc lap lai/du doan duoc. Tra seed cu de script khoi phuc dung nguyen ban.
 int LuaSetRandSeed(Lua_State* L)
 {
+	UINT uOld = g_GetRandomSeed();
 	if (Lua_GetTopIndex(L) >= 1)
 		g_RandomSeed((UINT)(DWORD)Lua_ValueToNumber(L, 1));
-	return 0;
+	Lua_PushNumber(L, (double)uOld);
+	return 1;
 }
 
 // GetTiredDegree() - JX1 khong co he do met. Ban goc trong TireReduce cung
