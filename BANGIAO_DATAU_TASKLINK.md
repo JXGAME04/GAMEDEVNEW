@@ -98,6 +98,17 @@ Dải lõi 1020–1046, 1825, 2419/2420, 2570–2575, 2690, 2797 + TEMP 154: **t
 - `script\tong\tong_header.lua` thô lệch **44 dòng** so bản đợt 12 mà **CTC citywar_global đang include** — để lại là hồi quy hệ công thành.
 → **ĐÃ XÓA 6 file** (`script\tong\{tong_award_head,tong_header,contribution_entry,tong_setting,log}.lua` + `script\lib\string.lua`); include của tasklink_award giờ đi qua remap về bản tong_vn đã vá — cống hiến bang Dã Tẩu và Bang Hội chảy chung MỘT đường mã.
 
+## 6c. ĐỢT SỬA 16/08 THEO TEST THẬT (commit `178fb42e`)
+
+1. **Cửa sổ thưởng = 3 rương SPR có sẵn** (thay hộp thoại chữ): `Prise` giờ là hàm Lua trong seasonnpc (đè hàm C) — vẫn bốc 3 thưởng bằng công thức tasklink gốc, rồi mở `OpenQuestFinish`:
+   - đa số thưởng thuộc nhóm {Exp, Tiền, Đổi-lần-nữa} → `KUiDaTau` (nType 1, nút Exp/Money/Random);
+   - đa số thuộc {Vật phẩm, Lượt hủy} → `KUiDaTau1` (nType 5, nút Point/Lucky/Item);
+   - 6 hàm whitelist (`finish_*`, `quest_random`) phát lại đúng `SelectAward_*`/`mySG` với đúng tham số đã bốc. Toán học: bộ 3 loại khác nhau → **tối đa 1 nút mang icon xấp xỉ**, phần thưởng nhận được luôn đúng như đã bốc. Đóng cửa sổ không chọn → course=2, gặp lại NPC ra đúng 3 ô cũ (seed 1037).
+   - Chú ý: `m_szNotice` client chỉ 64 byte → câu thoại bị cắt 60 byte (giới hạn cứng của UI có sẵn).
+2. **Khôi phục hook nhặt cuộn** (`KPlayer.cpp ServerPickUpItem`): nhặt 205/212 = chạy `PickUp()` ngay (cộng đếm + báo "được X tấm", tự chia tổ đội), **cuộn không vào túi** — đúng hành vi bản gốc Linux. Khối hook cũ của JX1 bị comment từ trước và có lỗi rơi xuống AddKIL — bản mới thêm `return TRUE`.
+3. Gỡ 3 que dò `[DT-1..3]`; thêm `OnTimer()` rỗng (spawn Ba Lăng Huyện có timer trò chuyện của hệ cũ).
+4. **PHẢI thay `Coreserver.dll` bản 16/08 02:58 + restart GameServer** (hook nhặt nằm trong DLL).
+
 ## 7. RỦI RO CÒN LẠI / ĐÃ BIẾT
 1. **Chưa boot test** — con số "0 hàm thiếu" là quét tĩnh; `ScriptError.log` sau restart là phép đo thật. Nếu còn `attempt to call a nil value`, tra tên hàm trong manifest mục D.
 2. Enum thuộc tính 85–110 đã đối chiếu **khớp từng số** với `KMagicAttrib.h` (85=lifemax… 110), nhưng nên test thật 1 nhiệm vụ loại 3.
