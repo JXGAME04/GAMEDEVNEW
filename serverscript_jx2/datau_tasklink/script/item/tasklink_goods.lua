@@ -80,3 +80,23 @@ myMapID = SubWorldIdx2ID( SubWorld )
 	end
 
 end
+
+-- [JX1 PORT 16/08/2026] Duong CLICK-PHAI kieu JX1 (genre 6 -> EatMecidine goi
+-- main): danh cho cuon da nam trong tui (nhat truoc khi hook C++ chay, hoac
+-- duong roi khac lot luoi). Cong don giong het nhat tren dat roi tu huy cuon.
+function main(nItemIndex)
+	local nPreservedPlayerIndex = PlayerIndex
+	local nMemCount = GetTeamSize()
+	if (nMemCount == 0) then
+		AddMapValues()
+	else
+		local i
+		for i = 1, nMemCount do
+			PlayerIndex = GetTeamMember(i)
+			AddMapValues()
+		end
+		PlayerIndex = nPreservedPlayerIndex
+	end
+	RemoveItemByIndex(nItemIndex)
+	return 0
+end

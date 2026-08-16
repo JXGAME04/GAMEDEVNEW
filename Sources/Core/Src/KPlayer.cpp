@@ -4769,20 +4769,30 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 			// nhiem vu (PickUp cua tasklink_goods*.lua, tu chia to doi), cuon KHONG
 			// vao tui. Khoi phuc tu khoi cu bi comment o tren (them return TRUE de
 			// khong roi xuong AddKIL voi object da go - loi cua khoi cu).
-			if (Object[nObjIndex].m_nGenre == 6 &&
-				(Object[nObjIndex].m_nParticularType == 205 || Object[nObjIndex].m_nParticularType == 212))
+			// FIX 16/08 lan 2: so bang DU LIEU ITEM chu khong phai truong genre cua
+			// object - nhieu duong AddObject gan m_nGenre = 0 cho vat roi (KObjSet.cpp
+			// :549/:602/:666) nen dieu kien cu truot, cuon van chui vao tui.
 			{
-				if (Object[nObjIndex].m_nParticularType == 205)
-					ExecuteScript((char*)"\script\item\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
-				else
-					ExecuteScript((char*)"\script\item\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
-				Object[nObjIndex].SyncRemove(TRUE);
-				if (Object[nObjIndex].m_nRegionIdx >= 0)
+				int nPickItemId = Object[nObjIndex].m_nItemDataID;
+				if (nPickItemId > 0 && nPickItemId < MAX_ITEM &&
+					Item[nPickItemId].GetGenre() == 6 && Item[nPickItemId].GetDetailType() == 1 &&
+					(Item[nPickItemId].GetParticular() == 205 || Item[nPickItemId].GetParticular() == 212))
 				{
-					SubWorld[Object[nObjIndex].m_nSubWorldID].m_Region[Object[nObjIndex].m_nRegionIdx].RemoveObj(nObjIndex);
-					ObjSet.Remove(nObjIndex);
+					if (Item[nPickItemId].GetParticular() == 205)
+						ExecuteScript((char*)"\script\item\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
+					else
+						ExecuteScript((char*)"\script\item\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+					Object[nObjIndex].SyncRemove(TRUE);
+					if (Object[nObjIndex].m_nRegionIdx >= 0)
+					{
+						SubWorld[Object[nObjIndex].m_nSubWorldID].m_Region[Object[nObjIndex].m_nRegionIdx].RemoveObj(nObjIndex);
+						ObjSet.Remove(nObjIndex);
+					}
+					// cuon khong vao tui -> giai phong item data khoi pool (chong ro ri
+					// pool item - loi nay tung gay het pool truoc day)
+					ItemSet.Remove(nPickItemId);
+					return TRUE;
 				}
-				return TRUE;
 			}
 			int nItemIdx = m_ItemList.AddKIL(Object[nObjIndex].m_nItemDataID, pPickUp->m_btPosType, pPickUp->m_btPosX, pPickUp->m_btPosY, false, true);
 			if (nItemIdx <= 0 || nItemIdx >= MAX_PLAYER_ITEM)
