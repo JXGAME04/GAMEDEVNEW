@@ -938,8 +938,8 @@ struct STONG_JX2_SYNC_DONE : EXTEND_HEADER
 // (defTONG_JX2_STR_* / ANNOUNCE_LEN / RECORD_* da don len truoc khoi struct)
 
 // Bien nhiem vu bang do engine JX1 tu quan ly (>48, khong dung voi 1002..1047 cua script JX2)
-#define defTONGTSK_STUNT_ID		1101	// tuyet ky dang dat
-#define defTONGTSK_STUNT_ENABLED	1102	// tuyet ky con hieu luc (bao tri du tien)
+#define defTONGTSK_STUNT_ID		1011	// tuyet ky dang dat - PHAI khop Lua TONGTSK_STUNT_ID (tong_header.lua:66); 1101 la WEEK_BFCONSUME cua Lua, ghi vao do la de len bo dem tieu thu tuan
+#define defTONGTSK_STUNT_ENABLED	1014	// tuyet ky con hieu luc - khop Lua TONGTSK_STUNT_ENABLED (tong_header.lua:69)
 #define defTONGTSK_WEEK_WFCONSUME	1103	// thong ke chien bi tieu trong tuan
 #define defTONGTSK_LAST_WM_DAY		1292	// so-ngay (epoch) chay bao tri TUAN gan nhat
 #define defTONGTSK_LAST_M_DAY		1293	// 1104/1105 cu DE len WEEK_WSCONSUME/MONEYFUND2BF cua Lua; 1292/1293 sach	// so-ngay (epoch) chay bao tri NGAY gan nhat

@@ -150,7 +150,7 @@ struct TJX2InfoCtl
 // MyLiveness/DailyCost) va 3 trong so do CHONG TOA DO TUYET DOI voi hang dang
 // hien (Liveness trung khit Ngan quy, MyLiveness trung khit Ngan sach kien
 // thiet, ServiceFee giao Dang cap kien thiet) - nap ca 11 hang la chu de len nhau.
-#define TJX2_INFO_NUM	29
+#define TJX2_INFO_NUM	33
 static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 {
 	{"TitleTongInfo",     "Tin t\370c"},
@@ -169,6 +169,12 @@ static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 	{"TitleWeeklyOffer",  "C\350ng hi\325n tu\307n"}, {"TxtWeeklyOffer", NULL},
 	{"TxtHelpTitle",      "Gi\363p \256\354"},
 	{"Van1",              "v\271n l\255\356ng"},   {"Van2",             "v\271n l\255\356ng"},
+	// 15/08 (+4): 2 hang TRONG SAN cua blueprint, khong chong toa do hang nao
+	// dang hien (BattleFund Top=188, StoredBuildFund Top=245; DailyCost chong
+	// BattleFund nen khong nap). Quy chien bi dang la cau hoi van hanh ma UI
+	// khong he hien no.
+	{"TitleBattleFund",   "Ng\251n s\270ch chi\325n b\336"}, {"TxtBattleFund", NULL},
+	{"TitleStoredBuildFund", "Ki\325n thi\325t d\371 tr\367"}, {"TxtStoredBuildFund", NULL},
 };
 // Chi so o GIA TRI de RenderInfo do so lieu vao (khop bang tren)
 #define TJX2_INFO_TONGNAME		2
@@ -183,6 +189,8 @@ static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 #define TJX2_INFO_TOTALOFFER	20
 #define TJX2_INFO_MYOFFER		23
 #define TJX2_INFO_WEEKOFFER		25
+#define TJX2_INFO_WARFUND		30	// 15/08: o gia tri "Ngan sach chien bi"
+#define TJX2_INFO_STOREDBUILD	32	// 15/08: o gia tri "Kien thiet du tru"
 
 // 14 nut quyen cua blueprint trang Phan phoi (RightID doc tu chinh ini)
 static const char* s_szRtSec[14] =
@@ -1613,6 +1621,11 @@ void KUiTongJX2::RenderInfo()
 		m_Info[TJX2_INFO_MYOFFER].SetText(sz);
 		sprintf(sz, "%u", p->m_dwMyWeekOffer);
 		m_Info[TJX2_INFO_WEEKOFFER].SetText(sz);
+		// 15/08: 2 hang moi - goi tin von DA MANG du 2 so nay
+		sprintf(sz, "%u", p->m_dwWarFund);
+		m_Info[TJX2_INFO_WARFUND].SetText(sz);
+		sprintf(sz, "%u", p->m_dwStoredBuild);
+		m_Info[TJX2_INFO_STOREDBUILD].SetText(sz);
 		if (m_bHasMember)
 			RenderMembers();	// panel danh sach thanh vien ben phai
 		return;

@@ -118,6 +118,16 @@ void KTongJX2Mgr::OnRelayPacket(const void* pData, int nSize)
 			if (!pTong)
 				return;
 			sSetMapField(pTong->mapField, pCmd->m_wKey, pCmd->m_dwValue);
+			// VIEC7 15/08: echo field TAC PHUONG ve toi -> day lai trang WS cho
+			// nguoi vua bam (y het khuon RIGHT_SYNC ben duoi). Truoc day client
+			// xin lai trang NGAY sau khi gui lenh, echo chua ve nen ve lai du
+			// lieu CU -> "bam khong thay gi doi". Chi push cho dai khoa WS
+			// (20010..20079) de khoi spam khi bao tri ghi hang loat field khac.
+			if (pCmd->m_dwParam != 0 &&
+				pCmd->m_wKey > defTONG_JX2_WS_ATTR_BASE &&
+				pCmd->m_wKey < defTONG_JX2_WS_ATTR_BASE + (defTONG_JX2_WS_MAX_TYPE + 1) * 10)
+				PushViewTo(pCmd->m_dwParam, pCmd->m_dwTongNameID,
+					defTONG_JX2_PAGE_WS);
 		}
 		break;
 
@@ -2801,8 +2811,38 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 	case defTONG_JX2_COP_DONATE:
 		{
 			int nVan = pCmd->m_nParam1;
-			if (nVan <= 0 || nVan > 10000)
+			if (nVan <= 0)
 				return 5;
+			// VIEC2 15/08: tran 10000/lan la chot chong tran cua ban port (goc
+			// khong co tran tren). Truoc day return 5 -> roi vao cau "muc tieu
+			// khong online" = bao sai hoan toan. Tu bao cau ro rang.
+			if (nVan > 10000)
+			{
+				static const char szCap[] = "M\344i l\307n quy\322n g\343p t\350i \256a 10000 v\271n l\255\356ng!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)szCap, (int)strlen(szCap));
+				return 20;
+			}
+			// VIEC2 15/08: 2 chot cua ban goc MONEY2BUILDFUND_G_1 (tong_mix.lua
+			// :239-266) phai kiem TRUOC khi tru tien:
+			// - an si (figure 4 = TONG_RETIRE, tong_header.lua:122) khong duoc gop
+			// - tran cong hien tuan ca nhan 22.400 (MAX_WEEK_CONTRIBUTION)
+			// He so goc: 1000 luong = 1 diem (COEF_CONTRIB_TO_VALUE) => 10 diem/van.
+			int nCtb = nVan * 10;
+			if (pMe && pMe->btFigure == 4)
+			{
+				static const char szRt[] = "\310n s\374 kh\253ng th\323 \256\343ng g\343p!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)szRt, (int)strlen(szRt));
+				return 20;
+			}
+			if ((int)Player[nPlayerIdx].m_cTask.GetSaveVal(defTASK_JX2_WEEKLYOFFER) + nCtb > 22400)
+			{
+				static const char szWk[] = "Kh\253ng th\323 \256\343ng g\343p, v\327 l\265m cho \256i\323m c\350ng hi\325n t\335ch l\362y s\317 v\255\356t qu\270 gi\355i h\271n tu\307n!";
+				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+					(char*)szWk, (int)strlen(szWk));
+				return 20;
+			}
 			if (!Player[nPlayerIdx].Pay(nVan * 10000))
 				return 6;	// khong du tien
 			{
@@ -2864,6 +2904,25 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				// khoa 11 = cong hien tuan nay. Truoc day chi ghi khoa 7 nen o
 				// "Cong hien tuan" tren giao dien VINH VIEN bang 0 (client doc
 				// khoa 9 - xem BuildClientView m_dwMyWeekOffer / m_dwWeekOffer).
+				// VIEC2 15/08: cong hu CONG HIEN TIEU DUOC (truoc day chi ghi o
+				// hien thi 7/9/11 nen gop tien ra 0 diem dung duoc). Nguyen van
+				// ban goc: AddWeeklyOffer + AddCumulateOffer + AddContribution
+				// (tong_mix.lua:259-262), moi hu +nCtb = nVan*10.
+				{
+					KPlayerTask* pTask = &Player[nPlayerIdx].m_cTask;
+					pTask->SetSaveVal(defTASK_JX2_CONTRIBUTION,
+						pTask->GetSaveVal(defTASK_JX2_CONTRIBUTION) + (DWORD)nCtb);
+					pTask->SetSaveVal(defTASK_JX2_WEEKLYOFFER,
+						pTask->GetSaveVal(defTASK_JX2_WEEKLYOFFER) + (DWORD)nCtb);
+					pTask->SetSaveVal(defTASK_JX2_CUMULATEOFFER,
+						pTask->GetSaveVal(defTASK_JX2_CUMULATEOFFER) + (DWORD)nCtb);
+					// cau ca nhan nguyen van tong_mix.lua:263
+					char szMe[224];
+					sprintf(szMe, "B\271n \256\343ng g\343p <color=gold>%d<color>Ng\251n l\255\356ng \256\325n bang h\351i l\313p qu\374, \256\345ng th\352i nh\313n \256\255\356c<color=green>%d<color>Nh\312n v\265o \256\351 c\350ng hi\325n",
+						nVan * 10000, nCtb);
+					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
+						szMe, (int)strlen(szMe));
+				}
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 7, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 9, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
 				sSendMemberFieldCmd(dwTongID, pMe->dwNameID, 11, (DWORD)nVan, defTONG_JX2_OP_ADD, dwParam);
