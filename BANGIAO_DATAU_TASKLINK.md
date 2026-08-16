@@ -79,6 +79,25 @@ Menu "Đến nơi làm nhiệm vụ dã tẩu/godatau" của Xa Phu vẫn đọc
 ## 6. HÀM C++ MỚI (ScriptFuns.cpp, cụm sau `{"IL",...}`)
 `C_Random, SetRandSeed, GetTiredDegree, GetTeamMember(=GetTeamMem), GetBitTask, SetBitTask, GetItemMagicAttrib, SetItemMagicLevel(stub), SyncItem, curpack, usepack, CallPlayerFunction, GetLastFactionNumber, TM_SetTimer, TM_GetRestCount, BT_GetGameData, BT_GetData, Prise, DynamicExecuteByPlayer` — thân hàm nằm ngay trước `LuaIncludeLib`, mỗi hàm có chú thích lý do. `MAX_PARAMLIST_COUNT` 5→8 vì `mySG` nhận 6 tham số (nội bộ server, không đổi protocol).
 
+## 6b. ĐÍNH CHÍNH 16/08 — KIỂM TRA TRÙNG TASK ID + SỬA LỖI CHE REMAP
+
+**Quét máy toàn cục (phân giải hằng số xuyên file, cả SAVE lẫn TEMP):** hệ Dã Tẩu dùng 42 task id; cây JX1 có sẵn dùng 266 id; **trùng 5 — không id nào là xung đột thật**:
+
+| ID | Dã Tẩu dùng | Bên có sẵn | Kết luận |
+|---|---|---|---|
+| 38 | CHỈ ĐỌC (mốc Tống Kim loại 5 — vá C3 cố ý) | TASKVALUE_STATTASK_ACCUM, hệ TK ghi | ✅ đúng thiết kế: đọc bộ đếm của tính năng kia |
+| 751 | CHỈ ĐỌC, trong `storm_want2start` (đường chết — caller đã bị comment từ 2004) | songjin_shophead (điểm TK) | ✅ ngủ đông, cùng huyết thống nghĩa |
+| 2361 | cống hiến cá nhân (`TASKID_CONTRIVALUE`) | scriptjx2 contribution_entry (Bang Hội đợt 12) | ✅ CÙNG MỘT tính năng, cùng file gốc — chung kho là ĐÚNG |
+| 2509 | tong_award_head | scriptjx2 tong_award_head | ✅ như trên |
+| 5 | `taskmanager.lua` | 18 file | ⚠️ DƯƠNG TÍNH GIẢ của trình quét (biến trùng tên hằng); taskmanager không có literal 5 và dormant |
+
+Dải lõi 1020–1046, 1825, 2419/2420, 2570–2575, 2690, 2797 + TEMP 154: **trống hoàn toàn bên JX1** (đã quét máy, không phải chỉ agent). Storm id (`TB_STORM_TASKID`…) ngủ đông — không ghi khi storm invalid.
+
+**Lỗi tự phát hiện và ĐÃ SỬA trong lúc kiểm:** 6 bản chép của tôi **che mất cơ chế remap đợt 12** (`\script\tong\` → `scriptjx2\tong_vn\`, `\script\lib\` → `scriptjx2\lib\` — remap chỉ nhường khi file gốc không tồn tại):
+- `script\lib\string.lua` bản thô chứa khối `/* */` **hỏng cú pháp Lua** (đợt 12 đã viết lại thuần Lua) — nếu để lại, chuỗi include của seasonnpc nổ ngay.
+- `script\tong\tong_header.lua` thô lệch **44 dòng** so bản đợt 12 mà **CTC citywar_global đang include** — để lại là hồi quy hệ công thành.
+→ **ĐÃ XÓA 6 file** (`script\tong\{tong_award_head,tong_header,contribution_entry,tong_setting,log}.lua` + `script\lib\string.lua`); include của tasklink_award giờ đi qua remap về bản tong_vn đã vá — cống hiến bang Dã Tẩu và Bang Hội chảy chung MỘT đường mã.
+
 ## 7. RỦI RO CÒN LẠI / ĐÃ BIẾT
 1. **Chưa boot test** — con số "0 hàm thiếu" là quét tĩnh; `ScriptError.log` sau restart là phép đo thật. Nếu còn `attempt to call a nil value`, tra tên hàm trong manifest mục D.
 2. Enum thuộc tính 85–110 đã đối chiếu **khớp từng số** với `KMagicAttrib.h` (85=lifemax… 110), nhưng nên test thật 1 nhiệm vụ loại 3.
