@@ -109,6 +109,22 @@ Dải lõi 1020–1046, 1825, 2419/2420, 2570–2575, 2690, 2797 + TEMP 154: **t
 3. Gỡ 3 que dò `[DT-1..3]`; thêm `OnTimer()` rỗng (spawn Ba Lăng Huyện có timer trò chuyện của hệ cũ).
 4. **PHẢI thay `Coreserver.dll` bản 16/08 02:58 + restart GameServer** (hook nhặt nằm trong DLL).
 
+## 6d. ĐIỀU TRA 6 LOẠI NHIỆM VỤ 16/08 (commit `9198a022`) — kết quả + đã vá
+
+**2 lỗi C++ chí mạng (nằm trong DLL 09:38):**
+1. `GetItemProp` chỉ trả 3/6 giá trị (vốn viết cho Tiêu Chiến Lệnh đợt E) → `Level`/`nSeries` = nil → **loại 1 (35 dòng) và loại 2 (526 dòng) không bao giờ trả được nhiệm vụ** dù nộp đúng món. Đã mở rộng trả 6 (genre, detail, particular, level, series, luck); caller cũ nhận 3 không ảnh hưởng.
+2. `SetRandSeed` không trả seed cũ → `_nSeed = nil` → **mỗi lần bốc thưởng đặt seed ngẫu nhiên TOÀN SERVER = 0** (drop, tỉ lệ mọi hệ lặp lại được). Đã trả seed cũ qua `g_GetRandomSeed()`.
+
+**Dữ liệu đã vá (bản gốc từng file giữ ở `.goc`):** award_link 3 dòng Huyền Tinh 147→146 · award_loop 9 dòng đồ phổ HK −1 (dòng cuối đang phát "Thịt tươi") · findgoods 5 dòng Sát Thủ Giản lv90 rate→0 (không nguồn phát), 6 dòng huyền tinh 147→146, 2 dòng attrib-96-trên-ngọc-bội rate→0 · buygoods 3 ô tên hiển thị · **buysell.txt bổ sung 16 goods 572–587** vào tiệm rèn (dòng 14/17), tạp hóa (12), chuồng ngựa (49/50) — 30/35 nhiệm vụ mua-đồ giờ mua được đúng hệ · port `shanhe-canpian.lua` (remap 440→439, 2514→2523) · phạt hủy-lậu 605→10890 tick (JX1 đếm 18 tick/giây).
+
+**Xác nhận KHÔNG phải lỗi:** rớt cuộn 205 có trong toàn bộ 11 file droprate thường (mọi map nhiệm vụ đều có nguồn, ~0,1–0,7%/quái); 212 chỉ rơi từ boss xanh (~0,8–4,7%/boss) — đúng thiết kế; enum thuộc tính 85–110 khớp; tầm giá trị Min/Max đạt được; đường cống hiến bang + ladder 10118 sạch; cột `level_exp.txt` đọc theo chỉ số nên không lệch tên cột.
+
+**Chờ chủ game quyết (không tự ý làm — balance):**
+- Map 75 `AutoGoldenNpc=300` (13 map kia =2000) → nhiệm vụ 3 Mật Chỉ ở Khoa Lang Động cực hiếm boss. Muốn cân: sửa `MapList.ini:846` thành 2000.
+- Loại 5-PK: `GetPK` JX1 kẹp 0..10 → dòng NumericValue cao bất khả thi khi PK nền đã cao. Gợi ý: hạ NumericValue tối đa 3–4 hoặc chặn giao khi `GetPK()+N > 10`.
+- Danh vọng/phúc duyên là **tiền tệ shop** trên JX1 → người chơi tiêu giữa nhiệm vụ loại 5 làm hiệu số âm (ghi chú vận hành, bản gốc cũng vậy về logic hiệu số).
+- Mốc-10 vẫn khóa chờ chọn item rương (mục 6c).
+
 ## 7. RỦI RO CÒN LẠI / ĐÃ BIẾT
 1. **Chưa boot test** — con số "0 hàm thiếu" là quét tĩnh; `ScriptError.log` sau restart là phép đo thật. Nếu còn `attempt to call a nil value`, tra tên hàm trong manifest mục D.
 2. Enum thuộc tính 85–110 đã đối chiếu **khớp từng số** với `KMagicAttrib.h` (85=lifemax… 110), nhưng nên test thật 1 nhiệm vụ loại 3.
