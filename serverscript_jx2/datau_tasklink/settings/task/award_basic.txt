@@ -57,20 +57,20 @@ Tiªn Th¶o Lé 	0	6	1	71	0	1	0	24000000
 Phi Phong	0	6	1	15	0	1	0	15000000
 HuyÒn Tinh cÊp 4	0	6	1	146	0	4	0	9000000
 Thiªn s¬n  B¶o Lé 	0	6	1	72	0	1	0	4000000
-§¹i Lùc hoµn	0	6	0	3	0	1	0	3500000
-Phi Tèc hoµn	0	6	0	6	0	1	0	3000000
+§¹i Lùc hoµn	0	6	1	3	0	1	0	3500000
+Phi Tèc hoµn	0	6	1	6	0	1	0	3000000
 B¸ch Qu¶ Lé 	0	6	1	73	0	1	0	3000000
 Phóc Duyªn Lé (§¹i) 	0	6	1	123	0	1	0	3000000
 HuyÒn tinh cÊp 3	0	6	1	146	0	3	0	2250000
-Tr­êng MÖnh hoµn	0	6	0	1	0	1	0	1200000
-Gia Bµo hoµn	0	6	0	2	0	1	0	1200000
+Tr­êng MÖnh hoµn	0	6	1	1	0	1	0	1200000
+Gia Bµo hoµn	0	6	1	2	0	1	0	1200000
 Phóc Duyªn Lé (Trung) 	0	6	1	122	0	1	0	1200000
-Cao ThiÓm hoµn	0	6	0	4	0	1	0	1000000
-Cao Trung hoµn	0	6	0	5	0	1	0	800000
-B¨ng Phßng hoµn	0	6	0	7	0	1	0	800000
-L«i Phßng hoµn	0	6	0	8	0	1	0	800000
-Háa Phßng hoµn	0	6	0	9	0	1	0	800000
-§éc Phßng hoµn	0	6	0	10	0	1	0	800000
+Cao ThiÓm hoµn	0	6	1	4	0	1	0	1000000
+Cao Trung hoµn	0	6	1	5	0	1	0	800000
+B¨ng Phßng hoµn	0	6	1	7	0	1	0	800000
+L«i Phßng hoµn	0	6	1	8	0	1	0	800000
+Háa Phßng hoµn	0	6	1	9	0	1	0	800000
+§éc Phßng hoµn	0	6	1	10	0	1	0	800000
 Phóc Duyªn Lé (TiÓu) 	0	6	1	121	0	1	0	600000
 ThiÖp mµu	0	6	1	1054	0	1	0	500000
 ThiÖp Nh­ ý 	0	6	1	1017	0	1	0	500000
@@ -95,5 +95,10 @@ HuyÒn tinh cÊp 1	0	6	1	146	0	1	0	100000
 Chu Sa Nguyªn Kho¸ng	0	6	1	152	0	1	0	50000
 MËt Ng©n Nguyªn Kho¸ng	0	6	1	150	0	1	0	50000
 HuyÒn ThiÕt Nguyªn Kho¸ng	0	6	1	148	0	1	0	50000
-Mai Kh«i Hoa Vò 	0	6	0	20	0	1	0	30000
-Ph¸o Hoa	0	6	0	11	0	1	0	10000
+Ph¸o Hoa	0	6	1	11	0	1	0	30000
+Ph¸o Hoa	0	6	1	11	0	1	0	10000
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500

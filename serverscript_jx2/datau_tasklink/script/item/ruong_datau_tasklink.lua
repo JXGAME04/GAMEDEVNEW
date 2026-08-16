@@ -1,11 +1,12 @@
--- ruong_datau_tasklink.lua - [JX1 PORT 16/08/2026]
--- "Bao ruong than bi cua Da Tau" (6/1/2383, ten trung voi item 2374 ban Linux).
--- Port dung co che goc (activity 17 config 1 + bang thuong 71 cua Linux):
---   - Can 6 Huyen Thien Chuy (JX1 id 6/1/2357; Linux 2348) + 1 o trong
---   - Roll DUNG ti le bang 71 (tong 100%%): x1000 de giu chinh xac 0.008%%
---   - Item remap theo TEN sang id JX1: 6/0/3->6/1/3, 6/0/6->6/1/6, 2006->2015,
---     906->907 (han 7 ngay), 1781->1790 (param 60), 1181->1182 x3,
---     2351->2360, 2352->2361, 2353->2362, 71 giu nguyen.
+-- ruong_datau_tasklink.lua - [JX1 PORT 16/08/2026, sua v2 theo chu game]
+-- "Bao ruong than bi cua Da Tau" (6/1/2383; = item 2374 ban Linux).
+-- Goc Linux (activity 17 + bang 71): can 6 Huyen Thien Chuy + 1 o trong.
+-- [v2 - chu game chot] BO 3 lenh Van Loc / Thuong Lang / Huyen Vien
+-- (2+0.05+0.008 = 2.058%%) -> don vao Khieu chien Le bao: 27.942+2.058 = 30%% tron.
+-- Bang roll x1000 (1..100000):
+--   25%% Dai Luc hoan | 25%% Phi Toc hoan | 30%% Khieu chien Le bao
+--   10%% Que Huy Hoang cao (han 7 ngay) | 5%% Tien Thao Lo
+--   3%% Cam nang doi troi dat (param 60) | 2%% Tien Thao Lo dac biet x3
 
 function main(nItemIndex)
 	if (GetItemCount(0, 6, 1, 2357) < 6) then
@@ -25,30 +26,24 @@ function main(nItemIndex)
 		AddItem(6, 1, 3, 1, 0, 0, 0)
 	elseif (n <= 50000) then
 		AddItem(6, 1, 6, 1, 0, 0, 0)
-	elseif (n <= 77942) then
+	elseif (n <= 80000) then
 		AddItem(6, 1, 2015, 1, 0, 0, 0)
-	elseif (n <= 87942) then
+	elseif (n <= 90000) then
 		nIdx = AddItem(6, 1, 907, 1, 0, 0, 0)
 		if (nIdx > 0) then
 			AddTimeItem(nIdx, 604800)
 		end
-	elseif (n <= 92942) then
+	elseif (n <= 95000) then
 		AddItem(6, 1, 71, 1, 0, 0, 0)
-	elseif (n <= 95942) then
+	elseif (n <= 98000) then
 		nIdx = AddItem(6, 1, 1790, 1, 0, 0, 0)
 		if (nIdx > 0) then
 			SetParamItem(nIdx, 60)
 		end
-	elseif (n <= 97942) then
-		AddItem(6, 1, 1182, 1, 0, 0, 0)
-		AddItem(6, 1, 1182, 1, 0, 0, 0)
-		AddItem(6, 1, 1182, 1, 0, 0, 0)
-	elseif (n <= 99942) then
-		AddItem(6, 1, 2362, 1, 0, 0, 0)
-	elseif (n <= 99992) then
-		AddItem(6, 1, 2361, 1, 0, 0, 0)
 	else
-		AddItem(6, 1, 2360, 1, 0, 0, 0)
+		AddItem(6, 1, 1182, 1, 0, 0, 0)
+		AddItem(6, 1, 1182, 1, 0, 0, 0)
+		AddItem(6, 1, 1182, 1, 0, 0, 0)
 	end
 	Msg2Player("Ban da mo B¶o r­¬ng thÇn bÝ cña D· TÈu!")
 	WriteLog(format("[DaTau ruong 2383] %s mo ruong, roll=%d", GetName() or "", n))
