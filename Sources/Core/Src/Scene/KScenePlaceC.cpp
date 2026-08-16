@@ -40,8 +40,10 @@ static bool		l_bPrerenderGround = true;
 	( ((h) - m_FocusRegion.x) * ((h) - m_FocusRegion.x) <= (range * range) &&   \
 		((v) - m_FocusRegion.y) * ((v) - m_FocusRegion.y) <= (range * range) )
 
+// 7x7 slots, offsets -3..+3 on each axis; must match the INSIDE_AREA(h, v, 3)
+// guards at the call sites and SPWP_NUM_REGIONS_IN_PROCESS_AREA = 49 (= 7*7).
 #define GET_IN_PROCESS_AREA_REGION(h, v)		\
-	( m_pInProcessAreaRegions[((v) - m_FocusRegion.y + 2) * SPWP_PROCESS_RANGE + (h) - m_FocusRegion.x + 2])
+	( m_pInProcessAreaRegions[((v) - m_FocusRegion.y + 3) * 7 + (h) - m_FocusRegion.x + 3])
 
 //***********************************************************************************************
 // EnvironmentLight类的实现
@@ -1623,14 +1625,22 @@ void KScenePlaceC::ARegionLoaded(KScenePlaceRegionC* pRegion)
 	if (INSIDE_AREA(h, v, 3))
 	{
 		EnterCriticalSection(&m_ProcessCritical);
-		if (l_bPrerenderGround)
-			pImage = GetFreeGroundImage();
-//		_ASSERT(pImage);
-		pRegion->EnterProcessArea(pImage);
-		GET_IN_PROCESS_AREA_REGION(h, v) = pRegion;
+		// load-thread path: m_FocusRegion moves on the main thread, so take one
+		// snapshot of the offsets here and bound-check it - a stale offset must
+		// never index outside the 7x7 slot table (mirrors GET_IN_PROCESS_AREA_REGION)
+		int nSlotH = h - m_FocusRegion.x + 3;
+		int nSlotV = v - m_FocusRegion.y + 3;
+		if (nSlotH >= 0 && nSlotH < 7 && nSlotV >= 0 && nSlotV < 7)
+		{
+			if (l_bPrerenderGround)
+				pImage = GetFreeGroundImage();
+//			_ASSERT(pImage);
+			pRegion->EnterProcessArea(pImage);
+			m_pInProcessAreaRegions[nSlotV * 7 + nSlotH] = pRegion;
 
-		if (nCount >= 8)
-			m_bPreprocessEvent = true;
+			if (nCount >= 8)
+				m_bPreprocessEvent = true;
+		}
 		LeaveCriticalSection(&m_ProcessCritical);
 	}
 
