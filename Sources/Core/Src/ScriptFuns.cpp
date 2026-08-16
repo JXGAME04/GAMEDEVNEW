@@ -1969,6 +1969,350 @@ int LuaIncludeFile(Lua_State* L)
 		return 0;
 }
 
+// ============================================================================
+// == DA TAU TASKLINK (JX2 port) 15/08/2026 =================================
+// Cac ham may chu Linux goc (jx_linux_y) cung cap cho he chuoi nhiem vu
+// Da Tau (script\task\newtask\tasklink + script\global\seasonnpc.lua).
+// Doi chieu day du: D:\GAMEDEVNEW\DANHSACH_DATAU_PORT.md (muc D).
+// ============================================================================
+
+// C_Random(nMin, nMax) - so nguyen ngau nhien [nMin, nMax] tren RNG engine
+// (g_Random). PHAI cung nguon voi SetRandSeed: tasklink_award khoa bo 3 phan
+// thuong theo seed luu o task 1037 (chong thoat/vao lai de doi thuong).
+int LuaC_Random(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nMin = (int)Lua_ValueToNumber(L, 1);
+	int nMax = (int)Lua_ValueToNumber(L, 2);
+	if (nMax < nMin)
+	{
+		int nTmp = nMin; nMin = nMax; nMax = nTmp;
+	}
+	Lua_PushNumber(L, GetRandomNumber(nMin, nMax));
+	return 1;
+}
+
+// SetRandSeed(nSeed) - dat seed RNG engine (KRandom g_RandomSeed).
+int LuaSetRandSeed(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) >= 1)
+		g_RandomSeed((UINT)(DWORD)Lua_ValueToNumber(L, 1));
+	return 0;
+}
+
+// GetTiredDegree() - JX1 khong co he do met. Ban goc trong TireReduce cung
+// tu gan de TireDegree = 0 ngay sau khi doc, nen tra 0 = DUNG nguyen ban.
+int LuaGetTiredDegree(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// GetBitTask(nTaskId, nStart, nLen) - doc cum bit trong bien task luu.
+int LuaGetBitTask(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nTaskId = (int)Lua_ValueToNumber(L, 1);
+	int nStart = (int)Lua_ValueToNumber(L, 2);
+	int nLen = (int)Lua_ValueToNumber(L, 3);
+	if (nStart < 0 || nLen <= 0 || nStart + nLen > 32)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwVal = (DWORD)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskId);
+	DWORD dwMask = (nLen >= 32) ? 0xFFFFFFFF : ((1UL << nLen) - 1);
+	Lua_PushNumber(L, (double)((dwVal >> nStart) & dwMask));
+	return 1;
+}
+
+// SetBitTask(nTaskId, nStart, nLen, nValue) - ghi cum bit vao bien task luu.
+int LuaSetBitTask(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 4)
+		return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+		return 0;
+	int nTaskId = (int)Lua_ValueToNumber(L, 1);
+	int nStart = (int)Lua_ValueToNumber(L, 2);
+	int nLen = (int)Lua_ValueToNumber(L, 3);
+	DWORD dwNew = (DWORD)Lua_ValueToNumber(L, 4);
+	if (nStart < 0 || nLen <= 0 || nStart + nLen > 32)
+		return 0;
+	DWORD dwMask = (nLen >= 32) ? 0xFFFFFFFF : ((1UL << nLen) - 1);
+	DWORD dwVal = (DWORD)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskId);
+	dwVal = (dwVal & ~(dwMask << nStart)) | ((dwNew & dwMask) << nStart);
+	Player[nPlayerIndex].m_cTask.SetSaveVal(nTaskId, (int)dwVal);
+	return 0;
+}
+
+// GetItemMagicAttrib(nItemIndex, i) -> nAttribType, nValue1, nValue2, nValue3
+// (o ma phap thu i, 1-based). tasklink loai 2 (tim do co thuoc tinh) va
+// loai 3 (khoe do) lap i=1..6 de so khop MagicEnName/MinValue/MaxValue.
+int LuaGetItemMagicAttrib(Lua_State* L)
+{
+	int nItemIndex = 0;
+	int nSlot = 0;
+	if (Lua_GetTopIndex(L) >= 2)
+	{
+		nItemIndex = (int)Lua_ValueToNumber(L, 1);
+		nSlot = (int)Lua_ValueToNumber(L, 2);
+	}
+	if (nItemIndex <= 0 || nItemIndex >= MAX_ITEM ||
+		nSlot < 1 || nSlot > MAX_ITEM_MAGICATTRIB)
+	{
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, 0);
+		return 4;
+	}
+	Lua_PushNumber(L, Item[nItemIndex].m_aryMagicAttrib[nSlot - 1].nAttribType);
+	Lua_PushNumber(L, Item[nItemIndex].m_aryMagicAttrib[nSlot - 1].nValue[0]);
+	Lua_PushNumber(L, Item[nItemIndex].m_aryMagicAttrib[nSlot - 1].nValue[1]);
+	Lua_PushNumber(L, Item[nItemIndex].m_aryMagicAttrib[nSlot - 1].nValue[2]);
+	return 4;
+}
+
+// SetItemMagicLevel(nItemIndex, nSlot, nValue) - STUB co chu dich.
+// Chi duong "Tich luy Da Tau" (item 6/1/1475, phat khi TireDegree==2) dung;
+// duong do NGU DONG tren JX1 (GetTiredDegree=0 va 1475 khong co trong
+// award_basic/link/loop). Phia doc cua 1475 la GetItemParam(idx,2/3) cua JX1
+// von tra -1 nen KHONG ghi that de khoi lech doc/ghi im lang.
+int LuaSetItemMagicLevel(Lua_State* L)
+{
+	g_DebugLog((LPSTR)"[DaTau] SetItemMagicLevel: duong 1475 ngu dong, bo qua (xem DANHSACH_DATAU_PORT.md)");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// SyncItem(nItemIndex) - dong bo 1 item xuong client (mau LuaSetParamItem).
+int LuaSyncItemJX2(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1)
+		return 0;
+	int nItemIndex = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIndex > 0 && nItemIndex < MAX_ITEM)
+		Player[nPlayerIndex].m_ItemList.SyncItem(nItemIndex);
+	return 0;
+}
+
+// curpack()/usepack(n) - may ao Linux: 1 Lua_State + N bang global chuyen
+// duoc ("pack"). JX1: moi file .lua mot Lua_State rieng nen "pack hien tai"
+// luon la 0 va chuyen pack la no-op. awardtype\simple.lua (SimpleType.nPak,
+// usepack trong Give) chay dung voi stub nay vi handler va nguoi goi cung state.
+int LuaCurPack(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaUsePack(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// CallPlayerFunction(nPlayerIdx, pFun, ...) - goi pFun voi PlayerIndex tam
+// thoi doi sang nPlayerIdx (GetPlayerIndex doc global "PlayerIndex" - xem
+// ScriptFuns.cpp GetPlayerIndex). Tra ve moi ket qua cua pFun.
+int LuaCallPlayerFunction(Lua_State* L)
+{
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 2)
+		return 0;
+	int nPlayerIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 0;
+	// luu PlayerIndex cu
+	lua_getglobal(L, SCRIPT_PLAYERINDEX);
+	int nOldTop = lua_gettop(L);	// vi tri gia tri cu tren stack
+	// dat PlayerIndex moi
+	Lua_PushNumber(L, nPlayerIdx);
+	lua_setglobal(L, SCRIPT_PLAYERINDEX);
+	// dung ham + tham so: pFun o vi tri 2, tham so 3..nParamNum
+	lua_pushvalue(L, 2);
+	int nArgs = 0;
+	for (int i = 3; i <= nParamNum; i++)
+	{
+		lua_pushvalue(L, i);
+		nArgs++;
+	}
+	lua_rawcall(L, nArgs, 0);
+	// khoi phuc PlayerIndex cu (van nam o nOldTop)
+	lua_pushvalue(L, nOldTop);
+	lua_setglobal(L, SCRIPT_PLAYERINDEX);
+	return 0;
+}
+
+// GetLastFactionNumber() - JX2: so hieu mon phai 0..9 (Thieu Lam=0 ... Con
+// Lon=9), -1 = chua vao phai. JX1 GetFactionNo() cung he so (KPlayer.cpp).
+int LuaGetLastFactionNumber(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Lua_PushNumber(L, Player[nPlayerIndex].GetFactionNo());
+	else
+		Lua_PushNumber(L, -1);
+	return 1;
+}
+
+// TM_SetTimer / TM_GetRestCount - he hen gio storm cua JX2. Stub co chu
+// dich: TM_GetRestCount tra NIL -> storm/custom.lua thay "chua co timer"
+// -> storm_valid_game=false -> storm_addpoint bo qua (storm ngu dong).
+int LuaTM_SetTimer(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaTM_GetRestCount(Lua_State* L)
+{
+	Lua_PushNil(L);
+	return 1;
+}
+
+// BT_GetGameData / BT_GetData - kho du lieu tran Tong Kim (battle) cua JX2.
+// Tra 0: moi nhanh storm/tong-kim trong bao dong Da Tau tu tat.
+int LuaBT_GetDataStub(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// Prise(szMsg, szOpt1, szOpt2, szOpt3) - cua so chon 1 trong 3 phan thuong
+// cua Da Tau. Moi szOpt dang "nhan/loai-icon/thamso/TenHam" (thamso co the
+// nhieu so cach nhau boi dau phay). Client JX2 co UI rieng; JX1 dung hop
+// thoai chon chuan: bien doi thanh "nhan/#TenHam(thamso)" roi giao cho
+// LuaSelectUI (cung co che callback m_szTaskAnswerFun).
+// LUU Y: mySG can 6 tham so -> MAX_PARAMLIST_COUNT (KPlayer.cpp) da noi 5->8.
+int LuaPrise(Lua_State* L)
+{
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 2)
+		return 0;
+	char szMsg[MAX_SCIRPTACTION_BUFFERNUM];
+	szMsg[0] = 0;
+	if (Lua_IsString(L, 1))
+		g_StrCpyLen(szMsg, (char*)Lua_ValueToString(L, 1), sizeof(szMsg));
+	char szOpt[3][256];
+	int nOpt = 0;
+	for (int i = 2; i <= nParamNum && nOpt < 3; i++)
+	{
+		if (!Lua_IsString(L, i))
+			continue;
+		char szRaw[256];
+		g_StrCpyLen(szRaw, (char*)Lua_ValueToString(L, i), sizeof(szRaw));
+		if (!szRaw[0])
+			continue;
+		// tach tu PHAI: .../fn , truoc do /thamso , truoc do /icon , con lai la nhan
+		char* pFn = strrchr(szRaw, '/');
+		if (!pFn)
+		{
+			// khong dung dinh dang -> giu nguyen ca chuoi lam nhan, callback main
+			g_StrCpyLen(szOpt[nOpt], szRaw, sizeof(szOpt[0]));
+			nOpt++;
+			continue;
+		}
+		*pFn = 0; pFn++;
+		char* pParam = strrchr(szRaw, '/');
+		if (!pParam)
+		{
+			szOpt[nOpt][0] = 0;
+			g_StrCpyLen(szOpt[nOpt], szRaw, sizeof(szOpt[0]));
+			strcat(szOpt[nOpt], "/");
+			strcat(szOpt[nOpt], pFn);
+			nOpt++;
+			continue;
+		}
+		*pParam = 0; pParam++;
+		char* pIcon = strrchr(szRaw, '/');
+		if (pIcon)
+			*pIcon = 0;	// bo truong icon - hop thoai JX1 khong ve icon rieng
+		// ghep: nhan/#fn(thamso) - cat bot NHAN neu tong vuot 255 byte
+		int nMaxLabel = (int)sizeof(szOpt[0]) - (int)strlen(pFn) - (int)strlen(pParam) - 8;
+		if (nMaxLabel < 0)
+			nMaxLabel = 0;
+		if ((int)strlen(szRaw) > nMaxLabel)
+			szRaw[nMaxLabel] = 0;
+		sprintf(szOpt[nOpt], "%s/#%s(%s)", szRaw, pFn, pParam);
+		nOpt++;
+	}
+	if (nOpt == 0)
+		return 0;
+	// dung lai stack: (msg, nOpt, opt1..optN) roi giao cho LuaSelectUI
+	lua_settop(L, 0);
+	Lua_PushString(L, szMsg);
+	Lua_PushNumber(L, nOpt);
+	for (int k = 0; k < nOpt; k++)
+		Lua_PushString(L, szOpt[k]);
+	return LuaSelectUI(L);
+}
+
+// DynamicExecuteByPlayer(nPlayerIdx, szScript, szFun, ...) - goi ham trong
+// MOT SCRIPT KHAC voi boi canh nguoi choi nPlayerIdx. szFun cho phep dang
+// method "tbX:Fun". Script chua nap (g_GetScript khong tu nap - KSortScript
+// .cpp:60) -> ghi log roi bo qua EM DEM (hook huoyuedu ngu dong tren JX1).
+int LuaDynamicExecuteByPlayer(Lua_State* L)
+{
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 3)
+		return 0;
+	int nPlayerIdx = (int)Lua_ValueToNumber(L, 1);
+	const char* szScript = Lua_ValueToString(L, 2);
+	const char* szFun = Lua_ValueToString(L, 3);
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || !szScript || !szFun)
+		return 0;
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(szScript);
+	if (!pScript)
+	{
+		g_DebugLog((LPSTR)"[DaTau] DynamicExecuteByPlayer: script chua nap, bo qua: %.128s -> %.64s", szScript, szFun);
+		return 0;
+	}
+	// ghep chuoi goi: Fun(a1,a2,...) - so -> %.0f, chuoi -> "..."
+	char szCall[512];
+	int nPos = 0;
+	nPos += sprintf(szCall + nPos, "%s(", szFun);
+	for (int i = 4; i <= nParamNum && nPos < (int)sizeof(szCall) - 80; i++)
+	{
+		if (i > 4)
+			szCall[nPos++] = ',';
+		if (Lua_IsNumber(L, i))
+			nPos += sprintf(szCall + nPos, "%.0f", (double)Lua_ValueToNumber(L, i));
+		else if (Lua_IsString(L, i))
+			nPos += sprintf(szCall + nPos, "\"%.64s\"", Lua_ValueToString(L, i));
+		else
+			nPos += sprintf(szCall + nPos, "nil");
+	}
+	szCall[nPos++] = ')';
+	szCall[nPos] = 0;
+	// dat boi canh nguoi choi cho state dich (mau KPlayer::ExecuteScript)
+	Lua_PushNumber(pScript->m_LuaState, nPlayerIdx);
+	pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
+	int nTopIndex = 0;
+	pScript->SafeCallBegin(&nTopIndex);
+	if (lua_dostring(pScript->m_LuaState, szCall) != 0)
+		g_DebugLog((LPSTR)"[DaTau] DynamicExecuteByPlayer LOI: %.128s -> %.200s", szScript, szCall);
+	pScript->SafeCallEnd(nTopIndex);
+	return 0;
+}
+
 // IncludeLib("TEN_MODULE") cua script JX2 -> nap file lib tuong ung o scriptjx2.
 // Module la nhan rieng cua engine JX2; module khong co trong bang thi bo qua im lang.
 int LuaIncludeLib(Lua_State* L)
@@ -12420,6 +12764,26 @@ TLua_Funcs GameScriptFuns[] =
 	// -> "attempt to call global 'IL'" lam cac file do nap DUT giua chung.
 	// Loi CO SAN tu dot C; truoc hom nay khong lo vi boot chet som hon o cho khac.
 	{"IL",LuaIncludeLib},
+	// == DA TAU TASKLINK (JX2 port) 15/08/2026 - xem DANHSACH_DATAU_PORT.md ==
+	{"C_Random",			LuaC_Random},
+	{"SetRandSeed",			LuaSetRandSeed},
+	{"GetTiredDegree",		LuaGetTiredDegree},
+	{"GetTeamMember",		LuaGetTeamMem},			// alias GetTeamMem - cung chu ky (nPos 1-based)
+	{"GetBitTask",			LuaGetBitTask},
+	{"SetBitTask",			LuaSetBitTask},
+	{"GetItemMagicAttrib",	LuaGetItemMagicAttrib},
+	{"SetItemMagicLevel",	LuaSetItemMagicLevel},	// stub co chu dich - duong 1475 ngu dong
+	{"SyncItem",			LuaSyncItemJX2},
+	{"curpack",				LuaCurPack},
+	{"usepack",				LuaUsePack},
+	{"CallPlayerFunction",	LuaCallPlayerFunction},
+	{"GetLastFactionNumber",LuaGetLastFactionNumber},
+	{"TM_SetTimer",			LuaTM_SetTimer},		// storm ngu dong
+	{"TM_GetRestCount",		LuaTM_GetRestCount},	// tra nil -> storm_valid_game=false
+	{"BT_GetGameData",		LuaBT_GetDataStub},
+	{"BT_GetData",			LuaBT_GetDataStub},
+	{"Prise",				LuaPrise},
+	{"DynamicExecuteByPlayer",	LuaDynamicExecuteByPlayer},
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
 	{"AddGlobalNews",LuaAddGlobalNews},

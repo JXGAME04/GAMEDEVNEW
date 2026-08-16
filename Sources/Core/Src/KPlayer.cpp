@@ -6751,7 +6751,7 @@ BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, int nParam,
 	return ExecuteScript(dwScriptId, szFunName, nParam, bGlobal);
 }
 
-#define MAX_PARAMLIST_COUNT 5
+#define MAX_PARAMLIST_COUNT 8	// [DA TAU 15/08/2026] 5->8: mySG cua seasonnpc.lua nhan 6 tham so
 BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, bool bGlobal)
 {
 	try
@@ -6805,7 +6805,7 @@ BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, boo
 						break;
 					}
 				}
-				if (pScript->CallFunction(szFunName,0, "ddddd", PList[0],PList[1],PList[2],PList[3],PList[4])) 
+				if (pScript->CallFunction(szFunName,0, "dddddddd", PList[0],PList[1],PList[2],PList[3],PList[4],PList[5],PList[6],PList[7])) 
 				{
 					bExecuteScriptMistake = false;
 				}
