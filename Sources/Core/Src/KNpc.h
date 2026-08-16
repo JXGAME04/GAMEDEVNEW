@@ -535,6 +535,7 @@ public:
 	int					m_nHurtDesY;
 	int					m_nTongFlag;			// 
 	int					m_nPosShiftStep;
+	DWORD				m_dwLastDirTick;	// tick logic cuoi da lam muot m_ResDir
 	BOOL				m_bProcPosShift;
 	static int			g_DrawVision;
 	static int			g_DrawVisionSkill;

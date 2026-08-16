@@ -292,6 +292,7 @@ void KNpc::Init()
 	m_sClientNpcID.m_dwRegionID	= 0;
 	m_sClientNpcID.m_nNo		= -1;
 	m_ResDir					= 0;
+	m_dwLastDirTick				= 0;
 	m_nPKFlag					= enumPKNormal;
 	m_nSleepFlag				= 0;
 	memset(&m_sSyncPos, 0, sizeof(m_sSyncPos));
@@ -6851,18 +6852,27 @@ void KNpc::Paint()
 		}
 	}
 
-	if (m_ResDir != m_Dir)
+	// Lam muot huong ve. Ban goc JX2 chay doan nay MOI LAN VE, nen khi PaintFps
+	// cao hon 18 thi nhan vat quay mat nhanh hon nguyen ban (60fps = nhanh 3,3 lan).
+	// Chot theo tick logic de toc do quay giong het ban goc du PaintFps bang bao nhieu.
+	// Van dat trong ham ve (khong phai Activate) vi Activate bi bo qua khi
+	// ProcessState() tra TRUE - luc choang/dong bang - se lam mat dung hinh giua luc quay.
+	if (m_dwLastDirTick != SubWorld[0].m_dwCurrentTime)
 	{
-		int nDirOff = m_Dir - m_ResDir;
-		if (nDirOff > 32)
-			nDirOff -= 64;
-		else if (nDirOff < - 32)
-			nDirOff += 64;
-		m_ResDir += nDirOff / 2;
-		if (m_ResDir >= 64)
-			m_ResDir -= 64;
-		if (m_ResDir < 0)
-			m_ResDir += 64;
+		m_dwLastDirTick = SubWorld[0].m_dwCurrentTime;
+		if (m_ResDir != m_Dir)
+		{
+				int nDirOff = m_Dir - m_ResDir;
+				if (nDirOff > 32)
+						nDirOff -= 64;
+				else if (nDirOff < - 32)
+						nDirOff += 64;
+				m_ResDir += nDirOff / 2;
+				if (m_ResDir >= 64)
+						m_ResDir -= 64;
+				if (m_ResDir < 0)
+						m_ResDir += 64;
+		}
 	}
 
 	m_DataRes.Draw(m_Index, m_ResDir, m_Frames.nTotalFrame, m_Frames.nCurrentFrame, FALSE, bPaintBody);

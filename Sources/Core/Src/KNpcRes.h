@@ -36,6 +36,7 @@ class KNpcBlur
 public:
 	int				m_nActive;							// 当前残影处理是否处于激活状态
 	int				m_nCurNo;							// 当前帧指针
+	DWORD			m_dwLastTick;		// tick logic cuoi da giam alpha (giu toc do tan vet mo doc lap voi PaintFps)
 	DWORD			m_dwTimer;							// 时间计数器
 	DWORD			m_dwInterval;						// 多少帧取一次残影
 	int				m_nMapXpos[MAX_BLUR_FRAME];			// 对应的地图坐标 x

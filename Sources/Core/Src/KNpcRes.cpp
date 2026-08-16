@@ -1630,6 +1630,7 @@ KNpcBlur::KNpcBlur()
 	m_nCurNo = 0;
 	m_dwInterval = 3;
 	m_dwTimer = 0;
+	m_dwLastTick = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -1690,6 +1691,11 @@ void	KNpcBlur::ChangeAlpha()
 		}
 	}
 
+	// Ban goc dem bang so lan VE, nen PaintFps cao lam vet mo tan nhanh hon.
+	// Dem theo tick logic de toc do tan giong het ban goc 18 khung/giay.
+	if (m_dwLastTick == SubWorld[0].m_dwCurrentTime)
+		return;
+	m_dwLastTick = SubWorld[0].m_dwCurrentTime;
 	m_dwTimer++;
 	if (m_dwTimer < m_dwInterval)
 		return;
