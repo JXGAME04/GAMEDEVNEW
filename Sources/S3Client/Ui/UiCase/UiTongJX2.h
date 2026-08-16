@@ -110,7 +110,7 @@ private:
 	KWndEdit32			m_MPageEdit;		// o nhap trang muon den
 	KWndText80			m_Row[TJX2_UI_ROWS];
 	KWndText80			m_Info[33];				// trang Tin tuc: 33 o = TJX2_INFO_NUM (15/08 +4: chien bi + kien thiet du tru)
-	KWndImage			m_InfoBg[29];			// khung nen do / thanh ong cua tung o
+	KWndImage			m_InfoBg[33];			// khung nen do / thanh ong cua tung o - 16/08: PHAI bang TJX2_INFO_NUM (quen tang cung m_Info lam tran 4 phan tu -> crack khi mo cua so bang)
 											// (KWndText KHONG doc khoa Image= -
 											// phai co lop KWndImage chay song song)
 	// trang Chieu mo (blueprint trang chieu mo - nhan giu NGUYEN VAN byte TCVN3)
