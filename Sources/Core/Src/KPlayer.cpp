@@ -4779,9 +4779,9 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 					(Item[nPickItemId].GetParticular() == 205 || Item[nPickItemId].GetParticular() == 212))
 				{
 					if (Item[nPickItemId].GetParticular() == 205)
-						ExecuteScript((char*)"\script\item\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
+						ExecuteScript((char*)"\\script\\item\\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
 					else
-						ExecuteScript((char*)"\script\item\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+						ExecuteScript((char*)"\\script\\item\\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
 					Object[nObjIndex].SyncRemove(TRUE);
 					if (Object[nObjIndex].m_nRegionIdx >= 0)
 					{
