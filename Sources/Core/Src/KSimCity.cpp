@@ -8,14 +8,17 @@
 #ifdef _SERVER
 
 #include "LuaLib.h"
-#include "KNpc.h"           // KNpc, Npc[], MAX_NPC, do_walk
+#include "KNpc.h"           // KNpc, Npc[], MAX_NPC, do_walk, GAME_FPS
 #include "KNpcSet.h"        // NpcSet
-#include "KSubWorld.h"      // SubWorld[]
+#include "KSubWorld.h"      // SubWorld[], TestBarrier, MAX_SUBWORLD
 #include "KSubWorldSet.h"
-#include "KTabFile.h"       // KTabFile - nap _preset.txt
+#include "KRegion.h"        // KRegion::IsActive
+#include "KTabFile.h"       // KTabFile - nap _preset.txt / chat.txt
+#include "KPlayerChat.h"    // KPlayerChat::NpcChat - bot noi chuyen
+#include "KRandom.h"        // g_Random
 #include "KSimCity.h"
 #include <string.h>         // strncpy, strcmp, memset
-#include <stdio.h>          // sscanf
+#include <stdio.h>          // sscanf, sprintf
 
 // ============================================================================
 // GD1 Fix1 - co danh dau bot giu can bang (xem KSimCity.h)
@@ -60,38 +63,89 @@ int LuaSC_GetBotFlag(Lua_State* L)
 // ============================================================================
 // GD2 - SO BOT + BANG LO TRINH + DI CHUYEN (driver C++ hook vao CoreServerShell::Breathe)
 //
-// Co che (da doc mã): SendCommand(do_walk, mpsX, mpsY) PUBLIC (Goto/RunTo private) =
-//   ban-roi-quen: phat 1 lan/chang -> ProcCommand(nAI=1) -> Goto; moi tick engine tu buoc
-//   (ServeMove), ne vat can cuc bo (KNpcFindPath::GetDir, men-tuong, KHONG A*), tu do_stand khi toi.
+// Co che (doc tu ma, KHONG doan):
+//   SendCommand(do_walk, mpsX, mpsY) PUBLIC (Goto/RunTo private) = ban-roi-quen:
+//   phat 1 lan/chang -> ProcCommand(nAI=1) -> Goto; moi tick engine tu buoc (ServeMove),
+//   ne vat can cuc bo (KNpcFindPath::GetDir, men-tuong, KHONG co A* o server).
 //   Bot kind_player DUNG giu m_ProcessAI=1 (OnStand KHONG ha) -> SendCommand tac dung NGAY.
 //   DoWalk broadcast s2c_npcwalk TRUOC early-return -> CHI phat khi doi chang (chong spam).
 //   Bot chi buoc khi region NONG (co nguoi choi gan) - KRegion nong qua AddPlayer, khong AddNpc.
+//
+// HAI KIEU KET (deu do doc ma, xem chu thich tai cho trong SC_Breathe):
+//   Kieu A - m_Doing == do_stand : ServeMove nhanh _SERVER (KNpc.cpp:4422-4433) goi DoStand()
+//            cho MOI gia tri GetDir != 1 (ke ca -1). Day la kieu ket thuong gap.
+//   Kieu B - m_Doing == do_walk ma vi tri DUNG YEN : ServeMove buoc xong, o moi roi vao
+//            region -1 nen KHOI PHUC vi tri cu roi return (KNpc.cpp:4498-4507); m_Doing VAN
+//            la do_walk -> lap vinh vien o bien region/map. Bat bang bo dem nStuck.
 // ============================================================================
 
-#define SC_MAX_BOTS    4096
-#define SC_MAX_ROUTE   64      // so lo trinh (chia se giua nhieu bot)
-#define SC_MAX_NODE    320     // so waypoint moi lo trinh (tuyen dai nhat that = 237, du bien)
-#define SC_ARRIVE_MPS  48      // toi chang khi trong 48 MPS; phai > buoc/tick (ServeMove kep <=31)
-#define SC_STUCK_LIMIT 18      // so tick dung ì (chua toi) truoc khi bo qua chang (ket tuong)
-#define SC_BOX_HALF    320     // ban kinh mac dinh patrol box (10 o)
+#define SC_MAX_BOTS     4096
+#define SC_MAX_ROUTE    64      // so lo trinh (chia se giua nhieu bot)
+#define SC_MAX_NODE     320     // so waypoint moi lo trinh (tuyen dai nhat that = 237, du bien)
+#define SC_ARRIVE_MPS   48      // toi chang khi trong 48 MPS; phai > buoc/tick (ServeMove kep <=31)
+#define SC_MAX_RETRY    3       // so lan ne ngang truoc khi bo chang
+#define SC_RETRY_CD     3       // tick cho giua 2 lan ne (~0.17s)
+#define SC_STUCK_TICK   9       // do_walk + dung yen >= 9 tick (0.5s) khi region NONG = ket kieu B
+#define SC_GIVEUP_STOP  3       // bo cuoc lien tiep 3 chang -> dung han bot (khoi dot CPU/goi tin)
+#define SC_SIDE_MPS     96      // do lech ngang khi ne (3 o)
+
+// ---- SC_STEP_MPS: HANG SO QUAN TRONG NHAT CUA CA BAN VA ----
+// KHONG bao gio phat thang node xa, ma phat tung buoc ngan huong ve node.
+//
+// LY DO (doc tu KNpcFindPath.cpp, day la GOC RE THAT cua "dinh goc"):
+//   Dong 106-111:  m_nFindTimes++;  if (m_nFindTimes > 1) { m_nFindTimes = 0; return 0; }
+//   Truy het cac nhanh:
+//     - buoc di duoc (:75-80) chi dat lai m_nFindState = 0, KHONG dung m_nFindTimes;
+//     - vao men tuong (:120-121, :137-138, :149-150) dat m_nFindTimer = 0, KHONG dung m_nFindTimes;
+//     - MOI nhanh bo cuoc (:156, :166, :194, :219) deu co "//m_nFindTimes = 0;" BI COMMENT;
+//     - CHI nhanh DOI DICH (:60-67) moi xoa sach m_nFindTimer/State/Times.
+//   => Engine cho DUNG MOT lan ne vat can cho MOI lenh SendCommand. Vat can THU HAI cua cung
+//      mot lenh (du cach do 15 o, du con thua huong trong) -> return 0 -> ServeMove nhanh
+//      _SERVER (KNpc.cpp:4422-4432) goi DoStand() -> m_Doing = do_stand -> OnWalk khong con
+//      duoc goi -> BOT DUNG IM VINH VIEN.
+//   Do that: chang preset trung vi 19,9 o (638 MPS) - mot chang xuyen pho chac chan gap hon
+//   mot vat can, nhat la vi JX1 tinh NPC LA TUONG khi buoc sang o moi (KSubWorld.cpp:1471-1476
+//   truyen bCheckNpc=TRUE -> KRegion.cpp:983-987 tra Obstacle_JumpFly), trong khi JX2 goc TAT
+//   lop nay bang IsCheckNpcBarrier=0 (JX1 khong he co cong tac do: grep 0 ket qua).
+//   => Lo trinh duoc ve trong the gioi NPC-trong-suot nay chay giua rung tuong NPC.
+//
+//   Ngan sach men tuong cung nho: MAX_FIND_TIMER=30 khung x 5 MPS/khung (m_CurrentWalkSpeed=5,
+//   KNpc.cpp:190 / KNpcSet.cpp:105) = 150 MPS = 4,7 o.
+//
+// => Phat lai moi 128 MPS (4 o) = nap lai tin dung ne moi 4 o. Chi phi: mot goi s2c_npcwalk
+//    moi ~26 khung (1,4 s) cho moi bot DANG DI. Tang so nay = it goi hon nhung de ket hon.
+// CANH BAO: diem trung gian PHAI qua TestBarrier truoc khi phat. Neu diem den nam trong tuong
+//    thi khi bot vao trong 64 MPS, KNpcFindPath.cpp:100-104 bo cuoc VINH VIEN cho lenh do
+//    (CheckDistance tra TRUE khi XA, nen !CheckDistance = GAN).
+#define SC_STEP_MPS     128     // do dai mot buoc trung gian (4 o)
+#define SC_BOX_HALF     320     // ban kinh mac dinh patrol box (10 o)
+#define SC_SNAP_MPS     1024    // node gan nhat xa hon 32 o -> tu choi gan lo trinh
 
 struct SC_Route
 {
-	int nCount;
-	int wpX[SC_MAX_NODE];      // toa do MPS (da ×32)
-	int wpY[SC_MAX_NODE];
+	int  nCount;
+	int  wpX[SC_MAX_NODE];      // toa do MPS (da x32)
+	int  wpY[SC_MAX_NODE];
+	int  nOwner;                // >0 = patrol box rieng cua bot nay; -1 = tuyen preset dung chung
+	char szFile[80];            // khoa khu trung lap (duong dan preset)
+	char szPath[40];            // khoa khu trung lap (ten tuyen)
 };
 
 struct SC_Bot
 {
 	int   nNpcIdx;             // slot Npc[]
 	DWORD dwID;                // chot danh tinh (chong reuse slot)
-	int   nRouteId;            // chi so vao s_routes[]; -1 = chua co lo trinh
+	int   nRouteId;            // chi so vao s_routes[]; -1 = chua co lo trinh / da dung han
 	int   nLeg;                // chang hien tai
 	int   nDir;                // +1 / -1 (khi khong khep vong)
 	int   bLoop;               // 1 = khep vong (%nCount); 0 = quay dau
-	int   nLastX, nLastY;      // vi tri MPS lan truoc (phat hien ket)
-	int   nStuck;              // so tick khong nhuc nhich
+	int   nLastX, nLastY;      // vi tri MPS lan truoc (biet bot co nhuc nhich khong)
+	int   nRetry;              // so lan da ne ngang cho chang nay
+	int   nRetryCd;            // tick con phai cho truoc khi ne lan nua
+	int   nStuck;              // so tick lien tiep do_walk ma dung yen (ket kieu B)
+	int   nGiveUp;             // so chang lien tiep phai bo cuoc
+	int   nSide;               // +1 / -1 : ben ne ngang lan toi (doi ben moi lan)
+	int   nTgtX, nTgtY;        // dich DA PHAT (diem trung gian hoac chinh node) - xem SC_STEP_MPS
 };
 
 static SC_Route s_routes[SC_MAX_ROUTE];
@@ -99,6 +153,76 @@ static int      s_routeCount   = 0;
 static SC_Bot   s_bots[SC_MAX_BOTS];
 static int      s_botCount     = 0;
 static int      g_bSimCityMove = 0;   // cong tac driver di chuyen
+
+// ---- GD3: bot noi chuyen ----
+// NpcChat KHONG tu kep do dai; tran that nam o CLIENT: KPlayerChat.cpp:673 szBuf[256] va
+// KProtocolProcess.cpp:1105 tmpMsg[256]. Chot 64 byte (giong ScriptFuns.cpp:6104) la LA CHAN
+// CHONG SAP CLIENT, phai giu. chat.txt that: cau dai nhat 56 byte.
+#define SC_MAX_CHAT    512     // so cau thoai giu trong bo nho
+#define SC_CHAT_LEN    68      // 64 byte + NUL, du bien
+
+static char s_chat[SC_MAX_CHAT][SC_CHAT_LEN];
+static int  s_chatCount  = 0;
+static int  s_chatChance = 0;   // n / 1000 moi giay moi bot; 0 = tat
+static int  s_tick       = 0;   // dem tick de coi nhip 1 giay (GAME_FPS = 18)
+static char s_chatFile[80] = "";  // khoa chong nap trung (LoadChat cong don)
+static char s_chatType[40] = "";
+
+// ============================================================================
+// Tien ich hinh hoc / ban do
+// ============================================================================
+
+// Khoang cach binh phuong bang __int64.
+// LY DO PHAI 64-BIT (do that tren du lieu da ship): 183_ngudoc_preset.txt cho dist2 = 2,642e9
+// va 154_thuyyen_preset.txt cho 2,019e9, deu VUOT INT_MAX = 2,147e9. Tran ra so AM se lot
+// qua phep so "<= SC_ARRIVE_MPS^2" -> bot tuong TOI DICH moi tick -> tien chang moi tick ->
+// SendCommand -> DoWalk broadcast s2c_npcwalk 18 goi/giay/bot. Day chinh la trieu chung "lag".
+static __int64 sc_Dist2(int x1, int y1, int x2, int y2)
+{
+	__int64 dx = (__int64)x1 - (__int64)x2;
+	__int64 dy = (__int64)y1 - (__int64)y2;
+	return dx * dx + dy * dy;
+}
+
+// O (x,y) co di duoc khong. TestBarrier tra 0xff khi ngoai vung nap (KSubWorld.cpp:1268-1286).
+static int sc_Walkable(int nSubWorld, int nMpsX, int nMpsY)
+{
+	if (nSubWorld < 0 || nSubWorld >= MAX_SUBWORLD)
+		return 0;
+	if (nMpsX <= 0 || nMpsY <= 0)
+		return 0;
+	return SubWorld[nSubWorld].TestBarrier(nMpsX, nMpsY) == 0;
+}
+
+// Region cua bot co NONG khong (m_nActive chi tang o KSubWorld::AddPlayer = nguoi choi that).
+// Region NGUOI => KSubWorld::Activate bo qua NPC (KSubWorld.cpp:900-905) => ProcCommand khong
+// chay => bot nam yen o do_stand. KHONG duoc doc trang thai do_stand do la "engine bo cuoc".
+static int sc_RegionHot(int i)
+{
+	int sw = Npc[i].m_SubWorldIndex;
+	int ri = Npc[i].m_RegionIndex;
+	if (sw < 0 || sw >= MAX_SUBWORLD || ri < 0)
+		return 0;
+	if (ri >= SubWorld[sw].m_nTotalRegion)
+		return 0;
+	return SubWorld[sw].m_Region[ri].IsActive() ? 1 : 0;
+}
+
+// Bot dang bat dong HOP LE (bi khong che / doi server) - khong duoc tinh la ket.
+//   m_StunState  : ProcessState tra TRUE -> Activate return TRUOC ProcStatus (KNpc.cpp:576-580)
+//   m_FreezeState: dong bang tick chan/le (KNpc.cpp:1161-1168)
+//   m_FrozenAction: SendCommand NUOT IM LANG moi do_walk (KNpc.cpp:4647-4661)
+//   m_CurrentWalkSpeed <= 0 : ServeMove return ngay, giu nguyen do_walk (KNpc.cpp:4369-4370)
+static int sc_Immobilized(int i)
+{
+	KNpc* p = &Npc[i];
+	if (p->m_StunState.nTime    > 0) return 1;
+	if (p->m_FreezeState.nTime  > 0) return 1;
+	if (p->m_FrozenAction.nTime > 0) return 1;
+	if (p->m_CurrentWalkSpeed  <= 0) return 1;
+	if (p->m_bExchangeServer)        return 1;
+	return 0;
+}
 
 // ---- quan ly so bot ----
 static int sc_Find(int nNpcIdx)
@@ -123,6 +247,7 @@ static void sc_Register(int nNpcIdx)
 	s_bots[r].dwID     = Npc[nNpcIdx].m_dwID;
 	s_bots[r].nRouteId = -1;
 	s_bots[r].nDir     = 1;
+	s_bots[r].nSide    = 1;
 }
 
 static void sc_Deregister(int nNpcIdx)
@@ -151,16 +276,147 @@ static void sc_NextLeg(SC_Bot& b, SC_Route& rt)
 	if (b.nLeg >= rt.nCount) b.nLeg = 0;
 }
 
-// phat lenh di toi chang hien tai
-static void sc_IssueLeg(SC_Bot& b, SC_Route& rt, int i)
+// Phat MOT BUOC NGAN huong ve node cua chang hien tai (khong bao gio phat thang node xa).
+// Moi lan phat = mot dich MOI = engine nap lai tin dung ne vat can (KNpcFindPath.cpp:60-67).
+// Xem khoi chu thich SC_STEP_MPS de biet vi sao day la mau chot.
+static void sc_IssueStep(SC_Bot& b, SC_Route& rt, int i)
 {
 	if (b.nLeg < 0)          b.nLeg = 0;
 	if (b.nLeg >= rt.nCount) b.nLeg = 0;
+
 	int tx = rt.wpX[b.nLeg];
 	int ty = rt.wpY[b.nLeg];
-	if (tx > 0 && ty > 0)
-		Npc[i].SendCommand(do_walk, tx, ty);
-	b.nStuck = 0;
+	int nx, ny;
+	Npc[i].GetMpsPos(&nx, &ny);
+	int sw = Npc[i].m_SubWorldIndex;
+
+	int dx = tx, dy = ty;               // mac dinh: node con gan, di thang toi luon
+
+	int vx = tx - nx, vy = ty - ny;
+	int ax = (vx < 0) ? -vx : vx;
+	int ay = (vy < 0) ? -vy : vy;
+	int len = (ax > ay) ? (ax + ay * 7 / 16) : (ay + ax * 7 / 16);   // xap xi bat giac
+
+	if (len > SC_STEP_MPS)
+	{
+		int fx = (int)((__int64)vx * SC_STEP_MPS / len);
+		int fy = (int)((__int64)vy * SC_STEP_MPS / len);
+		int px = (int)((__int64)(-vy) * 32 / len);    // 1 o lech ngang
+		int py = (int)((__int64)( vx) * 32 / len);
+
+		int cx[3], cy[3];
+		cx[0] = nx + fx;        cy[0] = ny + fy;      // dung tren tia toi node
+		cx[1] = nx + fx + px;   cy[1] = ny + fy + py; // lech 1 o de vuot mep
+		cx[2] = nx + fx - px;   cy[2] = ny + fy - py;
+
+		dx = 0;
+		for (int k = 0; k < 3; k++)
+		{
+			if (!sc_Walkable(sw, cx[k], cy[k]))
+				continue;
+			dx = cx[k];
+			dy = cy[k];
+			break;
+		}
+		if (dx <= 0)                    // khong diem trung gian nao di duoc -> pho mac node that
+		{
+			dx = tx;
+			dy = ty;
+		}
+	}
+
+	if (dx > 0 && dy > 0)
+		Npc[i].SendCommand(do_walk, dx, dy);
+	b.nTgtX    = dx;
+	b.nTgtY    = dy;
+	b.nRetry   = 0;
+	b.nRetryCd = 0;
+	b.nStuck   = 0;
+}
+
+// Node GAN NHAT trong lo trinh. Tra chi so, ghi khoang cach binh phuong ra *pDist2.
+//
+// VI SAO PHAI CO (loi B1 - nghi can chinh cua "di theo lo trinh thi DINH GOC"):
+//   Ban cu dat nLeg = 0 vo dieu kien, tuc ban bot toi node DAU TIEN THEO THU TU TEP.
+//   Do that tren du lieu: 1_phuongtuong node[0] cach cho admin dung toi 1009 o (~32.000 MPS),
+//   37_bienkinh toi 1155 o. Server KHONG co A* (KJXPathFinder.h:12 la #ifndef _SERVER), chi con
+//   bo men-tuong 30 tick -> duong thang cat ngang ca thanh chac chan dam nha va ket.
+//   Cac node trong preset la BUOC DI TREN DO THI (do that: 1_phuongtuong 63/63 cap node lien
+//   tiep deu la canh trong _nodes.txt) nen node k -> k+1 chi bao dam di duoc KHI xuat phat tu
+//   node k. Bam vao node gan nhat = khoi phuc bat bien do thi.
+static int sc_NearestLeg(SC_Route& rt, int nx, int ny, __int64* pDist2)
+{
+	int     nBest  = 0;
+	__int64 nBestD = -1;
+	for (int k = 0; k < rt.nCount; k++)
+	{
+		__int64 d = sc_Dist2(nx, ny, rt.wpX[k], rt.wpY[k]);
+		if (nBestD < 0 || d < nBestD)
+		{
+			nBestD = d;
+			nBest  = k;
+		}
+	}
+	if (pDist2)
+		*pDist2 = (nBestD < 0) ? 0 : nBestD;
+	return nBest;
+}
+
+// Bam bot vao node gan nhat roi phat buoc dau.
+static void sc_SnapToNearest(SC_Bot& b, SC_Route& rt, int i)
+{
+	int nx, ny;
+	Npc[i].GetMpsPos(&nx, &ny);
+	b.nLeg = sc_NearestLeg(rt, nx, ny, NULL);
+	sc_IssueStep(b, rt, i);
+}
+
+// Phat 1 dich NE NGANG (vuong goc voi tia cur->node) de pha the ket kieu A.
+//
+// VI SAO PHAI VUONG GOC, KHONG PHAI TRUNG DIEM:
+//   g_GetDirIndex (KMath.h:109-149) chi phu thuoc TI SO (dx,dy). Trung diem nam tren dung tia
+//   cur->node nen cho nWantDir Y HET -> CheckBarrier(x,y) (KNpcFindPath.cpp:74) cho ket qua y
+//   het -> toan bo vong do ne 112-155 tai hien dung that bai cu. GetDir la ham TAT DINH cua
+//   (vi tri, dich, ban do tinh): cung dau vao = cung dau ra. Chi doi HUONG moi doi duoc phep thu.
+// Tra 1 neu da phat duoc mot diem ne di duoc.
+static int sc_TryDetour(SC_Bot& b, int i, int nx, int ny, int tx, int ty)
+{
+	int sw = Npc[i].m_SubWorldIndex;
+	int vx = tx - nx;
+	int vy = ty - ny;
+
+	// chuan hoa xap xi kieu bat giac: len ~= max + min*7/16 (sai so < 4%, khong can sqrt/float)
+	int ax  = (vx < 0) ? -vx : vx;
+	int ay  = (vy < 0) ? -vy : vy;
+	int len = (ax > ay) ? (ax + ay * 7 / 16) : (ay + ax * 7 / 16);
+	if (len < 1)
+		return 0;
+
+	int fx = (int)((__int64)vx * SC_SIDE_MPS / len);   // don vi tien theo huong node
+	int fy = (int)((__int64)vy * SC_SIDE_MPS / len);
+	int px = (int)((__int64)(-vy) * SC_SIDE_MPS / len);  // don vi vuong goc
+	int py = (int)((__int64)( vx) * SC_SIDE_MPS / len);
+
+	// thu 4 ung vien: cheo-truoc va ngang-thuan, moi ben mot lan (doi ben moi lan goi)
+	int s = (b.nSide >= 0) ? 1 : -1;
+	int cx[4], cy[4];
+	cx[0] = nx + fx + px * s;      cy[0] = ny + fy + py * s;
+	cx[1] = nx + fx - px * s;      cy[1] = ny + fy - py * s;
+	cx[2] = nx + px * s * 2;       cy[2] = ny + py * s * 2;
+	cx[3] = nx - px * s * 2;       cy[3] = ny - py * s * 2;
+
+	for (int k = 0; k < 4; k++)
+	{
+		if (!sc_Walkable(sw, cx[k], cy[k]))
+			continue;
+		Npc[i].SendCommand(do_walk, cx[k], cy[k]);
+		b.nTgtX = cx[k];            // diem ne tro thanh dich hien tai; toi noi se phat buoc ke
+		b.nTgtY = cy[k];
+		b.nSide = -s;               // lan sau doi ben
+		return 1;
+	}
+	b.nSide = -s;
+	return 0;
 }
 
 // ============================================================================
@@ -202,6 +458,13 @@ int LuaSC_AddBot(Lua_State* L)
 	p->m_Series       = nSeries;
 	p->m_nSex         = nSex;
 
+	// TEN BOT - BAT BUOC dat, khong duoc de trong.
+	//   Nhanh sentinel nNpcSettingIdx < 0 cua KNpc::Load (KNpc.cpp:5046-5072) KHONG ghi Name,
+	//   KNpc::Init() (KNpc.cpp:134-155) cung KHONG xoa Name, con NpcSet.FindFree() tra o TAI SU
+	//   DUNG -> bot se giu nguyen ten chu cu cua o. Client tim nguoi noi bong thoai THEO TEN
+	//   (CoreShell.cpp:8458-8473 quet tuyen tinh strcmp roi return o match DAU TIEN) nen ten
+	//   rong = khong ve bong, ten trung = bong thoai gan NHAM sang quai/nguoi choi that.
+	p->Name[0] = 0;
 	if (Lua_GetTopIndex(L) >= 7 && Lua_IsString(L, 7))
 	{
 		char* pName = (char*)lua_tostring(L, 7);
@@ -211,6 +474,9 @@ int LuaSC_AddBot(Lua_State* L)
 			p->Name[sizeof(p->Name) - 1] = 0;
 		}
 	}
+	if (!p->Name[0])
+		sprintf(p->Name, "SC%d", nNpcIdx);   // dam bao duy nhat trong Npc[]
+
 	if (Lua_GetTopIndex(L) >= 8)
 	{
 		int nFaction = (int)Lua_ValueToNumber(L, 8);
@@ -321,8 +587,9 @@ int LuaSC_Goto(Lua_State* L)
 }
 
 // SC_LoadPreset(szPresetPath, szPathName) -> nRouteId (>=0) hoac -1.
-//   Doc file _preset.txt (2 cot: PathName, node_name "X_Y"), gom node cua szPathName theo thu tu -> 1 lo trinh.
-//   szPresetPath vd "\\settings\\simcity\\maps\\thanhthi\\1_phuongtuong_preset.txt" (giai theo cwd server).
+//   Doc file _preset.txt (2 cot: PathName, node_name "X_Y"), gom node cua szPathName theo thu tu.
+//   szPresetPath vd "/settings/simcity/maps/thanhthi/1_phuongtuong_preset.txt" (giai theo cwd server).
+//   PHAI dung gach xuoi "/" - Lua 4.0 nuot escape "\" ("\t" -> TAB). g_GetFullPath nhan ca hai.
 int LuaSC_LoadPreset(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 2 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2))
@@ -332,7 +599,26 @@ int LuaSC_LoadPreset(Lua_State* L)
 	}
 	char* szFile = (char*)lua_tostring(L, 1);
 	char* szPath = (char*)lua_tostring(L, 2);
-	if (!szFile || !szFile[0] || !szPath || !szPath[0] || s_routeCount >= SC_MAX_ROUTE)
+	if (!szFile || !szFile[0] || !szPath || !szPath[0])
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+
+	// KHU TRUNG LAP (loi B4): menu admin goi LoadPreset MOI LAN chon tuyen. Khong tra lai rid
+	// cu thi 64 lan bam menu la can SC_MAX_ROUTE roi tra -1 vinh vien.
+	for (int k = 0; k < s_routeCount; k++)
+	{
+		if (s_routes[k].nOwner < 0
+			&& strcmp(s_routes[k].szFile, szFile) == 0
+			&& strcmp(s_routes[k].szPath, szPath) == 0)
+		{
+			Lua_PushNumber(L, k);
+			return 1;
+		}
+	}
+
+	if (s_routeCount >= SC_MAX_ROUTE)
 	{
 		Lua_PushNumber(L, -1);
 		return 1;
@@ -347,6 +633,9 @@ int LuaSC_LoadPreset(Lua_State* L)
 
 	SC_Route& rt = s_routes[s_routeCount];
 	rt.nCount = 0;
+	rt.nOwner = -1;
+	strncpy(rt.szFile, szFile, sizeof(rt.szFile) - 1); rt.szFile[sizeof(rt.szFile) - 1] = 0;
+	strncpy(rt.szPath, szPath, sizeof(rt.szPath) - 1); rt.szPath[sizeof(rt.szPath) - 1] = 0;
 
 	int hgt = tab.GetHeight();
 	char szPn[64], szNn[64];
@@ -357,12 +646,27 @@ int LuaSC_LoadPreset(Lua_State* L)
 			continue;
 		tab.GetString(row, 2, (LPSTR)"", szNn, sizeof(szNn));
 		int gx = 0, gy = 0;
-		if (sscanf(szNn, "%d_%d", &gx, &gy) == 2 && gx > 0 && gy > 0)
+		if (sscanf(szNn, "%d_%d", &gx, &gy) != 2 || gx <= 0 || gy <= 0)
+			continue;
+
+		int mx = gx * 32;   // o luoi -> MPS
+		int my = gy * 32;
+
+		// LOC NODE QUA GAN (loi B3): do that tren bo preset co 59 chang ngan hon SC_ARRIVE_MPS,
+		// ke ca node TRUNG KHIT (10000_tongkim_nguyensoai_preset.txt tuyen huong2trai co
+		// 1570_3199 -> 1570_3199, dai 0). Chang ngan hon ban kinh toi dich = "toi ngay lap tuc"
+		// -> tien chang + SendCommand + broadcast moi tick. Bo di vo hai vi node bi bo nam
+		// TRONG ban kinh toi dich cua node truoc.
+		if (rt.nCount > 0)
 		{
-			rt.wpX[rt.nCount] = gx * 32;   // o luoi -> MPS
-			rt.wpY[rt.nCount] = gy * 32;
-			rt.nCount++;
+			__int64 d = sc_Dist2(mx, my, rt.wpX[rt.nCount - 1], rt.wpY[rt.nCount - 1]);
+			if (d < (__int64)SC_ARRIVE_MPS * SC_ARRIVE_MPS)
+				continue;
 		}
+
+		rt.wpX[rt.nCount] = mx;
+		rt.wpY[rt.nCount] = my;
+		rt.nCount++;
 	}
 
 	if (rt.nCount < 2)
@@ -375,7 +679,7 @@ int LuaSC_LoadPreset(Lua_State* L)
 	return 1;
 }
 
-// SC_SetBotRoute(nNpcIdx, nRouteId [, bLoop=1]) -> 1/0. Gan lo trinh cho bot + phat chang dau.
+// SC_SetBotRoute(nNpcIdx, nRouteId [, bLoop=1]) -> 1/0, kem khoang cach (o) toi node gan nhat.
 int LuaSC_SetBotRoute(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 2)
@@ -402,19 +706,47 @@ int LuaSC_SetBotRoute(Lua_State* L)
 			return 1;
 		}
 	}
+
+	SC_Route& rt = s_routes[nRid];
+	int nx, ny;
+	Npc[i].GetMpsPos(&nx, &ny);
+
+	// FIX B1: bam vao node GAN NHAT thay vi nLeg = 0 (xem chu thich sc_NearestLeg).
+	__int64 dNear = 0;
+	int     nLeg  = sc_NearestLeg(rt, nx, ny, &dNear);
+
+	// node gan nhat con qua xa -> tu choi, bao cho GM biet thay vi ban bot di xuyen thanh
+	if (dNear > (__int64)SC_SNAP_MPS * SC_SNAP_MPS)
+	{
+		int ddx = nx - rt.wpX[nLeg]; if (ddx < 0) ddx = -ddx;
+		int ddy = ny - rt.wpY[nLeg]; if (ddy < 0) ddy = -ddy;
+		// xap xi bat giac (sai so < 4%), khong can sqrt; doi MPS -> o luoi
+		int nCell = ((ddx > ddy) ? (ddx + ddy * 7 / 16) : (ddy + ddx * 7 / 16)) / 32;
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, nCell);
+		return 2;
+	}
+
 	SC_Bot& b = s_bots[r];
 	b.nRouteId = nRid;
-	b.nLeg     = 0;
+	b.nLeg     = nLeg;
 	b.nDir     = 1;
 	b.bLoop    = bLoop ? 1 : 0;
-	b.nStuck   = 0;
-	Npc[i].GetMpsPos(&b.nLastX, &b.nLastY);
-	sc_IssueLeg(b, s_routes[nRid], i);
+	b.nGiveUp  = 0;
+	b.nSide    = 1;
+	b.nLastX   = nx;
+	b.nLastY   = ny;
+	sc_IssueStep(b, rt, i);
 	Lua_PushNumber(L, 1);
 	return 1;
 }
 
-// SC_PatrolBox(nNpcIdx [, nHalfMps]) -> gan lo trinh tuan tra hinh vuong quanh vi tri hien tai (khep vong).
+// SC_PatrolBox(nNpcIdx [, nHalfMps]) -> gan lo trinh tuan tra hinh vuong quanh vi tri hien tai.
+//
+// FIX B5 (nghi can chinh cua "di tuan tra thi DINH GOC"): ban cu dung 4 goc cx +/- nHalf ma
+// KHONG he kiem TestBarrier lan bien ban do. Trong thanh, hop 10 o gan nhu chac chan co goc
+// nam trong nha/ngoai region -> GetDir tra != 1 mai -> DoStand -> ket vinh vien.
+// Nay: thu thu nho dan ban kinh, chon co lon nhat co du 2 goc DI DUOC tro len.
 int LuaSC_PatrolBox(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 1)
@@ -423,14 +755,14 @@ int LuaSC_PatrolBox(Lua_State* L)
 		return 1;
 	}
 	int i = (int)Lua_ValueToNumber(L, 1);
-	if (i <= 0 || i >= MAX_NPC || !Npc[i].m_btSimCityBot || s_routeCount >= SC_MAX_ROUTE)
+	if (i <= 0 || i >= MAX_NPC || !Npc[i].m_btSimCityBot)
 	{
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
 	int nHalf = (Lua_GetTopIndex(L) >= 2) ? (int)Lua_ValueToNumber(L, 2) : SC_BOX_HALF;
-	if (nHalf < 32)   nHalf = 32;
-	if (nHalf > 2048) nHalf = 2048;   // kep de tranh waypoint am / tran int khi tinh dist2
+	if (nHalf < 64)   nHalf = 64;
+	if (nHalf > 2048) nHalf = 2048;
 
 	int r = sc_Find(i);
 	if (r < 0)
@@ -444,35 +776,191 @@ int LuaSC_PatrolBox(Lua_State* L)
 		}
 	}
 
+	int sw = Npc[i].m_SubWorldIndex;
 	int cx, cy;
 	Npc[i].GetMpsPos(&cx, &cy);
 
-	SC_Route& rt = s_routes[s_routeCount];
-	rt.nCount = 4;
-	rt.wpX[0] = cx - nHalf; rt.wpY[0] = cy - nHalf;
-	rt.wpX[1] = cx + nHalf; rt.wpY[1] = cy - nHalf;
-	rt.wpX[2] = cx + nHalf; rt.wpY[2] = cy + nHalf;
-	rt.wpX[3] = cx - nHalf; rt.wpY[3] = cy + nHalf;
-	int nRid = s_routeCount++;
+	// tim co hop lon nhat ma con >= 2 goc di duoc
+	int nBestHalf = 0, nBestOk = 0;
+	int nTry[4];
+	nTry[0] = nHalf; nTry[1] = nHalf * 3 / 4; nTry[2] = nHalf / 2; nTry[3] = nHalf / 4;
+	for (int t = 0; t < 4; t++)
+	{
+		int h = nTry[t];
+		if (h < 64)
+			continue;
+		int nOk = 0;
+		if (sc_Walkable(sw, cx - h, cy - h)) nOk++;
+		if (sc_Walkable(sw, cx + h, cy - h)) nOk++;
+		if (sc_Walkable(sw, cx + h, cy + h)) nOk++;
+		if (sc_Walkable(sw, cx - h, cy + h)) nOk++;
+		if (nOk > nBestOk || (nOk == nBestOk && nOk >= 2 && nBestHalf == 0))
+		{
+			nBestOk   = nOk;
+			nBestHalf = h;
+		}
+		if (nOk == 4)
+			break;      // du 4 goc o ban kinh lon nhat -> dung luon
+	}
+	if (nBestOk < 2)
+	{
+		Lua_PushNumber(L, 0);   // cho nay qua chat, khong dung noi hop tuan tra
+		return 1;
+	}
+
+	// tai dung o lo trinh cu cua CHINH bot nay (khoi can SC_MAX_ROUTE moi lan bam menu)
+	int nRid = -1;
+	for (int k = 0; k < s_routeCount; k++)
+	{
+		if (s_routes[k].nOwner == i)
+		{
+			nRid = k;
+			break;
+		}
+	}
+	if (nRid < 0)
+	{
+		if (s_routeCount >= SC_MAX_ROUTE)
+		{
+			Lua_PushNumber(L, 0);
+			return 1;
+		}
+		nRid = s_routeCount++;
+	}
+
+	SC_Route& rt = s_routes[nRid];
+	rt.nOwner    = i;
+	rt.szFile[0] = 0;
+	rt.szPath[0] = 0;
+	rt.nCount    = 0;
+
+	int gx[4], gy[4];
+	gx[0] = cx - nBestHalf; gy[0] = cy - nBestHalf;
+	gx[1] = cx + nBestHalf; gy[1] = cy - nBestHalf;
+	gx[2] = cx + nBestHalf; gy[2] = cy + nBestHalf;
+	gx[3] = cx - nBestHalf; gy[3] = cy + nBestHalf;
+	for (int k = 0; k < 4; k++)
+	{
+		if (!sc_Walkable(sw, gx[k], gy[k]))
+			continue;
+		rt.wpX[rt.nCount] = gx[k];
+		rt.wpY[rt.nCount] = gy[k];
+		rt.nCount++;
+	}
+	if (rt.nCount < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
 
 	SC_Bot& b = s_bots[r];
 	b.nRouteId = nRid;
-	b.nLeg     = 0;
 	b.nDir     = 1;
 	b.bLoop    = 1;
-	b.nStuck   = 0;
+	b.nGiveUp  = 0;
+	b.nSide    = 1;
 	b.nLastX   = cx;
 	b.nLastY   = cy;
-	sc_IssueLeg(b, rt, i);
+	sc_SnapToNearest(b, rt, i);
 
 	Lua_PushNumber(L, 1);
 	return 1;
 }
 
-// SC_Breathe() - goi moi tick tu CoreServerShell::Breathe. Duyet so bot, tien chang khi toi.
+// ============================================================================
+// GD3 - bot noi chuyen
+// ============================================================================
+
+// SC_LoadChat(szChatPath, szType) -> so cau da nap. 0 = that bai.
+//   Doc chat.txt (2 cot: Type, Chat), gom cac cau co Type = szType.
+//   Vi du: SC_LoadChat("/settings/simcity/chat.txt", "general")
+int LuaSC_LoadChat(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char* szFile = (char*)lua_tostring(L, 1);
+	char* szType = (char*)lua_tostring(L, 2);
+	if (!szFile || !szFile[0] || !szType || !szType[0])
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+
+	// LoadChat CONG DON. Nap lai dung tep+type se nhan doi kho cau (loi C1) - chan tai day
+	// thay vi dua vao co SC_ChatLoaded ben Lua (co do mat khi nap lai script).
+	if (s_chatCount > 0 && strcmp(s_chatFile, szFile) == 0 && strcmp(s_chatType, szType) == 0)
+	{
+		Lua_PushNumber(L, s_chatCount);
+		return 1;
+	}
+
+	KTabFile tab;
+	if (!tab.Load((LPSTR)szFile))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+
+	int hgt = tab.GetHeight();
+	char szTy[64];
+	for (int row = 2; row <= hgt && s_chatCount < SC_MAX_CHAT; row++)   // row 1 = header
+	{
+		tab.GetString(row, 1, (LPSTR)"", szTy, sizeof(szTy));
+		if (strcmp(szTy, szType) != 0)
+			continue;
+		tab.GetString(row, 2, (LPSTR)"", s_chat[s_chatCount], SC_CHAT_LEN);
+		// LOC NGAY LUC NAP (loi B5-chat): dem SC_CHAT_LEN = 68 nen cau 65..67 byte VAO duoc kho
+		// nhung se bi chan "nLen <= 64" luc noi -> moi lan roll trung o do la mot lan bot cam
+		// khong ro nguyen nhan. Loc o day thi kho cau chi chua cau noi duoc.
+		int n = (int)strlen(s_chat[s_chatCount]);
+		if (n > 0 && n <= 64)
+			s_chatCount++;
+		else
+			s_chat[s_chatCount][0] = 0;
+	}
+
+	strncpy(s_chatFile, szFile, sizeof(s_chatFile) - 1); s_chatFile[sizeof(s_chatFile) - 1] = 0;
+	strncpy(s_chatType, szType, sizeof(s_chatType) - 1); s_chatType[sizeof(s_chatType) - 1] = 0;
+
+	Lua_PushNumber(L, s_chatCount);
+	return 1;
+}
+
+// SC_ChatChance(n) -> n. n/1000 co hoi moi giay moi bot se noi 1 cau. 0 = tat.
+int LuaSC_ChatChance(Lua_State* L)
+{
+	int n = 0;
+	if (Lua_GetTopIndex(L) >= 1)
+		n = (int)Lua_ValueToNumber(L, 1);
+	if (n < 0)    n = 0;
+	if (n > 1000) n = 1000;
+	s_chatChance = n;
+	Lua_PushNumber(L, s_chatChance);
+	return 1;
+}
+
+// SC_ClearChat() -> xoa kho cau thoai (goi truoc khi doi sang Type khac)
+int LuaSC_ClearChat(Lua_State* L)
+{
+	s_chatCount   = 0;
+	s_chatFile[0] = 0;
+	s_chatType[0] = 0;
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ============================================================================
+// SC_Breathe() - goi moi tick tu CoreServerShell::Breathe.
+// ============================================================================
 void SC_Breathe()
 {
-	if (!g_bSimCityMove)
+	s_tick++;
+
+	int bChatOn = (s_chatChance > 0 && s_chatCount > 0);
+	if (!g_bSimCityMove && !bChatOn)
 		return;
 
 	int w = 0;
@@ -486,46 +974,140 @@ void SC_Breathe()
 			|| !Npc[i].m_btSimCityBot
 			|| !Npc[i].m_Index
 			|| !Npc[i].IsMatch(b.dwID)
-			|| Npc[i].m_RegionIndex < 0)
+			|| Npc[i].m_RegionIndex < 0
+			|| Npc[i].m_SubWorldIndex < 0)
 			continue;
 
-		if (b.nRouteId >= 0 && b.nRouteId < s_routeCount)
+		// ---- GD3: bot noi chuyen ----
+		// Nhip RAI DEU theo chi so NPC thay vi mot nhip chung: (s_tick + i) % GAME_FPS.
+		// Ly do: nhip chung lam TAT CA bot roll cung mot tick, ma bo dem nhip cua server la
+		// "cong bu" (KSOServer.cpp:1076-1080) nen sau moi lan lag, MainLoop chay lien tuc va
+		// don cuc ca chum tin nhan vao vai ms. Rai deu thi moi tick chi ~1/18 so bot roll.
+		// Ep unsigned de khong bao gio ra so am khi s_tick tran (~3,8 nam uptime).
+		if (bChatOn && ((DWORD)(s_tick + i) % (DWORD)GAME_FPS) == 0
+			&& Npc[i].m_CurrentLife > 0 && Npc[i].m_Doing != do_death
+			&& (int)g_Random(1000) < s_chatChance)
 		{
-			SC_Route& rt = s_routes[b.nRouteId];
-			if (rt.nCount >= 2)
+			// g_Random la LCG rac o bit thap (KRandom.cpp:32-43: s = s*3877+29573, roi % nMax)
+			// nen g_Random(n) di het n gia tri theo mot THU TU CO DINH = phat lai danh sach.
+			// Tron them chi so NPC de moi bot doc kho cau tu mot vi tri khac nhau.
+			int nPick = (int)((g_Random(s_chatCount) + i * 37) % s_chatCount);
+			char* pMsg = s_chat[nPick];
+			int   nLen = (int)strlen(pMsg);
+			if (nLen > 0 && nLen <= 64)     // la chan chong tran buffer client (xem SC_MAX_CHAT)
+				KPlayerChat::NpcChat(i, pMsg, nLen, FALSE);
+		}
+
+		if (!g_bSimCityMove || b.nRouteId < 0 || b.nRouteId >= s_routeCount)
+		{
+			s_bots[w++] = b;
+			continue;
+		}
+
+		SC_Route& rt = s_routes[b.nRouteId];
+		if (rt.nCount < 2)
+		{
+			s_bots[w++] = b;
+			continue;
+		}
+
+		if (b.nLeg < 0)          b.nLeg = 0;
+		if (b.nLeg >= rt.nCount) b.nLeg = 0;
+
+		int nx, ny;
+		Npc[i].GetMpsPos(&nx, &ny);
+
+		// ---- CONG CHAN 1: region NGUOI ----
+		// Region nguoi thi KSubWorld::Activate khong goi Activate cho NPC (KSubWorld.cpp:900-905)
+		// nen ProcCommand khong bao gio tieu thu lenh -> bot nam o do_stand. Khong duoc doc
+		// trang thai do la "engine bo cuoc", neu khong se dot het retry roi tien chang lien tuc:
+		// bo vang vai phut la bo dem chang chay vong quanh lo trinh nhieu lan du bot chua he
+		// nhuc nhich, va khi co nguoi toi thi bot khoi dong tu mot chang bat ky.
+		// ---- CONG CHAN 2: bot bat dong HOP LE (choang / dong bang / khoa dong tac / speed 0)
+		if (!sc_RegionHot(i) || sc_Immobilized(i))
+		{
+			b.nLastX = nx;
+			b.nLastY = ny;
+			s_bots[w++] = b;
+			continue;
+		}
+
+		int tx = rt.wpX[b.nLeg];
+		int ty = rt.wpY[b.nLeg];
+
+		__int64 nArrive2 = (__int64)SC_ARRIVE_MPS * SC_ARRIVE_MPS;
+
+		if (sc_Dist2(nx, ny, tx, ty) <= nArrive2)
+		{
+			// toi NODE -> sang chang ke
+			sc_NextLeg(b, rt);
+			sc_IssueStep(b, rt, i);
+			b.nGiveUp = 0;
+		}
+		else
+		{
+			int bMoved = (nx != b.nLastX || ny != b.nLastY);
+			if (bMoved)
 			{
-				if (b.nLeg < 0)          b.nLeg = 0;
-				if (b.nLeg >= rt.nCount) b.nLeg = 0;
+				b.nRetry = 0;
+				b.nStuck = 0;
+			}
+			else if (Npc[i].m_Doing == do_walk)
+			{
+				b.nStuck++;     // ket kieu B: buoc bi khoi phuc o bien region, m_Doing giu do_walk
+			}
 
-				int nx, ny;
-				Npc[i].GetMpsPos(&nx, &ny);
-
-				int tx = rt.wpX[b.nLeg];
-				int ty = rt.wpY[b.nLeg];
-				int dx = nx - tx, dy = ny - ty;
-
-				if (dx * dx + dy * dy <= SC_ARRIVE_MPS * SC_ARRIVE_MPS)
+			if (sc_Dist2(nx, ny, b.nTgtX, b.nTgtY) <= nArrive2)
+			{
+				// Toi DIEM TRUNG GIAN (chua toi node). Phat buoc ke = NAP LAI TIN DUNG NE.
+				// Day la duong chinh cua ca ban va: bot di het chang dai bang nhieu lenh ngan,
+				// moi lenh duoc engine cho mot lan ne vat can (xem khoi SC_STEP_MPS).
+				sc_IssueStep(b, rt, i);
+				b.nGiveUp = 0;
+			}
+			else if (b.nRetryCd > 0)
+			{
+				b.nRetryCd--;
+			}
+			else if (Npc[i].m_Doing == do_stand || b.nStuck >= SC_STUCK_TICK)
+			{
+				// Ket THAT: chua toi diem trung gian ma engine da dung bot lai.
+				if (b.nRetry < SC_MAX_RETRY)
 				{
-					sc_NextLeg(b, rt);
-					sc_IssueLeg(b, rt, i);
-				}
-				else if (nx == b.nLastX && ny == b.nLastY)
-				{
-					if (++b.nStuck >= SC_STUCK_LIMIT)   // ket -> bo chang
-					{
-						sc_NextLeg(b, rt);
-						sc_IssueLeg(b, rt, i);
-					}
+					b.nRetry++;
+					b.nStuck   = 0;
+					b.nRetryCd = SC_RETRY_CD;
+					// Ne NGANG (vuong goc) - xem sc_TryDetour: chi doi HUONG moi doi duoc phep
+					// thu cua GetDir. Khong tim duoc huong ne thi it ra phat lai buoc (reset).
+					if (!sc_TryDetour(b, i, nx, ny, tx, ty))
+						sc_IssueStep(b, rt, i);
 				}
 				else
 				{
-					b.nStuck = 0;
+					// BO CUOC. KHONG duoc tien chang mu quang: node preset la buoc di tren do thi
+					// (do that: 13.984/13.984 chang preset deu la canh trong _nodes.txt), bot dang
+					// o ngoai do thi nen chang ke con kho hon chang nay.
+					// Bam lai node GAN NHAT; neu node gan nhat chinh la node dang ket thi moi bo.
+					b.nGiveUp++;
+					if (b.nGiveUp >= SC_GIVEUP_STOP)
+					{
+						b.nRouteId = -1;         // dung han - khoi dot CPU va goi tin vo ich
+					}
+					else
+					{
+						int nNear = sc_NearestLeg(rt, nx, ny, NULL);
+						if (nNear == b.nLeg)
+							sc_NextLeg(b, rt);
+						else
+							b.nLeg = nNear;
+						sc_IssueStep(b, rt, i);
+					}
 				}
-				b.nLastX = nx;
-				b.nLastY = ny;
 			}
 		}
 
+		b.nLastX = nx;
+		b.nLastY = ny;
 		s_bots[w++] = b;
 	}
 	s_botCount = w;

@@ -17,6 +17,10 @@
 
 SC_END_SAY   = "Ket thuc doi thoai./no"
 SC_PRESETDIR = "/settings/simcity/maps/thanhthi/"
+SC_CHATFILE  = "/settings/simcity/chat.txt"
+SC_CHATRATE  = 40                 -- 40/1000 moi giay moi bot (~1 cau / 25 giay / bot)
+SC_ChatLoaded = 0
+SC_ChatState  = 0
 
 -- bo nho tam cua phien admin (moi lan mo menu)
 SC_LastBot   = 0    -- bot vua sinh
@@ -33,24 +37,74 @@ function SC_Menu()
 	-- sUiAppendAnswer (ScriptFuns.cpp:548) dung "|" lam DAU PHAN CACH giua tieu de
 	-- va tung lua chon, tat ca trong 1 buffer 512 byte (MAX_SCIRPTACTION_BUFFERNUM).
 	-- Co "|" trong tieu de -> client tach sai -> mat het cac dong chon.
-	SayEx({format("<color=yellow>SimCity - bot nguoi choi gia lap<color>\nDriver di chuyen: <color=green>%s<color>\nBot vua sinh: <color=gold>%d<color>   Lo trinh: <color=gold>%d<color>", nMove, SC_LastBot, SC_LastRoute),
+	local nChat = "TAT"
+	if SC_ChatState == 1 then
+		nChat = "BAT"
+	end
+	SayEx({format("<color=yellow>SimCity - bot gia lap<color>\nDi chuyen: <color=green>%s<color>  Noi chuyen: <color=green>%s<color>\nBot: <color=gold>%d<color>  Lo trinh: <color=gold>%d<color>", nMove, nChat, SC_LastBot, SC_LastRoute),
 	"Sinh 1 bot tai cho toi dung/SC_SpawnHere",
 	"Sinh 5 bot tai cho toi dung/SC_Spawn5",
 	"Cho bot vua sinh di tuan tra (vuong)/SC_PatrolLast",
 	"Di theo lo trinh ban do nay/SC_RouteMenu",
 	"Bat driver di chuyen/SC_On",
 	"Tat driver di chuyen/SC_Off",
+	"Bat bot noi chuyen/SC_ChatOn",
+	"Tat bot noi chuyen/SC_ChatOff",
 	"Xoa het bot/SC_Clear",
 	SC_END_SAY})
 end
 
+-- ================= GD3: BOT NOI CHUYEN =================
+-- Nap kho cau thoai 1 lan roi bat xac suat noi.
+-- chat.txt: cot 1 = Type, cot 2 = Chat. Type nhieu nhat: general (1690), fighting (928).
+function SC_ChatOn()
+	if SC_ChatLoaded ~= 1 then
+		local n = SC_LoadChat(SC_CHATFILE, "general")
+		if n and n > 0 then
+			SC_ChatLoaded = 1
+			Msg2Player(format("Da nap %d cau thoai (general).", n))
+		else
+			Msg2Player("Nap cau thoai THAT BAI. Kiem tep settings/simcity/chat.txt da chep chua.")
+			SC_Menu()
+			return
+		end
+	end
+	SC_ChatChance(SC_CHATRATE)
+	SC_ChatState = 1
+	Msg2Player(format("Bot se noi chuyen (%d/1000 moi giay moi bot).", SC_CHATRATE))
+	SC_Menu()
+end
+
+function SC_ChatOff()
+	SC_ChatChance(0)
+	SC_ChatState = 0
+	Msg2Player("Da TAT bot noi chuyen.")
+	SC_Menu()
+end
+
 -- ================= SINH BOT =================
+-- TEN BOT: BAT BUOC truyen. O Npc[] duoc TAI SU DUNG va truong Name khong bi xoa khi sinh
+-- (KNpc::Init khong reset Name, nhanh sentinel cua KNpc::Load khong ghi Name) nen bot khong
+-- ten se mang ten chu cu cua o. Client tim nguoi noi bong thoai THEO TEN va lay ket qua trung
+-- DAU TIEN -> bong thoai co the nhay sang quai hoac nguoi choi that.
+SC_HO  = { "Tran", "Le", "Nguyen", "Pham", "Hoang", "Vo", "Dang", "Bui", "Do", "Ngo",
+           "Duong", "Ly", "Ho", "Truong", "Dinh", "Mai" }
+SC_TEN = { "Phong", "Vu", "Long", "Ha", "Minh", "Tuan", "Khoa", "Nam", "Lam", "Hai",
+           "Anh", "Bao", "Thang", "Quan", "Hung", "Son", "Trung", "Kiet", "Dat", "Vinh" }
+
+-- ten duy nhat: ghep Ho + Ten + so thu tu (Name[32] nen thoai mai)
+SC_NameSeq = 0
+function SC_MakeName()
+	SC_NameSeq = SC_NameSeq + 1
+	return format("%s%s%d", SC_HO[random(1, getn(SC_HO))], SC_TEN[random(1, getn(SC_TEN))], SC_NameSeq)
+end
+
 -- sinh 1 bot ngay tai vi tri admin dang dung (khoi phai doan toa do)
 function SC_SpawnHere()
 	local nW, nX, nY = GetWorldPos()          -- nX,nY = O LUOI
 	local nSwIdx = SubWorldID2Idx(nW)
 	local nSex   = random(0, 1)
-	local nIdx   = SC_AddBot(nSex, 100, nSwIdx, (nX + 1) * 32, (nY + 1) * 32, random(0, 4))
+	local nIdx   = SC_AddBot(nSex, 100, nSwIdx, (nX + 1) * 32, (nY + 1) * 32, random(0, 4), SC_MakeName())
 	if nIdx and nIdx > 0 then
 		SC_LastBot = nIdx
 		Msg2Player(format("Da sinh bot idx = %d tai map %d (%d,%d).", nIdx, nW, nX, nY))
@@ -65,7 +119,7 @@ function SC_Spawn5()
 	local nSwIdx = SubWorldID2Idx(nW)
 	local nOk = 0
 	for i = 1, 5 do
-		local nIdx = SC_AddBot(random(0, 1), 100, nSwIdx, (nX + i + 1) * 32, (nY + 1) * 32, random(0, 4))
+		local nIdx = SC_AddBot(random(0, 1), 100, nSwIdx, (nX + i + 1) * 32, (nY + 1) * 32, random(0, 4), SC_MakeName())
 		if nIdx and nIdx > 0 then
 			nOk = nOk + 1
 			SC_LastBot = nIdx
@@ -82,10 +136,12 @@ function SC_PatrolLast()
 		SC_Menu()
 		return
 	end
+	-- SC_PatrolBox nay kiem TestBarrier tung goc va tu thu nho ban kinh; tra 0 khi cho qua chat
+	-- (duoi 2 goc di duoc). Truoc day 4 goc khong he duoc kiem nen goc nam trong nha -> bot ket.
 	if SC_PatrolBox(SC_LastBot) == 1 then
 		Msg2Player(format("Bot %d da nhan lo trinh tuan tra (vuong). Nho BAT driver.", SC_LastBot))
 	else
-		Msg2Player(format("Gan tuan tra cho bot %d THAT BAI.", SC_LastBot))
+		Msg2Player("Cho nay qua chat de tuan tra (khong du 2 goc di duoc). Hay ra cho rong hon.")
 	end
 	SC_Menu()
 end
@@ -174,10 +230,19 @@ function SC_UseRoute(nSel)
 		return
 	end
 	SC_LastRoute = nRid
-	if SC_SetBotRoute(SC_LastBot, nRid, 1) == 1 then
+	-- SC_SetBotRoute tra 2 gia tri khi TU CHOI: 0 va khoang cach (o luoi) toi node gan nhat.
+	-- Bot luon bat dau tu node GAN NHAT chu khong phai node dau tep, nen ban phai dung trong
+	-- pham vi 32 o cua tuyen. Truoc day bot bi ban toi node dau tep (do duoc toi 1009 o) nen
+	-- no di duong thang xuyen thanh va ket goc ngay.
+	local nOk, nCell = SC_SetBotRoute(SC_LastBot, nRid, 1)
+	if nOk == 1 then
 		Msg2Player(format("Bot %d da nhan tuyen %s (routeId %d). Nho BAT driver.", SC_LastBot, r[3], nRid))
 	else
-		Msg2Player("Gan tuyen cho bot THAT BAI.")
+		if nCell then
+			Msg2Player(format("Bot cach tuyen %s toi %d o (toi da 32). Hay dung gan tuyen roi sinh bot lai.", r[3], nCell))
+		else
+			Msg2Player("Gan tuyen cho bot THAT BAI.")
+		end
 	end
 	SC_Menu()
 end

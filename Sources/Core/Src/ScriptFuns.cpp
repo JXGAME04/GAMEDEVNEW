@@ -12706,6 +12706,9 @@ extern int LuaSC_Goto(Lua_State* L);
 extern int LuaSC_PatrolBox(Lua_State* L);
 extern int LuaSC_LoadPreset(Lua_State* L);
 extern int LuaSC_SetBotRoute(Lua_State* L);
+extern int LuaSC_LoadChat(Lua_State* L);
+extern int LuaSC_ChatChance(Lua_State* L);
+extern int LuaSC_ClearChat(Lua_State* L);
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -13008,6 +13011,9 @@ TLua_Funcs GameScriptFuns[] =
 	{"SC_PatrolBox",	LuaSC_PatrolBox},
 	{"SC_LoadPreset",	LuaSC_LoadPreset},
 	{"SC_SetBotRoute",	LuaSC_SetBotRoute},
+	{"SC_LoadChat",		LuaSC_LoadChat},	// Port SimCity GD3
+	{"SC_ChatChance",	LuaSC_ChatChance},
+	{"SC_ClearChat",		LuaSC_ClearChat},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},

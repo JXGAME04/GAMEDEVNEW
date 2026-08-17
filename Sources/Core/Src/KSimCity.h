@@ -35,6 +35,11 @@ int LuaSC_PatrolBox(Lua_State* L);    // (nNpcIdx [, nHalfMps]) gan lo trinh tua
 int LuaSC_LoadPreset(Lua_State* L);   // (szPresetPath, szPathName) -> nRouteId / -1 (nap lo trinh tu file)
 int LuaSC_SetBotRoute(Lua_State* L);  // (nNpcIdx, nRouteId [, bLoop=1]) -> 1/0
 
+// GD3 - bot noi chuyen
+int LuaSC_LoadChat(Lua_State* L);     // (szChatPath, szType) -> so cau da nap (cong don)
+int LuaSC_ChatChance(Lua_State* L);   // (n) n/1000 moi giay moi bot; 0 = tat
+int LuaSC_ClearChat(Lua_State* L);    // () xoa kho cau thoai
+
 void SC_Breathe();                    // goi moi tick tu CoreServerShell::Breathe (KHONG phai ham Lua)
 
 #endif // _SERVER
