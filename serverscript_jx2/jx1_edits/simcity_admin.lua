@@ -29,7 +29,11 @@ function SC_Menu()
 	if SC_MoveState == 1 then
 		nMove = "BAT"
 	end
-	SayEx({format("<color=yellow>SimCity - bot nguoi choi gia lap<color>\nDriver di chuyen: <color=green>%s<color>\nBot vua sinh: <color=gold>%d<color>  |  Lo trinh vua nap: <color=gold>%d<color>", nMove, SC_LastBot, SC_LastRoute),
+	-- LUU Y: KHONG duoc dung ky tu "|" trong bat ky chuoi nao.
+	-- sUiAppendAnswer (ScriptFuns.cpp:548) dung "|" lam DAU PHAN CACH giua tieu de
+	-- va tung lua chon, tat ca trong 1 buffer 512 byte (MAX_SCIRPTACTION_BUFFERNUM).
+	-- Co "|" trong tieu de -> client tach sai -> mat het cac dong chon.
+	SayEx({format("<color=yellow>SimCity - bot nguoi choi gia lap<color>\nDriver di chuyen: <color=green>%s<color>\nBot vua sinh: <color=gold>%d<color>   Lo trinh: <color=gold>%d<color>", nMove, SC_LastBot, SC_LastRoute),
 	"Sinh 1 bot tai cho toi dung/SC_SpawnHere",
 	"Sinh 5 bot tai cho toi dung/SC_Spawn5",
 	"Cho bot vua sinh di tuan tra (vuong)/SC_PatrolLast",
@@ -123,19 +127,23 @@ SC_ROUTES = {
 	{176, "176_laman_preset.txt",      "lamAn_cungPhu1"        },
 }
 
+-- CHI liet ke tuyen CUNG MAP: vua dung nhu cau, vua khong vuot buffer 512 byte
+-- (tieu de + moi option cong them 1 byte "|" - xem sUiAppendAnswer ScriptFuns.cpp:538).
 function SC_RouteMenu()
 	local nW = GetWorldPos()
 	local tb = {}
-	tinsert(tb, format("<color=yellow>Chon tuyen duong<color>\nBan dang o map <color=gold>%d<color>.\nChi tuyen CUNG MAP moi dung duoc.", nW))
+	local nFound = 0
 	for i = 1, getn(SC_ROUTES) do
-		local r = SC_ROUTES[i]
-		local sMark = ""
-		if r[1] == nW then
-			sMark = " <color=green>(map nay)<color>"
+		if SC_ROUTES[i][1] == nW then
+			tinsert(tb, format("%s/#SC_UseRoute(%d)", SC_ROUTES[i][3], i))
+			nFound = nFound + 1
 		end
-		tinsert(tb, format("Map %d - %s%s/#SC_UseRoute(%d)", r[1], r[3], sMark, i))
 	end
-	tinsert(tb, "Xem cac tuyen co trong map nay/SC_ListLocal")
+	if nFound == 0 then
+		tinsert(tb, 1, format("<color=yellow>Chon tuyen duong<color>\nMap <color=gold>%d<color> CHUA khai bao tuyen nao.\nThem vao bang SC_ROUTES trong simcity_admin.lua.", nW))
+	else
+		tinsert(tb, 1, format("<color=yellow>Chon tuyen duong<color>\nMap <color=gold>%d<color> co <color=green>%d<color> tuyen.\nBot se di vong theo tuyen chon.", nW, nFound))
+	end
 	tinsert(tb, "Quay lai/SC_Menu")
 	tinsert(tb, SC_END_SAY)
 	SayEx(tb)
@@ -172,22 +180,4 @@ function SC_UseRoute(nSel)
 		Msg2Player("Gan tuyen cho bot THAT BAI.")
 	end
 	SC_Menu()
-end
-
--- liet ke tuyen khai bao san cho map hien tai (tien tra cuu)
-function SC_ListLocal()
-	local nW = GetWorldPos()
-	local nFound = 0
-	Msg2Player(format("--- Tuyen khai bao cho map %d ---", nW))
-	for i = 1, getn(SC_ROUTES) do
-		if SC_ROUTES[i][1] == nW then
-			Msg2Player(format("  %s  (tep %s)", SC_ROUTES[i][3], SC_ROUTES[i][2]))
-			nFound = nFound + 1
-		end
-	end
-	if nFound == 0 then
-		Msg2Player("  (khong co) - map nay chua khai bao tuyen trong SC_ROUTES.")
-		Msg2Player("  Co the them vao bang SC_ROUTES trong simcity_admin.lua.")
-	end
-	SC_RouteMenu()
 end
