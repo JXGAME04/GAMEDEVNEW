@@ -1339,7 +1339,7 @@ struct tagNewDelRoleResponse : public tagDBSelPlayer
 // 2003.05.11
 struct tagDBSyncPlayerInfo : public tagProtoHeader
 {
-	size_t	dataLength;
+	unsigned int	dataLength;
 	char	szData[0];
 };
 
@@ -1367,7 +1367,7 @@ struct tagGuidableInfo : public tagProtoHeader
 	GUID guid;
 	WORD nExtPoint;			//¿ÉÓÃµÄ¸½ËÍµã
 	WORD nChangePoint;		//±ä»¯µÄ¸½ËÍµã
-	size_t	datalength;
+	unsigned int	datalength;
 	char	szData[0];
 
 };
@@ -1608,7 +1608,7 @@ struct tagRegisterFamily : public tagProtoHeader
  */
 struct tagGS2GWSaveRole : public tagProtoHeader
 {
-	size_t	datalength;
+	unsigned int	datalength;
 	BYTE	szData[0];
 };
 

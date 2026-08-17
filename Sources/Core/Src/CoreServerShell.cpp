@@ -17,6 +17,7 @@
 #include "KJx2League.h"	// DOT E cong thanh: GLOBAL mission timer
 #include "KJx2CityWar.h"	// DOT E cong thanh: state 7 thanh (E3)
 #include "KSimCity.h"	// Port SimCity: nhip di chuyen bot
+#include "KPlayerBot.h"	// Bot la KPlayer that
 #include "KPlayerSet.h"
 #include "KLadder.h"
 
@@ -367,6 +368,8 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t
 			(void*)uParam, 2048);
 	case SGDI_TONG_JX2OP:	// JX2 port
 		return g_TongJX2.DoClientOp((int)nParam, (const void*)uParam);
+	case SGDI_PBOT_IS_BOT:	// khe Player[] nay co phai bot khong
+		return PB_IsBot((int)nParam);
 	case SGDI_CHARACTER_NETID:
 		if (uParam)
 		{
@@ -1014,6 +1017,33 @@ int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int n
 			g_TongJX2.OnRelayPacket((const void*)uParam, nParam);
 		break;
 
+	// ==== Bot la KPlayer that. Vo mong, chuyen thang sang KPlayerBot. ====
+	case SSOI_PBOT_SET_SENDER:
+		PB_SetSender((PB_DbSender)uParam);
+		break;
+
+	case SSOI_PBOT_SPAWN:
+		if (uParam)
+		{
+			// nParam <= 1: sinh dung tai khoan do. nParam > 1: khong dung o day
+			// (dai tai khoan di qua PB_SpawnRange tu Lua/lenh GM).
+			return PB_Spawn((const char*)uParam);
+		}
+		break;
+
+	case SSOI_PBOT_ROLELIST_RES:
+		if (uParam)
+			PB_OnRoleList((const PB_DB_RESULT*)uParam);
+		break;
+
+	case SSOI_PBOT_ROLEDATA_RES:
+		if (uParam)
+			PB_OnRoleData((const PB_DB_RESULT*)uParam);
+		break;
+
+	case SSOI_PBOT_REMOVE_ALL:
+		return PB_RemoveAll();
+
 	// relay 帮会创建成功，通知 core 进行相应的处理
 	case SSOI_TONG_CREATE:
 		{
@@ -1129,6 +1159,7 @@ int CoreServerShell::Breathe()
 	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
 	KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
 	SC_Breathe();	// Port SimCity: nhip di chuyen bot
+	PB_Breathe();	// Bot KPlayer that: rut hang doi sinh + het han cho
 
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();

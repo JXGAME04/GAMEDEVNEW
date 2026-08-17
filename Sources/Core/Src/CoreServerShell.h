@@ -235,6 +235,18 @@ struct iCoreServerShell
 // GetGameData: thao tac cua so JX2 (uParam = TONG_JX2OP_COMMAND*, nParam = playerIdx)
 #define SGDI_TONG_JX2OP			0x4A583203
 
+// ==== Bot la KPlayer that (KPlayerBot.*) - tien to PB_ ====
+// Dat NGOAI enum, cung khuon voi cac ma JX2 o tren, de KHONG them ham thuan ao.
+// Ly do: giao dien iCoreServerShell duoc CA S3Server dung
+// (S3Server\SwordOnLineServer.cpp:192). Them ham ao la buoc build lai ca no; quen mot
+// noi la lech khe vtable, hong ngam ma khong co loi lien ket nao.
+#define SSOI_PBOT_SET_SENDER		0x4A504210	// uParam = PB_DbSender
+#define SSOI_PBOT_SPAWN			0x4A504211	// uParam = ten tk, nParam = so bot
+#define SSOI_PBOT_ROLELIST_RES		0x4A504212	// uParam = PB_DB_RESULT*
+#define SSOI_PBOT_ROLEDATA_RES		0x4A504213	// uParam = PB_DB_RESULT*
+#define SSOI_PBOT_REMOVE_ALL		0x4A504215	// go het bot
+#define SGDI_PBOT_IS_BOT			0x4A504214	// nParam = playerIdx -> 1/0
+
 #ifndef CORE_EXPORTS
 
 #ifndef __linxu
