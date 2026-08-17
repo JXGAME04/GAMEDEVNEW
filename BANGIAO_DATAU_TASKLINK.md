@@ -125,6 +125,17 @@ Dải lõi 1020–1046, 1825, 2419/2420, 2570–2575, 2690, 2797 + TEMP 154: **t
 - Danh vọng/phúc duyên là **tiền tệ shop** trên JX1 → người chơi tiêu giữa nhiệm vụ loại 5 làm hiệu số âm (ghi chú vận hành, bản gốc cũng vậy về logic hiệu số).
 - Mốc-10 vẫn khóa chờ chọn item rương (mục 6c).
 
+## 6e. VÒNG PHẢN BIỆN 17/08 (5 mũi độc lập) — commit `9fd14637` + `19a39a3a`
+
+**Gốc "nhặt không báo" (đã đóng):** tham số inline của tool bash rút `\\` thành `\` → đường dẫn trong hook thành rác (`\t`=TAB) → `g_GetScript` NULL → im lặng. Phát hiện bằng soi byte DLL (thiếu chuỗi `tasklink_goods.lua`). Đã sửa + đặt luật: chuỗi có backslash chỉ đi qua file.
+
+**9 lỗi phản biện tìm thêm, đã vá (chi tiết trong commit `19a39a3a`):** chia tổ đội hỏng 3 tầng + exploit farm click-phải (viết lại `TLG_ChiaToDoi`, `GetTeamMember(0)`=đội trưởng — cần DLL mới); hook nuốt cuộn khi script lỗi (giờ kiểm return); `j<k`+`C_Random` bao hàm cận trên → 1%/lượt kẹt **vĩnh viễn** vì seed 1037 (đổi `j<=k`); findmaps mất trọng số link 6-10 → cấp 50-79 dính `random(1,0)` (đã điền + guard); **client chưa có buysell mới** (đã đồng bộ `bin\client` + `PATCHFULL`); `OpenQuestFinish` strcpy tràn stack tiềm ẩn; mất thưởng im lặng khi túi đầy (mốc-10 giờ không set cờ khi <3 ô — dọn túi nhận lại được); Prise chống nhầm người + tự mở lại cửa sổ; bom hẹn giờ `KTabFile FindRow/FindColumn`.
+
+**Phản biện bác bỏ (không phải lỗi, khỏi điều tra lại):** vật rớt là `Obj_Kind_Item` thật (ObjData 424); global `SubWorld` đúng tên; `ConsumeItem` đúng thứ tự + không có đường mất chìa; `AddTimeItem`/`SetParamItem` nhận index toàn cục khớp `AddItem`; buysell 35 cột an toàn tuyệt đối (KTabFile cấp phát động); rương 2383 không lọt shop nào; điều kiện dị dạng dòng 115 là ngữ nghĩa Lua 4 đúng.
+
+**Chờ chủ game:** nguồn chìa hiện đáp ứng ~53% nhu cầu mở 5 rương/ngày (đo bằng số: P(chìa|ô vật phẩm) 12–65% tùy giá trị V). Muốn "mở đủ 5 rương/ngày": tăng 5→9-10 dòng chìa trong award_basic HOẶC giảm giá mở 6→3 chìa; hoặc giữ nguyên làm van tiết lưu.
+**Ghi chú vận hành:** cây build server duy nhất từ đợt này = `D:\GAMEDEVNEW` (cây `E:\...\SOURCESUPDATE_KINHMACH_ONLTEST0608` KHÔNG có các sửa Dã Tẩu — coi như đóng băng).
+
 ## 7. RỦI RO CÒN LẠI / ĐÃ BIẾT
 1. **Chưa boot test** — con số "0 hàm thiếu" là quét tĩnh; `ScriptError.log` sau restart là phép đo thật. Nếu còn `attempt to call a nil value`, tra tên hàm trong manifest mục D.
 2. Enum thuộc tính 85–110 đã đối chiếu **khớp từng số** với `KMagicAttrib.h` (85=lifemax… 110), nhưng nên test thật 1 nhiệm vụ loại 3.
