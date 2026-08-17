@@ -166,8 +166,39 @@ def liet_ke_mau(cur):
     print('Chon mot cai roi chay lai voi:  --mau <taikhoan>')
 
 
+CANH_BAO = """
+*** DUNG LAI - TOOL NAY CHUA DUNG DUOC, DANG NHAM NOI LUU DU LIEU ***
+
+Tool viet theo gia dinh "nhan vat nam trong SQL Server (bang RoleBaseInfo)".
+Gia dinh do SAI. Da kiem lai tan goc:
+
+  * Goddess (RoleServer) doc BERKELEY DB, khong he dung SQL:
+      Goddess/IDBRoleServer.cpp:58   db_table = new ZDBTable("database", "roledb")
+      Goddess/db.h:63                "Berkeley DB 18.1.40"
+      grep ODBC/SQLConnect trong Goddess = 0 ket qua
+  * Tep du lieu that dang song: bin\\multiserver\\database\\roledb (+ roledb.0, log.*)
+  * DataBase.ini CHI duoc S3Relay doc (S3Relay/Global.cpp), khong phai Goddess.
+  * => CSDL SQL "account" (Account_Info / RoleBaseInfo) la BAN SAO cho relay/web,
+       KHONG phai noi Goddess lay du lieu nhan vat.
+
+Neu chay tool nay, no se tao 1000 dong trong SQL ma Goddess KHONG BAO GIO DOC ->
+bot van that bai o buoc GetRoleListOfAccount, con CSDL thi da bi ghi them rac.
+
+Them nua: he bot tham khao KHONG dang nhap bang mat khau - BOT_PASSWORD trong
+KBotConfig.h khong he duoc dung o bat ky dong ma nao. Bot di thang toi Goddess xin
+danh sach nhan vat theo TEN TAI KHOAN. Nen mat khau "1000bot" chi can neu NGUOI muon
+dang nhap tay vao cac tai khoan do.
+
+Tool se duoc viet lai cho Berkeley DB. Tam thoi khong chay.
+"""
+
+
 def main():
+    print(CANH_BAO)
+    if '--toi-hieu-va-van-muon-chay-tren-sql' not in sys.argv:
+        sys.exit(9)
     ap = argparse.ArgumentParser(description='Tao san tai khoan + nhan vat cho bot')
+    ap.add_argument('--toi-hieu-va-van-muon-chay-tren-sql', action='store_true')
     ap.add_argument('--tu', type=int, default=1)
     ap.add_argument('--den', type=int, default=1000)
     ap.add_argument('--matkhau', default='1000bot')
