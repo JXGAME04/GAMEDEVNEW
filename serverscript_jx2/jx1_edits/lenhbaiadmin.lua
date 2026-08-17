@@ -31,6 +31,7 @@ Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
  -- Include("\\script\\startgame.lua")
 Include("\\script\\header\\testgame.lua")
 Include("\\script\\test\\bangthanh_f.lua")	-- BO TEST bang hoi + cong thanh (TX_Root)
+Include("\\script\\item\\simcity_admin.lua")	-- SimCity: menu admin bot gia lap
 
 ADMIN_SUPPORT_TEXT = "Chøc n¨ng hç trî qu¶n trÞ viªn"
 PLAYER_INFOMATION = "<sex> - Tªn: <color=pink>%s<color>.\n- Täa ®é: <color=gold>%s (%d/%d) (%d/%d)<color>.\n- PIndex: <color=green>%d<color>"
@@ -89,6 +90,7 @@ function chucnangadmin(itemIdx)
 		"Chøc n¨ng chÝnh/manager",
 		"Reload File /reloadfileEvent",
 		"Test bang hoi va cong thanh/TX_Root",
+		"SimCity - bot gia lap/SC_Menu",
 		"NhËn trang bÞ Xanh/xanhtest",
 		--"LayBinhSiHieuPhu/LayBinhSiHieuPhu",
 		--"Demo Set Npc Time Idle/DemoSetNpcTimeIdle",
