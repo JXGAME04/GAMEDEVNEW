@@ -48,6 +48,28 @@
 #define PB_ASK_ROLELIST  0
 #define PB_ASK_ROLEDATA  1
 
+// ---------------------------------------------------------------------------
+// Gia tri m_nLixian danh RIENG cho bot. KHONG duoc dung 1 hay 2.
+//
+// Ngu nghia san co (ScriptFuns.cpp:8785): 0 = khong uy thac, 1 = dang uy thac,
+// 2 = ket thuc uy thac. Bot can cai gi do KHAC 0 de song, nhung ca 1 lan 2 deu co hai:
+//
+//   dat 1 -> KSOServer.cpp:3450 (trong PlayerLogoutGateway, quet MOI khe MOI khung) rot
+//            vao nhanh "else if (GetCharacterLixian(nIndex) == 1)": ban 3 goi tagLeaveGame2
+//            THEO TEN TAI KHOAN toi Transfer/Chat/Tong roi goi SetCharacterLixianCompleted
+//            -> engine TU LAT co thanh 2 ngay o khung dau.
+//   dat 2 -> CoreServerShell.cpp:1257 (SetCharacterLixianEnd) tim theo TEN TAI KHOAN va
+//            tra ve o khop DAU TIEN. Bot mang 2 se bi bat truoc nguoi that trung ten,
+//            khien nguoi do KET UY THAC VINH VIEN.
+//
+// Gia tri 3 lot qua dung hai cong CAN bao ve:
+//   KPlayer.cpp:970  if (m_nLixian) -> khong danh dau bot la dang thoat
+//   KPlayer.cpp:998  if (m_nLixian) -> mien nhiem IsLoginTimeOut (bot khong co ket noi nen
+//                    neu khong co cai nay se bi giet sau dung 10 giay)
+// va truot ca ba cong gay hai o tren. Da ra soat TOAN BO 9 cho doc co nay.
+// ---------------------------------------------------------------------------
+#define PB_LIXIAN_BOT    3
+
 // Core dua yeu cau ra ngoai qua con tro ham nay; GameServer cai dat no.
 // Tra 1 = da gui, 0 = that bai.
 typedef int (*PB_DbSender)(int nWhat, unsigned long ulIdentity, const char* szName);

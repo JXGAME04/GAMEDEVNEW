@@ -293,10 +293,11 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		Player[nIdx].m_pStatusLoadPlayerInfo = NULL;
 	}
 
-	// Bot khong co ket noi mang. m_nLixian = 1 (dang uy thac) la thu giu cho bot khoi bi
-	// IsLoginTimeOut giet sau 10 giay - xem chu thich tai KPlayer::IsLoginTimeOut.
+	// Bot khong co ket noi mang. PB_LIXIAN_BOT (=3) la thu giu cho bot khoi bi
+	// IsLoginTimeOut giet sau 10 giay MA khong dam vao hai gia tri co nghia san (1 va 2) -
+	// xem khoi chu thich dai tai KPlayerBot.h.
 	Player[nIdx].m_nNetConnectIdx = -1;
-	Player[nIdx].m_nLixian        = 1;
+	Player[nIdx].m_nLixian        = PB_LIXIAN_BOT;
 
 	// LaunchPlayer tra 0 = THANH CONG o cay nay (KPlayer.cpp:6797 return 0).
 	if (Player[nIdx].LaunchPlayer() != 0)

@@ -992,9 +992,15 @@ BOOL KPlayer::IsLoginTimeOut()
 	//   mot KIndexNode tro vao o Player[] da giai phong.
 	//
 	// m_nLixian: 0 = khong uy thac, 1 = dang uy thac, 2 = ket thuc uy thac
-	// (ngu nghia ghi ro tai ScriptFuns.cpp:8785). Bot duoc dat m_nLixian = 1 luc sinh,
-	// dung nghia "co mat trong the gioi nhung khong co ket noi client".
-	// Cay tham khao USVOLAM va y het cho nay (KPlayer.cpp:6540-6543).
+	// (ngu nghia ghi ro tai ScriptFuns.cpp:8785).
+	// Bot KPlayer duoc dat PB_LIXIAN_BOT = 3 - CO Y khong dung 1 hay 2:
+	//   dat 1 thi KSOServer.cpp:3450 ban 3 goi tagLeaveGame2 theo ten tai khoan roi
+	//          TU LAT co thanh 2 ngay khung dau;
+	//   dat 2 thi CoreServerShell.cpp:1257 tim theo ten tai khoan va tra ve o khop DAU
+	//          TIEN, khien nguoi that trung ten ket uy thac vinh vien.
+	// Gia tri 3 van khac 0 nen qua duoc cong nay, ma truot het cac cong gay hai.
+	// Xem khoi chu thich day du tai KPlayerBot.h.
+	// Cay tham khao USVOLAM chan cho nay bang m_byLixian (USVOLAM KPlayer.cpp:6540-6543).
 	if (m_nLixian)
 		return FALSE;
 	
