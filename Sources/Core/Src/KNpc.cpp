@@ -139,6 +139,7 @@ void KNpc::Init()
 	m_nPlayerIdx = 0;
 	m_ProcessAI = 1;
 	m_Kind = kind_normal;
+	m_btSimCityBot   = 0;		// Port SimCity: bot gia lap
 	m_Series = series_metal;
 	m_Camp = camp_free;
 	m_CurrentCamp = camp_free;
@@ -3579,7 +3580,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nDamage = 1 + (rand() % 20);
 			}	
 		}
-	if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player)
+	if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player && !m_btSimCityBot && !Npc[nAttacker].m_btSimCityBot)
 	{
 
 	if ((SubWorld[m_SubWorldIndex].m_SubWorldID == 209 && SubWorld[Npc[nAttacker].m_SubWorldIndex].m_SubWorldID == 209) || (SubWorld[m_SubWorldIndex].m_SubWorldID == 397 && SubWorld[Npc[nAttacker].m_SubWorldIndex].m_SubWorldID == 397))
@@ -3663,7 +3664,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 
-		if(g_Skill120ExpRate) // luyen skill 120
+		if(g_Skill120ExpRate && !m_btSimCityBot) // luyen skill 120
 		{
 			if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance <= 0 )
 					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance = 1;
@@ -3681,7 +3682,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 
-		if(g_Skill90ExpRate) // luyen skill 90
+		if(g_Skill90ExpRate && !m_btSimCityBot) // luyen skill 90
 		{
 			if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance <= 0 )
 					Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentExpSkillsEnchance = 1;
@@ -3746,7 +3747,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				Player[m_nPlayerIdx].m_cPK.CloseAll();
 		}
 	}
-	if (nRealDamage > 0 && (this->m_Kind == kind_player) && (Npc[nAttacker].m_Kind == kind_player))
+	if (nRealDamage > 0 && (this->m_Kind == kind_player) && (Npc[nAttacker].m_Kind == kind_player) && !m_btSimCityBot && !Npc[nAttacker].m_btSimCityBot)
 	{
 		if (Player[Npc[nAttacker].m_nPlayerIdx].m_dwDamageScriptId)
 			Player[m_nPlayerIdx].ExecuteScript(Player[m_nPlayerIdx].m_dwDamageScriptId, "OnDamage", nRealDamage);
@@ -8402,7 +8403,7 @@ int		KNpc::DeathCalcPKValue(int nKiller)
 	if (m_nCurPKPunishState == enumDEATH_MODE_PKBATTLE_PUNISH)
 		return enumDEATH_MODE_PKBATTLE_PUNISH;
 
-	if (this->m_Kind != kind_player || Npc[nKiller].m_Kind != kind_player || !m_FightMode)
+	if (this->m_Kind != kind_player || Npc[nKiller].m_Kind != kind_player || !m_FightMode || m_btSimCityBot || Npc[nKiller].m_btSimCityBot)
 		return enumDEATH_MODE_NPC_KILL;
 
 	if (Player[m_nPlayerIdx].m_cPK.GetExercisePKAim() == Npc[nKiller].m_nPlayerIdx)
@@ -9848,6 +9849,8 @@ void KNpc::ClearNormalState()
 
 void KNpc::CheckTrap()
 {
+	if (m_btSimCityBot)		// Port SimCity: bot gia lap khong kich bay
+		return;
 	if (m_Kind != kind_player)
 		return;
 	

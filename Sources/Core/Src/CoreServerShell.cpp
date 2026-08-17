@@ -16,6 +16,7 @@
 #include "KTongJX2.h"	// JX2 port
 #include "KJx2League.h"	// DOT E cong thanh: GLOBAL mission timer
 #include "KJx2CityWar.h"	// DOT E cong thanh: state 7 thanh (E3)
+#include "KSimCity.h"	// Port SimCity: nhip di chuyen bot
 #include "KPlayerSet.h"
 #include "KLadder.h"
 
@@ -1127,6 +1128,7 @@ int CoreServerShell::Breathe()
 
 	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
 	KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
+	SC_Breathe();	// Port SimCity: nhip di chuyen bot
 
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();

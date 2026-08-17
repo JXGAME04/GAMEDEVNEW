@@ -242,6 +242,7 @@ public:
 	int					m_nNpcTimeout;
 	int					m_nNpcParam[MAX_NPCPARAM];
 	BOOL				m_bNpcFollowFindPath;
+	BYTE				m_btSimCityBot;		// Port SimCity: NPC la bot gia lap (server set; client luon 0)
 	DWORD				m_uFindPathTime;
 	DWORD				m_uFindPathMaxTime;
 	DWORD				m_uLastFindPathTime;

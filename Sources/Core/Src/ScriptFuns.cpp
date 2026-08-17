@@ -12694,6 +12694,18 @@ extern int LuaCTC_JX2_GetTax(Lua_State* L);
 // ==== DOT E cong thanh JX2 (E4): ha tang tran (KJx2WarInfra.cpp) ====
 extern int LuaSetNpcDeathScript(Lua_State* L);
 extern int LuaClearMapNpc(Lua_State* L);
+// ==== Port SimCity (KSimCity.cpp): co danh dau bot giu can bang ====
+extern int LuaSC_SetBotFlag(Lua_State* L);
+extern int LuaSC_GetBotFlag(Lua_State* L);
+extern int LuaSC_AddBot(Lua_State* L);
+extern int LuaSC_DelBot(Lua_State* L);
+extern int LuaSC_ClearBots(Lua_State* L);
+extern int LuaSC_MoveOn(Lua_State* L);
+extern int LuaSC_MoveOff(Lua_State* L);
+extern int LuaSC_Goto(Lua_State* L);
+extern int LuaSC_PatrolBox(Lua_State* L);
+extern int LuaSC_LoadPreset(Lua_State* L);
+extern int LuaSC_SetBotRoute(Lua_State* L);
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -12985,6 +12997,17 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcValue",		LuaSetNpcParam},
 	{"GetNpcParam",		LuaGetNpcParam},
 	{"GetNpcValue",		LuaGetNpcParam},
+	{"SC_SetBotFlag",	LuaSC_SetBotFlag},	// Port SimCity
+	{"SC_GetBotFlag",	LuaSC_GetBotFlag},
+	{"SC_AddBot",		LuaSC_AddBot},
+	{"SC_DelBot",		LuaSC_DelBot},
+	{"SC_ClearBots",	LuaSC_ClearBots},
+	{"SC_MoveOn",		LuaSC_MoveOn},		// Port SimCity GD2
+	{"SC_MoveOff",		LuaSC_MoveOff},
+	{"SC_Goto",		LuaSC_Goto},
+	{"SC_PatrolBox",	LuaSC_PatrolBox},
+	{"SC_LoadPreset",	LuaSC_LoadPreset},
+	{"SC_SetBotRoute",	LuaSC_SetBotRoute},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},
