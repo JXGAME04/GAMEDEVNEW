@@ -1637,10 +1637,21 @@ typedef struct
 
 //ÒÆ×ÔRoleDBManager/kroledbheader.h
 //ÓÃÀ´Ìæ»»ÉÏÃæµÄROLE_LIST_SYNC,ROLE_LIST_SYNC½á¹¹²»ÔÙÐèÒªÁË
+// LUU Y BO CUC BYTE - dung doi kieu cac truong duoi day.
+//   Co HAI tep KProtocol.h trong cay nay va chung dung CHUNG guard KPROTOCOL_H
+//   (Headers\KProtocol.h va tep nay), nen ban nao include truoc thi ban kia bi bo qua.
+//   TProcessData la GOI TIN QUA MANG giua cac tien trinh KHAC BITNESS:
+//     Goddess.exe / Bishop.exe = Win32,  GameServer.exe / CoreServer.dll = x64.
+//   Ca hai tep deu o #pragma pack(1) (dong 18-19) nen khong co padding; nhung neu
+//   nDataLen la size_t thi tren x64 no thanh 8 byte, day ulIdentity tu offset 5 sang 9
+//   va sizeof tu 11 len 15. Goddess (Win32) van doc theo 11 byte => doc nham ulIdentity,
+//   ten tai khoan lech 4 byte, GetRoleListOfAccount that bai va KHONG bao loi.
+//   => Phai giu unsigned int de moi tien trinh cung thay 11 byte.
+//   (Cay tham khao D:\USVOLAM chi co MOT ban KProtocol.h nen khong dinh bay nay.)
 struct TProcessData
 {
 	unsigned char	nProtoId;
-	size_t			nDataLen;//TRoleNetMsgÊ±±íÊ¾¸ÃBlockµÄÊµ¼ÊÊý¾Ý³¤¶È,TProcessDataÊ±±íÊ¾StreamµÄÊµ¼ÊÊý¾Ý³¤¶È
+	unsigned int		nDataLen;//TRoleNetMsgÊ±±íÊ¾¸ÃBlockµÄÊµ¼ÊÊý¾Ý³¤¶È,TProcessDataÊ±±íÊ¾StreamµÄÊµ¼ÊÊý¾Ý³¤¶È
 	unsigned long	ulIdentity;
 	bool			bLeave;
 	char			pDataBuffer[1];//Êµ¼ÊµÄÊý¾Ý
