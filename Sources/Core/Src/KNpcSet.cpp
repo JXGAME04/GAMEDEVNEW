@@ -810,6 +810,11 @@ int		KNpcSet::GetAroundPlayerForTeamInvite(KUiPlayerItem *pList, int nCount)
 				break;
 			if (Npc[nIdx].m_Kind != kind_player)
 				continue;
+			// Bot khong bao gio nhan duoc loi moi to doi: server dinh tuyen qua
+			// KPlayer::FindAroundPlayer -> KRegion::FindPlayer, chi quet m_PlayerList, ma bot
+			// chi nam trong m_NpcList. Moi bot = spam thuan tuy.
+			if (Npc[nIdx].m_btSimCityBot)
+				continue;
 			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
 				continue;
 			if (Npc[nIdx].m_Camp != camp_begin && nCamp == camp_begin)
@@ -1032,7 +1037,12 @@ int	KNpcSet::GetAroundPlayer(KUiPlayerItem *pList, int nCount)
 		nIdx = m_UseIdx.GetNext(nIdx);
 		if (nIdx == 0)
 			break;
+		// Loc bot SimCity: vong nay cat cung o nCount (16 khi KPlayerAuto.cpp:3050 goi) va
+		// duyet THEO THU TU CHI SO, nen bot chi so thap chiem het khe -> dong doi THAT bi
+		// tinh la "vang mat" roi bi TeamKickMember (KPlayerAuto.cpp:3073) duoi khoi to doi.
+		// Cung danh sach nay quyet dinh muc tieu theo sau (KPlayerAuto.cpp:1023).
 		if (Npc[nIdx].m_Kind != kind_player ||
+			Npc[nIdx].m_btSimCityBot ||
 			nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex ||
 			Npc[nIdx].m_RegionIndex < 0)
 		{
@@ -1655,6 +1665,24 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 #endif
 
 #ifdef _SERVER
+	// Port SimCity: bot gia lap KHONG bao gio la ke dich cua ai.
+	// LY DO PHAI CHAN O DAY (doc tu ma - day la loi dang song, khong phai phong xa):
+	//   Nhanh else ben duoi mo dau bang
+	//     if (Player[Npc[nId1].m_nPlayerIdx].m_cPK.GetExercisePKAim() == Npc[nId2].m_nPlayerIdx)
+	//         return relation_enemy;
+	//   Bot co m_nPlayerIdx = 0 (KNpc.cpp:139) va nguoi choi that khong dau vo dai thi
+	//   GetExercisePKAim() tra 0 (KPlayerPK.cpp:43) => 0 == 0 => relation_enemy, TRUOC moi
+	//   kiem tra camp / co PK / FightMode. Tuc la MOI nguoi choi that la ke dich cua MOI bot
+	//   ngay tu khung hinh dau tien.
+	//   Hau qua da kiem: KPlayer::DialogNpc (KPlayer.cpp:8033) doi relation_none nen moi duong
+	//   hoi thoai voi bot bi chan; KMissle.cpp:638/670 FindNpc theo m_eRelation nen dan/am khi
+	//   DUNG LAI o bot thay vi bay toi quai.
+	//   6 cong m_btSimCityBot san co trong KNpc.cpp KHONG cai nao chan duoc cho nay.
+	if (Npc[nId1].m_btSimCityBot || Npc[nId2].m_btSimCityBot)
+	{
+		return relation_none;
+	}
+
 	if (Npc[nId1].m_Kind != kind_player || Npc[nId2].m_Kind != kind_player)
 	{
 		NPC_RELATION result = (NPC_RELATION)m_RelationTable

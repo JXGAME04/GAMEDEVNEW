@@ -2115,7 +2115,11 @@ int LuaSyncItemJX2(Lua_State* L)
 		return 0;
 	int nItemIndex = (int)Lua_ValueToNumber(L, 1);
 	if (nItemIndex > 0 && nItemIndex < MAX_ITEM)
+#ifdef _SERVER
+		// KItemList::SyncItem chi ton tai o ban server (KItemList.h:186 nam trong
+		// #ifdef _SERVER). Khong boc thi build Client bao C2039 "khong phai thanh vien".
 		Player[nPlayerIndex].m_ItemList.SyncItem(nItemIndex);
+#endif
 	return 0;
 }
 
@@ -12709,6 +12713,13 @@ extern int LuaSC_SetBotRoute(Lua_State* L);
 extern int LuaSC_LoadChat(Lua_State* L);
 extern int LuaSC_ChatChance(Lua_State* L);
 extern int LuaSC_ClearChat(Lua_State* L);
+// Port SimCity GD4 - lop thong tin bot
+extern int LuaSC_SetBotLook(Lua_State* L);
+extern int LuaSC_SetBotFaction(Lua_State* L);
+extern int LuaSC_SetBotInfo(Lua_State* L);
+extern int LuaSC_SetBotTitle(Lua_State* L);
+extern int LuaSC_SetBotTong(Lua_State* L);
+extern int LuaSC_SetBotMate(Lua_State* L);
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -12791,7 +12802,12 @@ TLua_Funcs GameScriptFuns[] =
 	{"C_Random",			LuaC_Random},
 	{"SetRandSeed",			LuaSetRandSeed},
 	{"GetTiredDegree",		LuaGetTiredDegree},
+#ifdef _SERVER
+	// LuaGetTeamMem chi duoc dinh nghia khi _SERVER (ScriptFuns.cpp:6734), giong het dong
+	// dang ky goc {"GetTeamMem", ...} von da nam trong #ifdef _SERVER. Alias nay bi bo quen
+	// ngoai guard -> build Client bao C2065, keo theo C2070 o sizeof(GameScriptFuns).
 	{"GetTeamMember",		LuaGetTeamMem},			// alias GetTeamMem - cung chu ky (nPos 1-based)
+#endif
 	{"GetBitTask",			LuaGetBitTask},
 	{"SetBitTask",			LuaSetBitTask},
 	{"GetItemMagicAttrib",	LuaGetItemMagicAttrib},
@@ -13014,6 +13030,13 @@ TLua_Funcs GameScriptFuns[] =
 	{"SC_LoadChat",		LuaSC_LoadChat},	// Port SimCity GD3
 	{"SC_ChatChance",	LuaSC_ChatChance},
 	{"SC_ClearChat",		LuaSC_ClearChat},
+	// Port SimCity GD4 - lop thong tin bot (ngoai trang / mon phai / danh hieu / bang hoi)
+	{"SC_SetBotLook",	LuaSC_SetBotLook},
+	{"SC_SetBotFaction",	LuaSC_SetBotFaction},
+	{"SC_SetBotInfo",	LuaSC_SetBotInfo},
+	{"SC_SetBotTitle",	LuaSC_SetBotTitle},
+	{"SC_SetBotTong",	LuaSC_SetBotTong},
+	{"SC_SetBotMate",	LuaSC_SetBotMate},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},

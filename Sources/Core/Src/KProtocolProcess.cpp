@@ -2229,6 +2229,17 @@ void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 	PLAYER_SYNC*	pPlaySync = (PLAYER_SYNC *)pMsg;
 
 	int nIdx = NpcSet.SearchID(pPlaySync->ID);
+	// Chan ghi de o sentinel Npc[0]: NpcSet.SearchID tra 0 khi CHUA co NPC nay o client
+	// (goi player-sync toi truoc goi tao NPC), hoac khi het khe - MAX_NPC o client chi 256
+	// (KNpc.h:23) trong khi server la 98000. Khong chan thi moi goi nhu vay ghi thang vao
+	// Npc[0] va con dat Npc[0].m_Kind = kind_player.
+	if (nIdx <= 0)
+		return;
+
+	// 0x20 = co nhan dien bot SimCity do server dat (KNpc.cpp, hai ham sync).
+	// Bit nay truoc day luon 0 nen client cu bo qua -> tuong thich nguoc.
+	// Dung de loc bot khoi cac danh sach "nguoi choi quanh day" cua WAuto.
+	Npc[nIdx].m_btSimCityBot = (pPlaySync->m_btSomeFlag & 0x20) ? 1 : 0;
 
 	Npc[nIdx].m_ArmorType			= pPlaySync->ArmorType;
 	Npc[nIdx].m_CurrentAttackSpeed	= pPlaySync->AttackSpeed; 
@@ -2314,6 +2325,18 @@ void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
 {
 	PLAYER_NORMAL_SYNC* pPlaySync = (PLAYER_NORMAL_SYNC *)pMsg;
 	int nIdx = NpcSet.SearchID(pPlaySync->ID);
+	// Chan ghi de o sentinel Npc[0]: NpcSet.SearchID tra 0 khi CHUA co NPC nay o client
+	// (goi player-sync toi truoc goi tao NPC), hoac khi het khe - MAX_NPC o client chi 256
+	// (KNpc.h:23) trong khi server la 98000. Khong chan thi moi goi nhu vay ghi thang vao
+	// Npc[0] va con dat Npc[0].m_Kind = kind_player.
+	if (nIdx <= 0)
+		return;
+
+	// 0x20 = co nhan dien bot SimCity do server dat (KNpc.cpp, hai ham sync).
+	// Bit nay truoc day luon 0 nen client cu bo qua -> tuong thich nguoc.
+	// Dung de loc bot khoi cac danh sach "nguoi choi quanh day" cua WAuto.
+	Npc[nIdx].m_btSimCityBot = (pPlaySync->m_btSomeFlag & 0x20) ? 1 : 0;
+
 	Npc[nIdx].m_CurrentWalkSpeed	= pPlaySync->WalkSpeed;
 	Npc[nIdx].m_CurrentRunSpeed		= pPlaySync->RunSpeed;
 	Npc[nIdx].m_CurrentAttackSpeed	= pPlaySync->AttackSpeed; 

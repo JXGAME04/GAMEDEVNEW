@@ -15,6 +15,8 @@
 #include "KRegion.h"        // KRegion::IsActive
 #include "KTabFile.h"       // KTabFile - nap _preset.txt / chat.txt
 #include "KPlayerChat.h"    // KPlayerChat::NpcChat - bot noi chuyen
+#include "KItemChangeRes.h" // g_ItemChangeRes - dat ngoai hinh mac dinh cho bot
+#include "KFaction.h"       // g_Faction.GetCamp - mon phai -> camp
 #include "KRandom.h"        // g_Random
 #include "KSimCity.h"
 #include <string.h>         // strncpy, strcmp, memset
@@ -442,6 +444,30 @@ int LuaSC_AddBot(Lua_State* L)
 	if (nLevel > 127) nLevel = 127;
 	if (nSeries < 0 || nSeries > 5) nSeries = 0;
 
+	// ---- TEN BOT: kiem TRUOC khi sinh, chu game da chot CAM TRUNG TUYET DOI ----
+	//   NpcSet.SearchName (KNpcSet.cpp:242-258) quet m_UseIdx = MOI NPC dang song, ke ca
+	//   KNpc cua nguoi choi that, va tra khop DAU TIEN - khong phan biet bot hay nguoi.
+	//   Ten trung se lam: (a) hook PM nuot tin nhan gui cho nguoi that, (b) loi moi bang hoi
+	//   (CoreShell.cpp:9330) va theo-sau-theo-ten (KPlayerAuto.cpp:1016) di nham sang bot,
+	//   (c) bong thoai gan nham doi tuong (CoreShell.cpp:8458-8473).
+	char szName[32];
+	szName[0] = 0;
+	if (Lua_GetTopIndex(L) >= 7 && Lua_IsString(L, 7))
+	{
+		char* pName = (char*)lua_tostring(L, 7);
+		if (pName && pName[0])
+		{
+			strncpy(szName, pName, sizeof(szName) - 1);
+			szName[sizeof(szName) - 1] = 0;
+		}
+	}
+	if (szName[0] && NpcSet.SearchName(szName) != 0)
+	{
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, -1);        // -1 = ten da co nguoi dung
+		return 2;
+	}
+
 	int nTid = nSex ? PLAYER_FEMALE_NPCTEMPLATEID : PLAYER_MALE_NPCTEMPLATEID;
 
 	int nNpcIdx = NpcSet.AddNpcSet2(MAKELONG(nLevel, nTid), nSeries, nSubWorldIdx, nMpsX, nMpsY);
@@ -458,30 +484,55 @@ int LuaSC_AddBot(Lua_State* L)
 	p->m_Series       = nSeries;
 	p->m_nSex         = nSex;
 
-	// TEN BOT - BAT BUOC dat, khong duoc de trong.
-	//   Nhanh sentinel nNpcSettingIdx < 0 cua KNpc::Load (KNpc.cpp:5046-5072) KHONG ghi Name,
-	//   KNpc::Init() (KNpc.cpp:134-155) cung KHONG xoa Name, con NpcSet.FindFree() tra o TAI SU
-	//   DUNG -> bot se giu nguyen ten chu cu cua o. Client tim nguoi noi bong thoai THEO TEN
-	//   (CoreShell.cpp:8458-8473 quet tuyen tinh strcmp roi return o match DAU TIEN) nen ten
-	//   rong = khong ve bong, ten trung = bong thoai gan NHAM sang quai/nguoi choi that.
-	p->Name[0] = 0;
-	if (Lua_GetTopIndex(L) >= 7 && Lua_IsString(L, 7))
-	{
-		char* pName = (char*)lua_tostring(L, 7);
-		if (pName && pName[0])
-		{
-			strncpy(p->Name, pName, sizeof(p->Name) - 1);   // Name[32] - tranh tran buffer
-			p->Name[sizeof(p->Name) - 1] = 0;
-		}
-	}
+	// ---- DON RAC HEAP (bat buoc truoc khi lop thong tin doc cac truong nay) ----
+	//   Server cap phat Npc bang "new KNpc[MAX_NPC]" (KNpc.cpp:111) = heap KHONG zero-init.
+	//   Lenh ZeroMemory cua m_szTongName/m_szTongTitle/m_nFigure nam trong khoi #ifndef _SERVER
+	//   cua KNpc::Init (KNpc.cpp:164-176) nen TREN SERVER KHONG BAO GIO CHAY; con
+	//   ZeroMemory(MateName) o KNpc.cpp:232 thi BI CHU THICH.
+	//   => 4 truong nay la 32 byte rac KHONG ket thuc NUL. Khi lop thong tin sao chep chung
+	//      vao goi sync, strcpy se doc tran qua truong ke tiep. Phai don o day.
+	memset(p->m_szTongName,  0, sizeof(p->m_szTongName));
+	memset(p->m_szTongTitle, 0, sizeof(p->m_szTongTitle));
+	memset(p->MateName,      0, sizeof(p->MateName));
+	p->m_nFigure  = 0;
+	p->m_Recruit  = 0;
+
+	// ---- NGOAI HINH mac dinh (khuon duy nhat trong cay nguon: KPlayerDBFuns.cpp:439-443) ----
+	//   KNpc::Init dat Helm/Armor/Weapon = 1 (KNpc.cpp:205-207) = do "tap su", trong ky cuc.
+	//   g_ItemChangeRes.Init() CO chay tren server (KCore.cpp:236, ngoai khoi #ifndef _SERVER).
+	p->m_WeaponType = g_ItemChangeRes.GetWeaponRes(0, 0, 0);
+	p->m_ArmorType  = g_ItemChangeRes.GetArmorRes(0, 0);
+	p->m_HelmType   = g_ItemChangeRes.GetHelmRes(0, 0);
+	p->m_HorseType  = g_ItemChangeRes.GetHorseRes(0, 0);
+	p->m_bRideHorse = FALSE;
+
+	// TEN: KNpc::Init CO xoa Name (KNpc.cpp:219 ZeroMemory(Name, 32)) nen o tai su dung KHONG
+	// mang ten chu cu. Nhung van phai dat ten: ten rong thi client khong ve bong thoai
+	// (CoreShell.cpp:8458-8473 tim nguoi noi THEO TEN).
+	strncpy(p->Name, szName, sizeof(p->Name) - 1);
+	p->Name[sizeof(p->Name) - 1] = 0;
 	if (!p->Name[0])
-		sprintf(p->Name, "SC%d", nNpcIdx);   // dam bao duy nhat trong Npc[]
+	{
+		sprintf(p->Name, "SC%d", nNpcIdx);          // duy nhat trong Npc[] theo chi so o
+		if (NpcSet.SearchName(p->Name) != nNpcIdx)  // cuc hiem: nguoi that dat trung "SCxxx"
+			sprintf(p->Name, "SC%dx", nNpcIdx);
+	}
 
 	if (Lua_GetTopIndex(L) >= 8)
 	{
+		// m_CurrentCamp la CHI SO MANG cua m_RelationTable[..][camp_num][camp_num][..]
+		// (KNpcSet.cpp:1663-1664, 1739-1740) voi camp_num = 9 (GameDataDef.h:495).
+		// Mot dong Lua go nham la doc ngoai mang trong ham nong nhat cua engine -> phai kep.
 		int nFaction = (int)Lua_ValueToNumber(L, 8);
+		if (nFaction < 0 || nFaction >= camp_num)
+			nFaction = camp_justice;      // dan thanh thi = chinh phai; camp_free(4) = "mau do sat thu"
 		p->m_Camp        = nFaction;
 		p->m_CurrentCamp = nFaction;
+	}
+	else
+	{
+		p->m_Camp        = camp_justice;  // KNpc::Init de camp_free (KNpc.cpp:144-145) - sai y do
+		p->m_CurrentCamp = camp_justice;
 	}
 	if (Lua_GetTopIndex(L) >= 9)
 	{
@@ -863,6 +914,197 @@ int LuaSC_PatrolBox(Lua_State* L)
 	b.nLastY   = cy;
 	sc_SnapToNearest(b, rt, i);
 
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ============================================================================
+// GD4 - LOP THONG TIN BOT (ngoai trang / mon phai / danh hieu / bang hoi / chi so)
+//
+// NGUYEN LY CHUNG: moi truong duoi day DA TON TAI tren KNpc va DA duoc hai ham dong bo
+// KNpc::SendSyncData (s2c_syncplayer) va KNpc::NormalSync (s2c_syncplayermin) doc san.
+// Cac ham nay chi GHI GIA TRI - khong them truong moi, khong them goi tin, khong doi
+// kich thuoc goi (PLAYER_SYNC 222 byte / PLAYER_NORMAL_SYNC 229 byte giu nguyen).
+// Nhanh doc cho bot da duoc chen trong KNpc.cpp (tim "Port SimCity: nguon du lieu cho BOT").
+// ============================================================================
+
+// chot chung: chi so phai tro toi mot BOT con song
+static KNpc* sc_Bot(Lua_State* L, int nArg)
+{
+	if (Lua_GetTopIndex(L) < nArg)
+		return NULL;
+	int i = (int)Lua_ValueToNumber(L, nArg);
+	if (i <= 0 || i >= MAX_NPC || !Npc[i].m_btSimCityBot || !Npc[i].m_Index)
+		return NULL;
+	return &Npc[i];
+}
+
+// kep ve mien cua BYTE - cac truong ngoai trang deu la BYTE trong goi tin
+// (KProtocol.h:28/31/33/38 va 426-431). Dat >= 256 se bi cat am tham.
+static int sc_Byte(int v)
+{
+	if (v < 0)   return 0;
+	if (v > 255) return 255;
+	return v;
+}
+
+// doc tham so tuy chon; khong truyen thi giu nguyen gia tri cu
+static int sc_Opt(Lua_State* L, int nArg, int nCur)
+{
+	if (Lua_GetTopIndex(L) < nArg)
+		return nCur;
+	return (int)Lua_ValueToNumber(L, nArg);
+}
+
+// SC_SetBotLook(idx, nHelm, nArmor, nWeapon [, nHorse] [, nMantle] [, nMantleLevel] [, nMask])
+//   Tuong duong ChangeNpcFeature cua ban goc JX2 (plugins/pngoaitrang.lua) - ban goc goi
+//   ChangeNpcFeature(idx, 0, 0, sentinel, helm, armor, weapon, horse) roi SetNpcRideHorse.
+//   O JX1 ham Lua ChangeNpcFeature chi la stub rong (ScriptFuns.cpp) nen ta ghi thang truong.
+//   nHorse < 0 = khong cuoi ngua (ham sync tu ep HorseType = -1).
+int LuaSC_SetBotLook(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 4)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	p->m_HelmType   = sc_Byte((int)Lua_ValueToNumber(L, 2));
+	p->m_ArmorType  = sc_Byte((int)Lua_ValueToNumber(L, 3));
+	p->m_WeaponType = sc_Byte((int)Lua_ValueToNumber(L, 4));
+
+	int nHorse = sc_Opt(L, 5, -1);
+	if (nHorse >= 0)
+	{
+		p->m_HorseType  = sc_Byte(nHorse);
+		p->m_bRideHorse = TRUE;
+	}
+	else
+	{
+		p->m_HorseType  = 0;
+		p->m_bRideHorse = FALSE;
+	}
+
+	p->m_MantleType   = sc_Byte(sc_Opt(L, 6, p->m_MantleType));
+	p->m_byMantleLevel = (BYTE)sc_Byte(sc_Opt(L, 7, p->m_byMantleLevel));
+	p->m_MaskType     = sc_Opt(L, 8, p->m_MaskType);   // MaskType la int trong goi, khong can kep
+
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SC_SetBotFaction(idx, nFaction 0..9) -> 1/0. Dat mon phai + camp tuong ung.
+//   MON PHAI KHAC HE (ngu hanh): KItemList.cpp:994-999 doc m_cFaction.m_nFirstAddFaction cho
+//   magic_requiremenpai, con KItemList.cpp:1000-1005 doc m_Series cho magic_requireseries.
+//   Anh xa: KFaction::GetID(nSeries, nNo) = nSeries * FACTIONS_PRR_SERIES + nNo => 5 he x 2 phai.
+int LuaSC_SetBotFaction(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nFaction = (int)Lua_ValueToNumber(L, 2);
+	if (nFaction < 0 || nFaction >= MAX_FACTION)
+	{
+		p->nFirstFaction = (BYTE)-1;      // chua vao phai; UpdateGameTitle chi in "Lv:x"
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	p->nFirstFaction = (BYTE)nFaction;
+
+	// camp phai theo phai, giong nguoi that (KPlayer.cpp:4017). KNpc::Init de camp_free
+	// (KNpc.cpp:144-145) = "mau do sat thu" - sai hoan toan y do "dan thanh thi".
+	int nCamp = g_Faction.GetCamp(nFaction);
+	if (nCamp < 0 || nCamp >= camp_num)
+		nCamp = camp_justice;
+	p->m_Camp        = nCamp;
+	p->m_CurrentCamp = nCamp;
+
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SC_SetBotInfo(idx, nPKValue, nRepute, nFuYuan, nReBorn [, nRankInWorld] [, nImagePlayer])
+//   Cac o so trong bang "Tin tuc". Deu la truong san co cua KNpc (KNpc.h:231-236).
+int LuaSC_SetBotInfo(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 5)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	p->nPKValue     = (BYTE)sc_Byte((int)Lua_ValueToNumber(L, 2));
+	p->nRepute      = (int)Lua_ValueToNumber(L, 3);
+	p->nFuYuan      = (int)Lua_ValueToNumber(L, 4);
+	p->nReBorn      = (BYTE)sc_Byte((int)Lua_ValueToNumber(L, 5));
+	p->nRankInWorld = sc_Opt(L, 6, p->nRankInWorld);
+	p->m_ImagePlayer = (BYTE)sc_Byte(sc_Opt(L, 7, p->m_ImagePlayer));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SC_SetBotTitle(idx, nRankId [, nRankBattleId] [, nPlayerTitle] [, nHonorId])
+int LuaSC_SetBotTitle(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	p->m_btRankId       = (BYTE)sc_Byte((int)Lua_ValueToNumber(L, 2));
+	p->m_btRankBattleId = (DWORD)sc_Opt(L, 3, p->m_btRankBattleId);
+	p->m_btPlayerTitle  = (DWORD)sc_Opt(L, 4, p->m_btPlayerTitle);
+	p->m_btHonorId      = (BYTE)sc_Byte(sc_Opt(L, 5, p->m_btHonorId));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SC_SetBotTong(idx, szTongName [, szTongTitle] [, nFigure] [, nRecruit])
+//   Truyen chuoi rong de xoa. LUU Y: 3 truong nay tung la RAC HEAP tren server
+//   (ZeroMemory cua chung nam trong khoi #ifndef _SERVER cua KNpc::Init) - SC_AddBot da don.
+int LuaSC_SetBotTong(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 2 || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char* pName = (char*)lua_tostring(L, 2);
+	memset(p->m_szTongName, 0, sizeof(p->m_szTongName));
+	if (pName)
+		strncpy(p->m_szTongName, pName, sizeof(p->m_szTongName) - 1);
+
+	memset(p->m_szTongTitle, 0, sizeof(p->m_szTongTitle));
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsString(L, 3))
+	{
+		char* pTitle = (char*)lua_tostring(L, 3);
+		if (pTitle)
+			strncpy(p->m_szTongTitle, pTitle, sizeof(p->m_szTongTitle) - 1);
+	}
+	p->m_nFigure = sc_Opt(L, 4, 0);
+	p->m_Recruit = sc_Opt(L, 5, 0);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SC_SetBotMate(idx, szMateName) - ten phu the. Chuoi rong = doc than.
+int LuaSC_SetBotMate(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 2 || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char* pMate = (char*)lua_tostring(L, 2);
+	memset(p->MateName, 0, sizeof(p->MateName));
+	if (pMate)
+		strncpy(p->MateName, pMate, sizeof(p->MateName) - 1);
 	Lua_PushNumber(L, 1);
 	return 1;
 }

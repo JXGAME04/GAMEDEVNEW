@@ -5432,6 +5432,48 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 		UpdateGameTitle(); // ensure m_szGameTitle is updated
 		strcpy(PlayerSync.GameTitle, m_szGameTitle);
 		memcpy(PlayerSync.bMeridianLevel, Player[m_nPlayerIdx].m_cMeridian.getMeridian(), sizeof(PlayerSync.bMeridianLevel));
+
+		// ---- Port SimCity: nguon du lieu cho BOT ----
+		// Bot la KNpc kind_player nhung KHONG co KPlayer: m_nPlayerIdx = 0 (KNpc.cpp:139)
+		// nen moi dong Player[m_nPlayerIdx] o tren doc tu Player[0] (o dat truoc, luon rong).
+		// Hau qua neu khong ghi de: MOI bot deu hien "khong bang hoi, PK 0, danh vong 0,
+		// trung sinh 0, khong phoi ngau, hang the gioi 0" - lo ngay la bot.
+		// Cac truong duoi day deu la truong CO SAN cua KNpc, khong them truong moi,
+		// khong doi kich thuoc goi tin (PLAYER_SYNC = 222 byte).
+		if (m_btSimCityBot)
+		{
+			// strncpy chu KHONG strcpy: xem SC_AddBot - cac truong nay tung la rac heap
+			// vi ZeroMemory cua chung nam trong khoi #ifndef _SERVER (KNpc.cpp:164-176)
+			// va ZeroMemory(MateName) o KNpc.cpp:232 bi chu thich.
+			strncpy(PlayerSync.MateName, MateName, sizeof(PlayerSync.MateName) - 1);
+			PlayerSync.MateName[sizeof(PlayerSync.MateName) - 1] = 0;
+			strncpy(PlayerSync.TongName, m_szTongName, sizeof(PlayerSync.TongName) - 1);
+			PlayerSync.TongName[sizeof(PlayerSync.TongName) - 1] = 0;
+			strncpy(PlayerSync.TongTitle, m_szTongTitle, sizeof(PlayerSync.TongTitle) - 1);
+			PlayerSync.TongTitle[sizeof(PlayerSync.TongTitle) - 1] = 0;
+			PlayerSync.TongFigure   = (BYTE)m_nFigure;
+			PlayerSync.TongRecruit  = m_Recruit;
+			PlayerSync.CUnlocked    = 0;
+			PlayerSync.RankInWorld  = (int)nRankInWorld;
+			PlayerSync.Repute       = (int)nRepute;
+			PlayerSync.FuYuan       = (int)nFuYuan;
+			PlayerSync.PKValue      = (BYTE)nPKValue;
+			PlayerSync.ReBorn       = (BYTE)nReBorn;
+			PlayerSync.nFirstFaction = (BYTE)nFirstFaction;
+			PlayerSync.ImagePlayer  = (BYTE)m_ImagePlayer;
+			memset(PlayerSync.bMeridianLevel, 0, sizeof(PlayerSync.bMeridianLevel));
+			// co trang thai: bot luon hoa binh (0x01), khong ngu (0x04), khong chien (0x10).
+			PlayerSync.m_btSomeFlag = 0x01;
+			if (m_FightMode)
+				PlayerSync.m_btSomeFlag |= 0x02;
+			if (m_szTongName[0])
+				PlayerSync.m_btSomeFlag |= 0x08;
+			// 0x20 = CO NHAN DIEN BOT cho client. Bit nay dang trong: client hien tai chi
+			// test 0x01/0x02/0x04/0x10 (KProtocolProcess.cpp:2282-2297) nen bit la bi bo qua
+			// => client cu tuong thich nguoc 100%, kich thuoc goi khong doi.
+			// Client moi dung bit nay de loc bot khoi GetAroundPlayer / moi to doi (WAuto).
+			PlayerSync.m_btSomeFlag |= 0x20;
+		}
 		if (SUCCEEDED(g_pServer->PackDataToClient(nClient, (BYTE*)&PlayerSync, sizeof(PLAYER_SYNC))))
 		{
 			//printf("Packing player sync data ok...\n");//edit by phong kieu sync data ok
@@ -5577,6 +5619,48 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 		UpdateGameTitle(); // ensure m_szGameTitle is updated
 		strcpy(PlayerSync.GameTitle, m_szGameTitle);
 		memcpy(PlayerSync.bMeridianLevel, Player[m_nPlayerIdx].m_cMeridian.getMeridian(), sizeof(PlayerSync.bMeridianLevel));
+
+		// ---- Port SimCity: nguon du lieu cho BOT ----
+		// Bot la KNpc kind_player nhung KHONG co KPlayer: m_nPlayerIdx = 0 (KNpc.cpp:139)
+		// nen moi dong Player[m_nPlayerIdx] o tren doc tu Player[0] (o dat truoc, luon rong).
+		// Hau qua neu khong ghi de: MOI bot deu hien "khong bang hoi, PK 0, danh vong 0,
+		// trung sinh 0, khong phoi ngau, hang the gioi 0" - lo ngay la bot.
+		// Cac truong duoi day deu la truong CO SAN cua KNpc, khong them truong moi,
+		// khong doi kich thuoc goi tin (PLAYER_NORMAL_SYNC = 229 byte).
+		if (m_btSimCityBot)
+		{
+			// strncpy chu KHONG strcpy: xem SC_AddBot - cac truong nay tung la rac heap
+			// vi ZeroMemory cua chung nam trong khoi #ifndef _SERVER (KNpc.cpp:164-176)
+			// va ZeroMemory(MateName) o KNpc.cpp:232 bi chu thich.
+			strncpy(PlayerSync.MateName, MateName, sizeof(PlayerSync.MateName) - 1);
+			PlayerSync.MateName[sizeof(PlayerSync.MateName) - 1] = 0;
+			strncpy(PlayerSync.TongName, m_szTongName, sizeof(PlayerSync.TongName) - 1);
+			PlayerSync.TongName[sizeof(PlayerSync.TongName) - 1] = 0;
+			strncpy(PlayerSync.TongTitle, m_szTongTitle, sizeof(PlayerSync.TongTitle) - 1);
+			PlayerSync.TongTitle[sizeof(PlayerSync.TongTitle) - 1] = 0;
+			PlayerSync.TongFigure   = (BYTE)m_nFigure;
+			PlayerSync.TongRecruit  = m_Recruit;
+			PlayerSync.CUnlocked    = 0;
+			PlayerSync.RankInWorld  = (int)nRankInWorld;
+			PlayerSync.Repute       = (int)nRepute;
+			PlayerSync.FuYuan       = (int)nFuYuan;
+			PlayerSync.PKValue      = (BYTE)nPKValue;
+			PlayerSync.ReBorn       = (BYTE)nReBorn;
+			PlayerSync.nFirstFaction = (BYTE)nFirstFaction;
+			PlayerSync.ImagePlayer  = (BYTE)m_ImagePlayer;
+			memset(PlayerSync.bMeridianLevel, 0, sizeof(PlayerSync.bMeridianLevel));
+			// co trang thai: bot luon hoa binh (0x01), khong ngu (0x04), khong chien (0x10).
+			PlayerSync.m_btSomeFlag = 0x01;
+			if (m_FightMode)
+				PlayerSync.m_btSomeFlag |= 0x02;
+			if (m_szTongName[0])
+				PlayerSync.m_btSomeFlag |= 0x08;
+			// 0x20 = CO NHAN DIEN BOT cho client. Bit nay dang trong: client hien tai chi
+			// test 0x01/0x02/0x04/0x10 (KProtocolProcess.cpp:2282-2297) nen bit la bi bo qua
+			// => client cu tuong thich nguoc 100%, kich thuoc goi khong doi.
+			// Client moi dung bit nay de loc bot khoi GetAroundPlayer / moi to doi (WAuto).
+			PlayerSync.m_btSomeFlag |= 0x20;
+		}
 		int nMaxCount = MAX_PLAYER;	//MAX_BROADCAST_COUNT;
 		CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
 		for (j = 0; j < 8; j++)
@@ -5598,7 +5682,11 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	//	sSync.MapID = SubWorld[m_SubWorldIndex].m_SubWorldID;
    	//	sSync.m_nEquipCount = Player[m_nPlayerIdx].m_ItemList.CountItemInAll();
 
-		g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(sSync));
+		// Bot khong co ket noi mang: Player[0].m_nNetConnectIdx = -1. Goi nay chi phi tien
+		// mang vo ich moi tick moi bot (khong sap - CIOCPServer::PackDataToClient co kiem bien,
+		// MultiServer/Heaven/ServerStage.cpp:390-396).
+		if (!m_btSimCityBot && m_nPlayerIdx > 0)
+			g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sSync, sizeof(sSync));
 		//------------------------------------------------------End SYNC 3-------------------------------
 	}
 }
@@ -10963,7 +11051,10 @@ void KNpc::OnWalkByFPS(int nStep)
 
 void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 {
-	if (!IsPlayer() || m_nPlayerIdx <= 0)
+	// Port SimCity: bot co m_nPlayerIdx = 0 nen cong cu chan het. Cho bot di qua -
+	// day la kenh DUY NHAT hien duoc mon phai cua bot (bang "Tin tuc" phia client gan
+	// cung nCurFaction = -1 khi xem NGUOI KHAC, CoreShell.cpp:1141-1144, nguoi that cung vay).
+	if (!IsPlayer() || (m_nPlayerIdx <= 0 && !m_btSimCityBot))
 	{
 		m_szGameTitle[0] = 0;
 		return;
@@ -10983,7 +11074,14 @@ void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 		"C«n L«n"
 	};
 
-	int nFaction = Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo();
+	// Bot lay so mon phai tu KNpc::nFirstFaction (truong san co, VON DA duoc truyen xuong
+	// client trong ca hai goi sync). Luu y nFirstFaction la BYTE va Init dat -1 => 255,
+	// nen phep kiem <= 9 o duoi vua lam cong chan chi so mang vua loc gia tri "chua vao phai".
+	int nFaction;
+	if (m_btSimCityBot)
+		nFaction = (nFirstFaction <= 9) ? (int)nFirstFaction : -1;
+	else
+		nFaction = Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo();
 	int nLevel = m_Level;
 
 	if (nLevel > 0)

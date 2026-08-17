@@ -40,6 +40,15 @@ int LuaSC_LoadChat(Lua_State* L);     // (szChatPath, szType) -> so cau da nap (
 int LuaSC_ChatChance(Lua_State* L);   // (n) n/1000 moi giay moi bot; 0 = tat
 int LuaSC_ClearChat(Lua_State* L);    // () xoa kho cau thoai
 
+// GD4 - lop thong tin bot. Moi truong deu CO SAN tren KNpc va DA nam trong 2 goi sync
+// s2c_syncplayer / s2c_syncplayermin -> khong them goi tin, khong doi kich thuoc goi.
+int LuaSC_SetBotLook(Lua_State* L);    // (idx, nHelm, nArmor, nWeapon [, nHorse] [, nMantle] [, nMantleLevel] [, nMask])
+int LuaSC_SetBotFaction(Lua_State* L); // (idx, nFaction 0..9) dat mon phai + camp tuong ung
+int LuaSC_SetBotInfo(Lua_State* L);    // (idx, nPKValue, nRepute, nFuYuan, nReBorn [, nRankInWorld] [, nImagePlayer])
+int LuaSC_SetBotTitle(Lua_State* L);   // (idx, nRankId [, nRankBattleId] [, nPlayerTitle] [, nHonorId])
+int LuaSC_SetBotTong(Lua_State* L);    // (idx, szTongName [, szTongTitle] [, nFigure] [, nRecruit])
+int LuaSC_SetBotMate(Lua_State* L);    // (idx, szMateName)
+
 void SC_Breathe();                    // goi moi tick tu CoreServerShell::Breathe (KHONG phai ham Lua)
 
 #endif // _SERVER
