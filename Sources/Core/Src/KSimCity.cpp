@@ -993,6 +993,99 @@ int LuaSC_SetBotLook(Lua_State* L)
 	return 1;
 }
 
+// ---- kho ngoai trang HOP LE cua JX1 (do tu chinh bang g_ItemChangeRes) ----
+//
+// Ban goc JX2 (plugins/pngoaitrang.lua) dung bang trang gan cung:
+//   HELM_WL = {2,5,8,11,14,17,20}; WEAPON_WL = {20,23,24,26,28,30}; HORSE_WL = {0,1,2,5,9,10,11,12}
+//   ARMOR_WL_NAM = {2,8,11,14,20,23,29,32,35,41}; ARMOR_WL_NU = {8,14,19,20,29,35,40,41}
+// KHONG bung nguyen sang JX1: do la chi so trong \settings\npcres_simple\*.txt cua JX2,
+// ma JX1 KHONG co thu muc do va dung bo bang khac (CHANGERES_*_FILE, KItemChangeRes.cpp:54-72).
+// Bung nham = bot mac do khong ton tai -> mat mon do (CRESINFO::GetName co kiem bien nen
+// khong sap client, nhung nhin nhu coi truong).
+//
+// Thay vao do DO THAT: g_ItemChangeRes.GetXxxRes(nParti, nLevel) tra ve gia tri tu KTabFile;
+// dong ngoai bang thi GetInteger tra mac dinh 2 => ham tra 0. Nen chi can quet va giu cac
+// gia tri > 0 la co dung tap ngoai trang MA BAN JX1 NAY THUC SU CO.
+#define SC_MAX_RES  128
+
+struct SC_ResPool
+{
+	int nCount;
+	int v[SC_MAX_RES];
+};
+
+static SC_ResPool s_resHelm, s_resArmor, s_resWeapon, s_resHorse;
+static int        s_resReady = 0;
+
+static void sc_PoolAdd(SC_ResPool& pool, int nVal)
+{
+	if (nVal <= 0 || nVal > 255 || pool.nCount >= SC_MAX_RES)
+		return;
+	for (int k = 0; k < pool.nCount; k++)
+		if (pool.v[k] == nVal)
+			return;                 // khu trung
+	pool.v[pool.nCount++] = nVal;
+}
+
+static void sc_BuildResPools()
+{
+	if (s_resReady)
+		return;
+	s_resReady = 1;
+	s_resHelm.nCount = s_resArmor.nCount = s_resWeapon.nCount = s_resHorse.nCount = 0;
+
+	// nRow = nParti * 10 + nLevel + 2 (KItemChangeRes.cpp:87, 107, 120, 132)
+	for (int nParti = 0; nParti < 32; nParti++)
+	{
+		for (int nLevel = 1; nLevel <= 9; nLevel++)
+		{
+			sc_PoolAdd(s_resHelm,   g_ItemChangeRes.GetHelmRes(nParti, nLevel));
+			sc_PoolAdd(s_resArmor,  g_ItemChangeRes.GetArmorRes(nParti, nLevel));
+			sc_PoolAdd(s_resHorse,  g_ItemChangeRes.GetHorseRes(nParti, nLevel));
+			sc_PoolAdd(s_resWeapon, g_ItemChangeRes.GetWeaponRes(equip_meleeweapon, nParti, nLevel));
+		}
+	}
+}
+
+// SC_DressBot(idx [, bRideHorse=0]) -> 1/0. Tuong duong SimCityNgoaiTrang:makeup cua ban goc.
+int LuaSC_DressBot(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	sc_BuildResPools();
+
+	if (s_resHelm.nCount > 0)
+		p->m_HelmType = s_resHelm.v[g_Random(s_resHelm.nCount)];
+	if (s_resArmor.nCount > 0)
+		p->m_ArmorType = s_resArmor.v[g_Random(s_resArmor.nCount)];
+	if (s_resWeapon.nCount > 0)
+		p->m_WeaponType = s_resWeapon.v[g_Random(s_resWeapon.nCount)];
+
+	int bHorse = (Lua_GetTopIndex(L) >= 2) ? (int)Lua_ValueToNumber(L, 2) : 0;
+	if (bHorse && s_resHorse.nCount > 0)
+	{
+		p->m_HorseType  = s_resHorse.v[g_Random(s_resHorse.nCount)];
+		p->m_bRideHorse = TRUE;
+	}
+	else
+	{
+		p->m_HorseType  = 0;
+		p->m_bRideHorse = FALSE;
+	}
+
+	Lua_PushNumber(L, 1);
+	// tra them so mon do moi kho tim duoc - de GM biet du lieu res co nap duoc khong
+	Lua_PushNumber(L, s_resHelm.nCount);
+	Lua_PushNumber(L, s_resArmor.nCount);
+	Lua_PushNumber(L, s_resWeapon.nCount);
+	Lua_PushNumber(L, s_resHorse.nCount);
+	return 5;
+}
+
 // SC_SetBotFaction(idx, nFaction 0..9) -> 1/0. Dat mon phai + camp tuong ung.
 //   MON PHAI KHAC HE (ngu hanh): KItemList.cpp:994-999 doc m_cFaction.m_nFirstAddFaction cho
 //   magic_requiremenpai, con KItemList.cpp:1000-1005 doc m_Series cho magic_requireseries.

@@ -93,10 +93,47 @@ SC_TEN = { "Phong", "Vu", "Long", "Ha", "Minh", "Tuan", "Khoa", "Nam", "Lam", "H
            "Anh", "Bao", "Thang", "Quan", "Hung", "Son", "Trung", "Kiet", "Dat", "Vinh" }
 
 -- ten duy nhat: ghep Ho + Ten + so thu tu (Name[32] nen thoai mai)
+-- SC_AddBot TU CHOI ten trung (chu game chot cam trung tuyet doi) va tra 0 kem -1.
 SC_NameSeq = 0
 function SC_MakeName()
 	SC_NameSeq = SC_NameSeq + 1
 	return format("%s%s%d", SC_HO[random(1, getn(SC_HO))], SC_TEN[random(1, getn(SC_TEN))], SC_NameSeq)
+end
+
+-- ================= NHAN THAN BOT (GD4) =================
+-- Cap day du thong tin cho bot vua sinh, de nhin nhu nguoi choi that.
+-- Ban goc JX2 lam dung viec nay trong SimCityNgoaiTrang:makeup (plugins/pngoaitrang.lua)
+-- bang ChangeNpcFeature; o JX1 ta ghi thang cac truong tuong ung qua SC_DressBot.
+SC_ResReported = 0
+function SC_GiveIdentity(nIdx)
+	if not nIdx or nIdx <= 0 then
+		return
+	end
+	-- ngoai trang: lay ngau nhien tu kho res THAT cua ban JX1 nay (SC_DressBot tu do bang
+	-- g_ItemChangeRes nen khong bao gio ra mon do khong ton tai). 1/6 bot cuoi ngua.
+	local nRide = 0
+	if random(1, 6) == 1 then
+		nRide = 1
+	end
+	local nOk, nHelm, nArmor, nWeapon, nHorse = SC_DressBot(nIdx, nRide)
+
+	-- bao MOT LAN cho GM biet du lieu res co nap duoc khong
+	if SC_ResReported == 0 and nHelm then
+		SC_ResReported = 1
+		if nHelm == 0 and nArmor == 0 then
+			Msg2Player("CANH BAO: kho ngoai trang RONG - kiem tep settings res cua client/server.")
+		else
+			Msg2Player(format("Kho ngoai trang: non %d, ao %d, vu khi %d, ngua %d.", nHelm, nArmor, nWeapon, nHorse))
+		end
+	end
+
+	-- mon phai 0..9 (5 he x 2 phai). SC_SetBotFaction tu dat camp theo phai,
+	-- neu khong bot se mang camp_free = "mau do sat thu", sai han y do dan thanh thi.
+	SC_SetBotFaction(nIdx, random(0, 9))
+
+	-- chi so trong bang Tin tuc: PK 0 (hien hoa binh), danh vong / phuc duyen / trung sinh
+	-- o muc hop ly cua nguoi choi lau nam.
+	SC_SetBotInfo(nIdx, 0, random(0, 8000), random(0, 300), random(0, 2))
 end
 
 -- sinh 1 bot ngay tai vi tri admin dang dung (khoi phai doan toa do)
@@ -104,12 +141,20 @@ function SC_SpawnHere()
 	local nW, nX, nY = GetWorldPos()          -- nX,nY = O LUOI
 	local nSwIdx = SubWorldID2Idx(nW)
 	local nSex   = random(0, 1)
-	local nIdx   = SC_AddBot(nSex, 100, nSwIdx, (nX + 1) * 32, (nY + 1) * 32, random(0, 4), SC_MakeName())
+	local nIdx = 0
+	-- thu lai vai lan phong khi ten vua boc bi trung (SC_AddBot tu choi ten trung)
+	for i = 1, 5 do
+		nIdx = SC_AddBot(nSex, 100, nSwIdx, (nX + 1) * 32, (nY + 1) * 32, random(0, 4), SC_MakeName())
+		if nIdx and nIdx > 0 then
+			break
+		end
+	end
 	if nIdx and nIdx > 0 then
 		SC_LastBot = nIdx
+		SC_GiveIdentity(nIdx)
 		Msg2Player(format("Da sinh bot idx = %d tai map %d (%d,%d).", nIdx, nW, nX, nY))
 	else
-		Msg2Player("Sinh bot THAT BAI (SC_AddBot tra 0). Kiem toa do / subworld.")
+		Msg2Player("Sinh bot THAT BAI. Kiem toa do / subworld (hoac ten bi trung lien tiep).")
 	end
 	SC_Menu()
 end
@@ -123,6 +168,7 @@ function SC_Spawn5()
 		if nIdx and nIdx > 0 then
 			nOk = nOk + 1
 			SC_LastBot = nIdx
+			SC_GiveIdentity(nIdx)
 		end
 	end
 	Msg2Player(format("Da sinh %d/5 bot quanh cho ban dung.", nOk))

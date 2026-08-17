@@ -12715,6 +12715,7 @@ extern int LuaSC_ChatChance(Lua_State* L);
 extern int LuaSC_ClearChat(Lua_State* L);
 // Port SimCity GD4 - lop thong tin bot
 extern int LuaSC_SetBotLook(Lua_State* L);
+extern int LuaSC_DressBot(Lua_State* L);
 extern int LuaSC_SetBotFaction(Lua_State* L);
 extern int LuaSC_SetBotInfo(Lua_State* L);
 extern int LuaSC_SetBotTitle(Lua_State* L);
@@ -13032,6 +13033,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"SC_ClearChat",		LuaSC_ClearChat},
 	// Port SimCity GD4 - lop thong tin bot (ngoai trang / mon phai / danh hieu / bang hoi)
 	{"SC_SetBotLook",	LuaSC_SetBotLook},
+	{"SC_DressBot",		LuaSC_DressBot},
 	{"SC_SetBotFaction",	LuaSC_SetBotFaction},
 	{"SC_SetBotInfo",	LuaSC_SetBotInfo},
 	{"SC_SetBotTitle",	LuaSC_SetBotTitle},

@@ -43,6 +43,7 @@ int LuaSC_ClearChat(Lua_State* L);    // () xoa kho cau thoai
 // GD4 - lop thong tin bot. Moi truong deu CO SAN tren KNpc va DA nam trong 2 goi sync
 // s2c_syncplayer / s2c_syncplayermin -> khong them goi tin, khong doi kich thuoc goi.
 int LuaSC_SetBotLook(Lua_State* L);    // (idx, nHelm, nArmor, nWeapon [, nHorse] [, nMantle] [, nMantleLevel] [, nMask])
+int LuaSC_DressBot(Lua_State* L);      // (idx [, bRideHorse]) trang diem ngau nhien tu kho res THAT cua JX1
 int LuaSC_SetBotFaction(Lua_State* L); // (idx, nFaction 0..9) dat mon phai + camp tuong ung
 int LuaSC_SetBotInfo(Lua_State* L);    // (idx, nPKValue, nRepute, nFuYuan, nReBorn [, nRankInWorld] [, nImagePlayer])
 int LuaSC_SetBotTitle(Lua_State* L);   // (idx, nRankId [, nRankBattleId] [, nPlayerTitle] [, nHonorId])
