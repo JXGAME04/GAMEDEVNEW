@@ -977,6 +977,26 @@ BOOL KPlayer::IsLoginTimeOut()
 {
 	if (m_nNetConnectIdx != -1)
 		return FALSE;
+
+	// Port bot: nguoi choi UY THAC khong bao gio duoc tinh la het han dang nhap.
+	//
+	// VI SAO BAT BUOC (doc tu ma - day la thu giet bot trong dung 10 giay):
+	//   defPLAYER_LOGIN_TIMEOUT = 10*20 (KPlayer.cpp:52). Bot co m_nNetConnectIdx = -1
+	//   va m_dwID != 0 nen LUON lot qua hai cong tren, roi LUON dinh moc thoi gian.
+	//   m_dwLoginTime duoc dat ngay trong KPlayerSet::Add (KPlayerSet.cpp:214), con
+	//   KSOServer::MainLoop quet toan bo Player[] moi vong va goi RemovePlayerLoginTimeOut.
+	//   Hau qua: bot vao game roi BIEN MAT sau 10 giay, KHONG mot dong log nao;
+	//   nang hon, duong kick gui c2s_leavegame toi Gateway/Chat/Tong THEO TEN TAI KHOAN,
+	//   va KPlayerSet::RemoveLoginTimeOut co dong SubWorld[].RemovePlayer BI CHU THICH CHET
+	//   nen khe bot khong duoc go khoi m_PlayerList cua region -> KRegion::Activate se doc
+	//   mot KIndexNode tro vao o Player[] da giai phong.
+	//
+	// m_nLixian: 0 = khong uy thac, 1 = dang uy thac, 2 = ket thuc uy thac
+	// (ngu nghia ghi ro tai ScriptFuns.cpp:8785). Bot duoc dat m_nLixian = 1 luc sinh,
+	// dung nghia "co mat trong the gioi nhung khong co ket noi client".
+	// Cay tham khao USVOLAM va y het cho nay (KPlayer.cpp:6540-6543).
+	if (m_nLixian)
+		return FALSE;
 	
 	if (!m_dwID)
 		return FALSE;
