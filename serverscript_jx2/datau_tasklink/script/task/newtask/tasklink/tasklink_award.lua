@@ -446,7 +446,7 @@ local myMainRate = 0 -- ×ÜµÄ½±ÀøÈ¨ÖØ
 		
 		tl_print ("Sè lÇn xuÊt hiÖn trŞ sè k trong qu¸ tr×nh lùa chän phÇn th­ëng lµ:"..k);
 		
-		if (j<k) then
+		if (j<=k) then -- [PB 17/08] j<k chat + C_Random bao ham can tren -> 1% tra nil, ket vinh vien vi seed 1037
 			return myAwardVariable[i][1]
 		end
 	end

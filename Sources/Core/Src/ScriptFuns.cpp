@@ -6728,10 +6728,13 @@ int LuaSetNpcDmgEx(Lua_State* L)
 	return 0;
 }
 
+// [PB 17/08] nPos BYTE->int + quy uoc moi: vi tri 0 = DOI TRUONG (m_nCaptain
+// khong nam trong m_nMember[]; truoc day khong the lay tu Lua, con arg 0 thi
+// doc m_nMember[-1] ngoai mang). Da Tau dung GetTeamMember(0..n) chia to doi.
 int LuaGetTeamMem(Lua_State* L)
 {
 	int nTeamId = -1;
-	BYTE nPos = -1;
+	int nPos = -1;
 	int nMemberId = 0;
 
 	int nParamNum = Lua_GetTopIndex(L);
@@ -6739,12 +6742,10 @@ int LuaGetTeamMem(Lua_State* L)
 	if (nParamNum >= 2)
 	{
 		nTeamId = Lua_ValueToNumber(L, 1);
-		if (nPos)
-		{
-			nPos = Lua_ValueToNumber(L, 2);
+		nPos = (int)Lua_ValueToNumber(L, 2);
+		if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
 			nMemberId = g_Team[nTeamId].m_nMember[nPos - 1];
-		}
-		else
+		else if (nPos == 0)
 			nMemberId = g_Team[nTeamId].m_nCaptain;
 	}
 	else
@@ -6753,12 +6754,10 @@ int LuaGetTeamMem(Lua_State* L)
 		if (Player[nPlayerIndex].m_cTeam.m_nFlag)
 		{
 			nTeamId = Player[nPlayerIndex].m_cTeam.m_nID;
-			if (nPos)
-			{
-				nPos = Lua_ValueToNumber(L, 1);
+			nPos = (int)Lua_ValueToNumber(L, 1);
+			if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
 				nMemberId = g_Team[nTeamId].m_nMember[nPos - 1];
-			}
-			else
+			else if (nPos == 0)
 				nMemberId = g_Team[nTeamId].m_nCaptain;
 		}
 	}
@@ -9652,9 +9651,12 @@ int LuaOpenQuestFinish(Lua_State* L)
 	QUEST_FINISH_DLG_SYNC FinishSync;
 	FinishSync.ProtocolType = (BYTE)s2c_openquestfinishdlg;
 	const char* szNotice = (char*)Lua_ValueToString(L, 1);
-	if (sizeof(szNotice) > sizeof(FinishSync.m_szNotice))
+	// [PB 17/08] guard cu so sizeof(CON TRO) voi 64 = hang false -> strcpy
+	// khong gioi han co the tran stack. Cat cung theo kich thuoc buffer.
+	if (!szNotice)
 		return 0;
-	strcpy(FinishSync.m_szNotice, szNotice);
+	strncpy(FinishSync.m_szNotice, szNotice, sizeof(FinishSync.m_szNotice) - 1);
+	FinishSync.m_szNotice[sizeof(FinishSync.m_szNotice) - 1] = 0;
 	FinishSync.m_bType = (int)Lua_ValueToNumber(L, 2);
 	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &FinishSync, sizeof(QUEST_FINISH_DLG_SYNC));
 

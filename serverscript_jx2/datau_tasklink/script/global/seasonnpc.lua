@@ -116,6 +116,9 @@ function Task_NewVersionAward()
 		Msg2Player("H«m nay hoµn thµnh liªn tôc nhiÖm vô D· TÈu lÇn thø 40, nhËn ®­îc kinh nghiÖm thªm!");
 		tbAwardTemplet:GiveAwardByList({nExp_tl = 100000000}, "PhÇn th­ëng kinh nghiÖm khi hoµn thµnh nhiÖm vô D· TÈu h»ng ngµy")
 		-- [16/08/2026 chu game chot] du 40 nhiem vu/ngay khong huy: tang them 5 ruong (nhu ruong Linux)
+		if (CalcFreeItemCellCount() < 6) then
+			Msg2Player("CHU Y: hanh trang sap day - hay chua it nhat 6 o trong de nhan du 5 ruong!");
+		end
 		tbAwardTemplet:GiveAwardByList({tbProp = {6, 1, 2383, 1, 0, 0}, nCount = 5}, "seasonnpc_40task_ruong")
 		Msg2Player("Hoan thanh 40 nhiem vu, nhan them 5 B¶o r­¬ng thÇn bÝ cña D· TÈu!");
 	end	
@@ -789,6 +792,12 @@ function Task_GiveAward()
 	-- [16/08/2026 chu game chot] moc moi-10-nhiem-vu = 3x Boss Trieu Hoan Phu (6/1/1023).
 	-- (goc Linux phat 1 ruong 2374; ruong do = item 2383 ben JX1, gio la thuong moc-40)
 	if (nTotalTaskNum ~= 0 and mod(nTotalTaskNum, 10) == 0 and GetTask(TKS_TASKLINK_SPITEM) ~= nTotalTaskNum) then
+		-- [PB 17/08] tui day thi KHONG set co + khong phat -> nguoi choi don tui
+		-- roi gap lai NPC van nhan duoc (co chi set khi phat that)
+		if (CalcFreeItemCellCount() < 3) then
+			Msg2Player("Hanh trang khong du 3 o trong de nhan thuong moc 10 nhiem vu, hay don tui roi noi chuyen lai voi Da Tau!");
+			return
+		end
 		SetTask(TKS_TASKLINK_SPITEM, nTotalTaskNum);
 		local tbItem = {tbProp = {6, 1, 1023, 1, 0, 0}, nCount = 3}
 		tbAwardTemplet:GiveAwardByList(tbItem, "seasonnpc_10task")
@@ -1279,12 +1288,27 @@ function Prise(szMsg, szOpt1, szOpt2, szOpt3)
 			end
 		end
 	end
+	tbMap.szChu = GetName()
 	tbPriseMap[PlayerIndex] = tbMap
 	-- goi tin client m_szNotice chi 64 byte -> cat 60
 	local szShort = szMsg or ""
 	if strlen(szShort) > 60 then
-		szShort = strsub(szShort, 1, 60)
+		-- [PB 17/08] tranh chat doi ky tu TCVN3/GBK 2-byte o bien cat
+		local nCat = 60
+		local nHi = 0
+		local q
+		for q = 1, 60 do
+			if strbyte(szShort, q) >= 128 then
+				nHi = nHi + 1
+			end
+		end
+		if mod(nHi, 2) == 1 then
+			nCat = 59
+		end
+		szShort = strsub(szShort, 1, nCat)
 	end
+	tbMap.szMsgLuu = szShort
+	tbMap.nTypeLuu = nType
 	OpenQuestFinish(szShort, nType)
 end
 
@@ -1294,8 +1318,18 @@ function Prise_Chon(szNut)
 	if not tbMap then
 		return
 	end
+	-- [PB 17/08] slot PlayerIndex tai su dung boi nguoi khac -> khong tra nham
+	if (tbMap.szChu and tbMap.szChu ~= GetName()) then
+		tbPriseMap[PlayerIndex] = nil
+		return
+	end
 	local tbA = tbMap[szNut]
 	if not tbA then
+		-- [PB 17/08] nut khong anh xa: whitelist C++ da bi xoa sau cu bam -> mo lai
+		-- cua so de nguoi choi chon nut khac (khong mat thuong)
+		if (tbMap.szMsgLuu and tbMap.nTypeLuu) then
+			OpenQuestFinish(tbMap.szMsgLuu, tbMap.nTypeLuu)
+		end
 		return
 	end
 	tbPriseMap[PlayerIndex] = nil

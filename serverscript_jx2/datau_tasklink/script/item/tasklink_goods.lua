@@ -8,35 +8,6 @@ Include("\\script\\task\\newtask\\newtask_head.lua");
 Include("\\script\\task\\newtask\\map_index.lua"); -- 用于获取地图的信息
 Include("\\script\\task\\newtask\\lib_setmembertask.lua"); -- 用于循环改变队友的任务变量
 
-function PickUp( nItemIndex, nPlayerIndex )
-
-local nPreservedPlayerIndex = PlayerIndex
-local nMemCount = GetTeamSize()
-
-	if (nMemCount == 0) then
-	
-		AddMapValues();
-	
-	else
-	
-		for i = 1, nMemCount do -- 在这里开始循环遍历每个玩家
-		
-			PlayerIndex = GetTeamMember(i);
-		
-			AddMapValues();
-
-		end
-	
-		PlayerIndex = nPreservedPlayerIndex; -- 循环结束后在这里归还主玩家 ID
-	
-	end
-	
-	return 0
-
-end
-
-
--- 根据各种条件给予玩家不同类型的地图志
 function AddMapValues()
 
 local myMapID, myMapName, myMapX, myMapY -- 用于获取地图志信息的变量
@@ -81,22 +52,38 @@ myMapID = SubWorldIdx2ID( SubWorld )
 
 end
 
--- [JX1 PORT 16/08/2026] Duong CLICK-PHAI kieu JX1 (genre 6 -> EatMecidine goi
--- main): danh cho cuon da nam trong tui (nhat truoc khi hook C++ chay, hoac
--- duong roi khac lot luoi). Cong don giong het nhat tren dat roi tu huy cuon.
-function main(nItemIndex)
-	local nPreservedPlayerIndex = PlayerIndex
+-- [PB 17/08/2026] Vong chia to doi viet lai theo binding JX1:
+-- GetTeamSize dem CA doi truong (memnum+1) nhung GetTeamMember(i) chi doc
+-- m_nMember[] (khong chua doi truong) va slot cuoi la -1 -> vong cu (i=1..size)
+-- lam doi truong mat phan + loi nil o slot trong. Quy uoc moi (DLL 17/08):
+-- GetTeamMember(0) = doi truong. Cong cho nguoi nhat truoc, roi cac thanh vien
+-- khac (bo slot <=0 va bo trung nguoi nhat).
+function TLG_ChiaToDoi()
+	local nMe = PlayerIndex
+	AddMapValues()
 	local nMemCount = GetTeamSize()
-	if (nMemCount == 0) then
-		AddMapValues()
-	else
+	if (nMemCount and nMemCount > 1) then
 		local i
-		for i = 1, nMemCount do
-			PlayerIndex = GetTeamMember(i)
-			AddMapValues()
+		for i = 0, nMemCount do
+			local nMem = GetTeamMember(i)
+			if (nMem and nMem > 0 and nMem ~= nMe) then
+				PlayerIndex = nMem
+				AddMapValues()
+			end
 		end
-		PlayerIndex = nPreservedPlayerIndex
+		PlayerIndex = nMe
 	end
+end
+
+function PickUp( nItemIndex, nPlayerIndex )
+	TLG_ChiaToDoi()
+	return 0
+end
+
+-- click-phai cuon trong tui: TRU CUON TRUOC roi moi chia (chong farm neu
+-- co loi giua chung - PB 17/08 phat hien exploit khi remove nam sau vong chia)
+function main(nItemIndex)
 	RemoveItemByIndex(nItemIndex)
+	TLG_ChiaToDoi()
 	return 0
 end

@@ -503,7 +503,7 @@ int KTabFile::FindRow(LPSTR szRow)
 	char	szTemp[128];
 	for (int i = 0; i < m_Height; i++)	// 从1开始，跳过第一行的字段行
 	{
-		GetValue(i, 0, szTemp, g_StrLen(szRow));
+		GetValue(i, 0, szTemp, sizeof(szTemp));
 		if (g_StrCmp(szTemp, szRow))
 			return i + 1; //改动此处为加一 by Romandou,即返回以1为起点的标号
 	}
@@ -520,7 +520,7 @@ int KTabFile::FindColumn(LPSTR szColumn)
 	char	szTemp[128];
 	for (int i = 0; i < m_Width; i++)	// 从1开始，跳过第一列的字段行
 	{
-		GetValue(0, i, szTemp, g_StrLen(szColumn));
+		GetValue(0, i, szTemp, sizeof(szTemp));
 		if (g_StrCmp(szTemp, szColumn))
 			return i + 1;//改动此处为加一 by Romandou,即返回以1为起点的标号
 	}

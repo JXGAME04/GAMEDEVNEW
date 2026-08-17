@@ -4778,19 +4778,24 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 					Item[nPickItemId].GetGenre() == 6 && Item[nPickItemId].GetDetailType() == 1 &&
 					(Item[nPickItemId].GetParticular() == 205 || Item[nPickItemId].GetParticular() == 212))
 				{
+					// [PB 17/08] kiem ket qua script: loi/chua nap -> KHONG huy cuon
+					// (truoc day huy vo dieu kien = moi that bai script deu nuot cuon trang)
+					BOOL bPickOk;
 					if (Item[nPickItemId].GetParticular() == 205)
-						ExecuteScript((char*)"\\script\\item\\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
+						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
 					else
-						ExecuteScript((char*)"\\script\\item\\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+					if (!bPickOk)
+						return FALSE;
 					Object[nObjIndex].SyncRemove(TRUE);
 					if (Object[nObjIndex].m_nRegionIdx >= 0)
 					{
 						SubWorld[Object[nObjIndex].m_nSubWorldID].m_Region[Object[nObjIndex].m_nRegionIdx].RemoveObj(nObjIndex);
 						ObjSet.Remove(nObjIndex);
 					}
-					// cuon khong vao tui -> giai phong item data khoi pool (chong ro ri
-					// pool item - loi nay tung gay het pool truoc day)
-					ItemSet.Remove(nPickItemId);
+					// [PB 17/08] KHONG ItemSet.Remove o day: KObj::Release (duoc
+					// ObjSet.Remove goi) da tu giai phong m_nItemDataID - remove kep
+					// la thua (comment cu ve ro ri pool la SAI, Release van don).
 					return TRUE;
 				}
 			}

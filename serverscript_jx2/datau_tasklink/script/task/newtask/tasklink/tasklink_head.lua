@@ -600,6 +600,9 @@ function tl_gettasktype(myTaskLevel)
 	end
 	
 	-- 根据权重公式最后随机计算出任务类型
+	if (myMainRate == nil or myMainRate <= 0) then
+		return 2
+	end -- [PB 17/08] link co tong trong so 0 (vd findmaps link 6-10 sau loc) -> random(1,0) = lua error
 	j = random(1,myMainRate)
 	
 	for i = 1,getn(Task_MainLevelRate[myTaskLevel]) do
@@ -655,6 +658,9 @@ local myMainRate  = 0 -- 任务的总权重
 	end
 	
 	-- 根据权重公式最后随机计算出具体的任务
+	if (myMainRate == nil or myMainRate <= 0) then
+		return 2
+	end -- [PB 17/08] link co tong trong so 0 (vd findmaps link 6-10 sau loc) -> random(1,0) = lua error
 	j = random(1,myMainRate)
 	
 --	tl_print ("任务的总权重:  "..myMainRate)
@@ -664,7 +670,7 @@ local myMainRate  = 0 -- 任务的总权重
 	
 		k = k + myTaskTable[myTaskLevel][i][2]
 		
-		if ( j < k ) then
+		if ( j <= k ) then -- [PB 17/08] chong truot 1/tong khi random cham can tren
 --			tl_print ("选择到了表格中的第  "..myTaskTable[myTaskLevel][i][1].."  行。")
 			return myTaskTable[myTaskLevel][i][1]
 		end

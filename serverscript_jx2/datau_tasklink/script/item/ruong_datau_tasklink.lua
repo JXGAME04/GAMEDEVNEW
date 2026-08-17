@@ -13,7 +13,7 @@ function main(nItemIndex)
 		Say("CÇn 6 HuyÒn Thiªn Chïy, c¸c h¹ ®em kh«ng ®ñ sè l­îng!", 0)
 		return 1
 	end
-	if (CalcFreeItemCellCount() < 2) then
+	if (CalcFreeItemCellCount() < 4) then -- [PB 17/08] nhanh 2% can 3 o + phong nguoi cam do tren chuot
 		Say("Hµnh trang ®· ®Çy, h·y s¾p xÕp l¹i cho ng¨n n¾p.", 0)
 		return 1
 	end
@@ -22,28 +22,37 @@ function main(nItemIndex)
 	end
 	local n = C_Random(1, 100000)
 	local nIdx = 0
+	local nOk = 1
 	if (n <= 25000) then
-		AddItem(6, 1, 3, 1, 0, 0, 0)
+		nOk = AddItem(6, 1, 3, 1, 0, 0, 0)
 	elseif (n <= 50000) then
-		AddItem(6, 1, 6, 1, 0, 0, 0)
+		nOk = AddItem(6, 1, 6, 1, 0, 0, 0)
 	elseif (n <= 80000) then
-		AddItem(6, 1, 2015, 1, 0, 0, 0)
+		nOk = AddItem(6, 1, 2015, 1, 0, 0, 0)
 	elseif (n <= 90000) then
 		nIdx = AddItem(6, 1, 907, 1, 0, 0, 0)
+		nOk = nIdx
 		if (nIdx > 0) then
 			AddTimeItem(nIdx, 604800)
 		end
 	elseif (n <= 95000) then
-		AddItem(6, 1, 71, 1, 0, 0, 0)
+		nOk = AddItem(6, 1, 71, 1, 0, 0, 0)
 	elseif (n <= 98000) then
 		nIdx = AddItem(6, 1, 1790, 1, 0, 0, 0)
+		nOk = nIdx
 		if (nIdx > 0) then
 			SetParamItem(nIdx, 60)
 		end
 	else
+		nOk = AddItem(6, 1, 1182, 1, 0, 0, 0)
 		AddItem(6, 1, 1182, 1, 0, 0, 0)
 		AddItem(6, 1, 1182, 1, 0, 0, 0)
-		AddItem(6, 1, 1182, 1, 0, 0, 0)
+	end
+	if (nOk == nil or nOk <= 0) then
+		-- [PB 17/08] pool item can/loi: GIU ruong lai (nguoi choi mat 6 chia, co log de GM den)
+		WriteLog(format("[DaTau ruong 2383] LOI AddItem fail, roll=%d, nguoi=%s - ruong GIU lai", n, GetName() or ""))
+		Msg2Player("Co loi khi mo ruong, ruong van con - hay bao GM!")
+		return 1
 	end
 	Msg2Player("Ban da mo B¶o r­¬ng thÇn bÝ cña D· TÈu!")
 	WriteLog(format("[DaTau ruong 2383] %s mo ruong, roll=%d", GetName() or "", n))
