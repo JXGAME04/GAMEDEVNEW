@@ -230,6 +230,10 @@ private:
 	std::vector<int>			m_aGCost;
 	std::vector<int>			m_aCameFrom;
 	std::vector<unsigned char>	m_aClosed;
+	// The-he cham tung o (18/08): o mang the he khac lan goi nay = CHUA DUNG,
+	// khoi tao luoi khi cham toi - khong phai do day ca 3 mang (~650KB) moi lan.
+	std::vector<unsigned int>	m_aTheHe;
+	unsigned int				m_nTheHe;
 	// Chi de than ham dung chung bien dich duoc; server khong dung.
 	int			m_nTargetX;
 	int			m_nTargetY;
@@ -263,6 +267,13 @@ private:
 	std::vector<VGridNeighbour> m_vNeighbour;
 	std::vector<int> m_vRetPath;
 	VGridNode	m_GridNode[MAX_CELL];
+	// Vung nhap A* dung lai - PHAI co o ca nhanh CLIENT vi FindPath_Block/
+	// FindPath_NpcObs (KSubWorld.cpp) khong nam trong #ifdef _SERVER.
+	std::vector<int>			m_aGCost;
+	std::vector<int>			m_aCameFrom;
+	std::vector<unsigned char>	m_aClosed;
+	std::vector<unsigned int>	m_aTheHe;
+	unsigned int				m_nTheHe;
 	int		m_pTempCover[MAX_CELL];
 	BOOL	m_bHavePath;
 	BOOL	m_uPaintTime;

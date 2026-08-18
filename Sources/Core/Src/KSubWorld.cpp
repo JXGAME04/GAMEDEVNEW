@@ -460,6 +460,17 @@ int KSubWorld::BlockHeuristic(int aId, int bId)
     return g_GetDistance(ax, ay, bx, by);
 }
 
+// Dem so lan A* chay - KPlayerBot.cpp doc de in [BotPerf] (dieu tra lag 18/08).
+int g_nPbAstarDem = 0;
+
+// Cham mot o cua vung nhap A* dung lai: o mang the-he khac lan goi nay = CHUA
+// DUNG trong lan nay -> khoi tao ngay tai cho. Nho vay moi lan tim duong khong
+// phai cap phat + do day 3 mang ~nodeCount phan tu (~650KB) nhu truoc - nguon
+// "lag hon nhieu" 18/08 khi 20 bot tim duong lien tuc.
+#define PB_ASTAR_CHAM(x) do { if (m_aTheHe[(x)] != m_nTheHe) { \
+        m_aTheHe[(x)] = m_nTheHe; m_aGCost[(x)] = 0x3f3f3f3f; \
+        m_aCameFrom[(x)] = -1; m_aClosed[(x)] = 0; } } while (0)
+
 int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
 {
     m_vRetPath.clear();
@@ -476,16 +487,30 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
 
     const int INF = 0x3f3f3f3f;
 
-    std::vector<int> gCost(nodeCount, INF);
-    std::vector<int> cameFrom(nodeCount, -1);
-    std::vector<unsigned char> closed(nodeCount, 0);
+    // vung nhap dung lai (m_aGCost... khai o KSubWorld.h tu truoc nhung chua noi)
+    g_nPbAstarDem++;
+    if ((int)m_aGCost.size() < nodeCount)
+    {
+        m_aGCost.resize(nodeCount);
+        m_aCameFrom.resize(nodeCount);
+        m_aClosed.resize(nodeCount);
+        m_aTheHe.assign(nodeCount, 0);
+        m_nTheHe = 0;
+    }
+    if (++m_nTheHe == 0)
+    {
+        // quay vong 2^32: xoa dau the-he cu de khong trung ngau nhien
+        m_aTheHe.assign(m_aTheHe.size(), 0);
+        m_nTheHe = 1;
+    }
 
     std::priority_queue<
         AStarNode,
         std::vector<AStarNode>,
         AStarCompare> open;
 
-    gCost[startParentId] = 0;
+    PB_ASTAR_CHAM(startParentId);
+    m_aGCost[startParentId] = 0;
 
     AStarNode s;
     s.id = startParentId;
@@ -500,7 +525,8 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
         AStarNode cur = open.top();
         open.pop();
         int id = cur.id;
-        if (closed[id])
+        PB_ASTAR_CHAM(id);
+        if (m_aClosed[id])
             continue;
 		
 		int hToGoal = BlockHeuristic(id, goalParentId);
@@ -515,7 +541,7 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
             found = true;
             break;
         }
-        closed[id] = 1;
+        m_aClosed[id] = 1;
         VGridNode& node = m_GridNode[id];
 
         if (node.parentId != id || node.obs != 0)
@@ -535,14 +561,15 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
             if (nbNode.parentId != nb || nbNode.obs != 0)
                 continue;
 
-            if (closed[nb])
+            PB_ASTAR_CHAM(nb);
+            if (m_aClosed[nb])
                 continue;
 
-            int newG = gCost[id] + m_vNeighbour[startIdx + i].cost;
-            if (newG < gCost[nb])
+            int newG = m_aGCost[id] + m_vNeighbour[startIdx + i].cost;
+            if (newG < m_aGCost[nb])
             {
-                gCost[nb]    = newG;
-                cameFrom[nb] = id;
+                m_aGCost[nb]     = newG;
+                m_aCameFrom[nb]  = id;
 
                 int h = BlockHeuristic(nb, goalParentId);
 
@@ -565,7 +592,7 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
         while (curId != -1)
         {
             m_vRetPath.push_back(curId);
-            curId = cameFrom[curId];
+            curId = m_aCameFrom[curId];
         }
         std::reverse(m_vRetPath.begin(), m_vRetPath.end());
         return 2;
@@ -575,7 +602,7 @@ int KSubWorld::FindPath_Block(int startParentId, int goalParentId)
     while (curId != -1)
     {
         m_vRetPath.push_back(curId);
-        curId = cameFrom[curId];
+        curId = m_aCameFrom[curId];
     }
 
     std::reverse(m_vRetPath.begin(), m_vRetPath.end());
@@ -598,16 +625,30 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
 
     const int INF = 0x3f3f3f3f;
 
-    std::vector<int> gCost(nodeCount, INF);
-    std::vector<int> cameFrom(nodeCount, -1);
-    std::vector<unsigned char> closed(nodeCount, 0);
+    // vung nhap dung lai (m_aGCost... khai o KSubWorld.h tu truoc nhung chua noi)
+    g_nPbAstarDem++;
+    if ((int)m_aGCost.size() < nodeCount)
+    {
+        m_aGCost.resize(nodeCount);
+        m_aCameFrom.resize(nodeCount);
+        m_aClosed.resize(nodeCount);
+        m_aTheHe.assign(nodeCount, 0);
+        m_nTheHe = 0;
+    }
+    if (++m_nTheHe == 0)
+    {
+        // quay vong 2^32: xoa dau the-he cu de khong trung ngau nhien
+        m_aTheHe.assign(m_aTheHe.size(), 0);
+        m_nTheHe = 1;
+    }
 
     std::priority_queue<
         AStarNode,
         std::vector<AStarNode>,
         AStarCompare> open;
 
-    gCost[startParentId] = 0;
+    PB_ASTAR_CHAM(startParentId);
+    m_aGCost[startParentId] = 0;
 
     AStarNode s;
     s.id = startParentId;
@@ -622,7 +663,8 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
         AStarNode cur = open.top();
         open.pop();
         int id = cur.id;
-        if (closed[id])
+        PB_ASTAR_CHAM(id);
+        if (m_aClosed[id])
             continue;
 		
 		int hToGoal = BlockHeuristic(id, goalParentId);
@@ -638,7 +680,7 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
             break;
         }
 
-        closed[id] = 1;
+        m_aClosed[id] = 1;
         VGridNode& node = m_GridNode[id];
 
         if (node.parentId != id || node.obs != 0)
@@ -658,7 +700,8 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
             if (nbNode.parentId != nb || nbNode.obs != 0)
                 continue;
 
-            if (closed[nb])
+            PB_ASTAR_CHAM(nb);
+            if (m_aClosed[nb])
                 continue;
 			//reject cells with npc obstacles
 			if(nbNode.w < 4 && nbNode.h < 8)
@@ -682,11 +725,11 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
 				if(bObsNpc)
 					continue;
 			}
-            int newG = gCost[id] + m_vNeighbour[startIdx + i].cost;
-            if (newG < gCost[nb])
+            int newG = m_aGCost[id] + m_vNeighbour[startIdx + i].cost;
+            if (newG < m_aGCost[nb])
             {
-                gCost[nb]    = newG;
-                cameFrom[nb] = id;
+                m_aGCost[nb]     = newG;
+                m_aCameFrom[nb]  = id;
 
                 int h = BlockHeuristic(nb, goalParentId);
 
@@ -709,7 +752,7 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
         while (curId != -1)
         {
             m_vRetPath.push_back(curId);
-            curId = cameFrom[curId];
+            curId = m_aCameFrom[curId];
         }
         std::reverse(m_vRetPath.begin(), m_vRetPath.end());
         return 2;
@@ -719,7 +762,7 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
     while (curId != -1)
     {
         m_vRetPath.push_back(curId);
-        curId = cameFrom[curId];
+        curId = m_aCameFrom[curId];
     }
 
     std::reverse(m_vRetPath.begin(), m_vRetPath.end());

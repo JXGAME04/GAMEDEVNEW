@@ -217,6 +217,12 @@ struct PB_Bot
 	unsigned int nDonTuiTick;                 // lan don tui gan nhat
 	unsigned int nPhamViTick;                 // dong ho "toi noi ma van ngoai tam" (6s -> cam)
 	unsigned int nBienLogTick;                // gion log [BotBien] 1 dong/giay
+	// ---- tra loi PM cho (gion nhip nhu nguoi that) ----
+	char         szPmTraLoi[224];             // cau dang cho gui (0 dau = khong co)
+	int          nPmSenderIdx;                // nguoi hoi
+	unsigned int nPmDenHan;                   // toi han nay moi gui (0 = khong cho)
+	unsigned int nPmCamToi;                   // som nhat duoc nhan cau hoi ke tiep
+	unsigned int nPmLapHash;                  // hash cau tra loi truoc (chong lap y het)
 	// ---- vong sang / buff / bua ----
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
@@ -667,6 +673,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		memset(b.aLootBanTick, 0, sizeof(b.aLootBanTick));
 		b.loot.Reset();  b.nLootScanTick = 0;  b.nDonTuiTick = 0;
 		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;
+		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
+		b.nPmCamToi = 0;  b.nPmLapHash = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -2137,6 +2145,10 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 // 4821 = Tui duoc pham HOAT DONG (tuiduocphamtk.lua) - chu game chot giu 18/08.
 static const int s_nGiuPhu[] = { 4813, 4821, 437, 1271, 70, 71, 1182 };
 
+// ---- do hieu nang (dieu tra "lag hon nhieu" 18/08) ----
+extern int g_nPbAstarDem;              // KSubWorld.cpp: so lan A* chay
+static int s_nPerfQuetDo = 0;          // so lan quet do roi toan ObjSet
+
 #define PB_LOOT_VISION    640          // chi nhat do roi trong 20 o quanh bot
 #define PB_LOOT_SCAN_GAP  (GAME_FPS * 2)
 #define PB_LOOT_PICK_MPS  150          // vao sat co nay moi phat lenh nhat (cong 200)
@@ -2237,6 +2249,7 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		if (b.nLootScanTick && now - b.nLootScanTick < (unsigned int)PB_LOOT_SCAN_GAP)
 			return 0;
 		b.nLootScanTick = now;
+		s_nPerfQuetDo++;
 
 		int bx = 0, by = 0;
 		Npc[nNpcIdx].GetMpsPos(&bx, &by);
@@ -2435,7 +2448,14 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	{
 		if (Npc[t].m_dwID == 0 || Npc[t].m_SubWorldIndex != nSub
 		 || Npc[t].m_Doing == do_death || Npc[t].m_Doing == do_revive)
+		{
+			// VUA GIET XONG -> quet do roi NGAY nhip sau (chu game 18/08: "nhat do
+			// uu tien hon"), khong ngoi doi gion 2 giay - do cua minh roi ra la
+			// chay lai nhat lien roi moi bat con ke.
+			if (Npc[t].m_Doing == do_death)
+				b.nLootScanTick = 0;
 			t = 0;
+		}
 	}
 	else
 		t = 0;
@@ -2874,6 +2894,25 @@ static void pb_GuiChatMatEcho(int nSenderIdx, const char* szBotName,
 	g_pServer->PackDataToClient(Player[nSenderIdx].m_nNetConnectIdx, pExHeader, pckgsize);
 }
 
+static const char* s_PmTraLoiChung[] = {
+	"Minh dang ban luyen cap, noi chuyen sau nhe.",
+	"U, minh nghe day.",
+	"Ban can gi khong?",
+	"Minh khong hieu y ban lam.",
+	"Chut nua ranh minh noi tiep nhe.",
+	"He he, vay ha.",
+	"Ok ban.",
+	"Minh dang danh quai, hoi kho tra loi dai.",
+};
+
+// hash chuoi don gian (djb2) - chong tra loi y het cau lien truoc
+static unsigned int pb_HashChuoi(const char* s)
+{
+	unsigned int h = 5381;
+	while (*s) h = h * 33 + (unsigned char)*s++;
+	return h;
+}
+
 int PB_WhisperReply(const PB_WHISPER* p)
 {
 	if (!p || !p->szTarget || !p->szMsg || p->nMsgLen <= 0)
@@ -2943,17 +2982,7 @@ int PB_WhisperReply(const PB_WHISPER* p)
 	// duoc ngay. PM la doi thoai 1-1, phai dung bo cau soan rieng.
 	if (!szTraLoi[0])
 	{
-		static const char* s_TraLoiChung[] = {
-			"Minh dang ban luyen cap, noi chuyen sau nhe.",
-			"U, minh nghe day.",
-			"Ban can gi khong?",
-			"Minh khong hieu y ban lam.",
-			"Chut nua ranh minh noi tiep nhe.",
-			"He he, vay ha.",
-			"Ok ban.",
-			"Minh dang danh quai, hoi kho tra loi dai.",
-		};
-		const int nSo = (int)(sizeof(s_TraLoiChung) / sizeof(s_TraLoiChung[0]));
+		const int nSo = (int)(sizeof(s_PmTraLoiChung) / sizeof(s_PmTraLoiChung[0]));
 		static int s_nXoay = 0;
 		int nPick;
 		if (pB)
@@ -2963,7 +2992,7 @@ int PB_WhisperReply(const PB_WHISPER* p)
 		}
 		else
 			nPick = (s_nXoay++) % nSo;
-		strncpy(szTraLoi, s_TraLoiChung[nPick], sizeof(szTraLoi) - 1);
+		strncpy(szTraLoi, s_PmTraLoiChung[nPick], sizeof(szTraLoi) - 1);
 		szTraLoi[sizeof(szTraLoi) - 1] = 0;
 	}
 
@@ -2971,15 +3000,68 @@ int PB_WhisperReply(const PB_WHISPER* p)
 	if (nOut <= 0)
 		return 0;
 
-	// Echo cau hoi TRUOC (dong "minh noi gi"), roi moi toi cau tra loi cua bot -
-	// dung thu tu nguoi choi quen thay khi PM nguoi that.
+	// Echo cau hoi van hien NGAY (do la dong "minh vua noi" cua chinh nguoi hoi).
 	pb_GuiChatMatEcho(p->nSenderIdx, Player[nBot].m_PlayerName, p->szMsg, nLen, p->nPackageID);
-	pb_GuiChatMat(p->nSenderIdx, nBot, szTraLoi, nOut);
 
-	pb_Log("[BotPM] %s <- %s: \"%.60s\" | dap: \"%.60s\"\n",
-		   Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName,
-		   p->szMsg, szTraLoi);
+	// GION NHIP + GUI TRE nhu nguoi that (chu game 18/08: "pm mat la bot tra loi
+	// lien... gioi han time rep"): cau tra loi KHONG gui ngay ma hen 2-6 giay;
+	// dang co cau cho gui / con trong han cam 8-15 giay thi lam ngo luon.
+	{
+		const int nNpcB = Player[nBot].m_nIndex;
+		if (nNpcB <= 0 || nNpcB >= MAX_NPC || !pB)
+		{
+			// khong co khe theo doi (hiem) -> gui thang nhu cu
+			pb_GuiChatMat(p->nSenderIdx, nBot, szTraLoi, nOut);
+			return 1;
+		}
+		const int nSubB = Npc[nNpcB].m_SubWorldIndex;
+		const unsigned int now = (nSubB >= 0 && nSubB < MAX_SUBWORLD)
+								   ? SubWorld[nSubB].m_dwCurrentTime : 0;
+		if (pB->nPmDenHan != 0 || (pB->nPmCamToi != 0 && now < pB->nPmCamToi))
+		{
+			pb_Log("[BotPM] %s lam ngo %s (dang ban tra loi / trong han cam)\n",
+			       Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName);
+			return 1;
+		}
+		// chong lap: cau y het cau vua tra loi lan truoc -> doi sang cau chung khac
+		unsigned int nH = pb_HashChuoi(szTraLoi);
+		if (nH == pB->nPmLapHash)
+		{
+			const int nSo2 = (int)(sizeof(s_PmTraLoiChung) / sizeof(s_PmTraLoiChung[0]));
+			pB->nChatCuoi = (pB->nChatCuoi + 1) % nSo2;
+			strncpy(szTraLoi, s_PmTraLoiChung[pB->nChatCuoi], sizeof(szTraLoi) - 1);
+			szTraLoi[sizeof(szTraLoi) - 1] = 0;
+			nH = pb_HashChuoi(szTraLoi);
+		}
+		pB->nPmLapHash = nH;
+		strncpy(pB->szPmTraLoi, szTraLoi, sizeof(pB->szPmTraLoi) - 1);
+		pB->szPmTraLoi[sizeof(pB->szPmTraLoi) - 1] = 0;
+		pB->nPmSenderIdx = p->nSenderIdx;
+		pB->nPmDenHan    = now + GAME_FPS * 2 + g_Random(GAME_FPS * 4);
+		pb_Log("[BotPM] %s <- %s: \"%.60s\" | hen dap: \"%.60s\"\n",
+		       Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName,
+		       p->szMsg, szTraLoi);
+	}
 	return 1;
+}
+
+// Gui cau tra loi PM da hen gio (goi moi nhip tu pb_DriveBot).
+static void pb_XuLyPmCho(int nBotIdx, PB_Bot& b, unsigned int now)
+{
+	if (b.nPmDenHan == 0 || now < b.nPmDenHan)
+		return;
+	b.nPmDenHan = 0;
+	const int nAi = b.nPmSenderIdx;
+	if (nAi <= 0 || nAi >= MAX_PLAYER
+	 || Player[nAi].m_dwID == 0 || Player[nAi].m_nIndex <= 0)
+		return;                                // nguoi hoi da thoat
+	const int nOut = (int)strlen(b.szPmTraLoi);
+	if (nOut <= 0)
+		return;
+	pb_GuiChatMat(nAi, nBotIdx, b.szPmTraLoi, nOut);
+	// han cam 8-15 giay: trong han nay moi cau hoi den deu bi lam ngo
+	b.nPmCamToi = now + GAME_FPS * (8 + (int)g_Random(8));
+	b.szPmTraLoi[0] = 0;
 }
 
 // Mot nhip cua MOT bot.
@@ -3019,6 +3101,8 @@ static void pb_DriveBot(PB_Bot& b)
 			if (&s_bots[q] == &b) { nLech = q; break; }
 		pb_Chat(nNpcIdx, b, nowAll, nLech);
 	}
+	// PM da hen gio thi gui - chay truoc cac nhanh return nhu chat
+	pb_XuLyPmCho(nIdx, b, nowAll);
 
 	// ---------------------------------------------------------------- TU HOI SINH
 	// BOT CHET LA NAM MAI neu khong co doan nay. Duong tu hoi sinh cua nguoi that nam
@@ -3365,9 +3449,36 @@ void PB_Breathe()
 		return;                            // dang don dep thi khoan sinh them / dieu khien
 	}
 
-	// nhip tung bot (di bo + vao phai)
-	for (int i = 0; i < s_botCount; i++)
-		pb_DriveBot(s_bots[i]);
+	// nhip tung bot (di bo + vao phai) - kem DO HIEU NANG (dieu tra lag 18/08):
+	// moi 10 giay in [BotPerf] tong thoi gian nhip bot + so lan A* + so lan quet do.
+	{
+		static __int64 s_nPerfTong = 0;
+		static DWORD   s_dwPerfMoc = 0;
+		static LARGE_INTEGER s_liTanSo = { 0 };
+		if (s_liTanSo.QuadPart == 0)
+			QueryPerformanceFrequency(&s_liTanSo);
+		LARGE_INTEGER liT0, liT1;
+		QueryPerformanceCounter(&liT0);
+
+		for (int i = 0; i < s_botCount; i++)
+			pb_DriveBot(s_bots[i]);
+
+		QueryPerformanceCounter(&liT1);
+		s_nPerfTong += liT1.QuadPart - liT0.QuadPart;
+		const DWORD dwNow = GetTickCount();
+		if (s_dwPerfMoc == 0)
+			s_dwPerfMoc = dwNow;
+		else if (dwNow - s_dwPerfMoc >= 10000)
+		{
+			const int nMs = (int)(s_nPerfTong * 1000 / (s_liTanSo.QuadPart ? s_liTanSo.QuadPart : 1));
+			pb_Log("[BotPerf] nhip bot %d ms/10s | A* %d lan | quet do %d lan | %d bot\n",
+			       nMs, g_nPbAstarDem, s_nPerfQuetDo, s_botCount);
+			s_nPerfTong   = 0;
+			g_nPbAstarDem = 0;
+			s_nPerfQuetDo = 0;
+			s_dwPerfMoc   = dwNow;
+		}
+	}
 
 	// rut hang doi
 	for (int n = 0; n < PB_DRAIN_PER_TICK; n++)
