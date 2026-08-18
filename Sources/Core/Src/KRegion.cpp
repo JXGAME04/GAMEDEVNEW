@@ -1345,19 +1345,23 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	}
 	while(pNode && nMaxCount > 0)
 	{
-	 if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER)
-	  { 
-		int nPlayerIndex = pNode->m_nIndex;
-		int nNpcIndex = Player[nPlayerIndex].m_nIndex;
-		int nDX = Npc[nNpcIndex].m_MapX - nOX;
-		int nDY = Npc[nNpcIndex].m_MapY - nOY;
-		if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 
-			&& nDX <= MAX_SYNC_RANGE && nDY <= MAX_SYNC_RANGE
-			&& Player[pNode->m_nIndex].m_bSleepMode == FALSE)
-			g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
-		nMaxCount--;
-		pNode = (KIndexNode *)pNode->GetNext();
-      	}
+		// LOI TREO CO SAN: truoc day pNode chi tien BEN TRONG if, nen mot node co
+		// m_nIndex <= 0 hoac >= MAX_PLAYER se lam vong lap quay vo tan => treo cung
+		// GameServer. Nay luon tien node o cuoi vong.
+		KIndexNode* pNext = (KIndexNode *)pNode->GetNext();
+		if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER)
+		{
+			int nPlayerIndex = pNode->m_nIndex;
+			int nNpcIndex = Player[nPlayerIndex].m_nIndex;
+			int nDX = Npc[nNpcIndex].m_MapX - nOX;
+			int nDY = Npc[nNpcIndex].m_MapY - nOY;
+			if (Player[pNode->m_nIndex].m_nNetConnectIdx >= 0 
+				&& nDX <= MAX_SYNC_RANGE && nDY <= MAX_SYNC_RANGE
+				&& Player[pNode->m_nIndex].m_bSleepMode == FALSE)
+				g_pServer->PackDataToClient(Player[pNode->m_nIndex].m_nNetConnectIdx, (BYTE*)pBuffer, dwSize);
+			nMaxCount--;
+		}
+		pNode = pNext;
 	}
 }
 
