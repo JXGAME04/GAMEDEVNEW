@@ -8365,11 +8365,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				continue;	// dung yen: tick da dat vi tri roi, khoi ton cong scene
 			int	nDrawX = s_InterpFrom[nIdx].x + (s_InterpTo[nIdx].x - s_InterpFrom[nIdx].x) * nAlpha / 1000;
 			int	nDrawY = s_InterpFrom[nIdx].y + (s_InterpTo[nIdx].y - s_InterpFrom[nIdx].y) * nAlpha / 1000;
+			if (!bIsPlayer)
+			{
+				// NPC thuong: chi doi vi tri VE. Goi SetPos se keo theo MoveObject ->
+				// PluckRto/AddLeafPoint + new/delete den, nam trong critical section dung
+				// chung voi luong nap canh; dong nguoi x 60 khung/giay se gay giut du FPS
+				// van cao. Sprite doc thang m_nXpos nen bo cay canh o day khong anh huong hinh.
+				Npc[nIdx].GetNpcRes()->SetDrawPos(nDrawX, nDrawY, Npc[nIdx].m_Height);
+				continue;
+			}
 			int	nFocusX0 = 0, nFocusY0 = 0, nFocusZ0 = 0;
-			if (bIsPlayer)
-				g_ScenePlace.GetFocusPosition(nFocusX0, nFocusY0, nFocusZ0);
-			Npc[nIdx].GetNpcRes()->SetPos(nIdx, nDrawX, nDrawY, Npc[nIdx].m_Height, bIsPlayer);
-			if (bIsPlayer)
+			g_ScenePlace.GetFocusPosition(nFocusX0, nFocusY0, nFocusZ0);
+			Npc[nIdx].GetNpcRes()->SetPos(nIdx, nDrawX, nDrawY, Npc[nIdx].m_Height, TRUE);
 			{
 				// Single writer: while interpolation is on, only POSSHIFT moves the camera
 				// (the logic tick and KSubWorld::LoadMap are muted through g_bPaintInterpFocus),

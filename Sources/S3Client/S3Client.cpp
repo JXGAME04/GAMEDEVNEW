@@ -1301,16 +1301,21 @@ BOOL KMyApp::GameLoop()
 	BOOL	bPainted = FALSE;
 	if (g_nPaintFps > 0)
 	{
-		// paint clock separated from the 18-fps logic clock (JX2 client PaintFps mechanism).
-		// wrap-safe: both DWORD products overflow together, their signed difference stays small
-		static DWORD s_PaintCounter = 0;
+		// Paint clock separated from the 18-fps logic clock (JX2 client PaintFps mechanism).
+		// Nhip duoc dat tu THOI DIEM VE THUC TE chu khong tu moc ly thuyet: vong bom ngoai
+		// chi moi 16ms mot co hoi (KWin32App::Run, nInterval = 1000/60) trong khi 60fps can
+		// 16,67ms - doi dung moc se cu ~25 khung lai truot 1 co hoi, thanh mot khung 32ms.
+		// FPS trung binh van ~60 nhung mat nhin thay giut. Cho phep ve som PAINT_LEAD_MS
+		// va tinh moc ke tu luc ve that => khoang cach cac khung deu nhau.
+		#define	PAINT_LEAD_MS	8	// nua chu ky vong bom
+		static DWORD s_dwNextPaint = 0;
 		DWORD	nPaintElapse = m_Timer.GetElapse();
-		int	nPaintDelta = (int)(nPaintElapse * (DWORD)g_nPaintFps - s_PaintCounter * 1000);
-		if (nPaintDelta >= 0)
+		DWORD	nPaintStep = 1000 / (DWORD)g_nPaintFps;
+		if (nPaintStep < 1)
+			nPaintStep = 1;
+		if ((int)(nPaintElapse + PAINT_LEAD_MS - s_dwNextPaint) >= 0)
 		{
-			s_PaintCounter++;
-			if (nPaintDelta > 2000)	// behind by more than 2 paint frames (modal loop / map load): resync, never catch up
-				s_PaintCounter = nPaintElapse * (DWORD)g_nPaintFps / 1000;
+			s_dwNextPaint = nPaintElapse + nPaintStep;
 			if (g_nPaintInterp > 0 && m_GameCounter > 0)
 			{
 				// alpha 0..1000: how far the paint moment sits between the last and the next logic tick

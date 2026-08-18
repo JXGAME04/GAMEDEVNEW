@@ -162,7 +162,11 @@ public:
 	void			CreateBlur(int nNpcIdx, int nRange, int nDir);
 	void			SetAdjustColorId(unsigned long ulColorId){m_ulAdjustColorId = ulColorId;};			// 设置偏色情况，如果为0表示不偏色.
 	int				GetAction(){return m_nAction;};
-	void			GetPos(int *pX, int *pY){*pX = m_nXpos; *pY = m_nYpos;};	// current DRAWN position (interpolated when PaintInterp is on)
+	void			GetPos(int *pX, int *pY){*pX = m_nXpos; *pY = m_nYpos;};
+	// Chi doi vi tri VE (sprite doc m_nXpos/m_nYpos), KHONG dung cay canh.
+	// Dung cho noi suy moi khung: nut cay chi de sap xep truoc-sau va cat canh,
+	// do chinh xac theo tick la du - tranh PluckRto/AddLeafPoint + cap phat den.
+	void			SetDrawPos(int x, int y, int z){ m_nXpos = x; m_nYpos = y; m_nZpos = z; };	// current DRAWN position (interpolated when PaintInterp is on)
 	void			SetMenuState(int nState, char *lpszSentence = NULL, int nSentenceLength = 0);	// 设定头顶状态	//Head
 	int				GetMenuState();						// 获得头顶状态	//Head
 	void			SetSleepState(BOOL bFlag);			// 设定睡眠状态

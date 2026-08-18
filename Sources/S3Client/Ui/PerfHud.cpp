@@ -38,6 +38,10 @@ static int      s_nRamSysFreeMB  = -1;
 static int      s_nGpuPercent    = -1;   // % GPU (tong cac engine cua game)
 static int      s_nGpuMemMB      = -1;   // VRAM tien trinh game dang giu
 static int      s_nFrameMs10     = 0;    // thoi gian 1 khung ve, nhan 10
+static int      s_nFrameMaxMs10  = 0;    // khung LAU NHAT trong 1 giay qua (nhan 10)
+static int      s_nFrameMaxCur   = 0;    // dang tich luy cho giay hien tai
+static DWORD    s_dwMaxReset     = 0;
+static int      s_nCpuPerMille   = -1;   // CPU cua tien trinh, phan nghin (de thay so nho)
 
 static DWORD    s_dwLastSample   = 0;
 static DWORD    s_dwLastGpu      = 0;
@@ -216,7 +220,17 @@ static void PerfHud_Sample()
     {
         DWORD dwDelta = dwNow - s_dwLastFrameTk;
         if (dwDelta < 1000)
+        {
             s_nFrameMs10 = (s_nFrameMs10 * 7 + (int)dwDelta * 30) / 10;
+            if ((int)dwDelta * 10 > s_nFrameMaxCur)
+                s_nFrameMaxCur = (int)dwDelta * 10;
+        }
+    }
+    if (!s_dwMaxReset || (dwNow - s_dwMaxReset) >= 1000)
+    {
+        s_dwMaxReset    = dwNow;
+        s_nFrameMaxMs10 = s_nFrameMaxCur;
+        s_nFrameMaxCur  = 0;
     }
     s_dwLastFrameTk = dwNow;
 
@@ -243,9 +257,10 @@ static void PerfHud_Sample()
         {
             ULONGLONG dProc = ullProc - s_ullPrevProcTime;
             ULONGLONG dWall = ullWall - s_ullPrevWallTime;
-            s_nCpuPercent = (int)((dProc * 100) / (dWall * (ULONGLONG)s_nCpuCores));
-            if (s_nCpuPercent > 100)
-                s_nCpuPercent = 100;
+            s_nCpuPerMille = (int)((dProc * 1000) / (dWall * (ULONGLONG)s_nCpuCores));
+            if (s_nCpuPerMille > 1000)
+                s_nCpuPerMille = 1000;
+            s_nCpuPercent = s_nCpuPerMille / 10;
         }
         s_ullPrevProcTime = ullProc;
         s_ullPrevWallTime = ullWall;
@@ -334,16 +349,20 @@ void PerfHud_Draw(int nPaintFps, int nLogicFps, unsigned int dwPing)
     nY += PH_LINE;
 
     // dong 2: thoi gian 1 khung ve
-    _snprintf(szLine, sizeof(szLine) - 1, "Khung ve  %d.%d ms",
-              s_nFrameMs10 / 10, s_nFrameMs10 % 10);
+    _snprintf(szLine, sizeof(szLine) - 1, "Khung ve  %d.%d ms   |   lau nhat %d.%d ms",
+              s_nFrameMs10 / 10, s_nFrameMs10 % 10,
+              s_nFrameMaxMs10 / 10, s_nFrameMaxMs10 % 10);
     szLine[sizeof(szLine) - 1] = 0;
     g_pRepresentShell->OutputText(PH_FONT, szLine, KRF_ZERO_END, PH_X, nY,
-                                  PH_COL_TEXT, 0, TEXT_IN_SINGLE_PLANE_COORD, PH_COL_BORDER);
+                                  s_nFrameMaxMs10 >= 400 ? PH_COL_BAD :
+                                  (s_nFrameMaxMs10 >= 250 ? PH_COL_WARN : PH_COL_GOOD),
+                                  0, TEXT_IN_SINGLE_PLANE_COORD, PH_COL_BORDER);
     nY += PH_LINE;
 
     // dong 3: CPU
     if (s_nCpuPercent >= 0)
-        _snprintf(szLine, sizeof(szLine) - 1, "CPU  %3d%%  (%d nhan)", s_nCpuPercent, s_nCpuCores);
+        _snprintf(szLine, sizeof(szLine) - 1, "CPU  %d.%d%% may  (%d nhan)",
+                  s_nCpuPerMille / 10, s_nCpuPerMille % 10, s_nCpuCores);
     else
         _snprintf(szLine, sizeof(szLine) - 1, "CPU  n/a");
     szLine[sizeof(szLine) - 1] = 0;

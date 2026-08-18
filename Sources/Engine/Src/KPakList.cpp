@@ -95,7 +95,10 @@ bool KPakList::FindElemFile(const char* pszFileName, XPackElemFileRef& ElemRef)
 	bool bFounded = false;
 	if (pszFileName && pszFileName[0])
 	{
-		char szPackName[128];
+		// g_GetPackPath dung g_StrCpy/g_StrCat KHONG gioi han do dai; moi noi goi khac
+		// deu cap MAX_PATH. De 128 thi duong dan tai nguyen dai >127 ky tu se tran stack
+		// (ban debug bao "Stack around the variable 'szPackName' was corrupted").
+		char szPackName[MAX_PATH];
 		#ifdef WIN32
 			szPackName[0] = '\\';
 		#else
