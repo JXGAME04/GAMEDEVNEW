@@ -295,6 +295,16 @@ int PB_GetCount()
 	return s_botCount;
 }
 
+// Ghi nhat ky khi mot bot DAP TRAP (goi tu KNpc::CheckTrap, truoc khi bo qua).
+// De ngoai nay vi pb_Log la static - KNpc.cpp khong goi thang duoc.
+void PB_TrapLog(int nPlayerIdx, unsigned long dwScriptId, int nMapX, int nMapY)
+{
+	pb_Log("[BotTrap] %s dap trap id=%08X tai o(%d,%d) -> BO QUA (bot mien trap)\n",
+	       (nPlayerIdx > 0 && nPlayerIdx < MAX_PLAYER)
+	           ? Player[nPlayerIdx].m_PlayerName : "?",
+	       (unsigned int)dwScriptId, nMapX, nMapY);
+}
+
 int PB_IsBot(int nPlayerIdx)
 {
 	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)

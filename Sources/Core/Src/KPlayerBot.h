@@ -157,6 +157,7 @@ int  PB_SpawnRange(int nFrom, int nTo);        // xep dai tai khoan "nFrom".."nT
 void PB_OnRoleList(const PB_DB_RESULT* pRes);  // Goddess tra danh sach nhan vat
 void PB_OnRoleData(const PB_DB_RESULT* pRes);  // Goddess tra blob TRoleData
 int  PB_IsBot(int nPlayerIdx);                 // 1 = khe nay la bot
+void PB_TrapLog(int nPlayerIdx, unsigned long dwScriptId, int nMapX, int nMapY); // ghi bot.log khi bot dap trap
 int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (tra so da nhan lenh)
