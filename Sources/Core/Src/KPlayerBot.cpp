@@ -26,6 +26,7 @@
 #include "KSkills.h"        // KSkill - doc EqtLimit / SkillStyle / IsTargetEnemy
 #include "KSkillManager.h"  // g_SkillManager.GetSkill(id, level)
 #include "SkillDef.h"       // SKILL_SS_* - phan biet vong sang / buff / bua
+#include "Scene/ObstacleDef.h"  // Obstacle_NULL - kiem o trong khi lach dam dong
 #include "KRegion.h"        // duyet m_NpcList de tim quai theo region
 #include "KMath.h"         // g_GetDistance
 #include "KPlayerChat.h"   // KPlayerChat::NpcChat - bot noi chuyen
@@ -183,6 +184,10 @@ struct PB_Bot
 	unsigned int nChaseLegTick;               // gion nhip chang thang cuoi khi ap sat
 	unsigned int nChatCamToi;                 // moc tick duoc phep noi cau tiep theo
 	int          nBuocRaX, nBuocRaY;          // buoc ra khoi diem dat chan sau khi doi map
+	// ---- lach dam dong ----
+	int          nJamX, nJamY;                // diem neo do "dam chan tai cho"
+	unsigned int nJamTick;                    // tu bao gio dung quanh diem neo
+	unsigned int nLachTick;                   // lan lach gan nhat (gion nhip)
 	// ---- luyen cap ----
 	int          nBaiIdx;                     // chi so bai luyen dang nham (-1 = chua chon)
 	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
@@ -613,6 +618,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChaseLegTick = 0;
 		b.nChatCamToi = 0;
 		b.nBuocRaX = 0;   b.nBuocRaY = 0;
+		b.nJamX = 0;      b.nJamY = 0;       b.nJamTick = 0;  b.nLachTick = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -2485,6 +2491,54 @@ static void pb_DriveBot(PB_Bot& b)
 		int nLech = 0;
 		for (int q = 0; q < s_botCount; q++)
 			if (&s_bots[q] == &b) { nLech = q; break; }
+		// ---- LACH DAM DONG ----
+		// bot.log 10:47: ca dan nem chat trong hop 4x4 o (2554-2558, 3480-3483) tren duong
+		// toi bai quai - nut co chai dia hinh + NPC-LA-TUONG, 18 than tu chan nhau, thinh
+		// thoang mot con lach qua duoc (dung "chi 1 bot ra"). Nguoi that gap dam dong thi
+		// LACH NGANG. Bot: 6 giay khong nhich noi qua 3 o -> buoc sang mot o TRONG gan do
+		// (SetPos - dung meo rai diem cua ban tham khao, KBotManager.cpp:1525-1557; o dich
+		// kiem bang GetBarrierMin bCheckNpc=TRUE de khong dap len nguoi khac) roi tinh
+		// duong lai tu dau.
+		{
+			int jx = 0, jy = 0;
+			Npc[nNpcIdx].GetMpsPos(&jx, &jy);
+			const int jdx = jx - b.nJamX;
+			const int jdy = jy - b.nJamY;
+			if (b.nJamTick == 0 || jdx > 96 || jdx < -96 || jdy > 96 || jdy < -96)
+			{
+				b.nJamX = jx;  b.nJamY = jy;  b.nJamTick = nowAll;
+			}
+			else if (nowAll - b.nJamTick >= (unsigned int)(GAME_FPS * 6)
+			      && nowAll - b.nLachTick >= (unsigned int)(GAME_FPS * 8))
+			{
+				b.nLachTick = nowAll;
+				b.nJamTick  = 0;
+				static const int aLx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+				static const int aLy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+				const int nLech3 = (int)(&b - &s_bots[0]);
+				for (int h = 0; h < 24; h++)
+				{
+					const int dir  = (nLech3 + h) & 7;
+					const int cach = 3 + (h / 8);            // 3, 4 roi 5 o
+					const int cx = jx + aLx[dir] * cach * 32;
+					const int cy = jy + aLy[dir] * cach * 32;
+					int nR = -1, nMX = 0, nMY = 0, nOX = 0, nOY = 0;
+					SubWorld[nSub].Mps2Map(cx, cy, &nR, &nMX, &nMY, &nOX, &nOY);
+					if (nR < 0)
+						continue;
+					if (SubWorld[nSub].m_Region[nR].GetBarrierMin(nMX, nMY, nOX, nOY, TRUE)
+					 != Obstacle_NULL)
+						continue;
+					pb_Log("[BotLach] %s ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
+					       Player[nIdx].m_PlayerName, jx / 32, jy / 32, cx / 32, cy / 32);
+					Npc[nNpcIdx].SetPos(cx, cy);
+					b.walk.Reset();
+					b.chase.Reset();
+					b.roam.Reset();
+					break;
+				}
+			}
+		}
 		// Vong sang / bua / buff xet TRUOC khi danh: bot phai vao tran voi day du
 		// trang thai, giong nguoi choi bam buff truoc roi moi lao vao.
 		pb_ApplyAuraBuff(nIdx, nNpcIdx, b, nowAll);
