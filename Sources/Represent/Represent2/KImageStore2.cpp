@@ -148,6 +148,7 @@ unsigned int KImageStore2::CreateImage(const char* pszName, int nWidth, int nHei
 			m_pObjectList[i] = m_pObjectList[i - 1];
 		}
 		m_pObjectList[nIdx].bNotCacheable = true;
+		m_pObjectList[nIdx].dwLastUsedTime = GetTickCount();
 		m_pObjectList[nIdx].bSingleFrameLoad = false;
 		m_pObjectList[nIdx].bType = ISI_T_BITMAP16;
 		m_pObjectList[nIdx].pObject = pBitmap;
@@ -167,6 +168,7 @@ unsigned int KImageStore2::CreateImage(const char* pszName, int nWidth, int nHei
 			m_pObjectList[i] = m_pObjectList[i - 1];
 		}
 		m_pObjectList[nIdx].bNotCacheable = true;
+		m_pObjectList[nIdx].dwLastUsedTime = GetTickCount();
 		m_pObjectList[nIdx].bSingleFrameLoad = false;
 		m_pObjectList[nIdx].bType = ISI_T_DRAWINGRC;
 		m_pObjectList[nIdx].pObject = pImg;
@@ -299,6 +301,7 @@ void* KImageStore2::GetImage(const char* pszImage, unsigned int& uImage,
 				}
 			}
 			ImgObj.bRef = true;
+			ImgObj.dwLastUsedTime = GetTickCount();
 		}
 		//else 略去同id但是不同图形类型情况的处理。因为这是受限情况
 
@@ -320,6 +323,7 @@ void* KImageStore2::GetImage(const char* pszImage, unsigned int& uImage,
 		_KISImageObj& ImgObj = m_pObjectList[nImagePosition];		
 		ImgObj.bNotCacheable = false;
 		ImgObj.bRef = true;
+		ImgObj.dwLastUsedTime = GetTickCount();
 		ImgObj.bSingleFrameLoad = false;
 		ImgObj.bType = (unsigned char)nType;
 		ImgObj.pFrames = NULL;
@@ -566,12 +570,21 @@ void KImageStore2::CheckBalance()
 
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
     
+    // Bo nho con thoai mai => chi don anh that su nguoi; cang thang => duoi manh tay hon.
+    unsigned int dwIdleLimit =
+        (MemStatus.dwAvailPhys > (MemStatus.dwTotalPhys / 32)) ? 100000 : 10000;
+
     nNewNumImages = 0;
     for (i = 0; i < m_nNumImages; i++)
     {
         if (m_pObjectList[i].bNotCacheable == false)
         {
-			if (m_pObjectList[i].bRef == false)
+			// Ban goc JX2 duoi anh khi NHAN ROI qua lau (100 giay), chu khong duoi moi thu
+			// khong duoc cham trong luot quet vua roi. Cach cu: map dong nguoi quay vong hon
+			// m_uCheckPoint anh khac nhau => XOA DUNG ANH DANG CAN roi nap lai ngay tu pak
+			// => dung hinh vai giay + CPU/dia dung dung.
+			if (m_pObjectList[i].bRef == false &&
+				(GetTickCount() - m_pObjectList[i].dwLastUsedTime) > dwIdleLimit)
 			{
 				FreeImageObject(m_pObjectList[i]);
                 continue;
@@ -787,6 +800,7 @@ void* KImageStore2::LoadImage(const char* pszImageFile, _KISImageObj& ImgObj, in
 					ImgObj.pObject = pSprHeader;
 					ImgObj.pFrames = pFrameObj;
 					ImgObj.bNotCacheable = false;
+					ImgObj.dwLastUsedTime = GetTickCount();
 					ImgObj.bSingleFrameLoad = false;
 					pFrameObj->pOffsetTable = pOffsTable;
 					pFrameObj->sOffTableSize = sizeof(SPROFFS) * pSprHeader->Frames;
@@ -810,6 +824,7 @@ void* KImageStore2::LoadImage(const char* pszImageFile, _KISImageObj& ImgObj, in
 					ImgObj.pObject = pSprHeader;
 					ImgObj.pFrames = pFrameObj;
 					ImgObj.bNotCacheable = false;
+					ImgObj.dwLastUsedTime = GetTickCount();
 					ImgObj.bSingleFrameLoad = true;
 					if (nFrame >= 0 && nFrame < pSprHeader->Frames)
 					{

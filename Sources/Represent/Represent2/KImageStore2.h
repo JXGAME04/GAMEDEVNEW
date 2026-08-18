@@ -170,6 +170,9 @@ private:
         bool bSingleFrameLoad;
 		//在本次绘图循环中是否被引用到
 		bool bRef;
+		// Thoi diem dung lan cuoi (timeGetTime). Ban goc JX2 duoi anh theo THOI GIAN
+		// NHAN ROI chu khong theo 'co duoc cham trong luot quet vua roi hay khong'.
+		unsigned int dwLastUsedTime;
         //## 图形的类型
         unsigned char bType;
         //## 图形数据对象指针。

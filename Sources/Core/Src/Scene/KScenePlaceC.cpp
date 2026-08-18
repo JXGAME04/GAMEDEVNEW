@@ -427,7 +427,10 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 
 	if (g_pRepresent && m_nNumGroundImagesAvailable == 0 && l_bPrerenderGround)
 	{
-		for (int i = 0; m_nNumGroundImagesAvailable < SPWP_NUM_REGIONS_IN_PROCESS_AREA && i < 2147483647; i++)
+		// CreateImage that bai thi m_nNumGroundImagesAvailable khong tang => vong nay se
+		// quay 2 ti lan (dung hinh). Chan bang so lan that bai lien tiep.
+		int	nFailed = 0;
+		for (int i = 0; m_nNumGroundImagesAvailable < SPWP_NUM_REGIONS_IN_PROCESS_AREA && nFailed < 8; i++)
 		{
 			KRUImage* pImage = &m_RegionGroundImages[m_nNumGroundImagesAvailable];
 			pImage->bRenderStyle = IMAGE_RENDER_STYLE_OPACITY;
@@ -447,7 +450,12 @@ bool KScenePlaceC::OpenPlace(int nPlaceIndex)
 				KScenePlaceRegionC::RWPP_AREGION_HEIGHT / 2, ISI_T_DRAWINGRC);
 			}
 			if (pImage->uImage)
+			{
 				m_nNumGroundImagesAvailable ++;
+				nFailed = 0;
+			}
+			else
+				nFailed++;
 		}
 	}
 
@@ -809,7 +817,12 @@ void KScenePlaceC::LoadProcess()
 
             //g_DebugLog("[Scene]Process Preload SPR");
 
-            PreLoadProcess();
+            // TAT theo ban goc: client JX2 goc KHONG preload SPR tren luong nap canh
+            // (da doi chieu opcode: moi ma tra ve khac WAIT_OBJECT_0 deu quay lai cho).
+            // Ham nay goi GetImageFrameParam -> doc + giai nen pak TU LUONG NEN, ma
+            // KImageStore2::GetImage giu m_ImageProcessLock => LUONG VE DUNG CHO.
+            // Con lam vo cache vi bom toi 1024 tep mot dot.
+            //PreLoadProcess();
         }
 	}
 }
