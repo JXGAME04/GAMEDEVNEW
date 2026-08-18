@@ -1473,8 +1473,10 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			continue;
 		int lv = sl.m_Skills[i].CurrentSkillLevel;
 		if (lv <= 0) lv = sl.m_Skills[i].SkillLevel;
+		// CAP 0 van phai XET: hockynang hoc moi thu o cap 0 (SKILLNORMAL toan {id, 0},
+		// factionhead.lua:161-173). Bo qua cap 0 thi khong bao gio chon duoc de nang cap.
 		if (lv <= 0)
-			continue;
+			lv = 1;
 
 		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
 		if (!p)                       continue;
@@ -1522,14 +1524,29 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	if (SubWorld[nSub].m_SubWorldID == bai.nMapId)
 		return 1;               // da o dung bai
 
-	// Giai cho de khong goi ChangeWorld lien tuc khi ban do chua mo.
-	if (b.nDoiMapTick && now - b.nDoiMapTick < (unsigned int)(GAME_FPS * 10))
+	// DAN HANG truoc khi doi map: nDoiMapTick giu "moc som nhat duoc phep thu".
+	//
+	// VI SAO: ca 20 bot cung nhan lenh danh quai mot luc -> cung ChangeWorld toi CUNG MOT
+	// O cung mot khung. JX1 tinh NPC LA TUONG, nen 20 than chong mot o thi buoc chan dau
+	// tien cua moi con deu bi 19 con kia chan - mot lan ne roi DoStand, phat lai lenh lai
+	// dung tiep => nhin nhu "di toi roi giat lui ve vi tri cu" (dung loi chu game ta).
+	// Moi con cham hon con truoc 1 giay: con truoc da BUOC RA khoi diem dat chan truoc
+	// khi con sau dap xuong.
+	if (b.nDoiMapTick == 0)
+		b.nDoiMapTick = now + (unsigned int)(nLech * GAME_FPS);
+	if (now < b.nDoiMapTick)
 		return 0;
-	b.nDoiMapTick = now;
+	b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 10);   // lan thu ke tiep (neu that bai)
 
 	b.nTargetNpc = 0;
 	b.walk.Reset();
-	const int nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32, bai.nOY * 32);
+	// Dat chan LECH NHAU: moi bot mot o rieng quanh diem den (luoi 5x4, cach nhau 2-3 o)
+	// de khong bao gio co hai con chong mot o. O lech bi chan thi lui ve dung diem goc.
+	const int nDx = ((nLech % 5) - 2) * 2 * 32;
+	const int nDy = (((nLech / 5) % 4) - 1) * 3 * 32;
+	int nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32 + nDx, bai.nOY * 32 + nDy);
+	if (nRet != 1)
+		nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32, bai.nOY * 32);
 	if (nRet == 1)
 	{
 		// Diem dat chan la CHO MOI NGUOI CHOI CUNG DAT CHAN - thuong sat trap vao/ra.
@@ -1683,8 +1700,10 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 			continue;
 		int lv = sl.m_Skills[i].CurrentSkillLevel;
 		if (lv <= 0) lv = sl.m_Skills[i].SkillLevel;
+		// CAP 0 van phai XET: hockynang hoc moi thu o cap 0 (SKILLNORMAL toan {id, 0},
+		// factionhead.lua:161-173). Bo qua cap 0 thi khong bao gio chon duoc de nang cap.
 		if (lv <= 0)
-			continue;
+			lv = 1;
 
 		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
 		if (!p)
@@ -1810,6 +1829,27 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		b.nAtkPickLevel = Npc[nNpcIdx].m_Level;
 		const int nCu = b.nAtkSkill;
 		b.nAtkSkill = pb_PickSkill(nIdx, nNpcIdx, &b.nAtkSkillLv);
+		if (b.nAtkSkill > 0)
+		{
+			// NANG CAP CHIEU CHINH - day la goc cua "bot toan danh thuong" chu game bat:
+			// SKILLNORMAL hoc moi chieu o CAP 0, ma chieu cap 0 cast khong co gi xay ra.
+			// Nguoi choi that tieu diem ky nang moi cap vao chieu chinh; bot lam y vay:
+			// cap chieu = cap bot (tran 20). Di dung duong AddMagic cua Lua:
+			// KSkillList::Add(id, lv) - CHI NANG khong ha (KSkillList.cpp:442-446).
+			int nLvMuon = Npc[nNpcIdx].m_Level;
+			if (nLvMuon > 20) nLvMuon = 20;
+			if (nLvMuon > 0 && b.nAtkSkillLv < nLvMuon)
+			{
+				Npc[nNpcIdx].m_SkillList.Add(b.nAtkSkill, nLvMuon);
+				const int nO = Npc[nNpcIdx].m_SkillList.FindSame(b.nAtkSkill);
+				if (nO)
+				{
+					b.nAtkSkillLv = Npc[nNpcIdx].m_SkillList.m_Skills[nO].CurrentSkillLevel;
+					pb_Log("[BotDanh] %s nang chieu %d len cap %d\n",
+					       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv);
+				}
+			}
+		}
 		if (b.nAtkSkill != nCu)
 			pb_Log("[BotDanh] %s cap %d dung chieu %d (cap %d)\n",
 				   Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, b.nAtkSkill, b.nAtkSkillLv);
