@@ -275,9 +275,14 @@ void KSubWorld::ProcLoadPathGrid()
 					m_GridNode[id].x = m_nRegionBeginX*REGION_GRID_WIDTH + regx+x;
 					m_GridNode[id].y = m_nRegionBeginY*REGION_GRID_HEIGHT + regy+y;
 					int lInfo = ObstacleInfo[x][y];
-					int lType = (lInfo >> 4) & 0x0000000f;
 					lInfo &= 0x0000000f;
-					if((lType >= Obstacle_LT && lType <= Obstacle_RB) || lInfo == 0)
+					// 18/08: O GOC (Obstacle_LT..RB) truoc day coi la DI DUOC ca o, nhung
+					// engine that chi cho di NUA O trong (GetBarrier kiem cheo nDx+nDy,
+					// KRegion.cpp:927-941). Vien vach nui toan o goc -> chuoi nua-o thanh
+					// "cau thang" cho bot leo xuyen vach ("bot tu chay vao" - chu game).
+					// Coi o goc la VAT CAN: bot di vong nhu nguoi that. Doi predicate =
+					// doi luoi -> da nang kMagic cache de moi ban do tu tinh lai.
+					if(lInfo == 0)
 					m_GridNode[id].obs = 0;
 					else
 					m_GridNode[id].obs = 1;
@@ -3157,7 +3162,7 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 	// khac goc toa do / khac co luoi thi A* VAN ra duong, nhung moi waypoint lech dung bang
 	// do lech goc -> bot di "dau do khac". Nen nhet goc + kich thuoc vao dau tep va VUT BO
 	// cache nao khong khop.
-	const UINT kMagic  = 0x53465001;	// S F P 01
+	const UINT kMagic  = 0x53465002;	// S F P 02 - doi predicate o goc 18/08
 	const UINT kHdrVer = 2;
 
 	bool bLoaded = false;

@@ -2276,8 +2276,15 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		b.nRoamX = rx;
 		b.nRoamY = ry;
 		b.roam.Reset();
-		pb_Log("[BotHoang] %s het quai gan -> di toi o %d,%d (map %d)\n",
-			   Player[nIdx].m_PlayerName, rx / 32, ry / 32, SubWorld[nSub].m_SubWorldID);
+		{
+			static unsigned int s_uHoangLog = 0;
+			if (now - s_uHoangLog >= (unsigned int)(GAME_FPS / 2))
+			{
+				s_uHoangLog = now;
+				pb_Log("[BotHoang] %s het quai gan -> di toi o %d,%d (map %d)\n",
+				       Player[nIdx].m_PlayerName, rx / 32, ry / 32, SubWorld[nSub].m_SubWorldID);
+			}
+		}
 	}
 
 	// Dung sat quai la du - toi noi thi vong danh se tu bat duoc muc tieu.
@@ -2286,8 +2293,15 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		return 1;                  // dang di
 
 	if (nRet < 0)
-		pb_Log("[BotHoang] %s khong tim duoc duong toi o %d,%d - boc cho khac\n",
-			   Player[nIdx].m_PlayerName, b.nRoamX / 32, b.nRoamY / 32);
+	{
+		static unsigned int s_uHoangLog2 = 0;
+		if (now - s_uHoangLog2 >= (unsigned int)(GAME_FPS / 2))
+		{
+			s_uHoangLog2 = now;
+			pb_Log("[BotHoang] %s khong tim duoc duong toi o %d,%d - boc cho khac\n",
+			       Player[nIdx].m_PlayerName, b.nRoamX / 32, b.nRoamY / 32);
+		}
+	}
 
 	b.nRoamX = 0;                  // toi noi hoac tac duong -> lan sau boc cho khac
 	b.nRoamY = 0;
@@ -2770,9 +2784,10 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				}
 				if (bHong)
 				{
-					if (now - b.nBienLogTick >= (unsigned int)GAME_FPS)
+					static unsigned int s_uBienLog1 = 0;
+					if (now - s_uBienLog1 >= (unsigned int)GAME_FPS)
 					{
-						b.nBienLogTick = now;
+						s_uBienLog1 = now;
 						pb_Log("[BotBien] %s diem nham o(%d,%d) ngoai map/vat can -> cam muc tieu %d\n",
 						       Player[nIdx].m_PlayerName, nAimThoX / 32, nAimThoY / 32, t);
 					}
@@ -2797,9 +2812,10 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				// A* KHONG co duong / duong CUT -> cam muc tieu, TUYET DOI khong chay
 				// thang thay the (nguon xuyen bien). Log gion 1 dong/giay/bot - phan
 				// bien 18/08: khu >4 con ket la log moi nhip, fopen 18 lan/giay/bot.
-				if (now - b.nBienLogTick >= (unsigned int)GAME_FPS)
+				static unsigned int s_uBienLog2 = 0;
+				if (now - s_uBienLog2 >= (unsigned int)GAME_FPS)
 				{
-					b.nBienLogTick = now;
+					s_uBienLog2 = now;
 					pb_Log("[BotBien] %s A* chiu thua toi o(%d,%d) -> cam muc tieu %d, KHONG chay thang\n",
 					       Player[nIdx].m_PlayerName, aimX / 32, aimY / 32, t);
 				}
@@ -3926,6 +3942,7 @@ static void pb_QuanLyNhom()
 	int aTuDo[PB_MAX_BOTS];   int nTuDo   = 0;
 	int aTruong[PB_MAX_BOTS]; int nTruong = 0;
 	int nDangNhom = 0;
+	int nDemDanh = 0, nDemMuon = 0;       // chan doan: dem RIENG tung dieu kien
 
 	for (int i = 0; i < s_botCount; i++)
 	{
@@ -3971,6 +3988,8 @@ static void pb_QuanLyNhom()
 			continue;
 		}
 
+		if (b.nAi == PB_AI_FIGHT) nDemDanh++;
+		if (b.nWantParty)         nDemMuon++;
 		if (bChet || !b.nWantParty || b.nAi != PB_AI_FIGHT)
 			continue;
 		if (nTuDo < PB_MAX_BOTS)
@@ -3990,8 +4009,8 @@ static void pb_QuanLyNhom()
 		if (++s_nDemTk >= 6)
 		{
 			s_nDemTk = 0;
-			pb_Log("[BotNhom] tk: %d bot | %d trong nhom | %d tu do muon nhom | %d truong cho them\n",
-			       s_botCount, nDangNhom, nTuDo, nTruong);
+			pb_Log("[BotNhom] tk: %d bot | %d trong nhom | %d tu do muon nhom | %d truong | dang danh %d | muon nhom %d\n",
+			       s_botCount, nDangNhom, nTuDo, nTruong, nDemDanh, nDemMuon);
 		}
 	}
 
