@@ -901,6 +901,22 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		{
 			st.lastPosX = bx; st.lastPosY = by; st.lastMoveTick = now;
 			bForceRepath = true;
+
+			// DANH THUC neu lenh dang bi NUOT: ProcCommand chi thi hanh khi m_ProcessAI != 0.
+			// Khi no = 0, lenh bi an mat va CHI duoc danh thuc neu m_Doing == do_stand
+			// (KNpc.cpp:929-933). Bot ket o trang thai KHAC do_stand voi ProcessAI = 0 la
+			// DONG BANG VINH VIEN - moi do_run ta phat deu bi nuot khong dau vet.
+			// Danh thuc y het khuon do_revive cua chinh engine (KNpc.cpp:889-893).
+			if (!Npc[nNpcIdx].IsCanInput())   // IsCanInput() = doc m_ProcessAI (KNpc.h:826)
+			{
+				pb_Log("[BotKet] npc=%d lenh bi nuot (doing=%d, procAI=0) -> danh thuc\n",
+				       nNpcIdx, (int)Npc[nNpcIdx].m_Doing);
+				// m_ProcessAI / DoStand deu PRIVATE - di cong cong khai: SetProcessAI
+				// (KNpc.h:676, inline public) bat AI day TRUOC, roi SendCommand(do_stand)
+				// de ProcCommand (luc nay nAI = 1) thi hanh DoStand that.
+				Npc[nNpcIdx].SetProcessAI(TRUE);
+				Npc[nNpcIdx].SendCommand(do_stand);
+			}
 		}
 	}
 
@@ -986,7 +1002,14 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		}
 		else
 		{
-			// Thu 3 lan van khong nhuc nhich -> bo cuoc, de ben goi quyet dinh lam gi tiep.
+			// Thu 3 lan van khong nhuc nhich -> bo cuoc. In TRANG THAI SONG cua than bot
+			// de bot.log ke duoc vi sao (dang lam gi, AI thuc hay ngu, the luc con khong).
+			pb_Log("[BotKet] npc=%d bo cuoc sau 3 lan: doing=%d procAI=%d theluc=%d/%d"
+			       " toc(di/chay)=%d/%d o(%d,%d)\n",
+			       nNpcIdx, (int)Npc[nNpcIdx].m_Doing, (int)Npc[nNpcIdx].IsCanInput(),
+			       (int)Npc[nNpcIdx].m_CurrentStamina, (int)Npc[nNpcIdx].m_CurrentStaminaMax,
+			       (int)Npc[nNpcIdx].m_CurrentWalkSpeed, (int)Npc[nNpcIdx].m_CurrentRunSpeed,
+			       bx / 32, by / 32);
 			st.Reset();
 			return -1;
 		}
@@ -2313,6 +2336,14 @@ static void pb_DriveBot(PB_Bot& b)
 	if (nSub < 0 || nSub >= MAX_SUBWORLD)    return;
 
 	const unsigned int nowAll = SubWorld[nSub].m_dwCurrentTime;
+
+	// THE LUC giu day binh: do_run TIEU the luc, va OnRun kiet suc thi tut xuong DI BO
+	// (KNpc.cpp:2203-2215) - cham va co the la mot phan ly do "khong ra khoi trap".
+	// Nhan vat mau nhan ban co the mang the luc 0 trong blob. Bot la dan gia lap, cu bom day.
+	if (Npc[nNpcIdx].m_CurrentStaminaMax <= 0)
+		Npc[nNpcIdx].m_CurrentStaminaMax = 100;
+	if (Npc[nNpcIdx].m_CurrentStamina < Npc[nNpcIdx].m_CurrentStaminaMax)
+		Npc[nNpcIdx].m_CurrentStamina = Npc[nNpcIdx].m_CurrentStaminaMax;
 
 	// Noi chuyen chay SONG SONG voi moi viec khac (di duong, danh nhau) - nguoi that cung
 	// vua danh vua noi. Dat truoc cac nhanh return de khong bi nhanh nao nuot mat.
