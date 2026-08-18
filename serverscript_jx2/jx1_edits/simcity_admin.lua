@@ -143,9 +143,9 @@ end
 function PB_Menu()
 	local nCo, nTran = PB_BotCount()
 	SayEx({format("<color=yellow>Bot nguoi choi THAT<color>\nDang song: <color=gold>%d<color> / toi da <color=gold>%d<color>\nBot nap tu roledb, co trang bi va chi so that.", nCo, nTran),
-	"Goi 1 bot (tai khoan 1)/#PB_Call(1,1)",
-	"Goi 5 bot (tai khoan 1-5)/#PB_Call(1,5)",
-	"Goi 20 bot (tai khoan 1-20)/#PB_Call(1,20)",
+	"Goi 1 bot/#PB_Call(1,1)",
+	"Goi 100 bot/#PB_Call(1,100)",
+	"Goi 1000 bot/#PB_Call(1,1000)",
 	"Cho bot VAO PHAI (theo ngu hanh)/PB_Join",
 	"BAT danh quai/#PB_Fight(1)",
 	"TAT danh quai/#PB_Fight(0)",
