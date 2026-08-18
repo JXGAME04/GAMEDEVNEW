@@ -47,6 +47,7 @@ typedef int (*PB_DbSender)(int nWhat, unsigned long ulIdentity, const char* szNa
 struct PB_WHISPER
 {
 	int			nSenderIdx;   // khe Player[] cua NGUOI GUI
+	unsigned long	nPackageID;   // packageID cua goi CMD - phai vong lai trong CHAT_FEEDBACK
 	const char*	szTarget;     // ten nhan vat duoc nhan (co the la bot, co the khong)
 	const char*	szMsg;        // noi dung
 	int			nMsgLen;

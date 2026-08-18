@@ -2736,6 +2736,7 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 					{
 						PB_WHISPER w;
 						w.nSenderIdx = nIndex;
+						w.nPackageID = pSc->packageID;
 						w.szTarget   = pSc->someone;
 						// Van ban nam NGAY SAU cau truc. Tinh bang (pSc + 1) chu KHONG cong tay
 						// bang so byte - hai cay co cau truc khac nhau, cong tay la lech.
