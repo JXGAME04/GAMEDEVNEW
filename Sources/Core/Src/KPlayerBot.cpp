@@ -924,8 +924,17 @@ int LuaPB_ClearBot(Lua_State* L)
 //
 // Bot da vao phai roi (PB_AI_IN_FACTION) thi BO QUA. Bot tung bo cuoc (PB_AI_GIVEUP) thi
 // CHO DI LAI - goi lenh lan nua chinh la cach thu lai bang tay.
+// CHE DO BEN VUNG (18/08 toi): 1000 bot sinh DAN ~30 giay + vao phai mat vai phut,
+// ma hai lenh menu von la ONE-SHOT quet danh sach TAI THOI DIEM BAM -> bot sinh/
+// vao phai SAU khi bam lenh dung i vinh vien ([BotNhom] tk 14:50 "0 tu do muon
+// nhom" mot phan vi vay). Gio lenh admin la CHE DO: co bat len thi bot den muon
+// cung tu ap trong pb_DriveBot.
+static int s_nPbCheDoNhapMon = 0;
+static int s_nPbCheDoDanh    = 0;
+
 int PB_JoinFaction()
 {
+	s_nPbCheDoNhapMon = 1;
 	int nRa = 0;
 	for (int i = 0; i < s_botCount; i++)
 	{
@@ -946,6 +955,7 @@ int PB_JoinFaction()
 // Tach rieng khoi vao phai (giong PB_JoinFaction) de chu game chu dong thoi diem test.
 int PB_SetFight(int bOn)
 {
+	s_nPbCheDoDanh = bOn ? 1 : 0;
 	int n = 0;
 	for (int i = 0; i < s_botCount; i++)
 	{
@@ -1085,8 +1095,15 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 			// Danh thuc y het khuon do_revive cua chinh engine (KNpc.cpp:889-893).
 			if (!Npc[nNpcIdx].IsCanInput())   // IsCanInput() = doc m_ProcessAI (KNpc.h:826)
 			{
-				pb_Log("[BotKet] npc=%d lenh bi nuot (doing=%d, procAI=0) -> danh thuc\n",
-				       nNpcIdx, (int)Npc[nNpcIdx].m_Doing);
+				{
+					static unsigned int s_uKetThucLog = 0;
+					if (now - s_uKetThucLog >= (unsigned int)(GAME_FPS / 2))
+					{
+						s_uKetThucLog = now;
+						pb_Log("[BotKet] npc=%d lenh bi nuot (doing=%d, procAI=0) -> danh thuc\n",
+						       nNpcIdx, (int)Npc[nNpcIdx].m_Doing);
+					}
+				}
 				// m_ProcessAI / DoStand deu PRIVATE - di cong cong khai: SetProcessAI
 				// (KNpc.h:676, inline public) bat AI day TRUOC, roi SendCommand(do_stand)
 				// de ProcCommand (luc nay nAI = 1) thi hanh DoStand that.
@@ -1194,12 +1211,22 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		{
 			// Thu 3 lan van khong nhuc nhich -> bo cuoc. In TRANG THAI SONG cua than bot
 			// de bot.log ke duoc vi sao (dang lam gi, AI thuc hay ngu, the luc con khong).
-			pb_Log("[BotKet] npc=%d bo cuoc sau 3 lan: doing=%d procAI=%d theluc=%d/%d"
-			       " toc(di/chay)=%d/%d o(%d,%d)\n",
-			       nNpcIdx, (int)Npc[nNpcIdx].m_Doing, (int)Npc[nNpcIdx].IsCanInput(),
-			       (int)Npc[nNpcIdx].m_CurrentStamina, (int)Npc[nNpcIdx].m_CurrentStaminaMax,
-			       (int)Npc[nNpcIdx].m_CurrentWalkSpeed, (int)Npc[nNpcIdx].m_CurrentRunSpeed,
-			       bx / 32, by / 32);
+			// 1000 bot chen nhau tung phun 6.880 dong/2 phut - moi dong mot fopen
+			// bot.log tren luong game. Gion 2 dong/giay TOAN CUC, hanh vi giu nguyen.
+			{
+				static unsigned int s_uKetBoLog = 0;
+				const unsigned int uNow4 = SubWorld[nSubIdx].m_dwCurrentTime;
+				if (uNow4 - s_uKetBoLog >= (unsigned int)(GAME_FPS / 2))
+				{
+					s_uKetBoLog = uNow4;
+					pb_Log("[BotKet] npc=%d bo cuoc sau 3 lan: doing=%d procAI=%d theluc=%d/%d"
+					       " toc(di/chay)=%d/%d o(%d,%d)\n",
+					       nNpcIdx, (int)Npc[nNpcIdx].m_Doing, (int)Npc[nNpcIdx].IsCanInput(),
+					       (int)Npc[nNpcIdx].m_CurrentStamina, (int)Npc[nNpcIdx].m_CurrentStaminaMax,
+					       (int)Npc[nNpcIdx].m_CurrentWalkSpeed, (int)Npc[nNpcIdx].m_CurrentRunSpeed,
+					       bx / 32, by / 32);
+				}
+			}
 			st.Reset();
 			return -1;
 		}
@@ -1586,6 +1613,7 @@ static const PB_BaiLuyen s_bai[] =
 	{ 90, 152, 1672, 3361, "Tuyet Bao Dong tang 8" },
 };
 #define PB_SO_BAI  (int)(sizeof(s_bai) / sizeof(s_bai[0]))
+#define PB_BAI_TRAN  120   // tran bot cho MOI bai luyen (gian dam dong 18/08)
 
 // Chon bai hop cap: lay MOC CAO NHAT ma bot du cap, roi boc ngau nhien trong moc do.
 // Tra chi so trong s_bai, hoac -1 neu chua du cap 10.
@@ -1598,15 +1626,34 @@ static int pb_ChonBai(int nLevel, int nLech)
 	if (nMoc < 0)
 		return -1;
 
+	// GOM CA BAC KE DUOI (18/08 toi: 1000 bot cung lua cap don het vao 1-2 map cua
+	// dung bac minh -> nghen than nhau + nung nong region keo ca quai day + client
+	// ve vai tram nguoi mot man hinh = "rat lag"). Lay them bai bac duoi (quai yeu
+	// hon chut van an exp) de so map gian ~gap doi, kem TRAN PB_BAI_TRAN bot/bai.
 	int aTm[PB_SO_BAI], n = 0;
 	for (int i = 0; i < PB_SO_BAI; i++)
-		if (s_bai[i].nCapToiThieu == nMoc)
+		if (s_bai[i].nCapToiThieu == nMoc
+		 || (nMoc > 10 && s_bai[i].nCapToiThieu >= nMoc - 10
+		     && s_bai[i].nCapToiThieu < nMoc))
 			aTm[n++] = i;
 	if (n <= 0)
 		return -1;
-	// tron them nLech (chi so bot) de 20 bot khong cung boc mot bai - cung meo
-	// KSimCity.cpp:1329 da dung, vi g_Random goi lien tiep trong mot khung hay ra giong nhau.
-	return aTm[((int)g_Random(n) + nLech * 7) % n];
+
+	// tron nLech (meo KSimCity.cpp:1329 - g_Random goi lien tiep hay ra giong nhau)
+	// roi NE BAI QUA TAI: dem so bot dang nham tung ung vien, lay bai dau tien con
+	// duoi tran; tat ca deu qua tai thi danh chiu lay bai boc dau.
+	const int nBat = ((int)g_Random(n) + nLech * 7) % n;
+	for (int v = 0; v < n; v++)
+	{
+		const int nUng = aTm[(nBat + v) % n];
+		int nDong = 0;
+		for (int q = 0; q < s_botCount; q++)
+			if (s_bots[q].nBaiIdx == nUng)
+				nDong++;
+		if (nDong < PB_BAI_TRAN)
+			return nUng;
+	}
+	return aTm[nBat];
 }
 
 #define PB_VISION_MPS     700          // tam tim quai
@@ -3489,6 +3536,21 @@ static void pb_DriveBot(PB_Bot& b)
 	// PM da hen gio thi gui - chay truoc cac nhanh return nhu chat
 	pb_XuLyPmCho(nIdx, b, nowAll);
 
+	// ap CHE DO cho bot den muon (sinh / vao phai xong SAU khi chu game bam lenh)
+	if (s_nPbCheDoNhapMon && b.nAi == PB_AI_IDLE && b.nFaction >= 0)
+	{
+		b.nAi      = PB_AI_GOTO_FACTION;
+		b.nRetry   = 0;
+		b.nNextTry = 0;
+		b.walk.Reset();
+	}
+	if (s_nPbCheDoDanh && b.nAi == PB_AI_IN_FACTION)
+	{
+		b.nAi        = PB_AI_FIGHT;
+		b.nTargetNpc = 0;
+		b.nAtkSkill  = 0;    // ep chon lai chieu theo vu khi hien tai
+	}
+
 	// ---------------------------------------------------------------- TU HOI SINH
 	// BOT CHET LA NAM MAI neu khong co doan nay. Duong tu hoi sinh cua nguoi that nam
 	// trong KPlayer::Active (KPlayer.cpp), nhung ham do MO DAU bang
@@ -3623,8 +3685,15 @@ static void pb_DriveBot(PB_Bot& b)
 					if (SubWorld[nSub].m_Region[nR].GetBarrierMin(nMX, nMY, nOX, nOY, TRUE)
 					 != Obstacle_NULL)
 						continue;
-					pb_Log("[BotLach] %s ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
-					       Player[nIdx].m_PlayerName, jx / 32, jy / 32, cx / 32, cy / 32);
+					{
+						static unsigned int s_uLachLog = 0;
+						if (nowAll - s_uLachLog >= (unsigned int)(GAME_FPS / 3))
+						{
+							s_uLachLog = nowAll;
+							pb_Log("[BotLach] %s ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
+							       Player[nIdx].m_PlayerName, jx / 32, jy / 32, cx / 32, cy / 32);
+						}
+					}
 					Npc[nNpcIdx].SetPos(cx, cy);
 					b.walk.Reset();
 					b.chase.Reset();
