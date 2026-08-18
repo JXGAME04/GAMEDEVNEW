@@ -978,14 +978,18 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 	bool bAdvanced = false;
 	while (st.idx < (int)st.path.size())
 	{
+		// Nham DIEM GAN NHAT trong block chu KHONG phai tam: block to toi 16x32 o nen
+		// tam co the nam NGUOC huong di -> bot "ra khoi trap roi chay lui vao trong",
+		// dung nhu chu game quan sat. Diem gan nhat cua block KE thi luon o phia truoc.
 		int wx = 0, wy = 0;
-		if (!SubWorld[nSubIdx].BlockCenterMps(st.path[st.idx], wx, wy))
+		if (!SubWorld[nSubIdx].BlockNearestMps(st.path[st.idx], bx, by, wx, wy))
 		{
 			st.idx++; bAdvanced = true; continue;
 		}
 		__int64 dx = (__int64)bx - wx;
 		__int64 dy = (__int64)by - wy;
-		if (dx * dx + dy * dy <= (__int64)64 * 64)
+		// da dam vao block (diem gan nhat ngay canh minh) -> qua waypoint ke
+		if (dx * dx + dy * dy <= (__int64)48 * 48)
 		{
 			st.idx++; bAdvanced = true; continue;
 		}
@@ -1027,7 +1031,7 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 	if (st.idx < (int)st.path.size())
 	{
 		int wx = 0, wy = 0;
-		if (SubWorld[nSubIdx].BlockCenterMps(st.path[st.idx], wx, wy) && wx > 0 && wy > 0)
+		if (SubWorld[nSubIdx].BlockNearestMps(st.path[st.idx], bx, by, wx, wy) && wx > 0 && wy > 0)
 		{
 			tx = wx; ty = wy;
 		}

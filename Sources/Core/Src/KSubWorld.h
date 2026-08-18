@@ -244,6 +244,10 @@ public:
 						  std::vector<int>& vOutPath, bool bCheckNpc);
 	// Doi id block -> toa do MPS tam block (de phat lenh di).
 	bool		BlockCenterMps(int nBlockId, int& nMpsX, int& nMpsY);
+	// Diem GAN NHAT ben trong hinh chu nhat cua block (thut vao nua o) so voi (nFromX,Y).
+	// Dung lam waypoint thay cho TAM block: block to toi 16x32 o nen tam co the nam
+	// NGUOC HUONG di - nham tam la bot chay qua lai nhu con lac.
+	bool		BlockNearestMps(int nBlockId, int nFromX, int nFromY, int& nMpsX, int& nMpsY);
 private:
 #endif
 

@@ -3067,6 +3067,21 @@ bool KSubWorld::BlockCenterMps(int nBlockId, int& nMpsX, int& nMpsY)
 	return true;
 }
 
+bool KSubWorld::BlockNearestMps(int nBlockId, int nFromX, int nFromY, int& nMpsX, int& nMpsY)
+{
+	if (!m_GridNode || nBlockId < 0 || nBlockId >= m_nGridTotal)
+		return false;
+	const VGridNode& nd = m_GridNode[nBlockId];
+	// bien hinh chu nhat cua block, thut vao nua o de khong bam sat mep vat can
+	const int x0 = (int)nd.x * 32 + 16;
+	const int y0 = (int)nd.y * 32 + 16;
+	const int x1 = ((int)nd.x + (int)nd.w) * 32 - 16;
+	const int y1 = ((int)nd.y + (int)nd.h) * 32 - 16;
+	nMpsX = (nFromX < x0) ? x0 : ((nFromX > x1) ? x1 : nFromX);
+	nMpsY = (nFromY < y0) ? y0 : ((nFromY > y1) ? y1 : nFromY);
+	return true;
+}
+
 // Nap luoi tim duong cho ban do nay. Goi mot lan cho moi ban do CAN bot di lai.
 //
 // BO NHO: client dung mang tinh VGridNode[MAX_CELL] (2.400.000 x 20B = 48 MB) vi no chi
