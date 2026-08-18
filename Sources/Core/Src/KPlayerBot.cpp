@@ -177,6 +177,9 @@ struct PB_Bot
 	unsigned int nLagTick;                    // moc do "danh mai khong sut mau"
 	int          nLagLife;                    // mau muc tieu tai moc do
 	unsigned int nCastTick;                   // moc phat lenh danh lan cuoi
+	PB_WalkState chase;                       // lo trinh A* DUOI DANH (rieng, khong dung chung)
+	int          aCam[4];                     // so den: muc tieu danh mai khong sut mau
+	unsigned int aCamTick[4];                 // moc cam tung con (het han thi tha)
 	// ---- luyen cap ----
 	int          nBaiIdx;                     // chi so bai luyen dang nham (-1 = chua chon)
 	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
@@ -601,6 +604,9 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChetTuTick = 0;
 		b.nAtkSkill = 0;  b.nAtkSkillLv = 0;  b.nAtkPickLevel = 0;
 		b.nTargetNpc = 0; b.nLagTick = 0;     b.nLagLife = 0;  b.nCastTick = 0;
+		b.chase.Reset();
+		memset(b.aCam, 0, sizeof(b.aCam));
+		memset(b.aCamTick, 0, sizeof(b.aCamTick));
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -1345,13 +1351,38 @@ static int pb_ChonBai(int nLevel, int nLech)
 #define PB_CAST_GAP       4            // so khung toi thieu giua hai lenh danh
 #define PB_LAG_SECONDS    10           // bo muc tieu neu chung nay giay khong sut 10% mau
 
+// ---------------------------------------------------------------------------
+// SO DEN MUC TIEU. Bai hoc tu log that (bot.log 18/08 09:14): bot bo muc tieu 5222 vi
+// "10 giay khong sut duoc mau", roi pb_FindTarget lai chon DUNG con 5222 vi no van la
+// con gan nhat - lap vo han, bot dung im ca phut. Bo muc tieu ma khong cam thi vo nghia.
+// Cam 45 giay roi tha (quai co the da doi cho / bot da doi vi tri).
+// ---------------------------------------------------------------------------
+#define PB_CAM_GIAY   45
+
+static void pb_CamMucTieu(PB_Bot& b, int t, unsigned int now)
+{
+	int k = 0;
+	for (int i = 1; i < 4; i++)
+		if (b.aCamTick[i] < b.aCamTick[k]) k = i;   // de len o cu nhat
+	b.aCam[k]     = t;
+	b.aCamTick[k] = now;
+}
+
+static bool pb_BiCam(const PB_Bot& b, int t, unsigned int now)
+{
+	for (int i = 0; i < 4; i++)
+		if (b.aCam[i] == t && now - b.aCamTick[i] < (unsigned int)(GAME_FPS * PB_CAM_GIAY))
+			return true;
+	return false;
+}
+
 // Tim quai GAN NHAT quanh bot.
 //
 // CO Y KHONG chep NpcSet.AutoGetNpcNear cua ban client (KNpcSet.cpp:1126): ham do quet TOAN BO
 // m_UseIdx - o client thi khong sao vi client chi giu vai tram NPC quanh minh, nhung o server
 // la duyet CA THE GIOI moi khung cho MOI bot. Thay bang quet theo REGION: region cua bot +
 // 8 region ke, dung m_NpcList co san (KRegion.h:35).
-static int pb_FindTarget(int nNpcIdx, int nVision)
+static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int now)
 {
 	const int nSub = Npc[nNpcIdx].m_SubWorldIndex;
 	const int nReg = Npc[nNpcIdx].m_RegionIndex;
@@ -1380,6 +1411,7 @@ static int pb_FindTarget(int nNpcIdx, int nVision)
 			// mot dot rieng ban ky ve PK, khong de bot tu nhien danh nguoi that.
 			if (Npc[i].m_Kind == kind_player)                continue;
 			if (!(NpcSet.GetRelation(nNpcIdx, i) & relation_enemy)) continue;
+			if (pb_BiCam(b, i, now))                         continue;
 
 			int ex = 0, ey = 0;
 			Npc[i].GetMpsPos(&ex, &ey);
@@ -1784,20 +1816,55 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		}
 		else if (now - b.nLagTick >= (unsigned int)(GAME_FPS * PB_LAG_SECONDS))
 		{
-			pb_Log("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau\n",
-				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS);
+			pb_Log("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau -> cam %d giay\n",
+				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS, PB_CAM_GIAY);
+			pb_CamMucTieu(b, t, now);
 			t = 0;
 		}
 	}
 
 	if (!t)
 	{
-		t = pb_FindTarget(nNpcIdx, PB_VISION_MPS);
+		t = pb_FindTarget(nNpcIdx, PB_VISION_MPS, b, now);
 		b.nTargetNpc = t;
+		b.chase.Reset();
 		b.nLagTick   = now;
 		b.nLagLife   = t ? Npc[t].m_CurrentLife : 0;
 		if (!t)
 			return 0;
+	}
+
+	// ---- ap sat bang A* khi ngoai tam ----
+	//
+	// DAY LA CHO DA LAM BOT DUNG YEN (bot.log 18/08 09:13-09:15): ban truoc pho thac viec
+	// ap sat cho nhanh tu-chay cua KNpc::DoSkill (KNpc.cpp:2338-2349). Nhanh do chay
+	// DUONG THANG, ma moi lenh chi duoc ne DUNG MOT vat can (KNpcFindPath.cpp:106-111) -
+	// vat can thu hai la DoStand, bot dung im nhin muc tieu ngoai tam mai mai.
+	// Dot khao sat da canh bao dung cho nay va toi da bo qua - nay sua: tu dan bang A*
+	// (PB_WalkTo, lo trinh chase rieng), chi phat do_skill khi DA VAO TAM.
+	// Tam lay tu chinh chieu dang dung; server chan o AR + 20 (KSkills.cpp:330) nen vao
+	// den AR - 16 la chac an.
+	{
+		KSkill* pSk = (KSkill*)g_SkillManager.GetSkill(b.nAtkSkill, b.nAtkSkillLv);
+		const int nAR = pSk ? pSk->GetAttackRadius() : 128;
+		int tx2 = 0, ty2 = 0;
+		Npc[t].GetMpsPos(&tx2, &ty2);
+		int bx2 = 0, by2 = 0;
+		Npc[nNpcIdx].GetMpsPos(&bx2, &by2);
+		if (g_GetDistance(bx2, by2, tx2, ty2) > nAR + 16)
+		{
+			const int nWalk = PB_WalkTo(nNpcIdx, tx2, ty2, nSub, b.chase,
+								(nAR > 48) ? (nAR - 16) : 32);
+			if (nWalk < 0)
+			{
+				// khong co duong toi con nay -> cam mot luc, nhip sau chon con khac
+				pb_CamMucTieu(b, t, now);
+				b.nTargetNpc = 0;
+				b.chase.Reset();
+			}
+			return 1;               // dang duoi (hoac vua cam) - chua ra don
+		}
+		b.chase.Reset();            // da vao tam
 	}
 
 	// ---- ra don ----
@@ -1923,6 +1990,41 @@ static void pb_ToLower(const char* szIn, int nLen, char* szOut, int nMax)
 	szOut[j] = 0;
 }
 
+// Gui loi dap vao DUNG CUA SO CHAT MAT cua nguoi gui (dung kenh, dung mau).
+//
+// Ban truoc dung KPlayerChat::SendSystemInfo - ham do dong goi CHAT_CHANNELCHAT_SYNC
+// (KPlayerChat.cpp:1796) nen client ve vao kenh HE THONG, sai mau chat mat (chu game
+// bat duoc). Duong ve dung cua chat mat la chat_someonechat: client nhan
+// CHAT_SOMEONECHAT_SYNC + text -> MSNMessageArrival (KProtocolProcess.cpp:4121-4127),
+// hien dung cua so PM voi mau cua du an.
+// Khuon dong goi chep y het SendSystemInfo, chi thay struct; kich thuoc that cua goi
+// tinh bang sizeof nen khong lech du hai cay khac cau truc.
+static void pb_GuiChatMat(int nSenderIdx, int nBotIdx, const char* szMsg, int nLen)
+{
+	if (nLen <= 0 || nLen > 200)
+		return;
+	char szGoi[512];
+	const size_t chatsize = sizeof(CHAT_SOMEONECHAT_SYNC) + nLen;
+	const size_t pckgsize = sizeof(tagExtendProtoHeader) + chatsize;
+	if (pckgsize > sizeof(szGoi))
+		return;
+
+	tagExtendProtoHeader* pExHeader = (tagExtendProtoHeader*)szGoi;
+	pExHeader->ProtocolType = s2c_extendchat;
+	pExHeader->wLength      = (WORD)(pckgsize - 1);
+
+	CHAT_SOMEONECHAT_SYNC* pSync = (CHAT_SOMEONECHAT_SYNC*)(pExHeader + 1);
+	pSync->ProtocolType = chat_someonechat;
+	pSync->wSize        = (WORD)(chatsize - 1);
+	pSync->packageID    = (DWORD)-1;
+	memset(pSync->someone, 0, sizeof(pSync->someone));
+	strncpy(pSync->someone, Player[nBotIdx].m_PlayerName, _NAME_LEN - 1);
+	pSync->sentlen      = (BYTE)nLen;
+	memcpy(pSync + 1, szMsg, nLen);
+
+	g_pServer->PackDataToClient(Player[nSenderIdx].m_nNetConnectIdx, pExHeader, pckgsize);
+}
+
 int PB_WhisperReply(const PB_WHISPER* p)
 {
 	if (!p || !p->szTarget || !p->szMsg || p->nMsgLen <= 0)
@@ -1947,7 +2049,17 @@ int PB_WhisperReply(const PB_WHISPER* p)
 	szTraLoi[0] = 0;
 
 	// ---- bat y dinh ----
-	if (strstr(szLow, "chao") || strstr(szLow, "hi ") || strstr(szLow, "hello"))
+	// Thu tu co chu y: "bot" xet TRUOC (nguoi choi hay thu "ban la bot ha"), roi cac cau
+	// hoi cu the, cuoi cung moi toi chao hoi chung chung.
+	if (strstr(szLow, "bot ") || strstr(szLow, " bot") || strstr(szLow, "auto"))
+		sprintf(szTraLoi, "Bot gi dau, minh choi that ma :)");
+	else if (strstr(szLow, "solo") || strstr(szLow, "pk "))
+		sprintf(szTraLoi, "Minh khong solo dau, dang ban luyen cap.");
+	else if (strstr(szLow, "co do") || strstr(szLow, "trang bi") || strstr(szLow, "vu khi")
+	      || strstr(szLow, "xin ") || strstr(szLow, "cho minh") || strstr(szLow, "tang "))
+		sprintf(szTraLoi, "Do minh tu kiem duoc thoi, khong cho duoc dau.");
+	else if (strstr(szLow, "chao") || strstr(szLow, "hi ") || strstr(szLow, "hello")
+	      || strstr(szLow, "alo"))
 		sprintf(szTraLoi, "Chao ban, minh dang ban chut viec.");
 	else if (strstr(szLow, "dang o dau") || strstr(szLow, "o dau") || strstr(szLow, "cho nao"))
 	{
@@ -1976,27 +2088,41 @@ int PB_WhisperReply(const PB_WHISPER* p)
 	else if (strstr(szLow, "ban gi") || strstr(szLow, "mua") || strstr(szLow, "gia"))
 		sprintf(szTraLoi, "Minh khong buon ban gi dau.");
 
-	// ---- khong khop tu khoa -> lay mot cau trong kho, KHONG BAO GIO im lang ----
+	// ---- khong khop tu khoa -> cau chung CO NGHIA, khong bao gio im lang ----
+	// Ban truoc boc ngau nhien tu kho chat.txt (kho NOI NHAM cong khai) nen ra nhung cau
+	// tren troi kieu "Toi khong the hat live!" giua cuoc noi chuyen rieng - chu game bat
+	// duoc ngay. PM la doi thoai 1-1, phai dung bo cau soan rieng.
 	if (!szTraLoi[0])
 	{
-		if (s_pbChatCount > 0 && pB)
+		static const char* s_TraLoiChung[] = {
+			"Minh dang ban luyen cap, noi chuyen sau nhe.",
+			"U, minh nghe day.",
+			"Ban can gi khong?",
+			"Minh khong hieu y ban lam.",
+			"Chut nua ranh minh noi tiep nhe.",
+			"He he, vay ha.",
+			"Ok ban.",
+			"Minh dang danh quai, hoi kho tra loi dai.",
+		};
+		const int nSo = (int)(sizeof(s_TraLoiChung) / sizeof(s_TraLoiChung[0]));
+		static int s_nXoay = 0;
+		int nPick;
+		if (pB)
 		{
-			pB->nChatCuoi = (pB->nChatCuoi + 13) % s_pbChatCount;
-			strncpy(szTraLoi, s_pbChat[pB->nChatCuoi], sizeof(szTraLoi) - 1);
-			szTraLoi[sizeof(szTraLoi) - 1] = 0;
+			pB->nChatCuoi = (pB->nChatCuoi + 1) % nSo;
+			nPick = pB->nChatCuoi;
 		}
 		else
-			sprintf(szTraLoi, "U, minh nghe day.");
+			nPick = (s_nXoay++) % nSo;
+		strncpy(szTraLoi, s_TraLoiChung[nPick], sizeof(szTraLoi) - 1);
+		szTraLoi[sizeof(szTraLoi) - 1] = 0;
 	}
 
 	const int nOut = (int)strlen(szTraLoi);
 	if (nOut <= 0)
 		return 0;
 
-	// nChannedID = -1: kenh rieng (mac dinh cua ham). Ten nguoi gui = ten BOT de nguoi
-	// choi thay dung la bot dang tra loi minh.
-	KPlayerChat::SendSystemInfo(0, p->nSenderIdx, Player[nBot].m_PlayerName,
-							  szTraLoi, nOut, -1);
+	pb_GuiChatMat(p->nSenderIdx, nBot, szTraLoi, nOut);
 
 	pb_Log("[BotPM] %s <- %s: \"%.60s\" | dap: \"%.60s\"\n",
 		   Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName,
