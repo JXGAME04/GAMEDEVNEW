@@ -795,12 +795,13 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;
 		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
 		b.nPmCamToi = 0;  b.nPmLapHash = 0;
-		b.nWantParty = ((int)g_Random(100) < PB_NHOM_RATE) ? 1 : 0;
+		const int nGieoNhom = (int)g_Random(100);
+		b.nWantParty = (nGieoNhom < PB_NHOM_RATE) ? 1 : 0;
 		// [chan doan 18/08 - GO khi xong] tk bao "muon nhom 0" du 988 con dang danh:
 		// in 30 lan boc dau de doi chieu gia tri thuc te cua g_Random tai day.
 		if (s_botCount < 30)
-			pb_Log("[BotNhom] roll #%d %s: muon nhom = %d\n",
-			       s_botCount, Player[nIdx].m_PlayerName, b.nWantParty);
+			pb_Log("[BotNhom] roll #%d %s: gieo=%d nguong=%d -> muon nhom = %d\n",
+			       s_botCount, Player[nIdx].m_PlayerName, nGieoNhom, PB_NHOM_RATE, b.nWantParty);
 		b.follow.Reset();
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
