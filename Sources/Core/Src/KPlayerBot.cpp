@@ -223,6 +223,11 @@ struct PB_Bot
 	unsigned int nPmDenHan;                   // toi han nay moi gui (0 = khong cho)
 	unsigned int nPmCamToi;                   // som nhat duoc nhan cau hoi ke tiep
 	unsigned int nPmLapHash;                  // hash cau tra loi truoc (chong lap y het)
+	// ---- to doi ----
+	int          nWantParty;                  // chot MOT LAN khi sinh: bot nay co muon vao nhom
+	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
+	                                          // cung co luc trung, cuoi cung 100% deu vao nhom
+	PB_WalkState follow;                      // duong A* bam theo doi truong
 	// ---- vong sang / buff / bua ----
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
@@ -339,6 +344,96 @@ int PB_IsBot(int nPlayerIdx)
 		if (s_bots[i].nPlayerIdx == nPlayerIdx)
 			return 1;
 	return 0;
+}
+
+// ===========================================================================
+// TO DOI (chu game 18/08): "bot tu mo to doi - thanh vien tu theo sau doi truong,
+// du cap nhay map thi tu thoat party, giai tan nhom doi voi doi truong, ti le lap
+// nhom phai gioi han". Khuon lay tu ban tham khao DT_FormBotTeam +
+// ManageGrindParties (KBotManager.cpp:1754/:1830) - khac biet JX1:
+//   SetCreatTeamFlag -> SetCanTeamFlag; khong co GetMapStyle (thay bang "cung
+//   subworld"); ban tham khao KHONG co ti le (ghep 100%) nen ti le la them moi.
+// Vao nhom truc tiep qua GetInviteReply (KPlayerTeam.cpp:414) = bam "dong y" ho,
+// khong can goi tin; goi tin dong bo ben trong tu toi nguoi that quanh do.
+// TUYET DOI khong dung KPlayer::TeamDismiss - vong for cua no (KPlayer.cpp:1836)
+// thieu guard slot -1, cham Player[-1].
+#define PB_NHOM_RATE     40                    // % bot muon vao nhom
+#define PB_NHOM_MAX_MEM  3                     // toi da 3 thanh vien (nhom 4 nguoi)
+#define PB_NHOM_QUAN_MS  5000                  // nhip quan ly nhom
+#define PB_NHOM_XAO_MS   600000                // 10 phut xao lai nhom mot lan
+#define PB_BAM_GAN       150                   // ban kinh bam theo doi truong (MPS)
+#define PB_BAM_NHA       200                   // xa hon nay la bo danh de bam theo
+
+static bool pb_TrongNhom(int nIdx)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+		return false;
+	const KPlayerTeam& t = Player[nIdx].m_cTeam;
+	return (t.m_nFlag != 0 && t.m_nID >= 0 && t.m_nID < MAX_TEAM);
+}
+
+static int pb_DoiTruongCua(int nIdx)
+{
+	if (!pb_TrongNhom(nIdx))
+		return 0;
+	const int c = g_Team[Player[nIdx].m_cTeam.m_nID].m_nCaptain;
+	return (c > 0 && c < MAX_PLAYER) ? c : 0;
+}
+
+static void pb_RoiNhom(int nIdx, const char* szLyDo)
+{
+	if (!pb_TrongNhom(nIdx))
+		return;
+	const int bTruong = (pb_DoiTruongCua(nIdx) == nIdx) ? 1 : 0;
+	PLAYER_APPLY_LEAVE_TEAM sLeave;
+	memset(&sLeave, 0, sizeof(sLeave));
+	sLeave.ProtocolType = c2s_teamapplyleave;
+	// LeaveTeam -> KTeam::DeleteMember: doi truong = giai tan CA nhom (nhanh nay
+	// CO guard slot -1, KPlayerTeam.cpp:745), thanh vien = rut mot minh.
+	Player[nIdx].LeaveTeam((BYTE*)&sLeave);
+	pb_Log("[BotNhom] %s %s (%s)\n", Player[nIdx].m_PlayerName,
+	       bTruong ? "GIAI TAN nhom" : "roi nhom", szLyDo);
+}
+
+// Ghep bIdx vao nhom cua a (a tu lap nhom neu chua co). Tra true khi vao duoc.
+static bool pb_GhepNhom(int a, int bIdx)
+{
+	if (a <= 0 || a >= MAX_PLAYER || bIdx <= 0 || bIdx >= MAX_PLAYER || a == bIdx)
+		return false;
+	// CHOT AN TOAN: ca hai phai la BOT khong client - khong bao gio dong vao nhom
+	// cua nguoi that (khuon DT_FormBotTeam, KBotManager.cpp:1758-1760).
+	if (!PB_IsBot(a) || !PB_IsBot(bIdx))
+		return false;
+	if (Player[a].m_nNetConnectIdx != -1 || Player[bIdx].m_nNetConnectIdx != -1)
+		return false;
+
+	KPlayerTeam& ta = Player[a].m_cTeam;
+	if (ta.m_nFlag == 0)
+	{
+		ta.SetCanTeamFlag(a, TRUE);
+		PLAYER_APPLY_CREATE_TEAM cmd;
+		memset(&cmd, 0, sizeof(cmd));
+		if (!ta.CreateTeam(a, &cmd))
+			return false;
+	}
+	if (ta.m_nFlag == 0 || ta.m_nID < 0 || ta.m_nID >= MAX_TEAM
+	 || g_Team[ta.m_nID].m_nCaptain != a)
+		return false;
+	if (g_Team[ta.m_nID].m_nMemNum >= PB_NHOM_MAX_MEM)
+		return false;
+
+	// "bam dong y" ho thanh vien: ghi vao danh sach moi roi GetInviteReply(.., 1)
+	Player[bIdx].m_cTeam.SetCanTeamFlag(bIdx, TRUE);
+	ta.m_nInviteList[ta.m_nListPos] = bIdx;
+	ta.m_nListPos = (ta.m_nListPos + 1) % MAX_TEAM_MEMBER;
+	ta.GetInviteReply(a, bIdx, 1);
+	const bool bOk = (Player[bIdx].m_cTeam.m_nFlag != 0
+	               && Player[bIdx].m_cTeam.m_nID == ta.m_nID);
+	if (bOk)
+		pb_Log("[BotNhom] %s vao nhom cua %s (%d/%d thanh vien)\n",
+		       Player[bIdx].m_PlayerName, Player[a].m_PlayerName,
+		       g_Team[ta.m_nID].m_nMemNum, PB_NHOM_MAX_MEM);
+	return bOk;
 }
 
 int PB_Spawn(const char* szAccountName)
@@ -560,6 +655,10 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	// xem khoi chu thich dai tai KPlayerBot.h.
 	Player[nIdx].m_nNetConnectIdx = -1;
 	Player[nIdx].m_nLixian        = PB_LIXIAN_BOT;
+	// Tran nhom = level_lead_exp.txt theo m_dwLeadLevel; blob mau co the mang 0
+	// -> GetMemNumFromLevel tra 1 (KPlayerSet.cpp:885) = nhom sap con 1 nguoi.
+	if (Player[nIdx].m_dwLeadLevel < 1)
+		Player[nIdx].m_dwLeadLevel = 1;
 
 	// LaunchPlayer tra 0 = THANH CONG o cay nay (KPlayer.cpp:6797 return 0).
 	if (Player[nIdx].LaunchPlayer() != 0)
@@ -675,6 +774,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;
 		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
 		b.nPmCamToi = 0;  b.nPmLapHash = 0;
+		b.nWantParty = ((int)g_Random(100) < PB_NHOM_RATE) ? 1 : 0;
+		b.follow.Reset();
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -721,6 +822,10 @@ static int pb_KillBot(PB_Bot& b)
 	// cap lai cho nguoi khac.
 	if (Player[nIdx].m_dwID == 0 || Player[nIdx].m_dwID != b.dwID)
 		return 0;
+
+	// Roi/giai tan nhom TRUOC khi go - khong de lai khe g_Team mo coi tro vao
+	// player index da tai su dung.
+	pb_RoiNhom(nIdx, "go bot");
 
 	Player[nIdx].m_nLixian   = 0;      // mo khoa 1
 	Player[nIdx].m_bForeQuit = TRUE;   // mo khoa 2
@@ -1762,6 +1867,12 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	if (now < b.nDoiMapTick)
 		return 0;
 	b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 10);   // lan thu ke tiep (neu that bai)
+
+	// DU CAP NHAY MAP -> tu thoat party (thanh vien) / giai tan nhom (doi truong)
+	// - dung nguyen loi chu game dan 18/08. Lam TRUOC ChangeWorld de dong doi
+	// khong bam theo sang map moi.
+	if (pb_TrongNhom(nIdx))
+		pb_RoiNhom(nIdx, "du cap doi map luyen");
 
 	b.nTargetNpc = 0;
 	b.walk.Reset();
@@ -3248,6 +3359,33 @@ static void pb_DriveBot(PB_Bot& b)
 				}
 			}
 		}
+		// ---- BAM THEO DOI TRUONG ----
+		// Thanh vien cach doi truong qua PB_BAM_NHA (200 MPS, cung map) thi BO
+		// DANH de chay ve gan (khuon KBotCombat.cpp:54-77 + FollowPlayer cua ban
+		// tham khao). Trong 200 thi danh binh thuong - ca dan tu tum quanh doi
+		// truong, nam trong ban kinh chia exp 768 (GameDataDef.h:58).
+		if (pb_TrongNhom(nIdx) && pb_DoiTruongCua(nIdx) != nIdx)
+		{
+			const int nCap    = pb_DoiTruongCua(nIdx);
+			const int nCapNpc = (nCap > 0) ? Player[nCap].m_nIndex : 0;
+			if (nCap > 0 && PB_IsBot(nCap) && nCapNpc > 0 && nCapNpc < MAX_NPC
+			 && Npc[nCapNpc].m_SubWorldIndex == nSub
+			 && Npc[nCapNpc].m_Doing != do_death)
+			{
+				if (NpcSet.GetDistance(nNpcIdx, nCapNpc) > PB_BAM_NHA)
+				{
+					b.nTargetNpc = 0;
+					b.chase.Reset();
+					b.nRoamX = 0;  b.nRoamY = 0;
+					int cx = 0, cy = 0;
+					Npc[nCapNpc].GetMpsPos(&cx, &cy);
+					// di bang A* nhu moi di chuyen khac - khong bao gio ChangeWorld
+					// duoi theo (luat cua ban tham khao, ServerAutoFight.cpp:1188)
+					PB_WalkTo(nNpcIdx, cx, cy, nSub, b.follow, PB_BAM_GAN);
+					return;
+				}
+			}
+		}
 		// Vong sang / bua / buff xet TRUOC khi danh: bot phai vao tran voi day du
 		// trang thai, giong nguoi choi bam buff truoc roi moi lao vao.
 		pb_ApplyAuraBuff(nIdx, nNpcIdx, b, nowAll);
@@ -3421,6 +3559,133 @@ static void pb_DriveBot(PB_Bot& b)
 }
 
 // ---------------------------------------------------------------- nhip
+// Nhip quan ly to doi ~5 giay (khuon ManageGrindParties, gian luoc):
+//   - thanh vien mo coi (doi truong mat/khac map) -> roi nhom
+//   - doi truong trong nhom -> giai tan
+//   - moi 10 phut XAO lai (chi giai tan; luot 5s sau tu ghep lai to hop khac)
+//   - ghep bot tu do CUNG MAP co nWantParty, tran tong PB_NHOM_RATE% ca dan
+static void pb_QuanLyNhom()
+{
+	static DWORD s_dwMocQuan = 0, s_dwMocXao = 0;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwMocQuan && dwNow - s_dwMocQuan < PB_NHOM_QUAN_MS)
+		return;
+	s_dwMocQuan = dwNow;
+	if (s_dwMocXao == 0)
+		s_dwMocXao = dwNow;
+	const bool bXao = (dwNow - s_dwMocXao >= PB_NHOM_XAO_MS);
+
+	int aTuDo[PB_MAX_BOTS];   int nTuDo   = 0;
+	int aTruong[PB_MAX_BOTS]; int nTruong = 0;
+	int nDangNhom = 0;
+
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		const int p = b.nPlayerIdx;
+		if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != b.dwID)
+			continue;
+		const int n = Player[p].m_nIndex;
+		if (n <= 0 || n >= MAX_NPC)
+			continue;
+		const bool bChet = (Npc[n].m_Doing == do_death || Npc[n].m_Doing == do_revive);
+
+		if (pb_TrongNhom(p))
+		{
+			nDangNhom++;
+			if (bXao)
+			{
+				// luot xao CHI giai tan/roi - luot 5s ke tiep tu ghep to hop moi
+				pb_RoiNhom(p, "xao lai nhom dinh ky");
+				continue;
+			}
+			const int c = pb_DoiTruongCua(p);
+			if (c == p)
+			{
+				if (g_Team[Player[p].m_cTeam.m_nID].m_nMemNum <= 0)
+				{
+					pb_RoiNhom(p, "khong con thanh vien");
+					continue;
+				}
+				if (!bChet && b.nAi == PB_AI_FIGHT
+				 && g_Team[Player[p].m_cTeam.m_nID].m_nMemNum < PB_NHOM_MAX_MEM
+				 && nTruong < PB_MAX_BOTS)
+					aTruong[nTruong++] = i;
+			}
+			else
+			{
+				const int nCapNpc = (c > 0) ? Player[c].m_nIndex : 0;
+				if (c <= 0 || !PB_IsBot(c) || nCapNpc <= 0 || nCapNpc >= MAX_NPC)
+					pb_RoiNhom(p, "doi truong khong con");
+				else if (Npc[nCapNpc].m_SubWorldIndex != Npc[n].m_SubWorldIndex)
+					pb_RoiNhom(p, "doi truong da sang map khac");
+			}
+			continue;
+		}
+
+		if (bChet || !b.nWantParty || b.nAi != PB_AI_FIGHT)
+			continue;
+		if (nTuDo < PB_MAX_BOTS)
+			aTuDo[nTuDo++] = i;
+	}
+
+	if (bXao)
+	{
+		s_dwMocXao = dwNow;
+		return;
+	}
+
+	// tran tong: khong qua PB_NHOM_RATE% so bot dang song nam trong nhom
+	if (nDangNhom >= s_botCount * PB_NHOM_RATE / 100)
+		return;
+
+	// dap them vao nhom con cho (cung map) truoc
+	for (int q = 0; q < nTruong && nTuDo > 0; q++)
+	{
+		const int pc = s_bots[aTruong[q]].nPlayerIdx;
+		const int nc = Player[pc].m_nIndex;
+		for (int f = 0; f < nTuDo; )
+		{
+			if (!pb_TrongNhom(pc)
+			 || g_Team[Player[pc].m_cTeam.m_nID].m_nMemNum >= PB_NHOM_MAX_MEM)
+				break;
+			const int pf = s_bots[aTuDo[f]].nPlayerIdx;
+			const int nf = Player[pf].m_nIndex;
+			if (Npc[nf].m_SubWorldIndex == Npc[nc].m_SubWorldIndex && pb_GhepNhom(pc, pf))
+				aTuDo[f] = aTuDo[--nTuDo];
+			else
+				f++;
+		}
+	}
+
+	// ghep nhom MOI: chi giu nhom khi co it nhat mot ban cung map vao duoc
+	for (int f = 0; f + 1 < nTuDo; f++)
+	{
+		const int pA = s_bots[aTuDo[f]].nPlayerIdx;
+		const int nA = Player[pA].m_nIndex;
+		if (pb_TrongNhom(pA))
+			continue;
+		int nGhep = 0;
+		for (int g2 = f + 1; g2 < nTuDo && nGhep < PB_NHOM_MAX_MEM; )
+		{
+			const int pB = s_bots[aTuDo[g2]].nPlayerIdx;
+			const int nB = Player[pB].m_nIndex;
+			if (Npc[nB].m_SubWorldIndex == Npc[nA].m_SubWorldIndex && pb_GhepNhom(pA, pB))
+			{
+				aTuDo[g2] = aTuDo[--nTuDo];
+				nGhep++;
+			}
+			else
+				g2++;
+		}
+		// khong ai vao duoc ma lo tao nhom rong (luat "khong doi truong don doc"
+		// cua ban tham khao, KBotManager.cpp:1957-1963) -> giai tan ngay
+		if (nGhep == 0 && pb_TrongNhom(pA) && pb_DoiTruongCua(pA) == pA
+		 && g_Team[Player[pA].m_cTeam.m_nID].m_nMemNum <= 0)
+			pb_RoiNhom(pA, "khong tim duoc ban cung map");
+	}
+}
+
 void PB_Breathe()
 {
 	// het han cho
@@ -3462,6 +3727,7 @@ void PB_Breathe()
 
 		for (int i = 0; i < s_botCount; i++)
 			pb_DriveBot(s_bots[i]);
+		pb_QuanLyNhom();
 
 		QueryPerformanceCounter(&liT1);
 		s_nPerfTong += liT1.QuadPart - liT0.QuadPart;
