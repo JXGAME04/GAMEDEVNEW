@@ -1623,6 +1623,12 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// (RepickBotCombatSkills, KBotManager.cpp:1262-1270).
 		int nRq = p->GetSkillReqLevel();
 		if (nRq > 80) nRq = 80;
+		// CHOT toi bo sot lan truoc, ap NGUYEN VAN ban tham khao (KBotManager.cpp:1243):
+		// "bo neu nBotLevel < rqTier" - khong co no thi bac rqTier uu tien chieu rq CAO
+		// NHAT ke ca chieu bot CHUA DU CAP dung -> cast roi im lang, KHONG PHAI NAO danh
+		// duoc ca (chu game bat 18/08 ngay sau ban rqTier).
+		if (Npc[nNpcIdx].m_Level < nRq)
+		{ PB_DIAG(" %d:CAP=%d", id, nRq); continue; }
 		PB_DIAG(" %d:OK(lv%d,r%d,rq%d)", id, lv, nRank, nRq);
 
 		if (nRank > nBestRank
