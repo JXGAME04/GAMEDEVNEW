@@ -130,6 +130,7 @@ struct PB_Bot
 static PB_Pending   s_pending[PB_MAX_PENDING];
 static PB_Bot       s_bots[PB_MAX_BOTS];
 static int          s_botCount   = 0;
+static int          s_bKillAll   = 0;   // 1 = dang rut dan go het bot
 static PB_DbSender  s_pfnSend    = NULL;
 
 // Hang doi tai khoan cho sinh. Vong tron don gian.
@@ -525,15 +526,30 @@ static int pb_KillBot(PB_Bot& b)
 	return 1;
 }
 
+// So bot go moi nhip. GO DAN CHU KHONG GO MOT LUOT - hai ly do:
+//   1. RemoveQuiting cham vao region, NpcSet, tui do va ban goi tin s2c_npcremove ra 9 region;
+//      don ca chuc khe trong mot khung lam khung do dai bat thuong.
+//   2. PrepareRemove chay playerlogout.lua. Go NGAY trong lenh Lua cua lenh bai admin tuc la
+//      goi Lua LONG TRONG Lua. Hoan sang PB_Breathe la tranh han chuyen do.
+// Cay tham khao dung dung co che nay (KBotManager::RemoveAllBots chi bat co m_bDrainAllBots
+// roi de Tick rut dan, KBotManager.cpp:3653-3662).
+#define PB_KILL_PER_TICK  4
+
 int PB_RemoveAll()
 {
-	int nGo = 0;
-	for (int i = 0; i < s_botCount; i++)
-		nGo += pb_KillBot(s_bots[i]);
-
-	s_botCount = 0;
-	printf("[Bot] da go %d bot khoi the gioi\n", nGo);
-	return nGo;
+	// CHI XEP HANG. Viec go that su do PB_Breathe lam, moi nhip vai con.
+	//
+	// TUYET DOI KHONG de bot song sot mot khung nao voi m_bIsQuiting = TRUE:
+	// PlayerLogoutGateway (KSOServer.cpp:3518) thay IsCharacterQuiting thi goi SavePlayerData,
+	// ma KPlayer::Save chan ngay dong dau voi m_nNetConnectIdx == -1 (KPlayer.cpp:1031) -> tra
+	// FALSE -> "continue" -> RemoveQuitingPlayer KHONG BAO GIO chay -> khe KET VINH VIEN kem
+	// spam console 18 dong/giay.
+	// Vi vay pb_KillBot lam TRON chuoi trong MOT lan goi, con o day chi xep hang, KHONG dat
+	// truoc bat ky co nao len bot.
+	s_bKillAll = 1;
+	printf("[Bot] xep hang go %d bot (rut dan %d con moi nhip)\n",
+		   s_botCount, PB_KILL_PER_TICK);
+	return s_botCount;
 }
 
 // ============================================================================
@@ -1003,6 +1019,23 @@ void PB_Breathe()
 			continue;
 		if (++s_pending[i].nWaited > PB_PENDING_TIMEOUT)
 			pb_FreePending(&s_pending[i]);
+	}
+
+	// rut dan hang go. Lam TRUOC vong nhip de khong dieu khien khe vua thao.
+	if (s_bKillAll)
+	{
+		for (int n = 0; n < PB_KILL_PER_TICK && s_botCount > 0; n++)
+		{
+			// Go tu CUOI danh sach: khong phai don mang, va chi so cac khe con lai khong doi.
+			pb_KillBot(s_bots[s_botCount - 1]);
+			s_botCount--;
+		}
+		if (s_botCount == 0)
+		{
+			s_bKillAll = 0;
+			printf("[Bot] da go xong toan bo bot\n");
+		}
+		return;                            // dang don dep thi khoan sinh them / dieu khien
 	}
 
 	// nhip tung bot (di bo + vao phai)
