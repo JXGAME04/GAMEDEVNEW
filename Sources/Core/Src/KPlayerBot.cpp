@@ -180,8 +180,9 @@ struct PB_Bot
 	int          nLagLife;                    // mau muc tieu tai moc do
 	unsigned int nCastTick;                   // moc phat lenh danh lan cuoi
 	PB_WalkState chase;                       // lo trinh A* DUOI DANH (rieng, khong dung chung)
-	int          aCam[4];                     // so den: muc tieu danh mai khong sut mau
-	unsigned int aCamTick[4];                 // moc cam tung con (het han thi tha)
+	int          aCam[8];                     // so den: muc tieu hong (8 o - phan bien 18/08:
+	                                          // 4 o bi xoay vong de khi >4 con cung ket)
+	unsigned int aCamTick[8];                 // moc cam tung con (het han thi tha)
 	unsigned int nChaseLegTick;               // gion nhip chang thang cuoi khi ap sat
 	unsigned int nChatCamToi;                 // moc tick duoc phep noi cau tiep theo
 	int          nBuocRaX, nBuocRaY;          // buoc ra khoi diem dat chan sau khi doi map
@@ -206,12 +207,14 @@ struct PB_Bot
 	// ---- nhat do roi ----
 	int          nLootObjIdx;                 // chi so Object dang nham nhat (0 = khong)
 	int          nLootObjID;                  // m_nID chot danh tinh (chong tai su dung khe)
-	int          nLootBanID;                  // obj vua nhat truot -> ne 30 giay
-	unsigned int nLootBanTick;                // han ne obj tren
+	int          aLootBan[4];                 // obj nhat truot -> ne 30 giay (4 o, phan bien
+	                                          // 18/08: 1 o thi 2 obj hong la ne ping-pong)
+	unsigned int aLootBanTick[4];             // moc ne tung obj
 	PB_WalkState loot;                        // duong di A* rieng cho viec nhat do
 	unsigned int nLootScanTick;               // lan quet do roi gan nhat (gion nhip)
 	unsigned int nDonTuiTick;                 // lan don tui gan nhat
-	unsigned int nPhamViTick;                 // gion log [BotPhamVi]
+	unsigned int nPhamViTick;                 // dong ho "toi noi ma van ngoai tam" (6s -> cam)
+	unsigned int nBienLogTick;                // gion log [BotBien] 1 dong/giay
 	// ---- vong sang / buff / bua ----
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
@@ -544,11 +547,6 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 			Npc[nNpcClean].m_SkillList.RemoveAllSkill();
 	}
 
-	// MO CONG NHAT DO: ServerPickUpItem chan !m_nLicReg (KPlayer.cpp:4664). Co nay
-	// binh thuong do CLIENT bat sau khi vao game (LaunchPlayer2) - bot khong co
-	// client nen phai tu bat, khong thi moi lenh nhat deu bi tu choi im lang.
-	Player[nIdx].LaunchPlayer2(true);
-
 	// Bot khong co ket noi mang. PB_LIXIAN_BOT (=3) la thu giu cho bot khoi bi
 	// IsLoginTimeOut giet sau 10 giay MA khong dam vao hai gia tri co nghia san (1 va 2) -
 	// xem khoi chu thich dai tai KPlayerBot.h.
@@ -662,8 +660,11 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nBuocRaX = 0;   b.nBuocRaY = 0;
 		b.nJamX = 0;      b.nJamY = 0;       b.nJamTick = 0;  b.nLachTick = 0;
 		b.nUongTick = 0;  b.nMoTuiTick = 0;  b.nHpTruoc = 0;  b.nDameTick = 0;
-		b.nLootObjIdx = 0;  b.nLootObjID = 0;  b.nLootBanID = 0;  b.nLootBanTick = 0;
-		b.loot.Reset();  b.nLootScanTick = 0;  b.nDonTuiTick = 0;  b.nPhamViTick = 0;
+		b.nLootObjIdx = 0;  b.nLootObjID = 0;
+		memset(b.aLootBan, 0, sizeof(b.aLootBan));
+		memset(b.aLootBanTick, 0, sizeof(b.aLootBanTick));
+		b.loot.Reset();  b.nLootScanTick = 0;  b.nDonTuiTick = 0;
+		b.nPhamViTick = 0;  b.nBienLogTick = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -1015,6 +1016,7 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		// xuat phat). Block to toi 16x32 o nen TAM cua no co the cach bot ca tram MPS -
 		// nham vao do la buoc GIAT LUI dau tien, dung trieu chung "tien roi giat lui" ma
 		// ban tham khao canh bao (KBotCombat.cpp:552-556). Bo qua no ngay tu dau.
+		st.nKieuDuong = nRet;    // 1 = duong tron ven, 2 = duong CUT (dich khong toi duoc)
 		st.idx = 1;
 	}
 
@@ -1052,7 +1054,16 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		if (st.repathCount < 3)
 		{
 			st.repathCount++;
-			SubWorld[nSubIdx].FindPathServer(bx, by, nDstMpsX, nDstMpsY, st.path, true);
+			// PHAI hung ma tra ve (phan bien 18/08): tra <= 0 la path da bi xoa trang
+			// (FindPathServer clear ngay khi vao) - truoc day lo di, nhanh "het waypoint"
+			// duoi kia lien do_run THANG vao dich tho khong qua A* = xuyen bien.
+			const int nRet2 = SubWorld[nSubIdx].FindPathServer(bx, by, nDstMpsX, nDstMpsY, st.path, true);
+			if (nRet2 <= 0 || st.path.empty())
+			{
+				st.Reset();
+				return -1;
+			}
+			st.nKieuDuong = nRet2;
 			st.idx = 1;   // bo block xuat phat, nhu tren
 		}
 		else
@@ -1070,8 +1081,18 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		}
 	}
 
-	// Het waypoint ma chua toi dich = lo trinh chi MOT PHAN (FindPathServer tra 2).
-	// Chang cuoi nham thang toi dich.
+	// DUONG CUT (FindPathServer tra 2 = dich KHONG toi duoc, A* chi dan toi block
+	// gan dich nhat): di het duong ma B0 chua bao toi noi -> BAO THUA cho noi goi
+	// xu ly (cam muc tieu / boc diem khac). Truoc day nhanh duoi day do_run THANG
+	// vao dich tho MOI NHIP, vinh vien - duong xuyen bien con sot (phan bien 18/08).
+	if (st.nKieuDuong == 2 && st.idx >= (int)st.path.size())
+	{
+		st.Reset();
+		return -1;
+	}
+
+	// Het waypoint (duong TRON VEN) ma chua toi dich: chang cuoi nham thang toi dich
+	// - dich nay da duoc FindPathServer kiem khong vat can (khong thi tra -3).
 	int tx = nDstMpsX, ty = nDstMpsY;
 	if (st.idx < (int)st.path.size())
 	{
@@ -1249,9 +1270,26 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 
 	Item[nNew].LockItem(LOCK_STATE_LOCK);              // khoa lai de bot khong lam roi
 	Player[nIdx].m_ItemList.InsertEquipment(nNew, false);
+	// Ghi lai o luoi tui ma InsertEquipment vua chiem: Equip chi doi nPlace sang
+	// pos_equip chu KHONG nha o luoi (KItemList.cpp:1185 - duong client that equip
+	// tu pos_hand nen engine chua bao gio lo). Khong nha thi vu khi 1x3/1x4 chiem
+	// chet 3-4 o tui suot doi bot (phan bien 18/08).
+	int nWpnRoomX = -1, nWpnRoomY = -1;
+	{
+		const int q2 = Player[nIdx].m_ItemList.FindSame(nNew);
+		if (q2 > 0 && Player[nIdx].m_ItemList.m_Items[q2].nPlace == pos_equiproom)
+		{
+			nWpnRoomX = Player[nIdx].m_ItemList.m_Items[q2].nX;
+			nWpnRoomY = Player[nIdx].m_ItemList.m_Items[q2].nY;
+		}
+	}
 	// Equip o cay nay chi co HAI tham so (KItemList.h:104); ban tham khao co tham so thu ba
 	// bUpdateSkin - dung chep nguyen chu ky sang.
 	Player[nIdx].m_ItemList.Equip(nNew, -1);
+	if (nWpnRoomX >= 0
+	 && Player[nIdx].m_ItemList.GetEquipment(itempart_weapon) == nNew)
+		Player[nIdx].m_ItemList.m_Room[room_equipment].PickUpItem(
+			nNew, nWpnRoomX, nWpnRoomY, Item[nNew].GetWidth(), Item[nNew].GetHeight());
 
 	pb_Log("[BotVuKhi] %s phai %s: detail=%d parti=%d he=%d, dang cam=%d\n",
 		   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen, w.d, w.p, nSeries,
@@ -1462,7 +1500,7 @@ static int pb_ChonBai(int nLevel, int nLech)
 static void pb_CamMucTieu(PB_Bot& b, int t, unsigned int now)
 {
 	int k = 0;
-	for (int i = 1; i < 4; i++)
+	for (int i = 1; i < 8; i++)
 		if (b.aCamTick[i] < b.aCamTick[k]) k = i;   // de len o cu nhat
 	b.aCam[k]     = t;
 	b.aCamTick[k] = now;
@@ -1470,7 +1508,7 @@ static void pb_CamMucTieu(PB_Bot& b, int t, unsigned int now)
 
 static bool pb_BiCam(const PB_Bot& b, int t, unsigned int now)
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 8; i++)
 		if (b.aCam[i] == t && now - b.aCamTick[i] < (unsigned int)(GAME_FPS * PB_CAM_GIAY))
 			return true;
 	return false;
@@ -1610,6 +1648,9 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			if (nSr >= 0 && nSr < series_num && nSr != Npc[nNpcIdx].m_Series)
 			{ PB_DIAG(" %d:HE=%d", id, nSr); continue; }
 		}
+		// 29 dong du lieu co AttackRadius = 0 - chon phai la te liet (cong engine
+		// "dist <= 0 + 20" gan nhu khong bao gio dat) -> loai thang (phan bien 18/08)
+		if (p->GetAttackRadius() <= 0) { PB_DIAG(" %d:TAM0", id); continue; }
 		if (p->IsAura())              { PB_DIAG(" %d:AURA", id);  continue; }
 		if (p->IsTargetSelf())        { PB_DIAG(" %d:SELF", id);  continue; }
 		if (!p->IsTargetEnemy())      { PB_DIAG(" %d:KDICH", id); continue; }
@@ -2098,6 +2139,25 @@ static const int s_nGiuPhu[] = { 4813, 437, 1271, 70, 71, 1182 };
 #define PB_LOOT_PICK_MPS  150          // vao sat co nay moi phat lenh nhat (cong 200)
 #define PB_DONTUI_GAP     (GAME_FPS * 12)
 
+// Ne mot obj nhat truot trong 30 giay - vong 4 o, de len o cu nhat.
+static void pb_NeDo(PB_Bot& b, int nObjID, unsigned int now)
+{
+	int k = 0;
+	for (int i = 1; i < 4; i++)
+		if (b.aLootBanTick[i] < b.aLootBanTick[k]) k = i;
+	b.aLootBan[k]     = nObjID;
+	b.aLootBanTick[k] = now;
+}
+
+static bool pb_DoBiNe(const PB_Bot& b, int nObjID, unsigned int now)
+{
+	for (int i = 0; i < 4; i++)
+		if (b.aLootBan[i] == nObjID
+		 && now - b.aLootBanTick[i] < (unsigned int)(GAME_FPS * 30))
+			return true;
+	return false;
+}
+
 static void pb_DonTui(int nIdx, PB_Bot& b, unsigned int now)
 {
 	if (b.nDonTuiTick && now - b.nDonTuiTick < (unsigned int)PB_DONTUI_GAP)
@@ -2115,7 +2175,15 @@ static void pb_DonTui(int nIdx, PB_Bot& b, unsigned int now)
 			continue;
 		const int nGe = Item[g].GetGenre();
 		if (nGe == item_medicine)
-			continue;                                   // binh mau / binh mana / tui
+			continue;                                   // binh mau / binh mana
+		if (nGe == item_task)
+			continue;                                   // do nhiem vu: engine coi la KHONG THE
+											            // MAT (KItem.h:252-266 khoa ban/vut cung)
+		if (nGe == item_townportal)
+			continue;                                   // Tho Dia Phu THUONG (TownPortal.txt, genre 5)
+		if (nGe == item_mine && Item[g].GetDetailType() == 1
+		 && Item[g].GetParticular() == 4)
+			continue;                                   // Tho Dia phu VINH VIEN (mine.txt:6)
 		if (nGe == item_magicscript && Item[g].GetDetailType() == 1)
 		{
 			const int nPa = Item[g].GetParticular();
@@ -2147,9 +2215,13 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	if (b.nLootObjIdx > 0)
 	{
 		KObj& o = Object[b.nLootObjIdx];
+		// dataID = 0: object da bi nhat trong CUNG frame (ServerPickUpItem xoa dataID
+		// nhung viec go khoi ObjSet cho den MessageLoop SAU PB_Breathe) - khong bat la
+		// Item[0] W=0 -> tuong "tui day" gia (phan bien 18/08).
 		if (o.m_nIndex <= 0 || o.m_nID != b.nLootObjID
 		 || o.m_nSubWorldID != Npc[nNpcIdx].m_SubWorldIndex
-		 || (o.m_nKind != Obj_Kind_Item && o.m_nKind != Obj_Kind_Money))
+		 || (o.m_nKind != Obj_Kind_Item && o.m_nKind != Obj_Kind_Money)
+		 || (o.m_nKind == Obj_Kind_Item && o.m_nItemDataID <= 0))
 		{
 			b.nLootObjIdx = 0;
 			b.loot.Reset();
@@ -2178,11 +2250,15 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			if (o.m_nKind == Obj_Kind_Item
 			 && (o.m_nItemDataID <= 0 || o.m_nItemDataID >= MAX_ITEM))
 				continue;
-			// ton trong chu quyen: chi nhat do VO CHU hoac do CUA MINH (do minh giet
-			// rot ra) - trung voi luat ServerPickUpItem, khoi bi tu choi vo ich
-			if (o.m_nBelong != -1 && o.m_nBelong != nIdx)
+			// CHI nhat do CUA MINH (quai minh giet, m_nBelong = chi so Player minh).
+			// TUYET DOI khong nhat do vo chu (-1): do nguoi choi that VUT XUONG DAT
+			// cung mang -1 ngay lap tuc (KPlayer.cpp:4997/5170) - khong chan thi bot
+			// hut do trao tay cua nguoi that trong 2 giay (phan bien 18/08). Do het
+			// han chu quyen (33s) cung ve -1 -> bo qua luon, do minh thi minh nhat
+			// trong vong 2 giay roi.
+			if (o.m_nBelong != nIdx)
 				continue;
-			if (o.m_nID == b.nLootBanID && now < b.nLootBanTick)
+			if (pb_DoBiNe(b, o.m_nID, now))
 				continue;                              // obj vua nhat truot - ne tam
 			int ox = 0, oy = 0;
 			o.GetMpsPos(&ox, &oy);
@@ -2213,8 +2289,7 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		{
 			pb_Log("[BotNhat] %s khong co duong A* toi do roi o(%d,%d) -> bo qua\n",
 			       Player[nIdx].m_PlayerName, ox / 32, oy / 32);
-			b.nLootBanID   = b.nLootObjID;
-			b.nLootBanTick = now + GAME_FPS * 30;
+			pb_NeDo(b, b.nLootObjID, now);
 			b.nLootObjIdx  = 0;
 			b.loot.Reset();
 			return 0;
@@ -2230,16 +2305,30 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	const int nItemNho  = (o.m_nKind == Obj_Kind_Item) ? o.m_nItemDataID : 0;
 	if (o.m_nKind == Obj_Kind_Item)
 	{
-		// tim o trong trong tui y nhu client: khong co cho thi DON TUI ngay roi
-		// thu lai nhip sau (b.nDonTuiTick = 0 de pb_DonTui chay lien)
+		if (nItemNho <= 0 || nItemNho >= MAX_ITEM)
+		{
+			// object vua bi tieu trong cung frame - bo, khong phai "tui day"
+			b.nLootObjIdx = 0;
+			b.loot.Reset();
+			return 1;
+		}
+		// Tim o trong bang FindRoom - ham engine THAT dung (SearchPosition,
+		// KItemList.cpp:153). FindEmptyPlace dinh dung ban dau la HAM CHET chua ai
+		// goi bao gio: tra toa do HOAN VI x/y va lech dung (cao, rong) (phan bien
+		// 18/08 mo phong: mon thu 2 tro di truot sach, bot chi nhat duoc dung 1 mon).
 		POINT pt;
-		if (!Player[nIdx].m_ItemList.m_Room[room_equipment].FindEmptyPlace(
+		if (!Player[nIdx].m_ItemList.m_Room[room_equipment].FindRoom(
 				Item[nItemNho].GetWidth(), Item[nItemNho].GetHeight(), &pt))
 		{
-			pb_Log("[BotNhat] %s tui DAY, khong nhat duoc -> don tui ngay\n",
+			pb_Log("[BotNhat] %s tui DAY, khong nhat duoc -> don tui, ne mon nay 30s\n",
 			       Player[nIdx].m_PlayerName);
 			b.nDonTuiTick = 0;
 			pb_DonTui(nIdx, b, now);
+			// PHAI nha muc tieu + ne: giu nguyen la lap "don tui MOI NHIP" vinh vien
+			// khi tui toan do thuoc danh sach giu (phan bien 18/08).
+			pb_NeDo(b, b.nLootObjID, now);
+			b.nLootObjIdx = 0;
+			b.loot.Reset();
 			return 1;
 		}
 		pk.m_btPosType = pos_equiproom;
@@ -2260,8 +2349,7 @@ static int pb_NhatDo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	{
 		pb_Log("[BotNhat] %s nhat TRUOT obj %d (item %d) - bi tu choi, ne 30 giay\n",
 		       Player[nIdx].m_PlayerName, pk.m_nObjID, nItemNho);
-		b.nLootBanID   = b.nLootObjID;
-		b.nLootBanTick = now + GAME_FPS * 30;
+		pb_NeDo(b, b.nLootObjID, now);
 	}
 	b.nLootObjIdx = 0;
 	b.loot.Reset();
@@ -2395,6 +2483,7 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		t = pb_FindTarget(nNpcIdx, PB_VISION_MPS, b, now);
 		b.nTargetNpc = t;
 		b.chase.Reset();
+		b.nPhamViTick = 0;    // dong ho ngoai tam thuoc muc tieu CU, khong mang sang
 		b.nLagTick   = now;
 		b.nLagLife   = t ? Npc[t].m_CurrentLife : 0;
 		if (!t)
@@ -2415,15 +2504,19 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	//      (chay thang khong qua A* = nguon bot xuyen bien map).
 	{
 		KSkill* pSk = (KSkill*)g_SkillManager.GetSkill(b.nAtkSkill, b.nAtkSkillLv);
-		const int nAR = pSk ? pSk->GetAttackRadius() : 128;
+		// Tam <= 0 (du lieu co 29 chieu AttackRadius = 0) cung roi ve 128: nAR = 0 la
+		// gate "nDist > 0" vinh vien dung (phan bien 18/08). pb_PickSkill cung da loc TAM0.
+		const int nAR = (pSk && pSk->GetAttackRadius() > 0) ? pSk->GetAttackRadius() : 128;
 		int tx2 = 0, ty2 = 0;
 		Npc[t].GetMpsPos(&tx2, &ty2);
 		int bx2 = 0, by2 = 0;
 		Npc[nNpcIdx].GetMpsPos(&bx2, &by2);
 		const int nDist = g_GetDistance(bx2, by2, tx2, ty2);
-		// Duoi khi con NGOAI tam (nDist > nAR); ra don chi khi DA TRONG tam (<= nAR).
-		// Hai dieu kien khop nhau - khong con khe "nAR < dist <= nAR+16" khong ai xu ly.
-		if (nDist > nAR)
+		// Cong chap nhan cua CHINH engine la "khoang cach <= tam + 20" (CanCastSkill,
+		// KSkills.cpp:330; ban server bo he so 0.8). Duoi khi vuot muc do, ra don khi
+		// trong muc do - DONG NHAT voi engine, khong siet hon (phan bien 18/08: siet ve
+		// dung nAR thi diem nham luoi 128 co the vinh vien khong lot vao tam).
+		if (nDist > nAR + 20)
 		{
 			int adist = nAR - 16;             // dung ngay ben trong tam danh
 			if (adist < 1) adist = 1;
@@ -2438,33 +2531,53 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			// chong cui. Toa ngang thi ca dam dan hang vong quanh muc tieu.
 			if (nDist > 0)
 			{
+				// Bien do toa ngang phai CO GIAN THEO TAM (phan bien 18/08: +/-128 voi
+				// chieu tam 75 la diem nham nam vinh vien NGOAI tam -> khong bao gio ra
+				// don). Buoc = tam/8 kep [8..32] -> lech toi da tam/4, tran 64.
 				const int nLech2 = (int)(&b - &s_bots[0]);
-				const int nLat = ((nLech2 % 5) - 2) * 64;
+				int nBuocLat = nAR / 8;
+				if (nBuocLat < 8)  nBuocLat = 8;
+				if (nBuocLat > 32) nBuocLat = 32;
+				const int nLat = ((nLech2 % 5) - 2) * nBuocLat;
 				if (nLat)
 				{
 					aimX += (-(ty2 - by2) * nLat) / nDist;
 					aimY += ((tx2 - bx2) * nLat) / nDist;
 				}
 			}
-			// Lam tron diem nham ve luoi 128 MPS: ca bot lan muc tieu deu nhuc nhich moi
-			// khung, khong lam tron thi o dich doi lien tuc va PB_WalkTo tinh lai A* MOI
-			// KHUNG (moi lan xoa trang ~3 MB bo nho nhap). Sai so 64 MPS < nguong toi 224.
+			// Diem nham THO (chua lam tron): chang thang cuoi se nham vao DAY - y het
+			// ban tham khao (KBotCombat.cpp:578-580 MoveTo diem chua lam tron). Ban
+			// lam tron chi lam DICH A* de khoa cache lo trinh khoi doi moi khung;
+			// phan bien 18/08 chi ra: chay toi diem DA lam tron (lech toi 90 MPS) la
+			// bot dau o "diem chet" ngoai tam, dung nhin quai vinh vien.
+			const int nAimThoX = aimX;
+			const int nAimThoY = aimY;
 			aimX = aimX / 128 * 128 + 64;
 			aimY = aimY / 128 * 128 + 64;
 
-			// CHAN XUYEN BIEN (chu game 18/08: "bot di chuyen duoc xuyen ra ngoai map,
-			// dung lam di chuyen A* la khong bi"): muc tieu dung SAT MEP ban do thi diem
-			// nham (day toi truoc mat + toa ngang + lam tron 128) co the roi RA NGOAI
-			// luoi region -> A* bao -3 (dest snap fail) -> nhanh du phong cu chay THANG
-			// khong qua A* => bot xuyen bien. Kiem ngay tai goc: diem nham khong doi
-			// duoc sang o hop le => cam muc tieu nay, tim con khac.
+			// CHAN XUYEN BIEN: kiem diem nham THO (diem se chay toi that) - phai nam
+			// TRONG ban do VA khong phai vat can dia hinh. Mps2Map chi kiem khung
+			// region (phan bien 18/08: nuoc / vach nui van lot qua) nen phai kem
+			// GetBarrierMin nhu [BotLach] da dung (bCheckNpc = FALSE: quai di dong,
+			// chi can chac dia hinh).
 			{
 				int nRv = -1, nMXv = 0, nMYv = 0, nOXv = 0, nOYv = 0;
-				SubWorld[nSub].Mps2Map(aimX, aimY, &nRv, &nMXv, &nMYv, &nOXv, &nOYv);
-				if (nRv < 0)
+				bool bHong = (nAimThoX < 32 || nAimThoY < 32);
+				if (!bHong)
 				{
-					pb_Log("[BotBien] %s diem nham o(%d,%d) NGOAI ban do -> cam muc tieu %d\n",
-					       Player[nIdx].m_PlayerName, aimX / 32, aimY / 32, t);
+					SubWorld[nSub].Mps2Map(nAimThoX, nAimThoY, &nRv, &nMXv, &nMYv, &nOXv, &nOYv);
+					bHong = (nRv < 0)
+					     || (SubWorld[nSub].m_Region[nRv].GetBarrierMin(nMXv, nMYv, nOXv, nOYv, FALSE)
+					         != Obstacle_NULL);
+				}
+				if (bHong)
+				{
+					if (now - b.nBienLogTick >= (unsigned int)GAME_FPS)
+					{
+						b.nBienLogTick = now;
+						pb_Log("[BotBien] %s diem nham o(%d,%d) ngoai map/vat can -> cam muc tieu %d\n",
+						       Player[nIdx].m_PlayerName, nAimThoX / 32, nAimThoY / 32, t);
+					}
 					pb_CamMucTieu(b, t, now);
 					b.nTargetNpc = 0;
 					b.chase.Reset();
@@ -2483,27 +2596,51 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			const int nWalk = PB_WalkTo(nNpcIdx, aimX, aimY, nSub, b.chase, 224);
 			if (nWalk < 0)
 			{
-				// A* KHONG co duong -> TUYET DOI khong chay thang thay the nua: chinh
-				// nhanh "A* thua thi do_run thang" la nguon xuyen bien/xuyen tuong
-				// (do_run khong qua A*, engine chi ne vat can 1 lan roi di xuyen).
-				// Cam muc tieu 45 giay nhu moi muc tieu hong khac, doi con de toi.
-				pb_Log("[BotBien] %s A* chiu thua toi o(%d,%d) -> cam muc tieu %d, KHONG chay thang\n",
-				       Player[nIdx].m_PlayerName, aimX / 32, aimY / 32, t);
+				// A* KHONG co duong / duong CUT -> cam muc tieu, TUYET DOI khong chay
+				// thang thay the (nguon xuyen bien). Log gion 1 dong/giay/bot - phan
+				// bien 18/08: khu >4 con ket la log moi nhip, fopen 18 lan/giay/bot.
+				if (now - b.nBienLogTick >= (unsigned int)GAME_FPS)
+				{
+					b.nBienLogTick = now;
+					pb_Log("[BotBien] %s A* chiu thua toi o(%d,%d) -> cam muc tieu %d, KHONG chay thang\n",
+					       Player[nIdx].m_PlayerName, aimX / 32, aimY / 32, t);
+				}
 				pb_CamMucTieu(b, t, now);
 				b.nTargetNpc = 0;
 				b.chase.Reset();
 				return 0;
 			}
-			if (nWalk == 1 && now - b.nChaseLegTick >= (unsigned int)(GAME_FPS / 2))
+			if (nWalk == 1)
 			{
-				// A* bao DA TOI vung 224 quanh diem nham (diem nham da kiem la o hop le
-				// trong map o tren) -> chang thang cuoi <= 224 MPS la an toan.
-				b.nChaseLegTick = now;
-				Npc[nNpcIdx].SendCommand(do_run, aimX, aimY);
+				// A* bao DA TOI vung 224 quanh dich A* ma van ngoai tam: chay chang
+				// thang cuoi vao diem nham THO (da kiem hop le + khong vat can o tren).
+				// DUONG THOAT (phan bien 18/08 doi): 6 giay van chua lot vao tam -> bo,
+				// cam muc tieu. Truoc day dong ho "khong sut mau" bi lam tuoi moi nhip
+				// duoi nen trang thai ket ngoai tam KHONG BAO GIO duoc tha.
+				if (b.nPhamViTick == 0)
+					b.nPhamViTick = now;
+				else if (now - b.nPhamViTick >= (unsigned int)(GAME_FPS * 6))
+				{
+					pb_Log("[BotPhamVi] %s toi noi ma van ngoai tam (chieu %d tam %d, cach %d) -> cam muc tieu %d\n",
+					       Player[nIdx].m_PlayerName, b.nAtkSkill, nAR, nDist, t);
+					b.nPhamViTick = 0;
+					pb_CamMucTieu(b, t, now);
+					b.nTargetNpc = 0;
+					b.chase.Reset();
+					return 0;
+				}
+				if (now - b.nChaseLegTick >= (unsigned int)(GAME_FPS / 2))
+				{
+					b.nChaseLegTick = now;
+					Npc[nNpcIdx].SendCommand(do_run, nAimThoX, nAimThoY);
+				}
 			}
+			else
+				b.nPhamViTick = 0;             // dang di binh thuong - xoa dong ho ngoai tam
 			return 1;                          // dang ap sat - chua ra don
 		}
 		b.chase.Reset();                       // da vao tam
+		b.nPhamViTick = 0;
 	}
 
 	// ---- ra don ----
@@ -2512,29 +2649,10 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	// (KNpc.cpp:2338-2349), nen KHONG can tu dan bot vao gan - engine lo phan ap sat.
 	if (now - b.nCastTick >= (unsigned int)PB_CAST_GAP)
 	{
-		// KIEM PHAM VI lan cuoi ngay truoc khi ra don (chu game 18/08: "them check
-		// pham vi cua ky nang de bot danh dung pham vi"): tam lay tu chinh du lieu
-		// chieu (GetAttackRadius). Ngoai tam thi KHONG phat do_skill - vi DoSkill
-		// gap muc tieu ngoai tam se TU do_run duoi theo (KNpc.cpp:2338-2349) ma
-		// duong do KHONG qua A* -> lai xuyen bien. Quay ve vong duoi A* nhip sau.
-		{
-			KSkill* pRg = (KSkill*)g_SkillManager.GetSkill(b.nAtkSkill, b.nAtkSkillLv);
-			const int nARg = pRg ? pRg->GetAttackRadius() : 128;
-			int cx1 = 0, cy1 = 0, cx2 = 0, cy2 = 0;
-			Npc[nNpcIdx].GetMpsPos(&cx1, &cy1);
-			Npc[t].GetMpsPos(&cx2, &cy2);
-			const int nDg = g_GetDistance(cx1, cy1, cx2, cy2);
-			if (nDg > nARg)
-			{
-				if (now - b.nPhamViTick >= (unsigned int)(GAME_FPS * 5))
-				{
-					b.nPhamViTick = now;
-					pb_Log("[BotPhamVi] %s chieu %d tam %d, muc tieu %d cach %d -> khong ra don, duoi tiep\n",
-					       Player[nIdx].m_PlayerName, b.nAtkSkill, nARg, t, nDg);
-				}
-				return 1;
-			}
-		}
+		// KIEM PHAM VI nam o CONG DUOI ben tren (nDist <= nAR + 20 moi xuong duoc day,
+		// dung bang cong CanCastSkill cua engine). Phan bien 18/08 chung minh khoi kiem
+		// "lan cuoi" tung dat o day la MA CHET: cung nhip, cung dau vao, dieu kien
+		// khong bao gio dung -> da go. Duong thoat ket-ngoai-tam nam o nhanh nWalk==1.
 		b.nCastTick = now;
 		// Dung khuon may chu dung cho nguoi choi that khi nhan c2s_npcskill
 		// (KProtocolProcess::NpcSkillCommand, KProtocolProcess.cpp:4926):

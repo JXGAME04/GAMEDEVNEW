@@ -130,6 +130,8 @@ struct PB_WalkState
 	unsigned int lastMoveTick;
 	int          repathCount;     // so lan da tim lai duong trong chuyen nay (toi da 3)
 	int          noAdvanceCalls;  // so lan goi lien tiep ma khong tien duoc waypoint
+	int          nKieuDuong;      // FindPathServer tra ve: 1 = duong TRON, 2 = duong CUT
+	                              // (dich khong toi duoc, chi dan toi block gan nhat)
 
 	PB_WalkState() { Reset(); }
 	void Reset()
@@ -143,6 +145,7 @@ struct PB_WalkState
 		lastMoveTick = 0;
 		repathCount = 0;
 		noAdvanceCalls = 0;
+		nKieuDuong = 0;
 	}
 };
 
