@@ -1587,10 +1587,10 @@ static int pb_FindRoamSpot(int nNpcIdx, int nSub, int nLech, int* pnX, int* pnY)
 //     PHAI DAT LAI DEU DAN: m_ActiveAuraID bi xoa khi hoi sinh, khong dat lai thi bot
 //     song lai la mat vong sang ma khong co dau hieu gi.
 //
-//  2. BUA / BI DONG (SKILL_SS_PassivityNpcState, SkillDef.h:105)
-//     Cast MOT LAN moi khi len cap. Ly do ton tai (ban tham khao ghi ro): luc bot vua
-//     hoc, no chua du cap nen cong CastPassivitySkill tu choi; len cap roi phai cap lai,
-//     khong thi bua nam trong tui ma khong bao gio co tac dung.
+//  2. BUA / BI DONG (SKILL_SS_PassivityNpcState, SkillDef.h:105) - KHONG DUNG
+//     Ban tham khao co cast lai moi khi len cap (ReapplyEligibleBotPassives), nhung
+//     chu game chot BO cho bot: "bua thi khong cho bot dung vi khong can thiet".
+//     Day la QUYET DINH, khong phai bo sot - dung tu y them lai.
 //
 //  3. BUFF chu dong (SKILL_SS_InitiativeNpcState + IsTargetSelf())
 //     Cast len CHINH MINH theo chu ky. Day la thu nguoi choi bam tay truoc khi danh.
