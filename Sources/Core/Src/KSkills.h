@@ -199,6 +199,9 @@ public:
 	int					IsExp() {return m_nIsExpSkill;};
 	int					GetMeleeType() const { return m_eMisslesForm;};
 	int					GetEquipLimit() const { return m_nEquiptLimited;};
+	// so DON SAT THUONG cua chieu (0 = chieu khong che / trang thai thuan tuy).
+	// Them cho bot chon chieu - ban tham khao goi la DealsDamage (KSkills.h:238 ben do).
+	int					GetDamageAttribsNum() const { return m_nDamageAttribsNum; };
 	int					GetHorseLimit() const { return m_nHorseLimited;};
 	int					GetStateSpecailId() const {return m_nStateSpecialId;		};
 	int					CanCastSkill  (int nLauncher, int &nParam1, int &nParam2)  const ;

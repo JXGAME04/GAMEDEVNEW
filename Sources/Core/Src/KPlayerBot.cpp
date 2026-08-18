@@ -191,6 +191,8 @@ struct PB_Bot
 	// ---- dung vat pham ----
 	unsigned int nUongTick;                   // lan uong binh gan nhat
 	unsigned int nMoTuiTick;                  // lan mo tui duoc pham gan nhat
+	int          nHpTruoc;                    // HP muc tieu nhip truoc (do sat thuong that)
+	unsigned int nDameTick;                   // lan xac nhan sat thuong gan nhat (gion log)
 	// ---- luyen cap ----
 	int          nBaiIdx;                     // chi so bai luyen dang nham (-1 = chua chon)
 	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
@@ -644,7 +646,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChatCamToi = 0;
 		b.nBuocRaX = 0;   b.nBuocRaY = 0;
 		b.nJamX = 0;      b.nJamY = 0;       b.nJamTick = 0;  b.nLachTick = 0;
-		b.nUongTick = 0;  b.nMoTuiTick = 0;
+		b.nUongTick = 0;  b.nMoTuiTick = 0;  b.nHpTruoc = 0;  b.nDameTick = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -1558,7 +1560,7 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			nWant = (nDetail == 1) ? (nParti + 100) : nParti;
 	}
 
-	int nBest = 0, nBestLv = 0, nBestRank = 0, nBestRq = -1;
+	int nBest = 0, nBestLv = 0, nBestRank = 0, nBestRq = -1, nBestDmg = -1;
 	// NHAT KY CHON CHIEU: liet ke TUNG chieu trong danh sach kem ly do loai, de doc
 	// bot.log la biet ngay vi sao mot phai "khong co chieu de danh" - khong doan mo.
 	//   HE=x  chieu mang ngu hanh x khac he bot     KIEU=x  style x khong phai Missles/Melee
@@ -1629,13 +1631,20 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// duoc ca (chu game bat 18/08 ngay sau ban rqTier).
 		if (Npc[nNpcIdx].m_Level < nRq)
 		{ PB_DIAG(" %d:CAP=%d", id, nRq); continue; }
-		PB_DIAG(" %d:OK(lv%d,r%d,rq%d)", id, lv, nRank, nRq);
+		// UU TIEN chieu CO DON SAT THUONG (khuon DealsDamage cua ban tham khao,
+		// KBotManager.cpp:1247). Lam dang UU TIEN chu khong chan cung: neu ca danh
+		// sach deu khong co don sat thuong thi van chon duoc, khong tai dien canh
+		// "khong phai nao danh duoc".
+		const int nDmg = (p->GetDamageAttribsNum() > 0) ? 1 : 0;
+		PB_DIAG(" %d:OK(lv%d,r%d,rq%d,d%d)", id, lv, nRank, nRq, nDmg);
 
 		if (nRank > nBestRank
-		 || (nRank == nBestRank && nRq > nBestRq)
-		 || (nRank == nBestRank && nRq == nBestRq && lv > nBestLv))
+		 || (nRank == nBestRank && nDmg > nBestDmg)
+		 || (nRank == nBestRank && nDmg == nBestDmg && nRq > nBestRq)
+		 || (nRank == nBestRank && nDmg == nBestDmg && nRq == nBestRq && lv > nBestLv))
 		{
 			nBestRank = nRank;
+			nBestDmg  = nDmg;
 			nBestRq   = nRq;
 			nBest     = id;
 			nBestLv   = lv;
@@ -2145,6 +2154,25 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			t = 0;
 		}
 	}
+
+	// XAC NHAN SAT THUONG THAT (chu game yeu cau 18/08: "log phai danh dung ky nang
+	// co sat thuong"): HP muc tieu tut so voi nhip truoc = chieu DANG AN DON.
+	// In toi da 1 dong / 10 giay / bot de khong ngap log.
+	if (t)
+	{
+		const int nHpNay = (int)Npc[t].m_CurrentLife;
+		if (b.nHpTruoc > 0 && nHpNay < b.nHpTruoc
+		 && now - b.nDameTick >= (unsigned int)(GAME_FPS * 10))
+		{
+			b.nDameTick = now;
+			pb_Log("[BotDame] %s chieu %d cap %d AN DON: muc tieu %d HP %d -> %d\n",
+			       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv,
+			       t, b.nHpTruoc, nHpNay);
+		}
+		b.nHpTruoc = nHpNay;
+	}
+	else
+		b.nHpTruoc = 0;
 
 	if (!t)
 	{
