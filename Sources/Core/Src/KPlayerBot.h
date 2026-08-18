@@ -42,6 +42,16 @@ typedef int (*PB_DbSender)(int nWhat, unsigned long ulIdentity, const char* szNa
 // lien ket tinh - KSOServer.cpp:629) va hai ben cung x64 + cung header => an toan.
 // pPayload tro thang vao pDataBuffer cua TProcessData (GameServer da boc phan dau),
 // nen Core KHONG BAO GIO cham vao TProcessData - do la ca y do, xem chu thich duoi.
+// Mot tin nhan MAT gui toi bot. GameServer dung goi, Core dien.
+// PHAI nam NGOAI #ifdef _SERVER: GameServer khong dinh nghia _SERVER.
+struct PB_WHISPER
+{
+	int			nSenderIdx;   // khe Player[] cua NGUOI GUI
+	const char*	szTarget;     // ten nhan vat duoc nhan (co the la bot, co the khong)
+	const char*	szMsg;        // noi dung
+	int			nMsgLen;
+};
+
 struct PB_DB_RESULT
 {
 	unsigned long	ulIdentity;
@@ -150,6 +160,8 @@ int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (tra so da nhan lenh)
 int  PB_SetFight(int bOn);                     // bat/tat danh quai (tra so bot doi trang thai)
+// Tra 1 = da nhan la bot VA da tra loi (GameServer khong chuyen tiep nua); 0 = khong phai bot.
+int  PB_WhisperReply(const PB_WHISPER* p);
 void PB_Breathe();                             // nhip: rut hang doi + het han cho
 
 // Ham Lua cho lenh GM (dang ky trong ScriptFuns.cpp)

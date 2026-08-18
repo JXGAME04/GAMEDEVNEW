@@ -2717,6 +2717,36 @@ void KSwordOnLineSever::PlayerMessageProcess(const unsigned long lnID, const cha
 				if (dataLength < 0 || dataLength >= 255)
 				return;
 				CHAT_CHANNELCHAT_CMD* pEh = (CHAT_CHANNELCHAT_CMD*)pExPckg;
+
+				// ---- TIN NHAN MAT GUI TOI BOT ----
+				// Bot la KPlayer phia SERVER; may chu chat (S3Relay) khong he biet chung ton tai,
+				// nen tin nhan rieng gui cho bot ma chuyen tiep len do thi roi vao hu khong.
+				// Chan ngay tai day: hoi Core "ten nay co phai bot khong". Neu phai thi Core tu
+				// tra loi (qua KPlayerChat::SendSystemInfo) va ta KHONG chuyen tiep nua.
+				// Neu KHONG phai bot thi roi qua, moi thu chay y nhu cu - nguoi choi that khong
+				// bi anh huong mot chut nao.
+				//
+				// Luu y da chap nhan: dong chan "dataLength >= 255" o ngay tren la cua san cay nay
+				// (ban tham khao khong co), nen tin nhan qua dai bi vut TRUOC khi toi day. Khong
+				// tu y bo dong do - no dang bao ve duong chat cua nguoi that.
+				if (pEh->ProtocolType == chat_someonechat)
+				{
+					CHAT_SOMEONECHAT_CMD* pSc = (CHAT_SOMEONECHAT_CMD*)pExPckg;
+					if (exsize > sizeof(CHAT_SOMEONECHAT_CMD) && pSc->sentlen > 0)
+					{
+						PB_WHISPER w;
+						w.nSenderIdx = nIndex;
+						w.szTarget   = pSc->someone;
+						// Van ban nam NGAY SAU cau truc. Tinh bang (pSc + 1) chu KHONG cong tay
+						// bang so byte - hai cay co cau truc khac nhau, cong tay la lech.
+						w.szMsg      = (const char*)(pSc + 1);
+						w.nMsgLen    = (int)pSc->sentlen;
+						if ((size_t)w.nMsgLen > exsize - sizeof(CHAT_SOMEONECHAT_CMD))
+							w.nMsgLen = (int)(exsize - sizeof(CHAT_SOMEONECHAT_CMD));
+						if (m_pCoreServerShell->GetGameData(SGDI_PBOT_WHISPER, (intptr_t)&w, 0) == 1)
+							return;   // bot da tra loi xong
+					}
+				}
 				if (pEh->ProtocolType == chat_channelchat && pEh->channelid != 0)	
 				{
 					if (!m_pCoreServerShell->PayForSpeech(nIndex, pEh->cost))

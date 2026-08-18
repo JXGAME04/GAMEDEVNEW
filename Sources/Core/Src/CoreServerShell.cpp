@@ -370,6 +370,8 @@ int	CoreServerShell::GetGameData(unsigned int uDataId, intptr_t uParam, intptr_t
 		return g_TongJX2.DoClientOp((int)nParam, (const void*)uParam);
 	case SGDI_PBOT_IS_BOT:	// khe Player[] nay co phai bot khong
 		return PB_IsBot((int)nParam);
+	case SGDI_PBOT_WHISPER:	// tin nhan mat gui toi mot bot -> bot tu tra loi
+		return PB_WhisperReply((const PB_WHISPER*)uParam);
 	case SGDI_CHARACTER_NETID:
 		if (uParam)
 		{

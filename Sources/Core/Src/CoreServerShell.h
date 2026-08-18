@@ -246,6 +246,7 @@ struct iCoreServerShell
 #define SSOI_PBOT_ROLEDATA_RES		0x4A504213	// uParam = PB_DB_RESULT*
 #define SSOI_PBOT_REMOVE_ALL		0x4A504215	// go het bot
 #define SGDI_PBOT_IS_BOT			0x4A504214	// nParam = playerIdx -> 1/0
+#define SGDI_PBOT_WHISPER			0x4A504216	// uParam = PB_WHISPER* -> 1 = bot da tra loi
 
 #ifndef CORE_EXPORTS
 

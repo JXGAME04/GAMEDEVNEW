@@ -12728,6 +12728,26 @@ extern int LuaPB_ClearBot(Lua_State* L);
 extern int LuaPB_JoinFaction(Lua_State* L);
 extern int LuaPB_SetFight(Lua_State* L);
 extern int LuaPB_SetChat(Lua_State* L);
+extern int PB_IsBot(int nPlayerIdx);
+
+// IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
+//
+// VI SAO CAN: bot la KPlayer THAT nen moi thu script nhin thay deu giong nguoi that -
+// co ten, co phai, co trang bi, vao duoc to doi, an duoc su kien. Khong co ham nay thi
+// moi script thuong/su kien deu co the tra thuong nham cho bot.
+//
+// KHONG duoc thay bang "m_nNetConnectIdx == -1": NGUOI CHOI UY THAC that cung mang -1.
+// PB_IsBot doi chieu voi so bot dang song nen chi dung bot moi khop.
+//
+// Khong truyen tham so thi hoi ve CHINH nhan vat dang chay script.
+int LuaIsBot(Lua_State* L)
+{
+	int nPlayerIndex = (Lua_GetTopIndex(L) >= 1)
+		? (int)Lua_ValueToNumber(L, 1)
+		: GetPlayerIndex(L);
+	Lua_PushNumber(L, PB_IsBot(nPlayerIndex));
+	return 1;
+}
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -13053,6 +13073,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_JoinFaction",	LuaPB_JoinFaction},
 	{"PB_SetFight",		LuaPB_SetFight},
 	{"PB_SetChat",		LuaPB_SetChat},
+	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},

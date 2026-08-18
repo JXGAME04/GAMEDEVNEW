@@ -36,6 +36,8 @@
 #include "../../lib/S3DBInterface.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <time.h>
 
 // ---------------------------------------------------------------- trang thai
 enum PB_STATE
@@ -195,6 +197,41 @@ static int          s_qHead = 0, s_qTail = 0;
 // KHONG bao gio phat 0xFFFFFFFF: gia tri do da duoc duong luu nhan vat dung lam gia tri canh
 // (KSOServer.cpp:3164 sProcessData.ulIdentity = -1).
 static unsigned long s_ulNext = 0x80000001ul;
+
+// ---------------------------------------------------------------------------
+// GHI NHAT KY RA TEP.
+//
+// Console cua GameServer cuon rat nhanh va lan voi log cua ca may chu, nen moi dong
+// cua he bot deu duoc ghi THEM vao mot tep rieng de doc lai cho de.
+//
+// Tep nam o THU MUC LAM VIEC cua GameServer (chinh la bin\server), ten "bot.log".
+// Mo/dong moi dong: cham hon mot chut nhung bot ghi rat thua (vai dong moi phut) va
+// doi lai la KHONG BAO GIO mat dong cuoi khi may chu tat dot ngot - dieu quan trong
+// hon nhieu khi dang di tim mot loi chi xay ra mot lan.
+// ---------------------------------------------------------------------------
+static void pb_Log(const char* szFmt, ...)
+{
+	char szBuf[600];
+	va_list ap;
+	va_start(ap, szFmt);
+	_vsnprintf(szBuf, sizeof(szBuf) - 1, szFmt, ap);
+	va_end(ap);
+	szBuf[sizeof(szBuf) - 1] = 0;
+
+	printf("%s", szBuf);          // van giu console cho ai dang nhin
+
+	FILE* f = fopen("bot.log", "a");
+	if (!f)
+		return;
+	time_t tNow = time(NULL);
+	struct tm* pT = localtime(&tNow);
+	if (pT)
+		fprintf(f, "[%02d/%02d %02d:%02d:%02d] %s",
+			  pT->tm_mday, pT->tm_mon + 1, pT->tm_hour, pT->tm_min, pT->tm_sec, szBuf);
+	else
+		fprintf(f, "%s", szBuf);
+	fclose(f);
+}
 
 static unsigned long pb_NextIdentity()
 {
@@ -526,7 +563,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 				{
 					// Chi xay ra voi bot NAM he THUY: ca Nga My lan Thuy Yen deu chi nhan nu.
 					// Nhan vat cu tao truoc khi taobot_bdb biet ep he Thuy = nu se roi vao day.
-					printf("[Bot] %s he %d gioi tinh %s: KHONG PHAI NAO NHAN"
+					pb_Log("[Bot] %s he %d gioi tinh %s: KHONG PHAI NAO NHAN"
 					       " - tao lai bot bang taobot_bdb ban moi (he Thuy phai la nu)\n",
 					       Player[nIdx].m_PlayerName, nSeries, nSex ? "nu" : "nam");
 				}
@@ -629,7 +666,7 @@ int PB_RemoveAll()
 	// Vi vay pb_KillBot lam TRON chuoi trong MOT lan goi, con o day chi xep hang, KHONG dat
 	// truoc bat ky co nao len bot.
 	s_bKillAll = 1;
-	printf("[Bot] xep hang go %d bot (rut dan %d con moi nhip)\n",
+	pb_Log("[Bot] xep hang go %d bot (rut dan %d con moi nhip)\n",
 		   s_botCount, PB_KILL_PER_TICK);
 	return s_botCount;
 }
@@ -701,7 +738,7 @@ int PB_JoinFaction()
 		b.walk.Reset();
 		nRa++;
 	}
-	printf("[Bot] ra lenh vao phai cho %d bot\n", nRa);
+	pb_Log("[Bot] ra lenh vao phai cho %d bot\n", nRa);
 	return nRa;
 }
 
@@ -732,7 +769,7 @@ int PB_SetFight(int bOn)
 			n++;
 		}
 	}
-	printf("[Bot] %s danh quai cho %d bot\n", bOn ? "BAT" : "TAT", n);
+	pb_Log("[Bot] %s danh quai cho %d bot\n", bOn ? "BAT" : "TAT", n);
 	return n;
 }
 
@@ -758,10 +795,10 @@ int LuaPB_SetChat(Lua_State* L)
 	if (nRate > 0 && s_pbChatCount <= 0)
 	{
 		const int n = pb_LoadChat(szFile, szType);
-		printf("[BotChat] nap %d cau tu %s (nhom %s)\n", n, szFile, szType);
+		pb_Log("[BotChat] nap %d cau tu %s (nhom %s)\n", n, szFile, szType);
 	}
 	s_pbChatRate = (nRate < 0) ? 0 : ((nRate > 1000) ? 1000 : nRate);
-	printf("[BotChat] muc noi chuyen = %d/1000 moi giay moi bot (kho %d cau)\n",
+	pb_Log("[BotChat] muc noi chuyen = %d/1000 moi giay moi bot (kho %d cau)\n",
 		   s_pbChatRate, s_pbChatCount);
 	Lua_PushNumber(L, s_pbChatCount);
 	return 1;
@@ -1074,7 +1111,7 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 	if (w.d < 0)
 	{
 		// DUONG QUYEN / NOI CONG - co y de tay khong.
-		printf("[BotVuKhi] %s phai %s: duong QUYEN, khong nhan vu khi\n",
+		pb_Log("[BotVuKhi] %s phai %s: duong QUYEN, khong nhan vu khi\n",
 			   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen);
 		return;
 	}
@@ -1087,7 +1124,7 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 						  g_SubWorldSet.GetGameVersion(), 0);
 	if (nNew <= 0)
 	{
-		printf("[BotVuKhi] %s: ItemSet.Add THAT BAI (detail=%d parti=%d he=%d)\n",
+		pb_Log("[BotVuKhi] %s: ItemSet.Add THAT BAI (detail=%d parti=%d he=%d)\n",
 			   Player[nIdx].m_PlayerName, w.d, w.p, nSeries);
 		return;
 	}
@@ -1098,7 +1135,7 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 	// bUpdateSkin - dung chep nguyen chu ky sang.
 	Player[nIdx].m_ItemList.Equip(nNew, -1);
 
-	printf("[BotVuKhi] %s phai %s: detail=%d parti=%d he=%d, dang cam=%d\n",
+	pb_Log("[BotVuKhi] %s phai %s: detail=%d parti=%d he=%d, dang cam=%d\n",
 		   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen, w.d, w.p, nSeries,
 		   (int)(Player[nIdx].m_ItemList.GetEquipment(itempart_weapon) > 0));
 }
@@ -1187,7 +1224,7 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 	pb_AddAttrib(nIdx, ATTRIBUTE_VITALITY, nSK);
 	pb_AddAttrib(nIdx, ATTRIBUTE_ENGERGY, nNC);
 
-	printf("[BotDiem] %s (%s) chia %d diem: SM=%d TP=%d SK=%d NC=%d, con lai=%d\n",
+	pb_Log("[BotDiem] %s (%s) chia %d diem: SM=%d TP=%d SK=%d NC=%d, con lai=%d\n",
 		   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen, nQuy, nSM, nTP, nSK, nNC,
 		   Player[nIdx].m_nAttributePoint);
 }
@@ -1440,12 +1477,12 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	const int nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32, bai.nOY * 32);
 	if (nRet == 1)
 	{
-		printf("[BotBai] %s cap %d -> %s (map %d, o %d,%d)\n",
+		pb_Log("[BotBai] %s cap %d -> %s (map %d, o %d,%d)\n",
 			   Player[nIdx].m_PlayerName, nLevel, bai.szTen, bai.nMapId, bai.nOX, bai.nOY);
 		return 0;
 	}
 
-	printf("[BotBai] %s: KHONG VAO DUOC %s (map %d) - ban do co the CHUA MO tren may chu."
+	pb_Log("[BotBai] %s: KHONG VAO DUOC %s (map %d) - ban do co the CHUA MO tren may chu."
 		   " Bot danh tai cho.\n", Player[nIdx].m_PlayerName, bai.szTen, bai.nMapId);
 	b.nBaiIdx = -1;             // thoi, khoi thu map do nua trong lan chon toi
 	return 1;
@@ -1468,7 +1505,7 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		const int nCu = b.nAtkSkill;
 		b.nAtkSkill = pb_PickSkill(nIdx, nNpcIdx, &b.nAtkSkillLv);
 		if (b.nAtkSkill != nCu)
-			printf("[BotDanh] %s cap %d dung chieu %d (cap %d)\n",
+			pb_Log("[BotDanh] %s cap %d dung chieu %d (cap %d)\n",
 				   Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, b.nAtkSkill, b.nAtkSkillLv);
 	}
 	if (b.nAtkSkill <= 0)
@@ -1495,7 +1532,7 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		}
 		else if (now - b.nLagTick >= (unsigned int)(GAME_FPS * PB_LAG_SECONDS))
 		{
-			printf("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau\n",
+			pb_Log("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau\n",
 				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS);
 			t = 0;
 		}
@@ -1588,6 +1625,133 @@ static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
 		KPlayerChat::NpcChat(nNpcIdx, p, nLen, false);
 }
 
+// ===========================================================================
+// TRA LOI TIN NHAN MAT
+//
+// Duong di: nguoi choi go tin nhan rieng -> goi c2s_extendchat toi GameServer ->
+// KSOServer bat goi chat_someonechat, hoi Core "ten nay co phai bot khong".
+// Neu phai thi Core TU TRA LOI ngay va GameServer KHONG chuyen tiep len may chu chat
+// (S3Relay khong biet gi ve bot phia server nen co chuyen len cung roi vao hu khong).
+//
+// GUI LOI DAP bang KPlayerChat::SendSystemInfo (KPlayerChat.h:159) - ham CO SAN,
+// gui thang toi mot khe Player[] kem TEN NGUOI GUI. CO Y khong tu dung goi tin:
+// cay nay va cay tham khao KHAC CAU TRUC goi chat (CHAT_FEEDBACK ben nay khong co
+// truong item[]), tu dong byte la de lech va client doc ra rac.
+//
+// NOI DUNG: bat y dinh bang tu khoa ASCII khong dau. Nguoi go CO DAU (TCVN3) se truot
+// het tu khoa va roi vao cau chung - nen MOI tin deu duoc tra loi, khong bao gio im.
+// ===========================================================================
+
+// Tim bot theo TEN nhan vat. Tra khe Player[] hoac 0.
+static int pb_FindBotByName(const char* szName)
+{
+	if (!szName || !szName[0])
+		return 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		const int nIdx = s_bots[i].nPlayerIdx;
+		if (nIdx <= 0 || nIdx >= MAX_PLAYER)                 continue;
+		if (Player[nIdx].m_dwID != s_bots[i].dwID)           continue;
+		if (strcmp(Player[nIdx].m_PlayerName, szName) == 0)  return nIdx;
+	}
+	return 0;
+}
+
+// Chep sang chu thuong, chi ASCII (chu co dau TCVN3 giu nguyen, se khong khop tu khoa).
+static void pb_ToLower(const char* szIn, int nLen, char* szOut, int nMax)
+{
+	int j = 0;
+	for (int i = 0; i < nLen && j < nMax - 1; i++)
+	{
+		char c = szIn[i];
+		if (c >= (char)0x41 && c <= (char)0x5A)
+			c = (char)(c + 32);
+		szOut[j++] = c;
+	}
+	szOut[j] = 0;
+}
+
+int PB_WhisperReply(const PB_WHISPER* p)
+{
+	if (!p || !p->szTarget || !p->szMsg || p->nMsgLen <= 0)
+		return 0;
+	if (p->nSenderIdx <= 0 || p->nSenderIdx >= MAX_PLAYER)
+		return 0;
+
+	const int nBot = pb_FindBotByName(p->szTarget);
+	if (nBot <= 0)
+		return 0;                       // khong phai bot -> de GameServer lo tiep nhu cu
+
+	PB_Bot* pB = NULL;
+	for (int i = 0; i < s_botCount; i++)
+		if (s_bots[i].nPlayerIdx == nBot) { pB = &s_bots[i]; break; }
+
+	char szLow[256];
+	int nLen = p->nMsgLen;
+	if (nLen > 200) nLen = 200;
+	pb_ToLower(p->szMsg, nLen, szLow, sizeof(szLow));
+
+	char szTraLoi[220];
+	szTraLoi[0] = 0;
+
+	// ---- bat y dinh ----
+	if (strstr(szLow, "chao") || strstr(szLow, "hi ") || strstr(szLow, "hello"))
+		sprintf(szTraLoi, "Chao ban, minh dang ban chut viec.");
+	else if (strstr(szLow, "dang o dau") || strstr(szLow, "o dau") || strstr(szLow, "cho nao"))
+	{
+		const int nNpc = Player[nBot].m_nIndex;
+		int mx = 0, my = 0;
+		if (nNpc > 0 && nNpc < MAX_NPC)
+			Npc[nNpc].GetMpsPos(&mx, &my);
+		sprintf(szTraLoi, "Minh dang o o %d,%d.", mx / 32, my / 32);
+	}
+	else if (strstr(szLow, "cap") || strstr(szLow, "level") || strstr(szLow, "lv"))
+	{
+		const int nNpc = Player[nBot].m_nIndex;
+		sprintf(szTraLoi, "Minh cap %d.",
+			  (nNpc > 0 && nNpc < MAX_NPC) ? Npc[nNpc].m_Level : 0);
+	}
+	else if (strstr(szLow, "phai") || strstr(szLow, "mon phai"))
+	{
+		const int nF = (int)Player[nBot].m_cFaction.m_nCurFaction;
+		if (nF >= 0 && nF < MAX_FACTION)
+			sprintf(szTraLoi, "Minh o %s.", s_facNpc[nF].szTen);
+		else
+			sprintf(szTraLoi, "Minh chua vao phai nao.");
+	}
+	else if (strstr(szLow, "nhom") || strstr(szLow, "to doi") || strstr(szLow, "party"))
+		sprintf(szTraLoi, "Minh dang di mot minh, de khi khac nhe.");
+	else if (strstr(szLow, "ban gi") || strstr(szLow, "mua") || strstr(szLow, "gia"))
+		sprintf(szTraLoi, "Minh khong buon ban gi dau.");
+
+	// ---- khong khop tu khoa -> lay mot cau trong kho, KHONG BAO GIO im lang ----
+	if (!szTraLoi[0])
+	{
+		if (s_pbChatCount > 0 && pB)
+		{
+			pB->nChatCuoi = (pB->nChatCuoi + 13) % s_pbChatCount;
+			strncpy(szTraLoi, s_pbChat[pB->nChatCuoi], sizeof(szTraLoi) - 1);
+			szTraLoi[sizeof(szTraLoi) - 1] = 0;
+		}
+		else
+			sprintf(szTraLoi, "U, minh nghe day.");
+	}
+
+	const int nOut = (int)strlen(szTraLoi);
+	if (nOut <= 0)
+		return 0;
+
+	// nChannedID = -1: kenh rieng (mac dinh cua ham). Ten nguoi gui = ten BOT de nguoi
+	// choi thay dung la bot dang tra loi minh.
+	KPlayerChat::SendSystemInfo(0, p->nSenderIdx, Player[nBot].m_PlayerName,
+							  szTraLoi, nOut, -1);
+
+	pb_Log("[BotPM] %s <- %s: \"%.60s\" | dap: \"%.60s\"\n",
+		   Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName,
+		   p->szMsg, szTraLoi);
+	return 1;
+}
+
 // Mot nhip cua MOT bot.
 static void pb_DriveBot(PB_Bot& b)
 {
@@ -1639,7 +1803,7 @@ static void pb_DriveBot(PB_Bot& b)
 		{
 			b.nChetTuTick = 0;
 			Player[nIdx].Revive(REMOTE_REVIVE_TYPE);
-			printf("[Bot] %s da chet -> tu hoi sinh\n", Player[nIdx].m_PlayerName);
+			pb_Log("[Bot] %s da chet -> tu hoi sinh\n", Player[nIdx].m_PlayerName);
 		}
 		return;                          // dang chet thi khong lam viec gi khac
 	}
@@ -1732,7 +1896,7 @@ static void pb_DriveBot(PB_Bot& b)
 	{
 		b.walk.Reset();
 		b.nAi = PB_AI_GIVEUP;
-		printf("[Bot] %s BO CUOC: NPC %s o ban do khac (bot map=%d, npc map=%d)\n",
+		pb_Log("[Bot] %s BO CUOC: NPC %s o ban do khac (bot map=%d, npc map=%d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
 		       SubWorld[nSub].m_SubWorldID,
 		       SubWorld[Npc[nFacNpc].m_SubWorldIndex].m_SubWorldID);
@@ -1764,7 +1928,7 @@ static void pb_DriveBot(PB_Bot& b)
 			// PB_JoinFaction() lan nua se cho no di lai.
 			int bx = 0, by = 0;
 			Npc[nNpcIdx].GetMpsPos(&bx, &by);
-			printf("[Bot] %s BO CUOC sau %d lan khong tim duoc duong toi %s"
+			pb_Log("[Bot] %s BO CUOC sau %d lan khong tim duoc duong toi %s"
 			       " (bot o o %d,%d -> NPC o o %d,%d, map %d)."
 			       " Kiem dong [BotA*] luoi luc boot xem luoi co nap khong.\n",
 			       Player[nIdx].m_PlayerName, PB_FAC_MAX_RETRY, s_facNpc[b.nFaction].szTen,
@@ -1798,7 +1962,7 @@ static void pb_DriveBot(PB_Bot& b)
 	// In ra thi chu game nhin console la biet ngay ly do, khong phai doan.
 	if (Player[nIdx].m_cFaction.m_nCurFaction == b.nFaction)
 	{
-		printf("[Bot] %s da vao %s (phai %d, he %d)\n",
+		pb_Log("[Bot] %s da vao %s (phai %d, he %d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
 		       b.nFaction, Npc[nNpcIdx].m_Series);
 
@@ -1818,7 +1982,7 @@ static void pb_DriveBot(PB_Bot& b)
 		pb_AllocAttribPoints(nIdx, b.nFaction);
 	}
 	else
-		printf("[Bot] %s XIN VAO %s THAT BAI: m_nCurFaction=%d (he bot=%d, he phai can=%d)\n",
+		pb_Log("[Bot] %s XIN VAO %s THAT BAI: m_nCurFaction=%d (he bot=%d, he phai can=%d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
 		       (int)Player[nIdx].m_cFaction.m_nCurFaction,
 		       Npc[nNpcIdx].m_Series, s_facNpc[b.nFaction].nSeries);
@@ -1848,7 +2012,7 @@ void PB_Breathe()
 		if (s_botCount == 0)
 		{
 			s_bKillAll = 0;
-			printf("[Bot] da go xong toan bo bot\n");
+			pb_Log("[Bot] da go xong toan bo bot\n");
 		}
 		return;                            // dang don dep thi khoan sinh them / dieu khien
 	}
