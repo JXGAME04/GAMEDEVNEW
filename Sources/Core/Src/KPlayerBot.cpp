@@ -181,6 +181,10 @@ struct PB_Bot
 	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
 	unsigned int nDoiMapTick;                 // giai cho giua hai lan thu doi map
 	int          nChatCuoi;                   // con tro cau thoai (chong lap giua cac bot)
+	// ---- di hoang tim quai ----
+	PB_WalkState roam;                        // trang thai di bo RIENG cho viec di hoang
+	int          nRoamX, nRoamY;              // diem dang nham toi (MPS), 0 = chua co
+	unsigned int nRoamTick;                   // moc boc diem lan cuoi
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -593,6 +597,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nTargetNpc = 0; b.nLagTick = 0;     b.nLagLife = 0;  b.nCastTick = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
+		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -1488,6 +1493,115 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	return 1;
 }
 
+// ===========================================================================
+// DI HOANG TIM QUAI (chong bot gom mot cho)
+//
+// Bot don cuc mot cho la chuyen chac chan xay ra: ca dam cung ChangeWorld toi CUNG MOT
+// diem cua bai luyen, danh sach quai quanh do, roi dung im vi khong con gi de danh.
+//
+// KHONG can boc tep NPC trong pak: may chu DA NAP san toan bo quai vao Npc[] khi mo ban
+// do (KRegion::LoadObject -> LoadServerNpc doc REGION_NPC_FILE_SERVER trong maps.pak).
+// Nen lay toa do quai DANG SONG con dung hon doc tep - quai chet/hoi sinh deu tinh dung,
+// va khong phai lo dinh dang tep hay giai ma pak.
+//
+// Cach lam: quet MOI region cua ban do hien tai, gom nhung con quai cach bot XA HON
+// nNearMps, roi boc ngau nhien mot con lam dich. Moi bot tron them chi so cua no nen 20
+// bot khong cung chon mot cho.
+//
+// PHAI di bang A* (PB_WalkTo): phat thang mot lenh do_run di xa la ket goc ngay - moi
+// lenh chi duoc DUNG MOT lan ne vat can (KNpcFindPath.cpp:106-111), vat can thu hai la
+// dung im vinh vien. Dung PB_WalkState RIENG (roam) de khong xo lech lo trinh vao phai.
+// ===========================================================================
+#define PB_ROAM_NEAR      1200     // "gan" = trong chung nay MPS thi khong tinh la diem moi
+#define PB_ROAM_MAX_CAND  64       // so ung vien gom toi da
+#define PB_ROAM_RETRY     (GAME_FPS * 5)   // giai cho giua hai lan boc diem
+
+// Tim mot con quai XA de lam dich di hoang. Tra 1 va dien toa do, 0 = khong tim duoc.
+static int pb_FindRoamSpot(int nNpcIdx, int nSub, int nLech, int* pnX, int* pnY)
+{
+	if (nSub < 0 || nSub >= MAX_SUBWORLD)
+		return 0;
+	const int nTong = SubWorld[nSub].m_nTotalRegion;
+	if (nTong <= 0)
+		return 0;
+
+	int bx = 0, by = 0;
+	Npc[nNpcIdx].GetMpsPos(&bx, &by);
+
+	int aX[PB_ROAM_MAX_CAND], aY[PB_ROAM_MAX_CAND];
+	int nCand = 0;
+
+	for (int r = 0; r < nTong && nCand < PB_ROAM_MAX_CAND; r++)
+	{
+		KIndexNode* pNode = (KIndexNode*)SubWorld[nSub].m_Region[r].m_NpcList.GetHead();
+		while (pNode && nCand < PB_ROAM_MAX_CAND)
+		{
+			const int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || i == nNpcIdx)      continue;
+			if (Npc[i].m_dwID == 0)                          continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive) continue;
+			if (Npc[i].m_Kind == kind_player)                continue;
+			if (!(NpcSet.GetRelation(nNpcIdx, i) & relation_enemy)) continue;
+
+			int ex = 0, ey = 0;
+			Npc[i].GetMpsPos(&ex, &ey);
+			// CHI lay con XA - gan thi bot da danh duoc roi, di toi do la dam chan tai cho.
+			if (g_GetDistance(bx, by, ex, ey) <= PB_ROAM_NEAR)
+				continue;
+
+			aX[nCand] = ex;
+			aY[nCand] = ey;
+			nCand++;
+		}
+	}
+
+	if (nCand <= 0)
+		return 0;
+
+	// Tron them chi so bot: g_Random goi lien tiep trong CUNG MOT khung hay ra giong nhau
+	// (canh bao da ghi san o KSimCity.cpp:1326-1328), khong tron thi ca dam keo ve mot cho.
+	const int k = ((int)g_Random(nCand) + nLech * 11) % nCand;
+	*pnX = aX[k];
+	*pnY = aY[k];
+	return 1;
+}
+
+// Mot nhip DI HOANG. Tra 1 = dang di (chua toi), 0 = khong co cho di / da toi noi.
+static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
+{
+	const unsigned int now = SubWorld[nSub].m_dwCurrentTime;
+
+	if (b.nRoamX == 0 && b.nRoamY == 0)
+	{
+		if (b.nRoamTick && now - b.nRoamTick < (unsigned int)PB_ROAM_RETRY)
+			return 0;
+		b.nRoamTick = now;
+		int rx = 0, ry = 0;
+		if (!pb_FindRoamSpot(nNpcIdx, nSub, nLech, &rx, &ry))
+			return 0;              // ban do het quai - dung yen cho hoi sinh
+		b.nRoamX = rx;
+		b.nRoamY = ry;
+		b.roam.Reset();
+		pb_Log("[BotHoang] %s het quai gan -> di toi o %d,%d (map %d)\n",
+			   Player[nIdx].m_PlayerName, rx / 32, ry / 32, SubWorld[nSub].m_SubWorldID);
+	}
+
+	// Dung sat quai la du - toi noi thi vong danh se tu bat duoc muc tieu.
+	const int nRet = PB_WalkTo(nNpcIdx, b.nRoamX, b.nRoamY, nSub, b.roam, 400);
+	if (nRet == 0)
+		return 1;                  // dang di
+
+	if (nRet < 0)
+		pb_Log("[BotHoang] %s khong tim duoc duong toi o %d,%d - boc cho khac\n",
+			   Player[nIdx].m_PlayerName, b.nRoamX / 32, b.nRoamY / 32);
+
+	b.nRoamX = 0;                  // toi noi hoac tac duong -> lan sau boc cho khac
+	b.nRoamY = 0;
+	b.roam.Reset();
+	return 0;
+}
+
 // Mot nhip DANH NHAU. Tra 1 neu dang co viec (dang danh), 0 neu khong co muc tieu.
 static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 {
@@ -1865,7 +1979,17 @@ static void pb_DriveBot(PB_Bot& b)
 		for (int q = 0; q < s_botCount; q++)
 			if (&s_bots[q] == &b) { nLech = q; break; }
 		if (pb_RaBai(nIdx, nNpcIdx, nSub, b, nLech))
-			pb_Fight(nIdx, nNpcIdx, nSub, b);
+		{
+			// Co quai gan thi danh; het quai gan thi DI HOANG toi cho khac tren CUNG ban do.
+			// Nho vay bot tu rai ra thay vi dam mot cho o diem ChangeWorld.
+			if (pb_Fight(nIdx, nNpcIdx, nSub, b))
+			{
+				b.nRoamX = 0;      // dang danh -> huy chuyen di hoang
+				b.nRoamY = 0;
+			}
+			else
+				pb_Roam(nIdx, nNpcIdx, nSub, b, nLech);
+		}
 		return;
 	}
 
