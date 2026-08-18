@@ -930,6 +930,17 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		int nRet = SubWorld[nSubIdx].FindPathServer(bx, by, nDstMpsX, nDstMpsY, st.path, bCheckNpc);
 		if (nRet <= 0 || st.path.empty())
 		{
+			// In MA LOI de bot.log ke duoc vi sao: -2 luoi chua nap, -3 dich ket vat can,
+			// -4 xuat phat ket vat can, -1 dau vao sai, 0 A* chiu thua. Gion 3 dong/giay.
+			static unsigned int s_uAstarLog = 0;
+			const unsigned int uNow2 = SubWorld[nSubIdx].m_dwCurrentTime;
+			if (uNow2 - s_uAstarLog >= (unsigned int)(GAME_FPS / 3))
+			{
+				s_uAstarLog = uNow2;
+				pb_Log("[BotA*] npc=%d map=%d tu o(%d,%d) den o(%d,%d) LOI ret=%d\n",
+				       nNpcIdx, SubWorld[nSubIdx].m_SubWorldID, bx / 32, by / 32,
+				       nDstMpsX / 32, nDstMpsY / 32, nRet);
+			}
 			st.path.clear();
 			return -1;
 		}
@@ -1829,25 +1840,45 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		b.nAtkPickLevel = Npc[nNpcIdx].m_Level;
 		const int nCu = b.nAtkSkill;
 		b.nAtkSkill = pb_PickSkill(nIdx, nNpcIdx, &b.nAtkSkillLv);
-		if (b.nAtkSkill > 0)
+		// NANG FULL KY NANG THEO CAP (chu game chot 18/08): moi lan len cap keo MOI ky nang
+		// da hoc len dung cap bot (tran 20). RIENG ky nang moc 80 tro len chi mo 1 CAP -
+		// "con lai bot tu luyen len cap" bang su dung, y nhu nguoi choi.
+		// BO QUA bua bi dong (SKILL_SS_PassivityNpcState): KSkillList::Add TU CAST bua khi
+		// nang (KSkillList.cpp:456-458) ma chu game da chot bot KHONG dung bua.
 		{
-			// NANG CAP CHIEU CHINH - day la goc cua "bot toan danh thuong" chu game bat:
-			// SKILLNORMAL hoc moi chieu o CAP 0, ma chieu cap 0 cast khong co gi xay ra.
-			// Nguoi choi that tieu diem ky nang moi cap vao chieu chinh; bot lam y vay:
-			// cap chieu = cap bot (tran 20). Di dung duong AddMagic cua Lua:
-			// KSkillList::Add(id, lv) - CHI NANG khong ha (KSkillList.cpp:442-446).
-			int nLvMuon = Npc[nNpcIdx].m_Level;
-			if (nLvMuon > 20) nLvMuon = 20;
-			if (nLvMuon > 0 && b.nAtkSkillLv < nLvMuon)
+			const int nLvBot = Npc[nNpcIdx].m_Level;
+			int nNang = 0;
+			KSkillList& sl2 = Npc[nNpcIdx].m_SkillList;
+			for (int q = 1; q < MAX_NPCSKILL; q++)
 			{
-				Npc[nNpcIdx].m_SkillList.Add(b.nAtkSkill, nLvMuon);
-				const int nO = Npc[nNpcIdx].m_SkillList.FindSame(b.nAtkSkill);
-				if (nO)
+				const int id2 = sl2.m_Skills[q].SkillId;
+				if (id2 <= 0 || id2 >= MAX_SKILL)
+					continue;
+				KSkill* p2 = (KSkill*)g_SkillManager.GetSkill(id2, 1);
+				if (!p2)
+					continue;
+				if (p2->GetSkillStyle() == SKILL_SS_PassivityNpcState)
+					continue;
+				const int rq2 = p2->GetSkillReqLevel();
+				if (nLvBot < rq2)
+					continue;                    // chua du cap mo ky nang nay
+				int nMuon = (rq2 >= 80) ? 1 : nLvBot;
+				if (nMuon > 20) nMuon = 20;
+				if (sl2.m_Skills[q].SkillLevel < nMuon)
 				{
-					b.nAtkSkillLv = Npc[nNpcIdx].m_SkillList.m_Skills[nO].CurrentSkillLevel;
-					pb_Log("[BotDanh] %s nang chieu %d len cap %d\n",
-					       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv);
+					sl2.Add(id2, nMuon);
+					nNang++;
 				}
+			}
+			if (nNang)
+				pb_Log("[BotDanh] %s cap %d: nang %d ky nang theo cap\n",
+				       Player[nIdx].m_PlayerName, nLvBot, nNang);
+			// doc lai cap cua chieu da chon (neu co) sau khi nang dong loat
+			if (b.nAtkSkill > 0)
+			{
+				const int nO = sl2.FindSame(b.nAtkSkill);
+				if (nO)
+					b.nAtkSkillLv = sl2.m_Skills[nO].CurrentSkillLevel;
 			}
 		}
 		if (b.nAtkSkill != nCu)

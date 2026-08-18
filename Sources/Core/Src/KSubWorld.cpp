@@ -3219,7 +3219,10 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 						   std::vector<int>& vOutPath, bool bCheckNpc)
 {
 	vOutPath.clear();
-	if (!m_bHavePath || m_GridNode == NULL || m_nGridTotal <= 0)	return -1;
+	// Ma loi RIENG cho tung duong som - de bot.log ke duoc vi sao khong co duong:
+	//   -2 luoi chua nap  .  -3 diem DICH ket trong vat can  .  -4 diem XUAT PHAT ket
+	//   -1 dau vao sai    .   0 A* chiu thua that su
+	if (!m_bHavePath || m_GridNode == NULL || m_nGridTotal <= 0)	return -2;
 	if (nStartMpsX <= 0 || nStartMpsY <= 0 || nDestMpsX <= 0 || nDestMpsY <= 0) return -1;
 
 	const int nCellW = m_nGridW * m_nRegionWidth;
@@ -3239,7 +3242,7 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 		// Dich roi dung vao vat can (vd sat hang rao): khong bam lai thi A* chi tra duong
 		// MOT PHAN dung o o gan nhat, roi chang cuoi ban thang vao goc -> ket goc.
 		tid = FindFreeBlockAround(tid, nDestMpsX, nDestMpsY);
-		if (tid < 0) return -1;
+		if (tid < 0) return -3;
 	}
 
 	// xuat phat (doi xung voi dich)
@@ -3253,7 +3256,7 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 	if (m_GridNode[sid].obs)
 	{
 		sid = FindFreeBlockAround(sid, nStartMpsX, nStartMpsY);
-		if (sid < 0) return -1;
+		if (sid < 0) return -4;
 	}
 
 	if (sid == tid)			// cung mot block, khong can tim duong
