@@ -336,6 +336,18 @@ void PB_TrapLog(int nPlayerIdx, unsigned long dwScriptId, int nMapX, int nMapY)
 	       (unsigned int)dwScriptId, nMapX, nMapY);
 }
 
+#include <stdarg.h>
+void PB_LogNgoai(const char* szFmt, ...)
+{
+	char szMsg[512];
+	va_list ap;
+	va_start(ap, szFmt);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFmt, ap);
+	va_end(ap);
+	szMsg[sizeof(szMsg) - 1] = 0;
+	pb_Log("%s", szMsg);
+}
+
 int PB_IsBot(int nPlayerIdx)
 {
 	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
@@ -784,6 +796,11 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
 		b.nPmCamToi = 0;  b.nPmLapHash = 0;
 		b.nWantParty = ((int)g_Random(100) < PB_NHOM_RATE) ? 1 : 0;
+		// [chan doan 18/08 - GO khi xong] tk bao "muon nhom 0" du 988 con dang danh:
+		// in 30 lan boc dau de doi chieu gia tri thuc te cua g_Random tai day.
+		if (s_botCount < 30)
+			pb_Log("[BotNhom] roll #%d %s: muon nhom = %d\n",
+			       s_botCount, Player[nIdx].m_PlayerName, b.nWantParty);
 		b.follow.Reset();
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;

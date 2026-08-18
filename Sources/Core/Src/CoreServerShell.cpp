@@ -1160,11 +1160,47 @@ int CoreServerShell::Breathe()
 
 	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
 	KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
-	SC_Breathe();	// Port SimCity: nhip di chuyen bot
-	PB_Breathe();	// Bot KPlayer that: rut hang doi sinh + het han cho
 
-	g_SubWorldSet.MessageLoop();
-	g_SubWorldSet.MainLoop();
+	// ---- [SvPerf] nhiet ke KHUNG SERVER (chu game 18/08: "1000 bot rat lag,
+	// can gan log xem loi do dau"). [BotPerf] chi do PB_Breathe (~9%/loi) nen
+	// nguon lag nam ngoai no - do not tung tang moi 10 giay de chi mat.
+	{
+		static __int64 s_tSC = 0, s_tPB = 0, s_tMsg = 0, s_tMain = 0;
+		static DWORD s_dwSvMoc = 0;
+		static LARGE_INTEGER s_liF = { 0 };
+		if (s_liF.QuadPart == 0)
+			QueryPerformanceFrequency(&s_liF);
+		LARGE_INTEGER t0, t1, t2, t3, t4;
+
+		QueryPerformanceCounter(&t0);
+		SC_Breathe();	// Port SimCity: nhip di chuyen bot
+		QueryPerformanceCounter(&t1);
+		PB_Breathe();	// Bot KPlayer that: rut hang doi sinh + het han cho
+		QueryPerformanceCounter(&t2);
+		g_SubWorldSet.MessageLoop();
+		QueryPerformanceCounter(&t3);
+		g_SubWorldSet.MainLoop();
+		QueryPerformanceCounter(&t4);
+
+		s_tSC   += t1.QuadPart - t0.QuadPart;
+		s_tPB   += t2.QuadPart - t1.QuadPart;
+		s_tMsg  += t3.QuadPart - t2.QuadPart;
+		s_tMain += t4.QuadPart - t3.QuadPart;
+		const DWORD dwNow = GetTickCount();
+		if (s_dwSvMoc == 0)
+			s_dwSvMoc = dwNow;
+		else if (dwNow - s_dwSvMoc >= 10000 && s_liF.QuadPart > 0)
+		{
+			PB_LogNgoai("[SvPerf] 10s: SimCity %d ms | BotKPlayer %d ms |"
+			            " MessageLoop %d ms | MainLoop(engine) %d ms\n",
+			            (int)(s_tSC * 1000 / s_liF.QuadPart),
+			            (int)(s_tPB * 1000 / s_liF.QuadPart),
+			            (int)(s_tMsg * 1000 / s_liF.QuadPart),
+			            (int)(s_tMain * 1000 / s_liF.QuadPart));
+			s_tSC = s_tPB = s_tMsg = s_tMain = 0;
+			s_dwSvMoc = dwNow;
+		}
+	}
 	g_BauCua.run();
 	return true;
 }

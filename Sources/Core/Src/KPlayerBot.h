@@ -172,6 +172,8 @@ int  PB_WhisperReply(const PB_WHISPER* p);
 // Hoc bang ten -> id kenh chat (goi tu KNewProtocolProcess khi relay cap id cho
 // client). Bot can id kenh THE GIOI de chat kenh nhu ban goc linux.
 void PB_GhiNhoKenh(const char* szTen, unsigned long dwId);
+// Ghi bot.log tu file khac (CoreServerShell dung cho [SvPerf]).
+void PB_LogNgoai(const char* szFmt, ...);
 void PB_Breathe();                             // nhip: rut hang doi + het han cho
 
 // Ham Lua cho lenh GM (dang ky trong ScriptFuns.cpp)
