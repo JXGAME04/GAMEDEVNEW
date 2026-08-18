@@ -149,6 +149,7 @@ int  PB_IsBot(int nPlayerIdx);                 // 1 = khe nay la bot
 int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (tra so da nhan lenh)
+int  PB_SetFight(int bOn);                     // bat/tat danh quai (tra so bot doi trang thai)
 void PB_Breathe();                             // nhip: rut hang doi + het han cho
 
 // Ham Lua cho lenh GM (dang ky trong ScriptFuns.cpp)
@@ -156,6 +157,7 @@ int  LuaPB_AddBot(Lua_State* L);               // (nTu [, nDen]) -> so da xep ha
 int  LuaPB_BotCount(Lua_State* L);             // () -> so bot dang song, tran
 int  LuaPB_ClearBot(Lua_State* L);             // () -> so bot da go
 int  LuaPB_JoinFaction(Lua_State* L);          // () -> so bot da nhan lenh vao phai
+int  LuaPB_SetFight(Lua_State* L);             // (bOn) -> so bot da bat/tat danh quai
 
 #endif // _SERVER
 #endif // KPLAYERBOT_H

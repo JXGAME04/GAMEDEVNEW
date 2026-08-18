@@ -69,6 +69,8 @@ function PB_Menu()
 	"Goi 5 bot (tai khoan 1-5)/#PB_Call(1,5)",
 	"Goi 20 bot (tai khoan 1-20)/#PB_Call(1,20)",
 	"Cho bot VAO PHAI (theo ngu hanh)/PB_Join",
+	"BAT danh quai/#PB_Fight(1)",
+	"TAT danh quai/#PB_Fight(0)",
 	"Go het bot nguoi choi/PB_Clear",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
@@ -95,6 +97,19 @@ end
 -- TACH RIENG khoi luc goi bot LA CO Y: sinh xong bot chi TU DI BO TAN RA roi dung cho,
 -- bam muc nay thi chung moi lu luot keo toi NPC mon phai dung ngu hanh cua tung con.
 -- Bot nao tung bo cuoc (khong tim duoc duong) thi bam lai lan nua la no di lai.
+-- Bat/tat danh quai. Bot tu tim quai gan nhat quanh no roi ra chieu hop vu khi dang cam
+-- (hoac hop duong quyen neu khong cam gi). Chi bot DA VAO PHAI moi co ky nang de danh.
+function PB_Fight(nOn)
+	local n = PB_SetFight(nOn)
+	if nOn == 1 then
+		Msg2Player(format("Da BAT danh quai cho %d bot.", n))
+		Msg2Player("Bot tu tim quai quanh no; xem console dong [BotDanh] de biet chieu da chon.")
+	else
+		Msg2Player(format("Da TAT danh quai cho %d bot.", n))
+	end
+	PB_Menu()
+end
+
 function PB_Join()
 	local n = PB_JoinFaction()
 	if n and n > 0 then

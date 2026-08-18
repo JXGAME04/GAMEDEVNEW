@@ -22,7 +22,11 @@
 #include "KItem.h"          // Item[] - doc DetailType / Particular / Series cua vu khi
 #include "KItemSet.h"       // ItemSet.Add - tao vat pham
 #include "KItemList.h"      // InsertEquipment / Equip / GetEquipment / RemoveItemIdx
-#include "GameDataDef.h"    // itempart_weapon, LOCK_STATE_LOCK
+#include "GameDataDef.h"    // itempart_weapon, LOCK_STATE_LOCK, HAND_PARTICULAR
+#include "KSkills.h"        // KSkill - doc EqtLimit / SkillStyle / IsTargetEnemy
+#include "KSkillManager.h"  // g_SkillManager.GetSkill(id, level)
+#include "KRegion.h"        // duyet m_NpcList de tim quai theo region
+#include "KMath.h"         // g_GetDistance
 #include "KPlayerBot.h"
 // TRoleData / S3DBI_RoleBaseInfo. Dung DUNG duong dan ma CoreServerShell.cpp:33 dang dung
 // de chac chan lay cung mot ban voi phan con lai cua Core (cay nay co nhieu ban
@@ -59,6 +63,7 @@ enum PB_AI
 	PB_AI_GOTO_FACTION,   // dang chay bo toi NPC mon phai (CHI vao khi GM goi PB_JoinFaction)
 	PB_AI_IN_FACTION,     // da vao phai xong
 	PB_AI_GIVEUP,         // khong toi duoc (khong tim thay NPC / khong co duong)
+	PB_AI_FIGHT,          // dang danh quai tai cho
 };
 
 // Ban kinh tan ra mac dinh, tinh bang O luoi (1 o = 32 MPS). Dat qua lon thi bot di lau va de
@@ -159,6 +164,14 @@ struct PB_Bot
 	int          nGaveWeapon;                 // 1 = da trao vu khi nhap mon (chi mot lan)
 	int          nLastLevel;                  // cap do lan cuoi da cong diem tiem nang
 	unsigned int nChetTuTick;                 // moc tick phat hien bot nam cho hoi sinh (0 = dang song)
+	// ---- chien dau ----
+	int          nAtkSkill;                   // id chieu danh da ghim (0 = chua chon)
+	int          nAtkSkillLv;                 // cap cua chieu do
+	int          nAtkPickLevel;               // cap bot luc chon chieu (len cap thi chon lai)
+	int          nTargetNpc;                  // khe NPC muc tieu (0 = chua co)
+	unsigned int nLagTick;                    // moc do "danh mai khong sut mau"
+	int          nLagLife;                    // mau muc tieu tai moc do
+	unsigned int nCastTick;                   // moc phat lenh danh lan cuoi
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -532,6 +545,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nGaveWeapon = 0;
 		b.nLastLevel  = 0;
 		b.nChetTuTick = 0;
+		b.nAtkSkill = 0;  b.nAtkSkillLv = 0;  b.nAtkPickLevel = 0;
+		b.nTargetNpc = 0; b.nLagTick = 0;     b.nLagLife = 0;  b.nCastTick = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -679,6 +694,44 @@ int PB_JoinFaction()
 	}
 	printf("[Bot] ra lenh vao phai cho %d bot\n", nRa);
 	return nRa;
+}
+
+// Bat/tat che do danh quai cho moi bot da vao phai.
+// Tach rieng khoi vao phai (giong PB_JoinFaction) de chu game chu dong thoi diem test.
+int PB_SetFight(int bOn)
+{
+	int n = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		if (bOn)
+		{
+			if (b.nAi != PB_AI_IN_FACTION && b.nAi != PB_AI_IDLE)
+				continue;
+			b.nAi        = PB_AI_FIGHT;
+			b.nTargetNpc = 0;
+			b.nAtkSkill  = 0;    // ep chon lai chieu theo vu khi hien tai
+			n++;
+		}
+		else if (b.nAi == PB_AI_FIGHT)
+		{
+			b.nAi        = PB_AI_IDLE;
+			b.nTargetNpc = 0;
+			int nNpcIdx  = Player[b.nPlayerIdx].m_nIndex;
+			if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
+				Npc[nNpcIdx].SendCommand(do_stand);
+			n++;
+		}
+	}
+	printf("[Bot] %s danh quai cho %d bot\n", bOn ? "BAT" : "TAT", n);
+	return n;
+}
+
+int LuaPB_SetFight(Lua_State* L)
+{
+	int bOn = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : 1;
+	Lua_PushNumber(L, PB_SetFight(bOn));
+	return 1;
 }
 
 int LuaPB_JoinFaction(Lua_State* L)
@@ -1099,6 +1152,216 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 		   Player[nIdx].m_nAttributePoint);
 }
 
+// ===========================================================================
+// CHIEN DAU
+//
+// Khuon lay tu chinh he auto cua du an, KHONG phai tu cay tham khao ngoai:
+//   chon MUC TIEU  : KPlayer::FindTargetNpc (KPlayer.cpp:9133-9291)
+//   chon KY NANG   : nhanh ATYPE_FIGHT (CoreShell.cpp:4589-4668)
+//   dieu phoi      : KMyApp::ExtAutoLoop (S3Client.cpp:781-1048)
+// Ca ba deu nam trong #ifndef _SERVER nen phia server khong co - phai viet lai.
+//
+// HAI DIEU HOC DUOC tu ban goc, giu nguyen o day:
+//   1. Muc tieu luon la GAN NHAT. Ban goc KHONG HE doc mau cua muc tieu trong ham chon
+//      (da doc tan dong KPlayer.cpp:9133-9291) - dung tu "cai tien" thanh uu tien mau thap.
+//   2. Chong ket: neu 10 giay ma mau muc tieu khong tut noi 10% thi bo no ra
+//      (khuon KPlayerAuto::AutoCheckNpcLag). Khong co cai nay thi mot con quai bat tu / ke
+//      sau tuong la du de treo bot vinh vien.
+//
+// TAM NHIN kep [100,1200] y ban goc (KPlayer.cpp:9139-9146).
+// ===========================================================================
+#define PB_VISION_MPS     700          // tam tim quai
+#define PB_CAST_GAP       4            // so khung toi thieu giua hai lenh danh
+#define PB_LAG_SECONDS    10           // bo muc tieu neu chung nay giay khong sut 10% mau
+
+// Tim quai GAN NHAT quanh bot.
+//
+// CO Y KHONG chep NpcSet.AutoGetNpcNear cua ban client (KNpcSet.cpp:1126): ham do quet TOAN BO
+// m_UseIdx - o client thi khong sao vi client chi giu vai tram NPC quanh minh, nhung o server
+// la duyet CA THE GIOI moi khung cho MOI bot. Thay bang quet theo REGION: region cua bot +
+// 8 region ke, dung m_NpcList co san (KRegion.h:35).
+static int pb_FindTarget(int nNpcIdx, int nVision)
+{
+	const int nSub = Npc[nNpcIdx].m_SubWorldIndex;
+	const int nReg = Npc[nNpcIdx].m_RegionIndex;
+	if (nSub < 0 || nSub >= MAX_SUBWORLD || nReg < 0)
+		return 0;
+
+	int bx = 0, by = 0;
+	Npc[nNpcIdx].GetMpsPos(&bx, &by);
+
+	int nBest = 0;
+	int nBestD = nVision;
+	for (int k = -1; k < 8; k++)
+	{
+		const int r = (k < 0) ? nReg : SubWorld[nSub].m_Region[nReg].m_nConnectRegion[k];
+		if (r < 0)
+			continue;
+		KIndexNode* pNode = (KIndexNode*)SubWorld[nSub].m_Region[r].m_NpcList.GetHead();
+		while (pNode)
+		{
+			const int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || i == nNpcIdx)      continue;
+			if (Npc[i].m_dwID == 0)                          continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive) continue;
+			// Dot nay bot CHI danh quai. Bo qua nguoi choi VA bot khac - de con lai
+			// mot dot rieng ban ky ve PK, khong de bot tu nhien danh nguoi that.
+			if (Npc[i].m_Kind == kind_player)                continue;
+			if (!(NpcSet.GetRelation(nNpcIdx, i) & relation_enemy)) continue;
+
+			int ex = 0, ey = 0;
+			Npc[i].GetMpsPos(&ex, &ey);
+			const int d = g_GetDistance(bx, by, ex, ey);
+			if (d < nBestD)
+			{
+				nBestD = d;
+				nBest  = i;
+			}
+		}
+	}
+	return nBest;
+}
+
+// Chon chieu danh hop VU KHI DANG CAM va hop CAP.
+//
+// Quy uoc EqtLimit (KSkills.cpp:241-254, da doc): -2 = moi vu khi, -1 = tay khong,
+// 0..99 = ho can chien, 100..199 = ho tam xa + 100. Rieng cay nay con quy
+// HAND_PARTICULAR (6, ho Trien Thu) ve -1, tuc "tay khong" va "Trien Thu" la MOT.
+// Bot di duong quyen (khong cam gi) vi vay khop dung nhom -1.
+//
+// Du lieu that cua may chu: 1454/1602 chieu la -2 (moi vu khi) va 5 chieu -1 (quyen Thieu
+// Lam). Moi phai deu co it nhat mot chieu sat thuong -2 tu cap 10 nen khong phai nao bi cam.
+//
+// Uu tien: vu khi KHOP DUNG HO (rank 2) an dut "moi vu khi" (rank 1); cung rank thi lay cap
+// cao hon. Chieu khong hop vu khi thi BO HAN - vi CanCastSkill se tu choi IM LANG va
+// KNpc::DoSkill "goto Exit" khong mot dong bao loi (KNpc.cpp:2314).
+static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
+{
+	const int nWpn = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
+	int nWant = -1;                       // -1 = tay khong / Trien Thu
+	if (nWpn > 0)
+	{
+		const int nDetail = Item[nWpn].GetDetailType();
+		const int nParti  = Item[nWpn].GetParticular();
+		if (nParti == HAND_PARTICULAR)
+			nWant = -1;
+		else
+			nWant = (nDetail == 1) ? (nParti + 100) : nParti;
+	}
+
+	int nBest = 0, nBestLv = 0, nBestRank = 0;
+	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
+	for (int i = 1; i < MAX_NPCSKILL; i++)
+	{
+		const int id = sl.m_Skills[i].SkillId;
+		if (id <= 0 || id >= MAX_SKILL)
+			continue;
+		int lv = sl.m_Skills[i].CurrentSkillLevel;
+		if (lv <= 0) lv = sl.m_Skills[i].SkillLevel;
+		if (lv <= 0)
+			continue;
+
+		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
+		if (!p)                       continue;
+		if (p->IsAura())              continue;   // vong sang, khong phai chieu danh
+		if (p->IsTargetSelf())        continue;
+		if (!p->IsTargetEnemy())      continue;
+
+		const int eq = p->GetEquipLimit();
+		int nRank = 0;
+		if (eq == -2)          nRank = 1;         // moi vu khi
+		else if (eq == nWant)  nRank = 2;         // khop dung ho -> an dut
+		else                   continue;          // khong hop -> se bi tu choi im lang
+
+		if (nRank > nBestRank || (nRank == nBestRank && lv > nBestLv))
+		{
+			nBestRank = nRank;
+			nBest     = id;
+			nBestLv   = lv;
+		}
+	}
+	if (pnLv) *pnLv = nBestLv;
+	return nBest;
+}
+
+// Mot nhip DANH NHAU. Tra 1 neu dang co viec (dang danh), 0 neu khong co muc tieu.
+static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
+{
+	const unsigned int now = SubWorld[nSub].m_dwCurrentTime;
+
+	// KNpc::DoSkill (KNpc.cpp:2329-2330) tra ve som neu IsPlayer() && !m_FightMode,
+	// nen KHONG bat co nay thi bot vung tay ma khong co gi xay ra.
+	if (!Npc[nNpcIdx].m_FightMode)
+		Npc[nNpcIdx].SetFightMode(TRUE);
+
+	// Chon lai chieu khi chua co, hoac khi da len cap (co chieu manh hon).
+	if (b.nAtkSkill <= 0 || b.nAtkPickLevel != Npc[nNpcIdx].m_Level)
+	{
+		b.nAtkPickLevel = Npc[nNpcIdx].m_Level;
+		const int nCu = b.nAtkSkill;
+		b.nAtkSkill = pb_PickSkill(nIdx, nNpcIdx, &b.nAtkSkillLv);
+		if (b.nAtkSkill != nCu)
+			printf("[BotDanh] %s cap %d dung chieu %d (cap %d)\n",
+				   Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, b.nAtkSkill, b.nAtkSkillLv);
+	}
+	if (b.nAtkSkill <= 0)
+		return 0;
+
+	// ---- muc tieu cu con dung khong ----
+	int t = b.nTargetNpc;
+	if (t > 0 && t < MAX_NPC)
+	{
+		if (Npc[t].m_dwID == 0 || Npc[t].m_SubWorldIndex != nSub
+		 || Npc[t].m_Doing == do_death || Npc[t].m_Doing == do_revive)
+			t = 0;
+	}
+	else
+		t = 0;
+
+	// ---- chong ket: 10 giay khong sut noi 10% mau thi bo con do ----
+	if (t)
+	{
+		if (b.nLagLife <= 0 || Npc[t].m_CurrentLife < b.nLagLife * 9 / 10)
+		{
+			b.nLagLife = Npc[t].m_CurrentLife;
+			b.nLagTick = now;
+		}
+		else if (now - b.nLagTick >= (unsigned int)(GAME_FPS * PB_LAG_SECONDS))
+		{
+			printf("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau\n",
+				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS);
+			t = 0;
+		}
+	}
+
+	if (!t)
+	{
+		t = pb_FindTarget(nNpcIdx, PB_VISION_MPS);
+		b.nTargetNpc = t;
+		b.nLagTick   = now;
+		b.nLagLife   = t ? Npc[t].m_CurrentLife : 0;
+		if (!t)
+			return 0;
+	}
+
+	// ---- ra don ----
+	// Khong phat moi khung: DoWalk/DoSkill deu phat goi tin ra vung lan can.
+	// KNpc::DoSkill co nhanh #ifdef _SERVER TU phat do_run toi muc tieu khi con ngoai tam
+	// (KNpc.cpp:2338-2349), nen KHONG can tu dan bot vao gan - engine lo phan ap sat.
+	if (now - b.nCastTick >= (unsigned int)PB_CAST_GAP)
+	{
+		b.nCastTick = now;
+		// Dung khuon may chu dung cho nguoi choi that khi nhan c2s_npcskill
+		// (KProtocolProcess::NpcSkillCommand, KProtocolProcess.cpp:4926):
+		//   SendCommand(do_skill, <id chieu>, -1, <khe NPC muc tieu>)
+		// ProcCommand tu goi FindSame + SetActiveSkill (KNpc.cpp:861-871) nen khong
+		// phai dat chieu truoc.
+		Npc[nNpcIdx].SendCommand(do_skill, b.nAtkSkill, -1, t);
+	}
+	return 1;
+}
+
 // Mot nhip cua MOT bot.
 static void pb_DriveBot(PB_Bot& b)
 {
@@ -1192,6 +1455,13 @@ static void pb_DriveBot(PB_Bot& b)
 		b.walk.Reset();
 		b.nNextTry = 0;
 		b.nAi      = PB_AI_IDLE;
+		return;
+	}
+
+	// ---------------------------------------------------------------- DANH QUAI
+	if (b.nAi == PB_AI_FIGHT)
+	{
+		pb_Fight(nIdx, nNpcIdx, nSub, b);
 		return;
 	}
 
