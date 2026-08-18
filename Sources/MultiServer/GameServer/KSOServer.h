@@ -181,6 +181,12 @@ private:
 	BOOL				SendGameDataToClient(const unsigned long lnID, const int nPlayerIndex);
 	void				SavePlayerData();
 	BOOL				SavePlayerData(int nIndex, bool bUnLock);
+public:
+	// Bot KPlayer: Core CHI dua (viec gi, identity, ten) sang day; GameServer moi dung
+	// goi tin. Xem chu thich dai trong Core\Src\KPlayerBot.h.
+	// PHAI public: ham thunk tinh PBotSendThunk (ngoai lop) goi vao day.
+	BOOL				PBotSendDbRequest(int nWhat, unsigned long ulIdentity, const char* szName);
+private:
 	void				ExitAllPlayer();
 	void				PlayerLogoutGateway();
 	void				PlayerExchangeServer();

@@ -21,6 +21,10 @@
 #include "CRC32.c"
 #endif
 
+// Hop dong voi bot KPlayer (chi typedef + POD). PHAI nam NGOAI khoi #ifdef _STANDALONE
+// o tren - khoi do DANG TAT nen dat trong do la khong thay gi ca.
+#include "../../Core/Src/KPlayerBot.h"
+
 #ifndef WIN32
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -97,6 +101,17 @@ const int KSwordOnLineSever::m_snMaxBuffer = 10;
 const int KSwordOnLineSever::m_snBufferSize = 1024 * 16;
 
 KSwordOnLineSever g_SOServer;
+
+// Con tro toi thuc the may chu, cho ham thunk tinh dung. Khai o day (truoc moi cho dung)
+// vi diem dang ky nam trong ham khoi tao, con than ham PBotSendDbRequest o mai duoi.
+static KSwordOnLineSever* g_pPBotSvr = NULL;
+
+static int PBotSendThunk(int nWhat, unsigned long ulIdentity, const char* szName)
+{
+	if (!g_pPBotSvr || !szName || !szName[0])
+		return 0;
+	return g_pPBotSvr->PBotSendDbRequest(nWhat, ulIdentity, szName) ? 1 : 0;
+}
 
 int	g_nTongPCSize[defTONG_PROTOCOL_CLIENT_NUM] = 
 {
@@ -635,6 +650,10 @@ BOOL KSwordOnLineSever::InitServer(char * szParam)
 	}
 
 	m_pCoreServerShell->OperationRequest(SSOI_LAUNCH, (intptr_t)pCloneServer, 0);
+
+	// Bot KPlayer: cam duong gui yeu cau CSDL vao Core.
+	g_pPBotSvr = this;
+	m_pCoreServerShell->OperationRequest(SSOI_PBOT_SET_SENDER, (intptr_t)&PBotSendThunk, 0);
 
 	/*
 	 * Connect to database
@@ -2056,6 +2075,55 @@ void KSwordOnLineSever::ChatSpecMan(const void *pData, size_t dataLength)
 }
 
 
+//------------------------------------------------------------------------------
+// Bot KPlayer: duong GUI yeu cau sang Goddess.
+//
+// VI SAO GameServer lam viec nay chu khong phai Core: cay nay co HAI tep KProtocol.h
+// dung chung guard KPROTOCOL_H, va ban trong Sources\Core\Src tung khai nDataLen la
+// size_t => 15 byte tren x64, trong khi Goddess (Win32) doc 11 byte. Neu Core tu dong
+// goi TProcessData thi Goddess doc nham ulIdentity, ten tai khoan lech 4 byte va
+// GetRoleListOfAccount that bai MA KHONG BAO LOI. Dung dung khoi ma o day (giong het
+// SavePlayerData ben duoi) thi bay khong the xay ra.
+//------------------------------------------------------------------------------
+BOOL KSwordOnLineSever::PBotSendDbRequest(int nWhat, unsigned long ulIdentity, const char* szName)
+{
+	if (!m_pDatabaseClient || !szName || !szName[0])
+		return FALSE;
+	int nLen = (int)strlen(szName);
+	if (nLen >= 30)			// Goddess kiem nLen < _NAME_LENGTH (ClientNode.cpp:301)
+		return FALSE;
+
+	char szBuf[sizeof(TProcessData) + 64];
+	memset(szBuf, 0, sizeof(szBuf));
+	TProcessData* pPD = (TProcessData*)szBuf;
+
+	if (nWhat == PB_ASK_ROLELIST)
+	{
+		// Khuon Goddess doc: pDataBuffer[0] = so nhan vat toi da muon lay,
+		// pDataBuffer[1..] = ten tai khoan, nDataLen = 1 + do dai ten.
+		// (Goddess\ClientNode.cpp:297-311)
+		pPD->nProtoId   = c2s_roleserver_getrolelist;
+		pPD->ulIdentity = ulIdentity;
+		pPD->bLeave     = false;
+		pPD->nDataLen   = nLen + 1;
+		pPD->pDataBuffer[0] = 1;	// chi can nhan vat dau tien
+		memcpy(&pPD->pDataBuffer[1], szName, nLen);
+	}
+	else
+	{
+		// Xin du lieu nhan vat: payload la TEN NHAN VAT.
+		pPD->nProtoId   = c2s_roleserver_getroleinfo;
+		pPD->ulIdentity = ulIdentity;
+		pPD->bLeave     = false;
+		pPD->nDataLen   = nLen + 1;
+		memcpy(&pPD->pDataBuffer[0], szName, nLen);
+	}
+
+	int nSend = (int)(sizeof(TProcessData) - 1 + pPD->nDataLen);
+	m_pDatabaseClient->SendPackToServer((const void*)pPD, nSend);
+	return TRUE;
+}
+
 void KSwordOnLineSever::DatabaseMessageProcess(const char* pData, size_t dataLength)
 {
 	_ASSERT( pData && dataLength );
@@ -2082,6 +2150,21 @@ void KSwordOnLineSever::DatabaseMessageProcess(const char* pData, size_t dataLen
 			int nIndex = pPD->ulIdentity;
 			m_pCoreServerShell->SetSaveStatus(nIndex, SAVE_IDLE);
 //			printf("=> Save Player Data finished(%d) <= \n", nIndex);
+		}
+		break;
+	case s2c_roleserver_getrolelist_result:
+		{
+			// Chi lay tra loi CUA BOT: Core luon bat bit 31 cua ulIdentity.
+			// (Duong luu nhan vat dung ulIdentity = chi so nguoi choi, KSOServer.cpp:3196.)
+			TProcessData* pPD = (TProcessData *)pData;
+			if (m_pCoreServerShell && (pPD->ulIdentity & 0x80000000ul))
+			{
+				PB_DB_RESULT res;
+				res.ulIdentity  = pPD->ulIdentity;
+				res.pPayload    = (const void*)pPD->pDataBuffer;
+				res.nPayloadLen = (int)pPD->nDataLen;
+				m_pCoreServerShell->OperationRequest(SSOI_PBOT_ROLELIST_RES, (intptr_t)&res, 0);
+			}
 		}
 		break;
 	default:
@@ -2123,6 +2206,30 @@ void KSwordOnLineSever::DatabaseLargePackProcess(const char* pData, size_t dataL
 				if (m_pCoreServerShell)
 				{
 					m_pCoreServerShell->SetLadder((void *)pRD->pDataBuffer, pRD->nDataLen);
+				}
+			}
+			break;
+
+		// Bot KPlayer: Goddess tra blob TRoleData. Goi nay la goi LON
+		// (s2c_roleserver_getroleinfo_result = 10 < s2c_micropackbegin = 31,
+		//  KProtocolDef.h:14,18,25) nen no di vao day chu khong vao switch goi nho.
+		case s2c_roleserver_getroleinfo_result:
+			{
+#ifndef _STANDALONE
+				TProcessData* pRI = (TProcessData *)pBuffer->GetBuffer();
+#else
+				TProcessData* pRI = (TProcessData *)pBuffer;
+#endif
+				// Chi lay tra loi CUA BOT: Core luon bat bit 31 cua ulIdentity.
+				// Duong luu nhan vat dung ulIdentity = chi so nguoi choi (KSOServer.cpp:3196)
+				// nen khong bao gio dung cham dai nay.
+				if (m_pCoreServerShell && (pRI->ulIdentity & 0x80000000ul))
+				{
+					PB_DB_RESULT res;
+					res.ulIdentity  = pRI->ulIdentity;
+					res.pPayload    = (const void*)pRI->pDataBuffer;
+					res.nPayloadLen = (int)pRI->nDataLen;
+					m_pCoreServerShell->OperationRequest(SSOI_PBOT_ROLEDATA_RES, (intptr_t)&res, 0);
 				}
 			}
 			break;

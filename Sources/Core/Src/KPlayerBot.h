@@ -22,6 +22,33 @@
 #ifndef KPLAYERBOT_H
 #define KPLAYERBOT_H
 
+//===========================================================================
+// HOP DONG CHUNG giua Core (x64, co _SERVER) va GameServer (x64, KHONG co _SERVER).
+// PHAI nam NGOAI #ifdef _SERVER: GameServer khong dinh nghia _SERVER (GameServer.vcxproj)
+// nen neu de trong guard thi no khong thay gi ca.
+// Chi la typedef + POD, khong keo theo phu thuoc nao.
+//===========================================================================
+
+// nWhat truyen cho PB_DbSender
+#define PB_ASK_ROLELIST  0
+#define PB_ASK_ROLEDATA  1
+
+// Core dua yeu cau ra ngoai qua con tro ham nay; GameServer cai dat no.
+// Tra 1 = da gui, 0 = that bai.
+typedef int (*PB_DbSender)(int nWhat, unsigned long ulIdentity, const char* szName);
+
+// Ket qua Goddess tra ve, GameServer chuyen nguoc vao Core.
+// POD thuan, CHI di trong cung mot tien trinh (CoreServer.dll nam trong GameServer.exe,
+// lien ket tinh - KSOServer.cpp:629) va hai ben cung x64 + cung header => an toan.
+// pPayload tro thang vao pDataBuffer cua TProcessData (GameServer da boc phan dau),
+// nen Core KHONG BAO GIO cham vao TProcessData - do la ca y do, xem chu thich duoi.
+struct PB_DB_RESULT
+{
+	unsigned long	ulIdentity;
+	const void*		pPayload;
+	int				nPayloadLen;
+};
+
 #ifdef _SERVER
 
 // Tran bot cua dot nay. CO Y de nho va gan cung, KHONG lay tu cau hinh.
@@ -44,10 +71,6 @@
 // So bot rut khoi hang doi moi nhip. Giu nho de khong nghen hang gui cua GameServer.
 #define PB_DRAIN_PER_TICK   2
 
-// nWhat truyen cho PB_DbSender
-#define PB_ASK_ROLELIST  0
-#define PB_ASK_ROLEDATA  1
-
 // ---------------------------------------------------------------------------
 // Gia tri m_nLixian danh RIENG cho bot. KHONG duoc dung 1 hay 2.
 //
@@ -69,20 +92,6 @@
 // va truot ca ba cong gay hai o tren. Da ra soat TOAN BO 9 cho doc co nay.
 // ---------------------------------------------------------------------------
 #define PB_LIXIAN_BOT    3
-
-// Core dua yeu cau ra ngoai qua con tro ham nay; GameServer cai dat no.
-// Tra 1 = da gui, 0 = that bai.
-typedef int (*PB_DbSender)(int nWhat, unsigned long ulIdentity, const char* szName);
-
-// Ket qua Goddess tra ve, GameServer chuyen nguoc vao Core.
-// POD thuan, CHI di trong cung mot tien trinh (CoreServer.dll nam trong GameServer.exe,
-// lien ket tinh - KSOServer.cpp:629) va hai ben cung x64 + cung header => an toan.
-struct PB_DB_RESULT
-{
-	unsigned long	ulIdentity;
-	const void*		pPayload;
-	int				nPayloadLen;
-};
 
 void PB_SetSender(PB_DbSender pfn);            // GameServer cai dat duong gui
 int  PB_Spawn(const char* szAccountName);      // xep 1 tai khoan vao hang doi sinh bot
