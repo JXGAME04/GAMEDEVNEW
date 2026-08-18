@@ -19,6 +19,10 @@
 #include "KFaction.h"       // FACTIONS_PRR_SERIES - so phai moi he
 #include "KRandom.h"        // g_Random
 #include "KFilePath.h"      // g_FileName2Id - doi duong script -> ma bam de nhan dien NPC
+#include "KItem.h"          // Item[] - doc DetailType / Particular / Series cua vu khi
+#include "KItemSet.h"       // ItemSet.Add - tao vat pham
+#include "KItemList.h"      // InsertEquipment / Equip / GetEquipment / RemoveItemIdx
+#include "GameDataDef.h"    // itempart_weapon, LOCK_STATE_LOCK
 #include "KPlayerBot.h"
 // TRoleData / S3DBI_RoleBaseInfo. Dung DUNG duong dan ma CoreServerShell.cpp:33 dang dung
 // de chac chan lay cung mot ban voi phan con lai cua Core (cay nay co nhieu ban
@@ -125,6 +129,8 @@ struct PB_Bot
 	int          nScatterX;                   // diem tan ra (MPS), 0 = chua boc
 	int          nScatterY;
 	int          nScatterTry;                 // so diem tan ra da boc hut
+	int          nGaveWeapon;                 // 1 = da trao vu khi nhap mon (chi mot lan)
+	int          nLastLevel;                  // cap do lan cuoi da cong diem tiem nang
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -474,6 +480,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nScatterX  = 0;
 		b.nScatterY  = 0;
 		b.nScatterTry = 0;
+		b.nGaveWeapon = 0;
+		b.nLastLevel  = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -844,6 +852,175 @@ static int pb_FindFacNpc(int nFaction)
 	return 0;
 }
 
+// ===========================================================================
+// TRAO VU KHI NHAP MON THEO PHAI (cap 1)
+//
+// Khuon lay tu cay tham khao: GiveBotFactionWeapon (USVOLAM PlayerAI\KBotManager.cpp:2010).
+// Vu khi dinh danh bang cap (nDetail, nParticular) theo bang [WeaponLimit] trong
+// settings\gamesetting.ini:134-144:
+//   can chien (detail 0): 0 Kiem  1 Don Dao  2 Con Bong  3 Thuong  4 Song Chuy  5 Song Dao
+//   tam xa   (detail 1): 0 Phi Tieu  1 Phi Dao  2 Tu Tien
+//
+// HAI DIEU CHINH so voi ban tham khao, theo dung yeu cau chu game:
+//   1. BO HAN particular 6 (Trien Thu / Chuong) - "du an toi khong co vu khi trien thu
+//      nen cac phai noi cong khong can add vu khi". Ban tham khao chen {0,6} vao gan het
+//      moi phai; bo no di thi bang con lai KHOP DUNG 10/10 danh sach chu game dua.
+//   2. "Kich" KHONG phai mot ho rieng - trong JX1 no la ho THUONG (particular 3), cai ten
+//      Kich chi xuat hien o cap cao ("Pha Thien Kich"). "Bao vu" la ho TU TIEN (tam xa,
+//      particular 2). Nen Thien Nhan lay ho Thuong, Duong Mon lay ca ho Tu Tien.
+//
+// Ngu hanh vu khi = nFaction / 2 - dung cong thuc phai = series*2 + {0,1} da chot.
+// ===========================================================================
+struct PB_WpnOpt { int d, p; };
+
+static const PB_WpnOpt s_wTL[] = { {0,1}, {0,2} };          // 0 Thieu Lam : Dao, Bong
+static const PB_WpnOpt s_wTV[] = { {0,3}, {0,4}, {0,1} };   // 1 Thien Vuong: Thuong, Chuy, Dao
+static const PB_WpnOpt s_wDM[] = { {1,2}, {1,0}, {1,1} };   // 2 Duong Mon  : Bao vu(Tu Tien), Phi Tieu, Phi Dao
+static const PB_WpnOpt s_wDao[] = { {0,1} };                // 3 Ngu Doc, 5 Thuy Yen, 9 Con Lon: Dao
+static const PB_WpnOpt s_wKiem[] = { {0,0} };               // 4 Nga My, 8 Vo Dang: Kiem
+static const PB_WpnOpt s_wBong[] = { {0,2} };               // 6 Cai Bang  : Bong
+static const PB_WpnOpt s_wThuong[] = { {0,3} };             // 7 Thien Nhan: Kich = ho Thuong
+
+static void pb_GiveFactionWeapon(int nIdx, int nFaction)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER || nFaction < 0 || nFaction >= MAX_FACTION)
+		return;
+
+	const PB_WpnOpt* pPool = s_wDao;
+	int nPool = 1;
+	switch (nFaction)
+	{
+	case 0: pPool = s_wTL;     nPool = 2; break;
+	case 1: pPool = s_wTV;     nPool = 3; break;
+	case 2: pPool = s_wDM;     nPool = 3; break;
+	case 4: case 8: pPool = s_wKiem;   nPool = 1; break;
+	case 6: pPool = s_wBong;   nPool = 1; break;
+	case 7: pPool = s_wThuong; nPool = 1; break;
+	default: break;            // 3 Ngu Doc / 5 Thuy Yen / 9 Con Lon = Dao
+	}
+
+	const PB_WpnOpt& w = pPool[(int)g_Random(nPool)];
+	const int nSeries = nFaction / 2;
+
+	// Thao vu khi cu neu co. Bot nhan ban tu mot nhan vat mau nen CO THE dang cam san vu
+	// khi cua nhan vat do - khong thao thi no giu nguyen va ky nang mon phai danh khong trung.
+	const int nOld = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
+	if (nOld > 0)
+	{
+		// RemoveItemIdx voi so luong = ca chong. TRUYEN 0 LA KHONG XOA GI (KItemList.cpp:
+		// nNum=0 -> SetStackNum(nStack - 0) tuc giu nguyen). KItemList::Remove tu goi UnEquip
+		// cho o pos_equip nen khong ro ri.
+		Player[nIdx].m_ItemList.RemoveItemIdx(nOld, Item[nOld].GetStackNum());
+	}
+
+	int nMagic[MAX_ITEM_MAGICLEVEL];
+	ZeroMemory(nMagic, sizeof(nMagic));
+	// (nItemNature=0, nItemGenre=0 item_equip, nSeries, nLevel=1, nLuck=0, nDetail, nParticular)
+	const int nNew = ItemSet.Add(0, 0, nSeries, 1, 0, w.d, w.p, nMagic,
+						  g_SubWorldSet.GetGameVersion(), 0);
+	if (nNew <= 0)
+	{
+		printf("[BotVuKhi] %s: ItemSet.Add THAT BAI (detail=%d parti=%d series=%d)\n",
+			   Player[nIdx].m_PlayerName, w.d, w.p, nSeries);
+		return;
+	}
+
+	Item[nNew].LockItem(LOCK_STATE_LOCK);              // khoa lai de bot khong lam roi
+	Player[nIdx].m_ItemList.InsertEquipment(nNew, false);
+	// Equip o cay nay chi co HAI tham so (KItemList.h:104), ban tham khao co tham so thu ba
+	// bUpdateSkin - dung chep nguyen chu ky sang.
+	Player[nIdx].m_ItemList.Equip(nNew, -1);
+
+	printf("[BotVuKhi] %s phai %s: detail=%d parti=%d he=%d, dang cam=%d\n",
+		   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen, w.d, w.p, nSeries,
+		   (int)(Player[nIdx].m_ItemList.GetEquipment(itempart_weapon) > 0));
+}
+
+// ===========================================================================
+// TU CONG DIEM TIEM NANG (goi moi lan len cap)
+//
+// Co che lay tu cay tham khao AllocateBotAttributePoints (KBotManager.cpp:2083), nhung
+// TY LE thi theo dung chu game chot (ban tham khao chia 50/50, khac han):
+//   Ngoai cong (mac dinh) : 50% Suc manh, 25% Sinh khi, 25% Than phap
+//   Duong Mon             : 60% Than phap, 40% Sinh khi
+//   Vo Dang               : 70% Noi cong, 30% Sinh khi
+//   Noi cong (neu co)     : 20% Suc manh, 10% Than phap, 70% Sinh khi
+//
+// GIA DINH DA NEU RO: chu game chi diem danh RIENG hai phai Duong Mon va Vo Dang, nen 8
+// phai con lai di duong "ngoai cong". Nhanh "noi cong" van giu nguyen trong ma, kich hoat
+// bang vu khi ho Trien Thu (particular 6) - du an hien khong co ho do nen nhanh nay nam cho.
+//
+// Ten bien THAT trong engine (da doi chieu, khong doan):
+//   Suc manh = m_nStrength   Than phap = m_nDexterity
+//   Sinh khi = m_nVitality   Noi cong = m_nEngergy   (engine viet sai chinh ta "Engergy")
+// Diem chua tieu = m_nAttributePoint (KPlayer.h:346), moi cap +5.
+// Bon ham AddBase* la CONG DUY NHAT co kiem du diem (nData > 0 && nData <= m_nAttributePoint)
+// va chung TRU DAN vao quy, nen phai chia sao cho TONG DUNG BANG quy va goi lan luot.
+// ===========================================================================
+// Cong diem vao MOT chi so, di dung duong goi tin cua nguoi choi that.
+static void pb_AddAttrib(int nIdx, int nWhich, int nPoint)
+{
+	if (nPoint <= 0)
+		return;
+	PLAYER_ADD_BASE_ATTRIBUTE_COMMAND cmd;
+	cmd.ProtocolType  = c2s_playeraddbaseattribute;
+	cmd.m_btAttribute = (BYTE)nWhich;
+	cmd.m_nAddNo      = nPoint;
+	Player[nIdx].AddBaseAttribute((BYTE*)&cmd);
+}
+
+static void pb_AllocAttribPoints(int nIdx, int nFaction)
+{
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+		return;
+	const int nQuy = Player[nIdx].m_nAttributePoint;
+	if (nQuy <= 0)
+		return;
+
+	// Bot co dang cam vu khi ho Trien Thu khong (nhanh noi cong).
+	const int nWpn   = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
+	const int nParti = (nWpn > 0) ? Item[nWpn].GetParticular() : -1;
+
+	int nSM = 0, nTP = 0, nSK = 0, nNC = 0;   // suc manh / than phap / sinh khi / noi cong
+
+	if (nFaction == 2)                       // Duong Mon
+	{
+		nTP = nQuy * 60 / 100;
+		nSK = nQuy - nTP;
+	}
+	else if (nFaction == 8)                  // Vo Dang
+	{
+		nNC = nQuy * 70 / 100;
+		nSK = nQuy - nNC;
+	}
+	else if (nParti == 6)                    // nhanh noi cong (Trien Thu) - hien chua dung
+	{
+		nSM = nQuy * 20 / 100;
+		nTP = nQuy * 10 / 100;
+		nSK = nQuy - nSM - nTP;              // phan du don het vao sinh khi
+	}
+	else                                     // ngoai cong
+	{
+		nSM = nQuy * 50 / 100;
+		nTP = nQuy * 25 / 100;
+		nSK = nQuy - nSM - nTP;
+	}
+
+	// Bon ham AddBaseStrength/Dexterity/Vitality/Engergy deu PRIVATE o cay nay
+	// (KPlayer.h:622-625). Cong CONG KHAI la AddBaseAttribute(BYTE*) o KPlayer.h:788 - chinh
+	// la thu KProtocolProcess::PlayerAddBaseAttribute goi khi nhan goi tin cua nguoi choi
+	// that (KProtocolProcess.cpp:5200-5202). Di duong nay tuc bot cong diem y HET nguoi that.
+	// AddBase* tu tru vao quy nen tong dung bang nQuy la khong bao gio bi tu choi.
+	pb_AddAttrib(nIdx, ATTRIBUTE_STRENGTH, nSM);
+	pb_AddAttrib(nIdx, ATTRIBUTE_DEXTERITY, nTP);
+	pb_AddAttrib(nIdx, ATTRIBUTE_VITALITY, nSK);
+	pb_AddAttrib(nIdx, ATTRIBUTE_ENGERGY, nNC);
+
+	printf("[BotDiem] %s (%s) chia %d diem: SM=%d TP=%d SK=%d NC=%d, con lai=%d\n",
+		   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen, nQuy, nSM, nTP, nSK, nNC,
+		   Player[nIdx].m_nAttributePoint);
+}
+
 // Mot nhip cua MOT bot.
 static void pb_DriveBot(PB_Bot& b)
 {
@@ -999,9 +1176,26 @@ static void pb_DriveBot(PB_Bot& b)
 	// lech, hoac script chua nap), ma luc do bot van dung yen canh NPC trong nhu da xong.
 	// In ra thi chu game nhin console la biet ngay ly do, khong phai doan.
 	if (Player[nIdx].m_cFaction.m_nCurFaction == b.nFaction)
+	{
 		printf("[Bot] %s da vao %s (phai %d, he %d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
 		       b.nFaction, Npc[nNpcIdx].m_Series);
+
+		// Trao vu khi nhap mon MOT LAN. Ban tham khao lam y het o day: vao phai xong moi trao,
+		// va dat co de KHONG boc lai moi lan len cap (KBotManager.cpp:2950-2956).
+		// Khong co vu khi hop ho thi ky nang mon phai vua hoc se bi CanCastSkill tu choi
+		// IM LANG (KSkills.cpp:230-267) va bot danh khong ra chieu.
+		if (!b.nGaveWeapon)
+		{
+			b.nGaveWeapon = 1;
+			pb_GiveFactionWeapon(nIdx, b.nFaction);
+		}
+
+		// Tieu luon so diem dang ton (nhan vat mau co the da tich san), tu do moi lan len cap
+		// se tieu tiep o nhanh PB_AI_IN_FACTION ben tren.
+		b.nLastLevel = Npc[nNpcIdx].m_Level;
+		pb_AllocAttribPoints(nIdx, b.nFaction);
+	}
 	else
 		printf("[Bot] %s XIN VAO %s THAT BAI: m_nCurFaction=%d (he bot=%d, he phai can=%d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
