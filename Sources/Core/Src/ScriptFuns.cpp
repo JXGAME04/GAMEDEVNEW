@@ -12721,6 +12721,12 @@ extern int LuaSC_SetBotInfo(Lua_State* L);
 extern int LuaSC_SetBotTitle(Lua_State* L);
 extern int LuaSC_SetBotTong(Lua_State* L);
 extern int LuaSC_SetBotMate(Lua_State* L);
+// Trang tri thanh thi 18/08 (KSimCity.cpp GD5)
+extern int LuaSC_SetBotStall(Lua_State* L);
+extern int LuaSC_SetBotSit(Lua_State* L);
+extern int LuaSC_CityNodes(Lua_State* L);
+extern int LuaSC_PickSpawn(Lua_State* L);
+extern int LuaSC_RandomName(Lua_State* L);
 // Bot KPlayer that (KPlayerBot.cpp) - khac bot NPC SimCity o tren
 extern int LuaPB_AddBot(Lua_State* L);
 extern int LuaPB_BotCount(Lua_State* L);
@@ -13066,6 +13072,11 @@ TLua_Funcs GameScriptFuns[] =
 	{"SC_SetBotTitle",	LuaSC_SetBotTitle},
 	{"SC_SetBotTong",	LuaSC_SetBotTong},
 	{"SC_SetBotMate",	LuaSC_SetBotMate},
+	{"SC_SetBotStall",	LuaSC_SetBotStall},	// Trang tri thanh thi 18/08
+	{"SC_SetBotSit",	LuaSC_SetBotSit},
+	{"SC_CityNodes",	LuaSC_CityNodes},
+	{"SC_PickSpawn",	LuaSC_PickSpawn},
+	{"SC_RandomName",	LuaSC_RandomName},
 	// Bot KPlayer that: goi bot nap tu roledb qua Goddess
 	{"PB_AddBot",		LuaPB_AddBot},
 	{"PB_BotCount",		LuaPB_BotCount},

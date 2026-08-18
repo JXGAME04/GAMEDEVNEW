@@ -50,9 +50,87 @@ function SC_Menu()
 	"Tat driver di chuyen/SC_Off",
 	"Bat bot noi chuyen/SC_ChatOn",
 	"Tat bot noi chuyen/SC_ChatOff",
+	"Trang tri thanh thi (map nay)/SC_City",
 	"Xoa het bot/SC_Clear",
 	"Bot NGUOI CHOI THAT (KPlayer)/PB_Menu",
 	SC_END_SAY})
+end
+
+-- ================= TRANG TRI THANH THI (18/08) =================
+-- Khuon ban goc pthanhthi.lua: sap hang NGOI BAN tum quanh dia danh (tiem thuoc,
+-- tap hoa, Da Tau...) + dan di dao rai tren luoi node cua map. Du lieu:
+--   settings/simcity/maps/thanhthi.txt (chi muc WorldID -> file node)
+--   settings/simcity/maps/attractions.txt (dia danh) + stall_adv.txt (bien sap)
+--   settings/simcity/names.txt (737 ten ban goc)
+SC_CitySeq = 0
+function SC_TenThanhThi()
+	local s = SC_RandomName()
+	if s and s ~= "" then
+		SC_CitySeq = SC_CitySeq + 1
+		return format("%s%d", s, SC_CitySeq)
+	end
+	return SC_MakeName()
+end
+
+function SC_City()
+	local nW, nX, nY = GetWorldPos()
+	local nSwIdx = SubWorldID2Idx(nW)
+	local nSet = SC_CityNodes(nW)
+	if not nSet or nSet < 0 then
+		Msg2Player(format("Map %d khong co du lieu node (maps/thanhthi.txt).", nW))
+		SC_Menu()
+		return
+	end
+	local nSap = 0
+	local nDi = 0
+	-- SAP BAN truoc (diem nhan thi giac): ngoi + bien hieu, quanh dia danh
+	local nMuonSap = 20 + random(0, 10)
+	for i = 1, nMuonSap do
+		local sx, sy = SC_PickSpawn(nSet, 1, nW, nSwIdx)
+		if sx and sx > 0 then
+			local nIdx = 0
+			for t = 1, 5 do
+				nIdx = SC_AddBot(random(0, 1), 85 + random(0, 15), nSwIdx, sx, sy,
+				                 random(0, 4), SC_TenThanhThi())
+				if nIdx and nIdx > 0 then
+					break
+				end
+			end
+			if nIdx and nIdx > 0 then
+				SC_DressBot(nIdx, 0)
+				SC_SetBotFaction(nIdx, random(0, 9))
+				SC_SetBotInfo(nIdx, 0, random(0, 8000), random(0, 300), random(0, 2))
+				-- stall + sit dat NGAY sau khi sinh - m_BaiTan chi di trong goi sync
+				-- luc client VAO region, khong co goi cap nhat rieng
+				SC_SetBotStall(nIdx, 1)
+				SC_SetBotSit(nIdx)
+				nSap = nSap + 1
+			end
+		end
+	end
+	-- DAN DI DAO: rai deu, tuan tra quanh cho dung (PatrolBox 16 o)
+	for i = 1, 40 do
+		local sx, sy = SC_PickSpawn(nSet, 0, nW, nSwIdx)
+		if sx and sx > 0 then
+			local nIdx = 0
+			for t = 1, 5 do
+				nIdx = SC_AddBot(random(0, 1), 80 + random(0, 20), nSwIdx, sx, sy,
+				                 random(0, 4), SC_TenThanhThi())
+				if nIdx and nIdx > 0 then
+					break
+				end
+			end
+			if nIdx and nIdx > 0 then
+				SC_GiveIdentity(nIdx)
+				SC_PatrolBox(nIdx, 512)
+				nDi = nDi + 1
+			end
+		end
+	end
+	SC_MoveOn()
+	SC_LastBot = SC_LastBot + nSap + nDi
+	Msg2Player(format("Trang tri map %d: %d sap ngoi ban + %d dan di dao.", nW, nSap, nDi))
+	SC_Menu()
 end
 
 -- ================= BOT NGUOI CHOI THAT (KPlayerBot) =================

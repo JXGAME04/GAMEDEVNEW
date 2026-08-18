@@ -1290,6 +1290,365 @@ int LuaSC_ClearChat(Lua_State* L)
 // ============================================================================
 // SC_Breathe() - goi moi tick tu CoreServerShell::Breathe.
 // ============================================================================
+// ============================================================================
+// TRANG TRI THANH THI (chu game 18/08: "lay phan trang tri o thanh thi nhu ban
+// tham khao"). Khuon tu pthanhthi.lua + sim.entity.lua cua ban goc:
+//   - sap hang NGOI BAN tum quanh dia danh (attractions.txt, node < 8 o) + lech
+//     ngau nhien +-12 o (sim.entity.lua:31-40) -> cho thanh cho tu nhien;
+//   - dan di dao rai deu tren luoi node (maps/thanhthi/<id>_*_nodes.txt);
+//   - bien sap = m_BaiTan + ShopName cua CHINH engine JX1 (KNpc.h:423-424,
+//     client co san: ve bien KNpc.cpp:6211, hoi ten qua c2s_playershopname);
+//   - ngoi = SendCommand(do_sit) (s2c_npcsit co san).
+// LUU Y SONG CON (phan tich 18/08): m_BaiTan CHI di trong goi PLAYER_SYNC khi
+// client vao region - KHONG co goi "doi bien hieu" rieng -> phai dat stall
+// NGAY SAU SC_AddBot, truoc khi nguoi choi sync bot. Va TUYET DOI khong dat
+// m_BaiTan len bot KPlayerBot (bot do co m_ItemList that, nguoi choi bam mua la
+// dong den do that) - sc_Bot da chan vi chi nhan m_btSimCityBot.
+
+#define SC_MAX_ADV    32
+#define SC_MAX_TEN    800
+#define SC_MAX_ATTR   320
+#define SC_MAX_NSET   12
+#define SC_NSET_NODE  512
+
+static char  s_adv[SC_MAX_ADV][32];
+static int   s_advCount = -1;            // -1 = chua nap
+static char  s_ten[SC_MAX_TEN][28];
+static int   s_tenCount = -1;
+static int   s_attrW[SC_MAX_ATTR], s_attrX[SC_MAX_ATTR], s_attrY[SC_MAX_ATTR];
+static int   s_attrCount = -1;
+
+struct SC_NodeSet
+{
+	int   nWorldId;
+	int   nCount;
+	short x[SC_NSET_NODE];              // O LUOI (tile), nhan 32 ra MPS
+	short y[SC_NSET_NODE];
+};
+static SC_NodeSet s_nset[SC_MAX_NSET];
+static int        s_nsetCount = 0;
+
+// doc mot dong, bo CRLF + khoang trang duoi
+static void sc_CatDuoi(char* p)
+{
+	int n = (int)strlen(p);
+	while (n > 0 && (p[n-1] == '\r' || p[n-1] == '\n'
+	             || p[n-1] == ' '  || p[n-1] == '\t'))
+		p[--n] = 0;
+}
+
+static void sc_NapAdv()
+{
+	if (s_advCount >= 0)
+		return;
+	s_advCount = 0;
+	FILE* f = fopen("settings/simcity/stall_adv.txt", "rb");
+	if (!f)
+		return;
+	char szDong[128];
+	while (s_advCount < SC_MAX_ADV && fgets(szDong, sizeof(szDong), f))
+	{
+		sc_CatDuoi(szDong);
+		if (!szDong[0] || strlen(szDong) > 31)
+			continue;                  // ShopName[32] - cat la vo bien
+		strcpy(s_adv[s_advCount++], szDong);
+	}
+	fclose(f);
+}
+
+static void sc_NapTen()
+{
+	if (s_tenCount >= 0)
+		return;
+	s_tenCount = 0;
+	FILE* f = fopen("settings/simcity/names.txt", "rb");
+	if (!f)
+		return;
+	char szDong[128];
+	int  nDong = 0;
+	while (s_tenCount < SC_MAX_TEN && fgets(szDong, sizeof(szDong), f))
+	{
+		nDong++;
+		if (nDong == 1)
+			continue;                  // dong tieu de "Name"
+		sc_CatDuoi(szDong);
+		// Name[32] tru cho 4 so duoi chong trung -> ten goc toi da 23 byte
+		if (!szDong[0] || strlen(szDong) > 23)
+			continue;
+		strcpy(s_ten[s_tenCount++], szDong);
+	}
+	fclose(f);
+}
+
+static void sc_NapAttr()
+{
+	if (s_attrCount >= 0)
+		return;
+	s_attrCount = 0;
+	FILE* f = fopen("settings/simcity/maps/attractions.txt", "rb");
+	if (!f)
+		return;
+	char szDong[256];
+	int  nDong = 0;
+	while (s_attrCount < SC_MAX_ATTR && fgets(szDong, sizeof(szDong), f))
+	{
+		nDong++;
+		if (nDong == 1)
+			continue;                  // tieu de
+		// cot: worldId  ten  pX  pY  mo ta  npcId (tach bang TAB)
+		char* a[6] = { 0 };
+		int   nA = 0;
+		char* p = szDong;
+		a[nA++] = p;
+		while (*p && nA < 6)
+		{
+			if (*p == '\t') { *p = 0; a[nA++] = p + 1; }
+			p++;
+		}
+		if (nA < 4)
+			continue;
+		s_attrW[s_attrCount] = atoi(a[0]);
+		s_attrX[s_attrCount] = atoi(a[2]);
+		s_attrY[s_attrCount] = atoi(a[3]);
+		if (s_attrW[s_attrCount] > 0 && s_attrX[s_attrCount] > 0)
+			s_attrCount++;
+	}
+	fclose(f);
+}
+
+// (idx, 0/1 [, szBienHieu]) - bay/don sap. Khong truyen bien hieu thi boc ngau
+// nhien tu stall_adv.txt (21 cau cua ban goc, cung bang ma).
+int LuaSC_SetBotStall(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || Lua_GetTopIndex(L) < 2)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	const int nOn = (int)Lua_ValueToNumber(L, 2);
+	if (!nOn)
+	{
+		p->m_BaiTan = 0;
+		p->ShopName[0] = 0;
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	const char* szBien = NULL;
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsString(L, 3))
+		szBien = (const char*)lua_tostring(L, 3);
+	if (!szBien || !szBien[0])
+	{
+		sc_NapAdv();
+		if (s_advCount > 0)
+			szBien = s_adv[g_Random(s_advCount)];
+	}
+	memset(p->ShopName, 0, sizeof(p->ShopName));
+	if (szBien && szBien[0])
+		strncpy(p->ShopName, szBien, sizeof(p->ShopName) - 1);
+	p->m_BaiTan = 1;
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// (idx) - cho bot ngoi xuong (giu tu the ngoi vinh vien, OnSit giu khung cuoi).
+int LuaSC_SetBotSit(Lua_State* L)
+{
+	KNpc* p = sc_Bot(L, 1);
+	if (!p || p->m_RegionIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	// OnSit co nhanh IsPlayer() && m_nTimeIdleValue > 0 -> cham Player[m_nPlayerIdx]
+	// (KNpc.cpp:2296-2308). Bot SimCity mang m_nPlayerIdx = 0 -> khoa nhanh do lai.
+	p->m_nTimeIdleValue = 0;
+	p->SendCommand(do_sit);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// (nWorldId) -> nSetId / -1. Tu tra maps/thanhthi.txt (WorldID -> file nodes),
+// nap luoi node cua ban do do. Nap roi thi tra lai id cu (khu trung).
+int LuaSC_CityNodes(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	const int nW = (int)Lua_ValueToNumber(L, 1);
+	for (int k = 0; k < s_nsetCount; k++)
+		if (s_nset[k].nWorldId == nW)
+		{
+			Lua_PushNumber(L, k);
+			return 1;
+		}
+	if (s_nsetCount >= SC_MAX_NSET)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+
+	// tra bang chi muc: WorldID <TAB> Ten <TAB> duong dan file <TAB> loai
+	char szFileNode[160];
+	szFileNode[0] = 0;
+	{
+		FILE* f = fopen("settings/simcity/maps/thanhthi.txt", "rb");
+		if (!f)
+		{
+			Lua_PushNumber(L, -1);
+			return 1;
+		}
+		char szDong[256];
+		while (fgets(szDong, sizeof(szDong), f))
+		{
+			char* a[4] = { 0 };
+			int   nA = 0;
+			char* p = szDong;
+			a[nA++] = p;
+			while (*p && nA < 4)
+			{
+				if (*p == '\t') { *p = 0; a[nA++] = p + 1; }
+				p++;
+			}
+			if (nA < 4 || atoi(a[0]) != nW)
+				continue;
+			sc_CatDuoi(a[3]);
+			if (strcmp(a[3], "nodes") != 0)
+				continue;
+			sc_CatDuoi(a[2]);
+			_snprintf(szFileNode, sizeof(szFileNode) - 1,
+			          "settings/simcity/maps/%s", a[2]);
+			break;
+		}
+		fclose(f);
+	}
+	if (!szFileNode[0])
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+
+	FILE* f = fopen(szFileNode, "rb");
+	if (!f)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	SC_NodeSet& ns = s_nset[s_nsetCount];
+	ns.nWorldId = nW;
+	ns.nCount   = 0;
+	char szDong[512];
+	int  nDong = 0;
+	while (ns.nCount < SC_NSET_NODE && fgets(szDong, sizeof(szDong), f))
+	{
+		nDong++;
+		if (nDong == 1)
+			continue;                  // tieu de node_name...
+		int tx = 0, ty = 0;
+		if (sscanf(szDong, "%d_%d", &tx, &ty) != 2)
+			continue;
+		if (tx <= 0 || ty <= 0 || tx > 30000 || ty > 30000)
+			continue;
+		ns.x[ns.nCount] = (short)tx;
+		ns.y[ns.nCount] = (short)ty;
+		ns.nCount++;
+	}
+	fclose(f);
+	if (ns.nCount <= 0)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	s_nsetCount++;
+	Lua_PushNumber(L, s_nsetCount - 1);
+	return 1;
+}
+
+// (nSetId, nMode, nWorldId, nSubWorldIdx) -> nMpsX, nMpsY (0,0 = that bai)
+//   nMode 0: node ngau nhien + lech 2 o  (dan di dao rai deu)
+//   nMode 1: node CANH DIA DANH (< 8 o, attractions.txt) + lech 12 o (sap ban
+//            tum thanh cho - chep sim.entity.lua:31-40)
+int LuaSC_PickSpawn(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 4)
+	{
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	const int nSet = (int)Lua_ValueToNumber(L, 1);
+	const int nMode = (int)Lua_ValueToNumber(L, 2);
+	const int nW    = (int)Lua_ValueToNumber(L, 3);
+	const int nSw   = (int)Lua_ValueToNumber(L, 4);
+	if (nSet < 0 || nSet >= s_nsetCount)
+	{
+		Lua_PushNumber(L, 0);
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	SC_NodeSet& ns = s_nset[nSet];
+	sc_NapAttr();
+
+	for (int nThu = 0; nThu < 12; nThu++)
+	{
+		int tx = 0, ty = 0;
+		if (nMode == 1 && s_attrCount > 0)
+		{
+			// boc node roi kiem co dia danh nao cua map nay trong 8 o khong
+			const int q = (int)g_Random(ns.nCount);
+			int bGan = 0;
+			for (int h = 0; h < s_attrCount; h++)
+			{
+				if (s_attrW[h] != nW)
+					continue;
+				const int dx = (int)ns.x[q] - s_attrX[h];
+				const int dy = (int)ns.y[q] - s_attrY[h];
+				if (dx * dx + dy * dy < 64)
+				{
+					bGan = 1;
+					break;
+				}
+			}
+			if (!bGan)
+				continue;
+			tx = (int)ns.x[q] + (int)g_Random(25) - 12;
+			ty = (int)ns.y[q] + (int)g_Random(25) - 12;
+		}
+		else
+		{
+			const int q = (int)g_Random(ns.nCount);
+			tx = (int)ns.x[q] + (int)g_Random(5) - 2;
+			ty = (int)ns.y[q] + (int)g_Random(5) - 2;
+		}
+		const int mx = tx * 32 + 16;
+		const int my = ty * 32 + 16;
+		if (sc_Walkable(nSw, mx, my))
+		{
+			Lua_PushNumber(L, mx);
+			Lua_PushNumber(L, my);
+			return 2;
+		}
+	}
+	Lua_PushNumber(L, 0);
+	Lua_PushNumber(L, 0);
+	return 2;
+}
+
+// () -> ten ngau nhien tu names.txt (737 ten ban goc, cung bang ma) hoac "".
+int LuaSC_RandomName(Lua_State* L)
+{
+	sc_NapTen();
+	if (s_tenCount <= 0)
+	{
+		Lua_PushString(L, (char*)"");
+		return 1;
+	}
+	Lua_PushString(L, s_ten[g_Random(s_tenCount)]);
+	return 1;
+}
+
 void SC_Breathe()
 {
 	s_tick++;

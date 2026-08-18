@@ -50,6 +50,13 @@ int LuaSC_SetBotTitle(Lua_State* L);   // (idx, nRankId [, nRankBattleId] [, nPl
 int LuaSC_SetBotTong(Lua_State* L);    // (idx, szTongName [, szTongTitle] [, nFigure] [, nRecruit])
 int LuaSC_SetBotMate(Lua_State* L);    // (idx, szMateName)
 
+// GD5 - trang tri thanh thi (18/08): sap ban + ngoi + luoi node/dia danh
+int LuaSC_SetBotStall(Lua_State* L);   // (idx, 0/1 [, szBienHieu]) bay/don sap
+int LuaSC_SetBotSit(Lua_State* L);     // (idx) ngoi xuong
+int LuaSC_CityNodes(Lua_State* L);     // (nWorldId) -> nSetId / -1
+int LuaSC_PickSpawn(Lua_State* L);     // (nSetId, nMode, nWorldId, nSubWorldIdx) -> x, y MPS
+int LuaSC_RandomName(Lua_State* L);    // () -> ten tu names.txt
+
 void SC_Breathe();                    // goi moi tick tu CoreServerShell::Breathe (KHONG phai ham Lua)
 
 #endif // _SERVER
