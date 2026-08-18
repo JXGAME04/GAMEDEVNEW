@@ -190,6 +190,8 @@ struct PB_Bot
 	int          nJamX, nJamY;                // diem neo do "dam chan tai cho"
 	unsigned int nJamTick;                    // tu bao gio dung quanh diem neo
 	unsigned int nLachTick;                   // lan lach gan nhat (gion nhip)
+	int          nLachDem;                    // dem lan lach - xoay huong khoi dau, chong
+	                                          // lach qua roi lach nguoc lai cung mot cap o
 	// ---- dung vat pham ----
 	unsigned int nUongTick;                   // lan uong binh gan nhat
 	unsigned int nMoTuiTick;                  // lan mo tui duoc pham gan nhat
@@ -664,7 +666,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		memset(b.aLootBan, 0, sizeof(b.aLootBan));
 		memset(b.aLootBanTick, 0, sizeof(b.aLootBanTick));
 		b.loot.Reset();  b.nLootScanTick = 0;  b.nDonTuiTick = 0;
-		b.nPhamViTick = 0;  b.nBienLogTick = 0;
+		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -2132,7 +2134,8 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 // particular cua cac vat pham DUOC GIU (magicscript.txt, chi so dong - 1, da doi
 // chieu tung file lua: tuiduocpham 4813 / thodiaphuvh 437 / shenxingfu 1271 /
 // tien thao lo 70+71+1182):
-static const int s_nGiuPhu[] = { 4813, 437, 1271, 70, 71, 1182 };
+// 4821 = Tui duoc pham HOAT DONG (tuiduocphamtk.lua) - chu game chot giu 18/08.
+static const int s_nGiuPhu[] = { 4813, 4821, 437, 1271, 70, 71, 1182 };
 
 #define PB_LOOT_VISION    640          // chi nhat do roi trong 20 o quanh bot
 #define PB_LOOT_SCAN_GAP  (GAME_FPS * 2)
@@ -3118,7 +3121,12 @@ static void pb_DriveBot(PB_Bot& b)
 			Npc[nNpcIdx].GetMpsPos(&jx, &jy);
 			const int jdx = jx - b.nJamX;
 			const int jdy = jy - b.nJamY;
-			if (b.nJamTick == 0 || jdx > 96 || jdx < -96 || jdy > 96 || jdy < -96)
+			// DUNG YEN RA DON la binh thuong, khong phai ket (chu game 18/08: bot dang
+			// danh bi SetPos nhay 3 o moi 8 giay - "nhay coc toa do", va SetPos doi
+			// region lam client go/ve NPC nhin "nhu ra vao map"). Vua cast trong 3
+			// giay thi lam tuoi neo nhu the dang di chuyen.
+			if (b.nJamTick == 0 || jdx > 96 || jdx < -96 || jdy > 96 || jdy < -96
+			 || nowAll - b.nCastTick < (unsigned int)(GAME_FPS * 3))
 			{
 				b.nJamX = jx;  b.nJamY = jy;  b.nJamTick = nowAll;
 			}
@@ -3130,9 +3138,12 @@ static void pb_DriveBot(PB_Bot& b)
 				static const int aLx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 				static const int aLy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 				const int nLech3 = (int)(&b - &s_bots[0]);
+				b.nLachDem++;
 				for (int h = 0; h < 24; h++)
 				{
-					const int dir  = (nLech3 + h) & 7;
+					// + nLachDem*3 (buoc le): moi lan lach thu huong KHAC truoc,
+					// khong con lach A->B roi 8 giay sau lach B->A vinh vien
+					const int dir  = (nLech3 + b.nLachDem * 3 + h) & 7;
 					const int cach = 3 + (h / 8);            // 3, 4 roi 5 o
 					const int cx = jx + aLx[dir] * cach * 32;
 					const int cy = jy + aLy[dir] * cach * 32;
