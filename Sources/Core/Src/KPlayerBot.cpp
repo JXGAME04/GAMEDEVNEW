@@ -2924,16 +2924,43 @@ static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
 static char s_pbChatTG[PB_TG_MAX][PB_CHAT_LEN];
 static int  s_pbChatTGCount = 0;
 
-// Nap kho cau danh rieng cho kenh the gioi tu CHINH chat.txt dang co tren may
-// (cac nhom mang tinh "rao vat": giao dich / solo / hoat dong / tan tinh).
-// Nap luoi mot lan o lan noi dau tien.
+// Nap kho cau kenh the gioi tu settings/simcity/chatworld.txt - chinh la
+// chatworld_msg.txt 119 cau RAO VAT cua ban goc linux (mo vdk 18/08 xac nhan:
+// file CUNG BANG MA voi ma nguon du an, chep thang khong chuyen ma; 20 dong co
+// cho trong {item} de nhet LINK DO). Khong co file thi lui ve nhom "giaodich"
+// cua chat.txt. Nap luoi mot lan.
 static void pb_NapChatTG()
 {
 	static int s_bDaNap = 0;
 	if (s_bDaNap)
 		return;
 	s_bDaNap = 1;
-	static const char* s_aNhomTG[] = { "giaodich", "solo", "hoatdong", "tantinh" };
+
+	FILE* f = fopen("settings/simcity/chatworld.txt", "rb");
+	if (f)
+	{
+		char szDong[512];
+		while (s_pbChatTGCount < PB_TG_MAX && fgets(szDong, sizeof(szDong), f))
+		{
+			char* p = szDong;
+			while (*p == ' ' || *p == '\t')
+				p++;                              // moi dong goc co mot dau cach dau dong
+			int nL = (int)strlen(p);
+			while (nL > 0 && (p[nL-1] == '\r' || p[nL-1] == '\n'
+						   || p[nL-1] == ' '  || p[nL-1] == '\t'))
+				p[--nL] = 0;
+			if (nL <= 0)
+				continue;
+			strncpy(s_pbChatTG[s_pbChatTGCount], p, PB_CHAT_LEN - 1);
+			s_pbChatTG[s_pbChatTGCount][PB_CHAT_LEN - 1] = 0;
+			s_pbChatTGCount++;
+		}
+		fclose(f);
+		pb_Log("[BotKenh] nap %d cau rao vat tu chatworld.txt\n", s_pbChatTGCount);
+		return;
+	}
+
+	// du phong: khong co chatworld.txt -> lay nhom giaodich cua chat.txt
 	KTabFile tab;
 	if (!tab.Load((LPSTR)"/settings/simcity/chat.txt"))
 		return;
@@ -2942,10 +2969,7 @@ static void pb_NapChatTG()
 	{
 		char szT[64] = { 0 };
 		tab.GetString(row, 1, (LPSTR)"", szT, sizeof(szT));
-		int bLay = 0;
-		for (int q = 0; q < (int)(sizeof(s_aNhomTG) / sizeof(s_aNhomTG[0])); q++)
-			if (strcmp(szT, s_aNhomTG[q]) == 0) { bLay = 1; break; }
-		if (!bLay)
+		if (strcmp(szT, "giaodich") != 0)
 			continue;
 		char szC[PB_CHAT_LEN] = { 0 };
 		tab.GetString(row, 2, (LPSTR)"", szC, PB_CHAT_LEN);
@@ -2955,7 +2979,62 @@ static void pb_NapChatTG()
 		s_pbChatTG[s_pbChatTGCount][PB_CHAT_LEN - 1] = 0;
 		s_pbChatTGCount++;
 	}
-	pb_Log("[BotKenh] nap %d cau rao vat cho kenh the gioi\n", s_pbChatTGCount);
+	pb_Log("[BotKenh] nap %d cau (du phong chat.txt)\n", s_pbChatTGCount);
+}
+
+// ---------------------------------------------------------------------------
+// LINK DO trong chat: client JX1 CO SAN trinh doc token "[40 so phay nhau]"
+// (UiPlayerBar.cpp:2067-2219 phia go, UiMsgCentrePad.cpp:323 + CoreShell.cpp:8529
+// phia doc, NUM_INFO_ITEM_CHAT = 39 dau phay). Thu tu 40 truong:
+//   1 idTen  2 genre  3 detail  4 particular  5 series  6 level  7 luck
+//   8 version  9 randomSeed  10 idx  11 price  12 x  13 y  14 point  15 stack
+//   16 enchance  17 goldid  18 yearexp  19 lock  20 durability  21 hlock
+//   22 nature  23 maxOpt  24..39 generatorLevel[0..15] (MOI so deu co dau phay
+//   sau no, ke ca so cuoi, roi dong ngoac).
+// Tao mot mon TAM bang dung duong ItemSet.Add cua trao vu khi nhap mon, doc du
+// lieu that (seed/version/magic) de tooltip client dung ra mon that, roi huy.
+static void pb_TaoLinkDo(char* szOut, int nMax)
+{
+	szOut[0] = 0;
+	// vai mau vu khi quen mat de rao ban (detail, particular nhu bang nhap mon)
+	static const int s_aMauDo[][2] = {
+		{ 0, 1 },   // dao
+		{ 0, 0 },   // kiem
+		{ 0, 2 },   // bong
+		{ 0, 3 },   // thuong
+		{ 0, 4 },   // chuy
+		{ 1, 1 },   // phi tieu
+	};
+	const int nMau = (int)g_Random(sizeof(s_aMauDo) / sizeof(s_aMauDo[0]));
+	int nMagicTG[MAX_ITEM_MAGICLEVEL];
+	ZeroMemory(nMagicTG, sizeof(nMagicTG));
+	const int nDo = ItemSet.Add(0, 0, (int)g_Random(5), 1 + (int)g_Random(8), 0,
+							  s_aMauDo[nMau][0], s_aMauDo[nMau][1], nMagicTG,
+							  g_SubWorldSet.GetGameVersion(), 0);
+	if (nDo <= 0 || nDo >= MAX_ITEM)
+		return;
+
+	KItemGeneratorParam* pTS = Item[nDo].GetItemParam();
+	int nViet = _snprintf(szOut, nMax - 1,
+		"[%lu,%d,%d,%d,%d,%d,%d,%d,%u,0,0,0,0,0,1,0,0,0,0,%d,0,%d,%d,",
+		(unsigned long)Item[nDo].GetID(), Item[nDo].GetGenre(),
+		Item[nDo].GetDetailType(), Item[nDo].GetParticular(),
+		Item[nDo].GetSeries(), Item[nDo].GetLevel(),
+		pTS->nLuck, pTS->nVersion, (unsigned int)pTS->uRandomSeed,
+		Item[nDo].GetDurability(), Item[nDo].GetNature(),
+		Item[nDo].GetMaxOptMultiply());
+	for (int q = 0; q < MAX_ITEM_MAGICLEVEL && nViet > 0 && nViet < nMax - 8; q++)
+		nViet += _snprintf(szOut + nViet, nMax - nViet - 1, "%d,",
+						   pTS->nGeneratorLevel[q]);
+	if (nViet > 0 && nViet < nMax - 2)
+	{
+		szOut[nViet]     = ']';
+		szOut[nViet + 1] = 0;
+	}
+	else
+		szOut[0] = 0;
+
+	ItemSet.Remove(nDo);              // mon tam chi de doc du lieu, huy ngay
 }
 
 struct PB_Kenh
@@ -3035,10 +3114,30 @@ static void pb_ChatTheGioi()
 	if (nNoi <= 0)
 		return;
 
-	char* szCau = s_pbChatTG[(int)g_Random(s_pbChatTGCount)];
+	char* szGoc = s_pbChatTG[(int)g_Random(s_pbChatTGCount)];
+	char szCau[480];
+	// 20/119 cau co cho trong {item}: nhet LINK DO that vao (client tu ve ten do
+	// mau vang bam xem duoc) - tra loi yeu cau "bot post do len kenh chat" 18/08.
+	const char* pItem = strstr(szGoc, "{item}");
+	if (pItem)
+	{
+		char szLink[320];
+		pb_TaoLinkDo(szLink, sizeof(szLink));
+		if (!szLink[0])
+			return;                            // khong tao duoc mon -> bo luot nay
+		const int nTruoc = (int)(pItem - szGoc);
+		_snprintf(szCau, sizeof(szCau) - 1, "%.*s%s%s",
+		          nTruoc, szGoc, szLink, pItem + 6);
+		szCau[sizeof(szCau) - 1] = 0;
+	}
+	else
+	{
+		strncpy(szCau, szGoc, sizeof(szCau) - 1);
+		szCau[sizeof(szCau) - 1] = 0;
+	}
 	const int nLen = (int)strlen(szCau);
-	if (nLen <= 0)
-		return;
+	if (nLen <= 0 || nLen > 250)
+		return;                                // sentlen la BYTE - giu duoi 250
 
 	// bom toi TUNG nguoi that (nType=1). TUYET DOI khong dung nType=0: vong lap
 	// ben trong SendSystemInfo khong loc m_nNetConnectIdx=-1 cua bot.
