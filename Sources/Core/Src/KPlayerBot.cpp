@@ -3189,14 +3189,21 @@ static void pb_DriveBot(PB_Bot& b)
 			// Co quai gan thi danh; het quai gan thi DI HOANG toi cho khac tren CUNG ban do.
 			// Nho vay bot tu rai ra thay vi dam mot cho o diem ChangeWorld.
 			pb_DonTui(nIdx, b, nowAll);
-			if (pb_Fight(nIdx, nNpcIdx, nSub, b))
-			{
-				b.nRoamX = 0;      // dang danh -> huy chuyen di hoang
-				b.nRoamY = 0;
-			}
-			else if (pb_NhatDo(nIdx, nNpcIdx, nSub, b))
+			// NHAT TRUOC - DANH SAU (chu game 18/08: "chua thay nhat"): truoc day nhat
+			// chi chay khi pb_Fight HET muc tieu, ma bai quai day thi giet xong con nay
+			// lap tuc khoa con ke -> do roi nam cho toi khi sach quai (log 13:07: 1901
+			// don danh / 63 lan nhat). Dao len truoc: giet xong thay do CUA MINH roi la
+			// ra nhat vai giay roi danh tiep - y nhu nguoi that. An toan vi pb_NhatDo
+			// chi nhan do m_nBelong = chinh minh (do minh giet moi co), khong bao gio
+			// bo danh di nhat do thien ha.
+			if (pb_NhatDo(nIdx, nNpcIdx, nSub, b))
 			{
 				b.nRoamX = 0;      // dang nhat do -> hoan di hoang
+				b.nRoamY = 0;
+			}
+			else if (pb_Fight(nIdx, nNpcIdx, nSub, b))
+			{
+				b.nRoamX = 0;      // dang danh -> huy chuyen di hoang
 				b.nRoamY = 0;
 			}
 			else
