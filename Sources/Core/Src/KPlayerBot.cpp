@@ -1962,8 +1962,13 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		}
 		else if (now - b.nLagTick >= (unsigned int)(GAME_FPS * PB_LAG_SECONDS))
 		{
-			pb_Log("[BotDanh] %s bo muc tieu %d: %d giay khong sut duoc mau -> cam %d giay\n",
-				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS, PB_CAM_GIAY);
+			// In kem HP muc tieu: HP con 100% = don danh KHONG AN (cast hong/sat thuong 0);
+			// HP co sut nhung cham = danh an nhung yeu - hai benh khac nhau, chua khac nhau.
+			pb_Log("[BotDanh] %s bo muc tieu %d: %d giay khong sut mau -> cam %d giay"
+			       " (HP %d/%d, chieu %d cap %d)\n",
+				   Player[nIdx].m_PlayerName, t, PB_LAG_SECONDS, PB_CAM_GIAY,
+				   (int)Npc[t].m_CurrentLife, (int)Npc[t].m_CurrentLifeMax,
+				   b.nAtkSkill, b.nAtkSkillLv);
 			pb_CamMucTieu(b, t, now);
 			t = 0;
 		}
@@ -2038,6 +2043,14 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			// KHUNG (moi lan xoa trang ~3 MB bo nho nhap). Sai so 64 MPS < nguong toi 224.
 			aimX = aimX / 128 * 128 + 64;
 			aimY = aimY / 128 * 128 + 64;
+
+			// DANG DUOI thi lam tuoi dong ho "khong sut mau": truoc day dong ho chay ca
+			// luc duoi, nen bot duoi 10 giay chua toi noi la CAM OAN muc tieu roi lang
+			// thang con khac (bot.log 10:57: HaDuy19 cam 5222 xong nham 5267 cach dung
+			// 36 MPS). Ca dan cam-doi-cam lien tuc -> di cu vong quanh -> tac duong.
+			// Dong ho chi duoc phep dem khi DA VAO TAM danh.
+			b.nLagTick = now;
+			b.nLagLife = Npc[t].m_CurrentLife;
 
 			const int nWalk = PB_WalkTo(nNpcIdx, aimX, aimY, nSub, b.chase, 224);
 			if (nWalk != 0 && now - b.nChaseLegTick >= (unsigned int)(GAME_FPS / 2))
