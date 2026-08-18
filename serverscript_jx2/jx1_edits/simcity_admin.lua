@@ -68,6 +68,7 @@ function PB_Menu()
 	"Goi 1 bot (tai khoan 1)/#PB_Call(1,1)",
 	"Goi 5 bot (tai khoan 1-5)/#PB_Call(1,5)",
 	"Goi 20 bot (tai khoan 1-20)/#PB_Call(1,20)",
+	"Cho bot VAO PHAI (theo ngu hanh)/PB_Join",
 	"Go het bot nguoi choi/PB_Clear",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
@@ -86,7 +87,22 @@ end
 
 function PB_Clear()
 	local n = PB_ClearBot()
-	Msg2Player(format("Da go %d bot khoi so.", n))
+	Msg2Player(format("Da go %d bot khoi the gioi.", n))
+	PB_Menu()
+end
+
+-- Ra lenh cho bot di vao phai.
+-- TACH RIENG khoi luc goi bot LA CO Y: sinh xong bot chi TU DI BO TAN RA roi dung cho,
+-- bam muc nay thi chung moi lu luot keo toi NPC mon phai dung ngu hanh cua tung con.
+-- Bot nao tung bo cuoc (khong tim duoc duong) thi bam lai lan nua la no di lai.
+function PB_Join()
+	local n = PB_JoinFaction()
+	if n and n > 0 then
+		Msg2Player(format("Da ra lenh vao phai cho %d bot.", n))
+		Msg2Player("Bot tu chay bo toi NPC mon phai; xem console de biet ket qua.")
+	else
+		Msg2Player("Khong co bot nao nhan lenh. Goi bot ra truoc da.")
+	end
 	PB_Menu()
 end
 
