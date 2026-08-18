@@ -188,10 +188,12 @@ int main(int argc, char *argv[])
 				// ipassrole -> m_nChestPW (KPlayerDBFuns.cpp:382). Gia tri 214519 la MIN:
 				// KPlayer::LaunchPlayer (KPlayer.cpp:6768) se g_pServer->Release() roi dong
 				// 6776 goi PackDataToClient tren con tro NULL -> giet tang mang may chu.
-				printf("  ten=%-20s taikhoan=%-16s cap=%-4d nguhanh=%d phai=%d/%d "
+				printf("  ten=%-20s taikhoan=%-16s cap=%-4d nguhanh=%d gioitinh=%-3s phai=%d/%d "
 				       "ipassrole=%d%s len=%d\n",
 				       p->BaseInfo.szName, p->BaseInfo.caccname, p->BaseInfo.ifightlevel,
-				       p->BaseInfo.ifiveprop, p->BaseInfo.nSect, p->BaseInfo.nFirstSect,
+				       p->BaseInfo.ifiveprop,
+				       p->BaseInfo.bSex ? "nu" : "nam",   // bSex != 0 = nu (KPlayerDBFuns.cpp:238-246)
+				       p->BaseInfo.nSect, p->BaseInfo.nFirstSect,
 				       p->BaseInfo.ipassrole,
 				       (p->BaseInfo.ipassrole == 214519) ? "  <<< MIN 214519 !!!" : "",
 				       p->dwDataLen);
