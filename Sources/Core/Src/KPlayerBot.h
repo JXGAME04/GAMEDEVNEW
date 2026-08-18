@@ -167,6 +167,9 @@ int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (t
 int  PB_SetFight(int bOn);                     // bat/tat danh quai (tra so bot doi trang thai)
 // Tra 1 = da nhan la bot VA da tra loi (GameServer khong chuyen tiep nua); 0 = khong phai bot.
 int  PB_WhisperReply(const PB_WHISPER* p);
+// Hoc bang ten -> id kenh chat (goi tu KNewProtocolProcess khi relay cap id cho
+// client). Bot can id kenh THE GIOI de chat kenh nhu ban goc linux.
+void PB_GhiNhoKenh(const char* szTen, unsigned long dwId);
 void PB_Breathe();                             // nhip: rut hang doi + het han cho
 
 // Ham Lua cho lenh GM (dang ky trong ScriptFuns.cpp)

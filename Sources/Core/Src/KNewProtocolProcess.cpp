@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include "IClient.h"
 #include "KPlayerSet.h"
+#include "KPlayerBot.h"      // PB_GhiNhoKenh - hoc id kenh chat cho bot
 
 using OnlineGameLib::Win32::CBuffer;
 
@@ -190,6 +191,20 @@ void KNewProtocolProcess::P_ProcessPlayerCommExtend(IClient* pTransfer,
 					   DWORD dwFromIP, DWORD dwFromRelayID,
 					   int nPlayerIndex, BYTE* pData, int nDataSize)
 {
+#ifdef _SERVER
+	// [PB 18/08] Bang ten -> id kenh chat do relay cap CHI di ngang qua day tren
+	// duong xuong client - hung lai cho bot (can id kenh THE GIOI de chat kenh).
+	// Chi doc, khong doi goi tin.
+	if (nDataSize >= (int)sizeof(PLAYERCOMM_NOTIFYCHANNELID)
+	 && ((EXTEND_HEADER*)pData)->ProtocolID == playercomm_s2c_notifychannelid)
+	{
+		PLAYERCOMM_NOTIFYCHANNELID* pN = (PLAYERCOMM_NOTIFYCHANNELID*)pData;
+		char szTenKenh[__X_NAME_LEN_ + 1];
+		memcpy(szTenKenh, pN->channel, __X_NAME_LEN_);
+		szTenKenh[__X_NAME_LEN_] = 0;
+		PB_GhiNhoKenh(szTenKenh, pN->channelid);
+	}
+#endif
 	size_t pckgsize = sizeof(tagExtendProtoHeader) + nDataSize;
 #ifdef WIN32
 	tagExtendProtoHeader* pExHeader = (tagExtendProtoHeader*)_alloca(pckgsize);

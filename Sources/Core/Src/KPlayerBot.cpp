@@ -2881,7 +2881,129 @@ static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
 	char* p = s_pbChat[b.nChatCuoi];
 	const int nLen = (int)strlen(p);
 	if (nLen > 0)
-		KPlayerChat::NpcChat(nNpcIdx, p, nLen, false);
+		// true = hien ca vao KHUNG CHAT kenh "noi chuyen" gan (chu game 18/08: "mo bot
+		// tu chat thi khong hien noi dung o kenh chat"). Tham so nay chi bat co
+		// m_btIsShowMsgPad trong goi s2c_playersendchat - client co san nhanh xu ly
+		// (GameSpaceChangedNotify.cpp:1097), bong bong van hien nhu cu.
+		KPlayerChat::NpcChat(nNpcIdx, p, nLen, true);
+}
+
+// ===========================================================================
+// CHAT KENH THE GIOI
+//
+// Ban goc linux trong tay CHI co bong bong (sim.fun.lua:13 NpcChat, tac gia tu
+// ghi "tam revert NpcChat (bong bong)"); phan chat kenh nam o ban vdk.so moi hon
+// khong co trong kho - chi con file lieu chatworld_msg.txt. Vay nen lam bang
+// duong JX1 co san: KPlayerChat::SendSystemInfo (KPlayerChat.cpp:1773) bom thang
+// CHAT_CHANNELCHAT_SYNC voi ten bot + id kenh toi tung nguoi that - khong di qua
+// S3Relay (relay se tu choi vi bot khong co ket noi chat, ChannelMgr.cpp:897).
+//
+// ID kenh do relay CAP LUC CHAY theo ten (PLAYERCOMM_NOTIFYCHANNELID di ngang
+// GameServer tren duong xuong) - khong co hang so de ghi cung. PB_GhiNhoKenh hung
+// bang nay; kenh THE GIOI = kenh dau tien co ten KHONG mang khoa the ca nhan
+// ('#' cua Team#/Faction#/Tong#, '\\' cua man hinh) va khong phai "GM" -
+// client hoi kenh theo thu tu ini nen the gioi luon toi truoc CH_SONG/CH_JIN.
+// Moi kenh thay duoc deu in [BotKenh] de doi tay neu chon sai.
+#define PB_KENH_MAX      24
+#define PB_TG_GAP_MS     45000                 // gian cach toi thieu giua 2 cau the gioi
+#define PB_TG_GAP_THEM   45000                 // + ngau nhien 0..45s nua
+
+struct PB_Kenh
+{
+	char          szTen[36];
+	unsigned long dwId;
+};
+static PB_Kenh s_aKenh[PB_KENH_MAX];
+static int     s_nKenhDem = 0;
+static unsigned long s_dwKenhTheGioi = (unsigned long)-1;
+
+void PB_GhiNhoKenh(const char* szTen, unsigned long dwId)
+{
+	if (!szTen || !szTen[0] || dwId == (unsigned long)-1)
+		return;
+	for (int i = 0; i < s_nKenhDem; i++)
+		if (s_aKenh[i].dwId == dwId)
+			return;                             // da biet
+	if (s_nKenhDem < PB_KENH_MAX)
+	{
+		strncpy(s_aKenh[s_nKenhDem].szTen, szTen, sizeof(s_aKenh[0].szTen) - 1);
+		s_aKenh[s_nKenhDem].szTen[sizeof(s_aKenh[0].szTen) - 1] = 0;
+		s_aKenh[s_nKenhDem].dwId = dwId;
+		s_nKenhDem++;
+		pb_Log("[BotKenh] thay kenh \"%s\" id=%lu\n", szTen, dwId);
+	}
+	if (s_dwKenhTheGioi == (unsigned long)-1
+	 && !strchr(szTen, '#') && !strchr(szTen, '\\')
+	 && _stricmp(szTen, "GM") != 0)
+	{
+		s_dwKenhTheGioi = dwId;
+		pb_Log("[BotKenh] CHON kenh THE GIOI = \"%s\" (id=%lu)\n", szTen, dwId);
+	}
+}
+
+// Thinh thoang mot bot ngau nhien noi mot cau len kenh the gioi (45-90 giay/cau
+// cho CA DAN - kenh chat on hon bong bong nhieu nen phai giu thua).
+static void pb_ChatTheGioi()
+{
+	static DWORD s_dwMoc = 0;
+	static DWORD s_dwCho = 0;
+	if (s_dwKenhTheGioi == (unsigned long)-1 || s_pbChatCount <= 0 || s_botCount <= 0)
+		return;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwCho == 0)
+		s_dwCho = PB_TG_GAP_MS + (DWORD)g_Random(PB_TG_GAP_THEM);
+	if (s_dwMoc == 0)
+	{
+		s_dwMoc = dwNow;
+		return;
+	}
+	if (dwNow - s_dwMoc < s_dwCho)
+		return;
+	s_dwMoc = dwNow;
+	s_dwCho = PB_TG_GAP_MS + (DWORD)g_Random(PB_TG_GAP_THEM);
+
+	// chon mot bot con song ngau nhien lam nguoi noi
+	const int nBat = (int)g_Random(s_botCount);
+	int nNoi = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[(nBat + i) % s_botCount];
+		const int p = b.nPlayerIdx;
+		if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != b.dwID)
+			continue;
+		const int n = Player[p].m_nIndex;
+		if (n <= 0 || n >= MAX_NPC)
+			continue;
+		if (Npc[n].m_Doing == do_death || Npc[n].m_Doing == do_revive)
+			continue;
+		nNoi = p;
+		break;
+	}
+	if (nNoi <= 0)
+		return;
+
+	char* szCau = s_pbChat[(int)g_Random(s_pbChatCount)];
+	const int nLen = (int)strlen(szCau);
+	if (nLen <= 0)
+		return;
+
+	// bom toi TUNG nguoi that (nType=1). TUYET DOI khong dung nType=0: vong lap
+	// ben trong SendSystemInfo khong loc m_nNetConnectIdx=-1 cua bot.
+	int nGui = 0;
+	int nIdx = PlayerSet.GetFirstPlayer();
+	while (nIdx)
+	{
+		if (Player[nIdx].m_nNetConnectIdx >= 0 && Player[nIdx].m_dwID != 0)
+		{
+			KPlayerChat::SendSystemInfo(1, nIdx, Player[nNoi].m_PlayerName,
+			                            szCau, nLen, (int)s_dwKenhTheGioi);
+			nGui++;
+		}
+		nIdx = PlayerSet.GetNextPlayer();
+	}
+	if (nGui)
+		pb_Log("[BotKenh] %s noi kenh the gioi (toi %d nguoi): \"%.60s\"\n",
+		       Player[nNoi].m_PlayerName, nGui, szCau);
 }
 
 // ===========================================================================
@@ -3728,6 +3850,7 @@ void PB_Breathe()
 		for (int i = 0; i < s_botCount; i++)
 			pb_DriveBot(s_bots[i]);
 		pb_QuanLyNhom();
+		pb_ChatTheGioi();
 
 		QueryPerformanceCounter(&liT1);
 		s_nPerfTong += liT1.QuadPart - liT0.QuadPart;
