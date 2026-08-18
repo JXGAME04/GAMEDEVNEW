@@ -13,6 +13,7 @@
 #include "KNpc.h"
 #include "GameDataDef.h"
 #include "KSubWorldSet.h"
+#include "KPlayerBot.h"	// PB_IsBot / PB_TrapLog - bot mien trap
 #include "KRegion.h"
 #include "KNpcTemplate.h"
 #include "KItemSet.h"
@@ -9962,6 +9963,19 @@ void KNpc::CheckTrap()
 	{
 		return;
 	}
+
+#ifdef _SERVER
+	// BOT KPLAYER MIEN TRAP (nhu bot SimCity m_btSimCityBot o dau ham).
+	// Trap o cua map luyen (vd Hoa Son) chay script day nguoi khong du dieu kien
+	// NGUOC VE DIEM VAO - bot cham trap la "xuat hien lai tai diem cu" (chu game
+	// quan sat 18/08). Bot doi ban do bang ChangeWorld rieng, khong can trap;
+	// van ghi bot.log de biet bot DA dap trap nao, o dau.
+	if (PB_IsBot(m_nPlayerIdx))
+	{
+		PB_TrapLog(m_nPlayerIdx, m_TrapScriptID, m_MapX, m_MapY);
+		return;
+	}
+#endif
 
 	Player[m_nPlayerIdx].ExecuteScript(m_TrapScriptID, "main", m_nPlayerIdx);
 }
