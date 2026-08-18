@@ -1437,8 +1437,13 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 	int bx = 0, by = 0;
 	Npc[nNpcIdx].GetMpsPos(&bx, &by);
 
-	int nBest = 0;
-	int nBestD = nVision;
+	// TOP-8 ung vien gan nhat, roi MOI BOT CHON MOT CON KHAC NHAU theo chi so cua no.
+	// Bai hoc tu bot.log 10:37: 18 con cung chon "gan nhat tuyet doi" -> ca dam do ve
+	// 4-5 con quai (5100/5102/5103/5139), chong cui len nhau thanh cum o(2554-2557,
+	// 3479-3483) - NPC la tuong nen giat tai cho. Hai con thoat duoc chinh la hai con
+	// tinh co boc trung muc tieu lech dan.
+	int aId[8], aD[8];
+	int nCand = 0;
 	for (int k = -1; k < 8; k++)
 	{
 		const int r = (k < 0) ? nReg : SubWorld[nSub].m_Region[nReg].m_nConnectRegion[k];
@@ -1452,8 +1457,7 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 			if (i <= 0 || i >= MAX_NPC || i == nNpcIdx)      continue;
 			if (Npc[i].m_dwID == 0)                          continue;
 			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive) continue;
-			// Dot nay bot CHI danh quai. Bo qua nguoi choi VA bot khac - de con lai
-			// mot dot rieng ban ky ve PK, khong de bot tu nhien danh nguoi that.
+			// Dot nay bot CHI danh quai; nguoi choi va bot khac de dot PK rieng.
 			if (Npc[i].m_Kind == kind_player)                continue;
 			if (!(NpcSet.GetRelation(nNpcIdx, i) & relation_enemy)) continue;
 			if (pb_BiCam(b, i, now))                         continue;
@@ -1461,14 +1465,34 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 			int ex = 0, ey = 0;
 			Npc[i].GetMpsPos(&ex, &ey);
 			const int d = g_GetDistance(bx, by, ex, ey);
-			if (d < nBestD)
+			if (d >= nVision)
+				continue;
+			if (nCand < 8)
 			{
-				nBestD = d;
-				nBest  = i;
+				int pos = nCand++;
+				while (pos > 0 && aD[pos - 1] > d)
+				{
+					aId[pos] = aId[pos - 1]; aD[pos] = aD[pos - 1]; pos--;
+				}
+				aId[pos] = i; aD[pos] = d;
+			}
+			else if (d < aD[7])
+			{
+				int pos = 7;
+				while (pos > 0 && aD[pos - 1] > d)
+				{
+					aId[pos] = aId[pos - 1]; aD[pos] = aD[pos - 1]; pos--;
+				}
+				aId[pos] = i; aD[pos] = d;
 			}
 		}
 	}
-	return nBest;
+	if (nCand <= 0)
+		return 0;
+
+	// chi so bot = vi tri trong s_bots (b la tham chieu vao mang do)
+	const int nLech = (int)(&b - &s_bots[0]);
+	return aId[(unsigned)nLech % (unsigned)nCand];
 }
 
 // Chon chieu danh hop VU KHI DANG CAM va hop CAP.
@@ -1990,6 +2014,19 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				aimX = tx2 - (tx2 - bx2) * adist / nDist;
 				aimY = ty2 - (ty2 - by2) * adist / nDist;
 			}
+			// TOA SANG NGANG theo chi so bot (vuong goc huong tien, +/- 2 o): nhieu bot
+			// danh CUNG mot con ma dung chung mot diem nham (lai qua luoi 128) la lai
+			// chong cui. Toa ngang thi ca dam dan hang vong quanh muc tieu.
+			if (nDist > 0)
+			{
+				const int nLech2 = (int)(&b - &s_bots[0]);
+				const int nLat = ((nLech2 % 5) - 2) * 64;
+				if (nLat)
+				{
+					aimX += (-(ty2 - by2) * nLat) / nDist;
+					aimY += ((tx2 - bx2) * nLat) / nDist;
+				}
+			}
 			// Lam tron diem nham ve luoi 128 MPS: ca bot lan muc tieu deu nhuc nhich moi
 			// khung, khong lam tron thi o dich doi lien tuc va PB_WalkTo tinh lai A* MOI
 			// KHUNG (moi lan xoa trang ~3 MB bo nho nhap). Sai so 64 MPS < nguong toi 224.
@@ -2344,6 +2381,12 @@ static void pb_DriveBot(PB_Bot& b)
 		Npc[nNpcIdx].m_CurrentStaminaMax = 100;
 	if (Npc[nNpcIdx].m_CurrentStamina < Npc[nNpcIdx].m_CurrentStaminaMax)
 		Npc[nNpcIdx].m_CurrentStamina = Npc[nNpcIdx].m_CurrentStaminaMax;
+	// NOI LUC giu it nhat nua binh: chieu ton noi luc, can noi luc thi cast bi tu choi
+	// IM LANG va bot tut ve DANH THUONG - dung trieu chung "mot so phai van danh thuong".
+	// Nguoi that uong thuoc; bot gia lap thi bom.
+	if (Npc[nNpcIdx].m_CurrentManaMax > 0
+	 && Npc[nNpcIdx].m_CurrentMana < Npc[nNpcIdx].m_CurrentManaMax / 2)
+		Npc[nNpcIdx].m_CurrentMana = Npc[nNpcIdx].m_CurrentManaMax;
 
 	// Noi chuyen chay SONG SONG voi moi viec khac (di duong, danh nhau) - nguoi that cung
 	// vua danh vua noi. Dat truoc cac nhanh return de khong bi nhanh nao nuot mat.
