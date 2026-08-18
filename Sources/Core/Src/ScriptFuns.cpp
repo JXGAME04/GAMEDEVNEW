@@ -12721,6 +12721,10 @@ extern int LuaSC_SetBotInfo(Lua_State* L);
 extern int LuaSC_SetBotTitle(Lua_State* L);
 extern int LuaSC_SetBotTong(Lua_State* L);
 extern int LuaSC_SetBotMate(Lua_State* L);
+// Bot KPlayer that (KPlayerBot.cpp) - khac bot NPC SimCity o tren
+extern int LuaPB_AddBot(Lua_State* L);
+extern int LuaPB_BotCount(Lua_State* L);
+extern int LuaPB_ClearBot(Lua_State* L);
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -13039,6 +13043,10 @@ TLua_Funcs GameScriptFuns[] =
 	{"SC_SetBotTitle",	LuaSC_SetBotTitle},
 	{"SC_SetBotTong",	LuaSC_SetBotTong},
 	{"SC_SetBotMate",	LuaSC_SetBotMate},
+	// Bot KPlayer that: goi bot nap tu roledb qua Goddess
+	{"PB_AddBot",		LuaPB_AddBot},
+	{"PB_BotCount",		LuaPB_BotCount},
+	{"PB_ClearBot",		LuaPB_ClearBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},

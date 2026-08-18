@@ -9,6 +9,7 @@
 
 #ifdef _SERVER
 
+#include "LuaLib.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
 #include "KNpc.h"
@@ -335,6 +336,51 @@ int PB_RemoveAll()
 	}
 	s_botCount = 0;
 	return nGo;
+}
+
+// ============================================================================
+// Ham Lua cho lenh GM. Dang ky trong ScriptFuns.cpp (bang GameScriptFuns[]).
+// ============================================================================
+
+// PB_AddBot(nTu, nDen) -> so tai khoan da xep vao hang doi.
+//   Bot duoc sinh DAN theo nhip (PB_DRAIN_PER_TICK moi tick) chu khong sinh mot lua,
+//   de khong nghen hang gui cua GameServer sang Goddess.
+int LuaPB_AddBot(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nTu  = (int)Lua_ValueToNumber(L, 1);
+	int nDen = (Lua_GetTopIndex(L) >= 2) ? (int)Lua_ValueToNumber(L, 2) : nTu;
+	if (nTu < 1 || nDen < nTu)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	// kep theo tran bot de mot lenh go nham khong lam trao hang doi
+	if (nDen - nTu + 1 > PB_MAX_BOTS)
+		nDen = nTu + PB_MAX_BOTS - 1;
+
+	Lua_PushNumber(L, PB_SpawnRange(nTu, nDen));
+	Lua_PushNumber(L, PB_MAX_BOTS);      // tra them tran de Lua bao cho GM biet
+	return 2;
+}
+
+// PB_BotCount() -> so bot dang song
+int LuaPB_BotCount(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_GetCount());
+	Lua_PushNumber(L, PB_MAX_BOTS);
+	return 2;
+}
+
+// PB_ClearBot() -> so bot da go khoi so
+int LuaPB_ClearBot(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_RemoveAll());
+	return 1;
 }
 
 // ---------------------------------------------------------------- nhip

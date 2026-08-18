@@ -51,7 +51,43 @@ function SC_Menu()
 	"Bat bot noi chuyen/SC_ChatOn",
 	"Tat bot noi chuyen/SC_ChatOff",
 	"Xoa het bot/SC_Clear",
+	"Bot NGUOI CHOI THAT (KPlayer)/PB_Menu",
 	SC_END_SAY})
+end
+
+-- ================= BOT NGUOI CHOI THAT (KPlayerBot) =================
+-- KHAC HAN bot SimCity o tren:
+--   bot SimCity = KNpc kind_player, khong co KPlayer -> chi di lai + noi chuyen.
+--   bot nay     = KPlayer THAT nap tu roledb qua Goddess -> co trang bi that, chi so that,
+--                 xem tin tuc / PM / vao phai / luyen cap deu di duong chinh thong.
+-- Dieu kien: tai khoan "1".."1000" phai co san nhan vat trong roledb
+-- (da tao bang tools\taobot_bdb, nhan ban tu tai khoan mau hinodl).
+function PB_Menu()
+	local nCo, nTran = PB_BotCount()
+	SayEx({format("<color=yellow>Bot nguoi choi THAT<color>\nDang song: <color=gold>%d<color> / toi da <color=gold>%d<color>\nBot nap tu roledb, co trang bi va chi so that.", nCo, nTran),
+	"Goi 1 bot (tai khoan 1)/#PB_Call(1,1)",
+	"Goi 5 bot (tai khoan 1-5)/#PB_Call(1,5)",
+	"Goi 20 bot (tai khoan 1-20)/#PB_Call(1,20)",
+	"Go het bot nguoi choi/PB_Clear",
+	"Quay lai/SC_Menu",
+	SC_END_SAY})
+end
+
+function PB_Call(nTu, nDen)
+	local nXep, nTran = PB_AddBot(nTu, nDen)
+	if nXep and nXep > 0 then
+		Msg2Player(format("Da xep %d tai khoan vao hang doi (toi da %d bot).", nXep, nTran))
+		Msg2Player("Bot sinh DAN theo nhip, doi vai giay roi xem lai so bot.")
+	else
+		Msg2Player("Khong xep duoc. Co the da cham tran bot, hoac hang doi day.")
+	end
+	PB_Menu()
+end
+
+function PB_Clear()
+	local n = PB_ClearBot()
+	Msg2Player(format("Da go %d bot khoi so.", n))
+	PB_Menu()
 end
 
 -- ================= GD3: BOT NOI CHUYEN =================

@@ -103,5 +103,10 @@ int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 void PB_Breathe();                             // nhip: rut hang doi + het han cho
 
+// Ham Lua cho lenh GM (dang ky trong ScriptFuns.cpp)
+int  LuaPB_AddBot(Lua_State* L);               // (nTu [, nDen]) -> so da xep hang, tran
+int  LuaPB_BotCount(Lua_State* L);             // () -> so bot dang song, tran
+int  LuaPB_ClearBot(Lua_State* L);             // () -> so bot da go
+
 #endif // _SERVER
 #endif // KPLAYERBOT_H
