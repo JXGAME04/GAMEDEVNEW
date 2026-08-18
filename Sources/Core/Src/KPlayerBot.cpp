@@ -307,6 +307,18 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		return;
 	}
 
+	// BAT CO GIAY PHEP. Duong nguoi choi that lam viec nay ngay sau LaunchPlayer:
+	//   KSOServer.cpp:2826  AddPlayerToWorld2(nIndex, m_LicReg)
+	//   -> CoreServerShell.cpp:192  Player[nIndex].LaunchPlayer2(value)
+	//   -> KPlayer.cpp:6760  m_nLicReg = value
+	// Bo qua buoc nay thi m_nLicReg giu nguyen false (dat o KPlayer.cpp:327) va NAM thu
+	// se HONG LANG LE, khong mot dong bao loi:
+	//   KPlayer.cpp:4037 + 4060  AddFaction  -> khong vao phai duoc
+	//   KPlayer.cpp:4878         EatMecidine -> khong an thuoc duoc
+	//   KPlayer.cpp:6726/6752    CostMoney / AddMoney -> khong tieu/nhan tien duoc
+	//   KPlayer.cpp:6552         (return som)
+	Player[nIdx].LaunchPlayer2(true);
+
 	s_bots[s_botCount].nPlayerIdx = nIdx;
 	s_bots[s_botCount].dwID       = Player[nIdx].m_dwID;
 	strncpy(s_bots[s_botCount].szAccount, p->szAccount, sizeof(s_bots[0].szAccount) - 1);
