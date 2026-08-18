@@ -16,6 +16,8 @@
 #include "KNpcSet.h"
 #include "KSubWorld.h"
 #include "KSubWorldSet.h"
+#include "KFaction.h"       // FACTIONS_PRR_SERIES - so phai moi he
+#include "KRandom.h"        // g_Random
 #include "KPlayerBot.h"
 // TRoleData / S3DBI_RoleBaseInfo. Dung DUNG duong dan ma CoreServerShell.cpp:33 dang dung
 // de chac chan lay cung mot ban voi phan con lai cua Core (cay nay co nhieu ban
@@ -318,6 +320,32 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	//   KPlayer.cpp:6726/6752    CostMoney / AddMoney -> khong tieu/nhan tien duoc
 	//   KPlayer.cpp:6552         (return som)
 	Player[nIdx].LaunchPlayer2(true);
+
+	// ---- TU VAO PHAI ----
+	// Di dung duong nguoi choi that: KPlayer::AddFaction (KPlayer.cpp:4058) - chinh la thu
+	// ma ham Lua SetFaction goi (ScriptFuns.cpp:13094). No tu lam ca 3 viec sau:
+	//   Npc[].SetCamp(GetGurFactionCamp())  -> dat chinh/ta cho dung
+	//   Npc[].UpdateGameTitle()             -> hien dong "Phai/Lv:x" tren dau
+	//   SendFactionData()                   -> dong bo xuong client
+	// KHONG co cong chan cap do trong AddFaction (da doc tan dong), nen bot cap 1 vao duoc.
+	//
+	// Phai PHAI khop ngu hanh: KPlayerFaction::AddFaction (KPlayerFaction.cpp:78-81) doi
+	//   nFactionID thuoc [nSeries*FACTIONS_PRR_SERIES, (nSeries+1)*FACTIONS_PRR_SERIES)
+	// Ngu hanh cua bot den tu BaseInfo.ifiveprop -> Npc[].m_Series (KPlayerDBFuns.cpp:392),
+	// ma tool taobot_bdb da rai deu 0..4 => moi bot co dung 2 phai hop le, boc ngau nhien 1.
+	{
+		int nNpcIdx = Player[nIdx].m_nIndex;
+		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
+		{
+			int nSeries = Npc[nNpcIdx].m_Series;
+			if (nSeries >= series_metal && nSeries < series_num)
+			{
+				int nFaction = nSeries * FACTIONS_PRR_SERIES
+				             + (int)g_Random(FACTIONS_PRR_SERIES);
+				Player[nIdx].AddFaction(nFaction);
+			}
+		}
+	}
 
 	s_bots[s_botCount].nPlayerIdx = nIdx;
 	s_bots[s_botCount].dwID       = Player[nIdx].m_dwID;
