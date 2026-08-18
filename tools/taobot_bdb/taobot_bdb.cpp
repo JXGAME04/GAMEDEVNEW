@@ -317,6 +317,23 @@ int main(int argc, char *argv[])
 		if (bHeDeu)
 			p->BaseInfo.ifiveprop = (i - nTu) % 5;   // series_metal..series_earth (GameDataDef.h:468-472)
 
+		// ---- GIOI TINH ----
+		// Truoc day KHONG he ghi bSex nen ca 1000 bot chep nguyen gioi tinh cua nhan vat mau
+		// (hinodl = nam) => sinh ra toan nam, va nam thi khong dung de vao hai phai he Thuy.
+		//
+		// Y NGHIA TRUONG (da doc tan dong, khong doan): KPlayerDBFuns.cpp:238-246
+		//   bSex khac 0 -> PLAYER_FEMALE_NPCTEMPLATEID (-2) = NU
+		//   bSex bang 0 -> PLAYER_MALE_NPCTEMPLATEID   (-1) = NAM
+		// Mau nhan vat chon CHI theo bSex nen doi mot truong nay la doi luon hinh dang;
+		// khong phai sua them truong ngoai hinh nao khac.
+		//
+		// LUAT: he THUY (ifiveprop == 2) BAT BUOC NU - hai phai cua he do la Nga My va Thuy
+		// Yen, ca hai deu chi nhan nu. Cac he con lai boc ngau nhien nam/nu.
+		if (p->BaseInfo.ifiveprop == 2)
+			p->BaseInfo.bSex = 1;                 // he Thuy: chi co nu
+		else
+			p->BaseInfo.bSex = (BYTE)(rand() & 1); // cac he khac: nam / nu deu duoc
+
 		// 0xFF -> (char)-1 => GetCurFactionNo() < 0 => du dieu kien tu vao phai
 		p->BaseInfo.nSect      = 0xFF;
 		p->BaseInfo.nFirstSect = 0xFF;

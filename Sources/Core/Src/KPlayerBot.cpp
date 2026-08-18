@@ -109,6 +109,33 @@ static const PB_FacNpc s_facNpc[MAX_FACTION] =
 	{ 4, "\\script\\npcthon\\npcmonphai\\conlon.lua",     "Con Lon"     },  // 9
 };
 
+// ---------------------------------------------------------------------------
+// PHAI NAO NHAN GIOI TINH NAO
+//
+// Engine KHONG chan: khong mot dong nao trong 10 script mon phai, trong factionhead.lua,
+// hay trong KPlayerFaction kiem gioi tinh. Day la luat THIET KE, cua vao la luc TAO NHAN
+// VAT. Nen neu ta khong tu giu thi bot nam se chui tot vao Nga My / Thuy Yen - dung nhu
+// chu game bat duoc.
+//
+//   Thieu Lam (0)          : chi NAM
+//   Nga My (4), Thuy Yen(5): chi NU   <- ca hai phai cua he Thuy
+//   con lai                : ca hai
+//
+// m_nSex: 0 = nam, khac 0 = nu (KPlayerDBFuns.cpp:238-246, bSex -> PLAYER_FEMALE/MALE_NPCTEMPLATEID).
+// ---------------------------------------------------------------------------
+static bool pb_SexOk(int nFaction, int nSex)
+{
+	const bool bNu = (nSex != 0);
+	if (nFaction == 0)                    return !bNu;   // Thieu Lam: nam
+	if (nFaction == 4 || nFaction == 5)   return bNu;    // Nga My / Thuy Yen: nu
+	return true;
+}
+
+// Bo dem LUAN PHIEN trong tung he. Truoc day boc bang g_Random(2) nen voi so bot it thi
+// phan bo lech han (chu game bao "chua random deu cac phai"). Luan phien thi 20 bot ra
+// dung 2 con moi phai, khong phu thuoc may man.
+static int s_facTurn[series_num] = { 0 };
+
 // Dung sat NPC bao nhieu thi coi la "toi noi". 96 MPS = 3 o, dung tam doi thoai.
 // KHONG nham vao DUNG o cua NPC: JX1 tinh NPC LA TUONG nen o do luon la vat can.
 #define PB_FAC_ARRIVE_MPS   96
@@ -455,13 +482,34 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	// ma tool taobot_bdb da rai deu 0..4 => moi bot co dung 2 phai hop le, boc ngau nhien 1.
 	int nFaction = -1;
 	{
-		int nNpcIdx = Player[nIdx].m_nIndex;
+		const int nNpcIdx = Player[nIdx].m_nIndex;
 		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
 		{
-			int nSeries = Npc[nNpcIdx].m_Series;
+			const int nSeries = Npc[nNpcIdx].m_Series;
+			const int nSex    = Npc[nNpcIdx].m_nSex;
 			if (nSeries >= series_metal && nSeries < series_num)
-				nFaction = nSeries * FACTIONS_PRR_SERIES
-				         + (int)g_Random(FACTIONS_PRR_SERIES);
+			{
+				// Luan phien trong he (phan bo deu), roi bo qua phai khong hop gioi tinh.
+				const int nBatDau = s_facTurn[nSeries]++;
+				for (int k = 0; k < FACTIONS_PRR_SERIES; k++)
+				{
+					const int nF = nSeries * FACTIONS_PRR_SERIES
+					             + ((nBatDau + k) % FACTIONS_PRR_SERIES);
+					if (pb_SexOk(nF, nSex))
+					{
+						nFaction = nF;
+						break;
+					}
+				}
+				if (nFaction < 0)
+				{
+					// Chi xay ra voi bot NAM he THUY: ca Nga My lan Thuy Yen deu chi nhan nu.
+					// Nhan vat cu tao truoc khi taobot_bdb biet ep he Thuy = nu se roi vao day.
+					printf("[Bot] %s he %d gioi tinh %s: KHONG PHAI NAO NHAN"
+					       " - tao lai bot bang taobot_bdb ban moi (he Thuy phai la nu)\n",
+					       Player[nIdx].m_PlayerName, nSeries, nSex ? "nu" : "nam");
+				}
+			}
 		}
 	}
 
