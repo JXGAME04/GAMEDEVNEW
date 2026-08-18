@@ -223,6 +223,11 @@ struct PB_Bot
 	unsigned int nPmDenHan;                   // toi han nay moi gui (0 = khong cho)
 	unsigned int nPmCamToi;                   // som nhat duoc nhan cau hoi ke tiep
 	unsigned int nPmLapHash;                  // hash cau tra loi truoc (chong lap y het)
+	// ---- gian dan (chu game 18/08: "len map check xung quanh co hon 20 bot thi
+	//      tu di chuyen di toa do xa de luyen") ----
+	unsigned int nDanKiemTick;                // lan kiem mat do gan nhat
+	unsigned int nDanDenHan;                  // 0 = khong di tan; khac 0 = han chot di tan
+	unsigned int nDanNghiToi;                 // sau mot lan di tan, nghi den moc nay moi kiem lai
 	// ---- to doi ----
 	int          nWantParty;                  // chot MOT LAN khi sinh: bot nay co muon vao nhom
 	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
@@ -802,6 +807,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		// deu ma giua cac lan boot van ngau nhien.
 		const int nGieoNhom = ((int)g_Random(100) + s_botCount * 37) % 100;
 		b.nWantParty = (nGieoNhom < PB_NHOM_RATE) ? 1 : 0;
+		b.nDanKiemTick = 0;  b.nDanDenHan = 0;  b.nDanNghiToi = 0;
 		// [chan doan 18/08 - GO khi xong] tk bao "muon nhom 0" du 988 con dang danh:
 		// in 30 lan boc dau de doi chieu gia tri thuc te cua g_Random tai day.
 		if (s_botCount < 30)
@@ -3805,6 +3811,79 @@ static void pb_DriveBot(PB_Bot& b)
 			// Co quai gan thi danh; het quai gan thi DI HOANG toi cho khac tren CUNG ban do.
 			// Nho vay bot tu rai ra thay vi dam mot cho o diem ChangeWorld.
 			pb_DonTui(nIdx, b, nowAll);
+
+			// ---- GIAN DAN (chu game 18/08): quanh minh 20 o ma co HON 20 bot thi bo
+			// cho nay, di tan toi diem quai XA (>= 1200 MPS, pb_FindRoamSpot) roi luyen
+			// o do. Kiem ~8-15 giay/lan (so le theo chi so), sau moi lan di tan nghi
+			// 60 giay. Thanh vien to doi KHONG tu y di tan (phai bam theo doi truong).
+#define PB_DAN_DONG      20
+#define PB_DAN_BAN_KINH  640
+#define PB_DAN_KIEM_GAP  (GAME_FPS * 8)
+#define PB_DAN_NGHI      (GAME_FPS * 60)
+#define PB_DAN_HAN       (GAME_FPS * 40)
+			if (b.nDanDenHan != 0)
+			{
+				// dang di tan: den noi (roam tu xoa dich) hoac het han -> luyen lai
+				if (nowAll >= b.nDanDenHan || (b.nRoamX == 0 && b.nRoamY == 0))
+				{
+					b.nDanDenHan  = 0;
+					b.nDanNghiToi = nowAll + (unsigned int)PB_DAN_NGHI;
+				}
+				else
+				{
+					b.nTargetNpc = 0;          // khong vua di vua ham danh
+					pb_Roam(nIdx, nNpcIdx, nSub, b, nLech);
+					return;
+				}
+			}
+			else if (nowAll - b.nDanKiemTick >= (unsigned int)(PB_DAN_KIEM_GAP + (nLech & 7) * GAME_FPS)
+			      && (b.nDanNghiToi == 0 || nowAll >= b.nDanNghiToi)
+			      && !(pb_TrongNhom(nIdx) && pb_DoiTruongCua(nIdx) != nIdx))
+			{
+				b.nDanKiemTick = nowAll;
+				int bx4 = 0, by4 = 0;
+				Npc[nNpcIdx].GetMpsPos(&bx4, &by4);
+				int nDong = 0;
+				for (int q3 = 0; q3 < s_botCount; q3++)
+				{
+					const int p3 = s_bots[q3].nPlayerIdx;
+					if (p3 <= 0 || p3 >= MAX_PLAYER || p3 == nIdx)
+						continue;
+					const int n3 = Player[p3].m_nIndex;
+					if (n3 <= 0 || n3 >= MAX_NPC)
+						continue;
+					if (Npc[n3].m_SubWorldIndex != nSub)
+						continue;
+					int x3 = 0, y3 = 0;
+					Npc[n3].GetMpsPos(&x3, &y3);
+					if (g_GetDistance(bx4, by4, x3, y3) <= PB_DAN_BAN_KINH)
+						if (++nDong > PB_DAN_DONG)
+							break;
+				}
+				if (nDong > PB_DAN_DONG)
+				{
+					int rx4 = 0, ry4 = 0;
+					if (pb_FindRoamSpot(nNpcIdx, nSub, nLech, &rx4, &ry4))
+					{
+						b.nRoamX = rx4;
+						b.nRoamY = ry4;
+						b.roam.Reset();
+						b.nDanDenHan = nowAll + (unsigned int)PB_DAN_HAN;
+						b.nTargetNpc = 0;
+						b.chase.Reset();
+						{
+							static unsigned int s_uDanLog = 0;
+							if (nowAll - s_uDanLog >= (unsigned int)(GAME_FPS / 2))
+							{
+								s_uDanLog = nowAll;
+								pb_Log("[BotDan] %s quanh 20 o co %d bot -> di tan toi o(%d,%d)\n",
+								       Player[nIdx].m_PlayerName, nDong, rx4 / 32, ry4 / 32);
+							}
+						}
+					}
+					// khong con diem quai xa (map nho/het quai) -> thoi, 8-15s sau kiem lai
+				}
+			}
 			// NHAT TRUOC - DANH SAU (chu game 18/08: "chua thay nhat"): truoc day nhat
 			// chi chay khi pb_Fight HET muc tieu, ma bai quai day thi giet xong con nay
 			// lap tuc khoa con ke -> do roi nam cho toi khi sach quai (log 13:07: 1901
