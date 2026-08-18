@@ -30,6 +30,8 @@
 #include <string.h>
 #include <time.h>
 #include <direct.h>
+#include <windows.h>
+#include <tlhelp32.h>   // CreateToolhelp32Snapshot - do xem Goddess con chay khong
 
 #include "DBTable.h"
 #include "S3DBInterface.h"
@@ -42,6 +44,264 @@ int get_account(DB *db, const DBT *pkey, const DBT *pdata, DBT *ikey)
 	TRoleData *pRoleData = (TRoleData *)pdata->data;
 	ikey->data = pRoleData->BaseInfo.caccname;
 	ikey->size = (u_int32_t)(strlen(pRoleData->BaseInfo.caccname) + 1);
+	return 0;
+}
+
+//--------------------------------------------------------------------- chot chan
+// TU CHOI CHAY NEU GODDESS (hay tien trinh nao khac giu roledb) DANG SONG.
+//
+// VI SAO PHAI CO: ngay 17/08/2026 da lam HONG roledb that vi chuyen nay. Goddess mo moi
+// truong BDB voi DB_RECOVER | DB_PRIVATE (Goddess\DBTable.cpp:32) - tool nay cung vay.
+// Hai tien trinh cung chay recovery tren mot moi truong thi mot ben lam LUI log trong khi
+// ben kia van ghi tiep, ket qua la trang du lieu mang LSN DI TRUOC log:
+//     "roledb.0 has LSN 4/14024713, past end of log at 4/7680327"  -> DB_RUNRECOVERY
+// Luc do CA GODDESS cung khong mo duoc DB nua, phai rut het ban ghi sang DB moi de cuu.
+//
+// Loi cu la doc danh sach tien trinh BANG TAY roi tu ket luan "chac tat roi". Nay de may
+// kiem, va kiem NGAY TRUOC khi ghi.
+static const char *g_szCam[] = { "Goddess.exe", "Goddess2.exe", "GameServer.exe",
+                                 "Bishop.exe", "DBRoleServer.exe", NULL };
+
+static bool CoTienTrinhGiuDB(char *szTen, int nCoTen)
+{
+	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnap == INVALID_HANDLE_VALUE)
+		return false;   // khong do duoc thi thoi, khong chan oan
+
+	PROCESSENTRY32 pe;
+	memset(&pe, 0, sizeof(pe));
+	pe.dwSize = sizeof(pe);
+	bool bCo = false;
+	if (Process32First(hSnap, &pe))
+	{
+		do {
+			for (int i = 0; g_szCam[i]; i++)
+			{
+				if (_stricmp(pe.szExeFile, g_szCam[i]) == 0)
+				{
+					strncpy(szTen, pe.szExeFile, nCoTen - 1);
+					szTen[nCoTen - 1] = 0;
+					bCo = true;
+				}
+			}
+		} while (!bCo && Process32Next(hSnap, &pe));
+	}
+	CloseHandle(hSnap);
+	return bCo;
+}
+
+// Goi TRUOC moi thao tac cham vao roledb. Tra true = duoc phep di tiep.
+static bool ChotChanAnToan()
+{
+	char szTen[64] = { 0 };
+	if (!CoTienTrinhGiuDB(szTen, sizeof(szTen)))
+		return true;
+
+	printf("\n=======================================================================\n");
+	printf(" DUNG LAI: \"%s\" DANG CHAY.\n", szTen);
+	printf("\n");
+	printf(" Tien trinh do dang giu moi truong Berkeley DB cua roledb. Chay tool bay\n");
+	printf(" gio se lam HONG DU LIEU (log bi lui trong khi ben kia van ghi -> trang du\n");
+	printf(" lieu di TRUOC log -> ca Goddess sau do cung khong mo duoc DB nua).\n");
+	printf("\n");
+	printf(" Hay TAT HAN tien trinh do roi chay lai.\n");
+	printf("=======================================================================\n\n");
+	return false;
+}
+
+//--------------------------------------------------------------------- tao lai
+// RUT TOAN BO BAN GHI SANG MOT roledb MOI TINH (khong con di san LSN / log cu).
+//
+// KHI NAO CAN: khi BDB bao "file roledb has LSN x, past end of log at y" - tuc trang du
+// lieu mang dau vet cua mot day log khong con khop. Luc do:
+//   - giu log cu  -> recovery vap vi trang di TRUOC log
+//   - bo log cu   -> trang lai di TRUOC ca log moi (bat dau tu 1/28)
+// Khong co duong nao chua tai cho. Cach chinh thong la reset LSN (db_load -r lsn);
+// khong co tien ich do thi rut het ban ghi roi nap lai vao DB moi - ket qua y het.
+//
+// AN TOAN: CHI DOC thu muc cu, GHI sang thu muc MOI. Khong xoa, khong sua gi ban cu.
+// Nguoi dung tu doi cho sau khi da kiem so ban ghi.
+static int TaoLaiDB(const char *szEnvCu, const char *szEnvMoi)
+{
+	struct BanGhi { char *pKey; u_int32_t nKey; char *pData; u_int32_t nData; };
+	BanGhi *aBG = NULL;
+	int nBG = 0, nCap = 0, ret = 0;
+
+	// ---------- GIAI DOAN 1: doc het tu DB cu ----------
+	{
+		DB_ENV *env = NULL; DB *pri = NULL; DBC *cur = NULL;
+		if ((ret = db_env_create(&env, 0)) != 0)
+		{ printf("LOI: db_env_create cu (%d)\n", ret); return 2; }
+		env->set_errpfx(env, "docCu");
+		env->set_lg_regionmax(env, 512 * 1024);
+		env->set_lg_max(env, 16 * 1024 * 1024);
+		env->set_lg_bsize(env, 2 * 1024 * 1024);
+		env->set_cachesize(env, 0, 64 * 1024 * 1024, 1);
+		ret = env->open(env, szEnvCu,
+					  DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL |
+					  DB_INIT_TXN | DB_RECOVER | DB_THREAD | DB_PRIVATE, 0);
+		if (ret) { printf("LOI: mo moi truong cu (%d)\n", ret); return 2; }
+
+		if ((ret = db_create(&pri, env, 0)) != 0)
+		{ printf("LOI: db_create cu (%d)\n", ret); env->close(env, 0); return 3; }
+		// Mo bang chinh MOT MINH - khong associate - nen chi muc hong khong can tro.
+		ret = pri->open(pri, NULL, "roledb", NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0664);
+		if (ret) { printf("LOI: mo roledb cu (%d)\n", ret); env->close(env, 0); return 3; }
+
+		if ((ret = pri->cursor(pri, NULL, &cur, 0)) != 0)
+		{ printf("LOI: tao con tro (%d)\n", ret); env->close(env, 0); return 3; }
+
+		DBT k, d;
+		memset(&k, 0, sizeof(k)); memset(&d, 0, sizeof(d));
+		while ((ret = cur->c_get(cur, &k, &d, DB_NEXT)) == 0)
+		{
+			if (nBG >= nCap)
+			{
+				nCap = nCap ? nCap * 2 : 256;
+				aBG = (BanGhi *)realloc(aBG, sizeof(BanGhi) * nCap);
+				if (!aBG) { printf("LOI: het bo nho\n"); return 4; }
+			}
+			aBG[nBG].nKey  = k.size;
+			aBG[nBG].pKey  = (char *)malloc(k.size);
+			memcpy(aBG[nBG].pKey, k.data, k.size);
+			aBG[nBG].nData = d.size;
+			aBG[nBG].pData = (char *)malloc(d.size);
+			memcpy(aBG[nBG].pData, d.data, d.size);
+			nBG++;
+		}
+		cur->c_close(cur);
+		pri->close(pri, 0);
+		env->close(env, 0);
+		printf("Doc xong DB cu: %d ban ghi.\n", nBG);
+	}
+
+	if (nBG <= 0) { printf("LOI: khong doc duoc ban ghi nao - DUNG LAI, khong ghi gi.\n"); return 5; }
+
+	// ---------- GIAI DOAN 2: nap vao DB moi ----------
+	{
+		DB_ENV *env = NULL; DB *pri = NULL, *sec = NULL;
+		if ((ret = db_env_create(&env, 0)) != 0)
+		{ printf("LOI: db_env_create moi (%d)\n", ret); return 6; }
+		env->set_errpfx(env, "ghiMoi");
+		env->set_lg_regionmax(env, 512 * 1024);
+		env->set_lg_max(env, 16 * 1024 * 1024);
+		env->set_lg_bsize(env, 2 * 1024 * 1024);
+		env->set_cachesize(env, 0, 64 * 1024 * 1024, 1);
+		ret = env->open(env, szEnvMoi,
+					  DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL |
+					  DB_INIT_TXN | DB_RECOVER | DB_THREAD | DB_PRIVATE, 0);
+		if (ret) { printf("LOI: mo moi truong moi (%d) - da tao thu muc chua?\n", ret); return 6; }
+
+		if ((ret = db_create(&pri, env, 0)) != 0) { printf("LOI: db_create moi (%d)\n", ret); return 7; }
+		ret = pri->open(pri, NULL, "roledb", NULL, DB_BTREE,
+					DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664);
+		if (ret) { printf("LOI: tao roledb moi (%d)\n", ret); return 7; }
+
+		if ((ret = db_create(&sec, env, 0)) != 0) { printf("LOI: db_create chi muc (%d)\n", ret); return 8; }
+		if ((ret = sec->set_flags(sec, DB_DUP | DB_DUPSORT)) != 0)
+		{ printf("LOI: set_flags DUP (%d)\n", ret); return 8; }
+		ret = sec->open(sec, NULL, "roledb.0", NULL, DB_BTREE,
+					DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664);
+		if (ret) { printf("LOI: tao roledb.0 moi (%d)\n", ret); return 8; }
+
+		// Associate TRUOC khi ghi -> BDB tu bao tri chi muc cho tung ban ghi put vao.
+		ret = pri->associate(pri, NULL, sec, get_account, DB_AUTO_COMMIT);
+		if (ret) { printf("LOI: associate (%d)\n", ret); return 9; }
+
+		int nGhi = 0;
+		for (int i = 0; i < nBG; i++)
+		{
+			DBT k, d;
+			memset(&k, 0, sizeof(k)); memset(&d, 0, sizeof(d));
+			k.data = aBG[i].pKey;  k.size = aBG[i].nKey;
+			d.data = aBG[i].pData; d.size = aBG[i].nData;
+			if (pri->put(pri, NULL, &k, &d, DB_AUTO_COMMIT) == 0) nGhi++;
+			if ((nGhi % 200) == 0 && nGhi) printf("   ... da nap %d/%d\n", nGhi, nBG);
+		}
+
+		DB_BTREE_STAT *stP = NULL, *stS = NULL;
+		int nP = -1, nS = -1;
+		if (pri->stat(pri, NULL, &stP, 0) == 0 && stP) { nP = (int)stP->bt_ndata; free(stP); }
+		if (sec->stat(sec, NULL, &stS, 0) == 0 && stS) { nS = (int)stS->bt_ndata; free(stS); }
+
+		sec->close(sec, 0);
+		pri->close(pri, 0);
+		env->close(env, 0);
+
+		printf("\nXONG: doc %d, nap duoc %d. DB moi: bang chinh %d, chi muc %d.\n",
+			   nBG, nGhi, nP, nS);
+		printf("DB moi nam o: %s\n", szEnvMoi);
+		printf("Kiem so lieu xong hay tu doi cho hai thu muc.\n");
+	}
+	return 0;
+}
+
+//--------------------------------------------------------------------- sua chua
+// DUNG LAI CHI MUC PHU (roledb.0) TU BANG CHINH (roledb).
+//
+// KHI NAO CAN: neu tep roledb.0 bi hong / bi xoa, moi tra cuu theo TEN TAI KHOAN se
+// khong ra gi (GetRoleListOfAccount tra rong) du bang chinh con nguyen, vi ZDBTable::search
+// di qua chi muc chu khong quet bang chinh.
+//
+// VI SAO LAM DUOC: roledb.0 la SECONDARY THAT, tao bang primary->associate()
+// (DBTable.cpp:70). Berkeley DB tu dung lai secondary tu primary khi associate co co
+// DB_CREATE va secondary dang RONG - do la duong chinh thong, khong phai meo.
+//
+// ZDBTable::open KHONG truyen DB_CREATE cho associate nen no khong tu dung lai duoc;
+// vi vay o day ta mo bang API BDB tho, dung y het tham so cua Goddess:
+//   primary  : DB_BTREE, DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664
+//   secondary: DB_DUP | DB_DUPSORT (vi addIndex mac dinh isUnique = false,
+//              DBTable.h:40 - mot tai khoan co nhieu nhan vat)
+//   ham bam  : get_account (y het IDBRoleServer.cpp:26)
+static int DungLaiChiMuc(const char *szEnv)
+{
+	DB_ENV *env = NULL;
+	DB *pri = NULL, *sec = NULL;
+	int ret = 0;
+
+	if ((ret = db_env_create(&env, 0)) != 0)
+	{ printf("LOI: db_env_create (%d)\n", ret); return 2; }
+	env->set_errpfx(env, "suachua");
+	env->set_lg_regionmax(env, 512 * 1024);
+	env->set_lg_max(env, 16 * 1024 * 1024);
+	env->set_lg_bsize(env, 2 * 1024 * 1024);
+	env->set_cachesize(env, 0, 64 * 1024 * 1024, 1);
+	ret = env->open(env, szEnv,
+				  DB_CREATE | DB_INIT_LOG | DB_INIT_LOCK | DB_INIT_MPOOL |
+				  DB_INIT_TXN | DB_RECOVER | DB_THREAD | DB_PRIVATE, 0);
+	if (ret) { printf("LOI: mo moi truong BDB (%d)\n", ret); return 2; }
+
+	if ((ret = db_create(&pri, env, 0)) != 0)
+	{ printf("LOI: db_create primary (%d)\n", ret); env->close(env, 0); return 3; }
+	ret = pri->open(pri, NULL, "roledb", NULL, DB_BTREE,
+				DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664);
+	if (ret) { printf("LOI: mo bang chinh roledb (%d)\n", ret); env->close(env, 0); return 3; }
+
+	if ((ret = db_create(&sec, env, 0)) != 0)
+	{ printf("LOI: db_create secondary (%d)\n", ret); env->close(env, 0); return 4; }
+	if ((ret = sec->set_flags(sec, DB_DUP | DB_DUPSORT)) != 0)
+	{ printf("LOI: set_flags DUP (%d)\n", ret); env->close(env, 0); return 4; }
+	ret = sec->open(sec, NULL, "roledb.0", NULL, DB_BTREE,
+				DB_CREATE | DB_AUTO_COMMIT | DB_THREAD, 0664);
+	if (ret) { printf("LOI: mo chi muc roledb.0 (%d)\n", ret); env->close(env, 0); return 4; }
+
+	printf("Dang dung lai chi muc tu bang chinh (co the mat vai giay)...\n");
+	ret = pri->associate(pri, NULL, sec, get_account, DB_CREATE | DB_AUTO_COMMIT);
+	if (ret) { printf("LOI: associate DB_CREATE (%d)\n", ret); env->close(env, 0); return 5; }
+
+	// Dem lai de bao con so that, khong noi suong.
+	DB_BTREE_STAT *stP = NULL, *stS = NULL;
+	int nP = -1, nS = -1;
+	if (pri->stat(pri, NULL, &stP, 0) == 0 && stP) { nP = (int)stP->bt_ndata; free(stP); }
+	if (sec->stat(sec, NULL, &stS, 0) == 0 && stS) { nS = (int)stS->bt_ndata; free(stS); }
+
+	sec->close(sec, 0);
+	pri->close(pri, 0);
+	env->close(env, 0);
+
+	printf("\nXONG: bang chinh co %d ban ghi, chi muc nay co %d muc.\n", nP, nS);
+	if (nP >= 0 && nS >= 0 && nP != nS)
+		printf("CANH BAO: hai con so LECH NHAU - chi muc co the chua day du.\n");
 	return 0;
 }
 
@@ -103,7 +363,7 @@ int main(int argc, char *argv[])
 	const char *szMau  = NULL;
 	const char *szXem  = NULL;
 	int  nTu = 1, nDen = 1000;
-	bool bApply = false, bHeDeu = false, bGo = false;
+	bool bApply = false, bHeDeu = false, bGo = false, bSuaChua = false, bTaoLai = false;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -114,9 +374,11 @@ int main(int argc, char *argv[])
 		else if (!strcmp(argv[i], "--apply"))  bApply = true;
 		else if (!strcmp(argv[i], "--he-deu")) bHeDeu = true;
 		else if (!strcmp(argv[i], "--go"))     bGo    = true;
+		else if (!strcmp(argv[i], "--suachua")) bSuaChua = true;
+		else if (!strcmp(argv[i], "--taolai"))  bTaoLai  = true;
 		else { InHuongDan(); return 1; }
 	}
-	if (!szMau && !szXem && !bGo) { InHuongDan(); return 1; }
+	if (!szMau && !szXem && !bGo && !bSuaChua && !bTaoLai) { InHuongDan(); return 1; }
 
 	setvbuf(stdout, NULL, _IONBF, 0);   // khong dem: sap giua chung van thay duoc dong cuoi
 
@@ -126,7 +388,31 @@ int main(int argc, char *argv[])
 	printf("   => moi truong BDB se la: %s\\database\n", szCwd);
 	printf("   (phai la bin\\multiserver, neu khong se tao nham mot roledb RONG)\n\n");
 
+	// CHOT CHAN: kiem TRUOC moi thu. Xem khoi chu thich tai ChotChanAnToan().
+	if (!ChotChanAnToan())
+		return 9;
+
 	srand((unsigned)time(NULL));
+
+	if (bTaoLai)
+	{
+		char szCu[512], szMoi[512];
+		_getcwd(szCu, sizeof(szCu));
+		strcpy(szMoi, szCu);
+		strcat(szCu,  "\\database");
+		strcat(szMoi, "\\database_moi");
+		_mkdir(szMoi);
+		printf("Doc tu : %s\nGhi sang: %s\n\n", szCu, szMoi);
+		return TaoLaiDB(szCu, szMoi);
+	}
+
+	if (bSuaChua)
+	{
+		char szEnv2[512];
+		_getcwd(szEnv2, sizeof(szEnv2));
+		strcat(szEnv2, "\\database");
+		return DungLaiChiMuc(szEnv2);
+	}
 
 	// BAY DA DINH MOT LAN: ZDBTable::ZDBTable chi dat index_number = 0 BEN TRONG nhanh
 	// mo moi truong THANH CONG (DBTable.cpp:32-38). Neu db_env_create/dbenv->open that bai
