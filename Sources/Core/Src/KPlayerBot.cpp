@@ -117,16 +117,16 @@ static const PB_FacNpc s_facNpc[MAX_FACTION] =
 // VAT. Nen neu ta khong tu giu thi bot nam se chui tot vao Nga My / Thuy Yen - dung nhu
 // chu game bat duoc.
 //
-//   Thieu Lam (0)          : chi NAM
-//   Nga My (4), Thuy Yen(5): chi NU   <- ca hai phai cua he Thuy
-//   con lai                : ca hai
+//   Thieu Lam (0), Thien Vuong (1): chi NAM  <- ca hai phai cua he KIM
+//   Nga My (4),    Thuy Yen (5)   : chi NU   <- ca hai phai cua he THUY
+//   con lai                       : ca hai
 //
 // m_nSex: 0 = nam, khac 0 = nu (KPlayerDBFuns.cpp:238-246, bSex -> PLAYER_FEMALE/MALE_NPCTEMPLATEID).
 // ---------------------------------------------------------------------------
 static bool pb_SexOk(int nFaction, int nSex)
 {
 	const bool bNu = (nSex != 0);
-	if (nFaction == 0)                    return !bNu;   // Thieu Lam: nam
+	if (nFaction == 0 || nFaction == 1)   return !bNu;   // Thieu Lam / Thien Vuong: nam
 	if (nFaction == 4 || nFaction == 5)   return bNu;    // Nga My / Thuy Yen: nu
 	return true;
 }

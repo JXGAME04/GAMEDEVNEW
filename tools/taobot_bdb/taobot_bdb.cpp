@@ -188,11 +188,12 @@ int main(int argc, char *argv[])
 				// ipassrole -> m_nChestPW (KPlayerDBFuns.cpp:382). Gia tri 214519 la MIN:
 				// KPlayer::LaunchPlayer (KPlayer.cpp:6768) se g_pServer->Release() roi dong
 				// 6776 goi PackDataToClient tren con tro NULL -> giet tang mang may chu.
-				printf("  ten=%-20s taikhoan=%-16s cap=%-4d nguhanh=%d gioitinh=%-3s phai=%d/%d "
+				printf("  ten=%-20s taikhoan=%-16s cap=%-4d nguhanh=%d gioitinh=%-3s phe=%d phai=%d/%d "
 				       "ipassrole=%d%s len=%d\n",
 				       p->BaseInfo.szName, p->BaseInfo.caccname, p->BaseInfo.ifightlevel,
 				       p->BaseInfo.ifiveprop,
 				       p->BaseInfo.bSex ? "nu" : "nam",   // bSex != 0 = nu (KPlayerDBFuns.cpp:238-246)
+				       p->BaseInfo.iteam,   // 0 = camp_begin = ten mau TRANG
 				       p->BaseInfo.nSect, p->BaseInfo.nFirstSect,
 				       p->BaseInfo.ipassrole,
 				       (p->BaseInfo.ipassrole == 214519) ? "  <<< MIN 214519 !!!" : "",
@@ -331,7 +332,14 @@ int main(int argc, char *argv[])
 		//
 		// LUAT: he THUY (ifiveprop == 2) BAT BUOC NU - hai phai cua he do la Nga My va Thuy
 		// Yen, ca hai deu chi nhan nu. Cac he con lai boc ngau nhien nam/nu.
-		if (p->BaseInfo.ifiveprop == 2)
+		// LUAT (chu game chot): mot he chi mo cho gioi tinh nao thi CA HAI phai cua he do
+		// deu chi nhan gioi tinh do.
+		//   he KIM  (0) = Thieu Lam + Thien Vuong -> ca hai chi nhan NAM  => he Kim chi co nam
+		//   he THUY (2) = Nga My    + Thuy Yen    -> ca hai chi nhan NU   => he Thuy chi co nu
+		//   he Moc(1) / Hoa(3) / Tho(4)          -> khong chan, boc ngau nhien
+		if (p->BaseInfo.ifiveprop == 0)
+			p->BaseInfo.bSex = 0;                 // he Kim: chi co nam
+		else if (p->BaseInfo.ifiveprop == 2)
 			p->BaseInfo.bSex = 1;                 // he Thuy: chi co nu
 		else
 			p->BaseInfo.bSex = (BYTE)(rand() & 1); // cac he khac: nam / nu deu duoc
@@ -339,6 +347,15 @@ int main(int argc, char *argv[])
 		// 0xFF -> (char)-1 => GetCurFactionNo() < 0 => du dieu kien tu vao phai
 		p->BaseInfo.nSect      = 0xFF;
 		p->BaseInfo.nFirstSect = 0xFF;
+
+		// XOA CA PHE. Truoc day chi xoa nSect ma quen iteam, nen bot chua vao phai da co
+		// TEN MAU XANH LA: nhan vat mau hinodl o Thien Vuong -> iteam = 3 = camp_balance,
+		// va MAU TEN ve theo camp (KNpc::PaintInfo, KNpc.cpp:5868-5886):
+		//   camp_begin  0 = TRANG   <- dung cho nguoi chua co phai
+		//   camp_justice1 = cam     camp_evil 2 = hong tim
+		//   camp_balance3 = XANH LA (85,255,145)   camp_free 4 = do
+		// Duong nap: pNpc->m_Camp = BaseInfo.iteam (KPlayerDBFuns.cpp:393).
+		p->BaseInfo.iteam      = 0;   // camp_begin: ten mau trang
 
 		if (pTab->add(p->BaseInfo.szName, (int)strlen(p->BaseInfo.szName) + 1, pNew, nLenMau))
 			nOk++;
