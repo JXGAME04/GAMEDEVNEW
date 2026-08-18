@@ -188,6 +188,9 @@ struct PB_Bot
 	int          nJamX, nJamY;                // diem neo do "dam chan tai cho"
 	unsigned int nJamTick;                    // tu bao gio dung quanh diem neo
 	unsigned int nLachTick;                   // lan lach gan nhat (gion nhip)
+	// ---- dung vat pham ----
+	unsigned int nUongTick;                   // lan uong binh gan nhat
+	unsigned int nMoTuiTick;                  // lan mo tui duoc pham gan nhat
 	// ---- luyen cap ----
 	int          nBaiIdx;                     // chi so bai luyen dang nham (-1 = chua chon)
 	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
@@ -517,6 +520,18 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		Player[nIdx].m_pStatusLoadPlayerInfo = NULL;
 	}
 
+	// XOA SACH ky nang THUA KE tu nhan vat mau. Nhan vat mau TestBOT von la nguoi
+	// THIEN VUONG - blob mang nguyen bo chieu Thien Vuong, va tu khi vong nap duoc va
+	// (18/08) thi bot NAP DUOC bo chieu do that. Hau qua chu game bat duoc: "nhan vat
+	// phai Ngu Doc cam dao danh skill dao Thien Vuong" - bo chon chieu thay chieu dao
+	// khop dung vu khi la chon, dau biet no cua phai khac.
+	// Xoa het ngay tu dau: hockynang() luc vao phai se day DUNG bo chieu cua phai minh.
+	{
+		const int nNpcClean = Player[nIdx].m_nIndex;
+		if (nNpcClean > 0 && nNpcClean < MAX_NPC)
+			Npc[nNpcClean].m_SkillList.RemoveAllSkill();
+	}
+
 	// Bot khong co ket noi mang. PB_LIXIAN_BOT (=3) la thu giu cho bot khoi bi
 	// IsLoginTimeOut giet sau 10 giay MA khong dam vao hai gia tri co nghia san (1 va 2) -
 	// xem khoi chu thich dai tai KPlayerBot.h.
@@ -629,6 +644,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChatCamToi = 0;
 		b.nBuocRaX = 0;   b.nBuocRaY = 0;
 		b.nJamX = 0;      b.nJamY = 0;       b.nJamTick = 0;  b.nLachTick = 0;
+		b.nUongTick = 0;  b.nMoTuiTick = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -1558,9 +1574,29 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 
 		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
 		if (!p)                       continue;
+		// Day an toan: chieu mang ngu hanh KHAC he bot = chieu cua phai khac (thua ke
+		// hoac nhet nham) -> khong bao gio dung. RemoveAllSkill o tren da don goc,
+		// luoi nay do phong blob mau doi sau nay.
+		{
+			const int nSr = p->GetSkillSeries();
+			if (nSr >= 0 && nSr < series_num && nSr != Npc[nNpcIdx].m_Series)
+				continue;
+		}
 		if (p->IsAura())              continue;   // vong sang, khong phai chieu danh
 		if (p->IsTargetSelf())        continue;
 		if (!p->IsTargetEnemy())      continue;
+		// CHI giu chieu SAT THUONG THAT (dan bay / can chien). Ban tham khao lam dung
+		// vay va ghi ro ly do (RepickBotCombatSkills, KBotManager.cpp:1246): chieu
+		// TRANG THAI (khong che / doc / lam cham) thuong hop MOI vu khi + cap yeu cau
+		// cao nen DANH BAI chieu that trong bang xep hang - bot cast no thi khong co
+		// sat thuong, nhin nhu DUNG YEN hoac quay ve dam tay. Chinh la ba trieu chung
+		// chu game bat 18/08: Duong Mon dung im, Thieu Lam bong dung im, Cai Bang
+		// quyen danh tay.
+		{
+			const int nSt = p->GetSkillStyle();
+			if (nSt != SKILL_SS_Missles && nSt != SKILL_SS_Melee)
+				continue;
+		}
 
 		const int eq = p->GetEquipLimit();
 		int nRank = 0;
@@ -1787,6 +1823,13 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 		if (!p)
 			continue;
 
+		// khong dung vong sang / buff cua phai khac (thua ke tu nhan vat mau)
+		{
+			const int nSr3 = p->GetSkillSeries();
+			if (nSr3 >= 0 && nSr3 < series_num && nSr3 != Npc[nNpcIdx].m_Series)
+				continue;
+		}
+
 		// Cap yeu cau kep tran 80 y ban tham khao (tren nua la ky nang 90/150).
 		int rq = p->GetSkillReqLevel();
 		if (rq > 80) rq = 80;
@@ -1854,6 +1897,81 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 	if (bLenCap && nBuff)
 		pb_Log("[BotBuff] %s cap %d: %d buff (bua bi dong: KHONG dung)\n",
 			   Player[nIdx].m_PlayerName, nLevel, nBuff);
+}
+
+// ===========================================================================
+// DUNG VAT PHAM: uong binh khi thieu mau, mo tui duoc pham khi sap het binh,
+// va giu buff Tien Thao Lo (x2 kinh nghiem).
+//
+// Du lieu that (trich tu script/settings, dot khao sat 18/08):
+//   Tui duoc pham : Genre 6 (item_magicscript), Detail 1, Particular 4813
+//                   (magicscript.txt:4815). Mo bang EatMecidine -> chay
+//                   tuiduocpham.lua: rot 20 binh/luot, tu cooldown 10 giay,
+//                   doi cap >= 10.
+//   Binh mau      : "Thua Tien Mat (Dai)" Genre 1 (item_medicine) - hoi 150HP+150MP.
+//   Tien Thao Lo  : buff = skill 440 cap 1 (skills.txt:441), 1 gio; script goc
+//                   xiancaolu.lua:19-25 chi cho an khi GetNpcExpRate() <= 100.
+//
+// Nguong "con <= 2 binh thi mo tui" theo dung ban tham khao (KBotAutoAI_DaTau.cpp:110
+// kPouchRefillBelow = 3 - tuc duoi 3 binh la rot them).
+// ===========================================================================
+static void pb_DungVatPham(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
+{
+	// nhe nhang: 2 giay xet mot lan, lech nhip theo bot
+	if (((now + nLech) % (unsigned int)(GAME_FPS * 2)) != 0)
+		return;
+
+	// ---- giu buff Tien Thao Lo ----
+	// m_CurrentExpEnhance goc = 100; buff 440 day len tren 100. Het buff thi cast lai
+	// (di dung duong LuaAddSkillState: CastStateSkill, ScriptFuns.cpp:11829).
+	if (Npc[nNpcIdx].m_CurrentExpEnhance <= 100)
+	{
+		KSkill* pTTL = (KSkill*)g_SkillManager.GetSkill(440, 1);
+		if (pTTL)
+		{
+			pTTL->CastStateSkill(nNpcIdx, 0, 0, 3600 * GAME_FPS, TRUE);
+			pb_Log("[BotTTL] %s an Tien Thao Lo (x2 kinh nghiem, 1 gio)\n",
+			       Player[nIdx].m_PlayerName);
+		}
+	}
+
+	// ---- dem binh + tim tui trong hanh trang ----
+	int nBinh = 0, nBinhIdx = 0, nTuiIdx = 0;
+	for (int q = 0; q < MAX_PLAYER_ITEM; q++)
+	{
+		const int g = Player[nIdx].m_ItemList.m_Items[q].nIdx;
+		if (g <= 0)
+			continue;
+		const int nGenre = Item[g].GetGenre();
+		if (nGenre == item_medicine)
+		{
+			nBinh++;
+			if (!nBinhIdx) nBinhIdx = g;
+		}
+		else if (nGenre == item_magicscript && Item[g].GetDetailType() == 1
+		      && Item[g].GetParticular() == 4813)
+			nTuiIdx = g;
+	}
+
+	// ---- uong binh khi mau duoi 50% ----
+	if (nBinhIdx && Npc[nNpcIdx].m_CurrentLife * 2 < Npc[nNpcIdx].m_CurrentLifeMax
+	 && now - b.nUongTick >= (unsigned int)(GAME_FPS * 5))
+	{
+		b.nUongTick = now;
+		Player[nIdx].m_ItemList.EatMecidine(nBinhIdx);
+		pb_Log("[BotUong] %s uong binh (HP %d/%d, con %d binh)\n",
+		       Player[nIdx].m_PlayerName, (int)Npc[nNpcIdx].m_CurrentLife,
+		       (int)Npc[nNpcIdx].m_CurrentLifeMax, nBinh - 1);
+	}
+
+	// ---- con it hon 3 binh thi mo tui rot them (script tu gioi han 10 giay/luot) ----
+	if (nTuiIdx && nBinh < 3 && now - b.nMoTuiTick >= (unsigned int)(GAME_FPS * 12))
+	{
+		b.nMoTuiTick = now;
+		Player[nIdx].m_ItemList.EatMecidine(nTuiIdx);
+		pb_Log("[BotTui] %s mo tui duoc pham (dang con %d binh)\n",
+		       Player[nIdx].m_PlayerName, nBinh);
+	}
 }
 
 // Mot nhip DI HOANG. Tra 1 = dang di (chua toi), 0 = khong co cho di / da toi noi.
@@ -1926,6 +2044,12 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 					continue;
 				if (p2->GetSkillStyle() == SKILL_SS_PassivityNpcState)
 					continue;
+				// khong nang chieu khac ngu hanh (chieu phai khac thua ke tu mau)
+				{
+					const int nSr2 = p2->GetSkillSeries();
+					if (nSr2 >= 0 && nSr2 < series_num && nSr2 != Npc[nNpcIdx].m_Series)
+						continue;
+				}
 				const int rq2 = p2->GetSkillReqLevel();
 				if (nLvBot < rq2)
 					continue;                    // chua du cap mo ky nang nay
@@ -1949,7 +2073,7 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			}
 		}
 		if (b.nAtkSkill != nCu)
-			pb_Log("[BotDanh] %s cap %d dung chieu %d (cap %d)\n",
+			pb_Log("[BotDanh] %s cap %d dung chieu %d (cap %d, kieu/eqt xem skills.txt)\n",
 				   Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, b.nAtkSkill, b.nAtkSkillLv);
 	}
 	if (b.nAtkSkill <= 0)
@@ -2569,6 +2693,7 @@ static void pb_DriveBot(PB_Bot& b)
 		// Vong sang / bua / buff xet TRUOC khi danh: bot phai vao tran voi day du
 		// trang thai, giong nguoi choi bam buff truoc roi moi lao vao.
 		pb_ApplyAuraBuff(nIdx, nNpcIdx, b, nowAll);
+		pb_DungVatPham(nIdx, nNpcIdx, b, nowAll, nLech);
 		if (pb_RaBai(nIdx, nNpcIdx, nSub, b, nLech))
 		{
 			// Vua dat chan sang map moi thi viec DAU TIEN la buoc ra khoi diem dat chan
@@ -2702,6 +2827,11 @@ static void pb_DriveBot(PB_Bot& b)
 		{
 			b.nGaveWeapon = 1;
 			pb_GiveFactionWeapon(nIdx, b.nFaction);
+			// CAP TUI DUOC PHAM VINH VIEN - di dung script co san cua du an
+			// (vatpham.lua:187-190: AddItem(6,1,4813) khong han + khoa vinh vien).
+			Player[nIdx].ExecuteScript((char*)"\\script\\global\\vatpham.lua",
+			                           (char*)"tuiduocpham1238", 0, false);
+			pb_Log("[BotTui] %s nhan tui duoc pham vinh vien\n", Player[nIdx].m_PlayerName);
 		}
 
 		// Tieu luon so diem dang ton (nhan vat mau co the da tich san), tu do moi lan len cap
