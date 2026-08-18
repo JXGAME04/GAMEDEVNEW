@@ -158,6 +158,7 @@ int  LuaPB_BotCount(Lua_State* L);             // () -> so bot dang song, tran
 int  LuaPB_ClearBot(Lua_State* L);             // () -> so bot da go
 int  LuaPB_JoinFaction(Lua_State* L);          // () -> so bot da nhan lenh vao phai
 int  LuaPB_SetFight(Lua_State* L);             // (bOn) -> so bot da bat/tat danh quai
+int  LuaPB_SetChat(Lua_State* L);              // (nRate[,szFile,szType]) -> so cau da nap
 
 #endif // _SERVER
 #endif // KPLAYERBOT_H

@@ -71,6 +71,8 @@ function PB_Menu()
 	"Cho bot VAO PHAI (theo ngu hanh)/PB_Join",
 	"BAT danh quai/#PB_Fight(1)",
 	"TAT danh quai/#PB_Fight(0)",
+	"BAT bot noi chuyen/#PB_Chat(40)",
+	"TAT bot noi chuyen/#PB_Chat(0)",
 	"Go het bot nguoi choi/PB_Clear",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
@@ -106,6 +108,23 @@ function PB_Fight(nOn)
 		Msg2Player("Bot tu tim quai quanh no; xem console dong [BotDanh] de biet chieu da chon.")
 	else
 		Msg2Player(format("Da TAT danh quai cho %d bot.", n))
+	end
+	PB_Menu()
+end
+
+-- Bat/tat bot noi chuyen. nRate = so lan/1000 moi giay moi bot (40 ~ mot cau / 25 giay / bot).
+-- Kho cau la settings/simcity/chat.txt (2745 dong) - DA CO SAN tren may chu.
+-- LUU Y duong dan phai dung gach XUOI: Lua 4.0 nuot escape "\".
+function PB_Chat(nRate)
+	local n = PB_SetChat(nRate, "/settings/simcity/chat.txt", "general")
+	if nRate > 0 then
+		if n and n > 0 then
+			Msg2Player(format("Da BAT bot noi chuyen (kho %d cau, muc %d/1000 moi giay).", n, nRate))
+		else
+			Msg2Player("Nap kho cau THAT BAI - kiem settings/simcity/chat.txt.")
+		end
+	else
+		Msg2Player("Da TAT bot noi chuyen.")
 	end
 	PB_Menu()
 end

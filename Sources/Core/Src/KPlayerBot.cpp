@@ -27,6 +27,8 @@
 #include "KSkillManager.h"  // g_SkillManager.GetSkill(id, level)
 #include "KRegion.h"        // duyet m_NpcList de tim quai theo region
 #include "KMath.h"         // g_GetDistance
+#include "KPlayerChat.h"   // KPlayerChat::NpcChat - bot noi chuyen
+#include "KTabFile.h"      // doc kho cau thoai chat.txt
 #include "KPlayerBot.h"
 // TRoleData / S3DBI_RoleBaseInfo. Dung DUNG duong dan ma CoreServerShell.cpp:33 dang dung
 // de chac chan lay cung mot ban voi phan con lai cua Core (cay nay co nhieu ban
@@ -172,6 +174,11 @@ struct PB_Bot
 	unsigned int nLagTick;                    // moc do "danh mai khong sut mau"
 	int          nLagLife;                    // mau muc tieu tai moc do
 	unsigned int nCastTick;                   // moc phat lenh danh lan cuoi
+	// ---- luyen cap ----
+	int          nBaiIdx;                     // chi so bai luyen dang nham (-1 = chua chon)
+	int          nBaiLevel;                   // cap bot luc chon bai (len cap thi chon lai)
+	unsigned int nDoiMapTick;                 // giai cho giua hai lan thu doi map
+	int          nChatCuoi;                   // con tro cau thoai (chong lap giua cac bot)
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -547,6 +554,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChetTuTick = 0;
 		b.nAtkSkill = 0;  b.nAtkSkillLv = 0;  b.nAtkPickLevel = 0;
 		b.nTargetNpc = 0; b.nLagTick = 0;     b.nLagLife = 0;  b.nCastTick = 0;
+		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
+		b.nChatCuoi = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -725,6 +734,37 @@ int PB_SetFight(int bOn)
 	}
 	printf("[Bot] %s danh quai cho %d bot\n", bOn ? "BAT" : "TAT", n);
 	return n;
+}
+
+// Kho cau thoai + muc noi. Dinh nghia SOM vi ham Lua ben duoi dung toi;
+// than pb_LoadChat/pb_Chat nam gan pb_DriveBot cho de doc.
+#define PB_CHAT_MAX     2048
+#define PB_CHAT_LEN     160
+static char s_pbChat[PB_CHAT_MAX][PB_CHAT_LEN];
+static int  s_pbChatCount = 0;
+static int  s_pbChatRate  = 0;    // n/1000 moi giay moi bot; 0 = tat
+static int  pb_LoadChat(const char* szFile, const char* szType);
+
+// PB_SetChat(nRate [, szFile, szType]) -> so cau da nap.
+//   nRate = n/1000 moi giay moi bot. 0 = tat.
+int LuaPB_SetChat(Lua_State* L)
+{
+	const int nRate = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : 0;
+	const char* szFile = (Lua_GetTopIndex(L) >= 2)
+		  ? (const char*)Lua_ValueToString(L, 2) : "/settings/simcity/chat.txt";
+	const char* szType = (Lua_GetTopIndex(L) >= 3)
+		  ? (const char*)Lua_ValueToString(L, 3) : "general";
+
+	if (nRate > 0 && s_pbChatCount <= 0)
+	{
+		const int n = pb_LoadChat(szFile, szType);
+		printf("[BotChat] nap %d cau tu %s (nhom %s)\n", n, szFile, szType);
+	}
+	s_pbChatRate = (nRate < 0) ? 0 : ((nRate > 1000) ? 1000 : nRate);
+	printf("[BotChat] muc noi chuyen = %d/1000 moi giay moi bot (kho %d cau)\n",
+		   s_pbChatRate, s_pbChatCount);
+	Lua_PushNumber(L, s_pbChatCount);
+	return 1;
 }
 
 int LuaPB_SetFight(Lua_State* L)
@@ -1170,6 +1210,88 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 //
 // TAM NHIN kep [100,1200] y ban goc (KPlayer.cpp:9139-9146).
 // ===========================================================================
+// ===========================================================================
+// BAI LUYEN CAP THEO CAP DO
+//
+// Nguon: chinh bang THAN HANH PHU cua may chu dang chay -
+//   script\item\ib\shenxingfu.lua (1398 dong): tab_lv20map .. tab_lv90map,
+//   rieng Hoa Son o ham go_HSBattle:708 "NewWorld(2,2605,3592)".
+// Toa do trong lua la O LUOI, nen phai nhan 32 khi doi sang MPS.
+//
+// Cap 10 -> Hoa Son dung yeu cau chu game. Tu 20 tro len lay dung cac bai cua Than
+// Hanh Phu, moi moc nhieu bai thi boc ngau nhien mot bai (rai bot ra, khong don cuc).
+//
+// CO Y giu DU bang ke ca ban do hien chua mo: chu game noi ban local dang mo it map
+// nhung sap mo full. Bot khong toi duoc thi ChangeWorld tra khac 1 va ta bao ro,
+// chu KHONG cat bot bang danh sach map hien co.
+// ===========================================================================
+struct PB_BaiLuyen
+{
+	int         nCapToiThieu;
+	int         nMapId;
+	int         nOX, nOY;        // O LUOI (nhan 32 ra MPS)
+	const char* szTen;
+};
+
+static const PB_BaiLuyen s_bai[] =
+{
+	{ 10,   2, 2605, 3592, "Hoa Son" },
+	{ 20,  19, 3102, 3963, "Kiem Cac Tay Nam" },
+	{ 20,   7, 2276, 2825, "Tan Lang tang 1" },
+	{ 30, 193, 1938, 2845, "Vu Di Son" },
+	{ 30, 170, 1612, 3187, "Tho Phi Dong" },
+	{ 40,  21, 2622, 4502, "Thanh Thanh Son" },
+	{ 40, 167, 1575, 3239, "Diem Thuong Son" },
+	{ 50, 182, 1777, 2982, "Nghiet Long Dong" },
+	{ 50, 164, 1611, 3187, "Thien Tam Thap" },
+	{ 60,  79, 1600, 3206, "Tuong Duong Mat Dao" },
+	{ 60,  56, 1516, 3443, "Hoanh Son Phai" },
+	{ 60, 166, 1649, 3231, "Thien Tam Thap tang 3" },
+	{ 70, 319, 1630, 3587, "Lam Du Quan" },
+	{ 70, 123, 1702, 3350, "Lao Ho Dong" },
+	{ 70, 206, 1603, 3215, "Tan Lang tang 2" },
+	{ 80, 224, 1622, 3118, "Sa Mac dia bieu" },
+	{ 80, 198, 1521, 2947, "Thanh Khe Dong" },
+	{ 80, 320, 1147, 3123, "Chan nui Truong Bach" },
+	{ 80, 181, 1425, 2999, "Luong Thuy Dong" },
+	{ 90, 875, 1576, 3177, "Hac Sa Dong" },
+	{ 90, 322, 1589, 3164, "Truong Bach Son Bac" },
+	{ 90, 321,  967, 2313, "Truong Bach Son Nam" },
+	{ 90,  75, 1811, 3012, "Khoa Lang Dong" },
+	{ 90, 225, 1474, 3275, "Sa Mac Me Cung 1" },
+	{ 90, 226, 1560, 3184, "Sa Mac Me Cung 2" },
+	{ 90, 227, 1588, 3237, "Sa Mac Me Cung 3" },
+	{ 90, 336, 1124, 3187, "Phong Lang Do" },
+	{ 90, 340, 1845, 3438, "Mac Cao Quat" },
+	{ 90, 144, 1691, 3020, "Duoc Vuong Dong tang 4" },
+	{ 90,  93, 1529, 3166, "Tien Cuc Dong Mat Cung" },
+	{ 90, 124, 1675, 3418, "Can Vien Dong Me Cung" },
+	{ 90, 152, 1672, 3361, "Tuyet Bao Dong tang 8" },
+};
+#define PB_SO_BAI  (int)(sizeof(s_bai) / sizeof(s_bai[0]))
+
+// Chon bai hop cap: lay MOC CAO NHAT ma bot du cap, roi boc ngau nhien trong moc do.
+// Tra chi so trong s_bai, hoac -1 neu chua du cap 10.
+static int pb_ChonBai(int nLevel, int nLech)
+{
+	int nMoc = -1;
+	for (int i = 0; i < PB_SO_BAI; i++)
+		if (nLevel >= s_bai[i].nCapToiThieu && s_bai[i].nCapToiThieu > nMoc)
+			nMoc = s_bai[i].nCapToiThieu;
+	if (nMoc < 0)
+		return -1;
+
+	int aTm[PB_SO_BAI], n = 0;
+	for (int i = 0; i < PB_SO_BAI; i++)
+		if (s_bai[i].nCapToiThieu == nMoc)
+			aTm[n++] = i;
+	if (n <= 0)
+		return -1;
+	// tron them nLech (chi so bot) de 20 bot khong cung boc mot bai - cung meo
+	// KSimCity.cpp:1329 da dung, vi g_Random goi lien tiep trong mot khung hay ra giong nhau.
+	return aTm[((int)g_Random(n) + nLech * 7) % n];
+}
+
 #define PB_VISION_MPS     700          // tam tim quai
 #define PB_CAST_GAP       4            // so khung toi thieu giua hai lenh danh
 #define PB_LAG_SECONDS    10           // bo muc tieu neu chung nay giay khong sut 10% mau
@@ -1285,6 +1407,50 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 	return nBest;
 }
 
+// Dua bot ra bai luyen hop cap. Tra 1 = da o dung bai (danh duoc), 0 = dang lo viec di.
+//
+// Doi ban do di duong CHINH THONG: KNpc::ChangeWorld(mapId, mpsX, mpsY) - dung thu ma
+// KPlayer::Revive goi khi hoi sinh (KPlayer.cpp), va ham Lua NewWorld cung goi vao day.
+// Tra 1 la thanh cong; khac 1 nghia la ban do CHUA MO tren may chu nay.
+static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
+{
+	const unsigned int now = SubWorld[nSub].m_dwCurrentTime;
+	const int nLevel = Npc[nNpcIdx].m_Level;
+
+	// Chon lai bai khi chua co hoac khi da len cap (moc cao hon co the da mo).
+	if (b.nBaiIdx < 0 || b.nBaiLevel != nLevel)
+	{
+		b.nBaiLevel = nLevel;
+		b.nBaiIdx   = pb_ChonBai(nLevel, nLech);
+	}
+	if (b.nBaiIdx < 0)
+		return 1;               // chua du cap 10 -> cu danh tai cho
+
+	const PB_BaiLuyen& bai = s_bai[b.nBaiIdx];
+	if (SubWorld[nSub].m_SubWorldID == bai.nMapId)
+		return 1;               // da o dung bai
+
+	// Giai cho de khong goi ChangeWorld lien tuc khi ban do chua mo.
+	if (b.nDoiMapTick && now - b.nDoiMapTick < (unsigned int)(GAME_FPS * 10))
+		return 0;
+	b.nDoiMapTick = now;
+
+	b.nTargetNpc = 0;
+	b.walk.Reset();
+	const int nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32, bai.nOY * 32);
+	if (nRet == 1)
+	{
+		printf("[BotBai] %s cap %d -> %s (map %d, o %d,%d)\n",
+			   Player[nIdx].m_PlayerName, nLevel, bai.szTen, bai.nMapId, bai.nOX, bai.nOY);
+		return 0;
+	}
+
+	printf("[BotBai] %s: KHONG VAO DUOC %s (map %d) - ban do co the CHUA MO tren may chu."
+		   " Bot danh tai cho.\n", Player[nIdx].m_PlayerName, bai.szTen, bai.nMapId);
+	b.nBaiIdx = -1;             // thoi, khoi thu map do nua trong lan chon toi
+	return 1;
+}
+
 // Mot nhip DANH NHAU. Tra 1 neu dang co viec (dang danh), 0 neu khong co muc tieu.
 static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 {
@@ -1362,6 +1528,66 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	return 1;
 }
 
+// ===========================================================================
+// BOT NOI CHUYEN
+//
+// Kho cau: settings\simcity\chat.txt - 2745 dong, 21 nhom tinh huong, DA CO SAN tren
+// may chu dang chay (khong phai chep them gi). Cot 1 = Type, cot 2 = Chat.
+//
+// Duong phat loi: KPlayerChat::NpcChat(nNpcIdx, ...) - CHINH duong ma bot NPC SimCity
+// dang dung va da chay that. Bot KPlayer cung la mot KNpc nen dung thang duoc.
+// KRegion::BroadCast loc m_nNetConnectIdx >= 0 nen bot (-1) khong tu gui cho minh,
+// con nguoi that quanh do VAN NHAN du.
+//
+// CHONG LAP: moi bot giu con tro rieng nChatCuoi va tien theo buoc le (nhay 7 cau) nen
+// hai bot canh nhau khong doc trung. g_Random goi lien tiep trong CUNG MOT KHUNG hay ra
+// giong nhau (canh bao da ghi san tai KSimCity.cpp:1326-1328) nen KHONG dung mot minh no.
+// ===========================================================================
+// Nap kho cau. Tra so cau da nap.
+// LUU Y duong dan: Lua 4.0 nuot escape "\" nen o Lua phai truyen gach XUOI
+// ("/settings/simcity/chat.txt"); g_GetFullPath nhan ca hai kieu.
+static int pb_LoadChat(const char* szFile, const char* szType)
+{
+	KTabFile tab;
+	if (!tab.Load((LPSTR)szFile))
+		return 0;
+	s_pbChatCount = 0;
+	const int nH = tab.GetHeight();
+	for (int row = 2; row <= nH && s_pbChatCount < PB_CHAT_MAX; row++)   // row 1 = tieu de
+	{
+		char szT[64] = { 0 };
+		tab.GetString(row, 1, (LPSTR)"", szT, sizeof(szT));
+		if (szType && szType[0] && strcmp(szT, szType) != 0)
+			continue;
+		char szC[PB_CHAT_LEN] = { 0 };
+		tab.GetString(row, 2, (LPSTR)"", szC, PB_CHAT_LEN);
+		if (!szC[0])
+			continue;
+		strncpy(s_pbChat[s_pbChatCount], szC, PB_CHAT_LEN - 1);
+		s_pbChat[s_pbChatCount][PB_CHAT_LEN - 1] = 0;
+		s_pbChatCount++;
+	}
+	return s_pbChatCount;
+}
+
+// Mot nhip NOI CHUYEN cho mot bot.
+static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
+{
+	if (s_pbChatRate <= 0 || s_pbChatCount <= 0)
+		return;
+	// moi bot xet mot lan moi giay, lech nhau theo chi so de khong dong loat cung luc
+	if (((now + nLech) % (unsigned int)GAME_FPS) != 0)
+		return;
+	if ((int)g_Random(1000) >= s_pbChatRate)
+		return;
+
+	b.nChatCuoi = (b.nChatCuoi + 7 + nLech) % s_pbChatCount;
+	char* p = s_pbChat[b.nChatCuoi];
+	const int nLen = (int)strlen(p);
+	if (nLen > 0)
+		KPlayerChat::NpcChat(nNpcIdx, p, nLen, false);
+}
+
 // Mot nhip cua MOT bot.
 static void pb_DriveBot(PB_Bot& b)
 {
@@ -1376,6 +1602,15 @@ static void pb_DriveBot(PB_Bot& b)
 	if (nSub < 0 || nSub >= MAX_SUBWORLD)    return;
 
 	const unsigned int nowAll = SubWorld[nSub].m_dwCurrentTime;
+
+	// Noi chuyen chay SONG SONG voi moi viec khac (di duong, danh nhau) - nguoi that cung
+	// vua danh vua noi. Dat truoc cac nhanh return de khong bi nhanh nao nuot mat.
+	{
+		int nLech = 0;
+		for (int q = 0; q < s_botCount; q++)
+			if (&s_bots[q] == &b) { nLech = q; break; }
+		pb_Chat(nNpcIdx, b, nowAll, nLech);
+	}
 
 	// ---------------------------------------------------------------- TU HOI SINH
 	// BOT CHET LA NAM MAI neu khong co doan nay. Duong tu hoi sinh cua nguoi that nam
@@ -1461,7 +1696,12 @@ static void pb_DriveBot(PB_Bot& b)
 	// ---------------------------------------------------------------- DANH QUAI
 	if (b.nAi == PB_AI_FIGHT)
 	{
-		pb_Fight(nIdx, nNpcIdx, nSub, b);
+		// Ra bai hop cap TRUOC, danh sau. pb_RaBai tra 1 khi da dung cho.
+		int nLech = 0;
+		for (int q = 0; q < s_botCount; q++)
+			if (&s_bots[q] == &b) { nLech = q; break; }
+		if (pb_RaBai(nIdx, nNpcIdx, nSub, b, nLech))
+			pb_Fight(nIdx, nNpcIdx, nSub, b);
 		return;
 	}
 
