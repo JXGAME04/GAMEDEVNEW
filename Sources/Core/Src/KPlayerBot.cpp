@@ -342,7 +342,26 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 			{
 				int nFaction = nSeries * FACTIONS_PRR_SERIES
 				             + (int)g_Random(FACTIONS_PRR_SERIES);
-				Player[nIdx].AddFaction(nFaction);
+				if (Player[nIdx].AddFaction(nFaction))
+				{
+					// PHAI dat CA m_CurrentCamp, khong chi m_Camp.
+					//
+					// MAU TEN nhan vat tren man hinh do DUY NHAT m_CurrentCamp quyet dinh:
+					// KNpc::PaintInfo switch(m_CurrentCamp) tai KNpc.cpp:5868
+					// (camp_justice -> cam, camp_evil -> hong tim, camp_free -> do...).
+					// Ma KPlayer::AddFaction (KPlayer.cpp:4043/4066) CHI goi Npc[].SetCamp(),
+					// tuc chi dat m_Camp va phat NPC_CHGCAMP_SYNC; client nhan goi do cung chi
+					// ghi m_Camp (KProtocolProcess.cpp:547), KHONG dung m_CurrentCamp.
+					// => ten bot se giu nguyen mau trang du da vao phai.
+					//
+					// Nguoi choi THAT khong dinh loi nay vi ho vao phai qua ham Lua
+					// (lib_faction.lua:187-195) goi CA HAI: SetCurCamp(nCamp) roi SetCamp(nCamp).
+					// Goi thang C++ AddFaction la thieu dung nua SetCurCamp do.
+					//
+					// SetCurrentCamp (KNpc.cpp:460-473) dat m_CurrentCamp va phat
+					// NPC_CHGCURCAMP_SYNC ra vung lan can - do la thu client can de doi mau.
+					Npc[nNpcIdx].SetCurrentCamp(Player[nIdx].m_cFaction.GetGurFactionCamp());
+				}
 			}
 		}
 	}
