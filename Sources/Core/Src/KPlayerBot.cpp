@@ -1558,7 +1558,7 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			nWant = (nDetail == 1) ? (nParti + 100) : nParti;
 	}
 
-	int nBest = 0, nBestLv = 0, nBestRank = 0;
+	int nBest = 0, nBestLv = 0, nBestRank = 0, nBestRq = -1;
 	// NHAT KY CHON CHIEU: liet ke TUNG chieu trong danh sach kem ly do loai, de doc
 	// bot.log la biet ngay vi sao mot phai "khong co chieu de danh" - khong doan mo.
 	//   HE=x  chieu mang ngu hanh x khac he bot     KIEU=x  style x khong phai Missles/Melee
@@ -1612,11 +1612,25 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		if (eq == -2)          nRank = 1;         // moi vu khi
 		else if (eq == nWant)  nRank = 2;         // khop dung ho -> an dut
 		else                   { PB_DIAG(" %d:EQT=%d", id, eq); continue; }
-		PB_DIAG(" %d:OK(lv%d,r%d)", id, lv, nRank);
 
-		if (nRank > nBestRank || (nRank == nBestRank && lv > nBestLv))
+		// BAC XEP HANG THU HAI: cap yeu cau (rqTier) - hoc tu bot.log 11:51 doi chieu
+		// skills.txt cua DU AN: id 1/2/53 deu la "Cong kich vat ly" (DON DANH THUONG,
+		// reqLevel 0, EqtLimit -2) va nam DAU danh sach ky nang, nen luat hoa cu
+		// "cung rank cung cap -> lay con dung truoc" khien bot tay khong cast chieu 53
+		// = dam tay dung nghia den, du danh sach CO san chieu phai that (122/145/85...
+		// deu OK,r1). Xep them bac reqLevel (kep 80) thi chieu phai (rq >= 10) luon
+		// thang don danh thuong (rq 0) - dung khuon rqTier cua ban tham khao
+		// (RepickBotCombatSkills, KBotManager.cpp:1262-1270).
+		int nRq = p->GetSkillReqLevel();
+		if (nRq > 80) nRq = 80;
+		PB_DIAG(" %d:OK(lv%d,r%d,rq%d)", id, lv, nRank, nRq);
+
+		if (nRank > nBestRank
+		 || (nRank == nBestRank && nRq > nBestRq)
+		 || (nRank == nBestRank && nRq == nBestRq && lv > nBestLv))
 		{
 			nBestRank = nRank;
+			nBestRq   = nRq;
 			nBest     = id;
 			nBestLv   = lv;
 		}
