@@ -25,6 +25,7 @@
 #include "GameDataDef.h"    // itempart_weapon, LOCK_STATE_LOCK, HAND_PARTICULAR
 #include "KSkills.h"        // KSkill - doc EqtLimit / SkillStyle / IsTargetEnemy
 #include "KSkillManager.h"  // g_SkillManager.GetSkill(id, level)
+#include "SkillDef.h"       // SKILL_SS_* - phan biet vong sang / buff / bua
 #include "KRegion.h"        // duyet m_NpcList de tim quai theo region
 #include "KMath.h"         // g_GetDistance
 #include "KPlayerChat.h"   // KPlayerChat::NpcChat - bot noi chuyen
@@ -185,6 +186,10 @@ struct PB_Bot
 	PB_WalkState roam;                        // trang thai di bo RIENG cho viec di hoang
 	int          nRoamX, nRoamY;              // diem dang nham toi (MPS), 0 = chua co
 	unsigned int nRoamTick;                   // moc boc diem lan cuoi
+	// ---- vong sang / buff / bua ----
+	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
+	int          nAuraLevel;                  // cap bot luc chon vong sang
+	unsigned int nBuffTick;                   // moc buff lan cuoi
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -598,6 +603,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
+		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -1567,6 +1573,106 @@ static int pb_FindRoamSpot(int nNpcIdx, int nSub, int nLech, int* pnX, int* pnY)
 	return 1;
 }
 
+// ===========================================================================
+// VONG SANG / BUFF / BUA - BA LOAI KHAC NHAU, BA DUONG DUNG KHAC NHAU
+//
+// Da doi chieu voi cay tham khao (PickBotAuras KBotManager.cpp:2213 va
+// ReapplyEligibleBotPassives :2241) roi anh xa sang ten cua cay nay:
+//
+//  1. VONG SANG  (IsAura() == TRUE, KSkills.h:195)
+//     KHONG cast nhu chieu thuong. Client bat vong sang bang PlayerSwitchAura - ham do
+//     CHI CO PHIA CLIENT, nen phia server phai TU DAT: Npc[].SetAuraSkill(id)
+//     (KNpc.h:719, ghi vao m_ActiveAuraID :289).
+//     PHAI DAT LAI DEU DAN: m_ActiveAuraID bi xoa khi hoi sinh, khong dat lai thi bot
+//     song lai la mat vong sang ma khong co dau hieu gi.
+//
+//  2. BUA / BI DONG (SKILL_SS_PassivityNpcState, SkillDef.h:105)
+//     Cast MOT LAN moi khi len cap. Ly do ton tai (ban tham khao ghi ro): luc bot vua
+//     hoc, no chua du cap nen cong CastPassivitySkill tu choi; len cap roi phai cap lai,
+//     khong thi bua nam trong tui ma khong bao gio co tac dung.
+//
+//  3. BUFF chu dong (SKILL_SS_InitiativeNpcState + IsTargetSelf())
+//     Cast len CHINH MINH theo chu ky. Day la thu nguoi choi bam tay truoc khi danh.
+//
+// Ca ba deu goi KSkill::Cast(nLauncher, nParam1, nParam2) (KSkills.h:172) voi
+// nParam1 = -1 va nParam2 = chinh khe NPC cua bot - tuc "nham vao ban than".
+// ===========================================================================
+#define PB_BUFF_LAI   (GAME_FPS * 60)     // buff lai moi 60 giay
+
+static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
+{
+	const int nLevel = Npc[nNpcIdx].m_Level;
+	const bool bLenCap = (b.nAuraLevel != nLevel);
+	const bool bToiGio = (b.nBuffTick == 0 || now - b.nBuffTick >= (unsigned int)PB_BUFF_LAI);
+	if (!bLenCap && !bToiGio)
+	{
+		// Khong den ky nhung VAN dat lai vong sang neu no bi mat (vd vua hoi sinh).
+		if (b.nAuraSkill > 0 && Npc[nNpcIdx].m_ActiveAuraID != b.nAuraSkill)
+			Npc[nNpcIdx].SetAuraSkill(b.nAuraSkill);
+		return;
+	}
+	b.nAuraLevel = nLevel;
+	b.nBuffTick  = now;
+
+	int nAura = 0, nAuraRq = -1;
+	int nBua = 0, nBuff = 0;
+	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
+
+	for (int i = 1; i < MAX_NPCSKILL; i++)
+	{
+		const int id = sl.m_Skills[i].SkillId;
+		if (id <= 0 || id >= MAX_SKILL)
+			continue;
+		int lv = sl.m_Skills[i].CurrentSkillLevel;
+		if (lv <= 0) lv = sl.m_Skills[i].SkillLevel;
+		if (lv <= 0)
+			continue;
+
+		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
+		if (!p)
+			continue;
+
+		// Cap yeu cau kep tran 80 y ban tham khao: tren nua la ky nang 90/150,
+		// bot chua den luc dung.
+		int rq = p->GetSkillReqLevel();
+		if (rq > 80) rq = 80;
+		if (nLevel < rq)
+			continue;
+
+		if (p->IsAura())
+		{
+			// vong sang: lay cai co cap yeu cau CAO NHAT ma bot du cap
+			if (rq > nAuraRq) { nAuraRq = rq; nAura = id; }
+			continue;
+		}
+
+		const int st = p->GetSkillStyle();
+		if (st == SKILL_SS_PassivityNpcState)
+		{
+			p->Cast(nNpcIdx, -1, nNpcIdx);
+			nBua++;
+		}
+		else if (st == SKILL_SS_InitiativeNpcState && p->IsTargetSelf())
+		{
+			p->Cast(nNpcIdx, -1, nNpcIdx);
+			nBuff++;
+		}
+	}
+
+	if (nAura > 0 && nAura != b.nAuraSkill)
+	{
+		b.nAuraSkill = nAura;
+		pb_Log("[BotVongSang] %s cap %d bat vong sang %d\n",
+			   Player[nIdx].m_PlayerName, nLevel, nAura);
+	}
+	if (b.nAuraSkill > 0)
+		Npc[nNpcIdx].SetAuraSkill(b.nAuraSkill);
+
+	if (bLenCap && (nBua || nBuff))
+		pb_Log("[BotBuff] %s cap %d: %d bua bi dong + %d buff\n",
+			   Player[nIdx].m_PlayerName, nLevel, nBua, nBuff);
+}
+
 // Mot nhip DI HOANG. Tra 1 = dang di (chua toi), 0 = khong co cho di / da toi noi.
 static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 {
@@ -1978,6 +2084,9 @@ static void pb_DriveBot(PB_Bot& b)
 		int nLech = 0;
 		for (int q = 0; q < s_botCount; q++)
 			if (&s_bots[q] == &b) { nLech = q; break; }
+		// Vong sang / bua / buff xet TRUOC khi danh: bot phai vao tran voi day du
+		// trang thai, giong nguoi choi bam buff truoc roi moi lao vao.
+		pb_ApplyAuraBuff(nIdx, nNpcIdx, b, nowAll);
 		if (pb_RaBai(nIdx, nNpcIdx, nSub, b, nLech))
 		{
 			// Co quai gan thi danh; het quai gan thi DI HOANG toi cho khac tren CUNG ban do.
