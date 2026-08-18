@@ -795,7 +795,12 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nPhamViTick = 0;  b.nBienLogTick = 0;  b.nLachDem = 0;
 		b.szPmTraLoi[0] = 0;  b.nPmSenderIdx = 0;  b.nPmDenHan = 0;
 		b.nPmCamToi = 0;  b.nPmLapHash = 0;
-		const int nGieoNhom = (int)g_Random(100);
+		// g_Random den tu engine.lib DUNG SAN (Lib/x64/Engine Server Release) va
+		// DONG BANG THEO GIAY: moi lan goi trong cung mot giay tra CUNG gia tri
+		// (log 16:05: 30 bot sinh cung giay deu gieo=68; ghi chu KSimCity.cpp:1329
+		// da tung cham mat bay nay). Tron chi so bot vao de mot loat sinh van rai
+		// deu ma giua cac lan boot van ngau nhien.
+		const int nGieoNhom = ((int)g_Random(100) + s_botCount * 37) % 100;
 		b.nWantParty = (nGieoNhom < PB_NHOM_RATE) ? 1 : 0;
 		// [chan doan 18/08 - GO khi xong] tk bao "muon nhom 0" du 988 con dang danh:
 		// in 30 lan boc dau de doi chieu gia tri thuc te cua g_Random tai day.
@@ -3641,8 +3646,15 @@ static void pb_DriveBot(PB_Bot& b)
 			Npc[nNpcIdx].GetMpsPos(&bx, &by);
 			const int nR = PB_SCATTER_TILES;
 			// boc lech theo ca hai truc, tru di nua ban kinh de ra so am duong
-			b.nScatterX = bx + ((int)g_Random(nR * 2 + 1) - nR) * 32;
-			b.nScatterY = by + ((int)g_Random(nR * 2 + 1) - nR) * 32;
+			// tron chi so bot: g_Random dong bang theo giay (xem ghi chu o cho gieo
+			// nhom) - khong tron thi ca loat bot sinh cung giay tan ra CUNG MOT diem
+			{
+				int nLechTan = 0;
+				for (int q2 = 0; q2 < s_botCount; q2++)
+					if (&s_bots[q2] == &b) { nLechTan = q2; break; }
+				b.nScatterX = bx + (((int)g_Random(nR * 2 + 1) + nLechTan * 13) % (nR * 2 + 1) - nR) * 32;
+				b.nScatterY = by + (((int)g_Random(nR * 2 + 1) + nLechTan * 29) % (nR * 2 + 1) - nR) * 32;
+			}
 			if (b.nScatterX <= 0) b.nScatterX = bx;
 			if (b.nScatterY <= 0) b.nScatterY = by;
 			b.walk.Reset();
