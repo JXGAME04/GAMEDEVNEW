@@ -25,6 +25,7 @@ KRegion::KRegion()
 	m_RegionID		= -1;
 	m_nActive		= 0;
 	m_nNpcSyncCounter = 0;
+	m_nBroadCastCursor = 0;
 	m_nObjSyncCounter = 0;
 	m_nNpcSyncCursor  = 0;
 	m_nWidth		= 0;
@@ -1329,7 +1330,19 @@ void KRegion::BroadCast(const void* pBuffer, DWORD dwSize, int &nMaxCount, int n
 	if (m_PlayerList.m_nNodeCount <= 0)
 		return;
 
+	// Bat dau duyet tu con tro xoay chu khong phai dau danh sach: neu so nguoi trong
+	// vung vuot tran nMaxCount thi moi lan phat se phuc vu mot doan khac nhau, thay vi
+	// luon phuc vu dung nhom dau danh sach (nhung nguoi con lai se thanh vo hinh).
 	pNode = (KIndexNode *)m_PlayerList.GetHead();
+	if (m_PlayerList.m_nNodeCount > nMaxCount)
+	{
+		m_nBroadCastCursor %= m_PlayerList.m_nNodeCount;
+		for (int nSkip = 0; nSkip < m_nBroadCastCursor && pNode; nSkip++)
+			pNode = (KIndexNode *)pNode->GetNext();
+		if (pNode == NULL)
+			pNode = (KIndexNode *)m_PlayerList.GetHead();
+		m_nBroadCastCursor += nMaxCount;
+	}
 	while(pNode && nMaxCount > 0)
 	{
 	 if (pNode->m_nIndex > 0 && pNode->m_nIndex < MAX_PLAYER)

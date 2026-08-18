@@ -5551,7 +5551,12 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 		{16, 0},
 		{16, 32},
 	};
-	int nMaxCount = MAX_PLAYER;//MAX_BROADCAST_COUNT;
+	// Tran nguoi nhan moi lan phat dong bo. Ban goc JX2 dung 100 (MAX_BROADCAST_COUNT);
+	// cay nay tung nang len MAX_PLAYER (1500) = gan nhu bo tran. Chu game chon thu 500.
+	// Luu y: day la ngan sach DUYET dung chung cho ca 9 vung, nen phai di kem con tro xoay
+	// diem bat dau trong KRegion::BroadCast, neu khong thi nguoi xep sau vi tri 500 se khong
+	// bao gio nhan duoc dong bo (nguoi vo hinh).
+	int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
 	CURREGION.BroadCast(&NpcSync, sizeof(NPC_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
 	int j;
 	for (j = 0; j < 8; j++)
@@ -5662,7 +5667,7 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 			// Client moi dung bit nay de loc bot khoi GetAroundPlayer / moi to doi (WAuto).
 			PlayerSync.m_btSomeFlag |= 0x20;
 		}
-		int nMaxCount = MAX_PLAYER;	//MAX_BROADCAST_COUNT;
+		int nMaxCount = NPC_SYNC_BROADCAST_LIMIT;
 		CURREGION.BroadCast(&PlayerSync, sizeof(PLAYER_NORMAL_SYNC), nMaxCount, m_MapX, m_MapY);
 		for (j = 0; j < 8; j++)
 		{

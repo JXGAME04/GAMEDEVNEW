@@ -8,6 +8,8 @@
 //-----------------------------------------------------------------------
 #ifdef _SERVER
 #define	MAX_BROADCAST_COUNT		100
+// Tran cho duong dong bo dinh ky (NormalSync). Ban goc = 100; chu game chon 500.
+#define	NPC_SYNC_BROADCAST_LIMIT	500
 #else
 #define	MAX_REGION		9						//toi da load 9 region vung xung quanh
 #endif
@@ -43,6 +45,9 @@ public:
 	int			m_nWidth;
 	int			m_nHeight;
 	int			m_nNpcSyncCursor; // Index in list, persistent across frames
+	// Diem bat dau duyet danh sach nguoi choi khi phat dong bo. Xoay moi lan phat de
+	// khong ai bi bo doi khi so nguoi trong vung vuot tran NPC_SYNC_BROADCAST_LIMIT.
+	int			m_nBroadCastCursor;
 private:
 #ifdef _SERVER
 	long		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表
