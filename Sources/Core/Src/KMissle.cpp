@@ -264,6 +264,7 @@ void KMissle::Release()
 	g_ScenePlace.RemoveObject(CGOG_MISSLE, m_nMissleId, m_SceneID);
 	m_MissleRes.Clear();
 	m_nMissleId = -1;
+	m_bInterpValid = FALSE;
 	m_nFollowNpcIdx = 0;
 	m_nLastDoCollisionIdx = 0;
 #endif
@@ -551,6 +552,27 @@ int KMissle::Activate()
 		int nSrcY;
 		
 		SubWorld[0].Map2Mps(m_nRegionId, m_nCurrentMapX, m_nCurrentMapY,m_nXOffset, m_nYOffset, &nSrcX, &nSrcY);
+		// chup 2 moc cho noi suy khi ve (khong tinh them Map2Mps - dung luon ket qua tren)
+		if (m_bInterpValid)
+		{
+			m_nPrevX = m_nTickX;
+			m_nPrevY = m_nTickY;
+			m_nPrevZ = m_nTickZ;
+		}
+		else
+		{
+			m_nPrevX = nSrcX;
+			m_nPrevY = nSrcY;
+			m_nPrevZ = m_nCurrentMapZ;
+			m_bInterpValid = TRUE;
+		}
+		m_nTickX = nSrcX;
+		m_nTickY = nSrcY;
+		m_nTickZ = m_nCurrentMapZ;
+		// mac dinh ve tai vi tri tick (dung khi tat noi suy); POSSHIFT se ghi de neu bat
+		m_nDrawX = nSrcX;
+		m_nDrawY = nSrcY;
+		m_nDrawZ = m_nCurrentMapZ;
 		if (m_usLightRadius && m_eMissleStatus != MS_DoWait)
 			g_ScenePlace.MoveObject(CGOG_MISSLE, m_nMissleId, nSrcX, nSrcY, m_nCurrentMapZ, m_SceneID, IPOT_RL_OBJECT | IPOT_RL_LIGHT_PROP );
 		else
@@ -964,22 +986,23 @@ void KMissle::OnVanish()
 void KMissle::Paint()
 {
 	if (m_nMissleId <= 0 ) return;
-	int nSrcX;
-	int nSrcY;
-	SubWorld[0].Map2Mps(m_nRegionId, m_nCurrentMapX, m_nCurrentMapY,m_nXOffset, m_nYOffset, &nSrcX, &nSrcY);
+	// Vi tri VE do Breathe (tick) dat va POSSHIFT noi suy moi khung ve.
+	// Truoc day cho nay tu tinh Map2Mps nen am khi luon nhay nac 18 lan/giay.
+	int nSrcX = m_nDrawX;
+	int nSrcY = m_nDrawY;
 	
 	if (!m_nZAcceleration)
 	{
 		if(!(m_nLifeTime <= 2 && Option.GetLow(LowMissle))) //add by phong kiÒu chØ vÏ nh÷ng missless > 2 khi LowMissle
 		{
-			m_MissleRes.Draw(m_eMissleStatus, nSrcX, nSrcY, m_nCurrentMapZ, m_nDir,m_nLifeTime - m_nStartLifeTime,  m_nCurrentLife - m_nStartLifeTime );
+			m_MissleRes.Draw(m_eMissleStatus, nSrcX, nSrcY, m_nDrawZ, m_nDir,m_nLifeTime - m_nStartLifeTime,  m_nCurrentLife - m_nStartLifeTime );
 		}
 	}
 	else
 	{
 		int nDirIndex = g_GetDirIndex(0,0,m_nXFactor, m_nYFactor);
 		int nDir = g_DirIndex2Dir(nDirIndex, 64);
-		m_MissleRes.Draw(m_eMissleStatus, nSrcX, nSrcY, m_nCurrentMapZ, nDir,m_nLifeTime - m_nStartLifeTime,  m_nCurrentLife - m_nStartLifeTime );
+		m_MissleRes.Draw(m_eMissleStatus, nSrcX, nSrcY, m_nDrawZ, nDir,m_nLifeTime - m_nStartLifeTime,  m_nCurrentLife - m_nStartLifeTime );
 	}
 	
 	if (m_MissleRes.m_bHaveEnd && (m_MissleRes.SpecialMovieIsAllEnd()))

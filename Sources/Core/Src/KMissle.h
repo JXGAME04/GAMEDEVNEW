@@ -175,6 +175,12 @@ public:
 	unsigned short		m_usLightRadius;
 	KMissleRes			m_MissleRes;			//	子弹的资源
 	unsigned int		m_SceneID;
+	// Noi suy vi tri VE giua 2 tick logic (PaintFps > 18). Chi anh huong hinh anh:
+	// toa do that van la m_nCurrentMapX/Y + m_nXOffset/YOffset.
+	int					m_nTickX, m_nTickY, m_nTickZ;	// vi tri tai tick hien tai
+	int					m_nPrevX, m_nPrevY, m_nPrevZ;	// vi tri tai tick truoc
+	int					m_nDrawX, m_nDrawY, m_nDrawZ;	// vi tri dung de VE (da noi suy)
+	BOOL				m_bInterpValid;					// da co du 2 moc de noi suy chua
 #endif
 	
 	

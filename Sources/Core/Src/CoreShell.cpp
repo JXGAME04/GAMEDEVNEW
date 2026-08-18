@@ -2493,6 +2493,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 // GOI_PROCFRAME_BREATHE (once per logic tick) writes these, GOI_PROCFRAME_POSSHIFT
 // (once per paint frame) reads them. Client only - this file is excluded from server builds.
 #define	PAINT_INTERP_SNAP_DIST	64	// pixels per tick; any bigger jump is a teleport, never interpolated
+#define	MISSLE_INTERP_SNAP_DIST	512	// missiles fly far per tick; only a real respawn/retarget exceeds this
 static POINT	s_InterpFrom[MAX_NPC];
 static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
@@ -8386,6 +8387,25 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					nRet = 2;	// report the crossing to the caller (frame-time probe)
 				}
 			}
+		}
+		// Ky nang / am khi: chi doi VI TRI VE, KHONG dung cay canh (MoveObject).
+		// Nut cay chi dung de sap xep truoc-sau va cat canh - do chinh xac theo tick
+		// la du, nen bo qua giup tranh chi phi PluckRto/AddLeafPoint moi khung ve.
+		for (int nMsl = 1; nMsl <= MAX_MISSLE; nMsl++)
+		{
+			if (Missle[nMsl].m_nMissleId <= 0 || !Missle[nMsl].m_bInterpValid)
+				continue;
+			int	nMdx = Missle[nMsl].m_nTickX - Missle[nMsl].m_nPrevX;
+			int	nMdy = Missle[nMsl].m_nTickY - Missle[nMsl].m_nPrevY;
+			int	nMdz = Missle[nMsl].m_nTickZ - Missle[nMsl].m_nPrevZ;
+			if (nMdx == 0 && nMdy == 0 && nMdz == 0)
+				continue;	// dung yen (dang cho / bam nguoi): tick da dat dung cho
+			if (nMdx > MISSLE_INTERP_SNAP_DIST || nMdx < -MISSLE_INTERP_SNAP_DIST ||
+				nMdy > MISSLE_INTERP_SNAP_DIST || nMdy < -MISSLE_INTERP_SNAP_DIST)
+				continue;	// nhay xa (moi sinh / doi muc tieu): ve thang tai vi tri tick
+			Missle[nMsl].m_nDrawX = Missle[nMsl].m_nPrevX + nMdx * nAlpha / 1000;
+			Missle[nMsl].m_nDrawY = Missle[nMsl].m_nPrevY + nMdy * nAlpha / 1000;
+			Missle[nMsl].m_nDrawZ = Missle[nMsl].m_nPrevZ + nMdz * nAlpha / 1000;
 		}
 	}
 	break;
