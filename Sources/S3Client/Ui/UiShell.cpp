@@ -8,6 +8,7 @@
 #include "Elem/Wnds.h"
 #include "Elem/UiImage.h"
 #include "UiShell.h"
+#include "PerfHud.h"
 #include "UiBase.h"
 //#include "../../../core/src/gamedatadef.h"
 //#include "../../core/src/coreshell.h"
@@ -331,6 +332,9 @@ void UiPaint(int nGameLoop)
 		//g_pRepresentShell->OutputText(12, Info, -1, 10, 20, 0xffffffff, 0);//bªn trªn
 	}
 #endif
+
+	// bang do hieu nang (config.ini [Client] PerfHud=1)
+	PerfHud_Draw(s_nFrameRate, nGameLoop, dwPing);
 
 	g_pRepresentShell->RepresentEnd();
 	if (g_nPaintLog > 0)

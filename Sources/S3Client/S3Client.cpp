@@ -6,6 +6,7 @@
 #include "KWin32Wnd.h"
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "Ui/UiShell.h"
+#include "Ui/PerfHud.h"
 #include "NetConnect/NetConnectAgent.h"
 #include "TextCtrlCmd/TextCtrlCmd.h"
 #include "KPakList.h"
@@ -500,6 +501,9 @@ BOOL KMyApp::GameInit()
 		g_nPaintFps = 60;
 	IniFile.GetInteger("Client", "PaintInterp", 1, &g_nPaintInterp);
 	IniFile.GetInteger("Client", "PaintLog", 0, &g_nPaintLog);
+	int nPerfHud = 0;
+	IniFile.GetInteger("Client", "PerfHud", 0, &nPerfHud);
+	PerfHud_SetEnable(nPerfHud);
 	if (g_nPaintFps > 30)
 		timeBeginPeriod(1);	// high paint rates need 1ms Sleep/wait resolution; paired with timeEndPeriod in GameExit
 
