@@ -96,7 +96,11 @@ KIpoTree::~KIpoTree()
 //##ModelId=3DD9ECFD00E6
 void KIpoTree::Paint(RECT* pRepresentArea, IPOT_RENDER_LAYER eLayer)
 {
-	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting)
+	// Represent2 (2D, mac dinh) co SetLightInfo la HAM RONG (KRepresentShell2.h:437)
+	// => toan bo RenderLightMap moi khung ve la cong toi: quet 48x96 o, moi nguon sang
+	// ~400 o kem sqrt, ma MOI npc/phi tieu deu la mot nguon ban kinh 320 (KIpoTree.cpp:290).
+	// Dong nguoi x 60 khung/giay = vai tram ms CPU/giay do di. Chi tinh khi shell that su dung.
+	if(eLayer == IPOT_RL_COVER_GROUND && m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
 		// 渲染光照图
 		RenderLightMap();
@@ -369,7 +373,8 @@ void KIpoTree::StrewRtoLeafs(RECT& KeepRtoArea)
 		}
 	}
 
-	if(m_bDynamicLighting)
+	// xem chu thich o KIpoTree::Paint - khong tinh khi Represent2 vi ket qua bi vut di
+	if(m_bDynamicLighting && g_pRepresent && g_pRepresent->IsRep3D())
 	{
 		// 清空遮挡信息
 		for(int j=0; j<LIGHTING_GRID_WIDTH*LIGHTING_GRID_HEIGHT; j++)

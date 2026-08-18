@@ -1614,12 +1614,6 @@ void KScenePlaceC::ARegionLoaded(KScenePlaceRegionC* pRegion)
 	if (m_nFirstToLoadIndex < 0)
 		ResetEvent(m_hLoadRegionEvent);
 
-	if (nCount >= SPWP_PROCESS_PRERENDER_REGION_COUNTER_TRIGGER)
-	{
-		SetLoadingStatus(false);
-		m_bRenderGround = true;
-	}
-
 	KRUImage* pImage = NULL;
 	pRegion->GetRegionIndex(h, v);
 	if (INSIDE_AREA(h, v, 3))
@@ -1642,6 +1636,16 @@ void KScenePlaceC::ARegionLoaded(KScenePlaceRegionC* pRegion)
 				m_bPreprocessEvent = true;
 		}
 		LeaveCriticalSection(&m_ProcessCritical);
+	}
+
+	// Danh thuc luong ve SAU khi da bat m_bPreprocessEvent va cam region vao
+	// m_pInProcessAreaRegions. Truoc day danh thuc truoc => luong ve co the chay
+	// Breathe luc co con FALSE, bo qua Preprocess va ve tren cay RONG
+	// (mat nha cua/NPC/nhan vat mot khung ngay sau khi doi map).
+	if (nCount >= SPWP_PROCESS_PRERENDER_REGION_COUNTER_TRIGGER)
+	{
+		SetLoadingStatus(false);
+		m_bRenderGround = true;
 	}
 
 	//´¦ÀíhighlightµÄspecial object

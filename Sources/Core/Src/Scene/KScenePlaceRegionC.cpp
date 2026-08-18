@@ -731,7 +731,6 @@ void KScenePlaceRegionC::PaintGround(BOOL bPrerenderGroundImg)//add by phong ki“
 	}
 	else
 	{
-		g_DebugLog("direct");
 		PaintGroundDirect();
 	}
 }
