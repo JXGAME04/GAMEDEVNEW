@@ -158,6 +158,7 @@ struct PB_Bot
 	int          nScatterTry;                 // so diem tan ra da boc hut
 	int          nGaveWeapon;                 // 1 = da trao vu khi nhap mon (chi mot lan)
 	int          nLastLevel;                  // cap do lan cuoi da cong diem tiem nang
+	unsigned int nChetTuTick;                 // moc tick phat hien bot nam cho hoi sinh (0 = dang song)
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -530,6 +531,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nScatterTry = 0;
 		b.nGaveWeapon = 0;
 		b.nLastLevel  = 0;
+		b.nChetTuTick = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -1111,6 +1113,39 @@ static void pb_DriveBot(PB_Bot& b)
 	if (nSub < 0 || nSub >= MAX_SUBWORLD)    return;
 
 	const unsigned int nowAll = SubWorld[nSub].m_dwCurrentTime;
+
+	// ---------------------------------------------------------------- TU HOI SINH
+	// BOT CHET LA NAM MAI neu khong co doan nay. Duong tu hoi sinh cua nguoi that nam
+	// trong KPlayer::Active (KPlayer.cpp), nhung ham do MO DAU bang
+	//     if (m_nNetConnectIdx == -1 || m_bExchangeServer) return;
+	// nen bot khong bao gio toi duoc.
+	//
+	// CO Y KHONG SUA KPlayer::Active: co -1 do NGUOI CHOI UY THAC cung mang, mo cong o
+	// day la doi hanh vi cua ho - va do la ham chay cho MOI nguoi choi MOI khung. Lam
+	// rieng trong nhip bot thi khong dong toi ai, va ta chu dong duoc hoan toan.
+	//
+	// KPlayer::Revive (KPlayer.h:582, public) an toan voi bot: goi tin ve chinh bot la
+	// no-op (PackDataToClient chan bien), BroadCastRevive van toi nguoi that quanh do,
+	// va REMOTE_REVIVE_TYPE co san duong lui ve map 53 (52032,101696) neu diem hoi sinh
+	// hong. No cung hoi day mau/noi luc/the luc roi SendCommand(do_revive).
+	if (Npc[nNpcIdx].m_Doing == do_death || Npc[nNpcIdx].m_Doing == do_revive)
+	{
+		if (b.nChetTuTick == 0)
+		{
+			b.nChetTuTick = nowAll;
+			b.walk.Reset();              // lo trinh cu vo nghia sau khi chet
+		}
+		// Cho 3 giay cho cai chet "kip dien ra" (client con dang ve), roi dung day.
+		else if (Npc[nNpcIdx].m_Doing == do_revive
+		      && nowAll - b.nChetTuTick >= (unsigned int)(GAME_FPS * 3))
+		{
+			b.nChetTuTick = 0;
+			Player[nIdx].Revive(REMOTE_REVIVE_TYPE);
+			printf("[Bot] %s da chet -> tu hoi sinh\n", Player[nIdx].m_PlayerName);
+		}
+		return;                          // dang chet thi khong lam viec gi khac
+	}
+	b.nChetTuTick = 0;
 
 	// ---------------------------------------------------------------- TAN RA
 	// Ca 1000 bot deu nhan ban tu MOT nhan vat mau nen mang y het mot toa do vao game
