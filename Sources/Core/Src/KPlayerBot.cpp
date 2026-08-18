@@ -1921,8 +1921,11 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	// dung tiep => nhin nhu "di toi roi giat lui ve vi tri cu" (dung loi chu game ta).
 	// Moi con cham hon con truoc 1 giay: con truoc da BUOC RA khoi diem dat chan truoc
 	// khi con sau dap xuong.
+	// 18/08 toi: nLech * 1 giay thiet ke cho 20 bot (toi da 20s). Voi 1000 bot,
+	// bot cuoi cho ~17 PHUT -> "chi len map vai acc, con dung thanh rat nhieu".
+	// Ep ve cua so 60 giay: ~17 bot doi map moi giay, van du gian de khong chong o.
 	if (b.nDoiMapTick == 0)
-		b.nDoiMapTick = now + (unsigned int)(nLech * GAME_FPS);
+		b.nDoiMapTick = now + (unsigned int)((nLech % 60) * GAME_FPS);
 	if (now < b.nDoiMapTick)
 		return 0;
 	b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 10);   // lan thu ke tiep (neu that bai)
@@ -1937,8 +1940,10 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	b.walk.Reset();
 	// Dat chan LECH NHAU: moi bot mot o rieng quanh diem den (luoi 5x4, cach nhau 2-3 o)
 	// de khong bao gio co hai con chong mot o. O lech bi chan thi lui ve dung diem goc.
-	const int nDx = ((nLech % 5) - 2) * 2 * 32;
-	const int nDy = (((nLech / 5) % 4) - 1) * 3 * 32;
+	// luoi 9x7 = 63 o rieng (truoc 5x4 = 20 - du cho 20 bot, 1000 bot thi 50 con
+	// chong mot o). O lech bi chan thi nhanh duoi tu lui ve diem goc nhu cu.
+	const int nDx = ((nLech % 9) - 4) * 2 * 32;
+	const int nDy = (((nLech / 9) % 7) - 3) * 3 * 32;
 	int nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32 + nDx, bai.nOY * 32 + nDy);
 	if (nRet != 1)
 		nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, bai.nOX * 32, bai.nOY * 32);
