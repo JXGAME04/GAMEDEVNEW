@@ -190,6 +190,7 @@ struct PB_Bot
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
 	unsigned int nBuffTick;                   // moc buff lan cuoi
+	int          nAuraPhien;                  // Nga Mi: dang o phien vong sang nao (0/1)
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -603,7 +604,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
-		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0;
+		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0; b.nAuraPhien = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -1614,8 +1615,11 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 	b.nAuraLevel = nLevel;
 	b.nBuffTick  = now;
 
-	int nAura = 0, nAuraRq = -1;
-	int nBua = 0, nBuff = 0;
+	// Gom TAT CA vong sang bot du cap, giu 4 cai co cap yeu cau cao nhat.
+	int aAura[4] = { 0, 0, 0, 0 };
+	int aRq[4]   = { -1, -1, -1, -1 };
+	int nAuraNum = 0;
+	int nBuff = 0;
 	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
 
 	for (int i = 1; i < MAX_NPCSKILL; i++)
@@ -1632,8 +1636,7 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 		if (!p)
 			continue;
 
-		// Cap yeu cau kep tran 80 y ban tham khao: tren nua la ky nang 90/150,
-		// bot chua den luc dung.
+		// Cap yeu cau kep tran 80 y ban tham khao (tren nua la ky nang 90/150).
 		int rq = p->GetSkillReqLevel();
 		if (rq > 80) rq = 80;
 		if (nLevel < rq)
@@ -1641,36 +1644,65 @@ static void pb_ApplyAuraBuff(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now)
 
 		if (p->IsAura())
 		{
-			// vong sang: lay cai co cap yeu cau CAO NHAT ma bot du cap
-			if (rq > nAuraRq) { nAuraRq = rq; nAura = id; }
+			// chen theo thu tu cap yeu cau GIAM DAN, giu 4 cai dau
+			for (int k = 0; k < 4; k++)
+			{
+				if (rq > aRq[k])
+				{
+					for (int m = 3; m > k; m--) { aRq[m] = aRq[m-1]; aAura[m] = aAura[m-1]; }
+					aRq[k]   = rq;
+					aAura[k] = id;
+					if (nAuraNum < 4) nAuraNum++;
+					break;
+				}
+			}
 			continue;
 		}
 
+		// BUA / BI DONG (SKILL_SS_PassivityNpcState) CO Y KHONG DUNG:
+		// chu game chot "bua thi khong cho bot dung vi khong can thiet".
+		// Giu chu thich nay de dot sau khong ai tuong la bi bo sot.
 		const int st = p->GetSkillStyle();
-		if (st == SKILL_SS_PassivityNpcState)
-		{
-			p->Cast(nNpcIdx, -1, nNpcIdx);
-			nBua++;
-		}
-		else if (st == SKILL_SS_InitiativeNpcState && p->IsTargetSelf())
+		if (st == SKILL_SS_InitiativeNpcState && p->IsTargetSelf())
 		{
 			p->Cast(nNpcIdx, -1, nNpcIdx);
 			nBuff++;
 		}
 	}
 
-	if (nAura > 0 && nAura != b.nAuraSkill)
+	// ---- chon vong sang ----
+	//
+	// Engine chi giu DUOC MOT vong sang mot luc: m_ActiveAuraID la mot so nguyen
+	// (KNpc.h:289). Nen "hai vong sang" chi co the la LUAN CHUYEN theo thoi gian,
+	// khong phai bat dong thoi - va do cung la y chu game.
+	//
+	// RIENG NGA MI (phai 4): phai nay co nhieu vong sang mo dan theo cap. Neu bot da du
+	// cap cho tu 2 cai tro len thi doi qua doi lai moi ky buff, thay vi om mai mot cai.
+	// Cac phai khac giu nguyen: luon dung cai co cap yeu cau cao nhat.
+	int nChon = 0;
+	if (b.nFaction == 4 && nAuraNum >= 2)
 	{
-		b.nAuraSkill = nAura;
-		pb_Log("[BotVongSang] %s cap %d bat vong sang %d\n",
-			   Player[nIdx].m_PlayerName, nLevel, nAura);
+		b.nAuraPhien = (b.nAuraPhien + 1) & 1;
+		nChon = b.nAuraPhien;
+	}
+
+	if (aAura[nChon] > 0 && aAura[nChon] != b.nAuraSkill)
+	{
+		b.nAuraSkill = aAura[nChon];
+		if (b.nFaction == 4 && nAuraNum >= 2)
+			pb_Log("[BotVongSang] %s (Nga Mi) cap %d luan chuyen -> vong sang %d"
+				   " (co %d cai du cap)\n",
+				   Player[nIdx].m_PlayerName, nLevel, b.nAuraSkill, nAuraNum);
+		else
+			pb_Log("[BotVongSang] %s cap %d bat vong sang %d\n",
+				   Player[nIdx].m_PlayerName, nLevel, b.nAuraSkill);
 	}
 	if (b.nAuraSkill > 0)
 		Npc[nNpcIdx].SetAuraSkill(b.nAuraSkill);
 
-	if (bLenCap && (nBua || nBuff))
-		pb_Log("[BotBuff] %s cap %d: %d bua bi dong + %d buff\n",
-			   Player[nIdx].m_PlayerName, nLevel, nBua, nBuff);
+	if (bLenCap && nBuff)
+		pb_Log("[BotBuff] %s cap %d: %d buff (bua bi dong: KHONG dung)\n",
+			   Player[nIdx].m_PlayerName, nLevel, nBuff);
 }
 
 // Mot nhip DI HOANG. Tra 1 = dang di (chua toi), 0 = khong co cho di / da toi noi.
