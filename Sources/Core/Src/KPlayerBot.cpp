@@ -1559,6 +1559,15 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 	}
 
 	int nBest = 0, nBestLv = 0, nBestRank = 0;
+	// NHAT KY CHON CHIEU: liet ke TUNG chieu trong danh sach kem ly do loai, de doc
+	// bot.log la biet ngay vi sao mot phai "khong co chieu de danh" - khong doan mo.
+	//   HE=x  chieu mang ngu hanh x khac he bot     KIEU=x  style x khong phai Missles/Melee
+	//   AURA  vong sang   SELF/KDICH  nham ban than / khong nham dich   EQT=x  can vu khi x
+	char szD[560];
+	int  nD = 0;
+	szD[0] = 0;
+#define PB_DIAG(...)  do { if (nD < (int)sizeof(szD) - 24) \
+	nD += _snprintf(szD + nD, sizeof(szD) - nD - 1, __VA_ARGS__); } while (0)
 	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
 	for (int i = 1; i < MAX_NPCSKILL; i++)
 	{
@@ -1573,18 +1582,18 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			lv = 1;
 
 		KSkill* p = (KSkill*)g_SkillManager.GetSkill(id, lv);
-		if (!p)                       continue;
+		if (!p)                       { PB_DIAG(" %d:NULL", id); continue; }
 		// Day an toan: chieu mang ngu hanh KHAC he bot = chieu cua phai khac (thua ke
 		// hoac nhet nham) -> khong bao gio dung. RemoveAllSkill o tren da don goc,
 		// luoi nay do phong blob mau doi sau nay.
 		{
 			const int nSr = p->GetSkillSeries();
 			if (nSr >= 0 && nSr < series_num && nSr != Npc[nNpcIdx].m_Series)
-				continue;
+			{ PB_DIAG(" %d:HE=%d", id, nSr); continue; }
 		}
-		if (p->IsAura())              continue;   // vong sang, khong phai chieu danh
-		if (p->IsTargetSelf())        continue;
-		if (!p->IsTargetEnemy())      continue;
+		if (p->IsAura())              { PB_DIAG(" %d:AURA", id);  continue; }
+		if (p->IsTargetSelf())        { PB_DIAG(" %d:SELF", id);  continue; }
+		if (!p->IsTargetEnemy())      { PB_DIAG(" %d:KDICH", id); continue; }
 		// CHI giu chieu SAT THUONG THAT (dan bay / can chien). Ban tham khao lam dung
 		// vay va ghi ro ly do (RepickBotCombatSkills, KBotManager.cpp:1246): chieu
 		// TRANG THAI (khong che / doc / lam cham) thuong hop MOI vu khi + cap yeu cau
@@ -1595,14 +1604,15 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		{
 			const int nSt = p->GetSkillStyle();
 			if (nSt != SKILL_SS_Missles && nSt != SKILL_SS_Melee)
-				continue;
+			{ PB_DIAG(" %d:KIEU=%d", id, nSt); continue; }
 		}
 
 		const int eq = p->GetEquipLimit();
 		int nRank = 0;
 		if (eq == -2)          nRank = 1;         // moi vu khi
 		else if (eq == nWant)  nRank = 2;         // khop dung ho -> an dut
-		else                   continue;          // khong hop -> se bi tu choi im lang
+		else                   { PB_DIAG(" %d:EQT=%d", id, eq); continue; }
+		PB_DIAG(" %d:OK(lv%d,r%d)", id, lv, nRank);
 
 		if (nRank > nBestRank || (nRank == nBestRank && lv > nBestLv))
 		{
@@ -1611,6 +1621,10 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			nBestLv   = lv;
 		}
 	}
+	pb_Log("[BotChon] %s (he %d, can vu khi %d):%s -> chon %d\n",
+	       Player[nIdx].m_PlayerName, (int)Npc[nNpcIdx].m_Series, nWant,
+	       szD[0] ? szD : " (danh sach rong)", nBest);
+#undef PB_DIAG
 	if (pnLv) *pnLv = nBestLv;
 	return nBest;
 }
@@ -2121,16 +2135,6 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		b.nLagLife   = t ? Npc[t].m_CurrentLife : 0;
 		if (!t)
 			return 0;
-		{
-			// Ghi ro de bot.log ke duoc chuyen: nham con nao, cach bao xa. Neu thay dong nay
-			// lap lai ma khong co [BotDuoi]/khong giet duoc con nao thi loi nam o tang danh.
-			int ex3 = 0, ey3 = 0;
-			Npc[t].GetMpsPos(&ex3, &ey3);
-			int bx3 = 0, by3 = 0;
-			Npc[nNpcIdx].GetMpsPos(&bx3, &by3);
-			pb_Log("[BotDanh] %s nham muc tieu %d (cach %d MPS)\n",
-			       Player[nIdx].m_PlayerName, t, g_GetDistance(bx3, by3, ex3, ey3));
-		}
 	}
 
 	// ---- ap sat: di toi DIEM TRUOC MAT muc tieu, KHONG di vao o cua no ----
@@ -2216,6 +2220,26 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		//   SendCommand(do_skill, <id chieu>, -1, <khe NPC muc tieu>)
 		// ProcCommand tu goi FindSame + SetActiveSkill (KNpc.cpp:861-871) nen khong
 		// phai dat chieu truoc.
+		// THAM DO truoc khi phat: hoi thang CanCastSkill cua DU AN (KSkills.cpp:177).
+		// Bi tu choi thi in ly do ra bot.log thay vi de DoSkill "goto Exit" im lang.
+		{
+			KSkill* pDo = (KSkill*)g_SkillManager.GetSkill(b.nAtkSkill, b.nAtkSkillLv);
+			if (pDo)
+			{
+				int nP1 = -1, nP2 = t;
+				if (pDo->CanCastSkill(nNpcIdx, nP1, nP2) == 0
+				 && now - b.nUongTick >= (unsigned int)(GAME_FPS * 5))
+				{
+					pb_Log("[BotCast] %s chieu %d cap %d BI TU CHOI (eqt=%d,"
+					       " vukhi detail=%d parti=%d, mana=%d/%d)\n",
+					       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv,
+					       pDo->GetEquipLimit(),
+					       Player[nIdx].m_ItemList.GetWeaponType(),
+					       Player[nIdx].m_ItemList.GetWeaponParticular(),
+					       (int)Npc[nNpcIdx].m_CurrentMana, (int)Npc[nNpcIdx].m_CurrentManaMax);
+				}
+			}
+		}
 		Npc[nNpcIdx].SendCommand(do_skill, b.nAtkSkill, -1, t);
 	}
 	return 1;
