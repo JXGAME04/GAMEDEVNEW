@@ -50,11 +50,20 @@ struct PB_Pending
 // khong phai dung lai khung.
 enum PB_AI
 {
-	PB_AI_IDLE = 0,       // khong co viec gi
-	PB_AI_GOTO_FACTION,   // dang chay bo toi NPC mon phai
+	PB_AI_IDLE = 0,       // khong co viec gi, dung cho lenh
+	PB_AI_SCATTER,        // vua vao game: TU DI BO tan ra cho khoi chong dong mot cho
+	PB_AI_GOTO_FACTION,   // dang chay bo toi NPC mon phai (CHI vao khi GM goi PB_JoinFaction)
 	PB_AI_IN_FACTION,     // da vao phai xong
 	PB_AI_GIVEUP,         // khong toi duoc (khong tim thay NPC / khong co duong)
 };
+
+// Ban kinh tan ra mac dinh, tinh bang O luoi (1 o = 32 MPS). Dat qua lon thi bot di lau va de
+// lot sang vung khong co duong; 40 o (~1280 MPS) du rong cho ca thi tran ma van toi duoc NPC.
+#define PB_SCATTER_TILES    40
+// So lan boc diem tan ra khac truoc khi chiu dung yen.
+#define PB_SCATTER_MAX_TRY  6
+// Toi dich tan ra thi coi la xong khi con cach chung nay (rong tay hon di gap NPC).
+#define PB_SCATTER_ARRIVE   160
 
 // ---------------------------------------------------------------------------
 // 10 NPC MON PHAI.
@@ -113,6 +122,9 @@ struct PB_Bot
 	int          nRetry;                      // so lan A* that bai lien tiep
 	unsigned int nNextTry;                    // moc tick duoc phep thu lai
 	PB_WalkState walk;                        // trang thai di bo A*
+	int          nScatterX;                   // diem tan ra (MPS), 0 = chua boc
+	int          nScatterY;
+	int          nScatterTry;                 // so diem tan ra da boc hut
 };
 
 static PB_Pending   s_pending[PB_MAX_PENDING];
@@ -348,16 +360,37 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 
 	// ---- Nap du lieu: soi guong CoreServerShell::PlayerDbLoading (:155-181) ----
 	// Nguoi that duoc nap dan qua nhieu khung theo nhip goi tin; bot khong co client nen
-	// quay tai cho cho xong. Rao 200 vong de mot blob hong khong treo may chu.
+	// quay tai cho cho xong.
+	//
+	// !! PHAI LAP THEO nStep, TUYET DOI KHONG LAY GIA TRI TRA VE LAM CO DUNG.
+	//
+	// Ban dau viet "while (...) { if (!LoadDBPlayerInfo(...)) break; }" va no THOAT NGAY
+	// O VONG DAU, khien bot khong bao gio co ky nang / nhiem vu / MOT MON DO NAO.
+	// Chuoi nhan qua (da doc tan dong):
+	//   LoadDBPlayerInfo o STEP_BASE_INFO tra ve chinh ket qua SendSyncData
+	//     (KPlayerDBFuns.cpp:46 nRetValue = SendSyncData(...) roi :202 return nRetValue)
+	//   -> KPlayer::SendSyncData buoc 0 goi SubWorld[].SendSyncData(m_nIndex, m_nNetConnectIdx)
+	//      (KPlayer.cpp:1109)
+	//   -> KSubWorld.cpp:2268 g_pServer->PackDataToClient(nClient, ...)
+	//   -> bot co m_nNetConnectIdx = -1 (KPlayerSet::Add da dat, KPlayerSet.cpp:213) nen tham so
+	//      'const unsigned long&' hoa 0xFFFFFFFF, truot cong 'ulnClientID < m_nPlayerMaxCount'
+	//      (ServerStage.cpp:396) -> tra E_FAIL -> SendSyncData FALSE -> ham tra 0.
+	// Tuc voi bot thi gia tri tra ve LUON = 0 ngay ca khi nap THANH CONG.
+	//
+	// Nhung nStep VAN TIEN dung: nStep++ nam trong nhanh nRet == 1 (nap xong mot mau) va ca
+	// nhanh nRet == -1 (bo qua buoc hong) - xem KPlayerDBFuns.cpp:47/54/70/77/93/100/154/161/179/186.
+	// Con nRet == 0 nghia la con mau nua (vd tui do nap 10 mon moi luot, nParam tu tien).
+	// => lap theo nStep la dung ban chat. Cay tham khao cung lam y het:
+	//    USVOLAM PlayerAI\KBotManager.cpp:1497 "while (nStep < STEP_SYNC_END && nSafety > 0)".
+	//
+	// Rao 500 vong: tui do nap 10 mon/luot nen can nhieu luot hon so buoc; con 'default:'
+	// (KPlayerDBFuns.cpp:199) tu dat nStep = STEP_SYNC_END nen vong luon co duong ra.
 	{
-		int          nStep  = 0;
+		int          nStep  = STEP_BASE_INFO;
 		unsigned int nParam = 0;
-		int          nGuard = 0;
-		while (nGuard++ < 200)
-		{
-			if (!Player[nIdx].LoadDBPlayerInfo((BYTE*)Player[nIdx].m_SaveBuffer, nStep, nParam))
-				break;
-		}
+		int          nGuard = 500;
+		while (nStep < STEP_SYNC_END && nGuard-- > 0)
+			Player[nIdx].LoadDBPlayerInfo((BYTE*)Player[nIdx].m_SaveBuffer, nStep, nParam);
 		Player[nIdx].m_pStatusLoadPlayerInfo = NULL;
 	}
 
@@ -432,9 +465,14 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		strncpy(b.szAccount, p->szAccount, sizeof(b.szAccount) - 1);
 		b.szAccount[sizeof(b.szAccount) - 1] = 0;
 		b.nFaction   = nFaction;
-		b.nAi        = (nFaction >= 0) ? PB_AI_GOTO_FACTION : PB_AI_IDLE;
+		// Vua vao game thi TU DI BO TAN RA, KHONG vao phai. Vao phai chi xay ra khi chu game
+		// goi PB_JoinFaction() - de con kip nhin bot dan hang ra truoc.
+		b.nAi        = PB_AI_SCATTER;
 		b.nRetry     = 0;
 		b.nNextTry   = 0;
+		b.nScatterX  = 0;
+		b.nScatterY  = 0;
+		b.nScatterTry = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		s_botCount++;
 	}
@@ -443,24 +481,58 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 }
 
 // ---------------------------------------------------------------- go bot
+// Go THAT SU mot bot khoi the gioi. Tra 1 neu da go.
+//
+// Ban truoc chi dat s_botCount = 0 nen bot van song nhan nhan trong the gioi, chi la khong con
+// ai dieu khien - dung nhu chu game bao "go bot ma bot khong bien mat". Go dung phai mo HAI
+// O KHOA, va ca hai deu nam tren duong danh cho nguoi choi CO ket noi:
+//
+//   1. KPlayer::WaitForRemove (KPlayer.cpp:968-974) danh dau m_bIsQuiting = TRUE CHI KHI
+//      m_nLixian == 0. Bot mang PB_LIXIAN_BOT (=3) nen no lai dat m_bIsQuiting = FALSE,
+//      va IsWaitingRemove() tra FALSE => RemoveQuiting khong lam gi.
+//      => phai ha m_nLixian ve 0 TRUOC khi goi PrepareRemove.
+//
+//   2. KPlayerSet::RemoveQuiting (KPlayerSet.cpp:449) thoat ngay neu
+//      m_nNetConnectIdx == -1, TRU KHI m_bForeQuit = TRUE. Bot luon la -1.
+//      => phai bat m_bForeQuit.
+//
+// Khuon nay chinh la thu KPlayerSet::RemoveAllPlayerLixianByAccount (KPlayerSet.cpp:1055-1059)
+// dang dung de go nguoi uy thac: ha lixian roi goi thang RemoveQuiting.
+//
+// AN TOAN cho nguoi that: da khoa hai lop truoc do (chi so nam trong s_bots + m_dwID khop),
+// nen khong the cham vao mot nguoi choi that trung khe.
+//
+// KHONG LUU DB, va do la CO Y: bot la nhan vat tam. PrepareRemove o cay nay cung khong luu
+// (dong Player[].Save() bi chu thich chet tai KPlayerSet.cpp:393), no chi don sach chat/
+// nhiem vu/to doi/giao dich/co bac/PK roi WaitForRemove - dung thu ta can de khong bo lai
+// rac trong to doi hay phien giao dich cua nguoi that.
+static int pb_KillBot(PB_Bot& b)
+{
+	const int nIdx = b.nPlayerIdx;
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+		return 0;
+	// IsMatch la ham cua KNpc, KPlayer khong co - so thang m_dwID de chac khe chua bi
+	// cap lai cho nguoi khac.
+	if (Player[nIdx].m_dwID == 0 || Player[nIdx].m_dwID != b.dwID)
+		return 0;
+
+	Player[nIdx].m_nLixian   = 0;      // mo khoa 1
+	Player[nIdx].m_bForeQuit = TRUE;   // mo khoa 2
+
+	PlayerSet.PrepareRemove(nIdx);     // don sach + WaitForRemove()
+	PlayerSet.RemoveQuiting(nIdx);     // go NPC + region + tui do + tra khe
+
+	return 1;
+}
+
 int PB_RemoveAll()
 {
 	int nGo = 0;
 	for (int i = 0; i < s_botCount; i++)
-	{
-		int nIdx = s_bots[i].nPlayerIdx;
-		if (nIdx <= 0 || nIdx >= MAX_PLAYER)
-			continue;
-		// IsMatch la ham cua KNpc, KPlayer khong co - so thang m_dwID de chac khe chua bi
-		// cap lai cho nguoi khac.
-		if (Player[nIdx].m_dwID != s_bots[i].dwID)
-			continue;
-		// Duong go dung dan can them mot dot rieng (chuoi PrepareRemove -> WaitForRemove ->
-		// SavePlayerData bi chan boi m_nNetConnectIdx == -1 se tra FALSE va lam khe ket
-		// vinh vien). Tam thoi chi danh dau de khong ai coi day la bot nua.
-		nGo++;
-	}
+		nGo += pb_KillBot(s_bots[i]);
+
 	s_botCount = 0;
+	printf("[Bot] da go %d bot khoi the gioi\n", nGo);
 	return nGo;
 }
 
@@ -506,6 +578,38 @@ int LuaPB_BotCount(Lua_State* L)
 int LuaPB_ClearBot(Lua_State* L)
 {
 	Lua_PushNumber(L, PB_RemoveAll());
+	return 1;
+}
+
+// Ra lenh cho moi bot dang ranh di vao phai. Tra so bot da nhan lenh.
+//
+// TACH RIENG khoi luc sinh bot LA CO Y (chu game yeu cau): sinh xong bot chi tan ra roi dung
+// cho, co goi lenh nay thi moi lu luot keo di. Nhu vay con kip nhin bot dan hang ra, va chu
+// game chu dong duoc thoi diem test.
+//
+// Bot da vao phai roi (PB_AI_IN_FACTION) thi BO QUA. Bot tung bo cuoc (PB_AI_GIVEUP) thi
+// CHO DI LAI - goi lenh lan nua chinh la cach thu lai bang tay.
+int PB_JoinFaction()
+{
+	int nRa = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		if (b.nFaction < 0 || b.nAi == PB_AI_IN_FACTION)
+			continue;
+		b.nAi      = PB_AI_GOTO_FACTION;
+		b.nRetry   = 0;
+		b.nNextTry = 0;
+		b.walk.Reset();
+		nRa++;
+	}
+	printf("[Bot] ra lenh vao phai cho %d bot\n", nRa);
+	return nRa;
+}
+
+int LuaPB_JoinFaction(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_JoinFaction());
 	return 1;
 }
 
@@ -680,8 +784,20 @@ static int s_facNpcIdx[MAX_FACTION] = { 0 };
 // Khe nay co con dung la NPC chay script do khong (khe co the da cap lai cho NPC khac).
 static bool pb_IsFacNpc(int nNpcIdx, DWORD dwScriptId)
 {
-	return nNpcIdx > 0 && nNpcIdx < MAX_NPC
-	    && Npc[nNpcIdx].m_ActionScriptID == dwScriptId
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return false;
+
+	// !! PHAI loai kind_player, KHONG duoc chi so m_ActionScriptID.
+	// Khi mot NGUOI CHOI THAT noi chuyen voi NPC mon phai, KPlayer::DialogNpc goi
+	// ExecuteScript(Npc[nIdx].m_ActionScriptID, "main", nIdx) voi bGlobal MAC DINH = true
+	// (KPlayer.h:546), ma ExecuteScript o nhanh bGlobal GHI CHINH ID SCRIPT DO len NPC CUA
+	// NGUOI CHOI (KPlayer.cpp:6825-6826 Npc[m_nIndex].m_ActionScriptID = dwScriptId).
+	// => sau khi mot nguoi that hoi NPC Thieu Lam, NPC cua chinh ho cung mang id script do,
+	//    va bot se bam nham roi chay toi... nguoi choi do thay vi NPC.
+	if (Npc[nNpcIdx].m_Kind == kind_player)
+		return false;
+
+	return Npc[nNpcIdx].m_ActionScriptID == dwScriptId
 	    && Npc[nNpcIdx].m_SubWorldIndex >= 0
 	    && Npc[nNpcIdx].m_RegionIndex   >= 0;
 }
@@ -725,6 +841,56 @@ static void pb_DriveBot(PB_Bot& b)
 	const int nSub = Npc[nNpcIdx].m_SubWorldIndex;
 	if (nSub < 0 || nSub >= MAX_SUBWORLD)    return;
 
+	const unsigned int nowAll = SubWorld[nSub].m_dwCurrentTime;
+
+	// ---------------------------------------------------------------- TAN RA
+	// Ca 1000 bot deu nhan ban tu MOT nhan vat mau nen mang y het mot toa do vao game
+	// (taobot_bdb.cpp KHONG ghi de ientergameid/x/y), vi vay goi ra la chong dong mot cho.
+	// Cach xu ly: cho bot TU DI BO tan ra - khong dich chuyen tuc thoi - de nhin nhu nguoi
+	// that dan hang ra khoi cong lang.
+	// Diem den boc ngau nhien quanh cho sinh; KHONG can tu kiem vat can vi neu diem roi vao
+	// tuong thi FindPathServer tra -1 va ta boc diem khac (tu sua sai, khong can API moi).
+	if (b.nAi == PB_AI_SCATTER)
+	{
+		if (b.nNextTry && nowAll < b.nNextTry)
+			return;
+
+		if (b.nScatterX == 0 && b.nScatterY == 0)
+		{
+			int bx = 0, by = 0;
+			Npc[nNpcIdx].GetMpsPos(&bx, &by);
+			const int nR = PB_SCATTER_TILES;
+			// boc lech theo ca hai truc, tru di nua ban kinh de ra so am duong
+			b.nScatterX = bx + ((int)g_Random(nR * 2 + 1) - nR) * 32;
+			b.nScatterY = by + ((int)g_Random(nR * 2 + 1) - nR) * 32;
+			if (b.nScatterX <= 0) b.nScatterX = bx;
+			if (b.nScatterY <= 0) b.nScatterY = by;
+			b.walk.Reset();
+		}
+
+		const int nRetS = PB_WalkTo(nNpcIdx, b.nScatterX, b.nScatterY, nSub,
+		                            b.walk, PB_SCATTER_ARRIVE);
+		if (nRetS == 0)
+			return;                       // dang di
+
+		if (nRetS < 0 && ++b.nScatterTry < PB_SCATTER_MAX_TRY)
+		{
+			// diem do khong toi duoc -> boc diem khac o nhip sau
+			b.nScatterX = 0;
+			b.nScatterY = 0;
+			b.walk.Reset();
+			b.nNextTry = nowAll + GAME_FPS;
+			return;
+		}
+
+		// Toi noi, hoac da boc hut qua nhieu lan -> thoi, dung do cho lenh vao phai.
+		Npc[nNpcIdx].SendCommand(do_stand);
+		b.walk.Reset();
+		b.nNextTry = 0;
+		b.nAi      = PB_AI_IDLE;
+		return;
+	}
+
 	if (b.nAi != PB_AI_GOTO_FACTION)
 		return;
 
@@ -752,6 +918,10 @@ static void pb_DriveBot(PB_Bot& b)
 	{
 		b.walk.Reset();
 		b.nAi = PB_AI_GIVEUP;
+		printf("[Bot] %s BO CUOC: NPC %s o ban do khac (bot map=%d, npc map=%d)\n",
+		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
+		       SubWorld[nSub].m_SubWorldID,
+		       SubWorld[Npc[nFacNpc].m_SubWorldIndex].m_SubWorldID);
 		return;
 	}
 
@@ -773,7 +943,19 @@ static void pb_DriveBot(PB_Bot& b)
 		b.walk.Reset();
 		b.nNextTry = now + PB_FAC_RETRY_TICK;
 		if (++b.nRetry >= PB_FAC_MAX_RETRY)
+		{
 			b.nAi = PB_AI_GIVEUP;
+			// PHAI in. Truoc day PB_AI_GIVEUP la ngo cut IM LANG: dinh mot lan la bot dung
+			// yen mai mai, nhin tu ngoai khong phan biet duoc voi "bot hong". Goi
+			// PB_JoinFaction() lan nua se cho no di lai.
+			int bx = 0, by = 0;
+			Npc[nNpcIdx].GetMpsPos(&bx, &by);
+			printf("[Bot] %s BO CUOC sau %d lan khong tim duoc duong toi %s"
+			       " (bot o o %d,%d -> NPC o o %d,%d, map %d)."
+			       " Kiem dong [BotA*] luoi luc boot xem luoi co nap khong.\n",
+			       Player[nIdx].m_PlayerName, PB_FAC_MAX_RETRY, s_facNpc[b.nFaction].szTen,
+			       bx / 32, by / 32, nx / 32, ny / 32, SubWorld[nSub].m_SubWorldID);
+		}
 		return;
 	}
 

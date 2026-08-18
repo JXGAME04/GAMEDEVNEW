@@ -12725,6 +12725,7 @@ extern int LuaSC_SetBotMate(Lua_State* L);
 extern int LuaPB_AddBot(Lua_State* L);
 extern int LuaPB_BotCount(Lua_State* L);
 extern int LuaPB_ClearBot(Lua_State* L);
+extern int LuaPB_JoinFaction(Lua_State* L);
 extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
@@ -13047,6 +13048,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_AddBot",		LuaPB_AddBot},
 	{"PB_BotCount",		LuaPB_BotCount},
 	{"PB_ClearBot",		LuaPB_ClearBot},
+	{"PB_JoinFaction",	LuaPB_JoinFaction},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},
 	{"SetNpcExp",		LuaSetNpcExp},
