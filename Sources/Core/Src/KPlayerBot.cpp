@@ -871,15 +871,30 @@ static int pb_FindFacNpc(int nFaction)
 //
 // Ngu hanh vu khi = nFaction / 2 - dung cong thuc phai = series*2 + {0,1} da chot.
 // ===========================================================================
+// Moi phai co nhieu DUONG DI ky nang. Cac duong dung vu khi thi ghi (detail, particular);
+// rieng duong QUYEN / NOI CONG thi bot KHONG NHAN VU KHI NAO - danh tay khong.
+//
+// Ban tham khao dat duong do bang ho Trien Thu (particular 6). Du an nay KHONG CO ho Trien
+// Thu, nen o day no thanh PB_WPN_NONE = khong trao gi ca. Truoc do toi XOA HAN lua chon
+// nay di - SAI, vi nhu vay mat luon duong noi cong: vd Thieu Lam phai co DU BA duong
+// dao / bong / quyen, Thuy Yen phai co dao HOAC tay khong.
 struct PB_WpnOpt { int d, p; };
+#define PB_WPN_NONE   { -1, -1 }        // duong quyen / noi cong: khong nhan vu khi
 
-static const PB_WpnOpt s_wTL[] = { {0,1}, {0,2} };          // 0 Thieu Lam : Dao, Bong
-static const PB_WpnOpt s_wTV[] = { {0,3}, {0,4}, {0,1} };   // 1 Thien Vuong: Thuong, Chuy, Dao
-static const PB_WpnOpt s_wDM[] = { {1,2}, {1,0}, {1,1} };   // 2 Duong Mon  : Bao vu(Tu Tien), Phi Tieu, Phi Dao
-static const PB_WpnOpt s_wDao[] = { {0,1} };                // 3 Ngu Doc, 5 Thuy Yen, 9 Con Lon: Dao
-static const PB_WpnOpt s_wKiem[] = { {0,0} };               // 4 Nga My, 8 Vo Dang: Kiem
-static const PB_WpnOpt s_wBong[] = { {0,2} };               // 6 Cai Bang  : Bong
-static const PB_WpnOpt s_wThuong[] = { {0,3} };             // 7 Thien Nhan: Kich = ho Thuong
+// 0 Thieu Lam : Dao, Bong, Quyen        (3 duong)
+static const PB_WpnOpt s_wTL[]   = { {0,1}, {0,2}, PB_WPN_NONE };
+// 1 Thien Vuong: Thuong, Chuy, Dao      (deu ngoai cong)
+static const PB_WpnOpt s_wTV[]   = { {0,3}, {0,4}, {0,1} };
+// 2 Duong Mon  : Bao vu(Tu Tien), Phi Tieu, Phi Dao  (deu tam xa)
+static const PB_WpnOpt s_wDM[]   = { {1,2}, {1,0}, {1,1} };
+// 3 Ngu Doc, 5 Thuy Yen, 9 Con Lon: Dao hoac tay khong
+static const PB_WpnOpt s_wDao[]  = { {0,1}, PB_WPN_NONE };
+// 4 Nga My, 8 Vo Dang: Kiem hoac tay khong
+static const PB_WpnOpt s_wKiem[] = { {0,0}, PB_WPN_NONE };
+// 6 Cai Bang  : Bong hoac tay khong
+static const PB_WpnOpt s_wBong[] = { {0,2}, PB_WPN_NONE };
+// 7 Thien Nhan: Kich (= ho Thuong) hoac tay khong
+static const PB_WpnOpt s_wKich[] = { {0,3}, PB_WPN_NONE };
 
 static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 {
@@ -887,32 +902,41 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 		return;
 
 	const PB_WpnOpt* pPool = s_wDao;
-	int nPool = 1;
+	int nPool = 2;
 	switch (nFaction)
 	{
-	case 0: pPool = s_wTL;     nPool = 2; break;
-	case 1: pPool = s_wTV;     nPool = 3; break;
-	case 2: pPool = s_wDM;     nPool = 3; break;
-	case 4: case 8: pPool = s_wKiem;   nPool = 1; break;
-	case 6: pPool = s_wBong;   nPool = 1; break;
-	case 7: pPool = s_wThuong; nPool = 1; break;
-	default: break;            // 3 Ngu Doc / 5 Thuy Yen / 9 Con Lon = Dao
+	case 0: pPool = s_wTL;   nPool = 3; break;
+	case 1: pPool = s_wTV;   nPool = 3; break;
+	case 2: pPool = s_wDM;   nPool = 3; break;
+	case 4: case 8: pPool = s_wKiem; nPool = 2; break;
+	case 6: pPool = s_wBong; nPool = 2; break;
+	case 7: pPool = s_wKich; nPool = 2; break;
+	default: break;          // 3 Ngu Doc / 5 Thuy Yen / 9 Con Lon = Dao hoac tay khong
 	}
 
 	const PB_WpnOpt& w = pPool[(int)g_Random(nPool)];
-	const int nSeries = nFaction / 2;
 
-	// Thao vu khi cu neu co. Bot nhan ban tu mot nhan vat mau nen CO THE dang cam san vu
-	// khi cua nhan vat do - khong thao thi no giu nguyen va ky nang mon phai danh khong trung.
+	// Thao vu khi cu TRUOC, ke ca khi boc trung duong quyen. Bot nhan ban tu mot nhan vat
+	// mau nen CO THE dang cam san vu khi cua nhan vat do; khong thao thi duong quyen van
+	// cam vu khi, va ky nang mon phai se danh khong dung ho.
 	const int nOld = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
 	if (nOld > 0)
 	{
-		// RemoveItemIdx voi so luong = ca chong. TRUYEN 0 LA KHONG XOA GI (KItemList.cpp:
-		// nNum=0 -> SetStackNum(nStack - 0) tuc giu nguyen). KItemList::Remove tu goi UnEquip
-		// cho o pos_equip nen khong ro ri.
+		// RemoveItemIdx voi so luong = CA CHONG. TRUYEN 0 LA KHONG XOA GI
+		// (KItemList.cpp: nNum = 0 -> SetStackNum(nStack - 0) tuc giu nguyen).
+		// KItemList::Remove tu goi UnEquip cho o pos_equip nen khong ro ri.
 		Player[nIdx].m_ItemList.RemoveItemIdx(nOld, Item[nOld].GetStackNum());
 	}
 
+	if (w.d < 0)
+	{
+		// DUONG QUYEN / NOI CONG - co y de tay khong.
+		printf("[BotVuKhi] %s phai %s: duong QUYEN, khong nhan vu khi\n",
+			   Player[nIdx].m_PlayerName, s_facNpc[nFaction].szTen);
+		return;
+	}
+
+	const int nSeries = nFaction / 2;   // phai = series*2 + {0,1}
 	int nMagic[MAX_ITEM_MAGICLEVEL];
 	ZeroMemory(nMagic, sizeof(nMagic));
 	// (nItemNature=0, nItemGenre=0 item_equip, nSeries, nLevel=1, nLuck=0, nDetail, nParticular)
@@ -920,14 +944,14 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 						  g_SubWorldSet.GetGameVersion(), 0);
 	if (nNew <= 0)
 	{
-		printf("[BotVuKhi] %s: ItemSet.Add THAT BAI (detail=%d parti=%d series=%d)\n",
+		printf("[BotVuKhi] %s: ItemSet.Add THAT BAI (detail=%d parti=%d he=%d)\n",
 			   Player[nIdx].m_PlayerName, w.d, w.p, nSeries);
 		return;
 	}
 
 	Item[nNew].LockItem(LOCK_STATE_LOCK);              // khoa lai de bot khong lam roi
 	Player[nIdx].m_ItemList.InsertEquipment(nNew, false);
-	// Equip o cay nay chi co HAI tham so (KItemList.h:104), ban tham khao co tham so thu ba
+	// Equip o cay nay chi co HAI tham so (KItemList.h:104); ban tham khao co tham so thu ba
 	// bUpdateSkin - dung chep nguyen chu ky sang.
 	Player[nIdx].m_ItemList.Equip(nNew, -1);
 
@@ -977,27 +1001,31 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 	if (nQuy <= 0)
 		return;
 
-	// Bot co dang cam vu khi ho Trien Thu khong (nhanh noi cong).
-	const int nWpn   = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
-	const int nParti = (nWpn > 0) ? Item[nWpn].GetParticular() : -1;
+	// Bot co dang cam vu khi khong - do la thu quyet dinh ngoai cong hay noi cong.
+	const int nWpn = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
 
 	int nSM = 0, nTP = 0, nSK = 0, nNC = 0;   // suc manh / than phap / sinh khi / noi cong
 
-	if (nFaction == 2)                       // Duong Mon
-	{
-		nTP = nQuy * 60 / 100;
-		nSK = nQuy - nTP;
-	}
-	else if (nFaction == 8)                  // Vo Dang
+	// KHONG CAM VU KHI = di duong QUYEN / NOI CONG. Day la dau hieu dang tin nhat va tu
+	// sua sai: pb_GiveFactionWeapon da thao vu khi cu truoc khi boc, nen bot tay khong la
+	// tay khong that.
+	const bool bNoiCong = (nWpn <= 0);
+
+	if (bNoiCong && nFaction == 8)           // Vo Dang NOI
 	{
 		nNC = nQuy * 70 / 100;
 		nSK = nQuy - nNC;
 	}
-	else if (nParti == 6)                    // nhanh noi cong (Trien Thu) - hien chua dung
+	else if (bNoiCong)                       // noi cong cac phai con lai
 	{
 		nSM = nQuy * 20 / 100;
 		nTP = nQuy * 10 / 100;
 		nSK = nQuy - nSM - nTP;              // phan du don het vao sinh khi
+	}
+	else if (nFaction == 2)                  // Duong Mon (luon cam vu khi tam xa)
+	{
+		nTP = nQuy * 60 / 100;
+		nSK = nQuy - nTP;
 	}
 	else                                     // ngoai cong
 	{
