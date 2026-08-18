@@ -73,7 +73,9 @@ struct PB_DB_RESULT
 // va 3 cho nua) => nguoi that bi day qua 470 se KHONG BAO GIO DUOC LUU.
 // Giu tran bot nho la cach vo hieu hoa lo hong do MA KHONG dung mot dong nao cua duong
 // nguoi choi that.
-#define PB_MAX_BOTS      20
+// 18/08: chu game yeu cau mo len 1000 de do tai that ([BotPerf] theo doi).
+// Cac tran engine du cho: MAX_PLAYER=1500, MAX_NPC=98000, MAX_TEAM=MAX_PLAYER.
+#define PB_MAX_BOTS      1000
 
 // So yeu cau dang bay toi Goddess. Moi bot can 2 luot hoi (danh sach nhan vat -> du lieu).
 #define PB_MAX_PENDING   32

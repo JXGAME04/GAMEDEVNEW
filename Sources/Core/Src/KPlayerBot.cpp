@@ -414,7 +414,11 @@ static bool pb_GhepNhom(int a, int bIdx)
 		PLAYER_APPLY_CREATE_TEAM cmd;
 		memset(&cmd, 0, sizeof(cmd));
 		if (!ta.CreateTeam(a, &cmd))
+		{
+			pb_Log("[BotNhom] %s LAP NHOM THAT BAI (CreateTeam tu choi)\n",
+			       Player[a].m_PlayerName);
 			return false;
+		}
 	}
 	if (ta.m_nFlag == 0 || ta.m_nID < 0 || ta.m_nID >= MAX_TEAM
 	 || g_Team[ta.m_nID].m_nCaptain != a)
@@ -429,6 +433,11 @@ static bool pb_GhepNhom(int a, int bIdx)
 	ta.GetInviteReply(a, bIdx, 1);
 	const bool bOk = (Player[bIdx].m_cTeam.m_nFlag != 0
 	               && Player[bIdx].m_cTeam.m_nID == ta.m_nID);
+	if (!bOk)
+		pb_Log("[BotNhom] %s VAO NHOM %s THAT BAI (GetInviteReply tu choi: mem=%d/tran=%d, mo=%d)\n",
+		       Player[bIdx].m_PlayerName, Player[a].m_PlayerName,
+		       g_Team[ta.m_nID].m_nMemNum, g_Team[ta.m_nID].CalcCaptainPower(),
+		       (int)g_Team[ta.m_nID].IsOpen());
 	if (bOk)
 		pb_Log("[BotNhom] %s vao nhom cua %s (%d/%d thanh vien)\n",
 		       Player[bIdx].m_PlayerName, Player[a].m_PlayerName,
@@ -843,7 +852,7 @@ static int pb_KillBot(PB_Bot& b)
 //      goi Lua LONG TRONG Lua. Hoan sang PB_Breathe la tranh han chuyen do.
 // Cay tham khao dung dung co che nay (KBotManager::RemoveAllBots chi bat co m_bDrainAllBots
 // roi de Tick rut dan, KBotManager.cpp:3653-3662).
-#define PB_KILL_PER_TICK  4
+#define PB_KILL_PER_TICK  20   // 1000 bot -> go het trong ~3 giay
 
 int PB_RemoveAll()
 {
@@ -1823,9 +1832,12 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			nBestLv   = lv;
 		}
 	}
-	pb_Log("[BotChon] %s (he %d, can vu khi %d):%s -> chon %d\n",
-	       Player[nIdx].m_PlayerName, (int)Npc[nNpcIdx].m_Series, nWant,
-	       szD[0] ? szD : " (danh sach rong)", nBest);
+	// 1000 bot: chi in nhat ky chon chieu khi THAT BAI (nBest = 0) - truong hop
+	// thanh cong da duoc kiem chung xong 18/08 sang, in nua la ngap log.
+	if (nBest == 0)
+		pb_Log("[BotChon] %s (he %d, can vu khi %d):%s -> chon %d\n",
+		       Player[nIdx].m_PlayerName, (int)Npc[nNpcIdx].m_Series, nWant,
+		       szD[0] ? szD : " (danh sach rong)", nBest);
 #undef PB_DIAG
 	if (pnLv) *pnLv = nBestLv;
 	return nBest;
@@ -2261,7 +2273,7 @@ extern int g_nPbAstarDem;              // KSubWorld.cpp: so lan A* chay
 static int s_nPerfQuetDo = 0;          // so lan quet do roi toan ObjSet
 
 #define PB_LOOT_VISION    640          // chi nhat do roi trong 20 o quanh bot
-#define PB_LOOT_SCAN_GAP  (GAME_FPS * 2)
+#define PB_LOOT_SCAN_GAP  (GAME_FPS * 6)   // quet nhan khi ranh; giet xong van quet NGAY
 #define PB_LOOT_PICK_MPS  150          // vao sat co nay moi phat lenh nhat (cong 200)
 #define PB_DONTUI_GAP     (GAME_FPS * 12)
 
@@ -2600,7 +2612,7 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 	{
 		const int nHpNay = (int)Npc[t].m_CurrentLife;
 		if (b.nHpTruoc > 0 && nHpNay < b.nHpTruoc
-		 && now - b.nDameTick >= (unsigned int)(GAME_FPS * 10))
+		 && now - b.nDameTick >= (unsigned int)(GAME_FPS * 120))
 		{
 			b.nDameTick = now;
 			pb_Log("[BotDame] %s chieu %d cap %d AN DON: muc tieu %d HP %d -> %d\n",
@@ -2881,11 +2893,11 @@ static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
 	char* p = s_pbChat[b.nChatCuoi];
 	const int nLen = (int)strlen(p);
 	if (nLen > 0)
-		// true = hien ca vao KHUNG CHAT kenh "noi chuyen" gan (chu game 18/08: "mo bot
-		// tu chat thi khong hien noi dung o kenh chat"). Tham so nay chi bat co
-		// m_btIsShowMsgPad trong goi s2c_playersendchat - client co san nhanh xu ly
-		// (GameSpaceChangedNotify.cpp:1097), bong bong van hien nhu cu.
-		KPlayerChat::NpcChat(nNpcIdx, p, nLen, true);
+		// false = CHI bong bong, KHONG ghi vao khung chat kenh phu can (chu game doi
+		// y 18/08 chieu: "tat luon kenh chat phu can khong cho bot chat kenh do" -
+		// cau bot nham khong hop khung chat, chi de lam nen som vai). Muon bat lai:
+		// doi tham so cuoi thanh true (co m_btIsShowMsgPad, client co san nhanh xu ly).
+		KPlayerChat::NpcChat(nNpcIdx, p, nLen, false);
 }
 
 // ===========================================================================
@@ -2907,6 +2919,44 @@ static void pb_Chat(int nNpcIdx, PB_Bot& b, unsigned int now, int nLech)
 #define PB_KENH_MAX      24
 #define PB_TG_GAP_MS     45000                 // gian cach toi thieu giua 2 cau the gioi
 #define PB_TG_GAP_THEM   45000                 // + ngau nhien 0..45s nua
+
+#define PB_TG_MAX  64
+static char s_pbChatTG[PB_TG_MAX][PB_CHAT_LEN];
+static int  s_pbChatTGCount = 0;
+
+// Nap kho cau danh rieng cho kenh the gioi tu CHINH chat.txt dang co tren may
+// (cac nhom mang tinh "rao vat": giao dich / solo / hoat dong / tan tinh).
+// Nap luoi mot lan o lan noi dau tien.
+static void pb_NapChatTG()
+{
+	static int s_bDaNap = 0;
+	if (s_bDaNap)
+		return;
+	s_bDaNap = 1;
+	static const char* s_aNhomTG[] = { "giaodich", "solo", "hoatdong", "tantinh" };
+	KTabFile tab;
+	if (!tab.Load((LPSTR)"/settings/simcity/chat.txt"))
+		return;
+	const int nH = tab.GetHeight();
+	for (int row = 2; row <= nH && s_pbChatTGCount < PB_TG_MAX; row++)
+	{
+		char szT[64] = { 0 };
+		tab.GetString(row, 1, (LPSTR)"", szT, sizeof(szT));
+		int bLay = 0;
+		for (int q = 0; q < (int)(sizeof(s_aNhomTG) / sizeof(s_aNhomTG[0])); q++)
+			if (strcmp(szT, s_aNhomTG[q]) == 0) { bLay = 1; break; }
+		if (!bLay)
+			continue;
+		char szC[PB_CHAT_LEN] = { 0 };
+		tab.GetString(row, 2, (LPSTR)"", szC, PB_CHAT_LEN);
+		if (!szC[0])
+			continue;
+		strncpy(s_pbChatTG[s_pbChatTGCount], szC, PB_CHAT_LEN - 1);
+		s_pbChatTG[s_pbChatTGCount][PB_CHAT_LEN - 1] = 0;
+		s_pbChatTGCount++;
+	}
+	pb_Log("[BotKenh] nap %d cau rao vat cho kenh the gioi\n", s_pbChatTGCount);
+}
 
 struct PB_Kenh
 {
@@ -2947,7 +2997,10 @@ static void pb_ChatTheGioi()
 {
 	static DWORD s_dwMoc = 0;
 	static DWORD s_dwCho = 0;
-	if (s_dwKenhTheGioi == (unsigned long)-1 || s_pbChatCount <= 0 || s_botCount <= 0)
+	if (s_dwKenhTheGioi == (unsigned long)-1 || s_botCount <= 0)
+		return;
+	pb_NapChatTG();
+	if (s_pbChatTGCount <= 0)
 		return;
 	const DWORD dwNow = GetTickCount();
 	if (s_dwCho == 0)
@@ -2982,7 +3035,7 @@ static void pb_ChatTheGioi()
 	if (nNoi <= 0)
 		return;
 
-	char* szCau = s_pbChat[(int)g_Random(s_pbChatCount)];
+	char* szCau = s_pbChatTG[(int)g_Random(s_pbChatTGCount)];
 	const int nLen = (int)strlen(szCau);
 	if (nLen <= 0)
 		return;
@@ -3755,6 +3808,18 @@ static void pb_QuanLyNhom()
 	{
 		s_dwMocXao = dwNow;
 		return;
+	}
+
+	// tong ket 30 giay/lan de bot.log ke duoc vi sao chua ghep (chu game 18/08
+	// chieu: "bot chua party" - so lieu thay vi doan mo)
+	{
+		static int s_nDemTk = 0;
+		if (++s_nDemTk >= 6)
+		{
+			s_nDemTk = 0;
+			pb_Log("[BotNhom] tk: %d bot | %d trong nhom | %d tu do muon nhom | %d truong cho them\n",
+			       s_botCount, nDangNhom, nTuDo, nTruong);
+		}
 	}
 
 	// tran tong: khong qua PB_NHOM_RATE% so bot dang song nam trong nhom
