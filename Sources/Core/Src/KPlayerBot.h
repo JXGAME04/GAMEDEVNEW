@@ -51,6 +51,8 @@ struct PB_DB_RESULT
 
 #ifdef _SERVER
 
+#include <vector>   // PB_WalkState giu lo trinh A* (danh sach id block)
+
 // Tran bot cua dot nay. CO Y de nho va gan cung, KHONG lay tu cau hinh.
 //
 // VI SAO 20: KPlayerSet::FindFree lay tu DAU danh sach ro (KPlayerSet.cpp:161), ma danh
@@ -92,6 +94,51 @@ struct PB_DB_RESULT
 // va truot ca ba cong gay hai o tren. Da ra soat TOAN BO 9 cho doc co nay.
 // ---------------------------------------------------------------------------
 #define PB_LIXIAN_BOT    3
+
+// ---------------------------------------------------------------------------
+// Trang thai DI BO cua mot bot (moi bot giu mot ban).
+//
+// Vi sao can trang thai: A* tra ve MOT LO TRINH nhieu waypoint, con engine chi nhan lenh di
+// toi MOT diem. Phai nho dang nham waypoint thu may, va nho khoa (ban do, o dich) de biet
+// khi nao can tinh lai duong. Kem hai bo do chong ket, deu lay tu cay tham khao:
+//   - DUNG YEN qua lau (thuong do bi NPC chan - JX1 tinh NPC LA TUONG) -> tim lai duong CO
+//     tinh NPC lam vat can;
+//   - goi nhieu lan ma KHONG tien duoc waypoint nao -> tim lai duong, toi da 3 lan roi thoi.
+// ---------------------------------------------------------------------------
+struct PB_WalkState
+{
+	std::vector<int> path;        // danh sach id BLOCK do A* tra ve
+	int          idx;             // dang nham toi waypoint thu may
+	int          destTileX;       // khoa tinh lai duong: dich quy ve o luoi
+	int          destTileY;
+	int          mapId;           // khoa tinh lai duong: lo trinh nay thuoc ban do nao
+	int          lastSendX;       // toa do lan cuoi da phat lenh (chong phat lai lien tuc)
+	int          lastSendY;
+	int          lastPosX;        // bo do dung yen
+	int          lastPosY;
+	unsigned int lastMoveTick;
+	int          repathCount;     // so lan da tim lai duong trong chuyen nay (toi da 3)
+	int          noAdvanceCalls;  // so lan goi lien tiep ma khong tien duoc waypoint
+
+	PB_WalkState() { Reset(); }
+	void Reset()
+	{
+		path.clear();
+		idx = 0;
+		destTileX = destTileY = -1;
+		mapId = -1;
+		lastSendX = lastSendY = 0;
+		lastPosX = lastPosY = 0;
+		lastMoveTick = 0;
+		repathCount = 0;
+		noAdvanceCalls = 0;
+	}
+};
+
+// Cho bot di toi mot toa do MPS. Goi MOI NHIP cho toi khi tra ve khac 0.
+// Tra: 1 = da toi noi, 0 = dang di, -1 = khong di duoc (chua nap luoi / khong co duong).
+int  PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
+               PB_WalkState& st, int nArriveMps);
 
 void PB_SetSender(PB_DbSender pfn);            // GameServer cai dat duong gui
 int  PB_Spawn(const char* szAccountName);      // xep 1 tai khoan vao hang doi sinh bot

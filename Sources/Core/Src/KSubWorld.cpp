@@ -1530,6 +1530,29 @@ BYTE KSubWorld::GetBarrier(int nMpsX, int nMpsY)
 }
 
 #ifdef _SERVER
+
+// Ban do NAO duoc nap luoi A* phia server.
+//
+// Vi sao phai loc: MAX_SUBWORLD = 1000 ma moi luoi ton ~1,5 MB, nap het la vut di hang GB
+// cho nhung noi khong bot nao dat chan toi. Bang duoi bung tu cay tham khao
+// (USVOLAM KSubWorld.cpp:2356-2361) - la cac thi tran + bai luyen cap bot hay lui toi.
+// Map 53 (Ba Lang Huyen) la noi bot sinh ra VA la noi dung ca 10 NPC mon phai.
+//
+// Them ban do moi chi can them so vao day, khong phai dong toi cho nao khac.
+static bool IsBotPathMap(int nMapId)
+{
+	static const int s_map[] = {
+		1,2,4,7,8,9,10,11,12,14,21,26,37,38,41,42,50,53,56,69,70,71,75,78,80,83,90,92,93,94,
+		120,122,123,125,140,162,163,164,167,176,203,205,206,207,224,225,226,227,
+		319,320,321,322,336,340,341,380,829,
+		969,970,971,972,973,974,975,976
+	};
+	for (int i = 0; i < (int)(sizeof(s_map) / sizeof(s_map[0])); i++)
+		if (s_map[i] == nMapId)
+			return true;
+	return false;
+}
+
 BOOL KSubWorld::LoadMap(int nId)
 {
 	KIniFile	IniFile;
@@ -1645,6 +1668,18 @@ BOOL KSubWorld::LoadMap(int nId)
 			g_SetFilePath(szPath);
 			m_Region[nY * m_nWorldRegionWidth + nX].LoadObject(m_nIndex,nX + m_nRegionBeginX, nY + m_nRegionBeginY);
 		}
+	}
+
+	// ---- Nap luoi A* cho ban do bot can di lai ----
+	// Du lieu vat can lay tu chinh cay \maps\<ten>\v_NNN ma vong LoadObject vua doc xong,
+	// nen goi o day la dung cho: moi thu can thiet da san sang.
+	// Lan dau tinh xong se ghi cache \maps\<id>_srv.fp, boot sau nap thang tu cache.
+	if (!m_bHavePath && IsBotPathMap(m_SubWorldID))
+	{
+		LoadPathGridSrv(szPath, m_nWorldRegionWidth, m_nWorldRegionHeight);
+		printf("[BotA*] luoi map=%d gridW=%d gridH=%d o=%d cothanhcong=%d\n",
+			   m_SubWorldID, m_nWorldRegionWidth, m_nWorldRegionHeight,
+			   m_nGridTotal, (int)m_bHavePath);
 	}
 
 	return TRUE;
