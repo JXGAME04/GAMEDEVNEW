@@ -3051,7 +3051,12 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.uDTHoldUntil = 0;
 		}
 		else
-			return 0;
+		{
+			// xong/treo: bDTTrainAfter -> nha may cho auto thuong len map luyen cong (return 0);
+			// nguoc lai giu lai (dung yen, chan auto thuong cay) theo dung o chon cua nguoi choi.
+			ea.nDTEngaged = pAp->bDTTrainAfter ? 0 : 1;
+			return ea.nDTEngaged;
+		}
 	}
 
 	if (Npc[Player[nPlayerIdx].m_nIndex].m_Doing == do_death
