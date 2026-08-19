@@ -763,10 +763,16 @@ void KImageStore2::FreeImageObject(_KISImageObj& ImgObject, int nFrame/*=-1*/)
 		{
 			if (ImgObject.pObject)
 			{
-				if (ImgObject.bType == ISI_T_BITMAP16)
-					free((KSGImageContent *)ImgObject.pObject);
-				else
-					free((AlphaRecContent *)ImgObject.pObject);
+				// Khoi nay do get_jpg_image() cua ENGINE.DLL cap phat (malloc cua CRT trong
+				// engine - xem Sources/Engine/Src/KPakFile.cpp:171). Goi free() o day la giai
+				// phong bang CRT cua Represent2 => KHAC VUNG NHO DONG => 0xC0000374 heap
+				// corruption. Chi lo o map DONG NGUOI vi phai qua 1024 anh thi CheckBalance
+				// moi bat dau duoi anh. Engine da xuat san release_image() dung cho viec nay
+				// (KPakFile.h:58); moi cho khac trong tep nay deu tra ve engine
+				// (SprReleaseHeader / SprReleaseFrame) - chi rieng cho nay bo quen.
+				// Nhanh else cu goi free((AlphaRecContent*)...) la ma chet: dieu kien ngoai
+				// da chot bType == ISI_T_BITMAP16 roi nen khong bao gio chay toi.
+				release_image((KSGImageContent *)ImgObject.pObject);
 				ImgObject.pObject = NULL;
 			}
 		}
