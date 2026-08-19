@@ -157,7 +157,6 @@ function PB_Menu()
 	"Cham TTL + Que Hoa Tuu: TAT/#PB_Buff(0)",
 	"Bot chay nhiem vu DA TAU/PB_DaTauMenu",
 	"Bot ra THANH ban sap/PB_SapMenu",
-	"Quay lai/SC_Menu",
 	SC_END_SAY})
 end
 

@@ -90,7 +90,7 @@ function chucnangadmin(itemIdx)
 		"Chøc n¨ng chÝnh/manager",
 		"Reload File /reloadfileEvent",
 		"Test bang hoi va cong thanh/TX_Root",
-		"SimCity - bot gia lap/SC_Menu",
+		"BOT nguoi choi (KPlayer)/PB_Menu",
 		"NhËn trang bÞ Xanh/xanhtest",
 		--"LayBinhSiHieuPhu/LayBinhSiHieuPhu",
 		--"Demo Set Npc Time Idle/DemoSetNpcTimeIdle",
