@@ -355,6 +355,7 @@ void KSubWorld::ProcLoadPathGrid()
 			}
 		}
 	}
+#ifdef _SERVER	// PB_LogNgoai chi co o build server (bot); client khong link duoc
 	if (nRegThieu >= m_nGridW * m_nGridH)
 		PB_LogNgoai("[PathSrv] CANH BAO map %d: TOAN BO %d region khong co du lieu vat can"
 		            " - luoi 100%% vat can, BOT KHONG DI DUOC tren map nay (bo sung"
@@ -364,6 +365,7 @@ void KSubWorld::ProcLoadPathGrid()
 		PB_LogNgoai("[PathSrv] map %d: %d/%d region KHONG co du lieu vat can"
 		            " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)\n",
 		            m_SubWorldID, nRegThieu, m_nGridW * m_nGridH);
+#endif
 	for (int si = 0; si < NUM_SIZES; ++si)
 	{
 		if(m_bStopThread)
