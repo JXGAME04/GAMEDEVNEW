@@ -1951,6 +1951,26 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 			}
 		}
 
+		// Ban goc JX2 (handler 0x005eca44): neu client da gio co "toi dang sai" thi goi
+		// dong bo dinh ky NAY duoc phep ghi de toa do that roi ha co. Truoc day JX1 vut
+		// toan bo toa do trong goi khi NPC con o cung region, nen nguoi bi ket dung im
+		// mai toi khi qua bien region moi nhay mot phat.
+		// Lech <= 64px se duoc lop noi suy ve keo muot (PAINT_INTERP_SNAP_DIST);
+		// lech lon hon thi noi suy tu snap - dung nhu mong muon.
+		if (Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
+		{
+			if (Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion)
+			{
+				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+				Npc[nIdx].m_MapX = nMapX;
+				Npc[nIdx].m_MapY = nMapY;
+				Npc[nIdx].m_OffX = NpcSync->m_fkOffX;
+				Npc[nIdx].m_OffY = NpcSync->m_fkOffY;
+				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].AddRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+			}
+			Npc[nIdx].m_nNeedFixPos = 0;
+		}
+
 		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)	// ·ÇÍæ¼?
 		{
 			int	nOldLife = Npc[nIdx].m_CurrentLife;
