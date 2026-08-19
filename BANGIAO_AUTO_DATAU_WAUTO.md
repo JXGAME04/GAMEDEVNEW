@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:19** | engine Dã Tẩu + fix 8.6 + 3 nâng cấp + bảng cụm quái/phù-về-xa-phu (53 marker `[DaTau]`); bản trước = `CoreClient_cu_1908c.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:27** | engine Da Tau + toan bo fix toi `f6f550c5` (2 cua so thuong / chi huy loai TAT / khong phu ve giua chung / len ngua di duong); ban truoc = `CoreClient_cu_1908d.dll` |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
