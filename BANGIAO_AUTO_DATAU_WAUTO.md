@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:27** | engine Da Tau + toan bo fix toi `f6f550c5` (2 cua so thuong / chi huy loai TAT / khong phu ve giua chung / len ngua di duong); ban truoc = `CoreClient_cu_1908d.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:31** | engine Dã Tẩu + toàn bộ fix tới `6bde16a1`; bản trước = `CoreClient_cu_1908e.dll` |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
@@ -275,6 +275,18 @@ thông báo nào (watchdog GOTONPC chỉ đếm khi ĐÃ tới tọa độ). Mã
 chạy vô điều kiện mỗi tick nên chỉ cần FindPath nhận đích đúng là nhân vật đi.
 Kèm theo: build Client của cây D hỏng từ `561e2163` (2 `PB_LogNgoai` ngoài `#ifdef _SERVER`,
 lỗi C3861) — đã bọc lại ở `0d3c6629`. Số dòng CoreShell.cpp sau 2704 lệch **+4** so với THAMCHIEU.
+
+---
+
+### 8.7 🔴 Năm lỗi bắt được khi test thật 19/08 chiều (`f6f550c5` + `6bde16a1`)
+
+| Triệu chứng người dùng | Nguyên nhân thật | Sửa |
+|---|---|---|
+| "ra bảng chọn phần thưởng mà không chọn" | `seasonnpc.lua` hàm `Prise`: **một** cửa sổ, 3 thưởng gán vào 3 nút của cửa sổ đó; bấm nút **không được ánh xạ** thì `Prise_Chon` **mở lại cửa sổ** (`:1327-1333`), bấm nhầm nhóm thì C++ dùng reward-id nhóm kia (=0) | `DTP_REWARD` xoay nút: nút người chơi chọn → mở lại thì nút kế → hết nhóm này sang nhóm kia → quá 6 lần thì bỏ qua. Bắt `uFinSeq` ở **mọi pha** |
+| "chọn Hủy nhiệm vụ thì nó hủy luôn loại đang bật" | `DT_Skip` hủy vô điều kiện khi `nDTSkipMode==1` | chỉ hủy khi loại hiện tại **bị TẮT**; loại đang bật mà kẹt thì treo |
+| "chưa xong nhiệm vụ đã tự phù về" | (a) id map đọc từ **văn bản** nhiệm vụ lệch với map Xa Phu thả xuống (map nhiều tầng) ⇒ nhánh "lạc map" bắt phù về; (b) `DTP_IDLE` sau mỗi lần hết treo coi map nhiệm vụ là "không ở thành" | (a) **tin máy chủ**: Xa Phu thả ra khỏi thành = đúng map, gán `nDTMapId = nMap`; (b) IDLE đang giữ loại 4 đúng map thì vào thẳng `DTP_FARM` |
+| "đi về thành trả nhiệm vụ phải lên ngựa" | `DT_WalkTo` không hề lên ngựa | thêm `DT_Ride` (khuôn `case PA_RIDE` `CoreShell.cpp:9614`) gọi trong `DT_WalkTo` mọi pha đi đường, **trừ** `DTP_FARM` |
+| "quét không được NPC trong map" | client chỉ thấy NPC đã đồng bộ; neo nhiệm vụ (chỗ Xa Phu thả) ở map 53/80/226 **nằm ngoài vùng có quái** | bảng cụm quái sinh từ pak — xem mục 7.2 |
 
 ---
 
