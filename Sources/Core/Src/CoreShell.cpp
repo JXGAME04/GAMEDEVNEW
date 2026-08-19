@@ -4111,14 +4111,34 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nDTEngaged = 1;
 		if (cap.uFinSeq != ea.uDTFinSeen)
 		{
-			// co cua so thuong CHUA BAM: bam dung nhom cua no roi cho cua so ke tiep
+			// Cua so thuong CHUA BAM. seasonnpc.lua (ham Prise) gan 3 phan thuong vao 3
+			// nut cua DUNG mot cua so; bam nut khong duoc anh xa thi Prise_Chon KHONG bao
+			// loi ma MO LAI cua so (:1327-1333). Nen: lan dau bam o nguoi choi chon, moi
+			// lan cua so mo lai thi thu NUT KE, het 3 nut nhom nay thi thu nhom kia.
 			ea.uDTFinSeen = cap.uFinSeq;
 			ea.nDTRetry = 0;
-			if (cap.nFinType <= 4)
-				SendUiCmdScript(3, (char*)DT_FIN3[pAp->nDTReward1 >= 0 && pAp->nDTReward1 <= 2 ? pAp->nDTReward1 : 0]);
-			else
-				SendUiCmdScript(4, (char*)DT_FIN4[pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2 ? pAp->nDTReward2 : 2]);
-			ea.uDTNext = uCurTime + 800;
+			const int nThu = ea.nDTRwTry++;
+			if (nThu < 6)
+			{
+				const int nRw1 = (pAp->nDTReward1 >= 0 && pAp->nDTReward1 <= 2) ? pAp->nDTReward1 : 0;
+				const int nRw2 = (pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2) ? pAp->nDTReward2 : 2;
+				const bool bNhomA = (cap.nFinType <= 4) ? (nThu < 3) : (nThu >= 3);
+				if (bNhomA)
+					SendUiCmdScript(3, (char*)DT_FIN3[(nRw1 + nThu) % 3]);
+				else
+					SendUiCmdScript(4, (char*)DT_FIN4[(nRw2 + nThu) % 3]);
+				ea.uDTNext = uCurTime + 800;
+				return 1;
+			}
+			// da thu ca 6 nut ma cua so van mo lai - thoi, di nhan nhiem vu ke
+			DT_Msg(nPlayerIdx, "[DaTau] khong bam duoc ruong thuong (thu du 6 nut) - bo qua");
+			ea.nDTRwTry = 0;
+			ea.nDTStep = DTI_NONE;
+			ea.nDTQType = 0;
+			ea.nDTItemIdx = 0;
+			ea.nDTPhase = DTP_GOTONPC;
+			ea.nDTRetry = 0;
+			ea.uDTNext = uCurTime + 1200;
 			return 1;
 		}
 		// da bam xong cua so vua roi - nan o day ~3 giay xem con cua so thu hai khong
@@ -4128,6 +4148,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		DT_Msg(nPlayerIdx, "[DaTau] da nhan thuong - di nhan nhiem vu ke");
+		ea.nDTRwTry = 0;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTQType = 0;
 		ea.nDTItemIdx = 0;

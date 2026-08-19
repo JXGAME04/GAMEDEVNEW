@@ -203,6 +203,7 @@ struct ExtAuto
 	UINT uDTRoamNext;    // [DaTau] nhip chay tim quai khi farm T4
 	int  nDTRoamStep;    // [DaTau] cum quai dang nham (KDaTauSpots.h)
 	int  nDTBackXaFu;    // [DaTau] 1 = phu ve thanh xong thi ra Xa Phu di lai map
+	int  nDTRwTry;       // [DaTau] so nut ruong thuong da thu (cua so mo lai = nut sai)
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -293,6 +294,7 @@ struct ExtAuto
 		uDTRoamNext = 0;
 		nDTRoamStep = 0;
 		nDTBackXaFu = 0;
+		nDTRwTry = 0;
 	}
 };
 
