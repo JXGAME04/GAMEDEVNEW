@@ -233,6 +233,8 @@ struct PB_Bot
 	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
 	                                          // cung co luc trung, cuoi cung 100% deu vao nhom
 	PB_WalkState follow;                      // duong A* bam theo doi truong
+	// ---- luu du lieu (18/08) ----
+	unsigned int nLuuTick;                    // GetGameTime() lan luu gan nhat (nhip 10 phut)
 	// ---- vong sang / buff / bua ----
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
@@ -358,7 +360,11 @@ int PB_IsBot(int nPlayerIdx)
 	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
 		return 0;
 	for (int i = 0; i < s_botCount; i++)
-		if (s_bots[i].nPlayerIdx == nPlayerIdx)
+		// (18/08 phan bien) PHAI so ca dwID: khe bot bi thao ngoai duong pb_KillBot
+		// (vd GM KickOutPlayer) roi cap lai cho NGUOI THAT ma chi so nPlayerIdx thi
+		// nguoi that se bi coi la bot (dong dau blob, mien trap, Lua IsBot=1).
+		if (s_bots[i].nPlayerIdx == nPlayerIdx
+		 && s_bots[i].dwID == Player[nPlayerIdx].m_dwID)
 			return 1;
 	return 0;
 }
@@ -579,10 +585,33 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		return;
 	}
 
+	// Chong sinh TRUNG (18/08): bam "Goi 1000" hai lan thi tai khoan da co bot song
+	// se bi PlayerSet.Add tao them mot nhan vat CUNG TEN - tu choi ngay tu day.
+	// (Khoa role o Goddess cung chan duong nap lan hai, nhung hai yeu cau co the
+	// cung bay truoc khi khoa kip dat - phai tu giu o day.)
+	for (int nTrung = 0; nTrung < s_botCount; nTrung++)
+	{
+		// (phan bien) strcmpi cho khop cach engine so tai khoan (KPlayerSet.cpp:1053);
+		// entry ma dwID da lech (khe bi thao ngoai luong) khong duoc quyen chan.
+		const int nIdxTrung = s_bots[nTrung].nPlayerIdx;
+		if (nIdxTrung <= 0 || nIdxTrung >= MAX_PLAYER
+		 || Player[nIdxTrung].m_dwID != s_bots[nTrung].dwID)
+			continue;
+		if (strcmpi(s_bots[nTrung].szAccount, p->szAccount) == 0)
+		{
+			pb_FreePending(p);
+			return;
+		}
+	}
+
 	// pDataBuffer[0] = co thanh cong, pDataBuffer[1..] = blob TRoleData.
 	const BYTE* pb = (const BYTE*)pRes->pPayload;
 	if (pb[0] != 1)
 	{
+		// Goddess tra -1 khi role dang bi KHOA (ClientNode.cpp:605 chi doc khi
+		// !IsRoleLock) - ghi log de van hanh biet vi sao goi bot ma khong ra.
+		pb_Log("[BotLuu] %s: Goddess khong tra du lieu (role dang bi khoa boi phien cu?)\n",
+		       p->szRole);
 		pb_FreePending(p);
 		return;
 	}
@@ -628,6 +657,30 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	memcpy(Player[nIdx].m_SaveBuffer, pData, dwLen);
 	Player[nIdx].m_pStatusLoadPlayerInfo = Player[nIdx].m_SaveBuffer;
 
+	// ---- BOT CU HAY BOT MOI? (18/08 - he luu du lieu bot) ----
+	// Blob do CHINH he bot luu mang dau PB_BLOB_DAU o truong chet irevivaly (dong tai
+	// CoreServerShell::SavePlayerDataAtOnce). Blob tuoi tu taobot_bdb KHONG co dau:
+	// tool chi memcpy mau roi doi ten/he/gioi tinh, nSect ghi 0xFF (taobot_bdb.cpp:598-644).
+	// Sua truc tiep tren BAN SAO trong m_SaveBuffer - khong dong vao pPayload goc.
+	TRoleData* pSua   = (TRoleData*)Player[nIdx].m_SaveBuffer;
+	const int  bBotCu = (pSua->BaseInfo.irevivaly == PB_BLOB_DAU);
+	// (phan bien) "bot cu HOP LE" = co dau VA nSect hop le. Neu ai do chay lai
+	// taobot_bdb lay MAU la mot bot da luu (blob mang dau nhung nSect bi tool ghi
+	// 0xFF) thi phai coi la BOT MOI - van xoa ky nang mau, van boc phai - neu khong
+	// se tai hien dung loi "phai Ngu Doc cam dao danh skill dao Thien Vuong".
+	const int  nSectBlob = (char)pSua->BaseInfo.nSect;
+	const int  bCuCoPhai = (bBotCu && nSectBlob >= 0 && nSectBlob < MAX_FACTION);
+	if (bBotCu && pSua->BaseInfo.ifightlevel < PB_CAP_GIU_VITRI)
+	{
+		// Luat chu game 18/08: DUOI cap 20 goi ra van ve diem hoi sinh map 53 nhu
+		// truoc nay; TU cap 20 bot dung nguyen cho da luu (cUseRevive=0 + ientergame*
+		// do SavePlayerBaseInfo ghi luc luu, KPlayerDBFuns.cpp:933-935).
+		// GetRevivalPosFromId(53,19) chinh la diem lui san co cua LoadPlayerBaseInfo.
+		pSua->BaseInfo.cUseRevive = 1;
+		pSua->BaseInfo.irevivalid = 53;
+		pSua->BaseInfo.irevivalx  = 19;   // LoadPlayerBaseInfo doc irevivalx lam ReviveID
+	}
+
 	// ---- Nap du lieu: soi guong CoreServerShell::PlayerDbLoading (:155-181) ----
 	// Nguoi that duoc nap dan qua nhieu khung theo nhip goi tin; bot khong co client nen
 	// quay tai cho cho xong.
@@ -670,6 +723,10 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	// phai Ngu Doc cam dao danh skill dao Thien Vuong" - bo chon chieu thay chieu dao
 	// khop dung vu khi la chon, dau biet no cua phai khac.
 	// Xoa het ngay tu dau: hockynang() luc vao phai se day DUNG bo chieu cua phai minh.
+	// (18/08) CHI xoa voi blob TUOI tu taobot_bdb - bot cu nap lai thi bo ky nang
+	// trong blob la bo chieu THAT cua phai no, xoa la mat sach cong luyen.
+	// (phan bien) dieu kien la bCuCoPhai chu khong phai bBotCu: dau + nSect hop le.
+	if (!bCuCoPhai)
 	{
 		const int nNpcClean = Player[nIdx].m_nIndex;
 		if (nNpcClean > 0 && nNpcClean < MAX_NPC)
@@ -705,6 +762,21 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	//   KPlayer.cpp:6552         (return som)
 	Player[nIdx].LaunchPlayer2(true);
 
+	// (18/08) Bot luon luu VI TRI THAT: m_bUseReviveIdWhenLogin phai la 0 de
+	// SavePlayerBaseInfo ghi cUseRevive=0 + toa do dang dung (KPlayerDBFuns.cpp:933-935).
+	// Release() da dat 0 nhung dat tuong minh cho chac - bot khong bao gio di qua
+	// Lua SetPlayerRevivalOptionWhenLogout nhu nguoi that.
+	Player[nIdx].SetLoginType(0);
+
+	// (18/08) KHOA role o Goddess ngay khi bot song. Thieu khoa thi moi goi luu sau
+	// nay bi _SaveRoleInfo VUT (doi IsRoleLockBySelf, ClientNode.cpp:431). Nguoi that
+	// duoc khoa dung cho nay tren duong vao game (KSOServer.cpp:2864-2869). Khoa se
+	// duoc tra khi go bot (luu bLeave=true) hoac khi GameServer ngat khoi Goddess
+	// (~CClientNode -> UnlockAllRole).
+	if (!s_pfnSend || !s_pfnSend(PB_ASK_LOCKROLE, 0, Player[nIdx].m_PlayerName))
+		pb_Log("[BotLuu] %s: gui KHOA role that bai - se tu khoa lai khi goi luu dau"
+		       " bao loi ve\n", Player[nIdx].m_PlayerName);
+
 	// ---- CHON PHAI, NHUNG CHUA VAO ----
 	//
 	// Ban truoc goi thang KPlayer::AddFaction (KPlayer.cpp:4058) ngay tai day. Chay thi
@@ -733,6 +805,12 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 	// Ngu hanh cua bot den tu BaseInfo.ifiveprop -> Npc[].m_Series (KPlayerDBFuns.cpp:392),
 	// ma tool taobot_bdb da rai deu 0..4 => moi bot co dung 2 phai hop le, boc ngau nhien 1.
 	int nFaction = -1;
+	if (bCuCoPhai)
+		// (18/08) Bot cu da o trong phai: nSect trong blob la phai THAT da vao (0..9,
+		// do gianhapmonphai dat va SavePlayerBaseInfo ghi lai). Blob tuoi taobot_bdb
+		// ghi 0xFF -> (char)-1. bCuCoPhai da tinh ngay sau khi doc dau o tren.
+		nFaction = nSectBlob;
+	else
 	{
 		const int nNpcIdx = Player[nIdx].m_nIndex;
 		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
@@ -819,6 +897,20 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
 		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0; b.nAuraPhien = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
+		b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();   // luu dinh ky tinh tu luc sinh
+		if (bCuCoPhai)
+		{
+			// (18/08) Bot cu nap lai: dung ngay cho da luu, KHONG tan ra / KHONG di
+			// xin phai lai. nGaveWeapon=1 la BAT BUOC: de 0 thi luot phat vu khi se
+			// HUY vu khi dang cam trong do luu (pb_GiveFactionWeapon thao + RemoveItemIdx
+			// truoc khi phat cai moi cap 1).
+			b.nAi         = PB_AI_IN_FACTION;
+			b.nGaveWeapon = 1;
+			pb_Log("[BotLuu] %s nap lai bot cu: cap %d phai %d%s\n",
+			       Player[nIdx].m_PlayerName, (int)pSua->BaseInfo.ifightlevel, nFaction,
+			       (pSua->BaseInfo.ifightlevel < PB_CAP_GIU_VITRI)
+			           ? " (duoi cap 20 -> ve map 53)" : " (giu nguyen cho cu)");
+		}
 		s_botCount++;
 	}
 
@@ -847,10 +939,11 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 // AN TOAN cho nguoi that: da khoa hai lop truoc do (chi so nam trong s_bots + m_dwID khop),
 // nen khong the cham vao mot nguoi choi that trung khe.
 //
-// KHONG LUU DB, va do la CO Y: bot la nhan vat tam. PrepareRemove o cay nay cung khong luu
-// (dong Player[].Save() bi chu thich chet tai KPlayerSet.cpp:393), no chi don sach chat/
-// nhiem vu/to doi/giao dich/co bac/PK roi WaitForRemove - dung thu ta can de khong bo lai
-// rac trong to doi hay phien giao dich cua nguoi that.
+// (18/08 DOI THIET KE) GO BOT GIO CO LUU DB - chu game yeu cau bot giu du lieu nhu
+// nguoi that. Trinh tu soi guong PlayerLogoutGateway (KSOServer.cpp:3549-3582): luu nam
+// SAU PrepareRemove (don chat/to doi/giao dich/co bac/PK + WaitForRemove - KHONG dong
+// den tui do, m_ItemList chi bi xoa trong RemoveQuiting) va TRUOC RemoveQuiting, nen
+// anh chup luu la day du. bLeave=true de Goddess luu xong tu tra khoa role.
 static int pb_KillBot(PB_Bot& b)
 {
 	const int nIdx = b.nPlayerIdx;
@@ -869,6 +962,19 @@ static int pb_KillBot(PB_Bot& b)
 	Player[nIdx].m_bForeQuit = TRUE;   // mo khoa 2
 
 	PlayerSet.PrepareRemove(nIdx);     // don sach + WaitForRemove()
+
+	// (18/08) LUU roi moi thao khe - xem khoi chu thich dau ham. Luu that bai
+	// (duong DB dut, Save() tra 0...) van phai TRA KHOA de phien sau nap lai duoc.
+	if (s_pfnSend)
+	{
+		// (phan bien) playerlogout.lua / script OnLogout vua chay trong PrepareRemove
+		// co the goi SetLogoutRV(1) lat co hoi-sinh-khi-vao - ep lai 0 de bot >= cap 20
+		// LUON luu vi tri that (KPlayerDBFuns.cpp:934 doc co nay).
+		Player[nIdx].SetLoginType(0);
+		if (!s_pfnSend(PB_ASK_SAVEROLE_LEAVE, (unsigned long)nIdx, Player[nIdx].m_PlayerName))
+			s_pfnSend(PB_ASK_UNLOCKROLE, 0, Player[nIdx].m_PlayerName);
+	}
+
 	PlayerSet.RemoveQuiting(nIdx);     // go NPC + region + tui do + tra khe
 
 	return 1;
@@ -881,7 +987,18 @@ static int pb_KillBot(PB_Bot& b)
 //      goi Lua LONG TRONG Lua. Hoan sang PB_Breathe la tranh han chuyen do.
 // Cay tham khao dung dung co che nay (KBotManager::RemoveAllBots chi bat co m_bDrainAllBots
 // roi de Tick rut dan, KBotManager.cpp:3653-3662).
-#define PB_KILL_PER_TICK  20   // 1000 bot -> go het trong ~3 giay
+// ---- (18/08) luu du lieu bot dinh ky ----
+// Nguoi that duoc AutoSave cua engine luu 30s/lan, nhung CanSave chan netidx==-1 nen
+// bot phai tu quay vong trong PB_Breathe. 10 phut/bot la du: mat dien bat ngo chi mat
+// toi da 10 phut luyen cua dan gia lap, doi lai Goddess chi chiu ~1,7 goi luu/giay.
+#define PB_LUU_MOI_GIAY  600
+static int          s_nLuuCon      = 0;   // con tro vong quet luu dinh ky
+static int          s_bLuuTatCa    = 0;   // 1 = dang don luu ep toan bo (PB_SaveAll)
+static unsigned int s_nLuuTatCaMoc = 0;   // GetGameTime() luc bam PB_SaveAll
+
+#define PB_KILL_PER_TICK  5    // 1000 bot -> ~11 giay. (18/08 phan bien) ha tu 20:
+                               // moi con go la MOT goi luu day du day vao socket Goddess
+                               // DONG BO (WSASend) - 20 con/nhip x ~15-69KB de nghen khung
 
 int PB_RemoveAll()
 {
@@ -895,7 +1012,11 @@ int PB_RemoveAll()
 	// Vi vay pb_KillBot lam TRON chuoi trong MOT lan goi, con o day chi xep hang, KHONG dat
 	// truoc bat ky co nao len bot.
 	s_bKillAll = 1;
-	pb_Log("[Bot] xep hang go %d bot (rut dan %d con moi nhip)\n",
+	// (18/08 phan bien) huy dot SaveAll dang do: tung con se duoc pb_KillBot luu
+	// bLeave=true roi, giu bo dem lai chi lam dot bot SAU bi luu ep oan + in XONG sai.
+	s_bLuuTatCa = 0;
+	s_nLuuCon   = 0;
+	pb_Log("[Bot] xep hang go %d bot (rut dan %d con moi nhip, moi con LUU truoc khi go)\n",
 		   s_botCount, PB_KILL_PER_TICK);
 	return s_botCount;
 }
@@ -1010,6 +1131,52 @@ int PB_SetFight(int bOn)
 	}
 	pb_Log("[Bot] %s danh quai cho %d bot\n", bOn ? "BAT" : "TAT", n);
 	return n;
+}
+
+// (18/08) Xep hang luu NGAY toan bo bot (bam truoc khi tat server). Khong gui mot
+// luot 1000 goi ~ chuc MB lam nghen duong sang Goddess - PB_Breathe don 5 goi/nhip,
+// 1000 bot het ~11 giay; xong in "[BotLuu] da gui luu XONG toan bo bot".
+int PB_SaveAll()
+{
+	if (s_botCount <= 0)
+		return 0;
+	if (s_bKillAll)
+		return 0;                      // dang go het - tung con tu luu khi go roi
+	s_bLuuTatCa    = 1;
+	s_nLuuTatCaMoc = (unsigned int)g_SubWorldSet.GetGameTime();
+	pb_Log("[BotLuu] xep hang luu %d bot (5 goi/nhip ~%d giay; bot dang chet se hoi"
+	       " sinh ~3 giay roi luu not)\n",
+	       s_botCount, s_botCount / (5 * GAME_FPS) + 1);
+	return s_botCount;
+}
+
+int LuaPB_SaveAll(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_SaveAll());
+	return 1;
+}
+
+// (18/08 phan bien) Goddess tra -1 cho mot goi luu (thuong do role KHONG con bi khoa
+// boi node nay - vd Goddess restart lam mat bang khoa RAM). GameServer bao ve day:
+// neu khe la bot thi ghi log + hen luu lai SOM (60 giay) de lan luu sau di sau khoa
+// moi (GameServer gui lai PB_ASK_LOCKROLE ngay khi thay bao loi). Tra 1 = dung la bot.
+int PB_OnSaveFailed(int nPlayerIdx)
+{
+	for (int i = 0; i < s_botCount; i++)
+	{
+		PB_Bot& b = s_bots[i];
+		if (b.nPlayerIdx != nPlayerIdx)
+			continue;
+		if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER
+		 || Player[nPlayerIdx].m_dwID != b.dwID)
+			return 0;                      // khe da doi chu (vd bot vua bi go) - bo qua
+		const unsigned int nowT = (unsigned int)g_SubWorldSet.GetGameTime();
+		b.nLuuTick = nowT - (unsigned int)(GAME_FPS * (PB_LUU_MOI_GIAY - 60));
+		pb_Log("[BotLuu] %s: Goddess TU CHOI luu (mat khoa role?) - da xin khoa lai,"
+		       " se luu lai sau ~60 giay\n", Player[nPlayerIdx].m_PlayerName);
+		return 1;
+	}
+	return 0;
 }
 
 // Kho cau thoai + muc noi. Dinh nghia SOM vi ham Lua ben duoi dung toi;
@@ -3578,9 +3745,9 @@ static void pb_DriveBot(PB_Bot& b)
 	// Noi chuyen chay SONG SONG voi moi viec khac (di duong, danh nhau) - nguoi that cung
 	// vua danh vua noi. Dat truoc cac nhanh return de khong bi nhanh nao nuot mat.
 	{
-		int nLech = 0;
-		for (int q = 0; q < s_botCount; q++)
-			if (&s_bots[q] == &b) { nLech = q; break; }
+		// chi so bot = vi tri trong s_bots (idiom :1787) - vong quet cu la O(n^2)
+		// voi 1000 bot: ~18 trieu vong lap/giay chi de tim chi so chinh minh
+		const int nLech = (int)(&b - s_bots);
 		pb_Chat(nNpcIdx, b, nowAll, nLech);
 	}
 	// PM da hen gio thi gui - chay truoc cac nhanh return nhu chat
@@ -3655,9 +3822,7 @@ static void pb_DriveBot(PB_Bot& b)
 			// tron chi so bot: g_Random dong bang theo giay (xem ghi chu o cho gieo
 			// nhom) - khong tron thi ca loat bot sinh cung giay tan ra CUNG MOT diem
 			{
-				int nLechTan = 0;
-				for (int q2 = 0; q2 < s_botCount; q2++)
-					if (&s_bots[q2] == &b) { nLechTan = q2; break; }
+				const int nLechTan = (int)(&b - s_bots);   // chi so bot, thay vong quet O(n)
 				b.nScatterX = bx + (((int)g_Random(nR * 2 + 1) + nLechTan * 13) % (nR * 2 + 1) - nR) * 32;
 				b.nScatterY = by + (((int)g_Random(nR * 2 + 1) + nLechTan * 29) % (nR * 2 + 1) - nR) * 32;
 			}
@@ -3693,9 +3858,7 @@ static void pb_DriveBot(PB_Bot& b)
 	if (b.nAi == PB_AI_FIGHT)
 	{
 		// Ra bai hop cap TRUOC, danh sau. pb_RaBai tra 1 khi da dung cho.
-		int nLech = 0;
-		for (int q = 0; q < s_botCount; q++)
-			if (&s_bots[q] == &b) { nLech = q; break; }
+		const int nLech = (int)(&b - s_bots);   // chi so bot, thay vong quet O(n)
 		// ---- LACH DAM DONG ----
 		// bot.log 10:47: ca dan nem chat trong hop 4x4 o (2554-2558, 3480-3483) tren duong
 		// toi bai quai - nut co chai dia hinh + NPC-LA-TUONG, 18 than tu chan nhau, thinh
@@ -4023,6 +4186,11 @@ static void pb_DriveBot(PB_Bot& b)
 		// se tieu tiep o nhanh PB_AI_IN_FACTION ben tren.
 		b.nLastLevel = Npc[nNpcIdx].m_Level;
 		pb_AllocAttribPoints(nIdx, b.nFaction);
+		// (18/08) LUU NGAY sau khi vao phai xong: chot phai + ky nang + vu khi vao DB,
+		// khoi mat neu server sap truoc nhip luu dinh ky 10 phut ke tiep.
+		Player[nIdx].SetLoginType(0);   // (phan bien) chan co SetLogoutRV neu Lua vua lat
+		if (s_pfnSend && s_pfnSend(PB_ASK_SAVEROLE, (unsigned long)nIdx, Player[nIdx].m_PlayerName))
+			b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();
 	}
 	else
 		pb_Log("[Bot] %s XIN VAO %s THAT BAI: m_nCurFaction=%d (he bot=%d, he phai can=%d)\n",
@@ -4232,6 +4400,92 @@ void PB_Breathe()
 			g_nPbAstarDem = 0;
 			s_nPerfQuetDo = 0;
 			s_dwPerfMoc   = dwNow;
+		}
+	}
+
+	// ---- (18/08) LUU DINH KY / LUU EP TOAN BO ----
+	// Dinh ky: toi da 1 goi/nhip, con tro quay het 1000 bot trong ~56 giay, moi bot
+	// chi gui that khi den han PB_LUU_MOI_GIAY (10 phut). PB_SaveAll (s_bLuuTatCa):
+	// moi nhip gui toi da 5 goi cho bot CHUA luu ke tu moc s_nLuuTatCaMoc - dong XONG
+	// chi in khi MOI bot hop le deu da gui that (phan bien dot 2: ban dem-theo-so-goi
+	// cu gui trung bot da luu va in XONG trong khi bot dang chet chua he duoc luu).
+	// Duong luu: s_pfnSend -> GameServer::SavePlayerData(idx,false) ->
+	// SavePlayerDataAtOnce (dong dau PB_BLOB_DAU) -> CRC -> c2s_roleserver_saveroleinfo.
+	if (s_botCount > 0 && s_pfnSend)
+	{
+		const unsigned int nowLuu = (unsigned int)g_SubWorldSet.GetGameTime();
+		if (s_bLuuTatCa)
+		{
+			int nConThieu = 0;
+			int nGui      = 5;
+			for (int iL = 0; iL < s_botCount; iL++)
+			{
+				PB_Bot& lb = s_bots[iL];
+				const int li = lb.nPlayerIdx;
+				if (li <= 0 || li >= MAX_PLAYER || Player[li].m_dwID != lb.dwID)
+					continue;              // khe hong: khong the luu, khong tinh thieu
+				if ((int)(lb.nLuuTick - s_nLuuTatCaMoc) >= 0)
+					continue;              // da luu trong dot nay roi
+				const int nNpcLuu = Player[li].m_nIndex;
+				if (nNpcLuu <= 0 || nNpcLuu >= MAX_NPC)
+					continue;
+				if (Npc[nNpcLuu].m_Doing == do_death || Npc[nNpcLuu].m_Doing == do_revive)
+				{
+					nConThieu++;           // cho hoi sinh (~3 giay) roi luu not
+					continue;
+				}
+				if (nGui <= 0)
+				{
+					nConThieu++;           // qua nhip sau gui tiep
+					continue;
+				}
+				Player[li].SetLoginType(0);
+				if (s_pfnSend(PB_ASK_SAVEROLE, (unsigned long)li, Player[li].m_PlayerName))
+				{
+					lb.nLuuTick = nowLuu;
+					nGui--;
+				}
+				else
+					nConThieu++;
+			}
+			if (nConThieu == 0)
+			{
+				s_bLuuTatCa = 0;
+				pb_Log("[BotLuu] da gui luu XONG toan bo bot - doi them ~10 giay cho"
+				       " Goddess ghi not roi hay tat server\n");
+			}
+		}
+		else
+		{
+			int nGui = 1;
+			int nXet = (s_botCount < 16) ? s_botCount : 16;
+			while (nXet-- > 0 && nGui > 0)
+			{
+				if (s_nLuuCon >= s_botCount)
+					s_nLuuCon = 0;
+				PB_Bot& lb = s_bots[s_nLuuCon++];
+				const int li = lb.nPlayerIdx;
+				if (li <= 0 || li >= MAX_PLAYER || Player[li].m_dwID != lb.dwID)
+					continue;
+				// (phan bien) khe mat NPC thi dung luu (SavePlayerBaseInfo doc Npc[m_nIndex])
+				const int nNpcLuu = Player[li].m_nIndex;
+				if (nNpcLuu <= 0 || nNpcLuu >= MAX_NPC)
+					continue;
+				// (phan bien) bot dang chet: luu luc nay ghi cUseRevive=1 lam bot >= cap
+				// 20 mat vi tri - no tu hoi sinh sau ~3 giay, de nhip sau luu.
+				if (Npc[nNpcLuu].m_Doing == do_death || Npc[nNpcLuu].m_Doing == do_revive)
+					continue;
+				if (nowLuu - lb.nLuuTick < (unsigned int)(GAME_FPS * PB_LUU_MOI_GIAY))
+					continue;
+				// (phan bien) ep co hoi-sinh-khi-vao ve 0 truoc MOI lan luu - script
+				// nao do (citywar SetLogoutRV) co the vua lat len 1.
+				Player[li].SetLoginType(0);
+				if (s_pfnSend(PB_ASK_SAVEROLE, (unsigned long)li, Player[li].m_PlayerName))
+				{
+					lb.nLuuTick = nowLuu;
+					nGui--;
+				}
+			}
 		}
 	}
 

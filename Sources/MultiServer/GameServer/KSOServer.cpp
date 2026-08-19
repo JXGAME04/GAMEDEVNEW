@@ -2089,6 +2089,32 @@ BOOL KSwordOnLineSever::PBotSendDbRequest(int nWhat, unsigned long ulIdentity, c
 {
 	if (!m_pDatabaseClient || !szName || !szName[0])
 		return FALSE;
+	// ---- (18/08) cac lenh he LUU bot - PHAI return NGAY trong nhanh: duoi cung ----
+	// ---- la duong dong goi TProcessData danh rieng cho ROLELIST/ROLEDATA.       ----
+	// (phan bien) khoi nay nam TRUOC guard nLen>=30: nhanh SAVEROLE khong dung den
+	// szName, con LOCK/UNLOCK strncpy vao Name[32] nen ten 30-31 byte van hop le
+	// (nguoi that lock bang strcpy o :2889 cung ten do). De sau guard thi bot ten
+	// dai KHONG BAO GIO luu duoc va goi UNLOCK du phong cung bi chan -> khoa ket.
+	if (nWhat == PB_ASK_SAVEROLE || nWhat == PB_ASK_SAVEROLE_LEAVE)
+	{
+		// Luu bot: di DUNG duong luu cua nguoi that (SavePlayerDataAtOnce -> CRC ->
+		// c2s_roleserver_saveroleinfo). ulIdentity = chi so Player[] cua bot.
+		// bLeave=true: Goddess luu xong tu mo khoa role (nhu nguoi that thoat game).
+		return SavePlayerData((int)ulIdentity, nWhat == PB_ASK_SAVEROLE_LEAVE);
+	}
+	if (nWhat == PB_ASK_LOCKROLE || nWhat == PB_ASK_UNLOCKROLE)
+	{
+		// Khoa/mo khoa role o Goddess - khuon y het luc nguoi that vao game (:2864).
+		// Khong khoa thi Goddess VUT bai luu (_SaveRoleInfo doi IsRoleLockBySelf).
+		tagRoleEnterGame reg;
+		reg.ProtocolType = c2s_roleserver_lock;
+		reg.bLock = (nWhat == PB_ASK_LOCKROLE);
+		memset(reg.Name, 0, sizeof(reg.Name));
+		strncpy((char*)reg.Name, szName, sizeof(reg.Name) - 1);
+		m_pDatabaseClient->SendPackToServer((const void *)&reg, sizeof(tagRoleEnterGame));
+		return TRUE;
+	}
+
 	int nLen = (int)strlen(szName);
 	if (nLen >= 30)			// Goddess kiem nLen < _NAME_LENGTH (ClientNode.cpp:301)
 		return FALSE;
@@ -2149,6 +2175,21 @@ void KSwordOnLineSever::DatabaseMessageProcess(const char* pData, size_t dataLen
 			TProcessData*	pPD = (TProcessData *)pData;
 			int nIndex = pPD->ulIdentity;
 			m_pCoreServerShell->SetSaveStatus(nIndex, SAVE_IDLE);
+			// (18/08 phan bien) Goddess tra pDataBuffer[0] = -1 khi bai luu bi VUT
+			// (role khong bi khoa boi node nay - vd Goddess restart mat bang khoa RAM,
+			// hoac CRC sai). Truoc day gia tri nay bi bo qua hoan toan. Voi BOT: bao
+			// Core hen luu lai som + gui lai khoa role de lan luu sau thanh cong.
+			if (pPD->nDataLen >= 1 && (char)pPD->pDataBuffer[0] != 1 && m_pCoreServerShell)
+			{
+				if (m_pCoreServerShell->OperationRequest(SSOI_PBOT_SAVE_FAILED, (intptr_t)nIndex, 0))
+				{
+					char szBotName[32];
+					szBotName[0] = 0;
+					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szBotName, nIndex);
+					if (szBotName[0])
+						PBotSendDbRequest(PB_ASK_LOCKROLE, 0, szBotName);
+				}
+			}
 //			printf("=> Save Player Data finished(%d) <= \n", nIndex);
 		}
 		break;

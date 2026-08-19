@@ -12734,6 +12734,7 @@ extern int LuaPB_ClearBot(Lua_State* L);
 extern int LuaPB_JoinFaction(Lua_State* L);
 extern int LuaPB_SetFight(Lua_State* L);
 extern int LuaPB_SetChat(Lua_State* L);
+extern int LuaPB_SaveAll(Lua_State* L);
 extern int PB_IsBot(int nPlayerIdx);
 
 // IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
@@ -13084,6 +13085,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_JoinFaction",	LuaPB_JoinFaction},
 	{"PB_SetFight",		LuaPB_SetFight},
 	{"PB_SetChat",		LuaPB_SetChat},
+	{"PB_SaveAll",		LuaPB_SaveAll},
 	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},

@@ -598,6 +598,11 @@ int main(int argc, char *argv[])
 		memcpy(pNew, pBlob, nLenMau);
 		TRoleData *p = (TRoleData *)pNew;
 
+		// (18/08) XOA DAU "bot cu" neu mau la mot bot da duoc he luu (irevivaly mang
+		// PB_BLOB_DAU 0xB07B07): ban sao la bot MOI, phai de server xoa ky nang mau
+		// + cho vao phai lai. Khong xoa thi tai hien loi "cam dao danh skill dao".
+		p->BaseInfo.irevivaly = 0;
+
 		memset(p->BaseInfo.szName, 0, sizeof(p->BaseInfo.szName));
 		strncpy(p->BaseInfo.szName, szTen, sizeof(p->BaseInfo.szName) - 1);
 		memset(p->BaseInfo.caccname, 0, sizeof(p->BaseInfo.caccname));

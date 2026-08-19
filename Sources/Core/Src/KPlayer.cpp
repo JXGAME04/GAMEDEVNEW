@@ -1028,7 +1028,13 @@ void KPlayer::LoginTimeOut()
 
 BOOL KPlayer::Save()
 {
-	if (m_nIndex <= 0 && m_dwID == 0  || m_nNetConnectIdx==-1)
+	// (18/08) Bot KPlayer (he PB_) khong co ket noi mang nhung PHAI luu duoc nhu
+	// nguoi that (yeu cau chu game). Chi mo dung cho khe dang nam trong s_bots.
+	// Nguoi that KHONG di qua nhanh moi: con song trong world thi netidx luon >= 0
+	// (nguoi uy thac giu nguyen lnID cu - da ra soat toan bo cho dat netidx=-1,
+	// deu la init/teardown voi m_dwID=0); khe da thao thi PB_IsBot cung tra 0.
+	extern int PB_IsBot(int nPlayerIdx);
+	if (m_nIndex <= 0 && m_dwID == 0  || (m_nNetConnectIdx==-1 && !PB_IsBot(m_nPlayerIndex)))
 	{
 		printf("Return %s o day 0\n",m_PlayerName);
 		return FALSE;

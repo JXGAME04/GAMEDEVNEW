@@ -151,6 +151,7 @@ function PB_Menu()
 	"TAT danh quai/#PB_Fight(0)",
 	"BAT bot noi chuyen/#PB_Chat(40)",
 	"TAT bot noi chuyen/#PB_Chat(0)",
+	"LUU du lieu bot ngay/PB_Save",
 	"Go het bot nguoi choi/PB_Clear",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
@@ -169,7 +170,20 @@ end
 
 function PB_Clear()
 	local n = PB_ClearBot()
-	Msg2Player(format("Da go %d bot khoi the gioi.", n))
+	Msg2Player(format("Da go %d bot khoi the gioi (moi con deu duoc LUU truoc khi go).", n))
+	PB_Menu()
+end
+
+-- (18/08) Luu NGAY du lieu moi bot (cap/do/vi tri) truoc khi tat server.
+-- Binh thuong bot tu luu 10 phut/lan va luu khi bi go; muc nay de chot lan cuoi.
+function PB_Save()
+	local n = PB_SaveAll()
+	if n and n > 0 then
+		Msg2Player(format("Da xep hang luu %d bot (~15 giay).", n))
+		Msg2Player("Muon tat server: doi dong [BotLuu] XONG trong bot.log, doi them ~10 giay cho Goddess ghi not roi hay tat.")
+	else
+		Msg2Player("Khong co bot nao dang song de luu.")
+	end
 	PB_Menu()
 end
 

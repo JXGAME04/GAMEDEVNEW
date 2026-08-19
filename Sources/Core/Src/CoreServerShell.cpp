@@ -1045,6 +1045,9 @@ int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int n
 
 	case SSOI_PBOT_REMOVE_ALL:
 		return PB_RemoveAll();
+	case SSOI_PBOT_SAVE_FAILED:
+		// (18/08 phan bien) Goddess vut bai luu cua khe nay - neu la bot thi hen luu lai
+		return PB_OnSaveFailed((int)uParam);
 
 	// relay 帮会创建成功，通知 core 进行相应的处理
 	case SSOI_TONG_CREATE:
@@ -1251,6 +1254,12 @@ void* CoreServerShell::SavePlayerDataAtOnce(int nIndex)
 	if (Player[nIndex].Save())
 	{
 		Player[nIndex].m_uMustSave = SAVE_REQUEST;
+		// (18/08) Bot KPlayer: dong dau PB_BLOB_DAU vao truong chet irevivaly de
+		// phien sau PB_OnRoleData nhan ra "bot cu" (giu ky nang/phai/vi tri).
+		// Nguoi that luon ghi 0 vao truong nay (KPlayerDBFuns.cpp SavePlayerBaseInfo)
+		// nen khong dung ai. Dong dau TRUOC khi GameServer tinh CRC nen CRC van khop.
+		if (PB_IsBot(nIndex))
+			((TRoleData*)Player[nIndex].m_SaveBuffer)->BaseInfo.irevivaly = PB_BLOB_DAU;
 		return &Player[nIndex].m_SaveBuffer;
 	}
 	else

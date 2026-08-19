@@ -32,6 +32,21 @@
 // nWhat truyen cho PB_DbSender
 #define PB_ASK_ROLELIST  0
 #define PB_ASK_ROLEDATA  1
+// (18/08) he LUU du lieu bot - bot duoc luu nhu nguoi that:
+#define PB_ASK_SAVEROLE        2   // ulIdentity = chi so Player[]: GameServer goi SavePlayerData(idx, false)
+#define PB_ASK_SAVEROLE_LEAVE  3   // nhu tren nhung bLeave=true - Goddess luu xong TU MO KHOA role
+#define PB_ASK_LOCKROLE        4   // szName = ten NHAN VAT: gui c2s_roleserver_lock bLock=true
+#define PB_ASK_UNLOCKROLE      5   // szName = ten NHAN VAT: bLock=false (tra khoa khi luu that bai)
+
+// Dau "blob nay do he bot luu" dong vao BaseInfo.irevivaly luc SavePlayerDataAtOnce.
+// irevivaly la truong CHET: nguoi that luon ghi 0 (KPlayerDBFuns.cpp:921), khong ai doc
+// no khi nap (da grep toan Core), Goddess chi in log (IDBRoleServer.cpp:624).
+// Blob tuoi cua taobot_bdb chi memcpy mau + doi ten/he/gioi tinh nen khong mang dau nay.
+#define PB_BLOB_DAU      0xB07B07
+
+// Duoi cap nay bot nap lai bi ep ve diem hoi sinh map 53 (yeu cau chu game 18/08);
+// tu cap nay tro len bot dung dung cho da luu luc tat server.
+#define PB_CAP_GIU_VITRI 20
 
 // Core dua yeu cau ra ngoai qua con tro ham nay; GameServer cai dat no.
 // Tra 1 = da gui, 0 = that bai.
@@ -167,6 +182,8 @@ int  PB_GetCount();                            // so bot dang song
 int  PB_RemoveAll();                           // go het bot (tra so da go)
 int  PB_JoinFaction();                         // ra lenh cho bot di vao phai (tra so da nhan lenh)
 int  PB_SetFight(int bOn);                     // bat/tat danh quai (tra so bot doi trang thai)
+int  PB_SaveAll();                             // xep hang luu NGAY toan bo bot (tra so bot)
+int  PB_OnSaveFailed(int nPlayerIdx);          // Goddess vut bai luu -> hen luu lai (1 = la bot)
 // Tra 1 = da nhan la bot VA da tra loi (GameServer khong chuyen tiep nua); 0 = khong phai bot.
 int  PB_WhisperReply(const PB_WHISPER* p);
 // Hoc bang ten -> id kenh chat (goi tu KNewProtocolProcess khi relay cap id cho
@@ -183,6 +200,7 @@ int  LuaPB_ClearBot(Lua_State* L);             // () -> so bot da go
 int  LuaPB_JoinFaction(Lua_State* L);          // () -> so bot da nhan lenh vao phai
 int  LuaPB_SetFight(Lua_State* L);             // (bOn) -> so bot da bat/tat danh quai
 int  LuaPB_SetChat(Lua_State* L);              // (nRate[,szFile,szType]) -> so cau da nap
+int  LuaPB_SaveAll(Lua_State* L);              // () -> so bot da xep hang luu
 
 #endif // _SERVER
 #endif // KPLAYERBOT_H
