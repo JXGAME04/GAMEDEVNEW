@@ -2207,7 +2207,12 @@ static int pb_DaTau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		const int nMapNv = (int)Player[nIdx].m_cTask.GetSaveVal(PB_DT_MAP);
 		const int nCan   = ((int)Player[nIdx].m_cTask.GetSaveVal(PB_DT_CAN) >> 8) & 0xFF;
 		const int nCo    = (int)Player[nIdx].m_cTask.GetSaveVal(PB_DT_CO);
-		if (nCo < nCan || nCan <= 0)
+		// (19/08 toi - chu game nhac) PHAI GOM DU cuon roi moi TU VE tra:
+		// 1031/1032 chua sync xong ngay sau khi nhan thi CHO nhip sau,
+		// khong farm mu cung khong chay ve NPC som.
+		if (nCan <= 0 || nMapNv <= 0)
+			return 0;
+		if (nCo < nCan)
 		{
 			if (SubWorld[nSub].m_SubWorldID == nMapNv)
 				return 1;              // dung map - danh quai, hook nhat cuon tu cong
@@ -2367,26 +2372,17 @@ static int pb_DaTau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			Player[nIdx].ExecuteScript((char*)PB_DT_SCRIPT, (char*)"Task_Accept", 0, false);
 			return 0;
 		}
-		// loai 1/2/3/5 hoac loai 6 qua han 45': HUY nhu nguoi (chu game: bot CHI
-		// lam loai 4/6). Xen ke PB_BotCancel / Task_TaskProcess cho toi khi doi
-		// duoc nhiem vu; 6 luot khong xong (thieu luot huy?) thi nghi 5 phut.
-		if (b.nDaTauKe >= 6)
-		{
-			b.nDaTauKe = 0;
-			b.nDaTauNghi = nowT + (unsigned int)(GAME_FPS * 300);
-			pb_Log("[BotDT] %s khong doi duoc nhiem vu loai %d -> ve bai, 5 phut thu lai\n",
-			       Player[nIdx].m_PlayerName, nLoai);
-			return 2;
-		}
-		b.nDaTauKe++;
-		if (b.nDaTauKe & 1)
-		{
-			pb_Log("[BotDT] %s huy nhiem vu loai %d (chi lam loai 4/6)\n",
-			       Player[nIdx].m_PlayerName, nLoai);
-			Player[nIdx].ExecuteScript((char*)PB_DT_SCRIPT, (char*)"PB_BotCancel", 0, false);
-		}
-		else
-			Player[nIdx].ExecuteScript((char*)PB_DT_SCRIPT, (char*)"Task_TaskProcess", 0, false);
+		// (19/08 toi - chu game chot) loai 1/2/3/5 hoac loai 6 qua han 45':
+		// DOI nhiem vu CHUA - "huy rieng bot khong ton gi ca". PB_BotDoiNhiemVu
+		// (seasonnpc.lua) goi tl_dealtask: cap nhiem vu MOI de thang len nhiem vu
+		// dang cam, KHONG cham bo dem nao (2420 tran ngay / 2797 huy / 1036 gian /
+		// luot huy / lan-trong-link) => mien phi tuyet doi. Re-roll moi 2 giay
+		// toi khi ra loai 4/6 (trong so loai 4 ~30-35%%, trung binh ~3 lan).
+		b.nDaTauHan = 0;   // han/ky farm cua nhiem vu cu vo nghia voi nhiem vu moi
+		b.nDaTauThu = 0;
+		pb_Log("[BotDT] %s bo nhiem vu loai %d (chua, khong ton gi) -> xin de khac\n",
+		       Player[nIdx].m_PlayerName, nLoai);
+		Player[nIdx].ExecuteScript((char*)PB_DT_SCRIPT, (char*)"PB_BotDoiNhiemVu", 0, false);
 		return 0;
 	}
 	return 0;

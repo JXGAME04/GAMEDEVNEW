@@ -1370,3 +1370,12 @@ end
 function PB_BotCancel()
 	Task_Cancel(1)
 end
+
+-- [PB 19/08 toi] "Huy rieng bot khong ton gi": tl_dealtask cap nhiem vu MOI de
+-- thang len nhiem vu dang cam - khong cham 2420/2797/1036/luot huy/lan-trong-link
+-- (tl_taskprocess moi tang cac bo dem chuoi; dealtask chi chon loai/dong + ghi
+-- 1031/1032/1025 + course=1). CHI he bot goi - nguoi that van di Task_Cancel
+-- co phat nhu cu.
+function PB_BotDoiNhiemVu()
+	tl_dealtask()
+end
