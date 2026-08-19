@@ -7,6 +7,7 @@
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "Ui/UiShell.h"
 #include "Ui/PerfHud.h"
+#include "CrashLog.h"
 #include "NetConnect/NetConnectAgent.h"
 #include "TextCtrlCmd/TextCtrlCmd.h"
 #include "KPakList.h"
@@ -209,6 +210,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	LPSTR     lpCmdLine,
 	int       nCmdShow)
 {
+	// bat bo ghi log crash cang som cang tot (ghi jx_crash.log canh Game.exe)
+	CrashLog_Install();
+
 	SetUnhandledExceptionFilter(ExeptionFillert);
 
 	//int* pbadPtr;	//add by tuanln test
