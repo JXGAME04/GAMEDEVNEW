@@ -201,7 +201,8 @@ struct ExtAuto
 	int  nDTHoldFreeze;  // 1 = hold 'du 40/ngay': dung yen neu nguoi choi tat luyen cong
 	UINT uDTFarmStall;   // moc thoi gian tien do farm gan nhat (T4/T5exp watchdog)
 	UINT uDTRoamNext;    // [DaTau] nhip chay tim quai khi farm T4
-	int  nDTRoamStep;    // [DaTau] buoc dao 8 huong quanh neo
+	int  nDTRoamStep;    // [DaTau] cum quai dang nham (KDaTauSpots.h)
+	int  nDTBackXaFu;    // [DaTau] 1 = phu ve thanh xong thi ra Xa Phu di lai map
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -291,6 +292,7 @@ struct ExtAuto
 		uDTFarmStall = 0;
 		uDTRoamNext = 0;
 		nDTRoamStep = 0;
+		nDTBackXaFu = 0;
 	}
 };
 

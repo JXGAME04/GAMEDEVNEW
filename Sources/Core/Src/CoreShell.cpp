@@ -38,6 +38,7 @@
 #include "KMath.h"
 #include "KDaTauCap.h"
 #include "KDaTauTables.h"
+#include "KDaTauSpots.h"
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -2755,6 +2756,34 @@ static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY
 	return 1;
 }
 
+// [DaTau] cum quai THAT cua map nhiem vu (KDaTauSpots.h - sinh tu file add NPC
+// cua may chu trong pak). Tra so cum cua map va dien toa do cum thu nIdx.
+// VI SAO CAN: neo nhiem vu chi la cho Xa Phu tha xuong - o map 53/80/226 no nam
+// NGOAI han vung co quai, dao quanh neo la khong bao gio gap quai.
+static int DT_SpotOf(int nMap, int nIdx, int* pnX, int* pnY)
+{
+	int nFrom = -1, nNum = 0;
+	for (int i = 0; i < g_nDTSpotCount; ++i)
+	{
+		if (g_DTSpot[i].nMapId != nMap)
+		{
+			if (nFrom >= 0)
+				break;	// bang gom theo map - qua nhom roi thi thoi
+			continue;
+		}
+		if (nFrom < 0)
+			nFrom = i;
+		++nNum;
+	}
+	if (nNum <= 0)
+		return 0;
+	if (nIdx < 0)
+		nIdx = -nIdx;
+	*pnX = g_DTSpot[nFrom + (nIdx % nNum)].nX;
+	*pnY = g_DTSpot[nFrom + (nIdx % nNum)].nY;
+	return nNum;
+}
+
 // tra loi hoi thoai dang mo theo index 0-based (dong khung roi gui - nhu luong mua thuoc)
 static void DT_Answer(int nPlayerIdx, int nIdx)
 {
@@ -3215,6 +3244,15 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			if (g_DTNpc[i].nMapId == nMap)
 			{
+				if (ea.nDTBackXaFu)
+				{
+					// ve thanh chi de DI LAI Xa Phu (len nham map luc truoc)
+					ea.nDTBackXaFu = 0;
+					ea.nDTPhase = DTP_GOXAFU;
+					ea.nDTRetry = 0;
+					DT_Msg(nPlayerIdx, "[DaTau] da ve thanh - ra Xa Phu di lai map nhiem vu");
+					return 1;
+				}
 				ea.nDTPhase = DTP_GOTONPC;
 				ea.nDTRetry = 0;
 				return 1;
@@ -3780,7 +3818,19 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nDTEngaged = 1;
 		std::map<int, StationVector>::iterator it = g_MoveStation.find(nMap);
 		if (it == g_MoveStation.end() || it->second.empty())
+		{
+			// Dang o map KHONG co Xa Phu (len nham map nhiem vu / bi keo di dau do):
+			// dung Tho Dia Phu ve thanh roi ra Xa Phu di lai cho dung map.
+			if (ea.nDTMapId > 0 && ea.nDTQType == 4)
+			{
+				DT_Msg(nPlayerIdx, "[DaTau] khong phai map nhiem vu - dung Tho Dia Phu ve thanh di lai");
+				ea.nDTBackXaFu = 1;
+				ea.nDTPhase = DTP_RETURN;
+				ea.nDTRetry = 0;
+				return 1;
+			}
 			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] thanh nay khong co toa do xa phu");
+		}
 		sStation& s = it->second[0];
 		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
 		if (nIdx)
@@ -3818,11 +3868,25 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nDTRetry = 0;
 			ea.nDTXaFuTry = 0;
 			ea.uDTFarmStall = uCurTime;	// ARM watchdog T4 (0 se TAT han - DT-3)
+			ea.nDTRoamStep = 0;
+			ea.uDTRoamNext = 0;	// bat dau tu cum quai gan neo nhat
 			return 2;
+		}
+		// Da bi chuyen di NHUNG khong phai map nhiem vu (map la, khong co Xa Phu):
+		// khong ngoi cho het 12 nhip - phu ve thanh ngay roi di lai.
+		if (g_MoveStation.find(nMap) == g_MoveStation.end())
+		{
+			if (++ea.nDTXaFuTry > 5)
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] xa phu khong chuyen map (kiem tra nhiem vu)");
+			DT_Msg(nPlayerIdx, "[DaTau] len NHAM map - phu ve thanh roi ra Xa Phu di lai");
+			ea.nDTBackXaFu = 1;
+			ea.nDTPhase = DTP_RETURN;
+			ea.nDTRetry = 0;
+			return 1;
 		}
 		if (++ea.nDTRetry > 12)
 		{
-			// xa phu khong chuyen map (server chua thay nhiem vu / sai nDTMapId)
+			// van dung trong thanh: xa phu khong chuyen (server chua thay nhiem vu?)
 			if (++ea.nDTXaFuTry > 5)
 				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] xa phu khong chuyen map (kiem tra nhiem vu)");
 			ea.nDTPhase = DTP_GOXAFU;
@@ -3868,40 +3932,59 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nDTEngaged = 1;
 			return 1;
 		}
-		// neo danh quai + DI TIM QUAI (ATYPE_FIGHT dung nCurMoveRet==3 -> nTempX/Y)
+		// DANH QUAI + DI TIM QUAI THEO BANG CUM THAT (ATYPE_FIGHT dung nCurMoveRet==3)
 		int nX, nY;
 		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
 		ea.nCurMoveRet = 3;
-		if (!ea.nTempX && !ea.nTempY)
-		{
-			// neo bam vi tri hien tai de FIGHT san quai doc duong tim
-			ea.nTempX = nX;
-			ea.nTempY = nY;
-		}
+		// moc quet cua FIGHT luon la CHO DANG DUNG -> gap gi danh nay, ke ca doc duong
+		ea.nTempX = nX;
+		ea.nTempY = nY;
 		if (ea.uNpcID)
 		{
-			// dang danh: nhuong quyen di chuyen cho FIGHT (huy duong roam neu con)
+			// dang danh: nhuong quyen di chuyen cho FIGHT (huy duong dang di neu con)
 			int tx = 0, ty = 0;
 			if (SubWorld[0].HaveTarget(tx, ty))
 				SubWorld[0].StopPath();
+			ea.uDTRoamNext = uCurTime + 60000;	// con viec lam - gia han doi cum
 		}
-		else if (g_GetDistance(nX, nY, ea.nDTAnchorX, ea.nDTAnchorY) > 3600)
-			DT_WalkTo(nPlayerIdx, ea.nDTAnchorX, ea.nDTAnchorY, 800, uCurTime);
-		else if (ea.uDTRoamNext < uCurTime)
+		else
 		{
-			ea.uDTRoamNext = uCurTime + 1500;
 			int rx = 0, ry = 0;
 			if (DT_FindFarMob(nPlayerIdx, pAp, &rx, &ry))
+			{
+				// co quai da dong bo (ngoai tam danh) -> chay toi luon
 				DT_WalkTo(nPlayerIdx, rx, ry, 300, uCurTime);
+				ea.uDTRoamNext = uCurTime + 60000;
+			}
 			else
 			{
-				// het quai trong tam sync: dao 8 huong quanh neo de nap quai moi
-				static const int nDTDir8[8][2] =
-					{ {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}, {1,-1} };
-				int k = ea.nDTRoamStep & 7;
-				if (DT_WalkTo(nPlayerIdx, ea.nDTAnchorX + nDTDir8[k][0] * 1800,
-					ea.nDTAnchorY + nDTDir8[k][1] * 1800, 350, uCurTime))
-					++ea.nDTRoamStep;
+				int nSx = 0, nSy = 0;
+				if (DT_SpotOf(nMap, ea.nDTRoamStep, &nSx, &nSy))
+				{
+					// khong thay quai nao trong tam dong bo -> di den CUM QUAI that
+					if (!ea.uDTRoamNext)
+						ea.uDTRoamNext = uCurTime + 60000;
+					if (DT_WalkTo(nPlayerIdx, nSx, nSy, 400, uCurTime)
+					 || uCurTime > ea.uDTRoamNext)
+					{
+						// toi noi ma van vang, hoac di mai khong toi -> cum ke tiep
+						++ea.nDTRoamStep;
+						ea.uDTRoamNext = uCurTime + 60000;
+					}
+				}
+				else if (g_GetDistance(nX, nY, ea.nDTAnchorX, ea.nDTAnchorY) > 3600)
+					DT_WalkTo(nPlayerIdx, ea.nDTAnchorX, ea.nDTAnchorY, 800, uCurTime);
+				else if (ea.uDTRoamNext < uCurTime)
+				{
+					// map la khong co trong bang: van dao 8 huong quanh neo
+					ea.uDTRoamNext = uCurTime + 1500;
+					static const int nDTDir8[8][2] =
+						{ {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}, {1,-1} };
+					int k = ea.nDTRoamStep & 7;
+					if (DT_WalkTo(nPlayerIdx, ea.nDTAnchorX + nDTDir8[k][0] * 1800,
+						ea.nDTAnchorY + nDTDir8[k][1] * 1800, 350, uCurTime))
+						++ea.nDTRoamStep;
+				}
 			}
 		}
 		// nhat cuon roi tren dat (genre 6) ke ca khi bo loc nhat cua nguoi choi bo qua
