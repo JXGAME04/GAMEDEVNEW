@@ -1364,3 +1364,9 @@ end
 function finish_item()
 	Prise_Chon("finish_item")
 end
+
+-- [PB 19/08] He bot KPlayer nho: Task_Cancel can THAM SO (1 = huy thuong) ma
+-- KPlayer::ExecuteScript khong truyen so duoc -> boc lai o day cho bot goi.
+function PB_BotCancel()
+	Task_Cancel(1)
+end

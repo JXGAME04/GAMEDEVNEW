@@ -156,6 +156,7 @@ function PB_Menu()
 	"Cham TTL + Que Hoa Tuu: BAT/#PB_Buff(1)",
 	"Cham TTL + Que Hoa Tuu: TAT/#PB_Buff(0)",
 	"Bot chay nhiem vu DA TAU/PB_DaTauMenu",
+	"Bot ra THANH ban sap/PB_SapMenu",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
 end
@@ -261,6 +262,22 @@ end
 function PB_DaTauSet(n)
 	local nMoi = PB_SetDaTau(n)
 	Talk(1,"","Da dat gioi han "..nMoi.." bot lam Da Tau (lay cac bot chi so thap nhat). Bot dang danh quai se tu di gap Da Tau; du 40/ngay tu ve bai luyen.")
+end
+
+function PB_SapMenu()
+	local nDang = PB_SetBanSap(-1)
+	Say("Bot ra thanh ngoi ban sap THAT (nguoi choi xem + mua duoc; hang trang suc trang, gia goc x2).\nDang cho phep: "..nDang.." bot. Chon so bot:",6,
+	"TAT het (dong sap, ve bai)/#PB_SapSet(0)",
+	"10 bot/#PB_SapSet(10)",
+	"20 bot/#PB_SapSet(20)",
+	"50 bot/#PB_SapSet(50)",
+	"100 bot/#PB_SapSet(100)",
+	"200 bot/#PB_SapSet(200)")
+end
+
+function PB_SapSet(n)
+	local nMoi = PB_SetBanSap(n)
+	Talk(1,"","Da boc NGAU NHIEN "..nMoi.." bot ra thanh ngoi ban sap. Bot se tu chay ve khu trung tam va mo sap trong vai giay.")
 end
 
 function SC_ChatOn()
