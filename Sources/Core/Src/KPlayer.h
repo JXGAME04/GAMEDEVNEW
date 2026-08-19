@@ -200,6 +200,8 @@ struct ExtAuto
 	int  nDTXaFuTry;     // dem lan thu xa phu that bai (chan ket vong)
 	int  nDTHoldFreeze;  // 1 = hold 'du 40/ngay': dung yen neu nguoi choi tat luyen cong
 	UINT uDTFarmStall;   // moc thoi gian tien do farm gan nhat (T4/T5exp watchdog)
+	UINT uDTRoamNext;    // [DaTau] nhip chay tim quai khi farm T4
+	int  nDTRoamStep;    // [DaTau] buoc dao 8 huong quanh neo
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -287,6 +289,8 @@ struct ExtAuto
 		nDTXaFuTry = 0;
 		nDTHoldFreeze = 0;
 		uDTFarmStall = 0;
+		uDTRoamNext = 0;
+		nDTRoamStep = 0;
 	}
 };
 
