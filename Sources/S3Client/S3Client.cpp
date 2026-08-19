@@ -817,6 +817,19 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	if(!g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
 		return;
+	// [DaTau] 0 = tha may; 1 = dang lam viec o thanh (bo MOVE/RETURN);
+	// 2 = dang farm map nhiem vu (bo MOVE/RETURN + bo qua skip-goldboss)
+	int nDT = 0;
+	autoData sDTData;
+	if(pApData->bDaTau)
+	{
+		nDT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DATAU, (int)pApData);
+		if(nDT == 2)
+		{
+			memcpy(&sDTData, pApData, sizeof(autoData));
+			sDTData.bSkipGoldboss = 0;	// Mat Chi chi roi tu boss
+		}
+	}
 	if(pApData->bOutWhenTP && !pApData->bOnPK)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_EXIT, 0))
@@ -975,10 +988,13 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		{
 			if(!bLaunch)
 			{
-				BOOL bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
-				if(!bMoving && pApData->bFight)
+				// [DaTau] khi may Da Tau cam lai thi khong cho ATYPE_MOVE gianh quyen di chuyen
+				BOOL bMoving = FALSE;
+				if(nDT == 0)
+					bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
+				if(!bMoving && pApData->bFight && nDT != 1)
 				{
-					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)pApData);
+					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)(nDT == 2 ? &sDTData : pApData));
 					if(bLaunch == 2)
 					{
 						PostQuitMessage(0);
@@ -1050,7 +1066,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_REPAIRF, 0))
 			return;
 	}
-	if(pApData->bReturn && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
+	if(pApData->bReturn && nDT == 0 && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
 	&& !Wnd_IsLButtonDown())
 	{
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RETURN, (int)pApData);

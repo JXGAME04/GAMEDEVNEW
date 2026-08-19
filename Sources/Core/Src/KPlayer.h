@@ -164,6 +164,41 @@ struct ExtAuto
 	int  nCurEncircle;
 	UINT uTEncircle;
 	autoCoord sEncircle[9];
+	// == Da Tau (18/08/2026) - trang thai may ATYPE_DATAU, POD (ATYPE_CLEAR memset) ==
+	int  nDTEngaged;     // 0 tha may; 1 lam viec thanh (chan MOVE/RETURN); 2 farm map nv
+	int  nDTPhase;       // pha lon DTP_*
+	int  nDTStep;        // buoc con trong pha
+	UINT uDTNext;        // moc thoi gian hanh dong ke tiep
+	UINT uDTPath;        // moc thoi gian FindPath ke tiep
+	UINT uDTDlgSeen;     // seq hoi thoai da xu ly
+	UINT uDTTalkSeen;
+	UINT uDTFinSeen;
+	UINT uDTBoxSeen;
+	UINT uDTMsgSeen;
+	int  nDTQType;       // loai nhiem vu 1..6 (0 chua biet)
+	int  nDTCand[8];     // dong bang ung vien (buy/find/show)
+	int  nDTCandNum;
+	int  nDTCandCur;
+	int  nDTReqNum;      // T4 so cuon / T5 gia tri / T6 so manh
+	int  nDTMapId;       // T4 map dich
+	int  nDTBook;        // T4 1=dia do chi 2=mat chi
+	int  nDTProg;        // T4 so tam hien co (-1 chua biet)
+	int  nDTAnchorX;     // T4 toa do neo farm (mps)
+	int  nDTAnchorY;
+	int  nDTStatType;    // T5: 2 exp 3 danhvong 4 phucduyen 5 pk 6 tongkim
+	double dDTExpBase;   // T5 exp baseline
+	int  nDTHaveBase;
+	int  nDTItemIdx;     // item dinh nop
+	int  nDTRetry;       // dem thu lai
+	int  nDTShopTry;     // option shop da thu
+	int  nDTUsedPD;      // so Phuc Duyen Lo da dung
+	int  nDTFuYuanPrev;  // fuyuan sau lan dung item truoc
+	UINT uDTHoldUntil;   // treo den thoi diem nay
+	int  nDTDoneDay;     // yymmdd ngay da du 40
+	UINT uDTStatusTime;  // throttle bao trang thai
+	int  nDTUnknown;     // dem hoi thoai LA khong nhan dang (khong reset khi mo lai)
+	int  nDTXaFuTry;     // dem lan thu xa phu that bai (chan ket vong)
+	UINT uDTFarmStall;   // moc thoi gian tien do farm gan nhat (T4/T5exp watchdog)
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -217,6 +252,39 @@ struct ExtAuto
 		bReachDes = FALSE;
 		uTEncircle = 0;
 		uTJustMove = 0;
+		nDTEngaged = 0;
+		nDTPhase = 0;
+		nDTStep = 0;
+		uDTNext = 0;
+		uDTPath = 0;
+		uDTDlgSeen = 0;
+		uDTTalkSeen = 0;
+		uDTFinSeen = 0;
+		uDTBoxSeen = 0;
+		uDTMsgSeen = 0;
+		nDTQType = 0;
+		nDTCandNum = 0;
+		nDTCandCur = 0;
+		nDTReqNum = 0;
+		nDTMapId = 0;
+		nDTBook = 0;
+		nDTProg = -1;
+		nDTAnchorX = 0;
+		nDTAnchorY = 0;
+		nDTStatType = 0;
+		dDTExpBase = 0;
+		nDTHaveBase = 0;
+		nDTItemIdx = 0;
+		nDTRetry = 0;
+		nDTShopTry = 0;
+		nDTUsedPD = 0;
+		nDTFuYuanPrev = 0;
+		uDTHoldUntil = 0;
+		nDTDoneDay = 0;
+		uDTStatusTime = 0;
+		nDTUnknown = 0;
+		nDTXaFuTry = 0;
+		uDTFarmStall = 0;
 	}
 };
 

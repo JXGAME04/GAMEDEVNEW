@@ -236,6 +236,16 @@ struct autoData
 	int		nCoordCount;
 	autoCoord sMoveCoord[24];
 	int		bEncircle;
+	// == Da Tau (18/08/2026) - PHAI o cuoi struct, truoc constructor ==
+	int		bDaTau;			// bat/tat auto Da Tau
+	int		bDTType[6];		// bat/tat tung loai nhiem vu 1..6
+	int		nDTSkipMode;	// loai tat/ket: 0=treo (ngung DT) 1=huy nhiem vu
+	int		nDTCancelMode;	// cach huy: 0=chi luot huy thuong 1=cho phep huy thuong(reset chuoi) 2=uu tien 100 manh SHXT
+	int		nDTReward1;		// cua so Exp/Money/Random: 0/1/2
+	int		nDTReward2;		// cua so Point/Lucky/Item: 0/1/2 (Lucky=tich luot huy)
+	int		bDTUseBox;		// cho phep lay do/tien tu ruong (dung szBoxPass)
+	int		bDTTrainAfter;	// xong/treo -> tha may cho auto thuong ve map luyen cong
+	int		nDTWDMoney;		// (van luong) rut tu ruong khi thieu tien mua do
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -390,6 +400,16 @@ struct autoData
 		szFollName[0] = 0;
 		nCoordCount = 0;
 		bEncircle = 0;
+		bDaTau = 0;
+		for (int dti = 0; dti < 6; ++dti)
+			bDTType[dti] = 0;
+		nDTSkipMode = 0;
+		nDTCancelMode = 0;
+		nDTReward1 = 0;
+		nDTReward2 = 0;
+		bDTUseBox = 0;
+		bDTTrainAfter = 0;
+		nDTWDMoney = 0;
 	}
 };
 

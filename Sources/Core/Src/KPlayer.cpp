@@ -36,6 +36,9 @@
 #include "KItemSet.h"
 #include "KTaskFuns.h"
 #include "Text.h"
+#include "KDaTauCap.h"
+
+KDaTauCapture g_sDTCap; // bo dem chup hoi thoai cho auto Da Tau (khai bao KDaTauCap.h)
 
 #ifdef _SERVER
 #ifndef _STANDALONE
@@ -7511,6 +7514,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					if (pScriptAction->m_bParam1 == 0)
 					{
 						g_StrCpyLen(strContent, pScriptAction->m_pContent,  pScriptAction->m_nBufferLen + 1);
+						// [DaTau] chup nguyen van hoi thoai (cau hoi|dap an...) truoc khi tach/ma hoa
+						g_StrCpyLen(g_sDTCap.szDlg, strContent, sizeof(g_sDTCap.szDlg));
+						++g_sDTCap.uDlgSeq;
 						pAnswer = strstr(strContent, "|");
 						if (!pAnswer)
 						{
@@ -7634,6 +7640,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					char * pAnswer = new char [pScriptAction->m_nBufferLen + 1];
 					char * pBackupAnswer = pAnswer;
 					g_StrCpyLen(pAnswer, pScriptAction->m_pContent, pScriptAction->m_nBufferLen + 1);
+						// [DaTau] chup noi dung Talk truoc khi tach/ma hoa
+						g_StrCpyLen(g_sDTCap.szTalk, pAnswer, sizeof(g_sDTCap.szTalk));
+						++g_sDTCap.uTalkSeq;
 					
 					int nCount = 0;
 					for (int i = 0; i < pScriptAction->m_bOptionNum; i ++)

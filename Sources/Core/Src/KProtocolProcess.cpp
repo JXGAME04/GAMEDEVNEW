@@ -33,6 +33,7 @@
 #include "KTongProtocol.h"
 #include "KLadder.h"
 #include "KOption.h"
+#include "KDaTauCap.h"
 #include <BauCua.h>
 #include <iostream>
 
@@ -3900,6 +3901,9 @@ void KProtocolProcess::s2cOpenQuestFinishDlg(BYTE* pMsg)
 
 	QUEST_FINISH_DLG_SYNC *pFinish = (QUEST_FINISH_DLG_SYNC *)pMsg;
 	CoreDataChanged(GDCNI_FINISH_QUEST_DLG, (unsigned int)pFinish->m_szNotice, pFinish->m_bType);
+	// [DaTau] bao cho auto: cua so 3 ruong dang mo
+	g_sDTCap.nFinType = pFinish->m_bType;
+	++g_sDTCap.uFinSeq;
 }
 
 void	KProtocolProcess::s2cImageNpcSync(BYTE* pMsg)
@@ -4049,10 +4053,15 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1); 
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2); 
 			CoreDataChanged(GDCNI_OPEN_AFFAIR_BOX, (unsigned int)&pInfo, NULL);
+			// [DaTau] give-box mo, luu ten ham nop
+			g_StrCpyLen(g_sDTCap.szBoxFunc, GiveBoxCmd->Value2, sizeof(g_sDTCap.szBoxFunc));
+			g_sDTCap.nBoxOpen = 1;
+			++g_sDTCap.uBoxSeq;
 		}
 		break;
 	case 2:
 		CoreDataChanged(GDCNI_END_AFFAIR_BOX, NULL, NULL);
+		g_sDTCap.nBoxOpen = 0; // [DaTau] give-box dong
 		break;
 	default:
 		break;
@@ -4128,6 +4137,19 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 	else if (protocol == chat_channelchat)//Chat kªnh
 	{
 		CHAT_CHANNELCHAT_SYNC* pCccSync = (CHAT_CHANNELCHAT_SYNC*)pExPckg;
+		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT)
+		if (!strcmp(pCccSync->someone, "H\326 Th\350ng"))
+		{
+			int nDTLen = pCccSync->sentlen;
+			if (nDTLen > (int)sizeof(g_sDTCap.szMsg) - 1)
+				nDTLen = (int)sizeof(g_sDTCap.szMsg) - 1;
+			if (nDTLen > 0)
+			{
+				memcpy(g_sDTCap.szMsg, (const char*)(pCccSync + 1), nDTLen);
+				g_sDTCap.szMsg[nDTLen] = 0;
+				++g_sDTCap.uMsgSeq;
+			}
+		}
 		l_pDataChangedNotifyFunc->ChannelMessageArrival(
 			pCccSync->channelid, pCccSync->someone,
 			(const char*)(pCccSync + 1), pCccSync->sentlen, true);
