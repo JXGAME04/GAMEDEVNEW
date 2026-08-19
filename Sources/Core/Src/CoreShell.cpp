@@ -8398,7 +8398,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		// Ky nang / am khi: chi doi VI TRI VE, KHONG dung cay canh (MoveObject).
 		// Nut cay chi dung de sap xep truoc-sau va cat canh - do chinh xac theo tick
 		// la du, nen bo qua giup tranh chi phi PluckRto/AddLeafPoint moi khung ve.
-		for (int nMsl = 1; nMsl <= MAX_MISSLE; nMsl++)
+		// Missle[] co MAX_MISSLE phan tu => chi so hop le 0..MAX_MISSLE-1.
+		// Dung '<=' la cham Missle[MAX_MISSLE], GHI RA NGOAI MANG -> hong bo nho.
+		for (int nMsl = 1; nMsl < MAX_MISSLE; nMsl++)
 		{
 			if (Missle[nMsl].m_nMissleId <= 0 || !Missle[nMsl].m_bInterpValid)
 				continue;

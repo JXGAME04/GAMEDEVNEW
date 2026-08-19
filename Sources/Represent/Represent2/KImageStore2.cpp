@@ -570,9 +570,19 @@ void KImageStore2::CheckBalance()
 
     KAutoCriticalSection AutoLock(m_ImageProcessLock);
     
-    // Bo nho con thoai mai => chi don anh that su nguoi; cang thang => duoi manh tay hon.
-    unsigned int dwIdleLimit =
-        (MemStatus.dwAvailPhys > (MemStatus.dwTotalPhys / 32)) ? 100000 : 10000;
+    // Ban goc JX2 duoi anh theo THOI GIAN NHAN ROI *VA* NGAN SACH (160/192/256/512 MB tuy RAM,
+    // dung ngay khi tong byte ve duoi ngan sach). Neu chi lay ve thoi gian nhan roi ma bo ngan
+    // sach thi o map DONG NGUOI moi anh deu 'vua dung' => KHONG gi bi duoi => so anh tang vo han
+    // => can bo nho (client 32-bit) => crash. JX1 do bang SO ANH chu khong do byte, nen tran o day
+    // dong vai tro ngan sach: vuot tran cung thi bo qua bao ve nhan roi, duoi nhu hanh vi cu.
+    #define KIS_HARD_IMAGE_CEIL  2048
+    unsigned int dwIdleLimit;
+    if (MemStatus.dwAvailPhys <= (MemStatus.dwTotalPhys / 32))
+        dwIdleLimit = 10000;                 // RAM cang: duoi manh tay
+    else if (m_nNumImages >= KIS_HARD_IMAGE_CEIL)
+        dwIdleLimit = 0;                     // vuot tran cung: duoi nhu truoc khi co ban va
+    else
+        dwIdleLimit = 100000;                // binh thuong: chi don anh that su nguoi
 
     nNewNumImages = 0;
     for (i = 0; i < m_nNumImages; i++)
