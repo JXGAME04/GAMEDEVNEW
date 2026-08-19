@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 11:23** | engine Dã Tẩu + fix 8.6 + 3 nâng cấp (50 marker `[DaTau]`) |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:19** | engine Dã Tẩu + fix 8.6 + 3 nâng cấp + bảng cụm quái/phù-về-xa-phu (53 marker `[DaTau]`); bản trước = `CoreClient_cu_1908c.dll` |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
@@ -214,6 +214,19 @@ python D:/GAMEDEVNEW/ReverseTools/re_pe_crt.py E:/SourceTuanLe/.../bin/client
 #    rồi CHÉP RA GỐC:  cp WAuto/WAuto/Release/WAuto.exe  E:/Src_Auto_Ngoai/WAuto.exe
 # 9. commit + push ở D
 ```
+
+### 7.2 Sinh lại bảng CỤM QUÁI map nhiệm vụ (loại 4)
+```bash
+python D:/GAMEDEVNEW/ReverseTools/gen_datau_spots.py   # -> Sources/Core/Src/KDaTauSpots.h
+```
+Đọc **thẳng file add NPC của server trong pak**: `\maps\<đường dẫn map>\v_NNN\NNN_Region_S.dat`
+(mục `REGION_NPC_FILE_INDEX`) trong `bin\server\Pak\maps.pak`. Tự cài lại 3 thứ bằng Python:
+định dạng pak `PACK` (header 32B + index 16B/mục, `XPackFile.cpp`), hàm băm tên tệp
+`KPakList::FileNameToId` (chú ý `char` là **có dấu** với byte GBK), và giải nén
+`ucl_nrv2b_decompress_8` (`ucl/n2b_d.c` + `getbit_8`). Kết quả 19/08: **12.472 quái / 14 map
+→ 336 cụm**. 🔑 Chỉ số region trong tên tệp **có cộng offset** `m_nRegionBeginX/Y` nên phải quét
+dải rộng (0-255), không phải 0-30. 🔴 Số liệu xác nhận: map **53/80/226** có **neo nhiệm vụ nằm
+NGOÀI vùng quái** — đó là lý do "quét không thấy NPC trong map".
 
 ### 7.1 Sinh lại bảng dữ liệu (khi server đổi bảng/lời thoại)
 ```bash
