@@ -276,17 +276,42 @@ using namespace std;
 #define IDC_STRING_8_WD			409
 #define IDC_EDITOR_8_WD			410
 #define IDC_CHECKBOX_8_TRAIN	411
-#define IDC_INDEX_END			412
-#define IDD_SETSERIES_DIALOG	413
-#define IDD_NOPICK_DIALOG		414
-#define IDC_COMBO_SELNOPICK		415
-#define IDC_LIST_NOPICK			416
-#define IDC_BTN_NOPREMOVE		417
-#define IDC_LIST_SERIES			418
-#define IDC_BTN_SERUP			419
-#define IDC_BTN_SERDOWN			420
-#define IDC_STRING_HOMEPAGE		421
-#define IDC_TABBTN_9			422
+// khung nhom (GROUPBOX) + ke phan muc (19/08/2026) - phai < IDC_INDEX_END de hide-loop ShowTab bao trum
+#define IDC_GRP_TAB0			412
+#define IDC_GRP_TAB1			413
+#define IDC_GRP_TAB2			414
+#define IDC_GRP_TAB3			415
+#define IDC_GRP_TAB4			416
+#define IDC_GRP_TAB5			417
+#define IDC_GRP_TAB6			418
+#define IDC_GRP_TAB7			419
+#define IDC_GRP_TAB8			420
+#define IDC_SEP_0A				421
+#define IDC_SEP_0B				422
+#define IDC_SEP_1A				423
+#define IDC_SEP_1B				424
+#define IDC_SEP_2A				425
+#define IDC_SEP_3A				426
+#define IDC_SEP_4A				427
+#define IDC_SEP_4B				428
+#define IDC_SEP_5A				429
+#define IDC_SEP_5B				430
+#define IDC_SEP_6A				431
+#define IDC_SEP_7A				432
+#define IDC_SEP_8A				433
+#define IDC_SEP_8B				434
+#define IDC_INDEX_END			436
+// khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
+#define IDD_SETSERIES_DIALOG	440
+#define IDD_NOPICK_DIALOG		441
+#define IDC_COMBO_SELNOPICK		442
+#define IDC_LIST_NOPICK			443
+#define IDC_BTN_NOPREMOVE		444
+#define IDC_LIST_SERIES			445
+#define IDC_BTN_SERUP			446
+#define IDC_BTN_SERDOWN			447
+#define IDC_STRING_HOMEPAGE		448
+#define IDC_TABBTN_9			449
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
