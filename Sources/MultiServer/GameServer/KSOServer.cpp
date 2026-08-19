@@ -2178,7 +2178,7 @@ void KSwordOnLineSever::DatabaseMessageProcess(const char* pData, size_t dataLen
 			// (18/08 phan bien) Goddess tra pDataBuffer[0] = -1 khi bai luu bi VUT
 			// (role khong bi khoa boi node nay - vd Goddess restart mat bang khoa RAM,
 			// hoac CRC sai). Truoc day gia tri nay bi bo qua hoan toan. Voi BOT: bao
-			// Core hen luu lai som + gui lai khoa role de lan luu sau thanh cong.
+			// Core ghi log; khoa duoc gui lai ngay duoi day, nhip 30s ke tiep luu bu.
 			if (pPD->nDataLen >= 1 && (char)pPD->pDataBuffer[0] != 1 && m_pCoreServerShell)
 			{
 				if (m_pCoreServerShell->OperationRequest(SSOI_PBOT_SAVE_FAILED, (intptr_t)nIndex, 0))

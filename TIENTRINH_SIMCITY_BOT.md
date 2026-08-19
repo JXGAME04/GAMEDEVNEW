@@ -93,8 +93,13 @@ Lệnh bài: `script/item/lenhbaiadmin.lua` → `script/item/simcity_admin.lua` 
 **Thiet ke** (bot duoc luu NHU NGUOI THAT, di dung duong luu 20 nam):
 - Spawn xong gui `PB_ASK_LOCKROLE` -> GameServer gui `c2s_roleserver_lock` toi Goddess
   (thieu khoa thi `_SaveRoleInfo` VUT bai luu - `IsRoleLockBySelf`).
-- Luu DINH KY 10 phut/bot (PB_Breathe, toi da 1 goi/nhip - 1000 bot trai deu ~56s/vong);
-  luu NGAY sau khi vao phai xong; go bot (`pb_KillBot`) luu `bLeave=true` giua
+- Luu DINH KY **30 GIAY/bot NHU NGUOI CHOI** (yeu cau chu game 18/08 dem; truoc do 10 phut).
+  PB_Breathe toi da 2 goi/nhip = 36 goi/giay, du 1000 bot nhip 30s (can 33,3/s); dong hon
+  thi nhip tu gian (bo dieu tiet). AN TOAN da kiem bang ma: BDB `DB_TXN_NOSYNC`
+  (DBTable.cpp:33 - put khong fsync), GUI Goddess cat tran 100 dong ListBox
+  (IDBRoleServer.cpp:731). Phi: file log Goddess phinh ~170MB/ngay khi du 1000 bot
+  (muon thi xoay vong). Dem "luu %d goi" in kem [BotPerf] moi 10s de quan trac.
+  Luu NGAY sau khi vao phai xong; go bot (`pb_KillBot`) luu `bLeave=true` giua
   PrepareRemove va RemoveQuiting (dung trinh tu PlayerLogoutGateway), that bai thi gui UNLOCK.
 - `KPlayer::Save()` mo cong `netidx==-1` CHI khi `PB_IsBot` (PB_IsBot da so ca dwID).
 - DAU BOT: `SavePlayerDataAtOnce` dong `PB_BLOB_DAU 0xB07B07` vao truong chet
@@ -108,7 +113,8 @@ Lệnh bài: `script/item/lenhbaiadmin.lua` → `script/item/simcity_admin.lua` 
 - Menu lenh bai: "LUU du lieu bot ngay" -> `PB_SaveAll()` don 5 goi/nhip (~11s/1000 bot);
   "Go het bot" gio luu tung con truoc khi go (PB_KILL_PER_TICK ha 20 -> 5).
 - Mat khoa role (vd Goddess restart): Goddess tra -1 -> GameServer doc byte ket qua
-  (truoc day BI NUOT), bao Core `PB_OnSaveFailed` hen luu lai ~60s + tu gui lai LOCKROLE.
+  (truoc day BI NUOT), bao Core `PB_OnSaveFailed` log + tu gui lai LOCKROLE; nhip 30s
+  ke tiep tu luu bu (khong hen som - hen som voi nhip 30s la phep tru ra so am).
   Log `[BotLuu]` ghi du: nap lai bot cu / Goddess tu choi / khoa that bai / luu XONG.
 
 **Phan bien 6 lang kinh da bat & da sua trong dot nay:** PB_IsBot thieu doi chieu dwID
@@ -128,7 +134,7 @@ chung cho ca nguoi that).
    trong luc dang goi bot.
 3. Tat server "sach": bam "LUU du lieu bot ngay" -> doi dong `[BotLuu] ... XONG` trong
    bot.log -> doi them ~10 giay (Goddess ghi not) -> tat. Khong bam gi thi mat toi da
-   10 phut luyen cuoi (nhip luu dinh ky).
+   ~30-60 giay luyen cuoi (nhip luu dinh ky 30s nhu nguoi choi).
 4. Muon doi NHAN VAT MAU cho taobot_bdb: build lai tool (da them dong xoa dau
    `p->BaseInfo.irevivaly = 0;` sau memcpy - tools/taobot_bdb, binary cu CHUA co).
 5. Con no (ghi nhan, chua sua): reply saverole tre co the SetSaveStatus(SAVE_IDLE) len

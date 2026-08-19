@@ -1046,7 +1046,7 @@ int	CoreServerShell::OperationRequest(unsigned int uOper, intptr_t uParam, int n
 	case SSOI_PBOT_REMOVE_ALL:
 		return PB_RemoveAll();
 	case SSOI_PBOT_SAVE_FAILED:
-		// (18/08 phan bien) Goddess vut bai luu cua khe nay - neu la bot thi hen luu lai
+		// (18/08 phan bien) Goddess vut bai luu cua khe nay - neu la bot thi log + luu bu
 		return PB_OnSaveFailed((int)uParam);
 
 	// relay 帮会创建成功，通知 core 进行相应的处理

@@ -234,7 +234,7 @@ struct PB_Bot
 	                                          // cung co luc trung, cuoi cung 100% deu vao nhom
 	PB_WalkState follow;                      // duong A* bam theo doi truong
 	// ---- luu du lieu (18/08) ----
-	unsigned int nLuuTick;                    // GetGameTime() lan luu gan nhat (nhip 10 phut)
+	unsigned int nLuuTick;                    // GetGameTime() lan luu gan nhat (nhip 30 giay)
 	// ---- vong sang / buff / bua ----
 	int          nAuraSkill;                  // vong sang dang bat (0 = chua co)
 	int          nAuraLevel;                  // cap bot luc chon vong sang
@@ -987,12 +987,18 @@ static int pb_KillBot(PB_Bot& b)
 //      goi Lua LONG TRONG Lua. Hoan sang PB_Breathe la tranh han chuyen do.
 // Cay tham khao dung dung co che nay (KBotManager::RemoveAllBots chi bat co m_bDrainAllBots
 // roi de Tick rut dan, KBotManager.cpp:3653-3662).
-// ---- (18/08) luu du lieu bot dinh ky ----
+// ---- (18/08) luu du lieu bot dinh ky - NHIP NHU NGUOI CHOI ----
 // Nguoi that duoc AutoSave cua engine luu 30s/lan, nhung CanSave chan netidx==-1 nen
-// bot phai tu quay vong trong PB_Breathe. 10 phut/bot la du: mat dien bat ngo chi mat
-// toi da 10 phut luyen cua dan gia lap, doi lai Goddess chi chiu ~1,7 goi luu/giay.
-#define PB_LUU_MOI_GIAY  600
+// bot phai tu quay vong trong PB_Breathe. Nhip 30s/bot (yeu cau chu game "luu tu dong
+// nhu nguoi choi"). 1000 bot / 30s = ~33 goi/giay - DA KIEM AN TOAN bang ma:
+//   - BDB mo voi DB_TXN_NOSYNC (Goddess DBTable.cpp:33) -> put khong fsync, ~us moi goi;
+//   - GUI Goddess AddOutputString tu cat tran 100 dong ListBox (IDBRoleServer.cpp:731);
+//   - bo dieu tiet duoi day tran 2 goi/nhip = 36 goi/giay, du 33 va khong the boc dau;
+//   - phi con lai: file log Goddess phinh ~170MB/ngay khi du 1000 bot (chap nhan duoc,
+//     muon thi xoay vong file log - ghi trong so tay van hanh).
+#define PB_LUU_MOI_GIAY  30
 static int          s_nLuuCon      = 0;   // con tro vong quet luu dinh ky
+static int          s_nPerfLuuDem  = 0;   // so goi luu da gui (in kem [BotPerf] moi 10s)
 static int          s_bLuuTatCa    = 0;   // 1 = dang don luu ep toan bo (PB_SaveAll)
 static unsigned int s_nLuuTatCaMoc = 0;   // GetGameTime() luc bam PB_SaveAll
 
@@ -1158,8 +1164,8 @@ int LuaPB_SaveAll(Lua_State* L)
 
 // (18/08 phan bien) Goddess tra -1 cho mot goi luu (thuong do role KHONG con bi khoa
 // boi node nay - vd Goddess restart lam mat bang khoa RAM). GameServer bao ve day:
-// neu khe la bot thi ghi log + hen luu lai SOM (60 giay) de lan luu sau di sau khoa
-// moi (GameServer gui lai PB_ASK_LOCKROLE ngay khi thay bao loi). Tra 1 = dung la bot.
+// neu khe la bot thi ghi log; khoa moi da duoc GameServer gui lai ngay khi thay bao
+// loi, nhip luu 30 giay ke tiep tu luu bu. Tra 1 = dung la bot.
 int PB_OnSaveFailed(int nPlayerIdx)
 {
 	for (int i = 0; i < s_botCount; i++)
@@ -1170,10 +1176,12 @@ int PB_OnSaveFailed(int nPlayerIdx)
 		if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER
 		 || Player[nPlayerIdx].m_dwID != b.dwID)
 			return 0;                      // khe da doi chu (vd bot vua bi go) - bo qua
-		const unsigned int nowT = (unsigned int)g_SubWorldSet.GetGameTime();
-		b.nLuuTick = nowT - (unsigned int)(GAME_FPS * (PB_LUU_MOI_GIAY - 60));
+		// Khong dung den nLuuTick: moc vua duoc stamp luc GUI nen nhip 30 giay ke
+		// tiep tu luu lai - luc do khoa moi (GameServer vua gui lai) da nam o Goddess.
+		// (Truoc day tru "PB_LUU_MOI_GIAY - 60" - doi nhip xuong 30s la ra so am,
+		// unsigned wrap lam den han NGAY LAP TUC -> spam luu; bo han cho lanh.)
 		pb_Log("[BotLuu] %s: Goddess TU CHOI luu (mat khoa role?) - da xin khoa lai,"
-		       " se luu lai sau ~60 giay\n", Player[nPlayerIdx].m_PlayerName);
+		       " nhip 30 giay ke tiep se luu bu\n", Player[nPlayerIdx].m_PlayerName);
 		return 1;
 	}
 	return 0;
@@ -4187,7 +4195,7 @@ static void pb_DriveBot(PB_Bot& b)
 		b.nLastLevel = Npc[nNpcIdx].m_Level;
 		pb_AllocAttribPoints(nIdx, b.nFaction);
 		// (18/08) LUU NGAY sau khi vao phai xong: chot phai + ky nang + vu khi vao DB,
-		// khoi mat neu server sap truoc nhip luu dinh ky 10 phut ke tiep.
+		// khoi mat neu server sap truoc nhip luu dinh ky 30 giay ke tiep.
 		Player[nIdx].SetLoginType(0);   // (phan bien) chan co SetLogoutRV neu Lua vua lat
 		if (s_pfnSend && s_pfnSend(PB_ASK_SAVEROLE, (unsigned long)nIdx, Player[nIdx].m_PlayerName))
 			b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();
@@ -4394,18 +4402,19 @@ void PB_Breathe()
 		else if (dwNow - s_dwPerfMoc >= 10000)
 		{
 			const int nMs = (int)(s_nPerfTong * 1000 / (s_liTanSo.QuadPart ? s_liTanSo.QuadPart : 1));
-			pb_Log("[BotPerf] nhip bot %d ms/10s | A* %d lan | quet do %d lan | %d bot\n",
-			       nMs, g_nPbAstarDem, s_nPerfQuetDo, s_botCount);
+			pb_Log("[BotPerf] nhip bot %d ms/10s | A* %d lan | quet do %d lan | luu %d goi | %d bot\n",
+			       nMs, g_nPbAstarDem, s_nPerfQuetDo, s_nPerfLuuDem, s_botCount);
 			s_nPerfTong   = 0;
 			g_nPbAstarDem = 0;
 			s_nPerfQuetDo = 0;
+			s_nPerfLuuDem = 0;
 			s_dwPerfMoc   = dwNow;
 		}
 	}
 
 	// ---- (18/08) LUU DINH KY / LUU EP TOAN BO ----
-	// Dinh ky: toi da 1 goi/nhip, con tro quay het 1000 bot trong ~56 giay, moi bot
-	// chi gui that khi den han PB_LUU_MOI_GIAY (10 phut). PB_SaveAll (s_bLuuTatCa):
+	// Dinh ky: toi da 2 goi/nhip (36 goi/giay), moi bot den han PB_LUU_MOI_GIAY (30
+	// giay) - 1000 bot hoi tu ~31 giay/vong (do phan bien mo phong). PB_SaveAll (s_bLuuTatCa):
 	// moi nhip gui toi da 5 goi cho bot CHUA luu ke tu moc s_nLuuTatCaMoc - dong XONG
 	// chi in khi MOI bot hop le deu da gui that (phan bien dot 2: ban dem-theo-so-goi
 	// cu gui trung bot da luu va in XONG trong khi bot dang chet chua he duoc luu).
@@ -4444,6 +4453,7 @@ void PB_Breathe()
 				{
 					lb.nLuuTick = nowLuu;
 					nGui--;
+					s_nPerfLuuDem++;
 				}
 				else
 					nConThieu++;
@@ -4457,7 +4467,9 @@ void PB_Breathe()
 		}
 		else
 		{
-			int nGui = 1;
+			// 2 goi/nhip = 36 goi/giay: du cho 1000 bot nhip 30s (can 33,3/s); dong
+			// hon thi nhip tu gian ra (bo dieu tiet), khong bao gio qua tai Goddess.
+			int nGui = 2;
 			int nXet = (s_botCount < 16) ? s_botCount : 16;
 			while (nXet-- > 0 && nGui > 0)
 			{
@@ -4484,6 +4496,7 @@ void PB_Breathe()
 				{
 					lb.nLuuTick = nowLuu;
 					nGui--;
+					s_nPerfLuuDem++;
 				}
 			}
 		}

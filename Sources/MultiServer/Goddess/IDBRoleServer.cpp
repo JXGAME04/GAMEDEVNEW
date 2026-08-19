@@ -46,7 +46,10 @@ DWORD WINAPI DeadlockProc(LPVOID lpParameter) {
 DWORD WINAPI RemoveLogProc(LPVOID lpParameter) {
 	while(!db_table->bStop) {
 		db_table->removeLog();
-		Sleep(60 * 60 * 1000);			
+		// (18/08) 1 gio -> 10 phut: he luu bot ghi 32-36 goi/giay (truoc ~1-2/giay),
+		// txn log giua hai lan checkpoint phinh ~0,5-1GB/gio va crash giua chung bat
+		// DB_RECOVER replay ca gio log luc boot. Checkpoint chay o luong rieng, re.
+		Sleep(10 * 60 * 1000);
 	}
 	return 0;
 }
