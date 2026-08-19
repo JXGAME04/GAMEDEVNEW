@@ -19,8 +19,8 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | | |
 |---|---|
-| **Trạng thái** | Viết xong · build sạch · phản biện 2 vòng · **đã deploy** · **NGƯỜI DÙNG CHƯA TEST THẬT** |
-| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` (chính) → `1d24b9fc` → `8a9ae8f5` |
+| **Trạng thái** | Viết xong · build sạch · phản biện 2 vòng · **đã deploy** · test thật lần 1 (19/08): **đứng yên → tìm ra lỗi gốc `DT_WalkTo` (mục 8.6), ĐÃ SỬA + deploy lại 10:22** — chờ test lại |
+| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` (chính) → `1d24b9fc` → `8a9ae8f5` → **`32e60788` (fix đứng yên)** |
 | **Nơi bật** | WAuto.exe → tab **"Dã Tẩu"** → tick "Bật auto Dã Tẩu" |
 | **Mặc định** | **TẮT** (`bDaTau=0`) — không tick thì hành vi auto cũ nguyên vẹn |
 | **Việc kế tiếp** | Hỏi người dùng kết quả test + dòng `[DaTau]` cuối trong khung chat |
@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | 19/08 06:49 | chứa engine Dã Tẩu |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 10:22** | chứa engine Dã Tẩu + fix `DT_WalkTo` (mục 8.6) |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | 19/08 09:21 | tab 9 + vá `.dat` cũ |
 
@@ -250,6 +250,18 @@ lỗi đều **nhả máy**; chỉ "đủ 40/ngày + tắt ô lên map luyện c
 ### 8.5 🔴 Bash tool rút `\\` thành `\`
 Chuỗi octal TCVN3 viết trong heredoc bị biến thành byte thật. → Script có backslash **phải đi
 qua tệp** (Write tool rồi chạy), đúng như [[bash-inline-backslash-halved]].
+
+### 8.6 🔴🔴 `DT_WalkTo` dùng sai `HaveTarget` → auto đứng yên vĩnh viễn (test thật 19/08, sửa ở `32e60788`)
+`KSubWorld::HaveTarget(int& x, int& y)` (KSubWorld.h:181) **GHI target hiện tại RA tham số**
+(hàm "xuất", không phải hàm "kiểm tra"). `DT_WalkTo` truyền thẳng đích đến vào ⇒ đích bị ghi đè
+thành `(0,0)` ⇒ `FindPath(0,0)` bị chặn (`nX<=0||nY<=0 → -1`, KSubWorld.cpp:911) ⇒ **mọi pha
+di chuyển tê liệt**: sau đúng 1 dòng `[DaTau] uu tien Da Tau...` nhân vật đứng im, không thêm
+thông báo nào (watchdog GOTONPC chỉ đếm khi ĐÃ tới tọa độ). Mã đúng xem `ATYPE_MOVE` nhánh
+`bAroundPoint` (CoreShell.cpp:8671): hứng target ra **biến nháp**, truyền đích **riêng** vào
+`FindPath`, chỉ re-path khi target ≠ đích. Đường tiêu thụ path (`KSubWorld::Activate`:1082)
+chạy vô điều kiện mỗi tick nên chỉ cần FindPath nhận đích đúng là nhân vật đi.
+Kèm theo: build Client của cây D hỏng từ `561e2163` (2 `PB_LogNgoai` ngoài `#ifdef _SERVER`,
+lỗi C3861) — đã bọc lại ở `0d3c6629`. Số dòng CoreShell.cpp sau 2704 lệch **+4** so với THAMCHIEU.
 
 ---
 
