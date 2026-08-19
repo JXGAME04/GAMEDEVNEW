@@ -175,8 +175,11 @@ dung (0 toa do am toan log). Ba cua thoat con lai:
    (KSubWorld.cpp cu :3296-3301) -> PB_WalkTo di het waypoint roi CHANG CUOI `do_run`
    thang vao toa do THO ngoai map. Nguon dich ngoai map: scatter chi kep can duoi,
    `nBuocRa` 8-11 o khong kiem, aim lam tron 128 khong kiem lai.
-2. **VUNG RONG du lieu**: chi 292/480 region co tep `_Region_S.dat`; region thieu bi
+2. **VUNG RONG du lieu**: region KHONG co tep vat can bi
    `memset 0` = "toan di duoc" o CA luoi A* lan engine -> bot di bo hop le ra vung
+   (DINH CHINH 19/08: con so "292/480" trong chu thich ma la SAI khi doc nhu ty le -
+   hai phep dem thuoc HAI THU MUC ROI NHAU; tong that 2638 tep _S vs 480 tep _C.
+   Ket luan van dung: CO map chi dong goi ban _C nen fallback _Region_C la can.)
    nhin-nhu-ngoai-map, khong de lai dong log nao (khop hien tuong chu game thay).
 3. `ChangeWorld`/`SetPos` chi kiem khung region, khong kiem vat can.
 

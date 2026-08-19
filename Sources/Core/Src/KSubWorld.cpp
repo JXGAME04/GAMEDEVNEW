@@ -195,6 +195,14 @@ inline void AddNeighbourUnique(int* arr, int& count, int maxCount, int value)
     }
 }
 
+// (19/08) g_DebugLog CHI gui WM_COPYDATA toi cua so DebugWin.exe (Engine KDebug.cpp:44)
+// - KHONG ghi file. Cac dong [PathSrv] chan doan luoi phai vao bot.log moi doc duoc,
+// nen dung PB_LogNgoai cua he bot (KPlayerBot.cpp). Khai extern tai cho: KSubWorld.cpp
+// khong include KPlayerBot.h (khuon giong ScriptFuns.cpp dang lam voi cac ham PB_).
+#ifdef _SERVER
+extern void PB_LogNgoai(const char* szFmt, ...);
+#endif
+
 void KSubWorld::ProcLoadPathGrid()
 {
 	if(m_bStopThread)
@@ -221,6 +229,11 @@ void KSubWorld::ProcLoadPathGrid()
 			// Do that tren cay chay: 292 tep _Region_S.dat va 480 tep _Region_C.dat, tuc
 			// CO ban do chi co ban client. Nen server thu S truoc roi LUI VE C, va neu ca
 			// hai deu khong mo duoc thi BAO RO chu khong im lang.
+			// (19/08 dinh chinh) Con so "292 tep _S va 480 tep _C" o tren la SAI khi doc
+			// nhu ty le: hai phep dem thuoc HAI THU MUC ROI NHAU (292 = rieng map
+			// Kiem Mon Quan, map do co 0 tep _C; 479/480 tep _C nam o map fongkieu co 0 tep _S).
+			// Tong that tren cay chay: 2638 tep _S vs 480 tep _C. Nhung KET LUAN van
+			// dung: CO map chi dong goi ban _C -> phai co fallback doc _Region_C.
 #ifdef _SERVER
 			sprintf(File, "%s\\v_%03d\\%03d_Region_S.dat", m_szPathName,
 						m_nRegionBeginY+h, m_nRegionBeginX+w);
@@ -324,7 +337,7 @@ void KSubWorld::ProcLoadPathGrid()
 					// (19/08) region KHONG co du lieu vat can (thieu ca _Region_S.dat lan
 					// _OBSTACLE.DAT, hoac doan vat can ngan): coi TOAN BO region la VAT CAN.
 					// Truoc day memset 0 = "toan di duoc" -> A* dan bot vao vung rong ngoai
-					// map that (cay chay chi co 292/480 region co tep _S) - chinh la duong
+					// map that (co map chi dong goi ban _C, khong co _S) - chinh la duong
 					// "bot di ra khoi map" chu game bat duoc. Doi luoi -> da nang kMagic 03.
 #ifdef _SERVER
 					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
@@ -343,14 +356,14 @@ void KSubWorld::ProcLoadPathGrid()
 		}
 	}
 	if (nRegThieu >= m_nGridW * m_nGridH)
-		g_DebugLog("[PathSrv] CANH BAO map %d: TOAN BO %d region khong co du lieu vat can"
-		           " - luoi 100%% vat can, BOT KHONG DI DUOC tren map nay (bo sung"
-		           " _Region_S/_Region_C hoac rut map khoi bai luyen)",
-		           m_SubWorldID, nRegThieu);
+		PB_LogNgoai("[PathSrv] CANH BAO map %d: TOAN BO %d region khong co du lieu vat can"
+		            " - luoi 100%% vat can, BOT KHONG DI DUOC tren map nay (bo sung"
+		            " _Region_S/_Region_C hoac rut map khoi bai luyen)\n",
+		            m_SubWorldID, nRegThieu);
 	else if (nRegThieu > 0)
-		g_DebugLog("[PathSrv] map %d: %d/%d region KHONG co du lieu vat can"
-		           " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)",
-		           m_SubWorldID, nRegThieu, m_nGridW * m_nGridH);
+		PB_LogNgoai("[PathSrv] map %d: %d/%d region KHONG co du lieu vat can"
+		            " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)\n",
+		            m_SubWorldID, nRegThieu, m_nGridW * m_nGridH);
 	for (int si = 0; si < NUM_SIZES; ++si)
 	{
 		if(m_bStopThread)
@@ -3278,7 +3291,7 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 
 	if (bLoaded)
 	{
-		g_DebugLog("[PathSrv] map %d: nap cache %s (%d o)", m_SubWorldID, szFile, m_nGridTotal);
+		PB_LogNgoai("[PathSrv] map %d: nap cache %s (%d o)\n", m_SubWorldID, szFile, m_nGridTotal);
 		return;
 	}
 
@@ -3298,13 +3311,13 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 			if (m_GridNode[i].obs) nObs++;
 		if (nObs == 0)
 		{
-			g_DebugLog("[PathSrv] CANH BAO map %d: luoi KHONG co vat can nao (%d o). "
-					   "Kiem tep %%03d_Region_S.dat trong %s - thieu thi A* se ve duong xuyen tuong.",
+			PB_LogNgoai("[PathSrv] CANH BAO map %d: luoi KHONG co vat can nao (%d o). "
+					   "Kiem tep %%03d_Region_S.dat trong %s - thieu thi A* se ve duong xuyen tuong.\n",
 					   m_SubWorldID, m_nGridTotal, m_szPathName);
 		}
 		else
 		{
-			g_DebugLog("[PathSrv] map %d: dung luoi %d o, %d o bi chan, %d canh",
+			PB_LogNgoai("[PathSrv] map %d: dung luoi %d o, %d o bi chan, %d canh\n",
 					   m_SubWorldID, m_nGridTotal, nObs, (int)m_vNeighbour.size());
 		}
 	}

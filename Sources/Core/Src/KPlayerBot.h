@@ -39,7 +39,7 @@
 #define PB_ASK_UNLOCKROLE      5   // szName = ten NHAN VAT: bLock=false (tra khoa khi luu that bai)
 
 // Dau "blob nay do he bot luu" dong vao BaseInfo.irevivaly luc SavePlayerDataAtOnce.
-// irevivaly la truong CHET: nguoi that luon ghi 0 (KPlayerDBFuns.cpp:921), khong ai doc
+// irevivaly la truong CHET: nguoi that luon ghi 0 (KPlayerDBFuns.cpp:925), khong ai doc
 // no khi nap (da grep toan Core), Goddess chi in log (IDBRoleServer.cpp:624).
 // Blob tuoi cua taobot_bdb chi memcpy mau + doi ten/he/gioi tinh nen khong mang dau nay.
 #define PB_BLOB_DAU      0xB07B07
