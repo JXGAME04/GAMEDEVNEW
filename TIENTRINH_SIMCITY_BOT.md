@@ -166,3 +166,43 @@ la chien tiep. Kiem tra cheo: console Goddess in `SaveRoleInfo:<ten>` moi lan lu
 - RNG to doi: fix an tu 16:39 (gieo= 30 gia tri phan biet/batch, ~33% muon nhom);
   19:11 co 339/1000 bot trong nhom. Con 103 dong "VAO NHOM THAT BAI mem=0/tran=3 mo=1"
   (GetInviteReply tu choi) - dang ngo, viec dot sau.
+
+## 8. EP BOT KHONG RA KHOI MAP (19/08 sang - "bot van di chuyen ra khoi map")
+
+**Chan doan (5 agent doc ma + phap y bot.log 2,2 trieu dong):** cac rao 18/08 dang chan
+dung (0 toa do am toan log). Ba cua thoat con lai:
+1. `FindPathServer` KEP dich ngoai map ve mep luoi roi tra "duong tron ven"
+   (KSubWorld.cpp cu :3296-3301) -> PB_WalkTo di het waypoint roi CHANG CUOI `do_run`
+   thang vao toa do THO ngoai map. Nguon dich ngoai map: scatter chi kep can duoi,
+   `nBuocRa` 8-11 o khong kiem, aim lam tron 128 khong kiem lai.
+2. **VUNG RONG du lieu**: chi 292/480 region co tep `_Region_S.dat`; region thieu bi
+   `memset 0` = "toan di duoc" o CA luoi A* lan engine -> bot di bo hop le ra vung
+   nhin-nhu-ngoai-map, khong de lai dong log nao (khop hien tuong chu game thay).
+3. `ChangeWorld`/`SetPos` chi kiem khung region, khong kiem vat can.
+
+**Da sua (3 vong phan bien 3+1 lang kinh, build xanh):**
+- `PB_WalkTo` TU CHOI ngay dich ngoai map (Mps2Map nR<0 -> -1; moi caller co san nhanh -1).
+- Chang cuoi KHONG lao vao dich tho nua: kep dich vao BLOCK CUOI cua duong A*
+  (`BlockNearestMps`); dich bi thay the ma da toi sat diem kep -> bao thua (-1).
+- Luoi A* bot: region KHONG doc duoc du lieu vat can -> VAT CAN TOAN BO (chi ap
+  `#ifdef _SERVER`); co fallback moi doc `_Region_C.dat` (cung enum SCENE_FILE_INDEX,
+  cung payload 2048B - 3 loader san co da doc _C nhu vay) roi moi toi `_OBSTACLE.DAT`.
+  Log `[PathSrv] map X: N/M region KHONG co du lieu vat can`; map 100% thieu in
+  CANH BAO "BOT KHONG DI DUOC tren map nay".
+- kMagic cache `_srv.fp` 02 -> 03 + BO guard "khong ghi de": guard cu lam 77 map tu
+  dung lai luoi MOI LAN BOOT tu 18/08 ma cache moi khong bao gio duoc ghi. Kem kiem
+  KICH THUOC TEP TONG + kep parentId khi nap cache (tep cut giua chung = rac).
+- Chase: diem lam tron 128 vang ngoai khung -> dung diem tho (khong cam oan quai mep).
+- Follow doi truong: HUNG gia tri tra ve PB_WalkTo (caller duy nhat tung vut no) -
+  thua thi nghi 5 giay (3 dong don dep nam TRONG cong nghi), trong luc nghi van
+  danh/nhat; [BotLach] SetPos reset them follow/loot/nFollowNghiToi.
+- Chang cuoi block gop rong (toi 512x1024 MPS): chi dem "khong tien" khi bot thuc su
+  KHONG dich chuyen (neo lastMoveTick) - khoi bao thua gia giua dong bang.
+
+**Van hanh sau deploy:** restart server -> lan boot dau MOI map tu dung lai luoi
+(cache cu bi vut vi kMagic 03) va GHI DE cache moi - boot thu 2 phai thay dong
+"nap cache" tro lai. Doc cac dong `[PathSrv]` de biet map nao thieu du lieu vat can
+nhieu/toan bo; map bai luyen nao dinh "CANH BAO ... BOT KHONG DI DUOC" thi bo sung
+tep _Region_S/_C hoac rut khoi bang s_bai. Loi engine nen ghi nhan CHUA va (anh
+huong ca nguoi that, doi dot rieng): Mps2Map chia so am lot bien voi map rect.left==0;
+ServeJump cong offset truoc khi chup old -> nhay lien tuc vao bien troi toa do.

@@ -233,6 +233,7 @@ struct PB_Bot
 	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
 	                                          // cung co luc trung, cuoi cung 100% deu vao nhom
 	PB_WalkState follow;                      // duong A* bam theo doi truong
+	unsigned int nFollowNghiToi;              // >0: follow vua thua A*, nghi toi moc nay
 	// ---- luu du lieu (18/08) ----
 	unsigned int nLuuTick;                    // GetGameTime() lan luu gan nhat (nhip 30 giay)
 	// ---- vong sang / buff / bua ----
@@ -892,6 +893,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 			pb_Log("[BotNhom] roll #%d %s: gieo=%d nguong=%d -> muon nhom = %d\n",
 			       s_botCount, Player[nIdx].m_PlayerName, nGieoNhom, PB_NHOM_RATE, b.nWantParty);
 		b.follow.Reset();
+		b.nFollowNghiToi = 0;
 		b.nBaiIdx = -1;   b.nBaiLevel = 0;    b.nDoiMapTick = 0;
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
@@ -1257,6 +1259,18 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 	if (nDstMpsX <= 0 || nDstMpsY <= 0)
 		return -1;
 
+	// (19/08 ep bot trong map) DICH NGOAI MAP -> bao thua NGAY. Truoc day
+	// FindPathServer KEP dich ngoai luoi ve o mep roi tra "duong tron ven"
+	// (KSubWorld.cpp:3296-3301), PB_WalkTo tuong dich hop le va chang cuoi
+	// do_run thang vao toa do THO ngoai map - bot ep sat mep nhu lao ra ngoai.
+	// Moi caller deu co san nhanh xu ly -1 (boc diem khac / cam muc tieu / bo qua).
+	{
+		int nRB = -1, nMXB = 0, nMYB = 0, nDXB = 0, nDYB = 0;
+		SubWorld[nSubIdx].Mps2Map(nDstMpsX, nDstMpsY, &nRB, &nMXB, &nMYB, &nDXB, &nDYB);
+		if (nRB < 0)
+			return -1;
+	}
+
 	int bx = 0, by = 0;
 	Npc[nNpcIdx].GetMpsPos(&bx, &by);
 
@@ -1392,7 +1406,13 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 	{
 		st.noAdvanceCalls = 0;
 	}
-	else if (st.idx < (int)st.path.size() && ++st.noAdvanceCalls >= GAME_FPS * 2)
+	// (19/08) dem ca CHANG CUOI (idx == size) - nhung o chang cuoi CHI dem khi bot
+	// KHONG dich chuyen that (neo lastMoveTick cua B5a lam moi moi khi nhuc nhich
+	// >32 MPS): block gop co the rong toi 512x1024 MPS, dang chay ngon 2 giay chua
+	// toi noi ma bao thua la CAM OAN quai / chen nghi follow gia (phan bien chot).
+	else if (!st.path.empty()
+	      && (st.idx < (int)st.path.size() || now - st.lastMoveTick >= (unsigned int)GAME_FPS)
+	      && ++st.noAdvanceCalls >= GAME_FPS * 2)
 	{
 		// ---- B5b: ~2 giay khong tien duoc waypoint nao ----
 		st.noAdvanceCalls = 0;
@@ -1446,8 +1466,14 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		return -1;
 	}
 
-	// Het waypoint (duong TRON VEN) ma chua toi dich: chang cuoi nham thang toi dich
-	// - dich nay da duoc FindPathServer kiem khong vat can (khong thi tra -3).
+	// Het waypoint (duong TRON VEN) ma chua toi dich: chang cuoi KHONG nham thang
+	// vao dich tho nua. (19/08 ep bot trong map) FindPathServer co the da THAY THE
+	// dich (ket vat can -> FindFreeBlockAround; vung rong thieu du lieu -> block
+	// hop le gan nhat) ma van tra 1 - "kiem khong vat can" chi dung cho BLOCK CUOI,
+	// khong phai toa do tho. Kep dich vao block cuoi (da xac nhan di duoc): dich
+	// nam trong block thi giu nguyen nhu cu; dich bi thay the thi dung o diem hop
+	// le gan dich nhat, va neu da toi sat diem kep ma van chua "toi noi" theo B0
+	// thi bao thua de caller boc diem khac - khong ep mep, khong lao ra ngoai.
 	int tx = nDstMpsX, ty = nDstMpsY;
 	if (st.idx < (int)st.path.size())
 	{
@@ -1455,6 +1481,29 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 		if (SubWorld[nSubIdx].BlockNearestMps(st.path[st.idx], bx, by, wx, wy) && wx > 0 && wy > 0)
 		{
 			tx = wx; ty = wy;
+		}
+	}
+	else if (!st.path.empty())
+	{
+		int wx = 0, wy = 0;
+		if (SubWorld[nSubIdx].BlockNearestMps(st.path[(int)st.path.size() - 1],
+		                                      nDstMpsX, nDstMpsY, wx, wy)
+		 && wx > 0 && wy > 0)
+		{
+			tx = wx; ty = wy;
+			// (19/08 phan bien) chi coi la "dich bi thay the" khi diem kep KHAC dich
+			// tho - dich nam trong block cuoi thi kep tra ve chinh no, di tiep binh
+			// thuong (khong phu thuoc gia dinh nArriveMps > 48 nua).
+			if (wx != nDstMpsX || wy != nDstMpsY)
+			{
+				const __int64 dxK = (__int64)bx - tx;
+				const __int64 dyK = (__int64)by - ty;
+				if (dxK * dxK + dyK * dyK <= (__int64)48 * 48)
+				{
+					st.Reset();
+					return -1;
+				}
+			}
 		}
 	}
 
@@ -2970,6 +3019,19 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			const int nAimThoY = aimY;
 			aimX = aimX / 128 * 128 + 64;
 			aimY = aimY / 128 * 128 + 64;
+			// (19/08 phan bien) quai dung sat mep khung map: diem THO hop le nhung diem
+			// LAM TRON (+/-64 MPS) co the nhay ra ngoai khung -> F-A trong PB_WalkTo se
+			// tra -1 va bot CAM OAN quai hoan toan danh duoc. Diem tron hong thi dung
+			// thang diem tho lam dich A* (chi kem on dinh cache lo trinh, khong sai).
+			{
+				int nRt = -1, nMXt = 0, nMYt = 0, nOXt = 0, nOYt = 0;
+				SubWorld[nSub].Mps2Map(aimX, aimY, &nRt, &nMXt, &nMYt, &nOXt, &nOYt);
+				if (nRt < 0)
+				{
+					aimX = nAimThoX;
+					aimY = nAimThoY;
+				}
+			}
 
 			// CHAN XUYEN BIEN: kiem diem nham THO (diem se chay toi that) - phai nam
 			// TRONG ban do VA khong phai vat can dia hinh. Mps2Map chi kiem khung
@@ -3926,6 +3988,9 @@ static void pb_DriveBot(PB_Bot& b)
 					b.walk.Reset();
 					b.chase.Reset();
 					b.roam.Reset();
+					b.follow.Reset();   // (19/08) lo trinh cu vo nghia sau khi dich cho
+					b.nFollowNghiToi = 0;
+					b.loot.Reset();
 					break;
 				}
 			}
@@ -3945,15 +4010,34 @@ static void pb_DriveBot(PB_Bot& b)
 			{
 				if (NpcSet.GetDistance(nNpcIdx, nCapNpc) > PB_BAM_NHA)
 				{
-					b.nTargetNpc = 0;
-					b.chase.Reset();
-					b.nRoamX = 0;  b.nRoamY = 0;
-					int cx = 0, cy = 0;
-					Npc[nCapNpc].GetMpsPos(&cx, &cy);
 					// di bang A* nhu moi di chuyen khac - khong bao gio ChangeWorld
 					// duoi theo (luat cua ban tham khao, ServerAutoFight.cpp:1188)
-					PB_WalkTo(nNpcIdx, cx, cy, nSub, b.follow, PB_BAM_GAN);
-					return;
+					// (19/08 phan bien) PHAI hung gia tri tra ve - day la caller DUY NHAT
+					// tung vut no: -1 lien tuc (doi truong dung cho A* khong toi duoc) ma
+					// cu goi lai moi nhip = quet A* full moi nhip + bot dong bang. Thua
+					// thi nghi 5 giay, trong luc nghi van danh/nhat tai cho binh thuong.
+					// (chot) 3 dong don dep PHAI nam trong cong nghi: de ngoai thi luc
+					// nghi van xoa muc tieu + reset chase MOI NHIP = quet FindTarget +
+					// A* chase moi nhip, dung cai churn ma fix nay dinh diet.
+					if (b.nFollowNghiToi == 0 || nowAll >= b.nFollowNghiToi)
+					{
+						b.nTargetNpc = 0;
+						b.chase.Reset();
+						b.nRoamX = 0;  b.nRoamY = 0;
+						int cx = 0, cy = 0;
+						Npc[nCapNpc].GetMpsPos(&cx, &cy);
+						const int nF = PB_WalkTo(nNpcIdx, cx, cy, nSub, b.follow, PB_BAM_GAN);
+						if (nF < 0)
+						{
+							b.follow.Reset();
+							b.nFollowNghiToi = nowAll + (unsigned int)(GAME_FPS * 5);
+						}
+						else
+						{
+							b.nFollowNghiToi = 0;
+							return;
+						}
+					}
 				}
 			}
 		}

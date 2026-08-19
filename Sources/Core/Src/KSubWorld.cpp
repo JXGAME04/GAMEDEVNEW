@@ -204,6 +204,7 @@ void KSubWorld::ProcLoadPathGrid()
 	int nAllCell  = nAllCellW * nAllCellH;
 	char	File[MAX_PATH];
 	int		ObstacleInfo[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];
+	int		nRegThieu = 0;	// (19/08) so region KHONG co du lieu vat can - coi la vat can
 	for(int h=0; h < m_nGridH; ++h)
 	{
 		if(m_bStopThread)
@@ -228,6 +229,7 @@ void KSubWorld::ProcLoadPathGrid()
 						m_nRegionBeginY+h, m_nRegionBeginX+w);
 #endif
 			memset(ObstacleInfo, 0, sizeof(ObstacleInfo));
+			int bCoObs = 0;	// (19/08) 1 = doc duoc du lieu vat can that cua region nay
 			KPakFile	Data;
 			if (Data.Open(File))
 			{
@@ -248,6 +250,7 @@ void KSubWorld::ProcLoadPathGrid()
 				{
 					Data.Seek(uOffsetAhead + ElemFile[REGION_OBSTACLE_FILE_INDEX].uOffset, FILE_BEGIN);
 					Data.Read((LPVOID)ObstacleInfo, sizeof(ObstacleInfo));
+					bCoObs = 1;
 				}
 				else
 				{
@@ -256,15 +259,51 @@ void KSubWorld::ProcLoadPathGrid()
 			}
 			else
 			{
-				sprintf(File, "%s\\v_%03d\\%03d_OBSTACLE.DAT", m_szPathName,
+				// (19/08 phan bien) LUI VE ban CLIENT _Region_C.dat - chu thich 18/08 o tren
+				// HUA nhung code chua he lam: map chi dong goi ban _C ma coi la "thieu toan
+				// bo" thi luoi 100% vat can, bot te liet ca map. Cung dinh dang combin.
+				sprintf(File, "%s\\v_%03d\\%03d_Region_C.dat", m_szPathName,
 						m_nRegionBeginY+h, m_nRegionBeginX+w);
 				if (Data.Open(File))
 				{
-					unsigned int uSize = Data.Size();
-					if(uSize >= sizeof(ObstacleInfo))
+					unsigned int uMaxElemFile2 = 0;
+					Data.Read(&uMaxElemFile2, sizeof(unsigned int));
+					KCombinFileSection	ElemFile2[REGION_ELEM_FILE_COUNT] = { 0 };
+					if (uMaxElemFile2 > REGION_ELEM_FILE_COUNT)
+					{
+						Data.Read(&ElemFile2[0], sizeof(KCombinFileSection) * REGION_ELEM_FILE_COUNT);
+						Data.Seek(sizeof(KCombinFileSection) * (uMaxElemFile2 - REGION_ELEM_FILE_COUNT), FILE_CURRENT);
+					}
+					else
+					{
+						Data.Read(&ElemFile2[0], sizeof(KCombinFileSection) * uMaxElemFile2);
+					}
+					unsigned int uOffsetAhead2 = sizeof(unsigned int) + sizeof(KCombinFileSection) * uMaxElemFile2;
+					if (ElemFile2[REGION_OBSTACLE_FILE_INDEX].uLength >= sizeof(ObstacleInfo))
+					{
+						Data.Seek(uOffsetAhead2 + ElemFile2[REGION_OBSTACLE_FILE_INDEX].uOffset, FILE_BEGIN);
 						Data.Read((LPVOID)ObstacleInfo, sizeof(ObstacleInfo));
+						bCoObs = 1;
+					}
+				}
+				if (!bCoObs)
+				{
+					sprintf(File, "%s\\v_%03d\\%03d_OBSTACLE.DAT", m_szPathName,
+							m_nRegionBeginY+h, m_nRegionBeginX+w);
+					KPakFile Data2;
+					if (Data2.Open(File))
+					{
+						unsigned int uSize = Data2.Size();
+						if(uSize >= sizeof(ObstacleInfo))
+						{
+							Data2.Read((LPVOID)ObstacleInfo, sizeof(ObstacleInfo));
+							bCoObs = 1;
+						}
+					}
 				}
 			}
+			if (!bCoObs)
+				nRegThieu++;
 			int regx = w*REGION_GRID_WIDTH;
 			int regy = h*REGION_GRID_HEIGHT;
 			for(int y=0;y<REGION_GRID_HEIGHT;++y)
@@ -282,7 +321,18 @@ void KSubWorld::ProcLoadPathGrid()
 					// "cau thang" cho bot leo xuyen vach ("bot tu chay vao" - chu game).
 					// Coi o goc la VAT CAN: bot di vong nhu nguoi that. Doi predicate =
 					// doi luoi -> da nang kMagic cache de moi ban do tu tinh lai.
+					// (19/08) region KHONG co du lieu vat can (thieu ca _Region_S.dat lan
+					// _OBSTACLE.DAT, hoac doan vat can ngan): coi TOAN BO region la VAT CAN.
+					// Truoc day memset 0 = "toan di duoc" -> A* dan bot vao vung rong ngoai
+					// map that (cay chay chi co 292/480 region co tep _S) - chinh la duong
+					// "bot di ra khoi map" chu game bat duoc. Doi luoi -> da nang kMagic 03.
+#ifdef _SERVER
+					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
+					// khoa bang FINDPATH_VERSION=0 khong doi, ap chung se lech ngu nghia.
+					if(lInfo == 0 && bCoObs)
+#else
 					if(lInfo == 0)
+#endif
 					m_GridNode[id].obs = 0;
 					else
 					m_GridNode[id].obs = 1;
@@ -292,6 +342,15 @@ void KSubWorld::ProcLoadPathGrid()
 			}
 		}
 	}
+	if (nRegThieu >= m_nGridW * m_nGridH)
+		g_DebugLog("[PathSrv] CANH BAO map %d: TOAN BO %d region khong co du lieu vat can"
+		           " - luoi 100%% vat can, BOT KHONG DI DUOC tren map nay (bo sung"
+		           " _Region_S/_Region_C hoac rut map khoi bai luyen)",
+		           m_SubWorldID, nRegThieu);
+	else if (nRegThieu > 0)
+		g_DebugLog("[PathSrv] map %d: %d/%d region KHONG co du lieu vat can"
+		           " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)",
+		           m_SubWorldID, nRegThieu, m_nGridW * m_nGridH);
 	for (int si = 0; si < NUM_SIZES; ++si)
 	{
 		if(m_bStopThread)
@@ -3162,7 +3221,7 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 	// khac goc toa do / khac co luoi thi A* VAN ra duong, nhung moi waypoint lech dung bang
 	// do lech goc -> bot di "dau do khac". Nen nhet goc + kich thuoc vao dau tep va VUT BO
 	// cache nao khong khop.
-	const UINT kMagic  = 0x53465002;	// S F P 02 - doi predicate o goc 18/08
+	const UINT kMagic  = 0x53465003;	// S F P 03 - 19/08 region thieu du lieu = vat can (02: o goc 18/08)
 	const UINT kHdrVer = 2;
 
 	bool bLoaded = false;
@@ -3194,13 +3253,23 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 						File.Read(m_GridNode, uGridSize);
 						UINT uNb = 0;
 						File.Read(&uNb, sizeof(UINT));
-						if (uNb > 0)
+						// (19/08 phan bien) tep cache CUT GIUA CHUNG (ghi do dang/dia day) van
+						// lot qua magic/header -> phan duoi m_GridNode la RAC (ctor VGridNode
+						// khong gan parentId/obs). Doi chieu kich thuoc tep TONG truoc khi tin.
+						const UINT uKyVong = 2 * sizeof(UINT) + sizeof(int) * 7 + sizeof(UINT)
+						                   + sizeof(UINT) + uGridSize + sizeof(UINT)
+						                   + uNb * (UINT)sizeof(VGridNeighbour);
+						// uNb rac co the lam phep nhan UINT wrap trung Size() -> resize no bad_alloc
+						if (uNb <= (UINT)nAllCell * 8u && File.Size() == uKyVong)
 						{
-							m_vNeighbour.resize(uNb);
-							File.Read(&m_vNeighbour[0], sizeof(VGridNeighbour) * uNb);
+							if (uNb > 0)
+							{
+								m_vNeighbour.resize(uNb);
+								File.Read(&m_vNeighbour[0], sizeof(VGridNeighbour) * uNb);
+							}
+							m_bHavePath = TRUE;
+							bLoaded = true;
 						}
-						m_bHavePath = TRUE;
-						bLoaded = true;
 					}
 				}
 			}
@@ -3241,12 +3310,11 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 	}
 	m_bHavePath = TRUE;
 
-	// Ghi cache cho lan khoi dong sau. KHONG ghi de neu tep da co (giong client:
-	// tao mot lan o lan ghe dau, cac lan sau chi doc).
+	// Ghi cache cho lan khoi dong sau. (19/08) GHI DE luon: chi toi duoc day khi
+	// cache VANG hoac DA BI VUT (lech magic/header). Guard "khong ghi de" cu lam
+	// moi lan nang kMagic la cac map giu cache cu tu dung lai luoi MOI LAN BOOT
+	// ma cache moi khong bao gio duoc ghi (da xay ra voi 77 map tu 18/08).
 	{
-		KFile Test;
-		bool bDaCo = Test.Open(szFile) ? true : false;
-		if (!bDaCo)
 		{
 			g_CreatePath("\\maps");
 			g_SetFilePath("\\maps");
@@ -3300,6 +3368,7 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 	int tid = tcy * nCellW + tcx;
 	if (tid < 0 || tid >= nTot) return -1;
 	tid = m_GridNode[tid].parentId;
+	if (tid < 0 || tid >= nTot) return -1;	// (19/08) parentId rac tu cache hong
 	if (m_GridNode[tid].obs)
 	{
 		// Dich roi dung vao vat can (vd sat hang rao): khong bam lai thi A* chi tra duong
@@ -3316,6 +3385,7 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 	int sid = scy * nCellW + scx;
 	if (sid < 0 || sid >= nTot) return -1;
 	sid = m_GridNode[sid].parentId;
+	if (sid < 0 || sid >= nTot) return -1;	// (19/08) parentId rac tu cache hong
 	if (m_GridNode[sid].obs)
 	{
 		sid = FindFreeBlockAround(sid, nStartMpsX, nStartMpsY);
