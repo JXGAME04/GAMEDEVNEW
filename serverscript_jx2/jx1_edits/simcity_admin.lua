@@ -153,6 +153,9 @@ function PB_Menu()
 	"TAT bot noi chuyen/#PB_Chat(0)",
 	"LUU du lieu bot ngay/PB_Save",
 	"Go het bot nguoi choi/PB_Clear",
+	"Cham TTL + Que Hoa Tuu: BAT/#PB_Buff(1)",
+	"Cham TTL + Que Hoa Tuu: TAT/#PB_Buff(0)",
+	"Bot chay nhiem vu DA TAU/PB_DaTauMenu",
 	"Quay lai/SC_Menu",
 	SC_END_SAY})
 end
@@ -235,6 +238,31 @@ end
 -- ================= GD3: BOT NOI CHUYEN =================
 -- Nap kho cau thoai 1 lan roi bat xac suat noi.
 -- chat.txt: cot 1 = Type, cot 2 = Chat. Type nhieu nhat: general (1690), fighting (928).
+function PB_Buff(nOn)
+	local n = PB_SetBuff(nOn)
+	if (nOn == 1) then
+		Talk(1,"","Da BAT cham Tien Thao Lo (x2 exp) + Que Hoa Tuu (+20 may man) cho "..n.." bot. Het han se tu cham lai.")
+	else
+		Talk(1,"","Da TAT cham buff cho bot. Buff dang co se het han dan.")
+	end
+end
+
+function PB_DaTauMenu()
+	local nDang = PB_SetDaTau(-1)
+	Say("Bot tu chay nhiem vu DA TAU (nhan - lam - tra - nhan thuong, tran 40/ngay/bot).\nDang cho phep: "..nDang.." bot. Chon so bot duoc lam:",6,
+	"TAT het/#PB_DaTauSet(0)",
+	"20 bot/#PB_DaTauSet(20)",
+	"50 bot/#PB_DaTauSet(50)",
+	"100 bot/#PB_DaTauSet(100)",
+	"200 bot/#PB_DaTauSet(200)",
+	"Tat ca 1000/#PB_DaTauSet(1000)")
+end
+
+function PB_DaTauSet(n)
+	local nMoi = PB_SetDaTau(n)
+	Talk(1,"","Da dat gioi han "..nMoi.." bot lam Da Tau (lay cac bot chi so thap nhat). Bot dang danh quai se tu di gap Da Tau; du 40/ngay tu ve bai luyen.")
+end
+
 function SC_ChatOn()
 	if SC_ChatLoaded ~= 1 then
 		local n = SC_LoadChat(SC_CHATFILE, "general")
