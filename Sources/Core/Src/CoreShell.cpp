@@ -2698,7 +2698,11 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 	if (ea.uDTPath < uCurTime)
 	{
 		ea.uDTPath = uCurTime + 2500;
-		if (!SubWorld[0].HaveTarget(nX, nY))
+		// HaveTarget(int&,int&) XUAT target hien tai ra tham so - dua thang dich den vao
+		// se bi ghi de thanh (0,0) => FindPath tu choi => dung yen tai cho.
+		// Lam nhu ATYPE_MOVE (bAroundPoint): hung ra bien nhap, so voi dich roi moi path.
+		int tx = 0, ty = 0;
+		if (!SubWorld[0].HaveTarget(tx, ty) || tx != nX || ty != nY)
 		{
 			g_ScenePlace.RemoveFlag();
 			SubWorld[0].FindPath(nX, nY);
