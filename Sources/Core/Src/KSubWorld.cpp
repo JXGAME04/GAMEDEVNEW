@@ -3428,4 +3428,27 @@ int KSubWorld::FindPathServer(int nStartMpsX, int nStartMpsY, int nDestMpsX, int
 	return nRet;
 }
 
+// (19/08 chieu) Tra loi "o luoi tai MPS nay co phai vat can khong" cho he bot.
+// KHONG kep toa do nhu FindPathServer (kep se doi cau hoi thanh o KHAC): ngoai
+// luoi -> -1 "chua biet". Doc obs cua CHINH O, khong qua parentId (block gop chi
+// gop o cung tinh trang nhung o goc thi cu doc thang cho chac - FindFreeBlockAround
+// cung doc kieu nay truoc khi lay parent).
+int KSubWorld::CellObsSrv(int nMpsX, int nMpsY)
+{
+	if (!m_bHavePath || m_GridNode == NULL || m_nGridTotal <= 0)
+		return -1;
+	if (nMpsX <= 0 || nMpsY <= 0)
+		return -1;
+	const int nCellW = m_nGridW * m_nRegionWidth;
+	const int nCellH = m_nGridH * m_nRegionHeight;
+	const int cx = nMpsX / 32 - m_nRegionBeginX * REGION_GRID_WIDTH;
+	const int cy = nMpsY / 32 - m_nRegionBeginY * REGION_GRID_HEIGHT;
+	if (cx < 0 || cx >= nCellW || cy < 0 || cy >= nCellH)
+		return -1;
+	const int id = cy * nCellW + cx;
+	if (id < 0 || id >= m_nGridTotal || id >= nCellW * nCellH)
+		return -1;
+	return m_GridNode[id].obs ? 1 : 0;
+}
+
 #endif	// _SERVER (A* phia server)

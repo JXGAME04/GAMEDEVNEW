@@ -228,6 +228,12 @@ struct PB_Bot
 	unsigned int nDanKiemTick;                // lan kiem mat do gan nhat
 	unsigned int nDanDenHan;                  // 0 = khong di tan; khac 0 = han chot di tan
 	unsigned int nDanNghiToi;                 // sau mot lan di tan, nghi den moc nay moi kiem lai
+	// ---- tu cuu khi ket luoi + phat lai vu khi (19/08 chieu) ----
+	unsigned int nCuuKiemTick;                // nhip soi ket (10 giay/lan, re)
+	unsigned int nCuuTick;                    // lan cuu gan nhat (gion 60 giay)
+	int          nAStarThua;                  // so lan roam A* thua LIEN TIEP
+	unsigned int nVuKhiTick;                  // lan phat lai vu khi gan nhat
+	int          nVuKhiThu;                   // so lan phat lai vu khi (tran 5)
 	// ---- to doi ----
 	int          nWantParty;                  // chot MOT LAN khi sinh: bot nay co muon vao nhom
 	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
@@ -898,6 +904,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nChatCuoi = 0;
 		b.roam.Reset();   b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
 		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0; b.nAuraPhien = 0;
+		b.nCuuKiemTick = 0;  b.nCuuTick = 0;  b.nAStarThua = 0;   // khe tai dung mang
+		b.nVuKhiTick = 0;    b.nVuKhiThu = 0;                     // rac cu -> phai xoa
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();   // luu dinh ky tinh tu luc sinh
 		if (bCuCoPhai)
@@ -2543,10 +2551,14 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	// Dung sat quai la du - toi noi thi vong danh se tu bat duoc muc tieu.
 	const int nRet = PB_WalkTo(nNpcIdx, b.nRoamX, b.nRoamY, nSub, b.roam, 400);
 	if (nRet == 0)
+	{
+		b.nAStarThua = 0;          // dang di duoc = khong ket
 		return 1;                  // dang di
+	}
 
 	if (nRet < 0)
 	{
+		b.nAStarThua++;            // (19/08 chieu) thua lien tiep -> [BotCuu] xet
 		static unsigned int s_uHoangLog2 = 0;
 		if (now - s_uHoangLog2 >= (unsigned int)(GAME_FPS / 2))
 		{
@@ -2555,6 +2567,8 @@ static int pb_Roam(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			       Player[nIdx].m_PlayerName, b.nRoamX / 32, b.nRoamY / 32);
 		}
 	}
+	else
+		b.nAStarThua = 0;          // toi noi binh thuong = duong van tot
 
 	b.nRoamX = 0;                  // toi noi hoac tac duong -> lan sau boc cho khac
 	b.nRoamY = 0;
@@ -4038,6 +4052,126 @@ static void pb_DriveBot(PB_Bot& b)
 							return;
 						}
 					}
+				}
+			}
+		}
+		// ---- TU CUU KHI KET LUOI + PHAT LAI VU KHI (19/08 chieu) ----
+		// Chu game: "bot van dang dung ngoai map" + "mot so bot chet ve thanh khong
+		// len lai map luyen cong". Phap y bot.log 09:5x ra HAI benh:
+		// 1) KET LUOI: bot bi NAP LAI dung vi tri da luu tu thoi "vung rong = di duoc"
+		//    (truoc 561e2163). Nay vung rong = VAT CAN toan phan -> xuat phat ket,
+		//    FindFreeBlockAround chi quet vanh 1 o quanh block (block vung rong gop to
+		//    toi 16x32 o) nen -4 vinh vien; hoac ket DAO (o dang dung hop le nhung A*
+		//    toi moi diem roam deu thua - map 193 sang 19/08: 2 bot thua 264 lan/50').
+		//    Bot dung im vo han = canh "dung ngoai map" chu game thay.
+		// 2) TAY KHONG: do ben ve 0 -> KItemList::Abrade THAO vu khi nem vao tui ->
+		//    don tui xoa -> 210 bot [BotCast] BI TU CHOI (vukhi detail=-1), danh khong
+		//    sut mau, chet lien tuc ve thanh. Goc da chan tai Abrade (bot khong mai
+		//    mon nua); day la don chua nhung con DA mat vu khi tu truoc.
+		if (nowAll - b.nCuuKiemTick >= (unsigned int)(GAME_FPS * 10))
+		{
+			b.nCuuKiemTick = nowAll;
+
+			// -- phat lai vu khi nhap mon khi tay khong giua doi --
+			// Chi khi DA tung nhan (nGaveWeapon=1 = vao phai xong), gion 60 giay,
+			// tran 5 lan: phai quyen boc trung "tay khong" (w.d < 0) la co y,
+			// thu vai lan roi thoi chu khong spam ItemSet.Add moi phut.
+			if (b.nGaveWeapon && b.nFaction >= 0
+			 && Player[nIdx].m_ItemList.GetWeaponType() < 0
+			 && b.nVuKhiThu < 5
+			 && nowAll - b.nVuKhiTick >= (unsigned int)(GAME_FPS * 60))
+			{
+				b.nVuKhiTick = nowAll;
+				b.nVuKhiThu++;
+				pb_Log("[BotVuKhi] %s tay khong giua doi (do ben ve 0 da bi thao/xoa?)"
+				       " -> phat lai vu khi nhap mon (lan %d)\n",
+				       Player[nIdx].m_PlayerName, b.nVuKhiThu);
+				pb_GiveFactionWeapon(nIdx, b.nFaction);
+				if (Player[nIdx].m_ItemList.GetWeaponType() >= 0)
+					b.nAtkSkill = 0;   // ep chon lai chieu theo vu khi moi
+			}
+
+			// -- tu cuu khoi ket luoi: dua ve diem dat chan bai cua chinh no --
+			// (diem da qua ChangeWorld + buoc-ra kiem chung ca ngay). Chi xet khi
+			// dang o DUNG map bai; o sai map thi pb_RaBai ngay duoi da ChangeWorld
+			// (dich chuyen, khong can duong di) nen khong ket kieu nay.
+			if (nowAll - b.nCuuTick >= (unsigned int)(GAME_FPS * 60)
+			 && b.nBaiIdx >= 0 && b.nBaiIdx < PB_SO_BAI
+			 && SubWorld[nSub].m_SubWorldID == s_bai[b.nBaiIdx].nMapId)
+			{
+				int nKcx = 0, nKcy = 0;
+				Npc[nNpcIdx].GetMpsPos(&nKcx, &nKcy);
+				int nKet = 0;
+				// T1: o dang dung + CA 4 o lan can la vat can tren LUOI nhung engine
+				// bao TRONG = chu ky rieng cua NAM SAU trong vung rong du lieu.
+				// Doi 4 lan can vi: o GOC nua-trong (Obstacle_LT..RB) bot dung hop le
+				// ma luoi ghi obs=1 va engine co the tra NULL cho nua o dung duoc ->
+				// khong duoc cuu oan; con bot o MEP vung rong thi FindFreeBlockAround
+				// (vanh 1 o quanh block) tu tim duoc duong, khong can dich chuyen.
+				if (SubWorld[nSub].CellObsSrv(nKcx, nKcy) == 1
+				 && SubWorld[nSub].CellObsSrv(nKcx - 32, nKcy) == 1
+				 && SubWorld[nSub].CellObsSrv(nKcx + 32, nKcy) == 1
+				 && SubWorld[nSub].CellObsSrv(nKcx, nKcy - 32) == 1
+				 && SubWorld[nSub].CellObsSrv(nKcx, nKcy + 32) == 1)
+				{
+					int nRc = -1, nMXc = 0, nMYc = 0, nOXc = 0, nOYc = 0;
+					SubWorld[nSub].Mps2Map(nKcx, nKcy, &nRc, &nMXc, &nMYc, &nOXc, &nOYc);
+					if (nRc >= 0
+					 && SubWorld[nSub].m_Region[nRc].GetBarrierMin(nMXc, nMYc, nOXc, nOYc, FALSE)
+					    == Obstacle_NULL)
+						nKet = 1;
+				}
+				// T2: 5 lan roam lien tiep khong co duong = ket dao A*
+				if (!nKet && b.nAStarThua >= 5)
+					nKet = 2;
+
+				if (nKet)
+				{
+					const PB_BaiLuyen& baiC = s_bai[b.nBaiIdx];
+					// diem ve: dat chan bai + o lech rieng (khuon 9x7 cua pb_RaBai)
+					int nVeX = baiC.nOX * 32 + ((nLech % 9) - 4) * 2 * 32;
+					int nVeY = baiC.nOY * 32 + (((nLech / 9) % 7) - 3) * 3 * 32;
+					{
+						int nRv = -1, nMXv = 0, nMYv = 0, nOXv = 0, nOYv = 0;
+						SubWorld[nSub].Mps2Map(nVeX, nVeY, &nRv, &nMXv, &nMYv, &nOXv, &nOYv);
+						if (nRv < 0
+						 || SubWorld[nSub].m_Region[nRv].GetBarrierMin(nMXv, nMYv, nOXv, nOYv, TRUE)
+						    != Obstacle_NULL)
+						{
+							nVeX = baiC.nOX * 32;   // o lech hong -> ve dung diem goc
+							nVeY = baiC.nOY * 32;
+						}
+					}
+					// Diem ve cung nam trong luoi chan = map hong du lieu toan phan:
+					// khong dich chuyen lung tung ([PathSrv] CANH BAO da chi ro map).
+					if (SubWorld[nSub].CellObsSrv(nVeX, nVeY) != 1)
+					{
+						b.nCuuTick = nowAll;
+						b.nAStarThua = 0;
+						pb_Log("[BotCuu] %s ket %s tai o(%d,%d) -> ve bai %s o(%d,%d)\n",
+						       Player[nIdx].m_PlayerName,
+						       (nKet == 1) ? "trong vung rong (nap lai cho cu?)"
+						                   : "dao A* (5 lan lien tiep khong duong)",
+						       nKcx / 32, nKcy / 32, baiC.szTen, nVeX / 32, nVeY / 32);
+						Npc[nNpcIdx].SetPos(nVeX, nVeY);
+						b.nTargetNpc = 0;
+						b.nRoamX = 0;  b.nRoamY = 0;
+						b.walk.Reset();
+						b.chase.Reset();
+						b.roam.Reset();
+						b.follow.Reset();
+						b.nFollowNghiToi = 0;
+						b.loot.Reset();
+						b.nJamTick = 0;
+						// buoc ra khoi diem dat chan nhu vua doi map (ne trap/dam dong)
+						const int nXa2   = (8 + (int)g_Random(4)) * 32;
+						const int nGocX2 = ((int)g_Random(2) * 2 - 1);
+						const int nGocY2 = ((int)g_Random(2) * 2 - 1);
+						b.nBuocRaX = baiC.nOX * 32 + nGocX2 * nXa2;
+						b.nBuocRaY = baiC.nOY * 32 + nGocY2 * nXa2;
+					}
+					else if (nKet == 2)
+						b.nAStarThua = 0;   // map hong toan phan: xoa dem, khoi xet lai ngay
 				}
 			}
 		}

@@ -252,6 +252,10 @@ public:
 	// Dung lam waypoint thay cho TAM block: block to toi 16x32 o nen tam co the nam
 	// NGUOC HUONG di - nham tam la bot chay qua lai nhu con lac.
 	bool		BlockNearestMps(int nBlockId, int nFromX, int nFromY, int& nMpsX, int& nMpsY);
+	// (19/08 chieu) O luoi tai MPS nay co la vat can khong? 1 = vat can, 0 = di duoc,
+	// -1 = chua biet (luoi chua nap / toa do ngoai luoi). Cho he bot tu phat hien
+	// minh bi NAP LAI vao vung rong (nay da doi thanh vat can) ma tu cuu [BotCuu].
+	int			CellObsSrv(int nMpsX, int nMpsY);
 private:
 #endif
 

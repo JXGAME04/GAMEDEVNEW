@@ -4638,6 +4638,19 @@ int	KItemList::GetSameDetailItemNum(int nImmediatePos)
 #ifdef _SERVER
 void KItemList::Abrade(int nType, BOOL isDeathPunish) //#mµi mßn item
 {
+	// (19/08 chieu) BOT KPlayer: KHONG mai mon trang bi. Bot khong biet di sua do
+	// o tho ren nhu nguoi that; sau ~10 gio danh lien tuc do ben ve 0 -> nhanh
+	// nDur==0 duoi day THAO trang bi nem vao tui ("cuc sat"), don tui cua bot xoa
+	// mat -> bot tay khong danh khong sut mau, chet lien tuc (bot.log 19/08 09:5x:
+	// 210 bot [BotCast] BI TU CHOI vukhi detail=-1). Nguoi that: khong doi gi.
+	// PB_IsBot TU kiem bien m_PlayerIdx (file nay co list khong thuoc player nao -
+	// xem guard m_PlayerIdx <= 0 cua CheckCanEquip) va so ca dwID; voi nguoi that
+	// vong quet s_bots thoat som khi trung nPlayerIdx khong xay ra - re.
+	{
+		extern int PB_IsBot(int nPlayerIdx);
+		if (PB_IsBot(m_PlayerIdx))
+			return;
+	}
 	int nItemIdx = 0;
 	for (int i = 0; i < itempart_num; i++)
 	{
