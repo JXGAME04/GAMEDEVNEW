@@ -198,6 +198,7 @@ struct ExtAuto
 	UINT uDTStatusTime;  // throttle bao trang thai
 	int  nDTUnknown;     // dem hoi thoai LA khong nhan dang (khong reset khi mo lai)
 	int  nDTXaFuTry;     // dem lan thu xa phu that bai (chan ket vong)
+	int  nDTHoldFreeze;  // 1 = hold 'du 40/ngay': dung yen neu nguoi choi tat luyen cong
 	UINT uDTFarmStall;   // moc thoi gian tien do farm gan nhat (T4/T5exp watchdog)
 	ExtAuto()
 	{
@@ -284,6 +285,7 @@ struct ExtAuto
 		uDTStatusTime = 0;
 		nDTUnknown = 0;
 		nDTXaFuTry = 0;
+		nDTHoldFreeze = 0;
 		uDTFarmStall = 0;
 	}
 };

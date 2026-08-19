@@ -821,7 +821,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	// 2 = dang farm map nhiem vu (bo MOVE/RETURN + bo qua skip-goldboss)
 	int nDT = 0;
 	autoData sDTData;
-	if(pApData->bDaTau)
+	if(pApData->bDaTau == 1)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
 	{
 		nDT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DATAU, (int)pApData);
 		if(nDT == 2)

@@ -2633,6 +2633,7 @@ static int DT_Hold(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
 	DT_Msg(nPlayerIdx, szWhy);
 	ea.nDTPhase = DTP_HOLD;
 	ea.uDTHoldUntil = uMs ? (uCurTime + uMs) : 0;
+	ea.nDTHoldFreeze = 0;	// hold loi/treo: NHA MAY cho auto thuong chay tiep
 	ea.nDTEngaged = 0;
 	return 0;
 }
@@ -2643,6 +2644,7 @@ static int DT_FindNpcTpl(int nPlayerIdx, int nTpl, int nRadius)
 	int nX, nY, dX, dY;
 	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
 	int nIdx = 0;
+	int nFirst = 0;
 	while (nIdx = NpcSet.GetNextIdx(nIdx))
 	{
 		if (Npc[nIdx].m_Kind != kind_dialoger)
@@ -2654,9 +2656,12 @@ static int DT_FindNpcTpl(int nPlayerIdx, int nTpl, int nRadius)
 		Npc[nIdx].GetMpsPos(&dX, &dY);
 		if (nRadius > 0 && g_GetDistance(nX, nY, dX, dY) > nRadius)
 			continue;
-		return nIdx;
+		if (strcmp(Npc[nIdx].Name, "D\267 T\310u") == 0)
+			return nIdx;	// dung ten 'Da Tau' (TCVN3) - chac chan nhat
+		if (!nFirst)
+			nFirst = nIdx;
 	}
-	return 0;
+	return nFirst;
 }
 
 // tim NPC kind_dialoger co ten (thuong hoa ASCII) chua chuoi con, gan (nX,nY)
@@ -3052,9 +3057,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		else
 		{
-			// xong/treo: bDTTrainAfter -> nha may cho auto thuong len map luyen cong (return 0);
-			// nguoc lai giu lai (dung yen, chan auto thuong cay) theo dung o chon cua nguoi choi.
-			ea.nDTEngaged = pAp->bDTTrainAfter ? 0 : 1;
+			// CHI hold 'du 40/ngay' (nDTHoldFreeze=1) + nguoi choi TAT 'len map luyen cong'
+			// thi dung yen; MOI hold khac (loi/treo) NHA MAY de auto thuong chay tiep.
+			ea.nDTEngaged = (ea.nDTHoldFreeze && !pAp->bDTTrainAfter) ? 1 : 0;
 			return ea.nDTEngaged;
 		}
 	}
@@ -3103,11 +3108,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				break;
 		if (i >= g_nDTNpcCount)
 		{
+			DT_Msg(nPlayerIdx, "[DaTau] khong o thanh Da Tau - dung Tho Dia Phu ve thanh");
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTStep = DTI_NONE;
 			ea.nDTEngaged = 1;
 			return 1;
 		}
+		DT_Msg(nPlayerIdx, "[DaTau] uu tien Da Tau: di den NPC nhan/tra nhiem vu");
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTRetry = 0;
@@ -3237,7 +3244,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_Has(szQ, DTM_MSG_LIMIT))
 		{
 			ea.nDTDoneDay = nToday;
-			return DT_Hold(nPlayerIdx, "[DaTau] du 40 nhiem vu hom nay - nghi den mai", uCurTime, 0);
+			DT_Hold(nPlayerIdx, "[DaTau] du 40 nhiem vu hom nay - nghi den mai", uCurTime, 0);
+			ea.nDTHoldFreeze = 1;	// hold hop le: dung yen neu nguoi choi tat luyen cong
+			ea.nDTEngaged = (pAp->bDTTrainAfter ? 0 : 1);
+			return ea.nDTEngaged;
 		}
 		// tui day
 		if (DT_Has(szQ, DTM_MSG_BAGFULL))
