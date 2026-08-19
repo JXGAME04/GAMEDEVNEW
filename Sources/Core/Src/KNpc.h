@@ -536,11 +536,6 @@ public:
 	int					m_nHurtDesY;
 	int					m_nTongFlag;			// 
 	int					m_nPosShiftStep;
-	// Co "toi dang sai, hay nan lai toi" - port tu ban goc JX2 (KNpc + 0x1894).
-	// Khi mo phong phia client bi ket (tim duong tra 0), thay vi DoStand() cung nhu
-	// truoc, ta giu nguyen trang thai chay va gio co; goi dong bo dinh ky KE TIEP
-	// se ghi de toa do that tu server roi ha co.
-	int					m_nNeedFixPos;
 	DWORD				m_dwLastDirTick;	// tick logic cuoi da lam muot m_ResDir
 	BOOL				m_bProcPosShift;
 	static int			g_DrawVision;

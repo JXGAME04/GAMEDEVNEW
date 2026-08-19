@@ -295,7 +295,6 @@ void KNpc::Init()
 	m_sClientNpcID.m_nNo		= -1;
 	m_ResDir					= 0;
 	m_dwLastDirTick				= 0;
-	m_nNeedFixPos				= 0;
 	m_nPKFlag					= enumPKNormal;
 	m_nSleepFlag				= 0;
 	memset(&m_sSyncPos, 0, sizeof(m_sSyncPos));
@@ -4405,18 +4404,7 @@ void KNpc::ServeMove(int MoveSpeed)
 	}
 	else if (nRet == 0)
 	{
-		// Bi chan. Ban goc JX2 (0x00598080) KHONG dung nhan vat lai o day: no gio co
-		// "toi dang sai" roi return, giu nguyen trang thai chay, tick sau thu tiep;
-		// goi dong bo ke tiep se nan lai toa do. JX1 truoc day goi DoStand() => dong
-		// nguoi la ai cung dung khung roi nhay - dung trieu chung dang gap.
-		// RIENG nhan vat cua minh van phai dung that, neu khong se di xuyen nguoi roi
-		// bi server keo lui lien tuc.
-		if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
-		{
-			DoStand(); //Â®Ã¸ng lÂ¹i
-			return;
-		}
-		m_nNeedFixPos++;
+		DoStand(); //Â®Ã¸ng lÂ¹i
 		return;
 	}
 	else if (nRet == -1)
