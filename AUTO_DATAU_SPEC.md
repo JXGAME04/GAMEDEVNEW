@@ -144,7 +144,7 @@ Bảng dữ liệu tra theo `task 1030` (dòng) tại `settings\task\` (test loc
 3. Cửa sổ rương mở lại vẫn 3 ô cũ (seed) — auto crash giữa chừng cứ gặp lại NPC.
 4. Cuộn 205 rơi từ quái thường; **212 CHỈ boss xanh** — auto nhiệm vụ Mật Chỉ phải có logic săn boss (map 75 đã cân AutoGoldenNpc=2000 như map khác).
 5. JX1 **không có A\* server**, NPC tính là TƯỜNG — di chuyển xa = chuỗi lệnh ngắn (kinh nghiệm WAuto sẵn có).
-6. Đổi map làm nhiệm vụ loại 4: có thể dùng Xa Phu / Thổ Địa Phù; task 1031 luôn cho biết map đích.
+6. Đổi map làm nhiệm vụ loại 4: **dùng NPC Xa Phu, mục "Đến nơi làm nhiệm vụ dã tẩu" (`godatau`) — ĐÃ nối hệ mới 17/08 (commit `61e834b5`)**: đang có nhiệm vụ loại 4 (task 1021==4) là chở thẳng tới map 1031 đúng tọa độ bảng `TL_MAPTRAPINDEX`, miễn phí, tự bật trạng thái chiến đấu. Auto chỉ cần: gặp Xa Phu → chọn mục đó → tới nơi. (Thổ Địa Phù là phương án phụ.)
 7. Mua đồ loại 1: mua ở bất kỳ thành nào (bảng bán chung) — đừng tốn thời gian chạy đúng thành theo lời thoại.
 8. Client phải là bản có `settings\buysell.txt` mới (đã đồng bộ 16/08) — client cũ không nhìn thấy hàng nhiệm vụ.
 9. Server side đã có log đầy đủ: `[DaTau ruong 2383]` (WriteLog), ScriptError.log — debug auto nhìn đó.
