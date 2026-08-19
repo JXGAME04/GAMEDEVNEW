@@ -2689,6 +2689,25 @@ static int DT_FindNpcName(int nPlayerIdx, const char* szSub, int nAtX, int nAtY,
 	return 0;
 }
 
+// [DaTau] len ngua khi di duong (khuon dung nguyen case PA_RIDE - CoreShell.cpp:9614:
+// phai co ngua o o trang bi, khong dang ngoi, va het gian TIME_RIDE).
+static void DT_Ride(int nPlayerIdx)
+{
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return;
+	if (Npc[nSelf].m_bRideHorse)
+		return;
+	if (Player[nPlayerIdx].m_ItemList.GetEquipment(itempart_horse) <= 0)
+		return;
+	if (Npc[nSelf].m_Doing == do_sit)
+		return;
+	if (GetTickCount() - Npc[nSelf].m_TimeHorse < TIME_RIDE)
+		return;
+	Npc[nSelf].m_TimeHorse = GetTickCount();
+	SendClientCmdRide(FALSE);
+}
+
 // di bo trong map; tra 1 khi da toi gan (nNear mps)
 static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 {
@@ -2697,6 +2716,10 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 	if (g_GetDistance(px, py, nX, nY) <= nNear)
 		return 1;
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	// di duong (ve thanh tra nhiem vu / toi NPC / toi tiem / toi Xa Phu) thi LEN NGUA;
+	// rieng pha farm thi khong - dang danh quai (yeu cau chu game 19/08).
+	if (ea.nDTPhase != DTP_FARM)
+		DT_Ride(nPlayerIdx);
 	if (ea.uDTPath < uCurTime)
 	{
 		ea.uDTPath = uCurTime + 2500;
@@ -3093,7 +3116,13 @@ static int DT_FindCandItem(int nPlayerIdx, const autoData* pAp, int* pnPos)
 static int DT_Skip(int nPlayerIdx, const autoData* pAp, UINT uCurTime, const char* szWhy)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
-	if (pAp->nDTSkipMode == 1)
+	// (19/08 - chu game chot) 'Khi bo qua = Huy nhiem vu' CHI ap cho loai nhiem vu
+	// nguoi choi da TAT trong tab Da Tau. Loai dang BAT ma ket thi TREO, tuyet doi
+	// khong huy - huy la mat cong lam do / mat luot trong chuoi.
+	const int nLoaiNay = ea.nDTQType;
+	const bool bLoaiBiTat = (nLoaiNay >= 1 && nLoaiNay <= 6
+	                      && !pAp->bDTType[nLoaiNay - 1]);
+	if (pAp->nDTSkipMode == 1 && bLoaiBiTat)
 	{
 		DT_Msg(nPlayerIdx, szWhy);
 		ea.nDTStep = DTI_CANCEL;
@@ -3213,11 +3242,31 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return ea.nDTEngaged;
 	ea.uDTNext = uCurTime + 250;
 
+	// [Ruong thuong] Da Tau tra thuong bang HAI cua so lien tiep (exp/bac roi
+	// diem/may man/vat pham). Cua so thu hai thuong bat ra khi may DA ROI pha
+	// WAITDLG -> phai bat o MOI PHA, khong thi no nam nguyen tren man hinh va
+	// may di nhan nhiem vu moi (loi nguoi dung bao 19/08).
+	if (cap.uFinSeq != ea.uDTFinSeen && ea.nDTPhase != DTP_REWARD)
+	{
+		ea.nDTPhase = DTP_REWARD;
+		ea.nDTRetry = 0;
+	}
+
 	switch (ea.nDTPhase)
 	{
 	case DTP_IDLE:
 	{
 		ea.nDTEngaged = 0;
+		// Dang giu nhiem vu loai 4 va DUNG tren map nhiem vu (vd vua het mot lan treo):
+		// lam tiep tai cho. CHI duoc phu ve khi DU cuon (yeu cau chu game 19/08).
+		if (ea.nDTQType == 4 && ea.nDTMapId > 0 && nMap == ea.nDTMapId
+		 && ea.nDTProg < ea.nDTReqNum)
+		{
+			ea.nDTPhase = DTP_FARM;
+			ea.nDTEngaged = 2;
+			ea.uDTFarmStall = uCurTime;
+			return 2;
+		}
 		for (i = 0; i < g_nDTNpcCount; ++i)
 			if (g_DTNpc[i].nMapId == nMap)
 				break;
@@ -3316,11 +3365,12 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case DTP_WAITDLG:
 	{
 		ea.nDTEngaged = 1;
-		// cua so 3 ruong (course 2 hoac vua tra xong)
+		// cua so 3 ruong (course 2 hoac vua tra xong) - KHONG an uFinSeq o day:
+		// chinh DTP_REWARD moi tieu thu no de biet phai bam nut nao.
 		if (cap.uFinSeq != ea.uDTFinSeen)
 		{
-			ea.uDTFinSeen = cap.uFinSeq;
 			ea.nDTPhase = DTP_REWARD;
+			ea.nDTRetry = 0;
 			ea.uDTNext = uCurTime + 700;
 			return 1;
 		}
@@ -3872,17 +3922,21 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.uDTRoamNext = 0;	// bat dau tu cum quai gan neo nhat
 			return 2;
 		}
-		// Da bi chuyen di NHUNG khong phai map nhiem vu (map la, khong co Xa Phu):
-		// khong ngoi cho het 12 nhip - phu ve thanh ngay roi di lai.
+		// Xa Phu da cho RA KHOI THANH (map hien tai khong co tram xe): TIN MAY CHU -
+		// day chinh la map nhiem vu. Id map doc tu VAN BAN nhiem vu co the lech (map
+		// nhieu tang), lay id THAT lam chuan roi farm luon - KHONG phu ve giua chung.
 		if (g_MoveStation.find(nMap) == g_MoveStation.end())
 		{
-			if (++ea.nDTXaFuTry > 5)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] xa phu khong chuyen map (kiem tra nhiem vu)");
-			DT_Msg(nPlayerIdx, "[DaTau] len NHAM map - phu ve thanh roi ra Xa Phu di lai");
-			ea.nDTBackXaFu = 1;
-			ea.nDTPhase = DTP_RETURN;
+			DT_Msg(nPlayerIdx, "[DaTau] da toi map nhiem vu - bat dau danh quai nhat cuon");
+			ea.nDTMapId = nMap;
+			ea.nDTPhase = DTP_FARM;
+			ea.nDTEngaged = 2;
 			ea.nDTRetry = 0;
-			return 1;
+			ea.nDTXaFuTry = 0;
+			ea.uDTFarmStall = uCurTime;
+			ea.nDTRoamStep = 0;
+			ea.uDTRoamNext = 0;
+			return 2;
 		}
 		if (++ea.nDTRetry > 12)
 		{
@@ -4055,16 +4109,31 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case DTP_REWARD:
 	{
 		ea.nDTEngaged = 1;
-		if (cap.nFinType <= 4)
-			SendUiCmdScript(3, (char*)DT_FIN3[pAp->nDTReward1 >= 0 && pAp->nDTReward1 <= 2 ? pAp->nDTReward1 : 0]);
-		else
-			SendUiCmdScript(4, (char*)DT_FIN4[pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2 ? pAp->nDTReward2 : 2]);
+		if (cap.uFinSeq != ea.uDTFinSeen)
+		{
+			// co cua so thuong CHUA BAM: bam dung nhom cua no roi cho cua so ke tiep
+			ea.uDTFinSeen = cap.uFinSeq;
+			ea.nDTRetry = 0;
+			if (cap.nFinType <= 4)
+				SendUiCmdScript(3, (char*)DT_FIN3[pAp->nDTReward1 >= 0 && pAp->nDTReward1 <= 2 ? pAp->nDTReward1 : 0]);
+			else
+				SendUiCmdScript(4, (char*)DT_FIN4[pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2 ? pAp->nDTReward2 : 2]);
+			ea.uDTNext = uCurTime + 800;
+			return 1;
+		}
+		// da bam xong cua so vua roi - nan o day ~3 giay xem con cua so thu hai khong
+		if (++ea.nDTRetry <= 12)
+		{
+			ea.uDTNext = uCurTime + 250;
+			return 1;
+		}
+		DT_Msg(nPlayerIdx, "[DaTau] da nhan thuong - di nhan nhiem vu ke");
 		ea.nDTStep = DTI_NONE;
 		ea.nDTQType = 0;
 		ea.nDTItemIdx = 0;
 		ea.nDTPhase = DTP_GOTONPC;	// noi chuyen tiep de nhan nhiem vu ke (course 3)
 		ea.nDTRetry = 0;
-		ea.uDTNext = uCurTime + 1500;
+		ea.uDTNext = uCurTime + 1200;
 		return 1;
 	}
 
