@@ -783,6 +783,10 @@ int	KPlayer::LoadPlayerStateSkillList(BYTE * pRoleBuffer, BYTE * &pStateBuffer, 
 	for (int i = nBegin ; i < nEnd; i ++, pStateData ++ )
 	{
 		KSkill *pSkill = (KSkill*)g_SkillManager.GetSkill(pStateData->m_nSkillId, pStateData->m_nSkillLevel);
+		// (18/08 phan bien) blob co the mang state-skill khong con trong bang (doi bang
+		// skill giua hai phien) - GetSkill tra NULL, deref la SAP SERVER luc nap nhan vat.
+		if (!pSkill)
+			continue;
 		pSkill->CastStateSkill(m_nIndex, 0, 0, pStateData->m_nSkillVal, TRUE);
 	}
 	pStateBuffer = (BYTE*) pStateData;
