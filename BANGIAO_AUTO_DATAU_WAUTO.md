@@ -19,8 +19,8 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | | |
 |---|---|
-| **Trạng thái** | Viết xong · build sạch · phản biện 2 vòng · **đã deploy** · test thật lần 1 (19/08): **đứng yên → tìm ra lỗi gốc `DT_WalkTo` (mục 8.6), ĐÃ SỬA + deploy lại 10:22** — chờ test lại |
-| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` (chính) → `1d24b9fc` → `8a9ae8f5` → **`32e60788` (fix đứng yên)** |
+| **Trạng thái** | test lần 1 đứng yên → fix `DT_WalkTo` (8.6) → **test lần 2 ĐÃ CHẠY LÀM DÃ TẨU** ✅ → đợt nâng cấp 19/08 trưa: đóng khung thoại sau nhận nhiệm vụ · T4 tự chạy tìm quái (roam 8 hướng + quét NpcSet) · túi đầy tự thả máy về bán rác Hậu cần (`DTP_SELLJUNK`) · **UI WAuto thiết kế lại** (khung nhóm/kẻ mục/~190 tooltip) — chờ test đợt 2 |
+| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` → `1d24b9fc` → `8a9ae8f5` → `32e60788` (fix đứng yên) → **`0c97e240` (3 nâng cấp + UI, kèm backup UI trong `WAutoUI/`)** |
 | **Nơi bật** | WAuto.exe → tab **"Dã Tẩu"** → tick "Bật auto Dã Tẩu" |
 | **Mặc định** | **TẮT** (`bDaTau=0`) — không tick thì hành vi auto cũ nguyên vẹn |
 | **Việc kế tiếp** | Hỏi người dùng kết quả test + dòng `[DaTau]` cuối trong khung chat |
@@ -31,9 +31,9 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 10:22** | chứa engine Dã Tẩu + fix `DT_WalkTo` (mục 8.6) |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 11:23** | engine Dã Tẩu + fix 8.6 + 3 nâng cấp (50 marker `[DaTau]`) |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
-| `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | 19/08 09:21 | tab 9 + vá `.dat` cũ |
+| `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
 - `re_pe_crt.py` **PASS**: CoreClient=CRT-tĩnh · Game.exe=UCRT-RELEASE · engine/Represent2=UCRT-DEBUG.
 - `bin\client\debug\` chỉ có tệp tháng 4 ⇒ **không** dựng nhầm Debug.
