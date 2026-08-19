@@ -234,6 +234,8 @@ struct PB_Bot
 	int          nAStarThua;                  // so lan roam A* thua LIEN TIEP
 	unsigned int nVuKhiTick;                  // lan phat lai vu khi gan nhat
 	int          nVuKhiThu;                   // so lan phat lai vu khi (tran 5)
+	int          nTrangBiLevel;               // cap lan cuoi da thu mac do (0 = chua)
+	unsigned int nQhtTick;                    // lan cham Que Hoa Tuu gan nhat
 	// ---- to doi ----
 	int          nWantParty;                  // chot MOT LAN khi sinh: bot nay co muon vao nhom
 	                                          // (%PB_NHOM_RATE) - roll lai moi luot la ai roi
@@ -906,6 +908,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0; b.nAuraPhien = 0;
 		b.nCuuKiemTick = 0;  b.nCuuTick = 0;  b.nAStarThua = 0;   // khe tai dung mang
 		b.nVuKhiTick = 0;    b.nVuKhiThu = 0;                     // rac cu -> phai xoa
+		b.nTrangBiLevel = 0;  b.nQhtTick = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();   // luu dinh ky tinh tu luc sinh
 		if (bCuCoPhai)
@@ -1798,6 +1801,147 @@ static void pb_AllocAttribPoints(int nIdx, int nFaction)
 }
 
 // ===========================================================================
+// TRANG BI THEO CAP (chu game 19/08 chieu): tieu not tiem nang ton dong, mac bo
+// Hoang Kim "Kim Phong", cuoi ngua Tuc Suong cap 10, dat 81 doi vu khi cap 10.
+// Duong tao do la duong that cua du an: ItemSet.AddGoldItem (y het LuaAddGoldItem,
+// ScriptFuns.cpp:4081) va ItemSet.Add (khuon pb_GiveFactionWeapon). Moi mon tao
+// xong PHAI qua CanEquip (KItemList.cpp:928 - kiem yeu cau cap/chi so nhu client
+// that lam truoc khi gui goi mac do; Equip phia server KHONG tu kiem) - chua du
+// dieu kien thi HUY mon do, lan LEN CAP sau thu lai => "di cap mac tung mon".
+// ===========================================================================
+
+// Chen vao tui -> kiem CanEquip -> mac -> nha o luoi tui ma Equip chiem chet
+// (meo PickUpItem giong pb_GiveFactionWeapon; KItemList.cpp:1185 khong tu nha).
+// nPlace = -1 de Equip tu chon cho theo loai; rieng NHAN THU HAI phai chi dinh
+// itempart_ring2 vi GetEquipPlace(equip_ring) LUON tra ring1 (KItemList.cpp:1394).
+// Tra 1 = da mac len nguoi; 0 = khong du dieu kien / tui day (mon do DA huy sach).
+static int pb_MacVaoNguoi(int nIdx, int nNew, int nPlace)
+{
+	if (nNew <= 0)
+		return 0;
+	if (!Player[nIdx].m_ItemList.CanEquip(nNew, -1))
+	{
+		ItemSet.Remove(nNew);              // chua chen vao tui - huy thang o kho item
+		return 0;
+	}
+	Item[nNew].LockItem(LOCK_STATE_LOCK);  // khoa nhu vu khi nhap mon - khong lam roi duoc
+	Player[nIdx].m_ItemList.InsertEquipment(nNew, false);
+	const int q2 = Player[nIdx].m_ItemList.FindSame(nNew);
+	if (q2 <= 0)
+	{
+		ItemSet.Remove(nNew);              // tui day (InsertEquipment void - kiem lai sau)
+		return 0;
+	}
+	int nRoomX = -1, nRoomY = -1;
+	if (Player[nIdx].m_ItemList.m_Items[q2].nPlace == pos_equiproom)
+	{
+		nRoomX = Player[nIdx].m_ItemList.m_Items[q2].nX;
+		nRoomY = Player[nIdx].m_ItemList.m_Items[q2].nY;
+	}
+	if (!Player[nIdx].m_ItemList.Equip(nNew, nPlace))
+	{
+		Player[nIdx].m_ItemList.RemoveItemIdx(nNew, Item[nNew].GetStackNum());
+		return 0;
+	}
+	if (nRoomX >= 0)
+		Player[nIdx].m_ItemList.m_Room[room_equipment].PickUpItem(
+			nNew, nRoomX, nRoomY, Item[nNew].GetWidth(), Item[nNew].GetHeight());
+	return 1;
+}
+
+// 9 mon Kim Phong = goldequip.txt dong 178-186; id AddGoldItem = DONG - 1 (kiem
+// chung: trangbihoangkim.lua:31 "AddGoldItem(2083-2)--dao" -> id 2081 = dong 2082
+// Kim O Bon Nhuoc GIOI DAO; NPC tan thu hotrotanthu.lua:86 phat dung bo nay bang
+// for i=177,185. Chu game noi "176-184" la lech 1 theo cach dem 0.
+// CA 9 mon mang nGoldId = 36 (cot m_nId) -> nhan biet "da mac" = GetGoldId()==36.
+static const int s_nKpId[9]  = { 177, 178, 179, 180, 181, 182, 183, 184, 185 };
+static const int s_nKpCho[9] = { itempart_head, itempart_body, itempart_amulet,
+                                 itempart_ring1, itempart_belt, itempart_cuff,
+                                 itempart_pendant, itempart_foot, itempart_ring2 };
+#define PB_KP_GOLDID  36
+
+static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
+{
+	// ---- 1. tieu not tiem nang ton dong ----
+	// LOI CU: pb_AllocAttribPoints chi duoc goi MOT LAN luc vao phai; chu thich cu
+	// noi "nhanh IN_FACTION ben tren se tieu tiep" nhung nhanh do KHONG TON TAI ->
+	// diem don dong khong tieu, sinh khi khong tang => bot cap 82 max HP 440
+	// (bot.log 09:5x) bi quai bai 80 giet lien tuc. Goi lai moi lan len cap la het.
+	if (Player[nIdx].m_nAttributePoint > 0)
+		pb_AllocAttribPoints(nIdx, b.nFaction);
+
+	const int nLevel = Npc[nNpcIdx].m_Level;
+
+	// ---- 2. bo Kim Phong: mon nao chua mac ma du dieu kien thi mac ----
+	for (int k = 0; k < 9; k++)
+	{
+		const int nDangMac = Player[nIdx].m_ItemList.GetEquipment(s_nKpCho[k]);
+		if (nDangMac > 0 && Item[nDangMac].GetGoldId() == PB_KP_GOLDID)
+			continue;              // mon nay xong tu truoc (ke ca qua restart)
+		const int nNew = ItemSet.AddGoldItem(s_nKpId[k], NULL, Npc[nNpcIdx].m_Series,
+		                                     0, 0, 0, 0, 0, 0, 0, 0);
+		if (nNew <= 0)
+			continue;
+		if (pb_MacVaoNguoi(nIdx, nNew,
+		                   (s_nKpCho[k] == itempart_ring2) ? itempart_ring2 : -1))
+			pb_Log("[BotTrangBi] %s cap %d mac Kim Phong mon %d/9 (goldequip id %d)\n",
+			       Player[nIdx].m_PlayerName, nLevel, k + 1, s_nKpId[k]);
+	}
+
+	// ---- 3. ngua Tuc Suong cap 10 (horse.txt dong 30-31: detail 10 = equip_horse,
+	//         particular 2; cot cap co ban 9 va 10 - chu game dan lay cap 10) ----
+	{
+		const int nNgua = Player[nIdx].m_ItemList.GetEquipment(itempart_horse);
+		const bool bDaCo = (nNgua > 0 && Item[nNgua].GetDetailType() == equip_horse
+		                 && Item[nNgua].GetParticular() == 2
+		                 && Item[nNgua].GetLevel() >= 10);
+		if (!bDaCo)
+		{
+			int nMagic[MAX_ITEM_MAGICLEVEL];
+			ZeroMemory(nMagic, sizeof(nMagic));
+			const int nNew = ItemSet.Add(0, 0, Npc[nNpcIdx].m_Series, 10, 0,
+			                             equip_horse, 2, nMagic,
+			                             g_SubWorldSet.GetGameVersion(), 0);
+			if (nNew > 0 && pb_MacVaoNguoi(nIdx, nNew, -1))
+				pb_Log("[BotTrangBi] %s cap %d cuoi ngua Tuc Suong cap 10\n",
+				       Player[nIdx].m_PlayerName, nLevel);
+		}
+	}
+
+	// ---- 4. dat cap 81: doi vu khi len CAP 10 cung loai dang cam ----
+	// (giu nguyen detail/particular/he - chi nang bac item nhu chu game dan;
+	// khong dong vao vu khi Hoang Kim neu sau nay bot duoc phat)
+	if (nLevel >= 81)
+	{
+		const int nW = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
+		if (nW > 0 && Item[nW].GetGoldId() == 0 && Item[nW].GetLevel() < 10)
+		{
+			int nMagic[MAX_ITEM_MAGICLEVEL];
+			ZeroMemory(nMagic, sizeof(nMagic));
+			const int nNew = ItemSet.Add(0, 0, Item[nW].GetSeries(), 10, 0,
+			                             Item[nW].GetDetailType(),
+			                             Item[nW].GetParticular(), nMagic,
+			                             g_SubWorldSet.GetGameVersion(), 0);
+			// kiem DU DIEU KIEN truoc roi moi huy vu khi cu - nguoc thu tu la co
+			// cua so bot tay khong (neu van hong o buoc mac, [BotVuKhi] 10s vot lai)
+			if (nNew > 0 && !Player[nIdx].m_ItemList.CanEquip(nNew, -1))
+				ItemSet.Remove(nNew);
+			else if (nNew > 0)
+			{
+				Player[nIdx].m_ItemList.RemoveItemIdx(nW, Item[nW].GetStackNum());
+				if (pb_MacVaoNguoi(nIdx, nNew, -1))
+				{
+					b.nAtkSkill = 0;   // chon lai chieu theo vu khi (cung loai - cho chac)
+					pb_Log("[BotTrangBi] %s cap %d len vu khi cap 10 (detail %d parti %d)\n",
+					       Player[nIdx].m_PlayerName, nLevel,
+					       Item[nNew].GetDetailType(), Item[nNew].GetParticular());
+				}
+			}
+		}
+	}
+}
+
+// ===========================================================================
 // CHIEN DAU
 //
 // Khuon lay tu chinh he auto cua du an, KHONG phai tu cay tham khao ngoai:
@@ -1900,10 +2044,32 @@ static int pb_ChonBai(int nLevel, int nLech)
 	if (n <= 0)
 		return -1;
 
-	// tron nLech (meo KSimCity.cpp:1329 - g_Random goi lien tiep hay ra giong nhau)
-	// roi NE BAI QUA TAI: dem so bot dang nham tung ung vien, lay bai dau tien con
-	// duoi tran; tat ca deu qua tai thi danh chiu lay bai boc dau.
+	// (19/08 chieu - chu game: "chia deu cac map cung cap khong gom mot map")
+	// Truoc day lay BAI DAU TIEN con duoi tran ke tu diem boc -> nghin con don vao
+	// 1-2 map dau danh sach. Nay CHIA DEU: vong 1 chon bai IT BOT NHAT trong cac
+	// ung vien DUNG BAC; ca bac cham tran PB_BAI_TRAN thi vong 2 mo xuong ca ung
+	// vien bac ke duoi (van lay it nhat). Diem boc xoay nBat giu vai tro xe hoa
+	// khi nhieu bai dong so bot.
 	const int nBat = ((int)g_Random(n) + nLech * 7) % n;
+	int nChon = -1, nDongChon = 0x7fffffff;
+	for (int v = 0; v < n; v++)
+	{
+		const int nUng = aTm[(nBat + v) % n];
+		if (s_bai[nUng].nCapToiThieu != nMoc)
+			continue;                   // vong 1: chi bai DUNG bac
+		int nDong = 0;
+		for (int q = 0; q < s_botCount; q++)
+			if (s_bots[q].nBaiIdx == nUng)
+				nDong++;
+		if (nDong < nDongChon)
+		{
+			nDongChon = nDong;
+			nChon     = nUng;
+		}
+	}
+	if (nChon >= 0 && nDongChon < PB_BAI_TRAN)
+		return nChon;
+	// bai dung bac day het (hoac hiem khi khong co): xet MOI ung vien ke ca bac duoi
 	for (int v = 0; v < n; v++)
 	{
 		const int nUng = aTm[(nBat + v) % n];
@@ -1911,10 +2077,13 @@ static int pb_ChonBai(int nLevel, int nLech)
 		for (int q = 0; q < s_botCount; q++)
 			if (s_bots[q].nBaiIdx == nUng)
 				nDong++;
-		if (nDong < PB_BAI_TRAN)
-			return nUng;
+		if (nDong < nDongChon)
+		{
+			nDongChon = nDong;
+			nChon     = nUng;
+		}
 	}
-	return aTm[nBat];
+	return (nChon >= 0) ? nChon : aTm[nBat];
 }
 
 #define PB_VISION_MPS     700          // tam tim quai
@@ -2478,6 +2647,24 @@ static void pb_DungVatPham(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now, i
 		{
 			pTTL->CastStateSkill(nNpcIdx, 0, 0, 3600 * GAME_FPS, TRUE);
 			pb_Log("[BotTTL] %s an Tien Thao Lo (x2 kinh nghiem, 1 gio)\n",
+			       Player[nIdx].m_PlayerName);
+		}
+	}
+
+	// ---- giu buff Que Hoa Tuu (+20 may man 30 phut - chu game 19/08) ----
+	// Item that (magicscript.txt:126, genre 6/detail 1/parti 124) chay
+	// \script\item\ghj.lua -> AddSkillState(450, 1, 1, 30*60*18, -1) va DOI phai
+	// co to doi. Bot cham thang trang thai nhu Tien Thao Lo o tren (khoi can item,
+	// khoi can nhom); khong co cach doc "con buff hay khong" re tien nen lam moi
+	// theo dong ho: som 1 phut truoc han 30 phut.
+	if (b.nQhtTick == 0 || now - b.nQhtTick >= (unsigned int)(GAME_FPS * 60 * 29))
+	{
+		b.nQhtTick = now;
+		KSkill* pQht = (KSkill*)g_SkillManager.GetSkill(450, 1);
+		if (pQht)
+		{
+			pQht->CastStateSkill(nNpcIdx, 0, 0, 30 * 60 * GAME_FPS, TRUE);
+			pb_Log("[BotQHT] %s cham Que Hoa Tuu (+20 may man, 30 phut)\n",
 			       Player[nIdx].m_PlayerName);
 		}
 	}
@@ -3060,7 +3247,12 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 					SubWorld[nSub].Mps2Map(nAimThoX, nAimThoY, &nRv, &nMXv, &nMYv, &nOXv, &nOYv);
 					bHong = (nRv < 0)
 					     || (SubWorld[nSub].m_Region[nRv].GetBarrierMin(nMXv, nMYv, nOXv, nOYv, FALSE)
-					         != Obstacle_NULL);
+					         != Obstacle_NULL)
+					     // (19/08 chieu) quai dung trong VUNG RONG du lieu / tren vach
+					     // (luoi chan nhung engine cho di): duoi theo la bot di vao vung
+					     // rong roi ket - chinh duong DoKiet382 bi [BotCuu] keo ve xong
+					     // 60 giay sau lai o trong vung rong. Cam luon tu day.
+					     || SubWorld[nSub].CellObsSrv(nAimThoX, nAimThoY) == 1;
 				}
 				if (bHong)
 				{
@@ -4089,6 +4281,15 @@ static void pb_DriveBot(PB_Bot& b)
 				pb_GiveFactionWeapon(nIdx, b.nFaction);
 				if (Player[nIdx].m_ItemList.GetWeaponType() >= 0)
 					b.nAtkSkill = 0;   // ep chon lai chieu theo vu khi moi
+			}
+
+			// -- trang bi theo cap (19/08 chieu): tiem nang ton dong + Kim Phong
+			// + ngua Tuc Suong + vu khi cap 10 khi dat 81. Thu MOT LAN moi khi
+			// LEN CAP (gate nTrangBiLevel) de khoi tao-huy item moi 10 giay.
+			if (b.nFaction >= 0 && b.nTrangBiLevel != Npc[nNpcIdx].m_Level)
+			{
+				b.nTrangBiLevel = Npc[nNpcIdx].m_Level;
+				pb_TrangBiTheoCap(nIdx, nNpcIdx, b);
 			}
 
 			// -- tu cuu khoi ket luoi: dua ve diem dat chan bai cua chinh no --
