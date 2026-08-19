@@ -209,3 +209,51 @@ nhieu/toan bo; map bai luyen nao dinh "CANH BAO ... BOT KHONG DI DUOC" thi bo su
 tep _Region_S/_C hoac rut khoi bang s_bai. Loi engine nen ghi nhan CHUA va (anh
 huong ca nguoi that, doi dot rieng): Mps2Map chia so am lot bien voi map rect.left==0;
 ServeJump cong offset truoc khi chup old -> nhay lien tuc vao bien troi toa do.
+
+## 9. TU CUU KET LUOI + HET MAI MON TRANG BI (19/08 chieu - f34a5cbb)
+
+Chu game bao (quan sat 09:46-09:55): "bot van dang dung ngoai map" + "mot so bot
+chet ve thanh khong len lai map luyen cong". Phap y 60MB cuoi bot.log ra 2 benh:
+
+1) KET LUOI - bot NAP LAI dung vi tri da luu tu thoi "vung rong = di duoc": nay
+   vung rong = vat can toan phan -> xuat phat ket -4 vinh vien (FindFreeBlockAround
+   chi quet vanh 1 o quanh block; block vung rong gop toi 16x32 o), hoac ket dao A*
+   (map 193: CaoVu720/NgoToan954 thua 264 lan/50 phut tai o ~1529,2464). Dung im
+   vo han = canh "dung ngoai map".
+   FIX [BotCuu] (KPlayerBot.cpp, moi 10s/bot, gion cuu 60s): T1 = o dang dung + CA
+   4 o lan can la vat can LUOI nhung engine bao TRONG (nam sau vung rong; o goc
+   nua-trong khong bi oan; mep vung rong tu thoat bang vanh block) HOAC T2 = roam
+   A* thua 5 lan LIEN TIEP -> SetPos ve diem dat chan bai (o lech 9x7, kiem
+   GetBarrierMin; diem ve cung bi chan = map hong toan phan thi KHONG dich) + reset
+   walk/chase/roam/follow/loot/jam + buoc-ra. API moi KSubWorld::CellObsSrv(mps):
+   1/0/-1, doc obs CHINH O khong kep toa do.
+
+2) TAY KHONG - do ben ve 0: KItemList::Abrade nhanh nDur==0 THAO trang bi nem vao
+   tui ("cuc sat") -> don tui cua bot XOA -> 210 bot [BotCast] BI TU CHOI (vukhi
+   detail=-1) danh khong sut mau -> cam muc tieu 45s quay vong -> chet lien tuc ve
+   thanh (NgoNghia790 hoi sinh 09:13:25 chet lai 09:14:09). Bot van QUAY LAI bai
+   ngay giay hoi sinh ([BotBai] cung giay) - "khong len lai" thuc ra la chet qua
+   nhanh nen luc nao cung thay o thanh.
+   FIX goc: Abrade return som cho bot (PB_IsBot tu kiem bien + dwID) - bot khong
+   biet sua do o tho ren; nguoi that/uy thac khong doi gi. FIX don chua: tay khong
+   (da co phai + tung nhan vu khi) -> pb_GiveFactionWeapon phat lai vu khi nhap mon
+   [BotVuKhi], gion 60s, tran 5 lan/doi (phai quyen "tay khong" la co y), xong ep
+   nAtkSkill=0 chon lai chieu.
+
+Phan bien tu bat truoc build: guard Abrade khong duoc doc Player[m_PlayerIdx] truoc
+khi kiem bien (list khong thuoc player co that - guard CheckCanEquip); 5 truong moi
+PB_Bot phai init khi tai dung khe (rac nAStarThua>=5 = cuu oan ngay, nVuKhiThu=5 =
+cam phat vinh vien); T1 mot-o cuu oan o goc -> doi 4 lan can.
+
+GHI NHAN chua lam: giap DA mat khong phuc hoi duoc (khong co ban ghi) - bot do
+thanh glass HP thap, chet nhieu hon binh thuong nhung van luyen duoc; max HP lech
+lon giua cac phai (440 vs 10000 o cap ~80) la phan bo tiem nang, viec khac neu can.
+
+TEST sau restart (GameServer dang TAT luc 10:32, DLL moi da nam san bin\server):
+bat GameServer -> Goi 1000 -> BAT danh quai -> doi 5-10 phut ->
+  grep -a "\[BotCuu\]"  bot.log   # cuu duoc bao nhieu con ket
+  grep -a "\[BotVuKhi\].*tay khong giua doi" bot.log   # phat lai vu khi
+  grep -a "\[PathSrv\]" bot.log | grep -a "CANH BAO"   # map hong du lieu (lan dau co log nay)
+  grep -a "BI TU CHOI" bot.log | tail                    # phai GIAM dan ve 0
+Quan sat mat thuong: khong con bot dung bat dong ngoai ria map; so bot lang vang
+o thanh giam manh (chi con con vua chet dang cho 60s doi map cua pb_RaBai).
