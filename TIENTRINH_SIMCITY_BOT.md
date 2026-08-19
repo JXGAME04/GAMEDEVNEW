@@ -1,6 +1,6 @@
 # TIẾN TRÌNH SIMCITY / BOT NGƯỜI CHƠI GIẢ LẬP — SỔ TAY TOÀN DỰ ÁN
 
-> Cập nhật cuối: **18/08/2026 ~16:45** · head lúc ghi: `a829482b` (+ các commit crash-log phía client mới hơn của chủ game)
+> Cập nhật cuối: **18/08/2026 ~20:45** · head lúc ghi: `a829482b` (+ các commit crash-log phía client mới hơn của chủ game)
 > Tài liệu liên quan: `PHANTICH_SIMCITY_JX2.md` (phân tích bản gốc), `PORT_SIMCITY_JX1_KEHOACH.md` (kế hoạch port), `BANGIAO_DATAU_TASKLINK.md`, `DANHSACH_DATAU_PORT.md`.
 
 ---
@@ -85,3 +85,78 @@ Lệnh bài: `script/item/lenhbaiadmin.lua` → `script/item/simcity_admin.lua` 
 - **Log**: `bin\server\bot.log` — các thẻ: `[BotPerf]` (nhịp bot/A*/quét đồ mỗi 10s), `[SvPerf]` (4 tầng khung server), `[BotNhom]` (roll/tk/vào nhóm), `[BotDan]` (giãn dân), `[BotBien]`, `[BotDame]`, `[BotNhat]/[BotXoaDo]`, `[BotKenh]` (kênh chat học được + câu đã nói), `[BotPM]`...
 - **Sửa nguồn**: file TCVN3 → script python latin-1; chuỗi có backslash → BẮT BUỘC qua Write tool (bẫy Bash heredoc nuốt nửa backslash — đã cắn 2 lần trong 18/08).
 - **Trình tự test chuẩn**: restart → lệnh bài → Gọi 1000 → "Cho bot VAO PHAI" → "BAT danh quai" (hai lệnh giờ là CHẾ ĐỘ, bấm sớm muộn đều được) → chạy 3–5 phút → kéo log.
+
+---
+
+## 6. HE LUU DU LIEU BOT (18/08 toi - "tat server mo lai bot van giu cap/do/vi tri")
+
+**Thiet ke** (bot duoc luu NHU NGUOI THAT, di dung duong luu 20 nam):
+- Spawn xong gui `PB_ASK_LOCKROLE` -> GameServer gui `c2s_roleserver_lock` toi Goddess
+  (thieu khoa thi `_SaveRoleInfo` VUT bai luu - `IsRoleLockBySelf`).
+- Luu DINH KY 10 phut/bot (PB_Breathe, toi da 1 goi/nhip - 1000 bot trai deu ~56s/vong);
+  luu NGAY sau khi vao phai xong; go bot (`pb_KillBot`) luu `bLeave=true` giua
+  PrepareRemove va RemoveQuiting (dung trinh tu PlayerLogoutGateway), that bai thi gui UNLOCK.
+- `KPlayer::Save()` mo cong `netidx==-1` CHI khi `PB_IsBot` (PB_IsBot da so ca dwID).
+- DAU BOT: `SavePlayerDataAtOnce` dong `PB_BLOB_DAU 0xB07B07` vao truong chet
+  `BaseInfo.irevivaly` (nguoi that luon ghi 0, khong ai doc khi nap, Goddess chi in log).
+  Blob mang dau + nSect hop le = "bot cu": KHONG xoa ky nang, phai = nSect,
+  nAi = IN_FACTION, nGaveWeapon = 1 (de 0 la pb_GiveFactionWeapon HUY vu khi dang cam!).
+- LUAT CAP 20: blob bot cu co `ifightlevel < 20` -> ep cUseRevive=1 + irevivalid=53 +
+  irevivalx=19 (ve diem hoi sinh map 53); tu cap 20 dung nguyen cho da luu
+  (`cUseRevive=0` + `ientergame*` do SavePlayerBaseInfo ghi - `SetLoginType(0)` duoc ep
+  truoc MOI lan luu de script SetLogoutRV khong lat co).
+- Menu lenh bai: "LUU du lieu bot ngay" -> `PB_SaveAll()` don 5 goi/nhip (~11s/1000 bot);
+  "Go het bot" gio luu tung con truoc khi go (PB_KILL_PER_TICK ha 20 -> 5).
+- Mat khoa role (vd Goddess restart): Goddess tra -1 -> GameServer doc byte ket qua
+  (truoc day BI NUOT), bao Core `PB_OnSaveFailed` hen luu lai ~60s + tu gui lai LOCKROLE.
+  Log `[BotLuu]` ghi du: nap lai bot cu / Goddess tu choi / khoa that bai / luu XONG.
+
+**Phan bien 6 lang kinh da bat & da sua trong dot nay:** PB_IsBot thieu doi chieu dwID
+(nguoi that chiem khe bot bi kick se bi dong dau oan); guard `nLen>=30` chan ca lenh
+luu/mo khoa (bot ten 30-31 byte); nuot ket qua luu -1; `s_nLuuTatCaCon` ket khi ClearBot
+cat ngang SaveAll; strcmp -> strcmpi + bo entry chet o vong chong spawn trung; tai-clone
+mau tu bot co dau (taobot_bdb da them `irevivaly=0`, server them dieu kien nSect hop le);
+bo qua bot dang chet/mat NPC khi luu dinh ky; NULL-deref `LoadPlayerStateSkillList`
+(loi engine san co, sap server khi blob mang state-skill khong con trong bang - da va
+chung cho ca nguoi that).
+
+**RANG BUOC VAN HANH (quan trong):**
+1. `GameServer_cfg.ini [Overload] MaxPlayer` PHAI >= 1500 khi bat bot (live dang 1500;
+   ha xuong la nguoi that bi day qua tran `nIndex > m_nMaxPlayer` het duong luu).
+2. Dai tai khoan PB_AddBot(1,1000) PHAI la tai khoan DO taobot_bdb TAO - dung tro vao
+   tai khoan nguoi that ten thuan so; dung dang nhap tai khoan 1..1000 bang client that
+   trong luc dang goi bot.
+3. Tat server "sach": bam "LUU du lieu bot ngay" -> doi dong `[BotLuu] ... XONG` trong
+   bot.log -> doi them ~10 giay (Goddess ghi not) -> tat. Khong bam gi thi mat toi da
+   10 phut luyen cuoi (nhip luu dinh ky).
+4. Muon doi NHAN VAT MAU cho taobot_bdb: build lai tool (da them dong xoa dau
+   `p->BaseInfo.irevivaly = 0;` sau memcpy - tools/taobot_bdb, binary cu CHUA co).
+5. Con no (ghi nhan, chua sua): reply saverole tre co the SetSaveStatus(SAVE_IDLE) len
+   khe nguoi that vua tai su dung (mat 1 chu ky autosave, tu lanh sau 30s - loi lop cu,
+   1000 bot khuech dai); khoi PB_ trong GameScriptFuns nam ngoai #ifdef _SERVER (build
+   CLIENT von da hong tu truoc); chay >= 2 GameServer thi unlock cua Goddess khong kiem
+   chu khoa (live 1 GS - khong sao).
+
+**Trinh tu test he luu:** restart server -> Goi 1000 -> VAO PHAI -> BAT danh quai ->
+doi 5-10 phut (xem `[BotLuu]` bao luu ngay-sau-vao-phai) -> "LUU du lieu bot ngay" ->
+doi XONG + 10s -> tat CA GameServer LAN Goddess -> bat lai -> Goi 1000 -> ky vong:
+`[BotLuu] <ten> nap lai bot cu: cap X phai Y (giu nguyen cho cu / duoi cap 20 -> ve map 53)`,
+bot >= 20 dung dung cho cu voi nguyen do/skill, khong can vao phai lai; BAT danh quai
+la chien tiep. Kiem tra cheo: console Goddess in `SaveRoleInfo:<ten>` moi lan luu.
+
+## 7. PHAN TICH LAG 1000 BOT (18/08 toi - so lieu tu bot.log 10h)
+
+- `[SvPerf]` (moi 10s): BotKPlayer median 1404ms (14%CPU 1 loi, max 3245ms luc relogin);
+  MainLoop engine 595ms (0 bot) -> ~840ms (1000 bot); MessageLoop ~10ms; SimCity 0.
+  Server GIU DU 18fps (tong ~15-21ms/khung trong quy 55ms) => lag nguoi choi thay la
+  CLIENT VE hang tram sprite, khop ket luan truoc; giai phap van la gian dan (da chay).
+- DA SUA O(n^2): 3 cho trong pb_DriveBot quet ca mang s_bots tim chi so chinh minh
+  (~18-36 trieu vong lap/giay voi 1000 bot) -> phep tru con tro `(int)(&b - s_bots)`.
+  Ky vong BotKPlayer ms giam ro trong [BotPerf] dot chay toi.
+- A* ~1000 lan/giay (10 lan/bot/10s, ty le tuyen tinh theo so bot) - binh thuong sau
+  fix e0686eb6. bot.log dang phinh ~33 dong/giay ([BotDame] 6,4/s, [BotDanh] 5,9/s,
+  [BotHoang] 3,7/s; moi dong 1 lan fopen/fclose) - DE XUAT dot sau: khi he da on dinh,
+  ha bot log [BotDame]/[BotDanh]/[BotHoang] hoac them cong tac do on.
+- RNG to doi: fix an tu 16:39 (gieo= 30 gia tri phan biet/batch, ~33% muon nhom);
+  19:11 co 339/1000 bot trong nhom. Con 103 dong "VAO NHOM THAT BAI mem=0/tran=3 mo=1"
+  (GetInviteReply tu choi) - dang ngo, viec dot sau.
