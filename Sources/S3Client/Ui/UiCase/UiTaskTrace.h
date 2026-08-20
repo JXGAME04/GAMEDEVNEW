@@ -36,8 +36,10 @@ private:
 	void	UpdateView();
 	void	SnapToButton();		// neo sat trai + ngang hang nut theo doi
 private:
+	// KHONG giu co "dang theo doi" rieng: trang thai = cua so co dang hien hay khong.
+	// (Truoc day co co m_bTraced rieng, ESC/UiCloseWndsInGame an cua so nhung khong
+	//  xoa co => bam nut lan sau chi "tat" mot cua so von da an, phai bam 2 lan.)
 	static KUiTaskTrace*	m_pSelf;
-	static bool				m_bTraced;
 
 	KWndText256				m_Title;
 	KScrollMessageListBox	m_List;		// [TaskInfo] + _List + _Scroll

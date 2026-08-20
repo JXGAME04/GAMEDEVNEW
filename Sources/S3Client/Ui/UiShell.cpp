@@ -590,7 +590,8 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiHelper2::CloseWindow(bAll);
 	KUiTaskNote::CloseWindow(bAll);
 	KUiTaskGuide::CloseWindow(bAll);
-	KUiTaskTrace::CloseWindow(bAll);
+	if (bAll)
+		KUiTaskTrace::CloseWindow(true);	// HUD: ESC khong an khung theo doi
 	KUiParadeItem::CloseWindow(bAll);
 	KUiStrengthRank::CloseWindow();
 	KUiTongManager::CloseWindow();

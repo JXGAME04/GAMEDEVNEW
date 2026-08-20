@@ -129,3 +129,26 @@ Cạm bẫy mới ghi nhận: `DT_Answer` định nghĩa SAU khối TG trong `Co
 - Lớp `KUiTaskTraceIcon` (đợt 4) đã **xóa**; UiShell không còn mở/đóng icon riêng.
 - `UiPlayerBar.ini` bản đã sửa lưu git tại `TaskGuideRes\Ui\Ui3\UiPlayerBar.ini`.
 - Deploy 21:59: `Game.exe` 1.252.352 B (bản cũ `Game_cu_2150.exe`), re_pe_crt PASS.
+
+## 12 · ĐỢT 5c/5d: gốc lệch vị trí + lỗi ESC (tìm bằng 6 mũi phản biện đối kháng)
+
+**5c — GỐC LỆCH THẬT** (`11d7b113`): `KWndShowAnimate::Show()` ([WndShowAnimate.cpp:60-64](D:/GAMEDEVNEW/Sources/S3Client/Ui/Elem/WndShowAnimate.cpp:60)) khi ini **không có** `StartPos`/`EndPos` thì `m_AppearRange=(0,0)` ⇒ chạy nhánh `else` → `SetPosition(m_oFixPos)` = **reset về toạ độ `[Main]` của ini**, đè lên mọi `SetPosition` gọi trước đó. Vì vậy 2 đợt trước (đổi sang `GetAbsolutePos`, snap mỗi lần mở) đều **vô nghĩa**. Fix: `SnapToButton()` cập nhật **cả `m_oFixPos`** rồi mới `SetPosition` — điểm "đứng yên" mà `Show()`/`Hide()` quay về chính là cạnh nút.
+
+Kiểm bằng số (client `config.ini` = **1024×768**), 3 agent độc lập cùng ra một kết quả:
+`PlayerBar [Main] (0,0)` → abs thanh = (0,0) · `m_TraceBtn` bị neo `SetPosition(1024−30,185)` → abs nút = **(994,185)** · khung `m_Width=180` → **(812,185)**, cách nút 2px, **cùng Top**. Ảnh nền `任务追踪底板.spr` đọc từ pak = **180×220** đúng bằng ini (nghi vấn "ảnh vẽ theo kích thước gốc khác Width khai báo" bị bác bỏ); icon `opentracebtn.spr` = **25×25, 2 frame**.
+
+**5d — LỖI THẬT do đợt 3 gây ra** (3/6 agent cùng bắt): khung theo dõi **không** nằm trong danh sách "có cửa sổ nào đang mở?" của `UiCloseWndsInGame` (UiShell.cpp:488-533) **nhưng lại nằm trong danh sách đóng** (dòng 593). Hậu quả: mở túi đồ + bật theo dõi → bấm **ESC** → khung bị ẩn nhưng cờ `m_bTraced` vẫn `true` ⇒ **bấm icon lần sau không hiện lại** (phải bấm 2 lần), và 2 nút trong bảng F11 hiển thị sai trạng thái. Cùng đường lỗi: bắt đầu giao dịch (`GDCNI_TRADE_START`), cờ bạc (`GDCNI_GAMBLE_START`).
+Sửa 2 lớp:
+- **Bỏ hẳn cờ `m_bTraced`** — `IsTraced()` nay = "cửa sổ có đang hiện không" (một nguồn sự thật duy nhất ⇒ không thể lệch).
+- Khung theo dõi là **HUD** (như minimap): ESC/đóng-cửa-sổ **không** ẩn nó nữa, chỉ đóng khi thoát game (`bAll==true`).
+- Kèm: khởi tạo `m_oFixPos` trong constructor (`KWndMovingImage` không khởi tạo — ini hỏng là bay toạ độ rác); bỏ 2 section CHẾT `[OpenIcon]/[OpenIconBtn]` khỏi `tasktrace.ini` (di sản đợt 4, dễ đánh lừa người sửa vị trí sau này — nút thật là `[TraceBtn]` trong `UiPlayerBar.ini`).
+
+Deploy 03:49: `Game.exe` 1.252.352 B (bản cũ `Game_cu_0303.exe`), re_pe_crt PASS.
+
+### 🔴 LƯU Ý PHÁT HÀNH CHO NGƯỜI CHƠI
+Tính năng đang sống nhờ **3 tệp .ini RỜI**: `Ui\Ui3\UiPlayerBar.ini` (có `[TraceBtn]`), `Ui\Ui3\uitaskguide\taskguide.ini`, `Ui\Ui3\uitaskguide\tasktrace.ini`, cộng `Ui\uitasklist.ini` + 6 bảng `settings\task\tasklink_*.txt`. Bản `UiPlayerBar.ini` **trong pak là bản CŨ không có `[TraceBtn]`** — máy người chơi chỉ có pak sẽ thấy **nút vô hình, không bấm được**. Khi phát hành phải kèm các tệp rời này (hoặc đóng lại pak). Bản git đầy đủ ở `TaskGuideRes\`.
+
+### Việc còn để ngỏ (đã cân nhắc, chưa làm)
+- Chế độ thanh **thu nhỏ** (`UiPlayerBarMini.ini`) không có `[TraceBtn]` ⇒ nút thành 0×0 ở (994,464) và khung bung lệch. **Hiện không chạm tới được** vì `[SwitchSizeBtn]` cũng thiếu trong ini đang phát hành; nếu ai thêm lại nút đổi cỡ thì phải thêm `[TraceBtn]` vào bản mini.
+- Kéo thả khung không đồng bộ `m_oFixPos` ⇒ vị trí người chơi tự kéo bị bỏ mỗi lần tắt/bật (đúng ý "luôn bung ra ngang nút", nhưng nếu sau này muốn nhớ chỗ đã kéo thì phải cập nhật `m_oFixPos` trong `OnMoveWnd`).
+- `[TraceBtn]` chưa đặt `CheckBox=1` nên nút không sáng trạng thái "đang bật".

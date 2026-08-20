@@ -21,10 +21,13 @@
 #define SCHEME_INI_TASKTRACE	"uitaskguide\\tasktrace.ini"
 
 KUiTaskTrace*	KUiTaskTrace::m_pSelf = NULL;
-bool			KUiTaskTrace::m_bTraced = false;
 
 KUiTaskTrace::KUiTaskTrace()
 {
+	// KWndMovingImage KHONG khoi tao m_oFixPos trong constructor: neu tasktrace.ini
+	// khong nap duoc thi Init() khong chay va Show() se nhay den toa do RAC.
+	m_oFixPos.x = 0;
+	m_oFixPos.y = 0;
 }
 
 KUiTaskTrace::~KUiTaskTrace()
@@ -92,8 +95,6 @@ void KUiTaskTrace::CloseWindow(bool bDestroy)
 			m_pSelf = NULL;
 		}
 	}
-	if (bDestroy)
-		m_bTraced = false;	// logout / ve man hinh chinh: bo theo doi
 }
 
 KUiTaskTrace* KUiTaskTrace::GetIfVisible()
@@ -103,14 +104,15 @@ KUiTaskTrace* KUiTaskTrace::GetIfVisible()
 	return NULL;
 }
 
+// Trang thai "dang theo doi" = cua so co dang hien hay khong (mot nguon su that duy
+// nhat) - khong the lech voi thuc te du bi an tu duong khac (ESC, giao dich, co bac).
 bool KUiTaskTrace::IsTraced()
 {
-	return m_bTraced;
+	return GetIfVisible() != NULL;
 }
 
 void KUiTaskTrace::SetTraced(bool bTraced)
 {
-	m_bTraced = bTraced;
 	if (bTraced)
 		OpenWindow();
 	else
@@ -119,7 +121,7 @@ void KUiTaskTrace::SetTraced(bool bTraced)
 
 void KUiTaskTrace::OnTaskValueChanged(int nTaskId)
 {
-	if (m_bTraced && m_pSelf && m_pSelf->IsVisible())
+	if (m_pSelf && m_pSelf->IsVisible())
 		m_pSelf->UpdateView();
 }
 
