@@ -25,7 +25,11 @@ import os, struct, sys
 
 SRV  = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server"
 CLI  = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client"
-PAKS = ["maps.pak", "maps_error.pak", "namcung.pak", "maps_tieu_bang_chien.pak"]
+# Danh sach pak KHONG duoc doan: doc dung tep may chu nap (package.ini) - maps_error.pak
+# va maps_tieu_bang_chien.pak co trong thu muc nhung KHONG nam trong package.ini nen
+# GameServer khong he nap; doc chung se sinh toa do "ma" (quai khong ton tai).
+PKG_INI = os.path.join(SRV, "package.ini")
+PAKS_DUPHONG = ["maps.pak", "namcung.pak"]
 INI  = os.path.join(SRV, "settings", "MapList.ini")
 MAPIDX = os.path.join(SRV, "script", "task", "newtask", "map_index.lua")
 FINDMAPS = os.path.join(SRV, "settings", "task", "tasklink_findmaps.txt")
@@ -334,15 +338,28 @@ def gom_cum(quai, ax_mps, ay_mps):
     cum = {}
     for (px, py) in quai:
         k = (px // CUM, py // CUM)
-        c = cum.setdefault(k, [0, 0, 0])
+        c = cum.setdefault(k, [0, 0, 0, []])
         c[0] += px
         c[1] += py
         c[2] += 1
+        c[3].append((px, py))
     ds = []
     for k, c in cum.items():
         if c[2] < MIN_QUAI:
             continue
-        ds.append((c[0] // c[2], c[1] // c[2], c[2]))
+        # TAM cum co the roi vao O VAT CAN (tuong, nha, vach nui) - ma engine chi ne
+        # vat can MOT lan moi lenh di, lan hai la dung im. Nen NEO vao vi tri CON QUAI
+        # THAT gan tam nhat: cho do chac chan di toi duoc vi quai dang dung o do.
+        tx = c[0] // c[2]
+        ty = c[1] // c[2]
+        gx, gy = c[3][0]
+        gd = (gx - tx) ** 2 + (gy - ty) ** 2
+        for (px, py) in c[3]:
+            d = (px - tx) ** 2 + (py - ty) ** 2
+            if d < gd:
+                gd = d
+                gx, gy = px, py
+        ds.append((gx, gy, c[2]))
     ds.sort(key=lambda t: -t[2])
     ds = ds[:MAX_SPOT]
     # cum gan diem Xa Phu tha xuong len truoc (di gan nhat truoc)
@@ -353,14 +370,34 @@ def gom_cum(quai, ax_mps, ay_mps):
 _PAKS = []
 
 
+def doc_package_ini(path):
+    """[Package] 0=maps.pak / 1=xxx.mps ... - dung THU TU nay lam thu tu tim tep."""
+    ds = []
+    try:
+        raw = open(path, "rb").read()
+    except IOError:
+        return list(PAKS_DUPHONG)
+    for line in raw.split(b"\n"):
+        line = line.strip()
+        if not line or line[:1] in (b";", b"[") or b"=" not in line:
+            continue
+        k, v = line.split(b"=", 1)
+        if k.strip().isdigit():
+            ds.append(v.strip().decode("latin-1"))
+    return ds or list(PAKS_DUPHONG)
+
+
 def _mo_pak():
     """Moi tien trinh con mo bo pak cua rieng no (khong chia se file handle)."""
     global _PAKS
     _PAKS = []
-    for pk in PAKS:
+    for pk in doc_package_ini(PKG_INI):
         full = os.path.join(SRV, "Pak", pk)
         if os.path.exists(full):
-            _PAKS.append(Pak(full))
+            try:
+                _PAKS.append(Pak(full))
+            except ValueError:
+                pass
 
 
 def _quet_mot_map(viec):
@@ -379,7 +416,8 @@ def main():
     if not _PAKS:
         print("KHONG THAY pak nao trong %s\\Pak" % SRV)
         return 1
-    print("pak: %s" % ", ".join("%s(%d)" % (p.name, len(p.idx)) for p in _PAKS))
+    print("pak (theo package.ini): %s"
+          % ", ".join("%s(%d)" % (p.name, len(p.idx)) for p in _PAKS))
 
     duong = doc_maplist(INI)
     dsmap = doc_mapindex(MAPIDX)
@@ -429,6 +467,11 @@ def main():
     d.append(b"#")
     d.append(b"# Cot:  MapID <tab> X <tab> Y <tab> SoQuai      (X/Y = MPS tuyet doi)")
     d.append(b"# Dong bat dau bang # la chu thich.")
+    d.append(b"# LUU Y KHI SUA TAY:")
+    d.append(b"#   - Luu bang ANSI (KHONG phai UTF-8) - tep co dau UTF-8 se hong dong dau.")
+    d.append(b"#   - Cac dong CUNG MOT MapID nen de LIEN TIEP nhau cho de doc.")
+    d.append(b"#   - Toa do lay tu VI TRI CON QUAI THAT (khong phai tam hinh hoc) nen")
+    d.append(b"#     chac chan khong roi vao o vat can.")
     d.append(b"")
     for (mid, ten, cx, cy, ds, nq) in ket:
         d.append(b"# ---- map %d: %s (%d quai, neo nhiem vu %d,%d) %s"

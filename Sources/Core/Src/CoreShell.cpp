@@ -2802,6 +2802,10 @@ static void DT_LoadSpotFile()
 	while (g_nDTSpotFile < DT_MAX_SPOTFILE && fgets(szD, sizeof(szD), f))
 	{
 		const char* s = szD;
+		// Notepad Windows luu UTF-8 co dau BOM EF BB BF - bo qua cho khoi hong dong dau
+		if ((unsigned char)s[0] == 0xEF && (unsigned char)s[1] == 0xBB
+		 && (unsigned char)s[2] == 0xBF)
+			s += 3;
 		while (*s == ' ' || *s == '\t')
 			++s;
 		if (*s == '#' || *s == ';' || *s == '\r' || *s == '\n' || *s == 0)
