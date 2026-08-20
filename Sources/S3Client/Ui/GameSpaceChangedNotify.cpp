@@ -29,6 +29,7 @@
 #include "UiCase/UiChatCentre.h"
 #include "UiCase/UiStoreBox.h"
 #include "UiCase/UiTaskNote.h"
+#include "UiCase/UiTaskGuide.h"
 #include "UiCase/UiNewsMessage.h"
 #include "UiCase/UiNewsMessage1.h"
 #include "UiCase/UiStrengthRank.h"
@@ -494,6 +495,9 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 			KMissionRecord* pRecord = (KMissionRecord*)uParam;
 			KUiTaskNote::WakeUp(pRecord->sContent, pRecord->nContentLen, pRecord->uValue);
 		}
+		break;
+	case GDCNI_TASK_VALUE_UPDATE:	// [TaskGuide] task value ve tu server
+		KUiTaskGuide::OnTaskValueChanged((int)uParam);
 		break;
 	case GDCNI_PK_SETTING:
 		break;

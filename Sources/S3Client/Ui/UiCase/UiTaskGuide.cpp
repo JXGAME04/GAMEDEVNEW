@@ -1,0 +1,478 @@
+/*
+ * File:     UiTaskGuide.cpp
+ * Desc:     Bang "Chi nam nhiem vu" (F11; ten cua so "NewTask" nhu ban Linux/JX2).
+ *           Giao dien nap tu <scheme>\uitaskguide\taskguide.ini (bo cuc + anh SPR
+ *           y het ban tham chieu). Noi dung Da Tau soan lai tu UI\taskui_random.lua
+ *           cua chinh client nay (chuoi TCVN3 trong UiTaskGuideStr.h, sinh tu dong).
+ * Creation: 2026/08/19
+ */
+#include "KWin32.h"
+#include "KIniFile.h"
+#include <stdio.h>
+#include <string.h>
+#include "../Elem/Wnds.h"
+#include "../Elem/WndMessage.h"
+#include "../UiSoundSetting.h"
+#include "UiTaskGuide.h"
+#include "UiTaskGuideStr.h"
+#include "../UiBase.h"
+#include "../../Represent/iRepresent/iRepresentShell.h"
+#include "../../../core/src/CoreShell.h"
+#include "../../../core/src/gamedatadef.h"
+#include "../../../Engine/src/Text.h"
+#include "../../../Engine/src/KTabFile.h"
+
+extern iCoreShell*		g_pCoreShell;
+
+#define SCHEME_INI_TASKGUIDE	"uitaskguide\\taskguide.ini"
+#define TASKGUIDE_DATAU_TASKID	6
+
+// ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
+enum
+{
+	DTG_TAB_BUYGOODS = 0,
+	DTG_TAB_FINDGOODS,
+	DTG_TAB_SHOWGOODS,
+	DTG_TAB_FINDMAPS,
+	DTG_TAB_UPGROUND,
+	DTG_TAB_WORLDMAPS,
+	DTG_TAB_COUNT,
+};
+
+static const char* s_szDTGTabPath[DTG_TAB_COUNT] =
+{
+	"\\settings\\task\\tasklink_buygoods.txt",
+	"\\settings\\task\\tasklink_findgoods.txt",
+	"\\settings\\task\\tasklink_showgoods.txt",
+	"\\settings\\task\\tasklink_findmaps.txt",
+	"\\settings\\task\\tasklink_upground.txt",
+	"\\settings\\task\\tasklink_worldmaps.txt",
+};
+
+static KTabFile	s_DTGTab[DTG_TAB_COUNT];
+static int		s_bDTGTabLoaded[DTG_TAB_COUNT] = { 0 };
+
+static KTabFile* DTG_GetTab(int nIdx)
+{
+	if (nIdx < 0 || nIdx >= DTG_TAB_COUNT)
+		return NULL;
+	if (!s_bDTGTabLoaded[nIdx])
+	{
+		if (!s_DTGTab[nIdx].Load((LPSTR)s_szDTGTabPath[nIdx]))
+			return NULL;	// thieu tep -> thu lai lan mo sau
+		s_bDTGTabLoaded[nIdx] = 1;
+	}
+	return &s_DTGTab[nIdx];
+}
+
+static void DTG_Cell(KTabFile* pTab, int nRow, const char* szCol, char* pOut, int nSize)
+{
+	pOut[0] = 0;
+	if (pTab)
+		pTab->GetString(nRow, (LPSTR)szCol, (LPSTR)"", pOut, nSize - 1);
+}
+
+static int DTG_CellInt(KTabFile* pTab, int nRow, const char* szCol)
+{
+	int nVal = 0;
+	if (pTab)
+		pTab->GetInteger(nRow, (LPSTR)szCol, 0, &nVal);
+	return nVal;
+}
+
+// gia tri task cua nhan vat (client giu ban sao, dong bo qua UI_TASKVALUE)
+static int DTG_TaskVal(int nTaskId)
+{
+	if (g_pCoreShell)
+		return g_pCoreShell->GetGameData(GDI_TASK_SAVE_VALUE, (unsigned int)nTaskId, 0);
+	return 0;
+}
+
+static int DTG_Repute()
+{
+	if (g_pCoreShell)
+		return g_pCoreShell->GetGameData(GDI_PLAYER_REPUTE_VALUE, 0, 0);
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+KUiTaskGuide*	KUiTaskGuide::m_pSelf = NULL;
+
+KUiTaskGuide::KUiTaskGuide()
+{
+	m_szTaskIniPath[0] = 0;
+	m_nEntryCount = 0;
+	m_nCurEntry = -1;
+}
+
+KUiTaskGuide::~KUiTaskGuide()
+{
+}
+
+KUiTaskGuide* KUiTaskGuide::OpenWindow()
+{
+	if (m_pSelf == NULL)
+	{
+		m_pSelf = new KUiTaskGuide;
+		if (m_pSelf)
+			m_pSelf->Initialize();
+	}
+	if (m_pSelf)
+	{
+		UiSoundPlay(UI_SI_WND_OPENCLOSE);
+		m_pSelf->BringToTop();
+		m_pSelf->Show();
+		// lam moi du lieu moi lan mo (task value co the da doi khi dong bang)
+		if (m_pSelf->m_nCurEntry >= 0)
+			m_pSelf->ShowTask(m_pSelf->m_nCurEntry);
+	}
+	return m_pSelf;
+}
+
+void KUiTaskGuide::CloseWindow(bool bDestroy)
+{
+	if (m_pSelf)
+	{
+		m_pSelf->Hide();
+		if (bDestroy)
+		{
+			m_pSelf->Destroy();
+			m_pSelf = NULL;
+		}
+	}
+}
+
+KUiTaskGuide* KUiTaskGuide::GetIfVisible()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		return m_pSelf;
+	return NULL;
+}
+
+void KUiTaskGuide::LoadScheme(const char* pScheme)
+{
+	if (m_pSelf)
+		m_pSelf->LoadSchemeSelf(pScheme);
+}
+
+void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
+{
+	if (m_pSelf == NULL || !m_pSelf->IsVisible())
+		return;
+	if (m_pSelf->m_nCurEntry < 0 || m_pSelf->m_nCurEntry >= m_pSelf->m_nEntryCount)
+		return;
+	// dang xem trang Da Tau -> ve lai (moi id lien quan deu re, khoi loc)
+	if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_DATAU_TASKID)
+		m_pSelf->BuildDaTauText();
+}
+
+void KUiTaskGuide::Initialize()
+{
+	AddChild(&m_Title);
+	AddChild(&m_TaskList);
+	AddChild(&m_SelTaskName);
+	AddChild(&m_Content);
+	AddChild(&m_ContentScroll);
+	AddChild(&m_BtnClose);
+	AddChild(&m_BtnQuit);
+	AddChild(&m_BtnTrace);
+	AddChild(&m_BtnCancelTrace);
+
+	char Scheme[256];
+	g_UiBase.GetCurSchemePath(Scheme, sizeof(Scheme));
+	LoadSchemeSelf(Scheme);
+
+	LoadTaskList();
+	FillTaskList();
+
+	Wnd_AddWindow(this);
+
+	// tu chon dong nhiem vu dau tien (bo qua tieu de nhom)
+	for (int i = 0; i < m_nEntryCount; i++)
+	{
+		if (m_Entries[i].nTaskId >= 0)
+		{
+			m_TaskList.GetMessageListBox()->SetCurSel(i);
+			ShowTask(i);
+			break;
+		}
+	}
+}
+
+void KUiTaskGuide::LoadSchemeSelf(const char* pScheme)
+{
+	char		Buff[256];
+	KIniFile	Ini;
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_TASKGUIDE);
+	if (Ini.Load(Buff))
+	{
+		Init(&Ini, "Main");
+		m_Title.Init(&Ini, "Title");
+		m_TaskList.Init(&Ini, "TaskList");
+		m_SelTaskName.Init(&Ini, "SelTaskName");
+		m_Content.Init(&Ini, "TaskContent");
+		m_ContentScroll.Init(&Ini, "DownScroll");
+		m_Content.SetScrollbar(&m_ContentScroll);
+		m_BtnClose.Init(&Ini, "BtnClose");
+		m_BtnQuit.Init(&Ini, "QuitTaskButton");
+		m_BtnTrace.Init(&Ini, "TraceButton");
+		m_BtnCancelTrace.Init(&Ini, "CancelTraceButton");
+		// ban tham chieu: nut Bo/Theo doi la ma chet (enum giao thuc khong ton tai,
+		// tasktrace.ini bi chu thich 100%) -> hien thi nhung khoa lai cho trung thuc
+		m_BtnQuit.Enable(false);
+		m_BtnTrace.Enable(false);
+		m_BtnCancelTrace.Enable(false);
+
+		Ini.GetString("Main", "TaskIni", "\\UI\\uitasklist.ini",
+			m_szTaskIniPath, sizeof(m_szTaskIniPath) - 1);
+	}
+}
+
+void KUiTaskGuide::LoadTaskList()
+{
+	m_nEntryCount = 0;
+	KIniFile Ini;
+	if (m_szTaskIniPath[0] == 0)
+		strcpy(m_szTaskIniPath, "\\UI\\uitasklist.ini");
+	if (!Ini.Load(m_szTaskIniPath))
+		return;
+	// cac section dat ten [0]..[31]; tep goc co the khong lien so -> quet het dai
+	for (int i = 0; i < TASKGUIDE_MAX_ENTRY * 2 && m_nEntryCount < TASKGUIDE_MAX_ENTRY; i++)
+	{
+		char szSection[16];
+		sprintf(szSection, "%d", i);
+		KTaskGuideEntry* pEntry = &m_Entries[m_nEntryCount];
+		pEntry->szName[0] = 0;
+		Ini.GetString(szSection, "Name", "", pEntry->szName, sizeof(pEntry->szName) - 1);
+		if (pEntry->szName[0] == 0)
+			continue;
+		Ini.GetInteger(szSection, "TaskId", -1, &pEntry->nTaskId);
+		m_nEntryCount++;
+	}
+}
+
+void KUiTaskGuide::FillTaskList()
+{
+	KWndMessageListBox* pList = m_TaskList.GetMessageListBox();
+	pList->Clear();
+	if (m_nEntryCount <= 0)
+		return;
+	pList->SetCapability(m_nEntryCount);
+	for (int i = 0; i < m_nEntryCount; i++)
+	{
+		char szLine[TASKGUIDE_NAME_LEN + 8];
+		strncpy(szLine, m_Entries[i].szName, sizeof(szLine) - 1);
+		szLine[sizeof(szLine) - 1] = 0;
+		int nLen = TEncodeText(szLine, strlen(szLine));
+		pList->AddOneMessage(szLine, nLen);
+	}
+}
+
+void KUiTaskGuide::ShowTask(int nEntry)
+{
+	if (nEntry < 0 || nEntry >= m_nEntryCount)
+		return;
+	m_nCurEntry = nEntry;
+
+	KTaskGuideEntry* pEntry = &m_Entries[nEntry];
+	if (pEntry->nTaskId < 0)
+	{
+		// tieu de nhom - khong co noi dung
+		m_SelTaskName.SetText("", 0);
+		m_Content.Clear();
+		return;
+	}
+
+	// ten nhiem vu (bo dau '+' trang tri o dau)
+	const char* pName = pEntry->szName;
+	while (*pName == '+' || *pName == ' ')
+		pName++;
+	m_SelTaskName.SetText(pName);
+
+	if (pEntry->nTaskId == TASKGUIDE_DATAU_TASKID)
+	{
+		BuildDaTauText();
+	}
+	else
+	{
+		m_Content.Clear();
+		AddLine(DTG_NO_SUPPORT);
+	}
+}
+
+void KUiTaskGuide::AddLine(const char* pText)
+{
+	char szBuf[2048];
+	strncpy(szBuf, pText, sizeof(szBuf) - 1);
+	szBuf[sizeof(szBuf) - 1] = 0;
+	int nLen = TEncodeText(szBuf, strlen(szBuf));
+	m_Content.AddOneMessage(szBuf, nLen);
+}
+
+// Soan noi dung Da Tau - port 1:1 tu showrandraskdesc (UI\taskui_random.lua),
+// chi khac: (a) bo lap ten map o cau loai 4; (b) them dong dem ngay o cuoi.
+void KUiTaskGuide::BuildDaTauText()
+{
+	m_Content.Clear();
+
+	char szMain[1536];
+	char szSub[512];
+	char szCell1[256], szCell2[128], szCell3[128];
+	szMain[0] = 0;
+
+	int nType   = DTG_TaskVal(1021);
+	int nRow    = DTG_TaskVal(1030);
+	int nCourse = DTG_TaskVal(1028);
+
+	if (nType == 0)
+	{
+		AddLine(DTG_NOTASK);
+	}
+	else
+	{
+		KTabFile* pTab = NULL;
+		switch (nType)
+		{
+		case 1:		// mua vat pham
+			pTab = DTG_GetTab(DTG_TAB_BUYGOODS);
+			if (pTab)
+			{
+				DTG_Cell(pTab, nRow, "TaskInfo", szCell1, sizeof(szCell1));
+				DTG_Cell(pTab, nRow, "TaskInfo1", szCell2, sizeof(szCell2));
+				sprintf(szMain, DTG_T1_FMT, szCell1, szCell2);
+			}
+			break;
+		case 2:		// tim vat pham (nop mat do)
+			pTab = DTG_GetTab(DTG_TAB_FINDGOODS);
+			if (pTab)
+			{
+				char szMagic[128];
+				DTG_Cell(pTab, nRow, "MagicCnName", szMagic, sizeof(szMagic));
+				DTG_Cell(pTab, nRow, "TaskInfo", szCell1, sizeof(szCell1));
+				if (strcmp(szMagic, "n") == 0)
+				{
+					sprintf(szMain, DTG_T2A_FMT, szCell1);
+				}
+				else
+				{
+					DTG_Cell(pTab, nRow, "MinValue", szCell2, sizeof(szCell2));
+					DTG_Cell(pTab, nRow, "MaxValue", szCell3, sizeof(szCell3));
+					sprintf(szMain, DTG_T2B_FMT, szMagic, szCell2, szCell3, szCell1);
+				}
+			}
+			break;
+		case 3:		// khoe vat pham (khong mat do)
+			pTab = DTG_GetTab(DTG_TAB_SHOWGOODS);
+			if (pTab)
+			{
+				char szMagic[128];
+				DTG_Cell(pTab, nRow, "MagicCnName", szMagic, sizeof(szMagic));
+				DTG_Cell(pTab, nRow, "MinValue", szCell2, sizeof(szCell2));
+				DTG_Cell(pTab, nRow, "MaxValue", szCell3, sizeof(szCell3));
+				sprintf(szMain, DTG_T3_FMT, szMagic, szCell2, szCell3);
+			}
+			break;
+		case 4:		// dia do chi / mat chi
+			pTab = DTG_GetTab(DTG_TAB_FINDMAPS);
+			if (pTab)
+			{
+				DTG_Cell(pTab, nRow, "TaskInfo1", szCell1, sizeof(szCell1));
+				DTG_Cell(pTab, nRow, "Num", szCell2, sizeof(szCell2));
+				const char* pLoai = (DTG_CellInt(pTab, nRow, "MapType") == 1) ?
+					DTG_LOAI_DIADO : DTG_LOAI_MAT;
+				sprintf(szMain, DTG_T4_FMT, szCell1, szCell2, pLoai,
+					DTG_TaskVal(1025), pLoai);
+			}
+			break;
+		case 5:		// nang chi so
+			pTab = DTG_GetTab(DTG_TAB_UPGROUND);
+			if (pTab)
+			{
+				int nNumType = DTG_CellInt(pTab, nRow, "NumericType");
+				int nTarget  = DTG_CellInt(pTab, nRow, "NumericValue");
+				DTG_Cell(pTab, nRow, "NumericValue", szCell1, sizeof(szCell1));
+				int nCur = 0, nNeed = 0;
+				szSub[0] = 0;
+				switch (nNumType)
+				{
+				case 1:
+					strcpy(szSub, DTG_T5_SUB1);
+					break;
+				case 2:
+					strcpy(szSub, DTG_T5_SUB2);
+					break;
+				case 3:
+					nCur = DTG_Repute();
+					nNeed = nTarget + DTG_TaskVal(1026) - nCur;
+					if (nNeed < 0) nNeed = 0;
+					sprintf(szSub, DTG_T5_SUB3_FMT, nCur, nNeed);
+					break;
+				case 4:
+					nCur = DTG_TaskVal(151);
+					nNeed = nTarget + DTG_TaskVal(1026) - nCur;
+					if (nNeed < 0) nNeed = 0;
+					sprintf(szSub, DTG_T5_SUB4_FMT, nCur, nNeed);
+					break;
+				case 5:
+					strcpy(szSub, DTG_T5_SUB5);
+					break;
+				case 6:
+					nCur = DTG_TaskVal(747);
+					nNeed = nTarget + DTG_TaskVal(1026) - nCur;
+					if (nNeed < 0) nNeed = 0;
+					sprintf(szSub, DTG_T5_SUB6_FMT, nCur, nNeed);
+					break;
+				}
+				sprintf(szMain, DTG_T5_FMT, szCell1, szSub);
+			}
+			break;
+		case 6:		// manh Son Ha Xa Tac
+			pTab = DTG_GetTab(DTG_TAB_WORLDMAPS);
+			if (pTab)
+			{
+				DTG_Cell(pTab, nRow, "Num", szCell1, sizeof(szCell1));
+				sprintf(szMain, DTG_T6_FMT, szCell1, DTG_TaskVal(1027));
+			}
+			break;
+		}
+
+		if (szMain[0])
+		{
+			char szLine[1792];
+			if (nCourse == 1)
+				sprintf(szLine, "%s%s", DTG_PREFIX_LAM, szMain);
+			else if (nCourse == 2 || nCourse == 3)
+				sprintf(szLine, "%s%s", DTG_PREFIX_XONG, szMain);
+			else
+				strcpy(szLine, szMain);
+			AddLine(szLine);
+		}
+	}
+
+	// dong trang thai trong ngay (them so voi ban goc - tien theo doi moc 40)
+	sprintf(szSub, DTG_EXTRA_FMT, DTG_TaskVal(2420), DTG_TaskVal(2797));
+	AddLine(szSub);
+}
+
+int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+	switch (uMsg)
+	{
+	case WND_N_BUTTON_CLICK:
+		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
+		{
+			CloseWindow(false);
+			return true;
+		}
+		break;
+	case WND_N_LIST_ITEM_SEL:
+		if (uParam == (unsigned int)(KWndWindow*)&m_TaskList)
+		{
+			ShowTask(m_TaskList.GetMessageListBox()->GetCurSel());
+			return true;
+		}
+		break;
+	}
+	return KWndShowAnimate::WndProc(uMsg, uParam, nParam);
+}

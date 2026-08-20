@@ -515,6 +515,7 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_TONG_JX2,	// JX2 port: du lieu trang cua so bang hoi
 	//uParam = (BYTE*) goi TONG_JX2_*_SYNC nguyen ven (byte dau ProtocolType)
 	//nParam = kich thuoc goi
+	GDCNI_TASK_VALUE_UPDATE,	// [TaskGuide] uParam = task id, nParam = gia tri
 };
 
 enum GAMEDEBUGCONTROL
@@ -814,6 +815,8 @@ enum GAMEOPERATION_INDEX
 
 	GDCNI_INPUT,
 	
+	GDI_TASK_SAVE_VALUE,		// [TaskGuide] uParam = task id -> tra ve ban sao task cua nhan vat
+	GDI_PLAYER_REPUTE_VALUE,	// [TaskGuide] danh vong hien tai cua nhan vat
 
 };
 

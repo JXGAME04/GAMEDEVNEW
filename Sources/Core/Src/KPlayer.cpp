@@ -8033,6 +8033,25 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					Player[CLIENT_PLAYER_INDEX].m_cTong.JX2_RequestView(0, 0);
 					break;
 				}
+			case UI_TASKVALUE:	// [TaskGuide] task value id >= 256 tu server
+				{
+					if (pScriptAction->m_nBufferLen < (int)(sizeof(int) * 2))
+						break;
+					int nTaskId  = *(int*)(pScriptAction->m_pContent);
+					int nTaskVal = *(int*)(pScriptAction->m_pContent + sizeof(int));
+					if (nTaskId == -1)
+					{
+						// dau moi phien nap nhan vat: xoa sach gia tri nhan vat truoc
+						memset(Player[CLIENT_PLAYER_INDEX].m_cTask.nSave, 0,
+							sizeof(Player[CLIENT_PLAYER_INDEX].m_cTask.nSave));
+					}
+					else
+					{
+						Player[CLIENT_PLAYER_INDEX].m_cTask.SetSaveVal(nTaskId, nTaskVal);
+					}
+					CoreDataChanged(GDCNI_TASK_VALUE_UPDATE, (unsigned int)nTaskId, nTaskVal);
+					break;
+				}
 			}
 		} 
 		break;

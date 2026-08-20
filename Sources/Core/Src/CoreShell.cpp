@@ -801,6 +801,13 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 	int nRet = 0;
 	switch(uDataId)
 	{
+	case GDI_TASK_SAVE_VALUE:	// [TaskGuide] ban sao task value (dong bo qua UI_TASKVALUE)
+		nRet = (int)Player[CLIENT_PLAYER_INDEX].m_cTask.GetSaveVal((int)uParam);
+		break;
+	case GDI_PLAYER_REPUTE_VALUE:	// [TaskGuide] danh vong hien tai
+		if (Player[CLIENT_PLAYER_INDEX].m_nIndex > 0)
+			nRet = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].nRepute;
+		break;
 	case GDI_PLAYER_IS_MALE:
 		{
 			int nIndex = 0;

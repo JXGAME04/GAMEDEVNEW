@@ -65,6 +65,7 @@
 #include "UiCase/UiHelper.h"
 #include "UiCase/UiHelper2.h"
 #include "UiCase/UiTaskNote.h"
+#include "UiCase/UiTaskGuide.h"
 #include "UiCase/UiReconnect.h"
 #include "UiCase/UiFaceSelector.h"
 #include "UiCase/UiPlayerBar.h"
@@ -498,6 +499,7 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiHelper::GetIfVisible() == NULL &&
 			KUiHelper2::GetIfVisible() == NULL &&
 			KUiTaskNote::GetIfVisible() == NULL &&
+			KUiTaskGuide::GetIfVisible() == NULL &&
 			KUiSelPlayerNearby::DoesHaveVisibleWnd() == false &&
 			KUiParadeItem::GetIfVisible() == NULL &&
 			KUiFaceSelector::GetIfVisible() == NULL &&
@@ -586,6 +588,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiHelper::CloseWindow(bAll);
 	KUiHelper2::CloseWindow(bAll);
 	KUiTaskNote::CloseWindow(bAll);
+	KUiTaskGuide::CloseWindow(bAll);
 	KUiParadeItem::CloseWindow(bAll);
 	KUiStrengthRank::CloseWindow();
 	KUiTongManager::CloseWindow();

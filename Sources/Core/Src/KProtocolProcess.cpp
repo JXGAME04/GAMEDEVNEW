@@ -3793,6 +3793,7 @@ void	KProtocolProcess::s2cTaskValueSync(BYTE* pMsg)
 {
 	TASK_VALUE_SYNC	*pValue = (TASK_VALUE_SYNC*)pMsg;
 	Player[CLIENT_PLAYER_INDEX].m_cTask.SetSaveVal(pValue->nTaskId,pValue->nTaskValue);
+	CoreDataChanged(GDCNI_TASK_VALUE_UPDATE, pValue->nTaskId, (int)pValue->nTaskValue);	// [TaskGuide]
 }
 
 void KProtocolProcess::s2cSetMissionData(BYTE* pMsg)

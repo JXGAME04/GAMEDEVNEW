@@ -54,6 +54,7 @@ enum	UIInfo
 	UI_PLAYMUSIC,
 	UI_OPENTONGUI,
 	UI_OPENTONGJX2,	// JX2 port: mo cua so bang hoi kieu JX2
+	UI_TASKVALUE,	// [TaskGuide] (int id, int value); id = -1 -> xoa bang task (client cu bo qua)
 };
 
 enum
@@ -984,6 +985,7 @@ private:
 public:
 	void			SetNpcDamageAttrib();
 	void			DoScriptAction(PLAYER_SCRIPTACTION_SYNC * pUIInfo); 
+	void			SyncTaskValueToClient(int nTaskId, int nValue);	// [TaskGuide] server->client (client build: rong)
 	void			ProcessPlayerSelectFromUI(BYTE* pProtocol);			
 #ifndef _SERVER
 	void			DialogNpc(int nIndex);

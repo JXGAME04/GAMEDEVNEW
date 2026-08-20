@@ -80,11 +80,48 @@ void	KPlayerTask::SetSaveVal(int nNo, DWORD bFlag)
 		return;
 	nSave[nNo] = bFlag;
 #ifdef _SERVER
-	TASK_VALUE_SYNC	sValue;
-	sValue.ProtocolType = s2c_taskvalue;
-	sValue.nTaskId = nNo;
-	sValue.nTaskValue = bFlag;
-	g_pServer->PackDataToClient(Player[m_nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sValue, sizeof(TASK_VALUE_SYNC));
+	Player[m_nPlayerIndex].SyncTaskValueToClient(nNo, (int)bFlag);
+#endif
+}
+
+//---------------------------------------------------------------------------
+//	[TaskGuide] Day 1 gia tri task xuong client.
+//	- id 0..255  : goi TASK_VALUE_SYNC cu (y het hanh vi truoc nay).
+//	- id >= 256  : kenh script-action bien do dai, UIId = UI_TASKVALUE.
+//	  (Goi cu chi co BYTE nTaskId nen id >= 256 bi cat mod 256, ghi de nham
+//	   o task thap phia client - nay khong gui kieu do nua.)
+//	- id == -1   : bao client xoa toan bo bang task (dau moi phien nap nhan vat).
+//	Client CU gap UI_TASKVALUE se bo qua (switch UIId khong co default) nen
+//	khong bat buoc nang cap dong loat; client cu chi mat tinh nang moi.
+//---------------------------------------------------------------------------
+void KPlayer::SyncTaskValueToClient(int nTaskId, int nValue)
+{
+#ifdef _SERVER
+	if (m_nNetConnectIdx < 0)
+		return;	// bot / chua co ket noi
+	if (nTaskId >= 0 && nTaskId < 256)
+	{
+		TASK_VALUE_SYNC	sValue;
+		sValue.ProtocolType = s2c_taskvalue;
+		sValue.nTaskId = (BYTE)nTaskId;
+		sValue.nTaskValue = (DWORD)nValue;
+		g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sValue, sizeof(TASK_VALUE_SYNC));
+	}
+	else
+	{
+		PLAYER_SCRIPTACTION_SYNC sSync;
+		sSync.m_nOperateType = SCRIPTACTION_UISHOW;
+		sSync.m_bUIId = UI_TASKVALUE;
+		sSync.m_bOptionNum = 0;
+		sSync.m_bParam1 = 0;
+		sSync.m_bParam2 = 1;
+		sSync.m_Select = 0;
+		sSync.m_nParam = 0;
+		*(int*)(sSync.m_pContent) = nTaskId;
+		*(int*)(sSync.m_pContent + sizeof(int)) = nValue;
+		sSync.m_nBufferLen = sizeof(int) * 2;
+		DoScriptAction(&sSync);
+	}
 #endif
 }
 

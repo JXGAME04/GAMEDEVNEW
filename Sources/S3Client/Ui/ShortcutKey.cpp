@@ -24,6 +24,7 @@
 #include "UICase/UiHelper.h"
 #include "UICase/UiHelper2.h"
 #include "UICase/UiTaskNote.h"
+#include "UICase/UiTaskGuide.h"
 #include "UiCase/UiTrade.h"
 #include "UiCase/UiShop.h"
 #include "UiCase/UiStoreBox.h"
@@ -169,6 +170,7 @@ char* l_WindowList[] =
 	"openbox",//27
 	"skillsnew", //28
 	"springgame", //29
+	"NewTask",	//30 [TaskGuide] ten cua so nhu ban goc (F12)
 };
 
 int FindWindow(const char* szname)
@@ -241,11 +243,11 @@ int LuaOpenWindow(Lua_State * L)
 			else
 				KUiHelper2::OpenWindow(true);
 			break;
-		case 8: 
-			if (KUiTaskNote::GetIfVisible())
-				KUiTaskNote::CloseWindow(false);
+		case 8: // [TaskGuide] F11 = bang chi nam nhiem vu (thay so tay cu)
+			if (KUiTaskGuide::GetIfVisible())
+				KUiTaskGuide::CloseWindow(false);
 			else
-				KUiTaskNote::OpenWindow();
+				KUiTaskGuide::OpenWindow();
 			break;
 		case 9: 
 			if (KUiSkillTree::GetIfVisible())
@@ -360,6 +362,12 @@ int LuaOpenWindow(Lua_State * L)
 				KUiSpringGame::CloseWindow();
 			else
 				KUiSpringGame::OpenWindow();
+			break;
+		case 30:	// [TaskGuide] "NewTask" - giu tuong thich phim F12 cua ban goc
+			if (KUiTaskGuide::GetIfVisible())
+				KUiTaskGuide::CloseWindow(false);
+			else
+				KUiTaskGuide::OpenWindow();
 			break;
 		}
 	}

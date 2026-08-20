@@ -4033,9 +4033,17 @@ int LuaJX2_GlobalExecute(Lua_State* L)
 	return 1;
 }
 
-// SyncTaskValue(...) - JX2 day bien nhiem vu xuong client UI; JX1 chua co kenh nay
+// SyncTaskValue(id) - day gia tri task hien tai xuong client. [TaskGuide]
+// id >= 256 di kenh script-action UI_TASKVALUE; id < 256 dung goi TASK_VALUE_SYNC cu.
 int LuaJX2_SyncTaskValue(Lua_State* L)
 {
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 1)
+	{
+		int nTaskId = (int)Lua_ValueToNumber(L, 1);
+		Player[nPlayerIndex].SyncTaskValueToClient(nTaskId,
+			(int)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskId));
+	}
 	Lua_PushNumber(L, 1);
 	return 1;
 }

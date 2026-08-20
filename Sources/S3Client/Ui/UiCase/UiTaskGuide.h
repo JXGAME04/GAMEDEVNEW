@@ -1,0 +1,71 @@
+/*
+ * File:     UiTaskGuide.h
+ * Desc:     Bang "Chi nam nhiem vu" (port tu KUiTaskGuide ban Linux/JX2, F12).
+ *           Du an gan vao phim F11 thay cho so tay KUiTaskNote cu; ten cua so
+ *           "NewTask" van duoc dang ky de F12 (autoexec.lua) dung chung.
+ *           Du lieu: task value dong bo qua UI_TASKVALUE (id >= 256) + bang
+ *           settings\task\tasklink_*.txt doc bang KTabFile (dia thang pak).
+ * Creation: 2026/08/19
+ */
+#pragma once
+
+#if !defined _UITASKGUIDE
+#define _UITASKGUIDE
+
+#include "../Elem/WndShowAnimate.h"
+#include "../Elem/WndButton.h"
+#include "../Elem/WndLabeledButton.h"
+#include "../Elem/WndText.h"
+#include "../Elem/WndMessageListBox.h"
+#include "../Elem/WndScrollBar.h"
+
+#define TASKGUIDE_MAX_ENTRY		32
+#define TASKGUIDE_NAME_LEN		64
+
+// mot dong trong \UI\uitasklist.ini
+struct KTaskGuideEntry
+{
+	char	szName[TASKGUIDE_NAME_LEN];	// ten hien thi (TCVN3, giu nguyen dau '+')
+	int		nTaskId;					// -1 = dong tieu de nhom
+};
+
+class KUiTaskGuide : public KWndShowAnimate
+{
+public:
+	static KUiTaskGuide*	OpenWindow();
+	static void				CloseWindow(bool bDestroy);
+	static KUiTaskGuide*	GetIfVisible();
+	static void				LoadScheme(const char* pScheme);
+	// goi tu GameSpaceChangedNotify khi nhan GDCNI_TASK_VALUE_UPDATE
+	static void				OnTaskValueChanged(int nTaskId);
+private:
+	KUiTaskGuide();
+	virtual ~KUiTaskGuide();
+	void	Initialize();
+	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	void	LoadSchemeSelf(const char* pScheme);
+	void	LoadTaskList();				// doc \UI\uitasklist.ini -> m_Entries
+	void	FillTaskList();				// do m_Entries vao khung trai
+	void	ShowTask(int nEntry);		// chon 1 dong -> dung noi dung khung phai
+	void	BuildDaTauText();			// noi dung nhiem vu Da Tau (TaskId 6)
+	void	AddLine(const char* pText);	// them 1 dong (tu ma hoa <color>/<enter>)
+private:
+	static KUiTaskGuide*	m_pSelf;
+
+	KWndText256				m_Title;
+	KWndText256				m_SelTaskName;
+	KScrollMessageListBox	m_TaskList;			// khung trai: danh muc nhiem vu
+	KWndMessageListBox		m_Content;			// khung phai: mo ta nhiem vu
+	KWndScrollBar			m_ContentScroll;
+	KWndButton				m_BtnClose;
+	KWndLabeledButton		m_BtnQuit;			// hien thi giong ban goc; chua co
+	KWndLabeledButton		m_BtnTrace;			// nghiep vu -> Enable(false)
+	KWndLabeledButton		m_BtnCancelTrace;
+
+	char					m_szTaskIniPath[128];	// khoa TaskIni trong [Main]
+	KTaskGuideEntry			m_Entries[TASKGUIDE_MAX_ENTRY];
+	int						m_nEntryCount;
+	int						m_nCurEntry;
+};
+
+#endif

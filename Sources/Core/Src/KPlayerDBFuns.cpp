@@ -813,7 +813,10 @@ int	KPlayer::LoadPlayerTaskList(BYTE * pRoleBuffer, BYTE * &pTaskBuffer, unsigne
 	}
 	//
 	if(nParam == 0)	
+	{
 		m_cTask.Release();
+		SyncTaskValueToClient(-1, 0);	// [TaskGuide] bao client xoa gia tri nhan vat truoc
+	}
 	//
 	int nTaskCount = 0;
 	int nTaskId = 0;
