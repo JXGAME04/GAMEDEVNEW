@@ -246,6 +246,9 @@ struct autoData
 	int		bDTUseBox;		// cho phep lay do/tien tu ruong (dung szBoxPass)
 	int		bDTTrainAfter;	// xong/treo -> tha may cho auto thuong ve map luyen cong
 	int		nDTWDMoney;		// (van luong) rut tu ruong khi thieu tien mua do
+	int		bDTLenhBai;		// (20/08) loai tat: dung Lenh bai hoan thanh (6,1,4818) neu co
+	int		bDTMuaSap;		// (20/08) T2 thieu do: di xem sap nguoi ban de mua (nhay 10 thanh)
+	int		nDTMaxMua;		// (20/08) gia mua o sap toi da (van luong)
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -410,6 +413,9 @@ struct autoData
 		bDTUseBox = 0;
 		bDTTrainAfter = 0;
 		nDTWDMoney = 0;
+		bDTLenhBai = 0;
+		bDTMuaSap = 0;
+		nDTMaxMua = 0;
 	}
 };
 

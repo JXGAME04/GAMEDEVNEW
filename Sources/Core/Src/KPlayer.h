@@ -205,6 +205,7 @@ struct ExtAuto
 	int  nDTRoamStep;    // [DaTau] cum quai dang nham (KDaTauSpots.h)
 	int  nDTBackXaFu;    // [DaTau] 1 = phu ve thanh xong thi ra Xa Phu di lai map
 	int  nDTRwTry;       // [DaTau] so nut ruong thuong da thu (cua so mo lai = nut sai)
+	int  nDTLBTry;       // [DaTau 20/08] so lan da dung Lenh bai hoan thanh cho nhiem vu nay
 	ExtAuto()
 	{
 		uLTime1 = 0;

@@ -300,7 +300,11 @@ using namespace std;
 #define IDC_SEP_7A				432
 #define IDC_SEP_8A				433
 #define IDC_SEP_8B				434
-#define IDC_INDEX_END			436
+#define IDC_CHECKBOX_8_LB		435
+#define IDC_CHECKBOX_8_MS		436
+#define IDC_STRING_8_MM			437
+#define IDC_EDITOR_8_MM			438
+#define IDC_INDEX_END			441
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	440
 #define IDD_NOPICK_DIALOG		441
