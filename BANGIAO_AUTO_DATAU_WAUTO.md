@@ -31,7 +31,8 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 16:31** | engine Dã Tẩu + toàn bộ fix tới `6bde16a1`; bản trước = `CoreClient_cu_1908e.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 17:11** | engine Dã Tẩu, toàn bộ fix tới `16de2b3a`; bản trước = `CoreClient_cu_1908h.dll` |
+| `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
@@ -215,18 +216,51 @@ python D:/GAMEDEVNEW/ReverseTools/re_pe_crt.py E:/SourceTuanLe/.../bin/client
 # 9. commit + push ở D
 ```
 
-### 7.2 Sinh lại bảng CỤM QUÁI map nhiệm vụ (loại 4)
+### 7.2 Sinh lại bảng TỌA ĐỘ QUÁI (`settings\datau_toado.txt`)
 ```bash
-python D:/GAMEDEVNEW/ReverseTools/gen_datau_spots.py   # -> Sources/Core/Src/KDaTauSpots.h
+python D:/GAMEDEVNEW/ReverseTools/gen_datau_spots.py
 ```
-Đọc **thẳng file add NPC của server trong pak**: `\maps\<đường dẫn map>\v_NNN\NNN_Region_S.dat`
-(mục `REGION_NPC_FILE_INDEX`) trong `bin\server\Pak\maps.pak`. Tự cài lại 3 thứ bằng Python:
-định dạng pak `PACK` (header 32B + index 16B/mục, `XPackFile.cpp`), hàm băm tên tệp
-`KPakList::FileNameToId` (chú ý `char` là **có dấu** với byte GBK), và giải nén
-`ucl_nrv2b_decompress_8` (`ucl/n2b_d.c` + `getbit_8`). Kết quả 19/08: **12.472 quái / 14 map
-→ 336 cụm**. 🔑 Chỉ số region trong tên tệp **có cộng offset** `m_nRegionBeginX/Y` nên phải quét
-dải rộng (0-255), không phải 0-30. 🔴 Số liệu xác nhận: map **53/80/226** có **neo nhiệm vụ nằm
-NGOÀI vùng quái** — đó là lý do "quét không thấy NPC trong map".
+Ghi **2 nơi**: `bin\client\settings\datau_toado.txt` (engine nạp lúc chạy) và
+`ReverseTools\datau_toado.txt` (bản trong git), kèm `KDaTauSpots.h` làm **bản dự phòng**
+khi thiếu tệp txt. Kết quả 19/08: **204 map · 63.301 quái · 3.365 dòng cụm** (153 map có
+quái; 51 map thành thị/trong nhà không có).
+
+**Nguồn:** file add NPC của server trong pak — `\maps\<đường dẫn map>\v_NNN\NNN_Region_S.dat`,
+mục `REGION_NPC_FILE_INDEX`. Bộ sinh tự cài lại: định dạng pak `PACK` (`XPackFile.cpp`),
+hàm băm tên tệp `KPakList::FileNameToId` (**`char` CÓ DẤU** với byte GBK), giải nén
+`ucl_nrv2b_decompress_8` (`ucl/n2b_d.c` + `getbit_8`; kiểu nén `0x01` UCL và `0x20` VNG
+dùng **cùng** thuật toán).
+
+**5 cạm bẫy đã trả giá để biết** (đừng bỏ khi sửa bộ sinh):
+1. **Chỉ số region cộng offset** `m_nRegionBeginX/Y` → phải quét dải rộng (dùng 0-383;
+   map lớn nhất chạm 273). Quét 0-30 ra 0 kết quả, quét 0-255 mất 34% quái của map 25.
+2. **Hàm băm chỉ 31 bit hiệu dụng** → quét ~147k tên/map thì đụng vài chục id của tệp
+   khác. Lọc bằng **phép kiểm tuyệt đối**: NPC của region `(nx,ny)` phải nằm trong ô của
+   chính nó — X ∈ [nx·512, +512), Y ∈ [ny·1024, +1024) (`REGION_GRID_WIDTH` 16 ·
+   `REGION_GRID_HEIGHT` 32). Trước khi lọc: **33 map toàn tọa độ bịa**.
+3. **Chỉ đọc pak trong `bin\server\package.ini`** (maps.pak + 3 tệp `.mps` + namcung.pak).
+   `maps_error.pak`/`maps_tieu_bang_chien.pak` nằm cùng thư mục nhưng server **không nạp** —
+   đọc chúng sinh tọa độ ma.
+4. **Đừng lọc region theo kích thước** ("≤2100 byte = chỉ có vật cản"): map 1 có 8 region
+   CÓ NPC mà vẫn ≤2100 → mất 16 quái.
+5. **Neo cụm vào vị trí con quái THẬT** gần tâm nhất, không lấy trung bình cộng: tâm hình
+   học rơi vào ô vật cản 10,1% số điểm (map 53 tới 21%), mà engine chỉ né vật cản **một
+   lần** mỗi lệnh đi — lần hai là đứng im vĩnh viễn. Đối chứng: 0/5.205 vị trí quái thật
+   nằm trên ô vật cản.
+
+**Bao nhiêu map nhiệm vụ là đúng?** Bảng quyết định map loại 4 là
+`settings\task\tasklink_findmaps.txt` (cột `MapID`, đọc ở `tasklink_head.lua:97`, ghi vào
+task 1031 ở `:141`; Xa Phu `godatau` đọc lại task 1031). Bản **đang chạy** chỉ còn 28 dòng =
+**14 map** (1, 11, 21, 37, 53, 75, 78, 80, 122, 162, 176, 225, 226, 227). Bản gốc
+`tasklink_findmaps.txt.goc` có 208 dòng = **104 map** — muốn "nhiều map nhiệm vụ" thì phục
+hồi tệp đó chứ không sửa mã. `map_index.lua` (`TL_MAPTRAPINDEX`, 204 map) **chỉ là bảng tra
+tọa độ**, không phải danh sách nhiệm vụ. Bảng txt hiện phủ cả 204 map nên phục hồi `.goc`
+cũng không phải sinh lại.
+
+**Quái sinh từ pak, không phải từ Lua** — đã kiểm chứng: `gamesetting.ini:259`
+`NotAddNpcNormal=1`, và `KRegion.cpp:468` là `if (shKind != kind_dialoger)` ⇒ server **giữ
+quái**, **bỏ** NPC đối thoại (Lua lo NPC đối thoại). ⚠️ Chú thích trong mã và tên biến
+`NotAddNpcNormal` **mô tả ngược** hành vi thật — đừng sửa mã theo chú thích đó.
 
 ### 7.1 Sinh lại bảng dữ liệu (khi server đổi bảng/lời thoại)
 ```bash
