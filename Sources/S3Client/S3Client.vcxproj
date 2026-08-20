@@ -339,6 +339,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiTargetInfo.cpp" />
     <ClCompile Include="Ui\UiCase\UiTaskDataFile.cpp" />
     <ClCompile Include="Ui\UiCase\UiTaskGuide.cpp" />
+    <ClCompile Include="Ui\UiCase\UiTaskTrace.cpp" />
     <ClCompile Include="Ui\UiCase\UiTaskNote.cpp" />
     <ClCompile Include="Ui\UiCase\UiTeamManage.cpp" />
     <ClCompile Include="Ui\UiCase\UiTeamManager2.cpp" />
@@ -521,6 +522,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiTargetInfo.h" />
     <ClInclude Include="Ui\UiCase\UiTaskDataFile.h" />
     <ClInclude Include="Ui\UiCase\UiTaskGuide.h" />
+    <ClInclude Include="Ui\UiCase\UiTaskTrace.h" />
     <ClInclude Include="Ui\UiCase\UiTaskGuideStr.h" />
     <ClInclude Include="Ui\UiCase\UiTaskNote.h" />
     <ClInclude Include="Ui\UiCase\UiTeamManage.h" />

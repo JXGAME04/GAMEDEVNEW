@@ -687,8 +687,9 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_WifiStatus);
 	AddChild(&m_Auto);	
 	AddChild(&m_HideWindow);
-	AddChild(&m_Zalo);
-	AddChild(&m_Fb);
+	// [TaskGuide 19/08] bo 2 nut Zalo/Facebook goc man hinh theo yeu cau chu game
+	//AddChild(&m_Zalo);
+	//AddChild(&m_Fb);
 	AddChild(&m_HideChat);
 	AddChild(&m_HideGraphic);
 	AddChild(&m_SpringGame);

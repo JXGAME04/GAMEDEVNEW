@@ -66,6 +66,7 @@
 #include "UiCase/UiHelper2.h"
 #include "UiCase/UiTaskNote.h"
 #include "UiCase/UiTaskGuide.h"
+#include "UiCase/UiTaskTrace.h"
 #include "UiCase/UiReconnect.h"
 #include "UiCase/UiFaceSelector.h"
 #include "UiCase/UiPlayerBar.h"
@@ -589,6 +590,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiHelper2::CloseWindow(bAll);
 	KUiTaskNote::CloseWindow(bAll);
 	KUiTaskGuide::CloseWindow(bAll);
+	KUiTaskTrace::CloseWindow(bAll);
 	KUiParadeItem::CloseWindow(bAll);
 	KUiStrengthRank::CloseWindow();
 	KUiTongManager::CloseWindow();

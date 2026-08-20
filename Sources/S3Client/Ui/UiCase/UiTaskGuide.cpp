@@ -14,6 +14,7 @@
 #include "../Elem/WndMessage.h"
 #include "../UiSoundSetting.h"
 #include "UiTaskGuide.h"
+#include "UiTaskTrace.h"
 #include "UiTaskGuideStr.h"
 #include "../UiBase.h"
 #include "../../Represent/iRepresent/iRepresentShell.h"
@@ -164,7 +165,72 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 		return;
 	// dang xem trang Da Tau -> ve lai (moi id lien quan deu re, khoi loc)
 	if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_DATAU_TASKID)
+	{
 		m_pSelf->BuildDaTauText();
+		m_pSelf->UpdateButtons();	// course doi -> nut Bo nhiem vu doi trang thai
+	}
+}
+
+// Ban rut gon 1 dong cho khung Theo doi nhiem vu (KUiTaskTrace).
+void KUiTaskGuide::BuildBriefLine(char* pOut, int nSize)
+{
+	pOut[0] = 0;
+	int nType   = DTG_TaskVal(1021);
+	int nCourse = DTG_TaskVal(1028);
+	int nRow    = DTG_TaskVal(1030);
+	char szBuf[256];
+	szBuf[0] = 0;
+
+	if (nType == 0)
+	{
+		strncpy(szBuf, DTG_BRIEF_NONE, sizeof(szBuf) - 1);
+	}
+	else if (nCourse == 2 || nCourse == 3)
+	{
+		strncpy(szBuf, DTG_BRIEF_RETURN, sizeof(szBuf) - 1);
+	}
+	else
+	{
+		KTabFile* pTab = NULL;
+		switch (nType)
+		{
+		case 1:
+			strncpy(szBuf, DTG_BRIEF_T1, sizeof(szBuf) - 1);
+			break;
+		case 2:
+			strncpy(szBuf, DTG_BRIEF_T2, sizeof(szBuf) - 1);
+			break;
+		case 3:
+			strncpy(szBuf, DTG_BRIEF_T3, sizeof(szBuf) - 1);
+			break;
+		case 4:
+			pTab = DTG_GetTab(DTG_TAB_FINDMAPS);
+			if (pTab)
+			{
+				char szNum[64];
+				DTG_Cell(pTab, nRow, "Num", szNum, sizeof(szNum));
+				const char* pLoai = (DTG_CellInt(pTab, nRow, "MapType") == 1) ?
+					DTG_LOAI_DIADO : DTG_LOAI_MAT;
+				sprintf(szBuf, DTG_BRIEF_T4_FMT, pLoai, DTG_TaskVal(1025), szNum);
+			}
+			break;
+		case 5:
+			strncpy(szBuf, DTG_BRIEF_T5, sizeof(szBuf) - 1);
+			break;
+		case 6:
+			pTab = DTG_GetTab(DTG_TAB_WORLDMAPS);
+			if (pTab)
+			{
+				char szNum[64];
+				DTG_Cell(pTab, nRow, "Num", szNum, sizeof(szNum));
+				sprintf(szBuf, DTG_BRIEF_T6_FMT, DTG_TaskVal(1027), szNum);
+			}
+			break;
+		}
+	}
+	szBuf[sizeof(szBuf) - 1] = 0;
+	strncpy(pOut, szBuf, nSize - 1);
+	pOut[nSize - 1] = 0;
 }
 
 void KUiTaskGuide::Initialize()
@@ -218,11 +284,7 @@ void KUiTaskGuide::LoadSchemeSelf(const char* pScheme)
 		m_BtnQuit.Init(&Ini, "QuitTaskButton");
 		m_BtnTrace.Init(&Ini, "TraceButton");
 		m_BtnCancelTrace.Init(&Ini, "CancelTraceButton");
-		// ban tham chieu: nut Bo/Theo doi la ma chet (enum giao thuc khong ton tai,
-		// tasktrace.ini bi chu thich 100%) -> hien thi nhung khoa lai cho trung thuc
-		m_BtnQuit.Enable(false);
-		m_BtnTrace.Enable(false);
-		m_BtnCancelTrace.Enable(false);
+		UpdateButtons();
 
 		Ini.GetString("Main", "TaskIni", "\\UI\\uitasklist.ini",
 			m_szTaskIniPath, sizeof(m_szTaskIniPath) - 1);
@@ -299,6 +361,21 @@ void KUiTaskGuide::ShowTask(int nEntry)
 		m_Content.Clear();
 		AddLine(DTG_NO_SUPPORT);
 	}
+	UpdateButtons();
+}
+
+// Bat/tat 3 nut duoi theo dung nghia ban goc, ap cho he Da Tau:
+// - Bo nhiem vu: chi khi dang lam (course 1) - gui tg_quit, server mo hop
+//   xac nhan huy CHUAN (du luat phat / tru luot / 100 manh SHXT).
+// - Theo doi / Huy theo doi: bat tat khung KUiTaskTrace.
+void KUiTaskGuide::UpdateButtons()
+{
+	bool bDT = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
+		m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_DATAU_TASKID);
+	int nCourse = bDT ? DTG_TaskVal(1028) : 0;
+	m_BtnQuit.Enable(bDT && nCourse == 1);
+	m_BtnTrace.Enable(bDT && !KUiTaskTrace::IsTraced());
+	m_BtnCancelTrace.Enable(bDT && KUiTaskTrace::IsTraced());
 }
 
 void KUiTaskGuide::AddLine(const char* pText)
@@ -467,6 +544,25 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnClose)
 		{
 			CloseWindow(false);
+			return true;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_BtnQuit)
+		{
+			// server mo hop xac nhan huy chuan (Task_CancelConfirm) - du luat
+			if (g_pCoreShell)
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (int)"tg_quit");
+			return true;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_BtnTrace)
+		{
+			KUiTaskTrace::SetTraced(true);
+			UpdateButtons();
+			return true;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_BtnCancelTrace)
+		{
+			KUiTaskTrace::SetTraced(false);
+			UpdateButtons();
 			return true;
 		}
 		break;

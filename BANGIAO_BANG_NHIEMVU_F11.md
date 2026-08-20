@@ -100,3 +100,16 @@ Chuỗi đầy đủ ở bản gốc:
 
 ### 8.3 Nút "Hủy theo dõi" (CancelTraceButton) — thao tác THUẦN C++
 Không tồn tại hàm Lua "tasktrace_remove" nào (đã rà toàn bộ `taskguide.lua` + bảng chuỗi binary) ⇒ bấm Hủy là C++ tự gỡ nhiệm vụ khỏi danh sách theo dõi nội bộ của `KUiTaskTrace` rồi vẽ lại khung + đổi chữ về `NotTraceText`. (Binary có thêm API Lua `SwitchTaskTrace` để script bật/tắt cả khung — nút Cancel không đi qua đường này.) *Mức tin: suy từ sự vắng mặt chuỗi Lua tương ứng + đủ bộ API C++; chưa dò asm riêng nút này.*
+
+---
+
+## 9 · ĐỢT 3 (19/08 khuya): bỏ Zalo/Facebook + 3 nút SỐNG THẬT + tự bấm mục Xa Phu
+
+Deploy 21:30 — `Game.exe` 1.251.840 B (`Game_cu_2105.exe`), `CoreClient.dll` 2.184.192 B (`CoreClient_cu_2105.dll`), **`bin\server\CoreServer.dll` 17.859.072 B (`CoreServer_cu_1910.dll`)**. `re_pe_crt` PASS.
+
+1. **Bỏ 2 nút Zalo/Facebook** góc phải: `UiPlayerBar.cpp` — comment 2 dòng `AddChild(&m_Zalo/&m_Fb)` (nút vẫn Init đọc ini nhưng không vào cây cửa sổ ⇒ không vẽ, không ăn click). Muốn bật lại: bỏ comment.
+2. **Nút "Bỏ nhiệm vụ" SỐNG**: client gửi `UI_CMD nType=6, szFunc="tg_quit"` (`GOI_ADD_UI_CMD_SCRIPT`) → server `UiCommandScript` case 6 (đặt GIỮA case 4 và case 5 — case 5 vốn RƠI xuống default, đừng chen sau nó) → `ExecuteScript(seasonnpc.lua, "tg_quit")` → `tg_quit` (chèn CUỐI seasonnpc.lua server sống; snippet lưu `TaskGuideRes\script\`) đặt `1045=1` rồi gọi **`Task_CancelConfirm()`** ⇒ hiện đúng hộp xác nhận hủy CHUẨN của hệ (đủ luật: trừ lượt hủy, phạt hủy lậu >2 lần đầu chuỗi, nhánh 100 mảnh SHXT, tăng 2797). Nút chỉ sáng khi course==1. **⚠️ Cần RESTART GameServer** (bin\server đã có DLL mới nhưng tiến trình đang chạy giữ bản 19:10 — tôi không tự restart).
+3. **Nút "Theo dõi / Hủy theo dõi" SỐNG**: lớp mới `KUiTaskTrace` (`UiTaskTrace.{h,cpp}`) — khung 180×220 mép phải (ảnh `任务追踪底板.spr` sẵn trong pak), nạp `uitaskguide\tasktrace.ini` **bản sống** (sinh lại từ bản comment tham chiếu + `MaxMsgCount=8`; đã deploy + `TaskGuideRes`). Hiện 2 dòng: tên (vàng) + bản rút gọn (`KUiTaskGuide::BuildBriefLine`: loại 4 = "Địa đồ chỉ: X/Y tấm", loại 6 = "Mảnh SHXT: X/Y", course 2/3 = "Về gặp Dã Tẩu trả nhiệm vụ!"…). Tự vẽ lại theo `GDCNI_TASK_VALUE_UPDATE`; **bấm vào dòng = mở bảng chính** (đúng vai `ClickTraceItemFunc` bản gốc); trạng thái theo dõi sống theo phiên, tắt khi logout (`UiShell` close-all).
+4. **Tự bấm mục Xa Phu**: `TG_XaFu` lên 2 pha — pha 2 sau `DialogNpc` theo dõi `g_sDTCap.uDlgSeq`, thoại về thì `DT_Split` + `DT_FindAns(DTM_OPT_GODATAU)` + `DT_Answer` ⇒ **tự chọn "Đến nơi làm nhiệm vụ dã tẩu", người chơi không phải bấm gì** (đúng yêu cầu); 3,2s không có thoại thì gõ lại NPC, thoại không có mục thì báo chọn tay; bị kéo ra xa khi chờ thì quay lại pha đi. (Hook `g_sDTCap` nằm trong OnScriptAction — chạy vô điều kiện, không cần WAuto.)
+
+Cạm bẫy mới ghi nhận: `DT_Answer` định nghĩa SAU khối TG trong `CoreShell.cpp` — đã thêm forward declaration; thêm hàm mới vào vùng đó nhớ khai báo trước.

@@ -2758,10 +2758,14 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 // WAuto (tick tu KCoreShell::Breathe, client-only); dung lai do nghe da kiem
 // chung cua engine Da Tau: g_MoveStation / DT_FindNpcName / DT_WalkTo / DialogNpc.
 //---------------------------------------------------------------------------
+static void DT_Answer(int nPlayerIdx, int nIdx);	// dinh nghia o duoi (dung chung voi engine)
+
 static int	g_nTGXaFuOn = 0;
 static UINT	g_uTGXaFuNext = 0;
 static int	g_nTGXaFuTry = 0;
 static int	g_nTGXaFuMap = 0;
+static int	g_nTGXaFuPhase = 0;		// 1 = dang di, 2 = da mo thoai - cho chon godatau
+static UINT	g_uTGXaFuDlgSeen = 0;	// uDlgSeq cua g_sDTCap da xem
 
 static void TG_XaFuStop(const char* szMsg)
 {
@@ -2797,6 +2801,8 @@ static int TG_XaFuStart()
 	g_nTGXaFuMap = nMap;
 	g_nTGXaFuTry = 0;
 	g_uTGXaFuNext = 0;
+	g_nTGXaFuPhase = 1;
+	g_uTGXaFuDlgSeen = g_sDTCap.uDlgSeq;
 	DT_Msg(nPlayerIdx, "<color=Cyan>[Ch\330 nam] \247ang t\371 ch\271y \256\325n Xa Phu - b\312m l\271i v\265o d\337ng nhi\326m v\364 \256\323 h\361y.");
 	return 1;
 }
@@ -2841,10 +2847,40 @@ static void TG_XaFuTick()
 		Npc[nIdx].GetMpsPos(&dX, &dY);
 		if (g_GetDistance(nX, nY, dX, dY) <= 128)
 		{
-			Player[nPlayerIdx].DialogNpc(nIdx);
-			TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 g\306p Xa Phu - ch\344n m\364c \247\325n n\254i l\265m nhi\326m v\364 d\267 t\310u.");
+			if (g_nTGXaFuPhase == 1)
+			{
+				// vua den noi: mo thoai va chuyen sang pha tu chon muc di map
+				g_nTGXaFuPhase = 2;
+				g_nTGXaFuTry = 0;
+				g_uTGXaFuDlgSeen = g_sDTCap.uDlgSeq;
+				Player[nPlayerIdx].DialogNpc(nIdx);
+				DT_Msg(nPlayerIdx, "<color=Cyan>[Ch\330 nam] \247\267 g\306p Xa Phu - \256ang t\371 ch\344n m\364c \256i map nhi\326m v\364...");
+				return;
+			}
+			// pha 2: doi thoai Xa Phu ve roi tu chon muc 'Den noi lam nhiem vu da tau'
+			if (g_sDTCap.uDlgSeq != g_uTGXaFuDlgSeen)
+			{
+				g_uTGXaFuDlgSeen = g_sDTCap.uDlgSeq;
+				char szBuf[2048];
+				char* apAns[16];
+				g_StrCpyLen(szBuf, g_sDTCap.szDlg, sizeof(szBuf));
+				int nAns = DT_Split(szBuf, apAns, 16);
+				int nOpt = DT_FindAns(apAns, nAns, DTM_OPT_GODATAU);
+				if (nOpt >= 0)
+				{
+					DT_Answer(nPlayerIdx, nOpt);
+					TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 ch\344n m\364c \256i t\355i map nhi\326m v\364 - ch\352 chuy\323n map.");
+					return;
+				}
+				TG_XaFuStop("<color=Yellow>[Ch\330 nam] Tho\271i kh\253ng c\343 m\364c \256i map - h\267y t\371 ch\344n trong khung tho\271i.");
+				return;
+			}
+			if ((g_nTGXaFuTry % 8) == 0)
+				Player[nPlayerIdx].DialogNpc(nIdx);	// ~3.2s chua co thoai -> go lai
 			return;
 		}
+		if (g_nTGXaFuPhase == 2)
+			g_nTGXaFuPhase = 1;	// bi keo ra xa khi dang cho thoai -> di lai
 		DT_WalkTo(nPlayerIdx, dX, dY, 96, uCur);
 		return;
 	}

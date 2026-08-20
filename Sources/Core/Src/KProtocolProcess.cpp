@@ -5854,6 +5854,12 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 			}
 			}
 			break;
+		case 6:	// [TaskGuide] nut 'Bo nhiem vu' tren bang F11 - mo hop xac nhan huy chuan
+			if (!strcmp(pUiCmd->szFunc, "tg_quit"))
+			{
+				Player[nIndex].ExecuteScript("\\script\\global\\seasonnpc.lua", "tg_quit", 0);
+			}
+			break;
 		case 5://kh¶m n¹m
 			{
 				Player[nIndex].ExecuteScript(Player[nIndex].m_dwTrembleItemId, Player[nIndex].m_szTaskExcuteFun, "");

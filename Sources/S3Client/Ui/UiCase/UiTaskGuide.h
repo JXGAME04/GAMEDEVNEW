@@ -38,6 +38,8 @@ public:
 	static void				LoadScheme(const char* pScheme);
 	// goi tu GameSpaceChangedNotify khi nhan GDCNI_TASK_VALUE_UPDATE
 	static void				OnTaskValueChanged(int nTaskId);
+	// ban RUT GON trang thai Da Tau (dung cho khung Theo doi nhiem vu)
+	static void				BuildBriefLine(char* pOut, int nSize);
 private:
 	KUiTaskGuide();
 	virtual ~KUiTaskGuide();
@@ -50,6 +52,7 @@ private:
 	void	BuildDaTauText();			// noi dung nhiem vu Da Tau (TaskId 6)
 	void	AddLine(const char* pText);	// them 1 dong (tu ma hoa <color>/<enter>)
 	void	TryGoXaFu();				// nhiem vu loai 4 dang lam -> nho CoreShell dan den Xa Phu
+	void	UpdateButtons();			// bat/tat 3 nut theo trang thai nhiem vu + theo doi
 private:
 	static KUiTaskGuide*	m_pSelf;
 
