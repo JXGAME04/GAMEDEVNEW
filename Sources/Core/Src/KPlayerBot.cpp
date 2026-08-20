@@ -6964,8 +6964,8 @@ static void pb_DriveBot(PB_Bot& b)
 						if (nowAll - s_uLachLog >= (unsigned int)(GAME_FPS / 3))
 						{
 							s_uLachLog = nowAll;
-							pb_Log("[BotLach] %s ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
-							       Player[nIdx].m_PlayerName, jx / 32, jy / 32,
+							pb_Log("[BotLach] %s map=%d ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
+							       Player[nIdx].m_PlayerName, nMapNay, jx / 32, jy / 32,
 							       nLachX / 32, nLachY / 32);
 						}
 					}
@@ -7103,6 +7103,54 @@ static void pb_DriveBot(PB_Bot& b)
 			{
 				b.nTrangBiLevel = Npc[nNpcIdx].m_Level;
 				pb_TrangBiTheoCap(nIdx, nNpcIdx, b);
+			}
+
+			// -- (20/08) CUU CHUNG: bot nam NGOAI CUA SO LUOI tren BAT KY ban do --
+			// Nhanh [BotCuu] ben duoi CHI chay khi bot dang dung dung ban do BAI
+			// cua no (can diem neo de tha ve). Nhung bot lot ra ngoai map trong
+			// THANH hoac tren duong di thi khong co neo nao ca - va do that 20/08
+			// cho thay chung ton tai. Ke tu ban nay pb_CatDoan con CHAN moi lenh
+			// di cua bot ngoai luoi (dung, de no khong chay xa them), nen neu
+			// khong co duong cuu nay thi no dung im vinh vien.
+			// Cach cuu: quet xoan oc quanh cho dung, lay o DAU TIEN ma LUOI bao
+			// di duoc (CellObsSrv == 0, khong nhan -1) roi SetPos ve do.
+			if (SubWorld[nSub].CoLuoiSrv())
+			{
+				int nOx = 0, nOy = 0;
+				Npc[nNpcIdx].GetMpsPos(&nOx, &nOy);
+				if (SubWorld[nSub].CellObsSrv(nOx, nOy) < 0)
+				{
+					static const int aVx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+					static const int aVy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+					int nVx = 0, nVy = 0;
+					for (int r = 2; r <= 128 && !nVx; r += 2)
+						for (int h = 0; h < 8 && !nVx; h++)
+						{
+							const int cx = nOx + aVx[h] * r * 32;
+							const int cy = nOy + aVy[h] * r * 32;
+							if (cx <= 32 || cy <= 32)                       continue;
+							if (SubWorld[nSub].CellObsSrv(cx, cy) != 0)     continue;
+							int nRr = -1, nMXr = 0, nMYr = 0, nOXr = 0, nOYr = 0;
+							SubWorld[nSub].Mps2Map(cx, cy, &nRr, &nMXr, &nMYr, &nOXr, &nOYr);
+							if (nRr < 0)                                    continue;
+							if (SubWorld[nSub].m_Region[nRr].GetBarrierMin(nMXr, nMYr, nOXr, nOYr, FALSE)
+							    != Obstacle_NULL)                           continue;
+							nVx = cx;  nVy = cy;
+						}
+					if (nVx)
+					{
+						pb_Log("[BotNgoai] CUU %s map=%d dang o o(%d,%d) NGOAI cua so luoi"
+						       " -> keo ve o(%d,%d)\n", Player[nIdx].m_PlayerName,
+						       SubWorld[nSub].m_SubWorldID, nOx / 32, nOy / 32,
+						       nVx / 32, nVy / 32);
+						Npc[nNpcIdx].SetPos(nVx, nVy);
+						b.nTargetNpc = 0;
+						b.nRoamX = 0;  b.nRoamY = 0;
+						b.walk.Reset();  b.chase.Reset();  b.roam.Reset();
+						b.follow.Reset();  b.nFollowNghiToi = 0;  b.loot.Reset();
+						b.nJamTick = 0;
+					}
+				}
 			}
 
 			// -- tu cuu khoi ket luoi: dua ve diem dat chan bai cua chinh no --
@@ -7468,6 +7516,80 @@ static void pb_DriveBot(PB_Bot& b)
 //   - doi truong trong nhom -> giai tan
 //   - moi 10 phut XAO lai (chi giai tan; luot 5s sau tu ghep lai to hop khac)
 //   - ghep bot tu do CUNG MAP co nWantParty, tran tong PB_NHOM_RATE% ca dan
+// ===========================================================================
+// (20/08 - chu game: "van con bi chay ra khoi map, ban keo log ve xem")
+// BO DEM BOT NGOAI MAP.
+//
+// Vi sao phai co: cac dong log san co ([BotLach], [BotKet], [BotDanh]...) KHONG
+// in ban do, nen khi doi chieu voi luoi phai doan ban do cua tung bot theo dong
+// gan nhat co ghi map - va cach do SAI: do that 20/08 co ba bot dung CHUNG mot
+// toa do lai bi gan ba ban do khac nhau. Khong the sua goc bang so lieu doan.
+//
+// Ham nay dem tu NGUON SU THAT: duyet moi khe bot con song, hoi thang
+// Npc[].m_SubWorldIndex + GetMpsPos + CellObsSrv. 1000 bot x mot phep tra mang,
+// 30 giay mot lan - khong dang ke.
+// ===========================================================================
+static void pb_DemNgoai()
+{
+	static DWORD s_dwMocDem = 0;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwMocDem && dwNow - s_dwMocDem < 30000)
+		return;
+	s_dwMocDem = dwNow;
+
+	int nTrong = 0, nChan = 0, nNgoai = 0, nKhongLuoi = 0, nVd = 0;
+	int aMap[64], aNgoai[64], aChan[64], nMap = 0;
+	for (int q = 0; q < s_botCount; q++)
+	{
+		const int p = s_bots[q].nPlayerIdx;
+		if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != s_bots[q].dwID)
+			continue;
+		const int n = Player[p].m_nIndex;
+		if (n <= 0 || n >= MAX_NPC)
+			continue;
+		const int sub = Npc[n].m_SubWorldIndex;
+		if (sub < 0 || sub >= MAX_SUBWORLD)
+			continue;
+		if (!SubWorld[sub].CoLuoiSrv())
+		{
+			nKhongLuoi++;
+			continue;
+		}
+		int x = 0, y = 0;
+		Npc[n].GetMpsPos(&x, &y);
+		const int v = SubWorld[sub].CellObsSrv(x, y);
+		if (v == 0)
+		{
+			nTrong++;
+			continue;
+		}
+		const int bNgoai = (v < 0);
+		if (bNgoai) nNgoai++; else nChan++;
+		const int mid = SubWorld[sub].m_SubWorldID;
+		int k = -1;
+		for (int i = 0; i < nMap; i++)
+			if (aMap[i] == mid) { k = i; break; }
+		if (k < 0 && nMap < 64)
+		{
+			k = nMap++;
+			aMap[k] = mid;  aNgoai[k] = 0;  aChan[k] = 0;
+		}
+		if (k >= 0) { if (bNgoai) aNgoai[k]++; else aChan[k]++; }
+		if (nVd < 8)
+		{
+			nVd++;
+			pb_Log("[BotNgoai] VD%d %s map=%d o(%d,%d) region(%d,%d) = %s\n", nVd,
+			       Player[p].m_PlayerName, mid, x / 32, y / 32, x / 512, y / 1024,
+			       bNgoai ? "NGOAI CUA SO LUOI" : "trong O BI CHAN");
+		}
+	}
+	pb_Log("[BotNgoai] tk: %d o trong | %d trong O CHAN | %d NGOAI cua so luoi"
+	       " | %d dang o ban do khong co luoi\n", nTrong, nChan, nNgoai, nKhongLuoi);
+	for (int i = 0; i < nMap; i++)
+		pb_Log("[BotNgoai]   map %d: %d ngoai luoi, %d trong o chan\n",
+		       aMap[i], aNgoai[i], aChan[i]);
+}
+
 static void pb_QuanLyNhom()
 {
 	static DWORD s_dwMocQuan = 0, s_dwMocXao = 0;
@@ -7667,6 +7789,7 @@ void PB_Breathe()
 		for (int i = 0; i < s_botCount; i++)
 			pb_DriveBot(s_bots[i]);
 		pb_QuanLyNhom();
+		pb_DemNgoai();      // (20/08) do dem bot ngoai map, 30 giay/lan
 		pb_ChatTheGioi();
 
 		QueryPerformanceCounter(&liT1);
