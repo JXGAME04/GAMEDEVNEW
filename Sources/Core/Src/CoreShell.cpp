@@ -2785,7 +2785,8 @@ static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY
 // ReverseTools/gen_datau_spots.py doc file add NPC cua may chu trong pak.
 // Sua tep la doi duoc cho danh quai - KHONG phai dung lai DLL. Thieu tep thi
 // dung bang nhung san trong KDaTauSpots.h (chi 14 map dang bat).
-#define DT_MAX_SPOTFILE 4096
+// 204 map x 24 cum = 4896 dong nen 4096 la THIEU (bi cat am tham). De 8192.
+#define DT_MAX_SPOTFILE 8192
 static DTSpotRow g_aDTSpotFile[DT_MAX_SPOTFILE];
 static int g_nDTSpotFile = -1;	// -1 = chua nap lan nao
 
@@ -2816,6 +2817,9 @@ static void DT_LoadSpotFile()
 		g_aDTSpotFile[g_nDTSpotFile].nNum = nNum;
 		++g_nDTSpotFile;
 	}
+	if (g_nDTSpotFile >= DT_MAX_SPOTFILE)
+		g_DebugLog("[DaTau] datau_toado.txt qua %d dong - da cat bot, tang DT_MAX_SPOTFILE\n",
+		           DT_MAX_SPOTFILE);
 	fclose(f);
 }
 

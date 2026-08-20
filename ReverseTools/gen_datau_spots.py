@@ -43,6 +43,9 @@ MIN_QUAI = 2             # cum it hon nay thi bo
 #  2100 lam mat 16 con quai. Dung loc theo kich thuoc "region chi co vat can" nua.)
 CHI_VATCAN = 124
 SO_TIEN_TRINH = 8        # quet song song cho nhanh (moi tien trinh mo pak rieng)
+# Chi so region trong ten tep co cong offset m_nRegionBeginX/Y nen phai quet rong.
+# Da do: map that cham toi 251; de 384 cho du bien (bo loc chu ky loai het va cham).
+DAI_QUET = 384
 
 # ---------------------------------------------------------------- bam ten
 
@@ -214,20 +217,37 @@ def doc_findmaps(path):
 
 
 def doc_npc_region(blob):
-    """Region_S.dat hop nhat -> [(x, y, kind, level, ten)]."""
+    """Region_S.dat hop nhat -> [(x, y, kind, level, ten)]; None neu KHONG phai region.
+
+    PHAI kiem that chat: ham bam ten tep cua pak chi 31 bit nen quet 100-150 nghin ten
+    se DUNG DO vai chuc id cua tep KHAC (do da kiem chung: cac 'region' rot ra ngoai dai
+    hop le dung bang so va cham du kien). Nhan dang region that bang chu ky:
+      * so muc = REGION_ELEM_FILE_COUNT = 6
+      * muc vat can (REGION_OBSTACLE_FILE_INDEX = 0) dai dung 2048 byte
+        (REGION_GRID_WIDTH 16 * REGION_GRID_HEIGHT 32 * 4)
+      * moi muc nam gon trong tep
+    """
     if len(blob) < 4:
-        return []
+        return None
     (num_sect,) = struct.unpack_from("<I", blob, 0)
-    if num_sect < 3 or num_sect > 64:
-        return []
+    if num_sect != 6:                       # REGION_ELEM_FILE_COUNT (SceneDataDef.h:35)
+        return None
     head_size = 4 + 8 * num_sect
     if len(blob) < head_size:
-        return []
-    off, length = struct.unpack_from("<II", blob, 4 + 8 * 2)   # REGION_NPC_FILE_INDEX = 2
+        return None
+    muc = []
+    for k in range(num_sect):
+        off, length = struct.unpack_from("<II", blob, 4 + 8 * k)
+        if head_size + off + length > len(blob):
+            return None
+        muc.append((off, length))
+    off, length = muc[2]                    # REGION_NPC_FILE_INDEX = 2
     beg = head_size + off
-    if length < 12 or beg + length > len(blob):
-        return []
+    if length < 12:
+        return []                           # region that nhung khong co NPC
     (num_npc,) = struct.unpack_from("<I", blob, beg)
+    if num_npc > 4096:
+        return None
     p = beg + 12
     out = []
     for _ in range(num_npc):
@@ -253,9 +273,11 @@ def quet_map(paks, duongdan):
     quai = []
     nReg = 0
     nCoNpc = 0
-    for ny in range(0, 256):
+    nVaCham = 0
+    nMax = 0
+    for ny in range(0, DAI_QUET):
         u1, i1 = hstep(st0[0], st0[1], b"%03d\\" % ny)
-        for nx in range(0, 256):
+        for nx in range(0, DAI_QUET):
             uid, _ = hstep(u1, i1, b"%03d_region_s.dat" % nx)
             uid ^= 0x12345678
             pk = None
@@ -265,26 +287,47 @@ def quet_map(paks, duongdan):
                     break
             if pk is None:
                 continue
-            nReg += 1
             off, size, cflag = pk.info(uid)
             if size < CHI_VATCAN:
-                continue                 # nho hon ca header+1 NPC -> chac chan rong
+                nVaCham += 1
+                continue                 # nho hon ca header+1 NPC -> khong phai region
             try:
                 blob = pk.doc(uid)
             except Exception:
-                continue
-            if not blob:
+                nVaCham += 1             # giai nen hong = tep khac trung id
                 continue
             ds = doc_npc_region(blob)
+            if ds is None:
+                nVaCham += 1             # khong dung chu ky region = trung id
+                continue
+            # PHEP KIEM TUYET DOI chong va cham bam: NPC cua region (nx,ny) BAT BUOC nam
+            # trong o cua chinh no - X trong [nx*512, +512), Y trong [ny*1024, +1024)
+            # (REGION_GRID_WIDTH 16 o * 32 mps = 512; REGION_GRID_HEIGHT 32 o * 32 = 1024).
+            # Tep khac trung id thi toa do "npc" cua no roi lung tung -> loai ca region.
+            if ds:
+                nTrong = 0
+                for (px, py, kind, lvl, ten) in ds:
+                    if (nx * 512 <= px < (nx + 1) * 512
+                     and ny * 1024 <= py < (ny + 1) * 1024):
+                        nTrong += 1
+                if nTrong * 2 < len(ds):     # qua nua NPC nam ngoai o -> khong phai region nay
+                    nVaCham += 1
+                    continue
+            nReg += 1
             if ds:
                 nCoNpc += 1
+                # chi region DA KIEM CHUNG (co NPC dung o) moi tinh vao bien quet
+                if nx > nMax:
+                    nMax = nx
+                if ny > nMax:
+                    nMax = ny
             for (px, py, kind, lvl, ten) in ds:
                 if kind != KIND_NORMAL:
                     continue
                 if px <= 0 or py <= 0:
                     continue
                 quai.append((px, py))
-    return quai, nReg, nCoNpc
+    return quai, nReg, nCoNpc, nVaCham, nMax
 
 
 def gom_cum(quai, ax_mps, ay_mps):
@@ -322,8 +365,8 @@ def _mo_pak():
 
 def _quet_mot_map(viec):
     mid, duongdan = viec
-    quai, nreg, nnpc = quet_map(_PAKS, duongdan)
-    return (mid, quai, nreg, nnpc)
+    quai, nreg, nnpc, nvacham, nmax = quet_map(_PAKS, duongdan)
+    return (mid, quai, nreg, nnpc, nvacham, nmax)
 
 
 def main():
@@ -362,14 +405,17 @@ def main():
     print("quet %d map bang %d tien trinh..." % (len(viecs), SO_TIEN_TRINH))
     sys.stdout.flush()
     with Pool(processes=SO_TIEN_TRINH, initializer=_mo_pak) as pool:
-        for (mid, quai, nreg, nnpc) in pool.imap_unordered(_quet_mot_map, viecs):
+        for (mid, quai, nreg, nnpc, nvacham, nmax) in pool.imap_unordered(_quet_mot_map, viecs):
             ten, cx, cy = thongtin[mid]
             ds = gom_cum(quai, cx * 32, cy * 32)
             ket.append((mid, ten, cx, cy, ds, len(quai)))
             tong_quai += len(quai)
-            print("  map %3d %-28s %5d region, %5d quai, %2d cum%s"
+            canhbao = ""
+            if nmax >= DAI_QUET - 4:
+                canhbao = "  <-- CHAM BIEN QUET, TANG DAI_QUET!"
+            print("  map %3d %-28s %5d region, %5d quai, %2d cum (bo %d id trung, imax=%d)%s%s"
                   % (mid, ten.decode("latin-1")[:28], nreg, len(quai), len(ds),
-                     "   [DANG BAT]" if mid in batmap else ""))
+                     nvacham, nmax, "  [DANG BAT]" if mid in batmap else "", canhbao))
             sys.stdout.flush()
     ket.sort(key=lambda t: t[0])
 

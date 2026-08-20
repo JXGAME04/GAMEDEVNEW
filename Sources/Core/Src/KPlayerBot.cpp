@@ -406,6 +406,16 @@ int PB_IsBot(int nPlayerIdx)
 #define PB_NHOM_MAX_MEM  7     // (19/08 trua) full nhom 8 nguoi = MAX_TEAM_MEMBER                     // toi da 3 thanh vien (nhom 4 nguoi)
 #define PB_NHOM_QUAN_MS  5000                  // nhip quan ly nhom
 #define PB_NHOM_XAO_MS   600000                // 10 phut xao lai nhom mot lan
+
+// ---- Da Tau: task value + kich ban + cap toi thieu (dung tu PB_SetDaTau tro di)
+#define PB_DT_COURSE  1028
+#define PB_DT_LOAI    1021
+#define PB_DT_MAP     1031
+#define PB_DT_CAN     1032
+#define PB_DT_CO      1025
+#define PB_DT_NGAY    2420
+#define PB_DT_SCRIPT  "\\script\\global\\seasonnpc.lua"
+#define PB_DT_CAP_TOI_THIEU  80    // (19/08 toi) chu game: chi bot cap >= 80
 #define PB_BAM_GAN       150                   // ban kinh bam theo doi truong (MPS)
 #define PB_BAM_NHA       200                   // xa hon nay la bo danh de bam theo
 
@@ -1293,33 +1303,80 @@ int PB_SetDaTau(int nMax)
 	if (nMax > PB_MAX_BOTS)
 		nMax = PB_MAX_BOTS;
 	s_nPbDaTauMax = nMax;
-	for (int i = 0; i < s_botCount; i++)
-		s_bots[i].nDaTauChon = 0;
-	// Fisher-Yates tren cac bot dang song (tron chi so - g_Random dong bang giay)
+
+	// (19/08 toi #2) HAI SUA QUAN TRONG, ca hai deu tu log that ngay 19/08:
+	// 1. CHI LAY BOT CAP >= 80 (luat chu game). Truoc day boc tren CA DAN nen
+	//    boc 200 con chi trung ~14 con du cap (log 16:30: 68/1000 bot >= 80,
+	//    16 con "nhap mon" that) - nhin nhu "bot khong chiu di lam nhiem vu".
+	// 2. GIU NGUYEN bot DANG LAM: bam lai menu (chu game bam 16:30:55 roi
+	//    16:31:40) truoc day BOC LAI TU DAU -> bot vua teleport sang map nhiem
+	//    vu bi bo chon -> pb_RaBai keo thang ve bai luyen (CaoVinh338: teleport
+	//    map 122 luc 16:30:57, bi bo chon 16:31:40, ve bai map 198 ngay giay do).
+	//    Nay chi THEM cho du so hoac BOT phan thua - bot dang lam khong bi dung.
 	static int aId[PB_MAX_BOTS];
-	int nSong = 0;
+	int nSong = 0, nDangChon = 0, nDuCap = 0;
 	for (int i = 0; i < s_botCount; i++)
 	{
-		if (s_bots[i].nPlayerIdx <= 0)
+		const int p = s_bots[i].nPlayerIdx;
+		if (p <= 0 || p >= MAX_PLAYER)
 			continue;
+		const int nn = Player[p].m_nIndex;
+		const int nCap = (nn > 0 && nn < MAX_NPC) ? Npc[nn].m_Level : 0;
+		if (nCap < PB_DT_CAP_TOI_THIEU)
+		{
+			s_bots[i].nDaTauChon = 0;  // tut cap / chua du cap thi bo ra
+			continue;
+		}
+		nDuCap++;
 		if (s_bots[i].nBanSap)
-			continue;                  // dang ban sap thi khoi lam Da Tau
-		aId[nSong++] = i;
+		{
+			s_bots[i].nDaTauChon = 0;  // dang ban sap thi khoi lam Da Tau
+			continue;
+		}
+		if (s_bots[i].nDaTauChon)
+			nDangChon++;
+		else
+			aId[nSong++] = i;          // ung vien co the them
 	}
-	for (int i = nSong - 1; i > 0; i--)
+
+	if (nDangChon > nMax)
 	{
-		const int j = ((int)g_Random(i + 1) + i * 17) % (i + 1);
-		const int t2 = aId[i];  aId[i] = aId[j];  aId[j] = t2;
+		// bot bot: nha nhung con CHUA vao viec truoc (course 0 = chua nhap mon)
+		for (int i = s_botCount - 1; i >= 0 && nDangChon > nMax; i--)
+		{
+			if (!s_bots[i].nDaTauChon)
+				continue;
+			const int p = s_bots[i].nPlayerIdx;
+			if (p > 0 && p < MAX_PLAYER
+			 && (int)Player[p].m_cTask.GetSaveVal(PB_DT_COURSE) == 1)
+				continue;              // dang giua nhiem vu - de yen
+			s_bots[i].nDaTauChon = 0;
+			nDangChon--;
+		}
+		for (int i = s_botCount - 1; i >= 0 && nDangChon > nMax; i--)
+			if (s_bots[i].nDaTauChon)
+			{
+				s_bots[i].nDaTauChon = 0;
+				nDangChon--;
+			}
 	}
-	int nChon = 0;
-	for (int i = 0; i < nSong && nChon < nMax; i++)
+	else if (nDangChon < nMax && nSong > 0)
 	{
-		s_bots[aId[i]].nDaTauChon = 1;
-		nChon++;
+		// Fisher-Yates tren ung vien du cap (tron chi so - g_Random dong bang giay)
+		for (int i = nSong - 1; i > 0; i--)
+		{
+			const int j = ((int)g_Random(i + 1) + i * 17) % (i + 1);
+			const int t2 = aId[i];  aId[i] = aId[j];  aId[j] = t2;
+		}
+		for (int i = 0; i < nSong && nDangChon < nMax; i++)
+		{
+			s_bots[aId[i]].nDaTauChon = 1;
+			nDangChon++;
+		}
 	}
-	pb_Log("[BotDT] boc NGAU NHIEN %d bot (trong %d con song) lam nhiem vu Da Tau\n",
-	       nChon, nSong);
-	return nChon;
+	pb_Log("[BotDT] chon %d bot lam Da Tau (yeu cau %d; %d/%d bot du cap %d)\n",
+	       nDangChon, nMax, nDuCap, s_botCount, PB_DT_CAP_TOI_THIEU);
+	return nDangChon;
 }
 
 int LuaPB_SetDaTau(Lua_State* L)
@@ -2116,13 +2173,6 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 // - Moi bot mot "NPC nha" (nLech % 10 trong 10 vi tri spec muc 1) de tram bot
 //   khong dun mot cho.
 // ===========================================================================
-#define PB_DT_COURSE  1028
-#define PB_DT_LOAI    1021
-#define PB_DT_MAP     1031
-#define PB_DT_CAN     1032
-#define PB_DT_CO      1025
-#define PB_DT_NGAY    2420
-#define PB_DT_SCRIPT  "\\script\\global\\seasonnpc.lua"
 
 struct PB_DtNpc { int nMap, nX, nY; };
 static const PB_DtNpc s_dtNpc[10] =
@@ -2369,7 +2419,7 @@ static int pb_DaTau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 {
 	if (!b.nDaTauChon)
 		return 2;                          // khong duoc boc (chon NGAU NHIEN o PB_SetDaTau)
-	if (Npc[nNpcIdx].m_Level < 80)
+	if (Npc[nNpcIdx].m_Level < PB_DT_CAP_TOI_THIEU)
 		return 2;                          // (19/08 toi chu game) CHI bot cap >= 80
 
 	const unsigned int nowT = SubWorld[nSub].m_dwCurrentTime;
@@ -2751,18 +2801,27 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			static const int aDet[3] = { 3, 4, 9 };   // nhan / lien / boi
 			const int nDet = aDet[(nLech + t2) % 3];
 			const int nLv  = 1 + (((int)g_Random(10) + nLech * 7 + t2 * 3) % 10);
-			// (19/08 toi chu game) hang phai la trang suc CO OPT: nGeneratorLevel[j]
-			// la DONG trong bang thuoc tinh phu (KItemGenerator.cpp:396-398) - dat
-			// 1..5 nhu chu game chot; va PHAI di duong AddItemSet2 vi ItemSet.Add
-			// KHONG co tham so nPoint (nPoint = 0 thi khong sinh opt nao).
+			// (19/08 toi #2 - chu game: "bay do XANH nhu do danh npc rot ra, khong
+			// phai do TIM"). LUAT MAU cua engine (KItem.cpp:3200 GetColorItem):
+			//   nGoldId/NATURE_GOLD -> vang | NATURE_PLATINA -> bach kim
+			//   IsPurple() -> TIM ; IsPurple() = (m_CommonAttrib.nPoint != 0) (:3222)
+			//   con lai co m_aryMagicAttrib[0].nAttribType != 0 -> XANH ; het -> trang
+			// Ban truoc dung AddItemSet2 voi nPoint = so opt -> Gen_Equipment goi
+			// SetPoint(nPoint) (KItemGenerator.cpp:417) -> MOI MON THANH TIM.
+			// DUONG DO XANH DUNG (chinh la duong quai rot do): nPoint == 0 VA truyen
+			// mang nMagicLevel co gia tri -> Gen_Equipment nhanh :368-374 goi
+			// Gen_MagicAttrib(nType, pnaryMALevel, ...) - ham nay doc pnaryMALevel[i]
+			// lam CAP thuoc tinh phu, DUNG o phan tu = 0 dau tien (:441-443), roc
+			// theo m_DropRate nhu do rot that. ItemSet.Add KHONG co tham so nPoint
+			// nen luon nPoint = 0 -> dung ham nay.
 			int nMagic[MAX_ITEM_MAGICLEVEL];
 			ZeroMemory(nMagic, sizeof(nMagic));
 			const int nSoOpt = 1 + (((int)g_Random(3) + nLech + t2) % 3);   // 1..3 opt
 			for (int o2 = 0; o2 < nSoOpt && o2 < MAX_ITEM_MAGICATTRIB; o2++)
 				nMagic[o2] = 1 + (((int)g_Random(5) + nLech * 3 + t2 * 7 + o2 * 11) % 5);
-			const int nNew = ItemSet.AddItemSet2(0, (nLech + t2) % 5, nLv, 10, nDet, 0,
-			                                     nMagic, g_SubWorldSet.GetGameVersion(),
-			                                     0, 1, 0, nSoOpt);
+			const int nMay = (int)g_Random(11);        // do may 0..10 nhu do rot
+			const int nNew = ItemSet.Add(0, 0, (nLech + t2) % 5, nLv, nMay, nDet, 0,
+			                             nMagic, g_SubWorldSet.GetGameVersion(), 0);
 			if (nNew <= 0)
 				continue;
 			Player[nIdx].m_ItemList.InsertEquipment(nNew, false);
@@ -2771,6 +2830,20 @@ static void pb_BanSap(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 			{
 				ItemSet.Remove(nNew);
 				continue;              // tui day
+			}
+			// kiem chung MAU ngay tai cho: chi giu do XANH (co opt). Do trang
+			// (khong roc duoc opt nao) thi bo, khoi bay hang vo dung.
+			if (Item[nNew].GetColorItem() != green_item)
+			{
+				static unsigned int s_uMauLog = 0;
+				if (nowT - s_uMauLog >= (unsigned int)(GAME_FPS * 30))
+				{
+					s_uMauLog = nowT;
+					pb_Log("[BotSap] %s bo mon khong phai do xanh (mau=%d, detail=%d cap=%d)\n",
+					       Player[nIdx].m_PlayerName, Item[nNew].GetColorItem(), nDet, nLv);
+				}
+				Player[nIdx].m_ItemList.RemoveItemIdx(nNew, Item[nNew].GetStackNum());
+				continue;
 			}
 			int nGia = Item[nNew].m_CommonAttrib.nPrice * 2;
 			if (nGia < 500)
