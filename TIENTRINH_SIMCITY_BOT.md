@@ -336,3 +336,40 @@ grep -a "\[BotSapLoi\]" bot.log                # kỳ vọng 0 dòng
 grep -a "\[BotDT\]" bot.log | grep -a "loai 4" # kỳ vọng có NHẬN loại 4 (8 cuộn, map 122/21)
 ```
 Điều kiện đạt: không còn bot đứng/di chuyển ngoài map 79 sau ~10 phút (bot cũ nạp lại ngoài xích cần vài phút roam về); sạp ngồi quanh NPC Dã Tẩu chỗ thoáng, không chui góc/khe tường; sạp cháy hàng vẫn mua được sau kỳ châm kế; Dã Tẩu thấy `NHAN nhiem vu loai 4` → `godatau` → `nhat cuon (n/8)` → `TRA XONG` → `chon ruong thuong`.
+
+
+## 12. PHIÊN 19/08 ĐÊM: NEO TỰ SỬA + VỀ THÀNH/THÔN + SẠP 8-12 MÓN + LINK XANH (đợt vá 2, sau restart 19:20)
+
+**5 việc chủ game giao (đêm) + 3 việc nhắn bổ sung:** (1) kiểm Kim Phong không add lặp; (2) kiểm ngựa Túc Sương add 1 lần; (3) kiểm hàm xóa skill Thiên Vương thừa kế; (4) bot VẪN đứng ngoài map — điều tra kỹ hơn; (5) hàm lệnh bài gọi toàn bộ bot về thành/thôn chia đều; (6) bot vẫn dồn đông một chỗ; (7) sạp bày nhiều món hơn; (8) item post kênh thế giới phải là đồ xanh opt 1-5. Phản biện: 2 agent độc lập (logic hệ / vật phẩm-hiệu năng), bắt 1 lỗi chặn + 3 rủi ro, tất cả đã đóng trước deploy.
+
+### Kết quả 3 việc KIỂM TRA (mã + log sau restart 19:20)
+1. **Kim Phong**: đợt 8 (`32c43c99`, trước phiên này) đã sửa đúng gốc — phép thử `GetGoldId() == 177..185` (so id thật, không phải cột m_nSet=36). Log sau restart: 65 dòng/57 bot = chỉ mặc món thiếu, **không còn add lặp** (hiện tượng 26.395 dòng chủ game từng thấy là của DLL cũ 17:42).
+2. **Túc Sương**: phép thử `detail==equip_horse && parti==2 && level>=10` trên ngựa đang mặc — log mỗi bot đúng 1 lần. **Đạt**.
+3. **Xóa skill thừa kế**: hàm CÒN — `RemoveAllSkill()` [KPlayerBot.cpp ~dòng 830] chạy cho mọi blob **mới** (taobot_bdb) hoặc blob thiếu nSect hợp lệ; bot <10 chưa vào phái lưu rồi nạp lại vẫn bị quét sạch (nSect=-1 → coi là bot mới). **Khe còn lại**: bot ĐÃ vào phái mà blob nhiễm skill Thiên Vương từ khe 18/08 (lưu giữa lúc vá vòng nạp và lúc thêm RemoveAllSkill) thì nạp lại KHÔNG tự sạch — nếu còn thấy phái khác múa chiêu đao TV thì đó là bot lưu trong khe đó; cách sạch: gỡ tạo lại 1000 con.
+
+### Điều tra "vẫn đứng ngoài map" — thủ phạm thật: NEO BÃI HỎNG
+Pháp y log sau restart: PhamVu342 được `[BotCuu]` thả về đúng tọa độ neo Lão Hổ Động (1702,3350) rồi 49 giây sau "ket dao A*" tại (1710,3345) → cứu về lại chỗ cũ — **vòng lặp cứu-tại-chỗ mỗi 60s**, bot đứng im giữa vùng đen = cảnh chủ game thấy. Gốc: một số **tọa độ neo trong s_bai được chọn tay TRƯỚC khi lưới 19/08 sơn đặc region thiếu dữ liệu** — nay chúng nằm trong/cạnh đảo lưới (Hoành Sơn Phái 21 lượt cứu/17ph, Trường Bạch 11, Lão Hổ Động 10).
+
+### Đã sửa (KPlayerBot.cpp + KSubWorld.cpp + ScriptFuns.cpp + simcity_admin.lua)
+1. **NEO TỰ SỬA `pb_LayNeo`**: lần đầu dùng neo mỗi bãi, đo độ liên thông bằng BFS cửa sổ 27×27 (`pb_SapLoang` giờ trả số ô); neo loang <60 ô → quét xoắn ốc 2 vòng: **vòng 1 (r≤12) đòi ứng viên CHẠM ĐƯỢC ô gốc/4 lân cận** trong bản đồ loang của nó (chống bốc nhầm "vùng trống giả" void loang mênh mông — phản biện chỉ đúng); vòng 2 (r≤40) chỉ đòi ≥60 + log `DUYET TAY`. Cache cả đời server. `pb_RaBai` + `[BotCuu]` + xích đều đi qua neo-đã-kiểm. Sau restart grep `[BotNeo]` để duyệt neo bị đổi.
+2. **Xích MAP NHIỆM VỤ loại 4** (lỗ mở ra khi nâng trần cuộn): neo = điểm Xa Phu thả (`nDtNeoMap/X/Y`), xích riêng **PB_XICH_NV 3200/3520** (rộng hơn bãi — quái rơi cuộn rải khắp map, 2000 dễ "farm 20 phút không ra cuộn"). Theo dõi tần suất dòng đó sau deploy.
+3. **Di tản ưu-tiên-chỗ-vắng** (trả lời "bot vẫn dồn đông"): `pb_FindRoamSpot` thêm `bUuTienVang` — nhánh đếm-bot-ít-nhất (sẵn có của đội trưởng) giờ dùng cho `[BotDan]` thay vì bốc ngẫu nhiên (trước hay trúng điểm ngay cạnh đám đông, di tản xong vẫn đông nguyên).
+4. **CHẾ ĐỘ VỀ THÀNH/THÔN** (yêu cầu #5): menu lệnh bài mới "Goi het bot ve THANH-THON: BAT/TAT" → `PB_SetVeThanh` (Lua đăng ký ScriptFuns.cpp). 15 map đích = 10 thành s_dtNpc + 5 thôn (99 Vĩnh Lạc, 100 Chu Tiên, 101 Đạo Hương, 153 Thạch Cổ, 174 Long Tuyền — tọa độ từ node simcity). Chia đều `nLech % 15` (~67 bot/map), teleport **so le 60 giây**, rải ô lệch 9×7, tới nơi cưỡi ngựa (thành) + đi dạo quanh tâm ≤18 ô. Sạp giữ nguyên sạp; Dã Tẩu tạm ngưng KHÔNG mất nhiệm vụ; hồi sinh + lưu định kỳ vẫn chạy. TẮT là bot tự về bãi. **Phản biện bắt kịp trước deploy: map 20 + 121 chưa từng có lưới A*** (2/15 đích VÀ 2/10 thành nhà Dã Tẩu — bệnh "không tới được NPC thành 20/121" có sẵn từ trước!) → đã thêm 20,121 + 5 thôn vào `IsBotPathMap` (boot đầu dựng 7 lưới mới, tốn vài giây).
+5. **Sạp 8-12 món** (yêu cầu #7): `nMuon = 8 + (nLech+nDot)%5`. Đo thật: cửa sổ sạp client theo ô túi 6×10=60, gói VIEW_ITEM_SYNC trần 60 món → 12 an toàn tuyệt đối; 12 món trang sức chỉ tốn ~20/60 ô túi. Vá kèm **nhánh túi-đầy ảo**: `InsertEquipment` túi đầy không báo lỗi mà nhét vào pos_hand + VỨT món đang cầm xuống đất → giờ món tới tay là hủy + dừng đợt.
+6. **Link kênh thế giới = đồ XANH opt 1-5** (yêu cầu #8): `pb_TaoLinkDo` rải `nMagicLevel` cấp 1..5 (trước để trống = đồ trắng), tự kiểm màu — không xanh thì bỏ link (câu rao vẫn gửi). Client dựng lại item từ seed+nMagicLevel trong token (cùng pipeline sạp đã chạy thật) → người chơi bấm link thấy đúng đồ xanh.
+7. **Phá "chữ ký bot" của RNG đóng băng**: mọi phép gieo trong link/sạp/đi-dạo giờ trộn biến đếm/chỉ số (không thì cùng-giây-cùng-giá-trị làm series ≡ cấp-opt mãi mãi, số opt chỉ {1,6}, cả đàn đi dạo chéo 45° dồn cục).
+
+### Ghi sổ (chưa sửa, có chủ đích)
+- `nDtNeoMap` không reset giữa 2 nhiệm vụ cùng map → xích neo quanh điểm thả CŨ (bán kính 3200 đủ rộng, rủi ro thấp).
+- Đổi neo bằng vòng-2 (không chạm gốc) có thể vẫn rơi vào void → log có chữ `DUYET TAY`, chủ game soi bằng `fp_view.py` trước khi tin.
+- Chú ý sau restart: bot Dã Tẩu thành nhà 20/121 hết bệnh "nghỉ 5 phút xoay vòng" (lưới mới) — grep `KHONG toi duoc` để xác nhận.
+
+### Nghiệm thu sau restart
+```
+grep -a "\[BotNeo\]" bot.log                      # neo nào bị đổi, có dòng DUYET TAY không
+grep -a "\[BotVeThanh\]" bot.log | awk '{print $NF}' | sort | uniq -c   # đủ 15 map, ~67 con/map
+grep -ac "\[BotCuu\]" bot.log                      # phải GIẢM mạnh so 62/17ph
+grep -a "farm 20 phut khong ra cuon" bot.log | wc -l   # xích NV có bóp nghẹt loại 4 không
+grep -a "\[BotSap\] .*mon trang suc" bot.log | tail    # 8-12 món/sạp
+```
+Bấm menu: BOT người chơi → "Goi het bot ve THANH-THON: BAT" — quan sát thành/thôn đông dần trong ~60 giây; TAT là bot về bãi đánh quái lại.

@@ -157,7 +157,19 @@ function PB_Menu()
 	"Cham TTL + Que Hoa Tuu: TAT/#PB_Buff(0)",
 	"Bot chay nhiem vu DA TAU/PB_DaTauMenu",
 	"Bot ra THANH ban sap/PB_SapMenu",
+	"Goi het bot ve THANH-THON: BAT/#PB_VeThanhBat(1)",
+	"Goi het bot ve THANH-THON: TAT (ve bai luyen)/#PB_VeThanhBat(0)",
 	SC_END_SAY})
+end
+
+-- (19/08 toi #4) goi het bot ve 15 map thanh thi/thon, chia deu theo chi so
+function PB_VeThanhBat(n)
+	local nMoi = PB_SetVeThanh(n)
+	if nMoi == 1 then
+		Talk(1,"","Da BAT che do goi bot ve THANH THI/THON (15 map, chia deu).\nBot doi map SO LE trong 60 giay - dung lo thay cham.\nBot ban sap GIU NGUYEN sap; bot Da Tau tam ngung, KHONG mat nhiem vu.")
+	else
+		Talk(1,"","Da TAT che do ve thanh - bot tu ve bai luyen danh quai nhu cu.")
+	end
 end
 
 function PB_Call(nTu, nDen)

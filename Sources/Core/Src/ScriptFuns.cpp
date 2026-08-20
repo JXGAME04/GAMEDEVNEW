@@ -12738,6 +12738,7 @@ extern int LuaPB_SaveAll(Lua_State* L);
 extern int LuaPB_SetBuff(Lua_State* L);
 extern int LuaPB_SetDaTau(Lua_State* L);
 extern int LuaPB_SetBanSap(Lua_State* L);
+extern int LuaPB_SetVeThanh(Lua_State* L);
 extern int PB_IsBot(int nPlayerIdx);
 
 // IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
@@ -13092,6 +13093,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_SetBuff",		LuaPB_SetBuff},		// (19/08) bat/tat cham TTL + Que Hoa Tuu
 	{"PB_SetDaTau",		LuaPB_SetDaTau},	// (19/08) gioi han so bot lam Da Tau
 	{"PB_SetBanSap",	LuaPB_SetBanSap},	// (19/08) so bot ra thanh ngoi ban sap
+	{"PB_SetVeThanh",	LuaPB_SetVeThanh},	// (19/08 toi) goi het bot ve thanh/thon chia deu (1=bat 0=tat -1=doc)
 	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},

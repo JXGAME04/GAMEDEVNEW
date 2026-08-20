@@ -1669,7 +1669,14 @@ static bool IsBotPathMap(int nMapId)
 		319,320,321,322,336,340,341,380,829,
 		// bai luyen cap theo Than Hanh Phu con thieu o danh sach goc:
 		19,79,124,144,152,166,170,181,182,193,198,875,
-		969,970,971,972,973,974,975,976
+		969,970,971,972,973,974,975,976,
+		// (19/08 toi #4) 5 thon/tran cua che do VE THANH (pb_VeThanh) - khong co
+		// luoi thi PB_WalkTo di dao tra -1, bot ve thon dung im nhu tuong
+		99,100,101,153,174,
+		// (phan bien dot 2) 20 + 121 la 2/15 map dich VE THANH *va* 2/10 thanh nha
+		// Da Tau (s_dtNpc) ma xua nay KHONG co luoi -> DTB_TOI_NPC di bo toi NPC
+		// tren 2 thanh nay von da -2, bot thanh nha 20/121 xoay vong nghi 5 phut
+		20,121
 	};
 	for (int i = 0; i < (int)(sizeof(s_map) / sizeof(s_map[0])); i++)
 		if (s_map[i] == nMapId)
