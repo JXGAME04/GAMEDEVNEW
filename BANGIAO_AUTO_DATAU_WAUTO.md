@@ -357,6 +357,45 @@ quy auto cũ khi `bDaTau=0` · ID tab-8 liền mạch < `IDC_INDEX_END` · nút 
 
 ---
 
+## 12 · Công cụ Dã Tẩu trong LỆNH BÀI ADMIN (19/08, `d72ace99`)
+
+Vào lệnh bài admin → **"Da Tau: xoa phat huy + them luot huy"**. Mã ở
+`script\item\datau_admin.lua` (ASCII thuần, có cả bản trong git `serverscript_jx2\jx1_edits\`),
+được `lenhbaiadmin.lua` `Include` (2 dòng chèn byte-safe, TCVN3 giữ nguyên 172 byte cao).
+
+| Mục | Làm gì | Ghi vào |
+|---|---|---|
+| Xóa phạt | bỏ phạt "hủy nhiều nhiệm vụ", gặp NPC là làm tiếp ngay | `1036=0`, `1029=0`, và **ghi lại `1046` cho khớp** để chữa luôn ca bị cấm hủy do lệch bản sao |
+| Thêm 10 lượt hủy | cộng lượt hủy (kẹp trần **100**) | byte 4 của `1020` **và** `1046` |
+| Đặt lại lượt hủy = 0 | về 0 | như trên |
+| Đặt lại số nhiệm vụ hôm nay | bỏ trần 40/ngày | `2420=0`, `2797=0` (⚠️ ăn lại được thưởng mốc 30/40) |
+
+**Bản đồ biến đếm (truy từ mã thật, đừng đoán lại):** lượt hủy = **BYTE 4 của task 1020**
+(`tl_settaskstate`, tasklink_head.lua:488-500) · **1046** = bản sao chống gian lận, lệch với
+byte 4 là **cấm hủy vĩnh viễn + ghi log gian lận** (`_CancelTaskDebug`, seasonnpc.lua:1121) ⇒
+**đổi lượt hủy phải ghi CẢ HAI** · phạt = **1036 == 10** (đặt ở `Task_Cancel` khi hủy quá 3
+lần đầu chuỗi, seasonnpc.lua:676-683) + mốc thời gian **1029**, hệ thống chỉ tự tha sau
+**10890 tick ≈ 10 phút** · **2419** ngày · **2420** số nhiệm vụ/ngày (trần 40) · **2797** số
+lần hủy trong ngày, chỉ dùng tính thưởng mốc 30/40 chứ không chặn gì.
+
+🔴 **Trần lượt hủy THẬT là 127, không phải 254** như `tl_settaskstate` ghi: `LuaGetByte`
+(ScriptFuns.cpp:121-134) đọc byte 4 bằng `(x & (0xff<<24)) >> 24` trên **int có dấu** nên byte
+≥128 đọc ra **số âm** → `Task_Cancel` tưởng "hết lượt" và rơi vào nhánh **xóa sạch chuỗi
+nhiệm vụ** (seasonnpc.lua:705-725). Đây là **bug có sẵn của hệ gốc** (người chơi tự tích lượt
+hủy bằng nút thưởng "finish_lucky" cũng dính) — công cụ admin kẹp trần 100 và tự chữa khi
+gặp byte âm.
+
+🔑 **Sửa Lua KHÔNG cần restart server**: `LuaIncludeFile` = `lua_dofile`, **không cache**
+(ScriptFuns.cpp:1964), và `main()` của lệnh bài tự `dofile` lại chính nó mỗi lần dùng vật phẩm.
+Các tệp `.lua` **khác** (không nằm trong cây Include của lệnh bài) thì vẫn phải restart.
+
+🔑 Giới hạn khi thêm mục menu: tiêu đề + các mục **dùng chung đệm 512 byte**
+(`MAX_SCIRPTACTION_BUFFERNUM`, cắt âm thầm không báo lỗi), số mục tối đa 50
+(`MAX_ANSWERNUM`), tên hàm gọi lại tối đa 31 ký tự, và **cấm ký tự `|`** trong nhãn. Menu hiện
+dùng ~415/512 byte với 8 mục.
+
+---
+
 ## 11 · Tra cứu nhanh
 
 ```bash
