@@ -175,11 +175,11 @@ CORE_API void g_InitCore(char * nParmName)
 		// tep con do thi khong dung toi, tranh de len ban moi hon tren dia.
 		char szRoot[MAX_PATH], szP[MAX_PATH];
 		g_GetRootPath(szRoot);
-		sprintf(szP, "%s\settings\jx2citywar.txt", szRoot);
+		sprintf(szP, "%s\\settings\\jx2citywar.txt", szRoot);
 		KGameKV::GetFileToDisk("jx2.citywar", "file", szP, true);
-		sprintf(szP, "%s\settings\jx2league.txt", szRoot);
+		sprintf(szP, "%s\\settings\\jx2league.txt", szRoot);
 		KGameKV::GetFileToDisk("jx2.league", "file", szP, true);
-		sprintf(szP, "%s\settings\jx2ladder.txt", szRoot);
+		sprintf(szP, "%s\\settings\\jx2ladder.txt", szRoot);
 		KGameKV::GetFileToDisk("jx2.ladder", "file", szP, true);
 	}
 #endif
