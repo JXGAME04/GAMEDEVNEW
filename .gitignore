@@ -54,3 +54,5 @@ EngineServerRelease/
 Lib/debug64/
 Lib/release64/
 Lib/x64/
+__pycache__/
+*.pyc
