@@ -270,7 +270,14 @@ void KSubWorld::ProcLoadPathGrid()
 					memset(ObstacleInfo, 0, sizeof(int)*REGION_GRID_WIDTH*REGION_GRID_HEIGHT);
 				}
 			}
-			else
+			// (20/08 phan bien) LUI VE _Region_C / _OBSTACLE.DAT PHAI chay CA KHI
+			// _Region_S.dat MO DUOC ma ben trong KHONG co doan vat can (tep stub
+			// 149-308 byte): truoc day nhanh nay nam trong "else" cua Data.Open(_S)
+			// nen region stub khong bao gio duoc thu ban _C - ma tu 20/08 region stub
+			// duoc coi la DAT TRONG (di duoc), nen neu ban _C co tuong that thi ta se
+			// son trang mat buc tuong do. Do tren maps.pak hien tai: 513 region stub,
+			// KHONG con nao co _C/_OBSTACLE - nhung luat phai dung, khong dua vao du lieu.
+			if (!bCoObs)
 			{
 				// (19/08 phan bien) LUI VE ban CLIENT _Region_C.dat - chu thich 18/08 o tren
 				// HUA nhung code chua he lam: map chi dong goi ban _C ma coi la "thieu toan
@@ -338,11 +345,11 @@ void KSubWorld::ProcLoadPathGrid()
 					// doan vat can = DAT TRONG CO THAT (dong bang, quang truong) -> DI DUOC.
 					// Chi khi KHONG mo duoc tep nao moi coi la ngoai map -> VAT CAN. Luat 19/08
 					// gop hai ca lam mot nen da SON DAC ca vung dat that: diem dap CHINH THONG
-					// cua Lam Du Quan (319: 1630,3592) va Chan nui Truong Bach (320: 1146,3130)
+					// cua Lam Du Quan (319:1630,3592) + Chan nui TB (320:1146,3130) nam GON trong
 #ifdef _SERVER
 					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
 					// khoa bang FINDPATH_VERSION=0 khong doi, ap chung se lech ngu nghia.
-					if(lInfo == 0 && (bCoObs || bCoTep))
+					if(lInfo == 0 && bCoTep)   // bCoObs => bCoTep, xem chu thich tren
 #else
 					if(lInfo == 0)
 #endif
@@ -363,7 +370,7 @@ void KSubWorld::ProcLoadPathGrid()
 		            m_SubWorldID, nRegThieu);
 	else if (nRegThieu > 0 || nRegKhongObs > 0)
 		PB_LogNgoai("[PathSrv] map %d: %d/%d region KHONG co TEP du lieu (%d region co tep ma thieu doan vat can -> DI DUOC)"
-		            " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)\n",
+		            " -> chi so DAU coi la VAT CAN (ngoai map that); so trong ngoac DI DUOC\n",
 		            m_SubWorldID, nRegThieu, m_nGridW * m_nGridH, nRegKhongObs);
 #endif
 	for (int si = 0; si < NUM_SIZES; ++si)

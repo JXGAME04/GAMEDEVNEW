@@ -256,6 +256,11 @@ public:
 	// -1 = chua biet (luoi chua nap / toa do ngoai luoi). Cho he bot tu phat hien
 	// minh bi NAP LAI vao vung rong (nay da doi thanh vat can) ma tu cuu [BotCuu].
 	int			CellObsSrv(int nMpsX, int nMpsY);
+	// (20/08) He bot phai phan biet "ban do CHUA nap luoi A*" voi "toa do
+	// nam NGOAI cua so luoi" - CellObsSrv tra -1 cho ca hai, ma ca thu hai
+	// chinh la "doi tuong dang o ngoai ban do" (thu can chan nhat). Day chi
+	// la co DOC noi tuyen, khong them truong, khong doi bo cuc lop.
+	BOOL		CoLuoiSrv() const { return m_bHavePath; }
 private:
 #endif
 

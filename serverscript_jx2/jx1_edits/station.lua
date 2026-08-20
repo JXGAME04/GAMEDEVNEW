@@ -398,7 +398,7 @@ end
 -- TRAIN_ARRAY1/2; cac dong dang waypoint da tra bang settings/WayPoint.txt) -
 -- diem dap CHINH THONG cua game, khong dung toa do tay nua.
 -- Bot KPlayer di bo toi Xa Phu roi goi botlc_go(n) y het nguoi choi bam menu.
--- DONG BO: thu tu BOT_LC[2] phai khop mang s_baiLc trong KPlayerBot.cpp.
+-- (20/08) BOT_LC chi con la MENU NGUOI CHOI. Bot dung bang BOT_BAI o duoi.
 -- ============================================================================
 BOT_LC = {
 [1] = {
@@ -461,6 +461,84 @@ end
 
 function sellc(nSel)
 	botlc_go(nSel + 1)
+end
+
+-- ============================================================================
+-- (20/08) BANG BAI LUYEN CUA BOT - 39 bai.
+-- PHAI KHOP THU TU voi mang s_bai trong Sources/Core/Src/KPlayerBot.cpp:
+--     BOT_BAI[i+1]  <=>  s_bai[i]      (macro PB_BAI_LUA)
+-- Toa do chep nguyen van tu cac bang tab_lv20map .. tab_lv90map cua
+-- script/item/ib/shenxingfu.lua (Than Hanh Phu - dung duong nguoi choi that
+-- di), hop them cac map chi co trong BOT_LC o tren. Moc cap giu nguyen moc
+-- chinh thong cua tung map: 20 co 3 bai, 30/40/50 co 4, 60/70 co 3, 80 co 4,
+-- 90 co 13.
+-- Bang nay RIENG cho bot, KHONG dua vao menu nguoi choi: 39 dong se lam vo
+-- goi hop thoai (tran 511 byte).
+-- ============================================================================
+BOT_BAI = {
+-- moc 10
+	{10,2,2605,3592},	-- Hoa Son (chi giu chi so - bot di go_HSBattle)
+-- moc 20
+	{20,19,3102,3963},	-- Kiem Cac Tay Nam
+	{20,7,2276,2825},	-- Tan Lang tang 1
+	{20,70,1608,3230},	-- Vu Lang Son
+-- moc 30
+	{30,193,1938,2845},	-- Vu Di Son
+	{30,170,1612,3187},	-- Tho Phi Dong
+	{30,90,1651,3571},	-- Phuc Nguu Dong
+	{30,92,1632,3290},	-- Thuc Cuong Son
+-- moc 40
+	{40,21,2622,4502},	-- Thanh Thanh Son
+	{40,167,1575,3239},	-- Diem Thuong Son
+	{40,41,2078,2805},	-- Phuc Nguu Tay
+	{40,122,1612,3323},	-- Hoang Ha Nguyen Dau
+-- moc 50
+	{50,182,1777,2982},	-- Nghiet Long Dong
+	{50,164,1611,3187},	-- Thien Tam Thap tang 1
+	{50,125,1809,3208},	-- Luu Tien Dong
+	{50,163,1558,3199},	-- Oc Ba Dia Dao
+-- moc 60
+	{60,79,1600,3206},	-- Tuong Duong Mat Dao
+	{60,56,1516,3443},	-- Hoanh Son Phai
+	{60,166,1649,3231},	-- Thien Tam Thap tang 3
+-- moc 70
+	{70,319,1630,3587},	-- Lam Du Quan
+	{70,123,1702,3350},	-- Lao Ho Dong
+	{70,206,1603,3215},	-- Tan Lang tang 2
+-- moc 80
+	{80,224,1622,3118},	-- Sa Mac Dia Bieu
+	{80,198,1521,2947},	-- Thanh Khe Dong
+	{80,320,1147,3123},	-- Chan nui Truong Bach
+	{80,181,1425,2999},	-- Luong Thuy Dong
+-- moc 90
+	{90,875,1576,3177},	-- Hac Sa Dong
+	{90,322,1589,3164},	-- Truong Bach Son Bac
+	{90,321,967,2313},	-- Truong Bach Son Nam
+	{90,75,1811,3012},	-- Khoa Lang Dong
+	{90,225,1474,3275},	-- Sa Mac Me Cung 1
+	{90,226,1560,3184},	-- Sa Mac Me Cung 2
+	{90,227,1588,3237},	-- Sa Mac Me Cung 3
+	{90,336,1124,3187},	-- Phong Lang Do
+	{90,340,1845,3438},	-- Mac Cao Quat
+	{90,144,1691,3020},	-- Duoc Vuong Dong tang 4
+	{90,93,1529,3166},	-- Tien Cuc Dong
+	{90,124,1675,3418},	-- Can Vien Dong
+	{90,152,1672,3361},	-- Tuyet Bao Dong tang 8
+}
+
+-- Bot goi ham nay y het nguoi choi bam menu Xa Phu (cung khuon botlc_go).
+function bot_bai_go(nIdx)
+	if (nIdx < 1 or nIdx > getn(BOT_BAI)) then
+		return
+	end
+	if (GetLevel() < BOT_BAI[nIdx][1]) then
+		return
+	end
+	if (NewWorld(BOT_BAI[nIdx][2], BOT_BAI[nIdx][3], BOT_BAI[nIdx][4])) then
+		SetFightState(1)
+		SetProtectTime(18*3)
+		AddSkillState(963, 1, 0, 18*3)
+	end
 end
 
 function botlc_go(nIdx)
