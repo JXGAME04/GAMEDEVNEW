@@ -42,27 +42,8 @@ private:
 	KScrollMessageListBox	m_List;		// [TaskInfo] + _List + _Scroll
 };
 
-// Nut icon nho 25x25 neo mep phai man hinh (anh opentracebtn.spr cua ban tham
-// chieu, co san trong pak): bam = bat/tat khung theo doi nhiem vu. Mo cung HUD
-// khi vao game (UiShell), dong khi thoat.
-class KUiTaskTraceIcon : public KWndShowAnimate
-{
-public:
-	static KUiTaskTraceIcon*	OpenWindow();
-	static void					CloseWindow(bool bDestroy);
-	// vi tri nut (de khung theo doi mo ra NGANG HANG voi nut); tra false neu chua co
-	static bool					GetAnchor(int& nX, int& nY);
-private:
-	KUiTaskTraceIcon();
-	virtual ~KUiTaskTraceIcon();
-	void	Initialize();
-	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
-private:
-	static KUiTaskTraceIcon*	m_pSelf;
-	static int					ms_nAnchorX;
-	static int					ms_nAnchorY;
-	static bool					ms_bAnchor;
-	KWndButton					m_Btn;
-};
+// Nut bat/tat khung theo doi nam TRONG thanh KUiPlayerBar (m_TraceBtn, section
+// [TraceBtn] cua UiPlayerBar.ini - dung vi tri nut Zalo cu, neo 1024-30 nhu cu).
+// Khung theo doi mo ra ngang hang nut qua KUiPlayerBar::GetTraceBtnPos.
 
 #endif

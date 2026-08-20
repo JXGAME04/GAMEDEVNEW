@@ -120,3 +120,12 @@ Cạm bẫy mới ghi nhận: `DT_Answer` định nghĩa SAU khối TG trong `Co
 - **Khung theo dõi hết bị minimap che**: `KUiTaskTrace::Initialize` tự neo `(nSW - W - 2, nSH*2/5)` theo màn hình thật (ini `Top=300` chỉ còn là dự phòng 1024). Khung vẫn kéo thả được (`Moveable=1`).
 - Section mới trong `tasktrace.ini`: `[OpenIcon]` + `[OpenIconBtn]` (sinh tự động, đường ảnh GBK lấy từ dòng Image mẫu).
 - Deploy 21:44: `Game.exe` 1.253.376 B (bản cũ `Game_cu_2130.exe`), re_pe_crt PASS. CoreClient/CoreServer không đổi so với 21:30.
+
+## 11 · ĐỢT 5 (19/08 khuya): nút theo dõi vào THANH PlayerBar — đúng chỗ Zalo cũ 100%
+
+Đợt 4/4b đặt nút bằng cửa sổ nổi + `Wnd_GetScreenSize` — vị trí vẫn lệch so với Zalo cũ (Zalo là CHILD của PlayerBar, neo `1024-30` trong hệ tọa độ thanh). Sửa dứt điểm bằng cách **đi đúng con đường cũ**:
+- `KUiPlayerBar` thêm `m_TraceBtn` (section **`[TraceBtn]`** mới trong `UiPlayerBar.ini` — Left/Top y hệt `[Zalo]` 765/185, ảnh `opentracebtn.spr`, Tip "Theo dõi nhiệm vụ"); Init cạnh Zalo, `AddChild` chỗ Zalo cũ, neo `SetPosition(1024-30, nY)` y hệt khối Zalo/Fb; click → `KUiTaskTrace::SetTraced(!IsTraced())`.
+- Khung theo dõi mở **ngang hàng nút** qua `KUiPlayerBar::GetTraceBtnPos` (vị trí thanh + vị trí nút = tuyệt đối).
+- Lớp `KUiTaskTraceIcon` (đợt 4) đã **xóa**; UiShell không còn mở/đóng icon riêng.
+- `UiPlayerBar.ini` bản đã sửa lưu git tại `TaskGuideRes\Ui\Ui3\UiPlayerBar.ini`.
+- Deploy 21:59: `Game.exe` 1.252.352 B (bản cũ `Game_cu_2150.exe`), re_pe_crt PASS.

@@ -70,6 +70,8 @@ class KUiPlayerBar : protected KWndImage
 public:
 
 	static KUiPlayerBar* OpenWindow();
+	// [TaskGuide] vi tri TUYET DOI cua nut theo doi (cha + con); false neu chua mo
+	static bool GetTraceBtnPos(int& nX, int& nY);
 	static KUiPlayerBar* GetIfVisible();
 	static void			CloseWindow(bool bDestroy);
 	static void			LoadScheme(const char* pScheme);
@@ -174,6 +176,7 @@ private:
 	KWndButton		m_HideWindow;
 	KWndButton		m_Zalo;
 	KWndButton		m_Fb;
+	KWndButton		m_TraceBtn;	// [TaskGuide] nut bat/tat khung theo doi (cho Zalo cu)
 	KWndButton		m_HideChat;
 	KWndButton		m_HideGraphic;
 	KWndButton		m_SpringGame;

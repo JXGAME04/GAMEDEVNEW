@@ -38,6 +38,8 @@
 #include "../../../Headers/KProtocolDef.h"
 #include "../../../Headers/KProtocol.h"
 #include "../../../Engine/src/KDebug.h"
+#include "UiTaskTrace.h"	// [TaskGuide]
+#include "UiTaskGuide.h"	// [TaskGuide]
 #include "../TrayMode.h"
 #include "malloc.h"
 
@@ -349,6 +351,19 @@ KUiPlayerBar* KUiPlayerBar::GetIfVisible()
 	return NULL;
 }
 
+// [TaskGuide] vi tri tuyet doi nut theo doi = vi tri thanh + vi tri nut trong thanh
+bool KUiPlayerBar::GetTraceBtnPos(int& nX, int& nY)
+{
+	if (m_pSelf == NULL)
+		return false;
+	int bx = 0, by = 0, cx = 0, cy = 0;
+	m_pSelf->GetPosition(&bx, &by);
+	m_pSelf->m_TraceBtn.GetPosition(&cx, &cy);
+	nX = bx + cx;
+	nY = by + cy;
+	return true;
+}
+
 KUiPlayerBar* KUiPlayerBar::OpenWindow()
 {
 	KUiChatCentre::OpenWindow(false);
@@ -530,6 +545,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
     m_HideWindow.Init(pIni, "HideWindow");
 	m_Zalo.Init(pIni, "Zalo");
 	m_Fb.Init(pIni, "Facebook");
+	m_TraceBtn.Init(pIni, "TraceBtn");	// [TaskGuide] vi tri [Zalo] cu, anh opentracebtn
 	m_HideChat.Init(pIni, "HideChat");
 	m_SpringGame.Init(pIni, "SpringGame");
 
@@ -604,6 +620,8 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 		m_Zalo.SetPosition(1024 - 30, nY);
 		m_Fb.GetPosition(&nX, &nY);
 		m_Fb.SetPosition(1024 - 30, nY);
+		m_TraceBtn.GetPosition(&nX, &nY);
+		m_TraceBtn.SetPosition(1024 - 30, nY);	// [TaskGuide] y het cach neo Zalo cu
 		m_HideGraphic.GetPosition(&nX, &nY);
 		m_HideGraphic.SetPosition(1024 - 30, nY);
 		m_SpringGame.GetPosition(&nX, &nY);
@@ -687,9 +705,11 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_WifiStatus);
 	AddChild(&m_Auto);	
 	AddChild(&m_HideWindow);
-	// [TaskGuide 19/08] bo 2 nut Zalo/Facebook goc man hinh theo yeu cau chu game
+	// [TaskGuide 19/08] bo 2 nut Zalo/Facebook goc man hinh theo yeu cau chu game;
+	// the cho bang nut bat/tat khung theo doi nhiem vu (di dung co che neo cu)
 	//AddChild(&m_Zalo);
 	//AddChild(&m_Fb);
+	AddChild(&m_TraceBtn);
 	AddChild(&m_HideChat);
 	AddChild(&m_HideGraphic);
 	AddChild(&m_SpringGame);
@@ -812,6 +832,12 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				Ini.GetString("URL", "Facebook", "", szFilePath, sizeof(szFilePath));
 				ShellExecute(NULL, "open", szFilePath, NULL, NULL, SW_SHOWNORMAL);
 			}
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_TraceBtn)
+		{
+			// [TaskGuide] bat/tat khung theo doi nhiem vu
+			KUiTaskTrace::SetTraced(!KUiTaskTrace::IsTraced());
+			KUiTaskGuide::RefreshButtons();
 		}
 		else if ((KWndWindow*)uParam == (KWndWindow*)&m_HideChat)
 		{
