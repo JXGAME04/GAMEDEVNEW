@@ -142,14 +142,38 @@ for j, c in rows:
     show.append((j, int(cell(col,c,'MagicEnName')), as_int(cell(col,c,'MinValue')),
                  as_int(cell(col,c,'MaxValue')), cell(col,c,'MagicCnName')))
 
-# ============ MAP LOAI 4 (TL_MAPTRAPINDEX) ============
-QUEST_MAPS = [1,11,37,53,78,80,162,176,21,122,75,225,226,227]
-maps = []
+# ============ MAP LOAI 4 ============
+# Danh sach map + TEN lay tu chinh bang nhiem vu tasklink_findmaps.txt (cot MapID,
+# TaskInfo1) chu KHONG chep tay: cau nhiem vu ghep ten tu cot TaskInfo1
+# (tasklink_head.lua:924 + :942 "Nguoi hay den <color=yellow>"..myTaskOrder..) nen day
+# moi la chuoi auto phai khop. Toa do (diem Xa Phu tha) van lay tu map_index.lua.
+# Ten o hai nguon co the KHAC NHAU (3 map sa mac 225/226/227: "Sa Mac son  dong 3" vs
+# "Son Dong Sa mac tang 3") -> phat THEM mot dong cho ten con lai, vong khop trong
+# CoreShell break o dong dau trung nen dong du vo hai.
+fmraw = rd(TASKDIR + r"\tasklink_findmaps.txt").split(b"\n")
+fmhead = [h.strip() for h in fmraw[0].split(b"\t")]
+cMap, cTen = fmhead.index(b"MapID"), fmhead.index(b"TaskInfo1")
+tenNv = {}                       # mapid -> ten trong cau nhiem vu
+for line in fmraw[1:]:
+    p = line.split(b"\t")
+    if len(p) <= max(cMap, cTen) or not p[cMap].strip().isdigit():
+        continue
+    tenNv.setdefault(int(p[cMap].strip()), p[cTen].strip())
+assert len(tenNv) >= 10, "doc tasklink_findmaps.txt hong: chi thay %d map" % len(tenNv)
+
+toaDo = {}                       # mapid -> (ten map_index, x, y)
 for m in re.finditer(rb'\{\s*(\d+)\s*,\s*"([^"]*)"\s*,\s*(\d+)\s*,\s*(\d+)\s*\}', mapidx):
-    mid = int(m.group(1))
-    if mid in QUEST_MAPS and mid not in [x[0] for x in maps]:
-        maps.append((mid, m.group(2), int(m.group(3)), int(m.group(4))))
-assert len(maps) == len(QUEST_MAPS), 'thieu map loai 4: co %d/%d' % (len(maps), len(QUEST_MAPS))
+    toaDo.setdefault(int(m.group(1)), (m.group(2), int(m.group(3)), int(m.group(4))))
+
+maps = []
+for mid in sorted(tenNv):
+    assert mid in toaDo, "map %d co trong tasklink_findmaps.txt ma khong co toa do trong map_index.lua" % mid
+    ten2, x, y = toaDo[mid]
+    maps.append((mid, tenNv[mid], x, y))          # ten trong CAU NHIEM VU (chinh)
+    if ten2 != tenNv[mid]:
+        maps.append((mid, ten2, x, y))            # ten map_index (du phong)
+print("map loai 4: %d map, %d dong ten (%d map co 2 kieu ten)"
+      % (len(tenNv), len(maps), len(maps) - len(tenNv)))
 
 # ============ NPC DA TAU (10 thanh, don vi O - AUTO_DATAU_SPEC.md muc 1) ============
 DTNPC = [(1,1620,3089),(11,3154,5067),(20,3537,6231),(37,1736,3101),(53,1626,3172),

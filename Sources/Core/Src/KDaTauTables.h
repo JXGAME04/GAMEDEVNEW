@@ -676,8 +676,11 @@ static const DTMapRow g_DTQuestMap[] = {
 	{ 122, 1612, 3328, "Ho\265ng H\265 Nguy\252n \247\307u" },
 	{ 162, 1642, 2935, "\247\271i L\375" },
 	{ 176, 1614, 2561, "L\251m An" },
+	{ 225, 1476, 3274, "Sa M\271c s\254n  \256\351ng 1" },
 	{ 225, 1476, 3274, "S\254n \256\351ng Sa m\271c t\307ng 1" },
+	{ 226, 1553, 3173, "Sa M\271c s\254n  \256\351ng 2" },
 	{ 226, 1553, 3173, "S\254n \256\351ng Sa m\271c t\307ng 2" },
+	{ 227, 1530, 3270, "Sa M\271c s\254n  \256\351ng 3" },
 	{ 227, 1530, 3270, "S\254n \256\351ng Sa m\271c t\307ng 3" },
 };
 static const int g_nDTQuestMapCount = sizeof(g_DTQuestMap)/sizeof(g_DTQuestMap[0]);
