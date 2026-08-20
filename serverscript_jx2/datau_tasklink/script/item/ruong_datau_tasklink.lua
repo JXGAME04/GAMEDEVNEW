@@ -11,7 +11,7 @@
 
 function main(nItemIndex)
 	if (GetItemCount(0, 6, 1, 2357) < 1) then
-		Say("C\199n 1 Huy\210n Thi\170n Ch\239y, c\184c h\185 \174em kh\171ng \174\241 s\232 l\173\238ng!", 0)
+		Say("CÇn 1 HuyÒn Thiªn Chïy, c¸c h¹ ®em kh«ng ®ñ sè l­îng!", 0)
 		return 1
 	end
 	if (CalcFreeItemCellCount() < 4) then -- [PB 17/08] nhanh 2% can 3 o + phong nguoi cam do tren chuot
