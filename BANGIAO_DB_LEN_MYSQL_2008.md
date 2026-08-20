@@ -336,3 +336,82 @@ Hai lỗi thật phát hiện được trong lúc khảo sát, ghi lại để �
 3. Cài **MySQL Connector/C bản x64** nếu muốn đưa tiền Xu + giftcode lên MySQL.
 4. Dọn `role_history` định kỳ trước khi chạy dài ngày (ước 480 MB/ngày với `LichSuPhut=30`).
 5. S3Relay: quyết định về CRT rồi mới làm tiếp.
+
+---
+
+# ĐỢT 3 — HAI VẬT CẢN ĐÃ GỠ, S3RELAY ĐÃ LÊN MySQL
+
+Chủ game hỏi: *"mục tiêu đưa toàn bộ lên MySQL, có cách nào làm mà phải an toàn không?"*
+**Có.** Cả hai vật cản nêu ở Đợt 2 đều đã gỡ được, và **đã kiểm chứng bằng build thật**, không phải suy đoán.
+
+## Đ3.1 Vật cản 1 — thư viện MySQL x64: ĐÃ CÓ SẴN TRÊN MÁY
+
+Không cần tải gì. MySQL Installer để lại **`mysql-5.7.44-winx64.msi` (117 MB)** trong
+`C:\ProgramData\MySQL\MySQL Installer for Windows\Product Cache\`.
+
+Đã bung bằng `msiexec /a` (**administrative install = chỉ giải nén, không cài dịch vụ, không đụng
+mysqld đang chạy**) ra `D:\_MYSQL_X64_EXTRACT\`. Kiểm bằng `dumpbin /headers`:
+
+| Tệp | Kiến trúc |
+|---|---|
+| `libmysql.dll` | **x64** (7.781.448 byte) |
+| `libmysql.lib` | **x64** (`8664 machine`) |
+| `mysqlclient.lib` | **x64** |
+| `mysql.h` | (header, dùng chung) |
+
+⇒ `CoreServer.dll` (x64) **nối được MySQL**. Đây là **chìa khoá chính**: nó mở đường cho tiền Xu,
+giftcode, và **toàn bộ nhóm file phẳng** (`jx2citywar/jx2ladder/jx2league`, `StatData.dat`,
+~10 tệp `.lua`, `player_log`, `username_kick`) — vì tất cả đều nằm trong CoreServer.
+
+*Lưu ý: client x64 nói chuyện với `mysqld` 32-bit hoàn toàn bình thường — giao thức MySQL là giao
+thức mạng, kiến trúc hai đầu độc lập nhau.*
+
+## Đ3.2 Vật cản 2 — bẫy CRT của S3Relay: gỡ bằng "tệp neo", KHÔNG đụng cấu hình CRT
+
+Nhắc lại vấn đề: `S3Relay.vcxproj` đặt `/MT` nhưng lại `IgnoreSpecificDefaultLibraries = libcmt.lib`,
+nên **thư viện Berkeley DB tĩnh là thứ duy nhất kéo C runtime vào cả tiến trình**. Bỏ `DBTable.cpp`
+là mất luôn CRT ⇒ 1.688 lỗi `unresolved operator new`.
+
+Cách gỡ **không cần đổi CRT**: thêm `_neo_libdb.cpp` — một tệp 25 dòng gọi `db_version()`, một hàm
+vô hại của Berkeley DB, **không bao giờ chạy lúc thi hành**. Nhờ nó trình liên kết vẫn phải rút
+`libdb` vào, nên môi trường liên kết giữ **y hệt** bản đang chạy.
+
+Kết quả build, đối chiếu số liệu:
+
+| | Bản gốc (Berkeley DB) | Bản MySQL + tệp neo |
+|---|---|---|
+| Lỗi biên dịch/liên kết | 0 | **0** |
+| `libdb181` trong nhật ký liên kết | 504 lần | **504 lần** |
+| Sinh ra `S3Relay.exe` | có | **có** (4.405.760 byte) |
+
+Con số 504 giống hệt nhau là bằng chứng môi trường CRT **không đổi một chút nào**.
+
+## Đ3.3 S3Relay đã lên MySQL và ĐÃ DEPLOY
+
+- Bảng `relay_kv` gộp cả 5 kho, blob giữ **nguyên vẹn từng byte**, kèm cột `idx0` thay khoá phụ và
+  `money` (**BIGINT CÓ DẤU** — chống tái lập lỗi "quỹ bang tràn số âm → 4,29 tỷ").
+- Di trú: **3/3 bản ghi khớp từng byte** (1 bang `TESTGAME` 6860 byte, 2 thành viên 404 byte;
+  friend/money/zhaomu rỗng). Khoá phụ kiểm đúng: cả hai thành viên trỏ về `TESTGAME`.
+- Đã chép `S3Relay.exe` sang máy test (bản cũ giữ `.bak_truoc_mysql_2008`) và thêm section `[relaydb]`.
+- **Gỡ luôn lỗi treo `CTongDB::DelTong`**: bản MySQL hiện thực đúng ngữ nghĩa khoá phụ nên
+  `while(!remove(tong, size, 0)){}` thoát đúng cách thay vì lặp vô tận.
+
+⚠️ **Một chi tiết bắt được nhờ kiểm chứng ngược:** bảng đặt `DEFAULT CHARSET=binary` nên
+`VARCHAR(24)` **thành `VARBINARY(24)`**, MySQL trả về `bytes` chứ không phải chuỗi. Lần đối chiếu
+đầu báo 0/3 khớp chỉ vì so sai kiểu. Nếu không có bước kiểm chứng ngược thì đã tưởng dữ liệu hỏng.
+
+## Đ3.4 Còn lại gì để "toàn bộ lên MySQL"
+
+Sau đợt 3, phần chưa lên MySQL **chỉ còn nhóm nằm trong CoreServer (x64)** — và nay đã có thư viện x64:
+
+| Nhóm | Nội dung | Ghi chú |
+|---|---|---|
+| Tiền Xu sòng bạc | `BauCua.cpp` | đã chống mất bằng ghi nguyên tử; lên MySQL được rồi |
+| Giftcode | `GiftCodeManager.cpp` + 2 tệp `.lua` | có 3 đường song song, chỉ 1 đi qua C++ |
+| Công Thành Chiến / xếp hạng / liên minh | `jx2citywar.txt`, `jx2ladder.txt`, `jx2league.txt` | đã có khuôn `.tmp`+`MoveFileEx` |
+| Bảng xếp hạng | `StatData.dat` | kèm việc bỏ đường ghi ngược vào roledb |
+| ~10 tệp `.lua` server tự ghi đè | ngân lượng/tiền vàng sòng bạc, boss, sự kiện | cần 4 hàm KV cho Lua |
+| Nhật ký người chơi | `dulieu\player_log\**` | bảng phân vùng theo tháng |
+
+**Thứ tự đề xuất (rủi ro tăng dần):** giftcode → Công Thành Chiến/xếp hạng/liên minh → tiền Xu →
+`StatData.dat` → tệp `.lua` qua bảng KV → nhật ký người chơi.
