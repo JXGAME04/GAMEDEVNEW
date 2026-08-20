@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 17:11** | engine Dã Tẩu, toàn bộ fix tới `16de2b3a`; bản trước = `CoreClient_cu_1908h.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 17:50** | engine Dã Tẩu, toàn bộ fix tới `ae1129f8`; bản trước = `CoreClient_cu_1908i.dll` |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
 | `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
@@ -321,6 +321,26 @@ lỗi C3861) — đã bọc lại ở `0d3c6629`. Số dòng CoreShell.cpp sau 2
 | "chưa xong nhiệm vụ đã tự phù về" | (a) id map đọc từ **văn bản** nhiệm vụ lệch với map Xa Phu thả xuống (map nhiều tầng) ⇒ nhánh "lạc map" bắt phù về; (b) `DTP_IDLE` sau mỗi lần hết treo coi map nhiệm vụ là "không ở thành" | (a) **tin máy chủ**: Xa Phu thả ra khỏi thành = đúng map, gán `nDTMapId = nMap`; (b) IDLE đang giữ loại 4 đúng map thì vào thẳng `DTP_FARM` |
 | "đi về thành trả nhiệm vụ phải lên ngựa" | `DT_WalkTo` không hề lên ngựa | thêm `DT_Ride` (khuôn `case PA_RIDE` `CoreShell.cpp:9614`) gọi trong `DT_WalkTo` mọi pha đi đường, **trừ** `DTP_FARM` |
 | "quét không được NPC trong map" | client chỉ thấy NPC đã đồng bộ; neo nhiệm vụ (chỗ Xa Phu thả) ở map 53/80/226 **nằm ngoài vùng có quái** | bảng cụm quái sinh từ pak — xem mục 7.2 |
+
+---
+
+### 8.8 🔴 Hai nguồn tên map — "sa mạc 3" báo không đọc được map rồi treo (`ae1129f8`)
+
+Câu nhiệm vụ loại 4 ghép tên map từ **cột `TaskInfo1` của `settings\task\tasklink_findmaps.txt`**
+(`tasklink_head.lua:924` lấy `myTaskOrder`, `:942` ghép `"Ngươi hãy đến <color=yellow>"..myTaskOrder..`),
+**không** phải từ `map_index.lua`. Bảng `g_DTQuestMap` lại lấy tên từ `map_index.lua`. 11 map
+trùng tên nên chạy tốt suốt, riêng 3 map sa mạc lệch hẳn thứ tự chữ:
+
+| Map | Câu nhiệm vụ (TaskInfo1) | map_index.lua |
+|---|---|---|
+| 225/226/227 | `Sa Mạc sơn␣␣động N` (hai dấu cách) | `Sơn Động Sa mạc tầng N` |
+
+⇒ `DT_HasName` trượt ⇒ `nDTMapId = 0` ⇒ `DT_Skip` ⇒ **treo** (vì loại 4 đang bật, theo luật
+"chỉ hủy loại đã tắt" chốt cùng ngày). Sửa **tận gốc ở bộ sinh**: danh sách map và tên đều đọc
+từ `tasklink_findmaps.txt` (bỏ luôn danh sách `QUEST_MAPS` chép tay), tọa độ vẫn từ
+`map_index.lua`; tên nào lệch thì phát **thêm một dòng** với tên còn lại — vòng khớp
+`CoreShell.cpp:3049` break ở dòng đầu trùng nên dòng dư vô hại. 14 map → 17 dòng, **không phải
+sửa C++**.
 
 ---
 
