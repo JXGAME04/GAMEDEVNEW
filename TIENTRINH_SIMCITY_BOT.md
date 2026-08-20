@@ -294,3 +294,45 @@ vua luyen cap vua lam; con lai DOI NHIEM VU MIEN PHI qua `PB_BotDoiNhiemVu` ->
 **Trang thai:** ban cuoi chay that tu 19/08 17:42, log xac nhan may trang thai hoat dong
 (35 nhap mon, 49 nhan nhiem vu, 7 doi nhiem vu). CHUA nghiem thu tron vong (chua thay
 `TRA XONG nhiem vu` -> `chon ruong thuong`) va CHUA test sap o ban moi.
+
+
+## 11. PHIÊN 19/08 TỐI #3: SẠP GÓC KẸT + BOT RA NGOÀI MAP 79 + DÃ TẨU 70 + LÀM MỚI TRANG SỨC (deploy 19:1x, chờ restart)
+
+**4 việc chủ game giao:** (1) sạp vẫn dính góc kẹt; (2) bot map luyện công vẫn ra ngoài map, 79 nhiều nhất — điều tra; (3) hạ cấp Dã Tẩu xuống 70 để test; (4) viết hàm cập nhật random trang sức cho sạp; (5) **bắt buộc phản biện khi fix** — đã chạy 3 agent phản biện độc lập (biên dịch / logic game / vật phẩm-hiệu năng), bắt được 1 lỗi thật suýt lọt + 2 rủi ro, tất cả đã xử lý trước deploy.
+
+### Điều tra map 79 (bằng chứng, không đoán)
+- Mổ cache lưới `79_srv.fp` (viết `fp_view.py` đọc định dạng SFP03): dữ liệu vật cản map **chỉ vẽ TƯỜNG mê cung**, toàn bộ vùng trống ngoài mê cung (client nhìn là "ngoài map") ghi = 0 = **đi được** → cả engine lẫn lưới A* đều tin dữ liệu, mọi rào 18–19/08 đều cho qua. Các khối chữ nhật full-obstacle trong hình = region thiếu dữ liệu (fix 19/08 sáng hoạt động đúng).
+- `bot.log` (run 17:42): quái đứng/lang thang trong vùng trống (engine cho đi), `pb_FindRoamSpot` lấy **vị trí quái** làm đích → `[BotHoang]` 27 lượt nhắm đúng ô (1686,3140) giữa vùng trống → bot đi theo quái "ra ngoài map". 62 lượt `[BotCuu]`/30 phút.
+- Lỗ thứ hai đang hoạt động: `[BotLach]` (lách đám đông) SetPos chỉ kiểm engine, **không kiểm CellObsSrv** → 3 bot khác nhau cùng kẹt đúng ô (1477,3023) cạnh bãi Lương Thủy Động.
+- Quan sát phụ: 18:12:46 toàn bộ map nạp lại cache lưới (SubWorld reload theo hệ mission?) — vô hại, cache nạp nhanh.
+
+### Đã sửa (KPlayerBot.cpp, một file duy nhất)
+1. **DÂY XÍCH BÃI** `PB_XICH_BAI=2000` MPS quanh điểm neo `s_bai` (ngã thả khi đuổi `PB_XICH_BAI_THA=2320`): lọc ở `pb_FindTarget` + `pb_FindRoamSpot` (cả nhánh `[BotDan]` giãn dân) + buông mục tiêu trong chase (`[BotXich]`). `pb_NeoBai` chỉ bật khi đứng ĐÚNG map bãi của mình → Dã Tẩu farm map nhiệm vụ / bán sạp / trong thành không bị xích. Không phân biệt được "vùng trống giả" bằng dữ liệu server nên ép bằng luật sản phẩm: bot luyện quanh bãi, quái ngoài xích coi như không tồn tại.
+2. **`[BotLach]`** thêm kiểm `CellObsSrv==1 → bỏ ứng viên` (đóng lỗ đẩy bot vào vùng rỗng) + nới 24→48 ứng viên (bán kính 3..8 ô, gần trước xa sau) bù van thoát khi mật độ bot tăng do xích.
+3. **Sạp không ngồi góc kẹt**: ô ngồi phải qua `pb_OSapTot` = nối được tới NPC theo **bản đồ loang BFS cửa sổ 27×27** (`pb_SapLoang`, trần cứng 729 ô — cố ý KHÔNG dùng FindPathServer vì ca không-có-đường sẽ loang cả thành phần liên thông map thành) + thoáng ≥5/8 ô lân cận + chưa ai chiếm; duyệt vòng bán kính 3→12 quanh NPC, thất bại lùi về `pb_ODat` cũ.
+4. **`pb_ChamHangSap(nIdx, nLech, nDot, nowT)`** — hàm cập nhật random trang sức (yêu cầu #4): dọn rổ cũ (`pb_DonTrangSucSap` — xóa cả nPrice>0) rồi sinh 3–5 món xanh mới; `nDot = b.nSapDot++` trộn vào mọi phép gieo (g_Random đóng băng theo giây) → mỗi đợt ra bộ hàng khác thật sự (chu kỳ đủ: detail %3, series %5, cấp %10 qua nDot*13, opt %6). Kỳ làm mới: lần đầu / hết hàng 5 phút / **định kỳ 15 phút SO LE +0..59s theo chỉ số bot** (không so le là 200 sạp thay hàng cùng 1 khung). Log `[BotSap] lam moi sap dot N (het hang|dinh ky 15 phut, X mon)` + `[BotSapLoi]` khi đợt châm 0 món.
+5. **Đóng sạp dọn hàng tồn**: `PB_SetBanSap` bấm lại → bot bị bỏ chọn được `pb_DonTrangSucSap` dọn rổ trước khi về bãi (trước đây ôm 3–5 món nPrice>0 kẹt túi vĩnh viễn vì `pb_DonTui` cố ý giữ đồ có giá).
+6. **Dã Tẩu**: `PB_DT_CAP_TOI_THIEU` 80→70 **và** `PB_DT_CUON_TOI_DA` 5→8. Phát hiện phản biện từ dữ liệu (`levellink.txt` + `tasklink_findmaps.txt`): cấp 70–79 rút bậc 6, dòng loại-4 kiểu-1 nhẹ nhất là **Num=8 (map 122/21)** — với trần 5 cũ thì **nhánh loại 4 là mã chết ở mọi cấp** (bậc 11 chỉ có Num=15 + Mật Chỉ). Nâng 8 thì bot 70–79 nhận được loại 4 thật → test trọn TOI_XAPHU/GODATAU/FARM_NV; lưới an toàn sẵn: farm 20 phút không ra cuộn tự đổi miễn phí.
+
+### Lỗi thật do phản biện bắt được (suýt lọt)
+- **Sạp cháy hàng đóng vĩnh viễn**: `SendSellItemCount` (KPlayer.cpp:10371) TỰ hạ `m_BaiTan=0` khi khách bấm vào sạp đã bán hết. Bản nháp đầu chỉ set `m_BaiTan=1` lúc mở lần đầu → sạp cháy hàng bị khách bấm là chết âm thầm (log vẫn đẹp, `c2sTradeBuy` chặn `!m_BaiTan`). Đã sửa: set `m_BaiTan=1` MỖI kỳ châm, ngoài `if (!nMoLai)`.
+- Bản nháp đầu dùng FindPathServer kiểm ô sạp → ca không-có-đường loang cả map thành (777k ô × 200 bot cùng khung = treo server nhiều giây) — tự bắt trước khi build, thay bằng BFS cửa sổ.
+
+### Rủi ro ghi sổ (chưa sửa, có chủ đích)
+- **Khách mở cửa sổ sạp đúng lúc làm mới**: chỉ số Item toàn cục tái dùng LIFO ngay trong 1 lời gọi → khách bấm mua "khe X" stale có thể được giao món MỚI với giá niêm yết của món mới (server tự nhất quán tiền–đồ, `GetPrice` khe không còn thì mua trượt êm; gói mua không mang giá nên không đối chiếu được). Thiệt hại trần thấp (trang sức xanh 500–2×gốc), có log_giaodich. Muốn đóng hẳn: push `SendSellItemInfo(bUpdate=TRUE)` cho player quanh region sau châm — để đợt sau nếu chủ game cần.
+- **Rò slot ItemSet có sẵn của engine** (không phải do vá): `c2sTradeBuy` phía server `KItemList::Remove` không trả slot về pool (chỉ client làm) → mỗi lượt mua sạp rò 1 slot / pool 1.000.000. Vô hại thực tế, ghi để khỏi đổ oan khi soi.
+- `pb_FindRoamSpot` trả rỗng không tăng `nAStarThua` → T2 không phủ ca "bot ngoài xích + không ứng viên" (tự khỏi nhờ quái di chuyển + [BotLach] nhảy ngẫu nhiên; phản biện xác nhận không treo vĩnh viễn).
+- Bãi nào vùng quái chính lệch xa neo >2000 MPS sẽ bỏ phí map — cách đo rẻ sau deploy: map nào tỉ lệ `[BotXich]`/`[BotDame]` cao bất thường thì CHỈNH TỌA ĐỘ NEO trong `s_bai`, đừng nới xích.
+
+### Vận hành / nghiệm thu (sau restart GameServer)
+DLL mới md5 `818de6bebe6fa5814e32897b6b12f0f1` đã nằm `bin\server` (bản 18:24 của phiên F11 lùi ở `CoreServer.dll.bak_1908_1824`; bản mới build từ HEAD `2886e954` nên **chứa cả F11 lẫn hệ bot** — không mất công phiên nào). Build 0 error; 3 vòng phản biện đã đóng hết phát hiện chặn.
+
+```
+restart → Gọi 1000 → BẬT đánh quái → Dã Tẩu 50–100 → bán sạp 20–50 → chạy ≥35 phút
+grep -a "\[BotXich\]" bot.log | head          # xích hoạt động (nhất là map 79/193)
+grep -ac "\[BotCuu\]" bot.log                  # kỳ vọng GIẢM mạnh so 62/30ph
+grep -a "\[BotSap\] .*lam moi" bot.log | head  # làm mới sau 15–16 phút, so le
+grep -a "\[BotSapLoi\]" bot.log                # kỳ vọng 0 dòng
+grep -a "\[BotDT\]" bot.log | grep -a "loai 4" # kỳ vọng có NHẬN loại 4 (8 cuộn, map 122/21)
+```
+Điều kiện đạt: không còn bot đứng/di chuyển ngoài map 79 sau ~10 phút (bot cũ nạp lại ngoài xích cần vài phút roam về); sạp ngồi quanh NPC Dã Tẩu chỗ thoáng, không chui góc/khe tường; sạp cháy hàng vẫn mua được sau kỳ châm kế; Dã Tẩu thấy `NHAN nhiem vu loai 4` → `godatau` → `nhat cuon (n/8)` → `TRA XONG` → `chon ruong thuong`.
