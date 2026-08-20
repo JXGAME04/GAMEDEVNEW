@@ -91,6 +91,29 @@ void ZDBTable::close() {
 	for(int index = 0; index < index_number; index++) index_db[index]->close(index_db[index], 0);
 }
 
+// (20/08) Than hai ham nay truoc day nam inline trong DBTable.h. Da chuyen ra day
+// de ban MySQL (DBTable_MySQL.cpp) co the giai phong them truong pImpl.
+// Noi dung giu NGUYEN VEN so voi ban goc.
+void ZDBTable::closeCursor(ZCursor* cursor) {
+	if (!cursor) return;
+	if (cursor->bTravel) {
+		free(cursor->key);
+	}
+	free(cursor->data);
+
+	delete cursor;
+}
+
+void CDBTableReadOnly::closeCursor(ZCursor* cursor) {
+	if (!cursor) return;
+	if (cursor->bTravel) {
+		free(cursor->key);
+	}
+	free(cursor->data);
+
+	delete cursor;
+}
+
 bool ZDBTable::commit() {
 	if(!dbenv) return false;
 	int ret;

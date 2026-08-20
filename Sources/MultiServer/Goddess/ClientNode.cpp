@@ -437,7 +437,19 @@ void CClientNode::_SaveRoleInfo( const void *pData, size_t dataLength )
 		}
 	}
 	else
+	{
+		// (20/08) Truoc day chi `nResult = 0` -- KHONG log, KHONG canh bao, va
+		// goi luu bi VUT THANG. Nguy hiem nhat la luot luu CUOI luc dang xuat /
+		// doi may chu (bLeave = true): sau do khong con luot nao de tu chua, mat
+		// tron phien choi. Nay: giu lai goi vao bang cach ly de con cuu ho.
 		nResult = 0;
+		char szLog[256];
+		sprintf(szLog, "SAVE_REJECT: %s khong bi khoa boi node %d (bLeave=%d) -- da cach ly",
+			szName, (int)m_nIndentity, (int)pPD->bLeave);
+		AddOutputString(hListOutput, szLog);
+		QuarantineRoleInfo( &pPD->pDataBuffer[0], szName,
+			pPD->bLeave ? "khong giu khoa - luot luu CUOI" : "khong giu khoa" );
+	}
 
 	if ( pPD->ulIdentity >= 0 )
 	{
@@ -698,6 +710,7 @@ void CClientNode::_GetGameStat( const void *pData, size_t dataLength )
 /////////////////////////////////////////////////////////////////////////////////
 
 CClientNode::stdRoleLockMap CClientNode::m_csRoleLock;
+CClientNode::stdRoleLockMap CClientNode::m_csRoleLockPrev;
 CCriticalSection	CClientNode::m_csCR;
 
 void CClientNode::_LockOrUnlockRole( const void *pData, size_t dataLength )	//强行加解锁
@@ -713,12 +726,32 @@ void CClientNode::_LockOrUnlockRole( const void *pData, size_t dataLength )	//强
 
 		if (szRole && szRole[0] != 0)
 		{
+			stdRoleLockMap::iterator it = m_csRoleLock.find(szRole);
 			if (bLock)
+			{
+				// (20/08) Truoc day gan VO DIEU KIEN: GameServer thu hai chi can gui
+				// c2s_roleserver_lock la CUOP duoc khoa. Ket hop voi _SaveRoleInfo (chi
+				// ghi khi IsRoleLockBySelf) thi luot luu CUOI cua may cu bi tu choi IM
+				// LANG, may moi nap blob CU => rollback/nhan doi vat pham.
+				// Van CHO chuyen chu (doi GameServer can the), nhung phai ghi nhat ky
+				// va nho chu cu de _SaveRoleInfo con cach luu vet luot luu den muon.
+				if (it != m_csRoleLock.end() && it->second != -1 &&
+					it->second != m_nIndentity)
+				{
+					m_csRoleLockPrev[szRole] = it->second;
+					char szLog[256];
+					sprintf(szLog, "LOCK_TAKEOVER: %s tu node %d sang node %d",
+						szRole, (int)it->second, (int)m_nIndentity);
+					AddOutputString(hListOutput, szLog);
+				}
 				m_csRoleLock[szRole] = m_nIndentity;
+			}
 			else
 			{
-				stdRoleLockMap::iterator it = m_csRoleLock.find(szRole);
-				if (it != m_csRoleLock.end())
+				// (20/08) Truoc day xoa VO DIEU KIEN: ket noi bat ky mo duoc khoa cua
+				// nguoi khac. Nay chi chu so huu (hoac khoa da chet, = -1) moi mo duoc.
+				if (it != m_csRoleLock.end() &&
+					(it->second == m_nIndentity || it->second == -1))
 					m_csRoleLock.erase(it);
 			}
 		}
@@ -767,12 +800,20 @@ bool CClientNode::UnlockRoleSelf(char* szRole)
 void CClientNode::UnlockAllRole(size_t ID)
 {
 	CCriticalSection::Owner lock( CClientNode::m_csCR );
+	// (20/08) Truoc day dat -1 thay vi xoa. Hau qua: IsRoleLock() coi -1 la "khong
+	// khoa" nhung IsRoleLockBySelf() luon tra false, nen nhan vat do KHONG AI LUU
+	// DUOC cho toi khi co nguoi khoa lai; va map chi phinh them sau moi lan rot
+	// ket noi. Ket noi da chet thi khoa cua no vo nghia -> xoa han.
 	stdRoleLockMap::iterator it = m_csRoleLock.begin();
 	while (it != m_csRoleLock.end())
 	{
 		if (it->second == ID)
-			it->second = -1;
-		it++;
+		{
+			m_csRoleLockPrev.erase(it->first);
+			it = m_csRoleLock.erase(it);
+		}
+		else
+			it++;
 	}
 }
 

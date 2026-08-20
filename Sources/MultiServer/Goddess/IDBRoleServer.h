@@ -23,6 +23,10 @@ void SetRoleInfoForGM(int nInfoID, char * pRoleBuffer, char * strUser, int nBufL
 
 int	SaveRoleInfo( char * pRoleBuffer, const char * strUser, BOOL bAutoInsertWhenNoExistUser );
 
+// (20/08) Giu lai mot goi luu BI TU CHOI de con cuu ho, thay vi vut bo im lang.
+// Tra ve TRUE neu da cat giu duoc.
+BOOL QuarantineRoleInfo( char * pRoleBuffer, const char * strUser, const char * szLyDo );
+
 int GetRoleListOfAccount( char * szAccountName, S3DBI_RoleBaseInfo * RoleBaseList, int nMaxCount );
 
 bool DeleteRole( const char * strUser );
@@ -41,5 +45,9 @@ bool DoManualBackup();							//手工备份
 
 bool GetGameStat(TGAME_STAT_DATA* aStatData);
 //------------------------------------------------------------------------
+// (20/08) Cua so nhat ky cua giao dien Goddess. Dinh nghia o IDBRoleServer.cpp:23.
+// Khai bao o day de ClientNode.cpp ghi duoc nhat ky khoa/tu choi luu.
+extern HWND hListOutput;
+
 void AddOutputString(HWND hListCtrl, char* aStr);
 #endif // __INCLUDE_IDBROLESERVER_H__

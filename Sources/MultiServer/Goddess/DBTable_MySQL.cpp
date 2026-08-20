@@ -1111,6 +1111,34 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// quarantine -- cat giu mot goi ghi BI TU CHOI de con cuu ho.
+// Goi tu CClientNode::_SaveRoleInfo qua QuarantineRoleInfo() khi goi luu bi tu
+// choi vi ket noi khong giu khoa nhan vat. Truoc day truong hop nay bi VUT BO
+// IM LANG -- nguy hiem nhat la luot luu CUOI luc dang xuat / doi may chu.
+//////////////////////////////////////////////////////////////////////////////
+bool ZDBTable::quarantine(const char *key_ptr, int key_size,
+                          const char *data_ptr, int data_size, const char *why)
+{
+    MyTableImpl *im = (MyTableImpl *)m_pImpl;
+    if (!im || !im->opened) return false;
+    if (!EnsureConn(im)) return false;
+
+    std::string k(key_ptr ? key_ptr : "", key_size > 0 ? key_size : 0);
+    while (!k.empty() && k[k.size() - 1] == '\0') k.erase(k.size() - 1);
+    if (k.empty() || k.size() > 32) return false;
+
+    // Kep kich thuoc goi giu lai: goi hong co the mang do dai phi ly.
+    int giu = data_size;
+    if (giu < 0) giu = 0;
+    if (giu > MAX_ROLE_DATALEN) giu = MAX_ROLE_DATALEN;
+
+    GhiThatBai(im, k, why ? why : "khong ro ly do", data_ptr, giu);
+    DbLog("quarantine(\"%s\") ly do=%s data_size=%d (giu %d byte)",
+          k.c_str(), why ? why : "?", data_size, giu);
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // remove -- V1: KHONG xoa trang. Chep sang role_delete_log truoc, trong 1 giao dich.
 //////////////////////////////////////////////////////////////////////////////
 bool ZDBTable::remove(const char *key_ptr, int key_size, int index)

@@ -120,6 +120,10 @@ private:
 
 	static stdRoleLockMap m_csRoleLock;
 
+	// (20/08) Nho chu so huu TRUOC do cua khoa khi bi chuyen chu (doi GameServer).
+	// Dung de nhan ra luot luu den muon cua may cu thay vi vut bo im lang.
+	static stdRoleLockMap m_csRoleLockPrev;
+
 	bool IsRoleLock(char* szRole);
 	bool IsRoleLockBySelf(char* szRole);
 	bool UnlockRoleSelf(char* szRole);

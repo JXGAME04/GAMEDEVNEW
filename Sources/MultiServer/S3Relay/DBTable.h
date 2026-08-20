@@ -17,6 +17,7 @@ typedef struct ZCursor {
 	int key_size;
 	char* data;									//returned data
 	int size;									//data size
+	void *pImpl;	// MySQL: trang thai rieng cua con tro (khong dung o ban Berkeley DB)
 }tagZCursor;
 
 class ZDBTable {
@@ -27,6 +28,7 @@ class ZDBTable {
 	int index_number;											//二级索引数目
 	char table_name[MAX_TABLE_NAME];
 	DBC *dbcp;													//目前考虑单线程，使用一个CURSOR
+	void *m_pImpl;										// MySQL: RlTableImpl*
 protected:
 	char env_path[MAX_TABLE_NAME];
 	DB_ENV *dbenv;												//数据库环境
@@ -45,15 +47,8 @@ public:
 	bool add(const char *key_ptr, int key_size, const char *data_ptr, int data_size);
 	bool remove(const char* key_ptr, int key_size, int index = -1);
 
-	void closeCursor(ZCursor* cursor) {
-		if (!cursor) return;
-		if (cursor->bTravel) {
-			free(cursor->key);
-		}
-		free(cursor->data);
-
-		delete cursor;
-	}
+	// Bo than inline: ban MySQL con phai giai phong pImpl.
+	void closeCursor(ZCursor* cursor);
 
 	ZCursor* first() {											//Traversing the database to get the first record
 		return _search(false, NULL, 0, -1);
@@ -83,7 +78,11 @@ public:
 
 	//Here are some maintenance operations
 	void deadlock() {						//remove deadlock
+#ifndef RELAYDB_MYSQL
 		dbenv->lock_detect(dbenv, 0, DB_LOCK_DEFAULT, NULL);
+#else
+		// MySQL/InnoDB tu phat hien va go deadlock.
+#endif
 	}
 	void removeLog();						//clear log file
 
@@ -97,6 +96,7 @@ class CDBTableReadOnly
 	DB *primary_db;												//存放主键-数据的数据库
 	DBC *dbcp;													//目前考虑单线程，使用一个CURSOR
 	char table_name[MAX_TABLE_NAME];
+	void *m_pImpl;										// MySQL: RlTableImpl*
 protected:
 	char env_path[MAX_TABLE_NAME];
 	DB_ENV *dbenv;												//数据库环境
@@ -113,15 +113,8 @@ public:
 		return _search(false, key_ptr, key_size, index);		//Search for specific records
 	}
 
-	void closeCursor(ZCursor* cursor) {
-		if (!cursor) return;
-		if (cursor->bTravel) {
-			free(cursor->key);
-		}
-		free(cursor->data);
-
-		delete cursor;
-	}
+	// Bo than inline: ban MySQL con phai giai phong pImpl.
+	void closeCursor(ZCursor* cursor);
 
 
 	//bool next(ZCursor* cursor) {											//next record

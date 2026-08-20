@@ -286,6 +286,12 @@ bool ZDBTable::_next(bool bKey, ZCursor *cursor) {
 // Truoc day than ham nay nam inline trong DBTable.h. Da chuyen ra day de ban
 // MySQL (DBTable_MySQL.cpp) co the giai phong them truong pImpl.
 // Noi dung giu NGUYEN VEN so voi ban goc.
+// (20/08) Ban Berkeley DB khong co cho chua goi bi tu choi -> luon tra false.
+// Ban MySQL (DBTable_MySQL.cpp) ghi vao bang role_save_fail.
+bool ZDBTable::quarantine(const char *, int, const char *, int, const char *) {
+	return false;
+}
+
 void ZDBTable::closeCursor(ZCursor *cursor) {
 	if(!cursor) return;
 	if(cursor->bTravel) {

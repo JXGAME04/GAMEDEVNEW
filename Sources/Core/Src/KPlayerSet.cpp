@@ -1097,6 +1097,13 @@ void KPlayerSet::AutoSave()
 	if (uTime >= m_ulNextSaveTime)
 	{
 		int nUseIdx = m_UseIdx.GetNext(0);
+		// (20/08) Truoc day `break` nam NGOAI nhanh if(Save()), nen mot nguoi choi
+		// co Save() luon that bai (vd Lua tat luu qua SetEnablePlayerSave, hoac
+		// UpdateDBPlayerInfo tra -1) se duoc chon lai moi tick roi break => CA MAY
+		// CHU khong con ai duoc luu. Nay: that bai thi di tiep nguoi ke, chi break
+		// khi da luu duoc. Van giu dung tran 1 luot luu THANH CONG moi tick.
+		int nThu = 0;
+		const int nThuToiDa = 8;	// tran so lan thu/tick, khong quet het 1500 khe
 		while(nUseIdx)
 		{
 			if (Player[nUseIdx].CanSave() && uTime - Player[nUseIdx].m_ulLastSaveTime >= m_ulMaxSaveTimePerPlayer)
@@ -1106,8 +1113,10 @@ void KPlayerSet::AutoSave()
 					Player[nUseIdx].m_uMustSave = SAVE_REQUEST;
 //					Player[nUseIdx].m_ulLastSaveTime = uTime;
 					m_ulNextSaveTime += m_ulDelayTimePerSave;
+					break;
 				}
-				break;
+				if (++nThu >= nThuToiDa)
+					break;
 			}
 			nUseIdx = m_UseIdx.GetNext(nUseIdx);
 		}

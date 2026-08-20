@@ -48,6 +48,11 @@ public:
 	bool add(const char *key_ptr, int key_size, const char *data_ptr, int data_size);
 	bool remove(const char *key_ptr, int key_size, int index = -1);
 
+	// (20/08) Cat giu mot goi ghi BI TU CHOI de con cuu ho. Ban MySQL ghi vao
+	// bang role_save_fail; ban Berkeley DB tra false (khong co cho chua).
+	bool quarantine(const char *key_ptr, int key_size,
+					const char *data_ptr, int data_size, const char *why);
+
 	// Bo than inline: ban MySQL con phai giai phong pImpl.
 	// Cai dat: DBTable_MySQL.cpp (dang dung) hoac DBTable.cpp (ban Berkeley DB).
 	void closeCursor(ZCursor *cursor);

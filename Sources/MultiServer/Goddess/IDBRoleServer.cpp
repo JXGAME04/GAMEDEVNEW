@@ -463,6 +463,25 @@ void *GetRoleInfo( char * pRoleBuffer, char * strUser, int &nBufLen )
 	return pRoleBuffer;
 }
 
+// (20/08) Cat giu mot goi luu bi tu choi. Duong ghi that nam o tang luu tru
+// (ZDBTable::quarantine): ban MySQL ghi vao bang role_save_fail kem nguyen goi;
+// ban Berkeley DB khong co cho chua nen tra FALSE va chi con lai dong nhat ky.
+BOOL QuarantineRoleInfo( char * pRoleBuffer, const char * strUser, const char * szLyDo )
+{
+	if ( !db_table || !pRoleBuffer || !strUser || !strUser[0] )
+		return FALSE;
+
+	TRoleData *pRoleData = ( TRoleData * )pRoleBuffer;
+
+	char aStr[1024];
+	sprintf( aStr, "QUARANTINE:%s dwDataLen=%d ly do=%s",
+		strUser, pRoleData->dwDataLen, szLyDo ? szLyDo : "?" );
+	AddOutputString( hListOutput, aStr );
+
+	return db_table->quarantine( strUser, strlen( strUser ) + 1,
+		pRoleBuffer, pRoleData->dwDataLen, szLyDo ) ? TRUE : FALSE;
+}
+
 int	SaveRoleInfo( char * pRoleBuffer, const char *strUser, BOOL bAutoInsertWhenNoExistUser )
 {
 	ASSERT( pRoleBuffer );

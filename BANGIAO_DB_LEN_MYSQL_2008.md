@@ -265,3 +265,74 @@ Bản gốc còn nguyên tại `DBTable_BDB_goc.h.bak` / `DBTable_BDB_goc.cpp.ba
 
 **Cấu hình kết nối** nằm ở section `[roledb]` trong `DataBase.ini` (Server / Port / DataBase / User / PassWord).
 Section `[role]` cũ ghi `Port=1433` là **rác chết** — đừng dùng.
+
+---
+
+# ĐỢT 2 (chiều 20/08) — vá R2/R3/R4, DB `account`, tiền Xu, và ĐÃ ĐỒNG BỘ SANG MÁY TEST
+
+## Đ2.1 Đã deploy sang `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE`
+
+| Tệp | Cũ | Mới | Bản lưu để quay lui |
+|---|---|---|---|
+| `multiserver\Goddess.exe` | 5.331.968 | **2.379.776** (nền MySQL) | `Goddess.exe.bak_truoc_mysql_2008` |
+| `server\CoreServer.dll` | 17.866.752 | **17.868.800** | `CoreServer.dll.bak_truoc_mysql_2008` |
+| `multiserver\libmysql.dll` | (chưa có) | 6.500.424 (x86) | — |
+| `multiserver\DataBase.ini` | — | thêm section `[roledb]` | `DataBase.ini.bak_truoc_mysql_2008` |
+
+Kiểm trước khi chép: không tiến trình server nào chạy · `roledb` không bị khoá · hash `roledb` **vẫn khớp** bản đã nhập.
+Kiểm sau khi chép: chạy bộ kiểm thử **ngay trong thư mục server thật** (để nó đọc đúng `DataBase.ini` vừa sửa) → **26/26 ĐẠT**.
+Nghiệm thu cuối đối chiếu với `roledb` sống: **1003/1003 khớp từng byte**.
+
+**Kho Berkeley DB `database\` vẫn nguyên vẹn, chưa bị chạm một byte.** Quay lui = đổi lại 2 tệp `.bak_truoc_mysql_2008`.
+
+## Đ2.2 Ba bản vá chống đúp đồ / mất đồ
+
+**R4 — khoá nhân vật (`ClientNode.cpp`)**, ba lỗi thật:
+- Đặt khoá **vô điều kiện** (dòng cũ 717): GameServer thứ hai chỉ cần gửi `c2s_roleserver_lock` là **cướp được khoá**; lượt lưu cuối của máy cũ bị từ chối im lặng, máy mới nạp blob **cũ** ⇒ rollback/nhân đôi vật phẩm. Nay: vẫn cho chuyển chủ (đổi GameServer cần thế) nhưng **ghi nhật ký `LOCK_TAKEOVER`** và nhớ chủ cũ.
+- Mở khoá **không kiểm chủ**: bất kỳ kết nối nào cũng mở được khoá của người khác. Nay chỉ chủ sở hữu (hoặc khoá đã chết `-1`) mới mở được.
+- `UnlockAllRole` đặt `-1` thay vì xoá ⇒ nhân vật đó **không ai lưu được nữa** cho tới khi có người khoá lại, và map chỉ phình thêm sau mỗi lần rớt kết nối. Nay xoá hẳn.
+
+**R3 — gói lưu bị từ chối không còn im lặng**: `_SaveRoleInfo` trước đây chỉ `nResult = 0`. Nguy hiểm nhất là lượt lưu **cuối** lúc đăng xuất/đổi máy chủ (`bLeave=true`) — sau đó không còn lượt nào để tự chữa, **mất trọn phiên chơi**. Nay ghi nhật ký `SAVE_REJECT` và **cách ly nguyên gói** vào bảng `role_save_fail` qua `QuarantineRoleInfo()`.
+
+**R2 — tài liệu 18/08 nói SAI, đã bác bằng mã nguồn.** Không có "bão ghi": `KPlayerSet.cpp:1102` AND thêm cổng **30 giây/người**, và `Save()` cập nhật `m_ulLastSaveTime` (`KPlayer.cpp:1079`) ⇒ tối đa 1 lượt/người/30 giây. **Nên tôi KHÔNG đụng vào `CanSave()`.**
+Nhưng ngay cạnh đó có **lỗi thật**: `break` nằm **ngoài** nhánh `if (Save())`. Một người chơi có `Save()` luôn thất bại sẽ được chọn lại mỗi tick rồi `break` ⇒ **cả máy chủ không còn ai được lưu**. Đã sửa: thất bại thì đi tiếp người kế, trần 8 lần thử/tick, vẫn giữ đúng 1 lượt lưu **thành công**/tick.
+
+## Đ2.3 DB `account` — làm phần an toàn, cố ý KHÔNG làm phần nguy hiểm
+
+Đo được: 1003 dòng `account_info` nhưng **chỉ 13 tài khoản thật** — 990 dòng là **rác thuần túy** (mọi cột NULL, kể cả `iid` và `cPassword`). `account_habitus` tương tự (880/893).
+
+**Đã làm:** sao lưu `mysqldump` trước khi động · chép 990+880 dòng rác sang bảng `*_rac_20260820` để tham chiếu · thêm chỉ mục `cAccName` cho cả hai bảng (trước nay **mỗi lần đăng nhập quét toàn bảng**), `iClientID`, `cServerName` · tạo **VIEW `View_AccountMoney`** mà `S3RelayServer` cần (trước nay **không tồn tại**) — đã chạy thử đúng câu SQL thật của nó, giờ trả về dòng thay vì lỗi.
+
+**Cố ý KHÔNG làm — và đây là quyết định kỹ thuật, không phải bỏ sót:**
+- **Không xoá 990 dòng rác.** `cAccName IS NULL` không bao giờ khớp tra cứu nên chúng vô hại; xoá thì có rủi ro mà lợi ích chỉ là thẩm mỹ.
+- **Không hồi sinh cột tính giờ chơi.** `account_habitus` **thiếu hẳn cột `dLoginDate`** mà code ghi vào, còn `iClientID`/`iLeftSecond` là `varchar(0)` — nghĩa là toàn bộ SQL tính giờ **đang thất bại từ lâu**. Nhưng `dEndDate` của mọi tài khoản là **2070**, server chạy theo mô hình chơi không giới hạn. Bật lại đường trừ giờ là **đổi luật chơi** và có thể khoá người chơi ra ngoài. Muốn làm phải là quyết định của chủ game, có kiểm thử riêng.
+
+## Đ2.4 Tiền Xu sòng bạc — chống mất, nhưng KHÔNG lên được MySQL
+
+🔴 **Chặn cứng:** `CoreServer.dll` là **x64**, mà máy này **chỉ có thư viện MySQL bản x86** (cả MySQL Server 5.7 lẫn Connector C++ 8.0 đều 32-bit). Không link được. Muốn đưa tiền Xu/giftcode lên MySQL phải **cài MySQL Connector/C bản x64** trước.
+
+Nên đợt này tôi làm đúng việc mà MySQL sẽ làm, nhưng trên tệp (`BauCua.cpp`):
+- `saveDeposits()` trước đây dùng `std::ofstream` ghi thẳng — **mở tệp là cắt trắng ngay**, sập điện giữa chừng = mất sạch số dư. **Bằng chứng đã xảy ra thật: `bin\server\deposits.json` hiện đang 0 byte.** Nay: ghi ra `.tmp` → `fflush` + `_commit` ép xuống đĩa → giữ bản cũ thành `.bak` → `MoveFileEx(REPLACE_EXISTING|WRITE_THROUGH)` đổi chỗ nguyên tử.
+- `loadDeposits()` **không có try/catch**, mà nó chạy trong hàm dựng của biến toàn cục `g_BauCua` ⇒ JSON hỏng là **ném ngoại lệ lúc nạp DLL, chết tiến trình**. Nay bắt ngoại lệ và tự động thử bản `.bak`.
+- Thêm **sổ cái chỉ-ghi-thêm** `baucua/deposits.log`: mất tệp chính vẫn dựng lại được số dư.
+- Tự tạo thư mục `baucua\` (trước không tạo ⇒ ghi hỏng **im lặng**).
+
+## Đ2.5 S3Relay (bang hội/bạn bè) — DỪNG LẠI CÓ CHỦ Ý, chưa chuyển
+
+Đã viết xong `S3Relay\DBTable_MySQL.cpp` + schema `relay_kv` (đã nạp vào MySQL, đang rỗng, chờ đợt sau). Nhưng **không deploy**, vì khi build lộ ra một ràng buộc nguy hiểm:
+
+`S3Relay.vcxproj` đặt `RuntimeLibrary = MultiThreaded` (/MT) **nhưng lại** `IgnoreSpecificDefaultLibraries = libcmt.lib;msvcrt.lib;msvcrtd.lib`. Kết quả: **thư viện Berkeley DB tĩnh là thứ DUY NHẤT kéo C runtime vào cả tiến trình**. Bỏ `DBTable.cpp` ra khỏi build là libdb không còn được liên kết ⇒ **1.688 lỗi `unresolved external symbol "operator new"`**. Số liệu đối chiếu: bản gốc `libdb181` xuất hiện 504 lần trong nhật ký liên kết, bản MySQL chỉ 2 lần.
+
+"Sửa" việc này nghĩa là **đổi CRT cho toàn bộ S3Relay** — đúng loại thay đổi đã từng gây hỏng heap trong dự án này. Tôi đã **trả S3Relay về Berkeley DB và build lại xác nhận 0 lỗi**, đường quay lui nguyên vẹn.
+
+Hai lỗi thật phát hiện được trong lúc khảo sát, ghi lại để đợt sau xử:
+- 🔴 **`CTongDB::DelTong` TREO VÔ TẬN**: `TONGDB.CPP:181` viết `while(!m_MemberTable->remove(aTongName, aKeySize, 0)) {}` nhưng `remove()` **bỏ qua tham số index** (`DBTable.cpp:251`, luôn xoá theo khoá chính). Xoá bang hội = lặp vô tận chiếm 100% CPU một lõi. (Bản MySQL đã viết sẽ gỡ luôn lỗi này vì hiện thực đúng ngữ nghĩa khoá phụ.)
+- Kích thước struct đã đối chiếu với **dữ liệu thật**: `TTongStruct`=6860, `TMemberStruct`=404 — khớp chính xác. `TZhaoMuStruct`=76 có **1 byte đệm ở offset 71** không bao giờ được xoá trắng ⇒ bản ghi không tất định.
+
+## Đ2.6 Việc còn lại
+
+1. **Chủ game chạy (Run as Administrator):** `Restart-Service MySQL57 -Force` → bật binlog.
+2. **Bật Goddess trên máy test và đăng nhập thử.** Goddess là ứng dụng có giao diện, phải bấm nút khởi động — tôi không tự động hoá được. Nên thử: một tài khoản có tên nhân vật **tiếng Việt có dấu**, một cặp tên chỉ khác **HOA/thường**, một nhân vật **rương đầy**.
+3. Cài **MySQL Connector/C bản x64** nếu muốn đưa tiền Xu + giftcode lên MySQL.
+4. Dọn `role_history` định kỳ trước khi chạy dài ngày (ước 480 MB/ngày với `LichSuPhut=30`).
+5. S3Relay: quyết định về CRT rồi mới làm tiếp.

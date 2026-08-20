@@ -10,6 +10,7 @@
 #include <KPlayerSet.h>
 #include <KPlayer.h>
 #include <algorithm> 
+#include <io.h>        // _commit, _fileno -- ep du lieu xuong dia that
 #include <openssl/rand.h>
 #include <random>
 #include <openssl/hmac.h>
@@ -583,6 +584,10 @@ void BauCua::logAction(const std::string& action) {
     log << "[" << std::ctime(&now) << "] " << action << "\n";
 }
 
+// (20/08) Ghi NGUYEN TU. Ban cu dung std::ofstream ghi thang vao tep that:
+// mo tep la CAT TRANG ngay, sap dien giua chung = MAT SACH so du. Bang chung
+// that: bin\server\deposits.json tren may chay hien dang 0 byte.
+// Nay: ghi ra .tmp -> ep xuong dia -> giu ban cu thanh .bak -> doi cho nguyen tu.
 void BauCua::saveDeposits() {
     json j;
     for (const auto& p : balances)
@@ -592,16 +597,77 @@ void BauCua::saveDeposits() {
         j["locked"][base64_encode(p.first)] = p.second;
     }
 
-    std::ofstream out("baucua/deposits.json");
-    out << j.dump(4);
+    ::CreateDirectoryA("baucua", NULL);   // ban cu khong tao -> ghi hong IM LANG
+
+    const char* szThat = "baucua\\deposits.json";
+    const char* szTam  = "baucua\\deposits.json.tmp";
+    const char* szCu   = "baucua\\deposits.json.bak";
+
+    std::string sNoiDung = j.dump(4);
+
+    FILE* f = fopen(szTam, "wb");
+    if (!f) {
+        logAction("LOI: khong mo duoc baucua/deposits.json.tmp de ghi");
+        return;
+    }
+    size_t nGhi = fwrite(sNoiDung.data(), 1, sNoiDung.size(), f);
+    int bOk = (nGhi == sNoiDung.size());
+    if (bOk) bOk = (fflush(f) == 0);
+    if (bOk) bOk = (_commit(_fileno(f)) == 0);   // ep xuong dia THAT
+    fclose(f);
+
+    if (!bOk) {
+        logAction("LOI: ghi baucua/deposits.json.tmp that bai -- GIU NGUYEN tep cu");
+        ::DeleteFileA(szTam);
+        return;
+    }
+
+    // Giu lai ban tot cuoi cung truoc khi thay
+    ::CopyFileA(szThat, szCu, FALSE);
+
+    if (!::MoveFileExA(szTam, szThat,
+                       MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        logAction("LOI: khong doi cho duoc deposits.json -- tep cu VAN NGUYEN");
+        return;
+    }
+
+    // So cai chi-ghi-them: mat tep chinh van dung lai duoc tu day.
+    FILE* fl = fopen("baucua/deposits.log", "a");
+    if (fl) {
+        time_t t = time(NULL);
+        struct tm* lt = localtime(&t);
+        char stamp[32];
+        strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M:%S", lt);
+        fprintf(fl, "[%s] %s\n", stamp, sNoiDung.c_str());
+        fclose(fl);
+    }
 }
 
-void BauCua::loadDeposits() {  
-   std::ifstream in("baucua/deposits.json");  
-   if (!in.is_open()) return;  
+// (20/08) Ban cu khong co try/catch, ma ham nay chay trong ham dung cua bien
+// toan cuc g_BauCua -> JSON hong la nem ngoai le luc NAP DLL, khong ai bat duoc,
+// CHET TIEN TRINH. Nay: bat ngoai le va tu dong thu ban .bak.
+void BauCua::loadDeposits() {
+   const char* szThat = "baucua/deposits.json";
+   const char* szCu   = "baucua/deposits.json.bak";
 
-   json j;  
-   in >> j;  
+   json j;
+   int bDocDuoc = 0;
+   for (int lan = 0; lan < 2 && !bDocDuoc; lan++)
+   {
+       const char* szTep = (lan == 0) ? szThat : szCu;
+       std::ifstream in(szTep);
+       if (!in.is_open()) continue;
+       try {
+           in >> j;
+           bDocDuoc = 1;
+           if (lan == 1)
+               logAction("CANH BAO: deposits.json hong, da khoi phuc tu deposits.json.bak");
+       }
+       catch (...) {
+           logAction("LOI: deposits.json khong doc duoc (JSON hong)");
+       }
+   }
+   if (!bDocDuoc) return;
 
    balances.clear();  
    lockedInBet.clear();  
