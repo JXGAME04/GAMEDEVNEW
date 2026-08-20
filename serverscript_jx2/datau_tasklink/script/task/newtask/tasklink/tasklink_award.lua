@@ -626,6 +626,8 @@ local nCount  = tl_linkaward_count(nCol)
 local nLock   = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "LockType"))
 local nExpDay = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "ExpDay"))
 local m, nIdx
+local nIdxCuoi = 0
+local nDaPhat = 0
 
 	if (nLock == nil) then
 		nLock = 0
@@ -660,8 +662,8 @@ local m, nIdx
 			if (nExpDay > 0) then
 				AddTimeItem(nIdx, nExpDay * 86400)
 			end
-			tl_thongbao_vatpham(nIdx)
-			TaskLink_WriteLog(nTask, GetItemName(nIdx) or "?")
+			nIdxCuoi = nIdx
+			nDaPhat = nDaPhat + 1
 		else
 			-- Noi bang ".." chu KHONG format("%d",...): nQual/nGenre den tu tonumber()
 			-- nen co the nil, ma format("%d", nil) nem loi cung tren Lua 4.
@@ -669,6 +671,14 @@ local m, nIdx
 				" Genre="..(nGenre or -1)..") nguoi "..(GetName() or "?"))
 		end
 
+	end
+
+	-- [PB 20/08] Bao DUNG MOT LAN cho ca dong, kem so luong.
+	-- Truoc do 2 dong nay nam TRONG vong 'for m' nen moc thuong ban 6 dong
+	-- chat (3 Tien Thao Lo + 3 Que Hoa Tuu) va moc 1000 ban 9 dong - loang chat.
+	if (nDaPhat > 0) and (nIdxCuoi > 0) then
+		tl_thongbao_vatpham(nIdxCuoi, nDaPhat)
+		TaskLink_WriteLog(nTask, (GetItemName(nIdxCuoi) or "?").." x"..nDaPhat)
 	end
 
 end
@@ -681,22 +691,26 @@ end
 -- LUON co 1 dau cach ASCII truoc moi the <color...> VA moi the dong <color>:
 -- TEncodeText (Text.cpp:468) coi byte >0x80 la byte dau cua cap 2 byte nen se
 -- NUOT dau '<' neu truoc no la day LE byte TCVN3 (loi that o map_index.lua:248).
-function tl_thongbao_vatpham(nItemIdx)
+function tl_thongbao_vatpham(nItemIdx, nSoLuong)
 
 local szTen
+local szSL = ""
 
 	if (nItemIdx == nil) or (nItemIdx <= 0) then
 		return
 	end
 
 	szTen = GetItemName(nItemIdx)
+	if (nSoLuong ~= nil) and (nSoLuong > 1) then
+		szSL = " x"..nSoLuong
+	end
 	if (szTen == nil) or (szTen == "") then
 		return
 	end
 
 	Msg2Region(SubWorldIdx2ID(SubWorld),
 		" <color=Yellow>"..GetName().." <color>".."nh\203n \174\173\238c"..
-		" <color=Gold>"..szTen.." <color>".."- D\183 T\200u l\199n"..
+		" <color=Gold>"..szTen..szSL.." <color>".."- D\183 T\200u l\199n"..
 		" <color=AYellow>"..GetTask(ID_TASKLINK_LIMITNUM).." <color>".."trong ng\181y.")
 
 end
