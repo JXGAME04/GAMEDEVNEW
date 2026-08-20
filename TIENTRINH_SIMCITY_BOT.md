@@ -257,3 +257,40 @@ bat GameServer -> Goi 1000 -> BAT danh quai -> doi 5-10 phut ->
   grep -a "BI TU CHOI" bot.log | tail                    # phai GIAM dan ve 0
 Quan sat mat thuong: khong con bot dung bat dong ngoai ria map; so bot lang vang
 o thanh giam manh (chi con con vua chet dang cho 60s doi map cua pb_RaBai).
+
+
+## 10. PHIEN 19/08 CHIEU-TOI: TRANG BI + DA TAU + BAN SAP (7 dot, f34a5cbb -> e243c38c)
+
+**DOC `BANGIAO_PHIEN_1908_CHIEU.md` TRUOC KHI GO** - tai lieu do la ban day du.
+Muc nay chi la chi muc nhanh.
+
+**Tinh nang moi:** trang bi theo cap (tieu tiem nang moi lan len cap + bo Hoang Kim
+Kim Phong 177-185 + ngua Tuc Suong cap 10 + vu khi cap 10 khi dat 81) · len/xuong ngua
+theo GetHorseLimit cua chieu + cuoi ngua trong thanh · party full 8 nguoi · chia deu bai
+luyen (chon bai it bot nhat) · doi truong roam diem it bot nhat · buff TTL + Que Hoa Tuu
+bat/tat bang lenh bai (mac dinh TAT) · BOT CHAY DA TAU (may trang thai 10 pha) · BOT RA
+THANH BAN SAP THAT (nguoi choi mua duoc) · bo SimCity khoi lenh bai.
+
+**SAU LOI GOC tim ra trong phien (gia tri lau dai):**
+1. `g_FileName2Id` (Engine/KFilePath.cpp:442) bam PHAN BIET HOA/THUONG -> duong dan
+   script viet hoa = ExecuteScript IM LANG khong chay (27.651 dong log chet).
+2. Do TIM = `nPoint != 0` (KItem.cpp:3222). `AddItemSet2` tham so thu 12 la nPoint.
+   Do XANH = `ItemSet.Add` (khong co nPoint) + mang nMagicLevel co gia tri.
+   Do xanh BAT BUOC phai co opt - 0 opt ra do TRANG.
+3. `ChangeWorld` chi kiem khung region, KHONG kiem vat can -> bot dap vao than tuong
+   (map 79). Nay moi diem dat chan qua pb_ODat (quet xoan oc tim o trong that).
+4. `KItemList::Abrade` thao trang bi khi do ben = 0 -> don tui xoa mat -> bot tay khong.
+5. `pb_AllocAttribPoints` chi goi MOT LAN luc vao phai (chu thich noi "nhanh IN_FACTION
+   tieu tiep" - nhanh do KHONG TON TAI) -> bot cap 82 chi 440 HP.
+6. `PB_SetDaTau` cu xoa sach co roi boc lai -> bam menu lan 2 la cat ngang bot dang
+   giua nhiem vu (CaoVinh338: teleport 16:30:57 -> bo chon 16:31:40 -> ve bai ngay giay do).
+
+**Luat Da Tau chot:** bot cap >= 80; chi nhan loai 4 KIEU 1 va <= 5 cuon (bac link 11
+co 95% dong Num=15 ~13.500 quai; Mat Chi chi rot tu boss xanh ~1/31.360 con); loai 5/6
+vua luyen cap vua lam; con lai DOI NHIEM VU MIEN PHI qua `PB_BotDoiNhiemVu` ->
+`tl_dealtask`. TUYET DOI KHONG goi `PB_BotCancel` (Task_Cancel that: mat thuong moc-40
++ dot luot ngay). task 1032: byte thap = KIEU cuon, byte 2 = SO cuon.
+
+**Trang thai:** ban cuoi chay that tu 19/08 17:42, log xac nhan may trang thai hoat dong
+(35 nhap mon, 49 nhan nhiem vu, 7 doi nhiem vu). CHUA nghiem thu tron vong (chua thay
+`TRA XONG nhiem vu` -> `chon ruong thuong`) va CHUA test sap o ban moi.
