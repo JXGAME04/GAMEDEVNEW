@@ -113,3 +113,10 @@ Deploy 21:30 — `Game.exe` 1.251.840 B (`Game_cu_2105.exe`), `CoreClient.dll` 2
 4. **Tự bấm mục Xa Phu**: `TG_XaFu` lên 2 pha — pha 2 sau `DialogNpc` theo dõi `g_sDTCap.uDlgSeq`, thoại về thì `DT_Split` + `DT_FindAns(DTM_OPT_GODATAU)` + `DT_Answer` ⇒ **tự chọn "Đến nơi làm nhiệm vụ dã tẩu", người chơi không phải bấm gì** (đúng yêu cầu); 3,2s không có thoại thì gõ lại NPC, thoại không có mục thì báo chọn tay; bị kéo ra xa khi chờ thì quay lại pha đi. (Hook `g_sDTCap` nằm trong OnScriptAction — chạy vô điều kiện, không cần WAuto.)
 
 Cạm bẫy mới ghi nhận: `DT_Answer` định nghĩa SAU khối TG trong `CoreShell.cpp` — đã thêm forward declaration; thêm hàm mới vào vùng đó nhớ khai báo trước.
+
+## 10 · ĐỢT 4 (19/08 khuya): nút icon mép phải + hạ khung theo dõi khỏi minimap
+
+- **`KUiTaskTraceIcon`** (trong `UiTaskTrace.{h,cpp}`): nút 25×25 dùng `opentracebtn.spr` của bộ tài nguyên tham chiếu (có sẵn trong `updatejx14.pak`, 2 frame Up/Down) — **luôn hiện khi vào game** (mở cùng HUD tại `UiShell.cpp` cạnh `KUiHeaderControlBar::OpenWindow`), neo `Wnd_GetScreenSize` mép phải ~2/5 chiều cao. Bấm = bật/tắt khung theo dõi (đồng bộ lại 2 nút của bảng chính qua `KUiTaskGuide::RefreshButtons`).
+- **Khung theo dõi hết bị minimap che**: `KUiTaskTrace::Initialize` tự neo `(nSW - W - 2, nSH*2/5)` theo màn hình thật (ini `Top=300` chỉ còn là dự phòng 1024). Khung vẫn kéo thả được (`Moveable=1`).
+- Section mới trong `tasktrace.ini`: `[OpenIcon]` + `[OpenIconBtn]` (sinh tự động, đường ảnh GBK lấy từ dòng Image mẫu).
+- Deploy 21:44: `Game.exe` 1.253.376 B (bản cũ `Game_cu_2130.exe`), re_pe_crt PASS. CoreClient/CoreServer không đổi so với 21:30.

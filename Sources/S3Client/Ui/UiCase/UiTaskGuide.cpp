@@ -171,6 +171,12 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	}
 }
 
+void KUiTaskGuide::RefreshButtons()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+		m_pSelf->UpdateButtons();
+}
+
 // Ban rut gon 1 dong cho khung Theo doi nhiem vu (KUiTaskTrace).
 void KUiTaskGuide::BuildBriefLine(char* pOut, int nSize)
 {

@@ -16,6 +16,8 @@
 #include "../Elem/WndText.h"
 #include "../Elem/WndMessageListBox.h"
 
+#include "../Elem/WndButton.h"
+
 class KUiTaskTrace : public KWndShowAnimate
 {
 public:
@@ -38,6 +40,24 @@ private:
 
 	KWndText256				m_Title;
 	KScrollMessageListBox	m_List;		// [TaskInfo] + _List + _Scroll
+};
+
+// Nut icon nho 25x25 neo mep phai man hinh (anh opentracebtn.spr cua ban tham
+// chieu, co san trong pak): bam = bat/tat khung theo doi nhiem vu. Mo cung HUD
+// khi vao game (UiShell), dong khi thoat.
+class KUiTaskTraceIcon : public KWndShowAnimate
+{
+public:
+	static KUiTaskTraceIcon*	OpenWindow();
+	static void					CloseWindow(bool bDestroy);
+private:
+	KUiTaskTraceIcon();
+	virtual ~KUiTaskTraceIcon();
+	void	Initialize();
+	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+private:
+	static KUiTaskTraceIcon*	m_pSelf;
+	KWndButton					m_Btn;
 };
 
 #endif

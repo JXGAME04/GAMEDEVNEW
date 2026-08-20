@@ -97,6 +97,13 @@ void KUiTaskTrace::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, sizeof(Scheme));
 	LoadSchemeSelf(Scheme);
 
+	// neo mep phai man hinh, duoi minimap (toa do trong ini chi la du phong 1024;
+	// minimap chiem goc phai tren ~230px nen ha xuong ~2/5 chieu cao)
+	int nSW = 0, nSH = 0;
+	Wnd_GetScreenSize(nSW, nSH);
+	if (nSW > 0 && nSH > 0)
+		SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
+
 	Wnd_AddWindow(this);
 }
 
@@ -149,6 +156,83 @@ int KUiTaskTrace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			return true;
 		}
 		break;
+	}
+	return KWndShowAnimate::WndProc(uMsg, uParam, nParam);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// KUiTaskTraceIcon - nut icon nho mep phai man hinh
+//////////////////////////////////////////////////////////////////////////
+
+KUiTaskTraceIcon*	KUiTaskTraceIcon::m_pSelf = NULL;
+
+KUiTaskTraceIcon::KUiTaskTraceIcon()
+{
+}
+
+KUiTaskTraceIcon::~KUiTaskTraceIcon()
+{
+}
+
+KUiTaskTraceIcon* KUiTaskTraceIcon::OpenWindow()
+{
+	if (m_pSelf == NULL)
+	{
+		m_pSelf = new KUiTaskTraceIcon;
+		if (m_pSelf)
+			m_pSelf->Initialize();
+	}
+	if (m_pSelf)
+		m_pSelf->Show();
+	return m_pSelf;
+}
+
+void KUiTaskTraceIcon::CloseWindow(bool bDestroy)
+{
+	if (m_pSelf)
+	{
+		m_pSelf->Hide();
+		if (bDestroy)
+		{
+			m_pSelf->Destroy();
+			m_pSelf = NULL;
+		}
+	}
+}
+
+void KUiTaskTraceIcon::Initialize()
+{
+	AddChild(&m_Btn);
+
+	char		Scheme[256];
+	char		Buff[256];
+	KIniFile	Ini;
+	g_UiBase.GetCurSchemePath(Scheme, sizeof(Scheme));
+	sprintf(Buff, "%s\\%s", Scheme, SCHEME_INI_TASKTRACE);
+	if (Ini.Load(Buff))
+	{
+		Init(&Ini, "OpenIcon");
+		m_Btn.Init(&Ini, "OpenIconBtn");
+	}
+
+	// neo sat mep phai, ngay tren khung theo doi
+	int nSW = 0, nSH = 0;
+	Wnd_GetScreenSize(nSW, nSH);
+	if (nSW > 0 && nSH > 0)
+		SetPosition(nSW - m_Width, nSH * 2 / 5 - 30);
+
+	Wnd_AddWindow(this);
+}
+
+int KUiTaskTraceIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+	if (uMsg == WND_N_BUTTON_CLICK &&
+		uParam == (unsigned int)(KWndWindow*)&m_Btn)
+	{
+		// bat/tat khung theo doi nhiem vu
+		KUiTaskTrace::SetTraced(!KUiTaskTrace::IsTraced());
+		KUiTaskGuide::RefreshButtons();
+		return true;
 	}
 	return KWndShowAnimate::WndProc(uMsg, uParam, nParam);
 }

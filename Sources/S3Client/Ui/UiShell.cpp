@@ -444,6 +444,7 @@ void UiStartGame()
 	KUiPlayerBar::OpenWindow();
 	KUiSysMsgCentre::OpenWindow();
 	KUiHeaderControlBar::OpenWindow();
+	KUiTaskTraceIcon::OpenWindow();	// [TaskGuide] icon mep phai bat/tat khung theo doi
 	KUiToolsControlBar::OpenWindow();
 	KUiNewsMessage::OpenWindow();
 	KUiFlashMessage::OpenWindow();
@@ -591,6 +592,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiTaskNote::CloseWindow(bAll);
 	KUiTaskGuide::CloseWindow(bAll);
 	KUiTaskTrace::CloseWindow(bAll);
+	KUiTaskTraceIcon::CloseWindow(bAll);
 	KUiParadeItem::CloseWindow(bAll);
 	KUiStrengthRank::CloseWindow();
 	KUiTongManager::CloseWindow();

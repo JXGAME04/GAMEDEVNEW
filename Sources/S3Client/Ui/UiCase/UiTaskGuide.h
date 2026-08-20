@@ -40,6 +40,8 @@ public:
 	static void				OnTaskValueChanged(int nTaskId);
 	// ban RUT GON trang thai Da Tau (dung cho khung Theo doi nhiem vu)
 	static void				BuildBriefLine(char* pOut, int nSize);
+	// dong bo lai trang thai 3 nut khi trace doi tu ben ngoai (icon mep man hinh)
+	static void				RefreshButtons();
 private:
 	KUiTaskGuide();
 	virtual ~KUiTaskGuide();
