@@ -4138,16 +4138,18 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 	else if (protocol == chat_channelchat)//Chat kªnh
 	{
 		CHAT_CHANNELCHAT_SYNC* pCccSync = (CHAT_CHANNELCHAT_SYNC*)pExPckg;
-		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT)
+		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT).
+		// (20/08 r3) ghi VONG 4 KHE - 2 tin trong cung tick khong de mat tin truoc.
 		if (!strcmp(pCccSync->someone, "H\326 Th\350ng"))
 		{
 			int nDTLen = pCccSync->sentlen;
-			if (nDTLen > (int)sizeof(g_sDTCap.szMsg) - 1)
-				nDTLen = (int)sizeof(g_sDTCap.szMsg) - 1;
+			if (nDTLen > (int)sizeof(g_sDTCap.aMsg[0]) - 1)
+				nDTLen = (int)sizeof(g_sDTCap.aMsg[0]) - 1;
 			if (nDTLen > 0)
 			{
-				memcpy(g_sDTCap.szMsg, (const char*)(pCccSync + 1), nDTLen);
-				g_sDTCap.szMsg[nDTLen] = 0;
+				char* pDTKhe = g_sDTCap.aMsg[(g_sDTCap.uMsgSeq + 1) & 3];
+				memcpy(pDTKhe, (const char*)(pCccSync + 1), nDTLen);
+				pDTKhe[nDTLen] = 0;
 				++g_sDTCap.uMsgSeq;
 			}
 		}

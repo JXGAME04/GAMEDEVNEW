@@ -18,7 +18,10 @@ struct KDaTauCapture
 	int nBoxOpen;            // 1 dang mo, 0 da dong
 	char szBoxFunc[64];      // ten ham nop (S2C_GIVE_BOX.Value2)
 	unsigned int uMsgSeq;    // tang moi thong diep "He Thong" (tien do nhat cuon...)
-	char szMsg[512];         // noi dung thong diep (TCVN3)
+	// (20/08 r3) VONG 4 KHE: 2 tin den trong 1 tick engine (~250ms) truoc day
+	// de mat tin dau; tin CHOT "du manh" bi de la bot khong bao gio ve tra.
+	// Khe cua tin thu N = aMsg[N & 3].
+	char aMsg[4][320];
 };
 
 extern KDaTauCapture g_sDTCap;
