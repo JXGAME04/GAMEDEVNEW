@@ -6,3 +6,7 @@ test_dbtable/*.ilk
 test_dbtable/*.dll
 test_dbtable/ref_roledb.bin
 test_dbtable/mysql_roledb.log
+test_kmysqldb/*.exe
+test_kmysqldb/*.obj
+test_kmysqldb/*.dll
+test_kmysqldb/*.log

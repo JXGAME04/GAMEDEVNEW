@@ -100,6 +100,8 @@ private:
 
 static CoreServerShell	g_CoreServerShell;
 
+#include "KMySQLDB.h"
+
 CORE_API void g_InitCore(char * nParmName);
 
 #ifndef _STANDALONE
@@ -1145,6 +1147,12 @@ int CoreServerShell::OnShutdown()
 
 int CoreServerShell::Breathe()
 {
+#ifdef _SERVER
+	// Rat re: chi doc mot bien dem, va 30 giay moi ghi nhat ky mot lan khi
+	// hang doi ghi nen phinh qua nua. KHONG cham MySQL o day.
+	g_MySQLDB.Tick();
+#endif
+
 	if (pTimeScript)
 	{
 		if (!(g_SubWorldSet.GetGameTime() % GAME_FPS))

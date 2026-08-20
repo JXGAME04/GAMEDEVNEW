@@ -7,6 +7,7 @@
 //---------------------------------------------------------------------------
 #include "KCore.h"
 #include "KEngine.h"
+#include "KMySQLDB.h"
 #include "KFilePath.h"
 #ifndef _SERVER
 #include "KNpcResList.h"
@@ -158,6 +159,15 @@ void g_InitProtocol();
 CORE_API void g_InitCore(char * nParmName)
 {
 	g_InitProtocol();
+
+#ifdef _SERVER
+	// (20/08) Mo ket noi MySQL cho toan bo du lieu tinh nang + nhat ky.
+	// THAT BAI THI VAN CHAY TIEP: cac tinh nang tu quay ve duong ghi tep cu.
+	// Tuyet doi khong duoc lam sap may chu chi vi MySQL chua san sang --
+	// dung nguyen tac "them mot phu thuoc thi phai them mot duong lui".
+	if (!g_MySQLDB.Init())
+		KDBLog("CANH BAO: khong ket noi duoc MySQL -- cac tinh nang se dung tep nhu cu");
+#endif
 #ifdef _DEBUG
 	g_bDebugScript = 0;
 	g_FindDebugWindow("#32770", "DebugWin");
@@ -541,6 +551,11 @@ BOOL	SaveAsBinFileFromNpcSetting(LPSTR BinFile = NPC_TEMPLATE_BINFILE)
 
 void g_ReleaseCore()
 {
+#ifdef _SERVER
+	// Dong truoc tien: Close() cho luong ghi nen XA HET hang doi roi moi tat,
+	// nen khong mat nhat ky cua nhung giay cuoi.
+	g_MySQLDB.Close();
+#endif
 	int nNpcTemplateNum = g_NpcSetting.GetHeight() - 1;
 	unsigned long i = 0;
 	unsigned long j = 0;
