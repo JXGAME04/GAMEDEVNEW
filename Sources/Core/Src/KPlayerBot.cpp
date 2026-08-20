@@ -2248,22 +2248,22 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 
 	const int nLevel = Npc[nNpcIdx].m_Level;
 
-	// ---- 1b. (20/08 - chu game: "bot cap 80 chua thay nhan duoc cac skill 90
-	// de luyen skill") hoc bo ky nang 90 DUNG DUONG NPC MON PHAI: goi
-	// show_kynang90(nCurFac) cua hocvocong.lua - ham nay tu doi GetLevel >= 80
-	// roi AddMagic tung skill 90 cua phai + skill 120 + chieu 210, y het nguoi
-	// choi bam NPC su phu. nCurFac 1-based = m_nCurFaction + 1 (PHAI truyen vi
-	// than ham index SKILL90_ARRAY[nCurFac] truc tiep - de nil la loi lua).
-	// Goi lai sau nap-bot-cu vo hai: KSkillList::Add chi NANG cap khi cao hon,
-	// khong bao gio ha (KSkillList.cpp:434-447).
+	// ---- 1b. (20/08 - chu game: "bot cap 80 chua thay nhan duoc cac skill 90",
+	// roi chot "CHI duoc nhan ky nang 90 thoi") hoc bo ky nang 90 qua ham lua
+	// bot_hoc90(nCurFac) trong hocvocong.lua - ham RIENG cho bot, copy dung vong
+	// SKILL90_ARRAY cua show_kynang90 nhung KHONG kem SKILL120AR + chieu 210 nhu
+	// ham NPC goc. nCurFac 1-based = m_nCurFaction + 1 (than ham index
+	// SKILL90_ARRAY[nCurFac] truc tiep). Goi lai sau nap-bot-cu vo hai:
+	// KSkillList::Add chi NANG cap khi cao hon, khong bao gio ha
+	// (KSkillList.cpp:434-447).
 	if (nLevel >= 80 && !b.nHoc90 && b.nFaction >= 0)
 	{
 		b.nHoc90 = 1;
 		Player[nIdx].ExecuteScript((char*)"\\script\\global\\hocvocong.lua",
-		                           (char*)"show_kynang90",
+		                           (char*)"bot_hoc90",
 		                           (int)Player[nIdx].m_cFaction.m_nCurFaction + 1,
 		                           false);
-		pb_Log("[BotSkill90] %s cap %d hoc bo ky nang 90 (phai %d)\n",
+		pb_Log("[BotSkill90] %s cap %d hoc bo ky nang 90 - CHI 90 (phai %d)\n",
 		       Player[nIdx].m_PlayerName, nLevel,
 		       (int)Player[nIdx].m_cFaction.m_nCurFaction + 1);
 		b.nAtkSkill = 0;   // chon lai chieu danh - co the co chieu 90 manh hon
