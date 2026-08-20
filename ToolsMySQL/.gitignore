@@ -1,0 +1,8 @@
+# San pham bien dich va du lieu tam cua bo kiem thu -- khong dua len git
+test_dbtable/*.exe
+test_dbtable/*.obj
+test_dbtable/*.pdb
+test_dbtable/*.ilk
+test_dbtable/*.dll
+test_dbtable/ref_roledb.bin
+test_dbtable/mysql_roledb.log

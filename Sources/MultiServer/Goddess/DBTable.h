@@ -18,6 +18,7 @@ typedef struct ZCursor {
 	int key_size;
 	char *data;									//返回的数据
 	int size;									//数据的大小
+	void *pImpl;	// MySQL: trang thai rieng cua con tro (khong dung o ban Berkeley DB)
 }tagZCursor;
 
 class ZDBTable {
@@ -27,6 +28,7 @@ class ZDBTable {
 	bool is_index_unique[MAX_INDEX];							//索引是否唯一
 	int index_number;											//二级索引数目
 	char table_name[MAX_TABLE_NAME];
+	void *m_pImpl;			// MySQL: MyTableImpl* (ket noi + ten bang). Khong dung o ban Berkeley DB.
 protected:
 	char env_path[MAX_TABLE_NAME];
 	DB_ENV *dbenv;												//数据库环境
@@ -46,15 +48,9 @@ public:
 	bool add(const char *key_ptr, int key_size, const char *data_ptr, int data_size);
 	bool remove(const char *key_ptr, int key_size, int index = -1);
 
-	void closeCursor(ZCursor *cursor) {
-		if(!cursor) return;
-		if(cursor->bTravel) {
-			free(cursor->key);
-		}
-		free(cursor->data);
-
-		delete cursor;
-	}
+	// Bo than inline: ban MySQL con phai giai phong pImpl.
+	// Cai dat: DBTable_MySQL.cpp (dang dung) hoac DBTable.cpp (ban Berkeley DB).
+	void closeCursor(ZCursor *cursor);
 	ZCursor *first() {											//遍历数据库，得到第一条记录	
 		return _search(false, NULL, 0, -1);
 	}
@@ -72,7 +68,13 @@ public:
 	}
 //下面是一些维护性的操作
 	void deadlock() {						//解除死锁
+#ifndef ROLEDB_MYSQL
 		dbenv->lock_detect(dbenv, 0, DB_LOCK_DEFAULT, NULL);
+#else
+		// MySQL/InnoDB tu phat hien va go deadlock -- khong can lam gi.
+		// (Ghi chu: luong DeadlockProc trong IDBRoleServer.cpp:67-80 dang BI COMMENT
+		//  nen ham nay von da khong bao gio duoc goi.)
+#endif
 	}
 	void removeLog();						//清除日志文件
 };

@@ -283,6 +283,19 @@ bool ZDBTable::_next(bool bKey, ZCursor *cursor) {
     return true;
 }
 
+// Truoc day than ham nay nam inline trong DBTable.h. Da chuyen ra day de ban
+// MySQL (DBTable_MySQL.cpp) co the giai phong them truong pImpl.
+// Noi dung giu NGUYEN VEN so voi ban goc.
+void ZDBTable::closeCursor(ZCursor *cursor) {
+	if(!cursor) return;
+	if(cursor->bTravel) {
+		free(cursor->key);
+	}
+	free(cursor->data);
+
+	delete cursor;
+}
+
 void ZDBTable::removeLog() {						//清除日志文件
 	int ret;
 	char **begin, **list;
