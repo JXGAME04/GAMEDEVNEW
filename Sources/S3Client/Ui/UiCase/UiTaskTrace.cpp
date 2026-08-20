@@ -48,21 +48,37 @@ KUiTaskTrace* KUiTaskTrace::OpenWindow()
 	return m_pSelf;
 }
 
-// dat khung sat ben trai + NGANG HANG nut theo doi tren thanh PlayerBar
+// Dat khung sat ben trai + NGANG HANG nut theo doi tren thanh PlayerBar.
+//
+// BAT BUOC cap nhat CA m_oFixPos: KWndShowAnimate::Show() (WndShowAnimate.cpp:60-64)
+// khi khong co StartPos/EndPos trong ini se goi SetPosition(m_oFixPos) - tuc RESET
+// ve toa do ini - de len moi lenh SetPosition goi TRUOC do. Chi SetPosition khong
+// thoi thi khung luon bung ra tai toa do [Main] cua tasktrace.ini, khong ngang nut.
 void KUiTaskTrace::SnapToButton()
 {
+	int nX = 0, nY = 0;
 	int nAX = 0, nAY = 0;
 	if (KUiPlayerBar::GetTraceBtnPos(nAX, nAY))
 	{
-		SetPosition(nAX - m_Width - 2, nAY);
+		nX = nAX - m_Width - 2;
+		nY = nAY;
 	}
 	else
 	{
 		int nSW = 0, nSH = 0;
 		Wnd_GetScreenSize(nSW, nSH);
-		if (nSW > 0 && nSH > 0)
-			SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
+		if (nSW <= 0 || nSH <= 0)
+			return;
+		nX = nSW - m_Width - 2;
+		nY = nSH * 2 / 5;
 	}
+	if (nX < 0)
+		nX = 0;
+	if (nY < 0)
+		nY = 0;
+	m_oFixPos.x = nX;		// diem "dung yen" ma Show()/Hide() se quay ve
+	m_oFixPos.y = nY;
+	SetPosition(nX, nY);
 }
 
 void KUiTaskTrace::CloseWindow(bool bDestroy)
