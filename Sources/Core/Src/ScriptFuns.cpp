@@ -57,6 +57,7 @@
 #include <KTongProtocol.h>
 #include <MapHandler.h>
 #include <GiftCodeManager.h>
+#include "KGameKV.h"
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -11139,6 +11140,84 @@ lab_npcindextoplayerindex:
 	return 1;
 
 }
+//////////////////////////////////////////////////////////////////////////////
+// (20/08) Nam ham cho Lua de bo han duong ghi tep.
+//
+// Duong cu: script\lib\lib_ham.lua dung `openfile(f,"w+")` -- CAT TRANG tep roi
+// moi ghi lai, khong nguyen tu, khong co lich su. Mat dien giua chung la mat CA
+// BANG (so du ngan luong, tien vang song bac, boss hoang kim, xep hang su kien...).
+//
+// Duong moi: KV_Set ghi mot dong trong bang jx1_game.game_kv -- nguyen tu san, va
+// ban cu duoc chup vao game_kv_history nen quay lui duoc.
+//
+//   KV_Set(ns, key, value)   -> 1 neu ghi duoc
+//   KV_Get(ns, key)          -> chuoi gia tri, hoac nil neu khong co
+//   KV_Del(ns, key)          -> 1 neu xoa duoc
+//   GhiNhatKy(loai, ten, noidung) -> 1; LUON bat dong bo, khong lam cham game
+//   LayLenhQuanTri(cmd)      -> chuoi tham so cua lenh cho xu ly cu nhat, hoac nil
+//                               (thay cho viec doc tep dulieu/username_kick.txt)
+//////////////////////////////////////////////////////////////////////////////
+int LuaKV_Set(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3) { Lua_PushNumber(L, 0); return 1; }
+	char* szNs  = (char*)Lua_ValueToString(L, 1);
+	char* szKey = (char*)Lua_ValueToString(L, 2);
+	char* szVal = (char*)Lua_ValueToString(L, 3);
+	if (!szNs || !szKey || !szVal) { Lua_PushNumber(L, 0); return 1; }
+	// Bat dong bo: Lua goi ham nay trong vong lap game.
+	int nOk = KGameKV::Put(szNs, szKey, szVal, (int)strlen(szVal), true) ? 1 : 0;
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaKV_Get(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) return 0;
+	char* szNs  = (char*)Lua_ValueToString(L, 1);
+	char* szKey = (char*)Lua_ValueToString(L, 2);
+	if (!szNs || !szKey) return 0;
+	// Lua 4 khong chiu duoc chuoi co byte 0 o giua, nen cap la chuoi ket NUL.
+	static char s_szBuf[256 * 1024];
+	int n = KGameKV::Get(szNs, szKey, s_szBuf, sizeof(s_szBuf) - 1);
+	if (n < 0) return 0;
+	s_szBuf[n] = 0;
+	Lua_PushString(L, s_szBuf);
+	return 1;
+}
+
+int LuaKV_Del(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) { Lua_PushNumber(L, 0); return 1; }
+	char* szNs  = (char*)Lua_ValueToString(L, 1);
+	char* szKey = (char*)Lua_ValueToString(L, 2);
+	if (!szNs || !szKey) { Lua_PushNumber(L, 0); return 1; }
+	Lua_PushNumber(L, KGameKV::Del(szNs, szKey) ? 1 : 0);
+	return 1;
+}
+
+int LuaGhiNhatKy(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3) { Lua_PushNumber(L, 0); return 1; }
+	char* szLoai = (char*)Lua_ValueToString(L, 1);
+	char* szTen  = (char*)Lua_ValueToString(L, 2);
+	char* szND   = (char*)Lua_ValueToString(L, 3);
+	if (!szLoai || !szND) { Lua_PushNumber(L, 0); return 1; }
+	Lua_PushNumber(L, KGameKV::LogStr(szLoai, szTen, szND) ? 1 : 0);
+	return 1;
+}
+
+int LuaLayLenhQuanTri(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1) return 0;
+	char* szCmd = (char*)Lua_ValueToString(L, 1);
+	if (!szCmd) return 0;
+	char szArg[256];
+	if (!KGameKV_LayLenhQuanTri(szCmd, szArg, sizeof(szArg)))
+		return 0;
+	Lua_PushString(L, szArg);
+	return 1;
+}
+
 int LuaGiftcodeIsValid(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 2)
@@ -11194,9 +11273,19 @@ int LuaUseGiftcodeS(Lua_State* L)
 	int nSubWorldIndex = GetSubWorldIndex(L);
 	if (nSubWorldIndex < 0)
 		return 0;
+
+	// (20/08) Lay ten nhan vat de bang giftcode ghi lai AI da nhan ma.
+	// Truoc day khong luu gi ca nen khong truy vet duoc khi co tranh chap.
+	const char* szRole = 0;
+	{
+		int nPlayerIndex = GetPlayerIndex(L);
+		if (nPlayerIndex > 0 && Player[nPlayerIndex].m_PlayerName[0])
+			szRole = Player[nPlayerIndex].m_PlayerName;
+	}
+
 	if (!strcmp(szGiftType, "Code_Tuan"))
 	{
-		if (g_GiftCodeFanCungManager.UseCode(szGiftCode)) {
+		if (g_GiftCodeFanCungManager.UseCode(szGiftCode, szRole)) {
 			Lua_PushNumber(L, 1);
 			return 1;
 		}
@@ -11207,7 +11296,7 @@ int LuaUseGiftcodeS(Lua_State* L)
 	}
 	else if (!strcmp(szGiftType, "Code_New"))
 	{
-		if (g_GiftCodeNewManager.UseCode(szGiftCode)) {
+		if (g_GiftCodeNewManager.UseCode(szGiftCode, szRole)) {
 			Lua_PushNumber(L, 1);
 			return 1;
 		}
@@ -13758,6 +13847,11 @@ TLua_Funcs GameScriptFuns[] =
 		{ "GetPoint", LuaGetPoint },
 		{"SendClientPoint", LuaSendClientPoint },
 	
+		{ "KV_Set", LuaKV_Set },
+		{ "KV_Get", LuaKV_Get },
+		{ "KV_Del", LuaKV_Del },
+		{ "GhiNhatKy", LuaGhiNhatKy },
+		{ "LayLenhQuanTri", LuaLayLenhQuanTri },
 		{ "UseGiftcodeS", LuaUseGiftcodeS },
 		{ "GiftcodeIsValid", LuaGiftcodeIsValid },
 		#else 

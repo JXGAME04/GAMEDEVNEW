@@ -5,9 +5,10 @@
 // KCore.h PHAI dung dau tien: du an Core dung precompiled header qua tep nay.
 // May man la KCore.h dat WIN32_LEAN_AND_MEAN ngay dong 8, nen windows.h KHONG
 // keo winsock.h vao -- nho vay mysql.h (can winsock2.h) khong bi dung do.
-#ifndef KDB_TEST_BUILD
-#include "KCore.h"          // bat buoc dung dau tien: Core dung PCH qua tep nay
-#endif
+// Tep nay KHONG dung precompiled header (vcxproj dat PrecompiledHeader=NotUsing).
+// Ly do: PCH cua Core la KCore.h, ma trinh bien dich BO QUA moi thu truoc dong
+// #include "KCore.h" -- lam #ifndef dat truoc no bi nuot, con #endif thanh mo coi.
+// Bo PCH cho rieng hai tep nay la cach duy nhat vua sach vua bien dich rieng le duoc.
 #include "KMySQLDB.h"
 
 #ifdef _SERVER

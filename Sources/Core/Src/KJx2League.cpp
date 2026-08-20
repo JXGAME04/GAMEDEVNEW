@@ -4,6 +4,7 @@
 // LUU Y: Core build voi PCH "Use" qua KCore.h - moi thu TRUOC dong include nay
 // deu bi compiler bo qua, nen KCore.h PHAI dung dau tien.
 #include "KCore.h"
+#include "KGameKV.h"
 #include "KWin32.h"
 
 #ifdef _SERVER
@@ -59,6 +60,7 @@ struct KJx2LgTmpMember
 #define JX2LG_TMP_LEAGUE_BASE	1000000
 #define JX2LG_TMP_MEMBER_BASE	2000000
 #define JX2LG_FILE				"\\settings\\jx2league.txt"
+#define JX2LG_KV_NS				"jx2.league"
 
 static std::map<int, KJx2League*>		s_LeagueByLid;		// lid tang dan -> league
 static int								s_nNextLid = 0;
@@ -226,7 +228,12 @@ static void sLeagueSave()
 	if (fclose(f) != 0)
 		bOk = FALSE;
 	if (bOk)
+	{
 		MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+#ifdef _SERVER
+		KGameKV::PutFile(JX2LG_KV_NS, "file", szPath, true);
+#endif
+	}
 	else
 	{
 		DeleteFile(szTmp);

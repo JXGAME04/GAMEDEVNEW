@@ -11,6 +11,8 @@
 #include <KPlayer.h>
 #include <algorithm> 
 #include <io.h>        // _commit, _fileno -- ep du lieu xuong dia that
+#include "KMySQLDB.h"
+#include "KGameKV.h"
 #include <openssl/rand.h>
 #include <random>
 #include <openssl/hmac.h>
@@ -45,10 +47,62 @@ BauCua::BauCua(int roundIntervalSeconds, int hostThreshold, int hostWinShare)
 	currentRound = generateGameRound(currentHost);
 }
 
+#ifdef _SERVER
+//////////////////////////////////////////////////////////////////////////////
+// So cai: MOI lan so du doi deu de lai mot dong. Neu bang so du hong thi van
+// dung lai duoc tu day. Dung Post() bat dong bo -- so cai la de doi soat,
+// khong phai nguon su that, nen khong duoc lam cham duong tien.
+//////////////////////////////////////////////////////////////////////////////
+void BauCua::_GhiSoCai(const std::string& playerId, const char* szViec,
+                       long long nSoTien, long long nSoDuSau)
+{
+    if (!g_MySQLDB.IsReady()) return;
+    KDBParam p[4];
+    p[0] = KDBParam::B(playerId.data(), (int)playerId.size());
+    p[1] = KDBParam::S(szViec);
+    p[2] = KDBParam::I(nSoTien);
+    p[3] = KDBParam::I(nSoDuSau);
+    g_MySQLDB.Post("INSERT INTO baucua_ledger (role_name,viec,so_tien,so_du_sau,at) "
+                   "VALUES (?,?,?,?,NOW())", p, 4);
+}
+
+// Ham nhan tung dong so du tu MySQL
+struct _KBcNhan { BauCua* pThis; int n; };
+static bool _NhanSoDu(const KDBRow& row, void* pParam)
+{
+    _KBcNhan* t = (_KBcNhan*)pParam;
+    if (row.nCol < 3) return false;
+    std::string ten(row.pVal[0], row.pLen[0]);
+    long long nSoDu = _atoi64(row.pVal[1]);
+    long long nKhoa = _atoi64(row.pVal[2]);
+    t->pThis->_DatSoDu(ten, (int)nSoDu, (int)nKhoa);
+    t->n++;
+    return true;
+}
+
+void BauCua::_DatSoDu(const std::string& ten, int nSoDu, int nKhoa)
+{
+    balances[ten] = nSoDu;
+    if (nKhoa) lockedInBet[ten] = nKhoa;
+}
+
+int BauCua::_NapSoDuTuMySQL()
+{
+    _KBcNhan t; t.pThis = this; t.n = 0;
+    if (!g_MySQLDB.Query("SELECT role_name, balance, locked FROM baucua_balance",
+                         0, 0, _NhanSoDu, &t))
+        return -1;
+    return t.n;
+}
+#endif // _SERVER
+
 void BauCua::deposit(const std::string& playerId, int amount) {
     if (isLocked())
         return; // Prevent action if game is locked
     balances[playerId] += amount;
+#ifdef _SERVER
+    _GhiSoCai(playerId, "gui", amount, balances[playerId]);
+#endif
     activePlayers.insert(playerId);
     logAction(playerId + " deposited " + std::to_string(amount));
     saveDeposits();
@@ -71,6 +125,9 @@ int BauCua::withdraw(const std::string& playerId) {
     if (!canWithdraw(playerId)) return false;
     int ret = balances[playerId];
     balances[playerId] = 0;
+#ifdef _SERVER
+    _GhiSoCai(playerId, "rut", -ret, 0);
+#endif
     logAction(playerId + " withdrew " + std::to_string(ret) + ".");
     saveDeposits();
     return ret;
@@ -576,19 +633,68 @@ void BauCua::logResult(const std::vector<DiceFace>& diceResults) {
     for (const auto& face : diceResults)
         log << DiceFaceToString(face) << " ";
     log << "\n";
+#ifdef _SERVER
+    {
+        std::string sKq = "Round Result: ";
+        for (const auto& f2 : diceResults) sKq += DiceFaceToString(f2) + " ";
+        KGameKV::LogStr("baucua", 0, sKq.c_str());
+    }
+#endif
 }
 
 void BauCua::logAction(const std::string& action) {
     std::ofstream log("baucua/game_log.txt", std::ios::app);
     time_t now = std::time(nullptr);
     log << "[" << std::ctime(&now) << "] " << action << "\n";
+#ifdef _SERVER
+    // (20/08) Ghi song song sang bang game_log. LUON bat dong bo: tep
+    // game_log.txt hien da 104 MB / 1,42 trieu dong, day la duong nong nhat,
+    // tuyet doi khong duoc cham vao vong lap game 18 khung/giay.
+    KGameKV::LogStr("baucua", 0, action.c_str());
+#endif
 }
 
 // (20/08) Ghi NGUYEN TU. Ban cu dung std::ofstream ghi thang vao tep that:
 // mo tep la CAT TRANG ngay, sap dien giua chung = MAT SACH so du. Bang chung
 // that: bin\server\deposits.json tren may chay hien dang 0 byte.
 // Nay: ghi ra .tmp -> ep xuong dia -> giu ban cu thanh .bak -> doi cho nguyen tu.
+//////////////////////////////////////////////////////////////////////////////
+// (20/08) TIEN XU len MySQL.
+// Bang baucua_balance la NGUON SU THAT; tep deposits.json van duoc ghi lam
+// guong de con duong lui khi MySQL chet. Moi lan doi so du deu co mot dong
+// trong baucua_ledger -- mat bang so du van dung lai duoc tu so cai.
+// Dung Exec() DONG BO chu khong phai Post(): day la TIEN, phai biet ket qua
+// ngay. Khoi luong rat nho (vai nguoi choi) nen khong anh huong vong lap game.
+//////////////////////////////////////////////////////////////////////////////
 void BauCua::saveDeposits() {
+#ifdef _SERVER
+    if (g_MySQLDB.IsReady())
+    {
+        bool bOkDB = g_MySQLDB.Begin();
+        if (bOkDB)
+        {
+            for (const auto& p : balances)
+            {
+                long long nKhoa = 0;
+                auto itL = lockedInBet.find(p.first);
+                if (itL != lockedInBet.end()) nKhoa = itL->second;
+                KDBParam q[3];
+                q[0] = KDBParam::B(p.first.data(), (int)p.first.size());
+                q[1] = KDBParam::I(p.second);
+                q[2] = KDBParam::I(nKhoa);
+                if (!g_MySQLDB.Exec(
+                        "INSERT INTO baucua_balance (role_name,balance,locked) "
+                        "VALUES (?,?,?) ON DUPLICATE KEY UPDATE "
+                        "balance=VALUES(balance), locked=VALUES(locked)", q, 3))
+                { bOkDB = false; break; }
+            }
+        }
+        if (bOkDB) g_MySQLDB.Commit();
+        else { g_MySQLDB.Rollback();
+               KDBLog("baucua: ghi so du len MySQL HONG -- van con ban tep"); }
+    }
+#endif
+
     json j;
     for (const auto& p : balances)
         j["balances"][base64_encode(p.first)] = p.second;
@@ -647,6 +753,22 @@ void BauCua::saveDeposits() {
 // toan cuc g_BauCua -> JSON hong la nem ngoai le luc NAP DLL, khong ai bat duoc,
 // CHET TIEN TRINH. Nay: bat ngoai le va tu dong thu ban .bak.
 void BauCua::loadDeposits() {
+#ifdef _SERVER
+   // Uu tien MySQL. Chi khi KHONG doc duoc dong nao moi quay ve tep --
+   // nho vay doi may / mat tep van khong mat tien.
+   if (g_MySQLDB.IsReady())
+   {
+       balances.clear();
+       lockedInBet.clear();
+       int nDoc = _NapSoDuTuMySQL();
+       if (nDoc > 0)
+       {
+           KDBLog("baucua: da nap %d so du tu MySQL", nDoc);
+           return;
+       }
+       KDBLog("baucua: MySQL khong co so du nao -- quay ve tep deposits.json");
+   }
+#endif
    const char* szThat = "baucua/deposits.json";
    const char* szCu   = "baucua/deposits.json.bak";
 

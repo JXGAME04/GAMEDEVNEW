@@ -37,6 +37,16 @@ public:
     bool allowPlayerToHost(const std::string& playerId);
     void noHost(const std::string& playerId);
     void saveDeposits();
+#ifdef _SERVER
+public:
+    // (20/08) Ho tro dua tien Xu len MySQL. _DatSoDu duoc goi tu ham nhan
+    // ket qua truy van nen phai public.
+    void _DatSoDu(const std::string& ten, int nSoDu, int nKhoa);
+    int  _NapSoDuTuMySQL();
+    void _GhiSoCai(const std::string& playerId, const char* szViec,
+                   long long nSoTien, long long nSoDuSau);
+public:
+#endif
     void loadDeposits();
     std::vector<DiceFace> getLastGameResult() const;
     BauCuaStatus BauCua::getBauCuaStatusForPlayer(const std::string& playerId);

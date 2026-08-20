@@ -8,6 +8,7 @@
 #include "KCore.h"
 #include "KEngine.h"
 #include "KMySQLDB.h"
+#include "KGameKV.h"
 #include "KFilePath.h"
 #ifndef _SERVER
 #include "KNpcResList.h"
@@ -167,6 +168,20 @@ CORE_API void g_InitCore(char * nParmName)
 	// dung nguyen tac "them mot phu thuoc thi phai them mot duong lui".
 	if (!g_MySQLDB.Init())
 		KDBLog("CANH BAO: khong ket noi duoc MySQL -- cac tinh nang se dung tep nhu cu");
+	else
+	{
+		// (20/08) Neu tep trang thai bi MAT (doi may, hong dia, xoa nham) thi
+		// dung lai tu MySQL TRUOC khi cac tinh nang doc. Chi lam khi tep THIEU --
+		// tep con do thi khong dung toi, tranh de len ban moi hon tren dia.
+		char szRoot[MAX_PATH], szP[MAX_PATH];
+		g_GetRootPath(szRoot);
+		sprintf(szP, "%s\settings\jx2citywar.txt", szRoot);
+		KGameKV::GetFileToDisk("jx2.citywar", "file", szP, true);
+		sprintf(szP, "%s\settings\jx2league.txt", szRoot);
+		KGameKV::GetFileToDisk("jx2.league", "file", szP, true);
+		sprintf(szP, "%s\settings\jx2ladder.txt", szRoot);
+		KGameKV::GetFileToDisk("jx2.ladder", "file", szP, true);
+	}
 #endif
 #ifdef _DEBUG
 	g_bDebugScript = 0;
@@ -266,6 +281,9 @@ CORE_API void g_InitCore(char * nParmName)
 	}
 	
 #ifdef _SERVER
+	// (20/08) Ten lo phai khop cot `batch` trong bang jx1_game.giftcode.
+	g_GiftCodeFanCungManager.SetBatch("tuan");
+	g_GiftCodeNewManager.SetBatch("new");
 	g_GiftCodeFanCungManager.LoadGiftCodes("dulieu\\giftcode\\giftcode_tuan_list.txt");
 	g_GiftCodeFanCungManager.LoadUsedCodes("dulieu\\giftcode\\giftcode_tuan_used.txt");
 	g_GiftCodeNewManager.LoadGiftCodes("dulieu\\giftcode\\giftcode_new_list.txt");

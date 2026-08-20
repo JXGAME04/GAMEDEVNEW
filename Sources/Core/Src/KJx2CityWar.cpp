@@ -4,6 +4,7 @@
 // LUU Y: Core build voi PCH "Use" qua KCore.h - moi thu TRUOC dong include nay
 // deu bi compiler bo qua, nen KCore.h PHAI dung dau tien.
 #include "KCore.h"
+#include "KGameKV.h"
 #include "KWin32.h"
 
 #ifdef _SERVER
@@ -39,6 +40,7 @@ extern DWORD KTongJX2_GetFieldC(DWORD dwTongID, WORD wKey);
 #define JX2CW_CITY_MAX		8		// dung 1..7
 #define JX2CW_MAPID_MAX		4		// AreaIncludesNN cho phep nhieu map cach dau phay
 #define JX2CW_FILE			"\\settings\\jx2citywar.txt"
+#define JX2CW_KV_NS			"jx2.citywar"
 #define JX2CW_INI			"\\settings\\citywar.ini"
 
 struct KJx2City
@@ -237,7 +239,14 @@ static void sSaveMirror()
 	if (fclose(f) != 0)
 		bOk = FALSE;
 	if (bOk)
+	{
 		MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+#ifdef _SERVER
+		// (20/08) Ghi xong tep thi day luon len MySQL. BAT DONG BO nen khong
+		// cham vao vong lap game. Tu day tep chi con la ban dem cuc bo.
+		KGameKV::PutFile(JX2CW_KV_NS, "file", szPath, true);
+#endif
+	}
 	else
 	{
 		DeleteFile(szTmp);

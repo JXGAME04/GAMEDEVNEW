@@ -5,6 +5,7 @@
 // LUU Y: Core build voi PCH "Use" qua KCore.h - moi thu TRUOC dong include nay
 // deu bi compiler bo qua, nen KCore.h PHAI dung dau tien.
 #include "KCore.h"
+#include "KGameKV.h"
 #include "KWin32.h"
 
 #ifdef _SERVER
@@ -273,6 +274,7 @@ struct KJx2LadderEntry
 #define JX2LADDER_TOP		10
 #define JX2LADDER_MIN_ID	10000
 #define JX2LADDER_FILE		"\\settings\\jx2ladder.txt"
+#define JX2LADDER_KV_NS		"jx2.ladder"
 
 static std::map<unsigned long, std::vector<KJx2LadderEntry> >	s_LadderMap;
 static bool	s_bLadderLoaded = false;
@@ -354,6 +356,9 @@ static void sLadderSave()
 	}
 	fclose(f);
 	MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+#ifdef _SERVER
+	KGameKV::PutFile(JX2LADDER_KV_NS, "file", szPath, true);
+#endif
 }
 
 // Ladder_NewLadder(id, szName, nValue [,nType][,nSect][,nGender]) - >=3 tham so, tra 0
