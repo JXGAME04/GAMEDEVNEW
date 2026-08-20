@@ -388,7 +388,8 @@ Vào lệnh bài admin → **"Da Tau: xoa phat huy + them luot huy"**. Mã ở
 | Xóa phạt | bỏ phạt "hủy nhiều nhiệm vụ", gặp NPC là làm tiếp ngay | `1036=0`, `1029=0`, và **ghi lại `1046` cho khớp** để chữa luôn ca bị cấm hủy do lệch bản sao |
 | Thêm 10 lượt hủy | cộng lượt hủy (kẹp trần **100**) | byte 4 của `1020` **và** `1046` |
 | Đặt lại lượt hủy = 0 | về 0 | như trên |
-| Đặt lại số nhiệm vụ hôm nay | bỏ trần 40/ngày | `2420=0`, `2797=0` (⚠️ ăn lại được thưởng mốc 30/40) |
+| Đặt lại số nhiệm vụ hôm nay | bỏ trần 40/ngày | chỉ `2420=0` (⚠️ ăn lại mốc 30; **cố ý không đụng `2797`** để người đã hủy vẫn không ăn lại mốc 40) |
+| Chọn nhân vật khác | sửa cho người chơi đang online, không phải chỉ cho GM | `FindPlayer` + `SetTaskTemp(TMP_INDEX_PLAYER)` rồi đổi `PlayerIndex`, xong **trả lại** |
 
 **Bản đồ biến đếm (truy từ mã thật, đừng đoán lại):** lượt hủy = **BYTE 4 của task 1020**
 (`tl_settaskstate`, tasklink_head.lua:488-500) · **1046** = bản sao chống gian lận, lệch với
@@ -408,6 +409,12 @@ gặp byte âm.
 🔑 **Sửa Lua KHÔNG cần restart server**: `LuaIncludeFile` = `lua_dofile`, **không cache**
 (ScriptFuns.cpp:1964), và `main()` của lệnh bài tự `dofile` lại chính nó mỗi lần dùng vật phẩm.
 Các tệp `.lua` **khác** (không nằm trong cây Include của lệnh bài) thì vẫn phải restart.
+
+🔴 **Đo đệm menu bằng CHUỖI LÚC CHẠY, không phải độ dài mã**: bản đầu của menu này tính ra
+~648 byte (tiêu đề + 7 nhãn) — **quá 512 nên sẽ bị cắt mất mục cuối mà không báo lỗi**; đã rút
+gọn còn 448/512. `ReverseTools`-style bộ kiểm trước khi deploy nằm ở scratchpad, kiểm 5 điều:
+cân bằng `function`/`end`, mọi hàm đổi `PlayerIndex` đều trả lại, nhãn không có `|`, tên hàm gọi
+lại ≤31 ký tự, độ dài menu <490.
 
 🔑 Giới hạn khi thêm mục menu: tiêu đề + các mục **dùng chung đệm 512 byte**
 (`MAX_SCIRPTACTION_BUFFERNUM`, cắt âm thầm không báo lỗi), số mục tối đa 50
