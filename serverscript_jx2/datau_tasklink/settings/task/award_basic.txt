@@ -17,8 +17,8 @@ Tiªn Th¶o Lé	0	6	1	71	0	1	0	24000000
 T©y TuÖ Kinh	0	6	1	22	0	1	0	900000000
 Vâ L©m MËt TÞch	0	6	1	26	0	1	0	1200000000
 B¶o R­¬ng Tr©n B¶o	0	6	1	4850	0	1	0	5000000
-HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
-HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
-HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
-HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
-HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	500
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	3000000
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	3000000
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	3000000
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	3000000
+HuyÒn Thiªn Chïy	0	6	1	2357	0	1	0	3000000
