@@ -22,6 +22,11 @@ struct KDaTauCapture
 	// de mat tin dau; tin CHOT "du manh" bi de la bot khong bao gio ve tra.
 	// Khe cua tin thu N = aMsg[N & 3].
 	char aMsg[4][320];
+	// (r4 - PB) kenh RIENG cho tin TIEN DO ("tong cong N tam"): loat thong bao
+	// toan server (Top Cao Thu phat 10+ tin/khung) co the quet sach vong khe
+	// chung - tin tien do luon co cho o day, khong ai de duoc.
+	unsigned int uTienSeq;
+	char szTien[320];
 };
 
 extern KDaTauCapture g_sDTCap;

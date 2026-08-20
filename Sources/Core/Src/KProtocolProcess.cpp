@@ -4151,6 +4151,12 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				memcpy(pDTKhe, (const char*)(pCccSync + 1), nDTLen);
 				pDTKhe[nDTLen] = 0;
 				++g_sDTCap.uMsgSeq;
+				// (r4) tin TIEN DO ("tong cong") vao kenh rieng - spam khong de duoc
+				if (strstr(pDTKhe, "t\346ng c\351ng") != 0)
+				{
+					memcpy(g_sDTCap.szTien, pDTKhe, nDTLen + 1);
+					++g_sDTCap.uTienSeq;
+				}
 			}
 		}
 		l_pDataChangedNotifyFunc->ChannelMessageArrival(
