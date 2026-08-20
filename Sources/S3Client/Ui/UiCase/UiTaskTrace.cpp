@@ -97,12 +97,20 @@ void KUiTaskTrace::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, sizeof(Scheme));
 	LoadSchemeSelf(Scheme);
 
-	// neo mep phai man hinh, duoi minimap (toa do trong ini chi la du phong 1024;
-	// minimap chiem goc phai tren ~230px nen ha xuong ~2/5 chieu cao)
-	int nSW = 0, nSH = 0;
-	Wnd_GetScreenSize(nSW, nSH);
-	if (nSW > 0 && nSH > 0)
-		SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
+	// mo ra NGANG HANG voi nut icon (vi tri Zalo cu), khung nam sat ben trai nut;
+	// neu chua co nut (khong the xay ra vi icon mo cung HUD) thi neo 2/5 man hinh
+	int nAX = 0, nAY = 0;
+	if (KUiTaskTraceIcon::GetAnchor(nAX, nAY))
+	{
+		SetPosition(nAX - m_Width - 2, nAY);
+	}
+	else
+	{
+		int nSW = 0, nSH = 0;
+		Wnd_GetScreenSize(nSW, nSH);
+		if (nSW > 0 && nSH > 0)
+			SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
+	}
 
 	Wnd_AddWindow(this);
 }
@@ -165,6 +173,16 @@ int KUiTaskTrace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 //////////////////////////////////////////////////////////////////////////
 
 KUiTaskTraceIcon*	KUiTaskTraceIcon::m_pSelf = NULL;
+int					KUiTaskTraceIcon::ms_nAnchorX = 0;
+int					KUiTaskTraceIcon::ms_nAnchorY = 0;
+bool				KUiTaskTraceIcon::ms_bAnchor = false;
+
+bool KUiTaskTraceIcon::GetAnchor(int& nX, int& nY)
+{
+	nX = ms_nAnchorX;
+	nY = ms_nAnchorY;
+	return ms_bAnchor;
+}
 
 KUiTaskTraceIcon::KUiTaskTraceIcon()
 {
@@ -215,11 +233,18 @@ void KUiTaskTraceIcon::Initialize()
 		m_Btn.Init(&Ini, "OpenIconBtn");
 	}
 
-	// neo sat mep phai, ngay tren khung theo doi
+	// dat DUNG vi tri nut Zalo cu: X = mep phai - 30 (nhu UiPlayerBar cu),
+	// Y = Top doc tu ini [OpenIcon] (= 185, bang [Zalo] cua UiPlayerBar.ini)
+	int nX = 0, nY = 0;
+	GetPosition(&nX, &nY);
 	int nSW = 0, nSH = 0;
 	Wnd_GetScreenSize(nSW, nSH);
-	if (nSW > 0 && nSH > 0)
-		SetPosition(nSW - m_Width, nSH * 2 / 5 - 30);
+	if (nSW > 0)
+		nX = nSW - 30;
+	SetPosition(nX, nY);
+	ms_nAnchorX = nX;
+	ms_nAnchorY = nY;
+	ms_bAnchor = true;
 
 	Wnd_AddWindow(this);
 }

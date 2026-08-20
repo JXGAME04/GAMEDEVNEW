@@ -50,6 +50,8 @@ class KUiTaskTraceIcon : public KWndShowAnimate
 public:
 	static KUiTaskTraceIcon*	OpenWindow();
 	static void					CloseWindow(bool bDestroy);
+	// vi tri nut (de khung theo doi mo ra NGANG HANG voi nut); tra false neu chua co
+	static bool					GetAnchor(int& nX, int& nY);
 private:
 	KUiTaskTraceIcon();
 	virtual ~KUiTaskTraceIcon();
@@ -57,6 +59,9 @@ private:
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 private:
 	static KUiTaskTraceIcon*	m_pSelf;
+	static int					ms_nAnchorX;
+	static int					ms_nAnchorY;
+	static bool					ms_bAnchor;
 	KWndButton					m_Btn;
 };
 
