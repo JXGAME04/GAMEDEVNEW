@@ -27,6 +27,13 @@ struct KDaTauCapture
 	// chung - tin tien do luon co cho o day, khong ai de duoc.
 	unsigned int uTienSeq;
 	char szTien[320];
+	// (r5c) tra loi tham do SO MON cua sap (s2c_playergetcount): server chi tra
+	// loi khi FindAroundPlayer thay PLAYER that (nguoi choi / bot PB) - sap
+	// trang tri SimCity (KNpc kind_player, m_nPlayerIdx=0) IM LANG -> day la
+	// cach duy nhat phan biet sap that/gia tu client.
+	unsigned int uCntSeq;
+	unsigned int dwCntId;
+	int nCnt;
 };
 
 extern KDaTauCapture g_sDTCap;

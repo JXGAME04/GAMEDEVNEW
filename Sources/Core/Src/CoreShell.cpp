@@ -3342,6 +3342,11 @@ static int   g_nDTSapBuyTry = 0;	// (PB V12) so lenh mua da gui cho sap hien tai
 static int   g_nDTSapRut = 0;		// (PB V15) so lan da rut tien ruong cho sap hien tai
 static UINT  g_uDTThpT = 0;		// (r5) Than Hanh Phu cho luot nhay nay: 0=chua thu,
 									// 1=khong co/that bai (di Xa Phu), >1=thoi diem da dung phu
+static DWORD g_dwDTSapProbe = 0;	// (r5c) sap dang tham do so mon (needcount)
+static UINT  g_uDTSapProbeT = 0;	// han cho tra loi tham do
+static UINT  g_uDTSapCntSeen = 0;	// moc uCntSeq luc gui tham do
+static int   g_nDTSapProbeTry = 0;	// so lan tham do ung vien hien tai
+static DWORD g_dwDTSapOkId = 0;		// ung vien DA qua tham do (sap that, co hang)
 
 // ten thanh trong menu "Nhung thanh thi da di qua" cua Xa Phu (settings\Station.txt)
 struct DTSapTown { int nMapId; const char* szMenu; };
@@ -3405,6 +3410,20 @@ static void DT_SapGhiXem(DWORD dwId)
 {
 	if (g_nDTSapDone < 96 && !DT_SapDaXem(dwId))
 		g_aDTSapDone[g_nDTSapDone++] = dwId;
+}
+
+// (r5c) nR co nam trong 3x3 region quanh nSelfR khong - dung tam voi
+// KPlayer::FindAroundPlayer (server chi tra loi tham do/mo xem trong tam nay).
+static int DT_SapKeVung(int nSelfR, int nR)
+{
+	if (nSelfR < 0 || nR < 0)
+		return 0;
+	if (nR == nSelfR)
+		return 1;
+	for (int i = 0; i < 8; ++i)
+		if (SubWorld[0].m_Region[nSelfR].m_nConnectRegion[i] == nR)
+			return 1;
+	return 0;
 }
 
 // dong cua so xem sap (UI + bo dem) - khong can gui gi len server (view la stateless)
@@ -5299,6 +5318,69 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				int nEx, nEy;
 				Npc[nGan].GetMpsPos(&nEx, &nEy);
+				// (r5c - nguoi dung bao "toi npc chuc nang") dan SimCity cung la
+				// kind_player + m_BaiTan=1 (sap trang tri) nen loc kind khong an.
+				// THAM DO truoc khi di: goi hoi SO MON - server chi tra loi cho sap
+				// co PLAYER that; im lang 2 lan (da ke vung) = sap gia, bo khong di.
+				const DWORD dwUV = Npc[nGan].m_dwID;
+				if (dwUV != g_dwDTSapOkId)
+				{
+					const int nSelfR = Npc[Player[nPlayerIdx].m_nIndex].m_RegionIndex;
+					if (!DT_SapKeVung(nSelfR, Npc[nGan].m_RegionIndex))
+					{
+						// xa qua server chua "thay" - di lai gan roi hoi
+						DT_WalkTo(nPlayerIdx, nEx, nEy, 280, uCurTime);
+						return 1;
+					}
+					if (g_dwDTSapProbe != dwUV)
+					{
+						g_dwDTSapProbe = dwUV;
+						g_nDTSapProbeTry = 1;
+						g_uDTSapProbeT = uCurTime + 1300;
+						g_uDTSapCntSeen = g_sDTCap.uCntSeq;
+						SendClientCmdGetCount(dwUV);
+						ea.uDTNext = uCurTime + 250;
+						return 1;
+					}
+					if (g_sDTCap.uCntSeq != g_uDTSapCntSeen && g_sDTCap.dwCntId == dwUV)
+					{
+						if (g_sDTCap.nCnt <= 0)
+						{
+							DT_SapGhiXem(dwUV);	// sap that nhung HET HANG - khoi mo
+							g_dwDTSapProbe = 0;
+							ea.uDTNext = uCurTime + 200;
+							return 1;
+						}
+						g_dwDTSapOkId = dwUV;	// sap that co hang - di toi mo xem
+						g_dwDTSapProbe = 0;
+					}
+					else if (uCurTime < g_uDTSapProbeT)
+					{
+						ea.uDTNext = uCurTime + 200;
+						return 1;
+					}
+					else if (g_nDTSapProbeTry < 2)
+					{
+						++g_nDTSapProbeTry;	// goi co the rot - hoi lai lan 2
+						g_uDTSapProbeT = uCurTime + 1300;
+						g_uDTSapCntSeen = g_sDTCap.uCntSeq;
+						SendClientCmdGetCount(dwUV);
+						ea.uDTNext = uCurTime + 250;
+						return 1;
+					}
+					else
+					{
+						DT_SapGhiXem(dwUV);	// 2 lan im lang = sap trang tri
+						++g_nDTSapCam;
+						g_dwDTSapProbe = 0;
+						char szBoQua[200];
+						sprintf(szBoQua, "<color=Gray>B\341 qua s\271p trang tr\335 \"%s\".",
+							Npc[nGan].ShopName[0] ? Npc[nGan].ShopName : Npc[nGan].Name);
+						DT_Msg(nPlayerIdx, szBoQua);
+						ea.uDTNext = uCurTime + 200;
+						return 1;
+					}
+				}
 				if (g_GetDistance(nPx, nPy, nEx, nEy) > 320)
 				{
 					DT_WalkTo(nPlayerIdx, nEx, nEy, 280, uCurTime);

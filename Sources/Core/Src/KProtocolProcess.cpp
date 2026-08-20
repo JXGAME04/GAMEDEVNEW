@@ -472,6 +472,10 @@ void	KProtocolProcess::s2cViewUpdateItem(BYTE* pMsg)
 void	KProtocolProcess::s2cGetCouunt(BYTE* pMsg)
 {
 	PLAYER_GET_COUNT *pGetCount = (PLAYER_GET_COUNT *)pMsg;
+	// (r5c - auto Da Tau) ghi tra loi tham do sap: CO goi ve = sap that
+	g_sDTCap.dwCntId = pGetCount->dwId;
+	g_sDTCap.nCnt = pGetCount->nCount;
+	++g_sDTCap.uCntSeq;
 	g_cSellItem.Check(pGetCount->nCount,pGetCount->dwId);
 }
 

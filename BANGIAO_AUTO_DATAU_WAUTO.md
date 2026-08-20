@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **20/08 10:44** (2.201.600 B) | engine vòng 4+5 (mục 13.14): loại 3 đi chợ + 4 fix + Thần Hành Phù; bản lùi: `_locked7` (10:11, thiếu vá r5b) |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **20/08 12:08** (2.203.648 B) | engine vòng 4+5 (mục 13.14): loại 3 đi chợ + 4 fix + Thần Hành Phù; bản lùi: `_locked7` (10:11, thiếu vá r5b) |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
 | `Game.exe` | như trên | **19/08 21:32** (1.251.840 B) | `GDCNI_UI_ACT uParam=7` (AutoPick) + đọc `autoData` **6888 B**; bản lùi = `Game_cu_1908tt.exe` |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc) **và** `bin\client\WAuto.exe` | **19/08 21:35** (361.472 B) | tab Dã Tẩu bố cục 2 cột + 3 điều khiển mới (LB 435, MS 436, MM 437/438, INDEX_END→441); gửi `autoData` 6888 B — **phải dùng đúng cặp WAuto+Game 21:3x**. ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn chép tay**. ⚠️ WAuto tự thoát nếu không có Game.exe đang chạy |
@@ -633,6 +633,20 @@ vẫn để món khoe kẹt trong hộp giao; engine sẽ nhặt lại dần qua
 Restart GameServer là hết cảnh này.
 
 Binary chốt vòng 4+5: **CoreClient.dll 20/08 10:44 (2.201.600 B)**, bản lùi `_locked7` (10:11).
+
+**E. r5c (12:08) — "vẫn tới NPC chức năng" trên bản MỚI → gốc thật là dân SimCity:**
+`KSimCity.cpp:545` dân giả lập là **kind_player mang ngoại hình người chơi** và được bật
+`m_BaiTan=1` + biển hiệu (sạp trang trí) — đồng bộ xuống client qua PLAYER_SYNC y như người
+thật ⇒ **không bộ lọc kind nào phân biệt nổi**; biển hiệu cũng vô dụng (bot PB bốc biển từ
+CÙNG `settings/simcity/stall_adv.txt`). Cách phân biệt DUY NHẤT: gói hỏi số món
+`c2s_playerneedcount` — server tra `FindAroundPlayer` (chỉ thấy PLAYER thật) nên **sạp giả im
+lặng, sạp thật (người + bot PB) trả lời**. Fix: máy **thăm dò trước khi đi** trong khối chọn
+sạp — đứng tại chỗ gửi hỏi (tầm 3×3 region, xa hơn thì đi lại gần rồi hỏi), 2 lần im lặng
+1,3s = sạp giả → đánh dấu bỏ + báo xám `Bỏ qua sạp trang trí "tên"`, trả lời 0 món = sạp thật
+hết hàng → bỏ không mở, trả lời >0 → đi tới mở xem như cũ. Bắt phản hồi qua 3 trường mới
+`uCntSeq/dwCntId/nCnt` trong `KDaTauCap.h` + hook `s2cGetCouunt` (KProtocolProcess.cpp).
+Binary chốt: **CoreClient.dll 20/08 12:08 (2.203.648 B)**. Đã audit 12/12 marker mọi vòng +
+font 8/8 chuỗi mới chuẩn TCVN3 trong binary này.
 
 ---
 
