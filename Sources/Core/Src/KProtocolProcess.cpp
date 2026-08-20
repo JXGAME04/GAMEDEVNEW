@@ -4140,7 +4140,7 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 		CHAT_CHANNELCHAT_SYNC* pCccSync = (CHAT_CHANNELCHAT_SYNC*)pExPckg;
 		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT).
 		// (20/08 r3) ghi VONG 4 KHE - 2 tin trong cung tick khong de mat tin truoc.
-		if (!strcmp(pCccSync->someone, "H\326 Th\350ng"))
+		if (!strcmp(pCccSync->someone, "HÖ Thèng"))
 		{
 			int nDTLen = pCccSync->sentlen;
 			if (nDTLen > (int)sizeof(g_sDTCap.aMsg[0]) - 1)
@@ -4152,7 +4152,7 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				pDTKhe[nDTLen] = 0;
 				++g_sDTCap.uMsgSeq;
 				// (r4) tin TIEN DO ("tong cong") vao kenh rieng - spam khong de duoc
-				if (strstr(pDTKhe, "t\346ng c\351ng") != 0)
+				if (strstr(pDTKhe, "tæng céng") != 0)
 				{
 					memcpy(g_sDTCap.szTien, pDTKhe, nDTLen + 1);
 					++g_sDTCap.uTienSeq;

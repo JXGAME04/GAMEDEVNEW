@@ -626,7 +626,7 @@ static int sJX2_DoApplyJoin(int nPlayerIdx, DWORD dwTongID)
 		// ghi so su kien (bang chu doc lai duoc sau khi vao game) + bao ngay
 		// cho nhung nguoi dang online co quyen duyet
 		char szLog[160];
-		sprintf(szLog, "%s xin gia nh\313p bang (c\312p %d)",
+		sprintf(szLog, "%s xin gia nhËp bang (cÊp %d)",
 			Player[nPlayerIdx].m_PlayerName, nLevel);
 		sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, (DWORD)nPlayerIdx);
 		sJX2_NotifyApply(pTong, szLog);
@@ -2636,72 +2636,72 @@ int KTongJX2Mgr::DoClientOp(int nPlayerIdx, const void* pData)
 			// lang hoac co cau RIENG cua tung thao tac.
 			if (pCmd->m_btOp == defTONG_JX2_COP_APPLY_JOIN)
 				// stringtable_core.txt:942 MSG_TONG_APPLY_ADD
-				pszMsg = "B\271n xin ph\320p gia nh\313p bang h\351i!";
+				pszMsg = "B¹n xin phÐp gia nhËp bang héi!";
 			break;
 		case 1:
-			pszMsg = "G\343i tin bang h\351i kh\253ng h\356p l\326.";
+			pszMsg = "Gãi tin bang héi kh«ng hîp lÖ.";
 			break;
 		case 7:
 			// stringtable_core.txt:947 MSG_TONG_ADD_SUCCESS
-			pszMsg = "B\271n gia nh\313p bang h\351i!";
+			pszMsg = "B¹n gia nhËp bang héi!";
 			break;
 		case 2:
-			pszMsg = "B\271n ch\255a v\265o bang h\351i.";
+			pszMsg = "B¹n ch­a vµo bang héi.";
 			break;
 		case 3:
 			// nguyen van ban Linux (MSG_TONG_NO_OPRIGHT)
-			pszMsg = "Kh\253ng c\343 quy\322n h\271n \256\323 th\371c hi\326n thao t\270c n\265y!";
+			pszMsg = "Kh«ng cã quyÒn h¹n ®Ó thùc hiÖn thao t¸c nµy!";
 			break;
 		case 4:
 			// 2B: tach theo thao tac, nguyen van ban goc
 			if (pCmd->m_btOp == defTONG_JX2_COP_ADDRIGHT ||
 				pCmd->m_btOp == defTONG_JX2_COP_DELRIGHT)
 				// stringtable_core.txt:964 MSG_RIGHT_ASSIGN_NEED_DIRECTOR
-				pszMsg = "\247\350i ph\255\254ng kh\253ng ph\266i l\265 tr\255\353ng l\267o, kh\253ng th\323 ti\325p nh\313n quy\322n h\271n!";
+				pszMsg = "§èi ph­¬ng kh«ng ph¶i lµ tr­ëng l·o, kh«ng thÓ tiÕp nhËn quyÒn h¹n!";
 			else
 				// stringtable_core.txt:965 MSG_TONG_TARGET_NOTMEMBER
-				pszMsg = "\247\350i ph\255\254ng kh\253ng ph\266i l\265 th\265nh vi\252n bang h\351i!";
+				pszMsg = "§èi ph­¬ng kh«ng ph¶i lµ thµnh viªn bang héi!";
 			break;
 		case 5:
 			if (pCmd->m_btOp == defTONG_JX2_COP_SET_FIGURE)
 				// stringtable_core.txt:937 MSG_TONG_INSTATE_FAIL_ID2 (bo %s vi
 				// cho nay khong co san ten nguoi bi bo nhiem)
-				pszMsg = "\247\350i ph\255\254ng kh\253ng tr\371c tuy\325n, kh\253ng th\323 nhi\326m m\326nh";
+				pszMsg = "§èi ph­¬ng kh«ng trùc tuyÕn, kh«ng thÓ nhiÖm mÖnh";
 			else if (pCmd->m_btOp == defTONG_JX2_COP_GRANT)
 				// stringtable_core.txt:46 G_PLAYERTONG_17
-				pszMsg = "Ch\336 c\343 th\323 ph\270t ti\322n cho c\270c h\351i vi\252n tr\371c tuy\325n (online)";
+				pszMsg = "ChÞ cã thÓ ph¸t tiÒn cho c¸c héi viªn trùc tuyÕn (online)";
 			else
-				pszMsg = "Thao t\270c kh\253ng h\356p l\326 ho\306c m\364c ti\252u kh\253ng online.";
+				pszMsg = "Thao t¸c kh«ng hîp lÖ hoÆc môc tiªu kh«ng online.";
 			break;
 		case 6:
 			// 2B: nguyen van tong_mix.lua ban goc, tach theo loai quy
 			if (pCmd->m_btOp == defTONG_JX2_COP_DONATE)
 				// tong_mix.lua:101
-				pszMsg = "Kh\253ng \256\361 ng\251n l\255\356ng!";
+				pszMsg = "Kh«ng ®ñ ng©n l­îng!";
 			else if (pCmd->m_btOp == defTONG_JX2_COP_GRANT ||
 				pCmd->m_btOp == defTONG_JX2_COP_GRANT_GROUP)
 				// tong_mix.lua:164
-				pszMsg = "Ng\251n s\270ch bang h\351i kh\253ng \256\361";
+				pszMsg = "Ng©n s¸ch bang héi kh«ng ®ñ";
 			else if (pCmd->m_btOp == defTONG_JX2_COP_UPGRADE)
 				// tong_mix.lua:197
-				pszMsg = "Ng\251n s\270ch ki\325n thi\325t bang kh\253ng \256\361!";
+				pszMsg = "Ng©n s¸ch kiÕn thiÕt bang kh«ng ®ñ!";
 			else
 				// tong_mix.lua:354
-				pszMsg = "Ng\251n s\270ch c\363ng hi\325n kh\253ng \256\361!";
+				pszMsg = "Ng©n s¸ch cóng hiÕn kh«ng ®ñ!";
 			break;
 		case 9:
 			// nguyen van ban Linux (workshop_head.lua)
-			pszMsg = "T\270c ph\255\352ng n\265y \256\267 c\343 r\345i!";
+			pszMsg = "T¸c ph­êng nµy ®· cã råi!";
 			break;
 		case 10:
-			pszMsg = "Qu\375 bang d\255\352ng nh\255 ch\255a x\251y d\371ng T\270c Ph\255\352ng n\265y.";
+			pszMsg = "Quý bang d­êng nh­ ch­a x©y dùng T¸c Ph­êng nµy.";
 			break;
 		case 11:
 			// nguyen van ban Linux (MSG_TONG_AUTO_REFUSE_LEVEL)
-			pszMsg = "\247\274ng c\312p c\361a ng\255\254i qu\270 th\312p, bang h\351i n\265y t\365 ch\350i \256\322 ngh\336 gia nh\313p c\361a ng\255\254i";
+			pszMsg = "§¼ng cÊp cña ng­¬i qu¸ thÊp, bang héi nµy tõ chèi ®Ò nghÞ gia nhËp cña ng­¬i";
 			break;
 		case 12:
-			pszMsg = "B\271n \256\267 g\366i \256\254n xin gia nh\313p bang h\351i n\265y r\345i, xin ch\352 duy\326t.";
+			pszMsg = "B¹n ®· göi ®¬n xin gia nhËp bang héi nµy råi, xin chê duyÖt.";
 			break;
 		}
 
@@ -2818,7 +2818,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// khong online" = bao sai hoan toan. Tu bao cau ro rang.
 			if (nVan > 10000)
 			{
-				static const char szCap[] = "M\344i l\307n quy\322n g\343p t\350i \256a 10000 v\271n l\255\356ng!";
+				static const char szCap[] = "Mäi lÇn quyÒn gãp tèi ®a 10000 v¹n l­îng!";
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					(char*)szCap, (int)strlen(szCap));
 				return 20;
@@ -2831,14 +2831,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			int nCtb = nVan * 10;
 			if (pMe && pMe->btFigure == 4)
 			{
-				static const char szRt[] = "\310n s\374 kh\253ng th\323 \256\343ng g\343p!";
+				static const char szRt[] = "Èn sü kh«ng thÓ ®ãng gãp!";
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					(char*)szRt, (int)strlen(szRt));
 				return 20;
 			}
 			if ((int)Player[nPlayerIdx].m_cTask.GetSaveVal(defTASK_JX2_WEEKLYOFFER) + nCtb > 22400)
 			{
-				static const char szWk[] = "Kh\253ng th\323 \256\343ng g\343p, v\327 l\265m cho \256i\323m c\350ng hi\325n t\335ch l\362y s\317 v\255\356t qu\270 gi\355i h\271n tu\307n!";
+				static const char szWk[] = "Kh«ng thÓ ®ãng gãp, v× lµm cho ®iÓm cèng hiÕn tÝch lòy sÏ v­ît qu¸ giíi h¹n tuÇn!";
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					(char*)szWk, (int)strlen(szWk));
 				return 20;
@@ -2891,8 +2891,8 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 					// contribution_entry.lua:35 - bao ro phan vuot chuyen di dau
 					sSendFieldCmd(dwTongID, 19, (DWORD)nOver, defTONG_JX2_OP_ADDU, dwParam);
 					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-						(char*)"Ng\251n s\270ch ki\325n thi\325t nh\313n \256\255\356c v\255\356t qu\270 gi\355i h\271n tu\307n, ph\307n d\255 chuy\323n sang ng\251n s\270ch ki\325n thi\325t d\371 b\336.",
-						(int)strlen("Ng\251n s\270ch ki\325n thi\325t nh\313n \256\255\356c v\255\356t qu\270 gi\355i h\271n tu\307n, ph\307n d\255 chuy\323n sang ng\251n s\270ch ki\325n thi\325t d\371 b\336."));
+						(char*)"Ng©n s¸ch kiÕn thiÕt nhËn ®­îc v­ît qu¸ giíi h¹n tuÇn, phÇn d­ chuyÓn sang ng©n s¸ch kiÕn thiÕt dù bÞ.",
+						(int)strlen("Ng©n s¸ch kiÕn thiÕt nhËn ®­îc v­ît qu¸ giíi h¹n tuÇn, phÇn d­ chuyÓn sang ng©n s¸ch kiÕn thiÕt dù bÞ."));
 				}
 			}
 			// KHONG cong ngan quy (field 3/4) o day: ban goc MONEY2BUILDFUND chi
@@ -2918,7 +2918,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 						pTask->GetSaveVal(defTASK_JX2_CUMULATEOFFER) + (DWORD)nCtb);
 					// cau ca nhan nguyen van tong_mix.lua:263
 					char szMe[224];
-					sprintf(szMe, "B\271n \256\343ng g\343p <color=gold>%d<color>Ng\251n l\255\356ng \256\325n bang h\351i l\313p qu\374, \256\345ng th\352i nh\313n \256\255\356c<color=green>%d<color>Nh\312n v\265o \256\351 c\350ng hi\325n",
+					sprintf(szMe, "B¹n ®ãng gãp <color=gold>%d<color>Ng©n l­îng ®Õn bang héi lËp quü, ®ång thêi nhËn ®­îc<color=green>%d<color>NhÊn vµo ®é cèng hiÕn",
 						nVan * 10000, nCtb);
 					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 						szMe, (int)strlen(szMe));
@@ -2931,7 +2931,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				// nguyen van tong_mix.lua:242; Msg2Tong VO DIEU KIEN (:247),
 				// so su kien chi ghi khi >= 100 van (:244 nOffer >= 1000000 luong)
 				char szLog[160];
-				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d v\271n l\255\356ng v\265o ng\251n s\270ch ki\325n thi\325t bang", Player[nPlayerIdx].m_PlayerName, nVan);
+				sprintf(szLog, "%s ®· ®ãng gãp %d v¹n l­îng vµo ng©n s¸ch kiÕn thiÕt bang", Player[nPlayerIdx].m_PlayerName, nVan);
 				sJX2_Msg2Tong(pTong, szLog);
 				if (nVan >= 100)
 					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
@@ -3090,7 +3090,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// moi bao, nguoi duoc nhan khong he biet minh da vao bang)
 			if (nJoinIdx > 0 && Player[nJoinIdx].m_nIndex > 0)
 			{
-				const char* pszOK = "B\271n gia nh\313p bang h\351i!";
+				const char* pszOK = "B¹n gia nhËp bang héi!";
 				KPlayerChat::SendSystemInfo(1, nJoinIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					(char*)pszOK, strlen(pszOK));
 			}
@@ -3104,7 +3104,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			pTong->btApplyCount--;
 			sSendZhaoMu(dwTongID, defTONG_JX2_ZM_DEL, szJoin, dwJoinID, 0, 0, dwParam);
 			char szLog[160];
-			sprintf(szLog, "%s duy\326t %s v\265o bang",
+			sprintf(szLog, "%s duyÖt %s vµo bang",
 				Player[nPlayerIdx].m_PlayerName, szJoin);
 			sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			return 0;
@@ -3127,7 +3127,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				if (nRefIdx > 0 && Player[nRefIdx].m_nIndex > 0)
 				{
 					char szRef[160];
-					sprintf(szRef, "Bang h\351i %.31s \256\267 t\365 ch\350i \256\254n xin gia nh\313p c\361a b\271n.",
+					sprintf(szRef, "Bang héi %.31s ®· tõ chèi ®¬n xin gia nhËp cña b¹n.",
 						pTong->szName);
 					KPlayerChat::SendSystemInfo(1, nRefIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 						szRef, strlen(szRef));
@@ -3177,7 +3177,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				// tong.lua:823/:851 - dang trong lien minh thi CAM doi phe
 				// (G_PLAYERTONG_5)
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Kh\253ng th\323 thay \256\346i phe ph\270i trong li\252n minh c\361a bang h\351i", (int)strlen("Kh\253ng th\323 thay \256\346i phe ph\270i trong li\252n minh c\361a bang h\351i"));
+					(char*)"Kh«ng thÓ thay ®æi phe ph¸i trong liªn minh cña bang héi", (int)strlen("Kh«ng thÓ thay ®æi phe ph¸i trong liªn minh cña bang héi"));
 				return 20;
 			}
 			if ((int)pTong->btCamp == nCamp)
@@ -3196,9 +3196,9 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			}
 			sSendTongOp(dwTongID, 0, defTONG_JX2_TOP_SET_CAMP, nCamp, 0, dwParam);
 			{
-				static const char* szC[4] = {"", "Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+				static const char* szC[4] = {"", "ChÝnh ph¸i", "Tµ ph¸i", "Trung lËp"};
 				char szLog[160];
-				sprintf(szLog, "%s \256\346i phe bang sang %s",
+				sprintf(szLog, "%s ®æi phe bang sang %s",
 					Player[nPlayerIdx].m_PlayerName, szC[nCamp]);
 				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
@@ -3255,10 +3255,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				char szLog[160];
 				if (pCmd->m_btOp == defTONG_JX2_COP_DRAW_MONEY)
-					sprintf(szLog, "%s \256\267 r\363t t\365 ng\251n qu\374 bang h\351i %.0f l\255\356ng",
+					sprintf(szLog, "%s ®· rót tõ ng©n quü bang héi %.0f l­îng",
 						Player[nPlayerIdx].m_PlayerName, (double)nVan * 10000);
 				else
-					sprintf(szLog, "%s ph\270t cho %s %.0f l\255\356ng",
+					sprintf(szLog, "%s ph¸t cho %s %.0f l­îng",
 						Player[nPlayerIdx].m_PlayerName, Player[nTargetIdx].m_PlayerName, (double)nVan * 10000);
 				sJX2_Msg2Tong(pTong, szLog);
 				if (nVan >= 100)	// ca rut lan phat: nguong 100 van (khop prefill hop nhap)
@@ -3289,7 +3289,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			}
 			{
 				char szLog[160];
-				sprintf(szLog, "%s \256\267 \256\343ng g\343p %.0f l\255\356ng v\265o ng\251n qu\374 bang h\351i",
+				sprintf(szLog, "%s ®· ®ãng gãp %.0f l­îng vµo ng©n quü bang héi",
 					Player[nPlayerIdx].m_PlayerName, (double)nVan * 10000);
 				sJX2_Msg2Tong(pTong, szLog);
 				if (nVan >= 100)
@@ -3306,7 +3306,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				// MSG_TONG_CREATE_UNION_ERROR2
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"\247\267 \353 trong li\252n minh, kh\253ng th\323 t\270i l\313p li\252n minh! ", (int)strlen("\247\267 \353 trong li\252n minh, kh\253ng th\323 t\270i l\313p li\252n minh! "));
+					(char*)"§· ë trong liªn minh, kh«ng thÓ t¸i lËp liªn minh! ", (int)strlen("§· ë trong liªn minh, kh«ng thÓ t¸i lËp liªn minh! "));
 				return 20;
 			}
 			if (!pCmd->m_szText[0])
@@ -3321,14 +3321,14 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				// G_PLAYERTONG_11
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Ch\330 c\343 Bang ch\361 m\355i c\343 th\323 m\352i gia nh\313p li\252n minh bang h\351i", (int)strlen("Ch\330 c\343 Bang ch\361 m\355i c\343 th\323 m\352i gia nh\313p li\252n minh bang h\351i"));
+					(char*)"ChØ cã Bang chñ míi cã thÓ mêi gia nhËp liªn minh bang héi", (int)strlen("ChØ cã Bang chñ míi cã thÓ mêi gia nhËp liªn minh bang héi"));
 				return 20;
 			}
 			if (GetField(dwTongID, 10) != 0)
 			{
 				// G_PLAYERTONG_12
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Th\265nh vi\252n c\361a li\252n minh bang h\351i n\265y kh\351ng th\323 gia nh\313p li\252n minh bang h\351i kh\270c", (int)strlen("Th\265nh vi\252n c\361a li\252n minh bang h\351i n\265y kh\351ng th\323 gia nh\313p li\252n minh bang h\351i kh\270c"));
+					(char*)"Thµnh viªn cña liªn minh bang héi nµy khéng thÓ gia nhËp liªn minh bang héi kh¸c", (int)strlen("Thµnh viªn cña liªn minh bang héi nµy khéng thÓ gia nhËp liªn minh bang héi kh¸c"));
 				return 20;
 			}
 			{
@@ -3337,7 +3337,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				if (dwT && time(NULL) - (time_t)dwT <= 259199)
 				{
 					char szMsg[160];
-					sprintf(szMsg, "Sau khi r\352i li\252n minh 3 ng\265y m\355i c\343 th\323 gia nh\313p li\252n minh m\355i, c\307n \256\356i %d gi\251y.",
+					sprintf(szMsg, "Sau khi rêi liªn minh 3 ngµy míi cã thÓ gia nhËp liªn minh míi, cÇn ®îi %d gi©y.",
 						(int)(259200 - (time(NULL) - (time_t)dwT)));
 					KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 						szMsg, (int)strlen(szMsg));
@@ -3352,13 +3352,13 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				// MSG_TONG_JOIN_UNION_ERROR1
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Li\252n minh xin gia nh\313p kh\253ng t\345n t\271i ho\306c \256\267 b\336 gi\266i t\270n!", (int)strlen("Li\252n minh xin gia nh\313p kh\253ng t\345n t\271i ho\306c \256\267 b\336 gi\266i t\270n!"));
+					(char*)"Liªn minh xin gia nhËp kh«ng tån t¹i hoÆc ®· bÞ gi¶i t¸n!", (int)strlen("Liªn minh xin gia nhËp kh«ng tån t¹i hoÆc ®· bÞ gi¶i t¸n!"));
 				return 20;
 			}
 			{
 				// bao bang chu cua BANG MINH CHU lien minh (online): don xin vao
 				char szMsg[160];
-				sprintf(szMsg, "Bang h\351i %s xin gia nh\313p li\252n minh!", pTong->szName);
+				sprintf(szMsg, "Bang héi %s xin gia nhËp liªn minh!", pTong->szName);
 				std::map<DWORD, KTongJX2Tong>::iterator itU;
 				for (itU = m_mapTong.begin(); itU != m_mapTong.end(); ++itU)
 				{
@@ -3369,7 +3369,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 					break;
 				}
 				// G_PLAYERTONG_13 cho nguoi xin
-				sprintf(szMsg, " B\271n \256\325n g\306p %s xin ph\320p gia nh\313p li\252n minh bang h\351i! ", pCmd->m_szText);
+				sprintf(szMsg, " B¹n ®Õn gÆp %s xin phÐp gia nhËp liªn minh bang héi! ", pCmd->m_szText);
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
 					szMsg, (int)strlen(szMsg));
 			}
@@ -3419,7 +3419,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			{
 				// MSG_NW_INSTATE_NOTKING
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Ch\330 c\343 qu\350c v\255\254ng m\355i th\371c hi\326n \256\255\356c thao t\270c n\265y!", (int)strlen("Ch\330 c\343 qu\350c v\255\254ng m\355i th\371c hi\326n \256\255\356c thao t\270c n\265y!"));
+					(char*)"ChØ cã quèc v­¬ng míi thùc hiÖn ®­îc thao t¸c nµy!", (int)strlen("ChØ cã quèc v­¬ng míi thùc hiÖn ®­îc thao t¸c nµy!"));
 				return 20;
 			}
 			int nSlot = pCmd->m_nParam1;
@@ -3432,15 +3432,15 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				nSlot, bSet ? 1 : 0, dwParam);
 			{
 				// ghi so su kien voi ten chuc nguyen van (G_NWTITLE_*)
-				static const char* szNW[4] = {"?", "Th\365a T\255\355ng", "Nguy\252n So\270i", "Ti\252n Phong"};
+				static const char* szNW[4] = {"?", "Thõa T­íng", "Nguyªn So¸i", "Tiªn Phong"};
 				char szLog[160];
 				if (bSet)
 				{
 					KTongJX2Member* pT2 = FindMember(pTong, pCmd->m_dwTarget);
-					sprintf(szLog, "%s \256\255\356c phong l\265m %s", pT2 ? pT2->szName : "?", szNW[nSlot]);
+					sprintf(szLog, "%s ®­îc phong lµm %s", pT2 ? pT2->szName : "?", szNW[nSlot]);
 				}
 				else
-					sprintf(szLog, "C\270ch ch\370c %s", szNW[nSlot]);
+					sprintf(szLog, "C¸ch chøc %s", szNW[nSlot]);
 				sJX2_Msg2Tong(pTong, szLog);
 				sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
 			}
@@ -3613,16 +3613,16 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			// thong bao theo khuon goc (tong_mix.lua:339): tung nhom mot cau
 			{
 				static const char* szFig[3] =
-					{"Tr\255\353ng L\267o", "\247\351i tr\255\353ng", "\247\326 t\366"};
+					{"Tr­ëng L·o", "§éi tr­ëng", "§Ö tö"};
 				char szMsg[192];
 				for (g = 0; g < 3; g++)
 				{
 					if (nCnt[g] == 0 || nPer[g] <= 0)
 						continue;
-					sprintf(szMsg, "%s Th\265nh vi\252n tr\252n m\271ng %s(%d ng\255\352i)"
-						" \256\255\356c ph\251n ph\270t %d %s!",
+					sprintf(szMsg, "%s Thµnh viªn trªn m¹ng %s(%d ng­êi)"
+						" ®­îc ph©n ph¸t %d %s!",
 						pMe->szName, szFig[g], nCnt[g], (int)nPer[g],
-						bMoney ? "l\255\356ng" : "\256i\323m c\350ng hi\325n");
+						bMoney ? "l­îng" : "®iÓm cèng hiÕn");
 					sJX2_Msg2Tong(pTong, szMsg);
 				}
 			}
@@ -3638,8 +3638,8 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			if (dwMap == 0)
 			{
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Bang h\351i ch\255a c\343 khu v\371c ri\252ng.",
-					(int)strlen("Bang h\351i ch\255a c\343 khu v\371c ri\252ng."));
+					(char*)"Bang héi ch­a cã khu vùc riªng.",
+					(int)strlen("Bang héi ch­a cã khu vùc riªng."));
 				return 20;
 			}
 			int nNpcIdx = Player[nPlayerIdx].m_nIndex;
@@ -3648,15 +3648,15 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 			if (Npc[nNpcIdx].m_FightMode == 1)
 			{
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"Ch\330 c\343 th\323 \256i v\265o khu v\371c bang h\351i t\365 n\254i phi chi\325n \256\312u!",
-					(int)strlen("Ch\330 c\343 th\323 \256i v\265o khu v\371c bang h\351i t\365 n\254i phi chi\325n \256\312u!"));
+					(char*)"ChØ cã thÓ ®i vµo khu vùc bang héi tõ n¬i phi chiÕn ®Êu!",
+					(int)strlen("ChØ cã thÓ ®i vµo khu vùc bang héi tõ n¬i phi chiÕn ®Êu!"));
 				return 20;
 			}
 			if (g_SubWorldSet.SearchWorld((int)dwMap) < 0)
 			{
 				KPlayerChat::SendSystemInfo(1, nPlayerIdx, MESSAGE_SYSTEM_ANNOUCE_HEAD,
-					(char*)"B\266n \256\345 khu v\371c bang h\351i ch\255a \256\255\356c n\271p tr\252n m\270y ch\361 n\265y.",
-					(int)strlen("B\266n \256\345 khu v\371c bang h\351i ch\255a \256\255\356c n\271p tr\252n m\270y ch\361 n\265y."));
+					(char*)"B¶n ®å khu vùc bang héi ch­a ®­îc n¹p trªn m¸y chñ nµy.",
+					(int)strlen("B¶n ®å khu vùc bang héi ch­a ®­îc n¹p trªn m¸y chñ nµy."));
 				return 20;
 			}
 			// diem vao mac dinh cua ban goc (aMapEnterPosDef trong addtongnpc.lua)
@@ -3678,7 +3678,7 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				// tong_mix.lua:297 (Msg2Tong :301 vo dieu kien, ghi so :298
 				// khi nOffer >= 100)
 				char szLog[160];
-				sprintf(szLog, "%s \256\267 \256\343ng g\343p %d \256i\323m c\350ng hi\325n v\265o ng\251n s\270ch c\350ng hi\325n bang", Player[nPlayerIdx].m_PlayerName, nVal);
+				sprintf(szLog, "%s ®· ®ãng gãp %d ®iÓm cèng hiÕn vµo ng©n s¸ch cèng hiÕn bang", Player[nPlayerIdx].m_PlayerName, nVal);
 				sJX2_Msg2Tong(pTong, szLog);
 				if (nVal >= 100)
 					sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, dwParam);
@@ -4200,7 +4200,7 @@ int LuaJX2_TongClaimWar(Lua_State* L)
 				szDest = pDest->szName;
 		}
 		char szLog[160];
-		sprintf(szLog, "Bang ch\361  \256\267 tuy\252n chi\325n bang h\351i%s r\345i", szDest);
+		sprintf(szLog, "Bang chñ  ®· tuyªn chiÕn bang héi%s råi", szDest);
 		sSendStringCmd(dwTongID, defTONG_JX2_STR_EVENT, szLog, sLuaPlayerParam(L));
 	}
 	Lua_PushNumber(L, 1);

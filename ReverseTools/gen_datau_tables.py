@@ -19,13 +19,26 @@ def rd(p):
     return open(p, 'rb').read()
 
 def c_escape(b):
-    # emit C literal, 3-digit octal cho moi byte ngoai ASCII in duoc
+    # [20/08/2026] Truoc day emit octal 3 chu so cho MOI byte ngoai ASCII, nen
+    # KDaTauTables.h mo ra chi thay "B\271n nh\313n..." - khong dev nao doc noi.
+    # Chu game yeu cau doi sang CHU TCVN3 THO cho doc hieu duoc.
+    #
+    # An toan: Core.vcxproj va S3Client.vcxproj deu dat
+    #     /source-charset:windows-1258 /execution-charset:windows-1258
+    # nen source charset == execution charset => byte vao = byte ra, noi dung
+    # KHONG doi. Da kiem chung: 432/433 chuoi sau khi doi van khop byte trong
+    # binary DA SHIP (build tu ban escape cu) => khong can build lai.
+    #
+    # Chi con escape cho ky tu DIEU KHIEN (<0x20) va DEL - chung khong in duoc.
+    # LUU Y: file .h sau khi sinh la ANSI/TCVN3 khong BOM. Mo bang editor UTF-8
+    # roi luu lai la HONG HET tieng Viet ma khong bao gi.
     out = []
     for ch in b:
         if ch == 0x22: out.append('\\"')
         elif ch == 0x5C: out.append('\\\\')
         elif 0x20 <= ch <= 0x7E: out.append(chr(ch))
-        else: out.append('\\%03o' % ch)
+        elif ch >= 0x80: out.append(chr(ch))      # byte TCVN3 -> viet THO
+        else: out.append('\\%03o' % ch)           # ky tu dieu khien: van escape
     return '"' + ''.join(out) + '"'
 
 def find_lit_before(data, anchor, what):
@@ -221,7 +234,12 @@ for mid,x,y in DTNPC:
 o.write('};\nstatic const int g_nDTNpcCount = sizeof(g_DTNpc)/sizeof(g_DTNpc[0]);\n')
 o.write('\n#endif // KDATAUTABLES_H\n')
 
-data = o.getvalue().replace('\n', '\r\n').encode('ascii')
+# [20/08/2026] Phai la 'latin-1' chu KHONG con 'ascii': c_escape gio xuat byte
+# TCVN3 THO (>=0x80) nen encode('ascii') se nem UnicodeEncodeError ngay.
+# latin-1 la anh xa 1:1 codepoint<->byte, ghi ra dung byte muon co.
+data = o.getvalue().replace('\n', '\r\n').encode('latin-1')
 open(OUT, 'wb').write(data)
-print('OK: ghi %s (%d byte, buy=%d find=%d show=%d map=%d marker=%d)' % (
-    OUT, len(data), len(buy), len(find_), len(show), len(maps), len(MK)))
+n_tho = sum(1 for x in data if x >= 0x80)
+print('OK: ghi %s (%d byte, %d byte TCVN3 tho, buy=%d find=%d show=%d map=%d marker=%d)' % (
+    OUT, len(data), n_tho, len(buy), len(find_), len(show), len(maps), len(MK)))
+print('LUU Y: file la ANSI/TCVN3 khong BOM - dung mo/luu bang editor UTF-8.')

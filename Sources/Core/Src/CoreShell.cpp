@@ -2567,7 +2567,7 @@ static void DT_Msg(int nPlayerIdx, const char* szMsg)
 	ea.uDTStatusTime = uNow + 1200;
 	try
 	{
-		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[D\267 T\310u]", (char*)szMsg, strlen(szMsg), TRUE);
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[D· TÈu]", (char*)szMsg, strlen(szMsg), TRUE);
 	}
 	catch (...) {}
 }
@@ -2645,7 +2645,7 @@ static int DT_Hold(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
 	// treo co thoi han -> tu ghi chu "(tam nghi N phut)" mau xam cuoi cau
 	if (uMs >= 60000u && strlen(szWhy) < 440)
 	{
-		sprintf(szNghi, "%s <color=Gray>(t\271m ngh\330 %u ph\363t)", szWhy, uMs / 60000u);
+		sprintf(szNghi, "%s <color=Gray>(t¹m nghØ %u phót)", szWhy, uMs / 60000u);
 		DT_Msg(nPlayerIdx, szNghi);
 	}
 	else
@@ -2676,7 +2676,7 @@ static int DT_FindNpcTpl(int nPlayerIdx, int nTpl, int nRadius)
 		Npc[nIdx].GetMpsPos(&dX, &dY);
 		if (nRadius > 0 && g_GetDistance(nX, nY, dX, dY) > nRadius)
 			continue;
-		if (strcmp(Npc[nIdx].Name, "D\267 T\310u") == 0)
+		if (strcmp(Npc[nIdx].Name, "D· TÈu") == 0)
 			return nIdx;	// dung ten 'Da Tau' (TCVN3) - chac chan nhat
 		if (!nFirst)
 			nFirst = nIdx;
@@ -2783,21 +2783,21 @@ static int TG_XaFuStart()
 	int nPlayerIdx = CLIENT_PLAYER_INDEX;
 	if (g_nTGXaFuOn)
 	{
-		TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 h\361y d\311n \256\255\352ng.");
+		TG_XaFuStop("<color=Cyan>[ChØ nam] §· hñy dÉn ®­êng.");
 		return 0;
 	}
 	if (Player[nPlayerIdx].m_nIndex <= 0)
 		return 0;
 	if (Player[nPlayerIdx].m_sExtAuto.nDTEngaged)
 	{
-		DT_Msg(nPlayerIdx, "<color=Yellow>[Ch\330 nam] Auto D\267 T\310u \256ang ch\271y - \256\323 auto t\371 lo vi\326c di chuy\323n.");
+		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Auto D· TÈu ®ang ch¹y - ®Ó auto tù lo viÖc di chuyÓn.");
 		return 0;
 	}
 	int nMap = SubWorld[0].m_SubWorldID;
 	MapStation::iterator it = g_MoveStation.find(nMap);
 	if (it == g_MoveStation.end() || it->second.empty())
 	{
-		DT_Msg(nPlayerIdx, "<color=Yellow>[Ch\330 nam] Kh\253ng t\327m th\312y Xa Phu \353 th\265nh n\265y.");
+		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Kh«ng t×m thÊy Xa Phu ë thµnh nµy.");
 		return 0;
 	}
 	g_nTGXaFuOn = 1;
@@ -2806,7 +2806,7 @@ static int TG_XaFuStart()
 	g_uTGXaFuNext = 0;
 	g_nTGXaFuPhase = 1;
 	g_uTGXaFuDlgSeen = g_sDTCap.uDlgSeq;
-	DT_Msg(nPlayerIdx, "<color=Cyan>[Ch\330 nam] \247ang t\371 ch\271y \256\325n Xa Phu - b\312m l\271i v\265o d\337ng nhi\326m v\364 \256\323 h\361y.");
+	DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §ang tù ch¹y ®Õn Xa Phu - bÊm l¹i vµo dßng nhiÖm vô ®Ó hñy.");
 	return 1;
 }
 
@@ -2832,13 +2832,13 @@ static void TG_XaFuTick()
 	}
 	if (++g_nTGXaFuTry > 90)	// ~36 giay
 	{
-		TG_XaFuStop("<color=Yellow>[Ch\330 nam] \247i qu\270 l\251u - d\365ng d\311n \256\255\352ng.");
+		TG_XaFuStop("<color=Yellow>[ChØ nam] §i qu¸ l©u - dõng dÉn ®­êng.");
 		return;
 	}
 	MapStation::iterator it = g_MoveStation.find(g_nTGXaFuMap);
 	if (it == g_MoveStation.end() || it->second.empty())
 	{
-		TG_XaFuStop("<color=Yellow>[Ch\330 nam] Kh\253ng t\327m th\312y Xa Phu \353 th\265nh n\265y.");
+		TG_XaFuStop("<color=Yellow>[ChØ nam] Kh«ng t×m thÊy Xa Phu ë thµnh nµy.");
 		return;
 	}
 	sStation& s = it->second[0];
@@ -2857,7 +2857,7 @@ static void TG_XaFuTick()
 				g_nTGXaFuTry = 0;
 				g_uTGXaFuDlgSeen = g_sDTCap.uDlgSeq;
 				Player[nPlayerIdx].DialogNpc(nIdx);
-				DT_Msg(nPlayerIdx, "<color=Cyan>[Ch\330 nam] \247\267 g\306p Xa Phu - \256ang t\371 ch\344n m\364c \256i map nhi\326m v\364...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §· gÆp Xa Phu - ®ang tù chän môc ®i map nhiÖm vô...");
 				return;
 			}
 			// pha 2: doi thoai Xa Phu ve roi tu chon muc 'Den noi lam nhiem vu da tau'
@@ -2872,10 +2872,10 @@ static void TG_XaFuTick()
 				if (nOpt >= 0)
 				{
 					DT_Answer(nPlayerIdx, nOpt);
-					TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 ch\344n m\364c \256i t\355i map nhi\326m v\364 - ch\352 chuy\323n map.");
+					TG_XaFuStop("<color=Cyan>[ChØ nam] §· chän môc ®i tíi map nhiÖm vô - chê chuyÓn map.");
 					return;
 				}
-				TG_XaFuStop("<color=Yellow>[Ch\330 nam] Tho\271i kh\253ng c\343 m\364c \256i map - h\267y t\371 ch\344n trong khung tho\271i.");
+				TG_XaFuStop("<color=Yellow>[ChØ nam] Tho¹i kh«ng cã môc ®i map - h·y tù chän trong khung tho¹i.");
 				return;
 			}
 			if ((g_nTGXaFuTry % 8) == 0)
@@ -3347,19 +3347,19 @@ static UINT  g_uDTThpT = 0;		// (r5) Than Hanh Phu cho luot nhay nay: 0=chua thu
 struct DTSapTown { int nMapId; const char* szMenu; };
 static const DTSapTown g_aDTSapTown[10] =
 {
-	{ 1,   "Ph\255\356ng T\255\352ng" },
-	{ 11,  "Th\265nh \247\253" },	// (r5b) bo " Phu": menu khu cua THP chi ghi "Thanh Do Trung Tam/Dong/..." -> co " Phu" la strstr truot, ket 12s
-	{ 162, "\247\271i L\375" },
-	{ 37,  "Bi\326n Kinh" },
-	{ 78,  "T\255\254ng D\255\254ng" },
-	{ 80,  "D\255\254ng Ch\251u" },
-	{ 176, "L\251m An" },
-	{ 20,  "Giang T\251n" },
-	{ 121, "Long M\253n" },
-	{ 53,  "Ba L\250ng" },	// (r5) rut ngan: THP viet "Huy\326n" HOA - "Ba L\250ng" khop ca 2 menu
+	{ 1,   "Ph­îng T­êng" },
+	{ 11,  "Thµnh §«" },	// (r5b) bo " Phu": menu khu cua THP chi ghi "Thanh Do Trung Tam/Dong/..." -> co " Phu" la strstr truot, ket 12s
+	{ 162, "§¹i Lý" },
+	{ 37,  "BiÖn Kinh" },
+	{ 78,  "T­¬ng D­¬ng" },
+	{ 80,  "D­¬ng Ch©u" },
+	{ 176, "L©m An" },
+	{ 20,  "Giang T©n" },
+	{ 121, "Long M«n" },
+	{ 53,  "Ba L¨ng" },	// (r5) rut ngan: THP viet "Huy\326n" HOA - "Ba L\250ng" khop ca 2 menu
 };
 // muc menu 1 cua Xa Phu: "Nhung thanh thi da di qua" (xaphu.lua:16)
-#define DTM_SAP_THANHTHI "th\265nh th\336 \256\267 \256i qua"
+#define DTM_SAP_THANHTHI "thµnh thÞ ®· ®i qua"
 
 static const char* DT_SapTownMenu(int nMapId)
 {
@@ -3648,7 +3648,7 @@ static int DT_Skip(int nPlayerIdx, const autoData* pAp, UINT uCurTime, const cha
 		char szHuy[512];
 		if (strlen(szWhy) < 440)
 		{
-			sprintf(szHuy, "%s <color=Gray>(h\361y nhi\326m v\364 - lo\271i n\265y \256ang t\276t)", szWhy);
+			sprintf(szHuy, "%s <color=Gray>(hñy nhiÖm vô - lo¹i nµy ®ang t¾t)", szWhy);
 			DT_Msg(nPlayerIdx, szHuy);
 		}
 		else
@@ -3689,7 +3689,7 @@ static int DT_BagRelease(int nPlayerIdx, const autoData* pAp, UINT uCurTime, con
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	DT_Msg(nPlayerIdx, szWhy);
 	ea.uDTStatusTime = 0;
-	DT_Msg(nPlayerIdx, "<color=Yellow>T\363i \256\307y - auto t\371 b\270n b\355t trang b\336 tr\276ng/xanh ngay t\271i ch\347...");
+	DT_Msg(nPlayerIdx, "<color=Yellow>Tói ®Çy - auto tù b¸n bít trang bÞ tr¾ng/xanh ngay t¹i chç...");
 	ea.nDTPhase = DTP_SELLJUNK;
 	ea.uDTHoldUntil = uCurTime + 4u * 60u * 1000u;	// han an toan 4 phut
 	ea.nDTRetry = 0;		// so lenh ban da gui
@@ -3764,7 +3764,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				int nCoH = DT_FindCandItem(nPlayerIdx, pAp, &nPosH);
 				if (nCoH && nPosH == pos_equiproom)
 				{
-					DT_Msg(nPlayerIdx, "<color=Green>\247\267 c\343 \256\345 \256\271t y\252u c\307u nhi\326m v\364 - quay v\322 g\306p D\267 T\310u tr\266 ngay!");
+					DT_Msg(nPlayerIdx, "<color=Green>§· cã ®å ®¹t yªu cÇu nhiÖm vô - quay vÒ gÆp D· TÈu tr¶ ngay!");
 					ea.uDTHoldUntil = 0;
 					ea.uDTPath = 0;
 					ea.nDTStep = DTI_NONE;
@@ -3790,7 +3790,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
 		if (nTrong >= 8)
 		{
-			DT_Msg(nPlayerIdx, "<color=Cyan>T\363i \256\267 c\343 ch\347 tr\350ng - quay l\271i l\265m D\267 T\310u.");
+			DT_Msg(nPlayerIdx, "<color=Cyan>Tói ®· cã chç trèng - quay l¹i lµm D· TÈu.");
 			DT_SellResume(ea);
 			ea.uDTHoldUntil = 0;
 		}
@@ -3799,7 +3799,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// (PB V09) TON TRONG cong tac "Ban vat pham" tab Hau can: nguoi choi tat
 			// thi Da Tau tuyet doi khong tu ban do - treo nho nguoi don tui.
 			ea.uDTHoldUntil = 0;
-			return DT_Hold(nPlayerIdx, "<color=Yellow>T\363i \256\307y - h\267y d\344n t\363i, ho\306c b\313t \253 'B\270n v\313t ph\310m' \353 tab H\313u c\307n \256\323 auto t\371 b\270n trang b\336 tr\276ng/xanh.", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Yellow>Tói ®Çy - h·y dän tói, hoÆc bËt « 'B¸n vËt phÈm' ë tab HËu cÇn ®Ó auto tù b¸n trang bÞ tr¾ng/xanh.", uCurTime, 15 * 60 * 1000);
 		}
 		else if (uCurTime > ea.uDTHoldUntil)
 		{
@@ -3809,7 +3809,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				DT_SellResume(ea);	// du 5 o de tra nhiem vu - lam tiep dung mach
 				return 1;
 			}
-			return DT_Hold(nPlayerIdx, "<color=Yellow>B\270n r\270c xong v\311n ch\255a \256\361 \253 tr\350ng - h\267y d\344n b\355t t\363i gi\363p auto.", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Yellow>B¸n r¸c xong vÉn ch­a ®ñ « trèng - h·y dän bít tói gióp auto.", uCurTime, 15 * 60 * 1000);
 		}
 		else if (ea.uDTNext <= uCurTime)
 		{
@@ -3898,7 +3898,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				DT_SellResume(ea);
 				return 1;
 			}
-			return DT_Hold(nPlayerIdx, "<color=Yellow>B\270n h\325t r\270c m\265 v\311n ch\255a \256\361 \253 tr\350ng - h\267y d\344n b\355t t\363i gi\363p auto.", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Yellow>B¸n hÕt r¸c mµ vÉn ch­a ®ñ « trèng - h·y dän bít tói gióp auto.", uCurTime, 15 * 60 * 1000);
 		}
 		return ea.nDTEngaged;
 	}
@@ -3920,10 +3920,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		g_dDTPrevExp = dCur;
 		if (ea.uDTFarmStall && uCurTime - ea.uDTFarmStall > 20u * 60u * 1000u)
-			return DT_Hold(nPlayerIdx, "<color=Red>C\265y kinh nghi\326m qu\270 l\251u kh\253ng ti\325n tri\323n.", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>Cµy kinh nghiÖm qu¸ l©u kh«ng tiÕn triÓn.", uCurTime, 15 * 60 * 1000);
 		if (g_dDTExpGain >= (double)ea.nDTReqNum)
 		{
-			DT_Msg(nPlayerIdx, "<color=Green>\247\267 \256\361 kinh nghi\326m - quay v\322 tr\266 nhi\326m v\364.");
+			DT_Msg(nPlayerIdx, "<color=Green>§· ®ñ kinh nghiÖm - quay vÒ tr¶ nhiÖm vô.");
 			ea.nDTStep = DTI_TURNIN;
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTEngaged = 1;
@@ -3970,13 +3970,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				break;
 		if (i >= g_nDTNpcCount)
 		{
-			DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng \353 th\265nh c\343 D\267 T\310u - d\357ng Th\346 \247\336a Ph\357 v\322 th\265nh.");
+			DT_Msg(nPlayerIdx, "<color=Cyan>Kh«ng ë thµnh cã D· TÈu - dïng Thæ §Þa Phï vÒ thµnh.");
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTStep = DTI_NONE;
 			ea.nDTEngaged = 1;
 			return 1;
 		}
-		DT_Msg(nPlayerIdx, "<color=Cyan>\247ang \256\325n ch\347 NPC D\267 T\310u \256\323 nh\313n / tr\266 nhi\326m v\364.");
+		DT_Msg(nPlayerIdx, "<color=Cyan>§ang ®Õn chç NPC D· TÈu ®Ó nhËn / tr¶ nhiÖm vô.");
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTRetry = 0;
@@ -4001,7 +4001,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.nDTRetry = 0;
 					ea.nDTShopTry = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
 					ea.uDTHoldUntil = uCurTime + 4u * 60u * 1000u;
-					DT_Msg(nPlayerIdx, "<color=Cyan>V\322 th\265nh - b\270n b\355t r\270c tr\255\355c r\345i l\265m ti\325p...");
+					DT_Msg(nPlayerIdx, "<color=Cyan>VÒ thµnh - b¸n bít r¸c tr­íc råi lµm tiÕp...");
 					return 1;
 				}
 				if (ea.nDTBackXaFu)
@@ -4010,7 +4010,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.nDTBackXaFu = 0;
 					ea.nDTPhase = DTP_GOXAFU;
 					ea.nDTRetry = 0;
-					DT_Msg(nPlayerIdx, "<color=Cyan>\247\267 v\322 th\265nh - ra Xa Phu \256i ti\325p t\355i map nhi\326m v\364.");
+					DT_Msg(nPlayerIdx, "<color=Cyan>§· vÒ thµnh - ra Xa Phu ®i tiÕp tíi map nhiÖm vô.");
 					return 1;
 				}
 				ea.nDTPhase = DTP_GOTONPC;
@@ -4022,13 +4022,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// (20/08) uu tien phu VO HAN (6,1,437) -> Tho Dia Phu -> Hoi thanh phu; het thi
 		// keo tu ruong; TUYET DOI khong tu mua nua (yeu cau nguoi dung).
 		if (!Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
-			return DT_Hold(nPlayerIdx, "<color=Red>K\321t: kh\253ng \353 th\265nh m\265 kh\253ng d\357ng \256\255\356c Th\346 \247\336a Ph\357.", uCurTime, 10 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>KÑt: kh«ng ë thµnh mµ kh«ng dïng ®­îc Thæ §Þa Phï.", uCurTime, 10 * 60 * 1000);
 		if (++ea.nDTRetry > 8)
-			return DT_Hold(nPlayerIdx, "<color=Red>K\321t: kh\253ng v\322 \256\255\356c th\265nh (h\325t ph\357 v\322?).", uCurTime, 10 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>KÑt: kh«ng vÒ ®­îc thµnh (hÕt phï vÒ?).", uCurTime, 10 * 60 * 1000);
 		if (!DT_UsePortal(nPlayerIdx))
 		{
 			if (!DT_PortalPull(nPlayerIdx, pAp, uCurTime))
-				return DT_Hold(nPlayerIdx, "<color=Yellow>H\325t ph\357 v\322 trong t\363i (ph\357 \353 r\255\254ng kh\253ng l\312y \256\255\356c khi ngo\265i th\265nh) - b\341 Th\346 \247\336a Ph\357 / ph\357 v\253 h\271n v\265o t\363i gi\363p auto.", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Yellow>HÕt phï vÒ trong tói (phï ë r­¬ng kh«ng lÊy ®­îc khi ngoµi thµnh) - bá Thæ §Þa Phï / phï v« h¹n vµo tói gióp auto.", uCurTime, 10 * 60 * 1000);
 		}
 		ea.uDTNext = uCurTime + 3000;
 		return 1;
@@ -4073,7 +4073,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_WalkTo(nPlayerIdx, pRow->nX * 32, pRow->nY * 32, 160, uCurTime))
 		{
 			if (++ea.nDTRetry > 20)
-				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng th\312y NPC D\267 T\310u \353 t\344a \256\351 \256\267 \256\336nh.", uCurTime, 5 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh«ng thÊy NPC D· TÈu ë täa ®é ®· ®Þnh.", uCurTime, 5 * 60 * 1000);
 		}
 		return 1;
 	}
@@ -4103,13 +4103,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			ea.uDTTalkSeen = cap.uTalkSeq;
 			if (DT_Has(cap.szTalk, DTM_MSG_PUNISH))
-				return DT_Hold(nPlayerIdx, "<color=Orange>B\336 D\267 T\310u ph\271t v\327 h\361y nhi\322u - ch\352 h\325t ph\271t s\317 l\265m ti\325p.", uCurTime, 11 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Orange>BÞ D· TÈu ph¹t v× hñy nhiÒu - chê hÕt ph¹t sÏ lµm tiÕp.", uCurTime, 11 * 60 * 1000);
 		}
 		if (cap.uDlgSeq == ea.uDTDlgSeen)
 		{
 			// moi vong ~250ms; 16 vong (~4s) khong co phan hoi -> go lai; 60 vong -> treo
 			if (++ea.nDTRetry > 60)
-				return DT_Hold(nPlayerIdx, "<color=Red>NPC kh\253ng tr\266 l\352i h\351i tho\271i.", uCurTime, 5 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>NPC kh«ng tr¶ lêi héi tho¹i.", uCurTime, 5 * 60 * 1000);
 			if ((ea.nDTRetry % 16) == 0)
 			{
 				ea.nDTPhase = DTP_GOTONPC;
@@ -4136,7 +4136,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			const int bLanDauNgay = (ea.nDTDoneDay != nToday);
 			ea.nDTDoneDay = nToday;
 			// (20/08) treo co han: server reset la chay tiep ngay.
-			DT_Hold(nPlayerIdx, "<color=AYellow>Tuy\326t! \247\267 \256\361 40 nhi\326m v\364 D\267 T\310u h\253m nay - ngh\330, qua ng\265y auto t\371 ch\271y l\271i.", uCurTime, 60 * 60 * 1000);
+			DT_Hold(nPlayerIdx, "<color=AYellow>TuyÖt! §· ®ñ 40 nhiÖm vô D· TÈu h«m nay - nghØ, qua ngµy auto tù ch¹y l¹i.", uCurTime, 60 * 60 * 1000);
 			ea.nDTHoldFreeze = 1;	// danh dau hold "du 40" (han che quet/thu lai)
 			// (r3) NHA MAY + danh thuc Hau can. (r4 - PB R4) CHI danh thuc khi may da
 			// xong/chet (nHomeStep>12) hoac lan dau cham tran trong ngay - probe moi
@@ -4151,7 +4151,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		// tui day
 		if (DT_Has(szQ, DTM_MSG_BAGFULL))
-			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i \256\307y (d\255\355i 5 \253 tr\350ng) - h\267y d\344n t\363i r\345i auto ch\271y ti\325p.");
+			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói ®Çy (d­íi 5 « trèng) - h·y dän tói råi auto ch¹y tiÕp.");
 		// tra nhiem vu that bai (chua du yeu cau)
 		if (DT_Has(szQ, DTM_MSG_FAILREQ) || DT_Has(szQ, DTM_MSG_FAILSHXT))
 		{
@@ -4160,14 +4160,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// (PB r5b) moi lan 1 mon + kiem cho; -1 = tui thieu cho -> giu trong hop.
 			int nThu5 = DT_ThuHoiBox(nPlayerIdx);
 			if (nThu5 < 0)
-				DT_Msg(nPlayerIdx, "<color=Yellow>\247\345 trong h\351p giao ch\255a l\312y ra \256\255\356c (t\363i thi\325u ch\347) - s\317 t\371 l\312y sau khi d\344n t\363i.");
+				DT_Msg(nPlayerIdx, "<color=Yellow>§å trong hép giao ch­a lÊy ra ®­îc (tói thiÕu chç) - sÏ tù lÊy sau khi dän tói.");
 			else if (nThu5 > 0)
-				DT_Msg(nPlayerIdx, "<color=Cyan>Tr\266 tr\255\356t - thu l\271i \256\345 trong h\351p giao v\322 t\363i.");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Tr¶ tr­ît - thu l¹i ®å trong hép giao vÒ tói.");
 			// (r3) loai 4 tra som ma chua du (tin nhan troi) -> quay lai map danh tiep,
 			// dung de roi xuong skip/treo lam mat nhiem vu dang lam do.
 			if (ea.nDTQType == 4 && ea.nDTMapId > 0)
 			{
-				DT_Msg(nPlayerIdx, "<color=Cyan>Ch\255a \256\361 m\266nh - quay l\271i map \256\270nh ti\325p...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Ch­a ®ñ m¶nh - quay l¹i map ®¸nh tiÕp...");
 				ea.nDTStep = DTI_NONE;
 				ea.nDTPhase = DTP_EXEC;
 				ea.uDTNext = uCurTime + 800;
@@ -4197,10 +4197,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uDTFarmStall = uCurTime;
 				ea.nDTPhase = DTP_FARM;
 				ea.nDTEngaged = 0;
-				DT_Msg(nPlayerIdx, "<color=Cyan>Ch\255a \256\361 kinh nghi\326m - c\265y ti\325p...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Ch­a ®ñ kinh nghiÖm - cµy tiÕp...");
 				return 0;
 			}
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng \256\270p \370ng \256\255\356c nhi\326m v\364 n\265y.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh«ng ®¸p øng ®­îc nhiÖm vô nµy.");
 		}
 		// hop xac nhan huy - het luot (3 lua chon, co option 100 manh)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL2)) >= 0)
@@ -4221,7 +4221,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			DT_Answer(nPlayerIdx, nAns - 1);	// "de ta suy nghi lai" - thoat
-			return DT_Hold(nPlayerIdx, "<color=Orange>H\325t l\255\356t h\361y nhi\326m v\364.", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Orange>HÕt l­ît hñy nhiÖm vô.", uCurTime, 15 * 60 * 1000);
 		}
 		// hop xac nhan huy (con luot / xac nhan lan 2)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1A)) >= 0
@@ -4282,7 +4282,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.nDTHaveBase = 0;	// cho phep "ve thu tra som" lai
 			}
 			if (ea.nDTQType <= 0)
-				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng hi\323u n\351i dung nhi\326m v\364 (l\271) - h\267y b\270o l\271i l\347i n\265y.", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh«ng hiÓu néi dung nhiÖm vô (l¹) - h·y b¸o l¹i lçi nµy.", uCurTime, 10 * 60 * 1000);
 			// loai bi nguoi choi tat?
 			if (!pAp->bDTType[ea.nDTQType - 1])
 			{
@@ -4301,11 +4301,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						// (PB V19) server doi >= 5 o trong moi phat thuong lenh bai (Talk tu
 						// choi thi client khong doc duoc) - kiem truoc, thieu thi don tui da.
 						if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
-							return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>C\307n \335t nh\312t 5 \253 tr\350ng \256\323 nh\313n th\255\353ng l\326nh b\265i - d\344n t\363i tr\255\355c.");
+							return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>CÇn Ýt nhÊt 5 « trèng ®Ó nhËn th­ëng lÖnh bµi - dän tói tr­íc.");
 						CoreDataChanged(GDCNI_UI_ACT, 1, 0);
 						++ea.nDTLBTry;
 						Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, 4818, nPlayerIdx);
-						DT_Msg(nPlayerIdx, "<color=AYellow>D\357ng L\326nh b\265i ho\265n th\265nh D\267 T\310u - ch\352 nh\313n th\255\353ng...");
+						DT_Msg(nPlayerIdx, "<color=AYellow>Dïng LÖnh bµi hoµn thµnh D· TÈu - chê nhËn th­ëng...");
 						ea.nDTStep = DTI_NONE;
 						ea.nDTPhase = DTP_WAITDLG;
 						ea.uDTNext = uCurTime + 1800;
@@ -4325,7 +4325,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					}
 				}
 				else if (pAp->bDTLenhBai == 1 && ea.nDTLBTry >= 2)
-					DT_Msg(nPlayerIdx, "<color=Red>L\326nh b\265i ho\265n th\265nh kh\253ng c\343 t\270c d\364ng (server ch\255a c\313p nh\313t script?) - l\265m theo c\312u h\327nh.");
+					DT_Msg(nPlayerIdx, "<color=Red>LÖnh bµi hoµn thµnh kh«ng cã t¸c dông (server ch­a cËp nhËt script?) - lµm theo cÊu h×nh.");
 				int nCanIdx = DT_FindAns(apAns, nAns, DTM_OPT_CANCELCONF);
 				if (pAp->nDTSkipMode == 1 && nCanIdx >= 0)
 				{
@@ -4334,13 +4334,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uDTNext = uCurTime + 900;
 					return 1;
 				}
-				return DT_Hold(nPlayerIdx, "<color=Yellow>Lo\271i nhi\326m v\364 n\265y \256ang <color=Red>t\276t<color> trong tab D\267 T\310u - treo ch\352.", uCurTime, 15 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Yellow>Lo¹i nhiÖm vô nµy ®ang <color=Red>t¾t<color> trong tab D· TÈu - treo chê.", uCurTime, 15 * 60 * 1000);
 			}
 			// den de tra?
 			if (ea.nDTStep == DTI_TURNIN)
 			{
 				if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
-					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>C\307n \335t nh\312t 5 \253 tr\350ng \256\323 tr\266 nhi\326m v\364 - h\267y d\344n t\363i.");
+					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>CÇn Ýt nhÊt 5 « trèng ®Ó tr¶ nhiÖm vô - h·y dän tói.");
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_TURNWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -4357,7 +4357,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uDTNext = uCurTime + 900;
 					return 1;
 				}
-				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng th\312y n\363t h\361y trong h\351i tho\271i.", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh«ng thÊy nót hñy trong héi tho¹i.", uCurTime, 10 * 60 * 1000);
 			}
 			// nhiem vu moi -> dong khung thoai (khong can tra loi - nhiem vu da duoc gan)
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
@@ -4369,7 +4369,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// reset boi new-dialog nen chot nay khong bi vo hieu khi NPC lien tuc tra hoi thoai la (DT-1).
 		ea.nDTUnknown = nUnkSave + 1;
 		if (ea.nDTUnknown > 6)
-			return DT_Hold(nPlayerIdx, "<color=Red>H\351i tho\271i kh\253ng nh\313n d\271ng \256\255\356c (server \256\346i l\352i tho\271i?).", uCurTime, 5 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>Héi tho¹i kh«ng nhËn d¹ng ®­îc (server ®æi lêi tho¹i?).", uCurTime, 5 * 60 * 1000);
 		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.uDTNext = uCurTime + 900;
@@ -4386,7 +4386,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		case 3:
 		{
 			if (ea.nDTCandNum <= 0)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh\253ng kh\355p \256\255\356c d\337ng b\266ng d\367 li\326u nhi\326m v\364.");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh«ng khíp ®­îc dßng b¶ng d÷ liÖu nhiÖm vô.");
 			int nPos = 0;
 			int nItem = DT_FindCandItem(nPlayerIdx, pAp, &nPos);
 			if (!nItem && ea.nDTCandCur + 1 < ea.nDTCandNum)
@@ -4408,16 +4408,16 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				{
 					// keo tu ruong ve tui
 					if (!pAp->bDTUseBox)
-						return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>\247\345 c\307n tr\266 \256ang n\273m trong r\255\254ng - h\267y b\313t \253 <color=White>L\312y \256\345/ti\322n t\365 r\255\254ng<color> \353 tab D\267 T\310u.");
+						return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>§å cÇn tr¶ ®ang n»m trong r­¬ng - h·y bËt « <color=White>LÊy ®å/tiÒn tõ r­¬ng<color> ë tab D· TÈu.");
 					if (!DT_EnsureUnlock(nPlayerIdx, pAp, uCurTime))
 					{
 						if (++ea.nDTRetry > 8)
-							return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh\253ng m\353 kh\343a \256\255\356c r\255\254ng - ki\323m tra m\313t kh\310u r\255\254ng \353 tab H\313u c\307n.");
+							return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh«ng më khãa ®­îc r­¬ng - kiÓm tra mËt khÈu r­¬ng ë tab HËu cÇn.");
 						return 1;
 					}
 					if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(
 						Item[nItem].GetWidth(), Item[nItem].GetHeight(), room_equipment) < 1)
-						return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i kh\253ng \256\361 ch\347 \256\323 l\312y \256\345 t\365 r\255\254ng - h\267y d\344n t\363i.");
+						return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói kh«ng ®ñ chç ®Ó lÊy ®å tõ r­¬ng - h·y dän tói.");
 					DT_BoxToBag(nItem, nPos);
 					ea.uDTNext = uCurTime + 1200;
 					return 1;	// tick sau se thay item trong tui
@@ -4442,7 +4442,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"<color=Orange>Nhi\326m v\364 c\307n v\362 kh\335/ng\371a - h\267y b\341 s\275n m\343n \256\343 v\265o r\255\254ng (xem t\252n trong nhi\326m v\364).");
+					"<color=Orange>NhiÖm vô cÇn vò khÝ/ngùa - h·y bá s½n mãn ®ã vµo r­¬ng (xem tªn trong nhiÖm vô).");
 			}
 			if (ea.nDTQType == 2)
 			{
@@ -4460,11 +4460,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.nDTPhase = DTP_MUASAP;
 					ea.nDTRetry = 0;
 					ea.uDTHoldUntil = uCurTime + 25u * 60u * 1000u;	// han toan cuoc di cho
-					DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng c\343 \256\345 c\307n t\327m trong t\363i/r\255\254ng - \256i xem s\271p ng\255\352i b\270n \256\323 mua...");
+					DT_Msg(nPlayerIdx, "<color=Cyan>Kh«ng cã ®å cÇn t×m trong tói/r­¬ng - ®i xem s¹p ng­êi b¸n ®Ó mua...");
 					return 1;
 				}
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"<color=Orange>Kh\253ng c\343 \256\345 c\307n t\327m trong t\363i/r\255\254ng - n\252n t\335ch tr\367 s\275n trang s\370c.");
+					"<color=Orange>Kh«ng cã ®å cÇn t×m trong tói/r­¬ng - nªn tÝch tr÷ s½n trang søc.");
 			}
 			// (r5 - nguoi dung) loai 3 "Tim trang bi (khoe)" cung DI CHO mua o sap nhu
 			// loai 2: quet sap thanh nay, het thi Xa Phu qua du 10 thanh/thon, tim het
@@ -4482,18 +4482,18 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.nDTPhase = DTP_MUASAP;
 				ea.nDTRetry = 0;
 				ea.uDTHoldUntil = uCurTime + 25u * 60u * 1000u;
-				DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng c\343 trang b\336 c\307n khoe trong t\363i/r\255\254ng - \256i xem s\271p ng\255\352i b\270n \256\323 mua...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Kh«ng cã trang bÞ cÇn khoe trong tói/r­¬ng - ®i xem s¹p ng­êi b¸n ®Ó mua...");
 				return 1;
 			}
 			return DT_Skip(nPlayerIdx, pAp, uCurTime,
-				"<color=Orange>Kh\253ng c\343 trang b\336 c\307n t\327m (khoe) ph\357 h\356p trong t\363i/r\255\254ng.");
+				"<color=Orange>Kh«ng cã trang bÞ cÇn t×m (khoe) phï hîp trong tói/r­¬ng.");
 		}
 		case 4:
 		{
 			if (ea.nDTMapId <= 0 || ea.nDTReqNum <= 0)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh\253ng \256\344c \256\255\356c t\252n map / s\350 l\255\356ng c\361a nhi\326m v\364 lo\271i 4 (\256\270nh qu\270i).");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh«ng ®äc ®­îc tªn map / sè l­îng cña nhiÖm vô lo¹i 4 (®¸nh qu¸i).");
 			if (!pAp->bFight)
-				return DT_Hold(nPlayerIdx, "<color=Yellow>Nhi\326m v\364 \256\270nh qu\270i: h\267y b\313t \253 <color=White>\247\270nh qu\270i<color> \353 tab Chi\325n \256\312u.", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Yellow>NhiÖm vô ®¸nh qu¸i: h·y bËt « <color=White>§¸nh qu¸i<color> ë tab ChiÕn ®Êu.", uCurTime, 10 * 60 * 1000);
 			// (r4 - PB R3) KHONG xoa nDTProg/uDTMsgSeen o day nua: quay lai CUNG nhiem
 			// vu (chet/teleport/tra som truot) phai giu tien do; baseline chi dat khi
 			// nhan nhiem vu MOI (nhanh else cua WAITDLG).
@@ -4508,7 +4508,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uDTNext = uCurTime + 1200;
 					return 1;	// dang keo phu tu ruong ve tui
 				}
-				DT_Msg(nPlayerIdx, "<color=Yellow>Ch\255a c\343 ph\357 v\322 th\265nh trong t\363i - n\252n b\341 s\275n Th\346 \247\336a Ph\357 ho\306c ph\357 v\253 h\271n v\265o t\363i/r\255\254ng.");
+				DT_Msg(nPlayerIdx, "<color=Yellow>Ch­a cã phï vÒ thµnh trong tói - nªn bá s½n Thæ §Þa Phï hoÆc phï v« h¹n vµo tói/r­¬ng.");
 			}
 			ea.uDTFarmStall = uCurTime;
 			if (nMap == ea.nDTMapId)
@@ -4529,7 +4529,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				g_dDTPrevExp = Player[nPlayerIdx].m_nExp;
 				g_dDTExpGain = 0;
 				ea.uDTFarmStall = uCurTime;
-				DT_Msg(nPlayerIdx, "<color=Cyan>Nhi\326m v\364 kinh nghi\326m: th\266 cho auto th\255\352ng c\265y, \256\361 s\317 t\371 v\322 tr\266.");
+				DT_Msg(nPlayerIdx, "<color=Cyan>NhiÖm vô kinh nghiÖm: th¶ cho auto th­êng cµy, ®ñ sÏ tù vÒ tr¶.");
 				ea.nDTPhase = DTP_FARM;
 				ea.nDTEngaged = 0;
 				return 0;
@@ -4554,7 +4554,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		}
-		return DT_Hold(nPlayerIdx, "<color=Red>Lo\271i nhi\326m v\364 l\271 - auto ch\255a h\347 tr\356.", uCurTime, 10 * 60 * 1000);
+		return DT_Hold(nPlayerIdx, "<color=Red>Lo¹i nhiÖm vô l¹ - auto ch­a hç trî.", uCurTime, 10 * 60 * 1000);
 	}
 
 	case DTP_GOSHOP:
@@ -4562,7 +4562,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nDTEngaged = 1;
 		std::map<int, StationVector>::iterator it = g_ShopStation.find(nMap);
 		if (it == g_ShopStation.end() || it->second.empty())
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Th\265nh n\265y ch\255a c\343 t\344a \256\351 ti\326m t\271p h\343a.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Thµnh nµy ch­a cã täa ®é tiÖm t¹p hãa.");
 		// du tien chua? (uoc luong 100k; thieu thi rut)
 		if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < 100000 && pAp->bDTUseBox
 		&& pAp->nDTWDMoney > 0)
@@ -4603,7 +4603,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			int nAns = DT_Split(szBuf, apAns, 16);
 			int nPick = ea.nDTShopTry;
 			if (nPick >= nAns)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Ti\326m kh\253ng c\343 m\364c giao d\336ch ph\357 h\356p.");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>TiÖm kh«ng cã môc giao dÞch phï hîp.");
 			DT_Answer(nPlayerIdx, nPick);
 			++ea.nDTShopTry;
 			ea.uDTNext = uCurTime + 900;
@@ -4612,11 +4612,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// tim chu tiem tap hoa gan diem shop va mo thoai
 		std::map<int, StationVector>::iterator it = g_ShopStation.find(nMap);
 		if (it == g_ShopStation.end() || it->second.empty())
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>M\312t t\344a \256\351 ti\326m t\271p h\343a.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>MÊt täa ®é tiÖm t¹p hãa.");
 		sStation& s = it->second[0];
-		int nIdx = DT_FindNpcName(nPlayerIdx, "t\271p h", s.x, s.y, 300);
+		int nIdx = DT_FindNpcName(nPlayerIdx, "t¹p h", s.x, s.y, 300);
 		if (!nIdx)
-			nIdx = DT_FindNpcName(nPlayerIdx, "t\271p h", s.x, s.y, 600);
+			nIdx = DT_FindNpcName(nPlayerIdx, "t¹p h", s.x, s.y, 600);
 		if (nIdx)
 		{
 			int nX, nY, dX, dY;
@@ -4628,14 +4628,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				Player[nPlayerIdx].DialogNpc(nIdx);
 				ea.uDTNext = uCurTime + 800;
 				if (++ea.nDTRetry > 10)
-					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng m\353 \256\255\356c c\366a s\346 ti\326m t\271p h\343a.");
+					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh«ng më ®­îc cöa sæ tiÖm t¹p hãa.");
 				return 1;
 			}
 			DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
 			return 1;
 		}
 		if (++ea.nDTRetry > 10)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng th\312y ch\361 ti\326m t\271p h\343a.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh«ng thÊy chñ tiÖm t¹p hãa.");
 		return 1;
 	}
 
@@ -4681,14 +4681,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						return 1;
 					}
 					CoreDataChanged(GDCNI_UI_ACT, 3, 0);
-					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh\253ng \256\361 ti\322n mua \256\345 nhi\326m v\364.");
+					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh«ng ®ñ tiÒn mua ®å nhiÖm vô.");
 				}
 				int x, y;
 				if (!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 					pItem->GetWidth(), pItem->GetHeight(), &x, &y))
 				{
 					CoreDataChanged(GDCNI_UI_ACT, 3, 0);
-					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i \256\307y, kh\253ng mua \256\255\356c \256\345.");
+					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói ®Çy, kh«ng mua ®­îc ®å.");
 				}
 				SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
 				ea.uDTNext = uCurTime + 1200;
@@ -4698,7 +4698,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// shop nay khong co mon can -> dong, thu option khac cua tiem
 		CoreDataChanged(GDCNI_UI_ACT, 3, 0);
 		if (ea.nDTShopTry >= 4)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Ti\326m kh\253ng b\270n m\343n c\307n mua.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>TiÖm kh«ng b¸n mãn cÇn mua.");
 		ea.nDTPhase = DTP_SHOPTALK;
 		ea.uDTNext = uCurTime + 700;
 		return 1;
@@ -4714,13 +4714,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// dung Tho Dia Phu ve thanh roi ra Xa Phu di lai cho dung map.
 			if (ea.nDTMapId > 0 && ea.nDTQType == 4)
 			{
-				DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng ph\266i map nhi\326m v\364 - d\357ng Th\346 \247\336a Ph\357 v\322 th\265nh \256i l\271i.");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Kh«ng ph¶i map nhiÖm vô - dïng Thæ §Þa Phï vÒ thµnh ®i l¹i.");
 				ea.nDTBackXaFu = 1;
 				ea.nDTPhase = DTP_RETURN;
 				ea.nDTRetry = 0;
 				return 1;
 			}
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Th\265nh n\265y ch\255a c\343 t\344a \256\351 Xa Phu.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Thµnh nµy ch­a cã täa ®é Xa Phu.");
 		}
 		sStation& s = it->second[0];
 		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
@@ -4743,7 +4743,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCurTime))
 		{
 			if (++ea.nDTRetry > 15)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng th\312y Xa Phu.");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh«ng thÊy Xa Phu.");
 		}
 		return 1;
 	}
@@ -4768,7 +4768,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// nhieu tang), lay id THAT lam chuan roi farm luon - KHONG phu ve giua chung.
 		if (g_MoveStation.find(nMap) == g_MoveStation.end())
 		{
-			DT_Msg(nPlayerIdx, "<color=Green>\247\267 t\355i map nhi\326m v\364 - b\276t \256\307u \256\270nh qu\270i nh\306t cu\351n.");
+			DT_Msg(nPlayerIdx, "<color=Green>§· tíi map nhiÖm vô - b¾t ®Çu ®¸nh qu¸i nhÆt cuén.");
 			ea.nDTMapId = nMap;
 			ea.nDTPhase = DTP_FARM;
 			ea.nDTEngaged = 2;
@@ -4783,7 +4783,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			// van dung trong thanh: xa phu khong chuyen (server chua thay nhiem vu?)
 			if (++ea.nDTXaFuTry > 5)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Xa Phu kh\253ng ch\353 \256i map nhi\326m v\364 (ki\323m tra l\271i nhi\326m v\364).");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Xa Phu kh«ng chë ®i map nhiÖm vô (kiÓm tra l¹i nhiÖm vô).");
 			ea.nDTPhase = DTP_GOXAFU;
 			ea.nDTRetry = 0;
 		}
@@ -4842,7 +4842,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		 && ea.uDTFarmStall && uCurTime - ea.uDTFarmStall > 4u * 60u * 1000u)
 		{
 			ea.nDTHaveBase = 1;
-			DT_Msg(nPlayerIdx, "<color=Cyan>C\343 th\323 \256\267 \256\361 m\266nh (tin nh\276n tr\253i) - v\322 th\366 tr\266 nhi\326m v\364...");
+			DT_Msg(nPlayerIdx, "<color=Cyan>Cã thÓ ®· ®ñ m¶nh (tin nh¾n tr«i) - vÒ thö tr¶ nhiÖm vô...");
 			ea.nDTStep = DTI_TURNIN;
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTRetry = 0;
@@ -4850,10 +4850,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		if (ea.uDTFarmStall && uCurTime - ea.uDTFarmStall > 20u * 60u * 1000u)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>\247\270nh qu\270i qu\270 l\251u kh\253ng ti\325n tri\323n.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>§¸nh qu¸i qu¸ l©u kh«ng tiÕn triÓn.");
 		if (ea.nDTProg >= ea.nDTReqNum && ea.nDTReqNum > 0)
 		{
-			DT_Msg(nPlayerIdx, "<color=Green>\247\267 nh\306t \256\361 s\350 cu\351n - quay v\322 tr\266 nhi\326m v\364.");
+			DT_Msg(nPlayerIdx, "<color=Green>§· nhÆt ®ñ sè cuén - quay vÒ tr¶ nhiÖm vô.");
 			ea.nDTStep = DTI_TURNIN;
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTRetry = 0;
@@ -5046,7 +5046,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				const int nRw2 = (pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2) ? pAp->nDTReward2 : 2;
 				const bool bNhomA = (cap.nFinType <= 4) ? (nThu < 3) : (nThu >= 3);
 				if (nThu == 0)
-					DT_Msg(nPlayerIdx, "<color=AYellow>R\255\254ng th\255\353ng \256\267 m\353 - auto b\312m ch\344n ph\307n th\255\353ng...");
+					DT_Msg(nPlayerIdx, "<color=AYellow>R­¬ng th­ëng ®· më - auto bÊm chän phÇn th­ëng...");
 				// (20/08) bam nut THAT tren cua so thuong qua UI (GDCNI_UI_ACT 7 ->
 				// KUiDaTau/KUiDaTau1::AutoPick): di dung duong click nguoi choi nen
 				// cua so TU DONG sau khi chon - het canh "nhan roi ma bang van hien".
@@ -5068,7 +5068,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			// da thu ca 6 nut ma cua so van mo lai - thoi, di nhan nhiem vu ke
-			DT_Msg(nPlayerIdx, "<color=Red>Kh\253ng ch\344n \256\255\356c r\255\254ng th\255\353ng (\256\267 th\366 \256\361 6 n\363t) - b\341 qua.");
+			DT_Msg(nPlayerIdx, "<color=Red>Kh«ng chän ®­îc r­¬ng th­ëng (®· thö ®ñ 6 nót) - bá qua.");
 			ea.nDTRwTry = 0;
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
@@ -5084,7 +5084,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.uDTNext = uCurTime + 250;
 			return 1;
 		}
-		DT_Msg(nPlayerIdx, "<color=AYellow>\247\267 nh\313n th\255\353ng xong - \256i nh\313n nhi\326m v\364 k\325 ti\325p!");
+		DT_Msg(nPlayerIdx, "<color=AYellow>§· nhËn th­ëng xong - ®i nhËn nhiÖm vô kÕ tiÕp!");
 		ea.nDTRwTry = 0;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTQType = 0;
@@ -5104,7 +5104,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (uCurTime > ea.uDTHoldUntil)
 		{
 			DT_SapDong(nPlayerIdx);
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>\247i ch\356 qu\270 l\251u m\265 ch\255a mua \256\255\356c m\343n c\307n t\327m.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>§i chî qu¸ l©u mµ ch­a mua ®­îc mãn cÇn t×m.");
 		}
 		// mua xong chua? (item ve tui la xong viec di cho)
 		{
@@ -5125,7 +5125,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (nCo && nPosM == pos_equiproom)
 			{
 				DT_SapDong(nPlayerIdx);
-				DT_Msg(nPlayerIdx, "<color=Green>\247\267 mua \256\255\356c \256\345 c\307n t\327m \353 s\271p - quay v\322 tr\266 nhi\326m v\364!");
+				DT_Msg(nPlayerIdx, "<color=Green>§· mua ®­îc ®å cÇn t×m ë s¹p - quay vÒ tr¶ nhiÖm vô!");
 				ea.nDTItemIdx = nCo;
 				ea.nDTStep = DTI_TURNIN;
 				ea.nDTPhase = DTP_GOTONPC;
@@ -5179,7 +5179,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					? pAp->nDTMaxMua : (ea.nDTQType == 3 ? 30 : 200);
 				if (nBuy && nGia > nTran * 10000)
 				{
-					DT_Msg(nPlayerIdx, "<color=Yellow>S\271p c\343 m\343n c\307n nh\255ng gi\270 v\255\356t tr\307n cho ph\320p - b\341 qua s\271p n\265y.");
+					DT_Msg(nPlayerIdx, "<color=Yellow>S¹p cã mãn cÇn nh­ng gi¸ v­ît trÇn cho phÐp - bá qua s¹p nµy.");
 					nBuy = 0;
 				}
 				if (nBuy && Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < nGia)
@@ -5204,7 +5204,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 							return 1;
 						}
 					}
-					DT_Msg(nPlayerIdx, "<color=Yellow>Th\312y m\343n c\307n \353 s\271p m\265 kh\253ng \256\361 ti\322n mua.");
+					DT_Msg(nPlayerIdx, "<color=Yellow>ThÊy mãn cÇn ë s¹p mµ kh«ng ®ñ tiÒn mua.");
 					nBuy = 0;
 				}
 				if (nBuy)
@@ -5218,7 +5218,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					{
 						DT_SapDong(nPlayerIdx);
 						return DT_BagRelease(nPlayerIdx, pAp, uCurTime,
-							"<color=Yellow>T\363i kh\253ng c\337n \253 tr\350ng \256\323 nh\313n \256\345 mua \353 s\271p.");
+							"<color=Yellow>Tói kh«ng cßn « trèng ®Ó nhËn ®å mua ë s¹p.");
 					}
 					// (PB V11) gia server tinh o THOI DIEM MUA theo m_Idx - snapshot cu qua
 					// 3.5s thi xin cap nhat lai roi moi mua (thu hep cua so doi gia lua auto).
@@ -5307,7 +5307,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				// server chi doi cung/canh region (~1 man hinh) - du gan roi, mo xem
 				{
 					char szXemSap[160];
-					sprintf(szXemSap, "<color=Cyan>Xem s\271p \"%s\" ...",
+					sprintf(szXemSap, "<color=Cyan>Xem s¹p \"%s\" ...",
 						Npc[nGan].ShopName[0] ? Npc[nGan].ShopName : Npc[nGan].Name);
 					DT_Msg(nPlayerIdx, szXemSap);
 				}
@@ -5336,7 +5336,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				DT_SapDong(nPlayerIdx);
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"<color=Orange>\247\267 xem s\271p kh\276p 10 th\265nh/th\253n m\265 kh\253ng c\343 m\343n c\307n t\327m.");
+					"<color=Orange>§· xem s¹p kh¾p 10 thµnh/th«n mµ kh«ng cã mãn cÇn t×m.");
 			}
 			ea.nDTPhase = DTP_CITYHOP;
 			ea.nDTShopTry = nKe;	// chi so thanh dich trong g_DTNpc
@@ -5345,7 +5345,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				// (r3) thong ke de chan doan: xem duoc bao nhieu sap, may sap "cam"
 				char szTKSap[220];
-				sprintf(szTKSap, "<color=Cyan>Th\265nh n\265y: xem %d s\271p (%d kh\253ng ph\266n h\345i) - kh\253ng c\343 m\343n c\307n, nh\352 Xa Phu qua th\265nh k\325...",
+				sprintf(szTKSap, "<color=Cyan>Thµnh nµy: xem %d s¹p (%d kh«ng ph¶n håi) - kh«ng cã mãn cÇn, nhê Xa Phu qua thµnh kÕ...",
 					g_nDTSapXem, g_nDTSapCam);
 				DT_Msg(nPlayerIdx, szTKSap);
 			}
@@ -5360,7 +5360,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (uCurTime > ea.uDTHoldUntil)
 		{
 			DT_SapDong(nPlayerIdx);
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>\247i ch\356 qu\270 l\251u m\265 ch\255a mua \256\255\356c m\343n c\307n t\327m.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>§i chî qu¸ l©u mµ ch­a mua ®­îc mãn cÇn t×m.");
 		}
 		if (ea.nDTShopTry < 0 || ea.nDTShopTry >= g_nDTNpcCount)
 		{
@@ -5399,7 +5399,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				DT_SapDong(nPlayerIdx);
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"<color=Orange>Kh\253ng nh\352 Xa Phu qua th\265nh kh\270c \256\255\356c (thi\325u ti\322n?).");
+					"<color=Orange>Kh«ng nhê Xa Phu qua thµnh kh¸c ®­îc (thiÕu tiÒn?).");
 			}
 			ea.nDTShopTry = nKe2;
 			return 1;
@@ -5413,7 +5413,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				DT_SapDong(nPlayerIdx);
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"<color=Red>L\271c map kh\253ng c\343 Xa Phu m\265 kh\253ng d\357ng \256\255\356c ph\357 v\322 th\265nh.");
+					"<color=Red>L¹c map kh«ng cã Xa Phu mµ kh«ng dïng ®­îc phï vÒ thµnh.");
 			}
 			ea.uDTNext = uCurTime + 3000;
 			return 1;
@@ -5449,7 +5449,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// Lam An KHONG co Trung Tam -> vao hang dau "Lam An Nam". CAM doi sang
 			// khop needle "Trung Tam": Lam An se truot het handler va ket 12s
 			// (nhu bug " Phu" cua Thanh Do). Thon dich chuyen thang, khong menu khu.
-			if ((idx2 = DT_FindAns(apAns2, nAns2, "thu\313t th\307n h\265nh")) >= 0)
+			if ((idx2 = DT_FindAns(apAns2, nAns2, "thuËt thÇn hµnh")) >= 0)
 			{
 				DT_Answer(nPlayerIdx, idx2);
 				ea.uDTNext = uCurTime + 900;
@@ -5458,7 +5458,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (g_uDTThpT > 1)
 			{
 				const int bThon5 = (nDestMap == 20 || nDestMap == 121 || nDestMap == 53);
-				idx2 = DT_FindAns(apAns2, nAns2, bThon5 ? "Th\253n trang" : "Th\265nh th\336");
+				idx2 = DT_FindAns(apAns2, nAns2, bThon5 ? "Th«n trang" : "Thµnh thÞ");
 				if (idx2 >= 0)
 				{
 					DT_Answer(nPlayerIdx, idx2);
@@ -5477,7 +5477,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, 1271, nPlayerIdx))
 			{
 				g_uDTThpT = (uCurTime > 1) ? uCurTime : 2;
-				DT_Msg(nPlayerIdx, "<color=Cyan>D\357ng Th\307n H\265nh Ph\357 d\336ch chuy\323n t\355i th\265nh k\325 ti\325p...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Dïng ThÇn Hµnh Phï dÞch chuyÓn tíi thµnh kÕ tiÕp...");
 				ea.uDTNext = uCurTime + 1200;
 				return 1;
 			}
@@ -5491,7 +5491,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			g_uDTThpT = 1;	// het 12s van chua toi - roi xuong Xa Phu
-			DT_Msg(nPlayerIdx, "<color=Yellow>Th\307n H\265nh Ph\357 kh\253ng \256\255a \256i \256\255\356c - ch\271y t\355i Xa Phu v\313y.");
+			DT_Msg(nPlayerIdx, "<color=Yellow>ThÇn Hµnh Phï kh«ng ®­a ®i ®­îc - ch¹y tíi Xa Phu vËy.");
 		}
 		// di den Xa Phu + mo thoai (khuon DTP_GOXAFU)
 		sStation& sXa = itXa->second[0];
@@ -5519,11 +5519,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	{
 		ea.nDTEngaged = 1;
 		if (ea.nDTUsedPD > 40)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>D\357ng qu\270 nhi\322u Ph\363c Duy\252n L\351 m\265 v\311n ch\255a \256\361 \256i\323m.");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Dïng qu¸ nhiÒu Phóc Duyªn Lé mµ vÉn ch­a ®ñ ®iÓm.");
 		// item khong tac dung? (2 lan dung ma fuyuan khong doi)
 		int nFY = Npc[Player[nPlayerIdx].m_nIndex].nFuYuan;
 		if (ea.nDTUsedPD >= 2 && nFY <= ea.nDTFuYuanPrev)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Ph\363c Duy\252n L\351 kh\253ng c\343 t\270c d\364ng (server thi\325u script?).");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Phóc Duyªn Lé kh«ng cã t¸c dông (server thiÕu script?).");
 		// dung 1 item tu tui; khong co -> keo tu ruong; khong co nua -> thu tra roi skip
 		bool bUsed = false;
 		for (i = 0; i < 3 && !bUsed; ++i)
@@ -5556,7 +5556,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						// (r4 - PB R8) mo khoa mai khong duoc (pass sai?) - dung lap vo han
 						if (++ea.nDTRetry > 12)
 						{
-							DT_Msg(nPlayerIdx, "<color=Yellow>Kh\253ng m\353 kh\343a \256\255\356c r\255\254ng (ki\323m tra m\313t kh\310u \353 tab H\313u c\307n).");
+							DT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng më khãa ®­îc r­¬ng (kiÓm tra mËt khÈu ë tab HËu cÇn).");
 							break;	// roi xuong thu tra / bao het
 						}
 						return 1;
@@ -5581,7 +5581,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				if (DT_FindItemRule(nPlayerIdx, true, false, 6, 1, 121 + i, -1, -1, 0, 0, 0, &nPosPD)
 				 && nPosPD != pos_equiproom)
 				{
-					DT_Msg(nPlayerIdx, "<color=Yellow>R\255\254ng c\343 Ph\363c Duy\252n L\351 nh\255ng \256ang kh\343a - nh\313p m\313t kh\310u r\255\254ng \353 tab H\313u c\307n.");
+					DT_Msg(nPlayerIdx, "<color=Yellow>R­¬ng cã Phóc Duyªn Lé nh­ng ®ang khãa - nhËp mËt khÈu r­¬ng ë tab HËu cÇn.");
 					break;
 				}
 			}
@@ -5594,7 +5594,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			++ea.nDTUsedPD;
 			return 1;
 		}
-		return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>H\325t Ph\363c Duy\252n L\351 m\265 v\311n ch\255a \256\361 \256i\323m.");
+		return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>HÕt Phóc Duyªn Lé mµ vÉn ch­a ®ñ ®iÓm.");
 	}
 
 	default:

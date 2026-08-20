@@ -149,7 +149,7 @@ void KUiTongGrant::UpdateDescription()
 	const char* szScope = (m_bMoney || m_BtnTotalMember.IsButtonChecked()) ?
 		m_szForOnline : m_szForWhole;
 	if (m_bMoney)
-		sprintf(szDesc, "%s\n%s", szScope, "\247\254n v\336: L\255\356NG (kh\253ng ph\266i v\271n)");
+		sprintf(szDesc, "%s\n%s", szScope, "§¬n vÞ: L­îNG (kh«ng ph¶i v¹n)");
 	else
 		strncpy(szDesc, szScope, sizeof(szDesc) - 1), szDesc[sizeof(szDesc) - 1] = 0;
 	m_TextDescription.SetText(szDesc);

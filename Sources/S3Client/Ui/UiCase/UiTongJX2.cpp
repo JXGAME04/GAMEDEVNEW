@@ -61,10 +61,10 @@ static const char* s_szTabName[TJX2_UI_TABS] =
 // lech mot vi tri la phan quyen sai bit)
 static const char* s_szRightName[14] =
 {
-	"B\346 nhi\326m - mi\324n nhi\326m", "\247\346i phe", "\247\346i t\252n",
-	"Tr\364c xu\312t", "Nh\313t k\375", "Qu\266n l\375 li\252n minh",
-	"Th\250ng c\312p", "Tho\270i \310n", "Khu v\371c", "T\270c ph\255\352ng",
-	"Ng\251n qu\374", "M\364c ti\252u tu\307n", "Th\265nh th\336", "K\374 n\250ng",
+	"BÊ nhi÷m - mi‘n nhi÷m", "ßÊi phe", "ßÊi t™n",
+	"TrÙc xu t", "NhÀt k˝", "Qu∂n l˝ li™n minh",
+	"Th®ng c p", "Tho∏i »n", "Khu v˘c", "T∏c ph≠Íng",
+	"Ng©n qu¸", "MÙc ti™u tu«n", "Thµnh thﬁ", "K¸ n®ng",
 };
 static const DWORD s_dwRightId[14] =
 {
@@ -77,13 +77,13 @@ static const DWORD s_dwRightId[14] =
 static const char* s_szWsName[8] =
 {
 	"",
-	"Khu Binh gi\270p",
-	"Khu Thi\252n C\253ng",
-	"Khu M\306t n\271",
-	"Khu Luy\326n t\313p",
-	"Khu Thi\252n \375",
-	"Khu L\324 v\313t",
-	"Khu ho\271t \256\351ng",
+	"Khu Binh gi∏p",
+	"Khu Thi™n C´ng",
+	"Khu M∆t nπ",
+	"Khu Luy÷n tÀp",
+	"Khu Thi™n ˝",
+	"Khu L‘ vÀt",
+	"Khu hoπt ÆÈng",
 };
 
 // 21 anh icon = 7 khu x 3 trang thai, lay tu chinh bang du lieu tren:
@@ -119,9 +119,9 @@ static const char* s_szWsIcon[8][3] =
 // ten 10 mon phai JX1 (id 1..10) - TCVN3
 static const char* s_szFaction[11] =
 {
-	"-", "Thi\325u L\251m", "Thi\252n V\255\254ng", "\247\255\352ng M\253n",
-	"Ng\362 \247\351c", "Nga My", "Th\363y Y\252n", "C\270i Bang",
-	"Thi\252n Nh\311n", "V\342 \247ang", "C\253n L\253n",
+	"-", "Thi’u L©m", "Thi™n V≠¨ng", "ß≠Íng M´n",
+	"NgÚ ßÈc", "Nga My", "ThÛy Y™n", "C∏i Bang",
+	"Thi™n Nh…n", "V‚ ßang", "C´n L´n",
 };
 
 // Ten 5 chuc vu - NGUYEN VAN bang chuoi ban Linux (stringtable_client.txt:481-485).
@@ -131,8 +131,8 @@ static const char* s_szFaction[11] =
 // 0 = Bang chu ... 4 = An sy.
 static const char* s_szFigure[5] =
 {
-	"Bang ch\361 ", "Tr\255\353ng L\267o", "\247\351i tr\255\353ng",
-	"\247\326 t\366 ", "\310n s\374",
+	"Bang chÒ ", "Tr≠Îng L∑o", "ßÈi tr≠Îng",
+	"ß÷ tˆ ", "»n s¸",
 };
 
 // Trang Tin tuc: bind NGUYEN VAN section blueprint Â∏Æ‰ºöÂü∫Á°Ä‰ø°ÊÅØÈ°µÈù¢.ini
@@ -153,28 +153,28 @@ struct TJX2InfoCtl
 #define TJX2_INFO_NUM	33
 static const TJX2InfoCtl s_sInfoCtl[TJX2_INFO_NUM] =
 {
-	{"TitleTongInfo",     "Tin t\370c"},
-	{"TitleTongName",     "Bang h\351i"},          {"TxtTongName",      NULL},
-	{"TitleMaster",       "Bang ch\361"},          {"TxtMaster",        NULL},
-	{"TitleLeague",       "Li\252n minh"},         {"TxtLeague",        NULL},
+	{"TitleTongInfo",     "Tin t¯c"},
+	{"TitleTongName",     "Bang hÈi"},          {"TxtTongName",      NULL},
+	{"TitleMaster",       "Bang chÒ"},          {"TxtMaster",        NULL},
+	{"TitleLeague",       "Li™n minh"},         {"TxtLeague",        NULL},
 	{"TitleCamp",         "Phe"},                  {"TxtCamp",          NULL},
-	{"TitleTongLevel",    "\247\274ng c\312p"},    {"TxtTongLevel",     NULL},
-	{"TitleMemberNum",    "Nh\251n s\350"},        {"TxtMemberNum",     NULL},
-	{"TitleBuildLevel",   "\247\274ng c\312p ki\325n thi\325t"}, {"TxtBuildLevel", NULL},
-	{"TitleTongCapital",  "Ng\251n qu\374"},       {"TxtTongCapital",   NULL},
-	{"TitleBuildFund",    "Ng\251n s\270ch ki\325n thi\325t"}, {"TxtBuildFund", NULL},
-	{"TitleTotalOffer",   "C\350ng hi\325n d\371 tr\367"}, {"TxtTotalOffer", NULL},
-	{"TitlePersonalInfo", "Tin t\370c c\270 nh\251n"},
-	{"TitlePersonalOffer","C\350ng hi\325n c\270 nh\251n"}, {"TxtPersonalOffer", NULL},
-	{"TitleWeeklyOffer",  "C\350ng hi\325n tu\307n"}, {"TxtWeeklyOffer", NULL},
-	{"TxtHelpTitle",      "Gi\363p \256\354"},
-	{"Van1",              "v\271n l\255\356ng"},   {"Van2",             "v\271n l\255\356ng"},
+	{"TitleTongLevel",    "ßºng c p"},    {"TxtTongLevel",     NULL},
+	{"TitleMemberNum",    "Nh©n sË"},        {"TxtMemberNum",     NULL},
+	{"TitleBuildLevel",   "ßºng c p ki’n thi’t"}, {"TxtBuildLevel", NULL},
+	{"TitleTongCapital",  "Ng©n qu¸"},       {"TxtTongCapital",   NULL},
+	{"TitleBuildFund",    "Ng©n s∏ch ki’n thi’t"}, {"TxtBuildFund", NULL},
+	{"TitleTotalOffer",   "CËng hi’n d˘ tr˜"}, {"TxtTotalOffer", NULL},
+	{"TitlePersonalInfo", "Tin t¯c c∏ nh©n"},
+	{"TitlePersonalOffer","CËng hi’n c∏ nh©n"}, {"TxtPersonalOffer", NULL},
+	{"TitleWeeklyOffer",  "CËng hi’n tu«n"}, {"TxtWeeklyOffer", NULL},
+	{"TxtHelpTitle",      "GiÛp ÆÏ"},
+	{"Van1",              "vπn l≠Óng"},   {"Van2",             "vπn l≠Óng"},
 	// 15/08 (+4): 2 hang TRONG SAN cua blueprint, khong chong toa do hang nao
 	// dang hien (BattleFund Top=188, StoredBuildFund Top=245; DailyCost chong
 	// BattleFund nen khong nap). Quy chien bi dang la cau hoi van hanh ma UI
 	// khong he hien no.
-	{"TitleBattleFund",   "Ng\251n s\270ch chi\325n b\336"}, {"TxtBattleFund", NULL},
-	{"TitleStoredBuildFund", "Ki\325n thi\325t d\371 tr\367"}, {"TxtStoredBuildFund", NULL},
+	{"TitleBattleFund",   "Ng©n s∏ch chi’n bﬁ"}, {"TxtBattleFund", NULL},
+	{"TitleStoredBuildFund", "Ki’n thi’t d˘ tr˜"}, {"TxtStoredBuildFund", NULL},
 };
 // Chi so o GIA TRI de RenderInfo do so lieu vao (khop bang tren)
 #define TJX2_INFO_TONGNAME		2
@@ -204,24 +204,24 @@ static const char* s_szRtSec[14] =
 // nhan 14 o kiem quyen (cung thu tu mat na s_dwRightId) - TCVN3 co dau
 static const char* s_szChkLabel[14] =
 {
-	"B\346 nhi\326m", "\247\346i phe", "\247\346i t\252n", "Tr\364c xu\312t",
-	"Nh\313t k\375", "Li\252n minh", "Th\250ng c\312p", "Tho\270i \310n",
-	"Khu v\371c", "T\270c ph\255\352ng", "Ng\251n qu\374", "M\364c ti\252u tu\307n",
-	"Th\265nh th\336", "K\374 n\250ng",
+	"BÊ nhi÷m", "ßÊi phe", "ßÊi t™n", "TrÙc xu t",
+	"NhÀt k˝", "Li™n minh", "Th®ng c p", "Tho∏i »n",
+	"Khu v˘c", "T∏c ph≠Íng", "Ng©n qu¸", "MÙc ti™u tu«n",
+	"Thµnh thﬁ", "K¸ n®ng",
 };
 
 // Nhan trang Chieu mo: NGUYEN VAN byte TCVN3 tu blueprint (Text= cua tung section)
 struct TJX2RecLbl { const char* szSec; const char* szLabel; };
 static const TJX2RecLbl s_sRecLbl[8] =
 {
-	{"JiyuTitle",       "Tin nh\276n bang h\351i:"},
-	{"ZhaoMuTitle",     "Tin t\370c chi\252u m\351 bang h\351i"},
-	{"QingXiangTitle",  "Khuynh h\255\355ng ch\361 y\325u bang h\351i:"},
-	{"HuoDongTitle",    "Ho\271t \256\351ng ch\361 y\325u bang h\351i:"},
-	{"AutoAcceptTitle", "Cao h\254n ______c\312p t\371 \256\351ng nh\313p bang"},
-	{"RefuseLevelTitle","T\365 ch\350i gamer d\255\355i______ c\312p xin nh\313p bang"},
-	{"ApplyTitle",      "Danh s\270ch th\265nh vi\252n xin gia nh\313p bang h\351i"},
-	{"ApplyerName",     "T\252n gamer xin gia nh\313p             \247\274ng c\312p"},
+	{"JiyuTitle",       "Tin nhæn bang hÈi:"},
+	{"ZhaoMuTitle",     "Tin t¯c chi™u mÈ bang hÈi"},
+	{"QingXiangTitle",  "Khuynh h≠Ìng chÒ y’u bang hÈi:"},
+	{"HuoDongTitle",    "Hoπt ÆÈng chÒ y’u bang hÈi:"},
+	{"AutoAcceptTitle", "Cao h¨n ______c p t˘ ÆÈng nhÀp bang"},
+	{"RefuseLevelTitle","Tı chËi gamer d≠Ìi______ c p xin nhÀp bang"},
+	{"ApplyTitle",      "Danh s∏ch thµnh vi™n xin gia nhÀp bang hÈi"},
+	{"ApplyerName",     "T™n gamer xin gia nhÀp             ßºng c p"},
 };
 #define TJX2_UI_PAGE_RECRUIT	5	// trang UI chieu mo (goi server PAGE_RECRUIT)
 // Trang Su dung chuc nang: bind nguyen van section blueprint (Fun_<ten goc>).
@@ -231,14 +231,14 @@ static const TJX2RecLbl s_sRecLbl[8] =
 struct TJX2FunTxt { const char* szSec; const char* szLabel; };	// szLabel NULL = o du lieu
 static const TJX2FunTxt s_sFunTxt[15] =
 {
-	{"TitleTongInfo", "Tin t\370c"},
-	{"TitleTongName", "T\252n bang"},        {"TxtTongName", NULL},
-	{"TitleTongUnion", "Li\252n minh"},      {"TxtTongUnion", NULL},
-	{"TitleBuildLevel", "\247\274ng c\312p"}, {"TxtBuildLevel", NULL},
-	{"TitleTotalOffer", "T\346ng c\350ng hi\325n"}, {"TxtTotalOffer", NULL},
-	{"TitleTongMoney", "Ng\251n qu\374"},    {"TxtTongMoney", NULL},
-	{"TitleBuildFund", "Qu\374 ki\325n thi\325t"}, {"TxtBuildFund", NULL},
-	{"TitleBattleFund", "Qu\374 chi\325n b\336"},  {"TxtBattleFund", NULL},
+	{"TitleTongInfo", "Tin t¯c"},
+	{"TitleTongName", "T™n bang"},        {"TxtTongName", NULL},
+	{"TitleTongUnion", "Li™n minh"},      {"TxtTongUnion", NULL},
+	{"TitleBuildLevel", "ßºng c p"}, {"TxtBuildLevel", NULL},
+	{"TitleTotalOffer", "TÊng cËng hi’n"}, {"TxtTotalOffer", NULL},
+	{"TitleTongMoney", "Ng©n qu¸"},    {"TxtTongMoney", NULL},
+	{"TitleBuildFund", "Qu¸ ki’n thi’t"}, {"TxtBuildFund", NULL},
+	{"TitleBattleFund", "Qu¸ chi’n bﬁ"},  {"TxtBattleFund", NULL},
 };
 // 3 o cuoi khoi trai + khoi ca nhan dung chung m_FunTxt? khong du cho - gop vao bang nut du lieu:
 struct TJX2FunBtn { const char* szSec; const char* szLabel; int nAct; };
@@ -250,18 +250,18 @@ struct TJX2FunBtn { const char* szSec; const char* szLabel; int nAct; };
 #define TJX2_QX_NUM		7
 static const char* s_szRecQX[TJX2_QX_NUM] =
 {
-	"(ch\255a ch\355n)",
-	"R\266nh m\355i ch\254i", "Th\335ch PK", "Tranh b\270",
-	"D\371 th\325 v\253 tranh", "T\335nh n\250ng PVE", "K\325t giao",
+	"(ch≠a chÌn)",
+	"R∂nh mÌi ch¨i", "Th›ch PK", "Tranh b∏",
+	"D˘ th’ v´ tranh", "T›nh n®ng PVE", "K’t giao",
 };
 #define TJX2_HD_NUM		12
 static const char* s_szRecHD[TJX2_HD_NUM] =
 {
-	"(ch\255a ch\355n)",
-	"T\350ng Kim", "V\255\356t \266i", "\247\270nh Boss", "C\253ng Th\265nh",
-	"Phong L\250ng \256\351", "Nhi\326m v\364 D\267 T\310u", "Vi\252m \256\325",
-	"T\335n S\370", "M\351c Nh\251n", "V\342 l\251m li\252n \256\312u",
-	"Thi\252n Tr\327 M\313t C\266nh",
+	"(ch≠a chÌn)",
+	"TËng Kim", "V≠Ót ∂i", "ß∏nh Boss", "C´ng Thµnh",
+	"Phong L®ng ÆÈ", "Nhi÷m vÙ D∑ T»u", "Vi™m Æ’",
+	"T›n S¯", "MÈc Nh©n", "V‚ l©m li™n Æ u",
+	"Thi™n Tr◊ MÀt C∂nh",
 };
 
 // 11 = gop tien ca nhan vao QUY KIEN THIET (COP_DONATE, nhan cong hien);
@@ -273,43 +273,43 @@ static const char* s_szRecHD[TJX2_HD_NUM] =
 #define TJX2_FUN_BTNS	24
 static const TJX2FunBtn s_sFunBtn[TJX2_FUN_BTNS] =
 {
-	{"BtnUpgradeBuildLevel", "N\251ng c\312p", 0},
-	{"BtnAssignTongOffer",   "Ph\270t", 1},
-	{"BtnGetTongMoney",      "R\363t", 9},	// nguyen van ban goc; chuoi 4 byte
+	{"BtnUpgradeBuildLevel", "N©ng c p", 0},
+	{"BtnAssignTongOffer",   "Ph∏t", 1},
+	{"BtnGetTongMoney",      "RÛt", 9},	// nguyen van ban goc; chuoi 4 byte
 											// "Nhan" cua ta bi nut rong 25px cat thanh "N.."
-	{"BtnAssignTongMoney",   "Ph\270t", 10},
-	{"BtnTransformMoney",    "\247\346i", -1},
-	{"BtnRecruit",           "Chi\252u m\351", 4},	// sprite goc -
+	{"BtnAssignTongMoney",   "Ph∏t", 10},
+	{"BtnTransformMoney",    "ßÊi", -1},
+	{"BtnRecruit",           "Chi™u mÈ", 4},	// sprite goc -
 											// KHONG co trong pak -> ini dung 5
-	{"BtnKickOut",           "\247u\346i ng\255\352i", 2},
-	{"BtnDepose",            "Tru\312t ch\370c", 3},
-	{"Btn_DispenseOffer",    "Ph\270t c\350ng hi\325n", 1},
-	{"BtnCreateTongMap",     "T\271o l\267nh \256\336a", 5},
-	{"BtnChangeCamp",       "\247\346i phe", 12},
+	{"BtnKickOut",           "ßuÊi ng≠Íi", 2},
+	{"BtnDepose",            "Tru t ch¯c", 3},
+	{"Btn_DispenseOffer",    "Ph∏t cËng hi’n", 1},
+	{"BtnCreateTongMap",     "Tπo l∑nh Æﬁa", 5},
+	{"BtnChangeCamp",       "ßÊi phe", 12},
 	{"BtnConfigureTongMap",  "", -1},
 	{"BtnTongStunt",         "", -1},
-	{"BtnStorePersonalOffer","G\366i", 7},	// nguyen van blueprint (Label=G\366i)
-	{"BtnLeaveTong",         "R\352i bang", 8},
-	{"BtnStoreBuildFund",    "G\366i", 11},
-	{"BtnStoreTongMoney",    "G\366i", 13},	// nap ngan quy (MONEYFUND_ADD ban goc)
+	{"BtnStorePersonalOffer","Gˆi", 7},	// nguyen van blueprint (Label=G\366i)
+	{"BtnLeaveTong",         "RÍi bang", 8},
+	{"BtnStoreBuildFund",    "Gˆi", 11},
+	{"BtnStoreTongMoney",    "Gˆi", 13},	// nap ngan quy (MONEYFUND_ADD ban goc)
 	// trang con 3 - LIEN MINH (nhan nguyen van blueprint, ke ca loi go
 	// "li\252m" cua ban goc va dau cach dau nhan dai than)
-	{"BtnCreateUnion",       "L\313p li\252n minh", 14},
-	{"BtnApplyJionUnion",    "V\265o li\252m minh", 15},
-	{"BtnAcceptUnionReq",    "Gia nh\313p li\252n minh", 16},
-	{"BtnLeaveUnion",        "H\361y li\252n minh", 17},
-	{"BtnKickUnionTong",     "Tr\364c xu\312t", 18},
+	{"BtnCreateUnion",       "LÀp li™n minh", 14},
+	{"BtnApplyJionUnion",    "Vµo li™m minh", 15},
+	{"BtnAcceptUnionReq",    "Gia nhÀp li™n minh", 16},
+	{"BtnLeaveUnion",        "HÒy li™n minh", 17},
+	{"BtnKickUnionTong",     "TrÙc xu t", 18},
 	// trang con 4 - DAI THAN QUOC GIA
-	{"BtnAppointMinister",   " \361y nhi\326m \256\271i th\307n", 19},
-	{"BtnFireMinister",      " C\270ch ch\370c \256\271i th\307n", 20},
+	{"BtnAppointMinister",   " Òy nhi÷m Æπi th«n", 19},
+	{"BtnFireMinister",      " C∏ch ch¯c Æπi th«n", 20},
 };
 
 // Trang Phuong tho: bind blueprint (Ws_*). Title co nhan TCVN3, Txt do render dien.
 static const TJX2FunTxt s_sWsTxt[6] =
 {
-	{"TitleWorkshopNum", "S\350 t\270c ph\255\352ng"}, {"TxtWorkshopNum", NULL},
-	{"TitleMaxRank", "Gi\355i h\271n c\312p"}, {"TxtMaxRank", NULL},
-	{"TitleServiceFee", "B\266o tr\327 h\265ng ng\265y"}, {"TxtServiceFee", NULL},
+	{"TitleWorkshopNum", "SË t∏c ph≠Íng"}, {"TxtWorkshopNum", NULL},
+	{"TitleMaxRank", "GiÌi hπn c p"}, {"TxtMaxRank", NULL},
+	{"TitleServiceFee", "B∂o tr◊ hµng ngµy"}, {"TxtServiceFee", NULL},
 };
 static const char* s_szWsBtnSec[6] =
 {
@@ -318,16 +318,16 @@ static const char* s_szWsBtnSec[6] =
 };
 static const char* s_szWsBtnLbl[6] =
 {
-	"L\313p khu", "M\353 khu", "\247\343ng khu",
-	"N\251ng c\312p khu", "\247\306t c\312p d\357ng", "X\343a khu",
+	"LÀp khu", "MÎ khu", "ß„ng khu",
+	"N©ng c p khu", "ß∆t c p dÔng", "X„a khu",
 };
 
 // Nhan 4 muc con trang Nhat ky - NGUYEN VAN khoa Label= cua ban thiet ke goc
 // (truoc day ta tu rut gon thanh "Thong bao" / "Bang vu" / "Lich su").
 static const char* s_szRcSub[4] =
 {
-	"M\364c ti\252u tu\307n", "C\253ng c\270o bang h\351i",
-	"S\371 ki\326n bang h\351i", "L\336ch s\366 bang h\351i",
+	"MÙc ti™u tu«n", "C´ng c∏o bang hÈi",
+	"S˘ ki÷n bang hÈi", "Lﬁch sˆ bang hÈi",
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -689,7 +689,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	ms_pSelf->m_Bot[2].Init(&Ini, "BtnTongList");
 	ms_pSelf->m_Bot[3].Init(&Ini, "BtnClose");
 	ms_pSelf->m_RecToggle.Init(&Ini, "Rec_ToggleRecruit");
-	ms_pSelf->m_RecToggle.SetLabel("\247\343ng/m\353 tuy\323n");
+	ms_pSelf->m_RecToggle.SetLabel("ß„ng/mÎ tuy”n");
 	// BO HAN khoi 13 muc Fun2_*: chung la ban dan NHAM tu trang Thong tin co ban
 	// sang trang Chuc nang. Ca 13 muc deu de len mot muc cua ban thiet ke goc
 	// trang Chuc nang - do la nguon goc cua chu "van luong" thua, dong tieu de
@@ -755,10 +755,10 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			ms_pSelf->m_FunTxt[i].SetText(s_sFunTxt[i].szLabel);
 	}
 	ms_pSelf->m_FunP[0].Init(&Ini, "Fun_TxtPersonalInfo");
-	ms_pSelf->m_FunP[0].SetText("Tin t\370c c\270 nh\251n");
+	ms_pSelf->m_FunP[0].SetText("Tin t¯c c∏ nh©n");
 	ms_pSelf->m_FunPBg[0].Init(&Ini, "Fun_TitlePersonalOffer");
 	ms_pSelf->m_FunP[1].Init(&Ini, "Fun_TitlePersonalOffer");
-	ms_pSelf->m_FunP[1].SetText("C\350ng hi\325n c\270 nh\251n");
+	ms_pSelf->m_FunP[1].SetText("CËng hi’n c∏ nh©n");
 	ms_pSelf->m_FunPBg[1].Init(&Ini, "Fun_TxtPersonalOffer");	// thanh ong
 	ms_pSelf->m_FunP[2].Init(&Ini, "Fun_TxtPersonalOffer");
 	// HAI HANG con lai cua khoi Tin tuc ca nhan - ban thiet ke goc CO du
@@ -766,12 +766,12 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 	// hang = khung do + o so + nut Gui. Truoc day chi bind hang dau nen
 	ms_pSelf->m_FunPBg[2].Init(&Ini, "Fun_TitleTongMoney2");
 	ms_pSelf->m_FunP[3].Init(&Ini, "Fun_TitleTongMoney2");
-	ms_pSelf->m_FunP[3].SetText("Ng\251n qu\374");
+	ms_pSelf->m_FunP[3].SetText("Ng©n qu¸");
 	ms_pSelf->m_FunPBg[3].Init(&Ini, "Fun_TxtTongMoney2");
 	ms_pSelf->m_FunP[4].Init(&Ini, "Fun_TxtTongMoney2");
 	ms_pSelf->m_FunPBg[4].Init(&Ini, "Fun_TitleBuildFund2");
 	ms_pSelf->m_FunP[5].Init(&Ini, "Fun_TitleBuildFund2");
-	ms_pSelf->m_FunP[5].SetText("Ng\251n s\270ch ki\325n thi\325t");
+	ms_pSelf->m_FunP[5].SetText("Ng©n s∏ch ki’n thi’t");
 	ms_pSelf->m_FunPBg[5].Init(&Ini, "Fun_TxtBuildFund2");
 	ms_pSelf->m_FunP[6].Init(&Ini, "Fun_TxtBuildFund2");
 	ms_pSelf->m_FunMask.Init(&Ini, "Fun_ImgSubPageMask");
@@ -889,7 +889,7 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			sprintf(szSec, "Ozm_QingXiangTitle%d", z + 1);
 			ms_pSelf->m_ZmQxT[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmQxT[z].Enable(false);
-			ms_pSelf->m_ZmQxT[z].SetText("Khuynh h\255\355ng bang h\351i");
+			ms_pSelf->m_ZmQxT[z].SetText("Khuynh h≠Ìng bang hÈi");
 			sprintf(szSec, "Ozm_QingXiang%d", z + 1);
 			ms_pSelf->m_ZmQx[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmQx[z].Enable(false);
@@ -897,8 +897,8 @@ void KUiTongJX2::LoadScheme(const char* pScheme)
 			sprintf(szSec, "Ozm_HuoDongTitle%d", z + 1);
 			ms_pSelf->m_ZmHdT[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmHdT[z].Enable(false);
-			ms_pSelf->m_ZmHdT[z].SetText(z == 0 ? "Ho\271t \256\351ng bang h\351i"
-				: "Ho\271t \256\351ng bang h\351i:");
+			ms_pSelf->m_ZmHdT[z].SetText(z == 0 ? "Hoπt ÆÈng bang hÈi"
+				: "Hoπt ÆÈng bang hÈi:");
 			sprintf(szSec, "Ozm_HuoDong%d", z + 1);
 			ms_pSelf->m_ZmHd[z].Init(&Ini, szSec);
 			ms_pSelf->m_ZmHd[z].Enable(false);
@@ -983,12 +983,12 @@ void KUiTongJX2::AskThenSendOp(const char* pszSection, const char* pszKey,
 			Ini.GetString(pszSection, pszKey, "", szMsg, sizeof(szMsg));
 	}
 	if (!szMsg[0])
-		strcpy(szMsg, "C\343 ch\276c th\371c hi\326n thao t\270c n\265y kh\253ng?");
+		strcpy(szMsg, "C„ chæc th˘c hi÷n thao t∏c nµy kh´ng?");
 	m_nPendOp = nOp;
 	m_dwPendTarget = dwTarget;
 	m_nPendP1 = nP1;
 	m_nPendP2 = nP2;
-	UIMessageBox(szMsg, this, "X\270c nh\313n", "Hu\373 b\341", TJX2_CONFIRM_ID);
+	UIMessageBox(szMsg, this, "X∏c nhÀn", "Hu˚ b·", TJX2_CONFIRM_ID);
 }
 
 void KUiTongJX2::SendOpStatic(int nOp, unsigned long dwTarget, int nP1, int nP2, const char* pszText)
@@ -1595,7 +1595,7 @@ void KUiTongJX2::RenderInfo()
 		// (GameDataDef.h) - KHONG phai 0/1/2. Truoc day tra bang bang chi so
 		// tho nen bang Chinh phai hien ra "Ta phai".
 		static const char* szCamp[4] =
-			{"", "Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+			{"", "Ch›nh ph∏i", "Tµ ph∏i", "Trung lÀp"};
 		m_Info[TJX2_INFO_TONGNAME].SetText(p->m_szTongName);
 		m_Info[TJX2_INFO_MASTER].SetText(p->m_szMaster);
 		// Lien minh: goi tin chua mang ten lien minh (server co field 10 =
@@ -1780,7 +1780,7 @@ void KUiTongJX2::RenderMembers(int nOffset)
 				break;
 			case 2:
 			case 3: sprintf(szV, "%u", pM->m_dwWeekOffer); break;
-			case 4: strcpy(szV, pM->m_btFigure == 4 ? "\310n s\374" : "-"); break;
+			case 4: strcpy(szV, pM->m_btFigure == 4 ? "»n s¸" : "-"); break;
 			case 5: strcpy(szV, pM->m_btFigure < 5 ? s_szFigure[pM->m_btFigure] : "?"); break;
 			case 6:
 				if (pM->m_dwLastActive)
@@ -1863,7 +1863,7 @@ void KUiTongJX2::RenderMembers(int nOffset)
 		m_MDet[4].SetTextColor(0xFF000000 | (0 << 16) | (220 << 8) | 170);
 		m_MDet[5].SetTextColor(0xFF000000 | (0 << 16) | (220 << 8) | 170);
 		// dong 1: Danh hieu <chuc vu>
-		sprintf(szT, "Danh hi\326u  %s",
+		sprintf(szT, "Danh hi÷u  %s",
 			pSel->m_btFigure < 5 ? s_szFigure[pSel->m_btFigure] : "?");
 		m_MDet[0].SetText(szT);
 		// dong 2: Ngay gia nhap dd-mm-yyyy hh:mm
@@ -1872,12 +1872,12 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			if (nT)
 			{
 				struct tm* pTm = localtime(&nT);
-				sprintf(szT, "Ng\265y gia nh\313p  %02d-%02d-%04d %02d:%02d",
+				sprintf(szT, "Ngµy gia nhÀp  %02d-%02d-%04d %02d:%02d",
 					pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
 					pTm->tm_hour, pTm->tm_min);
 			}
 			else
-				strcpy(szT, "Ng\265y gia nh\313p  -");
+				strcpy(szT, "Ngµy gia nhÀp  -");
 			m_MDet[1].SetText(szT);
 		}
 		// dong 3: Hoat dong gan day
@@ -1886,16 +1886,16 @@ void KUiTongJX2::RenderMembers(int nOffset)
 			if (nT)
 			{
 				struct tm* pTm = localtime(&nT);
-				sprintf(szT, "Ho\271t \256\351ng g\307n \256\251y  %02d-%02d-%04d %02d:%02d",
+				sprintf(szT, "Hoπt ÆÈng g«n Æ©y  %02d-%02d-%04d %02d:%02d",
 					pTm->tm_mday, pTm->tm_mon + 1, pTm->tm_year + 1900,
 					pTm->tm_hour, pTm->tm_min);
 			}
 			else
-				strcpy(szT, "Ho\271t \256\351ng g\307n \256\251y  -");
+				strcpy(szT, "Hoπt ÆÈng g«n Æ©y  -");
 			m_MDet[2].SetText(szT);
 		}
 		// dong 4: Cong hien tuan
-		sprintf(szT, "C\350ng hi\325n tu\307n  %u", pSel->m_dwWeekOffer);
+		sprintf(szT, "CËng hi’n tu«n  %u", pSel->m_dwWeekOffer);
 		m_MDet[3].SetText(szT);
 		// dong 5: Diem cong hien trung binh hang ngay = tich luy / so ngay
 		{
@@ -1904,12 +1904,12 @@ void KUiTongJX2::RenderMembers(int nOffset)
 				nDays = (long)((time(NULL) - (time_t)pSel->m_dwJoinTime) / 86400) + 1;
 			if (nDays < 1)
 				nDays = 1;
-			sprintf(szT, "\247i\323m c\350ng hi\325n trung b\327nh h\265ng ng\265y  %.2f",
+			sprintf(szT, "ßi”m cËng hi’n trung b◊nh hµng ngµy  %.2f",
 				(double)pSel->m_dwOffer / (double)nDays);
 			m_MDet[4].SetText(szT);
 		}
 		// dong 6: Hoan thanh muc tieu tuan
-		sprintf(szT, "Ho\265n th\265nh m\364c ti\252u tu\307n:  %u", pSel->m_dwWeekGoal);
+		sprintf(szT, "Hoµn thµnh mÙc ti™u tu«n:  %u", pSel->m_dwWeekGoal);
 		m_MDet[5].SetText(szT);
 		m_MDet[6].SetText("");
 	}
@@ -2023,12 +2023,12 @@ void KUiTongJX2::RenderWorkshop()
 		TONG_JX2_WS_SYNC* pW2 = (TONG_JX2_WS_SYNC*)m_byWs;
 		char szD[120];
 		if (pW2->m_sWs[m_nSelWs].btExist)
-			sprintf(szD, "Khu %d %s: c\312p %d [%s]  s\266n l\255\356ng %u  c\312p d\357ng %u",
+			sprintf(szD, "Khu %d %s: c p %d [%s]  s∂n l≠Óng %u  c p dÔng %u",
 				m_nSelWs, s_szWsName[m_nSelWs], (int)pW2->m_sWs[m_nSelWs].wLevel,
 				pW2->m_sWs[m_nSelWs].btOpen ? "MO" : "DONG",
 				pW2->m_sWs[m_nSelWs].dwOutput, pW2->m_sWs[m_nSelWs].dwUseLevel);
 		else
-			sprintf(szD, "Khu %d %s: (ch\255a l\313p)", m_nSelWs, s_szWsName[m_nSelWs]);
+			sprintf(szD, "Khu %d %s: (ch≠a lÀp)", m_nSelWs, s_szWsName[m_nSelWs]);
 		m_WsSel.SetText(szD);
 	}
 	if (m_bHasMember)
@@ -2073,8 +2073,8 @@ void KUiTongJX2::ApplyRights()
 		// Chi TRUONG LAO nhan duoc quyen (bang chu mac dinh toan quyen).
 		// Truoc day return IM LANG nen chon bang chu / doi truong / de tu /
 		// an sy deu "bam khong thay gi xay ra".
-		UIMessageBox("Ch\330 c\343 th\323 ph\251n quy\322n cho Tr\255\353ng L\267o.",
-			this, "\247\343ng", NULL, 0);
+		UIMessageBox("Chÿ c„ th” ph©n quy“n cho Tr≠Îng L∑o.",
+			this, "ß„ng", NULL, 0);
 		return;
 	}
 	for (int b = 0; b < 14; b++)
@@ -2220,7 +2220,7 @@ void KUiTongJX2::RenderRecord()
 		// muc tieu tuan: hien tu du lieu INFO (WeekGoal o field 22..28 - xem #17)
 		m_RcList.Hide();
 		m_RcScroll.Hide();
-		m_Row[0].SetText("M\364c ti\252u tu\307n xem trong bang th\253ng tin.");
+		m_Row[0].SetText("MÙc ti™u tu«n xem trong bang th´ng tin.");
 		return;
 	}
 	if (!m_bHasRecord)
@@ -2234,7 +2234,7 @@ void KUiTongJX2::RenderRecord()
 	m_RcList.Clear();
 	if (p->m_btCount == 0)
 	{
-		const char* szNone = "(ch\255a c\343 b\266n ghi)";
+		const char* szNone = "(ch≠a c„ b∂n ghi)";
 		m_RcList.AddOneMessage(szNone, (int)strlen(szNone));
 	}
 	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_RECORD_LINES; i++)
@@ -2252,15 +2252,15 @@ void KUiTongJX2::RenderTongList()
 	// chu game gui bi lech). m_Row = ten bang, m_MList = bang chu,
 	// m_RowDim = cap + so thanh vien; ca ba deu ranh o trang nay.
 	m_Row[0].SetTextColor(0xFF000000 | (255 << 16) | (237 << 8) | 165);
-	m_Row[0].SetText("T\252n bang");
-	m_MList[0].SetText("Bang ch\361");
-	m_RowDim[0].SetText("C\312p / Th\265nh vi\252n");
+	m_Row[0].SetText("T™n bang");
+	m_MList[0].SetText("Bang chÒ");
+	m_RowDim[0].SetText("C p / Thµnh vi™n");
 	if (!m_bHasList)
 		return;
 	TONG_JX2_TONGLIST_SYNC* p = (TONG_JX2_TONGLIST_SYNC*)m_byList;
 	if (p->m_btCount == 0)
 	{
-		m_Row[2].SetText("(ch\255a c\343 bang h\351i n\265o)");
+		m_Row[2].SetText("(ch≠a c„ bang hÈi nµo)");
 		return;
 	}
 	for (i = 0; i < (int)p->m_btCount && i < defTONG_JX2_LIST_ROWS; i++)
@@ -2302,7 +2302,7 @@ void KUiTongJX2::RenderOtherZM()
 			m_ZmName[i].SetText(pZ->m_szName);
 			// [Main] blueprint: so + LevelTxt ("c\312p") + so + PeopleCountTxt
 			// (" ng\255\352i") ghep thanh dong tin tuc
-			sprintf(sz, "%dc\312p  %d ng\255\352i", (int)pZ->m_btLevel, (int)pZ->m_wMember);
+			sprintf(sz, "%dc p  %d ng≠Íi", (int)pZ->m_btLevel, (int)pZ->m_wMember);
 			m_ZmInfo[i].SetText(sz);
 			m_ZmJiyu[i].SetText(pZ->m_szRecruit);
 			m_ZmQx[i].SetText(pZ->m_btTendency < TJX2_QX_NUM ? s_szRecQX[pZ->m_btTendency] : "?");
@@ -2738,35 +2738,35 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 7:
 					m_nAmtOp = defTONG_JX2_COP_STORE_OFFER;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("C\312t c\350ng hi\325n (\256i\323m)",
+					KUiTongGetString::OpenWindow("C t cËng hi’n (Æi”m)",
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
 					break;
 				case 11:
 					// gop tien ca nhan vao QUY KIEN THIET (nhan cong hien)
 					m_nAmtOp = defTONG_JX2_COP_DONATE;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("G\343p ki\325n thi\325t (v\271n)",
+					KUiTongGetString::OpenWindow("G„p ki’n thi’t (vπn)",
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
 					break;
 				case 14:
 					// lap lien minh: nhap ten (<= 20 ky tu de vua hop nhap)
 					m_nAmtOp = defTONG_JX2_COP_UNION_CREATE;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("T\252n li\252n minh",
+					KUiTongGetString::OpenWindow("T™n li™n minh",
 						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 15:
 					// xin vao lien minh: nhap ten mot bang thuoc lien minh
 					m_nAmtOp = defTONG_JX2_COP_UNION_APPLY;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("T\252n bang thu\351c li\252n minh",
+					KUiTongGetString::OpenWindow("T™n bang thuÈc li™n minh",
 						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 16:
 					// minh chu duyet: nhap ten bang xin vao
 					m_nAmtOp = defTONG_JX2_COP_UNION_ACCEPT;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("T\252n bang xin gia nh\313p",
+					KUiTongGetString::OpenWindow("T™n bang xin gia nhÀp",
 						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 17:
@@ -2781,7 +2781,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 18:
 					m_nAmtOp = defTONG_JX2_COP_UNION_KICK;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("T\252n bang mu\350n \256u\346i",
+					KUiTongGetString::OpenWindow("T™n bang muËn ÆuÊi",
 						"", this, TJX2_UNAME_ID, 1, 31);
 					break;
 				case 19:
@@ -2790,21 +2790,21 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					{
 						m_nAmtOp = defTONG_JX2_COP_MINISTER_SET;
 						m_dwAmtTarget = dwFT;
-						KUiTongGetString::OpenWindow("Ch\370c: 1 TT / 2 NS / 3 TP",
+						KUiTongGetString::OpenWindow("Ch¯c: 1 TT / 2 NS / 3 TP",
 							"1", this, TJX2_AMOUNT_ID, 1, 1);
 					}
 					break;
 				case 20:
 					m_nAmtOp = defTONG_JX2_COP_MINISTER_FIRE;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("C\270ch ch\370c: 1 TT / 2 NS / 3 TP",
+					KUiTongGetString::OpenWindow("C∏ch ch¯c: 1 TT / 2 NS / 3 TP",
 						"1", this, TJX2_AMOUNT_ID, 1, 1);
 					break;
 				case 13:
 					// nap tien ca nhan vao NGAN QUY bang (MONEYFUND_ADD)
 					m_nAmtOp = defTONG_JX2_COP_DEPOSIT_MONEY;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("N\271p ng\251n qu\374 (v\271n)",
+					KUiTongGetString::OpenWindow("Nπp ng©n qu¸ (vπn)",
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
 					break;
 				case 12:
@@ -2828,7 +2828,7 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 				case 9:
 					m_nAmtOp = defTONG_JX2_COP_DRAW_MONEY;
 					m_dwAmtTarget = 0;
-					KUiTongGetString::OpenWindow("R\363t ng\251n qu\374 (v\271n)",
+					KUiTongGetString::OpenWindow("RÛt ng©n qu¸ (vπn)",
 						"100", this, TJX2_AMOUNT_ID, 1, 7);
 					break;
 				case 10:
@@ -3044,16 +3044,16 @@ int KUiTongJX2::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 					if (m_bHasZM && z < (int)pZ->m_btCount)
 					{
 						TONG_JX2_ONE_ZM* pOne = &pZ->m_sZM[z];
-						static const char* szC[4] = {"?", "Ch\335nh ph\270i", "T\265 ph\270i", "Trung l\313p"};
+						static const char* szC[4] = {"?", "Ch›nh ph∏i", "Tµ ph∏i", "Trung lÀp"};
 						char szD[320];
-						sprintf(szD, "Bang h\351i: %s   Bang ch\361: %s   Phe: %s   "
-							"\247\274ng c\312p ki\325n thi\325t: %d   Nh\251n s\350: %d   "
-							"T\371 nh\313n t\365 c\312p: %d   T\365 ch\350i d\255\355i c\312p: %d",
+						sprintf(szD, "Bang hÈi: %s   Bang chÒ: %s   Phe: %s   "
+							"ßºng c p ki’n thi’t: %d   Nh©n sË: %d   "
+							"T˘ nhÀn tı c p: %d   Tı chËi d≠Ìi c p: %d",
 							pOne->m_szName, pOne->m_szMaster,
 							(pOne->m_btCamp >= 1 && pOne->m_btCamp <= 3) ? szC[pOne->m_btCamp] : "?",
 							(int)pOne->m_btLevel, (int)pOne->m_wMember,
 							(int)pOne->m_btAutoLv, (int)pOne->m_btRefuseLv);
-						UIMessageBox(szD, this, "\247\343ng", 0, 0x5702);
+						UIMessageBox(szD, this, "ß„ng", 0, 0x5702);
 					}
 					return 1;
 				}

@@ -457,18 +457,18 @@ int LuaGetCitySummary(Lua_State* L)
 	{
 		KJx2City* p = &s_Cities[n];
 		if (!p->szOwnerTong[0])
-			sprintf(szOut, "Th\265nh %s hi\326n v\253 ch\361.", p->szAreaName);
+			sprintf(szOut, "Thµnh %s hiÖn v« chñ.", p->szAreaName);
 		else
-			sprintf(szOut, "Th\265nh %s do bang [%s] tr\312n gi\367, Th\270i Th\363 l\265 [%s].",
+			sprintf(szOut, "Thµnh %s do bang [%s] trÊn gi÷, Th¸i Thó lµ [%s].",
 				p->szAreaName, p->szOwnerTong, p->szMaster);
 		if (p->nState == JX2CW_STATE_WARDECIDED && p->szChallenger[0])
 		{
 			char szLine[128];
-			sprintf(szLine, "\nBang [%s] s\317 khi\252u chi\325n th\265nh n\265y.", p->szChallenger);
+			sprintf(szLine, "\nBang [%s] sÏ khiªu chiÕn thµnh nµy.", p->szChallenger);
 			strcat(szOut, szLine);
 		}
 		else if (p->nState == JX2CW_STATE_ATWAR)
-			strcat(szOut, "\nChi\325n s\371 \256ang di\324n ra!");
+			strcat(szOut, "\nChiÕn sù ®ang diÔn ra!");
 	}
 	Lua_PushString(L, szOut);
 	return 1;
