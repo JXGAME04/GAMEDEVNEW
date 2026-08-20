@@ -507,6 +507,12 @@ end
 	
 	if (tl_checktask(myTaskGoods) == 1) then
 		RemoveItemByIndex(GetGiveItemUnit(1)) -- 删除玩家身上的物品
+		-- [PB 20/08] Dong hop giao + tra do con lai ve tui.
+		-- OnOk cua hop (UiAffairItem.cpp:176) CHI chay ham Lua, khong dong cua so
+		-- va khong thu hoi do; chi OnCancel moi thu hoi. Loai 1/2 co xoa do nen o
+		-- giao rong di, rieng loai 3 (Khoe - khong tieu do) bi ket mon trong hop.
+		-- EndGiveBox -> CloseWindow -> OnCancel: dong hop VA tra do ve tui.
+		EndGiveBox()
 		Task_AwardRecord()
 		Task_GiveAward()
 		-- 发奖处理
@@ -545,6 +551,12 @@ end
 	
 	if (m == 1) then
 		RemoveItemByIndex(GetGiveItemUnit(1)) -- 删除玩家身上的物品
+		-- [PB 20/08] Dong hop giao + tra do con lai ve tui.
+		-- OnOk cua hop (UiAffairItem.cpp:176) CHI chay ham Lua, khong dong cua so
+		-- va khong thu hoi do; chi OnCancel moi thu hoi. Loai 1/2 co xoa do nen o
+		-- giao rong di, rieng loai 3 (Khoe - khong tieu do) bi ket mon trong hop.
+		-- EndGiveBox -> CloseWindow -> OnCancel: dong hop VA tra do ve tui.
+		EndGiveBox()
 		Task_AwardRecord()
 		Task_GiveAward()
 	else
@@ -579,6 +591,12 @@ end
 	end	
 
 	if (m == 1) then
+		-- [PB 20/08] Dong hop giao + tra do con lai ve tui.
+		-- OnOk cua hop (UiAffairItem.cpp:176) CHI chay ham Lua, khong dong cua so
+		-- va khong thu hoi do; chi OnCancel moi thu hoi. Loai 1/2 co xoa do nen o
+		-- giao rong di, rieng loai 3 (Khoe - khong tieu do) bi ket mon trong hop.
+		-- EndGiveBox -> CloseWindow -> OnCancel: dong hop VA tra do ve tui.
+		EndGiveBox()
 		Task_AwardRecord()
 		Task_GiveAward()
 		-- 发奖处理
