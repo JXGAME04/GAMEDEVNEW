@@ -34,6 +34,7 @@ private:
 	void	LoadSchemeSelf(const char* pScheme);
 	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 	void	UpdateView();
+	void	SnapToButton();		// neo sat trai + ngang hang nut theo doi
 private:
 	static KUiTaskTrace*	m_pSelf;
 	static bool				m_bTraced;

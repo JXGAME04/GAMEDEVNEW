@@ -41,10 +41,28 @@ KUiTaskTrace* KUiTaskTrace::OpenWindow()
 	}
 	if (m_pSelf)
 	{
+		m_pSelf->SnapToButton();	// moi lan bung ra deu ngang hang nut theo doi
 		m_pSelf->UpdateView();
 		m_pSelf->Show();
 	}
 	return m_pSelf;
+}
+
+// dat khung sat ben trai + NGANG HANG nut theo doi tren thanh PlayerBar
+void KUiTaskTrace::SnapToButton()
+{
+	int nAX = 0, nAY = 0;
+	if (KUiPlayerBar::GetTraceBtnPos(nAX, nAY))
+	{
+		SetPosition(nAX - m_Width - 2, nAY);
+	}
+	else
+	{
+		int nSW = 0, nSH = 0;
+		Wnd_GetScreenSize(nSW, nSH);
+		if (nSW > 0 && nSH > 0)
+			SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
+	}
 }
 
 void KUiTaskTrace::CloseWindow(bool bDestroy)
@@ -98,20 +116,7 @@ void KUiTaskTrace::Initialize()
 	g_UiBase.GetCurSchemePath(Scheme, sizeof(Scheme));
 	LoadSchemeSelf(Scheme);
 
-	// mo ra NGANG HANG voi nut theo doi tren thanh PlayerBar (vi tri Zalo cu),
-	// khung nam sat ben trai nut; chua co thanh thi neo 2/5 man hinh
-	int nAX = 0, nAY = 0;
-	if (KUiPlayerBar::GetTraceBtnPos(nAX, nAY))
-	{
-		SetPosition(nAX - m_Width - 2, nAY);
-	}
-	else
-	{
-		int nSW = 0, nSH = 0;
-		Wnd_GetScreenSize(nSW, nSH);
-		if (nSW > 0 && nSH > 0)
-			SetPosition(nSW - m_Width - 2, nSH * 2 / 5);
-	}
+	SnapToButton();
 
 	Wnd_AddWindow(this);
 }

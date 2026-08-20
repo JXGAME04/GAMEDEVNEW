@@ -356,11 +356,9 @@ bool KUiPlayerBar::GetTraceBtnPos(int& nX, int& nY)
 {
 	if (m_pSelf == NULL)
 		return false;
-	int bx = 0, by = 0, cx = 0, cy = 0;
-	m_pSelf->GetPosition(&bx, &by);
-	m_pSelf->m_TraceBtn.GetPosition(&cx, &cy);
-	nX = bx + cx;
-	nY = by + cy;
+	// vi tri tuyet doi do engine duy tri khi ve (m_nAbsoluteLeft/Top) -
+	// KHONG tu cong cha+con (truoc cong doi lam khung mo lech icon)
+	m_pSelf->m_TraceBtn.GetAbsolutePos(&nX, &nY);
 	return true;
 }
 
