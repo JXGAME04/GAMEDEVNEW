@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **20/08 03:43** (2.200.064 B) | engine tới `643a6cfd` (vòng 3 + phản biện, mục 13.13); bản lùi các mốc: `_cu_1908tt` / `_cu_2008a` / `_locked*` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **20/08 10:44** (2.201.600 B) | engine vòng 4+5 (mục 13.14): loại 3 đi chợ + 4 fix + Thần Hành Phù; bản lùi: `_locked7` (10:11, thiếu vá r5b) |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
 | `Game.exe` | như trên | **19/08 21:32** (1.251.840 B) | `GDCNI_UI_ACT uParam=7` (AutoPick) + đọc `autoData` **6888 B**; bản lùi = `Game_cu_1908tt.exe` |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc) **và** `bin\client\WAuto.exe` | **19/08 21:35** (361.472 B) | tab Dã Tẩu bố cục 2 cột + 3 điều khiển mới (LB 435, MS 436, MM 437/438, INDEX_END→441); gửi `autoData` 6888 B — **phải dùng đúng cặp WAuto+Game 21:3x**. ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn chép tay**. ⚠️ WAuto tự thoát nếu không có Game.exe đang chạy |
@@ -549,6 +549,90 @@ lặp); Hậu cần bước 2 không còn spam mở khóa 300ms/lần khi không
 `DT_Hold` xóa cờ `nDTBackXaFu` (rò cờ làm chuyến trả sau bị chở ngược ra map); nắp trần vòng mở
 khóa ở USEPD/chuẩn-bị-phù (mật khẩu sai không đứng rực). Lưu ý đã xác minh: mật khẩu rương phải
 là **6 chữ số không bắt đầu bằng 0** (server `CheckChestPW` bác mọi giá trị < 100000).
+
+### 13.14 — Vòng 4+5 (20/08 sáng): loại 3 đi chợ, 4 fix, Thần Hành Phù
+
+**A. Loại 3 "Tìm trang bị (khoe)" cũng đi chợ mua ở sạp** (người dùng: *"khi tới nhiệm vụ tìm
+trang bị thì nó báo không có trang bị cần tìm (khoe) phù hợp trong túi / rương nó chạy lên bãi
+treo luôn"*). Trước đây DTP_MUASAP chỉ gắn cho loại 2; loại 3 rơi thẳng xuống DT_Skip/treo.
+Cách hoạt động sau sửa:
+- `DTP_EXEC` loại 3 không thấy đồ trong túi/rương **và** ô "Mua ở sạp" bật → reset bộ đếm
+  `g_nDTSap*` → vào `DTP_MUASAP` (trần thời gian đi chợ 25 phút giữ nguyên). Tắt ô thì giữ
+  hành vi cũ (báo cam + treo/hủy theo cấu hình).
+- Trong `DTP_MUASAP`, bộ lọc món hàng sạp phân nhánh theo `ea.nDTQType`: loại 3 dùng
+  `g_DTShow[cand]` — khớp **chỉ theo dòng ma trong khoảng** (`DT_MatchRule(nIt,-1,-1,-1,-1,-1,
+  nMagic,nMin,nMax)`), đúng luật server `Task_Accept_03`. Loại 2 giữ `g_DTFind` như cũ.
+- Toàn bộ máy đi chợ (tour waypoint, xem từng sạp, thống kê "xem X sạp", nhảy 10 thành/thôn,
+  chỉ treo sau khi HẾT thành) dùng chung — "tìm hết các thành thị thôn mà không có mới đi treo".
+- Đồ khoe trả xong được server HOÀN LẠI (khác loại 2 bị thu) → mua càng lợi.
+
+**B. 4 fix (2 phản biện + 2 người dùng báo khi test thật):**
+1. *(phản biện, nặng)* `DT_MatchRule` quét đủ 8 ô dòng ma nhưng server `seasonnpc.lua` chỉ kiểm
+   `for i=1,6` (cả loại 2 lẫn 3) — ô 7/8 là dòng ẩn hoàng kim/khảm. Món chỉ khớp ở ô 7/8 sẽ:
+   client mua (mất tiền) → trả trượt → HOLD-scan lại thấy → kẹt vĩnh viễn. **Sửa: kẹp vòng quét
+   6 ô** ngay trong DT_MatchRule → đồng bộ mọi nơi (mua sạp, quét túi/rương, bảo vệ bán, HOLD-scan).
+2. *(phản biện)* Trần mua mặc định 200 vạn quá cao cho đồ khoe (đồ trắng/xanh có dòng phổ biến —
+   dễ bị sạp "mồi" hút máu). **Sửa: mặc định theo loại — loại 3 = 30 vạn, loại khác 200 vạn**;
+   người dùng đặt tay ô "trần mua" thì luôn theo người dùng. Khuyên: đặt trần thấp nếu server
+   có sạp giá đểu.
+3. *(người dùng: "lúc tìm người bày bán thì tìm nhầm vào npc chức năng ở thành")* — vòng 3 đã bỏ
+   lọc kind khi quét sạp; hoá ra slot NPC tái dùng có thể SÓT cờ `m_BaiTan` cũ → NPC thoại/chức
+   năng bị coi là sạp. **Sửa: lọc lại `m_Kind == kind_player`** (người thật + bot sạp đều là
+   player; test thật đã xác nhận mua được ở sạp nên lọc này không bỏ sót sạp thật).
+4. *(người dùng: "lúc mua được item nhiệm vụ rồi lúc giao item vào box giao nhiệm vụ thì sẽ tìm
+   mua thêm vì WAuto xác định không có item nhiệm vụ trong rương nên tìm mua tiếp")* — cơ chế:
+   khi trả TRƯỢT, server chỉ `Say` lỗi mà **không đóng hộp giao** → item nằm kẹt ở
+   `pos_affairitem`, mọi bộ quét túi/rương không thấy → auto tưởng mất đồ, đi mua nữa (tiền chảy
+   máu, hộp phồng). **Sửa: helper `DT_ThuHoiBox()`** — duyệt `m_ItemList`, mỗi item ở
+   `pos_affairitem` gửi `SendClientRecoveryBox(id,w,h)` (đúng gói nút **Hủy** thật gửi — nhái
+   case `GOI_RECOVERY_BOX_COMMAND`); gọi ở ĐẦU nhánh FAILREQ nên phủ mọi lối ra (loại 4 về map,
+   phúc duyên dùng thêm, xoay ứng viên, skip). Item về túi → vòng sau EXEC/MUASAP thấy ngay,
+   tự thử trả tiếp thay vì mua trùng.
+
+**C. Thần Hành Phù thay Xa Phu khi nhảy thành** (người dùng: *"lúc di chuyển thành thị hoặc thôn
+thì mở thần hành phù lên chọn những thành thị thôn có sẵn ở trong thần hành phù không mất công
+chạy tới xa phu cho xa"*). Cách hoạt động:
+- Item = **(6,1,1271)**, script server `script\item\ib\shenxingfu.lua`. KHÔNG bị tiêu hao khi
+  dùng, dịch chuyển **miễn phí** (Xa Phu thu [N lượng]).
+- Vào lượt nhảy thành mới (`g_uDTSapHopT` khởi tạo), engine thử `AutoUseItem(6,1,1271)`:
+  có phù → chờ chuỗi thoại; không có → `g_uDTThpT=1` đi Xa Phu như cũ.
+- Chuỗi thoại THP đi qua **cùng bộ bắt thoại** của CITYHOP, thêm 2 needle:
+  1. menu chính: dòng chứa `"thuật thần hành"` (TCVN3 `thu\313t th\307n h\265nh`) → chọn;
+  2. menu "chọn địa điểm": `"Thành thị"` hoặc `"Thôn trang"` theo đích
+     (thôn = map 20 Giang Tân / 121 Long Môn / 53 Ba Lăng);
+  3. danh sách tên thành **và** menu khu (Trung Tâm/Đông/Tây...) đều được needle `szTen`
+     (bảng `g_aDTSapTown`) khớp sẵn — mọi bảng thành trong shenxingfu liệt kê "Trung Tâm"
+     **hàng đầu** nên tự vào khu trung tâm (Lâm An không có Trung Tâm → vào hàng đầu "Lâm An
+     Nam"); thôn dịch chuyển thẳng không có menu khu.
+- 12 giây chưa đổi map (server chặn/quá cấp/thiếu item lúc chạy script) → nhả xuống đường Xa Phu.
+  Tới nơi hoặc đổi thành đích thì `g_uDTThpT` reset để lượt sau thử phù lại.
+- Needle Ba Lăng rút còn `"Ba L\250ng"` vì bảng THP viết "Ba Lăng **H**uyện" (H hoa) còn menu
+  Xa Phu viết "huyện" thường — needle ngắn khớp cả hai.
+- Phủ sóng: đủ 10/10 thành-thôn của tour nằm trong THANH_ARRAY/THON_ARRAY của shenxingfu.
+
+**D. Phản biện r5b (sau deploy 10:11) — 4 CONFIRMED, vá tiếp trong 10:44:**
+1. *(nặng)* `DT_ThuHoiBox` bản đầu bắn **loạt** lệnh thu hồi không kiểm chỗ trống: server
+   `KPlayer::RecoveryBox` khi túi thiếu chỗ nhét món vào **pos_hand**, và lệnh thu hồi kế tiếp
+   làm món đang cầm bị **ném xuống đất = mất vĩnh viễn** (KPlayer.cpp:6466-6512). Sửa: mỗi lần
+   gọi chỉ thu **1 món**, client tự `CheckCanPlaceInEquipment` trước khi gửi; thiếu chỗ → trả −1,
+   **giữ món trong hộp** (an toàn, hộp là kho tạm) + báo vàng "túi thiếu chỗ - sẽ tự lấy sau
+   khi dọn túi"; món còn lại thu ở lần FAILREQ sau.
+2. Món ở pos_hand tàng hình với `DT_FindItemRule` → fix cũ tự vô hiệu đúng lúc túi chật —
+   giải quyết cùng gốc bằng (1): không bao giờ đẩy món vào pos_hand nữa.
+3. Needle map 11 "Thành Đô **Phủ**": menu khu của THP chỉ ghi "Thành Đô Trung Tâm/Đông/…"
+   (không có " Phủ") → strstr trượt → kẹt 12s mỗi chuyến tới Thành Đô rồi mới rơi xuống Xa Phu.
+   Sửa: rút needle còn `"Th\265nh \247\253"` (vẫn khớp duy nhất ở city-list, menu khu và
+   Station.txt của Xa Phu).
+4. Chú thích sai về Lâm An: bảng THP của Lâm An **không có** "Trung Tâm" (chỉ Nam/Đông/Bắc) —
+   hành vi hiện tại đúng nhờ szTen khớp hàng đầu "Lâm An Nam". Đã sửa chú thích kèm cảnh báo
+   **cấm** đổi cơ chế sang khớp needle "Trung Tâm" (Lâm An sẽ trượt hết và kẹt 12s).
+
+Ghi chú môi trường (từ phản biện): server đang chạy CHƯA restart nên bản `seasonnpc.lua` mới
+(có EndGiveBox — phiên bot thêm 20/08) chưa hiệu lực → loại 3 trả THÀNH CÔNG trên server cũ
+vẫn để món khoe kẹt trong hộp giao; engine sẽ nhặt lại dần qua các lần FAILREQ (mỗi lần 1 món).
+Restart GameServer là hết cảnh này.
+
+Binary chốt vòng 4+5: **CoreClient.dll 20/08 10:44 (2.201.600 B)**, bản lùi `_locked7` (10:11).
 
 ---
 

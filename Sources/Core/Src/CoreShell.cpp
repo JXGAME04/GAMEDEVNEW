@@ -3026,6 +3026,37 @@ static void DT_Answer(int nPlayerIdx, int nIdx)
 
 // item khop luat: magic>0 -> (G/D/P neu >=0) + magic co value trong [mn,mx];
 // magic==0 -> 5 truong chinh xac (lvl/five == -1 nghia la bo qua)
+// (r5 - nguoi dung bao) tra nhiem vu TRUOT: server chi Say loi, KHONG dong hop
+// giao -> mon da bo vao hop nam ket o pos_affairitem, moi bo quet tui/ruong
+// khong thay nen auto tuong thieu do va DI MUA THEM. Ham nay gui goi
+// RECOVERY_BOX (dung goi nut Huy that gui - xem case GOI_RECOVERY_BOX_COMMAND).
+// (PB r5b) server KPlayer::RecoveryBox khi tui thieu cho se nhet mon vao TAY
+// (pos_hand - tang hinh voi moi bo quet DT), va lenh thu hoi KE TIEP lam mon
+// dang cam bi NEM XUONG DAT = mat vinh vien. Nen: moi lan goi chi thu 1 MON,
+// va client tu kiem CheckCanPlaceInEquipment truoc khi gui - thieu cho thi GIU
+// mon trong hop (an toan, lay lai o lan FAILREQ sau khi tui da don).
+// Tra ve: 1 = da gui thu hoi 1 mon; 0 = hop trong; -1 = co mon nhung tui
+// khong du cho dat -> KHONG gui.
+static int DT_ThuHoiBox(int nPlayerIdx)
+{
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt)
+	{
+		if (pIt->nPlace == pos_affairitem && pIt->nIdx > 0)
+		{
+			int nX3, nY3;
+			if (!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
+				Item[pIt->nIdx].GetWidth(), Item[pIt->nIdx].GetHeight(), &nX3, &nY3))
+				return -1;
+			SendClientRecoveryBox(Item[pIt->nIdx].GetID(),
+				Item[pIt->nIdx].GetWidth(), Item[pIt->nIdx].GetHeight());
+			return 1;
+		}
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return 0;
+}
+
 static bool DT_MatchRule(int nItemIdx, int g, int d, int p, int lvl, int five, int magic, int mn, int mx)
 {
 	if (nItemIdx <= 0)
@@ -3038,7 +3069,11 @@ static bool DT_MatchRule(int nItemIdx, int g, int d, int p, int lvl, int five, i
 			return false;
 		if (p >= 0 && Item[nItemIdx].GetParticular() != p)
 			return false;
-		for (int i = 0; i < MAX_ITEM_MAGICATTRIB; ++i)
+		// (r5 - phan bien) server tasklink chi kiem 6 O DAU (for i=1,6 trong
+		// seasonnpc.lua, ca loai 2 lan loai 3) - o 7/8 la dong an hoang kim/kham,
+		// server KHONG doc. Kep 6 de khoi mua/giu/tra nham mon chi khop o o 7/8
+		// (tra truot vinh vien + mat tien mua).
+		for (int i = 0; i < 6; ++i)
 		{
 			if (Item[nItemIdx].m_aryMagicAttrib[i].nAttribType == magic
 			&& Item[nItemIdx].m_aryMagicAttrib[i].nValue[0] >= mn
@@ -3305,13 +3340,15 @@ static int   g_nDTSapXem = 0;		// (r3) so sap DA XEM trong thanh hien tai (thong
 static int   g_nDTSapCam = 0;		// (r3) so sap khong phan hoi (bot trang tri / ruong khoa)
 static int   g_nDTSapBuyTry = 0;	// (PB V12) so lenh mua da gui cho sap hien tai
 static int   g_nDTSapRut = 0;		// (PB V15) so lan da rut tien ruong cho sap hien tai
+static UINT  g_uDTThpT = 0;		// (r5) Than Hanh Phu cho luot nhay nay: 0=chua thu,
+									// 1=khong co/that bai (di Xa Phu), >1=thoi diem da dung phu
 
 // ten thanh trong menu "Nhung thanh thi da di qua" cua Xa Phu (settings\Station.txt)
 struct DTSapTown { int nMapId; const char* szMenu; };
 static const DTSapTown g_aDTSapTown[10] =
 {
 	{ 1,   "Ph\255\356ng T\255\352ng" },
-	{ 11,  "Th\265nh \247\253 Ph\361" },
+	{ 11,  "Th\265nh \247\253" },	// (r5b) bo " Phu": menu khu cua THP chi ghi "Thanh Do Trung Tam/Dong/..." -> co " Phu" la strstr truot, ket 12s
 	{ 162, "\247\271i L\375" },
 	{ 37,  "Bi\326n Kinh" },
 	{ 78,  "T\255\254ng D\255\254ng" },
@@ -3319,7 +3356,7 @@ static const DTSapTown g_aDTSapTown[10] =
 	{ 176, "L\251m An" },
 	{ 20,  "Giang T\251n" },
 	{ 121, "Long M\253n" },
-	{ 53,  "Ba L\250ng huy\326n" },
+	{ 53,  "Ba L\250ng" },	// (r5) rut ngan: THP viet "Huy\326n" HOA - "Ba L\250ng" khop ca 2 menu
 };
 // muc menu 1 cua Xa Phu: "Nhung thanh thi da di qua" (xaphu.lua:16)
 #define DTM_SAP_THANHTHI "th\265nh th\336 \256\267 \256i qua"
@@ -4118,6 +4155,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// tra nhiem vu that bai (chua du yeu cau)
 		if (DT_Has(szQ, DTM_MSG_FAILREQ) || DT_Has(szQ, DTM_MSG_FAILSHXT))
 		{
+			// (r5) thu do ket trong hop giao ve tui truoc (server khong dong hop
+			// khi tu choi) - khong thu thi moi bo quet se tuong MAT do.
+			// (PB r5b) moi lan 1 mon + kiem cho; -1 = tui thieu cho -> giu trong hop.
+			int nThu5 = DT_ThuHoiBox(nPlayerIdx);
+			if (nThu5 < 0)
+				DT_Msg(nPlayerIdx, "<color=Yellow>\247\345 trong h\351p giao ch\255a l\312y ra \256\255\356c (t\363i thi\325u ch\347) - s\317 t\371 l\312y sau khi d\344n t\363i.");
+			else if (nThu5 > 0)
+				DT_Msg(nPlayerIdx, "<color=Cyan>Tr\266 tr\255\356t - thu l\271i \256\345 trong h\351p giao v\322 t\363i.");
 			// (r3) loai 4 tra som ma chua du (tin nhan troi) -> quay lai map danh tiep,
 			// dung de roi xuong skip/treo lam mat nhiem vu dang lam do.
 			if (ea.nDTQType == 4 && ea.nDTMapId > 0)
@@ -4420,6 +4465,25 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				}
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
 					"<color=Orange>Kh\253ng c\343 \256\345 c\307n t\327m trong t\363i/r\255\254ng - n\252n t\335ch tr\367 s\275n trang s\370c.");
+			}
+			// (r5 - nguoi dung) loai 3 "Tim trang bi (khoe)" cung DI CHO mua o sap nhu
+			// loai 2: quet sap thanh nay, het thi Xa Phu qua du 10 thanh/thon, tim het
+			// ma khong co MOI treo. (Do khoe tra xong duoc hoan lai - mua cang loi.)
+			if (ea.nDTQType == 3 && pAp->bDTMuaSap == 1)
+			{
+				g_nDTSapMask = 0;
+				g_nDTSapDone = 0;
+				g_dwDTSapCur = 0;
+				g_nDTSapWpt = 0;
+				g_uDTSapWptT = 0;
+				g_uDTSapDwell = 0;
+				g_nDTSapXem = 0;
+				g_nDTSapCam = 0;
+				ea.nDTPhase = DTP_MUASAP;
+				ea.nDTRetry = 0;
+				ea.uDTHoldUntil = uCurTime + 25u * 60u * 1000u;
+				DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng c\343 trang b\336 c\307n khoe trong t\363i/r\255\254ng - \256i xem s\271p ng\255\352i b\270n \256\323 mua...");
+				return 1;
 			}
 			return DT_Skip(nPlayerIdx, pAp, uCurTime,
 				"<color=Orange>Kh\253ng c\343 trang b\336 c\307n t\327m (khoe) ph\357 h\356p trong t\363i/r\255\254ng.");
@@ -5087,6 +5151,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					bool bKhop = false;
 					for (int c2 = 0; c2 < ea.nDTCandNum && !bKhop; ++c2)
 					{
+						if (ea.nDTQType == 3)
+						{
+							// (r5) loai 3 "khoe": chi can DUNG DONG MA trong khoang yeu cau
+							const DTShowRow& rS = g_DTShow[ea.nDTCand[c2]];
+							bKhop = DT_MatchRule(nIt, -1, -1, -1, -1, -1, rS.nMagic, rS.nMin, rS.nMax);
+							continue;
+						}
 						const DTFindRow& r = g_DTFind[ea.nDTCand[c2]];
 						if (r.nMagic > 0)
 							bKhop = DT_MatchRule(nIt, r.nGenre, r.nDetail, r.nParticular, -1, -1, r.nMagic, r.nMin, r.nMax);
@@ -5101,7 +5172,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						nBuy = nIt;
 					}
 				}
-				int nTran = (pAp->nDTMaxMua > 0 && pAp->nDTMaxMua < 100000) ? pAp->nDTMaxMua : 200;
+				// (r5 - phan bien) tran MAC DINH khi nguoi dung chua dat: loai 3
+				// (khoe - do trang/xanh re) 30 van de khoi bi sap gia cao hut mau;
+				// loai khac giu 200 van. Dat tay o "tran mua" thi theo nguoi dung.
+				int nTran = (pAp->nDTMaxMua > 0 && pAp->nDTMaxMua < 100000)
+					? pAp->nDTMaxMua : (ea.nDTQType == 3 ? 30 : 200);
 				if (nBuy && nGia > nTran * 10000)
 				{
 					DT_Msg(nPlayerIdx, "<color=Yellow>S\271p c\343 m\343n c\307n nh\255ng gi\270 v\255\356t tr\307n cho ph\320p - b\341 qua s\271p n\265y.");
@@ -5200,8 +5275,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				if (nQ == nSelf2)
 					continue;
-				// (r3) KHONG loc kind nua: cu treo bien sap (m_BaiTan) la toi xem -
-				// sap "cam" (trang tri) da co timeout 2.5s lo.
+				// (r5 - nguoi dung bao) slot NPC tai dung co the SOT co m_BaiTan cu
+				// -> NPC chuc nang/thoai bi quet nham. Loc lai kind_player (nguoi
+				// that + bot sap deu la player - test that da mua duoc o sap).
+				if (Npc[nQ].m_Kind != kind_player)
+					continue;
 				if (!Npc[nQ].m_BaiTan)
 					continue;
 				if (Npc[nQ].m_RegionIndex < 0)
@@ -5298,6 +5376,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			g_uDTSapDwell = 0;
 			g_nDTSapDone = 0;
 			g_uDTSapHopT = 0;
+			g_uDTThpT = 0;
 			g_nDTSapXem = 0;
 			g_nDTSapCam = 0;
 			ea.nDTPhase = DTP_MUASAP;
@@ -5306,7 +5385,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		if (!g_uDTSapHopT)
+		{
 			g_uDTSapHopT = uCurTime + 150000;	// 150s cho mot luot nhay thanh
+			g_uDTThpT = 0;	// (r5) luot nhay moi - duoc thu Than Hanh Phu lai
+		}
 		if (uCurTime > g_uDTSapHopT)
 		{
 			// khong qua duoc thanh nay (khong co tien?) - bo, thu thanh khac
@@ -5360,8 +5442,56 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uDTNext = uCurTime + 900;
 				return 1;
 			}
+			// (r5) chuoi thoai Than Hanh Phu (shenxingfu.lua): menu chinh -> muc
+			// "Su dung thuat than hanh di den noi chi dinh" -> "Thanh thi"/"Thon
+			// trang" -> danh sach ten thanh + menu khu (CA HAI deu khop boi szTen
+			// o tren). 6 thanh co "Trung Tam" hang dau nen tu vao trung tam; RIENG
+			// Lam An KHONG co Trung Tam -> vao hang dau "Lam An Nam". CAM doi sang
+			// khop needle "Trung Tam": Lam An se truot het handler va ket 12s
+			// (nhu bug " Phu" cua Thanh Do). Thon dich chuyen thang, khong menu khu.
+			if ((idx2 = DT_FindAns(apAns2, nAns2, "thu\313t th\307n h\265nh")) >= 0)
+			{
+				DT_Answer(nPlayerIdx, idx2);
+				ea.uDTNext = uCurTime + 900;
+				return 1;
+			}
+			if (g_uDTThpT > 1)
+			{
+				const int bThon5 = (nDestMap == 20 || nDestMap == 121 || nDestMap == 53);
+				idx2 = DT_FindAns(apAns2, nAns2, bThon5 ? "Th\253n trang" : "Th\265nh th\336");
+				if (idx2 >= 0)
+				{
+					DT_Answer(nPlayerIdx, idx2);
+					ea.uDTNext = uCurTime + 900;
+					return 1;
+				}
+			}
 			// hoi thoai khong lien quan - dong roi mo lai
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+		}
+		// (r5 - nguoi dung) co Than Hanh Phu (6,1,1271) trong tui thi dung no dich
+		// chuyen thang (mien phi, khoi chay bo toi Xa Phu). Thu 1 lan moi luot
+		// nhay; 12 giay chua doi map thi roi xuong duong Xa Phu nhu cu.
+		if (g_uDTThpT == 0)
+		{
+			if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, 1271, nPlayerIdx))
+			{
+				g_uDTThpT = (uCurTime > 1) ? uCurTime : 2;
+				DT_Msg(nPlayerIdx, "<color=Cyan>D\357ng Th\307n H\265nh Ph\357 d\336ch chuy\323n t\355i th\265nh k\325 ti\325p...");
+				ea.uDTNext = uCurTime + 1200;
+				return 1;
+			}
+			g_uDTThpT = 1;	// khong co phu trong tui - di Xa Phu
+		}
+		else if (g_uDTThpT > 1)
+		{
+			if (uCurTime < g_uDTThpT + 12000)
+			{
+				ea.uDTNext = uCurTime + 700;	// dang di bang thoai THP (khoi tren xu ly)
+				return 1;
+			}
+			g_uDTThpT = 1;	// het 12s van chua toi - roi xuong Xa Phu
+			DT_Msg(nPlayerIdx, "<color=Yellow>Th\307n H\265nh Ph\357 kh\253ng \256\255a \256i \256\255\356c - ch\271y t\355i Xa Phu v\313y.");
 		}
 		// di den Xa Phu + mo thoai (khuon DTP_GOXAFU)
 		sStation& sXa = itXa->second[0];

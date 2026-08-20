@@ -269,3 +269,26 @@ python D:/GAMEDEVNEW/ReverseTools/re_pe_crt.py E:/SourceTuanLe/.../bin/client
 
 Tài liệu cập nhật kèm theo: `BANGIAO_AUTO_DATAU_WAUTO.md` mục **7.2** (bộ sinh tọa độ),
 **8.6-8.8** (ba nhóm lỗi test thật), **12** (công cụ lệnh bài).
+
+
+## 2.14 (20/08 sáng) — Vòng 4+5: loại 3 đi chợ, 4 fix, Thần Hành Phù
+
+- **patch9**: loại 3 "Tìm trang bị (khoe)" không còn treo ngay khi túi/rương trống — vào
+  DTP_MUASAP đi chợ như loại 2 (bộ lọc sạp riêng: chỉ dòng ma trong khoảng, `g_DTShow`).
+- **patch10**: (1) DT_MatchRule kẹp 6 ô dòng ma (server chỉ kiểm 6 — ô 7/8 mua là kẹt vĩnh viễn);
+  (2) trần mua mặc định loại 3 = 30 vạn; (3) quét sạp lọc lại `kind_player` (slot tái dùng sót
+  cờ m_BaiTan → nhầm NPC chức năng); (4) `DT_ThuHoiBox()` gửi gói RECOVERY_BOX ở đầu nhánh
+  FAILREQ — đồ kẹt trong hộp giao (trả trượt server không đóng hộp) tự về túi, hết cảnh
+  "mua được rồi vẫn đi mua thêm".
+- **patch11**: CITYHOP ưu tiên Thần Hành Phù (6,1,1271, script `shenxingfu.lua`) — dùng phù,
+  lái chuỗi thoại (thuật thần hành → Thành thị/Thôn trang → tên thành → Trung Tâm) dịch chuyển
+  miễn phí; 12s không tới thì rơi xuống Xa Phu như cũ. Needle "Ba Lăng" rút ngắn (THP viết
+  "Huyện" hoa). Chi tiết: BANGIAO mục 13.14.
+- Binary: CoreClient.dll 20/08 10:11 (2.201.600 B) đã chép vào bin\client. Phản biện r5b chạy
+  sau deploy — nếu có CONFIRMED sẽ vá tiếp và ghi chú ở đây.
+
+- **Phản biện r5b → patch12 (10:44)**: DT_ThuHoiBox chuyển sang "1 món/lần + kiểm chỗ client
+  trước khi gửi" (server RecoveryBox thiếu chỗ là nhét pos_hand rồi ném món cũ xuống đất — suýt
+  đổi lỗi mua-trùng lấy lỗi MẤT ĐỒ); needle map 11 bỏ " Phủ" (menu khu THP không có → kẹt 12s);
+  chú thích Lâm An sửa lại (không có Trung Tâm, vào "Lâm An Nam" hàng đầu). Binary chốt:
+  CoreClient.dll **20/08 10:44** (2.201.600 B), bản lùi `_locked7`.
