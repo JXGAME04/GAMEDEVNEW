@@ -131,6 +131,10 @@ struct RlTableImpl
     unsigned        port;
     const StoreCfg *cfg;
     int             opened;
+    // Con tro quet CAP DOI TUONG cho GetRecordEx(DB_FIRST/DB_NEXT). Ban Berkeley DB
+    // giu mot DBC* trong chinh doi tuong bang (DBTable.h: `DBC *dbcp;`), o day ta
+    // giu mot con tro phan trang tuong duong.
+    RlCursorImpl   *pQuet;
 };
 
 static void RlFreeRows(RlCursorImpl *ci)
@@ -411,6 +415,7 @@ ZDBTable::~ZDBTable()
     RlTableImpl *im = (RlTableImpl *)m_pImpl;
     if (im)
     {
+        if (im->pQuet) { RlFreeCursorImpl(im->pQuet); im->pQuet = NULL; }
         if (im->conn) { mysql_close(im->conn); im->conn = NULL; }
         free(im);
         m_pImpl = NULL;
@@ -470,6 +475,7 @@ void ZDBTable::close()
 {
     RlTableImpl *im = (RlTableImpl *)m_pImpl;
     if (!im) return;
+    if (im->pQuet) { RlFreeCursorImpl(im->pQuet); im->pQuet = NULL; }
     if (im->conn) { mysql_close(im->conn); im->conn = NULL; }
     im->opened = 0;
     RlLog("close() store=%s", im->cfg ? im->cfg->ten : "?");
@@ -787,11 +793,84 @@ ZCursor *ZDBTable::GetRecord_key(int cpMode, int index)
     RlLog("GetRecord_key() chua cai dat o ban MySQL (khong noi nao goi)");
     return NULL;
 }
+//////////////////////////////////////////////////////////////////////////////
+// GetRecordEx -- duyet toan bang bang con tro CAP DOI TUONG.
+//
+// Goi tu CTongDB::GetTongCount (TONGDB.CPP:349,357) va CTongDB::GetTongList
+// (:371,379) voi cpMode = DB_FIRST roi DB_NEXT.
+//
+// Phai giu DUNG ba quy uoc cua ban Berkeley DB:
+//   1. size / keysize tra ve KICH THUOC THAT cua ban ghi, KHONG phai so byte da
+//      chep. Ben goi dua vao do de nhan ra ban ghi lech phien ban struct
+//      (TONGDB.CPP:354-355 chap nhan ca 6860 lan 6732).
+//   2. nBufCap / nKeyCap = 0 nghia la KHONG gioi han (giu tuong thich ma cu).
+//   3. Tra false khi het du lieu; con tro tu dong duoc dung lai o lan DB_FIRST sau.
+//
+// Khoa tra ve giu dung quy uoc cua tung kho: cac bang Tong CO byte NUL cuoi.
+//////////////////////////////////////////////////////////////////////////////
 bool ZDBTable::GetRecordEx(char *aBuffer, int &size, char *aKeyBuffer, int &keysize,
                            int cpMode, int index, int nBufCap, int nKeyCap)
 {
-    RlLog("GetRecordEx() chua cai dat o ban MySQL (khong noi nao goi)");
-    return false;
+    RlTableImpl *im = (RlTableImpl *)m_pImpl;
+    if (!im || !im->opened || !im->cfg || !aBuffer || !aKeyBuffer) return false;
+    if (!RlEnsure(im)) return false;
+
+    char sql[512];
+    _snprintf(sql, sizeof(sql) - 1,
+              "SELECT k, v FROM relay_kv WHERE store=? AND k > ? ORDER BY k LIMIT %d",
+              SCAN_PAGE_ROWS);
+
+    if (cpMode == DB_FIRST)
+    {
+        if (im->pQuet) { RlFreeCursorImpl(im->pQuet); im->pQuet = NULL; }
+        RlCursorImpl *ci = (RlCursorImpl *)malloc(sizeof(RlCursorImpl));
+        if (!ci) return false;
+        memset(ci, 0, sizeof(RlCursorImpl));
+        ci->mode = RC_SCAN;
+        if (RlLoad(im, ci, sql, "", 0, 0) <= 0)
+        {
+            RlFreeCursorImpl(ci);
+            return false;
+        }
+        im->pQuet = ci;
+    }
+    else
+    {
+        // DB_NEXT (hoac che do khac): phai co con tro tu lan DB_FIRST truoc do
+        if (!im->pQuet) return false;
+        RlCursorImpl *ci = im->pQuet;
+        ci->pos++;
+        if (ci->pos >= ci->nrows)
+        {
+            char moc[RL_MAX_KEY];
+            int mlen = ci->seek_len;
+            if (mlen > 0) memcpy(moc, ci->seek, mlen);
+            moc[mlen > 0 ? mlen : 0] = 0;
+            if (RlLoad(im, ci, sql, moc, mlen, 0) <= 0)
+            {
+                RlFreeCursorImpl(ci);
+                im->pQuet = NULL;
+                return false;      // het du lieu
+            }
+        }
+    }
+
+    RlCursorImpl *ci = im->pQuet;
+    if (!ci || ci->pos >= ci->nrows) return false;
+    RlRow *r = &ci->rows[ci->pos];
+
+    // Quy uoc 1: tra ve kich thuoc THAT; quy uoc 2: cap = 0 la khong gioi han.
+    int nCopy = r->val_len;
+    if (nBufCap > 0 && nCopy > nBufCap) nCopy = nBufCap;
+    if (nCopy > 0) memmove(aBuffer, r->val, nCopy);
+    size = r->val_len;
+
+    nCopy = r->key_len;
+    if (nKeyCap > 0 && nCopy > nKeyCap) nCopy = nKeyCap;
+    if (nCopy > 0) memmove(aKeyBuffer, r->key, nCopy);
+    keysize = r->key_len;
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////

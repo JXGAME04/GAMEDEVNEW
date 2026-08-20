@@ -10,3 +10,7 @@ test_kmysqldb/*.exe
 test_kmysqldb/*.obj
 test_kmysqldb/*.dll
 test_kmysqldb/*.log
+test_relay/*.exe
+test_relay/*.obj
+test_relay/*.dll
+test_relay/*.log
