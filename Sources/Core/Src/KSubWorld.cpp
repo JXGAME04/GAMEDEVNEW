@@ -2389,6 +2389,15 @@ void KSubWorld::GetMps(int *nX, int *nY, int nSpeed, int nDir, int nMaxDir /* = 
 #ifdef _SERVER
 BOOL KSubWorld::SendSyncData(int nIdx, int nClient)
 {
+	// (19/08 dem) BOT / ket noi -1: dung dong goi + DUNG printf. Xua nay van
+	// fail (PackDataToClient truot cong ulnClientID) va tra FALSE - cac duong
+	// goi (nap nhan vat theo nStep, KNpc::ChangeWorld vut gia tri) khong doc
+	// ket qua nay, nen hanh vi KHONG doi. Cai doi la: 1000 bot doi map trong
+	// cua so 60 giay cua che do VE THANH lam console in hang nghin dong
+	// 'Packing world sync data failed' - console I/O dong bo tren main thread
+	// (~ms/dong) lam giat khung server va che sach log that.
+	if (nClient < 0)
+		return FALSE;
 	WORLD_SYNC	WorldSync;
 	WorldSync.ProtocolType = (BYTE)s2c_syncworld;
 	WorldSync.Region = m_Region[Npc[nIdx].m_RegionIndex].m_RegionID;
