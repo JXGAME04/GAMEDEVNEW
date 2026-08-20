@@ -23,10 +23,24 @@
 -- ============================================================================
 
 DT_ADM_THEMLUOT = 10      -- moi lan bam thi cong them bao nhieu luot huy
-DT_ADM_TRANLUOT = 254     -- tran cua chinh he thong (tl_settaskstate)
+-- TRAN THAT SU LA 127, KHONG PHAI 254 nhu tl_settaskstate ghi:
+--   LuaGetByte (ScriptFuns.cpp:121-134) doc byte 4 bang (x & (0xff<<24)) >> 24 tren
+--   int CO DAU, nen byte >= 128 doc ra SO AM. Khi do Task_Cancel (seasonnpc.lua:698)
+--   thay "luot huy < 1" va roi vao nhanh else :705-725 = XOA SACH chuoi nhiem vu
+--   cua nguoi choi. De 100 cho con bien an toan.
+DT_ADM_TRANLUOT = 100
 DT_ADM_ENDSAY   = "Ket thuc doi thoai./no"
 
 -- Dat so luot huy: PHAI ghi CA 1020-byte4 LAN ban sao 1046.
+-- doc so luot huy hien tai, tu chua neu byte 4 da bi day qua 127 (doc ra so am)
+function DT_AdminDocLuot()
+	local n = GetByte(GetTask(1020), 4)
+	if (n < 0) then
+		return -1
+	end
+	return n
+end
+
 function DT_AdminDatLuot(nGiaTri)
 	if (nGiaTri < 0) then
 		nGiaTri = 0
@@ -43,7 +57,7 @@ end
 
 function DT_AdminMenu()
 	local nPhat = GetTask(1036)
-	local nLuot = GetByte(GetTask(1020), 4)
+	local nLuot = DT_AdminDocLuot()
 	local nNgay = GetTask(2420)
 	local nHuy  = GetTask(2797)
 	local szPhat = "khong bi phat"
@@ -52,11 +66,15 @@ function DT_AdminMenu()
 	elseif (nPhat > 0) then
 		szPhat = format("%d/3 lan huy dau chuoi (qua 3 la bi phat)", nPhat)
 	end
+	local szLuot = format("%d", nLuot)
+	if (nLuot < 0) then
+		szLuot = "HONG (byte tran qua 127) - bam dat lai ve 0 de chua"
+	end
 	SayEx({format("<color=yellow>Da Tau - cong cu admin<color>" ..
 			"\nTrang thai: <color=green>%s<color>" ..
-			"\nLuot huy con lai: <color=gold>%d<color>" ..
+			"\nLuot huy con lai: <color=gold>%s<color>" ..
 			"\nHom nay da lam: <color=gold>%d<color>/40  (da huy %d lan)",
-			szPhat, nLuot, nNgay, nHuy),
+			szPhat, szLuot, nNgay, nHuy),
 		"Xoa phat - cho lam tiep nhiem vu ngay/DT_AdminXoaPhat",
 		format("Them %d luot huy nhiem vu/DT_AdminThemLuot", DT_ADM_THEMLUOT),
 		"Dat lai luot huy ve 0/DT_AdminXoaLuot",
@@ -73,13 +91,20 @@ function DT_AdminXoaPhat()
 	-- _CancelTaskDebug (seasonnpc.lua:1121) CAM huy vinh vien va nguoi choi ket
 	-- han o nhiem vu khong lam duoc. Ghi lai 1046 = dung so luot dang co, KHONG
 	-- cong them cho ai.
-	DT_AdminDatLuot(GetByte(GetTask(1020), 4))
+	local nHienCo = DT_AdminDocLuot()
+	if (nHienCo < 0) then
+		nHienCo = 0
+	end
+	DT_AdminDatLuot(nHienCo)
 	Msg2Player("[Da Tau] Da xoa phat: gap NPC Da Tau la nhan nhiem vu tiep duoc ngay.")
 	DT_AdminMenu()
 end
 
 function DT_AdminThemLuot()
-	local nCu = GetByte(GetTask(1020), 4)
+	local nCu = DT_AdminDocLuot()
+	if (nCu < 0) then
+		nCu = 0
+	end
 	local nMoi = DT_AdminDatLuot(nCu + DT_ADM_THEMLUOT)
 	Msg2Player(format("[Da Tau] Luot huy nhiem vu: %d -> %d", nCu, nMoi))
 	DT_AdminMenu()
