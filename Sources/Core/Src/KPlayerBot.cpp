@@ -7129,6 +7129,14 @@ static void pb_DriveBot(PB_Bot& b)
 				 && SubWorld[nSub].CellObsSrv(nKcx, nKcy - 32) == 1
 				 && SubWorld[nSub].CellObsSrv(nKcx, nKcy + 32) == 1)
 					nKet = 1;
+				// (20/08 do that) T1b - BOT NAM NGOAI HAN CUA SO LUOI. T1 doi
+				// CellObsSrv == 1, ma o ngoai cua so luoi thi ham tra -1 chu khong
+				// phai 1, nen con NGOAI MAP - dung con chu game thay - KHONG BAO GIO
+				// duoc T1 cuu. Do bot.log 9 phut sau restart 11:43: 23 luot bot dung
+				// o toa do nam ngoai han cua so luoi cua ban do minh dang o.
+				if (!nKet && SubWorld[nSub].CoLuoiSrv()
+				 && SubWorld[nSub].CellObsSrv(nKcx, nKcy) < 0)
+					nKet = 3;
 				// T2: 5 lan roam lien tiep khong co duong = ket dao A*
 				if (!nKet && b.nAStarThua >= 5)
 					nKet = 2;
@@ -7164,6 +7172,7 @@ static void pb_DriveBot(PB_Bot& b)
 						pb_Log("[BotCuu] %s ket %s tai o(%d,%d) -> ve bai %s o(%d,%d)\n",
 						       Player[nIdx].m_PlayerName,
 						       (nKet == 1) ? "trong vung rong (nap lai cho cu?)"
+						     : (nKet == 3) ? "NGOAI HAN CUA SO LUOI (ra ngoai map that)"
 						                   : "dao A* (5 lan lien tiep khong duong)",
 						       nKcx / 32, nKcy / 32, baiC.szTen, nVeX / 32, nVeY / 32);
 						Npc[nNpcIdx].SetPos(nVeX, nVeY);

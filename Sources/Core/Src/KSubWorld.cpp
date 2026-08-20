@@ -3259,7 +3259,7 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 	// khac goc toa do / khac co luoi thi A* VAN ra duong, nhung moi waypoint lech dung bang
 	// do lech goc -> bot di "dau do khac". Nen nhet goc + kich thuoc vao dau tep va VUT BO
 	// cache nao khong khop.
-	const UINT kMagic  = 0x53465004;	// S F P 04 - 20/08 region CO tep ma thieu doan vat can = DI DUOC (03: 19/08)
+	const UINT kMagic  = 0x53465005;	// S F P 05 - 20/08 nap them pak client (_Region_C.dat) cho vung server thieu
 	const UINT kHdrVer = 2;
 
 	bool bLoaded = false;
