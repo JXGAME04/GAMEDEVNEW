@@ -31,6 +31,7 @@ Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
  -- Include("\\script\\startgame.lua")
 Include("\\script\\header\\testgame.lua")
 Include("\\script\\test\\bangthanh_f.lua")	-- BO TEST bang hoi + cong thanh (TX_Root)
+Include("\\script\\item\\datau_admin.lua")	-- Da Tau: xoa phat + them luot huy
 Include("\\script\\item\\simcity_admin.lua")	-- SimCity: menu admin bot gia lap
 
 ADMIN_SUPPORT_TEXT = "Chøc n¨ng hç trî qu¶n trÞ viªn"
@@ -91,6 +92,7 @@ function chucnangadmin(itemIdx)
 		"Reload File /reloadfileEvent",
 		"Test bang hoi va cong thanh/TX_Root",
 		"BOT nguoi choi (KPlayer)/PB_Menu",
+		"Da Tau: xoa phat huy + them luot huy/DT_AdminMenu",
 		"NhËn trang bÞ Xanh/xanhtest",
 		--"LayBinhSiHieuPhu/LayBinhSiHieuPhu",
 		--"Demo Set Npc Time Idle/DemoSetNpcTimeIdle",
