@@ -119,3 +119,27 @@ int KUiDaTau1::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 }
 
 
+// ==== auto Da Tau (WAuto 20/08) ====
+// Auto bam nut cua so thuong theo DUNG DUONG CLICK that (xem UiQuestDT.cpp).
+int KUiDaTau1::AutoPick(int nIdx)
+{
+	if (m_pSelf == NULL || !m_pSelf->IsVisible())
+		return 0;
+	KWndWindow* pNut = (KWndWindow*)&m_pSelf->diem;		// 0: diem (finish_point)
+	if (nIdx == 1)
+		pNut = (KWndWindow*)&m_pSelf->bonv;				// 1: may man (finish_lucky)
+	else if (nIdx == 2)
+		pNut = (KWndWindow*)&m_pSelf->item;				// 2: vat pham (finish_item)
+	m_pSelf->WndProc(WND_N_BUTTON_CLICK, (unsigned int)pNut, 0);
+	return 1;
+}
+
+int KUiDaTau1::AutoHide()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+	{
+		m_pSelf->Hide();
+		return 1;
+	}
+	return 0;
+}

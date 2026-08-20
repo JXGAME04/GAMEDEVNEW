@@ -865,6 +865,23 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 			{
 				KUiMsgSel::GetMsg((char*)nParam);
 			}
+			else if(uParam == 7)
+			{
+				// [DaTau] auto bam nut THAT tren cua so ruong thuong dang mo.
+				// nParam = nhom*10 + nut: 30..32 = KUiDaTau (exp/tien/ngau nhien),
+				// 40..42 = KUiDaTau1 (diem/may man/vat pham). Tra 1 = da bam;
+				// 0 = cua so nhom do khong mo - khi do an not cua so thua (neu co)
+				// de Core gui thang script du phong ma man hinh van sach.
+				if (nParam >= 30 && nParam <= 32)
+					nRet = KUiDaTau::AutoPick(nParam - 30);
+				else if (nParam >= 40 && nParam <= 42)
+					nRet = KUiDaTau1::AutoPick(nParam - 40);
+				if (nRet == 0)
+				{
+					KUiDaTau::AutoHide();
+					KUiDaTau1::AutoHide();
+				}
+			}
 			break;
 		}
 	}

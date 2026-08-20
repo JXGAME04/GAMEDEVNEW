@@ -123,3 +123,29 @@ int KUiDaTau::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 }
 
 
+// ==== auto Da Tau (WAuto 20/08) ====
+// Auto bam nut cua so thuong theo DUNG DUONG CLICK that (WND_N_BUTTON_CLICK ->
+// WndProc -> Hide + GOI_ADD_UI_CMD_SCRIPT) nen cua so tu dong sau khi chon,
+// giong het nguoi choi tu bam.
+int KUiDaTau::AutoPick(int nIdx)
+{
+	if (m_pSelf == NULL || !m_pSelf->IsVisible())
+		return 0;
+	KWndWindow* pNut = (KWndWindow*)&m_pSelf->EXP;		// 0: kinh nghiem (finish_exp)
+	if (nIdx == 1)
+		pNut = (KWndWindow*)&m_pSelf->money;			// 1: tien (finish_money)
+	else if (nIdx == 2)
+		pNut = (KWndWindow*)&m_pSelf->random;			// 2: ngau nhien (quest_random)
+	m_pSelf->WndProc(WND_N_BUTTON_CLICK, (unsigned int)pNut, 0);
+	return 1;
+}
+
+int KUiDaTau::AutoHide()
+{
+	if (m_pSelf && m_pSelf->IsVisible())
+	{
+		m_pSelf->Hide();
+		return 1;
+	}
+	return 0;
+}

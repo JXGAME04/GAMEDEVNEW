@@ -2565,7 +2565,7 @@ static void DT_Msg(int nPlayerIdx, const char* szMsg)
 	ea.uDTStatusTime = uNow + 1200;
 	try
 	{
-		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[DaTau]", (char*)szMsg, strlen(szMsg), TRUE);
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[D\267 T\310u]", (char*)szMsg, strlen(szMsg), TRUE);
 	}
 	catch (...) {}
 }
@@ -2638,8 +2638,16 @@ static int DT_FindAns(char* apAns[], int nAns, const char* szMark)
 static int DT_Hold(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	char szNghi[512];
 	ea.uDTStatusTime = 0;
-	DT_Msg(nPlayerIdx, szWhy);
+	// treo co thoi han -> tu ghi chu "(tam nghi N phut)" mau xam cuoi cau
+	if (uMs >= 60000u && strlen(szWhy) < 440)
+	{
+		sprintf(szNghi, "%s <color=Gray>(t\271m ngh\330 %u ph\363t)", szWhy, uMs / 60000u);
+		DT_Msg(nPlayerIdx, szNghi);
+	}
+	else
+		DT_Msg(nPlayerIdx, szWhy);
 	ea.nDTPhase = DTP_HOLD;
 	ea.uDTHoldUntil = uMs ? (uCurTime + uMs) : 0;
 	ea.nDTHoldFreeze = 0;	// hold loi/treo: NHA MAY cho auto thuong chay tiep
@@ -3183,7 +3191,14 @@ static int DT_Skip(int nPlayerIdx, const autoData* pAp, UINT uCurTime, const cha
 	                      && !pAp->bDTType[nLoaiNay - 1]);
 	if (pAp->nDTSkipMode == 1 && bLoaiBiTat)
 	{
-		DT_Msg(nPlayerIdx, szWhy);
+		char szHuy[512];
+		if (strlen(szWhy) < 440)
+		{
+			sprintf(szHuy, "%s <color=Gray>(h\361y nhi\326m v\364 - lo\271i n\265y \256ang t\276t)", szWhy);
+			DT_Msg(nPlayerIdx, szHuy);
+		}
+		else
+			DT_Msg(nPlayerIdx, szWhy);
 		ea.nDTStep = DTI_CANCEL;
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.nDTRetry = 0;
@@ -3201,7 +3216,7 @@ static int DT_BagRelease(int nPlayerIdx, const autoData* pAp, UINT uCurTime, con
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	if (!pAp->bReturn)
 		return DT_Hold(nPlayerIdx, szWhy, uCurTime, 5 * 60 * 1000);
-	DT_Msg(nPlayerIdx, "[DaTau] tui day - tha may cho Hau can ban rac, xong tu lam tiep");
+	DT_Msg(nPlayerIdx, "<color=Yellow>T\363i \256\307y - nh\352 auto H\313u c\307n b\270n r\270c, xong s\317 t\371 l\265m ti\325p.");
 	ea.nDTPhase = DTP_SELLJUNK;
 	ea.uDTHoldUntil = uCurTime + 30u * 60u * 1000u;	// han an toan
 	ea.nHomeStep = 0;	// may hau can chay lai tu dau (ATYPE_RETURN)
@@ -3251,14 +3266,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	{
 		if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) >= 8)
 		{
-			DT_Msg(nPlayerIdx, "[DaTau] tui da co cho trong - quay lai lam Da Tau");
+			DT_Msg(nPlayerIdx, "<color=Cyan>T\363i \256\267 c\343 ch\347 tr\350ng - quay l\271i l\265m D\267 T\310u.");
 			ea.nDTPhase = DTP_IDLE;
 			ea.uDTHoldUntil = 0;
 		}
 		else if (uCurTime > ea.uDTHoldUntil)
 		{
 			ea.uDTHoldUntil = 0;
-			return DT_Hold(nPlayerIdx, "[DaTau] ban rac xong van chua du cho trong - don tui giup", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Yellow>B\270n r\270c xong v\311n ch\255a \256\361 \253 tr\350ng - h\267y d\344n b\355t t\363i gi\363p auto.", uCurTime, 15 * 60 * 1000);
 		}
 		else
 		{
@@ -3284,10 +3299,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		g_dDTPrevExp = dCur;
 		if (ea.uDTFarmStall && uCurTime - ea.uDTFarmStall > 20u * 60u * 1000u)
-			return DT_Hold(nPlayerIdx, "[DaTau] cay exp qua lau khong tien - treo 15 phut", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>C\265y kinh nghi\326m qu\270 l\251u kh\253ng ti\325n tri\323n.", uCurTime, 15 * 60 * 1000);
 		if (g_dDTExpGain >= (double)ea.nDTReqNum)
 		{
-			DT_Msg(nPlayerIdx, "[DaTau] du kinh nghiem, quay ve tra nhiem vu");
+			DT_Msg(nPlayerIdx, "<color=Green>\247\267 \256\361 kinh nghi\326m - quay v\322 tr\266 nhi\326m v\364.");
 			ea.nDTStep = DTI_TURNIN;
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTEngaged = 1;
@@ -3331,13 +3346,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				break;
 		if (i >= g_nDTNpcCount)
 		{
-			DT_Msg(nPlayerIdx, "[DaTau] khong o thanh Da Tau - dung Tho Dia Phu ve thanh");
+			DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng \353 th\265nh c\343 D\267 T\310u - d\357ng Th\346 \247\336a Ph\357 v\322 th\265nh.");
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTStep = DTI_NONE;
 			ea.nDTEngaged = 1;
 			return 1;
 		}
-		DT_Msg(nPlayerIdx, "[DaTau] uu tien Da Tau: di den NPC nhan/tra nhiem vu");
+		DT_Msg(nPlayerIdx, "<color=Cyan>\247ang \256\325n ch\347 NPC D\267 T\310u \256\323 nh\313n / tr\266 nhi\326m v\364.");
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTRetry = 0;
@@ -3358,7 +3373,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.nDTBackXaFu = 0;
 					ea.nDTPhase = DTP_GOXAFU;
 					ea.nDTRetry = 0;
-					DT_Msg(nPlayerIdx, "[DaTau] da ve thanh - ra Xa Phu di lai map nhiem vu");
+					DT_Msg(nPlayerIdx, "<color=Cyan>\247\267 v\322 th\265nh - ra Xa Phu \256i ti\325p t\355i map nhi\326m v\364.");
 					return 1;
 				}
 				ea.nDTPhase = DTP_GOTONPC;
@@ -3368,9 +3383,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		// khong o thanh: dung Tho Dia Phu (can fight mode - map luyen cong/godatau deu bat)
 		if (!Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
-			return DT_Hold(nPlayerIdx, "[DaTau] ket: khong o thanh, khong dung duoc Tho Dia Phu", uCurTime, 10 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>K\321t: kh\253ng \353 th\265nh m\265 kh\253ng d\357ng \256\255\356c Th\346 \247\336a Ph\357.", uCurTime, 10 * 60 * 1000);
 		if (++ea.nDTRetry > 8)
-			return DT_Hold(nPlayerIdx, "[DaTau] ket: khong ve duoc thanh (het Tho Dia Phu?)", uCurTime, 10 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>K\321t: kh\253ng v\322 \256\255\356c th\265nh (h\325t Th\346 \247\336a Ph\357?).", uCurTime, 10 * 60 * 1000);
 		if (!Player[nPlayerIdx].m_ItemList.AutoUseItem(item_townportal, 0, 0, nPlayerIdx))
 			SendClientCmdOpenShop(item_townportal, 0, 0, 2);	// mua tu xa roi lan sau dung
 		ea.uDTNext = uCurTime + 3000;
@@ -3416,7 +3431,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_WalkTo(nPlayerIdx, pRow->nX * 32, pRow->nY * 32, 160, uCurTime))
 		{
 			if (++ea.nDTRetry > 20)
-				return DT_Hold(nPlayerIdx, "[DaTau] khong thay NPC Da Tau o toa do", uCurTime, 5 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng th\312y NPC D\267 T\310u \353 t\344a \256\351 \256\267 \256\336nh.", uCurTime, 5 * 60 * 1000);
 		}
 		return 1;
 	}
@@ -3446,13 +3461,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			ea.uDTTalkSeen = cap.uTalkSeq;
 			if (DT_Has(cap.szTalk, DTM_MSG_PUNISH))
-				return DT_Hold(nPlayerIdx, "[DaTau] bi NPC phat, cho ~10 phut", uCurTime, 11 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Orange>B\336 D\267 T\310u ph\271t v\327 h\361y nhi\322u - ch\352 h\325t ph\271t s\317 l\265m ti\325p.", uCurTime, 11 * 60 * 1000);
 		}
 		if (cap.uDlgSeq == ea.uDTDlgSeen)
 		{
 			// moi vong ~250ms; 16 vong (~4s) khong co phan hoi -> go lai; 60 vong -> treo
 			if (++ea.nDTRetry > 60)
-				return DT_Hold(nPlayerIdx, "[DaTau] NPC khong tra loi, treo 5 phut", uCurTime, 5 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>NPC kh\253ng tr\266 l\352i h\351i tho\271i.", uCurTime, 5 * 60 * 1000);
 			if ((ea.nDTRetry % 16) == 0)
 			{
 				ea.nDTPhase = DTP_GOTONPC;
@@ -3477,14 +3492,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_Has(szQ, DTM_MSG_LIMIT))
 		{
 			ea.nDTDoneDay = nToday;
-			DT_Hold(nPlayerIdx, "[DaTau] du 40 nhiem vu hom nay - nghi den mai", uCurTime, 0);
+			DT_Hold(nPlayerIdx, "<color=AYellow>Tuy\326t! \247\267 \256\361 40 nhi\326m v\364 D\267 T\310u h\253m nay - ngh\330, mai l\265m ti\325p.", uCurTime, 0);
 			ea.nDTHoldFreeze = 1;	// hold hop le: dung yen neu nguoi choi tat luyen cong
 			ea.nDTEngaged = (pAp->bDTTrainAfter ? 0 : 1);
 			return ea.nDTEngaged;
 		}
 		// tui day
 		if (DT_Has(szQ, DTM_MSG_BAGFULL))
-			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "[DaTau] tui day (<5 o trong) - don tui roi auto chay lai");
+			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i \256\307y (d\255\355i 5 \253 tr\350ng) - h\267y d\344n t\363i r\345i auto ch\271y ti\325p.");
 		// tra nhiem vu that bai (chua du yeu cau)
 		if (DT_Has(szQ, DTM_MSG_FAILREQ) || DT_Has(szQ, DTM_MSG_FAILSHXT))
 		{
@@ -3512,10 +3527,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uDTFarmStall = uCurTime;
 				ea.nDTPhase = DTP_FARM;
 				ea.nDTEngaged = 0;
-				DT_Msg(nPlayerIdx, "[DaTau] chua du exp, cay tiep...");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Ch\255a \256\361 kinh nghi\326m - c\265y ti\325p...");
 				return 0;
 			}
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong dap ung duoc nhiem vu nay");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng \256\270p \370ng \256\255\356c nhi\326m v\364 n\265y.");
 		}
 		// hop xac nhan huy - het luot (3 lua chon, co option 100 manh)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL2)) >= 0)
@@ -3536,7 +3551,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			DT_Answer(nPlayerIdx, nAns - 1);	// "de ta suy nghi lai" - thoat
-			return DT_Hold(nPlayerIdx, "[DaTau] het luot huy, treo nhiem vu", uCurTime, 15 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Orange>H\325t l\255\356t h\361y nhi\326m v\364.", uCurTime, 15 * 60 * 1000);
 		}
 		// hop xac nhan huy (con luot / xac nhan lan 2)
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_CANCEL1A)) >= 0
@@ -3587,7 +3602,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			&& ea.nDTCand[0] == nPrevCand0 && nPrevCur < ea.nDTCandNum)
 				ea.nDTCandCur = nPrevCur;
 			if (ea.nDTQType <= 0)
-				return DT_Hold(nPlayerIdx, "[DaTau] khong hieu noi dung nhiem vu (?)", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng hi\323u n\351i dung nhi\326m v\364 (l\271) - h\267y b\270o l\271i l\347i n\265y.", uCurTime, 10 * 60 * 1000);
 			// loai bi nguoi choi tat?
 			if (!pAp->bDTType[ea.nDTQType - 1])
 			{
@@ -3599,13 +3614,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uDTNext = uCurTime + 900;
 					return 1;
 				}
-				return DT_Hold(nPlayerIdx, "[DaTau] loai nhiem vu nay dang TAT - treo", uCurTime, 15 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Yellow>Lo\271i nhi\326m v\364 n\265y \256ang <color=Red>t\276t<color> trong tab D\267 T\310u - treo ch\352.", uCurTime, 15 * 60 * 1000);
 			}
 			// den de tra?
 			if (ea.nDTStep == DTI_TURNIN)
 			{
 				if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
-					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "[DaTau] can >=5 o trong de tra nhiem vu");
+					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>C\307n \335t nh\312t 5 \253 tr\350ng \256\323 tr\266 nhi\326m v\364 - h\267y d\344n t\363i.");
 				DT_Answer(nPlayerIdx, idx);
 				ea.nDTStep = DTI_TURNWAIT;
 				ea.uDTNext = uCurTime + 900;
@@ -3622,7 +3637,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uDTNext = uCurTime + 900;
 					return 1;
 				}
-				return DT_Hold(nPlayerIdx, "[DaTau] khong thay nut huy", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Red>Kh\253ng th\312y n\363t h\361y trong h\351i tho\271i.", uCurTime, 10 * 60 * 1000);
 			}
 			// nhiem vu moi -> dong khung thoai (khong can tra loi - nhiem vu da duoc gan)
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
@@ -3634,7 +3649,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// reset boi new-dialog nen chot nay khong bi vo hieu khi NPC lien tuc tra hoi thoai la (DT-1).
 		ea.nDTUnknown = nUnkSave + 1;
 		if (ea.nDTUnknown > 6)
-			return DT_Hold(nPlayerIdx, "[DaTau] hoi thoai khong nhan dang duoc", uCurTime, 5 * 60 * 1000);
+			return DT_Hold(nPlayerIdx, "<color=Red>H\351i tho\271i kh\253ng nh\313n d\271ng \256\255\356c (server \256\346i l\352i tho\271i?).", uCurTime, 5 * 60 * 1000);
 		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
 		ea.nDTPhase = DTP_GOTONPC;
 		ea.uDTNext = uCurTime + 900;
@@ -3651,7 +3666,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		case 3:
 		{
 			if (ea.nDTCandNum <= 0)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong khop duoc dong bang du lieu");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh\253ng kh\355p \256\255\356c d\337ng b\266ng d\367 li\326u nhi\326m v\364.");
 			int nPos = 0;
 			int nItem = DT_FindCandItem(nPlayerIdx, pAp, &nPos);
 			if (!nItem && ea.nDTCandCur + 1 < ea.nDTCandNum)
@@ -3673,16 +3688,16 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				{
 					// keo tu ruong ve tui
 					if (!pAp->bDTUseBox)
-						return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] do can nam trong ruong nhung chua cho phep lay");
+						return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>\247\345 c\307n tr\266 \256ang n\273m trong r\255\254ng - h\267y b\313t \253 <color=White>L\312y \256\345/ti\322n t\365 r\255\254ng<color> \353 tab D\267 T\310u.");
 					if (!DT_EnsureUnlock(nPlayerIdx, pAp, uCurTime))
 					{
 						if (++ea.nDTRetry > 8)
-							return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong mo khoa duoc ruong (kiem tra mat khau)");
+							return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh\253ng m\353 kh\343a \256\255\356c r\255\254ng - ki\323m tra m\313t kh\310u r\255\254ng \353 tab H\313u c\307n.");
 						return 1;
 					}
 					if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(
 						Item[nItem].GetWidth(), Item[nItem].GetHeight(), room_equipment) < 1)
-						return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "[DaTau] tui khong du cho de lay do tu ruong");
+						return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i kh\253ng \256\361 ch\347 \256\323 l\312y \256\345 t\365 r\255\254ng - h\267y d\344n t\363i.");
 					DT_BoxToBag(nItem, nPos);
 					ea.uDTNext = uCurTime + 1200;
 					return 1;	// tick sau se thay item trong tui
@@ -3707,20 +3722,20 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"[DaTau] can mua vu khi/ngua - hay bo san mon nay vao ruong (xem ten trong nhiem vu)");
+					"<color=Orange>Nhi\326m v\364 c\307n v\362 kh\335/ng\371a - h\267y b\341 s\275n m\343n \256\343 v\265o r\255\254ng (xem t\252n trong nhi\326m v\364).");
 			}
 			if (ea.nDTQType == 2)
 				return DT_Skip(nPlayerIdx, pAp, uCurTime,
-					"[DaTau] khong co do can tim trong tui/ruong - nen tich luy trang suc");
+					"<color=Orange>Kh\253ng c\343 \256\345 c\307n t\327m trong t\363i/r\255\254ng - n\252n t\335ch tr\367 s\275n trang s\370c.");
 			return DT_Skip(nPlayerIdx, pAp, uCurTime,
-				"[DaTau] khong co do 'khoe' phu hop trong tui/ruong");
+				"<color=Orange>Kh\253ng c\343 \256\345 'khoe' ph\357 h\356p trong t\363i/r\255\254ng.");
 		}
 		case 4:
 		{
 			if (ea.nDTMapId <= 0 || ea.nDTReqNum <= 0)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong doc duoc map/so luong loai 4");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh\253ng \256\344c \256\255\356c t\252n map / s\350 l\255\356ng c\361a nhi\326m v\364 lo\271i 4 (\256\270nh qu\270i).");
 			if (!pAp->bFight)
-				return DT_Hold(nPlayerIdx, "[DaTau] loai 4 can bat 'Danh quai' o tab Chien dau", uCurTime, 10 * 60 * 1000);
+				return DT_Hold(nPlayerIdx, "<color=Yellow>Nhi\326m v\364 \256\270nh qu\270i: h\267y b\313t \253 <color=White>\247\270nh qu\270i<color> \353 tab Chi\325n \256\312u.", uCurTime, 10 * 60 * 1000);
 			ea.nDTProg = -1;
 			ea.uDTMsgSeen = cap.uMsgSeq;
 			// mua san Tho Dia Phu de ve
@@ -3748,7 +3763,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				g_dDTPrevExp = Player[nPlayerIdx].m_nExp;
 				g_dDTExpGain = 0;
 				ea.uDTFarmStall = uCurTime;
-				DT_Msg(nPlayerIdx, "[DaTau] nhiem vu exp: tha cho auto thuong cay, du se tu ve tra");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Nhi\326m v\364 kinh nghi\326m: th\266 cho auto th\255\352ng c\265y, \256\361 s\317 t\371 v\322 tr\266.");
 				ea.nDTPhase = DTP_FARM;
 				ea.nDTEngaged = 0;
 				return 0;
@@ -3772,7 +3787,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		}
-		return DT_Hold(nPlayerIdx, "[DaTau] loai nhiem vu la", uCurTime, 10 * 60 * 1000);
+		return DT_Hold(nPlayerIdx, "<color=Red>Lo\271i nhi\326m v\364 l\271 - auto ch\255a h\347 tr\356.", uCurTime, 10 * 60 * 1000);
 	}
 
 	case DTP_GOSHOP:
@@ -3780,7 +3795,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nDTEngaged = 1;
 		std::map<int, StationVector>::iterator it = g_ShopStation.find(nMap);
 		if (it == g_ShopStation.end() || it->second.empty())
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] thanh nay khong co toa do tiem tap hoa");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Th\265nh n\265y ch\255a c\343 t\344a \256\351 ti\326m t\271p h\343a.");
 		// du tien chua? (uoc luong 100k; thieu thi rut)
 		if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < 100000 && pAp->bDTUseBox
 		&& pAp->nDTWDMoney > 0)
@@ -3821,7 +3836,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			int nAns = DT_Split(szBuf, apAns, 16);
 			int nPick = ea.nDTShopTry;
 			if (nPick >= nAns)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] tiem khong co muc giao dich phu hop");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Ti\326m kh\253ng c\343 m\364c giao d\336ch ph\357 h\356p.");
 			DT_Answer(nPlayerIdx, nPick);
 			++ea.nDTShopTry;
 			ea.uDTNext = uCurTime + 900;
@@ -3830,7 +3845,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// tim chu tiem tap hoa gan diem shop va mo thoai
 		std::map<int, StationVector>::iterator it = g_ShopStation.find(nMap);
 		if (it == g_ShopStation.end() || it->second.empty())
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] mat toa do tiem");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>M\312t t\344a \256\351 ti\326m t\271p h\343a.");
 		sStation& s = it->second[0];
 		int nIdx = DT_FindNpcName(nPlayerIdx, "t\271p h", s.x, s.y, 300);
 		if (!nIdx)
@@ -3846,14 +3861,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				Player[nPlayerIdx].DialogNpc(nIdx);
 				ea.uDTNext = uCurTime + 800;
 				if (++ea.nDTRetry > 10)
-					return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong mo duoc tiem tap hoa");
+					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng m\353 \256\255\356c c\366a s\346 ti\326m t\271p h\343a.");
 				return 1;
 			}
 			DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
 			return 1;
 		}
 		if (++ea.nDTRetry > 10)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong thay chu tiem tap hoa");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng th\312y ch\361 ti\326m t\271p h\343a.");
 		return 1;
 	}
 
@@ -3899,14 +3914,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						return 1;
 					}
 					CoreDataChanged(GDCNI_UI_ACT, 3, 0);
-					return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong du tien mua do nhiem vu");
+					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Kh\253ng \256\361 ti\322n mua \256\345 nhi\326m v\364.");
 				}
 				int x, y;
 				if (!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 					pItem->GetWidth(), pItem->GetHeight(), &x, &y))
 				{
 					CoreDataChanged(GDCNI_UI_ACT, 3, 0);
-					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "[DaTau] tui day, khong mua duoc");
+					return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>T\363i \256\307y, kh\253ng mua \256\255\356c \256\345.");
 				}
 				SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
 				ea.uDTNext = uCurTime + 1200;
@@ -3916,7 +3931,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// shop nay khong co mon can -> dong, thu option khac cua tiem
 		CoreDataChanged(GDCNI_UI_ACT, 3, 0);
 		if (ea.nDTShopTry >= 4)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] tiem khong ban mon can mua");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Ti\326m kh\253ng b\270n m\343n c\307n mua.");
 		ea.nDTPhase = DTP_SHOPTALK;
 		ea.uDTNext = uCurTime + 700;
 		return 1;
@@ -3932,13 +3947,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// dung Tho Dia Phu ve thanh roi ra Xa Phu di lai cho dung map.
 			if (ea.nDTMapId > 0 && ea.nDTQType == 4)
 			{
-				DT_Msg(nPlayerIdx, "[DaTau] khong phai map nhiem vu - dung Tho Dia Phu ve thanh di lai");
+				DT_Msg(nPlayerIdx, "<color=Cyan>Kh\253ng ph\266i map nhi\326m v\364 - d\357ng Th\346 \247\336a Ph\357 v\322 th\265nh \256i l\271i.");
 				ea.nDTBackXaFu = 1;
 				ea.nDTPhase = DTP_RETURN;
 				ea.nDTRetry = 0;
 				return 1;
 			}
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] thanh nay khong co toa do xa phu");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Th\265nh n\265y ch\255a c\343 t\344a \256\351 Xa Phu.");
 		}
 		sStation& s = it->second[0];
 		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
@@ -3961,7 +3976,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCurTime))
 		{
 			if (++ea.nDTRetry > 15)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] khong thay xa phu");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>Kh\253ng th\312y Xa Phu.");
 		}
 		return 1;
 	}
@@ -3986,7 +4001,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// nhieu tang), lay id THAT lam chuan roi farm luon - KHONG phu ve giua chung.
 		if (g_MoveStation.find(nMap) == g_MoveStation.end())
 		{
-			DT_Msg(nPlayerIdx, "[DaTau] da toi map nhiem vu - bat dau danh quai nhat cuon");
+			DT_Msg(nPlayerIdx, "<color=Green>\247\267 t\355i map nhi\326m v\364 - b\276t \256\307u \256\270nh qu\270i nh\306t cu\351n.");
 			ea.nDTMapId = nMap;
 			ea.nDTPhase = DTP_FARM;
 			ea.nDTEngaged = 2;
@@ -4001,7 +4016,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			// van dung trong thanh: xa phu khong chuyen (server chua thay nhiem vu?)
 			if (++ea.nDTXaFuTry > 5)
-				return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] xa phu khong chuyen map (kiem tra nhiem vu)");
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Xa Phu kh\253ng ch\353 \256i map nhi\326m v\364 (ki\323m tra l\271i nhi\326m v\364).");
 			ea.nDTPhase = DTP_GOXAFU;
 			ea.nDTRetry = 0;
 		}
@@ -4035,10 +4050,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 		}
 		if (ea.uDTFarmStall && uCurTime - ea.uDTFarmStall > 20u * 60u * 1000u)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] farm qua lau khong tien trien - bo qua");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>\247\270nh qu\270i qu\270 l\251u kh\253ng ti\325n tri\323n.");
 		if (ea.nDTProg >= ea.nDTReqNum && ea.nDTReqNum > 0)
 		{
-			DT_Msg(nPlayerIdx, "[DaTau] du so cuon, quay ve tra nhiem vu");
+			DT_Msg(nPlayerIdx, "<color=Green>\247\267 nh\306t \256\361 s\350 cu\351n - quay v\322 tr\266 nhi\326m v\364.");
 			ea.nDTStep = DTI_TURNIN;
 			ea.nDTPhase = DTP_RETURN;
 			ea.nDTRetry = 0;
@@ -4182,15 +4197,30 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				const int nRw1 = (pAp->nDTReward1 >= 0 && pAp->nDTReward1 <= 2) ? pAp->nDTReward1 : 0;
 				const int nRw2 = (pAp->nDTReward2 >= 0 && pAp->nDTReward2 <= 2) ? pAp->nDTReward2 : 2;
 				const bool bNhomA = (cap.nFinType <= 4) ? (nThu < 3) : (nThu >= 3);
+				if (nThu == 0)
+					DT_Msg(nPlayerIdx, "<color=AYellow>R\255\254ng th\255\353ng \256\267 m\353 - auto b\312m ch\344n ph\307n th\255\353ng...");
+				// (20/08) bam nut THAT tren cua so thuong qua UI (GDCNI_UI_ACT 7 ->
+				// KUiDaTau/KUiDaTau1::AutoPick): di dung duong click nguoi choi nen
+				// cua so TU DONG sau khi chon - het canh "nhan roi ma bang van hien".
+				// Tra 0 = cua so nhom do khong mo (3 lan thu cheo nhom): UI da an
+				// cua so thua, gui thang script nhu ban cu de van nhan duoc thuong.
 				if (bNhomA)
-					SendUiCmdScript(3, (char*)DT_FIN3[(nRw1 + nThu) % 3]);
+				{
+					const int nNut = (nRw1 + nThu) % 3;
+					if (CoreDataChanged(GDCNI_UI_ACT, 7, 30 + nNut) == 0)
+						SendUiCmdScript(3, (char*)DT_FIN3[nNut]);
+				}
 				else
-					SendUiCmdScript(4, (char*)DT_FIN4[(nRw2 + nThu) % 3]);
+				{
+					const int nNut = (nRw2 + nThu) % 3;
+					if (CoreDataChanged(GDCNI_UI_ACT, 7, 40 + nNut) == 0)
+						SendUiCmdScript(4, (char*)DT_FIN4[nNut]);
+				}
 				ea.uDTNext = uCurTime + 800;
 				return 1;
 			}
 			// da thu ca 6 nut ma cua so van mo lai - thoi, di nhan nhiem vu ke
-			DT_Msg(nPlayerIdx, "[DaTau] khong bam duoc ruong thuong (thu du 6 nut) - bo qua");
+			DT_Msg(nPlayerIdx, "<color=Red>Kh\253ng ch\344n \256\255\356c r\255\254ng th\255\353ng (\256\267 th\366 \256\361 6 n\363t) - b\341 qua.");
 			ea.nDTRwTry = 0;
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
@@ -4206,7 +4236,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.uDTNext = uCurTime + 250;
 			return 1;
 		}
-		DT_Msg(nPlayerIdx, "[DaTau] da nhan thuong - di nhan nhiem vu ke");
+		DT_Msg(nPlayerIdx, "<color=AYellow>\247\267 nh\313n th\255\353ng xong - \256i nh\313n nhi\326m v\364 k\325 ti\325p!");
 		ea.nDTRwTry = 0;
 		ea.nDTStep = DTI_NONE;
 		ea.nDTQType = 0;
@@ -4221,11 +4251,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	{
 		ea.nDTEngaged = 1;
 		if (ea.nDTUsedPD > 40)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] dung qua nhieu Phuc Duyen Lo ma chua du");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>D\357ng qu\270 nhi\322u Ph\363c Duy\252n L\351 m\265 v\311n ch\255a \256\361 \256i\323m.");
 		// item khong tac dung? (2 lan dung ma fuyuan khong doi)
 		int nFY = Npc[Player[nPlayerIdx].m_nIndex].nFuYuan;
 		if (ea.nDTUsedPD >= 2 && nFY <= ea.nDTFuYuanPrev)
-			return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] Phuc Duyen Lo khong tac dung (server chua co script?)");
+			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Ph\363c Duy\252n L\351 kh\253ng c\343 t\270c d\364ng (server thi\325u script?).");
 		// dung 1 item tu tui; khong co -> keo tu ruong; khong co nua -> thu tra roi skip
 		bool bUsed = false;
 		for (i = 0; i < 3 && !bUsed; ++i)
@@ -4270,7 +4300,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			++ea.nDTUsedPD;
 			return 1;
 		}
-		return DT_Skip(nPlayerIdx, pAp, uCurTime, "[DaTau] het Phuc Duyen Lo ma chua du diem");
+		return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Orange>H\325t Ph\363c Duy\252n L\351 m\265 v\311n ch\255a \256\361 \256i\323m.");
 	}
 
 	default:

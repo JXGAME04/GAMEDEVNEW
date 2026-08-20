@@ -6,6 +6,8 @@ class KUiDaTau1 : protected KWndShowAnimate
 public:
 	static KUiDaTau1* OpenWindow(const char* pszInitString, int nType);				
 	static void			 CloseWindow();
+	static int			 AutoPick(int nIdx);	// [DaTau] auto bam nut nhu chuot that: 0 diem, 1 may man, 2 vat pham; tra 1 = da bam
+	static int			 AutoHide();			// [DaTau] an cua so neu dang mo; tra 1 = vua an
 private:
 	//KUiDaTau();
 	void	Initialize();					
