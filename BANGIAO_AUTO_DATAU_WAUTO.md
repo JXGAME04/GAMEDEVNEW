@@ -19,8 +19,8 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | | |
 |---|---|
-| **Trạng thái** | test lần 1 đứng yên → fix `DT_WalkTo` (8.6) → **test lần 2 ĐÃ CHẠY LÀM DÃ TẨU** ✅ → nâng cấp 19/08 trưa (đóng thoại · T4 tìm quái · `DTP_SELLJUNK` · UI WAuto) → test chiều bắt 5 lỗi (8.7) + bảng cụm quái từ pak (7.2) → **19/08 tối: cửa sổ thưởng được BẤM THẬT (8.9) + 54 thông báo tiếng Việt có dấu, có màu (mục 6)** — chờ test |
-| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` → … → `0c97e240` → `f6f550c5`/`6bde16a1` → `15b242c3`/`4c264409`/`16de2b3a` → `ae1129f8` → **`e40f40ea` (bấm rương thưởng thật + thông báo màu)** |
+| **Trạng thái** | test lần 1 đứng yên → fix `DT_WalkTo` (8.6) → **test lần 2 ĐÃ CHẠY** ✅ → nâng cấp trưa 19/08 → 5 lỗi test chiều (8.7) + bảng cụm quái (7.2) → tối: bấm rương thật (8.9) + 54 thông báo màu (mục 6) → **ĐỢT 20/08: 11 mục người dùng (mục 13 — hộp giao, bán rác tại chỗ, phù 437, lệnh bài, MUA Ở SẠP + nhảy 10 thành, ưu tiên tab Di chuyển, UI 2 cột…)** — chờ test |
+| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | … → `ae1129f8` → `e40f40ea` (bấm rương thật + thông báo màu) → **`c9de7a7b` (đợt 20/08, 11 mục)** |
 | **Nơi bật** | WAuto.exe → tab **"Dã Tẩu"** → tick "Bật auto Dã Tẩu" |
 | **Mặc định** | **TẮT** (`bDaTau=0`) — không tick thì hành vi auto cũ nguyên vẹn |
 | **Việc kế tiếp** | Hỏi người dùng kết quả test + dòng `[Dã Tẩu]` màu cuối cùng trong khung chat |
@@ -31,10 +31,11 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 19:11** | engine Dã Tẩu tới `e40f40ea` (bấm nút thật cửa sổ thưởng + thông báo có dấu/màu); bản lùi = `CoreClient_cu_1908_tg.dll` (17:50). ⚠️ bản trung gian 18:47 bị ghi đè không kịp sao lưu — cần thì dựng lại từ cây E đã revert 2 patch |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 21:32** (2.196.992 B) | engine Dã Tẩu tới `c9de7a7b` (đợt 20/08 — mục 13); bản lùi = `CoreClient_cu_1908tt.dll` (bản 19:2x) |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
-| `Game.exe` | như trên | **19/08 19:11** | cổng điều phối + **mới:** `GDCNI_UI_ACT uParam=7` bấm nút cửa sổ thưởng (`KUiDaTau/KUiDaTau1::AutoPick`); bản lùi = `Game_cu_1908_tg.exe` (06:49) |
-| `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
+| `Game.exe` | như trên | **19/08 21:32** (1.251.840 B) | `GDCNI_UI_ACT uParam=7` (AutoPick) + đọc `autoData` **6888 B**; bản lùi = `Game_cu_1908tt.exe` |
+| `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc) **và** `bin\client\WAuto.exe` | **19/08 21:35** (361.472 B) | tab Dã Tẩu bố cục 2 cột + 3 điều khiển mới (LB 435, MS 436, MM 437/438, INDEX_END→441); gửi `autoData` 6888 B — **phải dùng đúng cặp WAuto+Game 21:3x**. ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn chép tay**. ⚠️ WAuto tự thoát nếu không có Game.exe đang chạy |
+| `script\item\lbhtdatau.lua` | `...\bin\server\script\item\` | **19/08 21:37** (1.583 B) | **VIẾT LẠI cho tasklink** (mục 13.9); bản cũ = `lbhtdatau_cu_1908.lua`. ⚠️ **cần restart GameServer** mới ăn (script item bị cache; đằng nào cũng đang chờ restart cho DLL bot của phiên song song) |
 
 - `re_pe_crt.py` **PASS**: CoreClient=CRT-tĩnh · Game.exe=UCRT-RELEASE · engine/Represent2=UCRT-DEBUG.
 - `bin\client\debug\` chỉ có tệp tháng 4 ⇒ **không** dựng nhầm Debug.
@@ -114,11 +115,13 @@ nó đã bị chú thích chết tại `KPlayer.cpp:432`. Đừng sửa nhầm n
 
 > ⚠️ **Mã nguồn UI không được quản lý phiên bản.** Nên sao lưu vào git (đề xuất, chưa làm).
 
-### 4.3 Ba bản `ipc_shared.h` phải giống hệt nhau
+### 4.3 HAI bản `ipc_shared.h` phải giống hệt nhau (từ 20/08)
 
-`D:\GAMEDEVNEW\Sources\Core\Src\` · `E:\SourceTuanLe\...\SOURCESUPDATE_...\Sources\Core\Src\` ·
-`E:\Src_Auto_Ngoai\WAuto\WAuto\`. Đã kiểm: **md5 giống nhau (`73f453c6…`)**. Lệch một byte là
-Core đọc sai offset (Core ép kiểu thẳng `(autoData*)nParam`) — hỏng âm thầm, không có version handshake.
+`D:\GAMEDEVNEW\Sources\Core\Src\` · `E:\Src_Auto_Ngoai\WAuto\WAuto\` — **sizeof(autoData) = 6888**
+(20/08 thêm `bDTLenhBai`/`bDTMuaSap`/`nDTMaxMua` ở CUỐI). Lệch một byte là Core đọc sai offset
+(ép kiểu thẳng `(autoData*)nParam`) — hỏng âm thầm, không có version handshake.
+Bản thứ ba ở cây `E:\SourceTuanLe\...\SOURCESUPDATE_KINHMACH_ONLTEST0608` **KHÔNG cập nhật nữa**
+— cây nguồn E đã bỏ (build ở D, chép tay artifact; xem đầu mục 13).
 
 ---
 
@@ -138,6 +141,9 @@ Core đọc sai offset (Core ép kiểu thẳng `(autoData*)nParam`) — hỏng 
 | Cách hủy | Chỉ dùng lượt hủy |
 | Thưởng | Exp / Vật phẩm |
 | Lấy đồ/tiền từ rương | ✔ + nhập **mật khẩu rương ở tab Hậu cần** |
+| Dùng Lệnh bài hoàn thành khi loại tắt | ✔ (mặc định; chỉ tác dụng khi có item 6,1,4818 + server đã restart) |
+| Thiếu đồ: mua ở sạp | ✔ (mặc định) — cần có chút tiền đi Xa Phu (10-50 lượng/chuyến) |
+| Giá sạp tối đa (vạn) | 200 (mặc định) — món rẻ nhất đạt yêu cầu sẽ được mua |
 | Xong lên map luyện công | tuỳ ý (tắt = đứng yên khi xong) |
 | Tab Chiến đấu | **bật "Đánh quái"** — loại 4 bắt buộc cần |
 
@@ -390,6 +396,139 @@ DTP_REWARD ──CoreDataChanged(GDCNI_UI_ACT, 7, nhóm*10+nút)──► GameSp
 
 Vì sao give-box (hộp nộp đồ) không dính lỗi này: server có gói đóng riêng
 (`S2C_GIVE_BOX nType==2` → `GDCNI_END_AFFAIR_BOX`), còn cửa sổ thưởng thì không.
+
+
+## 13 · ĐỢT 20/08 (tối 19/08, `c9de7a7b`) — 11 mục theo yêu cầu: CÁCH HOẠT ĐỘNG
+
+> Toàn bộ nằm trong `CoreShell.cpp` (engine), trừ chỗ ghi rõ. Đã build + deploy 21:32-21:35.
+> ⚠️ **Cây nguồn E không dùng nữa** (chốt của phiên F11): build ở `D:\GAMEDEVNEW` rồi CHÉP TAY
+> artifact (`Sources\Core\ClientRelease\CoreClient.dll`, `Sources\S3Client\Release\Game.exe`)
+> vào `bin\client`. **Đừng build cây E nữa — sẽ mất tính năng F11 + đợt này.**
+
+### 13.1 Hộp giao vật phẩm nhận được item (bug "có đồ đúng mà không bỏ vào box")
+- **Gốc bệnh:** server `KItemList::ExchangeItem` **từ chối** mọi gói move-item có `Down != Up`
+  (KItemList.cpp:2227) — mỗi gói phải là MỘT CÚ CLICK trong đúng một ô đồ (nhặt lên tay /
+  đặt xuống theo `m_Hand`). Engine cũ gửi 1 gói Down=túi/Up=hộp ⇒ server im lặng bỏ qua.
+- **Cách chạy mới:** `DT_ClickItem` phát 3 gói click như người kéo thật (khuôn KPlayer.cpp:3281):
+  ① click ô item trong túi (nhấc lên tay) → ② click ô (0,0) hộp giao (đặt xuống) → ③ click lại
+  ô cũ (nếu đặt trượt thì item tự về túi, không kẹt trên tay; đặt trúng thì click 3 vô hại).
+  Sau 900ms mới bấm OK (`SendUiCmdScript(1, szBoxFunc)` — đúng gói của nút OK thật).
+
+### 13.2 Phúc Duyên lấy từ rương không cần bật ô "Lấy đồ/tiền từ rương"
+- `DTP_USEPD` giờ chỉ cần **có mật khẩu rương** (tab Hậu cần) là tự kéo Phúc Duyên Lộ
+  (6,1,121/122/123 = Tiểu +10 / Trung +20 / Đại +50) từ rương về túi rồi dùng; đủ điểm
+  (server so DELTA với mốc lúc nhận, task 1026) thì về NPC trả; hết item → hủy/treo theo ô
+  "Khi bỏ qua" như cũ.
+
+### 13.3 Túi đầy: TỰ BÁN RÁC TẠI CHỖ (hết vòng "phù về − không bán − đi xa phu − phù về")
+- **Gốc bệnh cũ:** túi đầy → thả máy cho auto Hậu cần; nhưng Hậu cần chạy theo cấu hình riêng
+  (không bật "Bán vật phẩm" thì không bán; xong việc lại tự quay về bãi/đi trạm xe) ⇒ lặp vô tận.
+- **Cách chạy mới:** `DTP_SELLJUNK` tự bán **tại chỗ** (server cho bán không cần đứng cạnh tiệm —
+  chính máy Hậu cần gốc vẫn bán ngay bước 1): mỗi 700ms bán 1 **trang bị trắng/xanh chưa khóa**,
+  tôn trọng bộ lọc giữ đồ của tab Hậu cần (không bán ngựa nếu tắt, giữ nhẫn/dây/bội cấp cao theo
+  `bSaveRing`, giữ đồ có dòng ma theo bảng lọc, +tất kỹ năng luôn giữ) **và không bao giờ bán item
+  đạt yêu cầu nhiệm vụ (13.8)**. Đủ 8 ô (hoặc hết rác mà ≥5 ô) → quay lại làm tiếp ngay.
+  Gửi ≥4 lệnh bán mà số ô trống không tăng + đang ngoài thành → phù về thành bán tiếp; hạn 4 phút.
+
+### 13.4 Phù về thành: KHÔNG tự mua nữa + dùng phù vô hạn (6,1,437)
+- Bỏ cả hai chỗ tự mua từ xa (`SendClientCmdOpenShop(item_townportal,...)` ở DTP_RETURN và
+  chuẩn bị loại 4). Thứ tự dùng mới: **phù VÔ HẠN (6,1,437)** (không tiêu hao) → Thổ Địa Phù
+  (5,0,0) → Hồi thành phù (6,1,1083/1084) → **kéo từ rương** (cần mật khẩu) → treo + nhắc
+  vàng "bỏ phù vào túi giúp auto". Loại 4 trước khi đi chỉ NHẮC nếu không có phù (vẫn đi làm).
+
+### 13.5 Đang treo Tìm/Khoe mà nhặt được đồ đạt yêu cầu → tự về trả
+- Trong `DTP_HOLD` (trừ hold "đủ 40"), nếu đang giữ nhiệm vụ loại 2/3: mỗi 5 giây quét
+  túi+rương theo đúng luật ứng viên; thấy đồ đạt → nhả treo, vào `DTP_EXEC` (tự lo kéo từ
+  rương nếu cần) → về NPC trả. Có báo xanh lá trong chat.
+
+### 13.6 Đủ 40 nhiệm vụ/ngày: nghỉ rồi TỰ chạy lại
+- Như cũ: sang ngày mới (giờ máy) là mở lại ngay. **Mới:** hold "đủ 40" giờ có hạn 60 phút —
+  mỗi giờ tự ra hỏi NPC một lần, phòng ngày của SERVER lệch ngày máy (múi giờ); server reset
+  là chạy tiếp trong vòng ≤1 giờ. Vẫn cần đang tick "Bật auto Dã Tẩu".
+
+### 13.7 FARM loại 4 (Địa đồ chỉ / Mật chỉ): ƯU TIÊN tab Di chuyển
+- Nếu tab Di chuyển cấu hình **đúng map nhiệm vụ** (`nMoveMapId == map`): "Di chuyển theo tọa
+  độ" → đi tuần tự các tọa độ đã đặt (dùng làm chuỗi điểm farm); "Quanh điểm" → đảo 8 hướng
+  quanh điểm đã đặt (bán kính = Phạm vi nhìn, kẹp 600-1800). Bảng cụm quái `datau_toado.txt`
+  chỉ dùng khi tab Di chuyển KHÔNG cấu hình cho map đó. Đuổi quái đã lọt tầm nhìn vẫn ưu tiên
+  trước như cũ.
+
+### 13.8 CẤM bán nhầm item nhiệm vụ (cẩn thận theo yêu cầu)
+- `DT_IsQuestItem`: khi đang giữ nhiệm vụ loại 1/2/3 (auto Dã Tẩu bật), mọi item khớp **bất kỳ
+  ứng viên nào** của nhiệm vụ (kể cả khớp dòng ma của loại khoe) + item đã chốt nộp đều bị
+  chặn ở: ① máy bán rác Hậu cần (bước bán, CoreShell), ② máy bán tại chỗ 13.3. Thiên vị an
+  toàn: thà giữ nhầm còn hơn bán nhầm.
+
+### 13.9 Lệnh bài hoàn thành Dã Tẩu (6,1,4818) — Ô MỚI "Dùng Lệnh bài hoàn thành khi loại tắt"
+- **Client:** gặp nhiệm vụ thuộc loại đã TẮT + ô bật: có lệnh bài trong túi → đóng thoại, dùng
+  luôn; nằm trong rương → kéo về (cần mật khẩu). Server hoàn thành + bung rương thưởng ⇒
+  `uFinSeq` bắt được ở mọi pha → bấm rương như thường → nhận nhiệm vụ kế. Dùng 2 lần mà không
+  thấy thưởng (hội thoại loại-tắt lại hiện) → báo đỏ "server chưa cập nhật script?" rồi làm
+  theo ô "Khi bỏ qua". Bộ đếm reset khi sang nhiệm vụ khác.
+- **Server (`lbhtdatau.lua` viết lại):** bản cũ nói chuyện với hệ Dã Tẩu CHẾT (task 87-98) nên
+  luôn từ chối. Bản mới: guard trần 100 lượt (task 318, giữ nguyên ý gốc) → đang có nhiệm vụ
+  tasklink (`1021≠0, 1030≠0, course==1`) → cần ≥5 ô trống → `Task_AwardRecord()` (course=2,
+  cộng chuỗi/điểm y hệt trả ở NPC) → trừ 1 lệnh bài → `Task_GiveAward()` (mở rương thưởng;
+  callback finish_* quay về đúng script item vì genre 6 chạy bGlobal=true). Lỡ mất cửa sổ
+  thưởng thì gặp NPC — course 2 có nhánh phát lại. **Cần restart GameServer mới ăn script mới.**
+
+### 13.10 Thiếu đồ loại 2 (tìm vật phẩm): ĐI CHỢ MUA Ở SẠP — Ô MỚI "Thiếu đồ: mua ở sạp"
+- Thứ tự đúng yêu cầu: túi → rương (như cũ, trong EXEC) → **sạp**. `DTP_MUASAP`:
+  ① quét `Npc[].m_BaiTan` (người thật + bot dùng chung hệ sạp) quanh mình, đi tới ≤320mps
+  (server chỉ cần chung/cạnh region), mở xem bằng `g_cSellItem.ApplyViewItem` — **timeout
+  2,5s** vì sạp trang trí SimCity có cờ mà không có người, server im lặng;
+  ② hàng sạp được client dựng lại vào `Item[]` **kèm dòng ma thật** ⇒ lọc thẳng bằng
+  `DT_MatchRule` theo mọi ứng viên; chọn món **RẺ NHẤT** ≤ trần "Giá sạp tối đa (vạn)" (ô mới,
+  mặc định 200); thiếu tiền thì rút từ rương theo cấu hình cũ;
+  ③ mua: **tự tính ô trống hợp lệ** trước khi gửi (`SearchPosition`, bắt buộc vì server bỏ qua
+  lỗi đặt — sai ô là MẤT TIỀN + MẤT MÓN, KProtocolProcess.cpp:6073), gửi
+  `SendClientCmdPlayerBuy(server-idx, dwID người bán, ...)`; không có gói ACK — xác nhận bằng
+  item xuất hiện trong túi rồi về NPC trả;
+  ④ hết sạp gần → đi tuần các điểm tụ tập trong thành (trung tâm/tạp hóa/Xa Phu/Dã Tẩu, dừng
+  2,5s mỗi điểm cho sạp sync); hết thành → `DTP_CITYHOP`: ra Xa Phu, menu 1 chọn "Những thành
+  thị đã đi qua", menu 2 chọn dòng mang tên thành đích (bảng 10 tên TCVN3 khớp từng byte
+  `Station.txt`: Phượng Tường, Thành Đô, Đại Lý, Biện Kinh, Tương Dương, Dương Châu, Lâm An,
+  Giang Tân, Long Môn, **Ba Lăng huyện**), server thu 10-50 lượng rồi chở; 150 giây/lượt nhảy,
+  25 phút cho cả cuộc đi chợ; đi đủ 10 thành/thôn không có → hủy/treo theo ô "Khi bỏ qua".
+
+### 13.11 UI tab Dã Tẩu (WAuto.exe 21:35)
+- 6 ô loại nhiệm vụ chuyển **2 cột × 74-76du** — hết cụt chữ ("Khoe vật phẩm" → **"Tìm trang
+  bị"** theo yêu cầu; "Địa đồ chỉ" → "Địa đồ/Mật chỉ"); nhãn rương rút gọn cho vừa 152du.
+- 3 điều khiển mới (đều có tooltip): "Dùng Lệnh bài hoàn thành khi loại tắt" (bật sẵn),
+  "Thiếu đồ: mua ở sạp (tự qua 10 thành)" (bật sẵn), "Giá sạp tối đa (vạn)" (200).
+- `autoData` +3 trường CUỐI (6876 → **6888 B**) — 2 bản `ipc_shared.h` D + WAuto **khớp**;
+  bản cây E bỏ (cây chết). `.dat` cũ di trú **HAI BẬC** theo `offsetof`: file trước 18/08 mới
+  đặt mặc định cả khối Dã Tẩu; file 18-19/08 chỉ đặt 3 trường mới — **không đè lựa chọn cũ**.
+
+### 13.12 Phản biện đa-agent của đợt này (`838960a9`) — 8 lỗi thật đã sửa
+
+Chạy 6 mũi soi độc lập + 14 vòng bác bỏ đối kháng trên commit `c9de7a7b` (20 phát hiện thô
+→ **8 CONFIRMED**, 6 bị bác có dẫn chứng). Đã sửa hết trong `838960a9`, build + deploy lại
+22:23:
+
+| Mã | Lỗi thật | Cách sửa |
+|---|---|---|
+| V07 | Kéo phù/đồ từ rương khi **ngoài thành** bị server DROP im lặng (mọi click vào rương bị chặn lúc `m_FightMode=1` — KItemList.cpp:2250) ⇒ treo lặp vô hạn | `DT_PortalPull` trả 0 ngay khi fight-mode + thông báo nói rõ "phù ở rương không lấy được khi ngoài thành" (kéo từ rương chỉ chạy TRONG thành — vẫn phủ ca chuẩn bị loại 4) |
+| V09 | Bán rác tại chỗ bỏ qua công tắc "Bán vật phẩm" ⇒ người tắt vẫn bị bán đồ | tắt `bSellItem` ⇒ không bán, treo với hướng dẫn bật ô hoặc tự dọn |
+| V10 | Quét "nhặt được đồ" khi treo nhận cả đồ trong RƯƠNG ⇒ vòng HOLD↔EXEC vô hạn nếu mật khẩu rương sai | chỉ nhận đồ trong **túi** (`pos_equiproom`) |
+| V11 | Giá trần sạp chỉ kiểm snapshot cũ — server tính giá **hiện tại**, người bán đổi giá là mua hớ | snapshot quá 3,5 giây phải `UpdateItem` làm mới rồi mới mua |
+| V12 | Món bị người khác mua trước: không có ACK ⇒ spam lệnh mua y hệt tới 25 phút | trần 3 lần gửi mua/sạp rồi bỏ qua sạp |
+| V15+V20 | Rút tiền rương: tick đầu `EnsureUnlock` false bị coi là "không đủ tiền" (bỏ oan sạp); rút quá số dư thì `ExchangeMoney` fail im lặng ⇒ livelock | chờ mở khóa xong; kẹp theo số dư rương; tối đa 3 lần/sạp |
+| V19 | Lệnh bài dùng khi túi <5 ô: server từ chối bằng Talk client không đọc được ⇒ tưởng "script chưa cập nhật" | guard ≥5 ô trống trước khi dùng, thiếu thì đi bán rác trước |
+| V13 | Cửa sổ thưởng đến đúng khe 900ms "đặt đồ → OK" của hộp giao ⇒ máy bị cướp pha, quên item trong hộp | catch-all `uFinSeq` nhường 1 nhịp khi đang ở bước đó |
+
+Kèm 3 lỗi nhẹ: mốc ô-trống của SELLJUNK đổi sang `nDTShopTry` (trả `nDTItemIdx` về đúng nghĩa
+cho lá chắn `DT_IsQuestItem`); hộp giao đóng giữa chừng thì xóa cờ "đã đặt item"; **di trú
+`.dat` đổi `<` thành `<=`** — không sửa thì MỌI người dùng cũ (file 6876 B — đúng bằng
+`offsetof(bDTLenhBai)`) bị 2 ô mới mặc định TẮT.
+
+6 phát hiện bị BÁC (đã có chốt chặn sẵn — khỏi sửa): mua lặp sau 3s lock (server `GetPrice==0`
+chặn); click swap ở ô (0,0) hộp giao (có đường thu hồi `GOI_RECOVERY_BOX_COMMAND`); catch-all
+thưởng nổ giữa MUASAP (GOTONPC/WAITDLG đã tiêu thụ fin trước đó — TCP có thứ tự); bán đồ khi
+chết ×2 (server chặn bán lúc fight-mode; `PushReviveButton` chạy TRƯỚC mọi pha, không bị Dã Tẩu
+chặn); ExtAuto thiếu init `nDTLBTry` (mọi trường DT đều dựa zero-init + ATYPE_CLEAR, nhất quán).
+
+---
 
 ## 9 · Phản biện — đã làm gì
 

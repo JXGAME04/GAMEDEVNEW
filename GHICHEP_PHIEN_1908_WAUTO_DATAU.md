@@ -143,6 +143,25 @@ Gray ghi chú máy tự thêm (`DT_Hold` → "(tạm nghỉ N phút)"; `DT_Skip`
 Marker ASCII `[DaTau]` còn đúng 1 chỗ (g_DebugLog) để grep binary phân biệt bản cũ/mới:
 bản mới `grep -c "<color=" CoreClient.dll` ra hàng trăm.
 
+### 2.11 ĐỢT 20/08 (tối): 11 mục người dùng → `c9de7a7b` — chi tiết ở BANGIAO mục 13
+Một câu mỗi mục: hộp giao đồ sửa tận gốc (server đòi mỗi gói move = 1 CLICK Down==Up —
+`DT_ClickItem` 3 gói như người kéo thật) · Phúc Duyên kéo từ rương chỉ cần mật khẩu ·
+túi đầy TỰ bán rác tại chỗ (hết vòng phù-về-lặp; có lá chắn không bán item nhiệm vụ) ·
+bỏ tự-mua Thổ Địa Phù, ưu tiên phù vô hạn (6,1,437) rồi kéo rương · đang treo T2/T3 nhặt
+được đồ đạt là tự về trả · đủ 40 treo 60' tự hỏi lại (chống lệch múi giờ server) · FARM T4
+ưu tiên tọa độ tab Di chuyển đúng map · Lệnh bài hoàn thành (6,1,4818): client tự dùng khi
+loại tắt + `lbhtdatau.lua` VIẾT LẠI cho tasklink (bản cũ nói với hệ chết 87-98; CẦN RESTART
+server) · thiếu đồ loại 2 đi chợ MUA Ở SẠP (quét m_BaiTan, timeout 2,5s né sạp trang trí
+SimCity, tự tính ô trống vì server bỏ qua lỗi đặt = mất tiền+món, mua món rẻ nhất ≤ trần)
++ nhảy đủ 10 thành/thôn qua menu Xa Phu "Những thành thị đã đi qua" · UI tab Dã Tẩu 2 cột
+hết cụt chữ, "Khoe vật phẩm"→"Tìm trang bị", 3 điều khiển mới, ipc 6876→6888 + di trú .dat
+HAI BẬC offsetof (không đè lựa chọn cũ). Deploy 21:32-21:35 (build ở D chép tay — CÂY NGUỒN E
+BỎ theo chốt phiên F11). **PHẢN BIỆN đa-agent (6 mũi soi + 14 vòng bác bỏ): 8 lỗi thật đã sửa
+ở `838960a9`** (nặng nhất: kéo đồ từ rương ngoài thành bị server drop im lặng; di trú .dat
+`<` làm người dùng cũ mất 2 ô mới; bán rác bỏ qua công tắc bSellItem; livelock rút tiền sạp) —
+bảng đầy đủ ở BANGIAO mục 13.12. Deploy lại CoreClient + WAuto 22:23; Game.exe dùng bản 22:13
+của phiên F11 (build sau commit ipc nên đã 6888).
+
 ---
 
 ## 3 · Bản đồ biến đếm Dã Tẩu (đắt nhất phiên này — đừng đoán lại)
@@ -236,6 +255,7 @@ python D:/GAMEDEVNEW/ReverseTools/re_pe_crt.py E:/SourceTuanLe/.../bin/client
 | 17:50 | `ae1129f8` | **fix sa mạc** — tên map lấy từ `TaskInfo1` |
 | 18:00 | `e61bb31e` | lệnh bài v2: **sửa được cho người chơi khác** + rút gọn menu |
 | 19:14 | `e40f40ea` | **bấm nút THẬT cửa sổ thưởng** (AutoPick, mục 2.9) + **54 thông báo có dấu, có màu** (mục 2.10); deploy E 19:11, re_pe_crt PASS |
+| 21:44 | `c9de7a7b` | **ĐỢT 20/08: 11 mục** (mục 2.11 / BANGIAO mục 13); deploy 21:32-21:35, re_pe_crt PASS |
 
 Tài liệu cập nhật kèm theo: `BANGIAO_AUTO_DATAU_WAUTO.md` mục **7.2** (bộ sinh tọa độ),
 **8.6-8.8** (ba nhóm lỗi test thật), **12** (công cụ lệnh bài).
