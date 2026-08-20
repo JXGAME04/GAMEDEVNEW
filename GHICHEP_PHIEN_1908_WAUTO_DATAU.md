@@ -13,7 +13,8 @@
 
 | Tệp | Đường dẫn | Giờ | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\bin\client\` | **17:50** | toàn bộ engine Dã Tẩu; bản lùi `CoreClient_cu_1908i.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\bin\client\` | **19:11** | engine Dã Tẩu tới `e40f40ea` (mục 2.9-2.10); bản lùi `CoreClient_cu_1908_tg.dll` (17:50) |
+| `Game.exe` | như trên | **19:11** | thêm `GDCNI_UI_ACT uParam=7` (AutoPick cửa sổ thưởng); bản lùi `Game_cu_1908_tg.exe` (06:49) |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **17:10** | 80 KB — bảng tọa độ quái 204 map, engine nạp **lúc chạy** |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc) | **11:39** | UI mới; ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn chép tay** ra gốc |
 | `script\item\datau_admin.lua` | `...\bin\server\script\item\` | **17:59** | công cụ Dã Tẩu trong lệnh bài admin |
@@ -116,6 +117,32 @@ mạc (225/226/227) dính. Sửa **tận gốc ở bộ sinh**: danh sách map v
 `tasklink_findmaps.txt` (**bỏ luôn danh sách 14 map chép tay**), tên nào lệch thì phát thêm
 một dòng — 14 map → 17 dòng, **không phải sửa C++**.
 
+### 2.9 "Nhận thưởng chưa tự kích vào phần thưởng, chạy thẳng script nên bảng thưởng vẫn hiện" → `e40f40ea`
+Nút của `KUiDaTau`/`KUiDaTau1` khi người chơi bấm làm 2 việc: `Hide()` **rồi mới** gửi
+`GOI_ADD_UI_CMD_SCRIPT` (UiQuestDT.cpp:87-117). `DTP_REWARD` cũ chỉ gọi `SendUiCmdScript`
+= nửa sau, thiếu `Hide()`; server **không có gói đóng** cửa sổ này (khác give-box có
+`S2C_GIVE_BOX nType==2`) ⇒ cửa sổ trơ mãi. Sửa: engine gọi
+`CoreDataChanged(GDCNI_UI_ACT, 7, nhóm*10+nút)` → `GameSpaceChangedNotify` → hàm mới
+`KUiDaTau[1]::AutoPick` phát `WND_N_BUTTON_CLICK` vào đúng nút = **bấm thật, tự đóng**.
+AutoPick trả 0 (cửa sổ nhóm đó không mở — 3 lần thử chéo nhóm) thì UI ẩn nốt cửa sổ thừa
+rồi engine gửi thẳng script dự phòng như cũ. Vòng xoay 6 nút + `uFinSeq` giữ nguyên.
+Nút map thứ tự `DT_FIN3`/`DT_FIN4`: 30-32 = exp/tiền/ngẫu nhiên · 40-42 = điểm/may mắn/vật phẩm.
+(⚠️ chú thích trong mã ghi nhầm "(20/08)" — thật ra tối 19/08.)
+
+### 2.10 "Làm lại các dòng thông báo: có dấu, dễ hiểu, có màu" → `e40f40ea`
+54 câu chuyển hết sang tiếng Việt **TCVN3 octal** (tệp .cpp vẫn thuần ASCII) + thẻ
+`<color=...>`. Vì sao thẻ màu ăn được trong chat: `FilterTextColor` chỉ **lọc mã màu thô
+0x02/0x03 trước**, sau đó `TEncodeText` (Text.cpp:487) mới dịch thẻ `<color=...>` thành mã
+— đúng đường server vẫn dùng. Bảng màu: Cyan tiến trình · Green xong bước · Yellow cần
+người chơi xử lý · Orange bỏ qua/thiếu đồ · Red lỗi bất thường · AYellow mốc thưởng ·
+Gray ghi chú máy tự thêm (`DT_Hold` → "(tạm nghỉ N phút)"; `DT_Skip` nhánh hủy →
+"(hủy nhiệm vụ - loại này đang tắt)"). Người gửi đổi `[DaTau]` → **`[Dã Tẩu]`** TCVN3.
+**Hai luật chuỗi** (TEncodeText ghép cặp byte >0x80): trước mỗi thẻ `<` phải là ASCII
+(dấu cách); ký tự **cuối chuỗi** phải ASCII. TCVN3 **không có nguyên âm HOA có dấu**
+(chỉ Ă Â Đ Ê Ô Ơ Ư trần) ⇒ cấm viết "TẮT", dùng thường + tô màu.
+Marker ASCII `[DaTau]` còn đúng 1 chỗ (g_DebugLog) để grep binary phân biệt bản cũ/mới:
+bản mới `grep -c "<color=" CoreClient.dll` ra hàng trăm.
+
 ---
 
 ## 3 · Bản đồ biến đếm Dã Tẩu (đắt nhất phiên này — đừng đoán lại)
@@ -157,8 +184,9 @@ một dòng — 14 map → 17 dòng, **không phải sửa C++**.
 
 1. **Lệnh bài admin chưa chạy thử** — GameServer tắt suốt phiên. Cần thử cả bước
    "Chọn nhân vật khác".
-2. **Auto Dã Tẩu sau bản 17:50 chưa test** — đặc biệt nhiệm vụ **sa mạc** (2.8) và việc
-   đi tới **cụm quái thật** (2.5).
+2. **Auto Dã Tẩu sau bản 19:11 chưa test** — đặc biệt: nhiệm vụ **sa mạc** (2.8), đi tới
+   **cụm quái thật** (2.5), **bấm rương thưởng có tự đóng cửa sổ không** (2.9), và
+   **thông báo màu hiển thị đúng font** (2.10). Nhớ khởi động lại game (Game.exe cũng đổi).
 3. **Bug có sẵn của hệ gốc, chưa sửa**: người chơi tự tích lượt hủy quá 127 bằng nút thưởng
    "may mắn" sẽ bị **xóa sạch chuỗi nhiệm vụ** ở lần hủy kế tiếp. Muốn sửa thì kẹp trần
    trong `SelectAward_Cancel` (seasonnpc.lua) và `tl_settaskstate`.
@@ -207,6 +235,7 @@ python D:/GAMEDEVNEW/ReverseTools/re_pe_crt.py E:/SourceTuanLe/.../bin/client
 | 17:41 | `9cee6585` | bỏ ghi `1029` + cảnh báo mốc thưởng |
 | 17:50 | `ae1129f8` | **fix sa mạc** — tên map lấy từ `TaskInfo1` |
 | 18:00 | `e61bb31e` | lệnh bài v2: **sửa được cho người chơi khác** + rút gọn menu |
+| 19:14 | `e40f40ea` | **bấm nút THẬT cửa sổ thưởng** (AutoPick, mục 2.9) + **54 thông báo có dấu, có màu** (mục 2.10); deploy E 19:11, re_pe_crt PASS |
 
 Tài liệu cập nhật kèm theo: `BANGIAO_AUTO_DATAU_WAUTO.md` mục **7.2** (bộ sinh tọa độ),
 **8.6-8.8** (ba nhóm lỗi test thật), **12** (công cụ lệnh bài).

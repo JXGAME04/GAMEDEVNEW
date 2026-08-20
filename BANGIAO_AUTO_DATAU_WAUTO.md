@@ -19,11 +19,11 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | | |
 |---|---|
-| **Trạng thái** | test lần 1 đứng yên → fix `DT_WalkTo` (8.6) → **test lần 2 ĐÃ CHẠY LÀM DÃ TẨU** ✅ → đợt nâng cấp 19/08 trưa: đóng khung thoại sau nhận nhiệm vụ · T4 tự chạy tìm quái (roam 8 hướng + quét NpcSet) · túi đầy tự thả máy về bán rác Hậu cần (`DTP_SELLJUNK`) · **UI WAuto thiết kế lại** (khung nhóm/kẻ mục/~190 tooltip) — chờ test đợt 2 |
-| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` → `1d24b9fc` → `8a9ae8f5` → `32e60788` (fix đứng yên) → **`0c97e240` (3 nâng cấp + UI, kèm backup UI trong `WAutoUI/`)** |
+| **Trạng thái** | test lần 1 đứng yên → fix `DT_WalkTo` (8.6) → **test lần 2 ĐÃ CHẠY LÀM DÃ TẨU** ✅ → nâng cấp 19/08 trưa (đóng thoại · T4 tìm quái · `DTP_SELLJUNK` · UI WAuto) → test chiều bắt 5 lỗi (8.7) + bảng cụm quái từ pak (7.2) → **19/08 tối: cửa sổ thưởng được BẤM THẬT (8.9) + 54 thông báo tiếng Việt có dấu, có màu (mục 6)** — chờ test |
+| **Commit** (`D:\GAMEDEVNEW`, nhánh main) | `f606e540` → … → `0c97e240` → `f6f550c5`/`6bde16a1` → `15b242c3`/`4c264409`/`16de2b3a` → `ae1129f8` → **`e40f40ea` (bấm rương thưởng thật + thông báo màu)** |
 | **Nơi bật** | WAuto.exe → tab **"Dã Tẩu"** → tick "Bật auto Dã Tẩu" |
 | **Mặc định** | **TẮT** (`bDaTau=0`) — không tick thì hành vi auto cũ nguyên vẹn |
-| **Việc kế tiếp** | Hỏi người dùng kết quả test + dòng `[DaTau]` cuối trong khung chat |
+| **Việc kế tiếp** | Hỏi người dùng kết quả test + dòng `[Dã Tẩu]` màu cuối cùng trong khung chat |
 
 ---
 
@@ -31,9 +31,9 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 17:50** | engine Dã Tẩu, toàn bộ fix tới `ae1129f8`; bản trước = `CoreClient_cu_1908i.dll` |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 19:11** | engine Dã Tẩu tới `e40f40ea` (bấm nút thật cửa sổ thưởng + thông báo có dấu/màu); bản lùi = `CoreClient_cu_1908_tg.dll` (17:50). ⚠️ bản trung gian 18:47 bị ghi đè không kịp sao lưu — cần thì dựng lại từ cây E đã revert 2 patch |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
-| `Game.exe` | như trên | 19/08 06:49 | chứa cổng điều phối |
+| `Game.exe` | như trên | **19/08 19:11** | cổng điều phối + **mới:** `GDCNI_UI_ACT uParam=7` bấm nút cửa sổ thưởng (`KUiDaTau/KUiDaTau1::AutoPick`); bản lùi = `Game_cu_1908_tg.exe` (06:49) |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc, KHÔNG phải `Release\`) | **19/08 11:39** (360.448 B) | UI mới: khung nhóm + kẻ mục + ~190 tooltip; ID dời (GRP 412-420, SEP 421-434, INDEX_END=436, popup/TABBTN_9→440-449). ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn phải chép tay ra gốc**. ⚠️ WAuto tự thoát ngay nếu không có Game.exe đang chạy (hành vi vốn có, đừng tưởng exe hỏng) |
 
 - `re_pe_crt.py` **PASS**: CoreClient=CRT-tĩnh · Game.exe=UCRT-RELEASE · engine/Represent2=UCRT-DEBUG.
@@ -146,50 +146,69 @@ Core đọc sai offset (Core ép kiểu thẳng `(autoData*)nParam`) — hỏng 
   Thôn, Biện Kinh, Ba Lăng, Tương Dương, Dương Châu, Long Môn Trấn, Đại Lý, Lâm An).
   Đứng nơi khác thì auto tự dùng Thổ Địa Phù về thành.
 - Tick ô auto ở dòng nhân vật như bình thường.
-- **Theo dõi khung chat**: mọi bước đều báo `[DaTau] ...` (bảng tra ở mục 6).
+- **Theo dõi khung chat**: mọi bước đều báo dòng `[Dã Tẩu]: ...` **có màu** (bảng tra ở mục 6).
 
 ### 5.4 Nếu không thấy nhúc nhích
-Chụp lại **dòng `[DaTau]` cuối cùng** — đó chính là chỗ máy đang dừng. Nếu **không có dòng
-`[DaTau]` nào**, nghĩa là engine chưa được gọi ⇒ kiểm theo thứ tự:
+Chụp lại **dòng `[Dã Tẩu]` cuối cùng** — đó chính là chỗ máy đang dừng. Nếu **không có dòng
+`[Dã Tẩu]` nào**, nghĩa là engine chưa được gọi ⇒ kiểm theo thứ tự:
 1. WAuto.exe có đúng là bản ở **gốc** `E:\Src_Auto_Ngoai\` không (không phải `Release\`)?
 2. Game.exe trong `bin\client` có dấu thời gian 19/08 06:49 không?
 3. Đã khởi động lại game sau khi thay tệp chưa?
 
 ---
 
-## 6 · Bảng tra thông báo `[DaTau]` (46 câu)
+## 6 · Bảng tra thông báo (từ 19/08 tối `e40f40ea`: **tiếng Việt có dấu + màu**)
 
-**Đang chạy bình thường**
-- `uu tien Da Tau: di den NPC nhan/tra nhiem vu` — bắt đầu lái, đang tới NPC
-- `khong o thanh Da Tau - dung Tho Dia Phu ve thanh`
-- `nhiem vu exp: tha cho auto thuong cay, du se tu ve tra` · `chua du exp, cay tiep...`
-- `du kinh nghiem/du so cuon, quay ve tra nhiem vu`
+Người gửi trong chat là **`[Dã Tẩu]:`** (TCVN3). Màu nhúng bằng thẻ `<color=...>` —
+chat CHỈ lọc mã màu thô 0x02 (`FilterTextColor`) rồi **mới** dịch thẻ (`TEncodeText`,
+Text.cpp:487) nên màu vẫn ăn. Hai luật khi thêm câu mới: trước mỗi thẻ `<` phải là
+ký tự ASCII (dấu cách); ký tự **cuối chuỗi** phải ASCII (byte TCVN3 đơn cuối chuỗi bị drop).
 
-**Thiếu điều kiện — người chơi xử lý được**
-- `can >=5 o trong de tra nhiem vu` · `tui day (<5 o trong) - don tui roi auto chay lai`
-- `tui day, khong mua duoc` · `tui khong du cho de lay do tu ruong`
-- `khong du tien mua do nhiem vu` · `khong mo khoa duoc ruong (kiem tra mat khau)`
-- `do can nam trong ruong nhung chua cho phep lay` — bật ô "Lấy đồ/tiền từ rương"
-- `loai 4 can bat 'Danh quai' o tab Chien dau`
-- `loai nhiem vu nay dang TAT - treo` — bật lại loại đó hoặc đổi "Khi bỏ qua"=Hủy
-- `du 40 nhiem vu hom nay - nghi den mai` ✅ (đã xong chỉ tiêu)
+| Màu | Ý nghĩa |
+|---|---|
+| **Cyan** (xanh ngọc) | đang chạy bình thường (đi NPC, về thành, ra Xa Phu, cày tiếp) |
+| **Green** (xanh lá) | xong một bước tốt (đủ exp, đủ cuộn, tới map nhiệm vụ) |
+| **Yellow** (vàng) | người chơi cần xử lý: dọn túi, mật khẩu rương, bật ô cấu hình, thiếu tiền |
+| **Orange** (cam) | không đáp ứng được nhiệm vụ / thiếu đồ / bị phạt → bỏ qua hoặc treo |
+| **Red** (đỏ) | lỗi bất thường — cần báo lại cho người viết mã |
+| **AYellow** (vàng kim) | mốc vui: rương thưởng mở, nhận thưởng xong, đủ 40 nhiệm vụ |
+| **Gray** (xám) | ghi chú máy tự thêm: `(tạm nghỉ N phút)` (mọi DT_Hold có hạn) · `(hủy nhiệm vụ - loại này đang tắt)` (DT_Skip nhánh hủy) |
 
-**Không làm nổi nhiệm vụ → bỏ qua/treo theo cấu hình**
-- `khong co do can tim trong tui/ruong - nen tich luy trang suc`
-- `khong co do 'khoe' phu hop trong tui/ruong`
-- `can mua vu khi/ngua - hay bo san mon nay vao ruong`
-- `tiem khong ban mon can mua` · `khong dap ung duoc nhiem vu nay`
-- `het Phuc Duyen Lo ma chua du diem` · `dung qua nhieu Phuc Duyen Lo ma chua du`
-- `het luot huy, treo nhiem vu`
+**Cyan — đang chạy:** `Đang đến chỗ NPC Dã Tẩu để nhận / trả nhiệm vụ.` ·
+`Không ở thành có Dã Tẩu - dùng Thổ Địa Phù về thành.` · `Đã về thành - ra Xa Phu đi tiếp tới map nhiệm vụ.` ·
+`Không phải map nhiệm vụ - dùng Thổ Địa Phù về thành đi lại.` · `Nhiệm vụ kinh nghiệm: thả cho auto thường cày, đủ sẽ tự về trả.` ·
+`Chưa đủ kinh nghiệm - cày tiếp...` · `Túi đã có chỗ trống - quay lại làm Dã Tẩu.`
 
-**Bất thường — cần báo lại cho người viết mã**
-- `hoi thoai khong nhan dang duoc` — server đổi lời thoại? (xem mục 8.3)
-- `khong hieu noi dung nhiem vu (?)` · `khong khop duoc dong bang du lieu`
-- `khong thay NPC Da Tau o toa do` · `khong thay xa phu` · `khong thay chu tiem tap hoa`
-- `xa phu khong chuyen map (kiem tra nhiem vu)`
-- `farm qua lau khong tien trien - bo qua` · `cay exp qua lau khong tien - treo 15 phut`
-- `Phuc Duyen Lo khong tac dung (server chua co script?)`
-- `bi NPC phat, cho ~10 phut` (hủy lậu >2 lần đầu chuỗi)
+**Green — xong bước:** `Đã đủ kinh nghiệm - quay về trả nhiệm vụ.` · `Đã tới map nhiệm vụ - bắt đầu đánh quái nhặt cuộn.` ·
+`Đã nhặt đủ số cuộn - quay về trả nhiệm vụ.`
+
+**AYellow — mốc thưởng:** `Rương thưởng đã mở - auto bấm chọn phần thưởng...` ·
+`Đã nhận thưởng xong - đi nhận nhiệm vụ kế tiếp!` · `Tuyệt! Đã đủ 40 nhiệm vụ Dã Tẩu hôm nay - nghỉ, mai làm tiếp.`
+
+**Yellow — người chơi xử lý:** `Túi đầy (dưới 5 ô trống) - hãy dọn túi rồi auto chạy tiếp.` ·
+`Cần ít nhất 5 ô trống để trả nhiệm vụ - hãy dọn túi.` · `Túi đầy - nhờ auto Hậu cần bán rác, xong sẽ tự làm tiếp.` ·
+`Bán rác xong vẫn chưa đủ ô trống - hãy dọn bớt túi giúp auto.` · `Túi đầy, không mua được đồ.` ·
+`Túi không đủ chỗ để lấy đồ từ rương - hãy dọn túi.` · `Không đủ tiền mua đồ nhiệm vụ.` ·
+`Không mở khóa được rương - kiểm tra mật khẩu rương ở tab Hậu cần.` ·
+`Đồ cần trả đang nằm trong rương - hãy bật ô «Lấy đồ/tiền từ rương» ở tab Dã Tẩu.` (tên ô màu trắng) ·
+`Nhiệm vụ đánh quái: hãy bật ô «Đánh quái» ở tab Chiến đấu.` (tên ô màu trắng) ·
+`Loại nhiệm vụ này đang tắt trong tab Dã Tẩu - treo chờ.` (chữ "tắt" màu đỏ)
+
+**Orange — bỏ qua/thiếu đồ:** `Không đáp ứng được nhiệm vụ này.` · `Không có đồ cần tìm trong túi/rương - nên tích trữ sẵn trang sức.` ·
+`Không có đồ 'khoe' phù hợp trong túi/rương.` · `Nhiệm vụ cần vũ khí/ngựa - hãy bỏ sẵn món đó vào rương (xem tên trong nhiệm vụ).` ·
+`Tiệm không bán món cần mua.` · `Tiệm không có mục giao dịch phù hợp.` · `Không mở được cửa sổ tiệm tạp hóa.` ·
+`Không thấy chủ tiệm tạp hóa.` · `Không thấy Xa Phu.` · `Hết lượt hủy nhiệm vụ.` ·
+`Bị Dã Tẩu phạt vì hủy nhiều - chờ hết phạt sẽ làm tiếp.` · `Đánh quái quá lâu không tiến triển.` ·
+`Dùng quá nhiều Phúc Duyên Lộ mà vẫn chưa đủ điểm.` · `Hết Phúc Duyên Lộ mà vẫn chưa đủ điểm.`
+
+**Red — bất thường, báo dev:** `Hội thoại không nhận dạng được (server đổi lời thoại?).` ·
+`Không hiểu nội dung nhiệm vụ (lạ) - hãy báo lại lỗi này.` · `Không khớp được dòng bảng dữ liệu nhiệm vụ.` ·
+`Không thấy NPC Dã Tẩu ở tọa độ đã định.` · `Không thấy nút hủy trong hội thoại.` · `NPC không trả lời hội thoại.` ·
+`Kẹt: không ở thành mà không dùng được Thổ Địa Phù.` · `Kẹt: không về được thành (hết Thổ Địa Phù?).` ·
+`Thành này chưa có tọa độ tiệm tạp hóa.` · `Mất tọa độ tiệm tạp hóa.` · `Thành này chưa có tọa độ Xa Phu.` ·
+`Xa Phu không chở đi map nhiệm vụ (kiểm tra lại nhiệm vụ).` · `Cày kinh nghiệm quá lâu không tiến triển.` ·
+`Không đọc được tên map / số lượng của nhiệm vụ loại 4 (đánh quái).` · `Loại nhiệm vụ lạ - auto chưa hỗ trợ.` ·
+`Không chọn được rương thưởng (đã thử đủ 6 nút) - bỏ qua.` · `Phúc Duyên Lộ không có tác dụng (server thiếu script?).`
 
 ---
 
@@ -344,6 +363,34 @@ sửa C++**.
 
 ---
 
+### 8.9 Cửa sổ thưởng nay được BẤM THẬT — hết cảnh "nhận rồi mà bảng vẫn hiện" (`e40f40ea`, 19/08 tối)
+
+Người dùng báo: *"nhận thưởng người chơi chưa tự kích vào phần thưởng để chọn mà chạy
+thẳng script nên cho dù nhận thưởng rồi nhưng vẫn hiện bảng nhận thưởng"*.
+
+**Nguyên nhân thật:** nút của `KUiDaTau`/`KUiDaTau1` khi người chơi bấm làm HAI việc —
+`Hide()` **rồi mới** `OperationRequest(GOI_ADD_UI_CMD_SCRIPT, ...)` (UiQuestDT.cpp:87-117).
+Engine cũ chỉ gọi `SendUiCmdScript(...)` = nửa sau, **thiếu `Hide()`** ⇒ server phát thưởng
+nhưng cửa sổ (client tự quản, server KHÔNG gửi lệnh đóng) trơ trên màn hình mãi.
+
+**Cách sửa:** đi đúng đường click của người chơi:
+```
+DTP_REWARD ──CoreDataChanged(GDCNI_UI_ACT, 7, nhóm*10+nút)──► GameSpaceChangedNotify.cpp
+              └─► KUiDaTau::AutoPick(nút) / KUiDaTau1::AutoPick(nút)   [hàm mới]
+                    └─ WndProc(WND_N_BUTTON_CLICK, &nút) → Hide() + GOI_ADD_UI_CMD_SCRIPT
+```
+- nParam mã hóa `30..32` = KUiDaTau (exp/tiền/ngẫu nhiên — đúng thứ tự `DT_FIN3`),
+  `40..42` = KUiDaTau1 (điểm/may mắn/vật phẩm — đúng `DT_FIN4`).
+- AutoPick trả **1** = đã bấm. Trả **0** = cửa sổ nhóm đó không mở (xảy ra ở 3 lần thử
+  chéo nhóm) ⇒ UI **ẩn nốt cửa sổ thừa** (AutoHide cả hai) rồi engine gửi thẳng script
+  dự phòng như bản cũ — không bao giờ mất thưởng, màn hình vẫn sạch.
+- Vòng xoay 6 nút + bắt `uFinSeq` giữ nguyên; chỉ thay cách "bấm".
+- Vào pha lần đầu (`nThu==0`) có thêm câu vàng kim `Rương thưởng đã mở - auto bấm chọn phần thưởng...`
+- ⚠️ chú thích trong mã ghi nhầm "(20/08)" — thật ra là tối **19/08**.
+
+Vì sao give-box (hộp nộp đồ) không dính lỗi này: server có gói đóng riêng
+(`S2C_GIVE_BOX nType==2` → `GDCNI_END_AFFAIR_BOX`), còn cửa sổ thưởng thì không.
+
 ## 9 · Phản biện — đã làm gì
 
 | Vòng | Kết quả |
@@ -432,8 +479,9 @@ grep -n "AUTO DA TAU" D:/GAMEDEVNEW/Sources/Core/Src/CoreShell.cpp
 grep -n "g_sDTCap" D:/GAMEDEVNEW/Sources/Core/Src/KPlayer.cpp D:/GAMEDEVNEW/Sources/Core/Src/KProtocolProcess.cpp
 # Cổng điều phối
 grep -n "nDT" D:/GAMEDEVNEW/Sources/S3Client/S3Client.cpp
-# Mọi thông báo trạng thái
-grep -o '"\[DaTau\][^"]*"' D:/GAMEDEVNEW/Sources/Core/Src/CoreShell.cpp | sort -u
-# Kiểm binary đã triển khai có mã mới chưa
-grep -c "\[DaTau\]" E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/CoreClient.dll
+# Mọi thông báo trạng thái (từ e40f40ea là octal TCVN3 + thẻ màu)
+grep -o '"<color=[^"]*"' D:/GAMEDEVNEW/Sources/Core/Src/CoreShell.cpp | sort -u
+# Kiểm binary đã triển khai có mã mới chưa (bản mới: '[DaTau]' ASCII chỉ còn 1 - ở g_DebugLog;
+# đếm '<color=' phải ra hàng trăm)
+grep -c "<color=" E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client/CoreClient.dll
 ```
