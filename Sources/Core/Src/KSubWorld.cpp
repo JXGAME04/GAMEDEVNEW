@@ -212,7 +212,7 @@ void KSubWorld::ProcLoadPathGrid()
 	int nAllCell  = nAllCellW * nAllCellH;
 	char	File[MAX_PATH];
 	int		ObstacleInfo[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];
-	int		nRegThieu = 0;	// (19/08) so region KHONG co du lieu vat can - coi la vat can
+	int		nRegThieu = 0, nRegKhongObs = 0;	// (20/08) nRegThieu = region KHONG mo duoc TEP nao (ngoai map that -> vat can); nRegKhongObs = CO tep ma thieu doan vat can (dat trong co that -> DI DUOC)
 	for(int h=0; h < m_nGridH; ++h)
 	{
 		if(m_bStopThread)
@@ -242,11 +242,11 @@ void KSubWorld::ProcLoadPathGrid()
 						m_nRegionBeginY+h, m_nRegionBeginX+w);
 #endif
 			memset(ObstacleInfo, 0, sizeof(ObstacleInfo));
-			int bCoObs = 0;	// (19/08) 1 = doc duoc du lieu vat can that cua region nay
+			int bCoObs = 0, bCoTep = 0;	// bCoObs = doc duoc doan vat can; bCoTep = mo duoc tep region (20/08)
 			KPakFile	Data;
 			if (Data.Open(File))
 			{
-				unsigned int uMaxElemFile = 0;
+				unsigned int uMaxElemFile = 0; bCoTep = 1;
 				Data.Read(&uMaxElemFile, sizeof(unsigned int));
 				KCombinFileSection	ElemFile[REGION_ELEM_FILE_COUNT] = { 0 };
 				if (uMaxElemFile > REGION_ELEM_FILE_COUNT)
@@ -279,7 +279,7 @@ void KSubWorld::ProcLoadPathGrid()
 						m_nRegionBeginY+h, m_nRegionBeginX+w);
 				if (Data.Open(File))
 				{
-					unsigned int uMaxElemFile2 = 0;
+					unsigned int uMaxElemFile2 = 0; bCoTep = 1;
 					Data.Read(&uMaxElemFile2, sizeof(unsigned int));
 					KCombinFileSection	ElemFile2[REGION_ELEM_FILE_COUNT] = { 0 };
 					if (uMaxElemFile2 > REGION_ELEM_FILE_COUNT)
@@ -306,7 +306,7 @@ void KSubWorld::ProcLoadPathGrid()
 					KPakFile Data2;
 					if (Data2.Open(File))
 					{
-						unsigned int uSize = Data2.Size();
+						unsigned int uSize = Data2.Size(); bCoTep = 1;
 						if(uSize >= sizeof(ObstacleInfo))
 						{
 							Data2.Read((LPVOID)ObstacleInfo, sizeof(ObstacleInfo));
@@ -316,7 +316,7 @@ void KSubWorld::ProcLoadPathGrid()
 				}
 			}
 			if (!bCoObs)
-				nRegThieu++;
+				{ if (bCoTep) nRegKhongObs++; else nRegThieu++; }
 			int regx = w*REGION_GRID_WIDTH;
 			int regy = h*REGION_GRID_HEIGHT;
 			for(int y=0;y<REGION_GRID_HEIGHT;++y)
@@ -334,15 +334,15 @@ void KSubWorld::ProcLoadPathGrid()
 					// "cau thang" cho bot leo xuyen vach ("bot tu chay vao" - chu game).
 					// Coi o goc la VAT CAN: bot di vong nhu nguoi that. Doi predicate =
 					// doi luoi -> da nang kMagic cache de moi ban do tu tinh lai.
-					// (19/08) region KHONG co du lieu vat can (thieu ca _Region_S.dat lan
-					// _OBSTACLE.DAT, hoac doan vat can ngan): coi TOAN BO region la VAT CAN.
-					// Truoc day memset 0 = "toan di duoc" -> A* dan bot vao vung rong ngoai
-					// map that (co map chi dong goi ban _C, khong co _S) - chinh la duong
-					// "bot di ra khoi map" chu game bat duoc. Doi luoi -> da nang kMagic 03.
+					// (20/08 SUA GOC) TACH HAI CA: region mo duoc TEP ma trong tep KHONG co
+					// doan vat can = DAT TRONG CO THAT (dong bang, quang truong) -> DI DUOC.
+					// Chi khi KHONG mo duoc tep nao moi coi la ngoai map -> VAT CAN. Luat 19/08
+					// gop hai ca lam mot nen da SON DAC ca vung dat that: diem dap CHINH THONG
+					// cua Lam Du Quan (319: 1630,3592) va Chan nui Truong Bach (320: 1146,3130)
 #ifdef _SERVER
 					// (19/08) chi SERVER ap luat "thieu du lieu = vat can": cache client %d.fp
 					// khoa bang FINDPATH_VERSION=0 khong doi, ap chung se lech ngu nghia.
-					if(lInfo == 0 && bCoObs)
+					if(lInfo == 0 && (bCoObs || bCoTep))
 #else
 					if(lInfo == 0)
 #endif
@@ -361,10 +361,10 @@ void KSubWorld::ProcLoadPathGrid()
 		            " - luoi 100%% vat can, BOT KHONG DI DUOC tren map nay (bo sung"
 		            " _Region_S/_Region_C hoac rut map khoi bai luyen)\n",
 		            m_SubWorldID, nRegThieu);
-	else if (nRegThieu > 0)
-		PB_LogNgoai("[PathSrv] map %d: %d/%d region KHONG co du lieu vat can"
+	else if (nRegThieu > 0 || nRegKhongObs > 0)
+		PB_LogNgoai("[PathSrv] map %d: %d/%d region KHONG co TEP du lieu (%d region co tep ma thieu doan vat can -> DI DUOC)"
 		            " -> coi la VAT CAN (ep bot khong ra vung rong ngoai map)\n",
-		            m_SubWorldID, nRegThieu, m_nGridW * m_nGridH);
+		            m_SubWorldID, nRegThieu, m_nGridW * m_nGridH, nRegKhongObs);
 #endif
 	for (int si = 0; si < NUM_SIZES; ++si)
 	{
@@ -3252,7 +3252,7 @@ void KSubWorld::LoadPathGridSrv(const char* szPathName, int nGridW, int nGridH)
 	// khac goc toa do / khac co luoi thi A* VAN ra duong, nhung moi waypoint lech dung bang
 	// do lech goc -> bot di "dau do khac". Nen nhet goc + kich thuoc vao dau tep va VUT BO
 	// cache nao khong khop.
-	const UINT kMagic  = 0x53465003;	// S F P 03 - 19/08 region thieu du lieu = vat can (02: o goc 18/08)
+	const UINT kMagic  = 0x53465004;	// S F P 04 - 20/08 region CO tep ma thieu doan vat can = DI DUOC (03: 19/08)
 	const UINT kHdrVer = 2;
 
 	bool bLoaded = false;

@@ -1631,6 +1631,56 @@ int LuaPB_JoinFaction(Lua_State* L)
 
 #define PB_TILE(v)   ((v) / 32)   // MPS -> o luoi (1 o = 32 MPS)
 
+// ============================================================================
+// (20/08) CAT CHANG CHAY THEO LUOI A* - chan "bot chay xuyen map".
+//
+// Moi lenh di deu la SendCommand(do_run, x, y) roi ENGINE tu dan than bot di.
+// Engine doc vat can bang KRegion::GetBarrierMin, ma du lieu do coi VUNG RONG
+// NGOAI MAP la "di duoc" (goc benh 19/08) - nen mot dich HOP LE tren luoi A*
+// van co the co DUONG DI cat qua vung rong: bot chay tat "ra ngoai map" mot
+// doan roi vao lai. Waypoint cua A* la BLOCK to toi 16x32 o (512x1024 MPS)
+// nen chang chay co the rat dai, du cho di lac han sang ben kia bo tuong.
+//
+// Cach chan: lay mau doc DOAN THANG bot se chay, moi 16 MPS (nua o); gap o bi
+// luoi chan thi KEO DICH VE diem tot cuoi cung truoc do. Nhu vay engine khong
+// bao gio nhan mot lenh doi hoi bang qua o ma luoi A* coi la vat can.
+//
+// Tra 1 = doan di duoc (dich co the da bi keo ve gan hon);
+//     0 = ngay buoc dau tien da bi chan -> noi goi NEN BO QUA nhip nay
+//         (dung phat lenh moi) va de bo do ket cua PB_WalkTo tu tim duong lai.
+// Luoi chua nap (CellObsSrv tra -1) thi khong cat gi ca - giu nguyen hanh vi cu.
+// ============================================================================
+static int pb_CatDoan(int nSub, int bx, int by, int* pnX, int* pnY)
+{
+	if (nSub < 0 || nSub >= MAX_SUBWORLD || bx <= 0 || by <= 0)
+		return 1;
+	const int dx = *pnX - bx;
+	const int dy = *pnY - by;
+	const int ax = (dx >= 0) ? dx : -dx;
+	const int ay = (dy >= 0) ? dy : -dy;
+	int nBuoc = ((ax > ay) ? ax : ay) / 16;
+	if (nBuoc <= 1)
+		return 1;                    // chang qua ngan, khong can cat
+	if (nBuoc > 512)
+		nBuoc = 512;                 // tran cung (chang 8192 MPS = 256 o)
+	int nGoodX = bx, nGoodY = by, nCo = 0;
+	for (int i = 1; i <= nBuoc; i++)
+	{
+		const int px = bx + (int)((__int64)dx * i / nBuoc);
+		const int py = by + (int)((__int64)dy * i / nBuoc);
+		if (SubWorld[nSub].CellObsSrv(px, py) == 1)
+			break;                   // dung NGAY TRUOC o bi chan
+		nGoodX = px;  nGoodY = py;  nCo = i;
+	}
+	if (nCo >= nBuoc)
+		return 1;                    // ca chang thong - giu nguyen dich
+	if (nCo <= 0)
+		return 0;                    // buoc dau da bi chan
+	*pnX = nGoodX;
+	*pnY = nGoodY;
+	return 1;
+}
+
 int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
               PB_WalkState& st, int nArriveMps)
 {
@@ -1888,6 +1938,13 @@ int PB_WalkTo(int nNpcIdx, int nDstMpsX, int nDstMpsY, int nSubIdx,
 	}
 
 	// ---- B3: phat lenh ----
+	// (20/08) CAT CHANG theo luoi truoc khi phat: block A* to toi 512x1024 MPS nen
+	// duong thang tu bot toi diem kep trong block ke co the cat qua vung rong ma
+	// ENGINE tuong la di duoc -> chinh la canh "bot chay xuyen map". Xem pb_CatDoan.
+	{
+		if (!pb_CatDoan(nSubIdx, bx, by, &tx, &ty))
+			return 0;      // buoc dau bi chan: giu lenh cu, bo do ket B5a/B5b tu lo
+	}
 	// CHI phat khi dich DOI, hoac khi engine da dung bot lai (do_stand). Phat lai cung mot
 	// dich moi nhip vua ton goi tin (DoWalk broadcast s2c_npcwalk) vua lam pathfinder cua
 	// engine reset lien tuc.
@@ -3652,6 +3709,8 @@ static const int s_baiLc[] =
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 	11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 };
+// (20/08) KHONG con dung: pb_ChonBai nay luon lay bai IT BOT NHAT nen so bot tu
+// can bang giua cac ung vien, khong can tran cung. Giu dinh nghia lam moc doc log.
 #define PB_BAI_TRAN  120   // tran bot cho MOI bai luyen (gian dam dong 18/08)
 
 // (19/08 toi #3 - chu game: "bot len map luyen cong van di chuyen ra ngoai map,
@@ -3666,8 +3725,16 @@ static const int s_baiLc[] =
 // chi danh/roam trong ban kinh xich quanh diem neo bai (diem neo la toa do da
 // kiem chung tay trong s_bai). Xa hon xich = mac ke, quai ngoai do khong ton tai
 // voi bot. Dat 2000 MPS (~62 o) de van rong hon le [BotDan] di tan >= 1200 MPS.
-#define PB_XICH_BAI      2000   // MPS - loc khi CHON muc tieu / diem roam
-#define PB_XICH_BAI_THA  2320   // MPS - nga cam khi DANG duoi (them 320 de khong
+//
+// (20/08 - chu game: "bot van gom 1 cho khong tan ra deu trong map") NOI XICH
+// 2000 -> 4800 MPS (62 -> 150 o). Xich 2000 chinh la thu ep het ~130 con cua mot
+// bai vao MOT dia ban kinh 62 o quanh diem dap Xa Phu: [BotDan] di tan mai van
+// "quanh 20 o co 21 bot" vi khong con cho nao de tan toi. Ba lop chan moi da thay
+// vai tro cua xich chat: (1) luoi A* nay danh dau dung vung ngoai map (sua
+// ProcLoadPathGrid 20/08), (2) pb_CatDoan cat chang chay khong cho bang qua o bi
+// luoi chan, (3) pb_FindRoamSpot loai thang quai dung tren o bi luoi chan.
+#define PB_XICH_BAI      4800   // MPS - loc khi CHON muc tieu / diem roam
+#define PB_XICH_BAI_THA  5120   // MPS - nga cam khi DANG duoi (them 320 de khong
                                 // nha oan muc tieu dang danh do o sat mep xich)
 // (phan bien dot 2) MAP NHIEM VU loai 4 xich RONG hon (100 o thay 62,5): quai roi
 // cuon rai khap map, xich 2000 quanh diem tha co the thieu quai -> "farm 20 phut
@@ -3817,8 +3884,15 @@ static int pb_NeoBai(const PB_Bot& b, int nSub, int* pnX, int* pnY)
 	return 1;
 }
 
-// Chon bai hop cap: lay MOC CAO NHAT ma bot du cap, roi boc ngau nhien trong moc do.
-// Tra chi so trong s_bai, hoac -1 neu chua du cap 10.
+// (20/08 - chu game: "bot gom vao 1 map cung cap ma khong chia ra deu cac map")
+// So BAC cap duoc phep lui xuong khi chon bai. Bang s_bai chi co 2 bai moi bac
+// (rieng bac 90 co 7), nen cua so 10 cu = TOI DA 4 ung vien: do that 20/08 la
+// 553 bot cap 80-89 chen vao dung 4 map (123/319/224/320 moi map 116-134 con) con
+// 7 bai bac 90 nam khong. Lui 30 cap = 4 bac = 8 ung vien -> ~70 con/map.
+// Muon bot bam sat cap hon thi ha ve 20 (6 ung vien), rong hon thi nang len 40.
+#define PB_BAI_LUI_CAP   30
+
+// Chon bai hop cap. Tra chi so trong s_bai, hoac -1 neu chua du cap 10.
 static int pb_ChonBai(int nLevel, int nLech)
 {
 	int nMoc = -1;
@@ -3828,55 +3902,44 @@ static int pb_ChonBai(int nLevel, int nLech)
 	if (nMoc < 0)
 		return -1;
 
-	// GOM CA BAC KE DUOI (18/08 toi: 1000 bot cung lua cap don het vao 1-2 map cua
-	// dung bac minh -> nghen than nhau + nung nong region keo ca quai day + client
-	// ve vai tram nguoi mot man hinh = "rat lag"). Lay them bai bac duoi (quai yeu
-	// hon chut van an exp) de so map gian ~gap doi, kem TRAN PB_BAI_TRAN bot/bai.
+	// Ung vien = bai DUNG bac + cac bac ke duoi trong PB_BAI_LUI_CAP cap.
 	int aTm[PB_SO_BAI], n = 0;
 	for (int i = 0; i < PB_SO_BAI; i++)
-		if (s_bai[i].nCapToiThieu == nMoc
-		 || (nMoc > 10 && s_bai[i].nCapToiThieu >= nMoc - 10
-		     && s_bai[i].nCapToiThieu < nMoc))
+		if (s_bai[i].nCapToiThieu <= nMoc
+		 && s_bai[i].nCapToiThieu >= nMoc - PB_BAI_LUI_CAP)
 			aTm[n++] = i;
 	if (n <= 0)
 		return -1;
 
-	// (19/08 chieu - chu game: "chia deu cac map cung cap khong gom mot map")
-	// Truoc day lay BAI DAU TIEN con duoi tran ke tu diem boc -> nghin con don vao
-	// 1-2 map dau danh sach. Nay CHIA DEU: vong 1 chon bai IT BOT NHAT trong cac
-	// ung vien DUNG BAC; ca bac cham tran PB_BAI_TRAN thi vong 2 mo xuong ca ung
-	// vien bac ke duoi (van lay it nhat). Diem boc xoay nBat giu vai tro xe hoa
-	// khi nhieu bai dong so bot.
-	const int nBat = ((int)g_Random(n) + nLech * 7) % n;
-	int nChon = -1, nDongChon = 0x7fffffff;
-	for (int v = 0; v < n; v++)
+	// DEM MOT LUOT cho toan bang (truoc day quet lai s_bots cho TUNG ung vien =
+	// n x s_botCount phep so moi lan chon; 1000 bot nap cung luc thi day la vai
+	// trieu vong lap khong can thiet).
+	int aDong[PB_SO_BAI];
+	for (int i = 0; i < PB_SO_BAI; i++)
+		aDong[i] = 0;
+	for (int q = 0; q < s_botCount; q++)
 	{
-		const int nUng = aTm[(nBat + v) % n];
-		if (s_bai[nUng].nCapToiThieu != nMoc)
-			continue;                   // vong 1: chi bai DUNG bac
-		int nDong = 0;
-		for (int q = 0; q < s_botCount; q++)
-			if (s_bots[q].nBaiIdx == nUng)
-				nDong++;
-		if (nDong < nDongChon)
-		{
-			nDongChon = nDong;
-			nChon     = nUng;
-		}
+		const int k = s_bots[q].nBaiIdx;
+		if (k >= 0 && k < PB_SO_BAI)
+			aDong[k]++;
 	}
-	if (nChon >= 0 && nDongChon < PB_BAI_TRAN)
-		return nChon;
-	// bai dung bac day het (hoac hiem khi khong co): xet MOI ung vien ke ca bac duoi
+
+	// CHIA DEU THAT: lay ung vien IT BOT NHAT trong CA nhom (truoc day vong 1 chi
+	// xet bai DUNG bac va chi mo xuong bac duoi khi bac tren da cham tran 120 -
+	// nen 2 bai dung bac luon phinh len 120+ truoc khi bai bac duoi duoc mot con).
+	// Hoa nhau thi uu tien bai CAP CAO HON (sat cap bot nhat); van hoa thi lay theo
+	// diem boc xoay de 1000 con khong cung nhin ve mot bai trong cung mot khung.
+	const int nBat = ((int)g_Random(n) + nLech * 7) % n;
+	int nChon = -1, nDongChon = 0x7fffffff, nCapChon = -1;
 	for (int v = 0; v < n; v++)
 	{
 		const int nUng = aTm[(nBat + v) % n];
-		int nDong = 0;
-		for (int q = 0; q < s_botCount; q++)
-			if (s_bots[q].nBaiIdx == nUng)
-				nDong++;
-		if (nDong < nDongChon)
+		const int nDong = aDong[nUng];
+		if (nDong < nDongChon
+		 || (nDong == nDongChon && s_bai[nUng].nCapToiThieu > nCapChon))
 		{
 			nDongChon = nDong;
+			nCapChon  = s_bai[nUng].nCapToiThieu;
 			nChon     = nUng;
 		}
 	}
@@ -4166,12 +4229,21 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;  b.nDoiMapTick = 0;
 			int nHx = 0, nHy = 0;
 			Npc[nNpcIdx].GetMpsPos(&nHx, &nHy);
-			const int nXaR  = 8 + (int)g_Random(4);
-			const int nGocX = ((int)g_Random(2) * 2 - 1);
-			const int nGocY = ((((int)g_Random(2) + nLech) % 2) * 2 - 1);
+			// (20/08 - chu game: "bot van gom 1 cho khong tan ra deu trong map")
+			// TAN XA HON NGAY TU DIEM DAP. Script Xa Phu (station.lua botlc_go ->
+			// NewWorld) tha MOI con xuong DUNG mot o co dinh, nen ca ~130 bot cua
+			// mot bai deu xuat phat tu mot diem; ban cu buoc ra 8-11 o theo 4 huong
+			// cheo = ca dam van nam trong mot dia ban kinh 11 o. Nay: 8 huong x 10
+			// muc ban kinh (12..66 o) = 80 diem dap rieng, boc theo CHI SO BOT nen
+			// khong phu thuoc g_Random (ham nay dong bang theo giay - ca loat bot
+			// doi map cung khung se ra cung mot so).
+			static const int aRx8[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+			static const int aRy8[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+			const int nHuong = (nLech + (int)g_Random(8)) & 7;
+			const int nXaR   = 12 + ((nLech / 8) % 10) * 6;      // 12..66 o
 			int nRx = 0, nRy = 0;
-			if (pb_ODat(nSub, nHx / 32 + nGocX * nXaR, nHy / 32 + nGocY * nXaR,
-			            nLech, 8, &nRx, &nRy))
+			if (pb_ODat(nSub, nHx / 32 + aRx8[nHuong] * nXaR,
+			            nHy / 32 + aRy8[nHuong] * nXaR, nLech, 12, &nRx, &nRy))
 			{
 				b.nBuocRaX = nRx;
 				b.nBuocRaY = nRy;
@@ -4189,9 +4261,11 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	//       Tho Dia Phu; thanh nha dong theo b.nThanhNhaMap neu tung bi goi ve)
 	//   (2) O thanh      -> DI BO toi NPC Xa Phu roi goi script station.lua nhu
 	//       nguoi choi bam menu (botlc_go / go_HSBattle cho Hoa Son cap 10)
+	// (20/08) NGUONG b.nRaBaiThu nay tinh bang GIAY (xem pha 2 ben duoi): 300 =
+	// 5 phut di bo trong thanh truoc khi phai dung duong teleport du phong.
 	// Moi nga hong deu cong don b.nRaBaiThu; qua nguong (hoac goi script 5 lan
 	// khong sang map) thi roi xuong khoi FALLBACK teleport neo-da-kiem ben duoi.
-	if (b.nRaBaiThu <= 700 && b.nRaBaiGoi <= 5)
+	if (b.nRaBaiThu <= 300 && b.nRaBaiGoi <= 5)
 	{
 		if (pb_LaThanhThi(SubWorld[nSub].m_SubWorldID))
 		{
@@ -4211,9 +4285,16 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			if (nDdx * nDdx + nDdy * nDdy
 			    > (__int64)PB_FAC_ARRIVE_MPS * PB_FAC_ARRIVE_MPS)
 			{
-				b.nRaBaiThu++;
-				if (PB_WalkTo(nNpcIdx, nPx, nPy, nSub, b.walk, PB_FAC_ARRIVE_MPS) < 0)
-					b.nRaBaiThu += 4;   // khong co duong toi Xa Phu - don nhanh
+				// (20/08) DEM THEO GIAY, KHONG THEO NHIP. Ban cu cong 1 MOI NHIP
+				// nen tran 700 chi la 39 GIAY di bo; trong thanh dong (Thanh Do
+				// toan duong cheo hep, ca nghin bot chen nhau) di toi NPC Xa Phu
+				// thuong lau hon the - do that 20/08: TruongAnh52 dat thu=701 roi
+				// bi day sang duong TELEPORT, dung thu chu game da bo. Nay 1 diem
+				// = 1 giay, A* thua thi phat them 4 giay.
+				const int nWx = PB_WalkTo(nNpcIdx, nPx, nPy, nSub, b.walk,
+				                          PB_FAC_ARRIVE_MPS);
+				if (now % (unsigned int)GAME_FPS == 0)
+					b.nRaBaiThu += (nWx < 0) ? 5 : 1;
 				return 0;               // dang di bo
 			}
 			// dung canh Xa Phu: gion 3 giay giua hai lan "bam menu"
@@ -4330,14 +4411,16 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		// Dung nguyen do la bot ke trap ("khong ra khoi trap duoc"). Buoc ra 8-11 o
 		// theo huong ngau nhien NGAY khi toi noi, truoc khi lam bat cu viec gi khac.
 		{
-			const int nXa   = 8 + (int)g_Random(4);
-			const int nGocX = ((int)g_Random(2) * 2 - 1);
-			const int nGocY = ((int)g_Random(2) * 2 - 1);
+			// (20/08) tan xa nhu nhanh Xa Phu o tren - 8 huong x 10 muc ban kinh
+			static const int aFx8[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+			static const int aFy8[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+			const int nHg = (nLech + (int)g_Random(8)) & 7;
+			const int nXa = 12 + ((nLech / 8) % 10) * 6;      // 12..66 o
 			// diem buoc ra cung phai la O TRONG (khong thi PB_WalkTo tra -1 hoai)
 			int nRx = 0, nRy = 0;
 			if (nSubBai >= 0
-			 && pb_ODat(nSubBai, nNeoOX + nGocX * nXa, nNeoOY + nGocY * nXa,
-			            nLech, 8, &nRx, &nRy))
+			 && pb_ODat(nSubBai, nNeoOX + aFx8[nHg] * nXa, nNeoOY + aFy8[nHg] * nXa,
+			            nLech, 12, &nRx, &nRy))
 			{
 				b.nBuocRaX = nRx;
 				b.nBuocRaY = nRy;
@@ -4429,6 +4512,13 @@ static int pb_FindRoamSpot(int nIdx, int nNpcIdx, int nSub, const PB_Bot& b,
 				continue;
 			if (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich)
 				continue;              // ngoai day xich -> khong roam toi
+			// (20/08) quai dung tren o LUOI CHAN (vung rong ngoai map / vach nui):
+			// A* khong bao gio toi duoc no. Ban cu van boc lam dich roi in
+			// "[BotHoang] khong tim duoc duong ... boc cho khac" - do that 20/08:
+			// 277/838 luot di hoang chet o cua nay, moi luot ton mot lan quet A*
+			// toan map VA treo bot PB_ROAM_RETRY = 5 giay cho lan boc sau.
+			if (SubWorld[nSub].CellObsSrv(ex, ey) == 1)
+				continue;
 
 			aX[nCand] = ex;
 			aY[nCand] = ey;
@@ -5378,7 +5468,13 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				if (now - b.nChaseLegTick >= (unsigned int)(GAME_FPS / 2))
 				{
 					b.nChaseLegTick = now;
-					Npc[nNpcIdx].SendCommand(do_run, nAimThoX, nAimThoY);
+					// (20/08) diem NHAM da kiem hop le o tren, nhung DOAN CHAY toi
+					// no thi chua: cat theo luoi de khong lao qua vung rong.
+					int nCx3 = 0, nCy3 = 0;
+					Npc[nNpcIdx].GetMpsPos(&nCx3, &nCy3);
+					int nRx3 = nAimThoX, nRy3 = nAimThoY;
+					if (pb_CatDoan(nSub, nCx3, nCy3, &nRx3, &nRy3))
+						Npc[nNpcIdx].SendCommand(do_run, nRx3, nRy3);
 				}
 			}
 			else
@@ -6393,6 +6489,20 @@ static void pb_DriveBot(PB_Bot& b)
 				// dung sat mep vung rong co the BI het 24 o gan; xich bai lai don
 				// bot day dac hon nen phai co van thoat xa hon. Vong xet o GAN
 				// truoc, chi cham toi 6-8 o khi 3-5 o deu bi.
+				// (20/08 - chu game: "cu di chuyen toi roi lui chay bay") LACH VE
+				// PHIA DICH, khong lay o TRONG DAU TIEN nua. Ban cu quet 8 huong
+				// theo thu tu xoay va nhan o hop le dau tien, nen huong lach hoan
+				// toan khong lien quan den noi bot dang muon toi: log 20/08 bat
+				// dung chuoi TruongAnh52 o(3185,5087) -> (3182,5087) -> (3185,5084)
+				// -> (3185,5087), tuc lach ba nhip roi ve DUNG CHO CU. Nay: gom moi
+				// o hop le roi lay o GAN DICH NHAT (dich = lenh do_run cuoi cung cua
+				// lo trinh dang chay), nen moi lan lach deu la mot buoc TIEN.
+				int nDichX = 0, nDichY = 0;
+				if (b.walk.lastSendX)       { nDichX = b.walk.lastSendX;  nDichY = b.walk.lastSendY;  }
+				else if (b.roam.lastSendX)  { nDichX = b.roam.lastSendX;  nDichY = b.roam.lastSendY;  }
+				else if (b.chase.lastSendX) { nDichX = b.chase.lastSendX; nDichY = b.chase.lastSendY; }
+				int nLachX = 0, nLachY = 0;
+				__int64 nLachD = 0;
 				for (int h = 0; h < 48; h++)
 				{
 					// + nLachDem*3 (buoc le): moi lan lach thu huong KHAC truoc,
@@ -6415,23 +6525,38 @@ static void pb_DriveBot(PB_Bot& b)
 					// o 1477,3023 canh bai Luong Thuy Dong - dau vet cua chinh cua nay).
 					if (SubWorld[nSub].CellObsSrv(cx, cy) == 1)
 						continue;
+					if (nDichX == 0)
+					{
+						nLachX = cx;  nLachY = cy;   // khong biet dich -> giu net cu
+						break;
+					}
+					const __int64 ddx = (__int64)cx - nDichX;
+					const __int64 ddy = (__int64)cy - nDichY;
+					const __int64 dd  = ddx * ddx + ddy * ddy;
+					if (nLachX == 0 || dd < nLachD)
+					{
+						nLachD = dd;  nLachX = cx;  nLachY = cy;
+					}
+				}
+				if (nLachX)
+				{
 					{
 						static unsigned int s_uLachLog = 0;
 						if (nowAll - s_uLachLog >= (unsigned int)(GAME_FPS / 3))
 						{
 							s_uLachLog = nowAll;
 							pb_Log("[BotLach] %s ket dam dong o(%d,%d) -> lach sang o(%d,%d)\n",
-							       Player[nIdx].m_PlayerName, jx / 32, jy / 32, cx / 32, cy / 32);
+							       Player[nIdx].m_PlayerName, jx / 32, jy / 32,
+							       nLachX / 32, nLachY / 32);
 						}
 					}
-					Npc[nNpcIdx].SetPos(cx, cy);
+					Npc[nNpcIdx].SetPos(nLachX, nLachY);
 					b.walk.Reset();
 					b.chase.Reset();
 					b.roam.Reset();
 					b.follow.Reset();   // (19/08) lo trinh cu vo nghia sau khi dich cho
 					b.nFollowNghiToi = 0;
 					b.loot.Reset();
-					break;
 				}
 			}
 		}
@@ -6443,7 +6568,18 @@ static void pb_DriveBot(PB_Bot& b)
 		// (D21) dang lam Da Tau thi KHONG bam theo doi truong: khoi follow co
 		// "return;" chay TRUOC pb_DaTau nen bot bo nhiem vu di duoi doi truong va
 		// pb_DaTau khong bao gio duoc goi de tu cuu.
-		if (pb_TrongNhom(nIdx) && pb_DoiTruongCua(nIdx) != nIdx && !b.nDaTauChon)
+		// (20/08 - chu game: "bot khi goi ve thanh roi chay len map luyen cong lai
+		// cu di chuyen toi roi lui chay bay roi moi toi xa phu") DANG TREN DUONG
+		// RA BAI thi KHONG bam theo doi truong. Khoi follow nay nam TRUOC pb_RaBai
+		// va co "return;" rieng, nen mot thanh vien cach doi truong hon 200 MPS
+		// KHONG BAO GIO xuong toi pb_RaBai: no chay ve phia doi truong, vao trong
+		// 200 MPS thi nhip sau moi duoc nhich ve phia NPC Xa Phu, di vai buoc lai
+		// vuot 200 MPS va bi keo nguoc - dung canh "di toi roi lui" chu game thay.
+		// pb_RaBai co san pb_RoiNhom o ca hai pha, nhung phai chay den do da.
+		const int bDangRaBai = (b.nBaiIdx >= 0 && b.nBaiIdx < PB_SO_BAI
+		                     && SubWorld[nSub].m_SubWorldID != s_bai[b.nBaiIdx].nMapId);
+		if (pb_TrongNhom(nIdx) && pb_DoiTruongCua(nIdx) != nIdx && !b.nDaTauChon
+		 && !bDangRaBai)
 		{
 			const int nCap    = pb_DoiTruongCua(nIdx);
 			const int nCapNpc = (nCap > 0) ? Player[nCap].m_nIndex : 0;
