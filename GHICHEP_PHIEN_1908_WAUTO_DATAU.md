@@ -162,6 +162,16 @@ BỎ theo chốt phiên F11). **PHẢN BIỆN đa-agent (6 mũi soi + 14 vòng b
 bảng đầy đủ ở BANGIAO mục 13.12. Deploy lại CoreClient + WAuto 22:23; Game.exe dùng bản 22:13
 của phiên F11 (build sau commit ipc nên đã 6888).
 
+### 2.13 VÒNG 3 (20/08 rạng sáng) — 5 lỗi test thật → `a3720c97`, phản biện 8 lỗi → `643a6cfd`
+Chi tiết đầy đủ ở **BANGIAO mục 13.13**. Tóm tắt: đủ-40 giờ NHẢ MÁY + đánh thức Hậu cần
+(nHomeStep kẹt "đã xong" là thủ phạm đứng lì); mọi cổng rương nhận rương-đang-mở
+`m_CUnlocked` (rương không mật khẩu); sạp thêm chẩn đoán tại trận (báo tên sạp + thống kê
+X/Y khi rời thành, bỏ lọc kind); về thành bán rác TRƯỚC (`DT_SellResume` giữ đúng mạch);
+tin nhặt mảnh có **KÊNH RIÊNG** (`szTien` — spam thông báo toàn server không đè được) + đọc
+tin trước khi rời FARM + lưới về-thử-trả ở (cần−1) + FAILREQ loại 4 quay lại đánh.
+Deploy CoreClient **03:43** (Game.exe/WAuto.exe giữ 22:1x/22:23). Mật khẩu rương hợp lệ
+phải là 6 chữ số không bắt đầu bằng 0 (server bác < 100000).
+
 ---
 
 ## 3 · Bản đồ biến đếm Dã Tẩu (đắt nhất phiên này — đừng đoán lại)

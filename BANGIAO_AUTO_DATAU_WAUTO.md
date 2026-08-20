@@ -31,7 +31,7 @@ nhiệm vụ, làm đủ **6 loại**, trả nhiệm vụ, chọn thưởng, r�
 
 | Tệp | Đường dẫn | Dấu thời gian | Ghi chú |
 |---|---|---|---|
-| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **19/08 21:32** (2.196.992 B) | engine Dã Tẩu tới `c9de7a7b` (đợt 20/08 — mục 13); bản lùi = `CoreClient_cu_1908tt.dll` (bản 19:2x) |
+| `CoreClient.dll` | `E:\SourceTuanLe\...\TESTLOFFF_ONLINE\bin\client\` | **20/08 03:43** (2.200.064 B) | engine tới `643a6cfd` (vòng 3 + phản biện, mục 13.13); bản lùi các mốc: `_cu_1908tt` / `_cu_2008a` / `_locked*` |
 | `settings\datau_toado.txt` | `...\bin\client\settings\` | **19/08 17:10** (80 KB) | **MỚI** — bảng tọa độ cụm quái 204 map, engine nạp lúc chạy; sửa tay được, không cần dựng lại DLL |
 | `Game.exe` | như trên | **19/08 21:32** (1.251.840 B) | `GDCNI_UI_ACT uParam=7` (AutoPick) + đọc `autoData` **6888 B**; bản lùi = `Game_cu_1908tt.exe` |
 | `WAuto.exe` | **`E:\Src_Auto_Ngoai\`** (gốc) **và** `bin\client\WAuto.exe` | **19/08 21:35** (361.472 B) | tab Dã Tẩu bố cục 2 cột + 3 điều khiển mới (LB 435, MS 436, MM 437/438, INDEX_END→441); gửi `autoData` 6888 B — **phải dùng đúng cặp WAuto+Game 21:3x**. ⚠️ post-build gọi `pwsh.exe` không có trên máy ⇒ **luôn chép tay**. ⚠️ WAuto tự thoát nếu không có Game.exe đang chạy |
@@ -527,6 +527,28 @@ chặn); click swap ở ô (0,0) hộp giao (có đường thu hồi `GOI_RECOVE
 thưởng nổ giữa MUASAP (GOTONPC/WAITDLG đã tiêu thụ fin trước đó — TCP có thứ tự); bán đồ khi
 chết ×2 (server chặn bán lúc fight-mode; `PushReviveButton` chạy TRƯỚC mọi pha, không bị Dã Tẩu
 chặn); ExtAuto thiếu init `nDTLBTry` (mọi trường DT đều dựa zero-init + ATYPE_CLEAR, nhất quán).
+
+### 13.13 VÒNG 3 (20/08 rạng sáng, `a3720c97` + `643a6cfd`) — 5 lỗi test thật + 8 lỗi phản biện
+
+**5 lỗi người dùng báo sau khi test, nguyên nhân thật → cách sửa:**
+
+| Lỗi báo | Nguyên nhân thật | Sửa |
+|---|---|---|
+| Đủ 40 đứng yên, không lên lại map treo | Máy giữ `engaged=1` khi ô "lên map luyện công" tắt (mặc định tắt) **và** máy Hậu cần còn kẹt ở trạng thái "đã xong" từ chuyến trước (`nHomeStep` chỉ reset khi fight-mode lật 1→0) nên chẳng ai đưa nhân vật đi | Đủ 40 → **nhả máy hoàn toàn** + đánh thức Hậu cần từ đầu (bán rác/mua đồ/đi trạm/lên map theo tab Hậu cần); mọi hold khác cũng nhả máy |
+| Phúc duyên không lấy bình Đại từ rương | Cổng rương đòi **mật khẩu trong WAuto** — rương không đặt mật khẩu thì ô này trống ⇒ auto bỏ qua rương dù rương đang MỞ | Mọi cổng kéo rương chấp nhận `m_CUnlocked` (rương đang mở); rương khóa + không mật khẩu + CÓ bình → nhắc thẳng "nhập mật khẩu rương ở tab Hậu cần" |
+| Chưa tới từng sạp | (chẩn đoán tại trận) | Bỏ lọc kind (cứ treo biển `m_BaiTan` là tới xem, timeout 2,5s lo sạp câm), báo `Xem sạp "tên"...` khi mở, và thống kê `Thành này: xem X sạp (Y không phản hồi)` khi rời thành — chạy lần tới sẽ biết ngay kẹt ở đâu |
+| Phù về không bán rác liền | `DTP_RETURN` về thành là đi thẳng NPC/Xa Phu | Vừa đặt chân về thành + bật "Bán vật phẩm" + túi <10 ô trống → **bán rác trước**; `DT_SellResume` đưa về đúng mạch sau khi bán (đang trả đồ → NPC, cần đi lại map → Xa Phu) |
+| Đôi khi đủ mảnh đồ chí mà không phù về | Bộ chụp tin "Hệ Thống" chỉ có **1 khe** — 2 tin đến trong 1 nhịp 250ms là mất tin đầu; tin CHỐT "tổng cộng N tấm" bị đè là hết (server **ngưng thả mảnh** khi đủ). Nguồn tin: `script\item\tasklink_goods(.secret).lua` | **Kênh riêng cho tin tiến độ** (`szTien`, hook lọc "tổng cộng" — spam thông báo toàn server không đè được) + vòng 4 khe chung + đọc hết tin trước khi rời FARM + lưới: đứng ở (cần−1) quá 4 phút → về thử trả MỘT lần; trả sớm trượt → loại 4 quay lại map đánh tiếp (không skip) |
+
+**Phản biện đợt này (6+4 mũi soi, 8+8 vòng bác bỏ) xác nhận và đã sửa thêm 8 lỗi** (chi tiết
+commit `643a6cfd`): probe đủ-40 kiểm vị trí mỗi 60 GIÂY thay vì 60 phút (không thì cơ chế hỏi-lại
+gần như không bao giờ trúng lúc ở thành — lệch múi giờ server là mất nhiều giờ); clamp vòng khe
+lệch-1 (4 khe chỉ giữ được 3); FARM đọc tin trước khi thoát vì đổi map + EXEC-4 không xóa trắng
+tiến độ khi quay lại cùng nhiệm vụ; LIMIT không đè trạng thái giữa-chuyến của Hậu cần (rút tiền
+lặp); Hậu cần bước 2 không còn spam mở khóa 300ms/lần khi không có mật khẩu (đứng im vĩnh viễn);
+`DT_Hold` xóa cờ `nDTBackXaFu` (rò cờ làm chuyến trả sau bị chở ngược ra map); nắp trần vòng mở
+khóa ở USEPD/chuẩn-bị-phù (mật khẩu sai không đứng rực). Lưu ý đã xác minh: mật khẩu rương phải
+là **6 chữ số không bắt đầu bằng 0** (server `CheckChestPW` bác mọi giá trị < 100000).
 
 ---
 
