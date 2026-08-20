@@ -5482,6 +5482,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			g_uDTThpT = 1;	// khong co phu trong tui - di Xa Phu
+			DT_Msg(nPlayerIdx, "<color=Gray>Kh\253ng c\343 Th\307n H\265nh Ph\357 trong t\363i (r\255\254ng kh\253ng t\335nh) - \256i nh\352 Xa Phu.");
 		}
 		else if (g_uDTThpT > 1)
 		{
