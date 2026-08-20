@@ -423,7 +423,10 @@ int PB_IsBot(int nPlayerIdx)
 #define PB_DT_CO      1025
 #define PB_DT_NGAY    2420
 #define PB_DT_SCRIPT  "\\script\\global\\seasonnpc.lua"
-#define PB_DT_CAP_TOI_THIEU  80    // (19/08 toi) chu game: chi bot cap >= 80
+#define PB_DT_CAP_TOI_THIEU  70    // (19/08 toi #3) chu game HA 80 -> 70 de test tron
+                                   // vong: cap 70-79 rut bac link THAP hon (khong con
+                                   // ket cum Num=15 cua bac 11) -> de gap loai 4 nhe,
+                                   // nhieu bot du cap hon de quan sat may trang thai
 // (19/08 toi #2) TRAN SO CUON nhan lam. Bang tasklink_findmaps.txt o bac link 11
 // (bot >= cap 80) chi con dong Num=15 (95,24% trong so) va Num=3 loai MAT CHI.
 // 15 cuon dia do ~ 13.500 con quai; mat chi CHI rot tu boss xanh ~1/31.360 con.
@@ -2100,16 +2103,23 @@ static int pb_MacVaoNguoi(int nIdx, int nNew, int nPlace)
 	return 1;
 }
 
-// 9 mon Kim Phong = goldequip.txt dong 178-186; id AddGoldItem = DONG - 1 (kiem
-// chung: trangbihoangkim.lua:31 "AddGoldItem(2083-2)--dao" -> id 2081 = dong 2082
-// Kim O Bon Nhuoc GIOI DAO; NPC tan thu hotrotanthu.lua:86 phat dung bo nay bang
-// for i=177,185. Chu game noi "176-184" la lech 1 theo cach dem 0.
-// CA 9 mon mang nGoldId = 36 (cot m_nId) -> nhan biet "da mac" = GetGoldId()==36.
+// 9 mon Kim Phong, id AddGoldItem = 177..185 (da kiem chung tren log that: cac mon
+// mac vao deu ten "Kim Phong ..."; NPC tan thu hotrotanthu.lua:86 cung phat bo nay
+// bang for i=177,185. Chu game noi "176-184" la lech 1 theo cach dem 0).
+//
+// (19/08 toi #3 - DINH CHINH sau dot soat doi khang) Bang du lieu THAT ma
+// AddGoldItem doc la settings\item\GoldItem.txt (TABFILE_GOLDITEM_O, xem
+// KBPT_Equipment_Gold::Init), KHONG phai goldequip.txt; id = DONG - 2 vi
+// LoadRecord cong nRow += 2 (GoldItem.txt dong 179 = "Kim phong thanh duong khoi",
+// cot 53 = 177). KItem.cpp:961 gan pCA->nGoldId = sData.m_nId = COT 53 = 177..185.
+// So 36 la COT 54 (m_nSet - ma BO do), KHONG phai nGoldId => phep thu
+// GetGoldId()==36 cu KHONG BAO GIO DUNG: bot mac lai ca bo 9 mon MOI LAN LEN CAP
+// (26.395 dong log trong 35 phut, mon cu roi vao tui roi bi pb_DonTui xoa).
+// Phep thu DUNG: GetGoldId() == chinh id da dung de tao mon do.
 static const int s_nKpId[9]  = { 177, 178, 179, 180, 181, 182, 183, 184, 185 };
 static const int s_nKpCho[9] = { itempart_head, itempart_body, itempart_amulet,
                                  itempart_ring1, itempart_belt, itempart_cuff,
                                  itempart_pendant, itempart_foot, itempart_ring2 };
-#define PB_KP_GOLDID  36
 
 static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 {
@@ -2127,7 +2137,7 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 	for (int k = 0; k < 9; k++)
 	{
 		const int nDangMac = Player[nIdx].m_ItemList.GetEquipment(s_nKpCho[k]);
-		if (nDangMac > 0 && Item[nDangMac].GetGoldId() == PB_KP_GOLDID)
+		if (nDangMac > 0 && Item[nDangMac].GetGoldId() == s_nKpId[k])
 			continue;              // mon nay xong tu truoc (ke ca qua restart)
 		const int nNew = ItemSet.AddGoldItem(s_nKpId[k], NULL, Npc[nNpcIdx].m_Series,
 		                                     0, 0, 0, 0, 0, 0, 0, 0);
@@ -3032,8 +3042,8 @@ static int pb_DaTau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 // BOT RA THANH NGOI BAN SAP (chu game 19/08 chieu - thay trang tri SC_ NPC)
 //
 // Bot duoc boc (PB_SetBanSap, ngau nhien) ra khu trung tam thanh "nha", bay
-// 3-5 mon TRANG SUC TRANG (nhan 0/3/0, lien 0/4/0, boi 0/9/0 - dung nguon do
-// nguoi choi can nop nhiem vu Da Tau loai 2 dong 'n') voi GIA = gia goc x2,
+// 3-5 mon TRANG SUC XANH - do CO THUOC TINH PHU, dung duong quai rot do
+// (nhan 0/3/0, lien 0/4/0, boi 0/9/0) - GIA = gia goc x2 nhung SAN 500,
 // mo sap THAT: m_BaiTan=1 + ShopName tu settings/simcity/stall_adv.txt.
 // Nguoi choi XEM + MUA qua dung duong TradeBuyItem cua nguoi that
 // (KProtocolProcess.cpp:6060 - hoan toan server-side, tien vao tui bot).
@@ -6027,8 +6037,10 @@ static void pb_DriveBot(PB_Bot& b)
 			pb_Log("[BotTui] %s nhan tui duoc pham vinh vien\n", Player[nIdx].m_PlayerName);
 		}
 
-		// Tieu luon so diem dang ton (nhan vat mau co the da tich san), tu do moi lan len cap
-		// se tieu tiep o nhanh PB_AI_IN_FACTION ben tren.
+		// Tieu luon so diem dang ton (nhan vat mau co the da tich san). Moi lan LEN CAP
+		// sau do thi pb_TrangBiTheoCap goi lai pb_AllocAttribPoints (dot 19/08 chieu) -
+		// chu thich cu ghi "nhanh PB_AI_IN_FACTION ben tren se tieu tiep" la SAI,
+		// nhanh do KHONG TON TAI, va do la ly do bot cap 82 chi co 440 HP.
 		b.nLastLevel = Npc[nNpcIdx].m_Level;
 		pb_AllocAttribPoints(nIdx, b.nFaction);
 		// (18/08) LUU NGAY sau khi vao phai xong: chot phai + ky nang + vu khi vao DB,

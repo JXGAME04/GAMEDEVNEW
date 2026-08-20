@@ -4,39 +4,49 @@
 > `BANGIAO_PHIEN_1908.md` (hệ lưu dữ liệu bot + ép bot trong map). Sổ tay dự án:
 > `TIENTRINH_SIMCITY_BOT.md`.
 >
-> Phiên này gồm **7 đợt vá** (`f34a5cbb` → `e243c38c`), tất cả đã build xanh, deploy,
-> push. Bản cuối **đang chạy thật** trên GameServer khởi động 19/08 17:42.
+> Phiên này gồm **8 đợt vá** (`f34a5cbb` → đợt 8), tất cả build xanh + deploy + push.
+> Đợt 8 là **sửa lỗi thật do vòng soát đối kháng bắt được**, xem mục 3.7.
 
 ---
 
-## 1 · TRẠNG THÁI LÚC BÀN GIAO (19/08 17:50)
+## 1 · TRẠNG THÁI LÚC BÀN GIAO (19/08 18:30)
 
 | Thứ | Trạng thái |
 |---|---|
-| `bin\server\CoreServer.dll` | md5 `6bcd1a663621671e3a68a257e999bf64`, **khớp** `Sources\Core\x64\ServerRelease\CoreServer.dll` |
-| GameServer | khởi động **17:42:20** → **đang chạy bản cuối** |
+| `bin\server\CoreServer.dll` | md5 `6a93c40c6a76ac3888b64707d7a6c2a6` (đợt 8, deploy 18:30), **khớp** `Sources\Core\x64\ServerRelease\CoreServer.dll`. ⚠️ **Cần restart GameServer để ăn bản này** |
+| GameServer | khởi động **18:12:37** (kiểm bằng `Get-Process GameServer \| Select StartTime`, **không có trong log**) |
 | Goddess / Bishop / S3Relay | vẫn từ 18/08 23:16 (không có thay đổi cho chúng) |
-| Commit cuối của tôi | `e243c38c` (đã push `main`) |
+| Commit hệ bot | `e243c38c` (máy trạng thái) + `54ffdf4f` (tài liệu này) + đợt 8 (sửa lỗi Kim Phong). **KHÔNG phải HEAD** — phiên song song commit liên tục, luôn `git log` trước khi kết luận |
 | `bot.log` | đã xoay: `bot.log.1908_sang` (1,0 GB), `bot.log.1908_chieu` (79,7 MB), log hiện tại bắt đầu 17:42 |
-| Bản lùi DLL | `CoreServer.dll.bak_1908_1740` (và các mốc 1032/1102/1320/1335/1623) |
+| Bản lùi DLL | ⚠️ **các `.bak_1908_*` cũ ĐÃ BỊ XOÁ khỏi đĩa** (nằm trong `E:\$RECYCLE.BIN`). Bản lùi còn dùng được: **`CoreServer.dll.bak_1908_1830`**. Lùi xa hơn phải build lại từ git |
 
 **⚠️ Có PHIÊN SONG SONG** (dự án auto Dã Tẩu cho WAuto) commit xen kẽ vào cùng repo và
 **cùng build `Core.vcxproj`** (`KDaTauTables.h` nằm trong `Sources/Core/Src`). Trước khi
 kết luận "DLL không có mã của tôi", grep chuỗi đặc trưng thay vì so mtime.
 
-### Bằng chứng bản cuối chạy đúng (log 17:42–17:50)
+### Bằng chứng bản cuối chạy đúng — **vòng lặp ĐÃ KHÉP**
 
-```
-[BotDT] chon 50 bot lam Da Tau (yeu cau 50; 105/1000 bot du cap 80)
-[BotDT] DuongLong185 bo nhiem vu loai 4 (kieu 1, can 15 cuon) - doi de khac, khong ton gi
-[BotDT] DuongLong185 NHAN nhiem vu loai 5 - vua luyen cap vua lam
-```
-35 lượt nhập môn, 49 lượt nhận nhiệm vụ, 7 lượt đổi nhiệm vụ miễn phí. **Chưa có lượt
-TRẢ nào** — bình thường, vì loại 5/6 chờ 5 phút mới thử trả lần đầu và run mới 8 phút.
+Mốc cắt **19/08 18:17** (log vẫn đang chạy — mọi con số dưới đây kèm câu lệnh đếm để phiên
+sau tự kiểm lại, đừng tin suông):
+
+| Đo | Số | Lệnh |
+|---|---|---|
+| Bot đủ cấp 80 | 119/1000 | `grep -a "chon .* bot lam Da Tau" bot.log \| tail -1` |
+| Nhập môn | 35+ | `grep -ac "nhap mon Da Tau"` |
+| Nhận nhiệm vụ | 97 (73 loại 5 · 24 loại 6 · **0 loại 4**) | `grep -ac "NHAN nhiem vu"` |
+| Đổi nhiệm vụ miễn phí | 7+ | `grep -ac "doi de khac"` |
+| **TRẢ XONG nhiệm vụ** | **30** (từ 17:54:39) | `grep -ac "TRA XONG nhiem vu"` |
+| Sạp mở | **200** | `grep -ac "mo sap"` |
+| Món bị loại vì không phải đồ xanh | **0** | `grep -ac "bo mon khong phai do xanh"` |
+
+⇒ **Điều kiện nghiệm thu (a) và (c) của mục 8 ĐÃ ĐẠT.** Còn lại: xác nhận pha **THƯỞNG**
+(nhận được rương thật) và vòng quay lại `TOI_NPC`.
+⚠️ Dòng `TRA XONG nhiem vu ... -> chon ruong thuong` là **MỘT dòng log duy nhất**, chỉ chứng
+minh `course == 2` — **không** chứng minh đã nhận được thưởng.
 
 ---
 
-## 2 · BẢY ĐỢT VÁ TRONG PHIÊN
+## 2 · TÁM ĐỢT VÁ TRONG PHIÊN
 
 | Commit | Nội dung |
 |---|---|
@@ -47,28 +57,30 @@ TRẢ nào** — bình thường, vì loại 5/6 chờ 5 phút mới thử trả
 | `fa595ddd` | Dã Tẩu v2 (chạy bộ tới NPC, chỉ loại 4/6) + **bot ra thành bán sạp thật** |
 | `f42782dd` | Loại 4 gom đủ mới về trả + **hủy nhiệm vụ riêng bot miễn phí** (`tl_dealtask`) |
 | `e243c38c` | **Dã Tẩu = máy trạng thái 10 pha** + **sạp bán đồ XANH** (sau đợt điều tra 13 agent) |
+| đợt 8 | **Sửa lỗi Kim Phong mặc lại mỗi cấp** + 3 chú thích sai (sau đợt soát đối kháng 5 agent) |
 
 ---
 
-## 3 · SÁU LỖI GỐC TÌM RA (giá trị lâu dài — đừng để mắc lại)
+## 3 · BẢY LỖI GỐC TÌM RA (giá trị lâu dài — đừng để mắc lại)
 
 ### 3.1 🔴 `g_FileName2Id` băm **phân biệt hoa/thường**
 
 `Engine/Src/KFilePath.cpp:442` băm từng byte, **không hạ chữ thường**. Gọi
 `ExecuteScript("\\Script\\Global\\station.lua")` (chữ hoa) → id khác id engine đăng ký →
-`g_GetScript` trả NULL → `KPlayer::ExecuteScript` (`KPlayer.cpp:6829`) **return FALSE im
-lặng**: không log, không ScriptError.
+`g_GetScript` (`KPlayer.cpp:6831`) trả NULL → **return FALSE im lặng** ở nhánh `:6893-6899`:
+không log, không ScriptError. (Nạp chồng `char*` `:6816`, nạp chồng DWORD `:6825`.)
 
-Triệu chứng thật: **27.651 dòng "nhờ Xa Phu" trong 20 phút mà bot không hề dịch chuyển**.
+Triệu chứng thật: **27.651 dòng "nhờ Xa Phu" trong 9 phút 45 giây** (15:41:40→15:51:25,
+~47 dòng/giây) mà bot không hề dịch chuyển.
 
 > **LUẬT: mọi đường dẫn script trong C++ phải viết THƯỜNG; sau build grep DLL để chắc.**
 
 ### 3.2 🔴 Đồ TÍM = `nPoint ≠ 0`, không liên quan số opt
 
-`KItem::GetColorItem()` (`KItem.cpp:3200`) → `IsPurple()` (`:3222`) = `m_CommonAttrib.nPoint`.
+`KItem::GetColorItem()` (`KItem.cpp:3200`, gọi `IsPurple` ở `:3210`) → `IsPurple()` (định nghĩa `KItem.cpp:3079`) = `m_CommonAttrib.nPoint`.
 `ItemSet.AddItemSet2` **tham số thứ 12 chính là `nPoint`** — truyền số-lượng-opt vào đó là
 `SetPoint()` → tím 100%. Nhánh `nPoint > 0` còn **bỏ qua `Gen_MagicAttrib`**, đọc
-`magicattrib.txt` theo **SỐ DÒNG** (dòng 1–5 đều là vật liệu khảm nam) → "đồ tím có ô khảm".
+`magicattrib.txt` theo **SỐ DÒNG**; `KTabFile::GetInteger` đọc `nRow-1` nên **dòng 1 là tiêu đề**, vật liệu khảm nạm nằm ở **dòng 2–6** → hàng bày ra là "đồ tím có ô khảm".
 
 **Đường ra đồ XANH (chính là đường quái rớt đồ):** `ItemSet.Add` (không có tham số `nPoint`
 ⇒ luôn 0) + mảng `pnMagicLevel` **có giá trị** → `Gen_MagicAttrib` → `m_aryMagicAttrib[0] ≠ 0`.
@@ -81,8 +93,11 @@ Triệu chứng thật: **27.651 dòng "nhờ Xa Phu" trong 20 phút mà bot kh�
 ### 3.3 🔴 `ChangeWorld` chỉ kiểm khung region, **KHÔNG kiểm vật cản**
 
 `pb_RaBai` cộng thẳng ô lệch ±8 ô rồi thả bot → map hành lang hẹp (79 Tương Dương Mật Đạo)
-bot rơi **vào thân tường**, kẹt vĩnh viễn. Nay mọi điểm đặt chân đi qua `pb_ODat`
-(quét xoắn ốc tìm ô engine bảo trống **và** lưới A* không chặn).
+bot rơi **vào thân tường**, kẹt vĩnh viễn. Nay các điểm đặt chân **chính** đi qua `pb_ODat`
+(quét xoắn ốc tìm ô engine bảo trống **và** lưới A* không chặn) — nhưng **3 nhánh dự phòng
+vẫn `ChangeWorld` thẳng vào neo gốc khi `pb_ODat` thất bại** (ra bãi, về thành, chỗ ngồi sạp).
+⚠️ Bất nhất chưa chốt: `pb_ODuoc` hỏi `GetBarrierMin(..., FALSE)` còn `[BotLach]` hỏi
+`(..., TRUE)` — hai mặt nạ khác nhau cho cùng câu hỏi.
 
 ### 3.4 🔴 `KItemList::Abrade` tháo trang bị khi độ bền = 0
 
@@ -101,6 +116,19 @@ năng dồn đống → bot cấp 82 chỉ 440 HP. Nay tiêu mỗi lần lên c�
 16:31:40, về bãi map 198 **đúng giây đó**. Nay chỉ thêm/bớt phần chênh lệch và **không bao
 giờ cắt bot đang `course == 1`**.
 
+### 3.7 🔴 `GetGoldId()` trả **cột `m_nId`**, không phải mã bộ đồ
+
+Phép thử "món Kim Phong này đã mặc chưa" so `GetGoldId()` với **36** — nhưng 36 là cột
+`m_nSet` (mã BỘ), còn `GetGoldId()` trả **cột `m_nId` = 177…185**. Phép thử **không bao giờ
+đúng** ⇒ bot **mặc lại cả bộ 9 món mỗi lần lên cấp**: **26.395 dòng log trong 35 phút**, món
+cũ rơi vào túi rồi bị `pb_DonTui` xoá (rác `KItem` + rác log).
+
+Bảng dữ liệu thật là **`settings\item\GoldItem.txt`** (`TABFILE_GOLDITEM_O`), **không phải
+`goldequip.txt`**; `id = DÒNG − 2` (`LoadRecord` cộng `nRow += 2`).
+
+> **Bài học: lỗi này KHÔNG lộ ra khi test** (bot vẫn mặc đủ đồ, log vẫn "đẹp") — chỉ vòng
+> soát đối kháng đối chiếu bảng dữ liệu mới bắt được. Đã vá đợt 8.
+
 ---
 
 ## 4 · MÁY TRẠNG THÁI DÃ TẨU (bản đang chạy)
@@ -118,16 +146,27 @@ nhiệm vụ (chặn `pb_RaBai`) · `2` = nhả máy (luyện cấp bình thư�
 
 ### Luật lọc nhiệm vụ (quyết định then chốt)
 
-Bot cấp ≥80 rút bậc link 11, ở đó **95,24% trọng số là dòng Num=15** (~13.500 con quái) và
-phần còn lại là **Mật Chỉ** (cuộn 212, **chỉ rơi từ boss xanh** ~1/31.360 con). Cả hai đều
-là ngõ cụt ⇒ bot **chỉ nhận loại 4 kiểu 1 và ≤ `PB_DT_CUON_TOI_DA` (5) cuộn**, còn lại
-**đổi nhiệm vụ MIỄN PHÍ** qua `PB_BotDoiNhiemVu` → `tl_dealtask()`.
+Bot cấp ≥80 rút bậc link 11, ở đó **95,24% trọng số là dòng Num=15** và phần còn lại là
+**Mật Chỉ** (cuộn 212). *(⚠️ CHƯA KIỂM CHỨNG: con số "~13.500 con quái" và "Mật Chỉ chỉ rơi
+từ boss xanh ~1/31.360 con" suy ra từ tỉ lệ rơi **chưa ai chứng minh** — xem nợ số 2 mục 7.)*
+Cả hai đều
+là ngõ cụt ⇒ **loại 4 chỉ nhận khi kiểu 1 VÀ ≤ `PB_DT_CUON_TOI_DA` (5) cuộn**; **loại 5 và 6
+nhận VÔ ĐIỀU KIỆN**; **loại 1/2/3 luôn bỏ**. Thứ không nhận thì **đổi nhiệm vụ MIỄN PHÍ**
+qua `PB_BotDoiNhiemVu` → `tl_dealtask()`.
+
+🔴 **Đo thực tế: loại 4 hiện có xác suất ~0%.** Từ bậc link 11 (bậc khởi đầu của cấp 80 theo
+`levellink.txt`) tới bậc 20 chỉ tồn tại 2 tổ hợp: `Num=15/kiểu 1` và `Num=3/kiểu 2` — bộ lọc
+loại cả hai. Log thật: **0 lượt nhận loại 4**, 73 loại 5, 24 loại 6. Muốn bot làm loại 4 phải
+nâng `PB_DT_CUON_TOI_DA` **≥15** *và* chấp nhận kiểu 2 — nhưng đọc nợ số 2 mục 7 trước đã.
 
 - `task 1032`: **byte thấp = KIỂU cuộn** (1 = Địa Đồ Chỉ 205, 2 = Mật Chỉ 212), **byte 2 = SỐ cuộn**.
 - ⚠️ **TUYỆT ĐỐI KHÔNG gọi `PB_BotCancel`** (bọc `Task_Cancel(1)` thật): +1 vào `2797` (mất
   thưởng mốc-40), +1 vào `2420` (đốt lượt trong trần 40/ngày), có thể làm NPC giận 10 phút.
   Đường đúng duy nhất là `PB_BotDoiNhiemVu`.
-- ⚠️ `tl_dealtask` **đặt lại `1025 = 0`** — đừng đổi nhiệm vụ khi đã gom được kha khá cuộn.
+- ⚠️ `tl_dealtask` **đặt lại `1025 = 0` — nhưng CHỈ khi nhiệm vụ mới bốc ra là loại 4**
+  (`tasklink_head.lua:144`, trong nhánh `myTaskType == 4`). Vẫn nên tránh đổi khi đã gom nhiều.
+- ⚠️ **Bẫy đọc log**: cặp `(kiểu, cần)` in trong dòng `bo nhiem vu loai N` **chỉ có nghĩa khi
+  `N == 4`** — task 1032 chỉ được ghi ở nhánh loại 4; với loại 1/2/3 đó là dữ liệu cũ còn sót.
 
 ### Các chốt chống treo
 
@@ -135,10 +174,11 @@ là ngõ cụt ⇒ bot **chỉ nhận loại 4 kiểu 1 và ≤ `PB_DT_CUON_TOI_
 |---|---|
 | Farm không ra cuộn | 20 phút → đổi nhiệm vụ |
 | Loại 5/6 chưa xong | thử trả mỗi 5 phút, quá 45 phút → đổi |
-| Kích Xa Phu không sang được map | 5 lần → đổi |
-| Trả mà `course` vẫn = 1 | 8 lần → đổi |
+| Kích Xa Phu không sang được map | **đúng 5 lần** (bộ đếm tăng trước khi kích) → đổi |
+| Trả mà `course` vẫn = 1 | gọi `Task_Accept` **9 lần** rồi mới đổi (lệnh chạy trước khi kiểm bộ đếm) |
 | Túi < 5 ô khi trả | tự dọn túi, 5 lần vẫn thiếu → nghỉ 15 phút |
-| Không tới được NPC | ~600 nhịp → nghỉ 5 phút |
+| Không tới được NPC Dã Tẩu | ~600 nhịp → nghỉ 5 phút |
+| Không tới được **Xa Phu** | ~600 nhịp → **ĐỔI nhiệm vụ** (không nghỉ) |
 | NPC giận (`1036 == 10`) | nghỉ **11 phút** (không phải 3) |
 | Đổi 40 lần chưa ra nhiệm vụ vừa sức | nghỉ 5 phút |
 
@@ -171,50 +211,80 @@ SimCity đã **gỡ khỏi lệnh bài** — mục cũ "SimCity - bot gia lap" n
    bấm "200 bot" sẽ ra log `chon 105 bot ... (yeu cau 200; 105/1000 bot du cap 80)` — **đúng
    thiết kế, không phải lỗi**.
 3. Hai nhóm Dã Tẩu và bán sạp **loại trừ nhau**.
-4. Bấm lại menu nay **an toàn** (chỉ thêm/bớt phần chênh), và có nhịp **bù quân số mỗi 60
-   giây** trong `PB_Breathe` vì mỗi lần nạp lại bot đều xóa cờ.
-5. Sau **restart server**, `s_nPbDaTauMax` về 0 → **phải bấm lại nút Dã Tẩu**; nhưng
-   **không** cần bấm lại "BẬT đánh quái" (bot nạp lại tự lên `PB_AI_FIGHT`).
+4. Bấm lại nút **Dã Tẩu** nay **an toàn** (chỉ thêm/bớt phần chênh, không cắt bot đang
+   `course == 1`), kèm nhịp **bù quân số mỗi 60 giây** trong `PB_Breathe`.
+5. Sau **restart server phải bấm lại CẢ HAI**: "BẬT đánh quái" *và* "Dã Tẩu" (và "bán sạp"
+   nếu dùng). Cả `s_nPbCheDoDanh` lẫn `s_nPbDaTauMax` đều là biến static → về 0 mỗi lần boot;
+   bot nạp lại vào `PB_AI_IN_FACTION` và **chỉ** lên `PB_AI_FIGHT` khi cờ đánh quái bật.
+6. **`PB_SetBanSap` KHÔNG giữ trạng thái như `PB_SetDaTau`**: bấm lại là **đóng hết sạp cũ**
+   rồi bốc lại từ đầu. Chỉ nút Dã Tẩu mới an toàn khi bấm nhiều lần.
+7. **Chưa có nhịp bù quân số cho bán sạp** (chỉ Dã Tẩu có, 60 giây/lần) — sau khi nạp lại bot
+   thì số bot bán sạp tụt dần, phải bấm lại.
 
 ---
 
 ## 6 · CÁC TÍNH NĂNG KHÁC ĐÃ THÊM TRONG PHIÊN
 
 - **Trang bị theo cấp** (mỗi lần lên cấp): tiêu hết tiềm năng tồn đọng · mặc dần bộ Hoàng
-  Kim **Kim Phong** (goldequip id **177–185**, `id = DÒNG − 1`; cả 9 món mang `nGoldId = 36`
-  = phép thử "đã mặc" sống sót qua restart; nhẫn thứ 2 phải chỉ định `itempart_ring2`) ·
+  Kim **Kim Phong** (id **177–185**; nhẫn thứ 2 phải chỉ định `itempart_ring2`) ·
   cưỡi **ngựa Túc Sương cấp 10** · đạt cấp 81 thì **nâng vũ khí lên cấp 10 cùng loại**.
   ⚠️ `Equip` phía server **không tự kiểm điều kiện** — phải gọi `CanEquip` trước.
+  ⚠️ **Bảng dữ liệu thật là `settings\item\GoldItem.txt`** (`TABFILE_GOLDITEM_O`), **KHÔNG
+  phải `goldequip.txt`**; `id = DÒNG − 2` (`LoadRecord` cộng `nRow += 2`). `GetGoldId()` trả
+  **cột 53 = `m_nId` = 177…185**; số **36 là cột 54 = `m_nSet`** (mã BỘ đồ).
+  🔴 **Lỗi đã sống suốt ngày 19/08:** phép thử "đã mặc" cũ so `GetGoldId() == 36` nên **không
+  bao giờ đúng** → bot mặc lại cả bộ 9 món **mỗi lần lên cấp** (đo được **26.395 dòng log
+  trong 35 phút**, món cũ rơi vào túi rồi bị `pb_DonTui` xoá). **Đã vá đợt 8** (so
+  `GetGoldId() == s_nKpId[k]`) — đợt soát đối kháng bắt được, không phải test bắt.
 - **Ngựa**: chiêu cấm-trên-ngựa → tự xuống, chiêu đòi-cưỡi → tự lên (đọc `GetHorseLimit`);
   di chuyển trong 10 map thành thị/thôn → cưỡi ngựa. `CheckRideHorse(FALSE)` = **lên**,
   `(TRUE)` = **xuống**.
 - **Bán sạp**: bot xuống ngựa + **ngồi** (`do_sit`), chỉ ngồi **ô trống quanh NPC Dã Tẩu
   thật**, biển sạp lấy từ `settings/simcity/stall_adv.txt`, bày 3–5 **trang sức xanh** giá
-  gốc ×2; người chơi mua qua **đúng đường `TradeBuyItem` của người thật** (có thuế thành).
+  gốc ×2 (**sàn 500**); người chơi mua qua **đúng đường của người thật**:
+  `KProtocolProcess::c2sTradeBuy` (`KProtocolProcess.cpp:6050`) — có thuế thành.
   Hết hàng 5 phút châm đợt mới. `pb_DonTui` không xóa hàng đang bày (`nPrice > 0`).
 - **Chia đều bãi luyện**: chọn bãi **ít bot nhất** đúng bậc, tràn 120 mới xuống bậc dưới.
   Đội trưởng nhóm chọn điểm roam **ít bot nhất / xa nhất** → các nhóm tự rải toàn map.
 - **Tổ đội**: 100% bot muốn vào nhóm, trần 7 thành viên (nhóm 8). Bot Dã Tẩu/bán sạp
   **không** vào danh sách ghép nhóm và **không** bám theo đội trưởng.
 - **Dọn rác log**: chặn mời vào nhóm **đã đầy** trước khi gọi `GetInviteReply` — trước đó
-  **49% log (120.281/244.802 dòng)** là rác loại này.
+  **43,1% log (339.788/788.726 dòng của `bot.log.1908_chieu`)** là rác loại này (đoạn cao nhất
+  50,97%); sau vá còn ~1,5%.
 
 ---
 
 ## 7 · NỢ KỸ THUẬT / VIỆC CHƯA LÀM
 
-| # | Việc | Ghi chú |
-|---|---|---|
-| 1 | **Chưa nghiệm thu trọn vòng Dã Tẩu** | Cần run ≥30 phút để thấy `TRA XONG nhiem vu` → `chon ruong thuong`. Run 17:42 mới 8 phút |
-| 2 | **Chưa thấy bot nhận được loại 4** | Bậc link 11 hiếm dòng ≤5 cuộn. Nếu muốn bot làm loại 4 thật thì hoặc nâng `PB_DT_CUON_TOI_DA`, hoặc tăng tỉ lệ rơi cuộn cho bot, hoặc chấp nhận bot chỉ làm loại 5/6 |
-| 3 | **Sạp chưa test lần nào ở bản mới** | Chưa có `[BotSap]` trong run 17:42 (chủ game chưa bấm). Cần xác nhận **0 dòng** `bo mon khong phai do xanh` |
-| 4 | **Giáp đã mất từ trước không phục hồi được** | Không có bản ghi. Bot đó máu mỏng; muốn sạch thì gỡ tạo lại 1000 con |
-| 5 | `KNpc.cpp:8241` khai `pnMagicLevel[6]` | Đọc ngoài biên trên đường rớt đồ của **quái** (ảnh hưởng người thật) — đợt riêng |
-| 6 | Nợ engine cũ: `Mps2Map` chia số âm, `ServeJump` trôi offset | Từ phiên sáng, ảnh hưởng cả người thật |
-| 7 | Goddess `RemoveLogProc` checkpoint 1 giờ → 10 phút | Đã sửa nguồn, **chưa build/deploy** |
-| 8 | `taobot_bdb.exe` chưa build lại | Chỉ cần khi đổi nhân vật mẫu |
+### 7A · Chặn đường — đọc đầu phiên sau
 
----
+| # | Việc | Chi tiết |
+|---|---|---|
+| **1** | 🔴 **Loại 4 có xác suất ~0%, không phải "hiếm"** | Từ bậc link 11 (khởi đầu của cấp 80) tới bậc 20, `tasklink_findmaps.txt` **chỉ có 2 tổ hợp**: `Num=15/kiểu 1` và `Num=3/kiểu 2`. Bộ lọc hiện tại loại cả hai ⇒ **bot sẽ không bao giờ làm loại 4**. Nâng `PB_DT_CUON_TOI_DA` lên 6–14 là **vô nghĩa** — phải ≥15 **và** chấp nhận kiểu 2 |
+| **2** | 🔴 **Cuộn 205/212 có thể KHÔNG có đường rơi nào đang sống** | Đường rơi duy nhất tìm thấy trong cả cây vận hành là `dropnvdt` / `dropnvdt01` (`script/lib/lib_sukien.lua:120,126`) và **cả hai không có nơi nào gọi** (`grep -rn dropnvdt script/ settings/` chỉ ra 2 dòng định nghĩa; C++ = 0). Nếu đúng vậy thì **loại 4 bất khả thi cho cả người thật**, và mọi chốt farm của bot chỉ là lý thuyết. **Việc điều tra số 1 của phiên sau** |
+| **3** | Ngưỡng "farm 20 phút không ra cuộn" **chưa từng chạy thật** | Hằng số trong mã đúng nhưng bot chưa bao giờ nhận nổi loại 4 (hệ quả của #1) |
+| **4** | Pha **THƯỞNG chưa nghiệm thu** | Có 30 lượt `TRA XONG` nhưng chưa xác nhận bot **nhận được rương** và quay lại `TOI_NPC`. Cần dấu hiệu khác ngoài dòng log đó |
+
+### 7B · Lỗi/chú thích còn sai trong mã
+
+| # | Việc |
+|---|---|
+| 5 | 🔴 **Cùng lỗi mảng `[6]` có ở HAI nơi**: `KNpc.cpp:8241` (đường quái rớt đồ) và `ScriptFuns.cpp:3837 int nItemLevel[6]` (`LuaDropItem`). Hậu quả **không phải** "đọc thêm ô rác": `KItemGenerator.CPP:591` lấy `pnaryMALevel[8]` làm **cờ rẽ nhánh** — rác khác 0 sẽ lái sang chế độ "nhận thẳng mã thuộc tính" ⇒ sinh đồ có **thuộc tính bịa**. Phải vá **cả hai cùng lúc** |
+| 6 | `simcity_admin.lua` và chú thích C++ đầu khối bán sạp vẫn ghi "hàng trang sức **TRẮNG**" — mã đã chuyển sang **đồ xanh** |
+| 7 | `pb_ChonBai` vòng 2 **không reset `nDongChon`** ⇒ chỉ tràn xuống bãi bậc dưới nếu bãi đó đông **ít hơn** mức thấp nhất của vòng 1 |
+| 8 | **Bất nhất cờ vật cản**: `pb_ODuoc` hỏi `GetBarrierMin(..., FALSE)`, `[BotLach]` hỏi `(..., TRUE)` — cần chốt một chuẩn |
+| 9 | **Không có nhịp bù quân số cho bán sạp** (chỉ Dã Tẩu có) |
+
+### 7C · Nợ cũ / môi trường
+
+| # | Việc |
+|---|---|
+| 10 | Giáp đã mất từ trước **không phục hồi được** (không có bản ghi) — bot đó máu mỏng |
+| 11 | Nợ engine từ phiên sáng: `Mps2Map` chia số âm (kiểm được: `KSubWorld.cpp:1379-1380` chia nguyên cắt về 0, guard `:1388` chỉ kiểm `x < m_nRegionBeginX`) · `ServeJump` trôi offset (**chưa ai tái lập được**, chỉ có địa chỉ `KNpc.cpp:4532`) |
+| 12 | Goddess `RemoveLogProc` checkpoint 1 giờ → 10 phút: đã sửa nguồn, **chưa build/deploy**. ⚠️ Còn **bản Goddess thứ hai chưa kiểm**: `Sources/MultiServer/Goddess2/src/IDBRoleServer.cpp:46` |
+| 13 | `taobot_bdb.exe` chưa build lại (chỉ cần khi đổi nhân vật mẫu) |
+| 14 | **Lệch tệp Lua giữa repo và cây chạy**: `lenhbaiadmin.lua` repo ≠ bản đang chạy (md5 khác). `seasonnpc.lua` và `simcity_admin.lua` thì khớp. Bảng theo dõi hiện chỉ có DLL — nên mở rộng cho cả `.lua`, `engine.dll`, `GameServer.exe`, `Represent2.dll` |
+| 15 | Menu lệnh bài còn một mục do phiên song song thêm mà mục 5 chưa liệt kê: `"Da Tau: xoa phat huy + them luot huy/DT_AdminMenu"` |
 
 ## 8 · QUY TRÌNH NGHIỆM THU PHIÊN SAU
 
@@ -237,11 +307,12 @@ grep -a "\[BotDT\]\|\[BotSap\]" bot.log | tail -60
 
 ## 9 · CẠM BẪY (bắt buộc nhớ)
 
-1. **`KPlayerBot.cpp` là ASCII thuần** nhưng `KItemList.cpp` / `KSubWorld.cpp` / `ScriptFuns.cpp`
-   là **TCVN3** → chỉ sửa qua **python latin-1**, sau mỗi đợt **đếm byte ≥ 0x80 so với
-   `git show HEAD:<file>`, phải khớp tuyệt đối**.
-2. **EOL không đồng nhất**: `KPlayerBot.cpp` LF · `KSubWorld.cpp`/`KItemList.cpp` CRLF ·
-   `ScriptFuns.cpp` **vùng đăng ký Lua là LF** · `seasonnpc.lua` **TRỘN** (CRLF + LF, đuôi LF).
+1. **`KPlayerBot.cpp` là ASCII thuần.** Các tệp khác có **BA loại mã hoá khác nhau**:
+   `KItemList.cpp` và `ScriptFuns.cpp` = **ANSI TRỘN GBK + TCVN3** · `KSubWorld.cpp` = TCVN3 ·
+   **`KNpc.cpp` = UTF-8 CÓ BOM**. Luật không đổi: chỉ sửa qua **python latin-1**, sau mỗi đợt
+   **đếm byte ≥ 0x80 so với `git show HEAD:<file>`, phải khớp tuyệt đối**.
+2. **EOL không đồng nhất**: `KPlayerBot.cpp` LF · `ScriptFuns.cpp` **LF toàn tệp** ·
+   `KSubWorld.cpp` / `KItemList.cpp` CRLF · `seasonnpc.lua` **TRỘN** (CRLF + LF, đuôi LF).
    Luôn xem byte thật trước khi tạo chuỗi anchor.
 3. **Chuỗi có backslash phải qua Write tool → chạy file**, không viết inline trong Bash.
 4. **Cắt log theo TỪ KHÓA, không theo kích thước** — cắt 25 MB từng làm mất 10 phút cuối và
@@ -252,7 +323,8 @@ grep -a "\[BotDT\]\|\[BotSap\]" bot.log | tail -60
 7. `KNpc::m_nPlayerIdx` là **private** — muốn biết chủ của NPC thì truyền `nIdx` vào hàm.
 8. Build: `MSBuild Core.vcxproj -p:Configuration="Server Release" -p:Platform=x64
    -p:SolutionDir="D:\GAMEDEVNEW\Sources\"`. **Đừng lọc output bằng `head`** — lỗi nằm ở cuối.
-9. **PostBuild của Core chỉ chép sang `D:\GAMEDEVNEW\bin\server`** — sang cây E phải chép tay
+9. **PostBuild của Core chép sang `D:\bin\server\` (GỐC ổ D:) + `D:\bin\server\release64\`** —
+   *không* phải `D:\GAMEDEVNEW\bin\server`, và **không** chạm cây E. Sang cây E phải chép tay
    (rename bản cũ trước, md5 hai bên, grep chuỗi mới trong DLL).
 10. **Phiên song song cùng build `Core.vcxproj`** — đừng so mtime, hãy grep chuỗi.
 
