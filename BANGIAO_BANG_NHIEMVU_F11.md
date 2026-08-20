@@ -66,3 +66,37 @@ Build **Server Release x64** hiện **bị chặn bởi tệp của phiên làm 
 | Xóa bảng lúc nạp nhân vật | `KPlayerDBFuns.cpp` (chỗ `m_cTask.Release()`) |
 | Lua server | `KTongJX2.cpp::LuaJX2_SyncTaskValue` (hết là hàm rỗng) |
 | Enum mới (đều nối ĐUÔI) | `KPlayer.h::UI_TASKVALUE` · `CoreShell.h::GDCNI_TASK_VALUE_UPDATE`, `GDI_TASK_SAVE_VALUE`, `GDI_PLAYER_REPUTE_VALUE` |
+
+---
+
+## 7 · ĐỢT 2 (19/08 tối, commit này): màu danh mục + click-đi-Xa-Phu
+
+1. **Màu tên nhiệm vụ**: `[TaskList_List]` bản gốc dùng khóa `Color=` (của tree control cũ) — `KWndMessageListBox` lại đọc `MsgColor`/`MsgBorderColor`, thiếu thì `GetColor("")=0` ⇒ **chữ đen**. Đã thêm `MsgColor=230,230,230` + `MsgBorderColor=9,9,9` vào cả 2 bản ini (chọn = màu vẫn vàng `SelColor` cũ).
+2. **Click nhiệm vụ loại 4 → tự chạy đến Xa Phu** (chỉ Địa đồ chỉ / Mật chỉ, đang làm - course 1):
+   - Kích hoạt: **bấm vào dòng nội dung** nhiệm vụ ở khung phải, hoặc **nhấp đúp** tên nhiệm vụ ở khung trái. Bảng tự thêm dòng gợi ý màu Cyan khi đủ điều kiện. Bấm lại khi đang chạy = **hủy**.
+   - Cơ chế: `GOI_TASKGUIDE_GOTO_XAFU` (OperationRequest, enum nối đuôi) → bộ tick `TG_XaFu*` trong `CoreShell.cpp` (chạy từ `KCoreShell::Breathe`, **client-only, không cần WAuto**) — tái dùng nguyên đồ nghề đã chạy thật của engine Dã Tẩu: `g_MoveStation` (tọa độ bến Xa Phu theo map) → `DT_FindNpcName("xa phu")` → `DT_WalkTo` (tự lên ngựa, path 2,5s/lần) → tới ≤128 mps thì `DialogNpc` mở thoại; người chơi chỉ việc chọn mục "Đến nơi làm nhiệm vụ dã tẩu" (godatau — server chở thẳng map 1031, miễn phí).
+   - An toàn: không bật khi auto Dã Tẩu WAuto đang giữ máy (`nDTEngaged`); tự tắt khi chuyển map (= Xa Phu đã chở đi), quá ~36 giây, hoặc thành không có bến; mọi thông báo qua khung chat prefix `[Chỉ nam]` (6 câu, TCVN3 octal).
+
+## 8 · PHÂN TÍCH 3 NÚT Ở BẢN LINUX THAM CHIẾU (Bỏ / Theo dõi / Hủy theo dõi)
+
+Nguồn: `taskguide.lua` (giải nén từ `Patch\data\slistcache.pak`, toàn văn 3.835 B), `protocol.lua` + `protocol_def_c.lua` cùng pak, chuỗi/xref trong `game_y_unpacked.bin`, `taskguide.txt` + `uitasklist.ini`.
+
+### 8.1 Nút "Bỏ nhiệm vụ" (QuitTaskButton) — **CHẾT TOÀN CHUỖI ngay ở bản tham chiếu**
+1. Nút sáng/mờ theo cột `Type` của `uitasklist.ini` (chú thích gốc dòng 7: 1=không bỏ được, 2=bỏ được) — Dã Tẩu `[7] Type=1` ⇒ mờ.
+2. Bấm → C++ gọi Lua `taskguide_quittask(nId)` (chuỗi `taskguide_quittask` @VA `0x006A560C`, xref `0x00544F00`).
+3. Lua (`taskguide.lua`): `OB_Create()` → `ObjBuffer:PushByType(handle, OBJTYPE_NUMBER, nId)` → `ScriptProtocol:SendData("emSCRIPT_PROTOCAL_TaskGuide_QuitTask", handle)` → `OB_Release`.
+4. `SendData` tra `self[szEnum]` trong bảng `KE_SCRIPT_PROTOCOL` (33 mục, `protocol.lua`) — **mục này không tồn tại** (chú ý chính tả gốc `PROTOCAL`) ⇒ `type(...) ~= "number"` ⇒ **không gửi gì, im lặng**.
+5. Phía máy chủ cũng không có người nhận (`grep TaskGuide_QuitTask` toàn cây `server1` = 0; thư mục `script_protocol` chỉ còn `protocol_def_gs.lua` + `protocol_def_c.lua--` đã vô hiệu).
+⇒ Thế hệ trước (JX2 gốc TQ) hẳn có enum này; bản VN 2021 cắt enum khỏi `protocol.lua` nhưng giữ nguyên UI + Lua ⇒ nút thành vỏ rỗng. **Dự án ta để nút mờ là trung thực**; muốn làm thật thì nối sang `tl_dealtask` (hủy miễn phí có sẵn từ đợt bot) — không đi đường ScriptProtocol.
+
+### 8.2 Nút "Theo dõi nhiệm vụ" (TraceButton) — hạ tầng ĐỦ nhưng bị TẮT bằng dữ liệu
+Chuỗi đầy đủ ở bản gốc:
+1. Nút sáng theo cột `Trace` của `uitasklist.ini` (1=theo dõi được, 2=không) — Dã Tẩu `[7] Trace=2` ⇒ **mờ ngay bản gốc**; chữ trạng thái đổi theo khóa `TraceText`/`NotTraceText` của `[Main]` ("Đã theo dõi"/"Chưa theo dõi").
+2. Bấm → C++ gọi Lua `tasktrace_add(nId, nClass, nTraceType)` (khối chuỗi `tasktrace_add`+`Trace`+`TaskId` @`0x006A55EC`) → `DynamicExecute(tracescript, TraceTaskFunc, nId, nClass, nTraceType)` — chạy hàm CỦA TỪNG nhiệm vụ khai trong `taskguide.txt` cột 9 (vd ID 5 `tb150skillTask:TraceTask`, ID 14 `tbGuideTask:ShowTrace`). Hàm này gọi API C++ (`TraceTask`, `TraceTask_TextOut`) để đăng ký nhiệm vụ vào cửa sổ **KUiTaskTrace** — khung nhỏ 180×220 treo mép phải màn hình, cấu hình `uitaskguide\tasktrace.ini` (`MaxShow=8`), RTTI `.?AVKUiTaskTrace@@` @`0x006E92B0`.
+3. Cập nhật sống: server đẩy task value → notify 84 → `playertaskchange(id, value)` → nếu id rơi vào `tbTaskVariable[2]` (chỉ khai cho **ID 5**: 2885 và **ID 14**: 4078, 1-10, 4001-4008) → `TraceTask_Update()` → C++ duyệt danh sách đang theo dõi → gọi lại Lua `tasktrace_udpate(nId)` (bản gốc gõ sai chính tả, binary lẫn lua khớp nhau) → `DynamicExecute(ShowReducedInfoFunc)` in bản RÚT GỌN vào khung. Có thêm `onridestatechange()` → cập nhật riêng ID 14.
+4. Bấm vào một dòng trong khung theo dõi → C++ gọi `tasktrace_select(nId)` → `ClickTraceItemFunc` (vd `tbGuideTask:ClickTraceItem` — mở lại bảng chỉ nam đúng nhiệm vụ / dẫn đường).
+5. **Vì sao bản tham chiếu không thấy gì:** (a) `tasktrace.ini` bị chú thích 100% ⇒ `Ini.Load` vẫn OK nhưng mọi control kích thước 0 ⇒ khung **vô hình** (đã kiểm nhánh mã: không bail, không treo); (b) dữ liệu chỉ cho phép ID 5/14 theo dõi (ID 14 thiếu cột `TaskTraceScriptFile` nhưng `load_data` có luật dự phòng `tracescript = guidescript`); (c) Dã Tẩu không khai hàm trace nào (5/9 cột) ⇒ `tasktrace_add/udpate/select` đều `return` sớm.
+⇒ Muốn "Theo dõi" chạy thật cho Dã Tẩu phải: bỏ chú thích `tasktrace.ini` + dựng lớp `KUiTaskTrace` + viết hàm rút gọn cho Dã Tẩu — bản gốc chưa từng hỗ trợ Dã Tẩu ở khung này.
+
+### 8.3 Nút "Hủy theo dõi" (CancelTraceButton) — thao tác THUẦN C++
+Không tồn tại hàm Lua "tasktrace_remove" nào (đã rà toàn bộ `taskguide.lua` + bảng chuỗi binary) ⇒ bấm Hủy là C++ tự gỡ nhiệm vụ khỏi danh sách theo dõi nội bộ của `KUiTaskTrace` rồi vẽ lại khung + đổi chữ về `NotTraceText`. (Binary có thêm API Lua `SwitchTaskTrace` để script bật/tắt cả khung — nút Cancel không đi qua đường này.) *Mức tin: suy từ sự vắng mặt chuỗi Lua tương ứng + đủ bộ API C++; chưa dò asm riêng nút này.*

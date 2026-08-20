@@ -22,4 +22,5 @@
 #define DTG_PREFIX_LAM "<color=green>[\256ang l\265m] <color>"
 #define DTG_PREFIX_XONG "<color=yellow>[ho\265n th\265nh - h\267y v\322 g\306p D\267 T\310u] <color>"
 #define DTG_EXTRA_FMT "H\253m nay \256\267 l\265m: <color=yellow>%d/40<color> nhi\326m v\364, \256\267 h\361y: %d l\307n."
+#define DTG_HINT_XAFU "<color=Cyan>Nh\312p v\265o d\337ng nhi\326m v\364 \256\323 t\371 ch\271y \256\325n Xa Phu \256i t\355i map l\265m nhi\326m v\364.<color>"
 #define DTG_NO_SUPPORT "Ch\255a h\347 tr\356 hi\323n th\336 lo\271i nhi\326m v\364 n\265y."

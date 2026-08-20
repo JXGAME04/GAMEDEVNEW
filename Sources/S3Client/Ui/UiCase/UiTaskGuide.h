@@ -49,6 +49,7 @@ private:
 	void	ShowTask(int nEntry);		// chon 1 dong -> dung noi dung khung phai
 	void	BuildDaTauText();			// noi dung nhiem vu Da Tau (TaskId 6)
 	void	AddLine(const char* pText);	// them 1 dong (tu ma hoa <color>/<enter>)
+	void	TryGoXaFu();				// nhiem vu loai 4 dang lam -> nho CoreShell dan den Xa Phu
 private:
 	static KUiTaskGuide*	m_pSelf;
 

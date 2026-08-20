@@ -817,6 +817,7 @@ enum GAMEOPERATION_INDEX
 	
 	GDI_TASK_SAVE_VALUE,		// [TaskGuide] uParam = task id -> tra ve ban sao task cua nhan vat
 	GDI_PLAYER_REPUTE_VALUE,	// [TaskGuide] danh vong hien tai cua nhan vat
+	GOI_TASKGUIDE_GOTO_XAFU,	// [TaskGuide] bam nhiem vu loai 4 -> tu chay den Xa Phu (bam lai = huy)
 
 };
 

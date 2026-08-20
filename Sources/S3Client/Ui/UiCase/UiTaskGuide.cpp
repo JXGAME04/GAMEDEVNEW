@@ -448,6 +448,10 @@ void KUiTaskGuide::BuildDaTauText()
 				strcpy(szLine, szMain);
 			AddLine(szLine);
 		}
+
+		// loai 4 dang lam: goi y bam de tu chay den Xa Phu
+		if (nType == 4 && nCourse == 1)
+			AddLine(DTG_HINT_XAFU);
 	}
 
 	// dong trang thai trong ngay (them so voi ban goc - tien theo doi moc 40)
@@ -472,7 +476,36 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			ShowTask(m_TaskList.GetMessageListBox()->GetCurSel());
 			return true;
 		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_Content)
+		{
+			// bam vao dong noi dung nhiem vu -> dan duong den Xa Phu (chi loai 4)
+			TryGoXaFu();
+			return true;
+		}
+		break;
+	case WND_N_LIST_ITEM_D_CLICK:
+		if (uParam == (unsigned int)(KWndWindow*)&m_TaskList)
+		{
+			// nhap dup ten nhiem vu ben trai cung co tac dung nhu bam noi dung
+			TryGoXaFu();
+			return true;
+		}
 		break;
 	}
 	return KWndShowAnimate::WndProc(uMsg, uParam, nParam);
+}
+
+// Chi tac dung voi nhiem vu Da Tau loai 4 (Dia do chi / Mat chi) DANG lam:
+// nho CoreShell tu chay den NPC Xa Phu roi mo thoai (muc godatau cho len map).
+// Bam lan nua khi dang chay = huy (CoreShell tu xu ly toggle).
+void KUiTaskGuide::TryGoXaFu()
+{
+	if (m_nCurEntry < 0 || m_nCurEntry >= m_nEntryCount)
+		return;
+	if (m_Entries[m_nCurEntry].nTaskId != TASKGUIDE_DATAU_TASKID)
+		return;
+	if (DTG_TaskVal(1021) != 4 || DTG_TaskVal(1028) != 1)
+		return;
+	if (g_pCoreShell)
+		g_pCoreShell->OperationRequest(GOI_TASKGUIDE_GOTO_XAFU, 0, 0);
 }

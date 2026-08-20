@@ -2751,6 +2751,106 @@ static int DT_WalkTo(int nPlayerIdx, int nX, int nY, int nNear, UINT uCurTime)
 	return 0;
 }
 
+//---------------------------------------------------------------------------
+// [TaskGuide] Bam vao nhiem vu loai 4 (Dia do chi / Mat chi) tren bang Chi nam
+// nhiem vu (F11) -> tu chay den NPC Xa Phu roi mo thoai; nguoi choi chon muc
+// 'Den noi lam nhiem vu da tau' (godatau) de len map. Chay DOC LAP voi engine
+// WAuto (tick tu KCoreShell::Breathe, client-only); dung lai do nghe da kiem
+// chung cua engine Da Tau: g_MoveStation / DT_FindNpcName / DT_WalkTo / DialogNpc.
+//---------------------------------------------------------------------------
+static int	g_nTGXaFuOn = 0;
+static UINT	g_uTGXaFuNext = 0;
+static int	g_nTGXaFuTry = 0;
+static int	g_nTGXaFuMap = 0;
+
+static void TG_XaFuStop(const char* szMsg)
+{
+	if (g_nTGXaFuOn && szMsg)
+		DT_Msg(CLIENT_PLAYER_INDEX, szMsg);
+	g_nTGXaFuOn = 0;
+}
+
+// bam lan dau = bat dan duong; dang chay bam lai = huy. Tra 1 neu vua bat.
+static int TG_XaFuStart()
+{
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	if (g_nTGXaFuOn)
+	{
+		TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 h\361y d\311n \256\255\352ng.");
+		return 0;
+	}
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	if (Player[nPlayerIdx].m_sExtAuto.nDTEngaged)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>[Ch\330 nam] Auto D\267 T\310u \256ang ch\271y - \256\323 auto t\371 lo vi\326c di chuy\323n.");
+		return 0;
+	}
+	int nMap = SubWorld[0].m_SubWorldID;
+	MapStation::iterator it = g_MoveStation.find(nMap);
+	if (it == g_MoveStation.end() || it->second.empty())
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>[Ch\330 nam] Kh\253ng t\327m th\312y Xa Phu \353 th\265nh n\265y.");
+		return 0;
+	}
+	g_nTGXaFuOn = 1;
+	g_nTGXaFuMap = nMap;
+	g_nTGXaFuTry = 0;
+	g_uTGXaFuNext = 0;
+	DT_Msg(nPlayerIdx, "<color=Cyan>[Ch\330 nam] \247ang t\371 ch\271y \256\325n Xa Phu - b\312m l\271i v\265o d\337ng nhi\326m v\364 \256\323 h\361y.");
+	return 1;
+}
+
+static void TG_XaFuTick()
+{
+	if (!g_nTGXaFuOn)
+		return;
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+	{
+		g_nTGXaFuOn = 0;
+		return;
+	}
+	UINT uCur = timeGetTime();
+	if (uCur < g_uTGXaFuNext)
+		return;
+	g_uTGXaFuNext = uCur + 400;
+	// da chuyen map (Xa Phu cho di / nguoi choi tu di) -> xong viec, tat im lang
+	if (SubWorld[0].m_SubWorldID != g_nTGXaFuMap)
+	{
+		g_nTGXaFuOn = 0;
+		return;
+	}
+	if (++g_nTGXaFuTry > 90)	// ~36 giay
+	{
+		TG_XaFuStop("<color=Yellow>[Ch\330 nam] \247i qu\270 l\251u - d\365ng d\311n \256\255\352ng.");
+		return;
+	}
+	MapStation::iterator it = g_MoveStation.find(g_nTGXaFuMap);
+	if (it == g_MoveStation.end() || it->second.empty())
+	{
+		TG_XaFuStop("<color=Yellow>[Ch\330 nam] Kh\253ng t\327m th\312y Xa Phu \353 th\265nh n\265y.");
+		return;
+	}
+	sStation& s = it->second[0];
+	int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
+	if (nIdx)
+	{
+		int nX, nY, dX, dY;
+		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+		Npc[nIdx].GetMpsPos(&dX, &dY);
+		if (g_GetDistance(nX, nY, dX, dY) <= 128)
+		{
+			Player[nPlayerIdx].DialogNpc(nIdx);
+			TG_XaFuStop("<color=Cyan>[Ch\330 nam] \247\267 g\306p Xa Phu - ch\344n m\364c \247\325n n\254i l\265m nhi\326m v\364 d\267 t\310u.");
+			return;
+		}
+		DT_WalkTo(nPlayerIdx, dX, dY, 96, uCur);
+		return;
+	}
+	DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCur);
+}
+
 // [DaTau] tim quai con SONG da sync NGOAI tam danh de chay toi (T4 di tim quai).
 // Client chi thay quai da sync (~2 man hinh); ngoai tam nay DTP_FARM dao 8 huong quanh neo.
 static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY)
@@ -4316,6 +4416,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	int nRet = 1;
 	switch(uOper)
 	{
+	case GOI_TASKGUIDE_GOTO_XAFU:	// [TaskGuide] bang F11: nhiem vu loai 4 -> tu chay den Xa Phu
+		nRet = TG_XaFuStart();
+		break;
 	case GOI_CP_UNLOCK:						//open ruong
 		SendClientCPUnlockCmd(uParam);
 		break;
@@ -10848,6 +10951,7 @@ int KCoreShell::Breathe()
 {
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();
+	TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
 	g_ScenePlace.Breathe();
 	return true;
 }
