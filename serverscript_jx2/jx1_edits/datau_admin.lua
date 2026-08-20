@@ -78,15 +78,18 @@ function DT_AdminMenu()
 		"Xoa phat - cho lam tiep nhiem vu ngay/DT_AdminXoaPhat",
 		format("Them %d luot huy nhiem vu/DT_AdminThemLuot", DT_ADM_THEMLUOT),
 		"Dat lai luot huy ve 0/DT_AdminXoaLuot",
-		"Dat lai so nhiem vu hom nay = 0 (an lai duoc thuong moc 30/40)/DT_AdminXoaNgay",
+		"Dat lai so nhiem vu hom nay = 0 (CANH BAO: phat LAI thuong moc 30 va 40)/DT_AdminXoaNgay",
 		DT_ADM_ENDSAY})
 end
 
 function DT_AdminXoaPhat()
-	SetTask(1036, 0)          -- so lan huy dau chuoi (==10 la dang bi phat)
+	-- Dat 1036 = 0 la DU de go phat: nhanh phat (seasonnpc.lua:247-257) CHI chay khi
+	-- 1036 == 10, nen sau lenh nay moc thoi gian 1029 khong con duoc doc nua.
+	-- BAY (quan trong): TUYET DOI khong "reset rieng 1029 ve 0" ma de nguyen 1036 = 10 -
+	-- khi do n = GetGameTime() - 0 rat lon, nhanh else goi Task_Confirm() (:255-257)
+	-- va Task_Confirm XOA SACH tien do chuoi (tl_settaskstate 1/2/3/4 + 1046 = 0).
+	SetTask(1036, 0)
 	SyncTaskValue(1036)
-	SetTask(1029, 0)          -- moc thoi gian bi phat
-	SyncTaskValue(1029)
 	-- Chua luon truong hop ban sao 1046 LECH voi luot huy that: khi lech thi
 	-- _CancelTaskDebug (seasonnpc.lua:1121) CAM huy vinh vien va nguoi choi ket
 	-- han o nhiem vu khong lam duoc. Ghi lai 1046 = dung so luot dang co, KHONG
@@ -116,6 +119,9 @@ function DT_AdminXoaLuot()
 	DT_AdminMenu()
 end
 
+-- CANH BAO KINH TE: 2420 ve 0 thi bo dem di qua moc 30 va moc 40 THEM MOT LAN =>
+-- phat lai 30 trieu exp (seasonnpc.lua:106-110) va 100 trieu exp + 5 ruong
+-- (seasonnpc.lua:112-124). Chi dung khi that su can chua loi cho nguoi choi.
 function DT_AdminXoaNgay()
 	SetTask(2420, 0)
 	SyncTaskValue(2420)
