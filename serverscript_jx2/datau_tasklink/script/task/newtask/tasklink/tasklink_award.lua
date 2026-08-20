@@ -458,86 +458,249 @@ end
 -- ´«Èë²ÎÊýÎªÔ­Ê¼Êý¾Ý±í£¬µ±Ç°Íê³ÉµÄ´ÎÊý
 function tl_getlinkaward(orgLinkAward, nTask)
 
-local i,j,nAward = 0,0,0;
-local decLinkAward = {}; -- ÐÐÊý£¬È¨ÖØ
+-- [PB 19/08/2026] VIET LAI HOAN TOAN.
+-- Ban cu: moi moc boc DUNG 1 dong bang C_Random roi AddItem 1 cai => khong the
+-- phat "set/bo", khong khoa duoc, khong dat han duoc. Cau thong bao cu con noi
+-- doi "nhan duoc 1 bo Trang bi Hoang Kim" trong khi chi phat dung 1 mon.
+-- Ban moi doc them 4 cot cuoi cua award_link.txt:
+--   Count    so luong moi dong
+--   LockType 0 = khong khoa | -2 = khoa vinh vien (LOCK_STATE_FOREVER).
+--            CHI -2 va 1 moi that su chan giao dich/ban/vut; -1 va -3 la KHOA GIA
+--            (GameDataDef.h:288-295 - moi cho chan deu kiem Lock>0 || Lock==-2).
+--   ExpDay   0 = khong han | N = het han sau N ngay roi mon TU BIEN MAT
+--   GiveAll  1 = phat HET moi dong cung moc (set) | 0 = boc 1 dong theo TaskValue
 
-local k,nRate = 0,0; -- ÓÃÓÚ¼ÆËãÈ¨ÖØµÄÁ½¸öÊý
-
-local nAwardCol = 0; -- »ñÈ¡µ½µÄ±í¸ñÐÐÊý
-
-local nGoods = {"",0,0,0,0,0,0,0};
+local i, j, k = 0, 0, 0
+local decLinkAward = {}
+local nAward = 0
+local nRate = 0
+local tbCol = {}
+local nGiveAll = 0
+local nCanO = 0
 
 	for i=1, getn(orgLinkAward) do
-	
-		if (nTask == orgLinkAward[i][1]) then -- µ½´ïÁË·ûºÏ·¢½±µÄ´ÎÊý
-			nAward = nAward + 1;
-			--decLinkAward[nAward][1] = orgLinkAward[i][2];
-			--decLinkAward[nAward][2] = orgLinkAward[i][3];
-			tinsert(decLinkAward, nAward, {orgLinkAward[i][2], orgLinkAward[i][3]});
-		end;
-	
-	end;
-	
-	if (nAward==0) then -- Ò»¸ö½±Àø¶¼Ã»ÓÐµÄ»°¾Í·µ»Ø¿©
-		-- storm_ask2start(4, 1)	--Storm ¿ªÊ¼ÌôÕ½
+		if (nTask == orgLinkAward[i][1]) then
+			nAward = nAward + 1
+			tinsert(decLinkAward, nAward, {orgLinkAward[i][2], orgLinkAward[i][3]})
+		end
+	end
+
+	if (nAward == 0) then
 		return
 	end
-	
-	if (getn(decLinkAward)>0) then
-	
+
+	nGiveAll = tonumber(TabFile_GetCell(TL_AWARDLINK, decLinkAward[1][1], "GiveAll"))
+	if (nGiveAll == nil) then
+		nGiveAll = 0
+	end
+
+	if (nGiveAll == 1) then
 		for i=1, getn(decLinkAward) do
-			nRate = nRate + decLinkAward[i][2];
-		end;
-		
-		j = C_Random(1, nRate);
-		
-		for i=1, getn(decLinkAward) do
-			k = k + decLinkAward[i][2];
-			if (j<=k) then
-				nAwardCol = decLinkAward[i][1];
-				break;
-			end;
-		end;
-		
-		nGoods[1] = TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Name");
-		nGoods[2] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Quality"));
-		nGoods[3] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Genre"));
-		nGoods[4] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Detail"));
-		nGoods[5] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Particular"));
-		nGoods[6] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Level"));
-		nGoods[7] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "GoodsFive"));
-		nGoods[8] = tonumber(TabFile_GetCell(TL_AWARDLINK, nAwardCol, "Magiclevel"));
-		
-		if (nGoods[2]==1) then
-			AddGoldItem(0, nGoods[3]);
-			Msg2Player("Chóc mõng b¹n! Hoµn thµnh nhiÖm vô lÇn nµy  "..nTask.." b¹n nhËn ®­îc"..nGoods[1].."!!!");
-			Say("B¹n trÎ lµm tèt l¾m, tÆng ng­¬i <color=yellow>"..nGoods[1].."<color> nµy, sau nµy h·y cè g¾ng thªm nhÐ!", 0);
-			AddGlobalCountNews("Ng­êi ch¬i "..GetName().."B¹n hoµn thµnh nhiÖm vô nµy  "..nTask.." D· TÈu, nhËn ®­îc 1 bé Trang bÞ Hoµng Kim "..nGoods[1].." mét c¸i!!!", 3);
-			
-			WriteLog(date("%H%M%S")..": Tµi kho¶n"..GetAccount()..", nh©n vËt"..GetName().."lÇn, nhËn ®­îc 1 bé Trang bÞ Hoµng Kim "..nGoods[1])
-			
-		else
-			AddItem(nGoods[3],nGoods[4],nGoods[5],nGoods[6],nGoods[7],nGoods[8],0);
-			Msg2Player("Chóc mõng b¹n! Hoµn thµnh nhiÖm vô lÇn nµy  "..nTask.." b¹n nhËn ®­îc"..nGoods[1].."!!!");
-			
-			if (nTask >= 100) then -- Èç¹ûÈÎÎñ´ÎÊý´óÓÚ 100 ²ÅÐ´ LOG
-				TaskLink_WriteLog(nTask, nGoods[1]);
-			end;
-			
-			Say("B¹n trÎ lµm tèt l¾m, tÆng ng­¬i <color=yellow>"..nGoods[1].."<color> nµy, sau nµy h·y cè g¾ng thªm nhÐ!", 0);
-		end;
-		
+			tinsert(tbCol, i, decLinkAward[i][1])
+		end
 	else
-	
-		-- storm_ask2start(4, 1)	--Storm ¿ªÊ¼ÌôÕ½
+		for i=1, getn(decLinkAward) do
+			nRate = nRate + decLinkAward[i][2]
+		end
+		if (nRate <= 0) then
+			return
+		end
+		j = C_Random(1, nRate)
+		for i=1, getn(decLinkAward) do
+			k = k + decLinkAward[i][2]
+			if (j <= k) then
+				tinsert(tbCol, 1, decLinkAward[i][1])
+				break
+			end
+		end
+	end
+
+	if (getn(tbCol) == 0) then
 		return
-	
-	end;
+	end
+
+	-- Moc chi ban DUNG MOT LAN tai dung con so nay (tl_counttasklinknum(1)) nen
+	-- phat khong duoc la MAT VINH VIEN. Task_Accept + mySG da chan truoc bang
+	-- tl_getlinkawardslots; day chi la luoi an toan cuoi + ghi log de GM den bu.
+	for i=1, getn(tbCol) do
+		nCanO = nCanO + tl_linkaward_cells(tbCol[i])
+	end
+	if (CalcFreeItemCellCount() < nCanO) then
+		Msg2Player("H\181nh trang c\199n \221t nh\202t"..nCanO.."\171 tr\232ng \174\211 nh\203n th\173\235ng m\232c n\181y, h\183y d\228n t\243i r\229i n\227i chuy\214n l\185i!")
+		-- Noi bang ".." chu KHONG dung format("%d",...): mot so o co the la nil va
+		-- format("%d", nil) nem loi cung tren Lua 4 => dong log dinh cuu moc lai giet moc.
+		WriteLog("[DaTau moc "..nTask.."] TUI DAY - KHONG PHAT DUOC, can "..nCanO..
+			" o - nguoi "..(GetName() or "?"))
+		return
+	end
+
+	for i=1, getn(tbCol) do
+		tl_linkaward_give(tbCol[i], nTask)
+	end
 
 end
 
 
--- »ñÈ¡Íæ¼ÒµÄÐÒÔËÖµ
+-- So O HANH TRANG mot moc can (KHONG phai so mon).
+-- CalcFreeItemCellCount() dem O 1x1 roi rac (ScriptFuns.cpp:5225) ma trang bi chiem
+-- nhieu o: Set Thien Hoang 9 mon = 24 O, Dinh Quoc 5 mon = 18 O, ngua 2x3 = 6 O.
+-- Chot bang so MON la sai: tui bao "du" nhung dat khong vua, va LuaAddItem2 khi
+-- khong dat duoc se NEM MON DANG CAM XUONG DAT. Moc chi ban DUNG MOT LAN => mat that.
+-- GiveAll=1 -> cong het; GiveAll=0 -> lay dong to nhat.
+function tl_getlinkawardslots(nTask)
+
+local i
+local nMax, nSum = 0, 0
+local nGiveAll = -1
+local nCol, n
+
+	if (Task_AwardLink == nil) then
+		return 0
+	end
+
+	for i=1, getn(Task_AwardLink) do
+		if (nTask == Task_AwardLink[i][1]) then
+			nCol = Task_AwardLink[i][2]
+			n = tl_linkaward_cells(nCol)
+			nSum = nSum + n
+			if (n > nMax) then
+				nMax = n
+			end
+			if (nGiveAll < 0) then
+				nGiveAll = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "GiveAll"))
+				if (nGiveAll == nil) then
+					nGiveAll = 0
+				end
+			end
+		end
+	end
+
+	if (nGiveAll == 1) then
+		return nSum
+	end
+
+	return nMax
+
+end
+
+
+function tl_linkaward_count(nCol)
+
+local n = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Count"))
+
+	if (n == nil) or (n < 1) then
+		n = 1
+	end
+
+	return n
+
+end
+
+
+-- So O hanh trang cua 1 dong (cot Cells da tinh san = Count * Width * Height).
+-- Neu chay tren bang CU (chua co cot Cells) thi lui ve so mon cho khoi vo.
+function tl_linkaward_cells(nCol)
+
+local n = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Cells"))
+
+	if (n == nil) or (n < 1) then
+		n = tl_linkaward_count(nCol)
+	end
+
+	return n
+
+end
+
+
+-- Phat 1 dong cua bang moc: dung so luong, dung khoa, dung han, co thong bao.
+function tl_linkaward_give(nCol, nTask)
+
+local nQual   = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Quality"))
+local nGenre  = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Genre"))
+local nDetail = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Detail"))
+local nPart   = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Particular"))
+local nLevel  = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Level"))
+local nFive   = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "GoodsFive"))
+local nMagic  = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "Magiclevel"))
+local nCount  = tl_linkaward_count(nCol)
+local nLock   = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "LockType"))
+local nExpDay = tonumber(TabFile_GetCell(TL_AWARDLINK, nCol, "ExpDay"))
+local m, nIdx
+
+	if (nLock == nil) then
+		nLock = 0
+	end
+	if (nExpDay == nil) then
+		nExpDay = 0
+	end
+
+	for m = 1, nCount do
+
+		if (nQual == 1) then
+			-- Genre = chi so record trong settings/item/goldequip.txt.
+			-- AddItem2(2=NATURE_GOLD, 0, idx, 0,0,0) -> Gen_Equipment(nature,...)
+			-- (KItemGenerator.CPP:1441) -> Gen_GoldEquipment(idx) -> GetGoldEquipRecord
+			-- (KBasPropTbl.CPP:367) -> KBPT_Equipment_Gold2 -> TABFILE_GOLDITEM_N
+			-- = goldequip.txt (KBasPropTbl.CPP:1744).
+			-- KHONG dung AddGoldItem: ham do doc GoldItem.txt la BANG CU khong con dung,
+			-- hai bang lech nhau dung 1 -> phat nham mon tren ca 3 bo.
+			-- AddItem2 co tra ve item index (ScriptFuns.cpp:4466) nen khoa/dat han duoc.
+			nIdx = AddItem2(2, 0, nGenre, 0, 0, 0)
+		else
+			-- Chu ky: AddItem(genre, detail, particular, level, series, nLuck, nItemLevel...)
+			-- Tham so 6 la nLUCK chu KHONG phai Magiclevel (ScriptFuns.cpp:4227 ->
+			-- nLuck = Lua_ValueToNumber(L,6) -> genXOpt). Ban dau dat nham nMagic vao day.
+			nIdx = AddItem(nGenre, nDetail, nPart, nLevel, nFive, 0, nMagic)
+		end
+
+		if (nIdx ~= nil) and (nIdx > 0) then
+			if (nLock ~= 0) then
+				SetPlayerItemLock(nIdx, nLock)
+			end
+			if (nExpDay > 0) then
+				AddTimeItem(nIdx, nExpDay * 86400)
+			end
+			tl_thongbao_vatpham(nIdx)
+			TaskLink_WriteLog(nTask, GetItemName(nIdx) or "?")
+		else
+			-- Noi bang ".." chu KHONG format("%d",...): nQual/nGenre den tu tonumber()
+			-- nen co the nil, ma format("%d", nil) nem loi cung tren Lua 4.
+			WriteLog("[DaTau moc "..nTask.."] PHAT THAT BAI (Quality="..(nQual or -1)..
+				" Genre="..(nGenre or -1)..") nguoi "..(GetName() or "?"))
+		end
+
+	end
+
+end
+
+
+-- Thong bao trong MAP khi nhan duoc vat pham thuong Da Tau.
+-- Chu game: "cho nhieu nguoi thay" -> Msg2Region = moi nguoi CUNG MAP
+-- (LuaMsgToAroundRegion loc theo m_SubWorldIndex, ScriptFuns.cpp:3341).
+-- Tran chuoi 256 byte va KHONG dong NUL (KPlayerChat.cpp:1778) -> giu duoi 200.
+-- LUON co 1 dau cach ASCII truoc moi the <color...> VA moi the dong <color>:
+-- TEncodeText (Text.cpp:468) coi byte >0x80 la byte dau cua cap 2 byte nen se
+-- NUOT dau '<' neu truoc no la day LE byte TCVN3 (loi that o map_index.lua:248).
+function tl_thongbao_vatpham(nItemIdx)
+
+local szTen
+
+	if (nItemIdx == nil) or (nItemIdx <= 0) then
+		return
+	end
+
+	szTen = GetItemName(nItemIdx)
+	if (szTen == nil) or (szTen == "") then
+		return
+	end
+
+	Msg2Region(SubWorldIdx2ID(SubWorld),
+		" <color=Yellow>"..GetName().." <color>".."nh\203n \174\173\238c"..
+		" <color=Gold>"..szTen.." <color>".."- D\183 T\200u l\199n"..
+		" <color=AYellow>"..GetTask(ID_TASKLINK_LIMITNUM).." <color>".."trong ng\181y.")
+
+end
+
 function tl_getplayerlucky()
 
 local nLucky = GetLucky(0);

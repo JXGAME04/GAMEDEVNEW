@@ -1,6 +1,7 @@
 -- ruong_datau_tasklink.lua - [JX1 PORT 16/08/2026, sua v2 theo chu game]
 -- "Bao ruong than bi cua Da Tau" (6/1/2383; = item 2374 ban Linux).
 -- Goc Linux (activity 17 + bang 71): can 6 Huyen Thien Chuy + 1 o trong.
+-- [PB 19/08/2026 chu game chot] HA XUONG CON 1 Huyen Thien Chuy la mo duoc.
 -- [v2 - chu game chot] BO 3 lenh Van Loc / Thuong Lang / Huyen Vien
 -- (2+0.05+0.008 = 2.058%%) -> don vao Khieu chien Le bao: 27.942+2.058 = 30%% tron.
 -- Bang roll x1000 (1..100000):
@@ -9,15 +10,15 @@
 --   3%% Cam nang doi troi dat (param 60) | 2%% Tien Thao Lo dac biet x3
 
 function main(nItemIndex)
-	if (GetItemCount(0, 6, 1, 2357) < 6) then
-		Say("CÇn 6 HuyÒn Thiªn Chïy, c¸c h¹ ®em kh«ng ®ñ sè l­îng!", 0)
+	if (GetItemCount(0, 6, 1, 2357) < 1) then
+		Say("C\199n 1 Huy\210n Thi\170n Ch\239y, c\184c h\185 \174em kh\171ng \174\241 s\232 l\173\238ng!", 0)
 		return 1
 	end
 	if (CalcFreeItemCellCount() < 4) then -- [PB 17/08] nhanh 2% can 3 o + phong nguoi cam do tren chuot
 		Say("Hµnh trang ®· ®Çy, h·y s¾p xÕp l¹i cho ng¨n n¾p.", 0)
 		return 1
 	end
-	if (ConsumeItem(6, 0, 6, 1, 2357) ~= 6) then
+	if (ConsumeItem(1, 0, 6, 1, 2357) ~= 1) then
 		return 1
 	end
 	local n = C_Random(1, 100000)

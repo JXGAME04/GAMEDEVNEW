@@ -1,66 +1,69 @@
-
--- ¹ÖÎïµØÍ¼ÒÔ¼°É½ºÓÉçğ¢Í¼²ĞÆ¬µôÂä½Å±¾
--- Edited by peres
--- 2004/12/25 Ê¥µ®½ÚÍíÉÏ
+-- Cuon Mat Chi (6/1/212) - cong task 1025 hoac manh SHXT 1027
+-- [PB 19/08] SUA LOI CO SAN: ban cu bao nham la "Dia Do Chi" trong file Mat Chi.
+-- [PB 19/08/2026] Them MAU + TEN MAP + so tam hien tai vao thong bao.
+-- File nay THUAN ASCII: tieng Viet viet bang escape thap phan \\ddd cua Lua 4.
+--
+-- KHONG DUOC DOI LOI VAN: auto Da Tau (CoreShell.cpp:4658) do bang strstr cac cum
+--   "B\271n nh\313n \256\255\356c m\351t t\312m" / "t\346ng c\351ng" / " t\312m."
+-- khai trong KDaTauTables.h. Doi chu = auto khong dem duoc cuon nua.
+-- Chi duoc BOC THE MAU quanh chung (DT_NumAfter bo qua ky tu khong phai so).
+--
+-- Dau cach ASCII truoc the <color...> la BAT BUOC khi phia truoc la chu Viet
+-- (Text.cpp:468 nuot dau '<' sau day LE byte >0x80).
 
 IncludeLib("BATTLE");
-Include("\\script\\task\\newtask\\newtask_head.lua"); 
-Include("\\script\\task\\newtask\\map_index.lua"); -- ÓÃÓÚ»ñÈ¡µØÍ¼µÄĞÅÏ¢
-Include("\\script\\task\\newtask\\lib_setmembertask.lua"); -- ÓÃÓÚÑ­»·¸Ä±ä¶ÓÓÑµÄÈÎÎñ±äÁ¿
+Include("\\script\\task\\newtask\\newtask_head.lua");
+Include("\\script\\task\\newtask\\map_index.lua");
+Include("\\script\\task\\newtask\\lib_setmembertask.lua");
 
 function AddMapValues()
 
-local myMapID, myMapName, myMapX, myMapY -- ÓÃÓÚ»ñÈ¡µØÍ¼Ö¾ĞÅÏ¢µÄ±äÁ¿
+local myMapID, myMapName, myMapX, myMapY
 local myTaskType = nt_getTask(1021)
-local nWorldMaps = nt_getTask(1027) -- ¿´¿´Íæ¼ÒÉíÉÏÓĞ¶àÉÙ¸öÉ½ºÓÉçğ¢Í¼
-local myMapNum = nt_getTask(1025) -- ÅĞ¶ÏÍæ¼ÒÉíÉÏÓĞ¶àÉÙÕÅµØÍ¼Ö¾
+local nWorldMaps = nt_getTask(1027)
+local myMapNum = nt_getTask(1025)
 
 myMapID = SubWorldIdx2ID( SubWorld )
 
 	if (myTaskType == 4) then
-		
+
 		myMapName, myMapX, myMapY = tl_getMapInfo(myMapID)
-		
-		if (myMapName == 0) or (myMapName == nil) then -- ·ÀÖ¹¿Õ×Ö·û´¦Àí
-			myMapName = ""
+
+		-- [PB 19/08] tl_getMapInfo chi phu 204 map, ngoai bang tra 0/nil. Ban cu de ten
+		-- RONG lam cau cut; nay lui ve so hieu map cho con doc duoc.
+		if (myMapName == 0) or (myMapName == nil) or (myMapName == "") then
+			myMapName = "map "..myMapID
 		end
-		
-		-- ¸øÍæ¼ÒÔö¼ÓÒ»¾íµ±Ç°µØÍ¼µÄµØÍ¼Ö¾
+
 		if (nt_getTask(1031) == myMapID) then
-				
+
 			if (GetByte(nt_getTask(1032),1) == 2) then
-			
+
 				myMapNum = myMapNum + 1
 				nt_setTask(1025,myMapNum)
-				Msg2Player("B¹n nhËn ®­îc mét tÊm"..myMapName.."§Şa §å chİ! HiÖn t¹i b¹n cã tæng céng"..myMapNum.." tÊm.");
-				
-				return 0
-				
-			end
-			
-		end
-		
-		-- ¸øÍæ¼ÒÔö¼ÓÒ»¸öÉ½ºÓÉçğ¢Í¼²ĞÆ¬
-		nWorldMaps = nWorldMaps + 1
-		nt_setTask(1027,nWorldMaps)
-		Msg2Player("B¹n nhËn ®­îc mét m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céngt"..nWorldMaps.." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
-		
-	else
-		-- ¸øÍæ¼ÒÔö¼ÓÒ»¸öÉ½ºÓÉçğ¢Í¼²ĞÆ¬
-		nWorldMaps = nWorldMaps + 1
-		nt_setTask(1027,nWorldMaps)
-		Msg2Player("B¹n nhËn ®­îc mét m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céngt"..nWorldMaps.." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
-	end
+				Msg2Player("B\185n nh\203n \174\173\238c m\233t t\202m".." <color=Yellow>".."M\203t Ch\216".." <color>".."t\185i"..
+					" <color=Cyan>"..myMapName.." <color>".."! Hi\214n t\185i b\185n c\227 t\230ng c\233ng"..
+					" <color=AYellow>"..myMapNum.."<color>".." t\202m.");
 
+				return 0
+			end
+		end
+
+		nWorldMaps = nWorldMaps + 1
+		nt_setTask(1027,nWorldMaps)
+		Msg2Player("B\185n nh\203n \174\173\238c m\233t m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c! Hi\214n t\185i b\185n c\227 t\230ng c\233ng".." <color=AYellow>"..nWorldMaps.."<color>".." m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c.");
+
+	else
+		nWorldMaps = nWorldMaps + 1
+		nt_setTask(1027,nWorldMaps)
+		Msg2Player("B\185n nh\203n \174\173\238c m\233t m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c! Hi\214n t\185i b\185n c\227 t\230ng c\233ng".." <color=AYellow>"..nWorldMaps.."<color>".." m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c.");
+	end
 
 end
 
--- [PB 17/08/2026] Vong chia to doi viet lai theo binding JX1:
--- GetTeamSize dem CA doi truong (memnum+1) nhung GetTeamMember(i) chi doc
--- m_nMember[] (khong chua doi truong) va slot cuoi la -1 -> vong cu (i=1..size)
--- lam doi truong mat phan + loi nil o slot trong. Quy uoc moi (DLL 17/08):
--- GetTeamMember(0) = doi truong. Cong cho nguoi nhat truoc, roi cac thanh vien
--- khac (bo slot <=0 va bo trung nguoi nhat).
+-- [PB 17/08/2026] Vong chia to doi theo binding JX1: GetTeamMember(0) = doi truong.
+-- Luu y: bien SubWorld KHONG doi trong vong lap, nen ten map trong thong bao cua
+-- dong doi la map cua NGUOI NHAT (thuc te ca doi thuong cung map).
 function TLG_ChiaToDoi()
 	local nMe = PlayerIndex
 	AddMapValues()
@@ -83,8 +86,8 @@ function PickUp( nItemIndex, nPlayerIndex )
 	return 0
 end
 
--- click-phai cuon trong tui: TRU CUON TRUOC roi moi chia (chong farm neu
--- co loi giua chung - PB 17/08 phat hien exploit khi remove nam sau vong chia)
+-- click-phai cuon trong tui: TRU CUON TRUOC roi moi chia (chong farm neu co loi
+-- giua chung - PB 17/08 phat hien exploit khi remove nam sau vong chia)
 function main(nItemIndex)
 	RemoveItemByIndex(nItemIndex)
 	TLG_ChiaToDoi()

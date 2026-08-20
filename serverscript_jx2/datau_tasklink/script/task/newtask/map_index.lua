@@ -245,7 +245,7 @@ local myMapID, myMapName, myMapX, myMapY
 	myMapName, myMapX, myMapY = tl_getMapInfo(myMapID)
 			
 	if (myMapName ~= 0) then
-		Say("Kh¸ch quan muèn ®Õn khu vùc lµm nhiÖm D· TÈu ".."<color=yellow>"..myMapName.."<color>".."­? Ta sÏ ®­a ®i miÔn phİ!",2,"§óng vËy! Mau ®­a ta ®i!/tl_moveToTaskMap_Confirm","Th«i khái! Ta cßn viÖc kh¸c!/tl_moveToTaskMap_Cancel");
+		Say("Kh¸ch quan muèn ®Õn khu vùc lµm nhiÖm D· TÈu ".."<color=yellow>"..myMapName.." <color>".."­? Ta sÏ ®­a ®i miÔn phİ!",2,"§óng vËy! Mau ®­a ta ®i!/tl_moveToTaskMap_Confirm","Th«i khái! Ta cßn viÖc kh¸c!/tl_moveToTaskMap_Cancel");
 	else
 		Say("Xin lçi! N¬i quı kh¸ch muèn ®Õn qu¸ hiÓm trë! Hay lµ tù ®i vËy!",0);
 	end

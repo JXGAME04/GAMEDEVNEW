@@ -121,6 +121,11 @@ function Task_NewVersionAward()
 		end
 		tbAwardTemplet:GiveAwardByList({tbProp = {6, 1, 2383, 1, 0, 0}, nCount = 5}, "seasonnpc_40task_ruong")
 		Msg2Player("Hoan thanh 40 nhiem vu, nhan them 5 B¶o r­¬ng thÇn bÝ cña D· TÈu!");
+		-- [PB 19/08] Bang chu TOAN SERVER (chu game: "cho toan bo nguoi trong game thay").
+		-- AddGlobalCountNews(chuoi, giay) - tran 255 byte (ScriptFuns.cpp:1186), giu duoi 240.
+		AddGlobalCountNews(" <color=Yellow>"..GetName().." <color>".."\174\183 ho\181n th\181nh"..
+			" <color=AYellow>40 <color>".."nhi\214m v\244 D\183 T\200u trong ng\181y, nh\203n"..
+			" <color=Gold>".."100 tri\214u kinh nghi\214m v\181 5 B\182o r\173\172ng th\199n b\221".." <color>", 10)
 	end	
 	
 end
@@ -146,7 +151,7 @@ end;
 
 function menglanjie()
 	if (GetExtPoint(0) <= 0 or GetLevel() < 30) then
-		Say("Xin lçi! ChØ cã ng­êi ch¬i tõ cÊp <color=red>30, ®· n¹p thÎ<color> míi cã thÓ tham gia ho¹t ®éng nµy", 0)
+		Say("Xin lçi! ChØ cã ng­êi ch¬i tõ cÊp <color=red>30, ®· n¹p thÎ <color> míi cã thÓ tham gia ho¹t ®éng nµy", 0)
 		return 
 	end;
 	local tab_Content = {
@@ -453,8 +458,11 @@ end
 -- Íæ¼ÒÒÑ¾­Íê³ÉÈÎÎñÇ°À´¸øÒ°ÛÅÑéÊÕ
 function Task_Accept()
 	--2007-09-19 Ôö¼ÓÎïÆ·½±ÀøÊ±µÄ±³°ü¿Õ¼äÅÐ¶Ï
-	if (CalcFreeItemCellCount() < 5) then
-		Say("Hµnh trang ®· ®Çy, h·y s¾p xÕp l¹i cho ng¨n n¾p.",0);
+	-- [PB 19/08] Moc set (1000/3000/6000/7000) phat toi 9 mon MOT LUC va chi ban DUNG
+	-- MOT LAN tai dung con so do => tui day la MAT VINH VIEN. Chan tu khau nop.
+	local nCanO = 5 + tl_getlinkawardslots(tl_counttasklinknum(1) + 1)
+	if (CalcFreeItemCellCount() < nCanO) then
+		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng - h\183y s\190p x\213p l\185i cho ng\168n n\190p.",0);
 		return
 	end;
 local myTaskType = tl_getplayertasktype()
@@ -785,7 +793,16 @@ function Task_GiveAward()
 	local myGoodsText = ""
 	local ShowText = {"","",""}
 
-	local nTotalTaskNum = tl_counttasklinknum(1); -- »ñÈ¡µ±Ç°Íæ¼ÒÒ»¹²×öÁË¶àÉÙ´ÎÈÎÎñ
+	local nTotalTaskNum = tl_counttasklinknum(1); 
+
+	-- [PB 19/08] Chan truoc khi mo cua so thuong: phai du o cho CA phan thuong
+	-- chon o cua so LAN phan thuong moc phat ngay sau do (PayPlayerLinkAward).
+	local nCanO = 5 + tl_getlinkawardslots(nTotalTaskNum)
+	if (CalcFreeItemCellCount() < nCanO) then
+		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng m\237i nh\203n \174\173\238c ph\199n th\173\235ng - h\183y d\228n t\243i r\229i n\227i chuy\214n l\185i.",0);
+		return
+	end
+-- »ñÈ¡µ±Ç°Íæ¼ÒÒ»¹²×öÁË¶àÉÙ´ÎÈÎÎñ
 	-- [JX1 PORT 15/08/2026] item goc 6/1/2374 ben JX2 = "Bao ruong than bi cua Da Tau";
 	-- 6/1/2374 ben JX1 lai la "Bang bach kim" (vat lieu quy) -> phat nham la su co kinh te.
 	-- TAM KHOA moc-10 bang co DATAU_MOC10_BAT; chu game chon item ruong roi thay id + dat DATAU_MOC10_BAT = 1.
@@ -878,14 +895,17 @@ if (tl_gettaskcourse() == 3) then
 	return
 end
 	--2007-09-19 Ôö¼ÓÎïÆ·½±ÀøÊ±µÄ±³°ü¿Õ¼äÅÐ¶Ï
-	if (CalcFreeItemCellCount() < 5) then
-		Say("Hµnh trang ®· ®Çy, h·y s¾p xÕp l¹i cho ng¨n n¾p.",0);
+	-- [PB 19/08] Con phai du cho ca phan thuong moc phat ngay sau day (PayPlayerLinkAward).
+	local nCanO = 5 + tl_getlinkawardslots(tl_counttasklinknum(1))
+	if (CalcFreeItemCellCount() < nCanO) then
+		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng - h\183y s\190p x\213p l\185i cho ng\168n n\190p.",0);
 		return
 	end;
 	
 --	tl_print("µÃµ½ÁË½±ÀøÎïÆ·±àºÅ£º"..myQuality..myGenre..myDetail..myParticular..myLevel..myGoodsFive);
+	local nItemIndex = 0
 	if (myQuality == 0) then
-		local nItemIndex =  AddItem(myGenre,myDetail,myParticular,myLevel,myFive,0,0)
+		nItemIndex =  AddItem(myGenre,myDetail,myParticular,myLevel,myFive,0,0)
 		if (GetProductRegion() == "vn") then
 			-- LLG_ALLINONE_TODO_20070802
 			if (myDetail==238) or (myDetail==239) or (myDetail==240) or (myDetail==252) then
@@ -910,12 +930,14 @@ end
 			WriteLog(" [Ghi nhí nhËn phÇn th­ëng]"..date(" [%y n¨m %m th¸ng %d ngµy  %H giê %M phót]").." [mËt m·:"..GetAccount().."] [nh©n vËt:"..GetName().."]".."NhËn ®­îc 1 "..szName);
 		end
 	else
-		AddGoldItem(0,myGenre)
+		nItemIndex = AddItem2(2, 0, myGenre, 0, 0, 0)
 		AddGlobalNews("Ng­êi ch¬i "..GetName().." ®· hoµn thµnh nhiÖm vô D· TÈu nªn ®· nhËn ®­îc 1 trang bÞ Hoµng Kim!!!");
 		WriteLog(" [Ghi nhí nhËn phÇn th­ëng]"..date(" [%y n¨m %m th¸ng %d ngµy  %H giê %M phót]")..": Tµi kho¶n"..GetAccount()..", nh©n vËt"..GetName().."Trong nhiÖm vô liªn tiÕp nhËn ®­îc phÇn th­ëng lµ trang bÞ Hoµng Kim sè thø tù lµ:"..myGenre)
 	end
 	Msg2Player("B¹n nhËn ®­îc mét phÇn th­ëng nhiÖm vô!");
 	
+	-- [PB 19/08] bao cho ca map biet (chu game: "cho nhieu nguoi thay")
+	tl_thongbao_vatpham(nItemIndex)
 	tl_settaskcourse(3)
 	PayPlayerLinkAward();
 	
@@ -1030,7 +1052,7 @@ local myNewCancel = GetTask(DEBUG_TASKVALUE);
 	tl_settaskstate(4, myCancel);
 	
 	if myCancel<=254 then
-		Msg2Player("B¹n nhËn ®­îc <color=green>1 c¬ héi hñy bá nhiÖm vô<color>!");
+		Msg2Player("B¹n nhËn ®­îc <color=green>1 c¬ héi hñy bá nhiÖm vô <color>!");
 	end;
 
 	WriteLog(" [Ghi nhí nhËn phÇn th­ëng]"..
@@ -1378,4 +1400,18 @@ end
 -- co phat nhu cu.
 function PB_BotDoiNhiemVu()
 	tl_dealtask()
+end
+
+-- ============================================================
+-- [TaskGuide 19/08/2026] Nut 'Bo nhiem vu' tren bang Chi nam nhiem vu (F11).
+-- Mo dung hop xac nhan huy CHUAN (Task_CancelConfirm): du luat tru luot huy,
+-- phat huy lau, huy bang 100 manh SHXT - y het dung truoc NPC chon muc huy.
+-- Duoc goi tu xa qua UI_CMD case 6 (KProtocolProcess.cpp::UiCommandScript).
+-- ============================================================
+function tg_quit()
+	if tl_gettaskcourse() ~= 1 then
+		return
+	end
+	nt_setTask(1045, 1)
+	Task_CancelConfirm()
 end
