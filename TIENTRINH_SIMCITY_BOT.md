@@ -397,3 +397,6 @@ grep -a "bang duong XA PHU" bot.log | wc -l   # so bot len bai dung duong
 grep -a "\[BotNeo\]\|\[BotCuu\]" bot.log       # ky vong giam manh (toa do THP chuan)
 ```
 Mắt thường: bot chết hồi sinh ở thành → chạy bộ tới Xa Phu → biến mất → hiện ra ở bãi đúng cấp; người chơi thật bấm Xa Phu thấy menu mới "Len ban do luyen cong (20 - 90)". Bot cũ đang đứng ở 11 bãi bị loại sẽ lần lượt phù về thành trong ~1 phút đầu rồi tỏa đi xe.
+
+### Bổ sung 03:1x — skill 90 (chủ game: "bot cấp 80 chưa thấy nhận được các skill 90")
+Bot đạt cấp 80 (mỗi lần lên cấp, gate ) tự gọi đúng đường NPC môn phái:  trong  — nhận trọn bộ skill 90 của phái + skill 120 + chiêu 210, log , ép chọn lại chiêu đánh. Gọi lặp sau nạp-bot-cũ vô hại vì  chỉ NÂNG cấp chiêu, không bao giờ hạ (KSkillList.cpp:434-447). DLL md5  (bản Xa Phu lùi ).

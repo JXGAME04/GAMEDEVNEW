@@ -235,6 +235,9 @@ struct PB_Bot
 	unsigned int nVuKhiTick;                  // lan phat lai vu khi gan nhat
 	int          nVuKhiThu;                   // so lan phat lai vu khi (tran 5)
 	int          nTrangBiLevel;               // cap lan cuoi da thu mac do (0 = chua)
+	int          nHoc90;                      // (20/08) 1 = da goi hoc bo ky nang 90 doi nay
+	                                          // (bot cu nap lai goi lai 1 lan - vo hai vi
+	                                          // KSkillList::Add khong bao gio HA cap chieu)
 	unsigned int nQhtTick;                    // lan cham Que Hoa Tuu gan nhat
 	// ---- Da Tau (19/08 trua) ----
 	unsigned int nDaTauTick;                  // gion nhip hanh dong Da Tau
@@ -986,7 +989,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nAuraSkill = 0; b.nAuraLevel = 0; b.nBuffTick = 0; b.nAuraPhien = 0;
 		b.nCuuKiemTick = 0;  b.nCuuTick = 0;  b.nAStarThua = 0;   // khe tai dung mang
 		b.nVuKhiTick = 0;    b.nVuKhiThu = 0;                     // rac cu -> phai xoa
-		b.nTrangBiLevel = 0;  b.nQhtTick = 0;
+		b.nTrangBiLevel = 0;  b.nQhtTick = 0;  b.nHoc90 = 0;
 		b.nDaTauTick = 0;  b.nDaTauNghi = 0;  b.nDaTauNut = 0;  b.nDaTauDaGhi = 0;
 		b.nDaTauChon = 0;  b.nDaTauKe = 0;    b.nDaTauHan = 0;  b.nDaTauThu = 0;
 		b.nBanSap = 0;     b.nBanSapXong = 0;  b.nBanSapNgoi = 0;  b.nNguaTick = 0;
@@ -2244,6 +2247,27 @@ static void pb_TrangBiTheoCap(int nIdx, int nNpcIdx, PB_Bot& b)
 		pb_AllocAttribPoints(nIdx, b.nFaction);
 
 	const int nLevel = Npc[nNpcIdx].m_Level;
+
+	// ---- 1b. (20/08 - chu game: "bot cap 80 chua thay nhan duoc cac skill 90
+	// de luyen skill") hoc bo ky nang 90 DUNG DUONG NPC MON PHAI: goi
+	// show_kynang90(nCurFac) cua hocvocong.lua - ham nay tu doi GetLevel >= 80
+	// roi AddMagic tung skill 90 cua phai + skill 120 + chieu 210, y het nguoi
+	// choi bam NPC su phu. nCurFac 1-based = m_nCurFaction + 1 (PHAI truyen vi
+	// than ham index SKILL90_ARRAY[nCurFac] truc tiep - de nil la loi lua).
+	// Goi lai sau nap-bot-cu vo hai: KSkillList::Add chi NANG cap khi cao hon,
+	// khong bao gio ha (KSkillList.cpp:434-447).
+	if (nLevel >= 80 && !b.nHoc90 && b.nFaction >= 0)
+	{
+		b.nHoc90 = 1;
+		Player[nIdx].ExecuteScript((char*)"\\script\\global\\hocvocong.lua",
+		                           (char*)"show_kynang90",
+		                           (int)Player[nIdx].m_cFaction.m_nCurFaction + 1,
+		                           false);
+		pb_Log("[BotSkill90] %s cap %d hoc bo ky nang 90 (phai %d)\n",
+		       Player[nIdx].m_PlayerName, nLevel,
+		       (int)Player[nIdx].m_cFaction.m_nCurFaction + 1);
+		b.nAtkSkill = 0;   // chon lai chieu danh - co the co chieu 90 manh hon
+	}
 
 	// ---- 2. bo Kim Phong: mon nao chua mac ma du dieu kien thi mac ----
 	for (int k = 0; k < 9; k++)
