@@ -123,9 +123,9 @@ function Task_NewVersionAward()
 		Msg2Player("Hoan thanh 40 nhiem vu, nhan them 5 B∂o r≠¨ng th«n b› cÒa D∑ T»u!");
 		-- [PB 19/08] Bang chu TOAN SERVER (chu game: "cho toan bo nguoi trong game thay").
 		-- AddGlobalCountNews(chuoi, giay) - tran 255 byte (ScriptFuns.cpp:1186), giu duoi 240.
-		AddGlobalCountNews(" <color=Yellow>"..GetName().." <color>".."\174\183 ho\181n th\181nh"..
-			" <color=AYellow>40 <color>".."nhi\214m v\244 D\183 T\200u trong ng\181y, nh\203n"..
-			" <color=Gold>".."100 tri\214u kinh nghi\214m v\181 5 B\182o r\173\172ng th\199n b\221".." <color>", 10)
+		AddGlobalCountNews(" <color=Yellow>"..GetName().." <color>".."Æ∑ hoµn thµnh"..
+			" <color=AYellow>40 <color>".."nhi÷m vÙ D∑ T»u trong ngµy, nhÀn"..
+			" <color=Gold>".."100 tri÷u kinh nghi÷m vµ 5 B∂o r≠¨ng th«n b›".." <color>", 10)
 	end	
 	
 end
@@ -462,7 +462,7 @@ function Task_Accept()
 	-- MOT LAN tai dung con so do => tui day la MAT VINH VIEN. Chan tu khau nop.
 	local nCanO = 5 + tl_getlinkawardslots(tl_counttasklinknum(1) + 1)
 	if (CalcFreeItemCellCount() < nCanO) then
-		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng - h\183y s\190p x\213p l\185i cho ng\168n n\190p.",0);
+		Say("Hµnh trang Æ∑ Æ«y, c«n ›t nh t"..nCanO.."´ trËng - h∑y sæp x’p lπi cho ng®n næp.",0);
 		return
 	end;
 local myTaskType = tl_getplayertasktype()
@@ -817,7 +817,7 @@ function Task_GiveAward()
 	-- chon o cua so LAN phan thuong moc phat ngay sau do (PayPlayerLinkAward).
 	local nCanO = 5 + tl_getlinkawardslots(nTotalTaskNum)
 	if (CalcFreeItemCellCount() < nCanO) then
-		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng m\237i nh\203n \174\173\238c ph\199n th\173\235ng - h\183y d\228n t\243i r\229i n\227i chuy\214n l\185i.",0);
+		Say("Hµnh trang Æ∑ Æ«y, c«n ›t nh t"..nCanO.."´ trËng mÌi nhÀn Æ≠Óc ph«n th≠Îng - h∑y d‰n tÛi rÂi n„i chuy÷n lπi.",0);
 		return
 	end
 -- ªÒ»°µ±«∞ÕÊº““ªπ≤◊ˆ¡À∂‡…Ÿ¥Œ»ŒŒÒ
@@ -916,7 +916,7 @@ end
 	-- [PB 19/08] Con phai du cho ca phan thuong moc phat ngay sau day (PayPlayerLinkAward).
 	local nCanO = 5 + tl_getlinkawardslots(tl_counttasklinknum(1))
 	if (CalcFreeItemCellCount() < nCanO) then
-		Say("H\181nh trang \174\183 \174\199y, c\199n \221t nh\202t"..nCanO.."\171 tr\232ng - h\183y s\190p x\213p l\185i cho ng\168n n\190p.",0);
+		Say("Hµnh trang Æ∑ Æ«y, c«n ›t nh t"..nCanO.."´ trËng - h∑y sæp x’p lπi cho ng®n næp.",0);
 		return
 	end;
 	

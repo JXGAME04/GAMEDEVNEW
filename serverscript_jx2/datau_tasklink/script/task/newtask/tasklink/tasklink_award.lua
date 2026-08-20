@@ -526,7 +526,7 @@ local nCanO = 0
 		nCanO = nCanO + tl_linkaward_cells(tbCol[i])
 	end
 	if (CalcFreeItemCellCount() < nCanO) then
-		Msg2Player("H\181nh trang c\199n \221t nh\202t"..nCanO.."\171 tr\232ng \174\211 nh\203n th\173\235ng m\232c n\181y, h\183y d\228n t\243i r\229i n\227i chuy\214n l\185i!")
+		Msg2Player("Hµnh trang c«n ›t nh t"..nCanO.."´ trËng Æ” nhÀn th≠Îng mËc nµy, h∑y d‰n tÛi rÂi n„i chuy÷n lπi!")
 		-- Noi bang ".." chu KHONG dung format("%d",...): mot so o co the la nil va
 		-- format("%d", nil) nem loi cung tren Lua 4 => dong log dinh cuu moc lai giet moc.
 		WriteLog("[DaTau moc "..nTask.."] TUI DAY - KHONG PHAT DUOC, can "..nCanO..
@@ -709,9 +709,9 @@ local szSL = ""
 	end
 
 	Msg2Region(SubWorldIdx2ID(SubWorld),
-		" <color=Yellow>"..GetName().." <color>".."nh\203n \174\173\238c"..
-		" <color=Gold>"..szTen..szSL.." <color>".."- D\183 T\200u l\199n"..
-		" <color=AYellow>"..GetTask(ID_TASKLINK_LIMITNUM).." <color>".."trong ng\181y.")
+		" <color=Yellow>"..GetName().." <color>".."nhÀn Æ≠Óc"..
+		" <color=Gold>"..szTen..szSL.." <color>".."- D∑ T»u l«n"..
+		" <color=AYellow>"..GetTask(ID_TASKLINK_LIMITNUM).." <color>".."trong ngµy.")
 
 end
 

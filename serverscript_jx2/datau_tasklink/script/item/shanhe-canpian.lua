@@ -18,7 +18,7 @@ function main(nItemIdx)
 	if (nThem > 0) then
 		nWorldMaps = nWorldMaps + nThem
 		nt_setTask(1027,nWorldMaps)
-		Msg2Player("B\185n nh\203n \174\173\238c".." <color=Yellow>"..nThem.."<color> ".."m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c! Hi\214n t\185i b\185n c\227 t\230ng c\233ng"..
-			" <color=AYellow>"..nWorldMaps.."<color>".." m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c.");
+		Msg2Player("B¹n nhËn ®­îc".." <color=Yellow>"..nThem.."<color> ".."m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céng"..
+			" <color=AYellow>"..nWorldMaps.."<color>".." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
 	end
 end

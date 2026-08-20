@@ -4,7 +4,8 @@
 -- File nay THUAN ASCII: tieng Viet viet bang escape thap phan \\ddd cua Lua 4.
 --
 -- KHONG DUOC DOI LOI VAN: auto Da Tau (CoreShell.cpp:4658) do bang strstr cac cum
---   "B\271n nh\313n \256\255\356c m\351t t\312m" / "t\346ng c\351ng" / " t\312m."
+--   "Ban nhan duoc mot tam" / "tong cong" / " tam."
+--   (viet khong dau o day cho de doc; chuoi THAT nam trong ma ben duoi)
 -- khai trong KDaTauTables.h. Doi chu = auto khong dem duoc cuon nua.
 -- Chi duoc BOC THE MAU quanh chung (DT_NumAfter bo qua ky tu khong phai so).
 --
@@ -41,9 +42,9 @@ myMapID = SubWorldIdx2ID( SubWorld )
 
 				myMapNum = myMapNum + 1
 				nt_setTask(1025,myMapNum)
-				Msg2Player("B\185n nh\203n \174\173\238c m\233t t\202m".." <color=Yellow>".."M\203t Ch\216".." <color>".."t\185i"..
-					" <color=Cyan>"..myMapName.." <color>".."! Hi\214n t\185i b\185n c\227 t\230ng c\233ng"..
-					" <color=AYellow>"..myMapNum.."<color>".." t\202m.");
+				Msg2Player("B¹n nhËn ®­îc mét tÊm".." <color=Yellow>".."MËt ChØ".." <color>".."t¹i"..
+					" <color=Cyan>"..myMapName.." <color>".."! HiÖn t¹i b¹n cã tæng céng"..
+					" <color=AYellow>"..myMapNum.."<color>".." tÊm.");
 
 				return 0
 			end
@@ -51,12 +52,12 @@ myMapID = SubWorldIdx2ID( SubWorld )
 
 		nWorldMaps = nWorldMaps + 1
 		nt_setTask(1027,nWorldMaps)
-		Msg2Player("B\185n nh\203n \174\173\238c m\233t m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c! Hi\214n t\185i b\185n c\227 t\230ng c\233ng".." <color=AYellow>"..nWorldMaps.."<color>".." m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c.");
+		Msg2Player("B¹n nhËn ®­îc mét m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céng".." <color=AYellow>"..nWorldMaps.."<color>".." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
 
 	else
 		nWorldMaps = nWorldMaps + 1
 		nt_setTask(1027,nWorldMaps)
-		Msg2Player("B\185n nh\203n \174\173\238c m\233t m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c! Hi\214n t\185i b\185n c\227 t\230ng c\233ng".." <color=AYellow>"..nWorldMaps.."<color>".." m\182nh b\182n \174\229 S\172n H\181 X\183 T\190c.");
+		Msg2Player("B¹n nhËn ®­îc mét m¶nh b¶n ®å S¬n Hµ X· T¾c! HiÖn t¹i b¹n cã tæng céng".." <color=AYellow>"..nWorldMaps.."<color>".." m¶nh b¶n ®å S¬n Hµ X· T¾c.");
 	end
 
 end
