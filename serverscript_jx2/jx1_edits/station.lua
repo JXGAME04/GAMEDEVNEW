@@ -6,6 +6,7 @@ Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\lib\\lib_ham.lua")
 Include("\\script\\lib\\lib_vatpham.lua")
 Include("\\script\\log_game\\save_log.lua")
+Include("\\script\\task\\newtask\\map_index.lua") -- [DA TAU 17/08] tl_getMapInfo cho he tasklink moi
 Include("\\script\\tinhnang\\datau\\lib_datau.lua")
 Include("\\script\\event\\kiemmonquan\\lib_kmq.lua")
 Include("\\script\\missions\\citywar_global\\station_ctc.lua")	-- DOT E (E5): GoCityWar/Attack/Defend
@@ -334,6 +335,27 @@ function  OnCancel()
 end
 
 function godatau()
+	-- [DA TAU 17/08/2026] he tasklink moi (ban goc Linux): loai 4 luu map dich o task 1031.
+	-- Dung dung du lieu + hanh vi cua tl_moveToTaskMap_Confirm (map_index.lua):
+	-- NewWorld toi toa do TL_MAPTRAPINDEX, SetFightState(1), that bai thi bao va thoi.
+	if (GetTask(1021) == 4 and GetTask(1031) > 0) then
+		local nMapIDMoi = GetTask(1031)
+		local szTenMap, nXMoi, nYMoi = tl_getMapInfo(nMapIDMoi)
+		if (szTenMap == 0 or szTenMap == nil or szTenMap == "") then
+			Talk(1,"","Xin lçi! N¬i quý kh¸ch muèn ®Õn qu¸ hiÓm trë! Hay lµ tù ®i vËy!")
+			return
+		end
+		local nKetQua = NewWorld(nMapIDMoi, nXMoi, nYMoi)
+		SetFightState(1)
+		if (nKetQua == 0) then
+			SetFightState(0)
+			Msg2Player("Xin lçi! HiÖn vÉn ch­a chuyÓn ®i!")
+			return
+		end
+		Msg2Player("Ngåi yªn chóng ta ®i "..szTenMap)
+		return
+	end
+	-- nhanh he CU (Fong Kieu 2021) giu nguyen cho nhan vat con du lieu cu
 	if (GetTask(T_TIMDOCHI) >= 1 or GetTask(T_TIMMATCHI) >= 1 or GetTask(T_DanhQuai) >= 1) then
 		local a = GetTask(T_TIMDOCHI)
 		local b = GetTask(T_TIMMATCHI)
@@ -369,3 +391,89 @@ end
 
 
 
+
+-- ============================================================================
+-- (19/08 dem - chu game) LEN BAN DO LUYEN CONG 20-90 tu Xa Phu.
+-- Toa do CHEP NGUYEN VAN tu item Than Hanh Phu (script/item/ib/shenxingfu.lua
+-- TRAIN_ARRAY1/2; cac dong dang waypoint da tra bang settings/WayPoint.txt) -
+-- diem dap CHINH THONG cua game, khong dung toa do tay nua.
+-- Bot KPlayer di bo toi Xa Phu roi goi botlc_go(n) y het nguoi choi bam menu.
+-- DONG BO: thu tu BOT_LC[2] phai khop mang s_baiLc trong KPlayerBot.cpp.
+-- ============================================================================
+BOT_LC = {
+[1] = {
+	"Kiem Cac Tay Nam [20]/sellc",
+	"Vo Lang Son [20]/sellc",
+	"Phuc Nguu Dong [30]/sellc",
+	"Thuc Cuong Son [30]/sellc",
+	"Phuc Nguu Tay [40]/sellc",
+	"Hoang Ha Nguyen Dau [40]/sellc",
+	"Luu Tien Dong [50]/sellc",
+	"Oc Ba Dia Dao [50]/sellc",
+	"Thien Tam Thap tang 3 [60]/sellc",
+	"Hoanh Son Phai [60]/sellc",
+	"Lam Du Quan [70]/sellc",
+	"Lao Ho Dong [70]/sellc",
+	"Chan nui Truong Bach [80]/sellc",
+	"Sa Mac Dia Bieu [80]/sellc",
+	"Truong Bach Son Nam [90]/sellc",
+	"Truong Bach Son Bac [90]/sellc",
+	"Khoa Lang Dong [90]/sellc",
+	"Tien Cuc Dong [90]/sellc",
+	"Can Vien Dong [90]/sellc",
+	"Phong Lang Do [90]/sellc",
+	"Mac Cao Quat [90]/sellc",
+	"Ta khong muon di/no"
+},
+[2] = {
+	{20,19,3102,3963},
+	{20,70,1608,3230},
+	{30,90,1651,3571},
+	{30,92,1632,3290},
+	{40,41,2078,2805},
+	{40,122,1612,3323},
+	{50,125,1809,3208},
+	{50,163,1558,3199},
+	{60,166,1649,3231},
+	{60,56,1493,3530},
+	{70,319,1630,3592},
+	{70,123,1698,3374},
+	{80,320,1146,3130},
+	{80,224,1621,3214},
+	{90,321,966,2296},
+	{90,322,1582,3147},
+	{90,75,1816,3009},
+	{90,93,1526,3172},
+	{90,124,1672,3420},
+	{90,336,1112,3189},
+	{90,340,1853,3446}
+}
+};
+
+function LuyenCongFun()
+	if (GetLevel() < 20) then
+		Say("Chua du 20 cap, hay luyen o Hoa Son truoc da.", 0)
+		return
+	end
+	Say("Muon toi ban do luyen cong nao? (so trong ngoac la cap toi thieu)",
+	    getn(BOT_LC[1]), BOT_LC[1])
+end
+
+function sellc(nSel)
+	botlc_go(nSel + 1)
+end
+
+function botlc_go(nIdx)
+	if (nIdx < 1 or nIdx > getn(BOT_LC[2])) then
+		return
+	end
+	if (GetLevel() < BOT_LC[2][nIdx][1]) then
+		Talk(1,"","Chua du cap toi ban do nay, phia truoc nguy hiem.")
+		return
+	end
+	if (NewWorld(BOT_LC[2][nIdx][2], BOT_LC[2][nIdx][3], BOT_LC[2][nIdx][4])) then
+		SetFightState(1)
+		SetProtectTime(18*3)
+		AddSkillState(963, 1, 0, 18*3)
+	end
+end

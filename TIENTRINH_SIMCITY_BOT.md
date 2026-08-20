@@ -373,3 +373,27 @@ grep -a "farm 20 phut khong ra cuon" bot.log | wc -l   # xích NV có bóp ngh�
 grep -a "\[BotSap\] .*mon trang suc" bot.log | tail    # 8-12 món/sạp
 ```
 Bấm menu: BOT người chơi → "Goi het bot ve THANH-THON: BAT" — quan sát thành/thôn đông dần trong ~60 giây; TAT là bot về bãi đánh quái lại.
+
+
+## 13. PHIÊN 20/08 RẠNG SÁNG: BỎ "BAY TỰ CHẾ" — BOT LÊN BÃI BẰNG ĐƯỜNG XA PHU (deploy 03:00, chờ restart)
+
+**Chủ game giao (5 tin nhắn):** bot lúc lên map "bay thẳng ra ngoài map" vì teleport tọa độ tự viết → làm lại: **muốn lên map luyện công thì về thành → đi bộ tới Xa Phu → lên map bằng cấp** (tọa độ có sẵn trong item Thần Hành Phù); lên cấp giữa bãi thì "phù về thành" rồi đi lại; >90 luyện map 90; thêm dòng menu "lên bản đồ luyện công 20-90" ở Xa Phu cho cả người chơi; chia đều map cùng cấp; chế độ Về-Thành phải **tự lưu rương** để sau phù về đúng thành đã bị gọi về.
+
+### Đã làm
+1. **`station.lua` (live + repo)**: thêm khối `BOT_LC` — 21 map luyện 20→90, tọa độ **chép nguyên văn từ `shenxingfu.lua` TRAIN_ARRAY1/2** (dòng dạng waypoint đã tra qua `settings/WayPoint.txt`) + `LuyenCongFun` (menu người chơi) + `sellc` + `botlc_go(n)` (bot gọi). Khuôn y `selluyen1`: kiểm cấp → `NewWorld` → `SetFightState(1)` + `SetProtectTime` + `AddSkillState(963)`. **Phát hiện kèm: 3 dòng "Sa Mạc 1/2/4" của THP thật trỏ waypoint 226/227/228 sai/không tồn tại — menu gốc đang hỏng 3 dòng đó** (không đưa vào BOT_LC).
+2. **`xaphu.lua` (live + repo)**: menu chính thêm "Len ban do luyen cong (20 - 90)/LuyenCongFun" (Say 9→10 mục).
+3. **`s_bai` C++ thay bằng 22 bãi** có tuyến chính thống (Hoa Sơn = tuyến `go_HSBattle` sẵn có + 21 map THP; mỗi mốc 20-80 có 2 map, mốc 90 có 7 → `pb_ChonBai` ít-bot-nhất chia đều sẵn; >90 tự luyện mốc 90). **Loại 11 bãi cũ tọa độ tay** (79, 7, 193, 170, 21, 167, 182, 164, 206, 198, 181, 875, 225-227, 144, 152) — không còn đường bay tự chế. `s_baiLc[]` ánh xạ 1-1 sang `BOT_LC` (đã đối chiếu máy: 21/21 dòng khớp).
+4. **`pb_RaBai` = máy 2 pha**: không ở thành → **"phù về thành nhà"** (khuôn `pb_DtVeThanh`, cửa sổ so le 60s, thành nhà động `pb_ThanhNha`); ở thành → **đi bộ tới NPC Xa Phu** (`pb_TimNpcNho "xaphu"` — khuôn Dã Tẩu) → `ExecuteScript station.lua botlc_go/go_HSBattle` như người bấm menu → đáp điểm chuẩn → bước-ra + log `[BotBai] ... bang duong XA PHU`. Đếm `nRaBaiThu/nRaBaiGoi`; quá 700 nhịp/5 lần gọi → **fallback teleport neo-đã-kiểm** (log `[BotXe] BO TAY` — không bao giờ chết đứng).
+5. **Chế độ Về-Thành lưu rương**: đáp map nào là `SetRevivalPos(map, revId)` (bảng `s_veThanh` + cột `nRevId` từ `RevivePos.ini`; map 53→19 khớp giá trị hệ lưu đang dùng) **+ tự chép sang DEATH-pos** (SetRevivalPos chỉ ghi LOGIN-pos, chết đọc DEATH-pos vốn chỉ chép lúc nạp — không tự chép thì phải đợi restart mới ăn) + ghi `b.nThanhNhaMap` (nếu là 1 trong 10 thành có Xa Phu) → "phù về thành" từ đó dùng đúng thành đã bị gọi về; 5 thôn vẫn lưu rương (chết hồi sinh tại thôn) nhưng phù-về dùng thành cũ.
+6. **Chặn spam console** `player Packing world sync data failed...` (đợt trước cùng đêm, commit `90a9d6e3`): guard `nClient < 0` đầu `KSubWorld::SendSyncData` — bot đổi map hàng loạt không in nữa, hành vi không đổi (cả 2 caller vứt giá trị trả về).
+
+### Phản biện
+Agent phản biện đợt 3 chết giữa chừng (hết hạn mức API) → tự phản biện thủ công 10 câu: build 0 lỗi (thứ tự khai báo OK), bảng Lua↔C++ so máy khớp, `ExecuteScript(file,func,int,bool)` là khuôn `write_log_tax` đã chạy prod, menu Say đếm đúng 10, bot đứng bãi-bị-loại chỉ đứng yên chờ phù (pb_RaBai trả 0 chặn khối đánh — không lang thang void), nhóm theo captain tới Xa Phu rồi tự tách, `pb_TimNpcNho` có cache theo map (rẻ), key rương map 1 tồn tại, hồi sinh nằm TRƯỚC mọi return trong pb_DriveBot.
+
+### Nghiệm thu sau restart
+```
+grep -a "\[BotXe\]" bot.log | head -30        # phu ve thanh + gap Xa Phu + BO TAY (ky vong ~0 BO TAY)
+grep -a "bang duong XA PHU" bot.log | wc -l   # so bot len bai dung duong
+grep -a "\[BotNeo\]\|\[BotCuu\]" bot.log       # ky vong giam manh (toa do THP chuan)
+```
+Mắt thường: bot chết hồi sinh ở thành → chạy bộ tới Xa Phu → biến mất → hiện ra ở bãi đúng cấp; người chơi thật bấm Xa Phu thấy menu mới "Len ban do luyen cong (20 - 90)". Bot cũ đang đứng ở 11 bãi bị loại sẽ lần lượt phù về thành trong ~1 phút đầu rồi tỏa đi xe.

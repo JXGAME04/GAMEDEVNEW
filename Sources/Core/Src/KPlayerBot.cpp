@@ -264,6 +264,13 @@ struct PB_Bot
 	                                          // chi co nghia khi nDtPha == DTB_FARM_NV va map khop
 	unsigned int nVeThanhHen;                 // (19/08 toi #4) che do VE THANH: moc duoc phep
 	                                          // doi map (so le 60s; 0 = chua hen)
+	int          nRaBaiThu;                   // (19/08 dem) duong Xa Phu: dem nhip vat va
+	                                          // (di bo/khong thay NPC/A* thua) -> qua nguong
+	                                          // thi fallback teleport neo-da-kiem
+	int          nRaBaiGoi;                   // so lan da "bam menu" Xa Phu ma chua sang map
+	int          nThanhNhaMap;                // thanh nha DONG: map thanh da "luu ruong" gan
+	                                          // nhat (che do VE THANH dat); 0 = dung mac dinh
+	                                          // s_dtNpc[nLech %% 10]
 	unsigned int nNguaTick;                   // gion nhip kiem cuoi ngua trong thanh
 	// ---- to doi ----
 	int          nWantParty;                  // chot MOT LAN khi sinh: bot nay co muon vao nhom
@@ -987,6 +994,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nDtPha = 0;  b.nDtToiNpcThu = 0;  b.nDtXaFuThu = 0;  b.nDtTraThu = 0;
 		b.nDtTuiThu = 0;  b.nDtCoCu = 0;  b.nDtFarmMoc = 0;
 		b.nDtNeoMap = 0;  b.nDtNeoX = 0;  b.nDtNeoY = 0;  b.nVeThanhHen = 0;
+		b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;  b.nThanhNhaMap = 0;
 		b.walk.Reset();          // khe co the da dung cho bot truoc do -> phai xoa lo trinh cu
 		b.nLuuTick = (unsigned int)g_SubWorldSet.GetGameTime();   // luu dinh ky tinh tu luc sinh
 		if (bCuCoPhai)
@@ -1550,24 +1558,28 @@ int LuaPB_SetBanSap(Lua_State* L)
 // 5 thon lay node dong nhat trong settings/simcity/maps/thanhthi/<id>_*_nodes.txt.
 static int s_nPbVeThanh = 0;
 
-struct PB_VeThanh { int nMap, nOX, nOY; };
+// nRevId = diem hoi sinh hop le cua map (key dau tien trong section cua
+// settings/RevivePos.ini - map 53 -> 19 khop dung gia tri he luu bot dang dung).
+// (19/08 dem - chu game) dap xuong la SetRevivalPos = "tu dong luu ruong o map do
+// luon de sau phu ve thi se ve dung thanh da tung bi goi ve".
+struct PB_VeThanh { int nMap, nOX, nOY, nRevId; };
 static const PB_VeThanh s_veThanh[] =
 {
-	{   1, 1620, 3089 },    // Phuong Tuong
-	{  11, 3154, 5067 },    // Thanh Do
-	{  20, 3537, 6231 },    // Giang Tan Thon
-	{  37, 1736, 3101 },    // Bien Kinh
-	{  53, 1626, 3172 },    // Ba Lang Huyen
-	{  78, 1595, 3288 },    // Tuong Duong
-	{  80, 1745, 2967 },    // Duong Chau
-	{ 121, 1960, 4501 },    // Long Mon Tran
-	{ 162, 1651, 3226 },    // Dai Ly
-	{ 176, 1562, 2979 },    // Lam An
-	{  99, 1635, 3188 },    // Vinh Lac Tran
-	{ 100, 1599, 3182 },    // Chu Tien Tran
-	{ 101, 1660, 3131 },    // Dao Huong Thon
-	{ 153, 1623, 3248 },    // Thach Co Tran
-	{ 174, 1575, 3255 },    // Long Tuyen Thon
+	{   1, 1620, 3089,  1 },    // Phuong Tuong
+	{  11, 3154, 5067,  5 },    // Thanh Do
+	{  20, 3537, 6231, 10 },    // Giang Tan Thon
+	{  37, 1736, 3101, 23 },    // Bien Kinh
+	{  53, 1626, 3172, 19 },    // Ba Lang Huyen
+	{  78, 1595, 3288, 29 },    // Tuong Duong
+	{  80, 1745, 2967, 34 },    // Duong Chau
+	{ 121, 1960, 4501, 55 },    // Long Mon Tran
+	{ 162, 1651, 3226, 63 },    // Dai Ly
+	{ 176, 1562, 2979, 67 },    // Lam An
+	{  99, 1635, 3188, 43 },    // Vinh Lac Tran
+	{ 100, 1599, 3182, 45 },    // Chu Tien Tran
+	{ 101, 1660, 3131, 47 },    // Dao Huong Thon
+	{ 153, 1623, 3248, 59 },    // Thach Co Tran
+	{ 174, 1575, 3255, 65 },    // Long Tuyen Thon
 };
 #define PB_SO_VETHANH  (int)(sizeof(s_veThanh) / sizeof(s_veThanh[0]))
 
@@ -2355,6 +2367,20 @@ static int pb_LaThanhThi(int nMapId)
 		if (s_dtNpc[i].nMap == nMapId)
 			return 1;
 	return 0;
+}
+
+// (19/08 dem - chu game: "goi bot ve thanh chia deu... phai tu dong luu ruong o
+// map do luon de sau phu ve thi se ve dung thanh da tung bi goi ve")
+// THANH NHA DONG: mac dinh s_dtNpc[nLech % 10]; che do VE THANH dap xuong thanh
+// nao (co Xa Phu) thi ghi thanh do vao b.nThanhNhaMap - moi lan "phu ve thanh"
+// sau nay dung dung thanh ay.
+static const PB_DtNpc& pb_ThanhNha(const PB_Bot& b, int nLech)
+{
+	if (b.nThanhNhaMap > 0)
+		for (int i = 0; i < 10; i++)
+			if (s_dtNpc[i].nMap == b.nThanhNhaMap)
+				return s_dtNpc[i];
+	return s_dtNpc[((unsigned)nLech) % 10u];
 }
 
 // O nay DUNG DUOC khong (tren ban do bat ky, ke ca ban do bot chua o):
@@ -3559,42 +3585,49 @@ struct PB_BaiLuyen
 	const char* szTen;
 };
 
+// (19/08 dem - chu game: "bot luc len map thi bay thang ra ngoai map... lam lai
+// cho bot phai tu di chuyen toi Xa Phu roi len map... toa do moi map da co san
+// trong item Than Hanh Phu"). BANG MOI: chi giu cac bai co tuyen CHINH THONG -
+// toa do CHEP NGUYEN VAN tu shenxingfu.lua TRAIN_ARRAY1/2 (dong dang waypoint da
+// tra qua settings/WayPoint.txt), rieng Hoa Son la tuyen go_HSBattle co san cua
+// menu Xa Phu. 9 bai cu toa do tay (170/182/164/79/206/198/181/875/225-227/
+// 144/152...) BI LOAI - khong con duong "bay tu che" nao nua.
+// s_baiLc = chi so 1-based trong bang BOT_LC cua script/global/station.lua
+// (0 = di tuyen go_HSBattle). HAI BANG PHAI KHOP THU TU - sua mot ben la sua ca hai.
 static const PB_BaiLuyen s_bai[] =
 {
-	{ 10,   2, 2605, 3592, "Hoa Son" },
-	{ 20,  19, 3102, 3963, "Kiem Cac Tay Nam" },
-	{ 20,   7, 2276, 2825, "Tan Lang tang 1" },
-	{ 30, 193, 1938, 2845, "Vu Di Son" },
-	{ 30, 170, 1612, 3187, "Tho Phi Dong" },
-	{ 40,  21, 2622, 4502, "Thanh Thanh Son" },
-	{ 40, 167, 1575, 3239, "Diem Thuong Son" },
-	{ 50, 182, 1777, 2982, "Nghiet Long Dong" },
-	{ 50, 164, 1611, 3187, "Thien Tam Thap" },
-	{ 60,  79, 1600, 3206, "Tuong Duong Mat Dao" },
-	{ 60,  56, 1516, 3443, "Hoanh Son Phai" },
-	{ 60, 166, 1649, 3231, "Thien Tam Thap tang 3" },
-	{ 70, 319, 1630, 3587, "Lam Du Quan" },
-	{ 70, 123, 1702, 3350, "Lao Ho Dong" },
-	{ 70, 206, 1603, 3215, "Tan Lang tang 2" },
-	{ 80, 224, 1622, 3118, "Sa Mac dia bieu" },
-	{ 80, 198, 1521, 2947, "Thanh Khe Dong" },
-	{ 80, 320, 1147, 3123, "Chan nui Truong Bach" },
-	{ 80, 181, 1425, 2999, "Luong Thuy Dong" },
-	{ 90, 875, 1576, 3177, "Hac Sa Dong" },
-	{ 90, 322, 1589, 3164, "Truong Bach Son Bac" },
-	{ 90, 321,  967, 2313, "Truong Bach Son Nam" },
-	{ 90,  75, 1811, 3012, "Khoa Lang Dong" },
-	{ 90, 225, 1474, 3275, "Sa Mac Me Cung 1" },
-	{ 90, 226, 1560, 3184, "Sa Mac Me Cung 2" },
-	{ 90, 227, 1588, 3237, "Sa Mac Me Cung 3" },
-	{ 90, 336, 1124, 3187, "Phong Lang Do" },
-	{ 90, 340, 1845, 3438, "Mac Cao Quat" },
-	{ 90, 144, 1691, 3020, "Duoc Vuong Dong tang 4" },
-	{ 90,  93, 1529, 3166, "Tien Cuc Dong Mat Cung" },
-	{ 90, 124, 1675, 3418, "Can Vien Dong Me Cung" },
-	{ 90, 152, 1672, 3361, "Tuyet Bao Dong tang 8" },
+	{ 10,   2, 2605, 3592, "Hoa Son" },                 // go_HSBattle (Xa Phu)
+	{ 20,  19, 3102, 3963, "Kiem Cac Tay Nam" },        // lc 1
+	{ 20,  70, 1608, 3230, "Vo Lang Son" },             // lc 2
+	{ 30,  90, 1651, 3571, "Phuc Nguu Dong" },          // lc 3
+	{ 30,  92, 1632, 3290, "Thuc Cuong Son" },          // lc 4
+	{ 40,  41, 2078, 2805, "Phuc Nguu Tay" },           // lc 5
+	{ 40, 122, 1612, 3323, "Hoang Ha Nguyen Dau" },     // lc 6
+	{ 50, 125, 1809, 3208, "Luu Tien Dong" },           // lc 7
+	{ 50, 163, 1558, 3199, "Oc Ba Dia Dao" },           // lc 8
+	{ 60, 166, 1649, 3231, "Thien Tam Thap tang 3" },   // lc 9
+	{ 60,  56, 1493, 3530, "Hoanh Son Phai" },          // lc 10
+	{ 70, 319, 1630, 3592, "Lam Du Quan" },             // lc 11
+	{ 70, 123, 1698, 3374, "Lao Ho Dong" },             // lc 12 (toa THP - het dao)
+	{ 80, 320, 1146, 3130, "Chan nui Truong Bach" },    // lc 13
+	{ 80, 224, 1621, 3214, "Sa Mac Dia Bieu" },         // lc 14
+	{ 90, 321,  966, 2296, "Truong Bach Son Nam" },     // lc 15 (WP198)
+	{ 90, 322, 1582, 3147, "Truong Bach Son Bac" },     // lc 16 (WP201)
+	{ 90,  75, 1816, 3009, "Khoa Lang Dong" },          // lc 17 (WP74)
+	{ 90,  93, 1526, 3172, "Tien Cuc Dong" },           // lc 18 (WP147)
+	{ 90, 124, 1672, 3420, "Can Vien Dong" },           // lc 19 (WP221)
+	{ 90, 336, 1112, 3189, "Phong Lang Do" },           // lc 20 (WP224)
+	{ 90, 340, 1853, 3446, "Mac Cao Quat" },            // lc 21 (WP225)
 };
 #define PB_SO_BAI  (int)(sizeof(s_bai) / sizeof(s_bai[0]))
+
+// chi so menu BOT_LC (station.lua) cung thu tu s_bai; 0 = tuyen go_HSBattle
+static const int s_baiLc[] =
+{
+	0,
+	1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+	11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+};
 #define PB_BAI_TRAN  120   // tran bot cho MOI bai luyen (gian dam dong 18/08)
 
 // (19/08 toi #3 - chu game: "bot len map luyen cong van di chuyen ra ngoai map,
@@ -4082,15 +4115,137 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	// Chon lai bai khi chua co hoac khi da len cap (moc cao hon co the da mo).
 	if (b.nBaiIdx < 0 || b.nBaiLevel != nLevel)
 	{
+		const int nBaiCu = b.nBaiIdx;
 		b.nBaiLevel = nLevel;
 		b.nBaiIdx   = pb_ChonBai(nLevel, nLech);
+		if (b.nBaiIdx != nBaiCu)
+		{
+			// (19/08 dem) doi bai (len cap mo moc moi) -> lam lai tu dau duong
+			// Xa Phu: "dang o map 20 ma len cap 30 thi phu ve thanh va toi xa
+			// phu de len map 30" - dung nguyen loi chu game.
+			b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;  b.nDoiMapTick = 0;
+		}
 	}
 	if (b.nBaiIdx < 0)
 		return 1;               // chua du cap 10 -> cu danh tai cho
 
 	const PB_BaiLuyen& bai = s_bai[b.nBaiIdx];
 	if (SubWorld[nSub].m_SubWorldID == bai.nMapId)
+	{
+		// (19/08 dem) vua DAP bang duong Xa Phu: buoc ra khoi diem dap chinh
+		// thong (nhu vua xuong xe - ca dan cung xuong mot cho thi gian dam dong),
+		// chot log roi ve nhip danh quai binh thuong.
+		if (b.nRaBaiGoi > 0 || b.nRaBaiThu > 0)
+		{
+			pb_Log("[BotBai] %s cap %d toi %s (map %d) bang duong XA PHU\n",
+			       Player[nIdx].m_PlayerName, nLevel, bai.szTen, bai.nMapId);
+			b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;  b.nDoiMapTick = 0;
+			int nHx = 0, nHy = 0;
+			Npc[nNpcIdx].GetMpsPos(&nHx, &nHy);
+			const int nXaR  = 8 + (int)g_Random(4);
+			const int nGocX = ((int)g_Random(2) * 2 - 1);
+			const int nGocY = ((((int)g_Random(2) + nLech) % 2) * 2 - 1);
+			int nRx = 0, nRy = 0;
+			if (pb_ODat(nSub, nHx / 32 + nGocX * nXaR, nHy / 32 + nGocY * nXaR,
+			            nLech, 8, &nRx, &nRy))
+			{
+				b.nBuocRaX = nRx;
+				b.nBuocRaY = nRy;
+			}
+			b.roam.Reset();
+		}
 		return 1;               // da o dung bai
+	}
+
+	// ======================= (19/08 dem) DUONG XA PHU =======================
+	// Chu game: "ep bot muon len map luyen cong thi ve thanh roi toi xa phu len
+	// lai map bang cap... lam nguoi choi nghi bot cung la nguoi choi - khong nen
+	// cho bot bay thang len map". May 2 pha, diem dap luon la toa do CHINH THONG:
+	//   (1) KHONG o thanh -> "phu ve thanh nha" (khuon pb_DtVeThanh - nhu dung
+	//       Tho Dia Phu; thanh nha dong theo b.nThanhNhaMap neu tung bi goi ve)
+	//   (2) O thanh      -> DI BO toi NPC Xa Phu roi goi script station.lua nhu
+	//       nguoi choi bam menu (botlc_go / go_HSBattle cho Hoa Son cap 10)
+	// Moi nga hong deu cong don b.nRaBaiThu; qua nguong (hoac goi script 5 lan
+	// khong sang map) thi roi xuong khoi FALLBACK teleport neo-da-kiem ben duoi.
+	if (b.nRaBaiThu <= 700 && b.nRaBaiGoi <= 5)
+	{
+		if (pb_LaThanhThi(SubWorld[nSub].m_SubWorldID))
+		{
+			// --- pha 2: di bo toi Xa Phu roi "len xe" ---
+			int nBx3 = 0, nBy3 = 0;
+			Npc[nNpcIdx].GetMpsPos(&nBx3, &nBy3);
+			const int nXp = pb_TimNpcNho(nSub, PB_NPC_XP, "xaphu", nBx3, nBy3);
+			if (nXp <= 0)
+			{
+				b.nRaBaiThu += 20;   // thanh nay khong thay Xa Phu? don toi fallback
+				return 0;
+			}
+			int nPx = 0, nPy = 0;
+			Npc[nXp].GetMpsPos(&nPx, &nPy);
+			const __int64 nDdx = (__int64)nBx3 - nPx;
+			const __int64 nDdy = (__int64)nBy3 - nPy;
+			if (nDdx * nDdx + nDdy * nDdy
+			    > (__int64)PB_FAC_ARRIVE_MPS * PB_FAC_ARRIVE_MPS)
+			{
+				b.nRaBaiThu++;
+				if (PB_WalkTo(nNpcIdx, nPx, nPy, nSub, b.walk, PB_FAC_ARRIVE_MPS) < 0)
+					b.nRaBaiThu += 4;   // khong co duong toi Xa Phu - don nhanh
+				return 0;               // dang di bo
+			}
+			// dung canh Xa Phu: gion 3 giay giua hai lan "bam menu"
+			if (now < b.nDoiMapTick)
+				return 0;
+			b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 3);
+			b.nRaBaiGoi++;
+			if (pb_TrongNhom(nIdx))
+				pb_RoiNhom(nIdx, "len xe di bai luyen");
+			pb_Log("[BotXe] %s gap Xa Phu tai thanh %d -> di %s (map %d, chuyen thu %d)\n",
+			       Player[nIdx].m_PlayerName, SubWorld[nSub].m_SubWorldID,
+			       bai.szTen, bai.nMapId, b.nRaBaiGoi);
+			// duong dan PHAI viet THUONG (g_FileName2Id bam phan biet hoa/thuong);
+			// ten HAM giu nguyen hoa/thuong cua Lua (khong qua bo bam duong dan)
+			if (s_baiLc[b.nBaiIdx] == 0)
+				Player[nIdx].ExecuteScript((char*)"\\script\\global\\station.lua",
+				                           (char*)"go_HSBattle", 0, false);
+			else
+				Player[nIdx].ExecuteScript((char*)"\\script\\global\\station.lua",
+				                           (char*)"botlc_go", s_baiLc[b.nBaiIdx], false);
+			b.nTargetNpc = 0;
+			b.walk.Reset();  b.chase.Reset();  b.roam.Reset();
+			b.nRoamX = 0;    b.nRoamY = 0;
+			return 0;                   // nhip sau map khop -> nhanh dau tra 1
+		}
+
+		// --- pha 1: khong o thanh -> "phu ve thanh nha" (so le cua so 60 giay:
+		// ca ngan con cung phu ve mot khung la nghen region sync) ---
+		if (b.nDoiMapTick == 0)
+			b.nDoiMapTick = now + (unsigned int)((nLech % 60) * GAME_FPS);
+		if (now < b.nDoiMapTick)
+			return 0;
+		b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 10);
+		b.nRaBaiThu++;
+		if (pb_TrongNhom(nIdx))
+			pb_RoiNhom(nIdx, "phu ve thanh doi map luyen");
+		const PB_DtNpc& nhaVe = pb_ThanhNha(b, nLech);
+		pb_Log("[BotXe] %s phu ve thanh %d tim Xa Phu (muon di %s map %d)\n",
+		       Player[nIdx].m_PlayerName, nhaVe.nMap, bai.szTen, bai.nMapId);
+		pb_DtVeThanh(nIdx, nNpcIdx, b, nhaVe, nLech);
+		return 0;
+	}
+
+	// ================== FALLBACK: teleport thang (hiem) ==================
+	// Chi toi day khi duong Xa Phu bo tay (khong thay NPC / khong co duong /
+	// script khong day sang map). Van dung neo-da-kiem lien thong.
+	{
+		static unsigned int s_uXeBoTay = 0;
+		if (now - s_uXeBoTay >= (unsigned int)(GAME_FPS * 5))
+		{
+			s_uXeBoTay = now;
+			pb_Log("[BotXe] %s BO TAY duong Xa Phu (thu=%d, goi=%d) -> teleport"
+			       " thang toi %s (map %d)\n", Player[nIdx].m_PlayerName,
+			       b.nRaBaiThu, b.nRaBaiGoi, bai.szTen, bai.nMapId);
+		}
+	}
 
 	// DAN HANG truoc khi doi map: nDoiMapTick giu "moc som nhat duoc phep thu".
 	//
@@ -4146,6 +4301,7 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, nNeoOX * 32, nNeoOY * 32);
 	if (nRet == 1)
 	{
+		b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;   // toi noi bang fallback - xoa dem xe
 		// Diem dat chan la CHO MOI NGUOI CHOI CUNG DAT CHAN - thuong sat trap vao/ra.
 		// Dung nguyen do la bot ke trap ("khong ra khoi trap duoc"). Buoc ra 8-11 o
 		// theo huong ngau nhien NGAY khi toi noi, truoc khi lam bat cu viec gi khac.
@@ -5945,12 +6101,36 @@ static void pb_VeThanh(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			b.walk.Reset();  b.chase.Reset();  b.roam.Reset();
 			b.nRoamX = 0;  b.nRoamY = 0;  b.nRoamTick = 0;
 			b.nBuocRaX = 0;  b.nBuocRaY = 0;
+			// (19/08 dem - chu game) "goi bot ve thanh chia deu cac map thi phai
+			// tu dong LUU RUONG o map do luon de sau phu ve thi se ve dung thanh
+			// da tung bi goi ve": dat diem hoi sinh (nhu bam ruong / Tho Dia Phu)
+			// + ghi thanh nha DONG (chi khi map co Xa Phu - 10 thanh s_dtNpc;
+			// 5 thon van luu ruong de chet hoi sinh tai cho nhung "phu ve" thi
+			// dung thanh nha cu vi chua chac thon co Xa Phu).
+			Player[nIdx].SetRevivalPos(vt.nMap, vt.nRevId);
+			// SetRevivalPos chi ghi LOGIN-pos; CHET hoi sinh doc DEATH-pos
+			// (KPlayer::Revive REMOTE :6706) ma death chi duoc chep tu login luc
+			// NAP nhan vat (:1376) - tu chep de hieu luc NGAY, khong doi restart.
+			{
+				POINT sPosRv;
+				if (g_SubWorldSet.GetRevivalPosFromId(vt.nMap, vt.nRevId, &sPosRv))
+				{
+					PLAYER_REVIVAL_POS* pDrv = Player[nIdx].GetDeathRevivalPos();
+					pDrv->m_nSubWorldID = vt.nMap;
+					pDrv->m_ReviveID    = vt.nRevId;
+					pDrv->m_nMpsX       = sPosRv.x;
+					pDrv->m_nMpsY       = sPosRv.y;
+				}
+			}
+			if (pb_LaThanhThi(vt.nMap))
+				b.nThanhNhaMap = vt.nMap;
 			static unsigned int s_uVtLog = 0;
 			if (now - s_uVtLog >= (unsigned int)(GAME_FPS / 3))
 			{
 				s_uVtLog = now;
-				pb_Log("[BotVeThanh] %s ve map %d (o %d,%d)\n",
-				       Player[nIdx].m_PlayerName, vt.nMap, vt.nOX + nDx, vt.nOY + nDy);
+				pb_Log("[BotVeThanh] %s ve map %d (o %d,%d) + luu ruong (rev %d)\n",
+				       Player[nIdx].m_PlayerName, vt.nMap, vt.nOX + nDx, vt.nOY + nDy,
+				       vt.nRevId);
 			}
 		}
 		return;
