@@ -2779,32 +2779,76 @@ static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY
 	return 1;
 }
 
+// [DaTau] BANG TOA DO QUAI CAC MAP NHIEM VU - nap tu tep van ban luc chay.
+// Tep: <thu muc game>\settings\datau_toado.txt, moi dong "MapID X Y SoQuai"
+// (X/Y = MPS tuyet doi), dong bat dau bang '#' hoac ';' la chu thich. Sinh boi
+// ReverseTools/gen_datau_spots.py doc file add NPC cua may chu trong pak.
+// Sua tep la doi duoc cho danh quai - KHONG phai dung lai DLL. Thieu tep thi
+// dung bang nhung san trong KDaTauSpots.h (chi 14 map dang bat).
+#define DT_MAX_SPOTFILE 4096
+static DTSpotRow g_aDTSpotFile[DT_MAX_SPOTFILE];
+static int g_nDTSpotFile = -1;	// -1 = chua nap lan nao
+
+static void DT_LoadSpotFile()
+{
+	if (g_nDTSpotFile >= 0)
+		return;				// da nap (hoac da biet la khong co tep)
+	g_nDTSpotFile = 0;
+	FILE* f = fopen("settings\\datau_toado.txt", "rb");
+	if (!f)
+		return;
+	char szD[256];
+	while (g_nDTSpotFile < DT_MAX_SPOTFILE && fgets(szD, sizeof(szD), f))
+	{
+		const char* s = szD;
+		while (*s == ' ' || *s == '\t')
+			++s;
+		if (*s == '#' || *s == ';' || *s == '\r' || *s == '\n' || *s == 0)
+			continue;
+		int nMap = 0, nX = 0, nY = 0, nNum = 0;
+		if (sscanf(s, "%d %d %d %d", &nMap, &nX, &nY, &nNum) < 3)
+			continue;
+		if (nMap <= 0 || nX <= 0 || nY <= 0)
+			continue;
+		g_aDTSpotFile[g_nDTSpotFile].nMapId = nMap;
+		g_aDTSpotFile[g_nDTSpotFile].nX = nX;
+		g_aDTSpotFile[g_nDTSpotFile].nY = nY;
+		g_aDTSpotFile[g_nDTSpotFile].nNum = nNum;
+		++g_nDTSpotFile;
+	}
+	fclose(f);
+}
+
 // [DaTau] cum quai THAT cua map nhiem vu (KDaTauSpots.h - sinh tu file add NPC
 // cua may chu trong pak). Tra so cum cua map va dien toa do cum thu nIdx.
 // VI SAO CAN: neo nhiem vu chi la cho Xa Phu tha xuong - o map 53/80/226 no nam
 // NGOAI han vung co quai, dao quanh neo la khong bao gio gap quai.
 static int DT_SpotOf(int nMap, int nIdx, int* pnX, int* pnY)
 {
-	int nFrom = -1, nNum = 0;
-	for (int i = 0; i < g_nDTSpotCount; ++i)
-	{
-		if (g_DTSpot[i].nMapId != nMap)
-		{
-			if (nFrom >= 0)
-				break;	// bang gom theo map - qua nhom roi thi thoi
-			continue;
-		}
-		if (nFrom < 0)
-			nFrom = i;
-		++nNum;
-	}
-	if (nNum <= 0)
-		return 0;
+	DT_LoadSpotFile();
+	const DTSpotRow* pBang = (g_nDTSpotFile > 0) ? g_aDTSpotFile : g_DTSpot;
+	const int nTong = (g_nDTSpotFile > 0) ? g_nDTSpotFile : g_nDTSpotCount;
 	if (nIdx < 0)
 		nIdx = -nIdx;
-	*pnX = g_DTSpot[nFrom + (nIdx % nNum)].nX;
-	*pnY = g_DTSpot[nFrom + (nIdx % nNum)].nY;
-	return nNum;
+	int nNum = 0;
+	int i;
+	for (i = 0; i < nTong; ++i)
+		if (pBang[i].nMapId == nMap)
+			++nNum;
+	if (nNum <= 0)
+		return 0;
+	int nCan = nIdx % nNum;
+	for (i = 0; i < nTong; ++i)
+	{
+		if (pBang[i].nMapId != nMap)
+			continue;
+		if (nCan-- > 0)
+			continue;
+		*pnX = pBang[i].nX;
+		*pnY = pBang[i].nY;
+		return nNum;
+	}
+	return 0;
 }
 
 // tra loi hoi thoai dang mo theo index 0-based (dong khung roi gui - nhu luong mua thuoc)

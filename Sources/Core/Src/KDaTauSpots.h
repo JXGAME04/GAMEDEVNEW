@@ -1,8 +1,7 @@
 // KDaTauSpots.h - SINH TU DONG boi ReverseTools/gen_datau_spots.py
-// Toa do CUM QUAI cua 14 map nhiem vu Da Tau loai 4, doc thang tu file
-// add NPC cua may chu trong pak (\maps\<map>\v_NNN\NNN_Region_S.dat).
-// Don vi: MPS tuyet doi (dung thang, KHONG nhan 32 nua).
-// SUA TAY LA VO ICH - chay lai bo sinh khi may chu doi bang map.
+// BAN DU PHONG: engine uu tien doc settings\datau_toado.txt luc chay;
+// thieu tep do thi dung bang nay (chi cac map DANG BAT cho nhiem vu loai 4).
+// Don vi: MPS tuyet doi. SUA TAY LA VO ICH - chay lai bo sinh.
 #ifndef KDATAUSPOTS_H
 #define KDATAUSPOTS_H
 

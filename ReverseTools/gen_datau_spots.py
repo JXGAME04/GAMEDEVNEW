@@ -1,55 +1,69 @@
 # -*- coding: ascii -*-
 """
-gen_datau_spots.py - SINH BANG DIEM QUAI CHO AUTO DA TAU (loai 4)
+gen_datau_spots.py - SINH TOA DO QUAI CHO AUTO DA TAU (ban 2, 19/08/2026)
 
-VI SAO CAN: client CHI thay NPC da duoc may chu dong bo (~2 man hinh). Khi Xa Phu
-tha nhan vat xuong map nhiem vu, quanh do thuong KHONG co quai nao trong tam dong
-bo -> vong quet cua auto (DT_FindFarMob) khong thay gi -> dung yen / di mo.
-Nguon SU THAT ve cho quai dung o dau la file add NPC cua may chu nam TRONG PAK:
-    \\maps\\<duong dan map>\\v_<nY>\\<nX>_Region_S.dat  (muc REGION_NPC_FILE_INDEX)
-Bo sinh nay doc thang pak do, gom toa do quai (kind_normal) cua 14 map nhiem vu
-Da Tau roi ket thanh cum, xuat ra Sources/Core/Src/KDaTauSpots.h de engine di den
-DUNG cho co quai thay vi do dam.
+VI SAO: client CHI thay NPC may chu da dong bo (~2 man hinh). Cho Xa Phu tha xuong
+map nhiem vu thuong KHONG co con quai nao trong tam do -> auto quet rong -> di mo.
+Nguon SU THAT ve cho quai la file add NPC cua may chu NAM TRONG PAK:
+    \\maps\\<duong dan map>\\v_<nY>\\<nX>_Region_S.dat   (muc REGION_NPC_FILE_INDEX)
 
-Doc:
-  - dinh dang pak  : Sources/Engine/Src/XPackFile.cpp (header 32B, index 16B/muc)
-  - bam ten tep    : KPakList::FileNameToId (KPakList.cpp:72-85)
-  - giai nen       : ucl_nrv2b_decompress_8 (Sources/Engine/Src/ucl/n2b_d.c + getbit.h)
-  - duong dan map  : KSubWorld.cpp:1756 + KRegion::LoadObject (KRegion.cpp:136-180)
-  - cau truc NPC   : Scene/SceneDataDef.h (KNpcFileHead + KSPNpc)
-Chay: python D:\\GAMEDEVNEW\\ReverseTools\\gen_datau_spots.py
+BAN 2 khac ban 1:
+  * Quet TOAN BO map trong TL_MAPTRAPINDEX (map_index.lua ~204 map) chu khong chi 14 map
+    dang bat trong tasklink_findmaps.txt - de doi bang nhiem vu la auto van co du lieu.
+  * Xuat ra FILE TXT doc luc chay: bin\\client\\settings\\datau_toado.txt (sua tay duoc,
+    khong phai dung lai DLL). Header KDaTauSpots.h van sinh de lam ban DU PHONG khi
+    thieu tep txt.
+  * Tim region nhanh: gieo mam thua roi loang (BFS) thay vi quet 65536 o moi map;
+    bo qua region chi co vat can (kich thuoc goc == 2100 byte) truoc khi giai nen.
+
+Doc: XPackFile.cpp (dinh dang pak), KPakList::FileNameToId (bam ten), ucl/n2b_d.c
+     (giai nen nrv2b), KRegion::LoadObject (duong dan), SceneDataDef.h (KSPNpc),
+     KSubWorld.cpp:1756 (\\maps\\<ten>), map_index.lua (TL_MAPTRAPINDEX).
+Chay: python D:\\GAMEDEVNEW\\ReverseTools\\gen_datau_spots.py [--maps 1,78,79]
 """
 import os, struct, sys
 
 SRV  = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server"
+CLI  = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client"
 PAKS = ["maps.pak", "maps_error.pak", "namcung.pak", "maps_tieu_bang_chien.pak"]
 INI  = os.path.join(SRV, "settings", "MapList.ini")
-OUT  = r"D:\GAMEDEVNEW\Sources\Core\Src\KDaTauSpots.h"
-TBL  = r"D:\GAMEDEVNEW\Sources\Core\Src\KDaTauTables.h"
+MAPIDX = os.path.join(SRV, "script", "task", "newtask", "map_index.lua")
+FINDMAPS = os.path.join(SRV, "settings", "task", "tasklink_findmaps.txt")
+OUT_H   = r"D:\GAMEDEVNEW\Sources\Core\Src\KDaTauSpots.h"
+OUT_TXT = os.path.join(CLI, "settings", "datau_toado.txt")
+OUT_TXT2 = r"D:\GAMEDEVNEW\ReverseTools\datau_toado.txt"
 
 M32 = 0xFFFFFFFF
-KIND_NORMAL = 0          # GameDataDef.h:1369 kind_normal = quai thuong
-CUM = 1024               # canh o gom cum (mps) ~ 32 o luoi
-MAX_SPOT = 24            # so cum giu lai moi map
-MIN_QUAI = 3             # cum it hon nay thi bo (le te)
+KIND_NORMAL = 0          # GameDataDef.h:1369
+CUM = 1024               # canh o gom cum (mps)
+MAX_SPOT = 24            # so cum giu moi map
+MIN_QUAI = 2             # cum it hon nay thi bo
+# Nguong bo qua region: PHAI nho hon "header 52 + KNpcFileHead 12 + 1 KSPNpc 60".
+# (Da do thuc te: o map 1 co 8 region CO NPC ma kich thuoc chi <= 2100 byte - loc theo
+#  2100 lam mat 16 con quai. Dung loc theo kich thuoc "region chi co vat can" nua.)
+CHI_VATCAN = 124
+SO_TIEN_TRINH = 8        # quet song song cho nhanh (moi tien trinh mo pak rieng)
 
-# ---------------------------------------------------------------- pak
+# ---------------------------------------------------------------- bam ten
 
-def name_to_id(s):
-    """KPakList::FileNameToId - char la SIGNED, so hoc 32-bit khong dau."""
-    uid = 0
-    idx = 0
-    for b in s:
-        c = b if b < 0x80 else b - 0x100
-        if 0x41 <= b <= 0x5A:                    # g_StrLower: 'A'-'Z' -> thuong
+def hstep(uid, idx, bs):
+    """Chay tiep ham bam KPakList::FileNameToId tren mot doan byte."""
+    for b in bs:
+        c = b if b < 0x80 else b - 0x100          # char CO DAU
+        if 0x41 <= b <= 0x5A:                      # g_StrLower
             c = b + 0x20
         idx += 1
         uid = ((((uid + idx * c) & M32) % 0x8000000b) * 0xffffffef) & M32
+    return uid, idx
+
+
+def name_to_id(s):
+    uid, idx = hstep(0, 0, s)
     return uid ^ 0x12345678
 
 
 def ucl_nrv2b_decompress_8(src, out_len):
-    """Ban Python cua ucl_nrv2b_decompress_8 (n2b_d.c + getbit_8 trong getbit.h)."""
+    """Ban Python cua ucl_nrv2b_decompress_8 (ucl/n2b_d.c + getbit_8)."""
     dst = bytearray(out_len)
     ilen = 0
     olen = 0
@@ -131,22 +145,23 @@ class Pak(object):
             self.idx[uid] = (off, size, cflag)
         self.name = os.path.basename(path)
 
-    def get(self, name_bytes):
-        u = name_to_id(name_bytes)
-        e = self.idx.get(u)
+    def info(self, uid):
+        return self.idx.get(uid)
+
+    def doc(self, uid):
+        e = self.idx.get(uid)
         if not e:
             return None
         off, size, cflag = e
         method = (cflag >> 24) & 0xFF
         csize = cflag & 0xFFFFFF
         self.f.seek(off)
-        if method == 0:                      # TYPE_NONE
+        if method == 0:
             return self.f.read(size)
-        raw = self.f.read(csize)             # TYPE_UCL(0x01) / VNG(0x20) deu la nrv2b
-        return ucl_nrv2b_decompress_8(raw, size)
+        return ucl_nrv2b_decompress_8(self.f.read(csize), size)
 
 
-# ---------------------------------------------------------------- du lieu
+# ---------------------------------------------------------------- du lieu nguon
 
 def doc_maplist(path):
     out = {}
@@ -162,28 +177,44 @@ def doc_maplist(path):
     return out
 
 
-def doc_map_nhiemvu(path):
-    """Lay 14 map loai 4 tu chinh bang da sinh truoc do (g_DTQuestMap)."""
-    txt = open(path, "rb").read().decode("latin-1")
-    i = txt.find("g_DTQuestMap[]")
-    j = txt.find("};", i)
+def doc_mapindex(path):
+    """TL_MAPTRAPINDEX: {id, "ten", X, Y} - X/Y don vi O LUOI."""
+    import re
+    raw = open(path, "rb").read()
     rows = []
-    for line in txt[i:j].split("\n"):
-        line = line.strip()
-        if not line.startswith("{"):
+    seen = set()
+    for m in re.finditer(rb'\{\s*(\d+)\s*,\s*"([^"]*)"\s*,\s*(\d+)\s*,\s*(\d+)\s*\}', raw):
+        mid = int(m.group(1))
+        if mid in seen:
             continue
-        p = line.strip("{},\r\n\t ").split(",")
-        if len(p) < 3:
-            continue
-        try:
-            rows.append((int(p[0]), int(p[1]), int(p[2])))
-        except ValueError:
-            pass
+        seen.add(mid)
+        rows.append((mid, m.group(2), int(m.group(3)), int(m.group(4))))
     return rows
 
 
+def doc_findmaps(path):
+    """Map DANG BAT cho nhiem vu loai 4 (cot MapID)."""
+    ids = set()
+    try:
+        data = open(path, "rb").read().split(b"\n")
+    except IOError:
+        return ids
+    if not data:
+        return ids
+    head = data[0].split(b"\t")
+    try:
+        col = head.index(b"MapID")
+    except ValueError:
+        return ids
+    for line in data[1:]:
+        p = line.split(b"\t")
+        if len(p) > col and p[col].strip().isdigit():
+            ids.add(int(p[col].strip()))
+    return ids
+
+
 def doc_npc_region(blob):
-    """Region_S.dat hop nhat -> danh sach (x, y, kind, level, ten) cua NPC trong region."""
+    """Region_S.dat hop nhat -> [(x, y, kind, level, ten)]."""
     if len(blob) < 4:
         return []
     (num_sect,) = struct.unpack_from("<I", blob, 0)
@@ -192,13 +223,12 @@ def doc_npc_region(blob):
     head_size = 4 + 8 * num_sect
     if len(blob) < head_size:
         return []
-    # REGION_NPC_FILE_INDEX = 2 (SceneDataDef.h:30)
-    off, length = struct.unpack_from("<II", blob, 4 + 8 * 2)
+    off, length = struct.unpack_from("<II", blob, 4 + 8 * 2)   # REGION_NPC_FILE_INDEX = 2
     beg = head_size + off
     if length < 12 or beg + length > len(blob):
         return []
     (num_npc,) = struct.unpack_from("<I", blob, beg)
-    p = beg + 12                            # KNpcFileHead = uNumNpc + uReserved[2]
+    p = beg + 12
     out = []
     for _ in range(num_npc):
         if p + 60 > len(blob):
@@ -212,110 +242,193 @@ def doc_npc_region(blob):
     return out
 
 
-def main():
-    if not os.path.exists(INI):
-        print("KHONG THAY %s - can cay may chu" % INI)
-        return 1
-    paks = []
+# ---------------------------------------------------------------- quet mot map
+
+def quet_map(paks, duongdan):
+    """Quet DAY DU 256x256 chi so region (chi so co cong offset m_nRegionBeginX/Y nen
+    khong the doan dai hep). Nhanh nho: (a) bam TANG DAN - phan '\\maps\\<map>\\v_NNN\\'
+    chi bam mot lan cho moi hang, (b) region chi co vat can (size == 2100) thi khong
+    giai nen. Tra (danh sach (x,y) quai, so region, so region co NPC)."""
+    st0 = hstep(0, 0, b"\\maps\\" + duongdan + b"\\v_")
+    quai = []
+    nReg = 0
+    nCoNpc = 0
+    for ny in range(0, 256):
+        u1, i1 = hstep(st0[0], st0[1], b"%03d\\" % ny)
+        for nx in range(0, 256):
+            uid, _ = hstep(u1, i1, b"%03d_region_s.dat" % nx)
+            uid ^= 0x12345678
+            pk = None
+            for p in paks:
+                if p.info(uid):
+                    pk = p
+                    break
+            if pk is None:
+                continue
+            nReg += 1
+            off, size, cflag = pk.info(uid)
+            if size < CHI_VATCAN:
+                continue                 # nho hon ca header+1 NPC -> chac chan rong
+            try:
+                blob = pk.doc(uid)
+            except Exception:
+                continue
+            if not blob:
+                continue
+            ds = doc_npc_region(blob)
+            if ds:
+                nCoNpc += 1
+            for (px, py, kind, lvl, ten) in ds:
+                if kind != KIND_NORMAL:
+                    continue
+                if px <= 0 or py <= 0:
+                    continue
+                quai.append((px, py))
+    return quai, nReg, nCoNpc
+
+
+def gom_cum(quai, ax_mps, ay_mps):
+    cum = {}
+    for (px, py) in quai:
+        k = (px // CUM, py // CUM)
+        c = cum.setdefault(k, [0, 0, 0])
+        c[0] += px
+        c[1] += py
+        c[2] += 1
+    ds = []
+    for k, c in cum.items():
+        if c[2] < MIN_QUAI:
+            continue
+        ds.append((c[0] // c[2], c[1] // c[2], c[2]))
+    ds.sort(key=lambda t: -t[2])
+    ds = ds[:MAX_SPOT]
+    # cum gan diem Xa Phu tha xuong len truoc (di gan nhat truoc)
+    ds.sort(key=lambda t: (t[0] - ax_mps) ** 2 + (t[1] - ay_mps) ** 2)
+    return ds
+
+
+_PAKS = []
+
+
+def _mo_pak():
+    """Moi tien trinh con mo bo pak cua rieng no (khong chia se file handle)."""
+    global _PAKS
+    _PAKS = []
     for pk in PAKS:
         full = os.path.join(SRV, "Pak", pk)
         if os.path.exists(full):
-            paks.append(Pak(full))
-    if not paks:
+            _PAKS.append(Pak(full))
+
+
+def _quet_mot_map(viec):
+    mid, duongdan = viec
+    quai, nreg, nnpc = quet_map(_PAKS, duongdan)
+    return (mid, quai, nreg, nnpc)
+
+
+def main():
+    chon = None
+    for i, a in enumerate(sys.argv):
+        if a == "--maps" and i + 1 < len(sys.argv):
+            chon = set(int(x) for x in sys.argv[i + 1].split(","))
+
+    _mo_pak()
+    if not _PAKS:
         print("KHONG THAY pak nao trong %s\\Pak" % SRV)
         return 1
-    print("pak nap: %s" % ", ".join("%s(%d muc)" % (p.name, len(p.idx)) for p in paks))
+    print("pak: %s" % ", ".join("%s(%d)" % (p.name, len(p.idx)) for p in _PAKS))
 
     duong = doc_maplist(INI)
-    maps = doc_map_nhiemvu(TBL)
-    print("map nhiem vu (g_DTQuestMap): %d" % len(maps))
+    dsmap = doc_mapindex(MAPIDX)
+    batmap = doc_findmaps(FINDMAPS)
+    print("TL_MAPTRAPINDEX: %d map | tasklink_findmaps.txt (dang BAT): %d map -> %s"
+          % (len(dsmap), len(batmap), sorted(batmap)))
 
-    ket = []          # (mapid, [(x, y, num), ...])
-    tong_quai = 0
-    for mid, ax, ay in maps:
+    viecs = []
+    thongtin = {}
+    for (mid, ten, cx, cy) in dsmap:
+        if chon and mid not in chon:
+            continue
         p = duong.get(mid)
         if not p:
-            print("  map %3d: KHONG co trong MapList.ini - bo qua" % mid)
-            ket.append((mid, []))
+            print("  map %3d: khong co trong MapList.ini - bo qua" % mid)
             continue
-        quai = []
-        nregion = 0
-        loi = 0
-        for ny in range(0, 256):
-            for nx in range(0, 256):
-                nm = b"\\maps\\%s\\v_%03d\\%03d_region_s.dat" % (p, ny, nx)
-                blob = None
-                for pk in paks:
-                    try:
-                        blob = pk.get(nm)
-                    except Exception:
-                        blob = None
-                        loi += 1
-                    if blob:
-                        break
-                if not blob:
-                    continue
-                nregion += 1
-                for (px, py, kind, lvl, name) in doc_npc_region(blob):
-                    if kind != KIND_NORMAL:
-                        continue
-                    if px <= 0 or py <= 0:
-                        continue
-                    quai.append((px, py))
-        # gom cum theo o CUM x CUM
-        cum = {}
-        for (px, py) in quai:
-            k = (px // CUM, py // CUM)
-            c = cum.setdefault(k, [0, 0, 0])
-            c[0] += px
-            c[1] += py
-            c[2] += 1
-        ds = []
-        for k, c in cum.items():
-            if c[2] < MIN_QUAI:
-                continue
-            ds.append((c[0] // c[2], c[1] // c[2], c[2]))
-        ds.sort(key=lambda t: -t[2])
-        ds = ds[:MAX_SPOT]
-        # gan neo nhiem vu len dau (diem Xa Phu tha xuong) neu no gan mot cum
-        ds.sort(key=lambda t: (t[0] - ax * 32) ** 2 + (t[1] - ay * 32) ** 2)
-        ket.append((mid, ds))
-        tong_quai += len(quai)
-        if quai:
-            xs = [q[0] for q in quai]
-            ys = [q[1] for q in quai]
-            print("  map %3d: %4d region, %5d quai, %2d cum | quai x=%d..%d y=%d..%d"
-                  " | neo nhiem vu (%d,%d)%s"
-                  % (mid, nregion, len(quai), len(ds), min(xs), max(xs), min(ys), max(ys),
-                     ax * 32, ay * 32,
-                     "" if (min(xs) <= ax * 32 <= max(xs)) else "  <-- NEO NGOAI VUNG QUAI"))
-        else:
-            print("  map %3d: %4d region, KHONG co quai (%d loi giai nen)" % (mid, nregion, loi))
+        viecs.append((mid, p))
+        thongtin[mid] = (ten, cx, cy)
 
-    # ---- xuat header ----
-    dong = []
-    dong.append("// KDaTauSpots.h - SINH TU DONG boi ReverseTools/gen_datau_spots.py")
-    dong.append("// Toa do CUM QUAI cua 14 map nhiem vu Da Tau loai 4, doc thang tu file")
-    dong.append("// add NPC cua may chu trong pak (\\maps\\<map>\\v_NNN\\NNN_Region_S.dat).")
-    dong.append("// Don vi: MPS tuyet doi (dung thang, KHONG nhan 32 nua).")
-    dong.append("// SUA TAY LA VO ICH - chay lai bo sinh khi may chu doi bang map.")
-    dong.append("#ifndef KDATAUSPOTS_H")
-    dong.append("#define KDATAUSPOTS_H")
-    dong.append("")
-    dong.append("struct DTSpotRow { int nMapId; int nX; int nY; int nNum; };")
-    dong.append("static const DTSpotRow g_DTSpot[] = {")
-    for mid, ds in ket:
+    ket = []
+    tong_quai = 0
+    from multiprocessing import Pool
+    print("quet %d map bang %d tien trinh..." % (len(viecs), SO_TIEN_TRINH))
+    sys.stdout.flush()
+    with Pool(processes=SO_TIEN_TRINH, initializer=_mo_pak) as pool:
+        for (mid, quai, nreg, nnpc) in pool.imap_unordered(_quet_mot_map, viecs):
+            ten, cx, cy = thongtin[mid]
+            ds = gom_cum(quai, cx * 32, cy * 32)
+            ket.append((mid, ten, cx, cy, ds, len(quai)))
+            tong_quai += len(quai)
+            print("  map %3d %-28s %5d region, %5d quai, %2d cum%s"
+                  % (mid, ten.decode("latin-1")[:28], nreg, len(quai), len(ds),
+                     "   [DANG BAT]" if mid in batmap else ""))
+            sys.stdout.flush()
+    ket.sort(key=lambda t: t[0])
+
+    # ---------------- xuat TXT (client nap luc chay) ----------------
+    d = []
+    d.append(b"# datau_toado.txt - TOA DO CUM QUAI CAC MAP NHIEM VU DA TAU")
+    d.append(b"# SINH TU DONG boi ReverseTools/gen_datau_spots.py - doc file add NPC cua")
+    d.append(b"# may chu trong pak (\\maps\\<map>\\v_NNN\\NNN_Region_S.dat).")
+    d.append(b"# Auto Da Tau (CoreClient.dll) nap tep nay luc chay de biet cho nao co quai")
+    d.append(b"# ma chay toi danh - sua tay duoc, khong can dung lai DLL.")
+    d.append(b"#")
+    d.append(b"# Cot:  MapID <tab> X <tab> Y <tab> SoQuai      (X/Y = MPS tuyet doi)")
+    d.append(b"# Dong bat dau bang # la chu thich.")
+    d.append(b"")
+    for (mid, ten, cx, cy, ds, nq) in ket:
+        d.append(b"# ---- map %d: %s (%d quai, neo nhiem vu %d,%d) %s"
+                 % (mid, ten, nq, cx * 32, cy * 32,
+                    b"[DANG BAT]" if mid in batmap else b""))
         for (x, y, num) in ds:
-            dong.append("\t{ %d, %d, %d, %d }," % (mid, x, y, num))
-    dong.append("};")
-    dong.append("static const int g_nDTSpotCount = sizeof(g_DTSpot)/sizeof(g_DTSpot[0]);")
-    dong.append("")
-    dong.append("#endif")
-    data = ("\r\n".join(dong) + "\r\n").encode("ascii")
-    open(OUT, "wb").write(data)
-    tong_cum = sum(len(d[1]) for d in ket)
-    print("OK: ghi %s (%d dong cum / %d map, %d quai da quet)"
-          % (OUT, tong_cum, len(ket), tong_quai))
+            d.append(b"%d\t%d\t%d\t%d" % (mid, x, y, num))
+    data = b"\r\n".join(d) + b"\r\n"
+    for path in (OUT_TXT, OUT_TXT2):
+        try:
+            thumuc = os.path.dirname(path)
+            if thumuc and not os.path.isdir(thumuc):
+                os.makedirs(thumuc)
+            open(path, "wb").write(data)
+            print("OK ghi %s (%d byte)" % (path, len(data)))
+        except IOError as e:
+            print("KHONG ghi duoc %s: %s" % (path, e))
+
+    # ---------------- xuat HEADER (ban du phong khi thieu txt) ----------------
+    h = []
+    h.append("// KDaTauSpots.h - SINH TU DONG boi ReverseTools/gen_datau_spots.py")
+    h.append("// BAN DU PHONG: engine uu tien doc settings\\datau_toado.txt luc chay;")
+    h.append("// thieu tep do thi dung bang nay (chi cac map DANG BAT cho nhiem vu loai 4).")
+    h.append("// Don vi: MPS tuyet doi. SUA TAY LA VO ICH - chay lai bo sinh.")
+    h.append("#ifndef KDATAUSPOTS_H")
+    h.append("#define KDATAUSPOTS_H")
+    h.append("")
+    h.append("struct DTSpotRow { int nMapId; int nX; int nY; int nNum; };")
+    h.append("static const DTSpotRow g_DTSpot[] = {")
+    nrow = 0
+    for (mid, ten, cx, cy, ds, nq) in ket:
+        if batmap and mid not in batmap:
+            continue
+        for (x, y, num) in ds:
+            h.append("\t{ %d, %d, %d, %d }," % (mid, x, y, num))
+            nrow += 1
+    if nrow == 0:
+        h.append("\t{ 0, 0, 0, 0 },")
+    h.append("};")
+    h.append("static const int g_nDTSpotCount = sizeof(g_DTSpot)/sizeof(g_DTSpot[0]);")
+    h.append("")
+    h.append("#endif")
+    open(OUT_H, "wb").write(("\r\n".join(h) + "\r\n").encode("ascii"))
+    print("OK ghi %s (%d dong du phong)" % (OUT_H, nrow))
+    print("TONG: %d map co du lieu, %d quai da quet, %d dong toa do"
+          % (len(ket), tong_quai, sum(len(k[4]) for k in ket)))
     return 0
 
 
