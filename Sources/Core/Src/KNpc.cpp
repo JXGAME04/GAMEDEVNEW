@@ -3601,14 +3601,6 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 
 	}
 
-#ifdef _SERVER
-		// [WLLS 20/08] bo dem sat thuong HUNG CHIU (ST_*DamageCounter): cong tai
-		// diem SAU khang tinh + noi luc ho than, TRUOC chuyen-noi-luc.
-		// Moi duong tru mau (danh thuong/phep/doc/phan don) deu di qua ham nay.
-		if (m_Kind == kind_player && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
-			Player[m_nPlayerIdx].m_bWllsDmgCounterOn && nDamage > 0)
-			Player[m_nPlayerIdx].m_nWllsDmgCounter += nDamage;
-#endif
 		if (nType != damage_poison)
 		{
 				int nCurenManaShield = m_ManaShield.nValue[0];
@@ -3746,6 +3738,15 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			m_CurrentMana = m_CurrentManaMax;
 		}
 	}
+#ifdef _SERVER
+	// [WLLS 21/08] bo dem sat thuong HUNG CHIU (ST_*DamageCounter): dat NGAY
+	// truoc dong tru mau duy nhat - SAU chuyen-noi-luc, khien tinh va clamp
+	// overkill - de dem dung MAU MAT THAT (tie-break xu thang thua theo damage
+	// nhan, combat\mission.lua:37-53; dat som hon la dem du).
+	if (m_Kind == kind_player && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
+		Player[m_nPlayerIdx].m_bWllsDmgCounterOn && nDamage > 0)
+		Player[m_nPlayerIdx].m_nWllsDmgCounter += (nDamage > (int)m_CurrentLife ? (int)m_CurrentLife : nDamage);
+#endif
 	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS || bIsFS);
 	m_CurrentLife -= nDamage;
 	nRealDamage += nDamage;
@@ -4415,6 +4416,7 @@ void KNpc::ServeMove(int MoveSpeed)
 #ifndef _SERVER
 	if(nRet == 1)
 	{
+		m_nNeedFixPos = 0;	// dang di duoc binh thuong - xoa bo dem bi chan
 		x = g_DirCos(m_Dir, 64) * MoveSpeed;
 		y = g_DirSin(m_Dir, 64) * MoveSpeed;
 	}
@@ -4864,6 +4866,15 @@ BOOL KNpc::Cost(NPCATTRIB nType, int nCost, BOOL bOnlyCheckCanCast)
 		break;
 	}
 
+#ifdef _SERVER
+	// [WLLS 21/08] ForbitStamina (trong tran lien dau): khong kiem / khong tru
+	// THE LUC khi ra chieu - dong bo voi nhanh tru-18 khi chay do PK da gate o
+	// phia tren (KNpc.cpp ~2200). pSource = NULL -> bo qua ca kiem lan tru.
+	if ((nType == attrib_stamina_v || nType == attrib_stamina_p) &&
+		m_Kind == kind_player && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
+		Player[m_nPlayerIdx].m_bWllsForbidStamina)
+		pSource = NULL;
+#endif
 	if (pSource)
 	{
 		if ((nType== attrib_life_v || nType== attrib_life_p)? ((*pSource-1) < nCurCost):(*pSource < nCurCost))

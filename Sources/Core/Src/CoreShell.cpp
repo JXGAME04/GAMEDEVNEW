@@ -12468,6 +12468,7 @@ static DWORD s_SecTickSum = 0, s_SecTickMax = 0;
 static DWORD s_SecNetSum = 0, s_SecNetMax = 0;
 static DWORD s_SecWorldSum = 0, s_SecWorldMax = 0;
 static DWORD s_SecSceneSum = 0, s_SecSceneMax = 0;
+static DWORD s_SecPaintSum = 0, s_SecPaintMax = 0;
 
 static void CoreProbeRollSecond(DWORD dwNow)
 {
@@ -12479,19 +12480,21 @@ static void CoreProbeRollSecond(DWORD dwNow)
 	// abnormal second: painted below ~55fps, starved ticks, or heavy ticking.
 	// s_SecPaint > 0 filters loading screens / minimized window noise.
 	if (s_SecPaint > 0 &&
-		(s_SecPaint < 55 || s_SecTick < 16 || s_SecTickMax >= 30 || s_SecTickSum >= 250))
+		(s_SecPaint < 55 || s_SecTick < 16 || s_SecTickMax >= 30 || s_SecTickSum >= 250 ||
+		 s_SecPaintSum >= 300))
 	{
 		FILE* pLog = fopen("jx_paint.log", "a");
 		if (pLog)
 		{
-			fprintf(pLog, "[SEC] pid=%u t=%u painted=%d ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
-				GetCurrentProcessId(), s_ProbeSec * 1000, s_SecPaint, s_SecTick, s_SecTickSum, s_SecTickMax,
+			fprintf(pLog, "[SEC] pid=%u t=%u painted=%d draw=%u/%u ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
+				GetCurrentProcessId(), s_ProbeSec * 1000, s_SecPaint, s_SecPaintSum, s_SecPaintMax, s_SecTick, s_SecTickSum, s_SecTickMax,
 				s_SecNetSum, s_SecNetMax, s_SecWorldSum, s_SecWorldMax, s_SecSceneSum, s_SecSceneMax);
 			fclose(pLog);
 		}
 	}
 	s_ProbeSec = dwSec;
 	s_SecPaint = 0;
+	s_SecPaintSum = 0; s_SecPaintMax = 0;
 	s_SecTick = 0;
 	s_SecTickSum = 0; s_SecTickMax = 0;
 	s_SecNetSum = 0; s_SecNetMax = 0;
@@ -12527,8 +12530,18 @@ void KCoreShell::DrawGameSpace()
 #ifndef _SERVER
 	if (g_nCorePaintLog > 0)
 	{
+		DWORD dwDrawT0 = timeGetTime();
 		s_SecPaint++;
-		CoreProbeRollSecond(timeGetTime());
+		if (g_pRepresent)
+		{
+			g_ScenePlace.Paint();
+			Player[CLIENT_PLAYER_INDEX].DrawSelectInfo();
+		}
+		DWORD dwDrawMs = timeGetTime() - dwDrawT0;
+		s_SecPaintSum += dwDrawMs;
+		if (dwDrawMs > s_SecPaintMax) s_SecPaintMax = dwDrawMs;
+		CoreProbeRollSecond(dwDrawT0 + dwDrawMs);
+		return;
 	}
 #endif
 	if (g_pRepresent)

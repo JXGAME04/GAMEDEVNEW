@@ -1966,14 +1966,27 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		{
 			if (Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion)
 			{
-				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
-				Npc[nIdx].m_MapX = nMapX;
-				Npc[nIdx].m_MapY = nMapY;
-				Npc[nIdx].m_OffX = NpcSync->m_fkOffX;
-				Npc[nIdx].m_OffY = NpcSync->m_fkOffY;
-				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].AddRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+				// Chi coi la "da nan" khi goi THUC SU doi vi tri. Goi ghi dung cho
+				// dang dung = server xac nhan NPC dung yen tai do => GIU bo dem de
+				// van chan >12 tick trong ServeMove duoc phep DoStand. Khong co
+				// dieu kien nay, cho dong sync toi day hon 0,7s/lan se reset dem
+				// lien tuc va NPC ket cung "dung yen ma chan van chay" vo han.
+				if (Npc[nIdx].m_MapX != nMapX || Npc[nIdx].m_MapY != nMapY ||
+					Npc[nIdx].m_OffX != NpcSync->m_fkOffX || Npc[nIdx].m_OffY != NpcSync->m_fkOffY)
+				{
+					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+					Npc[nIdx].m_MapX = nMapX;
+					Npc[nIdx].m_MapY = nMapY;
+					Npc[nIdx].m_OffX = NpcSync->m_fkOffX;
+					Npc[nIdx].m_OffY = NpcSync->m_fkOffY;
+					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].AddRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+					Npc[nIdx].m_nNeedFixPos = 0;
+				}
 			}
-			Npc[nIdx].m_nNeedFixPos = 0;
+			else
+			{
+				Npc[nIdx].m_nNeedFixPos = 0;	// khac region: khoi phia tren da doi vi tri that
+			}
 		}
 
 		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)	// ·ÇÍæ¼?
