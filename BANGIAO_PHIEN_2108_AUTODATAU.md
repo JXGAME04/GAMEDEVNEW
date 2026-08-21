@@ -17,16 +17,18 @@
 4. Luồng mong muốn: **phù về (túi đầy) → kiểm tra có rác → chạy Hậu cần (nó tự bán rác) → rồi
    mới chạy Dã Tẩu.** Đang treo thì: phù về có rác → bán → chạy Hậu cần như cũ.
 
-## 1. TL;DR — trạng thái lúc bàn giao (21/08 ~11:25)
+## 1. TL;DR — trạng thái lúc bàn giao (21/08 ~11:40)
 
 | Việc | Trạng thái |
 |---|---|
 | (1)(2) Phù về không bán mà tới Xa Phu → lên map → phù về lại (cả lúc treo xong lẫn đang làm) | ✅ sửa theo luồng Hậu cần (mục 3) + **sửa lỗi thật trong bước bán rác Hậu cần** (mục 4) — **chưa test thật** |
 | (3) Khoe đồ xong: gửi món vào rương thay vì bán | ✅ xong — **chưa test thật** |
 | Phần cấu trúc tự thêm ở `f5a38c40`/`adc57b19`/`8bcd1772` | ✅ **đã gỡ** trong `d8d27119` |
+| Hai vòng lọc bán rác (Hậu cần bước 1 + `DTP_SELLJUNK`) | ✅ **trả nguyên trạng** trong `78102641` — chủ game đã test, không đụng nữa |
+| Phân tích phần LƯU cấu hình của Auto | ✅ xong (mục 8) — tự lưu đủ, còn 2 khe hở nhỏ, **chưa sửa (chờ ý chủ game)** |
 
 ### Việc phải làm đầu phiên sau
-1. **Thoát game vào lại** — `Game.exe` chạy từ 09:20 (bản 09:20). Bản mới **11:19** (`d8d27119`).
+1. **Thoát game vào lại** — `Game.exe` chạy từ 09:20 (bản 09:20). Bản mới **11:25** (`78102641`).
 2. GameServer đã restart 09:33 (phiên khác) ⇒ `EndGiveBox` (hoàn món khoe) đang sống.
 3. Test theo mục 6.
 
@@ -34,13 +36,14 @@
 
 | Tệp | Mốc | Ghi chú |
 |---|---|---|
-| `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\CoreClient.dll` | **21/08 11:19** (2.213.888 B, md5 `d043c045…`) | `d8d27119`; CRT-TINH ĐÚNG |
-| bản lùi | `CoreClient_cu_2108_0920.dll` (sạch, trước phiên) · `CoreClient_cu_2108_1056.dll` (`8bcd1772`, **đừng dùng** — còn cấu trúc bị bác) | |
+| `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\CoreClient.dll` | **21/08 11:25** (2.215.424 B, md5 `b6f04852…`) | `78102641`; CRT-TINH ĐÚNG |
+| bản lùi | `CoreClient_cu_2108_0920.dll` (sạch, trước phiên) | |
 | `Game.exe` / `WAuto.exe` / `CoreServer.dll` | không đổi (`autoData` vẫn 6888 B) | |
 
 ```
 f5a38c40 / adc57b19 / 8bcd1772  (vòng 1-3: có phần cấu trúc bị chủ game bác — KHÔNG lùi về đây)
-d8d27119  r4: gỡ cấu trúc tự thêm; phù về có rác → chạy Hậu cần rồi Dã Tẩu; sửa vòng bán rác Hậu cần
+d8d27119  r4: gỡ cấu trúc tự thêm; phù về có rác → chạy Hậu cần rồi Dã Tẩu
+78102641  r5: trả nguyên trạng 2 vòng lọc bán rác; DT_LaRac hạ xuống CHỈ-ĐỂ-ĐỌC
 ```
 Chỉ `Sources/Core/Src/CoreShell.cpp`. Build: `MSBuild Sources/Core/Core.vcxproj "-p:Configuration=Client
 Release" -p:Platform=Win32 -m` tại D → chép tay `ClientRelease\CoreClient.dll` sang `bin\client` →
@@ -64,13 +67,17 @@ nằm trên đường này. Treo xong cũng rơi vào đây (hết hạn treo tr
   (`g_nDTSellNeed = 999`) rồi `nDTBackXaFu` → Xa Phu.
 - không dọn được (tắt cả hai, hoặc vừa nhường xong vẫn đầy) → treo 15' có lời.
 
-## 4. Lỗi thật trong bước "bán rác" của Hậu cần (gốc "đôi lúc có rác mà không bán")
+## 4. 🟠 BÁO CÁO (KHÔNG SỬA): nghi vấn trong bước "bán rác" của Hậu cần
 
-`ATYPE_RETURN` bước 1 quét túi theo hàng; `nSelIdx` = món **cuối** hàng đạt điều kiện; gặp món **giữ
-lại** theo bộ lọc (nhẫn/dây/bội cấp cao, dòng trong danh sách Lọc, +all skill) thì `nSelIdx = 0; continue;`
-→ **xóa luôn món rác đứng trước trong cùng hàng** → hàng đó không bao giờ bán. Một món giữ cỡ 2×4 ở cột
-cuối chặn 4 hàng. Sửa: **một bộ lọc `DT_LaRac`** (y nguyên luật cũ) dùng chung cho Hậu cần bước 1 và
-`DTP_SELLJUNK`, chọn món rác **đầu tiên**.
+Chủ game chốt: *"phần lọc đồ bán và lọc đồ khi nhặt đã test rồi, đừng đụng và fix lại"* ⇒ **đã trả
+nguyên trạng**, chỉ ghi lại để chủ game tự quyết:
+
+`ATYPE_RETURN` bước 1 quét túi theo hàng, `nSelIdx` = món **cuối** hàng đạt điều kiện. Gặp món **giữ lại**
+theo bộ lọc (nhẫn/dây/bội cấp cao, dòng trong danh sách Lọc, +all skill) thì làm `nSelIdx = 0; continue;`
+→ **xóa luôn món rác đứng trước trong cùng hàng** ⇒ hàng đó không bán ở lượt này. Lượt sau (mỗi 300 ms)
+quét lại nên **vẫn bán được** khi món giữ đã đứng ở vị trí khác; chỉ kẹt hẳn nếu món giữ luôn nằm sau món
+rác trong mọi hàng. `DTP_SELLJUNK` của Dã Tẩu không có nét này (nó `break` ngay khi chọn được món).
+Nếu chủ game muốn sửa: đổi thành "chọn món rác **đầu tiên**" (1 dòng) — nói một tiếng tôi làm.
 
 ## 5. Món khoe (loại 3) → rương (yêu cầu 3)
 
@@ -105,4 +112,27 @@ rương chính → mở rộng theo `nSelStore`; cần rương mở / mật kh�
 
 Phản biện: vòng 1-2 (agent Opus) đã chạy trên bản cũ; **r4 chưa được agent soi lại** — test thật trước.
 
-*Ghi 21/08/2026 ~11:25.*
+## 8. Phân tích phần LƯU cấu hình của Auto (theo yêu cầu chủ game)
+
+**Kết luận: WAuto đã tự lưu gần như MỌI thay đổi, ngay khi chỉnh.** Cách hoạt động:
+
+| Thành phần | Chi tiết |
+|---|---|
+| Nơi lưu | `<thư mục WAuto>\APdata\<dwPID>.dat` — ghi **nguyên struct `autoData`** (hiện 6888 B). Thư mục đang dùng: `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\APdata` (216 tệp). |
+| `dwPID` là gì | **ID nhân vật trên server** (`KProtocolProcess.cpp:1764: s.dwPID = Player[CLIENT_PLAYER_INDEX].m_dwID`), KHÔNG phải id tiến trình ⇒ mỗi nhân vật một tệp, giữ nguyên qua các lần thoát/vào game. |
+| 2 hàm ghi | `SaveRoleData(hDlg, gnode)` = **đọc toàn bộ 154 control** trên hộp thoại → `apdata` → ghi tệp. `SaveRoleDataFast(gnode)` = ghi thẳng `apdata` (dùng sau khi sửa danh sách trong bộ nhớ). |
+| Kích hoạt lưu | ① mọi **checkbox**: `BN_CLICKED` (khối `case` ~4220-4307) → `SaveRoleData`; ② mọi **combo**: `CBN_SELCHANGE` (~4986-5015); ③ mọi **ô nhập**: `EN_KILLFOCUS` (~4091-4216); ④ **nút danh sách** (lọc dòng ma, tọa độ, tổ đội, không-nhặt-theo-tên, sắp xếp acc) → `SaveRoleDataFast`; ⑤ phím tắt gán PK (subclass, dòng 3287); ⑥ bật/tắt PK bằng phím nóng (2352). |
+| Đối chiếu | So bộ control **đọc khi lưu** với bộ control **kích hoạt lưu**: chỉ 1 mục lệch — `IDC_EDITOR_7_K` (ô phím PK) — nhưng nó lưu qua đường ⑤, nên **không sót**. Tab 8 (Dã Tẩu): 11 checkbox qua ①, 4 combo qua ②, 2 ô nhập qua ③ — đủ. |
+| Nạp | `LoadRoleData`: tệp cũ nhỏ hơn struct thì đọc phần có + **di trú 2 bậc theo `offsetof`** (khối Dã Tẩu / 3 ô 20/08) rồi đặt mặc định — không mất lựa chọn cũ. Chưa có tệp → tạo mặc định và ghi ngay. |
+
+**2 khe hở nhỏ (chưa sửa, chờ ý chủ game):**
+1. **Ô nhập chỉ lưu khi rời ô** (`EN_KILLFOCUS`). Gõ số rồi **đóng WAuto ngay** (dấu ×/Alt+F4) mà con trỏ
+   còn trong ô đó → giá trị vừa gõ **mất** (`WM_CLOSE` chỉ gọi `UnInit()` rồi `EndDialog`, không lưu).
+   Sửa nếu muốn: gọi `SaveRoleData` một lần trong `WM_CLOSE`.
+2. **Ghi đè trực tiếp** (`fopen(...,"wb+")` → `fwrite` → `fclose`): mất điện/kill giữa chừng có thể làm
+   tệp `.dat` cụt. Sửa nếu muốn: ghi tệp tạm rồi `MoveFileEx` đè.
+
+**Ghi chú (không phải lỗi):** ô tick **bật/tắt auto** ở danh sách nhân vật và ô "ẩn game" là trạng thái
+phiên (gửi IPC sang game), **cố ý không lưu** — mở lại WAuto thì auto không tự bật.
+
+*Ghi 21/08/2026 ~11:40.*

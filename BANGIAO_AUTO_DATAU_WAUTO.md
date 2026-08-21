@@ -808,11 +808,14 @@ Tẩu) và (**có rác** `DT_CoRac` ∨ **vẫn đầy theo mức tab Cơ bản*
   chính bộ lọc rồi `nDTBackXaFu → GOXAFU`.
 - không dọn được → treo 15' có lời (treo = nhả máy).
 
-**C. Lỗi thật trong Hậu cần bước 1 "bán rác":** vòng quét theo hàng, `nSelIdx` = món cuối hàng đạt điều
+**C. 🟠 Nghi vấn ở Hậu cần bước 1 "bán rác" — CHỈ BÁO CÁO, đã trả nguyên trạng** (`78102641`; chủ game:
+*"phần lọc đồ bán và lọc đồ khi nhặt đã test rồi, đừng đụng và fix lại"*): vòng quét theo hàng, `nSelIdx` = món cuối hàng đạt điều
 kiện; gặp món **giữ lại** theo bộ lọc (nhẫn/dây/bội cấp cao, dòng trong Lọc, +all skill 139) thì
 `nSelIdx = 0; continue;` → **xóa món rác đứng trước cùng hàng** → hàng đó không bao giờ bán (món giữ 2×4
-ở cột cuối chặn 4 hàng). Sửa: **`DT_LaRac`** (một bộ lọc, y nguyên luật cũ kể cả ngựa/mặt nạ bán ngay
-không qua lọc) dùng chung cho bước 1 và `DTP_SELLJUNK`; chọn món rác **đầu tiên**.
+ở cột cuối chặn 4 hàng). Lượt sau (300 ms) quét lại nên
+thường vẫn bán được; chỉ kẹt khi món giữ luôn đứng sau món rác. **Không sửa** — `DT_LaRac` chỉ còn dùng
+để ĐỌC (`DT_CoRac`: "trong túi còn món nào máy bán rác sẽ bán không") phục vụ quyết định nhường máy cho
+Hậu cần; hai vòng bán giữ nguyên bản đã test.
 
 **D. Món khoe (3):** `g_dwDTKhoePend` ghi **lúc đặt vào hộp giao** (nhịp OK đi nhánh "bấm OK rỗng" —
 mã sau `SendUiCmdScript` cuối GIVEBOX không bao giờ chạy); `DT_KhoeXong` chốt `g_dwDTKhoeId` **chỉ khi
