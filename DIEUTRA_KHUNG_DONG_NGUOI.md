@@ -662,3 +662,87 @@ khi tổng thời gian **bên trong** `UiPaint` ≥ 20 ms.
   `...\subagents\workflows\wf_7e5f00dc-45f\`. Có thể resume workflow bằng
   `Workflow({scriptPath: "...\dieu-tra-dung-khung-hinh-ve-wf_7e5f00dc-45f.js",
   resumeFromRunId: "wf_7e5f00dc-45f"})` — các agent đã xong sẽ trả kết quả từ cache.
+
+---
+
+# 13. ĐÃ THI CÔNG (phiên 20/08 tối) — 4 commit mã + công cụ repack pak
+
+> Mục này thay trạng thái "CHƯA SỬA GÌ" ở đầu tài liệu. Tất cả build PASS
+> (Client Release|Win32 + Server Release|x64 + Game.exe), **chưa test trong game**.
+
+## 13.1 Vế B — `8474e504` áp lại bản vá bị revert oan
+
+`git revert eba30b04` sạch, không conflict. `m_nNeedFixPos` nằm trong
+`#ifndef _SERVER` (KNpc.h:523-548) — server không đổi layout. Nội dung đúng như
+mô tả mục 2: người khác bị chắn thì giương cờ + giữ trạng thái chạy thay vì
+`DoStand()`; `SyncNpcMin` thấy cờ thì ghi đè toạ độ thật từ gói rồi hạ cờ.
+
+## 13.2 Vế A — 3 fix mã đã vào
+
+| Commit | Fix | Nội dung |
+|---|---|---|
+| `59de0016` | **#3 (L4-02/L5-01)** | `KNpc::PaintInfo` thôi `Load()` + parse (kèm AES) 3 tệp cấu hình cho từng NPC từng khung vẽ — chuyển thành 3 bảng `static` nạp đúng một lần. Vị trí cũ: honor :6057, bobo :6084, rank :6205/:6213. Ước −5..−20 ms/khung chỗ đông người có danh hiệu. |
+| `5d6c5381` | **#5 (L4-04)** | **Áp thật sự N2 của `ce8c4d49`** (xác nhận lại: diff commit đó CHỈ chứa N4, N2 chưa từng vào mã). Vòng `PaintGround` giờ bỏ qua region không giao `m_RepresentArea` (rect region = `GetRegionIdx()` × 512×1024, nới 64px). KHÔNG thêm khoá mới — trong mã có sẵn HAI thứ tự lấy khoá ngược nhau (`:1208` Process→RegionList vs `:1746` RegionList→Process), thêm cặp lồng nữa là tăng nguy cơ deadlock; vụ đua realloc (L4-08) để xử riêng. |
+| `ae76b2e7` | **12.5 (mù đo)** | `[SPIKE]` giờ có ô `shift=` riêng cho POSSHIFT; `paint=` chỉ còn UiPaint thật. Phép thử dứt điểm thành: `shift` lớn ⇒ L4-01; `paint` lớn + `[PDET] render` lớn ⇒ nạp SPR trong vòng vẽ (12.1). |
+
+## 13.3 Vế A ưu tiên 1 — công cụ repack pak `TYPE_FRAME` ĐÃ DỰNG XONG
+
+`ReverseTools\repack_typeframe\` (tool + build_repack.cmd + verify_pak.py).
+
+- **Cách hoạt động**: transcode TẠI CHỖ từng mục — mục UCL-nguyên-tệp nào giải nén
+  ra SPR hợp lệ (magic `SPR\0`), `Frames ≥ 2`, cỡ ≥ ngưỡng (mặc định 64 KB) thì
+  tái nén theo khung đúng bố cục `Sources\Pack\main.cpp:115-155` (khung ≥256B nén
+  NRV2B lvl 10, <256B lưu thô size âm, cờ `0x11`). **Không cần biết tên tệp** (uId
+  giữ nguyên) — hoá giải "mắt xích thiếu" tưởng phải dựng lại cây thư mục.
+- **An toàn**: mọi mục chuyển đổi được VERIFY vòng tròn ngay trong tool (mô phỏng
+  `GetSprFrame` từng khung, so từng byte với bản gốc; lệch = abort). Kèm verifier
+  python độc lập so header/index/mục-copy. Mục có khung 0-byte / vượt 16 MiB /
+  pak >65535 mục (trần WORD `Reserved[2]`) tự động giữ nguyên.
+- **Đã kiểm chứng**: `skills.pak` 257 mục → 131 chuyển, verify PASS cả hai tầng.
+  `ucl_init()` của ucl-1.01 kêu fail oan trên MSVC 2022 (assert đời 2000) — thay
+  bằng self-test chức năng nén↔giải nén 300 KB; **tool phải build x86** (x64 hỏng
+  thật do truncation con trỏ trong thư viện).
+- Engine đọc frame-mode **tự kích hoạt theo cờ trong pak** — không cần đổi mã,
+  không cần config (bằng chứng: `KImageStore2.cpp:811/:833` rẽ nhánh theo
+  `pOffsTable == NULL`, chỉ nhánh TYPE_FRAME trả NULL).
+- ⚠️ Mục TYPE_FRAME **không đọc được bằng `KPakFile::Read` phẳng** — đường duy
+  nhất trong client là `KSprite::Load` bọc `#ifdef TOOLVERSION` (chưa từng define
+  = mã chết), nhưng **công cụ ngoài đọc pak (extractor/viewer) sẽ phải cập nhật**.
+
+**Triển khai (việc của chủ game, tool KHÔNG tự ghi đè pak đang chạy):**
+1. Chạy `repack_typeframe.exe <pak gốc> <pak mới> 65536` cho: `spr.pak`,
+   `update01.pak`, `updatejx14.pak`, `updatejx15.pak` (4 pak chứa SPR nhân vật/trang
+   bị theo mục 12.3; các pak updatejx khác cũng lợi nhưng ưu tiên 4 cái này).
+2. Chạy `python verify_pak.py <pak gốc> <pak mới>` — phải in OK.
+3. Backup pak gốc, thay bằng pak mới, vào chỗ đông test. Payload nén sẽ phình
+   ~3-6% (mất nén liên-khung) — đổi lấy nạp 1 khung ~1,6 KB thay vì 200 KB.
+
+## 13.4 Phát hiện mới trong phiên (chưa xử lý)
+
+- 🔴 **`_EXCLUDE_OUTSIDE_OBJECT` không được define ở đâu cả** ⇒ macro cắt cảnh
+  `SM_IsOutsideRepresentArea` (SceneMath.h:24-31) là `false` cứng toàn dự án —
+  `PaintAboveHeadObj` vẽ mọi vật thể trên-đầu kể cả ngoài màn. Không phải
+  regression (chết từ gốc), nhưng là tối ưu tiềm năng; bật define là đổi hành vi
+  rộng, cần đo riêng trước.
+- `Sources\S3Client` post-build copy trỏ `..\..\..\bin` = `D:\bin` (ngoài cây) ⇒
+  build Game.exe luôn "fail" ở MSB3073 dù link xong; binary thật nằm ở
+  `Sources\S3Client\Release\Game.exe`.
+- Fix #7 (`g_SetPakFileMode(1)`): mode 1 VẪN fallback đĩa khi pak miss
+  (KPakFile.cpp:260-266) nên không mất tài nguyên, NHƯNG nếu tệp rời trong `Spr\`
+  (887 MB trên client thật) là bản override cố ý khác nội dung pak thì đổi mode
+  đổi hình hiển thị ⇒ chờ chủ game xác nhận (hoặc so hash) rồi mới làm.
+- Fix #4 (`bSelect=false` trong CoreDrawGameObj) — đổi hành vi nhìn thấy (quái
+  hết hiện tên/máu khi không chọn) ⇒ **chờ ý chủ game**, chưa làm.
+- L4-01 (`Breathe()`/`WaitForSingleObject` trong khung vẽ) — rủi ro cao (chính
+  `9f759631` thêm vào để chữa giật lùi camera biên region), cần thiết kế khác,
+  chưa đụng.
+
+## 13.5 Việc chủ game cần làm để ĐO
+
+1. `config.ini` `[Client]`: `PaintLog=1`, tạm `PerfHud=0`. Binary mới có ô
+   `shift=` trong `[SPIKE]` — đọc theo bảng 12.8 (đã hết mù đo POSSHIFT).
+2. Vào chỗ đông lần đầu / lần hai như mục 12.8, gửi lại `jx_paint.log`.
+3. Vế B: đứng yên giữa đám đông nhìn người khác — kỳ vọng hết cảnh
+   đứng-khựng-rồi-nhảy (bản vá `m_nNeedFixPos` + nội suy sẵn có kéo mượt).
+4. Sau khi thay pak TYPE_FRAME: lặp lại phép đo — kỳ vọng `[PDET] render` giảm
+   mạnh, cú đơ khi người mới lọt tầm nhìn còn dưới ngưỡng mắt thấy.
