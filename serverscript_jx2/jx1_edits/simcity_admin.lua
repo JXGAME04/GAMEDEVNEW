@@ -1,7 +1,7 @@
 -- simcity_admin.lua - Menu admin cho tinh nang SimCity (bot nguoi choi gia lap)
 -- Port SimCity JX2 -> JX1. Xem BANGIAO_SIMCITY_JX1.md.
 --
--- Goi tu lenhbaiadmin.lua: muc "SimCity - bot gia lap/SC_Menu"
+-- Goi tu lenhbaiadmin.lua: muc "SimCity - bot gi¶ lËp/SC_Menu"
 -- Cac ham C dung o day dang ky trong ScriptFuns.cpp (KSimCity.cpp, server-only):
 --   SC_AddBot(nSex,nLevel,nSubWorldIdx,nMpsX,nMpsY,nSeries[,szName][,nFaction][,nLifeMax]) -> nNpcIdx/0
 --   SC_DelBot(nNpcIdx) / SC_ClearBots() -> so bot da xoa
@@ -15,7 +15,7 @@
 -- LUU Y duong dan preset: PHAI dung gach xuoi "/" vi Lua 4.0 nuot escape "\"
 --   ("\t" -> TAB, "\1" -> ky tu 0x01). g_GetFullPath nhan ca "/".
 
-SC_END_SAY   = "Ket thuc doi thoai./no"
+SC_END_SAY   = "KÕt thóc ®èi tho¹i./no"
 SC_PRESETDIR = "/settings/simcity/maps/thanhthi/"
 SC_CHATFILE  = "/settings/simcity/chat.txt"
 SC_CHATRATE  = 40                 -- 40/1000 moi giay moi bot (~1 cau / 25 giay / bot)
@@ -29,30 +29,39 @@ SC_MoveState = 0    -- 1 = driver di chuyen dang BAT (chi de hien thi tren menu)
 
 -- ================= MENU CHINH =================
 function SC_Menu()
-	local nMove = "TAT"
+	local nMove = "T¾t"
 	if SC_MoveState == 1 then
-		nMove = "BAT"
+		nMove = "BËt"
 	end
 	-- LUU Y: KHONG duoc dung ky tu "|" trong bat ky chuoi nao.
 	-- sUiAppendAnswer (ScriptFuns.cpp:548) dung "|" lam DAU PHAN CACH giua tieu de
 	-- va tung lua chon, tat ca trong 1 buffer 512 byte (MAX_SCIRPTACTION_BUFFERNUM).
 	-- Co "|" trong tieu de -> client tach sai -> mat het cac dong chon.
-	local nChat = "TAT"
+	local nChat = "T¾t"
 	if SC_ChatState == 1 then
-		nChat = "BAT"
+		nChat = "BËt"
 	end
-	SayEx({format("<color=yellow>SimCity - bot gia lap<color>\nDi chuyen: <color=green>%s<color>  Noi chuyen: <color=green>%s<color>\nBot: <color=gold>%d<color>  Lo trinh: <color=gold>%d<color>", nMove, nChat, SC_LastBot, SC_LastRoute),
-	"Sinh 1 bot tai cho toi dung/SC_SpawnHere",
-	"Sinh 5 bot tai cho toi dung/SC_Spawn5",
-	"Cho bot vua sinh di tuan tra (vuong)/SC_PatrolLast",
-	"Di theo lo trinh ban do nay/SC_RouteMenu",
-	"Bat driver di chuyen/SC_On",
-	"Tat driver di chuyen/SC_Off",
-	"Bat bot noi chuyen/SC_ChatOn",
-	"Tat bot noi chuyen/SC_ChatOff",
-	"Trang tri thanh thi (map nay)/SC_City",
-	"Xoa het bot/SC_Clear",
-	"Bot NGUOI CHOI THAT (KPlayer)/PB_Menu",
+	SayEx({format("<color=yellow>SimCity - bot gi¶ lËp<color>\nDi chuyÓn: <color=green>%s<color>  Nãi chuyÖn: <color=green>%s<color>", nMove, nChat),
+	"Sinh bot - tuÇn tra - lé tr×nh/SC_SinhMenu",
+	"Driver di chuyÓn: BËt/SC_On",
+	"Driver di chuyÓn: T¾t/SC_Off",
+	"Bot nãi chuyÖn: BËt/SC_ChatOn",
+	"Bot nãi chuyÖn: T¾t/SC_ChatOff",
+	"Trang trÝ thµnh thÞ (map nµy)/SC_City",
+	"Xo¸ hÕt bot/SC_Clear",
+	"Bot ng­êi ch¬i thËt (KPlayer)/PB_Menu",
+	SC_END_SAY})
+end
+
+-- (21/08) tach ra menu con: SC_Menu cu ~581 byte, VUOT bo dem 512 cua
+-- sUiAppendAnswer nen bi cat cut, dong chon cuoi mat ten ham -> bam vao la loi.
+function SC_SinhMenu()
+	SayEx({format("<color=yellow>SimCity - sinh bot<color>\nBot võa sinh: <color=gold>%d<color>  Lé tr×nh: <color=gold>%d<color>", SC_LastBot, SC_LastRoute),
+	"Sinh 1 bot t¹i chç t«i ®øng/SC_SpawnHere",
+	"Sinh 5 bot t¹i chç t«i ®øng/SC_Spawn5",
+	"Cho bot võa sinh ®i tuÇn tra/SC_PatrolLast",
+	"§i theo lé tr×nh b¶n ®å nµy/SC_RouteMenu",
+	"Quay l¹i/SC_Menu",
 	SC_END_SAY})
 end
 
@@ -77,7 +86,7 @@ function SC_City()
 	local nSwIdx = SubWorldID2Idx(nW)
 	local nSet = SC_CityNodes(nW)
 	if not nSet or nSet < 0 then
-		Msg2Player(format("Map %d khong co du lieu node (maps/thanhthi.txt).", nW))
+		Msg2Player(format("Map %d kh«ng cã d÷ liÖu node (maps/thanhthi.txt).", nW))
 		SC_Menu()
 		return
 	end
@@ -129,7 +138,7 @@ function SC_City()
 	end
 	SC_MoveOn()
 	SC_LastBot = SC_LastBot + nSap + nDi
-	Msg2Player(format("Trang tri map %d: %d sap ngoi ban + %d dan di dao.", nW, nSap, nDi))
+	Msg2Player(format("Trang trÝ map %d: %d s¹p ngåi b¸n + %d d©n ®i d¹o.", nW, nSap, nDi))
 	SC_Menu()
 end
 
@@ -142,24 +151,50 @@ end
 -- (da tao bang tools\taobot_bdb, nhan ban tu tai khoan mau hinodl).
 function PB_Menu()
 	local nCo, nTran = PB_BotCount()
-	SayEx({format("<color=yellow>Bot nguoi choi THAT<color>\nDang song: <color=gold>%d<color> / toi da <color=gold>%d<color>\nBot nap tu roledb, co trang bi va chi so that.", nCo, nTran),
-	"Goi 1 bot/#PB_Call(1,1)",
-	"Goi 100 bot/#PB_Call(1,100)",
-	"Goi 1000 bot/#PB_Call(1,1000)",
-	"Cho bot VAO PHAI (theo ngu hanh)/PB_Join",
-	"BAT danh quai/#PB_Fight(1)",
-	"TAT danh quai/#PB_Fight(0)",
-	"BAT bot noi chuyen/#PB_Chat(40)",
-	"TAT bot noi chuyen/#PB_Chat(0)",
-	"LUU du lieu bot ngay/PB_Save",
-	"Go het bot nguoi choi/PB_Clear",
-	"Cham TTL + Que Hoa Tuu: BAT/#PB_Buff(1)",
-	"Cham TTL + Que Hoa Tuu: TAT/#PB_Buff(0)",
-	"Bot chay nhiem vu DA TAU/PB_DaTauMenu",
-	"Bot ra THANH ban sap/PB_SapMenu",
-	"Goi het bot ve THANH-THON: BAT/#PB_VeThanhBat(1)",
-	"Goi het bot ve THANH-THON: TAT (ve bai luyen)/#PB_VeThanhBat(0)",
-	"Bot tu tham gia TONG KIM/PB_TkMenu",
+	SayEx({format("<color=yellow>Bot ng­êi ch¬i thËt<color>\n§ang sèng: <color=gold>%d<color> / tèi ®a <color=gold>%d<color>", nCo, nTran),
+	"Gäi bot - Vµo ph¸i - L­u - Gì/PB_GoiMenu",
+	"ChÕ ®é: ®¸nh qu¸i - chat - buff/PB_CheDoMenu",
+	"NhiÖm vô D· TÈu/PB_DaTauMenu",
+	"Ra thµnh b¸n s¹p/PB_SapMenu",
+	"Gäi vÒ thµnh - th«n/PB_VtMenu",
+	"Tham gia Tèng Kim/PB_TkMenu",
+	"Quay l¹i SimCity/SC_Menu",
+	SC_END_SAY})
+end
+
+-- (21/08) BA MENU CON. PB_Menu cu gom 18 dong ~764 byte, vuot xa bo dem 512 cua
+-- sUiAppendAnswer (ScriptFuns.cpp:540-554) nen bi cat cut giua chung: dong chon
+-- cuoi mat ten ham va bam vao la loi. Moi menu duoi day <= ~350 byte.
+function PB_GoiMenu()
+	local nCo, nTran = PB_BotCount()
+	SayEx({format("<color=yellow>Gäi bot / qu¶n lý <color>\n§ang sèng: <color=gold>%d<color> / tèi ®a <color=gold>%d<color>", nCo, nTran),
+	"Gäi 1 bot/#PB_Call(1,1)",
+	"Gäi 100 bot/#PB_Call(1,100)",
+	"Gäi 1000 bot/#PB_Call(1,1000)",
+	"Cho bot vµo ph¸i (theo ngò hµnh)/PB_Join",
+	"L­u d÷ liÖu bot ngay/PB_Save",
+	"Gì hÕt bot ng­êi ch¬i/PB_Clear",
+	"Quay l¹i/PB_Menu",
+	SC_END_SAY})
+end
+
+function PB_CheDoMenu()
+	SayEx({"<color=yellow>ChÕ ®é bot<color>",
+	"BËt ®¸nh qu¸i/#PB_Fight(1)",
+	"T¾t ®¸nh qu¸i/#PB_Fight(0)",
+	"BËt bot nãi chuyÖn/#PB_Chat(40)",
+	"T¾t bot nãi chuyÖn/#PB_Chat(0)",
+	"ChÊm TTL + QuÕ Hoa Töu: BËt/#PB_Buff(1)",
+	"ChÊm TTL + QuÕ Hoa Töu: T¾t/#PB_Buff(0)",
+	"Quay l¹i/PB_Menu",
+	SC_END_SAY})
+end
+
+function PB_VtMenu()
+	SayEx({"<color=yellow>Gäi bot vÒ thµnh - th«n<color>",
+	"BËt (bot vÒ 8 thµnh, chia ®Òu)/#PB_VeThanhBat(1)",
+	"T¾t (bot vÒ b·i luyÖn)/#PB_VeThanhBat(0)",
+	"Quay l¹i/PB_Menu",
 	SC_END_SAY})
 end
 
@@ -172,24 +207,23 @@ end
 function PB_TkMenu()
 	local nBat = PB_SetTongKim(-1)
 	local nTran = PB_SetTongKimTran(-1)
-	local sBat = "TAT"
+	local sBat = "T¾t"
 	if nBat == 1 then
-		sBat = "BAT"
+		sBat = "BËt"
 	end
 	local sTran = format("%d bot", nTran)
 	if nTran <= 0 then
-		sTran = "KHONG GIOI HAN"
+		sTran = "kh«ng giíi h¹n"
 	end
-	SayEx({format("<color=yellow>Bot tu tham gia TONG KIM<color>
-Trang thai: <color=green>%s<color>  Tran moi tran: <color=gold>%s<color>", sBat, sTran),
-	"GOI BOT VAO TRAN NGAY (dang mo tay)/PB_TkGoiNgay",
-	"BAT tu dong theo gio/#PB_TkBat(1)",
-	"TAT tu dong theo gio/#PB_TkBat(0)",
-	"Tran: KHONG gioi han/#PB_TkTran(0)",
-	"Tran: 100 bot/#PB_TkTran(100)",
-	"Tran: 200 bot/#PB_TkTran(200)",
-	"Tran: 500 bot/#PB_TkTran(500)",
-	"Quay lai menu bot/PB_Menu",
+	SayEx({format("<color=yellow>Bot tù tham gia Tèng Kim<color>\nTr¹ng th¸i: <color=green>%s<color>  TrÇn mçi trËn: <color=gold>%s<color>", sBat, sTran),
+	"Gäi bot vµo trËn ngay (®ang më tay)/PB_TkGoiNgay",
+	"BËt tù ®éng theo giê/#PB_TkBat(1)",
+	"T¾t tù ®éng theo giê/#PB_TkBat(0)",
+	"TrÇn: kh«ng giíi h¹n/#PB_TkTran(0)",
+	"TrÇn: 100 bot/#PB_TkTran(100)",
+	"TrÇn: 200 bot/#PB_TkTran(200)",
+	"TrÇn: 500 bot/#PB_TkTran(500)",
+	"Quay l¹i menu bot/PB_Menu",
 	SC_END_SAY})
 end
 
@@ -200,10 +234,10 @@ end
 function PB_TkGoiNgay()
 	local nUng = PB_TongKimGoi()
 	if nUng and nUng > 0 then
-		Msg2Player(format("Da ra lenh goi quan: %d bot du tu cach (cap >= 80, da vao phai, dang luyen cong, khong ban sap).", nUng))
-		Msg2Player("Bot bat dau ve map bao danh trong vai giay. Xem bot.log muc [BotTK].")
+		Msg2Player(format("§· ra lÖnh gäi qu©n: %d bot ®ñ t­ c¸ch (cÊp >= 80, ®· vµo ph¸i, ®ang luyÖn c«ng, kh«ng b¸n s¹p).", nUng))
+		Msg2Player("Bot b¾t ®Çu vÒ map b¸o danh trong vµi gi©y. Xem bot.log môc [BotTK].")
 	else
-		Msg2Player("KHONG co bot nao du tu cach. Can: cap >= 80, da vao mon phai, dang danh quai, khong ban sap, camp khac 4.")
+		Msg2Player("Kh«ng cã bot nµo ®ñ t­ c¸ch. CÇn: cÊp >= 80, ®· vµo m«n ph¸i, ®ang ®¸nh qu¸i, kh«ng b¸n s¹p, camp kh¸c 4.")
 	end
 	PB_TkMenu()
 end
@@ -211,10 +245,10 @@ end
 function PB_TkBat(n)
 	local nMoi = PB_SetTongKim(n)
 	if nMoi == 1 then
-		Msg2Player("Da BAT: toi gio Tong Kim bot tu ve map bao danh va gia nhap nhu nguoi choi.")
-		Msg2Player("Neu tran DANG MO san thi quan se duoc goi ngay o nhip ke tiep.")
+		Msg2Player("§· bËt: tíi giê Tèng Kim bot tù vÒ map b¸o danh vµ gia nhËp nh­ ng­êi ch¬i.")
+		Msg2Player("NÕu trËn ®ang më s½n th× qu©n sÏ ®­îc gäi ngay ë nhÞp kÕ tiÕp.")
 	else
-		Msg2Player("Da TAT. Bot dang trong tran duoc TRA LAI TRANG THAI CU roi ve bai luyen.")
+		Msg2Player("§· t¾t. Bot ®ang trong trËn ®­îc tr¶ l¹i tr¹ng th¸i cò råi vÒ b·i luyÖn.")
 	end
 	PB_TkMenu()
 end
@@ -222,9 +256,9 @@ end
 function PB_TkTran(n)
 	local nMoi = PB_SetTongKimTran(n)
 	if nMoi and nMoi > 0 then
-		Msg2Player(format("Tran moi tran = %d bot.", nMoi))
+		Msg2Player(format("TrÇn mçi trËn = %d bot.", nMoi))
 	else
-		Msg2Player("Tran moi tran = KHONG GIOI HAN (moi bot du tu cach deu vao).")
+		Msg2Player("TrÇn mçi trËn = kh«ng giíi h¹n (mäi bot ®ñ t­ c¸ch ®Òu vµo).")
 	end
 	PB_TkMenu()
 end
@@ -233,26 +267,26 @@ end
 function PB_VeThanhBat(n)
 	local nMoi = PB_SetVeThanh(n)
 	if nMoi == 1 then
-		Talk(1,"","Da BAT che do goi bot ve THANH THI/THON (15 map, chia deu).\nBot doi map SO LE trong 60 giay - dung lo thay cham.\nBot ban sap GIU NGUYEN sap; bot Da Tau tam ngung, KHONG mat nhiem vu.")
+		Talk(1,"","§· bËt chÕ ®é gäi bot vÒ thµnh thÞ - th«n (chia ®Òu).\nBot ®æi map so le trong 60 gi©y - ®õng lo thÊy chËm.\nBot b¸n s¹p gi÷ nguyªn s¹p; bot D· TÈu t¹m ng­ng, kh«ng mÊt nhiÖm vô.")
 	else
-		Talk(1,"","Da TAT che do ve thanh - bot tu ve bai luyen danh quai nhu cu.")
+		Talk(1,"","§· t¾t chÕ ®é vÒ thµnh - bot tù vÒ b·i luyÖn ®¸nh qu¸i nh­ cò.")
 	end
 end
 
 function PB_Call(nTu, nDen)
 	local nXep, nTran = PB_AddBot(nTu, nDen)
 	if nXep and nXep > 0 then
-		Msg2Player(format("Da xep %d tai khoan vao hang doi (toi da %d bot).", nXep, nTran))
-		Msg2Player("Bot sinh DAN theo nhip, doi vai giay roi xem lai so bot.")
+		Msg2Player(format("§· xÕp %d tµi kho¶n vµo hµng ®îi (tèi ®a %d bot).", nXep, nTran))
+		Msg2Player("Bot sinh dÇn theo nhÞp, ®îi vµi gi©y råi xem l¹i sè bot.")
 	else
-		Msg2Player("Khong xep duoc. Co the da cham tran bot, hoac hang doi day.")
+		Msg2Player("Kh«ng xÕp ®­îc. Cã thÓ ®· ch¹m trÇn bot, hoÆc hµng ®îi ®Çy.")
 	end
 	PB_Menu()
 end
 
 function PB_Clear()
 	local n = PB_ClearBot()
-	Msg2Player(format("Da go %d bot khoi the gioi (moi con deu duoc LUU truoc khi go).", n))
+	Msg2Player(format("§· gì %d bot khái thÕ giíi (mäi con ®Òu ®­îc l­u tr­íc khi gì).", n))
 	PB_Menu()
 end
 
@@ -261,10 +295,10 @@ end
 function PB_Save()
 	local n = PB_SaveAll()
 	if n and n > 0 then
-		Msg2Player(format("Da xep hang luu %d bot (~15 giay).", n))
-		Msg2Player("Muon tat server: doi dong [BotLuu] XONG trong bot.log, doi them ~10 giay cho Goddess ghi not roi hay tat.")
+		Msg2Player(format("§· xÕp hµng l­u %d bot (~15 gi©y).", n))
+		Msg2Player("Muèn t¾t server: ®îi dßng [BotLuu] xong trong bot.log, ®îi thªm ~10 gi©y cho Goddess ghi nèt råi h·y t¾t.")
 	else
-		Msg2Player("Khong co bot nao dang song de luu.")
+		Msg2Player("Kh«ng cã bot nµo ®ang sèng ®Ó l­u.")
 	end
 	PB_Menu()
 end
@@ -278,10 +312,10 @@ end
 function PB_Fight(nOn)
 	local n = PB_SetFight(nOn)
 	if nOn == 1 then
-		Msg2Player(format("Da BAT danh quai cho %d bot.", n))
-		Msg2Player("Bot tu tim quai quanh no; xem console dong [BotDanh] de biet chieu da chon.")
+		Msg2Player(format("§· bËt ®¸nh qu¸i cho %d bot.", n))
+		Msg2Player("Bot tù t×m qu¸i quanh nã; xem console dßng [BotDanh] ®Ó biÕt chiªu ®· chän.")
 	else
-		Msg2Player(format("Da TAT danh quai cho %d bot.", n))
+		Msg2Player(format("§· t¾t ®¸nh qu¸i cho %d bot.", n))
 	end
 	PB_Menu()
 end
@@ -293,12 +327,12 @@ function PB_Chat(nRate)
 	local n = PB_SetChat(nRate, "/settings/simcity/chat.txt", "general")
 	if nRate > 0 then
 		if n and n > 0 then
-			Msg2Player(format("Da BAT bot noi chuyen (kho %d cau, muc %d/1000 moi giay).", n, nRate))
+			Msg2Player(format("§· bËt bot nãi chuyÖn (kho %d c©u, møc %d/1000 mçi gi©y).", n, nRate))
 		else
-			Msg2Player("Nap kho cau THAT BAI - kiem settings/simcity/chat.txt.")
+			Msg2Player("N¹p kho c©u thÊt b¹i - kiÓm settings/simcity/chat.txt.")
 		end
 	else
-		Msg2Player("Da TAT bot noi chuyen.")
+		Msg2Player("§· t¾t bot nãi chuyÖn.")
 	end
 	PB_Menu()
 end
@@ -306,10 +340,10 @@ end
 function PB_Join()
 	local n = PB_JoinFaction()
 	if n and n > 0 then
-		Msg2Player(format("Da ra lenh vao phai cho %d bot.", n))
-		Msg2Player("Bot tu chay bo toi NPC mon phai; xem console de biet ket qua.")
+		Msg2Player(format("§· ra lÖnh vµo ph¸i cho %d bot.", n))
+		Msg2Player("Bot tù ch¹y bé tíi NPC m«n ph¸i; xem console ®Ó biÕt kÕt qu¶.")
 	else
-		Msg2Player("Khong co bot nao nhan lenh. Goi bot ra truoc da.")
+		Msg2Player("Kh«ng cã bot nµo nhËn lÖnh. Gäi bot ra tr­íc ®·.")
 	end
 	PB_Menu()
 end
@@ -320,32 +354,32 @@ end
 function PB_Buff(nOn)
 	local n = PB_SetBuff(nOn)
 	if (nOn == 1) then
-		Talk(1,"","Da BAT cham Tien Thao Lo (x2 exp) + Que Hoa Tuu (+20 may man) cho "..n.." bot. Het han se tu cham lai.")
+		Talk(1,"","§· bËt chÊm Tiªn Th¶o Lé (x2 exp) + QuÕ Hoa Töu (+20 may m¾n) cho "..n.." bot. HÕt h¹n sÏ tù chÊm l¹i.")
 	else
-		Talk(1,"","Da TAT cham buff cho bot. Buff dang co se het han dan.")
+		Talk(1,"","§· t¾t chÊm buff cho bot. Buff ®ang cã sÏ hÕt h¹n dÇn.")
 	end
 end
 
 function PB_DaTauMenu()
 	local nDang = PB_SetDaTau(-1)
-	Say("Bot tu chay nhiem vu DA TAU (nhan - lam - tra - nhan thuong, tran 40/ngay/bot).\nDang cho phep: "..nDang.." bot. Chon so bot duoc lam:",6,
-	"TAT het/#PB_DaTauSet(0)",
+	Say("Bot tù ch¹y nhiÖm vô D· TÈu (nhËn - lµm - tr¶ - nhËn th­ëng, trÇn 40/ngµy/bot).\n§ang cho phÐp: "..nDang.." bot. Chän sè bot ®­îc lµm:",6,
+	"T¾t hÕt/#PB_DaTauSet(0)",
 	"20 bot/#PB_DaTauSet(20)",
 	"50 bot/#PB_DaTauSet(50)",
 	"100 bot/#PB_DaTauSet(100)",
 	"200 bot/#PB_DaTauSet(200)",
-	"Tat ca 1000/#PB_DaTauSet(1000)")
+	"TÊt c¶ 1000/#PB_DaTauSet(1000)")
 end
 
 function PB_DaTauSet(n)
 	local nMoi = PB_SetDaTau(n)
-	Talk(1,"","Da dat gioi han "..nMoi.." bot lam Da Tau (lay cac bot chi so thap nhat). Bot dang danh quai se tu di gap Da Tau; du 40/ngay tu ve bai luyen.")
+	Talk(1,"","§· ®Æt giíi h¹n "..nMoi.." bot lµm D· TÈu (lÊy c¸c bot chØ sè thÊp nhÊt). Bot ®ang ®¸nh qu¸i sÏ tù ®i gÆp D· TÈu; ®ñ 40/ngµy tù vÒ b·i luyÖn.")
 end
 
 function PB_SapMenu()
 	local nDang = PB_SetBanSap(-1)
-	Say("Bot ra thanh ngoi ban sap THAT (nguoi choi xem + mua duoc; hang trang suc trang, gia goc x2).\nDang cho phep: "..nDang.." bot. Chon so bot:",6,
-	"TAT het (dong sap, ve bai)/#PB_SapSet(0)",
+	Say("Bot ra thµnh ngåi b¸n s¹p thËt (ng­êi ch¬i xem + mua ®­îc; hµng trang søc tr¾ng, gi¸ gèc x2).\n§ang cho phÐp: "..nDang.." bot. Chän sè bot:",6,
+	"T¾t hÕt (®ãng s¹p, vÒ b·i)/#PB_SapSet(0)",
 	"10 bot/#PB_SapSet(10)",
 	"20 bot/#PB_SapSet(20)",
 	"50 bot/#PB_SapSet(50)",
@@ -355,7 +389,7 @@ end
 
 function PB_SapSet(n)
 	local nMoi = PB_SetBanSap(n)
-	Talk(1,"","Da boc NGAU NHIEN "..nMoi.." bot ra thanh ngoi ban sap. Bot se tu chay ve khu trung tam va mo sap trong vai giay.")
+	Talk(1,"","§· bèc ngÉu nhiªn "..nMoi.." bot ra thµnh ngåi b¸n s¹p. Bot sÏ tù ch¹y vÒ khu trung t©m vµ më s¹p trong vµi gi©y.")
 end
 
 function SC_ChatOn()
@@ -363,23 +397,23 @@ function SC_ChatOn()
 		local n = SC_LoadChat(SC_CHATFILE, "general")
 		if n and n > 0 then
 			SC_ChatLoaded = 1
-			Msg2Player(format("Da nap %d cau thoai (general).", n))
+			Msg2Player(format("§· n¹p %d c©u tho¹i (general).", n))
 		else
-			Msg2Player("Nap cau thoai THAT BAI. Kiem tep settings/simcity/chat.txt da chep chua.")
+			Msg2Player("N¹p c©u tho¹i thÊt b¹i. KiÓm tÖp settings/simcity/chat.txt ®· chÐp ch­a.")
 			SC_Menu()
 			return
 		end
 	end
 	SC_ChatChance(SC_CHATRATE)
 	SC_ChatState = 1
-	Msg2Player(format("Bot se noi chuyen (%d/1000 moi giay moi bot).", SC_CHATRATE))
+	Msg2Player(format("Bot sÏ nãi chuyÖn (%d/1000 mçi gi©y mçi bot).", SC_CHATRATE))
 	SC_Menu()
 end
 
 function SC_ChatOff()
 	SC_ChatChance(0)
 	SC_ChatState = 0
-	Msg2Player("Da TAT bot noi chuyen.")
+	Msg2Player("§· t¾t bot nãi chuyÖn.")
 	SC_Menu()
 end
 
@@ -422,14 +456,14 @@ function SC_GiveIdentity(nIdx)
 	if SC_ResReported == 0 and nHelm then
 		SC_ResReported = 1
 		if nHelm == 0 and nArmor == 0 then
-			Msg2Player("CANH BAO: kho ngoai trang RONG - kiem tep settings res cua client/server.")
+			Msg2Player("C¶nh b¸o: kho ngo¹i trang rçng - kiÓm tÖp settings res cña client/server.")
 		else
-			Msg2Player(format("Kho ngoai trang: non %d, ao %d, vu khi %d, ngua %d.", nHelm, nArmor, nWeapon, nHorse))
+			Msg2Player(format("Kho ngo¹i trang: nãn %d, ¸o %d, vò khÝ %d, ngùa %d.", nHelm, nArmor, nWeapon, nHorse))
 		end
 	end
 
 	-- mon phai 0..9 (5 he x 2 phai). SC_SetBotFaction tu dat camp theo phai,
-	-- neu khong bot se mang camp_free = "mau do sat thu", sai han y do dan thanh thi.
+	-- neu khong bot se mang camp_free = "mÉu ®å s¸t thñ", sai han y do dan thanh thi.
 	SC_SetBotFaction(nIdx, random(0, 9))
 
 	-- chi so trong bang Tin tuc: PK 0 (hien hoa binh), danh vong / phuc duyen / trung sinh
@@ -453,9 +487,9 @@ function SC_SpawnHere()
 	if nIdx and nIdx > 0 then
 		SC_LastBot = nIdx
 		SC_GiveIdentity(nIdx)
-		Msg2Player(format("Da sinh bot idx = %d tai map %d (%d,%d).", nIdx, nW, nX, nY))
+		Msg2Player(format("§· sinh bot idx = %d t¹i map %d (%d,%d).", nIdx, nW, nX, nY))
 	else
-		Msg2Player("Sinh bot THAT BAI. Kiem toa do / subworld (hoac ten bi trung lien tiep).")
+		Msg2Player("Sinh bot thÊt b¹i. KiÓm to¹ ®é / subworld (hoÆc tªn bÞ trïng liªn tiÕp).")
 	end
 	SC_Menu()
 end
@@ -472,23 +506,23 @@ function SC_Spawn5()
 			SC_GiveIdentity(nIdx)
 		end
 	end
-	Msg2Player(format("Da sinh %d/5 bot quanh cho ban dung.", nOk))
+	Msg2Player(format("§· sinh %d/5 bot quanh chç b¹n ®øng.", nOk))
 	SC_Menu()
 end
 
 -- ================= DI CHUYEN =================
 function SC_PatrolLast()
 	if SC_LastBot <= 0 then
-		Msg2Player("Chua co bot nao. Hay sinh bot truoc.")
+		Msg2Player("Ch­a cã bot nµo. H·y sinh bot tr­íc.")
 		SC_Menu()
 		return
 	end
 	-- SC_PatrolBox nay kiem TestBarrier tung goc va tu thu nho ban kinh; tra 0 khi cho qua chat
 	-- (duoi 2 goc di duoc). Truoc day 4 goc khong he duoc kiem nen goc nam trong nha -> bot ket.
 	if SC_PatrolBox(SC_LastBot) == 1 then
-		Msg2Player(format("Bot %d da nhan lo trinh tuan tra (vuong). Nho BAT driver.", SC_LastBot))
+		Msg2Player(format("Bot %d ®· nhËn lé tr×nh tuÇn tra (vu«ng). Nhí bËt driver.", SC_LastBot))
 	else
-		Msg2Player("Cho nay qua chat de tuan tra (khong du 2 goc di duoc). Hay ra cho rong hon.")
+		Msg2Player("Chç nµy qu¸ chËt ®Ó tuÇn tra (kh«ng ®ñ 2 gãc ®i ®­îc). H·y ra chç réng h¬n.")
 	end
 	SC_Menu()
 end
@@ -496,14 +530,14 @@ end
 function SC_On()
 	SC_MoveOn()
 	SC_MoveState = 1
-	Msg2Player("Da BAT driver di chuyen. (Bot chi buoc khi co nguoi choi dung gan.)")
+	Msg2Player("§· bËt driver di chuyÓn. (Bot chØ b­íc khi cã ng­êi ch¬i ®øng gÇn.)")
 	SC_Menu()
 end
 
 function SC_Off()
 	SC_MoveOff()
 	SC_MoveState = 0
-	Msg2Player("Da TAT driver di chuyen.")
+	Msg2Player("§· t¾t driver di chuyÓn.")
 	SC_Menu()
 end
 
@@ -511,7 +545,7 @@ function SC_Clear()
 	local n = SC_ClearBots()
 	SC_LastBot   = 0
 	SC_LastRoute = -1
-	Msg2Player(format("Da xoa %d bot.", n))
+	Msg2Player(format("§· xo¸ %d bot.", n))
 	SC_Menu()
 end
 
@@ -543,11 +577,11 @@ function SC_RouteMenu()
 		end
 	end
 	if nFound == 0 then
-		tinsert(tb, 1, format("<color=yellow>Chon tuyen duong<color>\nMap <color=gold>%d<color> CHUA khai bao tuyen nao.\nThem vao bang SC_ROUTES trong simcity_admin.lua.", nW))
+		tinsert(tb, 1, format("<color=yellow>Chän tuyÕn ®­êng<color>\nMap <color=gold>%d<color> ch­a khai b¸o tuyÕn nµo.\nThªm vµo b¶ng SC_ROUTES trong simcity_admin.lua.", nW))
 	else
-		tinsert(tb, 1, format("<color=yellow>Chon tuyen duong<color>\nMap <color=gold>%d<color> co <color=green>%d<color> tuyen.\nBot se di vong theo tuyen chon.", nW, nFound))
+		tinsert(tb, 1, format("<color=yellow>Chän tuyÕn ®­êng<color>\nMap <color=gold>%d<color> cã <color=green>%d<color> tuyÕn.\nBot sÏ ®i vßng theo tuyÕn chän.", nW, nFound))
 	end
-	tinsert(tb, "Quay lai/SC_Menu")
+	tinsert(tb, "Quay l¹i/SC_Menu")
 	tinsert(tb, SC_END_SAY)
 	SayEx(tb)
 end
@@ -555,24 +589,24 @@ end
 function SC_UseRoute(nSel)
 	local r = SC_ROUTES[nSel]
 	if not r then
-		Msg2Player("Tuyen khong hop le.")
+		Msg2Player("TuyÕn kh«ng hîp lÖ.")
 		SC_Menu()
 		return
 	end
 	if SC_LastBot <= 0 then
-		Msg2Player("Chua co bot. Hay sinh bot truoc (menu chinh).")
+		Msg2Player("Ch­a cã bot. H·y sinh bot tr­íc (menu chÝnh).")
 		SC_Menu()
 		return
 	end
 	local nW = GetWorldPos()
 	if r[1] ~= nW then
-		Msg2Player(format("Tuyen nay thuoc map %d, ban dang o map %d. Bot se khong di duoc.", r[1], nW))
+		Msg2Player(format("TuyÕn nµy thuéc map %d, b¹n ®ang ë map %d. Bot sÏ kh«ng ®i ®­îc.", r[1], nW))
 		SC_Menu()
 		return
 	end
 	local nRid = SC_LoadPreset(SC_PRESETDIR..r[2], r[3])
 	if not nRid or nRid < 0 then
-		Msg2Player(format("Nap tuyen THAT BAI: %s / %s. Kiem du lieu da chep sang settings/simcity chua.", r[2], r[3]))
+		Msg2Player(format("N¹p tuyÕn thÊt b¹i: %s / %s. KiÓm d÷ liÖu ®· chÐp sang settings/simcity ch­a.", r[2], r[3]))
 		SC_Menu()
 		return
 	end
@@ -583,12 +617,12 @@ function SC_UseRoute(nSel)
 	-- no di duong thang xuyen thanh va ket goc ngay.
 	local nOk, nCell = SC_SetBotRoute(SC_LastBot, nRid, 1)
 	if nOk == 1 then
-		Msg2Player(format("Bot %d da nhan tuyen %s (routeId %d). Nho BAT driver.", SC_LastBot, r[3], nRid))
+		Msg2Player(format("Bot %d ®· nhËn tuyÕn %s (routeId %d). Nhí bËt driver.", SC_LastBot, r[3], nRid))
 	else
 		if nCell then
-			Msg2Player(format("Bot cach tuyen %s toi %d o (toi da 32). Hay dung gan tuyen roi sinh bot lai.", r[3], nCell))
+			Msg2Player(format("Bot c¸ch tuyÕn %s tíi %d « (tèi ®a 32). H·y ®øng gÇn tuyÕn råi sinh bot l¹i.", r[3], nCell))
 		else
-			Msg2Player("Gan tuyen cho bot THAT BAI.")
+			Msg2Player("G¸n tuyÕn cho bot thÊt b¹i.")
 		end
 	end
 	SC_Menu()
