@@ -522,6 +522,34 @@ lab_subworldid2idx:
 	Lua_PushNumber(L, nTargetSubWorld);
 	return 1;
 }
+
+// ---------------------------------------------------------------------------
+// SubWorldIdx2MapCopy(nSubWorldIdx) - port he Bang hoi/Boss bang hoi (21/08)
+//
+// Ban Linux (JX2) phan biet BAN DO GOC voi BAN SAO phong ban (dungeon copy):
+// ham nay tra ve id ban do GOC cua mot ban sao. Engine JX1 cua du an KHONG co
+// co che ban sao ban do (khong co PreApplyDungeonMap/ApplyDungeonMap), moi
+// subworld deu la ban do that, nen id goc == id that.
+// => tra ve dung nhu SubWorldIdx2ID. Giu ten rieng de script goc chep sang
+//    KHONG phai sua mot ky tu nao (vd script\item\bosscharm.lua:8).
+// ---------------------------------------------------------------------------
+int LuaSubWorldIdx2MapCopy(Lua_State* L)
+{
+	int nTargetSubWorld = -1;
+	int nSubWorldIndex = 0;
+	if (Lua_GetTopIndex(L) < 1)
+		goto lab_subworldidx2mapcopy;
+
+	nSubWorldIndex = (int)Lua_ValueToNumber(L, 1);
+	if (nSubWorldIndex < 0 || nSubWorldIndex >= MAX_SUBWORLD)
+		goto lab_subworldidx2mapcopy;
+
+	nTargetSubWorld = SubWorld[nSubWorldIndex].m_SubWorldID;
+
+lab_subworldidx2mapcopy:
+	Lua_PushNumber(L, nTargetSubWorld);
+	return 1;
+}
 /*
 Say(sMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
 Say(nMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
@@ -6274,6 +6302,100 @@ int LuaAddNpc(Lua_State* L)
 		if (pName && pName[0])
 			g_StrCpy(Npc[nNpcIdx].Name, (char*)pName);
 	}
+	Lua_PushNumber(L, nNpcIdx);
+	return 1;
+}
+
+// ---------------------------------------------------------------------------
+// AddNpcEx(nId, nLevel, nSeries, nSubWorldIdx, nX32, nY32, nCamp, szName, nFlag)
+//   port he Boss bang hoi / Bang hoi (21/08). 192 diem goi ben ban Linux.
+//
+// KHAC AddNpc cua du an o THU TU THAM SO: ban Linux dat nSeries o vi tri 3 va
+// nSubWorldIdx o vi tri 4, con AddNpc cua ta dat nSubWorldIdx o 3 va nSeries o 6.
+// Vi vay KHONG the bao AddNpcEx bang Lua ma khong sua script goc -> lam thanh
+// ham engine rieng de script chep tu ban Linux giu nguyen tung byte.
+//
+// Da dich nguoc ban Linux (jx_linux_y 0x0811BF40) de xac dinh ngu nghia:
+//   - tham so 1..6: y het AddNpc, chi khac thu tu; level ep ve [1,127];
+//     id ghep bang MAKELONG(nLevel, nId) roi AddNpcSet2 - GIONG HET LuaAddNpc.
+//   - tham so 1 nhan CA SO LAN CHUOI (chuoi -> tra bang NpcSetting, FindRow-2).
+//   - tham so 7  -> ghi mot co BYTE tai KNpc+0x1824 cua engine Linux.
+//   - tham so 8  -> ten NPC (chi dat khi chuoi khac rong).
+//   - tham so 9  == 1 -> goi 0x08085250 (nap thuoc tinh NPC tu mau: doc
+//                       [esi+0x1530]*0x2d0 + bang mau 0x836eb00) roi dat
+//                       KNpc+0x181C = 3 (neu tham so 7 khac 0) hoac = 2.
+//                  == 2 -> reset doi tuong con tai KNpc+0x88 roi goi voi 1000000.
+//
+// LECH CO CHU DICH (KNpc cua JX1 khong co hai truong 0x1824 / 0x181C):
+//   * tham so 7 anh xa sang SetCurrentCamp - phe cua NPC. Moi diem goi ban goc
+//     deu truyen 1, va camp 1 la gia tri hop le cua ta (camp_num guard).
+//   * tham so 9 KHONG lam gi them: viec "nap thuoc tinh tu mau" ma ban Linux
+//     lam o day thi AddNpcSet2 cua ta DA TU LAM ben trong. Danh Boss Hoang Kim
+//     o ban goc den tu MAU NPC (goldboss.txt) chu khong tu co nay, nen bo qua
+//     la dung ngu nghia. Giu tham so trong chu ky de script khong phai sua.
+// ---------------------------------------------------------------------------
+int LuaAddNpcEx(Lua_State* L)
+{
+	char*	pName = NULL;
+	int		nId = 0;
+	int		nTop = Lua_GetTopIndex(L);
+
+	if (nTop < 6)
+		return 0;
+
+	if (Lua_IsNumber(L, 1))
+	{
+		nId = (int)Lua_ValueToNumber(L, 1);
+	}
+	else if (Lua_IsString(L, 1))
+	{
+		pName = (char*)lua_tostring(L, 1);
+		if (!pName || !pName[0])
+			return 0;
+		nId = g_NpcSetting.FindRow(pName) - 2;
+	}
+	else
+	{
+		return 0;
+	}
+	if (nId < 0)
+		nId = 0;
+
+	int nLevel = (int)lua_tonumber(L, 2);
+	if (nLevel >= 128) nLevel = 127;
+	if (nLevel < 0)    nLevel = 1;
+
+	int nSeries      = (int)lua_tonumber(L, 3);
+	int nSubWorldIdx = (int)lua_tonumber(L, 4);
+	int nX           = (int)lua_tonumber(L, 5);
+	int nY           = (int)lua_tonumber(L, 6);
+
+	int nNpcIdxInfo = MAKELONG(nLevel, nId);
+	int nNpcIdx = NpcSet.AddNpcSet2(nNpcIdxInfo, nSeries, nSubWorldIdx, nX, nY);
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+	{
+		Lua_PushNumber(L, nNpcIdx);
+		return 1;
+	}
+
+	// tham so 7: phe NPC (ban goc la mot co byte rieng - xem chu thich tren)
+	if (nTop >= 7 && Lua_IsNumber(L, 7))
+	{
+		int nCamp = (int)Lua_ValueToNumber(L, 7);
+		if (nCamp >= 0 && nCamp < camp_num)
+			Npc[nNpcIdx].SetCurrentCamp(nCamp);
+	}
+
+	// tham so 8: ten hien thi - chi dat khi chuoi KHAC RONG (y het ban goc)
+	if (nTop >= 8 && Lua_IsString(L, 8))
+	{
+		pName = (char*)lua_tostring(L, 8);
+		if (pName && pName[0])
+			g_StrCpy(Npc[nNpcIdx].Name, pName);
+	}
+
+	// tham so 9: co nap-thuoc-tinh cua ban Linux - AddNpcSet2 da tu lam, bo qua.
+
 	Lua_PushNumber(L, nNpcIdx);
 	return 1;
 }
@@ -13588,6 +13710,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetNpcExpRate",	LuaGetNpcExpRate},
 	{"SubWorldID2Idx",	LuaSubWorldIDToIndex}, //SubWorldID2Idx
 	{"SubWorldIdx2ID",	LuaSubWorldIndexToID}, //SubWorldIdx2ID
+	{"SubWorldIdx2MapCopy",	LuaSubWorldIdx2MapCopy}, // port Boss bang hoi 21/08
 	{"AddLeadExp",		LuaAddLeadExp},
 	{"GetLeadLevel",	LuaGetLeadLevel},
 	{"SetFightState",	LuaSetFightState},
@@ -13602,6 +13725,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetNpcOwner",		LuaGetNpcOwner},
 	{"SetNpcFindPathTime", LuaSetNpcFindPathTime},
 	{"AddNpc",			LuaAddNpc},			//AddNpc
+	{"AddNpcEx",		LuaAddNpcEx},		//AddNpcEx - port Boss bang hoi 21/08
 	{"NoReloadNpcAttr", LuaNoReloadNpcAttr },
 	{"DelNpc",			LuaDelNpc},			//DelNpc(Npcid)
 	{"SetNpcBoss",	LuaSetNpcGoldBoss},
