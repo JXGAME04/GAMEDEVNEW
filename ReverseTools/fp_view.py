@@ -16,7 +16,8 @@ def read_fp(mapid):
     p = os.path.join(SRV, "maps", "%d_srv.fp" % mapid)
     d = open(p, "rb").read()
     magic, hdr = struct.unpack_from("<II", d, 0)
-    assert magic == 0x53465005 and hdr == 2, hex(magic)
+    # 05 = truoc siet luat region; 06 = tu 20/08 dem (_S dinh nghia region ton tai)
+    assert magic in (0x53465005, 0x53465006) and hdr == 2, hex(magic)
     h = struct.unpack_from("<7i", d, 8)
     rbx, rby, gw, gh, rw, rh, nall = h
     ver, gsz = struct.unpack_from("<II", d, 8+28)
