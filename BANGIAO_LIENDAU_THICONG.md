@@ -168,6 +168,11 @@ Xem commit message + THICONG_LIENDAU_PORT.md. Diem dang nho:
 | 12 | pgaming overlay (shopliendau 2501, hieuthuoc lien dau, NPC trang thai) KHONG port | do la lop private-server ngoai leaguematch; shopliendau con loi am diem (AskClientForNumber khong kiem lai) |
 | 13 | Ladder van TOP 10 (JX2LADDER_TOP), goc xep toi 512 | chi anh huong hien thi top qua npc\head (10 hang dau van dung); nang len 512 = viec treo |
 | 14 | GS khong co achievementsys type wlls (registrant thu 2 cua MatchResult tren Linux) | du an chua co achievementsys |
+| 15 | Quet do cam mo rong 9 o dung-ngay (goc 3) — head.lua vong i/j 1..9 + engine ITEM_GetImmediaItemIndex nhan 1..9 | IMMEDIACY_ROOM_WIDTH du an = 9; giu 3 la lot do cam o o 4-9 |
+| 16 | ST_DamageCounter dem MAU MAT THAT (sau chuyen-noi-luc + khien tinh + clamp overkill), khong phai damage truoc khien | tie-break cong bang; khong co nguon C Linux de doi chieu, chon so do sat nghia "damage hung chiu" nhat |
+| 17 | CalcEquiproomItemCount = hanh trang + TUI MO RONG; CalcItemCount(nPos,...) truyen thang ITEM_POSITION (1=tren tay, 3=hanh trang); CountFreeRoomByWH tra SO CHO that (khong phai 1/0) | tui ex la tinh nang du an (Linux 2010 chua co) — khong cong la lot do cam; bang chung pos: songjin_shophead.lua:132/139 cap CalcItemCount(3)+ConsumeItem; composeex.lua:333 can so that |
+| 18 | wlls_reload (GM) chi nap lai duoc cac script co that — 2 dong LoadScript global\server_playerlevelup.lua + global\login.lua tro file khong ton tai (giu nguyen van ban goc) | chi anh huong lenh GM reload; LoadScript thieu file chi log |
+| 19 | Cac ham moi dang ky ten toan cuc (CalcItemCount/CalcEquiproomItemCount/CountFreeRoomByWH/AskClientForString/DynamicExecute) lam "song day" mot so call site cu von loi-nil (songjin_shophead tetan2mibao, dailogsay, composeex, itemblue, map_management...) | da ra soat: khong co duong exploit (songjin_shophead khong duoc NPC nao include — xac chet; cac cho con lai ngu dong hoac dem dung hon truoc); ConsumeItem trong tetan2mibao lech chu ky tu truoc — KHONG thuoc pham vi port nay |
 
 ## 5. PHAN BIEN
 
@@ -176,9 +181,33 @@ Xem commit message + THICONG_LIENDAU_PORT.md. Diem dang nho:
   1-state), OnPlayerEvent do engine bom, NewWorldScript chet tren Windows,
   missions.txt tra theo so dong, MAX_TASK 3000, item id bang song khac id
   trong script goc, Sale 146/173 mo/chet...
-- Vong 2 (dang chay luc viet tai lieu nay): 2 tac tu phan bien doc lap
-  (C++ commit 21e570bf + toan bo script da cai vs ban goc). KET QUA SE DUOC
-  XU LY TRUOC KHI BAO CAO CUOI — xem muc ket qua trong bao cao phien.
+- Vong 2 (DA XONG 21/08, moi phat hien deu duoc tu xac minh lai tren ma nguon
+  truoc khi sua):
+  * Phan bien SCRIPT: 38/46 file giong het tung byte, 7 file lech dung danh
+    sach duyet, 0 byte thua; cu phap Lua 4 PASS 46/46; 13 muc lien ket runtime
+    PASS 12 — 5 loi that DA SUA: (1) hook wlls_login bi long nham TRONG khoi
+    vong sang bang hoi playerlogin.lua (nang nhat — da doi ra ngoai, moi nguoi
+    choi deu duoc tra thuong offline); (2) missions.txt 12 dong tro file ma →
+    gom ve mission_trong.lua co that; (3) compat CreateTeam_OFF thieu
+    LeaveTeam() nhu goc → da them; (4) WriteStringToFile fopen tran →
+    \relay_log\<ngay>\ mat log im lang tren Windows → da va g_GetFullPath +
+    g_CreatePath (KTongJX2.cpp); (5) backup thieu eventsys.lua goc → da chep.
+  * Phan bien C++ (15 muc): 11 PASS; 3 loi NANG + 4 loi VUA DA SUA het:
+    A1 ban va "flip AVAILABLE truoc OnLeave" ghi trong commit message 21e570bf
+    nhung CHUA HE AP vao KMission.cpp (da ap that, mission 24-26);
+    A2 DelMSPlayer(id, 0) la no-op cam (arg2=0 chet o guard) → arg2==0 nay
+    hieu la CHINH NGUOI dang chay script nhu Linux — mach "chet/roi san bi go
+    khoi mission → doi bi quet sach xu thang ngay" song lai;
+    A3 SyncTaskValueMore(2500, 37) range nguoc sau remap HONOUR → tach 2 lenh
+    SyncTaskValue tai head.lua:691 (task 2500 truoc do KHONG BAO GIO xuong client);
+    B1 quet do cam 3/9 o dung-ngay → 9 (lech #15); B2 3 ham item sua ngu nghia
+    (lech #17); B3 doi cho bo dem ST xuong ngay truoc dong tru mau (lech #16);
+    B4 ForbitStamina gate them duong Cost the-luc cua chieu thuc.
+  * Ghi nhan KHONG sua (co ly do): chuoi nhap rong → wlls_createleague tu lay
+    ten nhan vat (guard "if not str_lgname" co san); prompt hop nhap cut 31
+    byte (S2C_INPUT_BOX.Value[32] — cam doi wire); DynamicExecute arg chua
+    dau nhay kep se pha cau lenh (call site hien tai toan hang so); wlls_gmscript
+    :161 return som khong khoi phuc PlayerIndex (bug goc Linux, chep nguyen).
 - Cong cu gap: ReverseTools\re_lua_api_gap.py (patch tro cay da cai) → tu 37
   ham thieu xuong 0 (10 canh bao con lai deu la false-positive parser hoac
   guard co y: GetGlbMSRestTime/login_add da co "if ... then").
@@ -196,5 +225,6 @@ Xem commit message + THICONG_LIENDAU_PORT.md. Diem dang nho:
 ## 7. FILE THAM KHAO
 
 - D:\GAMEDEVNEW\THICONG_LIENDAU_PORT.md — nhat ky quyet dinh chi tiet.
-- Commit engine: 21e570bf (nhanh main, D:\GAMEDEVNEW).
+- Commit engine: 21e570bf + commit "Fix 12 loi tu 2 vong phan bien" 21/08
+  (nhanh main, D:\GAMEDEVNEW).
 - Log cai dat: scratchpad phien (install_log2.txt) — ban chat da tom o muc 3.

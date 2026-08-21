@@ -1,5 +1,10 @@
 # THI CONG - PORT 100% HE LIEN DAU leaguematch/WLLS (Linux) -> DU AN
 
+> **20/08 dem: DA THI CONG XONG — doc `BANGIAO_LIENDAU_THICONG.md` (ban chot).**
+> File nay giu lai lam nhat ky quyet dinh giua phien; mot so muc F da co dap an
+> trong ban giao (map DU trong pak — do hash; item map theo bang song TRU 1;
+> honour=37; Sale 93; NewWorldScript hoi sinh o engine...).
+
 Phien 20/08/2026. Trang thai cap nhat lien tuc trong phien. Chu truong nguoi dung:
 - Dem 100% tinh nang leaguematch ban Linux sang, GO BO han he lien_dau tu viet.
 - Giong 100% (uu tien hanh vi giong ban Linux; file Lua chep NGUYEN BYTE, chi va cho nao bat buoc).

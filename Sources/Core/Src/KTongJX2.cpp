@@ -4007,7 +4007,24 @@ int LuaJX2_WriteStringToFile(Lua_State* L)
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
-	FILE* pFile = fopen((const char*)Lua_ValueToString(L, 1), "ab");
+	// [WLLS 21/08] '\' dau duong dan = GOC SERVER (nhu moi API engine khac;
+	// fopen tran hieu la goc O DIA -> sai cho). Script goc ghi \relay_log\<ngay>\
+	// - thu muc doi theo ngay nen phai TU TAO, thieu la mat log IM LANG
+	// (tren Linux fopen coi '\' la ky tu thuong trong TEN file nen van chay).
+	char szFullFile[MAX_PATH];
+	g_GetFullPath(szFullFile, (LPSTR)Lua_ValueToString(L, 1));
+	for (int i = g_StrLen(szFullFile) - 1; i > 0; i--)
+	{
+		if (szFullFile[i] == '\\' || szFullFile[i] == '/')
+		{
+			char cSave = szFullFile[i];
+			szFullFile[i] = 0;
+			g_CreatePath(szFullFile);
+			szFullFile[i] = cSave;
+			break;
+		}
+	}
+	FILE* pFile = fopen(szFullFile, "ab");
 	if (!pFile)
 	{
 		Lua_PushNumber(L, 0);

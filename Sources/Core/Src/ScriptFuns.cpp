@@ -10808,6 +10808,14 @@ int LuaRemoveMissionPlayer(Lua_State* L)//RemoveMSPlayer(MissionId, PlayerIndex,
 		nPlayerIndex = GetPlayerIndex(L);
 	}
 
+	// [WLLS 21/08] ban Linux: DelMSPlayer(id, 0) = go CHINH NGUOI dang chay
+	// script (combat\playerdeath.lua:11 + combat\newworld.lua:14 dua vao day).
+	// Khong doi thi 0 chet o guard duoi -> nguoi chet/roi san van duoc dem khi
+	// phan thang bai. Caller cu duy nhat truyen arg2 != 0 (citywar curcamp)
+	// giu nguyen hanh vi.
+	if (nPlayerIndex == 0)
+		nPlayerIndex = GetPlayerIndex(L);
+
 	if (nMissionId < 0 || nPlayerIndex <= 0)
 		return 0;
 
@@ -13159,9 +13167,10 @@ int LuaWllsSafeshow(Lua_State* L)
 	return 1;
 }
 
-// CalcEquiproomItemCount(g,d,p,l) - dem trong HANH TRANG (pos_equiproom);
-// CalcItemCount(nRoom,g,d,p,l)    - dem trong hanh trang MO RONG (pos_equiproomex).
-// (wlls_en_check quet danh sach do cam mang vao dau truong - head.lua:838-882.)
+// CalcEquiproomItemCount(g,d,p,l) - dem item nguoi choi MANG THEO: hanh trang
+// + tui mo rong. [21/08] cong them pos_equiproomex vi du an co tui ex (Linux
+// 2010 chua co) - khong cong thi wlls_en_check lot do cam giau trong tui ex,
+// va cac caller cu (bank/hoa/compose) dem thieu do dang mang.
 int LuaWllsCalcEquiproomItemCount(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -13172,28 +13181,43 @@ int LuaWllsCalcEquiproomItemCount(Lua_State* L)
 		int d = (int)Lua_ValueToNumber(L, 2);
 		int pt = (int)Lua_ValueToNumber(L, 3);
 		int lv = Lua_GetTopIndex(L) >= 4 ? (int)Lua_ValueToNumber(L, 4) : -1;
-		nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproom);
+		nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproom)
+			+ Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproomex);
 	}
 	Lua_PushNumber(L, nCount);
 	return 1;
 }
+// CalcItemCount(nPos,g,d,p[,l]) - dem item tai vi tri ITEM_POSITION nPos.
+// [21/08] arg1 truyen THANG lam Place, khong hardcode: cap goc trong
+// songjin_shophead.lua:132/139 dung CalcItemCount(3,..)+ConsumeItem voi
+// 3 = pos_equiproom; league goi (1,..) = pos_hand de soat ca do CAM dang
+// cam TREN TAY khi vao dau truong (wlls_en_check). nPos = -1: dem ca
+// tay + hanh trang + tui mo rong (playerfunlib.lua:250).
 int LuaWllsCalcItemCount(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	int nCount = 0;
 	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 4)
 	{
+		int nPos = (int)Lua_ValueToNumber(L, 1);
 		int g = (int)Lua_ValueToNumber(L, 2);
 		int d = (int)Lua_ValueToNumber(L, 3);
 		int pt = (int)Lua_ValueToNumber(L, 4);
 		int lv = Lua_GetTopIndex(L) >= 5 ? (int)Lua_ValueToNumber(L, 5) : -1;
-		nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproomex);
+		if (nPos >= pos_hand && nPos < pos_num)
+			nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, nPos);
+		else if (nPos == -1)
+			nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_hand)
+				+ Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproom)
+				+ Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproomex);
 	}
 	Lua_PushNumber(L, nCount);
 	return 1;
 }
 
-// ITEM_GetImmediaItemIndex(i 1..3) -> item index trong o dung-ngay thu i / 0
+// ITEM_GetImmediaItemIndex(i) -> item index trong o dung-ngay thu i / 0.
+// [21/08] Linux chi co 3 o, du an 9 o (IMMEDIACY_ROOM_WIDTH) - nhan du 9 de
+// wlls_en_check (da doi vong lap 1..9) khong lot do cam dat o o 4-9.
 int LuaWllsGetImmediaItemIndex(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -13201,15 +13225,18 @@ int LuaWllsGetImmediaItemIndex(Lua_State* L)
 	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
 	{
 		int i = (int)Lua_ValueToNumber(L, 1);
-		if (i >= 1 && i <= 3)
+		if (i >= 1 && i <= IMMEDIACY_ROOM_WIDTH)
 			nRet = Player[nPlayerIndex].m_ItemList.m_Room[room_immediacy].FindItem(i - 1, 0);
 	}
 	Lua_PushNumber(L, nRet);
 	return 1;
 }
 
-// CountFreeRoomByWH(w,h,nNeed) -> so cho WxH dat duoc (call site chi so sanh < 1
-// nen tra 1/0 theo FindRoom la du trung thanh; item\hongyinbaoxiang.lua:11).
+// CountFreeRoomByWH(w,h[,nNeed]) -> SO cho trong WxH dat duoc (hanh trang +
+// tui mo rong neu con han). [21/08] truoc tra 1/0 theo FindRoom - du cho
+// league (hongyin/jindan so sanh < 1) nhung composeex.lua:333 nhan limit
+// theo so lan ghep, itemblue.lua:129 so voi so luong nhap -> can SO THAT;
+// dung KItemList::CalcFreeItemCellCount (KInventory::FindFreeCell dem cho).
 int LuaWllsCountFreeRoomByWH(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -13218,12 +13245,12 @@ int LuaWllsCountFreeRoomByWH(Lua_State* L)
 	{
 		int w = (int)Lua_ValueToNumber(L, 1);
 		int h = (int)Lua_ValueToNumber(L, 2);
-		POINT pt;
-		if (Player[nPlayerIndex].m_ItemList.m_Room[room_equipment].FindRoom(w, h, &pt))
-			nRet = 1;
-		else if ((Player[nPlayerIndex].m_dwEquipExpandTime - KSG_GetCurSec() > 0) &&
-			Player[nPlayerIndex].m_ItemList.m_Room[room_equipmentex].FindRoom(w, h, &pt))
-			nRet = 1;
+		if (w > 0 && h > 0)
+		{
+			nRet = Player[nPlayerIndex].m_ItemList.CalcFreeItemCellCount(w, h, room_equipment);
+			if (Player[nPlayerIndex].m_dwEquipExpandTime - KSG_GetCurSec() > 0)
+				nRet += Player[nPlayerIndex].m_ItemList.CalcFreeItemCellCount(w, h, room_equipmentex);
+		}
 	}
 	Lua_PushNumber(L, nRet);
 	return 1;

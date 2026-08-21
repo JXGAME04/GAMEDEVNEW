@@ -175,6 +175,12 @@ BOOL	KMission::RemovePlayer(unsigned long ulPlayerIndex, unsigned long ulPlayerI
 			g_MissionTabFile.GetString(m_ulMissionId + 1, 2, "", szScript, MAX_PATH);
 			if (szScript[0])
 			{
+				// [WLLS 21/08] mission lien dau 24-26: bo nguoi DANG ROI khoi dem
+				// AVAILABLE truoc khi goi OnLeave, de nhanh "doi bi quet sach ->
+				// xu thang ngay" (combat\mission.lua:114) dem dung so con lai;
+				// khong ap cho mission khac (citywar 7-9 giu hanh vi cu).
+				if (m_ulMissionId >= 24 && m_ulMissionId <= 26)
+					m_MissionPlayer.SetParam(nTdataIdx, MISSION_PARAM_AVAILABLE, MISSION_AVAILABLE_VALUE - 1);
 				ExecuteScript(szScript, "OnLeave", ulPlayerIndex);
 			}
 		}
