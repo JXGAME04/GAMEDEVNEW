@@ -4384,13 +4384,19 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (g_DTNpc[i].nMapId == nMap)
 			{
 				// (r3 - "phu ve la ban rac lien") vua dat chan ve thanh: bat o "Ban vat
-				// pham" + tui coi it cho trong -> ban rac TRUOC roi moi lam viec tiep
+				// pham" + con RAC trong tui -> ban rac TRUOC roi moi lam viec tiep
 				// (DT_SellResume se dua ve dung mach: NPC / Xa Phu).
-				if (pAp->bSellItem
-				 && Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 10)
+				// (21/08 - nguoi dung: "bao ve thanh ban rac truoc, ban chua xong da di toi NPC")
+				// GOC: cong vao la "< 10 o trong" nhung DTP_SELLJUNK THOAT o "nTrong >= 8" =>
+				// tui con 8-9 o la thoat NGAY o nhip dau, chua ban mon nao; con <8 o thi ban
+				// dung 8 o roi bo do dong rac con lai. Nay: chi vao khi THUC SU CON RAC (theo
+				// dung bo loc ban rac cua tab Hau can - DT_CoRac chi DOC, khong doi bo loc), va
+				// da vao thi BAN HET RAC moi di (nguong 999 -> vong ket thuc o nhanh "het rac").
+				if (pAp->bSellItem && DT_CoRac(nPlayerIdx, pAp))
 				{
 					DT_SellStart(nPlayerIdx, uCurTime);
-					DT_Msg(nPlayerIdx, "<color=Cyan>VÒ thµnh - b¸n bít r¸c tr­íc råi lµm tiÕp...");
+					g_nDTSellNeed = 999;	// ban het rac nhu may Hau can roi moi lam tiep
+					DT_Msg(nPlayerIdx, "<color=Cyan>VÒ thµnh - b¸n hÕt r¸c tr­íc råi lµm tiÕp...");
 					return 1;
 				}
 				if (ea.nDTBackXaFu)
