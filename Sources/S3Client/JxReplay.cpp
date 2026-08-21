@@ -165,6 +165,34 @@ static bool JxrHasEnoughDisk()
 //===========================================================================
 // Vong doi
 //===========================================================================
+
+// FIX 21/08 (jx_crash.log 20/08 19:45:38): game SAP NGAY O MAN HINH DAU voi
+// 0xC0000005. Ba khung dau cua ngan xep nam BEN TRONG chinh DLL dang duoc nap
+// (0x0DBF3D51 / 0x0DD27AF6 / 0x0DBFF062 - khong co ten module, EBX = 0x0DBF0000
+// la dia chi nap cua no), roi moi den LdrLoadDll -> LoadLibraryA -> JxReplay_Init.
+// Tuc DllMain cua JXReplay.dll no ra loi ==> LoadLibrary KHONG BAO GIO TRA VE,
+// cua chan "l_hJxReplayModule == NULL" ben duoi hoan toan vo dung. Chi can chep
+// nham hoac hong mot tep JXReplay.dll la ca game chet truoc khi vao duoc man dang nhap.
+// Boc SEH: DLL hong thi chi TAT rieng tinh nang quay phim, game van chay.
+// (CL_Vectored o CrashLog.cpp:370 tra 0 = EXCEPTION_CONTINUE_SEARCH nen jx_crash.log
+// VAN duoc ghi day du truoc khi __except nuot loi - khong mat dau vet de truy.)
+static HMODULE JxrSafeLoadLibrary()
+{
+	HMODULE hMod = NULL;
+	__try
+	{
+		hMod = LoadLibrary(JXREPLAY_MODULE_NAME);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		hMod = NULL;
+		JxrLog("LOI NGHIEM TRONG: %s no ngay trong DllMain (ma loi 0x%08X)."
+			   " Da TAT tinh nang replay, game van chay tiep binh thuong.",
+			   JXREPLAY_MODULE_NAME, (unsigned int)GetExceptionCode());
+	}
+	return hMod;
+}
+
 bool JxReplay_Init()
 {
 	if (l_pJxReplay)
@@ -172,7 +200,7 @@ bool JxReplay_Init()
 	if (g_pRepresentShell == NULL)
 		return false;
 
-	l_hJxReplayModule = LoadLibrary(JXREPLAY_MODULE_NAME);
+	l_hJxReplayModule = JxrSafeLoadLibrary();
 	if (l_hJxReplayModule == NULL)
 	{
 		JxrLog("LOI: LoadLibrary(%s) that bai, GetLastError=%lu"

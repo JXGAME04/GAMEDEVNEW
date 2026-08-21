@@ -201,8 +201,11 @@ extern char* g_GetStringRes(int nStringID, char * szString, int nMaxLen);
 // Ca hai phia CHI GHI RA TEP, khong in ra man hinh/cua so nao. Tu xoay khi tep > 64 MB.
 // Dung: if (g_AutoLogOn()) g_AutoLog("[TAG] npc=%u d=%d", u, d);
 //---------------------------------------------------------------------------
-int  g_AutoLogOn();
-void g_AutoLog(const char* szFmt, ...);
+// CORE_API: S3Client.cpp (Game.exe) cung dat AUTOLOG_EVERY nen hai ham nay phai
+// duoc XUAT ra khoi CoreClient.dll; thieu no thi Game.exe khong lien ket duoc
+// (LNK2019 g_AutoLogOn / g_AutoLog) => moi diem log ben S3Client thanh ma chet.
+CORE_API int  g_AutoLogOn();
+CORE_API void g_AutoLog(const char* szFmt, ...);
 void g_AutoLogSet(int nOn);
 int  g_AutoLogWho(const char* szName);	// (server) loc theo ten nhan vat, xem KCore.cpp
 // Tien ich: AUTOLOG(...) = ghi neu dang bat; AUTOLOG_EVERY(ms, ...) = tiet che theo
