@@ -1,0 +1,43 @@
+Ham Lua dang ky trong ma nguon du an: 923
+Tep .lua leaguematch: 45  | ten duoc goi: 352
+
+=== HAM ENGINE MA leaguematch GOI NHUNG DU AN CHUA CO ===
+TONG: 38
+  AddRespect                     x1    missions/leaguematch/award.lua:20
+  AskClientForString             x4    missions/leaguematch/npc/head.lua:91
+  CheckGlobalTradeFlag           x2    missions/leaguematch/npc/officer.lua:580
+  CloseGlbMission                x2    missions/leaguematch/wlls_gmscript.lua:111
+  CountFreeRoomByWH              x2    missions/leaguematch/item/hongyinbaoxiang.lua:11
+  ForbitStamina                  x2    missions/leaguematch/head.lua:524
+  ForbitTrade                    x2    missions/leaguematch/head.lua:521
+  GSReady                        x1    leaguematch/task.lua:261
+  GetBoxLockState                x2    missions/leaguematch/npc/officer.lua:585
+  GetGblInt                      x15   leaguematch/joinmatch.lua:8
+  GetGlbMSRestTime               x1    missions/leaguematch/combat/mission.lua:128
+  GetLastAddFaction              x1    missions/leaguematch/glbmission/schedule.lua:136
+  GetRespect                     x1    missions/leaguematch/award.lua:22
+  GetSkillState                  x1    missions/leaguematch/npc/officer.lua:184
+  GetStringTask                  x1    missions/leaguematch/npc/helper.lua:214
+  ITEM_GetImmediaItemIndex       x1    missions/leaguematch/head.lua:846
+  LoadScript                     x17   missions/leaguematch/wlls_gmscript.lua:253
+  Number2Int                     x1    missions/leaguematch/head.lua:485
+  Random                         x1    leaguematch/joinmatch.lua:95
+  ST_CheckTextFilter             x1    missions/leaguematch/npc/officer.lua:333
+  ST_GetDamageCounter            x3    missions/leaguematch/head.lua:604
+  ST_IncreaseDamageCounter       x1    missions/leaguematch/combat/mission.lua:109
+  ST_StartDamageCounter          x1    missions/leaguematch/glbmission/schedule.lua:128
+  ST_StopDamageCounter           x1    missions/leaguematch/head.lua:752
+  SetGblInt                      x6    leaguematch/task.lua:203
+  SetRespect                     x1    missions/leaguematch/npc/officer.lua:346
+  SetStringTask                  x2    missions/leaguematch/npc/helper.lua:201
+  SyncTaskValueMore              x4    missions/leaguematch/head.lua:688
+  TaskCountLimit                 x1    leaguematch/task.lua:218
+  TaskInterval                   x1    leaguematch/task.lua:219
+  TaskName                       x1    leaguematch/task.lua:211
+  TaskTime                       x2    leaguematch/task.lua:214
+  _AddBitTask                    x1    missions/leaguematch/item/zhenjing.lua:48
+  _ERRORMESSAGE                  x1    missions/leaguematch/head.lua:987
+  s                              x4    missions/leaguematch/glbmission/schedule.lua:91
+  safeshow                       x2    missions/leaguematch/npc/helper.lua:244
+  twlls_buildup_vs               x1    missions/leaguematch/glbmission/schedule.lua:23
+  varText                        x2    missions/leaguematch/macthtype/normal.lua:149
