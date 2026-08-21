@@ -12453,7 +12453,9 @@ int LuaGetIP(Lua_State * L)
 	pPlayer = &Player[nPlayerIndex];
 	const char* tmp = g_pServer->GetClientInfo(pPlayer->m_nNetConnectIdx);
 	if (tmp == NULL) {
-		printf("LuaGetIP: GetClientInfo return NULL\n");
+		// (21/08) BOT khong co ket noi mang nen GetClientInfo LUON tra NULL - dong
+		// nay ban ra MOI LAN bot cham vao GetIP(), hang tram lan mot tran Tong Kim.
+		// Van tra chuoi rong nhu cu, chi bo khau in.
 		goto lab_getplayerip;
 	}
 	strncpy(szDesMsg, tmp, sizeof(szDesMsg));

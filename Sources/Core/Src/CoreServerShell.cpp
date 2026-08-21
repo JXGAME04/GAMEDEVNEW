@@ -109,6 +109,24 @@ extern "C" __declspec(dllexport)
 #endif
 iCoreServerShell* CoreGetServerShell(const char* gamepass)
 {
+	// (21/08 - chu game: "bo toan bo log in ra trong gameserver chi de in ra file
+	// log thoi") CoreServer.dll phai TU nan dong stdout/stderr cua CHINH NO:
+	// Core.vcxproj va GameServer.vcxproj deu dung CRT TINH (RuntimeLibrary =
+	// MultiThreaded) nen EXE va DLL moi ben giu mot ban CRT rieng - freopen ben
+	// EXE khong he cham toi printf ben DLL. Ghi ra TEP RIENG (khong dung chung
+	// GameServer.log) vi hai bo dem CRT doc lap se ghi chen vao nhau.
+	// Ham nay la loi vao DUY NHAT cua DLL (GameServer goi mot lan luc khoi dong).
+	{
+		static int s_bDaNanDong = 0;
+		if (!s_bDaNanDong)
+		{
+			s_bDaNanDong = 1;
+			FILE* fOut = freopen("CoreServer.log", "a", stdout);
+			FILE* fErr = freopen("CoreServer.log", "a", stderr);
+			if (fOut) setvbuf(fOut, NULL, _IOLBF, 4096);
+			if (fErr) setvbuf(fErr, NULL, _IONBF, 0);
+		}
+	}
 	g_InitCore((char*)gamepass);
 	return &g_CoreServerShell;
 }
