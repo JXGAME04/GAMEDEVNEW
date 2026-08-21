@@ -322,10 +322,9 @@ Tên nằm rải trong `bin\server\settings\item\*.txt` theo taxonomy riêng ⇒
       (cần khảo sát `ConnectTo` của Bishop trước — xem §1 "Nợ còn lại")
 
 ### Tuỳ chọn — **chờ chủ dự án quyết**
-- [ ] Thêm **tên vật phẩm** vào `role_item` (ánh xạ `settings\item\*.txt`)
+- ~~Thêm tên vật phẩm vào `role_item`~~ — **chủ dự án đã quyết định KHÔNG làm** (20/08). Khảo sát đang chạy đã bị dừng, không ghi gì. Nếu sau này muốn làm lại: bộ đối chiếu vàng là `jx1_game.mua_shop` + `giao_dich_item` (đã có SẴN cả tên lẫn mã); phải kiểm bộ khoá `(genre, detail, particular[, level, series])` có cho ra **duy nhất một tên** không — gán nhầm tên nguy hiểm hơn không có tên.
 - [ ] Khôi phục **6 bang hội tháng 4** — viết bộ chuyển `2368 → 6860` (đệm 0 vào đuôi) và `76 → 404`
-- [ ] Build `FilterText.dll` bản **x64** để bật lại bộ lọc từ cấm
-      (hiện x86-only nên GameServer x64 **không nạp được** ⇒ bộ lọc đang TẮT — lỗi có sẵn, không do MySQL)
+*(mục FilterText đã bị gỡ — xem §9, tôi đã ghi sai)*
 
 ---
 
@@ -364,3 +363,44 @@ b119f973  Goddess/MySQL: gộp SaveStatInfo vào một giao dịch — sửa "b�
 746b0dac  Bishop: đặt lại m_hQuitEvent đầu Create() — hết "xác sống" khi bấm OK thử lại
 ab65d0e3  ToolsMySQL: 3 bảng tra cứu — vật phẩm từng nhân vật, giao dịch, mua shop
 ```
+
+---
+
+## 9. ĐÍNH CHÍNH — `FilterText.dll` KHÔNG hề bị tắt
+
+> Trong phiên này tôi có nói *"FilterText.dll là x86 nên GameServer x64 không nạp được
+> ⇒ bộ lọc từ cấm đang TẮT"*. **CÂU ĐÓ SAI.** Đừng tin nó nếu gặp lại ở đâu.
+
+Sự thật, tra từ mã nguồn:
+
+| Tiến trình | Dùng thế nào | Kiến trúc | Thực tế |
+|---|---|---|---|
+| **Goddess** | `Goddess.cpp:306-307` gọi `g_libFilterText.Initialize()` **và** `g_fltRoleName.Initialize()`; `ClientNode.cpp:362+` lọc **tên nhân vật lúc tạo** | x86 | ✅ **ĐANG CHẠY BÌNH THƯỜNG** |
+| GameServer | `GameServer.cpp:17` **chỉ khai báo biến toàn cục**, KHÔNG gọi `Initialize()` | x64 | không dùng ⇒ `bin\server` **không cần** DLL |
+| Bishop | `Application.cpp:145` gọi `Initialize()`, hàm lọc thật ở `:151` **bị comment** | x86 | chỉ nạp DLL |
+| S3Relay | `S3Relay.cpp:219` tương tự, `:225` bị comment | x86 | chỉ nạp DLL |
+| Client | `S3Client/Ui/ChatFilter.cpp` | x86 | lọc chat phía người chơi |
+
+**Tác dụng thật ở server: chặn tên nhân vật tục tĩu lúc tạo nhân vật.**
+Danh sách từ cấm: `bin\multiserver\goddess_rolename.flt` — **363 dòng**, nạp từng dòng
+qua `AddExpression()` (`RoleNameFilter.cpp:40-65`).
+
+### 🔴🔴 CẢNH BÁO — hai tệp này là ĐIỀU KIỆN SỐNG của Goddess và Bishop
+
+```cpp
+// Goddess.cpp:306-311
+if (!g_libFilterText.Initialize() || !g_fltRoleName.Initialize()) {
+    MessageBox(NULL, "text filter's initing has failed", ...);
+    return -1;                    // Goddess THOÁT
+}
+
+// Application.cpp:145-149  (Bishop)
+if (!g_libFilterText.Initialize())
+    return 0;                     // Bishop THOÁT IM LẶNG (MessageBox bị comment ở :147)
+```
+
+Xoá `FilterText.dll` hoặc `goddess_rolename.flt` khỏi `bin\multiserver` ⇒ **Bishop chết ngay
+không một lời báo**, triệu chứng **y hệt** sự cố gateway ở §1. **ĐỪNG dọn hai tệp đó.**
+(`RoleNameFilter.cpp:40-42`: không mở được tệp `.flt` là `return FALSE` ⇒ kéo theo Goddess `return -1`.)
+
+⇒ **Không có việc gì phải làm.** Không cần build FilterText.dll bản x64.
