@@ -1108,10 +1108,33 @@ void KScenePlaceC::Paint()
 	BOOL bPrerenderGroundImg = PaintBackGround();//add by phong kiÒu h×nh nÒn hoa s¬n
 
 	unsigned int i;
+	// N2 of ce8c4d49 (was described in that commit but never actually applied -
+	// finding L4-04): only paint ground of regions that INTERSECT the represent
+	// area instead of walking all 49 regions every frame. After a map switch,
+	// dozens of not-yet-prerendered regions painted via the DIRECT path (up to
+	// 256 ground cells x GetImage each) => 5-40 ms/frame for ~9 frames.
+	// Off-screen regions are fully clipped by the renderer anyway, so skipping
+	// them changes no visible pixel. Grow by 64px per side in case
+	// m_RepresentArea is one tick stale.
+	RECT rcGroundView = m_RepresentArea;
+	rcGroundView.left   -= 64;
+	rcGroundView.top    -= 64;
+	rcGroundView.right  += 64;
+	rcGroundView.bottom += 64;
 	for (i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
 		if (m_pInProcessAreaRegions[i])
-			m_pInProcessAreaRegions[i]->PaintGround(bPrerenderGroundImg);//add by phong kiÒu h×nh nÒn hoa s¬n
+		{
+			POINT ptRgnIdx = m_pInProcessAreaRegions[i]->GetRegionIdx();
+			LONG nRgnLeft = ptRgnIdx.x * (LONG)KScenePlaceRegionC::RWPP_AREGION_WIDTH;
+			LONG nRgnTop  = ptRgnIdx.y * (LONG)KScenePlaceRegionC::RWPP_AREGION_HEIGHT;
+			if (nRgnLeft >= rcGroundView.right ||
+				nRgnLeft + (LONG)KScenePlaceRegionC::RWPP_AREGION_WIDTH <= rcGroundView.left ||
+				nRgnTop >= rcGroundView.bottom ||
+				nRgnTop + (LONG)KScenePlaceRegionC::RWPP_AREGION_HEIGHT <= rcGroundView.top)
+				continue;
+				m_pInProcessAreaRegions[i]->PaintGround(bPrerenderGroundImg);//add by phong kiÒu h×nh nÒn hoa s¬n
+		}
 	}
 
 	m_ObjectsTree.Paint(&m_RepresentArea, IPOT_RL_COVER_GROUND);
