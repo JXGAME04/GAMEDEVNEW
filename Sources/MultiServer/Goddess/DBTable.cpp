@@ -301,6 +301,12 @@ bool ZDBTable::KetThucGoi() {
 	return true;
 }
 
+// (21/08) Ban Berkeley DB quet bang con tro that, khong phan trang qua mang
+// nen khong co canh "dut giua chung" -- luon tra false.
+bool ZDBTable::QuetBiLoi() {
+	return false;
+}
+
 void ZDBTable::closeCursor(ZCursor *cursor) {
 	if(!cursor) return;
 	if(cursor->bTravel) {

@@ -94,6 +94,7 @@ public:
 		//  nen ham nay von da khong bao gio duoc goi.)
 #endif
 	}
+	bool QuetBiLoi();					// (21/08) lan quet toan bang gan nhat co bi DUT giua chung khong
 	void removeLog();						//清除日志文件
 };
 

@@ -372,10 +372,14 @@ void ReleaseDBInterface()		//释放数据库引擎
 
 		db_table->removeLog();
 		
-		StopBackupTimer();//停止备份线程
+		// (21/08) Neu khong dung han duoc luong sao luu thi TUYET DOI khong duoc
+		// huy db_table: luong do van co the goi first()/next() len doi tuong.
+		if(!StopBackupTimer())
+			return;//停止备份线程
 		
 		db_table->close();
 		delete db_table;
+		db_table = NULL;	// (21/08) truoc day de con tro treo -- GetRoleInfoForGM dung thang
 	}
 }
 
@@ -703,6 +707,10 @@ bool StopBackupTimer()
 	while(IsBackupWorking()){}//等待备份线程结束
 
 	bool aResult = DBBackup->Close();
+	// (21/08) Close() tra false = con luong sao luu chua dung han. Huy doi tuong
+	// luc nay la de luong mo coi dung vung da giai phong -- dung kich ban ma ca
+	// dot va nay sinh ra de chan. Tha ro ri mot luong luc sap thoat con hon.
+	if(!aResult) return false;
 	delete DBBackup;
 	DBBackup = NULL;
 	return aResult;

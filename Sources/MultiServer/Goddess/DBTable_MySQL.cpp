@@ -159,8 +159,55 @@ struct MyTableImpl
     int           trong_goi;
     unsigned long luong_goi;   // mysql_thread_id luc mo goi, de bat reconnect
 
+    // (21/08) Lan quet toan bang gan nhat co bi dut giua chung khong.
+    // Dat o day chu khong o con tro, vi con tro TU HUY khi loi nen ben goi
+    // khong con cho nao ma hoi. Xem QuetBiLoi().
+    bool          quet_loi;
+
+    // (21/08) TUAN TU HOA. MOT ket noi MYSQL* nay bi DUNG CHUNG boi it nhat
+    // hai luong: luong mang CClientNode::ThreadFunction (add/remove/search) va
+    // luong sao luu CDBBackup::TimerThreadFunc (first/next). Ban Berkeley DB
+    // truoc day mo voi DB_THREAD | DB_INIT_LOCK nen thu vien tu khoa ho; ban
+    // MySQL bo mat luoi an toan do. Hau qua that: 03:25:45 ngay 21/08/2026 hai
+    // luong cung roi vao end_server() cua libmysql khi mat ket noi, cung goi
+    // my_free(vio->read_buffer) tren CUNG mot khoi ==> RtlFreeHeap bat duoc
+    // (HEAP_FAILURE_INFORMATION FailureType=8 usage_after_free) va giet tien
+    // trinh bang 0xC0000374.
+    // CRITICAL_SECTION cua Windows la khoa DE QUY -- bat buoc phai the, vi
+    // add() goi long EnsureConn/DocBanGhiCu/ChupAnh/GhiBaoDong/GhiThatBai.
+    CRITICAL_SECTION cs;
+
     MyTableImpl() : conn(NULL), port(3306), opened(false),
-                    trong_goi(0), luong_goi(0) {}
+                    trong_goi(0), luong_goi(0), quet_loi(false)
+    {
+        InitializeCriticalSection(&cs);
+    }
+    ~MyTableImpl()
+    {
+        DeleteCriticalSection(&cs);
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Khoa RAII -- vao khoa luc dung, ra khoa o MOI duong return (ke ca duong loi).
+// Bat buoc dung lop nay thay vi Enter/Leave tay: cac ham duoi co toi hang chuc
+// duong return, sot mot duong la treo ca may chu.
+//////////////////////////////////////////////////////////////////////////////
+class Khoa
+{
+public:
+    explicit Khoa(MyTableImpl *im) : m_im(im)
+    {
+        if (m_im) EnterCriticalSection(&m_im->cs);
+    }
+    ~Khoa()
+    {
+        if (m_im) LeaveCriticalSection(&m_im->cs);
+    }
+private:
+    MyTableImpl *m_im;
+    Khoa(const Khoa &);
+    Khoa &operator=(const Khoa &);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -424,6 +471,19 @@ static bool DoConnect(MyTableImpl *im)
     mysql_options(im->conn, MYSQL_SET_CHARSET_NAME, "latin1");
     unsigned int to = 5;
     mysql_options(im->conn, MYSQL_OPT_CONNECT_TIMEOUT, &to);
+    // (21/08) HAN GIO DOC/GHI -- BAT BUOC tu khi tang nay duoc tuan tu hoa bang
+    // mot khoa. Truoc day mot cau lenh treo chi ket rieng luong goi no; nay
+    // luong do GIU KHOA suot thoi gian treo va moi luong khac xep hang sau no
+    // VO THOI HAN -- Goddess se "treo cam": khong sap, khong nhat ky, khong
+    // dump, van giu cong 5011, phai giet tay. Voi may chu game, treo cam te
+    // hon sap (sap con tu khoi dong lai duoc).
+    // Chon 15 giay: mot luot quet 1003 nhan vat do that chi ~31 ms, nen 15 giay
+    // la rat rong; dong thoi nam duoi nguong dang nhap cua Bishop nen nguoi
+    // choi khong bi da ra, va duoi innodb_lock_wait_timeout (50 giay) nen cau
+    // lenh ket se bien thanh loi 2013 roi roi dung vao nhanh thu lai o add().
+    unsigned int rw = 15;
+    mysql_options(im->conn, MYSQL_OPT_READ_TIMEOUT,  &rw);
+    mysql_options(im->conn, MYSQL_OPT_WRITE_TIMEOUT, &rw);
     // KHONG bat MYSQL_OPT_RECONNECT: noi lai ngam se mat prepared statement
     // va mat ca transaction dang do. Tu noi lai co kiem soat o EnsureConn().
 
@@ -457,6 +517,7 @@ bool ZDBTable::open()
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im) return false;
+    Khoa khoa(im);
     bStop = false;
     if (!DoConnect(im)) return false;
 
@@ -495,6 +556,7 @@ void ZDBTable::close()
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im) return;
+    Khoa khoa(im);
     // Con GOI GHI dang mo (ben goi quen dong): chot ho. mysql_close() se
     // ROLLBACK, tuc mat trang cac lan ghi da lam -- khong duoc de im lang.
     if (im->trong_goi > 0 && im->conn)
@@ -531,6 +593,7 @@ bool ZDBTable::BatDauGoi()
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im || !im->opened) return false;
+    Khoa khoa(im);
     if (im->trong_goi > 0) { im->trong_goi++; return true; }
     if (!EnsureConn(im)) return false;
     if (mysql_query(im->conn, "START TRANSACTION"))
@@ -546,7 +609,9 @@ bool ZDBTable::BatDauGoi()
 bool ZDBTable::KetThucGoi()
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
-    if (!im || im->trong_goi <= 0) return false;
+    if (!im) return false;
+    Khoa khoa(im);
+    if (im->trong_goi <= 0) return false;
     if (--im->trong_goi > 0) return true;
     if (!im->conn) return false;
 
@@ -586,6 +651,19 @@ void ZDBTable::removeLog()
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// (21/08) Lan quet toan bang gan nhat (first()/next()) co bi DUT giua chung
+// khong. Ben goi phai hoi NGAY sau vong lap quet, truoc khi bat dau lan khac.
+// Ban Berkeley DB khong co ham nay va luon tra false (khong bao gio dut).
+//////////////////////////////////////////////////////////////////////////////
+bool ZDBTable::QuetBiLoi()
+{
+    MyTableImpl *im = (MyTableImpl *)m_pImpl;
+    if (!im) return false;
+    Khoa khoa(im);
+    return im->quet_loi;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // Con tro
 //////////////////////////////////////////////////////////////////////////////
 static ZCursor *MakeCursor(MyCursorImpl *ci)
@@ -619,6 +697,7 @@ static ZCursor *MakeCursor(MyCursorImpl *ci)
 void ZDBTable::closeCursor(ZCursor *cursor)
 {
     if (!cursor) return;
+    Khoa khoa((MyTableImpl *)m_pImpl);
     if (cursor->bTravel) free(cursor->key);
     free(cursor->data);
     delete (MyCursorImpl *)cursor->pImpl;
@@ -687,13 +766,28 @@ ZCursor *ZDBTable::_search(bool bKey, const char *key_ptr, int key_size, int ind
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im || !im->opened) return NULL;
+    Khoa khoa(im);
+
+    // (21/08) Dat co NGAY TU DAY, truoc MOI duong thoat som. Neu chi dat o
+    // trong nhanh first() phia duoi thi truong hop DUT NGAY TU DAU (vi du
+    // mysqld chet dung 3 gio sang -> EnsureConn hong -> first() tra NULL) se
+    // khong dat co, va Backup() van in "DB Dump Finished." tren mot ban sao
+    // luu KHONG CO MOT NHAN VAT NAO -- dung loi noi doi ma co che nay sinh ra
+    // de diet, chi khac cho gay.
+    const bool la_quet_toan_bang = (!key_ptr || !key_size) && !bKey;
+    if (la_quet_toan_bang) im->quet_loi = false;
+
     if (bKey)
     {
         // search_key/next_key khong duoc goi o bat cu dau trong Goddess.
         DbLog("search_key() duoc goi -- ban MySQL chua cai dat, tra NULL");
         return NULL;
     }
-    if (!EnsureConn(im)) return NULL;
+    if (!EnsureConn(im))
+    {
+        if (la_quet_toan_bang) im->quet_loi = true;
+        return NULL;
+    }
 
     MyCursorImpl *ci = new MyCursorImpl();
     ci->owner = this;
@@ -704,7 +798,8 @@ ZCursor *ZDBTable::_search(bool bKey, const char *key_ptr, int key_size, int ind
         // first(): duyet toan bang
         ci->mode = CM_SCAN;
         ci->seek = "";
-        if (!LoadScanPage(im, ci) || ci->rows.empty()) { delete ci; return NULL; }
+        if (!LoadScanPage(im, ci)) { im->quet_loi = true; delete ci; return NULL; }
+        if (ci->rows.empty()) { delete ci; return NULL; }
         ZCursor *c = MakeCursor(ci);
         if (!c) { delete ci; return NULL; }
         return c;
@@ -808,6 +903,7 @@ bool ZDBTable::_next(bool bKey, ZCursor *cursor)
     if (!cursor || !cursor->pImpl) return false;
     MyCursorImpl *ci = (MyCursorImpl *)cursor->pImpl;
     MyTableImpl  *im = (MyTableImpl *)m_pImpl;
+    Khoa khoa(im);
 
     // Giai phong vung cua ban ghi hien tai -- dung thu tu nhu ban Berkeley DB
     free(cursor->data);
@@ -817,13 +913,22 @@ bool ZDBTable::_next(bool bKey, ZCursor *cursor)
     ci->pos++;
     if (ci->pos >= ci->rows.size())
     {
-        if (ci->mode == CM_SCAN && im && LoadScanPage(im, ci) && !ci->rows.empty())
+        // (21/08) Truoc day nhanh nay gop CHUNG "het du lieu" voi "nap trang
+        // that bai", nen ben goi (DBBackup.cpp) chi thay next() tra false roi
+        // break va van in "DB Dump Finished." -- dung 03:25 ngay 21/08 no da
+        // sinh ra mot ban sao luu chi 192/1003 nhan vat (19%) ma khong mot
+        // dong canh bao nao. Nay tach ra va ghi dau vao im->quet_loi.
+        bool con_trang = false;
+        if (ci->mode == CM_SCAN && im)
         {
-            // sang trang moi, pos da ve 0
+            if (LoadScanPage(im, ci))
+                con_trang = !ci->rows.empty();
+            else
+                im->quet_loi = true;
         }
-        else
+        if (!con_trang)
         {
-            // Het du lieu: con tro TU HUY, dung quy uoc cua ban Berkeley DB.
+            // Het du lieu (hoac dut): con tro TU HUY, dung quy uoc ban Berkeley DB.
             delete ci;
             cursor->pImpl = NULL;
             delete cursor;
@@ -985,6 +1090,7 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im || !im->opened || bStop) return false;
+    Khoa khoa(im);
 
     std::string k(key_ptr ? key_ptr : "", key_size > 0 ? key_size : 0);
     while (!k.empty() && k[k.size() - 1] == '\0') k.erase(k.size() - 1);
@@ -1092,7 +1198,15 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
         "ver=ver+1%s", im->table.c_str(), can_chup ? ",hist_at=NOW()" : "");
 
     Stmt st(im->conn);
-    if (!st.Prepare(sql)) return false;
+    if (!st.Prepare(sql))
+    {
+        // (21/08) Duong thoat nay truoc day bo ngo giao dich vua mo o tren.
+        // Tren mot ket noi DUNG CHUNG, giao dich treo giu khoa InnoDB va moi
+        // lenh sau cua MOI luong deu chay ben trong no; START TRANSACTION ke
+        // tiep con CHOT NGAM ca dong viec khong lien quan.
+        if (co_giao_dich && im->conn) mysql_query(im->conn, "ROLLBACK");
+        return false;
+    }
 
     std::string acc(d.acc_name);
     if (acc.size() > 32) acc.resize(32);
@@ -1146,6 +1260,7 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
     if (mysql_stmt_bind_param(st.Get(), p))
     {
         DbLog("add() bind LOI: %s", mysql_stmt_error(st.Get()));
+        if (co_giao_dich && im->conn) mysql_query(im->conn, "ROLLBACK");
         return false;
     }
     if (mysql_stmt_execute(st.Get()))
@@ -1156,20 +1271,33 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
         if (err == 2006 || err == 2013)
         {
             st.Close();
-            if (DoConnect(im) && st.Prepare(sql) &&
-                !mysql_stmt_bind_param(st.Get(), p) && !mysql_stmt_execute(st.Get()))
+            // (21/08) DoConnect() goi mysql_close(im->conn) roi mysql_init lay
+            // con tro MOI. Lop Stmt GHIM con tro cu trong m_conn luc dung
+            // (Stmt(MYSQL *c) : m_conn(c)) va KHONG BAO GIO lam moi no, nen
+            // tai dung "st" o day se goi mysql_stmt_init() len vung nho VUA
+            // BI GIAI PHONG -- dung 0xC0000374 y het su co 03:25 ngay 21/08,
+            // lan nay khong can den cuoc dua nao ca. Phai dung Stmt MOI.
+            if (DoConnect(im))
             {
-                DbLog("add(\"%s\") thu lai sau khi noi lai: THANH CONG", k.c_str());
-                return true;
+                Stmt st2(im->conn);
+                if (st2.Prepare(sql) &&
+                    !mysql_stmt_bind_param(st2.Get(), p) &&
+                    !mysql_stmt_execute(st2.Get()))
+                {
+                    DbLog("add(\"%s\") thu lai sau khi noi lai: THANH CONG", k.c_str());
+                    return true;
+                }
             }
         }
         // --- V3: that bai KHONG duoc im lang
-        if (co_giao_dich) mysql_query(im->conn, "ROLLBACK");
+        // (21/08) DoConnect() o tren dat im->conn = NULL khi noi lai that bai,
+        // nen PHAI canh gac truoc khi dung -- neu khong la 0xC0000005.
+        if (co_giao_dich && im->conn) mysql_query(im->conn, "ROLLBACK");
         if (EnsureConn(im))
             GhiThatBai(im, k, "mysql_stmt_execute that bai", data_ptr, data_size);
         return false;
     }
-    if (co_giao_dich && mysql_query(im->conn, "COMMIT"))
+    if (co_giao_dich && im->conn && mysql_query(im->conn, "COMMIT"))
     {
         DbLog("add(\"%s\") COMMIT LOI: %s", k.c_str(), mysql_error(im->conn));
         mysql_query(im->conn, "ROLLBACK");
@@ -1190,6 +1318,7 @@ bool ZDBTable::quarantine(const char *key_ptr, int key_size,
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im || !im->opened) return false;
+    Khoa khoa(im);
     if (!EnsureConn(im)) return false;
 
     std::string k(key_ptr ? key_ptr : "", key_size > 0 ? key_size : 0);
@@ -1214,6 +1343,7 @@ bool ZDBTable::remove(const char *key_ptr, int key_size, int index)
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im || !im->opened) return false;
+    Khoa khoa(im);
     if (!EnsureConn(im)) return false;
 
     std::string k(key_ptr ? key_ptr : "", key_size > 0 ? key_size : 0);

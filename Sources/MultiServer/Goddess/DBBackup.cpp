@@ -21,11 +21,15 @@ static char DBPath[32] = {0};						//数据库目录
 static char DBName[32] = {0};						//数据库名
 static ZDBTable* RunTable = NULL;
 
-static bool IsBackupWorking = false;				//是否正在备份
-static bool IsThreadWorking = false;				//线程是否在工作
+static volatile bool IsBackupWorking = false;				//是否正在备份
+static volatile bool IsThreadWorking = false;				//线程是否在工作
 static bool IsSuspended = false;					//线程是否挂起
 static WORD BackupTime = 0;				//备份间隔时间
 static bool IsTimeToBackup = true;
+// (21/08) Co yeu cau dung luong hen gio. Truoc day TimerThreadFunc la while(true)
+// vo han va Close() chi CloseHandle, nen luong VAN SONG sau khi ReleaseDBInterface()
+// da "delete db_table" -- lan thuc day sau no goi first()/add() len doi tuong DA HUY.
+static volatile bool YeuCauDungLuong = false;
 
 static CDBBackup::TStatData oldGameStatData;//旧的游戏统计数据
 static CDBBackup::TStatData newGameStatData;//新的游戏统计数据
@@ -225,11 +229,61 @@ bool CDBBackup::Open(int aTime)
 
 bool CDBBackup::Close()
 {
+	// (21/08) Dat co dung TRUOC BackupTime = 0. Neu lam nguoc lai thi co mot khe
+	// rat hep: gio he thong dang la 00:xx, luong vua di qua while(!YeuCauDungLuong),
+	// doc BackupTime vua bi dat ve 0, thay khop, va bat dau MOT LUOT QUET DAY DU.
+	// Doi cho hai dong la mien phi nen khong co ly do de mo khe do.
+	YeuCauDungLuong = true;
 	BackupTime = 0;
-	if(m_hManualThread) CloseHandle( m_hManualThread );
-	return (CloseHandle( m_hThread ) == TRUE);
-
+	// Neu quan tri da bam Suspend thi luong dang bi treo va KHONG BAO GIO doc duoc
+	// co dung -- phai danh thuc no day roi moi cho.
+	if(m_hThread && IsSuspended)
+	{
+		ResumeThread(m_hThread);
+		IsSuspended = false;
+	}
+	// PHAI dung han luong hen gio TRUOC khi ben goi delete db_table.
+	// ReleaseDBInterface() (IDBRoleServer.cpp) huy ZDBTable ngay sau day; neu
+	// luong hen gio con song thi lan thuc day sau no goi first()/next() len
+	// doi tuong da bi huy va len MYSQL* da mysql_close.
+	bool aDungHan = true;
+	if(m_hThread)
+	{
+		// Luong ngu theo lat 200ms va Backup() cung kiem co giua cac ban ghi,
+		// nen binh thuong no thoat trong duoi 1 giay.
+		if(WaitForSingleObject(m_hThread, 30000) == WAIT_TIMEOUT)
+		{
+			// TUYET DOI KHONG TerminateThread o day. Luong nay co the dang GIU
+			// CRITICAL_SECTION cua tang CSDL (ZDBTable::_next lay khoa roi moi di
+			// mang); Windows KHONG nha CRITICAL_SECTION cua luong bi giet, nen
+			// khoa se MO COI va db_table->close() ngay sau day treo VINH VIEN --
+			// Goddess thanh xac song: khong sap, khong nhat ky, khong dump.
+			// Tha ro ri mot luong luc tien trinh sap thoat con hon.
+			aDungHan = false;
+		}
+		else
+		{
+			CloseHandle( m_hThread );
+			m_hThread = NULL;
+		}
+	}
+	if(m_hManualThread)
+	{
+		if(WaitForSingleObject(m_hManualThread, 30000) == WAIT_TIMEOUT)
+			aDungHan = false;
+		else
+		{
+			CloseHandle( m_hManualThread );
+			m_hManualThread = NULL;
+		}
+	}
+	if(!aDungHan)
+		return false;	// bao len de ben goi BO QUA viec huy ZDBTable
+	IsThreadWorking = false;
+	YeuCauDungLuong = false;	// de lan Open() sau con chay duoc
+	return true;
 }
+
 
 bool CDBBackup::Suspend()
 {
@@ -273,6 +327,15 @@ bool CDBBackup::ManualBackup()
 	if(!m_hThread) return false;	//如果线程没有初始化好就不能挂起
 	if(!IsThreadWorking) return false;	//如果线程没有开始就不能继续执行线程
 
+	// (21/08) Suspend() co kiem IsBackupWorking nhung ham nay thi KHONG.
+	// Bam nut luc dang sao luu se tao luong THU HAI chay cung ham Backup():
+	// hai luong cung ghi Backup.log/playerlist.txt/StatData.dat, cung dung cac
+	// bien static o dau tep, va cung quet tren MOT MYSQL* -- dung lai cuoc dua
+	// da giet may chu luc 03:25 ngay 21/08.
+	if(IsBackupWorking) return false;
+	// Khong ro ri handle khi bam nhieu lan.
+	if(m_hManualThread) { CloseHandle(m_hManualThread); m_hManualThread = NULL; }
+
 	DWORD dwThreadId, dwThrdParam = 1;
 	m_hManualThread = CreateThread(
 		NULL,                        // no security attributes 
@@ -293,7 +356,7 @@ bool CDBBackup::ManualBackup()
 DWORD WINAPI CDBBackup::TimerThreadFunc( LPVOID lpParam )
 {//备份计时线程
 	IsThreadWorking = true;
-	while(true)
+	while(!YeuCauDungLuong)
 	{
 		SYSTEMTIME aSysTime;
 		GetLocalTime(&aSysTime);
@@ -307,7 +370,9 @@ DWORD WINAPI CDBBackup::TimerThreadFunc( LPVOID lpParam )
 			IsTimeToBackup = true;
 		}
 		
-		Sleep(1000 * 60 * 30);
+		// (21/08) Van la 30 phut, nhung cat thanh nhieu lat 200ms de con dung duoc
+		// khi Close() yeu cau. Truoc day Sleep lien 30 phut nen khong the dung.
+		for(int aLat = 0; aLat < 30 * 60 * 5 && !YeuCauDungLuong; ++aLat) Sleep(200);
 		//Sleep(BackupTime);
 	}
 	IsThreadWorking = false;
@@ -393,6 +458,7 @@ void CDBBackup::Backup()
 	if(!RunTable)
 	{
 		aLogFile<<"RunTable NULL Error."<<endl;
+		IsBackupWorking = false;	// (21/08) khong reset la StopBackupTimer quay tit mai
 		return;
 	}
 	
@@ -547,11 +613,32 @@ void CDBBackup::Backup()
 			++aStatData.SectPlayerNum[0];
 		}
 		
+		// (21/08) Moc dung duy nhat trong vong quet. Khong co no thi dat co
+		// YeuCauDungLuong khong dung duoc luong dang o giua mot luot quet, va do
+		// chinh la ly do truoc day phai co TerminateThread (thu da bi bo di).
+		if(YeuCauDungLuong)
+		{
+			aLogFile<<"CANH BAO: dung theo yeu cau -- ban sao luu KHONG DAY DU."<<endl;
+			RunTable->closeCursor(cursor);
+			cursor = NULL;
+			break;
+		}
 		if(!RunTable->next(cursor))break;
 	}	
 	aPlayerListFile.close();
+	// (21/08) Hoi xem vong quet vua roi la HET DU LIEU hay BI DUT giua chung.
+	// Phai hoi NGAY o day, truoc bat cu thao tac CSDL nao khac.
+	bool aQuetDut = RunTable ? RunTable->QuetBiLoi() : false;
 	DBDump.Close();		//关闭备份数据库
-	aLogFile<<"DB Dump Finished."<<endl;
+	if(aQuetDut)
+	{	// Ban sao luu 21/08 chi co 192/1003 nhan vat ma van in "Finished" -- het roi.
+		aLogFile<<"CANH BAO: quet bang BI DUT giua chung -- ban sao luu nay KHONG DAY DU. "
+				<<"Xem mysql_roledb.log de biet ly do. KHONG duoc dung no de dung lai xep hang."<<endl;
+	}
+	else
+	{
+		aLogFile<<"DB Dump Finished."<<endl;
+	}
 	aLogFile<<"RunTable cursor closed."<<endl;
 
 	//数据库记录统计（维护查看用）==========Add by Fellow,2003.08.26
