@@ -12453,8 +12453,84 @@ void KCoreShell::DrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, in
 
 #include "../../Represent/iRepresent/iRepresentshell.h"
 
+#ifndef _SERVER
+// ============== slow-STRETCH probe (active only when PaintLog=1) ==============
+// [SPIKE]/[PDET] only catch a single pass >= 25ms. A slow STRETCH (paint fps
+// sagging to 40-55, or logic ticks stretching for a few seconds) is invisible
+// to them. This aggregates PER SECOND and logs only abnormal seconds, plus a
+// [TICK] line for any single logic tick >= 40ms split into its 3 phases
+// (net = MessageLoop, world = MainLoop, scene = ScenePlace Breathe which
+// contains the switch-scene wait and Preprocess).
+static DWORD s_ProbeSec = 0;
+static int   s_SecPaint = 0;
+static int   s_SecTick = 0;
+static DWORD s_SecTickSum = 0, s_SecTickMax = 0;
+static DWORD s_SecNetSum = 0, s_SecNetMax = 0;
+static DWORD s_SecWorldSum = 0, s_SecWorldMax = 0;
+static DWORD s_SecSceneSum = 0, s_SecSceneMax = 0;
+
+static void CoreProbeRollSecond(DWORD dwNow)
+{
+	DWORD dwSec = dwNow / 1000;
+	if (s_ProbeSec == 0)
+		s_ProbeSec = dwSec;
+	if (dwSec == s_ProbeSec)
+		return;
+	// abnormal second: painted below ~55fps, starved ticks, or heavy ticking.
+	// s_SecPaint > 0 filters loading screens / minimized window noise.
+	if (s_SecPaint > 0 &&
+		(s_SecPaint < 55 || s_SecTick < 16 || s_SecTickMax >= 30 || s_SecTickSum >= 250))
+	{
+		FILE* pLog = fopen("jx_paint.log", "a");
+		if (pLog)
+		{
+			fprintf(pLog, "[SEC] t=%u painted=%d ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
+				s_ProbeSec * 1000, s_SecPaint, s_SecTick, s_SecTickSum, s_SecTickMax,
+				s_SecNetSum, s_SecNetMax, s_SecWorldSum, s_SecWorldMax, s_SecSceneSum, s_SecSceneMax);
+			fclose(pLog);
+		}
+	}
+	s_ProbeSec = dwSec;
+	s_SecPaint = 0;
+	s_SecTick = 0;
+	s_SecTickSum = 0; s_SecTickMax = 0;
+	s_SecNetSum = 0; s_SecNetMax = 0;
+	s_SecWorldSum = 0; s_SecWorldMax = 0;
+	s_SecSceneSum = 0; s_SecSceneMax = 0;
+}
+
+static void CoreProbeTick(DWORD dwStart, DWORD dwNet, DWORD dwWorld, DWORD dwScene)
+{
+	DWORD dwTotal = dwNet + dwWorld + dwScene;
+	s_SecTick++;
+	s_SecTickSum += dwTotal;
+	if (dwTotal > s_SecTickMax) s_SecTickMax = dwTotal;
+	s_SecNetSum += dwNet;     if (dwNet > s_SecNetMax) s_SecNetMax = dwNet;
+	s_SecWorldSum += dwWorld; if (dwWorld > s_SecWorldMax) s_SecWorldMax = dwWorld;
+	s_SecSceneSum += dwScene; if (dwScene > s_SecSceneMax) s_SecSceneMax = dwScene;
+	if (dwTotal >= 40)
+	{
+		FILE* pLog = fopen("jx_paint.log", "a");
+		if (pLog)
+		{
+			fprintf(pLog, "[TICK] t=%u total=%u net=%u world=%u scene=%u\n",
+				dwStart, dwTotal, dwNet, dwWorld, dwScene);
+			fclose(pLog);
+		}
+	}
+	CoreProbeRollSecond(dwStart + dwTotal);
+}
+#endif
+
 void KCoreShell::DrawGameSpace()
 {
+#ifndef _SERVER
+	if (g_nCorePaintLog > 0)
+	{
+		s_SecPaint++;
+		CoreProbeRollSecond(timeGetTime());
+	}
+#endif
 	if (g_pRepresent)
 	{
 		g_ScenePlace.Paint();
@@ -12479,6 +12555,20 @@ void KCoreShell::SetMusicInterface(void* pMusicInterface)
 
 int KCoreShell::Breathe()
 {
+#ifndef _SERVER
+	if (g_nCorePaintLog > 0)
+	{
+		DWORD dwTickT0 = timeGetTime();
+		g_SubWorldSet.MessageLoop();
+		DWORD dwTickT1 = timeGetTime();
+		g_SubWorldSet.MainLoop();
+		TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
+		DWORD dwTickT2 = timeGetTime();
+		g_ScenePlace.Breathe();
+		CoreProbeTick(dwTickT0, dwTickT1 - dwTickT0, dwTickT2 - dwTickT1, timeGetTime() - dwTickT2);
+		return true;
+	}
+#endif
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();
 	TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
