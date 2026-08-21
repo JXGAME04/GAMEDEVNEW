@@ -215,7 +215,15 @@ BOOL KWin32App::InitWindow(HINSTANCE hInstance)
 void KWin32App::Run()
 {
 	MSG	Msg;
-	DWORD nInterval = 1000/60;
+	// Luoi co hoi chay GameLoop. PHAI chia het chu ky tick logic 1000/18 = 55,56ms,
+	// neu khong nhip logic bi luong tu hoa lech nhau:
+	//   luoi 16ms -> tick THAT tai 64/112/176/224 => span luan phien 48/64/48/64 ms
+	//                => toc do di chuyen dao dong +-14%, nguoi choi thay "chay nhanh cham"
+	//   luoi  8ms -> tick THAT tai 56/112/168/224 => span DEU 56ms
+	// 8ms cung ha do tre tick tu 6,0ms xuong 2,0ms, tuc thoi gian alpha noi suy bi
+	// ket tran (vi tri dong bang) tu 10,8% xuong 3,6% so khung ve.
+	DWORD nInterval = 8;
+	//DWORD nInterval = 1000/60;	// cu: 16ms - sinh span tick 48/64 luan phien
 	//DWORD nInterval = 1000 / 45; 
 	DWORD nNextElapse = m_gTimer.GetElapse() + nInterval;
 	while (TRUE)

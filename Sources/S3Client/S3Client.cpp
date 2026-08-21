@@ -1242,6 +1242,10 @@ BOOL KMyApp::GameLoop()
 	// frame-time probe (PaintLog=1): where does a slow pass spend its time
 	DWORD	nLogT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
 	DWORD	nLogTick = 0, nLogPaint = 0, nLogShift = 0;
+	// Moc tick logic THAT (khong phai moc ly tuong n*55,56ms): dung lam goc cho
+	// alpha noi suy. Xem chu thich tai cho tinh nAlpha ben duoi.
+	static DWORD	s_dwLastTickAt = 0;
+	static DWORD	s_dwTickSpan = 0;
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
 	g_NetConnectAgent.Breathe();
@@ -1308,6 +1312,11 @@ BOOL KMyApp::GameLoop()
 			}
 			m_GameCounter++;
 			int	nElapse = m_Timer.GetElapse();
+			// Chup moc tick THAT + khoang giua hai tick that, de lop noi suy neo dung
+			// vao no thay vi neo vao moc ly tuong (m_GameCounter-1)*55,56ms.
+			if (s_dwLastTickAt && (DWORD)nElapse > s_dwLastTickAt)
+				s_dwTickSpan = (DWORD)nElapse - s_dwLastTickAt;
+			s_dwLastTickAt = (DWORD)nElapse;
 			if (nElapse)
 				nGameFps = m_GameCounter * 1000 / nElapse;
 			g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DRAWVISION, g_DrawVision);
@@ -1350,8 +1359,18 @@ BOOL KMyApp::GameLoop()
 			s_dwNextPaint = nPaintElapse + nPaintStep;
 			if (g_nPaintInterp > 0 && m_GameCounter > 0)
 			{
-				// alpha 0..1000: how far the paint moment sits between the last and the next logic tick
-				int	nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
+				// alpha 0..1000: khung ve nay nam o dau giua hai tick logic.
+				// Truoc day neo vao moc LY TUONG (m_GameCounter-1)*1000/18: tick that luon
+				// xay ra TRE hon moc do (phai doi luot bom ke tiep), nen trong khoang tre
+				// alpha vuot 1000 va bi kep tran o CoreShell.cpp:11799 => vi tri DONG BANG
+				// vai khung moi chu ky tick, du FPS van du. Nay neo vao moc tick THAT va
+				// chia cho khoang tick THAT do duoc => alpha trai deu 0..1000 dung mot lan
+				// giua hai tick, khong con doan ket tran.
+				int	nAlpha;
+				if (s_dwTickSpan >= 20 && s_dwTickSpan <= 200 && nPaintElapse >= s_dwLastTickAt)
+					nAlpha = (int)((nPaintElapse - s_dwLastTickAt) * 1000 / s_dwTickSpan);
+				else
+					nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
 				if (nAlpha < 0)
 					nAlpha = 0;
 				// Do rieng POSSHIFT: truoc day chi phi nay bi tinh vao "paint=" cua
