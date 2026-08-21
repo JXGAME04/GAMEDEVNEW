@@ -207,6 +207,7 @@ struct ExtAuto
 	int  nDTRwTry;       // [DaTau] so nut ruong thuong da thu (cua so mo lai = nut sai)
 	int  nDTLBTry;       // [DaTau 20/08] so lan da dung Lenh bai hoan thanh cho nhiem vu nay
 	UINT uDTTienSeen;    // [DaTau r4] seq kenh tien do (szTien) da doc
+	int nDTPhaseBack;    // [DaTau r5d] pha di cho dang do bi cua so thuong TRE cuop
 	ExtAuto()
 	{
 		uLTime1 = 0;

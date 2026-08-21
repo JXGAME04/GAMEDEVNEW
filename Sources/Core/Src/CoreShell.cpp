@@ -2642,6 +2642,7 @@ static int DT_Hold(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	char szNghi[512];
 	ea.uDTStatusTime = 0;
+	ea.nDTPhaseBack = 0;	// (r5d) treo = bo tour, dung quay lai pha di cho cu
 	// treo co thoi han -> tu ghi chu "(tam nghi N phut)" mau xam cuoi cau
 	if (uMs >= 60000u && strlen(szWhy) < 440)
 	{
@@ -3474,7 +3475,15 @@ static int DT_SapWaypoint(int nPlayerIdx, int nMap, UINT uCurTime)
 	if (g_nDTSapWpt >= n)
 		return 0;
 	if (!g_uDTSapWptT)
+	{
 		g_uDTSapWptT = uCurTime + 45000;
+		// (r5d) bao ro dang DI TUAN cac diem tu tap (trung tam/tiem/xa phu) de
+		// quet sap quanh do - khong phai chay nham toi NPC chuc nang.
+		char szTuan[160];
+		sprintf(szTuan, "<color=Gray>\247i tu\307n \256i\323m t\364 t\313p %d/%d t\327m s\271p quanh \256\343...",
+			g_nDTSapWpt + 1, n);
+		DT_Msg(nPlayerIdx, szTuan);
+	}
 	int nToi = DT_WalkTo(nPlayerIdx, aX[g_nDTSapWpt], aY[g_nDTSapWpt], 250, uCurTime);
 	if (nToi && !g_uDTSapDwell)
 	{
@@ -3494,6 +3503,7 @@ static int DT_SapWaypoint(int nPlayerIdx, int nMap, UINT uCurTime)
 static void DT_ParseQuest(int nPlayerIdx, const char* szQ)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nDTPhaseBack = 0;	// (r5d) nhiem vu moi = tour cu het y nghia
 	ea.nDTQType = 0;
 	ea.nDTCandNum = 0;
 	ea.nDTCandCur = 0;
@@ -3656,6 +3666,7 @@ static int DT_FindCandItem(int nPlayerIdx, const autoData* pAp, int* pnPos)
 static int DT_Skip(int nPlayerIdx, const autoData* pAp, UINT uCurTime, const char* szWhy)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nDTPhaseBack = 0;	// (r5d) bo qua nhiem vu = bo tour dang do
 	// (19/08 - chu game chot) 'Khi bo qua = Huy nhiem vu' CHI ap cho loai nhiem vu
 	// nguoi choi da TAT trong tab Da Tau. Loai dang BAT ma ket thi TREO, tuyet doi
 	// khong huy - huy la mat cong lam do / mat luot trong chuoi.
@@ -3965,6 +3976,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (cap.uFinSeq != ea.uDTFinSeen && ea.nDTPhase != DTP_REWARD
 	 && !(ea.nDTPhase == DTP_GIVEBOX && ea.nDTStep == DTI_TURNWAIT + 100))
 	{
+		// (r5d - nguoi dung bao "tu chay ve Da Tau giua luc tim sap") cua so
+		// thuong THU 2 cua nhiem vu truoc hay toi TRE khi may DA sang di cho -
+		// nho pha lai de bam thuong xong quay ve dung cho, khong lam lai tour.
+		ea.nDTPhaseBack = (ea.nDTPhase == DTP_MUASAP || ea.nDTPhase == DTP_CITYHOP)
+			? ea.nDTPhase : 0;
 		ea.nDTPhase = DTP_REWARD;
 		ea.nDTRetry = 0;
 	}
@@ -5090,6 +5106,15 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			DT_Msg(nPlayerIdx, "<color=Red>Kh«ng chän ®­îc r­¬ng th­ëng (®· thö ®ñ 6 nót) - bá qua.");
 			ea.nDTRwTry = 0;
 			ea.nDTStep = DTI_NONE;
+			// (r5d) bi cuop pha giua luc di cho -> quay lai pha dang do (GIU nhiem vu)
+			if (ea.nDTPhaseBack == DTP_MUASAP || ea.nDTPhaseBack == DTP_CITYHOP)
+			{
+				ea.nDTPhase = ea.nDTPhaseBack;
+				ea.nDTPhaseBack = 0;
+				ea.nDTRetry = 0;
+				ea.uDTNext = uCurTime + 600;
+				return 1;
+			}
 			ea.nDTQType = 0;
 			ea.nDTItemIdx = 0;
 			ea.nDTPhase = DTP_GOTONPC;
@@ -5106,6 +5131,15 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		DT_Msg(nPlayerIdx, "<color=AYellow>§· nhËn th­ëng xong - ®i nhËn nhiÖm vô kÕ tiÕp!");
 		ea.nDTRwTry = 0;
 		ea.nDTStep = DTI_NONE;
+		// (r5d) bi cuop pha giua luc di cho -> quay lai pha dang do (GIU nhiem vu)
+		if (ea.nDTPhaseBack == DTP_MUASAP || ea.nDTPhaseBack == DTP_CITYHOP)
+		{
+			ea.nDTPhase = ea.nDTPhaseBack;
+			ea.nDTPhaseBack = 0;
+			ea.nDTRetry = 0;
+			ea.uDTNext = uCurTime + 600;
+			return 1;
+		}
 		ea.nDTQType = 0;
 		ea.nDTItemIdx = 0;
 		ea.nDTPhase = DTP_GOTONPC;	// noi chuyen tiep de nhan nhiem vu ke (course 3)

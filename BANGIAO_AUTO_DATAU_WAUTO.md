@@ -648,6 +648,17 @@ hết hàng → bỏ không mở, trả lời >0 → đi tới mở xem như cũ
 Binary chốt: **CoreClient.dll 20/08 12:08 (2.203.648 B)**. Đã audit 12/12 marker mọi vòng +
 font 8/8 chuỗi mới chuẩn TCVN3 trong binary này.
 
+**F. r5d (12:4x) — "vẫn chạy tới NPC chức năng" lần 2 → 2 nguồn còn lại (đã soi cổng điều phối):**
+Cổng S3Client.cpp:993/1069: MOVE + Hậu cần **chỉ chạy khi DT trả 0** — trong lúc đi chợ DT trả 1
+nên chúng bị khóa hoàn toàn (chỉ khi treo/hold thì Hậu cần đi tạp hóa/dược/rương là ĐÚNG thiết kế).
+Hai nguồn thật: (1) **cửa sổ thưởng THỨ 2 tới trễ** (thiết kế 2-cửa-sổ Dã Tẩu) cướp pha giữa lúc
+đi chợ → REWARD → thoát ra GOTONPC = chạy về NPC Dã Tẩu + làm lại tour từ đầu MỖI nhiệm vụ. Fix:
+trường mới `ExtAuto.nDTPhaseBack` — catch-all nhớ pha MUASAP/CITYHOP, REWARD bấm xong **quay lại
+đúng pha đang dở, GIỮ nhiệm vụ + tour** (xóa cờ ở DT_Hold/DT_Skip/ParseQuest chống rò). (2) tour
+`DT_SapWaypoint` vốn đi tuần **trung tâm + 2 tiệm + Xa Phu + chỗ Dã Tẩu** (sạp tụ quanh chợ) nhưng
+đi LẶNG LẼ nhìn như chạy nhầm → nay báo xám `Đi tuần điểm tụ tập N/M tìm sạp quanh đó...` mỗi chặng.
+Binary: **CoreClient.dll 20/08 12:4x (xem bảng)**.
+
 ---
 
 ## 9 · Phản biện — đã làm gì
