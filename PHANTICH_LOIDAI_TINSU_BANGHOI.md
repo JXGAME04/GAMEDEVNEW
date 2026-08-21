@@ -71,12 +71,24 @@ python ReverseTools/regionscan.py "E:/.../bin/server/Pak" '特殊用地\leitai'
 
 | Tên hiện trong game | Thư mục | Ghi chú |
 |---|---|---|
-| "Lôi đài thi đấu" / "Lôi đài nhiều người" | `missions/bw` (比武 = tỷ võ) | `bwmanager.lua:26,49` |
-| "Bách Nhân Lôi Đài" | `missions/bairenleitai` (百人擂台) | `head.lua:111` |
+| "Lôi đài thi đấu" / "Lôi đài nhiều người" | `missions/bw` (比武 = tỷ võ) | `bwmanager.lua:26,49` — 🔴 **ĐÃ KHOÁ CỨNG**, xem dưới |
+| **"Lôi Đài Hoàng Thành Tư"** = Bách Nhân Lôi Đài | `missions/bairenleitai` (百人擂台) | `npc_enter.lua:19`; `activitysys/config/9` là **bộ khởi động** của nó (`config.lua:12,45`), KHÔNG phải tính năng riêng |
 | **"Lôi đài bang hội"** | `missions/citywar_arena` | `camper.lua:44` — thuộc hệ Công Thành Chiến |
 | "Lôi Đài Hoa Sơn Đại Chiến" | `missions/huashanqunzhan` (26 tệp/758 dòng) | ngoài phạm vi yêu cầu, chỉ ghi nhận |
-| "Lôi Đài Hoàng Thành Tư" | `activitysys/config/9` | chỉ là vỏ sự kiện, `head.lua:4` |
 | "Cảnh Kỹ Trường" | `missions/arena` | **KHÔNG gọi là lôi đài** nhưng là đấu trường 1v1 xếp hạng — `npc/officer.lua:79` |
+
+> ✏️ **Đính chính 21/08 (sau khi đọc kỹ):** bản đầu của tài liệu này đếm "lôi đài" là **5 thứ** và tách
+> `activitysys/config/9` thành một mục riêng. Sai — nó là **vỏ khởi động của `bairenleitai`**
+> (`config/9/config.lua:12` Include `hundred_arena.lua`, `:45` Include `npc_enter.lua`). Đúng là **4 thứ**.
+
+> 🔴 **HAI TÍNH NĂNG ĐANG CHẾT trên chính bản Linux** (phát hiện 21/08, workflow 13 tác tử):
+> 1. `missions/bw` — dòng **đầu tiên** của `main()` là `bwmanager.lua:7`
+>    `do Talk(1, "", "Chức năng đã đóng.") return end` (**không có `--`**) ⇒ toàn bộ cây là mã chết.
+> 2. `missions/arena` — thiếu **5 mảnh**: giao thức báo danh đã comment 2 nơi; `apply_signup`,
+>    `on_player_enter_map`/`on_player_leave_map`/`on_begin_battle` **không tồn tại**;
+>    **lớp `tbMember` (giữ điểm rank) KHÔNG TỒN TẠI** dù `rule.lua:101` gọi; `common.lua` không ai Include.
+>
+> Chi tiết cách hoạt động + điều kiện tham gia của cả 9 hoạt động: **`DIEUKIEN_THAMGIA_9_HOATDONG.md`**.
 
 **"Tín sứ" = 信使** → `task/tollgate/messenger` + `item/messenger` (NPC **Dịch Quan**).
 ⚠ Đừng nhầm với `event/tongwar/npc_shizhe.lua` (使者) — cái đó là **"Sứ giả"** của Bang Chiến, không phải Tín Sứ.
