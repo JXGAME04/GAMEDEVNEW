@@ -1433,11 +1433,15 @@ int PB_SetDaTau(int nMax)
 		// (21/08) bot dang trong Tong Kim: KHONG gan nhiem vu Da Tau moi. Gan
 		// vao la nhanh DTB_TOI_NPC thay bot lech map roi ChangeWorld keo no ra
 		// khoi chien truong sau 3 giay.
-		if (s_bots[i].nTk)
-			continue;
+		// (phan bien) nhung VAN PHAI DEM no vao nDangChon truoc khi bo qua: bot
+		// TK dang giu nhiem vu Da Tau van la mot suat: khong dem thi vong bu 60
+		// giay tuong con thieu, bom them bot khac, va khi bot TK quay ve thi tong
+		// so vuot tran.
 		if (s_bots[i].nDaTauChon)
 			nDangChon++;
-		else
+		if (s_bots[i].nTk)
+			continue;
+		if (!s_bots[i].nDaTauChon)
 			aId[nSong++] = i;          // ung vien co the them
 	}
 
@@ -2834,11 +2838,13 @@ static int pb_TimNpc(int nSub, const char* szScript, int bx, int by)
 // -1 = ban do khong co, >0 = khe NPC. Kiem lai tinh hop le truoc khi tin.
 #define PB_NPC_DT   0
 #define PB_NPC_XP   1
-static int s_npcNho[2][MAX_SUBWORLD];
+#define PB_NPC_TKT  2      // (21/08) NPC bao danh phe Tong (song_signup)
+#define PB_NPC_TKK  3      // (21/08) NPC bao danh phe Kim  (jin_signup)
+static int s_npcNho[4][MAX_SUBWORLD];
 
 static int pb_TimNpcNho(int nSub, int nLoaiNpc, const char* szScript, int bx, int by)
 {
-	if (nSub < 0 || nSub >= MAX_SUBWORLD || nLoaiNpc < 0 || nLoaiNpc > 1)
+	if (nSub < 0 || nSub >= MAX_SUBWORLD || nLoaiNpc < 0 || nLoaiNpc > 3)
 		return 0;
 	const int nNho = s_npcNho[nLoaiNpc][nSub];
 	if (nNho > 0 && nNho < MAX_NPC
@@ -6848,6 +6854,8 @@ static void pb_VeThanh(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 static int s_nPbTongKim  = 0;      // cong tac tinh nang (0 = tat)
 static int s_nPbTkTran   = 0;      // tran so bot moi tran; 0 = KHONG GIOI HAN
 static int s_nPbTkDangMo = 0;      // 1 = dang co tran (do o nhip)
+static int s_nTkDemTong  = 0;      // quan so 2 phe, cap nhat 1 giay/lan o pb_TkNhip
+static int s_nTkDemKim   = 0;
 
 #define PB_TK_CHO_RATRAN  (GAME_FPS * 90)   // TIME_IN_TRAI: nguoi choi bi day ra sau 90 giay
 #define PB_TK_DICH_HAN    (GAME_FPS * 45)   // toi da bam mot diem doanh trai dich
@@ -6882,6 +6890,12 @@ static int pb_TkDuTuCach(const PB_Bot& b)
 	const int n = Player[p].m_nIndex;
 	if (n <= 0 || n >= MAX_NPC || Npc[n].m_dwID == 0) return 0;
 	if (Npc[n].m_Doing == do_death || Npc[n].m_Doing == do_revive) return 0;
+	if (b.nAi != PB_AI_FIGHT)                        return 0;  // (21/08 phan bien)
+	                        // chi lay bot DANG LUYEN CONG. Bot con dang tren duong
+	                        // vao phai (PB_AI_GOTO_FACTION) hoac chua duoc bat che
+	                        // do danh (IDLE / IN_FACTION) ma bi keo di thi viec do
+	                        // bi nuot, va luc tra ve pb_TkGoCo se LANG LE bat che
+	                        // do danh cho con bot chu game chua he bat.
 	if (Npc[n].m_Level < PB_TK_CAP_MIN)               return 0;  // mobinhtk.lua:141
 	if (b.nFaction < 0)                               return 0;  // mobinhtk.lua:62 GetFaction()==""
 	if (Npc[n].m_CurrentCamp == 4)                    return 0;  // mobinhtk.lua:100
@@ -6942,13 +6956,26 @@ static void pb_TkGoiQuan()
 	int aVet[10];
 	for (int f = 0; f < 10; f++)
 		aVet[f] = 0;
+	// (21/08 phan bien) XAO TRON THU TU DUYET PHAI. Neu duyet 0..9 co dinh thi
+	// phe thanh HAM THUAN TUY cua chi so mon phai: vong tron qua 10 phai (SO
+	// CHAN) cong luat "vao phe dang it hon" khien phai chi so chan LUON vao Tong,
+	// phai le LUON vao Kim, tran nao cung y het - trai voi "random deu".
+	int aTt[10];
+	for (int f = 0; f < 10; f++)
+		aTt[f] = f;
+	for (int f = 9; f > 0; f--)
+	{
+		const int j = ((int)g_Random(f + 1) + f * 17) % (f + 1);
+		const int t = aTt[f];  aTt[f] = aTt[j];  aTt[j] = t;
+	}
 	int nDaGoi = 0;
 	int bCon = 1;
 	while (bCon && nDaGoi < nTran)
 	{
 		bCon = 0;
-		for (int f = 0; f < 10 && nDaGoi < nTran; f++)
+		for (int fi = 0; fi < 10 && nDaGoi < nTran; fi++)
 		{
+			const int f = aTt[fi];
 			if (aVet[f] >= aSo[f])
 				continue;
 			bCon = 1;
@@ -7101,8 +7128,16 @@ static void pb_TkDungPhu(int nIdx, int nNpcIdx, PB_Bot& b, int nLech)
 // Go co Tong Kim va tra bot ve nhip song binh thuong.
 // PHAI ep nAi ve PB_AI_FIGHT: pb_RaBai / pb_DaTau chi chay trong nhanh do, bot o
 // trang thai IDLE se dung im vinh vien tren map vua bi tha xuong.
-static void pb_TkGoCo(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
+static void pb_TkGoCo(int nIdx, int nNpcIdx, PB_Bot& b)
 {
+	// (21/08 phan bien) TU DOC subworld, KHONG nhan tham so: ham nay duoc goi
+	// NGAY SAU pb_TkDungPhu - ma phu vua NewWorld bot sang bai luyen. Dung nSub
+	// chot tu dau pb_DriveBot thi vong do map ben duoi tra map CU (324), khong
+	// khop bang bai nao, b.nBaiIdx = -1 va pb_RaBai bat bot di lai tu dau -
+	// chuyen phu thanh vo ich hoan toan.
+	const int nSub = Npc[nNpcIdx].m_SubWorldIndex;
+	if (nSub < 0 || nSub >= MAX_SUBWORLD)
+		return;
 	b.nTk = 0;  b.nTkPhe = 0;  b.nTkTick = 0;  b.nTkGoiThu = 0;
 	b.nTkDichX = 0;  b.nTkDichY = 0;  b.nTkDichTick = 0;
 	b.nTargetNpc = 0;
@@ -7144,10 +7179,18 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	// Da duoc task03 (hoac pb_TkTraTrangThai) tha ra ngoai -> dung phu len bai.
 	if (b.nTk == 5)
 	{
-		if (nMapNay == PB_TK_MAP)
-			return;                       // van con trong chien truong, cho them
+		// Duong ket thuc BINH THUONG: task03 (PlayerEndTongKim) da NewWorld moi
+		// nguoi ve map 324 TRUOC khi CloseMission, nen luc nhip thay mission da
+		// dong thi bot da o 324 roi -> dung phu ngay.
+		// Duong THOAT SOM: pb_TkTraTrangThai go bot khoi mission nhung KHONG
+		// dich chuyen no; task03 se khong bao gio cham toi no nua. Neu chi
+		// "return" khi con o 379 thi bot dung im tren chien truong VINH VIEN.
+		// Nen: cho toi da 15 giay roi tu dung phu di.
+		if (nMapNay == PB_TK_MAP
+		 && now - b.nTkTick < (unsigned int)(GAME_FPS * 15))
+			return;
 		pb_TkDungPhu(nIdx, nNpcIdx, b, nLech);
-		pb_TkGoCo(nIdx, nNpcIdx, nSub, b);
+		pb_TkGoCo(nIdx, nNpcIdx, b);
 		return;
 	}
 
@@ -7191,7 +7234,7 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		if (nSubBd < 0)
 		{
 			pb_Log("[BotTK] map bao danh %d CHUA MO tren may chu -> huy\n", PB_TK_MAP_BD);
-			pb_TkGoCo(nIdx, nNpcIdx, nSub, b);
+			pb_TkGoCo(nIdx, nNpcIdx, b);
 			return;
 		}
 		// dap xuong canh NPC bao danh cua phe minh, moi bot mot o rieng (luoi 9x7
@@ -7249,7 +7292,12 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		const char* szNpc = (b.nTkPhe == 1) ? "song_signup" : "jin_signup";
 		int bx = 0, by = 0;
 		Npc[nNpcIdx].GetMpsPos(&bx, &by);
-		const int nNpcBd = pb_TimNpc(nSub, szNpc, bx, by);
+		// (21/08 phan bien) PHAI qua ban nho: pb_TimNpc quet TOAN BO region cua
+		// map moi lan goi, ma khoi nay chay MOI KHUNG cho MOI bot dang cho bao
+		// danh - hang tram bot trong cung mot map la O(n^2) khong ai chan.
+		// NPC bao danh dung yen suot doi nen quet mot lan la du.
+		const int nNpcBd = pb_TimNpcNho(nSub, (b.nTkPhe == 1) ? PB_NPC_TKT : PB_NPC_TKK,
+		                                szNpc, bx, by);
 		if (nNpcBd <= 0)
 		{
 			static unsigned int s_uLogNpc = 0;
@@ -7281,9 +7329,34 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		// AddMSPlayer, SetCurCamp, SetPunish, SetPKMode, SetRevPos, NewWorld...
 		if (now - b.nTkTick < (unsigned int)(GAME_FPS * 3) && b.nTkGoiThu > 0)
 			return;                        // gion 3 giay giua hai lan bam
+		// (21/08 phan bien) TU XEP HANG theo luat can bang. MAX_PLAYER_CL = 1
+		// (lib_tktc.lua:20) nen go_tong tu choi ngay khi nPTong > nPKim va nguoc
+		// lai - tu choi IM LANG, khong tra ve gi. Goi quan da chia deu tuyet doi
+		// nhung bot TOI NOI theo thu tu ngau nhien nen quan so hai phe van lech
+		// tam thoi. Cho luot o day (return TRUOC khi tang nTkGoiThu) thi khong
+		// ton lan bam nao, va dan bot phe kia dang toi lien tuc se san bang lai
+		// trong vai giay.
+		if ((b.nTkPhe == 1 && s_nTkDemTong > s_nTkDemKim)
+		 || (b.nTkPhe == 2 && s_nTkDemKim > s_nTkDemTong))
+			return;
 		b.nTkTick = now;
 		b.nTkGoiThu++;
 		Player[nIdx].m_cTask.SetClearVal(PB_TK_TMP_NPC, nNpcBd);
+		// (21/08 phan bien - CHI MANG) go_tong/go_kim doc phe bang
+		// GetNpcValue(GetTaskTemp(TMP_INDEX_NPC)), tuc lay tu NPC chu KHONG phai
+		// tu C++. Nguoi choi bam NPC thi main(sel) dat SetNpcValue(sel, phe)
+		// TRUOC khi mo thoai; bot goi thang go_* nen bo qua buoc do. Ma NPC
+		// "Kim Binh Bao Danh" (startgame.lua:89) KHONG duoc dat value luc add
+		// (m_nNpcParam ZeroMemory o KNpc.cpp:160) -> bot Kim se vao mission voi
+		// NHOM 0. AddMSPlayer(...,0) van THANH CONG nen ta khong he biet, nhung:
+		// GetMSPlayerCount(...,2) mai mai 0 -> cua can bang tu choi moi bot Tong
+		// sau con dau tien; va het tran task03 index TAB_PHE_TONGKIM[0] = nil ->
+		// loi Lua giet ca vong don dep -> CloseMission KHONG CHAY -> mission
+		// TREO den khi restart may chu.
+		// Dat cho CA HAI phe: pb_TimNpc da chon NPC theo dung b.nTkPhe nen gia
+		// tri luon khop voi chinh NPC do, khong the lam hong duong nguoi choi.
+		if (nNpcBd > 0 && nNpcBd < MAX_NPC && Npc[nNpcBd].m_dwID != 0)
+			Npc[nNpcBd].m_nNpcParam[0] = b.nTkPhe;    // = SetNpcValue(nNpcBd, phe)
 		if (b.nTkPhe == 1)
 			Player[nIdx].ExecuteScript(
 			    (char*)"\\script\\startgame\\tinhnang\\tongkim\\song_signup.lua",
@@ -7328,12 +7401,31 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		// hien cung mot khung o 8 diem xuat quan.
 		if (now - b.nTkTick < (unsigned int)(PB_TK_CHO_RATRAN + (nLech % 10) * GAME_FPS))
 			return;
-		// Goi CHINH ham ra tran cua nguoi choi: no tu SetPos 1 trong 8 diem xuat
-		// quan (da hoan doi theo M_VITRI_TRENDUOI), SetDeathScript, SetFightState,
-		// SetProtectTime 3 giay va AddSkillState(963) - y het nguoi that.
-		Player[nIdx].ExecuteScript((char*)"\\script\\timertask\\task02.lua",
-		                           (char*)((b.nTkPhe == 1) ? "tong_ratran" : "kim_ratran"),
-		                           0, false);
+		// Goi CHINH kich ban TRAP ra trai ma nguoi choi dam vao khi di bo ra khoi
+		// hau doanh. No lam DU: SetPMParam(MS_TONGKIM, idx, 1, 1) (co "dang chien
+		// dau" - task02.lua KHONG co, dong do da bi chu thich), SetPos 1 trong 8
+		// diem xuat quan, SetDeathScript theo M_VITRI_TRENDUOI, SetFightState(1),
+		// SetProtectTime 3 giay, AddSkillState(963), StopTimer.
+		// Cong doan chan thoi gian dau ham vo hai voi bot: GetRestTime() cua bot
+		// = 0 (SetTimer chet voi bot) nen nRemain am, di thang qua.
+		//
+		// LAY TRAP GAN MINH NHAT chu khong phai "trap cua phe minh": trap nam o
+		// TOA DO CO DINH (lib_tktc.lua:648 va :650) trong khi HAI PHE DOI CHO cho
+		// nhau moi tran (common_tong dung TKPOS_GO_HDOANH[nViTri], common_kim
+		// dung chi so nguoc lai). Lay theo khoang cach la dung y het nguoi choi
+		// di bo ra cua doanh trai minh dang dung, va tu dung o ca hai the tran.
+		{
+			int nBx5 = 0, nBy5 = 0;
+			Npc[nNpcIdx].GetMpsPos(&nBx5, &nBy5);
+			const __int64 dT = (__int64)(nBx5 - 1251 * 32) * (nBx5 - 1251 * 32)
+			                 + (__int64)(nBy5 - 3529 * 32) * (nBy5 - 3529 * 32);
+			const __int64 dK = (__int64)(nBx5 - 1661 * 32) * (nBx5 - 1661 * 32)
+			                 + (__int64)(nBy5 - 3098 * 32) * (nBy5 - 3098 * 32);
+			Player[nIdx].ExecuteScript(
+			    (char*)((dT <= dK) ? "\\script\\maps\\tongkim\\trap\\tongratrai.lua"
+			                       : "\\script\\maps\\tongkim\\trap\\kimratrai.lua"),
+			    (char*)"main", nIdx, false);
+		}
 		b.nTk = 4;
 		b.nTkTick = now;
 		b.nTkDichTick = 0;
@@ -7353,10 +7445,24 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 
 	// Co dich trong tam thi danh (pb_Fight tu bat FightMode, tu chon chieu).
 	// Bo loc kind_player da duoc mo RIENG cho truong hop nay o pb_FindTarget.
-	if (pb_Fight(nIdx, nNpcIdx, nSub, b))
+	//
+	// GION NHIP TIM MUC TIEU: pb_FindTarget quet 9 vung MOI LAN goi. Ngoai doi
+	// thuong 1000 bot rai tren ~16 ban do nen moi vung nhe; trong Tong Kim ca
+	// dan don vao MOT map, moi lan quet duyet qua ca ngan nguoi - thanh O(n^2)
+	// that su. Dang danh (da co muc tieu) thi van chay moi khung de ra don dung
+	// nhip; chi khau TIM muc tieu moi la gion ~2 lan/giay, rai lech theo chi so
+	// bot de khong ca dan cung quet mot khung.
+	if (b.nTargetNpc > 0 || ((now + (unsigned int)nLech) % 9) == 0)
 	{
-		b.nTkDichTick = 0;                 // dang danh -> huy chuyen di
-		return;
+		if (pb_Fight(nIdx, nNpcIdx, nSub, b))
+		{
+			b.nTkDichTick = 0;             // dang danh -> huy chuyen di
+			return;
+		}
+	}
+	else if (b.nTkDichX > 0)
+	{
+		// khong den luot quet ma van dang co duong di -> cu di tiep
 	}
 
 	// Het dich gan -> chay qua DOANH TRAI DOI PHUONG tim nguoi danh.
@@ -7370,6 +7476,32 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			const int k = ((int)g_Random(pD->nSo) + nLech * 11) % pD->nSo;
 			b.nTkDichX = pD->aX[k];
 			b.nTkDichY = pD->aY[k];
+		}
+		else
+		{
+			// Khong co NPC dich nao: tran CUU SAT (22:50) KHONG sinh mot con quai
+			// nao ca (lib_tktc.lua:452-459 chon the thuc theo GIO, task01.lua:
+			// 81-89 "cuu sat khong add npc hay object gi het"), va ca cua so
+			// truoc khi task01 kip sinh quai. Khong co dich thi bot dung im roi
+			// bi SetNpcTimeIdle(5*60) day ra - nen lay thang HAU DOANH cua phe
+			// DICH lam diem den (TKPOS_GO_HDOANH, lib_tktc.lua:580-584; don vi O).
+			// Vi tri 2 phe DAO NGAU NHIEN moi tran nen phai doc M_VITRI_TRENDUOI.
+			// Gia tri do nam o cap MANG (KMissionArray) chu khong phai cap
+			// mission - khuon lay tu LuaGetMissionValue (ScriptFuns.cpp:10314).
+			const int nViTri = SubWorld[nSub].m_MissionArray.GetMissionValue(47);
+			int nHx = (nCampDich == 1) ? 1229 : 1689;   // hau doanh Tong / Kim
+			int nHy = (nCampDich == 1) ? 3561 : 3074;
+			if (nViTri == 2)                            // hai phe doi cho cho nhau
+			{
+				nHx = (nCampDich == 1) ? 1689 : 1229;
+				nHy = (nCampDich == 1) ? 3074 : 3561;
+			}
+			int nVx = 0, nVy = 0;
+			if (pb_ODat(nSub, nHx, nHy, nLech, 16, &nVx, &nVy))
+			{
+				b.nTkDichX = nVx;
+				b.nTkDichY = nVy;
+			}
 		}
 		b.nTkDichTick = now;
 		b.walk.Reset();
@@ -7417,6 +7549,19 @@ static void pb_TkNhip()
 		return;
 	}
 
+	{
+		KMission* pMd = pb_TkMission(NULL);
+		if (pMd)
+		{
+			s_nTkDemTong = (int)pMd->GetGroupPlayerCount(1);
+			s_nTkDemKim  = (int)pMd->GetGroupPlayerCount(2);
+		}
+		else
+		{
+			s_nTkDemTong = 0;
+			s_nTkDemKim  = 0;
+		}
+	}
 	const int bMo = (pb_TkMission(NULL) != NULL) ? 1 : 0;
 	if (bMo && !s_nPbTkDangMo)
 	{
@@ -8523,7 +8668,9 @@ static void pb_QuanLyNhom()
 					pb_RoiNhom(p, "khong con thanh vien");
 					continue;
 				}
-				if (!bChet && b.nAi == PB_AI_FIGHT
+				// (21/08) doi truong dang Tong Kim khong duoc nhan them thanh vien
+				// (xem chu thich cung ngay o ve ung vien tu do)
+				if (!bChet && !b.nTk && b.nAi == PB_AI_FIGHT
 				 && g_Team[Player[p].m_cTeam.m_nID].m_nMemNum < PB_NHOM_MAX_MEM
 				 && nTruong < PB_MAX_BOTS)
 					aTruong[nTruong++] = i;
@@ -8544,7 +8691,12 @@ static void pb_QuanLyNhom()
 		// (D20) bot dang lam Da Tau KHONG vao danh sach ghep nhom: vua toi map
 		// nhiem vu da bi moi vao nhom roi bi keo di theo doi truong (log 16:31:40:
 		// LyKhang664 kich Xa Phu va vao nhom trong CUNG MOT giay).
-		if (bChet || !b.nWantParty || b.nAi != PB_AI_FIGHT || b.nDaTauChon || b.nBanSap)
+		// (21/08) bot dang Tong Kim KHONG duoc ghep nhom: KPlayerTeam::GetInviteReply
+		// (KPlayerTeam.cpp:466) GHI DE m_CurrentCamp cua thanh vien = m_Camp GOC
+		// cua doi truong -> xoa sach phe Tong/Kim vua SetCurCamp, hai bot khac phe
+		// cung nhom thanh DONG MINH khong danh nhau duoc.
+		if (bChet || b.nTk || !b.nWantParty || b.nAi != PB_AI_FIGHT
+		 || b.nDaTauChon || b.nBanSap)
 			continue;
 		if (nTuDo < PB_MAX_BOTS)
 			aTuDo[nTuDo++] = i;
