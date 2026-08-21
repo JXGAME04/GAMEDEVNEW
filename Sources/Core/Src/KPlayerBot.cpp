@@ -1595,9 +1595,9 @@ int LuaPB_SetNpcChan(Lua_State* L)
 //   - 7 thanh lon: posthanh() -> Rev2Pos(map, id "Trung Tam") = toa do DIEM HOI
 //     SINH trung tam (settings\RevivePos.ini, MPS/32). Lam An khong co muc
 //     Trung Tam -> lay "Lam An Bac" (rev 69) la diem sat tam THON_TT nhat (9 o).
-//   - thon/tran: chonthon() -> THON_TT_MP_ARRAY (tam thon). Chi 4 thon dang MO
-//     trong phu (53/20/121/54); 5 thon bang cu (99/100/101/153/174) dang bi
-//     comment trong phu nen BO - "moi thanh co san o than hanh phu".
+//   - thon/tran: chonthon() -> THON_TT_MP_ARRAY (tam thon). (21/08 - chu game:
+//     "bo cac thon khac di chi de Ba Lang Huyen thoi") -> chi giu Ba Lang
+//     Huyen (53); Giang Tan/Long Mon/Nam Nhac va 5 thon bang cu deu BO.
 // nRevId = dung id phu dung de "luu ruong" tai cho dap (Thanh Do Trung Tam la
 // rev 5 cua section [11] - id la KHOA TRONG SECTION tung map, khong toan cuc).
 static int s_nPbVeThanh = 0;
@@ -1612,10 +1612,7 @@ static const PB_VeThanh s_veThanh[] =
 	{  78, 1577, 3238, 29 },    // Tuong Duong Phu  - Trung Tam (rev 29)
 	{  80, 1758, 3030, 34 },    // Duong Chau Phu   - Trung Tam (rev 34)
 	{ 176, 1569, 2938, 69 },    // Lam An Phu       - Bac (rev 69, sat tam nhat)
-	{  53, 1622, 3189, 19 },    // Ba Lang Huyen    - THON_TT (rev 19)
-	{  20, 3552, 6194, 10 },    // Giang Tan Thon   - THON_TT (rev 10)
-	{ 121, 1951, 4509, 55 },    // Long Mon Tran    - THON_TT (rev 55)
-	{  54, 1650, 3169, 17 },    // Nam Nhac Tran    - THON_TT (rev 17)
+	{  53, 1622, 3189, 19 },    // Ba Lang Huyen    - THON_TT (rev 19) - thon DUY NHAT giu lai
 };
 #define PB_SO_VETHANH  (int)(sizeof(s_veThanh) / sizeof(s_veThanh[0]))
 
