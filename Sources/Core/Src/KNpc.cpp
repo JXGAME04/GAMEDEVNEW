@@ -2021,19 +2021,18 @@ void KNpc::DoStand()
 }
 
 #ifndef _SERVER
-// Bi chan tam thoi (GetDir tra 0). Doi ve tu the DUNG that su - khong con
-// canh "dung yen ma chan van chay" - NHUNG KHONG dung vao m_DesX/m_DesY.
-// Khac DoStand() o dung mot diem do: DoStand xoa dich (KNpc.cpp:2004) nen NPC
-// dung han cho toi khi server gui lenh di chuyen MOI; con day thi tick sau
-// GetDir tu thu lai, duong thong la di tiep ngay.
+// Bi chan tam thoi (GetDir tra 0): chi doi HOAT ANH sang tu the dung, GIU NGUYEN
+// m_Doing va m_DesX/m_DesY.
+// CANH BAO: ban dau ham nay dat m_Doing = do_stand va toi ghi chu thich "tick sau GetDir
+// tu thu lai" - SAI: ServeMove thoat ngay o dau ham (KNpc.cpp:4409) khi m_Doing
+// khong phai do_walk/do_run/... nen KHONG con duong nao goi lai GetDir; NPC phai
+// nam cho goi mang moi (5 tick = 278ms) moi tinh lai => dong nguoi thanh dung lau.
+// Giu m_Doing thi ServeMove van chay moi tick va tu thu lai duong ngay khi thong,
+// con mat nguoi choi van thay tu the DUNG (khong con "chan chay tai cho").
 void KNpc::DoStandBlocked()
 {
-	m_Frames.nTotalFrame = m_StandFrame;
-	if (m_Doing == do_stand)
-		return;
-	FixPos();
-	m_Doing = do_stand;
-	m_Frames.nCurrentFrame = 0;
+	if (m_ClientDoing == cdo_stand || m_ClientDoing == cdo_fightstand)
+		return;	// da o tu the dung roi
 	m_DataRes.SetBlur(FALSE);
 	if (m_FightMode)
 		m_ClientDoing = cdo_fightstand;
@@ -4440,6 +4439,15 @@ void KNpc::ServeMove(int MoveSpeed)
 	if(nRet == 1)
 	{
 		m_nNeedFixPos = 0;	// dang di duoc binh thuong - xoa bo dem bi chan
+		// Duong da thong: tra hoat anh ve chay/di neu truoc do DoStandBlocked da
+		// tam doi sang tu the dung (m_Doing van giu nguyen nen chi can doi lai anh).
+		if (m_ClientDoing == cdo_stand || m_ClientDoing == cdo_fightstand)
+		{
+			if (m_Doing == do_run || m_Doing == do_runattack)
+				m_ClientDoing = m_FightMode ? cdo_fightrun : cdo_run;
+			else if (m_Doing == do_walk)
+				m_ClientDoing = m_FightMode ? cdo_fightwalk : cdo_walk;
+		}
 		x = g_DirCos(m_Dir, 64) * MoveSpeed;
 		y = g_DirSin(m_Dir, 64) * MoveSpeed;
 	}

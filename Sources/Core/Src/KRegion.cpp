@@ -961,7 +961,13 @@ BYTE KRegion::GetBarrier(int nMapX, int nMapY, int nDx, int nDy)
 	}
 	return Obstacle_NULL;
 #else
-	if (m_pNpcRef)
+	// PHAI dung CUNG cong tac voi nhanh server o tren. Truoc day nhanh nay khong
+	// duoc gac, nen server cho di xuyen qua nhau con client van chan => client mo
+	// phong nguoi khac bi DUNG trong khi server cho CHAY TIEP => lech tang mot chieu
+	// ~10px/tick, den luc goi dong bo toi thi dan mot phat = "nguoi xung quanh giat
+	// manh khi dong". Hai ben lech luat va cham la lech mo phong, khong the vot lai
+	// bang noi suy.
+	if (g_nPbNpcChan && m_pNpcRef)
 	{
 		if (m_pNpcRef[nMapY * m_nWidth + nMapX] > 0)
 			return Obstacle_JumpFly;
@@ -1023,7 +1029,8 @@ BYTE	KRegion::GetBarrierMin(int nGridX, int nGridY, int nOffX, int nOffY, BOOL b
 
 #else
 	_ASSERT(0 <= nGridX && nGridX < REGION_GRID_WIDTH && 0 <= nGridY && nGridY < REGION_GRID_HEIGHT);
-	if (bCheckNpc && m_pNpcRef)
+	// Cung ly do voi GetBarrier o tren: phai chung cong tac voi phia server.
+	if (g_nPbNpcChan && bCheckNpc && m_pNpcRef)
 	{
 		if (m_pNpcRef[nGridY * m_nWidth + nGridX] > 0)
 			return Obstacle_JumpFly;
