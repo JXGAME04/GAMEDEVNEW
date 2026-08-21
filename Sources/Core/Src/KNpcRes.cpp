@@ -1645,6 +1645,8 @@ KNpcBlur::KNpcBlur()
 {
 	m_nActive = 0;
 	m_nCurNo = 0;
+	for (int nU = 0; nU < MAX_BLUR_FRAME; nU++)
+		m_nUsed[nU] = 0;
 	m_dwInterval = 3;
 	m_dwTimer = 0;
 	m_dwLastTick = 0;
@@ -1740,6 +1742,9 @@ void	KNpcBlur::ChangeAlpha()
 //---------------------------------------------------------------------------
 void	KNpcBlur::ClearCurNo()
 {
+	// Bat dau nap lai khung tan anh nay: dem lai tu 0 de Draw chi gui dung so o
+	// duoc dien lan nay (doi trang bi co the lam so phan giam di).
+	m_nUsed[m_nCurNo] = 0;
 	for (int i = 0; i < MAX_PART; i++)
 	{
 //		m_Blur[m_nCurNo][i].Release();
@@ -1763,6 +1768,10 @@ void	KNpcBlur::SetFile(int nNo, char *lpszFileName, int nSprID, int nFrameNo, in
 	m_Blur[m_nCurNo][nNo].oPosition.nY = nYpos;
 	m_Blur[m_nCurNo][nNo].oPosition.nZ = nZpos;
 	m_Blur[m_nCurNo][nNo].Color.Color_b.a = nBlurAlpha;
+	// Cac o duoc nap lien tiep tu 0 (xem vong nap KNpcRes.cpp:653-659) nen so o
+	// dung that = chi so cao nhat + 1.
+	if (nNo + 1 > m_nUsed[m_nCurNo])
+		m_nUsed[m_nCurNo] = nNo + 1;
 	m_nActive = 1;
 }
 
@@ -1774,7 +1783,15 @@ void	KNpcBlur::Draw(int nIdx)
 	if (m_nActive == 0)
 		return;
 
-	g_pRepresent->DrawPrimitives(MAX_PART, m_Blur[nIdx], RU_T_IMAGE, FALSE);
+	// Chi gui so o THAT SU da nap, khong gui cung MAX_PART = 20 nhu truoc.
+	// Cac o vuot qua m_nUsed chua duoc SetFile lan nao (hoac giu du lieu cu cua
+	// bo trang bi truoc) - gui di la ve thua, va la phan lon trong ~7000 anh moi
+	// khung do duoc luc Tong Kim. KHONG bo o nao dang dung => hinh anh khong doi.
+	if (nIdx < 0 || nIdx >= MAX_BLUR_FRAME)
+		return;
+	if (m_nUsed[nIdx] <= 0)
+		return;
+	g_pRepresent->DrawPrimitives(m_nUsed[nIdx], m_Blur[nIdx], RU_T_IMAGE, FALSE);
 }
 
 //---------------------------------------------------------------------------

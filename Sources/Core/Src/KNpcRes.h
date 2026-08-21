@@ -44,6 +44,11 @@ public:
 	int				m_nMapZpos[MAX_BLUR_FRAME];			// 对应的地图坐标 z
 	unsigned int	m_SceneIDNpcIdx[MAX_BLUR_FRAME];
 	unsigned int	m_SceneID[MAX_BLUR_FRAME];			// 
+	// So o THAT SU duoc nap cho tung khung tan anh. Vong nap o KNpcRes.cpp:653-659
+	// chi dien j phan hop le (j = 6-12 voi nhan vat thuong) nhung Draw truoc day
+	// gui cung MAX_PART = 20 => thua 8-14 anh RONG moi khung tan anh, x7 khung,
+	// x moi nguoi dang luot. Do that luc Tong Kim: ~7000 anh/khung => 19fps.
+	int				m_nUsed[MAX_BLUR_FRAME];
 	KRUImage		m_Blur[MAX_BLUR_FRAME][MAX_PART];	// 残影绘制列表
 public:
 	KNpcBlur();
