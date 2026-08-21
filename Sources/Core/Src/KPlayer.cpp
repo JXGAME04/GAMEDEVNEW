@@ -809,7 +809,12 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 					return ;
 				Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, nTargetIdx);
 				// Send to Server		
-				AUTOLOG("CAST-SEND-TGT id=%d tgtidx=%d tgtid=%u dist=%d radius=%d tlife=%d tdoing=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, nTargetIdx, Npc[nTargetIdx].m_dwID, NpcSet.GetDistance(m_nIndex, nTargetIdx), pISkill->GetAttackRadius(), Npc[nTargetIdx].m_CurrentLife, (int)Npc[nTargetIdx].m_Doing, GetTickCount());
+				if (g_AutoLogOn())
+				{
+					// FIX 21/08: nTargetIdx co the la chi so OBJECT (nhanh pISkill->IsTargetObj()) => cam tra Npc[].
+					int nLogT = (!pISkill->IsTargetObj() && nTargetIdx > 0 && nTargetIdx < MAX_NPC) ? nTargetIdx : -1;
+					AUTOLOG("CAST-SEND-TGT id=%d tgtidx=%d tgtid=%u dist=%d radius=%d tlife=%d tdoing=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, nTargetIdx, (nLogT >= 0) ? (unsigned int)Npc[nLogT].m_dwID : 0u, (nLogT >= 0) ? NpcSet.GetDistance(m_nIndex, nLogT) : -1, pISkill->GetAttackRadius(), (nLogT >= 0) ? Npc[nLogT].m_CurrentLife : -1, (nLogT >= 0) ? (int)Npc[nLogT].m_Doing : -1, GetTickCount());
+				}
 				SendClientCmdSkill(Npc[m_nIndex].m_ActiveSkillID, -1, Npc[nTargetIdx].m_dwID);
 			}
 		}
@@ -2035,7 +2040,7 @@ int		KPlayer::FindAroundNpc(DWORD dwNpcID)
 	
 	int		nNpc, nRegionNo, i;
 	if (m_nIndex > 0 && m_nIndex < MAX_NPC && (Npc[m_nIndex].m_SubWorldIndex < 0 || Npc[m_nIndex].m_RegionIndex < 0))
-		AUTOLOG("[S3-FIND-BADRGN] npc=%d tgtid=%u sw=%d rgn=%d", m_nIndex, dwNpcID, Npc[m_nIndex].m_SubWorldIndex, Npc[m_nIndex].m_RegionIndex);
+		AUTOLOG_IDX(m_nIndex, "[S3-FIND-BADRGN] npc=%d tgtid=%u sw=%d rgn=%d", m_nIndex, dwNpcID, Npc[m_nIndex].m_SubWorldIndex, Npc[m_nIndex].m_RegionIndex);
 	nNpc = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_Region[Npc[m_nIndex].m_RegionIndex].SearchNpc(dwNpcID);
 	if ( nNpc > 0)
 		return nNpc;
@@ -11997,7 +12002,13 @@ void KPlayer::PlayerFollowActack(int i)
 		m_Actacker = 0;
 		m_nTimeRunLag = 0;
 		m_Count_Acttack_Lag = 0;
-		m_bActacker = FALSE;
+	if (g_AutoLogOn())
+	{
+		// FIX 21/08: dong log nay dung TRUOC cua kiem IsNotValidNpc(i) (ngat mach o nIndex <= 0).
+		int nLogI = (i > 0 && i < MAX_NPC) ? i : -1;
+		int nLogMe = (Player[CLIENT_PLAYER_INDEX].m_nIndex > 0 && Player[CLIENT_PLAYER_INDEX].m_nIndex < MAX_NPC) ? Player[CLIENT_PLAYER_INDEX].m_nIndex : -1;
+		AUTOLOG_EVERY(1000, "AUTO-TGT-CHK i=%d sw=%d/%d rgn=%d kind=%u type=%d life=%d/%d hide=%d doing=%d fm=%d", i, (nLogI >= 0) ? Npc[nLogI].m_SubWorldIndex : -1, (nLogMe >= 0) ? Npc[nLogMe].m_SubWorldIndex : -1, (nLogI >= 0) ? Npc[nLogI].m_RegionIndex : -1, (nLogI >= 0) ? Npc[nLogI].m_Kind : 0, (nLogI >= 0) ? Npc[nLogI].m_Type : -1, (nLogI >= 0) ? Npc[nLogI].m_CurrentLife : -1, (nLogI >= 0) ? Npc[nLogI].m_CurrentLifeMax : -1, (nLogI >= 0) ? Npc[nLogI].m_HideState.nTime : 0, (nLogI >= 0) ? (int)Npc[nLogI].m_Doing : -1, (nLogI >= 0) ? Npc[nLogI].m_FightMode : -1);
+	}
 		return;
 	}
 	

@@ -463,7 +463,9 @@ int KMissle::Activate()
 	}
 	if (m_nFollowNpcIdx > 0)	// fix by Choi Huyn Woo
 	{
-		AUTOLOG_EVERY(1000, "[MIS-ACT-FOLLOWLOST] id=%d skill=%d follow=%d wantId=%lu haveId=%lu sw=%d/%d protect=%d hide=%d hp=%d", m_nMissleId, m_nSkillId, m_nFollowNpcIdx, m_dwFollowNpcID, Npc[m_nFollowNpcIdx].m_dwID, Npc[m_nFollowNpcIdx].m_SubWorldIndex, m_nSubWorldId, Npc[m_nFollowNpcIdx].m_nProtectedTime, Npc[m_nFollowNpcIdx].m_HideState.nTime, Npc[m_nFollowNpcIdx].m_CurrentLife);
+		// FIX 21/08: cua chan ngay tren chi co "> 0", THIEU "< MAX_NPC" => dung lai bien da kep.
+		int nLogF = (m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) ? m_nFollowNpcIdx : -1;
+		AUTOLOG_EVERY(1000, "[MIS-ACT-FOLLOWLOST] id=%d skill=%d follow=%d wantId=%lu haveId=%lu sw=%d/%d protect=%d hide=%d hp=%d", m_nMissleId, m_nSkillId, m_nFollowNpcIdx, m_dwFollowNpcID, (nLogF >= 0) ? (unsigned long)Npc[nLogF].m_dwID : 0ul, (nLogF >= 0) ? Npc[nLogF].m_SubWorldIndex : -1, m_nSubWorldId, (nLogF >= 0) ? Npc[nLogF].m_nProtectedTime : 0, (nLogF >= 0) ? Npc[nLogF].m_HideState.nTime : 0, (nLogF >= 0) ? Npc[nLogF].m_CurrentLife : -1);
 		if (!Npc[m_nFollowNpcIdx].IsMatch(m_dwFollowNpcID) 
 			|| Npc[m_nFollowNpcIdx].m_SubWorldIndex != m_nSubWorldId
 			|| Npc[m_nFollowNpcIdx].m_nProtectedTime > 0			//vong tron bat tu, vﬂng trﬂn b t tˆ

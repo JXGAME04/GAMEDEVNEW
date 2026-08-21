@@ -335,7 +335,9 @@ relationisvalid:
 #ifndef _SERVER				
 				if (distance > GetAttackRadius()*0.8)
 #endif
+				{
 				AUTOLOG_EVERY(1000, "[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d client08=%d -> tra ve -1 (bot se chay lai gan)", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), (int)(GetAttackRadius() * 0.8));
+				}
 				if (distance > GetAttackRadius() + 20)
 					return -1;
 			}
@@ -351,7 +353,9 @@ relationisvalid:
 #ifndef _SERVER				
 					if (distance > GetAttackRadius() * 0.8)
 #endif
+					{
 					AUTOLOG_EVERY(500, "[E3_REJECT_RANGE_XY] skill=%d launcher=%d src=(%d,%d) des=(%d,%d) distance=%d radius=%d", (int)m_nId, nLauncher, nLauncherX, nLauncherY, nParam1, nParam2, distance, GetAttackRadius());
+					}
 					if (distance > GetAttackRadius())
 					{
 #ifndef _SERVER
@@ -800,7 +804,7 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						SkillParam.nLauncher = nLauncher;
 						SkillParam.eLauncherType = eLauncherType;
 						SkillParam.nTargetId = nTargetId;
-						AUTOLOG_EVERY(1000, "[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind);
+						AUTOLOG_EVERY(1000, "[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (m_nChildSkillId > 0 && m_nChildSkillId < MAX_MISSLESTYLE) ? (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind : -1);
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line || g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Parabola) ) 
 						{
 							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
@@ -1213,7 +1217,7 @@ exit:
     }
 #endif
 
-			if (Npc[nLauncher].IsPlayer())
+			if (g_AutoLogOn() && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].IsPlayer())
 				AUTOLOG_EVERY(500, "[S2-ZONE-DONE] skill=%d lv=%d launcher=%d tgt=%d so_vien_tao=%d childnum=%d base=%d melee=%d radius=%d ref=(%d,%d) dir=%d wait=%d", (int)m_nId, (int)m_ulLevel, nLauncher, pSkillParam->nTargetId, nCastMissleNum, m_nChildSkillNum, (int)m_bBaseSkill, (int)m_bIsMelee, m_nAttackRadius, nRefPX, nRefPY, nDir, pSkillParam->nWaitTime);
 			return nCastMissleNum;
 }

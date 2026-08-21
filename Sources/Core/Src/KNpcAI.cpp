@@ -1080,7 +1080,12 @@ void KNpcAI::KeepAttackRange(int nEnemy, int nRange)
 
 void KNpcAI::FollowAttack(int i)
 {
-	AUTOLOG_EVERY(500, "[E4_AI_TARGET_CHECK] me=%d tgt=%d rgn=%d life=%d/%d hide=%d doing=%d", m_nIndex, i, Npc[i].m_RegionIndex, Npc[i].m_CurrentLife, Npc[i].m_CurrentLifeMax, Npc[i].m_HideState.nTime, (int)Npc[i].m_Doing);
+	if (g_AutoLogOn())
+	{
+		// FIX 21/08: dong log nay dung TRUOC cua kiem CheckNpc(i) (ngat mach o nIndex < 0).
+		int nLogI = (i > 0 && i < MAX_NPC) ? i : -1;
+		AUTOLOG_EVERY(500, "[E4_AI_TARGET_CHECK] me=%d tgt=%d rgn=%d life=%d/%d hide=%d doing=%d", m_nIndex, i, (nLogI >= 0) ? Npc[nLogI].m_RegionIndex : -1, (nLogI >= 0) ? Npc[nLogI].m_CurrentLife : -1, (nLogI >= 0) ? Npc[nLogI].m_CurrentLifeMax : -1, (nLogI >= 0) ? Npc[nLogI].m_HideState.nTime : 0, (nLogI >= 0) ? (int)Npc[nLogI].m_Doing : -1);
+	}
 	if (CheckNpc(i))
 		return;
 	//
