@@ -3242,14 +3242,11 @@ static int DT_HasPortalInBag(int nPlayerIdx)
 static DWORD g_dwDTKhoePend = 0;	// ID mon KHOE (loai 3) da dat vao hop giao, dang cho ket qua tra
 static DWORD g_dwDTKhoeId = 0;		// ID mon khoe da tra XONG (server hoan lai) - can cat vao ruong
 static int   g_nDTKhoeTry = 0;		// so nhip da thu cat mon khoe
-static UINT  g_uDTTickT = 0;		// moc nhip DT_Process gan nhat (cong TP tui day doc de biet DT con song)
 static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi ban
 static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
 static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
 static int   g_nDTYieldMap = 0;		// map luc nhuong
-#define DT_YIELD_GAP (3u * 60u * 1000u)	// (PB F5) toi thieu giua 2 lan nhuong: du de chan ping-pong,
-										// du ngan de TP tien/do hong/thuoc lap lai van duoc Hau can xu ly
-static UINT  g_uDTSellPortalT = 0;	// lan cuoi SELLJUNK dung phu ve (het rac, nho Hau can)
+#define DT_YIELD_GAP (3u * 60u * 1000u)	// toi thieu giua 2 lan nhuong may cho Hau can (chan ping-pong)
 static int   g_nDTLastMap = -1;		// (PB r2) map o nhip DT truoc - de biet vua doi map
 static UINT  g_uDTMapT = 0;			// luc doi map gan nhat (fight-mode cua minh dong bo sau id map 1-2 nhip)
 
@@ -3301,26 +3298,89 @@ static bool DT_IsQuestItem(int nPlayerIdx, const autoData* pAp, int nItemIdx)
 	return false;
 }
 
-// (21/08 - PB r2-2) Hau can buoc 5 "cat do": chi GIU LAI trong tui (1) mon da chot nop
-// (nDTItemIdx), (2) mon khoe DT tu cat (DT_CatKhoe), (3) khi TAT o "lay tu ruong" thi
-// ca ung vien theo luat (DT khong lay ra duoc). Khong dung DT_IsQuestItem thang: luat
-// loai 3 la dong ma pho bien ("sinh luc 1-50"...) -> ca tui deu khop -> Hau can khong
-// cat duoc gi -> nhuong may vo ich.
-static bool DT_GiuTrongTui(int nPlayerIdx, const autoData* pAp, int nItemIdx)
+// (21/08 - nguoi dung: "phan ban rac da co bo loc san tren auto") MOT bo loc "mon nay la RAC
+// dem ban" dung chung cho Hau can buoc 1 lan DTP_SELLJUNK - y nguyen luat cu cua buoc 1:
+// trang bi trang/xanh, khong khoa, khong phai item nhiem vu Da Tau; ngua/mat na theo o
+// "Ban ngua mat na"; "Giu nhan/day/boi cap >" (tab Nhat do); "Ban giu loc do" = giu mon co
+// dong trong danh sach LOC cua tab Nhat do (+all skill 139 luon giu).
+static bool DT_LaRac(int nPlayerIdx, const autoData* pAp, int nItemIdx)
 {
-	if (!pAp || pAp->bDaTau != 1 || nItemIdx <= 0)
+	if (nItemIdx <= 0 || Item[nItemIdx].GetGenre() != item_equip)
 		return false;
-	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
-	if (nItemIdx == ea.nDTItemIdx)
-		return true;
-	const DWORD dwK = Item[nItemIdx].GetID();
-	if ((g_dwDTKhoeId && dwK == g_dwDTKhoeId) || (g_dwDTKhoePend && dwK == g_dwDTKhoePend))
-		return true;
-	if (!pAp->bDTUseBox)
-		return DT_IsQuestItem(nPlayerIdx, pAp, nItemIdx);
+	if (Item[nItemIdx].GetColorItem() > green_item)
+		return false;
+	if (Item[nItemIdx].GetPlayerItemLock() > 0 || Item[nItemIdx].GetPlayerItemHLock() > 0
+	 || Item[nItemIdx].GetPlayerItemLock() == -2)
+		return false;
+	if (DT_IsQuestItem(nPlayerIdx, pAp, nItemIdx))
+		return false;
+	const int nDetail = Item[nItemIdx].GetDetailType();
+	if (!pAp->bSellHorse)
+	{
+		if (nDetail >= equip_horse)
+			return false;
+	}
+	else if (nDetail == equip_horse || nDetail == equip_mask)
+		return true;		// luat cu: ngua/mat na ban ngay, khong qua bo loc giu
+	else if (nDetail >= equip_horse)
+		return false;
+	if (pAp->bSaveRing && (nDetail == equip_ring || nDetail == equip_amulet || nDetail == equip_pendant)
+	 && Item[nItemIdx].GetLevel() > pAp->nSRLevel)
+		return false;
+	if (!pAp->nSelSell && pAp->nFtMaCount)
+	{
+		for (int k = 0; k < pAp->nFtMaCount; ++k)
+			for (int m = 0; m < 6; ++m)
+			{
+				if (Item[nItemIdx].m_aryMagicAttrib[m].nAttribType == 139)
+					return false;
+				if (Item[nItemIdx].m_aryMagicAttrib[m].nAttribType == 0)
+					break;
+				if (pAp->nFtMagic[k][0] == Item[nItemIdx].m_aryMagicAttrib[m].nAttribType
+				 && (pAp->nFtMagic[k][0] == magic_indestructible_b
+				  || Item[nItemIdx].m_aryMagicAttrib[m].nValue[0] >= pAp->nFtMagic[k][1]))
+					return false;
+			}
+	}
+	return true;
+}
+
+// trong tui co mon rac nao (theo DT_LaRac) khong
+static bool DT_CoRac(int nPlayerIdx, const autoData* pAp)
+{
+	for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+			if (DT_LaRac(nPlayerIdx, pAp, Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i)))
+				return true;
 	return false;
 }
 
+// hanh trang con "day" theo DUNG muc nguoi choi chon o tab Co ban ("Day hanh trang" + co do)
+// - cung cach do voi ATYPE_TP_FULLITEM (0: 1x1, 1: 2x2, 2: 2x3, 3: 2x4).
+static bool DT_TuiDayTP(int nPlayerIdx, const autoData* pAp)
+{
+	if (!pAp->bCheckTPIBox)
+		return false;
+	int x, y, w = 1, h = 1;
+	if (pAp->nTPiboxSel == 1)
+	{
+		w = 2;
+		h = 2;
+	}
+	else if (pAp->nTPiboxSel == 2)
+	{
+		w = 2;
+		h = 3;
+	}
+	else if (pAp->nTPiboxSel == 3)
+	{
+		w = 2;
+		h = 4;
+	}
+	return !Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(w, h, &x, &y);
+}
+
+// mo khoa ruong bang mat khau WAuto (tab Hau can); tra true khi da mo
 // mo khoa ruong bang mat khau WAuto (tab Hau can); tra true khi da mo
 static bool DT_EnsureUnlock(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
@@ -4024,7 +4084,6 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	KDaTauCapture& cap = g_sDTCap;
-	g_uDTTickT = uCurTime;	// (21/08) dau nhip "DT con song" cho cong TP tui day (ATYPE_TP_FULLITEM)
 	int nMap = SubWorld[0].m_SubWorldID;
 	if (nMap != g_nDTLastMap)
 	{
@@ -4153,64 +4212,22 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				if (DT_UsePortal(nPlayerIdx) || DT_PortalPull(nPlayerIdx, pAp, uCurTime))
 				{
-					if (ea.nDTQType == 4 && ea.nDTMapId > 0)
-						ea.nDTBackXaFu = 1;	// (21/08) ban xong o thanh thi ra Xa Phu di lai, khoi ghe NPC
 					ea.nDTRetry = 0;
 					ea.uDTNext = uCurTime + 3000;
 					return 1;
 				}
 			}
-			// chon 1 mon rac dem ban: trang bi trang/xanh, khong khoa, ton trong bo loc
-			// giu do cua tab Hau can, TRU item dat yeu cau nhiem vu (DT_IsQuestItem)
+			// chon 1 mon rac dem ban - DUNG bo loc ban rac cua Hau can (DT_LaRac)
 			int nBan = 0;
 			for (int bi = 0; bi < EQUIPMENT_ROOM_HEIGHT && !nBan; ++bi)
 				for (int bj = 0; bj < EQUIPMENT_ROOM_WIDTH; ++bj)
 				{
 					int nIdx2 = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(bj, bi);
-					if (nIdx2 <= 0)
-						continue;
-					if (Item[nIdx2].GetGenre() != item_equip)
-						continue;
-					if (Item[nIdx2].GetColorItem() > green_item)
-						continue;
-					if (Item[nIdx2].GetPlayerItemLock() > 0 || Item[nIdx2].GetPlayerItemHLock() > 0
-					 || Item[nIdx2].GetPlayerItemLock() == -2)
-						continue;
-					if (DT_IsQuestItem(nPlayerIdx, pAp, nIdx2))
-						continue;
-					int nDet = Item[nIdx2].GetDetailType();
-					if (!pAp->bSellHorse && nDet >= equip_horse)
-						continue;
-					if (pAp->bSaveRing && (nDet == equip_ring || nDet == equip_amulet || nDet == equip_pendant)
-					 && Item[nIdx2].GetLevel() > pAp->nSRLevel)
-						continue;
-					// bo loc giu do theo dong ma (nhu may Hau can): +all skill (139) luon giu
-					if (!pAp->nSelSell && pAp->nFtMaCount)
+					if (DT_LaRac(nPlayerIdx, pAp, nIdx2))
 					{
-						bool bGiu = false;
-						for (int bk = 0; bk < pAp->nFtMaCount && !bGiu; ++bk)
-							for (int bm = 0; bm < 6; ++bm)
-							{
-								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 139)
-								{
-									bGiu = true;
-									break;
-								}
-								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 0)
-									break;
-								if (pAp->nFtMagic[bk][0] == Item[nIdx2].m_aryMagicAttrib[bm].nAttribType
-								 && (pAp->nFtMagic[bk][0] == magic_indestructible_b
-								  || Item[nIdx2].m_aryMagicAttrib[bm].nValue[0] >= pAp->nFtMagic[bk][1]))
-								{
-									bGiu = true;
-									break;
-								}
-							}
-						if (bGiu)
-							continue;
+						nBan = nIdx2;
+						break;
 					}
-					nBan = nIdx2;
-					break;
 				}
 			if (nBan)
 			{
@@ -4219,40 +4236,12 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return ea.nDTEngaged;
 			}
 			// het rac ma van thieu cho
+			ea.uDTHoldUntil = 0;
 			if (nTrong >= g_nDTSellMin)
 			{
-				ea.uDTHoldUntil = 0;
 				DT_SellResume(ea);
 				return 1;
 			}
-			// (21/08 - "phu ve khong ban, toi xa phu, len map, phu ve lai") con do khong ban
-			// duoc (nguyen lieu/do khoa/do tim...): nho may HAU CAN don theo cau hinh cua no
-			// (cat ruong/ban/mua thuoc) roi lam tiep - dang ngoai thanh thi phu ve truoc. Moi
-			// DT_YIELD_GAP nhuong 1 lan; nhuong roi van chat thi treo nho nguoi don.
-			if (pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
-			{
-				if (nOThanh)
-					return DT_Yield(nPlayerIdx, uCurTime, "<color=Yellow>HÕt r¸c ®Ó b¸n mµ tói vÉn chËt - ®Ó HËu cÇn cÊt r­¬ng/dän tói råi lµm tiÕp.");
-				if (Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
-				{
-					// moi 15 giay dung phu 1 lan (Tho Dia Phu TIEU HAO - dang cho chuyen map thi dung lap)
-					if (uCurTime - g_uDTSellPortalT > 15000u && DT_UsePortal(nPlayerIdx))
-					{
-						g_uDTSellPortalT = uCurTime;
-						if (ea.nDTQType == 4 && ea.nDTMapId > 0)
-							ea.nDTBackXaFu = 1;
-						DT_Msg(nPlayerIdx, "<color=Yellow>HÕt r¸c ®Ó b¸n mµ tói vÉn chËt - phï vÒ thµnh nhê HËu cÇn dän tói råi quay l¹i.");
-						ea.uDTNext = uCurTime + 3000;
-						return ea.nDTEngaged;
-					}
-					if (uCurTime - g_uDTSellPortalT <= 15000u)
-					{
-						ea.uDTNext = uCurTime + 1000;	// dang cho phu chuyen map
-						return ea.nDTEngaged;
-					}
-				}
-			}
-			ea.uDTHoldUntil = 0;
 			return DT_Hold(nPlayerIdx, "<color=Yellow>B¸n hÕt r¸c mµ vÉn ch­a ®ñ « trèng - h·y dän bít tói gióp auto.", uCurTime, 15 * 60 * 1000);
 		}
 		return ea.nDTEngaged;
@@ -5210,12 +5199,14 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (nMap != ea.nDTMapId)
 		{
-			// bi ra khoi map (chet / teleport / TP mau-thuoc-tien-do hong cua tab Hau can) -
-			// quay lai (tin da doc xong o tren). (21/08 - "phu ve khong ban ma cu toi xa phu
-			// roi len lai map") dang o THANH co Da Tau thi: nhuong Hau can don theo cau hinh
-			// (o "Ve thanh" bat) hoac it nhat ban rac (o "Ban vat pham" bat) TRUOC roi moi
-			// ra Xa Phu - khong thi vua len map TP tui day lai bat ve, lap vo tan.
-			// (PB r2) fight-mode cua minh dong bo SAU id map 1-2 nhip -> doi 1,5 s roi moi xet
+			// bi ra khoi map (chet / teleport / phu "Day hanh trang" tab Co ban / TP mau-thuoc...).
+			// (21/08 - nguoi dung: "phu ve full ruong, kiem tra co rac thi chay Hau can se tu ban
+			// rac roi moi chay Da Tau") Dang o THANH (thanh Da Tau, hoac map khong fight-mode - phu
+			// ve co the roi vao thon khong co Da Tau): co RAC theo bo loc ban rac cua Hau can, hoac
+			// hanh trang van DAY theo muc tab Co ban -> nhuong may cho HAU CAN (DTP_YIELD: ban rac /
+			// cat ruong / mua binh / sua do theo cau hinh cua no), xong moi ra Xa Phu. Khong bat
+			// "Ve thanh" thi dung chinh bo loc do ban tai thanh (DTP_SELLJUNK) roi di tiep.
+			// fight-mode cua minh dong bo SAU id map 1-2 nhip -> doi 1,5 s roi moi xet.
 			if (uCurTime - g_uDTMapT < 1500u)
 			{
 				ea.uDTNext = uCurTime + 300;
@@ -5228,25 +5219,26 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					nOThanhF = 1;
 					break;
 				}
-			// (PB r2-1) phu ve co the roi vao THON/THANH KHONG co Da Tau (diem ve cua phu):
-			// o do van ban/cat duoc (server cho ban moi noi, Hau can chay o moi map khong
-			// fight-mode) - khong xu ly ma len lai map la lap vo han, dot het phu.
 			const int bThanhF = nOThanhF || !Npc[Player[nPlayerIdx].m_nIndex].m_FightMode;
-			const int nTrongF = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-			if (bThanhF && pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
-				return DT_Yield(nPlayerIdx, uCurTime, "<color=Cyan>BÞ ®­a vÒ thµnh gi÷a lóc ®¸nh qu¸i - ®Ó HËu cÇn b¸n/cÊt ®å, mua thuèc xong sÏ ra Xa Phu ®i l¹i.");
-			if (bThanhF && pAp->bSellItem && nTrongF < 10)
+			const bool bCoRac = DT_CoRac(nPlayerIdx, pAp);
+			const bool bDayTP = DT_TuiDayTP(nPlayerIdx, pAp);
+			if (bThanhF && (bCoRac || bDayTP))
 			{
-				DT_SellStart(nPlayerIdx, uCurTime);
-				ea.nDTBackXaFu = 1;	// ban xong thi ra Xa Phu di lai (DT_SellResume; khong co tram -> GOXAFU tu phu ve thanh)
-				DT_Msg(nPlayerIdx, "<color=Cyan>BÞ ®­a vÒ thµnh gi÷a lóc ®¸nh qu¸i - b¸n bít r¸c råi ra Xa Phu ®i l¹i.");
-				return 1;
+				if (pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
+					return DT_Yield(nPlayerIdx, uCurTime, "<color=Cyan>Phï vÒ thµnh cã r¸c - ®Ó HËu cÇn b¸n r¸c/dän tói xong sÏ ch¹y D· TÈu tiÕp.");
+				if (pAp->bSellItem && bCoRac)
+				{
+					DT_SellStart(nPlayerIdx, uCurTime);
+					g_nDTSellNeed = 999;	// ban HET rac nhu Hau can roi moi di
+					ea.nDTBackXaFu = 1;	// ban xong thi ra Xa Phu di lai (DT_SellResume)
+					DT_Msg(nPlayerIdx, "<color=Cyan>Phï vÒ thµnh cã r¸c (ch­a bËt 'VÒ thµnh') - b¸n r¸c theo bé läc råi ra Xa Phu ®i tiÕp.");
+					return 1;
+				}
+				// khong con cach nao don (Hau can/Ban rac tat, hoac vua don xong van day): len lai
+				// map chi de phu bat ve tiep -> treo co loi (treo = nha may cho auto thuong)
+				if (bDayTP)
+					return DT_Hold(nPlayerIdx, "<color=Yellow>Hµnh trang ®Çy theo møc ë tab C¬ b¶n mµ kh«ng dän ®­îc (t¾t 'VÒ thµnh'/'B¸n r¸c', hoÆc võa dän xong vÉn ®Çy) - h·y dän tói gióp auto.", uCurTime, 15 * 60 * 1000);
 			}
-			// (PB r2-1/r2-4) dang o thanh, tui van chat ma khong con cach nao don (tat ca hai o /
-			// vua nhuong xong ma Hau can khong don duoc gi): len lai map chi lap lai y nhu cu
-			// -> treo co loi; treo = nha may, TP/Hau can cua nguoi choi chay lai binh thuong.
-			if (bThanhF && nTrongF < 5)
-				return DT_Hold(nPlayerIdx, "<color=Yellow>VÒ thµnh mµ tói vÉn chËt, auto kh«ng tù dän ®­îc - bËt 'B¸n vËt phÈm' / 'VÒ thµnh' (cÊt r­¬ng) ë tab HËu cÇn, hoÆc dän tói gióp auto.", uCurTime, 15 * 60 * 1000);
 			ea.nDTPhase = DTP_EXEC;
 			ea.nDTEngaged = 1;
 			return 1;
@@ -5276,35 +5268,6 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nDTRetry = 0;
 			ea.nDTEngaged = 1;
 			return 1;
-		}
-		// (21/08 - "dang lam nhiem vu, tui day, phu ve khong ban, toi xa phu, len map, phu ve
-		// lai") FARM truoc day KHONG kiem tui: day thi TP "ve thanh khi tui day" (tab Hau
-		// can) bat nhan vat ve, may tuong bi da khoi map -> ra Xa Phu di lai khong ban -> lap;
-		// khong bat TP thi cuon roi khong nhat duoc -> 20 phut "khong tien trien". Nay <5 o
-		// trong la TU ban rac tai cho (DTP_SELLJUNK), du cho lai danh tiep.
-		if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
-		{
-			if (pAp->bSellItem)
-				return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói gÇn ®Çy khi ®ang ®¸nh qu¸i - b¸n bít r¸c t¹i chç råi ®¸nh tiÕp.");
-			// (PB F4) nguoi choi TAT "Ban vat pham": khong ep vao SELLJUNK (= treo 15 phut) -
-			// bat "Ve thanh" thi phu ve, toi thanh FARM se nhuong Hau can cat ruong (DTP_YIELD);
-			// khong co gi de don thi treo co loi, khong lap mu.
-			if (pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
-			{
-				if (uCurTime - g_uDTSellPortalT <= 15000u)
-				{
-					ea.uDTNext = uCurTime + 1000;	// dang cho phu chuyen map
-					return 2;
-				}
-				if (DT_UsePortal(nPlayerIdx))
-				{
-					g_uDTSellPortalT = uCurTime;
-					DT_Msg(nPlayerIdx, "<color=Yellow>Tói gÇn ®Çy (kh«ng bËt 'B¸n vËt phÈm') - phï vÒ thµnh nhê HËu cÇn cÊt ®å råi quay l¹i.");
-					ea.uDTNext = uCurTime + 1000;
-					return 2;
-				}
-			}
-			return DT_Hold(nPlayerIdx, "<color=Yellow>Tói gÇn ®Çy mµ auto kh«ng tù dän ®­îc - bËt 'B¸n vËt phÈm' hoÆc 'VÒ thµnh' (+ phï vÒ trong tói) ë tab HËu cÇn, hoÆc dän tói gióp auto.", uCurTime, 15 * 60 * 1000);
 		}
 		// DANH QUAI + DI TIM QUAI THEO BANG CUM THAT (ATYPE_FIGHT dung nCurMoveRet==3)
 		int nX, nY;
@@ -7632,15 +7595,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				{
 					if(!Npc[nNpcIdx].m_FightMode)
 						return 0;
-					// (21/08 DaTau) may Da Tau dang CAM LAI (farm / ban rac / ve thanh...) thi tu lo
-					// chuyen tui day (DTP_FARM <5 o -> DTP_SELLJUNK ban tai cho, het cach moi phu ve
-					// + nhuong Hau can). TP "ve thanh khi tui day" bat giua luc FARM lam may tuong bi
-					// da khoi map -> ra Xa Phu di lai khong ban -> "phu ve - xa phu - len map - phu
-					// ve" lap vo tan (loi nguoi dung 21/08). Chi chan khi DT_Process vua chay trong
-					// nhip nay (tat o Da Tau / treo / nhuong may = TP chay lai binh thuong).
-					if(uParam == ATYPE_TP_FULLITEM && Player[nPlayerIdx].m_sExtAuto.nDTEngaged
-					&& uCurTime - g_uDTTickT < 1500)
-						return 0;
 
 					static int aMap[42] = {387,388,389,390,391,392,393,394,395,375,386,416,511,995,44,197,208,209,210,211,213,223,
 														341,342,175,337,338,339,379,324,481,482,483,484,485,486,487,488,489,399,397,396};
@@ -9798,94 +9752,21 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					{	//b¸n r¸c
 						if(pApData->bSellItem)
 						{
+							// (21/08 - loi "co rac ma khong ban") vong cu chon mon CUOI moi hang tui: mon GIU LAI
+							// theo bo loc dung SAU se xoa (nSelIdx = 0; continue) mon rac dung TRUOC trong cung
+							// hang -> hang do khong bao gio duoc ban (mot mon giu 2x4 o cot cuoi chan 4 hang).
+							// Nay chon mon rac DAU TIEN, dung y nguyen bo loc cu (DT_LaRac).
 							int nSelIdx = 0;
-							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
-							{
-								if(nSelIdx)
-									break;
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT && !nSelIdx;++i)
 								for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
 								{
 									int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
-									if(nIdx > 0)
+									if(DT_LaRac(nPlayerIdx, pApData, nIdx))
 									{
-										if(Item[nIdx].GetGenre() != item_equip)
-											continue;
-										if(Item[nIdx].GetColorItem() > green_item)
-											continue;
-										if(Item[nIdx].GetPlayerItemLock() > 0 
-											|| Item[nIdx].GetPlayerItemHLock() > 0 
-											|| Item[nIdx].GetPlayerItemLock() == -2)
-											continue;
-										// (20/08) item dat yeu cau nhiem vu Da Tau dang lam: CAM ban
-										if(DT_IsQuestItem(nPlayerIdx, pApData, nIdx))
-											continue;
-										int nDetail = Item[nIdx].GetDetailType();
-										if(!pApData->bSellHorse)
-										{
-											if(nDetail >= equip_horse)
-												continue;
-											nSelIdx = nIdx;
-										}
-										else if(nDetail == equip_horse || nDetail == equip_mask)
-										{
-											nSelIdx = nIdx;
-											break;
-										}
-										else if(nDetail < equip_horse)
-										{
-											nSelIdx = nIdx;
-										}
-										if(nSelIdx)
-										{
-											if(pApData->bSaveRing)
-											{
-												if((nDetail == equip_ring
-												|| nDetail == equip_amulet
-												|| nDetail == equip_pendant)
-												&& Item[nSelIdx].GetLevel() > pApData->nSRLevel)
-												{
-													nSelIdx = 0;
-													continue;
-												}
-											}
-											if(!pApData->nSelSell && pApData->nFtMaCount)
-											{
-												bool bSave = false;
-												for(int k=0;k<pApData->nFtMaCount;++k)
-												{
-													if(bSave)
-														break;
-													for(int m=0;m<6;++m)
-													{
-														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 139)
-														{
-															bSave = true;
-															break;
-														}
-														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 0)
-															break;
-														if(pApData->nFtMagic[k][0] == Item[nSelIdx].m_aryMagicAttrib[m].nAttribType)
-														{
-															if(pApData->nFtMagic[k][0] == magic_indestructible_b
-															|| Item[nSelIdx].m_aryMagicAttrib[m].nValue[0] >= pApData->nFtMagic[k][1])
-															{
-																g_DebugLog("ma[%d][%d]", pApData->nFtMagic[k][0],pApData->nFtMagic[k][1]);
-																bSave = true;
-																break;
-															}
-														}
-													}
-												}
-												if(bSave)
-												{
-													nSelIdx = 0;
-													continue;
-												}
-											}
-										}
+										nSelIdx = nIdx;
+										break;
 									}
 								}
-							}
 							if(nSelIdx)
 							{
 								SendClientCmdSell(Item[nSelIdx].GetID());
@@ -9978,10 +9859,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									if(nIdx > 0)
 									{
 										if(Item[nIdx].GetGenre() != item_equip)
-											continue;
-										// (21/08 - PB F3/r2-2) mon nhiem vu Da Tau da chot / mon khoe DT tu cat /
-										// ung vien khi tat o lay-tu-ruong: de trong tui (xem DT_GiuTrongTui)
-										if(DT_GiuTrongTui(nPlayerIdx, pApData, nIdx))
 											continue;
 										int x, y;
 										if(pApData->nSelStore == 0)
