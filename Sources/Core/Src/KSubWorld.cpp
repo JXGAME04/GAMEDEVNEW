@@ -1716,7 +1716,13 @@ static bool IsBotPathMap(int nMapId)
 		// (phan bien dot 2) 20 + 121 la 2/15 map dich VE THANH *va* 2/10 thanh nha
 		// Da Tau (s_dtNpc) ma xua nay KHONG co luoi -> DTB_TOI_NPC di bo toi NPC
 		// tren 2 thanh nay von da -2, bot thanh nha 20/121 xoay vong nghi 5 phut
-		20,121
+		20,121,
+		// (21/08 - bot tu tham gia Tong Kim) 324 = map bao danh, 379 = chien
+		// truong. Thieu hai so nay thi PB_WalkTo tra -2 va bot dung im: khong
+		// di toi duoc NPC bao danh, khong chay sang doanh trai dich duoc.
+		// 379 dung CHUNG y het thu muc du lieu ban do voi 380 (MapList.ini,
+		// byte trung tuyet doi) nen luoi chac chan dung duoc.
+		324,379
 	};
 	for (int i = 0; i < (int)(sizeof(s_map) / sizeof(s_map[0])); i++)
 		if (s_map[i] == nMapId)

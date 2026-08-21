@@ -736,6 +736,7 @@ static int   s_nAutoLogDrop = 0;	// so dong bi bo vi vuot tran
 static FILE* s_pAutoLogFile = NULL;	// tep log giu mo san (tranh fopen moi dong)
 static int   s_nAutoLogSince = 0;	// so dong ke tu lan flush truoc
 static UINT  s_uAutoLogFlush = 0;	// moc flush gan nhat
+static char  s_szAutoLogName[32] = "";	// (server) chi ghi don danh lien quan nhan vat nay
 
 void g_AutoLogSet(int nOn)
 {
@@ -744,19 +745,36 @@ void g_AutoLogSet(int nOn)
 
 int g_AutoLogOn()
 {
-#ifdef _SERVER
-	return 0;	// (21/08 - yeu cau chu game) log CHI cho client, ban server KHONG ghi/in gi
-#else
 	if (s_nAutoLog < 0)
 	{
 #ifdef WIN32
+#ifdef _SERVER
+		// SERVER: doc config.ini muc [AutoLog]. Chi GHI RA TEP jx_auto_server.log,
+		// TUYET DOI khong in ra cua so GameServer (yeu cau chu game 21/08).
+		s_nAutoLog = (int)GetPrivateProfileIntA("AutoLog", "On", 0, ".\\config.ini");
+		GetPrivateProfileStringA("AutoLog", "Name", "", s_szAutoLogName,
+			sizeof(s_szAutoLogName), ".\\config.ini");
+#else
 		s_nAutoLog = (int)GetPrivateProfileIntA("Client", "AutoLog", 0, ".\\Config.ini");
+#endif
 #else
 		s_nAutoLog = 0;
 #endif
 	}
 	return s_nAutoLog;
-#endif
+}
+
+// (server) loc theo ten nhan vat trong config.ini [AutoLog] Name; de trong = khong loc.
+// Client luon tra 1 (khong can loc vi chi co mot nhan vat).
+int g_AutoLogWho(const char* szName)
+{
+	if (!g_AutoLogOn())
+		return 0;
+	if (!s_szAutoLogName[0])
+		return 1;
+	if (!szName || !szName[0])
+		return 0;
+	return (strcmp(szName, s_szAutoLogName) == 0) ? 1 : 0;
 }
 
 void g_AutoLog(const char* szFmt, ...)
@@ -788,7 +806,11 @@ void g_AutoLog(const char* szFmt, ...)
 	// chinh cai dang do (bot khung / danh miss). Chi flush dinh ky.
 	if (!s_pAutoLogFile)
 	{
+#ifdef _SERVER
+		s_pAutoLogFile = fopen("jx_auto_server.log", "a");
+#else
 		s_pAutoLogFile = fopen("jx_auto.log", "a");
+#endif
 		if (!s_pAutoLogFile)
 		{
 			s_nAutoLog = 0;	// khong mo duoc tep -> tat han, khoi thu lai moi dong
@@ -815,8 +837,13 @@ void g_AutoLog(const char* szFmt, ...)
 	{
 		fclose(pLog);
 		s_pAutoLogFile = NULL;
+#ifdef _SERVER
+		remove("jx_auto_server.log.1");
+		rename("jx_auto_server.log", "jx_auto_server.log.1");
+#else
 		remove("jx_auto.log.1");
 		rename("jx_auto.log", "jx_auto.log.1");
+#endif
 	}
 }
 

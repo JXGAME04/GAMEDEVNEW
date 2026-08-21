@@ -195,12 +195,16 @@ extern char* g_GetStringRes(int nStringID, char * szString, int nMaxLen);
 // [AutoLog 21/08] Log chan doan cho auto (danh / nhat do / di chuyen / skill /
 // dong bo toa do). BAT bang Config.ini muc [Client] AutoLog = 1; mac dinh 0 =
 // TAT hoan toan (g_AutoLogOn() tra 0 -> khong dinh dang chuoi, khong mo tep).
-// Ghi vao 'jx_auto.log' o thu muc lam viec; tu xoay khi tep > 64 MB.
+// Client: Config.ini [Client] AutoLog=1 -> ghi 'jx_auto.log'.
+// Server: config.ini [AutoLog] On=1 -> ghi 'jx_auto_server.log'; [AutoLog] Name=<ten
+//         nhan vat> de CHI ghi don danh lien quan nhan vat do (de trong = ghi tat ca).
+// Ca hai phia CHI GHI RA TEP, khong in ra man hinh/cua so nao. Tu xoay khi tep > 64 MB.
 // Dung: if (g_AutoLogOn()) g_AutoLog("[TAG] npc=%u d=%d", u, d);
 //---------------------------------------------------------------------------
 int  g_AutoLogOn();
 void g_AutoLog(const char* szFmt, ...);
 void g_AutoLogSet(int nOn);
+int  g_AutoLogWho(const char* szName);	// (server) loc theo ten nhan vat, xem KCore.cpp
 // Tien ich: AUTOLOG(...) = ghi neu dang bat; AUTOLOG_EVERY(ms, ...) = tiet che theo
 // thoi gian (moi diem goi co bien static rieng nho khoi do{}while(0)).
 #define AUTOLOG(...)              do { if (g_AutoLogOn()) g_AutoLog(__VA_ARGS__); } while (0)

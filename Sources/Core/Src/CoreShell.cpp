@@ -8807,12 +8807,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_PICKUPSET:
 				{
 					Player[nPlayerIdx].m_sExtAuto.bLBObjDown = nParam;
-					AUTOLOG("PICK-SET lbdown=%d mem=%d t=%u", nParam, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
+					AUTOLOG_EVERY(5000, "PICK-SET lbdown=%d mem=%d t=%u", nParam, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
 					for (std::map<int,ExtAutoObjTime>::iterator itt = Player[nPlayerIdx].m_mAutoIDObj.begin();
 						itt != Player[nPlayerIdx].m_mAutoIDObj.end();)
 					{
 						ExtAutoObjTime s = itt->second;
-						AUTOLOG("PICK-FORGET slot=%d id=%u bitem=%d checked=%d age=%u", itt->first, s.nID, (int)s.bItem, (int)s.nChecked, uCurTime - s.nTotalTime);
+						AUTOLOG_EVERY(10000, "PICK-FORGET slot=%d id=%u bitem=%d checked=%d age=%u", itt->first, s.nID, (int)s.bItem, (int)s.nChecked, uCurTime - s.nTotalTime);
 						if(uCurTime - s.nTotalTime >= 3*60000) //3 minutes
 						{
 							Player[nPlayerIdx].m_mAutoIDObj.erase(itt++);
@@ -8852,7 +8852,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					AUTOLOG_EVERY(5000, "PICK-OFF bPickUp=%d bFollowPick=%d bCityPick=%d t=%u", pApData->bPickUp, pApData->bFollowPick, pApData->bCityPick, uCurTime);
 					if(!pApData->bPickUp)
 						return 0;
-					AUTOLOG_EVERY(3000, "PICK-NOFIGHT fight=%d bCityPick=%d selfid=%u t=%u", Npc[nNpcIdx].m_FightMode, pApData->bCityPick, Npc[nNpcIdx].m_dwID, uCurTime);
+					AUTOLOG_EVERY(5000, "PICK-NOFIGHT fight=%d bCityPick=%d selfid=%u t=%u", Npc[nNpcIdx].m_FightMode, pApData->bCityPick, Npc[nNpcIdx].m_dwID, uCurTime);
 					if(!Npc[nNpcIdx].m_FightMode && !pApData->bCityPick)
 						return 0;
 					int nGameLoop = g_SubWorldSet.GetGameTime();
@@ -8864,7 +8864,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					int nX,nY,dX,dY;
 					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
 					int nVision = 200;
-					AUTOLOG_EVERY(1000, "PICK-SCAN self=(%d,%d) vision=%d picktype=%d nopick=%d/%d follow=%d pickvision=%d mem=%d t=%u", nX, nY, nVision, pApData->nPickType, pApData->bNoPick, pApData->nNOPCount, pApData->bFollowPick, pApData->nPickVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
+					AUTOLOG_EVERY(2000, "PICK-SCAN self=(%d,%d) vision=%d picktype=%d nopick=%d/%d follow=%d pickvision=%d mem=%d t=%u", nX, nY, nVision, pApData->nPickType, pApData->bNoPick, pApData->nNOPCount, pApData->bFollowPick, pApData->nPickVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
 					while(i)
 					{
 						if(Object[i].m_nID > 0 &&
@@ -8890,14 +8890,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							if(nExist >= 0)
 							{
 								ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
-								AUTOLOG_EVERY(1000, "PICK-SKIP-COOLDOWN obj=%d kind=%d dataid=%d name=%.79s slot=%d checked=%d picktime=%u now=%u", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, nExist, (int)s.nChecked, s.nPickTime, uCurTime);
+								AUTOLOG("PICK-SKIP-COOLDOWN obj=%d kind=%d dataid=%d name=%.79s slot=%d checked=%d picktime=%u now=%u", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, nExist, (int)s.nChecked, s.nPickTime, uCurTime);
 								if(s.nChecked >= 3 || s.nPickTime > uCurTime)
 								{
 									i = ObjSet.GetNext(i);
 									continue;
 								}
 							}
-							AUTOLOG_EVERY(2000, "PICK-NAME-IN obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
+							AUTOLOG("PICK-NAME-IN obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 							if(pApData->bNoPick && pApData->nNOPCount)
 							{
 								bool bCont = false;
@@ -8916,7 +8916,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									continue;
 								}
 							}
-							AUTOLOG_EVERY(1000, "PICK-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
+							AUTOLOG("PICK-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
 							if(Object[i].m_nKind == Obj_Kind_Item)
 							{
 								if(pApData->nPickType == 1) //Æ∆c ph»m
@@ -8970,13 +8970,13 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									continue;
 								}
 							}
-							AUTOLOG_EVERY(1000, "PICK-CAND obj=%d kind=%d dataid=%d name=%.79s w=%d h=%d money=%d", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, Object[i].m_nMoneyNum);
+							AUTOLOG("PICK-CAND obj=%d kind=%d dataid=%d name=%.79s w=%d h=%d money=%d", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, Object[i].m_nMoneyNum);
 							Object[i].GetMpsPos(&dX,&dY);
-							AUTOLOG_EVERY(1000, "PICK-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
+							AUTOLOG("PICK-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
 							if(g_GetDistance(nX, nY, dX, dY) < nVision)
 							{
 								int x, y;
-								AUTOLOG_EVERY(2000, "PICK-BAGFULL obj=%d name=%.79s w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
+								AUTOLOG("PICK-BAGFULL obj=%d name=%.79s w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
 								if(Object[i].m_nKind == Obj_Kind_Money
 									|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 										Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y))
@@ -9009,7 +9009,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 						i = ObjSet.GetNext(i);
 					}
-					AUTOLOG("PICK-FOLLOW-GATE followpick=%d onpk=%d fight=%d lbdown=%d nRet=%d", pApData->bFollowPick, pApData->bOnPK, Npc[nNpcIdx].m_FightMode, Player[nPlayerIdx].m_sExtAuto.bLBObjDown, nRet);
+					AUTOLOG_EVERY(5000, "PICK-FOLLOW-GATE followpick=%d onpk=%d fight=%d lbdown=%d nRet=%d", pApData->bFollowPick, pApData->bOnPK, Npc[nNpcIdx].m_FightMode, Player[nPlayerIdx].m_sExtAuto.bLBObjDown, nRet);
 					if(pApData->bFollowPick && !pApData->bOnPK && Npc[nNpcIdx].m_FightMode
 					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
 					{
@@ -9031,7 +9031,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									break;
 								}
 							}
-							AUTOLOG("PICK-FOLLOWMAN-BREAK movefollow=%d found=%d idx=%d", pApData->bMoveFollow, (int)bFoundFol, nIdx);
+							AUTOLOG_EVERY(5000, "PICK-FOLLOWMAN-BREAK movefollow=%d found=%d idx=%d", pApData->bMoveFollow, (int)bFoundFol, nIdx);
 							if(bFoundFol)
 								break;
 						}
@@ -9039,7 +9039,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						if(Player[nPlayerIdx].m_sExtAuto.nCurObjID)
 						{
 							nFollowObj = ObjSet.FindID(Player[nPlayerIdx].m_sExtAuto.nCurObjID);
-							AUTOLOG("PICK-CUR-LOST curobjid=%d found=%d t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nFollowObj, uCurTime);
+							AUTOLOG_EVERY(5000, "PICK-CUR-LOST curobjid=%d found=%d t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nFollowObj, uCurTime);
 							if(nFollowObj > 0)
 							{
 								int nExist = -1;
@@ -9087,7 +9087,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							nVision = 200;
 						else if(nVision > 800)
 							nVision = 800;
-						AUTOLOG_EVERY(1000, "PICK2-SCAN pickvision=%d vision=%d followobj=%d moveret=%d step=%d self=(%d,%d)", pApData->nPickVision, nVision, nFollowObj, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nX, nY);
+						AUTOLOG_EVERY(2000, "PICK2-SCAN pickvision=%d vision=%d followobj=%d moveret=%d step=%d self=(%d,%d)", pApData->nPickVision, nVision, nFollowObj, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nX, nY);
 						if(!nFollowObj)
 						{
 							i = ObjSet.GetNext(0);
@@ -9098,7 +9098,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								|| Object[i].m_nKind == Obj_Kind_Money))
 								{
 									int x, y;
-									AUTOLOG_EVERY(2000, "PICK2-BAGFULL obj=%d name=%.79s kind=%d w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nKind, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
+									AUTOLOG("PICK2-BAGFULL obj=%d name=%.79s kind=%d w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nKind, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
 									if(!(Object[i].m_nKind == Obj_Kind_Money
 											|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 											Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y)))
@@ -9149,7 +9149,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 											continue;
 										}
 									}
-									AUTOLOG_EVERY(1000, "PICK2-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
+									AUTOLOG("PICK2-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
 									if(Object[i].m_nKind == Obj_Kind_Item)
 									{
 										if(pApData->nPickType == 1) //Æ∆c ph»m
@@ -9204,7 +9204,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										}
 									}
 									Object[i].GetMpsPos(&dX,&dY);
-									AUTOLOG_EVERY(1000, "PICK2-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
+									AUTOLOG("PICK2-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
 									if(g_GetDistance(nX, nY, dX, dY) < nVision)
 									{
 										if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet > 0)
@@ -9251,7 +9251,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								i = ObjSet.GetNext(i);
 							}
 						}
-						AUTOLOG_EVERY(2000, "PICK2-NOTARGET curobjid=%d vision=%d mem=%d self=(%d,%d) t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), nX, nY, uCurTime);
+						AUTOLOG_EVERY(5000, "PICK2-NOTARGET curobjid=%d vision=%d mem=%d self=(%d,%d) t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), nX, nY, uCurTime);
 						if(nFollowObj)
 						{
 							g_ScenePlace.RemoveFlag();
