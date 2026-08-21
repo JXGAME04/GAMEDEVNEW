@@ -359,10 +359,11 @@ static void pb_Log(const char* szFmt, ...)
 	va_end(ap);
 	szBuf[sizeof(szBuf) - 1] = 0;
 
-	// (21/08 - chu game: "bo toan bo log in ra trong gameserver") BO echo
-	// console: he bot da co bot.log rieng ben duoi, ma tu khi stdout duoc nan
-	// dong sang tep (CoreServerShell.cpp) thi dong nay chi lam MOI dong bot bi
-	// ghi HAI LAN - mot vao CoreServer.log, mot vao bot.log.
+	// (21/08 - chu game: "tat nhung log in len gameserver tu bot do ban them vao,
+	// doi qua in ra file log") BO echo console. Moi dong log cua he bot deu di
+	// qua ham nay ([BotTK], [BotDanh], [BotNhat], [BotNgoai], [PathSrv],
+	// [BotTrap]...) nen bo o day la tat duoc CA HE. Cua so GameServer giu nguyen
+	// nhung dong thong tin cua chinh may chu; nhat ky bot xem trong bot.log.
 
 	FILE* f = fopen("bot.log", "a");
 	if (!f)

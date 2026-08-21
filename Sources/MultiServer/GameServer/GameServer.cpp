@@ -185,22 +185,6 @@ int main(int argc, char* argv[])
 {
 	SetUnhandledExceptionFilter(ExeptionFillert);
 
-	// (21/08 - chu game: "bo toan bo log in ra trong gameserver chi de in ra file
-	// log thoi") NAN DONG ca stdout lan stderr sang tep ngay dong dau tien cua
-	// main: moi printf co san trong EXE van chay, chi la chay vao tep thay vi ra
-	// console. Lam the nay thay vi di sua tung loi goi printf (~450 cho) vi vua
-	// de sot vua mat thong tin khi can chan doan su co.
-	// CoreServer.dll PHAI tu nan dong RIENG cua no (CoreServerShell.cpp): ca hai
-	// deu dung CRT TINH (RuntimeLibrary = MultiThreaded) nen moi ben mot ban CRT,
-	// tuc HAI stdout khac nhau - va vi the cung phai ghi ra HAI TEP khac nhau,
-	// khong thi hai bo dem se ghi chen vao nhau lam nat dong.
-	{
-		FILE* fOut = freopen("GameServer.log", "a", stdout);
-		FILE* fErr = freopen("GameServer.log", "a", stderr);
-		if (fOut) setvbuf(fOut, NULL, _IOLBF, 4096);   // xa theo DONG: tat dot ngot
-		if (fErr) setvbuf(fErr, NULL, _IONBF, 0);      // van con dong cuoi de doc
-	}
-
 	ClearConsoleToColors(7,1);         //function call to change console background color
 
 	BOOL bRunning = TRUE;
