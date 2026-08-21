@@ -3348,6 +3348,15 @@ static UINT  g_uDTSapProbeT = 0;	// han cho tra loi tham do
 static UINT  g_uDTSapCntSeen = 0;	// moc uCntSeq luc gui tham do
 static int   g_nDTSapProbeTry = 0;	// so lan tham do ung vien hien tai
 static DWORD g_dwDTSapOkId = 0;		// ung vien DA qua tham do (sap that, co hang)
+static int   g_nDTSapDsMap = 0;		// (r5e) danh ba sap: map da hoi
+static int   g_nDTSapDs = -1;		// so muc (-1 = chua co/cho tra loi)
+static int   g_nDTSapDsCur = 0;		// dang di toi muc nao
+static UINT  g_uDTSapDsT = 0;		// han cho server tra loi
+static UINT  g_uDTSapDsFresh = 0;	// luc hoi lan cuoi (90s hoi lai)
+static UINT  g_uDTSapDsSeen = 0;	// seq [SapMap] da doc
+static DWORD g_aDTSapDsId[12];		// danh ba: id / toa do MPS
+static int   g_aDTSapDsX[12];
+static int   g_aDTSapDsY[12];
 
 // ten thanh trong menu "Nhung thanh thi da di qua" cua Xa Phu (settings\Station.txt)
 struct DTSapTown { int nMapId; const char* szMenu; };
@@ -5439,8 +5448,84 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 		}
-		// khong con sap quanh day - di tiep cac diem tu tap trong thanh
-		if (DT_SapWaypoint(nPlayerIdx, nMap, uCurTime))
+		// (r5e - nguoi dung) DANH BA SAP: hoi server vi tri MOI sap trong map
+		// (goi needcount cu, dwId dac biet) - biet ngay cho nao co sap ke ca
+		// nguoi choi bay cho la, khoi long vong. Server cu chua restart -> im
+		// lang 1.8s roi roi xuong di tuan nhu truoc.
+		if (g_nDTSapDsMap != nMap
+		 || (g_nDTSapDs >= 0 && uCurTime > g_uDTSapDsFresh + 90000))
+		{
+			g_nDTSapDsMap = nMap;
+			g_nDTSapDs = -1;
+			g_nDTSapDsCur = 0;
+			g_uDTSapDsFresh = uCurTime;
+			g_uDTSapDsT = uCurTime + 1800;
+			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
+			SendClientCmdGetCount(0x0DA75AB1);
+			ea.uDTNext = uCurTime + 300;
+			return 1;
+		}
+		if (g_sDTCap.uSapMapSeq != g_uDTSapDsSeen)
+		{
+			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
+			g_nDTSapDs = 0;
+			g_nDTSapDsCur = 0;
+			const char* pDs = g_sDTCap.szSapMap + 8;
+			unsigned int uId5; int nX5, nY5;
+			while (g_nDTSapDs < 12 && sscanf(pDs, " %u:%d:%d", &uId5, &nX5, &nY5) == 3)
+			{
+				g_aDTSapDsId[g_nDTSapDs] = uId5;
+				g_aDTSapDsX[g_nDTSapDs] = nX5 * 32;
+				g_aDTSapDsY[g_nDTSapDs] = nY5 * 32;
+				++g_nDTSapDs;
+				const char* pKe = strchr(pDs + 1, ' ');
+				if (!pKe)
+					break;
+				pDs = pKe;
+			}
+			if (g_nDTSapDs > 0)
+			{
+				char szDs2[160];
+				sprintf(szDs2, "<color=Cyan>Server b\270o %d s\271p trong th\265nh - ch\271y th\274ng t\355i t\365ng s\271p.", g_nDTSapDs);
+				DT_Msg(nPlayerIdx, szDs2);
+			}
+			else
+				DT_Msg(nPlayerIdx, "<color=Gray>Th\265nh n\265y kh\253ng c\343 s\271p th\313t n\265o (server x\270c nh\313n) - qua th\265nh k\325.");
+		}
+		if (g_nDTSapDs < 0 && uCurTime < g_uDTSapDsT)
+		{
+			ea.uDTNext = uCurTime + 300;
+			return 1;	// cho danh ba ve
+		}
+		if (g_nDTSapDs > 0)
+		{
+			while (g_nDTSapDsCur < g_nDTSapDs
+			 && DT_SapDaXem(g_aDTSapDsId[g_nDTSapDsCur]))
+				++g_nDTSapDsCur;
+			if (g_nDTSapDsCur < g_nDTSapDs)
+			{
+				const int nDs = g_nDTSapDsCur;
+				int nPx5, nPy5;
+				Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nPx5, &nPy5);
+				if (g_GetDistance(nPx5, nPy5, g_aDTSapDsX[nDs], g_aDTSapDsY[nDs]) < 300)
+				{
+					int nIdx5 = NpcSet.SearchID(g_aDTSapDsId[nDs]);
+					if (nIdx5 <= 0 || !Npc[nIdx5].m_BaiTan)
+					{
+						DT_SapGhiXem(g_aDTSapDsId[nDs]);	// sap da don/doi cho
+						++g_nDTSapDsCur;
+					}
+					// con sap that o day: vong quet phia tren tu tham do + mo xem
+					ea.uDTNext = uCurTime + 400;
+					return 1;
+				}
+				DT_WalkTo(nPlayerIdx, g_aDTSapDsX[nDs], g_aDTSapDsY[nDs], 250, uCurTime);
+				return 1;
+			}
+			// het danh ba - coi nhu xong thanh nay, khoi di tuan mu
+		}
+		// khong co danh ba (server cu) -> di tuan cac diem tu tap nhu truoc
+		if (g_nDTSapDs < 0 && DT_SapWaypoint(nPlayerIdx, nMap, uCurTime))
 			return 1;
 		// het thanh nay -> danh dau roi qua thanh ke
 		{

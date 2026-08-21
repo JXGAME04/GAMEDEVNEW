@@ -659,6 +659,24 @@ trường mới `ExtAuto.nDTPhaseBack` — catch-all nhớ pha MUASAP/CITYHOP, R
 đi LẶNG LẼ nhìn như chạy nhầm → nay báo xám `Đi tuần điểm tụ tập N/M tìm sạp quanh đó...` mỗi chặng.
 Binary: **CoreClient.dll 20/08 12:4x (xem bảng)**.
 
+**G. r5e (17:29) — DANH BẠ SẠP toàn map** (người dùng: *"chỉ cần ở cùng map là biết ngay vị trí
+sạp ở đâu, tránh trường hợp người chơi bày sạp ở vị trí khác thì không tìm ra"*):
+- Client hỏi bằng **gói needcount CŨ với `dwId = 0x0DA75AB1`** (không thêm packet — Gate 2 an
+  toàn; giá trị không thể trùng dwID thật). Server (`c2sNeedCount`) duyệt Player cùng subworld có
+  `m_BaiTan` → trả `"[SapMap] id:x:y ..."` (tọa độ CELL, tối đa 12 sạp) qua
+  `mgs2player_from_c.lua` → tin Hệ Thống riêng người hỏi. **Chỉ liệt kê sạp có PLAYER thật đứng
+  sau** (người chơi + bot PB) — dân SimCity (KNpc) tự bị loại ngay từ nguồn.
+- Client: hook chat bắt `[SapMap]` vào kênh riêng (`szSapMap/uSapMapSeq` trong KDaTauCap — không
+  vào vòng 4 khe, không đè tin tiến độ) và **chặn không hiện lên khung chat**.
+- MUASAP: mỗi map hỏi 1 lần (90s hỏi lại) → có danh bạ thì **chạy thẳng tới từng sạp theo tọa
+  độ** (kể cả chỗ lạ), tới gần 300 MPS mà sạp đã dọn thì đánh dấu bỏ; **hết danh bạ / server xác
+  nhận 0 sạp = qua thành kế luôn, khỏi đi tuần mù**. Server CŨ chưa restart: im lặng 1,8s → rơi
+  về đi tuần waypoint như trước (tương thích ngược).
+- Thông báo: cyan `Server báo N sạp trong thành - chạy thẳng tới từng sạp.` / xám `Thành này
+  không có sạp thật nào (server xác nhận) - qua thành kế.`
+- **CẦN RESTART GameServer** (CoreServer.dll 17:29 đã nằm bin\server, bản lùi `_cu_1644` của
+  phiên bot) — trước restart client vẫn chạy kiểu đi tuần cũ.
+
 ---
 
 ## 9 · Phản biện — đã làm gì

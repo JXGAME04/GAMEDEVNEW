@@ -34,6 +34,11 @@ struct KDaTauCapture
 	unsigned int uCntSeq;
 	unsigned int dwCntId;
 	int nCnt;
+	// (r5e) DANH BA SAP: hoi bang needcount dwId=0x0DA75AB1, server tra
+	// "[SapMap] id:x:y ..." (toa do CELL) qua tin He Thong - chi sap co PLAYER
+	// that (nguoi + bot PB), dan SimCity tu bi loai.
+	unsigned int uSapMapSeq;
+	char szSapMap[400];
 };
 
 extern KDaTauCapture g_sDTCap;

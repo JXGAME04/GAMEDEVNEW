@@ -4149,7 +4149,16 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 			int nDTLen = pCccSync->sentlen;
 			if (nDTLen > (int)sizeof(g_sDTCap.aMsg[0]) - 1)
 				nDTLen = (int)sizeof(g_sDTCap.aMsg[0]) - 1;
-			if (nDTLen > 0)
+			// (r5e) "[SapMap] ..." = danh ba sap server tra ve - kenh du lieu
+			// rieng cho auto: khong vao vong khe (khoi de tin tien do) va khong
+			// hien len khung chat (chan o ChannelMessageArrival ben duoi).
+			if (nDTLen > 8 && !strncmp((const char*)(pCccSync + 1), "[SapMap]", 8))
+			{
+				memcpy(g_sDTCap.szSapMap, (const char*)(pCccSync + 1), nDTLen);
+				g_sDTCap.szSapMap[nDTLen] = 0;
+				++g_sDTCap.uSapMapSeq;
+			}
+			else if (nDTLen > 0)
 			{
 				char* pDTKhe = g_sDTCap.aMsg[(g_sDTCap.uMsgSeq + 1) & 3];
 				memcpy(pDTKhe, (const char*)(pCccSync + 1), nDTLen);
@@ -4163,6 +4172,7 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				}
 			}
 		}
+		if (strncmp((const char*)(pCccSync + 1), "[SapMap]", 8) != 0)
 		l_pDataChangedNotifyFunc->ChannelMessageArrival(
 			pCccSync->channelid, pCccSync->someone,
 			(const char*)(pCccSync + 1), pCccSync->sentlen, true);
@@ -6058,6 +6068,34 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		return;
 
 	PLAYER_NEED_COUNT *pView = (PLAYER_NEED_COUNT *)pProtocol;
+	// (r5e - auto Da Tau) dwId dac biet = xin DANH BA SAP ca map: tra ve
+	// "[SapMap] id:x:y ..." (toa do CELL) qua tin He Thong rieng nguoi hoi.
+	// Chi liet ke sap co PLAYER that dung sau (nguoi choi + bot PB) - dan
+	// SimCity (KNpc) tu bi loai. Gia tri nay khong the la dwID npc that.
+	if (pView->dwId == 0x0DA75AB1)
+	{
+		char szDs[320];
+		int nLen = sprintf(szDs, "[SapMap]");
+		int nSubDs = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
+		int nSoDs = 0;
+		for (int i5 = 1; i5 < MAX_PLAYER && nSoDs < 12; ++i5)
+		{
+			if (i5 == nIndex || Player[i5].m_nIndex <= 0)
+				continue;
+			if (Npc[Player[i5].m_nIndex].m_SubWorldIndex != nSubDs
+			 || !Npc[Player[i5].m_nIndex].m_BaiTan)
+				continue;
+			int nSx5, nSy5;
+			Npc[Player[i5].m_nIndex].GetMpsPos(&nSx5, &nSy5);
+			if (nLen > (int)sizeof(szDs) - 40)
+				break;
+			nLen += sprintf(szDs + nLen, " %u:%d:%d",
+				Npc[Player[i5].m_nIndex].m_dwID, nSx5 / 32, nSy5 / 32);
+			++nSoDs;
+		}
+		Player[nIndex].ExecuteScript("\\script\\player\\mgs2player_from_c.lua", "main", szDs, false);
+		return;
+	}
 	if (pView->dwId == Npc[Player[nIndex].m_nIndex].m_dwID)
 		return;
 	int nPlayerIdx = Player[nIndex].FindAroundPlayer(pView->dwId);
