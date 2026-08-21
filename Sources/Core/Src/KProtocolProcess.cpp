@@ -595,7 +595,7 @@ void KProtocolProcess::NetCommandJump(BYTE* pMsg)
 	
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx))
 	{
-		AUTOLOG("NET-JUMP npc=%u idx=%d dichmps=(%d,%d) cell=(%d,%d) off=(%d,%d) reg=%d t=%u", dwNpcId, nIdx, pNetCommandJump->nMpsX, pNetCommandJump->nMpsY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "NET-JUMP npc=%u idx=%d dichmps=(%d,%d) cell=(%d,%d) off=(%d,%d) reg=%d t=%u", dwNpcId, nIdx, pNetCommandJump->nMpsX, pNetCommandJump->nMpsY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].SendCommand(do_jump, pNetCommandJump->nMpsX, pNetCommandJump->nMpsY);
 		Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 	}
@@ -768,7 +768,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	//µ±Ö¸¶¨Ä³¸öÄ¿±êÊ±(MapX == -1),MapYÎªÄ¿±êµÄNpcdwID£¬ÐèÒª×ª»»³É±¾µØµÄNpcIndex²ÅÐÐ
 	if (MapX < 0)
 	{
-		AUTOLOG("NETSKILL-SKIP-X npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "NETSKILL-SKIP-X npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
 		if (MapX != -1)
 			return;
 	
@@ -789,7 +789,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx))
 	{
-		AUTOLOG("NETSKILL-DO npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d caster_cell=(%d,%d) off=(%d,%d) reg=%d me_idx=%d me_cell=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Player[CLIENT_PLAYER_INDEX].m_nIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "NETSKILL-DO npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d caster_cell=(%d,%d) off=(%d,%d) reg=%d me_idx=%d me_cell=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Player[CLIENT_PLAYER_INDEX].m_nIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].m_SkillList.SetSkillLevel(nSkillID, nSkillLevel);
 		Npc[nIdx].SendCommand(do_skill, nSkillID, MapX, MapY);
 		Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
@@ -1807,7 +1807,7 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 
 	int nRegion, nMapX, nMapY, nOffX, nOffY;
 	SubWorld[0].Mps2Map(NpcSync->MapX, NpcSync->MapY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
-	AUTOLOG("SYNCNPC-REGION-BAD npc=%u mps=(%d,%d) region=%d kind=%d set=%d t=%u", NpcSync->ID, NpcSync->MapX, NpcSync->MapY, nRegion, (int)NpcSync->m_btKind, NpcSync->NpcSettingIdx, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "SYNCNPC-REGION-BAD npc=%u mps=(%d,%d) region=%d kind=%d set=%d t=%u", NpcSync->ID, NpcSync->MapX, NpcSync->MapY, nRegion, (int)NpcSync->m_btKind, NpcSync->NpcSettingIdx, SubWorld[0].m_dwCurrentTime);
 
 	if (nRegion == -1)
 		return;
@@ -1816,7 +1816,7 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	if (!nIdx)
 	{
 		nIdx = NpcSet.AddNpcSet2(NpcSync->NpcSettingIdx, NpcSync->m_bySeries, 0, NpcSync->MapX, NpcSync->MapY);
-		AUTOLOG("SYNCNPC-ADDFAIL npc=%u idx=%d set=%d mps=(%d,%d) cell=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "SYNCNPC-ADDFAIL npc=%u idx=%d set=%d mps=(%d,%d) cell=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].m_dwID = NpcSync->ID;
 		Npc[nIdx].m_Kind = NpcSync->m_btKind;
 		Npc[nIdx].m_Height = 0;
@@ -1899,19 +1899,19 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 {
 	NPC_NORMAL_SYNC* NpcSync = (NPC_NORMAL_SYNC *)pMsg;
 
-	AUTOLOG("SYNCMIN-SKIP-DEATH npc=%u idx=%d doing=%d mps=(%d,%d) life=%d t=%u", NpcSync->ID, NpcSet.SearchID(NpcSync->ID), (int)NpcSync->Doing, NpcSync->MapX, NpcSync->MapY, NpcSync->m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "SYNCMIN-SKIP-DEATH npc=%u idx=%d doing=%d mps=(%d,%d) life=%d t=%u", NpcSync->ID, NpcSet.SearchID(NpcSync->ID), (int)NpcSync->Doing, NpcSync->MapX, NpcSync->MapY, NpcSync->m_CurrentLife, SubWorld[0].m_dwCurrentTime);
 	if (NpcSync->Doing == do_revive || NpcSync->Doing == do_death)
 		return;
 	//--end add
 	int nIdx = NpcSet.SearchID(NpcSync->ID);
 	if (!nIdx)
 	{
-		AUTOLOG("SYNCMIN-HIDE-NEW npc=%u state=0x%02X mps=(%d,%d) doing=%d t=%u", NpcSync->ID, (int)NpcSync->State, NpcSync->MapX, NpcSync->MapY, (int)NpcSync->Doing, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "SYNCMIN-HIDE-NEW npc=%u state=0x%02X mps=(%d,%d) doing=%d t=%u", NpcSync->ID, (int)NpcSync->State, NpcSync->MapX, NpcSync->MapY, (int)NpcSync->Doing, SubWorld[0].m_dwCurrentTime);
 		if(NpcSync->State & STATE_HIDE)	//npc khac' dang tang hinh, khong co san~ npc
 			return;
 		if (!NpcSet.IsNpcRequestExist(NpcSync->ID))
 		{
-			AUTOLOG("SYNCMIN-REQNPC npc=%u mps=(%d,%d) doing=%d state=0x%02X dangcho=%d t=%u", NpcSync->ID, NpcSync->MapX, NpcSync->MapY, (int)NpcSync->Doing, (int)NpcSync->State, (int)NpcSet.IsNpcRequestExist(NpcSync->ID), SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "SYNCMIN-REQNPC npc=%u mps=(%d,%d) doing=%d state=0x%02X dangcho=%d t=%u", NpcSync->ID, NpcSync->MapX, NpcSync->MapY, (int)NpcSync->Doing, (int)NpcSync->State, (int)NpcSet.IsNpcRequestExist(NpcSync->ID), SubWorld[0].m_dwCurrentTime);
 			if (NpcSet.InsertNpcRequest(NpcSync->ID))
 				SendClientCmdRequestNpc(NpcSync->ID);
 		}
@@ -1930,7 +1930,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 				NpcSet.Remove(nIdx);
 				return;
 			}
-			AUTOLOG("SYNCMIN-REGION-BAD npc=%u idx=%d mps=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->MapX, NpcSync->MapY, nRegion, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "SYNCMIN-REGION-BAD npc=%u idx=%d mps=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->MapX, NpcSync->MapY, nRegion, SubWorld[0].m_dwCurrentTime);
 			if (nRegion == -1)
 			{		
 				return;
@@ -1952,7 +1952,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		}
 		else
 		{
-			AUTOLOG("SYNCMIN-HIDE-DEL npc=%u idx=%d cell=(%d,%d) reg=%d life=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "SYNCMIN-HIDE-DEL npc=%u idx=%d cell=(%d,%d) reg=%d life=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
 			if(NpcSync->State & STATE_HIDE && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex) //npc khac' dang tang hinh, da co npc -> xoa
 			{
 				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
@@ -1960,7 +1960,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 				NpcSet.Remove(nIdx);
 				return;
 			}
-			AUTOLOG("SYNCMIN-CHGREGION npc=%u idx=%d cellcu=(%d,%d) regcu=%d cellmoi=(%d,%d) regmoi=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "SYNCMIN-CHGREGION npc=%u idx=%d cellcu=(%d,%d) regcu=%d cellmoi=(%d,%d) regmoi=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
 			if (Npc[nIdx].m_RegionIndex != nRegion && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 			{
 				SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
@@ -2017,7 +2017,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)	// ·ÇÍæ¼?
 		{
 			int	nOldLife = Npc[nIdx].m_CurrentLife;
-			AUTOLOG("SYNCMIN-LIFE npc=%u idx=%d life %d->%d max=%d cell=(%d,%d) reg=%d t=%u", NpcSync->ID, nIdx, nOldLife, NpcSync->m_CurrentLife, NpcSync->m_CurrentLifeMax, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "SYNCMIN-LIFE npc=%u idx=%d life %d->%d max=%d cell=(%d,%d) reg=%d t=%u", NpcSync->ID, nIdx, nOldLife, NpcSync->m_CurrentLife, NpcSync->m_CurrentLifeMax, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 			Npc[nIdx].m_CurrentLife = NpcSync->m_CurrentLife;
 			//if (Npc[nIdx].m_Kind == kind_normal)
 			//{
@@ -2068,7 +2068,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 
 	nNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 
-	AUTOLOG("SYNCME-FIRSTREGION me idx=%d regcu=%d svreg=%d cell=(%d,%d) mps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_RegionIndex, nRegion, nMapX, nMapY, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "SYNCME-FIRSTREGION me idx=%d regcu=%d svreg=%d cell=(%d,%d) mps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_RegionIndex, nRegion, nMapX, nMapY, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
 	if (Npc[nNpcIdx].m_RegionIndex == -1)
 	{
 		if (nRegion < 0)
@@ -2094,7 +2094,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 	{
 		SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
 
-		AUTOLOG("SYNCME-LOADMAP me idx=%d cellcu=(%d,%d) offcu=(%d,%d) regcu=%d svmps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "SYNCME-LOADMAP me idx=%d cellcu=(%d,%d) offcu=(%d,%d) regcu=%d svmps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
 		int nRegionX = pSync->m_dwMapX / (SubWorld[0].m_nCellWidth * SubWorld[0].m_nRegionWidth);
 		int nRegionY = pSync->m_dwMapY / (SubWorld[0].m_nCellHeight * SubWorld[0].m_nRegionHeight);
 		
@@ -2147,14 +2147,14 @@ void KProtocolProcess::SyncObjectAdd(BYTE* pMsg)
 	KObjItemInfo	sInfo;
 
 	nObjIndex = ObjSet.FindID(pObjSyncAdd->m_nID);
-	AUTOLOG("OBJADD-RECV id=%d dataid=%d itemid=%d genre=%d dtype=%d ptype=%d x=%d y=%d money=%d w=%d h=%d flag=%d dupidx=%d t=%u", pObjSyncAdd->m_nID, pObjSyncAdd->m_nDataID, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nGenre, pObjSyncAdd->m_nDetailType, pObjSyncAdd->m_nParticularType, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos, pObjSyncAdd->m_nMoneyNum, (int)pObjSyncAdd->m_btItemWidth, (int)pObjSyncAdd->m_btItemHeight, (int)pObjSyncAdd->m_btFlag, nObjIndex, GetTickCount());
+	AUTOLOG_EVERY(1000, "OBJADD-RECV id=%d dataid=%d itemid=%d genre=%d dtype=%d ptype=%d x=%d y=%d money=%d w=%d h=%d flag=%d dupidx=%d t=%u", pObjSyncAdd->m_nID, pObjSyncAdd->m_nDataID, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nGenre, pObjSyncAdd->m_nDetailType, pObjSyncAdd->m_nParticularType, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos, pObjSyncAdd->m_nMoneyNum, (int)pObjSyncAdd->m_btItemWidth, (int)pObjSyncAdd->m_btItemHeight, (int)pObjSyncAdd->m_btFlag, nObjIndex, GetTickCount());
 	if (nObjIndex > 0)
 		return;
 
 	sInfo.m_nItemID = pObjSyncAdd->m_nItemID;
 	sInfo.m_nItemWidth = pObjSyncAdd->m_btItemWidth;
 	sInfo.m_nItemHeight = pObjSyncAdd->m_btItemHeight;
-	AUTOLOG("OBJ-ADD-RX obj=%d data=%d item=%d mps=(%d,%d) tien=%d npc=%d cu_idx=%d me_cell=(%d,%d) me_reg=%d t=%u", pObjSyncAdd->m_nID, pObjSyncAdd->m_nDataID, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos, pObjSyncAdd->m_nMoneyNum, pObjSyncAdd->m_dwNpcId, nObjIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "OBJ-ADD-RX obj=%d data=%d item=%d mps=(%d,%d) tien=%d npc=%d cu_idx=%d me_cell=(%d,%d) me_reg=%d t=%u", pObjSyncAdd->m_nID, pObjSyncAdd->m_nDataID, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos, pObjSyncAdd->m_nMoneyNum, pObjSyncAdd->m_dwNpcId, nObjIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 	sInfo.m_nMoneyNum = pObjSyncAdd->m_nMoneyNum;
 	sInfo.m_nColorID = pObjSyncAdd->m_btColorID;
 	sInfo.m_nGenre = pObjSyncAdd->m_nGenre;
@@ -2175,7 +2175,7 @@ void KProtocolProcess::SyncObjectAdd(BYTE* pMsg)
 		pObjSyncAdd->m_nXpos,
 		pObjSyncAdd->m_nYpos,
 		sInfo);
-		AUTOLOG("OBJADD-RESULT id=%d idx=%d itemid=%d x=%d y=%d", pObjSyncAdd->m_nID, nObjIndex, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos);
+		AUTOLOG_EVERY(1000, "OBJADD-RESULT id=%d idx=%d itemid=%d x=%d y=%d", pObjSyncAdd->m_nID, nObjIndex, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos);
 #ifdef WAIGUA_ZROC
 	if (nObjIndex <= 0)
 		return;
@@ -2237,7 +2237,7 @@ void KProtocolProcess::SyncObjectRemove(BYTE* pMsg)
 	OBJ_SYNC_REMOVE	*pObjSyncRemove = (OBJ_SYNC_REMOVE*)pMsg;
 	int				nObjIndex;
 	nObjIndex = ObjSet.FindID(pObjSyncRemove->m_nID);
-	AUTOLOG("OBJREM-RECV id=%d idx=%d snd=%d t=%u", pObjSyncRemove->m_nID, nObjIndex, (int)pObjSyncRemove->m_btSoundFlag, GetTickCount());
+	AUTOLOG_EVERY(1000, "OBJREM-RECV id=%d idx=%d snd=%d t=%u", pObjSyncRemove->m_nID, nObjIndex, (int)pObjSyncRemove->m_btSoundFlag, GetTickCount());
 	if (nObjIndex > 0)
 	{	
 		Object[nObjIndex].Remove(pObjSyncRemove->m_btSoundFlag);
@@ -2249,7 +2249,7 @@ void KProtocolProcess::SyncObjectState(BYTE* pMsg)
 	OBJ_SYNC_STATE	*pObjSyncState = (OBJ_SYNC_STATE*)pMsg;
 	int				nObjIndex;
 	nObjIndex = ObjSet.FindID(pObjSyncState->m_nID);
-	AUTOLOG("OBJSTATE-MISS id=%d state=%d req=1 t=%u", pObjSyncState->m_nID, (int)pObjSyncState->m_btState, GetTickCount());
+	AUTOLOG_EVERY(1000, "OBJSTATE-MISS id=%d state=%d req=1 t=%u", pObjSyncState->m_nID, (int)pObjSyncState->m_btState, GetTickCount());
 	if (nObjIndex <= 0)
 	{
 		OBJ_CLIENT_SYNC_ADD	sObjClientSyncAdd;
@@ -2300,7 +2300,7 @@ void KProtocolProcess::SyncObjectTrap(BYTE* pMsg)
 void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 {
 	PLAYER_SYNC*	pPlaySync = (PLAYER_SYNC *)pMsg;
-	AUTOLOG("SYNCPLAYER-NOIDX player=%u idx=%d t=%u", pPlaySync->ID, NpcSet.SearchID(pPlaySync->ID), SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "SYNCPLAYER-NOIDX player=%u idx=%d t=%u", pPlaySync->ID, NpcSet.SearchID(pPlaySync->ID), SubWorld[0].m_dwCurrentTime);
 
 	int nIdx = NpcSet.SearchID(pPlaySync->ID);
 	// Chan ghi de o sentinel Npc[0]: NpcSet.SearchID tra 0 khi CHUA co NPC nay o client
@@ -2479,7 +2479,7 @@ void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
 	else
 		Npc[nIdx].SetSleepMode(0);
 
-	AUTOLOG("ME-FIGHTMODE me idx=%d flag=0x%02X fight=%d pk=%d ngua=%d aspd=%d cspd=%d t=%u", nIdx, (int)pPlaySync->m_btSomeFlag, (int)Npc[nIdx].m_FightMode, (int)Npc[nIdx].m_nPKFlag, (int)Npc[nIdx].m_bRideHorse, pPlaySync->AttackSpeed, pPlaySync->CastSpeed, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "ME-FIGHTMODE me idx=%d flag=0x%02X fight=%d pk=%d ngua=%d aspd=%d cspd=%d t=%u", nIdx, (int)pPlaySync->m_btSomeFlag, (int)Npc[nIdx].m_FightMode, (int)Npc[nIdx].m_nPKFlag, (int)Npc[nIdx].m_bRideHorse, pPlaySync->AttackSpeed, pPlaySync->CastSpeed, SubWorld[0].m_dwCurrentTime);
 	if (pPlaySync->m_btSomeFlag & 0x08)
 		Npc[nIdx].m_nTongFlag		= 1;
 	else
@@ -2764,13 +2764,13 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	int nIdx = NpcSet.SearchID(dwNpcID);
 	
 	//_ASSERT (nSkillID > 0 && nSkillLevel > 0);
-	AUTOLOG("CAST-RX npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) me_idx=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "CAST-RX npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) me_idx=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nSkillID, nSkillLevel);
-	AUTOLOG("CAST-NOSKILL npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "CAST-NOSKILL npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
 	if (!pOrdinSkill) 
         return ;
 	
-    AUTOLOG("CAST-DO npc=%u idx=%d skill=%d lv=%d style=%d aura=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)pOrdinSkill->GetSkillStyle(), (int)pOrdinSkill->IsAura(), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+    AUTOLOG_EVERY(1000, "CAST-DO npc=%u idx=%d skill=%d lv=%d style=%d aura=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)pOrdinSkill->GetSkillStyle(), (int)pOrdinSkill->IsAura(), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
     pOrdinSkill->Cast(nIdx, MapX, MapY);
 
 	if(!pOrdinSkill->IsAura())
@@ -3933,7 +3933,7 @@ void KProtocolProcess::s2cShowDamage(BYTE* pMsg)
 	DAMAGESHOW* pDamage = (DAMAGESHOW*)pMsg;
 	int	receiverNpcIndex = NpcSet.SearchID(pDamage->dwReceiver);
 	int casterNpcIndex = NpcSet.SearchID(pDamage->dwLauncher);
-	AUTOLOG("DMG-NOIDX thu=%u ridx=%d nan=%u cidx=%d dmg=%d skill=%d t=%u", pDamage->dwReceiver, receiverNpcIndex, pDamage->dwLauncher, casterNpcIndex, pDamage->nDamage, (int)pDamage->SkillId, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "DMG-NOIDX thu=%u ridx=%d nan=%u cidx=%d dmg=%d skill=%d t=%u", pDamage->dwReceiver, receiverNpcIndex, pDamage->dwLauncher, casterNpcIndex, pDamage->nDamage, (int)pDamage->SkillId, SubWorld[0].m_dwCurrentTime);
 
 	if (receiverNpcIndex > 0)
 	{
@@ -3941,7 +3941,7 @@ void KProtocolProcess::s2cShowDamage(BYTE* pMsg)
 		//Npc[nIdx].SetBlood(pDamage->nDamage, pDamage->enType);
 		//Npc[receiverNpcIndex].GetCombatInfoShower().AddInfo(casterNpcIndex, pDamage->nDamage, pDamage->SkillId, (COMBAT_INFO_TYPE)pDamage->enType, (TRUE == pDamage->IsCrit ? true : false));
 		int nHeight = Npc[receiverNpcIndex].GetNpcPate();
-		AUTOLOG("DMG dmg=%d type=%d crit=%d skill=%d nan=%u cidx=%d thu=%u ridx=%d thu_cell=(%d,%d) thu_life=%d me_idx=%d t=%u", pDamage->nDamage, (int)pDamage->enType, (int)pDamage->IsCrit, (int)pDamage->SkillId, pDamage->dwLauncher, casterNpcIndex, pDamage->dwReceiver, receiverNpcIndex, Npc[receiverNpcIndex].m_MapX, Npc[receiverNpcIndex].m_MapY, Npc[receiverNpcIndex].m_CurrentLife, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "DMG dmg=%d type=%d crit=%d skill=%d nan=%u cidx=%d thu=%u ridx=%d thu_cell=(%d,%d) thu_life=%d me_idx=%d t=%u", pDamage->nDamage, (int)pDamage->enType, (int)pDamage->IsCrit, (int)pDamage->SkillId, pDamage->dwLauncher, casterNpcIndex, pDamage->dwReceiver, receiverNpcIndex, Npc[receiverNpcIndex].m_MapX, Npc[receiverNpcIndex].m_MapY, Npc[receiverNpcIndex].m_CurrentLife, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 		Npc[receiverNpcIndex].SetBlood2(pDamage);
 	}
 }

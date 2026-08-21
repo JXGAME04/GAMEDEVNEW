@@ -839,7 +839,7 @@ void KNpc::ProcStatus()
 
 void KNpc::ProcCommand(int nAI)
 {
-	AUTOLOG_EVERY(1000, "[E4_PROCCMD_IN] npc=%d id=%u ai=%d cmd=%d p=(%d,%d,%d) exch=%d rgn=%d doing=%d", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);
+	AUTOLOG_EVERY(2000, "[E4_PROCCMD_IN] npc=%d id=%u ai=%d cmd=%d p=(%d,%d,%d) exch=%d rgn=%d doing=%d", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);
 	if (m_Command.CmdKind == do_none || m_bExchangeServer)
 		return;
 
@@ -2351,7 +2351,7 @@ void KNpc::DoSkill(int nX, int nY)
 	AUTOLOG_EVERY(300, "[E4_SKILL_IN] npc=%d id=%u plr=%d skill=%d tgt=(%d,%d) doing=%d fight=%d rgn=%d", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, nX, nY, (int)m_Doing, m_FightMode, m_RegionIndex);
 	if (Player[m_nPlayerIdx].CheckTrading())
 		return;
-	AUTOLOG("[E4_SKILL_REJ_BUSY] npc=%d id=%u skill=%d doing=%d frame=%d/%d", m_Index, m_dwID, m_ActiveSkillID, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);
+	AUTOLOG_EVERY(1000, "[E4_SKILL_REJ_BUSY] npc=%d id=%u skill=%d doing=%d frame=%d/%d", m_Index, m_dwID, m_ActiveSkillID, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);
 	if (m_Doing == do_skill || m_Doing == do_hurt)
 		return;
 
@@ -2361,7 +2361,7 @@ void KNpc::DoSkill(int nX, int nY)
 		eSkillStyle eStyle = (eSkillStyle)pSkill->GetSkillStyle();
 		if (IsPlayer())
 		{
-			AUTOLOG("[E4_SKILL_REJ_NOFIGHT] npc=%d id=%u plr=%d skill=%d fight=%d", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, m_FightMode);
+			AUTOLOG_EVERY(1000, "[E4_SKILL_REJ_NOFIGHT] npc=%d id=%u plr=%d skill=%d fight=%d", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, m_FightMode);
 			if (!m_FightMode)
 				return;
 			#ifdef _SERVER
@@ -3176,7 +3176,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 	if (m_Doing == do_death || m_Doing == do_revive || m_RegionIndex < 0)
 		return FALSE;
 	//
-	AUTOLOG("[E2-CALC-NORANGE] target=%d attacker=%d type=%d min=%d max=%d -> tra FALSE, khong co sat thuong de tinh", m_Index, nAttacker, (int)nType, nMin, nMax);
+	AUTOLOG_EVERY(1000, "[E2-CALC-NORANGE] target=%d attacker=%d type=%d min=%d max=%d -> tra FALSE, khong co sat thuong de tinh", m_Index, nAttacker, (int)nType, nMin, nMax);
 	if (nMin + nMax <= 0)
 		return FALSE;
 	//
@@ -3196,7 +3196,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 	}
 	//
-	AUTOLOG("[E2-CALC-OWNER] target=%d attacker=%d owner=%d attackerplayeridx=%d pkstate=%d -> da qua cua chu tieu xa / PK luyen cong", m_Index, nAttacker, (int)(Owner[0] != 0), Npc[nAttacker].m_nPlayerIdx, Player[Npc[nAttacker].m_nPlayerIdx].m_cPK.GetNormalPKState());
+	AUTOLOG_EVERY(1000, "[E2-CALC-OWNER] target=%d attacker=%d owner=%d attackerplayeridx=%d pkstate=%d -> da qua cua chu tieu xa / PK luyen cong", m_Index, nAttacker, (int)(Owner[0] != 0), Npc[nAttacker].m_nPlayerIdx, Player[Npc[nAttacker].m_nPlayerIdx].m_cPK.GetNormalPKState());
 	if (m_Series == series_minus)
 	{
 		nDamage = 1;
@@ -3440,7 +3440,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		{
 			nRate = MAX_RESIST;
 		}
-		AUTOLOG("[E2-CALC-PRERESIST] target=%d attacker=%d type=%d dmgtruockhang=%d khang=%d manashield=%d sorb=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, m_ManaShield.nValue[0], m_CurrentSorbDamageP);
+		AUTOLOG_EVERY(1000, "[E2-CALC-PRERESIST] target=%d attacker=%d type=%d dmgtruockhang=%d khang=%d manashield=%d sorb=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, m_ManaShield.nValue[0], m_CurrentSorbDamageP);
 		if (nDamage > 0 && nRate > 0) {
 		    float fResistRatio = nRate / 100.0f;
 		    float k = 2.0f; 
@@ -3481,7 +3481,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			nDamage -= (nDamage*m_CurrentSorbDamageP) / MAX_PERCENT;
 		}
 		//
-		AUTOLOG("[E2-CALC-POSTRESIST] target=%d attacker=%d type=%d dmgsaukhang=%d khang=%d pkrate=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, NpcSet.m_nPKDamageRate);
+		AUTOLOG_EVERY(1000, "[E2-CALC-POSTRESIST] target=%d attacker=%d type=%d dmgsaukhang=%d khang=%d pkrate=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, NpcSet.m_nPKDamageRate);
 		nDamage -= nDamage * nRate / MAX_PERCENT;
 		
 		bool bIsSkillAttack = (nFiveElements_DamageP > 0 || nMissleSeries >= 0);
@@ -3690,7 +3690,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 	}
-	AUTOLOG("[E2-CALC-CLAMP] target=%d attacker=%d type=%d dmgtruockep=%d lifehientai=%d staticshield=%d", m_Index, nAttacker, (int)nType, nDamage, m_CurrentLife, m_CurrentStaticMagicShieldP);
+	AUTOLOG_EVERY(1000, "[E2-CALC-CLAMP] target=%d attacker=%d type=%d dmgtruockep=%d lifehientai=%d staticshield=%d", m_Index, nAttacker, (int)nType, nDamage, m_CurrentLife, m_CurrentStaticMagicShieldP);
 	if(nDamage > (int)m_CurrentLife)
 		nDamage = (int)m_CurrentLife;
 	//
@@ -3787,7 +3787,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		Player[m_nPlayerIdx].m_nWllsDmgCounter += (nDamage > (int)m_CurrentLife ? (int)m_CurrentLife : nDamage);
 #endif
 	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS || bIsFS);
-	AUTOLOG("[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
+	AUTOLOG_EVERY(1000, "[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
 	m_CurrentLife -= nDamage;
 	nRealDamage += nDamage;
 	if (m_CurrentLife <= 0)
@@ -3859,7 +3859,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		return TRUE;
 
 
-	AUTOLOG("[E2-RECV-PASSGATE] target=%d(doing=%d) launcher=%d(doing=%d kind=%u playeridx=%d) owner=%d -> qua het cua chan dau, bat dau tinh sat thuong", m_Index, (int)m_Doing, nLauncher, (int)Npc[nLauncher].m_Doing, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)(Owner[0] != 0));
+	AUTOLOG_EVERY(1000, "[E2-RECV-PASSGATE] target=%d(doing=%d) launcher=%d(doing=%d kind=%u playeridx=%d) owner=%d -> qua het cua chan dau, bat dau tinh sat thuong", m_Index, (int)m_Doing, nLauncher, (int)Npc[nLauncher].m_Doing, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)(Owner[0] != 0));
 	KMagicAttrib *pTemp = NULL;
 
 	pTemp = (KMagicAttrib *)pData;
@@ -3869,7 +3869,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	if (bUseAR)
 	{
 		int nIgnoreAr = pTemp->nValue[0]; //ignoredefense[1]	//NÐ tr¸nh
-		AUTOLOG("[HIT-ROLL-IN] launcher=%d(id=%u) tgt=%d(id=%u) AR=%d ignoreAR=%d def=%d melee=%d phys=%d p_vs_npc=%d missrate=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, nAr, nIgnoreAr, m_CurrentDefend, (int)bIsMelee, (int)bIsPhysical, (int)(bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer()), nMissRate);
+		AUTOLOG_EVERY(1000, "[HIT-ROLL-IN] launcher=%d(id=%u) tgt=%d(id=%u) AR=%d ignoreAR=%d def=%d melee=%d phys=%d p_vs_npc=%d missrate=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, nAr, nIgnoreAr, m_CurrentDefend, (int)bIsMelee, (int)bIsPhysical, (int)(bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer()), nMissRate);
 		if (bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer())
 		{
 		
@@ -3885,7 +3885,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; 
-	AUTOLOG("[HIT-OK] launcher=%d(id=%u) tgt=%d(id=%u) da QUA cua trung, useAR=%d AR=%d def=%d hp_truoc=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, (int)bUseAR, nAr, m_CurrentDefend, m_CurrentLife);
+	AUTOLOG_EVERY(1000, "[HIT-OK] launcher=%d(id=%u) tgt=%d(id=%u) da QUA cua trung, useAR=%d AR=%d def=%d hp_truoc=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, (int)bUseAR, nAr, m_CurrentDefend, m_CurrentLife);
 	int nMagicDamage = pTemp->nValue[0]; //magic damage[2]
 	
 	pTemp++; 
@@ -4059,11 +4059,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; //randmove[16]
-	AUTOLOG("[E2-RECV-RANDMOVE] target=%d launcher=%d randmove0=%d randmove1=%d missrate=%d -> co the return FALSE (bo qua sat thuong)", m_Index, nLauncher, pTemp->nValue[0], pTemp->nValue[1], nMissRate);
+	AUTOLOG_EVERY(1000, "[E2-RECV-RANDMOVE] target=%d launcher=%d randmove0=%d randmove1=%d missrate=%d -> co the return FALSE (bo qua sat thuong)", m_Index, nLauncher, pTemp->nValue[0], pTemp->nValue[1], nMissRate);
 	if (pTemp->nValue[0] && pTemp->nValue[1] && g_RandPercent(nMissRate))
 		return FALSE;
 
-	AUTOLOG("[E2-RECV-OK] target=%d launcher=%d lifeconlai=%d doing=%d -> ReceiveDamage se tra TRUE", m_Index, nLauncher, m_CurrentLife, (int)m_Doing);
+	AUTOLOG_EVERY(1000, "[E2-RECV-OK] target=%d launcher=%d lifeconlai=%d doing=%d -> ReceiveDamage se tra TRUE", m_Index, nLauncher, m_CurrentLife, (int)m_Doing);
 	if (g_RandPercent(nDoHurtP))
 		DoHurt();
 
@@ -4783,7 +4783,7 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 		return;
 	}
 #endif
-	AUTOLOG_EVERY(1000, "[E4_CMD_ACCEPT] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d skill=%d map=(%d,%d) rgn=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);
+	AUTOLOG_EVERY(2000, "[E4_CMD_ACCEPT] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d skill=%d map=(%d,%d) rgn=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);
 	m_Command.CmdKind = cmd;
 	m_Command.Param_X = x;
 	m_Command.Param_Y = y;
@@ -7727,10 +7727,10 @@ BOOL KNpc::CheckHitTarget(int nAR, int nDf, int nIngore/* = 0*/)
 	if (nPercent > MAX_HIT_PERCENT)
 		nPercent = MAX_HIT_PERCENT;
 
-	AUTOLOG("[HIT-PERCENT] AR=%d Df=%d ignore=%d def_hieuluc=%d percent=%d (kep trong %d..%d)", nAR, nDf, nIngore, nDefense, nPercent, MIN_HIT_PERCENT, MAX_HIT_PERCENT);
+	AUTOLOG_EVERY(1000, "[HIT-PERCENT] AR=%d Df=%d ignore=%d def_hieuluc=%d percent=%d (kep trong %d..%d)", nAR, nDf, nIngore, nDefense, nPercent, MIN_HIT_PERCENT, MAX_HIT_PERCENT);
 	if (nPercent < MIN_HIT_PERCENT)
 		nPercent = MIN_HIT_PERCENT;
-		AUTOLOG("[E2-HITRATE] AR=%d Df=%d ignore=%d defsauignore=%d tile=%d%%", nAR, nDf, nIngore, (nDf * (100 - nIngore) / 100), nPercent);
+		AUTOLOG_EVERY(1000, "[E2-HITRATE] AR=%d Df=%d ignore=%d defsauignore=%d tile=%d%%", nAR, nDf, nIngore, (nDf * (100 - nIngore) / 100), nPercent);
 
 	BOOL bRet = g_RandPercent(nPercent);
 //	g_DebugLog("[ÃŠÃ½Ã–Âµ]AttackRating %d : Defense %d: RandomPercent (%d, %d)", nAR, nDf, nPercent, bRet);
@@ -9789,7 +9789,7 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 
 	Player[m_nPlayerIdx].m_nPrePayMoney = 0;
 	
-	AUTOLOG("[E4_POS_CHANGEWORLD] npc=%d id=%u swid=%u cursw=%d target=%d to=(%d,%d) doing=%d", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);
+	AUTOLOG_EVERY(1000, "[E4_POS_CHANGEWORLD] npc=%d id=%u swid=%u cursw=%d target=%d to=(%d,%d) doing=%d", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);
 	if (nTargetSubWorld == m_SubWorldIndex)
 	{
 		return SetPos(nX, nY);

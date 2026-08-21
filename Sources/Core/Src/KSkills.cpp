@@ -185,15 +185,15 @@ int KSkill::CanCastSkill(int nLauncher, int &nParam1, int &nParam2)  const
 	}
 	else
 	{
-		AUTOLOG("[E3_REJECT_TARGETONLY] skill=%d lv=%d launcher=%d p1=%d p2=%d need_npc_target", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2);
+		AUTOLOG_EVERY(1000, "[E3_REJECT_TARGETONLY] skill=%d lv=%d launcher=%d p1=%d p2=%d need_npc_target", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2);
 		if (m_bTargetOnly && (nParam1 != -1)) return 0;
 		
 		if (nParam1 == -1)
 		{
-			AUTOLOG("[E3_REJECT_BADIDX] skill=%d launcher=%d p2=%d out_of_range max=%d", (int)m_nId, nLauncher, nParam2, (int)MAX_NPC);
+			AUTOLOG_EVERY(1000, "[E3_REJECT_BADIDX] skill=%d launcher=%d p2=%d out_of_range max=%d", (int)m_nId, nLauncher, nParam2, (int)MAX_NPC);
 			if ( nParam2 <= 0 || nParam2 >= MAX_NPC) return 0;
 			NPC_RELATION  Relation = NpcSet.GetRelation(nLauncher, nParam2);
-			AUTOLOG("[E3_RELATION] skill=%d launcher=%d target=%d relation=0x%X need(enemy=%d ally=%d self=%d) tgt_id=%u", (int)m_nId, nLauncher, nParam2, (unsigned int)Relation, (int)m_bTargetEnemy, (int)m_bTargetAlly, (int)m_bTargetSelf, (unsigned int)Npc[nParam2].m_dwID);
+			AUTOLOG_EVERY(1000, "[E3_RELATION] skill=%d launcher=%d target=%d relation=0x%X need(enemy=%d ally=%d self=%d) tgt_id=%u", (int)m_nId, nLauncher, nParam2, (unsigned int)Relation, (int)m_bTargetEnemy, (int)m_bTargetAlly, (int)m_bTargetSelf, (unsigned int)Npc[nParam2].m_dwID);
 			
 			if (m_bTargetEnemy)
 			{
@@ -218,7 +218,7 @@ relationisvalid:
 
 	if (Npc[nLauncher].IsPlayer())
 	{
-		AUTOLOG("[E3_REJECT_SILENT] skill=%d launcher=%d silent_time=%d life=%d mana=%d", (int)m_nId, nLauncher, Npc[nLauncher].m_SilentState.nTime, Npc[nLauncher].m_CurrentLife, Npc[nLauncher].m_CurrentMana);
+		AUTOLOG_EVERY(1000, "[E3_REJECT_SILENT] skill=%d launcher=%d silent_time=%d life=%d mana=%d", (int)m_nId, nLauncher, Npc[nLauncher].m_SilentState.nTime, Npc[nLauncher].m_CurrentLife, Npc[nLauncher].m_CurrentMana);
 		if (Npc[nLauncher].m_SilentState.nTime > 0)
 		{
 #ifndef _SERVER
@@ -258,7 +258,7 @@ relationisvalid:
 			if (nParticularType == HAND_PARTICULAR)
 				nParticularType = -1;
 
-			AUTOLOG("[SKILL-REFUSE-WEAPON] sk=%d lv=%d launcher=%d wpn_detail=%d wpn_particular=%d yeucau=%d -> tra ve 0 (IM LANG)", (int)m_nId, (int)m_ulLevel, nLauncher, nDetailType, nParticularType, m_nEquiptLimited);
+			AUTOLOG_EVERY(1000, "[SKILL-REFUSE-WEAPON] sk=%d lv=%d launcher=%d wpn_detail=%d wpn_particular=%d yeucau=%d -> tra ve 0 (IM LANG)", (int)m_nId, (int)m_ulLevel, nLauncher, nDetailType, nParticularType, m_nEquiptLimited);
 			if (nParticularType != m_nEquiptLimited)
 			{
 #ifndef _SERVER
@@ -279,7 +279,7 @@ relationisvalid:
 			if ( nParam2 <= 0 || nParam2 >= MAX_NPC) return FALSE;
 			if (Npc[nParam2].IsPlayer())
 			{
-				AUTOLOG("[SKILL-REFUSE-FIGHTMODE] sk=%d launcher=%d fm=%d tgt=%d fm=%d -> tra ve 0", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);
+				AUTOLOG_EVERY(1000, "[SKILL-REFUSE-FIGHTMODE] sk=%d launcher=%d fm=%d tgt=%d fm=%d -> tra ve 0", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);
 				if (Npc[nLauncher].m_FightMode != Npc[nParam2].m_FightMode)
 					return 0;
 			}
@@ -335,7 +335,7 @@ relationisvalid:
 #ifndef _SERVER				
 				if (distance > GetAttackRadius()*0.8)
 #endif
-				AUTOLOG("[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d client08=%d -> tra ve -1 (bot se chay lai gan)", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), (int)(GetAttackRadius() * 0.8));
+				AUTOLOG_EVERY(1000, "[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d client08=%d -> tra ve -1 (bot se chay lai gan)", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), (int)(GetAttackRadius() * 0.8));
 				if (distance > GetAttackRadius() + 20)
 					return -1;
 			}
@@ -347,7 +347,7 @@ relationisvalid:
 					int nLauncherX, nLauncherY;
 					Npc[nLauncher].GetMpsPos(&nLauncherX, &nLauncherY);
 					distance = g_GetDistance(nLauncherX, nLauncherY, nParam1, nParam2);
-					AUTOLOG("[SKILL-DIST-XY] sk=%d form=%d launcher=%d mps(%d,%d) des(%d,%d) d=%d radius=%d", (int)m_nId, (int)m_eMisslesForm, nLauncher, nLauncherX, nLauncherY, nParam1, nParam2, distance, GetAttackRadius());
+					AUTOLOG_EVERY(1000, "[SKILL-DIST-XY] sk=%d form=%d launcher=%d mps(%d,%d) des(%d,%d) d=%d radius=%d", (int)m_nId, (int)m_eMisslesForm, nLauncher, nLauncherX, nLauncherY, nParam1, nParam2, distance, GetAttackRadius());
 #ifndef _SERVER				
 					if (distance > GetAttackRadius() * 0.8)
 #endif
@@ -434,7 +434,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 		}
 	}
 
-	AUTOLOG("[E3_REJECT_NOPARAM] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
+	AUTOLOG_EVERY(1000, "[E3_REJECT_NOPARAM] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
 	if (nParam1 < 0 && nParam2 < 0 ) 
 		return FALSE;
 	
@@ -532,7 +532,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 	if (m_bStartEvent && m_nStartSkillId > 0 && m_nEventSkillLevel > 0)
 	{
 		KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, m_nEventSkillLevel);
-		AUTOLOG("[E3_STARTSKILL_MISSING] skill=%d start_skill=%d start_lv=%d launcher=%d", (int)m_nId, m_nStartSkillId, m_nEventSkillLevel, nLauncher);
+		AUTOLOG_EVERY(1000, "[E3_STARTSKILL_MISSING] skill=%d start_skill=%d start_lv=%d launcher=%d", (int)m_nId, m_nStartSkillId, m_nEventSkillLevel, nLauncher);
 		if (!pOrdinSkill) 
             return FALSE;
         pOrdinSkill->Cast(nLauncher, nParam1, nParam2, nWaitTime, eLauncherType);
@@ -676,9 +676,9 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 	SkillParam.eParentType = (eSkillLauncherType)0;
 	SkillParam.nWaitTime = nWaitTime;
 	SkillParam.nTargetId = 0;
-	AUTOLOG("[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
+	AUTOLOG_EVERY(1000, "[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
 	if (nLauncher <= 0) return FALSE;
-	AUTOLOG("[CAST-MISSLE-IN] t=%u sk=%d lv=%d form=%d launcher=%d(id=%u) p1=%d p2=%d childnum=%d childid=%d wait=%d ltype=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, (int)m_eMisslesForm, nLauncher, Npc[nLauncher].m_dwID, nParam1, nParam2, m_nChildSkillNum, m_nChildSkillId, nWaitTime, (int)eLauncherType);
+	AUTOLOG_EVERY(1000, "[CAST-MISSLE-IN] t=%u sk=%d lv=%d form=%d launcher=%d(id=%u) p1=%d p2=%d childnum=%d childid=%d wait=%d ltype=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, (int)m_eMisslesForm, nLauncher, Npc[nLauncher].m_dwID, nParam1, nParam2, m_nChildSkillNum, m_nChildSkillId, nWaitTime, (int)eLauncherType);
 
 	switch(m_eMisslesForm)
 	{
@@ -784,7 +784,7 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						SkillParam.nLauncher = nLauncher;
 						SkillParam.eLauncherType = eLauncherType;
 						SkillParam.nTargetId = nTargetId;
-						AUTOLOG("[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind);
+						AUTOLOG_EVERY(1000, "[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind);
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line || g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Parabola) ) 
 						{
 							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
@@ -1131,9 +1131,9 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 					int nDesSubX = nBeginPX + j * SubWorld[nSubWorldId].m_nCellWidth;
 					int nDesSubY = nBeginPY +  i * SubWorld[nSubWorldId].m_nCellHeight;
 					nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX , nDesSubY);
-					AUTOLOG("[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
+					AUTOLOG_EVERY(1000, "[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
 					
-					AUTOLOG("[E3_MISSLE_ADDFAIL] skill=%d launcher=%d subworld=%d pos=(%d,%d) i=%d j=%d childnum=%d", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, m_nChildSkillNum);
+					AUTOLOG_EVERY(1000, "[E3_MISSLE_ADDFAIL] skill=%d launcher=%d subworld=%d pos=(%d,%d) i=%d j=%d childnum=%d", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, m_nChildSkillNum);
 					if (nMissleIndex < 0)	continue;
 					
 					Missle[nMissleIndex].m_nDir				= nDir;
@@ -1962,7 +1962,7 @@ void	KSkill::CreateMissle(int nLauncher, int nChildSkillId, int nMissleIndex)  c
 		}
 	}
 	
-	AUTOLOG("[MISSLE-PARAM] msl=%d sk=%d lv=%d launcher=%d move=%d speed=%d life=%d start=%d dmgrange=%d colrange=%d missrate=%d hitcount=%d useAR=%d melee=%d h=%d", nMissleIndex, (int)m_nId, (int)m_ulLevel, nLauncher, (int)pMissle->m_eMoveKind, pMissle->m_nSpeed, pMissle->m_nLifeTime, pMissle->m_nStartLifeTime, pMissle->m_nDamageRange, pMissle->m_nCollideRange, pMissle->m_nMissRate, pMissle->m_nHitCount, (int)pMissle->m_bUseAttackRating, (int)m_bIsMelee, pMissle->m_nHeight);
+	AUTOLOG_EVERY(1000, "[MISSLE-PARAM] msl=%d sk=%d lv=%d launcher=%d move=%d speed=%d life=%d start=%d dmgrange=%d colrange=%d missrate=%d hitcount=%d useAR=%d melee=%d h=%d", nMissleIndex, (int)m_nId, (int)m_ulLevel, nLauncher, (int)pMissle->m_eMoveKind, pMissle->m_nSpeed, pMissle->m_nLifeTime, pMissle->m_nStartLifeTime, pMissle->m_nDamageRange, pMissle->m_nCollideRange, pMissle->m_nMissRate, pMissle->m_nHitCount, (int)pMissle->m_bUseAttackRating, (int)m_bIsMelee, pMissle->m_nHeight);
 	if (m_bIsMelee)
 		pMissle->m_nLifeTime = Npc[nLauncher].ModifyMissleLifeTime(pMissle->m_nLifeTime);
 	else
@@ -2287,7 +2287,7 @@ BOOL KSkill::CastInitiativeSkill(int nLauncher, int nParam1, int nParam2, int nW
 	}
 	else
 	{
-		AUTOLOG("[E3_INIT_BADTARGET] skill=%d lv=%d launcher=%d p1=%d p2=%d self_flag=%d", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, (int)m_bTargetSelf);
+		AUTOLOG_EVERY(1000, "[E3_INIT_BADTARGET] skill=%d lv=%d launcher=%d p1=%d p2=%d self_flag=%d", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, (int)m_bTargetSelf);
 		if (nParam1 != -1 || nParam2 <= 0 || nParam2 >= MAX_NPC) return FALSE;
 		
 		NPC_RELATION  Relation = NpcSet.GetRelation(nLauncher, nParam2);
@@ -2317,7 +2317,7 @@ lab_processdamage:
 	
 	KMissleMagicAttribsData * pAttribsData = CreateMissleMagicAttribsData(nLauncher);
 	
-	AUTOLOG("[E3_INIT_NOATTRIB] skill=%d lv=%d launcher=%d target=%d create_attrib_failed", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2);
+	AUTOLOG_EVERY(1000, "[E3_INIT_NOATTRIB] skill=%d lv=%d launcher=%d target=%d create_attrib_failed", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2);
 	if (!pAttribsData)
     	return FALSE;
     

@@ -770,7 +770,7 @@ void g_AutoLog(const char* szFmt, ...)
 		s_uAutoLogSec = uSec;
 		s_nAutoLogCnt = 0;
 	}
-	if (s_nAutoLogCnt >= 600)
+	if (s_nAutoLogCnt >= 1200)
 	{
 		++s_nAutoLogDrop;
 		return;
@@ -798,7 +798,7 @@ void g_AutoLog(const char* szFmt, ...)
 	FILE* pLog = s_pAutoLogFile;
 	if (s_nAutoLogDrop > 0)
 	{
-		fprintf(pLog, "t=%u pid=%u [AUTOLOG] bo qua %d dong (tran 600 dong/giay)\n",
+		fprintf(pLog, "t=%u pid=%u [AUTOLOG] bo qua %d dong (tran 1200 dong/giay)\n",
 			uNow, (unsigned int)GetCurrentProcessId(), s_nAutoLogDrop);
 		s_nAutoLogDrop = 0;
 	}

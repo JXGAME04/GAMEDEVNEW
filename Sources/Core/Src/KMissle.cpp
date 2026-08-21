@@ -437,7 +437,7 @@ int KMissle::Activate()
 	if (m_nLauncher <= 0)
 		return 0;
 	
-	AUTOLOG("[MSL-OWNER-LOST] msl=%d sk=%d launcher=%d wantid=%u realid=%u sw=%d/%d region=%d life=%d/%d -> DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, m_dwLauncherId, Npc[m_nLauncher].m_dwID, Npc[m_nLauncher].m_SubWorldIndex, m_nSubWorldId, Npc[m_nLauncher].m_RegionIndex, m_nCurrentLife, m_nLifeTime);
+	AUTOLOG_EVERY(2000, "[MSL-OWNER-LOST] msl=%d sk=%d launcher=%d wantid=%u realid=%u sw=%d/%d region=%d life=%d/%d -> DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, m_dwLauncherId, Npc[m_nLauncher].m_dwID, Npc[m_nLauncher].m_SubWorldIndex, m_nSubWorldId, Npc[m_nLauncher].m_RegionIndex, m_nCurrentLife, m_nLifeTime);
 	if (!Npc[m_nLauncher].IsMatch(m_dwLauncherId) || 
 		/*(Npc[m_nLauncher].m_Doing == do_death) ||*/
 		(Npc[m_nLauncher].m_SubWorldIndex != m_nSubWorldId) || 
@@ -447,7 +447,7 @@ int KMissle::Activate()
 		return 0;	
 	}
 
-	AUTOLOG("[MSL-PKFLAG] msl=%d sk=%d launcher=%d pkflag_npc=%d pkflag_msl=%d life=%d/%d -> DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, (int)Npc[m_nLauncher].m_nPKFlag, m_nPKFlag, m_nCurrentLife, m_nLifeTime);
+	AUTOLOG_EVERY(2000, "[MSL-PKFLAG] msl=%d sk=%d launcher=%d pkflag_npc=%d pkflag_msl=%d life=%d/%d -> DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, (int)Npc[m_nLauncher].m_nPKFlag, m_nPKFlag, m_nCurrentLife, m_nLifeTime);
 	if (Npc[m_nLauncher].m_nPKFlag != m_nPKFlag)
 	{
 		DoVanish();
@@ -1314,7 +1314,7 @@ void KMissle::DoVanish()
 {
 	AUTOLOG_EVERY(1000, "[MIS-STATE-VANISH] id=%d skill=%d lv=%d oldStatus=%d life=%d/%d start=%d launcher=%d follow=%d lastHit=%d region=%d map=%d,%d z=%d vanishEvent=%d", m_nMissleId, m_nSkillId, m_nLevel, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nLauncher, m_nFollowNpcIdx, m_nLastDoCollisionIdx, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, m_bVanishedEvent);
 	if (m_eMissleStatus == MS_DoVanish) return ;
-	AUTOLOG("[MSL-END] t=%u msl=%d sk=%d lv=%d launcher=%d follow=%d status=%d life=%d/%d start=%d pos(r=%d,%d,%d off %d,%d z=%d) barrier=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, m_nFollowNpcIdx, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, (int)TestBarrier(), m_nLastDoCollisionIdx);
+	AUTOLOG_EVERY(1000, "[MSL-END] t=%u msl=%d sk=%d lv=%d launcher=%d follow=%d status=%d life=%d/%d start=%d pos(r=%d,%d,%d off %d,%d z=%d) barrier=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, m_nFollowNpcIdx, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, (int)TestBarrier(), m_nLastDoCollisionIdx);
 #ifndef _SERVER
 	m_MissleRes.m_bHaveEnd = TRUE;
 	m_nCollideOrVanishTime = m_nCurrentLife;
@@ -1348,7 +1348,7 @@ void KMissle::DoCollision()
 {
 	AUTOLOG_EVERY(1000, "[MIS-STATE-COLLIDE] id=%d skill=%d lv=%d status=%d life=%d/%d colVanish=%d colEvent=%d lastHit=%d map=%d,%d z=%d", m_nMissleId, m_nSkillId, m_nLevel, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_bCollideVanish, m_bCollideEvent, m_nLastDoCollisionIdx, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ);
 	if (m_eMissleStatus == MS_DoCollision) return;
-	AUTOLOG("[MSL-COLLIDE] t=%u msl=%d sk=%d launcher=%d pos(r=%d,%d,%d) life=%d/%d colvanish=%d colevent=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLauncher, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentLife, m_nLifeTime, (int)m_bCollideVanish, (int)m_bCollideEvent, m_nLastDoCollisionIdx);
+	AUTOLOG_EVERY(1000, "[MSL-COLLIDE] t=%u msl=%d sk=%d launcher=%d pos(r=%d,%d,%d) life=%d/%d colvanish=%d colevent=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLauncher, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentLife, m_nLifeTime, (int)m_bCollideVanish, (int)m_bCollideEvent, m_nLastDoCollisionIdx);
 	
 #ifndef _SERVER
 	int nSrcX = 0 ;
@@ -1409,7 +1409,7 @@ BOOL KMissle::GetOffsetAxis(int nSubWorld, int nSrcRegionId, int nSrcMapX, int n
 	nDesMapX = nSrcMapX + nOffsetMapX;
 	nDesMapY = nSrcMapY + nOffsetMapY;
 	
-	AUTOLOG("[MIS-OFFAXIS-BAD] sw=%d srcRegion=%d srcMap=%d,%d offset=%d,%d", nSubWorld, nSrcRegionId, nSrcMapX, nSrcMapY, nOffsetMapX, nOffsetMapY);
+	AUTOLOG_EVERY(5000, "[MIS-OFFAXIS-BAD] sw=%d srcRegion=%d srcMap=%d,%d offset=%d,%d", nSubWorld, nSrcRegionId, nSrcMapX, nSrcMapY, nOffsetMapX, nOffsetMapY);
 	if (nSrcRegionId < 0) 
 		return FALSE;
 
@@ -1480,11 +1480,11 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 		}
 	}
 #endif
-	AUTOLOG("[MIS-PROC-ARG] id=%d skill=%d launcherIdx=%d region=%d map=%d,%d range=%d rel=%d hitCount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, eRelation, m_nHitCount);
+	AUTOLOG_EVERY(2000, "[MIS-PROC-ARG] id=%d skill=%d launcherIdx=%d region=%d map=%d,%d range=%d rel=%d hitCount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, eRelation, m_nHitCount);
 	if (nLauncherIdx <= 0 ) return 0;
 	if (nRange <= 0) return 0;
 	if (nRegionId < 0) return 0; //#can kiem tra
-	AUTOLOG("[COLL-SCAN] msl=%d sk=%d launcher=%d region=%d map(%d,%d) range=%d (nRangeX=%d) rel=%d hitcount=%d dmginterval=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRange / 2, eRelation, m_nHitCount, (int)m_ulDamageInterval);
+	AUTOLOG_EVERY(2000, "[COLL-SCAN] msl=%d sk=%d launcher=%d region=%d map(%d,%d) range=%d (nRangeX=%d) rel=%d hitcount=%d dmginterval=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRange / 2, eRelation, m_nHitCount, (int)m_ulDamageInterval);
 	int nRangeX = nRange / 2;
 	int	nRangeY = nRangeX;
 	int	nSubWorld = Npc[nLauncherIdx].m_SubWorldIndex;
@@ -1513,7 +1513,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			{
 				if(Npc[nNpcIdx].GetProtectTime() > 0 && eRelation == relation_enemy) //®ang trong tr¹ng th¸i bÊt tö bÞ kÎ thï ®¸nh vµo return
 					return 0; //vong tron bat tu, vßng trßn bÊt tö
-				AUTOLOG("[COLL-NPC-FOUND] msl=%d sk=%d launcher=%d npc=%d(id=%u) o(%d,%d) region=%d rel=%d protect=%d doing=%d nRet=%d hitcount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nNpcIdx, Npc[nNpcIdx].m_dwID, nRMx, nRMy, nSearchRegion, eRelation, Npc[nNpcIdx].GetProtectTime(), (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
+				AUTOLOG_EVERY(2000, "[COLL-NPC-FOUND] msl=%d sk=%d launcher=%d npc=%d(id=%u) o(%d,%d) region=%d rel=%d protect=%d doing=%d nRet=%d hitcount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nNpcIdx, Npc[nNpcIdx].m_dwID, nRMx, nRMy, nSearchRegion, eRelation, Npc[nNpcIdx].GetProtectTime(), (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
 				nRet++;
 #ifndef _SERVER
 				int nSrcX = 0;
@@ -1525,7 +1525,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 				else 
 					CreateSpecialEffect(MS_DoCollision, nSrcX, nSrcY, m_nCurrentMapZ);
 #else
-				AUTOLOG("[MIS-PROC-HIT] id=%d skill=%d lv=%d launcher=%d npc=%d npcId=%lu hp=%d doing=%d nRet=%d hitCount=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcIdx, Npc[nNpcIdx].m_dwID, Npc[nNpcIdx].m_CurrentLife, (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
+				AUTOLOG_EVERY(1000, "[MIS-PROC-HIT] id=%d skill=%d lv=%d launcher=%d npc=%d npcId=%lu hp=%d doing=%d nRet=%d hitCount=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcIdx, Npc[nNpcIdx].m_dwID, Npc[nNpcIdx].m_CurrentLife, (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
 				ProcessDamage(nNpcIdx);				
 #endif
 				if(m_nHitCount > 0)
@@ -1544,7 +1544,7 @@ int KMissle::ProcessCollision()
 #ifdef TOOLVERSION
 	return 0;
 #endif
-	AUTOLOG("[COLL-CLIENTSEND] msl=%d sk=%d launcher=%d m_bClientSend=%d -> BO QUA ProcessCollision (khong quet sat thuong)", m_nMissleId, m_nSkillId, m_nLauncher, (int)m_bClientSend);
+	AUTOLOG_EVERY(1000, "[COLL-CLIENTSEND] msl=%d sk=%d launcher=%d m_bClientSend=%d -> BO QUA ProcessCollision (khong quet sat thuong)", m_nMissleId, m_nSkillId, m_nLauncher, (int)m_bClientSend);
 	if (m_bClientSend) return 0;
 	return ProcessCollision(m_nLauncher, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nDamageRange , m_eRelation);
 }
@@ -1704,7 +1704,7 @@ BOOL	KMissle::PrePareFly()
 	{
 		int nPX, nPY;
 		Npc[m_nLauncher].GetMpsPos(&nPX, &nPY);
-		AUTOLOG("[MIS-PREP-MOVED] id=%d skill=%d lv=%d interrupt=%d nowPX=%d nowPY=%d srcPX=%d srcPY=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nInteruptTypeWhenMove, nPX, nPY, m_nLauncherSrcPX, m_nLauncherSrcPY);
+		AUTOLOG_EVERY(1000, "[MIS-PREP-MOVED] id=%d skill=%d lv=%d interrupt=%d nowPX=%d nowPY=%d srcPX=%d srcPY=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nInteruptTypeWhenMove, nPX, nPY, m_nLauncherSrcPX, m_nLauncherSrcPY);
 		if (nPX != m_nLauncherSrcPX || nPY != m_nLauncherSrcPY)
 		{
 			return false;
@@ -1719,7 +1719,7 @@ BOOL	KMissle::PrePareFly()
 		
 		if (m_nParentMissleIndex) // ²Î¿¼µãÎªÄ¸×Óµ¯
 		{
-			AUTOLOG("[MIS-PREP-PARENT] id=%d skill=%d parent=%d parentLauncherId=%lu myLauncherId=%lu refPX=%d refPY=%d", m_nMissleId, m_nSkillId, m_nParentMissleIndex, Missle[m_nParentMissleIndex].m_dwLauncherId, m_dwLauncherId, m_nRefPX, m_nRefPY);
+			AUTOLOG_EVERY(1000, "[MIS-PREP-PARENT] id=%d skill=%d parent=%d parentLauncherId=%lu myLauncherId=%lu refPX=%d refPY=%d", m_nMissleId, m_nSkillId, m_nParentMissleIndex, Missle[m_nParentMissleIndex].m_dwLauncherId, m_dwLauncherId, m_nRefPX, m_nRefPY);
 			if (Missle[m_nParentMissleIndex].m_dwLauncherId != m_dwLauncherId)
 			{
 				return false;
@@ -1852,7 +1852,7 @@ int KMissle::CheckNearestCollision()
 				
 				
 CheckCollision:
-				AUTOLOG("[MSL-NEARMISS] msl=%d sk=%d npc=%d(id=%u) d_cell(%d,%d) msloff(%d,%d) npcoff(%d,%d) cell(%d,%d) bCollision=%d", m_nMissleId, m_nSkillId, nNpcIdx, Npc[nNpcIdx].m_dwID, nDX, nDY, m_nXOffset, m_nYOffset, nNpcOffsetX, nNpcOffsetY, nCellWidth, nCellHeight, (int)bCollision);
+				AUTOLOG_EVERY(2000, "[MSL-NEARMISS] msl=%d sk=%d npc=%d(id=%u) d_cell(%d,%d) msloff(%d,%d) npcoff(%d,%d) cell(%d,%d) bCollision=%d", m_nMissleId, m_nSkillId, nNpcIdx, Npc[nNpcIdx].m_dwID, nDX, nDY, m_nXOffset, m_nYOffset, nNpcOffsetX, nNpcOffsetY, nCellWidth, nCellHeight, (int)bCollision);
 				if (bCollision)
 					return nNpcIdx;
 			}
@@ -1863,6 +1863,6 @@ CheckCollision:
 
 void	KMissle::GetMpsPos(int *pPosX, int *pPosY)
 {
-	AUTOLOG("[MIS-MPS-BADREGION] id=%d skill=%d sw=%d region=%d map=%d,%d off=%d,%d", m_nMissleId, m_nSkillId, m_nSubWorldId, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset);
+	AUTOLOG_EVERY(5000, "[MIS-MPS-BADREGION] id=%d skill=%d sw=%d region=%d map=%d,%d off=%d,%d", m_nMissleId, m_nSkillId, m_nSubWorldId, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset);
 	SubWorld[m_nSubWorldId].Map2Mps(m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, pPosX, pPosY);
 };

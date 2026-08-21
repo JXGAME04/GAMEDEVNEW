@@ -62,7 +62,7 @@ int KMissleSet::Add(int nSubWorldId, int nPX, int nPY)
 	if (nSubWorldId < 0) return -1;
 	
 	int nFreeIndex = FindFree();
-	AUTOLOG("[MSL-SET-FULL] khong con khe dan: MAX_MISSLE=%d dang dung=%d subworld=%d mps(%d,%d)", MAX_MISSLE, GetCount(), nSubWorldId, nPX, nPY);
+	AUTOLOG_EVERY(2000, "[MSL-SET-FULL] khong con khe dan: MAX_MISSLE=%d dang dung=%d subworld=%d mps(%d,%d)", MAX_MISSLE, GetCount(), nSubWorldId, nPX, nPY);
 	if (nFreeIndex <= 0) 
 	{
 		printf("MissleSet Have Full!!!, It Maybe A Error!");

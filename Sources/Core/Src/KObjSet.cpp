@@ -238,7 +238,7 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 	int nAddNo;
 
 	nAddNo = AddData(nDataID, MapPos, sItemInfo.m_nMoneyNum, sItemInfo.m_nItemID, sItemInfo.m_nItemWidth, sItemInfo.m_nItemHeight);
-	AUTOLOG("SPAWN-SLOT dataid=%d itemid=%d idx=%d free=%d use=%d sw=%d region=%d mx=%d my=%d", nDataID, sItemInfo.m_nItemID, nAddNo, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MapPos.nSubWorld, MapPos.nRegion, MapPos.nMapX, MapPos.nMapY);
+	AUTOLOG_EVERY(1000, "SPAWN-SLOT dataid=%d itemid=%d idx=%d free=%d use=%d sw=%d region=%d mx=%d my=%d", nDataID, sItemInfo.m_nItemID, nAddNo, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MapPos.nSubWorld, MapPos.nRegion, MapPos.nMapX, MapPos.nMapY);
 	if (nAddNo < 0)
 		return -1;
 
@@ -325,7 +325,7 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 		SubWorld[MapPos.nSubWorld].m_Region[nConRegion].BroadCast((BYTE*)&cObjAdd, cObjAdd.m_wLength + 1, nMaxCount, Object[nAddNo].m_nMapX - POff[i].x, Object[nAddNo].m_nMapY - POff[i].y);
 	}
 
-	AUTOLOG("SPAWN-BCAST id=%d idx=%d kind=%d itemid=%d mx=%d my=%d mpsx=%d mpsy=%d left=%d maxbc=%d", Object[nAddNo].m_nID, nAddNo, Object[nAddNo].m_nKind, sItemInfo.m_nItemID, Object[nAddNo].m_nMapX, Object[nAddNo].m_nMapY, nTempX, nTempY, nMaxCount, MAX_BROADCAST_COUNT);
+	AUTOLOG_EVERY(1000, "SPAWN-BCAST id=%d idx=%d kind=%d itemid=%d mx=%d my=%d mpsx=%d mpsy=%d left=%d maxbc=%d", Object[nAddNo].m_nID, nAddNo, Object[nAddNo].m_nKind, sItemInfo.m_nItemID, Object[nAddNo].m_nMapX, Object[nAddNo].m_nMapY, nTempX, nTempY, nMaxCount, MAX_BROADCAST_COUNT);
 	SubWorld[MapPos.nSubWorld].m_Region[MapPos.nRegion].AddObj(nAddNo);// m_WorldMessage.Send(GWM_OBJ_ADD, MapPos.nRegion, nAddNo);
 
 	return nAddNo;
@@ -455,11 +455,11 @@ int		KObjSet::ClientAdd(int nID, int nDataID, int nState, int nDir, int nCurFram
 	int		nAddIndex;
 	int		nRegion, nMapX, nMapY, nOffX, nOffY;
 	SubWorld[0].Mps2Map(nXpos, nYpos, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
-	AUTOLOG("CLIENTADD-REGION-FAIL id=%d dataid=%d x=%d y=%d region=%d mx=%d my=%d", nID, nDataID, nXpos, nYpos, nRegion, nMapX, nMapY);
+	AUTOLOG_EVERY(1000, "CLIENTADD-REGION-FAIL id=%d dataid=%d x=%d y=%d region=%d mx=%d my=%d", nID, nDataID, nXpos, nYpos, nRegion, nMapX, nMapY);
 	if (nRegion < 0)
 		return -1;
 	nAddIndex = AddData(nDataID, 0, nRegion, nMapX, nMapY, nOffX, nOffY);
-	AUTOLOG("CLIENTADD-SLOT id=%d dataid=%d idx=%d free=%d use=%d max=%d region=%d", nID, nDataID, nAddIndex, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MAX_OBJECT, nRegion);
+	AUTOLOG_EVERY(1000, "CLIENTADD-SLOT id=%d dataid=%d idx=%d free=%d use=%d max=%d region=%d", nID, nDataID, nAddIndex, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MAX_OBJECT, nRegion);
 	if (nAddIndex < 0)
 		return -1;
 	Object[nAddIndex].SetWorldID(nID);
