@@ -733,6 +733,9 @@ static int   s_nAutoLog = -1;		// -1 = chua doc cau hinh
 static DWORD s_uAutoLogSec = 0;	// giay dang dem
 static int   s_nAutoLogCnt = 0;	// so dong da ghi trong giay do
 static int   s_nAutoLogDrop = 0;	// so dong bi bo vi vuot tran
+static FILE* s_pAutoLogFile = NULL;	// tep log giu mo san (tranh fopen moi dong)
+static int   s_nAutoLogSince = 0;	// so dong ke tu lan flush truoc
+static UINT  s_uAutoLogFlush = 0;	// moc flush gan nhat
 
 void g_AutoLogSet(int nOn)
 {
@@ -741,6 +744,9 @@ void g_AutoLogSet(int nOn)
 
 int g_AutoLogOn()
 {
+#ifdef _SERVER
+	return 0;	// (21/08 - yeu cau chu game) log CHI cho client, ban server KHONG ghi/in gi
+#else
 	if (s_nAutoLog < 0)
 	{
 #ifdef WIN32
@@ -750,6 +756,7 @@ int g_AutoLogOn()
 #endif
 	}
 	return s_nAutoLog;
+#endif
 }
 
 void g_AutoLog(const char* szFmt, ...)
@@ -774,11 +781,21 @@ void g_AutoLog(const char* szFmt, ...)
 	va_start(va, szFmt);
 	int n = _vsnprintf(szLine, sizeof(szLine) - 2, szFmt, va);
 	va_end(va);
+	szLine[sizeof(szLine) - 1] = 0;	// _vsnprintf khong bao dam ket NUL khi day buffer
 	if (n < 0)
 		szLine[sizeof(szLine) - 2] = 0;
-	FILE* pLog = fopen("jx_auto.log", "a");
-	if (!pLog)
-		return;
+	// giu tep MO SAN: fopen/fclose moi dong ton 30-200us, 600 dong/giay se lam lech
+	// chinh cai dang do (bot khung / danh miss). Chi flush dinh ky.
+	if (!s_pAutoLogFile)
+	{
+		s_pAutoLogFile = fopen("jx_auto.log", "a");
+		if (!s_pAutoLogFile)
+		{
+			s_nAutoLog = 0;	// khong mo duoc tep -> tat han, khoi thu lai moi dong
+			return;
+		}
+	}
+	FILE* pLog = s_pAutoLogFile;
 	if (s_nAutoLogDrop > 0)
 	{
 		fprintf(pLog, "t=%u pid=%u [AUTOLOG] bo qua %d dong (tran 600 dong/giay)\n",
@@ -787,9 +804,17 @@ void g_AutoLog(const char* szFmt, ...)
 	}
 	fprintf(pLog, "t=%u pid=%u %s\n", uNow, (unsigned int)GetCurrentProcessId(), szLine);
 	long nSize = ftell(pLog);
-	fclose(pLog);
+	++s_nAutoLogSince;
+	if (s_nAutoLogSince >= 50 || (DWORD)(uNow - s_uAutoLogFlush) >= 500)
+	{
+		fflush(pLog);
+		s_nAutoLogSince = 0;
+		s_uAutoLogFlush = uNow;
+	}
 	if (nSize > 64 * 1024 * 1024)
 	{
+		fclose(pLog);
+		s_pAutoLogFile = NULL;
 		remove("jx_auto.log.1");
 		rename("jx_auto.log", "jx_auto.log.1");
 	}

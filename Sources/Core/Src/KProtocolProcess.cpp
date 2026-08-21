@@ -579,7 +579,7 @@ void KProtocolProcess::NetCommandDeath(BYTE* pMsg)
 	{
 		//Npc[nIdx].SendCommand(do_death);
 		Npc[nIdx].ProcNetCommand(do_death);
-		AUTOLOG("NET-DEATH npc=%u idx=%d kind=%u cell=(%d,%d) off=(%d,%d) reg=%d lifecu=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "NET-DEATH npc=%u idx=%d kind=%u cell=(%d,%d) off=(%d,%d) reg=%d lifecu=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].m_CurrentLife = 0;
 		Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 		//g_DebugLog("[Death]Net command comes");
@@ -589,7 +589,7 @@ void KProtocolProcess::NetCommandDeath(BYTE* pMsg)
 void KProtocolProcess::NetCommandJump(BYTE* pMsg)
 {
 	NPC_JUMP_SYNC* pNetCommandJump = (NPC_JUMP_SYNC *)pMsg;
-	AUTOLOG("NET-JUMP-SKIP npc=%u idx=%d mps=(%d,%d) t=%u", pNetCommandJump->ID, NpcSet.SearchID(pNetCommandJump->ID), pNetCommandJump->nMpsX, pNetCommandJump->nMpsY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "NET-JUMP-SKIP npc=%u idx=%d mps=(%d,%d) t=%u", pNetCommandJump->ID, NpcSet.SearchID(pNetCommandJump->ID), pNetCommandJump->nMpsX, pNetCommandJump->nMpsY, SubWorld[0].m_dwCurrentTime);
 	DWORD dwNpcId = pNetCommandJump->ID;
 	int nIdx = NpcSet.SearchID(dwNpcId);
 	
@@ -604,13 +604,13 @@ void KProtocolProcess::NetCommandJump(BYTE* pMsg)
 void KProtocolProcess::NetCommandHurt(BYTE* pMsg)
 {
 	NPC_HURT_SYNC*	pSync = (NPC_HURT_SYNC *)pMsg;
-	AUTOLOG("NET-HURT-NOIDX npc=%u idx=%d frames=%d pos=(%d,%d) t=%u", pSync->ID, NpcSet.SearchID(pSync->ID), pSync->nFrames, pSync->nX, pSync->nY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "NET-HURT-NOIDX npc=%u idx=%d frames=%d pos=(%d,%d) t=%u", pSync->ID, NpcSet.SearchID(pSync->ID), pSync->nFrames, pSync->nX, pSync->nY, SubWorld[0].m_dwCurrentTime);
 	
 	int nIdx = NpcSet.SearchID(pSync->ID);
 	if (nIdx > 0)
 	{
 		//Npc[nIdx].SendCommand(do_hurt, pSync->nFrames, pSync->nX, pSync->nY);
-		AUTOLOG("NET-HURT npc=%u idx=%d kind=%u frames=%d pos=(%d,%d) cell=(%d,%d) life=%d/%d t=%u", pSync->ID, nIdx, Npc[nIdx].m_Kind, pSync->nFrames, pSync->nX, pSync->nY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_CurrentLife, Npc[nIdx].m_CurrentLifeMax, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(500, "NET-HURT npc=%u idx=%d kind=%u frames=%d pos=(%d,%d) cell=(%d,%d) life=%d/%d t=%u", pSync->ID, nIdx, Npc[nIdx].m_Kind, pSync->nFrames, pSync->nX, pSync->nY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_CurrentLife, Npc[nIdx].m_CurrentLifeMax, SubWorld[0].m_dwCurrentTime);
 		Npc[nIdx].ProcNetCommand(do_hurt, pSync->nFrames, pSync->nX, pSync->nY);
 		Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 	}
@@ -631,7 +631,7 @@ void KProtocolProcess::NetCommandRemoveNpc(BYTE* pMsg)
 			SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
 //			SubWorld[Npc[nIdx].m_SubWorldIndex].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
 		}
-		AUTOLOG("NET-RMNPC npc=%u idx=%d kind=%u cell=(%d,%d) reg=%d life=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+		AUTOLOG_EVERY(1000, "NET-RMNPC npc=%u idx=%d kind=%u cell=(%d,%d) reg=%d life=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
 		NpcSet.Remove(nIdx);
 	}
 }
@@ -728,7 +728,7 @@ void KProtocolProcess::PlayerRevive(BYTE* pMsg)
 	{
 		if (!Npc[nIdx].IsPlayer() && pSync->Type == REMOTE_REVIVE_TYPE)
 		{
-			AUTOLOG("NPC-DEL-DEATH npc=%u idx=%d kind=%u type=%d cell=(%d,%d) off=(%d,%d) reg=%d t=%u", pSync->ID, nIdx, Npc[nIdx].m_Kind, (int)pSync->Type, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG_EVERY(1000, "NPC-DEL-DEATH npc=%u idx=%d kind=%u type=%d cell=(%d,%d) off=(%d,%d) reg=%d t=%u", pSync->ID, nIdx, Npc[nIdx].m_Kind, (int)pSync->Type, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 			SubWorld[0].m_WorldMessage.Send(GWM_NPC_DEL, nIdx); //xoa npc khi chet edit by phong kieu
 			return;
 		}
@@ -761,7 +761,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	nSkillEnChance = *(int *)&pMsg[21];
 	AUTOLOG_EVERY(200, "NETSKILL-RX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d muctieuidx=%d ench=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, NpcSet.SearchID(MapY), nSkillEnChance, SubWorld[0].m_dwCurrentTime);
 	
-	AUTOLOG("NETSKILL-SKIP-Y npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "NETSKILL-SKIP-Y npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
 	if (MapY < 0)
 		return ;
 
@@ -783,7 +783,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	
 	int nIdx = NpcSet.SearchID(dwNpcID);
 	
-	AUTOLOG("NETSKILL-NOIDX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "NETSKILL-NOIDX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
 	if (nIdx <= 0) 
 		return;
 
@@ -1870,7 +1870,7 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 		Npc[nIdx].SendCommand((NPCCMD)NpcSync->m_Doing, NpcSync->MapX, NpcSync->MapY);
 
 	Npc[nIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
-	AUTOLOG("SYNCNPC-SETPOS npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) off=(%d,%d) reg=%d life=%d/%d t=%u", Npc[nIdx].m_dwID, nIdx, Npc[nIdx].m_Kind, (int)NpcSync->m_Doing, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, NpcSync->m_CurrentLife, NpcSync->m_CurrentLifeMax, SubWorld[0].m_dwCurrentTime);
+	AUTOLOG_EVERY(1000, "SYNCNPC-SETPOS npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) off=(%d,%d) reg=%d life=%d/%d t=%u", Npc[nIdx].m_dwID, nIdx, Npc[nIdx].m_Kind, (int)NpcSync->m_Doing, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, NpcSync->m_CurrentLife, NpcSync->m_CurrentLifeMax, SubWorld[0].m_dwCurrentTime);
 	Npc[nIdx].SetMenuState(NpcSync->m_btMenuState);
 
 	Npc[nIdx].m_CurrentLife		= NpcSync->m_CurrentLife;
@@ -2176,7 +2176,6 @@ void KProtocolProcess::SyncObjectAdd(BYTE* pMsg)
 		pObjSyncAdd->m_nYpos,
 		sInfo);
 		AUTOLOG("OBJADD-RESULT id=%d idx=%d itemid=%d x=%d y=%d", pObjSyncAdd->m_nID, nObjIndex, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos);
-		AUTOLOG("OBJ-ADD-FAIL obj=%d data=%d item=%d mps=(%d,%d) ket_qua=%d me_cell=(%d,%d) me_reg=%d t=%u", pObjSyncAdd->m_nID, pObjSyncAdd->m_nDataID, pObjSyncAdd->m_nItemID, pObjSyncAdd->m_nXpos, pObjSyncAdd->m_nYpos, nObjIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 #ifdef WAIGUA_ZROC
 	if (nObjIndex <= 0)
 		return;
@@ -2239,7 +2238,6 @@ void KProtocolProcess::SyncObjectRemove(BYTE* pMsg)
 	int				nObjIndex;
 	nObjIndex = ObjSet.FindID(pObjSyncRemove->m_nID);
 	AUTOLOG("OBJREM-RECV id=%d idx=%d snd=%d t=%u", pObjSyncRemove->m_nID, nObjIndex, (int)pObjSyncRemove->m_btSoundFlag, GetTickCount());
-	AUTOLOG("OBJ-DEL obj=%d idx=%d me_cell=(%d,%d) me_reg=%d t=%u", pObjSyncRemove->m_nID, nObjIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 	if (nObjIndex > 0)
 	{	
 		Object[nObjIndex].Remove(pObjSyncRemove->m_btSoundFlag);

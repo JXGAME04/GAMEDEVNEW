@@ -839,13 +839,13 @@ void KNpc::ProcStatus()
 
 void KNpc::ProcCommand(int nAI)
 {
-	AUTOLOG("[E4_PROCCMD_IN] g_DebugLog(\"[E4_PROCCMD_IN] npc=%d id=%u ai=%d cmd=%d p=(%d,%d,%d) exch=%d rgn=%d doing=%d\", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);
+	AUTOLOG_EVERY(1000, "[E4_PROCCMD_IN] npc=%d id=%u ai=%d cmd=%d p=(%d,%d,%d) exch=%d rgn=%d doing=%d", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);
 	if (m_Command.CmdKind == do_none || m_bExchangeServer)
 		return;
 
 	if (nAI)
 	{
-		AUTOLOG_EVERY(1000, "[E4_PROCCMD_NOREGION] g_DebugLog(\"[E4_PROCCMD_NOREGION] npc=%d id=%u cmd=%d rgn=%d sw=%d map=(%d,%d)\", m_Index, m_dwID, (int)m_Command.CmdKind, m_RegionIndex, m_SubWorldIndex, m_MapX, m_MapY);", m_Index, m_dwID, (int)m_Command.CmdKind, m_RegionIndex, m_SubWorldIndex, m_MapX, m_MapY);
+		AUTOLOG_EVERY(1000, "[E4_PROCCMD_NOREGION] npc=%d id=%u cmd=%d rgn=%d sw=%d map=(%d,%d)", m_Index, m_dwID, (int)m_Command.CmdKind, m_RegionIndex, m_SubWorldIndex, m_MapX, m_MapY);
 		if (m_RegionIndex < 0)
 			return;
 		switch (m_Command.CmdKind)
@@ -2348,10 +2348,10 @@ void KNpc::DoSkill(int nX, int nY)
 {
 	_ASSERT(m_RegionIndex >= 0);
 
-	AUTOLOG_EVERY(300, "[E4_SKILL_IN] g_DebugLog(\"[E4_SKILL_IN] npc=%d id=%u plr=%d skill=%d tgt=(%d,%d) doing=%d fight=%d rgn=%d\", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, nX, nY, (int)m_Doing, m_FightMode, m_RegionIndex);", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, nX, nY, (int)m_Doing, m_FightMode, m_RegionIndex);
+	AUTOLOG_EVERY(300, "[E4_SKILL_IN] npc=%d id=%u plr=%d skill=%d tgt=(%d,%d) doing=%d fight=%d rgn=%d", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, nX, nY, (int)m_Doing, m_FightMode, m_RegionIndex);
 	if (Player[m_nPlayerIdx].CheckTrading())
 		return;
-	AUTOLOG("[E4_SKILL_REJ_BUSY] g_DebugLog(\"[E4_SKILL_REJ_BUSY] npc=%d id=%u skill=%d doing=%d frame=%d/%d\", m_Index, m_dwID, m_ActiveSkillID, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);", m_Index, m_dwID, m_ActiveSkillID, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);
+	AUTOLOG("[E4_SKILL_REJ_BUSY] npc=%d id=%u skill=%d doing=%d frame=%d/%d", m_Index, m_dwID, m_ActiveSkillID, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);
 	if (m_Doing == do_skill || m_Doing == do_hurt)
 		return;
 
@@ -2361,7 +2361,7 @@ void KNpc::DoSkill(int nX, int nY)
 		eSkillStyle eStyle = (eSkillStyle)pSkill->GetSkillStyle();
 		if (IsPlayer())
 		{
-			AUTOLOG("[E4_SKILL_REJ_NOFIGHT] g_DebugLog(\"[E4_SKILL_REJ_NOFIGHT] npc=%d id=%u plr=%d skill=%d fight=%d\", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, m_FightMode);", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, m_FightMode);
+			AUTOLOG("[E4_SKILL_REJ_NOFIGHT] npc=%d id=%u plr=%d skill=%d fight=%d", m_Index, m_dwID, m_nPlayerIdx, m_ActiveSkillID, m_FightMode);
 			if (!m_FightMode)
 				return;
 			#ifdef _SERVER
@@ -2369,10 +2369,10 @@ void KNpc::DoSkill(int nX, int nY)
 				Player[m_nPlayerIdx].m_ItemList.Abrade(enumAbradeAttack, FALSE);//#mÂµi mÃŸn khi xuÃŠt skill
 			#endif
 		}
-		AUTOLOG_EVERY(500, "[E4_SKILL_COOLDOWN] g_DebugLog(\"[E4_SKILL_COOLDOWN] npc=%d id=%u skill=%d now=%u cancast=%d\", m_Index, m_dwID, m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime, (int)m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime));", m_Index, m_dwID, m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime, (int)m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime));
+		AUTOLOG_EVERY(500, "[E4_SKILL_COOLDOWN] npc=%d id=%u skill=%d now=%u cancast=%d", m_Index, m_dwID, m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime, (int)m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime));
 		if (m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime))
 		{
-			AUTOLOG_EVERY(300, "[E4_SKILL_CANCAST] g_DebugLog(\"[E4_SKILL_CANCAST] npc=%d id=%u skill=%d style=%d tgt=(%d,%d) map=(%d,%d) off=(%d,%d) dir=%d radius=%d\", m_Index, m_dwID, m_ActiveSkillID, (int)eStyle, nX, nY, m_MapX, m_MapY, m_OffX, m_OffY, m_Dir, m_CurrentAttackRadius);", m_Index, m_dwID, m_ActiveSkillID, (int)eStyle, nX, nY, m_MapX, m_MapY, m_OffX, m_OffY, m_Dir, m_CurrentAttackRadius);
+			AUTOLOG_EVERY(300, "[E4_SKILL_CANCAST] npc=%d id=%u skill=%d style=%d tgt=(%d,%d) map=(%d,%d) off=(%d,%d) dir=%d radius=%d", m_Index, m_dwID, m_ActiveSkillID, (int)eStyle, nX, nY, m_MapX, m_MapY, m_OffX, m_OffY, m_Dir, m_CurrentAttackRadius);
 			switch (pSkill->CanCastSkill(m_Index, nX, nY))
 			{
 			case -1:
@@ -2390,7 +2390,7 @@ void KNpc::DoSkill(int nX, int nY)
 				goto Exit;
 				break;
 			case 1: //!IsPlayer() -> chuan cho ca server va client
-				AUTOLOG_EVERY(500, "[E4_SKILL_COST] g_DebugLog(\"[E4_SKILL_COST] npc=%d id=%u skill=%d costtype=%d cost=%d mana=%d/%d stam=%d life=%d/%d\", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetSkillCostType(), pSkill->GetSkillCost(this), m_CurrentMana, m_CurrentManaMax, m_CurrentStamina, m_CurrentLife, m_CurrentLifeMax);", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetSkillCostType(), pSkill->GetSkillCost(this), m_CurrentMana, m_CurrentManaMax, m_CurrentStamina, m_CurrentLife, m_CurrentLifeMax);
+				AUTOLOG_EVERY(500, "[E4_SKILL_COST] npc=%d id=%u skill=%d costtype=%d cost=%d mana=%d/%d stam=%d life=%d/%d", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetSkillCostType(), pSkill->GetSkillCost(this), m_CurrentMana, m_CurrentManaMax, m_CurrentStamina, m_CurrentLife, m_CurrentLifeMax);
 				if(!IsPlayer() || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
 				{
 					#ifdef _SERVER
@@ -2481,7 +2481,7 @@ void KNpc::DoSkill(int nX, int nY)
 		return;
 	}
 Exit:
-AUTOLOG_EVERY(300, "[E4_SKILL_ABORT] g_DebugLog(\"[E4_SKILL_ABORT] npc=%d id=%u skill=%d tgt=(%d,%d) people=%d object=%d doing=%d\", m_Index, m_dwID, m_ActiveSkillID, nX, nY, m_nPeopleIdx, m_nObjectIdx, (int)m_Doing);", m_Index, m_dwID, m_ActiveSkillID, nX, nY, m_nPeopleIdx, m_nObjectIdx, (int)m_Doing);
+AUTOLOG_EVERY(300, "[E4_SKILL_ABORT] npc=%d id=%u skill=%d tgt=(%d,%d) people=%d object=%d doing=%d", m_Index, m_dwID, m_ActiveSkillID, nX, nY, m_nPeopleIdx, m_nObjectIdx, (int)m_Doing);
 	m_nPeopleIdx = 0;
 	m_nObjectIdx = 0;
 	DoStand();
@@ -2543,7 +2543,7 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 #endif
 	if (pSkill->GetSkillStyle() == SKILL_SS_Melee)
 	{
-		AUTOLOG_EVERY(300, "[E4_MELEE_TRY] g_DebugLog(\"[E4_MELEE_TRY] npc=%d id=%u skill=%d melee=%d des=(%d,%d) map=(%d,%d) jspeed=%d\", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetMeleeType(), m_DesX, m_DesY, m_MapX, m_MapY, m_CurrentJumpSpeed);", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetMeleeType(), m_DesX, m_DesY, m_MapX, m_MapY, m_CurrentJumpSpeed);
+		AUTOLOG_EVERY(300, "[E4_MELEE_TRY] npc=%d id=%u skill=%d melee=%d des=(%d,%d) map=(%d,%d) jspeed=%d", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetMeleeType(), m_DesX, m_DesY, m_MapX, m_MapY, m_CurrentJumpSpeed);
 		if (CastMeleeSkill(pSkill) == FALSE)
 		{
 			m_nPeopleIdx = 0;
@@ -2622,7 +2622,7 @@ int KNpc::DoOrdinSkill(KSkill * pSkill, int nX, int nY)
 
 void KNpc::DoAttack()
 {
-	AUTOLOG_EVERY(500, "[E4_DOATTACK_IN] g_DebugLog(\"[E4_DOATTACK_IN] npc=%d id=%u doing=%d aframe=%d aspeed=%d people=%d\", m_Index, m_dwID, (int)m_Doing, m_AttackFrame, m_CurrentAttackSpeed, m_nPeopleIdx);", m_Index, m_dwID, (int)m_Doing, m_AttackFrame, m_CurrentAttackSpeed, m_nPeopleIdx);
+	AUTOLOG_EVERY(500, "[E4_DOATTACK_IN] npc=%d id=%u doing=%d aframe=%d aspeed=%d people=%d", m_Index, m_dwID, (int)m_Doing, m_AttackFrame, m_CurrentAttackSpeed, m_nPeopleIdx);
 	if (m_Doing == do_attack)
 		return;
 
@@ -3172,7 +3172,7 @@ void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, 
 #ifdef _SERVER
 BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn /* = FALSE */, int nFiveElements_DamageP /*0*/, int nStolen_Life/*0*/, int nStolen_Mana/*0*/, int nStolen_Stamina/*0*/, BOOL bIsDS /*= FALSE*/, BOOL bIsFS /*= FALSE*/)
 {
-	AUTOLOG("[E2-CALC-IN] target=%d(doing=%d region=%d life=%d kind=%u) attacker=%d type=%d min=%d max=%d series=%d fivep=%d phys=%d melee=%d return=%d DS=%d FS=%d", m_Index, (int)m_Doing, m_RegionIndex, m_CurrentLife, m_Kind, nAttacker, (int)nType, nMin, nMax, nMissleSeries, nFiveElements_DamageP, (int)bIsPhysical, (int)bIsMelee, (int)bReturn, (int)bIsDS, (int)bIsFS);
+	AUTOLOG_EVERY(500, "[E2-CALC-IN] target=%d(doing=%d region=%d life=%d kind=%u) attacker=%d type=%d min=%d max=%d series=%d fivep=%d phys=%d melee=%d return=%d DS=%d FS=%d", m_Index, (int)m_Doing, m_RegionIndex, m_CurrentLife, m_Kind, nAttacker, (int)nType, nMin, nMax, nMissleSeries, nFiveElements_DamageP, (int)bIsPhysical, (int)bIsMelee, (int)bReturn, (int)bIsDS, (int)bIsFS);
 	if (m_Doing == do_death || m_Doing == do_revive || m_RegionIndex < 0)
 		return FALSE;
 	//
@@ -3815,8 +3815,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 
 BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, void *pData, BOOL bUseAR, int nDoHurtP, int nMissRate)
 {
-	AUTOLOG_EVERY(200, "[E4_DMG_IN] g_DebugLog(\"[E4_DMG_IN] victim=%d id=%u launcher=%d phys=%d melee=%d usear=%d missrate=%d doing=%d owner0=%d\", m_Index, m_dwID, nLauncher, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nMissRate, (int)m_Doing, (int)Owner[0]);", m_Index, m_dwID, nLauncher, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nMissRate, (int)m_Doing, (int)Owner[0]);
-	AUTOLOG("[E2-RECV-IN] target=%d(id=%u kind=%u doing=%d life=%d def=%d) launcher=%d pdata=%d owner=%d series=%d phys=%d melee=%d useAR=%d dohurt=%d missrate=%d", m_Index, m_dwID, m_Kind, (int)m_Doing, m_CurrentLife, m_CurrentDefend, nLauncher, (int)(pData != NULL), (int)(Owner[0] != 0), nMissleSeries, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nDoHurtP, nMissRate);
+	AUTOLOG_EVERY(200, "[E4_DMG_IN] victim=%d id=%u launcher=%d phys=%d melee=%d usear=%d missrate=%d doing=%d owner0=%d", m_Index, m_dwID, nLauncher, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nMissRate, (int)m_Doing, (int)Owner[0]);
 	if (nLauncher <= 0 || nLauncher >= MAX_NPC)
 		return FALSE;
 
@@ -3877,8 +3876,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		}
 		else
 		{
-			AUTOLOG_EVERY(200, "[E4_DMG_HITCHECK] g_DebugLog(\"[E4_DMG_HITCHECK] victim=%d launcher=%d ar=%d def=%d ignore=%d melee=%d phys=%d\", m_Index, nLauncher, nAr, m_CurrentDefend, nIgnoreAr, (int)bIsMelee, (int)bIsPhysical);", m_Index, nLauncher, nAr, m_CurrentDefend, nIgnoreAr, (int)bIsMelee, (int)bIsPhysical);
-			AUTOLOG("[E2-HITCHK-IN] target=%d(def=%d) launcher=%d AR=%d ignoredef=%d melee=%d launcherisplayer=%d targetisplayer=%d", m_Index, m_CurrentDefend, nLauncher, nAr, nIgnoreAr, (int)bIsMelee, (int)Npc[nLauncher].IsPlayer(), (int)IsPlayer());
+			AUTOLOG_EVERY(200, "[E4_DMG_HITCHECK] victim=%d launcher=%d ar=%d def=%d ignore=%d melee=%d phys=%d", m_Index, nLauncher, nAr, m_CurrentDefend, nIgnoreAr, (int)bIsMelee, (int)bIsPhysical);
 			if (!CheckHitTarget(nAr, m_CurrentDefend, nIgnoreAr))
 				return FALSE;
 		}
@@ -3888,7 +3886,6 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	pTemp++; 
 	AUTOLOG("[HIT-OK] launcher=%d(id=%u) tgt=%d(id=%u) da QUA cua trung, useAR=%d AR=%d def=%d hp_truoc=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, (int)bUseAR, nAr, m_CurrentDefend, m_CurrentLife);
-	AUTOLOG("[E2-HITCHK-OK] target=%d launcher=%d useAR=%d -> qua cua kiem trung, tiep tuc tinh sat thuong", m_Index, nLauncher, (int)bUseAR);
 	int nMagicDamage = pTemp->nValue[0]; //magic damage[2]
 	
 	pTemp++; 
@@ -4462,7 +4459,7 @@ void KNpc::ServeMove(int MoveSpeed)
 	y = (y << 10) + m_OffY;
 
 	int nRet = m_PathFinder.GetDir(x, y, m_Dir, m_DesX, m_DesY, MoveSpeed, &m_Dir);
-	AUTOLOG_EVERY(500, "[E4_MOVE_PATH] g_DebugLog(\"[E4_MOVE_PATH] npc=%d id=%u ret=%d dir=%d cur=(%d,%d) des=(%d,%d) speed=%d doing=%d\", m_Index, m_dwID, nRet, m_Dir, x, y, m_DesX, m_DesY, MoveSpeed, (int)m_Doing);", m_Index, m_dwID, nRet, m_Dir, x, y, m_DesX, m_DesY, MoveSpeed, (int)m_Doing);
+	AUTOLOG_EVERY(500, "[E4_MOVE_PATH] npc=%d id=%u ret=%d dir=%d cur=(%d,%d) des=(%d,%d) speed=%d doing=%d", m_Index, m_dwID, nRet, m_Dir, x, y, m_DesX, m_DesY, MoveSpeed, (int)m_Doing);
 
 #ifndef _SERVER
 	if(nRet == 1)
@@ -4740,7 +4737,7 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 {
 	if (m_FrozenAction.nTime > 0)
 	{
-		AUTOLOG_EVERY(1000, "[E4_CMD_FROZEN] g_DebugLog(\"[E4_CMD_FROZEN] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d frozen=%d\", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_FrozenAction.nTime);", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_FrozenAction.nTime);
+		AUTOLOG_EVERY(1000, "[E4_CMD_FROZEN] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d frozen=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_FrozenAction.nTime);
 		if (cmd == do_walk || 
 			cmd == do_run || 
 			cmd == do_runattack || 
@@ -4757,7 +4754,7 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 
 	if (m_RandMove.nTime > 0)
 	{
-		AUTOLOG_EVERY(1000, "[E4_CMD_RANDMOVE] g_DebugLog(\"[E4_CMD_RANDMOVE] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d randmove=%d\", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_RandMove.nTime);", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_RandMove.nTime);
+		AUTOLOG_EVERY(1000, "[E4_CMD_RANDMOVE] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d randmove=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_RandMove.nTime);
 		if (cmd == do_run || 
 			cmd == do_runattack || 
 			cmd == do_jump || 
@@ -4771,7 +4768,7 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 		}
 	}
 
-	AUTOLOG_EVERY(2000, "[E4_CMD_STAMINA] g_DebugLog(\"[E4_CMD_STAMINA] npc=%d id=%u cmd=%d stam=%d pkflag=%d\", m_Index, m_dwID, (int)cmd, m_CurrentStamina, m_nPKFlag);", m_Index, m_dwID, (int)cmd, m_CurrentStamina, m_nPKFlag);
+	AUTOLOG_EVERY(2000, "[E4_CMD_STAMINA] npc=%d id=%u cmd=%d stam=%d pkflag=%d", m_Index, m_dwID, (int)cmd, m_CurrentStamina, m_nPKFlag);
 	if(cmd == do_run)
 	{
 		if ((m_CurrentStamina < 18 && m_nPKFlag == enumPKMurder) || (m_CurrentStamina < 8 && m_nPKFlag == enumPKTongWar)) //#chua hoan thien
@@ -4786,7 +4783,7 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 		return;
 	}
 #endif
-	AUTOLOG("[E4_CMD_ACCEPT] g_DebugLog(\"[E4_CMD_ACCEPT] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d skill=%d map=(%d,%d) rgn=%d\", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);
+	AUTOLOG_EVERY(1000, "[E4_CMD_ACCEPT] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d skill=%d map=(%d,%d) rgn=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);
 	m_Command.CmdKind = cmd;
 	m_Command.Param_X = x;
 	m_Command.Param_Y = y;
@@ -4819,7 +4816,7 @@ BOOL KNpc::NewJump(int nMpsX, int nMpsY)
 		return FALSE;
 
 	int nRangeCheckL = (nX - nMpsX) * (nX - nMpsX) + (nY - nMpsY) * (nY - nMpsY);
-	AUTOLOG_EVERY(500, "[E4_JUMP_RANGE] g_DebugLog(\"[E4_JUMP_RANGE] npc=%d id=%u cur=(%d,%d) des=(%d,%d) dist2=%d jspeed=%d jframe=%d\", m_Index, m_dwID, nX, nY, nMpsX, nMpsY, nRangeCheckL, m_CurrentJumpSpeed, m_CurrentJumpFrame);", m_Index, m_dwID, nX, nY, nMpsX, nMpsY, nRangeCheckL, m_CurrentJumpSpeed, m_CurrentJumpFrame);
+	AUTOLOG_EVERY(500, "[E4_JUMP_RANGE] npc=%d id=%u cur=(%d,%d) des=(%d,%d) dist2=%d jspeed=%d jframe=%d", m_Index, m_dwID, nX, nY, nMpsX, nMpsY, nRangeCheckL, m_CurrentJumpSpeed, m_CurrentJumpFrame);
 	if (nRangeCheckL <= 32 * 32)
 		return FALSE;
 
@@ -7726,7 +7723,7 @@ BOOL KNpc::CheckHitTarget(int nAR, int nDf, int nIngore/* = 0*/)
 	else
 		nPercent = nAR * 100 / (nAR + nDefense);
 
-	AUTOLOG_EVERY(200, "[E4_HIT_PERCENT] g_DebugLog(\"[E4_HIT_PERCENT] ar=%d df=%d ignore=%d def=%d percent=%d\", nAR, nDf, nIngore, nDefense, nPercent);", nAR, nDf, nIngore, nDefense, nPercent);
+	AUTOLOG_EVERY(200, "[E4_HIT_PERCENT] ar=%d df=%d ignore=%d def=%d percent=%d", nAR, nDf, nIngore, nDefense, nPercent);
 	if (nPercent > MAX_HIT_PERCENT)
 		nPercent = MAX_HIT_PERCENT;
 
@@ -7759,7 +7756,7 @@ BOOL KNpc::CheckHitTarget2(int nAR, int nDf, int nIngore/* = 0*/) //§é chÝnh 
 	if (nPercent > MAX_HIT_PERCENT + 4)
 		nPercent = MAX_HIT_PERCENT;
 
-	AUTOLOG_EVERY(200, "[E4_HIT_PERCENT2] g_DebugLog(\"[E4_HIT_PERCENT2] ar=%d df=%d ignore=%d def=%d percent=%d\", nAR, nDf, nIngore, nDefense, nPercent);", nAR, nDf, nIngore, nDefense, nPercent);
+	AUTOLOG_EVERY(200, "[E4_HIT_PERCENT2] ar=%d df=%d ignore=%d def=%d percent=%d", nAR, nDf, nIngore, nDefense, nPercent);
 	if (nPercent < 40)
 		nPercent = 40;
 
@@ -9724,7 +9721,7 @@ void KNpc::DrawBlood()
 #ifdef _SERVER
 int KNpc::SetPos(int nX, int nY)
 {
-	AUTOLOG("[E4_POS_SETPOS] g_DebugLog(\"[E4_POS_SETPOS] npc=%d id=%u sw=%d rgn=%d old=(%d,%d,%d,%d) new=(%d,%d) doing=%d\", m_Index, m_dwID, m_SubWorldIndex, m_RegionIndex, m_MapX, m_MapY, m_OffX, m_OffY, nX, nY, (int)m_Doing);", m_Index, m_dwID, m_SubWorldIndex, m_RegionIndex, m_MapX, m_MapY, m_OffX, m_OffY, nX, nY, (int)m_Doing);
+	AUTOLOG_EVERY(1000, "[E4_POS_SETPOS] npc=%d id=%u sw=%d rgn=%d old=(%d,%d,%d,%d) new=(%d,%d) doing=%d", m_Index, m_dwID, m_SubWorldIndex, m_RegionIndex, m_MapX, m_MapY, m_OffX, m_OffY, nX, nY, (int)m_Doing);
 	if (m_SubWorldIndex < 0)
 	{
 		_ASSERT(0);
@@ -9792,7 +9789,7 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 
 	Player[m_nPlayerIdx].m_nPrePayMoney = 0;
 	
-	AUTOLOG("[E4_POS_CHANGEWORLD] g_DebugLog(\"[E4_POS_CHANGEWORLD] npc=%d id=%u swid=%u cursw=%d target=%d to=(%d,%d) doing=%d\", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);
+	AUTOLOG("[E4_POS_CHANGEWORLD] npc=%d id=%u swid=%u cursw=%d target=%d to=(%d,%d) doing=%d", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);
 	if (nTargetSubWorld == m_SubWorldIndex)
 	{
 		return SetPos(nX, nY);

@@ -8367,7 +8367,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					if(pApData->bSkipGoldboss)
 					{
-						AUTOLOG("[FIGHT-SKIPGOLD] t=%u tgID=%u tgIdx=%d type=%d lv=%d -> exclude 30s (until %u)", uCurTime, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, Npc[nTGNpcIdx].m_Type, Npc[nTGNpcIdx].m_Level, (UINT)(uCurTime + 30000));
+						AUTOLOG_EVERY(1000, "[FIGHT-SKIPGOLD] t=%u tgID=%u tgIdx=%d type=%d lv=%d -> exclude 30s (until %u)", uCurTime, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, Npc[nTGNpcIdx].m_Type, Npc[nTGNpcIdx].m_Level, (UINT)(uCurTime + 30000));
 						if(Npc[nTGNpcIdx].m_Type == boss_gold)
 						{
 							Player[nPlayerIdx].
@@ -9062,7 +9062,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								{
 									ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
 									AUTOLOG("PICK-CUR-DROP3 obj=%d dataid=%d name=%.79s checked=%d slot=%d", Object[nFollowObj].m_nID, Object[nFollowObj].m_nItemDataID, Object[nFollowObj].m_szName, (int)s.nChecked, nExist);
-									AUTOLOG_EVERY(1000, "PICK2-SKIP3 obj=%d dataid=%d name=%.79s checked=%d slot=%d", Object[i].m_nID, Object[i].m_nItemDataID, Object[i].m_szName, (int)s.nChecked, nExist);
 									if(s.nChecked >= 3)
 									{
 										nFollowObj = 0;
@@ -9236,7 +9235,6 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 											if(nDist < nFVision)
 											{
 												AUTOLOG("PICK2-TARGET-ANCHOR obj=%d name=%.79s at=(%d,%d) danchor=%d dself=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nDist, g_GetDistance(nX, nY, dX, dY));
-												AUTOLOG("PICK2-TARGET-FREE obj=%d name=%.79s at=(%d,%d) dself=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, g_GetDistance(nX, nY, dX, dY), nVision);
 												nFollowObj = i;
 												Player[nPlayerIdx].m_sExtAuto.nCurObjID = Object[i].m_nID;
 												break;

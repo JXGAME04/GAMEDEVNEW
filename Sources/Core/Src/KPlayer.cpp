@@ -3500,7 +3500,6 @@ void	KPlayer::PickUpObj(int nObjIndex)
 	if (nObjIndex <= 0)
 		return;
 	AUTOLOG("PICK-SKIP-KIND idx=%d id=%d kind=%d", nObjIndex, Object[nObjIndex].m_nID, Object[nObjIndex].m_nKind);
-	AUTOLOG("PICKOBJ-ENTER idx=%d kind=%d objid=%d dataid=%d name=%.79s w=%d h=%d t=%u", nObjIndex, Object[nObjIndex].m_nKind, Object[nObjIndex].m_nID, Object[nObjIndex].m_nItemDataID, Object[nObjIndex].m_szName, Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight, timeGetTime());
 	if (Object[nObjIndex].m_nKind != Obj_Kind_Item && Object[nObjIndex].m_nKind != Obj_Kind_Money)
 		return;
 	
@@ -3539,9 +3538,10 @@ void	KPlayer::PickUpObj(int nObjIndex)
 	}
 	
 	if (g_pClient)
-		AUTOLOG("[PICKOBJ-SEND] objid=%d kind=%d place=%d px=%d py=%d", sPickUp.m_nObjID, (int)Object[nObjIndex].m_nKind, (int)sPickUp.m_btPosType, (int)sPickUp.m_btPosX, (int)sPickUp.m_btPosY);
-		AUTOLOG("PICK-SEND objid=%d place=%d px=%d py=%d kind=%d t=%u", sPickUp.m_nObjID, (int)sPickUp.m_btPosType, (int)sPickUp.m_btPosX, (int)sPickUp.m_btPosY, Object[nObjIndex].m_nKind, GetTickCount());
-		g_pClient->SendPackToServer(&sPickUp, sizeof(PLAYER_PICKUP_ITEM_COMMAND));
+	{
+			AUTOLOG("[PICKOBJ-SEND] objid=%d kind=%d place=%d px=%d py=%d", sPickUp.m_nObjID, (int)Object[nObjIndex].m_nKind, (int)sPickUp.m_btPosType, (int)sPickUp.m_btPosX, (int)sPickUp.m_btPosY);
+			g_pClient->SendPackToServer(&sPickUp, sizeof(PLAYER_PICKUP_ITEM_COMMAND));
+	}
 }
 #endif
 
@@ -9227,11 +9227,15 @@ int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSel
 		|| Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
 		if(m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != m_mAutoExcludeNpcID.end())
+		{
 			AUTOLOG_EVERY(2000, "[FT-SKIP-EXCL] idx=%d id=%u kind=%d type=%d exclSize=%d", nIdx, Npc[nIdx].m_dwID, (int)Npc[nIdx].m_Kind, (int)Npc[nIdx].m_Type, (int)m_mAutoExcludeNpcID.size());
 			continue;
+		}
 		if(!(NpcSet.GetRelation(m_nIndex, nIdx) == relation_enemy))
+		{
 			AUTOLOG_EVERY(3000, "[FT-SKIP-REL] idx=%d id=%u kind=%d rel=%d", nIdx, Npc[nIdx].m_dwID, (int)Npc[nIdx].m_Kind, (int)NpcSet.GetRelation(m_nIndex, nIdx));
 			continue;
+		}
 		int x,y;
 		Npc[nIdx].GetMpsPos(&x, &y);
 		int nDist = g_GetDistance(nX, nY, x, y);
@@ -11967,8 +11971,8 @@ void KPlayer::PlayerFollowActack(int i)
 	if (m_bAttackAround)
 	{
 		if ((k - nMapX) * (k - nMapX) + (h - nMapY) * (h - nMapY) > m_RadiusAuto * 1024)
-			AUTOLOG_EVERY(1000, "[AUTO-LEASH] npc=%d tg=(%d,%d) me=(%d,%d) radius=%d around=%d", i, k, h, nMapX, nMapY, m_RadiusAuto, (int)m_bAttackAround);
 		{
+			AUTOLOG_EVERY(1000, "[AUTO-LEASH] npc=%d tg=(%d,%d) me=(%d,%d) radius=%d around=%d", i, k, h, nMapX, nMapY, m_RadiusAuto, (int)m_bAttackAround);
 			dX = nMapX-m_PosXAuto;
 			dY = nMapY-m_PosYAuto;
 			dZ = (int)sqrt((float)dX*dX+(float)dY*dY);

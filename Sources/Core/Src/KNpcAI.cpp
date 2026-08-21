@@ -1080,7 +1080,7 @@ void KNpcAI::KeepAttackRange(int nEnemy, int nRange)
 
 void KNpcAI::FollowAttack(int i)
 {
-	AUTOLOG_EVERY(500, "[E4_AI_TARGET_CHECK] g_DebugLog(\"[E4_AI_TARGET_CHECK] me=%d tgt=%d rgn=%d life=%d/%d hide=%d doing=%d\", m_nIndex, i, Npc[i].m_RegionIndex, Npc[i].m_CurrentLife, Npc[i].m_CurrentLifeMax, Npc[i].m_HideState.nTime, (int)Npc[i].m_Doing);", m_nIndex, i, Npc[i].m_RegionIndex, Npc[i].m_CurrentLife, Npc[i].m_CurrentLifeMax, Npc[i].m_HideState.nTime, (int)Npc[i].m_Doing);
+	AUTOLOG_EVERY(500, "[E4_AI_TARGET_CHECK] me=%d tgt=%d rgn=%d life=%d/%d hide=%d doing=%d", m_nIndex, i, Npc[i].m_RegionIndex, Npc[i].m_CurrentLife, Npc[i].m_CurrentLifeMax, Npc[i].m_HideState.nTime, (int)Npc[i].m_Doing);
 	if (CheckNpc(i))
 		return;
 	//
@@ -1100,7 +1100,7 @@ void KNpcAI::FollowAttack(int i)
 //		return;
 //	}
 	// Attack Enemy
-	AUTOLOG_EVERY(500, "[E4_AI_RANGE] g_DebugLog(\"[E4_AI_RANGE] me=%d tgt=%d dist=%d atkradius=%d vision=%d skill=%d doing=%d\", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID, (int)Npc[m_nIndex].m_Doing);", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID, (int)Npc[m_nIndex].m_Doing);
+	AUTOLOG_EVERY(500, "[E4_AI_RANGE] me=%d tgt=%d dist=%d atkradius=%d vision=%d skill=%d doing=%d", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID, (int)Npc[m_nIndex].m_Doing);
 	if (distance <= Npc[m_nIndex].m_CurrentAttackRadius && InEyeshot(i))
 	{
 		ISkill * pISkill =  g_SkillManager.GetSkill(Npc[m_nIndex].m_ActiveSkillID, 1);
@@ -1116,7 +1116,7 @@ void KNpcAI::FollowAttack(int i)
 			Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, nX, nY);
 			return;
 		}
-		AUTOLOG_EVERY(300, "[E4_AI_ATTACK_CMD] g_DebugLog(\"[E4_AI_ATTACK_CMD] me=%d tgt=%d skill=%d dist=%d atkradius=%d\", m_nIndex, i, Npc[m_nIndex].m_ActiveSkillID, distance, Npc[m_nIndex].m_CurrentAttackRadius);", m_nIndex, i, Npc[m_nIndex].m_ActiveSkillID, distance, Npc[m_nIndex].m_CurrentAttackRadius);
+		AUTOLOG_EVERY(300, "[E4_AI_ATTACK_CMD] me=%d tgt=%d skill=%d dist=%d atkradius=%d", m_nIndex, i, Npc[m_nIndex].m_ActiveSkillID, distance, Npc[m_nIndex].m_CurrentAttackRadius);
 		Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, i);
 		return;
 	}
@@ -1125,7 +1125,7 @@ void KNpcAI::FollowAttack(int i)
 	int x, y;
 	Npc[i].GetMpsPos(&x, &y);
 
-	AUTOLOG_EVERY(1000, "[E4_AI_OUTOFRANGE] g_DebugLog(\"[E4_AI_OUTOFRANGE] me=%d tgt=%d dist=%d atkradius=%d vision=%d to=(%d,%d)\", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, x, y);", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, x, y);
+	AUTOLOG_EVERY(1000, "[E4_AI_OUTOFRANGE] me=%d tgt=%d dist=%d atkradius=%d vision=%d to=(%d,%d)", m_nIndex, i, distance, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_VisionRadius, x, y);
 	Npc[m_nIndex].SendCommand(do_walk, x, y);
 }
 
@@ -1193,7 +1193,7 @@ BOOL KNpcAI::KeepActiveRange()
 	}
 
 	// If you find that you are out of the current activity range, go back
-	AUTOLOG_EVERY(1000, "[E4_AI_LEASH] g_DebugLog(\"[E4_AI_LEASH] me=%d cur=(%d,%d) origin=(%d,%d) range=%d curactive=%d active=%d\", m_nIndex, x, y, Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY, nRange, Npc[m_nIndex].m_CurrentActiveRadius, Npc[m_nIndex].m_ActiveRadius);", m_nIndex, x, y, Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY, nRange, Npc[m_nIndex].m_CurrentActiveRadius, Npc[m_nIndex].m_ActiveRadius);
+	AUTOLOG_EVERY(1000, "[E4_AI_LEASH] me=%d cur=(%d,%d) origin=(%d,%d) range=%d curactive=%d active=%d", m_nIndex, x, y, Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY, nRange, Npc[m_nIndex].m_CurrentActiveRadius, Npc[m_nIndex].m_ActiveRadius);
 	if (Npc[m_nIndex].m_CurrentActiveRadius < nRange)	//Active radius
 	{
 		Npc[m_nIndex].SendCommand(do_walk, Npc[m_nIndex].m_OriginX, Npc[m_nIndex].m_OriginY);
@@ -1892,7 +1892,7 @@ void KNpcAI::ProcessAIType1()
 	int nEnemyIdx = Npc[m_nIndex].m_nPeopleIdx;
 
 	// If no valid enemy locked or enemy is no longer visible, find nearest enemy and lock it
-	AUTOLOG_EVERY(1000, "[E4_AI_TARGET_PICK] g_DebugLog(\"[E4_AI_TARGET_PICK] me=%d locked=%d people=%d vision=%d skill=%d\", m_nIndex, nEnemyIdx, Npc[m_nIndex].m_nPeopleIdx, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID);", m_nIndex, nEnemyIdx, Npc[m_nIndex].m_nPeopleIdx, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID);
+	AUTOLOG_EVERY(1000, "[E4_AI_TARGET_PICK] me=%d locked=%d people=%d vision=%d skill=%d", m_nIndex, nEnemyIdx, Npc[m_nIndex].m_nPeopleIdx, Npc[m_nIndex].m_VisionRadius, Npc[m_nIndex].m_ActiveSkillID);
 	if (nEnemyIdx <= 0 || Npc[nEnemyIdx].m_dwID <= 0 || !InEyeshot(nEnemyIdx))
 	{
 		nEnemyIdx = GetNearestNpc(relation_enemy);

@@ -259,7 +259,6 @@ relationisvalid:
 				nParticularType = -1;
 
 			AUTOLOG("[SKILL-REFUSE-WEAPON] sk=%d lv=%d launcher=%d wpn_detail=%d wpn_particular=%d yeucau=%d -> tra ve 0 (IM LANG)", (int)m_nId, (int)m_ulLevel, nLauncher, nDetailType, nParticularType, m_nEquiptLimited);
-			AUTOLOG("[E3_REJECT_WEAPON] skill=%d lv=%d launcher=%d player=%d weapon_detail=%d particular=%d need=%d", (int)m_nId, (int)m_ulLevel, nLauncher, nPlayerIdx, nDetailType, nParticularType, m_nEquiptLimited);
 			if (nParticularType != m_nEquiptLimited)
 			{
 #ifndef _SERVER
@@ -281,7 +280,6 @@ relationisvalid:
 			if (Npc[nParam2].IsPlayer())
 			{
 				AUTOLOG("[SKILL-REFUSE-FIGHTMODE] sk=%d launcher=%d fm=%d tgt=%d fm=%d -> tra ve 0", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);
-				AUTOLOG("[E3_REJECT_FIGHTMODE] skill=%d launcher=%d(fm=%d) target=%d(fm=%d)", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);
 				if (Npc[nLauncher].m_FightMode != Npc[nParam2].m_FightMode)
 					return 0;
 			}
@@ -334,7 +332,6 @@ relationisvalid:
 			{
 				distance = NpcSet.GetDistance(nLauncher, nParam2);
 				AUTOLOG_EVERY(500, "[E3_RANGE_NPC] skill=%d lv=%d launcher=%d target=%d distance=%d radius=%d limit=%d", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), GetAttackRadius() + 20);
-				AUTOLOG("[SKILL-DIST] t=%u sk=%d lv=%d launcher=%d(id=%u) tgt=%d(id=%u) d=%d radius=%d nguong_svr=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, nLauncher, Npc[nLauncher].m_dwID, nParam2, Npc[nParam2].m_dwID, distance, GetAttackRadius(), GetAttackRadius() + 20);
 #ifndef _SERVER				
 				if (distance > GetAttackRadius()*0.8)
 #endif
@@ -788,7 +785,6 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						SkillParam.eLauncherType = eLauncherType;
 						SkillParam.nTargetId = nTargetId;
 						AUTOLOG("[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind);
-						AUTOLOG("[E3_LINE_SRCDES] skill=%d launcher=%d target=%d src=(%d,%d) des=(%d,%d) childnum=%d childid=%d", (int)m_nId, nLauncher, nTargetId, nSrcPX, nSrcPY, nDesPX, nDesPY, m_nChildSkillNum, m_nChildSkillId);
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line || g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Parabola) ) 
 						{
 							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
