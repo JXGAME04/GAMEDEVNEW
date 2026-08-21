@@ -21,7 +21,7 @@
 
 | Việc | Trạng thái |
 |---|---|
-| (1)(2) Phù về không bán mà tới Xa Phu → lên map → phù về lại (cả lúc treo xong lẫn đang làm) | ✅ sửa theo luồng Hậu cần (mục 3) + **sửa lỗi thật trong bước bán rác Hậu cần** (mục 4) — **chưa test thật** |
+| (1)(2) Phù về không bán mà tới Xa Phu → lên map → phù về lại (cả lúc treo xong lẫn đang làm) | ✅ sửa theo luồng Hậu cần có sẵn (mục 3) — **chưa test thật** |
 | (3) Khoe đồ xong: gửi món vào rương thay vì bán | ✅ xong — **chưa test thật** |
 | Phần cấu trúc tự thêm ở `f5a38c40`/`adc57b19`/`8bcd1772` | ✅ **đã gỡ** trong `d8d27119` |
 | Hai vòng lọc bán rác (Hậu cần bước 1 + `DTP_SELLJUNK`) | ✅ **trả nguyên trạng** trong `78102641` — chủ game đã test, không đụng nữa |
@@ -98,7 +98,7 @@ rương chính → mở rộng theo `nSelStore`; cần rương mở / mật kh�
 4. Loại 3 trả xong → `Khoe xong - cất món khoe vào rương...` → `Đã cất món khoe vào rương`.
 5. HỎNG chung: dòng lặp > 2 lần/giây; loop Xa Phu ↔ map quá 2 vòng.
 
-## 7. Bản đồ mã (`d8d27119`)
+## 7. Bản đồ mã (`78102641`)
 
 | Thành phần | Vị trí CoreShell.cpp |
 |---|---|
@@ -108,9 +108,9 @@ rương chính → mở rộng theo `nSelStore`; cần rương mở / mật kh�
 | `DT_SellStart` / `DT_Yield` | trước `DT_BagRelease` |
 | FARM "bị ra khỏi map" | ~5200-5245 |
 | `case DTP_YIELD` | trước `case DTP_MUASAP` |
-| Hậu cần bước 1 (bán rác) | ~9753 |
+| Hậu cần bước 1 (bán rác) | ~9753 — **nguyên trạng, không đụng** |
 
-Phản biện: vòng 1-2 (agent Opus) đã chạy trên bản cũ; **r4 chưa được agent soi lại** — test thật trước.
+Phản biện: vòng 1-2 (agent Opus) chạy trên bản cũ; **r4/r5 chưa được agent soi lại** — test thật trước.
 
 ## 8. Phân tích phần LƯU cấu hình của Auto (theo yêu cầu chủ game)
 
