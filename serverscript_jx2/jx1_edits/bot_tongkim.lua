@@ -60,3 +60,33 @@ function bot_tk_thoat()
 	SetTask(T_CHECKPHETK, 0) -- xoa phe da gia nhap
 	StopTimer()
 end
+
+-- Mua thuoc tai NPC Quan Y trong doanh trai (chu game 21/08: "phai cho bot mua o
+-- npc trong doanh trai - tu bom mau day du nhu bot luyen cong vay").
+--
+-- VI SAO KHONG goi thang muamaunhanh() cua quany.lua: ham do mua LAP DAY 100% so
+-- o trong cua tui (quany.lua:29 CalcFreeItemCellCount roi AddItem dung so do).
+-- Bot thi pb_DonTui GIU LAI thuoc, nen tui se day VINH VIEN -> khau TRA nhiem vu
+-- Da Tau doi tui con >= 5 o trong se ket sau tran. Ham nay mua dung mot phan,
+-- chua lai 6 o, va dung Y NGUYEN mat hang + gia cua NPC (1 luong / Ngu Hoa Ngoc
+-- Lo Hoan, quany.lua:30 va :38) nen ve kinh te khong khac gi nguoi choi bam menu.
+function bot_tk_muamau()
+	local nTrong = CalcFreeItemCellCount()
+	if (nTrong == nil) then
+		return
+	end
+	local nMua = nTrong - 6          -- chua lai 6 o cho Da Tau / thuong cuoi tran
+	if (nMua > 12) then
+		nMua = 12
+	end
+	if (nMua <= 0) then
+		return
+	end
+	if (GetCash() < nMua) then       -- 1 luong moi vien, y het NPC
+		return
+	end
+	Pay(nMua)
+	for i = 1, nMua do
+		AddItem(1, 2, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
+	end
+end

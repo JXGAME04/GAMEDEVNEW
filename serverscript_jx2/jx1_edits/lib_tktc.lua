@@ -17,7 +17,7 @@ Pos_Tren													= 1
 Pos_Duoi													= 2
 
 LEVEL_ENOUGH_TK 							= 80		--®¼ng cÊp tèi thiÓu khi tham gia
-MAX_PLAYER_CL 								= 1			--chªnh lÖch qu©n sè 2 bªn mÆc ®Þnh lµ 5 ng­êi
+MAX_PLAYER_CL 								= 20			--chªnh lÖch qu©n sè 2 bªn mÆc ®Þnh lµ 5 ng­êi
 NEEDMONEY 										= 20000--tiÒn b¸o danh tham gia tèng kim
 TICH_LUY_THUONG_TK_W				= 1200	--®iÓm th­ëng tÝch luü céng thªm cho phe th¾ng
 TICH_LUY_THUONG_TK_L 				= 300		--®iÓm th­ëng tÝch luü céng thªm cho phe thua
@@ -68,7 +68,7 @@ LIFE_NGUYEN_SOAI							= 5000000*STRONGBOSS_NSTK --m¸u boss nguyªn so¸i
 TK_VARV_KEY = 1
 
 TAB_TIME_TONG_KIM = {
-	{13,13,13,1},
+	{14,58,15,1},
 	-- {20,50,21,2},
 	{17,50,18,3},
 	{20,50,21,4},
