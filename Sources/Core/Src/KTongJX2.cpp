@@ -4020,7 +4020,17 @@ int LuaJX2_WriteStringToFile(Lua_State* L)
 	return 1;
 }
 
-// GlobalExecute(szLua) - JX2 chay cau lenh tren moi GameServer; JX1 mot GS -> chay ngay
+// GlobalExecute(szLua) - JX2 chay cau lenh tren moi GameServer; JX1 mot GS -> chay ngay.
+// [WLLS 20/08] Ban goc relay con nhan 2 tien to dinh tuyen:
+//   "dw <stmt>"         -> chay <stmt> tren GS trong state \script\gmscript.lua
+//                          (Linux gmscript.lua:7 include wlls_gmscript.lua)
+//   "dwf <path> <stmt>" -> chay <stmt> trong state cua <path>
+// Ca hai duoc HOAN 1 TICK qua KJx2DeferredExec (giu do tre mang goc; khong hoan
+// thi wlls_player_join -> NewWorld ngay giua hop thoai NPC - BANGIAO 4.3).
+// Chuoi KHONG tien to giu nguyen hanh vi cu (chay ngay tren state goi).
+#ifdef _SERVER
+extern void KJx2DeferredExec_Push(const char* szScriptPath, const char* szCode);
+#endif
 int LuaJX2_GlobalExecute(Lua_State* L)
 {
 	if (!Lua_IsString(L, 1))
@@ -4028,7 +4038,33 @@ int LuaJX2_GlobalExecute(Lua_State* L)
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
-	lua_dostring(L, (const char*)Lua_ValueToString(L, 1));
+	const char* psz = (const char*)Lua_ValueToString(L, 1);
+#ifdef _SERVER
+	if (psz[0] == 'd' && psz[1] == 'w' && psz[2] == ' ')
+	{
+		KJx2DeferredExec_Push(NULL, psz + 3);
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	if (psz[0] == 'd' && psz[1] == 'w' && psz[2] == 'f' && psz[3] == ' ')
+	{
+		char szPath[MAX_PATH];
+		const char* p = psz + 4;
+		while (*p == ' ')
+			p++;
+		int n = 0;
+		while (*p && *p != ' ' && n < MAX_PATH - 1)
+			szPath[n++] = *p++;
+		szPath[n] = 0;
+		while (*p == ' ')
+			p++;
+		if (szPath[0] && *p)
+			KJx2DeferredExec_Push(szPath, p);
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+#endif
+	lua_dostring(L, psz);
 	Lua_PushNumber(L, 1);
 	return 1;
 }
@@ -4043,6 +4079,33 @@ int LuaJX2_SyncTaskValue(Lua_State* L)
 		int nTaskId = (int)Lua_ValueToNumber(L, 1);
 		Player[nPlayerIndex].SyncTaskValueToClient(nTaskId,
 			(int)Player[nPlayerIndex].m_cTask.GetSaveVal(nTaskId));
+	}
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SyncTaskValueMore(idFrom, idTo [,n]) - dong bo mot DAI task xuong client.
+// [WLLS 20/08] leaguematch dong bo 1720..1732 va 2500..2501 (head.lua:688-689,
+// 897, 901); doi thu 3 cua ban goc khong doi hanh vi dong bo -> nhan roi bo qua.
+int LuaJX2_SyncTaskValueMore(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 2 &&
+		Lua_IsNumber(L, 1) && Lua_IsNumber(L, 2))
+	{
+		int nFrom = (int)Lua_ValueToNumber(L, 1);
+		int nTo = (int)Lua_ValueToNumber(L, 2);
+		if (nTo < nFrom)
+		{
+			int nTmp = nFrom;
+			nFrom = nTo;
+			nTo = nTmp;
+		}
+		if (nTo - nFrom > 256)
+			nTo = nFrom + 256;
+		for (int i = nFrom; i <= nTo; i++)
+			Player[nPlayerIndex].SyncTaskValueToClient(i,
+				(int)Player[nPlayerIndex].m_cTask.GetSaveVal(i));
 	}
 	Lua_PushNumber(L, 1);
 	return 1;

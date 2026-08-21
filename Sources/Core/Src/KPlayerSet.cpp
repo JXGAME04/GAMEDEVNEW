@@ -369,6 +369,9 @@ void KPlayerSet::PrepareRemove(int nIndex)//#khi player dang xuat
 	int nSubWorld = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
 	if (nSubWorld >= 0)
 	{
+		// [WLLS 20/08] dang xuat = roi map: ban OnLeaveWorld truoc khi go mission
+		// (schedule\newworld.lua can gui wlls_onleave de tra cho bao danh)
+		KSubWorld_FireMapScript(nSubWorld, "OnLeaveWorld", nIndex);
 		SubWorld[nSubWorld].m_MissionArray.RemovePlayer(nIndex, Player[nIndex].m_dwID);
 	}
 

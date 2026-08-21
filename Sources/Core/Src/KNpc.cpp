@@ -2195,6 +2195,13 @@ void KNpc::OnRun()
 	WaitForFrame();
 	if (!(m_LoopFrames % GAME_UPDATE_TIME) && Player[m_nPlayerIdx].m_cPK.GetNormalPKState() == enumPKMurder) // giet nguoi thÓ lùc gi¶m
 	{
+#ifdef _SERVER
+		// [WLLS] ForbitStamina(1): dong bang tieu hao the luc trong dau truong
+		if (m_Kind == kind_player && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
+			Player[m_nPlayerIdx].m_bWllsForbidStamina)
+			;
+		else
+#endif
 		m_CurrentStamina -= 18;
 		if (m_CurrentStamina <= 0)
 		{
@@ -3594,6 +3601,14 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 
 	}
 
+#ifdef _SERVER
+		// [WLLS 20/08] bo dem sat thuong HUNG CHIU (ST_*DamageCounter): cong tai
+		// diem SAU khang tinh + noi luc ho than, TRUOC chuyen-noi-luc.
+		// Moi duong tru mau (danh thuong/phep/doc/phan don) deu di qua ham nay.
+		if (m_Kind == kind_player && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
+			Player[m_nPlayerIdx].m_bWllsDmgCounterOn && nDamage > 0)
+			Player[m_nPlayerIdx].m_nWllsDmgCounter += nDamage;
+#endif
 		if (nType != damage_poison)
 		{
 				int nCurenManaShield = m_ManaShield.nValue[0];
@@ -9742,6 +9757,10 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 		SubWorld[nTargetSubWorld].SendSyncData(m_Index, Player[m_nPlayerIdx].m_nNetConnectIdx);
 		SubWorld[nSourceSubWorld].RemovePlayer(nSourceRegion, m_nPlayerIdx);
 		SubWorld[nTargetSubWorld].AddPlayer(nRegion, m_nPlayerIdx);
+		// [WLLS 20/08] NewWorldScript cua MapList.ini: roi map -> OnLeaveWorld,
+		// vao map -> OnNewWorld (Linux GS co san co che nay, Windows bo quen).
+		KSubWorld_FireMapScript(nSourceSubWorld, "OnLeaveWorld", m_nPlayerIdx);
+		KSubWorld_FireMapScript(nTargetSubWorld, "OnNewWorld", m_nPlayerIdx);
 	}
 	return 1;
 }
@@ -9819,6 +9838,20 @@ void KNpc::ForceClearStateSkillEffect() {
 	if(bStateRemove)
 		UpdateNpcStateInfo();
 #endif
+}
+
+// [WLLS 20/08] tra level trang thai skill dang treo (GetSkillState):
+// khong co -> -1 (officer.lua:184 so sanh ~= -1 truoc khi RemoveSkillState).
+int KNpc::GetStateSkillLevel(int nSkillId)
+{
+	KStateNode* pNode = (KStateNode*)m_StateSkillList.GetTail();
+	while (pNode)
+	{
+		if (pNode->m_SkillID == nSkillId)
+			return pNode->m_Level;
+		pNode = (KStateNode*)pNode->GetPrev();
+	}
+	return -1;
 }
 
 void KNpc::ForceClearStateSkillEffect(int nSkillId)

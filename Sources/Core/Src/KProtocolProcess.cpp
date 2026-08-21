@@ -5370,6 +5370,11 @@ void KProtocolProcess::ChatReDeleteFriend(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::TradeApplyOpen(int nIndex, BYTE* pProtocol)
 {
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+		return;
+	// [WLLS] ForbitTrade(1): cam giao dich trong khu lien dau
+	if (Player[nIndex].m_bWllsForbidTrade)
+		return;
 	Player[nIndex].TradeApplyOpen(pProtocol);
 }
 
@@ -5396,6 +5401,9 @@ void	KProtocolProcess::TradeApplyStart(int nIndex, BYTE* pProtocol)
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
 		return;
 
+	// [WLLS] ForbitTrade(1): cam giao dich trong khu lien dau
+	if (Player[nIndex].m_bWllsForbidTrade)
+		return;
 	Player[nIndex].TradeApplyStart(pProtocol);
 }
 
@@ -5841,6 +5849,15 @@ void KProtocolProcess::c2sInputCommand(int nIndex, BYTE* pProtocol)
 	case 1:
 		{
 			strncpy(Player[nIndex].szStringInput,pInput->nAction, sizeof(Player[nIndex].szStringInput));
+			Player[nIndex].szStringInput[sizeof(Player[nIndex].szStringInput) - 1] = 0;
+			// [WLLS] AskClientForString: callback nhan CHUOI NHAP lam doi so 1
+			// (officer wlls_createleague(str_lgname)); duong OpenGetString cu giu "".
+			if (Player[nIndex].m_bWllsAskStrArg)
+			{
+				Player[nIndex].m_bWllsAskStrArg = 0;
+				Player[nIndex].ExecuteScript(Player[nIndex].m_dwStrBoxId, Player[nIndex].m_szTaskExcuteFun, Player[nIndex].szStringInput);
+			}
+			else
 			Player[nIndex].ExecuteScript(Player[nIndex].m_dwStrBoxId, Player[nIndex].m_szTaskExcuteFun,"");
 		}
 		break;
@@ -6038,6 +6055,9 @@ void KProtocolProcess::StartTrade(int nIndex, BYTE* pProtocol)
 	PLAYER_START_TRADE *pST = (PLAYER_START_TRADE *)pProtocol;
 	if (nIndex > 0 && nIndex < MAX_PLAYER)
 	{
+		// [WLLS] DisabledStall(1): cam mo sap trong khu lien dau
+		if (pST->m_bSet != 0 && Player[nIndex].m_bWllsDisableStall)
+			return;
 		if (pST->m_bSet != 0 && Player[nIndex].GetTradeCount())
 		{
 			Npc[Player[nIndex].m_nIndex].m_BaiTan = 1;

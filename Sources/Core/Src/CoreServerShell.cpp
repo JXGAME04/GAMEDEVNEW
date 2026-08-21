@@ -1170,6 +1170,7 @@ int CoreServerShell::Breathe()
 	}
 
 	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
+	KJx2DeferredExec_Breathe();	// WLLS: hang doi "dw/dwf" hoan 1 tick (lien dau)
 	KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
 
 	// ---- [SvPerf] nhiet ke KHUNG SERVER (chu game 18/08: "1000 bot rat lag,

@@ -297,6 +297,14 @@ void	KPlayer::Release()
 	m_dwGiveBoxId = 0;
 	m_dwTimeBoxId = 0;
 	m_dwStrBoxId = 0;
+	// [WLLS 20/08] init truong lien dau (khe player duoc tai su dung)
+	m_bWllsAskStrArg = 0;
+	m_bWllsDisableStall = 0;
+	m_bWllsForbidTrade = 0;
+	m_bWllsForbidStamina = 0;
+	m_bWllsDmgCounterOn = 0;
+	m_nWllsDmgCounter = 0;
+	memset(m_szWllsStrTask, 0, sizeof(m_szWllsStrTask));
 	m_dwNumberBoxId = 0;
 	m_dwLogoutScriptID = 0;
 	m_dwRewardId = 0;

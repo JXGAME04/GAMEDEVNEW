@@ -734,6 +734,7 @@ public:
 	void				ForceClearStateSkillEffect();
 
 	void				ForceClearStateSkillEffect(int nSkillId);
+	int					GetStateSkillLevel(int nSkillId);	// [WLLS] level trang thai skill, -1 = khong co
 
 	void				ClearStateSkillEffect();
 	void				ClearStateSkillEffect(int nSkillId);

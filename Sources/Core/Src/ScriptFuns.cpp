@@ -2324,18 +2324,65 @@ int LuaDynamicExecuteByPlayer(Lua_State* L)
 	return 0;
 }
 
+// [WLLS 20/08] DynamicExecute(szScript, szFun, ...) - nhu DynamicExecuteByPlayer
+// nhung KHONG boi canh nguoi choi (Linux global\autoexec.lua goi ~10 lan;
+// startgame.lua dung de khoi dong driver lien dau trong state rieng cua no).
+int LuaDynamicExecute(Lua_State* L)
+{
+	int nParamNum = Lua_GetTopIndex(L);
+	if (nParamNum < 2)
+		return 0;
+	const char* szScript = Lua_ValueToString(L, 1);
+	const char* szFun = Lua_ValueToString(L, 2);
+	if (!szScript || !szFun)
+		return 0;
+	char szLow[MAX_PATH];
+	g_StrCpyLen(szLow, (char*)szScript, MAX_PATH);
+	g_StrLower(szLow);
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+	if (!pScript)
+	{
+		g_DebugLog((LPSTR)"[WLLS] DynamicExecute: script chua nap, bo qua: %.128s -> %.64s", szLow, szFun);
+		return 0;
+	}
+	char szCall[512];
+	int nPos = 0;
+	nPos += sprintf(szCall + nPos, "%s(", szFun);
+	for (int i = 3; i <= nParamNum && nPos < (int)sizeof(szCall) - 80; i++)
+	{
+		if (i > 3)
+			szCall[nPos++] = ',';
+		if (Lua_IsNumber(L, i))
+			nPos += sprintf(szCall + nPos, "%.0f", (double)Lua_ValueToNumber(L, i));
+		else if (Lua_IsString(L, i))
+			nPos += sprintf(szCall + nPos, "\"%.64s\"", Lua_ValueToString(L, i));
+		else
+			nPos += sprintf(szCall + nPos, "nil");
+	}
+	szCall[nPos++] = ')';
+	szCall[nPos] = 0;
+	int nTopIndex = 0;
+	pScript->SafeCallBegin(&nTopIndex);
+	if (lua_dostring(pScript->m_LuaState, szCall) != 0)
+		g_DebugLog((LPSTR)"[WLLS] DynamicExecute LOI: %.128s -> %.200s", szLow, szCall);
+	pScript->SafeCallEnd(nTopIndex);
+	return 0;
+}
+
 // IncludeLib("TEN_MODULE") cua script JX2 -> nap file lib tuong ung o scriptjx2.
 // Module la nhan rieng cua engine JX2; module khong co trong bang thi bo qua im lang.
 int LuaIncludeLib(Lua_State* L)
 {
 	// DOT E (E5): +6 module cong thanh - ham that da nam o C (LG_/BT_/Title_...),
 	// tro noop.lua chi de dofile khong loi. CAM tro LEAGUE vao jx2compat (de ham C).
-	static const char* szMod[20] = {
+	// [WLLS 20/08] +ITEM (leaguematch head.lua:10 IL("ITEM") - ham item da o C)
+	static const char* szMod[21] = {
 		"TONG", "FILE", "LOG", "STRING", "BASIC", "COMMON", "SAY",
 		"PLAYER", "AWARD", "TIMERLIST", "TOPLIST", "MAPDB", "GB_TASK", "FILESYS",
 		"SETTING", "BATTLE", "RELAYLADDER", "TITLE", "LEAGUE", "PARTNER",
+		"ITEM",
 	};
-	static const char* szFile[20] = {
+	static const char* szFile[21] = {
 		"scriptjx2\\tong_vn\\tong_header.lua", "scriptjx2\\lib\\file.lua",
 		"scriptjx2\\lib\\log.lua", "scriptjx2\\lib\\string.lua",
 		"scriptjx2\\lib\\basic.lua", "scriptjx2\\lib\\common.lua",
@@ -2346,6 +2393,7 @@ int LuaIncludeLib(Lua_State* L)
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
+		"scriptjx2\\lib\\noop.lua",
 	};
 	if (Lua_GetTopIndex(L) <= 0 || !Lua_IsString(L, 1))
 	{
@@ -2359,7 +2407,7 @@ int LuaIncludeLib(Lua_State* L)
 	// tien (citywar head.lua E5). Cam co global __INCLIB_<MOD> TRUOC khi dofile
 	// de chan ca tu-de-quy lan nap lai. Dong thoi sua tran vong lap 14 -> 20
 	// (6 module moi SETTING/BATTLE/RELAYLADDER/TITLE/LEAGUE/PARTNER bi cam).
-	for (int k = 0; k < 20; k++)
+	for (int k = 0; k < 21; k++)
 	{
 		if (strcmp(pszName, szMod[k]) != 0)
 			continue;
@@ -10365,12 +10413,65 @@ int LuaInitMission(Lua_State* L)
 		g_MissionTabFile.GetString(nMissionId + 1, 2, "", szScript, MAX_PATH);
 		if (szScript[0])
 		{
-			pMission->ExecuteScript(szScript, "BeginMission", 0);
+			// [WLLS 20/08] script leaguematch (Linux) dat ten ham "InitMission",
+			// mission cu cua du an dat "BeginMission" -> do ham co that trong
+			// state dich roi goi dung ten; khong co InitMission thi giu nep cu.
+			char szFun[16];
+			strcpy(szFun, "BeginMission");
+			{
+				char szLowMs[MAX_PATH];
+				g_StrCpyLen(szLowMs, szScript, MAX_PATH);
+				g_StrLower(szLowMs);
+				KLuaScript* pMs = (KLuaScript*)g_GetScript(szLowMs);
+				if (pMs && pMs->m_LuaState)
+				{
+					int nMsTop = Lua_GetTopIndex(pMs->m_LuaState);
+					Lua_GetGlobal(pMs->m_LuaState, "InitMission");
+					if (lua_isfunction(pMs->m_LuaState, Lua_GetTopIndex(pMs->m_LuaState)))
+						strcpy(szFun, "InitMission");
+					lua_settop(pMs->m_LuaState, nMsTop);
+				}
+			}
+			pMission->ExecuteScript(szScript, szFun, 0);
 		}
 	}
 
 	return 0;
 }
+
+// [WLLS 20/08] Khoi phuc co che NewWorldScript cua MapList.ini (Linux GS co san,
+// engine Windows bo quen): KNpc::ChangeWorld ban "OnLeaveWorld" cho map cu va
+// "OnNewWorld" cho map moi; KPlayerSet::PrepareRemove ban "OnLeaveWorld" luc thoat.
+// Script dich chay trong STATE RIENG cua file (giong moi mission script), voi
+// SubWorld/PlayerIndex duoc bom truoc. Thieu script trong bo nap -> bo qua IM LANG
+// (495 muc MapList tro newworldscript.lua von khong ton tai - khong duoc spam log).
+#ifdef _SERVER
+void KSubWorld_FireMapScript(int nSubWorldIndex, const char* szFun, int nPlayerIndex)
+{
+	if (nSubWorldIndex < 0 || nSubWorldIndex >= MAX_SUBWORLD)
+		return;
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+		return;
+	const char* szScript = SubWorld[nSubWorldIndex].m_szNewWorldScript;
+	if (!szScript[0])
+		return;
+	char szLow[MAX_PATH];
+	g_StrCpyLen(szLow, (char*)szScript, MAX_PATH);
+	g_StrLower(szLow);
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+	if (!pScript)
+		return;
+	Lua_PushNumber(pScript->m_LuaState, nSubWorldIndex);
+	pScript->SetGlobalName(SCRIPT_SUBWORLDINDEX);
+	Lua_PushNumber(pScript->m_LuaState, nPlayerIndex);
+	pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
+	int nTopIndex = 0;
+	pScript->SafeCallBegin(&nTopIndex);
+	pScript->CallFunction((char*)szFun, 0, (char*)"s",
+		(void*)SubWorld[nSubWorldIndex].m_szNewWorldParam);
+	pScript->SafeCallEnd(nTopIndex);
+}
+#endif // _SERVER (KSubWorld_FireMapScript)
 
 int LuaRunMission(Lua_State* L)
 {
@@ -10390,15 +10491,28 @@ int LuaRunMission(Lua_State* L)
 	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
 	if (pMission)
 	{
+		// [WLLS 20/08] FIX 2 loi lam sap GS ngay tran dau (BANGIAO_LIENDAU 4.1):
+		// 1) duong dan sai chinh ta "misions\misionNN.lua" (bo qua missions.txt);
+		// 2) g_GetScript tra NULL duoc ma van deref m_LuaState. Nay tra cuu bang
+		// missions.txt dung nhu OpenMission/CloseMission + kiem NULL.
 		char szScript[MAX_PATH];
-		sprintf(szScript, "\\script\\misions\\mision%02d.lua", nMissionId);
+		szScript[0] = 0;
+		g_MissionTabFile.GetString(nMissionId + 1, 2, "", szScript, MAX_PATH);
 		if (szScript[0])
 		{
+			g_StrLower(szScript);
 			KLuaScript* pScript = (KLuaScript*)g_GetScript(szScript);
-			Lua_PushNumber(pScript->m_LuaState, nSubWorldIndex);
-			pScript->SetGlobalName(SCRIPT_SUBWORLDINDEX);
-			pScript->CallFunction("RunMission", 0, "d", nMissionId);
-			//pMission->ExecuteScript(szScript,g_FileName2Id(szScript), "RunMission", 0);
+			if (pScript)
+			{
+				Lua_PushNumber(pScript->m_LuaState, nSubWorldIndex);
+				pScript->SetGlobalName(SCRIPT_SUBWORLDINDEX);
+				int nTopIndex = 0;
+				pScript->SafeCallBegin(&nTopIndex);
+				pScript->CallFunction("RunMission", 0, "d", nMissionId);
+				pScript->SafeCallEnd(nTopIndex);
+			}
+			else
+				g_DebugLog("[Mission] RunMission(%d): script chua nap [%.100s]", nMissionId, szScript);
 		}
 	}
 
@@ -12900,6 +13014,310 @@ int LuaJX2_ChangeNpcFeatureStub(Lua_State* L)
 }
 
 
+// ============================================================================
+// == WLLS / leaguematch port 20/08/2026 - cac ham Lua bo sung ================
+// == (xem D:\GAMEDEVNEW\THICONG_LIENDAU_PORT.md)              ================
+// ============================================================================
+#ifdef _SERVER
+extern int LuaCloseGlbMission(Lua_State* L);
+extern int LuaWllsTaskCentreStub(Lua_State* L);
+extern int LuaWllsRandom(Lua_State* L);
+extern int LuaNumber2Int(Lua_State* L);
+extern int LuaTime2Tm(Lua_State* L);
+extern int LuaGetGateWayClientID(Lua_State* L);
+extern int LuaWllsIsCharged(Lua_State* L);
+extern int LuaWllsLoadScript(Lua_State* L);
+extern int LuaJX2_SyncTaskValueMore(Lua_State* L);
+
+// AskClientForString(szCbFun, szDefault, nMin, nMax, szPrompt):
+// mo hop nhap chuoi phia client (S2C_INPUT_BOX nhu OpenGetString), khi client
+// tra loi thi goi szCbFun(chuoi) trong STATE cua script NPC dang thoai
+// (KProtocolProcess.cpp nhanh m_bWllsAskStrArg). nMin/nMax: client goc tu gioi
+// han; phia ta chuoi da bi chan 63 byte boi szStringInput, script tu strsub.
+int LuaWllsAskClientForString(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 5)
+		return 0;
+	const char* szAction = Lua_ValueToString(L, 1);
+	const char* szPrompt = Lua_ValueToString(L, 5);
+	if (!szAction || !szAction[0])
+		return 0;
+	Player[nPlayerIndex].m_dwStrBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, szAction, sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	Player[nPlayerIndex].m_bWllsAskStrArg = 1;
+	S2C_INPUT_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_inputbox;
+	NetCommand.nType = 1;
+	strncpy(NetCommand.Value, szPrompt ? szPrompt : "", sizeof(NetCommand.Value) - 1);
+	NetCommand.Value[sizeof(NetCommand.Value) - 1] = 0;
+	strncpy(NetCommand.Value1, szAction, sizeof(NetCommand.Value1) - 1);
+	NetCommand.Value1[sizeof(NetCommand.Value1) - 1] = 0;
+	if (g_pServer && Player[nPlayerIndex].m_nNetConnectIdx != -1)
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_INPUT_BOX));
+	return 0;
+}
+
+// GetRespect/AddRespect/SetRespect - uy danh = task 39 (TASKVALUE_STATTASK_RESPECT,
+// KBuySell da biet tinh gia bang uy danh - moneyunit_respect).
+int LuaWllsGetRespect(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	Lua_PushNumber(L, nPlayerIndex > 0 ?
+		(int)Player[nPlayerIndex].m_cTask.GetSaveVal(TASKVALUE_STATTASK_RESPECT) : 0);
+	return 1;
+}
+int LuaWllsAddRespect(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+		Player[nPlayerIndex].m_cTask.SetSaveVal(TASKVALUE_STATTASK_RESPECT,
+			Player[nPlayerIndex].m_cTask.GetSaveVal(TASKVALUE_STATTASK_RESPECT) + (int)Lua_ValueToNumber(L, 1));
+	return 0;
+}
+int LuaWllsSetRespect(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+		Player[nPlayerIndex].m_cTask.SetSaveVal(TASKVALUE_STATTASK_RESPECT, (int)Lua_ValueToNumber(L, 1));
+	return 0;
+}
+
+// GetSkillState(nSkillId) -> level trang thai / -1
+int LuaWllsGetSkillState(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRet = -1;
+	if (nPlayerIndex > 0 && Player[nPlayerIndex].m_nIndex > 0 && Lua_IsNumber(L, 1))
+		nRet = Npc[Player[nPlayerIndex].m_nIndex].GetStateSkillLevel((int)Lua_ValueToNumber(L, 1));
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// GetLastAddFaction() -> TEN mon phai hien tai (schedule.lua:136 in danh sach doi thu)
+int LuaWllsGetLastAddFaction(Lua_State* L)
+{
+	static char* s_szFaction[11] = {
+		(char*)"ThiÕu L©m",
+		(char*)"Thiªn V­¬ng",
+		(char*)"§­êng M«n",
+		(char*)"Ngò §éc",
+		(char*)"Nga Mi",
+		(char*)"Thóy Yªn",
+		(char*)"C¸i Bang",
+		(char*)"Thiªn NhÉn",
+		(char*)"Vâ §ang",
+		(char*)"C«n L«n",
+		(char*)"Hoa S¬n"
+	};
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nNo = -1;
+	if (nPlayerIndex > 0)
+		nNo = Player[nPlayerIndex].GetFactionNo();
+	if (nNo >= 0 && nNo < 11)
+		Lua_PushString(L, s_szFaction[nNo]);
+	else
+		Lua_PushString(L, (char*)"");
+	return 1;
+}
+
+// GetBoxLockState() -> 1 khi ruong dang KHOA (chua mo khoa phien nay), 0 = tu do
+int LuaWllsGetBoxLockState(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nLock = 0;
+	if (nPlayerIndex > 0 && !Player[nPlayerIndex].m_CUnlocked)
+		nLock = 1;
+	Lua_PushNumber(L, nLock);
+	return 1;
+}
+
+// CheckGlobalTradeFlag() -> cong tac giao dich toan cum cua relay goc; ta khong
+// co cong tac nay -> luon cho phep (1) nhu mac dinh may chu goc.
+int LuaWllsCheckGlobalTradeFlag(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ST_CheckTextFilter(sz) -> 1 = ten sach, 0 = pham tu cam. Du an chua noi bo
+// loc tu (FilterText chi dung phia client) -> chap nhan moi ten nhu hien trang.
+int LuaWllsSTCheckTextFilter(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// safeshow(sz) - relay goc escape chuoi de hien thi trong hop thoai; ten nhan
+// vat/doi cua ta khong chua ky tu pha hop thoai -> tra nguyen van.
+int LuaWllsSafeshow(Lua_State* L)
+{
+	if (Lua_IsString(L, 1))
+		Lua_PushString(L, (char*)Lua_ValueToString(L, 1));
+	else
+		Lua_PushString(L, (char*)"");
+	return 1;
+}
+
+// CalcEquiproomItemCount(g,d,p,l) - dem trong HANH TRANG (pos_equiproom);
+// CalcItemCount(nRoom,g,d,p,l)    - dem trong hanh trang MO RONG (pos_equiproomex).
+// (wlls_en_check quet danh sach do cam mang vao dau truong - head.lua:838-882.)
+int LuaWllsCalcEquiproomItemCount(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nCount = 0;
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 3)
+	{
+		int g = (int)Lua_ValueToNumber(L, 1);
+		int d = (int)Lua_ValueToNumber(L, 2);
+		int pt = (int)Lua_ValueToNumber(L, 3);
+		int lv = Lua_GetTopIndex(L) >= 4 ? (int)Lua_ValueToNumber(L, 4) : -1;
+		nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproom);
+	}
+	Lua_PushNumber(L, nCount);
+	return 1;
+}
+int LuaWllsCalcItemCount(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nCount = 0;
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 4)
+	{
+		int g = (int)Lua_ValueToNumber(L, 2);
+		int d = (int)Lua_ValueToNumber(L, 3);
+		int pt = (int)Lua_ValueToNumber(L, 4);
+		int lv = Lua_GetTopIndex(L) >= 5 ? (int)Lua_ValueToNumber(L, 5) : -1;
+		nCount = Player[nPlayerIndex].m_ItemList.CountCommonItem(0, g, d, pt, lv, -1, pos_equiproomex);
+	}
+	Lua_PushNumber(L, nCount);
+	return 1;
+}
+
+// ITEM_GetImmediaItemIndex(i 1..3) -> item index trong o dung-ngay thu i / 0
+int LuaWllsGetImmediaItemIndex(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRet = 0;
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		int i = (int)Lua_ValueToNumber(L, 1);
+		if (i >= 1 && i <= 3)
+			nRet = Player[nPlayerIndex].m_ItemList.m_Room[room_immediacy].FindItem(i - 1, 0);
+	}
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// CountFreeRoomByWH(w,h,nNeed) -> so cho WxH dat duoc (call site chi so sanh < 1
+// nen tra 1/0 theo FindRoom la du trung thanh; item\hongyinbaoxiang.lua:11).
+int LuaWllsCountFreeRoomByWH(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRet = 0;
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 2)
+	{
+		int w = (int)Lua_ValueToNumber(L, 1);
+		int h = (int)Lua_ValueToNumber(L, 2);
+		POINT pt;
+		if (Player[nPlayerIndex].m_ItemList.m_Room[room_equipment].FindRoom(w, h, &pt))
+			nRet = 1;
+		else if ((Player[nPlayerIndex].m_dwEquipExpandTime - KSG_GetCurSec() > 0) &&
+			Player[nPlayerIndex].m_ItemList.m_Room[room_equipmentex].FindRoom(w, h, &pt))
+			nRet = 1;
+	}
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// DisabledStall / ForbitTrade / ForbitStamina (wlls_set_pl_state / clear)
+int LuaWllsDisabledStall(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Player[nPlayerIndex].m_bWllsDisableStall = (Lua_IsNumber(L, 1) && (int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+	return 0;
+}
+int LuaWllsForbitTrade(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Player[nPlayerIndex].m_bWllsForbidTrade = (Lua_IsNumber(L, 1) && (int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+	return 0;
+}
+int LuaWllsForbitStamina(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Player[nPlayerIndex].m_bWllsForbidStamina = (Lua_IsNumber(L, 1) && (int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+	return 0;
+}
+
+// ST_*DamageCounter - bo dem sat thuong HUNG CHIU (hook o KNpc.cpp truoc khoi
+// chuyen-noi-luc; xem THICONG muc C5). Start reset ve 0, Stop giu gia tri.
+int LuaWllsSTStartDamageCounter(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+	{
+		Player[nPlayerIndex].m_nWllsDmgCounter = 0;
+		Player[nPlayerIndex].m_bWllsDmgCounterOn = 1;
+	}
+	return 0;
+}
+int LuaWllsSTStopDamageCounter(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Player[nPlayerIndex].m_bWllsDmgCounterOn = 0;
+	return 0;
+}
+int LuaWllsSTGetDamageCounter(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	Lua_PushNumber(L, nPlayerIndex > 0 ? Player[nPlayerIndex].m_nWllsDmgCounter : 0);
+	return 1;
+}
+int LuaWllsSTIncreaseDamageCounter(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+		Player[nPlayerIndex].m_nWllsDmgCounter += (int)Lua_ValueToNumber(L, 1);
+	return 0;
+}
+
+// GetStringTask/SetStringTask - o chuoi PHIEN (khong luu DB): helper.lua chi
+// dung id 5 lam con tro trang duyet danh sach; relog mat con tro = vo hai.
+int LuaWllsGetStringTask(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		int nId = (int)Lua_ValueToNumber(L, 1);
+		if (nId >= 0 && nId < 8)
+		{
+			Lua_PushString(L, Player[nPlayerIndex].m_szWllsStrTask[nId]);
+			return 1;
+		}
+	}
+	Lua_PushString(L, (char*)"");
+	return 1;
+}
+int LuaWllsSetStringTask(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1) && Lua_IsString(L, 2))
+	{
+		int nId = (int)Lua_ValueToNumber(L, 1);
+		if (nId >= 0 && nId < 8)
+		{
+			strncpy(Player[nPlayerIndex].m_szWllsStrTask[nId], Lua_ValueToString(L, 2), 63);
+			Player[nPlayerIndex].m_szWllsStrTask[nId][63] = 0;
+		}
+	}
+	return 0;
+}
+#endif // _SERVER (khoi ham WLLS)
+
 TLua_Funcs GameScriptFuns[] =
 {
 	{"Say", LuaSelectUI},
@@ -13512,6 +13930,47 @@ TLua_Funcs GameScriptFuns[] =
 		{ "WriteStringToFile",	LuaJX2_WriteStringToFile },
 		{ "GlobalExecute",	LuaJX2_GlobalExecute },
 		{ "SyncTaskValue",	LuaJX2_SyncTaskValue },
+#ifdef _SERVER
+		// == WLLS / leaguematch port 20/08/2026 ==
+		{ "SyncTaskValueMore",	LuaJX2_SyncTaskValueMore },
+		{ "GetGblInt",	LuaGetGlbValue },
+		{ "SetGblInt",	LuaSetGlbValue },
+		{ "Random",	LuaWllsRandom },
+		{ "Number2Int",	LuaNumber2Int },
+		{ "Time2Tm",	LuaTime2Tm },
+		{ "TaskName",	LuaWllsTaskCentreStub },
+		{ "TaskTime",	LuaWllsTaskCentreStub },
+		{ "TaskInterval",	LuaWllsTaskCentreStub },
+		{ "TaskCountLimit",	LuaWllsTaskCentreStub },
+		{ "CloseGlbMission",	LuaCloseGlbMission },
+		{ "GetGateWayClientID",	LuaGetGateWayClientID },
+		{ "IsCharged",	LuaWllsIsCharged },
+		{ "LoadScript",	LuaWllsLoadScript },
+		{ "DynamicExecute",	LuaDynamicExecute },
+		{ "AskClientForString",	LuaWllsAskClientForString },
+		{ "GetRespect",	LuaWllsGetRespect },
+		{ "AddRespect",	LuaWllsAddRespect },
+		{ "SetRespect",	LuaWllsSetRespect },
+		{ "GetSkillState",	LuaWllsGetSkillState },
+		{ "GetLastAddFaction",	LuaWllsGetLastAddFaction },
+		{ "GetBoxLockState",	LuaWllsGetBoxLockState },
+		{ "CheckGlobalTradeFlag",	LuaWllsCheckGlobalTradeFlag },
+		{ "ST_CheckTextFilter",	LuaWllsSTCheckTextFilter },
+		{ "safeshow",	LuaWllsSafeshow },
+		{ "CalcItemCount",	LuaWllsCalcItemCount },
+		{ "CalcEquiproomItemCount",	LuaWllsCalcEquiproomItemCount },
+		{ "ITEM_GetImmediaItemIndex",	LuaWllsGetImmediaItemIndex },
+		{ "CountFreeRoomByWH",	LuaWllsCountFreeRoomByWH },
+		{ "DisabledStall",	LuaWllsDisabledStall },
+		{ "ForbitTrade",	LuaWllsForbitTrade },
+		{ "ForbitStamina",	LuaWllsForbitStamina },
+		{ "ST_StartDamageCounter",	LuaWllsSTStartDamageCounter },
+		{ "ST_StopDamageCounter",	LuaWllsSTStopDamageCounter },
+		{ "ST_GetDamageCounter",	LuaWllsSTGetDamageCounter },
+		{ "ST_IncreaseDamageCounter",	LuaWllsSTIncreaseDamageCounter },
+		{ "GetStringTask",	LuaWllsGetStringTask },
+		{ "SetStringTask",	LuaWllsSetStringTask },
+#endif
 		{ "AskClientForNumber",	LuaJX2_AskClientForNumber },
 		{ "GetTong",	LuaJX2_GetTong },
 		{ "GetCurrentTong",	LuaJX2_GetTong },

@@ -754,7 +754,10 @@ int LuaLGM_ApplyAddMember(Lua_State* L)
 	return 1;
 }
 
-// LUON 6 doi (doi 6 luon 0 - moi call site; nhan roi bo qua)
+// LUON 6 doi: (nType, szName, szMember, cbS, cbF, removelg).
+// [WLLS 20/08] doi 6 removelg TUNG bi bo qua: leaguematch\league.lua:104,128,132
+// dat removelg=1 khi thanh vien CUOI roi doi -> engine phai TU XOA league,
+// khong thi league rong ton tai vinh vien trong jx2league.txt (bay phu BANGIAO).
 int LuaLGM_ApplyRemoveMember(Lua_State* L)
 {
 	sLeagueLoad();
@@ -779,6 +782,15 @@ int LuaLGM_ApplyRemoveMember(Lua_State* L)
 					nOk = 1;
 					break;
 				}
+			}
+			if (nOk && pLg->vMembers.empty() &&
+				Lua_GetTopIndex(L) >= 6 && Lua_IsNumber(L, 6) &&
+				(int)Lua_ValueToNumber(L, 6) != 0)
+			{
+				s_LeagueByLid.erase(pLg->nLid);
+				delete pLg;
+				pLg = NULL;
+				sLeagueSave();
 			}
 		}
 	}
@@ -987,6 +999,191 @@ int LuaStopGlbMSTimer(Lua_State* L)
 			}
 		}
 	}
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ============================================================================
+// == WLLS / leaguematch port 20/08/2026 - xem THICONG_LIENDAU_PORT.md ========
+// ============================================================================
+
+// CloseGlbMission(id) - doi xung OpenGlbMission: chay "EndMission" cua script
+// missions.txt[id]. glbmission\mission.lua:14 EndMission tu Stop 2 GlbTimer.
+int LuaCloseGlbMission(Lua_State* L)
+{
+	if (!Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nMissionId = (int)Lua_ValueToNumber(L, 1);
+	char szScript[MAX_PATH];
+	szScript[0] = 0;
+	g_MissionTabFile.GetString(nMissionId + 1, 2, "", szScript, MAX_PATH);
+	int nOk = 0;
+	if (szScript[0])
+	{
+		for (char* p = szScript; *p; p++)
+		{
+			if (*p >= 'A' && *p <= 'Z')
+				*p += 'a' - 'A';
+		}
+		KLuaScript* pScript = (KLuaScript*)g_GetScript(szScript);
+		if (pScript)
+			nOk = pScript->CallFunction((char*)"EndMission", 0, (char*)"") ? 1 : 0;
+		else
+			g_DebugLog((LPSTR)"KJx2League: CloseGlbMission(%d) script chua nap [%.60s]", nMissionId, szScript);
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// ---- Hang doi thuc thi HOAN 1 TICK -----------------------------------------
+// Goc: GlobalExecute chay tren relay -> goi tin toi GS o tick sau. Gop 1 GS thi
+// do tre mang bien mat -> NewWorld giua hop thoai NPC (de quy BANGIAO 4.3).
+// Ta mo phong do tre: "dw <stmt>" xep hang, tick sau chay <stmt> trong state
+// \script\gmscript.lua (Linux gmscript.lua:7 include wlls_gmscript.lua - dung
+// diem ha canh goc); "dwf <path> <stmt>" chay trong state <path>.
+struct KJx2DeferredItem
+{
+	char		szScript[MAX_PATH];
+	std::string	sCode;
+};
+static std::vector<KJx2DeferredItem> s_DeferredExec;
+
+void KJx2DeferredExec_Push(const char* szScriptPath, const char* szCode)
+{
+	if (!szCode || !szCode[0])
+		return;
+	KJx2DeferredItem it;
+	sStrCpy(it.szScript, (szScriptPath && szScriptPath[0]) ? szScriptPath : "\\script\\gmscript.lua",
+		sizeof(it.szScript));
+	for (char* p = it.szScript; *p; p++)
+	{
+		if (*p >= 'A' && *p <= 'Z')
+			*p += 'a' - 'A';
+		else if (*p == '/')
+			*p = '\\';
+	}
+	it.sCode = szCode;
+	s_DeferredExec.push_back(it);
+}
+
+void KJx2DeferredExec_Breathe()
+{
+	if (s_DeferredExec.empty())
+		return;
+	std::vector<KJx2DeferredItem> v;
+	v.swap(s_DeferredExec);	// handler co the push tiep -> chay o tick sau nua
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		KLuaScript* pScript = (KLuaScript*)g_GetScript(v[i].szScript);
+		if (!pScript)
+		{
+			g_DebugLog((LPSTR)"KJx2League: deferred exec - script chua nap [%.100s]", v[i].szScript);
+			continue;
+		}
+		int nTop = 0;
+		pScript->SafeCallBegin(&nTop);
+		if (lua_dostring(pScript->m_LuaState, (char*)v[i].sCode.c_str()) != 0)
+			g_DebugLog((LPSTR)"KJx2League: deferred exec LOI [%.200s]", v[i].sCode.c_str());
+		pScript->SafeCallEnd(nTop);
+	}
+}
+
+// ---- Stub task-centre relay (leaguematch\task.lua goi trong TaskShedule) ----
+// Tren relay chung cau hinh lich chay; GS driver (gsdriver.lua) tu bam quy 15'
+// theo dong ho tuong nen 4 ham nay chi can nhan roi bo qua.
+int LuaWllsTaskCentreStub(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// Random() / Random(n) -> [0, n-1] / Random(a, b) -> [a, b]
+// (C runtime cua relay goc: joinmatch.lua:95 "Random(nAllFree) + 1" roi tru dan
+//  tung phan tu -> can 0-based de khong lot nhanh loi "khong chon duoc".)
+int LuaWllsRandom(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	int nVal = 0;
+	if (nTop >= 2 && Lua_IsNumber(L, 1) && Lua_IsNumber(L, 2))
+	{
+		int a = (int)Lua_ValueToNumber(L, 1);
+		int b = (int)Lua_ValueToNumber(L, 2);
+		if (b < a) { int t = a; a = b; b = t; }
+		nVal = GetRandomNumber(a, b);
+	}
+	else if (nTop >= 1 && Lua_IsNumber(L, 1))
+	{
+		int n = (int)Lua_ValueToNumber(L, 1);
+		nVal = (n <= 1) ? 0 : GetRandomNumber(0, n - 1);
+	}
+	else
+		nVal = GetRandomNumber(0, 32767);
+	Lua_PushNumber(L, nVal);
+	return 1;
+}
+
+// Number2Int(x) - ve int 32-bit (String2Id tra DWORD duoi dang double;
+// head.lua:485 nNameID = Number2Int(String2Id(ten)) roi so sanh bang).
+int LuaNumber2Int(Lua_State* L)
+{
+	double d = Lua_IsNumber(L, 1) ? Lua_ValueToNumber(L, 1) : 0.0;
+	int n = (int)(unsigned int)(__int64)d;
+	Lua_PushNumber(L, n);
+	return 1;
+}
+
+// Time2Tm(nTime) -> bang {[1]=nam,[2]=thang,[3]=ngay,[4]=gio,[5]=phut,[6]=giay,
+// [7]=thu trong tuan 0-6,[8]=ngay trong nam 1-366} (lien dau chi dung [4],[5]).
+int LuaTime2Tm(Lua_State* L)
+{
+	time_t t = Lua_IsNumber(L, 1) ? (time_t)Lua_ValueToNumber(L, 1) : time(NULL);
+	struct tm* pTm = localtime(&t);
+	if (!pTm)
+		return 0;
+	lua_newtable(L);
+	int nVals[8];
+	nVals[0] = pTm->tm_year + 1900;
+	nVals[1] = pTm->tm_mon + 1;
+	nVals[2] = pTm->tm_mday;
+	nVals[3] = pTm->tm_hour;
+	nVals[4] = pTm->tm_min;
+	nVals[5] = pTm->tm_sec;
+	nVals[6] = pTm->tm_wday;
+	nVals[7] = pTm->tm_yday + 1;
+	for (int i = 0; i < 8; i++)
+	{
+		Lua_PushNumber(L, i + 1);
+		Lua_PushNumber(L, nVals[i]);
+		Lua_SetTable(L, -3);
+	}
+	return 1;
+}
+
+// GetGateWayClientID() - relay goc: id vung/gateway, chi dung trong log xep hang
+// (task.lua:83 "Zone:..."). 1 GS -> tra 1.
+int LuaGetGateWayClientID(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// IsCharged() - trang thai "da tra phi" cua tai khoan (item\*.lua kiem == 1
+// truoc khi cho dung Chan Kinh/Huyet Chien Lenh Ky). May chu ta khong thu phi
+// -> moi tai khoan coi nhu da tra phi (giu nguyen tinh nang, khong chan ai).
+int LuaWllsIsCharged(Lua_State* L)
+{
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// LoadScript(path) - GM nap lai script (wlls_reload). Map vao ReLoadScript.
+int LuaWllsLoadScript(Lua_State* L)
+{
+	if (Lua_IsString(L, 1))
+		ReLoadScript((char*)Lua_ValueToString(L, 1));
 	Lua_PushNumber(L, 1);
 	return 1;
 }

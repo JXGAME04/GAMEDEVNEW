@@ -1729,6 +1729,14 @@ BOOL KSubWorld::LoadMap(int nId)
 	sprintf(szKeyName, "%d_NpcSeriesEarth", nId);
 	IniFile.GetInteger("List", szKeyName, 0, &m_NpcSeriesEarth);
 
+	// [WLLS 20/08] khoi phuc 2 khoa NewWorldScript/NewWorldParam (xem KSubWorld.h)
+	m_szNewWorldScript[0] = 0;
+	m_szNewWorldParam[0] = 0;
+	sprintf(szKeyName, "%d_NewWorldScript", nId);
+	IniFile.GetString("List", szKeyName, "", m_szNewWorldScript, sizeof(m_szNewWorldScript));
+	sprintf(szKeyName, "%d_NewWorldParam", nId);
+	IniFile.GetString("List", szKeyName, "", m_szNewWorldParam, sizeof(m_szNewWorldParam));
+
 	g_SetFilePath("\\maps");
 	sprintf(szFileName, "%s.wor", szPathName);//edit by phong kieu load file wor
 	if (!IniFile.Load(szFileName))

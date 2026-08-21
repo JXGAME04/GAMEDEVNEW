@@ -24,6 +24,8 @@
 typedef KMissionArray <KMission , MAX_TIMER_PERMISSION> KSubWorldMissionArray;
 typedef KMissionArray <KMission , MAX_GLOBAL_MISSIONCOUNT> KGlobalMissionArray;
 extern KGlobalMissionArray g_GlobalMissionArray;
+// [WLLS 20/08] ban OnNewWorld/OnLeaveWorld theo NewWorldScript (impl ScriptFuns.cpp)
+void KSubWorld_FireMapScript(int nSubWorldIndex, const char* szFun, int nPlayerIndex);
 #endif
 
 // ==== Luoi tim duong (A* theo BLOCK) - DUNG CHUNG cho ca client lan server ====
@@ -111,6 +113,10 @@ public:
 
 #ifdef _SERVER
 	KWeatherMgr *m_pWeatherMgr;
+	// [WLLS 20/08] khoi phuc 2 khoa NewWorldScript/NewWorldParam cua MapList.ini
+	// (Linux GS co co che nay; engine Windows truoc gio bo qua chung)
+	char		m_szNewWorldScript[128];
+	char		m_szNewWorldParam[128];
 #endif
 #ifndef _SERVER
 	HANDLE  m_hLoadPathGrid;

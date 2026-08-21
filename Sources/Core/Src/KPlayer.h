@@ -469,6 +469,16 @@ public:
 	DWORD			m_dwGiveBoxId;
 	DWORD			m_dwTimeBoxId;
 	DWORD			m_dwStrBoxId;
+#ifdef _SERVER
+	// [WLLS 20/08] lien dau leaguematch (THICONG_LIENDAU_PORT.md)
+	BYTE			m_bWllsAskStrArg;		// AskClientForString: cb nhan chuoi nhap lam doi so 1
+	BYTE			m_bWllsDisableStall;	// DisabledStall(1): cam bay ban
+	BYTE			m_bWllsForbidTrade;		// ForbitTrade(1): cam giao dich
+	BYTE			m_bWllsForbidStamina;	// ForbitStamina(1): dong bang the luc
+	BYTE			m_bWllsDmgCounterOn;	// ST_StartDamageCounter dang dem
+	int				m_nWllsDmgCounter;		// tong mat mau ganh chiu (truoc hap thu noi luc)
+	char			m_szWllsStrTask[8][64];	// GetStringTask/SetStringTask (phien lam viec, KHONG luu DB)
+#endif
 	DWORD			m_dwNumberBoxId;
 	DWORD			m_dwLogoutScriptID;
 	DWORD			m_dwRewardId;

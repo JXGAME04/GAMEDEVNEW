@@ -64,6 +64,18 @@ int LuaStartGlbMSTimer(Lua_State* L);      // (nMissionId, nTimerId, nIntervalFr
 int LuaStopGlbMSTimer(Lua_State* L);       // (nMissionId, nTimerId)
 void KJx2GlbMission_Breathe();             // goi tu CoreServerShell::Breathe moi tick (tu gioi han theo thoi gian)
 
+// ---- WLLS / leaguematch port 20/08/2026 (THICONG_LIENDAU_PORT.md) ----
+int LuaCloseGlbMission(Lua_State* L);      // (nMissionId) -> goi EndMission() cua script missions.txt[id]
+int LuaWllsTaskCentreStub(Lua_State* L);   // TaskName/TaskTime/TaskInterval/TaskCountLimit - no-op tra 1
+int LuaWllsRandom(Lua_State* L);           // Random()/[0,n-1]/[a,b] - RNG kieu relay goc
+int LuaNumber2Int(Lua_State* L);           // Number2Int(x) -> int32
+int LuaTime2Tm(Lua_State* L);              // Time2Tm(t) -> bang tm ([4]=gio, [5]=phut)
+int LuaGetGateWayClientID(Lua_State* L);   // -> 1 (id vung, chi dung trong log)
+int LuaWllsIsCharged(Lua_State* L);        // -> 1 (khong thu phi)
+int LuaWllsLoadScript(Lua_State* L);       // LoadScript(path) -> ReLoadScript
+void KJx2DeferredExec_Push(const char* szScriptPath, const char* szCode); // xep hang chay tick sau
+void KJx2DeferredExec_Breathe();           // goi canh KJx2GlbMission_Breathe
+
 // helper C cho cac module engine khac (KJx2CityWar: IsSigningUp/NumOfSignUpTongs/
 // GetSignUpTongName doc league 508) - cung store voi cac ham Lua o tren
 int         KJx2League_GetLeagueTaskC(int nType, const char* szName, int nTaskId);  // 0 khi khong co

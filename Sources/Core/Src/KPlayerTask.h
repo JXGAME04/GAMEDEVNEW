@@ -10,8 +10,13 @@
 #ifndef KPLAYERTASK_H
 #define KPLAYERTASK_H
 
-#define		MAX_TASK				3000
-#define		MAX_TEMP_TASK	 3000
+// [WLLS 20/08] 3000 -> 4200: leaguematch dung task 4125 (WLLS_TASKID_SERIES_WIN,
+// head.lua:79) - voi tran 3000 SetTask(4125) bi nuot IM LANG (KPlayerTask.cpp:79).
+// Dinh dang luu la (id, value) THUA - KHONG phu thuoc MAX_TASK (KPlayerDBFuns.cpp:
+// 1126-1140 chi ghi o khac 0; nap co guard id >= MAX_TASK) nen save cu doc binh
+// thuong. Cung go ke tinh trang task 3179 cua citywar (KJx2CityWar.h:57).
+#define		MAX_TASK				4200
+#define		MAX_TEMP_TASK	 4200
 
 #ifdef _SERVER
 #define TASKGLOBALVALUENUM 256
