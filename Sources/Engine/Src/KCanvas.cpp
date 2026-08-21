@@ -1344,17 +1344,59 @@ void KCanvas::ClearAlpha(int nX, int nY, int nWidth, int nHeight, int nColor,int
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+// ===== Probe: gia thuc cua mot cap Lock/Unlock surface =====
+// Moi hinh nguyen thuy (sprite, tung ky tu chu, tung diem duong ke) deu tu mo-dong
+// khoa surface RIENG => uoc 1900-4000 cap moi khung. Nhung GIA moi cap thi CHUA AI DO:
+// neu ~0,1us thi huong "gop khoa ca khung" khong dang lam; neu ~1us thi day la khoan
+// lon nhat con lai. Chi dem khi co duoc bat tu client (PaintLog=1).
+static int			g_nCanvasLockProbe = 0;
+static unsigned int	g_nCanvasLockCount = 0;
+static __int64		g_nCanvasLockTicks = 0;
+
+void g_SetCanvasLockProbe(int nOn)
+{
+	g_nCanvasLockProbe = nOn;
+}
+
+void g_GetCanvasLockStats(unsigned int* pnCount, unsigned int* pnMicroSec, int bReset)
+{
+	if (pnCount)
+		*pnCount = g_nCanvasLockCount;
+	if (pnMicroSec)
+	{
+		LARGE_INTEGER	freq;
+		*pnMicroSec = 0;
+		if (QueryPerformanceFrequency(&freq) && freq.QuadPart > 0)
+			*pnMicroSec = (unsigned int)(g_nCanvasLockTicks * 1000000 / freq.QuadPart);
+	}
+	if (bReset)
+	{
+		g_nCanvasLockCount = 0;
+		g_nCanvasLockTicks = 0;
+	}
+}
+
 void* KCanvas::LockCanvas(int& nPitch)
 {
 	void* pBuffer = NULL;
 	if (m_pSurface)
 	{
+		LARGE_INTEGER	qpcT0;
+		if (g_nCanvasLockProbe)
+			QueryPerformanceCounter(&qpcT0);
 		DDSURFACEDESC	desc;
 		desc.dwSize = sizeof(desc);
 		if (m_pSurface->Lock(NULL, &desc, DDLOCK_WAIT, NULL) == DD_OK)
 		{
 			pBuffer = desc.lpSurface;
 			nPitch = desc.lPitch;
+		}
+		if (g_nCanvasLockProbe)
+		{
+			LARGE_INTEGER	qpcT1;
+			QueryPerformanceCounter(&qpcT1);
+			g_nCanvasLockTicks += (qpcT1.QuadPart - qpcT0.QuadPart);
+			g_nCanvasLockCount++;
 		}
 	}
 	return pBuffer;
@@ -1363,5 +1405,16 @@ void* KCanvas::LockCanvas(int& nPitch)
 void KCanvas::UnlockCanvas()
 {
 	if (m_pSurface)
+	{
+		LARGE_INTEGER	qpcT0;
+		if (g_nCanvasLockProbe)
+			QueryPerformanceCounter(&qpcT0);
 		m_pSurface->Unlock(NULL);
+		if (g_nCanvasLockProbe)
+		{
+			LARGE_INTEGER	qpcT1;
+			QueryPerformanceCounter(&qpcT1);
+			g_nCanvasLockTicks += (qpcT1.QuadPart - qpcT0.QuadPart);
+		}
+	}
 }

@@ -208,6 +208,11 @@ void KIpotBuildinObj::PaintABuildinObject(RECT* pRepresentArea)
 		}
 		BuildinObjNextFrame(pBio);
 	}
+	// Ghi nguoc id anh da tra duoc. GetImage nhan tham so nay THEO THAM CHIEU va chi
+	// bam lai duong dan khi id == 0 (KImageStore2.cpp:276-280); truoc day id chi song
+	// trong bien cuc bo Image nen moi vat dung san (nha cua, cay coi) bam lai chuoi
+	// duong dan MOI KHUNG VE. PaintAboveHeadObj:929-930 da lam dung viec nay tu truoc.
+	uImage = Image.uImage;
 }
 
 void KIpotLeaf_RemoveAllRtoLeafs(KIpotLeaf* pLeaf, KIpotLeaf* pPermanentRto)

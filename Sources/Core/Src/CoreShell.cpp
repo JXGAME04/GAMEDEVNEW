@@ -2509,6 +2509,11 @@ static POINT	s_InterpTo[MAX_NPC];
 static DWORD	s_InterpNpcID[MAX_NPC];
 static BYTE	s_InterpValid[MAX_NPC];	// 1 = snapshot hop le (ClientOnly npc co m_dwID = 0 van hop le)
 BOOL	g_bPaintInterpFocus = FALSE;
+// Probe gia cap Lock/Unlock surface - dinh nghia trong Engine (KCanvas.cpp).
+// Khai bao thang (dung ENGINE_API tu KWin32.h, KHONG extern "C" de khop ten
+// C++ da mangle) thay vi include KCanvas.h - tranh keo DirectDraw vao Core.
+ENGINE_API void g_SetCanvasLockProbe(int nOn);
+ENGINE_API void g_GetCanvasLockStats(unsigned int* pnCount, unsigned int* pnMicroSec, int bReset);
 int	g_nCorePaintLog = 0;	// mirror of [Client] PaintLog for Core-side probes (set via GOI_PROCFRAME_BREATHE nParam)	// TRUE = POSSHIFT drives the camera each paint frame; the logic tick must not touch the focus
 
 // ==================== AUTO DA TAU (18/08/2026) ====================
@@ -11746,6 +11751,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	{
 		g_bPaintInterpFocus = (uParam != 0);
 		g_nCorePaintLog = nParam;
+		g_SetCanvasLockProbe(nParam > 0 ? 1 : 0);	// do gia cap Lock/Unlock surface
 		if (uParam == 0)
 			break;	// PaintInterp off: snapshot would never be consumed
 		int	nIdx = 0;
@@ -12486,8 +12492,12 @@ static void CoreProbeRollSecond(DWORD dwNow)
 		FILE* pLog = fopen("jx_paint.log", "a");
 		if (pLog)
 		{
-			fprintf(pLog, "[SEC] pid=%u t=%u painted=%d draw=%u/%u ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
-				GetCurrentProcessId(), s_ProbeSec * 1000, s_SecPaint, s_SecPaintSum, s_SecPaintMax, s_SecTick, s_SecTickSum, s_SecTickMax,
+			// Gia thuc cua khau khoa surface: so cap trong giay vua roi va tong thoi gian (us).
+			unsigned int	nLockCnt = 0, nLockUs = 0;
+			g_GetCanvasLockStats(&nLockCnt, &nLockUs, 1);
+			fprintf(pLog, "[SEC] pid=%u t=%u painted=%d draw=%u/%u lock=%u/%uus ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
+				GetCurrentProcessId(), s_ProbeSec * 1000, s_SecPaint, s_SecPaintSum, s_SecPaintMax,
+				nLockCnt, nLockUs, s_SecTick, s_SecTickSum, s_SecTickMax,
 				s_SecNetSum, s_SecNetMax, s_SecWorldSum, s_SecWorldMax, s_SecSceneSum, s_SecSceneMax);
 			fclose(pLog);
 		}

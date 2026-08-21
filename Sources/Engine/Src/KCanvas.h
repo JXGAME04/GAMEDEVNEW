@@ -45,6 +45,10 @@ typedef struct {
 	KDrawNode*	node[10];	// 绘制对象指针
 } KSubCanvas;*/
 //---------------------------------------------------------------------------
+// Probe gia cua mot cap Lock/Unlock surface (chi bat khi PaintLog=1).
+ENGINE_API void g_SetCanvasLockProbe(int nOn);
+ENGINE_API void g_GetCanvasLockStats(unsigned int* pnCount, unsigned int* pnMicroSec, int bReset);
+
 class ENGINE_API KCanvas
 {
 private:
