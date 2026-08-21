@@ -51,6 +51,26 @@ bool CIntercessor::Create( HWND hwndViewer /* NULL */ )
 	m_hwndViewer = hwndViewer;
 	
 	/*
+	 * (20/08) PHAI dat lai cac su kien truoc khi tao luong.
+	 *
+	 * m_hQuitEvent duoc tao kieu MANUAL-RESET (:34, tham so thu 2 = true) va chi
+	 * duoc Set() trong Destroy() (:98) -- KHONG noi nao Reset(). Hai vong lam viec
+	 * deu la `while ( !m_hQuitEvent.Wait( 0 ) )` (:625 va :734).
+	 *
+	 * Khong co doan nay thi: Create() hong mot lan (vi du ConnectTo(RoleSvr) o :389
+	 * that bai khien StartupNetwork() tra false o :505) -> Application.cpp:521-526
+	 * goi Destroy() tuc Set() co thoat. Nguoi van hanh bam OK de thu lai
+	 * (Application.cpp:700 goi lai Create()): cong 5622/5632 mo lai duoc NHUNG hai
+	 * luong moi thoat ngay lap tuc vi co thoat van bat. Bishop thanh "xac song" --
+	 * cong mo ma khong xu ly gi, khong phat c2s_ping, nen may chu tai khoan cat ket
+	 * noi moi 20 giay (S3PDBSocketPool.cpp:21 PING_TIME 20000), nguoi choi khong vao
+	 * duoc trong khi nhin ben ngoai van tuong binh thuong.
+	 */
+	m_hQuitEvent.Reset();
+	m_hStartupWoringThreadEvent.Reset();
+	m_hStartupHelperThreadEvent.Reset();
+	
+	/*
 	 * Start a working thread
 	 */
 	DWORD dwThreadID = 0;
@@ -62,7 +82,10 @@ bool CIntercessor::Create( HWND hwndViewer /* NULL */ )
 		0, 
 		&dwThreadID );
 			
-	if ( m_hWorkingThread == INVALID_HANDLE_VALUE )
+	// CreateThread that bai tra NULL, KHONG phai INVALID_HANDLE_VALUE (do la quy
+	// uoc cua CreateFile). So sai thi nhanh nay la ma chet, khong bao gio bat
+	// duoc loi tao luong.
+	if ( m_hWorkingThread == NULL )
 	{
 		return false;
 	}
@@ -79,7 +102,10 @@ bool CIntercessor::Create( HWND hwndViewer /* NULL */ )
 		0, 
 		&dwThreadID );
 			
-	if ( m_hHelperThread == INVALID_HANDLE_VALUE )
+	// CreateThread that bai tra NULL, KHONG phai INVALID_HANDLE_VALUE (do la quy
+	// uoc cua CreateFile). So sai thi nhanh nay la ma chet, khong bao gio bat
+	// duoc loi tao luong.
+	if ( m_hHelperThread == NULL )
 	{
 		return false;
 	}
