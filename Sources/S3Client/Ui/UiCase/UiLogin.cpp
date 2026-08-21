@@ -13,6 +13,7 @@
 #include "UiLogin.h"
 #include "UiSelServer.h"
 #include "UiLoginBg.h"
+#include "../../JxReplay.h"
 #include "UiConnectInfo.h"
 #include "../../Login/Login.h"
 #include "../UiSoundSetting.h"
@@ -23,6 +24,7 @@
 #include "../../core/src/coreshell.h"
 extern iCoreShell*		g_pCoreShell;
 KUiLogin* KUiLogin::m_pSelf = NULL;
+bool      KUiLogin::m_bHiddenForReplay = false;
 
 //--------------------------------------------------------------------------
 //	功能：构造函数
@@ -66,6 +68,27 @@ void KUiLogin::AutoLgNextStep(const char* pszAccount, const char* pszPassword)
 //--------------------------------------------------------------------------
 //	功能：打开窗口，返回唯一的一个类对象实例
 //--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//  He replay .jxr: an man login trong luc phat, khoi phuc khi phat xong.
+//  Giong ban tham chieu (EnterReplayMode 0x004760E0): dat co roi an UI login
+//  de ban dien khong bi nen/form login ve de len.
+//--------------------------------------------------------------------------
+void KUiLogin::EnterReplayHide()
+{
+	m_bHiddenForReplay = true;
+	KUiLoginBackGround::CloseWindow(false);	// an nen login (Hide)
+	CloseWindow(false);						// an form login (Hide)
+}
+
+void KUiLogin::RestoreAfterReplay()
+{
+	if (!m_bHiddenForReplay)
+		return;
+	m_bHiddenForReplay = false;
+	KUiLoginBackGround::Restore();	// hien lai nen login
+	OpenWindow();					// hien lai form login (m_pSelf da ton tai -> Show)
+}
+
 KUiLogin* KUiLogin::OpenWindow()
 {
 	if (m_pSelf == NULL)
@@ -127,6 +150,7 @@ void KUiLogin::Initialize()
 	AddChild(&m_Login);
 	AddChild(&m_Cancel);
 	AddChild(&m_RememberAccount);
+	AddChild(&m_OpenRep);
 
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
@@ -158,6 +182,7 @@ void KUiLogin::LoadScheme(const char* pScheme)
 		m_Login   .Init(&Ini, "Login");
 		m_Cancel  .Init(&Ini, "Cancel");
 		m_RememberAccount.Init(&Ini, "Remember");
+		m_OpenRep.Init(&Ini, "OpenRep");
 	}
 }
 
@@ -174,6 +199,12 @@ int KUiLogin::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			OnLogin();
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Cancel)
 			OnCancel();
+		else if (uParam == (unsigned int)(KWndWindow*)&m_OpenRep)
+		{
+			// Xem lai ban dien .jxr: chon tep roi phat. Play thanh cong thi an man login.
+			if (JxReplay_OpenFileAndPlay())
+				EnterReplayHide();
+		}
 		break;
 	case WND_N_EDIT_SPECIAL_KEY_DOWN:
 		if (nParam == VK_TAB)

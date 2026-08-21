@@ -100,6 +100,16 @@ void KUiLoginBackGround::SetConfig(const char* pszConfig)
 		m_pSelf->LoadScheme(&Ini);
 }
 
+//--------------------------------------------------------------------------
+//  Hien lai nen login sau khi phat .jxr (KUiLogin::RestoreAfterReplay goi).
+//  SetConfig se bo qua vi config khong doi, nen phai Show() truc tiep.
+//--------------------------------------------------------------------------
+void KUiLoginBackGround::Restore()
+{
+	if (m_pSelf)
+		m_pSelf->Show();
+}
+
 void KUiLoginBackGround::LoadScheme(KIniFile* pIni)
 {
 	if (pIni)

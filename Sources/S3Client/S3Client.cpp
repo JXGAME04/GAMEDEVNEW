@@ -1257,6 +1257,9 @@ BOOL KMyApp::GameLoop()
 		KUiJxrPlayer::PlayPump();
 		return true;
 	}
+	// Phat .jxr vua ket thuc: khoi phuc man dang nhap neu no da bi an de xem.
+	// (no-op neu khong o trang thai xem tu man login)
+	KUiLogin::RestoreAfterReplay();
 
 	if(g_DrawVisionTime < timeGetTime())
 		g_DrawVision = 0;

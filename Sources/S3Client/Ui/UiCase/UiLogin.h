@@ -20,7 +20,9 @@ class KUiLogin : protected KWndShowAnimate
 {
 public:
 	static KUiLogin* OpenWindow();				//打开窗口，返回唯一的一个类对象实例
-	static void		 CloseWindow(bool bDestroy);//关闭窗口
+	static void		 CloseWindow(bool bDestroy);
+	static void		 EnterReplayHide();			// an man login khi bat dau phat .jxr
+	static void		 RestoreAfterReplay();		// khoi phuc man login khi phat xong//关闭窗口
 	static bool		 IsValidPassword(const char* pszPassword, int nLen);
 	static KUiLogin*		GetIfVisible();
 	void 				AutoLgNextStep(const char* pszAccount, const char* pszPassword);
@@ -38,6 +40,7 @@ private:
 	void	OnEnableAutoLogin();
 private:
 	static KUiLogin* m_pSelf;
+	static bool		 m_bHiddenForReplay;		// dang an man login vi phat .jxr
 private:
 	enum UILOGIN_STATUS
 	{
@@ -48,5 +51,6 @@ private:
 	KWndEdit32	m_PassWord;
 	KWndButton	m_Login, m_Cancel;
 	KWndButton	m_RememberAccount;
+	KWndButton	m_OpenRep;			// nut [OpenRep] xem lai ban dien .jxr (giong ban tham chieu)
 	char		m_szLoginBg[32];
 };

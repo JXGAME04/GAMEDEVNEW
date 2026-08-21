@@ -15,7 +15,8 @@ class KUiLoginBackGround : protected KWndImage
 public:
 	static KUiLoginBackGround*	OpenWindow(const char* pszConfig);	//打开窗口，返回唯一的一个类对象实例
 	static void					CloseWindow(bool bDestroy);			//关闭窗口
-	static void					SetConfig(const char* pszConfig);	//设置图形
+	static void					SetConfig(const char* pszConfig);
+	static void					Restore();							// hien lai nen login sau khi phat .jxr	//设置图形
 private:
 	KUiLoginBackGround() {}
 	~KUiLoginBackGround() {}
