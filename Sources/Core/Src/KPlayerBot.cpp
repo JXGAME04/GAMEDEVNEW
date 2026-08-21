@@ -4227,7 +4227,13 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 	int nNeoX = 0, nNeoY = 0;
 	const int bNeo = pb_NeoBai(b, nSub, &nNeoX, &nNeoY);
 	const int nXich = (bNeo == 2) ? PB_XICH_NV : PB_XICH_BAI;
-	const PB_CumMap* pCum = bNeo ? pb_LayCum(nSub, nNpcIdx) : NULL;
+	// (21/08 - chu game: "van con bot ra ngoai map, keo log ve") BO GATE bNeo:
+	// rao cum ap theo BAN DO DANG DUNG. bNeo == 0 (bot dung map KHAC bai duoc
+	// gan - vd vua doi bai/len moc, dang cho cua so Xa Phu 60 giay van danh
+	// quai o map cu; hoac Da Tau ngoai pha farm) truoc day la KHONG RAO GI CA -
+	// lo cuoi de bot duoi quai lang thang ra "vung trong gia" ma khong bo loc
+	// nao cham toi. Ban do khong co bang cum (thanh/thon) -> NULL -> nhu cu.
+	const PB_CumMap* pCum = pb_LayCum(nSub, nNpcIdx);
 
 	// TOP-8 ung vien gan nhat, roi MOI BOT CHON MOT CON KHAC NHAU theo chi so cua no.
 	// Bai hoc tu bot.log 10:37: 18 con cung chon "gan nhat tuyet doi" -> ca dam do ve
@@ -5830,10 +5836,12 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		{
 			int nNeoX4 = 0, nNeoY4 = 0;
 			const int nLoaiNeo = pb_NeoBai(b, nSub, &nNeoX4, &nNeoY4);
-			const PB_CumMap* pCum4 = nLoaiNeo ? pb_LayCum(nSub, nNpcIdx) : NULL;
-			if (nLoaiNeo
-			 && (pCum4 ? !pb_GanCum(pCum4, tx2, ty2, PB_XICH_CUM_THA)
-			           : g_GetDistance(nNeoX4, nNeoY4, tx2, ty2)
+			// (21/08) bo gate nLoaiNeo cho nhanh cum - rao theo ban do dang dung
+			// (xem chu thich cung ngay o pb_FindTarget).
+			const PB_CumMap* pCum4 = pb_LayCum(nSub, nNpcIdx);
+			if (pCum4 ? !pb_GanCum(pCum4, tx2, ty2, PB_XICH_CUM_THA)
+			          : (nLoaiNeo
+			           && g_GetDistance(nNeoX4, nNeoY4, tx2, ty2)
 			             > ((nLoaiNeo == 2) ? PB_XICH_NV_THA : PB_XICH_BAI_THA)))
 			{
 				static unsigned int s_uXichLog = 0;
@@ -7725,6 +7733,7 @@ static void pb_DemNgoai()
 	s_dwMocDem = dwNow;
 
 	int nTrong = 0, nChan = 0, nNgoai = 0, nKhongLuoi = 0, nVd = 0;
+	int nLac = 0, nVdLac = 0;
 	int aMap[64], aNgoai[64], aChan[64], nMap = 0;
 	for (int q = 0; q < s_botCount; q++)
 	{
@@ -7748,6 +7757,40 @@ static void pb_DemNgoai()
 		if (v == 0)
 		{
 			nTrong++;
+			// (21/08 - chu game: "van con bot ra ngoai map ban keo log ve")
+			// CENSUS BOT LAC: o dang dung MO tren luoi nen moi bo dem cu deu bao
+			// "on", nhung cach MOI tam cum diem sinh cua ban do qua
+			// PB_XICH_CUM_THA = dung giua "vung trong gia" nhin-nhu-ngoai-map -
+			// dung nhung con chu game thay bang mat ma khong dong log nao goi
+			// ten. Chi xet ban do DA co bang cum (khong tu kich build de khoi
+			// ton cong o thanh/thon von khong co quai -> khong bao gio bi tinh).
+			if (s_cumTinh[sub] && s_cum[sub].nSo > 0)
+			{
+				const PB_CumMap* pLc = &s_cum[sub];
+				int nMinC = 0x7fffffff;
+				for (int c2 = 0; c2 < pLc->nSo; c2++)
+				{
+					int dxc = x - pLc->aX[c2]; if (dxc < 0) dxc = -dxc;
+					int dyc = y - pLc->aY[c2]; if (dyc < 0) dyc = -dyc;
+					const int dc = (dxc > dyc) ? dxc : dyc;
+					if (dc < nMinC) nMinC = dc;
+				}
+				if (nMinC > PB_XICH_CUM_THA)
+				{
+					nLac++;
+					if (nVdLac < 6)
+					{
+						nVdLac++;
+						pb_Log("[BotLac] VD%d %s map=%d o(%d,%d) cach cum gan nhat"
+						       " %d o (ai=%d bai=%d dtPha=%d doing=%d target=%d)\n",
+						       nVdLac, Player[p].m_PlayerName,
+						       SubWorld[sub].m_SubWorldID, x / 32, y / 32,
+						       nMinC / 32, s_bots[q].nAi, s_bots[q].nBaiIdx,
+						       s_bots[q].nDtPha, (int)Npc[n].m_Doing,
+						       s_bots[q].nTargetNpc);
+					}
+				}
+			}
 			continue;
 		}
 		const int bNgoai = (v < 0);
@@ -7771,7 +7814,8 @@ static void pb_DemNgoai()
 		}
 	}
 	pb_Log("[BotNgoai] tk: %d o trong | %d trong O CHAN | %d NGOAI cua so luoi"
-	       " | %d dang o ban do khong co luoi\n", nTrong, nChan, nNgoai, nKhongLuoi);
+	       " | %d dang o ban do khong co luoi | %d LAC xa moi cum\n",
+	       nTrong, nChan, nNgoai, nKhongLuoi, nLac);
 	for (int i = 0; i < nMap; i++)
 		pb_Log("[BotNgoai]   map %d: %d ngoai luoi, %d trong o chan\n",
 		       aMap[i], aNgoai[i], aChan[i]);
