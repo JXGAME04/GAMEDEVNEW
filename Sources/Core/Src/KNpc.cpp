@@ -5812,8 +5812,21 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 	{
 		return 0;
 	}
-	KIniFile pIni;
-	KTabFile pTab;
+	// PaintInfo runs for EVERY npc EVERY paint frame. These config tables never
+	// change at runtime, so load them ONCE and reuse. Before this fix a local
+	// KIniFile/KTabFile was Load()-ed (read + parse + AES decrypt) per npc per
+	// frame => 5-20 ms/frame in crowds with many titled players.
+	static KTabFile s_HonorTab;
+	static KIniFile s_BoboIni;
+	static KTabFile s_RankTab;
+	static BOOL s_bInfoTabsLoaded = FALSE;
+	if (!s_bInfoTabsLoaded)
+	{
+		s_HonorTab.Load(HONOR_SETTING_FILE);
+		s_BoboIni.Load(NPC_BOBO_FILE);
+		s_RankTab.Load(PLAYER_RANK_BATTLE_SETTING_TABFILE);
+		s_bInfoTabsLoaded = TRUE;
+	}
 	nFontSize = 13;
 	char Buff[128], cbBuffer[32];
 	int nMpsX, nMpsY, nMX, nMY, nNumFrames,  nXX, nYY;
@@ -6054,13 +6067,11 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			memset(Buff, 0, sizeof(Buff));
 			memset(cbBuffer, 0, sizeof(cbBuffer));
 			itoa(m_btHonorId, cbBuffer, 10);
-			pTab.Load(HONOR_SETTING_FILE);
-			pTab.GetString(cbBuffer, "HONORLINK", "",Buff,sizeof(Buff));
-			pTab.GetInteger(cbBuffer, "HONORX", 0, &nMX);
-			pTab.GetInteger(cbBuffer, "HONORY", 0, &nMY);
-			pTab.GetInteger(cbBuffer, "TOTALFRAME", 1, &nNumFrames);
-			pTab.GetInteger(cbBuffer, "WIGTH", 0, &nMW);
-			pTab.Clear();
+			s_HonorTab.GetString(cbBuffer, "HONORLINK", "",Buff,sizeof(Buff));
+			s_HonorTab.GetInteger(cbBuffer, "HONORX", 0, &nMX);
+			s_HonorTab.GetInteger(cbBuffer, "HONORY", 0, &nMY);
+			s_HonorTab.GetInteger(cbBuffer, "TOTALFRAME", 1, &nNumFrames);
+			s_HonorTab.GetInteger(cbBuffer, "WIGTH", 0, &nMW);
 
 			KRUImage RURank;
 			RURank.nType = ISI_T_SPR;
@@ -6081,12 +6092,10 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		if (m_MaskType > 0)	//#mat na
 		{
 			memset(Buff, 0, sizeof(Buff));
-			pIni.Load(NPC_BOBO_FILE);
 			if (m_bRideHorse)
-				pIni.GetString("Actions", "0", "", Buff, sizeof(Buff));
+				s_BoboIni.GetString("Actions", "0", "", Buff, sizeof(Buff));
 			else if (m_Doing == do_sit)
-				pIni.GetString("Actions", "1", "", Buff, sizeof(Buff));
-			pIni.Clear();
+				s_BoboIni.GetString("Actions", "1", "", Buff, sizeof(Buff));
 			KRUImage RUIconImage;
 			RUIconImage.nType = ISI_T_SPR;
 			RUIconImage.Color.Color_b.a = 255;
@@ -6202,19 +6211,15 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			int nColor = 3;
 			if(m_btRankBattleId)
 			{
-				pTab.Load(PLAYER_RANK_BATTLE_SETTING_TABFILE);
 				nRankId = m_btRankBattleId + 1;
-				pTab.GetString(nRankId, "TitleName",	"", szString, sizeof(szString));
+				s_RankTab.GetString(nRankId, "TitleName",	"", szString, sizeof(szString));
 				dwColor = pColor[nColor];
-				pTab.Clear();
 			}
 			else if(m_btPlayerTitle)
 			{
-				pTab.Load(PLAYER_RANK_BATTLE_SETTING_TABFILE);
 				nRankId = m_btPlayerTitle + 1;
-				pTab.GetString(nRankId, "TitleName",	"", szString, sizeof(szString));
+				s_RankTab.GetString(nRankId, "TitleName",	"", szString, sizeof(szString));
 				dwColor = pColor[nColor];
-				pTab.Clear();
 			}
 
 			nX = nMpsX - nFontSize*g_StrLen(szString)/4;
