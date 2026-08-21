@@ -1588,32 +1588,34 @@ int LuaPB_SetNpcChan(Lua_State* L)
 //   - Doi map SO LE trong cua so 60 giay (khuon pb_RaBai - 1000 con teleport cung
 //     khung la nghen region sync).
 //   - TAT: bot tu ve bai luyen bang duong pb_RaBai cu, Da Tau lam tiep nhiem vu.
-// 10 thanh lay toa do NPC Da Tau (bang s_dtNpc - da kiem chung boi he sap);
-// 5 thon lay node dong nhat trong settings/simcity/maps/thanhthi/<id>_*_nodes.txt.
+// (21/08 - chu game: "viet lai ham goi bot ve thanh kieu nhu goi bot ve dung
+// toa do moi thanh co san o than hanh phu (nen goi ve trung tam)") BANG NAY
+// CHEP Y NGUYEN cach Than Hanh Phu (script\item\ib\shenxingfu.lua) dua nguoi
+// choi ve thanh:
+//   - 7 thanh lon: posthanh() -> Rev2Pos(map, id "Trung Tam") = toa do DIEM HOI
+//     SINH trung tam (settings\RevivePos.ini, MPS/32). Lam An khong co muc
+//     Trung Tam -> lay "Lam An Bac" (rev 69) la diem sat tam THON_TT nhat (9 o).
+//   - thon/tran: chonthon() -> THON_TT_MP_ARRAY (tam thon). Chi 4 thon dang MO
+//     trong phu (53/20/121/54); 5 thon bang cu (99/100/101/153/174) dang bi
+//     comment trong phu nen BO - "moi thanh co san o than hanh phu".
+// nRevId = dung id phu dung de "luu ruong" tai cho dap (Thanh Do Trung Tam la
+// rev 5 cua section [11] - id la KHOA TRONG SECTION tung map, khong toan cuc).
 static int s_nPbVeThanh = 0;
 
-// nRevId = diem hoi sinh hop le cua map (key dau tien trong section cua
-// settings/RevivePos.ini - map 53 -> 19 khop dung gia tri he luu bot dang dung).
-// (19/08 dem - chu game) dap xuong la SetRevivalPos = "tu dong luu ruong o map do
-// luon de sau phu ve thi se ve dung thanh da tung bi goi ve".
 struct PB_VeThanh { int nMap, nOX, nOY, nRevId; };
 static const PB_VeThanh s_veThanh[] =
 {
-	{   1, 1620, 3089,  1 },    // Phuong Tuong
-	{  11, 3154, 5067,  5 },    // Thanh Do
-	{  20, 3537, 6231, 10 },    // Giang Tan Thon
-	{  37, 1736, 3101, 23 },    // Bien Kinh
-	{  53, 1626, 3172, 19 },    // Ba Lang Huyen
-	{  78, 1595, 3288, 29 },    // Tuong Duong
-	{  80, 1745, 2967, 34 },    // Duong Chau
-	{ 121, 1960, 4501, 55 },    // Long Mon Tran
-	{ 162, 1651, 3226, 63 },    // Dai Ly
-	{ 176, 1562, 2979, 67 },    // Lam An
-	{  99, 1635, 3188, 43 },    // Vinh Lac Tran
-	{ 100, 1599, 3182, 45 },    // Chu Tien Tran
-	{ 101, 1660, 3131, 47 },    // Dao Huong Thon
-	{ 153, 1623, 3248, 59 },    // Thach Co Tran
-	{ 174, 1575, 3255, 65 },    // Long Tuyen Thon
+	{   1, 1591, 3200,  5 },    // Phuong Tuong Phu - Trung Tam (rev 5)
+	{  11, 3144, 5073,  5 },    // Thanh Do Phu     - Trung Tam (rev 5)
+	{ 162, 1579, 3135, 63 },    // Dai Ly Phu       - Trung Tam (rev 63)
+	{  37, 1726, 3100, 23 },    // Bien Kinh Phu    - Trung Tam (rev 23)
+	{  78, 1577, 3238, 29 },    // Tuong Duong Phu  - Trung Tam (rev 29)
+	{  80, 1758, 3030, 34 },    // Duong Chau Phu   - Trung Tam (rev 34)
+	{ 176, 1569, 2938, 69 },    // Lam An Phu       - Bac (rev 69, sat tam nhat)
+	{  53, 1622, 3189, 19 },    // Ba Lang Huyen    - THON_TT (rev 19)
+	{  20, 3552, 6194, 10 },    // Giang Tan Thon   - THON_TT (rev 10)
+	{ 121, 1951, 4509, 55 },    // Long Mon Tran    - THON_TT (rev 55)
+	{  54, 1650, 3169, 17 },    // Nam Nhac Tran    - THON_TT (rev 17)
 };
 #define PB_SO_VETHANH  (int)(sizeof(s_veThanh) / sizeof(s_veThanh[0]))
 
@@ -4613,19 +4615,16 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		return 0;
 	}
 
-	// ================== FALLBACK: teleport thang (hiem) ==================
-	// Chi toi day khi duong Xa Phu bo tay (khong thay NPC / khong co duong /
-	// script khong day sang map). Van dung neo-da-kiem lien thong.
-	{
-		static unsigned int s_uXeBoTay = 0;
-		if (now - s_uXeBoTay >= (unsigned int)(GAME_FPS * 5))
-		{
-			s_uXeBoTay = now;
-			pb_Log("[BotXe] %s BO TAY duong Xa Phu (thu=%d, goi=%d) -> teleport"
-			       " thang toi %s (map %d)\n", Player[nIdx].m_PlayerName,
-			       b.nRaBaiThu, b.nRaBaiGoi, bai.szTen, bai.nMapId);
-		}
-	}
+	// ========= (21/08) KHONG GOI DUOC XA PHU -> DOI THANH KHAC, KHONG TELEPORT =========
+	// Chu game: "bot khong goi duoc Xa Phu nen di chuyen qua thanh khac de goi
+	// xa phu". Truoc day toi day la teleport thang toi bai ("bay tu che" da bi
+	// cam) - do 09:33-09:44 van con 15 luot BO TAY, toan bot ket trong thanh
+	// 37/80 khong toi duoc NPC. Nay: qua 300 giay di bo / 5 lan goi script
+	// khong sang map -> lay THANH KE TIEP trong 10 thanh co Xa Phu (xoay vong
+	// s_dtNpc, tinh tu thanh DANG DUNG), xoa dem, phu sang do bang dung duong
+	// "phu ve thanh nha" (pb_DtVeThanh) roi di bo toi Xa Phu lai tu dau.
+	// Khong con van cuoi nao khac. Van giu cua so so le 60 giay ben duoi de
+	// ca dan khong ChangeWorld cung mot khung.
 
 	// DAN HANG truoc khi doi map: nDoiMapTick giu "moc som nhat duoc phep thu".
 	//
@@ -4644,80 +4643,41 @@ static int pb_RaBai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		return 0;
 	b.nDoiMapTick = now + (unsigned int)(GAME_FPS * 10);   // lan thu ke tiep (neu that bai)
 
-	// DU CAP NHAY MAP -> tu thoat party (thanh vien) / giai tan nhom (doi truong)
-	// - dung nguyen loi chu game dan 18/08. Lam TRUOC ChangeWorld de dong doi
-	// khong bam theo sang map moi.
-	if (pb_TrongNhom(nIdx))
-		pb_RoiNhom(nIdx, "du cap doi map luyen");
-
-	b.nTargetNpc = 0;
-	b.walk.Reset();
-	// Dat chan LECH NHAU: moi bot mot o rieng quanh diem den (luoi 5x4, cach nhau 2-3 o)
-	// de khong bao gio co hai con chong mot o. O lech bi chan thi lui ve dung diem goc.
-	// luoi 9x7 = 63 o rieng (truoc 5x4 = 20 - du cho 20 bot, 1000 bot thi 50 con
-	// chong mot o). O lech bi chan thi nhanh duoi tu lui ve diem goc nhu cu.
-	// (19/08 toi) O LECH PHAI LA O TRONG: truoc day cong thang +-8 o roi
-	// ChangeWorld - ChangeWorld chi kiem KHUNG region chu KHONG kiem vat can,
-	// nen o ban do hang lang hep (map 79 Tuong Duong Mat Dao) bot dap thang vao
-	// TRONG TUONG roi ket vinh vien ("bot ket o tuong" chu game bao).
-	const int nDx = ((nLech % 9) - 4) * 2;
-	const int nDy = (((nLech / 9) % 7) - 3) * 3;
-	const int nSubBai = g_SubWorldSet.SearchWorld(bai.nMapId);
-	// (19/08 toi #4) NEO DA KIEM lien thong thay cho toa do tho trong s_bai
-	// (neo Lao Ho Dong nam canh dao luoi -> tha bot vao la [BotCuu] cuu xoay vong)
-	int nNeoOX = bai.nOX, nNeoOY = bai.nOY;
-	if (nSubBai >= 0)
-		pb_LayNeo(b.nBaiIdx, nSubBai, &nNeoOX, &nNeoOY);
-	int nRet = 0;
-	if (nSubBai >= 0)
+	// "Bai hong" (ban do chua mo tren may chu) truoc day phat hien nho ChangeWorld
+	// that bai o day; nay hoi thang g_SubWorldSet.SearchWorld - ket qua nhu cu:
+	// cam bai den het phien, lan chon toi bot lay bai khac.
+	if (g_SubWorldSet.SearchWorld(bai.nMapId) < 0)
 	{
-		int nDx2 = 0, nDy2 = 0;
-		if (pb_ODat(nSubBai, nNeoOX + nDx, nNeoOY + nDy, nLech, 10, &nDx2, &nDy2))
-			nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, nDx2, nDy2);
-		if (nRet != 1 && pb_ODat(nSubBai, nNeoOX, nNeoOY, nLech, 16, &nDx2, &nDy2))
-			nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, nDx2, nDy2);
+		pb_Log("[BotBai] %s: KHONG VAO DUOC %s (map %d) - ban do co the CHUA MO tren may chu."
+		       " CAM bai nay den het phien.\n", Player[nIdx].m_PlayerName, bai.szTen, bai.nMapId);
+		if (b.nBaiIdx >= 0 && b.nBaiIdx < PB_SO_BAI)
+			s_baiHong[b.nBaiIdx] = 1;
+		b.nBaiIdx = -1;
+		return 1;
 	}
-	if (nRet != 1)
-		nRet = Npc[nNpcIdx].ChangeWorld(bai.nMapId, nNeoOX * 32, nNeoOY * 32);
-	if (nRet == 1)
 	{
-		b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;   // toi noi bang fallback - xoa dem xe
-		// Diem dat chan la CHO MOI NGUOI CHOI CUNG DAT CHAN - thuong sat trap vao/ra.
-		// Dung nguyen do la bot ke trap ("khong ra khoi trap duoc"). Buoc ra 8-11 o
-		// theo huong ngau nhien NGAY khi toi noi, truoc khi lam bat cu viec gi khac.
-		{
-			// (20/08) tan xa nhu nhanh Xa Phu o tren - 8 huong x 10 muc ban kinh
-			static const int aFx8[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
-			static const int aFy8[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-			const int nHg = (nLech + (int)g_Random(8)) & 7;
-			const int nXa = 12 + ((nLech / 8) % 10) * 6;      // 12..66 o
-			// diem buoc ra cung phai la O TRONG (khong thi PB_WalkTo tra -1 hoai)
-			int nRx = 0, nRy = 0;
-			if (nSubBai >= 0
-			 && pb_ODat(nSubBai, nNeoOX + aFx8[nHg] * nXa, nNeoOY + aFy8[nHg] * nXa,
-			            nLech, 12, &nRx, &nRy))
-			{
-				b.nBuocRaX = nRx;
-				b.nBuocRaY = nRy;
-			}
-			else
-			{
-				b.nBuocRaX = 0;
-				b.nBuocRaY = 0;
-			}
-			b.roam.Reset();
-		}
-		pb_Log("[BotBai] %s cap %d -> %s (map %d, o %d,%d)\n",
-			   Player[nIdx].m_PlayerName, nLevel, bai.szTen, bai.nMapId, bai.nOX, bai.nOY);
+		// thanh ke tiep tinh tu thanh DANG DUNG (neu dang o mot trong 10 thanh),
+		// khong thi tu thanh nha hien tai - de chac chan doi sang thanh KHAC.
+		int k = pb_DtIdxThanh(SubWorld[nSub].m_SubWorldID);
+		if (k < 0)
+			k = pb_DtIdxThanh(pb_ThanhNha(b, nLech).nMap);
+		if (k < 0)
+			k = nLech % 10;
+		const PB_DtNpc& nhaMoi = s_dtNpc[(k + 1) % 10];
+		pb_Log("[BotXe] %s KHONG goi duoc Xa Phu o map %d (thu=%d, goi=%d)"
+		       " -> doi thanh nha sang %d, phu qua do goi lai (muon di %s map %d)\n",
+		       Player[nIdx].m_PlayerName, SubWorld[nSub].m_SubWorldID,
+		       b.nRaBaiThu, b.nRaBaiGoi, nhaMoi.nMap, bai.szTen, bai.nMapId);
+		b.nThanhNhaMap = nhaMoi.nMap;
+		b.nRaBaiThu = 0;  b.nRaBaiGoi = 0;  b.nDoiMapTick = 0;
+		b.nTargetNpc = 0;
+		b.walk.Reset();  b.chase.Reset();  b.roam.Reset();
+		b.nRoamX = 0;    b.nRoamY = 0;
+		if (pb_TrongNhom(nIdx))
+			pb_RoiNhom(nIdx, "doi thanh tim Xa Phu");
+		pb_DtVeThanh(nIdx, nNpcIdx, b, nhaMoi, nLech);
 		return 0;
 	}
-
-	pb_Log("[BotBai] %s: KHONG VAO DUOC %s (map %d) - ban do co the CHUA MO tren may chu."
-		   " CAM bai nay den het phien.\n", Player[nIdx].m_PlayerName, bai.szTen, bai.nMapId);
-	if (b.nBaiIdx >= 0 && b.nBaiIdx < PB_SO_BAI)
-		s_baiHong[b.nBaiIdx] = 1;   // (phan bien 20/08) cam that, khong chi bo
-	b.nBaiIdx = -1;             // thoi, khoi thu map do nua trong lan chon toi
-	return 1;
 }
 
 // ===========================================================================
@@ -7119,36 +7079,23 @@ static void pb_DriveBot(PB_Bot& b)
 					// mot buoc nhu nguoi that. O dich da qua GetBarrierMin(bCheckNpc
 					// = TRUE) nen khong co ai dung san o do.
 					//
-					// VAN GIU duong teleport lam VAN CUOI: JX1 tinh NPC LA TUONG va
-					// moi lenh chi duoc ne DUNG MOT vat can, nen giua dam dong dac
-					// thi di bo co the khong nhuc nhich. Cu hai lan lach di bo moi
-					// cho mot lan SetPos (nLachDem tang moi lan lach, gion 8 giay/lan)
-					// - bot van thoat duoc trong ~24 giay xau nhat, ma so lan "toc
-					// bien" tut con 1/3.
-					const int bNhay = ((b.nLachDem % 3) == 0);
+					// (21/08 - chu game: "bo van nhay SetPos cua lach thay bang di
+					// chuyen") HET VAN CUOI. Ly do giu SetPos truoc day la "JX1 tinh NPC
+					// LA TUONG, giua dam dong dac di bo khong nhuc nhich" - tu khi cong
+					// tac g_nPbNpcChan tat (nguoi/bot/quai dung chong len nhau) ly do do
+					// khong con; do 09:33-09:44 van 129 cu nhay/11 phut = canh "bot toc
+					// bien" cho nguoi xem. Nay LUON di bo lach ngang; ket tuong that thi
+					// [BotCuu] (map bai) / che do Ve-Thanh (GM) do.
 					{
 						static unsigned int s_uLachLog = 0;
 						if (nowAll - s_uLachLog >= (unsigned int)(GAME_FPS / 3))
 						{
 							s_uLachLog = nowAll;
-							pb_Log("[BotLach] %s map=%d ket dam dong o(%d,%d) -> %s o(%d,%d)\n",
+							pb_Log("[BotLach] %s map=%d ket dam dong o(%d,%d) -> di bo lach sang o(%d,%d)\n",
 							       Player[nIdx].m_PlayerName, nMapNay, jx / 32, jy / 32,
-							       bNhay ? "NHAY (van cuoi)" : "di bo lach sang",
 							       nLachX / 32, nLachY / 32);
 						}
 					}
-					if (bNhay)
-					{
-						Npc[nNpcIdx].SetPos(nLachX, nLachY);
-						// Dich cho tuc thoi -> moi lo trinh cu deu vo nghia.
-						b.walk.Reset();
-						b.chase.Reset();
-						b.roam.Reset();
-						b.follow.Reset();   // (19/08) lo trinh cu vo nghia sau khi dich cho
-						b.nFollowNghiToi = 0;
-						b.loot.Reset();
-					}
-					else
 					{
 						// (phan bien 20/08) NHANH DI BO TUYET DOI KHONG DUOC Reset
 						// va phai KHOA lo trinh mot lat.
@@ -7157,8 +7104,7 @@ static void pb_DriveBot(PB_Bot& b)
 						// xuong pb_RaBai / bam doi truong / pb_Roam, ma ta vua
 						// Reset het lo trinh nen PB_WalkTo se tinh A* moi roi phat
 						// mot do_run KHAC DE LEN - lenh lach ngang khong bao gio
-						// duoc thi hanh. Bot ket lai phai doi den luot SetPos
-						// (nLachDem%3) tuc 24 giay thay vi 8 - TE HON han ban cu.
+						// duoc thi hanh.
 						Npc[nNpcIdx].SendCommand(do_run, nLachX, nLachY);
 						b.nLachToi = nowAll + (unsigned int)GAME_FPS;   // giu 1 giay
 					}
