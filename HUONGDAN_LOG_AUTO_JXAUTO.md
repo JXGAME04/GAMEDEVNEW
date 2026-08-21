@@ -112,3 +112,53 @@ lệch** → biết "miss" có phải do lệch vị trí không. `NET-WALK/RUN/
 - 🔴 Ba lỗi do **chính đợt đặt log** gây ra đã vá ở `b7e69aee` — nặng nhất: dòng log lọt vào giữa `if`
   không ngoặc trong `FindTargetNpc` khiến **auto không chọn được mục tiêu** (chỉ chạy tới NPC rồi đứng).
   Lần sau thêm log phải chạy lại bộ quét `scan_danger.py` trong scratchpad.
+
+
+---
+
+## 6. LOG PHÍA MÁY CHỦ — `jx_auto_server.log` (thêm 21/08 chiều)
+
+Client chỉ thấy *"đánh mà máu không giảm"*; **đường tính TRÚNG/TRƯỢT nằm hoàn toàn ở máy chủ**.
+25 điểm log server dưới đây bù đúng khoảng mù đó.
+
+### 6.1 Bật / tắt (KHÔNG cần build lại)
+
+`E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINEin\server\config.ini`:
+
+```ini
+[AutoLog]
+On=1
+Name=CaiBang
+```
+
+- `On=1` bật, `0` tắt. Ghi ra `bin\server\jx_auto_server.log`, **không** in ra cửa sổ server.
+- `Name=` là **tên nhân vật cần theo dõi**. 🔴 **Bắt buộc điền** — máy chủ đang chạy ~1000 bot,
+  bot nào cũng tính là "người chơi", để trống là log ngập và che mất đòn đánh của nhân vật thật.
+- Đổi tên nhân vật khác thì sửa dòng `Name=` rồi **khởi động lại GameServer** (đọc lúc nạp).
+
+### 6.2 Đọc theo thứ tự — một đòn đánh đi qua 3 chặng
+
+| Chặng | Nhãn | Cho biết |
+|---|---|---|
+| **S3 — gói tin vào** | `S3-PKT-IN` → `S2-NETSKILL-IN` → `S3-PKT-REJ` | Máy chủ **có nhận** lệnh chiêu không, có bị từ chối im lặng không (id chiêu, toạ độ) |
+| | `S2-NETSKILL-TARGET`, `S3-TGT-FIND` | Tìm mục tiêu theo id: `found_idx=0` = **không thấy** (mục tiêu ngoài 9 vùng quét) |
+| | `S3-CAST-XY`, `S3-CMD-SWALLOW` | Lệnh bị **nuốt** vì ô lệnh `m_Command` chỉ chứa 1 lệnh/nhịp |
+| **S2 — quyết định đánh** | `S2-MELEE-TOOFAR-RUN` | 🔴 Nghi can số 1: máy chủ đo xa hơn tầm chiêu → **tự đổi đòn đánh thành lệnh CHẠY** |
+| | `S2-CANCAST-DENY` | `CanCastSkill` từ chối (nội lực, im lặng, đang cưỡi ngựa, tầm) |
+| | `S2-SKILL-NOTLEARNED`, `S3-SETACTIVE` | Chiêu chưa học / chọn nhầm ô chiêu |
+| **S1 — tính sát thương** | `S1-WHO`, `S1-ARDATA` | Ai đánh ai, AR / phòng thủ / `usear` |
+| | `S1-MELEE-NOROLL` | Đòn **cận chiến của người chơi vào quái BỎ QUA xúc xắc trúng/trượt** ⇒ loại trừ khâu này |
+| | `S1-CRIT-ROLL`, `S1-PHYS-PRE/POST` | Máu trước/sau — đối chứng trực tiếp với `FIGHT-NODMG` bên client |
+| | `S2-DODGE-1/2/3` | Chữ "né" client vẽ ra **thực chất là sát thương bị về 0**, không phải xúc xắc né |
+| | `S2-ARMOR`, `S2-ARMOR-EAT` | Giáp vật lý **nuốt trọn** đòn |
+
+### 6.3 Ghép hai bên log
+
+Cả hai tệp cùng tiền tố `t=<ms>`; lấy mốc `t=` của một dòng `FIGHT-NODMG` (client) rồi tìm
+`S1-PHYS-PRE`/`S1-PHYS-POST` gần nhất trong log server để biết máu **thực sự** có đổi không.
+
+### 6.4 Quy tắc khi thêm điểm log server mới
+
+Dùng `AUTOLOG_IDX(idx, ...)` / `AUTOLOG_IDX_EVERY(idx, ms, ...)` (`KCore.h`) — chúng lọc theo tên
+**và** tự kiểm chỉ số, nên `Npc[idx]` trong danh sách đối số không bao giờ bị đọc với chỉ số xấu.
+Đây chính là loại lỗi đã làm **sập game lúc 13:52** (`Npc[chỉ-số-viên-đạn]`).
