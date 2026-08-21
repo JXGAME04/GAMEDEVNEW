@@ -3,6 +3,9 @@
 > **ĐỌC FILE NÀY TRƯỚC KHI GÕ.** Chi tiết cơ chế từng tính năng nằm ở
 > `BANGIAO_AUTO_DATAU_WAUTO.md` **mục 13.14, phần A → L**. File này là bản tổng hợp phiên:
 > trạng thái, việc đã làm, cạm bẫy, việc còn nợ, checklist test.
+>
+> **⏩ Phiên sau (21/08): `BANGIAO_PHIEN_2108_AUTODATAU.md`** — hết vòng "phù về không bán – Xa Phu – lên map";
+> món khoe cất rương; GameServer đã restart 09:33 21/08 (hai việc ở mục 0 dưới đã xong).
 
 ---
 
