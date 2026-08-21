@@ -182,9 +182,45 @@ unsigned int KRepresentShell2::CreateImage(const char* pszName, int nWidth, int 
 				pszName, nType, nWidth, nHeight);
 	return m_ImageStore.CreateImage(pszName, nWidth, nHeight, nType);
 }
+// ===== Probe dem doi tuong ve (chi khi PaintLog=1) =====
+// Muc dich: luc Tong Kim do duoc draw=900-943ms/giay (90%% CPU) va painted tut
+// xuong 32. Can biet CAI GI nhieu: so loi goi ve, so anh sprite, hay so hinh khac.
+static int			g_nDrawProbe = -1;	// -1 = chua doc config.ini
+static unsigned int	g_nDrawCalls = 0;	// so loi goi DrawPrimitives
+static unsigned int	g_nDrawImages = 0;	// tong so ANH sprite gui di
+static unsigned int	g_nDrawOther = 0;	// so hinh khac (duong ke, chu, khoi mau)
+static unsigned int	g_nDrawFrames = 0;	// so khung ve trong giay dang do
+static DWORD		g_dwDrawSec = 0;
+
+void g_SetDrawProbe(int nOn)
+{
+	g_nDrawProbe = nOn;
+}
+
+void g_GetDrawStats(unsigned int* pnCalls, unsigned int* pnImages, unsigned int* pnOther, int bReset)
+{
+	if (pnCalls)	*pnCalls = g_nDrawCalls;
+	if (pnImages)	*pnImages = g_nDrawImages;
+	if (pnOther)	*pnOther = g_nDrawOther;
+	if (bReset)
+	{
+		g_nDrawCalls = 0;
+		g_nDrawImages = 0;
+		g_nDrawOther = 0;
+	}
+}
+
 //##ModelId=3DB69FE401DA
 void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
+	if (g_nDrawProbe)
+	{
+		g_nDrawCalls++;
+		if (uGenre == RU_T_IMAGE)
+			g_nDrawImages += (unsigned int)nPrimitiveCount;
+		else
+			g_nDrawOther += (unsigned int)nPrimitiveCount;
+	}
 	// GHI .jxr - loai 11 (dong chinh cua ban dien).
 	if (m_pJxReplay &&
 		(m_nReplayStatus == JXR_STATUS_RECORDING || m_nReplayStatus == -1))
@@ -1229,6 +1265,55 @@ void KRepresentShell2::RepresentEnd()
 {
 	m_Canvas.Changed(true);
 	m_Canvas.UpdateScreen();
+
+	// Probe: gom theo giay roi tu ghi mot dong [DRAW]. Represent2 la DLL rieng,
+	// Core goi qua giao dien ao nen khong tien truyen so lieu ve; ghi thang o day.
+	// Co bat doc mot lan tu [Client] PaintLog trong config.ini.
+	if (g_nDrawProbe < 0)
+	{
+		g_nDrawProbe = 0;
+		FILE* pIni = fopen("config.ini", "r");
+		if (pIni)
+		{
+			char szLine[256];
+			while (fgets(szLine, sizeof(szLine), pIni))
+			{
+				if (strncmp(szLine, "PaintLog", 8) == 0)
+				{
+					if (strchr(szLine, '1'))
+						g_nDrawProbe = 1;
+					break;
+				}
+			}
+			fclose(pIni);
+		}
+	}
+	if (g_nDrawProbe <= 0)
+		return;
+	g_nDrawFrames++;
+	DWORD dwSec = GetTickCount() / 1000;	// GetTickCount: kernel32, khoi can winmm.lib
+	if (g_dwDrawSec == 0)
+		g_dwDrawSec = dwSec;
+	if (dwSec != g_dwDrawSec)
+	{
+		if (g_nDrawFrames > 0 && g_nDrawImages > 200)
+		{
+			FILE* pLog = fopen("jx_paint.log", "a");
+			if (pLog)
+			{
+				fprintf(pLog, "[DRAW] pid=%u t=%u frames=%u calls=%u img=%u other=%u | moi khung: %u anh, %u loi goi\n",
+					GetCurrentProcessId(), g_dwDrawSec * 1000, g_nDrawFrames,
+					g_nDrawCalls, g_nDrawImages, g_nDrawOther,
+					g_nDrawImages / g_nDrawFrames, g_nDrawCalls / g_nDrawFrames);
+				fclose(pLog);
+			}
+		}
+		g_dwDrawSec = dwSec;
+		g_nDrawFrames = 0;
+		g_nDrawCalls = 0;
+		g_nDrawImages = 0;
+		g_nDrawOther = 0;
+	}
 }
 
 //视图/绘图设备坐标 转化为空间坐标
