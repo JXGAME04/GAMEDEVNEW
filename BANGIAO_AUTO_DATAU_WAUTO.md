@@ -729,6 +729,32 @@ bản vá**:
 Binary: **CoreClient.dll 20/08 18:18 (2.205.696 B)** + **CoreServer.dll x64 18:18** (bản lùi
 `CoreClient_locked13` / `CoreServer_cu_r5f`). Vẫn **CẦN RESTART GameServer**.
 
+**K. r5h (18:43) — phản biện vòng 3: 5 CONFIRMED nữa, 1 bị bác.** Hai lỗi nặng đúng vào mục
+tiêu "khỏi lòng vòng":
+1. *(nặng — kẹt cả thành)* Vòng đi tới từng mục danh bạ **không có hạn giờ**: `DT_WalkTo` không
+   phát hiện kẹt (chỉ phát lại đường mỗi 2,5 s rồi trả 0 mãi), mà `FindPath` trả -1 ngay ở **map
+   không có lưới đường** ⇒ bot đứng im, ngốn trọn 25 phút của cả thành. (Nhánh đi tuần cũ vốn
+   có hạn 45 s — nhánh danh bạ bị bỏ mất.) Sửa: **hạn 45 giây/mục**, hết giờ thì ghi "đã xem"
+   (không chỉ tăng con trỏ — vì làm mới 90 s sẽ đặt lại con trỏ) + báo xám rồi đi sạp kế.
+2. *(giảm độ phủ)* Danh bạ **tắt hẳn** đường đi tuần, mà server chỉ trả **tối đa 12 sạp** ⇒ thành
+   đông bị tuyên bố "xong" sau 12 sạp — kém hơn cả bản trước khi có danh bạ. Sửa: danh bạ đi
+   trước (địa chỉ chính xác), **hết danh bạ thì tour điểm tụ tập quét nốt**, hết cả hai mới qua
+   thành kế; kèm **con trỏ quét xoay vòng phía server** để lượt làm mới sau trả lô 12 sạp **khác**.
+3. `6000 ms` giãn nhịp đặt **nhầm chỗ**: nó chỉ chi phối khoảng cách lần 2→3, còn lần 1→2 vẫn là
+   1,8 s ⇒ vẫn nằm trong cooldown 5 giây, đốt oan một lượt. Sửa: điều kiện hỏi lại thêm
+   `uCurTime > g_uDTSapDsFresh + 5200`, hạn chờ trả về 1,8 s cho mọi lần.
+4. Đi tuần chạy trong lúc chờ làm `g_uDTSapWptT`/`g_uDTSapDwell` (**mốc tuyệt đối**) treo quá
+   hạn ⇒ lần tuần sau **đốt thẳng** điểm tụ tập đầu tiên mà chưa hề đi tới. Sửa: xóa hai mốc khi
+   vào chế độ danh bạ.
+5. Biến static danh bạ **không nằm trong khối reset** khi vào `DTP_MUASAP` (static sống qua cả
+   chuyến/đổi nhân vật) ⇒ chuyến đi chợ mới vào lại đúng thành cũ sẽ **bỏ qua nguyên thành**.
+   Sửa: hàm `DT_SapDsReset()` gọi ở cả hai lối vào pha (`g_nDTSapDsMap` khởi tạo −1; **nuốt seq
+   hiện tại** để không phân tích lại gói sót của chuyến trước).
+*(Bị bác: "bỏ đứng-im ở lần hỏi lại làm bot bỏ thành vĩnh viễn" — city-hop chỉ chạm được ở 10 map
+có NPC Dã Tẩu nên kịch bản không xảy ra.)*
+
+Binary: **CoreClient.dll 20/08 18:43 (2.205.696 B)** + **CoreServer.dll x64 18:41**.
+
 ---
 
 ## 9 · Phản biện — đã làm gì

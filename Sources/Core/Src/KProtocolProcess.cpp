@@ -6095,6 +6095,9 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		static DWORD s_uSapDsNext[MAX_PLAYER] = { 0 };
 		static DWORD s_uSapDsChu[MAX_PLAYER] = { 0 };
 		static int   s_nSapDsSub[MAX_PLAYER] = { 0 };
+		// (r5h) con tro quet XOAY VONG: moi lo chi 12 sap, lo sau bat dau tu cho
+		// lo truoc dung lai -> thanh dong (>12 sap) van duoc can dan het.
+		static int   s_nSapDsDau[MAX_PLAYER] = { 0 };
 		const DWORD dwNayDs = SubWorld[0].m_dwCurrentTime;
 		int nSubDs = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
 		if (s_uSapDsChu[nIndex] != Player[nIndex].m_dwID
@@ -6103,6 +6106,7 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 			s_uSapDsNext[nIndex] = 0;
 			s_uSapDsChu[nIndex] = Player[nIndex].m_dwID;
 			s_nSapDsSub[nIndex] = nSubDs;
+			s_nSapDsDau[nIndex] = 1;	// (r5h) thanh moi -> quet lai tu dau
 		}
 		if (dwNayDs < s_uSapDsNext[nIndex])
 			return;
@@ -6110,22 +6114,32 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		char szDs[320];
 		int nLen = sprintf(szDs, "[SapMap]");
 		int nSoDs = 0;
-		for (int i5 = 1; i5 < MAX_PLAYER && nSoDs < 12; ++i5)
+		int nDauDs = s_nSapDsDau[nIndex];
+		if (nDauDs < 1 || nDauDs >= MAX_PLAYER)
+			nDauDs = 1;
+		int nQuetDs = 0;
+		s_nSapDsDau[nIndex] = 1;	// quet het vong ma khong day 12 -> lo sau tu dau
+		for (int i5 = nDauDs; nQuetDs < MAX_PLAYER - 1 && nSoDs < 12; ++nQuetDs)
 		{
-			if (i5 == nIndex || Player[i5].m_nIndex <= 0)
+			const int i5Nay = i5;
+			if (++i5 >= MAX_PLAYER)
+				i5 = 1;	// xoay vong
+			if (nSoDs == 11)
+				s_nSapDsDau[nIndex] = i5;	// lo sau bat dau ngay sau muc thu 12
+			if (i5Nay == nIndex || Player[i5Nay].m_nIndex <= 0)
 				continue;
-			if (Npc[Player[i5].m_nIndex].m_SubWorldIndex != nSubDs
-			 || !Npc[Player[i5].m_nIndex].m_BaiTan)
+			if (Npc[Player[i5Nay].m_nIndex].m_SubWorldIndex != nSubDs
+			 || !Npc[Player[i5Nay].m_nIndex].m_BaiTan)
 				continue;
 			int nSx5, nSy5;
-			Npc[Player[i5].m_nIndex].GetMpsPos(&nSx5, &nSy5);
+			Npc[Player[i5Nay].m_nIndex].GetMpsPos(&nSx5, &nSy5);
 			// (r5f - phan bien) sentlen tren duong day la BYTE va SendSystemInfo
 			// kep = MAX_SENTENCE_LENGTH (256) -> dung 256 TRAN VE 0 lam client
 			// vut trang ca danh ba. Kep 200 cho an toan.
 			if (nLen > DATAU_SAPMAP_MAXLEN)
 				break;
 			nLen += sprintf(szDs + nLen, " %u:%d:%d",
-				Npc[Player[i5].m_nIndex].m_dwID, nSx5 / 32, nSy5 / 32);
+				Npc[Player[i5Nay].m_nIndex].m_dwID, nSx5 / 32, nSy5 / 32);
 			++nSoDs;
 		}
 		Player[nIndex].ExecuteScript("\\script\\player\\mgs2player_from_c.lua", "main", szDs, false);

@@ -3348,7 +3348,7 @@ static UINT  g_uDTSapProbeT = 0;	// han cho tra loi tham do
 static UINT  g_uDTSapCntSeen = 0;	// moc uCntSeq luc gui tham do
 static int   g_nDTSapProbeTry = 0;	// so lan tham do ung vien hien tai
 static DWORD g_dwDTSapOkId = 0;		// ung vien DA qua tham do (sap that, co hang)
-static int   g_nDTSapDsMap = 0;		// (r5e) danh ba sap: map da hoi
+static int   g_nDTSapDsMap = -1;	// (r5e) danh ba sap: map da hoi (-1 = chua hoi)
 static int   g_nDTSapDs = -1;		// so muc (-1 = chua co/cho tra loi)
 static int   g_nDTSapDsCur = 0;		// dang di toi muc nao
 static UINT  g_uDTSapDsT = 0;		// han cho server tra loi
@@ -3356,6 +3356,7 @@ static UINT  g_uDTSapDsFresh = 0;	// luc hoi lan cuoi (90s hoi lai)
 static UINT  g_uDTSapDsSeen = 0;	// seq [SapMap] da doc
 static DWORD g_aDTSapDsId[12];		// danh ba: id / toa do MPS
 static int   g_nDTSapDsTry = 0;		// (r5f) so lan da hoi danh ba o map nay
+static UINT  g_uDTSapDsItemT = 0;	// (r5h) han di toi MOT muc danh ba (45 giay)
 static int   g_aDTSapDsX[12];
 static int   g_aDTSapDsY[12];
 
@@ -3415,6 +3416,26 @@ static bool DT_SapDaXem(DWORD dwId)
 		if (g_aDTSapDone[i] == dwId)
 			return true;
 	return false;
+}
+
+// (r5h - phan bien vong 3) cac bien danh ba la static trong DLL nen song qua
+// ca chuyen di cho / doi nhan vat. Vong Da Tau moi vao lai DUNG thanh cu ma
+// danh ba con "da tieu thu het" thi khoi di toi bi bo qua, waypoint cung bi
+// chan -> bo nguyen mot thanh. Goi ham nay o MOI loi vao DTP_MUASAP.
+static void DT_SapDsReset()
+{
+	g_nDTSapDsMap = -1;
+	g_nDTSapDs = -1;
+	g_nDTSapDsCur = 0;
+	g_nDTSapDsTry = 0;
+	g_uDTSapDsFresh = 0;
+	g_uDTSapDsT = 0;
+	g_uDTSapDsItemT = 0;
+	g_dwDTSapOkId = 0;
+	g_dwDTSapProbe = 0;
+	// PHAI nuot seq hien tai (khong dat 0) - khong thi goi [SapMap] sot lai cua
+	// chuyen truoc se bi phan tich lai thanh danh ba cu ngay nhip dau.
+	g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
 }
 
 static void DT_SapGhiXem(DWORD dwId)
@@ -4502,6 +4523,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					g_uDTSapDwell = 0;
 					g_nDTSapXem = 0;
 					g_nDTSapCam = 0;
+					DT_SapDsReset();	// (r5h) chuyen di cho moi - danh ba cu het hieu luc
 					ea.nDTPhase = DTP_MUASAP;
 					ea.nDTRetry = 0;
 					ea.uDTHoldUntil = uCurTime + 25u * 60u * 1000u;	// han toan cuoc di cho
@@ -4524,6 +4546,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				g_uDTSapDwell = 0;
 				g_nDTSapXem = 0;
 				g_nDTSapCam = 0;
+				DT_SapDsReset();	// (r5h) chuyen di cho moi - danh ba cu het hieu luc
 				ea.nDTPhase = DTP_MUASAP;
 				ea.nDTRetry = 0;
 				ea.uDTHoldUntil = uCurTime + 25u * 60u * 1000u;
@@ -5470,7 +5493,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (g_nDTSapDsMap != nMap
 		 || (g_nDTSapDs >= 0 && uCurTime > g_uDTSapDsFresh + 90000)
 		 || (g_nDTSapDs < 0 && uCurTime > g_uDTSapDsT && g_nDTSapDsTry < 3
-		  && g_sDTCap.uSapMapSeq == g_uDTSapDsSeen))
+		  && g_sDTCap.uSapMapSeq == g_uDTSapDsSeen
+		  && uCurTime > g_uDTSapDsFresh + 5200))	// (r5h) phai VUOT cooldown 5
+					// giay ben server, khong thi goi hoi lai bi vut im lang
 		{
 			if (g_nDTSapDsMap != nMap || g_nDTSapDs >= 0)
 				g_nDTSapDsTry = 0;
@@ -5481,7 +5506,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			g_uDTSapDsFresh = uCurTime;
 			// han cho: lan DAU 1,8 giay; cac lan hoi lai phai > 5 giay (cooldown
 			// chong spam ben server) khong thi goi hoi lai bi vut im lang.
-			g_uDTSapDsT = uCurTime + (g_nDTSapDsTry <= 1 ? 1800u : 6000u);
+			g_uDTSapDsT = uCurTime + 1800;	// han "coi nhu mat goi" + han dung im
 			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
 			SendClientCmdGetCount(DATAU_SAPMAP_ID);
 			ea.uDTNext = uCurTime + 300;
@@ -5491,6 +5516,12 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
 			g_nDTSapDsTry = 0;	// (r5g) co hoi am = kenh song, nap lai ngan sach
+			// (r5h) g_uDTSapWptT/g_uDTSapDwell la MOC TUYET DOI: roi di tuan sang
+			// che do danh ba ma de moc treo thi lan tuan sau se DOT thang diem tu
+			// tap dau tien (het han ngay nhip dau, chua di toi).
+			g_uDTSapWptT = 0;
+			g_uDTSapDwell = 0;
+			g_uDTSapDsItemT = 0;
 			g_nDTSapDs = 0;
 			g_nDTSapDsCur = 0;
 			const char* pDs = g_sDTCap.szSapMap + 8;
@@ -5527,6 +5558,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			while (g_nDTSapDsCur < g_nDTSapDs
 			 && DT_SapDaXem(g_aDTSapDsId[g_nDTSapDsCur]))
 				++g_nDTSapDsCur;
+			g_uDTSapWptT = 0;	// (r5h) dang chay che do danh ba - moc tuan phai sach
+			g_uDTSapDwell = 0;
 			if (g_nDTSapDsCur < g_nDTSapDs)
 			{
 				const int nDs = g_nDTSapDsCur;
@@ -5539,18 +5572,40 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					{
 						DT_SapGhiXem(g_aDTSapDsId[nDs]);	// sap da don/doi cho
 						++g_nDTSapDsCur;
+						g_uDTSapDsItemT = 0;
 					}
 					// con sap that o day: vong quet phia tren tu tham do + mo xem
 					ea.uDTNext = uCurTime + 400;
 					return 1;
 				}
+				// (r5h - phan bien vong 3) HAN 45 GIAY cho MOI muc: toa do co the
+				// khong bo toi duoc (NPC lam tuong, o cua, hoac map KHONG CO LUOI
+				// DUONG - FindPath tra -1 nen bot dung im vinh vien). Het gio thi
+				// GHI XEM (khong chi ++Cur - vi lam moi 90 giay dat Cur ve 0) roi
+				// qua muc ke, khong de mot sap lam ket ca thanh 25 phut.
+				if (!g_uDTSapDsItemT)
+					g_uDTSapDsItemT = uCurTime + 45000;
+				if (uCurTime > g_uDTSapDsItemT)
+				{
+					DT_SapGhiXem(g_aDTSapDsId[nDs]);
+					++g_nDTSapDsCur;
+					g_uDTSapDsItemT = 0;
+					DT_Msg(nPlayerIdx, "<color=Gray>Kh\253ng \256\325n \256\255\356c ch\347 s\271p n\265y - b\341 qua, \256i s\271p k\325.");
+					ea.uDTNext = uCurTime + 300;
+					return 1;
+				}
 				DT_WalkTo(nPlayerIdx, g_aDTSapDsX[nDs], g_aDTSapDsY[nDs], 250, uCurTime);
 				return 1;
 			}
-			// het danh ba - coi nhu xong thanh nay, khoi di tuan mu
+			// het danh ba -> KHONG dung o day: van di tuan cac diem tu tap de quet
+			// not sap ngoai 12 muc server tra ve (thanh dong co the co nhieu hon).
 		}
-		// khong co danh ba (server cu) -> di tuan cac diem tu tap nhu truoc
-		if (g_nDTSapDs < 0 && DT_SapWaypoint(nPlayerIdx, nMap, uCurTime))
+		// (r5h - phan bien vong 3) TRUOC day chi di tuan khi danh ba THAT BAI, ma
+		// server chi tra toi da 12 sap -> thanh dong bi tuyen bo "xong" sau 12 sap,
+		// do phu THAP HON ban truoc khi co danh ba. Nay: danh ba di truoc (dia chi
+		// chinh xac), het danh ba thi tour diem tu tap quet not, het CA HAI moi qua
+		// thanh ke.
+		if (DT_SapWaypoint(nPlayerIdx, nMap, uCurTime))
 			return 1;
 		// het thanh nay -> danh dau roi qua thanh ke
 		{
