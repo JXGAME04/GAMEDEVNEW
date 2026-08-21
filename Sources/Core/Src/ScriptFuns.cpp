@@ -2369,6 +2369,27 @@ int LuaDynamicExecute(Lua_State* L)
 	return 0;
 }
 
+// [WLLS 21/08] _ALERT: Lua 4 mac dinh in loi runtime ra stderr (console) nen
+// chay dich vu la MAT SACH thong diep ("attempt to index...", so dong) - chi
+// con ma so + ten ham trong ScriptError.log. Dang ky ban C de _ERRORMESSAGE
+// goi ve day, ghi nguyen van vao CUNG file ScriptError.log (fopen append
+// tuong doi nhu KLuaScript::WriteLogScriptErrorFile). Ap dung ca dofile/
+// dostring that bai (deferred dw, DynamicExecute) truoc nay chi thay o console.
+int LuaGameAlert(Lua_State* L)
+{
+	if (Lua_IsString(L, 1))
+	{
+		const char* psz = (const char*)Lua_ValueToString(L, 1);
+		FILE* pFile = fopen("ScriptError.log", "a");
+		if (pFile)
+		{
+			fprintf(pFile, "%s\n", psz);
+			fclose(pFile);
+		}
+	}
+	return 0;
+}
+
 // IncludeLib("TEN_MODULE") cua script JX2 -> nap file lib tuong ung o scriptjx2.
 // Module la nhan rieng cua engine JX2; module khong co trong bang thi bo qua im lang.
 int LuaIncludeLib(Lua_State* L)
@@ -12950,6 +12971,7 @@ extern int LuaPB_SetBuff(Lua_State* L);
 extern int LuaPB_SetDaTau(Lua_State* L);
 extern int LuaPB_SetBanSap(Lua_State* L);
 extern int LuaPB_SetVeThanh(Lua_State* L);
+extern int LuaPB_SetNpcChan(Lua_State* L);
 extern int PB_IsBot(int nPlayerIdx);
 
 // IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
@@ -13371,6 +13393,7 @@ TLua_Funcs GameScriptFuns[] =
 	// -> "attempt to call global 'IL'" lam cac file do nap DUT giua chung.
 	// Loi CO SAN tu dot C; truoc hom nay khong lo vi boot chet som hon o cho khac.
 	{"IL",LuaIncludeLib},
+	{"_ALERT",LuaGameAlert},	// [WLLS 21/08] loi runtime Lua ghi nguyen van vao ScriptError.log
 	// == DA TAU TASKLINK (JX2 port) 15/08/2026 - xem DANHSACH_DATAU_PORT.md ==
 	{"C_Random",			LuaC_Random},
 	{"SetRandSeed",			LuaSetRandSeed},
@@ -13628,6 +13651,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_SetDaTau",		LuaPB_SetDaTau},	// (19/08) gioi han so bot lam Da Tau
 	{"PB_SetBanSap",	LuaPB_SetBanSap},	// (19/08) so bot ra thanh ngoi ban sap
 	{"PB_SetVeThanh",	LuaPB_SetVeThanh},	// (19/08 toi) goi het bot ve thanh/thon chia deu (1=bat 0=tat -1=doc)
+	{"PB_SetNpcChan",	LuaPB_SetNpcChan},	// (20/08 dem) NPC la tuong: 1=bat nhu goc, 0=dung chong len nhau (mac dinh), -1=doc
 	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},

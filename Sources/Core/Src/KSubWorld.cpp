@@ -202,6 +202,7 @@ inline void AddNeighbourUnique(int* arr, int& count, int maxCount, int value)
 #ifdef _SERVER
 extern void PB_LogNgoai(const char* szFmt, ...);
 #endif
+extern int g_nPbNpcChan;	// KRegion.cpp - cong tac 'NPC la tuong' (0 = nguoi/bot/quai khong chan nhau)
 
 void KSubWorld::ProcLoadPathGrid()
 {
@@ -831,7 +832,9 @@ int KSubWorld::FindPath_NpcObs(int startParentId, int goalParentId)
 					for(int xx = 0;xx < (int)nbNode.w; ++xx)
 					{
 						Mps2Map((nbNode.x + xx)*32, (nbNode.y + yy)*32, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
-						if(nRegion >= 0 && m_Region[nRegion].GetRef(nMapX, nMapY, obj_npc) <= 0)
+						// (20/08 dem) cong tac NPC-la-tuong TAT -> khong o nao bi coi la
+						// "co nguoi chan" nua (xem g_nPbNpcChan o KRegion.cpp)
+						if(nRegion >= 0 && (!g_nPbNpcChan || m_Region[nRegion].GetRef(nMapX, nMapY, obj_npc) <= 0))
 						{
 							bObsNpc = false;
 							break;

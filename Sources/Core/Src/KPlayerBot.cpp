@@ -1549,6 +1549,34 @@ int LuaPB_SetBanSap(Lua_State* L)
 }
 
 // ===========================================================================
+// (20/08 dem - chu game: "thu lam phan nguoi choi hay bot khong phai vat can
+// co the dung chong len nhau xem con bi khong") CONG TAC 'NPC LA TUONG'.
+// Dinh nghia that o KRegion.cpp (g_nPbNpcChan): moi diem doc m_pNpcRef phia
+// server (GetBarrier / GetBarrierMin / FindPath_NpcObs) deu di qua cong tac.
+// Mac dinh 0 = nguoi choi/bot/quai KHONG chan duong nhau (thi nghiem chong
+// canh dam dong ep bot truot ra ngoai map); PB_SetNpcChan(1) = ve ban goc
+// ngay lap tuc, khong can restart; PB_SetNpcChan(-1) = doc trang thai.
+extern int g_nPbNpcChan;
+
+int PB_SetNpcChan(int nBat)
+{
+	if (nBat >= 0)
+	{
+		g_nPbNpcChan = nBat ? 1 : 0;
+		pb_Log("[BotChan] NPC la tuong: %s\n",
+		       g_nPbNpcChan ? "BAT (ban goc - NPC chan duong nhau)"
+		                    : "TAT (nguoi choi/bot/quai dung chong len nhau duoc)");
+	}
+	return g_nPbNpcChan;
+}
+
+int LuaPB_SetNpcChan(Lua_State* L)
+{
+	int nBat = (Lua_GetTopIndex(L) >= 1) ? (int)Lua_ValueToNumber(L, 1) : -1;
+	Lua_PushNumber(L, PB_SetNpcChan(nBat));
+	return 1;
+}
+
 // GOI BOT VE THANH THI / THON (chu game 19/08 toi #4): "viet 1 ham o lenh bai
 // admin de keu toan bo BOT o cac map ve lai cac map thanh thi va thon, yeu cau
 // chia bot ra deu cac map khong gom 1 cho". Lam thanh CHE DO bat/tat (bai hoc

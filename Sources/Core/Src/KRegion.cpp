@@ -19,6 +19,14 @@
 #include "MyAssert.H"
 #include <chrono>
 
+// (20/08 dem - chu game: "thu lam phan nguoi choi hay bot khong phai vat can
+// co the dung chong len nhau xem con bi khong") CONG TAC 'NPC LA TUONG':
+//   0 = nguoi choi/bot/quai KHONG chan duong nhau (dung chong len nhau duoc) -
+//       moi diem DOC m_pNpcRef phia SERVER deu bo qua; bo dem AddRef/DecRef
+//       van chay du nen bat lai la ve nguyen trang, khong dong 20 cap cong/tru.
+//   1 = ban goc: NPC dung o nao thi o do la vat can song (Obstacle_JumpFly).
+// Doi luc chay bang lenh GM Lua PB_SetNpcChan(1/0/-1) - khong can restart.
+int g_nPbNpcChan = 0;
 KRegion::KRegion()
 {
 	m_nIndex		= -1;
@@ -946,7 +954,7 @@ BYTE KRegion::GetBarrier(int nMapX, int nMapY, int nDx, int nDy)
 	}
 	if (lRet != Obstacle_NULL)
 		return lRet;
-	if (m_pNpcRef)
+	if (g_nPbNpcChan && m_pNpcRef)
 	{
 		if (m_pNpcRef[nMapY * m_nWidth + nMapX] > 0)
 			return Obstacle_JumpFly;
@@ -981,7 +989,7 @@ BYTE	KRegion::GetBarrierMin(int nGridX, int nGridY, int nOffX, int nOffY, BOOL b
 
 	if (lRet == Obstacle_NULL)
 	{
-		if (bCheckNpc && m_pNpcRef)
+		if (g_nPbNpcChan && bCheckNpc && m_pNpcRef)
 		{
 			if (m_pNpcRef[nGridY * m_nWidth + nGridX] > 0)
 				return Obstacle_JumpFly;
