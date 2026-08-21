@@ -698,10 +698,28 @@ mô tả mục 2: người khác bị chắn thì giương cờ + giữ trạng 
   `GetSprFrame` từng khung, so từng byte với bản gốc; lệch = abort). Kèm verifier
   python độc lập so header/index/mục-copy. Mục có khung 0-byte / vượt 16 MiB /
   pak >65535 mục (trần WORD `Reserved[2]`) tự động giữ nguyên.
-- **Đã kiểm chứng**: `skills.pak` 257 mục → 131 chuyển, verify PASS cả hai tầng.
-  `ucl_init()` của ucl-1.01 kêu fail oan trên MSVC 2022 (assert đời 2000) — thay
-  bằng self-test chức năng nén↔giải nén 300 KB; **tool phải build x86** (x64 hỏng
-  thật do truncation con trỏ trong thư viện).
+- **Đã kiểm chứng**: `ucl_init()` của ucl-1.01 kêu fail oan trên MSVC 2022 (assert
+  đời 2000) — thay bằng self-test chức năng nén↔giải nén 300 KB; **tool phải build
+  x86** (x64 hỏng thật do truncation con trỏ trong thư viện).
+- **Phát hiện thêm khi chạy**: `updatejx14/15` dùng byte cờ **`0x20` (nhãn "pak
+  VNG")** cho gần như mọi mục — `ExtractRead` (XPackFile.cpp:258) đối xử y hệt
+  `TYPE_UCL`, toàn repo chỉ đúng một chỗ đó đọc `0x20000000`. Tool nhận cả `0x01`
+  lẫn `0x20` làm nguồn nhưng **output bắt buộc `0x11`** — vì `GetSprFrame:559`
+  mask `TYPE_METHOD_FILTER (0x0f)`, cờ kiểu `0x30` sẽ giải mã thành `TYPE_NONE`
+  và hỏng (rủi ro R2 của bản phân tích).
+
+**KẾT QUẢ ĐÃ CHẠY (20/08 tối, output tại `ReverseTools\repack_typeframe\out\`):**
+
+| pak | mục | chuyển TYPE_FRAME | payload | verify tool (từng byte khung) | verify_pak.py |
+|---|---|---|---|---|---|
+| skills.pak (thử) | 257 | 131 | +1,6 MB | PASS | PASS |
+| **spr.pak** | 14.616 | **5.504** (từ 43) | +184 MB (~26%) | PASS | PASS |
+| update01.pak | 17.609 | 350 | +13 MB | PASS | PASS |
+| updatejx14.pak | 20.245 | **8.138** (từ 0) | +179 MB | PASS | PASS |
+| updatejx15.pak | 22.209 | **6.859** (từ 0) | +140 MB | PASS | PASS |
+
+Mục "skipped" (42-172/pak) = file lớn không phải SPR hoặc SPR 1 khung hoặc có
+khung 0-byte — giữ nguyên byte, không mất gì.
 - Engine đọc frame-mode **tự kích hoạt theo cờ trong pak** — không cần đổi mã,
   không cần config (bằng chứng: `KImageStore2.cpp:811/:833` rẽ nhánh theo
   `pOffsTable == NULL`, chỉ nhánh TYPE_FRAME trả NULL).
