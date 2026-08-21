@@ -485,18 +485,26 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 		{
 			if (m_nSortTable[i] >= 0 && m_nSortTable[i] < MAX_PART)
 			{
+				// Bo qua o KHONG co hieu ung trang bi. Phan lon NPC (nhat la quai thuong -
+				// KNpcResNode.cpp chi dat lpnTable[0]) khong he co hieu ung, truoc day van
+				// gui di anh co ten RONG => hang nghin o rong moi khung luc dong nguoi.
+				if (!m_cNpcEffectImage[m_nSortTable[i]].m_szName[0])
+					continue;
+				// Dung nPos cho CA kieu ve lan anh. Truoc day kieu ve/mau gan vao
+				// m_cDrawFile[i] con anh gan vao m_cDrawFile[nPos]: khi bang thu tu co "lo"
+				// (i != nPos) thi anh nhan kieu blend cua mot o KHAC.
 				if (m_ulAdjustColorId > 0 && m_ulAdjustColorId <= g_ulAdjustColorCount)
 				{
-					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
-					m_cDrawFile[i].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
+					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA_COLOR_ADJUST;
+					m_cDrawFile[nPos].Color.Color_dw = g_pAdjustColorTab[m_ulAdjustColorId - 1];
 				}
 				else
 				{
-					m_cDrawFile[i].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
+					m_cDrawFile[nPos].bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
 					if (Npc[nNpcIdx].m_HideState.nTime)
-						m_cDrawFile[i].Color.Color_b.a = START_BLUR_ALPHA;
+						m_cDrawFile[nPos].Color.Color_b.a = START_BLUR_ALPHA;
 					else
-						m_cDrawFile[i].Color.Color_b.a = 255;
+						m_cDrawFile[nPos].Color.Color_b.a = 255;
 				}
 				strcpy(m_cDrawFile[nPos].szImage, m_cNpcEffectImage[m_nSortTable[i]].m_szName);
 				m_cDrawFile[nPos].uImage = m_cNpcEffectImage[m_nSortTable[i]].m_dwNameID;
@@ -507,7 +515,9 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 				nPos++;
 			}
 		}
-		g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);
+		// Khong goi khi khong co gi de ve (moi quai thuong tiet kiem mot loi goi/khung).
+		if (nPos)
+			g_pRepresent->DrawPrimitives(nPos, m_cDrawFile, RU_T_IMAGE, bInMenu);
 		nPos = 0;
 		for (i = 0; i < MAX_PART; i++)
 		{
