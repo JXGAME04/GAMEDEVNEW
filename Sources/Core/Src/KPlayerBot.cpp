@@ -365,6 +365,54 @@ static void pb_Log(const char* szFmt, ...)
 	// [BotTrap]...) nen bo o day la tat duoc CA HE. Cua so GameServer giu nguyen
 	// nhung dong thong tin cua chinh may chu; nhat ky bot xem trong bot.log.
 
+	// (21/08 - chu game: "log nao khong dung nua thi tat di") Do thuc te: bot.log
+	// dat 430 MB trong MOT phien. Loc ngay tai day theo NHAN dau dong - mot cho
+	// duy nhat, khong phai sua hang tram diem goi. Muon bat lai mot nhan nao thi
+	// chi viec xoa no khoi bang duoi.
+	//
+	// Cac nhan bi tat la cua nhung dot dieu tra DA DONG (nhat do 18/08, tui/xoa
+	// do, sat thuong, to doi, hoang mang). Cac nhan cua dot dang chay - [BotTK],
+	// [BotTrap], [BotDanh], [BotVongSang], [BotUong], [BotKet], [BotBien],
+	// [BotLach], [BotCuu], [BotNgoai], [PathSrv] - GIU NGUYEN.
+	{
+		static const char* const s_szTat[] = {
+			"[BotNhat]", "[BotXoaDo]", "[BotTui]",
+			"[BotDame]", "[BotHoang]", "[BotNhom]",
+		};
+		for (int i = 0; i < (int)(sizeof(s_szTat) / sizeof(s_szTat[0])); i++)
+		{
+			const char* p = s_szTat[i];
+			if (strncmp(szBuf, p, strlen(p)) == 0)
+				return;
+		}
+	}
+
+	// Xoay tep khi qua 256 MB: doi ten thanh bot.log.1 (de mat ban cu nhat, giu
+	// lai duoc mot doi). Khong co buoc nay thi mot phien chay dai lam day o dia -
+	// no da tung len gan 1 GB (ghi nhan 19/08).
+	// Chi do co MOI 4096 DONG, khong phai moi dong: ham nay da ton mot cap
+	// fopen/fclose cho moi dong roi, them mot cap nua de do co la gap doi so lan
+	// cham o dia trong khi tep chi phinh khoang 300 KB sau 4096 dong.
+	{
+		static int s_nDemXoay = 0;
+		if (++s_nDemXoay >= 4096)
+		{
+			s_nDemXoay = 0;
+			FILE* fKt = fopen("bot.log", "rb");
+			if (fKt)
+			{
+				fseek(fKt, 0, SEEK_END);
+				long lCo = ftell(fKt);
+				fclose(fKt);
+				if (lCo > 256L * 1024L * 1024L)
+				{
+					remove("bot.log.1");
+					rename("bot.log", "bot.log.1");
+				}
+			}
+		}
+	}
+
 	FILE* f = fopen("bot.log", "a");
 	if (!f)
 		return;
