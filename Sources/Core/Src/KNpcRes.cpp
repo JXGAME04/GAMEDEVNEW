@@ -235,24 +235,41 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 				}
 				else
 				{
-					KImageParam	sImage;
-					if (g_pRepresent->GetImageParam(m_cNpcImage[i].m_szName, &sImage, ISI_T_SPR))
+					// Ask the image store ONCE per file-name change (m_bChange is set
+					// by SetSprFile and was never consumed). Before: GetImageParam ran
+					// EVERY paint frame for EVERY equipment part - name hash + image
+					// lock + tree lookup, and on a cache miss it LOADED THE WHOLE SPR
+					// mid-frame. The values it fetches (frame/dir count of the file)
+					// are constant per file name.
+					if (m_cNpcImage[i].m_bChange)
 					{
-						m_cNpcImage[i].m_nTotalDir = sImage.nNumFramesGroup;
-						m_cNpcImage[i].m_nTotalFrame = sImage.nNumFrames;
-						m_cNpcImage[i].SetCurFrame(nCurFrameNo);
+						KImageParam	sImage;
+						if (g_pRepresent->GetImageParam(m_cNpcImage[i].m_szName, &sImage, ISI_T_SPR))
+						{
+							m_cNpcImage[i].m_nTotalDir = sImage.nNumFramesGroup;
+							m_cNpcImage[i].m_nTotalFrame = sImage.nNumFrames;
+							m_cNpcImage[i].m_bChange = FALSE;
+						}
 					}
+					if (!m_cNpcImage[i].m_bChange)
+						m_cNpcImage[i].SetCurFrame(nCurFrameNo);
 				}
 			}
 			if (m_cNpcEffectImage[i].CheckExist())
 			{
-				KImageParam	sImage;
-				if (g_pRepresent->GetImageParam(m_cNpcEffectImage[i].m_szName, &sImage, ISI_T_SPR))
+				// Same as above: query once per file-name change, not every frame.
+				if (m_cNpcEffectImage[i].m_bChange)
 				{
-					m_cNpcEffectImage[i].m_nTotalDir = sImage.nNumFramesGroup;
-					m_cNpcEffectImage[i].m_nTotalFrame = sImage.nNumFrames;
-					m_cNpcEffectImage[i].m_nTotalDir > 1 ? m_cNpcEffectImage[i].SetCurFrame(nCurFrameNo) : m_cNpcEffectImage[i].GetNextFrame();
+					KImageParam	sImage;
+					if (g_pRepresent->GetImageParam(m_cNpcEffectImage[i].m_szName, &sImage, ISI_T_SPR))
+					{
+						m_cNpcEffectImage[i].m_nTotalDir = sImage.nNumFramesGroup;
+						m_cNpcEffectImage[i].m_nTotalFrame = sImage.nNumFrames;
+						m_cNpcEffectImage[i].m_bChange = FALSE;
+					}
 				}
+				if (!m_cNpcEffectImage[i].m_bChange)
+					m_cNpcEffectImage[i].m_nTotalDir > 1 ? m_cNpcEffectImage[i].SetCurFrame(nCurFrameNo) : m_cNpcEffectImage[i].GetNextFrame();
 			}
 		}
 	}
