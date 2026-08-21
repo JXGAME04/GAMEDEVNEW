@@ -6866,7 +6866,13 @@ static int s_nTkDemKim   = 0;
 // phe vuot len -> so con lai bi tu choi im lang va dot het lan thu.
 static unsigned int s_uTkBamTick[3] = { 0, 0, 0 };
 
-#define PB_TK_CHO_RATRAN  (GAME_FPS * 90)   // TIME_IN_TRAI: nguoi choi bi day ra sau 90 giay
+// (21/08 do lai) NGUOI CHOI CHI BI GIU TRONG TRAI 10 GIAY, khong phai 90.
+// tongratrai.lua:21 cho ra khi GetRestTime() <= (TIME_IN_TRAI - TIME_DELAY_RA_TRAI)*18
+// = (90 - 10)*18, ma dong ho bat dau tu 90*18 va giam theo GIO GAME -> qua duoc
+// ngay khi troi 10 giay. TIME_IN_TRAI = 90 chi la THOI GIAN TOI DA duoc o trong
+// trai (lib_tktc.lua:65-66). Cho 90 giay la bot dung im trong trai gan het pha
+// dau tran - dung canh chu game thay.
+#define PB_TK_CHO_RATRAN  (GAME_FPS * 12)   // 10 giay cua trap + 2 giay bien
 #define PB_TK_DICH_HAN    (GAME_FPS * 45)   // toi da bam mot diem doanh trai dich
 #define PB_TK_DOANH_LAI   (GAME_FPS * 30)   // lam moi bang toa do NPC dich
 #define PB_TK_PHA_HAN     (GAME_FPS * 120)  // qua han mot pha -> go co, khoi ket vinh vien
@@ -7175,6 +7181,57 @@ static void pb_TkGoCo(int nIdx, int nNpcIdx, PB_Bot& b)
 }
 
 // ---------------------------------------------------------------------------
+// RA KHOI HAU DOANH - di BO toi dung toa do cua trai roi MOI goi kich ban trap.
+//
+// Chu game 21/08: "khi vao hau doanh phai di chuyen toi mua mau roi se cho di
+// chuyen toi toa do trap roi moi goi lai kich ban trap ra trai". Nguoi choi that
+// phai di bo qua cua trai; goi kich ban tu giua trai la nhin ra ngay.
+//
+// Trap nam o TOA DO CO DINH (lib_tktc.lua:648 va :650) trong khi HAI PHE DOI CHO
+// cho nhau moi tran (common_tong dung TKPOS_GO_HDOANH[nViTri], common_kim dung
+// chi so nguoc lai) -> luon lay cua GAN MINH NHAT, khong lay "cua cua phe minh".
+//
+// Tra ve:  1 = da qua trap (goi kich ban xong)
+//          0 = dang di bo toi cua trai
+//         -1 = khong co duong toi cua trai
+static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int now)
+{
+	int bx = 0, by = 0;
+	Npc[nNpcIdx].GetMpsPos(&bx, &by);
+	static const int aTx[2] = { 1251, 1661 };   // cua trai (o) - tongratrai / kimratrai
+	static const int aTy[2] = { 3529, 3098 };
+	const __int64 dT = (__int64)(bx - aTx[0] * 32) * (bx - aTx[0] * 32)
+	                 + (__int64)(by - aTy[0] * 32) * (by - aTy[0] * 32);
+	const __int64 dK = (__int64)(bx - aTx[1] * 32) * (bx - aTx[1] * 32)
+	                 + (__int64)(by - aTy[1] * 32) * (by - aTy[1] * 32);
+	const int k = (dT <= dK) ? 0 : 1;
+
+	const int nW = PB_WalkTo(nNpcIdx, aTx[k] * 32, aTy[k] * 32, nSub, b.walk,
+	                         PB_FAC_ARRIVE_MPS);
+	if (nW == 0)
+		return 0;                      // dang di bo toi cua trai
+	if (nW < 0)
+		return -1;                     // khong co duong
+
+	// Da dung o cua trai -> "buoc qua trap": goi dung kich ban ma nguoi choi dam
+	// vao. No lam DU: SetPMParam(MS_TONGKIM, idx, 1, 1) (co "dang chien dau" -
+	// task02.lua KHONG co, dong do da bi chu thich), SetPos 1 trong 8 diem xuat
+	// quan, SetDeathScript theo M_VITRI_TRENDUOI, SetFightState(1),
+	// SetProtectTime 3 giay, AddSkillState(963), StopTimer.
+	// Cong chan thoi gian dau ham vo hai voi bot: GetRestTime() (KTaskFuns.h:54)
+	// tinh bang GIO GAME nen van giam du KPlayer::Active khong chay cho bot.
+	if (now - b.nTkRaTick < (unsigned int)(GAME_FPS * 3))
+		return 0;                      // gion 3 giay giua hai lan buoc qua trap
+	b.nTkRaTick = now;
+	Player[nIdx].ExecuteScript(
+	    (char*)((k == 0) ? "\\script\\maps\\tongkim\\trap\\tongratrai.lua"
+	                     : "\\script\\maps\\tongkim\\trap\\kimratrai.lua"),
+	    (char*)"main", nIdx, false);
+	b.walk.Reset();
+	return 1;
+}
+
+// ---------------------------------------------------------------------------
 // MAY TRANG THAI mot bot trong Tong Kim. Goi tu pb_DriveBot, ngay SAU khoi tu
 // hoi sinh (de bot chet trong tran van song lai) va TRUOC moi nhanh khac (ban
 // sap / ve thanh / Da Tau / ra bai) - bon nhanh do se keo bot ra khoi tran
@@ -7441,42 +7498,27 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			b.nTkMuaXong = 1;              // mua roi, hoac khong co Quan Y -> thoi
 			b.walk.Reset();
 		}
-		// Nguoi choi bi SetTimer(TIME_IN_TRAI*18, 2) day ra sau 90 giay; dong ho
-		// do CHET voi bot (KPlayer::Active return som khi m_nNetConnectIdx == -1)
-		// nen C++ tu dem. Rai le vai giay theo chi so bot cho khoi ca dan xuat
-		// hien cung mot khung o 8 diem xuat quan.
+		// Cho du 12 giay (10 giay cong trap doi + 2 giay bien) roi moi ra cua
+		// trai. Rai le vai giay theo chi so bot cho khoi ca dan xuat hien cung
+		// mot khung o 8 diem xuat quan.
 		if (now - b.nTkTick < (unsigned int)(PB_TK_CHO_RATRAN + (nLech % 10) * GAME_FPS))
 			return;
-		// Goi CHINH kich ban TRAP ra trai ma nguoi choi dam vao khi di bo ra khoi
-		// hau doanh. No lam DU: SetPMParam(MS_TONGKIM, idx, 1, 1) (co "dang chien
-		// dau" - task02.lua KHONG co, dong do da bi chu thich), SetPos 1 trong 8
-		// diem xuat quan, SetDeathScript theo M_VITRI_TRENDUOI, SetFightState(1),
-		// SetProtectTime 3 giay, AddSkillState(963), StopTimer.
-		// Cong doan chan thoi gian dau ham vo hai voi bot: GetRestTime() cua bot
-		// = 0 (SetTimer chet voi bot) nen nRemain am, di thang qua.
-		//
-		// LAY TRAP GAN MINH NHAT chu khong phai "trap cua phe minh": trap nam o
-		// TOA DO CO DINH (lib_tktc.lua:648 va :650) trong khi HAI PHE DOI CHO cho
-		// nhau moi tran (common_tong dung TKPOS_GO_HDOANH[nViTri], common_kim
-		// dung chi so nguoc lai). Lay theo khoang cach la dung y het nguoi choi
-		// di bo ra cua doanh trai minh dang dung, va tu dung o ca hai the tran.
+		// (21/08 chu game) DI BO toi cua trai truoc, toi noi MOI buoc qua trap.
 		{
-			int nBx5 = 0, nBy5 = 0;
-			Npc[nNpcIdx].GetMpsPos(&nBx5, &nBy5);
-			const __int64 dT = (__int64)(nBx5 - 1251 * 32) * (nBx5 - 1251 * 32)
-			                 + (__int64)(nBy5 - 3529 * 32) * (nBy5 - 3529 * 32);
-			const __int64 dK = (__int64)(nBx5 - 1661 * 32) * (nBx5 - 1661 * 32)
-			                 + (__int64)(nBy5 - 3098 * 32) * (nBy5 - 3098 * 32);
-			Player[nIdx].ExecuteScript(
-			    (char*)((dT <= dK) ? "\\script\\maps\\tongkim\\trap\\tongratrai.lua"
-			                       : "\\script\\maps\\tongkim\\trap\\kimratrai.lua"),
-			    (char*)"main", nIdx, false);
+			const int nRa = pb_TkRaTrai(nIdx, nNpcIdx, nSub, b, now);
+			if (nRa == 0)
+				return;                    // dang di bo toi cua trai
+			if (nRa < 0)
+			{
+				b.walk.Reset();            // khong co duong - tinh lai nhip sau
+				return;
+			}
 		}
 		b.nTk = 4;
 		b.nTkTick = now;
 		b.nTkDichTick = 0;
 		b.walk.Reset();
-		pb_Log("[BotTK] %s phe %s RA TRAN\n", Player[nIdx].m_PlayerName,
+		pb_Log("[BotTK] %s phe %s qua cua trai RA TRAN\n", Player[nIdx].m_PlayerName,
 		       (b.nTkPhe == 1) ? "Tong" : "Kim");
 		return;
 	}
@@ -7519,26 +7561,19 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		}
 		if (bTrongTrai)
 		{
-			if (now - b.nTkRaTick < (unsigned int)(GAME_FPS * 3))
-				return;
-			b.nTkRaTick = now;
-			const __int64 dT7 = (__int64)(nHx7 - 1251 * 32) * (nHx7 - 1251 * 32)
-			                  + (__int64)(nHy7 - 3529 * 32) * (nHy7 - 3529 * 32);
-			const __int64 dK7 = (__int64)(nHx7 - 1661 * 32) * (nHx7 - 1661 * 32)
-			                  + (__int64)(nHy7 - 3098 * 32) * (nHy7 - 3098 * 32);
-			Player[nIdx].ExecuteScript(
-			    (char*)((dT7 <= dK7) ? "\\script\\maps\\tongkim\\trap\\tongratrai.lua"
-			                         : "\\script\\maps\\tongkim\\trap\\kimratrai.lua"),
-			    (char*)"main", nIdx, false);
+			// DI BO toi cua trai roi moi buoc qua trap - y het luc moi vao tran.
+			const int nRa7 = pb_TkRaTrai(nIdx, nNpcIdx, nSub, b, now);
 			b.nTkDichX = 0;  b.nTkDichY = 0;  b.nTkDichTick = 0;
-			b.walk.Reset();
+			if (nRa7 < 0)
+				b.walk.Reset();            // khong co duong - tinh lai nhip sau
 			{
 				static unsigned int s_uLogRa = 0;
-				if (now - s_uLogRa >= (unsigned int)(GAME_FPS * 5))
+				if (nRa7 == 1 && now - s_uLogRa >= (unsigned int)(GAME_FPS * 5))
 				{
 					s_uLogRa = now;
-					pb_Log("[BotTK] %s ket trong hau doanh o(%d,%d) -> goi lai trap ra trai\n",
-					       Player[nIdx].m_PlayerName, nHx7 / 32, nHy7 / 32);
+					pb_Log("[BotTK] %s hoi sinh trong hau doanh o(%d,%d) -> di bo ra cua"
+					       " trai va qua trap lai\n", Player[nIdx].m_PlayerName,
+					       nHx7 / 32, nHy7 / 32);
 				}
 			}
 			return;
