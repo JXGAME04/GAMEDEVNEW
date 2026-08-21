@@ -4144,6 +4144,7 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 		CHAT_CHANNELCHAT_SYNC* pCccSync = (CHAT_CHANNELCHAT_SYNC*)pExPckg;
 		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT).
 		// (20/08 r3) ghi VONG 4 KHE - 2 tin trong cung tick khong de mat tin truoc.
+		bool bDTSapMap = false;	// (r5f) chi TIN DANH BA that su moi bi an khoi khung chat
 		if (!strcmp(pCccSync->someone, "HÖ Thèng"))
 		{
 			int nDTLen = pCccSync->sentlen;
@@ -4151,9 +4152,14 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				nDTLen = (int)sizeof(g_sDTCap.aMsg[0]) - 1;
 			// (r5e) "[SapMap] ..." = danh ba sap server tra ve - kenh du lieu
 			// rieng cho auto: khong vao vong khe (khoi de tin tien do) va khong
-			// hien len khung chat (chan o ChannelMessageArrival ben duoi).
-			if (nDTLen > 8 && !strncmp((const char*)(pCccSync + 1), "[SapMap]", 8))
+			// hien len khung chat.
+			// (r5f - phan bien) ">= 8": thanh KHONG CO SAP thi server tra dung
+			// "[SapMap]" 8 byte - ">" lam goi do bi vut, nhanh "0 sap -> qua thanh
+			// ke" thanh ma chet va bot van di tuan mu. memcmp (khong strncmp) vi
+			// payload KHONG ket thuc NUL - da chan do dai o tren nen khong doc lo.
+			if (nDTLen >= 8 && !memcmp((const char*)(pCccSync + 1), "[SapMap]", 8))
 			{
+				bDTSapMap = true;
 				memcpy(g_sDTCap.szSapMap, (const char*)(pCccSync + 1), nDTLen);
 				g_sDTCap.szSapMap[nDTLen] = 0;
 				++g_sDTCap.uSapMapSeq;
@@ -4172,10 +4178,15 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				}
 			}
 		}
-		if (strncmp((const char*)(pCccSync + 1), "[SapMap]", 8) != 0)
-		l_pDataChangedNotifyFunc->ChannelMessageArrival(
-			pCccSync->channelid, pCccSync->someone,
-			(const char*)(pCccSync + 1), pCccSync->sentlen, true);
+		// (r5f - phan bien) TRUOC day chan bang strncmp o day nen NGUOI CHOI go
+		// tin bat dau bang "[SapMap]" o bat ky kenh nao cung bi nuot voi moi
+		// client. Nay chi an dung goi danh ba cua He Thong.
+		if (!bDTSapMap)
+		{
+			l_pDataChangedNotifyFunc->ChannelMessageArrival(
+				pCccSync->channelid, pCccSync->someone,
+				(const char*)(pCccSync + 1), pCccSync->sentlen, true);
+		}
 	}
 	else if (protocol == chat_feedback)
 	{
@@ -6071,9 +6082,17 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 	// (r5e - auto Da Tau) dwId dac biet = xin DANH BA SAP ca map: tra ve
 	// "[SapMap] id:x:y ..." (toa do CELL) qua tin He Thong rieng nguoi hoi.
 	// Chi liet ke sap co PLAYER that dung sau (nguoi choi + bot PB) - dan
-	// SimCity (KNpc) tu bi loai. Gia tri nay khong the la dwID npc that.
-	if (pView->dwId == 0x0DA75AB1)
+	// SimCity (KNpc) tu bi loai. Id nay duoc DAT CHO trong KNpcSet::SetID.
+	if (pView->dwId == DATAU_SAPMAP_ID)
 	{
+		// (r5f - phan bien) nhanh nay nang hon duong cu (quet MAX_PLAYER + goi
+		// Lua) va chay cho MOI client -> chan spam 5 giay/nguoi. Bot tu hoi
+		// 90 giay mot lan nen khong anh huong.
+		static DWORD s_uSapDsNext[MAX_PLAYER] = { 0 };
+		const DWORD dwNayDs = SubWorld[0].m_dwCurrentTime;
+		if (dwNayDs < s_uSapDsNext[nIndex])
+			return;
+		s_uSapDsNext[nIndex] = dwNayDs + GAME_FPS * 5;
 		char szDs[320];
 		int nLen = sprintf(szDs, "[SapMap]");
 		int nSubDs = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
@@ -6087,7 +6106,10 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 				continue;
 			int nSx5, nSy5;
 			Npc[Player[i5].m_nIndex].GetMpsPos(&nSx5, &nSy5);
-			if (nLen > (int)sizeof(szDs) - 40)
+			// (r5f - phan bien) sentlen tren duong day la BYTE va SendSystemInfo
+			// kep = MAX_SENTENCE_LENGTH (256) -> dung 256 TRAN VE 0 lam client
+			// vut trang ca danh ba. Kep 200 cho an toan.
+			if (nLen > DATAU_SAPMAP_MAXLEN)
 				break;
 			nLen += sprintf(szDs + nLen, " %u:%d:%d",
 				Npc[Player[i5].m_nIndex].m_dwID, nSx5 / 32, nSy5 / 32);

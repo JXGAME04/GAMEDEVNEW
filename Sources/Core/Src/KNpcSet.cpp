@@ -7,6 +7,7 @@
 #include "KNpcSet.h"
 #include "KPlayer.h"
 #include "KNpcTemplate.h"
+#include "KDaTauCap.h"	// (r5f) DATAU_SAPMAP_ID - id dat cho, khong cap cho npc
 #ifndef _SERVER
 #include "CoreShell.h"
 #include "Scene\KScenePlaceC.h"
@@ -625,6 +626,11 @@ void KNpcSet::SetID(int m_nIndex)
 	if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
 		return;
 
+	// (r5f - phan bien) bo dem chay don dieu tu 1000 nen SOM MUON gi cung cham
+	// DATAU_SAPMAP_ID; npc/sap that mang id do se bi goi xin danh ba cuop mat.
+	// Bo qua dung mot gia tri = dong goi han kha nang do.
+	if (m_dwIDCreator == DATAU_SAPMAP_ID)
+		m_dwIDCreator++;
 	Npc[m_nIndex].m_dwID = m_dwIDCreator;
 	m_dwIDCreator++;
 }

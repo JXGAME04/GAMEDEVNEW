@@ -677,6 +677,36 @@ sạp ở đâu, tránh trường hợp người chơi bày sạp ở vị trí 
 - **CẦN RESTART GameServer** (CoreServer.dll 17:29 đã nằm bin\server, bản lùi `_cu_1644` của
   phiên bot) — trước restart client vẫn chạy kiểu đi tuần cũ.
 
+**H. r5f (18:01) — phản biện r5e: 5 lỗi CONFIRMED đã vá** (2 agent soi độc lập + 5 agent bác bỏ,
+1 phát hiện bị bác nhưng lòi ra lỗi nặng hơn):
+1. *(nặng — tính năng chính chết ở thành trống)* Thành **không có sạp nào** thì server trả đúng
+   chuỗi `"[SapMap]"` = **8 byte**, nhưng client bắt bằng `nDTLen > 8` → gói bị vứt, cờ danh bạ
+   không nhảy → nhánh "0 sạp → qua thành kế" và câu báo xám là **mã chết**, bot vẫn đi tuần mù
+   mọi thành trống; tin còn chiếm 1 khe vòng tin tiến độ. Sửa: `>= 8`, và đổi `strncmp` →
+   `memcmp` (payload **không kết thúc NUL**).
+2. *(nặng — cả danh bạ bị vứt im lặng)* `sentlen` trên đường dây là **BYTE**, còn
+   `KPlayerChat::SendSystemInfo` kẹp đúng `MAX_SENTENCE_LENGTH = 256` → **256 tràn về 0** ⇒ mọi
+   danh bạ ≥256 byte (12 sạp + dwID dài) mất trắng. Sửa: server kẹp chuỗi ở
+   `DATAU_SAPMAP_MAXLEN = 200`.
+3. *(nguyên tắc)* Sentinel `0x0DA75AB1` nằm **trong** không gian `m_dwIDCreator` (KNpcSet.cpp:26
+   đếm đơn từ 1000, không wrap, không reset ngoài constructor) → NPC/sạp thật thứ ~229 triệu sẽ
+   mang đúng id đó và bị gói xin danh bạ cướp mất (khi đó bot coi sạp thật là "sạp trang trí" và
+   bỏ qua). Sửa: hằng số chung `DATAU_SAPMAP_ID` (KDaTauCap.h) + `KNpcSet::SetID` **bỏ qua đúng
+   một giá trị** khi cấp id ⇒ đóng gói hoàn toàn khả năng va chạm.
+4. *(chống spam)* Nhánh sentinel chạy cho **mọi** client, mỗi gói quét `MAX_PLAYER` + gọi Lua —
+   nặng hơn hẳn đường cũ. Sửa: cooldown **5 giây/người** (`static DWORD s_uSapDsNext[MAX_PLAYER]`,
+   mốc `SubWorld[0].m_dwCurrentTime`, `GAME_FPS*5`); bot tự hỏi 90 giây/lần nên không ảnh hưởng.
+5. *(mất gói = mù vĩnh viễn)* `g_nDTSapDs == -1` là trạng thái chết: mất trả lời (server vừa
+   restart, gói rớt) thì **cả hai vế điều kiện hỏi lại đều sai** → không bao giờ hỏi lại trên map
+   đó. Sửa: `g_nDTSapDsTry` — hỏi lại tối đa **3 lần**, làm mới bộ đếm sau 30 giây.
+6. *(ảnh hưởng người chơi thật)* Dòng chặn hiển thị `[SapMap]` nằm **ngoài** khối "Hệ Thống" nên
+   áp cho **mọi** kênh chat: người chơi gõ tin bắt đầu bằng `[SapMap]` bị **nuốt với tất cả**
+   client chạy bản r5e. Sửa: cờ `bDTSapMap` chỉ bật bên trong khối Hệ Thống khi đúng là gói danh
+   bạ; chặn theo cờ.
+
+Binary: **CoreClient.dll 20/08 18:01 (2.205.696 B)** + **CoreServer.dll x64 18:01** (bản lùi
+`CoreClient_locked12` / `CoreServer_cu_r5e`). **VẪN CẦN RESTART GameServer** để danh bạ sạp sống.
+
 ---
 
 ## 9 · Phản biện — đã làm gì

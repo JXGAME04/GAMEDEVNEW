@@ -6,6 +6,16 @@
 #ifndef KDATAUCAP_H
 #define KDATAUCAP_H
 
+// (r5f) id DAT CHO goi xin DANH BA SAP (di nho goi c2s_playerneedcount cu).
+// PHAI dung chung o 3 noi: KNpcSet::SetID (bo qua khi cap id - khong de npc
+// that mang id nay), KProtocolProcess::c2sNeedCount (server), CoreShell
+// DTP_MUASAP (client hoi).
+#define DATAU_SAPMAP_ID 0x0DA75AB1u
+// tran do dai chuoi danh ba: sentlen tren duong day la BYTE va
+// KPlayerChat::SendSystemInfo kep = MAX_SENTENCE_LENGTH (256) -> 256 TRAN VE 0
+// lam mat trang ca goi. Giu duoi 200 cho chac.
+#define DATAU_SAPMAP_MAXLEN 200
+
 struct KDaTauCapture
 {
 	unsigned int uDlgSeq;    // tang moi UI_SELECTDIALOG (Say)

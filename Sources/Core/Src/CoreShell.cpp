@@ -3355,6 +3355,7 @@ static UINT  g_uDTSapDsT = 0;		// han cho server tra loi
 static UINT  g_uDTSapDsFresh = 0;	// luc hoi lan cuoi (90s hoi lai)
 static UINT  g_uDTSapDsSeen = 0;	// seq [SapMap] da doc
 static DWORD g_aDTSapDsId[12];		// danh ba: id / toa do MPS
+static int   g_nDTSapDsTry = 0;		// (r5f) so lan da hoi danh ba o map nay
 static int   g_aDTSapDsX[12];
 static int   g_aDTSapDsY[12];
 
@@ -5452,16 +5453,26 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// (goi needcount cu, dwId dac biet) - biet ngay cho nao co sap ke ca
 		// nguoi choi bay cho la, khoi long vong. Server cu chua restart -> im
 		// lang 1.8s roi roi xuong di tuan nhu truoc.
+		// (r5f - phan bien) "-1" truoc day la trang thai CHET: mat goi tra loi
+		// (server vua restart / goi roi) la khong bao gio hoi lai tren map do.
+		// Nay cho hoi lai toi da 3 lan, va lam moi bo dem sau 30 giay.
+		if (g_nDTSapDs < 0 && g_nDTSapDsMap == nMap
+		 && uCurTime > g_uDTSapDsFresh + 30000)
+			g_nDTSapDsTry = 0;
 		if (g_nDTSapDsMap != nMap
-		 || (g_nDTSapDs >= 0 && uCurTime > g_uDTSapDsFresh + 90000))
+		 || (g_nDTSapDs >= 0 && uCurTime > g_uDTSapDsFresh + 90000)
+		 || (g_nDTSapDs < 0 && uCurTime > g_uDTSapDsT && g_nDTSapDsTry < 3))
 		{
+			if (g_nDTSapDsMap != nMap)
+				g_nDTSapDsTry = 0;
+			++g_nDTSapDsTry;
 			g_nDTSapDsMap = nMap;
 			g_nDTSapDs = -1;
 			g_nDTSapDsCur = 0;
 			g_uDTSapDsFresh = uCurTime;
 			g_uDTSapDsT = uCurTime + 1800;
 			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
-			SendClientCmdGetCount(0x0DA75AB1);
+			SendClientCmdGetCount(DATAU_SAPMAP_ID);
 			ea.uDTNext = uCurTime + 300;
 			return 1;
 		}
