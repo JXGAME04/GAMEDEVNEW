@@ -3865,23 +3865,35 @@ static const PB_BaiLuyen s_bai[] =
 // kiem chung tay trong s_bai). Xa hon xich = mac ke, quai ngoai do khong ton tai
 // voi bot. Dat 2000 MPS (~62 o) de van rong hon le [BotDan] di tan >= 1200 MPS.
 //
-// (20/08 - chu game: "bot van gom 1 cho khong tan ra deu trong map") NOI XICH
-// 2000 -> 4800 MPS (62 -> 150 o). Xich 2000 chinh la thu ep het ~130 con cua mot
-// bai vao MOT dia ban kinh 62 o quanh diem dap Xa Phu: [BotDan] di tan mai van
-// "quanh 20 o co 21 bot" vi khong con cho nao de tan toi. Ba lop chan moi da thay
-// vai tro cua xich chat: (1) luoi A* nay danh dau dung vung ngoai map (sua
-// ProcLoadPathGrid 20/08), (2) pb_CatDoan cat chang chay khong cho bang qua o bi
-// luoi chan, (3) pb_FindRoamSpot loai thang quai dung tren o bi luoi chan.
-#define PB_XICH_BAI      9600   // MPS - loc khi CHON muc tieu / diem roam
-#define PB_XICH_BAI_THA  9920   // MPS - nga cam khi DANG duoi (them 320 de khong
+// (20/08 - chu game: "bot van gom 1 cho khong tan ra deu trong map") tung NOI
+// XICH 2000 -> 9600 MPS voi ly le: ba lop chan (luoi A* / pb_CatDoan /
+// pb_FindRoamSpot loc o luoi chan) da thay vai tro cua xich chat.
+// (20/08 dem - chu game DINH CHINH + do that) SAI: ba lop do chi chan duoc o
+// LUOI GHI CHAN, bat luc voi "vung trong gia" ma DU LIEU ghi di duoc (benh map
+// 79 - nhin tren client la ngoai map). Xich 300 o trum luon vung ay: 2h log sau
+// restart 20:25 co 65 luot [BotCuu] cach neo median 102 o, max 297 o - sat mep
+// xich. Loi chu game: "toi keu neu o dam dong tren 20 bot thi tim toa do npc
+// duoc add trong map do hop le xa de di chuyen, chu dau keu di chuyen ra ngoai
+// map". SUA GOC: san choi cua bot = QUANH CAC TAM CUM DIEM SINH quai da add
+// (pb_LayCum - m_OriginX/Y tu du lieu, luon nam trong map that): chon muc tieu,
+// diem roam du phong va nga tha khi duoi deu phai cach MOT tam cum <=
+// PB_XICH_CUM; ung vien di tan la CHINH tam cum nen van duoc di XA toan map
+// (dung dac ta tan deu). Day xich neo duoi day chi con la DUONG LUI cho ban do
+// chua co bang cum, tra ve gia tri truoc khi noi.
+#define PB_XICH_BAI      2000   // MPS - DUONG LUI (map chua co bang cum): loc theo neo
+#define PB_XICH_BAI_THA  2320   // MPS - nga cam khi DANG duoi (them 320 de khong
                                 // nha oan muc tieu dang danh do o sat mep xich)
 // (phan bien dot 2) MAP NHIEM VU loai 4 xich RONG hon (100 o thay 62,5): quai roi
 // cuon rai khap map, xich 2000 quanh diem tha co the thieu quai -> "farm 20 phut
 // khong ra cuon" doi nhiem vu lien tuc, mat thanh qua "T4 roam tim quai" dot sang.
-// (phan bien 20/08) PHAI keo theo khi noi PB_XICH_BAI: de 3200 thi map nhiem vu
-// hoa ra bi xich CHAT HON bai thuong (4800), lat nguoc dung y nghia cua chinh no.
-#define PB_XICH_NV       9600
-#define PB_XICH_NV_THA   9920
+#define PB_XICH_NV       3200
+#define PB_XICH_NV_THA   3520
+// (20/08 dem) XICH CUM: PB_CUM_CACH (1280) la khoang cach toi da tu mot diem
+// sinh toi tam cum cua no, cong ~600 MPS quai lang thang quanh diem sinh =>
+// 2000 phu du moi quai hop le ma khong voi toi vung trong gia (cach cum that
+// thuong hang tram o). Do theo TUNG TRUC (cung phep voi khoi gom cum) cho re.
+#define PB_XICH_CUM      2000
+#define PB_XICH_CUM_THA  2320
 
 // (19/08 toi #4 - "Bot van dung ngoai map, kiem ky hon") NEO TU SUA. Phap y sau
 // restart 19:20: PhamVu342 duoc [BotCuu] tha ve DUNG toa do neo Lao Ho Dong
@@ -4157,6 +4169,12 @@ static bool pb_BiCam(const PB_Bot& b, int t, unsigned int now)
 	return false;
 }
 
+// (20/08 dem) dung ngay duoi day nhung than ham nam o khu "gom cum" phia sau -
+// khai bao truoc.
+struct PB_CumMap;
+static PB_CumMap* pb_LayCum(int nSub, int nRefNpc);
+static int pb_GanCum(const PB_CumMap* pC, int x, int y, int nTam);
+
 // Tim quai GAN NHAT quanh bot.
 //
 // CO Y KHONG chep NpcSet.AutoGetNpcNear cua ban client (KNpcSet.cpp:1126): ham do quet TOAN BO
@@ -4176,9 +4194,12 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 	// (19/08 toi #3) day xich bai: quai dung ngoai ban kinh xich quanh diem neo
 	// bai coi nhu khong ton tai (chan tu goc viec bam theo quai lang thang trong
 	// "vung trong gia" nhin-nhu-ngoai-map - xem chu thich PB_XICH_BAI).
+	// (20/08 dem) co bang cum -> san choi do theo TAM CUM diem sinh (pb_GanCum);
+	// xich neo chi con la duong lui. Xem chu thich PB_XICH_CUM.
 	int nNeoX = 0, nNeoY = 0;
 	const int bNeo = pb_NeoBai(b, nSub, &nNeoX, &nNeoY);
 	const int nXich = (bNeo == 2) ? PB_XICH_NV : PB_XICH_BAI;
+	const PB_CumMap* pCum = bNeo ? pb_LayCum(nSub, nNpcIdx) : NULL;
 
 	// TOP-8 ung vien gan nhat, roi MOI BOT CHON MOT CON KHAC NHAU theo chi so cua no.
 	// Bai hoc tu bot.log 10:37: 18 con cung chon "gan nhat tuyet doi" -> ca dam do ve
@@ -4210,8 +4231,9 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 			const int d = g_GetDistance(bx, by, ex, ey);
 			if (d >= nVision)
 				continue;
-			if (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich)
-				continue;              // ngoai day xich -> khong nhin thay
+			if (pCum ? !pb_GanCum(pCum, ex, ey, PB_XICH_CUM)
+			         : (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich))
+				continue;              // ngoai san choi -> khong nhin thay
 			if (nCand < 8)
 			{
 				int pos = nCand++;
@@ -4864,6 +4886,24 @@ static void pb_RaiQuanhCum(int nSub, int nLech, int* pnX, int* pnY)
 	}
 }
 
+// (20/08 dem) x,y co nam trong "san choi" khong: cach MOT tam cum diem sinh
+// (pb_LayCum) toi da nTam theo tung truc - cung phep do tung-truc voi khoi gan
+// diem sinh vao cum o tren. Tam cum la m_OriginX/Y cua du lieu nen luon nam
+// trong map that; quai lang thang ra vung trong gia se rot khoi luoi nay.
+static int pb_GanCum(const PB_CumMap* pC, int x, int y, int nTam)
+{
+	if (!pC)
+		return 0;
+	for (int c = 0; c < pC->nSo; c++)
+	{
+		int dx = x - pC->aX[c]; if (dx < 0) dx = -dx;
+		int dy = y - pC->aY[c]; if (dy < 0) dy = -dy;
+		if (dx <= nTam && dy <= nTam)
+			return 1;
+	}
+	return 0;
+}
+
 // Tim mot con quai XA de lam dich di hoang. Tra 1 va dien toa do, 0 = khong tim duoc.
 // bUuTienVang = 1: chon ung vien IT BOT NHAT (dung cho DI TAN gian dan - chu game
 // 19/08 toi: "bot van tap trung 1 cho rat dong": boc ngau nhien hay trung diem
@@ -4897,8 +4937,10 @@ static int pb_FindRoamSpot(int nIdx, int nNpcIdx, int nSub, const PB_Bot& b,
 	// ---- DUONG CHINH (20/08): ung vien = DIEM SINH NPC da add trong ban do ----
 	// Bang cum tinh mot lan cho ca ban do (pb_LayCum). Toa do la m_OriginX/Y tu
 	// tep du lieu, khong phai cho quai vua di lac toi, nen bot khong "di bay".
+	// (20/08 dem) pC dua ra ngoai khoi de nhanh DU PHONG ben duoi cung loc duoc
+	// theo cum khi bang cum co ma moi ung vien chinh deu bi loai (qua gan).
+	const PB_CumMap* pC = pb_LayCum(nSub, nNpcIdx);
 	{
-		const PB_CumMap* pC = pb_LayCum(nSub, nNpcIdx);
 		if (pC)
 		{
 			// (phan bien 20/08) NOI LONG DAN moc "phai xa" thay vi rot ngay ve
@@ -4913,8 +4955,11 @@ static int pb_FindRoamSpot(int nIdx, int nNpcIdx, int nSub, const PB_Bot& b,
 					const int ex = pC->aX[c], ey = pC->aY[c];
 					if (g_GetDistance(bx, by, ex, ey) <= nGan)
 						continue;
-					if (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich)
-						continue;                 // ngoai day xich
+					// (20/08 dem - chu game dinh chinh) tam cum LA toa do NPC da
+					// add trong map -> hop le tren TOAN ban do, KHONG loc theo day
+					// xich neo nua: "neu o dam dong tren 20 bot thi tim toa do npc
+					// duoc add trong map do hop le xa de di chuyen". Chinh phep loc
+					// xich cho nay tung ep bot gom quanh neo lam [BotDan] het cho tan.
 					if (SubWorld[nSub].CellObsSrv(ex, ey) == 1)
 						continue;                 // o bi luoi chan (hiem, van kiem)
 					aX[nCand] = ex;
@@ -4946,8 +4991,9 @@ static int pb_FindRoamSpot(int nIdx, int nNpcIdx, int nSub, const PB_Bot& b,
 			// CHI lay con XA - gan thi bot da danh duoc roi, di toi do la dam chan tai cho.
 			if (g_GetDistance(bx, by, ex, ey) <= nGanMin)
 				continue;
-			if (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich)
-				continue;              // ngoai day xich -> khong roam toi
+			if (pC ? !pb_GanCum(pC, ex, ey, PB_XICH_CUM)
+			       : (bNeo && g_GetDistance(nNeoX, nNeoY, ex, ey) > nXich))
+				continue;              // ngoai san choi -> khong roam toi
 			// (20/08) quai dung tren o LUOI CHAN (vung rong ngoai map / vach nui):
 			// A* khong bao gio toi duoc no. Ban cu van boc lam dich roi in
 			// "[BotHoang] khong tim duoc duong ... boc cho khac" - do that 20/08:
@@ -5748,21 +5794,25 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 		int tx2 = 0, ty2 = 0;
 		Npc[t].GetMpsPos(&tx2, &ty2);
 		// (19/08 toi #3) day xich bai: muc tieu (ke ca con dang danh do) lang thang
-		// ra ngoai nga tha PB_XICH_BAI_THA thi cam roi buong - khong duoi theo quai
-		// keo minh vao "vung trong gia" ngoai me cung (map 79). Nga tha rong hon
-		// nga chon 320 MPS de khong nha oan con dang danh sat mep xich.
+		// ra ngoai nga tha thi cam roi buong - khong duoi theo quai keo minh vao
+		// "vung trong gia" ngoai me cung (map 79). Nga tha rong hon nga chon
+		// 320 MPS de khong nha oan con dang danh sat mep xich.
+		// (20/08 dem) co bang cum -> nga tha do theo TAM CUM (PB_XICH_CUM_THA);
+		// xich neo chi con la duong lui. Xem chu thich PB_XICH_CUM.
 		{
 			int nNeoX4 = 0, nNeoY4 = 0;
 			const int nLoaiNeo = pb_NeoBai(b, nSub, &nNeoX4, &nNeoY4);
+			const PB_CumMap* pCum4 = nLoaiNeo ? pb_LayCum(nSub, nNpcIdx) : NULL;
 			if (nLoaiNeo
-			 && g_GetDistance(nNeoX4, nNeoY4, tx2, ty2)
-			    > ((nLoaiNeo == 2) ? PB_XICH_NV_THA : PB_XICH_BAI_THA))
+			 && (pCum4 ? !pb_GanCum(pCum4, tx2, ty2, PB_XICH_CUM_THA)
+			           : g_GetDistance(nNeoX4, nNeoY4, tx2, ty2)
+			             > ((nLoaiNeo == 2) ? PB_XICH_NV_THA : PB_XICH_BAI_THA)))
 			{
 				static unsigned int s_uXichLog = 0;
 				if (now - s_uXichLog >= (unsigned int)(GAME_FPS * 2))
 				{
 					s_uXichLog = now;
-					pb_Log("[BotXich] %s muc tieu %d o(%d,%d) ngoai day xich bai -> buong\n",
+					pb_Log("[BotXich] %s muc tieu %d o(%d,%d) ngoai san choi cum -> buong\n",
 					       Player[nIdx].m_PlayerName, t, tx2 / 32, ty2 / 32);
 				}
 				pb_CamMucTieu(b, t, now);
