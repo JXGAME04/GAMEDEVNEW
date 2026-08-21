@@ -122,7 +122,7 @@ copy debug\Game.exe ..\..\..\bin\client\Game.exe</Command>
       <SubSystem>Windows</SubSystem>
       <OutputFile>Debug/Game.exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\Lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;Winmm.lib;shlwapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -247,7 +247,9 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiAutoPlay.cpp" />
     <ClCompile Include="Ui\UiCase\UiBattleReport.cpp" />
     <ClCompile Include="Ui\UiCase\UiBreakItem.cpp" />
-    <ClCompile Include="Ui\UiCase\UiCapture.cpp" />
+    <ClCompile Include="Ui\UiCase\UiJxrPlayer.cpp" />
+    <ClCompile Include="JxReplay.cpp" />
+    <ClCompile Include="JxrDrawAdapter.cpp" />
     <ClCompile Include="Ui\UiCase\UiChangePWBox.cpp" />
     <ClCompile Include="Ui\UiCase\UiChannelSubscibe.cpp" />
     <ClCompile Include="Ui\UiCase\UiChatCentre.cpp" />
@@ -381,7 +383,8 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="AntiHack\DumpMemory\DumpMemory.h" />
     <ClInclude Include="AntiHack\ExistMainName\ExistMainName.h" />
     <ClInclude Include="AntiHack\Splash\Splash.h" />
-    <ClInclude Include="bandicap.h" />
+    <ClInclude Include="JxReplay.h" />
+    <ClInclude Include="JxrDrawAdapter.h" />
     <ClInclude Include="ErrorCode.h" />
     <ClInclude Include="Login\Login.h" />
     <ClInclude Include="Login\LoginDef.h" />
@@ -439,7 +442,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiAutoPlay.h" />
     <ClInclude Include="Ui\UiCase\UiBattleReport.h" />
     <ClInclude Include="Ui\UiCase\UiBreakItem.h" />
-    <ClInclude Include="Ui\UiCase\UiCapture.h" />
+    <ClInclude Include="Ui\UiCase\UiJxrPlayer.h" />
     <ClInclude Include="Ui\UiCase\UiChangePWBox.h" />
     <ClInclude Include="Ui\UiCase\UiChannelSubscibe.h" />
     <ClInclude Include="Ui\UiCase\UiChatCentre.h" />

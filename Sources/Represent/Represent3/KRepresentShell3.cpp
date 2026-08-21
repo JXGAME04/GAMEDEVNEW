@@ -344,6 +344,9 @@ KRepresentShell3::KRepresentShell3()
 	m_pVB3D = NULL;
 	m_bDeviceLost = false;
 	m_bDoLighting = true;
+	m_pJxReplay = NULL;
+	m_nReplayTime = 0;
+	m_nReplayStatus = -1;
 	memset(m_FontTable, 0, sizeof(m_FontTable));
 
 	g_fZoomFactor = 1.00f;

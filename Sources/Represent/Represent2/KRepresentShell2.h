@@ -465,6 +465,26 @@ public:
 
     }
 	virtual bool IsRep3D() {return false;};
+
+	//---------------------------------------------------------------------
+	// He GHI / PHAT LAI ban dien .jxr  (xem ../iRepresent/iJxReplay.h)
+	//---------------------------------------------------------------------
+	virtual void SetJxReplay(void* pJxReplay);
+	virtual void SetReplayTimeAndStatus(int nTime, int nStatus);
+	virtual void SetReplayTime(int nTime);
+
+private:
+	// Con tro IJXReplay* do game cai vao luc khoi tao. NULL = tat han duong ghi.
+	void*	m_pJxReplay;
+
+	// Moc thoi gian truyen cho MOI loi goi Rec(): chi so khung replay 30 tick/giay.
+	// KHONG phai mili-giay. jxreplay.dll lam tron gia tri nay ve boi so 3.
+	int		m_nReplayTime;
+
+	// Trang thai replay hien hanh, dong vai tro CONG bat/tat duong ghi.
+	// Khoi tao -1 = "game chua bao gio dat" (ban tham chieu van cho ghi o gia tri nay).
+	int		m_nReplayStatus;
+
 private:
 
     //##ModelId=3DB68CEB0350

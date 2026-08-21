@@ -146,16 +146,19 @@ public:
 	const char*	GetShortKey();
 };
 
-class Player_Rec : public KWndButton
+//´ò×ø
+// Nut GHI BAN DIEN .jxr tren thanh cong cu.
+// Ten lop PHAI dung y "Player_Recorder" vi no la khoa tra cuu ClassType trong
+// tep ini, va day cung la ten lop cua ban tham chieu (VFTABLE 0x0069A0BC).
+class Player_Recorder : public KWndButton
 {
 public:
-	DECLARE_COMCLASS(Player_Rec)
+	DECLARE_COMCLASS(Player_Recorder)
 	void OnButtonClick();
 	const char*	GetShortKey();
 	void UpdateData();
 };
 
-//´ò×ø
 class Player_Sit : public KWndButton
 {
 public:

@@ -43,7 +43,8 @@
 #include "UiCase/UiRankData.h"
 #include "UiCase/UiCityWar.h"
 #include "Elem/SpecialFuncs.h"
-//#include "UiCase/UiCapture.h"
+#include "UiCase/UiJxrPlayer.h"
+#include "../JxReplay.h"
 #include "UiCase/SpringGame.h"
 //#include "UiCase/UiTeamManager2.h"
 #include "UiShell.h"
@@ -184,6 +185,23 @@ int FindWindow(const char* szname)
 }
 
 bool UiCloseWndsInGame(bool bAll);
+
+//---------------------------------------------------------------------------
+// Replay(szVerb) - he GHI / PHAT LAI ban dien .jxr
+// 8 dong tu, dung y ban tham chieu: rec | endrec | play | stop | pause |
+// speedup | slowdown | pauserec.  Moi nhanh deu tra 0 (khong day gia tri nao
+// len ngan xep Lua), y het LuaReplay 0x0040FF30 cua ban tham chieu.
+//---------------------------------------------------------------------------
+int LuaReplay(Lua_State * L)
+{
+	if (Lua_GetTopIndex(L) != 1)
+		return 0;
+
+	char * strVerb = (char *)Lua_ValueToString(L, 1);
+	if (strVerb)
+		JxReplay_DoVerb(strVerb);
+	return 0;
+}
 
 int LuaOpenWindow(Lua_State * L)
 {
@@ -327,12 +345,11 @@ int LuaOpenWindow(Lua_State * L)
 			}
 			break;
 		case 24:
-			//{
-				//if(KUiCapture::GetIfVisible()==FALSE)
-				//	KUiCapture::OpenWindow();
-				//else
-				//	KUiCapture::CloseWindow();
-			//}
+			// Thanh dieu khien PHAT LAI ban dien .jxr.
+			if (KUiJxrPlayer::GetIfVisible())
+				KUiJxrPlayer::CloseWindow();
+			else
+				KUiJxrPlayer::OpenWindow();
 			break;
 		case 25:
 			MapSetMode(MINIMAP_M_BRIEF_PIC_BROWSEEX);
@@ -2333,7 +2350,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetAddinUnitMemberStatus", LuaSetAddinUnitMemberStatus}, //char* strName, char* strMember, char* strStatus
 	{"ConvertEmotes", LuaConvertEmotes},        //Convert the WHOLE Emote File into Lua file
 	{"SetEmote", LuaSetEmote},                  //Set a emote expression, give 5 param,1 = command,2 = emote name,3 = emote expression with target,4 = emote expression without target,5 = emote index,if 5 set give,willl change the command,name,strings of emote with this index,if not give,this function will search the emote index by the command
-	{"SetScreenShotFolder", LuaSetScreenShotFolder},//Set the ScreenShot save folder
+	{"SetScreenShotFolder", LuaSetScreenShotFolder},
+	{"Replay", LuaReplay},	//rec|endrec|play|stop|pause|speedup|slowdown|pauserec//Set the ScreenShot save folder
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

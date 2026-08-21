@@ -391,6 +391,26 @@ struct iRepresentShell
 
     virtual void CoordinateTransform(int& nX, int& nY, int nZ) = 0;
 	virtual bool IsRep3D() = 0;
+
+	//---------------------------------------------------------------------
+	// He GHI / PHAT LAI ban dien .jxr  (xem iJxReplay.h)
+	// Ba o nay duoc NOI VAO CUOI vtable co chu dich: moi chi so o san giu
+	// nguyen nen Core va cac module chi GOI iRepresentShell khong phai build lai.
+	// Chi module CAI DAT giao dien (Represent2 / Represent3) moi phai build lai.
+	//---------------------------------------------------------------------
+
+	// Cai con tro IJXReplay* de shell tu ghi lai chinh cac loi goi ve cua no.
+	// Truyen NULL de tat han duong ghi.
+	virtual void SetJxReplay(void* pJxReplay) = 0;
+
+	// nTime  : chi so khung replay (bo dem 30 tick/giay) dung lam moc thoi gian.
+	// nStatus: trang thai replay hien hanh (JXREPLAY_STATUS), dong vai tro CONG
+	//          bat/tat duong ghi. Game phai goi ham nay MOI KHUNG; neu quen thi
+	//          se khong co gi duoc ghi va KHONG he co thong bao loi.
+	virtual void SetReplayTimeAndStatus(int nTime, int nStatus) = 0;
+
+	// Chi cap nhat moc thoi gian, giu nguyen trang thai.
+	virtual void SetReplayTime(int nTime) = 0;
 };
 
 

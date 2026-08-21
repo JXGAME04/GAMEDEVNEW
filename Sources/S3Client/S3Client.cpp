@@ -28,7 +28,8 @@
 #include "AntiHack/ExistMainName/ExistMainName.h"
 //#include "AntiHack/ProtectBypassMainName/ProtectBypassMainName.h"
 #include "AntiHack/Splash/Splash.h"
-#include "Ui/UiCase/UiCapture.h"
+#include "Ui/UiCase/UiJxrPlayer.h"
+#include "JxReplay.h"
 #include "Ui/TrayMode.h"
 //#include "stdafx.h"
 #include "Ui/UiCase/UiInit.h"
@@ -356,7 +357,11 @@ BOOL InitRepresentShell(BOOL bFullScreen, int nWidth, int nHeight)
 	}
 	if (g_pRepresentShell->Create(nWidth, nHeight, bFullScreen != 0))
 	{
-
+		// He GHI / PHAT LAI ban dien .jxr. Ban tham chieu cung nap JXReplay.dll
+		// ngay trong luong khoi tao Represent (KMyApp::InitRepresent 0x0056D615),
+		// KHONG nap tre luc bam nut. Thieu DLL thi ham tra false va game chay
+		// binh thuong nhu cu, chi la khong co tinh nang replay.
+		JxReplay_Init();
 		return TRUE;
 	}
 	else
@@ -519,14 +524,8 @@ BOOL KMyApp::GameInit()
 			SetScrPicPath(szPath);
 		}
 	}
-	char	szRecPath[MAX_PATH];
-	if (IniFile.GetString("Client", "RecPath", "", szRecPath, sizeof(szRecPath)))
-	{
-		if (szRecPath[0])
-		{
-			KUiCapture::SetRecPath(szRecPath);//Set Folder save file Rec video
-		}
-	}
+	// [Client] RecPath cua nhanh quay video BandiCam cu da bi bo.
+	// He replay .jxr luon luu vao <thu muc Game.exe>\JxRep\ giong ban tham chieu.
 
 
 	IniFile.Clear();
@@ -631,6 +630,10 @@ BOOL KMyApp::GameExit()
 		g_pCoreShell->Release();
 		g_pCoreShell = NULL;
 	}
+
+	// PHAI dong phien ghi truoc khi giai phong shell, neu khong luong nen nen
+	// cua jxreplay.dll bi giet giua chung va tep .jxr se hong.
+	JxReplay_Exit();
 
 	if (g_pRepresentShell)
 	{
@@ -1242,6 +1245,19 @@ BOOL KMyApp::GameLoop()
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
 	g_NetConnectAgent.Breathe();
+
+	// He replay .jxr: hoi lai trang thai tu DLL MOI VONG BOM (ban tham chieu
+	// lam y het tai 0x0056E3BD). Khi dang phat lai thi bo qua toan bo logic
+	// game va chi chay may bom khung cua trinh phat.
+	JxReplay_Breathe();
+	if (JxReplay_IsPlaying())
+	{
+		if (KUiJxrPlayer::GetIfVisible() == NULL)
+			KUiJxrPlayer::OpenWindow();
+		KUiJxrPlayer::PlayPump();
+		return true;
+	}
+
 	if(g_DrawVisionTime < timeGetTime())
 		g_DrawVision = 0;
 	ProcIpcCommand();
@@ -1250,16 +1266,9 @@ BOOL KMyApp::GameLoop()
 		if (g_pCoreShell->Breathe() && UiHeartBeat())
 		{
 			//UiPaint(nGameFps); //Fix by kinnox cpu nhe hon nhiÒu l¾m
-			KUiCapture* kct = KUiCapture::GetUiCapture();
-			if (kct->m_bandiCaptureLibrary.IsCapturing())
-			{
-				kct->m_bandiCaptureLibrary.Work(NULL);
-				TCHAR s[128];
-				INT msec = kct->m_bandiCaptureLibrary.GetCaptureTime();
-				//_stprintf(s, _T("%02d:%02d:%03d / %.1f MB"), msec/(60*1000), msec%(60*1000)/1000, msec%1000, kct->m_bandiCaptureLibrary.GetCaptureFileSize()/1024./1024.);
-				_stprintf(s, _T("[ %02d:%02d:%03d ]"), msec / (60 * 1000), msec % (60 * 1000) / 1000, msec % 1000);
-				kct->SetRecTimmer(s);
-			}
+			// He replay .jxr: bom bo dem khung 30Hz roi day xuong shell.
+			// KHONG goi cho nay thi se KHONG co gi duoc ghi va cung khong bao loi.
+			JxReplay_OnGameFrame();
 
 			int TickCountTMG = 0;
 			int TimeDelay_Update_TMG = 1000;

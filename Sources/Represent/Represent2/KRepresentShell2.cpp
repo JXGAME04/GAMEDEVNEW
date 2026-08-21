@@ -14,6 +14,7 @@
 #include "..\..\engine\src\KWin32Wnd.h"
 #include "..\..\engine\src\KBmpFile24.h"
 #include "../../Engine/Src/KDebug.h"
+#include "../iRepresent/iJxReplay.h"
 #include <assert.h>
 
 
@@ -48,6 +49,31 @@ KRepresentShell2::KRepresentShell2()
 	m_nLeft = 0;
 	m_nTop = 0;
 	memset(m_FontTable, 0, sizeof(m_FontTable));
+
+	// He replay .jxr: chua co gi cai vao. -1 = "game chua bao gio dat trang thai".
+	m_pJxReplay     = NULL;
+	m_nReplayTime   = 0;
+	m_nReplayStatus = -1;
+}
+
+//=========================================================================
+// He GHI ban dien .jxr
+// Shell tu ghi lai chinh cac loi goi ve cua no thong qua IJXReplay::Rec().
+//=========================================================================
+void KRepresentShell2::SetJxReplay(void* pJxReplay)
+{
+	m_pJxReplay = pJxReplay;
+}
+
+void KRepresentShell2::SetReplayTimeAndStatus(int nTime, int nStatus)
+{
+	m_nReplayTime   = nTime;
+	m_nReplayStatus = nStatus;
+}
+
+void KRepresentShell2::SetReplayTime(int nTime)
+{
+	m_nReplayTime = nTime;
 }
 
 //##ModelId=3DD20C900089
@@ -150,11 +176,21 @@ bool KRepresentShell2::CreateAFont(const char* pszFontFile, CHARACTER_CODE_SET C
 //##ModelId=3DCD8DEA01BB
 unsigned int KRepresentShell2::CreateImage(const char* pszName, int nWidth, int nHeight, int nType)
 {
+	// GHI .jxr - loai 1. Ban tham chieu KHONG kep cong trang thai o day.
+	if (m_pJxReplay)
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_CREATEIMAGE, "pnwh",
+				pszName, nType, nWidth, nHeight);
 	return m_ImageStore.CreateImage(pszName, nWidth, nHeight, nType);
 }
 //##ModelId=3DB69FE401DA
 void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrimitives, unsigned int uGenre, int bSinglePlaneCoord)
 {
+	// GHI .jxr - loai 11 (dong chinh cua ban dien).
+	if (m_pJxReplay &&
+		(m_nReplayStatus == JXR_STATUS_RECORDING || m_nReplayStatus == -1))
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_DRAWPRIMITIVES, "npub",
+				nPrimitiveCount, pPrimitives, uGenre, bSinglePlaneCoord);
+
 	int i = 0;
 
 	switch(uGenre)
@@ -710,6 +746,11 @@ void KRepresentShell2::DrawPrimitives(int nPrimitiveCount, KRepresentUnit* pPrim
 void KRepresentShell2::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit* pPrimitives, 
         unsigned int uGenre, const char* pszImage, unsigned int uImage, short& nImagePosition)
 {
+	// GHI .jxr - loai 12. Ban tham chieu chi kiem con tro, khong kep cong trang thai.
+	if (m_pJxReplay)
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_DRAWPRIMITIVESONIMAGE, "npusim",
+				nPrimitiveCount, pPrimitives, uGenre, pszImage, uImage, (int)nImagePosition);
+
 	AlphaRecContent* pDestBitmap = (AlphaRecContent*)m_ImageStore.GetExistedCreateBitmap(
 		pszImage, uImage, nImagePosition);
 
@@ -836,6 +877,16 @@ void KRepresentShell2::DrawPrimitivesOnImage(int nPrimitiveCount, KRepresentUnit
 //## 清除图形数据
 void KRepresentShell2::ClearImageData(const char* pszImage, unsigned int uImage, short nImagePosition)
 {
+	// GHI .jxr - loai 4. Day la cho DUY NHAT ban tham chieu chap nhan ca trang thai 5.
+	// LUU Y: bo GHI cua jxreplay.dll VUT BO im lang loai 4 (case 4 nhay thang vao
+	// epilogue), nhung duong PHAT lai co bo xu ly. Giu nguyen de trung voi ban tham chieu.
+	if (m_pJxReplay &&
+		(m_nReplayStatus == JXR_STATUS_RECORDING ||
+		 m_nReplayStatus == JXR_STATUS_PAUSEREC  ||
+		 m_nReplayStatus == -1))
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_CLEARIMAGEDATA, "pun",
+				pszImage, uImage, (int)nImagePosition);
+
 	void* pFrame;
 	KSGImageContent* pBitmap = (KSGImageContent*)m_ImageStore.GetImage(
 			pszImage,	uImage, nImagePosition, 0, ISI_T_BITMAP16, pFrame);
@@ -953,6 +1004,10 @@ int KRepresentShell2::GetImagePixelAlpha(const char* pszImage, int nFrame, int n
 //##ModelId=3DC0A08D0085
 void KRepresentShell2::LookAt(int nX, int nY, int nZ)
 {
+	// GHI .jxr - loai 17 (vi tri camera).
+	if (m_pJxReplay)
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_LOOKAT, "xyz", nX, nY, nZ);
+
 	m_nLeft = nX - m_Canvas.GetWidth() / 2;
 	m_nTop  = nY / 2 - ((nZ * 887) >> 10) - m_Canvas.GetHeight() / 2;
 }
@@ -960,6 +1015,12 @@ void KRepresentShell2::LookAt(int nX, int nY, int nZ)
 //##ModelId=3DCA0BAE00E4
 void KRepresentShell2::OutputText(int nFontId, const char* psText, int nCount, int nX, int nY, unsigned int Color, int nLineWidth, int nZ, unsigned int BorderColor)
 {
+	// GHI .jxr - loai 14.
+	if (m_pJxReplay &&
+		(m_nReplayStatus == JXR_STATUS_RECORDING || m_nReplayStatus == -1))
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_OUTPUTTEXT, "npcxyolzb",
+				nFontId, psText, nCount, nX, nY, Color, nLineWidth, nZ, BorderColor);
+
 	int i = 0;
 	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
@@ -1003,6 +1064,12 @@ int KRepresentShell2::OutputRichText(int nFontId, KOutputTextParam* pParam,
 	int i = 0;
 	if (pParam == NULL)
 		return 0;
+
+	// GHI .jxr - loai 13. Ban tham chieu cung thoat som truoc khi ghi khi pParam == NULL.
+	if (m_pJxReplay &&
+		(m_nReplayStatus == JXR_STATUS_RECORDING || m_nReplayStatus == -1))
+		((IJXReplay*)m_pJxReplay)->Rec(m_nReplayTime, JXRT_OUTPUTRICHTEXT, "npscl",
+				nFontId, pParam, psText, nCount, nLineWidth);
 	for (i = 0; i < RS2_MAX_FONT_ITEM_NUM; i++)
 	{
 		if (m_FontTable[i].nId == nFontId)

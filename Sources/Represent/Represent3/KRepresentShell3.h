@@ -403,6 +403,23 @@ public:
     }
     virtual void setZoomFactor(float zoomFactorDelta); //set zoom factor
 	virtual bool IsRep3D() {return true;};
+
+	//---------------------------------------------------------------------
+	// He GHI / PHAT LAI ban dien .jxr  (xem ../iRepresent/iJxReplay.h)
+	// Dinh dang .jxr chi ho tro 2D: lop K2DREC / K2DPlay trong jxreplay.dll,
+	// va chinh ban tham chieu cung chan phat lai khi dang o che do 3D
+	// (nut [OpenRep] hien canh bao [3DPlayRepWarn] roi thoi).
+	// Nen o day chi luu tru cho du chu ky - KHONG phat sinh ban ghi nao.
+	//---------------------------------------------------------------------
+	virtual void SetJxReplay(void* pJxReplay)                   { m_pJxReplay = pJxReplay; }
+	virtual void SetReplayTimeAndStatus(int nTime, int nStatus) { m_nReplayTime = nTime; m_nReplayStatus = nStatus; }
+	virtual void SetReplayTime(int nTime)                       { m_nReplayTime = nTime; }
+
+private:
+	void*	m_pJxReplay;
+	int		m_nReplayTime;
+	int		m_nReplayStatus;
+
 private:
     class KRSFontItem
     {

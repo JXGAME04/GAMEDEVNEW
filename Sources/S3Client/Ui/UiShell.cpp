@@ -90,7 +90,9 @@
 #include "UiCase/UiQuestDT.h"
 #include "UiCase/UiQuestDT1.h"
 #include "UiCase/UiSuperShop.h"
-#include "UiCase/UiCapture.h"
+#include "UiCase/UiJxrPlayer.h"
+#include "../JxReplay.h"
+#include "../../Represent/iRepresent/iJxReplay.h"
 #include "UiChatPhrase.h"
 #include "UiCase/UiInformation3.h"
 #include "UiCase/UiNotice.h"
@@ -198,7 +200,7 @@ int	UiInit()
 	Player_Faction::RegisterSelfClass();
 //	Player_AutoPlay::RegisterSelfClass();
 	Player_ItemEx::RegisterSelfClass();
-	Player_Rec::RegisterSelfClass();
+	Player_Recorder::RegisterSelfClass();
 	Player_Friend::RegisterSelfClass();
 	Player_Options::RegisterSelfClass();
 
@@ -517,7 +519,7 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiSuperShop::GetIfVisible()  == NULL &&
 			KUiTrembleItem::GetIfVisible() == NULL &&
 			KUiBreakItem::GetIfVisible() == NULL &&
-			//KUiCapture::GetIfVisible()== NULL &&
+			KUiJxrPlayer::GetIfVisible() == NULL &&
 			//KUiDaTau::GetIfVisible() == NULL &&
 			KUiChatCentre::GetIfVisible() == NULL &&
 			KUiChatItem::GetIfVisible() == NULL &&
@@ -598,7 +600,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiTongCreateSheet::CloseWindow();
 //	KUiAuto::CloseWindow();
 //	KUiAutoPlay::CloseWindow();
-	//KUiCapture::CloseWindow();
+	KUiJxrPlayer::CloseWindow();
 	KUiChooseFace::CloseWindow();
 	KUiSuperShop::CloseWindow(bAll);
 	KUiChatItem::CloseWindow();
@@ -983,39 +985,30 @@ const char*	Player_ItemEx::GetShortKey()
 	return NULL;
 }
 
-IMPLEMENT_COMCLASS(Player_Rec)
-void Player_Rec::OnButtonClick()
+IMPLEMENT_COMCLASS(Player_Recorder)
+void Player_Recorder::OnButtonClick()
 {
-	/*if(KUiCapture::CheckWinXP()==TRUE)
-	{
-		KSystemMessage	Msg;
-		Msg.byConfirmType = SMCT_NONE;
-		Msg.byParamSize = 0;
-		Msg.byPriority = 0;
-		Msg.eType = SMT_NORMAL;
-		Msg.uReservedForUi = 0;
-		sprintf(Msg.szMessage, "TÝnh n¨ng nµy kh«ng hç trî cho Windows XP");
-		KUiSysMsgCentre::AMessageArrival(&Msg, NULL);			
-		return;
-	}*/
-
-	if(KUiCapture::GetIfVisible()==NULL)
-		KUiCapture::OpenWindow();
+	// Ban tham chieu: bam trai chi BAT DAU ghi (state 0/5), con dung/tam dung
+	// di qua menu chuot phai. KWndButton cua ta khong co menu do nen o day
+	// bam trai la CONG TAC BAT/TAT: dang ghi thi luu lai.
+	int nState = JxReplay_GetState();
+	if (nState == JXR_STATUS_RECORDING)
+		JxReplay_DoVerb("endrec");
 	else
-		KUiCapture::CloseWindow();
+		JxReplay_DoVerb("rec");
 }
-const char*	Player_Rec::GetShortKey()
+
+const char*	Player_Recorder::GetShortKey()
 {
 	return KShortcutKeyCentre::GetKeyName(
 		KShortcutKeyCentre::GetCommandKey(
-		KShortcutKeyCentre::FindCommandByScript(SCK_SHORTCUT_REC)));
+		KShortcutKeyCentre::FindCommandByScript(SCK_SHORTCUT_JXR_REC)));
 }
-void Player_Rec::UpdateData()
+
+void Player_Recorder::UpdateData()
 {
 	if (g_pCoreShell)
-	{
-		CheckButton(KUiCapture::GetIfVisible()!=NULL);
-	}
+		CheckButton(JxReplay_IsRecording());
 }
 
 IMPLEMENT_COMCLASS(Player_Sit)

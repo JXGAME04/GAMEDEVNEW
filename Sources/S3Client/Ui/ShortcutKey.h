@@ -34,7 +34,7 @@
 #define SCK_SHORTCUT_SHOWOBJNAME	"Switch([[showobjname]])"//edit by phong kieu hien ten obj duoi dat
 #define SCK_SHORTCUTSKILL_FORMAT	"ShortcutSkill(%d)"
 #define SCK_DIRECTSHORTCUTSKILL_FORMAT	"DirectShortcutSkill(%d)"
-#define SCK_SHORTCUT_REC	"Switch([[rec]])"
+#define SCK_SHORTCUT_JXR_REC	"Replay([[rec]])"
 
 struct COMMAND_SETTING
 {
