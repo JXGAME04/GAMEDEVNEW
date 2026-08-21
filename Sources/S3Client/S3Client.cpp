@@ -1348,7 +1348,11 @@ BOOL KMyApp::GameLoop()
 		// 16,67ms - doi dung moc se cu ~25 khung lai truot 1 co hoi, thanh mot khung 32ms.
 		// FPS trung binh van ~60 nhung mat nhin thay giut. Cho phep ve som PAINT_LEAD_MS
 		// va tinh moc ke tu luc ve that => khoang cach cac khung deu nhau.
-		#define	PAINT_LEAD_MS	8	// nua chu ky vong bom
+		// Nua chu ky vong bom. PHAI di theo nInterval trong KWin32App::Run:
+		// luoi 16ms -> lead 8; luoi 8ms -> lead 4. Dat lead >= ca chu ky luoi thi
+		// dieu kien ve luon thoa va game ve moi luot bom (do that: 85-102 khung/giay
+		// thay vi 60, ngon thua 40-60% CPU ve ma man 60Hz khong hien duoc).
+		#define	PAINT_LEAD_MS	4	// nua chu ky vong bom (nInterval = 8)
 		static DWORD s_dwNextPaint = 0;
 		DWORD	nPaintElapse = m_Timer.GetElapse();
 		DWORD	nPaintStep = 1000 / (DWORD)g_nPaintFps;

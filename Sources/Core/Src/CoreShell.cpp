@@ -12502,6 +12502,10 @@ static void CoreProbeRollSecond(DWORD dwNow)
 			fclose(pLog);
 		}
 	}
+	// Reset bo dem khoa surface MOI GIAY (khong chi khi ghi log): neu khong, giay
+	// binh thuong khong ghi se cong don sang giay sau => dong log vo ly kieu
+	// lock=13448702/2097571us (2,1 giay chi phi trong mot giay).
+	g_GetCanvasLockStats(NULL, NULL, 1);
 	s_ProbeSec = dwSec;
 	s_SecPaint = 0;
 	s_SecPaintSum = 0; s_SecPaintMax = 0;
