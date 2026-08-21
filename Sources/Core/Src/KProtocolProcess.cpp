@@ -6088,14 +6088,27 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 		// (r5f - phan bien) nhanh nay nang hon duong cu (quet MAX_PLAYER + goi
 		// Lua) va chay cho MOI client -> chan spam 5 giay/nguoi. Bot tu hoi
 		// 90 giay mot lan nen khong anh huong.
+		// (r5g - phan bien vong 2) khe nguoi choi duoc TAI SU DUNG khi co nguoi
+		// thoat/vao, va cooldown theo NGUOI chu khong theo MAP - nguoi moi se
+		// thua ke cooldown cua chu cu, con bot vua doi thanh (hoi ngay) thi bi
+		// vut goi dau tien. Theo doi chu khe (m_dwID) + subworld, doi la xoa.
 		static DWORD s_uSapDsNext[MAX_PLAYER] = { 0 };
+		static DWORD s_uSapDsChu[MAX_PLAYER] = { 0 };
+		static int   s_nSapDsSub[MAX_PLAYER] = { 0 };
 		const DWORD dwNayDs = SubWorld[0].m_dwCurrentTime;
+		int nSubDs = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
+		if (s_uSapDsChu[nIndex] != Player[nIndex].m_dwID
+		 || s_nSapDsSub[nIndex] != nSubDs)
+		{
+			s_uSapDsNext[nIndex] = 0;
+			s_uSapDsChu[nIndex] = Player[nIndex].m_dwID;
+			s_nSapDsSub[nIndex] = nSubDs;
+		}
 		if (dwNayDs < s_uSapDsNext[nIndex])
 			return;
 		s_uSapDsNext[nIndex] = dwNayDs + GAME_FPS * 5;
 		char szDs[320];
 		int nLen = sprintf(szDs, "[SapMap]");
-		int nSubDs = Npc[Player[nIndex].m_nIndex].m_SubWorldIndex;
 		int nSoDs = 0;
 		for (int i5 = 1; i5 < MAX_PLAYER && nSoDs < 12; ++i5)
 		{

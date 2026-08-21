@@ -707,6 +707,28 @@ sạp ở đâu, tránh trường hợp người chơi bày sạp ở vị trí 
 Binary: **CoreClient.dll 20/08 18:01 (2.205.696 B)** + **CoreServer.dll x64 18:01** (bản lùi
 `CoreClient_locked12` / `CoreServer_cu_r5e`). **VẪN CẦN RESTART GameServer** để danh bạ sạp sống.
 
+**I. r5g (18:18) — phản biện vòng 2 (soi chính bản vá r5f): 5 lỗi CONFIRMED, 0 bị bác.**
+Toàn bộ nằm ở cơ chế "hỏi lại" vừa thêm — nó **xung khắc với chính cooldown 5 giây trong cùng
+bản vá**:
+1. *(hồi quy do r5f gây ra)* Nhánh hỏi-lại chạy **trước** khối phân tích và ghi đè
+   `g_uDTSapDsSeen` vô điều kiện ⇒ trả lời về **muộn hơn 1,8 giây bị vứt vĩnh viễn** (bộ đệm đơn,
+   seq đã bị đánh dấu đã đọc). Sửa: chỉ hỏi lại khi `uSapMapSeq == g_uDTSapDsSeen` (không còn
+   trả lời chưa đọc).
+2. Nhịp hỏi lại 1,8 s **nằm gọn trong** cooldown 5 giây của server ⇒ mọi lần hỏi lại bị `return`
+   im lặng, cơ chế hỏi lại vô dụng đúng trong tình huống nó sinh ra để cứu. Sửa: lần đầu 1,8 s,
+   các lần sau **6 s**.
+3. `g_nDTSapDsTry` tăng cả ở nhánh **làm mới 90 giây** và không reset khi nhận hồi âm ⇒ ở một
+   thành >3 phút là **cạn sạch ngân sách** hỏi lại. Sửa: reset khi đổi map / khi đã có danh bạ /
+   khi nhận hồi âm — bộ đếm chỉ đếm lần hỏi **liên tiếp không hồi âm**.
+4. Bot **đứng im 5,4 giây mỗi chu kỳ** (3×1,8 s) thay vì 1,8 s như r5e. Sửa: chỉ đứng chờ ở lần
+   hỏi đầu; các lần sau **vừa đi tuần vừa chờ**.
+5. *(server)* `s_uSapDsNext` không xóa khi **khe người chơi bị tái sử dụng**, và cooldown theo
+   **người** chứ không theo **map** ⇒ người mới thừa kế cooldown của chủ cũ; bot vừa đổi thành
+   (hỏi ngay) có thể bị vứt gói đầu tiên. Sửa: theo dõi chủ khe (`m_dwID`) + subworld, đổi là xóa.
+
+Binary: **CoreClient.dll 20/08 18:18 (2.205.696 B)** + **CoreServer.dll x64 18:18** (bản lùi
+`CoreClient_locked13` / `CoreServer_cu_r5f`). Vẫn **CẦN RESTART GameServer**.
+
 ---
 
 ## 9 · Phản biện — đã làm gì

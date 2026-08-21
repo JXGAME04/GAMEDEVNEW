@@ -5459,18 +5459,29 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (g_nDTSapDs < 0 && g_nDTSapDsMap == nMap
 		 && uCurTime > g_uDTSapDsFresh + 30000)
 			g_nDTSapDsTry = 0;
+		// (r5g - phan bien vong 2) BA sua o dieu kien nay:
+		// - nhanh hoi lai chay TRUOC khoi phan tich va ghi de g_uDTSapDsSeen ben
+		//   duoi, nen tra loi ve MUON hon han cho se bi vut vinh vien (bo dem
+		//   don, seq da bi danh dau da doc) -> con tra loi CHUA DOC thi DUNG hoi
+		//   lai, de nhip nay phan tich no.
+		// - bo dem Try phai dem so lan hoi LIEN TIEP KHONG hoi am: nhanh doi map
+		//   va nhanh lam moi 90 giay (da co danh ba = kenh dang song) nap lai ve 0,
+		//   khong thi o lau mot thanh la can sach ngan sach.
 		if (g_nDTSapDsMap != nMap
 		 || (g_nDTSapDs >= 0 && uCurTime > g_uDTSapDsFresh + 90000)
-		 || (g_nDTSapDs < 0 && uCurTime > g_uDTSapDsT && g_nDTSapDsTry < 3))
+		 || (g_nDTSapDs < 0 && uCurTime > g_uDTSapDsT && g_nDTSapDsTry < 3
+		  && g_sDTCap.uSapMapSeq == g_uDTSapDsSeen))
 		{
-			if (g_nDTSapDsMap != nMap)
+			if (g_nDTSapDsMap != nMap || g_nDTSapDs >= 0)
 				g_nDTSapDsTry = 0;
 			++g_nDTSapDsTry;
 			g_nDTSapDsMap = nMap;
 			g_nDTSapDs = -1;
 			g_nDTSapDsCur = 0;
 			g_uDTSapDsFresh = uCurTime;
-			g_uDTSapDsT = uCurTime + 1800;
+			// han cho: lan DAU 1,8 giay; cac lan hoi lai phai > 5 giay (cooldown
+			// chong spam ben server) khong thi goi hoi lai bi vut im lang.
+			g_uDTSapDsT = uCurTime + (g_nDTSapDsTry <= 1 ? 1800u : 6000u);
 			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
 			SendClientCmdGetCount(DATAU_SAPMAP_ID);
 			ea.uDTNext = uCurTime + 300;
@@ -5479,6 +5490,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (g_sDTCap.uSapMapSeq != g_uDTSapDsSeen)
 		{
 			g_uDTSapDsSeen = g_sDTCap.uSapMapSeq;
+			g_nDTSapDsTry = 0;	// (r5g) co hoi am = kenh song, nap lai ngan sach
 			g_nDTSapDs = 0;
 			g_nDTSapDsCur = 0;
 			const char* pDs = g_sDTCap.szSapMap + 8;
@@ -5503,7 +5515,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			else
 				DT_Msg(nPlayerIdx, "<color=Gray>Th\265nh n\265y kh\253ng c\343 s\271p th\313t n\265o (server x\270c nh\313n) - qua th\265nh k\325.");
 		}
-		if (g_nDTSapDs < 0 && uCurTime < g_uDTSapDsT)
+		// (r5g) chi dung im cho o LAN HOI DAU (1,8 giay); cac lan hoi lai cho 6
+		// giay nen phai vua di tuan vua cho, khong dung bot lai 5,4 giay/chu ky.
+		if (g_nDTSapDs < 0 && g_nDTSapDsTry <= 1 && uCurTime < g_uDTSapDsT)
 		{
 			ea.uDTNext = uCurTime + 300;
 			return 1;	// cho danh ba ve
