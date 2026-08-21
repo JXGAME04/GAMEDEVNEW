@@ -149,6 +149,16 @@ struct PB_WalkState
 	int          noAdvanceCalls;  // so lan goi lien tiep ma khong tien duoc waypoint
 	int          nKieuDuong;      // FindPathServer tra ve: 1 = duong TRON, 2 = duong CUT
 	                              // (dich khong toi duoc, chi dan toi block gan nhat)
+	unsigned int uSendTick;       // (20/08) nhip phat do_run gan nhat - gion lai lenh lap
+	                              // khi bot dung yen (bStopped mo cong MOI NHIP).
+	int          wpX, wpY;        // (20/08) WAYPOINT DA DONG BANG cua block dang nham.
+	                              // Truoc day diem den duoc tinh lai TU VI TRI BOT moi
+	                              // nhip (BlockNearestMps) nen no TRUOT theo bot: bot
+	                              // chay ~340 MPS/giay, cu 48 MPS lech la phat lai mot
+	                              // goi do_run -> ~7 goi s2c_npcwalk/giay/bot, client
+	                              // phai dung lai duong di cua NPC lien tuc (chu game:
+	                              // "di chuyen toi thi bi khung lai 1 nhip roi moi di
+	                              // tiep"). Nay tinh MOT LAN moi khi doi block. 0 = chua co.
 
 	PB_WalkState() { Reset(); }
 	void Reset()
@@ -163,6 +173,8 @@ struct PB_WalkState
 		repathCount = 0;
 		noAdvanceCalls = 0;
 		nKieuDuong = 0;
+		wpX = wpY = 0;
+		uSendTick = 0;
 	}
 };
 
