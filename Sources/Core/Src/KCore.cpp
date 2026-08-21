@@ -721,6 +721,80 @@ BOOL InitGameSetting()
 	return TRUE;
 }
 
+//---------------------------------------------------------------------------
+// [AutoLog 21/08] Xem mo ta o KCore.h.
+// - Doc cong tac MOT LAN tu Config.ini [Client] AutoLog (thu muc lam viec cua
+//   tien trinh: Game.exe -> bin\client, GameServer -> bin\server).
+// - Moi dong tu them 't=<ms> pid=<pid> ' de so khop giua cac dong/tien trinh.
+// - Chong phinh: toi da 600 dong/giay (dong bi bo duoc dem va bao lai o dong ke
+//   tiep), va xoay tep khi > 64 MB (doi ten thanh jx_auto.log.1).
+//---------------------------------------------------------------------------
+static int   s_nAutoLog = -1;		// -1 = chua doc cau hinh
+static DWORD s_uAutoLogSec = 0;	// giay dang dem
+static int   s_nAutoLogCnt = 0;	// so dong da ghi trong giay do
+static int   s_nAutoLogDrop = 0;	// so dong bi bo vi vuot tran
+
+void g_AutoLogSet(int nOn)
+{
+	s_nAutoLog = nOn ? 1 : 0;
+}
+
+int g_AutoLogOn()
+{
+	if (s_nAutoLog < 0)
+	{
+#ifdef WIN32
+		s_nAutoLog = (int)GetPrivateProfileIntA("Client", "AutoLog", 0, ".\\Config.ini");
+#else
+		s_nAutoLog = 0;
+#endif
+	}
+	return s_nAutoLog;
+}
+
+void g_AutoLog(const char* szFmt, ...)
+{
+	if (!g_AutoLogOn())
+		return;
+	DWORD uNow = timeGetTime();
+	DWORD uSec = uNow / 1000;
+	if (uSec != s_uAutoLogSec)
+	{
+		s_uAutoLogSec = uSec;
+		s_nAutoLogCnt = 0;
+	}
+	if (s_nAutoLogCnt >= 600)
+	{
+		++s_nAutoLogDrop;
+		return;
+	}
+	++s_nAutoLogCnt;
+	char szLine[1024];
+	va_list va;
+	va_start(va, szFmt);
+	int n = _vsnprintf(szLine, sizeof(szLine) - 2, szFmt, va);
+	va_end(va);
+	if (n < 0)
+		szLine[sizeof(szLine) - 2] = 0;
+	FILE* pLog = fopen("jx_auto.log", "a");
+	if (!pLog)
+		return;
+	if (s_nAutoLogDrop > 0)
+	{
+		fprintf(pLog, "t=%u pid=%u [AUTOLOG] bo qua %d dong (tran 600 dong/giay)\n",
+			uNow, (unsigned int)GetCurrentProcessId(), s_nAutoLogDrop);
+		s_nAutoLogDrop = 0;
+	}
+	fprintf(pLog, "t=%u pid=%u %s\n", uNow, (unsigned int)GetCurrentProcessId(), szLine);
+	long nSize = ftell(pLog);
+	fclose(pLog);
+	if (nSize > 64 * 1024 * 1024)
+	{
+		remove("jx_auto.log.1");
+		rename("jx_auto.log", "jx_auto.log.1");
+	}
+}
+
 int PositionToRoom(int Place)
 {
 	switch (Place)

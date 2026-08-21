@@ -332,6 +332,7 @@ void SendClientCmdSkill(int nSkillID, int nX, int nY)
 	
 	NetCommand.ProtocolType = (BYTE)c2s_npcskill;
 	NetCommand.nSkillID = nSkillID;
+	AUTOLOG("NET-SKILL-PKT skill=%d x=%d y=%d bytgtid=%d cli=%d t=%u", nSkillID, nX, nY, (int)(nX == -1), (int)(g_pClient != NULL), GetTickCount());
 	NetCommand.nMpsX = nX;
 	NetCommand.nMpsY = nY;
 

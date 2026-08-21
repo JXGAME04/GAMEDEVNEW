@@ -1332,6 +1332,7 @@ BOOL	KObj::SyncAdd(int nClient)
 	strcpy(cObjAdd.m_szName, this->m_szName);
 	cObjAdd.m_wLength = sizeof(OBJ_ADD_SYNC) - 1 - sizeof(cObjAdd.m_szName) + strlen(cObjAdd.m_szName);
 
+	AUTOLOG("OBJ-RESYNC id=%d kind=%d itemid=%d client=%d mpsx=%d mpsy=%d life=%d belong=%d", m_nID, m_nKind, m_nItemDataID, nClient, nTempX, nTempY, m_nLifeTime, m_nBelong);
 	g_pServer->PackDataToClient(nClient, (BYTE*)&cObjAdd, cObjAdd.m_wLength + 1);
 
 	return TRUE;
@@ -1530,6 +1531,7 @@ void	KObj::Remove(BOOL bSoundFlag)
 	m_Image.uImage = 0;
 	g_ScenePlace.RemoveObject(CGOG_OBJECT, m_nIndex, m_SceneID);
 #endif
+	AUTOLOG("OBJ-GONE idx=%d id=%d kind=%d itemid=%d money=%d life=%d region=%d mx=%d my=%d snd=%d", m_nIndex, m_nID, m_nKind, m_nItemDataID, m_nMoneyNum, m_nLifeTime, m_nRegionIdx, m_nMapX, m_nMapY, bSoundFlag);
 	SubWorld[m_nSubWorldID].m_WorldMessage.Send(GWM_OBJ_DEL, m_nIndex);
 }
 

@@ -191,6 +191,21 @@ public:
 extern char* g_GetStringRes(int nStringID, char * szString, int nMaxLen);
 #endif
 
+//---------------------------------------------------------------------------
+// [AutoLog 21/08] Log chan doan cho auto (danh / nhat do / di chuyen / skill /
+// dong bo toa do). BAT bang Config.ini muc [Client] AutoLog = 1; mac dinh 0 =
+// TAT hoan toan (g_AutoLogOn() tra 0 -> khong dinh dang chuoi, khong mo tep).
+// Ghi vao 'jx_auto.log' o thu muc lam viec; tu xoay khi tep > 64 MB.
+// Dung: if (g_AutoLogOn()) g_AutoLog("[TAG] npc=%u d=%d", u, d);
+//---------------------------------------------------------------------------
+int  g_AutoLogOn();
+void g_AutoLog(const char* szFmt, ...);
+void g_AutoLogSet(int nOn);
+// Tien ich: AUTOLOG(...) = ghi neu dang bat; AUTOLOG_EVERY(ms, ...) = tiet che theo
+// thoi gian (moi diem goi co bien static rieng nho khoi do{}while(0)).
+#define AUTOLOG(...)              do { if (g_AutoLogOn()) g_AutoLog(__VA_ARGS__); } while (0)
+#define AUTOLOG_EVERY(ms, ...)    do { static DWORD s_uAutoLogT = 0; if (g_AutoLogOn()) { DWORD uAutoLogNow = timeGetTime(); if ((DWORD)(uAutoLogNow - s_uAutoLogT) >= (DWORD)(ms)) { s_uAutoLogT = uAutoLogNow; g_AutoLog(__VA_ARGS__); } } } while (0)
+
 BOOL InitGameSetting();
 BOOL InitSkillSetting();
 BOOL InitMissleSetting();

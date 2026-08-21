@@ -794,6 +794,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	if(!g_pCoreShell)
 		return;
 	Wnd_SetPKKey(pApData->uFKey);
+	AUTOLOG_EVERY(1000, "[AUTO-PASS] pass=%u t=%u pidx=%d onpk=%d fight=%d pick=%d fpick=%d datau=%d vis=%d near=%d pvis=%d skL=%d skR=%d lbtn=%d", m_GameCounter, timeGetTime(), g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0), pApData->bOnPK, pApData->bFight, pApData->bPickUp, pApData->bFollowPick, pApData->bDaTau, pApData->nVision, pApData->nNearDist, pApData->nPickVision, pApData->nSkillIdL, pApData->nSkillIdR, Wnd_IsLButtonDown());
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CHECKTIME, 0);
 	if(pApData->bRevive)
 	{
@@ -818,6 +819,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			return;
 		}
 	}
+	AUTOLOG_EVERY(1000, "[AUTO-NOPLAYER] pass=%u t=%u pidx=%d reason=no-player-index", m_GameCounter, timeGetTime(), g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0));
 	if(!g_pCoreShell->GetGameData(GDI_GET_PLAYERNPC_INDEX, 0, 0))
 		return;
 	// [DaTau] 0 = tha may; 1 = dang lam viec o thanh (bo MOVE/RETURN);
@@ -827,6 +829,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	if(pApData->bDaTau == 1)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
 	{
 		nDT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DATAU, (int)pApData);
+		AUTOLOG("[DATAU-GATE] pass=%u t=%u nDT=%d bDaTau=%d skipboss=%d", m_GameCounter, timeGetTime(), nDT, pApData->bDaTau, pApData->bSkipGoldboss);
 		if(nDT == 2)
 		{
 			memcpy(&sDTData, pApData, sizeof(autoData));
@@ -895,6 +898,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_DMGITEM, pApData->nTPDmgItem))
 			return;
 	}
+	AUTOLOG_EVERY(1000, "[AUTO-STAGE-TP] pass=%u t=%u stage=after-tp tpl=%d tpm=%d tplg=%d tpmg=%d tpbox=%d tpmoney=%d tpdmg=%d", m_GameCounter, timeGetTime(), pApData->bCheckTPLife, pApData->bCheckTPMana, pApData->bCheckTPLifeGone, pApData->bCheckTPManaGone, pApData->bCheckTPIBox, pApData->bCheckTPMoney, pApData->bCheckTPIDmg);
 	if(pApData->bChat)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CANCHAT, pApData->nChatChann))
@@ -929,6 +933,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, Wnd_IsLButtonDown());
 	BOOL bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
+	AUTOLOG_EVERY(1000, "[PICK-RET] pass=%u t=%u pickret=%d lbtn=%d pick=%d fpick=%d pvis=%d ptype=%d city=%d nopick=%d nopcnt=%d", m_GameCounter, timeGetTime(), bLaunch, Wnd_IsLButtonDown(), pApData->bPickUp, pApData->bFollowPick, pApData->nPickVision, pApData->nPickType, pApData->bCityPick, pApData->bNoPick, pApData->nNOPCount);
 	if(bLaunch != 2)
 		bLaunch = 0;
 	if(pApData->bUseBuff && !bLaunch)
@@ -955,6 +960,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	if(!pApData->bOnPK)
 	{
+		AUTOLOG_EVERY(5000, "[SKILL-SET] skL=%d skR=%d skB=%d skP=%d skC=%d cSec=%d skLS=%d/%d skMS=%d/%d", pApData->nSkillIdL, pApData->nSkillIdR, pApData->nSkillIdB, pApData->nSkillIdP, pApData->nSkillIdC, pApData->nSkillCSec, pApData->nSkillIdLS, pApData->nSLSPerc, pApData->nSkillIdMS, pApData->nSMSPerc);
 		if(pApData->nSkillIdL)
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_LEFTSKILL, pApData->nSkillIdL);
 		if(pApData->nSkillIdR)
@@ -972,6 +978,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			g_DrawVisionTime = timeGetTime() + 250;
 		}
 	}
+	AUTOLOG_EVERY(500, "[BUFF-SWALLOW] pass=%u t=%u launch=%d ubuff=%d buffval=%d clbuff=%d sp1=%d sp2=%d sp3=%d", m_GameCounter, timeGetTime(), bLaunch, pApData->bUseBuff, pApData->nUseBuffVal, pApData->bCLBuff, pApData->nSkillIdSP1, pApData->nSkillIdSP2, pApData->nSkillIdSP3);
 	if(pApData->nSkillIdA1 || pApData->nSkillIdA2)
 	{
 		nParam[0] = pApData->nSkillIdA1;
@@ -986,6 +993,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
 			if(!bLaunch && (!pApData->bUseFKey || Wnd_IsPKKeyDown()))
 			bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pApData);
+			AUTOLOG_EVERY(1000, "[PK-RET] pass=%u t=%u pkret=%d fkey=%d fkeydown=%d pkvis=%d pknear=%d pkplayer=%d pknpc=%d pkappr=%d", m_GameCounter, timeGetTime(), bLaunch, pApData->bUseFKey, Wnd_IsPKKeyDown(), pApData->nPKVision, pApData->nPKNearDist, pApData->bPKPlayer, pApData->bPKNpc, pApData->bPKAppr);
 		}
 		else
 		{
@@ -995,14 +1003,18 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 				BOOL bMoving = FALSE;
 				if(nDT == 0)
 					bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
+					AUTOLOG_EVERY(2000, "[MOVE-RET] pass=%u t=%u moving=%d nDT=%d launch=%d killmons=%d follow=%d around=%d coord=%d uphorse=%d fdist=%d", m_GameCounter, timeGetTime(), bMoving, nDT, bLaunch, pApData->bMoveKillMons, pApData->bMoveFollow, pApData->bAroundPoint, pApData->bMoveCoord, pApData->bMoveUpHorse, pApData->nFollowDist);
 				if(!bMoving && pApData->bFight && nDT != 1)
 				{
 					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)(nDT == 2 ? &sDTData : pApData));
+					AUTOLOG_EVERY(1000, "[FIGHT-RET] pass=%u t=%u fightret=%d nDT=%d moving=%d vis=%d near=%d appr=%d fback=%d fbvis=%d selfb=%d selboss=%d skipboss=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, bMoving, pApData->nVision, pApData->nNearDist, pApData->bApproach, pApData->bFightBack, pApData->nFBVision, pApData->nSelFBack, pApData->nSelBoss, pApData->bSkipGoldboss, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
 					if(bLaunch == 2)
 					{
 						PostQuitMessage(0);
 						return;
 					}
+					if(!bLaunch)
+						AUTOLOG_EVERY(1000, "[FIGHT-SKIP] fight tra 0 -> RESETMOVE moving=%d nDT=%d vis=%d near=%d", (int)bMoving, nDT, pApData->nVision, pApData->nNearDist);
 					if(!bLaunch)
 						g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETMOVE, 0);
 				}
@@ -1052,6 +1064,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FILTER, (int)pApData))
 			return;
 	}
+	AUTOLOG_EVERY(1000, "[AUTO-STAGE-FILTER] pass=%u t=%u stage=after-filter launch=%d nDT=%d lbtn=%d filter=%d ftcnt=%d prize=%d level=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bFilter, pApData->nFtMaCount, pApData->bPrize, pApData->bLevel);
 	if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTPROC, (int)pApData))
 		return;
 	if(pApData->nSelInvitePt)
@@ -1069,6 +1082,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_REPAIRF, 0))
 			return;
 	}
+	AUTOLOG_EVERY(1000, "[AUTO-END] pass=%u t=%u stage=end launch=%d nDT=%d lbtn=%d ret=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bReturn, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
 	if(pApData->bReturn && nDT == 0 && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
 	&& !Wnd_IsLButtonDown())
 	{

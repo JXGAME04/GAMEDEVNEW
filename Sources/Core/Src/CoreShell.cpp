@@ -7841,6 +7841,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							Player[nPlayerIdx].m_sExtAuto.uUnFightTime = uCurTime;
 						}
 					}
+					AUTOLOG_EVERY(5000, "[EXCL-PURGE] t=%u size=%d objsize=%d", uCurTime, (int)Player[nPlayerIdx].m_mAutoExcludeNpcID.size(), (int)Player[nPlayerIdx].m_mAutoIDObj.size());
 					for (std::map<UINT,UINT>::iterator it = Player[nPlayerIdx].m_mAutoExcludeNpcID.begin();
 						it != Player[nPlayerIdx].m_mAutoExcludeNpcID.end();)
 					{
@@ -8255,6 +8256,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_LEFTSKILL:
 				{
+					AUTOLOG_EVERY(2000, "[SKILL-SETLEFT] t=%u want=%d cur=%d own=%d", uCurTime, nParam, Player[nPlayerIdx].GetLeftSkill(), Npc[nNpcIdx].m_SkillList.FindSame(nParam));
 					if(Player[nPlayerIdx].GetLeftSkill() == nParam)
 						return 0;
 					KUiGameObject	Skill;
@@ -8266,6 +8268,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_RIGHTSKILL:
 				{
+					AUTOLOG_EVERY(2000, "[SKILL-SETRIGHT] t=%u want=%d cur=%d own=%d", uCurTime, nParam, Player[nPlayerIdx].GetRightSkill(), Npc[nNpcIdx].m_SkillList.FindSame(nParam));
 					if(Player[nPlayerIdx].GetRightSkill() == nParam)
 						return 0;
 					KUiGameObject	Skill;
@@ -8306,6 +8309,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					return 1;
 				}
 				case ATYPE_FIGHT:
+				AUTOLOG_EVERY(2000, "[FIGHT-IN] t=%u pl=%d idx=%d prevF=%d fmode=%d doing=%d cell=(%d,%d) hp=%d/%d tgID=%u tgIdx=%d tgDoing=%d tgRegion=%d rel=%d moveRet=%d step=%d tmp=(%d,%d)", uCurTime, nPlayerIdx, nNpcIdx, Player[nPlayerIdx].m_sExtAuto.bPrevFightState, Npc[nNpcIdx].m_FightMode, (int)Npc[nNpcIdx].m_Doing, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_CurrentLife, Npc[nNpcIdx].m_CurrentLifeMax, Player[nPlayerIdx].m_sExtAuto.uNpcID, (Player[nPlayerIdx].m_sExtAuto.uNpcID ? NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID) : 0), (Player[nPlayerIdx].m_sExtAuto.uNpcID && NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID) ? (int)Npc[NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID)].m_Doing : -1), (Player[nPlayerIdx].m_sExtAuto.uNpcID && NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID) ? Npc[NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID)].m_RegionIndex : -1), (Player[nPlayerIdx].m_sExtAuto.uNpcID && NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID) ? (int)NpcSet.GetRelation(nNpcIdx, NpcSet.SearchID(Player[nPlayerIdx].m_sExtAuto.uNpcID)) : -1), Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY);
 				{
 					if(!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
 						return 0;
@@ -8343,8 +8347,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
 						pApData->nVision, pApData->bFightBack, pApData->nFBVision,
 						pApData->nSelBoss, TRUE, NULL, pApData->bMoveFollow, Ox, Oy);
+						AUTOLOG_EVERY(1000, "[FIGHT-FIND] t=%u ret=%d org=(%d,%d) me=(%d,%d) vision=%d fb=%d fbvis=%d selboss=%d follow=%d moveRet=%d step=%d excl=%d", uCurTime, nTGNpcIdx, Ox, Oy, nX, nY, pApData->nVision, pApData->bFightBack, pApData->nFBVision, pApData->nSelBoss, pApData->bMoveFollow, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, (int)Player[nPlayerIdx].m_mAutoExcludeNpcID.size());
 						if(!nTGNpcIdx)
 						{
+							AUTOLOG_EVERY(1000, "[FIGHT-NOTARGET] t=%u RETURN0 no-npc me=(%d,%d) cell=(%d,%d) org=(%d,%d) vision=%d moveRet=%d step=%d/%d reach=%d excl=%d", uCurTime, nX, nY, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Ox, Oy, pApData->nVision, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, pApData->nCoordCount, Player[nPlayerIdx].m_sExtAuto.bReachDes, (int)Player[nPlayerIdx].m_mAutoExcludeNpcID.size());
 							if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet == 2)
 							{
 								++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
@@ -8361,6 +8367,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					if(pApData->bSkipGoldboss)
 					{
+						AUTOLOG("[FIGHT-SKIPGOLD] t=%u tgID=%u tgIdx=%d type=%d lv=%d -> exclude 30s (until %u)", uCurTime, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, Npc[nTGNpcIdx].m_Type, Npc[nTGNpcIdx].m_Level, (UINT)(uCurTime + 30000));
 						if(Npc[nTGNpcIdx].m_Type == boss_gold)
 						{
 							Player[nPlayerIdx].
@@ -8394,6 +8401,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
 					int nDist = g_GetDistance(nX, nY, x, y);
+					AUTOLOG_EVERY(1000, "[FIGHT-DIST] t=%u new=%d tgID=%u tgIdx=%d kind=%d type=%d lv=%d tgDoing=%d tgHP=%d/%d meMps=(%d,%d) tgMps=(%d,%d) meCell=(%d,%d) tgCell=(%d,%d) dist=%d meDoing=%d", uCurTime, bNewFound, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, (int)Npc[nTGNpcIdx].m_Kind, Npc[nTGNpcIdx].m_Type, Npc[nTGNpcIdx].m_Level, (int)Npc[nTGNpcIdx].m_Doing, Npc[nTGNpcIdx].m_CurrentLife, Npc[nTGNpcIdx].m_CurrentLifeMax, nX, nY, x, y, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nTGNpcIdx].m_MapX, Npc[nTGNpcIdx].m_MapY, nDist, (int)Npc[nNpcIdx].m_Doing);
 					if(Npc[nTGNpcIdx].m_Kind != kind_player)
 					{
 						if(bNewFound)
@@ -8401,6 +8409,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							int nSpeed = Npc[nNpcIdx].m_CurrentRunSpeed;
 							if(nSpeed <= 0)
 								nSpeed = 10;
+							AUTOLOG("[FIGHT-DEADLINE] t=%u tgID=%u dist=%d speed=%d oldlife=%d", uCurTime, Npc[nTGNpcIdx].m_dwID, nDist, (int)Npc[nNpcIdx].m_CurrentRunSpeed, Npc[nTGNpcIdx].m_CurrentLife);
 							Player[nPlayerIdx].m_sExtAuto.uFDelayTime =
 								(UINT)(nDist/(float)nSpeed)*56 + 2500;
 							Player[nPlayerIdx].m_sExtAuto.uFDelayTime += uCurTime;
@@ -8408,6 +8417,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 						else if(Player[nPlayerIdx].m_sExtAuto.uFDelayTime < uCurTime)
 						{
+							AUTOLOG("[FIGHT-NODMG] t=%u deadline=%u tgID=%u tgIdx=%d oldHP=%d curHP=%d dist=%d meDoing=%d tgDoing=%d leftSkill=%d excl=%d", uCurTime, Player[nPlayerIdx].m_sExtAuto.uFDelayTime, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, Player[nPlayerIdx].m_sExtAuto.nOldLife, Npc[nTGNpcIdx].m_CurrentLife, nDist, (int)Npc[nNpcIdx].m_Doing, (int)Npc[nTGNpcIdx].m_Doing, Player[nPlayerIdx].GetLeftSkill(), (int)Player[nPlayerIdx].m_mAutoExcludeNpcID.size());
 							if(Player[nPlayerIdx].m_sExtAuto.nOldLife == Npc[nTGNpcIdx].m_CurrentLife)
 							{
 								Player[nPlayerIdx].
@@ -8440,6 +8450,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					bool bChecked = false;
+					AUTOLOG_EVERY(1000, "[FIGHT-SKILLPICK] t=%u base=%d left=%d idC=%d chSw=%d chT=%u idB=%d idLS=%d/%d idMS=%d/%d hp%%=%d mp%%=%d", uCurTime, nMainSkill, Player[nPlayerIdx].GetLeftSkill(), pApData->nSkillIdC, Player[nPlayerIdx].m_sExtAuto.bChSkill, Player[nPlayerIdx].m_sExtAuto.uChSkillTime, pApData->nSkillIdB, pApData->nSkillIdLS, pApData->nSLSPerc, pApData->nSkillIdMS, pApData->nSMSPerc, (int)((double)Npc[nNpcIdx].m_CurrentLife*100.0/(Npc[nNpcIdx].m_CurrentLifeMax?Npc[nNpcIdx].m_CurrentLifeMax:1)), (int)((double)Npc[nNpcIdx].m_CurrentMana*100.0/(Npc[nNpcIdx].m_CurrentManaMax?Npc[nNpcIdx].m_CurrentManaMax:1)));
 					if(pApData->nSkillIdB && Npc[nTGNpcIdx].m_Kind == kind_normal && Npc[nTGNpcIdx].m_Type != boss_none)
 						nMainSkill = pApData->nSkillIdB;
 					if(pApData->nSkillIdLS)
@@ -8511,8 +8522,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel);
 					if(!pSkill)
 						return 0;
+					AUTOLOG_EVERY(1000, "[FIGHT-SKILLRDY] t=%u skill=%d idx=%d lv=%d next=%u now=%u radius=%d needDown=%d ride=%d dist=%d mp=%d", uCurTime, nMainSkill, nSkillIdx, Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].SkillLevel, Npc[nNpcIdx].m_SkillList.m_Skills[nSkillIdx].NextCastTime, SubWorld[0].m_dwCurrentTime, pSkill->GetAttackRadius(), (int)pSkill->IsNeedDownHorse(), Npc[nNpcIdx].m_bRideHorse, nDist, Npc[nNpcIdx].m_CurrentMana);
 					if(pApData->nSelFHorse == 0)
 					{
+						AUTOLOG_EVERY(1000, "[FIGHT-HORSE] t=%u TOGGLE skill=%d needDown=%d ride=%d selFHorse=%d dist=%d", uCurTime, nMainSkill, (int)pSkill->IsNeedDownHorse(), Npc[nNpcIdx].m_bRideHorse, pApData->nSelFHorse, nDist);
 						if(pSkill->IsNeedDownHorse())
 						{
 							if(Npc[nNpcIdx].m_bRideHorse)
@@ -8525,9 +8538,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					int nSkillRadius = pSkill->GetAttackRadius();
+					AUTOLOG_EVERY(500, "[FIGHT-EMIT] t=%u tgID=%u skill=%d dist=%d radius=%d appr=%d near=%d run=%d me=(%d,%d) tg=(%d,%d) meDoing=%d", uCurTime, Npc[nTGNpcIdx].m_dwID, nMainSkill, nDist, nSkillRadius, pApData->bApproach, pApData->nNearDist, Player[nPlayerIdx].m_RunStatus, nX, nY, x, y, (int)Npc[nNpcIdx].m_Doing);
 					if(pApData->bApproach)
 					{
 						int nNearDist = pApData->nNearDist;
+						AUTOLOG_EVERY(2000, "[FIGHT-CLAMP] t=%u skill=%d rawRadius=%d cfgNear=%d useNear=%d dist=%d", uCurTime, nMainSkill, nSkillRadius, pApData->nNearDist, (nNearDist < 75 ? 75 : nNearDist), nDist);
 						if(nNearDist < 75)
 							nNearDist = 75;
 						if(nSkillRadius > nNearDist)
@@ -8582,6 +8597,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					return 0;
 				}
 				case ATYPE_PKFIGHT:
+				AUTOLOG_EVERY(2000, "[PK-IN] t=%u pl=%d idx=%d fmode=%d doing=%d tgID=%u cell=(%d,%d)", uCurTime, nPlayerIdx, nNpcIdx, Npc[nNpcIdx].m_FightMode, (int)Npc[nNpcIdx].m_Doing, Player[nPlayerIdx].m_sExtAuto.uNpcID, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY);
 				{
 					if(!Npc[nNpcIdx].m_FightMode)
 						return 0;
@@ -8608,6 +8624,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
 						pApData->nPKVision, pApData->bPKPlayer,
 						pApData->nPKVision, 0, pApData->bPKNpc);
+						AUTOLOG_EVERY(1000, "[PK-FIND] t=%u ret=%d prio=%d pkvis=%d pkplayer=%d pknpc=%d me=(%d,%d)", uCurTime, nTGNpcIdx, pApData->nPriority, pApData->nPKVision, pApData->bPKPlayer, pApData->bPKNpc, nX, nY);
 						if(!nTGNpcIdx)
 							return 0;
 						Player[nPlayerIdx].m_sExtAuto.uNpcID = Npc[nTGNpcIdx].m_dwID;
@@ -8733,6 +8750,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						return 0;
 					g_ScenePlace.RemoveFlag();
 					int nSkillRadius = pSkill->GetAttackRadius();
+					AUTOLOG_EVERY(500, "[PK-EMIT] t=%u tgID=%u skill=%d dist=%d radius=%d follow=%d appr=%d near=%d cast=%d run=%d me=(%d,%d) tg=(%d,%d)", uCurTime, Npc[nTGNpcIdx].m_dwID, nMainSkill, nDist, nSkillRadius, pApData->bPKFollowTG, pApData->bPKAppr, pApData->nPKNearDist, (int)bCastState, Player[nPlayerIdx].m_RunStatus, nX, nY, x, y);
 					if(pApData->bPKFollowTG)
 					{
 						if(pApData->bPKAppr && !bCastState)
@@ -8771,6 +8789,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 						else
 						{
+							AUTOLOG("[PK-CASTSKIP] t=%u cast=%d skill=%d dist=%d radius=%d tgID=%u cs1=%d cs2=%d cs3=%d", uCurTime, (int)bCastState, nMainSkill, nDist, nSkillRadius, Npc[nTGNpcIdx].m_dwID, pApData->nSkillIdCS1, pApData->nSkillIdCS2, pApData->nSkillIdCS3);
 							if(bCastState)
 								return 0;
 							int nOverDist = nDist - nSkillRadius;
@@ -8780,6 +8799,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							y = y + ((nOverDist * g_DirSin(nDir, 64)) >> 10);
 							Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, x, y);
 							SendClientCmdSkill(nMainSkill, x, y);
+							AUTOLOG("[PK-MISSILE] t=%u skill=%d tgID=%u dist=%d radius=%d over=%d dir=%d castPt=(%d,%d) me=(%d,%d)", uCurTime, nMainSkill, Npc[nTGNpcIdx].m_dwID, nDist, nSkillRadius, nOverDist, nDir, x, y, nX, nY);
 						}
 					}
 					return 1;
@@ -8787,10 +8807,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_PICKUPSET:
 				{
 					Player[nPlayerIdx].m_sExtAuto.bLBObjDown = nParam;
+					AUTOLOG("PICK-SET lbdown=%d mem=%d t=%u", nParam, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
 					for (std::map<int,ExtAutoObjTime>::iterator itt = Player[nPlayerIdx].m_mAutoIDObj.begin();
 						itt != Player[nPlayerIdx].m_mAutoIDObj.end();)
 					{
 						ExtAutoObjTime s = itt->second;
+						AUTOLOG("PICK-FORGET slot=%d id=%u bitem=%d checked=%d age=%u", itt->first, s.nID, (int)s.bItem, (int)s.nChecked, uCurTime - s.nTotalTime);
 						if(uCurTime - s.nTotalTime >= 3*60000) //3 minutes
 						{
 							Player[nPlayerIdx].m_mAutoIDObj.erase(itt++);
@@ -8827,11 +8849,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_PICKUP:
 				{
 					const autoData* pApData = (autoData*)nParam;
+					AUTOLOG_EVERY(5000, "PICK-OFF bPickUp=%d bFollowPick=%d bCityPick=%d t=%u", pApData->bPickUp, pApData->bFollowPick, pApData->bCityPick, uCurTime);
 					if(!pApData->bPickUp)
 						return 0;
+					AUTOLOG_EVERY(3000, "PICK-NOFIGHT fight=%d bCityPick=%d selfid=%u t=%u", Npc[nNpcIdx].m_FightMode, pApData->bCityPick, Npc[nNpcIdx].m_dwID, uCurTime);
 					if(!Npc[nNpcIdx].m_FightMode && !pApData->bCityPick)
 						return 0;
 					int nGameLoop = g_SubWorldSet.GetGameTime();
+					AUTOLOG_EVERY(5000, "PICK-LOOPGATE loop=%d cur=%d t=%u", nGameLoop, Player[nPlayerIdx].m_sExtAuto.nCurObjLoop, uCurTime);
 					if(Player[nPlayerIdx].m_sExtAuto.nCurObjLoop == nGameLoop)
 						return 0;
 					Player[nPlayerIdx].m_sExtAuto.nCurObjLoop = nGameLoop;
@@ -8839,6 +8864,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					int nX,nY,dX,dY;
 					Npc[nNpcIdx].GetMpsPos(&nX, &nY);
 					int nVision = 200;
+					AUTOLOG_EVERY(1000, "PICK-SCAN self=(%d,%d) vision=%d picktype=%d nopick=%d/%d follow=%d pickvision=%d mem=%d t=%u", nX, nY, nVision, pApData->nPickType, pApData->bNoPick, pApData->nNOPCount, pApData->bFollowPick, pApData->nPickVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), uCurTime);
 					while(i)
 					{
 						if(Object[i].m_nID > 0 &&
@@ -8864,12 +8890,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							if(nExist >= 0)
 							{
 								ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+								AUTOLOG_EVERY(1000, "PICK-SKIP-COOLDOWN obj=%d kind=%d dataid=%d name=%.79s slot=%d checked=%d picktime=%u now=%u", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, nExist, (int)s.nChecked, s.nPickTime, uCurTime);
 								if(s.nChecked >= 3 || s.nPickTime > uCurTime)
 								{
 									i = ObjSet.GetNext(i);
 									continue;
 								}
 							}
+							AUTOLOG_EVERY(2000, "PICK-NAME-IN obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 							if(pApData->bNoPick && pApData->nNOPCount)
 							{
 								bool bCont = false;
@@ -8881,12 +8909,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										break;
 									}
 								}
+								AUTOLOG("PICK-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 								if(bCont)
 								{
 									i = ObjSet.GetNext(i);
 									continue;
 								}
 							}
+							AUTOLOG_EVERY(1000, "PICK-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
 							if(Object[i].m_nKind == Obj_Kind_Item)
 							{
 								if(pApData->nPickType == 1) //Æ∆c ph»m
@@ -8940,10 +8970,13 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									continue;
 								}
 							}
+							AUTOLOG_EVERY(1000, "PICK-CAND obj=%d kind=%d dataid=%d name=%.79s w=%d h=%d money=%d", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, Object[i].m_nMoneyNum);
 							Object[i].GetMpsPos(&dX,&dY);
+							AUTOLOG_EVERY(1000, "PICK-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
 							if(g_GetDistance(nX, nY, dX, dY) < nVision)
 							{
 								int x, y;
+								AUTOLOG_EVERY(2000, "PICK-BAGFULL obj=%d name=%.79s w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
 								if(Object[i].m_nKind == Obj_Kind_Money
 									|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 										Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y))
@@ -8967,6 +9000,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										s.nChecked++;
 										s.nPickTime = uCurTime + 120;
 									}
+									AUTOLOG("PICK-SEND obj=%d kind=%d dataid=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d slot=%d t=%u", Object[i].m_nID, Object[i].m_nKind, Object[i].m_nItemDataID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nExist, uCurTime);
 									Player[nPlayerIdx].CheckObject(i);
 									nRet = 1;
 									break;
@@ -8975,6 +9009,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 						i = ObjSet.GetNext(i);
 					}
+					AUTOLOG("PICK-FOLLOW-GATE followpick=%d onpk=%d fight=%d lbdown=%d nRet=%d", pApData->bFollowPick, pApData->bOnPK, Npc[nNpcIdx].m_FightMode, Player[nPlayerIdx].m_sExtAuto.bLBObjDown, nRet);
 					if(pApData->bFollowPick && !pApData->bOnPK && Npc[nNpcIdx].m_FightMode
 					&& !Player[nPlayerIdx].m_sExtAuto.bLBObjDown)
 					{
@@ -8996,6 +9031,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									break;
 								}
 							}
+							AUTOLOG("PICK-FOLLOWMAN-BREAK movefollow=%d found=%d idx=%d", pApData->bMoveFollow, (int)bFoundFol, nIdx);
 							if(bFoundFol)
 								break;
 						}
@@ -9003,6 +9039,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						if(Player[nPlayerIdx].m_sExtAuto.nCurObjID)
 						{
 							nFollowObj = ObjSet.FindID(Player[nPlayerIdx].m_sExtAuto.nCurObjID);
+							AUTOLOG("PICK-CUR-LOST curobjid=%d found=%d t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nFollowObj, uCurTime);
 							if(nFollowObj > 0)
 							{
 								int nExist = -1;
@@ -9024,6 +9061,8 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								if(nExist >= 0)
 								{
 									ExtAutoObjTime& s = Player[nPlayerIdx].m_mAutoIDObj[nExist];
+									AUTOLOG("PICK-CUR-DROP3 obj=%d dataid=%d name=%.79s checked=%d slot=%d", Object[nFollowObj].m_nID, Object[nFollowObj].m_nItemDataID, Object[nFollowObj].m_szName, (int)s.nChecked, nExist);
+									AUTOLOG_EVERY(1000, "PICK2-SKIP3 obj=%d dataid=%d name=%.79s checked=%d slot=%d", Object[i].m_nID, Object[i].m_nItemDataID, Object[i].m_szName, (int)s.nChecked, nExist);
 									if(s.nChecked >= 3)
 									{
 										nFollowObj = 0;
@@ -9033,6 +9072,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								if(nFollowObj > 0)
 								{
 									int x, y;
+									AUTOLOG("PICK-CUR-BAGFULL obj=%d name=%.79s kind=%d w=%d h=%d canplace=%d", Object[nFollowObj].m_nID, Object[nFollowObj].m_szName, Object[nFollowObj].m_nKind, Object[nFollowObj].m_nItemWidth, Object[nFollowObj].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[nFollowObj].m_nItemWidth, Object[nFollowObj].m_nItemHeight, &x, &y));
 									if(!(Object[nFollowObj].m_nKind == Obj_Kind_Money
 											|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 											Object[nFollowObj].m_nItemWidth, Object[nFollowObj].m_nItemHeight, &x, &y)))
@@ -9048,6 +9088,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							nVision = 200;
 						else if(nVision > 800)
 							nVision = 800;
+						AUTOLOG_EVERY(1000, "PICK2-SCAN pickvision=%d vision=%d followobj=%d moveret=%d step=%d self=(%d,%d)", pApData->nPickVision, nVision, nFollowObj, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nX, nY);
 						if(!nFollowObj)
 						{
 							i = ObjSet.GetNext(0);
@@ -9058,6 +9099,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								|| Object[i].m_nKind == Obj_Kind_Money))
 								{
 									int x, y;
+									AUTOLOG_EVERY(2000, "PICK2-BAGFULL obj=%d name=%.79s kind=%d w=%d h=%d canplace=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nKind, Object[i].m_nItemWidth, Object[i].m_nItemHeight, (int)Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y));
 									if(!(Object[i].m_nKind == Obj_Kind_Money
 											|| Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(
 											Object[i].m_nItemWidth, Object[i].m_nItemHeight, &x, &y)))
@@ -9101,12 +9143,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 												break;
 											}
 										}
+										AUTOLOG("PICK2-SKIP-NAME obj=%d name=%.79s nopcount=%d", Object[i].m_nID, Object[i].m_szName, pApData->nNOPCount);
 										if(bCont)
 										{
 											i = ObjSet.GetNext(i);
 											continue;
 										}
 									}
+									AUTOLOG_EVERY(1000, "PICK2-TYPE-IN obj=%d name=%.79s genre=%d detail=%d color=%d w=%d h=%d picktype=%d", Object[i].m_nID, Object[i].m_szName, Object[i].m_nGenre, Object[i].m_nDetailType, Object[i].m_nColorID, Object[i].m_nItemWidth, Object[i].m_nItemHeight, pApData->nPickType);
 									if(Object[i].m_nKind == Obj_Kind_Item)
 									{
 										if(pApData->nPickType == 1) //Æ∆c ph»m
@@ -9161,6 +9205,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										}
 									}
 									Object[i].GetMpsPos(&dX,&dY);
+									AUTOLOG_EVERY(1000, "PICK2-FAR obj=%d name=%.79s at=(%d,%d) self=(%d,%d) d=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), nVision);
 									if(g_GetDistance(nX, nY, dX, dY) < nVision)
 									{
 										if(Player[nPlayerIdx].m_sExtAuto.nCurMoveRet > 0)
@@ -9187,8 +9232,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 											else if(nFVision > 1200)
 												nFVision = 1200;
 											int nDist = g_GetDistance(Ox, Oy, dX, dY);
+											AUTOLOG("PICK2-OUTANCHOR obj=%d name=%.79s at=(%d,%d) anchor=(%d,%d) d=%d fvision=%d moveret=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, Ox, Oy, nDist, nFVision, Player[nPlayerIdx].m_sExtAuto.nCurMoveRet);
 											if(nDist < nFVision)
 											{
+												AUTOLOG("PICK2-TARGET-ANCHOR obj=%d name=%.79s at=(%d,%d) danchor=%d dself=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, nDist, g_GetDistance(nX, nY, dX, dY));
+												AUTOLOG("PICK2-TARGET-FREE obj=%d name=%.79s at=(%d,%d) dself=%d vision=%d", Object[i].m_nID, Object[i].m_szName, dX, dY, g_GetDistance(nX, nY, dX, dY), nVision);
 												nFollowObj = i;
 												Player[nPlayerIdx].m_sExtAuto.nCurObjID = Object[i].m_nID;
 												break;
@@ -9205,10 +9253,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								i = ObjSet.GetNext(i);
 							}
 						}
+						AUTOLOG_EVERY(2000, "PICK2-NOTARGET curobjid=%d vision=%d mem=%d self=(%d,%d) t=%u", Player[nPlayerIdx].m_sExtAuto.nCurObjID, nVision, (int)Player[nPlayerIdx].m_mAutoIDObj.size(), nX, nY, uCurTime);
 						if(nFollowObj)
 						{
 							g_ScenePlace.RemoveFlag();
 							Object[nFollowObj].GetMpsPos(&dX,&dY);
+							AUTOLOG("PICK2-GO obj=%d name=%.79s to=(%d,%d) self=(%d,%d) d=%d run=%d t=%u", Object[nFollowObj].m_nID, Object[nFollowObj].m_szName, dX, dY, nX, nY, g_GetDistance(nX, nY, dX, dY), Player[nPlayerIdx].m_RunStatus, uCurTime);
 							if (!Player[nPlayerIdx].m_RunStatus)
 							{
 								Npc[nNpcIdx].SendCommand(do_walk, dX, dY);
@@ -10981,19 +11031,23 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_RESETMOVE:
 				{
+					AUTOLOG("[MOVE-RESET] t2cu=%u now=%u doing=%d", Player[nPlayerIdx].m_sExtAuto.uTFollMove2, uCurTime, (int)Npc[nNpcIdx].m_Doing);
 					Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = 0;
 					break;
 				}
 				case ATYPE_MOVE:
 				{
 					Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 0;
+					AUTOLOG_EVERY(2000, "[MOVE-OFF-FIGHT] bo qua MOVE prevfight=0 now=%u npcidx=%d doing=%d life=%d", uCurTime, nNpcIdx, (int)Npc[nNpcIdx].m_Doing, Npc[nNpcIdx].m_CurrentLife);
 					if(!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
 						return 0;
 					const autoData* pApData = (autoData*)nParam;
+					AUTOLOG_EVERY(5000, "[MOVE-NOMODE] khong bat che do di chuyen foll=%d around=%d coord=%d cfgmap=%d curmap=%d", pApData->bMoveFollow, pApData->bAroundPoint, pApData->bMoveCoord, pApData->nMoveMapId, SubWorld[0].m_SubWorldID);
 					if(!pApData->bMoveFollow && !pApData->bAroundPoint && !pApData->bMoveCoord)
 						return 0;
 					if(pApData->bMoveFollow)
 					{
+						AUTOLOG_EVERY(1000, "[FOLL-LOCK] theo sau bi khoa t2=%u now=%u con=%d fight=%d", Player[nPlayerIdx].m_sExtAuto.uTFollMove2, uCurTime, (int)(Player[nPlayerIdx].m_sExtAuto.uTFollMove2 - uCurTime), pApData->bFight);
 						if(Player[nPlayerIdx].m_sExtAuto.uTFollMove2 > uCurTime)
 							return 0;
 						int nIdx = 0;
@@ -11008,6 +11062,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							if(!strcmp(pApData->szFollName, Npc[nIdx].Name))
 							{
 								int nDist = NpcSet.GetDistance(nNpcIdx, nIdx);
+								AUTOLOG_EVERY(1000, "[FOLL-FOUND] chu=%s idx=%d id=%u d=%d fdist=%d t1=%u now=%u fight=%d region=%d", pApData->szFollName, nIdx, Npc[nIdx].m_dwID, nDist, pApData->nFollowDist, Player[nPlayerIdx].m_sExtAuto.uTFollMove1, uCurTime, pApData->bFight, Npc[nIdx].m_RegionIndex);
 								if((!pApData->bFight && nDist > 75) || (nDist > 75
 								&& (Player[nPlayerIdx].m_sExtAuto.uTFollMove1 > uCurTime
 								|| nDist > pApData->nFollowDist)))
@@ -11032,6 +11087,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										Npc[nNpcIdx].SendCommand(do_run, x, y);
 										SendClientCmdRun(x, y);
 									}
+									AUTOLOG_EVERY(1000, "[FOLL-GO] chay toi %d,%d cell=%d,%d d=%d fdist=%d run=%d horse=%d doing=%d", x, y, x/32, y/32, nDist, pApData->nFollowDist, Player[nPlayerIdx].m_RunStatus, Npc[nNpcIdx].m_bRideHorse, (int)Npc[nNpcIdx].m_Doing);
 									if(nDist > pApData->nFollowDist)
 										Player[nPlayerIdx].m_sExtAuto.uTFollMove1 = uCurTime + nDist;
 									Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
@@ -11039,6 +11095,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 								else
 								{
+									AUTOLOG_EVERY(2000, "[FOLL-NEAR] du gan KHONG di d=%d fdist=%d fight=%d dat_t2=%u now=%u", nDist, pApData->nFollowDist, pApData->bFight, uCurTime, uCurTime);
 									Player[nPlayerIdx].m_mAutoExcludeNpcID.clear();
 									if(pApData->bFight)
 									Player[nPlayerIdx].m_sExtAuto.uTFollMove2 = uCurTime + 1000;
@@ -11049,8 +11106,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							}
 						}
 					}
+					AUTOLOG_EVERY(3000, "[FOLL-NOTFOUND] khong thay chu ten=%s curmap=%d now=%u pos=%d,%d", pApData->szFollName, SubWorld[0].m_SubWorldID, uCurTime, nNpcIdx, nPlayerIdx);
 					if(pApData->bAroundPoint)
 					{
+						AUTOLOG_EVERY(5000, "[AP-SKIP] quanh diem bi bo cfgmap=%d curmap=%d px=%d py=%d", pApData->nMoveMapId, SubWorld[0].m_SubWorldID, pApData->nPointX, pApData->nPointY);
 						if(pApData->nMoveMapId == SubWorld[0].m_SubWorldID
 						&& pApData->nPointX > 0 && pApData->nPointY > 0)
 						{
@@ -11063,6 +11122,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							else if(nVision > 1200)
 								nVision = 1200;
 							int nDist = g_GetDistance(x, y, pApData->nPointX, pApData->nPointY);
+							AUTOLOG_EVERY(1000, "[AP-STATE] pos=%d,%d cell=%d,%d dest=%d,%d d=%d vis=%d out=%u now=%u npcid=%u doing=%d stall=%d", x, y, x/32, y/32, pApData->nPointX, pApData->nPointY, nDist, nVision, Player[nPlayerIdx].m_sExtAuto.uTOutMove, uCurTime, Player[nPlayerIdx].m_sExtAuto.uNpcID, (int)Npc[nNpcIdx].m_Doing, (int)(nDist < nVision && nDist > 75 && Player[nPlayerIdx].m_sExtAuto.uTOutMove < uCurTime));
 							if(nDist >= nVision || nDist > 75)
 							{
 								if(nDist >= nVision)
@@ -11075,12 +11135,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									g_ScenePlace.RemoveFlag();
 									return 0;
 								}
+								AUTOLOG_EVERY(1000, "[AP-PATH] xin duong pos=%d,%d dest=%d,%d d=%d vis=%d out=%u now=%u", x, y, pApData->nPointX, pApData->nPointY, nDist, nVision, Player[nPlayerIdx].m_sExtAuto.uTOutMove, uCurTime);
 								if(!SubWorld[0].HaveTarget(x, y))
 								{
 									SubWorld[0].FindPath(pApData->nPointX, pApData->nPointY);
 								}
 								else
 								{
+									AUTOLOG("[AP-RETARGET] duong cu dich=%d,%d muon=%d,%d d=%d", x, y, pApData->nPointX, pApData->nPointY, nDist);
 									if(pApData->nPointX != x || pApData->nPointY != y)
 									{
 										g_ScenePlace.RemoveFlag();
@@ -11096,11 +11158,13 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					if(pApData->bMoveCoord)
 					{
+						AUTOLOG_EVERY(5000, "[MC-SKIP] theo toa do bi bo ncoord=%d cfgmap=%d curmap=%d", pApData->nCoordCount, pApData->nMoveMapId, SubWorld[0].m_SubWorldID);
 						if(pApData->nCoordCount > 0 && pApData->nMoveMapId == SubWorld[0].m_SubWorldID)
 						{
 							Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 2;
 							int nX,nY;
 							Npc[nNpcIdx].GetMpsPos(&nX, &nY);
+							AUTOLOG("[MC-STUCK] KET tai %d,%d cell=%d,%d dung_yen=%ums doing=%d speed=%d step=%d npcid=%u", nX, nY, nX/32, nY/32, (uCurTime - Player[nPlayerIdx].m_sExtAuto.uTJustMove), (int)Npc[nNpcIdx].m_Doing, (int)Npc[nNpcIdx].m_CurrentRunSpeed, Player[nPlayerIdx].m_sExtAuto.nCoordStep, Player[nPlayerIdx].m_sExtAuto.uNpcID);
 							int nVision = pApData->nVision;
 							if(nVision < 100)
 								nVision = 100;
@@ -11111,6 +11175,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							int nDist = g_GetDistance(nX, nY,
 								pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
 								pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+							AUTOLOG_EVERY(1000, "[MC-STATE] pos=%d,%d cell=%d,%d step=%d/%d moc=%d,%d d=%d vis=%d out=%u just=%u enc=%u now=%u tmp=%d,%d reach=%d npcid=%u doing=%d speed=%d", nX, nY, nX/32, nY/32, Player[nPlayerIdx].m_sExtAuto.nCoordStep, pApData->nCoordCount, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y, nDist, nVision, Player[nPlayerIdx].m_sExtAuto.uTOutMove, Player[nPlayerIdx].m_sExtAuto.uTJustMove, Player[nPlayerIdx].m_sExtAuto.uTEncircle, uCurTime, Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY, Player[nPlayerIdx].m_sExtAuto.bReachDes, Player[nPlayerIdx].m_sExtAuto.uNpcID, (int)Npc[nNpcIdx].m_Doing, (int)Npc[nNpcIdx].m_CurrentRunSpeed);
 							if(pApData->bEncircle
 							&& Player[nPlayerIdx].m_sExtAuto.uTEncircle > uCurTime)
 							{
@@ -11129,6 +11194,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									x = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].x;
 									y = Player[nPlayerIdx].m_sExtAuto.sEncircle[i].y;
 									UINT uRemain = 9000 - (Player[nPlayerIdx].m_sExtAuto.uTEncircle - uCurTime);
+									AUTOLOG_EVERY(500, "[ENC-STEP] i=%u pos=%d,%d moc=%d,%d d=%d remain=%u tgt=%d encend=%u now=%u", i, nX, nY, x, y, g_GetDistance(nX, nY, x, y), uRemain, nTGNpcIdx, Player[nPlayerIdx].m_sExtAuto.uTEncircle, uCurTime);
 									if(g_GetDistance(nX, nY, x, y) < 64
 									|| uRemain > (i+1)*1000)
 									{
@@ -11156,12 +11222,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 								else
 								{
+									AUTOLOG("[ENC-NOTGT] huy vong vay quanh %d,%d vs=%d fb=%d fbvis=%d boss=%d pos=%d,%d now=%u", x, y, nVS, pApData->bFightBack, pApData->nFBVision, pApData->nSelBoss, nX, nY, uCurTime);
 									Player[nPlayerIdx].m_sExtAuto.uTEncircle = 0;
 									return 1;
 								}
 							}
 							if(nDist >= nVision || nDist > 75)
 							{
+								AUTOLOG_EVERY(2000, "[MC-PINNED] xa moc nhung DA CHOT tmp=%d,%d pos=%d,%d d=%d vis=%d -> khong tim duong", Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY, nX, nY, nDist, nVision);
 								if(!(pApData->bMoveKillMons && pApData->bFight)
 								|| !Player[nPlayerIdx].m_sExtAuto.nTempX)
 								{
@@ -11173,6 +11241,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									else if(Player[nPlayerIdx].m_sExtAuto.uTOutMove < uCurTime)
 									{
 										g_ScenePlace.RemoveFlag();
+										AUTOLOG("[MC-STALL] het gio uTOutMove -> ngung di d=%d vis=%d out=%u now=%u fight=%d step=%d pos=%d,%d moc=%d,%d", nDist, nVision, Player[nPlayerIdx].m_sExtAuto.uTOutMove, uCurTime, pApData->bFight, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nX, nY, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
 										if(!pApData->bFight)
 										{
 											++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
@@ -11185,11 +11254,13 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										return 0;
 									}
 									int x,y;
+									AUTOLOG_EVERY(1000, "[MC-PATH-REQ] xin duong step=%d dest=%d,%d pos=%d,%d cell=%d,%d d=%d vis=%d", Player[nPlayerIdx].m_sExtAuto.nCoordStep, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y, nX, nY, nX/32, nY/32, nDist, nVision);
 									if(!SubWorld[0].HaveTarget(x, y))
 									{
 										SubWorld[0].FindPath(
 										pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
 										pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+										AUTOLOG_EVERY(2000, "[MC-PATH-FAIL] FindPath khong tao duoc duong dest=%d,%d pos=%d,%d cell=%d,%d step=%d d=%d", pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y, nX, nY, nX/32, nY/32, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nDist);
 										if(Npc[nNpcIdx].m_CurrentRunSpeed <= 6)
 											Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 10000;
 										else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 10)
@@ -11201,6 +11272,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									}
 									else
 									{
+										AUTOLOG_EVERY(2000, "[MC-PATH-OLD] dang co duong dich=%d,%d muon=%d,%d step=%d pos=%d,%d", x, y, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nX, nY);
 										if(pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x != x
 										|| pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y != y)
 										{
@@ -11208,6 +11280,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 											SubWorld[0].FindPath(
 											pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x,
 											pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y);
+											AUTOLOG_EVERY(2000, "[MC-PATH-FAIL2] doi dich nhung FindPath rong dest=%d,%d pos=%d,%d step=%d d=%d", pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].x, pApData->sMoveCoord[Player[nPlayerIdx].m_sExtAuto.nCoordStep].y, nX, nY, Player[nPlayerIdx].m_sExtAuto.nCoordStep, nDist);
 											if(Npc[nNpcIdx].m_CurrentRunSpeed <= 6)
 												Player[nPlayerIdx].m_sExtAuto.uTJustMove = uCurTime + 10000;
 											else if(Npc[nNpcIdx].m_CurrentRunSpeed <= 10)
@@ -11221,16 +11294,20 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 								if(pApData->bMoveKillMons && pApData->bFight && nDist >= nVision)
 								{
+									AUTOLOG_EVERY(1000, "[MC-KILLGATE] cong quet quai tmp=%d,%d just=%u now=%u d=%d vis=%d killmons=%d fight=%d", Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY, Player[nPlayerIdx].m_sExtAuto.uTJustMove, uCurTime, nDist, nVision, pApData->bMoveKillMons, pApData->bFight);
 									if(!Player[nPlayerIdx].m_sExtAuto.nTempX)
 									{
+										AUTOLOG_EVERY(1000, "[MC-SCANLOCK] KHONG quet quai con khoa %ums just=%u now=%u d=%d vis=%d pos=%d,%d speed=%d", (Player[nPlayerIdx].m_sExtAuto.uTJustMove - uCurTime), Player[nPlayerIdx].m_sExtAuto.uTJustMove, uCurTime, nDist, nVision, nX, nY, (int)Npc[nNpcIdx].m_CurrentRunSpeed);
 										if(Player[nPlayerIdx].m_sExtAuto.uTJustMove < uCurTime)
 										{
 											int nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
 											pApData->nVision, pApData->bFightBack, pApData->nFBVision,
 											pApData->nSelBoss);
+											AUTOLOG("[MC-SCAN] quet quai ret=%d vis=%d fb=%d fbvis=%d boss=%d pos=%d,%d d=%d", nTGNpcIdx, pApData->nVision, pApData->bFightBack, pApData->nFBVision, pApData->nSelBoss, nX, nY, nDist);
 											if(nTGNpcIdx > 0)
 											{
 												g_ScenePlace.RemoveFlag();
+												AUTOLOG("[MC-TOFIGHT] giao cho FIGHT tgt=%d id=%u d=%d life=%d tgtpos=%d,%d chot=%d,%d", nTGNpcIdx, Npc[nTGNpcIdx].m_dwID, NpcSet.GetDistance(nNpcIdx, nTGNpcIdx), Npc[nTGNpcIdx].m_CurrentLife, Npc[nTGNpcIdx].m_RegionIndex, Npc[nTGNpcIdx].m_Kind, nX, nY);
 												Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 3;
 												Player[nPlayerIdx].m_sExtAuto.nTempX = nX;
 												Player[nPlayerIdx].m_sExtAuto.nTempY = nY;
@@ -11240,6 +11317,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									}
 									else
 									{
+										AUTOLOG_EVERY(2000, "[MC-LATCH] giu chot ret3 tmp=%d,%d pos=%d,%d lech=%d d=%d vis=%d npcid=%u", Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY, nX, nY, g_GetDistance(nX, nY, Player[nPlayerIdx].m_sExtAuto.nTempX, Player[nPlayerIdx].m_sExtAuto.nTempY), nDist, nVision, Player[nPlayerIdx].m_sExtAuto.uNpcID);
 										Player[nPlayerIdx].m_sExtAuto.nCurMoveRet = 3;
 										return 0;
 									}
@@ -11251,6 +11329,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 								if(pApData->bMoveUpHorse)
 								{
+									AUTOLOG_EVERY(5000, "[MC-HORSE] xet len ngua d=%d horse=%d speed=%d", nDist, Npc[nNpcIdx].m_bRideHorse, (int)Npc[nNpcIdx].m_CurrentRunSpeed);
 									if(nDist > 1500 && !Npc[nNpcIdx].m_bRideHorse)
 										OperationRequest(GOI_PLAYER_ACTION, PA_RIDE, 0);
 								}
@@ -11261,6 +11340,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								g_ScenePlace.RemoveFlag();
 								if(!pApData->bFight)
 								{
+									AUTOLOG("[MC-NEXT] toi noi -> sang moc ke step=%d/%d pos=%d,%d d=%d now=%u", Player[nPlayerIdx].m_sExtAuto.nCoordStep, pApData->nCoordCount, nX, nY, nDist, uCurTime);
 									++Player[nPlayerIdx].m_sExtAuto.nCoordStep;
 									if(Player[nPlayerIdx].m_sExtAuto.nCoordStep >= pApData->nCoordCount)
 										Player[nPlayerIdx].m_sExtAuto.nCoordStep = 0;
@@ -11278,6 +11358,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									pApData->nSelBoss, TRUE, NULL, pApData->bMoveFollow, x, y);
 									if(nTGNpcIdx > 0)
 									{
+										AUTOLOG_EVERY(9000, "[ENC-INIT] bat vong vay tam=%d,%d tgt=%d id=%u life=%d pos=%d,%d vis=%d", x, y, nTGNpcIdx, Npc[nTGNpcIdx].m_dwID, Npc[nTGNpcIdx].m_CurrentLife, nX, nY, pApData->nVision);
 										Player[nPlayerIdx].m_sExtAuto.bReachDes = TRUE;
 										Player[nPlayerIdx].m_sExtAuto.nCurEncircle = 0;
 										Player[nPlayerIdx].m_sExtAuto.uTEncircle = uCurTime + 9000;
@@ -11300,6 +11381,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 										Player[nPlayerIdx].m_sExtAuto.sEncircle[8].y = y;
 										return 1;
 									}
+									AUTOLOG_EVERY(2000, "[ENC-IDLE] toi moc + fight nhung khong thay quai tam=%d,%d pos=%d,%d vis=%d fb=%d fbvis=%d boss=%d reach=%d", x, y, nX, nY, pApData->nVision, pApData->bFightBack, pApData->nFBVision, pApData->nSelBoss, Player[nPlayerIdx].m_sExtAuto.bReachDes);
 									Player[nPlayerIdx].m_sExtAuto.sEncircle[8].x = x;
 									Player[nPlayerIdx].m_sExtAuto.sEncircle[8].y = y;
 									return 1;

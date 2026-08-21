@@ -176,6 +176,7 @@ inline int	KSkill::Param2PCoordinate(int nLauncher, int nParam1, int nParam2 , i
 
 int KSkill::CanCastSkill(int nLauncher, int &nParam1, int &nParam2)  const 
 {
+	AUTOLOG_EVERY(500, "[E3_CANCAST_ENTRY] g_DebugLog(\"[E3_CANCAST_ENTRY] skill=%d lv=%d launcher=%d p1=%d p2=%d flag(self=%d only=%d enemy=%d ally=%d) radius=%d style=%d mform=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, (int)m_bTargetSelf, (int)m_bTargetOnly, (int)m_bTargetEnemy, (int)m_bTargetAlly, m_nAttackRadius, (int)m_eSkillStyle, (int)m_eMisslesForm);", m_nId, m_ulLevel, nLauncher, nParam1, nParam2, m_bTargetSelf, m_bTargetOnly, m_bTargetEnemy, m_bTargetAlly, m_nAttackRadius, m_eSkillStyle, m_eMisslesForm);
 	if (m_bTargetSelf && (nParam1 != -1)) 
 	{
 		nParam1 = -1;
@@ -184,12 +185,15 @@ int KSkill::CanCastSkill(int nLauncher, int &nParam1, int &nParam2)  const
 	}
 	else
 	{
+		AUTOLOG("[E3_REJECT_TARGETONLY] if (m_bTargetOnly && (nParam1 != -1)) g_DebugLog(\"[E3_REJECT_TARGETONLY] skill=%d lv=%d launcher=%d p1=%d p2=%d need_npc_target\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2);", m_bTargetOnly, m_nId, m_ulLevel, nLauncher, nParam1, nParam2);
 		if (m_bTargetOnly && (nParam1 != -1)) return 0;
 		
 		if (nParam1 == -1)
 		{
+			AUTOLOG("[E3_REJECT_BADIDX] if (nParam2 <= 0 || nParam2 >= MAX_NPC) g_DebugLog(\"[E3_REJECT_BADIDX] skill=%d launcher=%d p2=%d out_of_range max=%d\", (int)m_nId, nLauncher, nParam2, (int)MAX_NPC);", nParam2, MAX_NPC, m_nId, nLauncher);
 			if ( nParam2 <= 0 || nParam2 >= MAX_NPC) return 0;
 			NPC_RELATION  Relation = NpcSet.GetRelation(nLauncher, nParam2);
+			AUTOLOG("[E3_RELATION] g_DebugLog(\"[E3_RELATION] skill=%d launcher=%d target=%d relation=0x%X need(enemy=%d ally=%d self=%d) tgt_id=%u\", (int)m_nId, nLauncher, nParam2, (unsigned int)Relation, (int)m_bTargetEnemy, (int)m_bTargetAlly, (int)m_bTargetSelf, (unsigned int)Npc[nParam2].m_dwID);", Relation, m_nId, nLauncher, nParam2, m_bTargetEnemy, m_bTargetAlly, m_bTargetSelf, Npc[nParam2].m_dwID);
 			
 			if (m_bTargetEnemy)
 			{
@@ -214,6 +218,7 @@ relationisvalid:
 
 	if (Npc[nLauncher].IsPlayer())
 	{
+		AUTOLOG("[E3_REJECT_SILENT] if (Npc[nLauncher].m_SilentState.nTime > 0) g_DebugLog(\"[E3_REJECT_SILENT] skill=%d launcher=%d silent_time=%d life=%d mana=%d\", (int)m_nId, nLauncher, Npc[nLauncher].m_SilentState.nTime, Npc[nLauncher].m_CurrentLife, Npc[nLauncher].m_CurrentMana);", Npc[nLauncher].m_SilentState.nTime, m_nId, nLauncher, Npc[nLauncher].m_CurrentLife, Npc[nLauncher].m_CurrentMana);
 		if (Npc[nLauncher].m_SilentState.nTime > 0)
 		{
 #ifndef _SERVER
@@ -253,6 +258,8 @@ relationisvalid:
 			if (nParticularType == HAND_PARTICULAR)
 				nParticularType = -1;
 
+			AUTOLOG("[SKILL-REFUSE-WEAPON] sk=%d lv=%d launcher=%d wpn_detail=%d wpn_particular=%d yeucau=%d -> tra ve 0 (IM LANG)", (int)m_nId, (int)m_ulLevel, nLauncher, nDetailType, nParticularType, m_nEquiptLimited);
+			AUTOLOG("[E3_REJECT_WEAPON] if (nParticularType != m_nEquiptLimited) g_DebugLog(\"[E3_REJECT_WEAPON] skill=%d lv=%d launcher=%d player=%d weapon_detail=%d particular=%d need=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nPlayerIdx, nDetailType, nParticularType, m_nEquiptLimited);", nParticularType, m_nEquiptLimited, nDetailType, nPlayerIdx, m_nId, m_ulLevel, nLauncher);
 			if (nParticularType != m_nEquiptLimited)
 			{
 #ifndef _SERVER
@@ -273,6 +280,8 @@ relationisvalid:
 			if ( nParam2 <= 0 || nParam2 >= MAX_NPC) return FALSE;
 			if (Npc[nParam2].IsPlayer())
 			{
+				AUTOLOG("[SKILL-REFUSE-FIGHTMODE] sk=%d launcher=%d fm=%d tgt=%d fm=%d -> tra ve 0", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);
+				AUTOLOG("[E3_REJECT_FIGHTMODE] if (Npc[nLauncher].m_FightMode != Npc[nParam2].m_FightMode) g_DebugLog(\"[E3_REJECT_FIGHTMODE] skill=%d launcher=%d(fm=%d) target=%d(fm=%d)\", (int)m_nId, nLauncher, Npc[nLauncher].m_FightMode, nParam2, Npc[nParam2].m_FightMode);", Npc[nLauncher].m_FightMode, Npc[nParam2].m_FightMode, m_nId, nLauncher, nParam2);
 				if (Npc[nLauncher].m_FightMode != Npc[nParam2].m_FightMode)
 					return 0;
 			}
@@ -324,9 +333,12 @@ relationisvalid:
 			if(nParam1 == -1)
 			{
 				distance = NpcSet.GetDistance(nLauncher, nParam2);
+				AUTOLOG_EVERY(500, "[E3_RANGE_NPC] g_DebugLog(\"[E3_RANGE_NPC] skill=%d lv=%d launcher=%d target=%d distance=%d radius=%d limit=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), GetAttackRadius() + 20);", distance, GetAttackRadius(), m_nId, m_ulLevel, nLauncher, nParam2);
+				AUTOLOG("[SKILL-DIST] t=%u sk=%d lv=%d launcher=%d(id=%u) tgt=%d(id=%u) d=%d radius=%d nguong_svr=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, nLauncher, Npc[nLauncher].m_dwID, nParam2, Npc[nParam2].m_dwID, distance, GetAttackRadius(), GetAttackRadius() + 20);
 #ifndef _SERVER				
 				if (distance > GetAttackRadius()*0.8)
 #endif
+				AUTOLOG("[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d client08=%d -> tra ve -1 (bot se chay lai gan)", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), (int)(GetAttackRadius() * 0.8));
 				if (distance > GetAttackRadius() + 20)
 					return -1;
 			}
@@ -338,9 +350,11 @@ relationisvalid:
 					int nLauncherX, nLauncherY;
 					Npc[nLauncher].GetMpsPos(&nLauncherX, &nLauncherY);
 					distance = g_GetDistance(nLauncherX, nLauncherY, nParam1, nParam2);
+					AUTOLOG("[SKILL-DIST-XY] sk=%d form=%d launcher=%d mps(%d,%d) des(%d,%d) d=%d radius=%d", (int)m_nId, (int)m_eMisslesForm, nLauncher, nLauncherX, nLauncherY, nParam1, nParam2, distance, GetAttackRadius());
 #ifndef _SERVER				
 					if (distance > GetAttackRadius() * 0.8)
 #endif
+					AUTOLOG_EVERY(500, "[E3_REJECT_RANGE_XY] if (distance > GetAttackRadius()) g_DebugLog(\"[E3_REJECT_RANGE_XY] skill=%d launcher=%d src=(%d,%d) des=(%d,%d) distance=%d radius=%d\", (int)m_nId, nLauncher, nLauncherX, nLauncherY, nParam1, nParam2, distance, GetAttackRadius());", distance, GetAttackRadius(), nLauncherX, nLauncherY, nParam1, nParam2, m_nId, nLauncher);
 					if (distance > GetAttackRadius())
 					{
 #ifndef _SERVER
@@ -358,11 +372,13 @@ relationisvalid:
 			}
 		}
 	}
+	AUTOLOG_EVERY(500, "[E3_CANCAST_OK] g_DebugLog(\"[E3_CANCAST_OK] skill=%d lv=%d launcher=%d p1=%d p2=%d cost=%d cost_type=%d mana=%d life=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, GetSkillCost(NULL), (int)GetSkillCostType(), Npc[nLauncher].m_CurrentMana, Npc[nLauncher].m_CurrentLife);", m_nId, m_ulLevel, nLauncher, nParam1, nParam2, GetSkillCost(NULL), GetSkillCostType(), Npc[nLauncher].m_CurrentMana, Npc[nLauncher].m_CurrentLife);
 	return 1;
 }
 
 BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkillLauncherType eLauncherType)  const 
 {
+	AUTOLOG_EVERY(500, "[E3_CAST_ENTRY] g_DebugLog(\"[E3_CAST_ENTRY] skill=%d lv=%d launcher=%d ltype=%d p1=%d p2=%d wait=%d style=%d mform=%d child(id=%d num=%d lv=%d) base=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, (int)eLauncherType, nParam1, nParam2, nWaitTime, (int)m_eSkillStyle, (int)m_eMisslesForm, m_nChildSkillId, m_nChildSkillNum, m_nChildSkillLevel, (int)m_bBaseSkill);", m_nId, m_ulLevel, nLauncher, eLauncherType, nParam1, nParam2, nWaitTime, m_eSkillStyle, m_eMisslesForm, m_nChildSkillId, m_nChildSkillNum, m_nChildSkillLevel, m_bBaseSkill);
 	if (nLauncher < 0 )
 	{
 		g_DebugLog("Skill::Cast(), nLauncher < 0 , Return False;"); 
@@ -421,6 +437,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 		}
 	}
 
+	AUTOLOG("[E3_REJECT_NOPARAM] if (nParam1 < 0 && nParam2 < 0) g_DebugLog(\"[E3_REJECT_NOPARAM] skill=%d launcher=%d ltype=%d p1=%d p2=%d\", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);", nParam1, nParam2, m_nId, nLauncher, eLauncherType);
 	if (nParam1 < 0 && nParam2 < 0 ) 
 		return FALSE;
 	
@@ -432,6 +449,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 	
 	//------------------------------------------------------------------------------
 	
+	AUTOLOG_EVERY(500, "[E3_STYLE_DISPATCH] g_DebugLog(\"[E3_STYLE_DISPATCH] skill=%d lv=%d style=%d launcher=%d p1=%d p2=%d wait=%d\", (int)m_nId, (int)m_ulLevel, (int)m_eSkillStyle, nLauncher, nParam1, nParam2, nWaitTime);", m_eSkillStyle, m_nId, m_ulLevel, nLauncher, nParam1, nParam2, nWaitTime);
 	switch(m_eSkillStyle)
 	{
 		
@@ -517,6 +535,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 	if (m_bStartEvent && m_nStartSkillId > 0 && m_nEventSkillLevel > 0)
 	{
 		KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, m_nEventSkillLevel);
+		AUTOLOG("[E3_STARTSKILL_MISSING] if (!pOrdinSkill) g_DebugLog(\"[E3_STARTSKILL_MISSING] skill=%d start_skill=%d start_lv=%d launcher=%d\", (int)m_nId, m_nStartSkillId, m_nEventSkillLevel, nLauncher);", pOrdinSkill, m_nId, m_nStartSkillId, m_nEventSkillLevel, nLauncher);
 		if (!pOrdinSkill) 
             return FALSE;
         pOrdinSkill->Cast(nLauncher, nParam1, nParam2, nWaitTime, eLauncherType);
@@ -660,7 +679,9 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 	SkillParam.eParentType = (eSkillLauncherType)0;
 	SkillParam.nWaitTime = nWaitTime;
 	SkillParam.nTargetId = 0;
+	AUTOLOG("[E3_MISSLES_BADLAUNCHER] if (nLauncher <= 0) g_DebugLog(\"[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d\", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);", nLauncher, m_nId, eLauncherType, nParam1, nParam2);
 	if (nLauncher <= 0) return FALSE;
+	AUTOLOG("[CAST-MISSLE-IN] t=%u sk=%d lv=%d form=%d launcher=%d(id=%u) p1=%d p2=%d childnum=%d childid=%d wait=%d ltype=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, (int)m_eMisslesForm, nLauncher, Npc[nLauncher].m_dwID, nParam1, nParam2, m_nChildSkillNum, m_nChildSkillId, nWaitTime, (int)eLauncherType);
 
 	switch(m_eMisslesForm)
 	{
@@ -766,6 +787,8 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						SkillParam.nLauncher = nLauncher;
 						SkillParam.eLauncherType = eLauncherType;
 						SkillParam.nTargetId = nTargetId;
+						AUTOLOG("[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind);
+						AUTOLOG("[E3_LINE_SRCDES] g_DebugLog(\"[E3_LINE_SRCDES] skill=%d launcher=%d target=%d src=(%d,%d) des=(%d,%d) childnum=%d childid=%d\", (int)m_nId, nLauncher, nTargetId, nSrcPX, nSrcPY, nDesPX, nDesPY, m_nChildSkillNum, m_nChildSkillId);", nSrcPX, nSrcPY, nDesPX, nDesPY, m_nChildSkillNum, m_nChildSkillId, m_nId, nLauncher, nTargetId);
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line || g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Parabola) ) 
 						{
 							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
@@ -1078,6 +1101,7 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 	int nCastMissleNum	= 0;
 	int nBeginPX ;
 	int nBeginPY ;
+	AUTOLOG_EVERY(500, "[E3_ZONE_ENTRY] g_DebugLog(\"[E3_ZONE_ENTRY] skill=%d lv=%d launcher=%d target=%d dir=%d ref=(%d,%d) childnum=%d base=%d value1=%d wait=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, pSkillParam->nTargetId, nDir, nRefPX, nRefPY, m_nChildSkillNum, (int)m_bBaseSkill, m_nValue1, pSkillParam->nWaitTime);", m_nId, m_ulLevel, nLauncher, pSkillParam->nTargetId, nDir, nRefPX, nRefPY, m_nChildSkillNum, m_bBaseSkill, m_nValue1, pSkillParam->nWaitTime);
 	if (m_nChildSkillNum == 1)
 	{
 		nBeginPX = nRefPX;
@@ -1111,7 +1135,9 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 					int nDesSubX = nBeginPX + j * SubWorld[nSubWorldId].m_nCellWidth;
 					int nDesSubY = nBeginPY +  i * SubWorld[nSubWorldId].m_nCellHeight;
 					nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX , nDesSubY);
+					AUTOLOG("[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
 					
+					AUTOLOG("[E3_MISSLE_ADDFAIL] if (nMissleIndex < 0) g_DebugLog(\"[E3_MISSLE_ADDFAIL] skill=%d launcher=%d subworld=%d pos=(%d,%d) i=%d j=%d childnum=%d\", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, m_nChildSkillNum);", nMissleIndex, nSubWorldId, nDesSubX, nDesSubY, i, j, m_nChildSkillNum, m_nId, nLauncher);
 					if (nMissleIndex < 0)	continue;
 					
 					Missle[nMissleIndex].m_nDir				= nDir;
@@ -1149,6 +1175,7 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 #ifdef _SERVER
 					Missle[nMissleIndex].SetMagicAttribsData(pNewMagicAttribsData);
 #endif //_SERVER
+					AUTOLOG_EVERY(500, "[E3_MISSLE_BORN] g_DebugLog(\"[E3_MISSLE_BORN] skill=%d missle_idx=%d launcher=%d follow=%d pos=(%d,%d) dir=%d start_life=%d life=%d pk=%d\", (int)m_nId, nMissleIndex, nLauncher, Missle[nMissleIndex].m_nFollowNpcIdx, nDesSubX, nDesSubY, Missle[nMissleIndex].m_nDir, Missle[nMissleIndex].m_nStartLifeTime, Missle[nMissleIndex].m_nLifeTime, (int)Missle[nMissleIndex].m_nPKFlag);", nMissleIndex, Missle[nMissleIndex].m_nFollowNpcIdx, Missle[nMissleIndex].m_nDir, Missle[nMissleIndex].m_nStartLifeTime, Missle[nMissleIndex].m_nLifeTime, Missle[nMissleIndex].m_nPKFlag, nDesSubX, nDesSubY, m_nId, nLauncher);
 					nCastMissleNum ++;
 			}
 			else
@@ -1939,6 +1966,7 @@ void	KSkill::CreateMissle(int nLauncher, int nChildSkillId, int nMissleIndex)  c
 		}
 	}
 	
+	AUTOLOG("[MISSLE-PARAM] msl=%d sk=%d lv=%d launcher=%d move=%d speed=%d life=%d start=%d dmgrange=%d colrange=%d missrate=%d hitcount=%d useAR=%d melee=%d h=%d", nMissleIndex, (int)m_nId, (int)m_ulLevel, nLauncher, (int)pMissle->m_eMoveKind, pMissle->m_nSpeed, pMissle->m_nLifeTime, pMissle->m_nStartLifeTime, pMissle->m_nDamageRange, pMissle->m_nCollideRange, pMissle->m_nMissRate, pMissle->m_nHitCount, (int)pMissle->m_bUseAttackRating, (int)m_bIsMelee, pMissle->m_nHeight);
 	if (m_bIsMelee)
 		pMissle->m_nLifeTime = Npc[nLauncher].ModifyMissleLifeTime(pMissle->m_nLifeTime);
 	else
@@ -2263,6 +2291,7 @@ BOOL KSkill::CastInitiativeSkill(int nLauncher, int nParam1, int nParam2, int nW
 	}
 	else
 	{
+		AUTOLOG("[E3_INIT_BADTARGET] if (nParam1 != -1 || nParam2 <= 0 || nParam2 >= MAX_NPC) g_DebugLog(\"[E3_INIT_BADTARGET] skill=%d lv=%d launcher=%d p1=%d p2=%d self_flag=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, (int)m_bTargetSelf);", nParam1, nParam2, MAX_NPC, m_nId, m_ulLevel, nLauncher, m_bTargetSelf);
 		if (nParam1 != -1 || nParam2 <= 0 || nParam2 >= MAX_NPC) return FALSE;
 		
 		NPC_RELATION  Relation = NpcSet.GetRelation(nLauncher, nParam2);
@@ -2292,11 +2321,13 @@ lab_processdamage:
 	
 	KMissleMagicAttribsData * pAttribsData = CreateMissleMagicAttribsData(nLauncher);
 	
+	AUTOLOG("[E3_INIT_NOATTRIB] if (!pAttribsData) g_DebugLog(\"[E3_INIT_NOATTRIB] skill=%d lv=%d launcher=%d target=%d create_attrib_failed\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2);", pAttribsData, m_nId, m_ulLevel, nLauncher, nParam2);
 	if (!pAttribsData)
     	return FALSE;
     
 	BOOL bHit = FALSE;
 
+    AUTOLOG_EVERY(500, "[E3_INIT_DAMAGE_CALL] g_DebugLog(\"[E3_INIT_DAMAGE_CALL] skill=%d lv=%d launcher=%d target=%d phys=%d melee=%d use_rate=%d hurtp=%d tgt_life=%d state_num=%d imm_num=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, (int)m_bIsPhysical, (int)m_bIsMelee, (int)m_bUseAttackRate, m_nDoHurtP, Npc[nParam2].m_CurrentLife, pAttribsData->m_nStateMagicAttribsNum, pAttribsData->m_nImmediateMagicAttribsNum);", m_nId, m_ulLevel, nLauncher, nParam2, m_bIsPhysical, m_bIsMelee, m_bUseAttackRate, m_nDoHurtP, Npc[nParam2].m_CurrentLife, pAttribsData->m_nStateMagicAttribsNum, pAttribsData->m_nImmediateMagicAttribsNum);
     if (Npc[nParam2].ReceiveDamage(
             nLauncher,
             -1,
@@ -2332,6 +2363,7 @@ lab_processdamage:
     if (pAttribsData->DelRef() == 0)
         delete pAttribsData;
 
+    AUTOLOG_EVERY(500, "[E3_INIT_DAMAGE_RESULT] g_DebugLog(\"[E3_INIT_DAMAGE_RESULT] skill=%d lv=%d launcher=%d target=%d hit=%d tgt_life_after=%d\", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, (int)bHit, Npc[nParam2].m_CurrentLife);", bHit, m_nId, m_ulLevel, nLauncher, nParam2, Npc[nParam2].m_CurrentLife);
     return bHit;
 
 #else

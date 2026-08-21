@@ -707,6 +707,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 	}
 	else
 	{
+		AUTOLOG("CAST-BLOCK-INPUT idx=%d doing=%d life=%d canin=%d skR=%d skL=%d btn=%d t=%u", m_nIndex, (int)Npc[m_nIndex].m_Doing, Npc[m_nIndex].m_CurrentLife, (int)Npc[m_nIndex].IsCanInput(), m_nRightSkillID, m_nLeftSkillID, (int)nButton, GetTickCount());
 		g_DebugLog("[skill]return");
 		Npc[m_nIndex].m_nPeopleIdx = 0;
 		return;
@@ -717,9 +718,11 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 		if (Npc[m_nIndex].m_ActiveSkillID > 0)
 		{
 			ISkill * pISkill = (KSkill *) g_SkillManager.GetSkill(Npc[m_nIndex].m_ActiveSkillID, 1);
+			AUTOLOG("CAST-SKILLOBJ active=%d idx=%d found=%d btn=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, m_nIndex, (int)(pISkill != NULL), (int)nButton, GetTickCount());
 			if (!pISkill) 
                 return;
 			
+			AUTOLOG("CAST-TRAIT id=%d aura=%d tOnly=%d tEnemy=%d tAlly=%d tObj=%d radius=%d style=%d", Npc[m_nIndex].m_ActiveSkillID, (int)pISkill->IsAura(), (int)pISkill->IsTargetOnly(), (int)pISkill->IsTargetEnemy(), (int)pISkill->IsTargetAlly(), (int)pISkill->IsTargetObj(), pISkill->GetAttackRadius(), pISkill->GetSkillStyle());
 			if (pISkill->IsAura())
 				return;
 			int nAttackRange = pISkill->GetAttackRadius();
@@ -755,6 +758,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 				}
 			}
 
+			AUTOLOG("CAST-SKIP-NOTARGET id=%d tgt=%d people=%d obj=%d mpsx=%d mpsy=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, nTargetIdx, m_nPeapleIdx, m_nObjectIdx, nX, nY, GetTickCount());
 			if (pISkill->IsTargetOnly() && !nTargetIdx)
             {
 				Npc[m_nIndex].m_nPeopleIdx = 0;
@@ -762,6 +766,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 				return;
 			}
 			
+			AUTOLOG("CAST-SKIP-SELF id=%d me=%d tgt=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, m_nIndex, nTargetIdx, GetTickCount());
 			if (m_nIndex == nTargetIdx)
 			{
 				Npc[m_nIndex].m_nPeopleIdx = 0;
@@ -769,6 +774,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 				return;
 			}
 			
+			AUTOLOG("CAST-GATE id=%d cancast=%d costtype=%d cost=%d mana=%d/%d life=%d sta=%d now=%u", Npc[m_nIndex].m_ActiveSkillID, (int)Npc[m_nIndex].m_SkillList.CanCast(Npc[m_nIndex].m_ActiveSkillID, SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_dwCurrentTime), (int)pISkill->GetSkillCostType(), pISkill->GetSkillCost(&Npc[m_nIndex]), Npc[m_nIndex].m_CurrentMana, Npc[m_nIndex].m_CurrentManaMax, Npc[m_nIndex].m_CurrentLife, Npc[m_nIndex].m_CurrentStamina, SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_dwCurrentTime);
 			if ((!Npc[m_nIndex].m_SkillList.CanCast(Npc[m_nIndex].m_ActiveSkillID, SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_dwCurrentTime))
 				||
 				(!Npc[m_nIndex].Cost(pISkill->GetSkillCostType() , pISkill->GetSkillCost(&Npc[m_nIndex]), TRUE))
@@ -783,6 +789,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 			{
 				Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, nX, nY);
 				// Send to Server		
+				AUTOLOG("CAST-SEND-XY id=%d mpsx=%d mpsy=%d cellx=%d celly=%d mana=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, nX, nY, Npc[m_nIndex].m_MapX, Npc[m_nIndex].m_MapY, Npc[m_nIndex].m_CurrentMana, GetTickCount());
 				SendClientCmdSkill(Npc[m_nIndex].m_ActiveSkillID, nX, nY);
 			}
 			else
@@ -790,6 +797,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 				if (pISkill->IsTargetOnly())
 				{
 					int distance = NpcSet.GetDistance(m_nIndex , nTargetIdx);
+					AUTOLOG("CAST-RANGE tgt=%d dist=%d radius=%d curradius=%d over=%d t=%u", nTargetIdx, distance, pISkill->GetAttackRadius(), Npc[m_nIndex].m_CurrentAttackRadius, (int)(distance > pISkill->GetAttackRadius()), GetTickCount());
 					if (distance > pISkill->GetAttackRadius())
 					{
 						m_nPeapleIdx = nTargetIdx;
@@ -801,6 +809,7 @@ void KPlayer::ProcessMouse(int x, int y, int Key, MOUSE_BUTTON nButton)
 					return ;
 				Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, nTargetIdx);
 				// Send to Server		
+				AUTOLOG("CAST-SEND-TGT id=%d tgtidx=%d tgtid=%u dist=%d radius=%d tlife=%d tdoing=%d t=%u", Npc[m_nIndex].m_ActiveSkillID, nTargetIdx, Npc[nTargetIdx].m_dwID, NpcSet.GetDistance(m_nIndex, nTargetIdx), pISkill->GetAttackRadius(), Npc[nTargetIdx].m_CurrentLife, (int)Npc[nTargetIdx].m_Doing, GetTickCount());
 				SendClientCmdSkill(Npc[m_nIndex].m_ActiveSkillID, -1, Npc[nTargetIdx].m_dwID);
 			}
 		}
@@ -3490,6 +3499,8 @@ void	KPlayer::PickUpObj(int nObjIndex)
 		return;
 	if (nObjIndex <= 0)
 		return;
+	AUTOLOG("PICK-SKIP-KIND idx=%d id=%d kind=%d", nObjIndex, Object[nObjIndex].m_nID, Object[nObjIndex].m_nKind);
+	AUTOLOG("PICKOBJ-ENTER idx=%d kind=%d objid=%d dataid=%d name=%.79s w=%d h=%d t=%u", nObjIndex, Object[nObjIndex].m_nKind, Object[nObjIndex].m_nID, Object[nObjIndex].m_nItemDataID, Object[nObjIndex].m_szName, Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight, timeGetTime());
 	if (Object[nObjIndex].m_nKind != Obj_Kind_Item && Object[nObjIndex].m_nKind != Obj_Kind_Money)
 		return;
 	
@@ -3505,6 +3516,7 @@ void	KPlayer::PickUpObj(int nObjIndex)
 	else
 	{
 		ItemPos	sItemPos;
+		AUTOLOG("PICK-NOROOM idx=%d id=%d itemid=%d w=%d h=%d", nObjIndex, Object[nObjIndex].m_nID, Object[nObjIndex].m_nItemDataID, Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight);
 		if ( FALSE == m_ItemList.SearchPosition(Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight, &sItemPos) )
 		{
 			KSystemMessage	sMsg;
@@ -3514,6 +3526,7 @@ void	KPlayer::PickUpObj(int nObjIndex)
 			sMsg.byParamSize = 0;
 			sMsg.byPriority = 0;
 			
+			AUTOLOG("PICKOBJ-NOROOM obj=%d dataid=%d name=%.79s w=%d h=%d", Object[nObjIndex].m_nID, Object[nObjIndex].m_nItemDataID, Object[nObjIndex].m_szName, Object[nObjIndex].m_nItemWidth, Object[nObjIndex].m_nItemHeight);
 			strcpy(sMsg.szMessage, MSG_SHOP_NO_ROOM);
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 			return;
@@ -3526,6 +3539,8 @@ void	KPlayer::PickUpObj(int nObjIndex)
 	}
 	
 	if (g_pClient)
+		AUTOLOG("[PICKOBJ-SEND] objid=%d kind=%d place=%d px=%d py=%d", sPickUp.m_nObjID, (int)Object[nObjIndex].m_nKind, (int)sPickUp.m_btPosType, (int)sPickUp.m_btPosX, (int)sPickUp.m_btPosY);
+		AUTOLOG("PICK-SEND objid=%d place=%d px=%d py=%d kind=%d t=%u", sPickUp.m_nObjID, (int)sPickUp.m_btPosType, (int)sPickUp.m_btPosX, (int)sPickUp.m_btPosY, Object[nObjIndex].m_nKind, GetTickCount());
 		g_pClient->SendPackToServer(&sPickUp, sizeof(PLAYER_PICKUP_ITEM_COMMAND));
 }
 #endif
@@ -4677,6 +4692,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 	
 	int		nObjIndex, nNpcX, nNpcY, nObjX, nObjY;
 	nObjIndex = ObjSet.FindID(pPickUp->m_nObjID);
+	AUTOLOG("SPICK-RECV objid=%d idx=%d lic=%d place=%d px=%d py=%d player=%d", pPickUp->m_nObjID, nObjIndex, (int)m_nLicReg, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, m_nPlayerIndex);
 	if (nObjIndex == 0)
 		return FALSE;
 	if(!m_nLicReg)
@@ -4685,6 +4701,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 	{
 		if (!m_cTeam.m_nFlag)
 		{
+			AUTOLOG("SPICK-BELONG objid=%d idx=%d belong=%d me=%d btime=%d kind=%d teamflag=%d", pPickUp->m_nObjID, nObjIndex, Object[nObjIndex].m_nBelong, m_nPlayerIndex, Object[nObjIndex].m_nBelongTime, Object[nObjIndex].m_nKind, m_cTeam.m_nFlag);
 			if (Object[nObjIndex].m_nBelong != m_nPlayerIndex)
 			{
 				SHOW_MSG_SYNC	sMsg;
@@ -4742,6 +4759,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 		}
 	}
 
+	AUTOLOG("SPICK-WORLD objid=%d objsw=%d npcsw=%d objreg=%d npcreg=%d", pPickUp->m_nObjID, Object[nObjIndex].m_nSubWorldID, Npc[m_nIndex].m_SubWorldIndex, Object[nObjIndex].m_nRegionIdx, Npc[m_nIndex].m_RegionIndex);
 	if (Object[nObjIndex].m_nSubWorldID != Npc[m_nIndex].m_SubWorldIndex)
 		return FALSE;
 	SubWorld[Object[nObjIndex].m_nSubWorldID].Map2Mps(
@@ -4760,6 +4778,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 		Npc[m_nIndex].m_OffY,
 		&nNpcX,
 		&nNpcY);
+	AUTOLOG("SPICK-FAR objid=%d d2=%d limit=%d npcx=%d npcy=%d objx=%d objy=%d", pPickUp->m_nObjID, ((nNpcX - nObjX) * (nNpcX - nObjX) + (nNpcY - nObjY) * (nNpcY - nObjY)), PLAYER_PICKUP_SERVER_DISTANCE, nNpcX, nNpcY, nObjX, nObjY);
 	if (PLAYER_PICKUP_SERVER_DISTANCE < (nNpcX - nObjX) * (nNpcX - nObjX) + (nNpcY - nObjY) * (nNpcY - nObjY))
 	{
 		SHOW_MSG_SYNC	sMsg;
@@ -4844,6 +4863,7 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 				}
 			}
 			int nItemIdx = m_ItemList.AddKIL(Object[nObjIndex].m_nItemDataID, pPickUp->m_btPosType, pPickUp->m_btPosX, pPickUp->m_btPosY, false, true);
+			AUTOLOG("SPICK-BAG objid=%d itemidx=%d itemdata=%d place=%d px=%d py=%d maxitem=%d", pPickUp->m_nObjID, nItemIdx, Object[nObjIndex].m_nItemDataID, (int)pPickUp->m_btPosType, (int)pPickUp->m_btPosX, (int)pPickUp->m_btPosY, MAX_PLAYER_ITEM);
 			if (nItemIdx <= 0 || nItemIdx >= MAX_PLAYER_ITEM)
 			{
 				//_ASSERT(0); //khong du khoang trong hanh trang
@@ -9154,6 +9174,7 @@ void KPlayer::DialogNpc(int nIndex)
 #ifndef _SERVER
 void KPlayer::CheckObject(int nIdx)
 {
+	AUTOLOG("CHECKOBJ-ENTRY idx=%d id=%d kind=%d itemid=%d omx=%d omy=%d pmx=%d pmy=%d preg=%d oreg=%d t=%u", nIdx, Object[nIdx].m_nID, Object[nIdx].m_nKind, Object[nIdx].m_nItemDataID, Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, Npc[m_nIndex].m_MapX, Npc[m_nIndex].m_MapY, Npc[m_nIndex].m_RegionIndex, Object[nIdx].m_nRegionIdx, GetTickCount());
 	switch(Object[nIdx].m_nKind)
 	{
 	case Obj_Kind_Item:
@@ -9178,6 +9199,7 @@ void KPlayer::CheckObject(int nIdx)
 int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSelBoss,
 	BOOL bTGNpc, const short* pSerOrder, BOOL bFoll, int nPointX, int nPointY)
 {
+	AUTOLOG_EVERY(1000, "[FT-IN] me=%d vision=%d fb=%d fbvis=%d selboss=%d tgnpc=%d foll=%d pt=(%d,%d) excl=%d", m_nIndex, nVision, bFightBack, nFBVision, nSelBoss, bTGNpc, bFoll, nPointX, nPointY, (int)m_mAutoExcludeNpcID.size());
 	if(!bTGNpc && !bFightBack)
 		return 0;
 	if(nVision < 100)
@@ -9205,8 +9227,10 @@ int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSel
 		|| Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
 		if(m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != m_mAutoExcludeNpcID.end())
+			AUTOLOG_EVERY(2000, "[FT-SKIP-EXCL] idx=%d id=%u kind=%d type=%d exclSize=%d", nIdx, Npc[nIdx].m_dwID, (int)Npc[nIdx].m_Kind, (int)Npc[nIdx].m_Type, (int)m_mAutoExcludeNpcID.size());
 			continue;
 		if(!(NpcSet.GetRelation(m_nIndex, nIdx) == relation_enemy))
+			AUTOLOG_EVERY(3000, "[FT-SKIP-REL] idx=%d id=%u kind=%d rel=%d", nIdx, Npc[nIdx].m_dwID, (int)Npc[nIdx].m_Kind, (int)NpcSet.GetRelation(m_nIndex, nIdx));
 			continue;
 		int x,y;
 		Npc[nIdx].GetMpsPos(&x, &y);
@@ -9230,6 +9254,8 @@ int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSel
 		}
 		else
 		{
+			if(nDist >= nVision && nDist < nVision + 300)
+				AUTOLOG_EVERY(2000, "[FT-SKIP-VIS] idx=%d id=%u dist=%d vision=%d org=(%d,%d) tg=(%d,%d)", nIdx, Npc[nIdx].m_dwID, nDist, nVision, nX, nY, x, y);
 			if(nDist >= nVision)
 				continue;
 			if(nSelBoss == 1)	//ne boss
@@ -9335,6 +9361,7 @@ int KPlayer::FindTargetNpc(int nVision, BOOL bFightBack, int nFBVision, int nSel
 			if(nDistSer != 5000)
 				return nNpcNearest;
 		}
+		AUTOLOG_EVERY(1000, "[FT-SUM] cand=%d pcand=%d near=%d nearIdx=%d vision=%d pnear=%d pnearIdx=%d fbvis=%d selboss=%d fb=%d", nNpcCount, nPCount, nDistNear, nNpcNearest, nVision, nPDistNear, nNearestPlayer, nFBVision, nSelBoss, bFightBack);
 		if(nDistNear < nVision)
 			return nNpcNearest;
 	}
@@ -11929,6 +11956,7 @@ int KEquipmentArray::FindSameGerne(int i)
 
 void KPlayer::PlayerFollowActack(int i)
 {
+	AUTOLOG_EVERY(1000, "AUTO-TGT-CHK i=%d sw=%d/%d rgn=%d kind=%u type=%d life=%d/%d hide=%d doing=%d fm=%d", i, Npc[i].m_SubWorldIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex, Npc[i].m_RegionIndex, Npc[i].m_Kind, Npc[i].m_Type, Npc[i].m_CurrentLife, Npc[i].m_CurrentLifeMax, Npc[i].m_HideState.nTime, (int)Npc[i].m_Doing, Npc[i].m_FightMode);
 	if (IsNotValidNpc(i))
 		return;
 
@@ -11939,6 +11967,7 @@ void KPlayer::PlayerFollowActack(int i)
 	if (m_bAttackAround)
 	{
 		if ((k - nMapX) * (k - nMapX) + (h - nMapY) * (h - nMapY) > m_RadiusAuto * 1024)
+			AUTOLOG_EVERY(1000, "[AUTO-LEASH] npc=%d tg=(%d,%d) me=(%d,%d) radius=%d around=%d", i, k, h, nMapX, nMapY, m_RadiusAuto, (int)m_bAttackAround);
 		{
 			dX = nMapX-m_PosXAuto;
 			dY = nMapY-m_PosYAuto;
@@ -11955,6 +11984,7 @@ void KPlayer::PlayerFollowActack(int i)
 			}
 		}
 	}
+	AUTOLOG("AUTO-TGT-REGION npc=%d rgn=%d sw=%d id=%u t=%u", i, Npc[i].m_RegionIndex, Npc[i].m_SubWorldIndex, Npc[i].m_dwID, GetTickCount());
 	if ( Npc[i].m_RegionIndex < 0 )
 	{
 		m_nLifeLag = 0;
@@ -11989,6 +12019,7 @@ void KPlayer::PlayerFollowActack(int i)
 				//sMsg.byPriority = 0;
 				//sMsg.byParamSize = 0;
 				//CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
+				AUTOLOG("AUTO-BLACKLIST npc=%d slot=%d cntlag=%d timelag=%d lifelag=%d life=%d dist=%d t=%u", i, j, m_Count_Acttack_Lag, m_nTimeRunLag, m_nLifeLag, Npc[i].m_CurrentLife, NpcSet.GetDistance(m_nIndex, i), GetTickCount());
 				m_ArrayNpcLag[j] = i;
 				m_ArrayTimeNpcLag[j] = GetTickCount();
 				m_Actacker = 0;
@@ -12001,6 +12032,7 @@ void KPlayer::PlayerFollowActack(int i)
 		}
 	}
 	
+	AUTOLOG("AUTO-TGT-DEAD-INC i=%d doing=%d life=%d id=%u nexti=%d t=%u", i, (int)Npc[i].m_Doing, Npc[i].m_CurrentLife, Npc[i].m_dwID, i + 1, GetTickCount());
 	if(Npc[i].m_Doing == do_death)
 		i++;
 
@@ -12012,6 +12044,7 @@ void KPlayer::PlayerFollowActack(int i)
 	else
 	{
 		distanceattack = Npc[m_nIndex].m_CurrentAttackRadius;	//danh tu xa dua theo pham vi skill
+		AUTOLOG_EVERY(1000, "AUTO-RANGE-CFG fightdist=%d distauto=%d curradius=%d active=%d skL=%d", (int)m_bFightDistance, m_DistanceAuto, Npc[m_nIndex].m_CurrentAttackRadius, Npc[m_nIndex].m_ActiveSkillID, m_nLeftSkillID);
 		if(distanceattack < 75)
 		{
 			distanceattack = m_DistanceAuto;	//fix truêng hîp nh©n vËt kh«ng tù ®¸nh m_CurrentAttackRadius = 0
@@ -12019,6 +12052,7 @@ void KPlayer::PlayerFollowActack(int i)
 	}
 
 	int distance = NpcSet.GetDistance(m_nIndex, i);
+	AUTOLOG_EVERY(500, "AUTO-DIST npc=%d dist=%d need=%d inrange=%d px=%d py=%d nx=%d ny=%d", i, distance, distanceattack, (int)(distance <= distanceattack), nMapX, nMapY, k, h);
 
 	if (distance <= distanceattack)
 	{
@@ -12029,6 +12063,7 @@ void KPlayer::PlayerFollowActack(int i)
 		KSkill * pSkill = (KSkill *) g_SkillManager.GetSkill(Npc[m_nIndex].m_ActiveSkillID, 1);
 		if (pSkill)
 		{
+			AUTOLOG("AUTO-HORSELIMIT skill=%d limit=%d ride=%d dt=%u", Npc[m_nIndex].m_ActiveSkillID, pSkill->GetHorseLimit(), (int)Npc[m_nIndex].m_bRideHorse, GetTickCount() - (DWORD)Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_TimeHorse);
 			if (pSkill->GetHorseLimit())
 			{
 				switch(pSkill->GetHorseLimit())
@@ -12105,6 +12140,7 @@ void KPlayer::PlayerFollowActack(int i)
 		if(m_Auto_SkillRight && m_nRightSkillID) //add by phong kiÒu ®¸nh chiªu bªn ph¶i
 		{
 			int nIdx = Npc[m_nIndex].m_SkillList.FindSame(m_nRightSkillID);
+			AUTOLOG("AUTO-CAST-R skR=%d nIdx=%d activeOld=%d npc=%d id=%u dist=%d mana=%d t=%u", m_nRightSkillID, nIdx, Npc[m_nIndex].m_ActiveSkillID, i, Npc[i].m_dwID, distance, Npc[m_nIndex].m_CurrentMana, GetTickCount());
 			Npc[m_nIndex].SetActiveSkill(nIdx);
 			Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, i);//auto skill ë ®©y
 			SendClientCmdSkill(Npc[m_nIndex].m_ActiveSkillID, -1, Npc[i].m_dwID);
@@ -12114,6 +12150,7 @@ void KPlayer::PlayerFollowActack(int i)
 		else
 		{
 			int nIdx = Npc[m_nIndex].m_SkillList.FindSame(m_nLeftSkillID);
+			AUTOLOG("AUTO-CAST-L skL=%d nIdx=%d activeOld=%d npc=%d id=%u dist=%d mana=%d t=%u", m_nLeftSkillID, nIdx, Npc[m_nIndex].m_ActiveSkillID, i, Npc[i].m_dwID, distance, Npc[m_nIndex].m_CurrentMana, GetTickCount());
 			Npc[m_nIndex].SetActiveSkill(nIdx);
 			Npc[m_nIndex].SendCommand(do_skill, Npc[m_nIndex].m_ActiveSkillID, -1, i);//auto skill ë ®©y
 			SendClientCmdSkill(Npc[m_nIndex].m_ActiveSkillID, -1, Npc[i].m_dwID);
@@ -12686,6 +12723,7 @@ void KPlayer::MoveTo(int nX, int nY)
 {
 	int nPlayerX, nPlayerY;
 	int nDestX, nDestY, dX, dY;
+	AUTOLOG_EVERY(500, "MOVE-GATE tox=%d toy=%d frames=%d need=%d run=%d sent=%d", nX, nY, m_nSendMoveFrames, defMAX_PLAYER_SEND_MOVE_FRAME, m_RunStatus, (int)(m_nSendMoveFrames >= defMAX_PLAYER_SEND_MOVE_FRAME));
 	if (m_nSendMoveFrames >= defMAX_PLAYER_SEND_MOVE_FRAME)
 	{
 		Npc[m_nIndex].GetMpsPos(&nPlayerX, &nPlayerY);
@@ -12726,6 +12764,7 @@ BOOL KPlayer::AutoBuffSkillState()
 			{
 				Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SendCommand(do_skill, m_ArrayStateSkill[i], -1, Player[CLIENT_PLAYER_INDEX].m_nIndex);
 				SendClientCmdSkill(m_ArrayStateSkill[i], -1, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID);
+				AUTOLOG("BUFF-CAST slot=%d skill=%d self=%u mana=%d t=%u", i, m_ArrayStateSkill[i], Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentMana, GetTickCount());
 				return TRUE;
 			}
 		}
@@ -12741,6 +12780,7 @@ BOOL KPlayer::AutoBuffSkillState()
 			if (pLifePlayer < m_AutoLifeReplenishP)
 			{
 				Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].SendCommand(do_skill, nSkillLifeReplenishID, -1, m_nPlayerIndex);
+				AUTOLOG("BUFF-LIFE skill=%d plife=%d thres=%d t=%u", nSkillLifeReplenishID, pLifePlayer, m_AutoLifeReplenishP, GetTickCount());
 				SendClientCmdSkill(nSkillLifeReplenishID, -1, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID);
 				_break = TRUE;
 			}
@@ -12774,6 +12814,7 @@ void KPlayer::PlayerFollowObject(int nObject)
 	int nX1, nY1, nX2, nY2;
 	Npc[m_nIndex].GetMpsPos(&nX1, &nY1);
 	Object[nObject].GetMpsPos(&nX2, &nY2);
+	AUTOLOG_EVERY(500, "PICK-DIST obj=%d oid=%d kind=%d px=%d py=%d ox=%d oy=%d need=%d timelag=%d", nObject, Object[nObject].m_nID, Object[nObject].m_nKind, nX1, nY1, nX2, nY2, PLAYER_PICKUP_CLIENT_DISTANCE, m_nTimeRunLag);
 
 	if ((nX1 - nX2) * (nX1 - nX2) + (nY1 - nY2) * (nY1 - nY2) < PLAYER_PICKUP_CLIENT_DISTANCE * PLAYER_PICKUP_CLIENT_DISTANCE)
 	{
@@ -12807,6 +12848,7 @@ void KPlayer::PlayerFollowObject(int nObject)
 			{
 				if (m_ArrayObjectLag[i] == 0)
 				{
+					AUTOLOG("PICK-GIVEUP obj=%d oid=%d slot=%d timelag=%d limit=%d t=%u", nObject, Object[nObject].m_nID, i, m_nTimeRunLag, AUTO_TIME_LAG, GetTickCount());
 					m_ArrayObjectLag[i] = Object[nObject].m_nID;
 					m_ArrayTimeObjectLag[i] = GetTickCount();
 					m_bObject = FALSE;

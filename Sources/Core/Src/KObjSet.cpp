@@ -238,6 +238,7 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 	int nAddNo;
 
 	nAddNo = AddData(nDataID, MapPos, sItemInfo.m_nMoneyNum, sItemInfo.m_nItemID, sItemInfo.m_nItemWidth, sItemInfo.m_nItemHeight);
+	AUTOLOG("SPAWN-SLOT dataid=%d itemid=%d idx=%d free=%d use=%d sw=%d region=%d mx=%d my=%d", nDataID, sItemInfo.m_nItemID, nAddNo, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MapPos.nSubWorld, MapPos.nRegion, MapPos.nMapX, MapPos.nMapY);
 	if (nAddNo < 0)
 		return -1;
 
@@ -324,6 +325,7 @@ int		KObjSet::Add(int nDataID, KMapPos MapPos, KObjItemInfo sItemInfo)
 		SubWorld[MapPos.nSubWorld].m_Region[nConRegion].BroadCast((BYTE*)&cObjAdd, cObjAdd.m_wLength + 1, nMaxCount, Object[nAddNo].m_nMapX - POff[i].x, Object[nAddNo].m_nMapY - POff[i].y);
 	}
 
+	AUTOLOG("SPAWN-BCAST id=%d idx=%d kind=%d itemid=%d mx=%d my=%d mpsx=%d mpsy=%d left=%d maxbc=%d", Object[nAddNo].m_nID, nAddNo, Object[nAddNo].m_nKind, sItemInfo.m_nItemID, Object[nAddNo].m_nMapX, Object[nAddNo].m_nMapY, nTempX, nTempY, nMaxCount, MAX_BROADCAST_COUNT);
 	SubWorld[MapPos.nSubWorld].m_Region[MapPos.nRegion].AddObj(nAddNo);// m_WorldMessage.Send(GWM_OBJ_ADD, MapPos.nRegion, nAddNo);
 
 	return nAddNo;
@@ -453,9 +455,11 @@ int		KObjSet::ClientAdd(int nID, int nDataID, int nState, int nDir, int nCurFram
 	int		nAddIndex;
 	int		nRegion, nMapX, nMapY, nOffX, nOffY;
 	SubWorld[0].Mps2Map(nXpos, nYpos, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
+	AUTOLOG("CLIENTADD-REGION-FAIL id=%d dataid=%d x=%d y=%d region=%d mx=%d my=%d", nID, nDataID, nXpos, nYpos, nRegion, nMapX, nMapY);
 	if (nRegion < 0)
 		return -1;
 	nAddIndex = AddData(nDataID, 0, nRegion, nMapX, nMapY, nOffX, nOffY);
+	AUTOLOG("CLIENTADD-SLOT id=%d dataid=%d idx=%d free=%d use=%d max=%d region=%d", nID, nDataID, nAddIndex, m_FreeIdx.GetCount(), m_UseIdx.GetCount(), MAX_OBJECT, nRegion);
 	if (nAddIndex < 0)
 		return -1;
 	Object[nAddIndex].SetWorldID(nID);
@@ -1104,6 +1108,7 @@ int	KObjSet::AutoGetObjNear(int nX1, int nY1, int nDistance, int nPickOption /*=
 		if (Object[nIdx].m_nRegionIdx < 0)
 			continue;
 		
+		AUTOLOG_EVERY(1000, "AUTOPICK-SKIP-LAG idx=%d id=%d kind=%d itemid=%d", nIdx, Object[nIdx].m_nID, Object[nIdx].m_nKind, Object[nIdx].m_nItemDataID);
 		if (Object[nIdx].m_bAutoLag == TRUE)
 			continue;
 		if (Object[nIdx].m_nKind != Obj_Kind_Money &&
@@ -1180,10 +1185,12 @@ int	KObjSet::AutoGetObjNear(int nX1, int nY1, int nDistance, int nPickOption /*=
 				}
 			}
 
+			AUTOLOG_EVERY(1000, "AUTOPICK-SKIP-BAG idx=%d id=%d itemid=%d w=%d h=%d genre=%d opt=%d", nIdx, Object[nIdx].m_nID, Object[nIdx].m_nItemDataID, nWidth, nHeight, Object[nIdx].m_nGenre, nPickOption);
 			if (!Player[CLIENT_PLAYER_INDEX].m_ItemList.SearchPosition(nWidth, nHeight, &Pos))
 			{
 				continue;
 			}
+			AUTOLOG_EVERY(1000, "AUTOPICK-SKIP-PLACE idx=%d id=%d place=%d need=%d px=%d py=%d", nIdx, Object[nIdx].m_nID, Pos.nPlace, pos_equiproom, Pos.nX, Pos.nY);
 			if (Pos.nPlace != pos_equiproom)
 			{
 				continue;
@@ -1196,6 +1203,7 @@ int	KObjSet::AutoGetObjNear(int nX1, int nY1, int nDistance, int nPickOption /*=
 		Object[nIdx].GetMpsPos(&nX2, &nY2);
 		int nDistanceObject = 0;
 		nDistanceObject = GetDistanceMps(nX1, nY1, nX2, nY2);
+		AUTOLOG_EVERY(1000, "AUTOPICK-SKIP-FAR idx=%d id=%d dist=%d limit=%d ax=%d ay=%d ox=%d oy=%d", nIdx, Object[nIdx].m_nID, nDistanceObject, nDistance, nX1, nY1, nX2, nY2);
 		if (nDistanceObject > nDistance)
 			continue;
 
@@ -1209,6 +1217,7 @@ int	KObjSet::AutoGetObjNear(int nX1, int nY1, int nDistance, int nPickOption /*=
 			nIndexReturn = nIdx;
 		}
 	}
+	AUTOLOG_EVERY(1000, "AUTOPICK-RESULT ret=%d distmin=%d limit=%d opt=%d money=%d objuse=%d ax=%d ay=%d", nIndexReturn, nDistanceMin, nDistance, nPickOption, (int)bPickMoney, m_UseIdx.GetCount(), nX1, nY1);
 	return nIndexReturn;
 }
 #endif

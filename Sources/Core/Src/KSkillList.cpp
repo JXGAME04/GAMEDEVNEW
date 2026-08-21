@@ -570,6 +570,7 @@ int KSkillList::GetCurrentLevel(int nSkillID)
 	if (i)
 	{
 		//_ASSERT(m_Skills[i].SkillLevel < MAX_SKILLLEVEL);
+		AUTOLOG("[E3_LIST_CURLEVEL] g_DebugLog(\"[E3_LIST_CURLEVEL] skill=%d slot=%d level=%d cur_level=%d\", nSkillID, i, m_Skills[i].SkillLevel, m_Skills[i].CurrentSkillLevel);", nSkillID, i, m_Skills[i].SkillLevel, m_Skills[i].CurrentSkillLevel);
 		if (m_Skills[i].SkillLevel > 0)
 			return m_Skills[i].CurrentSkillLevel;
 	}
@@ -588,9 +589,11 @@ BOOL KSkillList::CanCast(int nSkillID, DWORD dwTime)
 		return FALSE;
 	}
 
+	AUTOLOG("[E3_LIST_COOLDOWN] if (m_Skills[i].NextCastTime > dwTime) g_DebugLog(\"[E3_LIST_COOLDOWN] skill=%d slot=%d next=%u now=%u remain=%u wait=%d level=%d\", nSkillID, i, (unsigned int)m_Skills[i].NextCastTime, (unsigned int)dwTime, (unsigned int)(m_Skills[i].NextCastTime - dwTime), m_Skills[i].WaitCastTime, m_Skills[i].SkillLevel);", nSkillID, i, m_Skills[i].NextCastTime, dwTime, m_Skills[i].WaitCastTime, m_Skills[i].SkillLevel);
 	if (m_Skills[i].NextCastTime > dwTime)
 		return FALSE;
 
+	AUTOLOG("[E3_LIST_LEVEL0] if (m_Skills[i].SkillLevel <= 0) g_DebugLog(\"[E3_LIST_LEVEL0] skill=%d slot=%d level=%d cur_level=%d exp=%d temp=%d\", nSkillID, i, m_Skills[i].SkillLevel, m_Skills[i].CurrentSkillLevel, m_Skills[i].SkillExp, (int)m_Skills[i].TempSkill);", nSkillID, i, m_Skills[i].SkillLevel, m_Skills[i].CurrentSkillLevel, m_Skills[i].SkillExp, m_Skills[i].TempSkill);
 	if (m_Skills[i].SkillLevel <= 0)
 		return FALSE;
 	
