@@ -12484,8 +12484,8 @@ static void CoreProbeRollSecond(DWORD dwNow)
 		FILE* pLog = fopen("jx_paint.log", "a");
 		if (pLog)
 		{
-			fprintf(pLog, "[SEC] t=%u painted=%d ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
-				s_ProbeSec * 1000, s_SecPaint, s_SecTick, s_SecTickSum, s_SecTickMax,
+			fprintf(pLog, "[SEC] pid=%u t=%u painted=%d ticks=%d ticksum=%u tickmax=%u net=%u/%u world=%u/%u scene=%u/%u\n",
+				GetCurrentProcessId(), s_ProbeSec * 1000, s_SecPaint, s_SecTick, s_SecTickSum, s_SecTickMax,
 				s_SecNetSum, s_SecNetMax, s_SecWorldSum, s_SecWorldMax, s_SecSceneSum, s_SecSceneMax);
 			fclose(pLog);
 		}
@@ -12513,8 +12513,8 @@ static void CoreProbeTick(DWORD dwStart, DWORD dwNet, DWORD dwWorld, DWORD dwSce
 		FILE* pLog = fopen("jx_paint.log", "a");
 		if (pLog)
 		{
-			fprintf(pLog, "[TICK] t=%u total=%u net=%u world=%u scene=%u\n",
-				dwStart, dwTotal, dwNet, dwWorld, dwScene);
+			fprintf(pLog, "[TICK] pid=%u t=%u total=%u net=%u world=%u scene=%u\n",
+				GetCurrentProcessId(), dwStart, dwTotal, dwNet, dwWorld, dwScene);
 			fclose(pLog);
 		}
 	}
