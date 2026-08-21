@@ -12976,6 +12976,7 @@ extern int LuaPB_SetVeThanh(Lua_State* L);
 extern int LuaPB_SetNpcChan(Lua_State* L);
 extern int LuaPB_SetTongKim(Lua_State* L);
 extern int LuaPB_SetTongKimTran(Lua_State* L);
+extern int LuaPB_TongKimGoi(Lua_State* L);
 extern int PB_IsBot(int nPlayerIdx);
 
 // IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
@@ -13658,6 +13659,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_SetNpcChan",	LuaPB_SetNpcChan},	// (20/08 dem) NPC la tuong: 1=bat nhu goc, 0=dung chong len nhau (mac dinh), -1=doc
 	{"PB_SetTongKim",	LuaPB_SetTongKim},	// (21/08) bot tu tham gia Tong Kim: 1=bat 0=tat -1=doc
 	{"PB_SetTongKimTran",	LuaPB_SetTongKimTran},	// tran so bot moi tran; 0 = KHONG gioi han
+	{"PB_TongKimGoi",	LuaPB_TongKimGoi},	// goi bot vao tran NGAY (lenh bai admin)
 	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},

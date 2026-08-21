@@ -6854,6 +6854,7 @@ static void pb_VeThanh(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 static int s_nPbTongKim  = 0;      // cong tac tinh nang (0 = tat)
 static int s_nPbTkTran   = 0;      // tran so bot moi tran; 0 = KHONG GIOI HAN
 static int s_nPbTkDangMo = 0;      // 1 = dang co tran (do o nhip)
+static int s_nPbTkGoiLai = 0;      // co MOT LAN: nhip sau goi quan bo sung
 static int s_nTkDemTong  = 0;      // quan so 2 phe, cap nhat 1 giay/lan o pb_TkNhip
 static int s_nTkDemKim   = 0;
 
@@ -6907,12 +6908,12 @@ static int pb_TkDuTuCach(const PB_Bot& b)
 //    bot dang ngoi bay sap ban se khong bi goi vao tong kim), con toan bo bot
 //    khac thi se tu dong random deu chia deu 2 phe tong kim de tham gia"
 //   "phai random bot chu khong keu vao theo thu tu"
-static void pb_TkGoiQuan()
+static int pb_TkGoiQuan()
 {
 	int nSub = -1;
 	KMission* pM = pb_TkMission(&nSub);
 	if (!pM)
-		return;
+		return 0;
 
 	// (1) gom ung vien theo TUNG MON PHAI de con rai deu 10 phai
 	static int aPhai[10][PB_MAX_BOTS];
@@ -6934,8 +6935,8 @@ static void pb_TkGoiQuan()
 	if (nUng <= 0)
 	{
 		pb_Log("[BotTK] tran mo nhung KHONG co bot nao du tu cach (can cap >= %d,"
-		       " da vao phai, camp != 4, khong ban sap)\n", PB_TK_CAP_MIN);
-		return;
+		       " da vao phai, camp != 4, dang luyen cong, khong ban sap)\n", PB_TK_CAP_MIN);
+		return 0;
 	}
 
 	// (2) XAO TRON tung phai (Fisher-Yates) - "khong keu vao theo thu tu".
@@ -6996,6 +6997,7 @@ static void pb_TkGoiQuan()
 	pb_Log("[BotTK] GOI QUAN: goi %d/%d bot du tu cach (tran bot = %s) -> du kien"
 	       " Tong %d / Kim %d\n", nDaGoi, nUng,
 	       s_nPbTkTran > 0 ? "co gioi han" : "KHONG GIOI HAN", nTong, nKim);
+	return nDaGoi;
 }
 
 // ---------------------------------------------------------------------------
@@ -7566,9 +7568,28 @@ static void pb_TkNhip()
 	if (bMo && !s_nPbTkDangMo)
 	{
 		s_nPbTkDangMo = 1;
+		s_nPbTkGoiLai = 0;
 		pb_Log("[BotTK] TRAN MO (mission %d tren map %d) -> goi quan\n",
 		       PB_TK_MISSION, PB_TK_MAP);
 		pb_TkGoiQuan();
+	}
+	else if (bMo && s_nPbTkGoiLai)
+	{
+		// (21/08) GOI QUAN BO SUNG giua tran. Can vi pb_TkGoiQuan chi chay o
+		// dung khoanh khac tran chuyen dong->mo: chu game mo Tong Kim de TEST
+		// roi moi bat tinh nang thi se khong con bot nao duoc goi. Cung dung khi
+		// muon them quan giua tran (bot moi len cap 80, bot vua xong Da Tau...).
+		// An toan de goi lai nhieu lan: pb_TkDuTuCach loai ngay bot co b.nTk != 0
+		// nen bot dang trong tran khong bi dong den.
+		s_nPbTkGoiLai = 0;
+		pb_Log("[BotTK] GOI QUAN BO SUNG (lenh bai admin)\n");
+		pb_TkGoiQuan();
+	}
+	else if (s_nPbTkGoiLai)
+	{
+		s_nPbTkGoiLai = 0;
+		pb_Log("[BotTK] KHONG goi duoc: tran Tong Kim CHUA MO (mission %d tren map %d)\n",
+		       PB_TK_MISSION, PB_TK_MAP);
 	}
 	else if (!bMo && s_nPbTkDangMo)
 	{
@@ -7591,11 +7612,34 @@ int PB_SetTongKim(int nBat)
 	if (nBat >= 0)
 	{
 		s_nPbTongKim = nBat ? 1 : 0;
+		if (s_nPbTongKim)
+			s_nPbTkGoiLai = 1;   // bat GIUA tran van goi duoc quan (nhip sau)
 		pb_Log("[BotTK] tinh nang bot tu tham gia Tong Kim: %s (tran bot = %s)\n",
 		       s_nPbTongKim ? "BAT" : "TAT",
 		       s_nPbTkTran > 0 ? "co gioi han" : "KHONG GIOI HAN");
 	}
 	return s_nPbTongKim;
+}
+
+// Lenh bai admin: goi quan NGAY (dung khi chu game mo Tong Kim de test).
+// Tra ve so bot DU TU CACH tai thoi diem goi; viec goi that chay o nhip ke tiep
+// (trong vong 1 giay) de dung chung mot duong voi luc toi gio tu dong.
+int PB_TongKimGoi()
+{
+	if (!s_nPbTongKim)
+		s_nPbTongKim = 1;          // tien tay bat luon, dung y chu game
+	s_nPbTkGoiLai = 1;
+	int nUng = 0;
+	for (int i = 0; i < s_botCount; i++)
+		if (pb_TkDuTuCach(s_bots[i]))
+			nUng++;
+	return nUng;
+}
+
+int LuaPB_TongKimGoi(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_TongKimGoi());
+	return 1;
 }
 
 int LuaPB_SetTongKim(Lua_State* L)

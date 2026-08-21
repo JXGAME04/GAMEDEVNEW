@@ -159,7 +159,74 @@ function PB_Menu()
 	"Bot ra THANH ban sap/PB_SapMenu",
 	"Goi het bot ve THANH-THON: BAT/#PB_VeThanhBat(1)",
 	"Goi het bot ve THANH-THON: TAT (ve bai luyen)/#PB_VeThanhBat(0)",
+	"Bot tu tham gia TONG KIM/PB_TkMenu",
 	SC_END_SAY})
+end
+
+-- ================= TONG KIM (21/08) =================
+-- Bot tu tham gia Tong Kim y het nguoi choi: ve map bao danh 324, thoat party,
+-- di bo toi NPC bao danh, bam gia nhap, cho 90 giay trong hau doanh roi ra tran,
+-- chay sang doanh trai doi phuong tim nguoi danh. Het tran tu dung Than Hanh Phu
+-- len lai bai luyen dung cap; bot dang chay Da Tau tu chay Da Tau lai.
+-- Ham C dang ky o ScriptFuns.cpp: PB_SetTongKim / PB_SetTongKimTran / PB_TongKimGoi
+function PB_TkMenu()
+	local nBat = PB_SetTongKim(-1)
+	local nTran = PB_SetTongKimTran(-1)
+	local sBat = "TAT"
+	if nBat == 1 then
+		sBat = "BAT"
+	end
+	local sTran = format("%d bot", nTran)
+	if nTran <= 0 then
+		sTran = "KHONG GIOI HAN"
+	end
+	SayEx({format("<color=yellow>Bot tu tham gia TONG KIM<color>
+Trang thai: <color=green>%s<color>  Tran moi tran: <color=gold>%s<color>", sBat, sTran),
+	"GOI BOT VAO TRAN NGAY (dang mo tay)/PB_TkGoiNgay",
+	"BAT tu dong theo gio/#PB_TkBat(1)",
+	"TAT tu dong theo gio/#PB_TkBat(0)",
+	"Tran: KHONG gioi han/#PB_TkTran(0)",
+	"Tran: 100 bot/#PB_TkTran(100)",
+	"Tran: 200 bot/#PB_TkTran(200)",
+	"Tran: 500 bot/#PB_TkTran(500)",
+	"Quay lai menu bot/PB_Menu",
+	SC_END_SAY})
+end
+
+-- Goi quan NGAY. Dung khi chu game MO Tong Kim bang tay de test: bot chi duoc goi
+-- o dung khoanh khac tran chuyen dong->mo, nen mo tran truoc roi moi bat tinh nang
+-- thi se khong con nao vao. Muc nay ep goi lai, va goi bao nhieu lan cung an toan
+-- (bot dang trong tran khong bi dong den).
+function PB_TkGoiNgay()
+	local nUng = PB_TongKimGoi()
+	if nUng and nUng > 0 then
+		Msg2Player(format("Da ra lenh goi quan: %d bot du tu cach (cap >= 80, da vao phai, dang luyen cong, khong ban sap).", nUng))
+		Msg2Player("Bot bat dau ve map bao danh trong vai giay. Xem bot.log muc [BotTK].")
+	else
+		Msg2Player("KHONG co bot nao du tu cach. Can: cap >= 80, da vao mon phai, dang danh quai, khong ban sap, camp khac 4.")
+	end
+	PB_TkMenu()
+end
+
+function PB_TkBat(n)
+	local nMoi = PB_SetTongKim(n)
+	if nMoi == 1 then
+		Msg2Player("Da BAT: toi gio Tong Kim bot tu ve map bao danh va gia nhap nhu nguoi choi.")
+		Msg2Player("Neu tran DANG MO san thi quan se duoc goi ngay o nhip ke tiep.")
+	else
+		Msg2Player("Da TAT. Bot dang trong tran duoc TRA LAI TRANG THAI CU roi ve bai luyen.")
+	end
+	PB_TkMenu()
+end
+
+function PB_TkTran(n)
+	local nMoi = PB_SetTongKimTran(n)
+	if nMoi and nMoi > 0 then
+		Msg2Player(format("Tran moi tran = %d bot.", nMoi))
+	else
+		Msg2Player("Tran moi tran = KHONG GIOI HAN (moi bot du tu cach deu vao).")
+	end
+	PB_TkMenu()
 end
 
 -- (19/08 toi #4) goi het bot ve 15 map thanh thi/thon, chia deu theo chi so
