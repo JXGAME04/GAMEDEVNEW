@@ -292,6 +292,15 @@ bool ZDBTable::quarantine(const char *, int, const char *, int, const char *) {
 	return false;
 }
 
+// Goi ghi: ban Berkeley DB ghi thang vao bo nho/mmap nen khong can gop.
+bool ZDBTable::BatDauGoi() {
+	return true;
+}
+
+bool ZDBTable::KetThucGoi() {
+	return true;
+}
+
 void ZDBTable::closeCursor(ZCursor *cursor) {
 	if(!cursor) return;
 	if(cursor->bTravel) {

@@ -154,7 +154,13 @@ struct MyTableImpl
     unsigned    port;
     bool        opened;
 
-    MyTableImpl() : conn(NULL), port(3306), opened(false) {}
+    // GOI GHI (BatDauGoi/KetThucGoi): >0 nghia la dang trong mot giao dich
+    // bao ngoai, add()/remove() KHONG duoc tu mo/chot giao dich rieng nua.
+    int           trong_goi;
+    unsigned long luong_goi;   // mysql_thread_id luc mo goi, de bat reconnect
+
+    MyTableImpl() : conn(NULL), port(3306), opened(false),
+                    trong_goi(0), luong_goi(0) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -489,6 +495,15 @@ void ZDBTable::close()
 {
     MyTableImpl *im = (MyTableImpl *)m_pImpl;
     if (!im) return;
+    // Con GOI GHI dang mo (ben goi quen dong): chot ho. mysql_close() se
+    // ROLLBACK, tuc mat trang cac lan ghi da lam -- khong duoc de im lang.
+    if (im->trong_goi > 0 && im->conn)
+    {
+        DbLog("close() con GOI GHI dang mo (muc %d) -- chot ho truoc khi dong",
+              im->trong_goi);
+        mysql_query(im->conn, "COMMIT");
+        im->trong_goi = 0;
+    }
     if (im->conn) { mysql_close(im->conn); im->conn = NULL; }
     im->opened = false;
     DbLog("close()");
@@ -497,6 +512,58 @@ void ZDBTable::close()
 bool ZDBTable::commit()
 {
     // MySQL o che do autocommit; moi add()/remove() da tu chot.
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// GOI GHI -- gop nhieu add() vao MOT giao dich.
+//
+// Dat ra cho CDBBackup::SaveStatInfo(): no goi add() 1952 lan lien tuc luc
+// Goddess khoi dong. Voi autocommit=1 do la 1003 giao dich = 1003 lan fsync,
+// do duoc 3,891 giay (updated_at 16:47:44.474 -> 16:47:48.365). Cong 5011 chi
+// mo SAU do (Goddess.cpp:737), nen Bishop -- bat sau 1-3 giay, chi ConnectTo mot
+// lan (Intercessor.cpp:389) -- noi hut, roi tu dong cong 5632 (Application.cpp:525).
+//
+// Long nhau duoc (dem tang/giam). An toan khi quen dong: close() chot ho va
+// ghi nhat ky.
+//////////////////////////////////////////////////////////////////////////////
+bool ZDBTable::BatDauGoi()
+{
+    MyTableImpl *im = (MyTableImpl *)m_pImpl;
+    if (!im || !im->opened) return false;
+    if (im->trong_goi > 0) { im->trong_goi++; return true; }
+    if (!EnsureConn(im)) return false;
+    if (mysql_query(im->conn, "START TRANSACTION"))
+    {
+        DbLog("BatDauGoi() LOI: %s", mysql_error(im->conn));
+        return false;   // khong mo duoc goi -> ben goi van chay duoc kieu cu
+    }
+    im->trong_goi = 1;
+    im->luong_goi = mysql_thread_id(im->conn);
+    return true;
+}
+
+bool ZDBTable::KetThucGoi()
+{
+    MyTableImpl *im = (MyTableImpl *)m_pImpl;
+    if (!im || im->trong_goi <= 0) return false;
+    if (--im->trong_goi > 0) return true;
+    if (!im->conn) return false;
+
+    // Neu ket noi da bi lap lai giua chung thi giao dich cu da mat cung no.
+    // Khong duoc im lang: bao ro de con biet ma xu ly.
+    if (mysql_thread_id(im->conn) != im->luong_goi)
+    {
+        DbLog("KetThucGoi() CANH BAO: ket noi da lap lai giua goi -- "
+              "cac lan ghi trong goi nay da mat, se duoc ghi lai o ky sau");
+        return false;
+    }
+    if (mysql_query(im->conn, "COMMIT"))
+    {
+        DbLog("KetThucGoi() COMMIT LOI: %s", mysql_error(im->conn));
+        mysql_query(im->conn, "ROLLBACK");
+        return false;
+    }
     return true;
 }
 
@@ -987,7 +1054,9 @@ bool ZDBTable::add(const char *key_ptr, int key_size, const char *data_ptr, int 
 
     // Ca ba viec (chup anh + bao dong + ghi de) nam trong MOT giao dich:
     // khong the co canh "da chup ma chua ghi" hay "da ghi ma mat ban chup".
-    bool co_giao_dich = can_chup;
+    // Trong mot GOI GHI thi giao dich bao ngoai da lo -- tu mo them mot cai
+    // nua se CHOT NGAM giao dich ngoai (MySQL khong long giao dich).
+    bool co_giao_dich = can_chup && (im->trong_goi == 0);
     if (co_giao_dich && mysql_query(im->conn, "START TRANSACTION"))
     {
         DbLog("add() START TRANSACTION LOI: %s", mysql_error(im->conn));
@@ -1151,7 +1220,9 @@ bool ZDBTable::remove(const char *key_ptr, int key_size, int index)
     while (!k.empty() && k[k.size() - 1] == '\0') k.erase(k.size() - 1);
     if (k.empty()) return false;
 
-    if (mysql_query(im->conn, "START TRANSACTION"))
+    // Trong GOI GHI thi dung giao dich bao ngoai, khong tu mo cai moi.
+    const bool tu_giao_dich = (im->trong_goi == 0);
+    if (tu_giao_dich && mysql_query(im->conn, "START TRANSACTION"))
     {
         DbLog("remove() START TRANSACTION LOI: %s", mysql_error(im->conn));
         return false;
@@ -1195,17 +1266,17 @@ bool ZDBTable::remove(const char *key_ptr, int key_size, int index)
         }
     }
 
-    if (ok)
+    if (ok && tu_giao_dich)
     {
         if (mysql_query(im->conn, "COMMIT"))
         {
             DbLog("remove() COMMIT LOI: %s", mysql_error(im->conn));
             ok = false;
         }
-        else
-            DbLog("remove(\"%s\") xong -- ban goc da luu vao role_delete_log", k.c_str());
     }
-    if (!ok)
+    if (ok)
+        DbLog("remove(\"%s\") xong -- ban goc da luu vao role_delete_log", k.c_str());
+    if (!ok && tu_giao_dich)
         mysql_query(im->conn, "ROLLBACK");
     return ok;
 }

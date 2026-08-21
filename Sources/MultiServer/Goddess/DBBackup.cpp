@@ -872,6 +872,15 @@ void CDBBackup::SaveStatInfo()
 		return;
 	}
 	
+	// GOI GHI: hai vong duoi day goi RunTable->add() toi 1952 lan. Voi tang
+	// MySQL (autocommit) do la 1003 giao dich rieng = 3,891 giay do duoc, ma
+	// Goddess chi mo cong 5011 SAU ham nay (Goddess.cpp:707 truoc :737) nen
+	// Bishop bat sau 1-3 giay se noi hut roi tu dong cong 5632 khien GameServer
+	// bao "Connect to gateway is failed!". Gop tat ca vao mot giao dich:
+	// 1003 lan fsync con 1.
+	// Mo goi that bai thi van chay binh thuong kieu cu, chi cham hon.
+	bool bGoiGhi = RunTable->BatDauGoi();
+
 	int i,j;
 	for(i=0;i<LEVELSTATNUM;++i)
 	{
@@ -922,4 +931,6 @@ void CDBBackup::SaveStatInfo()
 			RunTable->closeCursor(cursor);
 		}
 	}
+
+	if (bGoiGhi) RunTable->KetThucGoi();
 }

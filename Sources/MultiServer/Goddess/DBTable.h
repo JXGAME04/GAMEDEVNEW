@@ -53,6 +53,19 @@ public:
 	bool quarantine(const char *key_ptr, int key_size,
 					const char *data_ptr, int data_size, const char *why);
 
+	// (20/08) GOI GHI -- gop nhieu add() vao MOT giao dich.
+	// VI SAO: mysql_autocommit=1 nen moi add() la mot giao dich rieng = mot lan
+	// fsync. CDBBackup::SaveStatInfo() goi add() 1952 lan luc Goddess khoi dong,
+	// het 3,891 giay (do that tren cot updated_at). Goddess chi OpenService(5011)
+	// SAU do (Goddess.cpp:707 truoc :737); Bishop bat sau 1-3 giay va chi
+	// ConnectTo MOT lan (Intercessor.cpp:389) -- noi hut thi StartupNetwork() tra
+	// false (:505), Application.cpp:521-526 goi Destroy() dong luon cong 5632,
+	// GameServer bao "Connect to gateway is failed!".
+	// Gop lai: 1003 lan fsync con 1.
+	// Ban Berkeley DB: hai ham nay khong lam gi va tra true.
+	bool BatDauGoi();
+	bool KetThucGoi();
+
 	// Bo than inline: ban MySQL con phai giai phong pImpl.
 	// Cai dat: DBTable_MySQL.cpp (dang dung) hoac DBTable.cpp (ban Berkeley DB).
 	void closeCursor(ZCursor *cursor);
