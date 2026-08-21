@@ -1,7 +1,8 @@
 # LOG CHẨN ĐOÁN AUTO — `jx_auto.log` (21/08/2026)
 
 > Đặt log để tìm nguyên nhân **"đánh hay miss"** và **"bỏ sót đồ rớt từ NPC khi luyện công"**.
-> **Chỉ đặt log — không sửa logic** (bản vá 341 dòng, 0 dòng bị xoá). Commit `61e83b52`.
+> **Chỉ đặt log — không sửa logic.** Bản chốt: **310 dòng log**, commit `61e83b52` → `f601e862`.
+> Binary đang chạy: `CoreClient.dll` **21/08 13:15** (md5 `ff775c6f…`).
 
 ## 1. Bật / tắt
 
@@ -14,9 +15,22 @@ AutoLog=1      ; 1 = ghi log, 0 (mặc định) = TẮT hoàn toàn, không tố
 
 Tệp ghi ra: **`bin\client\jx_auto.log`** (thư mục làm việc của `Game.exe`).
 - Mỗi dòng tự có tiền tố `t=<mili giây> pid=<id tiến trình>` → mở nhiều client vẫn tách được.
-- Trần **600 dòng/giây**; vượt thì bỏ và ghi lại `[AUTOLOG] bo qua N dong`.
+- Trần **1200 dòng/giây**; vượt thì bỏ và ghi lại `[AUTOLOG] bo qua N dong`.
+- Ghi qua tệp **mở sẵn** (flush mỗi 50 dòng / 500 ms) nên gần như không ảnh hưởng nhịp game.
+- Bản **Server tắt cứng** — GameServer không bao giờ ghi/in gì.
 - Tệp > 64 MB tự đổi tên thành `jx_auto.log.1` rồi ghi lại từ đầu.
-- **Muốn log sạch cho một lần thử: xoá `jx_auto.log` trước khi vào game.**
+- **Muốn log sạch cho một lần thử: xoá `jx_auto.log` trước khi vào game** (tệp cũ trộn nhiều bản DLL sẽ gây hiểu nhầm).
+
+### Mức chi tiết theo vùng
+
+| Vùng | Ghi thế nào |
+|---|---|
+| Auto (`CoreShell`, `KPlayer`, `S3Client`): chọn mục tiêu, phát lệnh đánh, từng món đồ bị bỏ qua | ghi **mọi lần** |
+| Engine (`KMissle`, `KSkills`, `KNpc`, `KProtocolProcess`…): chạy mỗi khung hình cho từng viên đạn/NPC | tiết chế **1 dòng/giây** mỗi điểm (vài nhãn rất nóng: 2–5 giây) |
+
+> 🔴 **Đo thật 21/08:** bản chưa tiết chế ngập **604 dòng/giây** (28 MB trong vài phút) và **nuốt mất**
+> chính các dòng `FIGHT-*` / `PICK-*` cần xem. Bản 13:15 đã tiết chế; nếu vẫn thấy dòng
+> `[AUTOLOG] bo qua N dong` xuất hiện liên tục thì báo tôi để giãn tiếp.
 
 ## 2. Đọc log thế nào
 
@@ -93,5 +107,8 @@ lệch** → biết "miss" có phải do lệch vị trí không. `NET-WALK/RUN/
 - Log dùng `AUTOLOG_EVERY(ms, ...)` ở chỗ chạy mỗi khung hình để khỏi ngập; các nhánh hiếm dùng
   `AUTOLOG(...)`.
 - Bản vá **không xoá dòng nào** của mã gốc (`git show 61e83b52 --stat`: 432 insertions, 0 deletions).
-- Binary đang chạy: `CoreClient.dll` **21/08 12:50** (2.286.592 B, md5 `f13d525d…`); bản lùi
+- Binary đang chạy: `CoreClient.dll` **21/08 13:15** (2.278.912 B, md5 `ff775c6f…`); bản lùi
   `CoreClient_cu_2108_1210.dll` (không có log).
+- 🔴 Ba lỗi do **chính đợt đặt log** gây ra đã vá ở `b7e69aee` — nặng nhất: dòng log lọt vào giữa `if`
+  không ngoặc trong `FindTargetNpc` khiến **auto không chọn được mục tiêu** (chỉ chạy tới NPC rồi đứng).
+  Lần sau thêm log phải chạy lại bộ quét `scan_danger.py` trong scratchpad.
