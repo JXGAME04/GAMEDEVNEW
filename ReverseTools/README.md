@@ -18,6 +18,11 @@ Cac cong cu duoi day thuan python, chay duoc ngay.
 | **`jx_linux_y.luamap.full.txt`** | ket qua ban SUA: **1.560 ten** (GameServer Linux) |
 | **`s3relay_y.luamap.full.txt`** | ket qua ban SUA: **473 ten** (Relay lien may chu) |
 | `liendau_api_gap.txt` | ket qua chay `re_lua_api_gap.py` cho he Lien Dau (leaguematch) |
+| **`gbktool.py`** | doc/tim trong cay script Linux TRON GBK + TCVN3 (nhan dang theo TUNG DONG) |
+| **`api_gap2.py`** | ban SUA cua `re_lua_api_gap.py` - phan 5 nhom OK/TREE/LIB/ENG/??? ; **KHONG cat tien to `Lop:` nua** |
+| **`dep_gap.py`** | bao dong phu thuoc Include() + danh dau tep du an DA CO |
+| **`pakcheck.py` / `pakscan.py` / `regionscan.py`** | tra tai nguyen trong .pak/.mps bang bam FileNameToId |
+| `loidai_tinsu_banghoi_api_gap.txt` | ket qua 21/08 cho 9 cay Loi dai / Tin su / Bang hoi (doc `../PHANTICH_LOIDAI_TINSU_BANGHOI.md`) |
 
 Doc `../BANGIAO_PHIEN_1808.md` muc 5 de biet cach dung va quy doi dia chi.
 Rieng he Lien Dau: doc `../BANGIAO_LIENDAU.md`.
@@ -54,6 +59,23 @@ python re_lua_api_gap.py > liendau_api_gap.txt
 ```
 
 ⚠️ Tren Windows phai dat `PYTHONIOENCODING=utf-8` truoc khi chay, neu khong se loi `charmap codec`.
+
+## 2 BAY DEM SAI da sua 21/08 (dung lap lai)
+
+**1. `function Lop:Ten(` KHONG che ham toan cuc `Ten`.**
+`lib/player.lua:365` co `function Player:ForbidEnmity(flag) return CallPlayerFunction(self.m_PlayerIndex, ForbidEnmity, flag) end`
+- than ham goi CHINH ham engine cung ten. `re_lua_api_gap.py` cat tien to `Player:` roi xep
+`ForbidEnmity` vao nhom "script tu dinh nghia" => GIAU MAT 5 ham engine thieu.
+Chi `function Ten(` TRAN moi la dinh nghia toan cuc. `api_gap2.py` da sua.
+
+**2. `FileNameToId` phai chan 32 bit TRUOC phep chia du.**
+C (`Engine/Src/KPakList.cpp:72`): `id = (id + (++index) * (*ptr)) % 0x8000000b * 0xffffffef;`
+voi `id` la `unsigned long` 32 bit. Thieu `& 0xFFFFFFFF` truoc `%` la tra pak ra **0 ket qua**
+cho ca map chac chan ton tai. Kem theo:
+- duong dan tra pak = `\maps\` + gia tri trong `MapList.ini` (**da rut `\` ve `\`**) + `.wor`;
+  **KHONG ha chu thuong bang `.lower()` cua Python** (pha byte GBK; ham bam da tu ha A-Z).
+- region: `<duong dan map>\v_%03d\%03d_Region_S.dat`, `%03d` la chi so region **TUYET DOI**
+  (`m_nRegionBeginY+h`, `KSubWorld.cpp:258`) - co map bat dau tu ~106, quet dai 0..90 = ket luan nham.
 
 ## Ban goc o dau
 

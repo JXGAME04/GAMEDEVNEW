@@ -1,0 +1,282 @@
+==============================================================================
+NHOM: TIN SU (task/tollgate/messenger + item/messenger)   | 66 tep .lua | 197 ten duoc goi
+cay: task\tollgate\messenger, item\messenger
+==============================================================================
+
+--- [ENG] 3 ten ---
+  SetSpecItemParam                 x5    item/messenger/toll_jinpaixinshi.lua:17
+  ConsumeEquiproomItem             x1    task/tollgate/messenger/posthouse.lua:503
+  NpcName2Replace                  x1    task/tollgate/messenger/qianbaoku/messenger_turenpc.lua:23
+
+--- [???] 0 ten ---
+
+--- [LIB] 10 ten ---
+  nt_getTask                       x227  task/tollgate/messenger/lib_messenger.lua:39 <= battles\boss\head.lua; battles\butcher\head.lua...
+  nt_setTask                       x153  task/tollgate/messenger/lib_messenger.lua:24 <= battles\boss\head.lua; battles\butcher\head.lua...
+  birthday0905_settask_message     x8    task/tollgate/messenger/messenger_flyrukou.lua:69 <= event\birthday_jieri\200905\message\message.lua
+  birthday0905_gettask_message     x8    task/tollgate/messenger/messenger_flyrukou.lua:72 <= event\birthday_jieri\200905\message\message.lua
+  tongaward_message                x5    task/tollgate/messenger/lib_messenger.lua:118 <= tong\tong_award_head.lua
+  greatnight_huang_event           x3    task/tollgate/messenger/lib_messenger.lua:19 <= event\great_night\huangzhizhang\event.lua
+  tl_addPlayerExp                  x3    task/tollgate/messenger/posthouse.lua:1057 <= task\task_addplayerexp.lua
+  AddExp_Skill_Extend              x2    task/tollgate/messenger/lib_messenger.lua:69 <= task\task_award_extend.lua
+  OnNewWorldDefault                x1    task/tollgate/messenger/newworld.lua:4 <= maps\newworldscript_default.lua
+  OnLeaveWorldDefault              x1    task/tollgate/messenger/newworld.lua:9 <= maps\newworldscript_default.lua
+
+[OK ] da co: 58 | [TREE] tu dinh nghia: 126
+
+==============================================================================
+NHOM: LOI DAI TY VO (missions/bw)   | 9 tep .lua | 103 ten duoc goi
+cay: missions\bw
+==============================================================================
+
+--- [ENG] 6 ten ---
+  LeaveChannel                     x2    missions/bw/bwhead.lua:57
+  ForbidEnmity                     x2    missions/bw/bwhead.lua:71
+  EnterChannel                     x2    missions/bw/bwhead.lua:121
+  CreateChannel                    x2    missions/bw/bwmission.lua:14
+  DeleteChannel                    x2    missions/bw/bwmission.lua:42
+  ChangeOwnFeature                 x1    missions/bw/bwhead.lua:158
+
+--- [???] 0 ten ---
+
+--- [LIB] 2 ten ---
+  branchTask_GainBW1               x1    missions/bw/bwhead.lua:233 <= task\newtask\branch\branch_bwsj.lua
+  branchTask_BW1                   x1    missions/bw/bwmanager.lua:96 <= task\newtask\branch\branch_bwsj.lua
+
+[OK ] da co: 55 | [TREE] tu dinh nghia: 40
+
+==============================================================================
+NHOM: BACH NHAN LOI DAI (missions/bairenleitai)   | 10 tep .lua | 63 ten duoc goi
+cay: missions\bairenleitai
+==============================================================================
+
+--- [ENG] 4 ten ---
+  Msg2Map                          x19   missions/bairenleitai/hundred_arena.lua:343
+  SetTmpCamp                       x2    missions/bairenleitai/hundred_arena.lua:484
+  AddMapTrap                       x1    missions/bairenleitai/hundred_arena.lua:61
+  AddNpcEx                         x1    missions/bairenleitai/hundred_arena.lua:630
+
+--- [???] 0 ten ---
+
+--- [LIB] 5 ten ---
+  clone                            x7    missions/bairenleitai/hundred_arena.lua:332 <= event\chunjie_jieri\201001\plant.lua; event\jiefang_jieri\201004\triumph_drum\head.lua...
+  CreateNewSayEx                   x5    missions/bairenleitai/npc_beauty.lua:25 <= dailogsys\dailogsay.lua
+  basemission_CallNpc              x4    missions/bairenleitai/hundred_arena.lua:78 <= missions\basemission\lib.lua
+  GetRandomAData                   x2    missions/bairenleitai/hundred_arena.lua:217 <= lib\file.lua
+  RemoteExc                        x2    missions/bairenleitai/hundred_arena.lua:677 <= lib\remoteexc.lua
+
+[OK ] da co: 45 | [TREE] tu dinh nghia: 9
+
+==============================================================================
+NHOM: CANH KY TRUONG (missions/arena)   | 9 tep .lua | 58 ten duoc goi
+cay: missions\arena
+==============================================================================
+
+--- [ENG] 8 ten ---
+  Msg2Map                          x13   missions/arena/rule.lua:184
+  RemoteExecute                    x6    missions/arena/map.lua:51
+  ForbidEnmity                     x4    missions/arena/rule.lua:108
+  SetTmpCamp                       x2    missions/arena/rule.lua:106
+  SetDeathType                     x2    missions/arena/rule.lua:109
+  AddTimer                         x1    missions/arena/player.lua:360
+  ClearMapNpcWithName              x1    missions/arena/rule.lua:54
+  PreApplyDungeonMap               x1    missions/arena/rule.lua:317
+
+--- [???] 0 ten ---
+
+--- [LIB] 6 ten ---
+  CreateNewSayEx                   x3    missions/arena/npc/officer.lua:29 <= dailogsys\dailogsay.lua
+  GetRandomAData                   x2    missions/arena/rule.lua:237 <= lib\file.lua
+  set_MapType                      x1    missions/arena/rule.lua:37 <= item\forbiditem.lua
+  basemission_CallNpc              x1    missions/arena/rule.lua:55 <= missions\basemission\lib.lua
+  IsFreshmanMap                    x1    missions/arena/npc/officer.lua:69 <= maps\checkmap.lua
+  IsCityMap                        x1    missions/arena/npc/officer.lua:69 <= event\expansion\201006\fuguijinhe\fuguijinhe_item.lua; maps\checkmap.lua...
+
+[OK ] da co: 29 | [TREE] tu dinh nghia: 15
+
+==============================================================================
+NHOM: LOI DAI BANG HOI (missions/citywar_arena)   | 10 tep .lua | 74 ten duoc goi
+cay: missions\citywar_arena
+==============================================================================
+
+--- [ENG] 0 ten ---
+
+--- [???] 0 ten ---
+
+--- [LIB] 0 ten ---
+
+[OK ] da co: 51 | [TREE] tu dinh nghia: 23
+
+==============================================================================
+NHOM: HOAT DONG PHUONG BANG HOI (missions/tong)   | 41 tep .lua | 218 ten duoc goi
+cay: missions\tong
+==============================================================================
+
+--- [ENG] 17 ten ---
+  ForbitSkill                      x9    missions/tong/collectgoods/head.lua:220
+  SetMoveSpeed                     x9    missions/tong/collectgoods/head.lua:221
+  ForbitAura                       x9    missions/tong/collectgoods/head.lua:235
+  ForbidEnmity                     x9    missions/tong/collectgoods/head.lua:237
+  FileName2Id                      x5    missions/tong/collectgoods/npcpoint.lua:9
+  AddMapTrap                       x5    missions/tong/collectgoods/npcpoint.lua:16
+  SetSpecItemParam                 x5    missions/tong/collectgoods/npcpoint.lua:125
+  IniFile_Load                     x5    missions/tong/collectgoods/npcpoint.lua:206
+  IniFile_GetData                  x5    missions/tong/collectgoods/npcpoint.lua:210
+  SetAForbitSkill                  x3    missions/tong/collectgoods/head.lua:74
+  AddTempMagic                     x2    missions/tong/collectgoods/head.lua:72
+  SetImmedSkill                    x2    missions/tong/collectgoods/head.lua:73
+  ClearMapObj                      x2    missions/tong/collectgoods/head.lua:119
+  ClearMapNpcWithName              x2    missions/tong/tong_disciple/head.lua:90
+  TaskNo                           x1    missions/tong/collectgoods/award.lua:138
+  ChangeOwnFeature                 x1    missions/tong/tong_springfestival/schedule/fairy_smalltimer.lua:108
+  GetMapNpcWithName                x1    missions/tong/tong_springfestival/schedule/fairy_smalltimer.lua:116
+
+--- [???] 0 ten ---
+
+--- [LIB] 7 ten ---
+  GetTabFileData                   x72   missions/tong/collectgoods/npcpoint.lua:14 <= lib\file.lua
+  GetTabFileHeight                 x30   missions/tong/collectgoods/npcpoint.lua:8 <= lib\file.lua
+  gb_SetTask                       x9    missions/tong/collectgoods/mission.lua:38 <= gb_taskfuncs.lua; lib\gb_taskfuncs.lua
+  OnNewWorldDefault                x6    missions/tong/collectgoods/schedule/newworld.lua:6 <= maps\newworldscript_default.lua
+  OnLeaveWorldDefault              x6    missions/tong/collectgoods/schedule/newworld.lua:11 <= maps\newworldscript_default.lua
+  gb_GetTask                       x3    missions/tong/collectgoods/head.lua:145 <= gb_taskfuncs.lua; lib\gb_taskfuncs.lua
+  selectNextTask                   x1    missions/tong/collectgoods/award.lua:138 <= task\random\task_head.lua
+
+[OK ] da co: 78 | [TREE] tu dinh nghia: 116
+
+==============================================================================
+NHOM: CO THAP BANG HOI (missions/tong_guta)   | 40 tep .lua | 153 ten duoc goi
+cay: missions\tong_guta
+==============================================================================
+
+--- [ENG] 35 ten ---
+  Msg2Map                          x27   missions/tong_guta/guta_map.lua:96
+  GetNpcId                         x23   missions/tong_guta/guta_npc.lua:119
+  RemoteExecute                    x8    missions/tong_guta/guta_relay.lua:141
+  AddTimer                         x6    missions/tong_guta/maintain_task.lua:87
+  GetNpcCurMaxLife                 x5    missions/tong_guta/level/level2.lua:63
+  GetNpcCurLife                    x5    missions/tong_guta/level/level2.lua:92
+  FindFreeRoomByWH                 x3    missions/tong_guta/item/equipbox.lua:33
+  ClearNpcDamageState              x3    missions/tong_guta/level/level2.lua:54
+  AddNpcEx                         x2    missions/tong_guta/config.lua:21
+  ForbidEnmity                     x2    missions/tong_guta/guta_map.lua:43
+  DisabledUseHeart                 x2    missions/tong_guta/guta_map.lua:48
+  SetDeathType                     x2    missions/tong_guta/guta_map.lua:54
+  SetItemBindState                 x2    missions/tong_guta/guta_shop.lua:6
+  GetItemDiceItemInfo              x2    missions/tong_guta/roll_item.lua:60
+  GetItemQuality                   x2    missions/tong_guta/item/rerandom.lua:102
+  GetGlodEqIndex                   x2    missions/tong_guta/item/rerandom.lua:139
+  NpcSetHide                       x2    missions/tong_guta/level/level2.lua:52
+  NpcCastSkill                     x2    missions/tong_guta/level/level3.lua:49
+  RemoveNpcSkillState              x2    missions/tong_guta/level/level4.lua:86
+  PreApplyDungeonMap               x1    missions/tong_guta/config.lua:7
+  SubWorldIdx2MapCopy              x1    missions/tong_guta/guta_head.lua:200
+  SetNpcActiveRegion               x1    missions/tong_guta/guta_npc.lua:153
+  IsGameServerReady                x1    missions/tong_guta/guta_relay.lua:238
+  GameServerId2ConnectIdx          x1    missions/tong_guta/guta_relay.lua:279
+  ConnectIdx2GameServerId          x1    missions/tong_guta/guta_relay.lua:391
+  GetHostPlayerCount               x1    missions/tong_guta/guta_relay.lua:466
+  ConsumeEquiproomItem             x1    missions/tong_guta/playerdeath.lua:42
+  ApplyItemDice                    x1    missions/tong_guta/roll_item.lua:32
+  AddDiceItemInfo                  x1    missions/tong_guta/roll_item.lua:39
+  ITEM_SetExpiredTime              x1    missions/tong_guta/roll_item.lua:46
+  GetItemStackCount                x1    missions/tong_guta/roll_item.lua:88
+  DelTimer                         x1    missions/tong_guta/level/head.lua:38
+  SetNpcCurLife                    x1    missions/tong_guta/level/level2.lua:64
+  KillNpcWithIdx                   x1    missions/tong_guta/level/level5.lua:266
+  PIdx2NpcIdx                      x1    missions/tong_guta/level/level5.lua:266
+
+--- [???] 6 ten ---
+  GuTaUi_SetData                   x6    missions/tong_guta/ui_client.lua:48
+  GuTaUi_AppendRankData            x6    missions/tong_guta/ui_client.lua:92
+  pFuncton                         x1    missions/tong_guta/guta_relay.lua:161
+  GuTaUi_Open                      x1    missions/tong_guta/ui_client.lua:37
+  GuTaUi_ClearLevelInfo            x1    missions/tong_guta/ui_client.lua:62
+  GuTaUi_ClearRankData             x1    missions/tong_guta/ui_client.lua:84
+
+--- [LIB] 6 ten ---
+  NewCommonShareData               x4    missions/tong_guta/guta_relay.lua:9 <= lib\common_sharedata.lua
+  CreateNewSayEx                   x3    missions/tong_guta/guta_map.lua:11 <= dailogsys\dailogsay.lua
+  g_GiveItemUI                     x2    missions/tong_guta/item/rerandom.lua:172 <= dailogsys\dailogsay.lua
+  NewStateMachine                  x1    missions/tong_guta/guta_statemachine.lua:3 <= lib\statemachine.lua
+  join                             x1    missions/tong_guta/signup_npc.lua:196 <= lib\basic.lua; lib\common.lua...
+  NewTemplateStateMachine          x1    missions/tong_guta/level/level5.lua:10 <= lib\statemachine.lua
+
+[OK ] da co: 83 | [TREE] tu dinh nghia: 23
+
+==============================================================================
+NHOM: THANH BAO BANG HOI (missions/tongcastle)   | 9 tep .lua | 105 ten duoc goi
+cay: missions\tongcastle
+==============================================================================
+
+--- [ENG] 17 ten ---
+  GetNpcId                         x7    missions/tongcastle/guard.lua:74
+  RemoteExecute                    x5    missions/tongcastle/guideperson.lua:245
+  GetTmpCamp                       x3    missions/tongcastle/guard.lua:22
+  SetTmpCamp                       x3    missions/tongcastle/guard.lua:73
+  Msg2Map                          x3    missions/tongcastle/tongcastle.lua:464
+  AddMapTrap                       x2    missions/tongcastle/game.lua:50
+  NpcName2Replace                  x2    missions/tongcastle/guideperson.lua:93
+  GetAroundNpcList                 x1    missions/tongcastle/guard.lua:19
+  GetItemStackCount                x1    missions/tongcastle/guard.lua:66
+  SetItemStackCount                x1    missions/tongcastle/guard.lua:68
+  MakeDateTime                     x1    missions/tongcastle/tongcastle.lua:514
+  AddTimer                         x1    missions/tongcastle/tongcastle.lua:591
+  AddNpcEx                         x1    missions/tongcastle/tongcastle.lua:932
+  GetNpcAroundNpcList              x1    missions/tongcastle/treedeath.lua:81
+  NpcCastSkill                     x1    missions/tongcastle/treedeath.lua:99
+  NPCINFO_GetNpcCurrentLife        x1    missions/tongcastle/treedeath.lua:102
+  NPCINFO_SetNpcCurrentLife        x1    missions/tongcastle/treedeath.lua:103
+
+--- [???] 0 ten ---
+
+--- [LIB] 5 ten ---
+  basemission_CallNpc              x3    missions/tongcastle/game.lua:83 <= missions\basemission\lib.lua
+  CreateNewSayEx                   x2    missions/tongcastle/guard.lua:88 <= dailogsys\dailogsay.lua
+  clone                            x2    missions/tongcastle/tongcastle.lua:687 <= event\chunjie_jieri\201001\plant.lua; event\jiefang_jieri\201004\triumph_drum\head.lua...
+  set_MapType                      x1    missions/tongcastle/game.lua:166 <= item\forbiditem.lua
+  g_AskClientNumberEx              x1    missions/tongcastle/guideperson.lua:114 <= dailogsys\dailogsay.lua
+
+[OK ] da co: 58 | [TREE] tu dinh nghia: 25
+
+==============================================================================
+NHOM: BANG CHIEN (missions/tongwar + event/tongwar)   | 24 tep .lua | 266 ten duoc goi
+cay: missions\tongwar, event\tongwar, tongpkmessage
+==============================================================================
+
+--- [ENG] 16 ten ---
+  SetDeathType                     x3    missions/tongwar/match/head.lua:140
+  AddMapTrap                       x2    missions/tongwar/tongwar_autoexec.lua:26
+  GetMapInfoFile                   x2    missions/tongwar/match/head.lua:211
+  ClearMapTrap                     x2    missions/tongwar/match/mission.lua:23
+  ClearMapObj                      x2    missions/tongwar/match/mission.lua:24
+  CreateChannel                    x2    missions/tongwar/match/mission.lua:135
+  DeleteChannel                    x2    missions/tongwar/match/mission.lua:148
+  ForbidEnmity                     x2    missions/tongwar/match/mission.lua:179
+  LeaveChannel                     x2    missions/tongwar/match/mission.lua:183
+  Tm2Time                          x2    missions/tongwar/trap/tongwar_trap.lua:67
+  EnterChannel                     x2    missions/tongwar/trap/tongwar_trap.lua:99
+  ST_SyncMiniMapObj                x1    missions/tongwar/match/head.lua:57
+  FileName2Id                      x1    missions/tongwar/match/head.lua:271
+  IniFile_Load                     x1    missions/tongwar/match/head.lua:382
+  IniFile_GetData                  x1    missions/tongwar/match/head.lua:386
+  GetAllEquipment                  x1    event/tongwar/tongwar_signup.lua:36
+
+--- [???] 5 ten ---
+  quan                             x2    missions/tongwar/match/mission.lua:93
+  CityName                         x1    event/tongwar/head.lua:417
+  ta                               x1    event/tongwar/head.lua:535
+  nay                              x1    event/tongwar/head.lua:535
+  Quang                            x1    event/tongwar/headinfo.lua:154
+
+--- [LIB] 7 ten ---
+  CreateTaskSay                    x71   event/tongwar/head.lua:172 <= task\system\task_string.lua
+  GetTabFileData                   x8    missions/tongwar/tongwar_autoexec.lua:24 <= lib\file.lua
+  GetTabFileHeight                 x4    missions/tongwar/tongwar_autoexec.lua:22 <= lib\file.lua
+  split                            x3    event/tongwar/event.lua:33 <= item\fireworks_callback.lua; item\valentine_callback.lua...
+  gb_GetTask                       x3    event/tongwar/head.lua:77 <= gb_taskfuncs.lua; lib\gb_taskfuncs.lua
+  sf_join                          x1    missions/tongwar/match/mission.lua:168 <= battles\boss\head.lua; battles\butcher\head.lua...
+  CreateNewSayEx                   x1    event/tongwar/head.lua:156 <= dailogsys\dailogsay.lua
+
+[OK ] da co: 132 | [TREE] tu dinh nghia: 106
+
