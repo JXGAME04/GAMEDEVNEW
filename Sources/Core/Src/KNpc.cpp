@@ -4432,6 +4432,15 @@ void KNpc::ServeMove(int MoveSpeed)
 			return;
 		}
 		m_nNeedFixPos++;
+		// Van chan "chay tai cho": co nay duoc SyncNpcMin ha ve 0 moi lan goi
+		// dong bo nan vi tri. Neu bi chan lien tuc ~2/3 giay ma KHONG co goi nao
+		// nan (NPC ket that su / server coi no dang dung yen) thi dung that -
+		// tranh canh "dung yen ma chan van chay" keo dai vo han.
+		if (m_nNeedFixPos > 12)
+		{
+			m_nNeedFixPos = 0;
+			DoStand();
+		}
 		return;
 	}
 	else if (nRet == -1)
