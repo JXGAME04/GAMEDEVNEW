@@ -1241,7 +1241,7 @@ BOOL KMyApp::GameLoop()
 	static int nGameFps = 0;
 	// frame-time probe (PaintLog=1): where does a slow pass spend its time
 	DWORD	nLogT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
-	DWORD	nLogTick = 0, nLogPaint = 0;
+	DWORD	nLogTick = 0, nLogPaint = 0, nLogShift = 0;
 	int	nLogCross = 0;
 	DWORD	nLogCntBefore = m_GameCounter;
 	g_NetConnectAgent.Breathe();
@@ -1351,8 +1351,13 @@ BOOL KMyApp::GameLoop()
 				int	nAlpha = (int)(nPaintElapse * (DWORD)GAME_FPS - (m_GameCounter - 1) * 1000);
 				if (nAlpha < 0)
 					nAlpha = 0;
+				// Do rieng POSSHIFT: truoc day chi phi nay bi tinh vao "paint=" cua
+				// [SPIKE] du no chay TRUOC UiPaint (muc 12.5 DIEUTRA_KHUNG_DONG_NGUOI).
+				DWORD	nLogShiftT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
 				if (g_pCoreShell->OperationRequest(GOI_PROCFRAME_POSSHIFT, (unsigned int)nAlpha, 1000) == 2)
 					nLogCross = 1;
+				if (g_nPaintLog > 0)
+					nLogShift = timeGetTime() - nLogShiftT0;
 			}
 			UiPaint(nGameFps);
 			bPainted = TRUE;
@@ -1360,7 +1365,7 @@ BOOL KMyApp::GameLoop()
 	}
 
 	if (g_nPaintLog > 0 && bPainted)
-		nLogPaint = timeGetTime() - nLogT0 - nLogTick;
+		nLogPaint = timeGetTime() - nLogT0 - nLogTick - nLogShift;
 	if (m_GameCounter * 1000 >= m_Timer.GetElapse() * GAME_FPS)
 	{
 		//UiPaint(nGameFps);
@@ -1389,8 +1394,8 @@ BOOL KMyApp::GameLoop()
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[SPIKE] t=%u total=%u logic=%u paint=%u tick=%d painted=%d cross=%d\n",
-					nLogT0, nLogTotal, nLogTick, nLogPaint, (int)(m_GameCounter != nLogCntBefore), (int)bPainted, nLogCross);
+				fprintf(pLog, "[SPIKE] t=%u total=%u logic=%u shift=%u paint=%u tick=%d painted=%d cross=%d\n",
+					nLogT0, nLogTotal, nLogTick, nLogShift, nLogPaint, (int)(m_GameCounter != nLogCntBefore), (int)bPainted, nLogCross);
 				fclose(pLog);
 			}
 		}
