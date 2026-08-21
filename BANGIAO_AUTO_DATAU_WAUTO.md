@@ -777,97 +777,64 @@ r5h) đã đủ.
 Binary: **CoreClient.dll 20/08 19:14 (2.206.208 B)** + CoreServer.dll x64 18:41. Vẫn **CẦN
 RESTART GameServer** cho tính năng danh bạ.
 
-### 13.15 — 21/08 (`f5a38c40` + phản biện `adc57b19` + `8bcd1772`): hết vòng "phù về không bán – Xa Phu – lên map – phù về lại"; món khoe cất rương
+### 13.15 — 21/08 (`d8d27119`): "phù về không bán rác" + món khoe cất rương — ĐỌC KÈM `BANGIAO_PHIEN_2108_AUTODATAU.md` mục 0 (luật chủ game)
 
-**Người dùng báo (21/08 sáng):** *(1)* "khi Auto vừa mở Dã Tẩu, tạm đi treo khi không thể hoàn
-thành nhiệm vụ thì đôi lúc về thành khi full đồ **không tự bán** mà cứ tới Xa Phu rồi lên lại map
-xong phù về lại"; *(2)* "đang làm nhiệm vụ, full [túi] phù về **không bán** mà cứ tới Xa Phu rồi
-lên lại map xong phù về lại"; *(3)* "làm nhiệm vụ khoe đồ xong **thay vì bán thì gửi món đó vào
-rương**".
+**Người dùng báo:** *(1)* "vừa treo xong... đôi lúc về thành khi full đồ không tự bán mà cứ tới Xa Phu
+rồi lên lại map xong phù về lại"; *(2)* "đang làm nhiệm vụ full [túi] phù về không bán... lặp như trên";
+*(3)* "làm nhiệm vụ khoe đồ xong thay vì bán thì gửi món đó vào rương".
 
-**A. Gốc bệnh của (1)+(2) — một cơ chế duy nhất:** TP *"Về thành khi túi đầy"* của tab Hậu cần
-(`ATYPE_TP_FULLITEM`, S3Client.cpp:883) **không bị khóa theo máy Dã Tẩu** (chỉ MOVE/RETURN mới
-bị khóa bởi `nDT`). Đang `DTP_FARM` (loại 4, nDT=2) túi đầy → TP phù về → `DTP_FARM` thấy
-`nMap != nDTMapId` → coi là "bị đá khỏi map" → `EXEC → GOXAFU` → lên lại map → túi vẫn đầy → TP
-bắn tiếp. **Không ai bán** vì Hậu cần bị chặn (nDT≠0), còn `DTP_RETURN` (nơi r3 đặt "về thành
-thì bán rác trước") **không nằm trên đường đi này**. Kịch bản (1) là cùng đường: hết hạn treo
-(15') lúc đang đứng trên map nhiệm vụ → `IDLE → FARM` → lặp y hệt. Ngoài ra **FARM không hề
-kiểm túi**: tắt TP thì túi đầy không nhặt được cuộn → 20' "không tiến triển" → skip.
+**🔴 Luật chủ game chốt trong phiên (sau khi bác 3 vòng vá đầu `f5a38c40`/`adc57b19`/`8bcd1772`):**
+không tự ý sửa cấu trúc auto; "full rương" = mức **tab Cơ bản** ("Đầy hành trang" + cỡ đồ
+`bCheckTPIBox/nTPiboxSel`); bán rác dùng **bộ lọc sẵn** (tab Hậu cần "Bán rác" + *Bán giữ lọc đồ / Bán hết
+đồ* `nSelSell`; danh sách **Lọc** tab Nhặt đồ `nFtMagic`; "Giữ nhẫn/dây/bội cấp >"); luồng: **phù về →
+có rác → chạy Hậu cần (tự bán) → rồi mới chạy Dã Tẩu**. Các thứ đã gỡ: FARM tự kiểm túi <5 ô bán tại chỗ
+trên map luyện, cổng chặn TP túi đầy, phù tự chế, guard cất đồ bước 5, nhường/phù ở nhánh SELLJUNK hết rác.
 
-**B. Sửa (chỉ `CoreShell.cpp`, client):**
-1. `DTP_FARM`: **< 5 ô trống** → bật "Bán vật phẩm": `DT_BagRelease` → `DTP_SELLJUNK` bán tại
-   chỗ (nDTEngaged=2, vẫn đánh), đủ ≥ 8 ô → `IDLE → FARM` tiếp. Tắt "Bán vật phẩm": bật "Về thành"
-   thì **phù về** (15 s/lần, `g_uDTSellPortalT`) để tới thành nhường Hậu cần (mục 3); không có
-   gì để dọn → treo 15' có lời rõ (PB F4 — trước đó rơi vào SELLJUNK = treo câm).
-2. **Cổng TP túi đầy**: `ATYPE_TP_FULLITEM` trả 0 khi `nDTEngaged != 0` **và** `DT_Process` vừa
-   chạy trong nhịp (`g_uDTTickT`, < 1,5 s) — tắt ô Dã Tẩu / treo / nhường máy là TP chạy lại
-   bình thường. Các TP khác (máu/mana/hết thuốc/đầy tiền/đồ hỏng) **không khóa** — chúng được
-   xử lý bằng mục 3.
-3. **Pha mới `DTP_YIELD` (nhường máy cho Hậu cần)**: FARM phát hiện đang ở **thành** — thành có
-   Dã Tẩu **hoặc** bất kỳ map không fight-mode (phù về có thể rơi vào thôn không có Dã Tẩu — PB
-   r2-1; chờ 1,5 s sau khi đổi map cho fight-mode đồng bộ, `g_uDTMapT`) — (bị TP/chết/bấm tay đưa
-   về) + bật "Về thành" + cách lần nhường trước ≥ `DT_YIELD_GAP` (3')
-   → `DT_Yield`: `nHomeStep=0`, trả 0 để `ATYPE_RETURN` chạy **bước 0-8** (bán/mở rương/rút/sửa/
-   cất/mua thuốc/giữ tiền); tới **bước 9** (sắp ra Xa Phu lên map luyện công) hoặc hết 5' / đổi
-   map / fight-mode (sau 3 s ân hạn) / tắt "Về thành" → lấy lại máy: loại 4 đang về trả → GOTONPC;
-   loại khác → `EXEC` (tìm lại đồ — Hậu cần có thể đã cất món vào rương, EXEC kéo ra). Không bật
-   "Về thành" nhưng bật "Bán vật phẩm" + < 10 ô → SELLJUNK với `nDTBackXaFu=1` → bán xong ra thẳng
-   Xa Phu. **Ở thành mà túi vẫn < 5 ô và không còn cách nào dọn** (tắt cả hai ô / vừa nhường xong mà
-   Hậu cần không dọn được gì) → `DT_Hold` 15' có lời — lên lại map chỉ lặp y như cũ (PB r2-1/r2-4:
-   treo = nhả máy nên TP/Hậu cần của người chơi chạy lại).
-4. `DTP_SELLJUNK` **hết rác mà vẫn chật**: bật "Về thành" → ở thành thì YIELD; ngoài thành thì
-   phù về (15 s/lần) rồi YIELD khi tới; còn lại treo như cũ. Loại 4 phù về xong đặt
-   `nDTBackXaFu=1` (bán xong ra Xa Phu, khỏi ghé NPC).
-5. **Mốc set "Hành trang đã đầy, cần ít nhất N ô trống"** (`seasonnpc.lua:463`, N tới 5+24):
-   đọc N (`DT_NumAfter`) → `g_nDTSellMin = N`, `g_nDTSellNeed = N+2` (kẹp N ≤ 40). Trước đó
-   SELLJUNK đủ 8 ô thoát ngay → NPC lại báo đầy → **lặp vô tận ở mốc set** (lỗi tiềm ẩn chưa ai
-   gặp). Mọi lối vào SELLJUNK đi qua `DT_SellStart()` (reset ngưỡng 8/5).
-6. **Món khoe (loại 3) → rương** (yêu cầu 3): server `Task_Accept_03` thành công → `EndGiveBox`
-   hoàn món về túi (server **cũ** không có EndGiveBox thì kẹt `pos_affairitem`). Client: ghi
-   `g_dwDTKhoePend = ID` **ngay nhịp đặt item vào hộp** (PB F1: ghi sau nút OK là vô dụng — nhịp
-   OK thực tế đi nhánh "bấm OK rỗng" vì item đã ở `pos_affairitem`); thấy rương thưởng
-   (`uFinSeq`, cả catch-all lẫn WAITDLG) → `DT_KhoeXong` chốt `g_dwDTKhoeId`; đầu
-   `DTP_GOTONPC` → `DT_CatKhoe`: tìm theo ID → còn trong hộp giao thì `DT_ThuHoiBox` trước →
-   `DT_EnsureUnlock` (rương đang mở hoặc mật khẩu tab Hậu cần) → `DT_ChestRoomFor` (rương
-   chính → mở rộng theo `nSelStore` y như Hậu cần bước 5) → `DT_BagToBox` (gói
-   `c2sdnmbr_exchangeitem` src=`pos_equiproom`). Tối đa 12 nhịp; rương khóa không mật khẩu /
-   rương đầy → báo vàng, để lại túi. `DT_IsQuestItem` **cấm bán** món đang chờ cất (Hậu cần lẫn
-   SELLJUNK). `DT_KhoeXong` **chỉ chốt khi món đã về `pos_equiproom`** (= tín hiệu server hoàn
-   lại; cửa sổ thưởng TRỄ của nhiệm vụ trước tới lúc món còn trong hộp giao thì không chốt — PB
-   r2-3); `DT_CatKhoe` **không rút hộp giao** nữa (chờ), bỏ qua món == `nDTItemIdx` (kiểm TRƯỚC
-   guard TURNIN) và khi `nDTStep==DTI_TURNIN`. Trả trượt / hội thoại nhiệm vụ hiện lại → hủy pend.
-7. Hậu cần **bước 5 "cất đồ"** nay bỏ qua `DT_GiuTrongTui` (PB F3 + r2-2): giữ trong túi **món đã
-   chốt nộp** (`nDTItemIdx`), **món khoe DT tự cất**, và — chỉ khi TẮT ô "lấy từ rương" — ứng viên
-   theo luật. Không dùng thẳng `DT_IsQuestItem` vì luật loại 3 là dòng ma phổ biến ("sinh lực
-   1-50"…) → cả túi đều khớp → Hậu cần không cất được gì → nhường máy vô ích.
+**A. Gốc (1)+(2):** phù "Đầy hành trang" (`ATYPE_TP_FULLITEM`, S3Client.cpp:883) **không bị khóa theo máy
+Dã Tẩu** (chỉ MOVE/RETURN khóa theo `nDT`). Bắn giữa `DTP_FARM` → về thành, FARM thấy `nMap != nDTMapId`
+→ "bị đá khỏi map" → `EXEC → GOXAFU` → lên lại map → bắn tiếp. Không ai bán: Hậu cần bị chặn (nDT≠0),
+`DTP_RETURN` (nơi r3 đặt "về thành bán trước") không nằm trên đường này. (1) là cùng đường (hết hạn treo
+trên map nhiệm vụ → `IDLE → FARM`). **Cộng thêm lỗi thật ở bước bán rác Hậu cần (mục C)** → "đôi lúc có
+rác mà không bán" ngay cả khi treo.
 
-**C. Thông báo mới (để nhận diện khi test):** `Túi gần đầy khi đang đánh quái - bán bớt rác tại
-chỗ rồi đánh tiếp.` · `Bị đưa về thành giữa lúc đánh quái - để Hậu cần bán/cất đồ, mua thuốc xong
-sẽ ra Xa Phu đi lại.` · `Hậu cần dọn xong - Dã Tẩu làm tiếp.` / `Không chờ Hậu cần nữa - ...` ·
-`Hết rác để bán mà túi vẫn chật - ...` · `Túi đầy (cần ít nhất N ô trống) - ...` · `Khoe xong - cất
-món khoe vào rương để lần sau dùng lại...` → `Đã cất món khoe vào rương - ...`.
+**B. Sửa (FARM, nhánh "bị ra khỏi map"):** chờ 1,5 s sau đổi map (`g_uDTMapT`; fight-mode của mình đồng
+bộ sau id map) → ở **thành** (thành Dã Tẩu ∨ `!m_FightMode` — phù về có thể rơi vào thôn không có Dã
+Tẩu) và (**có rác** `DT_CoRac` ∨ **vẫn đầy theo mức tab Cơ bản** `DT_TuiDayTP` — cùng phép đo với TP):
+- bật "Về thành" → **`DTP_YIELD`** (`DT_Yield`): `nHomeStep=0`, trả 0 để `ATYPE_RETURN` chạy bước 0-8
+  (bán rác/mở rương/rút/sửa/cất/mua bình/giữ tiền); tới bước 9 (sắp ra Xa Phu) hoặc hết 5' / đổi map /
+  fight-mode (sau 3 s) / tắt "Về thành" → lấy lại máy: loại 4 TURNIN → GOTONPC, loại 1-6 → `EXEC`
+  (→ GOXAFU), khác → IDLE. Giãn ≥ 3' giữa 2 lần nhường (`DT_YIELD_GAP`).
+- chưa bật "Về thành" nhưng bật "Bán rác" → `DTP_SELLJUNK` bán **hết** rác (`g_nDTSellNeed=999`) bằng
+  chính bộ lọc rồi `nDTBackXaFu → GOXAFU`.
+- không dọn được → treo 15' có lời (treo = nhả máy).
 
-**D. Phản biện bản vá (1 agent Opus, đọc mã thật):**
-- *Vòng 1 (soi `f5a38c40`) — 7 CONFIRMED, vá trong `adc57b19`:* F1 (nặng, mục 6) · F2 · F3 · F4 ·
-  F5 (khoảng nhường 10' → 3') · F7 (kẹp N) · F8 (dead store `nDTBackXaFu`, vô hại). Bị bác:
-  `DT_SellResume` ưu tiên `nDTBackXaFu` trước TURNIN (không có trạng thái tới được).
-- *Vòng 2 (soi chính `adc57b19`) — 2 NẶNG + 2 vừa, vá trong `8bcd1772`:* **R2-1** phù về (F4) rơi
-  vào thôn KHÔNG có Dã Tẩu → nhánh "bị ra khỏi map" không coi đó là thành → `EXEC→GOXAFU` → lặp
-  **vô hạn** đốt phù (yield-timer không bao giờ đổi, watchdog stall bị re-stamp) — nay "thành" =
-  DT-town ∨ !fight-mode + treo có lời khi hết cách; **R2-2** guard bước 5 theo lớp luật → Hậu cần
-  không cất được gì khi làm khoe dòng phổ biến → `DT_GiuTrongTui`; **R2-3** cửa sổ thưởng trễ chốt
-  món còn trong hộp giao → `DT_CatKhoe` rút món khỏi hộp đang nộp → chốt chỉ khi món về túi;
-  **R2-4** `return 2` khi chờ phù giữ cổng TP đóng trong lúc lặp R2-1 (đóng cùng R2-1); R2-5 (F4
-  không gọi `DT_PortalPull`) bỏ qua vì V07 — ngoài thành rương không kéo được; R2-6 xóa
-  `g_dwDTKhoeId` ở FAILREQ → bỏ. Kết luận vòng 2: sau vá, vòng xấu nhất là 1 chuyến + 1 treo 15'
-  mỗi ~18' khi cấu hình không có gì dọn túi — có lời báo, không còn lặp mù.
+**C. Lỗi thật trong Hậu cần bước 1 "bán rác":** vòng quét theo hàng, `nSelIdx` = món cuối hàng đạt điều
+kiện; gặp món **giữ lại** theo bộ lọc (nhẫn/dây/bội cấp cao, dòng trong Lọc, +all skill 139) thì
+`nSelIdx = 0; continue;` → **xóa món rác đứng trước cùng hàng** → hàng đó không bao giờ bán (món giữ 2×4
+ở cột cuối chặn 4 hàng). Sửa: **`DT_LaRac`** (một bộ lọc, y nguyên luật cũ kể cả ngựa/mặt nạ bán ngay
+không qua lọc) dùng chung cho bước 1 và `DTP_SELLJUNK`; chọn món rác **đầu tiên**.
 
-**E. Còn nợ / chưa kiểm chứng:** chưa test thật trong game bất cứ mục nào ở trên (client đang
-chạy là bản 09:20, **phải thoát game vào lại** để nạp `CoreClient.dll` 10:56 = `8bcd1772`). Chưa
-chạy phản biện vòng 3 (soi `8bcd1772`). TP hết thuốc/đầy
-tiền/đồ hỏng khi Hậu cần **không** bật mục tương ứng vẫn lặp (mỗi 3' nhường 1 lần) — cấu hình
-người dùng, có lời báo. Vòng sell của Hậu cần bước 1 có quirk cũ: `nSelIdx` của hàng bị món bị
-lọc đứng sau xóa mất (không sửa, ngoài phạm vi).
+**D. Món khoe (3):** `g_dwDTKhoePend` ghi **lúc đặt vào hộp giao** (nhịp OK đi nhánh "bấm OK rỗng" —
+mã sau `SendUiCmdScript` cuối GIVEBOX không bao giờ chạy); `DT_KhoeXong` chốt `g_dwDTKhoeId` **chỉ khi
+món đã về `pos_equiproom`** (server `EndGiveBox` hoàn trước khi bung thưởng; cửa sổ thưởng trễ của nhiệm vụ
+trước tới lúc món còn trong hộp thì không chốt); đầu `DTP_GOTONPC` → `DT_CatKhoe`: `DT_EnsureUnlock` →
+`DT_ChestRoomFor` (theo `nSelStore`) → `DT_BagToBox` (gói `c2sdnmbr_exchangeitem` src=`pos_equiproom`);
+12 nhịp; không cất khi `nDTStep==DTI_TURNIN` hoặc món == `nDTItemIdx`; không rút hộp giao.
+`DT_IsQuestItem` cấm bán món đang chờ cất. Trả trượt / hội thoại hiện lại → hủy pend.
+
+**E. Mốc set "cần ít nhất N ô":** đọc N → `g_nDTSellMin=N`, `g_nDTSellNeed=N+2` (kẹp ≤ 40); mọi lối vào
+SELLJUNK qua `DT_SellStart()` (reset 8/5). Trước đó SELLJUNK đủ 8 ô thoát ngay → NPC lại báo đầy → lặp.
+
+**F. Thông báo mới:** `Phù về thành có rác - để Hậu cần bán rác/dọn túi xong sẽ chạy Dã Tẩu tiếp.` ·
+`Hậu cần dọn xong - Dã Tẩu làm tiếp.` / `Không chờ Hậu cần nữa - ...` · `Phù về thành có rác (chưa bật 'Về
+thành') - bán rác theo bộ lọc rồi ra Xa Phu đi tiếp.` · `Hành trang đầy theo mức ở tab Cơ bản mà không dọn
+được ...` · `Túi đầy (cần ít nhất N ô trống) ...` · `Khoe xong - cất món khoe vào rương...` → `Đã cất món
+khoe vào rương - ...`.
+
+**G. Phản biện / nợ:** 2 vòng agent (Opus) trên các bản cũ bắt 11 lỗi thật (F1 ghi ID sau OK vô dụng; R2-1
+phù về rơi thôn không Dã Tẩu; R2-2 guard theo lớp luật; R2-3 cửa sổ thưởng trễ…) — phần còn giữ đã hấp thụ
+các sửa đó. **`d8d27119` chưa được agent soi lại; chưa test thật.** Cạm bẫy mới: phù về có thể rơi vào thôn
+không có Dã Tẩu → mọi nhánh "về thành" phải xét `!m_FightMode`, và fight-mode đồng bộ SAU id map 1-2 nhịp.
 
 ---
 
