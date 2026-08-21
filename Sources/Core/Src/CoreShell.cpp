@@ -3247,6 +3247,8 @@ static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi 
 static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
 static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
 static int   g_nDTYieldMap = 0;		// map luc nhuong
+#define DT_YIELD_GAP (3u * 60u * 1000u)	// (PB F5) toi thieu giua 2 lan nhuong: du de chan ping-pong,
+										// du ngan de TP tien/do hong/thuoc lap lai van duoc Hau can xu ly
 static UINT  g_uDTSellPortalT = 0;	// lan cuoi SELLJUNK dung phu ve (het rac, nho Hau can)
 
 // (20/08 - F11 nguoi dung) item DAT YEU CAU nhiem vu Da Tau dang lam (loai 1/2/3):
@@ -3375,6 +3377,8 @@ static int DT_CatKhoe(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (!g_dwDTKhoeId)
 		return 0;
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	if (ea.nDTStep == DTI_TURNIN)
+		return 0;	// (PB F2) dang tren duong di TRA nhiem vu ke - de sau, khong cat nham mon sap nop
 	int nIdx = 0, nPlace = -1;
 	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
 	while (pIt && pIt->nIdx > 0)
@@ -3386,6 +3390,14 @@ static int DT_CatKhoe(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			break;
 		}
 		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	if (nIdx && nIdx == ea.nDTItemIdx)
+	{
+		// (PB F2) chinh mon nay vua duoc chot cho nhiem vu khoe KE TIEP - giu trong tui,
+		// tra xong lan nua se cat
+		g_dwDTKhoeId = 0;
+		g_nDTKhoeTry = 0;
+		return 0;
 	}
 	if (!nIdx || nPlace == pos_repositoryroom || nPlace == pos_exbox1room
 	 || nPlace == pos_exbox2room || nPlace == pos_exbox3room)
@@ -4174,8 +4186,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// (21/08 - "phu ve khong ban, toi xa phu, len map, phu ve lai") con do khong ban
 			// duoc (nguyen lieu/do khoa/do tim...): nho may HAU CAN don theo cau hinh cua no
 			// (cat ruong/ban/mua thuoc) roi lam tiep - dang ngoai thanh thi phu ve truoc. Moi
-			// 10 phut nhuong 1 lan; nhuong roi van chat thi treo nho nguoi don.
-			if (pAp->bReturn && uCurTime - g_uDTYieldT > 10u * 60u * 1000u)
+			// DT_YIELD_GAP nhuong 1 lan; nhuong roi van chat thi treo nho nguoi don.
+			if (pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
 			{
 				if (nOThanh)
 					return DT_Yield(nPlayerIdx, uCurTime, "<color=Yellow>HÕt r¸c ®Ó b¸n mµ tói vÉn chËt - ®Ó HËu cÇn cÊt r­¬ng/dän tói råi lµm tiÕp.");
@@ -4466,7 +4478,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// thoat ngay -> NPC lai bao day -> lap vo tan. Ngoai moc N = 5 nhu cu.
 			char szDay[160];
 			const int nCanO = DT_NumAfter(szQ, DTM_MSG_BAGFULL);
-			const int nCanOk = (nCanO > 5 && nCanO <= 60) ? nCanO : 5;
+			const int nCanOk = (nCanO > 5 && nCanO <= 40) ? nCanO : 5;	// tui 60 o, server hien toi 29
 			sprintf(szDay, "<color=Yellow>Tói ®Çy (cÇn Ýt nhÊt %d « trèng) - auto dän bít råi ch¹y tiÕp.", nCanOk);
 			const int nRet5 = DT_BagRelease(nPlayerIdx, pAp, uCurTime, szDay);
 			if (nCanOk > 5)
@@ -5170,7 +5182,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					nOThanhF = 1;
 					break;
 				}
-			if (nOThanhF && pAp->bReturn && uCurTime - g_uDTYieldT > 10u * 60u * 1000u)
+			if (nOThanhF && pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
 				return DT_Yield(nPlayerIdx, uCurTime, "<color=Cyan>BÞ ®­a vÒ thµnh gi÷a lóc ®¸nh qu¸i - ®Ó HËu cÇn b¸n/cÊt ®å, mua thuèc xong sÏ ra Xa Phu ®i l¹i.");
 			if (nOThanhF && pAp->bSellItem
 			 && Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 10)
@@ -5216,7 +5228,29 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// khong bat TP thi cuon roi khong nhat duoc -> 20 phut "khong tien trien". Nay <5 o
 		// trong la TU ban rac tai cho (DTP_SELLJUNK), du cho lai danh tiep.
 		if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
-			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói gÇn ®Çy khi ®ang ®¸nh qu¸i - b¸n bít r¸c t¹i chç råi ®¸nh tiÕp.");
+		{
+			if (pAp->bSellItem)
+				return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói gÇn ®Çy khi ®ang ®¸nh qu¸i - b¸n bít r¸c t¹i chç råi ®¸nh tiÕp.");
+			// (PB F4) nguoi choi TAT "Ban vat pham": khong ep vao SELLJUNK (= treo 15 phut) -
+			// bat "Ve thanh" thi phu ve, toi thanh FARM se nhuong Hau can cat ruong (DTP_YIELD);
+			// khong co gi de don thi treo co loi, khong lap mu.
+			if (pAp->bReturn && uCurTime - g_uDTYieldT > DT_YIELD_GAP)
+			{
+				if (uCurTime - g_uDTSellPortalT <= 15000u)
+				{
+					ea.uDTNext = uCurTime + 1000;	// dang cho phu chuyen map
+					return 2;
+				}
+				if (DT_UsePortal(nPlayerIdx))
+				{
+					g_uDTSellPortalT = uCurTime;
+					DT_Msg(nPlayerIdx, "<color=Yellow>Tói gÇn ®Çy (kh«ng bËt 'B¸n vËt phÈm') - phï vÒ thµnh nhê HËu cÇn cÊt ®å råi quay l¹i.");
+					ea.uDTNext = uCurTime + 1000;
+					return 2;
+				}
+			}
+			return DT_Hold(nPlayerIdx, "<color=Yellow>Tói gÇn ®Çy mµ auto kh«ng tù dän ®­îc - bËt 'B¸n vËt phÈm' hoÆc 'VÒ thµnh' (+ phï vÒ trong tói) ë tab HËu cÇn, hoÆc dän tói gióp auto.", uCurTime, 15 * 60 * 1000);
+		}
 		// DANH QUAI + DI TIM QUAI THEO BANG CUM THAT (ATYPE_FIGHT dung nCurMoveRet==3)
 		int nX, nY;
 		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
@@ -5373,14 +5407,17 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			DT_ClickItem(sSrc.nPlace, sSrc.nX, sSrc.nY);
 			DT_ClickItem(pos_affairitem, 0, 0);
 			DT_ClickItem(sSrc.nPlace, sSrc.nX, sSrc.nY);
+			// (21/08 - PB F1) nho ID mon khoe NGAY o nhip dat vao hop: nhip sau item da o
+			// pos_affairitem -> guard tren di nhanh "bam OK rong" (chinh la nut OK), khong
+			// toi duoc doan duoi; nItem o day la DUY NHAT mon dang dat. Tra XONG thi cat ruong.
+			if (ea.nDTQType == 3)
+				g_dwDTKhoePend = Item[nItem].GetID();
 			ea.nDTStep = DTI_TURNWAIT + 100;
 			ea.uDTNext = uCurTime + 900;
 			return 1;
 		}
 		SendUiCmdScript(1, cap.szBoxFunc);
 		ea.nDTStep = DTI_TURNWAIT;
-		if (ea.nDTQType == 3 && nItem > 0)
-			g_dwDTKhoePend = Item[nItem].GetID();	// (21/08) nho mon khoe - tra XONG thi cat ruong
 		ea.nDTItemIdx = 0;
 		ea.nDTPhase = DTP_WAITDLG;
 		ea.uDTNext = uCurTime + 1000;
@@ -9886,6 +9923,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 									if(nIdx > 0)
 									{
 										if(Item[nIdx].GetGenre() != item_equip)
+											continue;
+										// (21/08 - PB F3) item dat yeu cau nhiem vu Da Tau dang lam: de trong tui
+										// (cat vao ruong la may DT khong thay / khong lay ra duoc khi tat o lay-tu-ruong)
+										if(DT_IsQuestItem(nPlayerIdx, pApData, nIdx))
 											continue;
 										int x, y;
 										if(pApData->nSelStore == 0)
