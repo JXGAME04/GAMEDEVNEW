@@ -21,6 +21,25 @@ cổng chứ không phải nới. Và bỏ điều kiện *thời gian đã vào
 đường cho **nhảy bang đánh thuê**: vào bang trước giờ mở 1 phút là đánh được. Chủ game quyết thì
 làm theo, nhưng nên biết mình đang đổi cái gì.
 
+### 0.1 Chốt phạm vi thi công (chủ game trả lời 21/08)
+
+| Câu hỏi | Trả lời |
+|---|---|
+| "Giống 100% bản Linux" với Tín Sứ nghĩa là gì? | **Chép đúng hiện trạng Linux** — 2 tuyến Thành Đô ↔ Đại Lý, **chỉ ải Thiên Bảo Khố (map 395)**. Các khối bị VNG comment tắt (40 tuyến, 2 ải Phong Chi Kỵ / Sơn Thần Miếu, 3 mức cấp, đồng hồ 7200 giây, nâng danh hiệu Tín Sứ) **GIỮ NGUYÊN TRẠNG TẮT**. Chỉ đổi cấp 120 → 90. |
+| Ai restart GameServer sau mỗi đợt? | **Chủ game tự restart.** Claude sửa + build + đặt sẵn binary/script rồi báo. |
+
+⚠️ Hệ quả đã báo trước và chủ game chấp nhận: bản tự viết `tinhnang/thienbaokho` đang có Dịch Quan ở
+**7 thành**; thay bằng bản Linux thì còn **2 thành**. Đây là lựa chọn có ý thức, không phải sót.
+
+### 0.2 Yêu cầu bổ sung (21/08)
+
+- Tính năng nào bản dự án **trùng** thì **gỡ bản tự viết, thay bản Linux vào** (Lôi Đài Bang Hội ↔
+  `tinhnang/loidai`; Tín Sứ ↔ `tinhnang/thienbaokho`).
+- Phải giống 100% bản Linux **từ item đến hình ảnh**; **thiếu item thì làm thêm item**.
+- **Ưu tiên cao nhất: các hoạt động bang hội + BOSS BANG HỘI.**
+- Làm luôn **bang hội chiếm lĩnh trên bản đồ + thông tin thuế mỗi thành**.
+- **Mọi nhiệm vụ lúc nhận phải hiện thông tin ở Chỉ Nam Nhiệm Vụ (F11).**
+
 ---
 
 ## 1. BẢNG TỔNG — 30 GIÂY
