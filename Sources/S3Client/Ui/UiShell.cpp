@@ -4,6 +4,7 @@
 //	CreateTime:	2020-7-17
 *****************************************************************************************/
 #include "KWin32.h"
+#include "KWin32Wnd.h"	// g_GetMainHWnd (bo ve khi cua so thu nho)
 #include "KIniFile.h"
 #include "Elem/Wnds.h"
 #include "Elem/UiImage.h"
@@ -283,6 +284,13 @@ extern int	g_nPaintLog;	// S3Client.cpp: frame-time probe (PaintLog=1)
 
 void UiPaint(int nGameLoop)
 {
+	// Cua so bi THU NHO thi khong ai nhin thay gi ca: bo han mot khung ve tiet kiem
+	// tron ven 5-12ms x 60 khung/giay CPU. Quan trong khi choi nhieu nick - cac nick
+	// phu dang thu nho van ve du 60fps va tranh CPU voi nick dang choi.
+	// An toan: nhip logic 18Hz, mang (SendAllCommand) va tick auto deu nam o nhanh
+	// KHAC trong KMyApp::GameLoop, chay TRUOC cho goi UiPaint nay.
+	if (IsIconic(g_GetMainHWnd()))
+		return;
 	DWORD	nPdT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
 	if (g_pRepresentShell == NULL || 
 		g_pRepresentShell->RepresentBegin(false, 0) == false)

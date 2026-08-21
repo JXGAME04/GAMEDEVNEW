@@ -1265,6 +1265,14 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 	EnterCriticalSection(&m_RegionListAdjustCritical);
 	int	nFarBudget = 1;	// far off-screen regions: at most one per paint frame
 	int	nDeferred = 0;
+	// Ngan sach thoi gian cho ca vong: mot region prerender ton 10-40ms, ma khoi 3x3
+	// quanh tieu diem truoc day deu ve LAI NGAY trong CUNG mot khung => do duoc cu
+	// 95-100ms trong jx_paint.log (draw=258/100, draw=235/95). Nay chi region CHUA
+	// tieu diem duoc uu tien tuyet doi (nen duoi chan nguoi choi phai dung ngay),
+	// cac region ke ben chiu ngan sach; phan con lai hoan sang khung sau qua
+	// m_bRenderGround. Toi da ~8ms de con cho khau ve trong chu ky 16,67ms.
+	DWORD	dwPgT0 = timeGetTime();
+	const DWORD	dwPgBudgetMs = 8;
 	for (int i = 0; i < SPWP_NUM_REGIONS_IN_PROCESS_AREA; i++)
 	{
 		if (m_pInProcessAreaRegions[i] == NULL)
@@ -1281,12 +1289,20 @@ void KScenePlaceC::PrerenderGround(bool bForce)
 			nDx = -nDx;
 		if (nDy < 0)
 			nDy = -nDy;
-		if (nDx <= 1 && nDy <= 1)
+		if (nDx == 0 && nDy == 0)
 		{
-			// on/near the screen (3x3 around the focus covers the whole view):
-			// always prerender right away, otherwise a map change shows stale
-			// ground under the player for a few frames
+			// region CHUA tieu diem: luon ve ngay, khong chiu ngan sach - neu hoan thi
+			// nen ngay duoi chan nguoi choi se bi cu vai khung, rat de thay.
 			m_pInProcessAreaRegions[i]->PrerenderGround(false);
+		}
+		else if (nDx <= 1 && nDy <= 1)
+		{
+			// 8 region ke ben (van trong tam nhin o ria): ve ngay NEU con ngan sach,
+			// het ngan sach thi hoan sang khung sau thay vi keo dai khung nay.
+			if (timeGetTime() - dwPgT0 < dwPgBudgetMs)
+				m_pInProcessAreaRegions[i]->PrerenderGround(false);
+			else
+				nDeferred++;
 		}
 		else if (nFarBudget > 0)
 		{
