@@ -210,6 +210,23 @@ bool JxReplay_Init()
 	// Gan hai chieu, dung thu tu ban tham chieu.
 	g_pRepresentShell->SetJxReplay((void*)l_pJxReplay);
 	l_pJxReplay->SetDrawInterface((void*)JxrGetDrawAdapter());
+
+	// BAT CHE DO CHUP TRANG THAI BAN DAU - THIEU CAI NAY THI PHAT LAI DEN NEN.
+	// jxreplay.dll co mot bo theo doi (REC vtable o 6, 0x10007700) chay MOI lan ve,
+	// KE CA khi chua bam quay. No ghi nho cac anh da tao / da ve len anh, roi StartRec
+	// xa toan bo vao dau tep. Nhung moi nhanh bi KEP boi mot co rieng:
+	//    nType 1  CreateImage           kiem [K2DREC+0x5F4] <- SetParam(1, x)
+	//    nType 12 DrawPrimitivesOnImage kiem [K2DREC+0x5F0] <- SetParam(12, x)
+	// Mac dinh ca hai co deu = 0 nen bang chup RONG: khi phat lai, cac anh nen dat
+	// ('_*PlaceGround*_#~N~#_') chua he duoc tao => GetImage tra NULL => chi con chu
+	// va hinh hoc, nen den thui.
+	// KHAC ban tham chieu CO CHU Y: ban goc KHONG goi SetParam o dau ca (da doi chieu
+	// ca InitRepresent 0x0056D520 lan nhanh 'rec' 0x0040FFAD) - va do cung la ly do
+	// CA HAI loi vao UI cua no deu bi chu thich: tinh nang von dang hong.
+	// SetParam bat buoc status == 0, o day vua tao xong nen dung luc.
+	l_pJxReplay->SetParam(JXR_PARAM_TRACE_CREATEIMAGE,     1);
+	l_pJxReplay->SetParam(JXR_PARAM_TRACE_DRAWPRIMONIMAGE, 1);
+
 	g_pRepresentShell->SetReplayTimeAndStatus(1, JXR_STATUS_IDLE);
 
 	l_nReplayState	= JXR_STATUS_IDLE;
@@ -324,6 +341,20 @@ static void JxrVerb_Rec()
 		strcpy(szName, "Replay");
 
 	l_pJxReplay->StartRec(szName, (unsigned int)time(NULL));
+
+	// EP VE LAI TOAN BO NEN NGAY SAU KHI BAT DAU GHI.
+	// Ly do: moi anh nen (_*PlaceGround*_#~N~#_) duoc GHEP tu NHIEU lenh
+	// DrawPrimitivesOnImage (tung o dat + tung vat the, xem
+	// KScenePlaceRegionC::PrerenderGround). Bo chup trang thai cua jxreplay.dll
+	// chi giu duoc khoang MOT lenh cho moi anh, nen phat lai chi hien mot mang
+	// cua moi vung - dung trieu chung "cho thay nen cho khong".
+	// SetRepresentShell() goi thang KScenePlaceC::RepresentShellReset(), thu ha
+	// GROUND_IMG_OK_FLAG cua MOI anh nen => khung ke tiep engine dung lai toan bo
+	// nen, va lan nay moi lenh deu roi vao trong phien ghi nen duoc luu DAY DU.
+	// Dung API san co, khong sua Core; chi ton mot lan ve lai ngay luc bam quay.
+	if (g_pCoreShell && g_pRepresentShell)
+		g_pCoreShell->SetRepresentShell(g_pRepresentShell);
+
 	JxrSysMsg(JXR_STR_REC_START, NULL);
 }
 

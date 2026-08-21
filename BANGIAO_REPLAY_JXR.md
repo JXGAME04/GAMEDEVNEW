@@ -191,3 +191,240 @@ nếu không sẽ treo ở hộp thoại lỗi.
 4. Bấm **Ctrl+S** → phải hiện *"File ảnh đã được lưu tại …"* và có tệp trong `bin\client\JxRep\2D_YY-MM-DD_HH-MM.jxr` (**> 0 byte**).
 5. `Ctrl+R` mở thanh điều khiển (hoặc `Open([[rec]])`) → nút **Mở ra** → chọn tệp → phải phát lại được.
 6. Nếu tệp `.jxr` 0 byte: kiểm `bin\client\UserData\Temp\` có tồn tại không — đây là điểm chết số 1.
+
+---
+
+## 8. 🟢 PHIÊN 20/08 CHIỀU-TỐI — ĐÃ TÌM RA GỐC "KHÔNG XEM ĐƯỢC" VÀ DỰNG TRÌNH XEM
+
+### 8.1 ĐO THẬT: khâu GHI ĐÚNG, DLL PHÁT ĐÚNG — file KHÔNG hỏng
+
+Trên máy thật đã có **2 tệp `.jxr` ghi ra hợp lệ**: `bin\client\JxRep\2D_26-08-20_20-01.jxr`
+(167 KB) và `2D_26-08-20_20-05.jxr` (38 KB). Cả hai giải nén zlib OK, magic `JXR\0`, ver 14,
+name `CaiBang`.
+
+Đã build **harness 32-bit** (`scratchpad\test_jxr.cpp`, adapter 38 ô giả) đặt cạnh `Game.exe`
+trong `bin\client`, gọi thẳng `Play()` vào `jxreplay.dll`:
+- `Play()` trả 1, trạng thái 0→3→4, `PlayTick` chạy 16 tick rồi báo HẾT đúng.
+- Callback ra **DỮ LIỆU THẬT**: `LookAt(47710,108493)` toạ độ bản đồ thật;
+  `CreateImage '*PlaceMap_0..7*'` 128×128; `DrawPrimitives` 22.185 lần; `OutputText` 1.823;
+  `OutputRichText` 1.343.
+
+⇒ **Ánh xạ vtable adapter (ô 8=CreateImage, 18=DrawPrimitives, 4=OutputText, 5=OutputRichText,
+21=LookAt) nay đã XÁC NHẬN bằng phát lại thật** — hết "suy luận". Mục 2 và 3.1 của
+`PHANTICH_QUAY_MANHINH_DICHNGUOC.md` đã được kiểm chứng.
+
+### 8.2 GỐC LỖI: KHÔNG có đường UI nào để BẮT ĐẦU phát lại
+
+Quét toàn bộ `autoexec.lua` + `kethop.lua` đã deploy: Ctrl+R/S/P đều gọi `Replay([[rec]])`
+để **GHI**; **`Open([[rec]])` (mở thanh phát lại, case 24) KHÔNG gắn với phím hay nút nào**.
+Nút toolbar `[Rec]` = `Player_Recorder` cũng chỉ để GHI (`UiShell.cpp:989`).
+Bản tham chiếu xem replay từ **nút `[OpenRep]` màn đăng nhập** — thứ ta CHƯA dựng (mục 7.6).
+⇒ Người chơi ghi được nhưng **không có đường nào để xem**. Đúng triệu chứng "in ra file không xem được".
+
+Đã dịch ngược đường xem của bản tham chiếu để làm cho khớp:
+- Handler `[OpenRep]` `0x00476C30` → mở hộp thoại `*.jxr` (`0x00476B70`) → `g_pReplay->vtbl+0x10`
+  = **`Play(szFile)`** → `Sleep(10)` → mở bar (`0x0052DC10`) → **`EnterReplayMode(1)` `0x004760E0`
+  ĐẶT CỜ STYLE `0x2000000` LÊN UI LOGIN** (ẩn login để replay không bị che).
+- `PlayTick` khi hết khung tự gọi `PlayCleanup 0x10008190` → `SetStatus(0)` ⇒ **tự về IDLE**, không kẹt vòng.
+
+### 8.3 ĐÃ THI CÔNG — nút `[OpenRep]` ở màn đăng nhập (build + deploy xong, CHƯA chạy thử trong game)
+
+Vì `KMyApp::GameLoop` **chạy cả ở màn đăng nhập**, nhánh phát lại `.jxr` sẵn có
+(`S3Client.cpp:1252-1259`) tự kích hoạt khi state==4 — nên đặt trình xem ở login là **sạch nhất**
+(kho ảnh trống, không đụng `*PlaceMap*` của map đang chơi như khi xem trong game).
+
+| Tệp | Sửa |
+|---|---|
+| `Ui/UiCase/UiLogin.h` | thêm `KWndButton m_OpenRep`; 2 static `EnterReplayHide()`/`RestoreAfterReplay()`; cờ `m_bHiddenForReplay` |
+| `Ui/UiCase/UiLogin.cpp` | `AddChild(&m_OpenRep)`, `m_OpenRep.Init(&Ini,"OpenRep")`, xử lý click → `JxReplay_OpenFileAndPlay()` rồi `EnterReplayHide()`; cài `EnterReplayHide`/`RestoreAfterReplay` (ẩn/hiện form+nền login, giống `EnterReplayMode`) |
+| `Ui/UiCase/UiLoginBg.{h,cpp}` | thêm `Restore()` (hiện lại nền login; `SetConfig` bỏ qua vì config không đổi) |
+| `S3Client.cpp` | sau nhánh phát lại trong `GameLoop`: `KUiLogin::RestoreAfterReplay()` (khôi phục login khi phát xong) |
+| `bin\client\Ui\Ui3\UiLogin.ini` | thêm mục `[OpenRep]` (Left=20 Top=560 28×28, tái dùng SPR `录像按钮`, Tip="Xem lai ban dien (.jxr)") |
+
+Build `Release\|Win32` (S3Client → `Game.exe` **1.254.912 B**, 20/08 21:13), deploy sang
+`E:\...\TESTLOFFF_ONLINE\bin\client\` (bản cũ đổi tên `Game.exe.dangchay_old` vì client đang chạy).
+🔴 **Phải thoát và mở lại client mới có nút.**
+
+**Cơ chế xem:** ở màn đăng nhập, bấm nút camera góc dưới-trái → chọn tệp `.jxr` trong `JxRep\`
+→ login tự ẩn, replay phát toàn màn hình, thanh điều khiển (Tạm dừng/Tiếp/Dừng) tự hiện →
+bấm **Dừng** hoặc hết phim → tự về màn đăng nhập. Nút [Open] trên thanh phát vẫn để chọn tệp khác.
+
+### 8.4 CHƯA KIỂM ĐƯỢC (thành thật)
+- 🔴 **Chưa chạy thử trong game** — chưa thấy pixel thật. Đường ghi + phát của DLL đã đo thật;
+  render tại login còn suy luận (kho ảnh trống, sprite nạp theo-yêu-cầu từ pak như login vẫn làm).
+  Có đường thoát an toàn: nút **Dừng** trên thanh phát luôn đưa về login (không kẹt).
+- Nút camera hơi kín đáo (giống bản tham chiếu). Nếu muốn dễ thấy hơn: đổi `Left/Top` trong
+  `[OpenRep]` hoặc dùng SPR to hơn.
+- Giới hạn DLL: xem **mục 9** — con số "≈20 giây" tôi viết ở đây lúc đầu là **SAI**, đã đo lại và đính chính.
+
+---
+
+## 9. 🔬 ĐO THẬT `jxreplay.dll` — ĐÍNH CHÍNH MỤC 7.5 VÀ VÁ 1 BYTE
+
+> Bối cảnh: câu "DLL đóng nên **không sửa được**" ở mục 7.5 là **nói quá**. DLL đóng chỉ có nghĩa
+> là không có mã nguồn — đã dịch ngược được thì **vá thẳng byte cũng được**. Mục này thay thế mục 7.5.
+
+### 9.1 🔴 ĐÍNH CHÍNH LỚN — "quay > 20 giây thì hỏng" là SAI
+
+Bộ đếm khung là BYTE thật (`0x1000A4F8 add byte ptr [esi+0x35], 1`), bảng offset ở header+0x132
+trong header 0x450 byte ⇒ **chỉ chứa 199 mục**, tràn từ khung 200. Lỗi có thật. **Nhưng điều kiện
+kích bộ đếm thì hoàn toàn khác điều tôi tưởng.**
+
+Dịch ngược `0x10003660`: đó là **`std::map<string, WORD>` tra TÊN tài nguyên → id**; gặp tên cũ thì
+tái dùng id (`al=0`), chỉ **tên MỚI** mới cấp id mới (`lea ebx,[eax+1]`). Bộ đếm khung chỉ tăng khi
+id chạm `0xFFFE` (`0x10005BDF cmp word ptr [esp+0x54], 0xfffe` → `NextFrame` + `Signal(1)`).
+
+**Đo thật** (harness `scratchpad\test_frames.cpp`, ghi N lệnh `CreateImage`):
+
+| Thí nghiệm | Kết quả `nFrameCount` |
+|---|---|
+| 70.000 tên **giống nhau** | **1** |
+| 70.000 tên **khác nhau** | **1** |
+| 200.000 tên **khác nhau** (có nghỉ cho luồng nền) | **4** — offset khung cách đều ~65.534 tên |
+| 2 tệp **thật** của người chơi (14 giây, 1,34 MB) | **1** |
+
+⇒ **1 khung = 65.534 TÊN TÀI NGUYÊN KHÁC NHAU**, không liên quan tới thời lượng hay dung lượng.
+Muốn tràn 199 khung cần **≈13 triệu tên tài nguyên khác nhau** trong một phiên quay.
+Trong game số sprite khác nhau chỉ vài nghìn và **được tái dùng** ⇒ **KHÔNG BAO GIỜ chạm tới.**
+
+**Kết luận: quay bao lâu cũng được. Không cần vá, không cần cảnh báo người chơi.**
+
+### 9.2 🟢 ĐÃ VÁ 1 BYTE — lỗi `WriteHeader` ghi rác ngăn xếp
+
+```
+0x100097F4   8D 4C 24 10   lea ecx,[esp+0x10]   ; SAI: lay DIA CHI cua o chua con tro
+             8B 4C 24 10   mov ecx,[esp+0x10]   ; DUNG: lay CHINH con tro header
+```
+Cùng độ dài 4 byte ⇒ vá đúng **1 byte** `8D`→`8B`, không xê dịch gì trong ảnh PE.
+
+**Chứng minh lỗi có thật** (ghi 200.000 lệnh rồi `TerminateProcess`, soi 0x450 byte đầu tệp tạm):
+
+| | 16 byte đầu header | byte khác 0 / 1104 |
+|---|---|---|
+| DLL **gốc** | `f8 7f 8f 01 ec 7f 8f 01 e8 7f 8f 01 40 0d 03 00` | **430** |
+| DLL **đã vá** | `00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00` | **0** |
+
+Bản gốc ghi thẳng **địa chỉ ngăn xếp** (`0x018F7FF8`) và cả **tên tệp tạm** vào header, không có magic
+`JXR\0`. Bản vá cho đúng 1104 byte 0 như `memset` ở `KJXRFile::Open` dự định.
+
+**Kiểm tương thích ngược** — phát lại tệp THẬT `2D_26-08-20_20-05.jxr` bằng DLL đã vá cho kết quả
+**giống hệt** bản gốc: 16 tick, `OutputText` 1.823, `OutputRichText` 1.343, `CreateImage` 74,
+`DrawPrimitives` 22.185, `LookAt` 16. Ghi tệp mới cũng bình thường (`JXR\0`, ver 14).
+⚠️ Tệp do harness sinh (chỉ toàn `CreateImage` tên giả) thì decoder dừng sớm — nhưng **DLL gốc cũng
+dừng y hệt**, nên đó là do dữ liệu giả, không phải do bản vá.
+
+**Đã triển khai:** `bin\client\JXReplay.dll` (90.112 B, byte `0x97F4 = 8B`).
+Sao lưu: `JXReplay.dll.goc` và `JXReplay.dll.dangchay_old` (đều là bản gốc 31/03/2020).
+Công cụ vá: `scratchpad\patch_jxr.py` (mặc định dry-run, phải `--apply`; từ chối vá nếu byte không khớp).
+
+**Lợi ích thực tế của bản vá này là VỪA PHẢI**, nói thẳng: phiên quay kết thúc bình thường bằng
+`EndRec` vốn đã ghi lại header đúng, nên tệp `.jxr` xuất ra **trước hay sau khi vá đều đọc được**.
+Vá giải quyết: (a) không còn rò rỉ địa chỉ ngăn xếp + tên tệp vào tệp, (b) tệp tạm dang dở có header
+hợp lệ thay vì rác. **Không** sửa được việc phiên quay bị ngắt vẫn mất bản diễn (vì `EndRec` mới là
+nơi ghép tệp cuối).
+
+### 9.4 🔴🟢 CHẠY THỬ THẬT: "xem lại bị ĐEN NỀN, chỉ thấy tên và thanh máu" — ĐÃ TÌM RA VÀ SỬA
+
+**Tin tốt kèm theo:** người chơi bấm được nút xem ở màn đăng nhập và **replay có chạy** (thấy tên +
+thanh máu chuyển động) ⇒ toàn bộ đường UI/nạp/phát của mục 8 là ĐÚNG. Chỉ thiếu phần hình nền.
+
+**Chẩn đoán bằng harness** (`scratchpad\test_img.cpp` — adapter đọc thẳng `KRUImage` khi phát lại),
+chạy trên bản ghi thật `2D_26-08-20_22-15.jxr`:
+```
+CreateImage '*PlaceMap_0..13*' 128x128        <- CO tao anh, nhung RONG
+Draw#1 genre=3 szImage='_*PlaceGround*_#~6~#_' uImage=0 nISPos=0
+Draw#2 genre=3 szImage='_*PlaceGround*_#~21~#_'
+...
+DrawPrimitives=41171  CreateImage=74  DrawPrimOnImage=11
+```
+⇒ Lệnh vẽ tham chiếu tới ảnh **`_*PlaceGround*_#~N~#_`** (ảnh nền đất, tạo lúc chạy), mà **trong cả
+bản ghi KHÔNG có `CreateImage` nào tạo ra chúng** — chúng đã được tạo TRƯỚC khi người chơi bấm quay.
+Lúc phát lại `GetImage` trả NULL ⇒ không vẽ gì ⇒ **nền đen**, chỉ còn chữ (`OutputText`) và hình học.
+
+**Gốc rễ — bỏ sót `SetParam`.** `jxreplay.dll` có sẵn bộ "chụp trạng thái ban đầu": REC vtable ô 6
+(`0x10007700`) chạy **mỗi lần vẽ, KỂ CẢ khi chưa bấm quay** (nó được gọi TRƯỚC phép kiểm `status==1`
+trong `Rec` dispatch), ghi nhớ ảnh đã tạo / nội dung đã vẽ, rồi `StartRec` xả hết vào đầu tệp.
+Nhưng mỗi nhánh bị kẹp bởi một cờ riêng — giải mã bảng nhảy tại `0x100077CC`/`0x100077E4`:
+
+| nType | nhánh | cờ kiểm | bật bởi |
+|---|---|---|---|
+| 1 `CreateImage` | `0x10007798` | `[K2DREC+0x5F4]` | `SetParam(1, x)` |
+| 12 `DrawPrimitivesOnImage` | `0x10007750` | `[K2DREC+0x5F0]` | `SetParam(12, x)` |
+| 17 / 20 / 21 | `0x1000776E` / `0x10007783` / `0x100077B6` | — | |
+
+Cả hai cờ **mặc định 0** ⇒ bảng chụp rỗng ⇒ nền đen. `SetParam` giải mã (`0x10004A80`):
+`id 1 → +0x5F4`, `id 12 → +0x5F0` (kèm init `0x10003FD0`), `id 11 → +0x5F8`; id 1 và 12 **bắt buộc
+`status == 0`**.
+
+**Đã sửa** (`JxReplay.cpp`, trong `JxReplay_Init()` ngay sau `SetDrawInterface`, lúc status vẫn 0):
+```cpp
+l_pJxReplay->SetParam(JXR_PARAM_TRACE_CREATEIMAGE,     1);   // id 1
+l_pJxReplay->SetParam(JXR_PARAM_TRACE_DRAWPRIMONIMAGE, 1);   // id 12
+```
+
+🔴 **ĐÂY LÀ CHỖ CỐ Ý KHÁC BẢN THAM CHIẾU (thêm vào mục 6).** Đã đối chiếu byte: bản gốc **KHÔNG gọi
+`SetParam` ở bất kỳ đâu** — cả `KMyApp::InitRepresent` (`0x0056D520`, chỉ có `LoadLibrary` →
+`SetJxReplay` → `SetDrawInterface` → `SetReplayTimeAndStatus(1,0)`) lẫn nhánh `rec` (`0x0040FFAD`,
+chỉ gọi `StartRec`). **Và đó nhiều khả năng chính là lý do CẢ HAI lối vào UI của bản tham chiếu đều
+bị chú thích: tính năng của họ vốn đang hỏng đúng kiểu này.** Giống-100%-theo-nghĩa-đen ở đây =
+tiếp tục đen nền, nên ta cố ý làm khác.
+
+**Triển khai:** `Game.exe` 1.254.912 B (20/08 22:26), bản trước đổi tên `Game.exe.truoc_setparam`
+(đã đối chiếu byte: hai bản khác nhau thật). **Phải thoát và mở lại client.**
+
+**⚠️ Chưa kiểm được:** chưa chạy thật sau bản vá này. Rủi ro còn lại đã lường: bảng chụp tích luỹ
+theo thời gian chơi (mỗi ảnh nền mới) ⇒ nếu chơi rất lâu rồi mới bấm quay thì phần đầu tệp `.jxr`
+sẽ phình ra. Ảnh nền map hữu hạn và được tái dùng nên dự kiến chấp nhận được, nhưng **nếu thấy tệp
+`.jxr` phình bất thường hoặc khựng lúc bấm quay thì báo — khi đó chỉ cần bỏ `SetParam(12,1)`,
+chấp nhận nền tĩnh kém chi tiết hơn.**
+
+### 9.5 🔴 ĐÍNH CHÍNH 9.4 + vòng sửa thứ hai: "chỗ thấy nền chỗ không"
+
+**Sau bản vá 9.4, người chơi báo: hết đen hoàn toàn, nhưng "chỗ thấy nền chỗ không".**
+
+🔴 **Đính chính chẩn đoán ở 9.4:** tôi đã kết luận vội "bản ghi thiếu `CreateImage` cho `_*PlaceGround*_`"
+— **SAI**. Lúc đó tôi chỉ in 10 dòng `CreateImage` đầu (toàn `*PlaceMap_N*`) rồi suy ra là thiếu.
+Đo lại đầy đủ (đối chiếu tập ảnh ĐƯỢC TẠO với tập ảnh ĐƯỢC VẼ) thì **cả hai tệp, trước và sau vá,
+đều có đủ 49 `_*PlaceGround*_` + 25 `*PlaceMap_*` và 0 ảnh bị thiếu.**
+
+**Khác biệt thật nằm ở `DrawPrimitivesOnImage` (nội dung vẽ VÀO ảnh):**
+
+| tệp | DrawPrimitives | CreateImage | **DrawPrimOnImage** |
+|---|---|---|---|
+| `22-15` (trước vá 9.4) | 41.171 | 74 | **11** |
+| `22-30` (sau vá 9.4) | 111.288 | 74 | **76** |
+
+⇒ `SetParam(12,1)` **có tác dụng thật** (11 → 76), nên nền mới hiện lên được một phần.
+
+**Nguyên nhân phần còn thiếu:** mỗi ảnh nền được **GHÉP TỪ NHIỀU LỆNH**
+`DrawPrimitivesOnImage` — `KScenePlaceRegionC::PrerenderGround` (`:215-292`) chạy 2 vòng (từng ô đất
+`pGrunodes`, rồi từng vật thể `pObjects`), mỗi lô tối đa `LOCAL_MAX_IMG_NUM` ảnh mới xả một lệnh.
+Bảng chụp của DLL chỉ giữ được **khoảng MỘT lệnh cho mỗi ảnh** (76 lệnh cho 74 ảnh) ⇒ mỗi vùng chỉ
+dựng lại được một mảnh ⇒ **chỗ có nền chỗ không**. Đây là giới hạn thiết kế của bảng chụp, không sửa
+được từ phía ta bằng `SetParam`.
+
+**🟢 Cách sửa (vòng 2) — ép vẽ lại toàn bộ nền NGAY SAU `StartRec`, dùng API có sẵn:**
+```cpp
+l_pJxReplay->StartRec(szName, (unsigned int)time(NULL));
+if (g_pCoreShell && g_pRepresentShell)
+    g_pCoreShell->SetRepresentShell(g_pRepresentShell);   // -> RepresentShellReset()
+```
+`KCoreShell::SetRepresentShell` (`CoreShell.cpp:12542`) gọi thẳng `KScenePlaceC::RepresentShellReset`
+(`KScenePlaceC.cpp:1753`), hàm này đặt `m_bRenderGround = true` và hạ `GROUND_IMG_OK_FLAG` của **mọi**
+ảnh nền ⇒ khung kế tiếp engine dựng lại toàn bộ nền, và lần này **mọi lệnh đều rơi vào trong phiên
+ghi** nên được lưu đầy đủ.
+**Không sửa một dòng nào trong Core**, chỉ dùng lại API client vốn đã gọi ở `UiPaint`. Tác dụng phụ
+duy nhất: một lần vẽ lại nền ngay lúc bấm quay (có thể khựng nhẹ đúng một khung) và `SetAdjustColorList`
+được nạp lại (vô hại).
+
+**Triển khai:** `Game.exe` 1.254.912 B (20/08 22:40), bản trước → `Game.exe.truoc_rerender`
+(đối chiếu byte: khác 135.144 byte). **Phải thoát và mở lại client, rồi quay một đoạn MỚI.**
+
+**⚠️ Chưa kiểm được:** chưa chạy thật sau vòng 2. Nếu vẫn còn mảng thiếu thì bước tiếp theo là gọi
+thẳng `KScenePlaceC::PrerenderGround(true)` cho từng region trong vùng xử lý (đã có sẵn tham số
+`bForce`, khai ở `KScenePlaceC.h:322`) — nhưng khi đó phải mở thêm API từ Core.
+
+### 9.3 Còn lại: `strcpy` tên phiên (`0x10009790`) — CHƯA vá, có chủ ý
+Trường tên trong header chỉ 32 byte và DLL dùng `strcpy` không giới hạn. Phía ta **đã tự kẹp 31 ký tự**
+trong `JxrVerb_Rec` (`JxReplay.cpp`), nên đường tràn đã bị chặn từ gốc. Vá thêm trong DLL là thừa
+và làm lệch thêm khỏi bản tham chiếu.
