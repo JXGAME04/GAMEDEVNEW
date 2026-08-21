@@ -863,8 +863,14 @@ void KNpc::ProcCommand(int nAI)
 			JumpTo(m_Command.Param_X, m_Command.Param_Y);
 			break;
 		case do_skill:
+			if (IsPlayer())
+				AUTOLOG_EVERY(1000, "[S2-SKILL-NOTLEARNED] npc=%d id=%u skill_req=%d found_idx=%d p2=%d p3=%d doing=%d fight=%d", m_Index, m_dwID, m_Command.Param_X, m_SkillList.FindSame(m_Command.Param_X), m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, (int)m_FightMode);
+			if (IsPlayer())
+				AUTOLOG_EVERY(500, "[S3-PROC-FINDSAME] npc=%d plr=%d reqskill=%d slot=%d active=%d doing=%d p=(%d,%d)", m_Index, m_nPlayerIdx, m_Command.Param_X, m_SkillList.FindSame(m_Command.Param_X), m_ActiveSkillID, (int)m_Doing, m_Command.Param_Y, m_Command.Param_Z);
 			if (int nSkillIdx = m_SkillList.FindSame(m_Command.Param_X))
 			{
+				if (IsPlayer())
+					AUTOLOG_EVERY(500, "[S3-SETACTIVE] npc=%d plr=%d slot=%d slotskill=%d lv=%d addlv=%d curlv=%d actbefore=%d radbefore=%d", m_Index, m_nPlayerIdx, nSkillIdx, m_SkillList.m_Skills[nSkillIdx].SkillId, m_SkillList.m_Skills[nSkillIdx].SkillLevel, m_SkillList.m_Skills[nSkillIdx].AddLevel, m_SkillList.m_Skills[nSkillIdx].CurrentSkillLevel, m_ActiveSkillID, m_CurrentAttackRadius);
 				SetActiveSkill(nSkillIdx);
 				DoSkill(m_Command.Param_Y, m_Command.Param_Z);
 			}
@@ -932,6 +938,8 @@ void KNpc::ProcCommand(int nAI)
 
 		case do_skill: // Linq Sau khi luot bi do, ket cac skill tao du anh
 		case do_run:
+			if (IsPlayer() && m_Command.CmdKind == do_skill)
+				AUTOLOG_EVERY(500, "[S3-CMD-SWALLOW] npc=%d plr=%d cmd=%d skill=%d p=(%d,%d) doing=%d procai=%d rgn=%d", m_Index, m_nPlayerIdx, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, m_ProcessAI, m_RegionIndex);
 			if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */ )
 				m_ProcessAI = 1;
 			break;
@@ -2381,12 +2389,16 @@ void KNpc::DoSkill(int nX, int nY)
 				{
 					int nDesX, nDesY;
 					Npc[nY].GetMpsPos(&nDesX, &nDesY);
+					if (IsPlayer())
+						AUTOLOG_EVERY(500, "[S2-MELEE-TOOFAR-RUN] npc=%d id=%u skill=%d tgt_idx=%d dist=%d radius=%d cong=%d curradius=%d chay_toi=(%d,%d) map=(%d,%d) doing=%d ngua=%d", m_Index, m_dwID, m_ActiveSkillID, nY, NpcSet.GetDistance(m_Index, nY), pSkill->GetAttackRadius(), pSkill->GetAttackRadius() + 20, m_CurrentAttackRadius, nDesX, nDesY, m_MapX, m_MapY, (int)m_Doing, (int)m_bRideHorse);
 					SendCommand(do_run, nDesX, nDesY);
 					return;
 				}
 				#endif
 				break;
 			case 0:
+				if (IsPlayer())
+					AUTOLOG_EVERY(500, "[S2-CANCAST-DENY] npc=%d id=%u skill=%d style=%d p1=%d p2=%d dist=%d radius=%d fight=%d silent=%d ngua=%d mana=%d life=%d", m_Index, m_dwID, m_ActiveSkillID, (int)eStyle, nX, nY, ((nX == -1 && nY > 0 && nY < MAX_NPC) ? NpcSet.GetDistance(m_Index, nY) : -1), pSkill->GetAttackRadius(), (int)m_FightMode, m_SilentState.nTime, (int)m_bRideHorse, m_CurrentMana, m_CurrentLife);
 				goto Exit;
 				break;
 			case 1: //!IsPlayer() -> chuan cho ca server va client
@@ -3257,6 +3269,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 		//
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
+			AUTOLOG_EVERY(500, "[S2-DODGE-1] tgt=%d(id=%u kind=%u lv=%d) lch=%d dmg=%d min=%d max=%d phys=%d melee=%d armor=%d def=%d presist=%d -> bao NE (COMBAT_INFO_DODGE) vi sat thuong <= 0", m_Index, m_dwID, m_Kind, m_Level, nAttacker, nDamage, nMin, nMax, (int)bIsPhysical, (int)bIsMelee, m_PhysicsArmor.nValue[0], m_CurrentDefend, m_CurrentPhysicsResist);
 		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player) {
 			SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
 			return FALSE;
@@ -3332,6 +3346,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				{
 					nRate = m_CurrentPhysicsResistMax;
 				}
+				AUTOLOG_EVERY(1000, "[S2-ARMOR] tgt=%d(id=%u) lch=%d dmg_truoc=%d armor_truoc=%d presist=%d presistmax=%d rate=%d", m_Index, m_dwID, nAttacker, nDamage, m_PhysicsArmor.nValue[0], m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, nRate);
 				m_PhysicsArmor.nValue[0] -= nDamage;
 				if (m_PhysicsArmor.nValue[0] < 0)
 				{
@@ -3341,6 +3356,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				}
 				else
 				{
+					AUTOLOG_EVERY(1000, "[S2-ARMOR-EAT] tgt=%d(id=%u) lch=%d GIAP VAT LY NUOT TRON don, armor_con=%d -> dmg=0", m_Index, m_dwID, nAttacker, m_PhysicsArmor.nValue[0]);
 					nDamage = 0;
 				}
 				if (bIsMelee)
@@ -3466,6 +3482,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
           			 nDamage = 1;    
 	    }
 		//
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
+			AUTOLOG_EVERY(500, "[S2-DODGE-2] tgt=%d(id=%u kind=%u lv=%d) lch=%d dmg=%d real=%d min=%d max=%d phys=%d melee=%d armor=%d presist=%d -> bao NE vi sat thuong <= 0", m_Index, m_dwID, m_Kind, m_Level, nAttacker, nDamage, nRealDamage, nMin, nMax, (int)bIsPhysical, (int)bIsMelee, m_PhysicsArmor.nValue[0], m_CurrentPhysicsResist);
 		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player) {
 			SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
 			return FALSE;
@@ -3540,6 +3558,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 
 		
+		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
+			AUTOLOG_EVERY(500, "[S2-DODGE-3] tgt=%d(id=%u kind=%u lv=%d) lch=%d dmg=%d real=%d min=%d max=%d phys=%d melee=%d armor=%d presist=%d -> bao NE vi sat thuong <= 0", m_Index, m_dwID, m_Kind, m_Level, nAttacker, nDamage, nRealDamage, nMin, nMax, (int)bIsPhysical, (int)bIsMelee, m_PhysicsArmor.nValue[0], m_CurrentPhysicsResist);
 		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
 		{
 		    SyncDamageInfo(nAttacker, 0, COMBAT_INFO_DODGE, 0);
@@ -3822,6 +3842,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	if (!m_Index || !Npc[nLauncher].m_Index)
 		return FALSE;
 
+	AUTOLOG("[S1-WHO] tgt=%d(id=%u kind=%u lv=%d life=%d/%d) lch=%d(kind=%u pidx=%d lv=%d) phys=%d melee=%d usear=%d missrate=%d dohurt=%d series=%d", m_Index, m_dwID, m_Kind, (int)m_Level, m_CurrentLife, m_CurrentLifeMax, nLauncher, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)Npc[nLauncher].m_Level, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nMissRate, nDoHurtP, nMissleSeries);
 	if (!pData)
 		return FALSE;
 
@@ -3866,13 +3887,16 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	int nAr = pTemp->nValue[0]; //attackrating[0]	//§é chÝnh x¸c
 
 	pTemp++; 
+	AUTOLOG("[S1-ARDATA] tgt=%d(id=%u kind=%u lv=%d def=%d) lch=%d(lv=%d) AR=%d usear=%d melee=%d phys=%d autohit=%d", m_Index, m_dwID, m_Kind, (int)m_Level, m_CurrentDefend, nLauncher, (int)Npc[nLauncher].m_Level, nAr, (int)bUseAR, (int)bIsMelee, (int)bIsPhysical, (int)(bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer()));
 	if (bUseAR)
 	{
 		int nIgnoreAr = pTemp->nValue[0]; //ignoredefense[1]	//NÐ tr¸nh
 		AUTOLOG_EVERY(1000, "[HIT-ROLL-IN] launcher=%d(id=%u) tgt=%d(id=%u) AR=%d ignoreAR=%d def=%d melee=%d phys=%d p_vs_npc=%d missrate=%d", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, nAr, nIgnoreAr, m_CurrentDefend, (int)bIsMelee, (int)bIsPhysical, (int)(bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer()), nMissRate);
 		if (bIsMelee && Npc[nLauncher].IsPlayer() && !IsPlayer())
 		{
-		
+			// (21/08) than RONG: nguoi choi danh CAN CHIEN vao QUAI thi BO QUA CheckHitTarget,
+			// tuc KHONG THE truot vi AR/DEF. Ghi lai de loai tru khau nay khi tim 'danh miss'.
+			AUTOLOG_EVERY(1000, "[S1-MELEE-NOROLL] lch=%d(id=%u) tgt=%d(id=%u kind=%u) AR=%d def=%d ignoreAR=%d -> BO QUA xuc xac trung/truot", nLauncher, Npc[nLauncher].m_dwID, m_Index, m_dwID, m_Kind, nAr, m_CurrentDefend, nIgnoreAr);
 		}
 		else
 		{
@@ -3902,6 +3926,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		bIsFS = TRUE;
 
 	pTemp++;
+	AUTOLOG("[S1-CRIT-ROLL] tgt=%d lch=%d DS=%d FS=%d dsp=%d fsp=%d fsres=%d dmgreduce=%d life=%d", m_Index, nLauncher, (int)bIsDS, (int)bIsFS, ((KMagicAttrib *)pData)[4].nValue[0], ((KMagicAttrib *)pData)[5].nValue[0], m_CurrentFatallyStrikeResP, m_nDamageReduction, m_CurrentLife);
 	int nStolenLifeP = pTemp->nValue[0]; //steallife[6]
 	
 	pTemp++;
@@ -3911,7 +3936,9 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	int nStolenStaminaP = pTemp->nValue[0]; //stealstamina[8]
 
 	pTemp++; //physics damage[9]
+	AUTOLOG_EVERY(1000, "[S1-PHYS-PRE] tgt=%d(id=%u kind=%u) lch=%d physmin=%d physmax=%d lifetruoc=%d resist=%d resistmax=%d armor=%d sorb=%d manashield=%d DS=%d FS=%d series=%d fivep=%d", m_Index, m_dwID, m_Kind, nLauncher, pTemp->nValue[0], pTemp->nValue[2], m_CurrentLife, m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, m_PhysicsArmor.nValue[0], m_CurrentSorbDamageP, m_ManaShield.nValue[0], (int)bIsDS, (int)bIsFS, nMissleSeries, nFiveElementsDamageP);
 	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS);
+	AUTOLOG_EVERY(1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
 	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
@@ -4068,6 +4095,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		DoHurt();
 
 	int	kpRelation = NpcSet.GetRelation(m_Index, nLauncher);//Add by Phong KiÒu fix lçi Npc Set Skill5 kh«ng nhËn diÖn ®­îc m_nPeopleIdx
+	AUTOLOG("[S1-RELATION] tgt=%d(kind=%u) lch=%d(kind=%u) relation=%d peopleidx_truoc=%d lifeconlai=%d", m_Index, m_Kind, nLauncher, Npc[nLauncher].m_Kind, kpRelation, m_nPeopleIdx, m_CurrentLife);
 	if(kpRelation == relation_enemy) 
 	{
 		m_nPeopleIdx = nLauncher;// nLauncher = kÎ tÊn c«ng [m_nPeopleIdx biÕn sö dông cho KNpcAI x¸c ®Þnh kÎ ®Þch ®Ó tÊn c«ng]

@@ -5036,9 +5036,13 @@ void KProtocolProcess::NpcRunCommand(int nIndex, BYTE* pProtocol)
 void KProtocolProcess::NpcSkillCommand(int nIndex, BYTE* pProtocol)
 {
 	NPC_SKILL_COMMAND* pNetCommand = (NPC_SKILL_COMMAND *)pProtocol;
+	AUTOLOG_EVERY(500, "[S3-PKT-IN] plr=%d npcidx=%d skill=%d mpsx=%d mpsy=%d", nIndex, Player[nIndex].m_nIndex, pNetCommand->nSkillID, pNetCommand->nMpsX, pNetCommand->nMpsY);
 	int ParamX = pNetCommand->nSkillID;
 	int ParamY = pNetCommand->nMpsX;
 	int ParamZ = pNetCommand->nMpsY;
+	AUTOLOG_EVERY(300, "[S2-NETSKILL-IN] plr=%d npc=%d skill=%d mpsx=%d mpsy=%d rej_id=%d rej_y=%d rej_x=%d doing=%d fight=%d rgn=%d map=(%d,%d)", nIndex, Player[nIndex].m_nIndex, ParamX, ParamY, ParamZ, (int)(ParamX <= 0 || ParamX > MAX_SKILL), (int)(ParamZ < 0), (int)(ParamY < 0 && ParamY != -1), (int)Npc[Player[nIndex].m_nIndex].m_Doing, (int)Npc[Player[nIndex].m_nIndex].m_FightMode, Npc[Player[nIndex].m_nIndex].m_RegionIndex, Npc[Player[nIndex].m_nIndex].m_MapX, Npc[Player[nIndex].m_nIndex].m_MapY);
+	if (ParamX <= 0 || ParamX > MAX_SKILL || ParamZ < 0 || (ParamY < 0 && ParamY != -1))
+		AUTOLOG("[S3-PKT-REJ] plr=%d npcidx=%d skill=%d mpsx=%d mpsy=%d maxskill=%d rejskill=%d rejz=%d rejy=%d", nIndex, Player[nIndex].m_nIndex, ParamX, ParamY, ParamZ, (int)MAX_SKILL, (int)(ParamX <= 0 || ParamX > MAX_SKILL), (int)(ParamZ < 0), (int)(ParamY < 0 && ParamY != -1));
 	if (ParamX <= 0 || ParamX > MAX_SKILL )
 	{
 		return ;
@@ -5055,11 +5059,15 @@ void KProtocolProcess::NpcSkillCommand(int nIndex, BYTE* pProtocol)
 			return;
 
 		int nNpcIndex = Player[nIndex].FindAroundNpc((DWORD)ParamZ);
+		AUTOLOG_EVERY(300, "[S2-NETSKILL-TARGET] plr=%d npc=%d skill=%d want_tgt_id=%u found_idx=%d accept=%d dist=%d rgn=%d", nIndex, Player[nIndex].m_nIndex, ParamX, (unsigned int)ParamZ, nNpcIndex, (int)(nNpcIndex > 0), (nNpcIndex > 0 ? NpcSet.GetDistance(Player[nIndex].m_nIndex, nNpcIndex) : -1), Npc[Player[nIndex].m_nIndex].m_RegionIndex);
+		if (nNpcIndex <= 0)
+			AUTOLOG("[S3-TGT-FIND] plr=%d npcidx=%d skill=%d tgtid=%d found=%d tgtkind=%d tgtlife=%d me=(%d,%d) tgt=(%d,%d) merng=%d tgtrng=%d", nIndex, Player[nIndex].m_nIndex, ParamX, ParamZ, nNpcIndex, -1, -1, Npc[Player[nIndex].m_nIndex].m_MapX, Npc[Player[nIndex].m_nIndex].m_MapY, -1, -1, Npc[Player[nIndex].m_nIndex].m_RegionIndex, -1);
 		if (nNpcIndex > 0)
 			Npc[Player[nIndex].m_nIndex].SendCommand(do_skill, ParamX, ParamY, nNpcIndex);
 	}
 	else
 	{
+		AUTOLOG_EVERY(500, "[S3-CAST-XY] plr=%d npcidx=%d skill=%d mps=(%d,%d) doing=%d frozen=%d randmove=%d actskill=%d radius=%d", nIndex, Player[nIndex].m_nIndex, ParamX, ParamY, ParamZ, (int)Npc[Player[nIndex].m_nIndex].m_Doing, Npc[Player[nIndex].m_nIndex].m_FrozenAction.nTime, Npc[Player[nIndex].m_nIndex].m_RandMove.nTime, Npc[Player[nIndex].m_nIndex].m_ActiveSkillID, Npc[Player[nIndex].m_nIndex].m_CurrentAttackRadius);
 		Npc[Player[nIndex].m_nIndex].SendCommand(do_skill, ParamX, ParamY, ParamZ);
 	}
 }

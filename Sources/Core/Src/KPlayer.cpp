@@ -2034,6 +2034,8 @@ int		KPlayer::FindAroundNpc(DWORD dwNpcID)
 		return 0;
 	
 	int		nNpc, nRegionNo, i;
+	if (m_nIndex > 0 && m_nIndex < MAX_NPC && (Npc[m_nIndex].m_SubWorldIndex < 0 || Npc[m_nIndex].m_RegionIndex < 0))
+		AUTOLOG("[S3-FIND-BADRGN] npc=%d tgtid=%u sw=%d rgn=%d", m_nIndex, dwNpcID, Npc[m_nIndex].m_SubWorldIndex, Npc[m_nIndex].m_RegionIndex);
 	nNpc = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_Region[Npc[m_nIndex].m_RegionIndex].SearchNpc(dwNpcID);
 	if ( nNpc > 0)
 		return nNpc;
