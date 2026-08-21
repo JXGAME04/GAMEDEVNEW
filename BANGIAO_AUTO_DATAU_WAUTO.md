@@ -755,6 +755,28 @@ có NPC Dã Tẩu nên kịch bản không xảy ra.)*
 
 Binary: **CoreClient.dll 20/08 18:43 (2.205.696 B)** + **CoreServer.dll x64 18:41**.
 
+**L. r5i (19:14) — phản biện vòng 4: 3 CONFIRMED, đều là hồi quy do chính r5h sinh ra**
+*(vòng bác bỏ bị cắt vì hết hạn mức phiên; cả 3 đã được xác minh thủ công trên mã thật)*:
+1. *(nặng nhất)* Hai lệnh xóa mốc tuần `g_uDTSapWptT = 0; g_uDTSapDwell = 0;` nằm **ngoài**
+   nhánh "đang đi theo danh bạ" ⇒ khi danh bạ **đã cạn**, mỗi nhịp đều xóa rồi gọi
+   `DT_SapWaypoint`: hạn 45 s nạp lại liên tục và `dwell` luôn 0 ⇒ **bot kẹt vĩnh viễn ở điểm
+   tuần đầu tiên**, không bao giờ sang thành kế, **và spam chat ~3 dòng/giây**. Sửa: chỉ xóa khi
+   thực sự đang đi theo danh bạ.
+2. Hạn 45 s/mục **không nạp lại** khi mục trước hoàn tất qua đường "sạp thật" (vòng quét gần xử
+   lý xong mất 15-40 s) ⇒ mục kế thừa hạn đã cạn, **bị bỏ oan khi chưa đi một bước** — hỏng xen
+   kẽ, mất tới nửa danh bạ. Sửa: theo dõi mục đang tính giờ (`g_nDTSapDsItemIdx`), đổi mục là
+   nạp lại hạn.
+3. Hết giờ ghi vào **đúng danh sách "đã xem"** mà vòng quét gần dùng để lọc ⇒ sạp không tới được
+   bằng đường dài **mù luôn với quét cận cảnh** (bot đứng sát bên sạp còn hàng vẫn không mở xem).
+   Sửa: danh sách riêng `g_aDTSapXa[16]` chỉ chặn đường danh bạ, quét gần vẫn thấy bình thường.
+
+**Kiến thức build (đã kiểm)**: `Src\CoreShell.cpp` bị `ExcludedFromBuild` ở **mọi cấu hình
+Server** ⇒ sửa riêng CoreShell **không cần** dựng lại CoreServer. Bản server hiện tại (18:41,
+r5h) đã đủ.
+
+Binary: **CoreClient.dll 20/08 19:14 (2.206.208 B)** + CoreServer.dll x64 18:41. Vẫn **CẦN
+RESTART GameServer** cho tính năng danh bạ.
+
 ---
 
 ## 9 · Phản biện — đã làm gì

@@ -3357,6 +3357,9 @@ static UINT  g_uDTSapDsSeen = 0;	// seq [SapMap] da doc
 static DWORD g_aDTSapDsId[12];		// danh ba: id / toa do MPS
 static int   g_nDTSapDsTry = 0;		// (r5f) so lan da hoi danh ba o map nay
 static UINT  g_uDTSapDsItemT = 0;	// (r5h) han di toi MOT muc danh ba (45 giay)
+static int   g_nDTSapDsItemIdx = -1;	// (r5i) muc danh ba dang tinh gio
+static DWORD g_aDTSapXa[16];		// (r5i) sap KHONG TOI DUOC bang duong dai:
+static int   g_nDTSapXa = 0;		// chi chan duong danh ba, KHONG chan quet gan
 static int   g_aDTSapDsX[12];
 static int   g_aDTSapDsY[12];
 
@@ -3422,8 +3425,28 @@ static bool DT_SapDaXem(DWORD dwId)
 // ca chuyen di cho / doi nhan vat. Vong Da Tau moi vao lai DUNG thanh cu ma
 // danh ba con "da tieu thu het" thi khoi di toi bi bo qua, waypoint cung bi
 // chan -> bo nguyen mot thanh. Goi ham nay o MOI loi vao DTP_MUASAP.
+// (r5i) danh sach RIENG cho muc danh ba khong bo toi duoc: dung DT_SapGhiXem
+// se lam sap do mu ca voi VONG QUET GAN (cung dung g_aDTSapDone de loc) - bot
+// dung sat ben sap con hang cung khong mo xem. Danh sach nay CHI chan duong
+// danh ba (di bo toi toa do), quet can canh van thay binh thuong.
+static int DT_SapDsDaBo(DWORD dwId)
+{
+	for (int i = 0; i < g_nDTSapXa; ++i)
+		if (g_aDTSapXa[i] == dwId)
+			return 1;
+	return 0;
+}
+
+static void DT_SapDsGhiBo(DWORD dwId)
+{
+	if (g_nDTSapXa < 16 && !DT_SapDsDaBo(dwId))
+		g_aDTSapXa[g_nDTSapXa++] = dwId;
+}
+
 static void DT_SapDsReset()
 {
+	g_nDTSapXa = 0;
+	g_nDTSapDsItemIdx = -1;
 	g_nDTSapDsMap = -1;
 	g_nDTSapDs = -1;
 	g_nDTSapDsCur = 0;
@@ -5497,6 +5520,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		  && uCurTime > g_uDTSapDsFresh + 5200))	// (r5h) phai VUOT cooldown 5
 					// giay ben server, khong thi goi hoi lai bi vut im lang
 		{
+			if (g_nDTSapDsMap != nMap)
+			{
+				g_nDTSapXa = 0;		// (r5i) thanh khac - danh sach khong-toi-duoc het nghia
+				g_nDTSapDsItemIdx = -1;
+			}
 			if (g_nDTSapDsMap != nMap || g_nDTSapDs >= 0)
 				g_nDTSapDsTry = 0;
 			++g_nDTSapDsTry;
@@ -5556,13 +5584,27 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (g_nDTSapDs > 0)
 		{
 			while (g_nDTSapDsCur < g_nDTSapDs
-			 && DT_SapDaXem(g_aDTSapDsId[g_nDTSapDsCur]))
+			 && (DT_SapDaXem(g_aDTSapDsId[g_nDTSapDsCur])
+			  || DT_SapDsDaBo(g_aDTSapDsId[g_nDTSapDsCur])))
 				++g_nDTSapDsCur;
-			g_uDTSapWptT = 0;	// (r5h) dang chay che do danh ba - moc tuan phai sach
-			g_uDTSapDwell = 0;
 			if (g_nDTSapDsCur < g_nDTSapDs)
 			{
+				// (r5i - phan bien vong 4) HAI dong xoa moc tuan TRUOC day nam O DAY
+				// (ngoai nhanh nay) nen khi danh ba DA CAN, moi nhip deu xoa roi goi
+				// DT_SapWaypoint: han 45s nap lai lien tuc va dwell luon 0 => bot ket
+				// VINH VIEN o diem tuan 1 + spam chat. Nay chi xoa khi THUC SU dang
+				// di theo danh ba.
+				g_uDTSapWptT = 0;
+				g_uDTSapDwell = 0;
 				const int nDs = g_nDTSapDsCur;
+				// (r5i) doi muc = nap lai han 45 giay. Truoc day muc hoan tat qua
+				// duong "sap that" khong xoa han nen muc ke thua han da can va bi bo
+				// OAN khi chua di mot buoc nao.
+				if (g_nDTSapDsItemIdx != nDs)
+				{
+					g_nDTSapDsItemIdx = nDs;
+					g_uDTSapDsItemT = 0;
+				}
 				int nPx5, nPy5;
 				Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nPx5, &nPy5);
 				if (g_GetDistance(nPx5, nPy5, g_aDTSapDsX[nDs], g_aDTSapDsY[nDs]) < 300)
@@ -5587,7 +5629,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					g_uDTSapDsItemT = uCurTime + 45000;
 				if (uCurTime > g_uDTSapDsItemT)
 				{
-					DT_SapGhiXem(g_aDTSapDsId[nDs]);
+					// (r5i) ghi vao danh sach RIENG - KHONG dung DT_SapGhiXem, khong thi
+					// vong quet gan cung mu luon (bot dung sat ben van khong mo xem).
+					DT_SapDsGhiBo(g_aDTSapDsId[nDs]);
 					++g_nDTSapDsCur;
 					g_uDTSapDsItemT = 0;
 					DT_Msg(nPlayerIdx, "<color=Gray>Kh\253ng \256\325n \256\255\356c ch\347 s\271p n\265y - b\341 qua, \256i s\271p k\325.");
