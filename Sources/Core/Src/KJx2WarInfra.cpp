@@ -191,6 +191,7 @@ int LuaGetNpcSettingIdx(Lua_State* L)
 // npc dang thoai = global Lua "NpcIndex" cua state goi (engine gan khi chay
 // script dialog - SCRIPT_NPCINDEX KPlayerDef.h:15; m_nLastNpcIndex chi co
 // phia CLIENT nen khong dung duoc o day)
+extern int GetPlayerIndex(Lua_State* L);
 int LuaGetLastDiagNpc(Lua_State* L)
 {
 	int nNpcIdx = 0;
@@ -200,6 +201,17 @@ int LuaGetLastDiagNpc(Lua_State* L)
 		nNpcIdx = (int)Lua_ValueToNumber(L, Lua_GetTopIndex(L));
 		if (nNpcIdx < 0 || nNpcIdx >= MAX_NPC)
 			nNpcIdx = 0;
+	}
+	// [WLLS 21/08] engine ta KHONG bom global NpcIndex vao state thoai NPC
+	// (KPlayer::ExecuteScript chi bom PlayerIndex/PlayerID/SubWorld) nen
+	// truoc day luon tra 0 -> GetNpcName(0)=nil -> concat gay (officer.lua
+	// wlls_npcname - trace ScriptError 20/08 23:33). Fallback: idx NPC vua
+	// bam, luu tai KPlayer::DialogNpc.
+	if (nNpcIdx == 0)
+	{
+		int nPlayerIdx = GetPlayerIndex(L);
+		if (nPlayerIdx > 0)
+			nNpcIdx = Player[nPlayerIdx].m_nWllsLastDiagNpc;
 	}
 	Lua_PushNumber(L, nNpcIdx);
 	return 1;

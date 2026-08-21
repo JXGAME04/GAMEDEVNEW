@@ -305,6 +305,7 @@ void	KPlayer::Release()
 	m_bWllsDmgCounterOn = 0;
 	m_nWllsDmgCounter = 0;
 	memset(m_szWllsStrTask, 0, sizeof(m_szWllsStrTask));
+	m_nWllsLastDiagNpc = 0;
 	m_dwNumberBoxId = 0;
 	m_dwLogoutScriptID = 0;
 	m_dwRewardId = 0;
@@ -8104,6 +8105,8 @@ void KPlayer::DialogNpc(BYTE * pProtocol)
 			{
 				if (Npc[nIdx].ActionScript[0])
 				{
+					// [WLLS 21/08] luu NPC dang thoai cho GetLastDiagNpc (wlls_npcname)
+					m_nWllsLastDiagNpc = nIdx;
 					ExecuteScript(Npc[nIdx].m_ActionScriptID, "main", nIdx); //#edit by phong kieu send nIdx qua lua //#can kiem tra
 					if(g_WriteScriptNpcLog)
 					{

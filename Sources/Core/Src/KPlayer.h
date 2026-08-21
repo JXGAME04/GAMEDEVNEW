@@ -478,6 +478,7 @@ public:
 	BYTE			m_bWllsDmgCounterOn;	// ST_StartDamageCounter dang dem
 	int				m_nWllsDmgCounter;		// tong mat mau ganh chiu (truoc hap thu noi luc)
 	char			m_szWllsStrTask[8][64];	// GetStringTask/SetStringTask (phien lam viec, KHONG luu DB)
+	int				m_nWllsLastDiagNpc;		// idx NPC vua bam thoai (GetLastDiagNpc doc - engine khong bom global NpcIndex)
 #endif
 	DWORD			m_dwNumberBoxId;
 	DWORD			m_dwLogoutScriptID;

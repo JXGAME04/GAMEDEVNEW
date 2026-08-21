@@ -24,6 +24,16 @@ start "GameServer" GameServer.exe
 
 (mysqld / Sword3PaySys / Goddess / Bishop / S3Relay GIU NGUYEN — chi GameServer.)
 
+> **DA RESTART 23:12 dem 20/08 (nguoi van hanh tat, Claude swap DLL + bat lai):**
+> boot "Khoi dong hoan tat" sach — 0 "Include HONG", ScriptError.log KHONG them
+> dong nao (giu nguyen 3787B noise tasklink cu), nguoi choi vao game binh thuong.
+> Phat hien them: thu muc `logs\` CHUA TUNG ton tai ==> sJX2_ScriptLog (script_jx2.log)
+> xua nay fopen fail IM LANG (benh giong WriteStringToFile da va o fc957e15,
+> nhung o ham log C++ khac). Da TAO SAN thu muc 23:16 — khong can restart vi moi
+> lan ghi la mot fopen moi. No engine nho: sJX2_ScriptLog chua tu tao thu muc
+> (chi anh huong neu ai xoa `logs\`; muon triet de thi them g_CreatePath nhu
+> WriteStringToFile o lan build sau).
+
 **Kiem sau boot:**
 - `GameServer.log`: khong co dong "[script] Include HONG" tro vao leaguematch.
 - `logs\script_jx2.log`: thay "============ League Match Start: Phase=..." va sau
@@ -222,7 +232,44 @@ Xem commit message + THICONG_LIENDAU_PORT.md. Diem dang nho:
 3. Cuoi mua (28/08 qua 29/08): pha 1 → nhan thuong xep hang + danh hieu top4.
 4. GM nhanh: GetGlbValue(820..826) qua console/script de soi pha.
 
-## 7. FILE THAM KHAO
+## 7. BO SUNG 21/08 RANG SANG — chay thu that + lenh bai admin + file cau hinh
+
+Sau khi nguoi van hanh restart va bam NPC, he van hanh dung thiet ke nhung lo 3 viec:
+
+1. **"Su gia kiet xuat khong bam duoc"** = HE DANG DUNG: hang Kiet xuat DONG
+   theo switch.lua goc (JUNIOR=0) -> NPC vao nhanh xin loi -> nhung
+   `GetNpcName(GetLastDiagNpc())` tra nil -> concat gay (ScriptError 23:33 bat
+   nguyen van nho _ALERT moi). Fix goc 3 tang:
+   - `_ALERT` dang ky vao moi state: loi runtime Lua tu nay ghi NGUYEN VAN
+     (thong diep + traceback) vao ScriptError.log — truoc chi co ma so.
+   - `GetLastDiagNpc`: fallback `m_nWllsLastDiagNpc` (ghi tai KPlayer::DialogNpc)
+     vi engine khong bom global NpcIndex nhu Linux.
+   - `GetNpcName`: idx sai tra "" thay vi nil.
+2. **"Chu bi xac nhau + thieu duong dan spr"**: client Text.cpp KHONG parse
+   the `<link=image:...spr>` (hien nguyen van) va TEncodeText nuot dau `<`
+   khi ngay truoc la chuoi LE byte cao (luat GBK). Fix: bo the link o
+   npc\head.lua + helper.lua; them `wlls_lamsach()` tu chen khoang trang
+   truoc `<`; WLLS_LEVEL_DESC dat lai "Kiet xuat "/"Vo lam "; viet lai nhan
+   menu officer/helper co dau, chu dau hoa.
+3. **Thu muc `logs\` chua tung ton tai** -> sJX2_ScriptLog fail im lang. Da tao;
+   driver lien dau xac nhan SONG: `[WLLS] Driver lien dau da khoi dong` 23:31.
+
+**LENH BAI ADMIN — bo test lien dau** (`script\item\liendau_admin.lua`, duoc
+`lenhbaiadmin.lua` Include; lenh bai dofile lai moi lan mo nen sua file la an
+ngay khong can restart): xem trang thai (pha/mua/matchid/dong-mo 2 hang/diem
+ca nhan), **Mo tran NGAY (ep pha 4)** de test bat ky luc nao, ve pha that,
+khoi tao lai driver, cong danh du (37)/uy danh (39)/tich luy (2500), dat-xoa
+chien tich, xem doi, top 10 hai ladder, di chuyen nhanh hall/khu chuan bi.
+Duong di lenh ep pha: DynamicExecute -> gsdriver (WLLS_Adm_*) ->
+wlls_set_phase -> "dw" (tre ~1 giay, dung mach relay that).
+
+**FILE CAU HINH TAP TRUNG**: `script\leaguematch\wlls_config.lua` — bat/tat
+2 hang (Kiet xuat mac dinh MO — lech chu dich so voi goc Linux dong), khung
+gio mo tran (GIO_MO), so phut/luot, he so diem thang/hoa, he so nhan
+diem/item thuong xep hang. Duoc keo vao moi state qua switch.lua (tang lich)
+va missions\leaguematch\head.lua (tang tran + NPC). CHINH XONG PHAI RESTART.
+
+## 8. FILE THAM KHAO
 
 - D:\GAMEDEVNEW\THICONG_LIENDAU_PORT.md — nhat ky quyet dinh chi tiet.
 - Commit engine: 21e570bf + commit "Fix 12 loi tu 2 vong phan bien" 21/08

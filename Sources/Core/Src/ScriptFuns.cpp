@@ -6565,9 +6565,11 @@ int LuaSetNpcName(Lua_State* L)
 
 int LuaGetNpcName(Lua_State* L)
 {
-	if (Lua_GetTopIndex(L) < 1) return 0;
+	// [WLLS 21/08] idx sai tra "" thay vi nil - script goc Linux concat thang
+	// ket qua (wlls_npcname), nil lam gay ca ham thoai.
+	if (Lua_GetTopIndex(L) < 1) { Lua_PushString(L, (char*)""); return 1; }
 	int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
-	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC) return 0;
+	if (nNpcIndex <= 0 || nNpcIndex >= MAX_NPC) { Lua_PushString(L, (char*)""); return 1; }
 	Lua_PushString(L, Npc[nNpcIndex].Name);
 	return 1;
 }
