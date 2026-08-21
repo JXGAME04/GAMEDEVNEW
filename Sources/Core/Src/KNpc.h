@@ -536,6 +536,9 @@ public:
 	int					m_nHurtDesY;
 	int					m_nTongFlag;			// 
 	int					m_nPosShiftStep;
+	// Bi chan tam thoi: dung that (tu the dung) NHUNG GIU m_DesX/m_DesY, khac
+	// DoStand() von xoa dich nen phai cho lenh moi tu server.
+	void				DoStandBlocked();
 	// Co "toi dang sai, hay nan lai toi" - port tu ban goc JX2 (KNpc + 0x1894).
 	// Khi mo phong phia client bi ket (tim duong tra 0), thay vi DoStand() cung nhu
 	// truoc, ta giu nguyen trang thai chay va gio co; goi dong bo dinh ky KE TIEP

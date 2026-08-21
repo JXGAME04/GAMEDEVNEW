@@ -2020,6 +2020,29 @@ void KNpc::DoStand()
 	}
 }
 
+#ifndef _SERVER
+// Bi chan tam thoi (GetDir tra 0). Doi ve tu the DUNG that su - khong con
+// canh "dung yen ma chan van chay" - NHUNG KHONG dung vao m_DesX/m_DesY.
+// Khac DoStand() o dung mot diem do: DoStand xoa dich (KNpc.cpp:2004) nen NPC
+// dung han cho toi khi server gui lenh di chuyen MOI; con day thi tick sau
+// GetDir tu thu lai, duong thong la di tiep ngay.
+void KNpc::DoStandBlocked()
+{
+	m_Frames.nTotalFrame = m_StandFrame;
+	if (m_Doing == do_stand)
+		return;
+	FixPos();
+	m_Doing = do_stand;
+	m_Frames.nCurrentFrame = 0;
+	m_DataRes.SetBlur(FALSE);
+	if (m_FightMode)
+		m_ClientDoing = cdo_fightstand;
+	else
+		m_ClientDoing = cdo_stand;
+	m_DataRes.StopSound();
+}
+#endif
+
 void KNpc::OnStand()
 {
 	if (WaitForFrame())
@@ -4433,16 +4456,11 @@ void KNpc::ServeMove(int MoveSpeed)
 			DoStand(); //Â®Ã¸ng lÂ¹i
 			return;
 		}
+		// Dung THAT (het canh chan chay tai cho) nhung GIU DICH: tick sau tu thu
+		// lai duong, thong la di tiep ngay - khong phai cho lenh moi nhu DoStand().
+		// Van giu co de SyncNpcMin nan vi tri khi client/server lech nhau.
 		m_nNeedFixPos++;
-		// Van chan "chay tai cho": co nay duoc SyncNpcMin ha ve 0 moi lan goi
-		// dong bo nan vi tri. Neu bi chan lien tuc ~2/3 giay ma KHONG co goi nao
-		// nan (NPC ket that su / server coi no dang dung yen) thi dung that -
-		// tranh canh "dung yen ma chan van chay" keo dai vo han.
-		if (m_nNeedFixPos > 12)
-		{
-			m_nNeedFixPos = 0;
-			DoStand();
-		}
+		DoStandBlocked();
 		return;
 	}
 	else if (nRet == -1)
