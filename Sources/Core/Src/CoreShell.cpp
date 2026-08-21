@@ -3298,8 +3298,10 @@ static bool DT_IsQuestItem(int nPlayerIdx, const autoData* pAp, int nItemIdx)
 	return false;
 }
 
-// (21/08 - nguoi dung: "phan ban rac da co bo loc san tren auto") MOT bo loc "mon nay la RAC
-// dem ban" dung chung cho Hau can buoc 1 lan DTP_SELLJUNK - y nguyen luat cu cua buoc 1:
+// (21/08 - nguoi dung: "phan loc do ban / loc do khi nhat da test roi, dung dung va fix lai")
+// CHI DE DOC - tra loi "trong tui con mon nao may ban rac se ban khong" (DT_CoRac). KHONG
+// dieu khien viec ban: hai vong ban rac (Hau can buoc 1 va DTP_SELLJUNK) giu NGUYEN TRANG.
+// Soi cung dieu kien voi chung:
 // trang bi trang/xanh, khong khoa, khong phai item nhiem vu Da Tau; ngua/mat na theo o
 // "Ban ngua mat na"; "Giu nhan/day/boi cap >" (tab Nhat do); "Ban giu loc do" = giu mon co
 // dong trong danh sach LOC cua tab Nhat do (+all skill 139 luon giu).
@@ -4217,17 +4219,57 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 			}
-			// chon 1 mon rac dem ban - DUNG bo loc ban rac cua Hau can (DT_LaRac)
+			// chon 1 mon rac dem ban: trang bi trang/xanh, khong khoa, ton trong bo loc
+			// giu do cua tab Hau can, TRU item dat yeu cau nhiem vu (DT_IsQuestItem)
 			int nBan = 0;
 			for (int bi = 0; bi < EQUIPMENT_ROOM_HEIGHT && !nBan; ++bi)
 				for (int bj = 0; bj < EQUIPMENT_ROOM_WIDTH; ++bj)
 				{
 					int nIdx2 = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(bj, bi);
-					if (DT_LaRac(nPlayerIdx, pAp, nIdx2))
+					if (nIdx2 <= 0)
+						continue;
+					if (Item[nIdx2].GetGenre() != item_equip)
+						continue;
+					if (Item[nIdx2].GetColorItem() > green_item)
+						continue;
+					if (Item[nIdx2].GetPlayerItemLock() > 0 || Item[nIdx2].GetPlayerItemHLock() > 0
+					 || Item[nIdx2].GetPlayerItemLock() == -2)
+						continue;
+					if (DT_IsQuestItem(nPlayerIdx, pAp, nIdx2))
+						continue;
+					int nDet = Item[nIdx2].GetDetailType();
+					if (!pAp->bSellHorse && nDet >= equip_horse)
+						continue;
+					if (pAp->bSaveRing && (nDet == equip_ring || nDet == equip_amulet || nDet == equip_pendant)
+					 && Item[nIdx2].GetLevel() > pAp->nSRLevel)
+						continue;
+					// bo loc giu do theo dong ma (nhu may Hau can): +all skill (139) luon giu
+					if (!pAp->nSelSell && pAp->nFtMaCount)
 					{
-						nBan = nIdx2;
-						break;
+						bool bGiu = false;
+						for (int bk = 0; bk < pAp->nFtMaCount && !bGiu; ++bk)
+							for (int bm = 0; bm < 6; ++bm)
+							{
+								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 139)
+								{
+									bGiu = true;
+									break;
+								}
+								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 0)
+									break;
+								if (pAp->nFtMagic[bk][0] == Item[nIdx2].m_aryMagicAttrib[bm].nAttribType
+								 && (pAp->nFtMagic[bk][0] == magic_indestructible_b
+								  || Item[nIdx2].m_aryMagicAttrib[bm].nValue[0] >= pAp->nFtMagic[bk][1]))
+								{
+									bGiu = true;
+									break;
+								}
+							}
+						if (bGiu)
+							continue;
 					}
+					nBan = nIdx2;
+					break;
 				}
 			if (nBan)
 			{
@@ -9752,21 +9794,94 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					{	//b¸n r¸c
 						if(pApData->bSellItem)
 						{
-							// (21/08 - loi "co rac ma khong ban") vong cu chon mon CUOI moi hang tui: mon GIU LAI
-							// theo bo loc dung SAU se xoa (nSelIdx = 0; continue) mon rac dung TRUOC trong cung
-							// hang -> hang do khong bao gio duoc ban (mot mon giu 2x4 o cot cuoi chan 4 hang).
-							// Nay chon mon rac DAU TIEN, dung y nguyen bo loc cu (DT_LaRac).
 							int nSelIdx = 0;
-							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT && !nSelIdx;++i)
+							for(int i=0;i<EQUIPMENT_ROOM_HEIGHT;++i)
+							{
+								if(nSelIdx)
+									break;
 								for(int j=0;j<EQUIPMENT_ROOM_WIDTH;++j)
 								{
 									int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
-									if(DT_LaRac(nPlayerIdx, pApData, nIdx))
+									if(nIdx > 0)
 									{
-										nSelIdx = nIdx;
-										break;
+										if(Item[nIdx].GetGenre() != item_equip)
+											continue;
+										if(Item[nIdx].GetColorItem() > green_item)
+											continue;
+										if(Item[nIdx].GetPlayerItemLock() > 0 
+											|| Item[nIdx].GetPlayerItemHLock() > 0 
+											|| Item[nIdx].GetPlayerItemLock() == -2)
+											continue;
+										// (20/08) item dat yeu cau nhiem vu Da Tau dang lam: CAM ban
+										if(DT_IsQuestItem(nPlayerIdx, pApData, nIdx))
+											continue;
+										int nDetail = Item[nIdx].GetDetailType();
+										if(!pApData->bSellHorse)
+										{
+											if(nDetail >= equip_horse)
+												continue;
+											nSelIdx = nIdx;
+										}
+										else if(nDetail == equip_horse || nDetail == equip_mask)
+										{
+											nSelIdx = nIdx;
+											break;
+										}
+										else if(nDetail < equip_horse)
+										{
+											nSelIdx = nIdx;
+										}
+										if(nSelIdx)
+										{
+											if(pApData->bSaveRing)
+											{
+												if((nDetail == equip_ring
+												|| nDetail == equip_amulet
+												|| nDetail == equip_pendant)
+												&& Item[nSelIdx].GetLevel() > pApData->nSRLevel)
+												{
+													nSelIdx = 0;
+													continue;
+												}
+											}
+											if(!pApData->nSelSell && pApData->nFtMaCount)
+											{
+												bool bSave = false;
+												for(int k=0;k<pApData->nFtMaCount;++k)
+												{
+													if(bSave)
+														break;
+													for(int m=0;m<6;++m)
+													{
+														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 139)
+														{
+															bSave = true;
+															break;
+														}
+														if(Item[nSelIdx].m_aryMagicAttrib[m].nAttribType == 0)
+															break;
+														if(pApData->nFtMagic[k][0] == Item[nSelIdx].m_aryMagicAttrib[m].nAttribType)
+														{
+															if(pApData->nFtMagic[k][0] == magic_indestructible_b
+															|| Item[nSelIdx].m_aryMagicAttrib[m].nValue[0] >= pApData->nFtMagic[k][1])
+															{
+																g_DebugLog("ma[%d][%d]", pApData->nFtMagic[k][0],pApData->nFtMagic[k][1]);
+																bSave = true;
+																break;
+															}
+														}
+													}
+												}
+												if(bSave)
+												{
+													nSelIdx = 0;
+													continue;
+												}
+											}
+										}
 									}
 								}
+							}
 							if(nSelIdx)
 							{
 								SendClientCmdSell(Item[nSelIdx].GetID());
