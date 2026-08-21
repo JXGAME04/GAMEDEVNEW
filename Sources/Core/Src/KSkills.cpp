@@ -457,6 +457,7 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 		break;
 		
 	case	SKILL_SS_Melee:
+	AUTOLOG_EVERY(2000, "[S2-STYLE-MELEE-NOOP] skill=%d lv=%d launcher=%d p1=%d p2=%d melee=%d radius=%d form=%d -> than rong, KHONG lam gi", (int)m_nId, (int)m_ulLevel, nLauncher, nParam1, nParam2, (int)m_bIsMelee, m_nAttackRadius, (int)m_eMisslesForm);
 		{
 			
 			
@@ -678,7 +679,22 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 	SkillParam.nTargetId = 0;
 	AUTOLOG_EVERY(1000, "[E3_MISSLES_BADLAUNCHER] skill=%d launcher=%d ltype=%d p1=%d p2=%d", (int)m_nId, nLauncher, (int)eLauncherType, nParam1, nParam2);
 	if (nLauncher <= 0) return FALSE;
-	AUTOLOG_EVERY(1000, "[CAST-MISSLE-IN] t=%u sk=%d lv=%d form=%d launcher=%d(id=%u) p1=%d p2=%d childnum=%d childid=%d wait=%d ltype=%d", SubWorld[Npc[nLauncher].m_SubWorldIndex].m_dwCurrentTime, (int)m_nId, (int)m_ulLevel, (int)m_eMisslesForm, nLauncher, Npc[nLauncher].m_dwID, nParam1, nParam2, m_nChildSkillNum, m_nChildSkillId, nWaitTime, (int)eLauncherType);
+	// FIX 21/08 (sap game 0xC0000005 tai KSkills.cpp:681, jx_crash.log 13:52:25):
+	// nLauncher CHI la chi so Npc khi eLauncherType == SKILL_SLT_Npc. Voi
+	// SKILL_SLT_Missle (OnMissleEvent goi o KSkills.cpp:630) no la chi so VIEN DAN
+	// 0..MAX_MISSLE-1 (=500 o client), trong khi Npc[] o client chi co MAX_NPC = 256
+	// phan tu => Npc[nLauncher] doc ngoai mang => m_SubWorldIndex la rac =>
+	// SubWorld[rac] cham dia chi khong hop le => sap. Nay lay chi so dung theo loai.
+	if (g_AutoLogOn())
+	{
+		int nLogNpcIdx = (eLauncherType == SKILL_SLT_Npc && nLauncher < MAX_NPC) ? nLauncher : -1;
+		int nLogSubIdx = -1;
+		if (nLogNpcIdx >= 0)
+			nLogSubIdx = Npc[nLogNpcIdx].m_SubWorldIndex;
+		else if (eLauncherType == SKILL_SLT_Missle && nLauncher < MAX_MISSLE)
+			nLogSubIdx = Missle[nLauncher].m_nSubWorldId;
+		AUTOLOG_EVERY(1000, "[CAST-MISSLE-IN] t=%u sk=%d lv=%d form=%d launcher=%d(id=%u) p1=%d p2=%d childnum=%d childid=%d wait=%d ltype=%d", (nLogSubIdx >= 0 && nLogSubIdx < MAX_SUBWORLD) ? SubWorld[nLogSubIdx].m_dwCurrentTime : (DWORD)0, (int)m_nId, (int)m_ulLevel, (int)m_eMisslesForm, nLauncher, (nLogNpcIdx >= 0) ? (unsigned int)Npc[nLogNpcIdx].m_dwID : 0u, nParam1, nParam2, m_nChildSkillNum, m_nChildSkillId, nWaitTime, (int)eLauncherType);
+	}
 
 	switch(m_eMisslesForm)
 	{
@@ -1197,6 +1213,8 @@ exit:
     }
 #endif
 
+			if (Npc[nLauncher].IsPlayer())
+				AUTOLOG_EVERY(500, "[S2-ZONE-DONE] skill=%d lv=%d launcher=%d tgt=%d so_vien_tao=%d childnum=%d base=%d melee=%d radius=%d ref=(%d,%d) dir=%d wait=%d", (int)m_nId, (int)m_ulLevel, nLauncher, pSkillParam->nTargetId, nCastMissleNum, m_nChildSkillNum, (int)m_bBaseSkill, (int)m_bIsMelee, m_nAttackRadius, nRefPX, nRefPY, nDir, pSkillParam->nWaitTime);
 			return nCastMissleNum;
 }
 
