@@ -58,7 +58,9 @@ và 6 phù về `\script\item\messenger\toll_*.lua` (hiện đang là `0` = chư
 ## 2. LÔI ĐÀI BANG HỘI — trạng thái
 
 Script đã port (trùng 9/10 tệp từng byte), map 213-220 + region data đủ, timer 16/17 + mission 9
-đã khai. **0 hàm engine thiếu, 0 item cần.**
+đã khai. **0 item cần, 0 ảnh cần.**
+⚠️ Câu "0 hàm engine thiếu" ở bản đầu của mục này **ĐÃ SAI** — nó chỉ đúng ở tầng Lua.
+Tầng C++ có 3 stub chặn cứng: **xem mục 4.1**.
 
 **Ba điểm nối dây đang bị comment tắt:**
 | Tệp : dòng | Nội dung |
@@ -70,9 +72,8 @@ Script đã port (trùng 9/10 tệp từng byte), map 213-220 + region data đ�
 **Phải gỡ (bản tự viết trùng chức năng):** `script/tinhnang/loidai/` + các điểm gọi trong
 `missions/mission06.lua`, `timertask/task06.lua`, `timerserver.lua:743-770`.
 
-**Đang điều tra (workflow `wf_e9950759-e3b`):** NPC `manager.lua` / `camper*.lua` của bản Linux được
-đặt lên map bằng cách nào — bản Linux **không có `AddNpc` nào** trỏ tới chúng, nên phải xác định
-cơ chế trước khi nối dây.
+**Đã điều tra xong** — kết quả ở mục 4.1: NPC nằm trong dữ liệu bản đồ nhưng engine dự án bỏ qua,
+`manager.lua` là mã chết, trap thì đủ.
 
 **Sửa điều kiện theo chính sách cấp 90:**
 | Tệp : dòng | Hiện tại | Đổi thành |
@@ -80,6 +81,96 @@ cơ chế trước khi nối dây.
 | `missions/citywar_arena/camper.lua:81` và `:87` | `GetJoinTongTime() >= 7200` (5 ngày) | bỏ, thay `GetLevel() >= 90` |
 
 ---
+
+## 4. KẾT QUẢ ĐIỀU TRA CHẶN-ĐƯỜNG (workflow 9 tác tử, 2,0 triệu token, 2 vòng phản biện)
+
+### 4.1 ĐÍNH CHÍNH NẶNG: Lôi Đài Bang Hội KHÔNG phải "0 hàm engine, gỡ 3 dòng comment"
+
+Phân tích trước chỉ đối chiếu tầng **Lua**. Tầng **C++** có stub:
+
+| Chặn | Bằng chứng | Phải làm |
+|---|---|---|
+| `IsArenaBegin` trả **cứng 0** | `Sources/Core/Src/KJx2CityWar.cpp:679` (chú thích `:675-678`: *"Nhom ARENA (E4) - idle"*) | Viết logic ghép cặp 2 bang + mở sân |
+| `GetArenaBothSides` trả rỗng | `KJx2CityWar.cpp:685` | Trả tên 2 bang được ghép |
+| `GetArenaCityArea` trả 0 | `KJx2CityWar.cpp:692` | Trả khu thành |
+| NPC map-data **bị engine bỏ** | `KRegion.cpp:474-484` lọc theo `g_NotAddNpcNormal`; `kind_dialoger=3` (`GameDataDef.h:1372`); `settings/gamesetting.ini:259 NotAddNpcNormal=1` | Tự `AddNpc` bằng Lua trong `InitMission` mission 9 |
+| Ngay bản Linux cũng **không có cửa vào** | `citywar_global/infocenter_head.lua:34 PreEnterGame()` và `:53 EnterGame()` — **0 call site** | Tự dựng cửa vào |
+
+Hệ quả: timer 18 poll `IsArenaBegin` luôn trả 0 → **không bao giờ `OpenMission(9)`**;
+`camper.lua:26` luôn rơi vào nhánh *"Thời gian chiến đấu vẫn chưa đến!"*.
+
+**Tin tốt (đo thật — tự viết bộ giải nén UCL nrv2b để đọc dữ liệu region trong `maps.pak` cả hai cây):**
+- Map lôi đài có **đúng 2 NPC**: tpl 178 ô (1581,3257) chạy `camper1.lua`; tpl 124 ô (1603,3236)
+  chạy `camper2.lua`. **Hai cây trùng từng trường.**
+- `manager.lua` là **MÃ CHẾT** — không bản đồ nào trỏ tới.
+- **Trap đủ**: 1 trap id `0x67E8E3EB`, băm `g_FileName2Id` khớp tuyệt đối tệp dự án **đã có**.
+- **0 item, 0 ảnh** — `citywar_arena` không dùng vật phẩm nào, không tham chiếu `.spr` nào.
+
+### 4.2 Tín Sứ — 4 hàm engine + 7 item nhánh phụ
+
+- **4 hàm engine thiếu**: `SetSpecItemParam` · `ConsumeEquiproomItem` · `NpcName2Replace` ·
+  **`GetAroundNpcList`** (phản biện tìm ra — 5 Triệt X Phù gọi ở dòng đầu `main()`).
+- **~85 tệp .lua + 2 settings** phải chép; 1 dòng Include đổi sang `scriptjx2/tong_vn`.
+- **Bản dump Linux THIẾU script đặt NPC Dịch Quan** (`especiallymessenger()` 0 call site).
+- **7 item thiếu**, đều ở nhánh thưởng "Chìa Khoá Vàng" của Tín Sứ Bảo Rương:
+  30301 · 30529 · 30537 · 30506 · 30507 · 30006 · 30505 → **làm thêm** theo lệnh chủ game.
+
+> BẪY: `magicscript.txt` **hai cây KHÁC BỐ CỤC CỘT** — Linux cột **14** = script, dự án cột **10**.
+> `AddGoldItem` **đảo thứ tự tham số** giữa hai cây.
+> Bảng mặt nạ dự án tách thành cặp `(particular, level)`.
+> `safeshow` **KHÔNG thiếu** — là hàm engine đã đăng ký (`ScriptFuns.cpp:13188`, `:14018`).
+
+### 4.3 Chỉ Nam Nhiệm Vụ (F11) — phải viết mã CLIENT
+
+Bảng F11 dự án là **C++ viết cứng cho ĐÚNG MỘT nhiệm vụ Dã Tẩu**
+(`TASKGUIDE_DATAU_TASKID 6`, `UiTaskGuide.cpp:29`); TaskId khác in *"Chưa hỗ trợ hiển thị"*
+(`UiTaskGuide.cpp:365-369`). Dự án **không có** bảng `task id → mô tả` (Linux có
+`settings/task/taskguide.txt`, không có trong pak nào của dự án) và **không có tầng Lua giao diện**.
+
+**Đường dữ liệu thì ĐÃ THÔNG**: `SetTask` → `KPlayerTask::SetSaveVal` tự đẩy mọi id xuống client
+(`KPlayerTask.cpp:77-85`), id ≥ 256 đi kênh `UI_TASKVALUE` — server không cần gọi thêm hàm nào.
+⇒ Việc phải làm: thêm mục vào `UI/uitasklist.ini` + **viết nhánh C++ `BuildTinSuText()`**. **Build lại client.**
+
+### 4.4 Boss bang hội — dự án đã port gần đủ nhưng đã bị sửa khác gốc
+
+Chuỗi 3 khâu: NPC **Tổng quản BINH GIÁP phường** (không phải Hoạt động phường — tài liệu cũ dẫn nhầm;
+mục ở Hoạt động phường bị cổng vùng "cn" chặn nên chết) bán **Lệnh bài gọi Boss** bằng ngân sách
+kiến thiết bang → vật phẩm **Boss Triệu Hoán Phù** (Linux `6/1/1022` → dự án **1023**) → dùng
+**chỉ trong map bang hội 586-604** triệu **Boss Hoàng Kim cấp 95**.
+
+Dự án đã có menu, item, `bosscharm.lua`, npc template, engine `TWS_ApplyUse`. Nhưng đã sửa khác gốc:
+cấp boss, số phù, kịch bản rơi đồ, hẹn giờ 18h, +500k exp, và `bosscharm.lua:88 RemoveItem(nItemIdx)`
+(gốc không có — giữ nguyên là **trừ phù 2 lần**).
+
+> **HẠNG MỤC "PHẢI LÀM THÊM MAP" (không phải item):** map **592** và **598-604** (8/19 map bang hội)
+> **không có `.wor` trong bất kỳ pak nào** trong 37 pak `bin/client/data`, và không có trong
+> `WorldSet_GameServer.ini` (chỉ nạp 586-591 + 593-597 = 11 map). Cần **art bản đồ mới**.
+> Trọng số bốc boss: bộ 511/513/523 chiếm **81%** (810/1000). `goldboss.txt` chỉ phủ **11/19 boss**.
+
+### 4.5 Thuế thành — server gần đủ, CLIENT chết hẳn
+
+Bản Linux hiện thông tin ở **ba nơi, tất cả đều client**: (1) bản đồ thế giới — 7 nhãn `PureTextBtn`
+chuỗi `G_VICEROY_<thành>`; (2) bản đồ lớn — `[CityInfo1]` (Thái Thú + bang) và `[CityInfo2]`
+(thuế + vật giá); (3) cửa sổ `KUiCityManage` cho Thái Thú chỉnh thuế.
+
+Dự án: **tài nguyên client đã đủ** (`UiWorldMap.ini` 7 khu, `UiMiniMapBig.ini` có `[CityInfo1]/[CityInfo2]`,
+`spr.pak` có sprite thuế suất) nhưng **mã client chết**: `UiWorldMap.cpp` chỉ set chữ Tương Dương,
+`KUiMiniMap::LoadScheme` không nạp `CityInfo1/2`, `c2s_getcityowntong` **0 call site**.
+Thêm nữa **hệ 7 thành chưa cutover**, `jx2citywar.txt` 7 dòng đều vô chủ, thuế 0.
+
+---
+
+## 5. KHỐI LƯỢNG THẬT SAU ĐIỀU TRA
+
+| Đợt | Việc | C++ | Lua | Build client |
+|---|---|---|---|---|
+| 1a | **Lôi Đài Bang Hội** | 3 hàm arena `KJx2CityWar.cpp` | AddNpc + cửa vào + gỡ `tinhnang/loidai` + cấp 90 | không |
+| 1b | **Tín Sứ** | 4 hàm engine | chép ~85 tệp + remap id + 7 item mới + gỡ `thienbaokho` | không |
+| 1c | **Chỉ Nam Nhiệm Vụ** | nhánh `BuildTinSuText()` | `uitasklist.ini` | **CÓ** |
+| 2 | **Bang hội + boss bang hội** | 17 hàm | `missions/tong` 41 tệp + kéo `bosscharm` về gốc | không |
+| 3 | **Thuế thành** | mở 3 chỗ client + nối giao thức | cutover `timerserver` | **CÓ** |
+
+**Duy nhất một thứ không làm được bằng mã: art bản đồ cho map 592 + 598-604 (8 map bang hội).**
 
 ## 3. NHẬT KÝ THI CÔNG
 
