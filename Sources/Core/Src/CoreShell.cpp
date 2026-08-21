@@ -2546,6 +2546,7 @@ enum DTPHASE
 	DTP_SELLJUNK,		// tui day: (20/08) TU ban rac tai cho, xong lam tiep
 	DTP_MUASAP,			// (20/08) T2 thieu do: di cho xem sap nguoi ban (that + bot) de mua
 	DTP_CITYHOP,		// (20/08) dang nho Xa Phu cho qua thanh khac tim sap
+	DTP_YIELD,			// (21/08) bi dua ve thanh giua chung / het rac: nhuong may cho Hau can don xong roi lam tiep
 };
 
 // y dinh hien tai khi mo thoai NPC Da Tau (ea.nDTStep)
@@ -3237,12 +3238,30 @@ static int DT_HasPortalInBag(int nPlayerIdx)
 	return 0;
 }
 
+// ==== (21/08) trang thai phu cua 1 client (1 nhan vat) ====
+static DWORD g_dwDTKhoePend = 0;	// ID mon KHOE (loai 3) da dat vao hop giao, dang cho ket qua tra
+static DWORD g_dwDTKhoeId = 0;		// ID mon khoe da tra XONG (server hoan lai) - can cat vao ruong
+static int   g_nDTKhoeTry = 0;		// so nhip da thu cat mon khoe
+static UINT  g_uDTTickT = 0;		// moc nhip DT_Process gan nhat (cong TP tui day doc de biet DT con song)
+static int   g_nDTSellNeed = 8;		// DTP_SELLJUNK: du bao nhieu o trong thi thoi ban
+static int   g_nDTSellMin = 5;		// DTP_SELLJUNK: het rac ma >= so nay thi van lam tiep duoc
+static UINT  g_uDTYieldT = 0;		// lan cuoi nhuong may cho Hau can (DTP_YIELD)
+static int   g_nDTYieldMap = 0;		// map luc nhuong
+static UINT  g_uDTSellPortalT = 0;	// lan cuoi SELLJUNK dung phu ve (het rac, nho Hau can)
+
 // (20/08 - F11 nguoi dung) item DAT YEU CAU nhiem vu Da Tau dang lam (loai 1/2/3):
 // TUYET DOI khong duoc ban. Goi tu may ban rac (ca Hau can lan DTP_SELLJUNK).
 static bool DT_IsQuestItem(int nPlayerIdx, const autoData* pAp, int nItemIdx)
 {
 	if (!pAp || pAp->bDaTau != 1 || nItemIdx <= 0)
 		return false;
+	// (21/08) mon "khoe" vua tra xong dang cho cat ruong (DT_CatKhoe): cung cam ban
+	if (g_dwDTKhoeId || g_dwDTKhoePend)
+	{
+		const DWORD dwK = Item[nItemIdx].GetID();
+		if (dwK == g_dwDTKhoeId || dwK == g_dwDTKhoePend)
+			return true;
+	}
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	if (ea.nDTQType < 1 || ea.nDTQType > 3)
 		return false;
@@ -3292,6 +3311,137 @@ static bool DT_EnsureUnlock(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.uDTNext = uCurTime + 1200;
 	}
 	return false;
+}
+
+// (21/08) cat item tu TUI vao ruong - nguoc voi DT_BoxToBag, cung goi c2sdnmbr_exchangeitem
+// (server KProtocolProcess.cpp:5073: doi nSrcPos == pos_equiproom, m_CUnlocked, KHONG fight-mode,
+// ruong dich phai con cho - thieu la bo qua im lang).
+static void DT_BagToBox(int nItemIdx, int nDstPos)
+{
+	char szPack[16];
+	DYNAMIC_COMMAND* pCmd = (DYNAMIC_COMMAND*)&szPack[0];
+	pCmd->ProtocolType = c2s_dynamic_structure;
+	pCmd->nBranch = c2sdnmbr_exchangeitem;
+	pCmd->m_wLength = sizeof(DYNAMIC_COMMAND) - 1 + 2 * sizeof(BYTE) + sizeof(int);
+	BYTE* pPos = (BYTE*)(pCmd + 1);
+	*pPos = (BYTE)pos_equiproom;
+	++pPos;
+	*pPos = (BYTE)nDstPos;
+	++pPos;
+	*(int*)pPos = Item[nItemIdx].GetID();
+	g_pClient->SendPackToServer((BYTE*)pCmd, pCmd->m_wLength + 1);
+}
+
+// (21/08) chon ruong con cho cho mon w x h, theo o "cat vao" (nSelStore) cua tab Hau can -
+// dung thu tu cua may Hau can buoc 5: ruong chinh -> mo rong 1 -> (nSelStore>=1) mo rong 2
+// -> (nSelStore>=2) mo rong 3. Tra pos_* ruong dich, 0 = het cho.
+static int DT_ChestRoomFor(int nPlayerIdx, const autoData* pAp, int w, int h)
+{
+	int x, y;
+	KItemList& il = Player[nPlayerIdx].m_ItemList;
+	const int nEx = Npc[Player[nPlayerIdx].m_nIndex].m_ExBoxId;
+	if (il.CheckCanPlaceInEquipment(w, h, &x, &y, room_repository))
+		return pos_repositoryroom;
+	if (nEx >= 1 && il.CheckCanPlaceInEquipment(w, h, &x, &y, room_exbox1))
+		return pos_exbox1room;
+	if (pAp->nSelStore >= 1 && nEx >= 2 && il.CheckCanPlaceInEquipment(w, h, &x, &y, room_exbox2))
+		return pos_exbox2room;
+	if (pAp->nSelStore >= 2 && nEx >= 3 && il.CheckCanPlaceInEquipment(w, h, &x, &y, room_exbox3))
+		return pos_exbox3room;
+	return 0;
+}
+
+// (21/08) thay ruong thuong trong luc dang tra loai 3 = tra XONG -> chot mon khoe can cat.
+static void DT_KhoeXong(int nPlayerIdx)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	if (ea.nDTQType == 3 && g_dwDTKhoePend)
+	{
+		g_dwDTKhoeId = g_dwDTKhoePend;
+		g_nDTKhoeTry = 0;
+	}
+	g_dwDTKhoePend = 0;
+}
+
+// (21/08 - nguoi dung: "lam nhiem vu khoe do xong thay vi ban thi gui mon do vao ruong")
+// Mon khoe (loai 3) duoc server HOAN LAI sau khi tra xong (seasonnpc.lua Task_Accept_03 ->
+// EndGiveBox) - truoc day nam lai trong tui roi bi may ban rac (Hau can / DTP_SELLJUNK)
+// ban mat. Nay: ghi ID luc bam OK hop giao (g_dwDTKhoePend), thay ruong thuong (= tra
+// XONG) thi chot (g_dwDTKhoeId), va o dau DTP_GOTONPC cat vao ruong (can ruong dang mo
+// hoac mat khau ruong tab Hau can). Server CU (chua restart, chua co EndGiveBox) de mon
+// ket trong hop giao -> thu hoi ve tui truoc roi moi cat. Tra 1 = dang ban, 0 = khong co viec.
+static int DT_CatKhoe(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	if (!g_dwDTKhoeId)
+		return 0;
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	int nIdx = 0, nPlace = -1;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if (Item[pIt->nIdx].GetID() == g_dwDTKhoeId)
+		{
+			nIdx = pIt->nIdx;
+			nPlace = pIt->nPlace;
+			break;
+		}
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	if (!nIdx || nPlace == pos_repositoryroom || nPlace == pos_exbox1room
+	 || nPlace == pos_exbox2room || nPlace == pos_exbox3room)
+	{
+		// da nam trong ruong (minh cat xong / Hau can cat ho) hoac khong con -> xong viec
+		if (nIdx && g_nDTKhoeTry > 0)
+			DT_Msg(nPlayerIdx, "<color=Cyan>§· cÊt mãn khoe vµo r­¬ng - lÇn sau gÆp nhiÖm vô khoe sÏ lÊy ra dïng l¹i.");
+		g_dwDTKhoeId = 0;
+		g_nDTKhoeTry = 0;
+		return 0;
+	}
+	if (Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
+		return 0;	// ngoai thanh server khong cho dung ruong - de luc ve thanh
+	if (++g_nDTKhoeTry > 12)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng cÊt ®­îc mãn khoe vµo r­¬ng (r­¬ng khãa/®Çy?) - ®Ó l¹i trong tói.");
+		g_dwDTKhoeId = 0;
+		g_nDTKhoeTry = 0;
+		return 0;
+	}
+	if (nPlace == pos_affairitem)
+	{
+		// server cu: mon con ket trong hop giao - thu hoi ve tui truoc (moi lan 1 mon)
+		if (DT_ThuHoiBox(nPlayerIdx) < 0)
+			DT_Msg(nPlayerIdx, "<color=Yellow>Mãn khoe cßn kÑt trong hép giao mµ tói thiÕu chç - sÏ lÊy sau.");
+		ea.uDTNext = uCurTime + 1200;
+		return 1;
+	}
+	if (nPlace != pos_equiproom)
+	{
+		g_dwDTKhoeId = 0;	// tren tay / cho la - thoi
+		g_nDTKhoeTry = 0;
+		return 0;
+	}
+	if (!Player[nPlayerIdx].m_CUnlocked && !pAp->szBoxPass[0])
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>R­¬ng ®ang khãa mµ ch­a cã mËt khÈu ë tab HËu cÇn - kh«ng cÊt ®­îc mãn khoe, ®Ó l¹i trong tói.");
+		g_dwDTKhoeId = 0;
+		g_nDTKhoeTry = 0;
+		return 0;
+	}
+	if (!DT_EnsureUnlock(nPlayerIdx, pAp, uCurTime))
+		return 1;	// dang go mat khau ruong
+	const int nDst = DT_ChestRoomFor(nPlayerIdx, pAp, Item[nIdx].GetWidth(), Item[nIdx].GetHeight());
+	if (!nDst)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>R­¬ng ®Çy - kh«ng cÊt ®­îc mãn khoe, ®Ó l¹i trong tói.");
+		g_dwDTKhoeId = 0;
+		g_nDTKhoeTry = 0;
+		return 0;
+	}
+	if (g_nDTKhoeTry == 1)
+		DT_Msg(nPlayerIdx, "<color=Cyan>Khoe xong - cÊt mãn khoe vµo r­¬ng ®Ó lÇn sau dïng l¹i...");
+	DT_BagToBox(nIdx, nDst);
+	ea.uDTNext = uCurTime + 1200;
+	return 1;
 }
 
 // (20/08) keo PHU VE tu ruong ve tui (chi can mat khau ruong). 1 = dang xu ly, 0 = chiu.
@@ -3563,6 +3713,7 @@ static void DT_ParseQuest(int nPlayerIdx, const char* szQ)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	ea.nDTPhaseBack = 0;	// (r5d) nhiem vu moi = tour cu het y nghia
+	g_dwDTKhoePend = 0;	// (21/08) hoi thoai nhiem vu hien lai = lan tra truoc khong xong
 	ea.nDTQType = 0;
 	ea.nDTCandNum = 0;
 	ea.nDTCandCur = 0;
@@ -3767,6 +3918,41 @@ static void DT_SellResume(ExtAuto& ea)
 	ea.nDTRetry = 0;
 }
 
+// (21/08) vao pha ban rac tai cho - dung chung cho MOI loi vao (DT_BagRelease / vua ve thanh /
+// bi dua ve thanh luc farm). Nguong thoat mac dinh 8 o, toi thieu 5 (= server doi khi tra);
+// hoi thoai "can it nhat N o" cua moc set se nang nguong SAU khi goi ham nay.
+static void DT_SellStart(int nPlayerIdx, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nDTPhase = DTP_SELLJUNK;
+	ea.uDTHoldUntil = uCurTime + 4u * 60u * 1000u;	// han an toan 4 phut
+	ea.nDTRetry = 0;		// so lenh ban da gui
+	// (PB S3) moc so o trong de vao nDTShopTry - nDTItemIdx phai giu nguyen nghia
+	// "item nhiem vu da chot" cho DT_IsQuestItem, khong duoc muon lam bien dem.
+	ea.nDTShopTry = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+	g_nDTSellNeed = 8;
+	g_nDTSellMin = 5;
+}
+
+// (21/08) nhuong may cho HAU CAN (tab Hau can, o "Ve thanh") lam viec thanh theo cau hinh
+// cua no: ban rac / mo ruong / rut tien / sua do / cat do / mua thuoc / giu tien (buoc 0-8);
+// toi buoc 9 (sap ra Xa Phu len map luyen cong) thi Da Tau lay lai may va tu di tiep
+// (DTP_YIELD). Chi goi khi pAp->bReturn bat va dang o thanh.
+static int DT_Yield(int nPlayerIdx, UINT uCurTime, const char* szWhy)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	DT_Msg(nPlayerIdx, szWhy);
+	g_uDTYieldT = uCurTime;
+	g_nDTYieldMap = SubWorld[0].m_SubWorldID;
+	ea.nHomeStep = 0;	// Hau can chay lai tu dau (may DT cam lai nen no chua chay nhip nao)
+	ea.nSubStep = 0;
+	ea.nDTBackXaFu = 0;	// sau khi nhuong, EXEC/GOTONPC tu quyet dinh duong di
+	ea.nDTPhase = DTP_YIELD;
+	ea.uDTHoldUntil = uCurTime + 5u * 60u * 1000u;	// han chot: Hau can ket o dau thi lay lai may
+	ea.nDTEngaged = 0;
+	return 0;
+}
+
 // (20/08 - loi "phu ve khong ban ma di thang xa phu roi phu ve lap mai") tui day:
 // truoc day THA MAY cho may Hau can - nhung Hau can chay theo cau hinh RIENG cua no
 // (co the khong bat Ban do, xong viec lai tu quay ve bai) => vong lap phu ve vo tan.
@@ -3779,12 +3965,7 @@ static int DT_BagRelease(int nPlayerIdx, const autoData* pAp, UINT uCurTime, con
 	DT_Msg(nPlayerIdx, szWhy);
 	ea.uDTStatusTime = 0;
 	DT_Msg(nPlayerIdx, "<color=Yellow>Tói ®Çy - auto tù b¸n bít trang bÞ tr¾ng/xanh ngay t¹i chç...");
-	ea.nDTPhase = DTP_SELLJUNK;
-	ea.uDTHoldUntil = uCurTime + 4u * 60u * 1000u;	// han an toan 4 phut
-	ea.nDTRetry = 0;		// so lenh ban da gui
-	// (PB S3) moc so o trong de vao nDTShopTry - nDTItemIdx phai giu nguyen nghia
-	// "item nhiem vu da chot" cho DT_IsQuestItem, khong duoc muon lam bien dem.
-	ea.nDTShopTry = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+	DT_SellStart(nPlayerIdx, uCurTime);
 	ea.nDTEngaged = 1;
 	return 1;
 }
@@ -3794,6 +3975,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	KDaTauCapture& cap = g_sDTCap;
+	g_uDTTickT = uCurTime;	// (21/08) dau nhip "DT con song" cho cong TP tui day (ATYPE_TP_FULLITEM)
 	int nMap = SubWorld[0].m_SubWorldID;
 	int nToday = DT_Today();
 	int i, idx;
@@ -3877,7 +4059,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	{
 		ea.nDTEngaged = (ea.nDTQType == 4 && nMap == ea.nDTMapId) ? 2 : 1;
 		int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-		if (nTrong >= 8)
+		if (nTrong >= g_nDTSellNeed)
 		{
 			DT_Msg(nPlayerIdx, "<color=Cyan>Tói ®· cã chç trèng - quay l¹i lµm D· TÈu.");
 			DT_SellResume(ea);
@@ -3893,9 +4075,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		else if (uCurTime > ea.uDTHoldUntil)
 		{
 			ea.uDTHoldUntil = 0;
-			if (nTrong >= 5)
+			if (nTrong >= g_nDTSellMin)
 			{
-				DT_SellResume(ea);	// du 5 o de tra nhiem vu - lam tiep dung mach
+				DT_SellResume(ea);	// du o de tra nhiem vu - lam tiep dung mach
 				return 1;
 			}
 			return DT_Hold(nPlayerIdx, "<color=Yellow>B¸n r¸c xong vÉn ch­a ®ñ « trèng - h·y dän bít tói gióp auto.", uCurTime, 15 * 60 * 1000);
@@ -3917,6 +4099,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				if (DT_UsePortal(nPlayerIdx) || DT_PortalPull(nPlayerIdx, pAp, uCurTime))
 				{
+					if (ea.nDTQType == 4 && ea.nDTMapId > 0)
+						ea.nDTBackXaFu = 1;	// (21/08) ban xong o thanh thi ra Xa Phu di lai, khoi ghe NPC
 					ea.nDTRetry = 0;
 					ea.uDTNext = uCurTime + 3000;
 					return 1;
@@ -3981,12 +4165,40 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return ea.nDTEngaged;
 			}
 			// het rac ma van thieu cho
-			ea.uDTHoldUntil = 0;
-			if (nTrong >= 5)
+			if (nTrong >= g_nDTSellMin)
 			{
+				ea.uDTHoldUntil = 0;
 				DT_SellResume(ea);
 				return 1;
 			}
+			// (21/08 - "phu ve khong ban, toi xa phu, len map, phu ve lai") con do khong ban
+			// duoc (nguyen lieu/do khoa/do tim...): nho may HAU CAN don theo cau hinh cua no
+			// (cat ruong/ban/mua thuoc) roi lam tiep - dang ngoai thanh thi phu ve truoc. Moi
+			// 10 phut nhuong 1 lan; nhuong roi van chat thi treo nho nguoi don.
+			if (pAp->bReturn && uCurTime - g_uDTYieldT > 10u * 60u * 1000u)
+			{
+				if (nOThanh)
+					return DT_Yield(nPlayerIdx, uCurTime, "<color=Yellow>HÕt r¸c ®Ó b¸n mµ tói vÉn chËt - ®Ó HËu cÇn cÊt r­¬ng/dän tói råi lµm tiÕp.");
+				if (Npc[Player[nPlayerIdx].m_nIndex].m_FightMode)
+				{
+					// moi 15 giay dung phu 1 lan (Tho Dia Phu TIEU HAO - dang cho chuyen map thi dung lap)
+					if (uCurTime - g_uDTSellPortalT > 15000u && DT_UsePortal(nPlayerIdx))
+					{
+						g_uDTSellPortalT = uCurTime;
+						if (ea.nDTQType == 4 && ea.nDTMapId > 0)
+							ea.nDTBackXaFu = 1;
+						DT_Msg(nPlayerIdx, "<color=Yellow>HÕt r¸c ®Ó b¸n mµ tói vÉn chËt - phï vÒ thµnh nhê HËu cÇn dän tói råi quay l¹i.");
+						ea.uDTNext = uCurTime + 3000;
+						return ea.nDTEngaged;
+					}
+					if (uCurTime - g_uDTSellPortalT <= 15000u)
+					{
+						ea.uDTNext = uCurTime + 1000;	// dang cho phu chuyen map
+						return ea.nDTEngaged;
+					}
+				}
+			}
+			ea.uDTHoldUntil = 0;
 			return DT_Hold(nPlayerIdx, "<color=Yellow>B¸n hÕt r¸c mµ vÉn ch­a ®ñ « trèng - h·y dän bít tói gióp auto.", uCurTime, 15 * 60 * 1000);
 		}
 		return ea.nDTEngaged;
@@ -4040,6 +4252,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// nho pha lai de bam thuong xong quay ve dung cho, khong lam lai tour.
 		ea.nDTPhaseBack = (ea.nDTPhase == DTP_MUASAP || ea.nDTPhase == DTP_CITYHOP)
 			? ea.nDTPhase : 0;
+		DT_KhoeXong(nPlayerIdx);	// (21/08) loai 3 co thuong = tra XONG, mon khoe duoc hoan -> cat ruong
 		ea.nDTPhase = DTP_REWARD;
 		ea.nDTRetry = 0;
 	}
@@ -4091,10 +4304,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				if (pAp->bSellItem
 				 && Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 10)
 				{
-					ea.nDTPhase = DTP_SELLJUNK;
-					ea.nDTRetry = 0;
-					ea.nDTShopTry = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
-					ea.uDTHoldUntil = uCurTime + 4u * 60u * 1000u;
+					DT_SellStart(nPlayerIdx, uCurTime);
 					DT_Msg(nPlayerIdx, "<color=Cyan>VÒ thµnh - b¸n bít r¸c tr­íc råi lµm tiÕp...");
 					return 1;
 				}
@@ -4131,6 +4341,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case DTP_GOTONPC:
 	{
 		ea.nDTEngaged = 1;
+		// (21/08) mon "khoe" vua tra xong (server hoan lai) -> cat vao ruong truoc (yeu cau
+		// nguoi dung: "khoe do xong thay vi ban thi gui mon do vao ruong").
+		if (DT_CatKhoe(nPlayerIdx, pAp, uCurTime))
+			return 1;
 		const DTNpcRow* pRow = NULL;
 		for (i = 0; i < g_nDTNpcCount; ++i)
 			if (g_DTNpc[i].nMapId == nMap)
@@ -4179,6 +4393,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// chinh DTP_REWARD moi tieu thu no de biet phai bam nut nao.
 		if (cap.uFinSeq != ea.uDTFinSeen)
 		{
+			DT_KhoeXong(nPlayerIdx);	// (21/08) loai 3: co thuong = tra XONG -> chot mon khoe de cat ruong
 			ea.nDTPhase = DTP_REWARD;
 			ea.nDTRetry = 0;
 			ea.uDTNext = uCurTime + 700;
@@ -4245,10 +4460,28 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		// tui day
 		if (DT_Has(szQ, DTM_MSG_BAGFULL))
-			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói ®Çy (d­íi 5 « trèng) - h·y dän tói råi auto ch¹y tiÕp.");
+		{
+			// (21/08) moc set doi NHIEU hon 5 o ("Hanh trang da day, can it nhat N o trong" -
+			// seasonnpc.lua:463, N toi 5+24): doc N de ban cho du, khong thi SELLJUNK du 8 o
+			// thoat ngay -> NPC lai bao day -> lap vo tan. Ngoai moc N = 5 nhu cu.
+			char szDay[160];
+			const int nCanO = DT_NumAfter(szQ, DTM_MSG_BAGFULL);
+			const int nCanOk = (nCanO > 5 && nCanO <= 60) ? nCanO : 5;
+			sprintf(szDay, "<color=Yellow>Tói ®Çy (cÇn Ýt nhÊt %d « trèng) - auto dän bít råi ch¹y tiÕp.", nCanOk);
+			const int nRet5 = DT_BagRelease(nPlayerIdx, pAp, uCurTime, szDay);
+			if (nCanOk > 5)
+			{
+				g_nDTSellMin = nCanOk;
+				g_nDTSellNeed = nCanOk + 2;
+			}
+			return nRet5;
+		}
 		// tra nhiem vu that bai (chua du yeu cau)
 		if (DT_Has(szQ, DTM_MSG_FAILREQ) || DT_Has(szQ, DTM_MSG_FAILSHXT))
 		{
+			g_dwDTKhoePend = 0;	// (21/08) tra truot = mon khoe chua xong, chua cat
+			if (ea.nDTQType == 3)
+				g_dwDTKhoeId = 0;	// (phong cua so thuong TRE cua nhiem vu truoc chot nham mon dang can tra)
 			// (r5) thu do ket trong hop giao ve tui truoc (server khong dong hop
 			// khi tu choi) - khong thu thi moi bo quet se tuong MAT do.
 			// (PB r5b) moi lan 1 mon + kiem cho; -1 = tui thieu cho -> giu trong hop.
@@ -4925,7 +5158,28 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if (nMap != ea.nDTMapId)
 		{
-			// bi ra khoi map (chet/telport) - quay lai (tin da doc xong o tren)
+			// bi ra khoi map (chet / teleport / TP mau-thuoc-tien-do hong cua tab Hau can) -
+			// quay lai (tin da doc xong o tren). (21/08 - "phu ve khong ban ma cu toi xa phu
+			// roi len lai map") dang o THANH co Da Tau thi: nhuong Hau can don theo cau hinh
+			// (o "Ve thanh" bat) hoac it nhat ban rac (o "Ban vat pham" bat) TRUOC roi moi
+			// ra Xa Phu - khong thi vua len map TP tui day lai bat ve, lap vo tan.
+			int nOThanhF = 0;
+			for (i = 0; i < g_nDTNpcCount; ++i)
+				if (g_DTNpc[i].nMapId == nMap)
+				{
+					nOThanhF = 1;
+					break;
+				}
+			if (nOThanhF && pAp->bReturn && uCurTime - g_uDTYieldT > 10u * 60u * 1000u)
+				return DT_Yield(nPlayerIdx, uCurTime, "<color=Cyan>BÞ ®­a vÒ thµnh gi÷a lóc ®¸nh qu¸i - ®Ó HËu cÇn b¸n/cÊt ®å, mua thuèc xong sÏ ra Xa Phu ®i l¹i.");
+			if (nOThanhF && pAp->bSellItem
+			 && Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 10)
+			{
+				DT_SellStart(nPlayerIdx, uCurTime);
+				ea.nDTBackXaFu = 1;	// ban xong thi ra Xa Phu di lai (DT_SellResume)
+				DT_Msg(nPlayerIdx, "<color=Cyan>BÞ ®­a vÒ thµnh gi÷a lóc ®¸nh qu¸i - b¸n bít r¸c råi ra Xa Phu ®i l¹i.");
+				return 1;
+			}
 			ea.nDTPhase = DTP_EXEC;
 			ea.nDTEngaged = 1;
 			return 1;
@@ -4956,6 +5210,13 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nDTEngaged = 1;
 			return 1;
 		}
+		// (21/08 - "dang lam nhiem vu, tui day, phu ve khong ban, toi xa phu, len map, phu ve
+		// lai") FARM truoc day KHONG kiem tui: day thi TP "ve thanh khi tui day" (tab Hau
+		// can) bat nhan vat ve, may tuong bi da khoi map -> ra Xa Phu di lai khong ban -> lap;
+		// khong bat TP thi cuon roi khong nhat duoc -> 20 phut "khong tien trien". Nay <5 o
+		// trong la TU ban rac tai cho (DTP_SELLJUNK), du cho lai danh tiep.
+		if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) < 5)
+			return DT_BagRelease(nPlayerIdx, pAp, uCurTime, "<color=Yellow>Tói gÇn ®Çy khi ®ang ®¸nh qu¸i - b¸n bít r¸c t¹i chç råi ®¸nh tiÕp.");
 		// DANH QUAI + DI TIM QUAI THEO BANG CUM THAT (ATYPE_FIGHT dung nCurMoveRet==3)
 		int nX, nY;
 		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
@@ -5118,6 +5379,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		SendUiCmdScript(1, cap.szBoxFunc);
 		ea.nDTStep = DTI_TURNWAIT;
+		if (ea.nDTQType == 3 && nItem > 0)
+			g_dwDTKhoePend = Item[nItem].GetID();	// (21/08) nho mon khoe - tra XONG thi cat ruong
 		ea.nDTItemIdx = 0;
 		ea.nDTPhase = DTP_WAITDLG;
 		ea.uDTNext = uCurTime + 1000;
@@ -5207,6 +5470,38 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nDTRetry = 0;
 		ea.uDTNext = uCurTime + 1200;
 		return 1;
+	}
+
+	case DTP_YIELD:
+	{
+		// (21/08) dang nhuong may cho Hau can lam viec thanh (xem DT_Yield). Buoc 9 cua no
+		// = sap ra Xa Phu len map luyen cong -> lay lai may TRUOC do; het han / roi thanh /
+		// nguoi tat o "Ve thanh" cung lay lai. Loai 4 dang ve tra thi toi NPC; loai khac
+		// qua EXEC de tim lai do (Hau can co the da cat mon nhiem vu vao ruong - EXEC keo ra).
+		const int nXongHC = (ea.nHomeStep >= 9);
+		// (fight-mode cua minh co the cap nhat TRE hon id map vai nhip sau khi chuyen map
+		// -> chi tin co nay sau 3 giay ke tu luc nhuong)
+		if (nXongHC || uCurTime > ea.uDTHoldUntil || nMap != g_nDTYieldMap || !pAp->bReturn
+		 || (Npc[Player[nPlayerIdx].m_nIndex].m_FightMode && uCurTime - g_uDTYieldT > 3000u))
+		{
+			DT_Msg(nPlayerIdx, nXongHC ? "<color=Cyan>HËu cÇn dän xong - D· TÈu lµm tiÕp."
+			                           : "<color=Cyan>Kh«ng chê HËu cÇn n÷a - D· TÈu lµm tiÕp.");
+			ea.uDTHoldUntil = 0;
+			if (ea.nDTQType == 4 && ea.nDTStep == DTI_TURNIN)
+				ea.nDTPhase = DTP_GOTONPC;
+			else if (ea.nDTQType >= 1 && ea.nDTQType <= 6)
+			{
+				ea.nDTStep = DTI_NONE;
+				ea.nDTPhase = DTP_EXEC;
+			}
+			else
+				ea.nDTPhase = DTP_IDLE;
+			ea.nDTRetry = 0;
+			ea.nDTEngaged = 1;
+			return 1;
+		}
+		ea.nDTEngaged = 0;
+		return 0;
 	}
 
 	case DTP_MUASAP:
@@ -7244,6 +7539,15 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_TP_DMGITEM:
 				{
 					if(!Npc[nNpcIdx].m_FightMode)
+						return 0;
+					// (21/08 DaTau) may Da Tau dang CAM LAI (farm / ban rac / ve thanh...) thi tu lo
+					// chuyen tui day (DTP_FARM <5 o -> DTP_SELLJUNK ban tai cho, het cach moi phu ve
+					// + nhuong Hau can). TP "ve thanh khi tui day" bat giua luc FARM lam may tuong bi
+					// da khoi map -> ra Xa Phu di lai khong ban -> "phu ve - xa phu - len map - phu
+					// ve" lap vo tan (loi nguoi dung 21/08). Chi chan khi DT_Process vua chay trong
+					// nhip nay (tat o Da Tau / treo / nhuong may = TP chay lai binh thuong).
+					if(uParam == ATYPE_TP_FULLITEM && Player[nPlayerIdx].m_sExtAuto.nDTEngaged
+					&& uCurTime - g_uDTTickT < 1500)
 						return 0;
 
 					static int aMap[42] = {387,388,389,390,391,392,393,394,395,375,386,416,511,995,44,197,208,209,210,211,213,223,
