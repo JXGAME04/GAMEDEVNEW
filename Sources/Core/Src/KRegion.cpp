@@ -690,6 +690,18 @@ void KRegion::Activate()
 
 	while (pNode)
 	{
+		// PHAI lay node ke TRUOC khi goi Activate(). Activate() -> ProcStatus() ->
+		// ServeMove() co the goi NpcChangeRegion (KNpc.cpp:4638, hoac :2120 khi chet)
+		// -> KRegion::RemoveNpc -> KNode::Remove() dat m_pNext = NULL => GetNext() tra
+		// NULL => vong lap DUNG GIUA CHUNG, moi NPC nam sau trong danh sach region do
+		// khong duoc Activate() VA khong duoc NormalSync() trong tick nay.
+		// Ma NormalSync la kenh DUY NHAT de client biet co nguoi la (SyncNpcMin ->
+		// InsertNpcRequest); cac handler su kien khac lang le vut goi khi chua biet ID.
+		// => cho dong nguoi: nguoi khong hien ra, bot ket o tu the dung, va NPC khong
+		// duoc day di trong tick do.
+		// Ban goc 43bca2e0 lam dung (pTmpNode lay truoc, dong 619/632); vong OBJECT ngay
+		// ben duoi trong CUNG ham cung lay truoc. Chi rieng vong NPC nay bi sai.
+		KIndexNode* pNpcTmpNode = (KIndexNode*)pNode->GetNext();
 		int nNpcIdx = pNode->m_nIndex;
 		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
 		{
@@ -715,7 +727,7 @@ void KRegion::Activate()
 			Npc[nNpcIdx].Activate();
 			currentIndex++;
 		}
-		pNode = (KIndexNode*)pNode->GetNext();
+		pNode = pNpcTmpNode;	// dung ban da lay TRUOC Activate (xem chu thich dau vong)
 	}
 	// Move sync cursor forward
 	m_nNpcSyncCursor = (m_nNpcSyncCursor + kNpcSyncChunkSize) % (npcCount > 0 ? npcCount : 1);
