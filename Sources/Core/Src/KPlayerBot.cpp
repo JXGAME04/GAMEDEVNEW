@@ -6967,7 +6967,6 @@ static unsigned int s_uTkBamTick[3] = { 0, 0, 0 };
 // dau tran - dung canh chu game thay.
 #define PB_TK_CHO_RATRAN  (GAME_FPS * 12)   // 10 giay cua trap + 2 giay bien
 #define PB_TK_DICH_HAN    (GAME_FPS * 45)   // toi da bam mot diem doanh trai dich
-#define PB_TK_DOANH_LAI   (GAME_FPS * 30)   // lam moi bang toa do NPC dich
 #define PB_TK_DICH_XA     3200              // 100 o - diem den phai XA cho dang dung
 #define PB_TK_PHA_HAN     (GAME_FPS * 120)  // qua han mot pha -> go co, khoi ket vinh vien
 
@@ -7117,96 +7116,164 @@ static int pb_TkGoiQuan()
 // danh)" va "toi noi cho bot lay toa do npc de goi ham di chuyen A* di chuyen
 // chu khong phai cho bot vao danh khi co npc".
 //
-// Doc THANG tu NPC dang song trong map 379, lay m_OriginX/m_OriginY (toa do GHI
-// TRONG TEP du lieu, khong phai cho quai vua di lac toi - bai hoc 20/08). Loc
-// theo m_CurrentCamp = camp DICH.
+// Lay THANG hai bang toa do CO SAN trong script - chu game da chi ro:
+// "toi bao ban lay toa do trong KIMBINH_TOADO va TONGBINH_TOADO roi ma ban da
+// lam theo chua". Ban truoc toi tu quet NPC dang song tren map 379 va DO THUC TE
+// trong bot.log la:
+//     [BotTK] doanh trai phe 1: 0 diem NPC (map 379)      <- 185 lan, lan nao cung 0
+// Bang rong => moi bot roi xuong nhanh du phong, ma nhanh do chi co MOT toa do
+// cung cho moi phe => ca dan don ve dung mot cho. Chinh la canh chu game nhin thay.
 //
-// VI SAO KHONG chep 217 toa do trong lib_tktc.lua vao C++: vi tri 2 phe DAO
-// NGAU NHIEN MOI TRAN (RandPosTK -> M_VITRI_TRENDUOI, lib_tktc.lua:486-508
-// hoan doi toan bo bang cua Tong va Kim). Doc song theo camp thi TU DUNG o ca
-// hai the tran, khong phai tra GetMissionV(47) va khong so lech bang.
+// (Chu thich cu o day lap luan rang khong chep bang vao C++ duoc vi "vi tri 2 phe
+// dao ngau nhien moi tran". Lap luan do SAI: phep dao la TAT DINH va doc duoc bang
+// M_VITRI_TRENDUOI - chinh gia tri ma tep nay VAN DANG dung o nhanh du phong ben
+// duoi. Doc song theo camp thi "tu dung o ca hai the tran" that, nhung chi dung khi
+// CO NPC de doc; o day khong co con nao.)
+//
+//   lib_tktc.lua:163  TONGBINH_TOADO -  78 diem, x 1300..1426, y 3318..3499
+//   lib_tktc.lua:244  KIMBINH_TOADO  - 139 diem, x 1434..1620, y 3140..3354
+// Don vi trong script la O; pb_ODat cung nhan O va TRA VE MPS, con aX/aY cua
+// PB_TkDoanh phai la MPS (cho khop g_GetDistance voi GetMpsPos) nen nhan 32.
+//
+// Phep dao cho 2 phe - chep DUNG phep so sanh cua Lua (lib_tktc.lua:486-499):
+//     if (nViTri == 1) then TONGBINH_POS = TONGBINH_TOADO;  KIMBINH_POS = KIMBINH_TOADO
+//     else                  TONGBINH_POS = KIMBINH_TOADO;   KIMBINH_POS = TONGBINH_TOADO
+// tuc CHI nViTri == 1 la giu nguyen, MOI gia tri khac deu dao. Phai chep dung the
+// nay chu khong duoc viet "== 2 thi dao": truoc luc mission kip dat gia tri thi
+// GetMissionValue tra 0, ma 0 phai roi vao nhanh DAO.
+//
+// pb_TkLayDoanh nhan nCampDich = camp DICH, va bang tra ve la noi bot chay TOI:
+// bot phe Tong (camp 1) di tim phe Kim => nCampDich = 2 => bang KIMBINH_POS.
 // ---------------------------------------------------------------------------
+// TONGBINH_TOADO - lib_tktc.lua:163 - 78 diem, x 1300..1426, y 3318..3499 (don vi O)
+static const short s_tkTongBinh[78][2] = {
+	{1368,3391}, {1369,3387}, {1370,3383}, {1376,3388}, {1381,3384}, {1383,3374},
+	{1383,3367}, {1391,3365}, {1396,3363}, {1394,3355}, {1396,3348}, {1405,3346},
+	{1403,3357}, {1406,3363}, {1414,3365}, {1422,3372}, {1426,3379}, {1418,3384},
+	{1414,3379}, {1412,3396}, {1419,3403}, {1421,3412}, {1416,3420}, {1409,3415},
+	{1403,3420}, {1400,3426}, {1403,3433}, {1400,3442}, {1397,3450}, {1398,3457},
+	{1391,3462}, {1383,3459}, {1377,3462}, {1381,3472}, {1381,3480}, {1376,3483},
+	{1367,3478}, {1366,3478}, {1360,3487}, {1359,3492}, {1351,3497}, {1344,3499},
+	{1346,3494}, {1351,3487}, {1354,3482}, {1300,3410}, {1303,3402}, {1308,3396},
+	{1306,3388}, {1311,3383}, {1317,3380}, {1319,3371}, {1320,3363}, {1329,3361},
+	{1338,3357}, {1344,3352}, {1352,3349}, {1348,3340}, {1335,3350}, {1352,3340},
+	{1359,3340}, {1360,3329}, {1368,3328}, {1374,3331}, {1379,3326}, {1385,3320},
+	{1394,3319}, {1404,3318}, {1411,3327}, {1407,3336}, {1401,3339}, {1393,3332},
+	{1385,3333}, {1388,3350}, {1392,3356}, {1400,3355}, {1407,3361}, {1403,3366},
+};
+
+// KIMBINH_TOADO - lib_tktc.lua:244 - 139 diem, x 1434..1620, y 3140..3354 (don vi O)
+static const short s_tkKimBinh[139][2] = {
+	{1434,3331}, {1436,3320}, {1437,3303}, {1444,3302}, {1447,3314}, {1444,3326},
+	{1441,3335}, {1441,3344}, {1444,3353}, {1451,3354}, {1453,3345}, {1452,3336},
+	{1458,3333}, {1463,3338}, {1471,3344}, {1477,3342}, {1475,3332}, {1470,3323},
+	{1464,3318}, {1461,3308}, {1459,3300}, {1451,3291}, {1450,3281}, {1453,3271},
+	{1458,3269}, {1466,3273}, {1476,3275}, {1480,3281}, {1478,3290}, {1477,3297},
+	{1482,3299}, {1491,3297}, {1494,3306}, {1491,3314}, {1485,3323}, {1483,3332},
+	{1485,3339}, {1493,3340}, {1497,3333}, {1497,3323}, {1499,3312}, {1506,3304},
+	{1514,3306}, {1519,3313}, {1517,3323}, {1512,3331}, {1510,3336}, {1518,3334},
+	{1523,3328}, {1525,3318}, {1530,3311}, {1534,3320}, {1539,3324}, {1542,3316},
+	{1544,3310}, {1549,3317}, {1552,3321}, {1557,3318}, {1558,3309}, {1559,3303},
+	{1563,3309}, {1568,3312}, {1571,3306}, {1571,3296}, {1578,3298}, {1581,3304},
+	{1587,3300}, {1590,3295}, {1588,3288}, {1585,3282}, {1587,3275}, {1592,3272},
+	{1598,3277}, {1602,3282}, {1607,3279}, {1607,3270}, {1606,3261}, {1607,3254},
+	{1613,3253}, {1619,3253}, {1620,3249}, {1617,3241}, {1614,3236}, {1606,3243},
+	{1609,3248}, {1609,3239}, {1539,3165}, {1535,3157}, {1539,3152}, {1540,3144},
+	{1535,3140}, {1530,3145}, {1527,3153}, {1523,3158}, {1518,3159}, {1516,3154},
+	{1518,3146}, {1512,3142}, {1507,3147}, {1507,3154}, {1509,3161}, {1509,3169},
+	{1505,3172}, {1500,3169}, {1496,3177}, {1496,3186}, {1492,3190}, {1487,3185},
+	{1482,3190}, {1485,3197}, {1488,3201}, {1487,3207}, {1482,3207}, {1477,3202},
+	{1472,3204}, {1469,3213}, {1474,3217}, {1477,3223}, {1474,3229}, {1469,3228},
+	{1462,3229}, {1461,3238}, {1465,3245}, {1470,3252}, {1472,3257}, {1477,3260},
+	{1485,3265}, {1490,3272}, {1493,3278}, {1497,3283}, {1501,3279}, {1502,3271},
+	{1505,3265}, {1511,3265}, {1513,3261}, {1514,3256}, {1521,3257}, {1524,3257},
+	{1523,3249},
+};
+
 #define PB_TK_DIEM_MAX 192
 struct PB_TkDoanh
 {
 	int          nSo;
-	int          bDaQuet;              // (21/08 phan bien) tach "da quet" khoi "co du lieu"
-	unsigned int uMoc;
+	int          bDaDung;              // da dung bang chua
+	int          nViTri;               // the tran da dung bang nay (de dung lai)
+	int          nSub;                 // subworld da dung (s_tkDoanh dung chung)
 	int          aX[PB_TK_DIEM_MAX];
 	int          aY[PB_TK_DIEM_MAX];
 };
 static PB_TkDoanh s_tkDoanh[3];       // [1] = doanh phe Tong, [2] = doanh phe Kim
 
-static void pb_TkNapMotNpc(PB_TkDoanh* p, int i, int nCampDich)
+// Hai phe DAO CHO nhau moi tran. Tra 1 = DAO, 0 = giu nguyen.
+//
+// (21/08 phan bien) TACH RIENG ra day vi phep dao nay truoc do bi CHEP LAM BA BAN
+// trong tep - va toi chi sua mot ban, hai ban kia van giu khuon cu "(nViTri == 2)".
+// Hai khuon do chi lech nhau DUNG TAI nViTri == 0, ma 0 la gia tri CO THAT:
+// script\missions\mission01.lua:40 dat SetMission(M_VITRI_TRENDUOI, 0) trong
+// EndMission, va KMissionArray::GetMissionValue tra 0 khi o chuoi con rong. Lua
+// (lib_tktc.lua:486, mobinhtk.lua:306) viet "if nViTri == 1 then giu nguyen else
+// dao" nen 0 PHAI roi vao nhanh dao.
+//
+// Tu nay moi cho deu goi ham nay - khong con ban sao nao de lech nua.
+static int pb_TkDaoTheTran(int nSub)
 {
-	if (p->nSo >= PB_TK_DIEM_MAX)                     return;
-	if (i <= 0 || i >= MAX_NPC || Npc[i].m_dwID == 0) return;
-	if (Npc[i].m_Kind != kind_normal)                 return;
-	if (Npc[i].m_CurrentCamp != nCampDich)            return;
-	const int ex = Npc[i].m_OriginX;
-	const int ey = Npc[i].m_OriginY;
-	if (ex <= 0 || ey <= 0)                           return;
-	// gian thua: bo diem qua sat diem da lay (256 MPS = 8 o) - mot doanh trai co
-	// hang chuc linh dung sat nhau, giu het thi bot chi loanh quanh mot goc
-	for (int k = 0; k < p->nSo; k++)
-	{
-		int dx = ex - p->aX[k];  if (dx < 0) dx = -dx;
-		int dy = ey - p->aY[k];  if (dy < 0) dy = -dy;
-		if (dx <= 256 && dy <= 256)
-			return;
-	}
-	p->aX[p->nSo] = ex;
-	p->aY[p->nSo] = ey;
-	p->nSo++;
+	if (nSub < 0 || nSub >= MAX_SUBWORLD)
+		return 0;
+	return (SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI) != 1);
 }
 
-static const PB_TkDoanh* pb_TkLayDoanh(int nSub, int nCampDich, unsigned int now)
+// (21/08 phan bien) Bo tham so "now": than ham khong con dung toi no tu khi cache
+// chuyen sang so theo the tran/subworld thay vi moc thoi gian. Giu lai la chu ky
+// ham noi doi ve hop dong (nguoi doc tuong bang tu lam moi theo thoi gian).
+static const PB_TkDoanh* pb_TkLayDoanh(int nSub, int nCampDich)
 {
 	if (nCampDich != 1 && nCampDich != 2)
 		return NULL;
+	if (nSub < 0 || nSub >= MAX_SUBWORLD)
+		return NULL;
 	PB_TkDoanh* p = &s_tkDoanh[nCampDich];
-	// (21/08 phan bien) TON TRONG MOC THOI GIAN KE CA KHI BANG RONG. Cong cu
-	// "p->nSo > 0" khien tran CUU SAT (task01 khong sinh mot con quai nao) roi
-	// vao canh: quet ra 0 diem -> cong khong bao gio dong -> MOI KHUNG MOI BOT
-	// quet lai toan bo region cua map 379. Khuon dung la s_cumTinh cua pb_LayCum.
-	if (p->bDaQuet && now - p->uMoc < (unsigned int)PB_TK_DOANH_LAI)
+
+	// M_VITRI_TRENDUOI nam o cap MANG (KMissionArray) chu khong phai cap mission -
+	// khuon lay tu LuaGetMissionValue (ScriptFuns.cpp:10436).
+	const int nViTri = SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI);
+
+	// Bang la HANG TINH nen chi dung lai khi the tran hoac ban do doi. KHONG dat
+	// han thoi gian 30 giay nhu ban quet cu: khong co gi de lam moi, ma dung lai
+	// moi 30 giay thi 1000 bot lai chep 139 cap so mot cach vo ich.
+	if (p->bDaDung && p->nViTri == nViTri && p->nSub == nSub)
 		return (p->nSo > 0) ? p : NULL;
-	const int nTong = SubWorld[nSub].m_nTotalRegion;
-	if (nTong <= 0)
-		return (p->nSo > 0) ? p : NULL;
-	p->nSo     = 0;
-	p->uMoc    = now;
-	p->bDaQuet = 1;
-	for (int r = 0; r < nTong && p->nSo < PB_TK_DIEM_MAX; r++)
+
+	const short (*pBang)[2];
+	int nSoBang;
 	{
-		KIndexNode* pNode = (KIndexNode*)SubWorld[nSub].m_Region[r].m_NpcList.GetHead();
-		while (pNode && p->nSo < PB_TK_DIEM_MAX)
+		// nCampDich == 1 -> can TONGBINH_POS ; == 2 -> can KIMBINH_POS
+		const int bDao = pb_TkDaoTheTran(nSub);
+		const int bLayTong = (nCampDich == 1) ? !bDao : bDao;
+		if (bLayTong)
 		{
-			const int i = pNode->m_nIndex;
-			pNode = (KIndexNode*)pNode->GetNext();
-			pb_TkNapMotNpc(p, i, nCampDich);
+			pBang  = s_tkTongBinh;
+			nSoBang = (int)(sizeof(s_tkTongBinh) / sizeof(s_tkTongBinh[0]));
+		}
+		else
+		{
+			pBang  = s_tkKimBinh;
+			nSoBang = (int)(sizeof(s_tkKimBinh) / sizeof(s_tkKimBinh[0]));
 		}
 	}
-	// quai DANG CHET cho hoi sinh nam o danh sach rieng (KNpc::DoRevive day sang
-	// VOID_REGION) - diem sinh cua chung van dung, van la doanh trai dich
+	if (nSoBang > PB_TK_DIEM_MAX)
+		nSoBang = PB_TK_DIEM_MAX;
+
+	p->nSo = 0;
+	for (int i = 0; i < nSoBang; i++)
 	{
-		KIndexNode* pNode = (KIndexNode*)SubWorld[nSub].m_NoneRegionNpcList.GetHead();
-		while (pNode && p->nSo < PB_TK_DIEM_MAX)
-		{
-			const int i = pNode->m_nIndex;
-			pNode = (KIndexNode*)pNode->GetNext();
-			pb_TkNapMotNpc(p, i, nCampDich);
-		}
+		p->aX[p->nSo] = (int)pBang[i][0] * 32;
+		p->aY[p->nSo] = (int)pBang[i][1] * 32;
+		p->nSo++;
 	}
-	{
-		static unsigned int s_uLog = 0;
-		if (now - s_uLog >= (unsigned int)(GAME_FPS * 20))
-		{
-			s_uLog = now;
-			pb_Log("[BotTK] doanh trai phe %d: %d diem NPC (map %d)\n",
-			       nCampDich, p->nSo, SubWorld[nSub].m_SubWorldID);
-		}
-	}
+	p->bDaDung = 1;
+	p->nViTri  = nViTri;
+	p->nSub    = nSub;
+
+	pb_Log("[BotTK] doanh trai phe %d: %d diem tu bang script (the tran %d, map %d)\n",
+	       nCampDich, p->nSo, nViTri, SubWorld[nSub].m_SubWorldID);
 	return (p->nSo > 0) ? p : NULL;
 }
 
@@ -7640,8 +7707,10 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			{
 				static const int aQx[2] = { 1249 * 32, 1700 * 32 };
 				static const int aQy[2] = { 3557 * 32, 3066 * 32 };
-				const int nViTri = SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI);
-				const int iTong  = (nViTri == 2) ? 1 : 0;      // vi tri cua phe Tong
+				// (21/08 phan bien) TRUOC DAY viet "(nViTri == 2) ? 1 : 0" - lech
+				// voi Lua tai nViTri == 0, luc do bot phe Tong nhan toa do Quan Y
+				// cua phe KIM va loi bo xuyen chien truong (~450 o) sang trai dich.
+				const int iTong  = pb_TkDaoTheTran(nSub);      // vi tri cua phe Tong
 				const int iQ     = (b.nTkPhe == 1) ? iTong : (1 - iTong);
 				const int nWq = PB_WalkTo(nNpcIdx, aQx[iQ], aQy[iQ], nSub, b.walk,
 				                          PB_FAC_ARRIVE_MPS);
@@ -7717,8 +7786,11 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			// vong lap khong loi ra.
 			static const int aHx[2] = { 1229, 1689 };   // TKPOS_GO_HDOANH (o)
 			static const int aHy[2] = { 3561, 3074 };
-			const int nViTri7 = SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI);
-			const int iTong7  = (nViTri7 == 2) ? 1 : 0;
+			// (21/08 phan bien) TRUOC DAY viet "(nViTri7 == 2) ? 1 : 0". Tai
+			// nViTri == 0 no lech voi bang doanh trai o tren (da dao), nen bot
+			// dung DUNG trong hau doanh nha minh lai khong duoc nhan la
+			// "bTrongTrai" -> khong chay kich ban ra trai.
+			const int iTong7  = pb_TkDaoTheTran(nSub);
 			const int h       = (b.nTkPhe == 1) ? iTong7 : (1 - iTong7);
 			int dx = nHx7 - aHx[h] * 32;  if (dx < 0) dx = -dx;
 			int dy = nHy7 - aHy[h] * 32;  if (dy < 0) dy = -dy;
@@ -7802,8 +7874,14 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 	if (b.nTkDichX <= 0 || b.nTkDichTick == 0
 	 || now - b.nTkDichTick > (unsigned int)PB_TK_DICH_HAN)
 	{
-		const PB_TkDoanh* pD = pb_TkLayDoanh(nSub, nCampDich, now);
-		if (pD && pD->nSo > 0)
+		// (21/08 phan bien) Nhanh "else" cu o day - lay MOT toa do vung xuat quan
+		// roi tan trong ban kinh 16 o - DA XOA. Sau khi bang toa do lay tu script
+		// (78/139 diem) thi pb_TkLayDoanh chi tra NULL khi camp hoac subworld sai,
+		// ma cho goi nay bao dam ca hai deu dung, nen nhanh do la ma chet. Giu lai
+		// chi ton cho va de nguoi sua sau tin nham rang no con song - trong khi
+		// chinh no la thu pham keo ca dan bot ve mot cho.
+		const PB_TkDoanh* pD = pb_TkLayDoanh(nSub, nCampDich);
+		if (pD)
 		{
 			// (21/08 - chu game: "toi muon bot phai random toa do trong danh sach
 			// toa do npc phe doi phuong") Tron BA nguon roi mo-dun: chi so bot,
@@ -7837,41 +7915,11 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			// nhau thanh mot cum.
 			pb_RaiQuanhCum(nSub, nLech, &b.nTkDichX, &b.nTkDichY);
 		}
-		else
-		{
-			// Khong co NPC dich nao: tran CUU SAT (22:50) KHONG sinh mot con quai
-			// nao ca (lib_tktc.lua:452-459 chon the thuc theo GIO, task01.lua:
-			// 81-89 "cuu sat khong add npc hay object gi het"), va ca cua so
-			// truoc khi task01 kip sinh quai. Khong co dich thi bot dung im roi
-			// bi SetNpcTimeIdle(5*60) day ra - nen lay thang HAU DOANH cua phe
-			// DICH lam diem den (TKPOS_GO_HDOANH, lib_tktc.lua:580-584; don vi O).
-			// Vi tri 2 phe DAO NGAU NHIEN moi tran nen phai doc M_VITRI_TRENDUOI.
-			// Gia tri do nam o cap MANG (KMissionArray) chu khong phai cap
-			// mission - khuon lay tu LuaGetMissionValue (ScriptFuns.cpp:10314).
-			// (21/08 phan bien) LAY VUNG XUAT QUAN cua dich, KHONG lay hau doanh
-			// dich: hau doanh nam trong hop 40 o cua khoi "ket trong trai" o tren,
-			// nen di toi do la bot tu bam vao vong lap ra-trai cua chinh no.
-			// 8 diem xuat quan: task02.lua:209-229 (Tong quanh 1308-1352/3419-3468,
-			// Kim quanh 1544-1592/3173-3227) - lay diem giua moi ben.
-			const int nViTri = SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI);
-			const int iTongX = (nViTri == 2) ? 1 : 0;
-			static const int aXx[2] = { 1330, 1568 };   // tam vung xuat quan (o)
-			static const int aXy[2] = { 3444, 3200 };
-			const int iX = (nCampDich == 1) ? iTongX : (1 - iTongX);
-			int nHx = aXx[iX];
-			int nHy = aXy[iX];
-			int nVx = 0, nVy = 0;
-			if (pb_ODat(nSub, nHx, nHy, nLech, 16, &nVx, &nVy))
-			{
-				b.nTkDichX = nVx;
-				b.nTkDichY = nVy;
-			}
-		}
 		b.nTkDichTick = now;
 		b.walk.Reset();
 	}
 	if (b.nTkDichX <= 0)
-		return;                            // chua co bang (tran Cuu Sat khong sinh quai)
+		return;                            // luoi an toan: chi xay ra neu camp/subworld sai
 	// (21/08 - chu game: "neu di chuyen duong xa thi phai len ngua de di chuyen")
 	// Hai doanh trai cach nhau gan 500 o - di bo la het tran chua toi noi.
 	pb_LenNguaDuongXa(nIdx, nNpcIdx, b, now);
