@@ -276,7 +276,12 @@ lab_setextpoint:
 
 int LuaGetGameTime(Lua_State* L)
 {
-	Lua_PushNumber(L, g_SubWorldSet.GetGameTime());
+	// [JX2COMPAT 22/08] Linux 0x0810F3A0 tra GIAY; JX1 tra frame (18/s). Script JX2 so hieu
+	// voi hang so giay (TIME_PLAYER_STAY 120 tongwar, bw) -> doi ra giay cho script JX2.
+	if (g_IsJx2Script(L))
+		Lua_PushNumber(L, (double)(g_SubWorldSet.GetGameTime() / 18));
+	else
+		Lua_PushNumber(L, g_SubWorldSet.GetGameTime());
 	return 1;
 }
 
@@ -7232,11 +7237,35 @@ int LuaSetNpcDmgEx(Lua_State* L)
 // [PB 17/08] nPos BYTE->int + quy uoc moi: vi tri 0 = DOI TRUONG (m_nCaptain
 // khong nam trong m_nMember[]; truoc day khong the lay tu Lua, con arg 0 thi
 // doc m_nMember[-1] ngoai mang). Da Tau dung GetTeamMember(0..n) chia to doi.
+// [JX2COMPAT 22/08] Linux 0x08115530: n == 1 -> doi truong; n >= 2 -> thanh vien HOP LE thu n-1
+// (bo o -1). Script JX2 lap "for i = 1, GetTeamSize() do GetTeamMember(i)" (lib_messenger,
+// tongwar head, bw) - theo quy uoc JX1 se bo sot doi truong va doc o trong.
+static int sJx2TeamMember(int nTeamId, int nPos)
+{
+	if (nTeamId < 0 || nPos < 1)
+		return 0;
+	if (nPos == 1)
+		return g_Team[nTeamId].m_nCaptain;
+	int nSeen = 1;
+	for (int i = 0; i < MAX_TEAM_MEMBER; i++)
+	{
+		int nM = g_Team[nTeamId].m_nMember[i];
+		if (nM > 0)
+		{
+			nSeen++;
+			if (nSeen == nPos)
+				return nM;
+		}
+	}
+	return 0;
+}
+
 int LuaGetTeamMem(Lua_State* L)
 {
 	int nTeamId = -1;
 	int nPos = -1;
 	int nMemberId = 0;
+	int bJx2 = g_IsJx2Script(L);
 
 	int nParamNum = Lua_GetTopIndex(L);
 
@@ -7244,7 +7273,9 @@ int LuaGetTeamMem(Lua_State* L)
 	{
 		nTeamId = Lua_ValueToNumber(L, 1);
 		nPos = (int)Lua_ValueToNumber(L, 2);
-		if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
+		if (bJx2)
+			nMemberId = sJx2TeamMember(nTeamId, nPos);
+		else if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
 			nMemberId = g_Team[nTeamId].m_nMember[nPos - 1];
 		else if (nPos == 0)
 			nMemberId = g_Team[nTeamId].m_nCaptain;
@@ -7256,7 +7287,9 @@ int LuaGetTeamMem(Lua_State* L)
 		{
 			nTeamId = Player[nPlayerIndex].m_cTeam.m_nID;
 			nPos = (int)Lua_ValueToNumber(L, 1);
-			if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
+			if (bJx2)
+				nMemberId = sJx2TeamMember(nTeamId, nPos);
+			else if (nPos > 0 && nPos <= MAX_TEAM_MEMBER)
 				nMemberId = g_Team[nTeamId].m_nMember[nPos - 1];
 			else if (nPos == 0)
 				nMemberId = g_Team[nTeamId].m_nCaptain;
@@ -12536,6 +12569,15 @@ int LuaAddSkillState(Lua_State* L)
 	//
 	if (nTime <= 0)
 		nTime = -1;
+	// [JX2COMPAT 22/08] Linux 0x08125D70: tham so 3 = kieu thoi gian (0/1/2), LUON ap skill that
+	// tu g_SkillManager -> script JX2 goi AddSkillState(id, lv, 0, t) van phai co thuoc tinh.
+	if (g_IsJx2Script(L))
+		nIfMagic = 1;
+	if (nIfMagic && g_SkillManager.GetSkill(nSkillId, nSkillLevel) == NULL)
+	{
+		g_DebugLog((LPSTR)"AddSkillState: skill %d level %d khong ton tai - bo qua", nSkillId, nSkillLevel);
+		return 0;
+	}
 	//
 	if (nIfMagic)//kh«ng ®­a thuéc tÝnh skill vµo
 	{
@@ -12803,6 +12845,10 @@ int LuaSetDeathPunish(Lua_State* L)
 	if (nPlayerIndex > 0)
 	{
 		int nState = Lua_ValueToNumber(L, 1);
+		// [JX2COMPAT 22/08] Linux 0x0810F470: SetPunish(0) = KHONG phat, (1) = phat - NGUOC voi JX1.
+		// Script JX2 (citywar/tong/messenger/tongwar/bw) goi SetPunish(0) luc vao tran, (1) luc ra.
+		if (g_IsJx2Script(L))
+			nState = (nState == 0) ? 1 : 0;
 		if (nState == 0)
 			Npc[Player[nPlayerIndex].m_nIndex].m_nCurPKPunishState = 0;
 		else

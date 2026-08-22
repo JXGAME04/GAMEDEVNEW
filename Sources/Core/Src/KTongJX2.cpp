@@ -4132,11 +4132,40 @@ int LuaJX2_SyncTaskValueMore(Lua_State* L)
 	return 1;
 }
 
-// AskClientForNumber(...) - can hop nhap so phia client (lam o giai doan cua so)
+// AskClientForNumber(szCbFun, nMin, nMax, szPrompt) - [JX2COMPAT 22/08] viet that (truoc la stub -1:
+// SignUpTheOne loi dai CN + doi 2v2 bw chet). Linux 0x08115CA0: luu script id + ten cb + cho so, goi
+// 0xA3 loai 2 (min/max/prompt); tra loi -> cb(so). Ta dung hop so san co cua client
+// (S2C_INPUT_BOX nType 2 -> KUiGetNumber, khuon LuaOpenGetNumber) + co m_bWllsAskStrArg = 2
+// de c2sInputCommand case 2 goi cb(so) (KProtocolProcess.cpp).
 int LuaJX2_AskClientForNumber(Lua_State* L)
 {
-	Lua_PushNumber(L, -1);
-	return 1;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 4 || !Lua_IsString(L, 1))
+		return 0;
+	const char* szAction = Lua_ValueToString(L, 1);
+	int nMin = (int)Lua_ValueToNumber(L, 2);
+	int nMax = (int)Lua_ValueToNumber(L, 3);
+	const char* szPrompt = Lua_IsString(L, 4) ? Lua_ValueToString(L, 4) : "";
+	if (!szAction || !szAction[0])
+		return 0;
+	if (nMax < nMin)
+		nMax = nMin;
+	Player[nPlayerIndex].m_dwNumberBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, szAction, sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
+	Player[nPlayerIndex].m_bWllsAskStrArg = 2;
+	Player[nPlayerIndex].m_nJx2AskMin = nMin;
+	Player[nPlayerIndex].m_nJx2AskMax = nMax;
+	S2C_INPUT_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_inputbox;
+	NetCommand.nType = 2;
+	strncpy(NetCommand.Value, szPrompt ? szPrompt : "", sizeof(NetCommand.Value) - 1);
+	NetCommand.Value[sizeof(NetCommand.Value) - 1] = 0;
+	strncpy(NetCommand.Value1, szAction, sizeof(NetCommand.Value1) - 1);
+	NetCommand.Value1[sizeof(NetCommand.Value1) - 1] = 0;
+	if (g_pServer && Player[nPlayerIndex].m_nNetConnectIdx != -1)
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_INPUT_BOX));
+	return 0;
 }
 
 // ---- cap nguoi choi ve bang (doc ban sao JX2) ----

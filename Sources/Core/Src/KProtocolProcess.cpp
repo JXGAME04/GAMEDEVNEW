@@ -5777,6 +5777,9 @@ void KProtocolProcess::c2sPKApplyChangeNormalFlag(int nIndex, BYTE* pProtocol)
 		return;
 
 	PK_APPLY_NORMAL_FLAG_COMMAND	*pApply = (PK_APPLY_NORMAL_FLAG_COMMAND*)pProtocol;
+	// [JX2COMPAT 22/08] ForbidChangePK(1) dang khoa -> khong cho client tu doi (Linux cung chan)
+	if (Player[nIndex].m_cPK.GetLockPKState() && !pApply->m_bLockPK)
+		return;
 	Player[nIndex].m_cPK.SetNormalPKState(pApply->m_btFlag, pApply->m_bLockPK);
 }
 
@@ -5956,6 +5959,17 @@ void KProtocolProcess::c2sInputCommand(int nIndex, BYTE* pProtocol)
 	case 2:
 		{
 			Player[nIndex].m_nStringNum = pInput->nNum;
+			// [JX2COMPAT 22/08] AskClientForNumber(cb, min, max, prompt): cb nhan SO lam doi so 1,
+			// kep vao [min, max] (client chi kiem >= 0)
+			if (Player[nIndex].m_bWllsAskStrArg == 2)
+			{
+				Player[nIndex].m_bWllsAskStrArg = 0;
+				int nNum = pInput->nNum;
+				if (nNum < Player[nIndex].m_nJx2AskMin) nNum = Player[nIndex].m_nJx2AskMin;
+				if (nNum > Player[nIndex].m_nJx2AskMax) nNum = Player[nIndex].m_nJx2AskMax;
+				Player[nIndex].ExecuteScript(Player[nIndex].m_dwNumberBoxId, Player[nIndex].m_szTaskExcuteFun, nNum);
+			}
+			else
 			Player[nIndex].ExecuteScript(Player[nIndex].m_dwNumberBoxId, Player[nIndex].m_szTaskExcuteFun,"");
 		}
 		break;

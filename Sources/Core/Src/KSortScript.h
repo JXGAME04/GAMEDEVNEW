@@ -48,6 +48,10 @@ extern KScriptBinTree g_ScriptBinTree;
 extern unsigned long g_IniScriptEngine();
 extern const KScript * g_GetScript(DWORD dwScriptId);
 extern const KScript * g_GetScript(const char * szRelativeScriptFile);
+// [JX2COMPAT 22/08] ten script (duong dan tuong doi, chu thuong) theo lua_State; NULL neu khong thay
+extern const char * g_GetScriptNameByState(Lua_State* L);
+// [JX2COMPAT 22/08] 1 khi state thuoc script port nguyen ban tu Linux/JX2 (ngu nghia ham khac JX1)
+extern int g_IsJx2Script(Lua_State* L);
 extern BOOL ReLoadScript(const char * szRelativePathScript);
 extern unsigned long  ReLoadAllScript();
 #endif

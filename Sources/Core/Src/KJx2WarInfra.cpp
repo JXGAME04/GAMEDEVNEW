@@ -226,13 +226,30 @@ int LuaGetLastDiagNpc(Lua_State* L)
 // OnLeave) -> map ve cung mot duong fight-state cua JX1
 int LuaSetPKFlag(Lua_State* L)
 {
-	return LuaSetFightState(L);
+	// [JX2COMPAT 22/08] Linux 0x0810F610 -> KPlayerPK::SetNormalPKState(n, giu khoa): doi co PK
+	// thuong (0/1), KHONG dung fight-state (ban cu map sang SetFightState -> PK mode khong doi,
+	// quan he none, danh khong len damage trong loi dai). Script JX2 van goi SetFightState rieng.
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		BYTE btFlag = ((int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+		Player[nPlayerIndex].m_cPK.SetNormalPKState(btFlag, Player[nPlayerIndex].m_cPK.GetLockPKState());
+	}
+	return 0;
 }
 
 // LO GOC (binary khong dang ky): nhan doi de duoi ham chay tron; JX1 chua co
 // co "cam nguoi choi tu doi trang thai PK" -> chua cuong che (ghi PHULUC muc 4)
 int LuaForbidChangePK(Lua_State* L)
 {
+	// [JX2COMPAT 22/08] Linux 0x0810F590: m_bLockPK = (n == 1) - cam nguoi choi tu doi co PK
+	// (client ton trong khoa; server chan them o c2sPKApplyNormalFlag).
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		BOOL bLock = ((int)Lua_ValueToNumber(L, 1) == 1) ? TRUE : FALSE;
+		Player[nPlayerIndex].m_cPK.SetNormalPKState((BYTE)Player[nPlayerIndex].m_cPK.GetNormalPKState(), bLock);
+	}
 	return 0;
 }
 

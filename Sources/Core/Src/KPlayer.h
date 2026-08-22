@@ -472,7 +472,9 @@ public:
 	DWORD			m_dwStrBoxId;
 #ifdef _SERVER
 	// [WLLS 20/08] lien dau leaguematch (THICONG_LIENDAU_PORT.md)
-	BYTE			m_bWllsAskStrArg;		// AskClientForString: cb nhan chuoi nhap lam doi so 1
+	BYTE			m_bWllsAskStrArg;		// AskClientForString: cb nhan chuoi nhap lam doi so 1 (2 = AskClientForNumber)
+	int				m_nJx2AskMin;			// [JX2COMPAT 22/08] AskClientForNumber: khoang hop le
+	int				m_nJx2AskMax;
 	BYTE			m_bWllsDisableStall;	// DisabledStall(1): cam bay ban
 	BYTE			m_bWllsForbidTrade;		// ForbitTrade(1): cam giao dich
 	BYTE			m_bWllsForbidStamina;	// ForbitStamina(1): dong bang the luc

@@ -83,6 +83,54 @@ const KScript * g_GetScript(const char * szRelativeScriptFile)
 	return g_GetScript(dwScriptId);
 }
 
+// [JX2COMPAT 22/08] g_ScriptSet[i].m_szScriptName = duong dan tuong doi chu thuong
+// ("\script\missions\bw\bwhead.lua", LoadScriptToSortList). Quet tuyen tinh lan dau,
+// nho lai theo state (script chi nap luc boot; ReLoadScript giu nguyen state).
+#include <map>
+const char * g_GetScriptNameByState(Lua_State* L)
+{
+	static std::map<Lua_State*, int> s_mapState;
+	if (!L)
+		return NULL;
+	std::map<Lua_State*, int>::iterator it = s_mapState.find(L);
+	if (it != s_mapState.end() && it->second >= 0 && it->second < (int)nCurrentScriptNum
+		&& g_ScriptSet[it->second].m_LuaState == L)
+		return g_ScriptSet[it->second].m_szScriptName;
+	for (unsigned int i = 0; i < nCurrentScriptNum && i < MAX_SCRIPT_IN_SET; i++)
+	{
+		if (g_ScriptSet[i].m_LuaState == L)
+		{
+			s_mapState[L] = (int)i;
+			return g_ScriptSet[i].m_szScriptName;
+		}
+	}
+	return NULL;
+}
+
+// Cac cay script chep nguyen ban tu Linux (JX2): SetPunish/GetTeamMember/AddSkillState/
+// GetGameTime co ngu nghia KHAC JX1 - ham Lua re nhanh theo co nay. Include() dung
+// state cua tep goi nen NPC JX1 goi luong JX2 (dichquan.lua -> posthouse.lua) phai liet ke.
+int g_IsJx2Script(Lua_State* L)
+{
+	static const char* szJx2[] = {
+		"\\script\\missions\\citywar_", "\\script\\missions\\leaguematch\\", "\\script\\leaguematch\\",
+		"\\script\\missions\\tong\\", "\\script\\task\\tollgate\\", "\\script\\item\\messenger\\",
+		"\\script\\item\\xinshirenwu\\", "\\script\\missions\\tongwar\\", "\\script\\event\\tongwar\\",
+		"\\script\\missions\\bw\\", "\\script\\missions\\bairenleitai\\", "\\script\\missions\\tongcastle\\",
+		"\\script\\missions\\arena\\", "\\script\\activitysys\\", "\\script\\tong\\", "\\scriptjx2\\",
+		"\\script\\global\\npcchucnang\\dichquan.lua",	// Dich Quan 7 thanh: Include posthouse.lua (Tin Su)
+	};
+	const char* szName = g_GetScriptNameByState(L);
+	if (!szName || !szName[0])
+		return 0;
+	for (int i = 0; i < (int)(sizeof(szJx2) / sizeof(szJx2[0])); i++)
+	{
+		if (strstr(szName, szJx2[i]) != NULL)
+			return 1;
+	}
+	return 0;
+}
+
 extern int LuaIncludeFile(Lua_State * L);
 
 static BOOL LoadScriptToSortListA(char * szRelativeFile)

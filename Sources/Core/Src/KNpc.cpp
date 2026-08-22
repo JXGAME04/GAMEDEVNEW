@@ -1539,6 +1539,24 @@ void KNpc::OnDeath()
 		{
 			if (Player[m_nPlayerIdx].m_dwDeathScriptId)
 			{
+				// [JX2COMPAT 22/08] script chet cua Linux dat OnDeath(Launcher) (citywar_arena, tongwar,
+				// bw, messenger playerdead_tollgate); JX1 dat OnPlayerDeath(pidx, killer). Do ham co that.
+				char szDeathFun[16];
+				strcpy(szDeathFun, "OnPlayerDeath");
+				{
+					KLuaScript* pDs = (KLuaScript*)g_GetScript(Player[m_nPlayerIdx].m_dwDeathScriptId);
+					if (pDs && pDs->m_LuaState)
+					{
+						int nTopD = Lua_GetTopIndex(pDs->m_LuaState);
+						Lua_GetGlobal(pDs->m_LuaState, "OnPlayerDeath");
+						if (!lua_isfunction(pDs->m_LuaState, Lua_GetTopIndex(pDs->m_LuaState)))
+							strcpy(szDeathFun, "OnDeath");
+						lua_settop(pDs->m_LuaState, nTopD);
+					}
+				}
+				if (strcmp(szDeathFun, "OnDeath") == 0)
+					Player[m_nPlayerIdx].ExecuteScript(Player[m_nPlayerIdx].m_dwDeathScriptId, "OnDeath", m_nLastDamageIdx);
+				else
 				Player[m_nPlayerIdx].ExecuteScript2(Player[m_nPlayerIdx].m_dwDeathScriptId, "OnPlayerDeath", m_nPlayerIdx, m_nLastDamageIdx); //#khi player bi chet
 			}
 		}
