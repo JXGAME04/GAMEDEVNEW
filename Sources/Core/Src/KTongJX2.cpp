@@ -4348,4 +4348,29 @@ DWORD KTongJX2_GetFieldC(DWORD dwTongID, WORD wKey)
 	return g_TongJX2.GetField(dwTongID, wKey);
 }
 
+// [LOI DAI CN 21/08] cho KJx2CityWar: field 11 = WarState (Tong::CityWarState goc:
+// 0 thuong / 2 dang dau loi dai / 3 khieu chien gia / 4 dang cong thanh)
+void KTongJX2_SetFieldC(DWORD dwTongID, WORD wKey, DWORD dwVal)
+{
+	if (!dwTongID || !g_TongJX2.FindTong(dwTongID))
+		return;
+	sSendFieldCmd(dwTongID, wKey, dwVal, defTONG_JX2_OP_SET, 0);
+}
+
+// quy bang (field 4 cao + 3 thap) - cung cong thuc TONG_GetMoney
+__int64 KTongJX2_GetMoneyC(DWORD dwTongID)
+{
+	if (!dwTongID || !g_TongJX2.FindTong(dwTongID))
+		return 0;
+	return ((__int64)g_TongJX2.GetField(dwTongID, 4) << 32) | (__int64)g_TongJX2.GetField(dwTongID, 3);
+}
+
+// cong/tru quy bang qua relay (am duoc; relay chan duoi 0) - phi dau thau loi dai
+void KTongJX2_AddMoneyC(DWORD dwTongID, __int64 nDelta)
+{
+	if (!dwTongID || !g_TongJX2.FindTong(dwTongID) || nDelta == 0)
+		return;
+	sSendMoneyCmd(dwTongID, nDelta, defTONG_JX2_OP_ADD, 0);
+}
+
 #endif // _SERVER

@@ -272,8 +272,40 @@ map 821/823 mở báo danh. Test ngoài giờ: `DynamicExecute("\script\missions
 - Kiểm sau restart: `ScriptError.log` không thêm dòng `tollgate|messenger|xinshirenwu`; Dịch Quan Thành Đô/Đại Lý menu "Nhiệm vụ Tín Sứ" → "Ta bằng lòng!" chọn tuyến; Xa Phu mục "Đi nơi đặc biệt…"; map 395 có 9 rương + 9 thủ hộ + Tiêu Trấn (1386,2442) + Dịch quan (1412,3203).
 
 
+
+## 8. ĐÃ THI CÔNG — LÔI ĐÀI BANG HỘI bản CN gốc (21/08 đêm, chờ restart)
+
+Lựa chọn chủ game: **"Dịch ngược relay, dựng lại bản CN gốc"** (bản Linux VN chết ở tầng engine). Nguồn: workflow 11 tác tử
+(`DACTA_LOIDAI_BANGHOI_CN_WORKFLOW.md` — đặc tả + 2 vòng phản biện), mã sinh bởi `ReverseTools\arena_block.cpp` + `arena_patch.py` + `arena_wire.py`.
+
+### 8.1 Engine (`KJx2CityWar.cpp/.h`, `KTongJX2.cpp`, `ScriptFuns.cpp`) — gộp relay + GS vào một chỗ
+- **6 trạng thái thành** như gốc (`JX2CW_STATE_*`): 0 rỗi · 1 báo danh · 2 có bảng đấu · 3 lôi đài · 4 có khiêu chiến giả · 5 công thành. Mirror `jx2citywar.txt` thêm `V 2`; mirror cũ (1/2) tự đổi 4/5. `HaveBeginWar` = state 5.
+- **4 pha = 4 API Lua trùng tên relay**: `StartSignUp(c)` (xoá dữ liệu thành, state 1, tin SIGNUP; cưỡng chế tắt lôi đài treo tuần trước), `EndSignUp(c)` (0 bang → 0; 1 bang → challenger, state 4; ≥2 → cắt ≤16 theo phí + hoàn tiền + tin SIGNUP_OUT, bốc thăm `BuildBracket` đúng thuật toán khe chẵn/lẻ, state 2), `StartArena(c)` (đòi state 2, bracket ≠ ∅, chưa có kết quả, không lôi đài khác; TongState bang = 2; state 3), `StartCityWar(c)` (đòi challenger; vô chủ → chiếm luôn WAR_RESULT3; có chủ → TongState 4 cả hai, state 5).
+- **`SignUpCityWarArena(c, fee)`**: 10 điều kiện gốc (bỏ "khảo nghiệm" — bang ta không có trường), so sánh **có dấu**, trừ quỹ bang qua `KTongJX2_AddMoneyC` (relay bang), tin SIGNUP_OK/SIGNUP_TOALL.
+- **`BuildArenaPairs`** chép đúng G `0x0805A480` (ArenaID đánh số lại mỗi vòng, `nLevel` ghi trong nhánh có cặp — theo phản biện); **`AddArenaResult`** kiểm trùng 2 chiều (A,B)/(B,A), từ chối hẳn khi đã có kết quả; hết cây → vô địch = bên thắng bản ghi cuối → `szChallenger`, state 4, TongState 3, tin ARENA_RESULT2.
+- **14 hàm Lua GS** thay stub: `IsArenaBegin/GetArenaBothSides/GetArenaCityArea/GetArenaTargetCity/GetArenaLevel/GetArenaTotalLevel[ByCity]/GetArenaSchedule/GetArenaInfoByCity/NotifyArenaResult` + `IsSigningUp` (= state 1), `NumOfSignUpTongs/GetSignUpTongName` (đọc vector báo danh, state 1..3 — không còn League 508), `AppointChallenger/AppointViceroy` xoá dữ liệu lôi đài thành (R `0x080988C4`).
+- **Persist**: dòng `G/A/F/B/R` trong `jx2citywar.txt`; nạp = bracket → replay kết quả (`bKeep=1`) → toàn cục (đúng thứ tự GS gốc). `KTongJX2_SetFieldC/GetMoneyC/AddMoneyC` mới.
+- Chuỗi thông báo = `lang\vn\stringtable_relay.txt` của relay, byte TCVN3 nguyên văn (31 chuỗi).
+
+### 8.2 Script (cây chạy thật; mirror `serverscript_jx2\loidai_cn\jx1_edits\`)
+| Tệp | Sửa |
+|---|---|
+| `timerserver.lua` | **CUTOVER Đợt E** (trước giờ `CTC_JX2_Tick` CHỈ được gọi từ bộ test GM!): Include `timerserver_ctc.lua` + gọi `CTC_JX2_Tick` mỗi tick (guard `~= nil`). `dofile` mỗi tick ⇒ có hiệu lực ngay, các hàm CN nil-guard tới khi restart. |
+| `timerserver_ctc.lua` | 18h `StartSignUp(i)` (+ giữ League 508 task để NPC mở menu) · 19h `EndSignUp(i)` (đường lệnh bài/`GetRandomChallenger` VN không còn chạy) · 20h ngày báo danh `StartArena(i)` · 20h ngày đánh `StartCityWar(i)` · 0h chỉ dọn state 5 (**sửa lỗi cũ: 0h xoá luôn khiêu chiến giả trước giờ đánh**). |
+| `infocenter_head.lua` `ArenaMain` | 18-19h thêm **"Báo danh đấu thầu Lôi đài bang hội/SignUpTheOne"** (AskClientForNumber 1.000.000–99.999.999 → `SignUpFinal` → `SignUpCityWarArena`); ngoài giờ thêm **"Tham gia Lôi đài bang hội/PreEnterGame"** (IsArenaBegin → EnterBattle map 213+). NPC = "Sứ Giả Công Thành" Ba Lăng Huyện (1625,3170). |
+| `citywar_arena\camper.lua:81/87` | `GetJoinTongTime() >= 7200` → **`GetLevel() >= 90`** (chính sách chủ game). |
+| `startgame\citywar_boot.lua` | `CityWar_ArenaNpc()`: spawn NPC 2 phe trên 8 map 213..220 (tpl 178 ô 1581,3257 `camper1.lua`; tpl 124 ô 1603,3236 `camper2.lua` — toạ độ đọc từ region maps.pak; engine bỏ NPC map-data). |
+- Lịch thành theo ngày: `TB_CTC6` (Phượng Tường T4/T5 … như relay `TB_CITYWAR_ARRANGE`); mission 9 = `citywar_arena`, timer 18 poll 5', map 213–220 có sẵn.
+- **Lôi đài tự chế của dự án (`tinhnang\loidai`, `sukien_loidaibanghoi`, `MS_LOIDAIBH`)**: đã bị Đợt E ngắt (`timerserver.lua` comment, NPC `congthanhquan.lua` bỏ) — chỉ còn `Include lib_loidai.lua` rải ở 8 tệp, giữ nguyên để không gãy Include.
+
+### 8.3 Lệch có chủ đích / chưa làm
+- Không có điều kiện "bang đang khảo nghiệm"; `GetCityWarTongCamp` giữ bản dự án (1 thủ/2 công); không thưởng/phạt tiền cược lôi đài (gốc cũng không có mã).
+- `AddLocalNews` là tin nội bộ 1 GS (gốc relay phát mọi GS) — ta 1 GS.
+- Chưa test chạy thật. Test nhanh sau restart (GM): `CTC_JX2_Tick(TB_CTC6[n][1],18,0)` → 2 bang chủ báo danh ở Sứ Giả → `CTC_JX2_Tick(...,19,0)` → `GetArenaSchedule(n)` có cặp → `CTC_JX2_Tick(...,20,0)` → ≤5' map 213 mở mission 9, NPC Cảnh Tử Kỳ/Độc Tiên Tử cho vào phe.
+
+
 | 21/08 | Chốt phạm vi + chính sách cấp 90 / bỏ trùng sinh | ✅ |
 | 21/08 | Đối chiếu item Tín Sứ (14/14 có sẵn, 0 phải làm thêm) | ✅ |
 | 21/08 | Điều tra NPC placement / Chỉ Nam Nhiệm Vụ / boss bang hội / thuế thành | ⏳ đang chạy |
-| — | Gỡ `tinhnang/loidai`, bật `citywar_arena` | ⬜ |
+| 21/08 | Lôi Đài Bang Hội CN (mục 8) — engine + script, cutover timerserver | ✅ chờ restart |
 | 21/08 | Gỡ `tinhnang/thienbaokho`, chép cây `messenger` (mục 7) | ✅ chờ restart |

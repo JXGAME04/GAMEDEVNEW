@@ -13345,6 +13345,12 @@ extern int LuaGetArenaTotalLevelByCity(Lua_State* L);
 extern int LuaGetArenaSchedule(Lua_State* L);
 extern int LuaGetArenaInfoByCity(Lua_State* L);
 extern int LuaNotifyArenaResult(Lua_State* L);
+// [LOI DAI CN 21/08] 4 pha + bao danh (ten trung API relay goc)
+extern int LuaStartSignUp(Lua_State* L);
+extern int LuaEndSignUp(Lua_State* L);
+extern int LuaStartArena(Lua_State* L);
+extern int LuaStartCityWar(Lua_State* L);
+extern int LuaSignUpCityWarArena(Lua_State* L);
 extern int LuaGetCityWarTongCamp(Lua_State* L);
 extern int LuaGetArenaCredits(Lua_State* L);
 extern int LuaSetArenaCredits(Lua_State* L);
@@ -14849,6 +14855,12 @@ TLua_Funcs GameScriptFuns[] =
 		{ "GetArenaSchedule",	LuaGetArenaSchedule },
 		{ "GetArenaInfoByCity",	LuaGetArenaInfoByCity },
 		{ "NotifyArenaResult",	LuaNotifyArenaResult },
+		// [LOI DAI CN 21/08]
+		{ "StartSignUp",	LuaStartSignUp },
+		{ "EndSignUp",	LuaEndSignUp },
+		{ "StartArena",	LuaStartArena },
+		{ "StartCityWar",	LuaStartCityWar },
+		{ "SignUpCityWarArena",	LuaSignUpCityWarArena },
 		{ "GetCityWarTongCamp",	LuaGetCityWarTongCamp },
 		{ "GetArenaCredits",	LuaGetArenaCredits },
 		{ "SetArenaCredits",	LuaSetArenaCredits },
