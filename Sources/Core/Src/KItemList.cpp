@@ -1731,6 +1731,28 @@ BOOL KItemList::RemoveItem_YearExp(int ItemIdx)
 }
 #endif
 
+#ifdef _SERVER
+// [JX2 ITEM 21/08] danh sach script item port tu Linux dung quy uoc "tra != 1 -> tru vat pham"
+static BOOL sIsJx2ItemScript(const char* szScript)
+{
+	static const char* szJx2[] = {
+		"\\script\\item\\messenger\\",					// Tin Su: 5 yeu bai
+		"\\script\\item\\xinshirenwu\\",				// Tin Su: Ngu Hanh Phu, Triet X Phu, Bao Ruong, Thien Bao Kho Lenh
+		"\\script\\item\\bosscharm.lua",				// Lenh bai boss bang hoi (tra 0 sau khi goi boss)
+		"\\script\\item\\event\\kinhmach\\honnguyenchandon.lua",	// Hon nguyen chan don (tra 0)
+	};
+	if (!szScript || !szScript[0])
+		return FALSE;
+	for (int i = 0; i < (int)(sizeof(szJx2) / sizeof(szJx2[0])); i++)
+	{
+		int n = (int)strlen(szJx2[i]);
+		if (_strnicmp(szScript, szJx2[i], n) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+#endif
+
 BOOL KItemList::EatMecidine(int nIdx)
 {
 	if (m_PlayerIdx <= 0)
@@ -1774,6 +1796,33 @@ BOOL KItemList::EatMecidine(int nIdx)
 			// "thodiaphuvh.lua" exists in ScriptFileName
 			bGlobal = false;
 		}
+#ifdef _SERVER
+		// [JX2 ITEM 21/08] script item port nguyen ban tu Linux (JX2) dua vao quy uoc engine JX2:
+		// main() tra != 1 -> engine tu tru 1 vat pham. Engine JX1 bo qua gia tri tra nen
+		// bosscharm.lua (Lenh bai boss bang hoi, tra 0) / che*fu.lua / honnguyenchandon.lua
+		// khong bao gio mat item. CHI ap dung cho danh sach duong dan JX2 (sIsJx2ItemScript)
+		// de khong doi hanh vi script JX1 (tu RemoveItem roi return nil).
+		if (sIsJx2ItemScript(ScriptFileName))
+		{
+			DWORD dwItemID = Item[nIdx].GetID();
+			int nRet = 1;
+			Player[m_PlayerIdx].ExecuteItemScriptJX2(ScriptFileName, nIdx, &nRet);
+			if (nRet != 1 && SearchID((int)dwItemID) == nIdx)	// script co the da tu tru (ConsumeItem) -> kiem lai
+			{
+				if (Item[nIdx].IsStack() && Item[nIdx].GetStackNum() > 1)
+				{
+					Item[nIdx].SetStackNum(Item[nIdx].GetStackNum() - 1);
+					this->SyncItem(nIdx);
+				}
+				else
+				{
+					this->Remove(nIdx);
+					ItemSet.Remove(nIdx);
+				}
+			}
+		}
+		else
+#endif
 		Player[m_PlayerIdx].ExecuteScript(Item[nIdx].GetScript(),"main", nIdx, bGlobal);
 	}
 	

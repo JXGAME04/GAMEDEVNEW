@@ -385,6 +385,56 @@ int LuaGetMapNpcWithName(Lua_State* L)
 	return 1;
 }
 
+// GetAroundNpcList(nDist[, nKind]) -> tbList, nCount : port Tin Su (21/08).
+// Linux (item\xinshirenwu\che*fu.lua): "20 = khoang 1 man hinh", tra bang chi so NPC
+// quanh nguoi choi de script tu loc GetNpcSettingIdx. nDist tinh bang O (32px, cung
+// don vi GetWorldPos/m_MapX). Tham so 2 (Linux luon 8) KHONG loc gi o ta - quai
+// muc tieu (849 Bao Kho Thu Ho Gia) co Kind = 0 trong npcs.txt nen 8 khong the la
+// bo loc Kind; bo qua cho an toan. Bo qua nguoi choi + NPC dang chet.
+int LuaGetAroundNpcList(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nCount = 0;
+	Lua_NewTable(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	int nDist = (int)Lua_ValueToNumber(L, 1);
+	int nMe = Player[nPlayerIndex].m_nIndex;
+	if (nDist <= 0 || nMe <= 0 || nMe >= MAX_NPC || Npc[nMe].m_SubWorldIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	KSubWorld* pWorld = &SubWorld[Npc[nMe].m_SubWorldIndex];
+	int nMX = Npc[nMe].m_MapX, nMY = Npc[nMe].m_MapY;
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_NpcList.GetHead();
+		while (pNode)
+		{
+			int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || Npc[i].m_Index <= 0 || i == nMe)
+				continue;
+			if (Npc[i].IsPlayer() || Npc[i].GetPlayerIdx() > 0)
+				continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
+				continue;
+			int dx = Npc[i].m_MapX - nMX, dy = Npc[i].m_MapY - nMY;
+			if (dx * dx + dy * dy > nDist * nDist)
+				continue;
+			Lua_PushNumber(L, i);
+			Lua_RawSetI(L, -2, ++nCount);
+		}
+	}
+	Lua_PushNumber(L, nCount);
+	return 2;
+}
+
 // () -> nSubWorldId, nRevId cua diem hoi sinh BEN VUNG (m_sLoginRevivalPos -
 // KPlayer.cpp:1329-1330, doc qua 2 getter inline them o KPlayer.h vi member
 // private); camper LeaveGame: SetRevPos(GetPlayerRev())

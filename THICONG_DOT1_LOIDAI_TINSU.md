@@ -224,8 +224,56 @@ map 821/823 mở báo danh. Test ngoài giờ: `DynamicExecute("\script\missions
 
 | Thời điểm | Việc | Trạng thái |
 |---|---|---|
+
+## 7. ĐÃ THI CÔNG — TÍN SỨ (21/08 đêm, chờ restart) — phạm vi "chép đúng hiện trạng Linux"
+
+### 7.1 Script (cây chạy thật `E:\...\bin\server`, mirror `serverscript_jx2\tinsu\`)
+- **85 tệp chép nguyên byte** = bao đóng Include đệ quy (`ReverseTools\tinsu_closure.py`): `task\tollgate\messenger\**` (61), `item\messenger` (5), `item\xinshirenwu` (8), `task\tollgate\{addtollgatenpc,killbosshead,messenger_prize}.lua`, `dailogsys\{dailog,g_dialog}.lua`, `event\birthday_jieri\200905\{class,taskctrl,message\message}.lua`, `event\jiaoshi_jieri\200910\head.lua`, `tagnewplayer\head.lua`, `vng_event\change_request_baoruong\exp_award.lua`, `vng_feature\checkinmap.lua`.
+  Bỏ `task\partner\master\partner_master_main.lua` (JX2 PARTNER) — Include ở 3 NPC ải được chú thích, phần dùng đã bị Linux chú thích sẵn.
+- **Sửa có chủ đích** (`ReverseTools\tinsu_patch.py`, mọi thay thế đều assert số lần):
+
+  | Tệp | Sửa |
+  |---|---|
+  | `posthouse.lua:132-133` | `GetLevel() < 120` → **90** (+ chữ trong thoại) |
+  | `posthouse.lua` | 11 id item: 402→401, 885-889→884-888, 2566→2575, 2812→3430, 2813→3431, 30229→4847; `AddGoldItem(0,205)`↔`(0,206)` **hoán đổi** (GoldItem.txt dự án: 205 = Mục Túc, 206 = Kiếm Bài — ngược Linux) |
+  | `xinshibaoxiang.lua` | 19 id: 2744→3362, 30191→2953, 4134→4752, 30228→4846, 30229→4847, 3203→4844, 30289→4848 (×3), 3811→4429, 3810→4428, 2812→3430, 7 item mới 30301/30529/30537/30506/30507/30006/30505 → **4857…4863** |
+  | `wuxingfu.lua` | 10 id: 2806→3424, 2807-2811→3425-3429 |
+  | `item\event\kinhmach\honnguyenchandon.lua` (MỚI) | = `vng_event\item\hunyuanzenyuan.lua` Linux, task 4000 → `TASK_CHANGNGUYENDAN` (362), thêm 2 Include tường minh |
+
+- **Nối dây** (`ReverseTools\tinsu_wire.py`): `task\tollgate\tinsu_addnpc.lua` (MỚI: 18 dòng NPC chép nguyên `global\autoexec_npc.lua` Linux dòng 3-23 + `add_alltollgatenpc()` = 9 Bảo Rương 844 + 9 Bảo Khố Thủ Hộ Giả 849 map 395); `startgame.lua:18/107` Include + `tinsu_addnpc()` **thay `addnpcthienbaokho()`**; `global\npcchucnang\dichquan.lua` menu "Thiên bảo khố" → **"Nhiệm vụ Tín Sứ/especiallymessenger"** (Include posthouse.lua; Linux tự chặn "chỉ Thành Đô/Đại Lý"); `xaphu.lua` thêm mục 6 **"Đi nơi đặc biệt làm Nhiệm vụ Tín Sứ/messenger_wagoner"** (= Linux station.lua mục 9); `station.lua` Include wagoner.lua; `settings\maplist.ini` +`395_NewWorldScript`.
+- **Gỡ** `script\tinhnang\thienbaokho\` (7 tệp Ken Nguyen) → `_backup_tinsu_2108\script\tinhnang\thienbaokho\`. Backup các tệp sửa ở `_backup_tinsu_2108\`.
+
+### 7.2 Bảng item `settings\item\magicscript.txt`
+- Bind cột Script (cột 10) cho 14 item: 884-888 → `toll_*paixinshi.lua`; 3424-3429 → `wuxingfu/che*fu.lua`; 3430 → `xinshibaoxiang.lua`; 3431 → `qianbaokuling.lua`; 4752 "Chân Nguyên Đan" (trùng tên+ảnh Linux 4134, đang là đồ chết) → `channguyendan.lua` (+10 chân nguyên của dự án).
+- **7 item mới 4857-4863** (tên/mô tả/ObjIdx/stack chép nguyên Linux): Hỗn nguyên chân đơn (4857, script mới, +1000 chân nguyên, 1 lần/ngày), Đồ Phổ Đằng Long Y/Khí Giới (4858/4859), Tinh Sương Lệnh (4860), Huyền Thiết (4861), Đồ Phổ Tinh Sương Y/Khí Giới (4862/4863).
+  🔴 **3 ảnh VNG không tồn tại ở bất kỳ pak nào trên máy** (`\spr\vng\item\dophodanglong.spr`, `201408_event_pk\bachkimlenhbai.spr`, `201410_event_thang10\huyenthiet.spr`) → tạm dùng `item_huangjintupu.spr` / `canglangling.spr` / `item_xuantiekuang.spr`. Chủ game kiếm được .spr thì đổi cột 5 của 4858-4861.
+- Ánh xạ theo TÊN có cân nhắc: Hộ Mạch Đơn 3203 → **4844** (bản kinh mạch có script; 3821 cùng ảnh nhưng đồ chết), Chân Nguyên Đơn (trung/đại) → **4846/4847**, Huyết Long Đằng 30289 → **4848** (cấp 9/11/12 giữ tham số, hệ kinh mạch dự án chỉ đếm số).
+
+### 7.3 Engine (`CoreServer.dll.moi_tinsu` 22:58, build sạch 0 lỗi; KHÔNG đụng client)
+
+| Hàm / chỗ | Nội dung |
+|---|---|
+| `GetAroundNpcList(nDist[,nKind])` (KJx2WarInfra.cpp) | trả `tbList, nCount` NPC quanh người chơi trong bán kính nDist ô; tham số 2 (Linux luôn 8) bỏ qua — quái đích 849 có Kind 0 nên 8 không thể là bộ lọc Kind |
+| `ConsumeEquiproomItem(n,g,d,p[,lv])` | trừ từ hành trang (+ túi mở rộng), trả số đã trừ |
+| **`ConsumeItem` nhận thêm DẠNG JX2** `(nPos, nCount, g, d, p[, lv])` | phân biệt bằng tham số 2 ≠ 0 (mọi caller JX1 trong cây truyền nature = 0). 🔴 **Trước đây 3 nơi JX2 là NO-OP** (không trừ đồ!): `songjin_shophead.lua:139` (shop Tống Kim — nhận thưởng không mất rương), `xinshibaoxiang.lua:146/151`, `tong_springfestival\head.lua:251` |
+| `GetItemParam(idx,1)` | = ô tham số 1 (nghĩa Linux) thay vì số lượng chồng — quét cây: không script nào dùng nghĩa cũ; yêu bài Tín Sứ đếm số lần dùng bằng ô này |
+| **Quy ước JX2 "main() trả ≠ 1 ⇒ engine tự trừ 1 vật phẩm"** (`KItemList.cpp` + `KPlayer::ExecuteItemScriptJX2`) | chỉ cho danh sách đường dẫn JX2: `item\messenger\`, `item\xinshirenwu\`, `item\bosscharm.lua`, `honnguyenchandon.lua`. 🔴 Phát hiện: engine JX1 bỏ qua giá trị trả ⇒ **`bosscharm.lua` (Lệnh bài boss bang hội, `return 0`) trước giờ KHÔNG bao giờ mất lệnh bài** = gọi boss vô hạn; che*fu.lua/honnguyenchandon cũng vậy. Kiểm `SearchID == nIdx` trước khi trừ để script tự `ConsumeItem` không bị trừ đôi |
+
+### 7.4 Đối chiếu đã xác minh
+- NPC template 844 Bảo rương / 849 Thiên Bảo Hộ thủ 90 / 842 Thiên Bảo tuần thủ / 377 Dịch quan: trùng id + tên 2 cây.
+- 18 skill id (509, 542-546, 548, 631-635, 963, 1038-1042) trùng id + tên (`ReverseTools\npc_skill_remap.py`).
+- `messenger_giveprize` (đọc `tollgate_allprize.txt`) **không ai gọi** cả trên Linux → chép nhưng không remap 80 dòng vàng trong bảng.
+- Menu Dịch Quan Linux: `messenger_duihuanprize` (đổi điểm → yêu bài / Hoàng Kim) và `messenger_getlevel` **đã bị Linux chú thích** ⇒ yêu bài chỉ có được nếu admin phát; giữ đúng hiện trạng theo lệnh.
+- Trap map 395 (`trap_qianbaoku.lua`): Linux map-data trỏ `trap-qianbaoku.lua` (gạch ngang, tệp không tồn tại) ⇒ trên Linux trap cũng chết; dự án maps.pak không có bảng trap ⇒ giống nhau: không có bẫy đẩy lui ở cửa ải.
+
+### 7.5 Chưa làm / chờ
+- **Chỉ Nam Nhiệm Vụ (F11)** cho Tín Sứ: phải viết mã CLIENT (`UiTaskGuide.cpp` + `uitasklist.ini`) — chưa.
+- Restart GameServer với `CoreServer.dll.moi_tinsu` (đã gồm mọi thứ của `.moi_hoatdongphuong` + log S4 của phiên kia).
+- Kiểm sau restart: `ScriptError.log` không thêm dòng `tollgate|messenger|xinshirenwu`; Dịch Quan Thành Đô/Đại Lý menu "Nhiệm vụ Tín Sứ" → "Ta bằng lòng!" chọn tuyến; Xa Phu mục "Đi nơi đặc biệt…"; map 395 có 9 rương + 9 thủ hộ + Tiêu Trấn (1386,2442) + Dịch quan (1412,3203).
+
+
 | 21/08 | Chốt phạm vi + chính sách cấp 90 / bỏ trùng sinh | ✅ |
 | 21/08 | Đối chiếu item Tín Sứ (14/14 có sẵn, 0 phải làm thêm) | ✅ |
 | 21/08 | Điều tra NPC placement / Chỉ Nam Nhiệm Vụ / boss bang hội / thuế thành | ⏳ đang chạy |
 | — | Gỡ `tinhnang/loidai`, bật `citywar_arena` | ⬜ |
-| — | Gỡ `tinhnang/thienbaokho`, chép cây `messenger` | ⬜ |
+| 21/08 | Gỡ `tinhnang/thienbaokho`, chép cây `messenger` (mục 7) | ✅ chờ restart |

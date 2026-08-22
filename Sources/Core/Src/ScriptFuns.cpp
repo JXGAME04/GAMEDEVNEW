@@ -3343,6 +3343,39 @@ int LuaConsumeItem(Lua_State* L)
 
 			int nDelNum = (int)Lua_ValueToNumber(L, 1);
 
+			// [TIN SU 21/08] DANG JX2: ConsumeItem(nPos, nCount, g, d, p[, lvl]) - nPos = 3 (pos_equiproom)
+			// hoac -1 (tay + hanh trang + tui mo rong), nCount >= 1. Phan biet voi dang JX1
+			// (nCount, nNature, g, d, p, ...) bang tham so 2: moi caller JX1 trong cay du an deu
+			// truyen nNature = 0 (NATURE_NORMAL); tham so 2 != 0 chi co o script port JX2
+			// (songjin_shophead.lua:139, xinshibaoxiang.lua:146/151, tong_springfestival\head.lua:251
+			// - truoc day 3 noi nay la NO-OP vi FindSameToRemove doi nature == 1/1000).
+			if (nParamNum >= 5 && Lua_IsNumber(L, 2) && (int)Lua_ValueToNumber(L, 2) != 0
+				&& (nDelNum == -1 || (nDelNum >= pos_hand && nDelNum < pos_num)))
+			{
+				int nPos = nDelNum;
+				int nCnt = (int)Lua_ValueToNumber(L, 2);
+				int g = (int)Lua_ValueToNumber(L, 3);
+				int d = (int)Lua_ValueToNumber(L, 4);
+				int p = (int)Lua_ValueToNumber(L, 5);
+				int lv = nParamNum > 5 ? (int)Lua_ValueToNumber(L, 6) : -1;
+				int nDone = 0;
+				if (nCnt > 0)
+				{
+					if (nPos == -1 || nPos == pos_equiproom)
+					{
+						nDone += Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt - nDone, 0, g, d, p, lv, -1, pos_equiproom);
+						if (nDone < nCnt)
+							nDone += Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt - nDone, 0, g, d, p, lv, -1, pos_equiproomex);
+					}
+					else
+						nDone += Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt - nDone, 0, g, d, p, lv, -1, nPos);
+					if (nPos == -1 && nDone < nCnt)
+						nDone += Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt - nDone, 0, g, d, p, lv, -1, pos_hand);
+				}
+				Lua_PushNumber(L, nDone);
+				return 1;
+			}
+
 			if (nDelNum)
 			{
 				nItemNature = (int)Lua_ValueToNumber(L, 2);
@@ -3369,6 +3402,31 @@ int LuaConsumeItem(Lua_State* L)
 		}
 	}
 	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// ConsumeEquiproomItem(nCount, g, d, p[, lvl]) -> so item da tru : port Tin Su (21/08).
+// Linux (posthouse.lua:503, wuxingfu.lua:25) kiem "== 1". Chi hanh trang (+ tui mo rong);
+// bang voi CalcEquiproomItemCount cung cap (WLLS). Khong dung tren quay (pos_hand).
+int LuaConsumeEquiproomItem(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nDone = 0;
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 4)
+	{
+		int nCnt = (int)Lua_ValueToNumber(L, 1);
+		int g = (int)Lua_ValueToNumber(L, 2);
+		int d = (int)Lua_ValueToNumber(L, 3);
+		int p = (int)Lua_ValueToNumber(L, 4);
+		int lv = Lua_GetTopIndex(L) >= 5 ? (int)Lua_ValueToNumber(L, 5) : -1;
+		if (nCnt > 0)
+		{
+			nDone = Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt, 0, g, d, p, lv, -1, pos_equiproom);
+			if (nDone < nCnt)
+				nDone += Player[nPlayerIndex].m_ItemList.RemoveCommonItem(nCnt - nDone, 0, g, d, p, lv, -1, pos_equiproomex);
+		}
+	}
+	Lua_PushNumber(L, nDone);
 	return 1;
 }
 
@@ -5410,13 +5468,10 @@ int LuaGetItemParam(Lua_State* L)
 	int nResult = -1;
 	switch (nKind)
 	{
-	case 1:
-		if (Item[nItemIndex].CanStack())
-			nResult = (int)Item[nItemIndex].GetStackNum();
-		else
-			nResult = 1;
-		break;
-	case 2: case 3: case 4: case 5: case 6:
+	case 1: case 2: case 3: case 4: case 5: case 6:
+		// [TIN SU 21/08] kind 1 truoc tra so luong chong - KHONG script nao trong cay dung
+		// (quet 21/08: chi item\messenger\toll_*.lua + seasonnpc_expitem.lua goi (idx,1) va
+		// ca hai deu theo nghia Linux = o tham so 1 - bo dem so lan dung yeu bai Tin Su).
 		// [TONG 21/08] o tham so rieng 2..6 = SetSpecItemParam (Linux GetItemParam(idx,k) doc
 		// KItem+0x1e0+k*4 = m_GeneratorParam.nGeneratorLevel[k-1]). Kind 1 giu = so luong chong.
 		if (nKind - 1 < MAX_ITEM_MAGICLEVEL)
@@ -13333,6 +13388,7 @@ extern int LuaClearMapNpc(Lua_State* L);
 extern int LuaClearMapObj(Lua_State* L);			// [TONG 21/08] KJx2WarInfra.cpp
 extern int LuaClearMapNpcWithName(Lua_State* L);
 extern int LuaGetMapNpcWithName(Lua_State* L);
+extern int LuaGetAroundNpcList(Lua_State* L);	// [TIN SU 21/08] KJx2WarInfra.cpp
 // ==== Port SimCity (KSimCity.cpp): co danh dau bot giu can bang ====
 extern int LuaSC_SetBotFlag(Lua_State* L);
 extern int LuaSC_GetBotFlag(Lua_State* L);
@@ -14026,6 +14082,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"EndGiveBox",		LuaEndGiveBox},
 	{"RemoveItem",		LuaRemoveItemIdx},
 	{"ConsumeItem",			LuaConsumeItem},
+	{"ConsumeEquiproomItem",	LuaConsumeEquiproomItem},	// [TIN SU 21/08] chi hanh trang
 	{"DropAllPlayerItems", LuaPlayerDropAllItem},
 	{"SetPlayerItemLock",			LuaSetPlayerItemLock},
 	{"SetPlayerItemUnLock",			LuaSetPlayerItemUnLock},
@@ -14829,6 +14886,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "ClearMapObj",	LuaClearMapObj },	// [TONG 21/08] KJx2WarInfra.cpp
 		{ "ClearMapNpcWithName",	LuaClearMapNpcWithName },
 		{ "GetMapNpcWithName",	LuaGetMapNpcWithName },
+		{ "GetAroundNpcList",	LuaGetAroundNpcList },	// [TIN SU 21/08] tbList, nCount quanh nguoi choi
 		{ "AddObstacleObj",	LuaAddObstacleObj },
 		{ "ClearObstacleObj",	LuaClearObstacleObj },
 		{ "GetLoop",	LuaGetLoop },

@@ -643,6 +643,9 @@ public:
 	int				GetFactionNo();
 	void			ChatFriendOnLine(DWORD dwID, int nFriendIdx);// 获得通知某好友上线了
 	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, int nParam = 0, bool bGlobal = true);
+#ifdef _SERVER
+	BOOL			ExecuteItemScriptJX2(char * ScriptFileName, int nItemIdx, int* pnRet);	// [JX2 ITEM 21/08] main(idx) -> gia tri tra
+#endif
 	BOOL			ExecuteScript(char * ScriptFileName, char * szFunName, char * szParams, bool bGlobal = true);
 	BOOL			ExecuteScript(DWORD dwScriptId, char * szFunName, char *  szParams, bool bGlobal = true);
 	BOOL			ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, bool bGlobal = true);

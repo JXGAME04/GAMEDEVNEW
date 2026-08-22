@@ -6918,6 +6918,68 @@ BOOL	KPlayer::ExecuteScript(char * ScriptFileName, char * szFunName, int nParam,
 }
 
 #define MAX_PARAMLIST_COUNT 8	// [DA TAU 15/08/2026] 5->8: mySG cua seasonnpc.lua nhan 6 tham so
+#ifdef _SERVER
+// [JX2 ITEM 21/08] Goi main(nItemIdx) cua script item va DOC GIA TRI TRA (ExecuteScript goc goi
+// CallFunction voi 0 ket qua nen bo qua). Engine JX2/Linux: main tra != 1 -> tu tru 1 vat pham;
+// script port tu Linux (bosscharm.lua tra 0, che*fu.lua `return`, honnguyenchandon tra 0) dua
+// vao quy uoc do. *pnRet = 1 neu khong doc duoc (an toan: khong tru).
+BOOL	KPlayer::ExecuteItemScriptJX2(char * ScriptFileName, int nItemIdx, int* pnRet)
+{
+	if (pnRet)
+		*pnRet = 1;
+	try
+	{
+		DWORD dwScriptId = g_FileName2Id(ScriptFileName);
+		KLuaScript * pScript = (KLuaScript* )g_GetScript(dwScriptId);
+		if (!pScript)
+			return FALSE;
+		Npc[m_nIndex].m_ActionScriptID = dwScriptId;
+		Lua_PushNumber(pScript->m_LuaState, m_nPlayerIndex);
+		pScript->SetGlobalName(SCRIPT_PLAYERINDEX);
+		Lua_PushNumber(pScript->m_LuaState, m_dwID);
+		pScript->SetGlobalName(SCRIPT_PLAYERID);
+		Lua_PushNumber(pScript->m_LuaState, Npc[m_nIndex].m_SubWorldIndex);
+		pScript->SetGlobalName(SCRIPT_SUBWORLDINDEX);
+		int nTopIndex = 0;
+		BOOL bOk = FALSE;
+		pScript->SafeCallBegin(&nTopIndex);
+		if (pScript->CallFunction("main", 1, "d", nItemIdx))
+		{
+			bOk = TRUE;
+			if (pnRet)
+			{
+				int nTop = Lua_GetTopIndex(pScript->m_LuaState);
+				if (nTop > nTopIndex && Lua_IsNumber(pScript->m_LuaState, nTop))
+					*pnRet = (int)Lua_ValueToNumber(pScript->m_LuaState, nTop);
+				else
+					*pnRet = 0;	// tra nil / khong tra -> JX2: tru vat pham
+			}
+		}
+		pScript->SafeCallEnd(nTopIndex);
+		if (!bOk)
+		{
+			m_bWaitingPlayerFeedBack = false;
+			m_btTryExecuteScriptTimes = 0;
+			Npc[m_nIndex].m_ActionScriptID = 0;
+			if (pnRet)
+				*pnRet = 1;
+			return FALSE;
+		}
+		return TRUE;
+	}
+	catch(...)
+	{
+		printf("-->Error ExecuteItemScriptJX2: [%s]\n", ScriptFileName);
+		m_bWaitingPlayerFeedBack = false;
+		m_btTryExecuteScriptTimes = 0;
+		Npc[m_nIndex].m_ActionScriptID = 0;
+		if (pnRet)
+			*pnRet = 1;
+		return FALSE;
+	}
+}
+#endif
+
 BOOL	KPlayer::ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam, bool bGlobal)
 {
 	try
