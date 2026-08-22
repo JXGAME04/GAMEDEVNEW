@@ -882,7 +882,7 @@ void KNpc::ProcCommand(int nAI)
 			if (IsPlayer())
 				AUTOLOG_IDX_EVERY(m_Index, 1000, "[S2-SKILL-NOTLEARNED] npc=%d id=%u skill_req=%d found_idx=%d p2=%d p3=%d doing=%d fight=%d", m_Index, m_dwID, m_Command.Param_X, m_SkillList.FindSame(m_Command.Param_X), m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, (int)m_FightMode);
 			if (IsPlayer())
-				AUTOLOG_IDX_EVERY(m_Index, 500, "[S3-PROC-FINDSAME] npc=%d plr=%d reqskill=%d slot=%d active=%d doing=%d p=(%d,%d)", m_Index, m_nPlayerIdx, m_Command.Param_X, m_SkillList.FindSame(m_Command.Param_X), m_ActiveSkillID, (int)m_Doing, m_Command.Param_Y, m_Command.Param_Z);
+				AUTOLOG_IDX(m_Index, "[S3-PROC-FINDSAME] npc=%d plr=%d reqskill=%d slot=%d active=%d doing=%d p=(%d,%d)", m_Index, m_nPlayerIdx, m_Command.Param_X, m_SkillList.FindSame(m_Command.Param_X), m_ActiveSkillID, (int)m_Doing, m_Command.Param_Y, m_Command.Param_Z);
 			if (int nSkillIdx = m_SkillList.FindSame(m_Command.Param_X))
 			{
 				if (IsPlayer())
@@ -955,7 +955,7 @@ void KNpc::ProcCommand(int nAI)
 		case do_skill: // Linq Sau khi luot bi do, ket cac skill tao du anh
 		case do_run:
 			if (IsPlayer() && m_Command.CmdKind == do_skill)
-				AUTOLOG_IDX_EVERY(m_Index, 500, "[S3-CMD-SWALLOW] npc=%d plr=%d cmd=%d skill=%d p=(%d,%d) doing=%d procai=%d rgn=%d", m_Index, m_nPlayerIdx, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, m_ProcessAI, m_RegionIndex);
+				AUTOLOG_IDX(m_Index, "[S3-CMD-SWALLOW] npc=%d plr=%d cmd=%d skill=%d p=(%d,%d) doing=%d procai=%d rgn=%d", m_Index, m_nPlayerIdx, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, m_ProcessAI, m_RegionIndex);
 			if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */ )
 				m_ProcessAI = 1;
 			break;
@@ -2406,7 +2406,7 @@ void KNpc::DoSkill(int nX, int nY)
 					int nDesX, nDesY;
 					Npc[nY].GetMpsPos(&nDesX, &nDesY);
 					if (IsPlayer())
-						AUTOLOG_IDX_EVERY(m_Index, 500, "[S2-MELEE-TOOFAR-RUN] npc=%d id=%u skill=%d tgt_idx=%d dist=%d radius=%d cong=%d curradius=%d chay_toi=(%d,%d) map=(%d,%d) doing=%d ngua=%d", m_Index, m_dwID, m_ActiveSkillID, nY, NpcSet.GetDistance(m_Index, nY), pSkill->GetAttackRadius(), pSkill->GetAttackRadius() + 20, m_CurrentAttackRadius, nDesX, nDesY, m_MapX, m_MapY, (int)m_Doing, (int)m_bRideHorse);
+						AUTOLOG_IDX(m_Index, "[S2-MELEE-TOOFAR-RUN] npc=%d id=%u skill=%d tgt_idx=%d dist=%d radius=%d cong=%d curradius=%d chay_toi=(%d,%d) map=(%d,%d) doing=%d ngua=%d", m_Index, m_dwID, m_ActiveSkillID, nY, NpcSet.GetDistance(m_Index, nY), pSkill->GetAttackRadius(), pSkill->GetAttackRadius() + 20, m_CurrentAttackRadius, nDesX, nDesY, m_MapX, m_MapY, (int)m_Doing, (int)m_bRideHorse);
 					SendCommand(do_run, nDesX, nDesY);
 					return;
 				}
@@ -2473,6 +2473,23 @@ void KNpc::DoSkill(int nX, int nY)
 						CONREGION(i).BroadCast(&NetCommand, sizeof(NetCommand), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
 					}
 					#endif		
+#ifdef _SERVER
+					// (21/08 toi) S4-CAST: may chu THUC SU thi hanh chieu (da qua CanCastSkill + Cost). Doi chieu voi
+					// S4-MSL-HIT/S4-MSL-END de biet dan co cham muc tieu khong = "danh hut" that. Loc ten, khong tiet che.
+					if (IsPlayer() && g_AutoLogWhoIdx(m_Index))
+					{
+						int nLogT = (nX == -1 && nY > 0 && nY < MAX_NPC) ? nY : -1;
+						int nLogMX = 0, nLogMY = 0, nLogTX = 0, nLogTY = 0;
+						GetMpsPos(&nLogMX, &nLogMY);
+						if (nLogT >= 0) Npc[nLogT].GetMpsPos(&nLogTX, &nLogTY);
+						g_AutoLog("[S4-CAST] npc=%d skill=%d lv=%d style=%d p=(%d,%d) tgt=%d(id=%u kind=%u doing=%d life=%d) dist=%d radius=%d me=(%d,%d) tgtmps=(%d,%d) medoing=%d",
+							m_Index, m_ActiveSkillID, (int)m_SkillList.GetCurrentLevel(m_ActiveSkillID), (int)eStyle, nX, nY,
+							nLogT, (nLogT >= 0) ? (unsigned int)Npc[nLogT].m_dwID : 0u, (nLogT >= 0) ? (unsigned int)Npc[nLogT].m_Kind : 0u,
+							(nLogT >= 0) ? (int)Npc[nLogT].m_Doing : -1, (nLogT >= 0) ? Npc[nLogT].m_CurrentLife : -1,
+							(nLogT >= 0) ? g_GetDistance(nLogMX, nLogMY, nLogTX, nLogTY) : -1, pSkill->GetAttackRadius(),
+							nLogMX, nLogMY, nLogTX, nLogTY, (int)m_Doing);
+					}
+#endif
 					if (eStyle == SKILL_SS_Missles 
 						|| eStyle == SKILL_SS_Melee 
 						|| eStyle == SKILL_SS_InitiativeNpcState 

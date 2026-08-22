@@ -1322,6 +1322,13 @@ void KMissle::DoVanish()
 {
 	AUTOLOG_EVERY(1000, "[MIS-STATE-VANISH] id=%d skill=%d lv=%d oldStatus=%d life=%d/%d start=%d launcher=%d follow=%d lastHit=%d region=%d map=%d,%d z=%d vanishEvent=%d", m_nMissleId, m_nSkillId, m_nLevel, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nLauncher, m_nFollowNpcIdx, m_nLastDoCollisionIdx, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, m_bVanishedEvent);
 	if (m_eMissleStatus == MS_DoVanish) return ;
+#ifdef _SERVER
+	// (21/08 toi) S4-MSL-END: dan cua nhan vat theo doi KET THUC. status=2 (DoFly) + lasthit=0 = bay het
+	// tuoi tho ma KHONG cham ai => "danh hut" that. follow=0 = da mat muc tieu bam.
+	AUTOLOG_IDX(m_nLauncher, "[S4-MSL-END] msl=%d sk=%d lch=%d follow=%d wantid=%u status=%d life=%d/%d start=%d lasthit=%d pos(r=%d,%d,%d z=%d) barrier=%d",
+		m_nMissleId, m_nSkillId, m_nLauncher, m_nFollowNpcIdx, (unsigned int)m_dwFollowNpcID, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime,
+		m_nStartLifeTime, m_nLastDoCollisionIdx, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, (int)TestBarrier());
+#endif
 	AUTOLOG_EVERY(1000, "[MSL-END] t=%u msl=%d sk=%d lv=%d launcher=%d follow=%d status=%d life=%d/%d start=%d pos(r=%d,%d,%d off %d,%d z=%d) barrier=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, m_nFollowNpcIdx, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, (int)TestBarrier(), m_nLastDoCollisionIdx);
 #ifndef _SERVER
 	m_MissleRes.m_bHaveEnd = TRUE;
@@ -1534,6 +1541,10 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 					CreateSpecialEffect(MS_DoCollision, nSrcX, nSrcY, m_nCurrentMapZ);
 #else
 				AUTOLOG_EVERY(1000, "[MIS-PROC-HIT] id=%d skill=%d lv=%d launcher=%d npc=%d npcId=%lu hp=%d doing=%d nRet=%d hitCount=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcIdx, Npc[nNpcIdx].m_dwID, Npc[nNpcIdx].m_CurrentLife, (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
+				// (21/08 toi) S4-MSL-HIT: dan cua nhan vat theo doi CHAM NPC nao (loc ten qua m_nLauncher).
+				AUTOLOG_IDX(m_nLauncher, "[S4-MSL-HIT] msl=%d sk=%d lch=%d npc=%d(id=%u kind=%u doing=%d life=%d) follow=%d life=%d/%d nret=%d hitmax=%d",
+					m_nMissleId, m_nSkillId, m_nLauncher, nNpcIdx, (unsigned int)Npc[nNpcIdx].m_dwID, (unsigned int)Npc[nNpcIdx].m_Kind, (int)Npc[nNpcIdx].m_Doing,
+					Npc[nNpcIdx].m_CurrentLife, m_nFollowNpcIdx, m_nCurrentLife, m_nLifeTime, nRet, m_nHitCount);
 				ProcessDamage(nNpcIdx);				
 #endif
 				if(m_nHitCount > 0)

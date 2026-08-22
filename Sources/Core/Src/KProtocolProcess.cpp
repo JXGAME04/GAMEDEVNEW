@@ -5052,7 +5052,7 @@ void KProtocolProcess::NpcRunCommand(int nIndex, BYTE* pProtocol)
 void KProtocolProcess::NpcSkillCommand(int nIndex, BYTE* pProtocol)
 {
 	NPC_SKILL_COMMAND* pNetCommand = (NPC_SKILL_COMMAND *)pProtocol;
-	AUTOLOG_IDX_EVERY(Player[nIndex].m_nIndex, 500, "[S3-PKT-IN] plr=%d npcidx=%d skill=%d mpsx=%d mpsy=%d", nIndex, Player[nIndex].m_nIndex, pNetCommand->nSkillID, pNetCommand->nMpsX, pNetCommand->nMpsY);
+	AUTOLOG_IDX(Player[nIndex].m_nIndex, "[S3-PKT-IN] plr=%d npcidx=%d skill=%d mpsx=%d mpsy=%d", nIndex, Player[nIndex].m_nIndex, pNetCommand->nSkillID, pNetCommand->nMpsX, pNetCommand->nMpsY);
 	int ParamX = pNetCommand->nSkillID;
 	int ParamY = pNetCommand->nMpsX;
 	int ParamZ = pNetCommand->nMpsY;
