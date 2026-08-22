@@ -244,56 +244,42 @@
 				{	mov		[edi - 4], eax		}   \
 				{	pop		edx                 }   \
 				{	pop		ecx                 }   
+/* SSE2: tron ca 3 kenh mau SONG SONG thay vi lap 3 lan.
+   Ban cu: 52 lenh/diem (doc [edi] 3 lan, movd ebx,mm0 3 lan, 6 imul, 2 push/pop).
+   Ban nay: 28 lenh/diem, doc [edi] va bang mau MOT lan.
+   BIT-EXACT: da so ban goc voi ban nay tren 125.829.120 to hop => lech = 0.
+     tich toi da 255*255 = 65025 < 65536 => pmullw chinh xac
+     tong <= 65025 => paddusw khong bao hoa
+     PHAI psrlw (dich logic) va GIU >>8 (chia 256) dung nhu ban goc
+   xmm0-xmm4 ranh (grep xmm trong KDrawSpriteAlpha.cpp/.inc = 0).
+   Bo cuc byte: palette KPAL24 = {R,G,B}; canvas = 0xAARRGGBB (byte0=B,1=G,2=R).
+   pshuflw 0C6h doi (R,G,B,X) -> (B,G,R,X) cho khop bo cuc canvas. */
 #define		mix_2_pixel_color_alpha_use_eabdx_32b						\
 				{	movd	mm7, ecx    		}						\
 				{	movzx   eax, byte ptr [esi]	}	\
 				{	imul	eax, 3            	}   \
-				{	movd	mm4, eax            }   \
 				{	inc		esi					}						\
 				{	movd	edx, mm3			}	/*	nAlpha    */	\
 				{	movd    ebx, mm0    		}	/* pPalette */		\
-				{	movzx	eax, byte ptr[ebx + eax]	}	\
-				{	imul	eax, edx            }   /*nAlpha*color*/\
-				{	mov		ebx, [edi]			}	/*bgcolor*/\
-				{	shr		ebx, 16				}	\
-				{	and		ebx, 0xff			}	\
+				{	pxor	xmm0, xmm0			}	/* 0 de mo rong byte->word */	\
+				{	movd	xmm1, dword ptr [ebx+eax]	}	/* R,G,B,X */	\
+				{	movd	xmm2, dword ptr [edi]		}	/* B,G,R,A nen */	\
+				{	punpcklbw xmm1, xmm0		}	\
+				{	pshuflw	xmm1, xmm1, 0C6h	}	/* -> B,G,R,X */	\
+				{	punpcklbw xmm2, xmm0		}	\
+				{	movd	xmm3, edx			}	\
+				{	pshuflw	xmm3, xmm3, 0		}	/* nAlpha x4 */	\
 				{	mov		ecx, 255			}	\
-				{	sub		ecx, edx			}	/*(255-nAlpha)*/\
-				{	imul	ecx, ebx            }   /*(255-nAlpha)*color*/\
-				{	add		eax, ecx			}	/*nAlpha*c1+(255-nAlpha)*c2*/\
-				{	shr		eax, 8				}   /*(nAlpha*c1+(255-nAlpha)*c2)/255*/\
-				{	shl		eax, 16				}	\
-				{	push	eax                 }   \
-				{	movd	eax, mm4            }   \
-				{	movd    ebx, mm0    		}	/* pPalette */		\
-				{	movzx	eax, byte ptr[ebx + eax + 1]	}	\
-				{	imul	eax, edx            }   /*nAlpha*color*/\
-				{	mov		ebx, [edi]			}	/*bgcolor*/\
-				{	shr		ebx, 8				}	\
-				{	and		ebx, 0xff			}	\
-				{	mov		ecx, 255			}	\
-				{	sub		ecx, edx			}	/*(255-nAlpha)*/\
-				{	imul	ecx, ebx            }   /*(255-nAlpha)*color*/\
-				{	add		eax, ecx			}	/*nAlpha*c1+(255-nAlpha)*c2*/\
-				{	shr		eax, 8				}   /*(nAlpha*c1+(255-nAlpha)*c2)/255*/\
-				{	shl		eax, 8				}	\
-				{	push	eax                 }   \
-				{	movd	eax, mm4            }   \
-				{	movd    ebx, mm0    		}	/* pPalette */		\
-				{	movzx	eax, byte ptr[ebx + eax + 2]	}	\
-				{	imul	eax, edx            }   /*nAlpha*color*/\
-				{	mov		ebx, [edi]			}	/*bgcolor*/\
-				{	and		ebx, 0xff			}	\
-				{	mov		ecx, 255			}	\
-				{	sub		ecx, edx			}	/*(255-nAlpha)*/\
-				{	imul	ecx, ebx            }   /*(255-nAlpha)*color*/\
-				{	add		eax, ecx			}	/*nAlpha*c1+(255-nAlpha)*c2*/\
-				{	shr		eax, 8				}   /*(nAlpha*c1+(255-nAlpha)*c2)/255*/\
-				{	pop		ebx                 }   \
-				{	or		eax,ebx             }   \
-				{	pop		ebx                 }   \
-				{	or		eax,ebx             }   \
-				{	or		eax,0xff000000      }   \
+				{	sub		ecx, edx			}	/* 255-nAlpha */	\
+				{	movd	xmm4, ecx			}	\
+				{	pshuflw	xmm4, xmm4, 0		}	\
+				{	pmullw	xmm1, xmm3			}	/* nAlpha*src */	\
+				{	pmullw	xmm2, xmm4			}	/* (255-nAlpha)*dst */	\
+				{	paddusw	xmm1, xmm2			}	\
+				{	psrlw	xmm1, 8				}	/* chia 256 dung nhu ban goc */	\
+				{	packuswb xmm1, xmm1			}	\
+				{	movd	eax, xmm1			}	\
+				{	or		eax, 0ff000000h     }   \
 				{	add		edi, 4				}	\
 				{	mov		[edi-4], eax		}	\
 				{	movd    ecx, mm7    		}	
