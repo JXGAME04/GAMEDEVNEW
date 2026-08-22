@@ -267,8 +267,8 @@ map 821/823 mở báo danh. Test ngoài giờ: `DynamicExecute("\script\missions
 - Trap map 395 (`trap_qianbaoku.lua`): Linux map-data trỏ `trap-qianbaoku.lua` (gạch ngang, tệp không tồn tại) ⇒ trên Linux trap cũng chết; dự án maps.pak không có bảng trap ⇒ giống nhau: không có bẫy đẩy lui ở cửa ải.
 
 ### 7.5 Chưa làm / chờ
-- **Chỉ Nam Nhiệm Vụ (F11)** cho Tín Sứ: phải viết mã CLIENT (`UiTaskGuide.cpp` + `uitasklist.ini`) — chưa.
-- Restart GameServer với `CoreServer.dll.moi_tinsu` (đã gồm mọi thứ của `.moi_hoatdongphuong` + log S4 của phiên kia).
+- **Chỉ Nam Nhiệm Vụ (F11)** cho Tín Sứ: ✅ mục 9.1.
+- Restart GameServer với `CoreServer.dll.moi_2108_tinsu_loidai` (mục 9.3).
 - Kiểm sau restart: `ScriptError.log` không thêm dòng `tollgate|messenger|xinshirenwu`; Dịch Quan Thành Đô/Đại Lý menu "Nhiệm vụ Tín Sứ" → "Ta bằng lòng!" chọn tuyến; Xa Phu mục "Đi nơi đặc biệt…"; map 395 có 9 rương + 9 thủ hộ + Tiêu Trấn (1386,2442) + Dịch quan (1412,3203).
 
 
@@ -302,6 +302,27 @@ Lựa chọn chủ game: **"Dịch ngược relay, dựng lại bản CN gốc"*
 - Không có điều kiện "bang đang khảo nghiệm"; `GetCityWarTongCamp` giữ bản dự án (1 thủ/2 công); không thưởng/phạt tiền cược lôi đài (gốc cũng không có mã).
 - `AddLocalNews` là tin nội bộ 1 GS (gốc relay phát mọi GS) — ta 1 GS.
 - Chưa test chạy thật. Test nhanh sau restart (GM): `CTC_JX2_Tick(TB_CTC6[n][1],18,0)` → 2 bang chủ báo danh ở Sứ Giả → `CTC_JX2_Tick(...,19,0)` → `GetArenaSchedule(n)` có cặp → `CTC_JX2_Tick(...,20,0)` → ≤5' map 213 mở mission 9, NPC Cảnh Tử Kỳ/Độc Tiên Tử cho vào phe.
+
+
+
+## 9. ĐÃ THI CÔNG — CHỈ NAM NHIỆM VỤ (F11) cho Tín Sứ + CHIẾM LĨNH BẢN ĐỒ / THUẾ THÀNH ở client (21/08 đêm)
+
+### 9.1 F11 — mục "Nhiệm vụ Tín Sứ" (`b484915c`)
+- `UI\uitasklist.ini` (client đang chạy) thêm `[2] Name=+Nhiệm vụ Tín Sứ, TaskId=7`.
+- `UiTaskGuide.cpp` `BuildTinSuText()`: đọc task **1204** (tuyến 1 Thành Đô→Đại Lý / 2 ngược), **1203** (10 đã nhận / 20 trong ải / 21 tạm ngưng / 25 ra ải chưa đủ rương / 30 đã vượt ải), **1201/1202** (mã 5 rương phải mở / đã mở, in "3,7,1,5,2"), **1205** điểm, **1206** danh hiệu, **1218** số lần hôm nay. Task ≥256 tự đồng bộ qua `UI_TASKVALUE` (`nt_setTask` → `SetSaveVal`), mục tự vẽ lại khi 1201..1218 đổi. 18 chuỗi TCVN3 thêm tay vào `UiTaskGuideStr.h`.
+
+### 9.2 Chiếm lĩnh bản đồ + thuế mỗi thành (`c28715f4`) — KHÔNG đổi wire-format
+- Server `KJx2CityWar_SyncToPlayer/SyncToAll`: 7 gói `PLAYER_SCRIPTACTION_SYNC` UIId **`UI_CITYINFO`** (thêm cuối enum, client cũ bỏ qua) nội dung `"id\tstate\ttax\tprice\tmapid\ttên\tchủ\tThái Thú"`; gửi lúc nạp nhân vật (`KPlayerDBFuns.cpp` cạnh `SyncTaskValueToClient(-1)`), khi client mở bản đồ (`c2sGetCityOwnTong` cũ → thêm sync), và **mỗi lần `sSaveMirror()`** (mọi thay đổi chủ/thuế/state).
+- Core client: `g_ClientCityInfo[8]` (`CoreShell.cpp`), `GDI_CITY_INFO` (thành 1..7 → `KCityInfoView`), `GDI_CITY_INFO_CURMAP` (thành của map đang đứng), `GDCNI_CITY_INFO_UPDATE` — 3 id thêm cuối enum `CoreShell.h`.
+- Game.exe: `KUiWorldmap::RefreshCityLabels()` đặt **cả 7 nhãn** (trước chỉ Tương Dương): "Bang hội chiếm lĩnh: X - Thuế N%" / "Vô chủ"; mở bản đồ gửi `GOI_GET_CITY_OWN_TONG` (trước **0 call site**). `KUiMiniMap`: nạp `[CityInfo1]/[CityInfo2]` của `UiMiniMapBig.ini` (bản gốc JX2, trước không nạp) → "Thái Thú: M - Bang hội: O" + "Thuế giao dịch: N% - Chỉ số vật giá: P" khi đứng trong map thành, ẩn ở map khác; cập nhật khi đổi map / khi server đẩy.
+- Giá trị thuế = `KJx2City.nTax` (Thái Thú đặt qua `CTC_JX2_SetTax` 22h-23h) — đã có từ Đợt E7; giờ người chơi **thấy** được.
+
+### 9.3 Binary chờ (23:44) — 3 tệp, **client phải thay CẢ HAI** (CoreClient.dll + Game.exe cùng enum)
+| Đặt cạnh | Nội dung |
+|---|---|
+| `bin\server\CoreServer.dll.moi_2108_tinsu_loidai` | Hoạt động phường + Tín Sứ + Lôi đài CN + CITYINFO + log S4 (phiên kia, đã commit) |
+| `bin\client\CoreClient.dll.moi_2108_cityinfo` | IMMEDSKILL (hoạt động phường) + CITYINFO |
+| `bin\client\Game.exe.moi_2108_f11_cityinfo` | F11 Tín Sứ + bản đồ/thuế. Build từ HEAD trong worktree sạch ⇒ **KHÔNG chứa sửa `S3Client.cpp` (static TickCountTMG) chưa commit của phiên kia** — phiên kia commit xong thì build lại Game.exe. |
 
 
 | 21/08 | Chốt phạm vi + chính sách cấp 90 / bỏ trùng sinh | ✅ |
