@@ -264,6 +264,10 @@ struct PB_Bot
 	int          nTkMuaXong;                  // 1 = da ghe Quan Y mua thuoc
 	unsigned int nTkRaTick;                   // moc goi lai trap ra trai
 	unsigned int nTkChoRa;                    // moc SOM NHAT duoc phep ra khoi trai
+	int          nTkDaBoc;                    // (21/08) 0 = chua boc diem trung gian
+	                                          // cho chang nay, 1 = boc roi
+	int          nTkTgX, nTkTgY;              // diem TRUNG GIAN dang di toi (MPS), 0 = khong
+	unsigned int nTkTgTick;                   // moc bat dau chang trung gian
 	int          nSubTruoc;                   // subworld nhip truoc (-1 = chua biet)
 	int          nBanSapXong;                 // 1 = da bay hang + mo sap
 	int          nBanSapNgoi;                 // 1 = da ngoi xuong (do_sit)
@@ -1084,6 +1088,7 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.nTk = 0;         b.nTkPhe = 0;       b.nTkTick = 0;      b.nTkGoiThu = 0;
 		b.nTkDichX = 0;    b.nTkDichY = 0;     b.nTkDichTick = 0;
 		b.nTkMuaXong = 0;  b.nTkRaTick = 0;  b.nTkChoRa = 0;  b.nSubTruoc = -1;
+		b.nTkDaBoc = 0;    b.nTkTgX = 0;    b.nTkTgY = 0;    b.nTkTgTick = 0;
 		b.nSapDot = 0;     // khe tai dung: dot cham hang cua bot cu khong mang sang
 		b.nDtPha = 0;  b.nDtToiNpcThu = 0;  b.nDtXaFuThu = 0;  b.nDtTraThu = 0;
 		b.nDtTuiThu = 0;  b.nDtCoCu = 0;  b.nDtFarmMoc = 0;
@@ -2937,6 +2942,16 @@ static void pb_LenNguaDuongXa(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now
 	if (now - b.nNguaTick < (unsigned int)(GAME_FPS * 5))
 		return;
 	b.nNguaTick = now;
+	// (21/08 - chu game: "phai giong nguoi choi 100%") Chia duong van chua du:
+	// cung duong + cung toc do + cung thoi diem thi van la doan tau, chi la nhieu
+	// doan tau thay vi mot. Cho ~1/4 bot di BO - nguoi that cung co nguoi khong co
+	// ngua hoac quen len. Chot theo CHI SO BOT nen moi con giu nguyen thoi quen ca
+	// tran, khong nhap nhay len xuong giua duong (nhin ra ngay).
+	//
+	// PHAI dat SAU dong gan nNguaTick o tren: dat truoc thi nhanh nay khong cap
+	// nhat moc, thanh ra bi goi lai moi khung hinh.
+	if ((((int)(&b - s_bots)) & 3) == 0)
+		return;
 	if (Npc[nNpcIdx].m_bRideHorse)
 		return;
 	if (Player[nIdx].m_ItemList.GetEquipment(itempart_horse) <= 0)
@@ -7099,6 +7114,7 @@ static int pb_TkGoiQuan()
 			b.nTkGoiThu   = 0;
 			b.nTkDichX    = 0;  b.nTkDichY = 0;  b.nTkDichTick = 0;
 			b.nTkMuaXong  = 0;  b.nTkRaTick = 0;  b.nTkChoRa = 0;
+			b.nTkDaBoc = 0;     b.nTkTgX = 0;   b.nTkTgY = 0;  b.nTkTgTick = 0;
 			nDaGoi++;
 		}
 	}
@@ -7220,6 +7236,173 @@ static int pb_TkDaoTheTran(int nSub)
 	return (SubWorld[nSub].m_MissionArray.GetMissionValue(PB_TK_MVITRI) != 1);
 }
 
+// ---------------------------------------------------------------------------
+// DIEM TRUNG GIAN - de bot cung phe CHIA NHAU NHIEU DUONG, nhieu huong.
+//
+// Chu game: "bot da chia ra 2 duong chay nhung toi muon bot phai chia nhau chay
+// nhieu duong de giong nguoi choi" / "nen cho bot chay rai ra nhieu toa do random
+// de tao cam giac chay nhieu huong giong nguoi choi".
+//
+// DO THAT tren luoi 379_srv.fp (608x672 o, 110.393/408.576 o di duoc = 27%):
+//  - Eo giua hai doanh trai co HAI cua, tong be rong 45 o, va 41/45 o do van cho
+//    duong nam trong nguong +5% chi phi. Bot chi bang qua DUNG 5 o. Ca ban do bot
+//    chi cham 20,5% so o di duoc. => Dia hinh KHONG phai thu pham, con rat nhieu cho.
+//  - Thu pham la BA TANG DON NHAU, deu o phia ta:
+//      a. 8 diem SetPos cua tongratrai.lua chi roi vao 7 BLOCK (kimratrai: 6).
+//      b. FindPath_Block la A* THUAN TUY, TAT DINH - khong seed, khong nhieu, khong
+//         tie-break ngau nhien. Cung (block xuat phat, block dich) => CUNG chuoi
+//         block, khong tru ngoai le.
+//      c. BlockNearestMps KEP toa do bot vao hinh chu nhat block; gap block 1x1 O
+//         thi hinh chu nhat co ve MOT DIEM => ca dan bi ep thanh HANG MOT. Co 9
+//         block nam tren 100% so chuyen (cum o(1352..1383, 3378..3408)), trong do
+//         1 block 1x1 va 2 block 1x2.
+//  - Doi DICH khong cuu duoc than duong: dich da rai that roi (bang KIMBINH sau khi
+//    rai cho 1.315 block dich khac nhau) ma van chung mot hanh lang. Muon doi THAN
+//    duong chi co ba duong vao: doi BLOCK XUAT PHAT, doi BLOCK DICH, hoac doi luoi.
+//    => phai chen CHANG TRUNG GIAN de doi block xuat phat cua chang dai.
+//  - Bang chung dut diem: xuat phat tu 9 toa do o suon dong cho 0/36 duong di qua
+//    cum choke, va con RE HON (chi phi trung binh 6359 so voi 8868).
+//
+// KHO DIEM lay tu CHINH SCRIPT (sinh tu dong, khong chep tay): gop moi bang toa do
+// chien truong trong lib_tktc.lua + trinhsat.lua. Lay tu script vi moi diem do la
+// cho script THAT SU sinh NPC / tha nguoi choi, nen chac chan NAM TRONG dau truong.
+//
+// VI SAO KHONG boc toa do ngau nhien tuy y tren ban do: dau truong Tong Kim la MOT
+// thanh phan lien thong RIENG tren luoi A* (3.343 block / 33.890 o), bi vung ngoai
+// bao quanh. Do that ti le mot diem lech roi sang thanh phan KHAC: +-12 o ~6% ;
+// +-40 o 14,5% ; +-60 o 25,8% ; +-80 o 54,3%. Moi diem nhu vay bat FindPath_Block
+// quet SACH 3.343 block roi tra "duong cut" - ma vong lap do KHONG co bien dem,
+// khong tran nut, khong ngat theo thoi gian, va khong log dong nao. 500 bot lam
+// vay cung luc la dot CPU khong dau vet.
+// ---------------------------------------------------------------------------
+#define PB_TK_LECH_O    12                   // bien do rai lech quanh diem kho (O).
+                                             // = PB_SAP_BFS_R - 1, vua trong cua so
+                                             // BFS 27x27 cua pb_SapLoang. TUYET DOI
+                                             // khong nang len cho "nhieu duong hon".
+#define PB_TK_TRUNG_HAN (GAME_FPS * 40)      // qua han chang trung gian -> bo, di thang
+#define PB_TK_TRUNG_TOI 160                  // ban kinh coi nhu toi diem trung gian (MPS)
+
+// KHO DIEM TRUNG GIAN - gop tu moi bang toa do chien truong trong script Tong Kim.
+// Sinh tu dong bang script (khong chep tay). Don vi O.
+// Nguon: lib_tktc.lua (COTONG/COKIM/POST_DES_CAMCO/TONGBINH/KIMBINH/HIEUUY/
+//         TLINH/PTUONG/DTUONG) + trinhsat.lua (RANDOM_POS_TONG/KIM).
+// 264 diem sau khi bo trung | x 1300..1620 (rong 320 o) | y 3140..3499 (cao 359 o)
+static const short s_tkKhoDiem[264][2] = {
+	{1300,3410}, {1303,3402}, {1306,3388}, {1308,3396}, {1311,3383}, {1313,3433},
+	{1314,3433}, {1317,3380}, {1319,3371}, {1320,3363}, {1320,3459}, {1329,3361},
+	{1330,3443}, {1331,3444}, {1332,3443}, {1335,3350}, {1338,3357}, {1338,3420},
+	{1338,3463}, {1339,3355}, {1340,3456}, {1343,3467}, {1344,3352}, {1344,3499},
+	{1345,3430}, {1346,3494}, {1347,3431}, {1348,3340}, {1348,3441}, {1351,3420},
+	{1351,3445}, {1351,3487}, {1351,3497}, {1352,3340}, {1352,3349}, {1354,3482},
+	{1359,3340}, {1359,3492}, {1360,3329}, {1360,3487}, {1366,3478}, {1367,3478},
+	{1368,3328}, {1368,3391}, {1369,3387}, {1370,3383}, {1370,3387}, {1374,3331},
+	{1374,3474}, {1376,3388}, {1376,3483}, {1377,3462}, {1379,3326}, {1381,3384},
+	{1381,3472}, {1381,3480}, {1383,3367}, {1383,3374}, {1383,3459}, {1385,3320},
+	{1385,3333}, {1387,3463}, {1388,3350}, {1391,3365}, {1391,3462}, {1392,3356},
+	{1393,3332}, {1394,3319}, {1394,3355}, {1396,3348}, {1396,3363}, {1397,3431},
+	{1397,3450}, {1398,3457}, {1400,3355}, {1400,3426}, {1400,3442}, {1401,3339},
+	{1403,3355}, {1403,3357}, {1403,3366}, {1403,3420}, {1403,3433}, {1404,3318},
+	{1405,3346}, {1406,3363}, {1407,3336}, {1407,3361}, {1409,3415}, {1410,3358},
+	{1411,3327}, {1412,3396}, {1414,3365}, {1414,3379}, {1416,3420}, {1417,3384},
+	{1418,3384}, {1419,3403}, {1421,3412}, {1422,3372}, {1426,3379}, {1434,3331},
+	{1436,3320}, {1437,3303}, {1441,3335}, {1441,3344}, {1444,3302}, {1444,3326},
+	{1444,3353}, {1447,3314}, {1450,3281}, {1451,3291}, {1451,3354}, {1452,3336},
+	{1453,3271}, {1453,3345}, {1458,3269}, {1458,3333}, {1459,3300}, {1461,3238},
+	{1461,3308}, {1462,3229}, {1463,3338}, {1464,3318}, {1465,3245}, {1466,3273},
+	{1469,3213}, {1469,3228}, {1470,3229}, {1470,3252}, {1470,3323}, {1471,3344},
+	{1472,3204}, {1472,3257}, {1474,3217}, {1474,3229}, {1475,3332}, {1476,3217},
+	{1476,3275}, {1477,3202}, {1477,3223}, {1477,3260}, {1477,3297}, {1477,3342},
+	{1478,3290}, {1480,3281}, {1482,3190}, {1482,3207}, {1482,3299}, {1483,3332},
+	{1485,3197}, {1485,3265}, {1485,3323}, {1485,3339}, {1487,3185}, {1487,3207},
+	{1488,3201}, {1489,3190}, {1490,3272}, {1491,3297}, {1491,3314}, {1492,3190},
+	{1493,3278}, {1493,3340}, {1494,3306}, {1496,3177}, {1496,3186}, {1497,3283},
+	{1497,3323}, {1497,3333}, {1499,3312}, {1500,3169}, {1501,3279}, {1502,3271},
+	{1505,3172}, {1505,3265}, {1506,3304}, {1507,3147}, {1507,3154}, {1509,3161},
+	{1509,3169}, {1510,3336}, {1511,3265}, {1512,3142}, {1512,3331}, {1513,3261},
+	{1514,3256}, {1514,3306}, {1516,3154}, {1517,3323}, {1518,3146}, {1518,3159},
+	{1518,3334}, {1519,3313}, {1521,3257}, {1523,3158}, {1523,3249}, {1523,3328},
+	{1524,3257}, {1525,3318}, {1527,3153}, {1530,3145}, {1530,3311}, {1533,3320},
+	{1534,3320}, {1535,3140}, {1535,3157}, {1539,3152}, {1539,3165}, {1539,3208},
+	{1539,3324}, {1540,3144}, {1542,3316}, {1544,3310}, {1548,3207}, {1549,3317},
+	{1551,3184}, {1552,3321}, {1554,3177}, {1557,3178}, {1557,3318}, {1558,3206},
+	{1558,3309}, {1559,3180}, {1559,3303}, {1563,3223}, {1563,3309}, {1568,3198},
+	{1568,3312}, {1570,3198}, {1571,3296}, {1571,3306}, {1572,3195}, {1578,3298},
+	{1579,3174}, {1580,3180}, {1580,3185}, {1581,3304}, {1583,3222}, {1584,3292},
+	{1585,3217}, {1585,3282}, {1587,3275}, {1587,3300}, {1588,3288}, {1589,3179},
+	{1589,3286}, {1590,3295}, {1592,3272}, {1595,3207}, {1598,3277}, {1602,3282},
+	{1606,3243}, {1606,3261}, {1607,3254}, {1607,3270}, {1607,3279}, {1609,3239},
+	{1609,3248}, {1613,3253}, {1614,3236}, {1617,3241}, {1619,3253}, {1620,3249},
+};
+
+// Boc MOT diem trung gian ngau nhien trong kho, rai lech quanh no, va KIEM LIEN
+// THONG bang pb_SapLoang.
+//
+// Dieu kien TIEN LEN: diem boc phai GAN DICH hon cho bot dang dung. Khong co no
+// thi bot boc trung mot diem sau lung roi chay nguoc - nhin la biet bot ngay.
+//
+// Dung pb_SapLoang chu KHONG dung FindPathServer de kiem: chu thich o pb_ODat da
+// ghi ro khi KHONG co duong thi A* loang het ca thanh phan lien thong (map 1:
+// 777k o) - 200 bot cung mot khung la treo may chu. BFS cua so 27x27 = 729 o co
+// TRAN CUNG, re va du.
+static int pb_TkBocTrungGian(int nSub, int nBx, int nBy, int nDichX, int nDichY,
+                             int nLech, unsigned int now, int* pnMpsX, int* pnMpsY)
+{
+	const int nKho = (int)(sizeof(s_tkKhoDiem) / sizeof(s_tkKhoDiem[0]));
+	// khoang cach hien tai toi dich - diem trung gian phai ngan hon con so nay
+	const __int64 dHienTai = (__int64)(nBx - nDichX) * (nBx - nDichX)
+	                       + (__int64)(nBy - nDichY) * (nBy - nDichY);
+
+	// tron chi so bot + moc thoi gian + g_Random: g_Random den tu engine.lib dung
+	// san va DONG BANG THEO GIAY (bat tan tay 18/08: 30 bot sinh cung giay deu
+	// gieo = 68), nen thieu hai nguon kia thi trong mot giay ca dan chi khac nhau
+	// bang mot cap so cong theo chi so - nhin ra khuon ngay.
+	unsigned int uR = (unsigned int)nLech * 2654435761u
+	                ^ (unsigned int)now * 2246822519u
+	                ^ ((unsigned int)g_Random(65536) * 3266489917u);
+	uR ^= uR >> 13;  uR *= 2654435761u;  uR ^= uR >> 16;
+
+	static unsigned char aReach[PB_SAP_BFS_O];
+	for (int t = 0; t < 6; t++)
+	{
+		const unsigned int u2 = uR + (unsigned int)t * 2654435761u;
+		const int k = (int)(u2 % (unsigned int)nKho);
+		const int nOX = (int)s_tkKhoDiem[k][0];
+		const int nOY = (int)s_tkKhoDiem[k][1];
+
+		// phai TIEN LEN, khong duoc chay nguoc
+		const __int64 dTu = (__int64)(nOX * 32 - nDichX) * (nOX * 32 - nDichX)
+		                  + (__int64)(nOY * 32 - nDichY) * (nOY * 32 - nDichY);
+		if (dTu >= dHienTai)
+			continue;
+
+		if (!pb_SapLoang(nSub, nOX, nOY, aReach))
+			continue;
+		// rai lech quanh diem kho de hai bot boc trung mot diem van khac cho
+		const int nBien = PB_TK_LECH_O * 2 + 1;
+		for (int j = 0; j < 6; j++)
+		{
+			const unsigned int u3 = u2 + (unsigned int)j * 2246822519u;
+			const int dx = (int)(u3 % (unsigned int)nBien) - PB_TK_LECH_O;
+			const int dy = (int)((u3 / (unsigned int)nBien) % (unsigned int)nBien)
+			             - PB_TK_LECH_O;
+			const int ix = PB_SAP_BFS_R + dx;
+			const int iy = PB_SAP_BFS_R + dy;
+			if (ix < 0 || ix >= PB_SAP_BFS_W || iy < 0 || iy >= PB_SAP_BFS_W)
+				continue;
+			if (!aReach[iy * PB_SAP_BFS_W + ix])
+				continue;                    // khong noi duoc tu tam -> BO
+			*pnMpsX = (nOX + dx) * 32 + 16;
+			*pnMpsY = (nOY + dy) * 32 + 16;
+			return 1;
+		}
+		// khong o lech nao noi duoc -> lay chinh tam (chac chan noi duoc)
+		*pnMpsX = nOX * 32 + 16;
+		*pnMpsY = nOY * 32 + 16;
+		return 1;
+	}
+	return 0;                                // het luot -> di thang nhu cu
+}
+
 // (21/08 phan bien) Bo tham so "now": than ham khong con dung toi no tu khi cache
 // chuyen sang so theo the tran/subworld thay vi moc thoi gian. Giu lai la chu ky
 // ham noi doi ve hop dong (nguoi doc tuong bang tu lam moi theo thoi gian).
@@ -7325,6 +7508,7 @@ static void pb_TkGoCo(int nIdx, int nNpcIdx, PB_Bot& b)
 	b.nTk = 0;  b.nTkPhe = 0;  b.nTkTick = 0;  b.nTkGoiThu = 0;
 	b.nTkDichX = 0;  b.nTkDichY = 0;  b.nTkDichTick = 0;
 	b.nTkMuaXong = 0;  b.nTkRaTick = 0;  b.nTkChoRa = 0;
+	b.nTkDaBoc = 0;    b.nTkTgX = 0;    b.nTkTgY = 0;    b.nTkTgTick = 0;
 	b.nTargetNpc = 0;
 	b.nRoamX = 0;  b.nRoamY = 0;
 	b.walk.Reset();  b.chase.Reset();  b.roam.Reset();
@@ -7745,6 +7929,10 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		b.nTk = 4;
 		b.nTkTick = now;
 		b.nTkDichTick = 0;
+		// (21/08) Moi luot ra tran la mot duong MOI. Giu nguyen duong ca tran thi
+		// bot lap lai dung mot lo trinh hang chuc lan - chinh cai do moi la dau
+		// hieu bot. Moi lan chet la mot co hoi doi huong, y het nguoi choi that.
+		b.nTkDaBoc = 0;  b.nTkTgX = 0;  b.nTkTgY = 0;  b.nTkTgTick = 0;
 		b.walk.Reset();
 		pb_Log("[BotTK] %s phe %s qua cua trai RA TRAN\n", Player[nIdx].m_PlayerName,
 		       (b.nTkPhe == 1) ? "Tong" : "Kim");
@@ -7916,10 +8104,65 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			pb_RaiQuanhCum(nSub, nLech, &b.nTkDichX, &b.nTkDichY);
 		}
 		b.nTkDichTick = now;
+		b.nTkDaBoc = 0;                    // doi dich -> boc diem vong MOI
 		b.walk.Reset();
 	}
 	if (b.nTkDichX <= 0)
 		return;                            // luoi an toan: chi xay ra neu camp/subworld sai
+
+	// ---- CHANG TRUNG GIAN: vong qua mot diem ngau nhien roi moi toi dich ----
+	// Day la khau DUY NHAT doi duoc BLOCK XUAT PHAT cua chang dai, tuc khau duy
+	// nhat lam A* tra ve mot chuoi block khac. Boc LAI moi khi doi dich (45 giay)
+	// nen duong bot di la mot duong gap khuc doi huong vai lan - y het nguoi choi
+	// chay lang quang tim nguoi danh, thay vi mot duong thang noi duoi nhau.
+	if (!b.nTkDaBoc)
+	{
+		int bxT = 0, byT = 0;
+		Npc[nNpcIdx].GetMpsPos(&bxT, &byT);
+		b.nTkDaBoc = 1;
+		if (pb_TkBocTrungGian(nSub, bxT, byT, b.nTkDichX, b.nTkDichY,
+		                      nLech, now, &b.nTkTgX, &b.nTkTgY))
+		{
+			b.nTkTgTick = now;
+			b.walk.Reset();
+			{
+				// GION TOAN CUC 1 dong/giay. 1000 bot moi con mot dong la moi dong
+				// mot fopen bot.log tren luong game - bai hoc da ghi o pb_Log.
+				static unsigned int s_uLogTg = 0;
+				if (now - s_uLogTg >= (unsigned int)GAME_FPS)
+				{
+					s_uLogTg = now;
+					pb_Log("[BotLan] %s phe %d -> vong qua o(%d,%d) roi toi o(%d,%d)\n",
+					       Player[nIdx].m_PlayerName, b.nTkPhe,
+					       b.nTkTgX / 32, b.nTkTgY / 32,
+					       b.nTkDichX / 32, b.nTkDichY / 32);
+				}
+			}
+		}
+		else
+		{
+			b.nTkTgX = 0;  b.nTkTgY = 0;   // khong boc duoc -> di thang nhu cu
+		}
+	}
+	if (b.nTkTgX > 0)
+	{
+		if (now - b.nTkTgTick > (unsigned int)PB_TK_TRUNG_HAN)
+		{
+			b.nTkTgX = 0;  b.nTkTgY = 0;   // qua han -> thoi, di thang toi dich
+			b.walk.Reset();
+		}
+		else
+		{
+			pb_LenNguaDuongXa(nIdx, nNpcIdx, b, now);
+			const int nWt = PB_WalkTo(nNpcIdx, b.nTkTgX, b.nTkTgY, nSub, b.walk,
+			                          PB_TK_TRUNG_TOI);
+			if (nWt == 0)
+				return;                    // dang tren duong vong
+			// toi noi HOAC khong co duong -> bo chang vong, di tiep toi dich
+			b.nTkTgX = 0;  b.nTkTgY = 0;
+			b.walk.Reset();
+		}
+	}
 	// (21/08 - chu game: "neu di chuyen duong xa thi phai len ngua de di chuyen")
 	// Hai doanh trai cach nhau gan 500 o - di bo la het tran chua toi noi.
 	pb_LenNguaDuongXa(nIdx, nNpcIdx, b, now);
