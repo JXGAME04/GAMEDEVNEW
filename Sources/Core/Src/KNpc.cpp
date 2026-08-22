@@ -662,13 +662,24 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	//AutoFixXY();
 	//
 	// Â³Â¬Â³Ã¶ÃÂ¬Â²Â½Â¾Ã Ã€Ã«Ã‰Â¾Â³?NpcÂ£Â¬9Ã†ÃÂ£Â¬32Â¸Ã¶Â¸Ã±Ã—Ã“
-	#define	MAX_SYNC_RANGE	32
+	// 32 o = 1024 MPS. Voi do phan giai 1024x768 dang chay thi NUA vung nhin doc da
+	// ~31,5 o ((768 + WINDAGE_T 90 + WINDAGE_B 150) * 2 / 32 = 63 o) => NPC o MEP
+	// TREN/DUOI nam DUNG NGAY nguong nay, bi go khoi region khi VAN CON nhin thay.
+	// Nang len 40 de bao het vung nhin + bien an toan cho do phan giai cao hon.
+	// NPC ngoai man hinh van bi cat canh khi VE (KIpotLeaf.cpp:122-123) nen chi ton
+	// them phan Activate; do that: logic chi chiem 1-27ms MOI GIAY, con nhieu du dia.
+	#define	MAX_SYNC_RANGE	40
 	if (!IsPlayer() && (GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE
 		|| GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE))
 	{
 		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
 		SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 		m_RegionIndex = -1;
+		// Go luon LA CAY khoi scene. Truoc day chi go khoi region roi return NGAY -
+		// tuc return TRUOC khi goi SetPos ben duoi - nhung la cay van con nen NPC do
+		// VAN DUOC VE voi vi tri DONG BANG trong khi hoat anh van chay
+		// => "dung yen ma chan di chuyen" (thay ro nhat o MEP khung hinh).
+		m_DataRes.Remove(m_Index);
 		return;
 	}
 
@@ -677,6 +688,11 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
 		SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 		m_RegionIndex = -1;
+		// Go luon LA CAY khoi scene. Truoc day chi go khoi region roi return NGAY -
+		// tuc return TRUOC khi goi SetPos ben duoi - nhung la cay van con nen NPC do
+		// VAN DUOC VE voi vi tri DONG BANG trong khi hoat anh van chay
+		// => "dung yen ma chan di chuyen" (thay ro nhat o MEP khung hinh).
+		m_DataRes.Remove(m_Index);
 		return;
 	}
 
