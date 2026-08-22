@@ -162,3 +162,18 @@ Cả hai tệp cùng tiền tố `t=<ms>`; lấy mốc `t=` của một dòng `F
 Dùng `AUTOLOG_IDX(idx, ...)` / `AUTOLOG_IDX_EVERY(idx, ms, ...)` (`KCore.h`) — chúng lọc theo tên
 **và** tự kiểm chỉ số, nên `Npc[idx]` trong danh sách đối số không bao giờ bị đọc với chỉ số xấu.
 Đây chính là loại lỗi đã làm **sập game lúc 13:52** (`Npc[chỉ-số-viên-đạn]`).
+
+### 6.5 Nhóm S4 (thêm 21/08 22:00) — đo "đánh hụt" THẬT theo từng viên đạn
+
+`S1-WHO` chỉ đếm đạn **đã chạm** mục tiêu; chiêu cận chiến 361 là đạn bay thẳng (`SKILL_MF_Line`), bay hụt thì
+không bao giờ tới `S1-WHO`. Nhóm S4 (lọc tên, **không tiết chế**, chỉ server) bịt lỗ đó:
+
+| Nhãn | Ở đâu | Nghĩa |
+|---|---|---|
+| `S4-CAST` | `KNpc::DoSkill` ngay trước `DoOrdinSkill` | máy chủ **thực sự thi hành** chiêu; có khoảng cách server đo, vị trí 2 bên, mục tiêu còn sống không |
+| `S4-MSL-HIT` | `KMissle::ProcessCollision` trước `ProcessDamage` | viên đạn `msl=` chạm NPC nào (kind/doing/life) |
+| `S4-MSL-END` | `KMissle::DoVanish` | đạn kết thúc: `status=2 lasthit=0` = **bay hết tuổi thọ không chạm ai** = hụt thật; `follow=0` = mất mục tiêu bám; `barrier=1` = vướng địa hình |
+
+**Tỷ lệ hụt thật** = số `S4-CAST` không có `S4-MSL-HIT` tương ứng (ghép theo `msl=` của `S4-MSL-END` ngay sau,
+hoặc theo mốc `t=`) / tổng `S4-CAST`. Bốn nhãn `S3-PKT-IN`, `S3-PROC-FINDSAME`, `S3-CMD-SWALLOW`,
+`S2-MELEE-TOOFAR-RUN` nay cũng **không tiết chế** ⇒ `% lệnh bị nuốt = SWALLOW / (SWALLOW + FINDSAME)` là số thật.
