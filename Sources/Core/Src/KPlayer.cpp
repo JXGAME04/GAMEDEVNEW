@@ -6544,6 +6544,10 @@ void KPlayer::GetCityOwnTong()
 	if (nTargetSubWorld >= 0 && nTargetSubWorld < MAX_SUBWORLD)
 		strncpy(sView.szTongName, SubWorld[nTargetSubWorld].m_CityOwnTong, sizeof(sView.szTongName) - 1);
 	g_pServer->PackDataToClient(m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
+	{
+		extern void KJx2CityWar_SyncToPlayer(int nPlayerIndex);
+		KJx2CityWar_SyncToPlayer(m_nPlayerIndex);	// [CITYINFO 21/08] mo ban do -> lam tuoi 7 thanh
+	}
 }
 
 void KPlayer::RecoveryBox(DWORD dwID, int nX, int nY)
@@ -8208,6 +8212,46 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 						Player[CLIENT_PLAYER_INDEX].m_cTask.SetSaveVal(nTaskId, nTaskVal);
 					}
 					CoreDataChanged(GDCNI_TASK_VALUE_UPDATE, (unsigned int)nTaskId, nTaskVal);
+					break;
+				}
+			case UI_CITYINFO:	// [CITYINFO 21/08] "id\tstate\ttax\tprice\tmapid\tten\tchu\tthaithu"
+				{
+					extern KCityInfoView g_ClientCityInfo[8];
+					char szBuf[512];
+					int nLen = pScriptAction->m_nBufferLen;
+					if (nLen <= 0 || nLen >= (int)sizeof(szBuf))
+						break;
+					memcpy(szBuf, pScriptAction->m_pContent, nLen);
+					szBuf[nLen] = 0;
+					char* pField[8];
+					int nField = 0;
+					char* pCur = szBuf;
+					pField[nField++] = pCur;
+					while (*pCur && nField < 8)
+					{
+						if (*pCur == '\t')
+						{
+							*pCur = 0;
+							pField[nField++] = pCur + 1;
+						}
+						pCur++;
+					}
+					if (nField < 8)
+						break;
+					int nCity = atoi(pField[0]);
+					if (nCity < 1 || nCity > 7)
+						break;
+					KCityInfoView* pV = &g_ClientCityInfo[nCity];
+					memset(pV, 0, sizeof(KCityInfoView));
+					pV->nCityId = nCity;
+					pV->nState = atoi(pField[1]);
+					pV->nTax = atoi(pField[2]);
+					pV->nPrice = atoi(pField[3]);
+					pV->nMapId = atoi(pField[4]);
+					strncpy(pV->szName, pField[5], sizeof(pV->szName) - 1);
+					strncpy(pV->szOwner, pField[6], sizeof(pV->szOwner) - 1);
+					strncpy(pV->szMaster, pField[7], sizeof(pV->szMaster) - 1);
+					CoreDataChanged(GDCNI_CITY_INFO_UPDATE, (unsigned int)nCity, 0);
 					break;
 				}
 			}

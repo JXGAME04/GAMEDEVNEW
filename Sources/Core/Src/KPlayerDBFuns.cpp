@@ -816,6 +816,10 @@ int	KPlayer::LoadPlayerTaskList(BYTE * pRoleBuffer, BYTE * &pTaskBuffer, unsigne
 	{
 		m_cTask.Release();
 		SyncTaskValueToClient(-1, 0);	// [TaskGuide] bao client xoa gia tri nhan vat truoc
+		{
+			extern void KJx2CityWar_SyncToPlayer(int nPlayerIndex);
+			KJx2CityWar_SyncToPlayer(m_nPlayerIndex);	// [CITYINFO 21/08] 7 thanh cho ban do/thue
+		}
 	}
 	//
 	int nTaskCount = 0;

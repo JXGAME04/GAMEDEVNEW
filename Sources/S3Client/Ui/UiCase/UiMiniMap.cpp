@@ -86,6 +86,9 @@ void KUiMiniMap::Initialize()
 {
 	AddChild(&m_Shadow);
 	AddChild(&m_SceneName);
+	AddChild(&m_CityInfo1);	// [CITYINFO 21/08]
+	AddChild(&m_CityInfo2);
+	m_bCityInfoOk = 0;
 	AddChild(&m_SwitchBtn);
 	AddChild(&m_WorldMapBtn);
 	AddChild(&m_CaveMapBtn);
@@ -154,6 +157,19 @@ void KUiMiniMap::LoadScheme(KIniFile* pIni)
 	Init(pIni, "MiniMap");
 	m_Shadow.Init(pIni, "NameShadow");
 	m_SceneName.Init(pIni, "SceneName");
+	// [CITYINFO 21/08] chi UiMiniMapBig.ini co [CityInfo1]/[CityInfo2] (ban goc JX2)
+	{
+		int nW = 0;
+		pIni->GetInteger("CityInfo1", "Width", 0, &nW);
+		m_bCityInfoOk = (nW > 0) ? 1 : 0;
+		if (m_bCityInfoOk)
+		{
+			m_CityInfo1.Init(pIni, "CityInfo1");
+			m_CityInfo2.Init(pIni, "CityInfo2");
+		}
+		m_CityInfo1.Hide();
+		m_CityInfo2.Hide();
+	}
 	m_ScenePos.Init(pIni, "ScenePos");
 	m_SwitchBtn.Init(pIni, "SwitchBtn");
 	m_WorldMapBtn.Init(pIni, "WorldMapBtn");
@@ -455,6 +471,7 @@ void KUiMiniMap::UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo)
 	{
 		ms_pSelf->m_SceneName.SetText(pInfo->szSceneName);
 		strcpy(ms_pSelf->m_szMapName,pInfo->szSceneName);
+		UpdateCityInfo();	// [CITYINFO 21/08] doi map -> khung chu thanh/thue
 
 		ms_pSelf->m_MpsID = pInfo->nSceneId;
 		/*ms_pSelf->m_MpsX = pInfo->nScenePos0/8;
@@ -508,9 +525,38 @@ void KUiMiniMap::Unflagging()
 	m_bFlagging = FALSE;
 }
 
+// [CITYINFO 21/08] ban do lon: 2 dong [CityInfo1]/[CityInfo2] cho map thanh (GDI_CITY_INFO_CURMAP)
+void KUiMiniMap::UpdateCityInfo()
+{
+	if (!ms_pSelf || !ms_pSelf->m_bCityInfoOk || !g_pCoreShell)
+		return;
+	KCityInfoView sV;
+	memset(&sV, 0, sizeof(sV));
+	int nCity = g_pCoreShell->GetGameData(GDI_CITY_INFO_CURMAP, 0, (int)&sV);
+	if (nCity <= 0)
+	{
+		ms_pSelf->m_CityInfo1.Hide();
+		ms_pSelf->m_CityInfo2.Hide();
+		return;
+	}
+	char szLine[160];
+	if (sV.szOwner[0])
+		_snprintf(szLine, sizeof(szLine) - 1, "Th∏i ThÛ: %s - Bang hÈi: %s", sV.szMaster, sV.szOwner);
+	else
+		strcpy(szLine, "Thµnh nµy ch≠a c„ Th∏i ThÛ");
+	szLine[sizeof(szLine) - 1] = 0;
+	ms_pSelf->m_CityInfo1.SetText(szLine);
+	_snprintf(szLine, sizeof(szLine) - 1, "Thu’ giao dﬁch: %d%% - Chÿ sË vÀt gi∏: %d", sV.nTax, (sV.nPrice < 0) ? 10 : sV.nPrice);
+	szLine[sizeof(szLine) - 1] = 0;
+	ms_pSelf->m_CityInfo2.SetText(szLine);
+	ms_pSelf->m_CityInfo1.Show();
+	ms_pSelf->m_CityInfo2.Show();
+}
+
 void KUiMiniMap::Show()
 {
 	KWndImage::Show();
+	UpdateCityInfo();	// [CITYINFO 21/08]
 	if (g_pCoreShell)
 	{
 		g_pCoreShell->SceneMapOperation(GSMOI_IS_SCENE_MAP_SHOWING,

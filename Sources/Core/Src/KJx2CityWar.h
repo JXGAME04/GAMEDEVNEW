@@ -77,6 +77,9 @@ int LuaCTC_JX2_GetTax(Lua_State* L);      // (1..7) -> thue hien tai
 
 // mot lan sau khi map nap xong: nap config + mirror roi ghi vao KSubWorld
 void KJx2CityWar_Breathe();
+// [CITYINFO 21/08] day 7 thanh xuong client (UI_CITYINFO) - luc nap nhan vat, khi mo ban do, khi doi
+void KJx2CityWar_SyncToPlayer(int nPlayerIndex);
+void KJx2CityWar_SyncToAll();
 
 // cho ScriptFuns (de-hardcode 2 setter map 78) + E7 (thue): tra FALSE khi city sai
 BOOL KJx2CityWar_SetTaxByCity(int nCityID, int nTax);          // clamp 0..MaxExchangeTax

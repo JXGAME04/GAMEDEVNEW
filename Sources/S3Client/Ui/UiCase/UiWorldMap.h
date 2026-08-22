@@ -12,6 +12,7 @@ public:
 	static KUiWorldmap*	GetIfVisible();
 	void				LoadScheme(const char* pScheme);	//载入界面方案
 	void SetCityOwnTong(const char* szTongName);
+	void RefreshCityLabels();	// [CITYINFO 21/08] 7 nhan tu GDI_CITY_INFO
 private:
 	KUiWorldmap() {}
 	~KUiWorldmap() {}

@@ -37,6 +37,7 @@ public:
 	static void			SetMode(MINIMAP_MODE eMode);	
 	static void			LoadScheme(const char* pScheme);
 	static void			UpdateSceneTimeInfo(KUiSceneTimeInfo* pInfo);
+	static void			UpdateCityInfo();	// [CITYINFO 21/08] [CityInfo1]/[CityInfo2] ban do lon
 
 	static KUiMiniMap*	GetSelf() {return ms_pSelf;}
 
@@ -66,6 +67,9 @@ private:
 	SIZE			m_MapSize;
 	KWndButton		m_SwitchBtn;
 	KWndText32		m_SceneName;
+	KWndText32		m_CityInfo1;	// [CITYINFO 21/08] Thai Thu + bang
+	KWndText32		m_CityInfo2;	// [CITYINFO 21/08] thue + vat gia
+	int				m_bCityInfoOk;	// ini co section CityInfo (chi ban do lon)
 	KWndImageTextButton		m_ScenePos;
 	KWndShadow		m_Shadow;
 	KWndButton		m_WorldMapBtn;

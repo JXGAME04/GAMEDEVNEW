@@ -796,11 +796,40 @@ void KCoreShell::SetPaintMode(BYTE bFlag)
 	g_ScenePlace.bPaintMode = bFlag;
 }
 
+// [CITYINFO 21/08] ban sao 7 thanh phia client (ghi o KPlayer.cpp case UI_CITYINFO)
+KCityInfoView g_ClientCityInfo[8];
+
 int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nParam)
 {
 	int nRet = 0;
 	switch(uDataId)
 	{
+	case GDI_CITY_INFO:			// [CITYINFO 21/08]
+		if (uParam >= 1 && uParam <= 7 && nParam)
+		{
+			memcpy((void*)nParam, &g_ClientCityInfo[uParam], sizeof(KCityInfoView));
+			nRet = g_ClientCityInfo[uParam].nCityId ? 1 : 0;
+		}
+		break;
+	case GDI_CITY_INFO_CURMAP:	// [CITYINFO 21/08] thanh cua map dang dung
+		if (nParam && Player[CLIENT_PLAYER_INDEX].m_nIndex > 0)
+		{
+			int nSW = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SubWorldIndex;
+			if (nSW >= 0 && nSW < MAX_SUBWORLD)
+			{
+				int nMapId = SubWorld[nSW].m_SubWorldID;
+				for (int c = 1; c <= 7; c++)
+				{
+					if (g_ClientCityInfo[c].nCityId && g_ClientCityInfo[c].nMapId == nMapId)
+					{
+						memcpy((void*)nParam, &g_ClientCityInfo[c], sizeof(KCityInfoView));
+						nRet = c;
+						break;
+					}
+				}
+			}
+		}
+		break;
 	case GDI_TASK_SAVE_VALUE:	// [TaskGuide] ban sao task value (dong bo qua UI_TASKVALUE)
 		nRet = (int)Player[CLIENT_PLAYER_INDEX].m_cTask.GetSaveVal((int)uParam);
 		break;

@@ -50,6 +50,26 @@ void KUiWorldmap::SetCityOwnTong(const char* szTongName)
 	m_xiangyang.SetText(szBuffer); //#tuong duong
 }
 
+// [CITYINFO 21/08] 7 nhan thanh theo thu tu CityID cua citywar.ini (1 Phuong Tuong, 2 Thanh Do,
+// 3 Dai Ly, 4 Bien Kinh, 5 Tuong Duong, 6 Duong Chau, 7 Lam An) - ban cu chi set Tuong Duong.
+void KUiWorldmap::RefreshCityLabels()
+{
+	KWndPureTextBtn* pBtn[8] = { NULL, &m_fengxiang, &m_chengdu, &m_dali, &m_bianjing, &m_xiangyang, &m_yangzhou, &m_linan };
+	if (!g_pCoreShell)
+		return;
+	for (int c = 1; c <= 7; c++)
+	{
+		KCityInfoView sV;
+		memset(&sV, 0, sizeof(sV));
+		if (!g_pCoreShell->GetGameData(GDI_CITY_INFO, c, (int)&sV))
+			continue;
+		char szBuffer[160];
+		_snprintf(szBuffer, sizeof(szBuffer) - 1, "Bang héi chiÕm lÜnh: %s - ThuÕ %d%%", sV.szOwner[0] ? sV.szOwner : "V« chñ", sV.nTax);
+		szBuffer[sizeof(szBuffer) - 1] = 0;
+		pBtn[c]->SetText(szBuffer);
+	}
+}
+
 void KUiWorldmap::CloseWindow()
 {
 	if (m_pSelf)
@@ -291,6 +311,9 @@ void KUiWorldmap::UpdateData()
 		
 				sprintf(szBuffer, szTongInfo, "V« hÖ ");
 				m_xiangyang.SetText(szBuffer); //#tuong duong
+				// [CITYINFO 21/08] 7 nhan tu ban sao client + xin server lam tuoi (tra ve UI_CITYINFO)
+				RefreshCityLabels();
+				g_pCoreShell->OperationRequest(GOI_GET_CITY_OWN_TONG, 0, 0);
 				
 				//sprintf(szBuffer, szTongInfo, "V« hÖ ");
 				//m_chengdu.SetText(szBuffer);

@@ -269,6 +269,7 @@ static void sSaveMirror()
 		// cham vao vong lap game. Tu day tep chi con la ban dem cuc bo.
 		KGameKV::PutFile(JX2CW_KV_NS, "file", szPath, true);
 #endif
+		KJx2CityWar_SyncToAll();	// [CITYINFO 21/08] moi thay doi -> client cap nhat ban do/thue
 	}
 	else
 	{
@@ -330,6 +331,46 @@ static void sApplyCityToSubWorld(int nCityID)
 				SubWorld[w].m_CityTax = (BYTE)nTax;
 			}
 		}
+	}
+}
+
+// [CITYINFO 21/08] 7 goi PLAYER_SCRIPTACTION_SYNC UIId = UI_CITYINFO (kenh mo rong nhu
+// UI_TASKVALUE - khong doi wire-format; client cu bo qua). Noi dung = chuoi tab.
+void KJx2CityWar_SyncToPlayer(int nPlayerIndex)
+{
+	sEnsureStore();
+	if (nPlayerIndex <= 0 || nPlayerIndex > PlayerSet.GetPlayerMaxNumber() || Player[nPlayerIndex].m_nIndex <= 0)
+		return;
+	if (Player[nPlayerIndex].m_nNetConnectIdx < 0)
+		return;		// bot / chua co ket noi
+	for (int c = 1; c <= 7; c++)
+	{
+		KJx2City* p = &s_Cities[c];
+		PLAYER_SCRIPTACTION_SYNC sSync;
+		sSync.m_nOperateType = SCRIPTACTION_UISHOW;
+		sSync.m_bUIId = UI_CITYINFO;
+		sSync.m_bOptionNum = 0;
+		sSync.m_bParam1 = 0;
+		sSync.m_bParam2 = 1;
+		sSync.m_Select = 0;
+		sSync.m_nParam = 0;
+		int n = _snprintf(sSync.m_pContent, 250, "%d\t%d\t%d\t%d\t%d\t%s\t%s\t%s",
+			c, p->nState, p->nTax, p->nPriceParam, p->nMapIdCount ? p->nMapIds[0] : 0,
+			p->szAreaName, p->szOwnerTong, p->szMaster);
+		if (n <= 0)
+			continue;
+		sSync.m_pContent[n] = 0;
+		sSync.m_nBufferLen = n;
+		Player[nPlayerIndex].DoScriptAction(&sSync);
+	}
+}
+
+void KJx2CityWar_SyncToAll()
+{
+	for (int i = 1; i <= PlayerSet.GetPlayerMaxNumber(); i++)
+	{
+		if (Player[i].m_nIndex > 0 && Player[i].m_nNetConnectIdx >= 0)
+			KJx2CityWar_SyncToPlayer(i);
 	}
 }
 

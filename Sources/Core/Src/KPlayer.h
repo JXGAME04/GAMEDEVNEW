@@ -55,6 +55,7 @@ enum	UIInfo
 	UI_OPENTONGUI,
 	UI_OPENTONGJX2,	// JX2 port: mo cua so bang hoi kieu JX2
 	UI_TASKVALUE,	// [TaskGuide] (int id, int value); id = -1 -> xoa bang task (client cu bo qua)
+	UI_CITYINFO,	// [CITYINFO 21/08] chuoi "id\tstate\ttax\tprice\tmapid\tten\tchu\tthaithu" 1 thanh (client cu bo qua)
 };
 
 enum

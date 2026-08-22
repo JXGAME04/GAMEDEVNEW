@@ -818,7 +818,23 @@ enum GAMEOPERATION_INDEX
 	GDI_TASK_SAVE_VALUE,		// [TaskGuide] uParam = task id -> tra ve ban sao task cua nhan vat
 	GDI_PLAYER_REPUTE_VALUE,	// [TaskGuide] danh vong hien tai cua nhan vat
 	GOI_TASKGUIDE_GOTO_XAFU,	// [TaskGuide] bam nhiem vu loai 4 -> tu chay den Xa Phu (bam lai = huy)
+	GDI_CITY_INFO,				// [CITYINFO 21/08] uParam = thanh 1..7, nParam = KCityInfoView* -> 1 co du lieu / 0
+	GDI_CITY_INFO_CURMAP,		// [CITYINFO 21/08] nParam = KCityInfoView* -> id thanh cua map dang dung / 0
+	GDCNI_CITY_INFO_UPDATE,		// [CITYINFO 21/08] uParam = id thanh vua nhan tu server
 
+};
+
+// [CITYINFO 21/08] ban sao 7 thanh (KJx2CityWar server -> UI_CITYINFO -> Core client)
+struct KCityInfoView
+{
+	int		nCityId;		// 0 = chua co du lieu
+	int		nState;			// JX2CW_STATE_* (0 roi .. 5 cong thanh)
+	int		nTax;			// thue giao dich (%)
+	int		nPrice;			// chi so vat gia (-1 = chua dat)
+	int		nMapId;			// map chinh cua thanh (AreaIncludes dau tien)
+	char	szName[32];		// ten thanh (TCVN3)
+	char	szOwner[32];	// bang chiem thanh ("" = vo chu)
+	char	szMaster[32];	// Thai Thu
 };
 
 //=========================================================

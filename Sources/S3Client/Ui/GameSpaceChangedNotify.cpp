@@ -740,6 +740,14 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		}
 	}
 	break;
+	case GDCNI_CITY_INFO_UPDATE:	// [CITYINFO 21/08] server day 1 thanh -> ve lai ban do + khung thue
+	{
+		KUiWorldmap* worldmap = KUiWorldmap::GetIfVisible();
+		if (worldmap)
+			worldmap->RefreshCityLabels();
+		KUiMiniMap::UpdateCityInfo();
+	}
+	break;
 	case GDCNI_SWITCHING_MAPMODE:
 		if (uParam)
 			MapSetMode(MINIMAP_M_BRIEF_PIC);
