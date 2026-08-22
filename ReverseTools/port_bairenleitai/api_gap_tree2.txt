@@ -1,0 +1,31 @@
+==============================================================================
+NHOM: TREE   | 0 tep .lua | 0 ten duoc goi
+cay: missions\bairenleitai\head.lua, missions\bairenleitai\hundred_arena.lua, missions\bairenleitai\npc_beauty.lua, missions\bairenleitai\npc_chuwuxiang.lua, missions\bairenleitai\npc_death.lua, missions\bairenleitai\npc_enter.lua, missions\bairenleitai\npc_store.lua, missions\bairenleitai\npc_trans.lua, missions\bairenleitai\player_death.lua, missions\bairenleitai\trap_arena.lua, activitysys\config\9\config.lua, activitysys\config\9\head.lua, activitysys\config\9\registe.lua, event\msg2allworld.lua
+==============================================================================
+
+--- [ENG] 0 ten ---
+
+--- [???] 0 ten ---
+
+--- [LIB] 0 ten ---
+
+[OK ] da co: 0 | [TREE] tu dinh nghia: 0
+NHOM TREE: 14 tep | 68 ten duoc goi
+
+--- [ENG] 2 ten ---
+  Msg2Map                      x19   missions/bairenleitai/hundred_arena.lua:343
+  SetTmpCamp                   x2    missions/bairenleitai/hundred_arena.lua:484
+
+--- [???] 0 ten ---
+
+--- [LNXLUA] 1 ten ---
+  basemission_CallNpc          x4    missions/bairenleitai/hundred_arena.lua:78 <= LINUX missions\basemission\lib.lua
+
+--- [PROJLUA] 4 ten ---
+  clone                        x7    missions/bairenleitai/hundred_arena.lua:332 <= ..\scriptjx2\lib\common.lua; lib\common.lua
+  CreateNewSayEx               x5    missions/bairenleitai/npc_beauty.lua:25 <= dailogsys\dailogsay.lua; lib\worldlibrary.lua
+  GetRandomAData               x2    missions/bairenleitai/hundred_arena.lua:217 <= ..\scriptjx2\lib\file.lua
+  RemoteExc                    x2    missions/bairenleitai/hundred_arena.lua:677 <= ..\scriptjx2\lib\remoteexc.lua
+
+[OK] engine da co: 50 | [TREE] tu dinh nghia: 11
+OK list: AddMapTrap, AddNpcEx, AddObstacleObj, CallPlayerFunction, DelNpc, DisabledStall, DisabledUseTownP, DynamicExecuteByPlayer, GetCamp, GetCurServerTime, GetLastDiagNpc, GetLevel, GetLocalDate, GetName, GetNpcName, GetNpcParam, GetPlayerRev, GetTask, GetWorldPos, GlobalExecute, Include, IncludeLib, Msg2Player, Msg2SubWorld, NewWorld, NpcIdx2PIdx, OB_IsEmpty, OpenBox, ST_StopDamageCounter, Sale, SetCurCamp, SetDeathScript, SetFightState, SetLogoutRV, SetNpcDeathScript, SetNpcParam, SetNpcScript, SetNpcTimer, SetPKFlag, SetRevPos, SetTask, SetTempRevPos, SubWorldID2Idx, TabFile_GetCell, TabFile_GetRowCount, TabFile_Load, Talk, WriteLog, curpack, usepack

@@ -1,0 +1,34 @@
+==============================================================================
+NHOM: BANG CHIEN   | 24 tep .lua | 266 ten duoc goi
+cay: missions\tongwar, event\tongwar, tongpkmessage
+==============================================================================
+
+--- [ENG] 10 ten ---
+  SetDeathType                     x3    missions/tongwar/match/head.lua:140
+  GetMapInfoFile                   x2    missions/tongwar/match/head.lua:211
+  ClearMapTrap                     x2    missions/tongwar/match/mission.lua:23
+  CreateChannel                    x2    missions/tongwar/match/mission.lua:135
+  DeleteChannel                    x2    missions/tongwar/match/mission.lua:148
+  LeaveChannel                     x2    missions/tongwar/match/mission.lua:183
+  Tm2Time                          x2    missions/tongwar/trap/tongwar_trap.lua:67
+  EnterChannel                     x2    missions/tongwar/trap/tongwar_trap.lua:99
+  ST_SyncMiniMapObj                x1    missions/tongwar/match/head.lua:57
+  GetAllEquipment                  x1    event/tongwar/tongwar_signup.lua:36
+
+--- [???] 5 ten ---
+  quan                             x2    missions/tongwar/match/mission.lua:93
+  CityName                         x1    event/tongwar/head.lua:417
+  ta                               x1    event/tongwar/head.lua:535
+  nay                              x1    event/tongwar/head.lua:535
+  Quang                            x1    event/tongwar/headinfo.lua:154
+
+--- [LIB] 7 ten ---
+  CreateTaskSay                    x71   event/tongwar/head.lua:172 <= task\system\task_string.lua
+  GetTabFileData                   x8    missions/tongwar/tongwar_autoexec.lua:24 <= lib\file.lua
+  GetTabFileHeight                 x4    missions/tongwar/tongwar_autoexec.lua:22 <= lib\file.lua
+  split                            x3    event/tongwar/event.lua:33 <= item\fireworks_callback.lua; item\valentine_callback.lua...
+  gb_GetTask                       x3    event/tongwar/head.lua:77 <= gb_taskfuncs.lua; lib\gb_taskfuncs.lua
+  sf_join                          x1    missions/tongwar/match/mission.lua:168 <= battles\boss\head.lua; battles\butcher\head.lua...
+  CreateNewSayEx                   x1    event/tongwar/head.lua:156 <= dailogsys\dailogsay.lua
+
+[OK ] da co: 138 | [TREE] tu dinh nghia: 106

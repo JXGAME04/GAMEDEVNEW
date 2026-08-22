@@ -1,0 +1,11 @@
+npcs.txt header Linux: ['Name', 'Kind', 'Camp', 'Series'] | du an: ['Name', 'Kind', 'Camp', 'Series']
+cot id Linux=None du an=None (None = id theo dong-2)
+
+=== NPC template: 1 id ===
+Linux   TEN                                DU AN          dung o
+53      T鑞g V� t�韓g 1                      TRUNG ID       missions/tongwar/tongwar_autoexec.lua:37 (x1)
+
+=== SKILL: 2 id ===
+Linux   TEN                                DU AN          dung o
+661     tr筺g th竔 trong chi課 tr�阯g T鑞g Kim  TRUNG ID       missions/tongwar/match/mission.lua:188 (x1)
+1500    加全技能状态vn                           -> 1485        event/tongwar/head.lua:270 (x2)

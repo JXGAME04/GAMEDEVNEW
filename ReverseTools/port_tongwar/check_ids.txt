@@ -1,0 +1,37 @@
+=== NPC template (id = dong-2) ===
+  393   Linux=Xa phu 蕋 4                   du an cung id=Xa phu 蕋 4                   TRUNG ID
+  625   Linux=R�琻g ch鴄 ��                  du an cung id=R�琻g ch鴄 ��                  TRUNG ID
+  389   Linux=Ch� d�頲 甶誱 1                 du an cung id=Ch� d�頲 甶誱 1                 TRUNG ID
+  55    Linux=T鑞g Ph� t�韓g 2               du an cung id=T鑞g Ph� t�韓g 2               TRUNG ID
+  49    Linux=Kim Quan vi猲 1               du an cung id=Kim Quan vi猲 1               TRUNG ID
+  629   Linux=T鑞g K�                       du an cung id=T鑞g K�                       TRUNG ID
+  630   Linux=Kim K�                       du an cung id=Kim K�                       TRUNG ID
+  626   Linux=K� Binh Trung l藀             du an cung id=K� Binh Trung l藀             TRUNG ID
+  627   Linux=K� Binh Kim                  du an cung id=K� Binh Kim                  TRUNG ID
+  628   Linux=K� Binh T鑞g                  du an cung id=K� Binh T鑞g                  TRUNG ID
+  53    Linux=T鑞g V� t�韓g 1                du an cung id=T鑞g V� t�韓g 1                TRUNG ID
+
+=== SKILL 661 cac cap (skills.txt) ===
+  661   Linux=tr筺g th竔 trong chi課 tr�阯g T鑞g Kim        du an=tr筺g th竔 trong chi課 tr�阯g T鑞g Kim       
+  1500  Linux=加全技能状态vn                                 du an=B輈h M閏 Chi N�.                          
+  1485  Linux=-                                        du an=加全技能状态vn                                
+  990   Linux=加血状态_阳                                   du an=加血状态_阳                                  
+  991   Linux=加跑状态_阳                                   du an=加跑状态_阳                                  
+  976   Linux=加血状态                                     du an=加血状态                                    
+  977   Linux=加跑状态                                     du an=加跑状态                                    
+  661 MaxLevel: Linux=20 du an=20
+  661 SkillStyle: Linux=2 du an=2
+  header du an: ['SkillName', 'Property', 'SkillId', 'Attrib', 'SkillStyle', 'SkillIcon', 'PreCastSpr', 'ManCastSnd', 'FMCastSnd', 'StateSpecialId', 'StatePriority', 'IsAura']
+
+=== Mat na cam (particular, magicscript.txt) ===
+  particular 482: magicscript Linux=M藅 �� "уng h祅h luy謓 c蕄" 36
+  particular 447: magicscript Linux=M藅 �� "уng h祅h luy謓 c蕄" 1
+  particular 450: magicscript Linux=M藅 �� "уng h祅h luy謓 c蕄" 4
+  particular 446: magicscript Linux=Nguy謙 H� l穙 nh﹏
+  particular 647: magicscript Linux=M藅 �� "уng h祅h luy謓 c蕄" 201
+  particular 806: magicscript Linux=M藅 �� "уng h祅h luy謓 c蕄" 360
+
+=== Item thuong ===
+  30438  Qu� Чi Ho祅g Kim                  -> du an None
+  2264   Ho祅g Ch﹏ Кn                      -> du an [2273]
+  30301  H鏽 nguy猲 ch﹏ �琻                  -> du an [4857]

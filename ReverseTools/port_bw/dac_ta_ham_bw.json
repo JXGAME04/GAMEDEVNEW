@@ -1,0 +1,137 @@
+[
+ {
+  "ham": "CreateChannel (ELF 0x081045A0) -> KChatChannelManager 0x0813AFE0 (map ten->id tai 0x9780D94)",
+  "chu_ky": "CreateChannel(szName) hoac CreateChannel(szName, nType) -> khong tra gi (xor eax; ret). lua_gettop PHAI = 1 hoac 2 (0x081045BA-0x081045C2), khac thi thoat im lang. szName = lua_tostring(L,1) (0x8233850); nType = (WORD)lua_tonumber(L,2) (0x82338B0 + fistp + movzx si), mac dinh 0 khi 1 tham so. Goi 0x0813AFE0(szName, nType).",
+  "ngu_nghia": "0x0813AFE0: dung std::string tu szName (0x804B2DC), tim trong map toan cuc 0x9780D94 (0x813C6B0 = find theo ten); da co -> tra 0 (khong tao trung). Chua co -> 0x813BDF0 (lay manager) -> 0x813C1B0(mgr, &wId) cap id kenh moi (WORD); 0x813B5A0(kenh, &nType) ghi loai kenh; 0x813C980(map, ten, id) dang ky ten. Kenh chat dong theo TEN, loai 11 = kenh phe (bwmission.lua:14-15). Phia client JX2 co giao thuc 'vao kenh' rieng (0x813AB70 trong EnterChannel gui goi {id, type}); client JX1 KHONG co he kenh chat dong nay.",
+  "tuong_duong_jx1": "KHONG CO. He chat JX1 (KPlayerChat) chi co kenh co dinh (the gioi/to doi/bang/rieng). Khong co API Lua nao tao kenh. Dang ky 0 ket qua cho 'Channel' trong ScriptFuns.cpp (grep).",
+  "cach_viet": "// KJx2WarInfra.cpp - 4 STUB nhan doi de script khong loi 'call expression not a function' (Lua 4 goi global nil = huy ca ham InitMission/JoinCamp)\nint LuaBwCreateChannel(Lua_State* L) { return 0; }\nint LuaBwEnterChannel(Lua_State* L)  { return 0; }\nint LuaBwLeaveChannel(Lua_State* L)  { return 0; }\nint LuaBwDeleteChannel(Lua_State* L) { return 0; }\n// ScriptFuns.cpp bang dang ky (canh {\"SetPKFlag\", LuaSetPKFlag} ~14907):\n{ \"CreateChannel\", LuaBwCreateChannel }, { \"EnterChannel\", LuaBwEnterChannel }, { \"LeaveChannel\", LuaBwLeaveChannel }, { \"DeleteChannel\", LuaBwDeleteChannel },",
+  "rui_ro": "Chi mat tinh nang 'chat rieng theo phe' (Linux: 2 kenh 'Loi dai nhieu nguoi ben Giap/At'). Tran dau van chay du. Neu sau nay muon that: phai them goi giao thuc + UI kenh o client (ngoai pham vi).",
+  "call_sites": [
+   "missions/bw/bwmission.lua:14-15 CreateChannel(ten, 11) trong InitMission",
+   "missions/bw/bwmission.lua:42-43 DeleteChannel(ten) trong EndMission",
+   "missions/bw/bwhead.lua:121,124 EnterChannel(PlayerIndex, ten) trong JoinCamp",
+   "missions/bw/bwhead.lua:57,59 LeaveChannel(PlayerIndex, ten) trong LeaveGame",
+   "DOI CHUNG: missions/tongwar (bang chien) cung 4 ham nay"
+  ]
+ },
+ {
+  "ham": "EnterChannel (ELF 0x081044C0) / LeaveChannel (0x08104420) / DeleteChannel (0x08104560)",
+  "chu_ky": "EnterChannel(nPlayerIdx, szName) / LeaveChannel(nPlayerIdx, szName): lua_gettop > 1 (cmp eax,1; jle thoat); arg1 = lua_tonumber -> int player idx; arg2 = lua_tostring ten kenh; dung doi tuong tam 0x813AA00(&obj, playerIdx) roi 0x813B160(&obj, ten) [Enter] / 0x813B350(&obj, ten) [Leave], huy 0x813AA10. DeleteChannel(szName): gettop > 0, arg1 string -> 0x813AE30(ten). Ca 3 khong tra gi.",
+  "ngu_nghia": "0x0813B160 (Enter): kiem player idx 1..0x4AF va Player[idx]+0x3F0 != 0 (ket noi mang, mang Player 0x8BAEE60 stride 0x8788); map find ten (0x813C6B0) -> lay id (0x813C8A0) -> lay doi tuong kenh (0x813BE50) -> kenh->AddPlayer(idx) (0x813B7A0) -> doc loai kenh (0x813B580) -> 0x813AB70(&obj, ten, id, type) = gui goi cho client bao da vao kenh. Tra 1 khi thanh cong.",
+  "tuong_duong_jx1": "KHONG CO (xem CreateChannel).",
+  "cach_viet": "stub return 0 (xem CreateChannel).",
+  "rui_ro": "nhu tren",
+  "call_sites": [
+   "bwhead.lua:57,59,121,124",
+   "bwmission.lua:42-43"
+  ]
+ },
+ {
+  "ham": "AskClientForNumber (ELF 0x08115CA0)",
+  "chu_ky": "AskClientForNumber(szCallback, nMin, nMax, szPrompt) -> khong tra gi. GetPlayerIndex(L) (0x8107860) < 0 -> thoat; lua_gettop PHAI > 3 (cmp eax,3; jg). arg1 PHAI la string (lua_isstring 0x8232640), arg4 PHAI la string, arg2/arg3 PHAI la number (lua_type 0x8232590 == 2). Luu: Player+0x5F9C = id script dang chay (0x8220780(L)); Player+0x78E4 = 0; Player+0x78E8 (BYTE) = 1 (co 'dang cho so'); strncpy(Player+0x5FA0, szCallback, 0x80) (ten ham goi lai, o chung voi cac callback Say - Say ghi o 0x5FA0 + 128*k, 0x08124BBE). Goi goi 0xA3 dai 0x4C (word 0x4C tai +1, byte 2 tai +3 = loai 'so'), chua nMin (ebp-0x3C), nMax (ebp-0x40), prompt strncpy 0x20 byte (0x8227030), gui bang 0x80A8400(Player, buf, 0x4D).",
+  "ngu_nghia": "Mo hop nhap SO o client voi khoang [nMin,nMax] va loi nhac; khi client tra loi, engine goi ham szCallback(nSo) trong script dang thoai (bang chung: bwmanager.lua:149 OnEnterKey1(Key) so sanh Key == GetMissionV(MS_TEAMKEY)). Co +0x78E8 bi xoa ve 0 moi lan KPlayer::ExecuteScript (0x080AD73C) va khi chon thoai (0x080AC5FE) -> hop so bi huy neu script khac chay. CHUA RO: ham xu ly goi tra loi co kiem min/max hay chi client kiem (chua tim duoc handler trong KProtocolProcess).",
+  "tuong_duong_jx1": "DANG LA STUB tra -1: KTongJX2.cpp:4132 LuaJX2_AskClientForNumber (dang ky ScriptFuns.cpp:14638) => callback KHONG BAO GIO duoc goi => doi vien 2v2..8v8 KHONG vao duoc dau truong (OnEnterKey bwmanager.lua:145-164), va ca 'SignUpTheOne' cua Loi dai bang hoi CN (THICONG muc 8.2) cung chet. Ha tang co san: AskClientForString (ScriptFuns.cpp:13535) + nhanh m_bWllsAskStrArg trong KProtocolProcess::c2sInputCommand (KProtocolProcess.cpp:5947-5951); hop SO cua JX1 = OpenGetNumber (ScriptFuns.cpp:10308, S2C_INPUT_BOX nType=2 -> client GDCNI_OPEN_INPUT2, KProtocolProcess.cpp:4031) tra loi ve c2sInputCommand case 2 (KProtocolProcess.cpp:5956-5960: m_nStringNum = nNum; ExecuteScript(m_dwNumberBoxId, fun, \"\")). KPlayer::ExecuteScript(DWORD, char*, int) (KPlayer.cpp:6987) da co de truyen so lam doi so 1.",
+  "cach_viet": "// KPlayer.h (#ifdef _SERVER, canh m_bWllsAskStrArg KPlayer.h:475): them\nint  m_nWllsAskNumMin, m_nWllsAskNumMax;   // AskClientForNumber: khoang hop le\n// KPlayer.cpp:301 canh m_bWllsAskStrArg = 0: m_nWllsAskNumMin = m_nWllsAskNumMax = 0;\n\n// KTongJX2.cpp:4132 THAY THAN STUB:\nint LuaJX2_AskClientForNumber(Lua_State* L)   // AskClientForNumber(szCb, nMin, nMax, szPrompt)\n{\n\tint nPlayerIndex = GetPlayerIndex(L);\n\tif (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 4) return 0;          // Linux: gettop > 3\n\tif (!Lua_IsString(L, 1) || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3) || !Lua_IsString(L, 4)) return 0;\n\tconst char* szCb = Lua_ValueToString(L, 1);\n\tconst char* szPrompt = Lua_ValueToString(L, 4);\n\tif (!szCb || !szCb[0]) return 0;\n\tKPlayer& p = Player[nPlayerIndex];\n\tp.m_dwNumberBoxId = Npc[p.m_nIndex].m_ActionScriptID;              // script NPC dang thoai (= Linux +0x5F9C)\n\tstrncpy(p.m_szTaskExcuteFun, szCb, sizeof(p.m_szTaskExcuteFun) - 1); p.m_szTaskExcuteFun[sizeof(p.m_szTaskExcuteFun)-1] = 0;\n\tp.m_nWllsAskNumMin = (int)Lua_ValueToNumber(L, 2);\n\tp.m_nWllsAskNumMax = (int)Lua_ValueToNumber(L, 3);\n\tp.m_bWllsAskStrArg = 2;                                               // 2 = cho SO (1 = cho CHUOI, da co)\n\tS2C_INPUT_BOX nc; nc.ProtocolType = s2c_inputbox; nc.nType = 2;    // hop so co san cua client (GDCNI_OPEN_INPUT2)\n\tstrncpy(nc.Value, szPrompt ? szPrompt : \"\", sizeof(nc.Value) - 1); nc.Value[sizeof(nc.Value)-1] = 0;   // toi da 31 byte!\n\tstrncpy(nc.Value1, szCb, sizeof(nc.Value1) - 1); nc.Value1[sizeof(nc.Value1)-1] = 0;\n\tif (g_pServer && p.m_nNetConnectIdx != -1) g_pServer->PackDataToClient(p.m_nNetConnectIdx, &nc, sizeof(S2C_INPUT_BOX));\n\treturn 0;\n}\n\n// KProtocolProcess.cpp:5956 case 2 (hop so) - THEM nhanh truoc duong cu:\ncase 2:\n{\n\tPlayer[nIndex].m_nStringNum = pInput->nNum;\n\tif (Player[nIndex].m_bWllsAskStrArg == 2)\n\t{\n\t\tPlayer[nIndex].m_bWllsAskStrArg = 0;\n\t\tint nNum = pInput->nNum;\n\t\tif (nNum < Player[nIndex].m_nWllsAskNumMin || nNum > Player[nIndex].m_nWllsAskNumMax) break;   // ngoai khoang: bo qua (Linux: CHUA RO, client tu chan)\n\t\tPlayer[nIndex].ExecuteScript(Player[nIndex].m_dwNumberBoxId, Player[nIndex].m_szTaskExcuteFun, nNum);   // KPlayer.cpp:6987 -> OnEnterKey1(Key)\n\t}\n\telse\n\t\tPlayer[nIndex].ExecuteScript(Player[nIndex].m_dwNumberBoxId, Player[nIndex].m_szTaskExcuteFun, \"\");\n}\nbreak;\n// Dong thoi trong c2sInputCommand case 1 (chuoi): doi 'if (m_bWllsAskStrArg)' thanh 'if (m_bWllsAskStrArg == 1)' de 2 duong khong lan nhau.",
+  "rui_ro": "(1) S2C_INPUT_BOX.Value chi 32 byte -> loi nhac bwmanager.lua:146 (34 byte TCVN3) bi cat; nen rut ngan chuoi (xem SPEC muc H). (2) m_szTaskExcuteFun[32] (KPlayer.h:386) - ten callback 'OnEnterKey1' 11 byte OK. (3) Ham callback chay o state script NPC (m_ActionScriptID) - dung nhu Linux; neu nguoi choi dong thoai truoc khi tra loi, m_ActionScriptID co the bi doi -> dung m_dwNumberBoxId da luu nen van goi dung script. (4) Linux xoa co cho so khi chay script khac; JX1 khong xoa -> hop so cu tra loi muon van duoc nhan; chap nhan duoc. (5) Phai kiem 'SignUpTheOne' cua Loi dai bang hoi CN (infocenter_head.lua) hoat dong lai nho ham nay.",
+  "call_sites": [
+   "missions/bw/bwmanager.lua:146 AskClientForNumber(\"OnEnterKey1\", 0, 10000, \"Xin nhập số thứ tự vào đấu trường:\")",
+   "DOI CHUNG: missions/citywar_global/infocenter_head.lua (SignUpTheOne, da port 21/08) ; missions/tongwar ; nhieu NPC shop JX2"
+  ]
+ },
+ {
+  "ham": "SetPKFlag (ELF 0x0810F610) -> KPlayerPK::SetNormalPKState 0x080C3740",
+  "chu_ky": "SetPKFlag(nFlag) -> khong tra gi. gettop > 0; GetPlayerIndex > 0; nFlag = (int)lua_tonumber(L,1). Goi 0x080C3740(&Player[idx]+0x5A50 (= m_cPK), nFlag, 1).",
+  "ngu_nghia": "0x080C3740(this=m_cPK, bFlag, bForce): neu bForce==0 va [this+8] (m_bLockPK) != 0 -> thoat (bi khoa). bFlag==1 -> (neu bForce==0 thi kiem them 0x80C3680(this,1) dieu kien cap) ghi [this]=1 (m_nNormalPKFlag=chien dau), [this+0x10]=0 (dong ho); bFlag==2 -> [this]=2 (do sat); bFlag==0 -> [this]=0, [this+0x10]=0; moi nhanh gui goi 0x90 dai 2 {bFlag} cho client (0x80A8400) = s2c_pksyncnormalflag. KHONG ghi [this+8] (khoa) => SetPKFlag doi TRANG THAI PK (0 luyen cong / 1 chien dau / 2 do sat) cuong che, GIU NGUYEN co khoa.",
+  "tuong_duong_jx1": "KPlayerPK::SetNormalPKState(BYTE bFlag, BOOL bLock) (KPlayerPK.cpp:55-65: ghi m_nNormalPKFlag + m_bLockPK, gui PK_NORMAL_FLAG_SYNC) = chinh ham Linux goi; Lua JX1 co san SetPKMode(flag, lock) (ScriptFuns.cpp:3833 LuaSetPlayerPKState, dang ky :14348). HIEN TAI SAI: KJx2WarInfra.cpp:227 LuaSetPKFlag = return LuaSetFightState(L) (chi bat/tat trang thai chien dau, KHONG doi PK) => trong bw nguoi choi o che do 'luyen cong' (0) danh nhau KHONG LEN DAMAGE (KNpc.cpp:3896 'PK luyen cong khong len Damage', KNpcSet.cpp:1547-1552 !m_nPKFlag -> relation_none).",
+  "cach_viet": "// KJx2WarInfra.cpp:227 THAY:\nint LuaSetPKFlag(Lua_State* L)\n{\n\tint nPlayerIndex = GetPlayerIndex(L);\n\tif (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1) return 0;\n\tint nFlag = (int)Lua_ValueToNumber(L, 1);\n\tif (nFlag < 0 || nFlag > 2) return 0;                // Linux: 0/1/2, khac thi thoat\n\tKPlayerPK& pk = Player[nPlayerIndex].m_cPK;           // KPlayer la friend cua KPlayerPK; neu khong truy cap duoc thi dung Player[].m_cPK.SetNormalPKState\n\tpk.SetNormalPKState((BYTE)nFlag, pk.GetLockPKState());   // giu nguyen khoa nhu Linux (khong ghi +8)\n\treturn 0;\n}",
+  "rui_ro": "(1) Doi hanh vi cua citywar_arena/citywar_city/leaguematch/tong/messenger (20 tep dang goi SetPKFlag) theo huong DUNG voi Linux; can test lai Loi dai bang hoi CN sau restart. (2) SetPKFlag(0) luc roi tran dua nguoi choi ve 'luyen cong' ke ca truoc do ho dang do sat - giong Linux. (3) SetPKFlag KHONG con bat FightMode: bw da goi SetFightState(1) rieng o RunMission (bwmission.lua:69) va citywar_arena cung vay (mission.lua:36) -> khong mat gi.",
+  "call_sites": [
+   "bwhead.lua:63 SetPKFlag(0) (LeaveGame)",
+   "bwhead.lua:157 SetPKFlag(0) (khan gia)",
+   "bwhead.lua:161 SetPKFlag(1) (dau thu)"
+  ]
+ },
+ {
+  "ham": "ForbidChangePK (ELF 0x0810F590) + IsForbidChangePK (0x0810F540)",
+  "chu_ky": "ForbidChangePK(nFlag) -> khong tra gi. gettop > 0; GetPlayerIndex > 0; n = (int)lua_tonumber(L,1); Player[idx]+0x5A58 (= m_cPK + 8 = m_bLockPK) = (n == 1) ? 1 : 0 (sete dl, 0x0810F5EA-0x0810F5F5). Chi gia tri DUNG BANG 1 moi khoa.",
+  "ngu_nghia": "Khoa/mo khoa quyen tu doi trang thai PK cua nguoi choi (cung truong m_bLockPK ma SetNormalPKState(bForce=0) kiem truoc khi doi, 0x080C3751-0x080C375A). Client JX2 cung an nut doi PK khi khoa.",
+  "tuong_duong_jx1": "KPlayerPK::m_bLockPK (KPlayerPK.h:36) + SetNormalPKState(flag, bLock) (KPlayerPK.cpp:55) dong bo xuong client; client JX1 da kiem khoa khi nguoi choi bam doi PK (CoreShell.cpp:12133 GetLockPKState). HIEN TAI: KJx2WarInfra.cpp:234 LuaForbidChangePK = no-op. Server KHONG kiem khoa khi nhan c2sPKApplyChangeNormalFlag (KProtocolProcess.cpp:5771-5781) -> client sua co the doi.",
+  "cach_viet": "// KJx2WarInfra.cpp:234 THAY:\nint LuaForbidChangePK(Lua_State* L)\n{\n\tint nPlayerIndex = GetPlayerIndex(L);\n\tif (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1) return 0;\n\tBOOL bLock = ((int)Lua_ValueToNumber(L, 1) == 1);          // Linux: sete (==1)\n\tKPlayerPK& pk = Player[nPlayerIndex].m_cPK;\n\tpk.SetNormalPKState((BYTE)pk.GetNormalPKState(), bLock);   // giu flag, doi khoa, tu dong bo client\n\treturn 0;\n}\n// KProtocolProcess.cpp:5780 (c2sPKApplyChangeNormalFlag) THEM truoc dong SetNormalPKState:\nif (Player[nIndex].m_cPK.GetLockPKState() && !pApply->m_bLockPK) return;   // dang bi script khoa -> tu choi (script goi thang SetNormalPKState nen khong bi anh huong)",
+  "rui_ro": "Dong cuoi (chan phia server) la CHAT HON Linux mot chut (Linux chi dua vao client); neu so anh huong den JX1 SetPKMode(x,1) cu (khoa roi nguoi choi muon mo) - JX1 cu cung the (khoa la khoa).",
+  "call_sites": [
+   "bwhead.lua:64 ForbidChangePK(0)",
+   "bwhead.lua:163 ForbidChangePK(1)"
+  ]
+ },
+ {
+  "ham": "SetPunish (ELF 0x0810F470) - NGU NGHIA NGUOC VOI JX1",
+  "chu_ky": "SetPunish(n) -> khong tra gi. gettop > 0; idx = GetPlayerIndex trong 1..0x4AF; n = (int)lua_tonumber(L,1). Npc[Player[idx]+0x3F4 (m_nIndex)] (mang Npc 0x836EAE0 stride 0x1A4C) + 0x1818 = (n != 0) ? 0 : 3.",
+  "ngu_nghia": "+0x1818 chinh la m_nCurPKPunishState: KNpc::DeathCalcPKValue Linux 0x0807A3C2 'cmp [edx+0x1818],3 ; je -> return 3' y het JX1 KNpc.cpp:8678. Vay Linux SetPunish(0) = KHONG phat khi chet (3 = enumDEATH_MODE_PKBATTLE_PUNISH), SetPunish(1) = phat binh thuong (0). Chu thich script Linux xac nhan: bwhead.lua:143 '--无死亡惩罚 SetPunish(0)', :62 'SetPunish(1)--设置PK惩罚'.",
+  "tuong_duong_jx1": "ScriptFuns.cpp:12797 LuaSetDeathPunish: nState==0 -> m_nCurPKPunishState = 0 (PHAT), khac 0 -> enumDEATH_MODE_PKBATTLE_PUNISH (KHONG PHAT). NGUOC 180 do. Script JX1 cua du an dung dung nghia JX1 (tinhnang/loidaihonchien/mainloidai.lua:43 SetPunish(1) 'chet khong mat gi') nen KHONG DUOC doi engine.",
+  "cach_viet": "Sua SCRIPT bw (2 dong): bwhead.lua:62 SetPunish(1) -> SetPunish(0) ; bwhead.lua:144 SetPunish(0) -> SetPunish(1). (Xem SPEC muc H.) Ghi chu: moi cay JX2 da port (citywar_arena head.lua:48/100, citywar_city camper.lua:10/142, leaguematch head.lua:521, tong/*, messenger/*) dang bi NGUOC - ngoai pham vi bw, bao cho chu game.",
+  "rui_ro": "Neu quen doi: nguoi choi chet trong loi dai BI mai mon/roi do/len PK; roi tran thi duoc 'mien phat' vinh vien toi khi relog.",
+  "call_sites": [
+   "bwhead.lua:62 SetPunish(1) (LeaveGame)",
+   "bwhead.lua:144 SetPunish(0) (joined_in)"
+  ]
+ },
+ {
+  "ham": "GetTeamMember (ELF 0x08115530) - CHI SO NGUOC VOI JX1",
+  "chu_ky": "GetTeamMember(n) -> player idx hoac -1. n = (int)lua_tonumber(L,1) > 0; GetPlayerIndex > 0; Player[idx]+0x5994 != 0 (co to doi) ; teamId = Player[idx]+0x5998 != -1. Bang Team tai 0x8BB86E8 stride 0x30: n == 1 -> tra [team+0] (doi truong, 0x08115618); n >= 2 -> duyet 7 o thanh vien [team+4 .. +0x1C] bo qua o = -1, tra o hop le thu (n-1) (0x081155B1-0x081155E1).",
+  "ngu_nghia": "Linux: 1 = doi truong, 2.. = thanh vien (dem o HOP LE, bo lo trong). JX1 ScriptFuns.cpp:7235 LuaGetTeamMem: 0 = doi truong (m_nCaptain), 1..MAX_TEAM_MEMBER = m_nMember[n-1] (theo VI TRI o, khong bo lo trong; KPlayerTeam.cpp:690-718 doi truong KHONG nam trong m_nMember).",
+  "tuong_duong_jx1": "Khong doi engine (script JX1 cua du an dua vao 0 = doi truong, item/tasklink_goods.lua:64).",
+  "cach_viet": "Sua SCRIPT bwmanager.lua:86-87 (xem SPEC muc H): thay vong 'for i=1,2 PlayerIndex = GetTeamMember(i)' bang cach lay doi truong GetTeamMember(0) va thanh vien dau tien hop le trong GetTeamMember(1..6) (> 0).",
+  "rui_ro": "Neu khong sua: MissionS(2) = GetName() cua PlayerIndex 0 (rong/loi) -> doi 2 khong co ten, OnJoin khong bao gio khop doi truong 2. Luu y DOI CHUNG: task/tollgate/messenger/lib_messenger.lua:37,76,123,161 (Tin Su da port) cung dang lap 'for i=1,nMemCount GetTeamMember(i)' theo nghia Linux -> bo sot doi truong, doc o rong.",
+  "call_sites": [
+   "bwmanager.lua:87"
+  ]
+ },
+ {
+  "ham": "ChangeOwnFeature dang 7 tham so (0,0,-1,-1,-1,-1,-1) = TANG HINH khan gia (ELF 0x08131350, da dich nguoc trong dac_ta_17_ham_hoatdong_phuong.json)",
+  "chu_ky": "ChangeOwnFeature(nType=0, nTime=0, nIdx=-1, helm=-1, armor=-1, weapon=-1, horse=-1). nIdx < 0 -> giu mau nguoi, 4 phan helm/armor/weapon/horse = -1 = KHONG VE -> than hinh trong suot.",
+  "ngu_nghia": "Khan gia (camp 3 -> SetCurCamp(0)) vao san khong ai nhin thay; khoi phuc bang RestoreOwnFeature trong LeaveGame (bwhead.lua:65).",
+  "tuong_duong_jx1": "ScriptFuns.cpp:3915 LuaChangeOwnFeature: nIdx <= 0 -> return 0 (NO-OP) => khan gia HIEN HINH. JX1 co san co che tang hinh bang trang thai: KNpc::m_HideState.nTime (KNpc.h:262): >0 -> sync STATE_HIDE (KNpc.cpp:5690) -> client khong tao/xoa NPC do (KProtocolProcess.cpp:1910-1956, KNpc::Paint 7098), AI bo qua (KNpcAI.cpp:744), giam 1 moi frame (KNpc.cpp:1288), bi xoa khi dung chieu (KNpc.cpp:2514), khi chet/ClearNormalState (KNpc.cpp:10140). Cach khac la camp_audience=7 (client khong ve, CoreDrawGameObj.cpp:60) nhung camp 7 != camp_begin -> co the bi danh (KNpcSet.cpp:143-164) -> KHONG dung.",
+  "cach_viet": "// ScriptFuns.cpp:3927 LuaChangeOwnFeature - THAY 'if (nIdx <= 0) return 0;' bang:\nif (nIdx < 0)\n{\n\t// [BW] dang 7 tham so, ca 4 phan = -1 => tang hinh (Linux khong ve helm/armor/weapon/horse)\n\tif (nTop == 7 && (int)Lua_ValueToNumber(L,4) < 0 && (int)Lua_ValueToNumber(L,5) < 0 && (int)Lua_ValueToNumber(L,6) < 0 && (int)Lua_ValueToNumber(L,7) < 0)\n\t{\n\t\tKNpc& npc = Npc[Player[nPlayerIndex].m_nIndex];\n\t\tnpc.m_HideState.nTime = 0x7FFFFFF0;   // 'vinh vien' (nType 0), KNpc.cpp:1288 giam dan\n\t\tnpc.m_HideState.nMagicAttrib = 0; npc.m_HideState.nValue[0] = npc.m_HideState.nValue[1] = 0;   // KState = {nMagicAttrib, nValue[2], nTime} KNpc.h:129-134\n\t}\n\treturn 0;\n}\nif (nIdx == 0) return 0;\n// KJx2WarInfra.cpp:247 LuaRestoreOwnFeature - THEM truoc return LuaReSetMask(L):\n{ int n = GetPlayerIndex(L); if (n > 0 && Player[n].m_nIndex > 0) ZeroMemory(&Npc[Player[n].m_nIndex].m_HideState, sizeof(KState)); }",
+  "rui_ro": "(1) Khan gia dung chieu -> hien hinh (KNpc.cpp:2514) - Linux khong; chap nhan. (2) RestoreOwnFeature xoa ca trang thai tang hinh do skill (neu co) - chi goi trong loi dai. (3) Khong lam cung duoc: khan gia hien hinh, tran van chay (camp 0 = camp_begin -> relation_ally voi moi nguoi, KNpcSet.cpp:143-144, khong the bi danh). (4) KState (KNpc.h:129-134) = {nMagicAttrib, nValue[2], nTime}.",
+  "call_sites": [
+   "bwhead.lua:158 ChangeOwnFeature(0, 0, -1, -1, -1, -1, -1) (khan gia)",
+   "bwhead.lua:65 RestoreOwnFeature() (LeaveGame)"
+  ]
+ },
+ {
+  "ham": "[ENGINE JX1] ten callback timer mission: 'OnMissionTimer' (KMission.cpp:342) vs Linux 'OnTimer'",
+  "chu_ky": "KTimerFunArray<KTimerTaskFun, MAX_TIMER_PERMISSION, g_MissionTimerCallBackFun> (KMission.h:121) -> g_MissionTimerCallBackFun -> pMission->ExecuteScript(szScriptFile, \"OnMissionTimer\", 0). Ban Linux goi \"OnTimer\" (bwtimer.lua:4, bwtotaltimer.lua:3, citywar_arena/timer.lua:3, tong/*/schedule/*.lua:3 deu dinh nghia OnTimer).",
+  "ngu_nghia": "Neu khong sua: 2 timer cua bw (bao danh 20s + tong 12') KHONG BAO GIO chay -> tran khong bat dau, khong ket thuc. (Cung la ly do tiem an citywar_arena/timer.lua va 9 timer hoat dong phuong chua chac da chay - DOI CHUNG, ngoai pham vi.)",
+  "tuong_duong_jx1": "LuaInitMission (ScriptFuns.cpp:10890-10908) DA co khuon do ham: thu 'InitMission' neu ton tai, khong thi 'BeginMission'.",
+  "cach_viet": "// KMission.cpp:338 THAY:\nint g_MissionTimerCallBackFun(void * pOwner, char * szScriptFile)\n{\n\tif (!pOwner || !szScriptFile || !szScriptFile[0]) return FALSE;\n\tKMission *pMission = (KMission*)pOwner;\n\tchar szFun[20]; strcpy(szFun, \"OnMissionTimer\");\n\tchar szLow[MAX_PATH]; g_StrCpyLen(szLow, szScriptFile, MAX_PATH); g_StrLower(szLow);\n\tKLuaScript* pS = (KLuaScript*)g_GetScript(szLow);\n\tif (pS && pS->m_LuaState)\n\t{\n\t\tint nTop = Lua_GetTopIndex(pS->m_LuaState);\n\t\tLua_GetGlobal(pS->m_LuaState, \"OnMissionTimer\");\n\t\tBOOL bHas = lua_isfunction(pS->m_LuaState, Lua_GetTopIndex(pS->m_LuaState));\n\t\tlua_settop(pS->m_LuaState, nTop);\n\t\tif (!bHas) strcpy(szFun, \"OnTimer\");      // [BW/JX2] script Linux dat ten OnTimer\n\t}\n\tpMission->ExecuteScript(szScriptFile, szFun, 0);\n\treturn 1;\n}\n// (cach B - khong dong engine: them cuoi bwtimer.lua va bwtotaltimer.lua dong 'OnMissionTimer = OnTimer' - lech byte so voi Linux)",
+  "rui_ro": "Dong 'printf ==>Run timer' cu (KMission.cpp:344) spam console moi 20s trong tran - giu hay bo tuy chu game.",
+  "call_sites": [
+   "bwmission.lua:12-13 StartMissionTimer(BW_MISSIONID, BW_SMALLTIME_ID, TIMER_1) / BW_TOTALTIME_ID, TIMER_2",
+   "settings/TimerTask.txt (khoa moi) -> bwtimer.lua / bwtotaltimer.lua"
+  ]
+ },
+ {
+  "ham": "[ENGINE JX1] ten callback script chet: 'OnPlayerDeath(nPlayerIdx, nKillerNpcIdx)' (KNpc.cpp:1542) vs Linux 'OnDeath(nKillerNpcIdx)'",
+  "chu_ky": "KNpc.cpp:1538-1543: if IsPlayer && Player[m_nPlayerIdx].m_dwDeathScriptId -> ExecuteScript2(id, \"OnPlayerDeath\", m_nPlayerIdx, m_nLastDamageIdx). bwdeath.lua:2 dinh nghia OnDeath(Launcher) voi Launcher = chi so NPC ke giet (NpcIdx2PIdx(Launcher) dong 8).",
+  "ngu_nghia": "Khong sua -> nguoi chet trong loi dai KHONG bi loai khoi phe (DelMSPlayer bwdeath.lua:26), tran khong ket thuc khi mot ben chet het; thong bao 'X da danh bai Y' khong hien.",
+  "tuong_duong_jx1": "Dot E (BANGIAO_CONGTHANH_DOTE.md muc 3.5) da chon cach doi SCRIPT sang OnPlayerDeath cho citywar_city; citywar_arena/death.lua:3 van la OnDeath (chua doi). De giong Linux tu dong cho moi cay port: do ham o engine.",
+  "cach_viet": "// KNpc.cpp:1540-1543 THAY:\nif (Player[m_nPlayerIdx].m_dwDeathScriptId)\n{\n\tKLuaScript* pS = (KLuaScript*)g_GetScript(Player[m_nPlayerIdx].m_dwDeathScriptId);\n\tBOOL bJx1 = TRUE;\n\tif (pS && pS->m_LuaState)\n\t{\n\t\tint nTop = Lua_GetTopIndex(pS->m_LuaState);\n\t\tLua_GetGlobal(pS->m_LuaState, \"OnPlayerDeath\");\n\t\tbJx1 = lua_isfunction(pS->m_LuaState, Lua_GetTopIndex(pS->m_LuaState));\n\t\tlua_settop(pS->m_LuaState, nTop);\n\t}\n\tif (bJx1)\n\t\tPlayer[m_nPlayerIdx].ExecuteScript2(Player[m_nPlayerIdx].m_dwDeathScriptId, \"OnPlayerDeath\", m_nPlayerIdx, m_nLastDamageIdx);\n\telse\n\t\tPlayer[m_nPlayerIdx].ExecuteScript2(Player[m_nPlayerIdx].m_dwDeathScriptId, \"OnDeath\", m_nLastDamageIdx, m_nPlayerIdx);   // [JX2] OnDeath(Launcher)\n}\n// (cach B: them vao cuoi bwdeath.lua 'function OnPlayerDeath(nPlayerIdx, nDamageIdx) OnDeath(nDamageIdx) end')",
+  "rui_ro": "ExecuteScript2 'dd' truyen 2 so -> OnDeath nhan them doi so 2 (bo qua). g_GetScript voi id 0x12345678 (SetDeathScript(\"\") -> g_FileName2Id(\"\") KFilePath.cpp:442-457) tra NULL -> di nhanh bJx1 nhu cu, vo hai.",
+  "call_sites": [
+   "bwhead.lua:170 SetDeathScript(\"\\\\script\\\\missions\\\\bw\\\\bwdeath.lua\")",
+   "bwdeath.lua:2 OnDeath(Launcher)"
+  ]
+ },
+ {
+  "ham": "[ENGINE JX1] doi map KHONG go nguoi choi khoi mission (KNpc.cpp:9876 bi chu thich) -> OnLeave/LeaveGame khong chay khi GameOver NewWorld",
+  "chu_ky": "KNpc::ChangeWorld JX1: dong '//SubWorld[m_SubWorldIndex].m_MissionArray.RemovePlayer(...)' bi chu thich tu ban goc (KNpc.cpp:9852, 9876); chi KPlayerSet.cpp:375 (dang xuat) moi RemovePlayer -> OnLeave. LuaCloseMission (ScriptFuns.cpp:11054-11057): EndMission -> StopMission() (KMission.cpp:112-130: Clear danh sach, KHONG goi OnLeave).",
+  "ngu_nghia": "bwhead.lua:79-104 GameOver() chi NewWorld tung nguoi (khong LeaveGame) - tren Linux viec roi map keo theo OnLeave -> LeaveGame (chu thich citywar_arena/mission.lua:60 xac nhan OnLeave chay ca khi dang xuat/roi). Tren JX1: nguoi choi ra khoi san voi co ForbidEnmity(1), DisabledStall(1), ForbitTrade(1), SetCreateTeam(0), SetLogoutRV(1), khoa PK... cho toi khi relog. CHUA RO: Linux ChangeWorld co go mission hay khong (chua tim duoc ham trong ELF) - nhung citywar_arena/head.lua:61-78 (Linux) GameOver goi LeaveGame() tung nguoi, chung to phai tu goi.",
+  "tuong_duong_jx1": "citywar_arena/head.lua:73-76 (da port, trung Linux): 'PlayerIndex = PTab[i]; LeaveGame()'.",
+  "cach_viet": "Sua SCRIPT bwhead.lua:99-100 (xem SPEC muc H): trong vong for cua GameOver them 'LeaveGame();' truoc NewWorld(...). LeaveGame -> DelMSPlayer -> KMission::RemovePlayer -> OnLeave (bwmission.lua:48) -> LeaveGame lan 2 (idempotent) + NewWorld; PTab da gom truoc nen xoa trong luc duyet an toan.",
+  "rui_ro": "Nguoi choi roi map 209 bang cach khac (GM, item dich chuyen khong bi chan) van ket co toi khi dang xuat (KPlayerSet.cpp:375 -> OnLeave) - Tho Dia Phu da bi chan o 209-211 (item/ib/thodiaphuvh.lua:32).",
+  "call_sites": [
+   "bwhead.lua:79-104 GameOver()",
+   "bwmission.lua:39 EndMission -> GameOver()"
+  ]
+ }
+]

@@ -339,7 +339,27 @@ int g_MissionTimerCallBackFun(void * pOwner, char * szScriptFile)
 {
 	if (!pOwner) return FALSE;
 	KMission *pMission = (KMission*)pOwner;
-	pMission->ExecuteScript(szScriptFile, "OnMissionTimer", 0);
+	// [22/08 S1] mission cua du an dat "OnMissionTimer"; script Linux/JX2 (citywar_arena,
+	// citywar_city, missions\tong schedule, tongwar) dat "OnTimer". Do ham co that trong
+	// state dich roi goi dung ten (khuon LuaInitMission ScriptFuns.cpp "InitMission"/"BeginMission").
+	char szFun[20];
+	strcpy(szFun, "OnMissionTimer");
+	if (szScriptFile && szScriptFile[0])
+	{
+		char szLow[MAX_PATH];
+		g_StrCpyLen(szLow, szScriptFile, MAX_PATH);
+		g_StrLower(szLow);
+		KLuaScript* pMs = (KLuaScript*)g_GetScript(szLow);
+		if (pMs && pMs->m_LuaState)
+		{
+			int nTop = Lua_GetTopIndex(pMs->m_LuaState);
+			Lua_GetGlobal(pMs->m_LuaState, "OnMissionTimer");
+			if (!lua_isfunction(pMs->m_LuaState, Lua_GetTopIndex(pMs->m_LuaState)))
+				strcpy(szFun, "OnTimer");
+			lua_settop(pMs->m_LuaState, nTop);
+		}
+	}
+	pMission->ExecuteScript(szScriptFile, szFun, 0);
 	if (szScriptFile)
 		printf("==>Run timer %s\n", szScriptFile);
 	return 1;

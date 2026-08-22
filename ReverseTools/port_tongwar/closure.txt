@@ -1,0 +1,82 @@
+TONG 69 {'IDENT': 16, 'THIEU': 43, 'DIFF': 2, 'IDENT(jx2lib)': 5, 'DIFF(jx2lib)': 1, 'IDENT(tong_vn)': 1, 'DIFF(tong_vn)': 1}
+IDENT          activitysys/functionlib.lua                                  <- missions/challengeoftime/include.lua
+IDENT          activitysys/playerfunlib.lua                                 <- task/metempsychosis/translife_7.lua
+THIEU          class/ktabex.lua                                             <- task/random/treasure_head.lua
+THIEU          class/ktabfile.lua                                           <- class/ktabex.lua
+THIEU          class/lerror.lua                                             <- class/ktabfile.lua
+IDENT          dailogsys/dailogsay.lua                                      <- task/metempsychosis/translife_6.lua
+THIEU          event/tongwar/event.lua                                      
+THIEU          event/tongwar/head.lua                                       
+THIEU          event/tongwar/headinfo.lua                                   
+THIEU          event/tongwar/npc_shizhe.lua                                 
+THIEU          event/tongwar/score.lua                                      
+THIEU          event/tongwar/tongwar_gmscript.lua                           
+THIEU          event/tongwar/tongwar_signup.lua                             
+IDENT          gb_taskfuncs.lua                                             <- event/tongwar/event.lua
+DIFF           global/titlefuncs.lua                                        <- event/tongwar/npc_shizhe.lua
+THIEU          global/translife.lua                                         <- tongpkmessage/tong_pk_message_gs.lua
+DIFF           lib/awardtemplet.lua                                         <- task/metempsychosis/translife_7.lua
+IDENT          lib/common.lua                                               <- event/tongwar/event.lua
+IDENT(jx2lib)  lib/coordinate.lua                                           <- missions/basemission/lib.lua
+IDENT(jx2lib)  lib/droptemplet.lua                                          <- missions/boss/bigboss.lua
+IDENT(jx2lib)  lib/file.lua                                                 <- missions/tongwar/match/head.lua
+IDENT          lib/gb_taskfuncs.lua                                         <- task/random/treasure_head.lua
+IDENT          lib/log.lua                                                  <- task/metempsychosis/translife_4.lua
+IDENT(jx2lib)  lib/mem.lua                                                  <- class/ktabfile.lua
+IDENT          lib/objbuffer_head.lua                                       <- tongpkmessage/tong_pk_message_gs.lua
+IDENT(jx2lib)  lib/sharedata.lua                                            <- missions/boss/bigboss.lua
+DIFF(jx2lib)   lib/string.lua                                               <- task/metempsychosis/translife_7.lua
+IDENT          misc/eventsys/type/func.lua                                  <- task/metempsychosis/translife_7.lua
+IDENT          misc/eventsys/type/harvestplant.lua                          <- task/metempsychosis/translife_7.lua
+IDENT          misc/eventsys/type/npcdeathbydamage.lua                      <- task/metempsychosis/translife_7.lua
+IDENT          misc/eventsys/type/player.lua                                <- task/metempsychosis/translife_7.lua
+THIEU          missions/basemission/lib.lua                                 <- task/metempsychosis/item/wulinren_xinfeng.lua
+THIEU          missions/boss/bigboss.lua                                    <- missions/challengeoftime/include.lua
+THIEU          missions/challengeoftime/include.lua                         <- task/metempsychosis/translife_5.lua
+THIEU          missions/tongwar/head.lua                                    
+THIEU          missions/tongwar/match/head.lua                              
+THIEU          missions/tongwar/match/homeouttrap1.lua                      
+THIEU          missions/tongwar/match/homeouttrap2.lua                      
+THIEU          missions/tongwar/match/hometrap1.lua                         
+THIEU          missions/tongwar/match/hometrap2.lua                         
+THIEU          missions/tongwar/match/mission.lua                           
+THIEU          missions/tongwar/match/playerdeath.lua                       
+THIEU          missions/tongwar/match/smalltimer.lua                        
+THIEU          missions/tongwar/match/totaltimer.lua                        
+THIEU          missions/tongwar/npc/chefu.lua                               
+THIEU          missions/tongwar/npc/doctor.lua                              
+THIEU          missions/tongwar/npc/openbox.lua                             
+THIEU          missions/tongwar/tongwar_autoexec.lua                        
+THIEU          missions/tongwar/tongwar_main.lua                            
+THIEU          missions/tongwar/trap/tongwar_trap.lua                       
+THIEU          missions/yandibaozang/head.lua                               <- task/metempsychosis/translife_5.lua
+IDENT          script_protocol/protocol_def_gs.lua                          <- tongpkmessage/tong_pk_message_gs.lua
+THIEU          task/metempsychosis/item/wulinren_xinfeng.lua                <- task/metempsychosis/translife_7.lua
+THIEU          task/metempsychosis/lang.lua                                 <- task/metempsychosis/translife_6.lua
+THIEU          task/metempsychosis/task_func.lua                            <- task/metempsychosis/translife_7.lua
+IDENT          task/metempsychosis/task_head.lua                            <- task/metempsychosis/translife_7.lua
+THIEU          task/metempsychosis/translife_4.lua                          <- global/translife.lua
+THIEU          task/metempsychosis/translife_5.lua                          <- global/translife.lua
+THIEU          task/metempsychosis/translife_6.lua                          <- global/translife.lua
+THIEU          task/metempsychosis/translife_7.lua                          <- global/translife.lua
+THIEU          task/metempsychosis/translife_7_config.lua                   <- task/metempsychosis/translife_7.lua
+THIEU          task/random/treasure_head.lua                                <- event/tongwar/head.lua
+THIEU          task/system/task_debug.lua                                   <- task/random/treasure_head.lua
+IDENT          task/system/task_string.lua                                  <- task/metempsychosis/task_func.lua
+IDENT(tong_vn) tong/tong_award_head.lua                                     <- missions/challengeoftime/include.lua
+DIFF(tong_vn)  tong/tong_header.lua                                         <- event/tongwar/head.lua
+THIEU          tongpkmessage/tong_pk_message_gs.lua                         
+THIEU          vng_event/give_support_item.lua                              <- event/tongwar/npc_shizhe.lua
+IDENT          vng_lib/bittask_lib.lua                                      <- vng_event/give_support_item.lua
+
+IncludeLib/IL dung:
+  TITLE        <- event/tongwar/headinfo.lua, global/titlefuncs.lua, missions/yandibaozang/head.lua
+  SETTING      <- activitysys/functionlib.lua, event/tongwar/headinfo.lua, event/tongwar/tongwar_signup.lua
+  PARTNER      <- global/translife.lua, task/random/treasure_head.lua, task/system/task_string.lua
+  FILESYS      <- activitysys/functionlib.lua, class/ktabfile.lua, event/tongwar/headinfo.lua
+  ITEM         <- event/tongwar/headinfo.lua, lib/awardtemplet.lua, lib/droptemplet.lua
+  LEAGUE       <- event/tongwar/headinfo.lua, lib/gb_taskfuncs.lua, missions/boss/bigboss.lua
+  RELAYLADDER  <- event/tongwar/headinfo.lua, missions/challengeoftime/include.lua, missions/yandibaozang/head.lua
+  BATTLE       <- event/tongwar/headinfo.lua, missions/tongwar/tongwar_main.lua
+  TONG         <- event/tongwar/head.lua
+  TASKSYS      <- task/random/treasure_head.lua, task/system/task_debug.lua

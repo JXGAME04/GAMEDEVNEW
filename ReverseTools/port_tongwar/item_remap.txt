@@ -1,0 +1,12 @@
+Cay: missions/tongwar, event/tongwar
+Bang Linux 4947 muc (6/1/*) | bang du an 4864 muc
+
+LinuxID  TEN                                  DU AN        DUNG O
+--------------------------------------------------------------------------------------------------------------
+2264     Ho祅g Ch﹏ Кn                          -> 2273      event/tongwar/headinfo.lua:149 (x1)
+30301    H鏽 nguy猲 ch﹏ �琻                      -> 4857      event/tongwar/headinfo.lua:153 (x1)
+30438    Qu� Чi Ho祅g Kim                      >>> THIEU <<< event/tongwar/headinfo.lua:147 (x1)
+
+=== ITEM PHAI LAM THEM: 1 ===
+  Linux id 30438 | Qu� Чi Ho祅g Kim | anh \spr\item\questkey\huangjinzhiguo.spr
+     dong goc: Qu� Чi Ho祅g Kim	6	1	30438	\spr\item\questkey\huangjinzhiguo.spr	377	1	1	S� d鬾g s� nh薾 ��頲 200 tri謚 kinh nghi謒		0	1	0	\script\vng_event\item\biggoldenseed.lua	0	1	1	0	0		0	0	0	0	0	0	0	0	0	0

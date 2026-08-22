@@ -1,0 +1,18 @@
+=== map 80  ÖÐÔ­ÄÏÇø\ÑïÖÝ
+  pak=maps.pak region(103,94) tpl=309 o=(1659,3020) mps=(53104,96667) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager.lua
+  pak=maps.pak region(115,95) tpl=309 o=(1852,3049) mps=(59279,97585) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager.lua
+  pak=maps.pak region(101,100) tpl=309 o=(1627,3208) mps=(52093,102663) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager.lua
+  pak=maps.pak region(106,101) tpl=309 o=(1709,3251) mps=(54709,104032) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager.lua
+  (region hop le: 748)
+=== map 78  ÖÐÔ­ÄÏÇø\ÏåÑô\ÏåÑô
+  pak=maps.pak region(91,99) tpl=309 o=(1464,3183) mps=(46877,101858) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_xiangyang.lua
+  pak=maps.pak region(106,101) tpl=309 o=(1705,3235) mps=(54561,103536) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_xiangyang.lua
+  pak=maps.pak region(92,102) tpl=309 o=(1474,3272) mps=(47178,104705) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_xiangyang.lua
+  pak=maps.pak region(98,105) tpl=309 o=(1577,3376) mps=(50478,108047) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_xiangyang.lua
+  (region hop le: 706)
+=== map 11  Î÷ÄÏ±±Çø\³É¶¼\³É¶¼
+  pak=maps.pak region(191,156) tpl=309 o=(3071,5002) mps=(98291,160094) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_chengdu.lua
+  pak=maps.pak region(201,157) tpl=309 o=(3225,5042) mps=(103208,161346) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_chengdu.lua
+  pak=maps.pak region(190,159) tpl=309 o=(3040,5096) mps=(97297,163101) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_chengdu.lua
+  pak=maps.pak region(197,162) tpl=309 o=(3166,5195) mps=(101332,166253) kind=3 lvl=1 camp=6 ten=¹«Æ½×Ó script=\script\missions\bw\bwmanager_chengdu.lua
+  (region hop le: 841)

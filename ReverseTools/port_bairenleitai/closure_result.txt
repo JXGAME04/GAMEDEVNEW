@@ -1,0 +1,32 @@
+TONG 31 {'IDENT': 10, 'THIEU': 16, 'IDENT(scriptjx2/lib)': 5}
+IDENT                  activitysys/activity.lua                                       <- activitysys/config/9/head.lua
+THIEU                  activitysys/config/9/config.lua                                
+THIEU                  activitysys/config/9/head.lua                                  
+THIEU                  activitysys/config/9/registe.lua                               
+IDENT                  activitysys/g_activity.lua                                     <- missions/bairenleitai/npc_store.lua
+THIEU                  activitysys/npcdailog.lua                                      <- missions/bairenleitai/npc_enter.lua
+IDENT                  activitysys/playerfunlib.lua                                   <- missions/bairenleitai/hundred_arena.lua
+IDENT                  dailogsys/dailogsay.lua                                        <- missions/bairenleitai/npc_trans.lua
+IDENT                  dailogsys/g_dialog.lua                                         <- missions/bairenleitai/npc_trans.lua
+THIEU                  event/msg2allworld.lua                                         
+IDENT                  lib/common.lua                                                 <- missions/bairenleitai/hundred_arena.lua
+IDENT(scriptjx2/lib)   lib/coordinate.lua                                             <- missions/basemission/lib.lua
+IDENT(scriptjx2/lib)   lib/file.lua                                                   <- missions/bairenleitai/hundred_arena.lua
+IDENT                  lib/log.lua                                                    <- missions/bairenleitai/npc_enter.lua
+IDENT                  lib/objbuffer_head.lua                                         <- missions/bairenleitai/hundred_arena.lua
+IDENT(scriptjx2/lib)   lib/player.lua                                                 <- missions/bairenleitai/hundred_arena.lua
+IDENT(scriptjx2/lib)   lib/remoteexc.lua                                              <- missions/bairenleitai/hundred_arena.lua
+IDENT(scriptjx2/lib)   lib/timerlist.lua                                              <- missions/bairenleitai/hundred_arena.lua
+IDENT                  misc/eventsys/type/map.lua                                     <- missions/bairenleitai/hundred_arena.lua
+IDENT                  misc/taskmanager.lua                                           <- activitysys/config/9/registe.lua
+THIEU                  missions/bairenleitai/head.lua                                 
+THIEU                  missions/bairenleitai/hundred_arena.lua                        
+THIEU                  missions/bairenleitai/npc_beauty.lua                           
+THIEU                  missions/bairenleitai/npc_chuwuxiang.lua                       
+THIEU                  missions/bairenleitai/npc_death.lua                            
+THIEU                  missions/bairenleitai/npc_enter.lua                            
+THIEU                  missions/bairenleitai/npc_store.lua                            
+THIEU                  missions/bairenleitai/npc_trans.lua                            
+THIEU                  missions/bairenleitai/player_death.lua                         
+THIEU                  missions/bairenleitai/trap_arena.lua                           
+THIEU                  missions/basemission/lib.lua                                   

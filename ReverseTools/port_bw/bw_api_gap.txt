@@ -1,0 +1,18 @@
+==============================================================================
+NHOM: BW   | 9 tep .lua | 103 ten duoc goi
+cay: missions\bw
+==============================================================================
+
+--- [ENG] 4 ten ---
+  LeaveChannel                     x2    missions/bw/bwhead.lua:57
+  EnterChannel                     x2    missions/bw/bwhead.lua:121
+  CreateChannel                    x2    missions/bw/bwmission.lua:14
+  DeleteChannel                    x2    missions/bw/bwmission.lua:42
+
+--- [???] 0 ten ---
+
+--- [LIB] 2 ten ---
+  branchTask_GainBW1               x1    missions/bw/bwhead.lua:233 <= task\newtask\branch\branch_bwsj.lua
+  branchTask_BW1                   x1    missions/bw/bwmanager.lua:96 <= task\newtask\branch\branch_bwsj.lua
+
+[OK ] da co: 57 | [TREE] tu dinh nghia: 40

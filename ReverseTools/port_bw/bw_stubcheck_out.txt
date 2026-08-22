@@ -1,0 +1,65 @@
+TEN                      HAM C                        TEP:DONG                                            DONG GHI CHU
+AddMSPlayer              LuaAddMissionPlayer          ScriptFuns.cpp:11165                                  34 
+AddNpc                   LuaAddNpc                    ScriptFuns.cpp:6580                                   28 
+AskClientForNumber       LuaJX2_AskClientForNumber    KTongJX2.cpp:4132                                      2 STUB? Lua_PushNumber(L, -1); | return 1;
+BT_GetData               LuaBT_GetDataStub            ScriptFuns.cpp:2254                                    2 STUB? Lua_PushNumber(L, 0); | return 1;
+ChangeOwnFeature         LuaChangeOwnFeature          ScriptFuns.cpp:3915                                   17 
+ClearMapNpc              LuaClearMapNpc               KJx2WarInfra.cpp:66                                   22 
+CloseMission             LuaCloseMission              ScriptFuns.cpp                                         ? khong tim thay than ham
+CreateChannel            -                            -                                                      - KHONG DANG KY  <- bwmission.lua:14,bwmission.lua:15
+DelMSPlayer              LuaRemoveMissionPlayer       ScriptFuns.cpp                                         ? khong tim thay than ham
+DeleteChannel            -                            -                                                      - KHONG DANG KY  <- bwmission.lua:42,bwmission.lua:43
+DisabledStall            LuaWllsDisabledStall         ScriptFuns.cpp:13750                                   4 
+DisabledUseTownP         LuaDisabledUseTownP          KJx2WarInfra.cpp:241                                   1 STUB? return 0;
+EnterChannel             -                            -                                                      - KHONG DANG KY  <- bwhead.lua:121,bwhead.lua:124
+ForbidChangePK           LuaForbidChangePK            KJx2WarInfra.cpp:234                                   1 STUB? return 0;
+ForbidEnmity             LuaTongForbidEnmity          ScriptFuns.cpp:13833                                   5 
+ForbitTrade              LuaWllsForbitTrade           ScriptFuns.cpp:13757                                   4 
+GetCamp                  LuaGetPlayerCamp             ScriptFuns.cpp:7829                                    1 STUB? MacroFun_GetPlayerInfoInt(L, m_Camp);
+GetCurCamp               LuaGetPlayerCurrentCamp      ScriptFuns.cpp:7824                                    1 STUB? MacroFun_GetPlayerInfoInt(L, m_CurrentCamp);
+GetMSPlayerCount         LuaMissionPlayerCount        ScriptFuns.cpp:11522                                  29 
+GetMSRestTime            LuaGetMissionRestTime        ScriptFuns.cpp:2715                                   22 
+GetMissionS              LuaGetMissionString          ScriptFuns.cpp:10741                                  17 
+GetMissionV              LuaGetMissionValue           ScriptFuns.cpp:10765                                  15 
+GetName                  LuaGetPlayerName             ScriptFuns.cpp:8955                                    8 
+GetNextPlayer            LuaGetNextPlayer             ScriptFuns.cpp                                         ? khong tim thay than ham
+GetTask                  LuaGetTaskValue              ScriptFuns.cpp:2528                                    9 
+GetTeamMember            LuaGetTeamMem                ScriptFuns.cpp:7235                                   28 
+GetTeamSize              LuaGetTeamSize               ScriptFuns.cpp:2774                                   23 
+GetWorldPos              LuaGetNewWorldPos            ScriptFuns.cpp                                         ? khong tim thay than ham
+Include                  LuaIncludeFile               ScriptFuns.cpp:1964                                   52 
+IncludeLib               LuaIncludeLib                ScriptFuns.cpp:2445                                   58 
+IsCaptain                LuaIsLeader                  ScriptFuns.cpp:2744                                   11 
+LeaveChannel             -                            -                                                      - KHONG DANG KY  <- bwhead.lua:57,bwhead.lua:59
+LeaveTeam                LuaLeaveTeam                 ScriptFuns.cpp:2802                                   11 
+Msg2MSAll                LuaMissionMsg2All            ScriptFuns.cpp                                         ? khong tim thay than ham
+Msg2Player               LuaMsgToPlayer               ScriptFuns.cpp:3530                                    9 
+Msg2Team                 LuaMsgToTeam                 ScriptFuns.cpp:3544                                   22 
+NewWorld                 LuaEnterNewWorld             ScriptFuns.cpp                                         ? khong tim thay than ham
+NpcIdx2PIdx              LuaNpcIndexToPlayerIndex     ScriptFuns.cpp:11721                                  12 
+OpenMission              LuaInitMission               ScriptFuns.cpp:10850                                  54 
+PIdx2MSDIdx              LuaGetMissionPlayer_DataIndex ScriptFuns.cpp:11935                                  22 
+RestoreOwnFeature        LuaRestoreOwnFeature         KJx2WarInfra.cpp:247                                   1 STUB? // [TONG 21/08] Linux KNpc::RestoreFeature (0x0807ACB0) tra ngoai hinh ve binh t
+Say                      LuaSelectUI                  ScriptFuns.cpp:606                                   120 
+SearchPlayer             LuaSearchPlayer              KJx2WarInfra.cpp:457                                  18 
+SetCreateTeam            LuaSetCreateTeamOption       ScriptFuns.cpp:2817                                   10 
+SetCurCamp               LuaSetPlayerCurrentCamp      ScriptFuns.cpp:7847                                    8 
+SetDeathScript           LuaSetPlayerDeathScript      ScriptFuns.cpp:11559                                   7 
+SetFightState            LuaSetFightState             ScriptFuns.cpp:9500                                    6 
+SetLogoutRV              LuaSetPlayerRevivalOptionWhenLogout ScriptFuns.cpp:12107                                  10 
+SetMissionS              LuaJx2SetMissionString       KJx2WarInfra.cpp:888                                  13 
+SetMissionV              LuaSetMission                ScriptFuns.cpp                                         ? khong tim thay than ham
+SetNpcScript             LuaSetNpcActionScript        ScriptFuns.cpp:6823                                   58 
+SetPKFlag                LuaSetPKFlag                 KJx2WarInfra.cpp:227                                   1 STUB? return LuaSetFightState(L);
+SetPunish                LuaSetDeathPunish            ScriptFuns.cpp:12797                                  12 
+SetRevPos                LuaSetPlayerRevivalPos       ScriptFuns.cpp                                         ? khong tim thay than ham
+SetTask                  LuaSetTaskValue              ScriptFuns.cpp:2541                                   11 
+SetTaskTemp              LuaSetTempTaskValue          ScriptFuns.cpp:2593                                   11 
+SetTempRevPos            LuaSetDeathRevivalPos        ScriptFuns.cpp                                         ? khong tim thay than ham
+StartMissionTimer        LuaStartMissionTimer         ScriptFuns.cpp                                         ? khong tim thay than ham
+StopMissionTimer         LuaStopMissionTimer          ScriptFuns.cpp                                         ? khong tim thay than ham
+SubWorldID2Idx           LuaSubWorldIDToIndex         ScriptFuns.cpp                                         ? khong tim thay than ham
+SubWorldIdx2ID           LuaSubWorldIndexToID         ScriptFuns.cpp:511                                     9 
+Talk                     LuaTalkUI                    ScriptFuns.cpp:1806                                   83 
+nt_getTask               -                            -                                                      - KHONG DANG KY  <- branch_bwsj.lua:5,branch_bwsj.lua:5
+nt_setTask               -                            -                                                      - KHONG DANG KY  <- branch_bwsj.lua:6,branch_bwsj.lua:11

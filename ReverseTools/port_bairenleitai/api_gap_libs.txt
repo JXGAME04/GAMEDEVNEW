@@ -1,0 +1,36 @@
+==============================================================================
+NHOM: LIBS   | 0 tep .lua | 0 ten duoc goi
+cay: lib\timerlist.lua, lib\player.lua, lib\remoteexc.lua, lib\file.lua, missions\basemission\lib.lua, lib\coordinate.lua, event\msg2allworld.lua, global\autoexec_head.lua
+==============================================================================
+
+--- [ENG] 0 ten ---
+
+--- [???] 0 ten ---
+
+--- [LIB] 0 ten ---
+
+[OK ] da co: 0 | [TREE] tu dinh nghia: 0
+NHOM LIBS: 8 tep | 94 ten duoc goi
+
+--- [ENG] 9 ten ---
+  RemoteExecute                x2    lib/remoteexc.lua:23
+  AddTimer                     x1    lib/timerlist.lua:11
+  DelTimer                     x1    lib/timerlist.lua:26
+  SuspendTimer                 x1    lib/timerlist.lua:34
+  ResumeTimer                  x1    lib/timerlist.lua:41
+  PIdx2NpcIdx                  x1    lib/player.lua:512
+  File_Create                  x1    lib/file.lua:8
+  IniFile_SetData              x1    lib/file.lua:19
+  IniFile_Save                 x1    lib/file.lua:24
+
+--- [???] 2 ten ---
+  func                         x1    lib/player.lua:79
+  GetNpcRelation               x1    lib/player.lua:516
+
+--- [LNXLUA] 0 ten ---
+
+--- [PROJLUA] 1 ten ---
+  pack                         x3    lib/remoteexc.lua:85 <= ..\scriptjx2\lib\basic.lua; ..\scriptjx2\lib\common.lua...
+
+[OK] engine da co: 42 | [TREE] tu dinh nghia: 40
+OK list: AddMapTrap, AddNpc, AddNpcEx, CallPlayerFunction, DropItem, FileName2Id, GetLastFactionNumber, GetLevel, GetName, GetPlayerRev, GetSex, GetTask, GetTaskTemp, GlobalExecute, Include, IncludeLib, IniFile_GetData, IniFile_Load, LG_ApplyAppendMemberTask, LG_GetMemberTask, Msg2Player, Msg2SubWorld, OB_Create, OB_IsEmpty, OB_Release, RevID2WXY, SearchPlayer, SetNpcCurCamp, SetNpcDeathScript, SetNpcParam, SetNpcScript, SetNpcTimer, SetSpecItemParam, SetTask, SetTaskTemp, SubWorldID2Idx, SubWorldIdx2ID, TabFile_GetCell, TabFile_GetRowCount, TabFile_Load, curpack, usepack

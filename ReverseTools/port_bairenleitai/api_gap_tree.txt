@@ -1,0 +1,19 @@
+==============================================================================
+NHOM: BAIRENLEITAI   | 13 tep .lua | 63 ten duoc goi
+cay: missions\bairenleitai, activitysys\config\9
+==============================================================================
+
+--- [ENG] 2 ten ---
+  Msg2Map                          x19   missions/bairenleitai/hundred_arena.lua:343
+  SetTmpCamp                       x2    missions/bairenleitai/hundred_arena.lua:484
+
+--- [???] 0 ten ---
+
+--- [LIB] 5 ten ---
+  clone                            x7    missions/bairenleitai/hundred_arena.lua:332 <= event\chunjie_jieri\201001\plant.lua; event\jiefang_jieri\201004\triumph_drum\head.lua...
+  CreateNewSayEx                   x5    missions/bairenleitai/npc_beauty.lua:25 <= dailogsys\dailogsay.lua
+  basemission_CallNpc              x4    missions/bairenleitai/hundred_arena.lua:78 <= missions\basemission\lib.lua
+  GetRandomAData                   x2    missions/bairenleitai/hundred_arena.lua:217 <= lib\file.lua
+  RemoteExc                        x2    missions/bairenleitai/hundred_arena.lua:677 <= lib\remoteexc.lua
+
+[OK ] da co: 47 | [TREE] tu dinh nghia: 9

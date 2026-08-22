@@ -1,0 +1,16 @@
+activitysys/config/9/config.lua
+activitysys/config/9/head.lua
+activitysys/config/9/registe.lua
+activitysys/npcdailog.lua
+event/msg2allworld.lua
+missions/bairenleitai/head.lua
+missions/bairenleitai/hundred_arena.lua
+missions/bairenleitai/npc_beauty.lua
+missions/bairenleitai/npc_chuwuxiang.lua
+missions/bairenleitai/npc_death.lua
+missions/bairenleitai/npc_enter.lua
+missions/bairenleitai/npc_store.lua
+missions/bairenleitai/npc_trans.lua
+missions/bairenleitai/player_death.lua
+missions/bairenleitai/trap_arena.lua
+missions/basemission/lib.lua

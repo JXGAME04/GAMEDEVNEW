@@ -1,0 +1,30 @@
+TONG 41 {'IDENT': 12, 'THIEU': 26, 'DIFF': 3}
+THIEU          battles/battle_rank_award.lua                                          <- battles/battlehead.lua
+THIEU          battles/battlehead.lua                                                 <- task/newtask/branch/branch_bwsj.lua
+THIEU          battles/doubleexp.lua                                                  <- battles/battlehead.lua
+THIEU          battles/lang.lua                                                       <- battles/battlehead.lua
+THIEU          battles/weeklyrank.lua                                                 <- battles/battlehead.lua
+THIEU          bonusvlmc/head.lua                                                     <- battles/battlehead.lua
+THIEU          event/jiefang_jieri/200904/qianqiu_yinglie/head.lua                    <- battles/battlehead.lua
+THIEU          item/battles/songjinskill.lua                                          <- lib/droptemplet.lua
+DIFF           lib/awardtemplet.lua                                                   <- battles/weeklyrank.lua
+THIEU          lib/basic.lua                                                          <- misc/vngpromotion/ipbonus/ipbonus_2_head.lua
+THIEU          lib/coordinate.lua                                                     <- missions/basemission/lib.lua
+THIEU          lib/droptemplet.lua                                                    <- missions/boss/bigboss.lua
+THIEU          lib/file.lua                                                           <- lib/coordinate.lua
+THIEU          lib/sharedata.lua                                                      <- missions/boss/bigboss.lua
+DIFF           misc/eventsys/eventsys.lua                                             <- battles/battle_rank_award.lua
+THIEU          misc/vngpromotion/ipbonus/ipbonus_2_head.lua                           <- battles/battlehead.lua
+THIEU          missions/basemission/lib.lua                                           <- battles/battle_rank_award.lua
+THIEU          missions/boss/bigboss.lua                                              <- battles/battlehead.lua
+THIEU          missions/bw/bwcamper.lua                                               
+THIEU          missions/bw/bwdeath.lua                                                
+THIEU          missions/bw/bwhead.lua                                                 
+THIEU          missions/bw/bwmanager.lua                                              
+THIEU          missions/bw/bwmanager_chengdu.lua                                      
+THIEU          missions/bw/bwmanager_xiangyang.lua                                    
+THIEU          missions/bw/bwmission.lua                                              
+THIEU          missions/bw/bwtimer.lua                                                
+THIEU          missions/bw/bwtotaltimer.lua                                           
+THIEU          task/newtask/branch/branch_bwsj.lua                                    <- missions/bw/bwhead.lua
+DIFF           task/newtask/newtask_head.lua                                          <- task/newtask/branch/branch_bwsj.lua
