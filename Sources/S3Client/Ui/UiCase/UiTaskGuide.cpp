@@ -27,6 +27,7 @@ extern iCoreShell*		g_pCoreShell;
 
 #define SCHEME_INI_TASKGUIDE	"uitaskguide\\taskguide.ini"
 #define TASKGUIDE_DATAU_TASKID	6
+#define TASKGUIDE_TINSU_TASKID	7	// [TIN SU 21/08] task 1201..1218 (nt_setTask -> SetSaveVal -> UI_TASKVALUE)
 
 // ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
 enum
@@ -168,6 +169,11 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	{
 		m_pSelf->BuildDaTauText();
 		m_pSelf->UpdateButtons();	// course doi -> nut Bo nhiem vu doi trang thai
+	}
+	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_TINSU_TASKID)
+	{
+		if (nTaskId >= 1201 && nTaskId <= 1218)
+			m_pSelf->BuildTinSuText();
 	}
 }
 
@@ -362,12 +368,100 @@ void KUiTaskGuide::ShowTask(int nEntry)
 	{
 		BuildDaTauText();
 	}
+	else if (pEntry->nTaskId == TASKGUIDE_TINSU_TASKID)
+	{
+		BuildTinSuText();
+	}
 	else
 	{
 		m_Content.Clear();
 		AddLine(DTG_NO_SUPPORT);
 	}
 	UpdateButtons();
+}
+
+// [TIN SU 21/08] Soan noi dung nhiem vu Tin Su (port Linux task\tollgate\messenger):
+//   1204 = tuyen (1 Thanh Do->Dai Ly, 2 Dai Ly->Thanh Do; 0 = chua nhan)
+//   1203 = buoc ai Thien Bao Kho: 10 da nhan / 20 dang trong ai / 21 tam ngung /
+//          25 ra ai chua du ruong / 30 da vuot ai (posthouse.lua, messenger_turenpc.lua)
+//   1201 = ma thu tu 5 ruong phai mo (5 chu so), 1202 = ruong da mo theo thu tu
+//   1205 = diem tich luy, 1206 = cap danh hieu, 1218 = so lan hoan thanh hom nay
+static void TS_Digits(int nCode, char* szOut, int nOutSize, int* pnCount)
+{
+	char szRev[16];
+	int n = 0;
+	while (nCode > 0 && n < 10)
+	{
+		szRev[n++] = (char)('0' + (nCode % 10));
+		nCode /= 10;
+	}
+	int k = 0;
+	for (int i = n - 1; i >= 0 && k < nOutSize - 2; i--)
+	{
+		if (k)
+			szOut[k++] = ',';
+		szOut[k++] = szRev[i];
+	}
+	szOut[k] = 0;
+	if (pnCount)
+		*pnCount = n;
+}
+
+void KUiTaskGuide::BuildTinSuText()
+{
+	m_Content.Clear();
+	int nRoute = DTG_TaskVal(1204);
+	int nState = DTG_TaskVal(1203);
+	if (nRoute == 0 || nState == 0)
+	{
+		AddLine(TS_NOTASK);
+	}
+	else
+	{
+		char szLine[1024];
+		const char* szFrom = (nRoute == 2) ? TS_ROUTE_1B : TS_ROUTE_1A;
+		const char* szTo   = (nRoute == 2) ? TS_ROUTE_1A : TS_ROUTE_1B;
+		sprintf(szLine, TS_ROUTE_FMT, szFrom, szTo);
+		AddLine(szLine);
+		switch (nState)
+		{
+		case 10:
+			AddLine(TS_ST10);
+			break;
+		case 20:
+			{
+				char szNeed[32], szDone[32];
+				int nDone = 0;
+				TS_Digits(DTG_TaskVal(1201), szNeed, sizeof(szNeed), NULL);
+				TS_Digits(DTG_TaskVal(1202), szDone, sizeof(szDone), &nDone);
+				if (!szDone[0])
+					strcpy(szDone, TS_NONE);
+				sprintf(szLine, TS_ST20_FMT, szNeed, szDone, nDone);
+				AddLine(szLine);
+			}
+			break;
+		case 21:
+			AddLine(TS_ST21);
+			break;
+		case 25:
+			AddLine(TS_ST25);
+			break;
+		case 30:
+			sprintf(szLine, TS_ST30, szTo);
+			AddLine(szLine);
+			break;
+		default:
+			AddLine(TS_ST10);
+			break;
+		}
+	}
+	static const char* s_szTitle[6] = { TS_TITLE_0, TS_TITLE_1, TS_TITLE_2, TS_TITLE_3, TS_TITLE_4, TS_TITLE_5 };
+	int nTitle = DTG_TaskVal(1206);
+	if (nTitle < 0 || nTitle > 5)
+		nTitle = 0;
+	char szPt[512];
+	sprintf(szPt, TS_POINT_FMT, DTG_TaskVal(1205), s_szTitle[nTitle], DTG_TaskVal(1218));
+	AddLine(szPt);
 }
 
 // Bat/tat 3 nut duoi theo dung nghia ban goc, ap cho he Da Tau:
