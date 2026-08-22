@@ -600,7 +600,18 @@ void KImageStore2::CheckBalance()
                 continue;
             }
 
+			// CHI xoa tung khung khi RAM THAT SU CANG.
+			// Nhanh nay chi chay khi anh duoc nap THEO KHUNG (bSingleFrameLoad), ma dieu
+			// do chi xay ra tu khi pak duoc dong goi lai che do TYPE_FRAME. Truoc do no
+			// KHONG BAO GIO chay. CheckBalance duoc goi sau moi 384 luot truy cap anh
+			// (ISBP_CHECK_POINT_DEF), ma canh dong ve 2.200 anh/khung => no chay ~5,7 LAN
+			// MOI KHUNG => moi khung hinh khong duoc ve trong ~1/6 khung vua qua deu bi
+			// xoa; nhan vat quay huong hay doi dong tac la phai nap lai tu pak ngay giua
+			// vong ve => lag nang + nguoi khong hien ra + hoat anh ket o tu the cu.
+			// Muc dich goc cua nhanh nay la TIET KIEM RAM, nen khi RAM con nhieu thi giu
+			// khung lai (dung nhu hanh vi truoc khi repack pak).
 			if (
+                (MemStatus.dwAvailPhys <= (MemStatus.dwTotalPhys / 16)) &&
                 (m_pObjectList[i].bSingleFrameLoad == true) &&
 				(m_pObjectList[i].pObject) &&
 				(m_pObjectList[i].bType == ISI_T_SPR)

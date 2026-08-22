@@ -32,6 +32,8 @@ public:
 
 	//## 初始化iResStore接口对象。
     bool Init();
+	// Probe: so anh dang giu trong kho (de biet co vuot KIS_HARD_IMAGE_CEIL = 2048 khong).
+	int  GetNumImages() const { return m_nNumImages; }
 
     //## 清空释放全部的图形对象，既包括动态加载的，也包括通过调用CreateImage生成的。
     void Free();
