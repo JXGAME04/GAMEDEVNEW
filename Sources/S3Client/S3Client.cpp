@@ -1284,7 +1284,15 @@ BOOL KMyApp::GameLoop()
 	ProcIpcCommand();
 	if (m_GameCounter * 1000 <= m_Timer.GetElapse() * GAME_FPS)
 	{
-		if (g_pCoreShell->Breathe() && UiHeartBeat())
+		// Probe tach khoi logic: [SPIKE] do duoc nhung cu logic=59-108ms trong mot vong
+		// lap, trong khi ticksum (ben trong Breathe) chi 1-27ms MOI GIAY => cu do nam o
+		// phan khac. Tach ra de biet la Breathe hay UiHeartBeat hay phan sau do.
+		DWORD	dwLgT0 = g_nPaintLog > 0 ? timeGetTime() : 0;
+		BOOL	bLgBre = g_pCoreShell->Breathe();
+		DWORD	dwLgT1 = g_nPaintLog > 0 ? timeGetTime() : 0;
+		BOOL	bLgUi  = bLgBre ? UiHeartBeat() : FALSE;
+		DWORD	dwLgT2 = g_nPaintLog > 0 ? timeGetTime() : 0;
+		if (bLgBre && bLgUi)
 		{
 			//UiPaint(nGameFps); //Fix by kinnox cpu nhe hon nhiÒu l¾m
 			// He replay .jxr: bom bo dem khung 30Hz roi day xuong shell.
@@ -1322,6 +1330,20 @@ BOOL KMyApp::GameLoop()
 					TickCountTI = GetTickCount();
 					KUiTargetInfo* ti = KUiTargetInfo::GetUiTargetInfo();
 					ti->UpdateData(NULL);
+				}
+			}
+			if (g_nPaintLog > 0)
+			{
+				DWORD	dwLgT3 = timeGetTime();
+				if (dwLgT3 - dwLgT0 >= 30)
+				{
+					FILE* pLgLog = fopen("jx_paint.log", "a");
+					if (pLgLog)
+					{
+						fprintf(pLgLog, "[LOGIC] t=%u tong=%u bre=%u uihb=%u sau=%u\n",
+							dwLgT0, dwLgT3 - dwLgT0, dwLgT1 - dwLgT0, dwLgT2 - dwLgT1, dwLgT3 - dwLgT2);
+						fclose(pLgLog);
+					}
 				}
 			}
 			m_GameCounter++;
