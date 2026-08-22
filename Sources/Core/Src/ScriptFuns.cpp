@@ -5416,12 +5416,51 @@ int LuaGetItemParam(Lua_State* L)
 		else
 			nResult = 1;
 		break;
+	case 2: case 3: case 4: case 5: case 6:
+		// [TONG 21/08] o tham so rieng 2..6 = SetSpecItemParam (Linux GetItemParam(idx,k) doc
+		// KItem+0x1e0+k*4 = m_GeneratorParam.nGeneratorLevel[k-1]). Kind 1 giu = so luong chong.
+		if (nKind - 1 < MAX_ITEM_MAGICLEVEL)
+			nResult = Item[nItemIndex].m_GeneratorParam.nGeneratorLevel[nKind - 1];
+		break;
 	default:
 		break;
 	}
 
 
 	Lua_PushNumber(L, nResult);
+	return 1;
+}
+
+// SetSpecItemParam(nItemIndex, nParamIdx, nValue) -> 1/0 : port Hoat dong phuong (21/08),
+// Linux 0x080FF360 ghi int vao KItem+0x1e0+k*4 (k=1..6) = m_GeneratorParam.nGeneratorLevel[k-1]
+// (cung bo cuc KItemGeneratorParam). KHONG doc PlayerIndex (goi duoc tu timer / item roi dat).
+// LUU Y: tren trang bi, nGeneratorLevel la chi so sinh magic-attrib (Gen_ExistEquipment) -
+// script goc chi dung tren item nhiem vu/hop, giu nguyen rang buoc do.
+int LuaSetSpecItemParam(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3) { Lua_PushNumber(L, 0); return 1; }
+	int nItemIndex = (int)Lua_ValueToNumber(L, 1);
+	int nParamIdx = (int)Lua_ValueToNumber(L, 2);
+	int nValue = (int)Lua_ValueToNumber(L, 3);
+	if (nItemIndex <= 0 || nItemIndex >= MAX_ITEM) { Lua_PushNumber(L, 0); return 1; }
+	if (Item[nItemIndex].GetIndex() <= 0) { Lua_PushNumber(L, 0); return 1; }
+	if (nParamIdx < 1 || nParamIdx > 6 || nParamIdx - 1 >= MAX_ITEM_MAGICLEVEL) { Lua_PushNumber(L, 0); return 1; }
+	Item[nItemIndex].m_GeneratorParam.nGeneratorLevel[nParamIdx - 1] = nValue;
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaGetSpecItemParam(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) { Lua_PushNumber(L, 0); return 1; }
+	int nItemIndex = (int)Lua_ValueToNumber(L, 1);
+	int nParamIdx = (int)Lua_ValueToNumber(L, 2);
+	if (nItemIndex <= 0 || nItemIndex >= MAX_ITEM || nParamIdx < 1 || nParamIdx > 6 || nParamIdx - 1 >= MAX_ITEM_MAGICLEVEL)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, Item[nItemIndex].m_GeneratorParam.nGeneratorLevel[nParamIdx - 1]);
 	return 1;
 }
 
@@ -14041,6 +14080,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetParamItem",	LuaSetParamItem},
 	{ "SetItemParam",		LuaSetItemParam },
 	{ "GetItemParam",		LuaGetItemParam },
+	{ "SetSpecItemParam",	LuaSetSpecItemParam },	// [TONG 21/08] o tham so rieng 1..6
+	{ "GetSpecItemParam",	LuaGetSpecItemParam },
 	{"GetGlowLightItem",	LuaGetGlowLightItem},
 	{"SetGlowLightItem",	LuaSetGlowLightItem},
 	{"AddTranslife", LuaAddPlayerTranslifeValue},
