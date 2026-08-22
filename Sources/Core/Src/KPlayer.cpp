@@ -306,6 +306,12 @@ void	KPlayer::Release()
 	m_nWllsDmgCounter = 0;
 	memset(m_szWllsStrTask, 0, sizeof(m_szWllsStrTask));
 	m_nWllsLastDiagNpc = 0;
+	// [TONG 21/08] init truong Hoat dong phuong (khe player duoc tai su dung)
+	m_bTongForbidSkill = 0;
+	m_bTongForbidAura = 0;
+	m_bTongForbidEnmity = 0;
+	memset(m_nTongForbidSkillId, 0, sizeof(m_nTongForbidSkillId));
+	memset(m_TongTempMagic, 0, sizeof(m_TongTempMagic));
 	m_dwNumberBoxId = 0;
 	m_dwLogoutScriptID = 0;
 	m_dwRewardId = 0;
@@ -2705,6 +2711,55 @@ void	KPlayer::LevelUp()
 #endif
 }
 
+#ifdef _SERVER
+// [TONG 21/08] AddTempMagic - cong don theo id; ve 0 thi xoa ban ghi (giong Linux)
+void KPlayer::TongTempMagicRecord(int nSkillId, int nLevel)
+{
+	int i, nFree = -1;
+	for (i = 0; i < 8; i++)
+	{
+		if (m_TongTempMagic[i].nSkillId == nSkillId)
+		{
+			m_TongTempMagic[i].nLevel += nLevel;
+			if (m_TongTempMagic[i].nLevel <= 0)
+			{
+				m_TongTempMagic[i].nSkillId = 0;
+				m_TongTempMagic[i].nLevel = 0;
+			}
+			return;
+		}
+		if (nFree < 0 && m_TongTempMagic[i].nSkillId == 0)
+			nFree = i;
+	}
+	if (nLevel > 0 && nFree >= 0)
+	{
+		m_TongTempMagic[nFree].nSkillId = nSkillId;
+		m_TongTempMagic[nFree].nLevel = nLevel;
+	}
+}
+
+void KPlayer::TongTempMagicReapply()
+{
+	if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
+		return;
+	for (int i = 0; i < 8; i++)
+	{
+		if (m_TongTempMagic[i].nSkillId > 0 && m_TongTempMagic[i].nLevel > 0)
+			Npc[m_nIndex].m_SkillList.AllSkillV(m_TongTempMagic[i].nSkillId, m_TongTempMagic[i].nLevel);
+	}
+}
+
+int KPlayer::TongIsForbidSkill(int nSkillId)
+{
+	if (m_bTongForbidSkill)
+		return 1;
+	for (int i = 0; i < 8; i++)
+		if (m_nTongForbidSkillId[i] && m_nTongForbidSkillId[i] == nSkillId)
+			return 1;
+	return 0;
+}
+#endif
+
 // need spe edit not end
 void	KPlayer::UpdataCurData()
 {
@@ -2722,6 +2777,11 @@ void	KPlayer::UpdataCurData()
 		if (Npc[m_nIndex].m_SkillList.m_Skills[i].TempSkill)
 			Npc[m_nIndex].m_SkillList.RemoveIdx(i);
 	}
+#ifdef _SERVER
+	// [TONG 21/08] AddTempMagic: ban Linux giu danh sach ban ghi (KSkillList+0xf08)
+	// nen chieu tam song sot qua viec xoa TempSkill o tren; ta ap lai tu m_TongTempMagic.
+	TongTempMagicReapply();
+#endif
 	int nCurbei = 0;
 	ZeroMemory(&Npc[m_nIndex].m_PhysicsMagic, sizeof(KMagicAttrib));	
 	Npc[m_nIndex].m_CurrentLifeMax = Npc[m_nIndex].m_LifeMax * (100 + m_cReBorn.GetReBornNum() * m_cReBorn.GetReBornLifeMaxVal()  + nCurbei * 50) / 100;

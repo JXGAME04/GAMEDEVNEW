@@ -14,6 +14,7 @@
 #include "KSubWorldSet.h"
 #include "KNpc.h"
 #include "KNpcSet.h"
+#include "KObjSet.h"	// [TONG 21/08] ObjSet cho LuaClearMapObj
 // KPlayer.h tu keo du chuoi KItem/KInventory/KItemList theo DUNG thu tu
 // (include KItemList.h truc tiep se thieu KInventory - loi C3646 m_Room)
 #include "KPlayerSet.h"
@@ -242,9 +243,146 @@ int LuaDisabledUseTownP(Lua_State* L)
 	return 0;
 }
 
+extern int LuaReSetMask(Lua_State* L);		// ScriptFuns.cpp - khoi phuc mat na theo do dang deo
 int LuaRestoreOwnFeature(Lua_State* L)
 {
-	return 0;	// JX1 khong doi feature nguoi choi trong duong citywar
+	// [TONG 21/08] Linux KNpc::RestoreFeature (0x0807ACB0) tra ngoai hinh ve binh thuong;
+	// JX1 ChangeOwnFeature dung co che mat na (m_MaskType) -> khoi phuc = ReSetMask.
+	return LuaReSetMask(L);
+}
+
+// ---------------------------------------------------------------------------
+// [TONG 21/08] 3 ham theo MAP ID cua ban Linux (missions\tong). Goc:
+//  ClearMapObj        0x08102B40 -> KSubWorld::ClearObj: xoa MOI KObj moi region
+//  ClearMapNpcWithName 0x08102DF0 -> KSubWorld::ClearNpcWithName (strcmp ten)
+//  GetMapNpcWithName  0x08102BC0 -> KSubWorld::GetNpcListByName (so bam ten)
+// Ca 3 deu SearchWorld(map id) -> INSTANCE DAU TIEN (giong goc).
+// ---------------------------------------------------------------------------
+int LuaClearMapObj(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1 || !Lua_IsNumber(L, 1))
+		return 0;
+	int nMapId = (int)Lua_ValueToNumber(L, 1);
+	int w = g_SubWorldSet.SearchWorld((DWORD)nMapId);
+	if (w < 0 || w >= MAX_SUBWORLD)
+		return 0;
+	KSubWorld* pWorld = &SubWorld[w];
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_ObjList.GetHead();
+		while (pNode)
+		{
+			KIndexNode* pNext = (KIndexNode*)pNode->GetNext();	// lay next TRUOC khi xoa
+			int nIdx = pNode->m_nIndex;
+			if (nIdx > 0 && nIdx < MAX_OBJECT)
+			{
+				// KHONG dung KObj::Remove(): phia server no Send(GWM_OBJ_DEL) roi KSubWorld
+				// xoa TRE lan nua (KSubWorld.cpp GWM_OBJ_DEL) -> double free. Khuon KPlayer.cpp.
+				Object[nIdx].SyncRemove(FALSE);
+				pRegion->RemoveObj(nIdx);
+				Object[nIdx].m_nRegionIdx = -1;
+				ObjSet.Remove(nIdx);
+			}
+			pNode = pNext;
+		}
+	}
+	return 0;
+}
+
+int LuaClearMapNpcWithName(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsString(L, 2))
+		return 0;
+	int nMapId = (int)Lua_ValueToNumber(L, 1);
+	const char* szName = (const char*)Lua_ValueToString(L, 2);
+	if (!szName)
+		return 0;
+	int w = g_SubWorldSet.SearchWorld((DWORD)nMapId);
+	if (w < 0 || w >= MAX_SUBWORLD)
+		return 0;
+	KSubWorld* pWorld = &SubWorld[w];
+	// (a) NPC dang o trong region - khuon LuaClearMapNpc o tren
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_NpcList.GetHead();
+		while (pNode)
+		{
+			KIndexNode* pNext = (KIndexNode*)pNode->GetNext();
+			int i = pNode->m_nIndex;
+			if (i > 0 && i < MAX_NPC && Npc[i].m_Index > 0 && !Npc[i].IsPlayer() && Npc[i].GetPlayerIdx() <= 0
+				&& strcmp(Npc[i].Name, szName) == 0)
+			{
+				pRegion->RemoveNpc(i);
+				pRegion->DecRef(Npc[i].m_MapX, Npc[i].m_MapY, obj_npc);
+				NpcSet.Remove(i);
+			}
+			pNode = pNext;
+		}
+	}
+	// (b) quai dang chet cho hoi sinh (m_NoneRegionNpcList) - goc cung xoa de khong hoi sinh lai
+	{
+		KIndexNode* pNode = (KIndexNode*)pWorld->m_NoneRegionNpcList.GetHead();
+		while (pNode)
+		{
+			KIndexNode* pNext = (KIndexNode*)pNode->GetNext();
+			int i = pNode->m_nIndex;
+			if (i > 0 && i < MAX_NPC && Npc[i].m_Index > 0 && !Npc[i].IsPlayer() && Npc[i].GetPlayerIdx() <= 0
+				&& strcmp(Npc[i].Name, szName) == 0)
+			{
+				Npc[i].m_Node.Remove();		// KSubWorld.cpp: cap Remove() + Release() khi go khoi list nay
+				Npc[i].m_Node.Release();
+				NpcSet.Remove(i);
+			}
+			pNode = pNext;
+		}
+	}
+	return 0;
+}
+
+int LuaGetMapNpcWithName(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2)
+		return 0;
+	int nMapId = (int)Lua_ValueToNumber(L, 1);
+	const char* szName = (const char*)Lua_ValueToString(L, 2);
+	if (!szName || !szName[0])
+		return 0;
+	int w = g_SubWorldSet.SearchWorld((DWORD)nMapId);
+	if (w < 0 || w >= MAX_SUBWORLD)
+	{
+		Lua_PushNil(L);	// goc tra rac (chuoi tren dinh stack); ta tra nil cho sach
+		return 1;
+	}
+	DWORD dwNameId = g_FileName2Id((char*)szName);	// goc so bam ten (KRegion::SearchNpcID cung vay)
+	KSubWorld* pWorld = &SubWorld[w];
+	int nCount = 0;
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_NpcList.GetHead();
+		while (pNode)
+		{
+			int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || Npc[i].m_Index <= 0)
+				continue;
+			if (Npc[i].IsPlayer() || Npc[i].GetPlayerIdx() > 0)
+				continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
+				continue;
+			if (g_FileName2Id(Npc[i].Name) != dwNameId)
+				continue;
+			if (nCount == 0)
+				Lua_NewTable(L);
+			Lua_PushNumber(L, i);
+			Lua_RawSetI(L, -2, ++nCount);
+		}
+	}
+	if (nCount == 0)
+		return 0;	// goc: danh sach rong -> return 0 (nil), KHONG tao bang
+	return 1;
 }
 
 // () -> nSubWorldId, nRevId cua diem hoi sinh BEN VUNG (m_sLoginRevivalPos -

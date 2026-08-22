@@ -4062,6 +4062,22 @@ void KProtocolProcess::s2cPlayerSync_MA(BYTE* pMsg)
 			Player[CLIENT_PLAYER_INDEX].m_nSkillPoint = pSync->nPoint;
 			CoreDataChanged(GDCNI_FIGHT_SKILL_POINT, 0, Player[CLIENT_PLAYER_INDEX].m_nSkillPoint);
 			break;
+		case enumS2C_PLAYERSYNC_ID_IMMEDSKILL:
+		{
+			// [TONG 21/08] SetImmedSkill(nSlot, nSkillId) - Linux proto 0x63/0x16: dat chieu tuc thi
+			// nPoint = (slot << 24) | skillId. JX2 id 1 = don tay -> JX1 ve mac dinh theo vu khi.
+			int nTongSlot = (int)((pSync->nPoint >> 24) & 0xFF);
+			int nTongSkill = (int)(pSync->nPoint & 0xFFFFFF);
+#ifndef _SERVER
+			if (nTongSkill <= 1)
+				Player[CLIENT_PLAYER_INDEX].SetDefaultImmedSkill();
+			else if (nTongSlot == 0)
+				Player[CLIENT_PLAYER_INDEX].SetRightSkill(nTongSkill);
+			else
+				Player[CLIENT_PLAYER_INDEX].SetLeftSkill(nTongSkill);
+#endif
+		}
+			break;
 		case enumS2C_PLAYERSYNC_ID_RANKDATA:
 			//CoreDataChanged(GDCNI_RANKDATA, NULL, NULL);
 			break;
@@ -5557,6 +5573,14 @@ void	KProtocolProcess::ChangeAuraSkill(int nIndex, BYTE * pProtocol)
 		return;
 
 	SKILL_CHANGEAURASKILL_COMMAND * pCommand = (SKILL_CHANGEAURASKILL_COMMAND*) pProtocol;
+#ifdef _SERVER
+	// [TONG 21/08] ForbitAura(1): Linux 0x080DC488 ep vong sang = 0 khi co cam bat
+	if (Player[nIndex].m_bTongForbidAura)
+	{
+		Npc[Player[nIndex].m_nIndex].SetAuraSkill(0);
+		return;
+	}
+#endif
 	Npc[Player[nIndex].m_nIndex].SetAuraSkill(pCommand->m_nAuraSkill);
 }
 
@@ -5765,6 +5789,10 @@ void KProtocolProcess::c2sPKApplyEnmity(int nIndex, BYTE* pProtocol)
 		return;
 
 	PK_APPLY_ENMITY_COMMAND	*pApply = (PK_APPLY_ENMITY_COMMAND*)pProtocol;
+#ifdef _SERVER
+	if (Player[nIndex].m_bTongForbidEnmity)
+		return;	// [TONG 21/08] ForbidEnmity(1): Linux 0x080DBC90 tra ve IM LANG
+#endif
 	if (Player[nIndex].m_nIndex && !Npc[Player[nIndex].m_nIndex].m_FightMode)
 	{
 		SHOW_MSG_SYNC	sMsg;

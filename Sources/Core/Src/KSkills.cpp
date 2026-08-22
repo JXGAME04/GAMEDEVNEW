@@ -219,6 +219,15 @@ relationisvalid:
 	if (Npc[nLauncher].IsPlayer())
 	{
 		AUTOLOG_EVERY(1000, "[E3_REJECT_SILENT] skill=%d launcher=%d silent_time=%d life=%d mana=%d", (int)m_nId, nLauncher, Npc[nLauncher].m_SilentState.nTime, Npc[nLauncher].m_CurrentLife, Npc[nLauncher].m_CurrentMana);
+#ifdef _SERVER
+		// [TONG 21/08] ForbitSkill / SetAForbitSkill (Hoat dong phuong bang hoi):
+		// Linux chan tai KSkillList::CanCast bang co KSkillList+4 / khe+0x2C.
+		{
+			int nTongPI = Npc[nLauncher].GetPlayerIdx();
+			if (nTongPI > 0 && nTongPI < MAX_PLAYER && Player[nTongPI].TongIsForbidSkill((int)m_nId))
+				return 0;
+		}
+#endif
 		if (Npc[nLauncher].m_SilentState.nTime > 0)
 		{
 #ifndef _SERVER

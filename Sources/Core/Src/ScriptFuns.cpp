@@ -550,6 +550,28 @@ lab_subworldidx2mapcopy:
 	Lua_PushNumber(L, nTargetSubWorld);
 	return 1;
 }
+
+// FileName2Id(szName) -> DWORD : port Hoat dong phuong bang hoi (21/08), Linux 0x08100E80.
+// LECH CO CHU DICH: Linux ha chu hoa->thuong va '/'->'\\' truoc khi bam (0x0821DEA0);
+// g_FileName2Id cua JX1 KHONG - va engine ta dang dung chinh no cho m_dwID, SetNpcScript,
+// AddTrap... nen script phai bam cung ham de so sanh duoc voi gia tri engine.
+int LuaFileName2Id(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	char* szName = (char*)Lua_ValueToString(L, 1);
+	if (!szName)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwId = g_FileName2Id(szName);
+	Lua_PushNumber(L, (double)(unsigned int)dwId);
+	return 1;
+}
 /*
 Say(sMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
 Say(nMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
@@ -3106,6 +3128,87 @@ int LuaTabFile_UnLoad(Lua_State* L)
 	return 0;
 }
 
+// ---- IniFile_* : port Hoat dong phuong bang hoi (21/08) ----
+// Linux: kho INI toan cuc theo TEN (0x978265C). IniFile_Load(szFile, szName) -> 1/0:
+// da nap cung ten + cung tep -> ref++ tra 1; cung ten khac tep -> tra 0, KHONG nap lai.
+// IniFile_GetData(szName, szSect, szKey) LUON tra 1 chuoi ("" khi thieu/khong co).
+// Khuon = s_mapTabFiles o tren. Trong missions\tong chi dung qua helper getinifiledata()
+// (khong ai goi) nhung tongwar/battles/lib\file.lua dung that.
+struct KTongIniEntry { KIniFile Ini; std::string strFile; int nRef; };
+static std::map<std::string, KTongIniEntry*> s_mapTongIniFiles;
+
+static KTongIniEntry* sGetTongIniByName(Lua_State* L, int nArg)
+{
+	if (Lua_GetTopIndex(L) >= nArg && Lua_IsString(L, nArg))
+	{
+		const char* szName = (const char*)Lua_ValueToString(L, nArg);
+		if (szName && szName[0])
+		{
+			std::map<std::string, KTongIniEntry*>::iterator it = s_mapTongIniFiles.find(szName);
+			if (it != s_mapTongIniFiles.end())
+				return it->second;
+		}
+	}
+	return NULL;
+}
+
+int LuaIniFile_Load(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) { Lua_PushNumber(L, 0); return 1; }
+	const char* szFile = (const char*)Lua_ValueToString(L, 1);
+	const char* szName = (const char*)Lua_ValueToString(L, 2);
+	if (!szFile || !szName || !szFile[0] || !szName[0]) { Lua_PushNumber(L, 0); return 1; }
+	std::map<std::string, KTongIniEntry*>::iterator it = s_mapTongIniFiles.find(szName);
+	if (it != s_mapTongIniFiles.end())
+	{
+		if (it->second->strFile != szFile) { Lua_PushNumber(L, 0); return 1; }
+		it->second->nRef++;
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	KTongIniEntry* p = new KTongIniEntry;
+	p->nRef = 0;
+	if (!p->Ini.Load(szFile)) { delete p; Lua_PushNumber(L, 0); return 1; }
+	p->strFile = szFile;
+	p->nRef = 1;
+	s_mapTongIniFiles[szName] = p;
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaIniFile_GetData(Lua_State* L)
+{
+	char szBuf[1024];
+	szBuf[0] = 0;
+	if (Lua_GetTopIndex(L) >= 3)
+	{
+		KTongIniEntry* p = sGetTongIniByName(L, 1);
+		if (p)
+		{
+			const char* szSect = (const char*)Lua_ValueToString(L, 2);
+			const char* szKey = (const char*)Lua_ValueToString(L, 3);
+			p->Ini.GetString(szSect ? szSect : "", szKey ? szKey : "", "", szBuf, sizeof(szBuf));
+		}
+	}
+	Lua_PushString(L, szBuf);
+	return 1;
+}
+
+int LuaIniFile_UnLoad(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1)) return 0;
+	const char* szName = (const char*)Lua_ValueToString(L, 1);
+	if (!szName || !szName[0]) return 0;
+	std::map<std::string, KTongIniEntry*>::iterator it = s_mapTongIniFiles.find(szName);
+	if (it == s_mapTongIniFiles.end()) return 0;
+	if (--it->second->nRef <= 0)
+	{
+		delete it->second;
+		s_mapTongIniFiles.erase(it);
+	}
+	return 0;
+}
+
 int LuaGetLocalDate(Lua_State* L)
 {
 	time_t rawtime;
@@ -3552,6 +3655,38 @@ int LuaAddTrap(Lua_State* L)
 	Lua_PushNumber(L, 1);
 	return 1;
 }
+
+// AddMapTrap(nMapID, nMpsX, nMpsY, szScript|nScriptId [, nParam]) -> 1/0
+// port Hoat dong phuong (21/08), Linux 0x08102700. KHAC AddTrap cua ta: tham so 1 la
+// MAP ID (qua SearchWorld), dat DUNG 1 o (nRange = 0), tham so 4 la so thi dung thang
+// lam id. LECH CO CHU DICH: nParam (tham so 5) JX1 khong luu theo o (KRegion chi co
+// m_dwTrap) - 0 call site trong missions\tong truyen no.
+int LuaAddMapTrap(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 4)
+		return 0;
+	DWORD dwMapID = (DWORD)Lua_ValueToNumber(L, 1);
+	int nMpsX = (int)Lua_ValueToNumber(L, 2);
+	int nMpsY = (int)Lua_ValueToNumber(L, 3);
+	DWORD dwTrapID = 0;
+	if (Lua_IsNumber(L, 4))
+		dwTrapID = (DWORD)Lua_ValueToNumber(L, 4);
+	else
+	{
+		char* szScript = (char*)Lua_ValueToString(L, 4);
+		if (!szScript) { Lua_PushNumber(L, 0); return 1; }
+		dwTrapID = (DWORD)g_FileName2Id(szScript);
+	}
+	int nSubWorldIndex = g_SubWorldSet.SearchWorld(dwMapID);
+	if (nSubWorldIndex < 0 || nSubWorldIndex >= MAX_SUBWORLD) { Lua_PushNumber(L, 0); return 1; }
+	int nRegion = -1, nMapX = 0, nMapY = 0, nOffX = 0, nOffY = 0;
+	SubWorld[nSubWorldIndex].Mps2Map(nMpsX, nMpsY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
+	if (nRegion < 0) { Lua_PushNumber(L, 0); return 1; }
+	SubWorld[nSubWorldIndex].SetTrap(dwTrapID, nMpsX, nMpsY, 0);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
 int LuaAddObj(Lua_State* L)
 {
 	int nParamNum = Lua_GetTopIndex(L);
@@ -3708,6 +3843,35 @@ int LuaReSetMask(Lua_State* L)
 	int nIdx = Player[nPlayerIndex].m_ItemList.GetEquipment(itempart_mask);
 
 	Npc[Player[nPlayerIndex].m_nIndex].m_MaskType = Item[nIdx].GetBaseMagic();
+	return 0;
+}
+
+// ChangeOwnFeature(nType, nTime, nIdx [, nHelm, nArmor, nWeapon, nHorse]) : port Hoat dong
+// phuong (21/08), Linux 0x08131350 -> KNpc::ChangeFeature/SetFeature/SyncFeature.
+// nType 0 = doi hinh VINH VIEN (toi khi RestoreOwnFeature); 1 = co han nTime frame.
+// JX1 khong co "feature" rieng -> dung co che MAT NA co san (SetMask: m_MaskType dong bo qua
+// PLAYER_NORMAL_SYNC, client ve bang template NPC). nIdx = dong npcs.txt cua JX1 (script
+// port PHAI remap tu id Linux). LECH CO CHU DICH: nType 1 (co han) va nhanh nIdx<0 (doi
+// 4 phan helm/armor/weapon/horse) khong co co che tuong duong -> coi nhu nType 0;
+// call site duy nhat trong missions\tong la ChangeOwnFeature(0,0,<id>).
+int LuaChangeOwnFeature(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop != 3 && nTop != 7)
+		return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+		return 0;
+	int nType = (int)Lua_ValueToNumber(L, 1);
+	int nIdx = (int)Lua_ValueToNumber(L, 3);
+	if (nType != 0 && nType != 1)
+		return 0;
+	if (nIdx <= 0)
+		return 0;
+	if (Player[nPlayerIndex].m_nIndex <= 0 || Player[nPlayerIndex].m_nIndex >= MAX_NPC)
+		return 0;
+	Player[nPlayerIndex].m_ItemList.SetMaskLock(TRUE);
+	Npc[Player[nPlayerIndex].m_nIndex].m_MaskType = nIdx;
 	return 0;
 }
 int LuaRandomNew(Lua_State* L)
@@ -5898,6 +6062,51 @@ int LuaAddMagic(Lua_State* L)
 	return 0;
 }
 
+// AddTempMagic(nSkillId|szSkillName, nLevelDelta) : port Hoat dong phuong (21/08),
+// Linux 0x0812C1B0 -> KSkillList::AllSkillV (tao o TempSkill / cong tru / xoa khi <=0)
+// + danh sach ban ghi (m_SkillList+0xf08) de chieu tam SONG SOT qua UpdataCurData.
+// JX1: AllSkillV co san; ban ghi = KPlayer::m_TongTempMagic, ap lai trong UpdataCurData.
+int LuaTongAddTempMagic(Lua_State* L)
+{
+	int nParamCount = Lua_GetTopIndex(L);
+	if (nParamCount < 1)
+		return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+		return 0;
+	int nSkillId = 0;
+	if (Lua_IsNumber(L, 1))
+		nSkillId = (int)Lua_ValueToNumber(L, 1);
+	else
+	{
+		char* szSkill = (char*)Lua_ValueToString(L, 1);
+		if (szSkill)
+			g_OrdinSkillsSetting.GetInteger(szSkill, "SkillId", 0, &nSkillId);
+	}
+	if (nSkillId <= 0 || nSkillId >= MAX_SKILL)
+		return 0;
+	int nLevel = (nParamCount >= 2) ? (int)Lua_ValueToNumber(L, 2) : 0;
+	if (nLevel == 0)
+		return 0;
+	int nNpcIdx = Player[nPlayerIndex].m_nIndex;
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return 0;
+
+	Npc[nNpcIdx].m_SkillList.AllSkillV(nSkillId, nLevel);
+	Player[nPlayerIndex].TongTempMagicRecord(nSkillId, nLevel);
+
+	PLAYER_SKILL_LEVEL_SYNC NewSkill;
+	NewSkill.ProtocolType = s2c_playerskilllevel;
+	NewSkill.m_nSkillID = nSkillId;
+	NewSkill.m_nSkillLevel = Npc[nNpcIdx].m_SkillList.GetLevel(nSkillId);
+	NewSkill.m_nAddLevel = Npc[nNpcIdx].m_SkillList.GetAddLevel(nSkillId);
+	NewSkill.m_nSkillExp = Npc[nNpcIdx].m_SkillList.GetExp(nSkillId);
+	NewSkill.m_bTempSkill = Npc[nNpcIdx].m_SkillList.IsTempSkill(nSkillId);
+	NewSkill.m_nLeavePoint = Player[nPlayerIndex].m_nSkillPoint;
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&NewSkill, sizeof(PLAYER_SKILL_LEVEL_SYNC));
+	return 0;
+}
+
 int LuaDelMagic(Lua_State* L)
 {
 	int nParamCount = Lua_GetTopIndex(L);
@@ -7055,6 +7264,32 @@ int LuaSetPlayerSpeed(Lua_State* L)
 	}
 	Npc[Player[nPlayerIdx].m_nIndex].m_CurrentWalkSpeed = (int)Lua_ValueToNumber(L, 2);
 	Npc[Player[nPlayerIdx].m_nIndex].m_CurrentRunSpeed = (int)Lua_ValueToNumber(L, 2);
+	Player[nPlayerIdx].m_bSpeedControl = TRUE;
+	return 0;
+}
+
+// SetMoveSpeed(nSpeed) : port Hoat dong phuong (21/08), Linux 0x081216C0 - tren NGUOI CHOI
+// HIEN HANH (PlayerIndex). nSpeed >= 0 khoa toc do; < 0 (-1/-2) mo khoa. = SetPlayerSpeed
+// cua ta voi nPlayerIdx = PlayerIndex (cung m_bSpeedControl / UpdataCurData).
+int LuaTongSetMoveSpeed(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1)
+		return 0;
+	int nPlayerIdx = GetPlayerIndex(L);
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 0;
+	int nNpcIdx = Player[nPlayerIdx].m_nIndex;
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return 0;
+	int nSpeed = (int)Lua_ValueToNumber(L, 1);
+	if (nSpeed < 0)
+	{
+		Player[nPlayerIdx].m_bSpeedControl = FALSE;
+		Player[nPlayerIdx].UpdataCurData();
+		return 0;
+	}
+	Npc[nNpcIdx].m_CurrentWalkSpeed = nSpeed;
+	Npc[nNpcIdx].m_CurrentRunSpeed = nSpeed;
 	Player[nPlayerIdx].m_bSpeedControl = TRUE;
 	return 0;
 }
@@ -13056,6 +13291,9 @@ extern int LuaCTC_JX2_GetTax(Lua_State* L);
 // ==== DOT E cong thanh JX2 (E4): ha tang tran (KJx2WarInfra.cpp) ====
 extern int LuaSetNpcDeathScript(Lua_State* L);
 extern int LuaClearMapNpc(Lua_State* L);
+extern int LuaClearMapObj(Lua_State* L);			// [TONG 21/08] KJx2WarInfra.cpp
+extern int LuaClearMapNpcWithName(Lua_State* L);
+extern int LuaGetMapNpcWithName(Lua_State* L);
 // ==== Port SimCity (KSimCity.cpp): co danh dau bot giu can bang ====
 extern int LuaSC_SetBotFlag(Lua_State* L);
 extern int LuaSC_GetBotFlag(Lua_State* L);
@@ -13430,6 +13668,131 @@ int LuaWllsForbitStamina(Lua_State* L)
 	return 0;
 }
 
+// =====================================================================
+// [TONG 21/08] port 3 Hoat dong Phuong bang hoi (missions\tong) - dac ta tung ham dich
+// nguoc tu jx_linux_y: ReverseTools\dac_ta_17_ham_hoatdong_phuong.json
+// =====================================================================
+
+// ForbitSkill(nFlag): Linux 0x08121620 ghi co cam TOAN BO (KSkillList+4) + tung khe
+// (+0x2C), diem chan KSkillList::CanCast. JX1: KPlayer::m_bTongForbidSkill, chan tai
+// KSkill::CanCastSkill. LECH: Linux gui goi 0x63/0x13 de client xam thanh chieu - JX1 khong.
+int LuaTongForbitSkill(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1) return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+	Player[nPlayerIndex].m_bTongForbidSkill = ((int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+	return 0;
+}
+
+// SetAForbitSkill(nSkillId, nFlag): Linux 0x08121580 ghi co vao khe NPCSKILL (+0x2C).
+// JX1: danh sach 8 o tren KPlayer (khong doi layout NPCSKILL dung chung client).
+int LuaTongSetAForbitSkill(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+	int nSkillId = (int)Lua_ValueToNumber(L, 1);
+	int nFlag = (int)Lua_ValueToNumber(L, 2);
+	if (nSkillId <= 0 || nSkillId >= MAX_SKILL) return 0;
+	int* pList = Player[nPlayerIndex].m_nTongForbidSkillId;
+	int i;
+	for (i = 0; i < 8; i++)
+		if (pList[i] == nSkillId) break;
+	if (nFlag)
+	{
+		if (i < 8) return 0;
+		for (i = 0; i < 8; i++)
+			if (pList[i] == 0) { pList[i] = nSkillId; break; }
+	}
+	else if (i < 8)
+		pList[i] = 0;
+	return 0;
+}
+
+// ForbitAura(nFlag): Linux 0x08111560 ghi Player+0x375; flag != 0 thi SetAuraSkill(0)
+// tat ngay; diem chan = KProtocolProcess::ChangeAuraSkill. Linux KHONG kiem gettop.
+int LuaTongForbitAura(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+	int nFlag = (Lua_IsNumber(L, 1) && (int)Lua_ValueToNumber(L, 1) != 0) ? 1 : 0;
+	if (nFlag)
+	{
+		int nNpc = Player[nPlayerIndex].m_nIndex;
+		if (nNpc > 0 && nNpc < MAX_NPC)
+			Npc[nNpc].SetAuraSkill(0);
+	}
+	Player[nPlayerIndex].m_bTongForbidAura = (BYTE)nFlag;
+	return 0;
+}
+
+// ForbidEnmity(nFlag): Linux 0x0810B0F0 ghi Player+0x5a5c = (nFlag == 1) - chu y DUNG
+// BANG 1 (sete), khong phai != 0; diem doc duy nhat = c2sPKApplyEnmity (tu choi im lang).
+int LuaTongForbidEnmity(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1) return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+	Player[nPlayerIndex].m_bTongForbidEnmity = ((int)Lua_ValueToNumber(L, 1) == 1) ? 1 : 0;
+	return 0;
+}
+
+// SetImmedSkill(nSlot, nSkillId): Linux 0x08114C70 CHI gui goi client (proto 0x63 sub 0x16),
+// khong ghi gi phia server. JX1: S2C_PLAYER_SYNC_M_A (x64/Win32 an toan) voi sub-id moi
+// enumS2C_PLAYERSYNC_ID_IMMEDSKILL (them CUOI enum), client SetRightSkill/SetLeftSkill.
+// Thu tu trong Lua phai giu: AddTempMagic TRUOC SetImmedSkill (client can biet chieu).
+int LuaTongSetImmedSkill(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2) return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER) return 0;
+	int nSlot = (int)Lua_ValueToNumber(L, 1);
+	int nSkillId = (int)Lua_ValueToNumber(L, 2);
+	if (nSlot < 0 || nSlot > 1 || nSkillId < 0) return 0;
+	S2C_PLAYER_SYNC_M_A sMsg;
+	sMsg.ProtocolType = s2c_playersync_magic_attr;
+	sMsg.nPoint = (DWORD)(((DWORD)nSlot << 24) | ((DWORD)nSkillId & 0xFFFFFF));
+	sMsg.nType = enumS2C_PLAYERSYNC_ID_IMMEDSKILL;
+	if (g_pServer)
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sMsg, sizeof(S2C_PLAYER_SYNC_M_A));
+	return 0;
+}
+
+// TaskNo(szTaskName) -> TaskID | nil : tra bang \settings\task\task_id.txt (cot 1 TaskID,
+// cot 2 TaskName, du lieu tu dong 3). Linux nap luc boot vao std::map (0x09786620);
+// JX1 nap lazy lan goi dau. Trung ten: giu ban DAU (map::insert). So sanh phan biet hoa/thuong.
+static std::map<std::string, int> s_mapTongTaskName2Id;
+static int s_nTongTaskIdLoaded = 0;
+static void sTongLoadTaskIdTab()
+{
+	s_nTongTaskIdLoaded = 1;
+	KTabFile cTab;
+	if (!cTab.Load("\\settings\\task\\task_id.txt"))
+		return;
+	char szName[260];
+	for (int nRow = 3; nRow <= cTab.GetHeight(); nRow++)
+	{
+		int nId = 0;
+		szName[0] = 0;
+		if (!cTab.GetInteger(nRow, 1, 0, &nId) || nId <= 0) continue;
+		if (!cTab.GetString(nRow, 2, "", szName, sizeof(szName) - 1) || !szName[0]) continue;
+		if (s_mapTongTaskName2Id.find(szName) == s_mapTongTaskName2Id.end())
+			s_mapTongTaskName2Id[szName] = nId;
+	}
+}
+int LuaTongTaskNo(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1) return 0;
+	const char* szName = (const char*)Lua_ValueToString(L, 1);
+	if (!szName) return 0;
+	if (!s_nTongTaskIdLoaded) sTongLoadTaskIdTab();
+	std::map<std::string, int>::iterator it = s_mapTongTaskName2Id.find(szName);
+	if (it == s_mapTongTaskName2Id.end()) { Lua_PushNil(L); return 1; }
+	Lua_PushNumber(L, it->second);
+	return 1;
+}
+
 // ST_*DamageCounter - bo dem sat thuong HUNG CHIU (hook o KNpc.cpp truoc khoi
 // chuyen-noi-luc; xem THICONG muc C5). Start reset ve 0, Stop giu gia tri.
 int LuaWllsSTStartDamageCounter(Lua_State* L)
@@ -13635,6 +13998,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"RepairItemByCoin",			LuaRepairItemByCoin},
 	{"RepairItemGetNumCoin",			LuaRepairItemGetNumCoin},
 	{"SetMask",			LuaSetMask},
+	{"ChangeOwnFeature",	LuaChangeOwnFeature},	// [TONG 21/08] doi ngoai hinh (co che mat na)
 	{"ReSetMask",		LuaReSetMask},
 	{"SetPos",			LuaSetPos},			//SetPos(x,y)
 	{"GetPos",			LuaGetPos},			//GetPos() return x,y,subworldindex
@@ -13642,6 +14006,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"NewWorld",		LuaEnterNewWorld},
 	{"RandomNew",			LuaRandomNew},	//SetTask(任务号,值):设置任务值
 	{"AddTrap",			LuaAddTrap},
+	{"AddMapTrap",		LuaAddMapTrap},	// [TONG 21/08] (mapId,x,y,script|id) 1 o
 	{"AddObj",			LuaAddObj},
 	{"AddObstacle",			LuaAddObstacle}, //#Set V藅 C秐
 	{"DropItem",		LuaDropItem},		//DropItem
@@ -13700,6 +14065,7 @@ TLua_Funcs GameScriptFuns[] =
 	{ "SetMagicAttrib",		LuaSetMagicAttrib },
 
 	{"AddMagic",		LuaAddMagic},		//AddMagic
+	{"AddTempMagic",	LuaTongAddTempMagic},	// [TONG 21/08] chieu tam AllSkillV + ban ghi
 	{"DelMagic",		LuaDelMagic},		//DelMagic
 	{"HaveMagic",		LuaHaveMagic},		//HaveMagic
 	{"GetMagicLevel",	LuaGetMagicLevel},	//GetMagicLevel
@@ -13713,6 +14079,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"SubWorldID2Idx",	LuaSubWorldIDToIndex}, //SubWorldID2Idx
 	{"SubWorldIdx2ID",	LuaSubWorldIndexToID}, //SubWorldIdx2ID
 	{"SubWorldIdx2MapCopy",	LuaSubWorldIdx2MapCopy}, // port Boss bang hoi 21/08
+	{"FileName2Id",		LuaFileName2Id},	// [TONG 21/08] bam ten/duong dan -> DWORD
 	{"AddLeadExp",		LuaAddLeadExp},
 	{"GetLeadLevel",	LuaGetLeadLevel},
 	{"SetFightState",	LuaSetFightState},
@@ -13801,6 +14168,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcRevTime",	LuaSetNpcRevTime},	//Set th阨 gian h錳 sinh
 	{"SetNpcSpeed",		LuaSetNpcSpeed},
 	{"SetPlayerSpeed",	LuaSetPlayerSpeed },
+	{"SetMoveSpeed",		LuaTongSetMoveSpeed },	// [TONG 21/08] tren PlayerIndex
 	{"SetNpcHitRecover",LuaSetNpcHitRecover},
 	{ "SetNpcHonorId", LuaSetNpcHonorId },	//SetNpcHonorId(npcidex, honorid)
 	{ "SetPlayerHonorId", LuaSetPlayerHonorId },	//SetPlayerHonorId(playerindex, honorid)
@@ -14149,6 +14517,13 @@ TLua_Funcs GameScriptFuns[] =
 		{ "DisabledStall",	LuaWllsDisabledStall },
 		{ "ForbitTrade",	LuaWllsForbitTrade },
 		{ "ForbitStamina",	LuaWllsForbitStamina },
+		// [TONG 21/08] 3 Hoat dong Phuong bang hoi (missions\tong)
+		{ "ForbitSkill",		LuaTongForbitSkill },
+		{ "SetAForbitSkill",	LuaTongSetAForbitSkill },
+		{ "ForbitAura",		LuaTongForbitAura },
+		{ "ForbidEnmity",		LuaTongForbidEnmity },
+		{ "SetImmedSkill",		LuaTongSetImmedSkill },
+		{ "TaskNo",			LuaTongTaskNo },
 		{ "ST_StartDamageCounter",	LuaWllsSTStartDamageCounter },
 		{ "ST_StopDamageCounter",	LuaWllsSTStopDamageCounter },
 		{ "ST_GetDamageCounter",	LuaWllsSTGetDamageCounter },
@@ -14410,6 +14785,9 @@ TLua_Funcs GameScriptFuns[] =
 		// ==== DOT E cong thanh JX2 (E4): ha tang tran ====
 		{ "SetNpcDeathScript",	LuaSetNpcDeathScript },
 		{ "ClearMapNpc",	LuaClearMapNpc },
+		{ "ClearMapObj",	LuaClearMapObj },	// [TONG 21/08] KJx2WarInfra.cpp
+		{ "ClearMapNpcWithName",	LuaClearMapNpcWithName },
+		{ "GetMapNpcWithName",	LuaGetMapNpcWithName },
 		{ "AddObstacleObj",	LuaAddObstacleObj },
 		{ "ClearObstacleObj",	LuaClearObstacleObj },
 		{ "GetLoop",	LuaGetLoop },
@@ -14474,6 +14852,9 @@ TLua_Funcs GameScriptFuns[] =
 		{"TabFile_GetCell",		LuaTabFile_GetCell},
 		{"TabFile_GetRowCount",		LuaTabFile_GetRowCount},
 		{"TabFile_UnLoad",		LuaTabFile_UnLoad},
+		{"IniFile_Load",		LuaIniFile_Load},	// [TONG 21/08]
+		{"IniFile_GetData",	LuaIniFile_GetData},
+		{"IniFile_UnLoad",		LuaIniFile_UnLoad},
 		//{"Trade",			LuaTrade	},				//Trade("maininfo", "IniFileName.ini的路径名")
 		//Trade("MainInfo", n, "item1|price1|function1", "item2|price2|function2", ......, "itemn|pricen|functionn")
 		{"RANDOM",				LuaRANDOM},  // th猰 h祄 m韎 load npc theo tuy謙 th?

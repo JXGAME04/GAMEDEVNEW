@@ -23,7 +23,11 @@ int LuaGetLastDiagNpc(Lua_State* L);      // () -> npc idx dang thoai / 0
 int LuaSetPKFlag(Lua_State* L);           // (0/1) = SetFightState (JX2 goi ca hai canh nhau)
 int LuaForbidChangePK(Lua_State* L);      // no-op nhan doi (lo goc; chua co co cam doi PK tay)
 int LuaDisabledUseTownP(Lua_State* L);    // no-op nhan doi (lo goc)
-int LuaRestoreOwnFeature(Lua_State* L);   // no-op (JX1 khong doi feature trong citywar)
+int LuaRestoreOwnFeature(Lua_State* L);   // [TONG 21/08] = ReSetMask (khoi phuc ngoai hinh sau ChangeOwnFeature)
+// [TONG 21/08] port missions\tong (Hoat dong phuong bang hoi)
+int LuaClearMapObj(Lua_State* L);          // (nMapId) - xoa MOI KObj (item/tien roi, hop, prop) tren map
+int LuaClearMapNpcWithName(Lua_State* L);  // (nMapId, szName) - xoa NPC thuong co TEN = szName tren map
+int LuaGetMapNpcWithName(Lua_State* L);    // (nMapId, szName) -> table{npcidx...} | nil
 int LuaGetPlayerRev(Lua_State* L);        // () -> nSubWorldId, nRevId (2 gia tri - cho SetRevPos)
 int LuaSearchPlayer(Lua_State* L);        // (szName) -> nPlayerIdx / 0
 int LuaGetJoinTongTime(Lua_State* L);     // stub 0 (chi arena idle goi)

@@ -542,6 +542,7 @@ enum
 	enumS2C_PLAYERSYNC_ID_ENCHASE,
 	enumS2C_PLAYERSYNC_ID_INPUT,
 	enumS2C_PLAYERSYNC_ID_MASKFEATURE,
+	enumS2C_PLAYERSYNC_ID_IMMEDSKILL,	// [TONG 21/08] SetImmedSkill - di qua S2C_PLAYER_SYNC_M_A.nPoint = (slot<<24)|skillId
 };
 
 #endif

@@ -479,6 +479,15 @@ public:
 	int				m_nWllsDmgCounter;		// tong mat mau ganh chiu (truoc hap thu noi luc)
 	char			m_szWllsStrTask[8][64];	// GetStringTask/SetStringTask (phien lam viec, KHONG luu DB)
 	int				m_nWllsLastDiagNpc;		// idx NPC vua bam thoai (GetLastDiagNpc doc - engine khong bom global NpcIndex)
+	// [TONG 21/08] port 3 Hoat dong Phuong bang hoi (missions\tong) - xem ReverseTools\dac_ta_17_ham_hoatdong_phuong.json
+	BYTE			m_bTongForbidSkill;		// ForbitSkill(1): cam moi chieu - chan tai KSkill::CanCastSkill
+	BYTE			m_bTongForbidAura;		// ForbitAura(1): cam bat vong sang - chan tai KProtocolProcess::ChangeAuraSkill
+	BYTE			m_bTongForbidEnmity;	// ForbidEnmity(1): cam GUI yeu cau cuu sat - c2sPKApplyEnmity tu choi im lang
+	int				m_nTongForbidSkillId[8];	// SetAForbitSkill(id,1): cam rieng tung chieu (0 = o trong)
+	struct { int nSkillId; int nLevel; } m_TongTempMagic[8];	// AddTempMagic: ban ghi de ap lai sau UpdataCurData
+	void			TongTempMagicRecord(int nSkillId, int nLevel);	// cong don; ve 0 thi xoa ban ghi
+	void			TongTempMagicReapply();							// goi trong UpdataCurData sau khi xoa TempSkill
+	int				TongIsForbidSkill(int nSkillId);				// 1 = bi cam (toan bo hoac rieng)
 #endif
 	DWORD			m_dwNumberBoxId;
 	DWORD			m_dwLogoutScriptID;
