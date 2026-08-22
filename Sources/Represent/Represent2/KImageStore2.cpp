@@ -555,6 +555,19 @@ void KImageStore2::SetBalanceParam(int nNumImage, unsigned int uCheckPoint)
 void KImageStore2::CheckBalance()
 {
 	m_uImageAccessCounter = 0;
+	// HAN TAN SUAT: toi da MOT LAN MOI GIAY.
+	// Bo dem goi la ISBP_CHECK_POINT_DEF = 384 luot truy cap anh - nguong dat cho thoi
+	// canh chi co vai tram anh. Do that hien nay: canh dong ve 2.126 anh MOI KHUNG
+	// => ham nay bi goi ~5,5 LAN MOI KHUNG VE. Ma cuoi ham lai dat bRef = false cho
+	// toan bo kho, nen anh nao khong kip duoc ve trong ~1/5 khung ke tiep se bi coi la
+	// "khong dung" va bi xoa - roi khung sau phai nap lai tu pak. Do la nguyen nhan
+	// "chay toi gan chua hien nguoi", "vai giay moi hien skill", va nhich nhich khi dong.
+	// Gian ra mot giay thi moi anh dang thuc su dung deu kip duoc danh dau bRef.
+	static unsigned int s_dwLastBalanceTick = 0;
+	unsigned int dwNowTick = GetTickCount();
+	if (s_dwLastBalanceTick != 0 && (dwNowTick - s_dwLastBalanceTick) < 1000)
+		return;
+	s_dwLastBalanceTick = dwNowTick;
 	int i, j;
     int nNewNumImages = 0;
     
@@ -580,7 +593,13 @@ void KImageStore2::CheckBalance()
     if (MemStatus.dwAvailPhys <= (MemStatus.dwTotalPhys / 32))
         dwIdleLimit = 10000;                 // RAM cang: duoi manh tay
     else if (m_nNumImages >= KIS_HARD_IMAGE_CEIL)
-        dwIdleLimit = 0;                     // vuot tran cung: duoi nhu truoc khi co ban va
+        dwIdleLimit = 5000;                  // vuot tran: don anh nhan roi 5 giay.
+                                             // TRUOC DAY dat 0 = xoa MOI anh khong duoc
+                                             // cham trong luot quet vua roi; o canh dong
+                                             // (2.000+ anh/khung) dieu do xoa nham ca anh
+                                             // DANG DUNG. Van chan duoc phinh RAM - muc
+                                             // dich goc cua tran - vi anh that su nguoi
+                                             // 5 giay thi chac chan khong con tren man hinh.
     else
         dwIdleLimit = 100000;                // binh thuong: chi don anh that su nguoi
 

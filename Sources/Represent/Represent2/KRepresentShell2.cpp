@@ -1301,9 +1301,9 @@ void KRepresentShell2::RepresentEnd()
 			FILE* pLog = fopen("jx_paint.log", "a");
 			if (pLog)
 			{
-				fprintf(pLog, "[DRAW] pid=%u t=%u frames=%u calls=%u img=%u other=%u | moi khung: %u anh, %u loi goi\n",
+				fprintf(pLog, "[DRAW] pid=%u t=%u frames=%u calls=%u img=%u other=%u kho=%d/2048 | moi khung: %u anh, %u loi goi\n",
 					GetCurrentProcessId(), g_dwDrawSec * 1000, g_nDrawFrames,
-					g_nDrawCalls, g_nDrawImages, g_nDrawOther,
+					g_nDrawCalls, g_nDrawImages, g_nDrawOther, m_ImageStore.GetNumImages(),
 					g_nDrawImages / g_nDrawFrames, g_nDrawCalls / g_nDrawFrames);
 				fclose(pLog);
 			}
