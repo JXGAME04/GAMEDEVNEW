@@ -282,22 +282,6 @@ Include([[\script\missions\tong\collectgoods\head.lua]]);
 Include([[\script\missions\tong\collectgoods\collg_gmscript.lua]]);
 Include([[\script\missions\tong\collectgoods\award.lua]]);
 end
--- 15/08: cay \script\missions\tong\ KHONG TON TAI trong ban port nen 9 dong
--- Include duoi day deu hong IM LANG -> moi ham cua 3 hoat dong thanh nil ->
--- kich vao Tong quan Hoat dong phuong la bao loi script (ke ca bam nut Huy).
--- KHONG chep cay mission tu ban goc sang: JX1 thieu >30 ham engine JX2, chep
--- vao thi hoat dong van khong chay ma con nem nguoi choi vao ban do rong.
--- Tam thoi dinh nghia bu de NPC het bao loi:
---   oncancel / festival06_Cancal: ban goc VON DA RONG -> dinh nghia rong la
---   dung goc. Cac ham con lai bao 'chua mo'.
-if (oncancel == nil) then
-	function oncancel()
-	end
-end
-if (festival06_Cancal == nil) then
-	function festival06_Cancal()
-	end
-end
 
 --ÕÐÝëµÜ×Ó
 function Sel_ZhaoDizhi(nTongID, nWorkshopID)

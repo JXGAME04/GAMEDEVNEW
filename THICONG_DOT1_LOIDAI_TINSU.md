@@ -172,6 +172,54 @@ Thêm nữa **hệ 7 thành chưa cutover**, `jx2citywar.txt` 7 dòng đều vô
 
 **Duy nhất một thứ không làm được bằng mã: art bản đồ cho map 592 + 598-604 (8 map bang hội).**
 
+---
+
+## 6. ĐÃ THI CÔNG — BOSS BANG HỘI + 3 HOẠT ĐỘNG PHƯỜNG (21/08, chờ restart)
+
+### 6.1 Boss bang hội (`c2ea67fa`, `612b7dbb`)
+- `script\item\bosscharm.lua`, `script\misc\boss\callbossdeath.lua` ← chép Linux, **trùng từng byte**.
+- `scriptjx2\tong_vn\workshop\ws_bingjia.lua`: gỡ cổng giờ 12h30–22h tự thêm quanh `use_g_1`.
+- Engine: `AddNpcEx` (dịch ngược `0x0811BF40`) + `SubWorldIdx2MapCopy`. **DLL đang chạy (19:49) đã có.**
+- Item: Linux 1022 → dự án **1023**, cùng ảnh, cột Script đã trỏ sẵn. Không làm item.
+
+### 6.2 Ba Hoạt động Phường (`17339638`, `8bf2dc3c`)
+**Script/settings đã đặt vào cây chạy thật:**
+| Gì | Ở đâu | Ghi chú |
+|---|---|---|
+| 41 tệp `missions\tong\**` | `script\missions\tong\` | **trùng 100% Linux** (diff -rq sạch) |
+| 3 tệp lịch relay | `script\missions\tong\relay\` | chép nguyên từ `gateway\s3relay\relaysetting\task\` |
+| **`tong_driver.lua`** (MỚI) | `script\missions\tong\` | thay task-centre relay, khuôn `gsdriver.lua`; gọi `TaskShedule`/`TaskContent` của 3 tệp relay qua `DynamicExecute` (mỗi tệp 1 state) |
+| `settings\maps\chrismas` (17) + `springfestival2006` (21) | `settings\maps\` | trùng Linux |
+| `settings\task\task_id.txt` | cho `TaskNo` | |
+| `settings\task\missions.txt` | nối 27→45; **37/38 đệ tử, 39/40 Niên Thú, 44/45 thu thập**, còn lại `mission_trong.lua` | tra theo SỐ DÒNG |
+| `settings\TimerTask.txt` | +65–70, 75–77 (đúng số Linux) + **53** = `tong_driver.lua` | tra theo KHOÁ |
+| `script\startgame.lua:101` | `DynamicExecute(tong_driver, "TONG_DriverInit")` | ngay sau dòng WLLS |
+| `scriptjx2\tong_vn\workshop\ws_huodong.lua` | **gỡ khối stub 15/08** (16 dòng) | còn 3 lệch có chủ đích: item 1023, 2×`RemoveSkillState` |
+| `tong_springfestival\head.lua:19` | `SF_LEVELLIMIT = 50` → **90** | chính sách chủ game |
+
+**NPC template:** 1121 / 323 / 361 / 1141 **trùng cả id lẫn tên** với `npcs.txt` dự án → không remap.
+
+**Engine: 18 hàm mới** (17 + `GetSpecItemParam`), mỗi hàm dịch ngược từ ELF, đặc tả ở
+`ReverseTools\dac_ta_17_ham_hoatdong_phuong.json`. Điểm chặn thêm vào engine:
+`KSkill::CanCastSkill` (cấm chiêu), `c2sPKApplyEnmity` (cấm cừu sát), `ChangeAuraSkill` (cấm vòng sáng),
+`KPlayer::UpdataCurData` (áp lại chiêu tạm), client `s2cPlayerSync_MA` (SetImmedSkill).
+**Giao thức:** +1 sub-id `enumS2C_PLAYERSYNC_ID_IMMEDSKILL` **cuối enum** ⇒ **client phải cập nhật** cùng server.
+
+**Binary chờ:** `bin\server\CoreServer.dll.moi_hoatdongphuong` + `bin\client\CoreClient.dll.moi_hoatdongphuong`
+(GameServer + Game.exe đang chạy nên không đè). 21/21 tên hàm xác minh có trong DLL.
+
+**Lệch có chủ đích (ghi tại chỗ trong mã):**
+- Linux gửi gói `0x63/0x13` để client xám thanh chiêu khi `ForbitSkill` — JX1 chỉ chặn server.
+- `AddMapTrap` tham số 5 (`nParam`) không lưu theo ô — 0 call site dùng.
+- `ChangeOwnFeature` nType 1 (có hạn) + nhánh `nIdx<0` coi như nType 0 — call site duy nhất là `(0,0,1141)`.
+- `FileName2Id` không `tolower` như Linux — để khớp hàm băm engine đang dùng.
+- **Không port `task/random`** (kéo cả hệ PARTNER/TASKSYS JX2) — chỉ phục vụ nhánh thưởng "quyển nhiệm vụ"
+  của Thu thập vật tư, hoạt động **đã chết trên chính Linux** (menu comment + `settings/maps/dragonboatfestival_06` không tồn tại).
+
+**Restart xong cần kiểm:** `[TONG] Driver hoat dong phuong da khoi dong` trong log; `ScriptError.log` không thêm;
+NPC Tổng quản Hoạt động phường bấm được, menu không báo lỗi; đến giờ `mod(giờ,3)==0` (đệ tử) / `==1` (Niên Thú)
+map 821/823 mở báo danh. Test ngoài giờ: `DynamicExecute("\script\missions\tong\tong_driver.lua","TONG_Adm_MoNgay",1|2)`.
+
 ## 3. NHẬT KÝ THI CÔNG
 
 | Thời điểm | Việc | Trạng thái |
