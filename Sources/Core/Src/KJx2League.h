@@ -75,6 +75,7 @@ int LuaWllsIsCharged(Lua_State* L);        // -> 1 (khong thu phi)
 int LuaWllsLoadScript(Lua_State* L);       // LoadScript(path) -> ReLoadScript
 void KJx2DeferredExec_Push(const char* szScriptPath, const char* szCode); // xep hang chay tick sau
 void KJx2DeferredExec_Breathe();           // goi canh KJx2GlbMission_Breathe
+void KJx2ScriptTimer_Breathe();			// [PORT5 23/08] AddTimer/DelTimer JX2 (bairenleitai/tongcastle)
 
 // helper C cho cac module engine khac (KJx2CityWar: IsSigningUp/NumOfSignUpTongs/
 // GetSignUpTongName doc league 508) - cung store voi cac ham Lua o tren

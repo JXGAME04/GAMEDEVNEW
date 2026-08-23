@@ -456,6 +456,12 @@ public:
 	int					m_nMissionGroup;
 	int					m_MantleType;		//#phi phong
 	DWORD				m_TrapScriptID;			// Npc的当前Trap脚本ID;
+#ifdef _SERVER
+	// [PORT5 23/08] JX2: tham so o trap dang dung / trai tam thoi / co khong-hoi-sinh
+	int				m_nLastTrapParam;		// JX2TRAP_PARAM_NONE = trap JX1
+	int				m_nTmpCamp;				// Linux KNpc+0x1900; 0 = khong dung (SetTmpCamp)
+	BYTE			m_bNoRevive;			// Linux +0x1824 (AddNpcEx tham so 7): chet la bien mat
+#endif
 	int					m_nPeopleIdx;			// 对象人物
 	int					m_nLastDamageIdx;		// 最后一次伤害的人物索引
 	int					m_nLastPoisonDamageIdx;	// 最后一次毒伤害的人物索引

@@ -226,6 +226,11 @@ void KNpc::Init()
 	m_DropRateScriptID = 0;
 	m_MantleType	= 0;			//#phi phong
 	m_TrapScriptID = 0;
+#ifdef _SERVER
+	m_nLastTrapParam = JX2TRAP_PARAM_NONE;	// [PORT5 23/08]
+	m_nTmpCamp = 0;
+	m_bNoRevive = 0;
+#endif
 	m_btRankId					= 0;
 	m_btRankBattleId			= 0; //#RankBattle
 	m_btPlayerTitle				= 0; //#PlayerTitle
@@ -1584,6 +1589,10 @@ void KNpc::OnDeath()
 		{
 			DoRevive();
 #ifdef _SERVER
+			// [PORT5 23/08] AddNpcEx bNoRevive: xac chi nan ~1s roi OnRevive go NPC (Linux xoa
+			// ngay sau hoat anh chet qua hang doi 0x3E9 - 0x08083520)
+			if (!IsPlayer() && m_bNoRevive && m_Doing == do_revive)
+				m_Frames.nTotalFrame = 18;
 			int nPIdx = GetPlayerIdx();
 			if(nPIdx > 0)
 			{
@@ -2180,6 +2189,18 @@ void KNpc::OnRevive()
 #ifdef _SERVER
 	if (!IsPlayer() && WaitForFrame())
 	{
+		// [PORT5 23/08] AddNpcEx bNoRevive: go NPC thay vi hoi sinh (khuon LuaDelNpc; cung thoi
+		// diem voi DelNpc trong script OnRevive cua global\drop\daihoangkim.lua - da chay that)
+		if (m_bNoRevive)
+		{
+			if (m_SubWorldIndex >= 0 && m_RegionIndex >= 0)
+			{
+				SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].RemoveNpc(m_Index);
+				SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
+				NpcSet.Remove(m_Index);
+			}
+			return;
+		}
 		Revive();
 	}
 #else	
@@ -10174,13 +10195,23 @@ void KNpc::CheckTrap()
 		return;
 
 	DWORD	dwTrap = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].GetTrap(m_MapX, m_MapY);
-	if (m_TrapScriptID == dwTrap)
+	// [PORT5 23/08] trap JX2 (AddMapTrap tham so 5): so sanh CA (scriptId, param) de hai vung
+	// trap ke nhau CUNG script khac param van kich (tongcastle); trap JX1 param NONE - nhu cu.
+	int nCellTrapParam = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].GetTrapParam(m_MapX, m_MapY);
+	if (m_TrapScriptID == dwTrap
+#ifdef _SERVER
+		&& m_nLastTrapParam == nCellTrapParam
+#endif
+		)
 	{
 		return;
 	}
 	else
 	{
 		m_TrapScriptID = dwTrap;
+#ifdef _SERVER
+		m_nLastTrapParam = nCellTrapParam;
+#endif
 	}
 
 	if (!m_TrapScriptID)
@@ -10201,6 +10232,15 @@ void KNpc::CheckTrap()
 	}
 #endif
 
+#ifdef _SERVER
+	if (nCellTrapParam != JX2TRAP_PARAM_NONE)
+	{
+		// [PORT5 23/08] trap dat qua AddMapTrap: main(nParam) nhu Linux (KNpc::CheckTrap 0x0807DA78;
+		// 4 tham so -> param 0 -> main(0) cung nhu Linux)
+		Player[m_nPlayerIdx].ExecuteScript(m_TrapScriptID, "main", nCellTrapParam);
+		return;
+	}
+#endif
 	Player[m_nPlayerIdx].ExecuteScript(m_TrapScriptID, "main", m_nPlayerIdx);
 }
 

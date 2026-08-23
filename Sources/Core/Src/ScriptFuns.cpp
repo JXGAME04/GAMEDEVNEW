@@ -2220,11 +2220,17 @@ int LuaCallPlayerFunction(Lua_State* L)
 		lua_pushvalue(L, i);
 		nArgs++;
 	}
-	lua_rawcall(L, nArgs, 0);
+	// [PORT5 23/08] Linux tra MOI ket qua cua pFun (bairenleitai: szName = CallPlayerFunction(idx,
+	// GetName); so sanh ST_GetDamageCounter). Ket qua nam tren gia tri cu o nOldTop; khi C tra
+	// nRes, Lua lay dung nRes gia tri tren cung. Caller cu khong doc ket qua -> vo hai.
+	lua_rawcall(L, nArgs, LUA_MULTRET);
+	int nRes = lua_gettop(L) - nOldTop;
+	if (nRes < 0)
+		nRes = 0;
 	// khoi phuc PlayerIndex cu (van nam o nOldTop)
 	lua_pushvalue(L, nOldTop);
 	lua_setglobal(L, SCRIPT_PLAYERINDEX);
-	return 0;
+	return nRes;
 }
 
 // GetLastFactionNumber() - JX2: so hieu mon phai 0..9 (Thieu Lam=0 ... Con
@@ -2352,17 +2358,25 @@ int LuaDynamicExecuteByPlayer(Lua_State* L)
 		return 0;
 	}
 	// ghep chuoi goi: Fun(a1,a2,...) - so -> %.0f, chuoi -> "..."
-	char szCall[512];
+	char szCall[4096];	// [PORT5 23/08] 512 -> 4096: RemoteExc chuyen thong bao ~150 byte + du phong
 	int nPos = 0;
 	nPos += sprintf(szCall + nPos, "%s(", szFun);
-	for (int i = 4; i <= nParamNum && nPos < (int)sizeof(szCall) - 80; i++)
+	for (int i = 4; i <= nParamNum && nPos < (int)sizeof(szCall) - 2200; i++)
 	{
 		if (i > 4)
 			szCall[nPos++] = ',';
 		if (Lua_IsNumber(L, i))
 			nPos += sprintf(szCall + nPos, "%.0f", (double)Lua_ValueToNumber(L, i));
 		else if (Lua_IsString(L, i))
-			nPos += sprintf(szCall + nPos, "\"%.64s\"", Lua_ValueToString(L, i));
+		{
+			// [PORT5 23/08] khong cat 64 byte, chiu duoc dau nhay kep: dung [[...]] (long string
+			// Lua 4 - llex.c chi ho tro dang nay); "]]" trong chuoi -> "] ]" de khong dong som
+			char szArgTmp[2049];
+			g_StrCpyLen(szArgTmp, (char*)Lua_ValueToString(L, i), sizeof(szArgTmp));
+			for (char* q = strstr(szArgTmp, "]]"); q; q = strstr(q + 2, "]]"))
+				q[1] = ' ';
+			nPos += sprintf(szCall + nPos, "[[%s]]", szArgTmp);
+		}
 		else
 			nPos += sprintf(szCall + nPos, "nil");
 	}
@@ -2400,17 +2414,25 @@ int LuaDynamicExecute(Lua_State* L)
 		g_DebugLog((LPSTR)"[WLLS] DynamicExecute: script chua nap, bo qua: %.128s -> %.64s", szLow, szFun);
 		return 0;
 	}
-	char szCall[512];
+	char szCall[4096];	// [PORT5 23/08] 512 -> 4096: RemoteExc chuyen thong bao ~150 byte + du phong
 	int nPos = 0;
 	nPos += sprintf(szCall + nPos, "%s(", szFun);
-	for (int i = 3; i <= nParamNum && nPos < (int)sizeof(szCall) - 80; i++)
+	for (int i = 3; i <= nParamNum && nPos < (int)sizeof(szCall) - 2200; i++)
 	{
 		if (i > 3)
 			szCall[nPos++] = ',';
 		if (Lua_IsNumber(L, i))
 			nPos += sprintf(szCall + nPos, "%.0f", (double)Lua_ValueToNumber(L, i));
 		else if (Lua_IsString(L, i))
-			nPos += sprintf(szCall + nPos, "\"%.64s\"", Lua_ValueToString(L, i));
+		{
+			// [PORT5 23/08] khong cat 64 byte, chiu duoc dau nhay kep: dung [[...]] (long string
+			// Lua 4 - llex.c chi ho tro dang nay); "]]" trong chuoi -> "] ]" de khong dong som
+			char szArgTmp[2049];
+			g_StrCpyLen(szArgTmp, (char*)Lua_ValueToString(L, i), sizeof(szArgTmp));
+			for (char* q = strstr(szArgTmp, "]]"); q; q = strstr(q + 2, "]]"))
+				q[1] = ' ';
+			nPos += sprintf(szCall + nPos, "[[%s]]", szArgTmp);
+		}
 		else
 			nPos += sprintf(szCall + nPos, "nil");
 	}
@@ -3747,9 +3769,208 @@ int LuaAddMapTrap(Lua_State* L)
 	SubWorld[nSubWorldIndex].Mps2Map(nMpsX, nMpsY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
 	if (nRegion < 0) { Lua_PushNumber(L, 0); return 1; }
 	SubWorld[nSubWorldIndex].SetTrap(dwTrapID, nMpsX, nMpsY, 0);
+	// [PORT5 23/08] tham so 5 (Linux 0x08102700 - trap JX2 = {scriptId, nParam}): script trap
+	// nhan main(nParam); thieu tham so -> 0 nhu Linux. Trap JX1 (AddTrap/map-data) van
+	// main(nPlayerIdx) vi param mac dinh JX2TRAP_PARAM_NONE.
+	int nTrapParam = (nTop >= 5 && Lua_IsNumber(L, 5)) ? (int)Lua_ValueToNumber(L, 5) : 0;
+	SubWorld[nSubWorldIndex].SetTrapParam(nMpsX, nMpsY, nTrapParam);
 	Lua_PushNumber(L, 1);
 	return 1;
 }
+// ============================================================================
+// [PORT5 23/08] tongwar / bairenleitai / tongcastle - xem SPEC_PORT_*.md muc C
+// ============================================================================
+
+// SetDeathType(n) - Linux 0x08110580 ghi Player+0xE4 (0 = thuong; -1 = che do dac biet khong
+// phat; N>0 = N lan mien). Cay tongwar LUON goi kem SetPunish cung nghia -> chi can LUU.
+int LuaSetDeathType(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1)
+		return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0)
+		return 0;
+	Player[nPlayerIndex].m_nJX2DeathType = (int)Lua_ValueToNumber(L, 1);
+	return 0;
+}
+
+// GetAllEquipment() -> bang 1..itempart_num chi so Item cua o trang bi (ke ca o trong = 0).
+// Linux 0x0810D0F0 tra 15 o; JX1 co 17 o - script chi tim mat na nen tra du 17.
+int LuaGetAllEquipment(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+		return 0;
+	Lua_NewTable(L);
+	for (int i = 0; i < itempart_num; i++)
+	{
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetEquipment(i));
+		Lua_RawSetI(L, -2, i + 1);
+	}
+	return 1;
+}
+
+// GetMapInfoFile(nMapId) -> chuoi khoa <id>_MapInfo cua MapList.ini (Linux 0x081024E0,
+// KSubWorld+0x4EFC4). gettop phai == 1 nhu Linux; loi -> chuoi rong.
+int LuaGetMapInfoFile(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushString(L, (char*)"");
+		return 1;
+	}
+	int w = g_SubWorldSet.SearchWorld((DWORD)Lua_ValueToNumber(L, 1));
+	if (w < 0 || w >= MAX_SUBWORLD)
+	{
+		Lua_PushString(L, (char*)"");
+		return 1;
+	}
+	Lua_PushString(L, SubWorld[w].m_szMapInfoFile);
+	return 1;
+}
+
+// ST_SyncMiniMapObj(x, y) - Linux 0x081C1930 gui goi 0xB4 (ky hieu ban do nho client JX2).
+// Client JX1 khong co protocol nay; cay tongwar chi goi (-1,-1) = go ky hieu -> stub.
+int LuaST_SyncMiniMapObj(Lua_State* L)
+{
+	return 0;
+}
+
+// CreateChannel/EnterChannel/LeaveChannel/DeleteChannel - he kenh chat tam JX2 (Linux
+// 0x081045A0/0x081044C0/0x08104420/0x08104560 -> KChannelMgr). Client JX1 khong co kenh
+// dong -> stub co chu dich (chi mat chat rieng theo phe; PHANTICH 5.2 da chot bo).
+int LuaJx2ChannelStub(Lua_State* L)
+{
+	return 0;
+}
+
+// SetTmpCamp(nCamp[, nNpcIdx]) -> 1/0 ; GetTmpCamp([nNpcIdx]) - Linux 0x0810BA50/0x0810BB70
+// ghi/doc KNpc+0x1900 (trai tam thoi, luat quan he o KNpcSet::GetRelation). Linux con gui goi
+// 0xD1 dong bo client - JX1 khong co goi nay; client tu tinh quan he bang CurCamp/FightMode/
+// PKFlag ma script da dat du (hundred_arena 485/591-593).
+int LuaSetTmpCamp(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nCamp = (int)Lua_ValueToNumber(L, 1);
+	if (nCamp < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nNpcIdx = 0;
+	if (nTop >= 2 && Lua_IsNumber(L, 2))
+		nNpcIdx = (int)Lua_ValueToNumber(L, 2);
+	else
+	{
+		int nPlayerIdx = GetPlayerIndex(L);
+		if (nPlayerIdx <= 0)
+		{
+			Lua_PushNumber(L, 0);
+			return 1;
+		}
+		nNpcIdx = Player[nPlayerIdx].m_nIndex;
+	}
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+#ifdef _SERVER
+	Npc[nNpcIdx].m_nTmpCamp = nCamp;
+#endif
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaGetTmpCamp(Lua_State* L)
+{
+	int nNpcIdx = 0;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1))
+		nNpcIdx = (int)Lua_ValueToNumber(L, 1);
+	else
+	{
+		int nPlayerIdx = GetPlayerIndex(L);
+		if (nPlayerIdx <= 0)
+			return 0;
+		nNpcIdx = Player[nPlayerIdx].m_nIndex;
+	}
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return 0;
+#ifdef _SERVER
+	Lua_PushNumber(L, Npc[nNpcIdx].m_nTmpCamp);
+#else
+	Lua_PushNumber(L, 0);
+#endif
+	return 1;
+}
+
+// MakeDateTime([nCount[, nTime]]) -> nCount gia tri {nam, thang, ngay, gio, phut, giay,
+// thu (0=CN), ngay-trong-nam} - Linux 0x081038A0 (mac dinh 6; epoch tuy chon).
+int LuaMakeDateTime(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	int nCount = 6;
+	if (nTop >= 1)
+	{
+		nCount = (int)Lua_ValueToNumber(L, 1);
+		if (nCount < 1 || nCount > 8)
+			return 0;
+	}
+	time_t tVal = time(NULL);
+	if (nTop >= 2 && Lua_IsNumber(L, 2))
+		tVal = (time_t)Lua_ValueToNumber(L, 2);
+	struct tm* pTm = localtime(&tVal);
+	if (!pTm)
+		return 0;
+	int v[8];
+	v[0] = pTm->tm_year + 1900;
+	v[1] = pTm->tm_mon + 1;
+	v[2] = pTm->tm_mday;
+	v[3] = pTm->tm_hour;
+	v[4] = pTm->tm_min;
+	v[5] = pTm->tm_sec;
+	v[6] = pTm->tm_wday;
+	v[7] = pTm->tm_yday + 1;
+	for (int i = 0; i < nCount; i++)
+		Lua_PushNumber(L, v[i]);
+	return nCount;
+}
+
+// NPCINFO_GetNpcCurrentLife / NPCINFO_SetNpcCurrentLife - Linux 0x081C06B0/0x081C0070:
+// doc/ghi m_CurrentLife (KHONG dong max nhu SetNpcLife cua JX1 - SetNpcLife ghi ca 2 =
+// nang tran mau cay moi lan hoi). Set kep [1, m_CurrentLifeMax].
+int LuaNPCINFO_GetNpcCurrentLife(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+		return 0;
+	int n = (int)Lua_ValueToNumber(L, 1);
+	if (n <= 0 || n >= MAX_NPC)
+		return 0;
+	Lua_PushNumber(L, Npc[n].m_CurrentLife);
+	return 1;
+}
+
+int LuaNPCINFO_SetNpcCurrentLife(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+		return 0;
+	int n = (int)Lua_ValueToNumber(L, 1);
+	int v = (int)Lua_ValueToNumber(L, 2);
+	if (n <= 0 || n >= MAX_NPC)
+		return 0;
+	if (v > Npc[n].m_CurrentLifeMax)
+		v = Npc[n].m_CurrentLifeMax;
+	if (v < 0)
+		v = 0;
+	Npc[n].m_CurrentLife = v;
+	return 0;
+}
+
 int LuaAddObj(Lua_State* L)
 {
 	int nParamNum = Lua_GetTopIndex(L);
@@ -6692,6 +6913,13 @@ int LuaAddNpcEx(Lua_State* L)
 		int nCamp = (int)Lua_ValueToNumber(L, 7);
 		if (nCamp >= 0 && nCamp < camp_num)
 			Npc[nNpcIdx].SetCurrentCamp(nCamp);
+#ifdef _SERVER
+		// [PORT5 23/08] nghia goc Linux cua tham so 7 = bNoRevive (KNpc+0x1824): chet la bien
+		// mat, khong hoi sinh (0x080833E2/0x08083520). Giu nhanh SetCurrentCamp o tren de khong
+		// doi hanh vi da chay; moi caller la script JX2 nen != 0 <=> bNoRevive that.
+		if ((int)Lua_ValueToNumber(L, 7) != 0)
+			Npc[nNpcIdx].m_bNoRevive = 1;
+#endif
 	}
 
 	// tham so 8: ten hien thi - chi dat khi chuoi KHAC RONG (y het ban goc)
@@ -13441,6 +13669,17 @@ extern int LuaClearMapObj(Lua_State* L);			// [TONG 21/08] KJx2WarInfra.cpp
 extern int LuaClearMapNpcWithName(Lua_State* L);
 extern int LuaGetMapNpcWithName(Lua_State* L);
 extern int LuaGetAroundNpcList(Lua_State* L);	// [TIN SU 21/08] KJx2WarInfra.cpp
+extern int LuaClearMapTrap(Lua_State* L);			// [PORT5 23/08] KJx2WarInfra.cpp
+extern int LuaGetItemStackCount(Lua_State* L);		// [PORT5 23/08] KJx2WarInfra.cpp
+extern int LuaSetItemStackCount(Lua_State* L);		// [PORT5 23/08] KJx2WarInfra.cpp
+extern int LuaGetNpcAroundNpcList(Lua_State* L);	// [PORT5 23/08] KJx2WarInfra.cpp
+extern int LuaJX2_AddTimer(Lua_State* L);			// [PORT5 23/08] KJx2League.cpp
+extern int LuaJX2_DelTimer(Lua_State* L);			// [PORT5 23/08] KJx2League.cpp
+extern int LuaJX2_SuspendTimer(Lua_State* L);		// [PORT5 23/08] KJx2League.cpp
+extern int LuaJX2_ResumeTimer(Lua_State* L);		// [PORT5 23/08] KJx2League.cpp
+extern int LuaJX2_RemoteExecute(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
+extern int LuaOB_SaveShareData(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
+extern int LuaOB_LoadShareData(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
 // ==== Port SimCity (KSimCity.cpp): co danh dau bot giu can bang ====
 extern int LuaSC_SetBotFlag(Lua_State* L);
 extern int LuaSC_GetBotFlag(Lua_State* L);
@@ -14990,6 +15229,34 @@ TLua_Funcs GameScriptFuns[] =
 		// ==== DOT E (E7): thue qua thoai NPC quan thanh (khong protocol moi) ====
 		{ "CTC_JX2_SetTax",	LuaCTC_JX2_SetTax },
 		{ "CTC_JX2_GetTax",	LuaCTC_JX2_GetTax },
+		// ==== [PORT5 23/08] tongwar / bairenleitai / bw / tongcastle ====
+		{ "SetDeathType",	LuaSetDeathType },	// tongwar (Linux 0x08110580) - luu, cay luon kem SetPunish
+		{ "GetMapInfoFile",	LuaGetMapInfoFile },	// tongwar (0x081024E0)
+		{ "ClearMapTrap",	LuaClearMapTrap },	// tongwar (0x08102AC0) KJx2WarInfra.cpp
+		{ "GetAllEquipment",	LuaGetAllEquipment },	// tongwar (0x0810D0F0)
+		{ "ST_SyncMiniMapObj",	LuaST_SyncMiniMapObj },	// tongwar: stub (goi 0xB4 JX2; cay chi go ky hieu)
+		{ "CreateChannel",	LuaJx2ChannelStub },	// tongwar/bw: kenh chat dong JX2 - stub
+		{ "EnterChannel",	LuaJx2ChannelStub },
+		{ "LeaveChannel",	LuaJx2ChannelStub },
+		{ "DeleteChannel",	LuaJx2ChannelStub },
+		{ "Msg2Map",	LuaMsgToAroundRegion },	// bairenleitai/tongcastle (0x08105080) = Msg2Region
+		{ "SetTmpCamp",	LuaSetTmpCamp },	// bairenleitai/tongcastle (0x0810BA50)
+		{ "GetTmpCamp",	LuaGetTmpCamp },	// (0x0810BB70)
+		{ "AddTimer",	LuaJX2_AddTimer },	// bairenleitai/tongcastle (0x08100D40) KJx2League.cpp
+		{ "DelTimer",	LuaJX2_DelTimer },	// (0x08100CA0)
+		{ "SuspendTimer",	LuaJX2_SuspendTimer },	// (0x08100C00)
+		{ "ResumeTimer",	LuaJX2_ResumeTimer },	// (0x08100B60)
+		{ "RemoteExecute",	LuaJX2_RemoteExecute },	// (0x08100740) 1 GS thuc thi tai cho - KJx2SharedStore.cpp
+		{ "OB_SaveShareData",	LuaOB_SaveShareData },	// tongcastle (relay 0x08102F54) persist settings\jx2sharedata
+		{ "OB_LoadShareData",	LuaOB_LoadShareData },	// (0x08102D58)
+		{ "GetNpcId",	LuaGetNpcID },	// tongcastle: alias GetNpcID (0x080FD920)
+		{ "NpcCastSkill",	LuaNpcCastSkill },	// tongcastle: alias CastNpcSkill (0x0812B3A0; x,y thua = vi tri NPC)
+		{ "GetItemStackCount",	LuaGetItemStackCount },	// tongcastle (0x080FD250) KJx2WarInfra.cpp
+		{ "SetItemStackCount",	LuaSetItemStackCount },	// (0x0810D9A0)
+		{ "MakeDateTime",	LuaMakeDateTime },	// tongcastle (0x081038A0)
+		{ "GetNpcAroundNpcList",	LuaGetNpcAroundNpcList },	// tongcastle (0x08104A20) KJx2WarInfra.cpp
+		{ "NPCINFO_GetNpcCurrentLife",	LuaNPCINFO_GetNpcCurrentLife },	// tongcastle (0x081C06B0)
+		{ "NPCINFO_SetNpcCurrentLife",	LuaNPCINFO_SetNpcCurrentLife },	// (0x081C0070)
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);

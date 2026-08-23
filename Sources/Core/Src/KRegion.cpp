@@ -48,6 +48,9 @@ KRegion::KRegion()
 	m_nRegionY		= 0;
 #ifdef _SERVER
 	memset(m_dwTrap, 0, sizeof(m_dwTrap));
+	// [PORT5 23/08] tham so trap JX2: mac dinh NONE (trap JX1)
+	for (int _tp = 0; _tp < REGION_GRID_WIDTH * REGION_GRID_HEIGHT; _tp++)
+		((int*)m_nTrapParam)[_tp] = JX2TRAP_PARAM_NONE;
 #endif
 }
 
@@ -219,6 +222,9 @@ gotoCLOSE:
 //		g_SetFilePath(szFilePath);
 		sprintf(szFile, "%s\\%03d_%s", szFilePath, nX, REGION_TRAP_FILE);
 		memset(this->m_dwTrap, 0, sizeof(m_dwTrap));
+		// [PORT5 23/08] tham so trap JX2: mac dinh NONE (trap JX1)
+		for (int _tp = 0; _tp < REGION_GRID_WIDTH * REGION_GRID_HEIGHT; _tp++)
+			((int*)m_nTrapParam)[_tp] = JX2TRAP_PARAM_NONE;
 		if (!cTrapData.Open(szFile))
 			goto TRAP_CLOSE;
 		if (cTrapData.Size() < sizeof(KTrapFileHead))
@@ -418,6 +424,9 @@ BOOL	KRegion::LoadServerObstacle(KPakFile *pFile, DWORD dwDataSize)
 BOOL	KRegion::LoadServerTrap(KPakFile *pFile, DWORD dwDataSize)
 {
 	memset(m_dwTrap, 0, sizeof(m_dwTrap));
+	// [PORT5 23/08] tham so trap JX2: mac dinh NONE (trap JX1)
+	for (int _tp = 0; _tp < REGION_GRID_WIDTH * REGION_GRID_HEIGHT; _tp++)
+		((int*)m_nTrapParam)[_tp] = JX2TRAP_PARAM_NONE;
 	if (!pFile || dwDataSize < sizeof(KTrapFileHead))
 		return FALSE;
 
@@ -1437,6 +1446,38 @@ void	KRegion::SetTrap(DWORD nTrapId, int nMapX, int nMapY)
 	if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
 		return;
 	m_dwTrap[nMapX][nMapY] = nTrapId;
+}
+
+// [PORT5 23/08] tham so trap JX2 (AddMapTrap tham so 5). Than #ifdef nhu GetTrap.
+int KRegion::GetTrapParam(int nMapX, int nMapY)
+{
+#ifdef _SERVER
+	if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
+		return JX2TRAP_PARAM_NONE;
+	return m_nTrapParam[nMapX][nMapY];
+#else
+	return JX2TRAP_PARAM_NONE;
+#endif
+}
+
+void KRegion::SetTrapParam(int nMapX, int nMapY, int nParam)
+{
+#ifdef _SERVER
+	if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
+		return;
+	m_nTrapParam[nMapX][nMapY] = nParam;
+#endif
+}
+
+// [PORT5 23/08] ClearMapTrap (Linux KRegion::ClearTrap 0x080E11A0): xoa SACH trap cua region
+// (ke ca trap map-data - Linux cung vay; chi dung cho map chien truong rieng).
+void KRegion::ClearAllTraps()
+{
+#ifdef _SERVER
+	memset(m_dwTrap, 0, sizeof(m_dwTrap));
+	for (int _tp = 0; _tp < REGION_GRID_WIDTH * REGION_GRID_HEIGHT; _tp++)
+		((int*)m_nTrapParam)[_tp] = JX2TRAP_PARAM_NONE;
+#endif
 }
 
 void	KRegion::SetObstacle(long value, int nSubWorld, int nMapX, int nMapY) //#Set VËt C¶n

@@ -4530,6 +4530,17 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 	}
 
 	int nBest = 0, nBestLv = 0, nBestRank = 0, nBestRq = -1, nBestDmg = -1;
+	int nBestNoi = 0;
+	// (23/08 chu game: "bot tham gia tong kim toi thay toan he ngoai cong khong
+	// co noi cong") NUA DAN thien NOI CONG: bot co dwID le se UU TIEN chieu SAT
+	// THUONG PHEP (don magic/cold/fire/lighting/poison) len tren bac khop-vu-khi.
+	// Vi sao truoc do ca dan danh vat ly het: bot nao cung duoc phat vu khi
+	// ("trang bi theo cap" 19/08), ma bac khop-vu-khi (nRank 2) an dut chieu phep
+	// -2 (nRank 1) - vi du Thuy Yen co Vu Da Le Hoa (105, Eqt=1 dao) va Bich Hai
+	// Trieu Sinh (111, Eqt=-2) nhung Song Dao vat ly luon thang. Chon theo dwID
+	// (chan/le) de on dinh giua cac phien; phai khong co chieu phep hop le (Thieu
+	// Lam...) thi bNoi = 0 cho moi ung vien va tu roi ve vat ly nhu cu.
+	const int bThienNoi = (int)(Player[nIdx].m_dwID & 1);
 	// NHAT KY CHON CHIEU: liet ke TUNG chieu trong danh sach kem ly do loai, de doc
 	// bot.log la biet ngay vi sao mot phai "khong co chieu de danh" - khong doan mo.
 	//   HE=x  chieu mang ngu hanh x khac he bot     KIEU=x  style x khong phai Missles/Melee
@@ -4608,13 +4619,38 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// sach deu khong co don sat thuong thi van chon duoc, khong tai dien canh
 		// "khong phai nao danh duoc".
 		const int nDmg = (p->GetDamageAttribsNum() > 0) ? 1 : 0;
-		PB_DIAG(" %d:OK(lv%d,r%d,rq%d,d%d)", id, lv, nRank, nRq, nDmg);
+		// (23/08) chieu nay co DON SAT THUONG PHEP khong. KSkills.cpp:2521 dua moi
+		// attrib trong khoang (magic_damage_begin, magic_damage_end) vao
+		// m_DamageAttribs bat ke chieu Missles hay Melee, nen quet o day bat duoc
+		// ca phep dan bay (67 Cuu Thien Cuong Loi: lightingdamage_v) lan chuong
+		// can chien. CHI tinh 5 loai don phep that (59, 62..65) - khong tinh
+		// attackrating/ignoredefense/seriesdamage cung nam trong khoang do.
+		int bNoi = 0;
+		{
+			KMagicAttrib* pDa = p->GetDamageAttribs();
+			const int nDaNum = p->GetDamageAttribsNum();
+			for (int a = 0; a < nDaNum && a < MAX_MISSLE_DAMAGEATTRIB; a++)
+			{
+				const int nT = pDa[a].nAttribType;
+				if (nT == magic_magicdamage_v  || nT == magic_colddamage_v
+				 || nT == magic_firedamage_v   || nT == magic_lightingdamage_v
+				 || nT == magic_poisondamage_v)
+				{
+					bNoi = 1;
+					break;
+				}
+			}
+		}
+		const int nNoi = bThienNoi ? bNoi : 0;
+		PB_DIAG(" %d:OK(lv%d,r%d,rq%d,d%d,n%d)", id, lv, nRank, nRq, nDmg, bNoi);
 
-		if (nRank > nBestRank
+		if (nNoi > nBestNoi
+		 || (nNoi == nBestNoi && (nRank > nBestRank
 		 || (nRank == nBestRank && nDmg > nBestDmg)
 		 || (nRank == nBestRank && nDmg == nBestDmg && nRq > nBestRq)
-		 || (nRank == nBestRank && nDmg == nBestDmg && nRq == nBestRq && lv > nBestLv))
+		 || (nRank == nBestRank && nDmg == nBestDmg && nRq == nBestRq && lv > nBestLv))))
 		{
+			nBestNoi  = nNoi;
 			nBestRank = nRank;
 			nBestDmg  = nDmg;
 			nBestRq   = nRq;
@@ -7758,7 +7794,47 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 		if (nMapNay == PB_TK_MAP
 		 && now - b.nTkTick < (unsigned int)(GAME_FPS * 15))
 			return;
-		pb_TkDungPhu(nIdx, nNpcIdx, b, nLech);
+		// (23/08 chu game: "khi xong tong kim thi 1 so bot khong ra map train ma
+		// dung o map bao danh") Do that tran 14:08 hom nay: task03 NewWorld ~336
+		// bot ve 324 trong MOT vong lap, roi pha nay lai phu ca dan trong cung
+		// giay ke tiep - dung vet "ca dan ChangeWorld cung mot khung la nghen
+		// region sync" (bai hoc 18/08 da ghi o pha 1). Con nao ChangeWorld truot
+		// thi o lai 324 voi nTk = 0 + nBaiIdx = -1 va dung im vinh vien: map 324
+		// khong co Xa Phu, khong thuoc bang bai nao. Sua BA lop:
+		//   a. rai le 1..12 giay theo chi so nhu pha 1 - het doi map cung khung;
+		//   b. phu xong KIEM da roi map that chua (gopos_step3lvXX khong tra ve
+		//      gi - y het bai hoc bao danh) -> truot thi thu lai, phu boc dong
+		//      khac cua bang 13 map;
+		//   c. 3 lan van truot -> ChangeWorld thang ve thanh nha, chuoi co san
+		//      pb_RaBai -> Xa Phu -> bai dung cap tu lo not.
+		if (b.nTkDaBoc != 77)
+		{
+			b.nTkDaBoc  = 77;          // dau "da vao pha 5" (pha 4 chi dung 0/1)
+			b.nTkGoiThu = 0;           // muon lai lam bo dem so lan phu truot
+		}
+		if (now - b.nTkTick < (unsigned int)((1 + (nLech % 12)) * GAME_FPS))
+			return;                    // rai le - khong ca dan doi map cung khung
+		if (now < b.nTkChoRa)
+			return;                    // gion 3 giay giua hai lan phu truot
+		{
+			const int nSubCu = Npc[nNpcIdx].m_SubWorldIndex;
+			pb_TkDungPhu(nIdx, nNpcIdx, b, nLech);
+			if (Npc[nNpcIdx].m_SubWorldIndex == nSubCu
+			 && (nMapNay == PB_TK_MAP_BD || nMapNay == PB_TK_MAP))
+			{
+				b.nTkGoiThu++;
+				b.nTkChoRa = now + (unsigned int)(GAME_FPS * 3);
+				if (b.nTkGoiThu < 3)
+					return;            // phu khong an - nhip sau thu lai
+				const PB_DtNpc& tn = pb_ThanhNha(b, nLech);
+				const int nSubTn = g_SubWorldSet.SearchWorld(tn.nMap);
+				int nVx5 = 0, nVy5 = 0;
+				if (pb_ODat(nSubTn, tn.nX, tn.nY, nLech, 12, &nVx5, &nVy5))
+					Npc[nNpcIdx].ChangeWorld(tn.nMap, nVx5, nVy5);
+				pb_Log("[BotTK] %s phu 3 lan khong roi duoc map %d -> ChangeWorld"
+				       " ve thanh %d\n", Player[nIdx].m_PlayerName, nMapNay, tn.nMap);
+			}
+		}
 		pb_TkGoCo(nIdx, nNpcIdx, b);
 		return;
 	}

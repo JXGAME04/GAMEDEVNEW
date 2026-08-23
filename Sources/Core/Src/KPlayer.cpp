@@ -293,6 +293,7 @@ void	KPlayer::Release()
 #ifdef _SERVER
 	m_bUseReviveIdWhenLogin = 0;
 	m_dwDeathScriptId = 0;
+	m_nJX2DeathType = 0;		// [PORT5 23/08]
 	m_dwDamageScriptId = 0;
 	m_dwGiveBoxId = 0;
 	m_dwTimeBoxId = 0;

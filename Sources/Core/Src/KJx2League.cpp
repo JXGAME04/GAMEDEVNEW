@@ -15,6 +15,7 @@
 #include "KTaskFuns.h"
 #include "TaskDef.h"
 #include "KJx2League.h"
+#include "KSortScript.h"	// [PORT5 23/08] g_ScriptSet - AddTimer tim script theo lua_State
 #include <map>
 #include <vector>
 #include <string>
@@ -1001,6 +1002,231 @@ int LuaStopGlbMSTimer(Lua_State* L)
 	}
 	Lua_PushNumber(L, 1);
 	return 1;
+}
+
+// ============================================================================
+// [PORT5 23/08] He hen gio script JX2: AddTimer(nFrames, "Ham", nParam) -> id (Linux 0x08100D40,
+// bo dem KScriptTimer 0x081CC300). Khi den han goi Ham(nParam, nTimerId) trong state cua TEP
+// DANG GOI (ho tro dang "Bang:Ham" - timerlist.lua dang ky "TimerList:OnTime"); ket qua:
+// 0 gia tri -> huy; 1 gia tri t -> t==0 huy / t!=0 hen lai t frame; >=2 gia tri (t, p) ->
+// hen lai t frame voi param moi p. DelTimer/SuspendTimer/ResumeTimer theo id.
+// ============================================================================
+extern unsigned int nCurrentScriptNum;	// KSortScript.cpp
+
+struct KJx2ScriptTimer
+{
+	int		nId;
+	int		nScriptIdx;		// chi so trong g_ScriptSet (script khong bao gio go luc chay)
+	char	szFunc[260];	// Linux ten ham toi da 0x103
+	int		nParam;
+	DWORD	dwIntervalMs;
+	DWORD	dwNextFire;
+	int		bSuspend;
+	DWORD	dwRemainMs;
+};
+static std::vector<KJx2ScriptTimer>	s_ScriptTimers;
+static int							s_nScriptTimerNextId = 1;
+
+static int sFindScriptIdxByState(Lua_State* L)
+{
+	if (!L)
+		return -1;
+	for (unsigned int i = 0; i < nCurrentScriptNum && i < MAX_SCRIPT_IN_SET; i++)
+	{
+		if (g_ScriptSet[i].m_LuaState == L)
+			return (int)i;
+	}
+	return -1;
+}
+
+static DWORD sJx2Frames2Ms(double fFrames)
+{
+	if (!(fFrames >= 1))
+		fFrames = 1;			// bat ca NaN
+	if (fFrames > 31104000.0)
+		fFrames = 31104000.0;	// tran 20 ngay (nhu GlbMSTimer)
+	return (DWORD)(fFrames * 1000.0 / 18.0);
+}
+
+int LuaJX2_AddTimer(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsNumber(L, 1) || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	const char* szFunc = Lua_ValueToString(L, 2);
+	if (!szFunc || !szFunc[0])
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nIdx = sFindScriptIdxByState(L);
+	if (nIdx < 0)
+	{
+		// = Linux ActionScriptID == 0 (state khong thuoc script nao) -> push 0
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KJx2ScriptTimer t;
+	t.nId = s_nScriptTimerNextId++;
+	t.nScriptIdx = nIdx;
+	strncpy(t.szFunc, szFunc, sizeof(t.szFunc) - 1);
+	t.szFunc[sizeof(t.szFunc) - 1] = 0;
+	t.nParam = (int)Lua_ValueToNumber(L, 3);
+	t.dwIntervalMs = sJx2Frames2Ms(Lua_ValueToNumber(L, 1));
+	t.dwNextFire = GetTickCount() + t.dwIntervalMs;
+	t.bSuspend = 0;
+	t.dwRemainMs = 0;
+	s_ScriptTimers.push_back(t);
+	Lua_PushNumber(L, t.nId);
+	return 1;
+}
+
+int LuaJX2_DelTimer(Lua_State* L)
+{
+	int nOk = 0;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1))
+	{
+		int nId = (int)Lua_ValueToNumber(L, 1);
+		for (size_t i = 0; i < s_ScriptTimers.size(); i++)
+		{
+			if (s_ScriptTimers[i].nId == nId)
+			{
+				s_ScriptTimers[i].nId = 0;	// danh dau, Breathe don - an toan khi goi trong callback
+				nOk = 1;
+				break;
+			}
+		}
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaJX2_SuspendTimer(Lua_State* L)
+{
+	int nOk = 0;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1))
+	{
+		int nId = (int)Lua_ValueToNumber(L, 1);
+		for (size_t i = 0; i < s_ScriptTimers.size(); i++)
+		{
+			if (s_ScriptTimers[i].nId == nId && !s_ScriptTimers[i].bSuspend)
+			{
+				int nLeft = (int)(s_ScriptTimers[i].dwNextFire - GetTickCount());
+				s_ScriptTimers[i].dwRemainMs = (nLeft > 0) ? (DWORD)nLeft : 0;
+				s_ScriptTimers[i].bSuspend = 1;
+				nOk = 1;
+				break;
+			}
+		}
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+int LuaJX2_ResumeTimer(Lua_State* L)
+{
+	int nOk = 0;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1))
+	{
+		int nId = (int)Lua_ValueToNumber(L, 1);
+		for (size_t i = 0; i < s_ScriptTimers.size(); i++)
+		{
+			if (s_ScriptTimers[i].nId == nId && s_ScriptTimers[i].bSuspend)
+			{
+				s_ScriptTimers[i].dwNextFire = GetTickCount() + s_ScriptTimers[i].dwRemainMs;
+				s_ScriptTimers[i].bSuspend = 0;
+				nOk = 1;
+				break;
+			}
+		}
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// goi moi tick ngay sau KJx2DeferredExec_Breathe (CoreServerShell.cpp)
+void KJx2ScriptTimer_Breathe()
+{
+	if (s_ScriptTimers.empty())
+		return;
+	DWORD dwNow = GetTickCount();
+	// don timer da DelTimer (nId == 0)
+	for (int k = (int)s_ScriptTimers.size() - 1; k >= 0; k--)
+	{
+		if (s_ScriptTimers[k].nId == 0)
+			s_ScriptTimers.erase(s_ScriptTimers.begin() + k);
+	}
+	// thu thap truoc - callback co the Add/Del lam doi vector
+	int nFire[64];
+	int nFireCount = 0;
+	for (size_t i = 0; i < s_ScriptTimers.size() && nFireCount < 64; i++)
+	{
+		if (!s_ScriptTimers[i].bSuspend && (int)(dwNow - s_ScriptTimers[i].dwNextFire) >= 0)
+			nFire[nFireCount++] = s_ScriptTimers[i].nId;
+	}
+	for (int k = 0; k < nFireCount; k++)
+	{
+		size_t i;
+		for (i = 0; i < s_ScriptTimers.size(); i++)
+		{
+			if (s_ScriptTimers[i].nId == nFire[k])
+				break;
+		}
+		if (i >= s_ScriptTimers.size())
+			continue;
+		KJx2ScriptTimer t = s_ScriptTimers[i];	// ban sao - vector co the doi trong callback
+		KLuaScript* pScript = NULL;
+		if (t.nScriptIdx >= 0 && t.nScriptIdx < MAX_SCRIPT_IN_SET)
+			pScript = &g_ScriptSet[t.nScriptIdx];
+		int bContinue = 0;
+		double fNewFrames = 0;
+		int nNewParam = t.nParam;
+		int bHasParam = 0;
+		if (pScript && pScript->m_LuaState)
+		{
+			char szCall[400];
+			sprintf(szCall, "return %s(%d,%d)", t.szFunc, t.nParam, t.nId);
+			int nTop0 = Lua_GetTopIndex(pScript->m_LuaState);
+			if (lua_dostring(pScript->m_LuaState, szCall) == 0)
+			{
+				int nRes = Lua_GetTopIndex(pScript->m_LuaState) - nTop0;
+				if (nRes == 1)
+				{
+					fNewFrames = Lua_ValueToNumber(pScript->m_LuaState, -1);
+					bContinue = (fNewFrames != 0);
+				}
+				else if (nRes >= 2)
+				{
+					fNewFrames = Lua_ValueToNumber(pScript->m_LuaState, -2);
+					bContinue = (fNewFrames != 0);
+					nNewParam = (int)Lua_ValueToNumber(pScript->m_LuaState, -1);
+					bHasParam = 1;
+				}
+			}
+			else
+				g_DebugLog((LPSTR)"[PORT5] ScriptTimer %d LOI: %.200s", t.nId, szCall);
+			lua_settop(pScript->m_LuaState, nTop0);
+		}
+		// tim lai - callback co the da DelTimer / push them
+		for (i = 0; i < s_ScriptTimers.size(); i++)
+		{
+			if (s_ScriptTimers[i].nId == nFire[k])
+				break;
+		}
+		if (i >= s_ScriptTimers.size())
+			continue;
+		if (!bContinue)
+		{
+			s_ScriptTimers.erase(s_ScriptTimers.begin() + i);
+			continue;
+		}
+		s_ScriptTimers[i].dwIntervalMs = sJx2Frames2Ms(fNewFrames);
+		s_ScriptTimers[i].dwNextFire = GetTickCount() + s_ScriptTimers[i].dwIntervalMs;
+		if (bHasParam)
+			s_ScriptTimers[i].nParam = nNewParam;
+	}
 }
 
 // ============================================================================

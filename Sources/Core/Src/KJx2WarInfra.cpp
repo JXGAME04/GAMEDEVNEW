@@ -275,6 +275,119 @@ int LuaRestoreOwnFeature(Lua_State* L)
 //  GetMapNpcWithName  0x08102BC0 -> KSubWorld::GetNpcListByName (so bam ten)
 // Ca 3 deu SearchWorld(map id) -> INSTANCE DAU TIEN (giong goc).
 // ---------------------------------------------------------------------------
+// [PORT5 23/08] ClearMapTrap(nMapId) - Linux 0x08102AC0 -> KSubWorld::ClearTrap 0x080EFDF0:
+// xoa SACH trap MOI region cua map (ke ca trap map-data - Linux cung vay). tongwar
+// InitMission/EndMission goi cho map chien truong rieng 605-607, KHONG dung cho map thanh.
+int LuaClearMapTrap(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1 || !Lua_IsNumber(L, 1))
+		return 0;
+	int w = g_SubWorldSet.SearchWorld((DWORD)Lua_ValueToNumber(L, 1));
+	if (w < 0 || w >= MAX_SUBWORLD)
+		return 0;
+	KSubWorld* pWorld = &SubWorld[w];
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+		pWorld->m_Region[r].ClearAllTraps();
+	return 0;
+}
+
+// [PORT5 23/08] GetItemStackCount (Linux 0x080FD250) / SetItemStackCount (0x0810D9A0) -
+// tongcastle guard.lua tru dan bua trieu hoi trong chong (item 3822 stack).
+int LuaGetItemStackCount(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) != 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	int n = (int)Lua_ValueToNumber(L, 1);
+	if (n <= 0 || n >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	int c = Item[n].GetStackNum();
+	if (c < 1)
+		c = 1;
+	int nMax = Item[n].GetMaxStackNum();
+	if (nMax >= 1 && c > nMax)
+		c = nMax;
+	Lua_PushNumber(L, c);
+	return 1;
+}
+
+int LuaSetItemStackCount(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (Lua_GetTopIndex(L) != 2 || nPlayerIndex <= 0 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	int n = (int)Lua_ValueToNumber(L, 1);
+	int c = (int)Lua_ValueToNumber(L, 2);
+	if (n <= 0 || n >= MAX_ITEM || c < 1)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	int nMax = Item[n].GetMaxStackNum();
+	if (nMax >= 1 && c > nMax)
+	{
+		Lua_PushNumber(L, -1);
+		return 1;
+	}
+	Item[n].SetStackNum(c);
+	Player[nPlayerIndex].m_ItemList.SyncItem(n);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// [PORT5 23/08] GetNpcAroundNpcList(nNpcIndex, nDist[, nMask]) - Linux 0x08104A20: nhu
+// GetAroundNpcList nhung tam la NPC bat ky (tongcastle treedeath quet quanh cay). Mask bo
+// qua (khong loc quan he - script tu loc theo NpcParam). Tra (tbList, nCount).
+int LuaGetNpcAroundNpcList(Lua_State* L)
+{
+	int nCount = 0;
+	int nTop = Lua_GetTopIndex(L);
+	Lua_NewTable(L);
+	if (nTop < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	int nMe = (int)Lua_ValueToNumber(L, 1);
+	int nDist = (int)Lua_ValueToNumber(L, 2);
+	if (nMe <= 0 || nMe >= MAX_NPC || Npc[nMe].m_Index <= 0 || nDist <= 0 || Npc[nMe].m_SubWorldIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	KSubWorld* pWorld = &SubWorld[Npc[nMe].m_SubWorldIndex];
+	int nMX = Npc[nMe].m_MapX, nMY = Npc[nMe].m_MapY;
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_NpcList.GetHead();
+		while (pNode)
+		{
+			int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || Npc[i].m_Index <= 0 || i == nMe)
+				continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
+				continue;
+			int dx = Npc[i].m_MapX - nMX, dy = Npc[i].m_MapY - nMY;
+			if (dx * dx + dy * dy > nDist * nDist)
+				continue;
+			Lua_PushNumber(L, i);
+			Lua_RawSetI(L, -2, ++nCount);
+		}
+	}
+	Lua_PushNumber(L, nCount);
+	return 2;
+}
+
 int LuaClearMapObj(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) != 1 || !Lua_IsNumber(L, 1))

@@ -1689,6 +1689,17 @@ NPC_RELATION KNpcSet::GetRelation(int nId1, int nId2)
 		return relation_none;
 	}
 
+	// [PORT5 23/08] trai tam thoi JX2 (Linux GetRelation 0x0809EF72-0x0809EFB3): ca hai co
+	// TmpCamp != 0 va (khong phai nguoi choi HOAC dang bat chien dau) -> DE LEN moi luat
+	// phe/PK: khac trai = dich, cung trai = dong minh (bairenleitai / tongcastle).
+	if (Npc[nId1].m_nTmpCamp && Npc[nId2].m_nTmpCamp &&
+		Npc[nId1].m_Kind != kind_dialoger && Npc[nId2].m_Kind != kind_dialoger &&
+		(Npc[nId1].m_Kind != kind_player || Npc[nId1].m_FightMode) &&
+		(Npc[nId2].m_Kind != kind_player || Npc[nId2].m_FightMode))
+	{
+		return (Npc[nId1].m_nTmpCamp != Npc[nId2].m_nTmpCamp) ? relation_enemy : relation_ally;
+	}
+
 	if (Npc[nId1].m_Kind != kind_player || Npc[nId2].m_Kind != kind_player)
 	{
 		NPC_RELATION result = (NPC_RELATION)m_RelationTable

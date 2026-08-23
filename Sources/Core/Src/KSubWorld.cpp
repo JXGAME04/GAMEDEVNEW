@@ -1776,6 +1776,25 @@ BOOL KSubWorld::LoadMap(int nId)
 	sprintf(szKeyName, "%d_NewWorldParam", nId);
 	IniFile.GetString("List", szKeyName, "", m_szNewWorldParam, sizeof(m_szNewWorldParam));
 
+	// [PORT5 23/08] <id>_MapInfo (tongwar GetMapInfoFile); rut '\\' kep ve '\' don cho
+	// KIniFile/TabFile phia Windows khoi phai doan (Linux fopen tu chiu '//')
+	m_szMapInfoFile[0] = 0;
+	sprintf(szKeyName, "%d_MapInfo", nId);
+	IniFile.GetString("List", szKeyName, "", m_szMapInfoFile, sizeof(m_szMapInfoFile));
+	{
+		char* pR = m_szMapInfoFile;
+		char* pW = m_szMapInfoFile;
+		while (*pR)
+		{
+			*pW++ = *pR;
+			if (pR[0] == '\\' && pR[1] == '\\')
+				pR += 2;
+			else
+				pR++;
+		}
+		*pW = 0;
+	}
+
 	g_SetFilePath("\\maps");
 	sprintf(szFileName, "%s.wor", szPathName);//edit by phong kieu load file wor
 	if (!IniFile.Load(szFileName))
@@ -3161,6 +3180,18 @@ long	KSubWorld::GetLastPlayerIndex(int nCurrentPlayerIndex)
 		}
 	}
 	return nLastPlayerIndex;
+}
+
+// [PORT5 23/08] tham so o trap JX2 (AddMapTrap tham so 5) - chi o chinh (nRange 0)
+void KSubWorld::SetTrapParam(int nMpsX, int nMpsY, int nParam)
+{
+	int nRegion, nMapX, nMapY, nOffX, nOffY;
+	Mps2Map(nMpsX, nMpsY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
+	if (nRegion == -1)
+		return;
+	if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
+		return;
+	m_Region[nRegion].SetTrapParam(nMapX, nMapY, nParam);
 }
 
 void KSubWorld::SetTrap(DWORD dwTrapId, int nMpsX, int nMpsY, int nRange)

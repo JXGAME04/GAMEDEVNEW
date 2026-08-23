@@ -15,6 +15,8 @@
 #endif
 #define	REGION_GRID_WIDTH	16
 #define	REGION_GRID_HEIGHT	32
+// [PORT5 23/08] o trap khong co tham so JX2 (trap JX1/map-data): main(nPlayerIdx) nhu cu
+#define JX2TRAP_PARAM_NONE	0x7FFFFFFF
 #define CORRECT_SYNC_RANGE		30								// 同步矫正的距离
 
 enum MOVE_OBJ_KIND
@@ -52,6 +54,8 @@ private:
 #ifdef _SERVER
 	long		m_Obstacle[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图障碍信息表
 	DWORD		m_dwTrap[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];	// 地图trap信息表
+	// [PORT5 23/08] tham so trap JX2 (AddMapTrap tham so 5 - Linux KRegion trap = {scriptId, nParam})
+	int			m_nTrapParam[REGION_GRID_WIDTH][REGION_GRID_HEIGHT];
 #endif
 	int			m_nNpcSyncCounter;					// 同步计数器
 	int			m_nObjSyncCounter;
@@ -105,6 +109,10 @@ public:
 	BYTE		GetBarrierMin(int nGridX, int nGridY, int nOffX, int nOffY, BOOL bCheckNpc);
 
 	DWORD		GetTrap(int MapX, int MapY);						//	得到Trap编号
+	// [PORT5 23/08] tham so trap JX2 theo o; JX2TRAP_PARAM_NONE khi khong dat (than co #ifdef nhu GetTrap)
+	int			GetTrapParam(int nMapX, int nMapY);
+	void		SetTrapParam(int nMapX, int nMapY, int nParam);
+	void		ClearAllTraps();
 	inline BOOL		IsActive() 
 	{
 #ifdef _SERVER

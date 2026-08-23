@@ -117,6 +117,8 @@ public:
 	// (Linux GS co co che nay; engine Windows truoc gio bo qua chung)
 	char		m_szNewWorldScript[128];
 	char		m_szNewWorldParam[128];
+	// [PORT5 23/08] khoa <id>_MapInfo cua MapList.ini (tongwar GetMapInfoFile - Linux KSubWorld+0x4EFC4)
+	char		m_szMapInfoFile[128];
 #endif
 #ifndef _SERVER
 	HANDLE  m_hLoadPathGrid;
@@ -166,6 +168,7 @@ public:
 	long	GetLastPlayerIndex(int nCurrentPlayerIndex);
 	std::vector<int> GetAllPlayerIndexes();
 	void		SetTrap(DWORD dwTrapId, int nMpsX, int nMpsY, int nRange); // AddTrap Fong Ki“u
+	void		SetTrapParam(int nMpsX, int nMpsY, int nParam);	// [PORT5 23/08] tham so o trap JX2 (o chinh)
 	void		SetObstacle(long value, int nMpsX, int nMpsY, int nRange); //#Set VÀt C∂n
 	BOOL ExecuteScript(char * ScriptFileName, char * szFunName, int nParam);
 	BOOL ExecuteScript(DWORD dwScriptId,  char * szFunName, int nParam);

@@ -97,6 +97,172 @@ int LuaOB_Release(Lua_State* L)
 	return 1;
 }
 
+// [PORT5 23/08] RemoteExecute (Linux GS 0x08100740 / relay 0x0810363A): RPC GS<->relay qua
+// ObjBuffer. Du an 1 GS khong relay -> thuc thi TAI CHO dong bo: fn(hParam, hRes, 0) trong
+// state cua szScript (co remap \script\lib -> \scriptjx2\lib nhu Include); co callback ->
+// cb(nCbParam, hRes) trong state DANG GOI; dwGameSvrId (tham so 6) bo qua. Caller tu
+// OB_Release hParam; hRes do ham nay cap va huy.
+int LuaJX2_RemoteExecute(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsNumber(L, 3))
+		return 0;
+	const char* szScript = Lua_ValueToString(L, 1);
+	const char* szFunc = Lua_ValueToString(L, 2);
+	int nHandle = (int)Lua_ValueToNumber(L, 3);
+	if (!szScript || !szScript[0] || !szFunc || !szFunc[0] || nHandle < 0)
+		return 0;
+	char szLow[MAX_PATH];
+	strncpy(szLow, szScript, MAX_PATH - 1);
+	szLow[MAX_PATH - 1] = 0;
+	{
+		for (char* pc = szLow; *pc; pc++)
+		{
+			if (*pc >= 'A' && *pc <= 'Z')
+				*pc += 'a' - 'A';
+		}
+	}
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+	if (!pScript)
+	{
+		char szAlt[MAX_PATH + 16];
+		const char* pLib = strstr(szLow, "\\script\\lib\\");
+		if (pLib)
+		{
+			int nPre = (int)(pLib - szLow);
+			memcpy(szAlt, szLow, nPre);
+			szAlt[nPre] = 0;
+			strcat(szAlt, "\\scriptjx2\\lib\\");
+			strcat(szAlt, pLib + 12);
+			pScript = (KLuaScript*)g_GetScript(szAlt);
+		}
+	}
+	if (!pScript || !pScript->m_LuaState)
+	{
+		g_DebugLog((LPSTR)"[PORT5] RemoteExecute: script chua nap %.128s", szLow);
+		return 0;
+	}
+	const char* szCb = (Lua_GetTopIndex(L) >= 4 && Lua_IsString(L, 4)) ? Lua_ValueToString(L, 4) : NULL;
+	int nCbId = (Lua_GetTopIndex(L) >= 5 && Lua_IsNumber(L, 5)) ? (int)Lua_ValueToNumber(L, 5) : 0;
+	KJx2ObjBuffer* pRes = new KJx2ObjBuffer;
+	pRes->nWrite = 0;
+	pRes->nRead = 0;
+	int hRes = ++s_nOBNextHandle;
+	s_OBMap[hRes] = pRes;
+	char szCall[600];
+	sprintf(szCall, "%s(%d,%d,0)", szFunc, nHandle, hRes);
+	int nTop0 = 0;
+	pScript->SafeCallBegin(&nTop0);
+	if (lua_dostring(pScript->m_LuaState, szCall) != 0)
+		g_DebugLog((LPSTR)"[PORT5] RemoteExecute LOI: %.128s -> %.200s", szLow, szCall);
+	pScript->SafeCallEnd(nTop0);
+	if (szCb && szCb[0])
+	{
+		sprintf(szCall, "%s(%d,%d)", szCb, nCbId, hRes);
+		int nTopL = lua_gettop(L);
+		if (lua_dostring(L, szCall) != 0)
+			g_DebugLog((LPSTR)"[PORT5] RemoteExecute cb LOI: %.200s", szCall);
+		lua_settop(L, nTopL);
+	}
+	{
+		std::map<int, KJx2ObjBuffer*>::iterator itR = s_OBMap.find(hRes);
+		if (itR != s_OBMap.end())
+		{
+			delete itR->second;
+			s_OBMap.erase(itR);
+		}
+	}
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// [PORT5 23/08] OB_Save/LoadShareData (relay s3relay_y 0x08102F54 / 0x08102D58): Linux luu MySQL
+// bang ShareData khoa (ShareKey, Param1, Param2). Du an persist ra tep
+// \settings\jx2sharedata\<key>_<p1>_<p2>.bin theo khuon tmp + MoveFileEx cua Ladder.
+// tongcastle luu diem bang/nguoi choi + trang thai cay than.
+static void sShareDataPath(char* szOut, const char* szKey, int nP1, int nP2, bool bTmp)
+{
+	char szRoot[MAX_PATH];
+	g_GetRootPath(szRoot);
+	char szSafe[64];
+	int i = 0;
+	for (; szKey[i] && i < 60; i++)
+	{
+		char c = szKey[i];
+		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_')
+			szSafe[i] = c;
+		else
+			szSafe[i] = '_';
+	}
+	szSafe[i] = 0;
+	sprintf(szOut, "%s\\settings\\jx2sharedata", szRoot);
+	CreateDirectory(szOut, NULL);
+	sprintf(szOut, "%s\\settings\\jx2sharedata\\%s_%d_%d.bin%s", szRoot, szSafe, nP1, nP2, bTmp ? ".tmp" : "");
+}
+
+int LuaOB_SaveShareData(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 4 || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	const char* szKey = Lua_ValueToString(L, 2);
+	if (!p || !szKey || !szKey[0])
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nP1 = (int)Lua_ValueToNumber(L, 3);
+	int nP2 = (int)Lua_ValueToNumber(L, 4);
+	char szTmp[MAX_PATH], szPath[MAX_PATH];
+	sShareDataPath(szTmp, szKey, nP1, nP2, true);
+	sShareDataPath(szPath, szKey, nP1, nP2, false);
+	FILE* f = fopen(szTmp, "wb");
+	if (!f)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (p->nWrite > 0)
+		fwrite(p->Buf, 1, p->nWrite, f);
+	fclose(f);
+	MoveFileEx(szTmp, szPath, MOVEFILE_REPLACE_EXISTING);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaOB_LoadShareData(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 4 || !Lua_IsString(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KJx2ObjBuffer* p = sOBGet(L, 1);
+	const char* szKey = Lua_ValueToString(L, 2);
+	if (!p || !szKey || !szKey[0])
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nP1 = (int)Lua_ValueToNumber(L, 3);
+	int nP2 = (int)Lua_ValueToNumber(L, 4);
+	p->nWrite = 0;
+	p->nRead = 0;
+	char szPath[MAX_PATH];
+	sShareDataPath(szPath, szKey, nP1, nP2, false);
+	FILE* f = fopen(szPath, "rb");
+	if (f)
+	{
+		p->nWrite = (int)fread(p->Buf, 1, JX2OB_BUF_SIZE, f);
+		fclose(f);
+	}
+	// khong co tep -> buffer rong (OB_IsEmpty == 1) nhu Linux khong co ban ghi
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
 int LuaOB_IsEmpty(Lua_State* L)
 {
 	KJx2ObjBuffer* p = sOBGet(L, 1);

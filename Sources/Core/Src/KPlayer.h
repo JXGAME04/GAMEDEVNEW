@@ -475,6 +475,7 @@ public:
 	BYTE			m_bWllsAskStrArg;		// AskClientForString: cb nhan chuoi nhap lam doi so 1 (2 = AskClientForNumber)
 	int				m_nJx2AskMin;			// [JX2COMPAT 22/08] AskClientForNumber: khoang hop le
 	int				m_nJx2AskMax;
+	int				m_nJX2DeathType;		// [PORT5 23/08] SetDeathType tongwar (Linux Player+0xE4) - chi luu, cay luon goi kem SetPunish
 	BYTE			m_bWllsDisableStall;	// DisabledStall(1): cam bay ban
 	BYTE			m_bWllsForbidTrade;		// ForbitTrade(1): cam giao dich
 	BYTE			m_bWllsForbidStamina;	// ForbitStamina(1): dong bang the luc

@@ -1,0 +1,31 @@
+==============================================================================
+NHOM: TONGCASTLE   | 9 tep .lua | 105 ten duoc goi
+cay: missions\tongcastle
+==============================================================================
+
+--- [ENG] 14 ten ---
+  GetNpcId                         x7    missions/tongcastle/guard.lua:74
+  RemoteExecute                    x5    missions/tongcastle/guideperson.lua:245
+  GetTmpCamp                       x3    missions/tongcastle/guard.lua:22
+  SetTmpCamp                       x3    missions/tongcastle/guard.lua:73
+  Msg2Map                          x3    missions/tongcastle/tongcastle.lua:464
+  NpcName2Replace                  x2    missions/tongcastle/guideperson.lua:93
+  GetItemStackCount                x1    missions/tongcastle/guard.lua:66
+  SetItemStackCount                x1    missions/tongcastle/guard.lua:68
+  MakeDateTime                     x1    missions/tongcastle/tongcastle.lua:514
+  AddTimer                         x1    missions/tongcastle/tongcastle.lua:591
+  GetNpcAroundNpcList              x1    missions/tongcastle/treedeath.lua:81
+  NpcCastSkill                     x1    missions/tongcastle/treedeath.lua:99
+  NPCINFO_GetNpcCurrentLife        x1    missions/tongcastle/treedeath.lua:102
+  NPCINFO_SetNpcCurrentLife        x1    missions/tongcastle/treedeath.lua:103
+
+--- [???] 0 ten ---
+
+--- [LIB] 5 ten ---
+  basemission_CallNpc              x3    missions/tongcastle/game.lua:83 <= missions\basemission\lib.lua
+  CreateNewSayEx                   x2    missions/tongcastle/guard.lua:88 <= dailogsys\dailogsay.lua
+  clone                            x2    missions/tongcastle/tongcastle.lua:687 <= event\chunjie_jieri\201001\plant.lua; event\jiefang_jieri\201004\triumph_drum\head.lua...
+  set_MapType                      x1    missions/tongcastle/game.lua:166 <= item\forbiditem.lua
+  g_AskClientNumberEx              x1    missions/tongcastle/guideperson.lua:114 <= dailogsys\dailogsay.lua
+
+[OK ] da co: 61 | [TREE] tu dinh nghia: 25

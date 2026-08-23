@@ -1,0 +1,45 @@
+TONG 63 {'THIEU': 40, 'IDENT': 19, 'DIFF': 3, 'DIFF(tong_vn)': 1}
+THIEU          activitysys/answer.lua                                                 <- activitysys/npcdailog.lua
+THIEU          activitysys/npcdailog.lua                                              <- missions/tongcastle/guideperson.lua
+THIEU          activitysys/npcfunlib.lua                                              <- activitysys/npcdailog.lua
+THIEU          bonusvlmc/fucmain.lua                                                  <- activitysys/npcdailog.lua
+THIEU          bonusvlmc/func_check.lua                                               <- bonusvlmc/fucmain.lua
+THIEU          bonusvlmc/func_quest999.lua                                            <- bonusvlmc/fucmain.lua
+THIEU          bonusvlmc/head.lua                                                     <- bonusvlmc/func_check.lua
+THIEU          bonusvlmc/killmonster.lua                                              <- bonusvlmc/func_quest999.lua
+THIEU          bonusvlmc/vlmc_main.lua                                                <- bonusvlmc/fucmain.lua
+THIEU          class/ktabex.lua                                                       <- task/random/treasure_head.lua
+THIEU          class/ktabfile.lua                                                     <- class/ktabex.lua
+THIEU          class/lerror.lua                                                       <- class/ktabfile.lua
+THIEU          event/tongwar/head.lua                                                 <- vng_event/traogiai/npah/vng_toolaward.lua
+THIEU          event/tongwar/headinfo.lua                                             <- event/tongwar/head.lua
+THIEU          event/tongwar/tongwar_signup.lua                                       <- event/tongwar/head.lua
+THIEU          global/achievementsys/common.lua                                       <- global/achievementsys/head.lua
+THIEU          global/achievementsys/detail_base.lua                                  <- global/achievementsys/simple_detail.lua
+THIEU          global/achievementsys/head.lua                                         <- global/achievementsys/type/tongcastle.lua
+THIEU          global/achievementsys/simple_detail.lua                                <- global/achievementsys/type/tongcastle.lua
+THIEU          global/achievementsys/type/tongcastle.lua                              
+THIEU          global/autoexec_head.lua                                               <- missions/tongcastle/treedeath.lua
+DIFF           global/titlefuncs.lua                                                  <- vng_event/traogiai/npah/vng_toolaward.lua
+THIEU          item/battles/songjinskill.lua                                          <- lib/droptemplet.lua
+THIEU          item/forbiditem.lua                                                    <- missions/tongcastle/game.lua
+DIFF           item/heart_head.lua                                                    <- missions/tongcastle/game.lua
+DIFF           lib/awardtemplet.lua                                                   <- missions/tongcastle/treedeath.lua
+THIEU          lib/coordinate.lua                                                     <- missions/basemission/lib.lua
+THIEU          lib/droptemplet.lua                                                    <- activitysys/npcfunlib.lua
+THIEU          lib/file.lua                                                           <- lib/coordinate.lua
+THIEU          lib/mem.lua                                                            <- class/ktabfile.lua
+THIEU          missions/basemission/lib.lua                                           <- missions/tongcastle/guideperson.lua
+THIEU          missions/tongcastle/castleplayer.lua                                   
+THIEU          missions/tongcastle/game.lua                                           
+THIEU          missions/tongcastle/guard.lua                                          
+THIEU          missions/tongcastle/guideperson.lua                                    
+THIEU          missions/tongcastle/guideperson_inside.lua                             
+THIEU          missions/tongcastle/shenmuling.lua                                     
+THIEU          missions/tongcastle/tongcastle.lua                                     
+THIEU          missions/tongcastle/trap.lua                                           
+THIEU          missions/tongcastle/treedeath.lua                                      
+THIEU          task/random/treasure_head.lua                                          <- event/tongwar/head.lua
+THIEU          task/system/task_debug.lua                                             <- task/random/treasure_head.lua
+DIFF(tong_vn)  tong/tong_header.lua                                                   <- event/tongwar/head.lua
+THIEU          vng_event/traogiai/npah/vng_toolaward.lua                              <- activitysys/npcdailog.lua
