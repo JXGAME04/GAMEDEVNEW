@@ -83,11 +83,15 @@ s = rep1(s, "\tif (IsCaptain() ~= 1) then " + NL + "\t\tErrorMsg(5)" + NL + "\t\
             "\t\tSay(\"" + SZ90 + "\", 0)" + NL +
             "\t\treturn" + NL +
             "\tend;", "H8a")
-# H8b: SignUpFinal - kiem CA 2 nguoi (sau kiem MemberCount)
-m = re.search(r"(\tif \(MemberCount <= 0 or MemberCount > 8\) then\r?\n.*?\r?\n\tend;\r?\n)", s, re.S)
-assert m, "H8b: khong thay kiem MemberCount"
+# H8b: SignUpFinal - kiem CA 2 nguoi TRUOC khi dung SubWorld/OpenMission (hau phan bien F2:
+# khoi MemberCount dong bang 'end' KHONG cham phay -> khong duoc neo '.*?end;')
+old_mc = ("\tif (MemberCount <= 0 or MemberCount > 8) then" + NL +
+          "\t\treturn" + NL +
+          "\tend" + NL)
+assert s.count(old_mc) == 1, "H8b: khoi MemberCount %d lan" % s.count(old_mc)
 ins = (
-    "\t" + MARK + "chinh sach cap 90 cho CA HAI doi truong (GetTeamMember JX2COMPAT: 1 = doi truong, 2 = thanh vien)" + NL +
+    "\t" + MARK + "chinh sach cap 90 cho CA HAI doi truong (GetTeamMember JX2COMPAT: 1 = doi truong, 2 = thanh vien);" + NL +
+    "\t-- dat TRUOC OpenMission de fail khong mo mission nua chung (phan bien F2)" + NL +
     "\tlocal nOldPlv = PlayerIndex;" + NL +
     "\tfor i = 1, 2 do" + NL +
     "\t\tPlayerIndex = GetTeamMember(i);" + NL +
@@ -98,7 +102,7 @@ ins = (
     "\t\tend;" + NL +
     "\tend;" + NL +
     "\tPlayerIndex = nOldPlv;" + NL)
-s = s[:m.end(1)] + ins + s[m.end(1):]
+s = s.replace(old_mc, old_mc + NL + ins, 1)
 # H8c: OnJoin - chan group ~= 3
 s = rep1(s, "function OnJoin(group)" + NL + "\tidx = SubWorldID2Idx(BW_COMPETEMAP[1]);",
             "function OnJoin(group)" + NL +
@@ -175,8 +179,9 @@ print("bw_addnpc.lua ok")
 # ============================================================
 p = os.path.join(E, r"script\tinhnang\loidaihonchien\mainloidai.lua")
 s = rd(p)
-s = rep1(s, "NewWorld(209, 1628 , 3213);",
-            "NewWorld(210, 1628 , 3213);\t" + MARK + "nhuong 209 cho Loi dai ty vo (bw); 210 cung map data, Tho Dia Phu da chan", "H13")
+if "NewWorld(210, 1628 , 3213);" not in s:
+    s = rep1(s, "NewWorld(209, 1628 , 3213);",
+                "NewWorld(210, 1628 , 3213);\t" + MARK + "nhuong 209 cho Loi dai ty vo (bw); 210 cung map data, Tho Dia Phu da chan", "H13")
 wr(p, s)
 mirror_edit(r"script\tinhnang\loidaihonchien\mainloidai.lua")
 print("mainloidai.lua -> map 210 ok")
@@ -188,25 +193,31 @@ p = os.path.join(E, r"settings\task\missions.txt")
 s = rd(p)
 NLm = "\r\n" if "\r\n" in s else "\n"
 ls = s.split(NLm)
-assert ls[11] == "11\t\\script\\missions\\mission_trong.lua", "missions.txt dong 12: %r" % ls[11]
-ls[11] = "11\t\\script\\missions\\bw\\bwmission.lua"
+if ls[11] != "11\t\\script\\missions\\bw\\bwmission.lua":
+    assert ls[11] == "11\t\\script\\missions\\mission_trong.lua", "missions.txt dong 12: %r" % ls[11]
+    ls[11] = "11\t\\script\\missions\\bw\\bwmission.lua"
 wr(p, NLm.join(ls))
 mirror_edit(r"settings\task\missions.txt")
 
 p = os.path.join(E, r"settings\TimerTask.txt")
 s = rd(p)
 NLt = "\r\n" if "\r\n" in s else "\n"
-for k in ("20", "21"):
-    assert not re.search(r"^%s\t" % k, s, re.M), "TimerTask da co khoa " + k
-if not s.endswith(NLt): s += NLt
-s += "20\t\\script\\missions\\bw\\bwtimer.lua" + NLt
-s += "21\t\\script\\missions\\bw\\bwtotaltimer.lua" + NLt
+if not re.search(r"^20\t", s, re.M):
+    if not s.endswith(NLt): s += NLt
+    s += "20\t\\script\\missions\\bw\\bwtimer.lua" + NLt
+    s += "21\t\\script\\missions\\bw\\bwtotaltimer.lua" + NLt
 wr(p, s)
 mirror_edit(r"settings\TimerTask.txt")
 
 p = os.path.join(E, r"script\startgame.lua")
 s = rd(p)
 NLs = "\r\n" if "\r\n" in s else "\n"
+if "bw_addnpc" in s:
+    wr(p, s)
+    mirror_edit(r"script\startgame.lua")
+    print("settings + startgame ok (da co)")
+    print("TAT CA XONG")
+    sys.exit(0)
 old = 'Include("\\\\script\\\\missions\\\\bairenleitai\\\\bairen_boot.lua")'
 i = s.find(old); assert i >= 0
 j = s.find(NLs, i)

@@ -34,3 +34,4 @@ TASK	SCRIPT
 54	\script\missions\tongwar\tongwar_driver.lua
 20	\script\missions\bw\bwtimer.lua
 21	\script\missions\bw\bwtotaltimer.lua
+55	\script\missions\tongcastle\tongcastle_driver.lua

@@ -19,6 +19,7 @@ Include("\\script\\task\\tollgate\\tinsu_addnpc.lua")	-- [TIN SU 21/08] thay tin
 Include("\\script\\missions\\tongwar\\tongwar_autoexec.lua")	-- [TONGWAR 23/08] NPC/trap 6 map bao danh + NPC loi vao Bang Chien
 Include("\\script\\missions\\bairenleitai\\bairen_boot.lua")	-- [BAIREN 23/08] Bach Nhan Loi Dai
 Include("\\script\\missions\\bw\\bw_addnpc.lua")	-- [BW 23/08] 12 NPC Cong Binh Tu (loi dai ty vo)
+Include("\\script\\missions\\tongcastle\\tongcastle_driver.lua")	-- [TONGCASTLE 23/08] Bang Hoi Thanh Bao
 Include("\\script\\startgame\\tongjx2npc.lua")	--NPC bang hoi JX2
 Include("\\script\\startgame\\traplib.lua");
 Include("\\script\\startgame\\thon\\balanghuyen.lua");
@@ -104,6 +105,7 @@ function OnGame()
 	DynamicExecute("\\script\\missions\\tong\\tong_driver.lua", "TONG_DriverInit")	-- [TONG 21/08] lich 3 Hoat dong Phuong bang hoi (thay relay)
 	DynamicExecute("\\script\\missions\\tongwar\\tongwar_driver.lua", "TONGWAR_DriverInit")	-- [TONGWAR 23/08] lich mua Bang Chien (thay relay)
 	DynamicExecute("\\script\\missions\\bairenleitai\\bairen_boot.lua", "BairenLeitai_Init")	-- [BAIREN 23/08] thay activitysys/config/9 ServerStart
+	DynamicExecute("\\script\\missions\\tongcastle\\tongcastle_driver.lua", "TONGCASTLE_DriverInit")	-- [TONGCASTLE 23/08]
 	addnpccongthanh()
 	addtrapcongthanh()
 

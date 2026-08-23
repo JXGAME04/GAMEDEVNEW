@@ -47,6 +47,13 @@ end;
 
 function OnLeave(RoleIndex)
 	PlayerIndex = RoleIndex;
+	-- [BW 23/08] CHAN DE QUY: engine JX1 goi OnLeave TRUOC khi xoa entry (KMission.cpp:185/188
+	-- 'Fix by Fong Kieu') -> LeaveGame():72 DelMSPlayer se vao lai OnLeave vo han (tran C stack).
+	-- LeaveGame ha TaskTemp(200)=0 (bwhead:61) TRUOC DelMSPlayer nen nhanh long nhau return o day;
+	-- nguoi da roi tran (200==0) cung khong bi NewWorld keo lai.
+	if (GetTaskTemp(200) ~= 1) then
+		return
+	end
 
 	str2 = GetName().."Rêi khái ®Êu tr­êng";
 	LeaveGame();

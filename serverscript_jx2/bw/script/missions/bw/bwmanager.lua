@@ -64,6 +64,19 @@ function SignUpFinal(MemberCount)
 	if (MemberCount <= 0 or MemberCount > 8) then
 		return
 	end
+
+	-- [BW 23/08] chinh sach cap 90 cho CA HAI doi truong (GetTeamMember JX2COMPAT: 1 = doi truong, 2 = thanh vien);
+	-- dat TRUOC OpenMission de fail khong mo mission nua chung (phan bien F2)
+	local nOldPlv = PlayerIndex;
+	for i = 1, 2 do
+		PlayerIndex = GetTeamMember(i);
+		if (PlayerIndex <= 0 or GetLevel() < 90) then
+			PlayerIndex = nOldPlv;
+			Say("Ph¶i ®¹t cÊp 90 trë lªn míi ®­îc tham gia L«i ®µi thi ®Êu.", 0)
+			return
+		end;
+	end;
+	PlayerIndex = nOldPlv;
 	
 	local OldSubWorld = SubWorld;
 	SubWorld = SubWorldID2Idx(BW_COMPETEMAP[1]);
@@ -82,17 +95,6 @@ function SignUpFinal(MemberCount)
 	else
 		SetMissionS(CITYID,"Thµnh §«")
 	end;
-	-- [BW 23/08] chinh sach cap 90 cho CA HAI doi truong (GetTeamMember JX2COMPAT: 1 = doi truong, 2 = thanh vien)
-	local nOldPlv = PlayerIndex;
-	for i = 1, 2 do
-		PlayerIndex = GetTeamMember(i);
-		if (PlayerIndex <= 0 or GetLevel() < 90) then
-			PlayerIndex = nOldPlv;
-			Say("Ph¶i ®¹t cÊp 90 trë lªn míi ®­îc tham gia L«i ®µi thi ®Êu.", 0)
-			return
-		end;
-	end;
-	PlayerIndex = nOldPlv;
 	
 	local key = {};
 	key = bw_getkey();
