@@ -4345,6 +4345,31 @@ static bool pb_BiCam(const PB_Bot& b, int t, unsigned int now)
 	return false;
 }
 
+// (23/08 chu game: "co tuong bot khong chay qua tuong ma dung 2 ben tuong danh
+// nhau, trong khi danh khong trung ma dung danh mai")
+// "NHIN THAY" muc tieu = doan thang noi hai ben khong cat qua o vat can (lay mau
+// ~1 o mot bang pb_ODuoc). Dung trong Tong Kim: tuong thanh chay doc eo giua hai
+// doanh trai ma tam nhin 700 MPS thi xuyen tuong -> ca hai dan khoa muc tieu ben
+// kia vach, dam chieu khong toi noi; dong ho "10 giay khong sut mau" cam duoc
+// con nay thi con KE BEN (cung sau tuong) lai duoc chon - sau tuong co hang chuc
+// dich nen xoay vong vo han, hai ben dung hinh doc theo vach dung canh chu game
+// chup duoc. Loc ngay tu luc CHON muc tieu thi bot coi nhu chua thay dich va di
+// tiep theo lo trinh - A* tu dan vong qua cong thanh roi moi danh.
+static int pb_ThayDuoc(int nSub, int x1, int y1, int x2, int y2)
+{
+	int dx = x2 - x1;  if (dx < 0) dx = -dx;
+	int dy = y2 - y1;  if (dy < 0) dy = -dy;
+	int nBuoc = ((dx > dy) ? dx : dy) / 32;
+	if (nBuoc <= 1)
+		return 1;                          // sat canh nhau - khong co cho cho tuong
+	if (nBuoc > 24)
+		nBuoc = 24;                        // tran cung (tam nhin 700 MPS ~ 22 o)
+	for (int s = 1; s < nBuoc; s++)
+		if (!pb_ODuoc(nSub, x1 + (x2 - x1) * s / nBuoc, y1 + (y2 - y1) * s / nBuoc))
+			return 0;
+	return 1;
+}
+
 // (20/08 dem) dung ngay duoi day nhung than ham nam o khu "gom cum" phia sau -
 // khai bao truoc.
 struct PB_CumMap;
@@ -4458,6 +4483,22 @@ static int pb_FindTarget(int nNpcIdx, int nVision, const PB_Bot& b, unsigned int
 
 	// chi so bot = vi tri trong s_bots (b la tham chieu vao mang do)
 	const int nLech = (int)(&b - &s_bots[0]);
+	// (23/08) trong Tong Kim CHI nhan muc tieu NHIN THAY duoc (khong bi tuong
+	// chan giua) - xem chu thich pb_ThayDuoc. Duyet du 8 ung vien bat dau tu vi
+	// tri boc rieng cua minh; khong con nao thay duoc thi coi nhu CHUA co dich,
+	// bot di tiep theo lo trinh thay vi dung ngoai vach dam chieu vao tuong.
+	if (bTrongTK)
+	{
+		for (int v = 0; v < nCand; v++)
+		{
+			const int i3 = aId[((unsigned)nLech + (unsigned)v) % (unsigned)nCand];
+			int ex3 = 0, ey3 = 0;
+			Npc[i3].GetMpsPos(&ex3, &ey3);
+			if (pb_ThayDuoc(nSub, bx, by, ex3, ey3))
+				return i3;
+		}
+		return 0;
+	}
 	return aId[(unsigned)nLech % (unsigned)nCand];
 }
 
@@ -5897,6 +5938,26 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				   b.nAtkSkill, b.nAtkSkillLv);
 			pb_CamMucTieu(b, t, now);
 			t = 0;
+		}
+	}
+
+	// (23/08) TRONG TONG KIM: muc tieu dang giu ma bi TUONG chan giua (mat duong
+	// nhin - thuong do mot ben vua chay doc theo vach) -> bo + cam NGAY, khong
+	// doi du 10 giay cua dong ho sut mau; de cang lau hai dan cang don dong ve
+	// hai ben vach. Gion ~0,5 giay moi lan kiem cho khoi ton 20+ pb_ODuoc/khung.
+	if (t && b.nTk >= 4 && SubWorld[nSub].m_SubWorldID == PB_TK_MAP)
+	{
+		const int nLechF = (int)(&b - s_bots);
+		if (((now + (unsigned int)nLechF) % 9u) == 0)
+		{
+			int bxF = 0, byF = 0, exF = 0, eyF = 0;
+			Npc[nNpcIdx].GetMpsPos(&bxF, &byF);
+			Npc[t].GetMpsPos(&exF, &eyF);
+			if (!pb_ThayDuoc(nSub, bxF, byF, exF, eyF))
+			{
+				pb_CamMucTieu(b, t, now);
+				t = 0;
+			}
 		}
 	}
 
@@ -7607,6 +7668,39 @@ static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 	if (nW < 0)
 		return -1;                     // khong co duong
 
+	// (23/08 chu game: "khi chua bat dau tong kim thi bot da chay tu hau doanh
+	// ra ngoai, con trap ma bao dung gio moi ra duoc thi bot chay xuyen ra")
+	// Kich ban trap chi giu MOI NGUOI 10 giay theo dong ho CA NHAN dat luc bao
+	// danh (tongratrai.lua:21 doc GetRestTime cua SetTimer(90*18,2) trong
+	// common_tong/kim) - no KHONG biet gi ve pha cua TRAN. Nguoi choi thuong bao
+	// danh muon nen it lo; bot bao danh ngay tu giay dau -> 10 giay sau ca dan
+	// da tran het ra chien truong trong khi tran CHUA chinh thuc bat dau.
+	// Nguon "dung gio" lay tu chinh he thong: timerserver.lua:699 dat
+	// StartMissionTimer(MS_TONGKIM, 1, TIME_BD_TK*1080) chu thich nguyen van
+	// "so phut de chinh thuc bat dau"; het gio task01.lua ontime_tongkim() goi
+	// StopMissionTimer(MS_TONGKIM,1) roi loan bao "Tong Kim dai chien chinh thuc
+	// bat dau!". Vay: TIMER 1 CON CHAY = con pha bao danh -> dung CHO o cua trai
+	// nhu nguoi choi cho truoc cong, CHUA duoc goi kich ban trap.
+	// (KTimerTaskFun::Activate tu nap lai chu ky khi no, nhung ontime_tongkim
+	// stop ngay dong dau nen sau moc bat dau GetTimerRestTimer(1) giu 0 ca tran.)
+	{
+		KMission* pM9 = pb_TkMission(NULL);
+		if (pM9 && pM9->GetTimerRestTimer(1) > 0)
+		{
+			// dong ho pha lam moi lien tuc: dung cho o cong la cho HOP LE, khong
+			// de PB_TK_PHA_HAN (120 giay) tinh la "ket" roi da bot khoi tran -
+			// TIME_BD_TK co ngay duoc noi lai 10 phut nhu chu thich goc.
+			b.nTkTick = now;
+			// moc rai le sau khi mo cong: moi bot cho them 1..15 giay RIENG theo
+			// chi so roi moi buoc qua trap. Khong co no thi luc mo cong ca dan o
+			// at qua trap trong cung mot giay - lai "tap trung chay voi nhau".
+			// Moc nay dong thoi la nhip kiem tra lai cong (pha 3 chan o
+			// "now < b.nTkChoRa" truoc khi goi lai ham nay).
+			b.nTkChoRa = now + (unsigned int)(GAME_FPS * (1 + ((nLech9 * 13 + 7) % 15)));
+			return 0;
+		}
+	}
+
 	// Da dung o cua trai -> "buoc qua trap": goi dung kich ban ma nguoi choi dam
 	// vao. No lam DU: SetPMParam(MS_TONGKIM, idx, 1, 1) (co "dang chien dau" -
 	// task02.lua KHONG co, dong do da bi chu thich), SetPos 1 trong 8 diem xuat
@@ -8496,7 +8590,12 @@ static void pb_DriveBot(PB_Bot& b)
 		// enumFightNone o KPlayer.cpp:1291).
 		// Va THU LAI moi 3 giay: mot lan goi that bai (diem hoi sinh hong, dang
 		// doi map...) khong duoc phep lam ket bot den het tran.
-		else if (nowAll - b.nChetTuTick >= (unsigned int)(GAME_FPS * 3))
+		// (23/08 chu game: "bot chet roi ma van thay nam duoi dat vai giay sau moi
+		// bien mat nhu tren hinh") Trong Tong Kim rut 3 giay con 1 giay: tran co
+		// hang tram bot chet lien tuc, moi xac nam 3 giay la mat dat trai day xac.
+		// 1 giay van du cho client ve xong don danh + hoat anh nga xuong, roi
+		// Revive dua ve hau doanh (SetTempRevPos) va xac bien mat.
+		else if (nowAll - b.nChetTuTick >= (unsigned int)(b.nTk ? GAME_FPS : GAME_FPS * 3))
 		{
 			b.nChetTuTick = nowAll;      // dat lai moc -> 3 giay nua thu tiep
 			Player[nIdx].Revive(REMOTE_REVIVE_TYPE);
