@@ -31,6 +31,8 @@ end
 
 -- Lenh bai Admin: ep hoi sinh cay loai n (1/2/3) de test ngoai gio
 function TONGCASTLE_Adm_ReviveTree(n)
+	-- [phan bien F16] relay SaveNpcData APPEND record - phai xoa record loai n truoc, khong thi x2 diem thu/cay chong
+	DynamicExecute(TC_RELAY, "tbS3TongCastle:DelAllTreeData", n or 1)
 	DynamicExecute("\\script\\missions\\tongcastle\\tongcastle.lua", "TongCastle:AddTreeInMap", 984, n or 1)
 	return 1
 end

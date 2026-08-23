@@ -119,6 +119,7 @@ int g_IsJx2Script(Lua_State* L)
 		"\\script\\missions\\bw\\", "\\script\\missions\\bairenleitai\\", "\\script\\missions\\tongcastle\\",
 		"\\script\\missions\\arena\\", "\\script\\activitysys\\", "\\script\\tong\\", "\\scriptjx2\\",
 		"\\script\\global\\npcchucnang\\dichquan.lua",	// Dich Quan 7 thanh: Include posthouse.lua (Tin Su)
+		"\\script\\missions\\basemission\\",	// [PORT5 23/08 phan bien F7] lib JX2 (CallNpc bNoRevive)
 	};
 	const char* szName = g_GetScriptNameByState(L);
 	if (!szName || !szName[0])

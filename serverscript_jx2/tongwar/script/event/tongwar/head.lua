@@ -489,7 +489,7 @@ end
 
 function tongwar_detail()
 --VLDNB 15 - §æi c©u th«ng b¸o - Modified by ThanhLD - 20140319
-	CreateTaskSay({format("<dec><npc>Tõ <color=green>%s <color>®Õn <color=green>%s<color>, ngo¹i trõ ngµy <color=green>04/11/2026<color>, mçi ngµy lµ 1 trËn ®Êu (mçi tèi cña ngµy thi ®Êu  cã thêi gian chuÈn bŞ tõ <color=green>08: 00~08: 29<color>, thêi gian thi ®Êu lµ <color=green>08:30~09:30<color>), trong mçi ngµy cã 3 trËn thi ®Êu cïng giê, ®ång thêi sÏ cã mét bang héi cã l­ît kh«ng ®Êu. Mçi bang héi ®· chiÕm lÜnh thµnh thŞ cïng víi liªn minh sÏ cïng víi <color=green>6<color> thµnh thŞ kh¸c thi ®Êu liªn minh.","29/03/2014", "05/04/2014"), 
+	CreateTaskSay({format("<dec><npc>Tõ <color=green>%s <color>®Õn <color=green>%s<color>, ngo¹i trõ ngµy <color=green>04/11/2026<color>, mçi ngµy lµ 1 trËn ®Êu (mçi tèi cña ngµy thi ®Êu  cã thêi gian chuÈn bŞ tõ <color=green>08: 00~08: 29<color>, thêi gian thi ®Êu lµ <color=green>08:30~09:30<color>), trong mçi ngµy cã 3 trËn thi ®Êu cïng giê, ®ång thêi sÏ cã mét bang héi cã l­ît kh«ng ®Êu. Mçi bang héi ®· chiÕm lÜnh thµnh thŞ cïng víi liªn minh sÏ cïng víi <color=green>6<color> thµnh thŞ kh¸c thi ®Êu liªn minh.","29/10/2026", "05/11/2026"), 
 		"Tra lŞch ®Êu c¸c bang héi chiÕn thµnh/tongwar_calendar", "Trë l¹i/tongWar_Start", "Ta biÕt råi!/OnCancel"});
 end;
 

@@ -364,7 +364,14 @@ int LuaGetNpcAroundNpcList(Lua_State* L)
 		return 2;
 	}
 	KSubWorld* pWorld = &SubWorld[Npc[nMe].m_SubWorldIndex];
-	int nMX = Npc[nMe].m_MapX, nMY = Npc[nMe].m_MapY;
+	// [PORT5 23/08 phan bien F6] toa do toan cuc (xem LuaGetAroundNpcList)
+	if (Npc[nMe].m_RegionIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	int nMX = LOWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionWidth + Npc[nMe].m_MapX;
+	int nMY = HIWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionHeight + Npc[nMe].m_MapY;
 	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
 	{
 		KRegion* pRegion = &pWorld->m_Region[r];
@@ -377,7 +384,8 @@ int LuaGetNpcAroundNpcList(Lua_State* L)
 				continue;
 			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
 				continue;
-			int dx = Npc[i].m_MapX - nMX, dy = Npc[i].m_MapY - nMY;
+			int dx = LOWORD(pRegion->m_RegionID) * pWorld->m_nRegionWidth + Npc[i].m_MapX - nMX;
+			int dy = HIWORD(pRegion->m_RegionID) * pWorld->m_nRegionHeight + Npc[i].m_MapY - nMY;
 			if (dx * dx + dy * dy > nDist * nDist)
 				continue;
 			Lua_PushNumber(L, i);
@@ -539,7 +547,16 @@ int LuaGetAroundNpcList(Lua_State* L)
 		return 2;
 	}
 	KSubWorld* pWorld = &SubWorld[Npc[nMe].m_SubWorldIndex];
-	int nMX = Npc[nMe].m_MapX, nMY = Npc[nMe].m_MapY;
+	// [PORT5 23/08 phan bien F6] m_MapX/m_MapY la toa do CUC BO region (0..15/0..31) - so giua
+	// cac region phai quy ve toa do toan cuc (khuon KNpc::GetMapDisX/Y KNpc.cpp:5353):
+	// G = LOWORD/HIWORD(m_RegionID) * m_nRegionWidth/Height + m_MapX/Y.
+	if (Npc[nMe].m_RegionIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	int nMX = LOWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionWidth + Npc[nMe].m_MapX;
+	int nMY = HIWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionHeight + Npc[nMe].m_MapY;
 	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
 	{
 		KRegion* pRegion = &pWorld->m_Region[r];
@@ -554,7 +571,8 @@ int LuaGetAroundNpcList(Lua_State* L)
 				continue;
 			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
 				continue;
-			int dx = Npc[i].m_MapX - nMX, dy = Npc[i].m_MapY - nMY;
+			int dx = LOWORD(pRegion->m_RegionID) * pWorld->m_nRegionWidth + Npc[i].m_MapX - nMX;
+			int dy = HIWORD(pRegion->m_RegionID) * pWorld->m_nRegionHeight + Npc[i].m_MapY - nMY;
 			if (dx * dx + dy * dy > nDist * nDist)
 				continue;
 			Lua_PushNumber(L, i);

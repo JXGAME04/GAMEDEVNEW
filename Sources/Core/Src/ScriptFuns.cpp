@@ -2370,12 +2370,16 @@ int LuaDynamicExecuteByPlayer(Lua_State* L)
 		else if (Lua_IsString(L, i))
 		{
 			// [PORT5 23/08] khong cat 64 byte, chiu duoc dau nhay kep: dung [[...]] (long string
-			// Lua 4 - llex.c chi ho tro dang nay); "]]" trong chuoi -> "] ]" de khong dong som
+			// Lua 4); "]]" -> "] ]" va "[[" -> "[ [" de khong dong som/mo long; duoi ']' don
+			// chen 1 dau cach truoc khi dong (phan bien F8: ten kieu "Bao[GM]").
 			char szArgTmp[2049];
 			g_StrCpyLen(szArgTmp, (char*)Lua_ValueToString(L, i), sizeof(szArgTmp));
 			for (char* q = strstr(szArgTmp, "]]"); q; q = strstr(q + 2, "]]"))
 				q[1] = ' ';
-			nPos += sprintf(szCall + nPos, "[[%s]]", szArgTmp);
+			for (char* q2 = strstr(szArgTmp, "[["); q2; q2 = strstr(q2 + 2, "[["))
+				q2[1] = ' ';
+			int nTailFix = (szArgTmp[0] && szArgTmp[strlen(szArgTmp) - 1] == ']') ? 1 : 0;
+			nPos += sprintf(szCall + nPos, nTailFix ? "[[%s ]]" : "[[%s]]", szArgTmp);
 		}
 		else
 			nPos += sprintf(szCall + nPos, "nil");
@@ -2426,12 +2430,16 @@ int LuaDynamicExecute(Lua_State* L)
 		else if (Lua_IsString(L, i))
 		{
 			// [PORT5 23/08] khong cat 64 byte, chiu duoc dau nhay kep: dung [[...]] (long string
-			// Lua 4 - llex.c chi ho tro dang nay); "]]" trong chuoi -> "] ]" de khong dong som
+			// Lua 4); "]]" -> "] ]" va "[[" -> "[ [" de khong dong som/mo long; duoi ']' don
+			// chen 1 dau cach truoc khi dong (phan bien F8: ten kieu "Bao[GM]").
 			char szArgTmp[2049];
 			g_StrCpyLen(szArgTmp, (char*)Lua_ValueToString(L, i), sizeof(szArgTmp));
 			for (char* q = strstr(szArgTmp, "]]"); q; q = strstr(q + 2, "]]"))
 				q[1] = ' ';
-			nPos += sprintf(szCall + nPos, "[[%s]]", szArgTmp);
+			for (char* q2 = strstr(szArgTmp, "[["); q2; q2 = strstr(q2 + 2, "[["))
+				q2[1] = ' ';
+			int nTailFix = (szArgTmp[0] && szArgTmp[strlen(szArgTmp) - 1] == ']') ? 1 : 0;
+			nPos += sprintf(szCall + nPos, nTailFix ? "[[%s ]]" : "[[%s]]", szArgTmp);
 		}
 		else
 			nPos += sprintf(szCall + nPos, "nil");
@@ -6914,10 +6922,11 @@ int LuaAddNpcEx(Lua_State* L)
 		if (nCamp >= 0 && nCamp < camp_num)
 			Npc[nNpcIdx].SetCurrentCamp(nCamp);
 #ifdef _SERVER
-		// [PORT5 23/08] nghia goc Linux cua tham so 7 = bNoRevive (KNpc+0x1824): chet la bien
-		// mat, khong hoi sinh (0x080833E2/0x08083520). Giu nhanh SetCurrentCamp o tren de khong
-		// doi hanh vi da chay; moi caller la script JX2 nen != 0 <=> bNoRevive that.
-		if ((int)Lua_ValueToNumber(L, 7) != 0)
+		// [PORT5 23/08 phan bien F7] nghia goc Linux cua tham so 7 = bNoRevive (+0x1824): chet la
+		// bien mat. CHI ap cho script JX2 (g_IsJx2Script) - 3 script JX1 dang song cung truyen 1
+		// o vi tri nay (bosscharm.lua:99 boss bang hoi, seasonnpc_item.lua:57, spider_web.lua:42)
+		// va dua vao hoi sinh cu; giu nguyen hanh vi JX1 cho chung.
+		if (g_IsJx2Script(L) && (int)Lua_ValueToNumber(L, 7) != 0)
 			Npc[nNpcIdx].m_bNoRevive = 1;
 #endif
 	}

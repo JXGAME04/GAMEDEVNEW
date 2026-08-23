@@ -400,7 +400,8 @@ NLa = "\r\n" if "\r\n" in s else "\n"
 assert "item_jx1" in s, "awardtemplet chua co item_jx1?"
 m = re.search(r'Include\("\\\\script\\\\lib\\\\awardtype\\\\item_jx1\.lua"\)[^\r\n]*', s)
 assert m, "khong thay Include item_jx1"
-s = s[:m.end()] + NLa + 'Include("\\\\script\\\\lib\\\\awardtype\\\\zhenyuan_jx1.lua")\t' + MARK + 'diem Chan Nguyen (shenmuling)' + s[m.end():]
+if "zhenyuan_jx1" not in s:
+    s = s[:m.end()] + NLa + 'Include("\\\\script\\\\lib\\\\awardtype\\\\zhenyuan_jx1.lua")\t' + MARK + 'diem Chan Nguyen (shenmuling)' + s[m.end():]
 wr(p, s)
 mirror_edit(r"script\lib\awardtemplet.lua")
 print("awardtemplet.lua ok")

@@ -1741,7 +1741,8 @@ static BOOL sIsJx2ItemScript(const char* szScript)
 		"\\script\\item\\bosscharm.lua",				// Lenh bai boss bang hoi (tra 0 sau khi goi boss)
 		"\\script\\item\\event\\kinhmach\\honnguyenchandon.lua",	// Hon nguyen chan don (tra 0)
 		"\\script\\item\\huangzhendan.lua",						// [PORT5 23/08] Hoang Chan Don (tongwar) - tu Remove + return
-		"\\script\\vng_event\\item\\biggoldenseed.lua",			// [PORT5 23/08] Qua Dai Hoang Kim (tongwar)
+		"\\script\\vng_event\\item\\biggoldenseed.lua",			// [PORT5 23/08]
+		"\\script\\missions\\tongcastle\\shenmuling.lua",		// [TONGCASTLE 23/08 phan bien F13] Than Moc Lenh 3205-3207 (thanh cong tra nil -> engine tru)			// [PORT5 23/08] Qua Dai Hoang Kim (tongwar)
 	};
 	if (!szScript || !szScript[0])
 		return FALSE;

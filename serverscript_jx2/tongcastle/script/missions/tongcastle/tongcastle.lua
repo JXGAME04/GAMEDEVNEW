@@ -513,7 +513,9 @@ function TongCastle:NotifyPlayTime(tbPlayer)
 	local nTime = PlayerFunLib:GetTaskDaily999(%TSK_STAY_TIME)
 	local _, _, _, _, _, _, nDay = MakeDateTime(7, GetCurServerTime())
 	if nTime >= 15 and nDay == 0 then --÷‹»’≤Œº”∞Ôª·≥«±§‘ˆÕ£¡Ù15∑÷÷”£¨‘ˆº”ªÓ‘æ∂»
-		DynamicExecuteByPlayer(PlayerIndex, "\\script\\huoyuedu\\huoyuedu.lua", "tbHuoYueDu:AddHuoYueDu", "tongcastle")
+		-- [TONGCASTLE 23/08 phan bien F22] he huoyuedu (diem hoat bat) KHONG co tren JX1 -
+		-- de nguyen se spam log 'script chua nap' moi phut moi nguoi du dieu kien Chu nhat
+		--DynamicExecuteByPlayer(PlayerIndex, "\\script\\huoyuedu\\huoyuedu.lua", "tbHuoYueDu:AddHuoYueDu", "tongcastle")
 	end
 						
 	Msg2Player(format("ThÍi gian t›ch lÚy trong Bang HÈi Thµnh B∂o cÒa ng≠¨I lµ <color=yellow>%d phÛt <color>", nTime))

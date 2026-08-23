@@ -1,0 +1,1238 @@
+﻿
+C:\vcpkg\scripts\buildsystems\msbuild\vcpkg.targets(182,3): warning MSB4011: "C:\vcpkg\scripts\buildsystems\msbuild\support\GetGlobalProperties.task" cannot be imported again. It was already imported at "C:\vcpkg\scripts\buildsystems\msbuild\support\Bootstrap.targets (2,3)". This is most likely a build authoring error. This subsequent import will be ignored. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  KItemList.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2623,8): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2626,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2988,8): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2991,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2622,8): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(2987,8): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4015,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4018,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4014,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4529,21): warning C4018: '>=': signed/unsigned mismatch [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4544,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4547,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4543,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4523,9): warning C4101: 'nSelect': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4645,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4648,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4644,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(4744,20): warning C4312: 'type cast': conversion from 'DWORD' to 'void *' of greater size [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(5067,33): warning C4101: 'pData': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KItemList.cpp(5165,13): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KItemList.cpp')
+  
+  KJx2Battle.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Battle.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Battle.cpp(99,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Battle.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Battle.cpp(251,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Battle.cpp')
+  
+  KJx2Title.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Title.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Title.cpp(64,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Title.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Title.cpp(75,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Title.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Title.cpp(76,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Title.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2Title.cpp(146,20): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2Title.cpp')
+  
+  KJx2WarInfra.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2WarInfra.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2WarInfra.cpp(38,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2WarInfra.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2WarInfra.cpp(828,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2WarInfra.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KJx2WarInfra.cpp(930,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KJx2WarInfra.cpp')
+  
+  KLittleMap.cpp
+  KMagicDesc.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(404,5): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(405,16): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(411,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(414,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(417,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(420,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(423,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(426,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(435,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(438,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(441,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(444,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(447,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(459,8): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(465,8): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(472,8): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(481,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(482,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(499,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(500,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(506,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(507,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(512,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(517,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(527,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(530,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(533,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(534,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(543,6): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(544,17): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(480,6): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(493,8): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(497,7): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(505,6): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMagicDesc.cpp(540,6): warning C4996: 'itoa': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _itoa. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMagicDesc.cpp')
+  
+  KMapMusic.cpp
+  KMath.cpp
+  KMission.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMission.cpp(40,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMission.cpp(346,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMission.cpp(358,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(124,21): warning C4018: '<': signed/unsigned mismatch [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+      D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(124,21):
+      the template instantiation context (the oldest one first) is
+          D:\GAMEDEVNEW\Sources\Core\Src\KMission.h(134,21):
+          see reference to class template instantiation 'KTimerFunArray<KTimerTaskFun,10,int g_MissionTimerCallBackFun(void *,char *)>' being compiled
+          D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(117,7):
+          while compiling class template member function 'BOOL KTimerFunArray<KTimerTaskFun,10,int g_MissionTimerCallBackFun(void *,char *)>::Activate(void)'
+              D:\GAMEDEVNEW\Sources\Core\Src\KMission.cpp(69,26):
+              see the first reference to 'KTimerFunArray<KTimerTaskFun,10,int g_MissionTimerCallBackFun(void *,char *)>::Activate' in 'KMission::Activate'
+  
+  KMissle.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KLinkArrayTemplate.h(139,24): warning C4267: 'return': conversion from 'size_t' to 'unsigned long', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMission.cpp')
+      D:\GAMEDEVNEW\Sources\Core\Src\KLinkArrayTemplate.h(139,24):
+      the template instantiation context (the oldest one first) is
+          D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(113,30):
+          see reference to class template instantiation 'KLinkArrayTemplate<T,10>' being compiled
+          with
+          [
+              T=KTimerTaskFun
+          ]
+          D:\GAMEDEVNEW\Sources\Core\Src\KLinkArrayTemplate.h(136,16):
+          while compiling class template member function 'unsigned long KLinkArrayTemplate<T,10>::GetUsedCount(void) const'
+          with
+          [
+              T=KTimerTaskFun
+          ]
+              D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(119,31):
+              see the first reference to 'KLinkArrayTemplate<T,10>::GetUsedCount' in 'KTimerFunArray<KTimerTaskFun,10,int g_MissionTimerCallBackFun(void *,char *)>::Activate'
+          with
+          [
+              T=KTimerTaskFun
+          ]
+              D:\GAMEDEVNEW\Sources\Core\Src\KMission.cpp(69,26):
+              see the first reference to 'KTimerFunArray<KTimerTaskFun,10,int g_MissionTimerCallBackFun(void *,char *)>::Activate' in 'KMission::Activate'
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMissle.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMissle.cpp(1193,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMissle.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMissle.cpp(1486,29): warning C4018: '>': signed/unsigned mismatch [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMissle.cpp')
+  
+  KMissleRes.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KMissleRes.cpp')
+  
+  KMissleSet.cpp
+  KPlayerBot.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(362,2): warning C4996: '_vsnprintf': This function or variable may be unsafe. Consider using _vsnprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(405,16): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(420,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(424,18): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(490,2): warning C4996: '_vsnprintf': This function or variable may be unsafe. Consider using _vsnprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(664,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(676,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(696,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(743,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(780,7): warning C4996: 'strcmpi': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strcmpi. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(828,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(830,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(1030,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(3651,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(3640,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(3872,5): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(3874,5): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4567,35): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4574,6): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4578,36): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4579,35): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4580,35): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4581,35): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4592,6): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4599,28): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4616,5): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(4645,3): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6330,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6401,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6416,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6440,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6503,14): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6512,12): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6543,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6614,3): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6620,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6720,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6759,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6813,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6815,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6818,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6821,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6828,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6833,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6840,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6842,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6845,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6847,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6865,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6902,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp(6907,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KPlayerBot.cpp')
+  
+  KSimCity.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(460,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(512,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(516,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(518,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(688,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(689,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(700,7): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1173,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1180,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1200,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1260,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1261,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1354,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1345,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1378,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1364,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1388,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1448,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1497,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1521,4): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1533,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSimCity.cpp(1550,7): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSimCity.cpp')
+  
+  KSortScript.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(41,2): warning C4996: 'getcwd': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getcwd. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(44,2): warning C4996: 'chdir': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _chdir. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(142,9): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(199,19): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(208,2): warning C4996: 'getcwd': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getcwd. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(213,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(215,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(270,6): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(228,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(236,5): warning C4996: 'chdir': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _chdir. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(271,6): warning C4996: '_strupr': This function or variable may be unsafe. Consider using _strupr_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(281,2): warning C4996: 'chdir': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _chdir. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KSortScript.cpp(344,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/KSortScript.cpp')
+  
+  ScriptFuns.cpp
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(17,38): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(17,69): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(18,53): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(18,83): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(26,34): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KScriptValueSet.h(27,47): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.h(95,1): warning C5208: unnamed class used in typedef name cannot declare members other than non-static data members, member enumerations, or member classes [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\MultiServer\Common\OpaqueUserData.h(57,10): warning C4311: 'reinterpret_cast': pointer truncation from 'void *' to 'unsigned long' [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\MultiServer\Common\OpaqueUserData.h(57,10): warning C4302: 'reinterpret_cast': truncation from 'void *' to 'unsigned long' [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\MultiServer\Common\OpaqueUserData.h(62,15): warning C4312: 'reinterpret_cast': conversion from 'unsigned long' to 'void *' of greater size [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(80,73): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(81,45): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(245,14): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(267,14): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(381,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(386,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(608,3): warning C4996: 'strncat': This function or variable may be unsafe. Consider using strncat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(726,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(732,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(734,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(870,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(876,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(878,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1065,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1071,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1073,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1120,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1155,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1168,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1196,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1209,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1243,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1258,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1292,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1307,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1335,60): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1369,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1397,60): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1431,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1460,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1473,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1502,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1515,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1550,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1565,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1600,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1615,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1644,60): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1678,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1707,60): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1741,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1796,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1881,30): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1873,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1878,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1927,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1957,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1958,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1963,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1940,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1959,7): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1980,17): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1999,17): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(1979,4): warning C4996: 'getcwd': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getcwd. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2015,3): warning C4996: 'strlwr': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strlwr. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2311,4): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2312,4): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2326,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2363,10): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2369,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2382,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2385,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2423,10): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2429,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2442,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2445,12): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2468,17): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2536,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2537,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2521,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2815,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2912,15): warning C4244: 'initializing': conversion from 'time_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2975,43): warning C4244: 'argument': conversion from 'time_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3020,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3021,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3022,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3023,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(2995,14): warning C4101: 'szScript': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3117,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3125,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3127,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3253,13): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3271,21): warning C4477: 'sprintf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'time_t' [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+      D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3271,21):
+      consider using '%llu' in the format string
+      D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3271,21):
+      consider using '%Iu' in the format string
+      D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3271,21):
+      consider using '%I64u' in the format string
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3271,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3512,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3513,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3514,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3515,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3573,98): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3591,113): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3599,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3613,86): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3636,94): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3681,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3725,90): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(3935,19): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4603,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4606,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4602,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4697,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4700,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4696,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4752,32): warning C4244: 'argument': conversion from 'time_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4828,20): warning C4244: '=': conversion from 'time_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4863,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4866,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4862,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4986,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4989,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(4985,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5036,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5073,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5114,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5117,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5113,7): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5308,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5311,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5307,5): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5563,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(5575,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(6516,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(6745,48): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(6778,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7092,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7093,3): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7108,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7109,5): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7114,5): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7115,5): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7083,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7094,18): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7105,9): warning C4996: 'strnicmp': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strnicmp. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7116,14): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7120,6): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7129,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7161,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7228,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7511,13): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7606,43): warning C4244: '=': conversion from 'int' to 'float', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7629,61): warning C4244: '=': conversion from 'int' to 'float', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7630,60): warning C4244: '=': conversion from 'int' to 'float', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7655,36): warning C4244: '=': conversion from 'int' to 'float', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(7656,35): warning C4244: '=': conversion from 'int' to 'float', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(8174,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(8200,111): warning C4244: '=': conversion from 'unsigned __int64' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9014,3): warning C4244: 'argument': conversion from 'size_t' to 'double', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9567,12): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9651,7): warning C4996: 'strcmpi': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strcmpi. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9704,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9706,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(9707,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10153,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10169,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10365,38): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10366,39): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10367,38): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10368,37): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10455,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10494,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10487,7): warning C4101: 'szPos': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10518,7): warning C4101: 'szPos': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10570,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10571,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10566,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10551,15): warning C4101: 'szScript': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10608,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10609,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10604,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10589,15): warning C4101: 'szScript': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10915,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10942,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(10935,7): warning C4101: 'szPos': unreferenced local variable [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11164,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11175,7): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11916,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11918,19): warning C4244: 'initializing': conversion from 'unsigned long' to 'BYTE', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11955,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11957,19): warning C4244: 'initializing': conversion from 'unsigned long' to 'BYTE', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11974,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11975,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11976,22): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11984,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11902,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11928,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11944,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11967,4): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11977,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12455,74): warning C4267: '=': conversion from 'size_t' to 'WORD', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12468,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12667,2): warning C4244: 'argument': conversion from 'time_t' to 'double', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12897,9): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12945,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12944,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12977,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12976,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(12996,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13046,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13069,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13084,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13120,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13225,30): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13276,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13280,9): warning C4244: '=': conversion from 'double' to 'int', possible loss of data [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13289,16): warning C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13309,11): warning C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13839,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13844,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(13846,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(14249,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+  
+D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(40,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  (compiling source file '/Src/ScriptFuns.cpp')
+      D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(40,3):
+      the template instantiation context (the oldest one first) is
+          D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11067,2):
+          see reference to class template instantiation 'KMissionArray<KMission,50>' being compiled
+          D:\GAMEDEVNEW\Sources\Core\Src\KMissionArray.h(36,7):
+          while compiling class template member function 'void KMissionArray<KMission,50>::SetMission(unsigned long,const char *)'
+              D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp(11081,33):
+              see the first reference to 'KMissionArray<KMission,50>::SetMission' in 'LuaSetGlobalMission'
+  
+  Generating Code...
+D:\GAMEDEVNEW\Sources\Core\Src\KItem.h(173,1): warning C4715: 'KItem::GetLine': not all control paths return a value [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+D:\GAMEDEVNEW\Sources\Core\Src\KItem.h(173,1): warning C4715: 'KItem::GetLine': not all control paths return a value [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1402,5): warning MSB8012: TargetPath(D:\GAMEDEVNEW\Sources\Core\x64\Server Release\CoreServer.dll) does not match the Linker's OutputFile property value (D:\GAMEDEVNEW\Sources\Core\x64\ServerRelease\CoreServer.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile). [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+     Creating library .\x64\ServerRelease\CoreServer.lib and object .\x64\ServerRelease\CoreServer.exp
+common.lib(Buffer.obj) : warning LNK4099: PDB 'Common.pdb' was not found with 'common.lib(Buffer.obj)' or at 'D:\GAMEDEVNEW\Sources\Core\x64\Server Release\Common.pdb'; linking object as if no debug info [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+common.lib(Exception.obj) : warning LNK4099: PDB 'Common.pdb' was not found with 'common.lib(Exception.obj)' or at 'D:\GAMEDEVNEW\Sources\Core\x64\Server Release\Common.pdb'; linking object as if no debug info [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+common.lib(NodeList.obj) : warning LNK4099: PDB 'Common.pdb' was not found with 'common.lib(NodeList.obj)' or at 'D:\GAMEDEVNEW\Sources\Core\x64\Server Release\Common.pdb'; linking object as if no debug info [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+common.lib(stdafx.obj) : warning LNK4099: PDB 'Common.pdb' was not found with 'common.lib(stdafx.obj)' or at 'D:\GAMEDEVNEW\Sources\Core\x64\Server Release\Common.pdb'; linking object as if no debug info [D:\GAMEDEVNEW\Sources\Core\Core.vcxproj]
+  Core.vcxproj -> D:\GAMEDEVNEW\Sources\Core\x64\Server Release\CoreServer.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  A subdirectory or file ..\..\..\bin\server\release64 already exists.
+  A subdirectory or file ..\..\lib\release64 already exists.
+          1 file(s) copied.
+  The system cannot find the file specified.
+          1 file(s) copied.
+          1 file(s) copied.
+  The system cannot find the file specified.
+          1 file(s) copied.
+          1 file(s) copied.

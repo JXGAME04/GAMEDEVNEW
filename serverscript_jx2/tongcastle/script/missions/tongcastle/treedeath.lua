@@ -130,6 +130,7 @@ AutoFunctions:Add(RegisterNpc)
 function OnDeath(nNpcIndex, nDamageIdx)
 	local nAtk = NpcIdx2PIdx(nDamageIdx)
 	if nAtk and nAtk > 0 then
+		PlayerIndex = nAtk	-- [phan bien F23] engine khong dat boi canh khi goi OnDeath cua NPC - de tbLog ghi dung ke giet
 		DynamicExecuteByPlayer(nAtk, "\\script\\missions\\tongcastle\\tongcastle.lua", "TongCastle:JX1_TreeDeath", nNpcIndex)
 	end
 	tbLog:PlayerActionLog("LOGTINHNANGJX1_npc_BHTB","BHTBKillTree", GetNpcName(nNpcIndex))
