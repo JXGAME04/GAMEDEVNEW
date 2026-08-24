@@ -110,7 +110,7 @@ REP = [
  (u'"Dich chuyen: Cong Binh Tu TUONG DUONG/HD_BW_Tele78"', u'"Dịch chuyển: Công Bình Tử TƯƠNG DƯƠNG/HD_BW_Tele78"'),
  (u'"Dich chuyen: Cong Binh Tu THANH DO/HD_BW_Tele11"', u'"Dịch chuyển: Công Bình Tử THÀNH ĐÔ/HD_BW_Tele11"'),
  (u'"Vao dau truong 209 (cho khan gia)/HD_BW_Tele209"', u'"Vào đấu trường 209 (chỗ khán giả)/HD_BW_Tele209"'),
- (u'"Go ket tran treo cua TOI (task 200/2340-2342)/HD_BW_GoKet"', u'"Gỡ kẹt trận treo của TÔI (task 200/2340-2342)/HD_BW_GoKet"'),
+ (u'"Go ket tran treo cua TOI (task 200 va 2340-2342)/HD_BW_GoKet"', u'"Gỡ kẹt trận treo của TÔI (task 200 va 2340-2342)/HD_BW_GoKet"'),
  (u'"Da xoa co trong-tran (TaskTemp 200) + vi tri luu (task 2340-2342) cua nhan vat nay"',
   u'"Đã xóa cờ trong-trận (TaskTemp 200) + vị trí lưu (task 2340-2342) của nhân vật này"'),
  # ---- TC ----
@@ -175,9 +175,9 @@ shutil.copyfile(p, r"D:\GAMEDEVNEW\serverscript_jx2\port5_admin\hoatdong_admin.l
 # ---- dong menu trong lenhbaiadmin.lua ----
 p2 = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script\item\lenhbaiadmin.lua"
 s2 = io.open(p2, "r", encoding="latin-1", newline="").read()
-old = '"Hoat dong 23-24/08 (BC-BN-TV-TB): bo test/HD_AdminMenu",'
+old = '"Hoat dong 23-24.08 (BC-BN-TV-TB): bo test/HD_AdminMenu",'
 if old in s2:
-    s2 = s2.replace(old, V(u'"Hoạt động 23-24/08 (BC-BN-TV-TB): bộ test/HD_AdminMenu",'), 1)
+    s2 = s2.replace(old, V(u'"Hoạt động 23-24.08 (BC-BN-TV-TB): bộ test/HD_AdminMenu",'), 1)
     io.open(p2, "w", encoding="latin-1", newline="").write(s2)
     print("lenhbaiadmin: dong menu da co dau")
 else:

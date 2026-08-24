@@ -10,7 +10,7 @@ if "hoatdong_admin" not in s:
     s = s.replace(old, old + NL + 'Include("\\\\script\\\\item\\\\hoatdong_admin.lua")\t-- [24/08] Bang Chien / Bach Nhan / Ty Vo / Thanh Bao: bo test + config', 1)
     old = '/LD_AdminMenu",'
     assert s.count(old) == 1, "menu anchor = %d" % s.count(old)
-    s = s.replace(old, old + NL + '\t\t"Hoat dong 23-24/08 (BC-BN-TV-TB): bo test/HD_AdminMenu",', 1)
+    s = s.replace(old, old + NL + '\t\t"Hoat dong 23-24.08 (BC-BN-TV-TB): bo test/HD_AdminMenu",', 1)
     io.open(p, "w", encoding="latin-1", newline="").write(s)
     print("lenhbaiadmin: menu OK")
 else:

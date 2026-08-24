@@ -96,7 +96,7 @@ function chucnangadmin(itemIdx)
 		"BOT ng­êi ch¬i (KPlayer)/PB_Menu",
 		"D· TÈu: xãa ph¹t hñy, thªm l­ît hñy/DT_AdminMenu",
 		"Liªn ®Êu: bé test (pha, th­ëng, di chuyÓn)/LD_AdminMenu",
-		"Ho¹t ®éng 23-24/08 (BC-BN-TV-TB): bé test/HD_AdminMenu",
+		"Ho¹t ®éng 23-24.08 (BC-BN-TV-TB): bé test/HD_AdminMenu",
 		"NhËn trang bÞ Xanh/xanhtest",
 		--"LayBinhSiHieuPhu/LayBinhSiHieuPhu",
 		--"Demo Set Npc Time Idle/DemoSetNpcTimeIdle",

@@ -112,7 +112,7 @@ function HD_BW_Menu()
 	"DÞch chuyÓn: C«ng B×nh Tö T­¬NG D­¬NG/HD_BW_Tele78",
 	"DÞch chuyÓn: C«ng B×nh Tö THµNH ®«/HD_BW_Tele11",
 	"Vµo ®Êu tr­êng 209 (chç kh¸n gi¶)/HD_BW_Tele209",
-	"Gì kÑt trËn treo cña T«I (task 200/2340-2342)/HD_BW_GoKet",
+	"Gì kÑt trËn treo cña T«I (task 200 va 2340-2342)/HD_BW_GoKet",
 	"Quay l¹i/HD_AdminMenu"})
 end
 
