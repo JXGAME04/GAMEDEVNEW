@@ -851,12 +851,18 @@ BOOL CFriendMgr::DB_LoadSomeone(const std::_tstring& someone, MEM_FRIENDRECORDLI
 	int valsize = 0;
 	char* pValue;
 	ZCursor * cursor = m_dbFriendRO.search(dbkey.data(), dbkey.size());
-	if (cursor) {
-		pValue = cursor->data;
-		m_dbFriendRO.closeCursor(cursor);
-	}
-	else
+	if (!cursor)
 		return TRUE;
+	// [FIX-UAF 24/08] KHONG duoc closeCursor o day: closeCursor() goi free(cursor->data)
+	// (DBTable.cpp:107 va DBTable_MySQL.cpp:929) nen pValue se thanh con tro treo, doan
+	// parse ben duoi doc vung DA GIAI PHONG. Cung loi da va o TONGDB.CPP:256/337.
+	pValue = cursor->data;
+	valsize = cursor->size;
+	if (!pValue || valsize < (int)sizeof(DB_FRIENDRECORDLIST))
+	{
+		m_dbFriendRO.closeCursor(cursor);
+		return TRUE;
+	}
 
 	DB_FRIENDRECORDLIST* pdbFriendList = (DB_FRIENDRECORDLIST*)pValue;
 	DB_FRIENDRECORD* pCursor = (DB_FRIENDRECORD*)(pdbFriendList + 1);
@@ -867,14 +873,21 @@ BOOL CFriendMgr::DB_LoadSomeone(const std::_tstring& someone, MEM_FRIENDRECORDLI
 		memFriend.cheating = pCursor->cheating;
 		memFriend.cheated = pCursor->cheated;
 
+		// [FIX-UAF 24/08] chan bien: ban ghi hong/cut khong duoc chay qua duoi bo dem
+		if ((char*)(pCursor + 1) > pValue + valsize)
+			break;
 		_BASIC_STR* pName = (_BASIC_STR*)(pCursor + 1);
 		assert(pName->strlen > 0 && pName->strlen < _NAME_LEN);
 		char* strName = (char*)(pName + 1);
+		if (strName + pName->strlen > pValue + valsize)
+			break;	// [FIX-UAF 24/08]
 		memFriend.name.assign(strName, pName->strlen);
 
 		_BASIC_STR* pGroup = (_BASIC_STR*)(strName + pName->strlen);
 		assert(pGroup->strlen >= 0 && pGroup->strlen < _NAME_LEN);
 		char* strGroup = (char*)(pGroup + 1);
+		if (strGroup + pGroup->strlen > pValue + valsize)
+			break;	// [FIX-UAF 24/08]
 		memFriend.group.assign(strGroup, pGroup->strlen);
 
 		pmemFriends->push_back(memFriend);
@@ -882,7 +895,9 @@ BOOL CFriendMgr::DB_LoadSomeone(const std::_tstring& someone, MEM_FRIENDRECORDLI
 		pCursor = (DB_FRIENDRECORD*)(strGroup + pGroup->strlen);
 	}
 
-	delete []pValue;
+	// [FIX-UAF 24/08] closeCursor() tu free(cursor->data); `delete []pValue` cu la
+	// DOUBLE FREE + sai bo cap phat (vung nay do malloc cap, phai free) -> hong heap.
+	m_dbFriendRO.closeCursor(cursor);
 	return TRUE;
 }
 
