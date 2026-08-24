@@ -10197,7 +10197,12 @@ void KNpc::CheckTrap()
 	DWORD	dwTrap = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].GetTrap(m_MapX, m_MapY);
 	// [PORT5 23/08] trap JX2 (AddMapTrap tham so 5): so sanh CA (scriptId, param) de hai vung
 	// trap ke nhau CUNG script khac param van kich (tongcastle); trap JX1 param NONE - nhu cu.
-	int nCellTrapParam = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].GetTrapParam(m_MapX, m_MapY);
+	// [FIX 24/08] GetTrapParam CHI ton tai o ban _SERVER (KRegion.cpp:1341 nam trong
+	// #ifdef _SERVER) - khong guard thi CoreClient.dll loi LNK2019.
+	int nCellTrapParam = 0;
+#ifdef _SERVER
+	nCellTrapParam = SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].GetTrapParam(m_MapX, m_MapY);
+#endif
 	if (m_TrapScriptID == dwTrap
 #ifdef _SERVER
 		&& m_nLastTrapParam == nCellTrapParam
