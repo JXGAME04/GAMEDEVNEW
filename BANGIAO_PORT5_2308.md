@@ -123,3 +123,18 @@ Build: `MSBuild Sources\Core\Core.vcxproj /p:Configuration="Server Release" /p:P
 **Bị bác sau kiểm chứng đối kháng** (không sửa): F5 timerserver quét 209 (hàm LoiDaiHonChien đã TẮT từ trước 20/08 — vẫn đồng bộ 4 chỗ 209→210 trong mã chết để phòng bật lại); F17 skill Thủ Vệ 1208/1210/1212 "khác nghĩa" (finder đếm lệch 1 dòng — thực tế ĐÚNG là hào quang Thủ Vệ).
 
 **Chấp nhận + ghi nhận (không vá đợt này)**: F19 cây chết bởi nguồn không-phải-người (DOT sau khi kẻ đánh thoát) không gọi death script — giới hạn trong 1 phiên, tự phục hồi 19:00; F21 xem mục 6.11; nợ cũ phát hiện kèm: Hỗn Chiến không có cơ chế kết thúc/trao giải (timer tắt từ ≥20/08 mà NPC vẫn nhận báo danh).
+
+## 10) SỰ CỐ ĐÊM 23/08 SAU RESTART — "gs chưa chạy" (ĐÃ XỬ LÝ, commit `d25f59fd`)
+
+**Diễn biến**: chủ game khởi động cụm 23:18 nhưng **chưa swap DLL** — GameServer chạy DLL CŨ `da14dd6f` + script MỚI. GS bị bật đi bật lại tay 2 lần (23:19 / 23:25), lần nào cũng "không lên".
+
+**2 nguyên nhân chồng nhau**:
+1. **DLL cũ thiếu toàn bộ hàm PORT5** (OB_LoadShareData nil ở tongcastle relay...) — lỗi nil rải rác, không chết nhưng tính năng mới liệt. → 23:32 tôi đã tự swap `CoreServer.dll` ← `.moi_2308_tongkim6fix` (md5 `0edd1e40`), backup bản cũ = `CoreServer.dll.cu_2208_S4_da14dd6f`.
+2. **VÒNG INCLUDE VÔ HẠN — thủ phạm chính làm boot không lên** (lỗi của tôi, phản biện 29 tác nhân không bắt được): 2 dòng Include tôi thêm cuối `awardtemplet.lua` (F10 + bước 10 tongcastle) tạo cạnh ngược:
+   - `awardtemplet:66 → zhenyuan_jx1:6 Include playerfunlib` mà **`playerfunlib.lua:4` Include NGƯỢC `awardtemplet.lua`** (+ `:5 g_activity → activity:300 → awardtemplet`);
+   - `awardtemplet:67 → exp_jx1:6 Include task_addplayerexp → task_head → ... → g_activity → ...`.
+   - Hệ quả: `error: stack Overflow` cho **mọi state** đi qua chuỗi g_activity/dailogsay/leaguematch..., mỗi lỗi kèm traceback ~50 khung → **ScriptError.log phình 958 MB** (23 tệp), boot bò ~13 phút chưa xong.
+
+**Vá (`ReverseTools\port5_fix_include_cycle.py`)**: 2 tệp awardtype thành **LÁ** — chỉ giữ Include `log.lua`/`lib_task.lua` (0 include con); `playerfunlib`/`task_addplayerexp` chuyển thành **nạp lười trong Give()** (`if not PlayerFunLib then Include(...) end`). Đã sửa cả 2 generator (tc_port.py, tongwar_fix_phanbien.py) + mirror + xoá 958MB log rác.
+
+**LUẬT rút ra**: tệp nào được `awardtemplet.lua` Include thì CẤM Include bất cứ thứ gì ngoài lá thuần (`log.lua`, `lib_task.lua`) — `playerfunlib`, `task_addplayerexp`, `g_activity`, `activity`, `dailogsay` đều dẫn ngược về awardtemplet. JX1 Include KHÔNG có chống-nạp-lại (khác Linux).
