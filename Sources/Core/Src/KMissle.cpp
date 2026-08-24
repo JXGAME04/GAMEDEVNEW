@@ -1822,8 +1822,8 @@ int KMissle::CheckNearestCollision()
 			if (nNpcIdx > 0)
 			{
 				bCollision = TRUE;
-				nDX = m_nCurrentMapX - Npc[nNpcIdx].m_MapX;
-				nDY = m_nCurrentMapY - Npc[nNpcIdx].m_MapY;
+				nDX = -i;	// FIX 24/08: GetOffsetAxis dat o dich = o dan + (i,j) ROI MOI cuon vong sang region ke,
+				nDY = -j;	// nen hieu 2 toa do CUC BO ra +-15 (region 16 o) / +-31 (32 o) khi qua bien -> lat nguoc phep so offset -> dan xuyen qua quai.
 				nNpcOffsetX = Npc[nNpcIdx].m_OffX;
 				nNpcOffsetY = Npc[nNpcIdx].m_OffY;
 				nAbsX = abs(nDX);
