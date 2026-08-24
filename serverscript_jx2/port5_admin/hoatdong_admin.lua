@@ -12,35 +12,35 @@ HD_TC_DRV   = "\\script\\missions\\tongcastle\\tongcastle_driver.lua"
 HD_TC_RELAY = "\\script\\mission\\tongcastle\\tongcastle.lua"
 
 function HD_AdminMenu()
-	SayEx({"<color=yellow>Hoat dong 23-24/08<color>: chon muc test (cau hinh: script\\header\\cauhinh_hoatdong.lua)",
-	"1. Bang Chien - Vo Lam De Nhat Bang/HD_TW_Menu",
-	"2. Bach Nhan Loi Dai/HD_BR_Menu",
-	"3. Ty Vo Dai/HD_BW_Menu",
-	"4. Bang Hoi Thanh Bao/HD_TC_Menu",
-	"5. Nhan item thuong (test)/HD_Item_Menu",
-	"6. BOT Tong Kim: BAT/HD_TK_Bat",
-	"7. BOT Tong Kim: TAT/HD_TK_Tat",
-	"8. NAP LAI CONFIG (khi khong co tran chay)/HD_ReloadCfg",
-	"Ket thuc doi thoai/no"})
+	SayEx({"<color=yellow>Ho¹t ®éng 23-24/08<color>: chän môc test (cÊu h×nh: script\\header\\cauhinh_hoatdong.lua)",
+	"1. Bang ChiÕn - Vâ L©m ®Ö NhÊt Bang/HD_TW_Menu",
+	"2. B¸ch Nh©n L«i ®µi/HD_BR_Menu",
+	"3. Tû Vâ ®µi/HD_BW_Menu",
+	"4. Bang Héi Thµnh B¶o/HD_TC_Menu",
+	"5. NhËn item th­ëng (test)/HD_Item_Menu",
+	"6. BOT Tèng Kim: bËt/HD_TK_Bat",
+	"7. BOT Tèng Kim: t¾t/HD_TK_Tat",
+	"8. N¹p l¹i CONFIG (khi kh«ng cã trËn ch¹y)/HD_ReloadCfg",
+	"KÕt thóc ®èi tho¹i/no"})
 end
 
 -- ================= 1) BANG CHIEN =================
 function HD_TW_Menu()
-	SayEx({"<color=yellow>Bang Chien<color> - mua 9: 29/10-05/11/2026, tran "..HD_GioPhut(HD_CFG("TW_GIO_KHAICHIEN", 2000)).."-"..HD_GioPhut(HD_CFG("TW_GIO_KETTHUC", 2130)).." (can >=2 bang chiem thanh de khoi tao)",
-	"Xem trang thai (co tran? file mua?)/HD_TW_TrangThai",
-	"B1. Khoi tao mua 9 NGAY (tongwar_initmatch)/HD_TW_InitMatch",
-	"B2. Ep tick lich NGAY (TaskContent)/HD_TW_Tick",
-	"B3. Ep mo pha 2 - bao danh 3 cap test/HD_TW_Redo",
-	"Dich chuyen: NPC bao danh Ba Lang Huyen/HD_TW_Tele53",
-	"Dich chuyen: map bao danh 608/HD_TW_Tele608",
-	"Dich chuyen: map bao danh 610/HD_TW_Tele610",
-	"Dich chuyen: map bao danh 612/HD_TW_Tele612",
-	"Quay lai/HD_AdminMenu"})
+	SayEx({"<color=yellow>Bang ChiÕn<color> - mïa 9: 29/10-05/11/2026, trËn "..HD_GioPhut(HD_CFG("TW_GIO_KHAICHIEN", 2000)).."-"..HD_GioPhut(HD_CFG("TW_GIO_KETTHUC", 2130)).." (cÇn >=2 bang chiÕm thµnh ®Ó khëi t¹o)",
+	"Xem tr¹ng th¸i (cê trËn? file mïa?)/HD_TW_TrangThai",
+	"B1. Khëi t¹o mïa 9 NGAY (tongwar_initmatch)/HD_TW_InitMatch",
+	"B2. Ðp tick lÞch NGAY (TaskContent)/HD_TW_Tick",
+	"B3. Ðp më pha 2 - b¸o danh 3 cÆp test/HD_TW_Redo",
+	"DÞch chuyÓn: NPC b¸o danh Ba L¨ng HuyÖn/HD_TW_Tele53",
+	"DÞch chuyÓn: map b¸o danh 608/HD_TW_Tele608",
+	"DÞch chuyÓn: map b¸o danh 610/HD_TW_Tele610",
+	"DÞch chuyÓn: map b¸o danh 612/HD_TW_Tele612",
+	"Quay l¹i/HD_AdminMenu"})
 end
 
 function HD_TW_TrangThai()
 	local nTran = GetGlbValue(850)
-	Msg2Player("Co van dang mo tran (GlbValue 850) = "..tostring(nTran).." (1 = dang co tran)")
+	Msg2Player("Cê ®ang më trËn (GlbValue 850) = "..tostring(nTran).." (1 = ®ang cã trËn)")
 	local f = openfile("jx2league.txt", "r")
 	if f then
 		local n = 0
@@ -51,27 +51,27 @@ function HD_TW_TrangThai()
 			if n <= 8 then Msg2Player("jx2league: "..dong) end
 		end
 		closefile(f)
-		Msg2Player("jx2league.txt tong "..n.." dong (7 dong G = da khoi tao mua)")
+		Msg2Player("jx2league.txt tong "..n.." dßng (7 dßng G = ®· khëi t¹o mïa)")
 	else
-		Msg2Player("CHUA co jx2league.txt (mua chua khoi tao - bam B1)")
+		Msg2Player("CH­A cã jx2league.txt (mïa ch­a khëi t¹o - bÊm B1)")
 	end
 	HD_TW_Menu()
 end
 
 function HD_TW_InitMatch()
 	DynamicExecute(HD_TW_RELAY, "tongwar_initmatch", 9)
-	Msg2Player("Da goi tongwar_initmatch(9) - xem jx2league.txt (can >=2 bang dang chiem thanh)")
+	Msg2Player("®· gäi tongwar_initmatch(9) - xem jx2league.txt (cÇn >=2 bang ®ang chiÕm thµnh)")
 end
 
 function HD_TW_Tick()
 	DynamicExecute(HD_TW_RELAY, "TaskContent")
-	Msg2Player("Da ep TaskContent (tick lich Bang Chien)")
+	Msg2Player("®· Ðp TaskContent (tick lÞch Bang ChiÕn)")
 end
 
 function HD_TW_Redo()
 	local t = HD_CFG("TW_TEST_REDO", {1, 2, 1, 3, 4, 2, 5, 6, 3})
 	DynamicExecute("\\script\\gmscript.lua", "HD_TW_RedoStart", t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9])
-	Msg2Player("Da ep pha 2 (bao danh) cho 3 cap test - id bang sua o TW_TEST_REDO trong config")
+	Msg2Player("®· Ðp pha 2 (b¸o danh) cho 3 cÆp test - id bang söa ë TW_TEST_REDO trong config")
 end
 
 function HD_TW_Tele53()  NewWorld(53, 1628, 3173) end
@@ -81,20 +81,20 @@ function HD_TW_Tele612() NewWorld(612, 1604, 3147) end
 
 -- ================= 2) BACH NHAN =================
 function HD_BR_Menu()
-	SayEx({"<color=yellow>Bach Nhan Loi Dai<color> - mo "..HD_GioPhut(HD_CFG("BR_GIO_MO", 1200)).."-24:00 hang ngay, map 960, cap >="..HD_CFG("BR_CAP_TOITHIEU", 90),
-	"Xem cau hinh dang chay/HD_BR_TrangThai",
-	"Dich chuyen: NPC loi vao (Lam An)/HD_BR_TeleNpc",
-	"Dich chuyen: vao map 960 (dai 1)/HD_BR_Tele960",
-	"Goi lai Init (CHI khi boot loi)/HD_BR_Init",
-	"Quay lai/HD_AdminMenu"})
+	SayEx({"<color=yellow>B¸ch Nh©n L«i ®µi<color> - më "..HD_GioPhut(HD_CFG("BR_GIO_MO", 1200)).."-24:00 h»ng ngµy, map 960, cÊp >="..HD_CFG("BR_CAP_TOITHIEU", 90),
+	"Xem cÊu h×nh ®ang ch¹y/HD_BR_TrangThai",
+	"DÞch chuyÓn: NPC lèi vµo (L©m An)/HD_BR_TeleNpc",
+	"DÞch chuyÓn: vµo map 960 (®µi 1)/HD_BR_Tele960",
+	"Gäi l¹i Init (CHØ khi boot lçi)/HD_BR_Init",
+	"Quay l¹i/HD_AdminMenu"})
 end
 
 function HD_BR_TrangThai()
-	Msg2Player(format("Gio mo %s | exp %d/%d phut (Loi Chu +%d) | tran %d luot/ngay | buff x2: %d%% nguoi, moi %d phut",
+	Msg2Player(format("Giê më %s | exp %d/%d phót (L«i Chñ +%d) | trÇn %d l­ît/ngµy | buff x2: %d%% ng­êi, mçi %d phót",
 		HD_GioPhut(HD_CFG("BR_GIO_MO", 1200)), HD_CFG("BR_EXP_TICK", 1000000), HD_CFG("BR_PHUT_CHUKY_EXP", 5),
 		HD_CFG("BR_EXP_LOICHU", 2000000), HD_CFG("BR_TRAN_LUOT_NGAY", 50),
 		floor(HD_CFG("BR_TILE_BUFFX2", 0.2)*100), HD_CFG("BR_PHUT_COTHU", 30)))
-	Msg2Player(format("Da dung hom nay (task 2709): %d luot", GetTaskDailyCount and GetTaskDailyCount(2709) or -1))
+	Msg2Player(format("®· dïng h«m nay (task 2709): %d l­ît", GetTaskDailyCount and GetTaskDailyCount(2709) or -1))
 	HD_BR_Menu()
 end
 
@@ -102,18 +102,18 @@ function HD_BR_TeleNpc() NewWorld(HD_CFG("BR_NPC_MAP", 176), 1464, 3223) end
 function HD_BR_Tele960() NewWorld(960, 1784, 3099) end
 function HD_BR_Init()
 	DynamicExecute("\\script\\missions\\bairenleitai\\bairen_boot.lua", "BairenLeitai_Adm_Init")
-	Msg2Player("Da goi BairenLeitai_Adm_Init (CHU Y: goi lap se tao them timer)")
+	Msg2Player("®· gäi BairenLeitai_Adm_Init (CHó ý: gäi lÆp sÏ t¹o thªm timer)")
 end
 
 -- ================= 3) TY VO =================
 function HD_BW_Menu()
-	SayEx({"<color=yellow>Ty Vo Dai<color> - khong co lich, 2 doi truong (moi doi du 2 nguoi) bao danh o Cong Binh Tu; tran "..HD_CFG("BW_PHUT_TRAN", 12).." phut (cho "..HD_CFG("BW_PHUT_CHO", 2).." phut)",
-	"Dich chuyen: Cong Binh Tu DUONG CHAU/HD_BW_Tele80",
-	"Dich chuyen: Cong Binh Tu TUONG DUONG/HD_BW_Tele78",
-	"Dich chuyen: Cong Binh Tu THANH DO/HD_BW_Tele11",
-	"Vao dau truong 209 (cho khan gia)/HD_BW_Tele209",
-	"Go ket tran treo cua TOI (task 200/2340-2342)/HD_BW_GoKet",
-	"Quay lai/HD_AdminMenu"})
+	SayEx({"<color=yellow>Tû Vâ ®µi<color> - kh«ng cã lÞch, 2 ®éi tr­ëng (mçi ®éi ®ñ 2 ng­êi) b¸o danh ë C«ng B×nh Tö; trËn "..HD_CFG("BW_PHUT_TRAN", 12).." phót (chê "..HD_CFG("BW_PHUT_CHO", 2).." phót)",
+	"DÞch chuyÓn: C«ng B×nh Tö D­¬NG CH©U/HD_BW_Tele80",
+	"DÞch chuyÓn: C«ng B×nh Tö T­¬NG D­¬NG/HD_BW_Tele78",
+	"DÞch chuyÓn: C«ng B×nh Tö THµNH ®«/HD_BW_Tele11",
+	"Vµo ®Êu tr­êng 209 (chç kh¸n gi¶)/HD_BW_Tele209",
+	"Gì kÑt trËn treo cña T«I (task 200/2340-2342)/HD_BW_GoKet",
+	"Quay l¹i/HD_AdminMenu"})
 end
 
 function HD_BW_Tele80()  NewWorld(80, 1659, 3020) end
@@ -126,42 +126,42 @@ function HD_BW_GoKet()
 	SetTask(2340, 0)
 	SetTask(2341, 0)
 	SetTask(2342, 0)
-	Msg2Player("Da xoa co trong-tran (TaskTemp 200) + vi tri luu (task 2340-2342) cua nhan vat nay")
+	Msg2Player("®· xãa cê trong-trËn (TaskTemp 200) + vÞ trÝ l­u (task 2340-2342) cña nh©n vËt nµy")
 end
 
 -- ================= 4) THANH BAO =================
 function HD_TC_Menu()
-	SayEx({"<color=yellow>Bang Hoi Thanh Bao<color> - thu "..HD_CFG("TC_THU", 0).." (0=CN), map 984 (CLIENT CHUA CO DATA - vao se den man)",
-	"Hoi sinh cay 1 (Thanh Dong) NGAY/HD_TC_Cay1",
-	"Hoi sinh cay 2 (Bach Ngan) NGAY/HD_TC_Cay2",
-	"Hoi sinh cay 3 (Hoang Kim) NGAY/HD_TC_Cay3",
-	"Xoa het cay + record (don test)/HD_TC_XoaCay",
-	"Xem diem Than Moc cua toi/HD_TC_XemDiem",
-	"Cong 500 diem Than Moc (test doi lenh bai)/HD_TC_CongDiem",
-	"Dich chuyen: NPC Thanh Bao (Lam An)/HD_TC_TeleNpc",
-	"Vao map 984 (CANH BAO: client den man)/HD_TC_Tele984",
-	"Quay lai/HD_AdminMenu"})
+	SayEx({"<color=yellow>Bang Héi Thµnh B¶o<color> - thø "..HD_CFG("TC_THU", 0).." (0=CN), map 984 (CLIENT CH­A Cã DATA - vµo sÏ ®en mµn)",
+	"Håi sinh c©y 1 (Thanh ®ång) NGAY/HD_TC_Cay1",
+	"Håi sinh c©y 2 (B¹ch Ng©n) NGAY/HD_TC_Cay2",
+	"Håi sinh c©y 3 (Hoµng Kim) NGAY/HD_TC_Cay3",
+	"Xãa hÕt c©y + record (dän test)/HD_TC_XoaCay",
+	"Xem ®iÓm ThÇn Méc cña t«i/HD_TC_XemDiem",
+	"Céng 500 ®iÓm ThÇn Méc (test ®æi lÖnh bµi)/HD_TC_CongDiem",
+	"DÞch chuyÓn: NPC Thµnh B¶o (L©m An)/HD_TC_TeleNpc",
+	"Vµo map 984 (C¶NH B¸O: client ®en mµn)/HD_TC_Tele984",
+	"Quay l¹i/HD_AdminMenu"})
 end
 
-function HD_TC_Cay1() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 1) Msg2Player("Da ep hoi sinh cay loai 1 o map 984") end
-function HD_TC_Cay2() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 2) Msg2Player("Da ep hoi sinh cay loai 2 o map 984") end
-function HD_TC_Cay3() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 3) Msg2Player("Da ep hoi sinh cay loai 3 o map 984") end
+function HD_TC_Cay1() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 1) Msg2Player("®· Ðp håi sinh c©y lo¹i 1 ë map 984") end
+function HD_TC_Cay2() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 2) Msg2Player("®· Ðp håi sinh c©y lo¹i 2 ë map 984") end
+function HD_TC_Cay3() DynamicExecute(HD_TC_DRV, "TONGCASTLE_Adm_ReviveTree", 3) Msg2Player("®· Ðp håi sinh c©y lo¹i 3 ë map 984") end
 
 function HD_TC_XoaCay()
 	DynamicExecute(HD_TC_RELAY, "tbS3TongCastle:DelAllTreeData", 1)
 	DynamicExecute(HD_TC_RELAY, "tbS3TongCastle:DelAllTreeData", 2)
 	DynamicExecute(HD_TC_RELAY, "tbS3TongCastle:DelAllTreeData", 3)
-	Msg2Player("Da xoa record cay ca 3 loai o relay (cay dang dung trong map se bi don o tick sau)")
+	Msg2Player("®· xãa record c©y c¶ 3 lo¹i ë relay (c©y ®ang ®øng trong map sÏ bÞ dän ë tick sau)")
 end
 
 function HD_TC_XemDiem()
-	Msg2Player("Diem Than Moc (task 3399) = "..GetTask(3399))
+	Msg2Player("®iÓm ThÇn Méc (task 3399) = "..GetTask(3399))
 	HD_TC_Menu()
 end
 
 function HD_TC_CongDiem()
 	SetTask(3399, GetTask(3399) + 500)
-	Msg2Player("Da cong 500 diem Than Moc -> hien co "..GetTask(3399))
+	Msg2Player("®· céng 500 ®iÓm ThÇn Méc -> hiÖn cã "..GetTask(3399))
 end
 
 function HD_TC_TeleNpc() NewWorld(176, 1663, 3262) end
@@ -169,31 +169,31 @@ function HD_TC_Tele984() NewWorld(984, 1311, 3515) end
 
 -- ================= 5) ITEM THUONG TEST =================
 function HD_Item_Menu()
-	SayEx({"Nhan item thuong de test (genre 6/detail 1)",
-	"Qua Dai Hoang Kim 4864 ("..floor(HD_CFG("QDHK_EXP", 200000000)/1e6).."tr exp) x1/HD_It4864",
-	"Hoang Chan Don 2273 ("..floor(HD_CFG("HCD_EXP", 2000000000)/1e6).."tr exp co tran) x1/HD_It2273",
-	"Bua trieu Thu Ve 3204 x5/HD_It3204",
-	"Thanh Dong Than Moc Lenh 3205 x1/HD_It3205",
-	"Bach Ngan Than Moc Lenh 3206 x1/HD_It3206",
-	"Hoang Kim Than Moc Lenh 3207 x1/HD_It3207",
-	"Han nguyen chan dan 4857 x1/HD_It4857",
-	"Quay lai/HD_AdminMenu"})
+	SayEx({"NhËn item th­ëng ®Ó test (genre 6/detail 1)",
+	"Qu¶ ®¹i Hoµng Kim 4864 ("..floor(HD_CFG("QDHK_EXP", 200000000)/1e6).."tr exp) x1/HD_It4864",
+	"Hoµng Ch©n ®¬n 2273 ("..floor(HD_CFG("HCD_EXP", 2000000000)/1e6).."tr exp cã trÇn) x1/HD_It2273",
+	"Bïa triÖu Thñ VÖ 3204 x5/HD_It3204",
+	"Thanh ®ång ThÇn Méc LÖnh 3205 x1/HD_It3205",
+	"B¹ch Ng©n ThÇn Méc LÖnh 3206 x1/HD_It3206",
+	"Hoµng Kim ThÇn Méc LÖnh 3207 x1/HD_It3207",
+	"Hµn nguyªn ch©n ®an 4857 x1/HD_It4857",
+	"Quay l¹i/HD_AdminMenu"})
 end
 
-function HD_It4864() AddItem(6, 1, 4864, 0, 0, 0) Msg2Player("Da nhan Qua Dai Hoang Kim") end
-function HD_It2273() AddItem(6, 1, 2273, 0, 0, 0) Msg2Player("Da nhan Hoang Chan Don") end
+function HD_It4864() AddItem(6, 1, 4864, 0, 0, 0) Msg2Player("®· nhËn Qu¶ ®¹i Hoµng Kim") end
+function HD_It2273() AddItem(6, 1, 2273, 0, 0, 0) Msg2Player("®· nhËn Hoµng Ch©n ®¬n") end
 function HD_It3204()
 	for i = 1, 5 do AddItem(6, 1, 3204, 0, 0, 0) end
-	Msg2Player("Da nhan 5 Bua trieu Thu Ve")
+	Msg2Player("®· nhËn 5 Bïa triÖu Thñ VÖ")
 end
-function HD_It3205() AddItem(6, 1, 3205, 0, 0, 0) Msg2Player("Da nhan Thanh Dong Than Moc Lenh") end
-function HD_It3206() AddItem(6, 1, 3206, 0, 0, 0) Msg2Player("Da nhan Bach Ngan Than Moc Lenh") end
-function HD_It3207() AddItem(6, 1, 3207, 0, 0, 0) Msg2Player("Da nhan Hoang Kim Than Moc Lenh") end
-function HD_It4857() AddItem(6, 1, 4857, 0, 0, 0) Msg2Player("Da nhan Han nguyen chan dan") end
+function HD_It3205() AddItem(6, 1, 3205, 0, 0, 0) Msg2Player("®· nhËn Thanh ®ång ThÇn Méc LÖnh") end
+function HD_It3206() AddItem(6, 1, 3206, 0, 0, 0) Msg2Player("®· nhËn B¹ch Ng©n ThÇn Méc LÖnh") end
+function HD_It3207() AddItem(6, 1, 3207, 0, 0, 0) Msg2Player("®· nhËn Hoµng Kim ThÇn Méc LÖnh") end
+function HD_It4857() AddItem(6, 1, 4857, 0, 0, 0) Msg2Player("®· nhËn Hµn nguyªn ch©n ®an") end
 
 -- ================= 6/7) BOT TONG KIM =================
-function HD_TK_Bat() PB_SetTongKim(1) Msg2Player("Da BAT bot tu tham gia Tong Kim (PB_SetTongKim 1)") end
-function HD_TK_Tat() PB_SetTongKim(0) Msg2Player("Da TAT bot tu tham gia Tong Kim (PB_SetTongKim 0)") end
+function HD_TK_Bat() PB_SetTongKim(1) Msg2Player("®· BËT bot tù tham gia Tèng Kim (PB_SetTongKim 1)") end
+function HD_TK_Tat() PB_SetTongKim(0) Msg2Player("®· T¾T bot tù tham gia Tèng Kim (PB_SetTongKim 0)") end
 
 -- ================= 8) NAP LAI CONFIG =================
 -- ReLoadScript = chay lai ca file trong state cua no => moi HD_CFG/%upvalue
@@ -223,5 +223,5 @@ function HD_ReloadCfg()
 		ReLoadScript(HD_RELOAD_LIST[i])
 		nOk = nOk + 1
 	end
-	Msg2Player("Da nap lai CONFIG + "..nOk.." file tinh nang. Cac muc [RESTART] trong config van can restart GS.")
+	Msg2Player("®· n¹p l¹i CONFIG + "..nOk.." file tÝnh n¨ng. C¸c môc [RESTART] trong config vÉn cÇn restart GS.")
 end
