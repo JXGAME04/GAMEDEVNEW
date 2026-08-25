@@ -196,6 +196,7 @@ private:
 	void				DoVanish();
 	void				DoCollision();
 	int					CheckNearestCollision();
+	void				S5LogScan(const char *szMap, int nRet);	// [S5 24/08] chan doan va cham chieu don muc tieu
 	friend				class KMissleSet;
 	void				Release();
 	int					CheckCollision();//检测是否碰撞// 1表示正常碰撞到物体，0表示未碰撞到任何物体, -1表示落地

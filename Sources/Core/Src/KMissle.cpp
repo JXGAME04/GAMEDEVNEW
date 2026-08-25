@@ -1789,6 +1789,25 @@ BOOL	KMissle::PrePareFly()
 	
 }
 
+// [S5 24/08 dem] In MOT dong cho moi lan quet va cham cua chieu don muc tieu (colrange==1).
+// Loc theo TEN nhan vat (AUTOLOG_IDX) va KHONG tiet che, nen dung lam thong ke duoc.
+// szMap 9 ky tu = 9 o cua vong quet 3x3, thu tu (i,j) = (-1,-1)(-1,0)(-1,1)(0,-1)(0,0)(0,1)(1,-1)(1,0)(1,1):
+//   '.' o trong    'x' co NPC nhung phep so offset LOAI    'o' NPC khac va cham    'F' dung muc tieu bam
+void KMissle::S5LogScan(const char *szMap, int nRet)
+{
+#ifdef _SERVER
+	if (m_nCollideRange != 1) return;
+	int nF = (m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) ? m_nFollowNpcIdx : -1;
+	AUTOLOG_IDX(m_nLauncher, "[S5-SCAN] msl=%d sk=%d life=%d/%d map9=%s ret=%d mpos(r=%d,%d,%d off %d,%d z=%d) follow=%d fpos(r=%d,%d,%d off %d,%d) fdoing=%d speed=%d fx=%d fy=%d",
+		m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, szMap, nRet,
+		m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ,
+		m_nFollowNpcIdx,
+		(nF > 0) ? Npc[nF].m_RegionIndex : -1, (nF > 0) ? Npc[nF].m_MapX : -1, (nF > 0) ? Npc[nF].m_MapY : -1,
+		(nF > 0) ? Npc[nF].m_OffX : -1, (nF > 0) ? Npc[nF].m_OffY : -1, (nF > 0) ? (int)Npc[nF].m_Doing : -1,
+		m_nSpeed, m_nXFactor, m_nYFactor);
+#endif
+}
+
 int KMissle::CheckNearestCollision()
 {
 	int nSearchRegion = 0;
@@ -1797,6 +1816,8 @@ int KMissle::CheckNearestCollision()
 	BOOL bCollision = TRUE;
 	int nNpcIdx = 0;
 	int nFirstHit = 0;	// FIX 24/08: nho con dau tien de van tra ve duoc khi muc tieu bam khong trong tam
+	// [S5 24/08 dem] ban do 9 o cua vong quet, chi de CHAN DOAN - xem chu thich cuoi ham.
+	char szS5Map[10] = "........."; int nS5Cell = 0;
 	int nDX = 0;
 	int nDY = 0;
 	int nNpcOffsetX = 0;
@@ -1825,9 +1846,11 @@ int KMissle::CheckNearestCollision()
 			
 			_ASSERT(nSearchRegion >= 0);
 			nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation);
+			nS5Cell = (i + 1) * 3 + (j + 1);
 			
 			if (nNpcIdx > 0)
 			{
+				if (nS5Cell >= 0 && nS5Cell < 9) szS5Map[nS5Cell] = 'x';
 				// FIX 24/08: xac chet nam im mot o van bi FindNpc tra ve va CUOP lan va cham cua
 				// chieu don muc tieu - ReceiveDamage (KNpc.cpp:3964) tra TRUE ma KHONG tru mau, con
 				// CheckCollision thi da return 1 nen dan tat luon. Bo qua xac, quet tiep o khac.
@@ -1886,17 +1909,23 @@ CheckCollision:
 				AUTOLOG_EVERY(2000, "[MSL-NEARMISS] msl=%d sk=%d npc=%d(id=%u) d_cell(%d,%d) msloff(%d,%d) npcoff(%d,%d) cell(%d,%d) bCollision=%d", m_nMissleId, m_nSkillId, nNpcIdx, Npc[nNpcIdx].m_dwID, nDX, nDY, m_nXOffset, m_nYOffset, nNpcOffsetX, nNpcOffsetY, nCellWidth, nCellHeight, (int)bCollision);
 				if (bCollision)
 				{
+					if (nS5Cell >= 0 && nS5Cell < 9)
+						szS5Map[nS5Cell] = (m_nFollowNpcIdx > 0 && nNpcIdx == m_nFollowNpcIdx) ? 'F' : 'o';
 					// FIX 24/08: truoc day tra ve con DAU TIEN theo thu tu quet 3x3 co dinh (goc tren-trai
 					// truoc, o cua chinh dan xep thu 5) nen mot con khac dung chen truoc se CUOP het sat
 					// thuong cua muc tieu da chon. Uu tien m_nFollowNpcIdx; khong co thi giu nguyen con dau.
 					if (m_nFollowNpcIdx > 0 && nNpcIdx == m_nFollowNpcIdx)
+					{
+						S5LogScan(szS5Map, nNpcIdx);
 						return nNpcIdx;
+					}
 					if (!nFirstHit)
 						nFirstHit = nNpcIdx;
 				}
 			}
 		}
 		
+		S5LogScan(szS5Map, nFirstHit);
 		return nFirstHit;
 }
 
