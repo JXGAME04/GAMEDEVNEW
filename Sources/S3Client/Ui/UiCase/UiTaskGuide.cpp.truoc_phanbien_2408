@@ -174,7 +174,7 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	}
 	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_TINSU_TASKID)
 	{
-		if ((nTaskId >= 1201 && nTaskId <= 1218) || nTaskId == 4128)	// [24/08] 4128 = bo dem ngay
+		if (nTaskId >= 1201 && nTaskId <= 1218)
 			m_pSelf->BuildTinSuText();
 	}
 	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_BANGCHIEN_TASKID)
@@ -429,21 +429,6 @@ static void TS_Digits(int nCode, char* szOut, int nOutSize, int* pnCount)
 
 // [CHI NAM 24/08] Bang Chien: doc task 2369 diem tran, 2370 so lan chet, 2371 so nguoi ha,
 // 2373 quan ham 1..5, 2375 chuoi ha cao nhat, 2376 tran mang, 2378 tong diem ca mua.
-// [24/08 hau phan bien] Task dang "dem theo ngay" cua may chu ma hoa la
-// yymmdd*256 + so_lan (script\activitysys\playerfunlib.lua). Neu phan ngay khac
-// hom nay thi so dem coi nhu 0. Engine giai ma y het o CoreShell.cpp.
-static int DTG_DailyCount(int nRaw)
-{
-	if (nRaw <= 0)
-		return 0;
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-	int nToday = (st.wYear % 100) * 10000 + st.wMonth * 100 + st.wDay;
-	if ((nRaw / 256) != nToday)
-		return 0;
-	return nRaw % 256;
-}
-
 void KUiTaskGuide::BuildBangChienText()
 {
 	m_Content.Clear();
@@ -454,10 +439,7 @@ void KUiTaskGuide::BuildBangChienText()
 	int nSeries = DTG_TaskVal(2375);
 	int nMaxDie = DTG_TaskVal(2376);
 	int nTotal  = DTG_TaskVal(2378);
-	// [24/08 hau phan bien] phai xet CA quan ham (2373) va tran mang (2376) - hai truong
-	// nay duoc dat NGAY LUC BAO DANH (tongwar_trap.lua:132,141) nen dang trong tran ma
-	// chi xet 4 truong kia se bao nham "chua tham gia".
-	if (nPoint == 0 && nKill == 0 && nTotal == 0 && nDeath == 0 && nRank == 0 && nMaxDie == 0)
+	if (nPoint == 0 && nKill == 0 && nTotal == 0 && nDeath == 0)
 	{
 		AddLine(TW_NOTASK);
 		return;
@@ -551,9 +533,7 @@ void KUiTaskGuide::BuildTinSuText()
 	if (nTitle < 0 || nTitle > 5)
 		nTitle = 0;
 	char szPt[512];
-	// [24/08 hau phan bien] 1218 la so TRON DOI (khong noi nao dat lai 0) - bo dem NGAY
-	// that la 4128 (doi tu 1205 hom nay, dang yymmdd*256 + so_lan).
-	sprintf(szPt, TS_POINT_FMT, DTG_TaskVal(1205), s_szTitle[nTitle], DTG_DailyCount(DTG_TaskVal(4128)));
+	sprintf(szPt, TS_POINT_FMT, DTG_TaskVal(1205), s_szTitle[nTitle], DTG_TaskVal(1218));
 	AddLine(szPt);
 }
 
@@ -571,15 +551,34 @@ void KUiTaskGuide::UpdateButtons()
 	m_BtnCancelTrace.Enable(bDT && KUiTaskTrace::IsTraced());
 }
 
-// [24/08 hau phan bien] Da BO ham DTG_FixTagAfterVn: no chen dau cach truoc MOI '<'
-// dung sau byte >0x80 nen thua nua o trang o cac cho VON KHONG hong. Mo phong
-// TEncodeText cho thay toan bo UiTaskGuideStr.h chi co DUNG 1 chuoi that su hong
-// (TS_ST10) - da sua thang chuoi do (doi cho dau cach) thay vi xu ly o day.
+// [FIX 24/08] TEncodeText (Engine\Src\Text.cpp:468) coi MOI byte > 0x80 la chu Han 2 byte
+// va chep luon byte ke tiep. Tieng Viet TCVN3 la 1 BYTE => the dung ngay sau chu co dau
+// (vd "...Tin Su<color>") bi nuot mat dau '<', parser khong nhan ra the nua nen "color>"
+// in thang ra man hinh. Chen 1 dau cach truoc '<' khi byte lien truoc > 0x80: dau cach do
+// se bi nuot THAY cho '<' (nen khong hien ra), con '<' tro thanh byte dau va duoc xu ly.
+static void DTG_FixTagAfterVn(char* pBuf, size_t nCap)
+{
+	if (!pBuf) return;
+	char szTmp[2048];
+	size_t i = 0, o = 0;
+	size_t nLen = strlen(pBuf);
+	for (; i < nLen && o + 2 < sizeof(szTmp); i++)
+	{
+		if (pBuf[i] == '<' && o > 0 && (unsigned char)szTmp[o - 1] > 0x80)
+			szTmp[o++] = ' ';
+		szTmp[o++] = pBuf[i];
+	}
+	szTmp[o] = 0;
+	strncpy(pBuf, szTmp, nCap - 1);
+	pBuf[nCap - 1] = 0;
+}
+
 void KUiTaskGuide::AddLine(const char* pText)
 {
 	char szBuf[2048];
 	strncpy(szBuf, pText, sizeof(szBuf) - 1);
 	szBuf[sizeof(szBuf) - 1] = 0;
+	DTG_FixTagAfterVn(szBuf, sizeof(szBuf));	// [FIX 24/08]
 	int nLen = TEncodeText(szBuf, strlen(szBuf));
 	m_Content.AddOneMessage(szBuf, nLen);
 }
