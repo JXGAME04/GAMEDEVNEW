@@ -394,6 +394,30 @@ sang HD3_Tick lần đầu.
 — gộp đủ: HD3_AddNpc/Ex + boss vàng + DelNpcByName. Copy đè `CoreServer.dll`
 trước khi bấm `RESTART_GS_2508.bat` (bản 10:23 đang nằm sẵn thiếu C14).
 
+## C15 — PLĐ đúng 100% Linux (3 báo cáo của chủ, commit `14e561ed`)
+
+1. **Xoá 6 NPC thuyền phu CŨ** (đứng TRÙNG toạ độ NPC mới ⇒ chủ click trúng bản
+   cũ). `HD3_DelNpcByName` thêm tham số 2 = **map** — chỉ xoá map 336 (template
+   "Thuyền phu *" còn dùng cho bến đò thôn, cấm xoá toàn cục).
+2. **Gốc "không đánh được quái"**: lên thuyền bằng NPC cũ ⇒ NGOÀI mission ⇒
+   không được `mission.lua` `SetFightState(1)` khi thuyền rời bến (fld_head:135
+   `SetFightState(0)` = THU VŨ KHÍ theo nghĩa JX1) ⇒ client mask
+   `relation_none` (KNpcSet.cpp:1558) chặn CHỌN mục tiêu. Đi đúng luồng Linux
+   (NPC mới) là hết — mission tự kéo fight=1 cho mọi thành viên.
+3. **Thông báo so bản Linux** (soát toàn bộ relay `TaskList.ini`):
+   - Task_86 PLĐ = bản interval **60 = MỖI GIỜ** (các tệp `_NN00` giờ chẵn KHÔNG
+     được đăng ký) ⇒ `HD3_PLD_GIO` mặc định đổi thành **đủ 24 giờ**.
+   - Task_52 Vượt Ải: chuỗi báo danh thay bằng ĐÚNG chuỗi gốc (có dấu, "10 phút").
+   - Task_84 DailyRank: đúng chuỗi gốc + `AddGlobalNews` (JX1 có sẵn) như Linux.
+   - PLĐ không có thông báo tầng relay (announce nằm trong mission script chép 1:1).
+   - Sát Thủ không có relay task — thông báo đều trong script chép.
+   - Tên NPC thuyền phu mới: "Thuyền phu" TCVN3 (trước là ASCII).
+
+**DLL server CHỐT: `CoreServer.dll.moi_2508_c15` (12:31)** — gộp AddNpc + boss
+vàng + DelNpcByName(tên, map). Copy đè `CoreServer.dll` (bản 12:08 đang nằm đó
+thiếu lọc-map + C15) trước khi bấm `RESTART_GS_2508.bat`. Console boot phải in:
+`Da xoa 7 NPC Nhiep Thi Tran cu` + `Da xoa 6 NPC thuyen phu cu (map 336)`.
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
