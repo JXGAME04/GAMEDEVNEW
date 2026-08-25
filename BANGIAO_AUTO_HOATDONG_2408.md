@@ -318,4 +318,32 @@ rương không thấy quái (chỉ quét 10 ô quanh rương) → gõ rương m�
 Binary staged: **`CoreClient.dll.moi_2408_liendau` 2.339.328 B md5 `41a70b84` mốc 11:59**
 (Game.exe `9eec1d50` + WAuto.exe `1b3de743` 09:43 giữ nguyên).
 
-*Ghi 24/08/2026 ~20:20 · Tín Sứ ~21:00 · 7.5 sáng 25/08 · 7.6 trưa 25/08 · 7.7 trưa 25/08.*
+### 7.8 Chiều 25/08 — TỐNG KIM vào theo LOA máy chủ (r10)
+
+Chủ game test: admin mở Tống Kim ngoài giờ (sửa `TAB_TIME_TONG_KIM` trong
+`script\tinhnang\tong_kim_tcap\lib_tktc.lua`) → WAuto không tự vào. Ba lỗi của r0:
+1. Loa chỉ được nhận khi **có tick ít nhất 1 khung giờ** trong tab Tống Kim (`nCoGio`).
+2. Tin loa chỉ sống **một nhịp đọc**: news "Báo danh Tống Kim đã bắt đầu…" bị news thứ hai
+   "Tống kim đã được khởi động phương thức…" (bắn ra ngay sau, ô chứa news chỉ có 1 khe)
+   đè mất là trượt luôn.
+3. Đã chạy 1 lượt theo loa trong ngày thì loa lần 2 (admin mở thêm) bị khoá.
+
+Vá (yêu cầu: **đổi giờ ở script là auto tự bám theo, không phải chỉnh WAuto**):
+- Loa chốt vào **cửa sổ `uTKMoT`**: đọc số phút ngay trong câu loa ("trong vòng N phút",
+  kẹp 3-30, mặc định 10 — server đang để `TIME_BD_TK=1` phút nên kẹp lên 10 là chủ đích:
+  NPC báo danh vẫn nhận người vào trễ trong trận).
+- Bắt **cả 3 kênh**: news báo danh + news "khởi động phương thức" (chống bị đè) + tin chat
+  `[Sự Kiện] … đang ở giai đoạn báo danh` (vòng 4 khe, khó trượt — hàm mới `TK_CoTin`).
+- **Bỏ điều kiện nCoGio**: chỉ cần bật ô Tống Kim là loa kích hoạt được, 4 khung giờ WAuto
+  thành đường DỰ PHÒNG (để trống cũng chạy). Loa mới giữa ngày xoá khoá "khung loa đã chạy".
+- 2 trường mới cuối ExtAuto: `uTKMsgSeen`, `uTKMoT` (Game.exe không dịch KPlayer.h nên
+  binary Game.exe KHÔNG đổi — hash giữ `9eec1d50`).
+
+**Trả lời câu hỏi cấu hình:** giờ Tống Kim nằm ở `TAB_TIME_TONG_KIM` (lib_tktc.lua, dạng
+`{giờ, phút, giờ-kết-thúc, số-trận}`) — đổi ở đó là loa phát đúng phút đó và auto tự vào,
+KHÔNG cần đụng WAuto. Điều kiện: nhân vật đang online + WAuto bật ô Tống Kim lúc loa nổ.
+
+Binary staged: **`CoreClient.dll.moi_2408_liendau` 2.340.352 B md5 `d0ccbf37` mốc 12:37**
+(Game.exe `9eec1d50` · WAuto.exe `1b3de743` giữ nguyên).
+
+*Ghi 24/08 ~20:20 · TS ~21:00 · 7.5-7.7 ngày 25/08 · 7.8 chiều 25/08.*

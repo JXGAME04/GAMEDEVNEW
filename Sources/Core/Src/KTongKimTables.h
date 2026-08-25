@@ -24,11 +24,13 @@ static const char TKM_OPT_MUANHANH[] = "Mua nhanh Ngò Hoa Ngäc Lé Hoµn";
 static const char TKM_OPT_MUADUOC[] = "Ta muèn mua d­îc phÈm";
 static const char TKM_OPT_CHDIEM[] = "Cöa hµng ®iÓm Tèng Kim";
 static const char TKM_MSG_BAODANH[] = "B¸o danh Tèng Kim ®· b¾t ®Çu thêi gian b¸o danh trong vßng ";
+static const char TKM_MSG_KHOIDONG[] = "Tèng kim ®· ®­îc khëi ®éng ph­¬ng thøc ";
+static const char TKM_MSG_SUKIENBD[] = "®ang ë giai ®o¹n b¸o danh";
 
 // ===== khung gio mo tran (gio, phut) - theo dong ho MAY CHU =====
 #define TK_GIO_COUNT	4
 static const short g_TKGio[TK_GIO_COUNT][2] = {
-	{ 13, 23 },
+	{ 12, 21 },
 	{ 17, 50 },
 	{ 20, 50 },
 	{ 22, 50 },

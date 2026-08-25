@@ -6672,6 +6672,24 @@ static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT u
 // ================== MAY CHINH TONG KIM ==================
 // Tra ve: 0 = tha may; 1 = dang cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
 //         2 = dang trong tran (cam lai + de may PK cua tab PK danh).
+// quet 4 khe tin "He Thong" cho song loa Tong Kim (nhu HD_CoTin, con tro rieng)
+static int TK_CoTin(int nPlayerIdx, const char* szMark)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	int nCo = 0;
+	if (cap.uMsgSeq != ea.uTKMsgSeen)
+	{
+		unsigned int uTu = ea.uTKMsgSeen;
+		if (cap.uMsgSeq - uTu > 4)
+			uTu = cap.uMsgSeq - 4;
+		for (unsigned int q = uTu; q != cap.uMsgSeq; ++q)
+			if (DT_Has(cap.aMsg[q & 3], szMark))
+				nCo = 1;
+	}
+	return nCo;
+}
+
 static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
@@ -6683,19 +6701,46 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	int nX, nY;
 	Npc[nSelf].GetMpsPos(&nX, &nY);
 
-	// tin toan may chu bao MO BAO DANH - moc dang tin cay nhat (khoi phu thuoc
-	// dong ho may nguoi choi); lich cau hinh van la duong chinh.
+	// LOA may chu la duong vao CHINH: admin doi gio trong TAB_TIME_TONG_KIM
+	// (lib_tktc.lua) la loa phat dung phut do va auto tu bam theo, khong can
+	// chinh 4 khung gio WAuto. Khung gio cau hinh van la duong du phong.
+	// Loa chot vao CUA SO uTKMoT vi tin news chi co MOT khe (news "khoi dong
+	// phuong thuc" ban NGAY SAU se de len) va co the truot mot nhip doc.
 	int nTinMo = 0;
 	if (cap.uNewsSeq != ea.uTKNewsSeen)
 	{
 		ea.uTKNewsSeen = cap.uNewsSeq;
 		if (DT_Has(cap.szNews, TKM_MSG_BAODANH))
+		{
 			nTinMo = 1;
+			// "... trong vong N phut" -> N la cua so bao danh (kep 3..30)
+			const char* pSo = strstr(cap.szNews, TKM_MSG_BAODANH);
+			int nPh = atoi(pSo + (sizeof(TKM_MSG_BAODANH) - 1));
+			if (nPh < 3 || nPh > 30)
+				nPh = 10;
+			ea.uTKMoT = uCurTime + (UINT)nPh * 60000u;
+		}
+		else if (DT_Has(cap.szNews, TKM_MSG_KHOIDONG) && !(uCurTime < ea.uTKMoT))
+		{
+			nTinMo = 1;	// news bao danh bi de mat - bat news thu hai
+			ea.uTKMoT = uCurTime + 600000u;
+		}
 	}
+	// kenh chat "[Su Kien] ... dang o giai doan bao danh" (vong 4 khe, kho truot)
+	if (TK_CoTin(nPlayerIdx, TKM_MSG_SUKIENBD) && !(uCurTime < ea.uTKMoT))
+	{
+		nTinMo = 1;
+		ea.uTKMoT = uCurTime + 600000u;
+	}
+	ea.uTKMsgSeen = cap.uMsgSeq;
+	const int nLoaMo = (nTinMo || uCurTime < ea.uTKMoT);
 	int nSlot = -1;
 	const int nTrongGio = TK_KhungGio(pAp, &nSlot);
-	const int nCoGio = (pAp->bTKGio[0] || pAp->bTKGio[1] || pAp->bTKGio[2] || pAp->bTKGio[3]);
 	const int nKhoa = DT_Today() * 10 + (nSlot < 0 ? 9 : nSlot);
+	// loa MOI giua ngay (admin mo them lan nua ngoai gio): xoa khoa "khung loa
+	// hom nay da chay xong" de vao duoc lan nua
+	if (nTinMo && !nTrongGio && ea.nTKPhase == TKP_DONE && ea.nTKKey == DT_Today() * 10 + 9)
+		ea.nTKKey = 0;
 
 	// dang cho hoi sinh: nut hoi sinh do o "Tu hoi sinh" (tab Co ban) bam ho
 	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
@@ -6714,7 +6759,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (ea.nTKPhase == TKP_OFF || ea.nTKPhase == TKP_DONE)
 	{
 		ea.nTKHold = 0;
-		if (!nTrongGio && !(nTinMo && nCoGio))
+		if (!nTrongGio && !nLoaMo)
 		{
 			ea.nTKPhase = TKP_OFF;
 			return 0;

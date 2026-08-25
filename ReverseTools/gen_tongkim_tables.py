@@ -100,6 +100,10 @@ MARK.append(("TKM_OPT_CHDIEM", pick(s_quanquan, '"' + ANY + '/giaodichtongkim"',
 # tin toan may chu bao mo bao danh
 MARK.append(("TKM_MSG_BAODANH",
              pick(s_timer, r'AddGlobalCountNews\("' + ANY + r'"\.\.TIME_BD_TK', "tin mo bao danh")))
+MARK.append(("TKM_MSG_KHOIDONG",
+             pick(s_timer, r'AddGlobalCountNewsEx\("' + ANY + r'"\.\.GetMissionName', "tin khoi dong tran")))
+MARK.append(("TKM_MSG_SUKIENBD",
+             pick(s_timer, r'(\xaeang \xeb giai \xaeo\xb9n b\xb8o danh)', "tin chat su kien bao danh")))
 
 # ---- toa do ----
 TONGBINH = toado(s_lib, "TONGBINH_TOADO")

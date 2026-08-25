@@ -217,6 +217,8 @@ struct ExtAuto
 	UINT uTKPhaseT;      // moc vao pha (de bat ket pha)
 	UINT uTKDlgSeen;     // uDlgSeq da xu ly
 	UINT uTKNewsSeen;    // uNewsSeq (tin toan may chu) da xu ly
+	UINT uTKMsgSeen;     // uMsgSeq kenh He Thong da quet (tin [Su Kien] bao danh)
+	UINT uTKMoT;         // het han cua so vao theo LOA bao danh (0 = khong co)
 	UINT uTKMsgT;        // throttle bao trang thai
 	int  nTKPhe;         // phe dang nham: 1 = Tong, 2 = Kim
 	int  nTKThe;         // the tran: 1 = minh o nua ban do A, 2 = nua B
@@ -377,6 +379,8 @@ struct ExtAuto
 		uTKPhaseT = 0;
 		uTKDlgSeen = 0;
 		uTKNewsSeen = 0;
+		uTKMsgSeen = 0;
+		uTKMoT = 0;
 		uTKMsgT = 0;
 		nTKPhe = 0;
 		nTKThe = 0;
