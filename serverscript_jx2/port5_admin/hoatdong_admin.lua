@@ -21,6 +21,7 @@ function HD_AdminMenu()
 	"6. BOT TËng Kim: bÀt/HD_TK_Bat",
 	"7. BOT TËng Kim: tæt/HD_TK_Tat",
 	"8. Nπp lπi CONFIG (khi kh´ng c„ trÀn chπy)/HD_ReloadCfg",
+	"9. Danh hi÷u & vﬂng s∏ng (Bang Chi’n)/HD_TT_Menu",
 	"K’t thÛc ÆËi thoπi/no"})
 end
 
@@ -280,3 +281,69 @@ function HD_ReloadCfg()
 	end
 	Msg2Player("Æ∑ nπp lπi CONFIG + "..nOk.." file t›nh n®ng. C∏c mÙc [RESTART] trong config v…n c«n restart GS.")
 end
+
+-- ================= 9) DANH HIEU & VONG SANG =================
+-- CHI Bang Chien co danh hieu/vong sang. Da doi chieu ban Linux: Bach Nhan, Thanh Bao,
+-- Ty Vo KHONG he co Title_AddTitle/AddSkillState nao => khong phai thieu khi port.
+--   quan ham 1..5 = title 100..104  (missions\tongwar\match\head.lua:430)
+--   vong sang quan ham = skill 661 cap (rank-1)          (match\head.lua:432)
+--   105/106 Vo Lam De Nhat Bang     (event\tongwar\head.lua:273, han 30 ngay)
+--   199 Cao Cap De Nhat Bang        (npc_shizhe.lua:355, han 90 ngay)
+--   3000 Vo Lam Minh Chu            (head.lua:266)
+-- Chu ky: Title_AddTitle(nId, nTimeType, nTime) - nTimeType 1 = co han, nTime tinh FRAME
+-- (18 frame = 1 giay); Title_ActiveTitle(nId) = DEO len nguoi.
+TT_QUANHAM = {"Binh S‹", "Hi÷u Ûy", "ThËng L‹nh", "Ph„ T≠Ìng", "Æπi T≠Ìng"}
+
+function HD_TT_Menu()
+	local nCur = Title_GetActiveTitle()
+	SayEx({"<color=yellow>Danh hi÷u & vﬂng s∏ng<color> - danh hi÷u Æang Æeo: ".. tostring(nCur),
+	"Qu©n hµm 1 - Binh S‹ (kÃm vﬂng s∏ng)/HD_TT_R1",
+	"Qu©n hµm 2 - Hi÷u Ûy (kÃm vﬂng s∏ng)/HD_TT_R2",
+	"Qu©n hµm 3 - ThËng L‹nh (kÃm vﬂng s∏ng)/HD_TT_R3",
+	"Qu©n hµm 4 - Ph„ T≠Ìng (kÃm vﬂng s∏ng)/HD_TT_R4",
+	"Qu©n hµm 5 - Æπi T≠Ìng (kÃm vﬂng s∏ng)/HD_TT_R5",
+	"Danh hi÷u 105 - V‚ L©m Æ÷ Nh t Bang/HD_TT_105",
+	"Danh hi÷u 106 - V‚ L©m Æ÷ Nh t Bang (bang vi™n)/HD_TT_106",
+	"Danh hi÷u 199 - Cao C p Æ÷ Nh t Bang/HD_TT_199",
+	"Danh hi÷u 3000 - V‚ L©m Minh ChÒ/HD_TT_3000",
+	"GÏ h’t danh hi÷u vµ vﬂng s∏ng/HD_TT_Clear",
+	"Quay lπi/HD_AdminMenu"})
+end
+
+function HD_TT_Rank(nRank)
+	local nId = 100 + nRank - 1
+	Title_AddTitle(nId, 0, 9999999)
+	Title_ActiveTitle(nId)
+	AddSkillState(661, nRank - 1, 0, 999999)
+	Msg2Player("Æ∑ nhÀn qu©n hµm ".. TT_QUANHAM[nRank] ..
+		" (danh hi÷u ".. nId .. ", vﬂng s∏ng k¸ n®ng 661 c p ".. (nRank - 1) .. ")")
+end
+function HD_TT_R1() HD_TT_Rank(1) end
+function HD_TT_R2() HD_TT_Rank(2) end
+function HD_TT_R3() HD_TT_Rank(3) end
+function HD_TT_R4() HD_TT_Rank(4) end
+function HD_TT_R5() HD_TT_Rank(5) end
+
+-- han dung y het ban goc: 105/106 = 30 ngay, 199 = 90 ngay (tinh bang FRAME)
+function HD_TT_Cap(nId, nNgay, szTen)
+	Title_AddTitle(nId, 1, nNgay * 24 * 60 * 60 * 18)
+	Title_ActiveTitle(nId)
+	Msg2Player("Æ∑ nhÀn danh hi÷u ".. szTen .. " (id ".. nId ..
+		", hπn ".. nNgay .. " ngµy)")
+end
+function HD_TT_105()  HD_TT_Cap(105,  30, "V‚ L©m Æ÷ Nh t Bang") end
+function HD_TT_106()  HD_TT_Cap(106,  30, "V‚ L©m Æ÷ Nh t Bang") end
+function HD_TT_199()  HD_TT_Cap(199,  90, "Cao C p Æ÷ Nh t Bang") end
+function HD_TT_3000() HD_TT_Cap(3000, 30, "V‚ L©m Minh ChÒ") end
+
+function HD_TT_Clear()
+	Title_ActiveTitle(0)
+	local tb = {100, 101, 102, 103, 104, 105, 106, 199, 3000}
+	for i = 1, getn(tb) do
+		Title_RemoveTitle(tb[i])
+	end
+	RemoveSkillState(661)
+	RemoveSkillState(1485)
+	Msg2Player("Æ∑ gÏ h’t danh hi÷u Bang Chi’n vµ vﬂng s∏ng qu©n hµm.")
+end
+
