@@ -128,6 +128,8 @@ static const char HDM_MSG_KETTHUC[] = "L«i §µi Hoµng Thµnh T­ h«m nay kÕt thóc !
 static const HDPoint g_HDTSDq11 = { 3018, 5087 };	// Dich quan Thanh Do
 static const HDPoint g_HDTSDq162 = { 1676, 3115 };	// Dich quan Dai Ly
 static const HDPoint g_HDTSDqAi = { 1412, 3203 };	// Dich quan trong ai 395
+static const HDPoint g_HDTSTieuTran = { 1386, 2442 };	// Tieu Tran - NPC CUA RA (sau trong ai)
+static const HDPoint g_HDBCXaPhu = { 1597, 3139 };	// Xa phu khu bao danh BC (ve thanh)
 // tuyen: { tuyen, map nhan, map dich, x dich, y dich } (citygo posthouse.lua)
 static const short g_HDTSVe[2][5] = {
 	{ 1, 11, 162, 1674, 3132 },
@@ -155,6 +157,17 @@ static const char HDM_OPT_TSMUON[] = "Muèn";
 static const char HDM_OPT_TSBATDAU[] = "B¾t ®Çu nhiÖm vô";
 static const char HDM_OPT_TSTIEPTUC[] = "TiÕp tôc nhiÖm vô";
 static const char HDM_OPT_TSROI[] = "Rêi khái khu vùc";
+static const char HDM_OPT_TSMUONRA[] = "Ta muèn ®i ra";
+static const char HDM_OPT_TSDUNGRA[] = "§óng! Ta muèn rêi khái";
+static const char HDM_OPT_TSCHUAXONG[] = "Ta ch­a hoµn thµnh kh¶o nghiÖm, ta muèn ®i ra mét chót";
+static const char HDM_SAY_TSDOITRUONG[] = "kh«ng ph¶i ®éi tr­ëng";
+static const char HDM_SAY_BCKHONGBANG[] = "Ch­a gia nhËp bang";
+static const char HDM_SAY_BCKHONGLM[] = "kh«ng cã liªn minh";
+static const char HDM_SAY_BCTHIEUCAP[] = "Ph¶i ®¹t cÊp ";
+static const char HDM_SAY_BCDOCAM[] = "Kh«ng ®­îc phÐp mang vËt phÈm";
+static const char HDM_MSG_BNMET[] = "Ta mÖt råi";
+static const char HDM_MSG_DADOC[] = "§· ®äc sí";
+static const char HDM_MSG_NGHERO[] = "VËy ng­¬i ®· nghe râ råi";
 static const char HDM_SAY_TSHETLUOT[] = "H«m nay ng­¬i ®· vÊt v¶ råi. Ngµy mai h·y quay l¹i nhÐ";
 static const char HDM_SAY_TSMETMOI[] = "H«m nay ng­¬i ®· mÖt mái råi";
 static const char HDM_SAY_TSQUAMET[] = "h«m nay ng­¬i ®· qu¸ mÖt råi";
@@ -169,5 +182,6 @@ static const char HDM_NPC_COTHU[] = "cæ thñ";
 static const char HDM_NPC_DICHQUAN[] = "dÞch quan";
 static const char HDM_NPC_TSRUONG[] = "b¶o r­¬ng";
 static const char HDM_NPC_TSGIU[] = "b¶o khè thñ hé gi¶";
+static const char HDM_NPC_TIEUTRAN[] = "tiªu trÊn";
 
 #endif // KHOATDONGTABLES_H

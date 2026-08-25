@@ -245,4 +245,59 @@ Binary staged (đè bộ 20:53, hậu tố `.moi_2408_liendau`, **mốc 09:43 25
 `CoreClient.dll` 2.335.744 B md5 `d485372c` (CRT-TĨNH) · `Game.exe` 1.264.128 B md5
 `9eec1d50` (UCRT-RELEASE) · `WAuto.exe` 389.632 B md5 `1b3de743`.
 
-*Ghi 24/08/2026 ~20:20, bổ sung Tín Sứ ~21:00, bổ sung 7.5 sáng 25/08.*
+### 7.6 Trưa 25/08 — RÀ QUY TRÌNH TỪNG BƯỚC theo lệnh chủ game (binary 10:45)
+
+Chủ game báo: lại gần NPC đầu cổng ải cứ hiện "muốn ra khỏi bản đồ hãy đi tìm Tiêu Trấn"
+dù đã tắt Ctrl+A. **Đó là BẪY server ở đầu cổng** (`trap/trap_qianbaoku.lua`): ai còn task
+1203=20 bước vào là bị đẩy lùi về (1414,3191) kèm đúng câu đó — không phải auto bấm.
+Nhưng nó phơi ra lỗi quy trình r4, và lệnh "rà từng bước toàn bộ" bắt ra thêm 10 lỗi BN/BC.
+
+**TÍN SỨ — quy trình trong ải viết lại theo script sống (r7):**
+- Ải 395 có HAI NPC: "Dịch quan" đầu cổng (1412,3203, túi ngoài) và **"Tiêu Trấn" CỬA RA
+  (842, sâu trong ải 1386,2442, `messenger_turenpc.lua`)** — r4 bỏ sót hoàn toàn.
+- Mở đủ 5 rương task 1203 **vẫn là 20** — phải tới Tiêu Trấn: "Ta muốn đi ra" → "Đúng! Ta
+  muốn rời khỏi" (`messenger_comeback`) thì server mới đặt **1203=30** + dịch ra túi ngoài;
+  LÚC ĐÓ mới gặp Dịch quan "Rời khỏi khu vực" về thành đích giao thư.
+- Bỏ cuộc (quá 25') cũng qua Tiêu Trấn: "Ta chưa hoàn thành khảo nghiệm…" → xác nhận
+  (`q_fallmessengertask` → 1203=21) rồi ra bằng Dịch quan. Vùng trong TUYỆT ĐỐI không đi
+  về phía Dịch quan (bẫy chặn + đẩy lùi vô hạn).
+- Bắt thêm câu "Ngươi không phải đội trưởng" (tổ đội >1 người chỉ captain bấm được Bắt
+  đầu) → báo người chơi rời tổ đội, chốt ngày, tự thoát ải. Auto KHÔNG tự rời tổ đội.
+- `messenger_timeer` toàn bộ bị comment = không có đồng hồ server; watchdog 25'/35' của
+  auto vẫn giữ.
+
+**BÁCH NHÂN — 4 vá (r8):**
+- 🔴 Lên đài: TÂM đài (InPos) KHÔNG phải ô trap — trap là VIỀN hình thoi dày 2 ô quanh
+  đài; khinh công thẳng vào tâm có thể vượt viền không chạm = đứng "chui" (server không
+  ghi nhận, không exp Lôi Chủ, không làm mới hạn 90'). Nay: **đi bộ đạp viền** (điểm lệch
+  15 ô theo trục gần nhất) → server tự SetPos lên tâm (loa "Ngươi đã vào Lôi Đài"); loa
+  "đã tiến hành tỷ võ" (đài bận) → 30 giây thử lại.
+- 🔴 Mode Đứng ăn: BỎ trò "chạm đài chống idle 80'" — chạm trap lúc đài TRỐNG là bị ghi
+  danh làm Lôi Chủ (bị NPC/người khiêu chiến đánh). Server chỉ cấp exp 90 phút/lần Enter;
+  hết hạn bị đá ra Lâm An → auto tự thấy đổi map → **quay lại vào ải ăn tiếp** (còn khung
+  giờ + chưa đủ 50 lượt).
+- Buff Cổ Thủ: chỉ 20% người trong map có suất mỗi đợt — nay đọc câu trả lời thật ("Vậy
+  ngươi đã nghe rõ rồi" = nhận; "Ta mệt rồi"/"Đã đọc sớ" = hết suất, không đếm khống x2).
+- Xa phu về: menu lạ thì đóng đi mở lại, không bấm bừa dòng 0 (= Phượng Tường, sai thành).
+
+**BANG CHIẾN — 5 vá (r8):**
+- 🔴 Pha mới `HDP_BC_OUT`: hết trận / hết cửa 40' / trap từ chối 8 lần / chết đủ trần mạng
+  / thiếu cấp → ra **Xa phu khu báo danh (1597,3139)** chọn "Lâm An Phủ" về thành (trước
+  đó trả máy TẠI CHỖ = nhân vật kẹt trong map báo danh vĩnh viễn).
+- 🔴 NPC báo danh: bắt 4 câu từ chối vĩnh viễn (chưa có bang / bang không liên minh /
+  thiếu cấp / đeo mặt nạ cấm) → trả máy ngay thay vì giữ máy bấm NPC suốt 85 phút; menu
+  không có mục tham gia 10 lần liên tiếp (hôm nay không có trận) → trả máy; riêng "Chưa
+  đến thời điểm" vẫn chờ hợp lệ.
+- Trap báo danh: thêm "Phải đạt cấp 90" (ra về) và "phe đã đủ 150 người" (từ chối TẠM —
+  90 giây thử lại, không tính vào bộ đếm 8 lần).
+- 🔴 Cửa vào theo map (kẹt sẵn trong map hoạt động) giờ có **khoá ngày** — mọi đường trả
+  máy trong map không còn bị cướp máy lại sau 1,5 giây (BN trước đó còn reset cả đồng hồ
+  cày → cày lại vô hạn).
+- Ghi nhận (chưa làm, chấp nhận): sau khi vào trận nằm hậu doanh 120 giây server mới đẩy
+  ra tiền tuyến (ô hometrap toạ độ NGẪU NHIÊN theo trận nên không đạp chủ động được);
+  mode Lôi Chủ rời map lúc đang giữ đài bị xử thua (hiếm, cuối phiên).
+
+Binary staged: **`CoreClient.dll.moi_2408_liendau` 2.339.328 B md5 `c3f72bc9` mốc 10:45**
+(Game.exe `9eec1d50` + WAuto.exe `1b3de743` mốc 09:43 giữ nguyên — một lần swap 3 tệp).
+
+*Ghi 24/08/2026 ~20:20 · Tín Sứ ~21:00 · 7.5 sáng 25/08 · 7.6 trưa 25/08.*

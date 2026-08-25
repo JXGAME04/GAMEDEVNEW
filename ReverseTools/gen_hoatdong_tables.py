@@ -182,6 +182,20 @@ TS_DQ_AI = (int(m.group(1)), int(m.group(2)))
 # ten hien thi "Dich quan" (TCVN3) trong bang tinsu_dialognpc
 TS_TEN_DQ = pick(qtnpc, r'turerukou\.lua",\s*"([^"]+)"', "ten Dich quan")
 
+# Tieu Tran - NPC CUA RA cua ai 395 (dong {842,395,x,y,...turenpc...,"Tieu Tran"})
+m = re.search(r"\{842,395,(\d+),(\d+),[^}]*turenpc[^}]*\"([^\"]+)\"\}", qtnpc)
+TS_TT_XY = (int(m.group(1)), int(m.group(2)))
+TS_TEN_TT = m.group(3)
+qtnp = rd(SC, "task", "tollgate", "messenger", "qianbaoku", "messenger_turenpc.lua")
+qbcsu = rd(SC, "event", "tongwar", "tongwar_signup.lua")
+qbcax = rd(SC, "missions", "tongwar", "tongwar_autoexec.lua")
+qbccf = rd(SC, "missions", "tongwar", "npc", "chefu.lua")
+qhar = rd(SC, "missions", "bairenleitai", "hundred_arena.lua")
+
+# Xa phu khu bao danh Bang Chien: dong AddNpc {393,...,x,y} + ten "Xa phu"
+m = re.search(r"\{\s*393,\s*(\d+),\s*(\d+),", qbcax)
+BC_XAPHU = (int(m.group(1)), int(m.group(2)))
+
 # 9 ruong map 395 (killbosshead: {844,100,395,x,y,...})
 TS_RUONG = []
 for m in re.finditer(r"(?m)^\{844,100,395,(\d+),(\d+),0,\"([^\"]+)\",1,", qkill):
@@ -209,6 +223,17 @@ MARK_TS = [
     ("HDM_OPT_TSBATDAU", pick(qruk, r'"([^"/]+)/ture_try_starttask"', "Bat dau nhiem vu").rstrip()),
     ("HDM_OPT_TSTIEPTUC", pick(qruk, r'"([^"/]+)/ture_continuetask"', "Tiep tuc nhiem vu")),
     ("HDM_OPT_TSROI", pick(qruk, r'"([^"/]+)/ture_movecity"', "Roi khoi khu vuc")),
+    ("HDM_OPT_TSMUONRA", pick(qtnp, r'AddOptEntry\("([^"]+)",messenger_main\)', "Ta muon di ra")),
+    ("HDM_OPT_TSDUNGRA", pick(qtnp, r'"([^"/]+)/messenger_comeback"', "Dung! Ta muon roi khoi")),
+    ("HDM_OPT_TSCHUAXONG", pick(qtnp, r'"([^"/]+)/messenger_icantdo"', "Ta chua hoan thanh khao nghiem")),
+    ("HDM_SAY_TSDOITRUONG", pick(qruk, r'"[^"]*?(kh«ng ph¶i ®éi tr­ëng)', "khong phai doi truong")),
+    ("HDM_SAY_BCKHONGBANG", pick(qbcsu, r'(Ch\xada gia nh\xcbp bang)', "chua gia nhap bang")),
+    ("HDM_SAY_BCKHONGLM", pick(qbcsu, r'(kh\xabng c\xe3 li\xaan minh)', "khong co lien minh")),
+    ("HDM_SAY_BCTHIEUCAP", pick(qbcsu, r'(Ph\xb6i \xae\xb9t c\xcap )', "phai dat cap ..")),
+    ("HDM_SAY_BCDOCAM", pick(qbcsu, r'(Kh\xabng \xae\xad\xeec ph\xd0p mang v\xcbt ph\xc8m)', "khong duoc mang vat pham")),
+    ("HDM_MSG_BNMET", pick(qhar, r'(Ta m\xd6t r\xe5i)', "co thu het suat")),
+    ("HDM_MSG_DADOC", pick(qhar, r'(\xa7\xb7 \xae\xe4c s\xed)', "da doc si roi")),
+    ("HDM_MSG_NGHERO", pick(qhar, r'(V\xcby ng\xad\xaci \xae\xb7 nghe r\xe2 r\xe5i)', "nhan buff ok")),
     ("HDM_SAY_TSHETLUOT", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} v[^"]{0,10}t v[^"]{0,60})\."', "het luot")),
     ("HDM_SAY_TSMETMOI", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} m[^"]{0,10}t m[^"]{0,10}i r[^"]{0,6}i)\.', "het luot can lenh bai")),
     ("HDM_SAY_TSQUAMET", pick(qpost, r'"[^"]*?(h\xabm nay ng[^"]{0,20} qu[^"]{0,8} m[^"]{0,10}t r[^"]{0,6}i)\.', "qua met (prize)")),
@@ -296,6 +321,8 @@ A("#define HD_TS_TSK_NGAY\t4128\t// so luot hom nay (YYMMDD*256 + n)")
 A("static const HDPoint g_HDTSDq11 = { %d, %d };\t// Dich quan Thanh Do" % TS_DQ_11)
 A("static const HDPoint g_HDTSDq162 = { %d, %d };\t// Dich quan Dai Ly" % TS_DQ_162)
 A("static const HDPoint g_HDTSDqAi = { %d, %d };\t// Dich quan trong ai 395" % TS_DQ_AI)
+A("static const HDPoint g_HDTSTieuTran = { %d, %d };\t// Tieu Tran - NPC CUA RA (sau trong ai)" % TS_TT_XY)
+A("static const HDPoint g_HDBCXaPhu = { %d, %d };\t// Xa phu khu bao danh BC (ve thanh)" % BC_XAPHU)
 A("// tuyen: { tuyen, map nhan, map dich, x dich, y dich } (citygo posthouse.lua)")
 A("static const short g_HDTSVe[2][5] = {")
 for t in TS_VE:
@@ -318,6 +345,7 @@ A("static const char HDM_NPC_COTHU[] = %s;" % cstr(lowascii(
 A("static const char HDM_NPC_DICHQUAN[] = %s;" % cstr(lowascii(TS_TEN_DQ)))
 A("static const char HDM_NPC_TSRUONG[] = %s;" % cstr(lowascii(TS_TEN_RUONG)))
 A("static const char HDM_NPC_TSGIU[] = %s;" % cstr(lowascii(TS_TEN_GIU)))
+A("static const char HDM_NPC_TIEUTRAN[] = %s;" % cstr(lowascii(TS_TEN_TT)))
 A("")
 A("#endif // KHOATDONGTABLES_H")
 
