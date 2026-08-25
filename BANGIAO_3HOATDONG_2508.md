@@ -461,6 +461,27 @@ Lỗi '8nhiệm vụ<color>là' hoá ra CÓ SẴN trong bản Linux gốc (dòng
 
 **Bộ binary CHỐT (13:55): `.moi_2508_c20` × 3** (thay c18).
 
+## C21-C23 — nhân bản NPC (gốc thật!) + Xa Phu đủ 39 map + hạ cánh waypoint (`fac440a2`)
+
+- 🔴 **GỐC "NPC ĐÔI"**: nút admin `HD3_ADM_ST_Boot` gọi lặp `HD3_DriverInit` ⇒
+  x2 toàn bộ (2 Nhiếp Thí Trần, 2 boss cùng toạ độ). KHÔNG phải NPC dự án cũ —
+  quét toàn cây xác nhận mọi spawn/lịch cũ (PLĐ/VA/ST) đã comment/trơ từ trước
+  (othermap :16-18, sukien_*, addnpc*, mission03/04, task01 nhánh cũ; task01
+  DÙNG CHUNG Tống Kim/CTC nên không đụng). Vá: **DriverInit idempotent** — dọn
+  NPC của chính hệ (script `	ollgate\killer\` + `hd3_thuyenphu`) trước khi
+  sinh; nút admin giờ gọi lặp an toàn.
+- **C21 Xa Phu**: menu luyện công đủ **39 map** (nguồn `BOT_BAI` = đã gộp từ Thần
+  Hành Phù 20/08), chia TRANG THEO MỐC (20-30/40-50/60-70/80/90) né trần 511B;
+  39 tên CÓ DẤU (`XP_TEN`); `BOT_BAI` giữ nguyên (khớp `s_bai` KPlayerBot).
+- **C22 F11**: "số hiệu 147" → "con thứ %d/20 của nhóm cấp %d (ngươi tự chọn
+  khi nhận)" — 147 là SỐ DÒNG BẢNG do người chơi tự chọn, không phải thứ tự nhận.
+- **C23 hạ cánh**: `st3_goboss` đáp xuống **waypoint mặc định** của map
+  (`GetWayPointPos`+`AddTermini` — chuẩn Thần Hành Phù) rồi client TỰ ĐI tới boss
+  (timeout pha đi bộ 6 phút).
+
+**Binary mới cần swap: `Game.exe.moi_2508_c23` + `CoreClient.dll.moi_2508_c23`
+(14:11). Server KHÔNG đổi C++ — chỉ script (ăn cùng lần restart).**
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
