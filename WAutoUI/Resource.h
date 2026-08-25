@@ -304,18 +304,45 @@ using namespace std;
 #define IDC_CHECKBOX_8_MS		436
 #define IDC_STRING_8_MM			437
 #define IDC_EDITOR_8_MM			438
-#define IDC_INDEX_END			441
+// ==== tab 9 Tong Kim (24/08/2026) - PHAI nam trong dai an/hien ====
+#define IDC_CHECKBOX_9_ON		450
+#define IDC_STRING_9_GIO		451
+#define IDC_CHECKBOX_9_G1		452
+#define IDC_CHECKBOX_9_G2		453
+#define IDC_CHECKBOX_9_G3		454
+#define IDC_CHECKBOX_9_G4		455
+#define IDC_STRING_9_SOM		456
+#define IDC_EDITOR_9_SOM		457
+#define IDC_STRING_9_LECH		458
+#define IDC_EDITOR_9_LECH		459
+#define IDC_STRING_9_PHE		460
+#define IDC_COMBO_9_PHE			461
+#define IDC_STRING_9_MUA		462
+#define IDC_COMBO_9_MUA			463
+#define IDC_STRING_9_SB			464
+#define IDC_EDITOR_9_SB			465
+#define IDC_CHECKBOX_9_TH		466
+#define IDC_STRING_9_THS		467
+#define IDC_COMBO_9_THS			468
+#define IDC_STRING_9_UT			469
+#define IDC_COMBO_9_UT			470
+#define IDC_CHECKBOX_9_VE		471
+#define IDC_GRP_TAB9			472
+#define IDC_SEP_9A				473
+#define IDC_SEP_9B				474
+#define IDC_INDEX_END			480
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
-#define IDD_SETSERIES_DIALOG	440
-#define IDD_NOPICK_DIALOG		441
-#define IDC_COMBO_SELNOPICK		442
-#define IDC_LIST_NOPICK			443
-#define IDC_BTN_NOPREMOVE		444
-#define IDC_LIST_SERIES			445
-#define IDC_BTN_SERUP			446
-#define IDC_BTN_SERDOWN			447
-#define IDC_STRING_HOMEPAGE		448
-#define IDC_TABBTN_9			449
+#define IDD_SETSERIES_DIALOG	500
+#define IDD_NOPICK_DIALOG		501
+#define IDC_COMBO_SELNOPICK		502
+#define IDC_LIST_NOPICK			503
+#define IDC_BTN_NOPREMOVE		504
+#define IDC_LIST_SERIES			505
+#define IDC_BTN_SERUP			506
+#define IDC_BTN_SERDOWN			507
+#define IDC_STRING_HOMEPAGE		508
+#define IDC_TABBTN_9			509
+#define IDC_TABBTN_10			510
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

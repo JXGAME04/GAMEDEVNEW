@@ -824,9 +824,22 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		return;
 	// [DaTau] 0 = tha may; 1 = dang lam viec o thanh (bo MOVE/RETURN);
 	// 2 = dang farm map nhiem vu (bo MOVE/RETURN + bo qua skip-goldboss)
+	// [TongKim] uu tien cao nhat: toi khung gio thi may Tong Kim cam lai - Da Tau,
+	// Hau can, di chuyen va moi dieu kien phu ve thanh deu nhuong (map bao danh
+	// cam Than Hanh Phu). 0 = tha may; 1 = dang cam lai; 2 = dang trong tran.
+	int nTK = 0;
+	if(pApData->bTongKim == 1)
+		nTK = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TONGKIM, (int)pApData);
+	// [TongKim] dang cam lai (di bao danh / trong tran) thi TU bam nut hoi sinh du
+	// nguoi choi khong bat 'Tu hoi sinh' - chet la chuyen thuong o Tong Kim.
+	if(nTK && !pApData->bRevive)
+	{
+		if(PushReviveButton())
+			return;
+	}
 	int nDT = 0;
 	autoData sDTData;
-	if(pApData->bDaTau == 1)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
+	if(pApData->bDaTau == 1 && nTK == 0)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
 	{
 		nDT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DATAU, (int)pApData);
 		AUTOLOG("[DATAU-GATE] pass=%u t=%u nDT=%d bDaTau=%d skipboss=%d", m_GameCounter, timeGetTime(), nDT, pApData->bDaTau, pApData->bSkipGoldboss);
@@ -836,7 +849,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			sDTData.bSkipGoldboss = 0;	// Mat Chi chi roi tu boss
 		}
 	}
-	if(pApData->bOutWhenTP && !pApData->bOnPK)
+	if(pApData->bOutWhenTP && !pApData->bOnPK && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_EXIT, 0))
 		{
@@ -863,37 +876,37 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			nParam[2] = 200;
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PUMPMANA, (int)&nParam);
 	}
-	if(pApData->bCheckTPLife)
+	if(pApData->bCheckTPLife && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKLIFE, pApData->nTPLife))
 			return;
 	}
-	if(pApData->bCheckTPMana)
+	if(pApData->bCheckTPMana && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKMANA, pApData->nTPMana))
 			return;
 	}
-	if(pApData->bCheckTPLifeGone)
+	if(pApData->bCheckTPLifeGone && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_LIFEGONE, 0))
 			return;
 	}
-	if(pApData->bCheckTPManaGone)
+	if(pApData->bCheckTPManaGone && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_MANAGONE, 0))
 			return;
 	}
-	if(pApData->bCheckTPIBox)
+	if(pApData->bCheckTPIBox && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLITEM, pApData->nTPiboxSel))
 			return;
 	}
-	if(pApData->bCheckTPMoney)
+	if(pApData->bCheckTPMoney && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLMONEY, pApData->nTPMoney))
 			return;
 	}
-	if(pApData->bCheckTPIDmg)
+	if(pApData->bCheckTPIDmg && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_DMGITEM, pApData->nTPDmgItem))
 			return;
@@ -987,11 +1000,11 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	if(!Wnd_IsLButtonDown())
 	{
-		if(pApData->bOnPK)
+		if(pApData->bOnPK || nTK == 2)
 		{
 			if(pApData->bUseFKey && !Wnd_IsPKKeyDown())
 				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
-			if(!bLaunch && (!pApData->bUseFKey || Wnd_IsPKKeyDown()))
+			if(!bLaunch && (nTK == 2 || !pApData->bUseFKey || Wnd_IsPKKeyDown()))
 			bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pApData);
 			AUTOLOG_EVERY(1000, "[PK-RET] pass=%u t=%u pkret=%d fkey=%d fkeydown=%d pkvis=%d pknear=%d pkplayer=%d pknpc=%d pkappr=%d", m_GameCounter, timeGetTime(), bLaunch, pApData->bUseFKey, Wnd_IsPKKeyDown(), pApData->nPKVision, pApData->nPKNearDist, pApData->bPKPlayer, pApData->bPKNpc, pApData->bPKAppr);
 		}
@@ -1001,10 +1014,10 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			{
 				// [DaTau] khi may Da Tau cam lai thi khong cho ATYPE_MOVE gianh quyen di chuyen
 				BOOL bMoving = FALSE;
-				if(nDT == 0)
+				if(nDT == 0 && nTK == 0)
 					bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
 					AUTOLOG_EVERY(2000, "[MOVE-RET] pass=%u t=%u moving=%d nDT=%d launch=%d killmons=%d follow=%d around=%d coord=%d uphorse=%d fdist=%d", m_GameCounter, timeGetTime(), bMoving, nDT, bLaunch, pApData->bMoveKillMons, pApData->bMoveFollow, pApData->bAroundPoint, pApData->bMoveCoord, pApData->bMoveUpHorse, pApData->nFollowDist);
-				if(!bMoving && pApData->bFight && nDT != 1)
+				if(!bMoving && pApData->bFight && nDT != 1 && nTK == 0)
 				{
 					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)(nDT == 2 ? &sDTData : pApData));
 					AUTOLOG_EVERY(1000, "[FIGHT-RET] pass=%u t=%u fightret=%d nDT=%d moving=%d vis=%d near=%d appr=%d fback=%d fbvis=%d selfb=%d selboss=%d skipboss=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, bMoving, pApData->nVision, pApData->nNearDist, pApData->bApproach, pApData->bFightBack, pApData->nFBVision, pApData->nSelFBack, pApData->nSelBoss, pApData->bSkipGoldboss, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
@@ -1067,12 +1080,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	AUTOLOG_EVERY(1000, "[AUTO-STAGE-FILTER] pass=%u t=%u stage=after-filter launch=%d nDT=%d lbtn=%d filter=%d ftcnt=%d prize=%d level=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bFilter, pApData->nFtMaCount, pApData->bPrize, pApData->bLevel);
 	if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTPROC, (int)pApData))
 		return;
-	if(pApData->nSelInvitePt)
+	if(pApData->nSelInvitePt && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTINVITE, (int)pApData))
 			return;
 	}
-	if(pApData->nSelJoinPt)
+	if(pApData->nSelJoinPt && nTK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PTJOIN, (int)pApData))
 			return;
@@ -1083,7 +1096,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			return;
 	}
 	AUTOLOG_EVERY(1000, "[AUTO-END] pass=%u t=%u stage=end launch=%d nDT=%d lbtn=%d ret=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, Wnd_IsLButtonDown(), pApData->bReturn, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
-	if(pApData->bReturn && nDT == 0 && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
+	if(pApData->bReturn && nDT == 0 && nTK == 0 && !g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0)
 	&& !Wnd_IsLButtonDown())
 	{
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RETURN, (int)pApData);
@@ -1299,8 +1312,13 @@ BOOL KMyApp::GameLoop()
 			// KHONG goi cho nay thi se KHONG co gi duoc ghi va cung khong bao loi.
 			JxReplay_OnGameFrame();
 
-			int TickCountTMG = 0;
-			int TimeDelay_Update_TMG = 1000;
+			// PHAI la static: bien cuc bo bi dat lai = 0 MOI VONG nen dieu kien
+			// (GetTickCount() - 0 > 1000) LUON dung => UpdateData chay MOI TICK
+			// (18 lan/giay) thay vi moi giay nhu y dinh. Ma UpdateData khong he re:
+			// Hide/Show 24 phan tu + Clear() + TeamOperation vao Core + DOC FILE
+			// cau hinh. Do that: [SPIKE] logic=59-108ms trong mot vong lap.
+			static int TickCountTMG = 0;
+			const int TimeDelay_Update_TMG = 1000;
 			if (KUiTeamManager2::GetIfVisible() == NULL)
 			{
 				KUiTeamManager2::OpenWindow();
@@ -1317,8 +1335,9 @@ BOOL KMyApp::GameLoop()
 			///
 
 			///UiTargetInfo
-			int TickCountTI = 0;
-			int TimeDelay_Update_TI = 1000;
+			// Cung loi voi TickCountTMG o tren - phai la static.
+			static int TickCountTI = 0;
+			const int TimeDelay_Update_TI = 1000;
 			if (KUiTargetInfo::GetIfVisible() == NULL)
 			{
 				KUiTargetInfo::OpenWindow();

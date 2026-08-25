@@ -8028,6 +8028,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							CoreDataChanged(GDCNI_NEWS_MESSAGE, (unsigned int)&News, 0);
@@ -8052,6 +8055,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							
@@ -8081,6 +8087,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							systime = *(SYSTEMTIME*)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(SYSTEMTIME)));
@@ -8115,6 +8124,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							CoreDataChanged(GDCNI_NEWS_MESSAGE_1, (unsigned int)&News, 0);
@@ -8139,6 +8151,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							
@@ -8167,6 +8182,9 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 							}
 							
 							g_StrCpyLen(News.sMsg,  strContent, sizeof(News.sMsg));
+							// [TongKim] chup tin toan may chu cho auto Tong Kim (truoc khi TEncodeText doi byte)
+							g_StrCpyLen(g_sDTCap.szNews, strContent, sizeof(g_sDTCap.szNews));
+							++g_sDTCap.uNewsSeq;
 							News.nMsgLen = TEncodeText(News.sMsg, strlen(News.sMsg));
 							SYSTEMTIME systime;
 							systime = *(SYSTEMTIME*)((pScriptAction->m_pContent + pScriptAction->m_nBufferLen - sizeof(SYSTEMTIME)));

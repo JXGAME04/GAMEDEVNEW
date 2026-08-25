@@ -249,6 +249,20 @@ struct autoData
 	int		bDTLenhBai;		// (20/08) loai tat: dung Lenh bai hoan thanh (6,1,4818) neu co
 	int		bDTMuaSap;		// (20/08) T2 thieu do: di xem sap nguoi ban de mua (nhay 10 thanh)
 	int		nDTMaxMua;		// (20/08) gia mua o sap toi da (van luong)
+	// == Tong Kim (24/08/2026) - PHAI o cuoi struct, truoc constructor ==
+	// (file APdata\<ID nhan vat>.dat ghi NGUYEN struct: them truong o giua la nat
+	//  cau hinh cua moi nguoi choi cu - xem ky uc wauto-luu-cau-hinh-apdata)
+	int		bTongKim;		// bat/tat auto Tong Kim
+	int		bTKGio[4];		// bat tung khung gio (13h23 / 17h50 / 20h50 / 22h50)
+	int		nTKSom;			// di som may phut truoc gio mo tran
+	int		nTKLech;		// gio may chu lech gio may nay bao nhieu PHUT (co the am)
+	int		nTKPhe;			// 0 = Tong, 1 = Kim, 2 = tu can bang theo quan so
+	int		nTKMuaMau;		// 0 = mua nhanh (day tui), 1 = mua so luong, 2 = khong mua
+	int		nTKSoBinh;		// so binh thuoc khi nTKMuaMau == 1
+	int		bTKThuoc;		// tu an thuoc hoat dong Tong Kim (mua o Cua hang diem TK)
+	int		nTKThuocSel;	// 0 = tat ca, 1 = chi tang cong, 2 = chi phong thu, 3 = cong + mau/toc
+	int		nTKUuTien;		// 0 = dich gan nhat, 1 = uu tien Hieu Uy / Pho Tuong / Dai Tuong
+	int		bTKVeCho;		// het tran nho Xa Phu dua ve dung cho luc nay
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -416,6 +430,18 @@ struct autoData
 		bDTLenhBai = 0;
 		bDTMuaSap = 0;
 		nDTMaxMua = 0;
+		bTongKim = 0;
+		for (int tki = 0; tki < 4; ++tki)
+			bTKGio[tki] = 0;
+		nTKSom = 0;
+		nTKLech = 0;
+		nTKPhe = 0;
+		nTKMuaMau = 0;
+		nTKSoBinh = 0;
+		bTKThuoc = 0;
+		nTKThuocSel = 0;
+		nTKUuTien = 0;
+		bTKVeCho = 0;
 	}
 };
 

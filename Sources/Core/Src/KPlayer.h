@@ -209,6 +209,29 @@ struct ExtAuto
 	int  nDTLBTry;       // [DaTau 20/08] so lan da dung Lenh bai hoan thanh cho nhiem vu nay
 	UINT uDTTienSeen;    // [DaTau r4] seq kenh tien do (szTien) da doc
 	int nDTPhaseBack;    // [DaTau r5d] pha di cho dang do bi cua so thuong TRE cuop
+	// == Tong Kim (24/08/2026) - trang thai may ATYPE_TONGKIM, POD (ATYPE_CLEAR memset) ==
+	int  nTKPhase;       // pha TKP_* (CoreShell.cpp)
+	int  nTKStep;        // buoc con trong pha
+	int  nTKHold;        // 0 tha may; 1 dang cam lai; 2 dang trong tran (may PK danh)
+	UINT uTKNext;        // moc hanh dong ke tiep
+	UINT uTKPhaseT;      // moc vao pha (de bat ket pha)
+	UINT uTKDlgSeen;     // uDlgSeq da xu ly
+	UINT uTKNewsSeen;    // uNewsSeq (tin toan may chu) da xu ly
+	UINT uTKMsgT;        // throttle bao trang thai
+	int  nTKPhe;         // phe dang nham: 1 = Tong, 2 = Kim
+	int  nTKThe;         // the tran: 1 = minh o nua ban do A, 2 = nua B
+	int  nTKTry;         // dem thu lai trong pha
+	int  nTKKey;         // khoa khung gio da chay xong (ngay*10 + so hieu khung)
+	int  nTKBackMap;     // map truoc khi di Tong Kim (de bao cao)
+	int  nTKBackX;
+	int  nTKBackY;
+	int  nTKMua;         // 1 = da mua thuoc cho mang nay
+	int  nTKChet;        // so mang da chet trong tran
+	int  nTKDestX;       // diem dang chay toi trong tran (don vi O)
+	int  nTKDestY;
+	UINT uTKDestT;       // han cho mot diem den
+	UINT uTKPillT;       // moc an dot thuoc ke tiep
+	int  nTKPillIdx;     // vien thuoc ke tiep trong bang g_TKPill
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -300,6 +323,28 @@ struct ExtAuto
 		nDTRoamStep = 0;
 		nDTBackXaFu = 0;
 		nDTRwTry = 0;
+		nTKPhase = 0;
+		nTKStep = 0;
+		nTKHold = 0;
+		uTKNext = 0;
+		uTKPhaseT = 0;
+		uTKDlgSeen = 0;
+		uTKNewsSeen = 0;
+		uTKMsgT = 0;
+		nTKPhe = 0;
+		nTKThe = 0;
+		nTKTry = 0;
+		nTKKey = 0;
+		nTKBackMap = 0;
+		nTKBackX = 0;
+		nTKBackY = 0;
+		nTKMua = 0;
+		nTKChet = 0;
+		nTKDestX = 0;
+		nTKDestY = 0;
+		uTKDestT = 0;
+		uTKPillT = 0;
+		nTKPillIdx = 0;
 	}
 };
 

@@ -39,6 +39,7 @@
 #include "KDaTauCap.h"
 #include "KDaTauTables.h"
 #include "KDaTauSpots.h"
+#include "KTongKimTables.h"
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -6362,6 +6363,910 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 }
 // ==================== HET AUTO DA TAU ====================
 
+// ==================== AUTO TONG KIM (24/08/2026) ====================
+// May trang thai cho NGUOI CHOI THAT (khac hoan toan he BOT pb_Tk* ben server):
+// toi gio -> dung Tong Kim Chieu Thu vao map bao danh -> bam thoai NPC bao danh
+// (co chon phe / tu can bang bang Xa Phu) -> hau doanh mua thuoc o Quan Y -> ra
+// vet trap vao tran -> danh theo cau hinh tab PK + tu chay toa do binh doan ->
+// chet thi hoi sinh ra lai -> het tran roi map bao danh bang Xa Phu -> tra may.
+// So lieu (toa do / marker thoai / id thuoc) o KTongKimTables.h - SINH TU DONG tu
+// script song cua may chu, dung go tay.
+// Trong luc may nay cam lai: S3Client bo qua Da Tau, Hau can, di chuyen va moi
+// dieu kien phu ve thanh (map bao danh cam Than Hanh Phu).
+
+enum TKPhase
+{
+	TKP_OFF = 0,	// ngoai khung gio - tha may cho auto thuong
+	TKP_GO,			// toi gio: dung Chieu Thu
+	TKP_BOOK,		// cho thoai Chieu Thu -> chon ben Tong/Kim
+	TKP_SIGNUP,		// tren map bao danh: toi NPC bao danh + bam dau quan
+	TKP_SWAP,		// bi chan can bang -> nho Xa Phu qua diem bao danh phe kia
+	TKP_CAMP,		// hau doanh: mua thuoc o Quan Y
+	TKP_TRAP,		// ra vet trap de vao tran
+	TKP_FIGHT,		// trong tran
+	TKP_END,		// het tran: don tui roi ra khoi map bao danh
+	TKP_DONE		// xong khung gio nay - tha may
+};
+
+#define TK_O(v)			((v) * 32)		// doi o -> mps
+#define TK_CUATRAN		40				// phut sau moc gio con vao duoc tran
+#define TK_HANPHA		180000u			// han mot pha (3 phut) truoc khi bo cuoc
+#define TK_GANTRAI		1440			// mps: gan hau doanh nay = dang trong trai
+
+static int TK_Abs(int v)
+{
+	return v < 0 ? -v : v;
+}
+
+static void TK_Msg(int nPlayerIdx, const char* szMsg)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	UINT uNow = timeGetTime();
+	if (ea.uTKMsgT > uNow)
+		return;
+	ea.uTKMsgT = uNow + 1200;
+	try
+	{
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[Tèng Kim]", (char*)szMsg, strlen(szMsg), TRUE);
+	}
+	catch (...) {}
+}
+
+static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nTKPhase = nPha;
+	ea.nTKStep = 0;
+	ea.nTKTry = 0;
+	ea.uTKPhaseT = uCurTime;
+	ea.uTKNext = uCurTime + 400;
+	ea.uTKDlgSeen = g_sDTCap.uDlgSeq;
+}
+
+// tra 1 neu dang trong cua so mot khung gio DANG BAT; *pnSlot = so hieu khung gio.
+// Gio lay tu dong ho may nay + do lech nguoi choi khai o tab Tong Kim (may chu co
+// the khac mui gio - xem ky uc gio-server-mui-gio-wauto).
+static int TK_KhungGio(const autoData* pAp, int* pnSlot)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	int nPhut = (int)st.wHour * 60 + (int)st.wMinute + pAp->nTKLech;
+	nPhut = ((nPhut % 1440) + 1440) % 1440;
+	int nSom = pAp->nTKSom;
+	if (nSom < 0)
+		nSom = 0;
+	else if (nSom > 30)
+		nSom = 30;
+	for (int i = 0; i < TK_GIO_COUNT && i < 4; ++i)
+	{
+		if (!pAp->bTKGio[i])
+			continue;
+		int nCach = nPhut - ((int)g_TKGio[i][0] * 60 + (int)g_TKGio[i][1]);
+		if (nCach < -720)
+			nCach += 1440;
+		else if (nCach > 720)
+			nCach -= 1440;
+		if (nCach >= -nSom && nCach <= TK_CUATRAN)
+		{
+			if (pnSlot)
+				*pnSlot = i;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+// duong nhin: quet doan thang tung o, gap vat can la KHONG thay duoc.
+// (bai hoc tran 23/08: chon "gan nhat tuyet doi" lam hai dan dung hai ben tuong
+// dam vach vo han vi don khong toi noi)
+static bool TK_ThayDuoc(int ax, int ay, int bx, int by)
+{
+	int dx = bx - ax;
+	int dy = by - ay;
+	int nB = (TK_Abs(dx) > TK_Abs(dy) ? TK_Abs(dx) : TK_Abs(dy)) / 32;
+	if (nB < 2)
+		return true;
+	if (nB > 48)
+		nB = 48;
+	for (int i = 1; i < nB; ++i)
+	{
+		BYTE b = SubWorld[0].TestBarrier(ax + dx * i / nB, ay + dy * i / nB);
+		if (b >= Obstacle_Normal && b <= Obstacle_JumpFly)
+			return false;
+	}
+	return true;
+}
+
+// 1 = dang o gan hau doanh (trong trai), kem *pnBo = nua ban do (1 = bo A, 2 = bo B)
+static int TK_TrongTrai(int nX, int nY, int* pnBo)
+{
+	int dA = g_GetDistance(nX, nY, TK_O((int)g_TKHauDoanhA.x), TK_O((int)g_TKHauDoanhA.y));
+	int dB = g_GetDistance(nX, nY, TK_O((int)g_TKHauDoanhB.x), TK_O((int)g_TKHauDoanhB.y));
+	if (pnBo)
+		*pnBo = (dA <= dB) ? 1 : 2;
+	return (dA < TK_GANTRAI || dB < TK_GANTRAI) ? 1 : 0;
+}
+
+// so Tong Kim Chieu Thu con trong tui / thanh mang nhanh
+static int TK_DemChieuThu(int nPlayerIdx)
+{
+	int nSo = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if ((pIt->nPlace == pos_equiproom || pIt->nPlace == pos_immediacy)
+		 && Item[pIt->nIdx].GetGenre() == TK_ITEM_THU_G
+		 && Item[pIt->nIdx].GetDetailType() == TK_ITEM_THU_D
+		 && Item[pIt->nIdx].GetParticular() == TK_ITEM_THU_P)
+			++nSo;
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return nSo;
+}
+
+// binh thuoc do CHINH AUTO mua o Quan Y (chi don loai nay sau tran, khong dung do khac)
+static bool TK_LaBinhMua(int nItemIdx)
+{
+	return nItemIdx > 0
+		&& Item[nItemIdx].GetGenre() == TK_ITEM_MAU_G
+		&& Item[nItemIdx].GetDetailType() == TK_ITEM_MAU_D
+		&& Item[nItemIdx].GetLevel() == TK_ITEM_MAU_L;
+}
+
+static int TK_DemBinh(int nPlayerIdx)
+{
+	int nSo = 0;
+	for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+		{
+			int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+			if (TK_LaBinhMua(nIdx))
+				++nSo;
+		}
+	return nSo;
+}
+
+// tu an thuoc hoat dong Tong Kim (6/1/177..194 - moi vien 3 phut, CHI dung duoc
+// tren map tran). Moi nhip mot vien; het bang thi hen lai sau ~2 phut 50 giay.
+// Tra 1 neu vua dung mot vien (da tieu ton nhip nay).
+static int TK_AnThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	if (!pAp->bTKThuoc)
+		return 0;
+	if (SubWorld[0].m_SubWorldID != TK_MAP_TRAN)
+		return 0;
+	if (ea.uTKPillT > uCurTime)
+		return 0;
+	while (ea.nTKPillIdx < TK_PILL_COUNT)
+	{
+		int i = ea.nTKPillIdx++;
+		int nLoai = (int)g_TKPill[i][1];
+		if (pAp->nTKThuocSel == 1 && nLoai != 1)
+			continue;
+		if (pAp->nTKThuocSel == 2 && nLoai != 2)
+			continue;
+		if (pAp->nTKThuocSel == 3 && nLoai == 2)
+			continue;
+		if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, (int)g_TKPill[i][0], nPlayerIdx))
+			return 1;
+	}
+	ea.nTKPillIdx = 0;
+	ea.uTKPillT = uCurTime + 170000u;
+	return 0;
+}
+
+// chon dich trong tran: khac phe, con song, trong tam nhin tab PK va KHONG bi
+// tuong chan. Uu tien NPC quan quan (Hieu Uy / Pho Tuong / Dai Tuong) neu nguoi
+// choi bat o cau hinh. Tra 0 = khong co dich hop le -> may se di chuyen tiep.
+static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
+{
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	int nTam = pAp->nPKVision;
+	if (nTam < 100)
+		nTam = 100;
+	else if (nTam > 1200)
+		nTam = 1200;
+	int nGan = 0, nGanD = 0x7fffffff;		// gan nhat CO duong nhin
+	int nMu = 0, nMuD = 0x7fffffff;			// gan nhat ke ca bi chan
+	int nQuan = 0, nQuanD = 0x7fffffff;		// NPC quan quan
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (nIdx == nSelf || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+			continue;
+		if (Npc[nIdx].m_Kind == kind_player)
+		{
+			if (!pAp->bPKPlayer)
+				continue;
+		}
+		else if (!pAp->bPKNpc)
+			continue;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		int nD = g_GetDistance(nX, nY, x, y);
+		if (nD > nTam)
+			continue;
+		if (nD < nMuD)
+		{
+			nMuD = nD;
+			nMu = nIdx;
+		}
+		if (!TK_ThayDuoc(nX, nY, x, y))
+			continue;
+		if (nD < nGanD)
+		{
+			nGanD = nD;
+			nGan = nIdx;
+		}
+		if (pAp->nTKUuTien == 1 && Npc[nIdx].m_Kind != kind_player)
+		{
+			for (int q = 0; q < TK_QUAN_COUNT; ++q)
+				if (Npc[nIdx].m_NpcSettingIdx == (int)g_TKQuanRes[q])
+				{
+					if (nD < nQuanD)
+					{
+						nQuanD = nD;
+						nQuan = nIdx;
+					}
+					break;
+				}
+		}
+	}
+	if (nQuan)
+		return nQuan;
+	if (nGan)
+		return nGan;
+	// ca man deu bi chan: chi nhan dua DANG DUNG SAT ben (nhieu kha nang la goc
+	// tuong chu khong phai buc tuong); con lai tra 0 de may chay tiep - khong dam vach.
+	if (nMu && nMuD <= 160)
+		return nMu;
+	return 0;
+}
+
+// diem den ke tiep: boc mot diem trong bang binh doan cua NUA BAN DO BEN DICH
+static void TK_ChonDiem(int nPlayerIdx, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const TKPoint* pB = (ea.nTKThe == 1) ? g_TKBinhB : g_TKBinhA;
+	int nSo = (ea.nTKThe == 1) ? TK_BINHB_COUNT : TK_BINHA_COUNT;
+	int i = (int)((uCurTime / 37u + (UINT)ea.nTKTry * 11u) % (UINT)nSo);
+	ea.nTKDestX = (int)pB[i].x;
+	ea.nTKDestY = (int)pB[i].y;
+	ea.uTKDestT = uCurTime + 45000u;	// han toi mot diem
+	++ea.nTKTry;
+}
+
+// mo thoai mot NPC theo ten (chu thuong) quanh toa do cho truoc; chua toi noi thi
+// di bo den. Tra: 0 dang di, 1 vua go thoai, -1 khong thay NPC (da toi noi).
+static int TK_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT uCurTime)
+{
+	int nX, nY, dX, dY;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	int nIdx = DT_FindNpcName(nPlayerIdx, szTen, TK_O(nOx), TK_O(nOy), 640);
+	if (!nIdx)
+	{
+		if (DT_WalkTo(nPlayerIdx, TK_O(nOx), TK_O(nOy), 320, uCurTime))
+			return -1;
+		return 0;
+	}
+	Npc[nIdx].GetMpsPos(&dX, &dY);
+	if (g_GetDistance(nX, nY, dX, dY) > 128)
+	{
+		DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
+		return 0;
+	}
+	Player[nPlayerIdx].DialogNpc(nIdx);
+	return 1;
+}
+
+// ================== MAY CHINH TONG KIM ==================
+// Tra ve: 0 = tha may; 1 = dang cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
+//         2 = dang trong tran (cam lai + de may PK cua tab PK danh).
+static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	int nX, nY;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+
+	// tin toan may chu bao MO BAO DANH - moc dang tin cay nhat (khoi phu thuoc
+	// dong ho may nguoi choi); lich cau hinh van la duong chinh.
+	int nTinMo = 0;
+	if (cap.uNewsSeq != ea.uTKNewsSeen)
+	{
+		ea.uTKNewsSeen = cap.uNewsSeq;
+		if (DT_Has(cap.szNews, TKM_MSG_BAODANH))
+			nTinMo = 1;
+	}
+	int nSlot = -1;
+	const int nTrongGio = TK_KhungGio(pAp, &nSlot);
+	const int nCoGio = (pAp->bTKGio[0] || pAp->bTKGio[1] || pAp->bTKGio[2] || pAp->bTKGio[3]);
+	const int nKhoa = DT_Today() * 10 + (nSlot < 0 ? 9 : nSlot);
+
+	// dang cho hoi sinh: nut hoi sinh do o "Tu hoi sinh" (tab Co ban) bam ho
+	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
+	{
+		if (ea.nTKPhase == TKP_FIGHT || ea.nTKPhase == TKP_TRAP || ea.nTKPhase == TKP_CAMP)
+		{
+			ea.uTKNext = uCurTime + 600;
+			return 1;
+		}
+		return ea.nTKPhase ? 1 : 0;
+	}
+	if (Player[nPlayerIdx].CheckTrading())
+		return ea.nTKPhase ? 1 : 0;
+
+	// ---- quyet dinh vao cuoc ----
+	if (ea.nTKPhase == TKP_OFF || ea.nTKPhase == TKP_DONE)
+	{
+		ea.nTKHold = 0;
+		if (!nTrongGio && !(nTinMo && nCoGio))
+		{
+			ea.nTKPhase = TKP_OFF;
+			return 0;
+		}
+		if (ea.nTKPhase == TKP_DONE && ea.nTKKey == nKhoa)
+			return 0;			// khung gio nay da chay xong
+		if (ea.uTKNext > uCurTime)
+			return 0;
+		ea.uTKNext = uCurTime + 1000;
+		if (Npc[nSelf].m_Level < TK_LEVEL_MIN)
+		{
+			ea.nTKKey = nKhoa;
+			ea.nTKPhase = TKP_DONE;
+			TK_Msg(nPlayerIdx, "<color=Yellow>Ch­a ®ñ cÊp 80 - bá qua khung giê Tèng Kim nµy.");
+			return 0;
+		}
+		if (nMap != TK_MAP_BAODANH && nMap != TK_MAP_TRAN && TK_DemChieuThu(nPlayerIdx) <= 0)
+		{
+			ea.nTKKey = nKhoa;
+			ea.nTKPhase = TKP_DONE;
+			TK_Msg(nPlayerIdx, "<color=Yellow>HÕt Tèng Kim Chiªu th­ trong hµnh trang - h·y mua thªm råi bËt l¹i.");
+			return 0;
+		}
+		if (Player[nPlayerIdx].GetFactionNo() < 0)
+			TK_Msg(nPlayerIdx, "<color=Yellow>H×nh nh­ ch­a vµo m«n ph¸i - m¸y chñ cã thÓ tõ chèi b¸o danh.");
+		ea.nTKKey = nKhoa;
+		ea.nTKPhe = (pAp->nTKPhe == 1) ? 2 : 1;		// tu can bang: tam nham Tong, doc quan so roi chinh
+		ea.nTKThe = 0;
+		ea.nTKMua = 0;
+		ea.nTKChet = 0;
+		ea.nTKPillIdx = 0;
+		ea.uTKPillT = 0;
+		ea.nTKBackMap = nMap;
+		ea.nTKBackX = nX;
+		ea.nTKBackY = nY;
+		TK_Pha(nPlayerIdx, TKP_GO, uCurTime);
+		TK_Msg(nPlayerIdx, "<color=Cyan>Tíi giê Tèng Kim - t¹m dõng viÖc ®ang lµm ®Ó ®i b¸o danh.");
+	}
+
+	if (ea.uTKNext > uCurTime)
+		return ea.nTKHold;
+	ea.uTKNext = uCurTime + 400;
+
+	// han pha: ket qua lau qua thi bo khung gio nay, tra may lai cho auto cu
+	if (ea.nTKPhase != TKP_FIGHT && ea.nTKPhase != TKP_OFF && ea.nTKPhase != TKP_DONE
+	 && uCurTime - ea.uTKPhaseT > TK_HANPHA)
+	{
+		TK_Msg(nPlayerIdx, "<color=Yellow>Mét b­íc cña auto Tèng Kim kÑt qu¸ 3 phót - bá khung giê nµy.");
+		ea.nTKHold = (nMap == TK_MAP_BAODANH) ? 1 : 0;
+		ea.nTKPhase = (nMap == TK_MAP_BAODANH) ? TKP_END : TKP_DONE;
+		ea.nTKStep = 0;
+		ea.nTKTry = 0;
+		ea.uTKPhaseT = uCurTime;
+		return ea.nTKHold;
+	}
+
+	switch (ea.nTKPhase)
+	{
+	case TKP_GO:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_TRAN)		// dang o san trong tran (vao lai game giua tran)
+		{
+			TK_Pha(nPlayerIdx, TK_TrongTrai(nX, nY, &ea.nTKThe) ? TKP_CAMP : TKP_FIGHT, uCurTime);
+			return 1;
+		}
+		if (nMap == TK_MAP_BAODANH)
+		{
+			TK_Pha(nPlayerIdx, TKP_SIGNUP, uCurTime);
+			return 1;
+		}
+		if (ea.nTKStep == 0)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			if (!Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THU_G, TK_ITEM_THU_D,
+					TK_ITEM_THU_P, nPlayerIdx))
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng dïng ®­îc Tèng Kim Chiªu th­ - bá khung giê nµy.");
+				ea.nTKPhase = TKP_DONE;
+				ea.nTKHold = 0;
+				return 0;
+			}
+			ea.nTKStep = 1;
+			ea.uTKNext = uCurTime + 700;
+			return 1;
+		}
+		// giu nguyen uTKDlgSeen de pha BOOK bat duoc hoi thoai vua bat ra
+		ea.nTKPhase = TKP_BOOK;
+		ea.nTKStep = 0;
+		ea.nTKTry = 0;
+		ea.uTKPhaseT = uCurTime;
+		ea.uTKNext = uCurTime + 300;
+		return 1;
+	}
+
+	case TKP_BOOK:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_BAODANH)
+		{
+			TK_Pha(nPlayerIdx, TKP_SIGNUP, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uTKDlgSeen)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			// thoai Chieu Thu: 0 = ben Tong, 1 = ben Kim, 2 = chua muon di
+			if (nAns >= 2)
+			{
+				DT_Answer(nPlayerIdx, (ea.nTKPhe == 2) ? 1 : 0);
+				ea.uTKNext = uCurTime + 1500;
+				return 1;
+			}
+		}
+		if (++ea.nTKTry % 8 == 0)
+			Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THU_G, TK_ITEM_THU_D,
+				TK_ITEM_THU_P, nPlayerIdx);
+		return 1;
+	}
+
+	case TKP_SIGNUP:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_TRAN)		// bao danh thanh cong = bi chuyen sang map tran
+		{
+			TK_TrongTrai(nX, nY, &ea.nTKThe);
+			TK_Msg(nPlayerIdx, "<color=Green>B¸o danh xong - ®ang ë hËu doanh.");
+			TK_Pha(nPlayerIdx, TKP_CAMP, uCurTime);
+			return 1;
+		}
+		if (nMap != TK_MAP_BAODANH)
+		{
+			TK_Pha(nPlayerIdx, TKP_GO, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uTKDlgSeen)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			// tu can bang: doc quan so tu CHINH cau thoai roi chon ben it nguoi hon
+			if (pAp->nTKPhe == 2 && ea.nTKStep == 0)
+			{
+				int nT = DT_NumAfter(szBuf, TKM_SAY_TONG);
+				int nK = DT_NumAfter(szBuf, TKM_SAY_KIM);
+				if (nT >= 0 && nK >= 0)
+				{
+					int nMuon = (nT <= nK) ? 1 : 2;
+					if (nMuon != ea.nTKPhe)
+					{
+						ea.nTKPhe = nMuon;
+						TK_Msg(nPlayerIdx, "<color=Cyan>Qu©n sè lÖch - qua b¸o danh phe Ýt ng­êi h¬n.");
+						TK_Pha(nPlayerIdx, TKP_SWAP, uCurTime);
+						return 1;
+					}
+				}
+			}
+			int nOpt = DT_FindAns(apAns, nAns, (ea.nTKPhe == 2) ? TKM_OPT_KIM : TKM_OPT_TONG);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nTKStep = 1;
+				ea.uTKNext = uCurTime + 2200;	// tu choi la IM LANG - chi biet qua viec doi map
+				return 1;
+			}
+			// tran chua mo (thoai chi co mot dong "Ta chi ghe ngang qua")
+			ea.nTKStep = 0;
+			ea.uTKPhaseT = uCurTime;		// dang cho dung gio, khong tinh la ket
+			ea.uTKNext = uCurTime + 8000;
+			TK_Msg(nPlayerIdx, "<color=Yellow>TrËn ch­a më - chê tíi giê råi b¸o danh l¹i.");
+			return 1;
+		}
+		if (ea.nTKStep == 1)
+		{
+			// bam roi ma van con o map bao danh = bi tu choi im lang
+			ea.nTKStep = 0;
+			if (++ea.nTKTry >= 3 && pAp->nTKPhe == 2)
+			{
+				ea.nTKPhe = (ea.nTKPhe == 2) ? 1 : 2;
+				TK_Msg(nPlayerIdx, "<color=Yellow>Phe nµy kh«ng nhËn thªm - qua ®iÓm b¸o danh phe kia.");
+				TK_Pha(nPlayerIdx, TKP_SWAP, uCurTime);
+				return 1;
+			}
+			if (ea.nTKTry >= 10)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>B¸o danh bÞ tõ chèi nhiÒu lÇn - bá khung giê nµy.");
+				TK_Pha(nPlayerIdx, TKP_END, uCurTime);
+				return 1;
+			}
+			ea.uTKNext = uCurTime + 3000;
+			return 1;
+		}
+		{
+			const TKPoint& sN = (ea.nTKPhe == 2) ? g_TKNpcBdKim : g_TKNpcBdTong;
+			int nR = TK_ToiNpc(nPlayerIdx, "b¸o danh", (int)sN.x, (int)sN.y, uCurTime);
+			if (nR == 1)
+				ea.uTKNext = uCurTime + 900;
+			else if (nR < 0)
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy NPC b¸o danh quanh ®©y.");
+		}
+		return 1;
+	}
+
+	case TKP_SWAP:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_TRAN)
+		{
+			TK_TrongTrai(nX, nY, &ea.nTKThe);
+			TK_Pha(nPlayerIdx, TKP_CAMP, uCurTime);
+			return 1;
+		}
+		if (nMap != TK_MAP_BAODANH)
+		{
+			TK_Pha(nPlayerIdx, TKP_GO, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uTKDlgSeen)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			int nOpt = DT_FindAns(apAns, nAns, (ea.nTKPhe == 2) ? TKM_OPT_QUAKIM : TKM_OPT_QUATONG);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nTKStep = 1;
+				ea.uTKNext = uCurTime + 1800;
+				return 1;
+			}
+			ea.uTKNext = uCurTime + 1200;
+			return 1;
+		}
+		if (ea.nTKStep == 1)
+		{
+			TK_Pha(nPlayerIdx, TKP_SIGNUP, uCurTime);	// da qua diem ben kia - bao danh tiep
+			return 1;
+		}
+		{
+			// Xa Phu cua PHE KIA moi co dong sang phe minh dang nham
+			const TKPoint& sX = (ea.nTKPhe == 2) ? g_TKXaFuTong : g_TKXaFuKim;
+			int nR = TK_ToiNpc(nPlayerIdx, "xa phu", (int)sX.x, (int)sX.y, uCurTime);
+			if (nR == 1)
+				ea.uTKNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu - tù ®i bé qua NPC phe kia.");
+				TK_Pha(nPlayerIdx, TKP_SIGNUP, uCurTime);
+			}
+		}
+		return 1;
+	}
+
+	case TKP_CAMP:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_BAODANH)		// bi da ve diem bao danh
+		{
+			TK_Pha(nPlayerIdx, nTrongGio ? TKP_SIGNUP : TKP_END, uCurTime);
+			return 1;
+		}
+		if (nMap != TK_MAP_TRAN)
+		{
+			TK_Pha(nPlayerIdx, TKP_GO, uCurTime);
+			return 1;
+		}
+		if (!TK_TrongTrai(nX, nY, &ea.nTKThe))	// da bi nem ra tran roi
+		{
+			TK_Pha(nPlayerIdx, TKP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
+			return 1;
+		if (pAp->nTKMuaMau == 2 || ea.nTKMua)	// 2 = khong mua thuoc
+		{
+			TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+			return 1;
+		}
+		if (pAp->nTKMuaMau == 1)
+		{
+			int nCan = pAp->nTKSoBinh > 0 ? pAp->nTKSoBinh : 20;
+			if (TK_DemBinh(nPlayerIdx) >= nCan)
+			{
+				ea.nTKMua = 1;
+				TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+				return 1;
+			}
+		}
+		else if (Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment) <= 0)
+		{
+			ea.nTKMua = 1;		// mua nhanh = mua bang so o trong; tui day thi khoi mua
+			TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+			return 1;
+		}
+		if (ea.nTKStep >= 2)
+		{
+			// cua so shop dang mo (chi voi kieu mua theo so luong)
+			if (!CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+			{
+				ea.nTKStep = 0;
+				return 1;
+			}
+			int nCan = pAp->nTKSoBinh > 0 ? pAp->nTKSoBinh : 20;
+			if (TK_DemBinh(nPlayerIdx) >= nCan)
+			{
+				ea.nTKMua = 1;
+				CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+				TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+				return 1;
+			}
+			int nShop = Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop];
+			for (int b = 0; b < BuySell.GetWidth(); ++b)
+			{
+				KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(nShop, b));
+				if (!pItem)
+					break;
+				if (pItem->GetGenre() != TK_ITEM_MAU_G || pItem->GetDetailType() != TK_ITEM_MAU_D)
+					continue;
+				int x2, y2;
+				if (!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x2, &y2))
+					break;
+				if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+					break;
+				SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+				ea.uTKNext = uCurTime + 250;
+				return 1;
+			}
+			ea.nTKMua = 1;
+			TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uTKDlgSeen)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			int nOpt = DT_FindAns(apAns, nAns,
+				(pAp->nTKMuaMau == 1) ? TKM_OPT_MUADUOC : TKM_OPT_MUANHANH);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				if (pAp->nTKMuaMau == 1)
+				{
+					ea.nTKStep = 2;
+					ea.uTKNext = uCurTime + 1200;
+				}
+				else
+				{
+					ea.nTKMua = 1;
+					ea.uTKNext = uCurTime + 1500;
+					TK_Msg(nPlayerIdx, "<color=Cyan>§· mua nhanh thuèc ë Qu©n Y.");
+				}
+				return 1;
+			}
+			ea.uTKNext = uCurTime + 1200;
+			return 1;
+		}
+		{
+			const TKPoint& sQ = (ea.nTKThe == 1) ? g_TKQuanYA : g_TKQuanYB;
+			int nR = TK_ToiNpc(nPlayerIdx, "qu©n y", (int)sQ.x, (int)sQ.y, uCurTime);
+			if (nR == 1)
+				ea.uTKNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Qu©n Y - ra trËn lu«n.");
+				ea.nTKMua = 1;
+				TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+			}
+		}
+		return 1;
+	}
+
+	case TKP_TRAP:
+	{
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_BAODANH)
+		{
+			TK_Pha(nPlayerIdx, nTrongGio ? TKP_SIGNUP : TKP_END, uCurTime);
+			return 1;
+		}
+		if (nMap != TK_MAP_TRAN)
+		{
+			TK_Pha(nPlayerIdx, TKP_GO, uCurTime);
+			return 1;
+		}
+		if (!TK_TrongTrai(nX, nY, &ea.nTKThe))
+		{
+			TK_Msg(nPlayerIdx, "<color=Green>§· vµo chiÕn tr­êng - ®¸nh theo cÊu h×nh tab PK.");
+			TK_Pha(nPlayerIdx, TKP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
+			return 1;
+		{
+			// vet trap ra trai nam canh hau doanh cua nua ban do minh dang dung: giam
+			// len la may chu nem ra tran (10 giay dau no tu choi - cho la duoc), khong
+			// thi dong ho 90 giay cung tu nem ra.
+			const TKPoint& sT = (ea.nTKThe == 1) ? g_TKTrapA : g_TKTrapB;
+			int nB = (int)((uCurTime / 3000u) % (UINT)(TK_TRAP_LEN + 1));	// di doc vet cheo
+			DT_WalkTo(nPlayerIdx, TK_O((int)sT.x + nB), TK_O((int)sT.y + nB), 24, uCurTime);
+		}
+		return 1;
+	}
+
+	case TKP_FIGHT:
+	{
+		ea.nTKHold = 2;
+		if (nMap == TK_MAP_BAODANH)
+		{
+			// het tran (may chu keo ca hai phe ve) hoac bi da vi dung yen 5 phut
+			if (nTrongGio)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>BÞ ®­a vÒ ®iÓm b¸o danh - b¸o danh l¹i ®Ó vµo tiÕp.");
+				TK_Pha(nPlayerIdx, TKP_SIGNUP, uCurTime);
+				return 1;
+			}
+			TK_Msg(nPlayerIdx, "<color=Cyan>HÕt trËn Tèng Kim - ®ang rêi ®iÓm b¸o danh.");
+			TK_Pha(nPlayerIdx, TKP_END, uCurTime);
+			return 1;
+		}
+		if (nMap != TK_MAP_TRAN)
+		{
+			ea.nTKPhase = TKP_DONE;
+			ea.nTKHold = 0;
+			return 0;
+		}
+		if (TK_TrongTrai(nX, nY, &ea.nTKThe))	// vua hoi sinh ve hau doanh
+		{
+			++ea.nTKChet;
+			ea.nTKMua = 0;			// moi mang mua lai thuoc theo cau hinh
+			TK_Pha(nPlayerIdx, TKP_CAMP, uCurTime);
+			return 1;
+		}
+		if (TK_AnThuoc(nPlayerIdx, pAp, uCurTime))
+			return 2;
+		{
+			int nTG = TK_ChonDich(nPlayerIdx, pAp);
+			if (nTG)
+			{
+				// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
+				ea.uNpcID = Npc[nTG].m_dwID;
+				ea.uTKDestT = 0;
+				g_ScenePlace.RemoveFlag();
+				ea.uTKNext = uCurTime + 300;
+				return 2;
+			}
+		}
+		// khong co dich hop le -> chay toi mot diem trong bang binh doan ben dich
+		if (!ea.uTKDestT || uCurTime > ea.uTKDestT
+		 || g_GetDistance(nX, nY, TK_O(ea.nTKDestX), TK_O(ea.nTKDestY)) < 200)
+			TK_ChonDiem(nPlayerIdx, uCurTime);
+		DT_WalkTo(nPlayerIdx, TK_O(ea.nTKDestX), TK_O(ea.nTKDestY), 160, uCurTime);
+		return 2;
+	}
+
+	case TKP_END:
+	{
+		ea.nTKHold = 1;
+		if (nMap != TK_MAP_BAODANH)
+		{
+			TK_Msg(nPlayerIdx, "<color=Cyan>Xong Tèng Kim - tr¶ m¸y l¹i cho auto cò.");
+			ea.nTKPhase = TKP_DONE;
+			ea.nTKHold = 0;
+			return 0;
+		}
+		// don bot binh thuoc mua nhanh de con cho cho Da Tau (Da Tau can >= 5 o trong)
+		if (pAp->nTKMuaMau == 0 && ea.nTKStep < 2)
+		{
+			if (++ea.nTKTry > 40)
+			{
+				ea.nTKStep = 2;
+				return 1;
+			}
+			int nTrong = Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment);
+			if (nTrong < 8)
+			{
+				int nHand = Player[nPlayerIdx].m_ItemList.Hand();
+				if (nHand > 0)
+				{
+					if (TK_LaBinhMua(nHand))
+						Player[nPlayerIdx].ThrowAwayItem();
+					ea.uTKNext = uCurTime + 400;
+					return 1;
+				}
+				for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+					for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+					{
+						int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+						if (!TK_LaBinhMua(nIdx))
+							continue;
+						DT_ClickItem(pos_equiproom, j, i);
+						ea.uTKNext = uCurTime + 400;
+						return 1;
+					}
+			}
+			ea.nTKStep = 2;
+			ea.nTKTry = 0;
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uTKDlgSeen)
+		{
+			ea.uTKDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			int nOpt = -1;
+			if (pAp->bTKVeCho)
+				nOpt = DT_FindAns(apAns, nAns, TKM_OPT_TROLAI);
+			if (nOpt < 0)
+				nOpt = DT_FindAns(apAns, nAns, TKM_OPT_THANHTHI);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.uTKNext = uCurTime + 1500;
+				return 1;
+			}
+			ea.uTKNext = uCurTime + 1200;
+			return 1;
+		}
+		{
+			const TKPoint& sX = (ea.nTKPhe == 2) ? g_TKXaFuKim : g_TKXaFuTong;
+			int nR = TK_ToiNpc(nPlayerIdx, "xa phu", (int)sX.x, (int)sX.y, uCurTime);
+			if (nR == 1)
+				ea.uTKNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu ®Ó rêi ®iÓm b¸o danh.");
+				ea.nTKPhase = TKP_DONE;
+				ea.nTKHold = 0;
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	default:
+		ea.nTKPhase = TKP_OFF;
+		ea.nTKHold = 0;
+		return 0;
+	}
+}
+// ==================== HET AUTO TONG KIM ====================
+
 
 int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
 {
@@ -11422,6 +12327,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_DATAU:
 				{
 					return DT_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_TONGKIM:
+				{
+					return TK_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
 				}
 				case ATYPE_SETSELSV1:
 				{

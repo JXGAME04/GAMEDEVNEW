@@ -49,6 +49,11 @@ struct KDaTauCapture
 	// that (nguoi + bot PB), dan SimCity tu bi loai.
 	unsigned int uSapMapSeq;
 	char szSapMap[400];
+	// (24/08) TIN TOAN MAY CHU (UI_NEWSINFO - AddGlobalCountNews / AddGlobalCountNewsEx):
+	// auto Tong Kim doi tin "Bao danh Tong Kim da bat dau..." de vao tran DUNG luc may
+	// chu mo, khong phu thuoc dong ho / mui gio cua may nguoi choi.
+	unsigned int uNewsSeq;
+	char szNews[320];
 };
 
 extern KDaTauCapture g_sDTCap;
