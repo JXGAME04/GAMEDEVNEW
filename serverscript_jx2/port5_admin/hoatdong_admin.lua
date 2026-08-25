@@ -286,7 +286,14 @@ end
 -- CHI Bang Chien co danh hieu/vong sang. Da doi chieu ban Linux: Bach Nhan, Thanh Bao,
 -- Ty Vo KHONG he co Title_AddTitle/AddSkillState nao => khong phai thieu khi port.
 --   quan ham 1..5 = title 100..104  (missions\tongwar\match\head.lua:430)
---   vong sang quan ham = skill 661 cap (rank-1)          (match\head.lua:432)
+--   skill 661 cap (rank-1) = hieu ung MAY MAN tren DAU (StateSpecialId 67 ->
+--     \spr\skill\others\lucky.spr, cot 3 = "Head"), KHONG phai vong sang.
+--     Ban Linux van goi (match\head.lua:432) nen GIU de dung 100% Linux.
+--   VONG SANG THAT: bang settings\PlayerTitle.txt cot ExtSkill1, engine tu cast
+--     trong KNpc::SetCurPlayerTitle (KNpc.cpp:11016-11023). Dong 288-292 (id 287-291)
+--     = skill 830..834 cap 2/4/6/8/10 (Status136..140, cot "Foot" = duoi chan);
+--     dong 293-296 (id 292-295) = skill 1169 cap 1 (Status81, giong id 286 THDNB).
+--     => chi can SetPlayerTitle la vong sang TU HIEN, khong phai cast tay.
 --   105/106 Vo Lam De Nhat Bang     (event\tongwar\head.lua:273, han 30 ngay)
 --   199 Cao Cap De Nhat Bang        (npc_shizhe.lua:355, han 90 ngay)
 --   3000 Vo Lam Minh Chu            (head.lua:266)
@@ -332,7 +339,7 @@ function HD_TT_Rank(nRank)
 	HD_TT_Hien(nId)	-- [FIX 25/08] de danh hieu HIEN tren dau nhan vat
 	AddSkillState(661, nRank - 1, 0, 999999)
 	Msg2Player("Æ∑ nhÀn qu©n hµm ".. TT_QUANHAM[nRank] ..
-		" (danh hi÷u ".. nId .. ", vﬂng s∏ng k¸ n®ng 661 c p ".. (nRank - 1) .. ")")
+		" (danh hi÷u ".. nId .. ", vﬂng s∏ng k¸ n®ng ".. (829 + nRank) .." c p ".. (nRank * 2) .. ")")
 end
 function HD_TT_R1() HD_TT_Rank(1) end
 function HD_TT_R2() HD_TT_Rank(2) end
@@ -362,6 +369,13 @@ function HD_TT_Clear()
 	RemovePlayerTitle()	-- [FIX 25/08] go danh hieu he JX1 (m_btPlayerTitle)
 	RemoveSkillState(661)
 	RemoveSkillState(1485)
+	-- [FIX 25/08] go ca VONG SANG that (ExtSkill1 cua 9 dong PlayerTitle.txt moi).
+	-- RemovePlayerTitle o tren da goi CastStateSkill overlook=1 nen thuong da go,
+	-- go lai cho chac vi menu co the cap nhieu danh hieu lien tiep.
+	local tbAura = {830, 831, 832, 833, 834, 1169}
+	for i = 1, getn(tbAura) do
+		RemoveSkillState(tbAura[i])
+	end
 	Msg2Player("Æ∑ gÏ h’t danh hi÷u Bang Chi’n vµ vﬂng s∏ng qu©n hµm.")
 end
 
