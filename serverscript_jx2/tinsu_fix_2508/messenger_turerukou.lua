@@ -133,7 +133,7 @@ function ture_real_starttask_member(nTaskCode)
     		ture_real_starttask(nTaskCode)
     		
     		local szMsg,nCount = get_task_string(nTaskCode)
-    		szMsg = format("§éi tr­ëng cña ng­¬i ®· b¾t ®Çu nhiÖm vô Thiªn B¶o Khè §­a Tin, h·y n¾m b¾t thêi gian ®Õn b¶n ®å <color=yellow> Thiªn B¶o Khè<color> më B¶o R­¬ng hoµn thµnh nhiÖm vô ®I, h·y chó ý më r­¬ng ®óng thø tù: <color=yellow>%s<color>", szMsg)
+    		szMsg = format("§éi tr­ëng cña ng­¬i ®· b¾t ®Çu nhiÖm vô Thiªn B¶o Khè §­a Tin, h·y n¾m b¾t thêi gian ®Õn b¶n ®å <color=yellow> Thiªn B¶o Khè <color> më B¶o R­¬ng hoµn thµnh nhiÖm vô ®I, h·y chó ý më r­¬ng ®óng thø tù: <color=yellow>%s<color>", szMsg)
     		Msg2Player(szMsg)
     		return
     	elseif ( nt_getTask(1203) == 20 or nt_getTask(1203) == 21 ) then
@@ -144,7 +144,7 @@ function ture_real_starttask_member(nTaskCode)
     		Msg2Player("§éi tr­ëng cña ng­¬i ®· b¾t ®Çu nhiÖm vô Thiªn B¶o Khè §­a Tin, ng­¬I vÉn ch­a tiÕp nhËn nhiÖm vô nµy, h·y rêi khái ®éi ngò ®i")
     	end
     else
-    	Msg2Player("§éi tr­ëng cña ng­¬i ®· b¾t ®Çu nhiÖm vô Thiªn B¶o Khè §­a Tin, ng­¬i kh«ng ë b¶n ®å<color=yellow>Thiªn B¶o Khè<color>, xin h·y tù m×nh hoµn thµnh")
+    	Msg2Player("§éi tr­ëng cña ng­¬i ®· b¾t ®Çu nhiÖm vô Thiªn B¶o Khè §­a Tin, ng­¬i kh«ng ë b¶n ®å <color=yellow>Thiªn B¶o Khè <color>, xin h·y tù m×nh hoµn thµnh")
 	end
 	
 	Msg2Team(format("<color=yellow>%s<color>TiÕn ®é nhiÖm vô kh«ng gièng víi ®éi ngò", GetName()))

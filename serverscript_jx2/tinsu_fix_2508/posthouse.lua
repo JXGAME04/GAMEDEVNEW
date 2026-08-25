@@ -104,7 +104,7 @@ function especiallymessenger()
 	local _, _, nMapIndex = GetPos()
 	local MapId = SubWorldIdx2ID( nMapIndex )
 	if MapId ~= 11 and MapId ~= 162 then
-		Talk(1,"","Tham gia nhiÖm vô Tİn Sø h·y ®i t×m DŞch Quan <color=red>Thµnh §«<color> hoÆc <color=red> §¹i Lı<color>!")
+		Talk(1,"","Tham gia nhiÖm vô Tİn Sø h·y ®i t×m DŞch Quan <color=red>Thµnh §« <color> hoÆc <color=red> §¹i Lı <color>!")
 		return
 	end
 	
@@ -529,14 +529,14 @@ function messenger_treasureprize()
 	--Ã¿ÌìµÚÒ»´ÎÍê³ÉÈÎÎñ½±Àø3¸öĞĞÏÀÁî
 	if nTodayTaskCount == 1 then
 		for i = 1, HD_CFG("TS_TRA_HANHHIEP", 3) do
-			AddItem(6,1,2575,1,0,0)--»ñÈ¡µÄĞĞÏÀÁîÎª²»°ó¶¨×´Ì¬
+			AddItem(6,1,2575,1,0,0,0)--»ñÈ¡µÄĞĞÏÀÁîÎª²»°ó¶¨×´Ì¬
 		end;
 		Msg2Player("Ng­¬i nhËn ®­îc "..HD_CFG("TS_TRA_HANHHIEP", 3).." Hµnh HiÖp LÖnh")
 	end
 	
 	--Ã¿´Î½»ÈÎÎñ½±Àø2¸öĞÅÊ¹±¦Ïä
 	for i = 1, HD_CFG("TS_TRA_BAORUONG", 2) do
-		AddItem(6,1,3430,0,0,0)
+		AddItem(6,1,3430,0,0,0,0)
 	end;
 	Msg2Player("Ng­¬i nhËn ®­îc "..HD_CFG("TS_TRA_BAORUONG", 2).." Tİn Sø B¶o R­¬ng")
 	if PlayerFunLib:CheckTaskDaily(3073,2,"nomsg","<") == 1 then
@@ -571,7 +571,7 @@ function messenger_duihuanprize()
 end
 
 function messenger_prize_partner()
-	Describe(DescLink_YiGuan..": Thñ lÜnh Long ngò võa míi mang vÒ mét sè <color=red>MÆt n¹ §ång hµnh kú bİ<color>, ng­êi cã muèn dïng thö kh«ng?",5,
+	Describe(DescLink_YiGuan..": Thñ lÜnh Long ngò võa míi mang vÒ mét sè <color=red>MÆt n¹ §ång hµnh kú bİ <color>, ng­êi cã muèn dïng thö kh«ng?",5,
 		"Kü n¨ng §ång hµnh/no",
 		"MÆt n¹ §ång hµnh/messenger_prize_mianju",
 		"VËt phÈm §ång hµnh/no",
@@ -881,7 +881,7 @@ end
 
 function prize_yaopai_mu()
 	if ( nt_getTask(1205) >= 50 ) then
-		AddItem(6,1,884,1,0,0)
+		AddItem(6,1,884,1,0,0,0)
 		local Uworld1205 = nt_getTask(1205) - 50
 		nt_setTask(1205,Uworld1205)
 		Msg2Player("B¹n nhËn ®­îc tÊm Tİn sø lÖnh – méc.")
@@ -892,7 +892,7 @@ end
 
 function prize_yaopai_tong()
 	if ( nt_getTask(1205) >= 150 ) then
-		AddItem(6,1,885,2,0,0)
+		AddItem(6,1,885,2,0,0,0)
 		local Uworld1205 = nt_getTask(1205) - 150
 		nt_setTask(1205,Uworld1205)
 		Msg2Player("B¹n nhËn ®­îc tÊm Tİn sø lÖnh – §ång.")
@@ -903,7 +903,7 @@ end
 
 function prize_yaopai_yin()
 	if ( nt_getTask(1205) >= 450 ) then
-		AddItem(6,1,886,3,0,0)
+		AddItem(6,1,886,3,0,0,0)
 		local Uworld1205 = nt_getTask(1205) - 450
 		nt_setTask(1205,Uworld1205)
 		Msg2Player("B¹n nhËn ®­îc Tİn sø lÖnh – B¹c.")
@@ -914,7 +914,7 @@ end
 
 function prize_yaopai_jin()
 	if ( nt_getTask(1205) >= 800 ) then
-		AddItem(6,1,887,4,0,0)
+		AddItem(6,1,887,4,0,0,0)
 		local Uworld1205 = nt_getTask(1205) - 800
 		nt_setTask(1205,Uworld1205)
 		Msg2Player("B¹n nhËn ®­îc 1 tÊm Tİn sø lÖnh - Vµng.")
@@ -925,7 +925,7 @@ end
 
 function prize_yaopai_yuci()
 	if ( nt_getTask(1205) >= 1500 ) then
-		AddItem(6,1,888,5,0,0)
+		AddItem(6,1,888,5,0,0,0)
 		local Uworld1205 = nt_getTask(1205) - 1500
 		nt_setTask(1205,Uworld1205)
 		Msg2Player("B¹n nhËn ®­îc 1 tÊm Ngù Tø Tİn Sø yªu bµi")
@@ -955,7 +955,7 @@ function prize_other_hongbao()
 	if ( nt_getTask(1205) >= 2000 ) then
 		local Uworld1205 = nt_getTask(1205) - 2000 
 		nt_setTask(1205,Uworld1205)
-		AddItem(6,1,401,0,0,0)
+		AddItem(6,1,401,0,0,0,0)
 		Msg2Player("B¹n nhËn ®­îc 1 ThÇn bİ §¹i Hång Bao.")
 	else
 		Describe(DescLink_YiGuan..": Xin lçi! §iÓm tİch lòy cña b¹n kh«ng ®ñ.",1,"KÕt thóc! /no")
@@ -1015,7 +1015,7 @@ function messenger_losemytask()
 end
 --------------------------------------------½âÊÍÊ²Ã´ÊÇĞÅÊ¹ÈÎÎñ----------------------------------------------
 function messenger_what()
-	Describe(DescLink_YiGuan..": NhiÖm vô Tİn Sø lµ nhiÖm vô gióp TriÒu §×nh ®­a th­ cho c¸c DŞch Quan ë c¸c Thµnh ThŞ, v× gÇn ®©y néi c¸c trong TriÒu §×nh xuÊt hiÖn ph¶n tÆc, cho nªn trong lóc ®­a th­ ng­¬i sÏ gÆp kh«ng İt nguy hiÓm. Kh«ng cã nh÷ng ng­êi dòng c¶m trİ tuÖ siªu phµm nhÊt ®¼ng vµ tinh thÇn hîp t¸c ®oµn kÕt th× sÏ rÊt khã hoµn thµnh nhiÖm vô. ChØ cã ®¹t ®Õn <color=red> cÊp 120 trë lªn<color> míi cã thÓ tham gia. Tr­íc m¾t ng­¬i sÏ gÆp nh÷ng trë ng¹i cöa ¶i sau ®©y: <color=red> Thiªn B¶o Khè<color>. Trong nh÷ng cöa ¶I nµy cã v« sè kÎ thï kh«ng gièng nhau vµ nh÷ng c¬ quan kú qu¸i,  ng­¬i ph¶i dùa vµo trİ tuÖ cña m×nh ®Ó cã lùa chän cùc kú chİn x¸c. Ta chØ cã ®«I lêi nh­ vËy choc ng­¬i thµnh c«ng, cè lªn chiÕn h÷u!",4,
+	Describe(DescLink_YiGuan..": NhiÖm vô Tİn Sø: ®­a th­ gióp TriÒu ®×nh, cÇn ®¹t <color=red> cÊp "..HD_CFG("TS_CAP_TOITHIEU", 90).." trë lªn <color>. V­ît ¶i <color=red>Thiªn B¶o Khè <color>: giÕt boss gi÷ r­¬ng råi më 5 B¶o R­¬ng ®óng thø tù lµ qua ¶i. Hoµn thµnh nhËn ®iÓm tİch lòy ®æi th­ëng; mçi ngµy 2 l­ît, thªm 1 l­ît b»ng Thiªn Khè B¶o LÖnh. Cè lªn chiÕn h÷u!",4,
 	"Giíi thiÖu ®¼ng cÊp ®Şa ®å/messenger_levelmap",
 	--"·çÖ®Æï¹Ø¿¨½éÉÜ/messenger_flyhorse",
 	--"É½ÉñÃí¹Ø¿¨½éÉÜ/messenger_mountaindeity",
@@ -1026,7 +1026,7 @@ function messenger_what()
 end
 
 function messenger_levelmap()
-	--Describe(DescLink_YiGuan.."£º°´ÕÕÍæ¼ÒµÄ²»Í¬µÈ¼¶£¬ÎÒÃÇ»®·ÖÁËÈıÖÖ²»Í¬Ç¿¶ÈµÄµØÍ¼¸øÄú¡£¼¶±ğÇø·ÖÊÇ<color=red>60-89¼¶£¬90-119¼¶£¬120<color>ÒÔÉÏÈıÖÖ¡£",2,"»ØÉÏÒ»²ã/messenger_what","½áÊø¶Ô»°/no")
+	Describe(DescLink_YiGuan..": Tr­íc m¾t chØ cã <color=red> cÊp "..HD_CFG("TS_CAP_TOITHIEU", 90).." trë lªn <color> mét møc ®é nhiÖm vô",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
 	Describe(DescLink_YiGuan..": Tr­íc m¾t chØ cã <color=red> cÊp 120 trë lªn<color> mét møc ®é nhiÖm vô",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
 end
 
@@ -1039,15 +1039,15 @@ function messenger_mountaindeity()
 end
 
 function messenger_storehouse()
-	Describe(DescLink_YiGuan..": Ng­¬i hoÆc ®éi tr­ëng cña ng­¬i khi tiÕp nhËn nhiÖm vô v­ît ¶i Thiªn B¶o Khè, hÖ thèng sÏ ph©n phèi cho ng­¬i ngÉu nhiªn  nhËn ®­îc 5 ch÷ sè, c¨n cø vµo <color-red> dùa theo thø tù <color> cña ch÷ sè më ra <color=red> B¶o R­¬ng<color> cña sè thø tù ®èi øng trong cöa ¶i Thiªn B¶o Khè, th× cã thÓ qua ¶i. §­¬ng nhiªn, ph¶i më B¶o R­¬ng, ng­¬i ph¶i ®¸nh b¹i <color=red> boss B¶o Khè Thñ Hé Gi¶ <color> bªn c¹nh B¶o R­¬ng. <color=red> Ngò Hµnh Phï <color> cã b¸n trong Kú Tr©n C¸c më ra cã thÓ nhËn ®­îc TriÖt Kim Phï, TriÖt Méc Phï, TriÖt Thñy Phï, TriÖt Háa Phï, TriÖt Thæ Phï, sau khi sö dông cã thÓ gióp ng­¬i dÔ dµng ®¸nh b¹i boss B¶o Khè Thñ Hé Gi¶.",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
+	Describe(DescLink_YiGuan..": Khi nhËn nhiÖm vô, hÖ thèng ph¸t ngÉu nhiªn 5 ch÷ sè - më <color=red>B¶o R­¬ng <color>theo ®óng thø tù ®ã lµ qua ¶i. Muèn më r­¬ng ph¶i giÕt <color=red>B¶o Khè Thñ Hé Gi¶ <color>®øng c¹nh. <color=red>Ngò Hµnh Phï <color>(b¸n ë Kú Tr©n C¸c) më ra TriÖt Kim/Méc/Thñy/Háa/Thæ Phï, dïng ®Ó ®¸nh boss dÔ h¬n h¼n.",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
 end
 
 function messenger_orderlevel()
-	Describe(DescLink_YiGuan..": C¨n cø biÓu hiÖn cña b¹n trong ¶i, chóng t«i sÏ phong cho b¹n vµi Quan hµm, b¹n sÏ nhËn ®­îc nhiÒu phÇn th­ëng. Yªu b¸i hiÖn t¹i chia thµnh Tİn sø - Méc, Tİn sø - §ång, Tİn sø - B¹c, Tİn sø - Vµng vµ Ngù Tø Tİn sø -  Vµng. §ång thêi, b¹n nhÊn <color=red>F12<color>, xem trong b¶ng <color=red>®iÓm tİch lòy<color> cña nhiÖm vô Tİn sø, biÕt ®­îc vŞ trİ chøc quan cña m×nh. B¹n cã thÓ dïng ®iÓm tİch lòy ®æi danh hiÖu Tİn sø. Sau ®ã cã thÓ dïng ®iÓm tİch lòy Tİn sø ®æi Yªu bµi. Nh÷ng Yªu bµi nµy sÏ t¨ng kh¶ n¨ng <color=red>phôc håi<color> cña b¹n, nã cã t¸c dông trong <color=red>1 giê<color>, sè lÇn sö dông lµ <color=red>5 lÇn<color>.",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
+	Describe(DescLink_YiGuan..": C¨n cø biÓu hiÖn cña b¹n trong ¶i, chóng t«i sÏ phong cho b¹n vµi Quan hµm, b¹n sÏ nhËn ®­îc nhiÒu phÇn th­ëng. Yªu b¸i hiÖn t¹i chia thµnh Tİn sø - Méc, Tİn sø - §ång, Tİn sø - B¹c, Tİn sø - Vµng vµ Ngù Tø Tİn sø -  Vµng. §ång thêi, b¹n nhÊn <color=red>F12<color>, xem trong b¶ng <color=red>®iÓm tİch lòy<color> cña nhiÖm vô Tİn sø, biÕt ®­îc vŞ trİ chøc quan cña m×nh. B¹n cã thÓ dïng ®iÓm tİch lòy ®æi danh hiÖu Tİn sø. Sau ®ã cã thÓ dïng ®iÓm tİch lòy Tİn sø ®æi Yªu bµi. Nh÷ng Yªu bµi nµy sÏ t¨ng kh¶ n¨ng <color=red>phôc håi<color> cña b¹n, nã cã t¸c dông trong <color=red>1 giê <color>, sè lÇn sö dông lµ <color=red>5 lÇn<color>.",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
 end
 
 function messenger_limittotask()
-	Describe(DescLink_YiGuan..": Sau khi tiÕp nhËn nhiÖm vô Tİn sø, b¹n cã thêi gian <color=red>2 giê<color> ®Ó hoµn thµnh. Thêi gian lµm nhiÖm vô mçi ngµy lµ <color=red>2 giê<color>. Chó ı! Khi ë trong ¶i, b¹n bŞ chÕt hoÆc rít m¹ng xem nh­ <color=red>nhiÖm vô thÊt b¹i<color>!",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
+	Describe(DescLink_YiGuan..": Sau khi tiÕp nhËn nhiÖm vô Tİn sø, b¹n cã thêi gian <color=red>2 giê <color> ®Ó hoµn thµnh. Thêi gian lµm nhiÖm vô mçi ngµy lµ <color=red>2 giê <color>. Chó ı! Khi ë trong ¶i, b¹n bŞ chÕt hoÆc rít m¹ng xem nh­ <color=red>nhiÖm vô thÊt b¹i<color>!",2,"Quay l¹i/messenger_what"," KÕt thóc ®èi tho¹i!/no")
 end
 
 function messenger_giveplayerexp(playerexp)
