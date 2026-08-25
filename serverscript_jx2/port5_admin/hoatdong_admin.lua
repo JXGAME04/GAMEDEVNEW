@@ -310,10 +310,26 @@ function HD_TT_Menu()
 	"Quay lπi/HD_AdminMenu"})
 end
 
+-- [FIX 25/08] Title_ActiveTitle (he JX2) KHONG dat Npc[].m_btPlayerTitle - bien DUY NHAT
+-- client dung de VE danh hieu (KNpc.cpp:5647 PlayerSync.PlayerTitle). Phai goi THEM
+-- SetPlayerTitle cua he JX1 (ScriptFuns.cpp:10702 -> KNpc::SetCurPlayerTitle:11006).
+-- Id HAI BANG mang nghia KHAC NHAU (105: JX2 = De Nhat Bang, JX1 = Hieu uy) nen phai
+-- tra bang duoi day; 9 dong 287-295 la dong MOI them vao settings\PlayerTitle.txt.
+TT_JX1ID = {[100]=287, [101]=288, [102]=289, [103]=290, [104]=291,
+			[105]=292, [106]=293, [199]=294, [3000]=295}
+
+function HD_TT_Hien(nIdJx2, nTimeFrame)
+	local nJx1 = TT_JX1ID[nIdJx2]
+	if nJx1 then
+		SetPlayerTitle(nJx1, nTimeFrame or 9999999, 0)
+	end
+end
+
 function HD_TT_Rank(nRank)
 	local nId = 100 + nRank - 1
 	Title_AddTitle(nId, 0, 9999999)
 	Title_ActiveTitle(nId)
+	HD_TT_Hien(nId)	-- [FIX 25/08] de danh hieu HIEN tren dau nhan vat
 	AddSkillState(661, nRank - 1, 0, 999999)
 	Msg2Player("Æ∑ nhÀn qu©n hµm ".. TT_QUANHAM[nRank] ..
 		" (danh hi÷u ".. nId .. ", vﬂng s∏ng k¸ n®ng 661 c p ".. (nRank - 1) .. ")")
@@ -328,6 +344,7 @@ function HD_TT_R5() HD_TT_Rank(5) end
 function HD_TT_Cap(nId, nNgay, szTen)
 	Title_AddTitle(nId, 1, nNgay * 24 * 60 * 60 * 18)
 	Title_ActiveTitle(nId)
+	HD_TT_Hien(nId, nNgay * 24 * 60 * 60 * 18)	-- [FIX 25/08]
 	Msg2Player("Æ∑ nhÀn danh hi÷u ".. szTen .. " (id ".. nId ..
 		", hπn ".. nNgay .. " ngµy)")
 end
@@ -342,6 +359,7 @@ function HD_TT_Clear()
 	for i = 1, getn(tb) do
 		Title_RemoveTitle(tb[i])
 	end
+	RemovePlayerTitle()	-- [FIX 25/08] go danh hieu he JX1 (m_btPlayerTitle)
 	RemoveSkillState(661)
 	RemoveSkillState(1485)
 	Msg2Player("Æ∑ gÏ h’t danh hi÷u Bang Chi’n vµ vﬂng s∏ng qu©n hµm.")
