@@ -366,6 +366,18 @@ server đổ `NpcEnchant = m_cGold.GetGoldType()`. Vá SERVER-ONLY:
 (bản 09:24 đang nằm đó vẫn chạy được, chỉ thiếu màu vàng).
 `CoreClient.dll.moi_2508_3hoatdong` đã làm tươi (10:23) — vẫn chờ swap client.
 
+## C12 — boss đánh "tàng hình" vẫn mất máu (chủ báo 10:3x, commit `b1f7c2bb`)
+
+Bằng chứng log 2 phía: server cast skill **328** (Tam Nga Tự Tuyết — boss Tín Sứ
+849 nhận skill theo ngũ hành) `E3_CANCAST_OK relation=0x8`; client **38/41 lượt**
+`relation=0x1 (none)` → `E4_SKILL_ABORT` (2 lượt RÚT VŨ KHÍ thì 0x8 → vẽ được).
+Gốc: `GetRelation` client ép `relation_none` cho (quái → người chơi CHƯA rút vũ
+khí, `KNpcSet.cpp:1554`); skill 53 không có cờ TargetEnemy nên quái thường không
+dính gate, skill 328 có cờ ⇒ hủy vẽ. Vá `KSkills.cpp CanCastSkill`: **client bỏ
+qua gate quan hệ khi launcher là NPC** (chiêu đến từ `s2c_skillcast` — server đã
+thẩm định; client chỉ vẽ lại). Server không đổi hành vi (guard `#ifndef _SERVER`).
+⇒ `CoreClient.dll.moi_2508_3hoatdong` đã làm tươi (10:43) — hiệu lực sau swap client.
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
