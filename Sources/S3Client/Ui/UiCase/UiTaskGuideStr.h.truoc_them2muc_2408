@@ -53,23 +53,3 @@
 #define TS_TITLE_4 "Kim"
 #define TS_TITLE_5 "Ngù Tø"
 #define TS_BRIEF_NONE "Ch­a nhËn nhiÖm vô TÝn Sø."
-
-// ---- [CHI NAM 24/08] Bang Chien (tongwar) - task 2369..2378 ----
-#define TW_NOTASK      "Ng­¬i ch­a tham gia trËn Bang ChiÕn nµo. Mïa gi¶i diÔn ra vµo cuèi th¸ng 10 - ®Çu th¸ng 11, mçi tèi mét trËn."
-#define TW_INFO_FMT    "®iÓm trËn nµy: <color=yellow>%d<color> . Tæng ®iÓm c¶ mïa: <color=yellow>%d<color> ."
-#define TW_KILL_FMT    "®· h¹: <color=yellow>%d<color> ng­êi . Chuçi h¹ cao nhÊt: <color=yellow>%d<color> ."
-#define TW_DEATH_FMT   "Sè lÇn tö vong: <color=yellow>%d<color> / <color=yellow>%d<color> . HÕt sè m¹ng sÏ bÞ ®­a khái chiÕn tr­êng."
-#define TW_RANK_FMT    "Qu©n hµm hiÖn t¹i: <color=yellow>%s<color> ."
-#define TW_RANK_0      "ch­a cã"
-#define TW_RANK_1      "Binh SÜ"
-#define TW_RANK_2      "HiÖu óy"
-#define TW_RANK_3      "Thèng LÜnh"
-#define TW_RANK_4      "Phã T­íng"
-#define TW_RANK_5      "®¹i T­íng"
-
-// ---- [CHI NAM 24/08] Bach Nhan Loi Dai - task 2709 (yymmdd*256 + dem) ----
-#define BR_INFO        "B¸ch Nh©n L«i ®µi më mçi ngµy tõ 12:00 ®Õn 24:00 t¹i L«i ®µi Hoµng Thµnh Tõ (vµo b»ng Quan nh¹c nhá ë L©m An)."
-#define BR_HOWTO       "Dïng khinh c«ng nh¶y lªn l«i ®µi ®Ó lµm L«i Chñ. ë trong b¶n ®å ®­îc céng kinh nghiÖm mçi 5 phót; gi÷ ®­îc ®µi th× céng thªm."
-#define BR_LIMIT_FMT   "L­ît nhËn kinh nghiÖm h«m nay: <color=yellow>%d<color> / <color=yellow>%d<color> ."
-#define BR_LIMIT_FULL  "H«m nay ®· dïng hÕt l­ît nhËn kinh nghiÖm. H·y quay l¹i vµo ngµy mai."
-

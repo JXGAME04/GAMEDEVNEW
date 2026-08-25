@@ -28,8 +28,6 @@ extern iCoreShell*		g_pCoreShell;
 #define SCHEME_INI_TASKGUIDE	"uitaskguide\\taskguide.ini"
 #define TASKGUIDE_DATAU_TASKID	6
 #define TASKGUIDE_TINSU_TASKID	7	// [TIN SU 21/08] task 1201..1218 (nt_setTask -> SetSaveVal -> UI_TASKVALUE)
-#define TASKGUIDE_BANGCHIEN_TASKID	8	// [CHI NAM 24/08] tongwar: task 2369..2378 (nt_setTask co SyncTaskValue)
-#define TASKGUIDE_BACHNHAN_TASKID	9	// [CHI NAM 24/08] bairenleitai: task 2709 (luot exp/ngay)
 
 // ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
 enum
@@ -176,16 +174,6 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	{
 		if (nTaskId >= 1201 && nTaskId <= 1218)
 			m_pSelf->BuildTinSuText();
-	}
-	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_BANGCHIEN_TASKID)
-	{
-		if (nTaskId >= 2369 && nTaskId <= 2378)
-			m_pSelf->BuildBangChienText();
-	}
-	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_BACHNHAN_TASKID)
-	{
-		if (nTaskId == 2709)
-			m_pSelf->BuildBachNhanText();
 	}
 }
 
@@ -384,14 +372,6 @@ void KUiTaskGuide::ShowTask(int nEntry)
 	{
 		BuildTinSuText();
 	}
-	else if (pEntry->nTaskId == TASKGUIDE_BANGCHIEN_TASKID)
-	{
-		BuildBangChienText();
-	}
-	else if (pEntry->nTaskId == TASKGUIDE_BACHNHAN_TASKID)
-	{
-		BuildBachNhanText();
-	}
 	else
 	{
 		m_Content.Clear();
@@ -425,59 +405,6 @@ static void TS_Digits(int nCode, char* szOut, int nOutSize, int* pnCount)
 	szOut[k] = 0;
 	if (pnCount)
 		*pnCount = n;
-}
-
-// [CHI NAM 24/08] Bang Chien: doc task 2369 diem tran, 2370 so lan chet, 2371 so nguoi ha,
-// 2373 quan ham 1..5, 2375 chuoi ha cao nhat, 2376 tran mang, 2378 tong diem ca mua.
-void KUiTaskGuide::BuildBangChienText()
-{
-	m_Content.Clear();
-	int nPoint  = DTG_TaskVal(2369);
-	int nDeath  = DTG_TaskVal(2370);
-	int nKill   = DTG_TaskVal(2371);
-	int nRank   = DTG_TaskVal(2373);
-	int nSeries = DTG_TaskVal(2375);
-	int nMaxDie = DTG_TaskVal(2376);
-	int nTotal  = DTG_TaskVal(2378);
-	if (nPoint == 0 && nKill == 0 && nTotal == 0 && nDeath == 0)
-	{
-		AddLine(TW_NOTASK);
-		return;
-	}
-	static const char* s_szRank[6] = { TW_RANK_0, TW_RANK_1, TW_RANK_2, TW_RANK_3, TW_RANK_4, TW_RANK_5 };
-	if (nRank < 0 || nRank > 5)
-		nRank = 0;
-	char szLine[512];
-	sprintf(szLine, TW_INFO_FMT, nPoint, nTotal);
-	AddLine(szLine);
-	sprintf(szLine, TW_KILL_FMT, nKill, nSeries);
-	AddLine(szLine);
-	sprintf(szLine, TW_DEATH_FMT, nDeath, nMaxDie);
-	AddLine(szLine);
-	sprintf(szLine, TW_RANK_FMT, s_szRank[nRank]);
-	AddLine(szLine);
-}
-
-// [CHI NAM 24/08] Bach Nhan Loi Dai: task 2709 ma hoa yymmdd*256 + so luot da dung.
-// Tran 50 luot/ngay (BR_TRAN_LUOT_NGAY trong cauhinh_hoatdong.lua).
-void KUiTaskGuide::BuildBachNhanText()
-{
-	m_Content.Clear();
-	AddLine(BR_INFO);
-	AddLine(BR_HOWTO);
-	const int nLimit = 50;
-	int nRaw = DTG_TaskVal(2709);
-	int nUsed = (nRaw > 0) ? (nRaw % 256) : 0;
-	if (nUsed > nLimit)
-		nUsed = nLimit;
-	char szLine[256];
-	if (nUsed >= nLimit)
-		AddLine(BR_LIMIT_FULL);
-	else
-	{
-		sprintf(szLine, BR_LIMIT_FMT, nUsed, nLimit);
-		AddLine(szLine);
-	}
 }
 
 void KUiTaskGuide::BuildTinSuText()
