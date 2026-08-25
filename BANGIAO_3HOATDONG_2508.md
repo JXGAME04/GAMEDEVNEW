@@ -508,6 +508,29 @@ còn phát thưởng); 116 con nhóm 20-80 ở map không thuộc menu luyện c
 ⚠️ `CoreShell.cpp` bị `ExcludedFromBuild` ở MỌI config Server ⇒ sửa nó **không**
 cần build lại server. Binary cần swap: **CLIENT `.moi_2508_c24` (14:27)**.
 
+## C25 — QUÉT SẠCH tàn dư dự án cũ theo TỪNG LỜI GỌI (công cụ `c25_quet_tandu.py`)
+
+Cách quét (bài học C24 — grep theo tên hệ KHÔNG bắt được):
+lấy mọi lời gọi hàm còn SỐNG trong `startgame.lua` + `timerserver.lua` → truy
+định nghĩa hàm trong toàn cây → soi thân hàm, đọc **đúng vị trí tham số map**
+(`AddNpcNew` tham số 3, `AddNpcEx1/3` tham số 4, `NewWorld` tham số 1) → đối
+chiếu với 3 dải map: PLĐ 336-339, Vượt Ải 464-495+957, 40 map boss sát thủ.
+
+**Kết quả cuối:**
+
+| Spawner bản Việt | Trạng thái |
+|---|---|
+| `addnpcsatthu()` (20 boss sát thủ) | 🔴 CÒN SỐNG → **đã tắt** (C24) |
+| `addnpcbosssatthu()` | đã comment từ trước |
+| `addnpcphonglangdo()` | đã comment từ trước |
+| `sukien_phonglangdo()` (chứa `addthuytacdaulinhpld` map 337) | định nghĩa còn nhưng **KHÔNG ai gọi** (call site :83 đã comment) ⇒ code chết |
+| `sukien_vuotai()` | call site :82 đã comment ⇒ code chết |
+| `othermap.lua` NPC thuyền phu PLĐ | đã comment |
+| `task01/task02` (Vượt Ải cũ) | chỉ chạy qua TimerTask **row 1/2**; bản Linux dùng **row 28/29** (PLĐ) và **41/42/43** (Vượt Ải) ⇒ **không va chạm** |
+
+⇒ Sau C24, **không còn lời gọi SỐNG nào** sinh NPC / dịch chuyển vào map của 3
+hoạt động ngoài bản Linux. (Không xoá file cũ để giữ lịch sử; chúng đã trơ.)
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
