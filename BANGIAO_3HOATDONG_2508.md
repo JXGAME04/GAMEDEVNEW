@@ -333,11 +333,14 @@ bỏ `/` trong nhãn nút, thêm nút Thoát, SetBoss/Gian2/SetRank/ShowCfg.
 🔴 **DLL server ĐANG CHẠY (boot 08:46) CHƯA CÓ `HD3_AddNpc`** ⇒ NPC 3HD hiện KHÔNG
 spawn (gọi nil lặng lẽ trong state startgame). Restart với DLL mới thì hết.
 
-Lệnh swap lúc server/client TẮT:
+⚠️ **CẬP NHẬT 09:4x**: phiên Tín Sứ ĐÃ SWAP phía SERVER (được chủ duyệt):
+`CoreServer.dll` = bản 09:13 có `HD3_AddNpc` (backup `.cu_2508_chico_perf`),
+`GameServer.exe` = bản perftick 24/08 (backup `.cu_2108_chua_va_packager`),
+kèm `bin\server\RESTART_GS_2508.bat` — **chủ game chỉ cần bấm bat này lúc vắng người**.
+
+CHỈ CÒN phía CLIENT (đừng đụng server nữa — swap lại lần 2 là mất DLL mới):
 ```
 cd /d E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE
-ren bin\server\CoreServer.dll CoreServer.dll.cu_2508_truoc3hd
-ren bin\server\CoreServer.dll.moi_2508_3hoatdong CoreServer.dll
 ren bin\client\CoreClient.dll CoreClient.dll.cu_2508_truoc3hd
 ren bin\client\CoreClient.dll.moi_2508_3hoatdong CoreClient.dll
 ren bin\client\Game.exe Game.exe.cu_2508_truoc3hd
