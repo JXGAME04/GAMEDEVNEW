@@ -444,18 +444,6 @@ static int DTG_DailyCount(int nRaw)
 	return nRaw % 256;
 }
 
-// [FIX 24/08 v2] Diem tich luy Tin Su (task 1205) tung bi bo dem ngay ghi de thanh
-// yymmdd*256 (~66 trieu). May chu da tach bo dem sang 4128 va co ham don rac, nhung ham do
-// chi chay khi nguoi choi noi chuyen Dich Quan. Chan them o day: moc doi thuong cao nhat
-// chi 1500 nen gia tri >= 1.000.000 chac chan la rac -> hien 0.
-static int DTG_TinSuPoint()
-{
-	int nPoint = DTG_TaskVal(1205);
-	if (nPoint >= 1000000 || nPoint < 0)
-		return 0;
-	return nPoint;
-}
-
 void KUiTaskGuide::BuildBangChienText()
 {
 	m_Content.Clear();
@@ -565,7 +553,7 @@ void KUiTaskGuide::BuildTinSuText()
 	char szPt[512];
 	// [24/08 hau phan bien] 1218 la so TRON DOI (khong noi nao dat lai 0) - bo dem NGAY
 	// that la 4128 (doi tu 1205 hom nay, dang yymmdd*256 + so_lan).
-	sprintf(szPt, TS_POINT_FMT, DTG_TinSuPoint(), s_szTitle[nTitle], DTG_DailyCount(DTG_TaskVal(4128)));
+	sprintf(szPt, TS_POINT_FMT, DTG_TaskVal(1205), s_szTitle[nTitle], DTG_DailyCount(DTG_TaskVal(4128)));
 	AddLine(szPt);
 }
 
@@ -583,61 +571,15 @@ void KUiTaskGuide::UpdateButtons()
 	m_BtnCancelTrace.Enable(bDT && KUiTaskTrace::IsTraced());
 }
 
-// [FIX 24/08 v2] TEncodeText (Engine\Src\Text.cpp:468) coi MOI byte > 0x80 la chu Han 2 byte
-// va nuot LUON byte ke tiep. Tieng Viet TCVN3 la 1 byte => neu dau '<' cua mot the roi dung
-// vao vi tri byte-duoi cua mot cap nhu vay thi the KHONG con duoc phan tich, phan "color>"
-// in thang ra man hinh.
-//
-// Phai xu ly SAU KHI ghep chuoi: trong khuon mau "<color=yellow>%s<color>" thi truoc '<' la
-// ky tu 's' (an toan), chi khi %s duoc thay bang ten ket thuc bang chu CO DAU (vd "Dai Ly",
-// "chua co") thi the moi hong. Vi vay quet rieng tep chuoi la KHONG DU.
-//
-// Cach lam: MO PHONG dung buoc nhay cua TEncodeText tu dau chuoi; chi khi '<' roi vao vi tri
-// byte-duoi moi chen 1 dau cach lam byte-duoi thay the, day '<' thanh byte dau.
-static void DTG_FixTagAfterVn(char* pBuf, size_t nCap)
-{
-	if (!pBuf)
-		return;
-	char szTmp[2048];
-	size_t i = 0, o = 0;
-	size_t nLen = strlen(pBuf);
-	while (i < nLen && o + 3 < sizeof(szTmp))
-	{
-		unsigned char c = (unsigned char)pBuf[i];
-		if (c > 0x80 && i + 1 < nLen)
-		{
-			if (pBuf[i + 1] == '<')
-			{
-				szTmp[o++] = pBuf[i];
-				szTmp[o++] = ' ';	// byte-duoi gia, hy sinh thay cho '<'
-				i++;				// '<' se thanh byte dau o vong sau
-			}
-			else
-			{
-				szTmp[o++] = pBuf[i];
-				szTmp[o++] = pBuf[i + 1];
-				i += 2;
-			}
-		}
-		else
-		{
-			szTmp[o++] = pBuf[i];
-			i++;
-		}
-	}
-	while (i < nLen && o + 1 < sizeof(szTmp))
-		szTmp[o++] = pBuf[i++];
-	szTmp[o] = 0;
-	strncpy(pBuf, szTmp, nCap - 1);
-	pBuf[nCap - 1] = 0;
-}
-
+// [24/08 hau phan bien] Da BO ham DTG_FixTagAfterVn: no chen dau cach truoc MOI '<'
+// dung sau byte >0x80 nen thua nua o trang o cac cho VON KHONG hong. Mo phong
+// TEncodeText cho thay toan bo UiTaskGuideStr.h chi co DUNG 1 chuoi that su hong
+// (TS_ST10) - da sua thang chuoi do (doi cho dau cach) thay vi xu ly o day.
 void KUiTaskGuide::AddLine(const char* pText)
 {
 	char szBuf[2048];
 	strncpy(szBuf, pText, sizeof(szBuf) - 1);
 	szBuf[sizeof(szBuf) - 1] = 0;
-	DTG_FixTagAfterVn(szBuf, sizeof(szBuf));	// [FIX 24/08 v2]
 	int nLen = TEncodeText(szBuf, strlen(szBuf));
 	m_Content.AddOneMessage(szBuf, nLen);
 }
