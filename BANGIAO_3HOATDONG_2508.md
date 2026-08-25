@@ -584,6 +584,42 @@ thưởng, hoặc thay bằng item JX1 tương đương (đổi qua khoá `HD3_S
 
 **Binary chốt: `Game.exe.moi_2508_c33` + `CoreClient.dll.moi_2508_c33` (15:00).**
 
+## C37 — 🔴🔴 GỐC THẬT "tới giờ ra NPC thì không đánh được" (`4bedca59`)
+
+**Soát toàn bộ PLĐ phần đặt cờ / chuyển chế độ, đối chiếu từng lệnh với Linux:**
+
+| Lệnh | JX1 | Linux |
+|---|---|---|
+| `SetFightState` | mission.lua ×5, fld_head ×1 | ×5, ×1 |
+| `SetCurCamp` | ×1 mỗi tệp | khớp |
+| `ForbidEnmity` / `DisabledUseTownP` | ×2 / ×3 | khớp |
+| `SetRevPos` / `SetLogoutRV` | ×3 / ×3 | khớp |
+| `AddMSPlayer` / `DelMSPlayer` / `SetTaskTemp` | ×1 | khớp |
+
+⇒ **0 lệch**. Hàm lên thuyền `fld_wanttakeboat` **giống Linux 44/44 dòng**.
+Script ĐÚNG — lỗi nằm ở **ENGINE**:
+
+`KNpc::SetFightMode` (`KNpc.cpp:10290`) **chỉ đặt `m_FightMode` phía SERVER**,
+không báo client. Khi mission gọi `SetFightState(1)` lúc thuyền rời bến:
+- SERVER: người chơi đang chiến đấu → chấp nhận đòn đánh
+- CLIENT: vẫn tưởng `m_FightMode = 0` → `GetRelation` (client, `KNpcSet.cpp:1458`)
+  ép `relation_none` cho cặp (người chơi `fight_none` ↔ quái) → `SearchNpcAt` lọc
+  theo `relation_enemy` → **không chọn được quái = không đánh được**.
+  *(Cùng lớp mask đã gây lỗi C12 "boss đánh tàng hình".)*
+
+**Vá** trong `LuaSetFightState`: sau khi đổi fight mode cho người chơi thật, gọi
+`KNpc::SendSyncData(m_nNetConnectIdx)` — đường CÓ SẴN, gói `PLAYER_SYNC` đã mang
+cờ `0x02` (`m_btSomeFlag`) và client đã xử lý sẵn, **không loại trừ bản thân**
+(`KProtocolProcess.cpp:2384`). Không thêm protocol, không đổi kích thước gói.
+⇒ **vá này chữa cho MỌI hoạt động dùng `SetFightState`** (PLĐ, Vượt Ải, Tống Kim,
+công thành…), không riêng 3 hoạt động.
+
+**NPC thuyền phu**: hành vi **100% Linux** — gọi đúng `fld_wanttakeboat(BOATID)`.
+Khác duy nhất là CÁCH NẠP: bản Linux có NPC sẵn trong dữ liệu map; map JX1 không
+có nên sinh lúc boot (template 240 + wrapper `hd3_thuyenphu.lua` đặt `BOATID`).
+
+**Binary: `CoreServer.dll.moi_2508_c37` + `CoreClient.dll.moi_2508_c37` (15:44).**
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
