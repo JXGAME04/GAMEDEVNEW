@@ -6,6 +6,13 @@
 > server** — hệ leaguematch đã port 20-21/08 giữ nguyên.
 > **CHƯA TEST THẬT** — binary mới đang nằm cạnh binary đang chạy, xem mục 2.
 
+> 🔴 **Commit: `faeee99d`** — KHÔNG phải commit riêng. Lúc tôi sắp commit thì **phiên song song**
+> (đang vá hệ va chạm đạn trong cùng cây `D:\GAMEDEVNEW`) commit trước và **cuốn luôn 15 tệp
+> đã stage của đợt Liên đấu vào commit của họ** — đúng cạm bẫy đã ghi trong ký ức
+> *"hai phiên chung cây D: — commit phiên kia nuốt tệp mình sửa"*. **Không mất gì** (đã đối chiếu
+> lại từng tệp trên đĩa), chỉ là lời commit của `faeee99d` **chỉ nói về vá đạn**, không nhắc
+> Liên đấu. Ai tra cứu sau này cứ nhớ: **toàn bộ mã Liên đấu nằm trong `faeee99d`.**
+
 ---
 
 ## 0. Trả lời 3 câu hỏi chủ game đặt ra
