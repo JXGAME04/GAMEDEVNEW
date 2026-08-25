@@ -98,6 +98,17 @@ ZMutex g_mutexFlow;
 // KHONG doi mac dinh cua LOP: Goddess va DBRoleServer co CPackager rieng
 // (ClientNode.h:64-65), khong nen bi keo theo.
 #define				GS_PACKAGER_BUFFER	655360	/* 1024*64*10 */
+// [24/08 r2] TRAN THAT SU KHONG phai o ben gui ma o BEN NHAN, va ben nhan van 128 KB:
+//  - Goddess: CClientNode ctor (Goddess/ClientNode.cpp:75-79) KHONG khoi tao
+//    m_theRecv/m_theSend (ClientNode.h:64-65) nen chung dung mac dinh 128 KB
+//    cua lop (Buffer.h:181); va try/catch cua Goddess::ThreadProcess DA BI CHU
+//    THICH, nen CException nem ra tu PackUp khong ai bat trong mot thread =>
+//    CHET CA Goddess.exe - cong DB cua ca cum, te hon han sap GameServer.
+//  - KTransferUnit::m_RecvData (KTransferUnit.h:24) cung dung mac dinh 128 KB.
+// Nen phai chan NGAY TAI DAY theo suc chua cua ben nhan, khong phai ben gui.
+// Muon that su ho tro goi > 128 KB thi phai noi CA BA cho va build lai
+// Goddess.exe (doi restart Goddess) - de thanh mot dot rieng.
+#define				GS_WIRE_LIMIT		131072	/* 128 KB - suc chua BEN NHAN */
 CPackager			m_theRecv(GS_PACKAGER_BUFFER);
 CPackager			m_theSend(GS_PACKAGER_BUFFER);
 
@@ -3399,11 +3410,14 @@ BOOL KSwordOnLineSever::SavePlayerData(int nIndex, bool bUnLock)
 		// Tha bo mot bai luu co canh bao ro rang con hon sap ca may chu; va tuyet doi
 		// khong duoc bo IM LANG.
 		const size_t uTongGoi = (sizeof(TProcessData) - 1) + (size_t)(pData->dwDataLen - 4) + 4;
-		if (uTongGoi > GS_PACKAGER_BUFFER)
+		if (uTongGoi > GS_WIRE_LIMIT)
 		{
-			printf("[LUU] BO QUA bai luu cua nguoi choi %d: goi %u byte > bo dem %u byte."
-			       " Phai noi rong GS_PACKAGER_BUFFER roi build lai GameServer.\n",
-			       nIndex, (unsigned int)uTongGoi, (unsigned int)GS_PACKAGER_BUFFER);
+			printf("[LUU] BO QUA bai luu cua nguoi choi %d: goi %u byte > tran ben nhan"
+			       " %u byte. Goi nay ma di tiep se lam SAP Goddess.exe (bo dem nhan"
+			       " cua no van 128 KB va khong co try/catch). Muon nang tran: noi"
+			       " CA BA cho - m_theSend o day, CClientNode cua Goddess,"
+			       " KTransferUnit::m_RecvData - roi build lai ca hai ben.\n",
+			       nIndex, (unsigned int)uTongGoi, (unsigned int)GS_WIRE_LIMIT);
 			return FALSE;
 		}
 
