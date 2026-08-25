@@ -15442,6 +15442,7 @@ TLua_Funcs GameScriptFuns[] =
 		// HD3_AddNpc tu random ngu hanh, tham so 6/7 = bNoRevive.
 		{"HD3_AddNpc",	LuaHD3_AddNpc},
 		{"HD3_DelNpcByName",	LuaHD3_DelNpcByName},	// [3HD C14] xoa NPC cu theo ten (don Nhiep Thi Tran ban Viet)
+		{"HD3_DelNpcByNameEx",	LuaHD3_DelNpcByName},	// [C15] ten moi = ban CO loc map; script goi Ex de DLL cu (khong loc) tu nil-skip, khong xoa nham toan cuc
 		{"HD3_AddNpcEx",	LuaHD3_AddNpcEx},
 		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)
 		{"ITEM_DropRateItem",	LuaDropRateItem},
