@@ -441,6 +441,26 @@ thiếu lọc-map + C15) trước khi bấm `RESTART_GS_2508.bat`. Console boot 
 Server: copy đè `CoreServer.dll` (bản 12:31 thiếu C16+st3_quit) rồi restart;
 client: copy đè `Game.exe` + `CoreClient.dll` rồi vào lại.
 
+## C19-C20 — AUTO LIÊN MAP tới boss + dọn NPC cũ triệt để (commit `f7761f92`)
+
+**Kích dòng nhiệm vụ Sát Thủ trên F11** → tự chạy tới Xa Phu → thuê xe
+(`HD3_ST_TIEN_XE`=1000, khuôn cũ `denchobossST` bản Việt) → server `NewWorld`
+tới gần boss + `SetFightState(1)` → client đi bộ nốt tới ô boss (bảng
+`KSatThuBossPos.h` SINH TỰ ĐỘNG từ killbosshead — 160 vị trí khớp tên 160/160
+với killer.txt). Đang ở đúng map boss thì đi bộ thẳng (miễn phí). Bấm lại = hủy.
+
+Dọn NPC cũ lớp cuối: `HD3_DelNpcByNameEx(tên, map, EXCLUDE-script)` — xoá NPC
+trùng tên KHÔNG mang script của mình (bắt được NPC cũ bất kể bind gì), chạy mỗi
+phút; mỗi nạn nhân ghi `DebugLog` (idx/setting/map/script) để truy nguồn gốc.
+
+Thoại [1] phục hồi câu 'thách thức thời gian' — gói 482B thường / 499B khi event
+(<511). ⚠️ nguyên văn Linux 292B KHÔNG nhét vừa trần 511B của JX1 cùng menu —
+bản nén giữ đủ 3 ý (160 giản = đệ nhất; 8 nhiệm vụ/ngày; thách thức thời gian);
+muốn nguyên văn từng chữ phải tách thoại 2 trang (đổi luồng — chờ chủ quyết).
+Lỗi '8nhiệm vụ<color>là' hoá ra CÓ SẴN trong bản Linux gốc (dòng 21, 292B).
+
+**Bộ binary CHỐT (13:55): `.moi_2508_c20` × 3** (thay c18).
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
