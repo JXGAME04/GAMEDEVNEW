@@ -6050,6 +6050,12 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 			{
 				Player[nIndex].ExecuteScript("\\script\\global\\seasonnpc.lua", "tg_quit", 0);
 			}
+			else if (!strcmp(pUiCmd->szFunc, "st3_quit"))
+			{
+				// [3HD C18] nut Bo nhiem vu tab San Boss Sat Thu: dung ham /cancel
+				// cua chinh thoai nieshichen (huy nhiem vu dang nhan, giu luat goc)
+				Player[nIndex].ExecuteScript("\\script\\task\\tollgate\\killer\\nieshichen.lua", "cancel", 0);
+			}
 			break;
 		case 5://kh¶m n¹m
 			{

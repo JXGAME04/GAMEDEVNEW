@@ -20,7 +20,7 @@ Include("\\script\\vng_feature\\challengeoftime\\npcNhiepThiTran.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 KILLER_MAXCOUNT = HD_CFG("HD3_ST_MAX_NGAY", KILLER_MAXCOUNT)	-- tran giet boss/ngay (goc Linux = 8, newtask_head.lua:20)
 ContentList = {
-	"<#>NÕu ai cã ®ñ 160  s¸t thñ gi¶n trong tay th× giÊc méng trë thµnh ®Ö nhÊt s¸t thñ ®· xem nh­ hoµn thµnh. Mçi ngµy chØ cÇn hoµn thµnh <color=yellow>8nhiÖm vô<color>lµ ®­îc. <enter>H·y tiÕp nhËn nhiÖm vô “th¸ch thøc thêi gian” ®Ó thÓ nghiÖm søc m¹nh ®ång ®éivµ kh¶ n¨ng s¸t thñ cña m×nh.",
+	"<#>Gép ®ñ 160 s¸t thñ gi¶n sÏ thµnh ®Ö nhÊt s¸t thñ. Mçi ngµy chØ cÇn xong <color=yellow>8 nhiÖm vô <color>lµ ®­îc.",
 	"<#>NhiÖm vô s¸t thñ cÊp 20/killer20",--2
 	"<#>NhiÖm vô s¸t thñ cÊp 30/killer30",
 	"<#>NhiÖm vô s¸t thñ cÊp 40/killer40",
@@ -28,9 +28,9 @@ ContentList = {
 	"<#>NhiÖm vô s¸t thñ cÊp 60/killer60",
 	"<#>NhiÖm vô s¸t thñ cÊp 70/killer70",
 	"<#>NhiÖm vô s¸t thñ cÊp 80/killer80",--8
-	"<#>NhiÖm vô s¸t thñ cÊp 90/killer90",
-	"<#>Ta ®¸nh kh«ng muèn giÕt ng­êi ®©u, hñy bá nhiÖm vô./cancel",	--10
-	"<#>M¸u ch¶y ®Çu r¬i, tèt nhÊt lµ ta nªn tr¸nh xa/no",
+	"<#>NhiÖm vô cÊp 90/killer90",
+	"<#>Hñy nhiÖm vô./cancel",	--10
+	"<#>Ta tr¸nh xa/no",
 	"<#>Ng­¬i ®· hñy bá nhiÖm vô. Lµm s¸t thñ tr­íc tiªn ph¶i cã thñ ph¸p siªu phµm, hai lµ h¹ thñ v« t×nh, xem ra ng­¬i kh«ng thİch hîp, kh«ng ®i còng kh«ng sao.",
 	"<#>Ng­êi lÇn tr­íc ta nãi ng­¬i ®i h¹ thñ vÉn cßn sèng, h·y chøng minh thùc lùc cña m×nh tr­íc ®i ®·.",
 	"<#>§¼ng cÊp cña ng­¬i kh«ng phï hîp, ph¶i giao ®Êu cïng víi ng­êi cã ®¼ng cÊp t­¬ng øng míi ®­îc.",
@@ -43,14 +43,14 @@ ContentList = {
 	"<#>Hîp l¹i mét lÇn n÷a/compose",
 	"<#>B¹n ®· hîp thµnh mét<color=",
 	"<#>Thuéc tİnh<color> s¸t thñ gi¶n, s¸t thñ gi¶n lµ mét s¸t thñ phi phµm. B¹n cã thÓ dïng mét s¸t thñ cïng cÊp ®Ó so tµi víi s¸t thñ gi¶n, quy t¾c th¾ng thua ®­îc ¸p dông theo quy t¾c t­¬ng kh¾c cña ngò hµnh. ",
-	"<#>Thö luyÖn s¸t thñ /annealofkiller",
+	"<#>Thö luyÖn s¸t thñ/annealofkiller",
 	"<#>Tham gia khiªu chiÕn/want_playboat",	--25
 	"<#>S¸t thñ luyÖn thøc tr­íc tiªn ph¶i b¾t ®Çu tõ viÖc tham gia khiªu chiÕn, ng­¬i d¸m tiÕp nhËn nhiÖm vô chø?",
 	"<#>Liªn quan ®Õn khiªu chiÕn/aboutchallenge",
 	"<#>Cø mçi giê hÖ thèng sÏ th«ng b¸o 1 lÇn. Thêi gian b¸o danh lµ 5 phót, thùc hiÖn chØ trong 30 phót. Mçi ng­êi chØ tèi ®a 2 lÇn/ngµy. Ph¶i ®o ®éi tr­ëng ®Õn b¸o danh. <enter>”NhiÖm vô th¸ch thøc thêi gian” gåm 2 khu vùc tham gia. S¬ cÊp: ng­êi ch¬i tõ cÊp 50 ®Õn 89, do ®éi tr­ëng mang 2 s¸t thñ gi¶n d­íi cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. Cao cÊp: ng­êi ch¬i tõ cÊp 90, do ®éi tr­ëng mang 2 s¸t thñ gi¶n cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. <enter>Néi trong thêi gian quy ®Şnh, nÕu v­ît qua hÕt 28 ¶i sÏ hoµn thµnh. Mçi ¶i phÇn th­ëng kinh nghiÖm sÏ kh¸c nhau. NÕu hoµn thµnh nhiÖm vô tr­íc thêi gian h¹n ®Şnh, phÇn th­ëng kinh nghiÖm sÏ cµng cao <enter>NÕu tr­íc thêi h¹n ®· hoµn thµnh, cã thÓ sÏ xuÊt hiÖn thªm 1 ¶i, trong ®ã cã nhiÒu phÇn th­ëng bÊt ngê (vËt phÈm ngÉu nhiªn, trang bŞ Hoµng Kim…). ChØ nh÷ng ®éi ®· v­ît 28 ¶i ®óng thêi gian quy ®Şnh míi cã tªn trong b¶ng xÕp h¹ng.",
-	"<#>NhiÖm vô \"Qu¸ quan tÇm b¶o\"/guoguan_xunbao",
-	"<#>Ta ®Õn nhËn th­ëng/rank_award",
-	"<#>Ta ®Õn xem xÕp h¹ng 5 ®éi cao nhÊt cña h«m nay./get_top5team"
+	"<#>Qu¸ quan tÇm b¶o/guoguan_xunbao",
+	"<#>NhËn th­ëng/rank_award",
+	"<#>XÕp h¹ng h«m nay./get_top5team"
 }
 
 killertabfile = new(KTabFile,"/settings/task/tollgate/killer/killer.txt","KILLER")

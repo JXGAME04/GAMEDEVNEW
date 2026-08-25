@@ -80,3 +80,8 @@
 #define ST3_GROUPLOW   "Nhãm cÊp thÊp: b¶n gèc chØ cßn nhãm 90 ph¸t th­ëng - h·y nhËn nhiÖm vô cÊp 90."
 #define ST3_NOTASK     "Ch­a nhËn nhiÖm vô s¸t thñ nµo."
 #define ST3_LIMIT_FMT  "Sè lÇn ®· giÕt h«m nay: <color=yellow>%d<color> / 8 ."
+// [3HD 25/08 C18] muc tieu boss + khung theo doi cua San Boss Sat Thu
+#define ST3_TARGET_FMT "Môc tiªu: <color=yellow>%s <color>%s."
+#define ST3_TRACE_TITLE "<color=yellow>S¨n Boss S¸t Thñ <color>"
+#define ST3_BRIEF_FMT "%s - %s. GiÕt: %d/8."
+#define ST3_BRIEF_NONE "Ch­a nhËn nhiÖm vô s¸t thñ."

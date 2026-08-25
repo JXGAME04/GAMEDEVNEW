@@ -1792,6 +1792,48 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 	Lua_PushNumber(L, nXoa);
 	return 1;
 }
+// [3HD 25/08 C16] HD3_DelNpcByScript(szSub) - xoa NPC co ActionScript CHUA
+// chuoi szSub (khong phan biet hoa thuong - engine luu ActionScript da
+// g_StrLower, KNpcSet.cpp:429). Bam theo SCRIPT nen phan biet duoc NPC cu
+// (nhieptran.lua / thuyenphu.lua) voi NPC moi (nieshichen/hd3_thuyenphu)
+// du TRUNG TEN. Goi duoc moi phut (tu lanh khi NPC cu sinh muon/hoi sinh).
+int LuaHD3_DelNpcByScript(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
+		return 0;
+	const char* pSub = Lua_ValueToString(L, 1);
+	if (!pSub || !pSub[0])
+		return 0;
+	char szSub[80];
+	g_StrCpyLen(szSub, (char*)pSub, sizeof(szSub));
+	g_StrLower(szSub);
+	int nXoa = 0;
+	int nGom = 0;
+	static int s_anGomS[512];
+	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
+	{
+		if (Npc[nIdx].m_dwID == 0)
+			continue;
+		if (Npc[nIdx].IsPlayer())
+			continue;
+		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].ActionScript[0] == 0 || strstr(Npc[nIdx].ActionScript, szSub) == NULL)
+			continue;
+		if (nGom < 512)
+			s_anGomS[nGom++] = nIdx;
+	}
+	for (int i = 0; i < nGom; i++)
+	{
+		int n = s_anGomS[i];
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		NpcSet.Remove(n);
+		nXoa++;
+	}
+	Lua_PushNumber(L, nXoa);
+	return 1;
+}
 int LuaHD3_AddNpc(Lua_State* L)
 {
 	return sHD3_AddNpcCommon(L, 0);

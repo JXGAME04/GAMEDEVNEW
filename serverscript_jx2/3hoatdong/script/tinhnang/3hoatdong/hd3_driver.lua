@@ -33,6 +33,24 @@ HD3_PLD_BOAT = {
 -- ============================================================================
 -- BOOT
 -- ============================================================================
+-- [3HD 25/08 C16] don NPC CU cua ban Viet theo SCRIPT DOI THOAI (chac chan
+-- khong dung NPC moi du trung ten). Goi luc boot VA moi phut (tu lanh: NPC
+-- cu co the sinh SAU DriverInit boi du lieu region / hoi sinh).
+HD3_SCRIPT_CU = {
+	"nhieptran.lua",		-- Nhiep Thi Tran ban Viet (boss satthu + vuot ai cu)
+	"tinhnang\\phonglangdo\\thuyenphu.lua",	-- thuyen phu Nam cu
+	"tinhnang\\phonglangdo\\thuyenphubac.lua",	-- thuyen phu Bac cu
+}
+function HD3_DonNpcCu(bNoiLuc)
+	if (HD3_DelNpcByScript == nil) then return end
+	local nTong = 0
+	for i = 1, getn(HD3_SCRIPT_CU) do
+		nTong = nTong + HD3_DelNpcByScript(HD3_SCRIPT_CU[i])
+	end
+	if (nTong > 0 or bNoiLuc == 1) then
+		print("[3HD] Don NPC cu (theo script): xoa "..nTong..".")
+	end
+end
 function HD3_DriverInit()
 	-- [3HD 25/08 r2] GUARD: neu DLL dang chay CHUA co HD3_AddNpc (chua swap
 	-- CoreServer.dll.moi_2508_3hoatdong) thi THOAT EM DEM - khong duoc de loi
@@ -48,6 +66,7 @@ function HD3_DriverInit()
 		local nXoaCu = HD3_DelNpcByName("Nhi’p Th› Tr«n")
 		print("[3HD] Da xoa "..nXoaCu.." NPC Nhiep Thi Tran cu (ban Viet).")
 	end
+	HD3_DonNpcCu(1)	-- [C16] xoa theo script - lop chac chan
 	-- nap lazy (chi luc boot): 384 KB killbosshead + bang NPC 769
 	Include("\\script\\global\\autoexec_npc_hd3.lua")
 	Include("\\script\\task\\tollgate\\killbosshead.lua")
@@ -108,6 +127,7 @@ function HD3_InList(nHHMM, tb)
 end
 
 function HD3_Tick(nHr, nMi)
+	HD3_DonNpcCu(0)	-- [C16] tu lanh: NPC cu sinh muon/hoi sinh la bi don ngay trong 1 phut
 	local nHHMM = nHr * 100 + nMi
 
 	-- (B) Phong Lang Do - relay fengling_ferry.lua: moi gio phut :00

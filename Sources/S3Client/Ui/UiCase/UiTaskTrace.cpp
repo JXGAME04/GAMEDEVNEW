@@ -160,14 +160,16 @@ void KUiTaskTrace::UpdateView()
 
 	char szLine[512];
 
-	// dong 1: ten nhiem vu (mau vang)
-	strncpy(szLine, DTG_TRACE_TITLE, sizeof(szLine) - 1);
+	// dong 1: ten nhiem vu (mau vang) - theo tab dang theo doi [C18]
+	const char* pTitle = (KUiTaskGuide::GetTracedTaskId() == 10 /*SATTHU*/)
+		? ST3_TRACE_TITLE : DTG_TRACE_TITLE;
+	strncpy(szLine, pTitle, sizeof(szLine) - 1);
 	szLine[sizeof(szLine) - 1] = 0;
 	int nLen = TEncodeText(szLine, strlen(szLine));
 	pList->AddOneMessage(szLine, nLen);
 
 	// dong 2: ban rut gon trang thai hien tai
-	KUiTaskGuide::BuildBriefLine(szLine, sizeof(szLine));
+	KUiTaskGuide::BuildTraceLine(szLine, sizeof(szLine));	// [C18]
 	if (szLine[0])
 	{
 		nLen = TEncodeText(szLine, strlen(szLine));

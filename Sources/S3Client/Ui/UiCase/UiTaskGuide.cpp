@@ -16,6 +16,7 @@
 #include "UiTaskGuide.h"
 #include "UiTaskTrace.h"
 #include "UiTaskGuideStr.h"
+#include "UiTaskGuideSatThuBoss.h"	// [C18] SINH TU DONG tu killer.txt
 #include "../UiBase.h"
 #include "../../Represent/iRepresent/iRepresentShell.h"
 #include "../../../core/src/CoreShell.h"
@@ -535,6 +536,9 @@ void KUiTaskGuide::BuildSatThuText()
 		int nCapNhom = 20 + ((nBoss - 1) / 20) * 10;	// 1-20=cap20 ... 141-160=cap90
 		sprintf(szLine, ST3_CUR_FMT, nBoss, nCapNhom);
 		AddLine(szLine);
+		// [C18] muc tieu: ten + noi o (co toa do) tu bang nuong killer.txt
+		sprintf(szLine, ST3_TARGET_FMT, s_szST3BossName[nBoss], s_szST3BossInfo[nBoss]);
+		AddLine(szLine);
 		if (nBoss >= 141)
 			AddLine(ST3_GROUP90);
 		else
@@ -612,16 +616,49 @@ void KUiTaskGuide::BuildTinSuText()
 // - Bo nhiem vu: chi khi dang lam (course 1) - gui tg_quit, server mo hop
 //   xac nhan huy CHUAN (du luat phat / tru luot / 100 manh SHXT).
 // - Theo doi / Huy theo doi: bat tat khung KUiTaskTrace.
+// [C18] tab dang duoc 'Theo doi' (mac dinh Da Tau de giu hanh vi cu)
+static int s_nTracedTaskId = TASKGUIDE_DATAU_TASKID;
+int KUiTaskGuide::GetTracedTaskId()
+{
+	return s_nTracedTaskId;
+}
+
 void KUiTaskGuide::UpdateButtons()
 {
 	bool bDT = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
 		m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_DATAU_TASKID);
+	// [C18] tab San Boss Sat Thu cung dung duoc 3 nut nhu Da Tau
+	bool bST = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
+		m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID);
 	int nCourse = bDT ? DTG_TaskVal(1028) : 0;
-	m_BtnQuit.Enable(bDT && nCourse == 1);
-	m_BtnTrace.Enable(bDT && !KUiTaskTrace::IsTraced());
-	m_BtnCancelTrace.Enable(bDT && KUiTaskTrace::IsTraced());
+	int nBossST = bST ? DTG_TaskVal(1082) : 0;
+	m_BtnQuit.Enable((bDT && nCourse == 1) || (bST && nBossST >= 1 && nBossST <= ST3_BOSS_MAX));
+	m_BtnTrace.Enable((bDT || bST) && !KUiTaskTrace::IsTraced());
+	m_BtnCancelTrace.Enable((bDT || bST) && KUiTaskTrace::IsTraced());
 }
 
+// [C18] dong rut gon cho khung Theo doi - theo tab da bam 'Theo doi'.
+void KUiTaskGuide::BuildTraceLine(char* pOut, int nSize)
+{
+	if (s_nTracedTaskId == TASKGUIDE_SATTHU_TASKID)
+	{
+		int nBoss = DTG_TaskVal(1082);
+		if (nBoss >= 1 && nBoss <= ST3_BOSS_MAX)
+		{
+			int nUsed = DTG_TaskVal(1193);
+			if (nUsed < 0) nUsed = 0;
+			_snprintf(pOut, nSize - 1, ST3_BRIEF_FMT, s_szST3BossName[nBoss], s_szST3BossInfo[nBoss], nUsed);
+			pOut[nSize - 1] = 0;
+		}
+		else
+		{
+			strncpy(pOut, ST3_BRIEF_NONE, nSize - 1);
+			pOut[nSize - 1] = 0;
+		}
+		return;
+	}
+	BuildBriefLine(pOut, nSize);
+}
 // [FIX 24/08 v2] TEncodeText (Engine\Src\Text.cpp:468) coi MOI byte > 0x80 la chu Han 2 byte
 // va nuot LUON byte ke tiep. Tieng Viet TCVN3 la 1 byte => neu dau '<' cua mot the roi dung
 // vao vi tri byte-duoi cua mot cap nhu vay thi the KHONG con duoc phan tich, phan "color>"
@@ -842,13 +879,21 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnQuit)
 		{
-			// server mo hop xac nhan huy chuan (Task_CancelConfirm) - du luat
+			// server mo hop xac nhan huy chuan (Da Tau) / huy truc tiep (Sat Thu)
 			if (g_pCoreShell)
-				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (int)"tg_quit");
+			{
+				const char* pCmd = "tg_quit";
+				if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount &&
+					m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID)
+					pCmd = "st3_quit";	// [C18] -> nieshichen.lua cancel()
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 6, (int)pCmd);
+			}
 			return true;
 		}
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnTrace)
 		{
+			if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount)
+				s_nTracedTaskId = m_Entries[m_nCurEntry].nTaskId;	// [C18]
 			KUiTaskTrace::SetTraced(true);
 			UpdateButtons();
 			return true;
