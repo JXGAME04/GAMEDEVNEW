@@ -3,8 +3,8 @@
 -- trong STATE TRAP -> nil (ScriptError: ture_try_starttask / ture_movecity).
 -- Include 2 script NPC cua ai de state trap co DU ham menu - mo phong dung
 -- hanh vi single-state cua ban Linux. main() cua trap o cuoi file nen van de len.
-Include("\script\task\tollgate\messenger\messenger_templerukou.lua")
-Include("\script\task\tollgate\messenger\shanshenmiao\messenger_temnpc.lua")
+Include("\\script\\task\\tollgate\\messenger\\messenger_templerukou.lua")
+Include("\\script\\task\\tollgate\\messenger\\shanshenmiao\\messenger_temnpc.lua")
 
 function main()
 	if ( GetTask(1202) == 10 ) then
