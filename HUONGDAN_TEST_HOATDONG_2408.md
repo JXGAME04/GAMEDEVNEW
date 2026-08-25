@@ -141,6 +141,13 @@ Muốn **đổi hoặc bỏ** vòng sáng: sửa thẳng `settings\PlayerTitle.t
 
 ---
 
+### Lưu ý mới 25/08 — quái Tín Sứ giờ là BOSS VÀNG
+Sau vá `b8d60392`, quái/boss trong ải Tín Sứ mang loại *boss hoàng kim* (tên **màu vàng** như bản Linux).
+⚠ WAuto có ô **"Bỏ qua boss vàng"** (tab PK): người dùng auto Tín Sứ phải **ĐỪNG tick** ô này,
+tick vào là auto sẽ không đánh quái giữ rương.
+
+---
+
 ## 6. FILE CONFIG TRUNG TÂM — `script\header\cauhinh_hoatdong.lua`
 
 - **Một file duy nhất** chứa TẤT CẢ khoá chỉnh của 4 hoạt động + 2 item exp, chú thích tiếng Việt từng dòng.
