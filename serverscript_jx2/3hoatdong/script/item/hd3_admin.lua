@@ -30,12 +30,12 @@ end
 function HD3_ADM_ST_Boot() HD3_DriverInit() Msg2Player("§· gäi HD3_DriverInit (tù dän NPC cò cña hÖ råi sinh l¹i - gäi lÆp an toµn).") end
 function HD3_ADM_ST_Tele() NewWorld(1, 1506, 3198) end
 function HD3_ADM_ST_Lenh()
-	for i = 1, 5 do AddItem(6, 1, 398, 90, mod(i, 5), 0) end
+	for i = 1, 5 do AddItem(6, 1, 398, 90, mod(i, 5), 0, 0) end
 	Msg2Player("§· nhËn 5 S¸t Thñ lÖnh cÊp 90 (®ñ 5 hÖ). GÆp NhiÕp ThÝ TrÇn ®Ó gép thµnh S¸t Thñ Gi¶n.")
 end
 function HD3_ADM_ST_Gian2()
-	AddItem(6, 1, 399, 90, 0, 0)
-	AddItem(6, 1, 399, 90, 1, 0)
+	AddItem(6, 1, 399, 90, 0, 0, 0)
+	AddItem(6, 1, 399, 90, 1, 0, 0)
 	Msg2Player("§· nhËn 2 S¸t Thñ Gi¶n cÊp 90 - ®ñ vÐ ®éi tr­ëng b¸o danh V­ît ¶i cao cÊp.")
 end
 function HD3_ADM_ST_SetBoss()
@@ -81,8 +81,8 @@ end
 function HD3_ADM_PLD_Tele336() NewWorld(336, 1147, 3018) end
 function HD3_ADM_PLD_Tele337() NewWorld(337, 1646, 3233) end
 function HD3_ADM_PLD_Thoat() NewWorld(1, 1506, 3198) Msg2Player("§· tho¸t vÒ Ph­îng T­êng.") end
-function HD3_ADM_PLD_LB() AddItem(4, 489, 0, 0, 0, 0) Msg2Player("§· nhËn LÖnh bµi Phong L¨ng §é.") end
-function HD3_ADM_PLD_LBTT() AddItem(6, 1, 3363, 0, 0, 0) Msg2Player("§· nhËn LÖnh Bµi Thñy TÆc (6,1,3363).") end
+function HD3_ADM_PLD_LB() AddItem(4, 489, 0, 0, 0, 0, 0) Msg2Player("§· nhËn LÖnh bµi Phong L¨ng §é.") end
+function HD3_ADM_PLD_LBTT() AddItem(6, 1, 3363, 0, 0, 0, 0) Msg2Player("§· nhËn LÖnh Bµi Thñy TÆc (6,1,3363).") end
 
 function HD3_ADM_VA()
 	SayEx({"<color=yellow>V­ît ¶i<color> - b¸o danh theo giê HD3_VA_GIO; ®éi tr­ëng cÇn 2 S¸t Thñ Gi¶n + tæ ®éi 4 ng­êi",
