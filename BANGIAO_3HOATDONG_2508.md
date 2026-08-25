@@ -347,6 +347,25 @@ ren bin\client\Game.exe Game.exe.cu_2508_truoc3hd
 ren bin\client\Game.exe.moi_2508_3hoatdong Game.exe
 ```
 
+## C10 — tên boss màu VÀNG như bản Linux (chủ chốt 25/08 sau restart 10:01)
+
+Chuỗi thật: client đặt `m_Type = NpcSync->NpcEnchant` ở CẢ 2 handler sync
+(`KProtocolProcess.cpp:1873` + `SyncNpcMin`), KHÔNG đọc `m_byType`;
+server đổ `NpcEnchant = m_cGold.GetGoldType()`. Vá SERVER-ONLY:
+- `sHD3_AddNpcCommon` đọc flag cột `[8]` bảng killbosshead (`{id,lv,map,x,y,
+  noRevive,"tên",FLAG,"script",..}` — killer + turesure đều truyền 1)
+  → `Npc.m_Type = boss_gold` (khớp dịch ngược Linux +0x181C=3).
+- 2 chỗ đổ `NpcEnchant` trong `KNpc.cpp`: nếu `GetGoldType()==0` và
+  `m_Type==boss_gold` thì đẩy `boss_gold`(3). Hệ quái vàng golding giữ ưu
+  tiên; NPC tĩnh `bSpecialNpc` chỉ 0/1 — không đụng chạm. **Client CŨ không
+  cần build lại vẫn thấy tên vàng.**
+- ⚠️ WAuto có ô "bỏ qua boss vàng" (`bSkipGoldboss`) — đi giết boss thì ĐỪNG tick.
+
+**DLL: `bin\server\CoreServer.dll.moi_2508_bossgold` (10:23).** Trước khi bấm
+`RESTART_GS_2508.bat`: copy đè `CoreServer.dll.moi_2508_bossgold` → `CoreServer.dll`
+(bản 09:24 đang nằm đó vẫn chạy được, chỉ thiếu màu vàng).
+`CoreClient.dll.moi_2508_3hoatdong` đã làm tươi (10:23) — vẫn chờ swap client.
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
