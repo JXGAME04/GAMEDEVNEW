@@ -1,0 +1,222 @@
+{
+ "satthu": {
+  "1217": [
+   [
+    "GetTask",
+    "script\\task\\tollgate\\killer\\kill_level.lua",
+    38,
+    "local Uworld1217 = nt_getTask(1217)"
+   ],
+   [
+    "SetTask",
+    "script\\task\\tollgate\\killer\\kill_level.lua",
+    41,
+    "nt_setTask(1217,Uworld1217+1);"
+   ],
+   [
+    "GetTask",
+    "script\\task\\tollgate\\killer\\lib_killlevel.lua",
+    27,
+    "local Uworld1217 = nt_getTask(1217);"
+   ]
+  ],
+  "1082": [
+   [
+    "GetTask",
+    "script\\task\\tollgate\\killer\\nieshichen.lua",
+    57,
+    "UWorld1082 = nt_getTask(1082);"
+   ],
+   [
+    "SetTask",
+    "script\\task\\tollgate\\killer\\nieshichen.lua",
+    131,
+    "nt_setTask(1082, 0);"
+   ],
+   [
+    "SetTask",
+    "script\\task\\tollgate\\killer\\nieshichen.lua",
+    152,
+    "nt_setTask(1082,taskid);"
+   ]
+  ]
+ },
+ "phonglangdo": {
+  "200": [
+   [
+    "SetTaskTemp",
+    "script\\missions\\fengling_ferry\\fld_head.lua",
+    117,
+    "SetTaskTemp(200,1);"
+   ]
+  ],
+  "3070": [
+   [
+    "TaskDaily",
+    "script\\missions\\fengling_ferry\\fld_head.lua",
+    121,
+    "if CalcFreeItemCellCount() >= 1 and PlayerFunLib:CheckTaskDaily(3070, 5, \"nomsg\", \"<\") == 1 then"
+   ],
+   [
+    "TaskDaily",
+    "script\\missions\\fengling_ferry\\fld_head.lua",
+    122,
+    "PlayerFunLib:AddTaskDaily(3070, 1)"
+   ]
+  ]
+ },
+ "vuotai": {
+  "200": [
+   [
+    "SetTaskTemp",
+    "script\\missions\\challengeoftime\\chuangguang30.lua",
+    85,
+    "SetTaskTemp(200,1)"
+   ],
+   [
+    "SetTaskTemp",
+    "script\\missions\\challengeoftime\\chuangguang30.lua",
+    140,
+    "SetTaskTemp(200,0)"
+   ],
+   [
+    "SetTaskTemp",
+    "script\\missions\\challengeoftime\\mission_match.lua",
+    43,
+    "SetTaskTemp(200,0)"
+   ],
+   [
+    "SetTaskTemp",
+    "script\\missions\\challengeoftime\\mission_match.lua",
+    68,
+    "SetTaskTemp(200,1)"
+   ]
+  ],
+  "1551": [
+   [
+    "TSK_JOIN_DATE",
+    "script\\missions\\challengeoftime\\include.lua",
+    19,
+    "TSK_JOIN_DATE\t\t\t= 1551"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    63,
+    "if (ndate ~= GetTask(1551)) then --chưa đi vượt ải trong ngày"
+   ]
+  ],
+  "1550": [
+   [
+    "TSK_REMAIN_COUNT",
+    "script\\missions\\challengeoftime\\include.lua",
+    20,
+    "TSK_REMAIN_COUNT\t= 1550"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    67,
+    "if GetTask(1550) <= 0 then --số lần vượt ải có thể tham gia"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    71,
+    "nResult = 1 + GetTask(2642) - GetTask(1550)"
+   ]
+  ],
+  "2852": [
+   [
+    "PLAYER_MAP_TASK",
+    "script\\missions\\challengeoftime\\include.lua",
+    31,
+    "PLAYER_MAP_TASK\t\t\t= 2852"
+   ]
+  ],
+  "2641": [
+   [
+    "TSK_Longxuewan_Date",
+    "script\\missions\\challengeoftime\\include.lua",
+    117,
+    "TSK_Longxuewan_Date = 2641"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    66,
+    "if ndate ~= GetTask(2641) then --chưa sử dụng long huyết hoàn"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    84,
+    "if ndate ~= GetTask(2641) then"
+   ]
+  ],
+  "2642": [
+   [
+    "TSK_Longxuewan_Use",
+    "script\\missions\\challengeoftime\\include.lua",
+    118,
+    "TSK_Longxuewan_Use\t= 2642"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    71,
+    "nResult = 1 + GetTask(2642) - GetTask(1550)"
+   ],
+   [
+    "GetTask",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    87,
+    "nResult = GetTask(2642)"
+   ]
+  ],
+  "4018": [
+   [
+    "TSK_Longxuewan_avail",
+    "script\\missions\\challengeoftime\\include.lua",
+    119,
+    "TSK_Longxuewan_avail = 4018"
+   ]
+  ],
+  "1505": [
+   [
+    "SetTask",
+    "script\\missions\\challengeoftime\\mission_match.lua",
+    51,
+    "SetTask(1505, 0)"
+   ],
+   [
+    "SetTask",
+    "script\\missions\\challengeoftime\\mission_match.lua",
+    80,
+    "SetTask(1505, 1)"
+   ]
+  ],
+  "3071": [
+   [
+    "nTaskID",
+    "script\\missions\\challengeoftime\\npc\\dragonboat_main.lua",
+    30,
+    "local nFlag1 = DynamicExecuteByPlayer(nPlayerIndex,\"\\\\script\\\\vng_lib\\\\bittask_lib.lua\", \"tbVNG_BitTask_Lib:getBitTask\","
+   ],
+   [
+    "nTaskID",
+    "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua",
+    14,
+    "local nFlag1 = DynamicExecuteByPlayer(PlayerIndex,\"\\\\script\\\\vng_lib\\\\bittask_lib.lua\", \"tbVNG_BitTask_Lib:getBitTask\", "
+   ]
+  ],
+  "3079": [
+   [
+    "TaskDaily",
+    "script\\missions\\challengeoftime\\npc\\dragonboat_main.lua",
+    166,
+    "PlayerFunLib:AddTaskDaily(3079, 1)"
+   ]
+  ]
+ }
+}

@@ -1,0 +1,33 @@
+Name	PhysicalDamageBase	PhysicalMagic	PoisonDamageBase	PoisonMagic	ColdDamageBase	ColdMagic	FireDamageBase	FireMagic	LightingDamageBase	LightingMagic	AuraSkillName	AuraSkillLevel	PasstSkillName	PasstSkillLevel
+Trương Tông Chính	0|0	0	0|0	1	0|0	1	0|0	1	0|1000	1	Thất Tinh Trận	0|30	Miễn dịch băng 	0|60
+Huyền Không	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	La Hán Trận	1|-40	Thế Vân Tung	1|-40
+Diệu Như 	0|535	0	0|0	1	0|3100	1	0|0	1	0|0	1	Lưu Thủy 	0|20	Miễn dịch băng	0|60
+Lý Nguyên Khánh 	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Bành Liên Ân	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Tào Minh 	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	La Hán Trận	1|-40	Thế Vân Tung	1|-40
+Tào Chân 	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Tào Sảng	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Tào Khiêm	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Tào Lực	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Thi Thanh 	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Đường Phong 	2|40	0	7|-400	1	7|-200	1	20|-900	1	20|-700	1	Thất Tinh Trận	1|-40	Thế Vân Tung	1|-40
+Liễu Thanh Thanh	0|330	2	0|30	1	0|0	1	0|0	1	0|0	1	Thanh Mộc Công 	0|30	Miễn dịch độc	0|60
+Đầu Thạch Xa	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Công thành Xung xa	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Thành môn nguyên vẹn	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Thành môn tổn hại	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Lôi Cổ Binh Sĩ 	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0	Hào quang tăng kháng tính 	0|1	Tất cả trạng thái miễn dịch	0|1
+Dao Kỳ Binh Sĩ 	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0	Hào quang tăng Sinh lực và Nội lực	0|20	Tất cả trạng thái miễn dịch	0|1
+Công Long trụ nguyên	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Công Long trụ vỡ 	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Thủ Long trụ nguyên	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+Thủ Long trụ vỡ 	0|0	0	0|0	0	0|0	0	0|0	0	0|0	0		0|0	Tất cả trạng thái miễn dịch	0|1
+daoqingzhenren	0|590	0	0|0	0	0|0	0	0|0	0	0|3100	1	Thế Vân Tung	0|20	Miễn dịch băng 	0|60
+yelvbili	0|1881	0	0|0	0	0|0	0	0|1000	1	0|0	0	Ngũ hành trận	0|20	Miễn dịch băng 	0|60
+wanyanxueyi	0|330	0	0|0	0	0|0	0	0|3300	2	0|0	0	Ngũ hành trận	0|20	Miễn dịch băng 	0|60
+duanmurui	0|1441	0	0|0	0	0|0	0	0|3500	1	0|0	0	Ngũ hành trận	0|20	Miễn dịch băng 	0|60
+gubo	0|451	0	0|0	0	0|0	0	0|0	0	0|0	0	Ngũ hành trận	0|20	Miễn dịch băng 	0|60
+zhonglingxiu	0|865	0	0|0	0	0|4900	1	0|0	0	0|0	0	Lưu Thủy 	0|20	Miễn dịch băng 	0|60
+helianpiao	0|641	0	0|0	0	0|3700	1	0|0	0	0|0	0	Lưu Thủy 	0|20	Miễn dịch băng 	0|60
+lanyiyi	0|500	0	0|550	1	0|0	0	0|0	0	0|0	0	Lưu Thủy 	0|20	Miễn dịch băng 	0|60
+mengcanglang	0|743	0	0|0	0	0|0	0	0|3700	1	0|0	0	Lưu Thủy 	0|20	Miễn dịch băng 	0|60

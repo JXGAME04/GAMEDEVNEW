@@ -1,0 +1,2562 @@
+[
+{
+"line": 6,
+"group": "--20级杀手任务Boss",
+"row": [
+761,
+25,
+73,
+1545,
+2947,
+0,
+"Tr竎 L穘h C莔",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+1
+]
+},
+{
+"line": 7,
+"group": "--20级杀手任务Boss",
+"row": [
+770,
+25,
+73,
+1418,
+3034,
+0,
+"Ti猽 Thi猲 Ng筼",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+2
+]
+},
+{
+"line": 8,
+"group": "--20级杀手任务Boss",
+"row": [
+771,
+25,
+73,
+1640,
+3088,
+0,
+"M鬰 Minh Ki謙",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+3
+]
+},
+{
+"line": 9,
+"group": "--20级杀手任务Boss",
+"row": [
+772,
+25,
+73,
+1740,
+3044,
+0,
+"T蕋 V璾 Ph鉵g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+4
+]
+},
+{
+"line": 10,
+"group": "--20级杀手任务Boss",
+"row": [
+761,
+25,
+43,
+1607,
+3038,
+0,
+"L鬰 C鰑 U",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+5
+]
+},
+{
+"line": 11,
+"group": "--20级杀手任务Boss",
+"row": [
+770,
+25,
+43,
+1717,
+3141,
+0,
+"B� Hi猽 Tr莕",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+6
+]
+},
+{
+"line": 12,
+"group": "--20级杀手任务Boss",
+"row": [
+771,
+25,
+43,
+1806,
+3062,
+0,
+"C鑓 Ki誱 Thu",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+7
+]
+},
+{
+"line": 13,
+"group": "--20级杀手任务Boss",
+"row": [
+772,
+25,
+43,
+1784,
+2746,
+0,
+"Thi謚 Hoa Dung",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+8
+]
+},
+{
+"line": 14,
+"group": "--20级杀手任务Boss",
+"row": [
+761,
+25,
+71,
+1684,
+3136,
+0,
+"Quan T� M筩",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+9
+]
+},
+{
+"line": 15,
+"group": "--20级杀手任务Boss",
+"row": [
+770,
+25,
+71,
+1602,
+3081,
+0,
+"B祅h Th輈h H秈",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+10
+]
+},
+{
+"line": 16,
+"group": "--20级杀手任务Boss",
+"row": [
+771,
+25,
+71,
+1578,
+3187,
+0,
+"B輈h Ph� B譶h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+11
+]
+},
+{
+"line": 17,
+"group": "--20级杀手任务Boss",
+"row": [
+772,
+25,
+71,
+1599,
+3293,
+0,
+"Tr�頽g L穘h s琻 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+12
+]
+},
+{
+"line": 18,
+"group": "--20级杀手任务Boss",
+"row": [
+761,
+25,
+83,
+1513,
+3086,
+0,
+"Ti猽 Ki誱 Tuy誸",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+13
+]
+},
+{
+"line": 19,
+"group": "--20级杀手任务Boss",
+"row": [
+770,
+25,
+83,
+1561,
+2885,
+0,
+"Kha Thi誹 Gia",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+14
+]
+},
+{
+"line": 20,
+"group": "--20级杀手任务Boss",
+"row": [
+771,
+25,
+83,
+1720,
+3031,
+0,
+"Ch�雗g B竧 Ph�琻g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+15
+]
+},
+{
+"line": 21,
+"group": "--20级杀手任务Boss",
+"row": [
+772,
+25,
+83,
+1696,
+3197,
+0,
+"M閚g 蕋  Phi",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+16
+]
+},
+{
+"line": 22,
+"group": "--20级杀手任务Boss",
+"row": [
+761,
+25,
+14,
+1799,
+3214,
+0,
+"T� у Tuy謙 Ch駓",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+17
+]
+},
+{
+"line": 23,
+"group": "--20级杀手任务Boss",
+"row": [
+770,
+25,
+14,
+1712,
+3312,
+0,
+"Th�頽g Quan L穘g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+18
+]
+},
+{
+"line": 24,
+"group": "--20级杀手任务Boss",
+"row": [
+771,
+25,
+14,
+1628,
+3172,
+0,
+"D�琻g Thanh 萵",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+19
+]
+},
+{
+"line": 25,
+"group": "--20级杀手任务Boss",
+"row": [
+772,
+25,
+14,
+1704,
+3214,
+0,
+"Ng魕 Chi猰 Th﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+20
+]
+},
+{
+"line": 28,
+"group": "--30级杀手任务Boss",
+"row": [
+762,
+35,
+4,
+1577,
+2996,
+0,
+"Уo �o箃 Thu",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+21
+]
+},
+{
+"line": 29,
+"group": "--30级杀手任务Boss",
+"row": [
+773,
+35,
+4,
+1755,
+3251,
+0,
+"X� B� Йng ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+22
+]
+},
+{
+"line": 30,
+"group": "--30级杀手任务Boss",
+"row": [
+774,
+35,
+4,
+1747,
+2973,
+0,
+"L�琻g T� Nam ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+23
+]
+},
+{
+"line": 31,
+"group": "--30级杀手任务Boss",
+"row": [
+775,
+35,
+4,
+1539,
+2894,
+0,
+"Tr竎 Th蕋 Lang",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+24
+]
+},
+{
+"line": 32,
+"group": "--30级杀手任务Boss",
+"row": [
+776,
+35,
+22,
+1722,
+3187,
+0,
+"Ki襲 жnh Thi猲",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+25
+]
+},
+{
+"line": 33,
+"group": "--30级杀手任务Boss",
+"row": [
+762,
+35,
+22,
+1784,
+3040,
+0,
+"Tr鋘g V� C蕄 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+26
+]
+},
+{
+"line": 34,
+"group": "--30级杀手任务Boss",
+"row": [
+773,
+35,
+22,
+1890,
+3206,
+0,
+"Kh� C莔 S� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+27
+]
+},
+{
+"line": 35,
+"group": "--30级杀手任务Boss",
+"row": [
+774,
+35,
+22,
+1727,
+3350,
+0,
+"�inh V╪ D鬰",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+28
+]
+},
+{
+"line": 36,
+"group": "--30级杀手任务Boss",
+"row": [
+775,
+35,
+77,
+1368,
+3508,
+0,
+"Phong Ng� 蕁",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+29
+]
+},
+{
+"line": 37,
+"group": "--30级杀手任务Boss",
+"row": [
+776,
+35,
+77,
+1447,
+3355,
+0,
+"Khang  B蕋 H鑙",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+30
+]
+},
+{
+"line": 38,
+"group": "--30级杀手任务Boss",
+"row": [
+762,
+35,
+77,
+1649,
+3269,
+0,
+"Ph�琻g D鵦 Vi猰",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+31
+]
+},
+{
+"line": 39,
+"group": "--30级杀手任务Boss",
+"row": [
+773,
+35,
+77,
+1623,
+3535,
+0,
+"Ninh T﹎ Cu錸g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+32
+]
+},
+{
+"line": 40,
+"group": "--30级杀手任务Boss",
+"row": [
+774,
+35,
+141,
+1575,
+3265,
+0,
+"H譶h Ph� Sinh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+33
+]
+},
+{
+"line": 41,
+"group": "--30级杀手任务Boss",
+"row": [
+775,
+35,
+141,
+1555,
+3220,
+0,
+"Ho綾 Tr蕁 Phi",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+34
+]
+},
+{
+"line": 42,
+"group": "--30级杀手任务Boss",
+"row": [
+776,
+35,
+141,
+1663,
+3273,
+0,
+"Qu秐 V� Y誱",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+35
+]
+},
+{
+"line": 43,
+"group": "--30级杀手任务Boss",
+"row": [
+762,
+35,
+141,
+1635,
+3194,
+0,
+"Di謕 V躰h �n",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+36
+]
+},
+{
+"line": 44,
+"group": "--30级杀手任务Boss",
+"row": [
+773,
+35,
+193,
+1250,
+2965,
+0,
+"�u ch� Phong",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+37
+]
+},
+{
+"line": 45,
+"group": "--30级杀手任务Boss",
+"row": [
+774,
+35,
+193,
+919,
+2668,
+0,
+"чc C� Hi謕 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+38
+]
+},
+{
+"line": 46,
+"group": "--30级杀手任务Boss",
+"row": [
+775,
+35,
+193,
+967,
+2705,
+0,
+"H筺g Ph� Nhai",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+39
+]
+},
+{
+"line": 47,
+"group": "--30级杀手任务Boss",
+"row": [
+776,
+35,
+193,
+1442,
+3181,
+0,
+"Ngh� Чi Chu",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+40
+]
+},
+{
+"line": 50,
+"group": "--40级杀手任务Boss",
+"row": [
+763,
+45,
+5,
+1616,
+3476,
+0,
+"Du Th竛 Giang ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+41
+]
+},
+{
+"line": 51,
+"group": "--40级杀手任务Boss",
+"row": [
+777,
+45,
+5,
+1442,
+3379,
+0,
+"H� H飊g Phi",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+42
+]
+},
+{
+"line": 52,
+"group": "--40级杀手任务Boss",
+"row": [
+778,
+45,
+5,
+1602,
+3284,
+0,
+"T鑞g V� Phong",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+43
+]
+},
+{
+"line": 53,
+"group": "--40级杀手任务Boss",
+"row": [
+779,
+45,
+5,
+1757,
+3616,
+0,
+"L� Th�頽g Nh﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+44
+]
+},
+{
+"line": 54,
+"group": "--40级杀手任务Boss",
+"row": [
+780,
+45,
+168,
+1765,
+3222,
+0,
+"Nh薽 T玭g Ho祅h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+45
+]
+},
+{
+"line": 55,
+"group": "--40级杀手任务Boss",
+"row": [
+781,
+45,
+168,
+1767,
+3038,
+0,
+"H祅 Khanh Long",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+46
+]
+},
+{
+"line": 56,
+"group": "--40级杀手任务Boss",
+"row": [
+763,
+45,
+168,
+1646,
+2923,
+0,
+"Tr� Ph萴 Ch﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+47
+]
+},
+{
+"line": 57,
+"group": "--40级杀手任务Boss",
+"row": [
+777,
+45,
+168,
+1525,
+2940,
+0,
+"Chung Thi誸 Th鑙",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+48
+]
+},
+{
+"line": 58,
+"group": "--40级杀手任务Boss",
+"row": [
+778,
+45,
+23,
+1699,
+3178,
+0,
+"�i猽 D辌h �ao",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+49
+]
+},
+{
+"line": 59,
+"group": "--40级杀手任务Boss",
+"row": [
+779,
+45,
+23,
+1774,
+3086,
+0,
+"у T祅 Sinh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+50
+]
+},
+{
+"line": 60,
+"group": "--40级杀手任务Boss",
+"row": [
+780,
+45,
+23,
+1866,
+3181,
+0,
+"B祅g V� T躰h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+51
+]
+},
+{
+"line": 61,
+"group": "--40级杀手任务Boss",
+"row": [
+781,
+45,
+23,
+1770,
+3319,
+0,
+"L� Hoa ч",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+52
+]
+},
+{
+"line": 62,
+"group": "--40级杀手任务Boss",
+"row": [
+763,
+45,
+91,
+1539,
+3011,
+0,
+"Th輈h 秐h Sa",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+53
+]
+},
+{
+"line": 63,
+"group": "--40级杀手任务Boss",
+"row": [
+777,
+45,
+91,
+1534,
+2785,
+0,
+"Nguy Nh﹏ T� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+54
+]
+},
+{
+"line": 64,
+"group": "--40级杀手任务Boss",
+"row": [
+778,
+45,
+91,
+1695,
+2972,
+0,
+"C� Vi詎 Kh� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+55
+]
+},
+{
+"line": 65,
+"group": "--40级杀手任务Boss",
+"row": [
+779,
+45,
+91,
+1660,
+3101,
+0,
+"Tang Ninh C鑓",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+56
+]
+},
+{
+"line": 66,
+"group": "--40级杀手任务Boss",
+"row": [
+780,
+45,
+135,
+1740,
+2960,
+0,
+"Di猰 T� H鱱",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+57
+]
+},
+{
+"line": 67,
+"group": "--40级杀手任务Boss",
+"row": [
+781,
+45,
+135,
+1812,
+3040,
+0,
+"Уm Thi猲 B閏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+58
+]
+},
+{
+"line": 68,
+"group": "--40级杀手任务Boss",
+"row": [
+763,
+45,
+135,
+1609,
+3097,
+0,
+"Th筩h C� Ki襲",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+59
+]
+},
+{
+"line": 69,
+"group": "--40级杀手任务Boss",
+"row": [
+777,
+45,
+135,
+1540,
+2902,
+0,
+"鴑g Th竔 Hi謕",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+60
+]
+},
+{
+"line": 72,
+"group": "--50级杀手任务Boss",
+"row": [
+764,
+55,
+12,
+1796,
+3172,
+0,
+"M筺h Чp H錸g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+61
+]
+},
+{
+"line": 73,
+"group": "--50级杀手任务Boss",
+"row": [
+782,
+55,
+12,
+1724,
+3113,
+0,
+"�n  T鴆 H薾",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+62
+]
+},
+{
+"line": 74,
+"group": "--50级杀手任务Boss",
+"row": [
+783,
+55,
+12,
+1703,
+3205,
+0,
+"Ho綾 Thanh S�琻g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+63
+]
+},
+{
+"line": 75,
+"group": "--50级杀手任务Boss",
+"row": [
+784,
+55,
+12,
+1783,
+3272,
+0,
+"Mi猲 T� Чo",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+64
+]
+},
+{
+"line": 76,
+"group": "--50级杀手任务Boss",
+"row": [
+785,
+55,
+24,
+1796,
+3238,
+0,
+"Ti誹 V鋘g Du",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+65
+]
+},
+{
+"line": 77,
+"group": "--50级杀手任务Boss",
+"row": [
+786,
+55,
+24,
+1903,
+3284,
+0,
+"Cao N穒 Kho竧",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+66
+]
+},
+{
+"line": 78,
+"group": "--50级杀手任务Boss",
+"row": [
+787,
+55,
+24,
+1955,
+3383,
+0,
+"M筺h T�  V� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+67
+]
+},
+{
+"line": 79,
+"group": "--50级杀手任务Boss",
+"row": [
+764,
+55,
+24,
+2065,
+3216,
+0,
+"Л阯g Ngh躠 Chi",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+68
+]
+},
+{
+"line": 80,
+"group": "--50级杀手任务Boss",
+"row": [
+782,
+55,
+42,
+1592,
+2932,
+0,
+"L﹗ Vi Thi謓",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+69
+]
+},
+{
+"line": 81,
+"group": "--50级杀手任务Boss",
+"row": [
+783,
+55,
+42,
+1527,
+3161,
+0,
+"L� Tranh Tranh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+70
+]
+},
+{
+"line": 82,
+"group": "--50级杀手任务Boss",
+"row": [
+784,
+55,
+42,
+1638,
+2994,
+0,
+"S� Ti猽 s琻 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+71
+]
+},
+{
+"line": 83,
+"group": "--50级杀手任务Boss",
+"row": [
+785,
+55,
+42,
+1708,
+3114,
+0,
+"T﹜ M玭 V� Gi韎",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+72
+]
+},
+{
+"line": 84,
+"group": "--50级杀手任务Boss",
+"row": [
+786,
+55,
+66,
+1725,
+3237,
+0,
+"Gi韎 T譶h Ch� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+73
+]
+},
+{
+"line": 85,
+"group": "--50级杀手任务Boss",
+"row": [
+787,
+55,
+66,
+1699,
+3316,
+0,
+"L玦 Huy詎 Kh竎h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+74
+]
+},
+{
+"line": 86,
+"group": "--50级杀手任务Boss",
+"row": [
+764,
+55,
+66,
+1838,
+3237,
+0,
+"Di謕 Ng� Long",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+75
+]
+},
+{
+"line": 87,
+"group": "--50级杀手任务Boss",
+"row": [
+782,
+55,
+66,
+1657,
+3196,
+0,
+"Ti誸 Ti觰 B竎h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+76
+]
+},
+{
+"line": 88,
+"group": "--50级杀手任务Boss",
+"row": [
+783,
+55,
+194,
+1723,
+3371,
+0,
+"M藆 Tu蕋 Nhung",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+77
+]
+},
+{
+"line": 89,
+"group": "--50级杀手任务Boss",
+"row": [
+784,
+55,
+194,
+1771,
+3213,
+0,
+"D�琻g Di詍 Qu﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+78
+]
+},
+{
+"line": 90,
+"group": "--50级杀手任务Boss",
+"row": [
+785,
+55,
+194,
+1538,
+3105,
+0,
+"Du Ti猽 C�阯g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+79
+]
+},
+{
+"line": 91,
+"group": "--50级杀手任务Boss",
+"row": [
+786,
+55,
+194,
+1482,
+3467,
+0,
+"C� D�  T萿",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+80
+]
+},
+{
+"line": 94,
+"group": "--60级杀手任务Boss",
+"row": [
+765,
+65,
+164,
+1787,
+3131,
+0,
+"U玭g  Th� Th駓",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+81
+]
+},
+{
+"line": 95,
+"group": "--60级杀手任务Boss",
+"row": [
+788,
+65,
+164,
+1780,
+2938,
+0,
+"Y課 L璾  Sanh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+82
+]
+},
+{
+"line": 96,
+"group": "--60级杀手任务Boss",
+"row": [
+789,
+65,
+164,
+1723,
+3083,
+0,
+"Tang Th�琻g H秈",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+83
+]
+},
+{
+"line": 97,
+"group": "--60级杀手任务Boss",
+"row": [
+790,
+65,
+164,
+1571,
+3040,
+0,
+"B� Th藀 Tam ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+84
+]
+},
+{
+"line": 98,
+"group": "--60级杀手任务Boss",
+"row": [
+791,
+65,
+117,
+1669,
+3011,
+0,
+"H藆  Kh蕋 Ki誱",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+85
+]
+},
+{
+"line": 99,
+"group": "--60级杀手任务Boss",
+"row": [
+792,
+65,
+117,
+1534,
+3118,
+0,
+"H藆 Y課 T﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+86
+]
+},
+{
+"line": 100,
+"group": "--60级杀手任务Boss",
+"row": [
+793,
+65,
+117,
+1660,
+3145,
+0,
+"Thi謚 Th蕋 S竧",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+87
+]
+},
+{
+"line": 101,
+"group": "--60级杀手任务Boss",
+"row": [
+794,
+65,
+117,
+1685,
+3256,
+0,
+"Du V筺 L� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+88
+]
+},
+{
+"line": 102,
+"group": "--60级杀手任务Boss",
+"row": [
+765,
+65,
+56,
+1466,
+3448,
+0,
+"C鮱 Du蒼 Sam",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+89
+]
+},
+{
+"line": 103,
+"group": "--60级杀手任务Boss",
+"row": [
+765,
+65,
+56,
+1536,
+3389,
+0,
+"Th�頽g Quan Ch蕋",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+90
+]
+},
+{
+"line": 104,
+"group": "--60级杀手任务Boss",
+"row": [
+788,
+65,
+56,
+1505,
+3234,
+0,
+"T竔 Vi詎 B筩",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+91
+]
+},
+{
+"line": 105,
+"group": "--60级杀手任务Boss",
+"row": [
+789,
+65,
+56,
+1631,
+3167,
+0,
+"T�雗g Huy襫 Vi詎",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+92
+]
+},
+{
+"line": 106,
+"group": "--60级杀手任务Boss",
+"row": [
+790,
+65,
+148,
+1539,
+3302,
+0,
+"Khu蕋 L閏 Vinh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+93
+]
+},
+{
+"line": 107,
+"group": "--60级杀手任务Boss",
+"row": [
+791,
+65,
+148,
+1567,
+3283,
+0,
+"L� Qu竛 B綾 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+94
+]
+},
+{
+"line": 108,
+"group": "--60级杀手任务Boss",
+"row": [
+792,
+65,
+148,
+1599,
+3318,
+0,
+"Gi秈 Qui Nam ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+95
+]
+},
+{
+"line": 109,
+"group": "--60级杀手任务Boss",
+"row": [
+793,
+65,
+148,
+1628,
+3209,
+0,
+"T飊g V� 秐h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+96
+]
+},
+{
+"line": 110,
+"group": "--60级杀手任务Boss",
+"row": [
+794,
+65,
+196,
+1533,
+3047,
+0,
+"Ti詎 Th� Thanh ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+97
+]
+},
+{
+"line": 111,
+"group": "--60级杀手任务Boss",
+"row": [
+765,
+65,
+196,
+1654,
+2953,
+0,
+"B筩h Th�琻g Nham",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+98
+]
+},
+{
+"line": 112,
+"group": "--60级杀手任务Boss",
+"row": [
+788,
+65,
+196,
+1774,
+3192,
+0,
+"Bi謓 L璾 Thi謓",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+99
+]
+},
+{
+"line": 113,
+"group": "--60级杀手任务Boss",
+"row": [
+789,
+65,
+196,
+1662,
+3356,
+0,
+"Th竔 Tinh Th莕",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+100
+]
+},
+{
+"line": 116,
+"group": "--70级杀手任务Boss",
+"row": [
+766,
+75,
+123,
+1604,
+3210,
+0,
+"H筺g L謓h Ti",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+101
+]
+},
+{
+"line": 117,
+"group": "--70级杀手任务Boss",
+"row": [
+795,
+75,
+123,
+1706,
+3254,
+0,
+"T祇 Nh﹏  Ph� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+102
+]
+},
+{
+"line": 118,
+"group": "--70级杀手任务Boss",
+"row": [
+796,
+75,
+123,
+1583,
+3375,
+0,
+"Tr譶h Ph骳 Ba",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+103
+]
+},
+{
+"line": 119,
+"group": "--70级杀手任务Boss",
+"row": [
+797,
+75,
+123,
+1554,
+3303,
+0,
+"�苙g An Khu� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+104
+]
+},
+{
+"line": 120,
+"group": "--70级杀手任务Boss",
+"row": [
+798,
+75,
+94,
+1670,
+3126,
+0,
+"鴑g  Ti猽 Phong",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+105
+]
+},
+{
+"line": 121,
+"group": "--70级杀手任务Boss",
+"row": [
+799,
+75,
+94,
+1755,
+3170,
+0,
+"Th�琻g Tri襲 S�琻g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+106
+]
+},
+{
+"line": 122,
+"group": "--70级杀手任务Boss",
+"row": [
+800,
+75,
+94,
+1591,
+3251,
+0,
+"Ph飊g Song D鵦",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+107
+]
+},
+{
+"line": 123,
+"group": "--70级杀手任务Boss",
+"row": [
+801,
+75,
+94,
+1613,
+3041,
+0,
+"Ph� Kh﹗ Tu",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+108
+]
+},
+{
+"line": 124,
+"group": "--70级杀手任务Boss",
+"row": [
+802,
+75,
+319,
+1663,
+3311,
+0,
+"L筩 Long Hi襫",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+109
+]
+},
+{
+"line": 125,
+"group": "--70级杀手任务Boss",
+"row": [
+766,
+75,
+319,
+1859,
+3273,
+0,
+"C� Thanh D�琻g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+110
+]
+},
+{
+"line": 126,
+"group": "--70级杀手任务Boss",
+"row": [
+795,
+75,
+319,
+1933,
+3642,
+0,
+"Quan Thi猲 V蕁",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+111
+]
+},
+{
+"line": 127,
+"group": "--70级杀手任务Boss",
+"row": [
+796,
+75,
+319,
+1815,
+3419,
+0,
+"H� Thi誹 H飊g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+112
+]
+},
+{
+"line": 128,
+"group": "--70级杀手任务Boss",
+"row": [
+797,
+75,
+72,
+1630,
+3121,
+0,
+"T� C� Ng﹎",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+113
+]
+},
+{
+"line": 129,
+"group": "--70级杀手任务Boss",
+"row": [
+798,
+75,
+72,
+1807,
+3201,
+0,
+"H� Nh蕋 Lang",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+114
+]
+},
+{
+"line": 130,
+"group": "--70级杀手任务Boss",
+"row": [
+799,
+75,
+72,
+1590,
+3238,
+0,
+"Ho祅g V筺 Ki誴",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+115
+]
+},
+{
+"line": 131,
+"group": "--70级杀手任务Boss",
+"row": [
+800,
+75,
+72,
+1562,
+2986,
+0,
+"Giang Tr莔 Nh筺 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+116
+]
+},
+{
+"line": 132,
+"group": "--70级杀手任务Boss",
+"row": [
+801,
+75,
+76,
+1655,
+3140,
+0,
+"C秐h Dung Ph鬰",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+117
+]
+},
+{
+"line": 133,
+"group": "--70级杀手任务Boss",
+"row": [
+802,
+75,
+76,
+1590,
+3153,
+0,
+"Kh�琻g T� Dao",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+118
+]
+},
+{
+"line": 134,
+"group": "--70级杀手任务Boss",
+"row": [
+766,
+75,
+76,
+1835,
+3066,
+0,
+"Kh鎛g Dong Nh﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+119
+]
+},
+{
+"line": 135,
+"group": "--70级杀手任务Boss",
+"row": [
+795,
+75,
+76,
+1614,
+3027,
+0,
+"L╪g T薾 Trung",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+120
+]
+},
+{
+"line": 138,
+"group": "--80级杀手任务Boss",
+"row": [
+767,
+85,
+201,
+1768,
+3200,
+0,
+"Di謕 鴆 Anh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+121
+]
+},
+{
+"line": 139,
+"group": "--80级杀手任务Boss",
+"row": [
+803,
+85,
+201,
+1649,
+3184,
+0,
+"L筩 Nh� Kim",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+122
+]
+},
+{
+"line": 140,
+"group": "--80级杀手任务Boss",
+"row": [
+804,
+85,
+201,
+1698,
+3320,
+0,
+"M筩 Nam Tr骳",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+123
+]
+},
+{
+"line": 141,
+"group": "--80级杀手任务Boss",
+"row": [
+805,
+85,
+201,
+1839,
+3365,
+0,
+"T莕 T� Du",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+124
+]
+},
+{
+"line": 142,
+"group": "--80级杀手任务Boss",
+"row": [
+806,
+85,
+10,
+1750,
+2997,
+0,
+"C� V� Th�阯g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+125
+]
+},
+{
+"line": 143,
+"group": "--80级杀手任务Boss",
+"row": [
+807,
+85,
+10,
+1849,
+3229,
+0,
+"Li評 T� Gia",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+126
+]
+},
+{
+"line": 144,
+"group": "--80级杀手任务Boss",
+"row": [
+808,
+85,
+10,
+1755,
+3225,
+0,
+"Thi Чi Thi誹",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+127
+]
+},
+{
+"line": 145,
+"group": "--80级杀手任务Boss",
+"row": [
+809,
+85,
+10,
+1675,
+3149,
+0,
+"T玭 V╪ B璾 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+128
+]
+},
+{
+"line": 146,
+"group": "--80级杀手任务Boss",
+"row": [
+810,
+85,
+202,
+1548,
+2836,
+0,
+"уng B蕋 Ph鬰",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+129
+]
+},
+{
+"line": 147,
+"group": "--80级杀手任务Boss",
+"row": [
+811,
+85,
+202,
+1715,
+2925,
+0,
+"Л阯g B竎 V╪",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+130
+]
+},
+{
+"line": 148,
+"group": "--80级杀手任务Boss",
+"row": [
+767,
+85,
+202,
+1610,
+3141,
+0,
+"Уo Фo Ch� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+131
+]
+},
+{
+"line": 149,
+"group": "--80级杀手任务Boss",
+"row": [
+803,
+85,
+202,
+1514,
+2666,
+0,
+"�i襫 V� Чo",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+132
+]
+},
+{
+"line": 150,
+"group": "--80级杀手任务Boss",
+"row": [
+804,
+85,
+181,
+1598,
+3111,
+0,
+"Vi猲 Ni謒 T辌h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+133
+]
+},
+{
+"line": 151,
+"group": "--80级杀手任务Boss",
+"row": [
+805,
+85,
+181,
+1625,
+2974,
+0,
+"Tr辬h Tr竎 Qu莕",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+134
+]
+},
+{
+"line": 152,
+"group": "--80级杀手任务Boss",
+"row": [
+806,
+85,
+181,
+1696,
+3031,
+0,
+"Ch�琻g Nguy猲 S飊g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+135
+]
+},
+{
+"line": 153,
+"group": "--80级杀手任务Boss",
+"row": [
+807,
+85,
+181,
+1694,
+3229,
+0,
+"T� Tr鋘g H藆",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+136
+]
+},
+{
+"line": 154,
+"group": "--80级杀手任务Boss",
+"row": [
+808,
+85,
+143,
+1536,
+3152,
+0,
+"Vu C鰑  у",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+137
+]
+},
+{
+"line": 155,
+"group": "--80级杀手任务Boss",
+"row": [
+809,
+85,
+143,
+1528,
+3251,
+0,
+"Vi猲 Thi猲 Th� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+138
+]
+},
+{
+"line": 156,
+"group": "--80级杀手任务Boss",
+"row": [
+810,
+85,
+143,
+1642,
+3130,
+0,
+"Nh筩 Th�頽g C玭",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+139
+]
+},
+{
+"line": 157,
+"group": "--80级杀手任务Boss",
+"row": [
+811,
+85,
+143,
+1634,
+3252,
+0,
+"Chi猰 Ph骳 V﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+140
+]
+},
+{
+"line": 160,
+"group": "--90级杀手任务Boss",
+"row": [
+768,
+95,
+93,
+1644,
+3279,
+0,
+"Gi� Gi韎 Nh﹏",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+141
+]
+},
+{
+"line": 161,
+"group": "--90级杀手任务Boss",
+"row": [
+812,
+95,
+93,
+1646,
+3058,
+0,
+"Tr辬h C鰑 Nh藅",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+142
+]
+},
+{
+"line": 162,
+"group": "--90级杀手任务Boss",
+"row": [
+813,
+95,
+93,
+1736,
+3213,
+0,
+"Chu S� B� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+143
+]
+},
+{
+"line": 163,
+"group": "--90级杀手任务Boss",
+"row": [
+814,
+95,
+93,
+1610,
+3152,
+0,
+"Trang Minh Trung",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+144
+]
+},
+{
+"line": 164,
+"group": "--90级杀手任务Boss",
+"row": [
+815,
+95,
+225,
+1590,
+3325,
+0,
+"Cam Ch輓h C� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+145
+]
+},
+{
+"line": 165,
+"group": "--90级杀手任务Boss",
+"row": [
+816,
+95,
+225,
+1261,
+3247,
+0,
+"V� Nh蕋 Th� ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+146
+]
+},
+{
+"line": 166,
+"group": "--90级杀手任务Boss",
+"row": [
+817,
+95,
+225,
+1452,
+3377,
+0,
+"D�琻g Phong  D藅",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+147
+]
+},
+{
+"line": 167,
+"group": "--90级杀手任务Boss",
+"row": [
+818,
+95,
+225,
+1425,
+3107,
+0,
+"H� Sinh Vong",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+148
+]
+},
+{
+"line": 168,
+"group": "--90级杀手任务Boss",
+"row": [
+819,
+95,
+75,
+1711,
+3187,
+0,
+"T╪g Ch� 鉧n",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+149
+]
+},
+{
+"line": 169,
+"group": "--90级杀手任务Boss",
+"row": [
+820,
+95,
+75,
+1752,
+3124,
+0,
+"V� Bi猲 Th祅h",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+150
+]
+},
+{
+"line": 170,
+"group": "--90级杀手任务Boss",
+"row": [
+768,
+95,
+75,
+1831,
+3190,
+0,
+"C� Th� Щng",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+151
+]
+},
+{
+"line": 171,
+"group": "--90级杀手任务Boss",
+"row": [
+812,
+95,
+75,
+1639,
+3159,
+0,
+"Gia C竧 Kinh H錸g",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+152
+]
+},
+{
+"line": 172,
+"group": "--90级杀手任务Boss",
+"row": [
+813,
+95,
+321,
+1253,
+3002,
+0,
+"Phan Ng箃 Nh筺",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+153
+]
+},
+{
+"line": 173,
+"group": "--90级杀手任务Boss",
+"row": [
+814,
+95,
+321,
+1483,
+2742,
+0,
+"Li猲 H譶h Th竔",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+154
+]
+},
+{
+"line": 174,
+"group": "--90级杀手任务Boss",
+"row": [
+815,
+95,
+321,
+1289,
+2613,
+0,
+"B祇 Tri謙 s琻 ",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+155
+]
+},
+{
+"line": 175,
+"group": "--90级杀手任务Boss",
+"row": [
+816,
+95,
+321,
+1113,
+2569,
+0,
+"V筺 H� Tinh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+156
+]
+},
+{
+"line": 176,
+"group": "--90级杀手任务Boss",
+"row": [
+817,
+95,
+340,
+1217,
+2740,
+0,
+"Tr� Thi猲 M蒼",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+157
+]
+},
+{
+"line": 177,
+"group": "--90级杀手任务Boss",
+"row": [
+820,
+95,
+340,
+1723,
+2765,
+0,
+"�o筺 L╪g Nguy謙",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+158
+]
+},
+{
+"line": 178,
+"group": "--90级杀手任务Boss",
+"row": [
+819,
+95,
+340,
+1275,
+2749,
+0,
+"T�  D藅 Minh",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+159
+]
+},
+{
+"line": 179,
+"group": "--90级杀手任务Boss",
+"row": [
+818,
+95,
+340,
+1932,
+2759,
+0,
+"Nh薽 Th�琻g Khung",
+1,
+"\\\\script\\\\task\\\\tollgate\\\\killer\\\\kill_level.lua",
+160
+]
+}
+]

@@ -1,0 +1,161 @@
+Id	BossName	BossInfo
+1	Trác Lãnh Cầm	trong Phục Lưu động (193,184) . Ta không tin ngươi thắng được hắn!
+2	Tiêu Thiên Ngạo	trong Phục Lưu động (177,189) . Ta không tin ngươi thắng được hắn!
+3	Mục Minh Kiệt	trong Phục Lưu động (205,193) . Ta không tin ngươi thắng được hắn!
+4	Tất Vưu Phóng	trong Phục Lưu động (217,190) . Ta không tin ngươi thắng được hắn!
+5	Lục Cửu U	trong Kiếm Các Trung Nguyên (200,189) . Ta không tin ngươi thắng được hắn!
+6	Bộ Hiêu Trần	trong Kiếm Các Trung Nguyên (214,196) . Ta không tin ngươi thắng được hắn!
+7	Cốc Kiếm Thu	trong Kiếm Các Trung Nguyên (225,191) . Ta không tin ngươi thắng được hắn!
+8	Thiệu Hoa Dung	trong Kiếm Các Trung Nguyên (223,171) . Ta không tin ngươi thắng được hắn!
+9	Quan Tử Mạc	Trong Bạch Thủy động (210,196) . Ta không tin ngươi thắng được hắn!
+10	Bành Thích Hải	trong Bạch Thủy động (200,192) . Ta không tin ngươi thắng được hắn!
+11	Bích Phù Bình	trong Bạch Thủy động (197,199) .. Ta không tin ngươi thắng được hắn!
+12	Trượng Lãnh sơn 	trong Bạch Thủy động ( (199,205) . Ta không tin ngươi thắng được hắn!
+13	Tiêu Kiếm Tuyết	trong Hỏa Lang động (189,192) . Ta không tin ngươi thắng được hắn!
+14	Kha Thiếu Gia	trong Hỏa Lang động (195,180) . Ta không tin ngươi thắng được hắn!
+15	Chưởng Bát Phương	trong Hỏa Lang động (215,189) . Ta không tin ngươi thắng được hắn!
+16	Mộng ất  Phi	trong Hỏa Lang động (212,199) . Ta không tin ngươi thắng được hắn!
+17	Tư Đồ Tuyệt Chủy	trong Mãnh Hổ động (224,220) . Ta không tin ngươi thắng được hắn!
+18	Thượng Quan Lãng	trong Mãnh Hổ động (214,207) . Ta không tin ngươi thắng được hắn!
+19	Dương Thanh ẩn	trong Mãnh Hổ động (203,196) . Ta không tin ngươi thắng được hắn!
+20	Ngụy Chiêm Thân	trong Mãnh Hổ động (213,200) . Ta không tin ngươi thắng được hắn!
+21	Đào Đoạt Thu	trong Kim Quang động (197,187) . Ta không tin ngươi thắng được hắn!
+22	Xà Bá Đông 	trong Kim Quang động (219,203) . Ta không tin ngươi thắng được hắn!
+23	Lương Tư Nam 	trong Kim Quang động (218,185) . Ta không tin ngươi thắng được hắn!
+24	Trác Thất Lang	trong Kim Quang động (192,180) . Ta không tin ngươi thắng được hắn!
+25	Kiều Đỉnh Thiên	trong Bạch Vân động (215,199) . Ta không tin ngươi thắng được hắn!
+26	Trọng Vô Cấp 	trong Bạch Vân động (223,190) . Ta không tin ngươi thắng được hắn!
+27	Khí Cầm Sĩ 	trong Bạch Vân động (236,200) . Ta không tin ngươi thắng được hắn!
+28	Đinh Văn Dục	trong Bạch Vân động (215,209) . Ta không tin ngươi thắng được hắn!
+29	Phong Ngũ ấn	trong Yến Tử động (171,219) . Ta không tin ngươi thắng được hắn!
+30	Khang  Bất Hối	trong Yến Tử động (180,209) . Ta không tin ngươi thắng được hắn!
+31	Phương Dực Viêm	trong Yến Tử động (206,204) . Ta không tin ngươi thắng được hắn!
+32	Ninh Tâm Cuồng	trong Yến Tử động (202,220) . Ta không tin ngươi thắng được hắn!
+33	Hình Phụ Sinh	trong tầng 1 Dược Vương động (196,204) . Ta không tin ngươi thắng được hắn!
+34	Hoắc Trấn Phi	trong tầng 1 Dược Vương động (194,201) . Ta không tin ngươi thắng được hắn!
+35	Quản Vô Yếm	trong tầng 1 Dược Vương động (207,204) . Ta không tin ngươi thắng được hắn!
+36	Diệp Vĩnh Ân	trong tầng 1 Dược Vương động (204,199) . Ta không tin ngươi thắng được hắn!
+37	Âu chí Phong	trong Vũ Di sơn (156,185) . Ta không tin ngươi thắng được hắn!
+38	Độc Cô Hiệp 	trong Vũ Di sơn (114,166) . Ta không tin ngươi thắng được hắn!
+39	Hạng Phù Nhai	trong Vũ Di sơn (120,169) . Ta không tin ngươi thắng được hắn!
+40	Nghê Đại Chu	trong Vũ Di sơn (180,198) . Ta không tin ngươi thắng được hắn!
+41	Du Thán Giang 	trong Kinh Hoàng động (202,217) . Ta không tin ngươi thắng được hắn!
+42	Hạ Hùng Phi	trong Kinh Hoàng động (180,211) . Ta không tin ngươi thắng được hắn!
+43	Tống Vũ Phong	trong Kinh Hoàng động (200,205) . Ta không tin ngươi thắng được hắn!
+44	Lộ Thượng Nhân	trong Kinh Hoàng động (219,226) . Ta không tin ngươi thắng được hắn!
+45	Nhậm Tông Hoành	trong Phụng Nhãn động (220,201) . Ta không tin ngươi thắng được hắn!
+46	Hàn Khanh Long	trong Phụng Nhãn động (220,189) . Ta không tin ngươi thắng được hắn!
+47	Trì Phẩm Chân	trong Phụng Nhãn động (205,182) . Ta không tin ngươi thắng được hắn!
+48	Chung Thiết Thối	trong Phụng Nhãn động (190,183) . Ta không tin ngươi thắng được hắn!
+49	Điêu Dịch Đao	trong Thần Tiên động (212,198) . Ta không tin ngươi thắng được hắn!
+50	Đồ Tàn Sinh	trong Thần Tiên động (221,192) . Ta không tin ngươi thắng được hắn!
+51	Bàng Vô Tĩnh	trong Thần Tiên động (233,198) . Ta không tin ngươi thắng được hắn!
+52	Lý Hoa Độ	trong Thần Tiên động (221,207) . Ta không tin ngươi thắng được hắn!
+53	Thích ảnh Sa	trong Kê Quán động (192,188) . Ta không tin ngươi thắng được hắn!
+54	Nguy Nhân Tử 	trong Kê Quán động (191,174) . Ta không tin ngươi thắng được hắn!
+55	Cố Viễn Khê 	trong Kê Quán động (211,185) . Ta không tin ngươi thắng được hắn!
+56	Tang Ninh Cốc	trong Kê Quán động (207,193) . Ta không tin ngươi thắng được hắn!
+57	Diêm Tự Hữu	trong Kiến Tính Phong sơn  động (217,185) . Ta không tin ngươi thắng được hắn!
+58	Đàm Thiên Bộc	trong Kiến Tính Phong sơn  động (226,190) . Ta không tin ngươi thắng được hắn!
+59	Thạch Cố Kiều	trong Kiến Tính Phong sơn  động (201,193) . Ta không tin ngươi thắng được hắn!
+60	ứng Thái Hiệp	trong Kiến Tính Phong sơn  động (192,181) . Ta không tin ngươi thắng được hắn!
+61	Mạnh Đạp Hồng	trong Mật đạo Tín Tướng tự (224,198) . Ta không tin ngươi thắng được hắn!
+62	Ân  Tức Hận	trong Mật đạo Tín Tướng tự (215,194) . Ta không tin ngươi thắng được hắn!
+63	Hoắc Thanh Sương	trong Mật đạo Tín Tướng tự (212,200) . Ta không tin ngươi thắng được hắn!
+64	Miên Tư Đạo	trong Mật đạo Tín Tướng tự (222,204) . Ta không tin ngươi thắng được hắn!
+65	Tiếu Vọng Du	trong Hưởng Thủy động (224,202) . Ta không tin ngươi thắng được hắn!
+66	Cao Nãi Khoát	trong Hưởng Thủy động (237,205) . Ta không tin ngươi thắng được hắn!
+67	Mạnh Tử  Vũ 	trong Hưởng Thủy động (244,211) . Ta không tin ngươi thắng được hắn!
+68	Đường Nghĩa Chi	trong Hưởng Thủy động (258,201) . Ta không tin ngươi thắng được hắn!
+69	Lâu Vi Thiện	trong Thiên Tâm động (199,183) . Ta không tin ngươi thắng được hắn!
+70	Lỗ Tranh Tranh	trong Thiên Tâm động (190,197) . Ta không tin ngươi thắng được hắn!
+71	Sử Tiêu sơn 	trong Thiên Tâm động (204,187) . Ta không tin ngươi thắng được hắn!
+72	Tây Môn Vô Giới	trong Thiên Tâm động (213,194) . Ta không tin ngươi thắng được hắn!
+73	Giới Tình Chỉ 	trong sơn  động dưới đáy Động Đình Hồ (215,202) . Ta không tin ngươi thắng được hắn!
+74	Lôi Huyễn Khách	trong sơn  động dưới đáy Động Đình Hồ (212,207) . Ta không tin ngươi thắng được hắn!
+75	Diệp Ngũ Long	trong sơn  động dưới đáy Động Đình Hồ (229,202) . Ta không tin ngươi thắng được hắn!
+76	Tiết Tiểu Bách	trong sơn  động dưới đáy Động Đình Hồ (207,199) . Ta không tin ngươi thắng được hắn!
+77	Mậu Tuất Nhung	trong Ngọc Hoa động (215,210) . Ta không tin ngươi thắng được hắn!
+78	Dương Diễm Quân	trong Ngọc Hoa động (221,200) . Ta không tin ngươi thắng được hắn!
+79	Du Tiêu Cường	trong Ngọc Hoa động (192,194) . Ta không tin ngươi thắng được hắn!
+80	Cô Dự  Tẩu	trong Ngọc Hoa động (185,216) . Ta không tin ngươi thắng được hắn!
+81	Uông  Thệ Thủy	trong tầng 1 Thiên Tầm tháp (223,195) . Ta không tin ngươi thắng được hắn!
+82	Yến Lưu  Sanh	trong tầng 1 Thiên Tầm tháp (222,183) . Ta không tin ngươi thắng được hắn!
+83	Tang Thương Hải	trong tầng 1 Thiên Tầm tháp (215,192) . Ta không tin ngươi thắng được hắn!
+84	Bồ Thập Tam 	trong tầng 1 Thiên Tầm tháp (196,190) . Ta không tin ngươi thắng được hắn!
+85	Hậu  Khất Kiếm	trong tầng  2 Tường Vân động (208,188) . Ta không tin ngươi thắng được hắn!
+86	Hậu Yến Tân	trong tầng  2 Tường Vân động (191,194) . Ta không tin ngươi thắng được hắn!
+87	Thiệu Thất Sát	trong tầng  2 Tường Vân động (207,196) . Ta không tin ngươi thắng được hắn!
+88	Du Vạn Lý 	trong tầng  2 Tường Vân động (210,203) . Ta không tin ngươi thắng được hắn!
+89	Cừu Duẫn Sam	ở Hoành sơn  phái (183,215) . Ta không tin ngươi thắng được hắn!
+90	Thượng Quan Chất	ở Hoành sơn  phái (192,211) . Ta không tin ngươi thắng được hắn!
+91	Tái Viễn Bạc	ở Hoành sơn  phái (188,202) . Ta không tin ngươi thắng được hắn!
+92	Tưởng Huyền Viễn	ở Hoành sơn  phái (203,197) . Ta không tin ngươi thắng được hắn!
+93	Khuất Lộc Vinh	trong tầng 4 Tuyết Báo động (192,206) . Ta không tin ngươi thắng được hắn!
+94	Lô Quán Bắc 	trong tầng 4 Tuyết Báo động (195,205) . Ta không tin ngươi thắng được hắn!
+95	Giải Qui Nam 	trong tầng 4 Tuyết Báo động (195,207) . Ta không tin ngươi thắng được hắn!
+96	Tùng Vô ảnh	trong tầng 4 Tuyết Báo động (203,200) . Ta không tin ngươi thắng được hắn!
+97	Tiễn Thê Thanh 	trong Dương Giác động (191,190) . Ta không tin ngươi thắng được hắn!
+98	Bạch Thương Nham	trong Dương Giác động (206,184) . Ta không tin ngươi thắng được hắn!
+99	Biện Lưu Thiện	 trong Dương Giác động (221,199) . Ta không tin ngươi thắng được hắn!
+100	Thái Tinh Thần	trong Dương Giác động (207,209) . Ta không tin ngươi thắng được hắn!
+101	Hạng Lệnh Ti	trong Lão Hổ động (200,200) . Ta không tin ngươi thắng được hắn!
+102	Tào Nhân  Phủ 	trong Lão Hổ động (213,203) . Ta không tin ngươi thắng được hắn!
+103	Trình Phúc Ba	trong Lão Hổ động (197,210) . Ta không tin ngươi thắng được hắn!
+104	Đặng An Khuê 	trong Lão Hổ động (194,206) . Ta không tin ngươi thắng được hắn!
+105	ứng  Tiêu Phong	trong Linh Cốc động (208,195) . Ta không tin ngươi thắng được hắn!
+106	Thương Triều Sương	trong Linh Cốc động (219,198) . Ta không tin ngươi thắng được hắn!
+107	Phùng Song Dực	trong Linh Cốc động (198,203) . Ta không tin ngươi thắng được hắn!
+108	Phó Khâu Tu	trong Linh Cốc động (201,190) . Ta không tin ngươi thắng được hắn!
+109	Lạc Long Hiền	trên Lâm Du Quan (207,206) . Ta không tin ngươi thắng được hắn!
+110	Cổ Thanh Dương	trên Lâm Du Quan (232,204) . Ta không tin ngươi thắng được hắn!
+111	Quan Thiên Vấn	trên Lâm Du Quan (241,227) . Ta không tin ngươi thắng được hắn!
+112	Hạ Thiếu Hùng	trên Lâm Du Quan (226,213) . Ta không tin ngươi thắng được hắn!
+113	Tô Cổ Ngâm	trong Đại Tù động (203,195) . Ta không tin ngươi thắng được hắn!
+114	Hồ Nhất Lang	trong Đại Tù động (225,200) . Ta không tin ngươi thắng được hắn!
+115	Hoàng Vạn Kiếp	trong Đại Tù động (198,202) . Ta không tin ngươi thắng được hắn!
+116	Giang Trầm Nhạn 	trong Đại Tù động (195,186) . Ta không tin ngươi thắng được hắn!
+117	Cảnh Dung Phục	Trong Sơn Bảo động (206,196) . Ta không tin ngươi thắng được hắn!
+118	Khương Tự Dao	trong Sơn Bảo động (198,197) . Ta không tin ngươi thắng được hắn!
+119	Khổng Dong Nhân	trong Sơn Bảo động (229,191) . Ta không tin ngươi thắng được hắn!
+120	Lăng Tận Trung	trong Sơn Bảo động (201,189) . Ta không tin ngươi thắng được hắn!
+121	Diệp ức Anh	trong Băng Hà động (221,200) . Ta không tin ngươi thắng được hắn!
+122	Lạc Nhĩ Kim	trong Băng Hà động (206,199) . Ta không tin ngươi thắng được hắn!
+123	Mạc Nam Trúc	trong Băng Hà động (212,207) . Ta không tin ngươi thắng được hắn!
+124	Tần Tử Du	trong Băng Hà động (229,210) . Ta không tin ngươi thắng được hắn!
+125	Cô Vô Thường	trong Nhạn Thạch động (218,187) . Ta không tin ngươi thắng được hắn!
+126	Liễu Tứ Gia	trong Nhạn Thạch động (231,201) . Ta không tin ngươi thắng được hắn!
+127	Thi Đại Thiếu	trong Nhạn Thạch động (219,201) . Ta không tin ngươi thắng được hắn!
+128	Tôn Văn Bưu 	trong Nhạn Thạch động (209,196) . Ta không tin ngươi thắng được hắn!
+129	Đồng Bất Phục	trong Phù Dung động (193,177) . Ta không tin ngươi thắng được hắn!
+130	Đường Bác Văn	trong Phù Dung động (214,182) . Ta không tin ngươi thắng được hắn!
+131	Đào Đảo Chủ 	trong Phù Dung động (201,196) . Ta không tin ngươi thắng được hắn!
+132	Điền Vô Đạo	trong Phù Dung động (189,166) . Ta không tin ngươi thắng được hắn!
+133	Viên Niệm Tịch	trong Lưỡng Thủy động (199,194) . Ta không tin ngươi thắng được hắn!
+134	Trịnh Trác Quần	trong Lưỡng Thủy động (203,185) . Ta không tin ngươi thắng được hắn!
+135	Chương Nguyên Sùng	trong Lưỡng Thủy động (212,189) . Ta không tin ngươi thắng được hắn!
+136	Tạ Trọng Hậu	trong Lưỡng Thủy động (211,201) . Ta không tin ngươi thắng được hắn!
+137	Vu Cửu  Đồ	trong tầng 3 Dược Vương động (192,197) . Ta không tin ngươi thắng được hắn!
+138	Viên Thiên Thọ 	trong tầng 3 Dược Vương động (191,203) . Ta không tin ngươi thắng được hắn!
+139	Nhạc Thượng Côn	trong tầng 3 Dược Vương động (205,195) . Ta không tin ngươi thắng được hắn!
+140	Chiêm Phúc Vân	trong tầng 3 Dược Vương động (204,203) . Ta không tin ngươi thắng được hắn!
+141	Giả Giới Nhân	trong Tiến Cúc động (205,204) . Ta không tin ngươi thắng được hắn!
+142	Trịnh Cửu Nhật	trong Tiến Cúc động (205,191) . Ta không tin ngươi thắng được hắn!
+143	Chu Sở Bá 	trong Tiến Cúc động (217,200) . Ta không tin ngươi thắng được hắn!
+144	Trang Minh Trung	trong Tiến Cúc động (201,197) . Ta không tin ngươi thắng được hắn!
+145	Cam Chính Cô 	trong Sa Mạc sơn  động (198,207) . Ta không tin ngươi thắng được hắn!
+146	Vũ Nhất Thế 	trong Sa Mạc sơn  động (157,202) . Ta không tin ngươi thắng được hắn!
+147	Dương Phong  Dật	trong Sa Mạc sơn  động (181,211) . Ta không tin ngươi thắng được hắn!
+148	Hà Sinh Vong	trong Sa Mạc sơn  động (178,194) . Ta không tin ngươi thắng được hắn!
+149	Tăng Chỉ óan	trong Khoả Lang động (213,199) . Ta không tin ngươi thắng được hắn!
+150	Vệ Biên Thành	trong Khoả Lang động (219,195) . Ta không tin ngươi thắng được hắn!
+151	Cố Thủ Đằng	trong Khoả Lang động (228,199) . Ta không tin ngươi thắng được hắn!
+152	Gia Cát Kinh Hồng	trong Khoả Lang động (204,197) . Ta không tin ngươi thắng được hắn!
+153	Phan Ngạt Nhạn	ở Trường Bạch nam (156,187) . Ta không tin ngươi thắng được hắn!
+154	Liên Hình Thái	ở Trường Bạch nam (185,171) . Ta không tin ngươi thắng được hắn!
+155	Bào Triệt sơn 	ở Trường Bạch nam (161,163) . Ta không tin ngươi thắng được hắn!
+156	Vạn Hồ Tinh	ở Trường Bạch nam (139,160) . Ta không tin ngươi thắng được hắn!
+157	Trử Thiên Mẫn	ở Mạc Cao Quật (152,171) . Ta không tin ngươi thắng được hắn!
+158	Đoạn Lăng Nguyệt	ở Mạc Cao Quật (215,172) . Ta không tin ngươi thắng được hắn!
+159	Tả  Dật Minh	ở Mạc Cao Quật (159,171) . Ta không tin ngươi thắng được hắn!
+160	Nhậm Thương Khung	ở Mạc Cao Quật (241,172) . Ta không tin ngươi thắng được hắn!

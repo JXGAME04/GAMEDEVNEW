@@ -1,0 +1,45 @@
+{
+ "satthu": [
+  "script\\task\\tollgate\\addtollgatenpc.lua",
+  "script\\task\\tollgate\\killbosshead.lua",
+  "script\\task\\tollgate\\killer\\kill_level.lua",
+  "script\\task\\tollgate\\killer\\lib_killlevel.lua",
+  "script\\task\\tollgate\\killer\\mibao_head.lua",
+  "script\\task\\tollgate\\killer\\nieshichen.lua",
+  "script\\task\\tollgate\\killer\\shashou_mibao.lua"
+ ],
+ "phonglangdo": [
+  "script\\missions\\fengling_ferry\\bigbossdeath.lua",
+  "script\\missions\\fengling_ferry\\boss.lua",
+  "script\\missions\\fengling_ferry\\bossdeath.lua",
+  "script\\missions\\fengling_ferry\\fld_death.lua",
+  "script\\missions\\fengling_ferry\\fld_head.lua",
+  "script\\missions\\fengling_ferry\\fld_landingtimer.lua",
+  "script\\missions\\fengling_ferry\\fld_smalltimer.lua",
+  "script\\missions\\fengling_ferry\\fldmap_boat1.lua",
+  "script\\missions\\fengling_ferry\\fldmap_boat2.lua",
+  "script\\missions\\fengling_ferry\\fldmap_boat3.lua",
+  "script\\missions\\fengling_ferry\\lang.lua",
+  "script\\missions\\fengling_ferry\\mission.lua",
+  "script\\missions\\fengling_ferry\\shuizeideath.lua"
+ ],
+ "vuotai": [
+  "script\\missions\\challengeoftime\\award.lua",
+  "script\\missions\\challengeoftime\\chuangguang30.lua",
+  "script\\missions\\challengeoftime\\chuangguang30_playerdeath.lua",
+  "script\\missions\\challengeoftime\\doubleexp.lua",
+  "script\\missions\\challengeoftime\\include.lua",
+  "script\\missions\\challengeoftime\\item\\chuangguanbaoxiang.lua",
+  "script\\missions\\challengeoftime\\mission_match.lua",
+  "script\\missions\\challengeoftime\\npc.lua",
+  "script\\missions\\challengeoftime\\npc\\dragonboat_main.lua",
+  "script\\missions\\challengeoftime\\npc\\transfer.lua",
+  "script\\missions\\challengeoftime\\npc_death.lua",
+  "script\\missions\\challengeoftime\\player_death.lua",
+  "script\\missions\\challengeoftime\\rank_perday.lua",
+  "script\\missions\\challengeoftime\\timer_board.lua",
+  "script\\missions\\challengeoftime\\timer_close.lua",
+  "script\\missions\\challengeoftime\\timer_match.lua",
+  "script\\vng_feature\\challengeoftime\\npcnhiepthitran.lua"
+ ]
+}

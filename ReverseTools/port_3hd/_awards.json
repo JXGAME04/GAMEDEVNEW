@@ -1,0 +1,272 @@
+{
+ "('EVENT', 353)": [
+  "Tinh H錸g B秓 Th筩h",
+  "AddEventItem(eventitem.txt id=353)",
+  "award.lua",
+  9
+ ],
+ "('EVENT', 238)": [
+  "Lam Th駓 Tinh",
+  "AddEventItem(eventitem.txt id=238)",
+  "award.lua",
+  10
+ ],
+ "('EVENT', 239)": [
+  "T� Th駓 Tinh",
+  "AddEventItem(eventitem.txt id=239)",
+  "award.lua",
+  11
+ ],
+ "('EVENT', 240)": [
+  "L鬰 Th駓 Tinh",
+  "AddEventItem(eventitem.txt id=240)",
+  "award.lua",
+  12
+ ],
+ "(6, 1, 26)": [
+  "V� L﹎ M藅 T辌h",
+  "AddItem(6,1,26)",
+  "award.lua",
+  13
+ ],
+ "(6, 1, 22)": [
+  "T葃 T駓 Kinh",
+  "AddItem(6,1,22)",
+  "award.lua",
+  14
+ ],
+ "(6, 1, 124)": [
+  "Ph骳 Duy猲 L� (Чi) ",
+  "AddItem(6,1,124)",
+  "award.lua",
+  15
+ ],
+ "(6, 1, 123)": [
+  "Ph骳 Duy猲 L� (Trung) ",
+  "AddItem(6,1,123)",
+  "award.lua",
+  16
+ ],
+ "(6, 1, 122)": [
+  "Ph骳 Duy猲 L� (Ti觰) ",
+  "AddItem(6,1,122)",
+  "award.lua",
+  17
+ ],
+ "(6, 1, 71)": [
+  "Ti猲 Th秓 L� ",
+  "AddItem(6,1,71)",
+  "award.lua",
+  18
+ ],
+ "(6, 1, 72)": [
+  "Thi猲 s琻  B秓 L� ",
+  "AddItem(6,1,72)",
+  "award.lua",
+  19
+ ],
+ "(6, 1, 73)": [
+  "B竎h Qu� L� ",
+  "AddItem(6,1,73)",
+  "award.lua",
+  20
+ ],
+ "('EVENT', 489)": [
+  "L謓h b礽 Phong L╪g ч",
+  "AddEventItem(eventitem.txt id=489)",
+  "award.lua",
+  22
+ ],
+ "('GOLD', 0, 159)": [
+  "мnh Qu鑓 Thanh Sa Tr�阯g Sam",
+  "AddGoldItem(genre=0, idx=159)",
+  "award.lua",
+  23
+ ],
+ "('GOLD', 0, 160)": [
+  "мnh Qu鑓 � Sa Ph竧 Qu竛",
+  "AddGoldItem(genre=0, idx=160)",
+  "award.lua",
+  24
+ ],
+ "('GOLD', 0, 161)": [
+  "мnh Qu鑓 X輈h Quy猲 Nhuy詎 Ngoa",
+  "AddGoldItem(genre=0, idx=161)",
+  "award.lua",
+  25
+ ],
+ "('GOLD', 0, 162)": [
+  "мnh Qu鑓 T� Щng H� uy觧",
+  "AddGoldItem(genre=0, idx=162)",
+  "award.lua",
+  26
+ ],
+ "('GOLD', 0, 163)": [
+  "мnh Qu鑓 Ng﹏ T祄 Y猽 �竔",
+  "AddGoldItem(genre=0, idx=163)",
+  "award.lua",
+  27
+ ],
+ "('GOLD', 0, 164)": [
+  "An Bang B╪g Tinh Th筩h H筺g Li猲",
+  "AddGoldItem(genre=0, idx=164)",
+  "award.lua",
+  28
+ ],
+ "('GOLD', 0, 165)": [
+  "An Bang C骳 Hoa Th筩h Ch� ho祅",
+  "AddGoldItem(genre=0, idx=165)",
+  "award.lua",
+  29
+ ],
+ "('GOLD', 0, 166)": [
+  "An Bang �i襫 Ho祅g Th筩h Ng鋍 B閕",
+  "AddGoldItem(genre=0, idx=166)",
+  "award.lua",
+  30
+ ],
+ "('GOLD', 0, 167)": [
+  "An Bang K� Huy誸 Th筩h Gi韎 Ch� ",
+  "AddGoldItem(genre=0, idx=167)",
+  "award.lua",
+  31
+ ],
+ "('GOLD', 0, 2)": [
+  "M閚g Long Kim Ti Ch輓h H錸g C� Sa",
+  "AddGoldItem(genre=0, idx=2)",
+  "award.lua",
+  32
+ ],
+ "('GOLD', 0, 11)": [
+  "T� Kh玭g Gi竛g Ma Gi韎 產o",
+  "AddGoldItem(genre=0, idx=11)",
+  "award.lua",
+  33
+ ],
+ "('GOLD', 0, 6)": [
+  "Ph鬰 Ma T� Kim C玭",
+  "AddGoldItem(genre=0, idx=6)",
+  "award.lua",
+  34
+ ],
+ "('GOLD', 0, 21)": [
+  "K� Nghi謕 B玭 L玦 To祅 Long th�琻g",
+  "AddGoldItem(genre=0, idx=21)",
+  "award.lua",
+  35
+ ],
+ "('GOLD', 0, 26)": [
+  "Ng� Long L�頽g Ng﹏ B秓 產o",
+  "AddGoldItem(genre=0, idx=26)",
+  "award.lua",
+  36
+ ],
+ "('GOLD', 0, 87)": [
+  "мa Ph竎h H綾 Di謒 Xung Thi猲 Li猲",
+  "AddGoldItem(genre=0, idx=87)",
+  "award.lua",
+  37
+ ],
+ "('GOLD', 0, 71)": [
+  "B╪g H祅 Кn Ch� Phi �ao",
+  "AddGoldItem(genre=0, idx=71)",
+  "award.lua",
+  38
+ ],
+ "('GOLD', 0, 81)": [
+  "S﹎ Hoang Phi Tinh �o箃 H錸",
+  "AddGoldItem(genre=0, idx=81)",
+  "award.lua",
+  39
+ ],
+ "('GOLD', 0, 77)": [
+  "Thi猲 Quang мnh T﹎ Ng璶g Th莕 Ph� ",
+  "AddGoldItem(genre=0, idx=77)",
+  "award.lua",
+  40
+ ],
+ "('GOLD', 0, 67)": [
+  "Ch� Ph�頲 Di謙 L玦 C秐h Ph� ",
+  "AddGoldItem(genre=0, idx=67)",
+  "award.lua",
+  41
+ ],
+ "('GOLD', 0, 61)": [
+  "Minh 秓 T� S竧 чc Nh薾",
+  "AddGoldItem(genre=0, idx=61)",
+  "award.lua",
+  42
+ ],
+ "('GOLD', 0, 46)": [
+  "T� Ho祅g Ph鬾g Nghi 產o",
+  "AddGoldItem(genre=0, idx=46)",
+  "award.lua",
+  43
+ ],
+ "('GOLD', 0, 51)": [
+  "B輈h H秈 Uy猲 Μng Li猲 Ho祅 產o",
+  "AddGoldItem(genre=0, idx=51)",
+  "award.lua",
+  44
+ ],
+ "('GOLD', 0, 40)": [
+  "V� Ma H錸g Truy Nhuy詎 Th竝 h礽",
+  "AddGoldItem(genre=0, idx=40)",
+  "award.lua",
+  45
+ ],
+ "('GOLD', 0, 39)": [
+  "V� Ma T葃 T�頽g Ng鋍 Kh蕌 ",
+  "AddGoldItem(genre=0, idx=39)",
+  "award.lua",
+  46
+ ],
+ "('GOLD', 0, 122)": [
+  "C藀 Phong Tam Thanh Ph� ",
+  "AddGoldItem(genre=0, idx=122)",
+  "award.lua",
+  47
+ ],
+ "('GOLD', 0, 136)": [
+  "V� 秓 B綾 Minh Чo qu竛",
+  "AddGoldItem(genre=0, idx=136)",
+  "award.lua",
+  48
+ ],
+ "('GOLD', 0, 126)": [
+  "S�琻g Tinh Thi猲 Ni猲 H祅 Thi誸",
+  "AddGoldItem(genre=0, idx=126)",
+  "award.lua",
+  49
+ ],
+ "('GOLD', 0, 132)": [
+  "L玦 Khung Thi猲 мa H� ph� ",
+  "AddGoldItem(genre=0, idx=132)",
+  "award.lua",
+  50
+ ],
+ "('GOLD', 0, 115)": [
+  "Ma Th� s琻  H秈 Phi H錸g L� ",
+  "AddGoldItem(genre=0, idx=115)",
+  "award.lua",
+  51
+ ],
+ "('GOLD', 0, 107)": [
+  "Ma Ho祅g 竛 Xu蕋 H� H筺g Khuy猲",
+  "AddGoldItem(genre=0, idx=107)",
+  "award.lua",
+  52
+ ],
+ "('GOLD', 0, 94)": [
+  "уng C鮱 Kh竛g Long H� Uy觧",
+  "AddGoldItem(genre=0, idx=94)",
+  "award.lua",
+  53
+ ],
+ "('GOLD', 0, 96)": [
+  "мch Kh竔 L鬰 Ng鋍 Tr�頽g",
+  "AddGoldItem(genre=0, idx=96)",
+  "award.lua",
+  54
+ ]
+}

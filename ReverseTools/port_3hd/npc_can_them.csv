@@ -1,0 +1,141 @@
+﻿TinhNang,NpcId,TenLinux,Kind,NpcResType,AIMode,LevelScript,DropRateFile,TrangThaiJX1,TenJX1,SoSanhTen
+satthu,761,Nhiệm vụ sát thủ cấp 20,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 20,TRUNG_TEN
+satthu,762,Nhiệm vụ sát thủ cấp 30,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 30,TRUNG_TEN
+satthu,763,Nhiệm vụ sát thủ cấp 40,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 40,TRUNG_TEN
+satthu,764,Nhiệm vụ sát thủ cấp 50,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 50,TRUNG_TEN
+satthu,765,Nhiệm vụ sát thủ cấp 60,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 60,TRUNG_TEN
+satthu,766,Nhiệm vụ sát thủ cấp 70,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 70,TRUNG_TEN
+satthu,767,Nhiệm vụ sát thủ cấp 80,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 80,TRUNG_TEN
+satthu,768,Nhiệm vụ sát thủ cấp 90,0,enemy051,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 90,TRUNG_TEN
+satthu,770,Nhiệm vụ sát thủ cấp 201,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 201,TRUNG_TEN
+satthu,771,Nhiệm vụ sát thủ cấp 202,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 202,TRUNG_TEN
+satthu,772,Nhiệm vụ sát thủ cấp 203,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 203,TRUNG_TEN
+satthu,773,Nhiệm vụ sát thủ cấp 301,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 301,TRUNG_TEN
+satthu,774,Nhiệm vụ sát thủ cấp 302,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 302,TRUNG_TEN
+satthu,775,Nhiệm vụ sát thủ cấp 303,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 303,TRUNG_TEN
+satthu,776,Nhiệm vụ sát thủ cấp 304,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 304,TRUNG_TEN
+satthu,777,Nhiệm vụ sát thủ cấp 401,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 401,TRUNG_TEN
+satthu,778,Nhiệm vụ sát thủ cấp 402,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 402,TRUNG_TEN
+satthu,779,Nhiệm vụ sát thủ cấp 403,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 403,TRUNG_TEN
+satthu,780,Nhiệm vụ sát thủ cấp 404,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 404,TRUNG_TEN
+satthu,781,Nhiệm vụ sát thủ cấp 405,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 405,TRUNG_TEN
+satthu,782,Nhiệm vụ sát thủ cấp 501,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 501,TRUNG_TEN
+satthu,783,Nhiệm vụ sát thủ cấp 502,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 502,TRUNG_TEN
+satthu,784,Nhiệm vụ sát thủ cấp 503,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 503,TRUNG_TEN
+satthu,785,Nhiệm vụ sát thủ cấp 504,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 504,TRUNG_TEN
+satthu,786,Nhiệm vụ sát thủ cấp 505,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 505,TRUNG_TEN
+satthu,787,Nhiệm vụ sát thủ cấp 506,0,enemy070,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 506,TRUNG_TEN
+satthu,788,Nhiệm vụ sát thủ cấp 601,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 601,TRUNG_TEN
+satthu,789,Nhiệm vụ sát thủ cấp 602,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 602,TRUNG_TEN
+satthu,790,Nhiệm vụ sát thủ cấp 603,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 603,TRUNG_TEN
+satthu,791,Nhiệm vụ sát thủ cấp 604,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 604,TRUNG_TEN
+satthu,792,Nhiệm vụ sát thủ cấp 605,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 605,TRUNG_TEN
+satthu,793,Nhiệm vụ sát thủ cấp 606,0,enemy070,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 606,TRUNG_TEN
+satthu,794,Nhiệm vụ sát thủ cấp 607,0,enemy048,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 607,TRUNG_TEN
+satthu,795,Nhiệm vụ sát thủ cấp 701,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 701,TRUNG_TEN
+satthu,796,Nhiệm vụ sát thủ cấp 702,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 702,TRUNG_TEN
+satthu,797,Nhiệm vụ sát thủ cấp 703,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 703,TRUNG_TEN
+satthu,798,Nhiệm vụ sát thủ cấp 704,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 704,TRUNG_TEN
+satthu,799,Nhiệm vụ sát thủ cấp 705,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 705,TRUNG_TEN
+satthu,800,Nhiệm vụ sát thủ cấp 706,0,enemy070,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 706,TRUNG_TEN
+satthu,801,Nhiệm vụ sát thủ cấp 707,0,enemy048,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 707,TRUNG_TEN
+satthu,802,Nhiệm vụ sát thủ cấp 708,0,enemy082,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 708,TRUNG_TEN
+satthu,803,Nhiệm vụ sát thủ cấp 801,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 801,TRUNG_TEN
+satthu,804,Nhiệm vụ sát thủ cấp 802,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 802,TRUNG_TEN
+satthu,805,Nhiệm vụ sát thủ cấp 803,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 803,TRUNG_TEN
+satthu,806,Nhiệm vụ sát thủ cấp 804,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 804,TRUNG_TEN
+satthu,807,Nhiệm vụ sát thủ cấp 805,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 805,TRUNG_TEN
+satthu,808,Nhiệm vụ sát thủ cấp 806,0,enemy070,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 806,TRUNG_TEN
+satthu,809,Nhiệm vụ sát thủ cấp 807,0,enemy048,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 807,TRUNG_TEN
+satthu,810,Nhiệm vụ sát thủ cấp 808,0,enemy082,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 808,TRUNG_TEN
+satthu,811,Nhiệm vụ sát thủ cấp 809,0,enemy050,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 809,TRUNG_TEN
+satthu,812,Nhiệm vụ sát thủ cấp 901,0,enemy107,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 901,TRUNG_TEN
+satthu,813,Nhiệm vụ sát thủ cấp 902,0,enemy081,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 902,TRUNG_TEN
+satthu,814,Nhiệm vụ sát thủ cấp 903,0,enemy109,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 903,TRUNG_TEN
+satthu,815,Nhiệm vụ sát thủ cấp 904,0,enemy126,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 904,TRUNG_TEN
+satthu,816,Nhiệm vụ sát thủ cấp 905,0,enemy089,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 905,TRUNG_TEN
+satthu,817,Nhiệm vụ sát thủ cấp 906,0,enemy070,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 906,TRUNG_TEN
+satthu,818,Nhiệm vụ sát thủ cấp 907,0,enemy048,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 907,TRUNG_TEN
+satthu,819,Nhiệm vụ sát thủ cấp 908,0,enemy082,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 908,TRUNG_TEN
+satthu,820,Nhiệm vụ sát thủ cấp 909,0,enemy050,1,\script\npclevelscript\task_killboss.lua,,CO,Nhiệm vụ sát thủ cấp 909,TRUNG_TEN
+phonglangdo,724,Thủy tặc ,0,enemy205,1,\script\npclevelscript\npc_fenglingdunan.lua,\settings\droprate\npcdroprate_boatthief.ini,CO,Thủy tặc,TRUNG_TEN
+phonglangdo,725,Boss Thủy tặc đầu lĩnh ,0,enemy205,1,\script\npclevelscript\makeboss.lua,\settings\droprate\goldennpc\boatboss_droprate.ini,CO,Boss Thủy tặc đầu lĩnh,TRUNG_TEN
+phonglangdo,1692,Thủy Tặc Đại Đầu Lĩnh.,0,enemy205,1,\script\npclevelscript\makeboss.lua,,CO,Thủy Tặc Đại Đầu Lĩnh.,TRUNG_TEN
+phonglangdo,511,Trương Tông Chính,0,enemy003,1,\script\npclevelscript\makeboss.lua,\settings\item\zhangzongzhengdroprate.ini,CO,Trương Tông Chính,TRUNG_TEN
+phonglangdo,513,Diệu Như ,0,enemy056,1,\script\npclevelscript\makeboss.lua,\settings\item\miaorudroprate.ini,CO,Diệu Như,TRUNG_TEN
+vuotai,975, (sơ cấp) Sương Đao,0,enemy150,1,\script\npclevelscript\dragonboat_short.lua,,CO, (sơ cấp) Sương Đao,TRUNG_TEN
+vuotai,976, (sơ cấp) Phi Sa ,0,enemy083,1,\script\npclevelscript\dragonboat_random.lua,,CO, (sơ cấp) Phi Sa ,TRUNG_TEN
+vuotai,977, (sơ cấp) Sương Liêm ,0,enemy122,1,\script\npclevelscript\dragonboat_short.lua,,CO, (sơ cấp) Sương Liêm ,TRUNG_TEN
+vuotai,978, (sơ cấp) Thừa Phong ,0,enemy069,1,\script\npclevelscript\dragonboat_random.lua,,CO, (sơ cấp) Thừa Phong ,TRUNG_TEN
+vuotai,979, (sơ cấp) Thủy Quỷ ,0,enemy205,1,\script\npclevelscript\dragonboat_long.lua,,CO, (sơ cấp) Thủy Quỷ ,TRUNG_TEN
+vuotai,980, (sơ cấp) Thần Tý ,0,enemy085,1,\script\npclevelscript\dragonboat_long.lua,,CO, (sơ cấp) Thần Tý ,TRUNG_TEN
+vuotai,981, (sơ cấp) Tranh Hán ,0,enemy134,1,\script\npclevelscript\dragonboat_long.lua,,CO, (sơ cấp) Tranh Hán ,TRUNG_TEN
+vuotai,982, (sơ cấp) Phá Lang ,0,enemy140,1,\script\npclevelscript\dragonboat_long.lua,,CO, (sơ cấp) Phá Lang ,TRUNG_TEN
+vuotai,983, (sơ cấp) ảnh Côn ,0,enemy137,1,\script\npclevelscript\dragonboat_long.lua,,CO, (sơ cấp) ảnh Côn ,TRUNG_TEN
+vuotai,984, (sơ cấp) Đao Tử ,0,enemy135,1,\script\npclevelscript\dragonboat_range1.lua,,CO, (sơ cấp) Đao Tử ,TRUNG_TEN
+vuotai,985, (sơ cấp) Lang Bổng,0,enemy129,1,\script\npclevelscript\dragonboat_range1.lua,,CO, (sơ cấp) Lang Bổng,TRUNG_TEN
+vuotai,986, (sơ cấp) Hắc Cân,0,enemy136,1,\script\npclevelscript\dragonboat_random.lua,,CO, (sơ cấp) Hắc Cân,TRUNG_TEN
+vuotai,987, (sơ cấp) npc Chú thuật ,0,boss016,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc Chú thuật ,TRUNG_TEN
+vuotai,988, (sơ cấp) npc té ngã ,0,enemy007,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc té ngã ,TRUNG_TEN
+vuotai,989, (sơ cấp) npc hôn mê ,0,enemy005,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc hôn mê ,TRUNG_TEN
+vuotai,990, (sơ cấp) npc giảm tốc,0,enemy091,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc giảm tốc,TRUNG_TEN
+vuotai,991, (sơ cấp) npc Chú thuật ,0,enemy003,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc Chú thuật ,TRUNG_TEN
+vuotai,992, (sơ cấp) npc siêu mạnh,0,enemy077,1,\script\npclevelscript\dragonboat_boss1.lua,,CO, (sơ cấp) npc siêu mạnh,TRUNG_TEN
+vuotai,993, (sơ cấp) npc phản đòn,0,enemy171,1,\script\npclevelscript\makeboss.lua,,CO, (sơ cấp) npc phản đòn,TRUNG_TEN
+vuotai,994, (sơ cấp) tiểu Boss nam 1,0,boss006,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 1,TRUNG_TEN
+vuotai,995, (sơ cấp) tiểu Boss nam 2,0,boss009,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 2,TRUNG_TEN
+vuotai,996, (sơ cấp) tiểu Boss nam 3,0,boss011,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 3,TRUNG_TEN
+vuotai,997, (sơ cấp) tiểu Boss nam 4,0,boss013,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 4,TRUNG_TEN
+vuotai,998, (sơ cấp) tiểu Boss nam 5,0,boss017,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 5,TRUNG_TEN
+vuotai,999, (sơ cấp) tiểu Boss nam 6,0,boss022,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 6,TRUNG_TEN
+vuotai,1000, (sơ cấp) tiểu Boss nam 7,0,boss019,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 7,TRUNG_TEN
+vuotai,1001, (sơ cấp) tiểu Boss nam 8,0,boss020,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nam 8,TRUNG_TEN
+vuotai,1002, (sơ cấp) tiểu Boss nữ 1,0,boss023,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nữ 1,TRUNG_TEN
+vuotai,1003, (sơ cấp) tiểu Boss nữ 2,0,boss014,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nữ 2,TRUNG_TEN
+vuotai,1004, (sơ cấp) tiểu Boss nữ 3,0,boss008,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nữ 3,TRUNG_TEN
+vuotai,1005, (sơ cấp) tiểu Boss nữ 4,0,boss007,1,\script\npclevelscript\lowchallenge_boss.lua,,CO, (sơ cấp) tiểu Boss nữ 4,TRUNG_TEN
+vuotai,1006, (sơ cấp) đại Boss  ,0,boss015,1,\script\npclevelscript\dragonboat_boss1.lua,,CO, (sơ cấp) đại Boss  ,TRUNG_TEN
+vuotai,1007, (cao cấp) Sương Đao,0,enemy150,1,\script\npclevelscript\dragonboat_short.lua,,CO, (cao cấp) Sương Đao,TRUNG_TEN
+vuotai,1008, (cao cấp) Phi Sa ,0,enemy083,1,\script\npclevelscript\dragonboat_random.lua,,CO, (cao cấp) Phi Sa ,TRUNG_TEN
+vuotai,1009, (cao cấp) Sương Liêm ,0,enemy122,1,\script\npclevelscript\dragonboat_short.lua,,CO, (cao cấp) Sương Liêm ,TRUNG_TEN
+vuotai,1010, (cao cấp) Thừa Phong ,0,enemy069,1,\script\npclevelscript\dragonboat_random.lua,,CO, (cao cấp) Thừa Phong ,TRUNG_TEN
+vuotai,1011, (cao cấp) Thủy Quỷ ,0,enemy205,1,\script\npclevelscript\dragonboat_long.lua,,CO, (cao cấp) Thủy Quỷ ,TRUNG_TEN
+vuotai,1012, (cao cấp) Thần Tý ,0,enemy085,1,\script\npclevelscript\dragonboat_long.lua,,CO, (cao cấp) Thần Tý ,TRUNG_TEN
+vuotai,1013, (cao cấp) Tranh Hán ,0,enemy134,1,\script\npclevelscript\dragonboat_long.lua,,CO, (cao cấp) Tranh Hán ,TRUNG_TEN
+vuotai,1014, (cao cấp) Phá Lang ,0,enemy140,1,\script\npclevelscript\dragonboat_long.lua,,CO, (cao cấp) Phá Lang ,TRUNG_TEN
+vuotai,1015, (cao cấp) ảnh Côn ,0,enemy137,1,\script\npclevelscript\dragonboat_long.lua,,CO, (cao cấp) ảnh Côn ,TRUNG_TEN
+vuotai,1016, (cao cấp) Đao Tử ,0,enemy135,1,\script\npclevelscript\dragonboat_range2.lua,,CO, (cao cấp) Đao Tử ,TRUNG_TEN
+vuotai,1017, (cao cấp) Lang Bổng,0,enemy129,1,\script\npclevelscript\dragonboat_range2.lua,,CO, (cao cấp) Lang Bổng,TRUNG_TEN
+vuotai,1018, (cao cấp) Hắc Cân,0,enemy136,1,\script\npclevelscript\dragonboat_random.lua,,CO, (cao cấp) Hắc Cân,TRUNG_TEN
+vuotai,1019, (cao cấp) Chú thuật quái,0,boss016,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) Chú thuật quái,TRUNG_TEN
+vuotai,1020, (cao cấp) npc té ngã ,0,enemy007,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) npc té ngã ,TRUNG_TEN
+vuotai,1021, (cao cấp) npc hôn mê ,0,enemy005,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) npc hôn mê ,TRUNG_TEN
+vuotai,1022, (cao cấp) npc giảm tốc,0,enemy091,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) npc giảm tốc,TRUNG_TEN
+vuotai,1023, (cao cấp) npc Chú thuật,0,enemy003,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) npc Chú thuật,TRUNG_TEN
+vuotai,1024, (cao cấp) npc siêu mạnh,0,enemy077,1,\script\npclevelscript\dragonboat_boss2.lua,,CO, (cao cấp) npc siêu mạnh,TRUNG_TEN
+vuotai,1025, (cao cấp) npc phản đòn,0,enemy171,1,\script\npclevelscript\makeboss.lua,,CO, (cao cấp) npc phản đòn,TRUNG_TEN
+vuotai,1026, (cao cấp) tiểu Boss nam 1,0,boss006,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 1,TRUNG_TEN
+vuotai,1027, (cao cấp) tiểu Boss nam 2,0,boss009,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 2,TRUNG_TEN
+vuotai,1028, (cao cấp) tiểu Boss nam 3,0,boss011,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 3,TRUNG_TEN
+vuotai,1029, (cao cấp) tiểu Boss nam 4,0,boss013,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 4,TRUNG_TEN
+vuotai,1030, (cao cấp) tiểu Boss nam 5,0,boss017,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 5,TRUNG_TEN
+vuotai,1031, (cao cấp) tiểu Boss nam 6,0,boss022,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nam 6,TRUNG_TEN
+vuotai,1032, (cao cấp) tiểu Boss nam 7,0,boss019,1,\script\npclevelscript\highchallenge_boss.lua,,CO,Boss New Dragon 165,KHAC_TEN
+vuotai,1033, (cao cấp) tiểu Boss nam 8,0,boss020,1,\script\npclevelscript\highchallenge_boss.lua,,CO,Boss New Dragon 166 8,KHAC_TEN
+vuotai,1034, (cao cấp) tiểu Boss nữ 1,0,boss023,1,\script\npclevelscript\highchallenge_boss.lua,,CO,Boss New Dragon 167,KHAC_TEN
+vuotai,1035, (cao cấp) tiểu Boss nữ 2,0,boss014,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nữ 2,TRUNG_TEN
+vuotai,1036, (cao cấp) tiểu Boss nữ 3,0,boss008,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nữ 3,TRUNG_TEN
+vuotai,1037, (cao cấp) tiểu Boss nữ 4,0,boss007,1,\script\npclevelscript\highchallenge_boss.lua,,CO, (cao cấp) tiểu Boss nữ 4,TRUNG_TEN
+vuotai,1038, (cao cấp) đại Boss  ,0,boss015,1,\script\npclevelscript\dragonboat_boss2.lua,,CO, (cao cấp) đại Boss  ,TRUNG_TEN
+vuotai,1673,Nhiếp Thí Trần,0,enemy205,1,\script\npclevelscript\makeboss.lua,,CO,Nhiếp Thí Trần,TRUNG_TEN
+vuotai,1674,Vượt ải_Cổ Bách,0,boss046,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Cổ Bách,TRUNG_TEN
+vuotai,1675,Vượt ải_Huyền Giác Đại Sư,0,boss047,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Huyền Giác Đại Sư,TRUNG_TEN
+vuotai,1676,Vượt ải_Đường Bất Nhiễm,0,boss048,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Đường Bất Nhiễm,TRUNG_TEN
+vuotai,1677,Vượt ải_Lam Y Y,0,boss049,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Lam Y Y,TRUNG_TEN
+vuotai,1678,Vượt ải _Thanh Hiểu Sư Thái,0,boss050,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải _Thanh Hiểu Sư Thái,TRUNG_TEN
+vuotai,1679,Vượt ải_Chung Linh Tú,0,boss051,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Chung Linh Tú,TRUNG_TEN
+vuotai,1680,Vượt ải_Hà Nhân Ngả,0,boss052,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Hà Nhân Ngả,TRUNG_TEN
+vuotai,1681,Vượt ải _Đoan Mộc Duệ,0,boss053,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải _Đoan Mộc Duệ,TRUNG_TEN
+vuotai,1682,Vượt ải_Đạo Thanh Chân Nhân,0,boss054,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải_Đạo Thanh Chân Nhân,TRUNG_TEN
+vuotai,1683,Vượt ải _Toàn Cơ Tử,0,boss055,1,\script\npclevelscript\makeboss.lua,,CO,Vượt ải _Toàn Cơ Tử,TRUNG_TEN
+vuotai,1684,Vượt ải_Người tiếp dẫn Mật Phòng,3,passerby043,,\script\npclevelscript\newnpc.lua,,CO,Vượt ải_Người tiếp dẫn Mật Phòng,TRUNG_TEN

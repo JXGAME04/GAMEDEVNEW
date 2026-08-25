@@ -1,0 +1,197 @@
+{
+ "satthu": {
+  "settings/droprate/boss/bosstask_lev20.ini": {
+   "path": "settings/droprate/boss/bosstask_lev20.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:47(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:13"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev30.ini": {
+   "path": "settings/droprate/boss/bosstask_lev30.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:50(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:16"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev40.ini": {
+   "path": "settings/droprate/boss/bosstask_lev40.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:53(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:19"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev50.ini": {
+   "path": "settings/droprate/boss/bosstask_lev50.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:56(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:22"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev60.ini": {
+   "path": "settings/droprate/boss/bosstask_lev60.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:59(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:25"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev70.ini": {
+   "path": "settings/droprate/boss/bosstask_lev70.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:62(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:28"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev80.ini": {
+   "path": "settings/droprate/boss/bosstask_lev80.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:65(cmt)",
+    "script/global/thanh/npc/bosssatthuhead.lua:31"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/droprate/boss/bosstask_lev90.ini": {
+   "path": "settings/droprate/boss/bosstask_lev90.ini",
+   "sites": [
+    "script/task/tollgate/killer/kill_level.lua:69",
+    "script/global/thanh/npc/bosssatthudeath.lua:9",
+    "script/global/thanh/npc/bosssatthuhead.lua:34"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/task/tollgate/killer/killer.txt": {
+   "path": "settings/task/tollgate/killer/killer.txt",
+   "sites": [
+    "script/task/tollgate/killer/nieshichen.lua:54"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  }
+ },
+ "phonglangdo": {
+  "settings/maps/öðô­±±çø/¶é´¬/¶é´¬ë¢¹öµã.txt": {
+   "path": "settings/maps/ÖÐÔ­±±Çø/¶É´¬/¶É´¬Ë¢¹Öµã.txt",
+   "sites": [
+    "script/missions/fengling_ferry/fld_head.lua:18"
+   ],
+   "live": true,
+   "in_A": false,
+   "in_B": true,
+   "in_JX1": false
+  }
+ },
+ "vuotai": {
+  "settings/maps/liandandong/npc_3.txt": {
+   "path": "settings/maps/liandandong/npc_3.txt",
+   "sites": [
+    "script/missions/challengeoftime/chuangguang30.lua:216"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup8.txt": {
+   "path": "settings/maps/challengeoftime/lineup8.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:12"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup16.txt": {
+   "path": "settings/maps/challengeoftime/lineup16.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:13"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup20.txt": {
+   "path": "settings/maps/challengeoftime/lineup20.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:14"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup24.txt": {
+   "path": "settings/maps/challengeoftime/lineup24.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:15"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup32.txt": {
+   "path": "settings/maps/challengeoftime/lineup32.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:16"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup40.txt": {
+   "path": "settings/maps/challengeoftime/lineup40.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:17"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  },
+  "settings/maps/challengeoftime/lineup56.txt": {
+   "path": "settings/maps/challengeoftime/lineup56.txt",
+   "sites": [
+    "script/missions/challengeoftime/npc.lua:18"
+   ],
+   "live": true,
+   "in_A": true,
+   "in_B": true,
+   "in_JX1": false
+  }
+ }
+}

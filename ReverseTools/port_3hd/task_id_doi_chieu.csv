@@ -1,0 +1,20 @@
+﻿TaskId,DungChoGiOBanLinux,SoChoJX1DaDung,ViTriJX1,TenHangSoJX1
+200,phonglangdo+vuotai SetTaskTemp(200) (task TAM THOI),23,item\hoatdong_admin.lua:125;missions\bw\bwhead.lua:62;missions\bw\bwhead.lua:137;missions\bw\bwmission.lua:54;missions\citywar_arena\head.lua:96;missions\citywar_arena\leavetrap.lua:11;missions\citywar_arena\mission.lua:65;missions\citywar_city\camper.lua:136,
+1082,satthu TSKID_KILLTASKID (boss dang nhan),0,,TSK_KILLER_ID;TSKID_KILLTASKID
+1192,satthu TSKID_KILLERDATE,0,,TSKID_KILLERDATE
+1193,satthu TSKID_KILLERMAXCOUNT,0,,TSKID_KILLERMAXCOUNT
+1217,satthu so lan hoan thanh (ladder 10119),0,,
+1505,vuotai SetTask trong mission_match.lua,0,,
+1550,vuotai TSK_REMAIN_COUNT,2,event\storm\function.lua:396;event\storm\function.lua:417,
+1551,vuotai TSK_JOIN_DATE,0,,
+2606,vuotai tsk_toll_cg_passcount (event sinh nhat 200905),0,,
+2641,vuotai TSK_Longxuewan_Date,0,,
+2642,vuotai TSK_Longxuewan_Use,0,,
+2852,vuotai PLAYER_MAP_TASK,0,,
+2863,phonglangdo - huoyuedu CountTask,0,,
+2864,vuotai - huoyuedu CountTask,0,,
+2871,satthu - huoyuedu CountTask,0,,
+3070,phonglangdo TaskDaily (Chan Nguyen Dan),0,,
+3071,vuotai bittask (bit 25) - dragonboat_main,0,,
+3079,vuotai TaskDaily trong dragonboat_main,0,,
+4018,vuotai TSK_Longxuewan_avail,0,,

@@ -1,0 +1,1626 @@
+[
+ {
+  "ten": "AddExp_Skill_Extend",
+  "def_tep": "task/task_award_extend.lua",
+  "def_dong": 5,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "AddGoldItem",
+  "def_tep": "event/wulin_final_match/test_award.lua",
+  "def_dong": 50,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "AddItem",
+  "def_tep": "event/wulin_final_match/test_award.lua",
+  "def_dong": 46,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "COT_CheckTeamRequirement",
+  "def_tep": "missions/challengeoftime/npc/dragonboat_main.lua",
+  "def_dong": 4,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "COT_GetFreeMap",
+  "def_tep": "missions/challengeoftime/npc/dragonboat_main.lua",
+  "def_dong": 82,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "CheckIPBonus",
+  "def_tep": "misc/vngpromotion/ipbonus.lua",
+  "def_dong": 31,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Chuangguan_checkdoubleexp",
+  "def_tep": "missions/challengeoftime/doubleexp.lua",
+  "def_dong": 9,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "CreateNewSayEx",
+  "def_tep": "dailogsys/dailogsay.lua",
+  "def_dong": 22,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "CreateNpcStringLink",
+  "def_tep": "task/system/task_string.lua",
+  "def_dong": 154,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "CreatePartnerStringLink",
+  "def_tep": "task/system/task_string.lua",
+  "def_dong": 136,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "CreateTaskSay",
+  "def_tep": "task/system/task_string.lua",
+  "def_dong": 46,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "FALSE",
+  "def_tep": "event/tongwar/event.lua",
+  "def_dong": 121,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetAccount",
+  "def_tep": "activitysys/autotest/testitem.lua",
+  "def_dong": 53,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetExp",
+  "def_tep": "npclevelscript/animal.lua",
+  "def_dong": 441,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetHidenNpcList",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 404,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetIniFileData",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 656,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetItemName",
+  "def_tep": "activitysys/autotest/testitem.lua",
+  "def_dong": 61,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetLife",
+  "def_tep": "npclevelscript/animal.lua",
+  "def_dong": 509,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetMatchLevel",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 121,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetMatchMapList",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 135,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetMatchPlayerList",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 169,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetMissionCompleteAward",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 271,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetName",
+  "def_tep": "activitysys/autotest/testitem.lua",
+  "def_dong": 57,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetNpcList",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 395,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetPlayerSex",
+  "def_tep": "global/tasklink_head.lua",
+  "def_dong": 570,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetRandomNpcRange",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 260,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetSeries",
+  "def_tep": "item/market_pack.lua",
+  "def_dong": 79,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "GetTabFileData",
+  "def_tep": "lib/file.lua",
+  "def_dong": 46,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetTabFileHeight",
+  "def_tep": "lib/file.lua",
+  "def_dong": 38,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "GetTask",
+  "def_tep": "event/wulin_final_match/test_award.lua",
+  "def_dong": 21,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "Include",
+  "def_tep": "lib/include.lua",
+  "def_dong": 4,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "IpBonus_Add",
+  "def_tep": "misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+  "def_dong": 73,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "IpResetTask",
+  "def_tep": "misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+  "def_dong": 61,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "IsCharged",
+  "def_tep": "event/2006vm_nationalday/event.lua",
+  "def_dong": 89,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "IsDoubledMoneyBox",
+  "def_tep": "global/signet_head.lua",
+  "def_dong": 16,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "JiluAttendCount",
+  "def_tep": "missions/fengling_ferry/mission.lua",
+  "def_dong": 43,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "JiluDeathCount",
+  "def_tep": "missions/fengling_ferry/fld_death.lua",
+  "def_dong": 27,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "JoinMission",
+  "def_tep": "battles/boss/mission.lua",
+  "def_dong": 217,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Landing",
+  "def_tep": "missions/fengling_ferry/mission.lua",
+  "def_dong": 79,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadItemDetail",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 68,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadItemType",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 47,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadMapDetail",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 98,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadShareData",
+  "def_tep": "lib/sharedata.lua",
+  "def_dong": 3,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadStuntData",
+  "def_tep": "tong/tong_setting.lua",
+  "def_dong": 42,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "LoadTongSetting",
+  "def_tep": "tong/tong_setting.lua",
+  "def_dong": 9,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Load_TransLifeSetting",
+  "def_tep": "task/metempsychosis/task_head.lua",
+  "def_dong": 18,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Mission_Complete",
+  "def_tep": "missions/challengeoftime/npc_death.lua",
+  "def_dong": 47,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "OutputMsg",
+  "def_tep": "lib/gb_modulefuncs.lua",
+  "def_dong": 32,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "RunMission",
+  "def_tep": "battles/boss/mission.lua",
+  "def_dong": 175,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "SaveShareData",
+  "def_tep": "lib/sharedata.lua",
+  "def_dong": 10,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Say",
+  "def_tep": "event/wulin_final_match/test_award.lua",
+  "def_dong": 54,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "SetMemberTask",
+  "def_tep": "task/newtask/lib_setmembertask.lua",
+  "def_dong": 17,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "SetTask",
+  "def_tep": "event/wulin_final_match/test_award.lua",
+  "def_dong": 35,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "SetTaskSayColor",
+  "def_tep": "task/system/task_string.lua",
+  "def_dong": 65,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Songjin_checkdoubleexp",
+  "def_tep": "battles/doubleexp.lua",
+  "def_dong": 9,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "TRANSLIFE5_award",
+  "def_tep": "task/metempsychosis/translife_5.lua",
+  "def_dong": 119,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "Talk",
+  "def_tep": "global/pgaming/cauca/lib/inc.lua",
+  "def_dong": 112,
+  "trong_bao_dong": false,
+  "co_trong_luamap": true,
+  "co_trong_jx1": true
+ },
+ {
+  "ten": "TaskSay",
+  "def_tep": "task/system/task_string.lua",
+  "def_dong": 28,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "TongFundAdd",
+  "def_tep": "tong/contribution_entry.lua",
+  "def_dong": 20,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "_AddLevel",
+  "def_tep": "vng_event/thapnienlenhbai/lenhbai_def.lua",
+  "def_dong": 375,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "_AwardTask",
+  "def_tep": "vng_event/thapnienlenhbai/lenhbai_def.lua",
+  "def_dong": 389,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "_LoverCallBack",
+  "def_tep": "item/heart_head.lua",
+  "def_dong": 148,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "_UnlineCallBack",
+  "def_tep": "item/heart_head.lua",
+  "def_dong": 283,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "__cclone",
+  "def_tep": "lib/mem.lua",
+  "def_dong": 23,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "__clone",
+  "def_tep": "lib/mem.lua",
+  "def_dong": 11,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "add_killertasknpc",
+  "def_tep": "task/tollgate/killbosshead.lua",
+  "def_dong": 183,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "add_messengernpc",
+  "def_tep": "task/tollgate/killbosshead.lua",
+  "def_dong": 3406,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "add_npc",
+  "def_tep": "global/eurofun/npc/add_npc.lua",
+  "def_dong": 15,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "add_shashouling",
+  "def_tep": "task/tollgate/killer/lib_killlevel.lua",
+  "def_dong": 70,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "add_transfer_npc",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 498,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_batch",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 246,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_batch_extend",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 91,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_batch_item",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 231,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_hidden_mission",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 121,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_item",
+  "def_tep": "item/giftbox.lua",
+  "def_dong": 44,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_random_object",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 149,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "award_success",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 280,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "basemission_CallNpc",
+  "def_tep": "missions/basemission/lib.lua",
+  "def_dong": 27,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "battle_rank_GetSortPlayer0808",
+  "def_tep": "battles/battle_rank_award.lua",
+  "def_dong": 75,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "broadcast",
+  "def_tep": "event/msg2allworld.lua",
+  "def_dong": 7,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_JudgePLAddTitle",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 844,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_RankEffect",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 863,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_addrandfightnpc",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 450,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_addtotalpoint",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 665,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_createleague",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 1113,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_getgn_awardtimes",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 986,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_getsignpos",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 327,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "bt_reportworldresult",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 1121,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "cancel_match",
+  "def_tep": "missions/challengeoftime/timer_match.lua",
+  "def_dong": 8,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkActMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 15,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkBWMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 45,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkHFMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 73,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkNEWPRACTICEMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 87,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkSJMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 34,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkTONGMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 80,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkXSMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 65,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkYDBZMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 27,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "checkZQMaps",
+  "def_tep": "global/forbidmap.lua",
+  "def_dong": 56,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "check_new_shuizeitask",
+  "def_tep": "missions/fengling_ferry/fld_head.lua",
+  "def_dong": 302,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "check_zhuansheng_level",
+  "def_tep": "task/metempsychosis/task_func.lua",
+  "def_dong": 108,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "clone",
+  "def_tep": "event/chunjie_jieri/201001/plant.lua",
+  "def_dong": 72,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "close_board_timer",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 213,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "close_close_timer",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 224,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "close_match",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 229,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "close_match_timer",
+  "def_tep": "missions/challengeoftime/timer_match.lua",
+  "def_dong": 57,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "create_all_npc",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 456,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "create_batch_npc",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 468,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "debug_out",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 70,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "doFunByPlayer",
+  "def_tep": "missions/basemission/lib.lua",
+  "def_dong": 9,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "drop_item",
+  "def_tep": "missions/challengeoftime/award.lua",
+  "def_dong": 216,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "exchange_lingpai",
+  "def_tep": "misc/itemexchangevalue/itemexchangevalue.lua",
+  "def_dong": 210,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "extong_double_award",
+  "def_tep": "tong/tong_award_head.lua",
+  "def_dong": 134,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "fld_TakeBoat",
+  "def_tep": "missions/fengling_ferry/fld_head.lua",
+  "def_dong": 85,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "fld_addhuoyuedu",
+  "def_tep": "missions/fengling_ferry/fld_smalltimer.lua",
+  "def_dong": 70,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "fld_getadata",
+  "def_tep": "missions/fengling_ferry/fld_head.lua",
+  "def_dong": 175,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "fld_haveroom",
+  "def_tep": "missions/fengling_ferry/fld_head.lua",
+  "def_dong": 152,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "fld_landingpos",
+  "def_tep": "missions/fengling_ferry/fld_head.lua",
+  "def_dong": 167,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "g_AskClientNumberEx",
+  "def_tep": "dailogsys/dailogsay.lua",
+  "def_dong": 90,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "g_GiveItemUI",
+  "def_tep": "dailogsys/dailogsay.lua",
+  "def_dong": 116,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "gb_GetTask",
+  "def_tep": "gb_taskfuncs.lua",
+  "def_dong": 12,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "gb_SetTask",
+  "def_tep": "gb_taskfuncs.lua",
+  "def_dong": 20,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "getDirection",
+  "def_tep": "global/judgeoffline_limit.lua",
+  "def_dong": 442,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "getNpcInfo",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 565,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "getSignetDropRate",
+  "def_tep": "global/signet_head.lua",
+  "def_dong": 6,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_ItemType",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 37,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_MapType",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 18,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_batch_count",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 413,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_file_pos",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 280,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_count",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 372,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_id",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 309,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_isboss",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 390,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_level",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 340,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_name",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 323,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_pos",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 377,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_npc_series",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 345,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "get_random_npc_id",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 269,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "give_shuizei_award_exp",
+  "def_tep": "event/jiefang_jieri/200904/shuizei/shuizei.lua",
+  "def_dong": 87,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "give_shuizei_award_lingpai",
+  "def_tep": "event/jiefang_jieri/200904/shuizei/shuizei.lua",
+  "def_dong": 63,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "givesword",
+  "def_tep": "task/tollgate/killer/nieshichen.lua",
+  "def_dong": 201,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "gn_getaward_times",
+  "def_tep": "event/great_night/huangzhizhang/event.lua",
+  "def_dong": 41,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "greatnight_huang_event",
+  "def_tep": "event/great_night/huangzhizhang/event.lua",
+  "def_dong": 16,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "havetask",
+  "def_tep": "task/tollgate/killer/nieshichen.lua",
+  "def_dong": 135,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "huang_event_name",
+  "def_tep": "event/great_night/huangzhizhang/event.lua",
+  "def_dong": 68,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "iftrue",
+  "def_tep": "lib/basic.lua",
+  "def_dong": 15,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "iif",
+  "def_tep": "lib/common.lua",
+  "def_dong": 7,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "inherit",
+  "def_tep": "lib/mem.lua",
+  "def_dong": 56,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "init",
+  "def_tep": "item/heart_head.lua",
+  "def_dong": 10,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "jf0904_InitTaskctrl",
+  "def_tep": "event/jiefang_jieri/200904/taskctrl.lua",
+  "def_dong": 26,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "jf0904_shuizei_IsActtime",
+  "def_tep": "event/jiefang_jieri/200904/shuizei/shuizei.lua",
+  "def_dong": 103,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "jiefangri_award",
+  "def_tep": "task/tollgate/killer/lib_killlevel.lua",
+  "def_dong": 110,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "kickout",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 193,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "kill_level20",
+  "def_tep": "global/thanh/npc/bosssatthuhead.lua",
+  "def_dong": 10,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "killerCoundTakedTask",
+  "def_tep": "task/tollgate/killer/nieshichen.lua",
+  "def_dong": 213,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "leave",
+  "def_tep": "missions/challengeoftime/npc/transfer.lua",
+  "def_dong": 26,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "login_add",
+  "def_tep": "global/login_head.lua",
+  "def_dong": 7,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "new",
+  "def_tep": "lib/mem.lua",
+  "def_dong": 40,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "npc_proceed",
+  "def_tep": "missions/challengeoftime/npc.lua",
+  "def_dong": 363,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "nt_getTask",
+  "def_tep": "battles/boss/head.lua",
+  "def_dong": 546,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "nt_setTask",
+  "def_tep": "battles/boss/head.lua",
+  "def_dong": 540,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "nt_settask",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 76,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "offlineCheckPermitRegion",
+  "def_tep": "global/judgeoffline_limit.lua",
+  "def_dong": 411,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "pack",
+  "def_tep": "event/act2years_yn/baibaoxiang.lua",
+  "def_dong": 81,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "pack_ItemDetail",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 88,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "replace",
+  "def_tep": "lib/common.lua",
+  "def_dong": 116,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "save_player_info",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 242,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "set_MapType",
+  "def_tep": "item/forbiditem.lua",
+  "def_dong": 22,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "showboss",
+  "def_tep": "task/tollgate/killer/nieshichen.lua",
+  "def_dong": 143,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "sj_UpdateScore",
+  "def_tep": "battles/weeklyrank.lua",
+  "def_dong": 5,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "sjskill_addskill",
+  "def_tep": "item/battles/songjinskill.lua",
+  "def_dong": 43,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "split",
+  "def_tep": "item/fireworks_callback.lua",
+  "def_dong": 43,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "start_board_timer",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 208,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "start_close_timer",
+  "def_tep": "missions/challengeoftime/include.lua",
+  "def_dong": 218,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "start_match",
+  "def_tep": "missions/challengeoftime/timer_match.lua",
+  "def_dong": 13,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "start_match_timer",
+  "def_tep": "missions/challengeoftime/mission_match.lua",
+  "def_dong": 10,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "start_signup",
+  "def_tep": "missions/challengeoftime/mission_match.lua",
+  "def_dong": 16,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_add_pointex",
+  "def_tep": "event/storm/function.lua",
+  "def_dong": 329,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_addpoint",
+  "def_tep": "event/storm/function.lua",
+  "def_dong": 268,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_anotherday",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 83,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_calc_point",
+  "def_tep": "event/storm/function.lua",
+  "def_dong": 249,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_calc_today",
+  "def_tep": "event/storm/function.lua",
+  "def_dong": 178,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_can_start",
+  "def_tep": "event/storm/function.lua",
+  "def_dong": 21,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_end",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 197,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_gamename",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 236,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_gametime",
+  "def_tep": "event/storm/custom.lua",
+  "def_dong": 125,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_gettime",
+  "def_tep": "event/storm/custom.lua",
+  "def_dong": 108,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_goon_start",
+  "def_tep": "battles/battlejoin.lua",
+  "def_dong": 132,
+  "trong_bao_dong": false,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "storm_valid_game",
+  "def_tep": "event/storm/head.lua",
+  "def_dong": 172,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "strfill_center",
+  "def_tep": "lib/common.lua",
+  "def_dong": 98,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "strsplit",
+  "def_tep": "battles/battlehead.lua",
+  "def_dong": 544,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "timeout",
+  "def_tep": "missions/challengeoftime/timer_close.lua",
+  "def_dong": 7,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "tl_getUpLevelExp",
+  "def_tep": "task/task_addplayerexp.lua",
+  "def_dong": 13,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "toSeriesColorText",
+  "def_tep": "lib/string.lua",
+  "def_dong": 191,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "tongGetWeekBuildUpper",
+  "def_tep": "tong/tong_setting.lua",
+  "def_dong": 100,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "tongaward_challengeoutoftime",
+  "def_tep": "tong/tong_award_head.lua",
+  "def_dong": 41,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "tongaward_killer",
+  "def_tep": "tong/tong_award_head.lua",
+  "def_dong": 119,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "tonum",
+  "def_tep": "lib/basic.lua",
+  "def_dong": 124,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "totext",
+  "def_tep": "lib/basic.lua",
+  "def_dong": 65,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "transferDigit2CnNum",
+  "def_tep": "lib/string.lua",
+  "def_dong": 231,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "update_gbtask",
+  "def_tep": "missions/challengeoftime/rank_perday.lua",
+  "def_dong": 31,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "update_playertask",
+  "def_tep": "missions/challengeoftime/rank_perday.lua",
+  "def_dong": 52,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "zhuansheng_check_common",
+  "def_tep": "task/metempsychosis/task_func.lua",
+  "def_dong": 133,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "zhuansheng_get_gre",
+  "def_tep": "task/metempsychosis/task_func.lua",
+  "def_dong": 41,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ },
+ {
+  "ten": "zhuansheng_set_gre",
+  "def_tep": "task/metempsychosis/task_func.lua",
+  "def_dong": 19,
+  "trong_bao_dong": true,
+  "co_trong_luamap": false,
+  "co_trong_jx1": false
+ }
+]

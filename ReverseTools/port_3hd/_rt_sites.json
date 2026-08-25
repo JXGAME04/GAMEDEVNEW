@@ -1,0 +1,1169 @@
+{
+ "satthu": [
+  {
+   "site": "script/activitysys/npcfunlib.lua:244",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(nNpcIndex, szLuaFile);"
+  },
+  {
+   "site": "script/activitysys/npcfunlib.lua:258",
+   "fn": "DynamicExecute",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "DynamicExecute(szLua, \"basemission_CallNpc\", tbNpcInfo, pPos[1], pPos[2] * 32, pPos[3] * 32)"
+  },
+  {
+   "site": "script/global/autoexec.lua:128",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor1/gamefloor1.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor1\\\\gamefloor1.lua\",\"GameFloor1:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:129",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor2/gamefloor2.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor2\\\\gamefloor2.lua\",\"GameFloor2:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:130",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor3/gamefloor3.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor3\\\\gamefloor3.lua\",\"GameFloor3:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:131",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor4/gamefloor4.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor4\\\\gamefloor4.lua\",\"GameFloor4:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:134",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/yuegedao/yuegedao/yuegedaoworld.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\yuegedao\\\\yuegedao\\\\yuegedaoworld.lua\", \"YueGeDaoWorld:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:135",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/yuegedao/yuegemigu/yuegemiguworld.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\yuegedao\\\\yuegemigu\\\\yuegemiguworld.lua\", \"YueGeMiGuWorld:Start\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:137",
+   "fn": "DynamicExecute",
+   "tgt": "script/changefeature/initmap.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\changefeature\\\\initmap.lua\", \"AddDailogNpc\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:138",
+   "fn": "DynamicExecute",
+   "tgt": "script/global/npc/huoke.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\global\\\\npc\\\\huoke.lua\", \"CallHuoKeInit\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:139",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor1/yunchihead.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor1\\\\yunchihead.lua\", \"AddEnterNpc\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:142",
+   "fn": "OpenGlbMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenGlbMission(8)"
+  },
+  {
+   "site": "script/global/autoexec.lua:145",
+   "fn": "OpenGlbMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenGlbMission(MSID_STAT_GOODS_SALE)"
+  },
+  {
+   "site": "script/global/autoexec.lua:191",
+   "fn": "SetNpcScript",
+   "tgt": "script/event/jiefang_jieri/200904/denggao/npc.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcScript(npcidx, \"\\\\script\\\\event\\\\jiefang_jieri\\\\200904\\\\denggao\\\\npc.lua\");"
+  },
+  {
+   "site": "script/global/autoexec.lua:212",
+   "fn": "DynamicExecute",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "DynamicExecute(szFile, \"OnGreatNightServerStart\")"
+  },
+  {
+   "site": "script/global/autoexec.lua:226",
+   "fn": "OpenMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenMission(9);"
+  },
+  {
+   "site": "script/global/autoexec.lua:239",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(npcindex, itemlist[5]);"
+  },
+  {
+   "site": "script/global/autoexec.lua:251",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(newtasknpcindex, Tab1[i][10]);"
+  },
+  {
+   "site": "script/global/autoexec.lua:269",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(huashanbattlenpcindex, Tab1[i][9]);"
+  },
+  {
+   "site": "script/global/thanh/npc/add_npc.lua:228",
+   "fn": "SetNpcDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcDeathScript(newtasknpcindex, nScript);"
+  },
+  {
+   "site": "script/global/thanh/npc/npc_chuyensinh.lua:18",
+   "fn": "dofile",
+   "tgt": "script/global/thanh/npc/npc_chuyensinh.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "dofile(\"script/global/thanh/npc/npc_chuyensinh.lua\")"
+  },
+  {
+   "site": "script/global/thanh/npc/npc_chuyensinh.lua:18",
+   "fn": "dofile",
+   "tgt": "script/global/thanh/npc/npc_chuyensinh.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "dofile(\"script/global/thanh/npc/npc_chuyensinh.lua\")"
+  },
+  {
+   "site": "script/global/thanh/npc/npc_hotro.lua:12",
+   "fn": "dofile",
+   "tgt": "script/global/thanh/npc/npc_hotro.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "dofile(\"script/global/thanh/npc/npc_hotro.lua\")"
+  },
+  {
+   "site": "script/global/thanh/npc/npc_hotro.lua:12",
+   "fn": "dofile",
+   "tgt": "script/global/thanh/npc/npc_hotro.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "dofile(\"script/global/thanh/npc/npc_hotro.lua\")"
+  },
+  {
+   "site": "script/task/tollgate/killbosshead.lua:190",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(newtasknpcindex, Tab3[i][9]);"
+  },
+  {
+   "site": "script/task/tollgate/killbosshead.lua:3400",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(newtasknpcindex, Tab6[i][9]);"
+  },
+  {
+   "site": "script/task/tollgate/killbosshead.lua:3411",
+   "fn": "SetNpcScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcScript(newtasknpcindex, Tab4[i][9]);"
+  },
+  {
+   "site": "script/task/tollgate/killer/lib_killlevel.lua:29",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "script/huoyuedu/huoyuedu.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecuteByPlayer(PlayerIndex, \"\\\\script\\\\huoyuedu\\\\huoyuedu.lua\", \"tbHuoYueDu:AddHuoYueDu\", \"shashourenwu\")"
+  }
+ ],
+ "phonglangdo": [
+  {
+   "site": "s3relay/relaysetting/task/fengling_ferry.lua:21",
+   "fn": "GlobalExecute",
+   "tgt": "script/missions/fengling_ferry/fldmap_boat1.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "GlobalExecute(\"dwf \\\\script\\\\missions\\\\fengling_ferry\\\\fldmap_boat1.lua fenglingdu_main()\")"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:30",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:31",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:37",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:38",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:46",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:47",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:53",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:54",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:62",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:63",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:69",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/global/tamhiep/callbossdeathmini.lua",
+   "clo": "KHONG",
+   "lnx": "KHONG",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(nNpcIndex,\"\\\\script\\\\global\\\\tamhiep\\\\callbossdeathmini.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/boss.lua:70",
+   "fn": "SetNpcTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcTimer(nNpcIndex,900*18)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_death.lua:13",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0);"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_head.lua:144",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(1)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_head.lua:146",
+   "fn": "SetDeathScript",
+   "tgt": "script/missions/fengling_ferry/fld_death.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetDeathScript(\"\\\\script\\\\missions\\\\fengling_ferry\\\\fld_death.lua\")"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_landingtimer.lua:3",
+   "fn": "CloseMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CloseMission(MISSIONID)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_smalltimer.lua:38",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/missions/fengling_ferry/bossdeath.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(npcindex, \"\\\\script\\\\missions\\\\fengling_ferry\\\\bossdeath.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_smalltimer.lua:45",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/missions/fengling_ferry/bossdeath.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(npcindex, \"\\\\script\\\\missions\\\\fengling_ferry\\\\bossdeath.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_smalltimer.lua:52",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/missions/fengling_ferry/bigbossdeath.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(npcindex, \"\\\\script\\\\missions\\\\fengling_ferry\\\\bigbossdeath.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_smalltimer.lua:61",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/missions/fengling_ferry/bossdeath.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(npcindex, \"\\\\script\\\\missions\\\\fengling_ferry\\\\bossdeath.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fld_smalltimer.lua:82",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "script/huoyuedu/huoyuedu.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecuteByPlayer(nPlayerIndex, \"\\\\script\\\\huoyuedu\\\\huoyuedu.lua\", \"tbHuoYueDu:AddHuoYueDu\", \"fenglingdu\")"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fldmap_boat1.lua:17",
+   "fn": "CloseMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CloseMission(MISSIONID);"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fldmap_boat1.lua:18",
+   "fn": "OpenMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenMission(MISSIONID)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fldmap_boat2.lua:12",
+   "fn": "OpenMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenMission(MISSIONID)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/fldmap_boat3.lua:12",
+   "fn": "OpenMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenMission(MISSIONID)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:15",
+   "fn": "StartMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StartMissionTimer(MISSIONID, 29, FLD_TIMER_1)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:16",
+   "fn": "StartMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StartMissionTimer(MISSIONID, 28, FLD_TIMER_2)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:23",
+   "fn": "SetNpcDeathScript",
+   "tgt": "script/missions/fengling_ferry/shuizeideath.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetNpcDeathScript(npcindex, \"\\\\script\\\\missions\\\\fengling_ferry\\\\shuizeideath.lua\");"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:57",
+   "fn": "StopMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StopMissionTimer(MISSIONID, 28)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:58",
+   "fn": "StopMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StopMissionTimer(MISSIONID ,29)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:72",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(\"\")"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:115",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(\"\")"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:125",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:131",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  },
+  {
+   "site": "script/missions/fengling_ferry/mission.lua:137",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  }
+ ],
+ "vuotai": [
+  {
+   "site": "s3relay/relaysetting/task/challegeoftime-dailyrank.lua:23",
+   "fn": "GlobalExecute",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "GlobalExecute(format(\"dw AddGlobalNews([[%s]], 10)\", szMsg))"
+  },
+  {
+   "site": "s3relay/relaysetting/task/challegeoftime-dailyrank.lua:24",
+   "fn": "GlobalExecute",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "GlobalExecute(format(\"dw Msg2SubWorld([[%s]])\", szMsg))"
+  },
+  {
+   "site": "s3relay/relaysetting/task/challengeoftime.lua:34",
+   "fn": "GlobalExecute",
+   "tgt": "settings/trigger_challengeoftime.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "GlobalExecute(\"dwf \\\\settings\\\\trigger_challengeoftime.lua OnTrigger()\");"
+  },
+  {
+   "site": "s3relay/relaysetting/task/challengeoftime.lua:36",
+   "fn": "GlobalExecute",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "GlobalExecute(format(\"dw AddLocalCountNews([[%s]], 2)\", szMsg))"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:70",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/tianchimijing/floor4/bossdeath.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\tianchimijing\\\\floor4\\\\bossdeath.lua\", \"OnDeath\", nNpcIndex, PlayerIndex)"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:72",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/challengeoftime/chuangguang30.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\challengeoftime\\\\chuangguang30.lua\", \"ChuangGuan30:OnNpcDeath\", nNpcIndex, PlayerIndex)"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:74",
+   "fn": "DynamicExecute",
+   "tgt": "script/task/metempsychosis/npcdeath_translife_4.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\task\\\\metempsychosis\\\\npcdeath_translife_4.lua\", \"OnNpcDeath\", nNpcIndex, PlayerIndex)"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:81",
+   "fn": "DynamicExecute",
+   "tgt": "script/event/jiefang_jieri/201004/main.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "if (DynamicExecute(\"\\\\script\\\\event\\\\jiefang_jieri\\\\201004\\\\main.lua\", \"FreedomEvent2010:IsActive1\") == 1) then"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:82",
+   "fn": "DynamicExecute",
+   "tgt": "script/event/jiefang_jieri/201004/soldier/main.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\event\\\\jiefang_jieri\\\\201004\\\\soldier\\\\main.lua\", \"Soldier2010:MonsterDrop\", nNpcIndex, PlayerIndex);"
+  },
+  {
+   "site": "script/activitysys/g_npcdeath.lua:85",
+   "fn": "DynamicExecute",
+   "tgt": "script/huoyuedu/worldtop10.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\huoyuedu\\\\worldtop10.lua\", \"checkworldtop10\", nNpcIndex, PlayerIndex)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:99",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, award_batch_contribution, batch)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:101",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, SetTask, tbBirthday0905.tbTask.tsk_toll_cg_passcount, batch)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:105",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, tbAwardTemplet.GiveAwardByList, tbAwardTemplet, %tbPro, \"chuangguan award\", 1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:110",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, tbAwardTemplet.GiveAwardByList, tbAwardTemplet, %tbPro, \"xiaonieshichen awrad\", 1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:114",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, tbAwardTemplet.GiveAwardByList, tbAwardTemplet, {nExp_tl=1,nCount = nExpCount,}, \"xiaonieshichen awrad\", 1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:125",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, award_random_object, map_random_awards);"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:127",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, SetTask, tbBirthday0905.tbTask.tsk_toll_cg_passcount, 29);"
+  },
+  {
+   "site": "script/missions/challengeoftime/award.lua:235",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayerList[i], award_player, item[1], item[3], time)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:87",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:112",
+   "fn": "SetDeathScript",
+   "tgt": "script/missions/challengeoftime/chuangguang30.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "SetDeathScript(\"\\\\script\\\\missions\\\\challengeoftime\\\\chuangguang30.lua\")"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:130",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:147",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(\"\")"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:166",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nGroup = CallPlayerFunction(nPlayerIndex, GetTask, PLAYER_MAP_TASK)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:175",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, self.GiveAward, self, nGroup, 2)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:204",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, self.KickOut, self)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:228",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(nPlayerIndex, SetFightState, 1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30.lua:265",
+   "fn": "AddTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "self.nChuangguan30Timeid = AddTimer(nTimeOut * 18,\"ChuangGuan30:GameTime\",0)"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30_playerdeath.lua:3",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(\"\")"
+  },
+  {
+   "site": "script/missions/challengeoftime/chuangguang30_playerdeath.lua:4",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  },
+  {
+   "site": "script/missions/challengeoftime/doubleexp.lua:12",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "nExp = DynamicExecuteByPlayer(PlayerIndex, tbfunc[1], tbfunc[2], nExp)"
+  },
+  {
+   "site": "script/missions/challengeoftime/doubleexp.lua:15",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "script/vng_feature/double_mission_award.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "nExp = DynamicExecuteByPlayer(PlayerIndex, \"\\\\script\\\\vng_feature\\\\double_mission_award.lua\", \"tbVnX2Award:X2ChallengeOfTime\", nExp)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:201",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayers[i], DelMSPlayer ,MISSION_MATCH, 1)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:202",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayers[i], SetLogoutRV, 0)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:203",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayers[i], NewWorld, world, pos_x, pos_y)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:209",
+   "fn": "StartMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StartMissionTimer(MISSION_MATCH, TIMER_BOARD, INTERVAL_BOARD * 60 * 18);"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:214",
+   "fn": "StopMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StopMissionTimer(MISSION_MATCH, TIMER_BOARD);"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:220",
+   "fn": "StartMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StartMissionTimer(MISSION_MATCH, TIMER_CLOSE, LIMIT_FINISH * 18);"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:225",
+   "fn": "StopMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StopMissionTimer(MISSION_MATCH, TIMER_CLOSE);"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:246",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local szName =  CallPlayerFunction(players[index], GetName)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:247",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nSex =    CallPlayerFunction(players[index], GetSex)"
+  },
+  {
+   "site": "script/missions/challengeoftime/include.lua:248",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nSeries = CallPlayerFunction(players[index], GetSeries)"
+  },
+  {
+   "site": "script/missions/challengeoftime/item/chuangguanbaoxiang.lua:13",
+   "fn": "RemoteExecute",
+   "tgt": "script/event/msg2allworld.lua",
+   "clo": "KHONG",
+   "lnx": "A",
+   "jx1": "CO",
+   "src": "RemoteExecute(\"\\\\script\\\\event\\\\msg2allworld.lua\", \"broadcast\", handle)"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:12",
+   "fn": "StartMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StartMissionTimer(MISSION_MATCH, TIMER_MATCH, LIMIT_SIGNUP * 18);"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:49",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(\"\")"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:70",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(1);"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:79",
+   "fn": "SetDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetDeathScript(SCRIPT_PLAYER_DEATH);"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:89",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(index, PlayerLeave)"
+  },
+  {
+   "site": "script/missions/challengeoftime/mission_match.lua:97",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(RoleIndex, PlayerJoinMission, camp)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc.lua:444",
+   "fn": "SetNpcDeathScript",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetNpcDeathScript(npc_index, SCRIPT_NPC_DEATH);"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:26",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nJoinDate = CallPlayerFunction(nPlayerIndex, GetTask, TSK_JOIN_DATE)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:27",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nRemainCount = CallPlayerFunction(nPlayerIndex, GetTask, TSK_REMAIN_COUNT)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:28",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nPlayerLevel = CallPlayerFunction(nPlayerIndex, GetLevel)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:29",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "local nTaskItem = CallPlayerFunction(nPlayerIndex, CalcItemCount, 3, 6, 1, 400, 90)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:30",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "script/vng_lib/bittask_lib.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "CO",
+   "src": "local nFlag1 = DynamicExecuteByPlayer(nPlayerIndex,\"\\\\script\\\\vng_lib\\\\bittask_lib.lua\", \"tbVNG_BitTask_Lib:getBitTask\", {nTaskID = 3071,nStartBit = 2"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:59",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "if CallPlayerFunction(nPlayerIndex, CalcEquiproomItemCount, 6, 1, 400, i) > 0 then"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:65",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "bHaveItem = CallPlayerFunction(nPlayerIndex, CalcEquiproomItemCount, 6, 1, 400, 90)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/dragonboat_main.lua:203",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayers[i], COT_TeamMemberJoin, nMatchLevel)"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc/transfer.lua:31",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0);"
+  },
+  {
+   "site": "script/missions/challengeoftime/npc_death.lua:93",
+   "fn": "CallPlayerFunction",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CallPlayerFunction(tbPlayerList[i], UpdatePlayerScore, time)"
+  },
+  {
+   "site": "script/missions/challengeoftime/player_death.lua:31",
+   "fn": "SetLogoutRV",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "SetLogoutRV(0)"
+  },
+  {
+   "site": "script/missions/challengeoftime/timer_match.lua:58",
+   "fn": "StopMissionTimer",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "StopMissionTimer(MISSION_MATCH, TIMER_MATCH);"
+  },
+  {
+   "site": "script/vng_feature/challengeoftime/npcnhiepthitran.lua:14",
+   "fn": "DynamicExecuteByPlayer",
+   "tgt": "script/vng_lib/bittask_lib.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "CO",
+   "src": "local nFlag1 = DynamicExecuteByPlayer(PlayerIndex,\"\\\\script\\\\vng_lib\\\\bittask_lib.lua\", \"tbVNG_BitTask_Lib:getBitTask\", {nTaskID = 3071,nStartBit = 25"
+  },
+  {
+   "site": "settings/trigger_challengeoftime.lua:22",
+   "fn": "DynamicExecute",
+   "tgt": "script/missions/challengeoftime/chuangguang30.lua",
+   "clo": "CO",
+   "lnx": "A",
+   "jx1": "KHONG",
+   "src": "DynamicExecute(\"\\\\script\\\\missions\\\\challengeoftime\\\\chuangguang30.lua\", \"ChuangGuan30:AddTime\")"
+  },
+  {
+   "site": "settings/trigger_include.lua:15",
+   "fn": "OpenMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "OpenMission(mission);"
+  },
+  {
+   "site": "settings/trigger_include.lua:29",
+   "fn": "CloseMission",
+   "tgt": "",
+   "clo": "",
+   "lnx": "",
+   "jx1": "",
+   "src": "CloseMission(mission);"
+  }
+ ]
+}

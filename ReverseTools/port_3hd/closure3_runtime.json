@@ -1,0 +1,8406 @@
+{
+ "satthu": [
+  {
+   "rel": "script/activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8685,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4276,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/1005/check_func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1162,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/1005/partysupport.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1784,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/32/dailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3044,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/32/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 290,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/32/talkdailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6677,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/32/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 787,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/award_ext.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5507,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10385,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:407 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 296,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10164,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2613,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1940,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/npcfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7121,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18746,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/battle_rank_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3058,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/battlehead.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 44633,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/battleinfo.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 11813,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 640,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 409,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5711,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/bonusvlmc/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 354,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/class/ktabfile.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4047,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/class/lerror.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1984,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/currency/currency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2588,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/dailogsys/dailog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4810,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/dailogsys/g_dialog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 951,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6553,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12582,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:38 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:44 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/gambler.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2446,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/birthday_jieri/200905/chuangguan/chuangguan.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2281,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/birthday_jieri/200905/class.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2427,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/birthday_jieri/200905/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6309,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5376,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/great_night/huangzhizhang/event.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/jiaoshi_jieri/200910/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 658,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8251,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/msg2allworld.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 369,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/missions/boss/bigboss.lua:243 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:603 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1946,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4682,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:104 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/loginprize.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6967,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:91 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/questionnaire/questionnaire.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1294,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:110 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/storm/custom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8331,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/storm/function.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 16531,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/storm/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8610,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/tianlu_tree/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 45,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1602,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:77 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 76,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 59,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5490,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:146 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6074,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7500,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:170 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/wardrobe_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4897,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:176 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/autoexec_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 465,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/events.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3234,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:140 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2259,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcurrency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8963,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcustom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2853,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1691,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1591,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/goods.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5077,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2662,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/main_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6696,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:182 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 780,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/shop.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1155,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/forbidmap.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3087,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/fuyuan.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6588,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 68641,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/login_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1177,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 32498,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10528,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:164 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 652,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 423,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/security_lock.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2803,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:116 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:122 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:128 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:134 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/signet_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 799,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/skills_table.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 43859,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/add_npc.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 23628,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/bosssatthudeath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 327,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/bosssatthuhead.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 2298,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/npc_chuyensinh.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 2474,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/npc_hotro.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1651,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thanh/npc/npcdeath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 432,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/global/thinh/hotro/functions_points.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2985,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/translife.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3612,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/huoyuedu/award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3067,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:50 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/huoyuedu/huoyuedu.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7712,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "core",
+   "sites": [
+    "script/task/tollgate/killer/lib_killlevel.lua:29 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7444,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1221,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/dynamic_shop/dynamic_shop_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1902,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:21 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/item/forbiditem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4543,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/item/heart_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9613,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1392,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 841,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/basic.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3518,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/common_sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4763,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14325,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6830,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5768,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1694,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2274,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4318,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/mem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1112,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 121,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3488,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/player.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 16412,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/remoteexc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2915,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6965,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/timerlist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1406,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1634,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/achievement.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1988,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/harvestplant.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 106,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/host.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 297,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2091,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/npcdeathbydamage.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 89,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/tong.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 93,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/equip_value_rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3547,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:16 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6956,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rankdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 153,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12799,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/timeline/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 80,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timeline.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4556,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinelist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4146,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinemanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5334,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5216,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/Miss Include tong_header.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:126 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:651 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:664 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/mission/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1693,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/missions/boss/bigboss.lua:172 RemoteExecute",
+    "script/missions/boss/bigboss.lua:237 RemoteExecute"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/dungeon.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3039,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1883,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/battle/battle.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13444,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8203,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2374,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/manager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6075,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 50,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2027,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:32 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13447,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10052,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/challengeoftime/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 657,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/challengeoftime/include.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10875,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18610,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc/dragonboat_main.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8225,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc_death.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5134,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/missions/challengeoftime/include.lua:79 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/challengeoftime/player_death.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 819,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/missions/challengeoftime/include.lua:80 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/challengeoftime/rank_perday.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3213,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/qianchonglou/challenger.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7674,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:69 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/qianchonglou/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 752,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8419,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_playerdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1999,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_relay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14839,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/signup_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7330,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 217,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4710,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:152 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7649,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2722,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1630,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1676,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/protocol_process_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 326,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:84 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4024,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/requesttable.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 565,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:27 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_c.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4792,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/sharedata_key.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 191,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/item/wulinren_xinfeng.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2103,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2894,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7385,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_4.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4957,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_5.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8440,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_6.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9985,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18224,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9358,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/newtask/newtask_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1851,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3175,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/task_award_extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 182,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/addtollgatenpc.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 713,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killbosshead.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 384819,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killer/kill_level.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 6079,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killer/lib_killlevel.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 4824,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killer/mibao_head.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1182,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killer/nieshichen.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 10956,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/killer/shashou_mibao.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 974,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/task/tollgate/messenger/lib_messenger.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6398,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/messenger_losetask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2019,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/messenger_timeer.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4052,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/posthouse.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 45841,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/qianbaoku/90/tureboss90.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 24666,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "core",
+   "sites": [
+    "script/task/tollgate/killbosshead.lua:3380 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:3381 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:3382 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:3383 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/qianbaoku/90/turebug90.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3396,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "core",
+   "sites": [
+    "script/task/tollgate/killbosshead.lua:2922 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:2923 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:2924 (bang du lieu)",
+    "script/task/tollgate/killbosshead.lua:2925 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/qianbaoku/enemy_tureboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 11196,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/qianbaoku/enemy_turebugbear.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1056,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/tollgate/messenger/qianbaoku/messenger_baoxiangtask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3480,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/tong/contribution_entry.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7488,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1651,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_award_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4595,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_header.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6722,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_setting.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5610,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/TongPkMessage/Tong_Pk_Message_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1579,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:158 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/trip/define.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/vng_event/20130107_den_bu_chinh_do/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4974,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/task/metempsychosis/task_func.lua:137 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/vng_event/tanthu/giveskill60.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7575,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_event/tanthu/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 16320,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_event/thapnienlenhbai/lenhbai_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 28426,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/vng_event/thapnienlenhbai/mainfuc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6513,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/vng_feature/challengeoftime/npcNhiepThiTran.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2994,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1389,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1959,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2871,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2329,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1007,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  }
+ ],
+ "phonglangdo": [
+  {
+   "rel": "s3relay/relaysetting/task/fengling_ferry.lua",
+   "seed": true,
+   "linux": true,
+   "root": "G",
+   "size": 607,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8685,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4276,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/dailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3044,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/talkdailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6677,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 787,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/4/award_ext.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5507,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10385,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:407 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 296,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1153,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13089,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/battles/doubleexp.lua:7 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 296,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 878,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10164,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2613,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1940,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/npcfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7121,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18746,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battle/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5207,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/battles/weeklyrank.lua:15 RemoteExecute",
+    "script/battles/weeklyrank.lua:34 RemoteExecute",
+    "script/battles/weeklyrank.lua:89 RemoteExecute",
+    "script/battles/weeklyrank.lua:165 RemoteExecute"
+   ]
+  },
+  {
+   "rel": "script/battles/battle_rank_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3058,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/battlehead.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 44633,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/battleinfo.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 11813,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/battles/bossdeath.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 905,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/battles/battlehead.lua:80 SetNpcDeathScript"
+   ]
+  },
+  {
+   "rel": "script/battles/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 640,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 409,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5711,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/bonusvlmc/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 354,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/currency/currency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2588,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/dailogsys/dailog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4810,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/dailogsys/g_dialog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 951,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6553,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12582,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:38 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:44 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/gambler.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2446,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5376,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/great_night/huangzhizhang/event.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8251,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/jiefang_jieri/200904/shuizei/shuizei.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3751,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/jiefang_jieri/200904/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1973,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/msg2allworld.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 369,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:603 (bang du lieu)",
+    "script/battles/battlehead.lua:1137 (bang du lieu)",
+    "script/missions/boss/bigboss.lua:243 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1946,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4682,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:104 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/loginprize.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6967,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:91 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/questionnaire/questionnaire.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1294,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:110 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/storm/custom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8331,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/storm/function.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 16531,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/storm/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8610,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/tianlu_tree/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 45,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1602,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:77 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 76,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 59,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5490,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:146 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6074,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7500,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:170 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/wardrobe_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4897,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:176 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/autoexec_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 465,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/events.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3234,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:140 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2259,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcurrency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8963,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcustom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2853,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1691,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1591,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/goods.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5077,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2662,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/main_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6696,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:182 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 780,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/shop.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1155,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/forbidmap.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3087,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 68641,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/judgeoffline_limit.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10015,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/login_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1177,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 32498,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10528,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:164 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 652,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 423,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/security_lock.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2803,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:116 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:122 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:128 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:134 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/signet_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 799,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/tamhiep/callbossdeathmini.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "core",
+   "sites": [
+    "script/missions/fengling_ferry/boss.lua:30 SetNpcDeathScript",
+    "script/missions/fengling_ferry/boss.lua:37 SetNpcDeathScript",
+    "script/missions/fengling_ferry/boss.lua:46 SetNpcDeathScript",
+    "script/missions/fengling_ferry/boss.lua:53 SetNpcDeathScript"
+   ]
+  },
+  {
+   "rel": "script/global/translife.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3612,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/Â·ÈË_Àñ¹Ù.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/huoyuedu/award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3067,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:50 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/huoyuedu/huoyuedu.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7712,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "core",
+   "sites": [
+    "script/missions/fengling_ferry/fld_smalltimer.lua:82 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7444,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1221,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/dynamic_shop/dynamic_shop_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1902,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:21 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/item/forbiditem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4543,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/item/heart_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9613,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1392,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 841,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/basic.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3518,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/common_sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4763,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/composeclass.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9758,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14325,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/composelistclass.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1160,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6830,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5768,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1694,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2274,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4318,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 121,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3488,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/progressbar.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3436,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/remoteexc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2915,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6965,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/timerlist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1406,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1634,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/achievement.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1988,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/harvestplant.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 106,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/host.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 297,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2091,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/npcdeathbydamage.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 89,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/tong.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 93,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/equip_value_rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3547,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:16 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6956,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rankdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 153,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12799,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/timeline/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 80,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timeline.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4556,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinelist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4146,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinemanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5334,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5216,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/Miss Include tong_header.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:126 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:651 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:664 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/mission/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1693,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/missions/boss/bigboss.lua:172 RemoteExecute",
+    "script/missions/boss/bigboss.lua:237 RemoteExecute"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/dungeon.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3039,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1883,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/battle/battle.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13444,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8203,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2374,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/manager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6075,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 50,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2027,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:32 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13447,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/include.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10875,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/fengling_ferry/bigbossdeath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 176,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/boss.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 2290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/bossdeath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1917,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fld_death.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 980,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fld_head.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 10386,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fld_landingtimer.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 110,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fld_smalltimer.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 3063,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fldmap_boat1.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1118,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fldmap_boat2.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 621,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/fldmap_boat3.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 626,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/lang.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 190,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/mission.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 4191,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/fengling_ferry/shuizeideath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 782,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/qianchonglou/challenger.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7674,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:69 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/qianchonglou/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 752,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8419,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_playerdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1999,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_relay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14839,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/signup_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7330,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 217,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4710,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:152 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7649,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/npclevelscript/npc_fenglingdubei.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 13135,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/npclevelscript/npc_fenglingdunan.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 15138,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/petsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2722,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1630,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1676,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/protocol_process_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 326,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:84 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4024,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/requesttable.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 565,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:27 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_c.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4792,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/sharedata_key.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 191,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/item/wulinren_xinfeng.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2103,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2894,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7385,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_4.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4957,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_5.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8440,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_6.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9985,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18224,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9358,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3175,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/contribution_entry.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7488,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/tong/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1651,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/tong/tong_award_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4595,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/tong/tong_header.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6722,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/tong/tong_setting.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5610,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/TongPkMessage/Tong_Pk_Message_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1579,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:158 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/trip/define.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/vng_event/20130107_den_bu_chinh_do/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4974,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/task/metempsychosis/task_func.lua:137 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/vng_feature/double_mission_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1637,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/battles/doubleexp.lua:15 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1389,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1959,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2871,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2329,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1007,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  }
+ ],
+ "vuotai": [
+  {
+   "rel": "s3relay/relaysetting/task/challegeoftime-dailyrank.lua",
+   "seed": true,
+   "linux": true,
+   "root": "G",
+   "size": 884,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "s3relay/relaysetting/task/challengeoftime.lua",
+   "seed": true,
+   "linux": true,
+   "root": "G",
+   "size": 1160,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8685,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4276,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/1005/check_func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1162,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/1005/partysupport.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1784,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/dailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3044,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/talkdailytask.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6677,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/32/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 787,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/config/4/award_ext.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5507,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10385,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:407 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 296,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/4/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1153,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13089,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "core",
+   "sites": [
+    "script/battles/doubleexp.lua:7 (bang du lieu)",
+    "script/missions/challengeoftime/doubleexp.lua:7 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 296,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/config/41/variables.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 878,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10164,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2613,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1940,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/activitysys/npcfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7121,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18746,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battle/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5207,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/battles/weeklyrank.lua:15 RemoteExecute",
+    "script/battles/weeklyrank.lua:34 RemoteExecute",
+    "script/battles/weeklyrank.lua:89 RemoteExecute",
+    "script/battles/weeklyrank.lua:165 RemoteExecute"
+   ]
+  },
+  {
+   "rel": "script/battles/battle_rank_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3058,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/battlehead.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 44633,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/battleinfo.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 11813,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/bossdeath.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 905,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/battles/battlehead.lua:80 SetNpcDeathScript"
+   ]
+  },
+  {
+   "rel": "script/battles/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 640,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 409,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/battles/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5711,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/bonusvlmc/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 354,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/currency/currency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2588,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/dailogsys/dailog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4810,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/dailogsys/g_dialog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 951,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6553,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/bingo_machine_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12582,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:38 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:44 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/bingo_machine/gambler.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2446,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/birthday_jieri/200905/class.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2427,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/birthday_jieri/200905/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6309,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5376,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3290,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/great_night/huangzhizhang/event.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8251,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/msg2allworld.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 369,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "core",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:603 (bang du lieu)",
+    "script/missions/yandibaozang/head.lua:108 RemoteExecute",
+    "script/missions/boss/bigboss.lua:243 (bang du lieu)",
+    "script/battles/battlehead.lua:1137 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1946,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/func_prize_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4682,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:104 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/event/prize/loginprize.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6967,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:91 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/questionnaire/questionnaire.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1294,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:110 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/event/storm/custom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8331,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/storm/function.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 16531,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/storm/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8610,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/event/tianlu_tree/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 45,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1602,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:77 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/flipcard/flipcard_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 76,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 59,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/achievementsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5490,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:146 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6074,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2969,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/shop_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7500,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:170 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/appearancesystem/wardrobe_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4897,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:176 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/autoexec_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 465,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/events.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3234,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:140 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2259,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcurrency.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8963,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costcustom.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2853,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1691,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/cost/costmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1591,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/goods.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5077,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2662,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/main_s.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6696,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:182 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 780,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/exchangeshop/shop.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1155,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/forbidmap.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3087,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 68641,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/global/login_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1177,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 32498,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/mantlesystem/mantleupgrade_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10528,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:164 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 652,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 423,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/securitylock/security_lock.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2803,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:116 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:122 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:128 (bang du lieu)",
+    "script/script_protocol/protocol_def_gs.lua:134 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/global/signet_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 799,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/global/translife.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3612,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/huoyuedu/award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3067,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:50 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/huoyuedu/huoyuedu.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7712,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7444,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1221,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/dynamic_shop/dynamic_shop_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1902,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:21 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/item/forbiditem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4543,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/item/heart_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9613,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1392,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 841,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/basic.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3518,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/common_sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4763,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14325,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6830,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5768,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1694,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2274,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4318,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2602,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 121,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3488,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/remoteexc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2915,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6965,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/lib/timerlist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1406,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1634,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/achievement.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1988,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/harvestplant.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 106,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/host.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 297,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2091,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/npcdeathbydamage.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 89,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 476,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/eventsys/type/tong.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 93,
+   "in_jx1": true,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/equip_value_rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3547,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:16 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rank.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6956,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/rank/rankdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 153,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12799,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/misc/timeline/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 80,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timeline.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4556,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinelist.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4146,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/timeline/timelinemanager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5334,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5216,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/Miss Include tong_header.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/activitysys/playerfunlib.lua:126 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:651 (bang du lieu)",
+    "script/activitysys/playerfunlib.lua:664 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/mission/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1693,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/missions/boss/bigboss.lua:172 RemoteExecute",
+    "script/missions/boss/bigboss.lua:237 RemoteExecute"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/dungeon.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3039,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1883,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/battle/battle.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13444,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/data.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8203,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2374,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/manager.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6075,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 50,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/battle/protocol_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2027,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:32 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 13447,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/award.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 10052,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/chuangguang30.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 7980,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/chuangguang30_playerdeath.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 145,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/doubleexp.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 657,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/include.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 10875,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/item/chuangguanbaoxiang.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 6477,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/mission_match.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 2406,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 18610,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc/dragonboat_main.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 8225,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc/transfer.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1929,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/npc_death.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 5134,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/player_death.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 819,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/rank_perday.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 3213,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/timer_board.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 669,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/timer_close.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 431,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/challengeoftime/timer_match.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 1614,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/qianchonglou/challenger.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7674,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:69 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/qianchonglou/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 752,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8419,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_playerdata.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1999,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/guta_relay.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 14839,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/signup_npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7330,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 217,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/tong_guta/ui_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4710,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:152 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 646,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7649,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/missions/yandibaozang/include.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5732,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/npc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 15070,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/npc_death.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 10446,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/missions/yandibaozang/head.lua:197 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/player_death.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4828,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/missions/yandibaozang/head.lua:198 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/readymap/include.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 12603,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/missions/yandibaozang/saizi.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3104,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/common.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2722,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1630,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1676,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/petsys/protocol_process_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 326,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:84 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/protocol.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4024,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/requesttable.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 565,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:27 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_c.lua",
+   "seed": false,
+   "linux": false,
+   "root": "",
+   "size": 0,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4792,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/sharedata_key.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 191,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/item/wulinren_xinfeng.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2103,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/lang.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2894,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7385,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7475,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_4.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4957,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_5.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 8440,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_6.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9985,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 18224,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/metempsychosis/translife_7_config.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9358,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4561,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3175,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/task/task_award_extend.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 182,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/contribution_entry.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 7488,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/log.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1651,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_award_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4595,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_header.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6722,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/tong/tong_setting.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 5610,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/TongPkMessage/Tong_Pk_Message_gs.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1579,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "data",
+   "tier": "lib",
+   "sites": [
+    "script/script_protocol/protocol_def_gs.lua:158 (bang du lieu)"
+   ]
+  },
+  {
+   "rel": "script/trip/define.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 117,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "include2",
+   "tier": "lib",
+   "sites": [
+    "(Include cap 2)"
+   ]
+  },
+  {
+   "rel": "script/vng_event/20130107_den_bu_chinh_do/head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 4974,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "lib",
+   "sites": [
+    "script/task/metempsychosis/task_func.lua:137 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/vng_event/change_request_baoruong/exp_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 3166,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_event/thapnienlenhbai/lenhbai_def.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 28426,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_event/thapnienlenhbai/mainfuc.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 6513,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_feature/challengeoftime/npcnhiepthitran.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 2994,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_feature/double_mission_award.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1637,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "runtime",
+   "tier": "core",
+   "sites": [
+    "script/battles/doubleexp.lua:15 DynamicExecuteByPlayer",
+    "script/missions/challengeoftime/doubleexp.lua:15 DynamicExecuteByPlayer"
+   ]
+  },
+  {
+   "rel": "script/vng_feature/forbiditem/vngforbidspecialitem.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 9859,
+   "in_jx1": false,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1389,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1959,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2871,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 2329,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1029,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "script/vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "root": "A",
+   "size": 1007,
+   "in_jx1": true,
+   "in_closure3": true,
+   "how": "closure3",
+   "tier": "lib",
+   "sites": []
+  },
+  {
+   "rel": "settings/trigger_challengeoftime.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 704,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  },
+  {
+   "rel": "settings/trigger_include.lua",
+   "seed": true,
+   "linux": true,
+   "root": "A",
+   "size": 828,
+   "in_jx1": false,
+   "in_closure3": false,
+   "how": "seed",
+   "tier": "core",
+   "sites": []
+  }
+ ]
+}

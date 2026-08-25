@@ -3244,6 +3244,75 @@ int LuaIniFile_UnLoad(Lua_State* L)
 	return 0;
 }
 
+// ---- [3HD 25/08] IniFile_SetData / IniFile_Save / File_Create ----
+// Bo sung cho kho s_mapTongIniFiles o tren (Linux 0x0814AAF0/0x0814B160/
+// 0x0814A120). libile.lua:8,19,24 dung de luu trang thai hoat dong.
+int LuaIniFile_SetData(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 4) return 0;
+	KTongIniEntry* p = sGetTongIniByName(L, 1);
+	if (!p) return 0;
+	const char* szSect = Lua_IsString(L, 2) ? Lua_ValueToString(L, 2) : "";
+	const char* szKey = Lua_IsString(L, 3) ? Lua_ValueToString(L, 3) : "";
+	char szVal[512];
+	szVal[0] = 0;
+	if (Lua_IsString(L, 4))
+		strncpy(szVal, Lua_ValueToString(L, 4), sizeof(szVal) - 1);
+	else if (Lua_IsNumber(L, 4))
+	{
+		double d = (double)Lua_ValueToNumber(L, 4);
+		if (d == (double)(int)d)
+			sprintf(szVal, "%d", (int)d);
+		else
+			sprintf(szVal, "%f", d);
+	}
+	szVal[sizeof(szVal) - 1] = 0;
+	p->Ini.WriteString(szSect, szKey, szVal);
+	return 0;
+}
+
+int LuaIniFile_Save(Lua_State* L)
+{
+	// Linux: IniFile_Save(szTepNguon, szTepDich) - libile.lua goi cung mot
+	// ten kho cho tham so 1. Ghi anh .ini trong bo nho xuong dia.
+	KTongIniEntry* p = sGetTongIniByName(L, 1);
+	if (!p) { Lua_PushNumber(L, 0); return 1; }
+	const char* szTo = (Lua_GetTopIndex(L) >= 2 && Lua_IsString(L, 2))
+		? Lua_ValueToString(L, 2) : p->strFile.c_str();
+	// [VA 25/08 - N5] KIniFile::Save bi chinh du an CAM cho du lieu song
+	// (KJx2SharedStore.cpp:2-3 "cat trang file"), va KMemStack MAX_CHUNK=10
+	// lam ~9 lan luu la g_MessageBox + sprintf(NULL) => SAP may chu.
+	// Hien KHONG co loi goi that nao trong 3 hoat dong. De an toan: khong ghi,
+	// chi bao ro - neu sau nay co duong goi that se thay canh bao thay vi sap.
+	g_DebugLog((LPSTR)"[3HD] IniFile_Save CHUA HIEN THUC (tep %.120s) - xem BANGIAO_3HOATDONG_2508.md", szTo);
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+int LuaFile_Create(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1)) { Lua_PushNumber(L, 0); return 1; }
+	const char* szFile = Lua_ValueToString(L, 1);
+	if (!szFile || !szFile[0]) { Lua_PushNumber(L, 0); return 1; }
+	char szPath[MAX_PATH * 2];
+	if (szFile[0] == '\\' || szFile[0] == '/')
+	{
+		g_GetRootPath(szPath);
+		int nL = (int)strlen(szPath);
+		if (nL > 0 && (szPath[nL - 1] == '\\' || szPath[nL - 1] == '/')) szPath[nL - 1] = 0;
+		strcat(szPath, szFile);
+	}
+	else
+	{
+		strncpy(szPath, szFile, sizeof(szPath) - 1);
+		szPath[sizeof(szPath) - 1] = 0;
+	}
+	FILE* f = fopen(szPath, "ab");
+	if (f) fclose(f);
+	Lua_PushNumber(L, f ? 1 : 0);
+	return 1;
+}
+
 int LuaGetLocalDate(Lua_State* L)
 {
 	time_t rawtime;
@@ -13784,6 +13853,40 @@ extern int LuaPARTNER_GetCurPartner(Lua_State* L);
 extern int LuaPARTNER_GetSettingIdx(Lua_State* L);
 extern int LuaSetSiegeVoitureParam(Lua_State* L);
 extern int LuaSetMangonelParam(Lua_State* L);
+// ---- [3HD 25/08] 3 hoat dong ban Linux (than ham: KJx2WarInfra.cpp) ----
+extern int LuaHD3_Tm2Time(Lua_State* L);
+extern int LuaHD3_FormatTime2Date(Lua_State* L);
+extern int LuaHD3_AddStatData(Lua_State* L);
+extern int LuaHD3_GetItemAllParams(Lua_State* L);
+extern int LuaHD3_GetItemRandSeed(Lua_State* L);
+extern int LuaHD3_GetItemGenTime(Lua_State* L);
+extern int LuaHD3_GetItemQuality(Lua_State* L);
+extern int LuaHD3_GetGlodEqIndex(Lua_State* L);
+extern int LuaHD3_GetPlatinaEquipIndex(Lua_State* L);
+extern int LuaHD3_GetPlatinaLevel(Lua_State* L);
+extern int LuaHD3_GetRoomItems(Lua_State* L);
+extern int LuaHD3_GetFirstPlayerAtServer(Lua_State* L);
+extern int LuaHD3_GetNextPlayerAtServer(Lua_State* L);
+extern int LuaHD3_GetNpcAroundPlayerList(Lua_State* L);
+extern int LuaHD3_ITEM_SetExpiredTime(Lua_State* L);
+extern int LuaHD3_ITEM_GetExpiredTime(Lua_State* L);
+extern int LuaHD3_ITEM_SetLeftUsageTime(Lua_State* L);
+extern int LuaHD3_SetItemBindState(Lua_State* L);
+extern int LuaHD3_DropItemEx(Lua_State* L);
+extern int LuaHD3_NpcDropMoney(Lua_State* L);
+extern int LuaHD3_JoinMission(Lua_State* L);
+extern int LuaHD3_GetDisabledUseTownP(Lua_State* L);
+extern int LuaHD3_IsDisabledUseHeart(Lua_State* L);
+extern int LuaHD3_OpenProgressBar(Lua_State* L);
+extern int LuaHD3_Add120SkillExp(Lua_State* L);
+extern int LuaHD3_ST_IsTransLife(Lua_State* L);
+extern int LuaHD3_SendScriptData(Lua_State* L);
+extern int LuaHD3_QueryWiseManForSB(Lua_State* L);
+extern int LuaHD3_BT_GetBattleParam(Lua_State* L);
+extern int LuaHD3_ST_DoTransLife(Lua_State* L);
+extern int LuaHD3_ST_LevelUp(Lua_State* L);
+extern int LuaHD3_PET_Stub(Lua_State* L);
+extern int LuaHD3_TrimString(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -15288,6 +15391,53 @@ TLua_Funcs GameScriptFuns[] =
 		{"IniFile_Load",		LuaIniFile_Load},	// [TONG 21/08]
 		{"IniFile_GetData",	LuaIniFile_GetData},
 		{"IniFile_UnLoad",		LuaIniFile_UnLoad},
+		// ==== [3HD 25/08] 3 hoat dong ban Linux: San boss Sat Thu / Phong Lang Do /
+		// Vuot Ai. Than ham + ghi chu chu ky: KJx2WarInfra.cpp (khoi [3HD]).
+		// Doi chieu: ReverseTools\port_3hd_bosung_soat_api.md muc 6.
+		{"IniFile_SetData",	LuaIniFile_SetData},
+		{"IniFile_Save",	LuaIniFile_Save},
+		{"File_Create",	LuaFile_Create},
+		{"Tm2Time",	LuaHD3_Tm2Time},
+		{"FormatTime2Date",	LuaHD3_FormatTime2Date},
+		{"AddStatData",	LuaHD3_AddStatData},
+		{"GetItemAllParams",	LuaHD3_GetItemAllParams},
+		{"ITEM_GetItemRandSeed",	LuaHD3_GetItemRandSeed},
+		{"GetItemGenTime",	LuaHD3_GetItemGenTime},
+		{"GetItemQuality",	LuaHD3_GetItemQuality},
+		{"GetGlodEqIndex",	LuaHD3_GetGlodEqIndex},
+		{"GetPlatinaEquipIndex",	LuaHD3_GetPlatinaEquipIndex},
+		{"GetPlatinaLevel",	LuaHD3_GetPlatinaLevel},
+		{"GetRoomItems",	LuaHD3_GetRoomItems},
+		{"GetFirstPlayerAtServer",	LuaHD3_GetFirstPlayerAtServer},
+		{"GetNextPlayerAtServer",	LuaHD3_GetNextPlayerAtServer},
+		{"GetNpcAroundPlayerList",	LuaHD3_GetNpcAroundPlayerList},
+		{"ITEM_SetExpiredTime",	LuaHD3_ITEM_SetExpiredTime},
+		{"ITEM_GetExpiredTime",	LuaHD3_ITEM_GetExpiredTime},
+		{"ITEM_SetLeftUsageTime",	LuaHD3_ITEM_SetLeftUsageTime},
+		{"SetItemBindState",	LuaHD3_SetItemBindState},
+		{"DropItemEx",	LuaHD3_DropItemEx},
+		{"NpcDropMoney",	LuaHD3_NpcDropMoney},
+		{"JoinMission",	LuaHD3_JoinMission},
+		{"GetDisabledUseTownP",	LuaHD3_GetDisabledUseTownP},
+		{"IsDisabledUseHeart",	LuaHD3_IsDisabledUseHeart},
+		{"OpenProgressBar",	LuaHD3_OpenProgressBar},
+		{"Add120SkillExp",	LuaHD3_Add120SkillExp},
+		{"ST_IsTransLife",	LuaHD3_ST_IsTransLife},
+		{"SendScriptData",	LuaHD3_SendScriptData},
+		{"QueryWiseManForSB",	LuaHD3_QueryWiseManForSB},
+		{"BT_GetBattleParam",	LuaHD3_BT_GetBattleParam},
+		{"ST_DoTransLife",	LuaHD3_ST_DoTransLife},
+		{"ST_LevelUp",	LuaHD3_ST_LevelUp},
+		{"PET_GetGrownPoint",	LuaHD3_PET_Stub},
+		{"PET_SetGrownPoint",	LuaHD3_PET_Stub},
+		{"PET_GetTamePoint",	LuaHD3_PET_Stub},
+		{"PET_SetTamePoint",	LuaHD3_PET_Stub},
+		{"PET_GetUpgradePoint",	LuaHD3_PET_Stub},
+		{"PET_SetUpgradePoint",	LuaHD3_PET_Stub},
+		{"TrimString",	LuaHD3_TrimString},
+		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)
+		{"ITEM_DropRateItem",	LuaDropRateItem},
+		{"NPCINFO_GetSeries",	LuaGetNpcSeries},
 		//{"Trade",			LuaTrade	},				//Trade("maininfo", "IniFileName.iniµÄÂ·¾¶Ãû")
 		//Trade("MainInfo", n, "item1|price1|function1", "item2|price2|function2", ......, "itemn|pricen|functionn")
 		{"RANDOM",				LuaRANDOM},  // thªm hµm míi load npc theo tuyÖt th?

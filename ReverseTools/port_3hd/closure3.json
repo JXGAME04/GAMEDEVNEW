@@ -1,0 +1,1772 @@
+{
+ "satthu": [
+  {
+   "rel": "activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8685,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4276,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 10164,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2613,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1940,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 18746,
+   "in_jx1": true
+  },
+  {
+   "rel": "class/ktabfile.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4047,
+   "in_jx1": false
+  },
+  {
+   "rel": "class/lerror.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1984,
+   "in_jx1": false
+  },
+  {
+   "rel": "dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4810,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/birthday_jieri/200905/chuangguan/chuangguan.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2281,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/birthday_jieri/200905/class.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2427,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/birthday_jieri/200905/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6309,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5376,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3290,
+   "in_jx1": false
+  },
+  {
+   "rel": "global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "size": 68641,
+   "in_jx1": true
+  },
+  {
+   "rel": "item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7444,
+   "in_jx1": false
+  },
+  {
+   "rel": "item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1221,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1392,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "size": 841,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3475,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "size": 14325,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6830,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5768,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1694,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2274,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4318,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/mem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1112,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2602,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 121,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3488,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "size": 561,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6965,
+   "in_jx1": false
+  },
+  {
+   "rel": "misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1634,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "size": 476,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "size": 12799,
+   "in_jx1": true
+  },
+  {
+   "rel": "missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1883,
+   "in_jx1": true
+  },
+  {
+   "rel": "missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "size": 13447,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/include.lua",
+   "seed": false,
+   "linux": true,
+   "size": 10875,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/npc/dragonboat_main.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8225,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/rank_perday.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3213,
+   "in_jx1": false
+  },
+  {
+   "rel": "protocol.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4024,
+   "in_jx1": true
+  },
+  {
+   "rel": "script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4792,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7385,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7475,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/newtask/newtask_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1851,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4561,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3175,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/task_award_extend.lua",
+   "seed": false,
+   "linux": true,
+   "size": 182,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/tollgate/addtollgatenpc.lua",
+   "seed": true,
+   "linux": true,
+   "size": 713,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/tollgate/killbosshead.lua",
+   "seed": true,
+   "linux": true,
+   "size": 384819,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/tollgate/killer/kill_level.lua",
+   "seed": true,
+   "linux": true,
+   "size": 6079,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/tollgate/killer/lib_killlevel.lua",
+   "seed": true,
+   "linux": true,
+   "size": 4824,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/tollgate/killer/mibao_head.lua",
+   "seed": true,
+   "linux": true,
+   "size": 1182,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/tollgate/killer/nieshichen.lua",
+   "seed": true,
+   "linux": true,
+   "size": 10956,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/tollgate/killer/shashou_mibao.lua",
+   "seed": true,
+   "linux": true,
+   "size": 974,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/contribution_entry.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7488,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/log.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1651,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_award_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4595,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_header.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6722,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_setting.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5610,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_feature/challengeoftime/npcNhiepThiTran.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2994,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1389,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1959,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2871,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2329,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1029,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1007,
+   "in_jx1": true
+  }
+ ],
+ "phonglangdo": [
+  {
+   "rel": "activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8685,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4276,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/config/32/dailytask.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3044,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 290,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/talkdailytask.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6677,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/variables.lua",
+   "seed": false,
+   "linux": true,
+   "size": 787,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 10164,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2613,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1940,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 18746,
+   "in_jx1": true
+  },
+  {
+   "rel": "battles/battle_rank_award.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3058,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/battlehead.lua",
+   "seed": false,
+   "linux": true,
+   "size": 44633,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "size": 640,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/lang.lua",
+   "seed": false,
+   "linux": true,
+   "size": 409,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5711,
+   "in_jx1": false
+  },
+  {
+   "rel": "bonusvlmc/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 354,
+   "in_jx1": false
+  },
+  {
+   "rel": "dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4810,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5376,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3290,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/great_night/huangzhizhang/event.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2969,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8251,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/jiefang_jieri/200904/shuizei/shuizei.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3751,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/jiefang_jieri/200904/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1973,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/storm/custom.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8331,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/storm/function.lua",
+   "seed": false,
+   "linux": true,
+   "size": 16531,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/storm/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8610,
+   "in_jx1": true
+  },
+  {
+   "rel": "global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "size": 68641,
+   "in_jx1": true
+  },
+  {
+   "rel": "global/judgeoffline_limit.lua",
+   "seed": false,
+   "linux": true,
+   "size": 10015,
+   "in_jx1": false
+  },
+  {
+   "rel": "global/signet_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 799,
+   "in_jx1": false
+  },
+  {
+   "rel": "global/Â·ÈË_Àñ¹Ù.lua",
+   "seed": false,
+   "linux": false,
+   "size": 0,
+   "in_jx1": false
+  },
+  {
+   "rel": "item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7444,
+   "in_jx1": false
+  },
+  {
+   "rel": "item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1221,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1392,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "size": 841,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/basic.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3518,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3475,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/composeclass.lua",
+   "seed": false,
+   "linux": true,
+   "size": 9758,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "size": 14325,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/composelistclass.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1160,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6830,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5768,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1694,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2274,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4318,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2602,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 121,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3488,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/progressbar.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3436,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "size": 561,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6965,
+   "in_jx1": false
+  },
+  {
+   "rel": "misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1634,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1988,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "size": 476,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "size": 12799,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5216,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1883,
+   "in_jx1": true
+  },
+  {
+   "rel": "missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "size": 13447,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/bigbossdeath.lua",
+   "seed": true,
+   "linux": true,
+   "size": 176,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/boss.lua",
+   "seed": true,
+   "linux": true,
+   "size": 2290,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/bossdeath.lua",
+   "seed": true,
+   "linux": true,
+   "size": 1917,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fld_death.lua",
+   "seed": true,
+   "linux": true,
+   "size": 980,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fld_head.lua",
+   "seed": true,
+   "linux": true,
+   "size": 10386,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fld_landingtimer.lua",
+   "seed": true,
+   "linux": true,
+   "size": 110,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fld_smalltimer.lua",
+   "seed": true,
+   "linux": true,
+   "size": 3063,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fldmap_boat1.lua",
+   "seed": true,
+   "linux": true,
+   "size": 1118,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fldmap_boat2.lua",
+   "seed": true,
+   "linux": true,
+   "size": 621,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/fldmap_boat3.lua",
+   "seed": true,
+   "linux": true,
+   "size": 626,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/lang.lua",
+   "seed": true,
+   "linux": true,
+   "size": 190,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/mission.lua",
+   "seed": true,
+   "linux": true,
+   "size": 4191,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/fengling_ferry/shuizeideath.lua",
+   "seed": true,
+   "linux": true,
+   "size": 782,
+   "in_jx1": false
+  },
+  {
+   "rel": "protocol.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4024,
+   "in_jx1": true
+  },
+  {
+   "rel": "script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4792,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7385,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7475,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4561,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3175,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1389,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1959,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2871,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2329,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1029,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1007,
+   "in_jx1": true
+  }
+ ],
+ "vuotai": [
+  {
+   "rel": "activitysys/activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8685,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/activitydetail.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4276,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/config/1005/check_func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1162,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/1005/partysupport.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1784,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/dailytask.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3044,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 290,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/talkdailytask.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6677,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/config/32/variables.lua",
+   "seed": false,
+   "linux": true,
+   "size": 787,
+   "in_jx1": false
+  },
+  {
+   "rel": "activitysys/functionlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 10164,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/g_activity.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2613,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/ladderfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1940,
+   "in_jx1": true
+  },
+  {
+   "rel": "activitysys/playerfunlib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 18746,
+   "in_jx1": true
+  },
+  {
+   "rel": "battles/battle_rank_award.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3058,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/battlehead.lua",
+   "seed": false,
+   "linux": true,
+   "size": 44633,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/battleinfo.lua",
+   "seed": false,
+   "linux": true,
+   "size": 11813,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/doubleexp.lua",
+   "seed": false,
+   "linux": true,
+   "size": 640,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/lang.lua",
+   "seed": false,
+   "linux": true,
+   "size": 409,
+   "in_jx1": false
+  },
+  {
+   "rel": "battles/weeklyrank.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5711,
+   "in_jx1": false
+  },
+  {
+   "rel": "bonusvlmc/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 354,
+   "in_jx1": false
+  },
+  {
+   "rel": "dailogsys/dailog.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2602,
+   "in_jx1": true
+  },
+  {
+   "rel": "dailogsys/dailogsay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4810,
+   "in_jx1": true
+  },
+  {
+   "rel": "dailogsys/g_dialog.lua",
+   "seed": false,
+   "linux": true,
+   "size": 951,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/birthday_jieri/200905/class.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2427,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/birthday_jieri/200905/taskctrl.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6309,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/change_destiny/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5376,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/change_destiny/mission.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3290,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/great_night/huangzhizhang/event.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2969,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8251,
+   "in_jx1": false
+  },
+  {
+   "rel": "event/storm/custom.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8331,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/storm/function.lua",
+   "seed": false,
+   "linux": true,
+   "size": 16531,
+   "in_jx1": true
+  },
+  {
+   "rel": "event/storm/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8610,
+   "in_jx1": true
+  },
+  {
+   "rel": "global/forbidmap.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3087,
+   "in_jx1": true
+  },
+  {
+   "rel": "global/itemset.lua",
+   "seed": false,
+   "linux": true,
+   "size": 68641,
+   "in_jx1": true
+  },
+  {
+   "rel": "item/battles/songjinskill.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7444,
+   "in_jx1": false
+  },
+  {
+   "rel": "item/class/virtualitem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1221,
+   "in_jx1": true
+  },
+  {
+   "rel": "item/forbiditem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4543,
+   "in_jx1": true
+  },
+  {
+   "rel": "item/heart_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 9613,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/awardtemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1392,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/baseclass.lua",
+   "seed": false,
+   "linux": true,
+   "size": 841,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/basic.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3518,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/common.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3475,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/composeex.lua",
+   "seed": false,
+   "linux": true,
+   "size": 14325,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/coordinate.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6830,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/droptemplet.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5768,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/file.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1694,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/gb_taskfuncs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2274,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/log.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4318,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/objbuffer_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2602,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pay.lua",
+   "seed": false,
+   "linux": true,
+   "size": 121,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/pfunction.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3488,
+   "in_jx1": true
+  },
+  {
+   "rel": "lib/sharedata.lua",
+   "seed": false,
+   "linux": true,
+   "size": 561,
+   "in_jx1": false
+  },
+  {
+   "rel": "lib/string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6965,
+   "in_jx1": false
+  },
+  {
+   "rel": "misc/eventsys/eventsys.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1634,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1988,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/harvestplant.lua",
+   "seed": false,
+   "linux": true,
+   "size": 106,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/npc.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2091,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/eventsys/type/player.lua",
+   "seed": false,
+   "linux": true,
+   "size": 476,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/taskmanager.lua",
+   "seed": false,
+   "linux": true,
+   "size": 12799,
+   "in_jx1": true
+  },
+  {
+   "rel": "misc/vngpromotion/ipbonus/ipbonus_2_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5216,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/basemission/lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1883,
+   "in_jx1": true
+  },
+  {
+   "rel": "missions/boss/bigboss.lua",
+   "seed": false,
+   "linux": true,
+   "size": 13447,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/award.lua",
+   "seed": true,
+   "linux": true,
+   "size": 10052,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/chuangguang30.lua",
+   "seed": true,
+   "linux": true,
+   "size": 7980,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/chuangguang30_playerdeath.lua",
+   "seed": true,
+   "linux": true,
+   "size": 145,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/doubleexp.lua",
+   "seed": true,
+   "linux": true,
+   "size": 657,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/include.lua",
+   "seed": true,
+   "linux": true,
+   "size": 10875,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/item/chuangguanbaoxiang.lua",
+   "seed": true,
+   "linux": true,
+   "size": 6477,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/mission_match.lua",
+   "seed": true,
+   "linux": true,
+   "size": 2406,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/npc.lua",
+   "seed": true,
+   "linux": true,
+   "size": 18610,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/npc/dragonboat_main.lua",
+   "seed": true,
+   "linux": true,
+   "size": 8225,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/npc/transfer.lua",
+   "seed": true,
+   "linux": true,
+   "size": 1929,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/npc_death.lua",
+   "seed": true,
+   "linux": true,
+   "size": 5134,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/player_death.lua",
+   "seed": true,
+   "linux": true,
+   "size": 819,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/rank_perday.lua",
+   "seed": true,
+   "linux": true,
+   "size": 3213,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/timer_board.lua",
+   "seed": true,
+   "linux": true,
+   "size": 669,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/timer_close.lua",
+   "seed": true,
+   "linux": true,
+   "size": 431,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/challengeoftime/timer_match.lua",
+   "seed": true,
+   "linux": true,
+   "size": 1614,
+   "in_jx1": false
+  },
+  {
+   "rel": "missions/yandibaozang/head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7649,
+   "in_jx1": false
+  },
+  {
+   "rel": "protocol.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4024,
+   "in_jx1": true
+  },
+  {
+   "rel": "script_protocol/protocol_def_gs.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4792,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/metempsychosis/lang.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2894,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/metempsychosis/task_func.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7385,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/metempsychosis/task_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7475,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/metempsychosis/translife_5.lua",
+   "seed": false,
+   "linux": true,
+   "size": 8440,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/metempsychosis/translife_6.lua",
+   "seed": false,
+   "linux": true,
+   "size": 9985,
+   "in_jx1": false
+  },
+  {
+   "rel": "task/system/task_string.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4561,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/task_addplayerexp.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3175,
+   "in_jx1": true
+  },
+  {
+   "rel": "task/task_award_extend.lua",
+   "seed": false,
+   "linux": true,
+   "size": 182,
+   "in_jx1": true
+  },
+  {
+   "rel": "tong/contribution_entry.lua",
+   "seed": false,
+   "linux": true,
+   "size": 7488,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/log.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1651,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_award_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 4595,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_header.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6722,
+   "in_jx1": false
+  },
+  {
+   "rel": "tong/tong_setting.lua",
+   "seed": false,
+   "linux": true,
+   "size": 5610,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_event/change_request_baoruong/exp_award.lua",
+   "seed": false,
+   "linux": true,
+   "size": 3166,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_event/thapnienlenhbai/lenhbai_def.lua",
+   "seed": false,
+   "linux": true,
+   "size": 28426,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_event/thapnienlenhbai/mainfuc.lua",
+   "seed": false,
+   "linux": true,
+   "size": 6513,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_feature/forbiditem/vngforbidspecialitem.lua",
+   "seed": false,
+   "linux": true,
+   "size": 9859,
+   "in_jx1": false
+  },
+  {
+   "rel": "vng_lib/bittask_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1389,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1959,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/extpoint_head.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2871,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/files_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 2329,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/taskweekly_lib.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1029,
+   "in_jx1": true
+  },
+  {
+   "rel": "vng_lib/VngTransLog.lua",
+   "seed": false,
+   "linux": true,
+   "size": 1007,
+   "in_jx1": true
+  }
+ ]
+}

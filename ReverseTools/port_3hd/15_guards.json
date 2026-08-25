@@ -1,0 +1,526 @@
+{
+"Add120SkillExp": [
+[
+"task/task_award_extend.lua",
+6,
+false,
+"Add120SkillExp(floor(nExp / 2));\t--                 1/2"
+]
+],
+"AddStatData": [
+[
+"activitysys/config/32/talkdailytask.lua",
+159,
+false,
+"AddStatData(\"richangrenwu_songxincishu\")"
+],
+[
+"missions/challengeoftime/item/chuangguanbaoxiang.lua",
+169,
+false,
+"AddStatData(\"baoxiangxiaohao_kaichuangguanbaoxiang\", 1)\t--"
+],
+[
+"missions/fengling_ferry/fld_death.lua",
+30,
+false,
+"AddStatData(\"fld_chuan1siwangrenshu\", nCount)"
+],
+[
+"missions/fengling_ferry/fld_death.lua",
+32,
+false,
+"AddStatData(\"fld_chuan2siwangrenshu\", nCount)"
+],
+[
+"missions/fengling_ferry/fld_death.lua",
+34,
+false,
+"AddStatData(\"fld_chuan3siwangrenshu\", nCount)"
+],
+[
+"missions/fengling_ferry/fld_head.lua",
+291,
+false,
+"AddStatData(\"shuizeilingpai_shiyongshuliang\", 1)\t--"
+],
+[
+"missions/fengling_ferry/mission.lua",
+48,
+false,
+"AddStatData(\"fld_chuan1canjiarenshu\", nCount)"
+],
+[
+"missions/fengling_ferry/mission.lua",
+50,
+false,
+"AddStatData(\"fld_chuan2canjiarenshu\", nCount)"
+],
+[
+"missions/fengling_ferry/mission.lua",
+52,
+false,
+"AddStatData(\"fld_chuan3canjiarenshu\", nCount)"
+],
+[
+"task/tollgate/killer/lib_killlevel.lua",
+145,
+false,
+"AddStatData(tbMaiDian[i], tbshashou[i])"
+],
+[
+"task/tollgate/killer/shashou_mibao.lua",
+23,
+false,
+"AddStatData(\"baoxiangxiaohao_kaishashoumibao\", 1)\t\t--"
+]
+],
+"BT_GetBattleParam": [
+[
+"battles/battlehead.lua",
+631,
+false,
+"str = BT_GetBattleParam(i);"
+],
+[
+"battles/battlehead.lua",
+639,
+false,
+"str = BT_GetBattleParam(i + 6 );"
+]
+],
+"DropItemEx": [
+[
+"lib/droptemplet.lua",
+74,
+false,
+"return DropItemEx("
+]
+],
+"File_Create": [
+[
+"lib/file.lua",
+8,
+false,
+"File_Create(filename)"
+]
+],
+"FormatTime2Date": [
+[
+"event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+200,
+false,
+"local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());"
+],
+[
+"event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+217,
+false,
+"local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());"
+]
+],
+"GetFirstPlayerAtServer": [
+[
+"missions/boss/bigboss.lua",
+289,
+false,
+"local nIdx = GetFirstPlayerAtServer();"
+]
+],
+"GetGlodEqIndex": [
+[
+"event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+67,
+false,
+"local nRecordIndex = GetGlodEqIndex(nMaskIndex)"
+],
+[
+"lib/composeex.lua",
+142,
+false,
+"tbItem.tbProp  = {0, GetGlodEqIndex(nItemIndex)}"
+],
+[
+"lib/log.lua",
+39,
+false,
+"nDetailType = GetGlodEqIndex(nItemIdx) - 1;"
+]
+],
+"GetItemAllParams": [
+[
+"lib/log.lua",
+46,
+false,
+"local arynMagLvl = GetItemAllParams(nItemIdx);"
+]
+],
+"GetItemGenTime": [
+[
+"lib/log.lua",
+51,
+false,
+"GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);"
+]
+],
+"GetItemQuality": [
+[
+"event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+65,
+false,
+"local nQuality = GetItemQuality(nMaskIndex)"
+],
+[
+"lib/composeex.lua",
+138,
+false,
+"tbItem.nQuality = GetItemQuality(nItemIndex)"
+],
+[
+"lib/log.lua",
+37,
+false,
+"local nQuality = GetItemQuality(nItemIdx);"
+]
+],
+"GetNextPlayerAtServer": [
+[
+"missions/boss/bigboss.lua",
+293,
+false,
+"nIdx = GetNextPlayerAtServer();"
+]
+],
+"GetNpcAroundPlayerList": [
+[
+"missions/boss/bigboss.lua",
+218,
+false,
+"local tbRoundPlayer, nCount = GetNpcAroundPlayerList(nNpcIndex, 20);"
+]
+],
+"GetPlatinaEquipIndex": [
+[
+"lib/composeex.lua",
+144,
+false,
+"tbItem.tbProp  = {0, GetPlatinaEquipIndex(nItemIndex)}"
+],
+[
+"lib/log.lua",
+44,
+false,
+"nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;"
+]
+],
+"GetPlatinaLevel": [
+[
+"lib/log.lua",
+43,
+false,
+"szPlatinaLvl = tostring(GetPlatinaLevel(nItemIdx));"
+]
+],
+"GetRoomItems": [
+[
+"lib/composeex.lua",
+191,
+false,
+"tbRoomItems = GetRoomItems(nRoomType)"
+]
+],
+"ITEM_DropRateItem": [
+[
+"task/tollgate/killer/kill_level.lua",
+69,
+false,
+"ITEM_DropRateItem(nNpcIndex, 8,\"\\\\settings\\\\droprate\\\\boss\\\\bosstask_lev90.ini\", 0, 10, nseries);"
+]
+],
+"ITEM_GetExpiredTime": [
+[
+"activitysys/activity.lua",
+314,
+false,
+"local nTime = ITEM_GetExpiredTime(nItemIndex);"
+]
+],
+"ITEM_GetItemRandSeed": [
+[
+"lib/log.lua",
+48,
+false,
+"ITEM_GetItemRandSeed(nItemIdx), nQuality,"
+]
+],
+"ITEM_SetExpiredTime": [
+[
+"event/birthday_jieri/200905/class.lua",
+95,
+false,
+"ITEM_SetExpiredTime(n_itemidx, self.tbTask.item_expiredtime1);"
+],
+[
+"event/jiefang_jieri/200904/qianqiu_yinglie/head.lua",
+201,
+false,
+"ITEM_SetExpiredTime(n_itemidx, nExpiredDate);"
+],
+[
+"lib/droptemplet.lua",
+130,
+false,
+"ITEM_SetExpiredTime(nItemIndex, tbItem.nExpiredTime)--"
+],
+[
+"missions/fengling_ferry/bossdeath.lua",
+35,
+false,
+"ITEM_SetExpiredTime(nItemIdx, nRestMin);"
+],
+[
+"missions/fengling_ferry/shuizeideath.lua",
+17,
+false,
+"ITEM_SetExpiredTime(nItemIdx, nRestMin);"
+]
+],
+"ITEM_SetLeftUsageTime": [
+[
+"lib/droptemplet.lua",
+135,
+false,
+"ITEM_SetLeftUsageTime(nItemIndex,tbItem.nLeftUsageTime)"
+],
+[
+"lib/droptemplet.lua",
+140,
+false,
+"ITEM_SetLeftUsageTime(nItemIndex,tbItem.nLeftUsageTime)"
+]
+],
+"IniFile_Save": [
+[
+"lib/file.lua",
+24,
+false,
+"IniFile_Save(filename, filename)"
+]
+],
+"IniFile_SetData": [
+[
+"lib/file.lua",
+19,
+false,
+"IniFile_SetData(filename, szsect, szkey, szvalue)"
+]
+],
+"IsDisabledUseHeart": [
+[
+"item/heart_head.lua",
+116,
+false,
+"if (IsDisabledUseHeart(PlayerIndex) == 1) then"
+]
+],
+"JoinMission": [
+[
+"missions/challengeoftime/mission_match.lua",
+93,
+false,
+"function JoinMission(RoleIndex, camp)"
+],
+[
+"missions/challengeoftime/npc/dragonboat_main.lua",
+163,
+false,
+"JoinMission(MISSION_MATCH, 1)"
+]
+],
+"NPCINFO_GetSeries": [
+[
+"task/tollgate/killer/kill_level.lua",
+37,
+false,
+"local nseries = NPCINFO_GetSeries(nNpcIndex)"
+]
+],
+"NpcDropMoney": [
+[
+"lib/droptemplet.lua",
+159,
+false,
+"NpcDropMoney(nNpcIndex, nAddJxb, nBelongerIndex)"
+]
+],
+"NpcName2Replace": [
+[
+"missions/challengeoftime/npc/transfer.lua",
+10,
+true,
+"if NpcName2Replace then szNpcName = NpcName2Replace(szNpcName) end"
+]
+],
+"OpenProgressBar": [
+[
+"lib/progressbar.lua",
+95,
+false,
+"OpenProgressBar(szTitle, nFrame, nEvent, bDesc, \"tbProgressBar_OnTime\", \"tbProgressBar_OnBreak\")"
+]
+],
+"PET_GetGrownPoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+391,
+false,
+"PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)"
+]
+],
+"PET_GetTamePoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+392,
+false,
+"PET_SetTamePoint(PET_GetTamePoint() + nTame)"
+]
+],
+"PET_GetUpgradePoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+390,
+false,
+"PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)"
+]
+],
+"PET_SetGrownPoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+391,
+false,
+"PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)"
+]
+],
+"PET_SetTamePoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+392,
+false,
+"PET_SetTamePoint(PET_GetTamePoint() + nTame)"
+]
+],
+"PET_SetUpgradePoint": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+390,
+false,
+"PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)"
+]
+],
+"QueryWiseManForSB": [
+[
+"item/heart_head.lua",
+129,
+false,
+"QueryWiseManForSB(\"LoverCB_C\", \"UnlineCB_C\", 1000, Lover);"
+],
+[
+"item/heart_head.lua",
+132,
+false,
+"QueryWiseManForSB(\"LoverCB_F\", \"UnlineCB_F\", 1000, Lover);"
+]
+],
+"ST_DoTransLife": [
+[
+"task/metempsychosis/translife_6.lua",
+102,
+false,
+"ST_DoTransLife()"
+]
+],
+"ST_IsTransLife": [
+[
+"activitysys/playerfunlib.lua",
+146,
+false,
+"if ST_IsTransLife() == 1 or lib:OptionFunction(GetLevel(), nLevel,szOption) then"
+],
+[
+"activitysys/playerfunlib.lua",
+157,
+false,
+"if ST_IsTransLife() == 1 then"
+],
+[
+"event/birthday_jieri/200905/class.lua",
+59,
+false,
+"if self.nMinLevel and (GetLevel() < self.nMinLevel and ST_IsTransLife() ~= 1) then"
+],
+[
+"event/birthday_jieri/200905/class.lua",
+63,
+false,
+"if self.nMaxLevel and (GetLevel() > self.nMaxLevel and ST_IsTransLife() ~= 1) then"
+],
+[
+"event/change_destiny/head.lua",
+114,
+false,
+"if ST_IsTransLife() ~= 1 then"
+]
+],
+"ST_LevelUp": [
+[
+"vng_event/thapnienlenhbai/lenhbai_def.lua",
+378,
+false,
+"ST_LevelUp(nLevel - GetLevel())"
+]
+],
+"SendScriptData": [
+[
+"script_protocol/protocol_def_gs.lua",
+193,
+false,
+"SendScriptData(self[szEnum], nHandle)"
+]
+],
+"SetItemBindState": [
+[
+"battles/battlehead.lua",
+1317,
+false,
+"SetItemBindState(ItemIdx, -2);--"
+],
+[
+"lib/droptemplet.lua",
+144,
+false,
+"SetItemBindState(nItemIndex, tbItem.nBindState)--    nBindState"
+]
+],
+"Tm2Time": [
+[
+"activitysys/functionlib.lua",
+364,
+false,
+"local nTaskTime = Tm2Time(nYear, nMonth, nDay, nHour, nMinute, nSecond)"
+],
+[
+"activitysys/functionlib.lua",
+380,
+false,
+"local nTaskTime = Tm2Time(nYear, nMonth, nDay, nHour, nMinute, nSecond)"
+]
+],
+"TrimString": [
+[
+"lib/string.lua",
+163,
+false,
+"TrimString()"
+]
+]
+}

@@ -1,0 +1,21 @@
+Name	NpcIndex	Five	Rate	NumMin	NumMax
+Loại hình NPC	npcIndex	Ngũ Hành	Tỷ lệ xuất hiện	Trị nhỏ nhất	Trị lớn nhất
+Đoạt Bảo Tặc	1100	n	94000	4	12
+Trương Tông Chính	511	4	1000	1	1
+Diệu Như 	513	2	1000	1	1
+Liễu Thanh Thanh	523	1	1000	1	1
+Đạo Thanh Chân Nhân	562	4	200	1	1
+Gia Luật Tị Ly	563	3	200	1	1
+Đoan Mộc Duệ 	565	3	200	1	1
+Chung Linh Tú 	567	2	200	1	1
+Hà Linh Phiêu	568	2	200	1	1
+Mạnh Thương Lương	583	3	200	1	1
+Lam Y Y	582	1	200	1	1
+Vương Tá 	739	0	200	1	1
+Huyền Giác Đại Sư 	740	0	200	1	1
+Đường Bất Nhiễm	741	1	200	1	1
+Bạch Doanh Doanh	742	1	200	1	1
+Thanh Hiểu Sư Thái 	743	2	200	1	1
+Yên Hiểu Trái	744	2	200	1	1
+Hà Nhân Ngã 	745	3	200	1	1
+Tuyền Cơ Tử 	747	4	200	1	1

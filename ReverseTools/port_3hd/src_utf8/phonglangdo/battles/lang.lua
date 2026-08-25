@@ -1,0 +1,5 @@
+BATTLE_STR_1 = "Chiến trường còn <color=red>%d <color=red>phút nữa có thể báo danh"
+BATTLE_STR_2 = "Xin lỗi, tham gia đợt Phong Vân Luận Kiếm này, cần phải nộp 1 Tống Kim Chiêu Binh Lệnh"
+BATTLE_STR_3 = "Chiến trường là nơi sinh tử, không phải chuyện đùa, học nghệ chưa thông không nên mạo hiểm."
+BATTLE_STR_4 = "Chức năng đã đóng."
+BATTLE_STR_5 = "Đại hiệp không thỏa điều kiện để tham gia tính năng này"

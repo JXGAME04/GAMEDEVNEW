@@ -1,0 +1,3109 @@
+{
+"Say": [
+"Core\\Src\\ScriptFuns.cpp:14259 -> LuaSelectUI"
+],
+"Describe": [
+"Core\\Src\\ScriptFuns.cpp:14260 -> LuaSelectUI"
+],
+"GetPartnerBagLevel": [
+"Core\\Src\\ScriptFuns.cpp:14261 -> LuaJX2_PartnerBagStub"
+],
+"SetPartnerBagLevel": [
+"Core\\Src\\ScriptFuns.cpp:14262 -> LuaJX2_PartnerBagStub"
+],
+"ChangeNpcFeature": [
+"Core\\Src\\ScriptFuns.cpp:14263 -> LuaJX2_ChangeNpcFeatureStub"
+],
+"SayNew": [
+"Core\\Src\\ScriptFuns.cpp:14264 -> LuaSaySPR"
+],
+"SayImg": [
+"Core\\Src\\ScriptFuns.cpp:14265 -> LuaSelectImage"
+],
+"Talk": [
+"Core\\Src\\ScriptFuns.cpp:14266 -> LuaTalkUI",
+"Engine\\Src\\LuaFuns.cpp:67 -> LuaNpcTalk"
+],
+"TalkEx": [
+"Core\\Src\\ScriptFuns.cpp:14267 -> LuaTalkUI2"
+],
+"GetTaskTemp": [
+"Core\\Src\\ScriptFuns.cpp:14268 -> LuaGetTempTaskValue"
+],
+"SetTaskTemp": [
+"Core\\Src\\ScriptFuns.cpp:14269 -> LuaSetTempTaskValue"
+],
+"Message": [
+"Core\\Src\\ScriptFuns.cpp:14270 -> LuaMessage"
+],
+"GetBit": [
+"Core\\Src\\ScriptFuns.cpp:14271 -> LuaGetBit"
+],
+"GetByte": [
+"Core\\Src\\ScriptFuns.cpp:14272 -> LuaGetByte"
+],
+"SetBit": [
+"Core\\Src\\ScriptFuns.cpp:14273 -> LuaSetBit"
+],
+"SetByte": [
+"Core\\Src\\ScriptFuns.cpp:14274 -> LuaSetByte"
+],
+"Include": [
+"Core\\Src\\ScriptFuns.cpp:14275 -> LuaIncludeFile"
+],
+"IncludeLib": [
+"Core\\Src\\ScriptFuns.cpp:14276 -> LuaIncludeLib"
+],
+"IL": [
+"Core\\Src\\ScriptFuns.cpp:14282 -> LuaIncludeLib"
+],
+"_ALERT": [
+"Core\\Src\\ScriptFuns.cpp:14283 -> LuaGameAlert"
+],
+"C_Random": [
+"Core\\Src\\ScriptFuns.cpp:14285 -> LuaC_Random"
+],
+"SetRandSeed": [
+"Core\\Src\\ScriptFuns.cpp:14286 -> LuaSetRandSeed"
+],
+"GetTiredDegree": [
+"Core\\Src\\ScriptFuns.cpp:14287 -> LuaGetTiredDegree"
+],
+"GetTeamMember": [
+"Core\\Src\\ScriptFuns.cpp:14292 -> LuaGetTeamMem"
+],
+"GetBitTask": [
+"Core\\Src\\ScriptFuns.cpp:14294 -> LuaGetBitTask"
+],
+"SetBitTask": [
+"Core\\Src\\ScriptFuns.cpp:14295 -> LuaSetBitTask"
+],
+"GetItemMagicAttrib": [
+"Core\\Src\\ScriptFuns.cpp:14296 -> LuaGetItemMagicAttrib"
+],
+"SetItemMagicLevel": [
+"Core\\Src\\ScriptFuns.cpp:14297 -> LuaSetItemMagicLevel"
+],
+"SyncItem": [
+"Core\\Src\\ScriptFuns.cpp:14298 -> LuaSyncItemJX2"
+],
+"curpack": [
+"Core\\Src\\ScriptFuns.cpp:14299 -> LuaCurPack"
+],
+"usepack": [
+"Core\\Src\\ScriptFuns.cpp:14300 -> LuaUsePack"
+],
+"CallPlayerFunction": [
+"Core\\Src\\ScriptFuns.cpp:14301 -> LuaCallPlayerFunction"
+],
+"GetLastFactionNumber": [
+"Core\\Src\\ScriptFuns.cpp:14302 -> LuaGetLastFactionNumber"
+],
+"TM_SetTimer": [
+"Core\\Src\\ScriptFuns.cpp:14303 -> LuaTM_SetTimer"
+],
+"TM_GetRestCount": [
+"Core\\Src\\ScriptFuns.cpp:14304 -> LuaTM_GetRestCount"
+],
+"BT_GetGameData": [
+"Core\\Src\\ScriptFuns.cpp:14305 -> LuaBT_GetDataStub"
+],
+"BT_GetData": [
+"Core\\Src\\ScriptFuns.cpp:14306 -> LuaBT_GetDataStub",
+"Core\\Src\\ScriptFuns.cpp:15173 -> LuaBT_GetData"
+],
+"Prise": [
+"Core\\Src\\ScriptFuns.cpp:14307 -> LuaPrise"
+],
+"DynamicExecuteByPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14308 -> LuaDynamicExecuteByPlayer"
+],
+"GetProductRegion": [
+"Core\\Src\\ScriptFuns.cpp:14309 -> LuaGetProductRegion"
+],
+"PutMessage": [
+"Core\\Src\\ScriptFuns.cpp:14310 -> LuaSendMessageInfo"
+],
+"AddGlobalNews": [
+"Core\\Src\\ScriptFuns.cpp:14311 -> LuaAddGlobalNews"
+],
+"AddGlobalTimeNews": [
+"Core\\Src\\ScriptFuns.cpp:14312 -> LuaAddGlobalTimeNews"
+],
+"AddGlobalCountNews": [
+"Core\\Src\\ScriptFuns.cpp:14313 -> LuaAddGlobalCountNews"
+],
+"AddLocalNews": [
+"Core\\Src\\ScriptFuns.cpp:14314 -> LuaAddLocalNews",
+"Core\\Src\\ScriptFuns.cpp:15327 -> LuaAddLocalNews"
+],
+"AddLocalTimeNews": [
+"Core\\Src\\ScriptFuns.cpp:14315 -> LuaAddLocalTimeNews"
+],
+"AddLocalCountNews": [
+"Core\\Src\\ScriptFuns.cpp:14316 -> LuaAddLocalCountNews",
+"Core\\Src\\ScriptFuns.cpp:15329 -> LuaAddLocalCountNews"
+],
+"AddGlobalNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14317 -> LuaAddGlobalNewsEx"
+],
+"AddGlobalTimeNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14318 -> LuaAddGlobalTimeNews"
+],
+"AddGlobalCountNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14319 -> LuaAddGlobalCountNewsEx"
+],
+"AddLocalNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14320 -> LuaAddLocalNewsEx"
+],
+"AddLocalTimeNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14321 -> LuaAddLocalTimeNewsEx"
+],
+"AddLocalCountNewsEx": [
+"Core\\Src\\ScriptFuns.cpp:14322 -> LuaAddLocalCountNewsEx"
+],
+"ST_IsRideHorse": [
+"Core\\Src\\ScriptFuns.cpp:14324 -> LuaST_IsRideHorse"
+],
+"ModifyAttrib": [
+"Core\\Src\\ScriptFuns.cpp:14325 -> LuaModifyAttrib"
+],
+"GetEquipCount": [
+"Core\\Src\\ScriptFuns.cpp:14326 -> LuaCountEquipPlayer"
+],
+"RemoveAllItem": [
+"Core\\Src\\ScriptFuns.cpp:14327 -> LuaRemoveAllItem"
+],
+"AddRepute": [
+"Core\\Src\\ScriptFuns.cpp:14328 -> LuaModifyRepute"
+],
+"GetRepute": [
+"Core\\Src\\ScriptFuns.cpp:14329 -> LuaGetRepute"
+],
+"SetRepute": [
+"Core\\Src\\ScriptFuns.cpp:14330 -> LuaSetPlayerReputeValue"
+],
+"SetReBorn": [
+"Core\\Src\\ScriptFuns.cpp:14331 -> LuaSetPlayerReBornValue"
+],
+"GetReBorn": [
+"Core\\Src\\ScriptFuns.cpp:14332 -> LuaGetPlayerReBornValue"
+],
+"GetReBornQPoint": [
+"Core\\Src\\ScriptFuns.cpp:14333 -> LuaGetReBornQPoint"
+],
+"GetReBornJPoint": [
+"Core\\Src\\ScriptFuns.cpp:14334 -> LuaGetReBornJPoint"
+],
+"AddReBorn": [
+"Core\\Src\\ScriptFuns.cpp:14335 -> LuaSetPlayerReBornValue"
+],
+"ST_GetTransLifeCount": [
+"Core\\Src\\ScriptFuns.cpp:14336 -> LuaGetPlayerReBornValue"
+],
+"GetReBornNum": [
+"Core\\Src\\ScriptFuns.cpp:14337 -> LuaGetPlayerReBornNum"
+],
+"SetPlayerReBornNum": [
+"Core\\Src\\ScriptFuns.cpp:14338 -> LuaSetPlayerReBornNum"
+],
+"AddFuYuan": [
+"Core\\Src\\ScriptFuns.cpp:14339 -> LuaAddPlayerFuYuanValue"
+],
+"GetFuYuan": [
+"Core\\Src\\ScriptFuns.cpp:14340 -> LuaGetPlayerFuYuanValue"
+],
+"SetFuYuan": [
+"Core\\Src\\ScriptFuns.cpp:14341 -> LuaSetPlayerFuYuanValue"
+],
+"SetMeridian": [
+"Core\\Src\\ScriptFuns.cpp:14342 -> LuaSetPlayerMeridianValue"
+],
+"GetGameTime": [
+"Core\\Src\\ScriptFuns.cpp:14343 -> LuaGetGameTime"
+],
+"GetExtPoint": [
+"Core\\Src\\ScriptFuns.cpp:14344 -> LuaGetExtPoint"
+],
+"SetExtPoint": [
+"Core\\Src\\ScriptFuns.cpp:14345 -> LuaSetExtPoint"
+],
+"AddExtPoint": [
+"Core\\Src\\ScriptFuns.cpp:14346 -> LuaAddExtPoint"
+],
+"PayExtPoint": [
+"Core\\Src\\ScriptFuns.cpp:14347 -> LuaPayExtPoint"
+],
+"IsMyItem": [
+"Core\\Src\\ScriptFuns.cpp:14348 -> LuaIsMyItem"
+],
+"AddSkillState": [
+"Core\\Src\\ScriptFuns.cpp:14349 -> LuaAddSkillState"
+],
+"RemoveSkillState": [
+"Core\\Src\\ScriptFuns.cpp:14350 -> LuaRemoveSkillState"
+],
+"SetProtectTime": [
+"Core\\Src\\ScriptFuns.cpp:14351 -> LuaSetProtectTime"
+],
+"AddNpcSkillState": [
+"Core\\Src\\ScriptFuns.cpp:14352 -> LuaAddNpcSkillState"
+],
+"IgnoreState": [
+"Core\\Src\\ScriptFuns.cpp:14353 -> LuaIgnoreState"
+],
+"CastSkill": [
+"Core\\Src\\ScriptFuns.cpp:14354 -> LuaCastSkill",
+"Engine\\Src\\LuaFuns.cpp:76 -> LuaCastSkill"
+],
+"CastNpcSkill": [
+"Core\\Src\\ScriptFuns.cpp:14355 -> LuaNpcCastSkill"
+],
+"GetNpcIdx": [
+"Core\\Src\\ScriptFuns.cpp:14356 -> LuaGetCurNpcIndex"
+],
+"SetTimer": [
+"Core\\Src\\ScriptFuns.cpp:14357 -> LuaSetTimer"
+],
+"StopTimer": [
+"Core\\Src\\ScriptFuns.cpp:14358 -> LuaStopTimer"
+],
+"GetRestTime": [
+"Core\\Src\\ScriptFuns.cpp:14359 -> LuaGetRestTime"
+],
+"GetTimerId": [
+"Core\\Src\\ScriptFuns.cpp:14360 -> LuaGetCurTimerId"
+],
+"GetTask": [
+"Core\\Src\\ScriptFuns.cpp:14361 -> LuaGetTaskValue"
+],
+"SetTask": [
+"Core\\Src\\ScriptFuns.cpp:14362 -> LuaSetTaskValue"
+],
+"IsCaptain": [
+"Core\\Src\\ScriptFuns.cpp:14363 -> LuaIsLeader"
+],
+"GetTeam": [
+"Core\\Src\\ScriptFuns.cpp:14364 -> LuaGetTeamId"
+],
+"GetTeamSize": [
+"Core\\Src\\ScriptFuns.cpp:14365 -> LuaGetTeamSize"
+],
+"LeaveTeam": [
+"Core\\Src\\ScriptFuns.cpp:14366 -> LuaLeaveTeam"
+],
+"GetTeamMem": [
+"Core\\Src\\ScriptFuns.cpp:14367 -> LuaGetTeamMem"
+],
+"Msg2Player": [
+"Core\\Src\\ScriptFuns.cpp:14368 -> LuaMsgToPlayer"
+],
+"Msg2Team": [
+"Core\\Src\\ScriptFuns.cpp:14369 -> LuaMsgToTeam"
+],
+"Msg2SubWorld": [
+"Core\\Src\\ScriptFuns.cpp:14370 -> LuaMsgToSubWorld",
+"Core\\Src\\ScriptFuns.cpp:15331 -> LuaMsgToSubWorld"
+],
+"Msg2Region": [
+"Core\\Src\\ScriptFuns.cpp:14371 -> LuaMsgToAroundRegion"
+],
+"Msg2GM": [
+"Core\\Src\\ScriptFuns.cpp:14372 -> LuaMsgToGameMaster"
+],
+"Msg2IP": [
+"Core\\Src\\ScriptFuns.cpp:14373 -> LuaMsgToIP",
+"Core\\Src\\ScriptFuns.cpp:15332 -> LuaMsgToIP"
+],
+"Msg2Faction": [
+"Core\\Src\\ScriptFuns.cpp:14374 -> LuaMsgToFaction"
+],
+"Msg2Tong": [
+"Core\\Src\\ScriptFuns.cpp:14375 -> LuaMsgToTong"
+],
+"GetInfo": [
+"Core\\Src\\ScriptFuns.cpp:14376 -> LuaGetPlayerInfo"
+],
+"GetIP": [
+"Core\\Src\\ScriptFuns.cpp:14377 -> LuaGetIP"
+],
+"GetHWID": [
+"Core\\Src\\ScriptFuns.cpp:14378 -> LuaGetHWID"
+],
+"GetNpcTimeIdle": [
+"Core\\Src\\ScriptFuns.cpp:14379 -> LuaGetNpcTimeIdle"
+],
+"SetNpcTimeIdle": [
+"Core\\Src\\ScriptFuns.cpp:14380 -> LuaSetNpcTimeIdle"
+],
+"OpenGiveBox": [
+"Core\\Src\\ScriptFuns.cpp:14381 -> LuaOpenGiveBox"
+],
+"EndGiveBox": [
+"Core\\Src\\ScriptFuns.cpp:14382 -> LuaEndGiveBox"
+],
+"RemoveItem": [
+"Core\\Src\\ScriptFuns.cpp:14383 -> LuaRemoveItemIdx"
+],
+"ConsumeItem": [
+"Core\\Src\\ScriptFuns.cpp:14384 -> LuaConsumeItem"
+],
+"ConsumeEquiproomItem": [
+"Core\\Src\\ScriptFuns.cpp:14385 -> LuaConsumeEquiproomItem"
+],
+"DropAllPlayerItems": [
+"Core\\Src\\ScriptFuns.cpp:14386 -> LuaPlayerDropAllItem"
+],
+"SetPlayerItemLock": [
+"Core\\Src\\ScriptFuns.cpp:14387 -> LuaSetPlayerItemLock"
+],
+"SetPlayerItemUnLock": [
+"Core\\Src\\ScriptFuns.cpp:14388 -> LuaSetPlayerItemUnLock"
+],
+"SetPlayerItemUnLockF": [
+"Core\\Src\\ScriptFuns.cpp:14389 -> LuaSetPlayerItemUnLockF"
+],
+"GetPlayerItemIsTimeLimit": [
+"Core\\Src\\ScriptFuns.cpp:14390 -> LuaGetPlayerItemIsTimeLimit"
+],
+"GetPlayerItemIsLock": [
+"Core\\Src\\ScriptFuns.cpp:14391 -> LuaGetPlayerItemIsLock"
+],
+"GetPlayerItemHourLock": [
+"Core\\Src\\ScriptFuns.cpp:14392 -> LuaGetPlayerItemHourLock"
+],
+"GetPlayerItemSecondLock": [
+"Core\\Src\\ScriptFuns.cpp:14393 -> LuaGetPlayerItemSecondLock"
+],
+"RepairItemByCoin": [
+"Core\\Src\\ScriptFuns.cpp:14394 -> LuaRepairItemByCoin"
+],
+"RepairItemGetNumCoin": [
+"Core\\Src\\ScriptFuns.cpp:14395 -> LuaRepairItemGetNumCoin"
+],
+"SetMask": [
+"Core\\Src\\ScriptFuns.cpp:14396 -> LuaSetMask"
+],
+"ChangeOwnFeature": [
+"Core\\Src\\ScriptFuns.cpp:14397 -> LuaChangeOwnFeature"
+],
+"ReSetMask": [
+"Core\\Src\\ScriptFuns.cpp:14398 -> LuaReSetMask"
+],
+"SetPos": [
+"Core\\Src\\ScriptFuns.cpp:14399 -> LuaSetPos"
+],
+"GetPos": [
+"Core\\Src\\ScriptFuns.cpp:14400 -> LuaGetPos"
+],
+"GetWorldPos": [
+"Core\\Src\\ScriptFuns.cpp:14401 -> LuaGetNewWorldPos"
+],
+"NewWorld": [
+"Core\\Src\\ScriptFuns.cpp:14402 -> LuaEnterNewWorld"
+],
+"RandomNew": [
+"Core\\Src\\ScriptFuns.cpp:14403 -> LuaRandomNew"
+],
+"AddTrap": [
+"Core\\Src\\ScriptFuns.cpp:14404 -> LuaAddTrap"
+],
+"AddMapTrap": [
+"Core\\Src\\ScriptFuns.cpp:14405 -> LuaAddMapTrap"
+],
+"AddObj": [
+"Core\\Src\\ScriptFuns.cpp:14406 -> LuaAddObj"
+],
+"AddObstacle": [
+"Core\\Src\\ScriptFuns.cpp:14407 -> LuaAddObstacle"
+],
+"DropItem": [
+"Core\\Src\\ScriptFuns.cpp:14408 -> LuaDropItem"
+],
+"DropItemPUBG": [
+"Core\\Src\\ScriptFuns.cpp:14409 -> LuaDropItemPUBG"
+],
+"DropRateItem": [
+"Core\\Src\\ScriptFuns.cpp:14410 -> LuaDropRateItem"
+],
+"DropNpcMoney": [
+"Core\\Src\\ScriptFuns.cpp:14411 -> LuaDropNpcMoney"
+],
+"GetNpcLevel": [
+"Core\\Src\\ScriptFuns.cpp:14412 -> LuaGetNpcLevel"
+],
+"AddItem": [
+"Core\\Src\\ScriptFuns.cpp:14413 -> LuaAddItem"
+],
+"AddItem2": [
+"Core\\Src\\ScriptFuns.cpp:14414 -> LuaAddItem2"
+],
+"UpgradePlatinaItem": [
+"Core\\Src\\ScriptFuns.cpp:14415 -> LuaUpgradePlatinaItem"
+],
+"ResetGoldEquipItem": [
+"Core\\Src\\ScriptFuns.cpp:14416 -> LuaResetGoldEquipItem"
+],
+"AddItemID": [
+"Core\\Src\\ScriptFuns.cpp:14417 -> LuaAddItemID"
+],
+"AddItemIdx": [
+"Core\\Src\\ScriptFuns.cpp:14418 -> LuaAddItemIdx"
+],
+"AddTimeItem": [
+"Core\\Src\\ScriptFuns.cpp:14419 -> LuaAddTimeItem"
+],
+"AddGoldItem": [
+"Core\\Src\\ScriptFuns.cpp:14420 -> LuaAddGoldItem"
+],
+"AddEventItem": [
+"Core\\Src\\ScriptFuns.cpp:14421 -> LuaAddEventItem"
+],
+"AddMineItem": [
+"Core\\Src\\ScriptFuns.cpp:14422 -> LuaAddMineItem"
+],
+"DelItem": [
+"Core\\Src\\ScriptFuns.cpp:14423 -> LuaDelItem"
+],
+"HaveItem": [
+"Core\\Src\\ScriptFuns.cpp:14424 -> LuaHaveItem"
+],
+"GetNameItem": [
+"Core\\Src\\ScriptFuns.cpp:14425 -> LuaGetNameItem"
+],
+"GetItemName": [
+"Core\\Src\\ScriptFuns.cpp:14426 -> LuaGetNameItem"
+],
+"GetTaskItemCount": [
+"Core\\Src\\ScriptFuns.cpp:14427 -> LuaGetTaskItemCount"
+],
+"GetItemCount": [
+"Core\\Src\\ScriptFuns.cpp:14428 -> LuaGetItemCount"
+],
+"CheckRoom": [
+"Core\\Src\\ScriptFuns.cpp:14429 -> LuaCheckRoom"
+],
+"CheckFreeBoxItem": [
+"Core\\Src\\ScriptFuns.cpp:14430 -> LuaCheckFreeBoxItem"
+],
+"CalcFreeItemCellCount": [
+"Core\\Src\\ScriptFuns.cpp:14431 -> LuaCalcFreeItemCellCount"
+],
+"FindItem": [
+"Core\\Src\\ScriptFuns.cpp:14432 -> LuaFindItem"
+],
+"FindItemEx": [
+"Core\\Src\\ScriptFuns.cpp:14433 -> LuaFindItemEx"
+],
+"GetMantleItem": [
+"Core\\Src\\ScriptFuns.cpp:14434 -> LuaGetMantleItem"
+],
+"SetMantleItem": [
+"Core\\Src\\ScriptFuns.cpp:14435 -> LuaSetMantleItem"
+],
+"GetParamItem": [
+"Core\\Src\\ScriptFuns.cpp:14436 -> LuaGetParamItem"
+],
+"SetParamItem": [
+"Core\\Src\\ScriptFuns.cpp:14437 -> LuaSetParamItem"
+],
+"SetItemParam": [
+"Core\\Src\\ScriptFuns.cpp:14438 -> LuaSetItemParam"
+],
+"GetItemParam": [
+"Core\\Src\\ScriptFuns.cpp:14439 -> LuaGetItemParam"
+],
+"SetSpecItemParam": [
+"Core\\Src\\ScriptFuns.cpp:14440 -> LuaSetSpecItemParam"
+],
+"GetSpecItemParam": [
+"Core\\Src\\ScriptFuns.cpp:14441 -> LuaGetSpecItemParam"
+],
+"GetGlowLightItem": [
+"Core\\Src\\ScriptFuns.cpp:14442 -> LuaGetGlowLightItem"
+],
+"SetGlowLightItem": [
+"Core\\Src\\ScriptFuns.cpp:14443 -> LuaSetGlowLightItem"
+],
+"AddTranslife": [
+"Core\\Src\\ScriptFuns.cpp:14444 -> LuaAddPlayerTranslifeValue"
+],
+"GetTranslife": [
+"Core\\Src\\ScriptFuns.cpp:14445 -> LuaGetPlayerTranslifeValue"
+],
+"GetMateName": [
+"Core\\Src\\ScriptFuns.cpp:14446 -> LuaGetMateName"
+],
+"SetMateName": [
+"Core\\Src\\ScriptFuns.cpp:14447 -> LuaMakeMate"
+],
+"DelMateName": [
+"Core\\Src\\ScriptFuns.cpp:14448 -> LuaDeleteMate"
+],
+"GetPlayerNpcIdx": [
+"Core\\Src\\ScriptFuns.cpp:14449 -> LuaGetPlayerNpcIdx"
+],
+"FindPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14450 -> LuaFindPlayer"
+],
+"GetCurServerSec": [
+"Core\\Src\\ScriptFuns.cpp:14451 -> LuaGetCurServerSec"
+],
+"SetNumber": [
+"Core\\Src\\ScriptFuns.cpp:14452 -> LuaSetNumber"
+],
+"GetNumber": [
+"Core\\Src\\ScriptFuns.cpp:14453 -> LuaGetNumber"
+],
+"SetNumber2": [
+"Core\\Src\\ScriptFuns.cpp:14454 -> LuaSetNumber2"
+],
+"GetNumber2": [
+"Core\\Src\\ScriptFuns.cpp:14455 -> LuaGetNumber2"
+],
+"GetROItem": [
+"Core\\Src\\ScriptFuns.cpp:14456 -> LuaGetROItem"
+],
+"GetCBItem": [
+"Core\\Src\\ScriptFuns.cpp:14457 -> LuaGetCBItem"
+],
+"GetBASItem": [
+"Core\\Src\\ScriptFuns.cpp:14458 -> LuaGetBASItem"
+],
+"GetOTItem": [
+"Core\\Src\\ScriptFuns.cpp:14459 -> LuaGetOTItem"
+],
+"GetOTLVItem": [
+"Core\\Src\\ScriptFuns.cpp:14460 -> LuaGetOTLVItem"
+],
+"GetMagicAttrib": [
+"Core\\Src\\ScriptFuns.cpp:14462 -> LuaGetMagicAttrib"
+],
+"SetMagicAttrib": [
+"Core\\Src\\ScriptFuns.cpp:14463 -> LuaSetMagicAttrib"
+],
+"AddMagic": [
+"Core\\Src\\ScriptFuns.cpp:14465 -> LuaAddMagic"
+],
+"AddTempMagic": [
+"Core\\Src\\ScriptFuns.cpp:14466 -> LuaTongAddTempMagic"
+],
+"DelMagic": [
+"Core\\Src\\ScriptFuns.cpp:14467 -> LuaDelMagic"
+],
+"HaveMagic": [
+"Core\\Src\\ScriptFuns.cpp:14468 -> LuaHaveMagic"
+],
+"GetMagicLevel": [
+"Core\\Src\\ScriptFuns.cpp:14469 -> LuaGetMagicLevel"
+],
+"DelAllMagic": [
+"Core\\Src\\ScriptFuns.cpp:14470 -> LuaDelAllMagic"
+],
+"AddMagicPoint": [
+"Core\\Src\\ScriptFuns.cpp:14471 -> LuaAddMagicPoint"
+],
+"GetMagicPoint": [
+"Core\\Src\\ScriptFuns.cpp:14472 -> LuaGetMagicPoint"
+],
+"CheckItemEquipCS": [
+"Core\\Src\\ScriptFuns.cpp:14473 -> LuaCheckItemEquipCS"
+],
+"IncSkill": [
+"Core\\Src\\ScriptFuns.cpp:14474 -> LuaIncSkill"
+],
+"IncSkillExp": [
+"Core\\Src\\ScriptFuns.cpp:14475 -> LuaIncSkillExp"
+],
+"GetNpcExpRate": [
+"Core\\Src\\ScriptFuns.cpp:14476 -> LuaGetNpcExpRate"
+],
+"SubWorldID2Idx": [
+"Core\\Src\\ScriptFuns.cpp:14477 -> LuaSubWorldIDToIndex",
+"Core\\Src\\ScriptFuns.cpp:15333 -> LuaSubWorldIDToIndex"
+],
+"SubWorldIdx2ID": [
+"Core\\Src\\ScriptFuns.cpp:14478 -> LuaSubWorldIndexToID"
+],
+"SubWorldIdx2MapCopy": [
+"Core\\Src\\ScriptFuns.cpp:14479 -> LuaSubWorldIdx2MapCopy"
+],
+"FileName2Id": [
+"Core\\Src\\ScriptFuns.cpp:14480 -> LuaFileName2Id"
+],
+"AddLeadExp": [
+"Core\\Src\\ScriptFuns.cpp:14481 -> LuaAddLeadExp"
+],
+"GetLeadLevel": [
+"Core\\Src\\ScriptFuns.cpp:14482 -> LuaGetLeadLevel",
+"Core\\Src\\ScriptFuns.cpp:14637 -> LuaGetPlayerLeadLevel"
+],
+"SetFightState": [
+"Core\\Src\\ScriptFuns.cpp:14483 -> LuaSetFightState"
+],
+"GetFightState": [
+"Core\\Src\\ScriptFuns.cpp:14484 -> LuaGetFightState"
+],
+"SetNpcWalkOriginPos": [
+"Core\\Src\\ScriptFuns.cpp:14485 -> LuaSetNpcWalkOriginPos"
+],
+"SetNpcDamageReduction": [
+"Core\\Src\\ScriptFuns.cpp:14487 -> LuaSetNpcDamageReduction"
+],
+"SetNpcAIType": [
+"Core\\Src\\ScriptFuns.cpp:14488 -> LuaSetNpcAIType"
+],
+"NpcWalk": [
+"Core\\Src\\ScriptFuns.cpp:14489 -> LuaNpcWalk"
+],
+"NpcChat": [
+"Core\\Src\\ScriptFuns.cpp:14490 -> LuaNpcChat"
+],
+"SetNpcOwner": [
+"Core\\Src\\ScriptFuns.cpp:14491 -> LuaSetNpcOwner"
+],
+"GetNpcOwner": [
+"Core\\Src\\ScriptFuns.cpp:14492 -> LuaGetNpcOwner"
+],
+"SetNpcFindPathTime": [
+"Core\\Src\\ScriptFuns.cpp:14493 -> LuaSetNpcFindPathTime"
+],
+"AddNpc": [
+"Core\\Src\\ScriptFuns.cpp:14494 -> LuaAddNpc",
+"Engine\\Src\\LuaFuns.cpp:73 -> LuaAddNpcClient"
+],
+"AddNpcEx": [
+"Core\\Src\\ScriptFuns.cpp:14495 -> LuaAddNpcEx"
+],
+"NoReloadNpcAttr": [
+"Core\\Src\\ScriptFuns.cpp:14496 -> LuaNoReloadNpcAttr"
+],
+"DelNpc": [
+"Core\\Src\\ScriptFuns.cpp:14497 -> LuaDelNpc"
+],
+"SetNpcBoss": [
+"Core\\Src\\ScriptFuns.cpp:14498 -> LuaSetNpcGoldBoss"
+],
+"GetNpcBoss": [
+"Core\\Src\\ScriptFuns.cpp:14499 -> LuaGetNpcBoss"
+],
+"SetNpcScript": [
+"Core\\Src\\ScriptFuns.cpp:14500 -> LuaSetNpcActionScript"
+],
+"SetNpcActiveRange": [
+"Core\\Src\\ScriptFuns.cpp:14501 -> LuaSetNpcActiveRange"
+],
+"SetNpcDropScript": [
+"Core\\Src\\ScriptFuns.cpp:14502 -> LuaSetNpcDropScript"
+],
+"SetNpcSeries": [
+"Core\\Src\\ScriptFuns.cpp:14503 -> LuaSetNpcSeries"
+],
+"GetNpcSeries": [
+"Core\\Src\\ScriptFuns.cpp:14504 -> LuaGetNpcSeries"
+],
+"SetNpcName": [
+"Core\\Src\\ScriptFuns.cpp:14505 -> LuaSetNpcName"
+],
+"GetNpcName": [
+"Core\\Src\\ScriptFuns.cpp:14506 -> LuaGetNpcName"
+],
+"SetNpcParam": [
+"Core\\Src\\ScriptFuns.cpp:14507 -> LuaSetNpcParam"
+],
+"SetNpcValue": [
+"Core\\Src\\ScriptFuns.cpp:14508 -> LuaSetNpcParam"
+],
+"GetNpcParam": [
+"Core\\Src\\ScriptFuns.cpp:14509 -> LuaGetNpcParam"
+],
+"GetNpcValue": [
+"Core\\Src\\ScriptFuns.cpp:14510 -> LuaGetNpcParam"
+],
+"SC_SetBotFlag": [
+"Core\\Src\\ScriptFuns.cpp:14511 -> LuaSC_SetBotFlag"
+],
+"SC_GetBotFlag": [
+"Core\\Src\\ScriptFuns.cpp:14512 -> LuaSC_GetBotFlag"
+],
+"SC_AddBot": [
+"Core\\Src\\ScriptFuns.cpp:14513 -> LuaSC_AddBot"
+],
+"SC_DelBot": [
+"Core\\Src\\ScriptFuns.cpp:14514 -> LuaSC_DelBot"
+],
+"SC_ClearBots": [
+"Core\\Src\\ScriptFuns.cpp:14515 -> LuaSC_ClearBots"
+],
+"SC_MoveOn": [
+"Core\\Src\\ScriptFuns.cpp:14516 -> LuaSC_MoveOn"
+],
+"SC_MoveOff": [
+"Core\\Src\\ScriptFuns.cpp:14517 -> LuaSC_MoveOff"
+],
+"SC_Goto": [
+"Core\\Src\\ScriptFuns.cpp:14518 -> LuaSC_Goto"
+],
+"SC_PatrolBox": [
+"Core\\Src\\ScriptFuns.cpp:14519 -> LuaSC_PatrolBox"
+],
+"SC_LoadPreset": [
+"Core\\Src\\ScriptFuns.cpp:14520 -> LuaSC_LoadPreset"
+],
+"SC_SetBotRoute": [
+"Core\\Src\\ScriptFuns.cpp:14521 -> LuaSC_SetBotRoute"
+],
+"SC_LoadChat": [
+"Core\\Src\\ScriptFuns.cpp:14522 -> LuaSC_LoadChat"
+],
+"SC_ChatChance": [
+"Core\\Src\\ScriptFuns.cpp:14523 -> LuaSC_ChatChance"
+],
+"SC_ClearChat": [
+"Core\\Src\\ScriptFuns.cpp:14524 -> LuaSC_ClearChat"
+],
+"SC_SetBotLook": [
+"Core\\Src\\ScriptFuns.cpp:14526 -> LuaSC_SetBotLook"
+],
+"SC_DressBot": [
+"Core\\Src\\ScriptFuns.cpp:14527 -> LuaSC_DressBot"
+],
+"SC_SetBotFaction": [
+"Core\\Src\\ScriptFuns.cpp:14528 -> LuaSC_SetBotFaction"
+],
+"SC_SetBotInfo": [
+"Core\\Src\\ScriptFuns.cpp:14529 -> LuaSC_SetBotInfo"
+],
+"SC_SetBotTitle": [
+"Core\\Src\\ScriptFuns.cpp:14530 -> LuaSC_SetBotTitle"
+],
+"SC_SetBotTong": [
+"Core\\Src\\ScriptFuns.cpp:14531 -> LuaSC_SetBotTong"
+],
+"SC_SetBotMate": [
+"Core\\Src\\ScriptFuns.cpp:14532 -> LuaSC_SetBotMate"
+],
+"SC_SetBotStall": [
+"Core\\Src\\ScriptFuns.cpp:14533 -> LuaSC_SetBotStall"
+],
+"SC_SetBotSit": [
+"Core\\Src\\ScriptFuns.cpp:14534 -> LuaSC_SetBotSit"
+],
+"SC_CityNodes": [
+"Core\\Src\\ScriptFuns.cpp:14535 -> LuaSC_CityNodes"
+],
+"SC_PickSpawn": [
+"Core\\Src\\ScriptFuns.cpp:14536 -> LuaSC_PickSpawn"
+],
+"SC_RandomName": [
+"Core\\Src\\ScriptFuns.cpp:14537 -> LuaSC_RandomName"
+],
+"PB_AddBot": [
+"Core\\Src\\ScriptFuns.cpp:14539 -> LuaPB_AddBot"
+],
+"PB_BotCount": [
+"Core\\Src\\ScriptFuns.cpp:14540 -> LuaPB_BotCount"
+],
+"PB_ClearBot": [
+"Core\\Src\\ScriptFuns.cpp:14541 -> LuaPB_ClearBot"
+],
+"PB_JoinFaction": [
+"Core\\Src\\ScriptFuns.cpp:14542 -> LuaPB_JoinFaction"
+],
+"PB_SetFight": [
+"Core\\Src\\ScriptFuns.cpp:14543 -> LuaPB_SetFight"
+],
+"PB_SetChat": [
+"Core\\Src\\ScriptFuns.cpp:14544 -> LuaPB_SetChat"
+],
+"PB_SaveAll": [
+"Core\\Src\\ScriptFuns.cpp:14545 -> LuaPB_SaveAll"
+],
+"PB_SetBuff": [
+"Core\\Src\\ScriptFuns.cpp:14546 -> LuaPB_SetBuff"
+],
+"PB_SetDaTau": [
+"Core\\Src\\ScriptFuns.cpp:14547 -> LuaPB_SetDaTau"
+],
+"PB_SetBanSap": [
+"Core\\Src\\ScriptFuns.cpp:14548 -> LuaPB_SetBanSap"
+],
+"PB_SetVeThanh": [
+"Core\\Src\\ScriptFuns.cpp:14549 -> LuaPB_SetVeThanh"
+],
+"PB_SetNpcChan": [
+"Core\\Src\\ScriptFuns.cpp:14550 -> LuaPB_SetNpcChan"
+],
+"PB_SetTongKim": [
+"Core\\Src\\ScriptFuns.cpp:14551 -> LuaPB_SetTongKim"
+],
+"PB_SetTongKimTran": [
+"Core\\Src\\ScriptFuns.cpp:14552 -> LuaPB_SetTongKimTran"
+],
+"PB_TongKimGoi": [
+"Core\\Src\\ScriptFuns.cpp:14553 -> LuaPB_TongKimGoi"
+],
+"IsBot": [
+"Core\\Src\\ScriptFuns.cpp:14554 -> LuaIsBot"
+],
+"SetNpcTimer": [
+"Core\\Src\\ScriptFuns.cpp:14555 -> LuaSetNpcTimer"
+],
+"GetNpcTimer": [
+"Core\\Src\\ScriptFuns.cpp:14556 -> LuaGetNpcTimer"
+],
+"SetNpcExp": [
+"Core\\Src\\ScriptFuns.cpp:14557 -> LuaSetNpcExp"
+],
+"SetNpcLife": [
+"Core\\Src\\ScriptFuns.cpp:14558 -> LuaSetNpcLife"
+],
+"GetNpcLife": [
+"Core\\Src\\ScriptFuns.cpp:14559 -> LuaGetNpcLife"
+],
+"SetNpcReplenish": [
+"Core\\Src\\ScriptFuns.cpp:14560 -> LuaSetNpcLifeReplenish"
+],
+"SetNpcAR": [
+"Core\\Src\\ScriptFuns.cpp:14561 -> LuaSetNpcAR"
+],
+"SetNpcDefense": [
+"Core\\Src\\ScriptFuns.cpp:14562 -> LuaSetNpcDefense"
+],
+"SetNpcDamage": [
+"Core\\Src\\ScriptFuns.cpp:14563 -> LuaSetNpcDamage"
+],
+"SetNpcDmgEx": [
+"Core\\Src\\ScriptFuns.cpp:14564 -> LuaSetNpcDmgEx"
+],
+"SetNpcResist": [
+"Core\\Src\\ScriptFuns.cpp:14565 -> LuaSetNpcResist"
+],
+"SetNpcRevTime": [
+"Core\\Src\\ScriptFuns.cpp:14566 -> LuaSetNpcRevTime"
+],
+"SetNpcSpeed": [
+"Core\\Src\\ScriptFuns.cpp:14567 -> LuaSetNpcSpeed"
+],
+"SetPlayerSpeed": [
+"Core\\Src\\ScriptFuns.cpp:14568 -> LuaSetPlayerSpeed"
+],
+"SetMoveSpeed": [
+"Core\\Src\\ScriptFuns.cpp:14569 -> LuaTongSetMoveSpeed"
+],
+"SetNpcHitRecover": [
+"Core\\Src\\ScriptFuns.cpp:14570 -> LuaSetNpcHitRecover"
+],
+"SetNpcHonorId": [
+"Core\\Src\\ScriptFuns.cpp:14571 -> LuaSetNpcHonorId"
+],
+"SetPlayerHonorId": [
+"Core\\Src\\ScriptFuns.cpp:14572 -> LuaSetPlayerHonorId"
+],
+"GetNpcID": [
+"Core\\Src\\ScriptFuns.cpp:14573 -> LuaGetNpcID"
+],
+"SetNpcSkill": [
+"Core\\Src\\ScriptFuns.cpp:14574 -> LuaSetNpcSkill"
+],
+"RemoveNpcSkill": [
+"Core\\Src\\ScriptFuns.cpp:14575 -> LuaRemoveNpcSkill"
+],
+"NpcNewWorld": [
+"Core\\Src\\ScriptFuns.cpp:14576 -> LuaNpcEnterNewWorld"
+],
+"SetNpcPos": [
+"Core\\Src\\ScriptFuns.cpp:14577 -> LuaSetNpcPos"
+],
+"GetNpcPos": [
+"Core\\Src\\ScriptFuns.cpp:14578 -> LuaGetNpcPos",
+"Engine\\Src\\LuaFuns.cpp:69 -> LuaGetNpcPos"
+],
+"GetNpcWorldPos": [
+"Core\\Src\\ScriptFuns.cpp:14579 -> LuaGetNpcNewWorldPos"
+],
+"GetNpcCamp": [
+"Core\\Src\\ScriptFuns.cpp:14580 -> LuaGetNpcCamp"
+],
+"SetNpcCamp": [
+"Core\\Src\\ScriptFuns.cpp:14581 -> LuaSetNpcCamp"
+],
+"GetNpcCurCamp": [
+"Core\\Src\\ScriptFuns.cpp:14582 -> LuaGetNpcCurCamp"
+],
+"FindNpcFrID": [
+"Core\\Src\\ScriptFuns.cpp:14583 -> LuaFindNpcFrID"
+],
+"FindNearNpc": [
+"Core\\Src\\ScriptFuns.cpp:14584 -> LuaFindNearNpc"
+],
+"FindAroundNpc": [
+"Core\\Src\\ScriptFuns.cpp:14585 -> LuaFindAroundNpc"
+],
+"SetNpcFightState": [
+"Core\\Src\\ScriptFuns.cpp:14586 -> LuaSetNpcFightState"
+],
+"GetNpcFightState": [
+"Core\\Src\\ScriptFuns.cpp:14587 -> LuaGetNpcFightState"
+],
+"Rev2Pos": [
+"Core\\Src\\ScriptFuns.cpp:14588 -> LuaGetPlayerRevivalPos"
+],
+"SetRevPos": [
+"Core\\Src\\ScriptFuns.cpp:14589 -> LuaSetPlayerRevivalPos"
+],
+"SetTempRevPos": [
+"Core\\Src\\ScriptFuns.cpp:14590 -> LuaSetDeathRevivalPos"
+],
+"GetCurCamp": [
+"Core\\Src\\ScriptFuns.cpp:14591 -> LuaGetPlayerCurrentCamp"
+],
+"GetCamp": [
+"Core\\Src\\ScriptFuns.cpp:14592 -> LuaGetPlayerCamp"
+],
+"SetCurCamp": [
+"Core\\Src\\ScriptFuns.cpp:14593 -> LuaSetPlayerCurrentCamp"
+],
+"SetCamp": [
+"Core\\Src\\ScriptFuns.cpp:14594 -> LuaSetPlayerCamp"
+],
+"RestoreCamp": [
+"Core\\Src\\ScriptFuns.cpp:14595 -> LuaRestorePlayerCamp"
+],
+"GetFactionNo": [
+"Core\\Src\\ScriptFuns.cpp:14598 -> LuaGetPlayerFactionNo"
+],
+"GetFirstAddFaction": [
+"Core\\Src\\ScriptFuns.cpp:14599 -> LuaGetPlayerFirstAddFaction"
+],
+"SetFaction": [
+"Core\\Src\\ScriptFuns.cpp:14600 -> LuaChangePlayerFaction"
+],
+"ClearFactionIfnfo": [
+"Core\\Src\\ScriptFuns.cpp:14601 -> LuaClearFactionIfnfo"
+],
+"GetColdR": [
+"Core\\Src\\ScriptFuns.cpp:14602 -> LuaGetPlayerColdResist"
+],
+"SetColdR": [
+"Core\\Src\\ScriptFuns.cpp:14603 -> LuaGetPlayerColdResist"
+],
+"GetFireR": [
+"Core\\Src\\ScriptFuns.cpp:14604 -> LuaGetPlayerFireResist"
+],
+"SetFireR": [
+"Core\\Src\\ScriptFuns.cpp:14605 -> LuaSetPlayerFireResist"
+],
+"GetLightR": [
+"Core\\Src\\ScriptFuns.cpp:14606 -> LuaGetPlayerLightResist"
+],
+"SetLightR": [
+"Core\\Src\\ScriptFuns.cpp:14607 -> LuaSetPlayerLightResist"
+],
+"GetPoisonR": [
+"Core\\Src\\ScriptFuns.cpp:14608 -> LuaGetPlayerPoisonResist"
+],
+"SetPoisonR": [
+"Core\\Src\\ScriptFuns.cpp:14609 -> LuaSetPlayerPoisonResist"
+],
+"GetPhyR": [
+"Core\\Src\\ScriptFuns.cpp:14610 -> LuaGetPlayerPhysicsResist"
+],
+"SetPhyR": [
+"Core\\Src\\ScriptFuns.cpp:14611 -> LuaSetPlayerPhysicsResist"
+],
+"GetExp": [
+"Core\\Src\\ScriptFuns.cpp:14612 -> LuaGetPlayerExp"
+],
+"GetNextExp": [
+"Core\\Src\\ScriptFuns.cpp:14613 -> LuaGetNextExp"
+],
+"AddExp": [
+"Core\\Src\\ScriptFuns.cpp:14614 -> LuaModifyPlayerExp"
+],
+"GetNpcSkillsExpRate": [
+"Core\\Src\\ScriptFuns.cpp:14615 -> LuaGetNpcExpSkillsRate"
+],
+"GetNpcVip": [
+"Core\\Src\\ScriptFuns.cpp:14616 -> LuaGetNpcVip"
+],
+"AddOwnExp": [
+"Core\\Src\\ScriptFuns.cpp:14617 -> LuaAddOwnExp"
+],
+"AddSumExp": [
+"Core\\Src\\ScriptFuns.cpp:14618 -> LuaAddSumExp"
+],
+"SetLevel": [
+"Core\\Src\\ScriptFuns.cpp:14619 -> LuaSetLevel"
+],
+"ResetBaseAttrib": [
+"Core\\Src\\ScriptFuns.cpp:14620 -> LuaResetBaseAttribute"
+],
+"SetBasePoint": [
+"Core\\Src\\ScriptFuns.cpp:14621 -> LuaSetBasePoint"
+],
+"GetLife": [
+"Core\\Src\\ScriptFuns.cpp:14622 -> LuaGetPlayerLife"
+],
+"RestoreLife": [
+"Core\\Src\\ScriptFuns.cpp:14623 -> LuaRestorePlayerLife"
+],
+"GetMana": [
+"Core\\Src\\ScriptFuns.cpp:14624 -> LuaGetPlayerMana"
+],
+"RestoreMana": [
+"Core\\Src\\ScriptFuns.cpp:14625 -> LuaRestorePlayerMana"
+],
+"GetStamina": [
+"Core\\Src\\ScriptFuns.cpp:14626 -> LuaGetPlayerStamina"
+],
+"RestoreStamina": [
+"Core\\Src\\ScriptFuns.cpp:14627 -> LuaRestorePlayerStamina"
+],
+"GetDefend": [
+"Core\\Src\\ScriptFuns.cpp:14628 -> LuaGetPlayerDefend"
+],
+"GetSex": [
+"Core\\Src\\ScriptFuns.cpp:14629 -> LuaGetPlayerSex"
+],
+"SetSex": [
+"Core\\Src\\ScriptFuns.cpp:14630 -> LuaSetPlayerSex"
+],
+"GetSeries": [
+"Core\\Src\\ScriptFuns.cpp:14631 -> LuaGetPlayerSeries"
+],
+"SetSeries": [
+"Core\\Src\\ScriptFuns.cpp:14632 -> LuaSetPlayerSeries"
+],
+"GetName": [
+"Core\\Src\\ScriptFuns.cpp:14633 -> LuaGetPlayerName"
+],
+"GetAccount": [
+"Core\\Src\\ScriptFuns.cpp:14634 -> LuaGetPlayerAccount"
+],
+"GetUUID": [
+"Core\\Src\\ScriptFuns.cpp:14635 -> LuaGetPlayerID"
+],
+"GetLeadExp": [
+"Core\\Src\\ScriptFuns.cpp:14636 -> LuaGetPlayerLeadExp"
+],
+"GetLevel": [
+"Core\\Src\\ScriptFuns.cpp:14638 -> LuaGetLevel"
+],
+"KiemTraKhoaRuong": [
+"Core\\Src\\ScriptFuns.cpp:14639 -> LuaGetKhoa"
+],
+"SetPKState": [
+"Core\\Src\\ScriptFuns.cpp:14640 -> LuaSetPKState"
+],
+"GetPKState": [
+"Core\\Src\\ScriptFuns.cpp:14641 -> LuaGetPKState"
+],
+"SetPKMode": [
+"Core\\Src\\ScriptFuns.cpp:14642 -> LuaSetPlayerPKState"
+],
+"GetRestAP": [
+"Core\\Src\\ScriptFuns.cpp:14643 -> LuaGetPlayerRestAttributePoint"
+],
+"GetRestSP": [
+"Core\\Src\\ScriptFuns.cpp:14644 -> LuaGetPlayerRestSkillPoint"
+],
+"GetLucky": [
+"Core\\Src\\ScriptFuns.cpp:14645 -> LuaGetPlayerLucky"
+],
+"GetEng": [
+"Core\\Src\\ScriptFuns.cpp:14646 -> LuaGetPlayerEngergy"
+],
+"AddEng": [
+"Core\\Src\\ScriptFuns.cpp:14647 -> LuaSetPlayerEngergy"
+],
+"GetDex": [
+"Core\\Src\\ScriptFuns.cpp:14648 -> LuaGetPlayerDexterity"
+],
+"AddDex": [
+"Core\\Src\\ScriptFuns.cpp:14649 -> LuaSetPlayerDexterity"
+],
+"GetStrg": [
+"Core\\Src\\ScriptFuns.cpp:14650 -> LuaGetPlayerStrength"
+],
+"AddStrg": [
+"Core\\Src\\ScriptFuns.cpp:14651 -> LuaSetPlayerStrength"
+],
+"GetVit": [
+"Core\\Src\\ScriptFuns.cpp:14652 -> LuaGetPlayerVitality"
+],
+"AddVit": [
+"Core\\Src\\ScriptFuns.cpp:14653 -> LuaSetPlayerVitality"
+],
+"GetCash": [
+"Core\\Src\\ScriptFuns.cpp:14654 -> LuaGetPlayerCashMoney"
+],
+"GetSaveMoney": [
+"Core\\Src\\ScriptFuns.cpp:14655 -> LuaGetSaveMoney"
+],
+"Pay": [
+"Core\\Src\\ScriptFuns.cpp:14656 -> LuaPlayerPayMoney"
+],
+"Earn": [
+"Core\\Src\\ScriptFuns.cpp:14657 -> LuaPlayerEarnMoney"
+],
+"PrePay": [
+"Core\\Src\\ScriptFuns.cpp:14658 -> LuaPlayerPrePayMoney"
+],
+"Sale": [
+"Core\\Src\\ScriptFuns.cpp:14659 -> LuaSale"
+],
+"NewSale": [
+"Core\\Src\\ScriptFuns.cpp:14660 -> LuaNewSale"
+],
+"UseTownPortal": [
+"Core\\Src\\ScriptFuns.cpp:14661 -> LuaUseTownPortal"
+],
+"ReturnFromPortal": [
+"Core\\Src\\ScriptFuns.cpp:14662 -> LuaReturnFromTownPortal"
+],
+"SetNpcCurCamp": [
+"Core\\Src\\ScriptFuns.cpp:14663 -> LuaSetNpcCurCamp"
+],
+"OpenBox": [
+"Core\\Src\\ScriptFuns.cpp:14664 -> LuaOpenBox"
+],
+"AddStation": [
+"Core\\Src\\ScriptFuns.cpp:14665 -> LuaAddPlayerStation"
+],
+"AddTermini": [
+"Core\\Src\\ScriptFuns.cpp:14666 -> LuaAddPlayerWayPoint"
+],
+"GetStation": [
+"Core\\Src\\ScriptFuns.cpp:14667 -> LuaGetPlayerStation"
+],
+"GetStationCount": [
+"Core\\Src\\ScriptFuns.cpp:14668 -> LuaGetPlayerStationCount"
+],
+"GetCityCount": [
+"Core\\Src\\ScriptFuns.cpp:14669 -> LuaGetAllStationCount"
+],
+"GetCity": [
+"Core\\Src\\ScriptFuns.cpp:14670 -> LuaGetCity"
+],
+"OpenResetPass": [
+"Core\\Src\\ScriptFuns.cpp:14671 -> LuaOpenResetPass"
+],
+"OpenDatauBox": [
+"Core\\Src\\ScriptFuns.cpp:14672 -> LuaDaTauBox"
+],
+"OpenDatauBox1": [
+"Core\\Src\\ScriptFuns.cpp:14673 -> LuaDaTau1Box"
+],
+"OpenQuestFinish": [
+"Core\\Src\\ScriptFuns.cpp:14674 -> LuaOpenQuestFinish"
+],
+"OpenTrembleItem": [
+"Core\\Src\\ScriptFuns.cpp:14675 -> LuaOpenTrembleItem"
+],
+"EndTrembleItem": [
+"Core\\Src\\ScriptFuns.cpp:14676 -> LuaEndTrembleItem"
+],
+"OpenCompoundItem": [
+"Core\\Src\\ScriptFuns.cpp:14677 -> LuaOpenCompoundItem"
+],
+"GetIdItem": [
+"Core\\Src\\ScriptFuns.cpp:14678 -> LuaGetIdItem"
+],
+"ChangeInfoItem": [
+"Core\\Src\\ScriptFuns.cpp:14679 -> LuaChangeInfoItem"
+],
+"GetWayPoint": [
+"Core\\Src\\ScriptFuns.cpp:14680 -> LuaGetPlayerWayPoint"
+],
+"GetStationName": [
+"Core\\Src\\ScriptFuns.cpp:14681 -> LuaGetStationName"
+],
+"GetWayPointName": [
+"Core\\Src\\ScriptFuns.cpp:14682 -> LuaGetWayPointName"
+],
+"GetPrice2Station": [
+"Core\\Src\\ScriptFuns.cpp:14683 -> LuaGetPriceToStation"
+],
+"GetPrice2WayPoint": [
+"Core\\Src\\ScriptFuns.cpp:14684 -> LuaGetPriceToWayPoint"
+],
+"GetStationPos": [
+"Core\\Src\\ScriptFuns.cpp:14685 -> LuaGetStationPos"
+],
+"GetWayPointPos": [
+"Core\\Src\\ScriptFuns.cpp:14686 -> LuaGetWayPointPos"
+],
+"GetPlayerCount": [
+"Core\\Src\\ScriptFuns.cpp:14687 -> LuaGetPlayerCount"
+],
+"GetSubWorldPlayerCount": [
+"Core\\Src\\ScriptFuns.cpp:14688 -> LuaGetSubWorldPlayerCount"
+],
+"GetSubWorldLastPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14689 -> LuaGetSubWorldLastPlayer"
+],
+"GetWordRank": [
+"Core\\Src\\ScriptFuns.cpp:14690 -> LuaGetWordRank"
+],
+"OpenGetString": [
+"Core\\Src\\ScriptFuns.cpp:14691 -> LuaOpenGetString"
+],
+"OpenGetNumber": [
+"Core\\Src\\ScriptFuns.cpp:14692 -> LuaOpenGetNumber"
+],
+"GetStringFromUI": [
+"Core\\Src\\ScriptFuns.cpp:14693 -> LuaGetStringFromUI"
+],
+"GetNumberFromUI": [
+"Core\\Src\\ScriptFuns.cpp:14694 -> LuaGetNumberFromUI"
+],
+"GetRank": [
+"Core\\Src\\ScriptFuns.cpp:14695 -> LuaGetRank"
+],
+"SetRank": [
+"Core\\Src\\ScriptFuns.cpp:14696 -> LuaSetRank"
+],
+"GetPlayerTitle": [
+"Core\\Src\\ScriptFuns.cpp:14697 -> LuaGetPlayerTitle"
+],
+"SetPlayerTitle": [
+"Core\\Src\\ScriptFuns.cpp:14698 -> LuaSetPlayerTitle"
+],
+"RemovePlayerTitle": [
+"Core\\Src\\ScriptFuns.cpp:14699 -> LuaRemovePlayerTitle"
+],
+"SetCurPlayerTitle": [
+"Core\\Src\\ScriptFuns.cpp:14700 -> LuaSetCurPlayerTitle"
+],
+"GetRankBattle": [
+"Core\\Src\\ScriptFuns.cpp:14701 -> LuaGetRankBattle"
+],
+"SetRankBattle": [
+"Core\\Src\\ScriptFuns.cpp:14702 -> LuaSetRankBattle"
+],
+"RemoveRankBattle": [
+"Core\\Src\\ScriptFuns.cpp:14703 -> LuaRemoveRankBattle"
+],
+"SetPropState": [
+"Core\\Src\\ScriptFuns.cpp:14704 -> LuaSetObjPropState"
+],
+"GetServerName": [
+"Core\\Src\\ScriptFuns.cpp:14705 -> LuaGetServerName",
+"Core\\Src\\ScriptFuns.cpp:15334 -> LuaGetServerName"
+],
+"GetExItem": [
+"Core\\Src\\ScriptFuns.cpp:14706 -> LuaGetExItem"
+],
+"SetExItem": [
+"Core\\Src\\ScriptFuns.cpp:14707 -> LuaSetExItem"
+],
+"GetExBox": [
+"Core\\Src\\ScriptFuns.cpp:14708 -> LuaGetExBox"
+],
+"SetExBox": [
+"Core\\Src\\ScriptFuns.cpp:14709 -> LuaSetExBox"
+],
+"GetWharfName": [
+"Core\\Src\\ScriptFuns.cpp:14711 -> LuaGetDockName"
+],
+"GetWharfCount": [
+"Core\\Src\\ScriptFuns.cpp:14712 -> LuaGetDockCount"
+],
+"GetWharfPrice": [
+"Core\\Src\\ScriptFuns.cpp:14713 -> LuaGetDockPrice"
+],
+"GetWharf": [
+"Core\\Src\\ScriptFuns.cpp:14714 -> LuaGetDock"
+],
+"GetWharfPos": [
+"Core\\Src\\ScriptFuns.cpp:14715 -> LuaGetDockPos"
+],
+"GetTerminiFState": [
+"Core\\Src\\ScriptFuns.cpp:14716 -> LuaGetWayPointFightState"
+],
+"GetWayPointFight": [
+"Core\\Src\\ScriptFuns.cpp:14717 -> LuaGetWayPointFight"
+],
+"KickOutPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14719 -> LuaKickOutPlayer",
+"Core\\Src\\ScriptFuns.cpp:15335 -> LuaKickOutPlayer"
+],
+"KickOutAccount": [
+"Core\\Src\\ScriptFuns.cpp:14720 -> LuaKickOutAccount",
+"Core\\Src\\ScriptFuns.cpp:15336 -> LuaKickOutAccount"
+],
+"KickOutSelf": [
+"Core\\Src\\ScriptFuns.cpp:14721 -> LuaKickOutSelf"
+],
+"KickOutSelf2": [
+"Core\\Src\\ScriptFuns.cpp:14722 -> LuaKickOutSelf2"
+],
+"IsLixian": [
+"Core\\Src\\ScriptFuns.cpp:14723 -> LuaIsLixian"
+],
+"SetPlayerSaveState": [
+"Core\\Src\\ScriptFuns.cpp:14724 -> LuaSetPlayerSaveState"
+],
+"GetSkillId": [
+"Core\\Src\\ScriptFuns.cpp:14725 -> LuaGetSkillIdInSkillList"
+],
+"GetSkillName": [
+"Core\\Src\\ScriptFuns.cpp:14726 -> LuaGetSkillName"
+],
+"SetSkillLevel": [
+"Core\\Src\\ScriptFuns.cpp:14727 -> LuaSetSkillLevel"
+],
+"SetChatFlag": [
+"Core\\Src\\ScriptFuns.cpp:14728 -> LuaSetPlayerChatForbiddenFlag"
+],
+"SaveNow": [
+"Core\\Src\\ScriptFuns.cpp:14729 -> LuaSaveNow"
+],
+"PaceBar": [
+"Core\\Src\\ScriptFuns.cpp:14730 -> LuaOpenTimeBox"
+],
+"TimeBox": [
+"Core\\Src\\ScriptFuns.cpp:14731 -> LuaOpenTimeBox"
+],
+"GetCountPlayerMax": [
+"Core\\Src\\ScriptFuns.cpp:14732 -> LuaGetCountPlayerMax"
+],
+"ReLoadScript": [
+"Core\\Src\\ScriptFuns.cpp:14733 -> LuaReLoadScript"
+],
+"GetPramaItemIdx": [
+"Core\\Src\\ScriptFuns.cpp:14734 -> LuaGetGetPramaItemIdx"
+],
+"AddNote": [
+"Core\\Src\\ScriptFuns.cpp:14737 -> LuaAddNote"
+],
+"GetMissionV": [
+"Core\\Src\\ScriptFuns.cpp:14739 -> LuaGetMissionValue"
+],
+"GetMissionS": [
+"Core\\Src\\ScriptFuns.cpp:14740 -> LuaGetMissionString",
+"Core\\Src\\ScriptFuns.cpp:15233 -> LuaJx2GetMissionString"
+],
+"SetMission": [
+"Core\\Src\\ScriptFuns.cpp:14741 -> LuaSetMission"
+],
+"GetGlbMissionV": [
+"Core\\Src\\ScriptFuns.cpp:14742 -> LuaGetGlobalMissionValue"
+],
+"GetGlbMissionVC": [
+"Core\\Src\\ScriptFuns.cpp:14743 -> LuaGetGlobalMissionValueC"
+],
+"SetGlbMissionV": [
+"Core\\Src\\ScriptFuns.cpp:14744 -> LuaSetGlobalMissionValue"
+],
+"SetGlbMission": [
+"Core\\Src\\ScriptFuns.cpp:14745 -> LuaSetGlobalMission"
+],
+"OpenMission": [
+"Core\\Src\\ScriptFuns.cpp:14746 -> LuaInitMission"
+],
+"RunMission": [
+"Core\\Src\\ScriptFuns.cpp:14747 -> LuaRunMission"
+],
+"CloseMission": [
+"Core\\Src\\ScriptFuns.cpp:14748 -> LuaCloseMission"
+],
+"GetMissionName": [
+"Core\\Src\\ScriptFuns.cpp:14749 -> LuaGetMissionName"
+],
+"StartMissionTimer": [
+"Core\\Src\\ScriptFuns.cpp:14750 -> LuaStartMissionTimer"
+],
+"StopMissionTimer": [
+"Core\\Src\\ScriptFuns.cpp:14751 -> LuaStopMissionTimer"
+],
+"GetMSRestTime": [
+"Core\\Src\\ScriptFuns.cpp:14752 -> LuaGetMissionRestTime"
+],
+"GetMSIdxGroup": [
+"Core\\Src\\ScriptFuns.cpp:14753 -> LuaGetPlayerMissionGroup"
+],
+"IsMission": [
+"Core\\Src\\ScriptFuns.cpp:14754 -> LuaIsMission"
+],
+"GetMSLadder": [
+"Core\\Src\\ScriptFuns.cpp:14755 -> LuaGetMSLadder"
+],
+"AddMSPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14756 -> LuaAddMissionPlayer"
+],
+"DelMSPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14757 -> LuaRemoveMissionPlayer"
+],
+"AddMSNpc": [
+"Core\\Src\\ScriptFuns.cpp:14758 -> LuaAddMissionNpc"
+],
+"DelMSNpc": [
+"Core\\Src\\ScriptFuns.cpp:14759 -> LuaRemoveMissionNpc"
+],
+"SetMSGroup": [
+"Core\\Src\\ScriptFuns.cpp:14760 -> LuaSetMissionGroup"
+],
+"GetNextPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14761 -> LuaGetNextPlayer"
+],
+"PIdx2MSDIdx": [
+"Core\\Src\\ScriptFuns.cpp:14762 -> LuaGetMissionPlayer_DataIndex"
+],
+"MSDIdx2PIdx": [
+"Core\\Src\\ScriptFuns.cpp:14763 -> LuaGetMissionPlayer_PlayerIndex"
+],
+"NpcIdx2PIdx": [
+"Core\\Src\\ScriptFuns.cpp:14764 -> LuaNpcIndexToPlayerIndex"
+],
+"GetMSPlayerCount": [
+"Core\\Src\\ScriptFuns.cpp:14765 -> LuaMissionPlayerCount"
+],
+"GetMSNpcCount": [
+"Core\\Src\\ScriptFuns.cpp:14766 -> LuaMissionNpcCount"
+],
+"RevivalAllNpc": [
+"Core\\Src\\ScriptFuns.cpp:14767 -> LuaRevivalAllNpc"
+],
+"DelAllNpc": [
+"Core\\Src\\ScriptFuns.cpp:14768 -> LuaDelAllNpcInWro"
+],
+"DelAllNpcName": [
+"Core\\Src\\ScriptFuns.cpp:14769 -> LuaDelAllNpcInWroName"
+],
+"SetPMParam": [
+"Core\\Src\\ScriptFuns.cpp:14770 -> LuaSetMissionPlayerParam"
+],
+"GetPMParam": [
+"Core\\Src\\ScriptFuns.cpp:14771 -> LuaGetMissionPlayerParam"
+],
+"Msg2MSGroup": [
+"Core\\Src\\ScriptFuns.cpp:14772 -> LuaMissionMsg2Group"
+],
+"Msg2MSAll": [
+"Core\\Src\\ScriptFuns.cpp:14773 -> LuaMissionMsg2All"
+],
+"Msg2MSPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14774 -> LuaMissionMsg2Player"
+],
+"UpdateBattleBox": [
+"Core\\Src\\ScriptFuns.cpp:14775 -> LuaUpdateBattleBox"
+],
+"SetDeathScript": [
+"Core\\Src\\ScriptFuns.cpp:14776 -> LuaSetPlayerDeathScript"
+],
+"SetLogoutScript": [
+"Core\\Src\\ScriptFuns.cpp:14777 -> LuaSetLogoutScript"
+],
+"HideNpc": [
+"Core\\Src\\ScriptFuns.cpp:14778 -> LuaHideNpc"
+],
+"SetLogoutRV": [
+"Core\\Src\\ScriptFuns.cpp:14779 -> LuaSetPlayerRevivalOptionWhenLogout"
+],
+"SetCreateTeam": [
+"Core\\Src\\ScriptFuns.cpp:14780 -> LuaSetCreateTeamOption"
+],
+"GetPK": [
+"Core\\Src\\ScriptFuns.cpp:14781 -> LuaGetPlayerPKValue"
+],
+"SetPK": [
+"Core\\Src\\ScriptFuns.cpp:14782 -> LuaSetPlayerPKValue"
+],
+"ShowLadder": [
+"Core\\Src\\ScriptFuns.cpp:14784 -> LuaShowLadder"
+],
+"OpenTongJX2": [
+"Core\\Src\\ScriptFuns.cpp:14786 -> LuaOpenTongJX2"
+],
+"OpenTong": [
+"Core\\Src\\ScriptFuns.cpp:14787 -> LuaOpenTong"
+],
+"GetTongName": [
+"Core\\Src\\ScriptFuns.cpp:14788 -> LuaGetTongName"
+],
+"GetTongInfo": [
+"Core\\Src\\ScriptFuns.cpp:14789 -> LuaGetTongInfo"
+],
+"GetTongFlag": [
+"Core\\Src\\ScriptFuns.cpp:14790 -> LuaGetTongFlag"
+],
+"SetViewTongOwnCity": [
+"Core\\Src\\ScriptFuns.cpp:14791 -> LuaSetViewTongOwnCity"
+],
+"SetThueTongOwnCity": [
+"Core\\Src\\ScriptFuns.cpp:14792 -> LuaSetThueTongOwnCity"
+],
+"SetPunish": [
+"Core\\Src\\ScriptFuns.cpp:14793 -> LuaSetDeathPunish"
+],
+"GetTongLevel": [
+"Core\\Src\\ScriptFuns.cpp:14794 -> LuaGetTongLevel"
+],
+"SetTongLevel": [
+"Core\\Src\\ScriptFuns.cpp:14795 -> LuaSetTongLevel"
+],
+"GetTongExp": [
+"Core\\Src\\ScriptFuns.cpp:14796 -> LuaGetTongExp"
+],
+"SetTongExp": [
+"Core\\Src\\ScriptFuns.cpp:14797 -> LuaSetTongExp"
+],
+"TONG_IsExist": [
+"Core\\Src\\ScriptFuns.cpp:14800 -> LuaTONG_IsExist"
+],
+"TONG_GetName": [
+"Core\\Src\\ScriptFuns.cpp:14801 -> LuaTONG_GetName"
+],
+"TONG_ApplyJoin": [
+"Core\\Src\\ScriptFuns.cpp:14802 -> LuaTONG_ApplyJoin"
+],
+"TONG_GetApplyCount": [
+"Core\\Src\\ScriptFuns.cpp:14803 -> LuaTONG_GetApplyCount"
+],
+"TONG_Name2ID": [
+"Core\\Src\\ScriptFuns.cpp:14804 -> LuaTONG_Name2ID"
+],
+"TONG_GetTongCount": [
+"Core\\Src\\ScriptFuns.cpp:14805 -> LuaTONG_GetTongCount"
+],
+"TONG_GetFirstTong": [
+"Core\\Src\\ScriptFuns.cpp:14806 -> LuaTONG_GetFirstTong"
+],
+"TONG_GetNextTong": [
+"Core\\Src\\ScriptFuns.cpp:14807 -> LuaTONG_GetNextTong"
+],
+"TONG_GetTongByRoleName": [
+"Core\\Src\\ScriptFuns.cpp:14808 -> LuaTONG_GetTongByRoleName"
+],
+"TONG_GetMemberCount": [
+"Core\\Src\\ScriptFuns.cpp:14809 -> LuaTONG_GetMemberCount"
+],
+"TONG_GetOnlineCount": [
+"Core\\Src\\ScriptFuns.cpp:14810 -> LuaTONG_GetOnlineCount"
+],
+"TONG_GetFirstMember": [
+"Core\\Src\\ScriptFuns.cpp:14811 -> LuaTONG_GetFirstMember"
+],
+"TONG_GetNextMember": [
+"Core\\Src\\ScriptFuns.cpp:14812 -> LuaTONG_GetNextMember"
+],
+"TONG_GetMaster": [
+"Core\\Src\\ScriptFuns.cpp:14813 -> LuaTONG_GetMaster"
+],
+"TONG_GetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14814 -> LuaTONG_GetTaskValue"
+],
+"TONG_GetUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14815 -> LuaTONG_GetUTaskValue"
+],
+"TONG_GetTaskTemp": [
+"Core\\Src\\ScriptFuns.cpp:14816 -> LuaTONG_GetTaskTemp"
+],
+"TONG_SetTaskTemp": [
+"Core\\Src\\ScriptFuns.cpp:14817 -> LuaTONG_SetTaskTemp"
+],
+"TONG_GetCredit": [
+"Core\\Src\\ScriptFuns.cpp:14818 -> LuaTONG_GetCredit"
+],
+"TONG_GetExp": [
+"Core\\Src\\ScriptFuns.cpp:14819 -> LuaTONG_GetExp"
+],
+"TONG_GetUnionID": [
+"Core\\Src\\ScriptFuns.cpp:14820 -> LuaTONG_GetUnionID"
+],
+"TONG_GetWarState": [
+"Core\\Src\\ScriptFuns.cpp:14821 -> LuaTONG_GetWarState"
+],
+"TONG_GetBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14822 -> LuaTONG_GetBuildFund"
+],
+"TONG_GetBuildLevel": [
+"Core\\Src\\ScriptFuns.cpp:14823 -> LuaTONG_GetBuildLevel"
+],
+"TONG_GetWarBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14824 -> LuaTONG_GetWarBuildFund"
+],
+"TONG_GetMaintainFund": [
+"Core\\Src\\ScriptFuns.cpp:14825 -> LuaTONG_GetMaintainFund"
+],
+"TONG_GetPerStandFund": [
+"Core\\Src\\ScriptFuns.cpp:14826 -> LuaTONG_GetPerStandFund"
+],
+"TONG_GetStoredOffer": [
+"Core\\Src\\ScriptFuns.cpp:14827 -> LuaTONG_GetStoredOffer"
+],
+"TONG_GetStoredBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14828 -> LuaTONG_GetStoredBuildFund"
+],
+"TONG_GetDay": [
+"Core\\Src\\ScriptFuns.cpp:14829 -> LuaTONG_GetDay"
+],
+"TONG_GetWeek": [
+"Core\\Src\\ScriptFuns.cpp:14830 -> LuaTONG_GetWeek"
+],
+"TONG_GetWeekBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14831 -> LuaTONG_GetWeekBuildFund"
+],
+"TONG_GetWeekBuildUpper": [
+"Core\\Src\\ScriptFuns.cpp:14832 -> LuaTONG_GetWeekBuildUpper"
+],
+"TONG_GetTotalBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14833 -> LuaTONG_GetTotalBuildFund"
+],
+"TONG_GetPauseState": [
+"Core\\Src\\ScriptFuns.cpp:14834 -> LuaTONG_GetPauseState"
+],
+"TONG_GetTongMap": [
+"Core\\Src\\ScriptFuns.cpp:14835 -> LuaTONG_GetTongMap"
+],
+"TONG_GetTongMapTemplate": [
+"Core\\Src\\ScriptFuns.cpp:14836 -> LuaTONG_GetTongMapTemplate"
+],
+"TONG_GetTongMapBan": [
+"Core\\Src\\ScriptFuns.cpp:14837 -> LuaTONG_GetTongMapBan"
+],
+"TONG_GetOccupyCityDay": [
+"Core\\Src\\ScriptFuns.cpp:14838 -> LuaTONG_GetOccupyCityDay"
+],
+"TONG_GetMoney": [
+"Core\\Src\\ScriptFuns.cpp:14839 -> LuaTONG_GetMoney"
+],
+"TONG_GetStandFund": [
+"Core\\Src\\ScriptFuns.cpp:14840 -> LuaTONG_GetStandFund"
+],
+"TONG_ApplySetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14841 -> LuaTONG_ApplySetTaskValue"
+],
+"TONG_ApplyAddTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14842 -> LuaTONG_ApplyAddTaskValue"
+],
+"TONG_ApplyAddUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14843 -> LuaTONG_ApplyAddUTaskValue"
+],
+"TONG_ApplySetMoney": [
+"Core\\Src\\ScriptFuns.cpp:14844 -> LuaTONG_ApplySetMoney"
+],
+"TONG_ApplyAddMoney": [
+"Core\\Src\\ScriptFuns.cpp:14845 -> LuaTONG_ApplyAddMoney"
+],
+"TONGM_IsExist": [
+"Core\\Src\\ScriptFuns.cpp:14846 -> LuaTONGM_IsExist"
+],
+"TONGM_GetName": [
+"Core\\Src\\ScriptFuns.cpp:14847 -> LuaTONGM_GetName"
+],
+"TONGM_GetFigure": [
+"Core\\Src\\ScriptFuns.cpp:14848 -> LuaTONGM_GetFigure"
+],
+"TONGM_GetSex": [
+"Core\\Src\\ScriptFuns.cpp:14849 -> LuaTONGM_GetSex"
+],
+"TONGM_GetOnline": [
+"Core\\Src\\ScriptFuns.cpp:14850 -> LuaTONGM_GetOnline"
+],
+"TONGM_GetOffer": [
+"Core\\Src\\ScriptFuns.cpp:14851 -> LuaTONGM_GetOffer"
+],
+"TONGM_GetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14852 -> LuaTONGM_GetTaskValue"
+],
+"TONGM_GetUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14853 -> LuaTONGM_GetUTaskValue"
+],
+"TONGM_CheckRight": [
+"Core\\Src\\ScriptFuns.cpp:14854 -> LuaTONGM_CheckRight"
+],
+"TONGM_ApplySetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14855 -> LuaTONGM_ApplySetTaskValue"
+],
+"TONGM_ApplyAddTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14856 -> LuaTONGM_ApplyAddTaskValue"
+],
+"TONGM_ApplyAddOffer": [
+"Core\\Src\\ScriptFuns.cpp:14857 -> LuaTONGM_ApplyAddOffer"
+],
+"TONGM_ApplySetRetireDate": [
+"Core\\Src\\ScriptFuns.cpp:14858 -> LuaTONGM_ApplySetRetireDate"
+],
+"TONGM_ApplySetLastOnlineDate": [
+"Core\\Src\\ScriptFuns.cpp:14859 -> LuaTONGM_ApplySetLastOnlineDate"
+],
+"TONGM_ApplyAddRight": [
+"Core\\Src\\ScriptFuns.cpp:14860 -> LuaTONGM_ApplyAddRight"
+],
+"TONGM_ApplyDelRight": [
+"Core\\Src\\ScriptFuns.cpp:14861 -> LuaTONGM_ApplyDelRight"
+],
+"GetContribution": [
+"Core\\Src\\ScriptFuns.cpp:14864 -> LuaJX2_GetContribution"
+],
+"AddContribution": [
+"Core\\Src\\ScriptFuns.cpp:14865 -> LuaJX2_AddContribution"
+],
+"GetWeeklyOffer": [
+"Core\\Src\\ScriptFuns.cpp:14866 -> LuaJX2_GetWeeklyOffer"
+],
+"AddWeeklyOffer": [
+"Core\\Src\\ScriptFuns.cpp:14867 -> LuaJX2_AddWeeklyOffer"
+],
+"SetWeeklyOffer": [
+"Core\\Src\\ScriptFuns.cpp:14868 -> LuaJX2_SetWeeklyOffer"
+],
+"GetCumulateOffer": [
+"Core\\Src\\ScriptFuns.cpp:14869 -> LuaJX2_GetCumulateOffer"
+],
+"AddCumulateOffer": [
+"Core\\Src\\ScriptFuns.cpp:14870 -> LuaJX2_AddCumulateOffer"
+],
+"GetWeekGoalOffer": [
+"Core\\Src\\ScriptFuns.cpp:14871 -> LuaJX2_GetWeekGoalOffer"
+],
+"AddWeekGoalOffer": [
+"Core\\Src\\ScriptFuns.cpp:14872 -> LuaJX2_AddWeekGoalOffer"
+],
+"GetCurServerTime": [
+"Core\\Src\\ScriptFuns.cpp:14873 -> LuaJX2_GetCurServerTime"
+],
+"GetSysCurrentTime": [
+"Core\\Src\\ScriptFuns.cpp:14874 -> LuaJX2_GetCurServerTime"
+],
+"GetCurrentTime": [
+"Core\\Src\\ScriptFuns.cpp:14875 -> LuaJX2_GetCurServerTime"
+],
+"FormatTime2String": [
+"Core\\Src\\ScriptFuns.cpp:14876 -> LuaJX2_FormatTime2String"
+],
+"FormatTime2Number": [
+"Core\\Src\\ScriptFuns.cpp:14877 -> LuaJX2_FormatTime2Number"
+],
+"String2Id": [
+"Core\\Src\\ScriptFuns.cpp:14878 -> LuaJX2_String2Id"
+],
+"OutputMsg": [
+"Core\\Src\\ScriptFuns.cpp:14879 -> LuaJX2_OutputMsg"
+],
+"WriteLog": [
+"Core\\Src\\ScriptFuns.cpp:14880 -> LuaJX2_WriteLog"
+],
+"WriteStringToFile": [
+"Core\\Src\\ScriptFuns.cpp:14881 -> LuaJX2_WriteStringToFile"
+],
+"GlobalExecute": [
+"Core\\Src\\ScriptFuns.cpp:14882 -> LuaJX2_GlobalExecute"
+],
+"SyncTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:14883 -> LuaJX2_SyncTaskValue"
+],
+"SyncTaskValueMore": [
+"Core\\Src\\ScriptFuns.cpp:14886 -> LuaJX2_SyncTaskValueMore"
+],
+"GetGblInt": [
+"Core\\Src\\ScriptFuns.cpp:14887 -> LuaGetGlbValue"
+],
+"SetGblInt": [
+"Core\\Src\\ScriptFuns.cpp:14888 -> LuaSetGlbValue"
+],
+"Random": [
+"Core\\Src\\ScriptFuns.cpp:14889 -> LuaWllsRandom"
+],
+"Number2Int": [
+"Core\\Src\\ScriptFuns.cpp:14890 -> LuaNumber2Int"
+],
+"Time2Tm": [
+"Core\\Src\\ScriptFuns.cpp:14891 -> LuaTime2Tm"
+],
+"TaskName": [
+"Core\\Src\\ScriptFuns.cpp:14892 -> LuaWllsTaskCentreStub"
+],
+"TaskTime": [
+"Core\\Src\\ScriptFuns.cpp:14893 -> LuaWllsTaskCentreStub"
+],
+"TaskInterval": [
+"Core\\Src\\ScriptFuns.cpp:14894 -> LuaWllsTaskCentreStub"
+],
+"TaskCountLimit": [
+"Core\\Src\\ScriptFuns.cpp:14895 -> LuaWllsTaskCentreStub"
+],
+"CloseGlbMission": [
+"Core\\Src\\ScriptFuns.cpp:14896 -> LuaCloseGlbMission"
+],
+"GetGateWayClientID": [
+"Core\\Src\\ScriptFuns.cpp:14897 -> LuaGetGateWayClientID"
+],
+"IsCharged": [
+"Core\\Src\\ScriptFuns.cpp:14898 -> LuaWllsIsCharged"
+],
+"LoadScript": [
+"Core\\Src\\ScriptFuns.cpp:14899 -> LuaWllsLoadScript"
+],
+"DynamicExecute": [
+"Core\\Src\\ScriptFuns.cpp:14900 -> LuaDynamicExecute"
+],
+"AskClientForString": [
+"Core\\Src\\ScriptFuns.cpp:14901 -> LuaWllsAskClientForString"
+],
+"GetRespect": [
+"Core\\Src\\ScriptFuns.cpp:14902 -> LuaWllsGetRespect"
+],
+"AddRespect": [
+"Core\\Src\\ScriptFuns.cpp:14903 -> LuaWllsAddRespect"
+],
+"SetRespect": [
+"Core\\Src\\ScriptFuns.cpp:14904 -> LuaWllsSetRespect"
+],
+"GetSkillState": [
+"Core\\Src\\ScriptFuns.cpp:14905 -> LuaWllsGetSkillState"
+],
+"GetLastAddFaction": [
+"Core\\Src\\ScriptFuns.cpp:14906 -> LuaWllsGetLastAddFaction"
+],
+"GetBoxLockState": [
+"Core\\Src\\ScriptFuns.cpp:14907 -> LuaWllsGetBoxLockState"
+],
+"CheckGlobalTradeFlag": [
+"Core\\Src\\ScriptFuns.cpp:14908 -> LuaWllsCheckGlobalTradeFlag"
+],
+"ST_CheckTextFilter": [
+"Core\\Src\\ScriptFuns.cpp:14909 -> LuaWllsSTCheckTextFilter"
+],
+"safeshow": [
+"Core\\Src\\ScriptFuns.cpp:14910 -> LuaWllsSafeshow"
+],
+"CalcItemCount": [
+"Core\\Src\\ScriptFuns.cpp:14911 -> LuaWllsCalcItemCount"
+],
+"CalcEquiproomItemCount": [
+"Core\\Src\\ScriptFuns.cpp:14912 -> LuaWllsCalcEquiproomItemCount"
+],
+"ITEM_GetImmediaItemIndex": [
+"Core\\Src\\ScriptFuns.cpp:14913 -> LuaWllsGetImmediaItemIndex"
+],
+"CountFreeRoomByWH": [
+"Core\\Src\\ScriptFuns.cpp:14914 -> LuaWllsCountFreeRoomByWH"
+],
+"DisabledStall": [
+"Core\\Src\\ScriptFuns.cpp:14915 -> LuaWllsDisabledStall"
+],
+"ForbitTrade": [
+"Core\\Src\\ScriptFuns.cpp:14916 -> LuaWllsForbitTrade"
+],
+"ForbitStamina": [
+"Core\\Src\\ScriptFuns.cpp:14917 -> LuaWllsForbitStamina"
+],
+"ForbitSkill": [
+"Core\\Src\\ScriptFuns.cpp:14919 -> LuaTongForbitSkill"
+],
+"SetAForbitSkill": [
+"Core\\Src\\ScriptFuns.cpp:14920 -> LuaTongSetAForbitSkill"
+],
+"ForbitAura": [
+"Core\\Src\\ScriptFuns.cpp:14921 -> LuaTongForbitAura"
+],
+"ForbidEnmity": [
+"Core\\Src\\ScriptFuns.cpp:14922 -> LuaTongForbidEnmity"
+],
+"SetImmedSkill": [
+"Core\\Src\\ScriptFuns.cpp:14923 -> LuaTongSetImmedSkill"
+],
+"TaskNo": [
+"Core\\Src\\ScriptFuns.cpp:14924 -> LuaTongTaskNo"
+],
+"ST_StartDamageCounter": [
+"Core\\Src\\ScriptFuns.cpp:14925 -> LuaWllsSTStartDamageCounter"
+],
+"ST_StopDamageCounter": [
+"Core\\Src\\ScriptFuns.cpp:14926 -> LuaWllsSTStopDamageCounter"
+],
+"ST_GetDamageCounter": [
+"Core\\Src\\ScriptFuns.cpp:14927 -> LuaWllsSTGetDamageCounter"
+],
+"ST_IncreaseDamageCounter": [
+"Core\\Src\\ScriptFuns.cpp:14928 -> LuaWllsSTIncreaseDamageCounter"
+],
+"GetStringTask": [
+"Core\\Src\\ScriptFuns.cpp:14929 -> LuaWllsGetStringTask"
+],
+"SetStringTask": [
+"Core\\Src\\ScriptFuns.cpp:14930 -> LuaWllsSetStringTask"
+],
+"AskClientForNumber": [
+"Core\\Src\\ScriptFuns.cpp:14932 -> LuaJX2_AskClientForNumber"
+],
+"GetTong": [
+"Core\\Src\\ScriptFuns.cpp:14933 -> LuaJX2_GetTong"
+],
+"GetCurrentTong": [
+"Core\\Src\\ScriptFuns.cpp:14934 -> LuaJX2_GetTong"
+],
+"GetTongMemberID": [
+"Core\\Src\\ScriptFuns.cpp:14935 -> LuaJX2_GetTongMemberID"
+],
+"GetTongFigure": [
+"Core\\Src\\ScriptFuns.cpp:14936 -> LuaJX2_GetTongFigure"
+],
+"CheckTongMasterPower": [
+"Core\\Src\\ScriptFuns.cpp:14937 -> LuaJX2_CheckTongMasterPower"
+],
+"GetNpcTong": [
+"Core\\Src\\ScriptFuns.cpp:14938 -> LuaJX2_GetNpcTong"
+],
+"SetTongMaster": [
+"Core\\Src\\ScriptFuns.cpp:14939 -> LuaJX2_SetTongMaster"
+],
+"GetTongLogData": [
+"Core\\Src\\ScriptFuns.cpp:14940 -> LuaJX2_GetTongLogData"
+],
+"TongClaimWar": [
+"Core\\Src\\ScriptFuns.cpp:14941 -> LuaJX2_TongClaimWar"
+],
+"GetTongDuty": [
+"Core\\Src\\ScriptFuns.cpp:14942 -> LuaJX2_GetTongDuty"
+],
+"Msg2PlayerByName": [
+"Core\\Src\\ScriptFuns.cpp:14943 -> LuaJX2_Msg2PlayerByName"
+],
+"GetTongNameByID": [
+"Core\\Src\\ScriptFuns.cpp:14944 -> LuaTONG_GetName"
+],
+"GetTongMTask": [
+"Core\\Src\\ScriptFuns.cpp:14945 -> LuaJX2_GetTongMTask"
+],
+"SetTongMTask": [
+"Core\\Src\\ScriptFuns.cpp:14946 -> LuaJX2_SetTongMTask"
+],
+"AddTongMTask": [
+"Core\\Src\\ScriptFuns.cpp:14947 -> LuaJX2_AddTongMTask"
+],
+"TONG_GetSelfCamp": [
+"Core\\Src\\ScriptFuns.cpp:14948 -> LuaTONG_GetSelfCamp"
+],
+"TONG_GetCurCamp": [
+"Core\\Src\\ScriptFuns.cpp:14949 -> LuaTONG_GetCurCamp"
+],
+"TONG_GetExpLevel": [
+"Core\\Src\\ScriptFuns.cpp:14950 -> LuaTONG_GetExpLevel"
+],
+"TONG_GetPremium": [
+"Core\\Src\\ScriptFuns.cpp:14951 -> LuaTONG_GetPremium"
+],
+"TONG_GetCurWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14952 -> LuaTONG_GetCurWeekGoalLevel"
+],
+"TONG_GetWeekGoalEvent": [
+"Core\\Src\\ScriptFuns.cpp:14953 -> LuaTONG_GetWeekGoalEvent"
+],
+"TONG_GetWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14954 -> LuaTONG_GetWeekGoalLevel"
+],
+"TONG_GetWeekGoalTotal": [
+"Core\\Src\\ScriptFuns.cpp:14955 -> LuaTONG_GetWeekGoalTotal"
+],
+"TONG_GetWeekGoalPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14956 -> LuaTONG_GetWeekGoalPlayer"
+],
+"TONG_GetWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:14957 -> LuaTONG_GetWeekGoalValue"
+],
+"TONG_GetWeekGoalPriceTong": [
+"Core\\Src\\ScriptFuns.cpp:14958 -> LuaTONG_GetWeekGoalPriceTong"
+],
+"TONG_GetWeekGoalPricePlayer": [
+"Core\\Src\\ScriptFuns.cpp:14959 -> LuaTONG_GetWeekGoalPricePlayer"
+],
+"TONG_GetLWeekGoalEvent": [
+"Core\\Src\\ScriptFuns.cpp:14960 -> LuaTONG_GetLWeekGoalEvent"
+],
+"TONG_GetLWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14961 -> LuaTONG_GetLWeekGoalLevel"
+],
+"TONG_GetLWeekGoalTotal": [
+"Core\\Src\\ScriptFuns.cpp:14962 -> LuaTONG_GetLWeekGoalTotal"
+],
+"TONG_GetLWeekGoalPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14963 -> LuaTONG_GetLWeekGoalPlayer"
+],
+"TONG_GetLWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:14964 -> LuaTONG_GetLWeekGoalValue"
+],
+"TONG_GetLWeekGoalPriceTong": [
+"Core\\Src\\ScriptFuns.cpp:14965 -> LuaTONG_GetLWeekGoalPriceTong"
+],
+"TONG_GetLWeekGoalPricePlayer": [
+"Core\\Src\\ScriptFuns.cpp:14966 -> LuaTONG_GetLWeekGoalPricePlayer"
+],
+"TONG_GetAnnouncement": [
+"Core\\Src\\ScriptFuns.cpp:14967 -> LuaTONG_GetAnnouncement"
+],
+"TONG_ApplySetBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14968 -> LuaTONG_ApplySetBuildFund"
+],
+"TONG_ApplySetCurWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14969 -> LuaTONG_ApplySetCurWeekGoalLevel"
+],
+"TONG_ApplySetDay": [
+"Core\\Src\\ScriptFuns.cpp:14970 -> LuaTONG_ApplySetDay"
+],
+"TONG_ApplySetWeek": [
+"Core\\Src\\ScriptFuns.cpp:14971 -> LuaTONG_ApplySetWeek"
+],
+"TONG_ApplySetMaintainFund": [
+"Core\\Src\\ScriptFuns.cpp:14972 -> LuaTONG_ApplySetMaintainFund"
+],
+"TONG_ApplySetOccupyCityDay": [
+"Core\\Src\\ScriptFuns.cpp:14973 -> LuaTONG_ApplySetOccupyCityDay"
+],
+"TONG_ApplySetPauseState": [
+"Core\\Src\\ScriptFuns.cpp:14974 -> LuaTONG_ApplySetPauseState"
+],
+"TONG_ApplySetPerStandFund": [
+"Core\\Src\\ScriptFuns.cpp:14975 -> LuaTONG_ApplySetPerStandFund"
+],
+"TONG_ApplySetStoredBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14976 -> LuaTONG_ApplySetStoredBuildFund"
+],
+"TONG_ApplySetStoredOffer": [
+"Core\\Src\\ScriptFuns.cpp:14977 -> LuaTONG_ApplySetStoredOffer"
+],
+"TONG_ApplySetTotalBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14978 -> LuaTONG_ApplySetTotalBuildFund"
+],
+"TONG_ApplySetWarBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14979 -> LuaTONG_ApplySetWarBuildFund"
+],
+"TONG_ApplySetWeekBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:14980 -> LuaTONG_ApplySetWeekBuildFund"
+],
+"TONG_ApplySetWeekBuildUpper": [
+"Core\\Src\\ScriptFuns.cpp:14981 -> LuaTONG_ApplySetWeekBuildUpper"
+],
+"TONG_ApplySetWeekGoalEvent": [
+"Core\\Src\\ScriptFuns.cpp:14982 -> LuaTONG_ApplySetWeekGoalEvent"
+],
+"TONG_ApplySetWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14983 -> LuaTONG_ApplySetWeekGoalLevel"
+],
+"TONG_ApplySetWeekGoalTotal": [
+"Core\\Src\\ScriptFuns.cpp:14984 -> LuaTONG_ApplySetWeekGoalTotal"
+],
+"TONG_ApplySetWeekGoalPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14985 -> LuaTONG_ApplySetWeekGoalPlayer"
+],
+"TONG_ApplySetWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:14986 -> LuaTONG_ApplySetWeekGoalValue"
+],
+"TONG_ApplySetWeekGoalPriceTong": [
+"Core\\Src\\ScriptFuns.cpp:14987 -> LuaTONG_ApplySetWeekGoalPriceTong"
+],
+"TONG_ApplySetWeekGoalPricePlayer": [
+"Core\\Src\\ScriptFuns.cpp:14988 -> LuaTONG_ApplySetWeekGoalPricePlayer"
+],
+"TONG_ApplySetLWeekGoalEvent": [
+"Core\\Src\\ScriptFuns.cpp:14989 -> LuaTONG_ApplySetLWeekGoalEvent"
+],
+"TONG_ApplySetLWeekGoalLevel": [
+"Core\\Src\\ScriptFuns.cpp:14990 -> LuaTONG_ApplySetLWeekGoalLevel"
+],
+"TONG_ApplySetLWeekGoalTotal": [
+"Core\\Src\\ScriptFuns.cpp:14991 -> LuaTONG_ApplySetLWeekGoalTotal"
+],
+"TONG_ApplySetLWeekGoalPlayer": [
+"Core\\Src\\ScriptFuns.cpp:14992 -> LuaTONG_ApplySetLWeekGoalPlayer"
+],
+"TONG_ApplySetLWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:14993 -> LuaTONG_ApplySetLWeekGoalValue"
+],
+"TONG_ApplySetLWeekGoalPriceTong": [
+"Core\\Src\\ScriptFuns.cpp:14994 -> LuaTONG_ApplySetLWeekGoalPriceTong"
+],
+"TONG_ApplySetLWeekGoalPricePlayer": [
+"Core\\Src\\ScriptFuns.cpp:14995 -> LuaTONG_ApplySetLWeekGoalPricePlayer"
+],
+"TONG_ApplySetTongMap": [
+"Core\\Src\\ScriptFuns.cpp:14996 -> LuaTONG_ApplySetTongMap"
+],
+"TONG_ApplySetTongMapBan": [
+"Core\\Src\\ScriptFuns.cpp:14997 -> LuaTONG_ApplySetTongMapBan"
+],
+"TONG_ApplySetAnnouncement": [
+"Core\\Src\\ScriptFuns.cpp:14998 -> LuaTONG_ApplySetAnnouncement"
+],
+"TONG_ApplySetStunt": [
+"Core\\Src\\ScriptFuns.cpp:14999 -> LuaTONG_ApplySetStunt"
+],
+"TONG_ApplyAddBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:15000 -> LuaTONG_ApplyAddBuildFund"
+],
+"TONG_ApplyAddWarBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:15001 -> LuaTONG_ApplyAddWarBuildFund"
+],
+"TONG_ApplyAddPerStandFund": [
+"Core\\Src\\ScriptFuns.cpp:15002 -> LuaTONG_ApplyAddPerStandFund"
+],
+"TONG_ApplyAddDay": [
+"Core\\Src\\ScriptFuns.cpp:15003 -> LuaTONG_ApplyAddDay"
+],
+"TONG_ApplyAddWeek": [
+"Core\\Src\\ScriptFuns.cpp:15004 -> LuaTONG_ApplyAddWeek"
+],
+"TONG_ApplyAddStoredBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:15005 -> LuaTONG_ApplyAddStoredBuildFund"
+],
+"TONG_ApplyAddStoredOffer": [
+"Core\\Src\\ScriptFuns.cpp:15006 -> LuaTONG_ApplyAddStoredOffer"
+],
+"TONG_ApplyAddTotalBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:15007 -> LuaTONG_ApplyAddTotalBuildFund"
+],
+"TONG_ApplyAddWeekBuildFund": [
+"Core\\Src\\ScriptFuns.cpp:15008 -> LuaTONG_ApplyAddWeekBuildFund"
+],
+"TONG_ApplyAddWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:15009 -> LuaTONG_ApplyAddWeekGoalValue"
+],
+"TONG_ApplyAddLWeekGoalValue": [
+"Core\\Src\\ScriptFuns.cpp:15010 -> LuaTONG_ApplyAddLWeekGoalValue"
+],
+"TONG_ApplyAddEventRecord": [
+"Core\\Src\\ScriptFuns.cpp:15011 -> LuaTONG_ApplyAddEventRecord"
+],
+"TONG_ApplyAddHistoryRecord": [
+"Core\\Src\\ScriptFuns.cpp:15012 -> LuaTONG_ApplyAddHistoryRecord"
+],
+"TONG_AddTaskTemp": [
+"Core\\Src\\ScriptFuns.cpp:15013 -> LuaTONG_AddTaskTemp"
+],
+"TONG_WriteLog": [
+"Core\\Src\\ScriptFuns.cpp:15014 -> LuaTONG_WriteLog"
+],
+"TONG_ApplyInit": [
+"Core\\Src\\ScriptFuns.cpp:15015 -> LuaTONG_ApplyInit"
+],
+"TONG_ApplyUpgrade": [
+"Core\\Src\\ScriptFuns.cpp:15016 -> LuaTONG_ApplyUpgrade"
+],
+"TONG_ApplyDegrade": [
+"Core\\Src\\ScriptFuns.cpp:15017 -> LuaTONG_ApplyDegrade"
+],
+"TONG_ApplyMaintain": [
+"Core\\Src\\ScriptFuns.cpp:15018 -> LuaTONG_ApplyMaintain"
+],
+"TONG_ApplyWeeklyMaintain": [
+"Core\\Src\\ScriptFuns.cpp:15019 -> LuaTONG_ApplyWeeklyMaintain"
+],
+"TONG_ApplyDeleteMap": [
+"Core\\Src\\ScriptFuns.cpp:15020 -> LuaTONG_ApplyDeleteMap"
+],
+"TONG_ApplyKickMember": [
+"Core\\Src\\ScriptFuns.cpp:15021 -> LuaTONG_ApplyKickMember"
+],
+"TONG_ApplyDeleteMember": [
+"Core\\Src\\ScriptFuns.cpp:15022 -> LuaTONG_ApplyDeleteMember"
+],
+"TONG_ApplyCreatMap": [
+"Core\\Src\\ScriptFuns.cpp:15023 -> LuaTONG_ApplyCreatMap"
+],
+"TONG_ChangeAllMemberFeature": [
+"Core\\Src\\ScriptFuns.cpp:15024 -> LuaTONG_ChangeAllMemberFeature"
+],
+"TONG_ContributeOffer": [
+"Core\\Src\\ScriptFuns.cpp:15025 -> LuaTONG_ContributeOffer"
+],
+"TONG_DistributeOfferToGroup": [
+"Core\\Src\\ScriptFuns.cpp:15026 -> LuaTONG_DistributeOfferToGroup"
+],
+"TONG_DistributeOfferToMember": [
+"Core\\Src\\ScriptFuns.cpp:15027 -> LuaTONG_DistributeOfferToMember"
+],
+"TONGM_GetJoinTime": [
+"Core\\Src\\ScriptFuns.cpp:15028 -> LuaTONGM_GetJoinTime"
+],
+"TONGM_GetJoinDay": [
+"Core\\Src\\ScriptFuns.cpp:15029 -> LuaTONGM_GetJoinDay"
+],
+"TONGM_GetMoney": [
+"Core\\Src\\ScriptFuns.cpp:15030 -> LuaTONGM_GetMoney"
+],
+"TONGM_GetLWeekGoalOffer": [
+"Core\\Src\\ScriptFuns.cpp:15031 -> LuaTONGM_GetLWeekGoalOffer"
+],
+"TONGM_GetLWeeklyOffer": [
+"Core\\Src\\ScriptFuns.cpp:15032 -> LuaTONGM_GetLWeeklyOffer"
+],
+"TONGM_GetLastOnlineDate": [
+"Core\\Src\\ScriptFuns.cpp:15033 -> LuaTONGM_GetLastOnlineDate"
+],
+"TONGM_GetRetireDate": [
+"Core\\Src\\ScriptFuns.cpp:15034 -> LuaTONGM_GetRetireDate"
+],
+"TONGM_ApplySetLWeekGoalOffer": [
+"Core\\Src\\ScriptFuns.cpp:15035 -> LuaTONGM_ApplySetLWeekGoalOffer"
+],
+"TONGM_ApplySetLWeeklyOffer": [
+"Core\\Src\\ScriptFuns.cpp:15036 -> LuaTONGM_ApplySetLWeeklyOffer"
+],
+"TONGM_ApplyAddUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15037 -> LuaTONGM_ApplyAddUTaskValue"
+],
+"TONGM_ApplyAddOfferEx": [
+"Core\\Src\\ScriptFuns.cpp:15038 -> LuaTONGM_ApplyAddOfferEx"
+],
+"TWS_IsExist": [
+"Core\\Src\\ScriptFuns.cpp:15039 -> LuaTWS_IsExist"
+],
+"TWS_IsOpen": [
+"Core\\Src\\ScriptFuns.cpp:15040 -> LuaTWS_IsOpen"
+],
+"TWS_GetType": [
+"Core\\Src\\ScriptFuns.cpp:15041 -> LuaTWS_GetType"
+],
+"TWS_GetLevel": [
+"Core\\Src\\ScriptFuns.cpp:15042 -> LuaTWS_GetLevel"
+],
+"TWS_GetWorkshopCount": [
+"Core\\Src\\ScriptFuns.cpp:15043 -> LuaTWS_GetWorkshopCount"
+],
+"TWS_GetFirstWorkshop": [
+"Core\\Src\\ScriptFuns.cpp:15044 -> LuaTWS_GetFirstWorkshop"
+],
+"TWS_GetNextWorkshop": [
+"Core\\Src\\ScriptFuns.cpp:15045 -> LuaTWS_GetNextWorkshop"
+],
+"TWS_GetDayOutput": [
+"Core\\Src\\ScriptFuns.cpp:15046 -> LuaTWS_GetDayOutput"
+],
+"TWS_GetUseLevel": [
+"Core\\Src\\ScriptFuns.cpp:15047 -> LuaTWS_GetUseLevel"
+],
+"TWS_GetUseLevelSet": [
+"Core\\Src\\ScriptFuns.cpp:15048 -> LuaTWS_GetUseLevelSet"
+],
+"TWS_GetBuildingNpc": [
+"Core\\Src\\ScriptFuns.cpp:15049 -> LuaTWS_GetBuildingNpc"
+],
+"TWS_SetBuildingNpc": [
+"Core\\Src\\ScriptFuns.cpp:15050 -> LuaTWS_SetBuildingNpc"
+],
+"TWS_GetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15051 -> LuaTWS_GetTaskValue"
+],
+"TWS_GetUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15052 -> LuaTWS_GetUTaskValue"
+],
+"TWS_ApplySetTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15053 -> LuaTWS_ApplySetTaskValue"
+],
+"TWS_ApplyAddTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15054 -> LuaTWS_ApplyAddTaskValue"
+],
+"TWS_ApplyAddUTaskValue": [
+"Core\\Src\\ScriptFuns.cpp:15055 -> LuaTWS_ApplyAddUTaskValue"
+],
+"TWS_ApplySetDayOutput": [
+"Core\\Src\\ScriptFuns.cpp:15056 -> LuaTWS_ApplySetDayOutput"
+],
+"TWS_ApplyAddDayOutput": [
+"Core\\Src\\ScriptFuns.cpp:15057 -> LuaTWS_ApplyAddDayOutput"
+],
+"TWS_ApplySetUseLevel": [
+"Core\\Src\\ScriptFuns.cpp:15058 -> LuaTWS_ApplySetUseLevel"
+],
+"TWS_ApplySetUseLevelSet": [
+"Core\\Src\\ScriptFuns.cpp:15059 -> LuaTWS_ApplySetUseLevelSet"
+],
+"TWS_ApplyAdd": [
+"Core\\Src\\ScriptFuns.cpp:15060 -> LuaTWS_ApplyAdd"
+],
+"TWS_ApplyRemove": [
+"Core\\Src\\ScriptFuns.cpp:15061 -> LuaTWS_ApplyRemove"
+],
+"TWS_ApplyOpen": [
+"Core\\Src\\ScriptFuns.cpp:15062 -> LuaTWS_ApplyOpen"
+],
+"TWS_ApplyClose": [
+"Core\\Src\\ScriptFuns.cpp:15063 -> LuaTWS_ApplyClose"
+],
+"TWS_ApplyUpgrade": [
+"Core\\Src\\ScriptFuns.cpp:15064 -> LuaTWS_ApplyUpgrade"
+],
+"TWS_ApplyDegrade": [
+"Core\\Src\\ScriptFuns.cpp:15065 -> LuaTWS_ApplyDegrade"
+],
+"TWS_ApplyMaintain": [
+"Core\\Src\\ScriptFuns.cpp:15066 -> LuaTWS_ApplyMaintain"
+],
+"TWS_ApplyUse": [
+"Core\\Src\\ScriptFuns.cpp:15067 -> LuaTWS_ApplyUse"
+],
+"TWS_MaintainAll": [
+"Core\\Src\\ScriptFuns.cpp:15068 -> LuaTWS_MaintainAll"
+],
+"TONG_DailyMaintainAll": [
+"Core\\Src\\ScriptFuns.cpp:15069 -> LuaTONG_DailyMaintainAll"
+],
+"OB_Create": [
+"Core\\Src\\ScriptFuns.cpp:15071 -> LuaOB_Create"
+],
+"OB_Release": [
+"Core\\Src\\ScriptFuns.cpp:15072 -> LuaOB_Release"
+],
+"OB_IsEmpty": [
+"Core\\Src\\ScriptFuns.cpp:15073 -> LuaOB_IsEmpty"
+],
+"OB_Clear": [
+"Core\\Src\\ScriptFuns.cpp:15074 -> LuaOB_Clear"
+],
+"OB_Append": [
+"Core\\Src\\ScriptFuns.cpp:15075 -> LuaOB_Append"
+],
+"OB_Copy": [
+"Core\\Src\\ScriptFuns.cpp:15076 -> LuaOB_Copy"
+],
+"OB_PushByte": [
+"Core\\Src\\ScriptFuns.cpp:15077 -> LuaOB_PushByte"
+],
+"OB_PopByte": [
+"Core\\Src\\ScriptFuns.cpp:15078 -> LuaOB_PopByte"
+],
+"OB_PushInt": [
+"Core\\Src\\ScriptFuns.cpp:15079 -> LuaOB_PushInt"
+],
+"OB_PopInt": [
+"Core\\Src\\ScriptFuns.cpp:15080 -> LuaOB_PopInt"
+],
+"OB_PushDouble": [
+"Core\\Src\\ScriptFuns.cpp:15081 -> LuaOB_PushDouble"
+],
+"OB_PopDouble": [
+"Core\\Src\\ScriptFuns.cpp:15082 -> LuaOB_PopDouble"
+],
+"OB_PushString": [
+"Core\\Src\\ScriptFuns.cpp:15083 -> LuaOB_PushString"
+],
+"OB_PopString": [
+"Core\\Src\\ScriptFuns.cpp:15084 -> LuaOB_PopString"
+],
+"Ladder_NewLadder": [
+"Core\\Src\\ScriptFuns.cpp:15085 -> LuaLadder_NewLadder"
+],
+"Ladder_ClearLadder": [
+"Core\\Src\\ScriptFuns.cpp:15086 -> LuaLadder_ClearLadder"
+],
+"Ladder_GetLadderInfo": [
+"Core\\Src\\ScriptFuns.cpp:15087 -> LuaLadder_GetLadderInfo"
+],
+"SetGlbValue": [
+"Core\\Src\\ScriptFuns.cpp:15088 -> LuaSetGlbValue"
+],
+"GetGlbValue": [
+"Core\\Src\\ScriptFuns.cpp:15089 -> LuaGetGlbValue"
+],
+"LG_CreateLeagueObj": [
+"Core\\Src\\ScriptFuns.cpp:15091 -> LuaLG_CreateLeagueObj"
+],
+"LG_FreeLeagueObj": [
+"Core\\Src\\ScriptFuns.cpp:15092 -> LuaLG_FreeLeagueObj"
+],
+"LG_SetLeagueInfo": [
+"Core\\Src\\ScriptFuns.cpp:15093 -> LuaLG_SetLeagueInfo"
+],
+"LG_AddMemberToObj": [
+"Core\\Src\\ScriptFuns.cpp:15094 -> LuaLG_AddMemberToObj"
+],
+"LG_ApplyAddLeague": [
+"Core\\Src\\ScriptFuns.cpp:15095 -> LuaLG_ApplyAddLeague"
+],
+"LG_ApplyRemoveLeague": [
+"Core\\Src\\ScriptFuns.cpp:15096 -> LuaLG_ApplyRemoveLeague"
+],
+"LG_GetLeagueObj": [
+"Core\\Src\\ScriptFuns.cpp:15097 -> LuaLG_GetLeagueObj"
+],
+"LG_GetLeagueObjByRole": [
+"Core\\Src\\ScriptFuns.cpp:15098 -> LuaLG_GetLeagueObjByRole"
+],
+"LG_GetFirstLeague": [
+"Core\\Src\\ScriptFuns.cpp:15099 -> LuaLG_GetFirstLeague"
+],
+"LG_GetNextLeague": [
+"Core\\Src\\ScriptFuns.cpp:15100 -> LuaLG_GetNextLeague"
+],
+"LG_GetLeagueInfo": [
+"Core\\Src\\ScriptFuns.cpp:15101 -> LuaLG_GetLeagueInfo"
+],
+"LG_GetLeagueCreateTime": [
+"Core\\Src\\ScriptFuns.cpp:15102 -> LuaLG_GetLeagueCreateTime"
+],
+"LG_GetMemberCount": [
+"Core\\Src\\ScriptFuns.cpp:15103 -> LuaLG_GetMemberCount"
+],
+"LG_GetMemberInfo": [
+"Core\\Src\\ScriptFuns.cpp:15104 -> LuaLG_GetMemberInfo"
+],
+"LG_GetMemberObj": [
+"Core\\Src\\ScriptFuns.cpp:15105 -> LuaLG_GetMemberObj"
+],
+"LG_GetMemberJoinTime": [
+"Core\\Src\\ScriptFuns.cpp:15106 -> LuaLG_GetMemberJoinTime"
+],
+"LG_GetLeagueTask": [
+"Core\\Src\\ScriptFuns.cpp:15107 -> LuaLG_GetLeagueTask"
+],
+"LG_ApplySetLeagueTask": [
+"Core\\Src\\ScriptFuns.cpp:15108 -> LuaLG_ApplySetLeagueTask"
+],
+"LG_ApplyAppendLeagueTask": [
+"Core\\Src\\ScriptFuns.cpp:15109 -> LuaLG_ApplyAppendLeagueTask"
+],
+"LG_GetMemberTask": [
+"Core\\Src\\ScriptFuns.cpp:15110 -> LuaLG_GetMemberTask"
+],
+"LG_ApplySetMemberTask": [
+"Core\\Src\\ScriptFuns.cpp:15111 -> LuaLG_ApplySetMemberTask"
+],
+"LG_ApplyAppendMemberTask": [
+"Core\\Src\\ScriptFuns.cpp:15112 -> LuaLG_ApplyAppendMemberTask"
+],
+"LGM_CreateMemberObj": [
+"Core\\Src\\ScriptFuns.cpp:15113 -> LuaLGM_CreateMemberObj"
+],
+"LGM_SetMemberInfo": [
+"Core\\Src\\ScriptFuns.cpp:15114 -> LuaLGM_SetMemberInfo"
+],
+"LGM_ApplyAddMember": [
+"Core\\Src\\ScriptFuns.cpp:15115 -> LuaLGM_ApplyAddMember"
+],
+"LGM_ApplyRemoveMember": [
+"Core\\Src\\ScriptFuns.cpp:15116 -> LuaLGM_ApplyRemoveMember"
+],
+"LGM_FreeMemberObj": [
+"Core\\Src\\ScriptFuns.cpp:15117 -> LuaLGM_FreeMemberObj"
+],
+"LG_ApplyDoScript": [
+"Core\\Src\\ScriptFuns.cpp:15118 -> LuaLG_ApplyDoScript"
+],
+"OpenGlbMission": [
+"Core\\Src\\ScriptFuns.cpp:15119 -> LuaOpenGlbMission"
+],
+"StartGlbMSTimer": [
+"Core\\Src\\ScriptFuns.cpp:15120 -> LuaStartGlbMSTimer"
+],
+"StopGlbMSTimer": [
+"Core\\Src\\ScriptFuns.cpp:15121 -> LuaStopGlbMSTimer"
+],
+"GetCityOwner": [
+"Core\\Src\\ScriptFuns.cpp:15123 -> LuaGetCityOwner"
+],
+"GetCityWarBothSides": [
+"Core\\Src\\ScriptFuns.cpp:15124 -> LuaGetCityWarBothSides"
+],
+"GetCityAreaName": [
+"Core\\Src\\ScriptFuns.cpp:15125 -> LuaGetCityAreaName"
+],
+"GetCityArea": [
+"Core\\Src\\ScriptFuns.cpp:15126 -> LuaGetCityArea"
+],
+"GetCitySummary": [
+"Core\\Src\\ScriptFuns.cpp:15127 -> LuaGetCitySummary"
+],
+"GetAllCitySummary": [
+"Core\\Src\\ScriptFuns.cpp:15128 -> LuaGetAllCitySummary"
+],
+"SyncCitySummary": [
+"Core\\Src\\ScriptFuns.cpp:15129 -> LuaSyncCitySummary"
+],
+"OpenCityManageUI": [
+"Core\\Src\\ScriptFuns.cpp:15130 -> LuaOpenCityManageUI"
+],
+"HaveBeginWar": [
+"Core\\Src\\ScriptFuns.cpp:15131 -> LuaHaveBeginWar"
+],
+"NotifyWarResult": [
+"Core\\Src\\ScriptFuns.cpp:15132 -> LuaNotifyWarResult"
+],
+"AppointViceroy": [
+"Core\\Src\\ScriptFuns.cpp:15133 -> LuaAppointViceroy"
+],
+"AppointChallenger": [
+"Core\\Src\\ScriptFuns.cpp:15134 -> LuaAppointChallenger"
+],
+"IsSigningUp": [
+"Core\\Src\\ScriptFuns.cpp:15135 -> LuaIsSigningUp"
+],
+"NumOfSignUpTongs": [
+"Core\\Src\\ScriptFuns.cpp:15136 -> LuaNumOfSignUpTongs"
+],
+"GetSignUpTongName": [
+"Core\\Src\\ScriptFuns.cpp:15137 -> LuaGetSignUpTongName"
+],
+"DisabledChatCity": [
+"Core\\Src\\ScriptFuns.cpp:15138 -> LuaDisabledChatCity"
+],
+"IsDisabledChatCity": [
+"Core\\Src\\ScriptFuns.cpp:15139 -> LuaIsDisabledChatCity"
+],
+"CTC_JX2_SetCityState": [
+"Core\\Src\\ScriptFuns.cpp:15140 -> LuaCTC_JX2_SetCityState"
+],
+"IsArenaBegin": [
+"Core\\Src\\ScriptFuns.cpp:15142 -> LuaIsArenaBegin"
+],
+"GetArenaBothSides": [
+"Core\\Src\\ScriptFuns.cpp:15143 -> LuaGetArenaBothSides"
+],
+"GetArenaCityArea": [
+"Core\\Src\\ScriptFuns.cpp:15144 -> LuaGetArenaCityArea"
+],
+"GetArenaLevel": [
+"Core\\Src\\ScriptFuns.cpp:15145 -> LuaGetArenaLevel"
+],
+"GetArenaTargetCity": [
+"Core\\Src\\ScriptFuns.cpp:15146 -> LuaGetArenaTargetCity"
+],
+"GetArenaTotalLevel": [
+"Core\\Src\\ScriptFuns.cpp:15147 -> LuaGetArenaTotalLevel"
+],
+"GetArenaTotalLevelByCity": [
+"Core\\Src\\ScriptFuns.cpp:15148 -> LuaGetArenaTotalLevelByCity"
+],
+"GetArenaSchedule": [
+"Core\\Src\\ScriptFuns.cpp:15149 -> LuaGetArenaSchedule"
+],
+"GetArenaInfoByCity": [
+"Core\\Src\\ScriptFuns.cpp:15150 -> LuaGetArenaInfoByCity"
+],
+"NotifyArenaResult": [
+"Core\\Src\\ScriptFuns.cpp:15151 -> LuaNotifyArenaResult"
+],
+"StartSignUp": [
+"Core\\Src\\ScriptFuns.cpp:15153 -> LuaStartSignUp"
+],
+"EndSignUp": [
+"Core\\Src\\ScriptFuns.cpp:15154 -> LuaEndSignUp"
+],
+"StartArena": [
+"Core\\Src\\ScriptFuns.cpp:15155 -> LuaStartArena"
+],
+"StartCityWar": [
+"Core\\Src\\ScriptFuns.cpp:15156 -> LuaStartCityWar"
+],
+"SignUpCityWarArena": [
+"Core\\Src\\ScriptFuns.cpp:15157 -> LuaSignUpCityWarArena"
+],
+"GetCityWarTongCamp": [
+"Core\\Src\\ScriptFuns.cpp:15158 -> LuaGetCityWarTongCamp"
+],
+"GetArenaCredits": [
+"Core\\Src\\ScriptFuns.cpp:15159 -> LuaGetArenaCredits"
+],
+"SetArenaCredits": [
+"Core\\Src\\ScriptFuns.cpp:15160 -> LuaSetArenaCredits"
+],
+"AddArenaCredits": [
+"Core\\Src\\ScriptFuns.cpp:15161 -> LuaAddArenaCredits"
+],
+"ReduceArenaCredits": [
+"Core\\Src\\ScriptFuns.cpp:15162 -> LuaReduceArenaCredits"
+],
+"Title_AddTitle": [
+"Core\\Src\\ScriptFuns.cpp:15164 -> LuaTitle_AddTitle"
+],
+"Title_ActiveTitle": [
+"Core\\Src\\ScriptFuns.cpp:15165 -> LuaTitle_ActiveTitle"
+],
+"Title_RemoveTitle": [
+"Core\\Src\\ScriptFuns.cpp:15166 -> LuaTitle_RemoveTitle"
+],
+"Title_GetTitleInfo": [
+"Core\\Src\\ScriptFuns.cpp:15167 -> LuaTitle_GetTitleInfo"
+],
+"Title_GetTitleName": [
+"Core\\Src\\ScriptFuns.cpp:15168 -> LuaTitle_GetTitleName"
+],
+"Title_GetActiveTitle": [
+"Core\\Src\\ScriptFuns.cpp:15169 -> LuaTitle_GetActiveTitle"
+],
+"Title_GetTitleTab": [
+"Core\\Src\\ScriptFuns.cpp:15170 -> LuaTitle_GetTitleTab"
+],
+"BT_SetType2Task": [
+"Core\\Src\\ScriptFuns.cpp:15172 -> LuaBT_SetType2Task"
+],
+"BT_SetData": [
+"Core\\Src\\ScriptFuns.cpp:15174 -> LuaBT_SetData"
+],
+"BT_SetTypeBonus": [
+"Core\\Src\\ScriptFuns.cpp:15175 -> LuaBT_SetTypeBonus"
+],
+"BT_GetTypeBonus": [
+"Core\\Src\\ScriptFuns.cpp:15176 -> LuaBT_GetTypeBonus"
+],
+"BT_SetView": [
+"Core\\Src\\ScriptFuns.cpp:15177 -> LuaBT_SetView"
+],
+"BT_SetMissionName": [
+"Core\\Src\\ScriptFuns.cpp:15178 -> LuaBT_SetMissionName"
+],
+"BT_SetGameData": [
+"Core\\Src\\ScriptFuns.cpp:15179 -> LuaBT_SetGameData"
+],
+"BT_SetRestTime": [
+"Core\\Src\\ScriptFuns.cpp:15180 -> LuaBT_SetRestTime"
+],
+"BT_SortLadder": [
+"Core\\Src\\ScriptFuns.cpp:15181 -> LuaBT_SortLadder"
+],
+"BT_GetTopTenInfo": [
+"Core\\Src\\ScriptFuns.cpp:15182 -> LuaBT_GetTopTenInfo"
+],
+"BT_UpdateMemberCount": [
+"Core\\Src\\ScriptFuns.cpp:15183 -> LuaBT_UpdateMemberCount"
+],
+"BT_ClearBattle": [
+"Core\\Src\\ScriptFuns.cpp:15184 -> LuaBT_ClearBattle"
+],
+"BT_BroadView": [
+"Core\\Src\\ScriptFuns.cpp:15185 -> LuaBT_BroadView"
+],
+"BT_BroadGameData": [
+"Core\\Src\\ScriptFuns.cpp:15186 -> LuaBT_BroadGameData"
+],
+"BT_BroadAllLadder": [
+"Core\\Src\\ScriptFuns.cpp:15187 -> LuaBT_BroadAllLadder"
+],
+"BT_BroadSelf": [
+"Core\\Src\\ScriptFuns.cpp:15188 -> LuaBT_BroadSelf"
+],
+"SetNpcDeathScript": [
+"Core\\Src\\ScriptFuns.cpp:15190 -> LuaSetNpcDeathScript"
+],
+"ClearMapNpc": [
+"Core\\Src\\ScriptFuns.cpp:15191 -> LuaClearMapNpc"
+],
+"ClearMapObj": [
+"Core\\Src\\ScriptFuns.cpp:15192 -> LuaClearMapObj"
+],
+"ClearMapNpcWithName": [
+"Core\\Src\\ScriptFuns.cpp:15193 -> LuaClearMapNpcWithName"
+],
+"GetMapNpcWithName": [
+"Core\\Src\\ScriptFuns.cpp:15194 -> LuaGetMapNpcWithName"
+],
+"GetAroundNpcList": [
+"Core\\Src\\ScriptFuns.cpp:15195 -> LuaGetAroundNpcList"
+],
+"AddObstacleObj": [
+"Core\\Src\\ScriptFuns.cpp:15196 -> LuaAddObstacleObj"
+],
+"ClearObstacleObj": [
+"Core\\Src\\ScriptFuns.cpp:15197 -> LuaClearObstacleObj"
+],
+"GetLoop": [
+"Core\\Src\\ScriptFuns.cpp:15198 -> LuaGetLoop"
+],
+"GetNpcSettingIdx": [
+"Core\\Src\\ScriptFuns.cpp:15199 -> LuaGetNpcSettingIdx"
+],
+"GetLastDiagNpc": [
+"Core\\Src\\ScriptFuns.cpp:15200 -> LuaGetLastDiagNpc"
+],
+"SetPKFlag": [
+"Core\\Src\\ScriptFuns.cpp:15201 -> LuaSetPKFlag"
+],
+"ForbidChangePK": [
+"Core\\Src\\ScriptFuns.cpp:15202 -> LuaForbidChangePK"
+],
+"DisabledUseTownP": [
+"Core\\Src\\ScriptFuns.cpp:15203 -> LuaDisabledUseTownP"
+],
+"RestoreOwnFeature": [
+"Core\\Src\\ScriptFuns.cpp:15204 -> LuaRestoreOwnFeature"
+],
+"GetPlayerRev": [
+"Core\\Src\\ScriptFuns.cpp:15205 -> LuaGetPlayerRev"
+],
+"SearchPlayer": [
+"Core\\Src\\ScriptFuns.cpp:15206 -> LuaSearchPlayer"
+],
+"GetJoinTongTime": [
+"Core\\Src\\ScriptFuns.cpp:15207 -> LuaGetJoinTongTime"
+],
+"GetTongMaster": [
+"Core\\Src\\ScriptFuns.cpp:15208 -> LuaGetTongMaster"
+],
+"AddTongExp": [
+"Core\\Src\\ScriptFuns.cpp:15209 -> LuaAddTongExp"
+],
+"GetItemCountEx": [
+"Core\\Src\\ScriptFuns.cpp:15210 -> LuaGetItemCountEx"
+],
+"DelItemEx": [
+"Core\\Src\\ScriptFuns.cpp:15211 -> LuaDelItemEx"
+],
+"GetItemLife": [
+"Core\\Src\\ScriptFuns.cpp:15212 -> LuaGetItemLife"
+],
+"GetItemProp": [
+"Core\\Src\\ScriptFuns.cpp:15213 -> LuaGetItemProp"
+],
+"GiveItemUI": [
+"Core\\Src\\ScriptFuns.cpp:15214 -> LuaGiveItemUI"
+],
+"GetGiveItemUnit": [
+"Core\\Src\\ScriptFuns.cpp:15215 -> LuaGetGiveItemUnit"
+],
+"RemoveItemByIndex": [
+"Core\\Src\\ScriptFuns.cpp:15216 -> LuaRemoveItemByIndex"
+],
+"PushString": [
+"Core\\Src\\ScriptFuns.cpp:15217 -> LuaPushString"
+],
+"AppendString": [
+"Core\\Src\\ScriptFuns.cpp:15218 -> LuaAppendString"
+],
+"ReplaceString": [
+"Core\\Src\\ScriptFuns.cpp:15219 -> LuaReplaceString"
+],
+"PopString": [
+"Core\\Src\\ScriptFuns.cpp:15220 -> LuaPopString"
+],
+"NW_GetSealInfo": [
+"Core\\Src\\ScriptFuns.cpp:15221 -> LuaNW_GetSealInfo"
+],
+"PARTNER_GetCurPartner": [
+"Core\\Src\\ScriptFuns.cpp:15222 -> LuaPARTNER_GetCurPartner"
+],
+"PARTNER_GetSettingIdx": [
+"Core\\Src\\ScriptFuns.cpp:15223 -> LuaPARTNER_GetSettingIdx"
+],
+"SetSiegeVoitureParam": [
+"Core\\Src\\ScriptFuns.cpp:15224 -> LuaSetSiegeVoitureParam"
+],
+"SetMangonelParam": [
+"Core\\Src\\ScriptFuns.cpp:15225 -> LuaSetMangonelParam"
+],
+"SetMissionV": [
+"Core\\Src\\ScriptFuns.cpp:15231 -> LuaSetMission"
+],
+"SetMissionS": [
+"Core\\Src\\ScriptFuns.cpp:15232 -> LuaJx2SetMissionString"
+],
+"BT_ClearPlayerData": [
+"Core\\Src\\ScriptFuns.cpp:15234 -> LuaBT_ClearPlayerData"
+],
+"BT_LeaveBattle": [
+"Core\\Src\\ScriptFuns.cpp:15235 -> LuaBT_LeaveBattle"
+],
+"RevID2WXY": [
+"Core\\Src\\ScriptFuns.cpp:15237 -> LuaGetPlayerRevivalPos"
+],
+"CTC_JX2_SetTax": [
+"Core\\Src\\ScriptFuns.cpp:15239 -> LuaCTC_JX2_SetTax"
+],
+"CTC_JX2_GetTax": [
+"Core\\Src\\ScriptFuns.cpp:15240 -> LuaCTC_JX2_GetTax"
+],
+"SetDeathType": [
+"Core\\Src\\ScriptFuns.cpp:15242 -> LuaSetDeathType"
+],
+"GetMapInfoFile": [
+"Core\\Src\\ScriptFuns.cpp:15243 -> LuaGetMapInfoFile"
+],
+"ClearMapTrap": [
+"Core\\Src\\ScriptFuns.cpp:15244 -> LuaClearMapTrap"
+],
+"GetAllEquipment": [
+"Core\\Src\\ScriptFuns.cpp:15245 -> LuaGetAllEquipment"
+],
+"ST_SyncMiniMapObj": [
+"Core\\Src\\ScriptFuns.cpp:15246 -> LuaST_SyncMiniMapObj"
+],
+"CreateChannel": [
+"Core\\Src\\ScriptFuns.cpp:15247 -> LuaJx2ChannelStub"
+],
+"EnterChannel": [
+"Core\\Src\\ScriptFuns.cpp:15248 -> LuaJx2ChannelStub"
+],
+"LeaveChannel": [
+"Core\\Src\\ScriptFuns.cpp:15249 -> LuaJx2ChannelStub"
+],
+"DeleteChannel": [
+"Core\\Src\\ScriptFuns.cpp:15250 -> LuaJx2ChannelStub"
+],
+"Msg2Map": [
+"Core\\Src\\ScriptFuns.cpp:15251 -> LuaMsgToAroundRegion"
+],
+"SetTmpCamp": [
+"Core\\Src\\ScriptFuns.cpp:15252 -> LuaSetTmpCamp"
+],
+"GetTmpCamp": [
+"Core\\Src\\ScriptFuns.cpp:15253 -> LuaGetTmpCamp"
+],
+"AddTimer": [
+"Core\\Src\\ScriptFuns.cpp:15254 -> LuaJX2_AddTimer"
+],
+"DelTimer": [
+"Core\\Src\\ScriptFuns.cpp:15255 -> LuaJX2_DelTimer"
+],
+"SuspendTimer": [
+"Core\\Src\\ScriptFuns.cpp:15256 -> LuaJX2_SuspendTimer"
+],
+"ResumeTimer": [
+"Core\\Src\\ScriptFuns.cpp:15257 -> LuaJX2_ResumeTimer"
+],
+"RemoteExecute": [
+"Core\\Src\\ScriptFuns.cpp:15258 -> LuaJX2_RemoteExecute"
+],
+"OB_SaveShareData": [
+"Core\\Src\\ScriptFuns.cpp:15259 -> LuaOB_SaveShareData"
+],
+"OB_LoadShareData": [
+"Core\\Src\\ScriptFuns.cpp:15260 -> LuaOB_LoadShareData"
+],
+"GetNpcId": [
+"Core\\Src\\ScriptFuns.cpp:15261 -> LuaGetNpcID"
+],
+"NpcCastSkill": [
+"Core\\Src\\ScriptFuns.cpp:15262 -> LuaNpcCastSkill"
+],
+"GetItemStackCount": [
+"Core\\Src\\ScriptFuns.cpp:15263 -> LuaGetItemStackCount"
+],
+"SetItemStackCount": [
+"Core\\Src\\ScriptFuns.cpp:15264 -> LuaSetItemStackCount"
+],
+"MakeDateTime": [
+"Core\\Src\\ScriptFuns.cpp:15265 -> LuaMakeDateTime"
+],
+"GetNpcAroundNpcList": [
+"Core\\Src\\ScriptFuns.cpp:15266 -> LuaGetNpcAroundNpcList"
+],
+"NPCINFO_GetNpcCurrentLife": [
+"Core\\Src\\ScriptFuns.cpp:15267 -> LuaNPCINFO_GetNpcCurrentLife"
+],
+"NPCINFO_SetNpcCurrentLife": [
+"Core\\Src\\ScriptFuns.cpp:15268 -> LuaNPCINFO_SetNpcCurrentLife"
+],
+"SwearBrother": [
+"Core\\Src\\ScriptFuns.cpp:15271 -> LuaSwearBrother"
+],
+"MakeEnemy": [
+"Core\\Src\\ScriptFuns.cpp:15272 -> LuaMakeEnemy"
+],
+"RollbackSkill": [
+"Core\\Src\\ScriptFuns.cpp:15273 -> LuaRollBackSkills"
+],
+"UpdateSkill": [
+"Core\\Src\\ScriptFuns.cpp:15274 -> LuaUpdateSkillList"
+],
+"AddProp": [
+"Core\\Src\\ScriptFuns.cpp:15276 -> LuaAddPropPoint"
+],
+"AddPropPoint": [
+"Core\\Src\\ScriptFuns.cpp:15277 -> LuaAddPropPoint"
+],
+"ResetProp": [
+"Core\\Src\\ScriptFuns.cpp:15278 -> LuaResetProp"
+],
+"GetProp": [
+"Core\\Src\\ScriptFuns.cpp:15279 -> LuaGetRestPropPoint"
+],
+"GetTimeNow": [
+"Core\\Src\\ScriptFuns.cpp:15280 -> LuaGetTimeNow"
+],
+"GetTimeZero": [
+"Core\\Src\\ScriptFuns.cpp:15281 -> LuaGetTimeZero"
+],
+"GetLocalDate": [
+"Core\\Src\\ScriptFuns.cpp:15282 -> LuaGetLocalDate"
+],
+"GetLocalDateEx": [
+"Core\\Src\\ScriptFuns.cpp:15283 -> LuaGetTimeByMiao"
+],
+"TabFile_Load": [
+"Core\\Src\\ScriptFuns.cpp:15284 -> LuaTabFile_Load"
+],
+"TabFile_GetCell": [
+"Core\\Src\\ScriptFuns.cpp:15285 -> LuaTabFile_GetCell"
+],
+"TabFile_GetRowCount": [
+"Core\\Src\\ScriptFuns.cpp:15286 -> LuaTabFile_GetRowCount"
+],
+"TabFile_UnLoad": [
+"Core\\Src\\ScriptFuns.cpp:15287 -> LuaTabFile_UnLoad"
+],
+"IniFile_Load": [
+"Core\\Src\\ScriptFuns.cpp:15288 -> LuaIniFile_Load"
+],
+"IniFile_GetData": [
+"Core\\Src\\ScriptFuns.cpp:15289 -> LuaIniFile_GetData"
+],
+"IniFile_UnLoad": [
+"Core\\Src\\ScriptFuns.cpp:15290 -> LuaIniFile_UnLoad"
+],
+"Trade": [
+"Core\\Src\\ScriptFuns.cpp:15291 -> LuaTrade"
+],
+"RANDOM": [
+"Core\\Src\\ScriptFuns.cpp:15293 -> LuaRANDOM"
+],
+"RANDOMC": [
+"Core\\Src\\ScriptFuns.cpp:15294 -> LuaRANDOMC"
+],
+"SetNpcKind": [
+"Core\\Src\\ScriptFuns.cpp:15295 -> LuaSetNpcKind"
+],
+"SetNpcBoss2": [
+"Core\\Src\\ScriptFuns.cpp:15296 -> LuaSetNpcBoss2"
+],
+"IsBlueBoss": [
+"Core\\Src\\ScriptFuns.cpp:15297 -> LuaIsBlueBoss"
+],
+"GenNewPUBGMap": [
+"Core\\Src\\ScriptFuns.cpp:15298 -> LuaGenNewPUBGMap"
+],
+"GetSubWorldPlayerIndexes": [
+"Core\\Src\\ScriptFuns.cpp:15299 -> LuaGetSubWorldPlayerIndexes"
+],
+"ForceClearStateSkillEffect": [
+"Core\\Src\\ScriptFuns.cpp:15300 -> LuaNpcForceClearStateSkillEffect"
+],
+"ForceClearStateSkillEffectSkillId": [
+"Core\\Src\\ScriptFuns.cpp:15301 -> LuaNpcForceClearStateSkillEffectId"
+],
+"UpdatePubgCircle": [
+"Core\\Src\\ScriptFuns.cpp:15302 -> LuaUpdatePubgCircle"
+],
+"GetLayerCount": [
+"Core\\Src\\ScriptFuns.cpp:15303 -> LuaGetLayerCount"
+],
+"GetPointCountInLayer": [
+"Core\\Src\\ScriptFuns.cpp:15304 -> LuaGetPointCountInLayer"
+],
+"GetPoint": [
+"Core\\Src\\ScriptFuns.cpp:15305 -> LuaGetPoint"
+],
+"SendClientPoint": [
+"Core\\Src\\ScriptFuns.cpp:15306 -> LuaSendClientPoint"
+],
+"KV_Set": [
+"Core\\Src\\ScriptFuns.cpp:15308 -> LuaKV_Set"
+],
+"KV_Get": [
+"Core\\Src\\ScriptFuns.cpp:15309 -> LuaKV_Get"
+],
+"KV_Del": [
+"Core\\Src\\ScriptFuns.cpp:15310 -> LuaKV_Del"
+],
+"GhiNhatKy": [
+"Core\\Src\\ScriptFuns.cpp:15311 -> LuaGhiNhatKy"
+],
+"LayLenhQuanTri": [
+"Core\\Src\\ScriptFuns.cpp:15312 -> LuaLayLenhQuanTri"
+],
+"UseGiftcodeS": [
+"Core\\Src\\ScriptFuns.cpp:15313 -> LuaUseGiftcodeS"
+],
+"GiftcodeIsValid": [
+"Core\\Src\\ScriptFuns.cpp:15314 -> LuaGiftcodeIsValid"
+],
+"PlaySound": [
+"Core\\Src\\ScriptFuns.cpp:15316 -> LuaPlaySound"
+],
+"PlaySprMovie": [
+"Core\\Src\\ScriptFuns.cpp:15317 -> LuaPlaySprMovie"
+],
+"PlayMusic": [
+"Core\\Src\\ScriptFuns.cpp:15319 -> LuaPlayMusic"
+],
+"FadeInMusic": [
+"Core\\Src\\ScriptFuns.cpp:15320 -> LuaFadeInMusic"
+],
+"FadeOutMusic": [
+"Core\\Src\\ScriptFuns.cpp:15321 -> LuaFadeOutMusic"
+],
+"StrSplit": [
+"Core\\Src\\ScriptFuns.cpp:15322 -> LuaStrSplit"
+],
+"AddLoaclTimeNews": [
+"Core\\Src\\ScriptFuns.cpp:15328 -> LuaAddLocalTimeNews"
+],
+"Wait": [
+"Core\\Src\\LuaFuns.cpp:45 -> LuaWait",
+"Engine\\Src\\LuaFuns.cpp:56 -> LuaWait"
+],
+"EndWait": [
+"Core\\Src\\LuaFuns.cpp:46 -> LuaEndWait",
+"Engine\\Src\\LuaFuns.cpp:57 -> LuaEndWait"
+],
+"GetScriptState": [
+"Core\\Src\\LuaFuns.cpp:47 -> LuaGetScriptState",
+"Engine\\Src\\LuaFuns.cpp:58 -> LuaGetScriptState"
+],
+"NewScript": [
+"Core\\Src\\LuaFuns.cpp:48 -> LuaNewScript",
+"Engine\\Src\\LuaFuns.cpp:59 -> LuaNewScript"
+],
+"Goto": [
+"Core\\Src\\LuaFuns.cpp:49 -> LuaGotoLabel",
+"Engine\\Src\\LuaFuns.cpp:60 -> LuaGotoLabel"
+],
+"Label": [
+"Core\\Src\\LuaFuns.cpp:50 -> LuaLabel",
+"Engine\\Src\\LuaFuns.cpp:61 -> LuaLabel"
+],
+"MessageBox": [
+"Core\\Src\\LuaFuns.cpp:51 -> LuaMessageBox",
+"Engine\\Src\\LuaFuns.cpp:62 -> LuaMessageBox"
+],
+"SendScriptMessage": [
+"Core\\Src\\LuaFuns.cpp:52 -> LuaSendScriptMessage",
+"Engine\\Src\\LuaFuns.cpp:63 -> LuaSendScriptMessage"
+],
+"WaitForEvent": [
+"Core\\Src\\LuaFuns.cpp:53 -> LuaWaitForEvent",
+"Engine\\Src\\LuaFuns.cpp:64 -> LuaWaitForEvent"
+],
+"SendMessage": [
+"Core\\Src\\LuaFuns.cpp:54 -> LuaSendMessage",
+"Engine\\Src\\LuaFuns.cpp:65 -> LuaSendMessage"
+],
+"SetValue": [
+"Core\\Src\\LuaFuns.cpp:55 -> LuaSetValue",
+"Engine\\Src\\LuaFuns.cpp:70 -> LuaSetValue"
+],
+"GetValue": [
+"Core\\Src\\LuaFuns.cpp:56 -> LuaGetValue",
+"Engine\\Src\\LuaFuns.cpp:71 -> LuaGetValue"
+],
+"Exit": [
+"Core\\Src\\LuaFuns.cpp:57 -> LuaReturn",
+"Engine\\Src\\LuaFuns.cpp:72 -> LuaReturn"
+],
+"Resume": [
+"Core\\Src\\LuaFuns.cpp:58 -> LuaResume",
+"Engine\\Src\\LuaFuns.cpp:78 -> LuaResume"
+],
+"NpcGoto": [
+"Engine\\Src\\LuaFuns.cpp:66 -> LuaNpcGoto"
+],
+"NpcGotoEx": [
+"Engine\\Src\\LuaFuns.cpp:68 -> LuaNpcGotoEx"
+],
+"SetPlayer": [
+"Engine\\Src\\LuaFuns.cpp:74 -> LuaSetPlayer"
+],
+"InitGameWorld": [
+"Engine\\Src\\LuaFuns.cpp:75 -> LuaInitStandAloneGame"
+],
+"GetNpcTalk": [
+"Engine\\Src\\LuaFuns.cpp:77 -> LuaGetNpcTalk"
+],
+"InsertNpc": [
+"Engine\\Src\\LuaFuns.cpp:79 -> LuaAddNpcFromTemplate"
+],
+"TaskSay": [
+"Engine\\Src\\LuaFuns.cpp:81 -> LuaTaskSay"
+]
+}

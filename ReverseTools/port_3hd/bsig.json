@@ -1,0 +1,756 @@
+{
+ "Add120SkillExp": {
+  "addr": "0x0811C710",
+  "gettop": true,
+  "ninsn": 65,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 3
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "AddStatData": {
+  "addr": "0x080FF550",
+  "gettop": true,
+  "ninsn": 63,
+  "params": {
+   "1": [
+    "string"
+   ],
+   "2": [
+    "number"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": [
+   "pcszName"
+  ]
+ },
+ "BT_GetBattleParam": {
+  "addr": "0x081C69B0",
+  "gettop": false,
+  "ninsn": 90,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushstring": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "DropItemEx": {
+  "addr": "0x0811FD70",
+  "gettop": true,
+  "ninsn": 185,
+  "params": {
+   "1": [
+    "number",
+    "string"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ],
+   "4": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "File_Create": {
+  "addr": "0x0814A120",
+  "gettop": false,
+  "ninsn": 92,
+  "params": {
+   "1": [
+    "string"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 3
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "FormatTime2Date": {
+  "addr": "0x081022B0",
+  "gettop": true,
+  "ninsn": 70,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": [
+   "%04d%02d%02d"
+  ]
+ },
+ "GetFirstPlayerAtServer": {
+  "addr": "0x08101CF0",
+  "gettop": false,
+  "ninsn": 15,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "GetGlodEqIndex": {
+  "addr": "0x080FEF90",
+  "gettop": false,
+  "ninsn": 11,
+  "params": {},
+  "push": {},
+  "retvals": [],
+  "strings": []
+ },
+ "GetItemAllParams": {
+  "addr": "0x08102D20",
+  "gettop": true,
+  "ninsn": 60,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   0,
+   1
+  ],
+  "strings": []
+ },
+ "GetItemGenTime": {
+  "addr": "0x080FE820",
+  "gettop": true,
+  "ninsn": 40,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "GetItemQuality": {
+  "addr": "0x080FEFB0",
+  "gettop": true,
+  "ninsn": 46,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "GetNextPlayerAtServer": {
+  "addr": "0x08101D20",
+  "gettop": false,
+  "ninsn": 15,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "GetNpcAroundPlayerList": {
+  "addr": "0x08104870",
+  "gettop": true,
+  "ninsn": 119,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 3
+  },
+  "retvals": [
+   2
+  ],
+  "strings": []
+ },
+ "GetPlatinaEquipIndex": {
+  "addr": "0x080FEF70",
+  "gettop": false,
+  "ninsn": 11,
+  "params": {},
+  "push": {},
+  "retvals": [],
+  "strings": []
+ },
+ "GetPlatinaLevel": {
+  "addr": "0x08100520",
+  "gettop": true,
+  "ninsn": 67,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   0,
+   1
+  ],
+  "strings": []
+ },
+ "GetRoomItems": {
+  "addr": "0x0810D170",
+  "gettop": false,
+  "ninsn": 77,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ITEM_DropRateItem": {
+  "addr": "0x08154DE0",
+  "gettop": true,
+  "ninsn": 145,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "string"
+   ],
+   "4": [
+    "number"
+   ],
+   "5": [
+    "number"
+   ],
+   "6": [
+    "number"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "ITEM_GetExpiredTime": {
+  "addr": "0x08154540",
+  "gettop": true,
+  "ninsn": 51,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ITEM_GetItemRandSeed": {
+  "addr": "0x081548E0",
+  "gettop": true,
+  "ninsn": 52,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ITEM_SetExpiredTime": {
+  "addr": "0x08154A30",
+  "gettop": true,
+  "ninsn": 100,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 4
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ITEM_SetLeftUsageTime": {
+  "addr": "0x08154FD0",
+  "gettop": true,
+  "ninsn": 77,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "IniFile_Save": {
+  "addr": "0x0814B160",
+  "gettop": true,
+  "ninsn": 61,
+  "params": {
+   "1": [
+    "string"
+   ],
+   "2": [
+    "string"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "IniFile_SetData": {
+  "addr": "0x0814AAF0",
+  "gettop": true,
+  "ninsn": 62,
+  "params": {
+   "1": [
+    "string"
+   ],
+   "2": [
+    "string"
+   ],
+   "3": [
+    "string"
+   ],
+   "4": [
+    "string"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "IsDisabledUseHeart": {
+  "addr": "0x0812ED70",
+  "gettop": false,
+  "ninsn": 49,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "NPCINFO_GetSeries": {
+  "addr": "0x081C08E0",
+  "gettop": true,
+  "ninsn": 44,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "NpcDropMoney": {
+  "addr": "0x0811D9C0",
+  "gettop": false,
+  "ninsn": 68,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "NpcName2Replace": {
+  "addr": "0x081006D0",
+  "gettop": false,
+  "ninsn": 32,
+  "params": {
+   "1": [
+    "string"
+   ]
+  },
+  "push": {
+   "lua_pushstring": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "OpenProgressBar": {
+  "addr": "0x081082D0",
+  "gettop": true,
+  "ninsn": 157,
+  "params": {
+   "1": [
+    "string"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ],
+   "4": [
+    "number"
+   ],
+   "5": [
+    "string"
+   ],
+   "6": [
+    "string"
+   ],
+   "7": [
+    "string"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "PET_GetGrownPoint": {
+  "addr": "0x081D5FE0",
+  "gettop": false,
+  "ninsn": 24,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "PET_GetTamePoint": {
+  "addr": "0x081D5F90",
+  "gettop": false,
+  "ninsn": 24,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "PET_GetUpgradePoint": {
+  "addr": "0x081D6150",
+  "gettop": false,
+  "ninsn": 33,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 2
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "PET_SetGrownPoint": {
+  "addr": "0x081D6230",
+  "gettop": true,
+  "ninsn": 38,
+  "params": {},
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "PET_SetTamePoint": {
+  "addr": "0x081D5F10",
+  "gettop": true,
+  "ninsn": 38,
+  "params": {},
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "PET_SetUpgradePoint": {
+  "addr": "0x081D70E0",
+  "gettop": true,
+  "ninsn": 49,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "QueryWiseManForSB": {
+  "addr": "0x0811A270",
+  "gettop": true,
+  "ninsn": 131,
+  "params": {
+   "1": [
+    "string"
+   ],
+   "2": [
+    "string"
+   ],
+   "3": [
+    "number"
+   ],
+   "4": [
+    "string"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": [
+   "|-|%d",
+   "|-|%s"
+  ]
+ },
+ "ST_DoTransLife": {
+  "addr": "0x081C2990",
+  "gettop": false,
+  "ninsn": 30,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ST_IsTransLife": {
+  "addr": "0x081C1160",
+  "gettop": false,
+  "ninsn": 29,
+  "params": {},
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "ST_LevelUp": {
+  "addr": "0x081C2A60",
+  "gettop": false,
+  "ninsn": 34,
+  "params": {
+   "1": [
+    "number"
+   ]
+  },
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ },
+ "SendScriptData": {
+  "addr": "0x0810B220",
+  "gettop": true,
+  "ninsn": 125,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 3
+  },
+  "retvals": [
+   1
+  ],
+  "strings": []
+ },
+ "SetItemBindState": {
+  "addr": "0x08127630",
+  "gettop": true,
+  "ninsn": 75,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   0,
+   1
+  ],
+  "strings": []
+ },
+ "Tm2Time": {
+  "addr": "0x08103AC0",
+  "gettop": true,
+  "ninsn": 159,
+  "params": {
+   "1": [
+    "number"
+   ],
+   "2": [
+    "number"
+   ],
+   "3": [
+    "number"
+   ],
+   "4": [
+    "number"
+   ],
+   "5": [
+    "number"
+   ],
+   "6": [
+    "number"
+   ]
+  },
+  "push": {
+   "lua_pushnumber": 1
+  },
+  "retvals": [
+   0,
+   1
+  ],
+  "strings": []
+ },
+ "TrimString": {
+  "addr": "0x080FF630",
+  "gettop": false,
+  "ninsn": 74,
+  "params": {},
+  "push": {},
+  "retvals": [
+   0
+  ],
+  "strings": []
+ }
+}

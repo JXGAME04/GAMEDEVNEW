@@ -1,0 +1,777 @@
+
+########## Add120SkillExp  (0x0811C710)
+  --- task/task_award_extend.lua:6
+          4| --其经验值等量提升120级技能修炼度
+          5| function AddExp_Skill_Extend(nExp)
+   >>     6| 	Add120SkillExp(floor(nExp / 2));	--任务中获得经验的 1/2
+          7| end;
+  --- task/task_award_extend.lua:6
+          4| --其经验值等量提升120级技能修炼度
+          5| function AddExp_Skill_Extend(nExp)
+   >>     6| 	Add120SkillExp(floor(nExp / 2));	--任务中获得经验的 1/2
+          7| end;
+
+########## AddStatData  (0x080FF550)
+  --- activitysys/config/32/talkdailytask.lua:159
+        157| 
+        158| 	WriteLog(format("[%s]\t%s\t%s\t%s","Nhi謒 v� h祅g ng祔",GetName(), GetAccount(),format("Nh薾 nhi謒 v� �鑙 tho筰: �鑙 tho筰 v韎%s",tbTask.szNpcName)))
+   >>   159| 	AddStatData("richangrenwu_songxincishu")
+        160| 	return 1;
+        161| end
+        162| 
+  --- missions/fengling_ferry/fld_death.lua:30
+         28| 	local mapid = SubWorldIdx2ID(SubWorld)
+         29| 	if (mapid == 337) then
+   >>    30| 		AddStatData("fld_chuan1siwangrenshu", nCount)
+         31| 	elseif (mapid == 338) then
+         32| 		AddStatData("fld_chuan2siwangrenshu", nCount)
+         33| 	elseif (mapid == 339) then
+  --- missions/fengling_ferry/fld_death.lua:32
+         30| 		AddStatData("fld_chuan1siwangrenshu", nCount)
+         31| 	elseif (mapid == 338) then
+   >>    32| 		AddStatData("fld_chuan2siwangrenshu", nCount)
+         33| 	elseif (mapid == 339) then
+         34| 		AddStatData("fld_chuan3siwangrenshu", nCount)
+         35| 	end
+
+########## BT_GetBattleParam  (0x081C69B0)
+  --- battles/battlehead.lua:631
+        629| 
+        630| 	for i = 1, 6 do
+   >>   631| 		str = BT_GetBattleParam(i);
+        632| 		tnpcid, level, count = getNpcInfo(str);
+        633| 		SetMissionV(MS_TRANK1_S + i - 1, tnpcid);
+        634| 		SetMissionV(MS_RANK1LVL_S + i - 1, level);
+  --- battles/battlehead.lua:639
+        637| 
+        638| 	for i = 1, 6 do
+   >>   639| 		str = BT_GetBattleParam(i + 6 );
+        640| 		tnpcid, level, count = getNpcInfo(str);
+        641| 		SetMissionV(MS_TRANK1_J + i - 1, tnpcid);
+        642| 		SetMissionV(MS_RANK1LVL_J + i - 1, level);
+  --- battles/battlehead.lua:631
+        629| 
+        630| 	for i = 1, 6 do
+   >>   631| 		str = BT_GetBattleParam(i);
+        632| 		tnpcid, level, count = getNpcInfo(str);
+        633| 		SetMissionV(MS_TRANK1_S + i - 1, tnpcid);
+        634| 		SetMissionV(MS_RANK1LVL_S + i - 1, level);
+
+########## ContriValueEntryLogic  (khong xuat ra Lua)
+  --- tong/tong_award_head.lua:27
+         25| 	local nValue = nRecord * 0.03 * COEF_CONTRIB_TO_VALUE;
+         26| 	nValue = extong_double_award(nValue);
+   >>    27| 	ContriValueEntryLogic(nValue, EVE_SOJIN);
+         28| end;
+         29| 
+         30| --信使任务贡献度奖励
+  --- tong/tong_award_head.lua:37
+         35| 	local nValue = nRecord * 0.15 * COEF_CONTRIB_TO_VALUE;
+         36| 	nValue = extong_double_award(nValue);
+   >>    37| 	ContriValueEntryLogic(nValue, EVE_XINSHI);
+         38| end;
+         39| 
+         40| --闯关任务贡献度奖励
+  --- tong/tong_award_head.lua:51
+         49| 	end;
+         50| 	nValue = extong_double_award(nValue);
+   >>    51| 	ContriValueEntryLogic(nValue, EVE_CHUNGGUAN);
+         52| end;
+         53| 
+         54| --野叟任务贡献度奖励
+
+########## DropItemEx  (0x0811FD70)
+  --- lib/droptemplet.lua:74
+         72| 		return
+         73| 	end
+   >>    74| 	return DropItemEx(
+         75| 		nMapIndex,
+         76| 		nX32,
+         77| 		nY32,
+  --- lib/droptemplet.lua:74
+         72| 		return
+         73| 	end
+   >>    74| 	return DropItemEx(
+         75| 		nMapIndex,
+         76| 		nX32,
+         77| 		nY32,
+  --- lib/droptemplet.lua:74
+         72| 		return
+         73| 	end
+   >>    74| 	return DropItemEx(
+         75| 		nMapIndex,
+         76| 		nX32,
+         77| 		nY32,
+
+########## File_Create  (0x0814A120)
+  --- lib/file.lua:8
+          6| function ini_loadfile(filename, is_create)
+          7| 	if (IniFile_Load(filename, filename) == 0) and (is_create ~= nil) then
+   >>     8| 		File_Create(filename)
+          9| 	end
+         10| end
+         11| 
+  --- lib/file.lua:8
+          6| function ini_loadfile(filename, is_create)
+          7| 	if (IniFile_Load(filename, filename) == 0) and (is_create ~= nil) then
+   >>     8| 		File_Create(filename)
+          9| 	end
+         10| end
+         11| 
+  --- lib/file.lua:8
+          6| function ini_loadfile(filename, is_create)
+          7| 	if (IniFile_Load(filename, filename) == 0) and (is_create ~= nil) then
+   >>     8| 		File_Create(filename)
+          9| 	end
+         10| end
+         11| 
+
+########## FormatTime2Date  (0x081022B0)
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:200
+        198| 		local n_itemidx = AddItem(6, 1, 2005, 1, 1, 0);
+        199| 		if (n_itemidx > 0) then
+   >>   200| 			local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
+        201| 			ITEM_SetExpiredTime(n_itemidx, nExpiredDate);
+        202| 			SyncItem(n_itemidx);
+        203| 			nLiBaoCount = nLiBaoCount + 1;
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:217
+        215| function TB_QIANQIU_YINGLIE0904:add_end_award(tb_player, b_win)
+        216| 	local game_level = BT_GetGameData(GAME_LEVEL);
+   >>   217| 	local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
+        218| 	local tb_award = {tbProp = {6,1,2005,1,1,0}, szName = "T鑞g Kim l� bao",  nCount = 1+b_win, nExpiredTime = nExpiredDate};
+        219| 
+        220| 	if (game_level == 3) then
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:200
+        198| 		local n_itemidx = AddItem(6, 1, 2005, 1, 1, 0);
+        199| 		if (n_itemidx > 0) then
+   >>   200| 			local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
+        201| 			ITEM_SetExpiredTime(n_itemidx, nExpiredDate);
+        202| 			SyncItem(n_itemidx);
+        203| 			nLiBaoCount = nLiBaoCount + 1;
+
+########## GetFirstPlayerAtServer  (0x08101CF0)
+  --- missions/boss/bigboss.lua:289
+        287| 
+        288| function BigBoss:MakeAllPlayerCanGetReward()
+   >>   289| 	local nIdx = GetFirstPlayerAtServer();
+        290| 	while(nIdx > 0) do
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+  --- missions/boss/bigboss.lua:289
+        287| 
+        288| function BigBoss:MakeAllPlayerCanGetReward()
+   >>   289| 	local nIdx = GetFirstPlayerAtServer();
+        290| 	while(nIdx > 0) do
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+  --- missions/boss/bigboss.lua:289
+        287| 
+        288| function BigBoss:MakeAllPlayerCanGetReward()
+   >>   289| 	local nIdx = GetFirstPlayerAtServer();
+        290| 	while(nIdx > 0) do
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+
+########## GetGlodEqIndex  (0x080FEF90)
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:67
+         65| 	local nQuality = GetItemQuality(nMaskIndex)
+         66| 	if nQuality == 1 then
+   >>    67| 		local nRecordIndex = GetGlodEqIndex(nMaskIndex)
+         68| 		if 4493 <= nRecordIndex and nRecordIndex <= 4630 then
+         69| 			return 3
+         70| 		end
+  --- lib/composeex.lua:142
+        140| 
+        141| 	if tbItem.nQuality == 1 then
+   >>   142| 		tbItem.tbProp  = {0, GetGlodEqIndex(nItemIndex)}
+        143| 	elseif tbItem.nQuality == 4 then
+        144| 		tbItem.tbProp  = {0, GetPlatinaEquipIndex(nItemIndex)}
+        145| 	else
+  --- lib/log.lua:39
+         37| 	local nQuality = GetItemQuality(nItemIdx);
+         38| 	if (nQuality == 1) then
+   >>    39| 		nDetailType = GetGlodEqIndex(nItemIdx) - 1;
+         40| 	end
+         41| 	local szPlatinaLvl = "nil";
+         42| 	if (nQuality == 4) then
+
+########## GetItemAllParams  (0x08102D20)
+  --- lib/log.lua:46
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+   >>    46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+         48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+  --- lib/log.lua:46
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+   >>    46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+         48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+  --- lib/log.lua:46
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+   >>    46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+         48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+
+########## GetItemGenTime  (0x080FE820)
+  --- lib/log.lua:51
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+   >>    51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+         52| 	return szDes;
+         53| end;
+         54| 
+  --- lib/log.lua:51
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+   >>    51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+         52| 	return szDes;
+         53| end;
+         54| 
+  --- lib/log.lua:51
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+   >>    51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+         52| 	return szDes;
+         53| end;
+         54| 
+
+########## GetItemQuality  (0x080FEFB0)
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:65
+         63| 		return 1
+         64| 	end
+   >>    65| 	local nQuality = GetItemQuality(nMaskIndex)
+         66| 	if nQuality == 1 then
+         67| 		local nRecordIndex = GetGlodEqIndex(nMaskIndex)
+         68| 		if 4493 <= nRecordIndex and nRecordIndex <= 4630 then
+  --- lib/composeex.lua:138
+        136| function tbActivityCompose:MakeItem(nItemIndex)
+        137| 	local tbItem = {}
+   >>   138| 	tbItem.nQuality = GetItemQuality(nItemIndex)
+        139| 	tbItem.tbProp = {}
+        140| 
+        141| 	if tbItem.nQuality == 1 then
+  --- lib/log.lua:37
+         35| function getItemInfo(nItemIdx)
+         36| 	local nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck = GetItemProp(nItemIdx);
+   >>    37| 	local nQuality = GetItemQuality(nItemIdx);
+         38| 	if (nQuality == 1) then
+         39| 		nDetailType = GetGlodEqIndex(nItemIdx) - 1;
+         40| 	end
+
+########## GetNextPlayerAtServer  (0x08101D20)
+  --- missions/boss/bigboss.lua:293
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+   >>   293| 		nIdx = GetNextPlayerAtServer();
+        294| 	end
+        295| end
+  --- missions/boss/bigboss.lua:293
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+   >>   293| 		nIdx = GetNextPlayerAtServer();
+        294| 	end
+        295| end
+  --- missions/boss/bigboss.lua:293
+        291| 		doFunByPlayer(nIdx, PlayerFunLib.AddTaskDaily, PlayerFunLib, self.TSK_BIGBOSS_REWARD, 0);
+        292| 		doFunByPlayer(nIdx, PlayerFunLib.SetTaskBit, PlayerFunLib, self.TSK_BIGBOSS_REWARD, self.CAN_GET_REWARD_BIT, 1);
+   >>   293| 		nIdx = GetNextPlayerAtServer();
+        294| 	end
+        295| end
+
+########## GetNpcAroundPlayerList  (0x08104870)
+  --- missions/boss/bigboss.lua:218
+        216| 	end
+        217| 
+   >>   218| 	local tbRoundPlayer, nCount = GetNpcAroundPlayerList(nNpcIndex, 20);
+        219| 
+        220| 	for i=1,nCount do
+        221| 		doFunByPlayer(tbRoundPlayer[i], PlayerFunLib.AddExp, PlayerFunLib, 50000000, 0, format("%s ph莕 th�雗g","Ph莕 th�雗g kinh nghi謒 cho ng�阨 �鴑g g莕 khi �� b
+  --- missions/boss/bigboss.lua:218
+        216| 	end
+        217| 
+   >>   218| 	local tbRoundPlayer, nCount = GetNpcAroundPlayerList(nNpcIndex, 20);
+        219| 
+        220| 	for i=1,nCount do
+        221| 		doFunByPlayer(tbRoundPlayer[i], PlayerFunLib.AddExp, PlayerFunLib, 50000000, 0, format("%s ph莕 th�雗g","Ph莕 th�雗g kinh nghi謒 cho ng�阨 �鴑g g莕 khi �� b
+  --- missions/boss/bigboss.lua:218
+        216| 	end
+        217| 
+   >>   218| 	local tbRoundPlayer, nCount = GetNpcAroundPlayerList(nNpcIndex, 20);
+        219| 
+        220| 	for i=1,nCount do
+        221| 		doFunByPlayer(tbRoundPlayer[i], PlayerFunLib.AddExp, PlayerFunLib, 50000000, 0, format("%s ph莕 th�雗g","Ph莕 th�雗g kinh nghi謒 cho ng�阨 �鴑g g莕 khi �� b
+
+########## GetPlatinaEquipIndex  (0x080FEF70)
+  --- lib/composeex.lua:144
+        142| 		tbItem.tbProp  = {0, GetGlodEqIndex(nItemIndex)}
+        143| 	elseif tbItem.nQuality == 4 then
+   >>   144| 		tbItem.tbProp  = {0, GetPlatinaEquipIndex(nItemIndex)}
+        145| 	else
+        146| 		local nG,nD,nP,nL,nS, nLuk = GetItemProp(nItemIndex)
+        147| 		tbItem.tbProp = {nG,nD,nP,nL,nS, nLuk}
+  --- lib/log.lua:44
+         42| 	if (nQuality == 4) then
+         43| 		szPlatinaLvl = tostring(GetPlatinaLevel(nItemIdx));
+   >>    44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+  --- lib/composeex.lua:144
+        142| 		tbItem.tbProp  = {0, GetGlodEqIndex(nItemIndex)}
+        143| 	elseif tbItem.nQuality == 4 then
+   >>   144| 		tbItem.tbProp  = {0, GetPlatinaEquipIndex(nItemIndex)}
+        145| 	else
+        146| 		local nG,nD,nP,nL,nS, nLuk = GetItemProp(nItemIndex)
+        147| 		tbItem.tbProp = {nG,nD,nP,nL,nS, nLuk}
+
+########## GetPlatinaLevel  (0x08100520)
+  --- lib/log.lua:43
+         41| 	local szPlatinaLvl = "nil";
+         42| 	if (nQuality == 4) then
+   >>    43| 		szPlatinaLvl = tostring(GetPlatinaLevel(nItemIdx));
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+  --- lib/log.lua:43
+         41| 	local szPlatinaLvl = "nil";
+         42| 	if (nQuality == 4) then
+   >>    43| 		szPlatinaLvl = tostring(GetPlatinaLevel(nItemIdx));
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+  --- lib/log.lua:43
+         41| 	local szPlatinaLvl = "nil";
+         42| 	if (nQuality == 4) then
+   >>    43| 		szPlatinaLvl = tostring(GetPlatinaLevel(nItemIdx));
+         44| 		nDetailType = GetPlatinaEquipIndex(nItemIdx) - 1;
+         45| 	end;
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+
+########## ITEM_DropRateItem  (0x08154DE0)
+  --- task/tollgate/killer/kill_level.lua:69
+         67| 		if ( Uworld1082 >= 141 and Uworld1082 <= 160 ) then
+         68| 			tbChangeDestiny:completeMission_Killer();	-- 逆天改命
+   >>    69| 			ITEM_DropRateItem(nNpcIndex, 8,"\\settings\\droprate\\boss\\bosstask_lev90.ini", 0, 10, nseries);
+         70| 		end
+         71| 		G_ACTIVITY:OnMessage("FinishKillerBoss", PlayerIndex, TSKID_KILLTASKID, Uworld1082, 0)
+         72| 		EventSys:GetType("KillerBoss"):OnPlayerEvent("OnKillBoss", PlayerIndex, TSKID_KILLTASKID, Uworld1082)
+
+########## ITEM_GetExpiredTime  (0x08154540)
+  --- activitysys/activity.lua:314
+        312|         return 0;
+        313|     end
+   >>   314|     local nTime = ITEM_GetExpiredTime(nItemIndex);
+        315|     if (nTime == nil or nTime <= 0) then
+        316|         return 0;
+        317|     end
+  --- activitysys/activity.lua:314
+        312|         return 0;
+        313|     end
+   >>   314|     local nTime = ITEM_GetExpiredTime(nItemIndex);
+        315|     if (nTime == nil or nTime <= 0) then
+        316|         return 0;
+        317|     end
+  --- activitysys/activity.lua:314
+        312|         return 0;
+        313|     end
+   >>   314|     local nTime = ITEM_GetExpiredTime(nItemIndex);
+        315|     if (nTime == nil or nTime <= 0) then
+        316|         return 0;
+        317|     end
+
+########## ITEM_GetItemRandSeed  (0x081548E0)
+  --- lib/log.lua:48
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+   >>    48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+         51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+  --- lib/log.lua:48
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+   >>    48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+         51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+  --- lib/log.lua:48
+         46| 	local arynMagLvl = GetItemAllParams(nItemIdx);
+         47| 	local szDes = format("{4,%0.0f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}:%s,GET_TIME:%0.0f,PLA_LVL:%s",
+   >>    48| 							ITEM_GetItemRandSeed(nItemIdx), nQuality,
+         49| 							nGenre, nDetailType, nParticular, nLevel, nSeries, nLuck,
+         50| 							arynMagLvl[1], arynMagLvl[2], arynMagLvl[3], arynMagLvl[4], arynMagLvl[5], arynMagLvl[6],
+         51| 							GetItemName(nItemIdx),GetItemGenTime(nItemIdx),szPlatinaLvl);
+
+########## ITEM_SetExpiredTime  (0x08154A30)
+  --- event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:201
+        199| 		if (n_itemidx > 0) then
+        200| 			local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
+   >>   201| 			ITEM_SetExpiredTime(n_itemidx, nExpiredDate);
+        202| 			SyncItem(n_itemidx);
+        203| 			nLiBaoCount = nLiBaoCount + 1;
+        204| 		end
+  --- lib/droptemplet.lua:130
+        128| 			if nItemIndex > 0 then
+        129| 				if tbItem.nExpiredTime then
+   >>   130| 					ITEM_SetExpiredTime(nItemIndex, tbItem.nExpiredTime)-- 设置有效期
+        131| 					--SyncItem(nItemIndex) --同步客户端无需同步
+        132| 				end
+        133| 
+  --- missions/fengling_ferry/bossdeath.lua:35
+         33| 		local nCurtime = tonumber(GetLocalDate("%H%M"));
+         34| 		local nRestMin = 24 * 60 - (floor(nCurtime/100)*60+floor(mod(nCurtime, 100)));
+   >>    35| 		ITEM_SetExpiredTime(nItemIdx, nRestMin);
+         36| 		SyncItem(nItemIdx);
+         37| 
+         38| 		local nRate = 0.005;
+
+########## ITEM_SetLeftUsageTime  (0x08154FD0)
+  --- lib/droptemplet.lua:135
+        133| 
+        134| 				if tbItem.nLeftUsageTime then
+   >>   135| 					ITEM_SetLeftUsageTime(nItemIndex,tbItem.nLeftUsageTime)
+        136| 					--SyncItem(nItemIndex) --同步客户端 无需同步
+        137| 				end
+        138| 
+  --- lib/droptemplet.lua:140
+        138| 
+        139| 				if tbItem.nUsageTime then
+   >>   140| 					ITEM_SetLeftUsageTime(nItemIndex,tbItem.nLeftUsageTime)
+        141| 				end
+        142| 
+        143| 				if tbItem.nBindState then
+  --- lib/droptemplet.lua:135
+        133| 
+        134| 				if tbItem.nLeftUsageTime then
+   >>   135| 					ITEM_SetLeftUsageTime(nItemIndex,tbItem.nLeftUsageTime)
+        136| 					--SyncItem(nItemIndex) --同步客户端 无需同步
+        137| 				end
+        138| 
+
+########## IniFile_Save  (0x0814B160)
+  --- lib/file.lua:24
+         22| -- 配置文件存档
+         23| function ini_save(filename)
+   >>    24| 	IniFile_Save(filename, filename)
+         25| end
+         26| 
+         27| --------------------------------------------------------------------------------------
+  --- lib/file.lua:24
+         22| -- 配置文件存档
+         23| function ini_save(filename)
+   >>    24| 	IniFile_Save(filename, filename)
+         25| end
+         26| 
+         27| --------------------------------------------------------------------------------------
+  --- lib/file.lua:24
+         22| -- 配置文件存档
+         23| function ini_save(filename)
+   >>    24| 	IniFile_Save(filename, filename)
+         25| end
+         26| 
+         27| --------------------------------------------------------------------------------------
+
+########## IniFile_SetData  (0x0814AAF0)
+  --- lib/file.lua:19
+         17| --设置文件中的szSection的key值为szValue
+         18| function ini_setdata(filename, szsect, szkey, szvalue)
+   >>    19| 	IniFile_SetData(filename, szsect, szkey, szvalue)
+         20| end
+         21| 
+         22| -- 配置文件存档
+  --- lib/file.lua:19
+         17| --设置文件中的szSection的key值为szValue
+         18| function ini_setdata(filename, szsect, szkey, szvalue)
+   >>    19| 	IniFile_SetData(filename, szsect, szkey, szvalue)
+         20| end
+         21| 
+         22| -- 配置文件存档
+  --- lib/file.lua:19
+         17| --设置文件中的szSection的key值为szValue
+         18| function ini_setdata(filename, szsect, szkey, szvalue)
+   >>    19| 	IniFile_SetData(filename, szsect, szkey, szvalue)
+         20| end
+         21| 
+         22| -- 配置文件存档
+
+########## IsDisabledUseHeart  (0x0812ED70)
+  --- item/heart_head.lua:116
+        114| 
+        115| 	-- 心心相映符功能被屏蔽，不能使用
+   >>   116| 	if (IsDisabledUseHeart(PlayerIndex) == 1) then
+        117| 		Msg2Player("Xin l鏸! Hi謓 b筺 kh玭g th� s� d鬾g T﹎ T﹎ T�琻g 竛h Ph�.");
+        118| 		--AddItem(6,1,18,1,0,0,0);
+        119| 		return 1
+
+########## JudgePLAddTitle  (khong xuat ra Lua)
+  --- battles/battlehead.lua:781
+        779| 			camptab[nTopIndex] = 0;
+        780| 			if (camp == 1) then
+   >>   781| 				JudgePLAddTitle()
+        782| 			else
+        783| 				JudgePLAddTitle()
+        784| 			end
+  --- battles/battlehead.lua:783
+        781| 				JudgePLAddTitle()
+        782| 			else
+   >>   783| 				JudgePLAddTitle()
+        784| 			end
+        785| 		end
+        786| 	end
+  --- battles/battlehead.lua:781
+        779| 			camptab[nTopIndex] = 0;
+        780| 			if (camp == 1) then
+   >>   781| 				JudgePLAddTitle()
+        782| 			else
+        783| 				JudgePLAddTitle()
+        784| 			end
+
+########## NPCINFO_GetSeries  (0x081C08E0)
+  --- task/tollgate/killer/kill_level.lua:37
+         35| 	local Uworld1082 = nt_getTask(TSKID_KILLTASKID);
+         36| 	local nNpcSign = GetNpcParam( nNpcIndex, 1 );
+   >>    37| 	local nseries = NPCINFO_GetSeries(nNpcIndex)
+         38| 	local Uworld1217 = nt_getTask(1217)
+         39| 	if( Uworld1082 == nNpcSign ) then
+         40| 
+
+########## NpcDropMoney  (0x0811D9C0)
+  --- lib/droptemplet.lua:159
+        157| 		local nAddJxb = tbItem.nJxb * nItemCount
+        158| 
+   >>   159| 		NpcDropMoney(nNpcIndex, nAddJxb, nBelongerIndex)
+        160| 		self:WriteLog(szLogTitle, format("npcname(%s) drop %d Jxb", szNpcName, nAddJxb ))
+        161| 	end
+        162| 
+  --- lib/droptemplet.lua:159
+        157| 		local nAddJxb = tbItem.nJxb * nItemCount
+        158| 
+   >>   159| 		NpcDropMoney(nNpcIndex, nAddJxb, nBelongerIndex)
+        160| 		self:WriteLog(szLogTitle, format("npcname(%s) drop %d Jxb", szNpcName, nAddJxb ))
+        161| 	end
+        162| 
+  --- lib/droptemplet.lua:159
+        157| 		local nAddJxb = tbItem.nJxb * nItemCount
+        158| 
+   >>   159| 		NpcDropMoney(nNpcIndex, nAddJxb, nBelongerIndex)
+        160| 		self:WriteLog(szLogTitle, format("npcname(%s) drop %d Jxb", szNpcName, nAddJxb ))
+        161| 	end
+        162| 
+
+########## NpcName2Replace  (0x081006D0)
+  --- missions/challengeoftime/npc/transfer.lua:10
+          8| 	local nNpcIndex = GetLastDiagNpc();
+          9| 	local szNpcName = GetNpcName(nNpcIndex);
+   >>    10| 	if NpcName2Replace then szNpcName = NpcName2Replace(szNpcName) end
+         11| 	local tbDailog = DailogClass:new(szNpcName);
+         12| 	G_ACTIVITY:OnMessage("ClickNpc", tbDailog, nNpcIndex);
+         13| 
+
+########## PET_GetGrownPoint  (0x081D5FE0)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:391
+        389| _AwardTask = function (nUpgrade,nGrown,nTame,szLog)
+        390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+   >>   391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+        392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+        394| 	if(not szLog) then szLog = "NhanNguyenLieu" end
+
+########## PET_GetTamePoint  (0x081D5F90)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:392
+        390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+        391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+   >>   392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+        394| 	if(not szLog) then szLog = "NhanNguyenLieu" end
+        395| 	tbLog:PlayerActionLog(tbThapnienLenhbai.EVENT_LOG_TITLE,szLog,format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+
+########## PET_GetUpgradePoint  (0x081D6150)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:390
+        388| --Function t╪g nguy猲 li謚 cho pet
+        389| _AwardTask = function (nUpgrade,nGrown,nTame,szLog)
+   >>   390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+        391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+        392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+
+########## PET_SetGrownPoint  (0x081D6230)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:391
+        389| _AwardTask = function (nUpgrade,nGrown,nTame,szLog)
+        390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+   >>   391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+        392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+        394| 	if(not szLog) then szLog = "NhanNguyenLieu" end
+
+########## PET_SetTamePoint  (0x081D5F10)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:392
+        390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+        391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+   >>   392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+        394| 	if(not szLog) then szLog = "NhanNguyenLieu" end
+        395| 	tbLog:PlayerActionLog(tbThapnienLenhbai.EVENT_LOG_TITLE,szLog,format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+
+########## PET_SetUpgradePoint  (0x081D70E0)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:390
+        388| --Function t╪g nguy猲 li謚 cho pet
+        389| _AwardTask = function (nUpgrade,nGrown,nTame,szLog)
+   >>   390| 	PET_SetUpgradePoint(PET_GetUpgradePoint() + nUpgrade)
+        391| 	PET_SetGrownPoint(PET_GetGrownPoint() + nGrown)
+        392| 	PET_SetTamePoint(PET_GetTamePoint() + nTame)
+        393| 	Msg2Player(format("Nh薾 ��頲 %d 甶觤 Th╪g C蕄, %d 甶觤 T╪g Tr�雗g, %d 甶觤 Tu Luy謓",nUpgrade,nGrown,nTame))
+
+########## QueryWiseManForSB  (0x0811A270)
+  --- item/heart_head.lua:129
+        127| 	end;
+        128| 	if (bForever == 0) then
+   >>   129| 		QueryWiseManForSB("LoverCB_C", "UnlineCB_C", 1000, Lover);
+        130| 		return 0
+        131| 	else
+        132| 		QueryWiseManForSB("LoverCB_F", "UnlineCB_F", 1000, Lover);
+  --- item/heart_head.lua:132
+        130| 		return 0
+        131| 	else
+   >>   132| 		QueryWiseManForSB("LoverCB_F", "UnlineCB_F", 1000, Lover);
+        133| 		return 1
+        134| 	end
+        135| end;
+
+########## Require  (khong xuat ra Lua)
+  --- protocol.lua:109
+        107| 		elseif MODEL_GAMECLIENT == 1 then
+        108| 			if szFile ~= "" then
+   >>   109| 				Require(szFile);
+        110| 			end
+        111| 			DynamicExecute(szFile, szFun, unpack(tbParam))
+        112| 		end
+  --- protocol.lua:109
+        107| 		elseif MODEL_GAMECLIENT == 1 then
+        108| 			if szFile ~= "" then
+   >>   109| 				Require(szFile);
+        110| 			end
+        111| 			DynamicExecute(szFile, szFun, unpack(tbParam))
+        112| 		end
+  --- protocol.lua:109
+        107| 		elseif MODEL_GAMECLIENT == 1 then
+        108| 			if szFile ~= "" then
+   >>   109| 				Require(szFile);
+        110| 			end
+        111| 			DynamicExecute(szFile, szFun, unpack(tbParam))
+        112| 		end
+
+########## ST_DoTransLife  (0x081C2990)
+  --- task/metempsychosis/translife_6.lua:102
+        100| 	SetTaskTemp(TSKM_ZHUANSHENG_RESISTID, -2)
+        101| 	LeaveTeam()
+   >>   102| 	ST_DoTransLife()
+        103| end
+        104| 
+        105| function TransLife6:AcceptTask(nTaskIndex)
+
+########## ST_IsTransLife  (0x081C1160)
+  --- activitysys/playerfunlib.lua:146
+        144| 	nLevel = lib:NumberParamTrans(nLevel)
+        145| 
+   >>   146| 	if ST_IsTransLife() == 1 or lib:OptionFunction(GetLevel(), nLevel,szOption) then
+        147| 		return 1
+        148| 	else
+        149| 		if szFailMsg == "default" then
+  --- activitysys/playerfunlib.lua:157
+        155| 
+        156| function PlayerFunLib:CheckIsTransLife(szFailMsg)
+   >>   157| 	if ST_IsTransLife() == 1 then
+        158| 		return 1
+        159| 	else
+        160| 		lib:ShowMessage(szFailMsg)
+  --- event/change_destiny/head.lua:114
+        112| 	end
+        113| 
+   >>   114| 	if ST_IsTransLife() ~= 1 then
+        115| 		return 0;
+        116| 	end
+        117| 
+
+########## ST_LevelUp  (0x081C2A60)
+  --- vng_event/thapnienlenhbai/lenhbai_def.lua:378
+        376| 	local szMsg = "T╪g l猲 c蕄 %d"
+        377| 	if(nId ==  1) then
+   >>   378| 		ST_LevelUp(nLevel - GetLevel())
+        379| 	else
+        380| 		SetTask(4000, GetTask(4000) + nLevel)
+        381| 		szMsg = "Nh薾 ��頲 %d 甶觤 Ch﹏ Nguy猲"
+
+########## SetItemBindState  (0x08127630)
+  --- battles/battlehead.lua:1317
+       1315| 		SetSpecItemParam(ItemIdx, 2,nEndMonthDay);--设置物品月日
+       1316| 		SyncItem(ItemIdx)
+   >>  1317| 		SetItemBindState(ItemIdx, -2);-- 绑定
+       1318| 		Msg2Player("B筺 nh薾 ��頲 1 Hu﹏ c玭g b礽 T鑞g Kim")
+       1319| 		WriteLog(format("[Chi課 tr�阯g T鑞g Kim]\t%s\tName:%s\tAccount:%s\t 1000 甶觤 t輈h l騳 tr� l猲 s� nh薾 ��頲 1 Hu﹏ c玭g b礽 T鑞g Kim",
+       1320| 				GetLocalDate("%y%m%d %X"), GetName(), GetAccount()));
+  --- lib/droptemplet.lua:144
+        142| 
+        143| 				if tbItem.nBindState then
+   >>   144| 					SetItemBindState(nItemIndex, tbItem.nBindState)--根据nBindState绑定物品
+        145| 				end
+        146| 				if type(tbItem.CallBack) == "function" then
+        147| 					tbItem.CallBack(nItemIndex)
+  --- lib/droptemplet.lua:144
+        142| 
+        143| 				if tbItem.nBindState then
+   >>   144| 					SetItemBindState(nItemIndex, tbItem.nBindState)--根据nBindState绑定物品
+        145| 				end
+        146| 				if type(tbItem.CallBack) == "function" then
+        147| 					tbItem.CallBack(nItemIndex)
+
+########## Tm2Time  (0x08103AC0)
+  --- activitysys/functionlib.lua:364
+        362| 	local nSecond = tbTaskTime.nSecond or tonumber(GetLocalDate("%S"))
+        363| 	nIntervalSec = tonumber(nIntervalSec)
+   >>   364| 	local nTaskTime = Tm2Time(nYear, nMonth, nDay, nHour, nMinute, nSecond)
+        365| 	local nCurrTime = GetCurServerTime()
+        366| 	while nCurrTime > nTaskTime do
+        367| 		nTaskTime = nTaskTime + nIntervalSec
+  --- activitysys/functionlib.lua:380
+        378| 	local nMinute = tbTaskTime.nMinute or tonumber(GetLocalDate("%M"))
+        379| 	local nSecond = tbTaskTime.nSecond or tonumber(GetLocalDate("%S"))
+   >>   380| 	local nTaskTime = Tm2Time(nYear, nMonth, nDay, nHour, nMinute, nSecond)
+        381| 	local nCurrTime = GetCurServerTime()
+        382| 	if nTaskTime >= nCurrTime then
+        383| 		return nTaskTime - nCurrTime
+  --- activitysys/functionlib.lua:364
+        362| 	local nSecond = tbTaskTime.nSecond or tonumber(GetLocalDate("%S"))
+        363| 	nIntervalSec = tonumber(nIntervalSec)
+   >>   364| 	local nTaskTime = Tm2Time(nYear, nMonth, nDay, nHour, nMinute, nSecond)
+        365| 	local nCurrTime = GetCurServerTime()
+        366| 	while nCurrTime > nTaskTime do
+        367| 		nTaskTime = nTaskTime + nIntervalSec
+
+########## TrimString  (0x080FF630)
+  --- lib/string.lua:163
+        161| 	*/
+        162| 	PushString(str)
+   >>   163| 	TrimString()
+        164| 	return PopString()
+        165| end
+        166| 
+  --- lib/string.lua:163
+        161| 	*/
+        162| 	PushString(str)
+   >>   163| 	TrimString()
+        164| 	return PopString()
+        165| end
+        166| 
+  --- lib/string.lua:163
+        161| 	*/
+        162| 	PushString(str)
+   >>   163| 	TrimString()
+        164| 	return PopString()
+        165| end
+        166| 

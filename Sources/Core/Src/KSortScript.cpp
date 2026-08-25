@@ -120,6 +120,14 @@ int g_IsJx2Script(Lua_State* L)
 		"\\script\\missions\\arena\\", "\\script\\activitysys\\", "\\script\\tong\\", "\\scriptjx2\\",
 		"\\script\\global\\npcchucnang\\dichquan.lua",	// Dich Quan 7 thanh: Include posthouse.lua (Tin Su)
 		"\\script\\missions\\basemission\\",	// [PORT5 23/08 phan bien F7] lib JX2 (CallNpc bNoRevive)
+		// [3HD 25/08] 3 hoat dong ban Linux (fengling / challengeoftime / boss lib
+		// + trigger o settings). Include() chay trong state TEP GOI nen chi can
+		// liet ke cac STATE GOC; bao dong Include cua chung tu duoc phu theo.
+		"\\script\\missions\\fengling_ferry\\",
+		"\\script\\missions\\challengeoftime\\",
+		"\\script\\missions\\boss\\",
+		"\\script\\vng_feature\\",
+		"\\settings\\trigger_",
 	};
 	const char* szName = g_GetScriptNameByState(L);
 	if (!szName || !szName[0])

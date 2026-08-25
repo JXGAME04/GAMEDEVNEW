@@ -253,11 +253,13 @@ int LuaForbidChangePK(Lua_State* L)
 	return 0;
 }
 
-// LO GOC nhu tren; map 221 la map mission - viec chan Tho Dia Phu de E5 xu
-// bang thuoc tinh map neu can
+// [3HD 25/08] het la stub: chuyen sang ban that o cuoi file (co theo
+// PlayerIndex + nho subworld luc bat - LuaHD3_DisabledUseTownP_Real).
+// Truoc day stub return 0 -> 7 loi goi cua PLD / Vuot Ai vo tac dung.
+int LuaHD3_DisabledUseTownP_Real(Lua_State* L);
 int LuaDisabledUseTownP(Lua_State* L)
 {
-	return 0;
+	return LuaHD3_DisabledUseTownP_Real(L);
 }
 
 extern int LuaReSetMask(Lua_State* L);		// ScriptFuns.cpp - khoi phuc mat na theo do dang deo
@@ -1067,6 +1069,805 @@ int LuaJx2GetMissionString(Lua_State* L)
 	}
 	Lua_PushString(L, (char*)szVal);
 	return 1;
+}
+
+// ============================================================================
+// == [3HD 25/08/2026] PORT 3 HOAT DONG BAN LINUX =============================
+// ==   (1) San boss Sat Thu  - script\task\tollgate\killer\
+// ==   (2) Phong Lang Do     - script\missions\fengling_ferry\
+// ==   (3) Vuot Ai           - script\missions\challengeoftime\
+// == Cac ham engine Linux (jx_linux_y) chua co tren JX1. Chu ky lay tu
+// == dich nguoc ELF + chinh script goc; doi chieu day du:
+// == D:\GAMEDEVNEW\ReverseTools\port_3hd\15_bosung_soat_api.md (muc 6).
+// == Dang ky o ScriptFuns.cpp (khoi "[3HD 25/08]"). Toan bo server-only.
+// ============================================================================
+
+#include "KItemSet.h"
+#include "KSubWorldSet.h"
+#include "KSG_StringProcess.h"	// KSG_GetCurSec
+#include "KSortScript.h"		// g_FileName2Id / g_GetScriptNameByState
+#include <time.h>
+
+extern KItemSet ItemSet;
+extern KObjSet ObjSet;
+
+// log 1 lan cho moi ham stub de biet duong nao dang duoc goi that
+static void sHD3_LogOnce(const char* szTag)
+{
+	static std::map<std::string, int> s_mapOnce;
+	if (s_mapOnce.find(szTag) == s_mapOnce.end())
+	{
+		s_mapOnce[szTag] = 1;
+		g_DebugLog((LPSTR)"[3HD] ham stub duoc goi lan dau: %.60s", szTag);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Tm2Time(nYear, nMonth, nDay, nHour, nMin, nSec) -> so giay Unix.
+// Linux 0x08103AC0 - ham nguoc cua Time2Tm (JX1 da co :14891). Thieu tham so
+// -> dung 0 (mktime tu chinh). functionlib.lua:364,380 dung de tinh lich.
+int LuaHD3_Tm2Time(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	struct tm t;
+	memset(&t, 0, sizeof(t));
+	int nVal[6] = { 1970, 1, 1, 0, 0, 0 };
+	for (int i = 0; i < 6 && i < nTop; i++)
+		nVal[i] = (int)Lua_ValueToNumber(L, i + 1);
+	t.tm_year = nVal[0] - 1900;
+	t.tm_mon  = nVal[1] - 1;
+	t.tm_mday = nVal[2];
+	t.tm_hour = nVal[3];
+	t.tm_min  = nVal[4];
+	t.tm_sec  = nVal[5];
+	t.tm_isdst = -1;
+	time_t nTime = mktime(&t);
+	if (nTime == (time_t)-1)
+		nTime = 0;
+	Lua_PushNumber(L, (double)nTime);
+	return 1;
+}
+
+// FormatTime2Date(nUnix) -> so YYYYMMDD. Linux 0x081022B0 ("%04d%02d%02d").
+int LuaHD3_FormatTime2Date(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	time_t nTime = (time_t)(double)Lua_ValueToNumber(L, 1);
+	struct tm* pTm = localtime(&nTime);
+	if (!pTm)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)((pTm->tm_year + 1900) * 10000 + (pTm->tm_mon + 1) * 100 + pTm->tm_mday));
+	return 1;
+}
+
+// AddStatData(szTen [, nSoLuong]) -> 0 gia tri. Linux 0x080FF550 cong vao bo
+// dem thong ke phia relay (StatGameData). JX1 khong co kenh do -> ghi dong
+// "thoi_gian \t ten \t so_luong" vao bin\server\log_game\hd3_statdata.log de
+// van dem duoc (nguoi van hanh gop bang tay/script). Mo file giu san, flush
+// moi dong (tan suat thap: mo ruong/chet/bao danh - khong phai moi tick).
+int LuaHD3_AddStatData(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 1 || !Lua_IsString(L, 1))
+		return 0;
+	const char* szName = Lua_ValueToString(L, 1);
+	int nCount = 1;
+	if (nTop >= 2 && Lua_IsNumber(L, 2))
+		nCount = (int)Lua_ValueToNumber(L, 2);
+	if (!szName || !szName[0])
+		return 0;
+	static FILE* s_pStat = NULL;
+	if (!s_pStat)
+	{
+		char szPath[MAX_PATH * 2];
+		g_GetRootPath(szPath);
+		// [VA 25/08 - N4] bin\server\log_game KHONG TON TAI (log_game la thu muc SCRIPT);
+		// thu muc log that cua may chu la logs\.
+		strcat(szPath, "\\logs\\hd3_statdata.log");
+		s_pStat = fopen(szPath, "a");
+	}
+	if (s_pStat)
+	{
+		time_t nNow = time(NULL);
+		struct tm* pTm = localtime(&nNow);
+		fprintf(s_pStat, "%04d-%02d-%02d %02d:%02d:%02d\t%s\t%d\n",
+			pTm->tm_year + 1900, pTm->tm_mon + 1, pTm->tm_mday,
+			pTm->tm_hour, pTm->tm_min, pTm->tm_sec, szName, nCount);
+		fflush(s_pStat);
+	}
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+// GetItemAllParams(nItemIdx) -> bang {1..6} = nGeneratorLevel[0..5].
+// Linux 0x08102D20 doc 6 so lien tiep o +0x1E0. JX1: m_GeneratorParam (KItem.h:143).
+int LuaHD3_GetItemAllParams(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+		return 0;
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+		return 0;
+	KItemGeneratorParam* pParam = Item[nItemIdx].GetGeneratorParam();
+	Lua_NewTable(L);
+	for (int i = 0; i < MAX_ITEM_MAGICLEVEL && i < 6; i++)
+	{
+		Lua_PushNumber(L, pParam->nGeneratorLevel[i]);
+		Lua_RawSetI(L, -2, i + 1);
+	}
+	return 1;
+}
+
+// ITEM_GetItemRandSeed(nItemIdx) -> uRandomSeed (khong dau, script in %0.0f).
+int LuaHD3_GetItemRandSeed(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)Item[nItemIdx].GetGeneratorParam()->uRandomSeed);
+	return 1;
+}
+
+// GetItemGenTime(nItemIdx) -> 0. JX1 KItem KHONG luu moc thoi gian tao vat pham
+// (da kiem KItemCommonAttrib). Chi dung de GHI LOG roi do (lib\log.lua:51) nen
+// tra 0 an toan; ghi chu sai lech trong BANGIAO.
+int LuaHD3_GetItemGenTime(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// GetItemQuality / GetGlodEqIndex / GetPlatinaEquipIndex / GetPlatinaLevel:
+// he "pham chat vang/bach kim" cua JX2 (truong +4 bang item). JX1 quan ly
+// trang bi Hoang Kim bang bang rieng phia script, KItem khong co truong nay.
+// Cac cho goi trong 3 hoat dong CHI de ghi log + ghep do (composeex - ngoai
+// luong choi). Tra "khong phai do vang" la an toan va trung thuc nhat.
+int LuaHD3_GetItemQuality(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_GetGlodEqIndex(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_GetPlatinaEquipIndex(Lua_State* L)
+{
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_GetPlatinaLevel(Lua_State* L)
+{
+	// Linux: khong phai bach kim -> push nil (van 1 gia tri, script tostring())
+	Lua_PushNil(L);
+	return 1;
+}
+
+// GetRoomItems(nRoomType) -> bang chi so vat pham cua nguoi choi hien tai.
+// Linux 0x0810D170. Cho goi duy nhat trong bao dong: lib\composeex.lua:191
+// (quet TUI khi ghep do). JX1: quet tung o cua khay hanh trang
+// (room_equipment + room_equipmentex - pos_equiproom map vao room_equipment,
+//  KItemList.cpp:251) qua KInventory::FindItem(x,y); kich thuoc dung hang
+// EQUIPMENT_ROOM_WIDTH/HEIGHT (GameDataDef.h:371-372, ca room ex cung co 6x10;
+// FindItem tu kiem bien nen thua o cung vo hai);
+// vat pham chiem nhieu o -> khu trung bang chi so lien truoc.
+int LuaHD3_GetRoomItems(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	Lua_NewTable(L);
+	if (nPlayerIndex <= 0)
+		return 1;
+	int nCount = 0;
+	// [VA 25/08 - N7] ton trong tham so nRoomType (composeex.lua co nhieu khoang).
+	// Mac dinh (thieu tham so hoac <=0) = khay hanh trang + phan mo rong, y nhu truoc.
+	int nRoomArg = (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1)) ? (int)Lua_ValueToNumber(L, 1) : -1;
+	int nRoomsOne[1] = { nRoomArg };
+	static const int nRoomsDef[2] = { room_equipment, room_equipmentex };
+	const int* pRooms = nRoomsDef;
+	int nRoomN = 2;
+	if (nRoomArg >= 0 && nRoomArg < room_num)
+	{
+		pRooms = nRoomsOne;
+		nRoomN = 1;
+	}
+	static const int nRooms[2] = { room_equipment, room_equipmentex };
+	std::map<int, int> mapSeen;
+	for (int r = 0; r < nRoomN; r++)
+	{
+		KInventory* pRoom = &Player[nPlayerIndex].m_ItemList.m_Room[pRooms[r]];
+		for (int y = 0; y < EQUIPMENT_ROOM_HEIGHT; y++)
+		{
+			for (int x = 0; x < EQUIPMENT_ROOM_WIDTH; x++)
+			{
+				int nItemIdx = pRoom->FindItem(x, y);
+				if (nItemIdx > 0 && nItemIdx < MAX_ITEM && mapSeen.find(nItemIdx) == mapSeen.end())
+				{
+					mapSeen[nItemIdx] = 1;
+					Lua_PushNumber(L, nItemIdx);
+					Lua_RawSetI(L, -2, ++nCount);
+				}
+			}
+		}
+	}
+	return 1;
+}
+
+// ---------------------------------------------------------------------------
+// GetFirstPlayerAtServer() / GetNextPlayerAtServer() -> PlayerIndex (0 = het).
+// Linux 0x08101CF0/0x08101D20 - con tro duyet noi bo (server don luong).
+// missions\boss\bigboss.lua:289-294 duyet toan bo nguoi choi online.
+static int s_nHD3PlayerCursor = 0;
+static int sHD3_NextOnlinePlayer(int nFrom)
+{
+	for (int i = nFrom; i < MAX_PLAYER; i++)
+	{
+		if (Player[i].m_nIndex > 0)
+			return i;
+	}
+	return 0;
+}
+int LuaHD3_GetFirstPlayerAtServer(Lua_State* L)
+{
+	s_nHD3PlayerCursor = sHD3_NextOnlinePlayer(1);
+	Lua_PushNumber(L, s_nHD3PlayerCursor);
+	return 1;
+}
+int LuaHD3_GetNextPlayerAtServer(Lua_State* L)
+{
+	if (s_nHD3PlayerCursor <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	s_nHD3PlayerCursor = sHD3_NextOnlinePlayer(s_nHD3PlayerCursor + 1);
+	Lua_PushNumber(L, s_nHD3PlayerCursor);
+	return 1;
+}
+
+// GetNpcAroundPlayerList(nNpcIdx, nDist) -> tbPlayerIndex, nCount.
+// Linux 0x08104870 (2 gia tri). Khuon quet region + quy toa do cuc bo ve toan
+// cuc lay tu LuaGetAroundNpcList o tren (PORT5 - da xu ly dung bay region).
+int LuaHD3_GetNpcAroundPlayerList(Lua_State* L)
+{
+	int nCount = 0;
+	int nTop = Lua_GetTopIndex(L);
+	Lua_NewTable(L);
+	if (nTop < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	int nMe = (int)Lua_ValueToNumber(L, 1);
+	int nDist = (int)Lua_ValueToNumber(L, 2);
+	if (nMe <= 0 || nMe >= MAX_NPC || nDist <= 0 || Npc[nMe].m_SubWorldIndex < 0
+		|| Npc[nMe].m_RegionIndex < 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 2;
+	}
+	KSubWorld* pWorld = &SubWorld[Npc[nMe].m_SubWorldIndex];
+	int nMX = LOWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionWidth + Npc[nMe].m_MapX;
+	int nMY = HIWORD(pWorld->m_Region[Npc[nMe].m_RegionIndex].m_RegionID) * pWorld->m_nRegionHeight + Npc[nMe].m_MapY;
+	for (int r = 0; r < pWorld->m_nTotalRegion; r++)
+	{
+		KRegion* pRegion = &pWorld->m_Region[r];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_NpcList.GetHead();
+		while (pNode)
+		{
+			int i = pNode->m_nIndex;
+			pNode = (KIndexNode*)pNode->GetNext();
+			if (i <= 0 || i >= MAX_NPC || Npc[i].m_Index <= 0 || i == nMe)
+				continue;
+			if (Npc[i].GetPlayerIdx() <= 0)		// chi lay NGUOI CHOI
+				continue;
+			if (Npc[i].m_Doing == do_death || Npc[i].m_Doing == do_revive)
+				continue;
+			int dx = LOWORD(pRegion->m_RegionID) * pWorld->m_nRegionWidth + Npc[i].m_MapX - nMX;
+			int dy = HIWORD(pRegion->m_RegionID) * pWorld->m_nRegionHeight + Npc[i].m_MapY - nMY;
+			if (dx * dx + dy * dy > nDist * nDist)
+				continue;
+			Lua_PushNumber(L, Npc[i].GetPlayerIdx());
+			Lua_RawSetI(L, -2, ++nCount);
+		}
+	}
+	Lua_PushNumber(L, nCount);
+	return 2;
+}
+
+// ---------------------------------------------------------------------------
+// ITEM_SetExpiredTime(nItemIdx, nGiaTri) -> 1. HAI DON VI (dung nhu ban goc):
+//   >= 20000000 : ngay tuyet doi YYYYMMDD (het han 0h ngay do)
+//   <  20000000 : SO PHUT ke tu bay gio (rank_perday.lua: 24*60)
+// KItem.nExpireTime = giay theo goc 1451581200 (01/01/2016 - KItem.cpp:2629),
+// so sanh voi KSG_GetCurSec() (KItem.h:346).
+int LuaHD3_ITEM_SetExpiredTime(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	double dVal = (double)Lua_ValueToNumber(L, 2);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	// [VA 25/08 - N9] ban goc: tham so 2 == 0 nghia la KHONG DAT HAN (test esi,esi/je),
+	// KHONG phai 'het han ngay'. droptemplet.lua:129 chi kiem 'if .. then' ma Lua coi
+	// 0 la true nen gia tri 0 CO THE toi day.
+	if (dVal == 0.0)
+	{
+		Item[nItemIdx].SetExpireTime(0);
+		Lua_PushNumber(L, 1);
+		return 1;
+	}
+	int nExpireSec;		// giay theo goc 1451581200
+	if (dVal >= 20000000.0)
+	{
+		int nDate = (int)dVal;
+		struct tm t;
+		memset(&t, 0, sizeof(t));
+		t.tm_year = nDate / 10000 - 1900;
+		t.tm_mon  = (nDate / 100) % 100 - 1;
+		t.tm_mday = nDate % 100;
+		t.tm_isdst = -1;
+		time_t nAbs = mktime(&t);
+		if (nAbs == (time_t)-1)
+		{
+			Lua_PushNumber(L, 0);
+			return 1;
+		}
+		nExpireSec = (int)(nAbs - 1451581200);
+	}
+	else
+	{
+		nExpireSec = KSG_GetCurSec() + (int)dVal * 60;
+	}
+	Item[nItemIdx].SetExpireTime(nExpireSec);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ITEM_GetExpiredTime(nItemIdx) -> so PHUT con lai (<= 0: khong co han).
+// (doi ung don vi phut cua duong Set; cho goi la activitysys\activity.lua:314
+// chi so sanh <= 0)
+int LuaHD3_ITEM_GetExpiredTime(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	// [VA 25/08 - N1] ban goc 0x08154540 tra GIA TRI THO (khong phep tinh nao) va
+	// cho goi (activitysys\activity.lua:314-322) dua thang vao Time2Tm = epoch Unix
+	// that => phai cong goc 1451581200 cua JX1 (KItem.cpp:2629). Doc TRUC TIEP truong,
+	// KHONG qua GetExpireTime() vi getter tra 0 khi vat pham DA het han.
+	int nExpire = Item[nItemIdx].m_CommonAttrib.nExpireTime;
+	if (nExpire <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)nExpire + 1451581200.0);
+	return 1;
+}
+
+// ITEM_SetLeftUsageTime(nItemIdx, n) -> 1. KItem.nParam = "so lan su dung item"
+// (KItem.h:87, SetParam/GetParam :413-414) - dung truong co san.
+int LuaHD3_ITEM_SetLeftUsageTime(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[nItemIdx].SetParam((int)Lua_ValueToNumber(L, 2));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// SetItemBindState(nItemIdx, nState) -> 1. Linux 0x08127630, -2 = khoa vinh vien
+// (battlehead.lua:1317, droptemplet.lua:144). JX1 DA CO he khoa vat pham:
+// SetPlayerItemLock -> InsuranceCourse + LockItem.nState (KItem.h:313-316);
+// duong cam ban/giao dich kiem "InsuranceCourse > 0 || InsuranceCourse == -2"
+// (KPlayer.cpp:3755, :5155, :5237) => anh xa 1-1, ben vung qua save.
+int LuaHD3_SetItemBindState(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nItemIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[nItemIdx].SetPlayerItemLock((int)Lua_ValueToNumber(L, 2));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DropItemEx(nSubWorldIdx, nMpsX, nMpsY, nBelonger, nVersion, szRandSeed,
+//            nQuality, nGenre, nDetail, nParticular, nLevel, nSeries, nLuck,
+//            nMagic1..nMagic6) -> nItemIdx (0 = hong).
+// Linux 0x0811FD70 - tha xuong dat vat pham DA xac dinh day du thuoc tinh.
+// Chu ky ghi ngay trong lib\droptemplet.lua:59-93 (19 tham so, szRandSeed la
+// CHUOI). JX1: dung dung khuon KNpc::DropItemFromLuaScript (KNpc.cpp:8344)
+// nhung theo TOA DO thay vi vi tri NPC. nQuality bo qua (JX1 khong co truong
+// pham chat - xem ghi chu GetItemQuality); nVersion bo qua (AddItemSet2 tu lay
+// GetGameVersion) - ca hai chi anh huong hien thi log.
+int LuaHD3_DropItemEx(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 13)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nSubWorldIdx = (int)Lua_ValueToNumber(L, 1);
+	int nMpsX      = (int)Lua_ValueToNumber(L, 2);
+	int nMpsY      = (int)Lua_ValueToNumber(L, 3);
+	int nBelonger  = (int)Lua_ValueToNumber(L, 4);
+	double dSeed   = 0;
+	if (Lua_IsString(L, 6))
+		dSeed = atof(Lua_ValueToString(L, 6));
+	else if (Lua_IsNumber(L, 6))
+		dSeed = (double)Lua_ValueToNumber(L, 6);
+	int nGenre     = (int)Lua_ValueToNumber(L, 8);
+	int nDetail    = (int)Lua_ValueToNumber(L, 9);
+	int nParticular= (int)Lua_ValueToNumber(L, 10);
+	int nLevel     = (int)Lua_ValueToNumber(L, 11);
+	int nSeries    = (int)Lua_ValueToNumber(L, 12);
+	int nLuck      = (int)Lua_ValueToNumber(L, 13);
+	int nMagic[MAX_ITEM_MAGICLEVEL];
+	memset(nMagic, 0, sizeof(nMagic));
+	for (int i = 0; i < 6 && i < MAX_ITEM_MAGICLEVEL; i++)
+	{
+		if (nTop >= 14 + i)
+			nMagic[i] = (int)Lua_ValueToNumber(L, 14 + i);
+	}
+	if (nSubWorldIdx < 0 || nSubWorldIdx >= MAX_SUBWORLD)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nXOpt = ItemSet.genXOpt(nLuck);
+	int nIdx = ItemSet.AddItemSet2(nGenre, nSeries, nLevel, nLuck, nDetail, nParticular,
+		nMagic, g_SubWorldSet.GetGameVersion(), 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, nXOpt);
+	if (nIdx <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (dSeed > 0)
+		Item[nIdx].GetGeneratorParam()->uRandomSeed = (UINT)dSeed;
+
+	POINT	ptLocal;
+	KMapPos	Pos;
+	ptLocal.x = nMpsX;
+	ptLocal.y = nMpsY;
+	SubWorld[nSubWorldIdx].GetFreeObjPos(ptLocal);
+	Pos.nSubWorld = nSubWorldIdx;
+	SubWorld[nSubWorldIdx].Mps2Map(ptLocal.x, ptLocal.y,
+		&Pos.nRegion, &Pos.nMapX, &Pos.nMapY, &Pos.nOffX, &Pos.nOffY);
+
+	KObjItemInfo sInfo;
+	sInfo.m_nItemID = nIdx;
+	sInfo.m_nItemWidth = Item[nIdx].GetWidth();
+	sInfo.m_nItemHeight = Item[nIdx].GetHeight();
+	sInfo.m_nMoneyNum = 0;
+	if (Item[nIdx].GetGenre() != item_equip && Item[nIdx].GetStackNum() > 1)
+		sprintf(sInfo.m_szName, "%s x %d", Item[nIdx].GetName(), Item[nIdx].GetStackNum());
+	else
+		strcpy(sInfo.m_szName, Item[nIdx].GetName());
+	sInfo.m_nColorID = Item[nIdx].GetColorItem();
+	sInfo.m_nGenre = Item[nIdx].GetGenre();
+	sInfo.m_nDetailType = Item[nIdx].GetDetailType();
+	sInfo.m_nParticularType = Item[nIdx].GetParticular();
+	sInfo.m_nMovieFlag = 1;
+	sInfo.m_nSoundFlag = 1;
+	sInfo.m_dwNpcId1 = 0;
+	int nObj = ObjSet.Add(Item[nIdx].GetObjIdx(), Pos, sInfo);
+	if (nObj == -1)
+	{
+		ItemSet.Remove(nIdx);
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (nBelonger > 0 && nBelonger < MAX_PLAYER)
+		Object[nObj].SetItemBelong(nBelonger);
+	Lua_PushNumber(L, nIdx);
+	return 1;
+}
+
+// NpcDropMoney(nNpcIdx, nSoTien, nBelonger) -> 0 gia tri. Linux 0x0811D9C0.
+// JX1 da co DropNpcMoney(nNpcIdx, nSoTien) voi belong = nguoi choi hien tai
+// (ScriptFuns.cpp:4267) - day la ban them tham so 3.
+int LuaHD3_NpcDropMoney(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop < 2)
+		return 0;
+	int nIndex = (int)Lua_ValueToNumber(L, 1);
+	int nMoneyNum = (int)Lua_ValueToNumber(L, 2);
+	int nBelonger = (nTop >= 3) ? (int)Lua_ValueToNumber(L, 3) : GetPlayerIndex(L);
+	if (nIndex <= 0 || nIndex >= MAX_NPC || nMoneyNum <= 0 || Npc[nIndex].m_SubWorldIndex < 0)
+		return 0;
+	int nX, nY;
+	POINT ptLocal;
+	KMapPos Pos;
+	Npc[nIndex].GetMpsPos(&nX, &nY);
+	ptLocal.x = nX;
+	ptLocal.y = nY;
+	SubWorld[Npc[nIndex].m_SubWorldIndex].GetFreeObjPos(ptLocal);
+	Pos.nSubWorld = Npc[nIndex].m_SubWorldIndex;
+	SubWorld[Npc[nIndex].m_SubWorldIndex].Mps2Map(ptLocal.x, ptLocal.y,
+		&Pos.nRegion, &Pos.nMapX, &Pos.nMapY, &Pos.nOffX, &Pos.nOffY);
+	int nObjIdx = ObjSet.AddMoneyObj(Pos, nMoneyNum);
+	if (nObjIdx > 0 && nObjIdx < MAX_OBJECT && nBelonger > 0)
+		Object[nObjIdx].SetItemBelong(nBelonger);
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+// JoinMission(nMissionId, nCamp) -> 0 gia tri. Linux 0x08137E40: them NGUOI
+// CHOI HIEN TAI vao mission tren SUBWORLD HIEN TAI voi nhom nCamp (dich nguoc
+// 15_bosung_soat_api.md muc 3.2). Cho goi: challengeoftime\npc\
+// dragonboat_main.lua:163. Khuon = LuaAddMissionPlayer (ScriptFuns.cpp:11435).
+// LUU Y trung ten: mission_match.lua tu dinh nghia "function JoinMission" -
+// JX1 moi tep .lua mot Lua_State rieng nen ban script CHI che trong tep do,
+// khong anh huong dang ky engine nay (va nguoc lai).
+int LuaHD3_JoinMission(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1))
+		return 0;
+	int nMissionId = (int)Lua_ValueToNumber(L, 1);
+	int nCamp = (int)Lua_ValueToNumber(L, 2);
+	if (nMissionId < 0 || nCamp < 0)
+		return 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nSubWorldIndex = GetSubWorldIndex(L);
+	if (nPlayerIndex <= 0 || nSubWorldIndex < 0)
+		return 0;
+	KMission Mission;
+	Mission.SetMissionId(nMissionId);
+	KMission* pMission = SubWorld[nSubWorldIndex].m_MissionArray.GetData(&Mission);
+	if (pMission)
+		pMission->AddPlayer(nPlayerIndex, Player[nPlayerIndex].m_dwID, nCamp);
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+// DisabledUseTownP(n) - THAY THE stub cu (return 0). Linux: cam nguoi choi
+// hien tai dung Hoi thanh phu khi o trong hoat dong (PLD gọi (1) luc len
+// thuyen fld_head.lua:142; Vuot Ai goi (1) khi vao ai). JX1 khong co co nay
+// trong KPlayer (CAM them truong - ABI), dung mang static theo PlayerIndex +
+// NHO SUBWORLD luc bat: co chi con hieu luc khi nguoi choi VAN o dung
+// subworld do => roi map / relog sang map khac la tu het, khong bi ket co.
+// Script kiem bang GetDisabledUseTownP() (dang ky moi); item hoi thanh cua
+// JX1 chan theo map o script\header\forbidmap.lua (da them map 3 hoat dong -
+// cung khuon Thanh Bao 984), co nay la lop dung theo dung nguyen ban Linux.
+static BYTE s_byHD3NoTownP[MAX_PLAYER];
+static int  s_nHD3NoTownPWorld[MAX_PLAYER];
+int LuaHD3_DisabledUseTownP_Real(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || nPlayerIndex >= MAX_PLAYER)
+		return 0;
+	int nOn = 1;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsNumber(L, 1))
+		nOn = (int)Lua_ValueToNumber(L, 1);
+	if (nOn == 1)
+	{
+		s_byHD3NoTownP[nPlayerIndex] = 1;
+		s_nHD3NoTownPWorld[nPlayerIndex] = (Player[nPlayerIndex].m_nIndex > 0)
+			? Npc[Player[nPlayerIndex].m_nIndex].m_SubWorldIndex : -1;
+	}
+	else
+	{
+		s_byHD3NoTownP[nPlayerIndex] = 0;
+	}
+	return 0;
+}
+int LuaHD3_GetDisabledUseTownP(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRet = 0;
+	if (nPlayerIndex > 0 && nPlayerIndex < MAX_PLAYER && s_byHD3NoTownP[nPlayerIndex]
+		&& Player[nPlayerIndex].m_nIndex > 0
+		&& Npc[Player[nPlayerIndex].m_nIndex].m_SubWorldIndex == s_nHD3NoTownPWorld[nPlayerIndex])
+		nRet = 1;
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// IsDisabledUseHeart() -> 0/1. Linux 0x0812ED70 doc co cam cua nguoi choi
+// hien tai (bit 0x200000 - cung ho co voi DisabledUseTownP). Dung chung co
+// tren: item\heart_head.lua:116 chi can chan Tam Tam Tuong Anh trong map
+// hoat dong - hanh vi trung voi co TownP.
+int LuaHD3_IsDisabledUseHeart(Lua_State* L)
+{
+	return LuaHD3_GetDisabledUseTownP(L);
+}
+
+// ---------------------------------------------------------------------------
+// OpenProgressBar(szTitle, nFrame, nEventFlag, bDesc, szOnTime, szOnBreak)
+// Linux 0x081082D0 - thanh tien trinh tren client, xong goi szOnTime trong
+// TEP GOI. JX1 co san co che TimeBox (S2C_TIME_BOX + m_dwTimeBoxId +
+// m_szTaskExcuteFun - LuaOpenTimeBox ScriptFuns.cpp:9675) lam dung viec do.
+// Chuyen doi: nFrame (18 khung/giay - Linux FRAME2TIME) -> giay; szOnBreak
+// khong co doi ung tren TimeBox JX1 (ngat = khong goi gi) - ghi chu sai lech.
+int LuaHD3_OpenProgressBar(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 5)
+		return 0;
+	const char* szTitle = Lua_IsString(L, 1) ? Lua_ValueToString(L, 1) : "";
+	int nFrame = (int)Lua_ValueToNumber(L, 2);
+	const char* szOnTime = Lua_IsString(L, 5) ? Lua_ValueToString(L, 5) : "";
+	if (!szOnTime || !szOnTime[0])
+		return 0;
+	int nSec = nFrame / 18;
+	if (nSec < 1)
+		nSec = 1;
+	// callback chay trong chinh tep dang goi
+	const char* szSelf = g_GetScriptNameByState(L);
+	if (szSelf && szSelf[0])
+		Player[nPlayerIndex].m_dwTimeBoxId = g_FileName2Id((LPSTR)szSelf);
+	S2C_TIME_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_timebox;
+	strncpy(NetCommand.Value, szTitle, sizeof(NetCommand.Value) - 1);
+	NetCommand.Value[sizeof(NetCommand.Value) - 1] = 0;
+	NetCommand.Value1 = nSec;
+	strncpy(NetCommand.Value2, szOnTime, sizeof(NetCommand.Value2) - 1);
+	NetCommand.Value2[sizeof(NetCommand.Value2) - 1] = 0;
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, szOnTime, sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	if (g_pServer && Player[nPlayerIndex].m_nNetConnectIdx != -1)
+		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_TIME_BOX));
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Add120SkillExp(nExp) -> so exp da cong. JX1 DA CO he luyen ky nang 120:
+// KPlayer::AddSkillExp120 (duong danh quai KNpc.cpp:3843-3859 dang dung).
+// Cho goi: task\task_award_extend.lua:6 (thuong sat thu cap 90).
+int LuaHD3_Add120SkillExp(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nExp = (int)Lua_ValueToNumber(L, 1);
+	if (nExp <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Player[nPlayerIndex].AddSkillExp120(nExp);
+	Lua_PushNumber(L, nExp);
+	return 1;
+}
+
+// ST_IsTransLife() -> 0/1. Suy truc tiep tu ST_GetTransLifeCount (JX1 da co,
+// = LuaGetPlayerReBornValue - ScriptFuns.cpp:14336): so lan chuyen sinh > 0.
+extern int LuaGetPlayerReBornValue(Lua_State* L);
+int LuaHD3_ST_IsTransLife(Lua_State* L)
+{
+	int nRet = LuaGetPlayerReBornValue(L);
+	if (nRet >= 1 && Lua_IsNumber(L, -1))
+	{
+		int nCount = (int)Lua_ValueToNumber(L, -1);
+		Lua_PushNumber(L, (nCount > 0) ? 1 : 0);
+		return 1;
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Nhom stub CO CHU DICH - cac he JX2 chua ton tai tren JX1, MOI cho goi deu
+// nam NGOAI luong choi loi cua 3 hoat dong (bang doi chieu: 15_bosung muc 6).
+// Tra gia tri an toan de khong "attempt to call nil" lam dut ham dang chay.
+// SendScriptData(nProtocolId, nObHandle): giao thuc script->client cua JX2 -
+// client JX1 khong hieu goi nay; cho goi (protocol_def_gs.lua:193) chi chay
+// khi UI JX2 mo. QueryWiseManForSB: hoi vi tri qua may chu khac - khong co
+// cum lien server. BT_GetBattleParam: kho du lieu battle relay. ST_DoTransLife/
+// ST_LevelUp/PET_*: chuyen sinh cuong buc / thu cung JX2 (thapnienlenhbai,
+// translife_6 - ngoai 3 hoat dong).
+int LuaHD3_SendScriptData(Lua_State* L)
+{
+	sHD3_LogOnce("SendScriptData");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_QueryWiseManForSB(Lua_State* L)
+{
+	sHD3_LogOnce("QueryWiseManForSB");
+	return 0;
+}
+int LuaHD3_BT_GetBattleParam(Lua_State* L)
+{
+	// [VA 25/08 - N8] ban goc 0x081C69B0 tra CHUOI (lua_pushstring), khong phai so.
+	// battlehead.lua:631/639 goi getNpcInfo(str) - day so se tach sai.
+	sHD3_LogOnce("BT_GetBattleParam");
+	Lua_PushString(L, "");
+	return 1;
+}
+int LuaHD3_ST_DoTransLife(Lua_State* L)
+{
+	sHD3_LogOnce("ST_DoTransLife");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_ST_LevelUp(Lua_State* L)
+{
+	sHD3_LogOnce("ST_LevelUp");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+int LuaHD3_PET_Stub(Lua_State* L)
+{
+	sHD3_LogOnce("PET_*");
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// TrimString() - cat trang (space/TAB/CR/LF) o HAI DAU chuoi trong bo dem
+// dung chung s_szStrBuf cua nhom PushString/AppendString/PopString (dinh
+// nghia phia tren trong file nay). Linux 0x080FF630. lib\string.lua:163.
+int LuaHD3_TrimString(Lua_State* L)
+{
+	int nLen = (int)strlen(s_szStrBuf);
+	int nFrom = 0;
+	while (nFrom < nLen && (s_szStrBuf[nFrom] == ' ' || s_szStrBuf[nFrom] == '\t'
+		|| s_szStrBuf[nFrom] == '\r' || s_szStrBuf[nFrom] == '\n'))
+		nFrom++;
+	int nTo = nLen - 1;
+	while (nTo >= nFrom && (s_szStrBuf[nTo] == ' ' || s_szStrBuf[nTo] == '\t'
+		|| s_szStrBuf[nTo] == '\r' || s_szStrBuf[nTo] == '\n'))
+		nTo--;
+	int nNew = nTo - nFrom + 1;
+	if (nNew < 0)
+		nNew = 0;
+	if (nFrom > 0 && nNew > 0)
+		memmove(s_szStrBuf, s_szStrBuf + nFrom, nNew);
+	s_szStrBuf[nNew] = 0;
+	return 0;
 }
 
 #endif // _SERVER

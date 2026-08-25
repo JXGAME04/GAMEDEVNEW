@@ -1,0 +1,6090 @@
+{
+ "Add120SkillExp": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0811C710",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/task_award_extend.lua:6",
+   "task/task_award_extend.lua:6"
+  ]
+ },
+ "AddContribution": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14865 -> LuaJX2_AddContribution",
+  "dia_chi_linux": "0x0811A850",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:100",
+   "tong/contribution_entry.lua:108",
+   "tong/contribution_entry.lua:100",
+   "tong/contribution_entry.lua:108"
+  ]
+ },
+ "AddCumulateOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14870 -> LuaJX2_AddCumulateOffer",
+  "dia_chi_linux": "0x08113F20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:101",
+   "tong/contribution_entry.lua:109",
+   "tong/contribution_entry.lua:101",
+   "tong/contribution_entry.lua:109"
+  ]
+ },
+ "AddDex": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14649 -> LuaSetPlayerDexterity",
+  "dia_chi_linux": "0x08119FC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:88",
+   "task/metempsychosis/task_func.lua:88",
+   "task/metempsychosis/task_func.lua:88"
+  ]
+ },
+ "AddEng": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14647 -> LuaSetPlayerEngergy",
+  "dia_chi_linux": "0x0811A040",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:90",
+   "task/metempsychosis/task_func.lua:90",
+   "task/metempsychosis/task_func.lua:90"
+  ]
+ },
+ "AddEventItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14421 -> LuaAddEventItem",
+  "dia_chi_linux": "0x0811DF90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/award.lua:138"
+  ]
+ },
+ "AddExtPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14346 -> LuaAddExtPoint",
+  "dia_chi_linux": "0x0810FBE0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:749",
+   "vng_lib/extpoint.lua:24",
+   "activitysys/playerfunlib.lua:749",
+   "vng_lib/extpoint.lua:24",
+   "activitysys/playerfunlib.lua:749",
+   "vng_lib/extpoint.lua:24"
+  ]
+ },
+ "AddGlobalCountNews": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14313 -> LuaAddGlobalCountNews",
+  "dia_chi_linux": "0x081258E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fldmap_boat1.lua:23",
+   "missions/fengling_ferry/fldmap_boat2.lua:14",
+   "missions/fengling_ferry/fldmap_boat3.lua:14"
+  ]
+ },
+ "AddGlobalNews": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14311 -> LuaAddGlobalNews",
+  "dia_chi_linux": "0x08125A90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 14,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:605",
+   "battles/battlehead.lua:85",
+   "missions/boss/bigboss.lua:242",
+   "activitysys/playerfunlib.lua:605",
+   "missions/boss/bigboss.lua:242",
+   "missions/challengeoftime/include.lua:164"
+  ]
+ },
+ "AddMSPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14756 -> LuaAddMissionPlayer",
+  "dia_chi_linux": "0x081366A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_head.lua:138",
+   "missions/challengeoftime/mission_match.lua:66"
+  ]
+ },
+ "AddMagic": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14465 -> LuaAddMagic",
+  "dia_chi_linux": "0x0812C430",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:66",
+   "task/metempsychosis/task_func.lua:71",
+   "task/metempsychosis/task_func.lua:66",
+   "task/metempsychosis/task_func.lua:71",
+   "task/metempsychosis/task_func.lua:66",
+   "task/metempsychosis/task_func.lua:71"
+  ]
+ },
+ "AddMagicPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14471 -> LuaAddMagicPoint",
+  "dia_chi_linux": "0x0810FE50",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:74",
+   "task/metempsychosis/task_func.lua:74",
+   "task/metempsychosis/task_func.lua:74"
+  ]
+ },
+ "AddMapTrap": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14405 -> LuaAddMapTrap",
+  "dia_chi_linux": "0x08102700",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:354",
+   "lib/coordinate.lua:14",
+   "lib/coordinate.lua:14",
+   "battles/battlehead.lua:354",
+   "lib/coordinate.lua:14"
+  ]
+ },
+ "AddNpc": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14494 -> LuaAddNpc",
+  "dia_chi_linux": "0x0811BB10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 49,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:27",
+   "battles/battlehead.lua:384",
+   "battles/battlehead.lua:386",
+   "lib/coordinate.lua:94",
+   "lib/coordinate.lua:96",
+   "lib/coordinate.lua:122"
+  ]
+ },
+ "AddNpcEx": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14495 -> LuaAddNpcEx",
+  "dia_chi_linux": "0x0811BF40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:77",
+   "missions/basemission/lib.lua:33",
+   "missions/basemission/lib.lua:33",
+   "battles/battlehead.lua:77",
+   "missions/basemission/lib.lua:33",
+   "missions/challengeoftime/npc.lua:431"
+  ]
+ },
+ "AddOwnExp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14617 -> LuaAddOwnExp",
+  "dia_chi_linux": "0x081126C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 23,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/shuizei/shuizei.lua:99",
+   "task/task_addplayerexp.lua:87",
+   "task/task_addplayerexp.lua:91",
+   "task/task_addplayerexp.lua:87",
+   "task/task_addplayerexp.lua:91",
+   "task/task_addplayerexp.lua:123"
+  ]
+ },
+ "AddProp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15276 -> LuaAddPropPoint",
+  "dia_chi_linux": "0x0810FD60",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:85",
+   "task/metempsychosis/task_func.lua:93",
+   "task/metempsychosis/task_func.lua:85",
+   "task/metempsychosis/task_func.lua:93",
+   "task/metempsychosis/task_func.lua:85",
+   "task/metempsychosis/task_func.lua:93"
+  ]
+ },
+ "AddRepute": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14328 -> LuaModifyRepute",
+  "dia_chi_linux": "0x08117290",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1333",
+   "battles/battlehead.lua:1333"
+  ]
+ },
+ "AddSkillState": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14349 -> LuaAddSkillState",
+  "dia_chi_linux": "0x08126240",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:680",
+   "battles/battlehead.lua:873",
+   "item/battles/songjinskill.lua:58",
+   "activitysys/playerfunlib.lua:680",
+   "item/battles/songjinskill.lua:58",
+   "task/tollgate/killer/kill_level.lua:82"
+  ]
+ },
+ "AddStatData": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FF550",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 12,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:159",
+   "missions/fengling_ferry/fld_death.lua:30",
+   "missions/fengling_ferry/fld_death.lua:32",
+   "task/tollgate/killer/lib_killlevel.lua:145",
+   "task/tollgate/killer/shashou_mibao.lua:23",
+   "activitysys/config/32/talkdailytask.lua:159"
+  ]
+ },
+ "AddStrg": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14651 -> LuaSetPlayerStrength",
+  "dia_chi_linux": "0x08119F40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:87",
+   "task/metempsychosis/task_func.lua:87",
+   "task/metempsychosis/task_func.lua:87"
+  ]
+ },
+ "AddTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15254 -> LuaJX2_AddTimer",
+  "dia_chi_linux": "0x08100D40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/functionlib.lua:370",
+   "activitysys/functionlib.lua:370",
+   "activitysys/functionlib.lua:370",
+   "missions/challengeoftime/chuangguang30.lua:265"
+  ]
+ },
+ "AddVit": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14653 -> LuaSetPlayerVitality",
+  "dia_chi_linux": "0x08119EC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:89",
+   "task/metempsychosis/task_func.lua:89",
+   "task/metempsychosis/task_func.lua:89"
+  ]
+ },
+ "AddWeekGoalOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14872 -> LuaJX2_AddWeekGoalOffer",
+  "dia_chi_linux": "0x0811A700",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:83",
+   "tong/contribution_entry.lua:176",
+   "tong/contribution_entry.lua:83",
+   "tong/contribution_entry.lua:176"
+  ]
+ },
+ "AddWeeklyOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14867 -> LuaJX2_AddWeeklyOffer",
+  "dia_chi_linux": "0x08114280",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:110",
+   "tong/contribution_entry.lua:110"
+  ]
+ },
+ "AppendString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15218 -> LuaAppendString",
+  "dia_chi_linux": "0x0812FCD0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/basic.lua:56",
+   "lib/basic.lua:57",
+   "lib/basic.lua:113",
+   "lib/string.lua:125",
+   "lib/string.lua:126",
+   "task/system/task_string.lua:124"
+  ]
+ },
+ "AskClientForNumber": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14932 -> LuaJX2_AskClientForNumber",
+  "dia_chi_linux": "0x08115CA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "dailogsys/dailogsay.lua:96",
+   "lib/composeclass.lua:261",
+   "dailogsys/dailogsay.lua:96",
+   "dailogsys/dailogsay.lua:96"
+  ]
+ },
+ "AskClientForString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14901 -> LuaWllsAskClientForString",
+  "dia_chi_linux": "0x08115E90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "dailogsys/dailogsay.lua:70",
+   "dailogsys/dailogsay.lua:70",
+   "dailogsys/dailogsay.lua:70"
+  ]
+ },
+ "BT_GetBattleParam": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081C69B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:631",
+   "battles/battlehead.lua:639",
+   "battles/battlehead.lua:631",
+   "battles/battlehead.lua:639"
+  ]
+ },
+ "BT_GetData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14306 -> LuaBT_GetDataStub",
+  "dia_chi_linux": "0x081C67D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 58,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:66",
+   "battles/battlehead.lua:521",
+   "battles/battlehead.lua:521",
+   "activitysys/playerfunlib.lua:66",
+   "event/change_destiny/mission.lua:18",
+   "activitysys/playerfunlib.lua:66"
+  ]
+ },
+ "BT_GetGameData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14305 -> LuaBT_GetDataStub",
+  "dia_chi_linux": "0x081C6230",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 51,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:517",
+   "battles/battlehead.lua:518",
+   "battles/battlehead.lua:519",
+   "event/change_destiny/mission.lua:10",
+   "battles/battlehead.lua:517",
+   "battles/battlehead.lua:518"
+  ]
+ },
+ "BT_GetTopTenInfo": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15182 -> LuaBT_GetTopTenInfo",
+  "dia_chi_linux": "0x081C57C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battle_rank_award.lua:95",
+   "battles/battlehead.lua:1032",
+   "battles/battle_rank_award.lua:95",
+   "battles/battlehead.lua:1032"
+  ]
+ },
+ "BT_SetData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15174 -> LuaBT_SetData",
+  "dia_chi_linux": "0x081C68E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:729",
+   "battles/battlehead.lua:730",
+   "battles/battlehead.lua:875",
+   "battles/battlehead.lua:729",
+   "battles/battlehead.lua:730",
+   "battles/battlehead.lua:875"
+  ]
+ },
+ "BT_SetType2Task": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15172 -> LuaBT_SetType2Task",
+  "dia_chi_linux": "0x081C6340",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:535",
+   "battles/battlehead.lua:537",
+   "battles/battlehead.lua:535",
+   "battles/battlehead.lua:537"
+  ]
+ },
+ "BT_SetTypeBonus": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15175 -> LuaBT_SetTypeBonus",
+  "dia_chi_linux": "0x081C5120",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 52,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:813",
+   "battles/battlehead.lua:814",
+   "battles/battlehead.lua:815",
+   "battles/battlehead.lua:813",
+   "battles/battlehead.lua:814",
+   "battles/battlehead.lua:815"
+  ]
+ },
+ "CalcEquiproomItemCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14912 -> LuaWllsCalcEquiproomItemCount",
+  "dia_chi_linux": "0x0810D580",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:237",
+   "activitysys/playerfunlib.lua:270",
+   "item/class/virtualitem.lua:18",
+   "activitysys/playerfunlib.lua:237",
+   "activitysys/playerfunlib.lua:270",
+   "item/class/virtualitem.lua:18"
+  ]
+ },
+ "CalcFreeItemCellCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14431 -> LuaCalcFreeItemCellCount",
+  "dia_chi_linux": "0x0810CA20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 17,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:179",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:180",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:195",
+   "activitysys/playerfunlib.lua:179",
+   "event/birthday_jieri/200905/chuangguan/chuangguan.lua:33",
+   "missions/challengeoftime/rank_perday.lua:22"
+  ]
+ },
+ "CalcItemCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14911 -> LuaWllsCalcItemCount",
+  "dia_chi_linux": "0x0810D840",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 19,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:250",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:57",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:86",
+   "activitysys/playerfunlib.lua:250",
+   "task/metempsychosis/task_func.lua:157",
+   "task/tollgate/killer/shashou_mibao.lua:16"
+  ]
+ },
+ "CallPlayerFunction": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14301 -> LuaCallPlayerFunction",
+  "dia_chi_linux": "0x08129580",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 62,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/activitydetail.lua:106",
+   "battles/weeklyrank.lua:9",
+   "battles/weeklyrank.lua:11",
+   "activitysys/activitydetail.lua:106",
+   "missions/challengeoftime/include.lua:201",
+   "missions/challengeoftime/include.lua:202"
+  ]
+ },
+ "ClearMapNpc": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15191 -> LuaClearMapNpc",
+  "dia_chi_linux": "0x08102E90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:12",
+   "missions/fengling_ferry/mission.lua:148",
+   "missions/challengeoftime/include.lua:235",
+   "missions/challengeoftime/include.lua:235",
+   "missions/challengeoftime/timer_match.lua:44"
+  ]
+ },
+ "ClearMapObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15192 -> LuaClearMapObj",
+  "dia_chi_linux": "0x08102B40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:14",
+   "missions/fengling_ferry/mission.lua:150",
+   "missions/challengeoftime/include.lua:237",
+   "missions/challengeoftime/include.lua:237",
+   "missions/challengeoftime/timer_match.lua:46"
+  ]
+ },
+ "ClearMapTrap": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15244 -> LuaClearMapTrap",
+  "dia_chi_linux": "0x08102AC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:13",
+   "missions/fengling_ferry/mission.lua:149",
+   "missions/challengeoftime/include.lua:236",
+   "missions/challengeoftime/include.lua:236",
+   "missions/challengeoftime/timer_match.lua:45"
+  ]
+ },
+ "CloseMission": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14748 -> LuaCloseMission",
+  "dia_chi_linux": "0x081327E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_landingtimer.lua:3",
+   "missions/fengling_ferry/fldmap_boat1.lua:17"
+  ]
+ },
+ "ConsumeEquiproomItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14385 -> LuaConsumeEquiproomItem",
+  "dia_chi_linux": "0x0810CEF0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 14,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:492",
+   "activitysys/playerfunlib.lua:509",
+   "item/class/virtualitem.lua:41",
+   "activitysys/playerfunlib.lua:492",
+   "activitysys/playerfunlib.lua:509",
+   "item/class/virtualitem.lua:41"
+  ]
+ },
+ "ConsumeItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14384 -> LuaConsumeItem",
+  "dia_chi_linux": "0x0810D6C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc/dragonboat_main.lua:142",
+   "task/tollgate/killer/shashou_mibao.lua:21",
+   "missions/challengeoftime/item/chuangguanbaoxiang.lua:154",
+   "missions/challengeoftime/item/chuangguanbaoxiang.lua:159",
+   "missions/challengeoftime/npc/dragonboat_main.lua:142"
+  ]
+ },
+ "ContriValueEntryLogic": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 16,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/tong_award_head.lua:27",
+   "tong/tong_award_head.lua:37",
+   "tong/tong_award_head.lua:51",
+   "tong/tong_award_head.lua:27",
+   "tong/tong_award_head.lua:37",
+   "tong/tong_award_head.lua:51"
+  ]
+ },
+ "CountFreeRoomByWH": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14914 -> LuaWllsCountFreeRoomByWH",
+  "dia_chi_linux": "0x0810C790",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:194",
+   "lib/composeex.lua:333",
+   "activitysys/playerfunlib.lua:194",
+   "lib/composeex.lua:333",
+   "activitysys/playerfunlib.lua:194",
+   "lib/composeex.lua:333"
+  ]
+ },
+ "DelMSPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14757 -> LuaRemoveMissionPlayer",
+  "dia_chi_linux": "0x081372A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_death.lua:12",
+   "missions/challengeoftime/npc/transfer.lua:30",
+   "missions/challengeoftime/player_death.lua:28"
+  ]
+ },
+ "DelMagic": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14467 -> LuaDelMagic",
+  "dia_chi_linux": "0x0811C7E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/translife_6.lua:300"
+  ]
+ },
+ "DelNpc": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14497 -> LuaDelNpc",
+  "dia_chi_linux": "0x08107460",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:505",
+   "missions/fengling_ferry/boss.lua:76",
+   "battles/battlehead.lua:505"
+  ]
+ },
+ "DelTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15255 -> LuaJX2_DelTimer",
+  "dia_chi_linux": "0x08100CA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/chuangguang30.lua:263"
+  ]
+ },
+ "Describe": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14260 -> LuaSelectUI",
+  "dia_chi_linux": "0x081242A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 26,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "dailogsys/dailogsay.lua:35",
+   "task/system/task_string.lua:34",
+   "task/system/task_string.lua:112",
+   "dailogsys/dailogsay.lua:35",
+   "task/system/task_string.lua:34",
+   "task/system/task_string.lua:112"
+  ]
+ },
+ "DisabledUseTownP": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15203 -> LuaDisabledUseTownP",
+  "dia_chi_linux": "0x08130A80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_head.lua:142",
+   "missions/fengling_ferry/mission.lua:128",
+   "missions/fengling_ferry/mission.lua:134",
+   "missions/challengeoftime/chuangguang30.lua:92",
+   "missions/challengeoftime/mission_match.lua:52",
+   "missions/challengeoftime/mission_match.lua:81"
+  ]
+ },
+ "DropItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14408 -> LuaDropItem",
+  "dia_chi_linux": "0x081200B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "lib/coordinate.lua:150",
+   "missions/fengling_ferry/bossdeath.lua:22",
+   "missions/fengling_ferry/bossdeath.lua:31",
+   "lib/coordinate.lua:150",
+   "lib/coordinate.lua:150",
+   "missions/challengeoftime/award.lua:221"
+  ]
+ },
+ "DropItemEx": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0811FD70",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/droptemplet.lua:74",
+   "lib/droptemplet.lua:74",
+   "lib/droptemplet.lua:74"
+  ]
+ },
+ "DynamicExecute": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14900 -> LuaDynamicExecute",
+  "dia_chi_linux": "0x081300B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "protocol.lua:111",
+   "protocol.lua:111",
+   "item/forbiditem.lua:137",
+   "protocol.lua:111"
+  ]
+ },
+ "DynamicExecuteByPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14308 -> LuaDynamicExecuteByPlayer",
+  "dia_chi_linux": "0x0812FE80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 23,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:409",
+   "activitysys/playerfunlib.lua:411",
+   "battles/doubleexp.lua:12",
+   "activitysys/playerfunlib.lua:409",
+   "activitysys/playerfunlib.lua:411",
+   "missions/challengeoftime/npc/dragonboat_main.lua:30"
+  ]
+ },
+ "FileName2Id": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14480 -> LuaFileName2Id",
+  "dia_chi_linux": "0x08100E80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:347",
+   "lib/coordinate.lua:7",
+   "lib/coordinate.lua:7",
+   "battles/battlehead.lua:347",
+   "lib/coordinate.lua:7"
+  ]
+ },
+ "File_Create": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0814A120",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/file.lua:8",
+   "lib/file.lua:8",
+   "lib/file.lua:8"
+  ]
+ },
+ "ForbidChangePK": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15202 -> LuaForbidChangePK",
+  "dia_chi_linux": "0x0810F590",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:966",
+   "missions/fengling_ferry/mission.lua:74",
+   "battles/battlehead.lua:966",
+   "missions/challengeoftime/chuangguang30.lua:91",
+   "missions/challengeoftime/chuangguang30.lua:145"
+  ]
+ },
+ "ForbidEnmity": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14922 -> LuaTongForbidEnmity",
+  "dia_chi_linux": "0x0810B0F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_head.lua:118",
+   "missions/fengling_ferry/mission.lua:70",
+   "missions/fengling_ferry/mission.lua:117",
+   "missions/challengeoftime/chuangguang30.lua:93",
+   "missions/challengeoftime/chuangguang30.lua:148"
+  ]
+ },
+ "FormatTime2Date": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081022B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:200",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:217",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:200",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:217"
+  ]
+ },
+ "FormatTime2Number": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14877 -> LuaJX2_FormatTime2Number",
+  "dia_chi_linux": "0x081023B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 10,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1310",
+   "battles/weeklyrank.lua:138",
+   "missions/challengeoftime/rank_perday.lua:33",
+   "missions/challengeoftime/rank_perday.lua:53",
+   "missions/challengeoftime/rank_perday.lua:59",
+   "battles/battlehead.lua:1310"
+  ]
+ },
+ "FormatTime2String": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14876 -> LuaJX2_FormatTime2String",
+  "dia_chi_linux": "0x08106720",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:677",
+   "missions/fengling_ferry/bossdeath.lua:18",
+   "missions/fengling_ferry/bossdeath.lua:19",
+   "activitysys/playerfunlib.lua:677",
+   "activitysys/playerfunlib.lua:677"
+  ]
+ },
+ "GetAllEquipment": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15245 -> LuaGetAllEquipment",
+  "dia_chi_linux": "0x0810D0F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:60",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:60"
+  ]
+ },
+ "GetBit": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14271 -> LuaGetBit",
+  "dia_chi_linux": "0x080FEBA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 26,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/config/32/dailytask.lua:45",
+   "activitysys/functionlib.lua:137",
+   "activitysys/playerfunlib.lua:307",
+   "activitysys/functionlib.lua:137",
+   "activitysys/playerfunlib.lua:307",
+   "activitysys/playerfunlib.lua:733"
+  ]
+ },
+ "GetBitTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14294 -> LuaGetBitTask",
+  "dia_chi_linux": "0x081090A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/change_destiny/head.lua:135",
+   "misc/taskmanager.lua:212",
+   "vng_lib/bittask_lib.lua:7",
+   "event/change_destiny/head.lua:135",
+   "misc/taskmanager.lua:212",
+   "vng_lib/bittask_lib.lua:7"
+  ]
+ },
+ "GetByte": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14272 -> LuaGetByte",
+  "dia_chi_linux": "0x080FEA20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 32,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:282",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:283",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:303",
+   "event/birthday_jieri/200905/taskctrl.lua:92",
+   "event/birthday_jieri/200905/taskctrl.lua:93",
+   "event/birthday_jieri/200905/taskctrl.lua:112"
+  ]
+ },
+ "GetCamp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14592 -> LuaGetPlayerCamp",
+  "dia_chi_linux": "0x08114650",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:977",
+   "missions/fengling_ferry/fld_death.lua:6",
+   "missions/fengling_ferry/mission.lua:112",
+   "battles/battlehead.lua:977",
+   "missions/challengeoftime/chuangguang30.lua:138",
+   "missions/challengeoftime/mission_match.lua:42"
+  ]
+ },
+ "GetCash": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14654 -> LuaGetPlayerCashMoney",
+  "dia_chi_linux": "0x081116D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 14,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:207",
+   "activitysys/playerfunlib.lua:222",
+   "lib/composeclass.lua:70",
+   "activitysys/playerfunlib.lua:207",
+   "activitysys/playerfunlib.lua:222",
+   "event/birthday_jieri/200905/class.lua:89"
+  ]
+ },
+ "GetCityOwner": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15123 -> LuaGetCityOwner",
+  "dia_chi_linux": "0x080FFF40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/tong_setting.lua:154",
+   "tong/tong_setting.lua:154"
+  ]
+ },
+ "GetCurCamp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14591 -> LuaGetPlayerCurrentCamp",
+  "dia_chi_linux": "0x081146C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:868",
+   "battles/battlehead.lua:958",
+   "battles/battlehead.lua:1183",
+   "battles/battlehead.lua:868",
+   "battles/battlehead.lua:958",
+   "battles/battlehead.lua:1183"
+  ]
+ },
+ "GetCurServerTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14873 -> LuaJX2_GetCurServerTime",
+  "dia_chi_linux": "0x08103800",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 30,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/functionlib.lua:365",
+   "activitysys/functionlib.lua:381",
+   "activitysys/playerfunlib.lua:676",
+   "activitysys/functionlib.lua:365",
+   "activitysys/functionlib.lua:381",
+   "activitysys/playerfunlib.lua:676"
+  ]
+ },
+ "GetDex": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14648 -> LuaGetPlayerDexterity",
+  "dia_chi_linux": "0x08111960",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:88",
+   "task/metempsychosis/task_func.lua:88",
+   "task/metempsychosis/task_func.lua:88"
+  ]
+ },
+ "GetEng": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14646 -> LuaGetPlayerEngergy",
+  "dia_chi_linux": "0x08111A30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:90",
+   "task/metempsychosis/task_func.lua:90",
+   "task/metempsychosis/task_func.lua:90"
+  ]
+ },
+ "GetExtPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14344 -> LuaGetExtPoint",
+  "dia_chi_linux": "0x0810FA90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 35,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:56",
+   "activitysys/playerfunlib.lua:75",
+   "activitysys/playerfunlib.lua:733",
+   "activitysys/playerfunlib.lua:56",
+   "activitysys/playerfunlib.lua:75",
+   "activitysys/playerfunlib.lua:733"
+  ]
+ },
+ "GetFightState": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14484 -> LuaGetFightState",
+  "dia_chi_linux": "0x081113C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:88",
+   "activitysys/playerfunlib.lua:708",
+   "activitysys/playerfunlib.lua:718",
+   "activitysys/playerfunlib.lua:88",
+   "activitysys/playerfunlib.lua:708",
+   "activitysys/playerfunlib.lua:718"
+  ]
+ },
+ "GetFirstPlayerAtServer": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08101CF0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "missions/boss/bigboss.lua:289",
+   "missions/boss/bigboss.lua:289",
+   "missions/boss/bigboss.lua:289"
+  ]
+ },
+ "GetGameTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14343 -> LuaGetGameTime",
+  "dia_chi_linux": "0x0810F3A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:944",
+   "event/storm/custom.lua:114",
+   "misc/vngpromotion/ipbonus/ipbonus_2_head.lua:45",
+   "battles/battlehead.lua:944",
+   "event/storm/custom.lua:114",
+   "misc/vngpromotion/ipbonus/ipbonus_2_head.lua:45"
+  ]
+ },
+ "GetGiveItemUnit": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15215 -> LuaGetGiveItemUnit",
+  "dia_chi_linux": "0x08114E60",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/shuizei/shuizei.lua:72",
+   "lib/composeex.lua:185",
+   "missions/fengling_ferry/fld_head.lua:195",
+   "lib/composeex.lua:185",
+   "task/tollgate/killer/nieshichen.lua:166",
+   "lib/composeex.lua:185"
+  ]
+ },
+ "GetGlodEqIndex": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FEF90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:67",
+   "lib/composeex.lua:142",
+   "lib/log.lua:39",
+   "lib/composeex.lua:142",
+   "lib/log.lua:39",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:67"
+  ]
+ },
+ "GetItemAllParams": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08102D20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:46",
+   "lib/log.lua:46",
+   "lib/log.lua:46"
+  ]
+ },
+ "GetItemGenTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FE820",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:51",
+   "lib/log.lua:51",
+   "lib/log.lua:51"
+  ]
+ },
+ "GetItemProp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15213 -> LuaGetItemProp",
+  "dia_chi_linux": "0x080FF260",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 12,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:72",
+   "event/jiefang_jieri/200904/shuizei/shuizei.lua:73",
+   "lib/composeex.lua:146",
+   "lib/composeex.lua:146",
+   "lib/log.lua:36",
+   "task/tollgate/killer/nieshichen.lua:167"
+  ]
+ },
+ "GetItemQuality": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FEFB0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:65",
+   "lib/composeex.lua:138",
+   "lib/log.lua:37",
+   "lib/composeex.lua:138",
+   "lib/log.lua:37",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:65"
+  ]
+ },
+ "GetItemStackCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15263 -> LuaGetItemStackCount",
+  "dia_chi_linux": "0x080FD250",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "lib/composeex.lua:201",
+   "lib/composeex.lua:217",
+   "missions/fengling_ferry/fld_head.lua:200",
+   "lib/composeex.lua:201",
+   "lib/composeex.lua:217",
+   "lib/composeex.lua:201"
+  ]
+ },
+ "GetLastDiagNpc": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15200 -> LuaGetLastDiagNpc",
+  "dia_chi_linux": "0x0810C5E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:164",
+   "task/system/task_string.lua:156",
+   "task/system/task_string.lua:156",
+   "activitysys/config/32/talkdailytask.lua:164",
+   "missions/challengeoftime/npc/transfer.lua:8",
+   "task/system/task_string.lua:156"
+  ]
+ },
+ "GetLastFactionNumber": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14302 -> LuaGetLastFactionNumber",
+  "dia_chi_linux": "0x0810E6D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 16,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "lib/log.lua:28",
+   "lib/log.lua:94",
+   "lib/log.lua:143",
+   "lib/log.lua:28",
+   "lib/log.lua:94",
+   "lib/log.lua:143"
+  ]
+ },
+ "GetLevel": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14638 -> LuaGetLevel",
+  "dia_chi_linux": "0x081111E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 67,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:111",
+   "activitysys/playerfunlib.lua:146",
+   "battles/battlehead.lua:332",
+   "activitysys/playerfunlib.lua:111",
+   "activitysys/playerfunlib.lua:146",
+   "event/birthday_jieri/200905/chuangguan/chuangguan.lua:12"
+  ]
+ },
+ "GetLocalDate": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15282 -> LuaGetLocalDate",
+  "dia_chi_linux": "0x0812A140",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 239,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:35",
+   "activitysys/activity.lua:47",
+   "activitysys/activity.lua:167",
+   "activitysys/activity.lua:35",
+   "activitysys/activity.lua:47",
+   "activitysys/activity.lua:167"
+  ]
+ },
+ "GetMSPlayerCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14765 -> LuaMissionPlayerCount",
+  "dia_chi_linux": "0x081351F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 22,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battle_rank_award.lua:79",
+   "battles/battlehead.lua:790",
+   "battles/battlehead.lua:791",
+   "missions/challengeoftime/include.lua:176",
+   "battles/battle_rank_award.lua:79",
+   "battles/battlehead.lua:790"
+  ]
+ },
+ "GetMSRestTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14752 -> LuaGetMissionRestTime",
+  "dia_chi_linux": "0x081361C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc_death.lua:50"
+  ]
+ },
+ "GetMapInfoFile": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15243 -> LuaGetMapInfoFile",
+  "dia_chi_linux": "0x081024E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:575",
+   "battles/battlehead.lua:626",
+   "battles/battlehead.lua:575",
+   "battles/battlehead.lua:626"
+  ]
+ },
+ "GetMateName": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14446 -> LuaGetMateName",
+  "dia_chi_linux": "0x08110340",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "item/heart_head.lua:122"
+  ]
+ },
+ "GetMissionS": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14740 -> LuaGetMissionString",
+  "dia_chi_linux": "0x08107160",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/include.lua:320",
+   "missions/challengeoftime/include.lua:348",
+   "missions/challengeoftime/award.lua:194",
+   "missions/challengeoftime/include.lua:320",
+   "missions/challengeoftime/include.lua:348"
+  ]
+ },
+ "GetMissionV": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14739 -> LuaGetMissionValue",
+  "dia_chi_linux": "0x081072F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 100,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:579",
+   "battles/battlehead.lua:580",
+   "battles/battlehead.lua:581",
+   "missions/challengeoftime/include.lua:123",
+   "missions/challengeoftime/include.lua:196",
+   "missions/challengeoftime/include.lua:197"
+  ]
+ },
+ "GetNextPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14761 -> LuaGetNextPlayer",
+  "dia_chi_linux": "0x08135760",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 20,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battle_rank_award.lua:80",
+   "battles/battlehead.lua:312",
+   "battles/battlehead.lua:750",
+   "event/change_destiny/mission.lua:41",
+   "missions/challengeoftime/include.lua:177",
+   "battles/battle_rank_award.lua:80"
+  ]
+ },
+ "GetNextPlayerAtServer": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08101D20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "missions/boss/bigboss.lua:293",
+   "missions/boss/bigboss.lua:293",
+   "missions/boss/bigboss.lua:293"
+  ]
+ },
+ "GetNpcAroundPlayerList": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08104870",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "missions/boss/bigboss.lua:218",
+   "missions/boss/bigboss.lua:218",
+   "missions/boss/bigboss.lua:218"
+  ]
+ },
+ "GetNpcName": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14506 -> LuaGetNpcName",
+  "dia_chi_linux": "0x08100040",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:164",
+   "lib/droptemplet.lua:120",
+   "task/system/task_string.lua:160",
+   "lib/droptemplet.lua:120",
+   "task/system/task_string.lua:160",
+   "activitysys/config/32/talkdailytask.lua:164"
+  ]
+ },
+ "GetNpcParam": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14509 -> LuaGetNpcParam",
+  "dia_chi_linux": "0x081C0A00",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "task/tollgate/killer/kill_level.lua:36"
+  ]
+ },
+ "GetNpcPos": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14578 -> LuaGetNpcPos",
+  "dia_chi_linux": "0x081293F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "lib/droptemplet.lua:70",
+   "missions/fengling_ferry/bossdeath.lua:9",
+   "missions/fengling_ferry/bossdeath.lua:41",
+   "lib/droptemplet.lua:70",
+   "lib/droptemplet.lua:70",
+   "missions/challengeoftime/award.lua:217"
+  ]
+ },
+ "GetNpcSettingIdx": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15199 -> LuaGetNpcSettingIdx",
+  "dia_chi_linux": "0x080FDE50",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "task/system/task_string.lua:158",
+   "task/system/task_string.lua:158",
+   "missions/challengeoftime/chuangguang30.lua:161",
+   "missions/challengeoftime/npc_death.lua:148",
+   "task/system/task_string.lua:158"
+  ]
+ },
+ "GetPlatinaEquipIndex": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FEF70",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/composeex.lua:144",
+   "lib/log.lua:44",
+   "lib/composeex.lua:144",
+   "lib/log.lua:44",
+   "lib/composeex.lua:144",
+   "lib/log.lua:44"
+  ]
+ },
+ "GetPlatinaLevel": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08100520",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:43",
+   "lib/log.lua:43",
+   "lib/log.lua:43"
+  ]
+ },
+ "GetPos": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14400 -> LuaGetPos",
+  "dia_chi_linux": "0x08129140",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc.lua:499",
+   "missions/challengeoftime/npc/transfer.lua:52"
+  ]
+ },
+ "GetProp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15279 -> LuaGetRestPropPoint",
+  "dia_chi_linux": "0x0810F9F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:91",
+   "task/metempsychosis/task_func.lua:91",
+   "task/metempsychosis/task_func.lua:91"
+  ]
+ },
+ "GetRoomItems": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0810D170",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/composeex.lua:191",
+   "lib/composeex.lua:191",
+   "lib/composeex.lua:191"
+  ]
+ },
+ "GetServerName": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14705 -> LuaGetServerName",
+  "dia_chi_linux": "0x08106510",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:25",
+   "lib/log.lua:91",
+   "lib/log.lua:25",
+   "lib/log.lua:91",
+   "lib/log.lua:25",
+   "lib/log.lua:91"
+  ]
+ },
+ "GetSex": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14629 -> LuaGetPlayerSex",
+  "dia_chi_linux": "0x08112020",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:72",
+   "activitysys/config/32/talkdailytask.lua:86",
+   "activitysys/config/32/talkdailytask.lua:106",
+   "missions/challengeoftime/npc/dragonboat_main.lua:192",
+   "task/system/task_string.lua:179",
+   "task/system/task_string.lua:181"
+  ]
+ },
+ "GetStrg": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14650 -> LuaGetPlayerStrength",
+  "dia_chi_linux": "0x08111890",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:87",
+   "task/metempsychosis/task_func.lua:87",
+   "task/metempsychosis/task_func.lua:87"
+  ]
+ },
+ "GetTeamMember": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14292 -> LuaGetTeamMem",
+  "dia_chi_linux": "0x08115530",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 17,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/boss/bigboss.lua:208",
+   "missions/boss/bigboss.lua:209",
+   "missions/boss/bigboss.lua:211",
+   "missions/boss/bigboss.lua:208",
+   "missions/boss/bigboss.lua:209",
+   "missions/boss/bigboss.lua:211"
+  ]
+ },
+ "GetTeamSize": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14365 -> LuaGetTeamSize",
+  "dia_chi_linux": "0x08115480",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/boss/bigboss.lua:203",
+   "missions/boss/bigboss.lua:203",
+   "missions/challengeoftime/npc/dragonboat_main.lua:11",
+   "missions/challengeoftime/npc/dragonboat_main.lua:24",
+   "missions/boss/bigboss.lua:203",
+   "missions/challengeoftime/npc/dragonboat_main.lua:11"
+  ]
+ },
+ "GetTong": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14933 -> LuaJX2_GetTong",
+  "dia_chi_linux": "0x0811AAB0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:30",
+   "lib/log.lua:30",
+   "lib/log.lua:30",
+   "vng_event/change_request_baoruong/exp_award.lua:100"
+  ]
+ },
+ "GetTongFigure": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14936 -> LuaJX2_GetTongFigure",
+  "dia_chi_linux": "0x081145B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/tong_award_head.lua:144",
+   "tong/tong_award_head.lua:164",
+   "tong/tong_award_head.lua:178",
+   "tong/tong_award_head.lua:144",
+   "tong/tong_award_head.lua:164",
+   "tong/tong_award_head.lua:178"
+  ]
+ },
+ "GetTongMTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14945 -> LuaJX2_GetTongMTask",
+  "dia_chi_linux": "0x0812DC60",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:135",
+   "tong/contribution_entry.lua:135"
+  ]
+ },
+ "GetTongName": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14788 -> LuaGetTongName",
+  "dia_chi_linux": "0x0811AB30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 33,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "activitysys/functionlib.lua:54",
+   "activitysys/playerfunlib.lua:98",
+   "activitysys/playerfunlib.lua:123",
+   "activitysys/functionlib.lua:54",
+   "activitysys/playerfunlib.lua:98",
+   "activitysys/playerfunlib.lua:123"
+  ]
+ },
+ "GetVit": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14652 -> LuaGetPlayerVitality",
+  "dia_chi_linux": "0x081117B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:89",
+   "task/metempsychosis/task_func.lua:89",
+   "task/metempsychosis/task_func.lua:89"
+  ]
+ },
+ "GetWeekGoalOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14871 -> LuaJX2_GetWeekGoalOffer",
+  "dia_chi_linux": "0x08114390",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:71",
+   "tong/contribution_entry.lua:169",
+   "tong/contribution_entry.lua:71",
+   "tong/contribution_entry.lua:169"
+  ]
+ },
+ "GetWeeklyOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14866 -> LuaJX2_GetWeeklyOffer",
+  "dia_chi_linux": "0x08114320",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:69",
+   "tong/contribution_entry.lua:69"
+  ]
+ },
+ "GetWorldPos": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14401 -> LuaGetNewWorldPos",
+  "dia_chi_linux": "0x08128F30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 25,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:37",
+   "activitysys/playerfunlib.lua:707",
+   "activitysys/playerfunlib.lua:717",
+   "activitysys/playerfunlib.lua:37",
+   "activitysys/playerfunlib.lua:707",
+   "activitysys/playerfunlib.lua:717"
+  ]
+ },
+ "GiveItemUI": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15214 -> LuaGiveItemUI",
+  "dia_chi_linux": "0x0812BBA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "dailogsys/dailogsay.lua:119",
+   "event/jiefang_jieri/200904/shuizei/shuizei.lua:64",
+   "missions/fengling_ferry/fld_head.lua:185",
+   "dailogsys/dailogsay.lua:119",
+   "task/tollgate/killer/nieshichen.lua:157",
+   "dailogsys/dailogsay.lua:119"
+  ]
+ },
+ "HaveMagic": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14468 -> LuaHaveMagic",
+  "dia_chi_linux": "0x0811C930",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:61",
+   "task/metempsychosis/task_func.lua:62",
+   "task/metempsychosis/task_func.lua:61",
+   "task/metempsychosis/task_func.lua:62",
+   "task/metempsychosis/task_func.lua:61",
+   "task/metempsychosis/task_func.lua:62"
+  ]
+ },
+ "IL": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14282 -> LuaIncludeLib",
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 5,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "event/storm/head.lua:66",
+   "event/storm/head.lua:67",
+   "event/storm/head.lua:66",
+   "event/storm/head.lua:67",
+   "missions/challengeoftime/npc_death.lua:9"
+  ]
+ },
+ "ITEM_DropRateItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08154DE0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "task/tollgate/killer/kill_level.lua:69"
+  ]
+ },
+ "ITEM_GetExpiredTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08154540",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:314",
+   "activitysys/activity.lua:314",
+   "activitysys/activity.lua:314"
+  ]
+ },
+ "ITEM_GetItemRandSeed": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081548E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/log.lua:48",
+   "lib/log.lua:48",
+   "lib/log.lua:48"
+  ]
+ },
+ "ITEM_SetExpiredTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08154A30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:201",
+   "lib/droptemplet.lua:130",
+   "missions/fengling_ferry/bossdeath.lua:35",
+   "event/birthday_jieri/200905/class.lua:95",
+   "lib/droptemplet.lua:130",
+   "event/birthday_jieri/200905/class.lua:95"
+  ]
+ },
+ "ITEM_SetLeftUsageTime": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08154FD0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/droptemplet.lua:135",
+   "lib/droptemplet.lua:140",
+   "lib/droptemplet.lua:135",
+   "lib/droptemplet.lua:140",
+   "lib/droptemplet.lua:135",
+   "lib/droptemplet.lua:140"
+  ]
+ },
+ "IncludeLib": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14276 -> LuaIncludeLib",
+  "dia_chi_linux": "0x0812E1D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 107,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/dailytask.lua:4",
+   "activitysys/config/32/dailytask.lua:5",
+   "activitysys/functionlib.lua:4",
+   "activitysys/functionlib.lua:4",
+   "activitysys/functionlib.lua:5",
+   "activitysys/ladderfunlib.lua:2"
+  ]
+ },
+ "IniFile_GetData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15289 -> LuaIniFile_GetData",
+  "dia_chi_linux": "0x0814ABD0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:661",
+   "lib/coordinate.lua:237",
+   "lib/file.lua:14",
+   "lib/coordinate.lua:237",
+   "lib/file.lua:14",
+   "lib/file.lua:34"
+  ]
+ },
+ "IniFile_Load": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15288 -> LuaIniFile_Load",
+  "dia_chi_linux": "0x0814AFB0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:657",
+   "lib/coordinate.lua:233",
+   "lib/file.lua:7",
+   "lib/coordinate.lua:233",
+   "lib/file.lua:7",
+   "lib/file.lua:30"
+  ]
+ },
+ "IniFile_Save": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0814B160",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/file.lua:24",
+   "lib/file.lua:24",
+   "lib/file.lua:24"
+  ]
+ },
+ "IniFile_SetData": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0814AAF0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/file.lua:19",
+   "lib/file.lua:19",
+   "lib/file.lua:19"
+  ]
+ },
+ "IsCaptain": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14363 -> LuaIsLeader",
+  "dia_chi_linux": "0x08115690",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc/dragonboat_main.lua:6",
+   "vng_feature/challengeoftime/npcNhiepThiTran.lua:4",
+   "missions/challengeoftime/npc/dragonboat_main.lua:6"
+  ]
+ },
+ "IsDisabledUseHeart": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0812ED70",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "item/heart_head.lua:116"
+  ]
+ },
+ "IsMyItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14348 -> LuaIsMyItem",
+  "dia_chi_linux": "0x0811B4D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/composeex.lua:153",
+   "lib/composeex.lua:153",
+   "lib/composeex.lua:153"
+  ]
+ },
+ "JudgePLAddTitle": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:781",
+   "battles/battlehead.lua:783",
+   "battles/battlehead.lua:781",
+   "battles/battlehead.lua:783"
+  ]
+ },
+ "LGM_CreateMemberObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15113 -> LuaLGM_CreateMemberObj",
+  "dia_chi_linux": "0x0815D0F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/gb_taskfuncs.lua:26",
+   "lib/gb_taskfuncs.lua:50",
+   "lib/gb_taskfuncs.lua:26",
+   "lib/gb_taskfuncs.lua:50",
+   "lib/gb_taskfuncs.lua:26",
+   "lib/gb_taskfuncs.lua:50"
+  ]
+ },
+ "LGM_SetMemberInfo": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15114 -> LuaLGM_SetMemberInfo",
+  "dia_chi_linux": "0x0815CCA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/gb_taskfuncs.lua:28",
+   "lib/gb_taskfuncs.lua:52",
+   "lib/gb_taskfuncs.lua:28",
+   "lib/gb_taskfuncs.lua:52",
+   "lib/gb_taskfuncs.lua:28",
+   "lib/gb_taskfuncs.lua:52"
+  ]
+ },
+ "LG_AddMemberToObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15094 -> LuaLG_AddMemberToObj",
+  "dia_chi_linux": "0x0815DC80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/gb_taskfuncs.lua:29",
+   "lib/gb_taskfuncs.lua:53",
+   "lib/gb_taskfuncs.lua:29",
+   "lib/gb_taskfuncs.lua:53",
+   "lib/gb_taskfuncs.lua:29",
+   "lib/gb_taskfuncs.lua:53"
+  ]
+ },
+ "LG_ApplyAddLeague": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15095 -> LuaLG_ApplyAddLeague",
+  "dia_chi_linux": "0x0815D210",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1116",
+   "lib/gb_taskfuncs.lua:30",
+   "lib/gb_taskfuncs.lua:54",
+   "lib/gb_taskfuncs.lua:30",
+   "lib/gb_taskfuncs.lua:54",
+   "battles/battlehead.lua:1116"
+  ]
+ },
+ "LG_ApplyAppendLeagueTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15109 -> LuaLG_ApplyAppendLeagueTask",
+  "dia_chi_linux": "0x0815C3B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1080",
+   "battles/battlehead.lua:1081",
+   "battles/battlehead.lua:1086",
+   "lib/gb_taskfuncs.lua:57",
+   "battles/battlehead.lua:1080",
+   "battles/battlehead.lua:1081"
+  ]
+ },
+ "LG_ApplyDoScript": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15118 -> LuaLG_ApplyDoScript",
+  "dia_chi_linux": "0x0815B700",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:603",
+   "battles/battlehead.lua:1137",
+   "missions/boss/bigboss.lua:243",
+   "activitysys/playerfunlib.lua:603",
+   "missions/boss/bigboss.lua:243",
+   "activitysys/playerfunlib.lua:603"
+  ]
+ },
+ "LG_ApplySetLeagueTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15108 -> LuaLG_ApplySetLeagueTask",
+  "dia_chi_linux": "0x0815C3D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1082",
+   "battles/battlehead.lua:1083",
+   "lib/gb_taskfuncs.lua:34",
+   "lib/gb_taskfuncs.lua:34",
+   "battles/battlehead.lua:1082",
+   "battles/battlehead.lua:1083"
+  ]
+ },
+ "LG_CreateLeagueObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15091 -> LuaLG_CreateLeagueObj",
+  "dia_chi_linux": "0x0815D740",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1114",
+   "lib/gb_taskfuncs.lua:25",
+   "lib/gb_taskfuncs.lua:49",
+   "lib/gb_taskfuncs.lua:25",
+   "lib/gb_taskfuncs.lua:49",
+   "battles/battlehead.lua:1114"
+  ]
+ },
+ "LG_FreeLeagueObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15092 -> LuaLG_FreeLeagueObj",
+  "dia_chi_linux": "0x0815C670",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1117",
+   "lib/gb_taskfuncs.lua:31",
+   "lib/gb_taskfuncs.lua:55",
+   "lib/gb_taskfuncs.lua:31",
+   "lib/gb_taskfuncs.lua:55",
+   "battles/battlehead.lua:1117"
+  ]
+ },
+ "LG_GetFirstLeague": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15099 -> LuaLG_GetFirstLeague",
+  "dia_chi_linux": "0x0815B640",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1046",
+   "battles/battlehead.lua:1046"
+  ]
+ },
+ "LG_GetLeagueInfo": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15101 -> LuaLG_GetLeagueInfo",
+  "dia_chi_linux": "0x0815C500",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1048",
+   "battles/battlehead.lua:1048"
+  ]
+ },
+ "LG_GetLeagueObj": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15097 -> LuaLG_GetLeagueObj",
+  "dia_chi_linux": "0x0815E020",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1077",
+   "lib/gb_taskfuncs.lua:14",
+   "lib/gb_taskfuncs.lua:22",
+   "lib/gb_taskfuncs.lua:14",
+   "lib/gb_taskfuncs.lua:22",
+   "lib/gb_taskfuncs.lua:46"
+  ]
+ },
+ "LG_GetLeagueObjByRole": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15098 -> LuaLG_GetLeagueObjByRole",
+  "dia_chi_linux": "0x0815DE40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:99",
+   "task/metempsychosis/task_func.lua:99",
+   "task/metempsychosis/task_func.lua:99"
+  ]
+ },
+ "LG_GetLeagueTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15107 -> LuaLG_GetLeagueTask",
+  "dia_chi_linux": "0x0815E330",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1049",
+   "battles/battlehead.lua:1050",
+   "battles/battlehead.lua:1051",
+   "lib/gb_taskfuncs.lua:18",
+   "battles/battlehead.lua:1049",
+   "battles/battlehead.lua:1050"
+  ]
+ },
+ "LG_GetNextLeague": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15100 -> LuaLG_GetNextLeague",
+  "dia_chi_linux": "0x0815D870",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1054",
+   "battles/battlehead.lua:1054"
+  ]
+ },
+ "LG_SetLeagueInfo": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15093 -> LuaLG_SetLeagueInfo",
+  "dia_chi_linux": "0x0815CB90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1115",
+   "lib/gb_taskfuncs.lua:27",
+   "lib/gb_taskfuncs.lua:51",
+   "lib/gb_taskfuncs.lua:27",
+   "lib/gb_taskfuncs.lua:51",
+   "battles/battlehead.lua:1115"
+  ]
+ },
+ "Ladder_ClearLadder": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15086 -> LuaLadder_ClearLadder",
+  "dia_chi_linux": "0x08159A80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1091",
+   "battles/battlehead.lua:1091"
+  ]
+ },
+ "Ladder_GetLadderInfo": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15087 -> LuaLadder_GetLadderInfo",
+  "dia_chi_linux": "0x08159BD0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 11,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/ladderfunlib.lua:19",
+   "activitysys/ladderfunlib.lua:34",
+   "activitysys/ladderfunlib.lua:19",
+   "activitysys/ladderfunlib.lua:34",
+   "missions/challengeoftime/include.lua:334",
+   "activitysys/ladderfunlib.lua:19"
+  ]
+ },
+ "Ladder_NewLadder": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15085 -> LuaLadder_NewLadder",
+  "dia_chi_linux": "0x08159D40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 17,
+  "trong_seed": [
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/ladderfunlib.lua:51",
+   "battles/battlehead.lua:1097",
+   "event/storm/function.lua:240",
+   "activitysys/ladderfunlib.lua:51",
+   "task/tollgate/killer/kill_level.lua:44",
+   "activitysys/ladderfunlib.lua:51"
+  ]
+ },
+ "LeaveTeam": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14366 -> LuaLeaveTeam",
+  "dia_chi_linux": "0x08121060",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fld_head.lua:112",
+   "missions/challengeoftime/mission_match.lua:65",
+   "task/metempsychosis/translife_6.lua:101"
+  ]
+ },
+ "Msg2MSAll": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14773 -> LuaMissionMsg2All",
+  "dia_chi_linux": "0x08134280",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 43,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battle_rank_award.lua:67",
+   "battles/battlehead.lua:588",
+   "battles/battlehead.lua:604",
+   "battles/battle_rank_award.lua:67",
+   "battles/battlehead.lua:588",
+   "battles/battlehead.lua:604"
+  ]
+ },
+ "Msg2Player": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14368 -> LuaMsgToPlayer",
+  "dia_chi_linux": "0x081171B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 162,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/functionlib.lua:237",
+   "activitysys/playerfunlib.lua:590",
+   "activitysys/playerfunlib.lua:599",
+   "activitysys/functionlib.lua:237",
+   "activitysys/playerfunlib.lua:590",
+   "activitysys/playerfunlib.lua:599"
+  ]
+ },
+ "Msg2SubWorld": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14370 -> LuaMsgToSubWorld",
+  "dia_chi_linux": "0x08105170",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/chuangguang30.lua:32",
+   "missions/yandibaozang/head.lua:111"
+  ]
+ },
+ "Msg2Team": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14369 -> LuaMsgToTeam",
+  "dia_chi_linux": "0x081152C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 13,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc/dragonboat_main.lua:40",
+   "missions/challengeoftime/npc/dragonboat_main.lua:47",
+   "missions/challengeoftime/npc/dragonboat_main.lua:51",
+   "missions/challengeoftime/chuangguang30.lua:31",
+   "missions/challengeoftime/chuangguang30_playerdeath.lua:2",
+   "missions/challengeoftime/npc/dragonboat_main.lua:40"
+  ]
+ },
+ "Msg2Tong": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14375 -> LuaMsgToTong",
+  "dia_chi_linux": "0x08120E00",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "missions/yandibaozang/head.lua:105"
+  ]
+ },
+ "NPCINFO_GetSeries": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081C08E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "task/tollgate/killer/kill_level.lua:37"
+  ]
+ },
+ "NewWorld": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14402 -> LuaEnterNewWorld",
+  "dia_chi_linux": "0x0811B690",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:971",
+   "battles/battlehead.lua:974",
+   "missions/fengling_ferry/fld_death.lua:17",
+   "battles/battlehead.lua:971",
+   "battles/battlehead.lua:974",
+   "item/heart_head.lua:269"
+  ]
+ },
+ "NpcDropMoney": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0811D9C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/droptemplet.lua:159",
+   "lib/droptemplet.lua:159",
+   "lib/droptemplet.lua:159"
+  ]
+ },
+ "NpcIdx2PIdx": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14764 -> LuaNpcIndexToPlayerIndex",
+  "dia_chi_linux": "0x081058B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:499",
+   "battles/battlehead.lua:499"
+  ]
+ },
+ "NpcName2Replace": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081006D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/npc/transfer.lua:10"
+  ]
+ },
+ "OB_Clear": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15074 -> LuaOB_Clear",
+  "dia_chi_linux": "0x080FC360",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:26",
+   "lib/objbuffer_head.lua:26",
+   "lib/objbuffer_head.lua:26"
+  ]
+ },
+ "OB_Create": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15071 -> LuaOB_Create",
+  "dia_chi_linux": "0x08130230",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 22,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/weeklyrank.lua:12",
+   "battles/weeklyrank.lua:31",
+   "battles/weeklyrank.lua:86",
+   "dailogsys/dailogsay.lua:169",
+   "dailogsys/dailogsay.lua:176",
+   "lib/objbuffer_head.lua:13"
+  ]
+ },
+ "OB_IsEmpty": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15073 -> LuaOB_IsEmpty",
+  "dia_chi_linux": "0x080FC280",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 15,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/weeklyrank.lua:40",
+   "battles/weeklyrank.lua:96",
+   "battles/weeklyrank.lua:172",
+   "lib/objbuffer_head.lua:30",
+   "missions/boss/bigboss.lua:124",
+   "missions/boss/bigboss.lua:180"
+  ]
+ },
+ "OB_LoadShareData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15260 -> LuaOB_LoadShareData",
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/sharedata.lua:7",
+   "lib/sharedata.lua:7",
+   "lib/sharedata.lua:7"
+  ]
+ },
+ "OB_PopByte": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15078 -> LuaOB_PopByte",
+  "dia_chi_linux": "0x08128E30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:43",
+   "lib/objbuffer_head.lua:43",
+   "lib/objbuffer_head.lua:43"
+  ]
+ },
+ "OB_PopDouble": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15082 -> LuaOB_PopDouble",
+  "dia_chi_linux": "0x08100220",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:82",
+   "lib/objbuffer_head.lua:82",
+   "lib/objbuffer_head.lua:82"
+  ]
+ },
+ "OB_PopInt": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15080 -> LuaOB_PopInt",
+  "dia_chi_linux": "0x08128D30",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:98",
+   "lib/objbuffer_head.lua:98",
+   "lib/objbuffer_head.lua:98"
+  ]
+ },
+ "OB_PopString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15084 -> LuaOB_PopString",
+  "dia_chi_linux": "0x08100320",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:90",
+   "lib/objbuffer_head.lua:90",
+   "lib/objbuffer_head.lua:90"
+  ]
+ },
+ "OB_PushByte": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15077 -> LuaOB_PushByte",
+  "dia_chi_linux": "0x0812F2D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 12,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:66",
+   "lib/objbuffer_head.lua:69",
+   "lib/objbuffer_head.lua:72",
+   "lib/objbuffer_head.lua:66",
+   "lib/objbuffer_head.lua:69",
+   "lib/objbuffer_head.lua:72"
+  ]
+ },
+ "OB_PushDouble": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15081 -> LuaOB_PushDouble",
+  "dia_chi_linux": "0x0812F150",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:86",
+   "lib/objbuffer_head.lua:86",
+   "lib/objbuffer_head.lua:86"
+  ]
+ },
+ "OB_PushInt": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15079 -> LuaOB_PushInt",
+  "dia_chi_linux": "0x0812EFC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:113",
+   "lib/objbuffer_head.lua:113",
+   "lib/objbuffer_head.lua:113"
+  ]
+ },
+ "OB_PushString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15083 -> LuaOB_PushString",
+  "dia_chi_linux": "0x08130B90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/objbuffer_head.lua:94",
+   "lib/objbuffer_head.lua:94",
+   "lib/objbuffer_head.lua:94"
+  ]
+ },
+ "OB_Release": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15072 -> LuaOB_Release",
+  "dia_chi_linux": "0x08130440",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 28,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/weeklyrank.lua:16",
+   "battles/weeklyrank.lua:35",
+   "battles/weeklyrank.lua:48",
+   "dailogsys/dailogsay.lua:172",
+   "dailogsys/dailogsay.lua:179",
+   "lib/objbuffer_head.lua:20"
+  ]
+ },
+ "OB_SaveShareData": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15259 -> LuaOB_SaveShareData",
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/sharedata.lua:14",
+   "lib/sharedata.lua:14",
+   "lib/sharedata.lua:14"
+  ]
+ },
+ "OpenMission": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14746 -> LuaInitMission",
+  "dia_chi_linux": "0x081332F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/fldmap_boat1.lua:18",
+   "missions/fengling_ferry/fldmap_boat2.lua:12",
+   "missions/fengling_ferry/fldmap_boat3.lua:12"
+  ]
+ },
+ "OpenProgressBar": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081082D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/progressbar.lua:95"
+  ]
+ },
+ "PARTNER_GetCurPartner": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15222 -> LuaPARTNER_GetCurPartner",
+  "dia_chi_linux": "0x0816BFD0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/system/task_string.lua:138",
+   "task/system/task_string.lua:138",
+   "task/system/task_string.lua:138"
+  ]
+ },
+ "PARTNER_GetSettingIdx": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15223 -> LuaPARTNER_GetSettingIdx",
+  "dia_chi_linux": "0x0816C870",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/system/task_string.lua:139",
+   "task/system/task_string.lua:139",
+   "task/system/task_string.lua:139"
+  ]
+ },
+ "PET_GetGrownPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D5FE0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:391"
+  ]
+ },
+ "PET_GetTamePoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D5F90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:392"
+  ]
+ },
+ "PET_GetUpgradePoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D6150",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:390"
+  ]
+ },
+ "PET_SetGrownPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D6230",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:391"
+  ]
+ },
+ "PET_SetTamePoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D5F10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:392"
+  ]
+ },
+ "PET_SetUpgradePoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081D70E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:390"
+  ]
+ },
+ "Pay": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14656 -> LuaPlayerPayMoney",
+  "dia_chi_linux": "0x08118A90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "lib/composeclass.lua:127",
+   "lib/composeex.lua:260",
+   "event/birthday_jieri/200905/class.lua:93",
+   "lib/composeex.lua:260",
+   "missions/challengeoftime/npc/dragonboat_main.lua:193",
+   "event/birthday_jieri/200905/class.lua:93"
+  ]
+ },
+ "PayExtPoint": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14347 -> LuaPayExtPoint",
+  "dia_chi_linux": "0x0810FCA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:586",
+   "activitysys/playerfunlib.lua:757",
+   "vng_lib/extpoint.lua:20",
+   "activitysys/playerfunlib.lua:586",
+   "activitysys/playerfunlib.lua:757",
+   "vng_lib/extpoint.lua:20"
+  ]
+ },
+ "PopString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15220 -> LuaPopString",
+  "dia_chi_linux": "0x080FFB00",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 19,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/basic.lua:59",
+   "lib/basic.lua:115",
+   "lib/string.lua:50",
+   "lib/string.lua:50",
+   "lib/string.lua:128",
+   "lib/string.lua:164"
+  ]
+ },
+ "PushString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15217 -> LuaPushString",
+  "dia_chi_linux": "0x0812FDA0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 19,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/basic.lua:54",
+   "lib/basic.lua:111",
+   "lib/string.lua:48",
+   "lib/string.lua:48",
+   "lib/string.lua:123",
+   "lib/string.lua:162"
+  ]
+ },
+ "PutMessage": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14310 -> LuaSendMessageInfo",
+  "dia_chi_linux": "0x08116F80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:35"
+  ]
+ },
+ "QueryWiseManForSB": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0811A270",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "item/heart_head.lua:129",
+   "item/heart_head.lua:132"
+  ]
+ },
+ "RemoteExecute": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15258 -> LuaJX2_RemoteExecute",
+  "dia_chi_linux": "0x08100740",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 16,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/weeklyrank.lua:15",
+   "battles/weeklyrank.lua:34",
+   "battles/weeklyrank.lua:89",
+   "missions/boss/bigboss.lua:172",
+   "missions/boss/bigboss.lua:237",
+   "battles/weeklyrank.lua:15"
+  ]
+ },
+ "RemoveItemByIndex": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15216 -> LuaRemoveItemByIndex",
+  "dia_chi_linux": "0x08114F80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/shuizei/shuizei.lua:75",
+   "lib/composeex.lua:221",
+   "missions/fengling_ferry/fld_head.lua:222",
+   "lib/composeex.lua:221",
+   "task/tollgate/killer/nieshichen.lua:195",
+   "lib/composeex.lua:221"
+  ]
+ },
+ "ReplaceString": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15219 -> LuaReplaceString",
+  "dia_chi_linux": "0x0812EB20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/string.lua:49",
+   "task/system/task_string.lua:72",
+   "task/system/task_string.lua:73",
+   "lib/string.lua:49",
+   "task/system/task_string.lua:72",
+   "task/system/task_string.lua:73"
+  ]
+ },
+ "Require": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "protocol.lua:109",
+   "protocol.lua:109",
+   "protocol.lua:109"
+  ]
+ },
+ "RollbackSkill": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15273 -> LuaRollBackSkills",
+  "dia_chi_linux": "0x0811C640",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/task_func.lua:63",
+   "task/metempsychosis/task_func.lua:63",
+   "task/metempsychosis/task_func.lua:63"
+  ]
+ },
+ "ST_DoTransLife": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081C2990",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "task/metempsychosis/translife_6.lua:102"
+  ]
+ },
+ "ST_GetTransLifeCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14336 -> LuaGetPlayerReBornValue",
+  "dia_chi_linux": "0x081C1100",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 35,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:166",
+   "lib/log.lua:69",
+   "lib/log.lua:141",
+   "activitysys/playerfunlib.lua:166",
+   "lib/log.lua:69",
+   "lib/log.lua:141"
+  ]
+ },
+ "ST_IsTransLife": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081C1160",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 13,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:146",
+   "activitysys/playerfunlib.lua:157",
+   "event/change_destiny/head.lua:114",
+   "activitysys/playerfunlib.lua:146",
+   "activitysys/playerfunlib.lua:157",
+   "event/birthday_jieri/200905/class.lua:59"
+  ]
+ },
+ "ST_LevelUp": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x081C2A60",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "vng_event/thapnienlenhbai/lenhbai_def.lua:378"
+  ]
+ },
+ "SearchPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15206 -> LuaSearchPlayer",
+  "dia_chi_linux": "0x081020A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 12,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battle_rank_award.lua:98",
+   "battles/weeklyrank.lua:45",
+   "battles/weeklyrank.lua:102",
+   "battles/battle_rank_award.lua:98",
+   "battles/weeklyrank.lua:45",
+   "battles/weeklyrank.lua:102"
+  ]
+ },
+ "SendScriptData": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x0810B220",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "script_protocol/protocol_def_gs.lua:193",
+   "script_protocol/protocol_def_gs.lua:193",
+   "script_protocol/protocol_def_gs.lua:193"
+  ]
+ },
+ "SetBit": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14273 -> LuaSetBit",
+  "dia_chi_linux": "0x080FEAC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 26,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/config/32/dailytask.lua:65",
+   "activitysys/functionlib.lua:158",
+   "activitysys/playerfunlib.lua:581",
+   "activitysys/functionlib.lua:158",
+   "activitysys/playerfunlib.lua:581",
+   "activitysys/playerfunlib.lua:747"
+  ]
+ },
+ "SetBitTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14295 -> LuaSetBitTask",
+  "dia_chi_linux": "0x08108F10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/change_destiny/head.lua:129",
+   "misc/taskmanager.lua:217",
+   "vng_lib/bittask_lib.lua:10",
+   "event/change_destiny/head.lua:129",
+   "misc/taskmanager.lua:217",
+   "vng_lib/bittask_lib.lua:10"
+  ]
+ },
+ "SetByte": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14274 -> LuaSetByte",
+  "dia_chi_linux": "0x080FE950",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 18,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:288",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:289",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:303",
+   "event/birthday_jieri/200905/taskctrl.lua:98",
+   "event/birthday_jieri/200905/taskctrl.lua:101",
+   "event/birthday_jieri/200905/taskctrl.lua:120"
+  ]
+ },
+ "SetCreateTeam": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14780 -> LuaSetCreateTeamOption",
+  "dia_chi_linux": "0x08120FC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:962",
+   "missions/fengling_ferry/fld_head.lua:145",
+   "missions/fengling_ferry/mission.lua:69",
+   "battles/battlehead.lua:962",
+   "missions/challengeoftime/chuangguang30.lua:89",
+   "missions/challengeoftime/chuangguang30.lua:143"
+  ]
+ },
+ "SetCurCamp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14593 -> LuaSetPlayerCurrentCamp",
+  "dia_chi_linux": "0x0811B1D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:978",
+   "missions/fengling_ferry/fld_death.lua:7",
+   "missions/fengling_ferry/fld_head.lua:127",
+   "battles/battlehead.lua:978",
+   "missions/challengeoftime/chuangguang30.lua:138",
+   "missions/challengeoftime/mission_match.lua:42"
+  ]
+ },
+ "SetDeathScript": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14776 -> LuaSetPlayerDeathScript",
+  "dia_chi_linux": "0x08110700",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 10,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:963",
+   "missions/fengling_ferry/fld_head.lua:146",
+   "missions/fengling_ferry/mission.lua:72",
+   "battles/battlehead.lua:963",
+   "missions/challengeoftime/chuangguang30.lua:112",
+   "missions/challengeoftime/chuangguang30.lua:147"
+  ]
+ },
+ "SetFightState": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14483 -> LuaSetFightState",
+  "dia_chi_linux": "0x08117A10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 13,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:964",
+   "missions/fengling_ferry/fld_head.lua:134",
+   "missions/fengling_ferry/mission.lua:34",
+   "battles/battlehead.lua:964",
+   "item/heart_head.lua:270",
+   "missions/challengeoftime/chuangguang30.lua:86"
+  ]
+ },
+ "SetItemBindState": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08127630",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 5,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1317",
+   "lib/droptemplet.lua:144",
+   "lib/droptemplet.lua:144",
+   "battles/battlehead.lua:1317",
+   "lib/droptemplet.lua:144"
+  ]
+ },
+ "SetItemStackCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15264 -> LuaSetItemStackCount",
+  "dia_chi_linux": "0x0810D9A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/composeex.lua:226",
+   "missions/boss/bigboss.lua:85",
+   "lib/composeex.lua:226",
+   "missions/boss/bigboss.lua:85",
+   "lib/composeex.lua:226",
+   "missions/boss/bigboss.lua:85"
+  ]
+ },
+ "SetLogoutRV": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14779 -> LuaSetPlayerRevivalOptionWhenLogout",
+  "dia_chi_linux": "0x08110500",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 13,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:961",
+   "missions/fengling_ferry/fld_death.lua:13",
+   "missions/fengling_ferry/fld_head.lua:144",
+   "battles/battlehead.lua:961",
+   "missions/challengeoftime/chuangguang30.lua:87",
+   "missions/challengeoftime/chuangguang30.lua:130"
+  ]
+ },
+ "SetMissionS": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15232 -> LuaJx2SetMissionString",
+  "dia_chi_linux": "0x08107220",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/include.lua:250",
+   "missions/challengeoftime/npc/dragonboat_main.lua:190",
+   "missions/challengeoftime/npc/dragonboat_main.lua:191",
+   "missions/challengeoftime/include.lua:250",
+   "missions/challengeoftime/mission_match.lua:20",
+   "missions/challengeoftime/npc/dragonboat_main.lua:190"
+  ]
+ },
+ "SetMissionV": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15231 -> LuaSetMission",
+  "dia_chi_linux": "0x08107390",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 65,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:633",
+   "battles/battlehead.lua:634",
+   "battles/battlehead.lua:635",
+   "missions/challengeoftime/include.lua:251",
+   "missions/challengeoftime/include.lua:252",
+   "missions/challengeoftime/include.lua:256"
+  ]
+ },
+ "SetNpcCurCamp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14663 -> LuaSetNpcCurCamp",
+  "dia_chi_linux": "0x0811B120",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 10,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:439",
+   "battles/battlehead.lua:484",
+   "lib/coordinate.lua:200",
+   "lib/coordinate.lua:200",
+   "missions/basemission/lib.lua:59",
+   "battles/battlehead.lua:439"
+  ]
+ },
+ "SetNpcDeathScript": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15190 -> LuaSetNpcDeathScript",
+  "dia_chi_linux": "0x08101500",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 19,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:80",
+   "battles/battlehead.lua:485",
+   "missions/basemission/lib.lua:48",
+   "missions/basemission/lib.lua:48",
+   "battles/battlehead.lua:80",
+   "battles/battlehead.lua:485"
+  ]
+ },
+ "SetNpcParam": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14507 -> LuaSetNpcParam",
+  "dia_chi_linux": "0x081C0260",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "lib/coordinate.lua:129",
+   "missions/basemission/lib.lua:64",
+   "lib/coordinate.lua:129",
+   "missions/basemission/lib.lua:64",
+   "task/tollgate/killbosshead.lua:191",
+   "lib/coordinate.lua:129"
+  ]
+ },
+ "SetNpcScript": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14500 -> LuaSetNpcActionScript",
+  "dia_chi_linux": "0x08101500",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 21,
+  "trong_seed": [
+   "satthu"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:29",
+   "battles/battlehead.lua:390",
+   "battles/battlehead.lua:406",
+   "lib/coordinate.lua:100",
+   "lib/coordinate.lua:128",
+   "lib/coordinate.lua:169"
+  ]
+ },
+ "SetNpcTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14555 -> LuaSetNpcTimer",
+  "dia_chi_linux": "0x080FC180",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 9,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "missions/basemission/lib.lua:55",
+   "missions/fengling_ferry/boss.lua:31",
+   "missions/fengling_ferry/boss.lua:38",
+   "missions/basemission/lib.lua:55",
+   "missions/basemission/lib.lua:55"
+  ]
+ },
+ "SetPKFlag": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15201 -> LuaSetPKFlag",
+  "dia_chi_linux": "0x0810F610",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:967",
+   "missions/fengling_ferry/mission.lua:75",
+   "battles/battlehead.lua:967",
+   "missions/challengeoftime/chuangguang30.lua:90",
+   "missions/challengeoftime/chuangguang30.lua:144"
+  ]
+ },
+ "SetPunish": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14793 -> LuaSetDeathPunish",
+  "dia_chi_linux": "0x0810F470",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 6,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:965",
+   "battles/battlehead.lua:965",
+   "missions/challengeoftime/chuangguang30.lua:88",
+   "missions/challengeoftime/chuangguang30.lua:142"
+  ]
+ },
+ "SetRevPos": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14589 -> LuaSetPlayerRevivalPos",
+  "dia_chi_linux": "0x0811B370",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:970",
+   "battles/battlehead.lua:973",
+   "missions/fengling_ferry/fld_head.lua:143",
+   "battles/battlehead.lua:970",
+   "battles/battlehead.lua:973"
+  ]
+ },
+ "SetSpecItemParam": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14440 -> LuaSetSpecItemParam",
+  "dia_chi_linux": "0x080FF360",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 14,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1314",
+   "battles/battlehead.lua:1315",
+   "lib/coordinate.lua:152",
+   "lib/coordinate.lua:152",
+   "lib/coordinate.lua:153",
+   "battles/battlehead.lua:1314"
+  ]
+ },
+ "SetTaskTemp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14269 -> LuaSetTempTaskValue",
+  "dia_chi_linux": "0x08123950",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:960",
+   "missions/fengling_ferry/fld_head.lua:117",
+   "battles/battlehead.lua:960",
+   "missions/challengeoftime/chuangguang30.lua:85",
+   "missions/challengeoftime/chuangguang30.lua:140"
+  ]
+ },
+ "SetTmpCamp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15252 -> LuaSetTmpCamp",
+  "dia_chi_linux": "0x0810BA50",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/challengeoftime/chuangguang30.lua:114",
+   "missions/challengeoftime/chuangguang30.lua:139"
+  ]
+ },
+ "SetTongMTask": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14946 -> LuaJX2_SetTongMTask",
+  "dia_chi_linux": "0x08128A20",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:139",
+   "tong/contribution_entry.lua:139"
+  ]
+ },
+ "SetWeeklyOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14868 -> LuaJX2_SetWeeklyOffer",
+  "dia_chi_linux": "0x081141E0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:102",
+   "tong/contribution_entry.lua:102"
+  ]
+ },
+ "StartMissionTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14750 -> LuaStartMissionTimer",
+  "dia_chi_linux": "0x08138840",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:15",
+   "missions/fengling_ferry/mission.lua:16",
+   "missions/challengeoftime/include.lua:209",
+   "missions/challengeoftime/include.lua:220",
+   "missions/challengeoftime/include.lua:209",
+   "missions/challengeoftime/include.lua:220"
+  ]
+ },
+ "StopMissionTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14751 -> LuaStopMissionTimer",
+  "dia_chi_linux": "0x08134720",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "missions/fengling_ferry/mission.lua:57",
+   "missions/fengling_ferry/mission.lua:58",
+   "missions/challengeoftime/include.lua:214",
+   "missions/challengeoftime/include.lua:225",
+   "missions/challengeoftime/include.lua:214",
+   "missions/challengeoftime/include.lua:225"
+  ]
+ },
+ "SubWorldID2Idx": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14477 -> LuaSubWorldIDToIndex",
+  "dia_chi_linux": "0x08102580",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 30,
+  "trong_seed": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:27",
+   "event/storm/function.lua:120",
+   "missions/basemission/lib.lua:31",
+   "missions/basemission/lib.lua:31",
+   "missions/challengeoftime/npc/dragonboat_main.lua:88",
+   "missions/challengeoftime/npc/dragonboat_main.lua:220"
+  ]
+ },
+ "SubWorldIdx2ID": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14478 -> LuaSubWorldIndexToID",
+  "dia_chi_linux": "0x081077D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 38,
+  "trong_seed": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:68",
+   "battles/battlehead.lua:82",
+   "battles/battlehead.lua:349",
+   "event/birthday_jieri/200905/class.lua:76",
+   "lib/coordinate.lua:9",
+   "missions/challengeoftime/include.lua:234"
+  ]
+ },
+ "SubWorldIdx2MapCopy": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14479 -> LuaSubWorldIdx2MapCopy",
+  "dia_chi_linux": "0x08107740",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "item/heart_head.lua:51",
+   "item/heart_head.lua:228"
+  ]
+ },
+ "SyncItem": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14298 -> LuaSyncItemJX2",
+  "dia_chi_linux": "0x08114EF0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 13,
+  "trong_seed": [
+   "phonglangdo"
+  ],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1316",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:187",
+   "event/jiefang_jieri/200904/qianqiu_yinglie/head.lua:202",
+   "event/birthday_jieri/200905/class.lua:96",
+   "battles/battlehead.lua:1316",
+   "event/birthday_jieri/200905/class.lua:96"
+  ]
+ },
+ "SyncTaskValue": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14883 -> LuaJX2_SyncTaskValue",
+  "dia_chi_linux": "0x0810E350",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 29,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/storm/function.lua:433",
+   "event/storm/function.lua:434",
+   "event/storm/function.lua:435",
+   "task/newtask/newtask_head.lua:33",
+   "event/storm/function.lua:433",
+   "event/storm/function.lua:434"
+  ]
+ },
+ "TM_GetRestCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14304 -> LuaTM_GetRestCount",
+  "dia_chi_linux": "0x081C21A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/storm/custom.lua:134",
+   "event/storm/custom.lua:134"
+  ]
+ },
+ "TM_SetTimer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14303 -> LuaTM_SetTimer",
+  "dia_chi_linux": "0x081C23C0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "event/storm/function.lua:137",
+   "event/storm/function.lua:137"
+  ]
+ },
+ "TONGM_GetFigure": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14848 -> LuaTONGM_GetFigure",
+  "dia_chi_linux": "0x08199EC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:65",
+   "tong/contribution_entry.lua:65"
+  ]
+ },
+ "TONG_ApplyAddBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15000 -> LuaTONG_ApplyAddBuildFund",
+  "dia_chi_linux": "0x08194650",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:40",
+   "tong/contribution_entry.lua:40"
+  ]
+ },
+ "TONG_ApplyAddEventRecord": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15011 -> LuaTONG_ApplyAddEventRecord",
+  "dia_chi_linux": "0x0818BFE0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:35",
+   "tong/contribution_entry.lua:35"
+  ]
+ },
+ "TONG_ApplyAddStoredBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15005 -> LuaTONG_ApplyAddStoredBuildFund",
+  "dia_chi_linux": "0x08195A90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:36",
+   "tong/contribution_entry.lua:46",
+   "tong/contribution_entry.lua:36",
+   "tong/contribution_entry.lua:46"
+  ]
+ },
+ "TONG_ApplyAddStoredOffer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15006 -> LuaTONG_ApplyAddStoredOffer",
+  "dia_chi_linux": "0x08195C10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:121",
+   "tong/contribution_entry.lua:121"
+  ]
+ },
+ "TONG_ApplyAddTaskValue": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14842 -> LuaTONG_ApplyAddTaskValue",
+  "dia_chi_linux": "0x08196450",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 7,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:670",
+   "activitysys/playerfunlib.lua:670",
+   "tong/contribution_entry.lua:26",
+   "tong/contribution_entry.lua:51",
+   "activitysys/playerfunlib.lua:670",
+   "tong/contribution_entry.lua:26"
+  ]
+ },
+ "TONG_ApplyAddTotalBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15007 -> LuaTONG_ApplyAddTotalBuildFund",
+  "dia_chi_linux": "0x08194B90",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:43",
+   "tong/contribution_entry.lua:43"
+  ]
+ },
+ "TONG_ApplyAddWarBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15001 -> LuaTONG_ApplyAddWarBuildFund",
+  "dia_chi_linux": "0x08194410",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:50",
+   "tong/contribution_entry.lua:50"
+  ]
+ },
+ "TONG_ApplyAddWeekBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15008 -> LuaTONG_ApplyAddWeekBuildFund",
+  "dia_chi_linux": "0x08194D10",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:41",
+   "tong/contribution_entry.lua:41"
+  ]
+ },
+ "TONG_ApplyAddWeekGoalValue": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15009 -> LuaTONG_ApplyAddWeekGoalValue",
+  "dia_chi_linux": "0x08195550",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:87",
+   "tong/contribution_entry.lua:180",
+   "tong/contribution_entry.lua:87",
+   "tong/contribution_entry.lua:180"
+  ]
+ },
+ "TONG_ApplySetTaskValue": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14841 -> LuaTONG_ApplySetTaskValue",
+  "dia_chi_linux": "0x0818AE40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:657",
+   "activitysys/playerfunlib.lua:657",
+   "activitysys/playerfunlib.lua:657"
+  ]
+ },
+ "TONG_GetBuildLevel": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14823 -> LuaTONG_GetBuildLevel",
+  "dia_chi_linux": "0x0818D600",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:22",
+   "tong/contribution_entry.lua:22"
+  ]
+ },
+ "TONG_GetDay": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14829 -> LuaTONG_GetDay",
+  "dia_chi_linux": "0x0818DEC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/tong_setting.lua:166",
+   "tong/tong_setting.lua:166"
+  ]
+ },
+ "TONG_GetMemberCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14809 -> LuaTONG_GetMemberCount",
+  "dia_chi_linux": "0x0818FF40",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/tong_setting.lua:145",
+   "tong/tong_setting.lua:145"
+  ]
+ },
+ "TONG_GetName": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14801 -> LuaTONG_GetName",
+  "dia_chi_linux": "0x0818AC80",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:33",
+   "tong/tong_setting.lua:152",
+   "tong/contribution_entry.lua:33",
+   "tong/tong_setting.lua:152"
+  ]
+ },
+ "TONG_GetTaskTemp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14816 -> LuaTONG_GetTaskTemp",
+  "dia_chi_linux": "0x08190260",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:85",
+   "tong/contribution_entry.lua:116",
+   "tong/contribution_entry.lua:143",
+   "tong/contribution_entry.lua:85",
+   "tong/contribution_entry.lua:116",
+   "tong/contribution_entry.lua:143"
+  ]
+ },
+ "TONG_GetTaskValue": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14814 -> LuaTONG_GetTaskValue",
+  "dia_chi_linux": "0x081900A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/playerfunlib.lua:134",
+   "global/signet_head.lua:17",
+   "activitysys/playerfunlib.lua:134",
+   "activitysys/playerfunlib.lua:134"
+  ]
+ },
+ "TONG_GetWeek": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14830 -> LuaTONG_GetWeek",
+  "dia_chi_linux": "0x0818E000",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:34",
+   "tong/contribution_entry.lua:68",
+   "tong/contribution_entry.lua:34",
+   "tong/contribution_entry.lua:68"
+  ]
+ },
+ "TONG_GetWeekBuildFund": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14831 -> LuaTONG_GetWeekBuildFund",
+  "dia_chi_linux": "0x0818F400",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:21",
+   "tong/contribution_entry.lua:21"
+  ]
+ },
+ "TONG_GetWeekGoalEvent": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14953 -> LuaTONG_GetWeekGoalEvent",
+  "dia_chi_linux": "0x0818E140",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:70",
+   "tong/contribution_entry.lua:162",
+   "tong/contribution_entry.lua:70",
+   "tong/contribution_entry.lua:162"
+  ]
+ },
+ "TONG_GetWeekGoalPlayer": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14956 -> LuaTONG_GetWeekGoalPlayer",
+  "dia_chi_linux": "0x0818E500",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:169",
+   "tong/contribution_entry.lua:169"
+  ]
+ },
+ "TONG_SetTaskTemp": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14817 -> LuaTONG_SetTaskTemp",
+  "dia_chi_linux": "0x0818B350",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 8,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/contribution_entry.lua:90",
+   "tong/contribution_entry.lua:124",
+   "tong/contribution_entry.lua:150",
+   "tong/contribution_entry.lua:90",
+   "tong/contribution_entry.lua:124",
+   "tong/contribution_entry.lua:150"
+  ]
+ },
+ "TONG_WriteLog": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15014 -> LuaTONG_WriteLog",
+  "dia_chi_linux": "0x0818B5A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "tong/log.lua:22",
+   "tong/tong_setting.lua:90",
+   "tong/log.lua:22",
+   "tong/tong_setting.lua:90"
+  ]
+ },
+ "TabFile_GetCell": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15285 -> LuaTabFile_GetCell",
+  "dia_chi_linux": "0x0814A740",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 142,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:99",
+   "activitysys/activity.lua:100",
+   "activitysys/activity.lua:101",
+   "activitysys/activity.lua:99",
+   "activitysys/activity.lua:100",
+   "activitysys/activity.lua:101"
+  ]
+ },
+ "TabFile_GetRowCount": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15286 -> LuaTabFile_GetRowCount",
+  "dia_chi_linux": "0x0814A690",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 27,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/config/32/talkdailytask.lua:38",
+   "activitysys/config/32/talkdailytask.lua:50",
+   "activitysys/functionlib.lua:75",
+   "activitysys/functionlib.lua:75",
+   "class/ktabfile.lua:146",
+   "lib/file.lua:43"
+  ]
+ },
+ "TabFile_Load": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15284 -> LuaTabFile_Load",
+  "dia_chi_linux": "0x0814AEF0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 39,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:95",
+   "activitysys/config/32/dailytask.lua:20",
+   "activitysys/config/32/dailytask.lua:27",
+   "activitysys/activity.lua:95",
+   "activitysys/functionlib.lua:70",
+   "class/ktabfile.lua:101"
+  ]
+ },
+ "TabFile_UnLoad": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15287 -> LuaTabFile_UnLoad",
+  "dia_chi_linux": "0x0814B040",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "satthu"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 1,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "class/ktabfile.lua:150"
+  ]
+ },
+ "Time2Tm": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14891 -> LuaTime2Tm",
+  "dia_chi_linux": "0x081021B0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:318",
+   "activitysys/activity.lua:318",
+   "activitysys/activity.lua:318"
+  ]
+ },
+ "Title_ActiveTitle": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15165 -> LuaTitle_ActiveTitle",
+  "dia_chi_linux": "0x081596F0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:872",
+   "battles/weeklyrank.lua:142",
+   "battles/battlehead.lua:872",
+   "battles/weeklyrank.lua:142"
+  ]
+ },
+ "Title_AddTitle": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15164 -> LuaTitle_AddTitle",
+  "dia_chi_linux": "0x081597A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 4,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:871",
+   "battles/weeklyrank.lua:141",
+   "battles/battlehead.lua:871",
+   "battles/weeklyrank.lua:141"
+  ]
+ },
+ "Title_RemoveTitle": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:15166 -> LuaTitle_RemoveTitle",
+  "dia_chi_linux": "0x081595A0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/weeklyrank.lua:140",
+   "battles/weeklyrank.lua:140"
+  ]
+ },
+ "Tm2Time": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x08103AC0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 6,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/functionlib.lua:364",
+   "activitysys/functionlib.lua:380",
+   "activitysys/functionlib.lua:364",
+   "activitysys/functionlib.lua:380",
+   "activitysys/functionlib.lua:364",
+   "activitysys/functionlib.lua:380"
+  ]
+ },
+ "TrimString": {
+  "chu_ky": null,
+  "dang_ky_jx1": null,
+  "dia_chi_linux": "0x080FF630",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "B",
+  "so_lan_goi": 3,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "lib/string.lua:163",
+   "lib/string.lua:163",
+   "lib/string.lua:163"
+  ]
+ },
+ "WriteLog": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14880 -> LuaJX2_WriteLog",
+  "dia_chi_linux": "0x081237D0",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 53,
+  "trong_seed": [
+   "vuotai"
+  ],
+  "vi_tri_goi": [
+   "activitysys/activity.lua:59",
+   "activitysys/activity.lua:96",
+   "activitysys/activity.lua:120",
+   "activitysys/activity.lua:59",
+   "activitysys/activity.lua:96",
+   "activitysys/activity.lua:120"
+  ]
+ },
+ "curpack": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14299 -> LuaCurPack",
+  "dia_chi_linux": "0x0823D220",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 10,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activitydetail.lua:83",
+   "activitysys/activitydetail.lua:99",
+   "misc/eventsys/eventsys.lua:29",
+   "activitysys/activitydetail.lua:83",
+   "activitysys/activitydetail.lua:99",
+   "misc/eventsys/eventsys.lua:29"
+  ]
+ },
+ "safeshow": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14910 -> LuaWllsSafeshow",
+  "dia_chi_linux": null,
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 2,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "battles/battlehead.lua:1134",
+   "battles/battlehead.lua:1134"
+  ]
+ },
+ "usepack": {
+  "chu_ky": null,
+  "dang_ky_jx1": "ScriptFuns.cpp:14300 -> LuaUsePack",
+  "dia_chi_linux": "0x0823D240",
+  "do_tin_cay": null,
+  "dung_boi": [
+   "phonglangdo",
+   "satthu",
+   "vuotai"
+  ],
+  "mo_ta": null,
+  "nhom": "A",
+  "so_lan_goi": 22,
+  "trong_seed": [],
+  "vi_tri_goi": [
+   "activitysys/activitydetail.lua:85",
+   "activitysys/activitydetail.lua:89",
+   "activitysys/activitydetail.lua:101",
+   "activitysys/activitydetail.lua:85",
+   "activitysys/activitydetail.lua:89",
+   "activitysys/activitydetail.lua:101"
+  ]
+ }
+}
