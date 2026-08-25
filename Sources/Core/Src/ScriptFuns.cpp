@@ -13890,6 +13890,7 @@ extern int LuaHD3_TrimString(Lua_State* L);
 extern int LuaHD3_AddNpc(Lua_State* L);
 extern int LuaHD3_DelNpcByName(Lua_State* L);
 extern int LuaHD3_DelNpcByScript(Lua_State* L);
+extern int LuaHD3_DelNpcByNameEx(Lua_State* L);
 extern int LuaHD3_AddNpcEx(Lua_State* L);
 #endif
 
@@ -15443,7 +15444,7 @@ TLua_Funcs GameScriptFuns[] =
 		// HD3_AddNpc tu random ngu hanh, tham so 6/7 = bNoRevive.
 		{"HD3_AddNpc",	LuaHD3_AddNpc},
 		{"HD3_DelNpcByName",	LuaHD3_DelNpcByName},	// [3HD C14] xoa NPC cu theo ten (don Nhiep Thi Tran ban Viet)
-		{"HD3_DelNpcByNameEx",	LuaHD3_DelNpcByName},	// [C15] ten moi = ban CO loc map; script goi Ex de DLL cu (khong loc) tu nil-skip, khong xoa nham toan cuc
+		{"HD3_DelNpcByNameEx",	LuaHD3_DelNpcByNameEx},	// [C19] ten + map + exclude-script	// [C15] ten moi = ban CO loc map; script goi Ex de DLL cu (khong loc) tu nil-skip, khong xoa nham toan cuc
 		{"HD3_DelNpcByScript",	LuaHD3_DelNpcByScript},	// [C16] xoa theo ActionScript (nhieptran/thuyenphu cu)
 		{"HD3_AddNpcEx",	LuaHD3_AddNpcEx},
 		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)

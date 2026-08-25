@@ -824,6 +824,7 @@ enum GAMEOPERATION_INDEX
 	GDI_CITY_INFO,				// [CITYINFO 21/08] uParam = thanh 1..7, nParam = KCityInfoView* -> 1 co du lieu / 0
 	GDI_CITY_INFO_CURMAP,		// [CITYINFO 21/08] nParam = KCityInfoView* -> id thanh cua map dang dung / 0
 	GDCNI_CITY_INFO_UPDATE,		// [CITYINFO 21/08] uParam = id thanh vua nhan tu server
+	GOI_TASKGUIDE_GOTO_SATTHU,	// [3HD C20] bam nhiem vu Sat Thu tren F11 -> tu chay toi boss (bam lai = huy)
 
 };
 

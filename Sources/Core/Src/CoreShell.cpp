@@ -2929,6 +2929,136 @@ static void TG_XaFuTick()
 	DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCur);
 }
 
+//---------------------------------------------------------------------------
+// [3HD C20] Bam nhiem vu 'San Boss Sat Thu' tren F11 -> tu dan duong toi boss:
+//   pha 1: chay den Xa Phu (tai dung nghe Da Tau) roi gui 'st3_goboss' - server
+//          thu tien xe + NewWorld toi gan boss (khuon cu denchobossST ban Viet);
+//   pha 2: doi chuyen map;  pha 3: di bo toi o boss (KSatThuBossPos.h).
+// Dang o dung map boss thi vao thang pha 3 (khong ton tien).
+//---------------------------------------------------------------------------
+#include "KSatThuBossPos.h"
+
+static int  g_nTGSTOn = 0;
+static int  g_nTGSTPhase = 0;		// 1 = di xa phu, 2 = doi chuyen map, 3 = di toi boss
+static int  g_nTGSTMap = 0;			// map boss
+static int  g_nTGSTX = 0, g_nTGSTY = 0;	// o boss (cell)
+static int  g_nTGSTTry = 0;
+static UINT g_uTGSTNext = 0;
+
+static void TG_SatThuStop(const char* szMsg)
+{
+	if (g_nTGSTOn && szMsg)
+		DT_Msg(CLIENT_PLAYER_INDEX, szMsg);
+	g_nTGSTOn = 0;
+}
+
+static int TG_SatThuStart()
+{
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	if (g_nTGSTOn)
+	{
+		TG_SatThuStop("<color=Cyan>[Chÿ nam] ß∑ hÒy d…n Æ≠Íng tÌi boss.");
+		return 0;
+	}
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	int nBoss = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(1082);
+	if (nBoss < 1 || nBoss > ST3_POS_MAX)
+	{
+		DT_Msg(nPlayerIdx, "<color=Yellow>[Chÿ nam] Ch≠a nhÀn nhi÷m vÙ s∏t thÒ.");
+		return 0;
+	}
+	g_nTGSTMap = s_nST3BossMap[nBoss];
+	g_nTGSTX = s_nST3BossX[nBoss];
+	g_nTGSTY = s_nST3BossY[nBoss];
+	g_nTGSTTry = 0;
+	g_uTGSTNext = 0;
+	if (SubWorld[0].m_SubWorldID == g_nTGSTMap)
+		g_nTGSTPhase = 3;	// da o map boss - di bo toi noi
+	else
+	{
+		MapStation::iterator it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
+		if (it == g_MoveStation.end() || it->second.empty())
+		{
+			DT_Msg(nPlayerIdx, "<color=Yellow>[Chÿ nam] Kh´ng th y Xa Phu Î map nµy - h∑y v“ thµnh rÂi b m lπi.");
+			return 0;
+		}
+		g_nTGSTPhase = 1;
+	}
+	g_nTGSTOn = 1;
+	DT_Msg(nPlayerIdx, "<color=Cyan>[Chÿ nam] ßang d…n Æ≠Íng tÌi boss - b m lπi vµo dﬂng nhi÷m vÙ Æ” hÒy.");
+	return 1;
+}
+
+static void TG_SatThuTick()
+{
+	if (!g_nTGSTOn)
+		return;
+	int nPlayerIdx = CLIENT_PLAYER_INDEX;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+	{
+		g_nTGSTOn = 0;
+		return;
+	}
+	UINT uCur = timeGetTime();
+	if (uCur < g_uTGSTNext)
+		return;
+	g_uTGSTNext = uCur + 400;
+	if (++g_nTGSTTry > 450)	// ~3 phut
+	{
+		TG_SatThuStop("<color=Yellow>[Chÿ nam] ßi qu∏ l©u - dıng d…n Æ≠Íng.");
+		return;
+	}
+	if (g_nTGSTPhase == 1)
+	{
+		MapStation::iterator it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
+		if (it == g_MoveStation.end() || it->second.empty())
+		{
+			TG_SatThuStop("<color=Yellow>[Chÿ nam] Kh´ng th y Xa Phu Î map nµy - h∑y v“ thµnh rÂi b m lπi.");
+			return;
+		}
+		sStation& s = it->second[0];
+		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
+		if (nIdx)
+		{
+			int nX, nY, dX, dY;
+			Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+			Npc[nIdx].GetMpsPos(&dX, &dY);
+			if (g_GetDistance(nX, nY, dX, dY) <= 160)
+			{
+				SendUiCmdScript(6, (char*)"st3_goboss");
+				g_nTGSTPhase = 2;
+				g_nTGSTTry = 0;
+				DT_Msg(nPlayerIdx, "<color=Cyan>[Chÿ nam] ß∑ g∆p Xa Phu - Æang thu™ xe tÌi chÁ boss...");
+				return;
+			}
+			DT_WalkTo(nPlayerIdx, dX, dY, 128, uCur);
+			return;
+		}
+		DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCur);
+		return;
+	}
+	if (g_nTGSTPhase == 2)
+	{
+		if (SubWorld[0].m_SubWorldID == g_nTGSTMap)
+		{
+			g_nTGSTPhase = 3;
+			g_nTGSTTry = 0;
+			return;
+		}
+		if (g_nTGSTTry > 25)	// ~10s khong duoc chuyen (thieu tien...)
+			TG_SatThuStop("<color=Yellow>[Chÿ nam] Ch≠a Æ≠Óc chuy”n map (thi’u ti“n xe?) - dıng d…n Æ≠Íng.");
+		return;
+	}
+	// pha 3: di toi o boss
+	if (SubWorld[0].m_SubWorldID != g_nTGSTMap)
+	{
+		g_nTGSTOn = 0;	// bi keo sang map khac - tat im lang
+		return;
+	}
+	if (DT_WalkTo(nPlayerIdx, g_nTGSTX * 32, g_nTGSTY * 32, 250, uCur))
+		TG_SatThuStop("<color=Cyan>[Chÿ nam] ß∑ tÌi khu v˘c boss - c»n thÀn!");
+}
 // [DaTau] tim quai con SONG da sync NGOAI tam danh de chay toi (T4 di tim quai).
 // Client chi thay quai da sync (~2 man hinh); ngoai tam nay DTP_FARM dao 8 huong quanh neo.
 static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY)
@@ -10182,6 +10312,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	int nRet = 1;
 	switch(uOper)
 	{
+	case GOI_TASKGUIDE_GOTO_SATTHU:	// [3HD C20] bang F11: nhiem vu Sat Thu -> tu chay toi boss
+		nRet = TG_SatThuStart();
+		break;
 	case GOI_TASKGUIDE_GOTO_XAFU:	// [TaskGuide] bang F11: nhiem vu loai 4 -> tu chay den Xa Phu
 		nRet = TG_XaFuStart();
 		break;
@@ -16923,6 +17056,7 @@ int KCoreShell::Breathe()
 		DWORD dwTickT1 = timeGetTime();
 		g_SubWorldSet.MainLoop();
 		TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
+		TG_SatThuTick();	// [3HD C20] dan duong toi boss Sat Thu
 		DWORD dwTickT2 = timeGetTime();
 		g_ScenePlace.Breathe();
 		CoreProbeTick(dwTickT0, dwTickT1 - dwTickT0, dwTickT2 - dwTickT1, timeGetTime() - dwTickT2);
@@ -16932,6 +17066,7 @@ int KCoreShell::Breathe()
 	g_SubWorldSet.MessageLoop();
 	g_SubWorldSet.MainLoop();
 	TG_XaFuTick();	// [TaskGuide] dan duong den Xa Phu (chi chay khi dang bat)
+	TG_SatThuTick();	// [3HD C20] dan duong toi boss Sat Thu
 	g_ScenePlace.Breathe();
 	return true;
 }

@@ -1797,6 +1797,60 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 // g_StrLower, KNpcSet.cpp:429). Bam theo SCRIPT nen phan biet duoc NPC cu
 // (nhieptran.lua / thuyenphu.lua) voi NPC moi (nieshichen/hd3_thuyenphu)
 // du TRUNG TEN. Goi duoc moi phut (tu lanh khi NPC cu sinh muon/hoi sinh).
+// [3HD 25/08 C19] HD3_DelNpcByNameEx(szTen, nMapID|0, szExcludeScript) - xoa NPC
+// trung TEN nhung ActionScript KHONG chua szExcludeScript (phan biet NPC cu voi
+// NPC moi cung ten bat ke NPC cu bind script gi hay khong co script). Log tung
+// nan nhan vao DebugLog de truy nguon (template + script).
+int LuaHD3_DelNpcByNameEx(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
+		return 0;
+	const char* pTen = Lua_ValueToString(L, 1);
+	if (!pTen || !pTen[0])
+		return 0;
+	int nLocMap = 0;
+	if (Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+		nLocMap = (int)Lua_ValueToNumber(L, 2);
+	char szExcl[80];
+	szExcl[0] = 0;
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsString(L, 3))
+	{
+		g_StrCpyLen(szExcl, (char*)Lua_ValueToString(L, 3), sizeof(szExcl));
+		g_StrLower(szExcl);
+	}
+	int nXoa = 0;
+	int nGom = 0;
+	static int s_anGomN[512];
+	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
+	{
+		if (Npc[nIdx].m_dwID == 0)
+			continue;
+		if (Npc[nIdx].IsPlayer())
+			continue;
+		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (nLocMap != 0 && SubWorld[Npc[nIdx].m_SubWorldIndex].m_SubWorldID != nLocMap)
+			continue;
+		if (strstr(Npc[nIdx].Name, pTen) == NULL)
+			continue;
+		if (szExcl[0] && Npc[nIdx].ActionScript[0] && strstr(Npc[nIdx].ActionScript, szExcl) != NULL)
+			continue;	// NPC cua minh - giu
+		if (nGom < 512)
+			s_anGomN[nGom++] = nIdx;
+	}
+	for (int i = 0; i < nGom; i++)
+	{
+		int n = s_anGomN[i];
+		g_DebugLog("[3HD C19] xoa NPC cu idx=%d setting=%d map=%d script=%s",
+			n, Npc[n].m_NpcSettingIdx, SubWorld[Npc[n].m_SubWorldIndex].m_SubWorldID, Npc[n].ActionScript);
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		NpcSet.Remove(n);
+		nXoa++;
+	}
+	Lua_PushNumber(L, nXoa);
+	return 1;
+}
 int LuaHD3_DelNpcByScript(Lua_State* L)
 {
 	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))

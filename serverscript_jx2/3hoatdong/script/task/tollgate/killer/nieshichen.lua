@@ -20,7 +20,7 @@ Include("\\script\\vng_feature\\challengeoftime\\npcNhiepThiTran.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 KILLER_MAXCOUNT = HD_CFG("HD3_ST_MAX_NGAY", KILLER_MAXCOUNT)	-- tran giet boss/ngay (goc Linux = 8, newtask_head.lua:20)
 ContentList = {
-	"<#>Gép ®ñ 160 s¸t thñ gi¶n sÏ thµnh ®Ö nhÊt s¸t thñ. Mçi ngµy chØ cÇn xong <color=yellow>8 nhiÖm vô <color>lµ ®­îc.",
+	"<#>Gép ®ñ 160 s¸t thñ gi¶n sÏ thµnh ®Ö nhÊt s¸t thñ. Mçi ngµy chØ cÇn xong <color=yellow>8 nhiÖm vô <color>lµ ®­îc. <enter>H·y nhËn 'th¸ch thøc thêi gian' ®Ó thö søc ®ång ®éi.",
 	"<#>NhiÖm vô s¸t thñ cÊp 20/killer20",--2
 	"<#>NhiÖm vô s¸t thñ cÊp 30/killer30",
 	"<#>NhiÖm vô s¸t thñ cÊp 40/killer40",
@@ -50,7 +50,7 @@ ContentList = {
 	"<#>Cø mçi giê hÖ thèng sÏ th«ng b¸o 1 lÇn. Thêi gian b¸o danh lµ 5 phót, thùc hiÖn chØ trong 30 phót. Mçi ng­êi chØ tèi ®a 2 lÇn/ngµy. Ph¶i ®o ®éi tr­ëng ®Õn b¸o danh. <enter>”NhiÖm vô th¸ch thøc thêi gian” gåm 2 khu vùc tham gia. S¬ cÊp: ng­êi ch¬i tõ cÊp 50 ®Õn 89, do ®éi tr­ëng mang 2 s¸t thñ gi¶n d­íi cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. Cao cÊp: ng­êi ch¬i tõ cÊp 90, do ®éi tr­ëng mang 2 s¸t thñ gi¶n cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. <enter>Néi trong thêi gian quy ®Şnh, nÕu v­ît qua hÕt 28 ¶i sÏ hoµn thµnh. Mçi ¶i phÇn th­ëng kinh nghiÖm sÏ kh¸c nhau. NÕu hoµn thµnh nhiÖm vô tr­íc thêi gian h¹n ®Şnh, phÇn th­ëng kinh nghiÖm sÏ cµng cao <enter>NÕu tr­íc thêi h¹n ®· hoµn thµnh, cã thÓ sÏ xuÊt hiÖn thªm 1 ¶i, trong ®ã cã nhiÒu phÇn th­ëng bÊt ngê (vËt phÈm ngÉu nhiªn, trang bŞ Hoµng Kim…). ChØ nh÷ng ®éi ®· v­ît 28 ¶i ®óng thêi gian quy ®Şnh míi cã tªn trong b¶ng xÕp h¹ng.",
 	"<#>Qu¸ quan tÇm b¶o/guoguan_xunbao",
 	"<#>NhËn th­ëng/rank_award",
-	"<#>XÕp h¹ng h«m nay./get_top5team"
+	"<#>XÕp h¹ng ngµy./get_top5team"
 }
 
 killertabfile = new(KTabFile,"/settings/task/tollgate/killer/killer.txt","KILLER")
@@ -59,7 +59,7 @@ function main()
 	UWorld1082 = nt_getTask(1082);
 	local tbDialog = {ContentList[24],ContentList[17],ContentList[9],ContentList[10],ContentList[11],ContentList[30], ContentList[31], ContentList[15]};
 	if (tbBirthday0905:IsActDate() == 1) then
-		tinsert(tbDialog, 12, ContentList[29]);
+		tbDialog[5] = ContentList[29];	-- [C19] thay muc flavor [11] de khong vuot tran goi 511B
 	end
 	Describe(DescLink_NieShiChen..ContentList[1], getn(tbDialog), unpack(tbDialog));
 end

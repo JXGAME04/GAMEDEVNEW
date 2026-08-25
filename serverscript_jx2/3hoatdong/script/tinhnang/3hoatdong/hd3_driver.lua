@@ -47,6 +47,12 @@ function HD3_DonNpcCu(bNoiLuc)
 	for i = 1, getn(HD3_SCRIPT_CU) do
 		nTong = nTong + HD3_DelNpcByScript(HD3_SCRIPT_CU[i])
 	end
+	-- [C19] lop CHAC CHAN: xoa NPC trung ten KHONG mang script cua minh
+	-- (bat duoc NPC cu bat ke no bind script gi / khong script)
+	if (HD3_DelNpcByNameEx ~= nil) then
+		nTong = nTong + HD3_DelNpcByNameEx("NhiÕp ThÝ TrÇn", 0, "nieshichen")
+		nTong = nTong + HD3_DelNpcByNameEx("ThuyÒn phu", 336, "hd3_thuyenphu")
+	end
 	if (nTong > 0 or bNoiLuc == 1) then
 		print("[3HD] Don NPC cu (theo script): xoa "..nTong..".")
 	end

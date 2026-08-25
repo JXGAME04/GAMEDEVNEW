@@ -6050,6 +6050,12 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 			{
 				Player[nIndex].ExecuteScript("\\script\\global\\seasonnpc.lua", "tg_quit", 0);
 			}
+			else if (!strcmp(pUiCmd->szFunc, "st3_goboss"))
+			{
+				// [3HD C19] F11 dan duong: thue xe toi cho boss (khuon cu denchobossST
+				// cua ban Viet: kiem tien + Pay + NewWorld + SetFightState(1))
+				Player[nIndex].ExecuteScript("\\script\\task\\tollgate\\killer\\hd3_st_goboss.lua", "st3_goboss", 0);
+			}
 			else if (!strcmp(pUiCmd->szFunc, "st3_quit"))
 			{
 				// [3HD C18] nut Bo nhiem vu tab San Boss Sat Thu: dung ham /cancel

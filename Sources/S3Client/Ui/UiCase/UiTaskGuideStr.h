@@ -75,7 +75,7 @@
 // [3HD 25/08] San boss Sat Thu (TaskId 10) - chuoi TCVN3 tho
 #define ST3_INFO       "GÆp NhiÕp Thİ TrÇn ë thÊt ®¹i thµnh thŞ ®Ó nhËn nhiÖm vô truy n· s¸t thñ (mçi ngµy tèi ®a 8 lÇn)."
 #define ST3_HOWTO      "T×m vµ tiªu diÖt ®óng tªn s¸t thñ ®­îc giao; gép 5 S¸t Thñ lÖnh cïng cÊp thµnh S¸t Thñ Gi¶n - vĞ vµo Th¸ch thøc thêi gian."
-#define ST3_CUR_FMT    "§ang truy n· s¸t thñ thø <color=yellow>%d<color> (nhãm cÊp %d)."
+#define ST3_CUR_FMT    "§ang truy n· s¸t thñ sè hiÖu <color=yellow>%d <color>(nhãm cÊp %d) - ng­¬i tù chän trong danh s¸ch."
 #define ST3_GROUP90    "Nhãm cÊp 90: h¹ xong cã th­ëng lín vµ S¸t Thñ lÖnh cÊp 90."
 #define ST3_GROUPLOW   "Nhãm cÊp thÊp: b¶n gèc chØ cßn nhãm 90 ph¸t th­ëng - h·y nhËn nhiÖm vô cÊp 90."
 #define ST3_NOTASK     "Ch­a nhËn nhiÖm vô s¸t thñ nµo."
@@ -85,3 +85,4 @@
 #define ST3_TRACE_TITLE "<color=yellow>S¨n Boss S¸t Thñ <color>"
 #define ST3_BRIEF_FMT "%s - %s. GiÕt: %d/8."
 #define ST3_BRIEF_NONE "Ch­a nhËn nhiÖm vô s¸t thñ."
+#define ST3_HINT_GO    "Kİch vµo dßng nhiÖm vô ®Ó tù ch¹y tíi boss (tèn tiÒn xe nÕu kh¸c map)."

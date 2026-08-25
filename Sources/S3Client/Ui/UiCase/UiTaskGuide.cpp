@@ -539,6 +539,7 @@ void KUiTaskGuide::BuildSatThuText()
 		// [C18] muc tieu: ten + noi o (co toa do) tu bang nuong killer.txt
 		sprintf(szLine, ST3_TARGET_FMT, s_szST3BossName[nBoss], s_szST3BossInfo[nBoss]);
 		AddLine(szLine);
+		AddLine(ST3_HINT_GO);	// [C20]
 		if (nBoss >= 141)
 			AddLine(ST3_GROUP90);
 		else
@@ -937,6 +938,13 @@ void KUiTaskGuide::TryGoXaFu()
 {
 	if (m_nCurEntry < 0 || m_nCurEntry >= m_nEntryCount)
 		return;
+	// [3HD C20] tab Sat Thu: tu chay toi boss (xa phu -> qua map -> toa do)
+	if (m_Entries[m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID)
+	{
+		if (g_pCoreShell)
+			g_pCoreShell->OperationRequest(GOI_TASKGUIDE_GOTO_SATTHU, 0, 0);
+		return;
+	}
 	if (m_Entries[m_nCurEntry].nTaskId != TASKGUIDE_DATAU_TASKID)
 		return;
 	if (DTG_TaskVal(1021) != 4 || DTG_TaskVal(1028) != 1)

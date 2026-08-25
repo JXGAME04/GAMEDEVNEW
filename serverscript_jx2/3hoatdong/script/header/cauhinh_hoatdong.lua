@@ -350,6 +350,9 @@ HD3_VA_LUOT_NGAY = 1,
 -- (A) SAT THU - bang thuong hoan thanh nhom cap 90 (25 dong vat pham +
 --     10.000.000 exp). Goc: kill_level.lua:89-118 OnFinishKillerTask. [RESTART]
 HD3_ST_THUONG = nil,
+-- (A) SAT THU - gia thue xe toi cho boss khi bam dan duong tren F11 (khuon
+--     cu cua ban Viet MONEY_GO_BOSS = 1000 luong). [LIVE]
+HD3_ST_TIEN_XE = 1000,
 
 -- (B) PLD - so Thi Gia Chi An (6,1,1095) roi tu boss dau linh 725 (goc 2;
 --     bang co Dao Chu tien dai thi tu x2 theo getSignetDropRate). [RESTART]
