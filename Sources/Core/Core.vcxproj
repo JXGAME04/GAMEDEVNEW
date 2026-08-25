@@ -861,6 +861,8 @@
     </ClCompile>
     <ClCompile Include="Src\KPartnerSkill.cpp">
     </ClCompile>
+    <ClCompile Include="Src\KPerfTick.cpp">
+    </ClCompile>
     <ClCompile Include="Src\KPlayer.cpp">
     </ClCompile>
     <ClCompile Include="Src\KPlayerAuto.cpp">
@@ -1156,6 +1158,7 @@
     <ClInclude Include="Src\KObjSet.h" />
     <ClInclude Include="Src\KOption.h" />
     <ClInclude Include="Src\KPartnerSkill.h" />
+    <ClInclude Include="Src\KPerfTick.h" />
     <ClInclude Include="Src\KPlayer.h" />
     <ClInclude Include="Src\KPlayerAuto.h" />
     <ClInclude Include="Src\KPlayerChat.h" />

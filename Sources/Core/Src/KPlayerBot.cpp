@@ -391,43 +391,60 @@ static void pb_Log(const char* szFmt, ...)
 		}
 	}
 
-	// Xoay tep khi qua 256 MB: doi ten thanh bot.log.1 (de mat ban cu nhat, giu
-	// lai duoc mot doi). Khong co buoc nay thi mot phien chay dai lam day o dia -
-	// no da tung len gan 1 GB (ghi nhan 19/08).
-	// Chi do co MOI 4096 DONG, khong phai moi dong: ham nay da ton mot cap
-	// fopen/fclose cho moi dong roi, them mot cap nua de do co la gap doi so lan
-	// cham o dia trong khi tep chi phinh khoang 300 KB sau 4096 dong.
+	// [24/08] Giu tep MO SAN + flush theo lo (giong g_AutoLog, KCore.cpp:806).
+	// Truoc day moi dong ton mot cap fopen/fclose (30-200us); do that 24/08:
+	// bot.log phinh 128 MB trong mot gio (~360 dong/giay) => 10-70 ms moi giay
+	// bi tieu tren LUONG CHINH, chua ke luc Tong Kim dong nguoi.
+	static FILE*  s_pTep    = NULL;	// tep giu mo
+	static long   s_lCo     = 0;	// kich thuoc cong don (khoi ftell moi dong)
+	static int    s_nTuFlush = 0;	// so dong ke tu lan flush truoc
+	static DWORD  s_dwFlush = 0;	// moc flush gan nhat
+	static int    s_nEpFlush = -1;	// [BotLog] Flush=1 -> flush moi dong
+
+	if (s_nEpFlush < 0)
+		s_nEpFlush = (int)GetPrivateProfileIntA("BotLog", "Flush", 0, ".\\config.ini");
+
+	if (!s_pTep)
 	{
-		static int s_nDemXoay = 0;
-		if (++s_nDemXoay >= 4096)
-		{
-			s_nDemXoay = 0;
-			FILE* fKt = fopen("bot.log", "rb");
-			if (fKt)
-			{
-				fseek(fKt, 0, SEEK_END);
-				long lCo = ftell(fKt);
-				fclose(fKt);
-				if (lCo > 256L * 1024L * 1024L)
-				{
-					remove("bot.log.1");
-					rename("bot.log", "bot.log.1");
-				}
-			}
-		}
+		s_pTep = fopen("bot.log", "a");
+		if (!s_pTep)
+			return;
+		fseek(s_pTep, 0, SEEK_END);
+		s_lCo = ftell(s_pTep);	// chi mot lan luc mo
 	}
 
-	FILE* f = fopen("bot.log", "a");
-	if (!f)
-		return;
+	FILE* f = s_pTep;
+	int nGhi = 0;
 	time_t tNow = time(NULL);
 	struct tm* pT = localtime(&tNow);
 	if (pT)
-		fprintf(f, "[%02d/%02d %02d:%02d:%02d] %s",
+		nGhi = fprintf(f, "[%02d/%02d %02d:%02d:%02d] %s",
 			  pT->tm_mday, pT->tm_mon + 1, pT->tm_hour, pT->tm_min, pT->tm_sec, szBuf);
 	else
-		fprintf(f, "%s", szBuf);
-	fclose(f);
+		nGhi = fprintf(f, "%s", szBuf);
+	if (nGhi > 0)
+		s_lCo += nGhi;
+
+	const DWORD dwNay = GetTickCount();
+	++s_nTuFlush;
+	if (s_nEpFlush || s_nTuFlush >= 50 || (DWORD)(dwNay - s_dwFlush) >= 500)
+	{
+		fflush(f);
+		s_nTuFlush = 0;
+		s_dwFlush = dwNay;
+	}
+
+	// Xoay tep khi qua 256 MB: PHAI dong truoc khi rename (Windows khoa tep dang mo).
+	// Giu lai duoc mot doi (bot.log.1), mat ban cu nhat.
+	if (s_lCo > 256L * 1024L * 1024L)
+	{
+		fclose(s_pTep);
+		s_pTep = NULL;
+		s_lCo = 0;
+		s_nTuFlush = 0;
+		remove("bot.log.1");
+		rename("bot.log", "bot.log.1");
+	}
 }
 
 static unsigned long pb_NextIdentity()

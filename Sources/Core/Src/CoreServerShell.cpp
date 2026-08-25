@@ -6,6 +6,7 @@
 *****************************************************************************************/
 #include "KCore.h"
 #include "CoreServerShell.h"
+#include "KPerfTick.h"	// [PerfLog 24/08] do thoi gian tung giai doan trong tick
 #include "KThread.h"
 #include "KPlayer.h"
 #include "KItemList.h"
@@ -1148,6 +1149,10 @@ int CoreServerShell::OnShutdown()
 int CoreServerShell::Breathe()
 {
 #ifdef _SERVER
+	g_PerfFrame(PlayerSet.GetOnlinePlayerCount());	// [PerfLog] chot khung TRUOC (dung so lieu tick vua xong)
+#endif
+	PERF_SCOPE(PERF_TICK);
+#ifdef _SERVER
 	// Rat re: chi doc mot bien dem, va 30 giay moi ghi nhat ky mot lan khi
 	// hang doi ghi nen phinh qua nua. KHONG cham MySQL o day.
 	g_MySQLDB.Tick();
@@ -1155,6 +1160,7 @@ int CoreServerShell::Breathe()
 
 	if (pTimeScript)
 	{
+		PERF_SCOPE(PERF_SCRIPT_TIME);
 		if (!(g_SubWorldSet.GetGameTime() % GAME_FPS))
 		{
 			SYSTEMTIME aSysTime;
@@ -1169,10 +1175,13 @@ int CoreServerShell::Breathe()
 		}
 	}
 
-	KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
-	KJx2DeferredExec_Breathe();	// WLLS: hang doi "dw/dwf" hoan 1 tick (lien dau)
-	KJx2ScriptTimer_Breathe();	// [PORT5 23/08] AddTimer/DelTimer JX2 (bairenleitai/tongcastle)
-	KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
+	{
+		PERF_SCOPE(PERF_GLBMISSION);	// [PerfLog] 4 nhip timer/mission
+		KJx2GlbMission_Breathe();	// DOT E: nhip timer GLOBAL mission (cong thanh 5')
+		KJx2DeferredExec_Breathe();	// WLLS: hang doi "dw/dwf" hoan 1 tick (lien dau)
+		KJx2ScriptTimer_Breathe();	// [PORT5 23/08] AddTimer/DelTimer JX2 (bairenleitai/tongcastle)
+		KJx2CityWar_Breathe();	// DOT E (E3): mot lan sau boot - ghi chu thanh/thue vao KSubWorld
+	}
 
 	// ---- [SvPerf] nhiet ke KHUNG SERVER (chu game 18/08: "1000 bot rat lag,
 	// can gan log xem loi do dau"). [BotPerf] chi do PB_Breathe (~9%/loi) nen
@@ -1190,9 +1199,9 @@ int CoreServerShell::Breathe()
 		QueryPerformanceCounter(&t1);
 		PB_Breathe();	// Bot KPlayer that: rut hang doi sinh + het han cho
 		QueryPerformanceCounter(&t2);
-		g_SubWorldSet.MessageLoop();
+		{ PERF_SCOPE(PERF_SW_MSGLOOP);  g_SubWorldSet.MessageLoop(); }
 		QueryPerformanceCounter(&t3);
-		g_SubWorldSet.MainLoop();
+		{ PERF_SCOPE(PERF_SW_MAINLOOP); g_SubWorldSet.MainLoop(); }
 		QueryPerformanceCounter(&t4);
 
 		s_tSC   += t1.QuadPart - t0.QuadPart;
@@ -1214,7 +1223,7 @@ int CoreServerShell::Breathe()
 			s_dwSvMoc = dwNow;
 		}
 	}
-	g_BauCua.run();
+	{ PERF_SCOPE(PERF_BAUCUA); g_BauCua.run(); }
 	return true;
 }
 

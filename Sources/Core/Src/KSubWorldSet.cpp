@@ -10,6 +10,7 @@
 #include "KNpcTemplate.h"
 #include "KPlayerSet.h"
 #include "KPlayer.h"
+#include "KPerfTick.h"	// [PerfLog 24/08] do thoi gian tung giai doan
 #include <thread>
 #include <vector>
 #include <chrono>
@@ -83,7 +84,7 @@ BOOL KSubWorldSet::Load(LPSTR szFileName)//edit by phong kieu Load Maps LoadMaps
 }
 
 int nActiveRegionCount;
-extern ThreadPool pool;
+int nActiveNpcCount;	// [PerfLog 24/08] so NPC nam trong cac region hoat dong
 
 void KSubWorldSet::MainLoop()
 {
@@ -101,32 +102,33 @@ void KSubWorldSet::MainLoop()
 //		g_GlobalMissionArray.Activate();
 #endif
 	nActiveRegionCount = 0;
+	nActiveNpcCount = 0;
 	
 
-	std::atomic<int> activeSubworlds(0);
-	auto start = std::chrono::high_resolution_clock::now();
-	for (int i = 0; i < MAX_SUBWORLD; i++)
+	// [PerfLog 24/08] Thay doan do chrono cu (bi comment nen khong ai doc duoc)
+	// bang bo dem PerfTick: co max/p95/dem tick tre, bat tat bang config.ini [PerfLog].
+	// Bo luon bien chet "activeSubworlds" + vong cho da luong bi bo do:
+	// SubWorld[i].Activate() dung chung Npc[]/Player[] toan cuc KHONG co khoa
+	// (KNpc.h:878, KPlayer.h:1101) nen KHONG duoc chay song song.
 	{
-		if (SubWorld[i].m_SubWorldID >= 0)
+		PERF_SCOPE(PERF_SW_ACTIVATE);
+		for (int i = 0; i < MAX_SUBWORLD; i++)
 		{
-			SubWorld[i].Activate();
+			if (SubWorld[i].m_SubWorldID >= 0)
+			{
+				SubWorld[i].Activate();
 #ifndef _SERVER
-			NpcSet.CheckBalance();
+				NpcSet.CheckBalance();
 #endif
+			}
 		}
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-//	if (duration > 10000)
-	//	printf("SubWorlds Activate Time: %lld microseconds\n", duration);
-	// Wait until all tasks are done
-	//while (activeSubworlds > 0)
-	//	std::this_thread::yield();
 
 //	if ((m_nLoopRate % 100) == 0)
 //		printf("Region:%d:%d\n", m_nLoopRate, nActiveRegionCount);
 #ifdef _SERVER
-	PlayerSet.AutoSave();
+	{ PERF_SCOPE(PERF_AUTOSAVE); PlayerSet.AutoSave(); }
+	g_PerfCount(nActiveRegionCount, nActiveNpcCount);	// [PerfLog] khoi luong tick nay
 #endif
 }
 

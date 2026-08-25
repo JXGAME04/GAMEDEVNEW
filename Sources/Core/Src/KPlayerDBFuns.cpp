@@ -1119,7 +1119,16 @@ int	KPlayer::SavePlayerTaskList(BYTE * pRoleBuffer)
 	while(pNode)
 	{
 		if (n >= TASKVALUE_MAXWAYPOINT_COUNT) break;
-		if (pNode->m_nIndex == 0) continue;
+		// [24/08] VA LOI TREO CUNG MAY CHU: 'continue' o day KHONG dich con tro,
+		// nen chi can MOT nut co m_nIndex == 0 la vong lap chay VO HAN - ngay trong
+		// duong luu nhan vat, tren luong chinh => GameServer dung im, khong sap,
+		// khong ghi log gi. Vong tram xe ngay ben tren khong co nhanh continue nay
+		// nen khong dinh loi.
+		if (pNode->m_nIndex == 0)
+		{
+			pNode = (KIndexNode*)pNode->GetNext();
+			continue;
+		}
 		m_cTask.nSave[TASKVALUE_SAVEWAYPOINT_BEGIN + n] = pNode->m_nIndex;
 		n++;
 		pNode = (KIndexNode*)pNode->GetNext();

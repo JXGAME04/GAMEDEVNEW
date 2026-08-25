@@ -1075,6 +1075,22 @@ int KSubWorld::FindFreeRegion(int nX, int nY)
 
 extern int nActiveRegionCount;
 
+#ifdef _SERVER
+// [24/08] Bo vong quet region cua nhung ban do dang TRONG (xem chu thich trong
+// KSubWorld::Activate). Dung mang static o pham vi tep - KHONG them truong vao
+// lop KSubWorld, vi doi bo cuc lop la doi ABI qua ranh gioi CoreClient.dll <->
+// Game.exe (Gate: cam dung cham bo cuc struct).
+static int s_nRegionNgu[MAX_SUBWORLD] = { 0 };
+#define SUBWORLD_KHUNG_NGU	9	// 9 khung = 0,5 giay o 18 khung/giay
+
+static void SubWorld_DanhThucQuetRegion(const KSubWorld* pSubWorld)
+{
+	const int nIdx = (int)(pSubWorld - SubWorld);
+	if (nIdx >= 0 && nIdx < MAX_SUBWORLD)
+		s_nRegionNgu[nIdx] = 0;
+}
+#endif
+
 void KSubWorld::Activate()
 {
 	if (m_SubWorldID < 0)
@@ -1086,6 +1102,37 @@ void KSubWorld::Activate()
 	NpcSet.ClearActivateFlagOfAllNpc();
 #endif
 
+#ifdef _SERVER
+	// [24/08] ~909 ban do duoc nap san, moi ban do ~370-500 region => quet het
+	// la ~334.000 lan doc m_nActive MOI KHUNG (~6 trieu lan/giay), moi lan nhay
+	// qua mot KRegion > 6 KB nen truot cache. Ban do dang TRONG thi toan bo
+	// region deu IsActive()==0, quet chi de nhan ve 0 - bo di khong doi hanh vi.
+	// Ngu toi da 0,5 giay roi TU quet lai (luoi an toan), va duoc danh thuc ngay
+	// khi co nguoi vao map qua KSubWorld::AddPlayer - diem DUY NHAT lam m_nActive
+	// tang (doan tang trong PlayerChangeRegion nam trong khoi chu thich /* */).
+	const int nIdxSubWorld = (int)(this - SubWorld);
+	int* pNgu = (nIdxSubWorld >= 0 && nIdxSubWorld < MAX_SUBWORLD)
+		? &s_nRegionNgu[nIdxSubWorld] : NULL;
+	if (pNgu && *pNgu > 0)
+	{
+		(*pNgu)--;	// ban do trong: bo qua vong quet khung nay
+	}
+	else
+	{
+		int nCoActive = 0;
+		for (int i = 0; i < m_nTotalRegion; i++)
+		{
+			if (m_Region[i].IsActive())
+			{
+				m_Region[i].Activate();
+				nActiveRegionCount++;
+				nCoActive++;
+			}
+		}
+		if (pNgu && nCoActive == 0)
+			*pNgu = SUBWORLD_KHUNG_NGU;
+	}
+#else
 	for (int i = 0; i < m_nTotalRegion; i++)
 	{
 		if (m_Region[i].IsActive())
@@ -1095,6 +1142,7 @@ void KSubWorld::Activate()
 			nActiveRegionCount++;
 		}
 	}
+#endif
 
 #ifdef _SERVER
 	KIndexNode* pNode = (KIndexNode *)m_NoneRegionNpcList.GetHead();
@@ -2245,7 +2293,13 @@ void KSubWorld::ProcessMsg(KWorldMsgNode *pMsg)
 			MissleSet.Remove(pMsg->m_nParam[0]);
 		}
 #else
-		SubWorld[Missle[pMsg->m_nParam[0]].m_nSubWorldId].m_Region[Missle[pMsg->m_nParam[0]].m_nRegionId].RemoveMissle(pMsg->m_nParam[0]);
+		// FIX 24/08: nhanh SERVER thieu chan m_nRegionId >= 0 ma nhanh CLIENT ngay tren da co.
+		// Tu 24/08 KMissleSet::Remove dat m_nRegionId = -1 sau khi tra bo dem, nen lan GWM_MISSLE_DEL
+		// THU HAI cho cung mot khe se roi vao day. Bo qua la dung: lan dau da go nut khoi danh sach roi.
+		// (KRegion::RemoveMissle khong dung 'this' nen m_Region[-1] chi la phep cong dia chi, khong
+		// doc/ghi ngoai mang - nhung van nen chan cho ro y.)
+		if (Missle[pMsg->m_nParam[0]].m_nRegionId >= 0)
+			SubWorld[Missle[pMsg->m_nParam[0]].m_nSubWorldId].m_Region[Missle[pMsg->m_nParam[0]].m_nRegionId].RemoveMissle(pMsg->m_nParam[0]);
 		MissleSet.Remove(pMsg->m_nParam[0]);
 #endif
 		break;
@@ -2710,6 +2764,9 @@ void KSubWorld::AddPlayer(int nRegion, int nIdx)
 	if (m_Region[nRegion].AddPlayer(nIdx))
 	{
 		m_Region[nRegion].m_nActive++;
+#ifdef _SERVER
+		SubWorld_DanhThucQuetRegion(this);	// [24/08] co nguoi vao: quet lai ngay
+#endif
 
 		for (int i = 0; i < 8; i++)
 		{
@@ -2882,7 +2939,12 @@ BOOL KSubWorld::CanPutObjBarrier(POINT pos)  // fix item rot ra ngoai map
 		if (!m_Region[nRegion].GetBarrier(nMapX, nMapY, nOffX, nOffY))
 			return TRUE;
 		else {
-			if (m_Region[nRegion].GetRef(nMapX, nMapY, obj_npc) || m_Region[nRegion].GetRef(nMapX, nMapY, obj_missle))
+			// FIX 24/08: BO ve "|| GetRef(obj_missle)". Truoc khi va KRegion::AddRef (24/08), bo dem
+			// dan luon = 0 nen ve nay CHUA BAO GIO chay; nay no co gia tri that. Dan BAY QUA duoc
+			// tuong, no KHONG phai bang chung o do di duoc - de nguyen thi tia quet cua GetFreeObjPos
+			// xuyen qua tuong va do roi ra sau tuong (dung trieu chung ham nay sinh ra de chua).
+			// NPC thi khac: NPC dung duoc tren o nghia la bang vat can sai o do.
+			if (m_Region[nRegion].GetRef(nMapX, nMapY, obj_npc))
 				return TRUE;
 		}
 	}
@@ -3209,22 +3271,22 @@ void KSubWorld::SetTrap(DWORD dwTrapId, int nMpsX, int nMpsY, int nRange)
 	{
 		if (nMapX - i >= 0)
 			m_Region[nRegion].SetTrap(dwTrapId, nMapX - i, nMapY);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_LEFT] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_LEFT]].SetTrap(dwTrapId, REGION_GRID_WIDTH - i, nMapY);
 		
 		if (nMapX + i < REGION_GRID_WIDTH)
 			m_Region[nRegion].SetTrap(dwTrapId, nMapX + i, nMapY);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_RIGHT] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_RIGHT]].SetTrap(dwTrapId, i-1, nMapY);
 		
 		if (nMapY - i >= 0)
 			m_Region[nRegion].SetTrap(dwTrapId, nMapX, nMapY - i);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_UP] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_UP]].SetTrap(dwTrapId, nMapX, REGION_GRID_HEIGHT - i);
 		
 		if (nMapY + i < REGION_GRID_HEIGHT)
 			m_Region[nRegion].SetTrap(dwTrapId, nMapX, nMapY + i);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_DOWN] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_DOWN]].SetTrap(dwTrapId, nMapX, i-1);
 	}
 }
@@ -3239,27 +3301,28 @@ void KSubWorld::SetObstacle(long value, int nMpsX, int nMpsY, int nRange) //#Set
 	if (nMapX < 0 || nMapY < 0 || nMapX >= REGION_GRID_WIDTH || nMapY >= REGION_GRID_HEIGHT)
 		return;
 	
-	m_Region[nRegion].SetTrap(value, nMapX, nMapY);
+	// FIX 24/08: o TAM truoc goi SetTrap => ghi vao bang BAY thay vi bang VAT CAN.
+	m_Region[nRegion].SetObstacle(value, m_SubWorldID, nMapX, nMapY);
 	for (int i = 1; i <= nRange; i++)
 	{
 		if (nMapX - i >= 0)
 			m_Region[nRegion].SetObstacle(value, m_SubWorldID, nMapX - i, nMapY);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_LEFT] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_LEFT]].SetObstacle(value, m_SubWorldID, REGION_GRID_WIDTH - i, nMapY);
 		
 		if (nMapX + i < REGION_GRID_WIDTH)
 			m_Region[nRegion].SetObstacle(value, m_SubWorldID, nMapX + i, nMapY);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_RIGHT] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_RIGHT]].SetObstacle(value, m_SubWorldID, i-1, nMapY);
 		
 		if (nMapY - i >= 0)
 			m_Region[nRegion].SetObstacle(value, m_SubWorldID, nMapX, nMapY - i);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_UP] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_UP]].SetObstacle(value, m_SubWorldID, nMapX, REGION_GRID_HEIGHT - i);
 		
 		if (nMapY + i < REGION_GRID_HEIGHT)
 			m_Region[nRegion].SetObstacle(value, m_SubWorldID, nMapX, nMapY + i);
-		else
+		else if (m_Region[nRegion].m_nConnectRegion[DIR_DOWN] >= 0)	// FIX 24/08: chan m_Region[-1] o ria ban do
 			m_Region[m_Region[nRegion].m_nConnectRegion[DIR_DOWN]].SetObstacle(value, m_SubWorldID, nMapX, i-1);
 	}
 }

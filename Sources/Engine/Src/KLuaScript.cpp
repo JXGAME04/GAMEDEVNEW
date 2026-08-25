@@ -712,6 +712,12 @@ void KLuaScript::WriteLogScriptErrorFile(const char* szString)
 	int len = 0;
 	sprintf_s(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
 	FILE* pFile = fopen("ScriptError.log", "a");
+	// [24/08] fopen co the tra NULL (o dia day, tep bi khoa, thu muc chi doc).
+	// Truoc day fprintf(NULL,...) roi fclose(NULL) => SAP CA GameServer, ma duong
+	// nay lai chay DUNG LUC dang co loi script (tuc luc dong nguoi / su kien).
+	// Ham song sinh LuaGameAlert (Core/Src/ScriptFuns.cpp:2468) da kiem dung.
+	if (!pFile)
+		return;
 	fprintf(pFile, "%s \t %s\n", buff ,szString);
 	fclose(pFile);
 }

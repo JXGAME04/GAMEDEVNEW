@@ -736,6 +736,7 @@ static int   s_nAutoLogDrop = 0;	// so dong bi bo vi vuot tran
 static FILE* s_pAutoLogFile = NULL;	// tep log giu mo san (tranh fopen moi dong)
 static int   s_nAutoLogSince = 0;	// so dong ke tu lan flush truoc
 static UINT  s_uAutoLogFlush = 0;	// moc flush gan nhat
+static long  s_lAutoLogSize = 0;	// [24/08] kich thuoc cong don (bo ftell moi dong)
 static char  s_szAutoLogName[32] = "";	// (server) chi ghi don danh lien quan nhan vat nay
 
 void g_AutoLogSet(int nOn)
@@ -816,6 +817,8 @@ void g_AutoLog(const char* szFmt, ...)
 			s_nAutoLog = 0;	// khong mo duoc tep -> tat han, khoi thu lai moi dong
 			return;
 		}
+		fseek(s_pAutoLogFile, 0, SEEK_END);
+		s_lAutoLogSize = ftell(s_pAutoLogFile);	// [24/08] chi mot lan luc mo
 	}
 	FILE* pLog = s_pAutoLogFile;
 	if (s_nAutoLogDrop > 0)
@@ -824,8 +827,13 @@ void g_AutoLog(const char* szFmt, ...)
 			uNow, (unsigned int)GetCurrentProcessId(), s_nAutoLogDrop);
 		s_nAutoLogDrop = 0;
 	}
-	fprintf(pLog, "t=%u pid=%u %s\n", uNow, (unsigned int)GetCurrentProcessId(), szLine);
-	long nSize = ftell(pLog);
+	int nWrote = fprintf(pLog, "t=%u pid=%u %s\n", uNow, (unsigned int)GetCurrentProcessId(), szLine);
+	// [24/08] cong don thay cho ftell() moi dong (xem dau ham): ftell lay khoa
+	// CRT cua stream va dong bo vi tri voi he dieu hanh - vo ich khi chi can
+	// biet luc nao vuot 64 MB. fprintf o tren da tra ve so ky tu that su ghi.
+	if (nWrote > 0)
+		s_lAutoLogSize += nWrote;
+	long nSize = s_lAutoLogSize;
 	++s_nAutoLogSince;
 	if (s_nAutoLogSince >= 50 || (DWORD)(uNow - s_uAutoLogFlush) >= 500)
 	{
@@ -837,6 +845,7 @@ void g_AutoLog(const char* szFmt, ...)
 	{
 		fclose(pLog);
 		s_pAutoLogFile = NULL;
+		s_lAutoLogSize = 0;
 #ifdef _SERVER
 		remove("jx_auto_server.log.1");
 		rename("jx_auto_server.log", "jx_auto_server.log.1");

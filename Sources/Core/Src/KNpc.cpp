@@ -145,6 +145,10 @@ void KNpc::Init()
 	m_Camp = camp_free;
 	m_CurrentCamp = camp_free;
 	m_Doing = do_stand;
+	// FIX 24/08: Init() (duoc KNpc::Remove goi) KHONG xoa m_Command. Sau ban va giu lenh do_skill o
+	// khung cuoi hoat anh, khe NPC co the duoc thu hoi khi con mot lenh treo => nhan vat MOI nap vao
+	// khe do se thi hanh lenh cua nguoi truoc (nang nhat: DoSkill -> SendCommand(do_run) toi toa do cu).
+	m_Command.CmdKind = do_none;
 	m_Height = 0;
 	m_Frames.nCurrentFrame = 0;
 	m_Frames.nTotalFrame = 0;
@@ -449,7 +453,7 @@ void KNpc::SetCurrentCamp(int nCamp)
 	m_CurrentCamp = nCamp;
 
 #ifdef _SERVER
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -485,7 +489,7 @@ void KNpc::SetCamp(int nCamp)
 {
 	m_Camp = nCamp;
 #ifdef _SERVER
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -521,7 +525,7 @@ void KNpc::RestoreCurrentCamp()
 {
 	m_CurrentCamp = m_Camp;
 #ifdef _SERVER
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -601,7 +605,6 @@ void KNpc::Activate()
 #ifdef _SERVER
 	this->m_cDeathCalcExp.Active();
 #endif
-	int Map = SubWorld[m_SubWorldIndex].m_SubWorldID;
 
 /*	if (Map == 220 && Player[CLIENT_PLAYER_INDEX].m_nIndex != m_Index && Npc[m_Index].m_Kind == kind_player)
 	{
@@ -615,6 +618,10 @@ void KNpc::Activate()
 if (m_Kind == kind_player)  // míi thªm tõ src mobile
  {
 #ifdef _SERVER //check PUBG out range
+	// [24/08] Doc SubWorld[] NGAY TAI DAY thay vi o dau ham: truoc kia MOI NPC
+	// (ke ca quai, chiem da so) deu doc mot o trong mang KSubWorld rat lon roi
+	// vut di, vi 'Map' chi duoc dung trong dung nhanh nay.
+	const int Map = SubWorld[m_SubWorldIndex].m_SubWorldID;
 	if (Map == PUBG_MAP) {
 		if (g_MapHandler.getCurrentRadius() > 0 && g_MapHandler.getCurrentRadius() < g_MapHandler.getDistanceToCenter(m_DesX, m_DesY)) {
 			//buff skill tru mau
@@ -963,6 +970,15 @@ void KNpc::ProcCommand(int nAI)
 				AUTOLOG_IDX(m_Index, "[S3-CMD-SWALLOW] npc=%d plr=%d cmd=%d skill=%d p=(%d,%d) doing=%d procai=%d rgn=%d", m_Index, m_nPlayerIdx, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, m_ProcessAI, m_RegionIndex);
 			if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */ )
 				m_ProcessAI = 1;
+			// FIX 24/08: ProcCommand chay TRUOC ProcStatus (KNpc.cpp:598-599). Dung khung ma OnSkill
+			// ket thuc hoat anh (WaitForFrame tra TRUE roi DoStand + m_ProcessAI=1) thi lenh vua toi
+			// bi dong cuoi ham xoa mat, phai cho client gui lai ~1 khung. Giu lai DUNG khung do.
+			// Bat buoc co nTotalFrame > 0: neu = 0 thi OnSkill khong bao gio DoStand => lenh ket vinh vien.
+			if (IsPlayer() && m_Command.CmdKind == do_skill && 0 == m_ProcessAI &&
+				(m_Doing == do_attack || m_Doing == do_magic) &&
+				m_Frames.nTotalFrame > 0 &&
+				m_Frames.nCurrentFrame + 1 >= m_Frames.nTotalFrame)
+				return;
 			break;
 		default:
 			break;
@@ -1070,7 +1086,7 @@ BOOL KNpc::ProcessState()
 				SkillCmd.nMpsX = -1;
 				SkillCmd.nMpsY = m_dwID;
 				SkillCmd.ProtocolType = s2c_castskilldirectly;
-				POINT	POff[8] = 
+				static const POINT	POff[8] = 
 				{
 					{0, 32},
 					{-16, 32},
@@ -1092,7 +1108,8 @@ BOOL KNpc::ProcessState()
 					CONREGION(i).BroadCast(&SkillCmd, sizeof(SkillCmd), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
 				}
 #endif				
-				KSkill * pOrdinSkill1 = (KSkill *) g_SkillManager.GetSkill(m_ActiveAuraID, nCurLevel);
+				KSkill * pOrdinSkill1 = pOrdinSkill;	// [24/08] tra dung con tro da lay o tren
+								// (cung m_ActiveAuraID + nCurLevel, GetSkill chi la tra bang)
 				int nChildSkillId = 0;
 				if (pOrdinSkill1)
 				{
@@ -1129,7 +1146,7 @@ BOOL KNpc::ProcessState()
 							SkillCmd.nMpsY = m_dwID;
 							SkillCmd.ProtocolType = s2c_castskilldirectly;
 
-							POINT	POff[8] = 
+							static const POINT	POff[8] = 
 							{
 								{0, 32},
 								{-16, 32},
@@ -1485,7 +1502,7 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	NetCommand.ProtocolType = (BYTE)s2c_npcdeath;
 	NetCommand.ID = m_dwID;
 	//
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -1700,7 +1717,7 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 
 	GetMpsPos(&NetCommand.nX, &NetCommand.nY);  // thªm míi tõ src mobile 
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -2245,7 +2262,7 @@ void KNpc::DoRun()
 	NetCommand.nMpsX = m_DesX;
 	NetCommand.nMpsY = m_DesY;
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -2350,7 +2367,7 @@ void KNpc::DoSit()
 	NetCommand.ProtocolType = (BYTE)s2c_npcsit;
 	NetCommand.ID = m_dwID;
 		
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -2491,7 +2508,7 @@ void KNpc::DoSkill(int nX, int nY)
 					m_DesX = nX;
 					m_DesY = nY;
 					
-					POINT	POff[8] = 
+					static const POINT	POff[8] = 
 					{
 						{0, 32},
 						{-16, 32},
@@ -2924,7 +2941,7 @@ void KNpc::DoWalk()
 	NetCommand.nMpsX = m_DesX;
 	NetCommand.nMpsY = m_DesY;
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -2980,7 +2997,7 @@ void KNpc::DoPlayerTalk(char * szTalk)
 	strcpy((char*)(pNetCommand + 6), szTalk);
 	pNetCommand[nTalkLen + 6 ] = '\0';
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -3188,7 +3205,7 @@ void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, 
 		if (m_SubWorldIndex >= 0 && m_SubWorldIndex < MAX_SUBWORLD) {
 			if (m_RegionIndex >= 0 && m_RegionIndex < SubWorld[m_SubWorldIndex].m_nTotalRegion) {
 				CURREGION.BroadCast(&damInfo, sizeof(damInfo), nMaxCount, m_MapX, m_MapY);
-				POINT	POff[8] =
+				static const POINT	POff[8] =
 				{
 					{0, 32},
 					{-16, 32},
@@ -5101,7 +5118,7 @@ void KNpc::Cast(int nSkillId, int nSkillLevel)
 		SkillCmd.nMpsY = m_dwID;
 		SkillCmd.ProtocolType = s2c_castskilldirectly;
 		
-		POINT	POff[8] = 
+		static const POINT	POff[8] = 
 		{
 			{0, 32},
 			{-16, 32},
@@ -5173,7 +5190,7 @@ void KNpc::DoJump()
 	NetCommand.nMpsX = m_DesX;
 	NetCommand.nMpsY = m_DesY;
 		
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -5751,7 +5768,7 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	NpcSync.MissionGroup		= m_nMissionGroup;//#NpcMissionGroup
 	memcpy(NpcSync.StateInfo, m_btStateInfo, sizeof(BYTE) * MAX_SKILL_STATE);
 	NpcSync.NpcEnchant			= m_cGold.GetGoldType();
-	POINT	POff[8] = 	//MAX_PLAYER
+	static const POINT	POff[8] = 	//MAX_PLAYER
 	{
 		{0, 32},
 		{-16, 32},
@@ -5921,7 +5938,7 @@ void KNpc::BroadCastRevive(int nType)
 	NpcReviveSync.ID = m_dwID;
 	NpcReviveSync.Type = (BYTE)nType;
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -8664,7 +8681,7 @@ void	KNpc::SendDataToNearRegion(void* pBuffer, DWORD dwSize)
 	if (m_RegionIndex < 0)
 		return;
 
-	POINT	POff[8] = 
+	static const POINT	POff[8] = 
 	{
 		{0, 32},
 		{-16, 32},
@@ -11344,7 +11361,7 @@ void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 	}
 	
 		
-	const char* FactionName[] = {
+	static const char* const FactionName[] = {
 		"ThiÕu L©m",
 		"Thiªn V­¬ng Bang",
 		"§­êng M«n",

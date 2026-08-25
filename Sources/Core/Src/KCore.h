@@ -239,69 +239,14 @@ extern IClient* g_pClient;
 //extern BOOL	g_bPingReply;
 #endif
 
-class ThreadPool {
-public:
-	ThreadPool(size_t threadCount) {
-		stop = false;
-		for (size_t i = 0; i < threadCount; ++i) {
-			workers.emplace_back([this]() {
-				while (true) {
-					std::function<void()> task;
-
-					{
-						std::unique_lock<std::mutex> lock(queueMutex);
-						condition.wait(lock, [this]() { return stop || !tasks.empty(); });
-
-						if (stop && tasks.empty())
-							return;
-
-						task = std::move(tasks.front());
-						tasks.pop();
-					}
-
-					task();
-				}
-				});
-		}
-	}
-
-	void enqueue(std::function<void()> task) {
-		{
-			std::unique_lock<std::mutex> lock(queueMutex);
-			tasks.push(std::move(task));
-		}
-		condition.notify_one();
-	}
-
-	void wait() {
-		while (true) {
-			std::unique_lock<std::mutex> lock(queueMutex);
-			if (tasks.empty())
-				break;
-			lock.unlock();
-			std::this_thread::yield();
-		}
-	}
-
-	~ThreadPool() {
-		{
-			std::unique_lock<std::mutex> lock(queueMutex);
-			stop = true;
-		}
-		condition.notify_all();
-		for (std::thread& worker : workers)
-			worker.join();
-	}
-
-private:
-	std::vector<std::thread> workers;
-	std::queue<std::function<void()>> tasks;
-	std::mutex queueMutex;
-	std::condition_variable condition;
-	bool stop;
-};
-
-const int THREAD_COUNT = std::thread::hardware_concurrency() > 0 ? std::thread::hardware_concurrency()/2 : 4; // Default to 4 if hardware concurrency is not available
-static ThreadPool pool(THREAD_COUNT);
+// [24/08] DA BO ThreadPool + THREAD_COUNT + "static ThreadPool pool".
+// Ly do: khong mot lenh pool.enqueue()/pool.wait() nao ton tai trong toan bo ma
+// nguon, nhung ctor van sinh hardware_concurrency()/2 luong ngay luc nap DLL.
+// Do that tren may chay (24 loi): 13 luong trong CoreServer.dll, 0.00s CPU/12s
+// - luong rac. Nguy hiem hon: vi "static" nam trong HEADER nen moi .cpp include
+// KCore.h (84 tep) deu co the sinh MOT pool rieng neu co ai do bat dau dung no.
+// Muon da luong that thi xem KPerfTick.h: phai do TRUOC, va chi duoc day ra
+// luong phu nhung viec KHONG cham Npc[]/Player[]/Item[]/SubWorld[] (cac mang
+// toan cuc nay khong he co khoa - xem KNpc.h:878, KPlayer.h:1101, KItem.h:460).
 //---------------------------------------------------------------------------
 #endif

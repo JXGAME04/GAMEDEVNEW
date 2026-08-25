@@ -912,11 +912,15 @@ int KNpcAI::GetNearestNpc(int nRelation)
     int nMapX = Npc[m_nIndex].m_MapX;
     int nMapY = Npc[m_nIndex].m_MapY;
 
+    // [24/08] nRangeX*nRangeX la hang so trong ca hai vong va i*i chi doi theo i;
+    // truoc day ca hai duoc tinh lai o TUNG O cua vung quet vuong.
+    const int nR2 = nRangeX * nRangeX;
     for (int i = 0; i < nRangeX; i++)
     {
+        const int nI2 = i * i;
         for (int j = 0; j < nRangeY; j++)
         {
-            if ((i * i + j * j) > nRangeX * nRangeX)
+            if ((nI2 + j * j) > nR2)
                 continue;
 
             for (int dx = -1; dx <= 1; dx += 2)
@@ -1015,12 +1019,13 @@ int KNpcAI::GetNpcNumber(int nRelation)
 	nRangeY = nRangeY / SubWorld[nSubWorld].m_nCellHeight;
 
 	// 检查视野范围内的格子里的NPC
+	const int nR2 = nRangeX * nRangeX;	// [24/08] hang so trong ca hai vong
 	for (int i = -nRangeX; i < nRangeX; i++)
 	{
 		for (int j = -nRangeY; j < nRangeY; j++)
 		{
 			// 去掉边角几个格子，保证视野是椭圆形
-			if ((i * i + j * j) > nRangeX * nRangeX)
+			if ((i * i + j * j) > nR2)
 				continue;
 
 			// 确定目标格子实际的REGION和坐标确定

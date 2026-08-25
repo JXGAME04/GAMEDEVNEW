@@ -8092,10 +8092,21 @@ static int LD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uLDNext = uCurTime + 1200;
 					return 1;
 				}
+				nOpt = DT_FindAns(apAns, nAns, LDM_OPT_LAP);
+				if (nOpt >= 0 && pAp->bLDTuLap)
+				{
+					// mylg bao CHUA co chien doi -> lap truoc (mach LAPNHOM + hop
+					// nhap ten co san), them ban dien o vong quay lai sau
+					DT_Answer(nPlayerIdx, nOpt);
+					ea.nLDStep = 0;
+					ea.uLDNext = uCurTime + 1200;
+					return 1;
+				}
 				if (ea.nLDStep == 2)
 				{
-					// da vao mylg ma khong co dong them (da du nguoi / ban dien
-					// dang o chien doi khac) - thoi, di bao danh luon
+					// da vao mylg ma khong co dong them duoc (da du nguoi / ban dien
+					// dang o chien doi khac / minh khong phai doi truong chien doi)
+					// - thoi, di bao danh luon
 					LD_Huy(nPlayerIdx, nAns);
 					ea.nLDPtDone = 1;
 					ea.nLDStep = 0;
@@ -8127,6 +8138,7 @@ static int LD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				if (nOpt >= 0)
 				{
 					DT_Answer(nPlayerIdx, nOpt);	// vao mylg de them doi huu
+					ea.nLDStep = 2;					// danh dau: thoai ke tiep la mylg
 					ea.uLDNext = uCurTime + 1200;
 					return 1;
 				}

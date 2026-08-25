@@ -690,12 +690,25 @@ void KRegion::Activate()
     KIndexNode *pTmpNode = NULL;
 	const int kNpcSyncChunkSize = 5;  // Number of NPCs to sync per frame
 	int npcCount = m_NpcList.GetNodeCount();
+#ifdef _SERVER
+	extern int nActiveNpcCount;	// [PerfLog 24/08] khoi luong tick (KSubWorldSet.cpp)
+	nActiveNpcCount += npcCount;
+#endif
 
     int nCounter = 0;
 
     pNode = (KIndexNode *)m_NpcList.GetHead();
 	int currentIndex = 0;
 	int synced = 0;
+#ifdef _SERVER
+	// [24/08] Tinh san 5 chi so can dong bo. Truoc day phep '%' (idiv, ~20-40
+	// chu ky, khong pipeline duoc) chay cho MOI NPC MOI KHUNG, du ca vong chi
+	// dung toi da 5 gia tri: m_nNpcSyncCursor khong doi trong vong (chi cap nhat
+	// sau vong) va npcCount lay mot lan o tren.
+	int aSyncIdx[kNpcSyncChunkSize];
+	for (int k = 0; k < kNpcSyncChunkSize; k++)
+		aSyncIdx[k] = (npcCount > 0) ? ((m_nNpcSyncCursor + k) % npcCount) : -1;
+#endif
 
 	while (pNode)
 	{
@@ -715,21 +728,18 @@ void KRegion::Activate()
 		if (nNpcIdx > 0 && nNpcIdx < MAX_NPC)
 		{
 #ifdef _SERVER
-			if ((nCounter == m_nNpcSyncCounter / 2) && (m_nNpcSyncCounter & 1))
+			// [24/08] DA BO nhanh dong bo cu:
+			//     if ((nCounter == m_nNpcSyncCounter / 2) && (m_nNpcSyncCounter & 1))
+			// m_nNpcSyncCounter CHI duoc gan 0 trong ctor (KRegion.cpp:35) va KHONG
+			// o dau tang no (grep toan cay: dung 3 lan - khai bao, gan 0, doc o day),
+			// nen '(0 & 1)' = 0 => dieu kien LUON SAI, khoi NormalSync do chua tung
+			// chay. Doi chieu: m_nObjSyncCounter thi CO duoc tang - chung to day dung
+			// la ma bo quen chu khong phai co y.
+			// Viec dong bo that su van do vong 'chunk' ngay duoi dam nhiem.
+			if (synced < kNpcSyncChunkSize && currentIndex == aSyncIdx[synced])
 			{
 				Npc[nNpcIdx].NormalSync();
-			}
-			nCounter++;
-			// Do NormalSync() if this NPC is in current chunk
-			if (synced < kNpcSyncChunkSize)
-			{
-				// Calculate actual sync index using round robin logic
-				int syncIndex = (m_nNpcSyncCursor + synced) % npcCount;
-				if (currentIndex == syncIndex)
-				{
-					Npc[nNpcIdx].NormalSync();
-					synced++;
-				}
+				synced++;
 			}
 #endif
 			// Always activate
@@ -907,6 +917,7 @@ void KRegion::RemoveObj(int nIdx)
 		return;
 
 	KIndexNode *pNode = NULL;
+	BOOL bFound = FALSE;
 	
 	pNode = (KIndexNode *)m_ObjList.GetHead();
 	
@@ -916,12 +927,23 @@ void KRegion::RemoveObj(int nIdx)
 		{
 			pNode->Remove();
 			delete pNode;
+			bFound = TRUE;
 			break;
 		}
 		pNode = (KIndexNode *)pNode->GetNext();
 	}
 
-	if (Object[nIdx].m_nMapX > 0 && Object[nIdx].m_nMapY > 0)
+	// FIX 24/08 (di kem C3): CHI tra bo dem khi that su GO duoc nut khoi danh sach vung nay.
+	// KObj::Release() dat m_nMapX = m_nMapY = m_nRegionIdx = 0, nen lan RemoveObj THU HAI cho
+	// cung mot vat pham (GWM_OBJ_DEL gui 2 lan: nhat do o KPlayer.cpp:4963 + het han trong
+	// KObj::Activate cung mot khung) se DecRef NHAM vao o (0,0) cua region 0. Dieu kien "> 0"
+	// cu tinh co chan duoc chuyen do; sau khi doi thanh ">= 0" thi khong con gi chan nua.
+	if (!bFound)
+		return;
+
+	// FIX 24/08: AddObj dung ">= 0" (KRegion.cpp:896) con day dung "> 0" => vat pham o COT 0 hoac
+	// HANG 0 cua region duoc AddRef ma KHONG BAO GIO DecRef, bo dem ket o do vinh vien.
+	if (Object[nIdx].m_nMapX >= 0 && Object[nIdx].m_nMapY >= 0)
 	{
 		DecRef(Object[nIdx].m_nMapX, Object[nIdx].m_nMapY, obj_object);
 		if(Object[nIdx].m_nKind == Obj_Kind_Obstacle)
@@ -1107,8 +1129,8 @@ BOOL KRegion::AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 		pBuffer = m_pObstacleRef;
 		break;
 	case obj_missle:
-		pBuffer = m_pObjRef;
-		break;
+		pBuffer = m_pMslRef;	// FIX 24/08: truoc tro nham m_pObjRef (bang dem VAT PHAM) trong khi
+		break;			// GetRef(obj_missle) (KRegion.cpp:1082) lai doc m_pMslRef
 	default:
 		break;
 	}
@@ -1153,8 +1175,8 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 		pBuffer = m_pObstacleRef;
 		break;
 	case obj_missle:
-		pBuffer = m_pObjRef;
-		break;
+		pBuffer = m_pMslRef;	// FIX 24/08: truoc tro nham m_pObjRef (bang dem VAT PHAM) trong khi
+		break;			// GetRef(obj_missle) (KRegion.cpp:1082) lai doc m_pMslRef
 	default:
 		break;
 	}
