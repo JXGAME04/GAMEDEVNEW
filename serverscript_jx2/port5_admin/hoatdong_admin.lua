@@ -23,7 +23,7 @@ function HD_AdminMenu()
 	"7. BOT Tèng Kim: t¾t/HD_TK_Tat",
 	"8. N¹p l¹i CONFIG (khi kh«ng cã trËn ch¹y)/HD_ReloadCfg",
 	"9. Danh hiÖu & vßng s¸ng (Bang ChiÕn)/HD_TT_Menu",
-	"10. Test Tin Su - chan doan va go ket/HD_TS_Menu",
+	"10. Test TÝn Sø (chÈn ®o¸n + gì kÑt)/HD_TS_Menu",
 	"KÕt thóc ®èi tho¹i/no"})
 end
 
@@ -93,7 +93,7 @@ function HD_BR_Menu()
 end
 
 function HD_BR_TrangThai()
-	Msg2Player(format("Giê më %s | exp %d/%d phót (L«i Chñ +%d) | trÇn %d l­ît/ngµy | buff x2: %d%% ng­êi, mçi %d phót",
+	Msg2Player(format("Giê më %s, exp %d/%d phót (L«i Chñ +%d), trÇn %d l­ît/ngµy, buff x2: %d%% ng­êi, mçi %d phót",
 		HD_GioPhut(HD_CFG("BR_GIO_MO", 1200)), HD_CFG("BR_EXP_TICK", 1000000), HD_CFG("BR_PHUT_CHUKY_EXP", 5),
 		HD_CFG("BR_EXP_LOICHU", 2000000), HD_CFG("BR_TRAN_LUOT_NGAY", 50),
 		floor(HD_CFG("BR_TILE_BUFFX2", 0.2)*100), HD_CFG("BR_PHUT_COTHU", 30)))
@@ -383,45 +383,46 @@ end
 
 
 -- ================= 10) TEST TIN SU =================
--- Chan doan + go ket tai cho. Nguon tung thao tac ghi trong add_menu_tinsu.py.
--- Y nghia 1203: 0=chua nhan/da xong het, 10=da nhan chua bat dau, 20=dang lam,
--- 21=tam ngat (duoc phep 'Tiep tuc'), 25/30=hoan thanh cho tra.
+-- [25/08 v2] Tieng Viet co dau (TCVN3, bang ma tu kiem 4/4); BO '|' khoi tieu de -
+-- '|' la ky tu PHAN CACH option cua goi thoai (sUiAppendAnswer ScriptFuns.cpp:604,
+-- client tach KPlayer.cpp:7683/7717); co '|' trong noi dung la AnswerCount=0, mat het nut.
+-- Y nghia 1203: 0=chua nhan, 10=da nhan chua bat dau, 20=dang lam, 21=tam ngat, 25/30=xong.
 function HD_TS_Menu()
-	SayEx({"<color=yellow>Test Tin Su<color> - 1203="..nt_getTask(1203).." | RutVuKhi="..GetFightState().." (0 = khong danh duoc quai + khong the chet)",
-	"1. Xem trang thai chi tiet/HD_TS_Xem",
-	"2. Go ket: 20 sang 21 roi toi Dich Quan bam Tiep tuc/HD_TS_GoKet",
-	"3. Bat trang thai chien dau NGAY - test nhanh trong ai/HD_TS_BatFight",
-	"4. Huy sach nhiem vu Tin Su - nhu NPC/HD_TS_Huy",
-	"5. Den ai 3 Thien Bao Kho - map 395/HD_TS_DenAi",
-	"6. Ve Ba Lang Huyen - don trang thai nhu NPC/HD_TS_VeThanh",
-	"Ket thuc doi thoai/no"})
+	SayEx({"<color=yellow>Test TÝn Sø <color>- 1203="..nt_getTask(1203)..", rót vò khÝ="..GetFightState().." (0 = kh«ng ®¸nh ®­îc qu¸i, kh«ng thÓ chÕt)",
+	"1. Xem tr¹ng th¸i chi tiÕt".."/HD_TS_Xem",
+	"2. Gì kÑt: 20 sang 21, råi tíi DÞch Quan bÊm TiÕp tôc".."/HD_TS_GoKet",
+	"3. BËt tr¹ng th¸i chiÕn ®Êu NGAY (test nhanh trong ¶i)".."/HD_TS_BatFight",
+	"4. Hñy s¹ch nhiÖm vô TÝn Sø (nh­ NPC)".."/HD_TS_Huy",
+	"5. ®Õn ¶i 3 - Thiªn B¶o Khè (map 395)".."/HD_TS_DenAi",
+	"6. VÒ Ba L¨ng HuyÖn (dän tr¹ng th¸i nh­ NPC)".."/HD_TS_VeThanh",
+	"KÕt thóc ®èi tho¹i".."/no"})
 end
 
 function HD_TS_Xem()
-	Msg2Player(format("[TinSu] 1203=%d 1201=%d 1202=%d 1204=%d 1205=%d 1206=%d 1211=%d",
+	Msg2Player(format("[TÝn Sø] 1203=%d 1201=%d 1202=%d 1204=%d 1205=%d 1206=%d 1211=%d",
 		nt_getTask(1203), nt_getTask(1201), nt_getTask(1202), nt_getTask(1204),
 		nt_getTask(1205), nt_getTask(1206), nt_getTask(1211)))
 	local nMap, nX, nY = GetWorldPos()
-	Msg2Player(format("[TinSu] map=%d toado=(%d,%d) RutVuKhi=%d", nMap, nX, nY, GetFightState()))
+	Msg2Player(format("[TÝn Sø] map=%d täa ®é (%d,%d), rót vò khÝ=%d (0 = kh«ng ®¸nh ®­îc qu¸i, kh«ng thÓ chÕt)", nMap, nX, nY, GetFightState()))
 end
 
 function HD_TS_GoKet()
 	if (nt_getTask(1203) == 20) then
 		nt_setTask(1203, 21)
-		Msg2Player("[TinSu] 1203: 20 -> 21. Toi Dich Quan bam 'Tiep tuc nhiem vu' de bat lai day du trang thai (dong ho, chien dau, hoi sinh...).")
+		Msg2Player("[TÝn Sø] 1203: 20 -> 21. Tíi DÞch Quan bÊm 'TiÕp tôc nhiÖm vô' ®Ó bËt l¹i ®Çy ®ñ tr¹ng th¸i (®ång hå, chiÕn ®Êu, håi sinh...).")
 	else
-		Msg2Player("[TinSu] 1203 = "..nt_getTask(1203).." - chi go ket khi dang 20.")
+		Msg2Player("[TÝn Sø] 1203 = "..nt_getTask(1203).." - chØ gì kÑt khi ®ang 20.")
 	end
 end
 
 function HD_TS_BatFight()
 	SetFightState(1)
-	Msg2Player("[TinSu] Da RUT VU KHI (bat chien dau). Thu danh quai ngay. Luu y: gio co the CHET that.")
+	Msg2Player("[TÝn Sø] ®· RóT Vò KHÝ (bËt chiÕn ®Êu). Thö ®¸nh qu¸i ngay. L­u ý: giê cã thÓ CHÕT thËt.")
 end
 
 function HD_TS_Huy()
 	losemessengertask()
-	Msg2Player("[TinSu] Da goi huy nhiem vu (chi xoa khi dang 20/21). Nhan lai o Dich Quan thanh Ba Lang/Dai Ly.")
+	Msg2Player("[TÝn Sø] ®· gäi hñy nhiÖm vô (chØ xãa khi ®ang 20/21). NhËn l¹i ë DÞch Quan thµnh Ba L¨ng hoÆc ®¹i Lý.")
 end
 
 function HD_TS_DenAi()
