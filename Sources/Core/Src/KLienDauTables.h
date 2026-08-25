@@ -91,6 +91,8 @@ static const char LDM_SAY_DONGCUA[] = "Hiªn t¹i lµ thêi gian liªn ®Êu t¹m nghØ, 
 static const char LDM_SAY_TAMNGHI[] = "Xin h·y t¹m nghØ ë ®©y";
 static const char LDM_SAY_DANGDAU[] = "VÉn ®ang tiÕn hµnh thi ®Êu";
 static const char LDM_SAY_CHUATHIDAU[] = "B©y giê b¹n ng­¬i ch­a thi ®Êu";
+static const char LDM_OPT_THEMDOI[] = "§Ó ®éi h÷u cña Tagia nhËp vµo ®éi thi ®Êu nµy";
+static const char LDM_OPT_DONGYTHEM[] = "§óng råi! §¨ng ký ®Ó anh Êy (c« Êy) gia nhËp ®éi thi ®Êu";
 static const char LDM_MSG_BAODANH[] = "®ang trong giai ®o¹n b¸o danh. C¸c ®éi muèn tham gia h·y nhanh ch©n ®Õn b¸o danh";
 static const char LDM_MSG_BATDAU[] = "thi ®Êu chÝnh thøc b¾t ®Çu";
 static const char LDM_OPT_LAP[] = "Ta muèn lËp";
@@ -101,6 +103,11 @@ static const char LDM_NPC_QUANVIEN[] = "quan viªn héi tr­êng";
 static const char LDM_NPC_XAPHU[] = "xa phu";
 static const char LDM_NPC_RUONG[] = "r­¬ng chøa ®å";
 static const char LDM_NPC_THIVE[] = "thÞ vÖ héi tr­êng";
+
+// ===== the loai dau theo THANG (timetable.lua sid 124..243, xoay 12 thang) =====
+// 1 Song dau / 2 Chien doi mon phai / 3 Su do / 4 Tam nhan / 5 DON DAU / 6 Cung he / 7 Nam nu
+// Chu y: LOAI_CO_DINH / LOAI_THEO_MUA trong wlls_config.lua co the DE bang nay.
+static const short g_LDLoaiThang[12] = { 2, 1, 2, 5, 3, 6, 2, 1, 4, 5, 3, 6 };
 
 // ===== do CAM mang vao san (WLLS_FORBID_ITEM) - auto phai cat vao ruong truoc =====
 // { genre, detail, particular }

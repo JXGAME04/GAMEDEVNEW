@@ -79,6 +79,8 @@ def prefix(a, b):
 # ---------------------------------------------------------------- nguon
 head = rd(LM, "head.lua")
 officer = rd(LM, "npc", "officer.lua")
+double = rd(LM, "macthtype", "double.lua")
+ttable = rd(SRV, "leaguematch", "timetable.lua")
 signup = rd(LM, "npc", "signup.lua")
 chefu = rd(LM, "npc", "chefu.lua")
 autoexec = rd(LM, "wlls_autoexec.lua")
@@ -211,6 +213,10 @@ MARK = [
                              r'n_matchphase == 5.*?Say\("([^"!]+)!', "pha 5 dang thi dau")),
     ("LDM_SAY_CHUATHIDAU", pick(func(signup, "wlls_ready2join"),
                                 r'n_matchphase < 3.*?Say\("([^",?]+)', "pha <3 chua thi dau")),
+    ("LDM_OPT_THEMDOI", pick(double, r'"([^"/]*)/wlls_want2addmember"',
+                             "De doi huu cua Ta gia nhap...")),
+    ("LDM_OPT_DONGYTHEM", pick(officer, r'"([^"/]*)/wlls_sure2addmember"',
+                               "Dung roi! Dang ky de ...")),
     ("LDM_MSG_BAODANH", pick(gmscript,
                              r'TB_WLLS_PHASE_MSG\s*=\s*\{[^{}]*?"[^"]*?%d ([^"]*?)!"',
                              "tin toan may chu mo bao danh")),
@@ -226,6 +232,16 @@ MARK.append(("LDM_OPT_LAP", prefix(_dmark["LDM_OPT_LAPNHOM"], _dmark["LDM_OPT_LA
 for nm, v in MARK:
     if len(v) < 6:
         raise SystemExit("marker qua ngan: %s = %r" % (nm, v))
+
+# ------------------------------------------------------- the loai theo thang
+# timetable [124..135] = 12 thang nam 2026; vong xoay lap lai moi nam (den 243).
+LOAI = []
+for sid in range(124, 136):
+    LOAI.append(int(pick(ttable, r"\[" + str(sid) + r"\]\s*=\s*\{\s*(\d+)\s*,", "sid %d" % sid)))
+for sid in range(136, 244):
+    t = int(pick(ttable, r"\[" + str(sid) + r"\]\s*=\s*\{\s*(\d+)\s*,", "sid %d" % sid))
+    if t != LOAI[(sid - 124) % 12]:
+        raise SystemExit("vong xoay the loai KHONG lap 12 thang o sid %d" % sid)
 
 # ---------------------------------------------------------------- do cam
 m = re.search(r"WLLS_FORBID_ITEM\s*=\s*\{(.*?)" + NL + r"\}", head, re.S)
@@ -313,6 +329,11 @@ A("")
 A("// ten NPC de DT_FindNpcName (ha thuong CHI ASCII nhu g_StrLower - byte co dau giu nguyen)")
 for nm, v in NPCNAME:
     A("static const char %s[] = %s;" % (nm, cstr(lowascii(v))))
+A("")
+A("// ===== the loai dau theo THANG (timetable.lua sid 124..243, xoay 12 thang) =====")
+A("// 1 Song dau / 2 Chien doi mon phai / 3 Su do / 4 Tam nhan / 5 DON DAU / 6 Cung he / 7 Nam nu")
+A("// Chu y: LOAI_CO_DINH / LOAI_THEO_MUA trong wlls_config.lua co the DE bang nay.")
+A("static const short g_LDLoaiThang[12] = { %s };" % ", ".join(str(t) for t in LOAI))
 A("")
 A("// ===== do CAM mang vao san (WLLS_FORBID_ITEM) - auto phai cat vao ruong truoc =====")
 A("// { genre, detail, particular }")

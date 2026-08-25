@@ -1792,6 +1792,16 @@ void KProtocolProcess::SyncCurNormalData(BYTE* pMsg)
 		s.nSelServer2 = PlayerSet.m_nSelServer;
 		strcpy(s.szPassword, PlayerSet.m_szPassword);
 		strcpy(s.szAccount, PlayerSet.m_szAccount);
+		// [r2] dong trang thai auto cho chan WAuto (WA_HoatDong o CoreShell.cpp -
+		// tep do KHONG bien dich ban server nen phai guard)
+#ifndef _SERVER
+		{
+			extern void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax);
+			WA_HoatDong(CLIENT_PLAYER_INDEX, s.szHoatDong, sizeof(s.szHoatDong));
+		}
+#else
+		s.szHoatDong[0] = 0;
+#endif
 		SendDataToTool(&s, sizeof(IPCMainSync));
 	}
 }

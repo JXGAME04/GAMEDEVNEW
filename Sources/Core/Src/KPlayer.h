@@ -251,6 +251,10 @@ struct ExtAuto
 	UINT uLDNewsSeen;    // uNewsSeq (tin toan may chu) da xu ly
 	UINT uLDMsgT;        // throttle bao trang thai
 	UINT uLDMoT;         // moc nghe tin may chu MO BAO DANH gan nhat (pha 4)
+	UINT uLDPtT;         // throttle moi to doi (LDP_PARTY)
+	int  nLDPtDone;      // 1 = da xu ly xong buoc them doi huu vao chien doi
+	UINT uLDHopT;        // han 150s cho mot luot nhay thanh (LD_DiThanh)
+	UINT uLDThpT;        // Than Hanh Phu cua luot nhay: 0 chua thu / 1 di Xa phu / >1 moc dung
 
 	ExtAuto()
 	{
@@ -383,6 +387,10 @@ struct ExtAuto
 		uLDNewsSeen = 0;
 		uLDMsgT = 0;
 		uLDMoT = 0;
+		uLDPtT = 0;
+		nLDPtDone = 0;
+		uLDHopT = 0;
+		uLDThpT = 0;
 	}
 };
 

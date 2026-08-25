@@ -81,6 +81,9 @@ struct IPCMainSync : public SharedState
 	short nSelServer1;
 	short nSelServer2;
 	IPCSkillInfo skill[defSKILLNUMGET];
+	// (24/08 r2) dong trang thai auto dang lam gi (TCVN3) - hien o chan WAuto.
+	// PHAI o CUOI struct; WAuto kiem Size >= sizeof truoc khi doc truong nay.
+	char szHoatDong[48];
 };
 
 struct autoData
@@ -278,6 +281,11 @@ struct autoData
 	int		bLDNhanThuong;	// cuoi mua tu nhan thuong xep hang + danh hieu
 	int		nLDVeThanh;		// het gio ra Xa phu ve thanh nao (0..6); 7 = o lai hoi truong
 	int		bLDPhuVe;		// dung phu ve thanh khi dang o map khong co Su gia
+	// == Lien dau r2 (24/08/2026 toi) - PHAI o cuoi struct, truoc constructor ==
+	int		bLDParty;		// Song dau: tu to doi 2 nguoi voi ten trong danh sach
+	int		nLDThanhBD;		// bao danh o thanh nao (0..6 theo g_LDVeMap); 7 = thanh dang dung
+	int		nLDPtCount;		// so ten trong danh sach ban dien
+	char	szLDPtName[8][32];	// danh sach ung vien to doi (chi moi 1 nguoi dau tien gap)
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -474,6 +482,10 @@ struct autoData
 		bLDNhanThuong = 0;
 		nLDVeThanh = 0;
 		bLDPhuVe = 0;
+		bLDParty = 0;
+		nLDThanhBD = 7;
+		nLDPtCount = 0;
+		szLDPtName[0][0] = 0;
 	}
 };
 

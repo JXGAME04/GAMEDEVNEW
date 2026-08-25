@@ -360,6 +360,14 @@ using namespace std;
 #define IDC_GRP_TAB10	507
 #define IDC_SEP_10A		508
 #define IDC_SEP_10B		509
+// r2 24/08 toi: to doi Song dau + thanh bao danh (van trong dai an/hien)
+#define IDC_CHECKBOX_10_PT	510
+#define IDC_COMBO_10_PT		511
+#define IDC_BTN_10_PTA		512
+#define IDC_BTN_10_PTD		513
+#define IDC_LIST_10_PT		514
+#define IDC_STRING_10_BD	515
+#define IDC_COMBO_10_BD		516
 #define IDC_INDEX_END			560
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
@@ -374,6 +382,9 @@ using namespace std;
 #define IDC_TABBTN_9			609
 #define IDC_TABBTN_10			610
 #define IDC_TABBTN_11			611
+// dong trang thai auto o chan cua so (NGOAI dai an/hien - luon hien)
+#define IDC_STRING_HD_L		612
+#define IDC_STRING_HD_V		613
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

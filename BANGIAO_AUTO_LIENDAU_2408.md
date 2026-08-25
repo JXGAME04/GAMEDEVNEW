@@ -212,6 +212,54 @@ Ngoài ra xác nhận đúng: mùa theo tháng ngày 08→28; 15 phút/lượt; 
 về hội trường ngay (`playerdeath.lua:13`); hết trận cả sân bị kéo về hội trường
 (`wlls_remove_camp`); 7 thành + 4 sân mỗi hạng.
 
+## 6b. ĐỢT R2 (24/08 tối) — tổ đội Song đấu + thành báo danh + giao diện có màu
+
+Theo 3 yêu cầu bổ sung của chủ game (*tự tổ đội ở NPC liên đấu khi Song đấu, tối đa 1 người;
+Đơn đấu thì không tổ đội; thêm tùy chọn thành để quay về báo danh; thêm màu thêm thông tin
+như auto tham khảo*). Binary `.moi_2408_liendau` đã được **build đè bằng bản r2** (mốc 19:36).
+
+**1. Tổ đội Song đấu (pha mới `LDP_PARTY`):**
+- Ô **"Song đấu: tự tổ đội với bạn diễn (1 người)"** + combo lấy **tên người chơi đang đứng
+  quanh nhân vật** (bấm vào combo là game gửi danh sách lên — cùng cơ chế tab Tổ đội) +
+  danh sách tối đa 8 tên (`szLDPtName`), nút Thêm/Xóa, lưu `.dat` như mọi danh sách khác.
+- Tới giờ, khi đã đứng ở thành báo danh: **máy đội trưởng** (bật *Tự lập chiến đội*) đứng
+  cạnh Sứ giả **mời** người trong danh sách vào tổ đội (`TeamInviteAdd`, chống spam 15 s);
+  **máy bạn diễn** (tắt *Tự lập*) **nhận lời mời** (`ReplyInvite`) — nhận cả trong lúc đứng
+  chờ ở Sứ giả. Đủ 2 người → đội trưởng vào mục *"Chiến đội hạng … của ta"* → bấm
+  **"Để đội hữu của Ta gia nhập vào đội thi đấu này"** → xác nhận *"Đúng rồi! Đăng ký…"*
+  (2 marker mới trích byte-chuẩn từ `double.lua`/`officer.lua`) → rồi mới bấm vào hội trường.
+- Bạn diễn không còn bỏ cuộc khi chưa có chiến đội: cứ **8 giây bấm lại Sứ giả** chờ đội
+  trưởng đăng ký mình, tối đa 3 phút. Quá **100 giây** không gặp nhau → đi báo danh một mình
+  (đội 1 người vẫn thi đấu được).
+- **Đơn đấu tự bỏ qua tổ đội**: bảng `g_LDLoaiThang[12]` (trích từ vòng xoay `timetable.lua`,
+  đã kiểm chứng lặp đúng 12 tháng suốt sid 124-243) — tháng thể loại 5 thì `LD_CanParty` = 0.
+  Đồng thời dòng *"Ta muốn lập chiến đội!"* (chỉ Đơn đấu mới có) giờ **bấm luôn** không cần
+  bật *Tự lập* — không lập thì khỏi thi đấu.
+
+**2. Ô "Báo danh ở" (8 lựa chọn):** 7 thành + *Thành đang đứng (không tự đi)* (mặc định).
+Chọn thành cụ thể thì tới giờ auto **tự đi tới đó**: ưu tiên **Thần Hành Phù** (6/1/1271)
+trong túi, không có thì **Xa Phu** (mục *"Những thành thị đã đi qua"* → tên thành — cùng bảng
+`g_aDTSapTown` đường Dã Tẩu đang dùng), lạc map hoang thì dùng phù về thành rồi nhảy tiếp;
+quá 150 giây thì bỏ khung giờ. Chọn thành **sai hạng** → auto báo và coi như *Thành đang đứng*.
+Ô cũ *"Dùng phù về thành nếu chưa đúng thành"* **bỏ** (tính năng này thay thế).
+
+**3. Giao diện thêm màu + thông tin (kiểu auto Thái Lan):**
+- **Dòng trạng thái ở chân cửa sổ** (luôn hiện, chữ xanh lá đậm): auto của nhân vật đang chọn
+  **đang làm gì** — `Liên đấu: đang thi đấu`, `Tống Kim: mua thuốc hậu doanh`, `Dã Tẩu: đánh
+  quái nhiệm vụ`… Nguồn: trường mới `szHoatDong[48]` **ở CUỐI `IPCMainSync`** do
+  `WA_HoatDong()` (CoreShell.cpp) điền mỗi nhịp đồng bộ; WAuto **kiểm `Size` trước khi đọc**
+  nên chạy lẫn với Game.exe cũ không đọc rác; hàm gọi trong `KProtocolProcess.cpp` guard
+  `#ifndef _SERVER` (CoreShell.cpp không biên dịch bản server).
+- **Danh sách nhân vật tô màu** (NM_CUSTOMDRAW): **xanh lá** = đang tick auto, **đen** = online
+  chưa bật, **xám** = mất kết nối.
+- Cấp + Kinh nghiệm tab Cơ bản chuyển **màu tím**; giữ nguyên bộ màu máu đỏ / nội lực xanh /
+  thể lực lục có sẵn. Cửa sổ cao thêm 6 đơn vị (354 → 360) để chứa dòng trạng thái.
+
+**Cách dùng cho cặp Song đấu (2 máy):** máy A (đội trưởng): bật *Tự lập chiến đội* + bật ô
+tổ đội + thêm tên B; máy B: **tắt** *Tự lập* + bật ô tổ đội + thêm tên A; cả hai chọn **cùng
+một thành** ở *"Báo danh ở"*. Tới giờ hai máy tự gặp nhau ở Sứ giả, tự nhóm, tự đăng ký,
+tự vào hội trường.
+
 ## 7. Nghiệm thu (làm theo thứ tự)
 
 0. **Thoát hẳn Game.exe + WAuto.exe**, swap 3 binary (mục 2), mở lại.
