@@ -103,6 +103,18 @@ for nm, idx in (("Map", 0), ("X", 1), ("Y", 2)):
     L.append("};")
     L.append("")
 
+# --- ten boss (TCVN3 tho): auto WAuto (ST_Process) tim DUNG con boss tren map
+#     theo ten nay, va bam DUNG dong ten trong menu showboss cua NPC 769 ---
+L.append("// Ten 160 boss (TCVN3 tho, khop tung byte voi killer.txt cot BossName):")
+L.append("// auto WAuto dung de (1) bam dong ten trong menu showboss cua NPC 769")
+L.append("// va (2) tim dung con boss can giet tren map nhiem vu.")
+L.append("static const char* const s_szST3BossTen[ST3_POS_MAX + 1] = {")
+L.append('	"",')
+for i in range(1, 161):
+    L.append('	"%s",' % esc(rows[i][0]))
+L.append("};")
+L.append("")
+
 # --- bang MENU XA PHU cua tung boss: de auto BAM MENU THAT (dung y chu game:
 #     toi Xa Phu -> kich len dung map nhiem vu -> roi moi di toi boss) ---
 stt = io.open(SRV + r"\script\global\station.lua", encoding="latin-1", newline="").read()

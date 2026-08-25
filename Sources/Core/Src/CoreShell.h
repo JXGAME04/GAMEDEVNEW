@@ -60,6 +60,7 @@ enum AUTOOPERATION_INDEX
 	ATYPE_TONGKIM,
 	ATYPE_LIENDAU,
 	ATYPE_HOATDONG,
+	ATYPE_SATTHU,		// (25/08) may san boss Sat Thu + ghep Sat Thu Gian (ST_Process)
 };
 
 enum GAMEDATA_INDEX

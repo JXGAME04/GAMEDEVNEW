@@ -106,6 +106,17 @@ function fld_TakeBoat(plindex)
 	if (fld_haveroom() == 1) then
 		return 0
 	end
+	-- [3HD 25/08 C40] CHUA KHAI CUOC thi mission KHONG TON TAI (fenglingdu_main
+	-- moi goi OpenMission = TAO mission). Khi do GetMissionV tra 0 => t = 10 =>
+	-- chan ben duoi vo hieu => nguoi choi len duoc thuyen ma AddMSPlayer that bai
+	-- (ngoai mission, khong duoc SetFightState(1), ket tren thuyen).
+	-- IsMission tra 1 CHI KHI mission dang ton tai = da toi gio khai cuoc.
+	if (IsMission(MISSIONID) == 0) then
+		Say("Ch­a tíi giê thuyÒn ch¹y. Mçi giê ®óng phót 00 thuyÒn míi khai cuéc, h·y quay l¹i lóc ®ã.", 0)
+		SubWorld = oldsubworldindex
+		PlayerIndex = orgplayerindex
+		return 0
+	end
 	t = 10 - GetMissionV(MS_TIMEACC_1MIN)
 	if (t <= 0) then
 		return 0

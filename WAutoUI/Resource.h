@@ -399,6 +399,21 @@ using namespace std;
 #define IDC_EDITOR_12_TSP	544
 #define IDC_STRING_12_TSL	545
 #define IDC_EDITOR_12_TSL	546
+// tab 13 San boss Sat Thu (25/08/2026) - phai contiguous va < IDC_INDEX_END
+// de hide-loop cua ShowTab bao trum
+#define IDC_CHECKBOX_13_ON	547
+#define IDC_STRING_13_LUOT	548
+#define IDC_EDITOR_13_LUOT	549
+#define IDC_STRING_13_CHON	550
+#define IDC_COMBO_13_CHON	551
+#define IDC_STRING_13_BOSS	552
+#define IDC_COMBO_13_BOSS	553
+#define IDC_CHECKBOX_13_GHEP	554
+#define IDC_CHECKBOX_13_CHO	555
+#define IDC_STRING_13_NGHI	556
+#define IDC_EDITOR_13_NGHI	557
+#define IDC_GRP_TAB12		558
+#define IDC_SEP_12A			559
 #define IDC_INDEX_END			560
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
@@ -417,6 +432,7 @@ using namespace std;
 #define IDC_STRING_HD_L		612
 #define IDC_STRING_HD_V		613
 #define IDC_TABBTN_12		614
+#define IDC_TABBTN_13		615
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

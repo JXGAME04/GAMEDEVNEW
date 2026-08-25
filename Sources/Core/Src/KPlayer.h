@@ -280,6 +280,26 @@ struct ExtAuto
 	UINT uHDBuffT;       // buff Co Thu con den luc nay (uoc luong)
 	UINT uHDLuotT;       // moc tick 5 phut gan nhat
 	UINT uHDVaoT;        // thoi diem vao map hoat dong
+	// == San Boss Sat Thu (25/08) - trang thai may ATYPE_SATTHU, POD (ATYPE_CLEAR memset) ==
+	int  nSTPhase;       // pha STP_* (CoreShell.cpp)
+	int  nSTStep;        // buoc con trong pha
+	int  nSTTry;         // dem thu lai / dem nhip trong pha
+	int  nSTHold;        // 0 tha may / 1 cam lai / 2 cam lai + may PK danh
+	int  nSTMucBoss;     // so hieu boss dang truy na (cache cua task 1082)
+	int  nSTKe;          // con tro xoay vong 0..19 cho che do 'lan luot'
+	int  nSTNgay;        // yymmdd da CHOT xong luot hom nay (het luot / bi tu choi)
+	int  nSTGhepTry;     // dem lan da thu ghep sat thu gian (chan ket vong)
+	int  nSTCap;         // cap cua bo 5 Sat Thu lenh dang bo vao hop giao
+	UINT uSTNext;        // moc hanh dong ke tiep
+	UINT uSTPhaseT;      // moc vao pha (de bat ket pha)
+	UINT uSTDlgSeen;     // uDlgSeq da xu ly
+	UINT uSTMsgSeen;     // uMsgSeq (tin He Thong aMsg) da quet
+	UINT uSTBoxSeen;     // uBoxSeq (hop giao vat pham) da xu ly
+	UINT uSTMsgT;        // throttle bao trang thai
+	UINT uSTNghiT;       // nghi den moc nay (giua 2 luot / cho boss hoi sinh)
+	UINT uSTThayT;       // moc gan nhat con THAY boss quanh diem spawn
+	UINT uSTVongT;       // moc bat dau VONG hien tai (chan ket vong pha nay doi pha kia)
+
 
 	ExtAuto()
 	{
@@ -440,6 +460,25 @@ struct ExtAuto
 		uHDBuffT = 0;
 		uHDLuotT = 0;
 		uHDVaoT = 0;
+		nSTPhase = 0;
+		nSTStep = 0;
+		nSTTry = 0;
+		nSTHold = 0;
+		nSTMucBoss = 0;
+		nSTKe = 0;
+		nSTNgay = 0;
+		nSTGhepTry = 0;
+		nSTCap = 0;
+		uSTNext = 0;
+		uSTPhaseT = 0;
+		uSTDlgSeen = 0;
+		uSTMsgSeen = 0;
+		uSTBoxSeen = 0;
+		uSTMsgT = 0;
+		uSTNghiT = 0;
+		uSTThayT = 0;
+		uSTVongT = 0;
+
 	}
 };
 

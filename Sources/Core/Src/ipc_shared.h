@@ -303,6 +303,17 @@ struct autoData
 	int		nHDTSGio;		// gio bat dau (theo gio MAY CHU + nHDLech)
 	int		nHDTSPhut;
 	int		nHDTSLuot;		// muc tieu luot/ngay: 1..2 thuong, 3 = dung Thien Kho Bao Lenh
+	// == San Boss Sat Thu (25/08/2026) - PHAI o cuoi struct, truoc constructor ==
+	// (file APdata\<ID nhan vat>.dat ghi NGUYEN struct - them truong o GIUA la
+	//  nat cau hinh cua moi nguoi choi cu; xem ky uc wauto-luu-cau-hinh-apdata)
+	int		bSatThu;		// bat/tat auto san boss Sat Thu (NPC 769 Nhiep Thi Tran)
+	int		nSTLuot;		// muc tieu luot/ngay (1..8; 0 = lam het tran 8 luot)
+	int		nSTChon;		// chon boss: 0 = lan luot, 1 = ngau nhien, 2 = co dinh nSTBoss
+	int		nSTBoss;		// so hieu boss co dinh (141..160) khi nSTChon == 2
+	int		bSTGhep;		// tu ghep 5 Sat Thu lenh cung cap -> 1 Sat Thu Gian
+	int		bSTChoHS;		// boss chua hoi sinh: 1 = cho tai cho (~7,5 phut), 0 = doi con khac
+	int		nSTNghi;		// nghi bao nhieu PHUT giua 2 luot (0 = lien tuc)
+
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -518,6 +529,14 @@ struct autoData
 		nHDTSGio = 9;
 		nHDTSPhut = 30;
 		nHDTSLuot = 2;
+		bSatThu = 0;
+		nSTLuot = 8;
+		nSTChon = 0;
+		nSTBoss = 141;
+		bSTGhep = 1;
+		bSTChoHS = 1;
+		nSTNghi = 0;
+
 	}
 };
 

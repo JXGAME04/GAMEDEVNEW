@@ -10389,6 +10389,977 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 }
 // ==================== HET AUTO HOAT DONG ====================
 
+// ==================== AUTO SAN BOSS SAT THU (25/08/2026) ====================
+// Dung THU TU chu game yeu cau ("lam theo tung buoc 1"):
+//   1. ve thanh, toi NPC 769 "Nhiep Thi Tran"  -> menu "Nhiem vu cap 90"
+//      -> bam DUNG dong ten con boss muon danh (so hieu 141..160 -> task 1082)
+//   2. ra XA PHU  -> "len ban do luyen cong" -> moc cap -> ten ban do nhiem vu
+//      (ban do khong co trong menu thi thue xe rieng: hd3_st_goboss.lua)
+//   3. len map    -> di bo tu diem dap xuong toi O BOSS (KSatThuBossPos.h)
+//   4. danh DUNG con boss mang ten trong bang (giao muc tieu cho may PK tab PK)
+//   5. boss chet (task 1082 ve 0, 1193 +1) -> NHA MAY cho bo NHAT DO cua nguoi
+//      choi (tab Nhat do) lam viec tai cho
+//   6. dung PHU VE THANH -> quay lai buoc 1 (het luot/ngay thi nghi toi mai)
+// Ngoai vong: du 5 Sat Thu lenh CUNG CAP thi ghe NPC ghep thanh 1 Sat Thu Gian
+// (muc "Hop thanh sat thu gian" -> hop giao vat pham -> bo dung 5 -> xac nhan).
+//
+// Nghe dung lai (KHONG tu che co che moi): DT_WalkTo / DT_UsePortal / DT_Answer /
+// DT_Split / DT_FindAns / DT_ClickItem / LD_DiThanh / HD_TimQuai / g_MoveStation /
+// TG_SatThuTimNpc / TG_SatThuChiSoNpcMap va bang KSatThuBossPos.h.
+// Nhat do / an thuoc / ban rac deu de NGUYEN cho cac tab co san cua WAuto lo.
+
+enum STPhase
+{
+	STP_OFF = 0,
+	STP_NPC,		// ve thanh co NPC 769 roi dung canh NPC va mo thoai
+	STP_MENU,		// trong thoai NPC: nhan nhiem vu cap 90 (chon dung con boss)
+	STP_GHEP,		// trong thoai NPC: hop thanh Sat Thu Gian (bo 5 lenh vao hop giao)
+	STP_HUY,		// huy nhiem vu dang cam (boss khong hoi sinh) de doi con khac
+	STP_XAPHU,		// ra Xa Phu bam menu len ban do nhiem vu
+	STP_LENMAP,		// doi chuyen map
+	STP_TOIBOSS,	// di bo toi o boss
+	STP_DANH,		// danh dung con boss (giao muc tieu cho may PK)
+	STP_NHAT,		// boss chet - nha may cho bo nhat do cua nguoi choi
+	STP_DONE
+};
+
+#define ST_HANPHA		240000u		// han MOT pha di duong (4 phut)
+#define ST_HANDIBO		480000u		// rieng pha DI BO trong map nhiem vu (8 phut):
+									// ham nhu Sa Mac Me Cung / Mac Cao Quat di rat lau
+#define ST_HANVONG		2700000u	// han MOT vong (45 phut) - chan ket vong pha nay doi pha kia
+#define ST_TRAN_NGAY	8			// tran luot/ngay cua server (KILLER_MAXCOUNT)
+#define ST_TSK_BOSS		1082		// so hieu boss dang truy na (0 = chua nhan)
+#define ST_TSK_NGAY		1192		// ngay nhan (yymmdd) - server tu reset 1193 khi sang ngay
+#define ST_TSK_DEM		1193		// so lan da giet hom nay
+#define ST_LENH_G		6			// Sat Thu lenh = 6,1,398 (nLevel = cap nhom)
+#define ST_LENH_D		1
+#define ST_LENH_P		398
+#define ST_BOSS_DAU		141			// nhom cap 90 = so hieu 141..160 (nhom duy nhat con thuong)
+#define ST_BOSS_CUOI	160
+#define ST_MAP_NPC_MD	1			// thanh mac dinh co NPC 769 khi phu ve tha nham cho
+#define ST_NHAT_MIN		8000u		// nhat do it nhat 8 giay
+#define ST_NHAT_MAX		60000u		// va nhieu nhat 60 giay (con thay do thi con nhat)
+#define ST_CHO_HOISINH	600000u		// cho boss hoi sinh toi da 10 phut (nhip goc ~7,5 phut)
+
+// -- marker thoai NPC 769 (TCVN3 tho, khop tung byte voi nieshichen.lua) --
+#define STM_OPT_NV90		"NhiÖm vô cÊp 90"
+#define STM_OPT_GHEP		"Hîp thµnh s¸t thñ gi¶n"
+#define STM_OPT_HUY			"Hñy nhiÖm vô"
+#define STM_OPT_TRANGKE		"Trang kÕ"
+#define STM_OPT_DONG		"§ãng"
+#define STM_SAY_HETLUOT		"khinh kÎ b¹i trËn"
+#define STM_SAY_SAICAP		"cÊp cña ng­¬i kh«ng phï hîp"
+#define STM_SAY_DANGCO		"vÉn cßn sèng"
+#define STM_SAY_GHEPOK		"hîp thµnh mét"
+#define STM_SAY_GHEPSAI		"®Ó kh«ng ®óng"
+#define STM_SAY_GHEPNHIEU	"®Ó qu¸ nhiÒu"
+#define STM_SAY_GHEPIT		"®Ó qu¸ Ýt"
+
+static void ST_Msg(int nPlayerIdx, const char* szMsg)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	UINT uNow = timeGetTime();
+	if (ea.uSTMsgT > uNow)
+		return;
+	ea.uSTMsgT = uNow + 1200;
+	try
+	{
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[S¸t Thñ]", (char*)szMsg, strlen(szMsg), TRUE);
+	}
+	catch (...) {}
+}
+
+static void ST_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nSTPhase = nPha;
+	ea.nSTStep = 0;
+	ea.nSTTry = 0;
+	ea.uSTPhaseT = uCurTime;
+	ea.uSTNext = uCurTime + 400;
+	ea.uSTDlgSeen = g_sDTCap.uDlgSeq;
+}
+
+// muc tieu luot/ngay theo o cau hinh (kep vao 1..8 = tran cua server)
+static int ST_MucLuot(const autoData* pAp)
+{
+	int n = pAp->nSTLuot;
+	if (n < 1 || n > ST_TRAN_NGAY)
+		n = ST_TRAN_NGAY;
+	return n;
+}
+
+// so hieu boss se nhan lan nay (141..160) theo o "Chon boss" cua nguoi choi
+static int ST_ChonBoss(int nPlayerIdx, const autoData* pAp)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nSo = ST_BOSS_CUOI - ST_BOSS_DAU + 1;
+	if (pAp->nSTChon == 2)
+	{
+		if (pAp->nSTBoss >= ST_BOSS_DAU && pAp->nSTBoss <= ST_BOSS_CUOI)
+			return pAp->nSTBoss;
+		return ST_BOSS_DAU;
+	}
+	if (pAp->nSTChon == 1)
+		return ST_BOSS_DAU + (rand() % nSo);
+	return ST_BOSS_DAU + (((ea.nSTKe % nSo) + nSo) % nSo);
+}
+
+// dem Sat Thu lenh trong TUI theo tung cap; tra so nhieu nhat, *pnCap = cap do
+static int ST_DemLenh(int nPlayerIdx, int* pnCap)
+{
+	int anCap[16], anSo[16], nLoai = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if (pIt->nPlace == pos_equiproom
+		 && Item[pIt->nIdx].GetGenre() == ST_LENH_G
+		 && Item[pIt->nIdx].GetDetailType() == ST_LENH_D
+		 && Item[pIt->nIdx].GetParticular() == ST_LENH_P
+		 && !DT_ItemProtected(pIt->nIdx, false))
+		{
+			int nCap = Item[pIt->nIdx].GetLevel();
+			int i;
+			for (i = 0; i < nLoai; ++i)
+				if (anCap[i] == nCap)
+					break;
+			if (i == nLoai && nLoai < 16)
+			{
+				anCap[nLoai] = nCap;
+				anSo[nLoai] = 0;
+				++nLoai;
+			}
+			if (i < nLoai)
+				++anSo[i];
+		}
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	int nTot = 0, nCapTot = 0;
+	for (int i = 0; i < nLoai; ++i)
+	{
+		if (anSo[i] > nTot || (anSo[i] == nTot && anCap[i] > nCapTot))
+		{
+			nTot = anSo[i];
+			nCapTot = anCap[i];
+		}
+	}
+	if (pnCap)
+		*pnCap = nCapTot;
+	return nTot;
+}
+
+// mot Sat Thu lenh cap nCap dang o TUI (chua bo vao hop giao); 0 = het
+static int ST_TimLenh(int nPlayerIdx, int nCap, ItemPos* pPos)
+{
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if (pIt->nPlace == pos_equiproom
+		 && Item[pIt->nIdx].GetGenre() == ST_LENH_G
+		 && Item[pIt->nIdx].GetDetailType() == ST_LENH_D
+		 && Item[pIt->nIdx].GetParticular() == ST_LENH_P
+		 && Item[pIt->nIdx].GetLevel() == nCap
+		 && !DT_ItemProtected(pIt->nIdx, false))
+		{
+			pPos->nPlace = pIt->nPlace;
+			pPos->nX = pIt->nX;
+			pPos->nY = pIt->nY;
+			return pIt->nIdx;
+		}
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return 0;
+}
+
+// so mon dang nam trong HOP GIAO (pos_affairitem)
+static int ST_DemTrongHop(int nPlayerIdx)
+{
+	int n = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if (pIt->nPlace == pos_affairitem)
+			++n;
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return n;
+}
+
+// dong hop giao vat pham. nieshichen.lua (exchange_token) KHONG goi EndGiveBox nen
+// server khong tu gui goi dong - phai tu dong o client, khong thi khung hop treo
+// mai va Wnd_GameSpaceHandleInput(false) chan tay nguoi choi.
+// CloseWindow -> OnCancel: mon con ket trong hop duoc THU HOI ve tui (dung y do).
+static void ST_DongHop(int nPlayerIdx)
+{
+	CoreDataChanged(GDCNI_END_AFFAIR_BOX, NULL, NULL);
+	g_sDTCap.nBoxOpen = 0;
+}
+
+// tim DUNG con boss can giet (theo ten trong bang killer.txt) quanh (nAtX,nAtY)
+static int ST_TimBoss(int nPlayerIdx, int nBoss, int nAtX, int nAtY, int nRadius)
+{
+	if (nBoss < 1 || nBoss > ST3_POS_MAX)
+		return 0;
+	char szTen[40];
+	g_StrCpyLen(szTen, s_szST3BossTen[nBoss], sizeof(szTen));
+	g_StrLower(szTen);	// g_StrLower CHI ha thuong A-Z; byte co dau giu nguyen
+	return HD_TimQuai(nPlayerIdx, szTen, nAtX, nAtY, nRadius);
+}
+
+// bam mot muc trong thoai dang mo; 1 = da bam, 0 = thoai khong co muc do
+static int ST_BamMuc(int nPlayerIdx, char* apAns[], int nAns, const char* szMark,
+	UINT uCurTime, UINT uCho)
+{
+	if (!szMark || !szMark[0])
+		return 0;
+	int nOpt = DT_FindAns(apAns, nAns, szMark);
+	if (nOpt < 0)
+		return 0;
+	DT_Answer(nPlayerIdx, nOpt);
+	Player[nPlayerIdx].m_sExtAuto.uSTNext = uCurTime + uCho;
+	return 1;
+}
+
+// Ve thanh co NPC 769 va dung canh NPC. Tra: 0 dang di, 1 da dung canh (*pnNpc),
+// -1 khong ve duoc. Dung ea.nSTStep lam bo dem thu phu ve thanh -> pha nao goi ham
+// nay thi KHONG duoc dung nSTStep vao viec khac.
+static int ST_ToiNpc769(int nPlayerIdx, const autoData* pAp, UINT uCurTime, int* pnNpc)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	const int nI = TG_SatThuChiSoNpcMap(nMap);
+	if (nI < 0)
+	{
+		// khong o thanh co NPC: thu PHU VE THANH 3 lan (~5s/lan), het phu thi
+		// di duong Xa phu nhu may Lien dau (LD_DiThanh - da kiem chung)
+		if (ea.nSTStep < 3)
+		{
+			if ((ea.nSTTry % 12) == 1)
+			{
+				if (DT_UsePortal(nPlayerIdx))
+				{
+					++ea.nSTStep;
+					ea.uSTNext = uCurTime + 4000;
+					return 0;
+				}
+				ea.nSTStep = 3;
+			}
+			return 0;
+		}
+		int nDi = LD_DiThanh(nPlayerIdx, pAp, ST_MAP_NPC_MD, uCurTime);
+		if (ea.uLDNext > uCurTime)
+			ea.uSTNext = ea.uLDNext;
+		return (nDi < 0) ? -1 : 0;
+	}
+	ea.uLDHopT = 0;
+	int nX, nY, dX, dY;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	const int nDX = TK_O((int)s_nST3NpcX[nI]);
+	const int nDY = TK_O((int)s_nST3NpcY[nI]);
+	// tim theo TEMPLATE 769 - chac chan hon so ten (ten TCVN3 co byte cao)
+	int nNpc = TG_SatThuTimNpc(ST3_NPC_TEMPLATE, nDX, nDY, 640);
+	if (!nNpc)
+	{
+		DT_WalkTo(nPlayerIdx, nDX, nDY, 200, uCurTime);
+		return 0;
+	}
+	Npc[nNpc].GetMpsPos(&dX, &dY);
+	if (g_GetDistance(nX, nY, dX, dY) > 128)
+	{
+		DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
+		return 0;
+	}
+	if (pnNpc)
+		*pnNpc = nNpc;
+	return 1;
+}
+
+// go lai thoai NPC 769 khi cho mai khong thay thoai moi
+static void ST_GoLaiNpc(int nPlayerIdx)
+{
+	const int nI = TG_SatThuChiSoNpcMap(SubWorld[0].m_SubWorldID);
+	if (nI < 0)
+		return;
+	int nNpc = TG_SatThuTimNpc(ST3_NPC_TEMPLATE,
+		TK_O((int)s_nST3NpcX[nI]), TK_O((int)s_nST3NpcY[nI]), 640);
+	if (nNpc)
+		Player[nPlayerIdx].DialogNpc(nNpc);
+}
+
+// nghi nMs roi lam lai vong khac (loi tam - KHONG chot ca ngay)
+static int ST_Nghi(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	if (szWhy)
+		ST_Msg(nPlayerIdx, szWhy);
+	ea.uLDHopT = 0;
+	ea.uSTNghiT = uCurTime + uMs;
+	ea.nSTPhase = STP_DONE;
+	ea.nSTHold = 0;
+	ea.uNpcID = 0;
+	return 0;
+}
+
+// Tui day theo DUNG nguong nguoi choi dat o tab Co ban (bCheckTPIBox /
+// nTPiboxSel): nha may 3 phut cho chu trinh Hau can CO SAN (ve thanh, ban
+// rac theo bo loc, cat ruong) chay - khong tu che co che don tui rieng.
+// Tra 1 = da nha may (goi trong pha ket luot).
+static int ST_TuiDayYield(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	if (!DT_TuiDayTP(nPlayerIdx, pAp))
+		return 0;
+	ST_Nghi(nPlayerIdx, "<color=Yellow>Tói ®Çy theo ng­ìng tab C¬ b¶n - nh¶ m¸y cho HËu cÇn vÒ thµnh dän tói, 3 phót n÷a s¨n tiÕp.", uCurTime, 180000u);
+	return 1;
+}
+
+// ================== MAY CHINH SAN BOSS SAT THU ==================
+// Tra 0 = tha may; 1 = cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
+//     2 = cam lai + may PK (tab PK) danh + bo NHAT DO cua nguoi choi van chay.
+static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	int nX, nY;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	const int nNgay = DT_Today();
+	const int nTask = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_BOSS);
+
+	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
+		return ea.nSTPhase ? 1 : 0;
+	if (Player[nPlayerIdx].CheckTrading())
+		return ea.nSTPhase ? 1 : 0;
+
+	// ---- quyet dinh vao cuoc ----
+	if (ea.nSTPhase == STP_OFF || ea.nSTPhase == STP_DONE)
+	{
+		ea.nSTHold = 0;
+		if (!pAp->bSatThu)
+		{
+			ea.nSTPhase = STP_OFF;
+			return 0;
+		}
+		if (ea.uSTNext > uCurTime)
+			return 0;
+		ea.uSTNext = uCurTime + 1500;
+		if (ea.nSTNgay == nNgay)		// da chot xong / bo hom nay
+			return 0;
+		if (ea.uSTNghiT > uCurTime)		// dang nghi giua 2 luot / nghi loi tam
+			return 0;
+		// Het luot hom nay thi KHONG di vo ich. Task 1192 la ngay SERVER ghi; lech
+		// mui gio thi dieu kien khong khop -> cu di, server se tu reset 1193 luc mo
+		// thoai (nieshichen.killerCoundTakedTask) va tra loi "khinh ke bai tran"
+		// neu that su het - nhanh do chot ngay o STP_MENU.
+		if ((int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_NGAY) == nNgay
+		 && (int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_DEM) >= ST_MucLuot(pAp)
+		 && !(nTask >= 1 && nTask <= ST3_POS_MAX))
+		{
+			ea.nSTNgay = nNgay;
+			ST_Msg(nPlayerIdx, "<color=Cyan>§· ®ñ l­ît s¨n boss s¸t thñ h«m nay - nghØ tíi ngµy mai.");
+			return 0;
+		}
+		// tui day thi don truoc da (nhat do xong ma tui day thi luot sau vo ich)
+		if (!(nTask >= 1 && nTask <= ST3_POS_MAX) && ST_TuiDayYield(nPlayerIdx, pAp, uCurTime))
+			return 0;
+		ea.nSTGhepTry = 0;
+		ea.uSTVongT = uCurTime;
+		ea.uLDHopT = 0;
+		if (nTask >= 1 && nTask <= ST3_POS_MAX)
+		{
+			// nhiem vu do dang (vua thoat game / vua bat o) -> di giet truoc
+			ea.nSTMucBoss = nTask;
+			ST_Pha(nPlayerIdx, (nMap == (int)s_nST3BossMap[nTask]) ? STP_TOIBOSS : STP_XAPHU, uCurTime);
+			ST_Msg(nPlayerIdx, "<color=Cyan>§ang cã nhiÖm vô s¸t thñ dë - ®i giÕt boss tr­íc.");
+		}
+		else
+		{
+			ea.nSTMucBoss = 0;
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			ST_Msg(nPlayerIdx, "<color=Cyan>B¾t ®Çu vßng s¨n boss s¸t thñ - vÒ thµnh gÆp NhiÕp ThÝ TrÇn.");
+		}
+		ea.nSTHold = 1;
+		return 1;
+	}
+
+	// nguoi choi vua TAT o cau hinh cua ho -> tha may + OFF ngay
+	if (!pAp->bSatThu)
+	{
+		ea.nSTPhase = STP_OFF;
+		ea.nSTHold = 0;
+		ea.uNpcID = 0;
+		return 0;
+	}
+
+	if (ea.uSTNext > uCurTime)
+		return ea.nSTHold;
+	ea.uSTNext = uCurTime + 400;
+	++ea.nSTTry;
+
+	// han MOT pha di duong (pha di bo trong map / danh boss / nhat do co dong
+	// ho rieng - xem ST_HANDIBO va ST_CHO_HOISINH)
+	if (ea.nSTPhase == STP_TOIBOSS && uCurTime - ea.uSTPhaseT > ST_HANDIBO)
+		return ST_Nghi(nPlayerIdx, "<color=Yellow>§i bé tíi chç boss qu¸ 8 phót (kÑt ®Þa h×nh?) - nghØ 5 phót råi lµm l¹i.", uCurTime, 300000u);
+	if (ea.nSTPhase != STP_DANH && ea.nSTPhase != STP_NHAT && ea.nSTPhase != STP_TOIBOSS
+	 && uCurTime - ea.uSTPhaseT > ST_HANPHA)
+		return ST_Nghi(nPlayerIdx, "<color=Yellow>Mét b­íc cña auto S¸t Thñ kÑt qu¸ 4 phót - nghØ 5 phót råi lµm l¹i.", uCurTime, 300000u);
+	// han MOT vong: chan canh pha nay day pha kia vong tron (moi lan doi pha deu
+	// dat lai uSTPhaseT nen han 4 phut o tren khong bao gio no)
+	if (uCurTime - ea.uSTVongT > ST_HANVONG)
+		return ST_Nghi(nPlayerIdx, "<color=Yellow>Mét vßng s¨n boss ch¹y qu¸ 45 phót - nghØ 5 phót råi lµm l¹i.", uCurTime, 300000u);
+
+	switch (ea.nSTPhase)
+	{
+	case STP_NPC:
+	{
+		ea.nSTHold = 1;
+		int nNpc = 0;
+		int nR = ST_ToiNpc769(nPlayerIdx, pAp, uCurTime, &nNpc);
+		if (nR < 0)
+			return ST_Nghi(nPlayerIdx, "<color=Yellow>Kh«ng vÒ ®­îc thµnh cã NhiÕp ThÝ TrÇn (hÕt phï vÒ?) - nghØ 5 phót.", uCurTime, 300000u);
+		if (nR == 0)
+			return 1;
+		// Da dung canh NPC. GHEP TRUOC (neu du 5 lenh cung cap va tui con o) roi
+		// moi nhan nhiem vu - de nhan xong la di duoc ngay.
+		int nCap = 0;
+		if (pAp->bSTGhep && ea.nSTGhepTry < 3 && ST_DemLenh(nPlayerIdx, &nCap) >= 5)
+		{
+			int x, y;
+			if (Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x, &y))
+			{
+				ea.nSTCap = nCap;
+				ST_Pha(nPlayerIdx, STP_GHEP, uCurTime);
+				Player[nPlayerIdx].DialogNpc(nNpc);
+				ea.uSTNext = uCurTime + 900;
+				return 1;
+			}
+			ea.nSTGhepTry = 3;	// tui day - de lan sau, dung ket vong o day
+			ST_Msg(nPlayerIdx, "<color=Yellow>Tói ®Çy - ch­a ghÐp ®­îc S¸t Thñ Gi¶n, cø ®i nhËn nhiÖm vô.");
+		}
+		ST_Pha(nPlayerIdx, STP_MENU, uCurTime);
+		Player[nPlayerIdx].DialogNpc(nNpc);
+		ea.uSTNext = uCurTime + 900;
+		return 1;
+	}
+
+	case STP_MENU:
+	{
+		ea.nSTHold = 1;
+		if (TG_SatThuChiSoNpcMap(nMap) < 0)
+		{
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);	// bi keo sang map khac
+			return 1;
+		}
+		// nhan duoc roi (server da ghi so hieu boss vao task) -> di ngay
+		if (nTask >= 1 && nTask <= ST3_POS_MAX)
+		{
+			ea.nSTMucBoss = nTask;
+			CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// dong khung thoai
+			{
+				char szTB[256];
+				sprintf(szTB, "<color=Green>§· nhËn nhiÖm vô giÕt <color=Yellow>%s <color>- ra Xa Phu ®i b¶n ®å nhiÖm vô.", s_szST3BossTen[nTask]);
+				ST_Msg(nPlayerIdx, szTB);
+			}
+			ea.uLDHopT = 0;
+			ST_Pha(nPlayerIdx, STP_XAPHU, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq == ea.uSTDlgSeen)
+		{
+			if ((ea.nSTTry % 8) == 0)
+				ST_GoLaiNpc(nPlayerIdx);
+			return 1;
+		}
+		ea.uSTDlgSeen = cap.uDlgSeq;
+		{
+			char szBuf[2048];
+			char* apAns[24];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 24);
+			if (DT_Has(szBuf, STM_SAY_HETLUOT))
+			{
+				ea.nSTNgay = nNgay;
+				ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 600);
+				ST_Msg(nPlayerIdx, "<color=Cyan>H«m nay ®· ®ñ l­ît s¨n s¸t thñ - nghØ tíi ngµy mai.");
+				ea.nSTPhase = STP_DONE;
+				ea.nSTHold = 0;
+				return 0;
+			}
+			if (DT_Has(szBuf, STM_SAY_SAICAP))
+			{
+				ea.nSTNgay = nNgay;
+				ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 600);
+				ST_Msg(nPlayerIdx, "<color=Yellow>CÊp nh©n vËt ch­a ®ñ 90 - auto S¸t Thñ nghØ hÕt h«m nay.");
+				ea.nSTPhase = STP_DONE;
+				ea.nSTHold = 0;
+				return 0;
+			}
+			if (DT_Has(szBuf, STM_SAY_DANGCO))
+			{
+				// "van con song": server bao dang cam nhiem vu ma task chua ve toi
+				// client - dong thoai, nhip sau doc lai task
+				ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 1500);
+				return 1;
+			}
+			if (ea.nSTMucBoss < ST_BOSS_DAU || ea.nSTMucBoss > ST_BOSS_CUOI)
+				ea.nSTMucBoss = ST_ChonBoss(nPlayerIdx, pAp);
+			// dang o bang 20 boss: bam DUNG dong ten con muon danh
+			if (ST_BamMuc(nPlayerIdx, apAns, nAns, s_szST3BossTen[ea.nSTMucBoss], uCurTime, 1500))
+				return 1;
+			// con muon danh nam o trang 2 (151..160) -> lat trang
+			if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_TRANGKE, uCurTime, 1200))
+				return 1;
+			if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_NV90, uCurTime, 1500))
+				return 1;
+			if (++ea.nSTStep > 6)
+				return ST_Nghi(nPlayerIdx, "<color=Yellow>Tho¹i NhiÕp ThÝ TrÇn kh«ng cã môc cÇn chän - nghØ 5 phót råi thö l¹i.", uCurTime, 300000u);
+			CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// thoai la - dong roi go lai
+			ea.uSTNext = uCurTime + 1200;
+		}
+		return 1;
+	}
+
+	case STP_GHEP:
+	{
+		ea.nSTHold = 1;
+		if (TG_SatThuChiSoNpcMap(nMap) < 0)
+		{
+			ST_DongHop(nPlayerIdx);
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			return 1;
+		}
+		// nSTStep >= 100: DA bam xac nhan - chi cho thoai ket qua, KHONG bo them do
+		if (ea.nSTStep >= 100)
+		{
+			if (cap.uDlgSeq != ea.uSTDlgSeen)
+			{
+				ea.uSTDlgSeen = cap.uDlgSeq;
+				char szBuf[2048];
+				char* apAns[24];
+				g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+				int nAns = DT_Split(szBuf, apAns, 24);
+				if (DT_Has(szBuf, STM_SAY_GHEPOK))
+				{
+					++ea.nSTGhepTry;	// toi da 3 lan/vong (chan ket vong)
+					ST_Msg(nPlayerIdx, "<color=Green>§· hîp thµnh 1 S¸t Thñ Gi¶n tõ 5 S¸t Thñ lÖnh.");
+				}
+				else if (DT_Has(szBuf, STM_SAY_GHEPSAI) || DT_Has(szBuf, STM_SAY_GHEPNHIEU)
+					  || DT_Has(szBuf, STM_SAY_GHEPIT))
+				{
+					ea.nSTGhepTry = 3;	// server tu choi - thoi ghep vong nay
+					ST_Msg(nPlayerIdx, "<color=Yellow>GhÐp S¸t Thñ Gi¶n kh«ng thµnh (sai sè l­îng hoÆc kh¸c cÊp) - bá qua.");
+				}
+				else
+				{
+					ea.nSTGhepTry = 3;
+				}
+				ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 900);
+				ST_DongHop(nPlayerIdx);
+				ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+				return 1;
+			}
+			if (uCurTime - ea.uSTPhaseT > 30000u)
+			{
+				ea.nSTGhepTry = 3;
+				ST_DongHop(nPlayerIdx);
+				ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			}
+			return 1;
+		}
+		if (cap.nBoxOpen)
+		{
+			int nDaBo = ST_DemTrongHop(nPlayerIdx);
+			ItemPos sSrc;
+			int nIt = (nDaBo < 5) ? ST_TimLenh(nPlayerIdx, ea.nSTCap, &sSrc) : 0;
+			if (nDaBo >= 5 || !nIt)
+			{
+				// du 5 mon (hoac het lenh cung cap trong tui - bam OK cho server
+				// tra loi roi dong): xac nhan
+				SendUiCmdScript(1, cap.szBoxFunc);
+				ea.nSTStep = 100;
+				ea.uSTPhaseT = uCurTime;
+				ea.uSTNext = uCurTime + 1200;
+				return 1;
+			}
+			// MOT goi = MOT CU CLICK trong 1 o (Down == Up): server KItemList::
+			// ExchangeItem tu choi goi Down != Up, nen "keo" do phai la 2 cu click -
+			// nhac len tay, dat vao o hop, roi click lai cho cu (dat truot thi mon
+			// tu quay ve tui, khong ket tren tay). Khuon DTP_GIVEBOX cua Da Tau.
+			if (uCurTime - ea.uSTPhaseT > 45000u)
+			{
+				// 45 giay ma van chua bo du 5 mon (goi keo do bi nuot?) - bam xac
+				// nhan cho server tra loi roi dong hop, dung de ket het han pha
+				SendUiCmdScript(1, cap.szBoxFunc);
+				ea.nSTStep = 100;
+				ea.uSTPhaseT = uCurTime;
+				ea.uSTNext = uCurTime + 1200;
+				return 1;
+			}
+			int w = Item[nIt].GetWidth();
+			int h = Item[nIt].GetHeight();
+			if (w < 1)
+				w = 1;
+			if (h < 1)
+				h = 1;
+			int nCot = AFFAIRITEM_ROOM_WIDTH / w;
+			if (nCot < 1)
+				nCot = 1;
+			DT_ClickItem(sSrc.nPlace, sSrc.nX, sSrc.nY);
+			DT_ClickItem(pos_affairitem, (nDaBo % nCot) * w, (nDaBo / nCot) * h);
+			DT_ClickItem(sSrc.nPlace, sSrc.nX, sSrc.nY);
+			ea.uSTNext = uCurTime + 700;
+			return 1;
+		}
+		// hop chua mo: chon muc "Hop thanh sat thu gian" trong thoai NPC
+		if (cap.uDlgSeq != ea.uSTDlgSeen)
+		{
+			ea.uSTDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[24];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 24);
+			if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_GHEP, uCurTime, 1500))
+				return 1;
+			if (++ea.nSTStep > 6)
+			{
+				ea.nSTGhepTry = 3;
+				ST_Msg(nPlayerIdx, "<color=Yellow>Kh«ng më ®­îc giao diÖn hîp thµnh - bá ghÐp vßng nµy.");
+				ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+				return 1;
+			}
+			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+			ea.uSTNext = uCurTime + 1200;
+			return 1;
+		}
+		if ((ea.nSTTry % 8) == 0)
+			ST_GoLaiNpc(nPlayerIdx);
+		return 1;
+	}
+
+	case STP_HUY:
+	{
+		ea.nSTHold = 1;
+		if (nTask == 0)
+		{
+			// da huy xong -> doi con khac roi ve nhan lai
+			ea.nSTMucBoss = 0;
+			++ea.nSTKe;
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			return 1;
+		}
+		// dung dung duong /cancel cua chinh thoai nieshichen (server da co san
+		// nhanh st3_quit - nut "Bo nhiem vu" cua bang F11), khong phai ve thanh
+		if ((ea.nSTTry % 8) == 1)
+			SendUiCmdScript(6, (char*)"st3_quit");
+		if (uCurTime - ea.uSTPhaseT > 20000u)
+		{
+			// server khong huy duoc (ban cu chua co st3_quit) -> ve thanh bam tay
+			int nNpc = 0;
+			int nR = ST_ToiNpc769(nPlayerIdx, pAp, uCurTime, &nNpc);
+			if (nR < 0)
+				return ST_Nghi(nPlayerIdx, "<color=Yellow>Kh«ng vÒ ®­îc thµnh cã NhiÕp ThÝ TrÇn (hÕt phï vÒ?) - nghØ 5 phót.", uCurTime, 300000u);
+			if (nR == 0)
+				return 1;
+			if (cap.uDlgSeq != ea.uSTDlgSeen)
+			{
+				ea.uSTDlgSeen = cap.uDlgSeq;
+				char szBuf[2048];
+				char* apAns[24];
+				g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+				int nAns = DT_Split(szBuf, apAns, 24);
+				if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_HUY, uCurTime, 1500))
+					return 1;
+				ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 900);
+				CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+				ea.uSTNext = uCurTime + 1200;
+				return 1;
+			}
+			if ((ea.nSTTry % 8) == 0)
+				ST_GoLaiNpc(nPlayerIdx);
+		}
+		return 1;
+	}
+
+	case STP_XAPHU:
+	{
+		ea.nSTHold = 1;
+		const int nBoss = ea.nSTMucBoss;
+		if (nBoss < 1 || nBoss > ST3_POS_MAX)
+		{
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			return 1;
+		}
+		if (nMap == (int)s_nST3BossMap[nBoss])
+		{
+			ST_Pha(nPlayerIdx, STP_TOIBOSS, uCurTime);
+			return 1;
+		}
+		MapStation::iterator itXa = g_MoveStation.find(nMap);
+		if (itXa == g_MoveStation.end() || itXa->second.empty())
+		{
+			// map la khong co Xa phu (bi keo di dau do) -> ve thanh lam lai
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			return 1;
+		}
+		sStation& sXa = itXa->second[0];
+		if (ea.nSTStep == 0)
+		{
+			int nXa = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
+			if (!nXa)
+			{
+				DT_WalkTo(nPlayerIdx, sXa.x, sXa.y, 200, uCurTime);
+				return 1;
+			}
+			int dX, dY;
+			Npc[nXa].GetMpsPos(&dX, &dY);
+			if (g_GetDistance(nX, nY, dX, dY) > 128)
+			{
+				DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
+				return 1;
+			}
+			ea.uSTDlgSeen = cap.uDlgSeq;
+			Player[nPlayerIdx].DialogNpc(nXa);
+			// ban do khong co trong menu "len ban do luyen cong" -> thue xe rieng
+			// (hd3_st_goboss.lua: tru HD3_ST_TIEN_XE roi tha xuong waypoint cua map)
+			if (s_szST3BossMenu[nBoss][0] == 0)
+			{
+				SendUiCmdScript(6, (char*)"st3_goboss");
+				ST_Msg(nPlayerIdx, "<color=Yellow>Xa Phu kh«ng chë tíi b¶n ®å nµy - thuª xe riªng (tèn tiÒn).");
+				ST_Pha(nPlayerIdx, STP_LENMAP, uCurTime);
+				return 1;
+			}
+			ea.nSTStep = 1;
+			ea.uSTNext = uCurTime + 900;
+			return 1;
+		}
+		if (cap.uDlgSeq == ea.uSTDlgSeen)
+		{
+			if ((ea.nSTTry % 10) == 0)
+			{
+				int nXa = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
+				if (nXa)
+					Player[nPlayerIdx].DialogNpc(nXa);
+			}
+			return 1;
+		}
+		ea.uSTDlgSeen = cap.uDlgSeq;
+		{
+			char szBuf[2048];
+			char* apAns[24];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 24);
+			const char* szMark = ST3_MENU_LUYENCONG;
+			if (ea.nSTStep == 2)
+				szMark = s_szST3BossMoc[nBoss];
+			else if (ea.nSTStep >= 3)
+				szMark = s_szST3BossMenu[nBoss];
+			if (ST_BamMuc(nPlayerIdx, apAns, nAns, szMark, uCurTime, 1200))
+			{
+				if (ea.nSTStep >= 3)
+				{
+					ST_Pha(nPlayerIdx, STP_LENMAP, uCurTime);
+					ST_Msg(nPlayerIdx, "<color=Cyan>§· chän b¶n ®å nhiÖm vô - ®ang lªn ®­êng.");
+				}
+				else
+					++ea.nSTStep;
+				return 1;
+			}
+			// thoai Xa Phu khong co muc can chon -> dong roi go lai tu dau
+			ea.nSTStep = 0;
+			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+			ea.uSTNext = uCurTime + 1500;
+		}
+		return 1;
+	}
+
+	case STP_LENMAP:
+	{
+		ea.nSTHold = 1;
+		const int nBoss = ea.nSTMucBoss;
+		if (nBoss >= 1 && nBoss <= ST3_POS_MAX && nMap == (int)s_nST3BossMap[nBoss])
+		{
+			ST_Pha(nPlayerIdx, STP_TOIBOSS, uCurTime);
+			ST_Msg(nPlayerIdx, "<color=Cyan>§· lªn b¶n ®å nhiÖm vô - ®ang ch¹y tíi chç boss...");
+			return 1;
+		}
+		if (uCurTime - ea.uSTPhaseT > 30000u)
+			ST_Pha(nPlayerIdx, STP_XAPHU, uCurTime);	// chua len duoc - go Xa Phu lai
+		return 1;
+	}
+
+	case STP_TOIBOSS:
+	{
+		ea.nSTHold = 1;
+		const int nBoss = ea.nSTMucBoss;
+		if (nBoss < 1 || nBoss > ST3_POS_MAX)
+		{
+			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+			return 1;
+		}
+		if (nMap != (int)s_nST3BossMap[nBoss])
+		{
+			ST_Pha(nPlayerIdx, STP_XAPHU, uCurTime);	// bi keo sang map khac
+			return 1;
+		}
+		// boss chet giua chung (to doi / nguoi khac giet ho) -> nhat do roi ve
+		if (nTask == 0)
+		{
+			ST_Pha(nPlayerIdx, STP_NHAT, uCurTime);
+			ea.nSTHold = 2;
+			return 2;
+		}
+		const int nBX = TK_O((int)s_nST3BossX[nBoss]);
+		const int nBY = TK_O((int)s_nST3BossY[nBoss]);
+		if (ST_TimBoss(nPlayerIdx, nBoss, nX, nY, TK_O(40)))
+		{
+			ST_Pha(nPlayerIdx, STP_DANH, uCurTime);	// thay boss roi - vao danh luon
+			ea.uSTThayT = uCurTime;
+			return 1;
+		}
+		if (DT_WalkTo(nPlayerIdx, nBX, nBY, 200, uCurTime))
+		{
+			ST_Pha(nPlayerIdx, STP_DANH, uCurTime);
+			ea.uSTThayT = uCurTime;
+			ST_Msg(nPlayerIdx, "<color=Cyan>§· tíi chç boss s¸t thñ - b¾t ®Çu ®¸nh.");
+		}
+		return 1;
+	}
+
+	case STP_DANH:
+	{
+		const int nBoss = ea.nSTMucBoss;
+		if (nBoss < 1 || nBoss > ST3_POS_MAX || nMap != (int)s_nST3BossMap[nBoss])
+		{
+			ea.uNpcID = 0;
+			ST_Pha(nPlayerIdx, STP_XAPHU, uCurTime);
+			ea.nSTHold = 1;
+			return 1;
+		}
+		// task ve 0 = boss DA CHET (lib_killlevel.lua SetMemberTask) -> nhat do
+		if (nTask == 0)
+		{
+			ea.uNpcID = 0;
+			ST_Msg(nPlayerIdx, "<color=Green>§· h¹ boss s¸t thñ - nhÆt ®å theo cµi ®Æt tab NhÆt ®å.");
+			ST_Pha(nPlayerIdx, STP_NHAT, uCurTime);
+			ea.nSTHold = 2;
+			return 2;
+		}
+		const int nBX = TK_O((int)s_nST3BossX[nBoss]);
+		const int nBY = TK_O((int)s_nST3BossY[nBoss]);
+		int nTG = ST_TimBoss(nPlayerIdx, nBoss, nX, nY, TK_O(40));
+		if (!nTG)
+			nTG = ST_TimBoss(nPlayerIdx, nBoss, nBX, nBY, TK_O(40));
+		if (nTG)
+		{
+			// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
+			ea.uSTThayT = uCurTime;
+			ea.uSTVongT = uCurTime;	// dang danh that -> gia han dong ho vong
+			ea.uNpcID = Npc[nTG].m_dwID;
+			g_ScenePlace.RemoveFlag();
+			ea.uSTNext = uCurTime + 300;
+			ea.nSTHold = 2;
+			return 2;
+		}
+		// khong thay boss: chua hoi sinh (ReviveFrame 16200, JX1 chia doi = ~7,5
+		// phut) hoac dang khuat - ve dung diem spawn roi dung cho tai cho
+		ea.uNpcID = 0;
+		ea.nSTHold = 1;
+		if (g_GetDistance(nX, nY, nBX, nBY) > TK_O(6))
+		{
+			DT_WalkTo(nPlayerIdx, nBX, nBY, TK_O(4), uCurTime);
+			ea.uSTNext = uCurTime + 800;
+			return 1;
+		}
+		if (!pAp->bSTChoHS)
+		{
+			ST_Msg(nPlayerIdx, "<color=Yellow>Boss ch­a håi sinh - hñy nhiÖm vô ®Ó ®æi con kh¸c.");
+			ST_Pha(nPlayerIdx, STP_HUY, uCurTime);
+			return 1;
+		}
+		if (uCurTime - ea.uSTThayT > ST_CHO_HOISINH)
+		{
+			ST_Msg(nPlayerIdx, "<color=Yellow>Chê 10 phót kh«ng thÊy boss håi sinh - ®æi nhiÖm vô kh¸c.");
+			ST_Pha(nPlayerIdx, STP_HUY, uCurTime);
+			return 1;
+		}
+		if ((ea.nSTTry % 25) == 1)
+			ST_Msg(nPlayerIdx, "<color=Gray>Boss ch­a håi sinh - ®øng chê t¹i chç (nhÞp kho¶ng 7,5 phót).");
+		// tra 2 chu KHONG phai 1: dung im giua o quai suot 10 phut ma chan
+		// ca PKFIGHT lan PICKUP thi bi danh khong danh tra duoc. KHONG giao
+		// uNpcID nen may PK tu chon muc tieu theo DUNG cau hinh tab PK.
+		ea.nSTHold = 2;
+		ea.uSTNext = uCurTime + 1500;
+		return 2;
+	}
+
+	case STP_NHAT:
+	{
+		// Tra 2 = van cam MOVE/RETURN nhung ExtAutoLoop VAN chay ATYPE_PICKUP,
+		// tuc la bo NHAT DO cua nguoi choi (tab Nhat do + danh sach Loc) lam viec
+		// binh thuong. KHONG giao muc tieu nen may PK khong bi ep danh gi.
+		ea.nSTHold = 2;
+		ea.uNpcID = 0;
+		UINT uDa = uCurTime - ea.uSTPhaseT;
+		int nConDo = 0;
+		if (pAp->bPickUp)
+		{
+			int nVis = pAp->nPickVision;
+			if (nVis < 100)
+				nVis = 100;
+			else if (nVis > 1200)
+				nVis = 1200;
+			int nObj = ObjSet.GetNext(0);
+			while (nObj)
+			{
+				if (Object[nObj].m_nKind == Obj_Kind_Item)
+				{
+					int dX, dY;
+					Object[nObj].GetMpsPos(&dX, &dY);
+					if (g_GetDistance(nX, nY, dX, dY) <= nVis)
+					{
+						nConDo = 1;
+						break;
+					}
+				}
+				nObj = ObjSet.GetNext(nObj);
+			}
+		}
+		if (uDa < ST_NHAT_MIN || (nConDo && uDa < ST_NHAT_MAX))
+		{
+			ea.uSTNext = uCurTime + 500;
+			return 2;
+		}
+		// nhat xong -> ket luot: doi con boss ke, roi ve thanh nhan luot moi
+		ea.nSTMucBoss = 0;
+		ea.nSTGhepTry = 0;
+		++ea.nSTKe;
+		if (pAp->nSTNghi > 0)
+		{
+			char szTB[200];
+			sprintf(szTB, "<color=Cyan>Xong 1 l­ît s¨n boss - nghØ %d phót råi lµm l­ît kÕ.", pAp->nSTNghi);
+			ST_Msg(nPlayerIdx, szTB);
+			return ST_Nghi(nPlayerIdx, NULL, uCurTime, (UINT)pAp->nSTNghi * 60000u);
+		}
+		if (ST_TuiDayYield(nPlayerIdx, pAp, uCurTime))
+			return 0;
+		ea.uSTVongT = uCurTime;
+		ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
+		ea.nSTHold = 1;
+		return 1;
+	}
+
+	default:
+		ea.nSTPhase = STP_OFF;
+		ea.nSTHold = 0;
+		ea.uNpcID = 0;
+		return 0;
+	}
+}
+// ==================== HET AUTO SAN BOSS SAT THU ====================
+
+
 // (r2) dong "auto dang lam gi" cho chan cua so WAuto - KProtocolProcess dien vao
 // IPCMainSync.szHoatDong (chi ban CLIENT; server khong bien dich CoreShell.cpp).
 void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
@@ -10400,7 +11371,23 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 		return;
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	const char* sz = NULL;
-	if (ea.nLDPhase)
+	if (ea.nSTPhase)
+	{
+		switch (ea.nSTPhase)
+		{
+		case STP_NPC:       sz = "S¸t Thñ: tíi NhiÕp ThÝ TrÇn"; break;
+		case STP_MENU:      sz = "S¸t Thñ: nhËn nhiÖm vô"; break;
+		case STP_GHEP:      sz = "S¸t Thñ: ghÐp S¸t Thñ Gi¶n"; break;
+		case STP_HUY:       sz = "S¸t Thñ: hñy nhiÖm vô"; break;
+		case STP_XAPHU:     sz = "S¸t Thñ: nhê Xa Phu ®i b¶n ®å"; break;
+		case STP_LENMAP:    sz = "S¸t Thñ: chê lªn b¶n ®å"; break;
+		case STP_TOIBOSS:   sz = "S¸t Thñ: ch¹y tíi chç boss"; break;
+		case STP_DANH:      sz = "S¸t Thñ: ®ang ®¸nh boss"; break;
+		case STP_NHAT:      sz = "S¸t Thñ: nhÆt ®å"; break;
+		default: break;
+		}
+	}
+	else if (ea.nLDPhase)
 	{
 		switch (ea.nLDPhase)
 		{
@@ -15544,6 +16531,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_HOATDONG:
 				{
 					return HD_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_SATTHU:
+				{
+					return ST_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
 				}
 				case ATYPE_SETSELSV1:
 				{
