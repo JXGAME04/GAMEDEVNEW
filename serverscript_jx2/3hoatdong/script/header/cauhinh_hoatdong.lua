@@ -100,6 +100,45 @@ TW_TEST_REDO = {1, 2, 1, 3, 4, 2, 5, 6, 3},
 --   * Map 605-613: settings\MapList.ini + WorldSet.ini.
 
 -- ===========================================================================
+-- [1b] NHIÖM Vô TÝN Sø (Thiªn B¶o Khè ®­a tin) - tiÒn tè TS_
+-- ===========================================================================
+-- NhËn ë DÞch Quan Ba L¨ng HuyÖn (map 11) / ®¹i Lý (162); Xa phu ®­a vµo ¶i map 395.
+-- Chuçi lµm: giÕt Thñ Hé Gi¶ -> më 5/9 B¶o R­¬ng ®óng thø tù -> Tiªu TrÊn ra -> tr¶ nhiÖm vô.
+
+-- CÊp tèi thiÓu nhËn nhiÖm vô (gèc Linux 120, chñ game ®· h¹ 90). [RESTART]
+TS_CAP_TOITHIEU = 90,
+
+-- Sè l­ît th­êng/ngµy + sè l­ît mua thªm b»ng item Thiªn Khè B¶o LÖnh (6,1,3431).
+-- ®Õm theo ngµy ë task 4128. [RESTART]
+TS_LUOT_THUONG_NGAY = 2,
+TS_LUOT_ITEM_NGAY = 1,
+
+-- --- PHÇN TH­ëNG (nil = dïng ®óng b¶ng gèc Linux) ---------------------------
+-- B¶ng gèc: settings\task\tollgate\messenger\messenger_tollprize.txt, hµng 10 (qian120):
+--    më 1 B¶o R­¬ng    = 10000 exp + 9 ®iÓm TÝn Sø (céng vµo task 1205)
+--    giÕt 1 Thñ Hé Gi¶ = 40000 exp + 30 ®iÓm TÝn Sø
+-- ®iÒn sè vµo ®©y lµ GHI ®Ì b¶ng; ®Ó nil lµ gi÷ nguyªn b¶ng (100% Linux). [RESTART]
+TS_EXP_MO_RUONG = nil,
+TS_DIEM_MO_RUONG = nil,
+TS_EXP_GIET_THUHO = nil,
+TS_DIEM_GIET_THUHO = nil,
+
+-- Th­ëng khi TR¶ nhiÖm vô ë tr¹m dÞch (posthouse.lua, hµm messenger_treasureprize):
+--    lÇn ®ÇU trong ngµy: TS_TRA_HANHHIEP c¸i Hµnh HiÖp LÖnh (6,1,2575)
+--    MäI lÇn tr¶: TS_TRA_BAORUONG c¸i TÝn Sø B¶o R­¬ng (6,1,3430)
+--    (riªng nguyªn liÖu Kinh M¹ch 4847 tèi ®a 2 lÇn/ngµy theo task 3073 - gi÷ nguyªn)
+-- [RESTART]
+TS_TRA_HANHHIEP = 3,
+TS_TRA_BAORUONG = 2,
+
+-- [ENGINE/B¶NG] Kh«ng chØnh ë ®©y:
+--   * Sè r­¬ng ph¶i më (5) / tæng r­¬ng (9): messenger_baoxiangtask.lua dßng 10-11,
+--     g¾n cøng víi 9 vÞ trÝ NPC trong killbosshead.lua - ®õng ®æi.
+--   * Giíi h¹n 2 giê trong ¶i (task 1222): BÞ COMMENT Tõ GèC ë c¶ Linux
+--     (messenger_timeer.lua) - kh«ng giíi h¹n thêi gian lµ ®óng b¶n gèc.
+--   * Danh s¸ch tr¹m tr¶ nhiÖm vô: b¶ng citygo trong posthouse.lua.
+
+-- ===========================================================================
 -- [2] BACH NHAN LOI DAI (bairenleitai) - map 960, vao tu NPC Lam An (176)
 -- ===========================================================================
 -- Cap toi thieu. [LIVE]
@@ -270,9 +309,10 @@ HD3_ST_MAX_NGAY = 8,
 -- Cap toi thieu - CHI HIEN THI (ban Linux chi doi co mon phai, fld_head.lua:40). [HIEN THI]
 HD3_PLD_CAP_TOITHIEU = 1,
 -- Gio mo trong ngay (dang HHMM, moi so = 1 luot dua). Ban Linux relay chay
--- MOI GIO dung phut :00 (24 luot/ngay); mac dinh o day 12 gio chan = LECH CO
--- CHU DICH de nhe server - muon dung 100% Linux thi liet ke du 24 gio. [RESTART]
-HD3_PLD_GIO = {0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200},
+-- MOI GIO dung phut :00 (24 luot/ngay) - DUNG 100% Linux (TaskList.ini Task_86
+-- dang ky ban interval 60; cac tep _NN00 gio chan KHONG duoc dang ky). [RESTART]
+HD3_PLD_GIO = {0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200,
+               1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300},
 -- Suc chua moi thuyen (fld_haveroom - da noi HD_CFG doc luc chay). [RESTART]
 HD3_PLD_SUC_CHUA = 100,
 -- Cac gio "ton phi" (dung Lenh Bai Thuy Tac 6,1,3363) dang HHMM - goc Linux

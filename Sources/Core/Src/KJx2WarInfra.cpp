@@ -1754,6 +1754,11 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
 		return 0;
 	const char* pTen = Lua_ValueToString(L, 1);
+	// tham so 2 (tuy chon): CHI xoa NPC dang o map co SubWorldID nay (vd 336
+	// ben Phong Lang Do) - tranh xoa nham NPC trung ten o he khac (ben do thon).
+	int nLocMapID = 0;
+	if (Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+		nLocMapID = (int)Lua_ValueToNumber(L, 2);
 	if (!pTen || !pTen[0])
 		return 0;
 	int nXoa = 0;
@@ -1768,6 +1773,8 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 		if (Npc[nIdx].IsPlayer())
 			continue;
 		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (nLocMapID != 0 && SubWorld[Npc[nIdx].m_SubWorldIndex].m_SubWorldID != nLocMapID)
 			continue;
 		if (strstr(Npc[nIdx].Name, pTen) == NULL)
 			continue;

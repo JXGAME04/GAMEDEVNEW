@@ -58,6 +58,14 @@ function HD3_DriverInit()
 	if (add_killertasknpc ~= nil) then
 		add_killertasknpc(addkillertasknpc)     -- boss sat thu (killbosshead)
 	end
+	-- [3HD 25/08 C15] xoa 6 NPC thuyen phu CU cua ban Viet (dung TRUNG toa do
+	-- voi NPC moi -> user click trung NPC cu, vao PLD ngoai mission => khong
+	-- danh duoc quai vi thieu SetFightState(1) cua mission). GIOI HAN map 336:
+	-- template "Thuyen phu *" con dung cho ben do thon o map khac.
+	if (HD3_DelNpcByName ~= nil) then
+		local nXoaTP = HD3_DelNpcByName("ThuyÒn phu", 336)
+		print("[3HD] Da xoa "..nXoaTP.." NPC thuyen phu cu (ban Viet, map 336).")
+	end
 	-- (B) Phong Lang Do: 6 thuyen phu (Linux fld_head.lua fld_wanttakeboat).
 	HD3_PLD_AddBoatNpc()
 	-- (C) Vuot Ai: NPC bao danh Nhiep Thi Tran (npcNhiepThiTran.lua) da gan qua
@@ -78,7 +86,7 @@ function HD3_PLD_AddBoatNpc()
 		local t = HD3_PLD_BOAT[i]
 		local nIdx = SubWorldID2Idx(t[3])
 		if (nIdx >= 0) then
-			local npc = HD3_AddNpc(240, 1, nIdx, t[1]*32, t[2]*32, 1, "Thuyen phu")
+			local npc = HD3_AddNpc(240, 1, nIdx, t[1]*32, t[2]*32, 1, "ThuyÒn phu")
 			if (npc ~= nil and npc > 0) then
 				SetNpcScript(npc, "\\script\\missions\\fengling_ferry\\hd3_thuyenphu.lua")
 				SetNpcValue(npc, t[4])   -- BOATID 1/2/3
@@ -111,7 +119,7 @@ function HD3_Tick(nHr, nMi)
 	-- (C) Vuot Ai - relay challengeoftime.lua: moi gio phut :00
 	if (nMi == 0) and (HD3_InList(nHHMM, HD_CFG("HD3_VA_GIO", {})) == 1) then
 		DynamicExecute(HD3_VA_TRIGGER, "OnTrigger")
-		AddLocalCountNews("Nhiem vu 'Thach thuc thoi gian' bat dau bao danh. Cac doi truong hay den gap Nhiep Thi Tran o that dai thanh thi!", 2)
+		AddLocalCountNews("Thêi gian b¸o danh 'Th¸ch thøc thêi gian' ®· b¾t ®Çu, c¸c ®éi tr­ëng h·y mau ®Õn NhiÕp ThÝ TrÇn ë c¸c thµnh thÞ b¸o danh. Thêi gian b¸o danh lµ 10 phót.", 2)	-- chuoi goc relay challengeoftime.lua
 		print(format("[3HD] Vuot Ai bao danh %02d:%02d", nHr, nMi))
 	end
 
@@ -126,9 +134,9 @@ function HD3_VA_DailyRank()
 	local name, value = Ladder_GetLadderInfo(10235, 1)
 	if (name ~= nil and name ~= "") then
 		value = value * (-1)
-		local szTime = format("%s phut %s giay", floor(value/60), floor(mod(value, 60)))
-		local szMsg = format("Chuc mung doi <%s> hoan thanh <Thach thuc thoi gian> voi thoi gian ngan nhat <%s>", name, szTime)
-		AddGlobalCountNews(szMsg, 10)
+		local szTime = format("%s phót %s gi©y", floor(value/60), floor(mod(value, 60)))
+		local szMsg = format("Chóc mõng ®éi <%s> ®· hoµn thµnh <th¸ch ®Êu thêi gian> víi thêi gian ng¾n nhÊt <%s>", name, szTime)	-- chuoi goc relay dailyrank
+		AddGlobalNews(szMsg, 10)	-- dung ham goc Linux (JX1 co san)
 		Msg2SubWorld(szMsg)
 	end
 	Ladder_ClearLadder(10235)
