@@ -478,34 +478,11 @@ void KUiTaskGuide::UpdateButtons()
 	m_BtnCancelTrace.Enable(bDT && KUiTaskTrace::IsTraced());
 }
 
-// [FIX 24/08] TEncodeText (Engine\Src\Text.cpp:468) coi MOI byte > 0x80 la chu Han 2 byte
-// va chep luon byte ke tiep. Tieng Viet TCVN3 la 1 BYTE => the dung ngay sau chu co dau
-// (vd "...Tin Su<color>") bi nuot mat dau '<', parser khong nhan ra the nua nen "color>"
-// in thang ra man hinh. Chen 1 dau cach truoc '<' khi byte lien truoc > 0x80: dau cach do
-// se bi nuot THAY cho '<' (nen khong hien ra), con '<' tro thanh byte dau va duoc xu ly.
-static void DTG_FixTagAfterVn(char* pBuf, size_t nCap)
-{
-	if (!pBuf) return;
-	char szTmp[2048];
-	size_t i = 0, o = 0;
-	size_t nLen = strlen(pBuf);
-	for (; i < nLen && o + 2 < sizeof(szTmp); i++)
-	{
-		if (pBuf[i] == '<' && o > 0 && (unsigned char)szTmp[o - 1] > 0x80)
-			szTmp[o++] = ' ';
-		szTmp[o++] = pBuf[i];
-	}
-	szTmp[o] = 0;
-	strncpy(pBuf, szTmp, nCap - 1);
-	pBuf[nCap - 1] = 0;
-}
-
 void KUiTaskGuide::AddLine(const char* pText)
 {
 	char szBuf[2048];
 	strncpy(szBuf, pText, sizeof(szBuf) - 1);
 	szBuf[sizeof(szBuf) - 1] = 0;
-	DTG_FixTagAfterVn(szBuf, sizeof(szBuf));	// [FIX 24/08]
 	int nLen = TEncodeText(szBuf, strlen(szBuf));
 	m_Content.AddOneMessage(szBuf, nLen);
 }

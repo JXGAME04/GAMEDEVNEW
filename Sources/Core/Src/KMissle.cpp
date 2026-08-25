@@ -1527,7 +1527,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			if (nNpcIdx > 0)	
 			{
 				if(Npc[nNpcIdx].GetProtectTime() > 0 && eRelation == relation_enemy) //®ang trong tr¹ng th¸i bÊt tö bÞ kÎ thï ®¸nh vµo return
-					return 0; //vong tron bat tu, vßng trßn bÊt tö
+					continue; //FIX 24/08: bo qua RIENG muc tieu bat tu, KHONG bo ca vung quet - return 0 cu lam MOT con bat tu chan het sat thuong dien rong cua ca vien dan va pha luon bo dem nRet/m_nHitCount. vong tron bat tu, vßng trßn bÊt tö
 				AUTOLOG_EVERY(2000, "[COLL-NPC-FOUND] msl=%d sk=%d launcher=%d npc=%d(id=%u) o(%d,%d) region=%d rel=%d protect=%d doing=%d nRet=%d hitcount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nNpcIdx, Npc[nNpcIdx].m_dwID, nRMx, nRMy, nSearchRegion, eRelation, Npc[nNpcIdx].GetProtectTime(), (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
 				nRet++;
 #ifndef _SERVER
@@ -1770,7 +1770,13 @@ BOOL	KMissle::PrePareFly()
 		int nOldRegion = m_nRegionId;
 		CurRegion.DecRef(m_nCurrentMapX, m_nCurrentMapY, obj_missle);
 		SubWorld[m_nSubWorldId].Mps2Map(nNewPX, nNewPY, &m_nRegionId, &m_nCurrentMapX, &m_nCurrentMapY, &m_nXOffset, &m_nYOffset);
-		CurRegion.AddRef(m_nCurrentMapX, m_nCurrentMapY, obj_missle);
+		// FIX 24/08: Mps2Map dat *nR = -1 khi diem moi ra ngoai ban do (KSubWorld.cpp:1430 va 1445).
+		// CurRegion = SubWorld[..].m_Region[m_nRegionId] (KMissle.cpp:117) => m_Region[-1]; KRegion::AddRef
+		// DOC m_nWidth/m_nHeight ngoai mang roi GHI pBuffer[index]++ - phep GHI nay nam NGOAI khoi __try
+		// => hong heap ngau nhien. DecRef o tren da tra lai o cu va KMissleSet::Remove co chan
+		// m_nRegionId >= 0, nen bo qua AddRef o day van CAN BANG bo dem.
+		if (m_nRegionId >= 0)
+			CurRegion.AddRef(m_nCurrentMapX, m_nCurrentMapY, obj_missle);
 		
 		if (nOldRegion != m_nRegionId)
 		{
@@ -1790,6 +1796,7 @@ int KMissle::CheckNearestCollision()
 	int nRMy = 0;
 	BOOL bCollision = TRUE;
 	int nNpcIdx = 0;
+	int nFirstHit = 0;	// FIX 24/08: nho con dau tien de van tra ve duoc khi muc tieu bam khong trong tam
 	int nDX = 0;
 	int nDY = 0;
 	int nNpcOffsetX = 0;
@@ -1821,6 +1828,11 @@ int KMissle::CheckNearestCollision()
 			
 			if (nNpcIdx > 0)
 			{
+				// FIX 24/08: xac chet nam im mot o van bi FindNpc tra ve va CUOP lan va cham cua
+				// chieu don muc tieu - ReceiveDamage (KNpc.cpp:3964) tra TRUE ma KHONG tru mau, con
+				// CheckCollision thi da return 1 nen dan tat luon. Bo qua xac, quet tiep o khac.
+				if (Npc[nNpcIdx].m_Doing == do_death || Npc[nNpcIdx].m_Doing == do_revive)
+					continue;
 				bCollision = TRUE;
 				nDX = -i;	// FIX 24/08: GetOffsetAxis dat o dich = o dan + (i,j) ROI MOI cuon vong sang region ke,
 				nDY = -j;	// nen hieu 2 toa do CUC BO ra +-15 (region 16 o) / +-31 (32 o) khi qua bien -> lat nguoc phep so offset -> dan xuyen qua quai.
@@ -1873,11 +1885,19 @@ int KMissle::CheckNearestCollision()
 CheckCollision:
 				AUTOLOG_EVERY(2000, "[MSL-NEARMISS] msl=%d sk=%d npc=%d(id=%u) d_cell(%d,%d) msloff(%d,%d) npcoff(%d,%d) cell(%d,%d) bCollision=%d", m_nMissleId, m_nSkillId, nNpcIdx, Npc[nNpcIdx].m_dwID, nDX, nDY, m_nXOffset, m_nYOffset, nNpcOffsetX, nNpcOffsetY, nCellWidth, nCellHeight, (int)bCollision);
 				if (bCollision)
-					return nNpcIdx;
+				{
+					// FIX 24/08: truoc day tra ve con DAU TIEN theo thu tu quet 3x3 co dinh (goc tren-trai
+					// truoc, o cua chinh dan xep thu 5) nen mot con khac dung chen truoc se CUOP het sat
+					// thuong cua muc tieu da chon. Uu tien m_nFollowNpcIdx; khong co thi giu nguyen con dau.
+					if (m_nFollowNpcIdx > 0 && nNpcIdx == m_nFollowNpcIdx)
+						return nNpcIdx;
+					if (!nFirstHit)
+						nFirstHit = nNpcIdx;
+				}
 			}
 		}
 		
-		return 0;
+		return nFirstHit;
 }
 
 void	KMissle::GetMpsPos(int *pPosX, int *pPosY)

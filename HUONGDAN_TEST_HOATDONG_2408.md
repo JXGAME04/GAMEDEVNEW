@@ -124,8 +124,9 @@ Test không chờ lịch:
 
 | Hiện tượng | Xử lý |
 |---|---|
-| Menu không hiện dòng "Hoat dong 23-24/08" | Dùng lại lệnh bài (item tự dofile); nếu vẫn không có → xem `script\item\ScriptError.log` |
-| Bấm nút không có phản ứng | Xem `bin\server\script\...\ScriptError.log` cạnh file tính năng tương ứng |
+| Menu không hiện dòng "Hoạt động 23-24.08" | Dùng lại lệnh bài (item tự dofile); nếu vẫn không có → xem `script\item\ScriptError.log` |
+| Bấm nút không có phản ứng, GameServer báo lỗi script | 🔴 **Nhãn lựa chọn CẤM chứa dấu `/`** — engine tách nhãn/hàm bằng dấu `/` ĐẦU TIÊN (`ScriptFuns.cpp:716` `strstr(pAnswer,"/")`), nên nhãn kiểu "23-24/08" làm engine hiểu sai tên hàm. Quét bằng `ReverseTools\lua_syncheck\scan_slash.py` |
+| Nghi file lua lỗi cú pháp | Build `ReverseTools\lua_syncheck\build_syncheck.bat` (dựng Lua 4.0.1 từ chính LuaLib của engine) rồi `syncheck.exe <file.lua>` — phân biệt lỗi cú pháp thật với lỗi chạy do thiếu hàm engine |
 | Sửa config không ăn | Khoá [RESTART]? → restart GS. Khoá [LIVE]? → đã bấm menu 8 chưa |
 | Tỷ Võ kẹt "đang trong trận" | Menu 3 → Gỡ kẹt trận treo |
 | Bang Chiến B1 không ra jx2league.txt | Chưa đủ 2 bang chiếm thành — chiếm thành trước bằng bộ test cong thanh (TX_Root) |

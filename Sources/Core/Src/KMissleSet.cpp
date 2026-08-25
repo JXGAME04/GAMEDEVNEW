@@ -116,6 +116,20 @@ void KMissleSet::Remove(int nIndex)
 	if (nIndex <= 0) return;
 	
 	if (Missle[nIndex].m_nMissleId < 0) return;
+	// FIX 24/08: co 5 lan AddRef(obj_missle) (KMissleSet.cpp:82 + KMissle.cpp 835/889/1144/1773)
+	// nhung chi 4 lan DecRef => moi vien dan de lai +1 VINH VIEN tren o no chet. Tra lai o day,
+	// luc (m_nRegionId, m_nCurrentMapX, m_nCurrentMapY) van con la cho dang giu bo dem.
+	if (Missle[nIndex].m_nSubWorldId >= 0 && Missle[nIndex].m_nRegionId >= 0)
+	{
+		SubWorld[Missle[nIndex].m_nSubWorldId].m_Region[Missle[nIndex].m_nRegionId].DecRef(
+			Missle[nIndex].m_nCurrentMapX, Missle[nIndex].m_nCurrentMapY, obj_missle);
+		// Chot cua vao: KMissle::Release() phia SERVER KHONG dat lai m_nMissleId = -1
+		// (nam trong #ifndef _SERVER, KMissle.cpp:267) nen chan "m_nMissleId < 0" o dau ham
+		// KHONG BAO GIO an tren server => Remove() co the chay 2 lan cho cung mot khe va tru
+		// bo dem 2 lan. Dat m_nRegionId = -1 (dung khuon KRegion::Close, KRegion.cpp:1609)
+		// de lan thu hai roi vao nhanh bo qua.
+		Missle[nIndex].m_nRegionId = -1;
+	}
 	Missle[nIndex].Release();
 
 	m_FreeIdx.Insert(nIndex);

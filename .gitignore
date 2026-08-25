@@ -56,3 +56,9 @@ Lib/release64/
 Lib/x64/
 __pycache__/
 *.pyc
+
+# (24/08) Ket qua chay cong cu / thu muc build tam - KHONG dua vao lich su:
+#   repack_typeframe/out chua cac pak da tai nen, 4,3 GB (updatejx14.pak 1,8 GB),
+#   vuot han tran 100 MB/tep cua GitHub. Sinh lai duoc bang chinh cong cu do.
+ReverseTools/repack_typeframe/out/
+_build_goddess_2108/

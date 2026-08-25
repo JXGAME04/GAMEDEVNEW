@@ -179,7 +179,8 @@ public:
 //--------------------------------------------------------------------------
 inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation)
 {
-	if (nMapX < 0 || nMapY < 0)
+	// FIX 24/08: thieu chan CAN TREN => cac ham quet vung tam nhin lon co the doc tran m_pNpcRef.
+	if (nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)
 		return 0;
 
 	if (m_pNpcRef[nMapY * m_nWidth + nMapX] == 0)
