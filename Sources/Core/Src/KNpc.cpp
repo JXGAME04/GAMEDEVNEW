@@ -5587,6 +5587,12 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 	NpcSync.ID					= m_dwID;
 	NpcSync.NpcSettingIdx		= MAKELONG(m_Level, m_NpcSettingIdx);
 	NpcSync.NpcEnchant			= (WORD)this->m_cGold.GetGoldType();
+	// [3HD 25/08] boss san boss sat thu / tin su (HD3_AddNpc flag 1): server
+	// danh dau m_Type = boss_gold; client to mau ten theo NpcEnchant (client
+	// dat m_Type = NpcEnchant o ca 2 duong sync) nen day qua truong nay.
+	// He quai vang (GetGoldType != 0) giu uu tien - khong doi hanh vi cu.
+	if (NpcSync.NpcEnchant == 0 && m_Type == boss_gold)
+		NpcSync.NpcEnchant		= (WORD)boss_gold;
 	NpcSync.m_CurrentLife		= m_CurrentLife;
 	NpcSync.m_CurrentLifeMax	= m_CurrentLifeMax;
 	NpcSync.m_LifeMax			= m_LifeMax;
@@ -5780,6 +5786,9 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 	NpcSync.MissionGroup		= m_nMissionGroup;//#NpcMissionGroup
 	memcpy(NpcSync.StateInfo, m_btStateInfo, sizeof(BYTE) * MAX_SKILL_STATE);
 	NpcSync.NpcEnchant			= m_cGold.GetGoldType();
+	// [3HD 25/08] nhu SendSyncData: giu mau VANG qua duong sync lien tuc.
+	if (NpcSync.NpcEnchant == 0 && m_Type == boss_gold)
+		NpcSync.NpcEnchant		= boss_gold;
 	static const POINT	POff[8] = 	//MAX_PLAYER
 	{
 		{0, 32},

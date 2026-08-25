@@ -1734,7 +1734,13 @@ static int sHD3_AddNpcCommon(Lua_State* L, int bHasSeries)
 		if (pDispName && pDispName[0])
 			g_StrCpy(Npc[nNpcIdx].Name, (char*)pDispName);
 	}
-	// tham so cuoi (flag/isboss cua ban Linux): AddNpcSet2 da tu nap thuoc tinh, bo qua
+	// tham so cuoi (flag/isboss ban Linux - cot [8] bang killbosshead): dich
+	// nguoc ban Linux ghi +0x181C=3 khi flag==1 => ten boss mau VANG tren
+	// client (chu game chot 25/08). m_Type duoc day sang client qua
+	// NpcEnchant (KNpc.cpp SendSyncData/SendNormalSyncData - va kem 25/08).
+	nArg++;
+	if (nTop >= nArg && Lua_IsNumber(L, nArg) && (int)Lua_ValueToNumber(L, nArg) != 0)
+		Npc[nNpcIdx].m_Type = boss_gold;
 	Lua_PushNumber(L, nNpcIdx);
 	return 1;
 }
