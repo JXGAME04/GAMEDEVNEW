@@ -6,6 +6,7 @@
 -- Cau hinh so lieu: script\header\cauhinh_hoatdong.lua (1 file chinh tat ca).
 -- ============================================================================
 Include("\\script\\header\\cauhinh_hoatdong.lua")
+Include("\\script\\task\\tollgate\\messenger\\messenger_losetask.lua")	-- [25/08] losemessengertask + nt_* cho muc 10
 
 HD_TW_RELAY = "\\script\\missions\\tongwar\\relay\\tongwar.lua"
 HD_TC_DRV   = "\\script\\missions\\tongcastle\\tongcastle_driver.lua"
@@ -22,6 +23,7 @@ function HD_AdminMenu()
 	"7. BOT TËng Kim: tæt/HD_TK_Tat",
 	"8. Nπp lπi CONFIG (khi kh´ng c„ trÀn chπy)/HD_ReloadCfg",
 	"9. Danh hi÷u & vﬂng s∏ng (Bang Chi’n)/HD_TT_Menu",
+	"10. Test Tin Su - chan doan va go ket/HD_TS_Menu",
 	"K’t thÛc ÆËi thoπi/no"})
 end
 
@@ -379,3 +381,62 @@ function HD_TT_Clear()
 	Msg2Player("Æ∑ gÏ h’t danh hi÷u Bang Chi’n vµ vﬂng s∏ng qu©n hµm.")
 end
 
+
+-- ================= 10) TEST TIN SU =================
+-- Chan doan + go ket tai cho. Nguon tung thao tac ghi trong add_menu_tinsu.py.
+-- Y nghia 1203: 0=chua nhan/da xong het, 10=da nhan chua bat dau, 20=dang lam,
+-- 21=tam ngat (duoc phep 'Tiep tuc'), 25/30=hoan thanh cho tra.
+function HD_TS_Menu()
+	SayEx({"<color=yellow>Test Tin Su<color> - 1203="..nt_getTask(1203).." | RutVuKhi="..GetFightState().." (0 = khong danh duoc quai + khong the chet)",
+	"1. Xem trang thai chi tiet/HD_TS_Xem",
+	"2. Go ket: 20 sang 21 roi toi Dich Quan bam Tiep tuc/HD_TS_GoKet",
+	"3. Bat trang thai chien dau NGAY - test nhanh trong ai/HD_TS_BatFight",
+	"4. Huy sach nhiem vu Tin Su - nhu NPC/HD_TS_Huy",
+	"5. Den ai 3 Thien Bao Kho - map 395/HD_TS_DenAi",
+	"6. Ve Ba Lang Huyen - don trang thai nhu NPC/HD_TS_VeThanh",
+	"Ket thuc doi thoai/no"})
+end
+
+function HD_TS_Xem()
+	Msg2Player(format("[TinSu] 1203=%d 1201=%d 1202=%d 1204=%d 1205=%d 1206=%d 1211=%d",
+		nt_getTask(1203), nt_getTask(1201), nt_getTask(1202), nt_getTask(1204),
+		nt_getTask(1205), nt_getTask(1206), nt_getTask(1211)))
+	local nMap, nX, nY = GetWorldPos()
+	Msg2Player(format("[TinSu] map=%d toado=(%d,%d) RutVuKhi=%d", nMap, nX, nY, GetFightState()))
+end
+
+function HD_TS_GoKet()
+	if (nt_getTask(1203) == 20) then
+		nt_setTask(1203, 21)
+		Msg2Player("[TinSu] 1203: 20 -> 21. Toi Dich Quan bam 'Tiep tuc nhiem vu' de bat lai day du trang thai (dong ho, chien dau, hoi sinh...).")
+	else
+		Msg2Player("[TinSu] 1203 = "..nt_getTask(1203).." - chi go ket khi dang 20.")
+	end
+end
+
+function HD_TS_BatFight()
+	SetFightState(1)
+	Msg2Player("[TinSu] Da RUT VU KHI (bat chien dau). Thu danh quai ngay. Luu y: gio co the CHET that.")
+end
+
+function HD_TS_Huy()
+	losemessengertask()
+	Msg2Player("[TinSu] Da goi huy nhiem vu (chi xoa khi dang 20/21). Nhan lai o Dich Quan thanh Ba Lang/Dai Ly.")
+end
+
+function HD_TS_DenAi()
+	SetRevPos(11,10)
+	NewWorld(395,1417,3207)
+end
+
+function HD_TS_VeThanh()
+	DisabledUseTownP(0)
+	SetFightState(0)
+	SetPunish(1)
+	SetCreateTeam(1)
+	SetPKFlag(0)
+	ForbidChangePK(0)
+	SetDeathScript("")
+	SetLogoutRV(0)
+	NewWorld(11,3021,5090)
+end
