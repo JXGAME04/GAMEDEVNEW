@@ -13,7 +13,7 @@ function HD3_AdminMenu()
 	"3. V­ît ¶i/HD3_ADM_VA",
 	"4. N¹p l¹i CONFIG/HD3_ADM_Reload",
 	"5. Xem c¸c kho¸ cÊu h×nh HD3 ®ang hiÖu lùc/HD3_ADM_ShowCfg",
-	"6. N¹p l¹i toµn bé script (sau khi gâ ?gm RLAS)/HD3_ADM_ReloadAll",
+	"6. N¹p l¹i toµn bé script 3 ho¹t ®éng (kh«ng cÇn restart)/HD3_ADM_ReloadAll",
 	"KÕt thóc ®èi tho¹i./no"})
 end
 
@@ -126,11 +126,13 @@ end
 -- NHUNG g_IniScriptEngine CHI quet \script va \scriptjx2\tong_vn, KHONG quet
 -- \settings => 2 tep trigger cua Vuot Ai bi mat sau RLAS. Nut nay nap bu chung.
 function HD3_ADM_ReloadAll()
-	ReLoadScript("\\settings\\trigger_include.lua")
-	ReLoadScript("\\settings\\trigger_challengeoftime.lua")
-	if (HD_NapLaiCauHinh ~= nil) then HD_NapLaiCauHinh() end
-	Msg2Player("§· n¹p bï 2 trigger V­ît ¶i + config. Muèn n¹p l¹i toµn bé script th× gâ trong khung chat: <color=yellow>?gm RLAS<color>")
-	Msg2Player("Thø tù ®óng: gâ ?gm RLAS tr­íc, råi bÊm nót nµy ®Ó n¹p bï trigger.")
+	Include("\script\tinhnang\3hoatdong\hd3_reload.lua")
+	local n = 0
+	if (HD3_ReloadAll ~= nil) then
+		n = HD3_ReloadAll()
+	end
+	Msg2Player("§· n¹p l¹i "..n.." tÖp script cña 3 ho¹t ®éng (gåm c¶ 2 trigger V­ît ¶i vµ cÊu h×nh). Kh«ng cÇn restart.")
+	Msg2Player("L­u ý: script g¾n trªn NPC ®· sinh vÉn dïng b¶n míi v× engine tra theo m· tÖp.")
 	HD3_AdminMenu()
 end
 function HD3_ADM_Reload()
