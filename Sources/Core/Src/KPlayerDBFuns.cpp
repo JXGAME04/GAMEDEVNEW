@@ -835,14 +835,25 @@ int	KPlayer::LoadPlayerTaskList(BYTE * pRoleBuffer, BYTE * &pTaskBuffer, unsigne
 	// (dong 15) nen them/noi rong mot truong la DICH OFFSET moi truong sau no =>
 	// hong toan bo roledb da luu; Goddess con neo thang vao kich thuoc
 	// (DBTable_MySQL.cpp:69 MIN_ROLE_DATALEN, do that sizeof(TRoleData) = 746).
-	// Nen so DAY DU duoc luu song song o BaseInfo.ipduphong5 - truong du phong
-	// kieu int chua ai dung. Ban ghi CU co ipduphong5 = 0 (nho memset trong
-	// SavePlayerBaseInfo) nen tu dong roi ve duong cu -> tuong thich nguoc.
+	// HAU QUA THAT SU NANG HON "mat nhiem vu": duong nap dung MOT con tro chay
+	// (m_pCurStatusOffset) qua tung buoc, va LoadPlayerItemList lay vi tri vat pham
+	// tu chinh con tro do chu KHONG seek lai theo dwItemOffset. Nen khi so task bi
+	// cat, buoc vat pham doc do TU GIUA vung task => HONG CA TUI DO, roi ban hong
+	// do duoc ghi de len o lan luu ke tiep.
+	// Cach doc dung, khong dong vao struct, xem ngay ben duoi.
 	{
 		const TRoleData* pRD = (const TRoleData*)pRoleBuffer;
-		nTaskCount = pRD->BaseInfo.ipduphong5;
-		if (nTaskCount <= 0 || nTaskCount > MAX_TASK)
-			nTaskCount = pRD->nTaskCount;	// ban ghi cu, hoac gia tri vo ly
+		// So task THAT nam san trong moi ban ghi (KE CA BAN GHI CU): SavePlayerTaskList
+		// dat dwItemOffset tu con tro DA CHAY HET so task that (bien int, chua bi cat).
+		// Cong thuc nay da duoc chinh du an kiem chung thuc nghiem tu 20/08 - xem
+		// ToolsMySQL\jx_role.py: "(dwItemOffset-dwTaskOffset)/8 == nTaskCount" dung
+		// 1003/1003 ban ghi cua roledb song; do lai 24/08 tren 3009 luot: 0 sai lech.
+		const int nSpan = (int)(pRD->dwItemOffset - pRD->dwTaskOffset);
+		const int nRec = (int)sizeof(TDBTaskData);
+		if (nSpan >= 0 && nRec > 0 && (nSpan % nRec) == 0 && (nSpan / nRec) <= MAX_TASK)
+			nTaskCount = nSpan / nRec;
+		else
+			nTaskCount = pRD->nTaskCount;	// ban ghi hong: quay ve truong BYTE cu
 	}
 	//
 	if (nTaskCount == 0) 
@@ -1164,11 +1175,12 @@ int	KPlayer::SavePlayerTaskList(BYTE * pRoleBuffer)
 	}
 	//
 	// [24/08] Xem chu thich day du o duong NAP (tim "VA TRAN SO NHIEM VU").
-	// Giu nguyen truong BYTE de Goddess van ghi duoc cot thong ke n_task
-	// (DBTable_MySQL.cpp:314) va ban cu van doc duoc phan thap; so DAY DU di kem
-	// o BaseInfo.ipduphong5 (truong du phong, khong doi bo cuc struct).
-	pRoleData->nTaskCount = (BYTE)(nTaskCount & 0xFF);
-	pRoleData->BaseInfo.ipduphong5 = nTaskCount;
+	// Van ghi truong BYTE de binary CU con doc duoc ban ghi moi, nhung BAO HOA 255
+	// thay vi cat modulo: cat modulo bien dung 256 task thanh 0, ma duong nap thay
+	// 0 la return ngay => mat sach nhiem vu VA bo con tro dung dau vung task, khien
+	// buoc vat pham doc do tu giua du lieu task. Bao hoa 255 nghiem ngat khong te hon.
+	// Nguon su that khi nap la dwItemOffset o dong ke duoi, KHONG phai truong nay.
+	pRoleData->nTaskCount = (BYTE)(nTaskCount > 255 ? 255 : nTaskCount);
 	pRoleData->dwItemOffset = (BYTE *)pTaskData - pRoleBuffer;
 	return 1;
 }

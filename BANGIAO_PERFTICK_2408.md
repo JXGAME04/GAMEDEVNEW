@@ -274,11 +274,33 @@ có byte đệm nào** — thêm hay nới rộng một trường là dịch off
 toàn bộ roledb đã lưu. Goddess còn neo thẳng vào kích thước đó:
 `DBTable_MySQL.cpp:68-69` ghi rõ *"Chặn dưới: header TRoleData trước pBuffer. Đo được = 745."*
 
-Nên số đầy đủ được lưu **song song** ở `BaseInfo.ipduphong5` — trường dự phòng kiểu `int`,
-grep toàn cây chỉ có `Bishop/PlayerCreator.cpp:259` đặt `= 0`. Bản ghi cũ có `ipduphong5 = 0`
-(nhờ `memset(pRoleData, 0, sizeof(TRoleData))`) nên đường nạp tự động rơi về cách cũ —
-**tương thích ngược hoàn toàn**. Trường `BYTE` giữ nguyên để Goddess vẫn ghi được cột thống kê
-`n_task` (`DBTable_MySQL.cpp:314`) và bản cũ vẫn đọc được phần thấp.
+**Số task thật đã có sẵn trong mọi bản ghi — kể cả bản ghi cũ.** `SavePlayerTaskList` đặt
+`dwItemOffset` từ con trỏ **đã chạy hết số task thật** (biến `int`, chưa hề bị cắt), nên:
+
+```c
+so_task = (dwItemOffset - dwTaskOffset) / sizeof(TDBTaskData)
+```
+
+Công thức này **chính dự án đã kiểm chứng thực nghiệm từ 20/08** — `ToolsMySQL\jx_role.py`
+ghi ngay đầu tệp: *"(dwItemOffset-dwTaskOffset)/8 == nTaskCount ... 1003/1003 bản ghi của
+roledb sống"*. Đo lại hôm nay trên **3009 lượt bản ghi thật**: 0 trường hợp âm, 0 trường hợp
+không chia hết 8, 0 trường hợp lệch. Đường nạp vẫn giữ fallback về trường `BYTE` nếu giá trị
+vô lý (bản ghi hỏng).
+
+Đường lưu đổi từ *cắt modulo* sang **bão hoà 255**: cắt modulo biến đúng 256 task thành **0**,
+mà đường nạp thấy 0 là `return` ngay.
+
+> **Hậu quả thật nặng hơn "mất nhiệm vụ"**: đường nạp dùng **một con trỏ chạy**
+> (`m_pCurStatusOffset`) qua từng bước, và `LoadPlayerItemList` lấy vị trí vật phẩm từ chính
+> con trỏ đó chứ **không seek lại theo `dwItemOffset`**. Nên khi số task bị cắt, bước vật phẩm
+> đọc đồ **từ giữa vùng task** → hỏng cả túi đồ, rồi bản hỏng được ghi đè lên ở lần lưu kế tiếp.
+
+**Lỗi này chưa từng xảy ra**: đo trên kho, số task nhiều nhất là **60** (nhân vật CaiBang),
+trung bình 20,2 — còn cách ngưỡng 256 khoảng 195 slot. Bản vá là chặn trước, không phải cứu hỏa.
+
+*Không sửa Goddess*: `DBTable_MySQL.cpp:314` ghi cột thống kê `n_task` từ trường `BYTE` nên sẽ
+bão hoà 255 khi vượt. Đó chỉ là **cột báo cáo trong MySQL**, không tham gia tái tạo blob, và chỉ
+sai khi >255 task (chưa từng xảy ra). Sửa nó đòi restart Goddess — rủi ro với DB lớn hơn lợi ích.
 
 #### (3) Blob vượt bộ đệm `CPackager` 128 KB → sập GameServer
 
