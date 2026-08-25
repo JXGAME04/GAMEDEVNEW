@@ -94,7 +94,16 @@ function HD_BR_TrangThai()
 		HD_GioPhut(HD_CFG("BR_GIO_MO", 1200)), HD_CFG("BR_EXP_TICK", 1000000), HD_CFG("BR_PHUT_CHUKY_EXP", 5),
 		HD_CFG("BR_EXP_LOICHU", 2000000), HD_CFG("BR_TRAN_LUOT_NGAY", 50),
 		floor(HD_CFG("BR_TILE_BUFFX2", 0.2)*100), HD_CFG("BR_PHUT_COTHU", 30)))
-	Msg2Player(format("®· dïng h«m nay (task 2709): %d l­ît", GetTaskDailyCount and GetTaskDailyCount(2709) or -1))
+	-- [24/08 hau phan bien] GetTaskDailyCount la PHUONG THUC cua bang PlayerFunLib, goi
+	-- nhu bien toan cuc se luon ra -1. Giai ma tai cho (yymmdd*256 + so_lan); KHONG
+	-- Include playerfunlib.lua vi se tao lai vong Include gay tran stack dem 23/08.
+	local nRaw2709 = GetTask(2709)
+	local nNgayNay = tonumber(GetLocalDate("%y%m%d"))
+	local nDaDung = 0
+	if (floor(nRaw2709 / 256) == nNgayNay) then
+		nDaDung = mod(nRaw2709, 256)
+	end
+	Msg2Player(format("®· dïng h«m nay (task 2709): %d l­ît", nDaDung))
 	HD_BR_Menu()
 end
 
@@ -168,6 +177,10 @@ function HD_TC_TeleNpc() NewWorld(176, 1663, 3262) end
 function HD_TC_Tele984() NewWorld(984, 1311, 3515) end
 
 -- ================= 5) ITEM THUONG TEST =================
+-- [FIX 24/08] Engine doi AddItem TOI THIEU 7 THAM SO (ScriptFuns.cpp:4764: neu
+-- nParamNum < 7 thi return luon, KHONG tao item). Truoc day o day goi 6 tham so nen
+-- bam "nhan item" khong duoc gi. Chuan cua du an: AddItem(genre, detail, particular,
+-- nLevel, nSeries, nLuck, 0) voi nLevel = 1 (xem lib\awardtype\item_jx1.lua:30).
 function HD_Item_Menu()
 	SayEx({"NhËn item th­ëng ®Ó test (genre 6/detail 1)",
 	"Qu¶ ®¹i Hoµng Kim 4864 ("..floor(HD_CFG("QDHK_EXP", 200000000)/1e6).."tr exp) x1/HD_It4864",
@@ -180,16 +193,58 @@ function HD_Item_Menu()
 	"Quay l¹i/HD_AdminMenu"})
 end
 
-function HD_It4864() AddItem(6, 1, 4864, 0, 0, 0) Msg2Player("®· nhËn Qu¶ ®¹i Hoµng Kim") end
-function HD_It2273() AddItem(6, 1, 2273, 0, 0, 0) Msg2Player("®· nhËn Hoµng Ch©n ®¬n") end
+function HD_It4864()
+	local nIdx = AddItem(6, 1, 4864, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn Qu¶ ®¹i Hoµng Kim")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
+function HD_It2273()
+	local nIdx = AddItem(6, 1, 2273, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn Hoµng Ch©n ®¬n")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
 function HD_It3204()
-	for i = 1, 5 do AddItem(6, 1, 3204, 0, 0, 0) end
+	for i = 1, 5 do AddItem(6, 1, 3204, 1, 0, 0, 0) end
 	Msg2Player("®· nhËn 5 Bïa triÖu Thñ VÖ")
 end
-function HD_It3205() AddItem(6, 1, 3205, 0, 0, 0) Msg2Player("®· nhËn Thanh ®ång ThÇn Méc LÖnh") end
-function HD_It3206() AddItem(6, 1, 3206, 0, 0, 0) Msg2Player("®· nhËn B¹ch Ng©n ThÇn Méc LÖnh") end
-function HD_It3207() AddItem(6, 1, 3207, 0, 0, 0) Msg2Player("®· nhËn Hoµng Kim ThÇn Méc LÖnh") end
-function HD_It4857() AddItem(6, 1, 4857, 0, 0, 0) Msg2Player("®· nhËn Hµn nguyªn ch©n ®an") end
+function HD_It3205()
+	local nIdx = AddItem(6, 1, 3205, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn Thanh ®ång ThÇn Méc LÖnh")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
+function HD_It3206()
+	local nIdx = AddItem(6, 1, 3206, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn B¹ch Ng©n ThÇn Méc LÖnh")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
+function HD_It3207()
+	local nIdx = AddItem(6, 1, 3207, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn Hoµng Kim ThÇn Méc LÖnh")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
+function HD_It4857()
+	local nIdx = AddItem(6, 1, 4857, 1, 0, 0, 0)
+	if (nIdx and nIdx > 0) then
+		Msg2Player("®· nhËn Hµn nguyªn ch©n ®an")
+	else
+		Msg2Player("Khong nhan duoc item - hanh trang day hoac id sai.")
+	end
+end
 
 -- ================= 6/7) BOT TONG KIM =================
 function HD_TK_Bat() PB_SetTongKim(1) Msg2Player("®· BËT bot tù tham gia Tèng Kim (PB_SetTongKim 1)") end
