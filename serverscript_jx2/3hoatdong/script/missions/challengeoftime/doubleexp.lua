@@ -9,7 +9,11 @@ local tbDouble = {
 function Chuangguan_checkdoubleexp(nExp)
 	for i=1, getn(%tbDouble) do
 		local tbfunc = %tbDouble[i]
-		nExp = DynamicExecuteByPlayer(PlayerIndex, tbfunc[1], tbfunc[2], nExp)
+		-- [FIX 25/08] phong nil nhu battles\doubleexp.lua (hoat dong 41 da tat)
+		local nRet = DynamicExecuteByPlayer(PlayerIndex, tbfunc[1], tbfunc[2], nExp)
+		if nRet then
+			nExp = nRet
+		end
 	end
 	--Nh©n ®«i ®iÓm tÝch luü V­ît ¶i - Modified By DinhHQ - 20130305
 	nExp = DynamicExecuteByPlayer(PlayerIndex, "\\script\\vng_feature\\double_mission_award.lua", "tbVnX2Award:X2ChallengeOfTime", nExp)
