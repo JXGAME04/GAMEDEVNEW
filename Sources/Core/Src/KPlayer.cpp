@@ -6816,6 +6816,12 @@ void KPlayer::Revive(int nType)
 		break;
 	}
 	
+	// [3HD 25/08 C37b] hoi sinh doi m_FightMode phia SERVER (0 khi ve thanh, 1 khi
+	// hoi sinh TAI CHO) nhung client KHONG duoc bao - PlayerRevive phia client chi
+	// goi ProcNetCommand(do_revive). Lech co nay lam nguoi choi hoi sinh trong hoat
+	// dong KHONG CHON DUOC QUAI (cung goc voi C37). Gui lai goi dong bo cho chinh ho.
+	if (m_nNetConnectIdx >= 0)
+		Npc[m_nIndex].SendSyncData(m_nNetConnectIdx);
 	Npc[m_nIndex].m_CurrentLife = Npc[m_nIndex].m_CurrentLifeMax;
 	Npc[m_nIndex].m_CurrentMana = Npc[m_nIndex].m_CurrentManaMax;
 	Npc[m_nIndex].m_CurrentStamina = Npc[m_nIndex].m_CurrentStaminaMax;
