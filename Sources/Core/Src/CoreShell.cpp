@@ -8681,6 +8681,24 @@ static int HD_PhutServer(const autoData* pAp)
 	return ((n % 1440) + 1440) % 1440;
 }
 
+// yymmdd theo GIO MAY CHU (cong o Lech gio) - de khop task 4128 server ghi
+// theo ngay cua no; DT_Today() la ngay may nguoi choi, qua nua dem/lech mui la sai
+static int HD_NgayServer(const autoData* pAp)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	FILETIME ft;
+	SystemTimeToFileTime(&st, &ft);
+	ULARGE_INTEGER u;
+	u.LowPart = ft.dwLowDateTime;
+	u.HighPart = ft.dwHighDateTime;
+	u.QuadPart = (ULONGLONG)((LONGLONG)u.QuadPart + (LONGLONG)pAp->nHDLech * 600000000LL);
+	ft.dwLowDateTime = u.LowPart;
+	ft.dwHighDateTime = u.HighPart;
+	FileTimeToSystemTime(&ft, &st);
+	return ((int)st.wYear % 100) * 10000 + (int)st.wMonth * 100 + (int)st.wDay;
+}
+
 // 1 = dang trong cua so hoat dong [nGio:nPhut .. +nDaiPhut)
 static int HD_TrongCua(const autoData* pAp, int nGio, int nPhut, int nDaiPhut)
 {
@@ -8845,7 +8863,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	const int nMap = SubWorld[0].m_SubWorldID;
 	int nX, nY;
 	Npc[nSelf].GetMpsPos(&nX, &nY);
-	const int nNgay = DT_Today();
+	const int nNgay = HD_NgayServer(pAp);
 
 	int nBCSign = 0, nBCFight = 0;
 	for (int i = 0; i < HD_BC_SIGN_COUNT; ++i)
@@ -8868,7 +8886,8 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 0;
 		ea.uHDNext = uCurTime + 1500;
 		// dang ket san trong map hoat dong -> vao thang pha tuong ung
-		if (nMap == HD_BN_MAP)
+		// (25/08: phai kiem O BAT - khong thi tat o roi van bi cuop may moi 1,5s)
+		if (pAp->bHDBachNhan && nMap == HD_BN_MAP)
 		{
 			ea.uHDVaoT = uCurTime;
 			ea.uHDIdleT = uCurTime;
@@ -8877,19 +8896,19 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nHDHold = 1;
 			return 1;
 		}
-		if (nBCFight)
+		if (pAp->bHDBangChien && nBCFight)
 		{
 			HD_Pha(nPlayerIdx, HDP_BC_FIGHT, uCurTime);
 			ea.nHDHold = 2;
 			return 2;
 		}
-		if (nBCSign)
+		if (pAp->bHDBangChien && nBCSign)
 		{
 			HD_Pha(nPlayerIdx, HDP_BC_SIGN, uCurTime);
 			ea.nHDHold = 1;
 			return 1;
 		}
-		if (pAp->bHDTinSu && nMap == HD_TS_MAP_AI)
+		if (pAp->bHDTinSu && nMap == HD_TS_MAP_AI && ea.nHDKeyTS != nNgay)
 		{
 			// dang ket trong ai Thien Bao Kho (thoat game giua chung...)
 			HD_Pha(nPlayerIdx, HDP_TS_AI, uCurTime);
@@ -8912,15 +8931,25 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			int nSt = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_TT);
 			int nDoDang = (nSt != 0);
-			if (nDoDang || (ea.nHDKeyTS != nNgay
-			 && HD_TrongCua(pAp, pAp->nHDTSGio, pAp->nHDTSPhut, 720)
-			 && HD_TSLuotNay(nPlayerIdx, nNgay) < HD_TSMucTieu(pAp)))
+			// 25/08: deu phai TRONG khung gio nguoi choi dat - ke ca lam tiep viec
+			// do dang (truoc do do dang chay bat ke gio -> "chua toi gio da chay").
+			// nHDKeyTS = khoa "da chot hom nay" - CHI dat khi xong du luot / bo cuoc /
+			// bi tu choi han, de moi duong DONE la dung that (khong bi nhanh do dang
+			// nhan lai sau 1,5s). Loi tam thi nghi toi uHDTSNghi roi tu thu lai.
+			if (HD_TrongCua(pAp, pAp->nHDTSGio, pAp->nHDTSPhut, 720)
+			 && ea.nHDKeyTS != nNgay && uCurTime > ea.uHDTSNghi
+			 && (nDoDang || HD_TSLuotNay(nPlayerIdx, nNgay) < HD_TSMucTieu(pAp)))
 			{
-				ea.nHDKeyTS = nNgay;
 				HD_Pha(nPlayerIdx, HDP_TS_GO, uCurTime);
-				HD_Msg(nPlayerIdx, nDoDang
-					? "<color=Cyan>Lµm tiÕp nhiÖm vô TÝn Sø ®ang dë."
-					: "<color=Cyan>Tíi giê TÝn Sø - ®i DÞch Quan nhËn nhiÖm vô.");
+				{
+					char szTB[160];
+					int nPh = HD_PhutServer(pAp);
+					sprintf(szTB, "%s (giê m¸y chñ %02d:%02d)", nDoDang
+						? "<color=Cyan>Lµm tiÕp nhiÖm vô TÝn Sø ®ang dë"
+						: "<color=Cyan>Tíi giê TÝn Sø - ®i DÞch Quan nhËn nhiÖm vô",
+						nPh / 60, nPh % 60);
+					HD_Msg(nPlayerIdx, szTB);
+				}
 				ea.nHDHold = 1;
 				return 1;
 			}
@@ -8939,6 +8968,28 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return 0;
 	}
 
+	// nguoi choi vua TAT o cau hinh cua ho pha dang chay -> tha may + OFF ngay
+	// (khong co khoi nay: tat o Tin Su khi Bach Nhan con bat la pha TS van chay tiep)
+	{
+		int nCanRun = 1;
+		switch (ea.nHDPhase)
+		{
+		case HDP_BN_GO: case HDP_BN_IN: case HDP_BN_BUFF: case HDP_BN_OUT:
+			nCanRun = pAp->bHDBachNhan; break;
+		case HDP_BC_GO: case HDP_BC_SIGN: case HDP_BC_FIGHT:
+			nCanRun = pAp->bHDBangChien; break;
+		case HDP_TS_GO: case HDP_TS_XAPHU: case HDP_TS_AI:
+			nCanRun = pAp->bHDTinSu; break;
+		default: break;
+		}
+		if (!nCanRun)
+		{
+			ea.nHDPhase = HDP_OFF;
+			ea.nHDHold = 0;
+			return 0;
+		}
+	}
+
 	if (ea.uHDNext > uCurTime)
 		return ea.nHDHold;
 	ea.uHDNext = uCurTime + 400;
@@ -8949,6 +9000,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	 && uCurTime - ea.uHDPhaseT > HD_HANPHA)
 	{
 		HD_Msg(nPlayerIdx, "<color=Yellow>Mét b­íc cña auto Ho¹t ®éng kÑt qu¸ 4 phót - bá l­ît nµy.");
+		ea.uHDNext = uCurTime + 300000;	// nghi 5 phut roi moi tinh chuyen vao lai
 		ea.nHDPhase = HDP_DONE;
 		ea.nHDHold = 0;
 		return 0;
@@ -8971,6 +9023,8 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nMap != HD_BN_MAP_NPC)
 		{
 			int nDi = LD_DiThanh(nPlayerIdx, pAp, HD_BN_MAP_NPC, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uHDNext = ea.uLDNext;
 			if (nDi < 0)
 			{
 				HD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc L©m An - bá l­ît B¸ch Nh©n h«m nay.");
@@ -9267,6 +9321,8 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nMap != HD_BC_MAP_NPC)
 		{
 			int nDi = LD_DiThanh(nPlayerIdx, pAp, HD_BC_MAP_NPC, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uHDNext = ea.uLDNext;
 			if (nDi < 0)
 			{
 				HD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc Ba L¨ng HuyÖn - bá Bang ChiÕn h«m nay.");
@@ -9449,7 +9505,29 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		int nTuyen = HD_TSTuyen(nPlayerIdx);
 		if (nSt == 10 || nSt == 20 || nSt == 21)
 		{
-			HD_Pha(nPlayerIdx, HDP_TS_XAPHU, uCurTime);
+			// chi sang pha Xa Phu khi map nay CO ben xe; dang o map hoang thi
+			// LD_DiThanh ve thanh nhan cua tuyen (khong thi TS_GO <-> TS_XAPHU
+			// nhay qua lai vo han vi moi lan HD_Pha lai reset dong ho HANPHA)
+			std::map<int, StationVector>::iterator itBen = g_MoveStation.find(nMap);
+			if (itBen != g_MoveStation.end() && !itBen->second.empty())
+			{
+				ea.uLDHopT = 0;	// toi noi - xoa han chuyen di, khong de ro sang chuyen sau
+				HD_Pha(nPlayerIdx, HDP_TS_XAPHU, uCurTime);
+				return 1;
+			}
+			int nVeCity = (nTuyen >= 0) ? (int)g_HDTSVe[nTuyen][1] : 11;
+			int nDiVe = LD_DiThanh(nPlayerIdx, pAp, nVeCity, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uHDNext = ea.uLDNext;	// theo nhip cua LD_DiThanh, khong goi don 400ms
+			if (nDiVe < 0)
+			{
+				ea.uLDHopT = 0;
+				ea.uHDTSNghi = uCurTime + 600000;
+				HD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng vÒ ®­îc thµnh ®Ó ®i tiÕp TÝn Sø - thö l¹i sau 10 phót.");
+				ea.nHDPhase = HDP_DONE;
+				ea.nHDHold = 0;
+				return 0;
+			}
 			return 1;
 		}
 		// dich den: giao -> thanh dich cua tuyen; nhan -> 11/162 (dang dung thi dung luon)
@@ -9475,9 +9553,13 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nMap != nDest)
 		{
 			int nDi = LD_DiThanh(nPlayerIdx, pAp, nDest, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uHDNext = ea.uLDNext;	// theo nhip cua LD_DiThanh
 			if (nDi < 0)
 			{
-				HD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc thµnh DÞch Quan - bá TÝn Sø h«m nay.");
+				ea.uLDHopT = 0;
+				ea.uHDTSNghi = uCurTime + 600000;
+				HD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc thµnh DÞch Quan - thö l¹i sau 10 phót.");
 				ea.nHDPhase = HDP_DONE;
 				ea.nHDHold = 0;
 				return 0;
@@ -9497,6 +9579,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			 || DT_Has(szBuf, HDM_SAY_TSQUAMET))
 			{
 				LD_Huy(nPlayerIdx, nAns);
+				ea.nHDKeyTS = nNgay;	// chot han hom nay
 				HD_Msg(nPlayerIdx, "<color=Yellow>HÕt l­ît TÝn Sø h«m nay - tr¶ m¸y.");
 				ea.nHDPhase = HDP_DONE;
 				ea.nHDHold = 0;
@@ -9505,6 +9588,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (DT_Has(szBuf, HDM_SAY_TSTHIEUCAP))
 			{
 				LD_Huy(nPlayerIdx, nAns);
+				ea.nHDKeyTS = nNgay;	// chua du cap - khoi thu trong ngay
 				HD_Msg(nPlayerIdx, "<color=Yellow>Ch­a ®ñ cÊp 90 lµm TÝn Sø - tr¶ m¸y.");
 				ea.nHDPhase = HDP_DONE;
 				ea.nHDHold = 0;
@@ -9513,10 +9597,17 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			if (DT_Has(szBuf, HDM_SAY_TSTHIEUO))
 			{
 				LD_Huy(nPlayerIdx, nAns);
-				HD_Msg(nPlayerIdx, "<color=Yellow>Hµnh trang thiÕu 5 « trèng ®Ó nhËn th­ëng TÝn Sø - h·y dän tói råi bËt l¹i.");
+				ea.uHDTSNghi = uCurTime + 600000;	// loi tam - 10 phut sau thu lai
+				HD_Msg(nPlayerIdx, "<color=Yellow>Hµnh trang thiÕu 5 « trèng ®Ó nhËn th­ëng TÝn Sø - h·y dän tói, 10 phót n÷a auto thö l¹i.");
 				ea.nHDPhase = HDP_DONE;
 				ea.nHDHold = 0;
 				return 0;
+			}
+			if (DT_Has(szBuf, HDM_SAY_TSDANGCO))
+			{	// task 1203/1204 chua sync kip sau khi vua bam nhan - cho mot nhip
+				LD_Huy(nPlayerIdx, nAns);
+				ea.uHDNext = uCurTime + 2500;
+				return 1;
 			}
 			int nOpt;
 			if (nSt == 25 || nSt == 30)
@@ -9562,6 +9653,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// sau khi giao: 1204 ve 0 -> con luot thi nhan tiep NGAY TAI thanh nay
 		if (nSt == 0 && HD_TSLuotNay(nPlayerIdx, nNgay) >= HD_TSMucTieu(pAp))
 		{
+			ea.nHDKeyTS = nNgay;	// xong du luot - chot
 			HD_Msg(nPlayerIdx, "<color=Cyan>§· ®ñ l­ît TÝn Sø h«m nay - tr¶ m¸y l¹i cho auto cò.");
 			ea.nHDPhase = HDP_DONE;
 			ea.nHDHold = 0;
@@ -9654,6 +9746,16 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		int nSt = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(HD_TS_TSK_TT);
+		// qua 35 phut van chua ra khoi ai (thoai liet, khong phai doi truong...):
+		// bo han - tha may de khoi giu nguoi choi vinh vien (thoat ai xu ly tay)
+		if (uCurTime - ea.uHDVaoT > 35u * 60000u)
+		{
+			ea.nHDKeyTS = nNgay;
+			HD_Msg(nPlayerIdx, "<color=Yellow>KÑt trong ¶i Thiªn B¶o Khè qu¸ l©u - auto TÝn Sø nghØ hÕt h«m nay, cÇn xö lý tay.");
+			ea.nHDPhase = HDP_DONE;
+			ea.nHDHold = 0;
+			return 0;
+		}
 		// qua 25 phut trong ai -> bo cuoc, ra ngoai
 		int nQuaHan = (uCurTime - ea.uHDVaoT > 25u * 60000u);
 		if (nSt == 20 && !nQuaHan)
@@ -9684,6 +9786,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 						DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
 					else
 					{
+						ea.uHDDlgSeen = cap.uDlgSeq;	// thoai ke cua ruong khong can doc
 						Player[nPlayerIdx].DialogNpc(nIdx);
 						ea.uHDNext = uCurTime + 1200;
 					}
@@ -9716,9 +9819,17 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				DT_Answer(nPlayerIdx, nOpt);
 				if (nSt == 10 || nSt == 21)
+				{
+					ea.uHDVaoT = uCurTime;	// lam moi han 25 phut cho luot chay
 					HD_Msg(nPlayerIdx, "<color=Green>B¾t ®Çu më 5 B¶o R­¬ng theo ®óng thø tù.");
-				else if (nSt == 0 || nQuaHan)
-					HD_Msg(nPlayerIdx, "<color=Yellow>NhiÖm vô TÝn Sø háng/qu¸ l©u - rêi ¶i.");
+				}
+				else if (nSt == 0 || (nQuaHan && nSt != 25 && nSt != 30))
+				{
+					// bo cuoc giua chung: task van do dang (1203 giu nguyen) -> phai
+					// CHOT ngay, khong thi ra thanh lai vao ai lap vo tan
+					ea.nHDKeyTS = nNgay;
+					HD_Msg(nPlayerIdx, "<color=Yellow>NhiÖm vô TÝn Sø háng/qu¸ l©u - rêi ¶i, nghØ hÕt h«m nay.");
+				}
 				ea.uHDNext = uCurTime + 2000;
 				if (nSt == 0)
 				{

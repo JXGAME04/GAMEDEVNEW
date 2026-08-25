@@ -957,7 +957,11 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, Wnd_IsLButtonDown());
-	BOOL bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
+	// nBS == 1: may TK/LD/HD dang cam lai DI DUONG - lenh duoi-nhat (do_run) se de
+	// len lenh di cua may nen bo qua; nBS == 2 giu nep cu: nhat truoc, danh pass sau
+	BOOL bLaunch = 0;
+	if(nBS != 1)
+		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
 	AUTOLOG_EVERY(1000, "[PICK-RET] pass=%u t=%u pickret=%d lbtn=%d pick=%d fpick=%d pvis=%d ptype=%d city=%d nopick=%d nopcnt=%d", m_GameCounter, timeGetTime(), bLaunch, Wnd_IsLButtonDown(), pApData->bPickUp, pApData->bFollowPick, pApData->nPickVision, pApData->nPickType, pApData->bCityPick, pApData->bNoPick, pApData->nNOPCount);
 	if(bLaunch != 2)
 		bLaunch = 0;
@@ -1014,7 +1018,8 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	{
 		if(pApData->bOnPK || nBS == 2)
 		{
-			if(pApData->bUseFKey && !Wnd_IsPKKeyDown())
+			// nBS == 2: muc tieu do may TK/LD/HD vua giao (ea.uNpcID) - khong duoc xoa
+			if(pApData->bUseFKey && !Wnd_IsPKKeyDown() && nBS != 2)
 				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
 			if(!bLaunch && (nBS == 2 || !pApData->bUseFKey || Wnd_IsPKKeyDown()))
 			bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pApData);

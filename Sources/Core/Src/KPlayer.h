@@ -262,7 +262,8 @@ struct ExtAuto
 	int  nHDHold;        // 0 tha may / 1 cam lai / 2 danh theo may PK
 	int  nHDKeyBN;       // khoa ngay da chay xong Bach Nhan (yymmdd)
 	int  nHDKeyBC;       // khoa ngay da chay xong Bang Chien (yymmdd)
-	int  nHDKeyTS;       // khoa ngay da BAT DAU chay Tin Su (yymmdd)
+	int  nHDKeyTS;       // khoa ngay da CHOT Tin Su: xong du luot / bo cuoc / bi tu choi (yymmdd)
+	UINT uHDTSNghi;      // loi TAM (thieu o trong, di thanh hong): nghi toi moc nay roi thu lai
 	int  nHDDai;         // dai dang nham (1..5); 0 = chua
 	int  nHDLuot;        // uoc luong luot exp da an hom nay
 	int  nHDCothu;       // chi so diem Co Thu dang di toi
@@ -420,6 +421,7 @@ struct ExtAuto
 		nHDKeyBN = 0;
 		nHDKeyBC = 0;
 		nHDKeyTS = 0;
+		uHDTSNghi = 0;
 		nHDDai = 0;
 		nHDLuot = 0;
 		nHDCothu = 0;

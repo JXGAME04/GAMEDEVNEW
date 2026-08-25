@@ -204,4 +204,45 @@ Binary staged đè lên bản 20:17: `CoreClient.dll.moi_2408_liendau` 2.333.184
 `WAuto.exe.moi_2408_liendau` 389.120 B md5 `3d3a8812` — **mốc 20:53, một lần swap ăn cả
 Liên đấu r1+r2 + Hoạt động r3 + Tín sứ r4**.
 
-*Ghi 24/08/2026 ~20:20, bổ sung Tín Sứ ~21:00.*
+### 7.5 Sáng 25/08 — vá theo báo lỗi của chủ game + 2 vòng phản biện (binary 09:43)
+
+Chủ game test 08:50-09:00 (đúng lúc server ải 395 đang hỏng script — xem
+`GHICHU_TINSU_TRAP_2508.md` của phiên song song) và báo 2 hiện tượng: (1) đặt 9:00 mà
+chưa tới giờ auto đã chạy; (2) tắt kích hoạt nick rồi mà vẫn tự kích NPC. Gốc + vá:
+
+- **Chạy trước giờ**: nhân vật còn nhiệm vụ dở dang (1203≠0) và thiết kế cũ cho "dở dang
+  chạy bất kể giờ". Nay: **mọi đường vào đều phải trong khung [giờ đặt .. +12h)**; câu
+  thông báo bắt đầu in kèm `(giờ máy chủ hh:mm)` để soi ô Lệch giờ.
+- **Tắt không ăn**: trạng thái pha nằm trong CoreClient; tick lại là chạy tiếp giữa pha,
+  và tắt 1 ô trong khi ô khác còn bật thì pha cũ vẫn chạy. Nay: **mỗi nhịp HD_Process
+  kiểm lại đúng ô của pha đang chạy** — bỏ tick là buông máy về OFF ngay; cửa vào theo
+  map (960/Bang Chiến) cũng phải có ô bật tương ứng.
+- **Chống lặp vô hạn** (phản biện A, 5 lỗi CAO): `nHDKeyTS` đổi nghĩa thành **khoá "đã
+  chốt hôm nay"** (xong đủ lượt / bỏ cuộc / bị từ chối hẳn — hết lượt, thiếu cấp 90, hỏng
+  nhiệm vụ, quá 25' trong ải) — nhánh dở dang cũng qua khoá này nên mọi DONE là dừng thật;
+  lỗi **tạm** (thiếu 5 ô trống, đi thành thất bại) nghỉ 10 phút bằng đồng hồ riêng
+  `uHDTSNghi` rồi tự thử lại; thêm **watchdog 35 phút** trong ải (thoại liệt / không phải
+  đội trưởng tổ đội → nghỉ hết ngày, cần xử lý tay — auto KHÔNG tự rời tổ đội).
+- Vá kỹ thuật kèm: rò `uLDHopT` ở nhánh về-thành mới (làm mọi chuyến `LD_DiThanh` sau đó
+  fail tức thì); HD gọi `LD_DiThanh` theo đúng nhịp nội bộ của nó (hết cảnh dùng phù
+  ~2,5 lần/giây ở map hoang); ngày so khoá/lượt đổi sang **ngày máy chủ** (`HD_NgayServer`
+  = giờ máy + Lệch giờ) khớp cách server ghi task 4128; bắt thêm câu "không thể tiếp nhận
+  nhiệm vụ giống nhau" (task chưa sync) — chờ 2,5s thay vì loạn thoại; mở rương đánh dấu
+  `uHDDlgSeen`; làm mới hạn 25' khi bấm "Bắt đầu/Tiếp tục"; HANPHA nghỉ 5' trước khi thử lại.
+- **Dây nối** (phản biện B): `bUseFKey` không còn `RESETNPCID` khi `nBS==2` (trước đó ai bật
+  "dùng phím F" là mục tiêu máy TK/LĐ/HĐ giao bị xoá mỗi nhịp — Tín Sứ không giết nổi Thủ Hộ
+  Giả); máy nhặt-đuổi không chạy khi `nBS==1` (đang cầm lái đi đường) — `nBS==2` giữ nếp cũ.
+- WAuto: kẹp giờ 0-23/phút 0-59 cho BN/BC/TS; tooltip Tín Sứ viết lại đúng luật khung giờ
+  + ghi chú đánh Thủ Hộ Giả dùng thiết lập tab PK (bật "Đuổi theo mục tiêu", tầm nhìn > 0).
+
+**Lưu ý phối hợp 25/08**: cây D: sáng nay có thêm code client của phiên "3 Hoạt Động"
+(commit `f4fb0bf1`, F11 Săn Boss) — bộ binary dưới đây build SAU commit đó nên **đã gồm cả
+phần client 3HD**; bộ `.moi_2508_3hoatdong` cũ hơn, không cần dùng nữa. Server ải 395 phải
+được restart GS (vá trap của phiên Tín Sứ) thì Tín Sứ mới chơi được — auto phía client đã
+tự vệ đủ nếu server còn hỏng (nghỉ hết ngày thay vì lặp).
+
+Binary staged (đè bộ 20:53, hậu tố `.moi_2408_liendau`, **mốc 09:43 25/08**):
+`CoreClient.dll` 2.335.744 B md5 `d485372c` (CRT-TĨNH) · `Game.exe` 1.264.128 B md5
+`9eec1d50` (UCRT-RELEASE) · `WAuto.exe` 389.632 B md5 `1b3de743`.
+
+*Ghi 24/08/2026 ~20:20, bổ sung Tín Sứ ~21:00, bổ sung 7.5 sáng 25/08.*
