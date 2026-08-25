@@ -687,7 +687,7 @@ int KMissle::CheckCollision()
 		if (nNpcIdx > 0)
 		{
 			if (m_nDamageRange == 1)//ÔÚÄ¿±êNpc´¦Åö×²
-				ProcessCollision(m_nLauncher, Npc[nNpcIdx].m_RegionIndex , Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, m_nDamageRange , m_eRelation);
+				ProcessCollision(m_nLauncher, Npc[nNpcIdx].m_RegionIndex , Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, m_nDamageRange , m_eRelation, nNpcIdx);
 			else
 				ProcessCollision();//ÔÚ×Óµ¯Î»ÖÃ´¦ÀíÅö×²
 			AUTOLOG_EVERY(500, "[MSL-HIT-CELL] t=%u msl=%d sk=%d lv=%d launcher=%d trung npc=%d(id=%u) tai(r=%d,%d,%d) dmgrange=%d colrange=%d lastidx=%d move=%d life=%d/%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcIdx, Npc[nNpcIdx].m_dwID, Npc[nNpcIdx].m_RegionIndex, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, m_nDamageRange, m_nCollideRange, m_nLastDoCollisionIdx, (int)m_eMoveKind, m_nCurrentLife, m_nLifeTime);
@@ -1474,7 +1474,7 @@ BOOL KMissle::GetOffsetAxis(int nSubWorld, int nSrcRegionId, int nSrcMapX, int n
 // Comments		:
 // Author		: RomanDou
 *****************************************************************************/
-int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nMapY, int nRange , int eRelation)
+int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nMapY, int nRange , int eRelation, int nPreferIdx)
 {
 #ifdef TOOLVERSION 
 	return 0;
@@ -1523,7 +1523,10 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 				continue;
 
 			_ASSERT(nSearchRegion >= 0);
-			int nNpcIdx = SubWorld[nSubWorld].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, nLauncherIdx, eRelation);
+			// FIX 25/08 (r2): truyen tiep MUC TIEU. Neu khong, FindNpc lai tra con DAU TIEN trong o -
+			// do that 25/08: 166/2733 lan cham la XAC (doing=10) lot qua duong nay du CheckNearestCollision
+			// da loc xac, vi no goi lai FindNpc tren CHINH o cua muc tieu ma khong noi minh muon ai.
+			int nNpcIdx = SubWorld[nSubWorld].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, nLauncherIdx, eRelation, nPreferIdx);
 			if (nNpcIdx > 0)	
 			{
 				if(Npc[nNpcIdx].GetProtectTime() > 0 && eRelation == relation_enemy) //®ang trong tr¹ng th¸i bÊt tö bŞ kÎ thï ®¸nh vµo return

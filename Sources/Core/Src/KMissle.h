@@ -205,7 +205,7 @@ private:
 	KMissle&			operator=(KMissle& Missle);
 	DWORD				GetCurrentSubWorldTime();
 	int					ProcessCollision();//´¦ÀíÅö×²
-	int					ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nMapY, int nRange , int eRelation);
+	int					ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nMapY, int nRange , int eRelation, int nPreferIdx = 0);
 
 	inline void	ZAxisMove()
 	{
