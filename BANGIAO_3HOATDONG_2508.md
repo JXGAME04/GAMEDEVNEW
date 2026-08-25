@@ -378,6 +378,22 @@ qua gate quan hệ khi launcher là NPC** (chiêu đến từ `s2c_skillcast` �
 thẩm định; client chỉ vẽ lại). Server không đổi hành vi (guard `#ifndef _SERVER`).
 ⇒ `CoreClient.dll.moi_2508_3hoatdong` đã làm tươi (10:43) — hiệu lực sau swap client.
 
+## C14 — dọn NPC "Nhiếp Thí Trần" CŨ của bản Việt (chủ báo, commit `bb6ddeaa`)
+
+NPC cũ (script `global
+pcchucnang
+hieptran.lua`, 2021) nằm trong **dữ liệu map
+tĩnh** — không script nào spawn (đã grep hết cây; `addnpcbosssatthu` comment từ
+trước). Vá: hàm mới `HD3_DelNpcByName(tên)` (quét `Npc[]` với `m_dwID != 0`, bỏ
+player, gỡ đúng khuôn `LuaDelNpc`), gọi **đầu `HD3_DriverInit`** trước khi sinh
+NPC 769 Linux (guard nil cho DLL cũ). Console boot in `[3HD] Da xoa N NPC ...` —
+N=7 là đúng (7 thành); N=0 nghĩa là map nạp NPC SAU startgame → báo lại để chuyển
+sang HD3_Tick lần đầu.
+
+**DLL server MỚI NHẤT: `CoreServer.dll.moi_2508_xoanpccu` (12:08, 18.058.240 B)**
+— gộp đủ: HD3_AddNpc/Ex + boss vàng + DelNpcByName. Copy đè `CoreServer.dll`
+trước khi bấm `RESTART_GS_2508.bat` (bản 10:23 đang nằm sẵn thiếu C14).
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
