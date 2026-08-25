@@ -23,7 +23,7 @@ function RunMission()
 		SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\shuizeideath.lua");
 	end
 	idx = 0
-	local nCount = GetMSPlayerCount(MISSIONID, 0)
+	local nCount = GetMSPlayerCount(MISSIONID)
 	for i = 1 , nCount do 
  		idx, pidx = GetNextPlayer(MISSIONID,idx, 0);
 
@@ -42,7 +42,7 @@ end
 
 function JiluAttendCount()
 	-- 得到当前报名的人数 
- 	local nCount = GetMSPlayerCount(MISSIONID, 0)
+ 	local nCount = GetMSPlayerCount(MISSIONID)
 	local mapid = SubWorldIdx2ID(SubWorld)
 	if (mapid == 337) then
 		AddStatData("fld_chuan1canjiarenshu", nCount)
@@ -87,7 +87,7 @@ function Landing()
 	
 	local tbPlayer = {}
 	idx = 0
-	local nCount = GetMSPlayerCount(MISSIONID, 0)
+	local nCount = GetMSPlayerCount(MISSIONID)
 	for i = 1 , nCount do 
 		idx, pidx = GetNextPlayer(MISSIONID,idx, 0)
 		

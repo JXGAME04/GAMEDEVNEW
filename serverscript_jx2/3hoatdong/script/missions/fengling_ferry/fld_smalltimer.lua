@@ -75,7 +75,7 @@ function fld_addhuoyuedu(nPassedTime)
 	
 	local nIndex = 0
 	local nPlayerIndex = 0
-	local nCount = GetMSPlayerCount(MISSIONID, 0);
+	local nCount = GetMSPlayerCount(MISSIONID);
 	for i=1, nCount do 
 		nIndex, nPlayerIndex = GetNextPlayer(MISSIONID, nIndex, 0)
 		if (nPlayerIndex > 0) then
