@@ -498,6 +498,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		}
 		break;
 	case GDCNI_TASK_VALUE_UPDATE:	// [TaskGuide] task value ve tu server
+		KUiTaskGuide::AutoTraceOnTask((int)uParam);	// [C35] nhan nhiem vu -> tu theo doi
 		KUiTaskGuide::OnTaskValueChanged((int)uParam);
 		KUiTaskTrace::OnTaskValueChanged((int)uParam);
 		break;

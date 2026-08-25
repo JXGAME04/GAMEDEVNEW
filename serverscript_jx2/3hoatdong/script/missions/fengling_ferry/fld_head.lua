@@ -139,7 +139,7 @@ function fld_TakeBoat(plindex)
 	AddMSPlayer(MISSIONID,1)
 	NewWorld(boatmapid, posx, posy)
 	EventSys:GetType("FengLingDu"):OnPlayerEvent("OnBoard", PlayerIndex)
-	Msg2Player("cßn"..t.." phót thuyÒn rêi bÕn, ®Õn bê B¾c Phong L¨ng §é")
+	Msg2Player("cßn "..t.." phót thuyÒn rêi bÕn, ®Õn bê B¾c Phong L¨ng §é")
 	DisabledUseTownP(1)	--ÏŞÖÆÆäÔÚ¶É´¬ÄÚÊ¹ÓÃ»Ø³Ç·û
 	SetRevPos(175,1);		--ÉèÖÃÖØÉúµãÔÚÎ÷É½´å
 	SetLogoutRV(1)

@@ -204,7 +204,7 @@ function award_player(exp, objects, time)
 		point = BigBoss:AddChuangGuanPoint(point);
 		point = Chuangguan_checkdoubleexp(point)
 		AddOwnExp(point);
-		Msg2Player("<#> B¹n nhËn ®­îc " .. point .. "®iÓm kinh nghiÖm.");
+		Msg2Player("<#> B¹n nhËn ®­îc " .. point .. " ®iÓm kinh nghiÖm.");
 	end
 	
 	-- ½±ÀøËæ»úÎïÆ·

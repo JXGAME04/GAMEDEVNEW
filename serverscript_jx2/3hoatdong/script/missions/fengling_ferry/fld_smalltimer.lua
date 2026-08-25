@@ -19,17 +19,17 @@ function OnTimer()
 	
 	if (t < ENDSIGN_TIME and mod(t, 9) == 0) then
 		local bf_mint = 10 - GetMissionV(MS_TIMEACC_1MIN)
-		Msg2MSAll(MISSIONID, "cßn"..bf_mint.." phót rêi bÕn")
+		Msg2MSAll(MISSIONID, "cßn "..bf_mint.." phót rêi bÕn")
 	end
 	
 	if (t >= ENDSIGN_TIME and mod(t, 15) == 0) then
 		local mint = 39 - GetMissionV(MS_TIMEACC_1MIN)
-		Msg2MSAll(MISSIONID, "cßn"..mint.." phót sÏ ®Õn bê B¾c Phong L¨ng §é")
+		Msg2MSAll(MISSIONID, "cßn "..mint.." phót sÏ ®Õn bê B¾c Phong L¨ng §é")
 	end
 	
 	if (t == REPORT_TIME) then
 		local mint = 39 - GetMissionV(MS_TIMEACC_1MIN)
-		Msg2MSAll(MISSIONID, "cßn"..mint.." phót sÏ ®Õn bê B¾c Phong L¨ng §é")
+		Msg2MSAll(MISSIONID, "cßn "..mint.." phót sÏ ®Õn bê B¾c Phong L¨ng §é")
 	end
 	
 	if (t == UPBOSS_TIME) then		-- 15·ÖÖÓ

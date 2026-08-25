@@ -1743,6 +1743,7 @@ static BOOL sIsJx2ItemScript(const char* szScript)
 		"\\script\\item\\huangzhendan.lua",						// [PORT5 23/08] Hoang Chan Don (tongwar) - tu Remove + return
 		"\\script\\vng_event\\item\\biggoldenseed.lua",			// [PORT5 23/08]
 		"\\script\\missions\\tongcastle\\shenmuling.lua",		// [TONGCASTLE 23/08 phan bien F13] Than Moc Lenh 3205-3207 (thanh cong tra nil -> engine tru)			// [PORT5 23/08] Qua Dai Hoang Kim (tongwar)
+		"\\script\\task\\tollgate\\killer\\shashou_mibao.lua",	// [3HD C35] Sat Thu Bi Bao: thanh cong tra nil -> engine tru 1 cai
 	};
 	if (!szScript || !szScript[0])
 		return FALSE;

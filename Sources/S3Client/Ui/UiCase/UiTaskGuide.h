@@ -38,6 +38,7 @@ public:
 	static void				LoadScheme(const char* pScheme);
 	// goi tu GameSpaceChangedNotify khi nhan GDCNI_TASK_VALUE_UPDATE
 	static void				OnTaskValueChanged(int nTaskId);
+	static void				AutoTraceOnTask(int nTaskId);			// [C35] nhan nhiem vu -> tu theo doi
 	// ban RUT GON trang thai Da Tau (dung cho khung Theo doi nhiem vu)
 	static void				BuildBriefLine(char* pOut, int nSize);
 	static void				BuildTraceLine(char* pOut, int nSize);	// [C18] theo tab dang theo doi

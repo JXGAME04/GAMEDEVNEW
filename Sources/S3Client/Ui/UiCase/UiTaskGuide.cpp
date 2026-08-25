@@ -32,6 +32,7 @@ extern iCoreShell*		g_pCoreShell;
 #define TASKGUIDE_BANGCHIEN_TASKID	8	// [CHI NAM 24/08] tongwar: task 2369..2378 (nt_setTask co SyncTaskValue)
 #define TASKGUIDE_BACHNHAN_TASKID	9	// [CHI NAM 24/08] bairenleitai: task 2709 (luot exp/ngay)
 #define TASKGUIDE_SATTHU_TASKID	10	// [3HD 25/08] san boss sat thu: task 1082/1192/1193/1217 (nt_setTask co SyncTaskValue)
+#define TRACE_MAX_TASKID	16	// [C33] so he toi da tren bang Chi nam (chi so = TaskId)
 
 // ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
 enum
@@ -196,6 +197,41 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	}
 }
 
+// [C35] Tu BAT theo doi khi nguoi choi VUA NHAN nhiem vu (khoi phai bam nut).
+// Chay ca khi bang F11 dang DONG (goi tu GameSpaceChangedNotify). Chi tu bat
+// dung MOT LAN cho moi lan nhan: nguoi choi tat di thi khong bi bat lai, den
+// khi ho nhan nhiem vu MOI (task ve 0 roi co lai) thi mo lai.
+static bool s_abAutoDone[TRACE_MAX_TASKID] = { false };
+
+void KUiTaskGuide::AutoTraceOnTask(int nTaskId)
+{
+	int nHe = -1;
+	bool bCo = false;
+	if (nTaskId == 1082)
+	{
+		nHe = TASKGUIDE_SATTHU_TASKID;
+		int nB = DTG_TaskVal(1082);
+		bCo = (nB >= 1 && nB <= ST3_BOSS_MAX);
+	}
+	else if (nTaskId == 1021 || nTaskId == 1028)
+	{
+		nHe = TASKGUIDE_DATAU_TASKID;
+		bCo = (DTG_TaskVal(1021) != 0);
+	}
+	if (nHe < 0 || nHe >= TRACE_MAX_TASKID)
+		return;
+	if (!bCo)
+	{
+		s_abAutoDone[nHe] = false;	// het nhiem vu -> cho phep tu bat lan sau
+		return;
+	}
+	if (s_abAutoDone[nHe] || IsTracedTask(nHe))
+		return;
+	s_abAutoDone[nHe] = true;
+	SetTracedTask(nHe, true);
+	KUiTaskTrace::SetTraced(true);	// mo khung neu dang dong
+	RefreshButtons();
+}
 void KUiTaskGuide::RefreshButtons()
 {
 	if (m_pSelf && m_pSelf->IsVisible())
@@ -621,7 +657,6 @@ void KUiTaskGuide::BuildTinSuText()
 // - Theo doi / Huy theo doi: bat tat khung KUiTaskTrace.
 // [C33] CAC he dang duoc 'Theo doi' (truoc day chi giu DUY NHAT 1 he).
 // Chi so = TaskId (6..15). Mac dinh khong theo doi he nao - nguoi choi tu bam.
-#define TRACE_MAX_TASKID 16
 static bool s_abTraced[TRACE_MAX_TASKID] = { false };
 
 bool KUiTaskGuide::IsTracedTask(int nTaskId)

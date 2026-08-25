@@ -110,14 +110,14 @@ function want_playboat()
 	
 	if bStarted then
 		if (getn(tbFreeMapList) == 0) then
-			Say("Khu vùc nµy"..strLevel.."®· b¾t ®Çu. Kh«ng cßn chç n÷a….",0)
+			Say("Khu vùc nµy "..strLevel.." ®· b¾t ®Çu. Kh«ng cßn chç n÷a….",0)
 			return
 		else
-			Say("Khu vùc nµy"..strLevel.."giai ®o¹n b¸o danh ®ua thuyÒn rång, vÉn cßn <color=red>"..getn(tbFreeMapList).."<color> mét b¶n ®å nhiÖm vô cßn trèng, khiªu chiÕn cã thêi gian cÇn ph¶i nép <color=red>10 v¹n<color> ng©n l­îng, ng­¬i muèn nhËp héi kh«ng?",2, "Ph¶i! Ta muèn dÉn d¾t ®éi cña ta tham gia./dragon_join", "Kh«ng cÇn/onCancel")
+			Say("Khu vùc nµy "..strLevel.." giai ®o¹n b¸o danh ®ua thuyÒn rång, vÉn cßn <color=red>"..getn(tbFreeMapList).."<color> mét b¶n ®å nhiÖm vô cßn trèng, khiªu chiÕn cã thêi gian cÇn ph¶i nép <color=red>10 v¹n<color> ng©n l­îng, ng­¬i muèn nhËp héi kh«ng?",2, "Ph¶i! Ta muèn dÉn d¾t ®éi cña ta tham gia./dragon_join", "Kh«ng cÇn/onCancel")
 			return
 		end
 	else
-		Say("Xin lçi! Khu vùc nµy"..strLevel.."NhiÖm vô Th¸ch thøc thêi gian ch­a ®Õn giai ®o¹n b¸o danh. C¸ch <color=red>mçi giê <color> b¸o danh 1 lÇn. Xin chó ı hÖ thèng th«ng b¸o!",0)
+		Say("Xin lçi! Khu vùc nµy "..strLevel.." NhiÖm vô Th¸ch thøc thêi gian ch­a ®Õn giai ®o¹n b¸o danh. C¸ch <color=red>mçi giê <color> b¸o danh 1 lÇn. Xin chó ı hÖ thèng th«ng b¸o!",0)
 		return
 	end
 	
