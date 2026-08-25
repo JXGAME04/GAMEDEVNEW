@@ -159,7 +159,10 @@ ty le hut = so dong [S4-MSL-END] co lasthit=0 va barrier=0  /  tong so dong [S4-
 
 ---
 
-## 6. Các lỗi THẬT khác đã tìm ra nhưng **KHÔNG** gây hụt đạn (chưa vá)
+## 6. Các lỗi THẬT khác đã tìm ra nhưng **KHÔNG** gây hụt đạn
+
+> ✅ **ĐÃ VÁ HẾT ở đợt 2 — commit `faeee99d`. Xem mục 10 để biết bằng chứng đo lại, 5 lỗi phụ
+> phát sinh, và 1 thay đổi ĐỔI CÂN BẰNG PvP cần chủ game duyệt.**
 
 Xếp theo giá trị. Không được cộng số này vào 831.
 
@@ -220,3 +223,80 @@ rồi **C** (a+b+c cùng lúc) + **D** → cuối cùng **E**, **F**.
 quét mã tìm cùng kiểu lỗi / soi đường lệnh auto→client→server / góc nhìn client), mỗi phát hiện qua
 **2 lớp phản biện độc lập** (một lớp kiểm cơ chế trong mã, một lớp tự đếm lại trên log bằng Python).
 7 bản vá bị bác bỏ ở mục 7 đều là phát hiện **đã chết trong vòng phản biện** — giữ lại để khỏi làm lại.
+
+---
+
+## 10. ĐỢT 2 — ĐÃ VÁ 6 LỖI CÒN LẠI + 5 LỖI PHỤ (commit `faeee99d`, 24/08 tối)
+
+Chủ game: *"Fix tiếp 6 lỗi"* + ***"phải xác định chính xác lỗi mới fix"***.
+Mọi con số dưới đây **đo lại từ đầu** trên log 24/08 (2.783 viên đạn của CaiBang), không lấy số của ai khác.
+
+### 10.1 Bằng chứng từng lỗi
+
+| Mã | Lỗi | Bằng chứng ĐO ĐƯỢC |
+|---|---|---|
+| **A1** | `CheckNearestCollision` trả về XÁC; `ReceiveDamage` (`KNpc.cpp:3964`) `return TRUE` không trừ máu, còn `CheckCollision` đã `return 1` nên đạn tắt luôn | **537/3419 = 15,7%** lần chạm rơi vào NPC `doing=10` hoặc `life≤0`; **167 viên (6,0%)** chỉ chạm xác |
+| **A2** | Trả về con **đầu tiên theo thứ tự quét 3×3 cố định**, không ưu tiên `m_nFollowNpcIdx` | **405/1952 = 20,7%** viên có chạm nhưng **không hề chạm `wantid`** (40,2% số đó là chạm xác). Cộng 831 viên hụt ⇒ **mục tiêu không ăn gì = 1236/2783 = 44,4%** |
+| **B** | `ProcessCollision`: `return 0` thoát **cả hai vòng** khi gặp NPC bất tử, trong khi cửa chặn là **theo từng NPC** | Không có ca thật trong log (790/790 `COLL-NPC-FOUND` đều `protect=0`). **Chứng minh là LỖI chứ không phải cơ chế:** những con quét TRƯỚC đó **vẫn ăn** sát thương (`ProcessDamage` đã chạy) ⇒ kết quả phụ thuộc **thứ tự quét** |
+| **C** | Bộ đếm đạn ghi `m_pObjRef` (bảng VẬT PHẨM) trong khi `GetRef(obj_missle)` (`KRegion.cpp:1082`) đọc `m_pMslRef`; 5 `AddRef` / 4 `DecRef`; `AddObj` `>=0` vs `RemoveObj` `>0` | Ô **(region 128, cell 12,22) ăn 592 lần** trong 3 giờ của **một** nhân vật ⇒ **vượt trần byte 255** ⇒ `CanPutObj` FALSE vĩnh viễn |
+| **D** | `FindNpc` thiếu chặn cận trên | Người gọi không chỉ `KMissle`: `KNpcAI.cpp:959/1059`, `KPlayer.cpp:11604/11649/11694/11739` chỉ cuộn **một** bước region ⇒ NPC tầm nhìn > 512 mps cho `nRMx ≥ 16` ⇒ đọc quá mảng 512 byte. **Kết quả trả về không đổi** (vòng quét không thể khớp toạ độ ngoài dải) ⇒ thuần an toàn bộ nhớ |
+| **E** | `ProcCommand` chạy **trước** `ProcStatus` (`KNpc.cpp:598-599`) và xoá lệnh vô điều kiện | Histogram khoảng cách 2 lần cast chiêu 361 tách **đúng hai cụm**: `430-459 ms` (**1176** mẫu = 8 khung) và `480-519 ms` (**1204** mẫu = 9 khung) — cách nhau **55,5 ms = 1 khung @ GAME_FPS 18**. **50,6%** số đòn ở cụm chậm ⇒ **≈5% thông lượng** |
+| **F** | `SetObstacle` ghi ô **tâm** vào bảng **BẪY** thay vì bảng vật cản | **KHÔNG phải mã chết**: `LuaAddObstacle` (`ScriptFuns.cpp:4034`, đăng ký `"AddObstacle"` ở `:14407`) gọi với `nRange=1`; **5 script đang chạy** dùng: `lib_map.lua`, `hundred_arena.lua`, `citywar_city/head.lua`, `tongcastle.lua`, `lib_ctc.lua` |
+
+### 10.2 Năm lỗi PHỤ do vòng phản biện 2 lớp (11 tác nhân) tìm ra — đều đã tự kiểm lại
+
+| Mã | Tệp | Vì sao bắt buộc |
+|---|---|---|
+| **G1** | `KMissle.cpp` `PrePareFly` | `Mps2Map` đặt `*nR = -1` (`KSubWorld.cpp:1430/1445`), dòng ngay sau gọi `CurRegion.AddRef` ⇒ `m_Region[-1]`. `KRegion::AddRef` **ĐỌC** `m_nWidth/m_nHeight` ngoài mảng rồi **GHI** `pBuffer[index]++` — phép GHI này nằm **NGOÀI** khối `__try` ⇒ hỏng heap. Thêm `if (m_nRegionId >= 0)` |
+| **G2** | `KNpc::Init()` | `Init()` (được `KNpc::Remove` gọi) **không xoá** `m_Command`. Sau bản vá **E**, khe NPC có thể được thu hồi khi còn lệnh `do_skill` treo ⇒ nhân vật **mới** nạp vào khe thi hành lệnh của người trước (`DoSkill` → `SendCommand(do_run)` tới toạ độ cũ) |
+| **G3** | `KMissleSet::Remove` | `KMissle::Release()` phía **SERVER** không đặt `m_nMissleId = -1` (dòng đó nằm trong `#ifndef _SERVER`) ⇒ cửa chặn đầu hàm **không bao giờ ăn** ⇒ `Remove()` chạy 2 lần, trừ bộ đếm 2 lần. Đặt `m_nRegionId = -1` sau `DecRef` (đúng khuôn `KRegion::Close`) |
+| **G4** | `KRegion::RemoveObj` | `KObj::Release()` đặt `m_nMapX/m_nMapY/m_nRegionIdx = 0` ⇒ lần `RemoveObj` **thứ hai** sẽ `DecRef` nhầm ô (0,0) region 0 sau khi đổi `> 0` → `>= 0`. Thêm cờ `bFound` |
+| **G5** | `KSubWorld::CanPutObjBarrier` | **BẮT BUỘC đi cùng C1.** Trước C1 vế `\|\| GetRef(obj_missle)` **chưa bao giờ chạy** (bộ đếm luôn 0); sau C1 nó sống. Đạn **bay qua được tường** nên nó KHÔNG phải bằng chứng ô đó đi được — để nguyên thì tia quét của `GetFreeObjPos` **xuyên tường** và đồ rơi ra sau tường, đúng triệu chứng hàm này sinh ra để chữa. Kèm chặn `m_nRegionId >= 0` trước `RemoveMissle` (`:2248`) |
+
+### 10.3 ⚠️ MỘT thay đổi ĐỔI CÂN BẰNG PvP — chủ game cần duyệt
+
+Bản vá **B** là thay đổi duy nhất người chơi **cảm nhận được ngay**:
+
+- `kimratrai.lua:47` và `tongratrai.lua:46` gọi `SetProtectTime(18*3)` cho **mọi** người ra cửa trại Tống Kim ⇒ **cửa trại lúc nào cũng có người bất tử**.
+- **Hôm nay**: chiêu diện rộng dội vào cửa trại gần như vô hại (một con bất tử huỷ cả vùng quét).
+- **Sau khi vá**: nó giết sạch tất cả những ai **không** còn bất tử.
+- `pubgutils.lua:41` còn cho bất tử **180 giây** — ở chế độ đó thì cửa chặn cũ gần như vĩnh viễn.
+
+**Muốn gỡ RIÊNG bản vá B** (giữ nguyên 5 cái còn lại):
+
+```bash
+cd /d/GAMEDEVNEW && python "$HOME/.claude/skills/swordonline-dev/scripts/safe_edit.py" Sources/Core/Src/KMissle.cpp --old "continue; //FIX 24/08: bo qua RIENG muc tieu bat tu" --new "return 0; //vong tron bat tu (giu nguyen theo yeu cau chu game) //"
+```
+
+### 10.4 Trạng thái binary
+
+| | |
+|---|---|
+| `CoreServer.dll` x64 md5 **`36316816`** | đã đặt `E:\...\TESTLOFFF_ONLINE\bin\server\`, backup `CoreServer.dll.cu_2408_dot1_26f43102` — **CHỜ RESTART** |
+| Cách build | **cây worktree riêng** (`HEAD` + đúng 6 tệp này) để **không cuốn theo** phần việc chưa commit của phiên song song (auto Tống Kim của WAuto: `CoreShell.cpp`, `ipc_shared.h`, `KPlayer.h` `ExtAuto`…) |
+| `CoreClient.dll` | **KHÔNG thay.** Bản đang chạy là 22/08; thay sẽ kéo theo cả PORT5 + auto Tống Kim chưa test. Không cần: sát thương do máy chủ quyết định 100% |
+| Cây vận hành `E:` | đã áp **từng dòng** cả 6 + 5 bản vá (không chép đè cả hàm) |
+
+### 10.5 Cách nghiệm thu
+
+| Vá | Kiểm thế nào |
+|---|---|
+| A1+A2 | Đo lại `[S4-MSL-HIT]`: tỷ lệ chạm `doing=10` phải về ~0; tỷ lệ viên "có chạm nhưng không chạm `wantid`" phải giảm mạnh từ 20,7% |
+| C | Đứng một chỗ bắn ~600 phát rồi thả đồ tại đúng ô đó — trước đây ô bão hoà thì đồ nhảy ra ô khác; và **đồ không được rơi xuyên tường** (nếu có là G5 sai) |
+| E | Histogram cast phải gộp về **một cụm ~444 ms** thay vì hai cụm |
+| F | Vào Bách Nhân / Thành Bảo / Công Thành Chiến: ô **tâm** vật cản do script đặt phải chặn được |
+| B | Tống Kim: chiêu diện rộng dội vào cửa trại **có** sát thương lên người hết bất tử |
+| G2 | Thoát/vào lại nhiều lần ở bãi đông: nhân vật **không** được tự chạy/tự đánh ngay khi vừa nạp |
+
+### 10.6 🔴 Bẫy vận hành phát hiện trong đợt này
+
+- **Hai phiên Claude cùng làm trên `D:\GAMEDEVNEW`.** Phiên kia đang viết auto Tống Kim cho WAuto
+  (`CoreShell.cpp` +909, `KPlayer.h` `struct ExtAuto`, `ipc_shared.h`, `KTongKimTables.h`, `S3Client.cpp`).
+  ⇒ Build ở cây chính sẽ **cuốn theo** việc chưa xong của họ. `struct ExtAuto` nằm trong `#ifndef _SERVER`
+  nên không ảnh hưởng `CoreServer.dll`, nhưng **đừng dựa vào may mắn** — build DLL đem thả phải qua worktree riêng.
+- **`git add` phải chỉ đích danh tệp mình sửa.** Trong cây còn 4 tệp `.lib` nhị phân trạng thái `M`
+  (`Lib/debug/engine.lib`, `Lib/release/engine.lib`, `Lib/release/CoreClient.lib`, `Lib/Represent.lib`) —
+  **tuyệt đối không commit**, và chính vì `engine.lib` đã lệch nên **build client trong worktree sẽ FAIL**
+  (`LNK2019 g_SetCanvasLockProbe`). Client phải build ở cây chính.
+- **`Core.vcxproj` `Server Release|x64` có PostBuildEvent chép thẳng DLL vào `..\..\..\bin\server\`** —
+  build = deploy trong phạm vi cây đó. Ở worktree thì nó rơi vào `_wt_*/bin/server`, vô hại.
