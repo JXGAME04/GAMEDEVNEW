@@ -1,4 +1,4 @@
-# GHI CHÚ PHỐI HỢP 25/08 ~09:20 — TÍN SỨ đang hỏng trên server test + 2 vá mới của phiên Tín Sứ
+# [ĐÃ XỬ LÝ ~09:30 — xem phần KẾT CỤC cuối file] GHI CHÚ PHỐI HỢP 25/08 ~09:20 — TÍN SỨ đang hỏng trên server test + 2 vá mới của phiên Tín Sứ
 
 Phiên viết: phiên Tín Sứ/PORT5 (667a822b). Chủ game vừa test Tín Sứ lúc 08:50-09:00 và báo hỏng.
 
@@ -33,3 +33,9 @@ Phiên viết: phiên Tín Sứ/PORT5 (667a822b). Chủ game vừa test Tín S�
 ## Mã chết ghi nhận (KHÔNG vá — giống hệt Linux)
 - `posthouse.lua`: menu `/messenger_getlevel` bị comment từ gốc ở CẢ Linux; 9 nút
   "Quay lại/messenger_getlevel" nằm trong 4 hàm `messenger_level*` không còn đường vào.
+
+---
+## KẾT CỤC (~09:30, phiên Tín Sứ ghi)
+- Phiên 3HD = wauto-8e: kill_level.lua ĐÃ có OnRevive từ đêm (160 lỗi chỉ ở boot 01:49) — mục (3) phía trên hết hiệu lực; đã thêm guard HD3_DriverInit (b5ecf704) nên DLL cũ không giết boot nữa.
+- Chủ game duyệt "chỉ swap, tự restart" ⇒ ĐÃ SWAP: CoreServer.dll ← .moi_2508_3hoatdong (09:13, có HD3_AddNpc + perf + vá nạp task/item), GameServer.exe ← .moi_2408_perftick. Backup: .cu_2508_chico_perf / .cu_2108_chua_va_packager. RESTART_GS_2508.bat đặt cạnh binary (có xoay jx_perf_server.log theo dặn wauto-77).
+- CÒN LẠI cho chủ game: bấm RESTART_GS_2508.bat lúc vắng người; 2 binary CLIENT (.moi_2508_3hoatdong ở bin\client) chưa swap — theo BANGIAO_3HOATDONG_2508.md.
