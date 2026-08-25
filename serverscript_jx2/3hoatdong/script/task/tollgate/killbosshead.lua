@@ -186,7 +186,7 @@ function add_killertasknpc(Tab3)
 		if (Tid >= 0 ) then
 			TabValue4 = Tab3[i][4] * 32
 			TabValue5 = Tab3[i][5] * 32
-			newtasknpcindex = AddNpcEx(Tab3[i][1],Tab3[i][2],random(0,4),Tid,TabValue4,TabValue5,Tab3[i][6],Tab3[i][7],Tab3[i][8]);
+			newtasknpcindex = HD3_AddNpc(Tab3[i][1],Tab3[i][2],Tid,TabValue4,TabValue5,Tab3[i][6],Tab3[i][7],Tab3[i][8]);
 			SetNpcScript(newtasknpcindex, Tab3[i][9]);
 			SetNpcParam( newtasknpcindex,1,Tab3[i][10]);
 		end;
@@ -3396,7 +3396,7 @@ function add_bossnpc(Tab6)
 		if (Tid >= 0 ) then
 			TabValue4 = Tab6[i][4] * 32
 			TabValue5 = Tab6[i][5] * 32
-			newtasknpcindex = AddNpcEx(Tab6[i][1],Tab6[i][2],random(0,4),Tid,TabValue4,TabValue5,Tab6[i][6],Tab6[i][7],Tab6[i][8]);
+			newtasknpcindex = HD3_AddNpc(Tab6[i][1],Tab6[i][2],Tid,TabValue4,TabValue5,Tab6[i][6],Tab6[i][7],Tab6[i][8]);
 			SetNpcScript(newtasknpcindex, Tab6[i][9]);
 			SetNpcParam( newtasknpcindex,1,Tab6[i][10]);
 		end;
@@ -3407,7 +3407,7 @@ function add_messengernpc(Tab4)
 	for i = 1 , getn(Tab4) do
 		Tid = SubWorldID2Idx(Tab4[i][3]);
 		if (Tid >= 0 ) then
-			newtasknpcindex = AddNpcEx(Tab4[i][1],Tab4[i][2],random(0,4),Tid,Tab4[i][4],Tab4[i][5],Tab4[i][6],Tab4[i][7],Tab4[i][8]);
+			newtasknpcindex = HD3_AddNpc(Tab4[i][1],Tab4[i][2],Tid,Tab4[i][4],Tab4[i][5],Tab4[i][6],Tab4[i][7],Tab4[i][8]);
 			SetNpcScript(newtasknpcindex, Tab4[i][9]);
 		end;
 	end;

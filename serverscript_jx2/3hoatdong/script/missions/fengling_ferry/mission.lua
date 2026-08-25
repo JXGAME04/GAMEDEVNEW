@@ -19,7 +19,7 @@ end
 function RunMission()
 	for i=1, 30 do
 		posx, posy = fld_getadata(npcthiefpos)
-		local npcindex	= AddNpcEx(724, 95,random(0,4), SubWorld, posx, posy, 0, "Thñy TÆc ");
+		local npcindex	= HD3_AddNpc(724, 95, SubWorld, posx, posy, 0, "Thñy TÆc ");
 		SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\shuizeideath.lua");
 	end
 	idx = 0
@@ -117,7 +117,7 @@ function Landing()
 		ForbidEnmity(0);
 		
 		if (bShuizeiTask == 1) then
-			tbAwardTemplet:GiveAwardByList({tbProp={6,1,3361,1,0,0},}, "fenglingdu_shuizeicaibao", 2)
+			tbAwardTemplet:GiveAwardByList({tbProp={6,1,3361,1,0,0},}, "fenglingdu_shuizeicaibao", HD_CFG("HD3_PLD_THUONG_CAPBEN", 2))
 		end
 		
 		local mapid = SubWorldIdx2ID(SubWorld)

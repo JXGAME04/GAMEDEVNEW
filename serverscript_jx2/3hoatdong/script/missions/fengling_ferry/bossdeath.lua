@@ -3,7 +3,9 @@ Include("\\script\\missions\\fengling_ferry\\fld_head.lua")
 Include("\\script\\event\\jiefang_jieri\\200904\\shuizei\\shuizei.lua");
 Include("\\script\\event\\change_destiny\\mission.lua");	-- ÄæÌì¸ÄÃü
 Include("\\script\\misc\\eventsys\\type\\func.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 SIGNET_DROPCOUNT = 2
+SIGNET_DROPCOUNT = HD_CFG("HD3_PLD_SO_AN_BOSS", SIGNET_DROPCOUNT)	-- so Thi Gia Chi An roi tu boss dau linh
 
 function OnDeath( nNpcIndex )
 	local x, y, world = GetNpcPos(nNpcIndex);
@@ -35,7 +37,7 @@ function OnDeath( nNpcIndex )
 		ITEM_SetExpiredTime(nItemIdx, nRestMin);
 		SyncItem(nItemIdx);
 		
-		local nRate = 0.005;
+		local nRate = HD_CFG("HD3_PLD_TILE_HAILONG", 0.005);
 		local nCurRate	= random(10000000)
 		if (nCurRate <= 10000000 * nRate) then		
 			local x, y, world = GetNpcPos(nNpcIndex);

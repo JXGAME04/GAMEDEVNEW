@@ -14,7 +14,7 @@ Include("\\script\\missions\\challengeoftime\\include.lua")
 Include("\\script\\task\\metempsychosis\\task_head.lua")
 Include("\\script\\missions\\yandibaozang\\head.lua")
 
-local tbAwardItem = {szName="V« Cùc Tiªn §¬n", tbProp={6,1,3277,1,0,0},nBindState = -2,}
+local tbAwardItem = {szName="V« Cùc Tiªn §¬n", tbProp={6,1,3895,1,0,0},nBindState = -2,}
 local nAwardCount = 5
 local nFinishSongJin = 300
 local nChuanguanLimit = 17

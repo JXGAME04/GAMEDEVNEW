@@ -253,26 +253,30 @@ TC_BANKINH_BUA = 15,
 -- ===========================================================================
 
 -- ---- (A) SAN BOSS SAT THU ----
--- Cap toi thieu de nhan nhiem vu (NPC Nhiep Thi Tran o 7 thanh). [LIVE]
+-- Cap toi thieu - CHI HIEN THI tren menu admin (ban Linux khong chan cap o
+-- buoc nhan nhiem vu; nhom boss chia theo cap 20..90 san trong killbosshead). [HIEN THI]
 HD3_ST_CAP_TOITHIEU = 90,
--- Tran so lan giet boss / ngay (KILLER_MAXCOUNT ban Linux = 8). [LIVE]
+-- Tran so lan giet boss / ngay (goc Linux KILLER_MAXCOUNT = 8; da noi vao
+-- nieshichen.lua). [RESTART]
 HD3_ST_MAX_NGAY = 8,
 -- Chi nhom boss cap 90 (chi so 141..160) con phat thuong (nhom 20..80 da bi
 -- comment trong nieshichen.lua goc Linux - GIU DUNG NGUYEN BAN). [ENGINE]
---   * 160 NPC boss + 7 NPC 769: engine tu sinh luc boot (hd3_driver HD3_Boot).
+--   * 160 NPC boss + 7 NPC 769: engine tu sinh luc boot (hd3_driver HD3_DriverInit).
 --   * Bang toa do boss: settings\task\tollgate\killbosshead.lua (da chep).
 --   * Bang roi do: settings\droprate\boss\bosstask_lev90.ini (da chep).
 --   * 5 Sat Thu lenh cung cap -> 1 Sat Thu Gian (ve vao VUOT AI).
 
 -- ---- (B) PHONG LANG DO ----
--- Cap toi thieu len thuyen. [LIVE]
+-- Cap toi thieu - CHI HIEN THI (ban Linux chi doi co mon phai, fld_head.lua:40). [HIEN THI]
 HD3_PLD_CAP_TOITHIEU = 1,
 -- Gio mo trong ngay (dang HHMM, moi so = 1 luot dua). Ban Linux relay chay
--- moi gio dung phut :00; day la danh sach cac gio bat. [LIVE]
+-- MOI GIO dung phut :00 (24 luot/ngay); mac dinh o day 12 gio chan = LECH CO
+-- CHU DICH de nhe server - muon dung 100% Linux thi liet ke du 24 gio. [RESTART]
 HD3_PLD_GIO = {0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200},
--- Suc chua moi thuyen (GetMSPlayerCount >= n thi day). Ban Linux = 100. [RESTART]
+-- Suc chua moi thuyen (fld_haveroom - da noi HD_CFG doc luc chay). [RESTART]
 HD3_PLD_SUC_CHUA = 100,
--- Cac gio "ton phi" (dung Lenh Bai Thuy Tac) dang HHMM - Linux: 10/14/16/18/20h.
+-- Cac gio "ton phi" (dung Lenh Bai Thuy Tac 6,1,3363) dang HHMM - goc Linux
+-- 10/14/16/18/20h; da noi vao fld_head check_new_shuizeitask.
 -- Ngoai gio nay dung Lenh bai PLD (item 4,489) hoac 200 Mat do than bi. [LIVE]
 HD3_PLD_GIO_TONPHI = {1000, 1400, 1600, 1800, 2000},
 -- [ENGINE] Khong chinh o day:
@@ -283,18 +287,51 @@ HD3_PLD_GIO_TONPHI = {1000, 1400, 1600, 1800, 2000},
 --     1692 (dai dau linh x2, chi gio ton phi): npcs.txt.
 
 -- ---- (C) VUOT AI ----
--- Cap toi thieu (khong chan khan gia). [LIVE]
+-- Cap toi thieu - CHI HIEN THI (gioi han that = tbLevels trong include.lua:
+-- so cap 50-89, cao cap 90+; doi o day KHONG co tac dung). [HIEN THI]
 HD3_VA_CAP_TOITHIEU = 50,
--- Gio bao danh (HHMM) - Linux relay chay moi gio phut :00. [LIVE]
+-- Gio bao danh (HHMM) - Linux relay chay moi gio phut :00. [RESTART]
 HD3_VA_GIO = {0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200,
               1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300},
--- Phut bao danh (LIMIT_SIGNUP = 10) va phut lam nhiem vu (LIMIT_FINISH = 30). [RESTART]
+-- Phut bao danh + phut lam nhiem vu (da noi vao challengeoftime include.lua). [RESTART]
 HD3_VA_PHUT_BAODANH = 10,
 HD3_VA_PHUT_NHIEMVU = 30,
 -- So nguoi toi da 1 doi (LIMIT_PLAYER_COUNT = 8). [RESTART]
 HD3_VA_NGUOI_TOIDA = 8,
--- Gio bang xep hang ngay (trao "Thien Nien Linh Duoc", HHMM = 0 -> 00:00). [LIVE]
+-- Gio bang xep hang ngay, so sanh dang HHMM (0 = 00:00, 130 = 01:30). [RESTART]
 HD3_VA_GIO_XEPHANG = 0,
+-- So luot vao Vuot ai / nguoi / ngay (COUNT_LIMIT goc Linux = 1). [RESTART]
+HD3_VA_LUOT_NGAY = 1,
+
+-- ============ PHAN THUONG (nil = dung bang goc ban Linux) ============
+-- Muon doi: chep nguyen bang goc tu tep script neu duoi day vao thay cho nil
+-- roi sua so; bang co the chua ca function (giu nguyen cau truc goc).
+
+-- (A) SAT THU - bang thuong hoan thanh nhom cap 90 (25 dong vat pham +
+--     10.000.000 exp). Goc: kill_level.lua:89-118 OnFinishKillerTask. [RESTART]
+HD3_ST_THUONG = nil,
+
+-- (B) PLD - so Thi Gia Chi An (6,1,1095) roi tu boss dau linh 725 (goc 2;
+--     bang co Dao Chu tien dai thi tu x2 theo getSignetDropRate). [RESTART]
+HD3_PLD_SO_AN_BOSS = 2,
+-- (B) PLD - ti le roi Hai Long Chau 6,1,2124 tu boss (goc 0.005 = 0,5%). [RESTART]
+HD3_PLD_TILE_HAILONG = 0.005,
+-- (B) PLD - ti le roi Truy Cong Lenh 6,1,2024 tu Thuy tac thuong trong gio
+--     su kien (goc: nCurRate < 50 tren random(1,100) = 49%). [RESTART]
+HD3_PLD_TILE_TRUYCONG = 50,
+-- (B) PLD - so Bao Ruong Thuy Tac 6,1,3361 khi cap ben thanh cong. [RESTART]
+HD3_PLD_THUONG_CAPBEN = 2,
+
+-- (C) VUOT AI - bang exp hoan thanh 28 ai (2 cap do, co function tinh theo
+--     thoi gian). Goc: award.lua:58-83 tbAward_Success. [RESTART]
+HD3_VA_THUONG_HOANTHANH = nil,
+-- (C) VUOT AI - thuong hang 1 bang xep hang ngay (goc: 1 Thien Nien Linh Duoc
+--     6,1,2125, han 24h). Goc: rank_perday.lua:13. [RESTART]
+HD3_VA_THUONG_HANG_NGAY = nil,
+-- (C) VUOT AI - bang do trong Bao Ruong Vuot ai (theo loai chia khoa).
+--     Goc: chuangguanbaoxiang.lua:21-90 tbCOT_Box_Award. [RESTART]
+HD3_VA_THUONG_RUONG = nil,
+
 -- [ENGINE] Khong chinh o day:
 --   * 2 cap do + ban do: challengeoftime\include.lua (tbLevels / tbLevelMaps
 --     464-479 so cap, 480-495 cao cap).

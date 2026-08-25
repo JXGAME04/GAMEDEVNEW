@@ -19,7 +19,7 @@ function add_dialognpc_hd3(Tab)
 		local it = Tab[i]
 		local SId = SubWorldID2Idx(it[2])
 		if (SId >= 0) then
-			local npc = AddNpcEx(it[1], 1, random(0,4), SId, it[3]*32, it[4]*32, 0, it[6])
+			local npc = HD3_AddNpc(it[1], 1, SId, it[3]*32, it[4]*32, 0, it[6])
 			if (npc ~= nil and npc > 0) then
 				SetNpcScript(npc, it[5])
 			end

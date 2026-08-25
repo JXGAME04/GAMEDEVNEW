@@ -2,12 +2,13 @@ Include("\\script\\lib\\awardtemplet.lua")
 
 Include("\\script\\event\\jiefang_jieri\\200904\\shuizei\\shuizei.lua");
 Include("\\script\\misc\\eventsys\\type\\func.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 function OnDeath( nNpcIndex )
 	--local nRate = 0.01;
 	--local nCurRate	= random(10000000)
 	--if (nCurRate <= 10000000 * nRate) then	
 	local nCurRate	= random(1,100)
-	if nCurRate < 50 then
+	if nCurRate < HD_CFG("HD3_PLD_TILE_TRUYCONG", 50) then
 		local x, y, world = GetNpcPos(nNpcIndex);
 		if (jf0904_shuizei_IsActtime() == 1) then
 			local nItemIdx = DropItem(world, x, y, PlayerIndex, 6,1,2024, 1, 0, 0, 0, 0, 0, 0, 0, 0);

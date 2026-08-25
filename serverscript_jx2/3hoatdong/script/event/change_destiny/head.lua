@@ -16,8 +16,8 @@ tbChangeDestiny =
 	nLimit_TransUpperBound = 179,				-- 转生等级上界
 	nLimit_NieShiChen = 1038,					-- 高级闯关聂弑尘的ID
 	
-	tbItem_ShenLongZhenDan = {6,1,2113},		-- 神农真丹
-	tbItem_GaiMingJue = 	 {6,1,2114},		-- 逆天改命诀
+	tbItem_ShenLongZhenDan = {6,1,2122},		-- 神农真丹
+	tbItem_GaiMingJue = 	 {6,1,2123},		-- 逆天改命诀
 	
 	tbNpcPos = 
 	{

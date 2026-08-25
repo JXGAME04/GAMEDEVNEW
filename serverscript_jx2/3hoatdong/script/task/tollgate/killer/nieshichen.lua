@@ -17,6 +17,8 @@ Include("\\script\\missions\\challengeoftime\\rank_perday.lua");
 --KILLER_MAXCOUNT		= 8;	--Ã¿ÌìÉ±ÈËÉÏÏŞ8ÈË
 
 Include("\\script\\vng_feature\\challengeoftime\\npcNhiepThiTran.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
+KILLER_MAXCOUNT = HD_CFG("HD3_ST_MAX_NGAY", KILLER_MAXCOUNT)	-- tran giet boss/ngay (goc Linux = 8, newtask_head.lua:20)
 ContentList = {
 	"<#>NÕu ai cã ®ñ 160  s¸t thñ gi¶n trong tay th× giÊc méng trë thµnh ®Ö nhÊt s¸t thñ ®· xem nh­ hoµn thµnh. Mçi ngµy chØ cÇn hoµn thµnh <color=yellow>8nhiÖm vô<color>lµ ®­îc. <enter>H·y tiÕp nhËn nhiÖm vô “th¸ch thøc thêi gian” ®Ó thÓ nghiÖm søc m¹nh ®ång ®éivµ kh¶ n¨ng s¸t thñ cña m×nh.",
 	"<#>NhiÖm vô s¸t thñ cÊp 20/killer20",--2

@@ -64,7 +64,7 @@ function HD3_PLD_AddBoatNpc()
 		local t = HD3_PLD_BOAT[i]
 		local nIdx = SubWorldID2Idx(t[3])
 		if (nIdx >= 0) then
-			local npc = AddNpcEx(240, 1, random(0,4), nIdx, t[1]*32, t[2]*32, 1, "Thuyen phu")
+			local npc = HD3_AddNpc(240, 1, nIdx, t[1]*32, t[2]*32, 1, "Thuyen phu")
 			if (npc ~= nil and npc > 0) then
 				SetNpcScript(npc, "\\script\\missions\\fengling_ferry\\hd3_thuyenphu.lua")
 				SetNpcValue(npc, t[4])   -- BOATID 1/2/3

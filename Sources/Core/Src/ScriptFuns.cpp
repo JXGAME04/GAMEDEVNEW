@@ -13887,6 +13887,8 @@ extern int LuaHD3_ST_DoTransLife(Lua_State* L);
 extern int LuaHD3_ST_LevelUp(Lua_State* L);
 extern int LuaHD3_PET_Stub(Lua_State* L);
 extern int LuaHD3_TrimString(Lua_State* L);
+extern int LuaHD3_AddNpc(Lua_State* L);
+extern int LuaHD3_AddNpcEx(Lua_State* L);
 #endif
 
 // (dat NGOAI #ifdef _SERVER: bang dang ky duoc bien dich o CA client
@@ -15435,6 +15437,10 @@ TLua_Funcs GameScriptFuns[] =
 		{"PET_GetUpgradePoint",	LuaHD3_PET_Stub},
 		{"PET_SetUpgradePoint",	LuaHD3_PET_Stub},
 		{"TrimString",	LuaHD3_TrimString},
+		// [VA A7-C1] AddNpc/AddNpcEx ngu nghia Linux: KHONG dung camp (giu npcs.txt),
+		// HD3_AddNpc tu random ngu hanh, tham so 6/7 = bNoRevive.
+		{"HD3_AddNpc",	LuaHD3_AddNpc},
+		{"HD3_AddNpcEx",	LuaHD3_AddNpcEx},
 		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)
 		{"ITEM_DropRateItem",	LuaDropRateItem},
 		{"NPCINFO_GetSeries",	LuaGetNpcSeries},

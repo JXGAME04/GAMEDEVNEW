@@ -195,7 +195,7 @@ function TB_QIANQIU_YINGLIE0904:add_rank_award(nrank)
 		if CalcFreeItemCellCount() == 0 then
 			break
 		end
-		local n_itemidx = AddItem(6, 1, 2005, 1, 1, 0);
+		local n_itemidx = AddItem(6, 1, 2014, 1, 1, 0);
 		if (n_itemidx > 0) then
 			local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
 			ITEM_SetExpiredTime(n_itemidx, nExpiredDate);
@@ -215,7 +215,7 @@ end
 function TB_QIANQIU_YINGLIE0904:add_end_award(tb_player, b_win)
 	local game_level = BT_GetGameData(GAME_LEVEL);
 	local nExpiredDate = FormatTime2Date(7 * 24 * 60 *60 + GetCurServerTime());
-	local tb_award = {tbProp = {6,1,2005,1,1,0}, szName = "TËng Kim l‘ bao",  nCount = 1+b_win, nExpiredTime = nExpiredDate};
+	local tb_award = {tbProp = {6,1,2014,1,1,0}, szName = "TËng Kim l‘ bao",  nCount = 1+b_win, nExpiredTime = nExpiredDate};
 	 
 	if (game_level == 3) then
 		local old_player = PlayerIndex;

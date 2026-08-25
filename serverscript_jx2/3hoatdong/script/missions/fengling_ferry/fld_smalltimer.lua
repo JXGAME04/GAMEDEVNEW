@@ -34,21 +34,21 @@ function OnTimer()
 	
 	if (t == UPBOSS_TIME) then		-- 15∑÷÷”
 		posx, posy = fld_getadata(npcthiefpos)
-		npcindex = AddNpcEx(725, 85,random(0,4), SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
+		npcindex = HD3_AddNpc(725, 85, SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
 		SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\bossdeath.lua");
 		Msg2MSAll(MISSIONID, "ThÒy t∆c Æ«u l‹nh Æ∑ xu t hi÷n.")
 	end
 	
 	if (t == UPBOSS_TIME2) then		-- 20∑÷÷”
 		posx, posy = fld_getadata(npcthiefpos)
-		npcindex = AddNpcEx(725, 85,random(0,4), SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
+		npcindex = HD3_AddNpc(725, 85, SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
 		SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\bossdeath.lua");
 		Msg2MSAll(MISSIONID, "ThÒy t∆c Æ«u l‹nh Æ∑ xu t hi÷n.")
 		
 		if (check_new_shuizeitask() == 1) then
 			for i = 1, 2 do
 				posx, posy = fld_getadata(npcthiefpos)
-				npcindex = AddNpcEx(1692, 85,random(0,4), SubWorld, posx, posy, 1, "ThÒy T∆c ßπi ß«u L‹nh.", 1)
+				npcindex = HD3_AddNpc(1692, 85, SubWorld, posx, posy, 1, "ThÒy T∆c ßπi ß«u L‹nh.", 1)
 				SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\bigbossdeath.lua");
 				Msg2MSAll(MISSIONID, "ThÒy T∆c ßπi ß«u L‹nh xu t hi÷n rÂi")
 			end
@@ -57,7 +57,7 @@ function OnTimer()
 	
 	if (t == UPBOSS_TIME3) then
 		posx, posy = fld_getadata(npcthiefpos)
-		npcindex = AddNpcEx(725, 85,random(0,4), SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
+		npcindex = HD3_AddNpc(725, 85, SubWorld, posx, posy, 1, "ThÒy t∆c Æ«u l‹nh", 1)
 		SetNpcDeathScript(npcindex, "\\script\\missions\\fengling_ferry\\bossdeath.lua");
 		Msg2MSAll(MISSIONID, "ThÒy t∆c Æ«u l‹nh Æ∑ xu t hi÷n.")
 	end		

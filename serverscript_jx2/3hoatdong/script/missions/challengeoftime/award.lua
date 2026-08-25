@@ -1,4 +1,5 @@
 Include("\\script\\missions\\challengeoftime\\include.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 Include("\\script\\misc\\eventsys\\type\\func.lua")
 Include("\\script\\misc\\eventsys\\eventsys.lua")
 Include("\\script\\vng_event\\thapnienlenhbai\\mainfuc.lua")
@@ -12,13 +13,13 @@ map_random_awards = {
 	{0.005, 		{"Lôc Thñy Tinh", 			240}},					-- ÂÌË®¾§
 	{0.0005, 	{"Vâ L©m MËt TÞch", 		6, 1, 26, 1, 0, 0}},	-- ÎäÁÖÃØ¼®
 	{0.0005, 	{"TÈy Tñy Kinh",			6, 1, 22, 1, 0, 0}},	-- Ï´Ëè¾­
-	{0.2, 		{"Phóc Duyªn Lé (§¹i) ",	6, 1, 124, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨´ó£©
-	{0.19587, 		{"Phóc Duyªn Lé (Trung) ", 	6, 1, 123, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨ÖÐ£©
-	{0.18, 		{"Phóc Duyªn Lé (TiÓu) ",	6, 1, 122, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨Ð¡£©
+	{0.2, 		{"Phóc Duyªn Lé (§¹i) ",	6, 1, 123, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨´ó£©
+	{0.19587, 		{"Phóc Duyªn Lé (Trung) ", 	6, 1, 122, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨ÖÐ£©
+	{0.18, 		{"Phóc Duyªn Lé (TiÓu) ",	6, 1, 121, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨Ð¡£©
 	{0.15, 	{"Tiªn Th¶o Lé ",			6, 1, 71, 1, 0, 0}},	-- ÏÉ²ÝÂ¶
 	{0.1, 		{"Thiªn s¬n  B¶o Lé ",		6, 1, 72, 1, 0, 0}},	-- ÌìÉ½ÓñÂ¶
 	{0.1, 		{"B¸ch Qu¶ Lé ",			6, 1, 73, 1, 0, 0}},	-- °Ù¹ûÂ¶
---	{0.00, 		{"´ó°×¾ÔÍè",		6, 1, 130, 1, 0, 0}},	-- ´ó°×¾ÔÍè
+--	{0.00, 		{"´ó°×¾ÔÍè",		6, 1, 129, 1, 0, 0}},	-- ´ó°×¾ÔÍè
 	{0.05, 		{"LÖnh bµi Phong L¨ng §é",		489}},					-- ·çÁê¶ÉÁîÅÆ
 	{0.0005, 	{"§Þnh Quèc Thanh Sa Tr­êng Sam",	0, 159}},				-- ¶¨¹úÖ®ÇàÉ´³¤ÉÀ
 	{0.0005, 	{"§Þnh Quèc ¤ Sa Ph¸t Qu¸n",	0, 160}},				-- ¶¨¹úÖ®ÎÙÉ°·¢¹Ú
@@ -81,6 +82,7 @@ tbAward_Success = {
 		[3]=nil
 	},-- Level 2
 }
+tbAward_Success = HD_CFG("HD3_VA_THUONG_HOANTHANH", nil) or tbAward_Success	-- [3HD] nil = bang goc
 
 local tbAward_batch = 
 {

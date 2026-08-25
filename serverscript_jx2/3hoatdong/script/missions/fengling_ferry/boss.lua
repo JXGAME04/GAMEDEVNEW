@@ -25,14 +25,14 @@ function thuytacdaulinh()
 end
 
 function bossben1A()
-nNpcIndex = AddNpcEx(513, 85,random(0,4),SubWorldID2Idx(337), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
+nNpcIndex = HD3_AddNpc(513, 85,SubWorldID2Idx(337), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)
 end
 end
 function bossben1B()
-nNpcIndex = AddNpcEx(511, 85,random(0,4),SubWorldID2Idx(337), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
+nNpcIndex = HD3_AddNpc(511, 85,SubWorldID2Idx(337), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)
@@ -41,14 +41,14 @@ end
 
 
 function bossben2A()
-nNpcIndex = AddNpcEx(513, 85,random(0,4),SubWorldID2Idx(338), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
+nNpcIndex = HD3_AddNpc(513, 85,SubWorldID2Idx(338), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)
 end
 end
 function bossben2B()
-nNpcIndex = AddNpcEx(511, 85,random(0,4),SubWorldID2Idx(338), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
+nNpcIndex = HD3_AddNpc(511, 85,SubWorldID2Idx(338), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)
@@ -57,14 +57,14 @@ end
 
 
 function bossben3A()
-nNpcIndex = AddNpcEx(513, 85,random(0,4),SubWorldID2Idx(339), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
+nNpcIndex = HD3_AddNpc(513, 85,SubWorldID2Idx(339), 1636*32, 3221*32, 1, "DiÖu Nh­", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)
 end
 end
 function bossben3B()
-nNpcIndex = AddNpcEx(511, 85,random(0,4),SubWorldID2Idx(339), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
+nNpcIndex = HD3_AddNpc(511, 85,SubWorldID2Idx(339), 1632*32, 3221*32, 1, "Tr­¬ng T«ng ChÝnh", 1)
 if nNpcIndex > 0 then
 SetNpcDeathScript(nNpcIndex,"\\script\\global\\tamhiep\\callbossdeathmini.lua");
 SetNpcTimer(nNpcIndex,900*18)

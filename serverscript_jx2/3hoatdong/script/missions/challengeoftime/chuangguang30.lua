@@ -40,7 +40,7 @@ tbVnItemAwardEx = {
 		{szName="Tinh ThiÕt Kho¸ng",tbProp={6,1,4428,1,0,0},nCount=1,nRate=10},
 	},
 	[2] = {--PhÇn 2
-		{szName="Tói D­îc PhÈm",tbProp={6,1,30557,1,0,0},nCount=1,nRate=30},
+		{szName="Tói D­îc PhÈm",tbProp={6,1,4813,1,0,0},nCount=1,nRate=30},
 		{szName="Cµn Kh«n T¹o Hãa §an (®¹i) ",tbProp={6,1,214,1,0,0},nCount=50,nRate=40},
 		{szName="§¹i Lùc hoµn",tbProp={6,0,3,1,0,0},nCount=1,nRate=15},
 		{szName="Phi Tèc hoµn",tbProp={6,0,6,1,0,0},nCount=1,nRate=15},

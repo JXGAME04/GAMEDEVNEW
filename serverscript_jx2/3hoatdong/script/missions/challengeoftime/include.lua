@@ -1,4 +1,5 @@
 IncludeLib("RELAYLADDER")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 Include("\\script\\tong\\tong_award_head.lua")		--By Liao Zhishan
 Include("\\script\\missions\\boss\\bigboss.lua") -- big boss
 Include("\\script\\activitysys\\functionlib.lua")
@@ -30,6 +31,12 @@ CHUANGGUAN30_START_TIME = 10
 CHUANGGUAN30_END_TIME	= 22
 PLAYER_MAP_TASK			= 2852
 COUNT_LIMIT 		= 1
+-- [3HD 25/08] noi cauhinh_hoatdong.lua (khoa HD3_VA_*) - mac dinh = so goc Linux
+TIME_SIGNUP = HD_CFG("HD3_VA_PHUT_BAODANH", TIME_SIGNUP)
+LIMIT_SIGNUP = TIME_SIGNUP * 60
+LIMIT_FINISH = HD_CFG("HD3_VA_PHUT_NHIEMVU", 30) * 60
+LIMIT_PLAYER_COUNT = HD_CFG("HD3_VA_NGUOI_TOIDA", LIMIT_PLAYER_COUNT)
+COUNT_LIMIT = HD_CFG("HD3_VA_LUOT_NGAY", COUNT_LIMIT)
 
 
 
@@ -109,8 +116,10 @@ tbRangeId = {
 		{1002, 1005}
 	},
 	[2] = {
-		{1026, 1033},
-		{1034, 1037}
+		-- [3HD 25/08] npcs.txt JX1: 1032-1034 = Boss New Dragon (he khac da chiem
+		-- cho); nam 7/8 + nu 1 khong ton tai -> thu hep dai (6 nam + 3 nu).
+		{1026, 1031},
+		{1035, 1037}
 	},
 }
 

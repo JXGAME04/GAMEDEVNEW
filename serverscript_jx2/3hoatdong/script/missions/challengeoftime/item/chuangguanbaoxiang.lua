@@ -2,6 +2,7 @@
 -- By: Wangjingjun(2011-03-02)
 
 Include("\\script\\lib\\awardtemplet.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 Include("\\script\\vng_event\\change_request_baoruong\\exp_award.lua")
 Include("\\script\\lib\\objbuffer_head.lua")
 Include("\\script\\task\\metempsychosis\\translife_6.lua")
@@ -16,7 +17,7 @@ end
 
 tbCOT_Key_Require = {
 	["chiakhoanhuy"] = {6, 1, 3362},
-	["chiakhoavang"] = {6, 1, 30191},
+	["chiakhoavang"] = {6, 1, 2953},
 }
 tbCOT_Box_Award = 
 {
@@ -57,21 +58,21 @@ tbCOT_Box_Award =
 	["chiakhoavang"] = 
 	{
 		{szName="Ch©n Nguyªn §an",tbProp={6,1,4752,1,0,0},nCount=10,nRate=5},
-		{szName="Ch©n Nguyªn §¬n (trung)",tbProp={6,1,30228,1,0,0},nCount=7,nRate=10,nBindState=-2},
-		{szName="Ch©n Nguyªn §¬n (®¹i)",tbProp={6,1,30229,1,0,0},nCount=7,nRate=5,nBindState=-2},
-		{szName="Hçn nguyªn ch©n ®¬n",tbProp={6,1,30301,1,0,0},nCount=1,nRate=0.01},
+		{szName="Ch©n Nguyªn §¬n (trung)",tbProp={6,1,4846,1,0,0},nCount=7,nRate=10,nBindState=-2},
+		{szName="Ch©n Nguyªn §¬n (®¹i)",tbProp={6,1,4847,1,0,0},nCount=7,nRate=5,nBindState=-2},
+		{szName="Hçn nguyªn ch©n ®¬n",tbProp={6,1,4857,1,0,0},nCount=1,nRate=0.01},
 		{szName="Hé M¹ch §¬n",tbProp={6,1,3821,1,0,0},nCount=50,nRate=10},
-		{szName="HuyÕt Long §»ng CÊp 9",tbProp={6,1,30289,9,0,0},nCount=5,nRate=1.2},
-		{szName="HuyÕt Long §»ng CÊp 11",tbProp={6,1,30289,11,0,0},nCount=5,nRate=1.1},
-		{szName="HuyÕt Long §»ng CÊp 12",tbProp={6,1,30289,12,0,0},nCount=5,nRate=0.5},
+		{szName="HuyÕt Long §»ng CÊp 9",tbProp={6,1,3051,9,0,0},nCount=5,nRate=1.2},
+		{szName="HuyÕt Long §»ng CÊp 11",tbProp={6,1,3051,11,0,0},nCount=5,nRate=1.1},
+		{szName="HuyÕt Long §»ng CÊp 12",tbProp={6,1,3051,12,0,0},nCount=5,nRate=0.5},
 		{szName="Tinh Tinh Kho¸ng",tbProp={6,1,4429,1,0,0},nCount=1,nRate=1},
 		{szName="Tinh ThiÕt Kho¸ng",tbProp={6,1,4428,1,0,0},nCount=1,nRate=0.5},
-		{szName = "§å Phæ §»ng Long Y", tbProp = {6, 1, 30529,1,0,0}, nRate = 0.002,},
-		{szName = "§å Phæ §»ng Long KhÝ Giíi", tbProp = {6, 1, 30537,1,0,0}, nRate = 0.001,},
-		{szName = "Tinh S­¬ng LÖnh", tbProp = {6, 1, 30506,1,0,0}, nRate = 0.007,},
-		{szName = "HuyÒn ThiÕt", tbProp = {6, 1, 30507,1,0,0}, nRate = 0.03,},
-		{szName = "§å Phæ Tinh S­¬ng Y", tbProp = {6, 1, 30006,1,0,0}, nRate = 0.007,},
-		{szName = "§å Phæ Tinh S­¬ng KhÝ Giíi", tbProp = {6, 1, 30505,1,0,0}, nRate = 0.006,},
+		{szName = "§å Phæ §»ng Long Y", tbProp = {6, 1, 4858,1,0,0}, nRate = 0.002,},
+		{szName = "§å Phæ §»ng Long KhÝ Giíi", tbProp = {6, 1, 4859,1,0,0}, nRate = 0.001,},
+		{szName = "Tinh S­¬ng LÖnh", tbProp = {6, 1, 4860,1,0,0}, nRate = 0.007,},
+		{szName = "HuyÒn ThiÕt", tbProp = {6, 1, 4861,1,0,0}, nRate = 0.03,},
+		{szName = "§å Phæ Tinh S­¬ng Y", tbProp = {6, 1, 4862,1,0,0}, nRate = 0.007,},
+		{szName = "§å Phæ Tinh S­¬ng KhÝ Giíi", tbProp = {6, 1, 4863,1,0,0}, nRate = 0.006,},
 		{szName="§iÓm kinh nghiÖm 1", 
 					pFun = function (tbItem, nItemCount, szLogTitle)
 						%tbvng_ChestExpAward:ExpAward(2000000,"B¶o r­¬ng v­ît ¶i")
@@ -147,6 +148,7 @@ function Oncancel()end
 
 function VnCOTBoxNewAward(nItemIdx, strKeyType)
 	local tbKey = tbCOT_Key_Require[strKeyType]
+	tbCOT_Box_Award = HD_CFG("HD3_VA_THUONG_RUONG", nil) or tbCOT_Box_Award	-- [3HD] nil = bang goc
 	local tbAward = tbCOT_Box_Award[strKeyType]
 	if not tbKey or not tbAward then
 		return

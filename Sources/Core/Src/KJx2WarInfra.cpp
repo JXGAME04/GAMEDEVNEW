@@ -1671,6 +1671,83 @@ int LuaHD3_JoinMission(Lua_State* L)
 }
 
 // ---------------------------------------------------------------------------
+// [VA 25/08 - A7-C1] HD3_AddNpc / HD3_AddNpcEx - dung ngu nghia ban Linux.
+// LuaAddNpcEx cua JX1 lay tham so 7 lam CAMP va SetCurrentCamp GHI DE camp tu
+// npcs.txt; GenOneRelation (KNpcSet.cpp:143) coi camp 0 / camp trung la ALLY
+// => moi NPC 3 hoat dong thanh dong minh, khong danh duoc. Hai ham nay:
+//   - KHONG dung den camp (giu nguyen camp tu npcs.txt - dung nhu Linux)
+//   - HD3_AddNpc: series TU RANDOM 0..4 (Linux AddNpc goi rand()%5 noi bo,
+//     0x0811BB10 tai 0x0811BC8C), tham so 6 = bNoRevive
+//   - HD3_AddNpcEx: tham so 3 = series (script tu tinh), tham so 7 = bNoRevive
+// Khong sua LuaAddNpc/LuaAddNpcEx goc de khoi dung cham cac he JX1/PORT5 dang chay.
+static int sHD3_AddNpcCommon(Lua_State* L, int bHasSeries)
+{
+	int nTop = Lua_GetTopIndex(L);
+	int nMin = bHasSeries ? 6 : 5;
+	if (nTop < nMin)
+		return 0;
+	int nId = 0;
+	if (Lua_IsNumber(L, 1))
+		nId = (int)Lua_ValueToNumber(L, 1);
+	else if (Lua_IsString(L, 1))
+	{
+		const char* pName = Lua_ValueToString(L, 1);
+		if (!pName || !pName[0])
+			return 0;
+		nId = g_NpcSetting.FindRow((char*)pName) - 2;
+	}
+	else
+		return 0;
+	if (nId < 0)
+		nId = 0;
+	int nLevel = (int)Lua_ValueToNumber(L, 2);
+	if (nLevel >= 128) nLevel = 127;
+	if (nLevel < 0)    nLevel = 1;
+	int nArg = 3;
+	int nSeries;
+	if (bHasSeries)
+		nSeries = (int)Lua_ValueToNumber(L, nArg++);
+	else
+		nSeries = g_Random(5);	// Linux: rand() % 5
+	if (nSeries < 0 || nSeries > 4)
+		nSeries = g_Random(5);
+	int nSubWorldIdx = (int)Lua_ValueToNumber(L, nArg++);
+	int nX = (int)Lua_ValueToNumber(L, nArg++);
+	int nY = (int)Lua_ValueToNumber(L, nArg++);
+	int nNoRevive = (nTop >= nArg && Lua_IsNumber(L, nArg)) ? (int)Lua_ValueToNumber(L, nArg) : 0;
+	nArg++;
+	if (nSubWorldIdx < 0 || nSubWorldIdx >= MAX_SUBWORLD)
+		return 0;
+	int nNpcIdxInfo = MAKELONG(nLevel, nId);
+	int nNpcIdx = NpcSet.AddNpcSet2(nNpcIdxInfo, nSeries, nSubWorldIdx, nX, nY);
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+	{
+		Lua_PushNumber(L, nNpcIdx);
+		return 1;
+	}
+	if (nNoRevive != 0)
+		Npc[nNpcIdx].m_bNoRevive = 1;
+	// tham so ke tiep: ten hien thi (chuoi khac rong)
+	if (nTop >= nArg && Lua_IsString(L, nArg))
+	{
+		const char* pDispName = Lua_ValueToString(L, nArg);
+		if (pDispName && pDispName[0])
+			g_StrCpy(Npc[nNpcIdx].Name, (char*)pDispName);
+	}
+	// tham so cuoi (flag/isboss cua ban Linux): AddNpcSet2 da tu nap thuoc tinh, bo qua
+	Lua_PushNumber(L, nNpcIdx);
+	return 1;
+}
+int LuaHD3_AddNpc(Lua_State* L)
+{
+	return sHD3_AddNpcCommon(L, 0);
+}
+int LuaHD3_AddNpcEx(Lua_State* L)
+{
+	return sHD3_AddNpcCommon(L, 1);
+}
+
+// ---------------------------------------------------------------------------
 // DisabledUseTownP(n) - THAY THE stub cu (return 0). Linux: cam nguoi choi
 // hien tai dung Hoi thanh phu khi o trong hoat dong (PLD gọi (1) luc len
 // thuyen fld_head.lua:142; Vuot Ai goi (1) khi vao ai). JX1 khong co co nay

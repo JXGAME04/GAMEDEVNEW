@@ -56,7 +56,7 @@ function fullfilltask_chuangguan()
 	SetTask(tbBirthday0905.tbTask.tsk_toll_cg_state, 0);
 	SetTask(tbBirthday0905.tbTask.tsk_toll_cg_passcount, 0);
 	for i = 1, nAwardCount do
-		AddItem(6, 1, 2070, 1, 0, 0);
+		AddItem(6, 1, 2079, 1, 0, 0);
 	end
 end
 

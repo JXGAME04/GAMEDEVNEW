@@ -72,4 +72,11 @@
 #define BR_HOWTO       "Dïng khinh c«ng nh¶y lªn l«i ®µi ®Ó lµm L«i Chñ. ë trong b¶n ®å ®­îc céng kinh nghiÖm mçi 5 phót; gi÷ ®­îc ®µi th× céng thªm."
 #define BR_LIMIT_FMT   "L­ît nhËn kinh nghiÖm h«m nay: <color=yellow>%d<color> / <color=yellow>%d<color> ."
 #define BR_LIMIT_FULL  "H«m nay ®· dïng hÕt l­ît nhËn kinh nghiÖm. H·y quay l¹i vµo ngµy mai."
-
+// [3HD 25/08] San boss Sat Thu (TaskId 10) - chuoi TCVN3 tho
+#define ST3_INFO       "GÆp NhiÕp Thİ TrÇn ë thÊt ®¹i thµnh thŞ ®Ó nhËn nhiÖm vô truy n· s¸t thñ (mçi ngµy tèi ®a 8 lÇn)."
+#define ST3_HOWTO      "T×m vµ tiªu diÖt ®óng tªn s¸t thñ ®­îc giao; gép 5 S¸t Thñ lÖnh cïng cÊp thµnh S¸t Thñ Gi¶n - vĞ vµo Th¸ch thøc thêi gian."
+#define ST3_CUR_FMT    "§ang truy n· s¸t thñ thø <color=yellow>%d<color> (nhãm cÊp %d)."
+#define ST3_GROUP90    "Nhãm cÊp 90: h¹ xong cã th­ëng lín vµ S¸t Thñ lÖnh cÊp 90."
+#define ST3_GROUPLOW   "Nhãm cÊp thÊp: b¶n gèc chØ cßn nhãm 90 ph¸t th­ëng - h·y nhËn nhiÖm vô cÊp 90."
+#define ST3_NOTASK     "Ch­a nhËn nhiÖm vô s¸t thñ nµo."
+#define ST3_LIMIT_FMT  "Sè lÇn ®· giÕt h«m nay: <color=yellow>%d<color> / 8 ."

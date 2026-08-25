@@ -6,6 +6,7 @@ Include("\\script\\lib\\awardtemplet.lua")
 Include("\\script\\activitysys\\playerfunlib.lua")
 Include("\\script\\missions\\fengling_ferry\\lang.lua")
 Include("\\script\\misc\\eventsys\\type\\func.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 
 MISSIONID = 15			--Î´¶¨
 FRAME2TIME = 18;		--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
@@ -120,7 +121,7 @@ function fld_TakeBoat(plindex)
 		--Meridan material - Modified by DinhHQ - 20120711
 		if CalcFreeItemCellCount() >= 1 and PlayerFunLib:CheckTaskDaily(3070, 5, "nomsg", "<") == 1 then
 			PlayerFunLib:AddTaskDaily(3070, 1)
-			local tbMeridanAward = {szName="Ch©n Nguyªn §¬n (trung)",tbProp={6,1,30228,1,0,0},nCount=2,nBindState=-2}
+			local tbMeridanAward = {szName="Ch©n Nguyªn §¬n (trung)",tbProp={6,1,4846,1,0,0},nCount=2,nBindState=-2}
 			tbAwardTemplet:Give(tbMeridanAward, 1, {"KinhMach", "DangKyPLDTonPhiThanhCong"})
 		end
 	end
@@ -150,7 +151,7 @@ function fld_TakeBoat(plindex)
 end
 
 function fld_haveroom()
-	if (GetMSPlayerCount(MISSIONID, 1) >= 100 ) then
+	if (GetMSPlayerCount(MISSIONID, 1) >= HD_CFG("HD3_PLD_SUC_CHUA", 100) ) then
 		if (BOATID == 1) then
 			Say("Ng­¬i ®Õn trÔ råi! ThuyÒn ®· ®Çy råi, h·y chê chuyÕn sau ®i!", 0)
 			return 1
@@ -302,13 +303,12 @@ end;
 function check_new_shuizeitask()
 	local nHour = tonumber(GetLocalDate("%H"));
 	--§iÒu chØnh thêi gian phong l¨ng ®é tèn phÝ - Modified by DinhHQ - 20110504
-	local tb_sptime = {
-		[10] = 1,
-		[14] = 1,
-		[16] = 1,
-		[18] = 1,
-		[20] = 1,
-	};
+	-- [3HD 25/08] gio ton phi lay tu cauhinh (HHMM) - goc Linux 10/14/16/18/20h
+	local tb_sptime = {}
+	local tbGioTP = HD_CFG("HD3_PLD_GIO_TONPHI", {1000, 1400, 1600, 1800, 2000})
+	for i = 1, getn(tbGioTP) do
+		tb_sptime[floor(tbGioTP[i] / 100)] = 1
+	end
 	if (tb_sptime[nHour] and tb_sptime[nHour] == 1) then
 		return 1
 	else

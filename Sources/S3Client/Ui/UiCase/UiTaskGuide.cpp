@@ -30,6 +30,7 @@ extern iCoreShell*		g_pCoreShell;
 #define TASKGUIDE_TINSU_TASKID	7	// [TIN SU 21/08] task 1201..1218 (nt_setTask -> SetSaveVal -> UI_TASKVALUE)
 #define TASKGUIDE_BANGCHIEN_TASKID	8	// [CHI NAM 24/08] tongwar: task 2369..2378 (nt_setTask co SyncTaskValue)
 #define TASKGUIDE_BACHNHAN_TASKID	9	// [CHI NAM 24/08] bairenleitai: task 2709 (luot exp/ngay)
+#define TASKGUIDE_SATTHU_TASKID	10	// [3HD 25/08] san boss sat thu: task 1082/1192/1193/1217 (nt_setTask co SyncTaskValue)
 
 // ---- bang du lieu tasklink (dia thang pak - KPakFile doc dia truoc) ----
 enum
@@ -186,6 +187,11 @@ void KUiTaskGuide::OnTaskValueChanged(int nTaskId)
 	{
 		if (nTaskId == 2709)
 			m_pSelf->BuildBachNhanText();
+	}
+	else if (m_pSelf->m_Entries[m_pSelf->m_nCurEntry].nTaskId == TASKGUIDE_SATTHU_TASKID)
+	{
+		if (nTaskId == 1082 || nTaskId == 1192 || nTaskId == 1193 || nTaskId == 1217)
+			m_pSelf->BuildSatThuText();
 	}
 }
 
@@ -392,6 +398,10 @@ void KUiTaskGuide::ShowTask(int nEntry)
 	{
 		BuildBachNhanText();
 	}
+	else if (pEntry->nTaskId == TASKGUIDE_SATTHU_TASKID)
+	{
+		BuildSatThuText();
+	}
 	else
 	{
 		m_Content.Clear();
@@ -510,6 +520,35 @@ void KUiTaskGuide::BuildBachNhanText()
 	}
 }
 
+// [3HD 25/08] San boss Sat Thu (ban Linux): task 1082 = chi so boss dang nhan
+// (1..160, moi nhom 20 chi so = mot bac cap 20..90; chi nhom 90 = 141..160 con
+// phat thuong), 1193 = so lan giet hom nay (tran 8).
+void KUiTaskGuide::BuildSatThuText()
+{
+	m_Content.Clear();
+	AddLine(ST3_INFO);
+	AddLine(ST3_HOWTO);
+	int nBoss = DTG_TaskVal(1082);
+	char szLine[512];
+	if (nBoss >= 1 && nBoss <= 160)
+	{
+		int nCapNhom = 20 + ((nBoss - 1) / 20) * 10;	// 1-20=cap20 ... 141-160=cap90
+		sprintf(szLine, ST3_CUR_FMT, nBoss, nCapNhom);
+		AddLine(szLine);
+		if (nBoss >= 141)
+			AddLine(ST3_GROUP90);
+		else
+			AddLine(ST3_GROUPLOW);
+	}
+	else
+	{
+		AddLine(ST3_NOTASK);
+	}
+	int nUsed = DTG_TaskVal(1193);
+	if (nUsed < 0) nUsed = 0;
+	sprintf(szLine, ST3_LIMIT_FMT, nUsed);
+	AddLine(szLine);
+}
 void KUiTaskGuide::BuildTinSuText()
 {
 	m_Content.Clear();

@@ -263,13 +263,13 @@ map_random_awards = {
 	{0.005, 		{"Lôc Thñy Tinh", 			240}},					-- ÂÌË®¾§
 	{0.0005, 	{"Vâ L©m MËt TÞch", 		6, 1, 26, 1, 0, 0}},	-- ÎäÁÖÃØ¼®
 	{0.0005, 	{"TÈy Tñy Kinh",			6, 1, 22, 1, 0, 0}},	-- Ï´Ëè¾­
-	{0.2, 		{"Phóc Duyªn Lé (§¹i) ",	6, 1, 124, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨´ó£©
-	{0.19587, 		{"Phóc Duyªn Lé (Trung) ", 	6, 1, 123, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨ÖÐ£©
-	{0.18, 		{"Phóc Duyªn Lé (TiÓu) ",	6, 1, 122, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨Ð¡£©
+	{0.2, 		{"Phóc Duyªn Lé (§¹i) ",	6, 1, 123, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨´ó£©
+	{0.19587, 		{"Phóc Duyªn Lé (Trung) ", 	6, 1, 122, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨ÖÐ£©
+	{0.18, 		{"Phóc Duyªn Lé (TiÓu) ",	6, 1, 121, 1, 0, 0}},	-- ¸£ÔµÂ¶£¨Ð¡£©
 	{0.15, 	{"Tiªn Th¶o Lé ",			6, 1, 71, 1, 0, 0}},	-- ÏÉ²ÝÂ¶
 	{0.1, 		{"Thiªn s¬n  B¶o Lé ",		6, 1, 72, 1, 0, 0}},	-- ÌìÉ½ÓñÂ¶
 	{0.1, 		{"B¸ch Qu¶ Lé ",			6, 1, 73, 1, 0, 0}},	-- °Ù¹ûÂ¶
---	{0.00, 		{"´ó°×¾ÔÍè",		6, 1, 130, 1, 0, 0}},	-- ´ó°×¾ÔÍè
+--	{0.00, 		{"´ó°×¾ÔÍè",		6, 1, 129, 1, 0, 0}},	-- ´ó°×¾ÔÍè
 	{0.05, 		{"LÖnh bµi Phong L¨ng §é",		489}},					-- ·çÁê¶ÉÁîÅÆ
 	{0.0005, 	{"§Þnh Quèc Thanh Sa Tr­êng Sam",	0, 159}},				-- ¶¨¹úÖ®ÇàÉ´³¤ÉÀ
 	{0.0005, 	{"§Þnh Quèc ¤ Sa Ph¸t Qu¸n",	0, 160}},				-- ¶¨¹úÖ®ÎÙÉ°·¢¹Ú
@@ -428,7 +428,7 @@ function add_npc(item)
 		local px, py = get_npc_pos(item, index);
 		npc_proceed(item);
 
-		local npc_index = AddNpcEx(
+		local npc_index = HD3_AddNpcEx(
 			id,			-- ID
 			level,		-- µÈ¼¶
 			series,		-- ÎåÐÐ
@@ -444,7 +444,7 @@ function add_npc(item)
 			SetNpcDeathScript(npc_index, SCRIPT_NPC_DEATH);
 		else
 			-- DEBUG
-			local msg = format("Failed to AddNpcEx(%d,%d,%d,%d,%d,%d,%d,%s,%d)!!!",
+			local msg = format("Failed to HD3_AddNpcEx(%d,%d,%d,%d,%d,%d,%d,%s,%d)!!!",
 				id, level, series, SubWorld, px, py, 1, name, isboss);
 			print(msg);
 		end

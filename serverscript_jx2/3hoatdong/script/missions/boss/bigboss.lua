@@ -80,7 +80,7 @@ BigBoss.tbVngNewAward =
 		{szName="Phi Phong CÊp PhÖ Quang (hãa gi¶i s¸t th­¬ng)",tbProp={0,3477},nCount=1,nRate=25,nQuality = 1,nExpiredTime=10080,},
 	},
 	[4] = {--PhÇn 5
-		{szName="Tói D­îc PhÈm",tbProp={6,1,30557,1,0,0},nCount=5,nRate=20},
+		{szName="Tói D­îc PhÈm",tbProp={6,1,4813,1,0,0},nCount=5,nRate=20},
 		{szName="Håi thiªn t¸i t¹o lÔ bao",tbProp={6,1,2536,1,0,0},nCount=1,nRate=20},
 		{szName="Cµn Kh«n T¹o Hãa §an (®¹i) ",tbProp={6,1,214,1,0,0},nCount=5,nRate=20,CallBack=function(nItemIndex) SetItemStackCount(nItemIndex, 10) end},
 		{szName="KÝch C«ng Trî Lùc Hoµn",tbProp={6,1,3570,1,0,0},nCount=3,nRate=20},
@@ -106,8 +106,8 @@ BigBoss.tbVngNewAward =
 		{szName="§å Phæ §»ng Long Th­îng Giíi ChØ",tbProp={6,1,30535,1,0,0},nCount=1,nRate=1},
 		{szName="§å Phæ §»ng Long H¹ Giíi ChØ",tbProp={6,1,30536,1,0,0},nCount=1,nRate=1},
 		{szName="§»ng Long Th¹ch - H¹",tbProp={6,1,30538,1,0,0},nCount=10,nRate=77},
-		{szName="Tinh S­¬ng LÖnh",tbProp={6,1,30506,1,0,0},nCount=1,nRate=2},
-		{szName="HuyÒn ThiÕt",tbProp={6,1,30507,1,0,0},nCount=1,nRate=3},
+		{szName="Tinh S­¬ng LÖnh",tbProp={6,1,4860,1,0,0},nCount=1,nRate=2},
+		{szName="HuyÒn ThiÕt",tbProp={6,1,4861,1,0,0},nCount=1,nRate=3},
 	},
 	[8] = {--PhÇn 4
 		{szName="Ngò Hµnh Ên 6",tbProp={0,3230},nCount=1,nRate=10,nQuality = 1,nExpiredTime=10080,},

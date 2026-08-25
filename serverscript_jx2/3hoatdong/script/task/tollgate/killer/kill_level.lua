@@ -14,6 +14,7 @@ Include("\\script\\event\\change_destiny\\mission.lua");	-- ÄæÌì¸ÄÃü
 Include( "\\script\\tong\\contribution_entry.lua" )
 Include("\\script\\misc\\eventsys\\eventsys.lua")
 Include("\\script\\lib\\awardtemplet.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 
 -- TSKID_KILLERDATE	= 1192;	--½ÓÈÎÎñÊ±µÄÈÕÆÚ
 -- TSKID_KILLERMAXCOUNT	= 1193;	--Ã¿ÌìÉ±ÈË´ÎÊý
@@ -101,7 +102,7 @@ function OnFinishKillerTask(TSKID_KILL)
 				{szName="Phong V©n B¹ch M·",tbProp={0,10,19,1,0,0},nCount=1,nRate=0.0007,nExpiredTime=43200},
 				{szName="Phong V©n ChiÕn M·",tbProp={0,10,20,1,0,0},nCount=1,nRate=0.0003,nExpiredTime=43200},
 				{szName="Phong V©n ThÇn M·",tbProp={0,10,21,1,0,0},nCount=1,nRate=0.0001,nExpiredTime=43200},
-				{szName="Tói D­îc PhÈm",tbProp={6,1,30557,1,0,0},nCount=1,nRate=68.2639},
+				{szName="Tói D­îc PhÈm",tbProp={6,1,4813,1,0,0},nCount=1,nRate=68.2639},
 				{szName="§¹i Lùc hoµn",tbProp={6,0,3,1,0,0},nCount=1,nRate=15},
 				{szName="Phi Tèc hoµn",tbProp={6,0,6,1,0,0},nCount=1,nRate=15},
 				{szName="§å Phæ §»ng Long Kh«i",tbProp={6,1,30528,1,0,0},nCount=1,nRate=0.0003},
@@ -116,6 +117,7 @@ function OnFinishKillerTask(TSKID_KILL)
 			[2] = { -- PhÇn th­ëng cè ®Þnh
 				{szName="§iÓm kinh nghiÖm", nExp=10000000,},},
 		}
+		tbAward = HD_CFG("HD3_ST_THUONG", nil) or tbAward	-- nil = bang goc Linux o tren
 		tbAwardTemplet:Give(tbAward, 1, {"KillerTask", "FinishLevel90"})
 	end
 end

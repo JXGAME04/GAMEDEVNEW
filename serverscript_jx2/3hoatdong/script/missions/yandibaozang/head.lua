@@ -49,8 +49,8 @@ YDBZ_LIMIT_PLAYER_LEVEL = 120				-- Íæ¼Ò×îµÍµÈ¼¶ÏÞÖÆ
 YDBZ_LIMIT_WEEK_COUNT		= 10 				-- Ò»ÖÜ²Î¼Ó×î´ó´ÎÊý
 YDBZ_LIMIT_DAY_COUNT		= 4 				-- Ã¿Ìì²Î¼Ó×î´ó´ÎÊý
 YDBZ_PAIHANG_ID					=	10252			--ÅÅÐÐ°ñID
-YDBZ_LIMIT_ITEM					= {{6,1,1604},1,"Anh Hïng ThiÕp"}	--ÐèÒªÐÅÎï£¬Ó¢ÐÛÌû£¬tb1£¬Í¼Æ×ID£¬tb2£¬ÐèÒªÊýÁ¿
-YDBZ_LIMIT_DOUBEL_ITEM	= {{6,1,1617},1,"Viªm §Õ LÖnh"}	--Ñ×µÛÁî£¬¿É»ñµÃË«±¶µÄ½±Àø
+YDBZ_LIMIT_ITEM					= {{6,1,1613},1,"Anh Hïng ThiÕp"}	--ÐèÒªÐÅÎï£¬Ó¢ÐÛÌû£¬tb1£¬Í¼Æ×ID£¬tb2£¬ÐèÒªÊýÁ¿
+YDBZ_LIMIT_DOUBEL_ITEM	= {{6,1,1626},1,"Viªm §Õ LÖnh"}	--Ñ×µÛÁî£¬¿É»ñµÃË«±¶µÄ½±Àø
 YDBZ_AWARD_EXP 					= 600000									--Ã¿Í¨¹ýÒ»¹ØÕû¶Ó»ñµÃµÄ¾­Ñé
 YDBZ_Faninl_AWARD_EXP		=	300000									--Õù¶áµØboss¾­Ñé
 YDBZ_KILLPLAYER_EXP 		= 200000									--É±ËÀÒ»¸öµÐÈË»ñµÃ¾­Ñé£¨É±Íæ¼ÒµÃ¾­Ñé£©
@@ -115,7 +115,7 @@ end
 --½±Àø
 YDBZ_ZUANYONG_ITEM =				--×¨ÓÃÎïÆ·
 {
-	[1] = {"H×nh nh©n",6,1,1605}, -- 1¹Ì¶¨Îª¿þÀÜ
+	[1] = {"H×nh nh©n",6,1,1614}, -- 1¹Ì¶¨Îª¿þÀÜ
 	[2] = {"Viªm §Õ tr­êng mÖnh hoµn",	6,	0,	1607}, 
 	[3] = {"Viªm §Õ gia bµo hoµn",	6,	0,	1608}, 
 	[4] = {"Viªm §Õ ®¹i lùc hoµn",	6,	0,	1609}, 
@@ -136,13 +136,13 @@ YDBZ_tbaward_item ={
 	},
 	[2]=--Ð¡¹Øboss
 	{--¼¸ÂÊ%,¸öÊý,ÎïÆ·ID,ÊÇ·ñµôµØÉÏ(0,µôµØÉÏ£¬1Ö±½ÓËæ»úµôÒ»¸ö¶ÓÔ±ÉíÉÏ),Ãû³Æ,Ë«±¶ÍèÊÇ·ñÓÐÐ§
-		{50,1,{6,1,1605,1,0,0},1,"H×nh nh©n",1},		--¿þÀÜ
+		{50,1,{6,1,1614,1,0,0},1,"H×nh nh©n",1},		--¿þÀÜ
 		{100,15,{1, 2, 0, 5, 0, 0},0,"Ngò Hoa Ngäc Lé Hoµn",0}, --Îå»¨
-		--{10,1,{6,1,1606,1,0,0},1,"Viªm §Õ §å §»ng",1},			--ËéÆ¬
+		--{10,1,{6,1,1615,1,0,0},1,"Viªm §Õ §å §»ng",1},			--ËéÆ¬
 	},
 	[3]=--Õù¶áµØÐ¡boss
 	{
-		{100,1,{6,1,1605,1,0,0},1,"H×nh nh©n",1},		--¿þÀÜ
+		{100,1,{6,1,1614,1,0,0},1,"H×nh nh©n",1},		--¿þÀÜ
 		{100,30,{1, 2, 0, 5, 0, 0},0,"Ngò Hoa Ngäc Lé Hoµn",0},--Îå»¨
 	},
 --Modifiled by:ThanhLD - 20140226 - change award from Boss cuèi tÝnh n¨ng Viªm §Õ
@@ -161,7 +161,7 @@ YDBZ_tbaward_item ={
 			{szName="Phi Phong CÊp PhÖ Quang (hãa gi¶i s¸t th­¬ng)",tbProp={0,3477},nCount=1,nRate=1,nQuality = 1,nExpiredTime=10080,},
 		},
 		[3] = {--PhÇn 3
-			{szName="Tói D­îc PhÈm",tbProp={6,1,30557,1,0,0},nCount=1,nRate=40},
+			{szName="Tói D­îc PhÈm",tbProp={6,1,4813,1,0,0},nCount=1,nRate=40},
 			{szName="Cµn Kh«n T¹o Hãa §an (®¹i) ",tbProp={6,1,214,1,0,0},nCount=50,nRate=30},
 			{szName="§¹i Lùc hoµn",tbProp={6,0,3,1,0,0},nCount=1,nRate=15},
 			{szName="Phi Tèc hoµn",tbProp={6,0,6,1,0,0},nCount=1,nRate=15},
@@ -178,7 +178,7 @@ YDBZ_tbaward_item ={
 -- 2011.03.23
 YDBZ_tbaward_item_ex = 
 {
-	[1] = {szName="Viªm §Õ BÝ B¶o",tbProp={6,1,2805,1,0,0}},		-- Ñ×µÛÃØ±¦pÓÐ´ýÐÞ¸Ä
+	[1] = {szName="Viªm §Õ BÝ B¶o",tbProp={6,1,3423,1,0,0}},		-- Ñ×µÛÃØ±¦pÓÐ´ýÐÞ¸Ä
 }
 
 --

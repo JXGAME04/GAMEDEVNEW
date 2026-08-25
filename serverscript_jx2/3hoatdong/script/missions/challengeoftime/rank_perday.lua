@@ -1,5 +1,6 @@
 Include("\\script\\lib\\gb_taskfuncs.lua")
 Include("\\script\\lib\\awardtemplet.lua")
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 
 tsk_rank_lastdate	= 2636	-- 玩家最近一次参加高级闯关的时间
 tsk_rank_lastscore 	= 2637	-- 玩家最近一次参加高级闯关的成绩
@@ -11,6 +12,7 @@ DailyRankLadderId	= 10235
 nTIMERANK = "challengeoftime_ranklist";	-- 时间挑战每天的排名
 
 tbQiannianlingyao = {szName = "Thi猲 Ni猲 Linh Dc", tbProp = {6, 1, 2125, 1, 1, 0}, nExpiredTime = 24 * 60};
+tbQiannianlingyao = HD_CFG("HD3_VA_THUONG_HANG_NGAY", nil) or tbQiannianlingyao	-- [3HD] nil = Thien Nien Linh Duoc goc
 
 function rank_award()
 	ntime = tonumber(GetLocalDate("%H%M"))
