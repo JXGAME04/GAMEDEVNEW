@@ -418,6 +418,29 @@ vàng + DelNpcByName(tên, map). Copy đè `CoreServer.dll` (bản 12:08 đang n
 thiếu lọc-map + C15) trước khi bấm `RESTART_GS_2508.bat`. Console boot phải in:
 `Da xoa 7 NPC Nhiep Thi Tran cu` + `Da xoa 6 NPC thuyen phu cu (map 336)`.
 
+## C16-C18 — 3 báo cáo có ảnh của chủ (13:2x), commit `fe5b8bec`
+
+- **C16 — vẫn còn 2 Nhiếp Thí Trần**: xoá theo TÊN lúc boot không đủ (NPC cũ
+  có thể sinh SAU DriverInit/hồi sinh). Thêm `HD3_DelNpcByScript` (match
+  `Npc[].ActionScript` — nhieptran.lua/thuyenphu*.lua cũ, KHÔNG BAO GIỜ đụng
+  NPC mới dù trùng tên) gọi ở boot **và MỖI PHÚT** trong `HD3_Tick` (tự lành).
+- **C17 — thoại NPC 769**: gói `Describe` ~729B vượt **trần 511B** ⇒ menu đứt
+  "<#>M"; "<co lor>" do byte TCVN3 nuốt `<`. Rút gọn còn 425/459B + space
+  trước mọi `<color>`. Chỉ đổi chuỗi hiển thị, giữ nguyên function.
+- **C18 — F11 Sát Thủ đầy đủ**: (a) hiện **Mục tiêu: tên boss + nơi ở (toạ độ)**
+  — bảng `UiTaskGuideSatThuBoss.h` SINH TỰ ĐỘNG từ `killer.txt` (160 boss,
+  generator `ReverseTools\gen_satthu_boss_table.py`); (b) 3 nút hoạt động:
+  Bỏ nhiệm vụ → gửi `st3_quit` (case 6 uicmdscript) → server chạy `cancel()`
+  của nieshichen; Theo dõi/Hủy theo dõi dùng khung chung, nhớ tab đang theo.
+- ⏳ **CHƯA làm: kích → tự chạy tới xa phu → qua map → tới toạ độ boss** — đây
+  là tính năng AUTO liên map mới (cần chốt tuyến xe/điểm dừng như các
+  AUTO_*_SPEC trước nay) — đề xuất làm đợt riêng sau khi chủ duyệt luồng.
+
+**Binary CHỐT (13:35): `CoreServer.dll.moi_2508_c18` + `Game.exe.moi_2508_c18`
++ `CoreClient.dll.moi_2508_c18`** (gộp đủ mọi vá trước + vá của phiên Tín Sứ).
+Server: copy đè `CoreServer.dll` (bản 12:31 thiếu C16+st3_quit) rồi restart;
+client: copy đè `Game.exe` + `CoreClient.dll` rồi vào lại.
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
