@@ -41,6 +41,13 @@ function HD3_DriverInit()
 		print("[3HD] BO QUA HD3_DriverInit: DLL chua co HD3_AddNpc - can swap CoreServer.dll moi.")
 		return
 	end
+	-- [3HD 25/08 C14] don NPC "Nhiep Thi Tran" CU cua ban Viet (nam trong du
+	-- lieu map tinh) TRUOC khi sinh NPC 769 Linux - de dung 100% ban Linux.
+	-- Guard nil: DLL cu chua co ham thi bo qua (khong lam chet boot).
+	if (HD3_DelNpcByName ~= nil) then
+		local nXoaCu = HD3_DelNpcByName("Nhi’p Th› Tr«n")
+		print("[3HD] Da xoa "..nXoaCu.." NPC Nhiep Thi Tran cu (ban Viet).")
+	end
 	-- nap lazy (chi luc boot): 384 KB killbosshead + bang NPC 769
 	Include("\\script\\global\\autoexec_npc_hd3.lua")
 	Include("\\script\\task\\tollgate\\killbosshead.lua")

@@ -1744,6 +1744,47 @@ static int sHD3_AddNpcCommon(Lua_State* L, int bHasSeries)
 	Lua_PushNumber(L, nNpcIdx);
 	return 1;
 }
+// [3HD 25/08 C14] HD3_DelNpcByName(szTen) - xoa NPC (khong phai player) co ten
+// CHUA chuoi szTen. Dung don NPC "Nhiep Thi Tran" CU cua ban Viet (nam trong
+// du lieu map tinh, khong script nao tat duoc) TRUOC khi sinh NPC 769 Linux.
+// Duyet m_UseIdx nhu KNpcSet::GetAroundGoldMonster => chi cham NPC dang song,
+// khong dinh free-slot; go theo dung khuon LuaDelNpc (ScriptFuns.cpp:7078).
+int LuaHD3_DelNpcByName(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
+		return 0;
+	const char* pTen = Lua_ValueToString(L, 1);
+	if (!pTen || !pTen[0])
+		return 0;
+	int nXoa = 0;
+	int nGom = 0;
+	static int s_anGom[512];
+	// m_UseIdx la private => quet thang mang Npc[]; slot trong co m_dwID == 0
+	// (quy uoc engine, vd KNpc.cpp:2621 kiem "khong ton tai" bang m_dwID == 0).
+	for (int nIdx = 1; nIdx < MAX_NPC; nIdx++)
+	{
+		if (Npc[nIdx].m_dwID == 0)
+			continue;
+		if (Npc[nIdx].IsPlayer())
+			continue;
+		if (Npc[nIdx].m_SubWorldIndex < 0 || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (strstr(Npc[nIdx].Name, pTen) == NULL)
+			continue;
+		if (nGom < 512)
+			s_anGom[nGom++] = nIdx;
+	}
+	for (int i = 0; i < nGom; i++)
+	{
+		int n = s_anGom[i];
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
+		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		NpcSet.Remove(n);
+		nXoa++;
+	}
+	Lua_PushNumber(L, nXoa);
+	return 1;
+}
 int LuaHD3_AddNpc(Lua_State* L)
 {
 	return sHD3_AddNpcCommon(L, 0);

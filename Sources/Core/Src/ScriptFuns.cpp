@@ -13888,6 +13888,7 @@ extern int LuaHD3_ST_LevelUp(Lua_State* L);
 extern int LuaHD3_PET_Stub(Lua_State* L);
 extern int LuaHD3_TrimString(Lua_State* L);
 extern int LuaHD3_AddNpc(Lua_State* L);
+extern int LuaHD3_DelNpcByName(Lua_State* L);
 extern int LuaHD3_AddNpcEx(Lua_State* L);
 #endif
 
@@ -15440,6 +15441,7 @@ TLua_Funcs GameScriptFuns[] =
 		// [VA A7-C1] AddNpc/AddNpcEx ngu nghia Linux: KHONG dung camp (giu npcs.txt),
 		// HD3_AddNpc tu random ngu hanh, tham so 6/7 = bNoRevive.
 		{"HD3_AddNpc",	LuaHD3_AddNpc},
+		{"HD3_DelNpcByName",	LuaHD3_DelNpcByName},	// [3HD C14] xoa NPC cu theo ten (don Nhiep Thi Tran ban Viet)
 		{"HD3_AddNpcEx",	LuaHD3_AddNpcEx},
 		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)
 		{"ITEM_DropRateItem",	LuaDropRateItem},
