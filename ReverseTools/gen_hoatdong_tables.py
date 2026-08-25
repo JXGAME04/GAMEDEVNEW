@@ -159,6 +159,67 @@ for t in (BC_TSK_DEATH, BC_TSK_MAXD):
 BN_TSK_LUOT = 2709
 BN_TSK_MAP = 2323
 
+# ================================================================ TIN SU
+qpost = rd(SC, "task", "tollgate", "messenger", "posthouse.lua")
+qruk = rd(SC, "task", "tollgate", "messenger", "messenger_turerukou.lua")
+qwag = rd(SC, "task", "tollgate", "messenger", "wagoner.lua")
+qdq = rd(SC, "global", "npcchucnang", "dichquan.lua")
+qxp = rd(SC, "global", "npcchucnang", "xaphu.lua")
+qkill = rd(SC, "task", "tollgate", "killbosshead.lua")
+qtnpc = rd(SC, "task", "tollgate", "tinsu_addnpc.lua")
+
+# Dich quan trong thanh (AddNpcNew 377 + dichquan.lua): Thanh Do 11 + Dai Ly 162
+qtdo = rd(SC, "startgame", "thanh", "thanhdo.lua")
+qdly = rd(SC, "startgame", "thanh", "daily.lua")
+m = re.search(r"AddNpcNew\(377,1,11,(\d+)\*32,(\d+)\*32,[^)]*dichquan", qtdo)
+TS_DQ_11 = (int(m.group(1)), int(m.group(2)))
+m = re.search(r"AddNpcNew\(377,1,162,(\d+)\*32,(\d+)\*32,[^)]*dichquan", qdly)
+TS_DQ_162 = (int(m.group(1)), int(m.group(2)))
+
+# Dich quan TRONG AI 395 (tinsu_addnpc): {377,395,x,y,...turerukou...}
+m = re.search(r"\{377,395,(\d+),(\d+),[^}]*turerukou[^}]*\}", qtnpc)
+TS_DQ_AI = (int(m.group(1)), int(m.group(2)))
+# ten hien thi "Dich quan" (TCVN3) trong bang tinsu_dialognpc
+TS_TEN_DQ = pick(qtnpc, r'turerukou\.lua",\s*"([^"]+)"', "ten Dich quan")
+
+# 9 ruong map 395 (killbosshead: {844,100,395,x,y,...})
+TS_RUONG = []
+for m in re.finditer(r"(?m)^\{844,100,395,(\d+),(\d+),0,\"([^\"]+)\",1,", qkill):
+    TS_RUONG.append((int(m.group(1)), int(m.group(2))))
+if len(TS_RUONG) != 9:
+    raise SystemExit("chi trich duoc %d ruong (mong 9)" % len(TS_RUONG))
+TS_TEN_RUONG = pick(qkill, r'(?m)^\{844,100,395,\d+,\d+,0,"(B[^"]*?)\s*\d",1,', "ten Bao ruong")
+TS_TEN_GIU = pick(qkill, r'(?m)^\{849,100,395,[^,]+,\d+,0,"(B[^"]*?)\s*\d",1,', "ten Thu Ho Gia")
+
+# tuyen di (citygo posthouse): 2 dong song: {1204,1,...,1203,11,162,x,y} - dich den
+TS_VE = []
+for m in re.finditer(r"\{1204,(\d),[^{}]*?,1203,(\d+),(\d+),(\d+),(\d+)\}", qpost):
+    TS_VE.append((int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                  int(m.group(4)), int(m.group(5))))
+if len(TS_VE) != 2:
+    raise SystemExit("citygo song phai co 2 dong (%d)" % len(TS_VE))
+
+MARK_TS = [
+    ("HDM_OPT_TINSU", pick(qdq, r'"([^"/]+)/especiallymessenger"', "muc Nhiem vu Tin Su")),
+    ("HDM_OPT_TSNHAN", pick(qpost, r'"([^"/]+)/messenger_ido"', "Ta bang long!")),
+    ("HDM_OPT_TSGIAO", pick(qpost, r'"([^"/]+)/messenger_finishtask"', "Ta den de giao").rstrip()),
+    ("HDM_OPT_TSTHUONG", pick(qpost, r'"([^"/]+)/messenger_treasureprize"', "Nhan lanh phan thuong")),
+    ("HDM_OPT_TSXAPHU", pick(qxp, r'"([^"/]+)/messenger_wagoner"', "Di noi dac biet")),
+    ("HDM_OPT_TSMUON", pick(qwag, r'"([^"/]+)/messenger_storewagoner"', "Muon")),
+    ("HDM_OPT_TSBATDAU", pick(qruk, r'"([^"/]+)/ture_try_starttask"', "Bat dau nhiem vu").rstrip()),
+    ("HDM_OPT_TSTIEPTUC", pick(qruk, r'"([^"/]+)/ture_continuetask"', "Tiep tuc nhiem vu")),
+    ("HDM_OPT_TSROI", pick(qruk, r'"([^"/]+)/ture_movecity"', "Roi khoi khu vuc")),
+    ("HDM_SAY_TSHETLUOT", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} v[^"]{0,10}t v[^"]{0,60})\."', "het luot")),
+    ("HDM_SAY_TSMETMOI", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} m[^"]{0,10}t m[^"]{0,10}i r[^"]{0,6}i)\.', "het luot can lenh bai")),
+    ("HDM_SAY_TSQUAMET", pick(qpost, r'"[^"]*?(h\xabm nay ng[^"]{0,20} qu[^"]{0,8} m[^"]{0,10}t r[^"]{0,6}i)\.', "qua met (prize)")),
+    ("HDM_SAY_TSDANGCO", pick(qpost, r'"[^"]*?(kh\xabng th[^"]{0,10} ti[^"]{0,10}p nh[^"]{0,10}n nhi[^"]{0,20}m v[^"]{0,30} gi[^"]{0,10}ng nhau)', "dang co nhiem vu")),
+    ("HDM_SAY_TSTHIEUCAP", pick(qpost, r'"[^"]*?(ch[^"]{0,10}a \xae\xf1 90)', "thieu cap 90")),
+    ("HDM_SAY_TSTHIEUO", pick(qpost, r'"[^"]*?(kh\xabng \xae\xf1 ch[^"]{0,10} tr[^"]{0,10}ng)', "thieu o tui")),
+]
+for _n, _v in MARK_TS:
+    if not _v or len(_v) < 4:
+        raise SystemExit("marker TS hong: %s = %r" % (_n, _v))
+
 # ================================================================ xuat
 L = []
 A = L.append
@@ -225,11 +286,38 @@ for nm, v in (("HDM_MSG_VAODAI", vao), ("HDM_MSG_ROIDAI", roi),
     else:
         A("#define %s \"\"\t// KHONG trich duoc - marker nay bo trong" % nm)
 A("")
+A("// ===== TIN SU (nhiem vu dua tin qua Thien Bao Kho map 395) =====")
+A("#define HD_TS_MAP_AI\t395\t// ai Thien Bao Kho")
+A("#define HD_TS_TSK_MA\t1201\t// ma 5 ruong phai mo (theo THU TU)")
+A("#define HD_TS_TSK_DA\t1202\t// cac ruong da mo (prefix cua 1201)")
+A("#define HD_TS_TSK_TT\t1203\t// 0 khong/that bai; 10 da nhan; 20 trong ai; 21 tam ngung; 25/30 xong")
+A("#define HD_TS_TSK_TUYEN\t1204\t// 1 = Thanh Do->Dai Ly, 2 = nguoc lai")
+A("#define HD_TS_TSK_NGAY\t4128\t// so luot hom nay (YYMMDD*256 + n)")
+A("static const HDPoint g_HDTSDq11 = { %d, %d };\t// Dich quan Thanh Do" % TS_DQ_11)
+A("static const HDPoint g_HDTSDq162 = { %d, %d };\t// Dich quan Dai Ly" % TS_DQ_162)
+A("static const HDPoint g_HDTSDqAi = { %d, %d };\t// Dich quan trong ai 395" % TS_DQ_AI)
+A("// tuyen: { tuyen, map nhan, map dich, x dich, y dich } (citygo posthouse.lua)")
+A("static const short g_HDTSVe[2][5] = {")
+for t in TS_VE:
+    A("\t{ %d, %d, %d, %d, %d }," % t)
+A("};")
+A("// 9 Bao ruong map 395 (ruong i+1; Thu Ho Gia dung canh, lech +2 o x)")
+A("static const HDPoint g_HDTSRuong[9] = {")
+for p in TS_RUONG:
+    A("\t{ %d, %d }," % p)
+A("};")
+A("")
+for _n, _v in MARK_TS:
+    A("static const char %s[] = %s;" % (_n, cstr(_v)))
+A("")
 A("// ten NPC (ha thuong CHI ASCII nhu g_StrLower)")
 A("static const char HDM_NPC_BNVAO[] = %s;" % cstr(lowascii(BN_NPC_TEN)))
 A("static const char HDM_NPC_BCVAO[] = %s;" % cstr(lowascii(BC_NPC_TEN)))
 A("static const char HDM_NPC_COTHU[] = %s;" % cstr(lowascii(
     pick(qhead, r'nNpcId = 1571,\s*szName = "([^"]+)"', "ten Co Thu"))))
+A("static const char HDM_NPC_DICHQUAN[] = %s;" % cstr(lowascii(TS_TEN_DQ)))
+A("static const char HDM_NPC_TSRUONG[] = %s;" % cstr(lowascii(TS_TEN_RUONG)))
+A("static const char HDM_NPC_TSGIU[] = %s;" % cstr(lowascii(TS_TEN_GIU)))
 A("")
 A("#endif // KHOATDONGTABLES_H")
 

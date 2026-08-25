@@ -1,4 +1,4 @@
-# BÀN GIAO — AUTO HOẠT ĐỘNG (BÁCH NHÂN + BANG CHIẾN) · WAuto tab thứ 12 · 24/08/2026 đêm
+# BÀN GIAO — AUTO HOẠT ĐỘNG (BÁCH NHÂN + BANG CHIẾN + TÍN SỨ) · WAuto tab thứ 12 · 24/08/2026 đêm
 
 > Thi công theo `AUTO_HOATDONG_SPEC.md` (*"thiết kế Auto tự hoạt động các tính năng trên bản
 > note - tham khảo mã nguồn auto có sẵn"*).
@@ -143,4 +143,65 @@ Binary staged: `CoreClient.dll.moi_2408_liendau` 2.326.016 B (CRT-TĨNH ĐÚNG) 
 `Game.exe.moi_2408_liendau` 1.260.544 B (UCRT-RELEASE ĐÚNG) · `WAuto.exe.moi_2408_liendau`
 387.072 B — mốc 20:17, **một lần swap ăn cả 3 đợt hôm nay** (Liên đấu r1+r2 + Hoạt động).
 
-*Ghi 24/08/2026 ~20:20.*
+## 7. Đợt 2 cùng đêm — TÍN SỨ (r4, ~20:55)
+
+### 7.0 🔴🔴 Sửa lỗi nghiêm trọng đợt r3 phát hiện khi làm r4
+
+Miếng vá `S3Client.cpp` của r3 (nối `ATYPE_HOATDONG` vào chuỗi `nBS`) **chưa từng được áp**
+— heredoc chết im lặng, `git log` xác nhận tệp không đổi. Nghĩa là **Game.exe staged mốc
+20:17 KHÔNG có dây nối Hoạt Động nào cả** (bật Bách Nhân/Bang Chiến sẽ không chạy). Đã áp
+lại bằng script file (`r4_s3.py`), build lại 20:53. **Chỉ dùng bộ binary mốc 20:53.**
+
+### 7.1 Luồng Tín Sứ (đọc từ script server, task client tự sync)
+
+- Task đọc được ở client: `1201` mã 5 rương (mở theo THỨ TỰ) · `1202` đã mở (prefix của
+  1201) · `1203` trạng thái (0 không/hỏng; 10 đã nhận; 20 trong ải; 21 tạm ngưng; 25/30
+  xong) · `1204` tuyến (1 = Thành Đô→Đại Lý, 2 = ngược) · `4128` lượt hôm nay
+  (`YYMMDD*256+n`). Trần 2 lượt/ngày, lượt 3 cần Thiên Khố Bảo Lệnh (6,1,3431). Cần cấp 90.
+- Máy 3 pha nối sau BC trong `HD_Process`: `HDP_TS_GO` (tới Dịch Quan thành — nhận khi
+  1204==0, giao khi 1203∈{25,30}; giao xong còn lượt thì **nhận tiếp ngay tại thành đang
+  đứng** vì 2 tuyến nối đuôi nhau) → `HDP_TS_XAPHU` (Xa Phu → "Đi nơi đặc biệt…" → "Muốn"
+  → NewWorld 395) → `HDP_TS_AI` (trong ải: bấm Dịch quan "Bắt đầu/Tiếp tục nhiệm vụ", vòng
+  5 rương: giết `Bảo Khố Thủ Hộ Giả N` cạnh rương bằng máy PK (`return 2`) rồi thoại `Bảo
+  rương N`; xong/hỏng/quá 25 phút → "Rời khỏi khu vực" tự dịch về thành đích).
+- Nhiệm vụ **dở dang** (`1203 != 0`): bật auto là làm tiếp NGAY bất kể khung giờ; đang kẹt
+  trong map 395 lúc auto bật cũng tự nhận ra.
+- Từ chối bắt theo marker: hết lượt/mệt mỏi/quá mệt → DONE; chưa đủ cấp 90 → DONE; **không
+  đủ 5 ô trống** → nhắn người chơi dọn túi rồi DONE (auto KHÔNG tự vứt đồ).
+- Bảng số mới trong `KHoatDongTables.h` (generator đã nới): toạ độ Dịch Quan 11/162/ải,
+  2 tuyến `g_HDTSVe`, 9 rương `g_HDTSRuong`, 15 marker + 3 tên NPC.
+- Quái Thủ Hộ Giả không phải `kind_dialoger` nên thêm `HD_TimQuai` (tìm quái sống gần nhất
+  theo tên hạ-ascii) thay vì `LD_FindNpcGan`.
+
+### 7.2 UI (chèn vào chỗ trống cuối tab "H.động", ID 539-546)
+
+Kẻ ngăn `IDC_SEP_11C` y288 → ô "Bật auto Tín Sứ (đưa thư, cần cấp 90)" y292 → "Đi lúc"
+giờ:phút y305 → "Lượt/ngày (3 cần Bảo Lệnh)" y318. 4 trường `bHDTinSu/nHDTSGio(9)/
+nHDTSPhut(30)/nHDTSLuot(2)` nối CUỐI `autoData` + di trú `offsetof(bHDTinSu)`; đủ 5 dây
+(save/update/default/migrate/autosave) + 3 tooltip; vòng ShowTab nới tới `IDC_EDITOR_12_TSL`.
+
+### 7.3 Nghiệm thu Tín Sứ (nhân vật cấp ≥90, túi ≥5 ô trống)
+
+1. Swap bộ binary **mốc 20:53** (thoát hẳn Game.exe + WAuto trước).
+2. Tab "H.động" → bật ô Tín Sứ, giờ đặt phút hiện tại +2, Lượt = 1.
+3. Xem auto: về Thành Đô/Đại Lý → Dịch Quan → `Tới giờ Tín Sứ...` → Xa Phu → vào ải 395 →
+   giết Thủ Hộ Giả → mở 5 rương đúng thứ tự → rời ải (tự dịch sang thành kia) → Dịch Quan
+   giao → `Đã giao nhiệm vụ Tín Sứ - nhận thưởng.` Chân WAuto đổi trạng thái theo pha.
+4. Thoát game giữa chừng trong ải → vào lại, bật auto → phải tự làm tiếp.
+5. Đặt Lượt = 2 → giao xong lượt 1 phải nhận tiếp ngay tại thành đích.
+6. **HỎNG cần báo**: mở rương sai thứ tự (1203 về 0), đứng đơ cạnh rương không đánh Thủ Hộ
+   Giả, không thoát ải sau 25 phút, giao xong không nhận tiếp.
+
+### 7.4 Tệp sửa thêm đợt r4 + binary
+
+`CoreShell.cpp` (3 pha + 4 hàm phụ TS + vào cuộc + `WA_HoatDong`) · `KHoatDongTables.h`
+(sinh lại) + `gen_hoatdong_tables.py` (nới TS) · `ipc_shared.h` ×3 (+4 trường) ·
+`KPlayer.h` (+`nHDKeyTS`) · `S3Client.cpp` (áp lại toàn bộ dây HD, mục 7.0) ·
+`WAutoUI/{Resource.h,WAuto.rc,WAuto.cpp}` (khối TS).
+
+Binary staged đè lên bản 20:17: `CoreClient.dll.moi_2408_liendau` 2.333.184 B md5 `70626f4d`
+(CRT-TĨNH) · `Game.exe.moi_2408_liendau` 1.263.104 B md5 `8816d10e` (UCRT-RELEASE) ·
+`WAuto.exe.moi_2408_liendau` 389.120 B md5 `3d3a8812` — **mốc 20:53, một lần swap ăn cả
+Liên đấu r1+r2 + Hoạt động r3 + Tín sứ r4**.
+
+*Ghi 24/08/2026 ~20:20, bổ sung Tín Sứ ~21:00.*

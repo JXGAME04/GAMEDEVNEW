@@ -118,9 +118,56 @@ static const char HDM_MSG_ROIDAI[] = "Ng­¬i ®· rêi khái L«i §µi";
 static const char HDM_MSG_DANGDANH[] = "L«i §µi ®· tiÕn hµnh tû vâ, xin h·y ®îi l­ît b¸o danh sau.";
 static const char HDM_MSG_KETTHUC[] = "L«i §µi Hoµng Thµnh T­ h«m nay kÕt thóc !";
 
+// ===== TIN SU (nhiem vu dua tin qua Thien Bao Kho map 395) =====
+#define HD_TS_MAP_AI	395	// ai Thien Bao Kho
+#define HD_TS_TSK_MA	1201	// ma 5 ruong phai mo (theo THU TU)
+#define HD_TS_TSK_DA	1202	// cac ruong da mo (prefix cua 1201)
+#define HD_TS_TSK_TT	1203	// 0 khong/that bai; 10 da nhan; 20 trong ai; 21 tam ngung; 25/30 xong
+#define HD_TS_TSK_TUYEN	1204	// 1 = Thanh Do->Dai Ly, 2 = nguoc lai
+#define HD_TS_TSK_NGAY	4128	// so luot hom nay (YYMMDD*256 + n)
+static const HDPoint g_HDTSDq11 = { 3018, 5087 };	// Dich quan Thanh Do
+static const HDPoint g_HDTSDq162 = { 1676, 3115 };	// Dich quan Dai Ly
+static const HDPoint g_HDTSDqAi = { 1412, 3203 };	// Dich quan trong ai 395
+// tuyen: { tuyen, map nhan, map dich, x dich, y dich } (citygo posthouse.lua)
+static const short g_HDTSVe[2][5] = {
+	{ 1, 11, 162, 1674, 3132 },
+	{ 2, 162, 11, 3021, 5090 },
+};
+// 9 Bao ruong map 395 (ruong i+1; Thu Ho Gia dung canh, lech +2 o x)
+static const HDPoint g_HDTSRuong[9] = {
+	{ 1415, 3082 },
+	{ 1437, 3040 },
+	{ 1409, 2978 },
+	{ 1377, 2940 },
+	{ 1409, 2870 },
+	{ 1378, 2821 },
+	{ 1420, 2769 },
+	{ 1375, 2737 },
+	{ 1419, 2668 },
+};
+
+static const char HDM_OPT_TINSU[] = "NhiÖm vô TÝn Sø";
+static const char HDM_OPT_TSNHAN[] = "Ta b»ng lßng!";
+static const char HDM_OPT_TSGIAO[] = "Ta ®Õn ®Ó giao nhiÖm vô TÝn sø";
+static const char HDM_OPT_TSTHUONG[] = "NhËn l·nh phÇn th­ëng";
+static const char HDM_OPT_TSXAPHU[] = "§i n¬i ®Æc biÖt lµm NhiÖm vô TÝn Sø";
+static const char HDM_OPT_TSMUON[] = "Muèn";
+static const char HDM_OPT_TSBATDAU[] = "B¾t ®Çu nhiÖm vô";
+static const char HDM_OPT_TSTIEPTUC[] = "TiÕp tôc nhiÖm vô";
+static const char HDM_OPT_TSROI[] = "Rêi khái khu vùc";
+static const char HDM_SAY_TSHETLUOT[] = "H«m nay ng­¬i ®· vÊt v¶ råi. Ngµy mai h·y quay l¹i nhÐ";
+static const char HDM_SAY_TSMETMOI[] = "H«m nay ng­¬i ®· mÖt mái råi";
+static const char HDM_SAY_TSQUAMET[] = "h«m nay ng­¬i ®· qu¸ mÖt råi";
+static const char HDM_SAY_TSDANGCO[] = "kh«ng thÓ tiÕp nhËn nhiÖm vô gièng nhau";
+static const char HDM_SAY_TSTHIEUCAP[] = "ch­a ®ñ 90";
+static const char HDM_SAY_TSTHIEUO[] = "kh«ng ®ñ chç trèng";
+
 // ten NPC (ha thuong CHI ASCII nhu g_StrLower)
 static const char HDM_NPC_BNVAO[] = "quan nh¾c nhë hoµng thµnh t­";
 static const char HDM_NPC_BCVAO[] = "vâ l©m truyÒn nh©n";
 static const char HDM_NPC_COTHU[] = "cæ thñ";
+static const char HDM_NPC_DICHQUAN[] = "dÞch quan";
+static const char HDM_NPC_TSRUONG[] = "b¶o r­¬ng";
+static const char HDM_NPC_TSGIU[] = "b¶o khè thñ hé gi¶";
 
 #endif // KHOATDONGTABLES_H

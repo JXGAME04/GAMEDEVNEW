@@ -836,7 +836,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	int nLD = 0;
 	if(pApData->bLienDau == 1 && nTK == 0)
 		nLD = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_LIENDAU, (int)pApData);
-	const int nBS = nTK ? nTK : nLD;
+	// [HoatDong] Bach Nhan / Bang Chien / Tin Su - chay khi Tong Kim va Lien dau tha may
+	int nHD = 0;
+	if((pApData->bHDBachNhan == 1 || pApData->bHDBangChien == 1 || pApData->bHDTinSu == 1)
+		&& nTK == 0 && nLD == 0)
+		nHD = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_HOATDONG, (int)pApData);
+	const int nBS = nTK ? nTK : (nLD ? nLD : nHD);
 	// [TongKim] dang cam lai (di bao danh / trong tran) thi TU bam nut hoi sinh du
 	// nguoi choi khong bat 'Tu hoi sinh' - chet la chuyen thuong o Tong Kim.
 	if(nBS && !pApData->bRevive)

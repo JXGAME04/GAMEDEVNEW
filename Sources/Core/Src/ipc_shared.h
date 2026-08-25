@@ -298,6 +298,11 @@ struct autoData
 	int		nHDBCGio;		// gio di (mac dinh 20:25 - cua vao that 20:30-21:30)
 	int		nHDBCPhut;
 	int		nHDLech;		// gio may chu lech gio may nay (PHUT, am duoc) - chung ca tab
+	// == Tin Su (24/08/2026 dem, dot 2) - PHAI o cuoi struct ==
+	int		bHDTinSu;		// bat auto Nhiem vu Tin Su (Thien Bao Kho)
+	int		nHDTSGio;		// gio bat dau (theo gio MAY CHU + nHDLech)
+	int		nHDTSPhut;
+	int		nHDTSLuot;		// muc tieu luot/ngay: 1..2 thuong, 3 = dung Thien Kho Bao Lenh
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -509,6 +514,10 @@ struct autoData
 		nHDBCGio = 20;
 		nHDBCPhut = 25;
 		nHDLech = 0;
+		bHDTinSu = 0;
+		nHDTSGio = 9;
+		nHDTSPhut = 30;
+		nHDTSLuot = 2;
 	}
 };
 

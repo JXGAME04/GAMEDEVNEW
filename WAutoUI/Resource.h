@@ -391,6 +391,14 @@ using namespace std;
 #define IDC_GRP_TAB11		536
 #define IDC_SEP_11A			537
 #define IDC_SEP_11B			538
+#define IDC_SEP_11C			539
+#define IDC_CHECKBOX_12_TS	540
+#define IDC_STRING_12_TSG	541
+#define IDC_EDITOR_12_TSG	542
+#define IDC_STRING_12_TSH	543
+#define IDC_EDITOR_12_TSP	544
+#define IDC_STRING_12_TSL	545
+#define IDC_EDITOR_12_TSL	546
 #define IDC_INDEX_END			560
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
