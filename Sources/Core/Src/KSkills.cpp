@@ -192,6 +192,15 @@ int KSkill::CanCastSkill(int nLauncher, int &nParam1, int &nParam2)  const
 		{
 			AUTOLOG_EVERY(1000, "[E3_REJECT_BADIDX] skill=%d launcher=%d p2=%d out_of_range max=%d", (int)m_nId, nLauncher, nParam2, (int)MAX_NPC);
 			if ( nParam2 <= 0 || nParam2 >= MAX_NPC) return 0;
+#ifndef _SERVER
+			// [3HD 25/08] Chieu cua NPC den tu s2c_skillcast - MAY CHU da tham dinh
+			// quan he + tam danh roi moi broadcast; client chi VE LAI. GetRelation
+			// phia client ep relation_none cho (quai -> nguoi choi CHUA RUT VU KHI)
+			// lam chieu co co TargetEnemy (vd 328 boss Tin Su) bi huy ve => "danh
+			// tang hinh van mat mau". Khong ap dung cho nguoi choi (van tham dinh).
+			if (!Npc[nLauncher].IsPlayer())
+				goto relationisvalid;
+#endif
 			NPC_RELATION  Relation = NpcSet.GetRelation(nLauncher, nParam2);
 			AUTOLOG_EVERY(1000, "[E3_RELATION] skill=%d launcher=%d target=%d relation=0x%X need(enemy=%d ally=%d self=%d) tgt_id=%u", (int)m_nId, nLauncher, nParam2, (unsigned int)Relation, (int)m_bTargetEnemy, (int)m_bTargetAlly, (int)m_bTargetSelf, (unsigned int)Npc[nParam2].m_dwID);
 			
