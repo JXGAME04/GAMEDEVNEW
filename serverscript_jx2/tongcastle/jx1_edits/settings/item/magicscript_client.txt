@@ -883,11 +883,11 @@ Dung Cèt V« Tung. §ång hµnh MËt tŞch (Chó thuËt)	6	1	879	\spr\item\questkey\task
 ¸m §éc Chi Thñ. §ång hµnh MËt tŞch (Chó thuËt)	6	1	881	\spr\item\questkey\taskobj075.spr	375	1	1	Gióp §ång hµnh t¨ng kü n¨ng ¸m §éc Chi Thñ, t¨ng kh¶ n¨ng ph¸t ®éc	0	100	1	0	0																
 Tam Phôc Chi Khİ. §ång hµnh MËt tŞch (Chó thuËt)	6	1	882	\spr\item\questkey\taskobj075.spr	375	1	1	Gióp §ång hµnh t¨ng kü n¨ng Tam Phôc Chi Khİ, kĞo dµi tr¹ng th¸i g©y cho¸ng cho ®èi ph­¬ng	0	100	1	0	0																
 Nam Minh Tam §o¹n Kİch. §ång hµnh MËt tŞch (Vâ c«ng)	6	1	883	\spr\item\questkey\taskobj090.spr	374	1	1	Gióp §ång hµnh t¨ng kü n¨ng Nam Minh Tam §o¹n Kİch, t¨ng tÊn c«ng VËt lı	0	100	1	0	0																
-Tİn Sø Méc yªu bµi	6	1	884	\spr\item\task\item_xinshimu.spr	385	1	2	Sö dông sÏ phôc håi 10 ®iÓm ©m	\script\item\messenger\toll_mupaixinshi.lua	100	1	0	0																
-Tİn Sø §ång yªu bµi	6	1	885	\spr\item\task\item_xinshitong.spr	385	1	2	Sö dông sÏ phôc håi 15 ®iÓm ©m	\script\item\messenger\toll_tongpaixinshi.lua	100	1	0	0																
-Tİn Sø Ng©n yªu bµi	6	1	886	\spr\item\task\item_xinshiyin.spr	385	1	2	Sö dông sÏ phôc håi 20 ®iÓm ©m	\script\item\messenger\toll_yinpaixinshi.lua	100	1	0	0																
-Tİn Sø Kim yªu bµi	6	1	887	\spr\item\task\item_xinshijin.spr	385	1	2	Sö dông sÏ phôc håi 25 ®iÓm ©m	\script\item\messenger\toll_jinpaixinshi.lua	100	1	0	0																
-Ngù Tø Tİn Sø yªu bµi	6	1	888	\spr\item\task\item_xinshiyuci.spr	385	1	2	Sö dông sÏ phôc håi 30 ®iÓm ©m	\script\item\messenger\toll_yucixinshi.lua	100	1	0	0																
+Tİn Sø Méc yªu bµi	6	1	884	\spr\item\task\item_xinshimu.spr	385	1	2	Sö dông sÏ phôc håi 10 ®iÓm ©m	0	100	1	0	0																
+Tİn Sø §ång yªu bµi	6	1	885	\spr\item\task\item_xinshitong.spr	385	1	2	Sö dông sÏ phôc håi 15 ®iÓm ©m	0	100	1	0	0																
+Tİn Sø Ng©n yªu bµi	6	1	886	\spr\item\task\item_xinshiyin.spr	385	1	2	Sö dông sÏ phôc håi 20 ®iÓm ©m	0	100	1	0	0																
+Tİn Sø Kim yªu bµi	6	1	887	\spr\item\task\item_xinshijin.spr	385	1	2	Sö dông sÏ phôc håi 25 ®iÓm ©m	0	100	1	0	0																
+Ngù Tø Tİn Sø yªu bµi	6	1	888	\spr\item\task\item_xinshiyuci.spr	385	1	2	Sö dông sÏ phôc håi 30 ®iÓm ©m	0	100	1	0	0																
 B¸nh Trung Thu ch¸y	6	1	889	\spr\item\special\ÔÂ±ı.spr	377	1	1	Sö dông sÏ t¨ng kinh nghiÖm.	0	100	1	0	0																
 B¸nh Trung Thu §Ëu Xanh	6	1	890	\spr\item\mid_autumn\yuebing.spr	377	1	1	Cã thÓ ®æi ®­îc mét Tiªn Th¶o Lé t¹i Minh NguyÖt L·o Nh©n	0	100	1	0	0																
 B¸nh Trung thu h¹t sen	6	1	891	\spr\item\mid_autumn\yuebing.spr	377	1	1	Sö dông sÏ nhËn ®­îc (20 v¹n, 30 v¹n, hoÆc 40 v¹n) kinh nghiÖm.	0	100	1	0	0																
@@ -1258,10 +1258,10 @@ HiÖp Cèt CÈm Nang	6	1	1255	\spr\item\obj_item_jixiang.spr	41	1	1	(IB)®èi tho¹i v
 Nhu T×nh CÈm Nang	6	1	1256	\spr\item\obj_item_jixiang.spr	41	1	1	(IB) ®èi tho¹i víi LÔ Quan ®Ó sö dông, sÏ nhËn ®­îc 1 bé trang bŞ Nhu T×nh, thuéc tİnh ngÉu nhiªn.	0	100	1	0	0																
 Th­¬ng Cæ LÖnh Bµi	6	1	1257	\spr\item\questkey\taskobj132.spr	385	1	1	Mang ®Õn LiÔu Êt th­¬ng nh©n ë T­¬ng D­¬ng ®Ó ®æi phÇn th­ëng (§Õn 13.10.2006 hÕt h¹n).	0	2000000	1	50	0																
 Thiªn Nh·n Phï	6	1	1258	\spr\item\questkey\006.spr	41	1	1	¤ chiÕm IB	0	100	1	0	0																
-LÖnh bµi vinh dù Hoµng Kim	6	1	1259	\spr\item\vietnam\leaguematch\icon_league_gold.spr	385	1	1	Sö dông sÏ nhËn ®­îc 500 ®iÓm vinh dù	\script\missions\leaguematch\item\honour.lua	500	1	500	0
-LÖnh bµi vinh dù B¹ch Ng©n	6	1	1260	\spr\item\vietnam\leaguematch\icon_league_silver.spr	385	1	1	Sö dông sÏ nhËn ®­îc 100 ®iÓm vinh dù	\script\missions\leaguematch\item\honour.lua	100	1	500	0
-LÖnh bµi vinh dù Thanh ®ång	6	1	1261	\spr\item\vietnam\leaguematch\icon_league_iron.spr	385	1	1	Sö dông sÏ nhËn ®­îc 50 ®iÓm vinh dù	\script\missions\leaguematch\item\honour.lua	50	1	500	0
-LÖnh bµi vinh dù Hµn thiÕt	6	1	1262	\spr\item\vietnam\leaguematch\icon_league_copper.spr	385	1	1	Sö dông sÏ nhËn ®­îc 10 ®iÓm vinh dù	\script\missions\leaguematch\item\honour.lua	10	1	500	0
+LÖnh bµi vinh dù Hoµng Kim	6	1	1259	\spr\item\vietnam\leaguematch\icon_league_gold.spr	385	1	1	Sö dông sÏ nhËn ®­îc 500 ®iÓm vinh dù	\script\item\ib\hoangkim.lua	500	1	500	0
+LÖnh bµi vinh dù B¹ch Ng©n	6	1	1260	\spr\item\vietnam\leaguematch\icon_league_silver.spr	385	1	1	Sö dông sÏ nhËn ®­îc 100 ®iÓm vinh dù	\script\item\ib\bachngan.lua	100	1	500	0
+LÖnh bµi vinh dù Thanh ®ång	6	1	1261	\spr\item\vietnam\leaguematch\icon_league_iron.spr	385	1	1	Sö dông sÏ nhËn ®­îc 50 ®iÓm vinh dù	\script\item\ib\thanhdong.lua	50	1	500	0
+LÖnh bµi vinh dù Hµn thiÕt	6	1	1262	\spr\item\vietnam\leaguematch\icon_league_copper.spr	385	1	1	Sö dông sÏ nhËn ®­îc 10 ®iÓm vinh dù	\script\item\ib\hanthiet.lua	10	1	500	0
 H¹nh V©n Phóc §¸i	6	1	1263	\spr\item\twzhuanyun\zhuanyunbao_big.spr	448	1	1	Sö dông sÏ ngÉu nhiªn nhËn ®­îc 1 viªn HuyÒn tinh kho¸ng th¹ch (cÊp 7 ®Õn 10).	0	50	1	0	0																
 Kinh nghiÖm lÔ hép	6	1	1264	\spr\item\obj_item_gifts.spr	345	1	1	LÔ hép kinh nghiÖm, sö dông sÏ ngÉu nhiªn nhËn ®­îc 50 v¹n ®Õn 500 v¹n ®iÓm kinh nghiÖm.	0	100	1	0	0																
 §Şnh Quèc CÈm Nang	6	1	1265	\spr\item\obj_item_jixiang.spr	41	1	1	(IB)®èi tho¹i víi LÔ Quan ®Ó sö dông, sÏ nhËn ®­îc 1 bé trang bŞ §Şnh Quèc, thuéc tİnh ngÉu nhiªn.	0	100	1	0	0																
@@ -1298,7 +1298,7 @@ Hép lÔ phÈm	6	1	1293	\spr\item\mid_autumn\zhongqiuwupin.spr	432	1	1	Chøa ngÉu nh
 “Vi”	6	1	1296	\spr\item\teacherday06\vi.spr	432	2	1	§Ö tö (d­íi cÊp 80) dµnh tÆng S­ phô. (Tr­íc ngµy 31/12/2006)	0	100	1	50	0																
 “S­”	6	1	1297	\spr\item\teacherday06\su.spr	432	2	1	§Ö tö (d­íi cÊp 80) dµnh tÆng S­ phô. (Tr­íc ngµy 31/12/2006)	0	100	1	50	0																
 ThÎ ¢n S­	6	1	1298	\spr\item\questkey\card_mgk.spr	38	1	1	§em ®Õn ch­ëng m«n bæn ph¸i ®Ó nhËn th­ëng. (Tr­íc ngµy 31/12/2006)	0	100	1	50	0																
-LÖnh bµi vinh dù	6	1	1299	\spr\item\leaguematch\icon_league_wood.spr	385	1	1	Sö dông cã thÓ nhËn ®­îc 20 ®iÓm vinh dù	\script\missions\leaguematch\item\honour.lua	10	1	0	0																
+LÖnh bµi vinh dù	6	1	1299	\spr\item\leaguematch\icon_league_wood.spr	385	1	1	Sö dông cã thÓ nhËn ®­îc 20 ®iÓm vinh dù	0	10	1	0	0																
 ThÎ Cao §å	6	1	1300	\spr\item\questkey\card_xnk.spr	38	1	1	§em ®Õn ch­ëng m«n bæn ph¸i ®Ó nhËn th­ëng. (Tr­íc ngµy 31/12/2006)	0	100	1	50	0																
 Tói kü n¨ng	6	1	1301	\spr\item\twzhuanyun\zhuanyunbao_big.spr	448	1	1	Sö dông sÏ ngÉu nhiªn nhËn ®­îc b¶o vËt, cã thÓ häc ®­îc kü n¨ng cÊp 120.	0	1000	1	0	0																
 Thanh §ång §Ønh CÈm Hép	6	1	1302	\spr\item\script\item_chrismasbox.spr	377	1	1	Bªn trong cã chøa 10 Thanh §ång §Ønh, lµ tİn vËt c«ng thµnh vÜnh cöu	0	100	1	0	0																
@@ -1338,8 +1338,8 @@ ThiÖp gi¸ng sinh 3	6	1	1335	\spr\item\christmas2006\xmascard3.spr	38	1	1	NhÊn ch
 ThiÖp gi¸ng sinh 4	6	1	1336	\spr\item\christmas2006\xmascard4.spr	38	1	1	NhÊn chuét ph¶i ®Ó më	0	1000	1	0	0																
 ThiÖp gi¸ng sinh 5	6	1	1337	\spr\item\christmas2006\xmascard5.spr	38	1	1	NhÊn chuét ph¶i ®Ó më	0	1000	1	0	0																
 Quµ Ngò Hoa Ngäc Lé	6	1	1338	\spr\item\obj_item_jixiang.spr	347	1	1	Trong chøa 60 Ngò Hoa Ngäc Lé hoµn (®Æc biÖt, c«ng hiÖu 5 ngµy)	0	20	1	0	0																
-B¹ch Kim bµi	6	1	1339	\spr\item\leaguematch\icon_league_platina.spr	385	1	1	LÖnh bµi vinh dù. Sö dông sÏ nhËn ®­îc <color=green>1000<color> ®iÓm vinh dù.	\script\missions\leaguematch\item\honour.lua	500	1	0	0																
-Chİ t«n lÖnh bµi	6	1	1340	\spr\item\leaguematch\icon_league_top.spr	385	1	1	LÖnh bµi vinh dù tèi cao, sö dông sÏ nhËn ®­îc <color=green>3000<color> ®iÓm vinh dù.	\script\missions\leaguematch\item\honour.lua	500	1	0	0																
+B¹ch Kim bµi	6	1	1339	\spr\item\leaguematch\icon_league_platina.spr	385	1	1	LÖnh bµi vinh dù. Sö dông sÏ nhËn ®­îc <color=green>1000<color> ®iÓm vinh dù.	0	500	1	0	0																
+Chİ t«n lÖnh bµi	6	1	1340	\spr\item\leaguematch\icon_league_top.spr	385	1	1	LÖnh bµi vinh dù tèi cao, sö dông sÏ nhËn ®­îc <color=green>3000<color> ®iÓm vinh dù.	0	500	1	0	0																
 R­¬ng D· TÈu	6	1	1341	\spr\item\script\item_goldenbox.spr	367	2	2	R­¬ng cña D· TÈu, kh¶m rÊt nhiÒu b¶o th¹ch. Bªn trong chøa nhiÒu bİ Èn	\script\item\ruongdatau.lua	5000	1	0	0																
 N÷ Nhi Hång	6	1	1342	\spr\item\questkey\taskobj072.spr	41	1	1	Lo¹i r­îu D· TÈu rÊt thİch.<enter><color=greeen>Dïng ®Ó nhö D· TÈu ra khái thµnh<color><enter>.	0	1000	1	0	0																
 Bao lÔ vËt ¶o kü n¨ng cÊp 120	6	1	1343	\spr\item\script\item_chrismasbox.spr	377	1	1	Trong chøa <color=green>5 tói h¹nh phóc, 2 bao may m¾n (lín), 1 HuyÒn tinh kho¸ng th¹ch cÊp 9, 1 hép ®¹i B¹ch C©u Hoµn kü n¨ng<color>.	0	100	1	0	0																
@@ -2134,7 +2134,7 @@ Long HuyÕt Hoµn	6	1	2126	\spr\item\questkey\taskobj018.spr	41	1	1	Cã t¸c dông ®¶
 Êm trµ Long TÜnh	6	1	2132	\spr\item\script\zhongqiu_jieri\200909\longtangjinghu.spr	41	1	1	Cßn g× b»ng khi võa th­ëng thøc h­¬ng vŞ trµ vµ b¸nh trung thu cïng mét lóc	0	0	1	0	0																
 Qu©n trang Tèng Kim	6	1	2133	\spr\item\script\zhongqiu_jieri\200909\songjinjunzhuang .spr	41	1	1	VËt bÊt ly th©n cña nh÷ng ng­êi lİnh x«ng pha n¬i chiÕn tr­êng	0	0	1	50	0																
 Ngò Hµnh Kú Th¹ch	6	1	2134	\spr\item\vnxmas2007\wuse_bingjin.spr	41	1	1	Mét lo¹i ®¸ gåm n¨m yÕu tè, mµu s¾c lÊp l¸nh, ai tr«ng thÊy còng ®Òu thİch thó	0	0	1	50	0																
-NhÊt Kû Cµn Kh«n Phï	6	1	2135	\spr\item\script\zhongqiu_jieri\gongxuanlingpai.spr	41	1	1	Nh©n sÜ vâ l©m nµo cã ®­îc b¸u vËt nµy sÏ nh­ hæ thªm c¸nh	\script\missions\leaguematch\item\yijiqiankunfu.lua	0	1	0	0																
+NhÊt Kû Cµn Kh«n Phï	6	1	2135	\spr\item\script\zhongqiu_jieri\gongxuanlingpai.spr	41	1	1	Nh©n sÜ vâ l©m nµo cã ®­îc b¸u vËt nµy sÏ nh­ hæ thªm c¸nh	0	0	1	0	0																
 B¾c §Èu LuyÖn Kim ThuËt (QuyÓn 1)	6	1	2136	\spr\item\script\item_huangjintupu.spr	41	1	1	Nguyªn liÖu cÇn ®Ó th¨ng cÊp trang bŞ B¹ch Kim tõ cÊp 6 lªn cÊp 7.	0	0	1	0	0																
 Lång ®Ìn Kim Ng­u	6	1	2137	\spr\item\script\zhongqiu_jieri\200909\jnniudenglong.spr	41	1	1	H×nh t­îng con tr©u g¾n liÒn víi nh©n d©n ta, sÏ s¸ng lung linh trong ®ªm	0	0	1	50	0																
 Hoµn Mü Kim Bµi	6	1	2138	\spr\item\questkey\obj_item_lection02.spr	41	1	1	Tİn vËt cña Vâ L©m Minh Chñ. Ai kiªn tr× vµ nhÉn n¹i sÏ ®­îc nh÷ng phÇn th­ëng v« cïng quı gi¸	0	50000	1	50	0																
@@ -2220,15 +2220,15 @@ V¸n tr­ît tuyÕt	6	1	2217	\spr\item\script\huaxueban.spr	41	1	1	Gióp cho viÖc di 
 <<Î´·­Òë>>	6	1	2218	\spr\item\script\spring2007\xinnian_lihua.spr	41	1	1	<<Î´·­Òë>>	0	0	1	0	0																
 <<Î´·­Òë>>	6	1	2219	\spr\item\script\jiaoshi_jieri\200810\fuyuanjinshi.spr	41	1	1	<<Î´·­Òë>>	0	0	1	0	0																
 KiÕm HiÖp Thµnh Tùu LÖnh	6	1	2220	\spr\item\zhongqiu\wulinlingpai.spr	41	1	2	PhÇn th­ëng KiÕm HiÖp Thµnh Tù LÖnh, nhÊn chuét ph¶i sö dông.	0	0	1	0	0																
-HuyÕt ChiÕn LÖnh Kú	6	1	2221	\spr\item\zhongqiu\wulinlingpai.spr	41	1	2	ThÓ hiÖn tinh thÇn chiÕn ®Êu m¹nh mÏ, kh«ng mái mÖt cña ng­êi luyÖn vâ	\script\missions\leaguematch\item\xuezhanlingqi.lua	49996	1	0	0																
-Khai Quang Ch©n Kinh	6	1	2222	\spr\item\leaguematch\kaiguangzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\zhenjing.lua	0	1	0	0																
-TŞch Cèc Ch©n Kinh	6	1	2223	\spr\item\leaguematch\piguzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\zhenjing.lua	0	1	0	0																
-Dung Hîp Ch©n Kinh	6	1	2224	\spr\item\leaguematch\ronghezhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\zhenjing.lua	0	1	0	0																
-T©m §éng Ch©n Kinh	6	1	2225	\spr\item\leaguematch\xindongzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\zhenjing.lua	0	1	0	0																
-Kim §¬n Ch©n Kinh	6	1	2226	\spr\item\leaguematch\jindanzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\zhenjing.lua	0	1	0	0																
-Hång ¶nh B¶o R­¬ng	6	1	2227	\spr\item\leaguematch\hongyinbaoxiang.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	\script\missions\leaguematch\item\hongyinbaoxiang.lua	0	1	0	0																
-Cµn Kh«n Song TuyÖt Béi	6	1	2228	\spr\item\leaguematch\qiankunshuangjuepei.spr	41	1	1	§éc C« V« §Şch	\script\missions\leaguematch\item\qiankunshuangjue.lua	0	1	0	0																
-Kim §¬n B¶o R­¬ng	6	1	2229	\spr\item\questkey\taskobj132.spr	458	1	1	Bªn trong chøa 1 Kim §¬n Ch©n Kinh vµ 1 bé Hång ¶nh Hoµn Mü 120%	\script\missions\leaguematch\item\jindanbaoxiang.lua	0	1	0	0																
+HuyÕt ChiÕn LÖnh Kú	6	1	2221	\spr\item\zhongqiu\wulinlingpai.spr	41	1	2	ThÓ hiÖn tinh thÇn chiÕn ®Êu m¹nh mÏ, kh«ng mái mÖt cña ng­êi luyÖn vâ	0	49996	1	0	0																
+Khai Quang Ch©n Kinh	6	1	2222	\spr\item\leaguematch\kaiguangzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+TŞch Cèc Ch©n Kinh	6	1	2223	\spr\item\leaguematch\piguzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+Dung Hîp Ch©n Kinh	6	1	2224	\spr\item\leaguematch\ronghezhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+T©m §éng Ch©n Kinh	6	1	2225	\spr\item\leaguematch\xindongzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+Kim §¬n Ch©n Kinh	6	1	2226	\spr\item\leaguematch\jindanzhenjin.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+Hång ¶nh B¶o R­¬ng	6	1	2227	\spr\item\leaguematch\hongyinbaoxiang.spr	41	1	1	Ng­êi luyÖn vâ lu«n mong muèn tiÕn vµo nh÷ng c¶nh giíi cao h¬n vµ m­u cÇu tr­êng sinh bÊt l·o	0	0	1	0	0																
+Cµn Kh«n Song TuyÖt Béi	6	1	2228	\spr\item\leaguematch\qiankunshuangjuepei.spr	41	1	1	§éc C« V« §Şch	0	0	1	0	0																
+Kim §¬n B¶o R­¬ng	6	1	2229	\spr\item\questkey\taskobj132.spr	458	1	1	Bªn trong chøa 1 Kim §¬n Ch©n Kinh vµ 1 bé Hång ¶nh Hoµn Mü 120%	0	0	1	0	0																
 Bao l× x×	6	1	2230	\spr\item\script\spring2010\hongbao.spr	41	1	1	V¹n sù nh­ ı	0	0	1	50	0																
 ThiÖp chóc xu©n	6	1	2231	\spr\item\script\spring2010\chunjieheka.spr	41	1	1	An Khang ThŞnh V­îng	0	0	1	0	0																
 Tµi Léc Hång Bao	6	1	2232	\spr\item\script\spring2010\cailuhongbao.spr	41	1	1	N¨m míi Ph¸t Tµi, Ph¸t Léc	0	0	1	0	0																
@@ -2272,7 +2272,7 @@ GiÊy Mµu	6	1	2268	\spr\item\script\zhongqiu_jieri\200909\wusezhizhang.spr	41	1	1
 Hép quµ h¹nh phóc	6	1	2270	\spr\item\script\item_chrismasbox.spr	377	1	1	H÷u T×nh Nh©n Chung Thµnh QuyÕn Thuéc. Giao cho Ch­ëng §¨ng Cung N÷ ë L©m An cã thÓ ®æi lÊy lÔ vËt.	0	0	1	0	0																
 T©m Liªn §¨ng Léng	6	1	2271	\spr\item\script\zhongqiu_jieri\lianhuadenglong.spr	41	1	1	T©m T©m T­¬ng ¸nh. Ng­êi ch¬i kh«ng cïng giíi tİnh cïng nhau tæ ®éi cã thÓ ra ngoµi b¶n ®å ngoµi thµnh nhÊn chuét ph¶i sö dông.	0	0	1	0	0																
 Tö Kim Ch©n §¬n	6	1	2272	\spr\item\script\zijinzhendan.spr	41	1	1	HÊp thô c«ng lùc cña c¸c TuyÖt ThÕ Cao Thñ. Sö dông sÏ gia t¨ng 12 thµnh c«ng lùc	0	0	1	0	0																
-Hoµng Ch©n §¬n	6	1	2273	\spr\item\script\huangzhendan.spr	41	1	1	Sø dông nh¬n 2 tı ®iÓm kinh nghiÖm (bÜ giíi h¹n theo c¥p nh©n v­t). 30 ngµy chØ dùng ®Úîc 1 l§n.	\script\item\huangzhendan.lua	0	1	0	0																
+Hoµng Ch©n §¬n	6	1	2273	\spr\item\script\huangzhendan.spr	41	1	1	Sø dông nh¬n 2 tı ®iÓm kinh nghiÖm (bÜ giíi h¹n theo c¥p nh©n v­t). 30 ngµy chØ dùng ®Úîc 1 l§n.	0	0	1	0	0																
 V¹n Niªn Ngò Th¸i Hoa	6	1	2274	\spr\item\script\wannianwutaihua.spr	41	1	1	Lo¹i hoa quı hiÕm v¹n n¨m dïng ®Ó tinh luyÖn Tö Kim Ch©n §¬n	0	0	1	0	0																
 B¸ch Niªn Tr©n Lé	6	1	2275	\spr\item\script\zhenlu_avd1.spr	41	1	1	Sau khi sö dông ®i nhÆt qu¶ sÏ cã c¬ duyªn nhÆt ®­îc B¸ch niªn huy hoµng qu¶	0	0	1	50	0																
 Thiªn Niªn Tr©n Lé	6	1	2276	\spr\item\script\zhenlu_avd2.spr	41	1	1	Sau khi sö dông ®i nhÆt qu¶ sÏ cã c¬ duyªn nhÆt ®­îc Thiªn niªn huy hoµng qu¶	0	0	1	50	0																
@@ -3203,10 +3203,10 @@ Thiªn S¬n Th¸nh Thñy	6	1	3076	\spr\item\qingren_jieri\200902\tianxianshui.spr	41
 Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß532	6	1	3201	\spr\item\questkey\taskobj056.spr	387	1	1	Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß1032	0	0	1	0	0																
 Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß533	6	1	3202	\spr\item\questkey\taskobj056.spr	387	1	1	Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß1033	0	0	1	0	0																
 Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß534	6	1	3203	\spr\item\questkey\taskobj056.spr	387	1	1	Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß1034	0	0	1	0	0																
-Bùa TriÖu Thñ VÖ	6	1	3204	\spr\item\questkey\taskobj119.spr	41	1	1	vËt phÈm triÖu håi Thñ VÖ bang héi thµnh b¶o	\script\missions\tongcastle\guard.lua	0	1	50	0																
-Thanh §ång ThÇn Méc LÖnh	6	1	3205	\spr\item\leaguematch\icon_league_iron.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 10 triÖu kinh nghiÖm	\script\missions\tongcastle\shenmuling.lua	0	1	0	0																
-B¹ch Ng©n ThÇn Méc LÖnh	6	1	3206	\spr\item\leaguematch\icon_league_silver.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 20 ®iÓm ch©n nguyªn	\script\missions\tongcastle\shenmuling.lua	0	1	0	0																
-Hoµng Kim ThÇn Méc LÖnh	6	1	3207	\spr\item\leaguematch\icon_league_gold.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 120 ®iÓm ch©n nguyªn vµ 60 triÖu kinh nghiÖm	\script\missions\tongcastle\shenmuling.lua	0	1	0	0																
+Bùa TriÖu Thñ VÖ	6	1	3204	\spr\item\questkey\taskobj119.spr	41	1	1	vËt phÈm triÖu håi Thñ VÖ bang héi thµnh b¶o	0	0	1	50	0																
+Thanh §ång ThÇn Méc LÖnh	6	1	3205	\spr\item\leaguematch\icon_league_iron.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 10 triÖu kinh nghiÖm	0	0	1	0	0																
+B¹ch Ng©n ThÇn Méc LÖnh	6	1	3206	\spr\item\leaguematch\icon_league_silver.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 20 ®iÓm ch©n nguyªn	0	0	1	0	0																
+Hoµng Kim ThÇn Méc LÖnh	6	1	3207	\spr\item\leaguematch\icon_league_gold.spr	41	1	1	NhÊn chuét ph¶i sö sông nhËn ®­îc 120 ®iÓm ch©n nguyªn vµ 60 triÖu kinh nghiÖm	0	0	1	0	0																
 §¹i Thµnh Bİ Kİp cÊp 150	6	1	3208	\spr\item\questkey\quyuanmifang.spr	368	1	1	Sö dông cã thÓ häc ®­îc mét kü n¨ng 150 cã ®¼ng cÊp 20.	\script\item\daithanhbk150.lua	0	1	0	0																
 Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß540	6	1	3209	\spr\item\questkey\taskobj056.spr	387	1	1	Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß1040	0	0	1	0	0																
 Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß541	6	1	3210	\spr\item\questkey\taskobj056.spr	387	1	1	Ô½ÄÏ×Ô¶¨ÒåµÀ¾ß1041	0	0	1	0	0																
@@ -3423,14 +3423,14 @@ TiÓu Bao Tinh LuyÖn Th¹ch Nguyªn Th¹ch	6	1	3420	\spr\item\script\yuanshibaoxiao.
 §¹i Bao Tinh LuyÖn Th¹ch Nguyªn Th¹ch	6	1	3421	\spr\item\script\yuanshibaoda.spr	41	1	1	NhÊn chuét ph¶i cã thÓ nhËn ®­îc 50 c¸i Tinh LuyÖn Th¹ch Nguyªn Th¹ch xÕp chång	0	0	1	0	0																
 Ngäc Bİch B¶o R­¬ng	6	1	3422	\spr\item\script\yubibaoxiang.spr	41	1	1	Thu thËp Qu¶ Hoµng Kim nhËn ®­îc B¶o R­¬ng, sö dông Ch×a Khãa Nh­ ı ®Ó më.	0	0	1	50	0																
 Viªm §Õ Bİ B¶o	6	1	3423	\spr\item\script\yandibaoxiang.spr	41	1	1	B¶o R­¬ng Quı HiÕm trong kho b¸u Viªm §Õ	0	0	1	50	0																
-Ngò Hµnh Phï	6	1	3424	\spr\item\script\wuxingfu.spr	41	1	1	Sau khi sö dông cã thÓ nhËn ®­îc thuèc hç trî nhiÖm vô Tİn Sø Thiªn B¶o Khè.	\script\item\xinshirenwu\wuxingfu.lua	0	1	1	0																
-TriÖt Kim Phï	6	1	3425	\spr\item\script\chejinfu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng vËt lı cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	\script\item\xinshirenwu\chejinfu.lua	0	1	50	0																
-TriÖt Méc Phï	6	1	3426	\spr\item\script\chemufu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng ®éc cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	\script\item\xinshirenwu\chemufu.lua	0	1	50	0																
-TriÖt Thñy Phï	6	1	3427	\spr\item\script\cheshuifu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng b¨ng cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	\script\item\xinshirenwu\cheshuifu.lua	0	1	50	0																
-TriÖt Háa Phï	6	1	3428	\spr\item\script\chehuofu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng háa cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	\script\item\xinshirenwu\chehuofu.lua	0	1	50	0																
-TriÖt Thæ Phï	6	1	3429	\spr\item\script\chetufu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng l«i cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	\script\item\xinshirenwu\chetufu.lua	0	1	50	0																
-Tİn Sø B¶o R­¬ng	6	1	3430	\spr\item\script\xinshibaoxiang.spr	41	1	1	PhÇn th­ëng B¶o R­¬ng nhiÖm vô Tİn Sø Thiªn B¶o Khè, cÇn cã 1 Ch×a Khãa Nh­ Y ®Ó më.	\script\item\xinshirenwu\xinshibaoxiang.lua	0	1	50	0																
-Thiªn B¶o Khè LÖnh	6	1	3431	\spr\item\script\tianbaokuling.spr	41	1	1	Sau khi sö dông cã thÓ t¨ng thªm mét lÇn c¬ héi tham gia nhiÖm vô Tİn Sø Thiªn B¶o Khè	\script\item\xinshirenwu\qianbaokuling.lua	0	1	1	0																
+Ngò Hµnh Phï	6	1	3424	\spr\item\script\wuxingfu.spr	41	1	1	Sau khi sö dông cã thÓ nhËn ®­îc thuèc hç trî nhiÖm vô Tİn Sø Thiªn B¶o Khè.	0	0	1	1	0																
+TriÖt Kim Phï	6	1	3425	\spr\item\script\chejinfu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng vËt lı cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	0	0	1	50	0																
+TriÖt Méc Phï	6	1	3426	\spr\item\script\chemufu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng ®éc cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	0	0	1	50	0																
+TriÖt Thñy Phï	6	1	3427	\spr\item\script\cheshuifu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng b¨ng cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	0	0	1	50	0																
+TriÖt Háa Phï	6	1	3428	\spr\item\script\chehuofu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng háa cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	0	0	1	50	0																
+TriÖt Thæ Phï	6	1	3429	\spr\item\script\chetufu.spr	41	1	1	Sö dông trong b¶n ®å Thiªn B¶o Khè, sÏ lµm gi¶m ®i 50% kh¸ng l«i cña B¶o Khè Thñ Hé Gi¶ ë trong ph¹m vi nhÊt ®Şnh.	0	0	1	50	0																
+Tİn Sø B¶o R­¬ng	6	1	3430	\spr\item\script\xinshibaoxiang.spr	41	1	1	PhÇn th­ëng B¶o R­¬ng nhiÖm vô Tİn Sø Thiªn B¶o Khè, cÇn cã 1 Ch×a Khãa Nh­ Y ®Ó më.	0	0	1	50	0																
+Thiªn B¶o Khè LÖnh	6	1	3431	\spr\item\script\tianbaokuling.spr	41	1	1	Sau khi sö dông cã thÓ t¨ng thªm mét lÇn c¬ héi tham gia nhiÖm vô Tİn Sø Thiªn B¶o Khè	0	0	1	1	0																
 VÖ Trô LÔ Bao	6	1	3432	\spr\item\script\weizhulibao.spr	41	1	1	PhÇn th­ëng khi chiÕn ®Êu hÕt m×nh trong ThÊt Thµnh §¹i ChiÕn	0	0	1	50	0																
 C«ng Thµnh LÔ Bao	6	1	3433	\spr\item\twzhuanyun\zhuanyunbao_small.spr	41	1	1	PhÇn th­ëng khi chiÕn ®Êu hÕt m×nh trong ThÊt Thµnh §¹i ChiÕn	0	0	1	50	0																
 Bİ ChÕ Háa D­îc	6	1	3434	\spr\item\script\item_xuantiekuang.spr	41	1	1	ÓÃÀ´ÖÆ×÷Ç¬À¤Åùö¨µ¯µÄÖ÷ÒªÔ­ÁÏ£¬¿ÉÈ¥ÁÙ°²µÄÕÆµÆ¹¬Å®£¨180,204£©ÄÇÀï¶Ò»»Ç¬À¤Åùö¨µ¯<enter>»î¶¯½ØÖ¹ÈÕÆÚ2011Äê5ÔÂ18ÈÕ24µã	0	0	1	0	0																
@@ -4751,7 +4751,7 @@ nguyÖt	6	1	4746	\spr\item\script\event\zhongqiu_jieri\201009\mianfen.spr	41	1	1	
 Ô²	6	1	4749	\spr\item\script\event\zhongqiu_jieri\201009\mianfen.spr	41	1	1	Nguyªn liÖu c¬ b¶n ®Ó lµm b¸nh trung thu, ng­¬i cã thÓ ®i t×m hiÓu c¸ch lµm ë nh©n c«ng lµm th¸p phßng cña Minh NguyÖt TrÊn	0	0	1	50	0																
 <<Î´·­Òë>>	6	1	4750	\spr\item\script\event\zhongqiu_jieri\201009\mianfen.spr	41	1	1	Nguyªn liÖu c¬ b¶n ®Ó lµm b¸nh trung thu, ng­¬i cã thÓ ®i t×m hiÓu c¸ch lµm ë nh©n c«ng lµm th¸p phßng cña Minh NguyÖt TrÊn	0	0	1	50	0																
 Cµn Kh«n Phİch LŞch §¬n	6	1	4751	\spr\item\script\zijinzhendan.spr	41	1	1	¿ÉÓÃÀ´´ò°Ü¶ñÀÇ×óÊ¹£¬»ñµÃ½±Àø,¶ñÀÇ×óÊ¹ÔÚ¶ñÀÇ¹ÈÖĞ£¬´Ó³ÇÊĞ³µ·òÄÇÀï¿ÉÒÔ½øÈë¶ñÀÇ¹È£¬Äã¿ÉÒÔÈ¥ÁÙ°²µÄ»î¶¯´óÊ¹ÄÇ´òÌı´òÌı<enter>»î¶¯½ØÖ¹ÈÕÆÚ2013Äê8ÔÂ26ÈÕ	0	0	1	50	0																
-Ch©n Nguyªn §an	6	1	4752	\spr\item\script\wusetang.spr	41	1	1	Sö dông sÏ nhËn ®­îc 1 ®iÓm Ch©n Nguyªn	\script\item\event\kinhmach\channguyendan.lua	0	1	250	0																
+Ch©n Nguyªn §an	6	1	4752	\spr\item\script\wusetang.spr	41	1	1	Sö dông sÏ nhËn ®­îc 1 ®iÓm Ch©n Nguyªn	0	0	1	250	0																
 Thiªn Long Hoµn	6	1	4753	\spr\item\script\zhenpailingyao.spr	41	1	1	Sö dông ®Ó ®¸nh qu¸i trong 5 tiÕng sÏ nhËn ®­îc gÊp 4 lÇn kinh nghiÖm, kh«ng céng dån víi Tiªn Th¶o Lé. T¨ng tØ lÖ rít Ch©n Nguyªn §an lªn 3 lÇn	0	0	1	0	0																
 §Şa Long Hoµn	6	1	4754	\spr\item\script\zhenpailingdan.spr	41	1	1	Sö dông ®Ó ®¸nh qu¸i trong 1 tiÕng sÏ nhËn ®­îc gÊp 4 lÇn kinh nghiÖm, kh«ng céng dån víi Tiªn Th¶o Lé. T¨ng tØ lÖ rít Ch©n Nguyªn §an lªn 3 lÇn	0	0	1	0	0																
 S¸ch kÜ n¨ng cÊp 150 cÊp 22	6	1	4755	\spr\item\script\other\21miji.spr	41	1	1	Sau khi sö dông cã thÓ t¨ng giíi h¹n kÜ n¨ng cÊp 150 lªn cÊp 22	0	0	1	0	0																

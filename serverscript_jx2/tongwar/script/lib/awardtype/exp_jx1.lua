@@ -11,7 +11,10 @@ ExpJX1Type = {}
 function ExpJX1Type:Give(tbItem, nAwardCount, tbLogTitle)
 	local nExp = (tbItem.nExp or 0) * (nAwardCount or 1)
 	if nExp > 0 then
-		AddOwnExp(nExp)
+		-- [FIX 24/08] AddOwnExp -> DirectAddExp -> LevelUp() dat m_nExp = 0
+		-- (KPlayer.cpp:2629) => MAT SACH exp du khi len cap, va chi len DUNG 1 cap.
+		-- AddSumExp (ScriptFuns.cpp:8786) cong TUNG CAP mot nen khong mat gi.
+		AddSumExp(nExp)
 		WriteLog(format("[awardtype exp_jx1] %s +%d exp", GetName() or "", nExp))
 		return 1
 	end
