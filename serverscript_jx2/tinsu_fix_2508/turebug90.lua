@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------
 IncludeLib( "FILESYS" );
 Include("\\script\\task\\tollgate\\messenger\\qianbaoku\\enemy_turebugbear.lua") 
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [CFG TS 25/08]
 Include("\\script\\task\\newtask\\newtask_head.lua") --µ÷ÓÃ nt_getTask Í¬²½±äÁ¿µ½¿Í»§¶ËµÄÀà
 Include("\\script\\task\\tollgate\\messenger\\messenger_losetask.lua")  --È¡ÏûÈÎÎñ
 Include("\\script\\task\\tollgate\\messenger\\messenger_timeer.lua")    --µ÷ÓÃ¼ÆÊ±Æ÷
@@ -16,6 +17,9 @@ Include("\\script\\activitysys\\functionlib.lua")--ÒýÓÃlib:DoFunByPlayer
 TUREBUGBEAR_EXP =tonumber( TabFile_GetCell( "tollprize" ,10 ,"bug_exp"))  --Ð¡¹Ö¾­Ñé
 TUREBUGBEAR_MAPID= 395  --Ç§±¦¿âµÄµØÍ¼id
 TUREBUGBEAR_MESSENGEREXP= tonumber( TabFile_GetCell( "tollprize" ,10 ,"bug_jifen"))  --Ð¡¹Ö¾­Ñé
+-- [CFG TS 25/08] cho phÐp ghi ®Ì th­ëng tõ config; ®Ó nil = gi÷ b¶ng gèc Linux
+TUREBUGBEAR_EXP = HD_CFG("TS_EXP_GIET_THUHO", TUREBUGBEAR_EXP)
+TUREBUGBEAR_MESSENGEREXP = HD_CFG("TS_DIEM_GIET_THUHO", TUREBUGBEAR_MESSENGEREXP)
 
 --Õâ¸ö¾àÀë´ó¸ÅÊÇ2ÆÁ·¶Î§
 SHARE_BOSS_DIST_LEN = 80^2--¸Ã¾àÀë·¶Î§ÄÚµÄ¶ÓÓÑÉ±ËÀboss£¬×Ô¼º¿ÉÒÔ¿ª±¦Ïä

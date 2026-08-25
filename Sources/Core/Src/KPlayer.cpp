@@ -7662,6 +7662,7 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 				{
 					KUiQuestionAndAnswer	*pQuest = NULL;
 					KUiNpcSpr                *pImage = NULL;
+					BOOL					bTagNpcImage = FALSE;	// [TIN SU 25/08] thoai co tag <link=image...> cua JX2
 					if (pScriptAction->m_nBufferLen <= 0) break;
 					
 					if (pScriptAction->m_bOptionNum <= 0)
@@ -7690,6 +7691,40 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 						*pAnswer++ = 0;
 						
 						g_StrCpyLen(pQuest->Question, strContent, sizeof(pQuest->Question));
+						// [TIN SU 25/08] Thoai JX2 nhung CHAN DUNG NPC ngay trong van ban:
+						//   "<#><link=image[a,b]:\spr\npcres\...\xxx_pst.spr>Ten NPC<link>: noi dung"
+						// Client JX1 khong parse => tag hien THO va khong co anh (chu game bao 25/08).
+						// Tach tag: path + so khung nap vao pImage roi mo hop CO ANH KUiMsgSel2
+						// (co san, truoc gio chi di duong m_Select==1); "Ten NPC" giu lai lam dau cau.
+						// An het moi thoai dung DescLink_* (posthouse/messenger/killer). "<#>" don le bi bo.
+						{
+							char* pHash = strstr(pQuest->Question, "<#>");
+							if (pHash)
+								memmove(pHash, pHash + 3, strlen(pHash + 3) + 1);
+							char* pTag = strstr(pQuest->Question, "<link=image[");
+							if (pTag)
+							{
+								char* pNum = pTag + 12;			// sau "<link=image["
+								char* pComma = strchr(pNum, ',');
+								char* pColon = strchr(pNum, ':');
+								char* pGt = pColon ? strchr(pColon, '>') : NULL;
+								char* pEnd = pGt ? strstr(pGt + 1, "<link>") : NULL;
+								if (pComma && pColon && pGt && pEnd &&
+									pGt > pColon + 1 && pGt - pColon - 1 < (int)sizeof(pImage->ImageFile))
+								{
+									int nFrame = atoi(pComma + 1);
+									int nPathLen = (int)(pGt - pColon - 1);
+									memcpy(pImage->ImageFile, pColon + 1, nPathLen);
+									pImage->ImageFile[nPathLen] = 0;
+									pImage->MaxFrame = (unsigned short)(nFrame > 0 ? nFrame : 1);
+									bTagNpcImage = TRUE;
+									// xoa "<link>" dong TRUOC (pEnd tinh theo chuoi hien tai)...
+									memmove(pEnd, pEnd + 6, strlen(pEnd + 6) + 1);
+									// ...roi xoa tag mo (phan bi xoa nam SAU pGt nen pGt van hop le)
+									memmove(pTag, pGt + 1, strlen(pGt + 1) + 1);
+								}
+							}
+						}
 						if (m_nLastNpcIndex)
 						TReplaceText(pQuest->Question, NPCNAME_KEY, Npc[m_nLastNpcIndex].Name);
 						TReplaceText(pQuest->Question, PLAYERNAME_KEY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name);
@@ -7740,7 +7775,11 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					{
 					case 0:
 						{
-							CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, 0);
+							// [TIN SU 25/08] thoai co tag <link=image...> -> mo hop CO ANH nhu Linux
+							if (bTagNpcImage)
+								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, (int) pImage);
+							else
+								CoreDataChanged(GDCNI_QUESTION_CHOOSE,(unsigned int) pQuest, 0);
 						}
 						break;
 					case 1:
@@ -7787,6 +7826,13 @@ void	KPlayer::OnScriptAction(PLAYER_SCRIPTACTION_SYNC * pMsg)
 					}
 
 					/******************************************the end********************************************************/ 
+					// [TIN SU 25/08] fix ro ri co san: case 0/2 malloc pImage khong free
+					// (case 1 da free + NULL nen guard nay khong double-free).
+					if (pImage)
+					{
+						free(pImage);
+						pImage = NULL;
+					}
 					free(pQuest); 
 					pQuest = NULL; 
 				}

@@ -100,6 +100,45 @@ TW_TEST_REDO = {1, 2, 1, 3, 4, 2, 5, 6, 3},
 --   * Map 605-613: settings\MapList.ini + WorldSet.ini.
 
 -- ===========================================================================
+-- [1b] NHIÖM Vô TÝN Sø (Thiªn B¶o Khè ®­a tin) - tiÒn tè TS_
+-- ===========================================================================
+-- NhËn ë DÞch Quan Ba L¨ng HuyÖn (map 11) / ®¹i Lý (162); Xa phu ®­a vµo ¶i map 395.
+-- Chuçi lµm: giÕt Thñ Hé Gi¶ -> më 5/9 B¶o R­¬ng ®óng thø tù -> Tiªu TrÊn ra -> tr¶ nhiÖm vô.
+
+-- CÊp tèi thiÓu nhËn nhiÖm vô (gèc Linux 120, chñ game ®· h¹ 90). [RESTART]
+TS_CAP_TOITHIEU = 90,
+
+-- Sè l­ît th­êng/ngµy + sè l­ît mua thªm b»ng item Thiªn Khè B¶o LÖnh (6,1,3431).
+-- ®Õm theo ngµy ë task 4128. [RESTART]
+TS_LUOT_THUONG_NGAY = 2,
+TS_LUOT_ITEM_NGAY = 1,
+
+-- --- PHÇN TH­ëNG (nil = dïng ®óng b¶ng gèc Linux) ---------------------------
+-- B¶ng gèc: settings\task\tollgate\messenger\messenger_tollprize.txt, hµng 10 (qian120):
+--    më 1 B¶o R­¬ng    = 10000 exp + 9 ®iÓm TÝn Sø (céng vµo task 1205)
+--    giÕt 1 Thñ Hé Gi¶ = 40000 exp + 30 ®iÓm TÝn Sø
+-- ®iÒn sè vµo ®©y lµ GHI ®Ì b¶ng; ®Ó nil lµ gi÷ nguyªn b¶ng (100% Linux). [RESTART]
+TS_EXP_MO_RUONG = nil,
+TS_DIEM_MO_RUONG = nil,
+TS_EXP_GIET_THUHO = nil,
+TS_DIEM_GIET_THUHO = nil,
+
+-- Th­ëng khi TR¶ nhiÖm vô ë tr¹m dÞch (posthouse.lua, hµm messenger_treasureprize):
+--    lÇn ®ÇU trong ngµy: TS_TRA_HANHHIEP c¸i Hµnh HiÖp LÖnh (6,1,2575)
+--    MäI lÇn tr¶: TS_TRA_BAORUONG c¸i TÝn Sø B¶o R­¬ng (6,1,3430)
+--    (riªng nguyªn liÖu Kinh M¹ch 4847 tèi ®a 2 lÇn/ngµy theo task 3073 - gi÷ nguyªn)
+-- [RESTART]
+TS_TRA_HANHHIEP = 3,
+TS_TRA_BAORUONG = 2,
+
+-- [ENGINE/B¶NG] Kh«ng chØnh ë ®©y:
+--   * Sè r­¬ng ph¶i më (5) / tæng r­¬ng (9): messenger_baoxiangtask.lua dßng 10-11,
+--     g¾n cøng víi 9 vÞ trÝ NPC trong killbosshead.lua - ®õng ®æi.
+--   * Giíi h¹n 2 giê trong ¶i (task 1222): BÞ COMMENT Tõ GèC ë c¶ Linux
+--     (messenger_timeer.lua) - kh«ng giíi h¹n thêi gian lµ ®óng b¶n gèc.
+--   * Danh s¸ch tr¹m tr¶ nhiÖm vô: b¶ng citygo trong posthouse.lua.
+
+-- ===========================================================================
 -- [2] BACH NHAN LOI DAI (bairenleitai) - map 960, vao tu NPC Lam An (176)
 -- ===========================================================================
 -- Cap toi thieu. [LIVE]
@@ -241,6 +280,103 @@ TC_BANKINH_BUA = 15,
 --     1914-1916 cot LifeParam3; HP Thu Ve 2031-2034 = 9.6tr: dong 2033-2036.
 --   * Vi tri cay: settings\maps\tongcastle\bronzetree/silvertree/goldtree.txt.
 --   * Driver tick: settings\TimerTask.txt dong khoa 55.
+
+
+-- ===========================================================================
+-- [6] 3 HOAT DONG BAN LINUX (port 25/08) - tien to HD3_
+--   (A) SAN BOSS SAT THU  = Killer Boss  (thuong truc, khong theo lich)
+--   (B) PHONG LANG DO      = fengling ferry (dua thuyen theo gio)
+--   (C) VUOT AI            = challengeoftime (thi dau to doi theo gio)
+-- Nguon 100% ban Linux; so lieu duoi = doc thang tu script Linux, sua o day
+-- roi RESTART (hoac Lenh Bai Admin -> "Hoat dong Linux" -> "Nap lai CONFIG").
+-- ===========================================================================
+
+-- ---- (A) SAN BOSS SAT THU ----
+-- Cap toi thieu - CHI HIEN THI tren menu admin (ban Linux khong chan cap o
+-- buoc nhan nhiem vu; nhom boss chia theo cap 20..90 san trong killbosshead). [HIEN THI]
+HD3_ST_CAP_TOITHIEU = 90,
+-- Tran so lan giet boss / ngay (goc Linux KILLER_MAXCOUNT = 8; da noi vao
+-- nieshichen.lua). [RESTART]
+HD3_ST_MAX_NGAY = 8,
+-- Chi nhom boss cap 90 (chi so 141..160) con phat thuong (nhom 20..80 da bi
+-- comment trong nieshichen.lua goc Linux - GIU DUNG NGUYEN BAN). [ENGINE]
+--   * 160 NPC boss + 7 NPC 769: engine tu sinh luc boot (hd3_driver HD3_DriverInit).
+--   * Bang toa do boss: settings\task\tollgate\killbosshead.lua (da chep).
+--   * Bang roi do: settings\droprate\boss\bosstask_lev90.ini (da chep).
+--   * 5 Sat Thu lenh cung cap -> 1 Sat Thu Gian (ve vao VUOT AI).
+
+-- ---- (B) PHONG LANG DO ----
+-- Cap toi thieu - CHI HIEN THI (ban Linux chi doi co mon phai, fld_head.lua:40). [HIEN THI]
+HD3_PLD_CAP_TOITHIEU = 1,
+-- Gio mo trong ngay (dang HHMM, moi so = 1 luot dua). Ban Linux relay chay
+-- MOI GIO dung phut :00 (24 luot/ngay); mac dinh o day 12 gio chan = LECH CO
+-- CHU DICH de nhe server - muon dung 100% Linux thi liet ke du 24 gio. [RESTART]
+HD3_PLD_GIO = {0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200},
+-- Suc chua moi thuyen (fld_haveroom - da noi HD_CFG doc luc chay). [RESTART]
+HD3_PLD_SUC_CHUA = 100,
+-- Cac gio "ton phi" (dung Lenh Bai Thuy Tac 6,1,3363) dang HHMM - goc Linux
+-- 10/14/16/18/20h; da noi vao fld_head check_new_shuizeitask.
+-- Ngoai gio nay dung Lenh bai PLD (item 4,489) hoac 200 Mat do than bi. [LIVE]
+HD3_PLD_GIO_TONPHI = {1000, 1400, 1600, 1800, 2000},
+-- [ENGINE] Khong chinh o day:
+--   * Nhip thoi gian (18 khung/giay): fld_head.lua:10-30 (timer 20s / 39 phut).
+--   * 3 ban do thuyen 337/338/339 + ban do bo Bac 336: settings\MapList.ini.
+--   * Bang toa do sinh Thuy tac: settings\maps\ZhongYuanBeiQu\DuChuan\DuChuanShuaGuaiDian.txt (ten thu muc chu Han, da chep tu goc B Patch).
+--   * Quai 724 (Thuy tac x30 cap95), boss 725 (dau linh x3 cap85),
+--     1692 (dai dau linh x2, chi gio ton phi): npcs.txt.
+
+-- ---- (C) VUOT AI ----
+-- Cap toi thieu - CHI HIEN THI (gioi han that = tbLevels trong include.lua:
+-- so cap 50-89, cao cap 90+; doi o day KHONG co tac dung). [HIEN THI]
+HD3_VA_CAP_TOITHIEU = 50,
+-- Gio bao danh (HHMM) - Linux relay chay moi gio phut :00. [RESTART]
+HD3_VA_GIO = {0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200,
+              1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300},
+-- Phut bao danh + phut lam nhiem vu (da noi vao challengeoftime include.lua). [RESTART]
+HD3_VA_PHUT_BAODANH = 10,
+HD3_VA_PHUT_NHIEMVU = 30,
+-- So nguoi toi da 1 doi (LIMIT_PLAYER_COUNT = 8). [RESTART]
+HD3_VA_NGUOI_TOIDA = 8,
+-- Gio bang xep hang ngay, so sanh dang HHMM (0 = 00:00, 130 = 01:30). [RESTART]
+HD3_VA_GIO_XEPHANG = 0,
+-- So luot vao Vuot ai / nguoi / ngay (COUNT_LIMIT goc Linux = 1). [RESTART]
+HD3_VA_LUOT_NGAY = 1,
+
+-- ============ PHAN THUONG (nil = dung bang goc ban Linux) ============
+-- Muon doi: chep nguyen bang goc tu tep script neu duoi day vao thay cho nil
+-- roi sua so; bang co the chua ca function (giu nguyen cau truc goc).
+
+-- (A) SAT THU - bang thuong hoan thanh nhom cap 90 (25 dong vat pham +
+--     10.000.000 exp). Goc: kill_level.lua:89-118 OnFinishKillerTask. [RESTART]
+HD3_ST_THUONG = nil,
+
+-- (B) PLD - so Thi Gia Chi An (6,1,1095) roi tu boss dau linh 725 (goc 2;
+--     bang co Dao Chu tien dai thi tu x2 theo getSignetDropRate). [RESTART]
+HD3_PLD_SO_AN_BOSS = 2,
+-- (B) PLD - ti le roi Hai Long Chau 6,1,2124 tu boss (goc 0.005 = 0,5%). [RESTART]
+HD3_PLD_TILE_HAILONG = 0.005,
+-- (B) PLD - ti le roi Truy Cong Lenh 6,1,2024 tu Thuy tac thuong trong gio
+--     su kien (goc: nCurRate < 50 tren random(1,100) = 49%). [RESTART]
+HD3_PLD_TILE_TRUYCONG = 50,
+-- (B) PLD - so Bao Ruong Thuy Tac 6,1,3361 khi cap ben thanh cong. [RESTART]
+HD3_PLD_THUONG_CAPBEN = 2,
+
+-- (C) VUOT AI - bang exp hoan thanh 28 ai (2 cap do, co function tinh theo
+--     thoi gian). Goc: award.lua:58-83 tbAward_Success. [RESTART]
+HD3_VA_THUONG_HOANTHANH = nil,
+-- (C) VUOT AI - thuong hang 1 bang xep hang ngay (goc: 1 Thien Nien Linh Duoc
+--     6,1,2125, han 24h). Goc: rank_perday.lua:13. [RESTART]
+HD3_VA_THUONG_HANG_NGAY = nil,
+-- (C) VUOT AI - bang do trong Bao Ruong Vuot ai (theo loai chia khoa).
+--     Goc: chuangguanbaoxiang.lua:21-90 tbCOT_Box_Award. [RESTART]
+HD3_VA_THUONG_RUONG = nil,
+
+-- [ENGINE] Khong chinh o day:
+--   * 2 cap do + ban do: challengeoftime\include.lua (tbLevels / tbLevelMaps
+--     464-479 so cap, 480-495 cao cap).
+--   * Bang doi hinh 28 ai: settings\maps\challengeoftime\lineup*.txt (da chep).
+--   * Che do "chuangguan30" (map 957): challengeoftime\chuangguang30.lua.
+--   * Ve vao: 1 Sat Thu Gian (6,1,399 sau anh xa) - san o hoat dong SAT THU.
 
 -- ===========================================================================
 -- [5] ITEM THUONG DUNG CHUNG

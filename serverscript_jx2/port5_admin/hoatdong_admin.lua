@@ -272,6 +272,12 @@ HD_RELOAD_LIST = {
 	"\\script\\missions\\tongcastle\\shenmuling.lua",
 	"\\script\\item\\huangzhendan.lua",
 	"\\script\\vng_event\\item\\biggoldenseed.lua",
+	-- [CFG TS 25/08] file doc TS_*; posthouse con BAN SAO trong state wagoner/turenpc/
+	-- turerukou nen nap lai o day chi cap nhat state goc - muon an moi cua van can
+	-- restart GS (vi vay config danh dau [RESTART])
+	"\\script\\task\\tollgate\\messenger\\posthouse.lua",
+	"\\script\\task\\tollgate\\messenger\\qianbaoku\\90\\tureboss90.lua",
+	"\\script\\task\\tollgate\\messenger\\qianbaoku\\90\\turebug90.lua",
 }
 
 function HD_ReloadCfg()
