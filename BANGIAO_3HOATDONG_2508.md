@@ -482,6 +482,32 @@ Lỗi '8nhiệm vụ<color>là' hoá ra CÓ SẴN trong bản Linux gốc (dòng
 **Binary mới cần swap: `Game.exe.moi_2508_c23` + `CoreClient.dll.moi_2508_c23`
 (14:11). Server KHÔNG đổi C++ — chỉ script (ăn cùng lần restart).**
 
+## C24 — GỐC THẬT của "2 boss 1 toạ độ" + auto đi đúng luồng Xa Phu (`00a0fc5b`)
+
+🔴🔴 **GỐC**: `startgame.lua:202` gọi `addnpcsatthu()` →
+`script\startgame\khac\satthu.lua` spawn **20 boss sát thủ bản Việt đang SỐNG**
+(không comment như 2 hàm anh em `addnpcbosssatthu`/`addnpcphonglangdo`). Ví dụ
+"Dương Phong Dật" map 225 mps (46399,108248) **trùng chỗ** boss Linux 147 cùng
+map cell (1452,3377). ⇒ đã TẮT lời gọi.
+**Đính chính C23**: chẩn đoán "do nút admin" là SAI — nút admin chỉ là nguồn thứ
+hai (vẫn nên giữ idempotent), nguồn CHÍNH là spawner bản Việt này.
+
+**Bài học đưa vào quy trình**: trước khi port một hệ, phải quét `startgame.lua` +
+`timerserver.lua` theo TỪNG LỜI GỌI HÀM (không chỉ grep tên hệ) — hàm cũ có thể
+nằm ở thư mục tên khác (`startgame\khac\satthu.lua` chứ không phải
+`tinhnangoss_satthu\`).
+
+**Auto giờ đi ĐÚNG luồng người chơi thật** (6 pha): chạy tới Xa Phu → chọn
+"luyện công" → chọn "Mốc XX" → chọn TÊN MAP → lên map ở **toạ độ mặc định** →
+đi bộ tới ô boss. Bảng tên menu từng boss sinh tự động (`s_szST3BossMenu/Moc`
+trong `KSatThuBossPos.h`, lấy từ `XP_TEN`/`BOT_BAI` nên khớp từng byte).
+**44/160 boss** đi được bằng menu — **gồm đủ 20 con nhóm cấp 90** (nhóm duy nhất
+còn phát thưởng); 116 con nhóm 20-80 ở map không thuộc menu luyện công → giữ
+đường thuê xe `st3_goboss` làm dự phòng (cũng đáp xuống waypoint).
+
+⚠️ `CoreShell.cpp` bị `ExcludedFromBuild` ở MỌI config Server ⇒ sửa nó **không**
+cần build lại server. Binary cần swap: **CLIENT `.moi_2508_c24` (14:27)**.
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
