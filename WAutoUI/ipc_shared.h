@@ -286,6 +286,18 @@ struct autoData
 	int		nLDThanhBD;		// bao danh o thanh nao (0..6 theo g_LDVeMap); 7 = thanh dang dung
 	int		nLDPtCount;		// so ten trong danh sach ban dien
 	char	szLDPtName[8][32];	// danh sach ung vien to doi (chi moi 1 nguoi dau tien gap)
+	// == Hoat dong Bach Nhan + Bang Chien (24/08/2026 dem) - PHAI o cuoi struct ==
+	int		bHDBachNhan;	// bat auto Bach Nhan Loi Dai (cay exp hang ngay)
+	int		nHDBNGio;		// gio vao (theo gio MAY CHU + nHDLech)
+	int		nHDBNPhut;
+	int		nHDBNCay;		// cay bao nhieu phut; 0 = toi khi het 50 luot exp
+	int		nHDBNMode;		// 0 = dung an exp (an toan), 1 = tranh lam Loi Chu
+	int		nHDBNDai;		// 0 = tu chon (dai 2), 1..5 = dai cu the
+	int		bHDBNBuff;		// tu di an buff Co Thu x2
+	int		bHDBangChien;	// bat auto Bang Chien (Vo Lam De Nhat Bang)
+	int		nHDBCGio;		// gio di (mac dinh 20:25 - cua vao that 20:30-21:30)
+	int		nHDBCPhut;
+	int		nHDLech;		// gio may chu lech gio may nay (PHUT, am duoc) - chung ca tab
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -486,6 +498,17 @@ struct autoData
 		nLDThanhBD = 7;
 		nLDPtCount = 0;
 		szLDPtName[0][0] = 0;
+		bHDBachNhan = 0;
+		nHDBNGio = 12;
+		nHDBNPhut = 5;
+		nHDBNCay = 0;
+		nHDBNMode = 0;
+		nHDBNDai = 0;
+		bHDBNBuff = 1;
+		bHDBangChien = 0;
+		nHDBCGio = 20;
+		nHDBCPhut = 25;
+		nHDLech = 0;
 	}
 };
 

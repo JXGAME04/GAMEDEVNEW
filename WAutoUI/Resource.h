@@ -368,6 +368,29 @@ using namespace std;
 #define IDC_LIST_10_PT		514
 #define IDC_STRING_10_BD	515
 #define IDC_COMBO_10_BD		516
+// tab 12 Hoat dong (24/08 dem) - trong dai an/hien
+#define IDC_CHECKBOX_12_BN	517
+#define IDC_STRING_12_BNG	518
+#define IDC_EDITOR_12_BNG	519
+#define IDC_STRING_12_BNH	520
+#define IDC_EDITOR_12_BNP	521
+#define IDC_STRING_12_CAY	522
+#define IDC_EDITOR_12_CAY	523
+#define IDC_STRING_12_MODE	524
+#define IDC_COMBO_12_MODE	525
+#define IDC_STRING_12_DAI	526
+#define IDC_COMBO_12_DAI	527
+#define IDC_CHECKBOX_12_BUFF	528
+#define IDC_CHECKBOX_12_BC	529
+#define IDC_STRING_12_BCG	530
+#define IDC_EDITOR_12_BCG	531
+#define IDC_STRING_12_BCH	532
+#define IDC_EDITOR_12_BCP	533
+#define IDC_STRING_12_LECH	534
+#define IDC_EDITOR_12_LECH	535
+#define IDC_GRP_TAB11		536
+#define IDC_SEP_11A			537
+#define IDC_SEP_11B			538
 #define IDC_INDEX_END			560
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
@@ -385,6 +408,7 @@ using namespace std;
 // dong trang thai auto o chan cua so (NGOAI dai an/hien - luon hien)
 #define IDC_STRING_HD_L		612
 #define IDC_STRING_HD_V		613
+#define IDC_TABBTN_12		614
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

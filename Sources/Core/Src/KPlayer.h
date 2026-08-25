@@ -255,6 +255,27 @@ struct ExtAuto
 	int  nLDPtDone;      // 1 = da xu ly xong buoc them doi huu vao chien doi
 	UINT uLDHopT;        // han 150s cho mot luot nhay thanh (LD_DiThanh)
 	UINT uLDThpT;        // Than Hanh Phu cua luot nhay: 0 chua thu / 1 di Xa phu / >1 moc dung
+	// == Hoat dong BN/BC (24/08 dem) - trang thai may ATYPE_HOATDONG, POD ==
+	int  nHDPhase;       // pha HDP_* (CoreShell.cpp)
+	int  nHDStep;
+	int  nHDTry;
+	int  nHDHold;        // 0 tha may / 1 cam lai / 2 danh theo may PK
+	int  nHDKeyBN;       // khoa ngay da chay xong Bach Nhan (yymmdd)
+	int  nHDKeyBC;       // khoa ngay da chay xong Bang Chien (yymmdd)
+	int  nHDDai;         // dai dang nham (1..5); 0 = chua
+	int  nHDLuot;        // uoc luong luot exp da an hom nay
+	int  nHDCothu;       // chi so diem Co Thu dang di toi
+	int  nHDDestX;       // diem den (don vi O)
+	int  nHDDestY;
+	UINT uHDNext;
+	UINT uHDPhaseT;
+	UINT uHDDlgSeen;     // uDlgSeq da xu ly
+	UINT uHDMsgSeen;     // uMsgSeq (tin He Thong aMsg) da xu ly
+	UINT uHDDestT;
+	UINT uHDIdleT;       // moc hoat dong gan nhat (chong bi da 90 phut)
+	UINT uHDBuffT;       // buff Co Thu con den luc nay (uoc luong)
+	UINT uHDLuotT;       // moc tick 5 phut gan nhat
+	UINT uHDVaoT;        // thoi diem vao map hoat dong
 
 	ExtAuto()
 	{
@@ -391,6 +412,26 @@ struct ExtAuto
 		nLDPtDone = 0;
 		uLDHopT = 0;
 		uLDThpT = 0;
+		nHDPhase = 0;
+		nHDStep = 0;
+		nHDTry = 0;
+		nHDHold = 0;
+		nHDKeyBN = 0;
+		nHDKeyBC = 0;
+		nHDDai = 0;
+		nHDLuot = 0;
+		nHDCothu = 0;
+		nHDDestX = 0;
+		nHDDestY = 0;
+		uHDNext = 0;
+		uHDPhaseT = 0;
+		uHDDlgSeen = 0;
+		uHDMsgSeen = 0;
+		uHDDestT = 0;
+		uHDIdleT = 0;
+		uHDBuffT = 0;
+		uHDLuotT = 0;
+		uHDVaoT = 0;
 	}
 };
 
