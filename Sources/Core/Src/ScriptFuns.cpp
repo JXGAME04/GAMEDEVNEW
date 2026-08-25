@@ -9843,6 +9843,16 @@ int LuaSetFightState(Lua_State* L)
 
 	if (Player[nPlayerIndex].m_nIndex <= 0) return 0;
 	Npc[Player[nPlayerIndex].m_nIndex].SetFightMode(Lua_ValueToNumber(L, 1) != 0);
+#ifdef _SERVER
+	// [3HD 25/08 C37] BAO CHO CLIENT trang thai chien dau vua doi. Neu khong, client
+	// van tuong minh CHUA RUT VU KHI => GetRelation (client, KNpcSet.cpp:1458) ep
+	// relation_none cho cap (nguoi choi fight_none <-> quai) => SearchNpcAt khong tra
+	// ve muc tieu = "toi gio ra NPC ma khong danh duoc". Dung duong CO SAN:
+	// PLAYER_SYNC mang co 0x02 (m_btSomeFlag), client da xu ly san va KHONG loai tru
+	// ban than (KProtocolProcess.cpp:2384). Khong them protocol, khong doi kich thuoc goi.
+	if (Player[nPlayerIndex].m_nNetConnectIdx >= 0)
+		Npc[Player[nPlayerIndex].m_nIndex].SendSyncData(Player[nPlayerIndex].m_nNetConnectIdx);
+#endif
 	Player[nPlayerIndex].SetLastNetOperationTime(g_SubWorldSet.GetGameTime());
 	return 0;
 }
