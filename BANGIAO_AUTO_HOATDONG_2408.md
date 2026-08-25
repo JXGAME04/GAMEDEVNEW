@@ -300,4 +300,22 @@ Nhưng nó phơi ra lỗi quy trình r4, và lệnh "rà từng bước toàn b�
 Binary staged: **`CoreClient.dll.moi_2408_liendau` 2.339.328 B md5 `c3f72bc9` mốc 10:45**
 (Game.exe `9eec1d50` + WAuto.exe `1b3de743` mốc 09:43 giữ nguyên — một lần swap 3 tệp).
 
-*Ghi 24/08/2026 ~20:20 · Tín Sứ ~21:00 · 7.5 sáng 25/08 · 7.6 trưa 25/08.*
+### 7.7 Trưa 25/08 (đợt 2) — quái giữ rương KHÔNG đứng yên (test thật của chủ game)
+
+Chủ game test: một số Thủ Hộ Giả **đuổi theo người chơi**, rời chỗ spawn; auto tới toạ độ
+rương không thấy quái (chỉ quét 10 ô quanh rương) → gõ rương mù → "đứng mãi". Vá (r9):
+
+- Tìm quái theo **tên có SỐ** `"bảo khố thủ hộ giả N"` (khớp đúng con giữ rương N — giết
+  nhầm con khác là TaskTemp(181) sai số, rương vẫn không mở) ở **bất kỳ đâu trong tầm
+  nhìn** quanh người chơi (bán kính 500 ô thay vì 10 ô quanh rương) — quái đang đuổi sau
+  lưng cũng bị phát hiện và giết trước khi đụng rương.
+- Đọc tin Hệ Thống của rương: **"chưa hạ được người giữ rương"** (Msg2Player khi
+  TaskTemp(181) != số rương) → đứng cạnh rương chờ quái hồi sinh (~2 phút,
+  `TUREBOSS_RELIVE=2`) rồi giết lại — hết cảnh gõ rương 1,2 giây/lần vô hạn; gõ rương
+  xong đợi 2,5 giây đọc trả lời. Mở thành công thì task 1202 tự nhảy số → sang rương kế.
+- Watchdog 25'/35' giữ nguyên làm lưới đỡ cuối.
+
+Binary staged: **`CoreClient.dll.moi_2408_liendau` 2.339.328 B md5 `41a70b84` mốc 11:59**
+(Game.exe `9eec1d50` + WAuto.exe `1b3de743` 09:43 giữ nguyên).
+
+*Ghi 24/08/2026 ~20:20 · Tín Sứ ~21:00 · 7.5 sáng 25/08 · 7.6 trưa 25/08 · 7.7 trưa 25/08.*

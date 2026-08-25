@@ -9882,8 +9882,13 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				const HDPoint& sR = g_HDTSRuong[nRuong - 1];
 				int nRx = TK_O((int)sR.x);
 				int nRy = TK_O((int)sR.y);
-				// con Thu Ho Gia song canh ruong -> giet (giao cho may PK)
-				int nGiu = HD_TimQuai(nPlayerIdx, HDM_NPC_TSGIU, nRx, nRy, TK_O(10));
+				// quai giu ruong KHONG dung yen tai cho spawn - no tuan/duoi theo
+				// nguoi choi. Phai tim DUNG con giu ruong nay ("bao kho thu ho gia N",
+				// ten co SO) o BAT KY cho nao trong tam nhin roi giet truoc;
+				// giet nham con khac la TaskTemp(181) sai so, ruong van khong mo.
+				char szGiu[40];
+				sprintf(szGiu, "%s %d", HDM_NPC_TSGIU, nRuong);
+				int nGiu = HD_TimQuai(nPlayerIdx, szGiu, nX, nY, TK_O(500));
 				if (nGiu)
 				{
 					ea.uNpcID = Npc[nGiu].m_dwID;
@@ -9892,7 +9897,19 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.nHDHold = 2;
 					return 2;
 				}
-				// het quai -> lai gan ruong roi mo (DialogNpc)
+				// ruong vua tra loi qua kenh He Thong "chua ha duoc nguoi giu ruong"
+				// (TaskTemp(181) != so ruong): quai khuat tam nhin hoac dang cho
+				// hoi sinh (~2 phut) - dung canh ruong doi, khong go mu tiep
+				if (HD_CoTin(nPlayerIdx, HDM_MSG_TSCHUAHA))
+				{
+					ea.uHDMsgSeen = cap.uMsgSeq;
+					if (g_GetDistance(nX, nY, nRx, nRy) > TK_O(6))
+						DT_WalkTo(nPlayerIdx, nRx, nRy, TK_O(4), uCurTime);
+					ea.uHDNext = uCurTime + 5000;
+					return 1;
+				}
+				ea.uHDMsgSeen = cap.uMsgSeq;
+				// khong thay quai quanh day -> lai gan ruong roi mo (DialogNpc)
 				int nIdx = LD_FindNpcGan(nPlayerIdx, HDM_NPC_TSRUONG, nRx, nRy, TK_O(10));
 				if (nIdx)
 				{
@@ -9904,7 +9921,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					{
 						ea.uHDDlgSeen = cap.uDlgSeq;	// thoai ke cua ruong khong can doc
 						Player[nPlayerIdx].DialogNpc(nIdx);
-						ea.uHDNext = uCurTime + 1200;
+						ea.uHDNext = uCurTime + 2500;	// go xong DOI cau tra loi
 					}
 					return 1;
 				}

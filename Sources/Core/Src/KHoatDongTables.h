@@ -167,6 +167,7 @@ static const char HDM_SAY_BCTHIEUCAP[] = "Ph¶i ®¹t cÊp ";
 static const char HDM_SAY_BCDOCAM[] = "Kh«ng ®­îc phÐp mang vËt phÈm";
 static const char HDM_MSG_BNMET[] = "Ta mÖt råi";
 static const char HDM_MSG_DADOC[] = "§· ®äc sí";
+static const char HDM_MSG_TSCHUAHA[] = "ch­a h¹ ®­îc ng­êi gi÷ r­¬ng";
 static const char HDM_MSG_NGHERO[] = "VËy ng­¬i ®· nghe râ råi";
 static const char HDM_SAY_TSHETLUOT[] = "H«m nay ng­¬i ®· vÊt v¶ råi. Ngµy mai h·y quay l¹i nhÐ";
 static const char HDM_SAY_TSMETMOI[] = "H«m nay ng­¬i ®· mÖt mái råi";

@@ -233,6 +233,7 @@ MARK_TS = [
     ("HDM_SAY_BCDOCAM", pick(qbcsu, r'(Kh\xabng \xae\xad\xeec ph\xd0p mang v\xcbt ph\xc8m)', "khong duoc mang vat pham")),
     ("HDM_MSG_BNMET", pick(qhar, r'(Ta m\xd6t r\xe5i)', "co thu het suat")),
     ("HDM_MSG_DADOC", pick(qhar, r'(\xa7\xb7 \xae\xe4c s\xed)', "da doc si roi")),
+    ("HDM_MSG_TSCHUAHA", pick(rd(SC, "task", "tollgate", "messenger", "qianbaoku", "90", "tureboss90.lua"), r'(ch\xada h\xb9 \xae\xad\xeec ng\xad\xeai gi\xf7 r\xad\xacng)', "chua ha nguoi giu ruong")),
     ("HDM_MSG_NGHERO", pick(qhar, r'(V\xcby ng\xad\xaci \xae\xb7 nghe r\xe2 r\xe5i)', "nhan buff ok")),
     ("HDM_SAY_TSHETLUOT", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} v[^"]{0,10}t v[^"]{0,60})\."', "het luot")),
     ("HDM_SAY_TSMETMOI", pick(qpost, r'"[^"]*?(H\xabm nay ng[^"]{0,20} m[^"]{0,10}t m[^"]{0,10}i r[^"]{0,6}i)\.', "het luot can lenh bai")),
