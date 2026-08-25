@@ -603,6 +603,17 @@ void KNpc::Activate()
 	ProcStatus();
 
 #ifdef _SERVER
+	// [24/08] Truoc day ham nay bi goi HAI LAN trong cung mot lan KNpc::Activate
+	// (o day va mot lan nua o cuoi ham, canh khoi m_nNpcTimeout). No GIAM bo dem
+	// m_nTime-- nen cua so quy cong sat thuong bi rut con MOT NUA:
+	// defMAX_CALC_EXP_TIME = 1200 tick (66,7 giay o 18 khung/giay) ma thuc te chi
+	// con 600 tick (33,3 giay). Da kiem: giua hai loi goi khong co 'return' nao nen
+	// ca hai luon chay cung nhau. Giu DUNG MOT loi goi o day.
+	// LUU Y CAN BANG: cua so tro ve dung 66,7 giay - nguoi danh quai roi quay lai
+	// trong 66 giay van duoc tinh cong (truoc kia qua 33 giay la mat), tuc anh huong
+	// ai duoc tinh ha quai => chia kinh nghiem va quyen roi do.
+	// Muon giu Y NGUYEN cam giac cu: doi defMAX_CALC_EXP_TIME 1200 -> 600 trong
+	// KNpcDeathCalcExp.h (mot dong), ma van dung.
 	this->m_cDeathCalcExp.Active();
 #endif
 
@@ -656,7 +667,8 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 			ExecuteScript(m_ActionScriptID, "OnTimer", m_Index);//#idx cña npc hÕt thêi gian
 		}
 	}
-	this->m_cDeathCalcExp.Active();
+	// [24/08] Loi goi m_cDeathCalcExp.Active() thu hai o day DA BO - xem chu thich
+	// day du o dau ham KNpc::Activate (ngay sau ProcStatus).
 #endif
 
 #ifndef _SERVER

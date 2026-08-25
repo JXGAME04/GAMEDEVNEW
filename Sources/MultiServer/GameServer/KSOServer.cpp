@@ -89,8 +89,17 @@ ZMutex g_mutexFlow;
 
 #endif
 
-CPackager			m_theRecv;
-CPackager			m_theSend;
+// [24/08] Noi rong bo dem cho RIENG hai CPackager cua GameServer.
+// Blob luu nhan vat lay tu KPlayer::m_SaveBuffer = 64*1024*5 = 320 KB
+// (KPlayer.h:460), trong khi mac dinh cua CPackager chi 128 KB
+// (Buffer.h). Vuot cho la CBuffer::AddData NEM CException (Buffer.cpp:76)
+// va MainLoop khong co try bao => SAP CA GameServer.
+// 655360 dung la gia tri tac gia da dinh dung (dong bi chu thich Buffer.h:179).
+// KHONG doi mac dinh cua LOP: Goddess va DBRoleServer co CPackager rieng
+// (ClientNode.h:64-65), khong nen bi keo theo.
+#define				GS_PACKAGER_BUFFER	655360	/* 1024*64*10 */
+CPackager			m_theRecv(GS_PACKAGER_BUFFER);
+CPackager			m_theSend(GS_PACKAGER_BUFFER);
 
 #define				GAME_FPS		18						//khung hinh game chi so khung hinh tren giay mac dinh la 18 edit by phong kieu 60FPS tieu chuan game hien nay
 using namespace std;
@@ -3385,9 +3394,33 @@ BOOL KSwordOnLineSever::SavePlayerData(int nIndex, bool bUnLock)
 		dwCRC = CRC32(dwCRC, pData, pData->dwDataLen - 4);
 		// CRC END
 
-		m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)&sProcessData, sizeof(TProcessData) - 1);
-		m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)pData, pData->dwDataLen - 4);
-		m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)&dwCRC, 4);
+		// [24/08] Chan TRAN BO DEM truoc khi AddData. CBuffer::AddData nem CException
+		// (Buffer.cpp:76) va MainLoop khong co try bao => ngoai le lam SAP GameServer.
+		// Tha bo mot bai luu co canh bao ro rang con hon sap ca may chu; va tuyet doi
+		// khong duoc bo IM LANG.
+		const size_t uTongGoi = (sizeof(TProcessData) - 1) + (size_t)(pData->dwDataLen - 4) + 4;
+		if (uTongGoi > GS_PACKAGER_BUFFER)
+		{
+			printf("[LUU] BO QUA bai luu cua nguoi choi %d: goi %u byte > bo dem %u byte."
+			       " Phai noi rong GS_PACKAGER_BUFFER roi build lai GameServer.\n",
+			       nIndex, (unsigned int)uTongGoi, (unsigned int)GS_PACKAGER_BUFFER);
+			return FALSE;
+		}
+
+		try
+		{
+			m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)&sProcessData, sizeof(TProcessData) - 1);
+			m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)pData, pData->dwDataLen - 4);
+			m_theSend.AddData(c2s_roleserver_saveroleinfo, (const char*)&dwCRC, 4);
+		}
+		catch (...)
+		{
+			// Don hang doi de goi do dang khong lam hong bai luu KE TIEP.
+			printf("[LUU] LOI dong goi bai luu cua nguoi choi %d (goi %u byte) - da bo qua.\n",
+			       nIndex, (unsigned int)uTongGoi);
+			try { m_theSend.DelData(c2s_roleserver_saveroleinfo); } catch (...) {}
+			return FALSE;
+		}
 		
 #ifndef _STANDALONE
 		CBuffer* pBuffer = m_theSend.GetHeadPack(c2s_roleserver_saveroleinfo);

@@ -236,7 +236,62 @@ chạy**: nó do phiên vá đạn swap vào từ worktree `D:\GAMEDEVNEW\_wt_mi
 | Thêm `m_nNpcCount`/`m_nObjCount` vào `KRegion` thay cho `GetNodeCount()` | Vừa đổi ABI vừa **chắc chắn trôi bộ đếm**: `KRegion::Close` gỡ hàng loạt phần tử không qua `RemoveObj` |
 | Bộ nhớ đệm danh hiệu trong `KNpc` | Đổi ABI **và** có hai đường ghi `m_szGameTitle` vượt mặt bộ đệm → mất danh hiệu trên đầu nhân vật |
 
-### 6.3 Ba lỗi thật đã tìm ra nhưng CỐ Ý KHÔNG sửa (cần chủ game quyết)
+### 6.3 ĐỢT 2 — chủ game đã duyệt, ĐÃ SỬA cả ba
+
+Ba lỗi dưới đây ban đầu chỉ báo cáo vì đụng cân bằng / định dạng lưu / gói tin.
+Chủ game đã đọc cảnh báo và yêu cầu sửa hết. Mỗi bản vá đều **tương thích ngược** và
+**không đổi một byte nào** của bố cục struct hay gói tin trên dây.
+
+#### (1) `m_cDeathCalcExp.Active()` bị gọi hai lần → cửa sổ quy công rút một nửa
+
+Đã bỏ lời gọi thứ hai (`KNpc.cpp`, cạnh khối `m_nNpcTimeout`), giữ lời gọi ở đầu hàm
+ngay sau `ProcStatus()`.
+
+Kiểm chứng trước khi sửa: giữa hai lời gọi có **53 dòng và 0 lần `return`** → cả hai
+luôn chạy cùng nhau, bỏ cái nào cũng tương đương. Mọi `return` của hàm đều nằm **trước**
+lời gọi thứ nhất, nên chúng bỏ *cả hai* — tỉ lệ đúng bằng 2:1, không lệch.
+Giữ lời gọi đầu vì nó gần đầu hàm hơn, ít rủi ro bị một `return` thêm vào sau này chặn mất.
+
+> **Đây là thay đổi cân bằng duy nhất của cả hai đợt.** Cửa sổ quy công trở về đúng
+> `defMAX_CALC_EXP_TIME` = 1200 tick = **66,7 giây** (trước đây thực tế chỉ 33,3 giây).
+> Người đánh quái rồi quay lại trong 66 giây vẫn được tính công → ảnh hưởng ai được tính
+> là người hạ quái, tức chia kinh nghiệm và quyền rơi đồ.
+> **Muốn giữ y nguyên cảm giác cũ**: đổi `defMAX_CALC_EXP_TIME` 1200 → 600 trong
+> `KNpcDeathCalcExp.h` — một dòng, mã vẫn đúng, hành vi không đổi một chút nào.
+
+#### (2) `BYTE nTaskCount` tràn → mất sạch nhiệm vụ
+
+**Không đổi struct.** Đo thật bằng chương trình biên dịch riêng in `offsetof`:
+
+```
+sizeof(TRoleBaseInfo) = 701      offset nTaskCount = 712
+sizeof(TRoleData)     = 746      offset nItemCount = 713   <-- liền kề, KHÔNG có padding
+                                 offset BaseInfo.ipduphong5 = 393
+```
+
+`S3DBInterface.h` mở đầu bằng `#pragma pack(push, 1)` (dòng 15, `pop` ở 579) nên **không
+có byte đệm nào** — thêm hay nới rộng một trường là dịch offset mọi trường sau nó, hỏng
+toàn bộ roledb đã lưu. Goddess còn neo thẳng vào kích thước đó:
+`DBTable_MySQL.cpp:68-69` ghi rõ *"Chặn dưới: header TRoleData trước pBuffer. Đo được = 745."*
+
+Nên số đầy đủ được lưu **song song** ở `BaseInfo.ipduphong5` — trường dự phòng kiểu `int`,
+grep toàn cây chỉ có `Bishop/PlayerCreator.cpp:259` đặt `= 0`. Bản ghi cũ có `ipduphong5 = 0`
+(nhờ `memset(pRoleData, 0, sizeof(TRoleData))`) nên đường nạp tự động rơi về cách cũ —
+**tương thích ngược hoàn toàn**. Trường `BYTE` giữ nguyên để Goddess vẫn ghi được cột thống kê
+`n_task` (`DBTable_MySQL.cpp:314`) và bản cũ vẫn đọc được phần thấp.
+
+#### (3) Blob vượt bộ đệm `CPackager` 128 KB → sập GameServer
+
+Ba lớp, trong `KSOServer.cpp`:
+1. Nới bộ đệm cho **riêng** hai `CPackager` của GameServer lên `655360` (chính giá trị tác giả
+   đã định dùng, đang bị chú thích ở `Buffer.h:179`). **Không** đổi mặc định của lớp — Goddess
+   và DBRoleServer có `CPackager` riêng (`ClientNode.h:64-65`), không nên bị kéo theo.
+2. **Kiểm tra kích thước trước khi `AddData`**: quá lớn thì bỏ qua và in cảnh báo nêu rõ tên
+   biến cần nới — thà mất một bài lưu có cảnh báo còn hơn sập máy chủ, và tuyệt đối không bỏ im lặng.
+3. Bọc `try/catch` quanh chuỗi `AddData`, dọn hàng đợi bằng `DelData` rồi trả `FALSE` —
+   để một bài lưu hỏng không kéo sập cả tiến trình và không làm hỏng bài lưu kế tiếp.
+
+### 6.3b Ba lỗi thật đã tìm ra nhưng CỐ Ý KHÔNG sửa (bản gốc đợt 1 — nay đã sửa hết, giữ để tra cứu)
 
 1. **`m_cDeathCalcExp.Active()` bị gọi HAI LẦN trong một lần `KNpc::Activate`**
    (KNpc.cpp:605-607 và :647-657). Hàm này **giảm bộ đếm** `m_nTime--`, nên cửa sổ quy công

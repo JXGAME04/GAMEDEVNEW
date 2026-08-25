@@ -827,7 +827,23 @@ int	KPlayer::LoadPlayerTaskList(BYTE * pRoleBuffer, BYTE * &pTaskBuffer, unsigne
 	int nTaskDegee = 0;
 	char szTaskIDKey[100];
 	char szTaskValueKey[100];
-	nTaskCount = ((TRoleData* )pRoleBuffer)->nTaskCount;
+	// [24/08] VA TRAN SO NHIEM VU. Truong 'nTaskCount' trong TRoleData la BYTE
+	// (S3DBInterface.h:158) trong khi MAX_TASK = 4200: nhan vat co >= 256 nhiem vu
+	// da luu bi cat con (n & 0xFF), va dung 256 thi thanh 0 -> ham nay 'return 1'
+	// ngay ben duoi => MAT SACH nhiem vu, im lang.
+	// KHONG the doi kieu truong do: S3DBInterface.h dung '#pragma pack(push,1)'
+	// (dong 15) nen them/noi rong mot truong la DICH OFFSET moi truong sau no =>
+	// hong toan bo roledb da luu; Goddess con neo thang vao kich thuoc
+	// (DBTable_MySQL.cpp:69 MIN_ROLE_DATALEN, do that sizeof(TRoleData) = 746).
+	// Nen so DAY DU duoc luu song song o BaseInfo.ipduphong5 - truong du phong
+	// kieu int chua ai dung. Ban ghi CU co ipduphong5 = 0 (nho memset trong
+	// SavePlayerBaseInfo) nen tu dong roi ve duong cu -> tuong thich nguoc.
+	{
+		const TRoleData* pRD = (const TRoleData*)pRoleBuffer;
+		nTaskCount = pRD->BaseInfo.ipduphong5;
+		if (nTaskCount <= 0 || nTaskCount > MAX_TASK)
+			nTaskCount = pRD->nTaskCount;	// ban ghi cu, hoac gia tri vo ly
+	}
 	//
 	if (nTaskCount == 0) 
 		return 1;
@@ -1147,7 +1163,12 @@ int	KPlayer::SavePlayerTaskList(BYTE * pRoleBuffer)
 		pTaskData ++;
 	}
 	//
-	pRoleData->nTaskCount = nTaskCount;
+	// [24/08] Xem chu thich day du o duong NAP (tim "VA TRAN SO NHIEM VU").
+	// Giu nguyen truong BYTE de Goddess van ghi duoc cot thong ke n_task
+	// (DBTable_MySQL.cpp:314) va ban cu van doc duoc phan thap; so DAY DU di kem
+	// o BaseInfo.ipduphong5 (truong du phong, khong doi bo cuc struct).
+	pRoleData->nTaskCount = (BYTE)(nTaskCount & 0xFF);
+	pRoleData->BaseInfo.ipduphong5 = nTaskCount;
 	pRoleData->dwItemOffset = (BYTE *)pTaskData - pRoleBuffer;
 	return 1;
 }
