@@ -2938,12 +2938,23 @@ static void TG_XaFuTick()
 //---------------------------------------------------------------------------
 #include "KSatThuBossPos.h"
 
+//---------------------------------------------------------------------------
+// [3HD C24] Bam nhiem vu 'San Boss Sat Thu' tren F11 -> dan duong DUNG luong
+// nguoi choi that: chay toi Xa Phu -> BAM MENU (luyen cong -> moc -> ten map)
+// -> len map o TOA DO MAC DINH -> di bo toi o boss. Map khong co trong menu
+// thi thue xe rieng (st3_goboss - server tru tien, cung dap xuong waypoint).
+// Tai dung nghe Da Tau: DT_WalkTo / DT_FindNpcName / g_MoveStation / DT_Answer.
+//---------------------------------------------------------------------------
 static int  g_nTGSTOn = 0;
-static int  g_nTGSTPhase = 0;		// 1 = di xa phu, 2 = doi chuyen map, 3 = di toi boss
-static int  g_nTGSTMap = 0;			// map boss
-static int  g_nTGSTX = 0, g_nTGSTY = 0;	// o boss (cell)
+static int  g_nTGSTPhase = 0;		// 1 di XaPhu, 2..4 bam menu, 5 doi len map, 6 di toi boss
+static int  g_nTGSTMap = 0;
+static int  g_nTGSTX = 0, g_nTGSTY = 0;
+static int  g_nTGSTBoss = 0;
 static int  g_nTGSTTry = 0;
+static int  g_nTGSTDlgTry = 0;		// so lan go lai thoai trong 1 pha menu
 static UINT g_uTGSTNext = 0;
+static UINT g_uTGSTDlgSeen = 0;
+static int  g_nTGSTNpc = 0;			// idx Xa Phu dang noi chuyen
 
 static void TG_SatThuStop(const char* szMsg)
 {
@@ -2968,13 +2979,19 @@ static int TG_SatThuStart()
 		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Ch­a nhËn nhiÖm vô s¸t thñ.");
 		return 0;
 	}
+	g_nTGSTBoss = nBoss;
 	g_nTGSTMap = s_nST3BossMap[nBoss];
 	g_nTGSTX = s_nST3BossX[nBoss];
 	g_nTGSTY = s_nST3BossY[nBoss];
 	g_nTGSTTry = 0;
+	g_nTGSTDlgTry = 0;
 	g_uTGSTNext = 0;
+	g_nTGSTNpc = 0;
+	g_uTGSTDlgSeen = g_sDTCap.uDlgSeq;
 	if (SubWorld[0].m_SubWorldID == g_nTGSTMap)
-		g_nTGSTPhase = 3;	// da o map boss - di bo toi noi
+	{
+		g_nTGSTPhase = 6;	// da dung tren map boss - di bo thang
+	}
 	else
 	{
 		MapStation::iterator it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
@@ -2987,6 +3004,30 @@ static int TG_SatThuStart()
 	}
 	g_nTGSTOn = 1;
 	DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §ang dÉn ®­êng tíi boss - bÊm l¹i vµo dßng nhiÖm vô ®Ó hñy.");
+	return 1;
+}
+
+// chon mot muc trong thoai dang mo; tra 1 neu da bam, 0 neu chua co thoai moi,
+// -1 neu thoai co roi ma KHONG tim thay muc can chon.
+static int TG_SatThuPickAns(int nPlayerIdx, const char* szMark)
+{
+	if (g_sDTCap.uDlgSeq == g_uTGSTDlgSeen)
+	{
+		// chua co thoai moi: cu ~3.2s go lai NPC mot lan
+		if (g_nTGSTNpc > 0 && (++g_nTGSTDlgTry % 8) == 0)
+			Player[nPlayerIdx].DialogNpc(g_nTGSTNpc);
+		return 0;
+	}
+	g_uTGSTDlgSeen = g_sDTCap.uDlgSeq;
+	g_nTGSTDlgTry = 0;
+	char szBuf[2048];
+	char* apAns[24];
+	g_StrCpyLen(szBuf, g_sDTCap.szDlg, sizeof(szBuf));
+	int nAns = DT_Split(szBuf, apAns, 24);
+	int nOpt = DT_FindAns(apAns, nAns, szMark);
+	if (nOpt < 0)
+		return -1;
+	DT_Answer(nPlayerIdx, nOpt);
 	return 1;
 }
 
@@ -3004,11 +3045,12 @@ static void TG_SatThuTick()
 	if (uCur < g_uTGSTNext)
 		return;
 	g_uTGSTNext = uCur + 400;
-	if (++g_nTGSTTry > ((g_nTGSTPhase == 3) ? 900 : 450))	// pha di bo toi boss duoc ~6 phut (tu waypoint co the xa)
+	if (++g_nTGSTTry > ((g_nTGSTPhase == 6) ? 900 : 450))
 	{
 		TG_SatThuStop("<color=Yellow>[ChØ nam] §i qu¸ l©u - dõng dÉn ®­êng.");
 		return;
 	}
+	// --- pha 1: chay toi Xa Phu roi mo thoai ---
 	if (g_nTGSTPhase == 1)
 	{
 		MapStation::iterator it = g_MoveStation.find(SubWorld[0].m_SubWorldID);
@@ -3026,10 +3068,21 @@ static void TG_SatThuTick()
 			Npc[nIdx].GetMpsPos(&dX, &dY);
 			if (g_GetDistance(nX, nY, dX, dY) <= 160)
 			{
-				SendUiCmdScript(6, (char*)"st3_goboss");
-				g_nTGSTPhase = 2;
+				g_nTGSTNpc = nIdx;
 				g_nTGSTTry = 0;
-				DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §· gÆp Xa Phu - ®ang thuª xe tíi chç boss...");
+				g_nTGSTDlgTry = 0;
+				g_uTGSTDlgSeen = g_sDTCap.uDlgSeq;
+				Player[nPlayerIdx].DialogNpc(nIdx);
+				// map khong co trong menu luyen cong -> thue xe rieng
+				if (s_szST3BossMenu[g_nTGSTBoss][0] == 0)
+				{
+					DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] B¶n ®å nµy Xa Phu kh«ng chë tíi - thuª xe riªng (tèn tiÒn).");
+					SendUiCmdScript(6, (char*)"st3_goboss");
+					g_nTGSTPhase = 5;
+					return;
+				}
+				DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §· gÆp Xa Phu - ®ang chän b¶n ®å nhiÖm vô...");
+				g_nTGSTPhase = 2;
 				return;
 			}
 			DT_WalkTo(nPlayerIdx, dX, dY, 128, uCur);
@@ -3038,19 +3091,41 @@ static void TG_SatThuTick()
 		DT_WalkTo(nPlayerIdx, s.x, s.y, 200, uCur);
 		return;
 	}
-	if (g_nTGSTPhase == 2)
+	// --- pha 2..4: bam 3 cap menu cua Xa Phu ---
+	if (g_nTGSTPhase >= 2 && g_nTGSTPhase <= 4)
+	{
+		const char* szMark = ST3_MENU_LUYENCONG;
+		if (g_nTGSTPhase == 3)
+			szMark = s_szST3BossMoc[g_nTGSTBoss];
+		else if (g_nTGSTPhase == 4)
+			szMark = s_szST3BossMenu[g_nTGSTBoss];
+		int nRet = TG_SatThuPickAns(nPlayerIdx, szMark);
+		if (nRet == 1)
+		{
+			g_nTGSTTry = 0;
+			g_nTGSTPhase++;	// 4 -> 5: da bam ten map, cho chuyen map
+		}
+		else if (nRet < 0)
+		{
+			TG_SatThuStop("<color=Yellow>[ChØ nam] Tho¹i Xa Phu kh«ng cã môc cÇn chän - h·y tù chän trong khung tho¹i.");
+		}
+		return;
+	}
+	// --- pha 5: doi len dung map nhiem vu ---
+	if (g_nTGSTPhase == 5)
 	{
 		if (SubWorld[0].m_SubWorldID == g_nTGSTMap)
 		{
-			g_nTGSTPhase = 3;
+			g_nTGSTPhase = 6;
 			g_nTGSTTry = 0;
+			DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] §· lªn b¶n ®å nhiÖm vô - ®ang ch¹y tíi boss...");
 			return;
 		}
-		if (g_nTGSTTry > 25)	// ~10s khong duoc chuyen (thieu tien...)
-			TG_SatThuStop("<color=Yellow>[ChØ nam] Ch­a ®­îc chuyÓn map (thiÕu tiÒn xe?) - dõng dÉn ®­êng.");
+		if (g_nTGSTTry > 25)
+			TG_SatThuStop("<color=Yellow>[ChØ nam] Ch­a lªn ®­îc b¶n ®å - dõng dÉn ®­êng.");
 		return;
 	}
-	// pha 3: di toi o boss
+	// --- pha 6: di bo tu toa do mac dinh cua map toi o boss ---
 	if (SubWorld[0].m_SubWorldID != g_nTGSTMap)
 	{
 		g_nTGSTOn = 0;	// bi keo sang map khac - tat im lang
@@ -3059,6 +3134,7 @@ static void TG_SatThuTick()
 	if (DT_WalkTo(nPlayerIdx, g_nTGSTX * 32, g_nTGSTY * 32, 250, uCur))
 		TG_SatThuStop("<color=Cyan>[ChØ nam] §· tíi khu vùc boss - cÈn thËn!");
 }
+
 // [DaTau] tim quai con SONG da sync NGOAI tam danh de chay toi (T4 di tim quai).
 // Client chi thay quai da sync (~2 man hinh); ngoai tam nay DTP_FARM dao 8 huong quanh neo.
 static int DT_FindFarMob(int nPlayerIdx, const autoData* pAp, int* pnX, int* pnY)

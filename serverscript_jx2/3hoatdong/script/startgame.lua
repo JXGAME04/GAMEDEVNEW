@@ -199,7 +199,11 @@ function addfullnpc()
 
 	
 --phan add tong hop cac loai khac
-	addnpcsatthu()
+	-- [3HD 25/08 C24] TAT boss sat thu ban VIET (startgame\khac\satthu.lua: 20 boss
+	-- AddNpcNew SONG, vd "Duong Phong Dat" map 225 mps 46399,108248 - TRUNG CHO voi
+	-- boss Linux 147 cung map cell 1452,3377). Day la GOC THAT cua "2 boss 1 toa do",
+	-- KHONG phai nut admin. Bo di de dung 100% ban Linux (add_killertasknpc).
+	-- addnpcsatthu()
 
 	addnpcother()
 	

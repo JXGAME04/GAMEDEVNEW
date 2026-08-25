@@ -102,6 +102,35 @@ for nm, idx in (("Map", 0), ("X", 1), ("Y", 2)):
         L.append("\t" + ", ".join(vals[j:j + 16]) + ",")
     L.append("};")
     L.append("")
+
+# --- bang MENU XA PHU cua tung boss: de auto BAM MENU THAT (dung y chu game:
+#     toi Xa Phu -> kich len dung map nhiem vu -> roi moi di toi boss) ---
+stt = io.open(SRV + r"\script\global\station.lua", encoding="latin-1", newline="").read()
+xpten = re.findall(r'\t"([^"]*)",', stt.split("XP_TEN = {")[1].split("\n}")[0])
+bb = stt.split("BOT_BAI = {")[1].split("\n}")[0]
+bai = [tuple(int(x) for x in m) for m in re.findall(r"\{(\d+),(\d+),(\d+),(\d+)\}", bb)]
+assert len(xpten) == 39 and len(bai) == 39, (len(xpten), len(bai))
+MOC = {20: "Mốc 20 - 30", 30: "Mốc 20 - 30", 40: "Mốc 40 - 50", 50: "Mốc 40 - 50",
+       60: "Mốc 60 - 70", 70: "Mốc 60 - 70", 80: "Mốc 80", 90: "Mốc 90"}
+map2menu = {}
+for i in range(1, 39):          # bo dong 1 (Hoa Son - khong len menu)
+    map2menu[bai[i][1]] = (xpten[i], V(MOC[bai[i][0]]))
+nCo = sum(1 for i in range(160) if pos[i][0] in map2menu)
+print("   boss co the di bang menu Xa Phu:", nCo, "/160")
+L.append("// Menu Xa Phu cua tung boss (rong = map KHONG co trong menu luyen cong")
+L.append("// => auto se dung duong thue xe truc tiep). Sinh tu XP_TEN/BOT_BAI cua")
+L.append("// station.lua nen KHOP TUNG BYTE voi nhan menu that.")
+for nm, k in (("Menu", 0), ("Moc", 1)):
+    L.append("static const char* const s_szST3Boss%s[ST3_POS_MAX + 1] = {" % nm)
+    L.append('\t"",')
+    for i in range(160):
+        v = map2menu.get(pos[i][0])
+        L.append('\t"%s",' % (esc(v[k]) if v else ""))
+    L.append("};")
+    L.append("")
+L.append("// chuoi khop muc menu chinh cua Xa Phu (\"Len ban do luyen cong (20 - 90)\")")
+L.append('#define ST3_MENU_LUYENCONG "%s"' % esc(V("luy\u1ec7n c\u00f4ng")))
+L.append("")
 L.append("#endif")
 L.append("")
 io.open(r"D:\GAMEDEVNEW\Sources\Core\Src\KSatThuBossPos.h", "w", encoding="latin-1", newline="\r\n").write("\n".join(L))
