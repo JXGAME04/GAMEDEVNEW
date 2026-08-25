@@ -19,6 +19,9 @@ function ZhenYuanJX1Type:Give(tbItem, nAwardCount, tbLogTitle)
 	end
 	PlayerFunLib:AddTask(TASK_CHANGNGUYENDAN, nPoint)
 	WriteLog(format("[TongCastle awardtype zhenyuan] %s +%d diem Chan Nguyen", GetName() or "", nPoint))
+	-- [FIX 24/08] ban Linux (lib\awardtype\zhenyuanpoint.lua:13) co thong bao nay;
+	-- thieu no thi dung Than Moc Lenh xong khong biet co nhan duoc gi khong.
+	Msg2Player(format("Nh­n ®Úîc %d ®iÓm ch©n nguyªn", nPoint))
 	return 1
 end
 

@@ -16,6 +16,10 @@ function ExpJX1Type:Give(tbItem, nAwardCount, tbLogTitle)
 		-- AddSumExp (ScriptFuns.cpp:8786) cong TUNG CAP mot nen khong mat gi.
 		AddSumExp(nExp)
 		WriteLog(format("[awardtype exp_jx1] %s +%d exp", GetName() or "", nExp))
+		-- [FIX 24/08] ban Linux (lib\awardtype\exp.lua:7) BAN thong bao cho nguoi choi;
+		-- thieu no thi an item xong im lang, nguoi choi tuong item hong.
+		-- Dung %s (KHONG phai %d): 2 ty TRAN dinh dang so nguyen.
+		Msg2Player(format("®¹t ®Úîc kinh nghiÖm không thÓ céng d«n %s", nExp))
 		return 1
 	end
 	return 0
@@ -31,6 +35,8 @@ function ExpTlJX1Type:Give(tbItem, nAwardCount, tbLogTitle)
 		end
 		tl_addPlayerExp(nExp)
 		WriteLog(format("[awardtype exp_jx1] %s +%d exp (tl)", GetName() or "", nExp))
+		-- [FIX 24/08] khuon ban Linux lib\awardtype\exp.lua:13
+		Msg2Player(format("Nh­n ®Úîc ®iÓm kinh nghiÖm céng d«n %s.", nExp))
 		return 1
 	end
 	return 0

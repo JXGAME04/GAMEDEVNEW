@@ -33,7 +33,7 @@ function main(nItemIndex)
 	local tbOpt;
 	
 	if szMsg_Huang ~= nil then
-		szTitle	= format("Xin chµo <color=yellow>%s<color>, trong thêi gian 60 ngµy chØ ®­îc sö dông 1 lÇn Hoµng Ch©n §¬n, ®¹i hiÖp ®îi thªm %s råi h·y thö l¹i.",GetName(), szMsg_Huang);
+		szTitle	= format("Xin chµo <color=yellow>%s<color>, trong thêi gian 30 ngµy chØ ®­îc sö dông 1 lÇn Hoµng Ch©n §¬n, ®¹i hiÖp ®îi thªm %s råi h·y thö l¹i.",GetName(), szMsg_Huang);
 		tbOpt = 
 		{
 			"X¸c nhËn/OnCancel"
@@ -70,7 +70,7 @@ function BeiDouChuanGong_UseItem(nItemIndex)
 	end			
 	
 	if szMsg_Huang ~= nil then
-		local szTitle = format("Xin chµo <color=yellow>%s<color>, trong thêi gian 60 ngµy chØ ®­îc sö dông 1 lÇn Hoµng Ch©n §¬n, ®¹i hiÖp ®îi thªm %s råi h·y thö l¹i.",GetName(), szMsg_Huang)
+		local szTitle = format("Xin chµo <color=yellow>%s<color>, trong thêi gian 30 ngµy chØ ®­îc sö dông 1 lÇn Hoµng Ch©n §¬n, ®¹i hiÖp ®îi thªm %s råi h·y thö l¹i.",GetName(), szMsg_Huang)
 		local tbOpt = 
 		{
 			"X¸c nhËn/OnCancel"
