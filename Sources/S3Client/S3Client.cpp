@@ -1133,8 +1133,21 @@ void KMyApp::ProcIpcCommand()
 			break;
 			case PRT_GAMELOOP:
 			{
+				// (24/08) WAuto.exe CU gui goi NGAN hon struct hien tai -> phan duoi la RAC
+				// (cac truong moi cua Tong Kim / Da Tau doc phai rac se tu bat auto lung tung).
+				// Chep sang ban sao DA XOA TRANG, khong ghi de len goi ke tiep trong bo dem.
 				IPCGameLoop* pGL = (IPCGameLoop*)p;
-				ExtAutoLoop(&pGL->setting);
+				if(pGL->Size >= sizeof(IPCGameLoop))
+				{
+					ExtAutoLoop(&pGL->setting);
+				}
+				else
+				{
+					IPCGameLoop sGL;
+					memset(&sGL, 0, sizeof(sGL));
+					memcpy(&sGL, pGL, pGL->Size);
+					ExtAutoLoop(&sGL.setting);
+				}
 			}
 			break;
 			case PRT_HIDEGAME:
