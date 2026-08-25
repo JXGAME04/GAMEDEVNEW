@@ -40,6 +40,7 @@
 #include "KDaTauTables.h"
 #include "KDaTauSpots.h"
 #include "KTongKimTables.h"
+#include "KLienDauTables.h"
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -7266,6 +7267,1002 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	}
 }
 // ==================== HET AUTO TONG KIM ====================
+// ==================== AUTO LIEN DAU / WLLS (24/08/2026) ====================
+// May trang thai cho NGUOI CHOI THAT, bam theo he leaguematch da port 20-21/08
+// (BANGIAO_LIENDAU_THICONG.md + AUTO_LIENDAU_SPEC.md):
+//   toi khung gio -> Su gia trong thanh -> (tu lap chien doi neu chua co) ->
+//   "Ta muon den khu thi dau hang ..." vao HOI TRUONG -> cat do CAM vao ruong ->
+//   Quan vien hoi truong: "Ta muon tham chien!" / "Ta da san sang!" / "Xac nhan"
+//   -> KHU CHUAN BI (dung yen cho ghep, 4 phut) -> DAU TRUONG: danh theo tab PK
+//   -> chet hoac het tran thi bi keo ve hoi truong -> bao danh luot sau -> het
+//   khung gio thi ra Xa phu ve thanh. Cuoi mua (pha 1) tu nhan thuong + danh hieu.
+// So lieu (map, toa do NPC, marker thoai, bang do cam) o KLienDauTables.h - SINH TU
+// DONG boi ReverseTools/gen_liendau_tables.py tu script SONG cua may chu; dung go tay.
+// Dung chung voi khoi Tong Kim: TK_O / TK_ThayDuoc / TK_ToiNpc (khong chep lai).
+
+enum LDPhase
+{
+	LDP_OFF = 0,	// ngoai khung gio - tha may cho auto thuong
+	LDP_GO,			// toi gio: di toi Su gia trong thanh
+	LDP_TEAM,		// thoai Su gia: lap chien doi (neu can) roi vao hoi truong
+	LDP_NAME,		// dang cho hop nhap TEN CHIEN DOI
+	LDP_STASH,		// trong hoi truong: cat do CAM vao ruong
+	LDP_SIGNUP,		// trong hoi truong: Quan vien hoi truong -> tham chien
+	LDP_PREP,		// khu chuan bi: dung yen cho ghep cap
+	LDP_FIGHT,		// dau truong: danh theo tab PK
+	LDP_WAIT,		// ve hoi truong sau tran: cho luot sau
+	LDP_AWARD,		// cuoi mua (pha 1): nhan thuong xep hang + danh hieu
+	LDP_LEAVE,		// ra khoi hoi truong bang Xa phu
+	LDP_DONE		// xong khung gio nay - tha may
+};
+
+#define LD_HANPHA	180000u		// han mot pha (3 phut) truoc khi bo cuoc
+#define LD_NHIPNPC	12000u		// nhip bam lai Quan vien hoi truong khi bi tu choi
+
+static void LD_Msg(int nPlayerIdx, const char* szMsg)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	UINT uNow = timeGetTime();
+	if (ea.uLDMsgT > uNow)
+		return;
+	ea.uLDMsgT = uNow + 1200;
+	try
+	{
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[Liªn ®Êu]", (char*)szMsg, strlen(szMsg), TRUE);
+	}
+	catch (...) {}
+}
+
+static void LD_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nLDPhase = nPha;
+	ea.nLDStep = 0;
+	ea.nLDTry = 0;
+	ea.uLDPhaseT = uCurTime;
+	ea.uLDNext = uCurTime + 400;
+	ea.uLDDlgSeen = g_sDTCap.uDlgSeq;
+}
+
+static int LD_TrongBang(int nMap, const short* pTb, int nSo)
+{
+	for (int i = 0; i < nSo; ++i)
+		if ((int)pTb[i] == nMap)
+			return 1;
+	return 0;
+}
+
+// 1 = hoi truong, 2 = khu chuan bi, 3 = dau truong, 0 = map khac
+static int LD_LoaiMap(int nMap)
+{
+	if (LD_TrongBang(nMap, g_LDHall, G_LDHALL_COUNT))
+		return 1;
+	if (LD_TrongBang(nMap, g_LDPrep, G_LDPREP_COUNT))
+		return 2;
+	if (LD_TrongBang(nMap, g_LDArena, G_LDARENA_COUNT))
+		return 3;
+	return 0;
+}
+
+// chi so trong g_LDCity cua map thanh dang dung (-1 = thanh khong co Su gia)
+static int LD_ThanhIdx(int nMap)
+{
+	for (int i = 0; i < LD_CITY_COUNT; ++i)
+		if ((int)g_LDCity[i][0] == nMap)
+			return i;
+	return -1;
+}
+
+// hang du thi theo cap nhan vat: 1 Kiet xuat (80-119), 2 Vo lam (>=120), 0 chua du
+static int LD_Hang(int nLevel)
+{
+	if (nLevel >= LD_LEVEL_SENIOR)
+		return 2;
+	if (nLevel >= LD_LEVEL_JUNIOR)
+		return 1;
+	return 0;
+}
+
+// tra so hieu khung gio (1/2) neu dang trong cua so cua mot khung DANG BAT,
+// *pnConLai = so phut con lai cua khung. Gio lay tu dong ho may nay + do lech
+// nguoi choi khai o tab Lien dau (xem ky uc gio-server-mui-gio-wauto).
+static int LD_KhungGio(const autoData* pAp, int* pnConLai)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	int nPhut = (int)st.wHour * 60 + (int)st.wMinute + pAp->nLDLech;
+	nPhut = ((nPhut % 1440) + 1440) % 1440;
+	int nSom = pAp->nLDSom;
+	if (nSom < 0)
+		nSom = 0;
+	else if (nSom > 30)
+		nSom = 30;
+	int nLuot = pAp->nLDLuot > 0 ? pAp->nLDLuot : 4;
+	if (nLuot > 24)
+		nLuot = 24;
+	int nDai = pAp->nLDPhutLuot > 0 ? pAp->nLDPhutLuot : LD_PHUT_LUOT;
+	if (nDai > 60)
+		nDai = 60;
+	for (int k = 0; k < 2; ++k)
+	{
+		if (!pAp->bLDKhung[k])
+			continue;
+		int nBD = pAp->nLDGio[k] * 60 + pAp->nLDPhut[k];
+		int nCach = nPhut - nBD;
+		if (nCach < -720)
+			nCach += 1440;
+		else if (nCach > 720)
+			nCach -= 1440;
+		if (nCach >= -nSom && nCach < nLuot * nDai)
+		{
+			if (pnConLai)
+				*pnConLai = nLuot * nDai - nCach;
+			return k + 1;
+		}
+	}
+	return 0;
+}
+
+// dong CUOI cua moi thoai lien dau LUON la dong huy (wlls_add_option day
+// "/OnCancel" xuong cuoi; cac Say 2 dong cung dat dong tu choi sau cung).
+static void LD_Huy(int nPlayerIdx, int nAns)
+{
+	if (nAns > 0)
+		DT_Answer(nPlayerIdx, nAns - 1);
+	else
+		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+}
+
+static bool LD_LaDoCam(int nItemIdx)
+{
+	if (nItemIdx <= 0)
+		return false;
+	int g = Item[nItemIdx].GetGenre();
+	int d = Item[nItemIdx].GetDetailType();
+	int p = Item[nItemIdx].GetParticular();
+	for (int i = 0; i < LD_FORBID_COUNT; ++i)
+		if (g == (int)g_LDForbid[i][0] && d == (int)g_LDForbid[i][1] && p == (int)g_LDForbid[i][2])
+			return true;
+	return false;
+}
+
+// mo khoa ruong bang mat khau o tab Hau can (szBoxPass).
+// Tra: true = da mo; false = chua mo, *pnCho = 1 nghia la VUA gui lenh mo (phai
+// doi mot nhip), 0 nghia la chiu han (khong co mat khau).
+static bool LD_MoRuong(int nPlayerIdx, const autoData* pAp, UINT uCurTime, int* pnCho)
+{
+	if (pnCho)
+		*pnCho = 0;
+	if (Player[nPlayerIdx].m_CUnlocked)
+		return true;
+	if (!pAp->szBoxPass[0])
+		return false;
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	SendClientCPUnlockCmd(atoi(pAp->szBoxPass));
+	ea.uLDNext = uCurTime + 1200;
+	if (pnCho)
+		*pnCho = 1;
+	return false;
+}
+
+// don do CAM (WLLS_FORBID_ITEM) khoi tay / o dung ngay / hanh trang -> ruong.
+// Tra: 0 = sach; 1 = vua lam mot viec (tieu nhip nay); -2 = dang cho mo khoa ruong;
+//      -1 = con do cam ma KHONG cat duoc (ruong day / khong co mat khau).
+static int LD_CatDoCam(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	KItemList& il = Player[nPlayerIdx].m_ItemList;
+	int x, y;
+	int nHand = il.Hand();
+	if (nHand > 0)
+	{
+		// dang cam mon tren tay - dat xuong hanh trang truoc da
+		if (!il.CheckCanPlaceInEquipment(Item[nHand].GetWidth(), Item[nHand].GetHeight(), &x, &y))
+			return -1;
+		DT_ClickItem(pos_equiproom, x, y);
+		return 1;
+	}
+	for (int i = 0; i < IMMEDIACY_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < IMMEDIACY_ROOM_WIDTH; ++j)
+		{
+			int nIdx = il.m_Room[room_immediacy].FindItem(j, i);
+			if (!LD_LaDoCam(nIdx))
+				continue;
+			if (!il.CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y))
+				return -1;
+			DT_ClickItem(pos_immediacy, j, i);	// nhac len tay, nhip sau se dat vao tui
+			return 1;
+		}
+	for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+		{
+			int nIdx = il.m_Room[room_equipment].FindItem(j, i);
+			if (!LD_LaDoCam(nIdx))
+				continue;
+			int nCho = 0;
+			if (!LD_MoRuong(nPlayerIdx, pAp, uCurTime, &nCho))
+				return nCho ? -2 : -1;
+			int nDst = DT_ChestRoomFor(nPlayerIdx, pAp, Item[nIdx].GetWidth(), Item[nIdx].GetHeight());
+			if (!nDst)
+				return -1;
+			DT_BagToBox(nIdx, nDst);
+			return 1;
+		}
+	return 0;
+}
+
+// chon dich trong dau truong: doi thu la NGUOI CHOI o MISSION GROUP KHAC
+// (glbmission/schedule.lua: AddMSPlayer(WLLS_MSID_COMBAT, camp) + SetCurCamp(camp%2+2)
+//  -> m_nMissionGroup duoc dong bo xuong client qua NpcSync.MissionGroup).
+// Loc them duong nhin nhu ben Tong Kim de khong dam vao tuong.
+static int LD_ChonDich(int nPlayerIdx, const autoData* pAp)
+{
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	const int nMyGrp = Npc[nSelf].m_nMissionGroup;
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	int nTam = pAp->nPKVision;
+	if (nTam < 100)
+		nTam = 100;
+	else if (nTam > 1200)
+		nTam = 1200;
+	int nGan = 0, nGanD = 0x7fffffff;
+	int nMu = 0, nMuD = 0x7fffffff;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (nIdx == nSelf || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if (Npc[nIdx].m_Kind != kind_player)
+			continue;		// trong san chi co nguoi choi
+		if (nMyGrp > 0)
+		{
+			if (Npc[nIdx].m_nMissionGroup <= 0 || Npc[nIdx].m_nMissionGroup == nMyGrp)
+				continue;	// dong doi hoac nguoi ngoai tran
+		}
+		else if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+			continue;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		int nD = g_GetDistance(nX, nY, x, y);
+		if (nD > nTam)
+			continue;
+		if (nD < nMuD)
+		{
+			nMuD = nD;
+			nMu = nIdx;
+		}
+		if (!TK_ThayDuoc(nX, nY, x, y))
+			continue;
+		if (nD < nGanD)
+		{
+			nGanD = nD;
+			nGan = nIdx;
+		}
+	}
+	if (nGan)
+		return nGan;
+	if (nMu && nMuD <= 160)
+		return nMu;
+	return 0;
+}
+
+// NPC kind_dialoger co ten chua szSub va GAN NHAT toa do (nAtX, nAtY) trong ban kinh.
+// Khac DT_FindNpcName (tra NPC DAU TIEN khop): o 4 thanh 78/162/80/11 NPC "Su gia
+// lien dau" tim dong doi (id 87) dung cach Su gia bao danh (id 308) duoi 20 o nen
+// "dau tien" hay bam nham; ba Quan vien hoi truong cung trung ten y het nhau.
+static int LD_FindNpcGan(int nPlayerIdx, const char* szSub, int nAtX, int nAtY, int nRadius)
+{
+	int dX, dY;
+	char szBuff[36];
+	int nBest = 0, nBestD = 0x7fffffff;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (Npc[nIdx].m_Kind != kind_dialoger || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		Npc[nIdx].GetMpsPos(&dX, &dY);
+		int nD = g_GetDistance(nAtX, nAtY, dX, dY);
+		if (nD > nRadius || nD >= nBestD)
+			continue;
+		g_StrCpyLen(szBuff, Npc[nIdx].Name, sizeof(szBuff));
+		g_StrLower(szBuff);
+		if (!strstr(szBuff, szSub))
+			continue;
+		nBestD = nD;
+		nBest = nIdx;
+	}
+	return nBest;
+}
+
+// mo thoai NPC ten szTen GAN NHAT o (nOx, nOy) - don vi O; chua toi noi thi di bo den.
+// Tra: 0 dang di, 1 vua go thoai, -1 khong thay NPC (da toi noi).
+static int LD_ToiNpc(int nPlayerIdx, const char* szTen, int nOx, int nOy, UINT uCurTime)
+{
+	int nX, nY, dX, dY;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	int nIdx = LD_FindNpcGan(nPlayerIdx, szTen, TK_O(nOx), TK_O(nOy), 640);
+	if (!nIdx)
+	{
+		if (DT_WalkTo(nPlayerIdx, TK_O(nOx), TK_O(nOy), 320, uCurTime))
+			return -1;
+		return 0;
+	}
+	Npc[nIdx].GetMpsPos(&dX, &dY);
+	if (g_GetDistance(nX, nY, dX, dY) > 128)
+	{
+		DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
+		return 0;
+	}
+	Player[nPlayerIdx].DialogNpc(nIdx);
+	return 1;
+}
+
+// ================== MAY CHINH LIEN DAU ==================
+// Tra ve: 0 = tha may; 1 = dang cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
+//         2 = dang trong dau truong (cam lai + de may PK cua tab PK danh).
+static int LD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	const int nLoai = LD_LoaiMap(nMap);
+	int nX, nY;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+
+	// tin toan may chu bao MO BAO DANH (wlls_setphase pha 4 -> AddGlobalNews)
+	if (cap.uNewsSeq != ea.uLDNewsSeen)
+	{
+		ea.uLDNewsSeen = cap.uNewsSeq;
+		if (DT_Has(cap.szNews, LDM_MSG_BAODANH))
+		{
+			ea.uLDMoT = uCurTime;
+			if (ea.nLDPhase == LDP_WAIT || ea.nLDPhase == LDP_SIGNUP)
+				ea.uLDNext = uCurTime;	// bam ngay, khong doi het nhip 12 giay
+		}
+	}
+
+	int nConLai = 0;
+	const int nKhung = LD_KhungGio(pAp, &nConLai);
+	const int nHang = LD_Hang(Npc[nSelf].m_Level);
+	const int nKhoa = DT_Today() * 10 + nKhung;
+
+	// dang cho hoi sinh: nut hoi sinh do "Tu hoi sinh" (tab Co ban) / S3Client bam ho
+	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
+		return ea.nLDPhase ? 1 : 0;
+	if (Player[nPlayerIdx].CheckTrading())
+		return ea.nLDPhase ? 1 : 0;
+
+	// ---- quyet dinh vao cuoc ----
+	if (ea.nLDPhase == LDP_OFF || ea.nLDPhase == LDP_DONE)
+	{
+		ea.nLDHold = 0;
+		if (ea.uLDNext > uCurTime)
+			return 0;
+		ea.uLDNext = uCurTime + 1500;
+		// Dang o KHU CHUAN BI / DAU TRUONG thi phai cam lai ngay (dung yen / danh)
+		// du con trong khung gio hay khong. Rieng HOI TRUONG thi chi cam lai khi
+		// dang trong khung gio - ngoai gio nguoi choi co the tu vao quan ly chien
+		// doi, auto khong duoc keo ho ra bang Xa phu.
+		if (nLoai == 3 || nLoai == 2)
+		{
+			LD_Pha(nPlayerIdx, (nLoai == 3) ? LDP_FIGHT : LDP_PREP, uCurTime);
+			ea.nLDHold = 1;
+			return 1;
+		}
+		if (nLoai == 1 && nKhung)
+		{
+			LD_Pha(nPlayerIdx, LDP_SIGNUP, uCurTime);
+			ea.nLDHold = 1;
+			return 1;
+		}
+		// cuoi mua (pha 1 - ngay 29 den 07): tu nhan thuong xep hang + danh hieu
+		if (pAp->bLDNhanThuong && ea.nLDAwardDay != DT_Today())
+		{
+			SYSTEMTIME st;
+			GetLocalTime(&st);
+			int nNgay = (int)st.wDay;
+			if ((nNgay >= 29 || nNgay <= 7) && nHang && LD_ThanhIdx(nMap) >= 0
+			 && (int)g_LDCity[LD_ThanhIdx(nMap)][1] == nHang)
+			{
+				ea.nLDAwardDay = DT_Today();
+				ea.nLDMask = 0;
+				LD_Pha(nPlayerIdx, LDP_AWARD, uCurTime);
+				ea.nLDHold = 1;
+				return 1;
+			}
+		}
+		if (!nKhung)
+		{
+			ea.nLDPhase = LDP_OFF;
+			return 0;
+		}
+		if (ea.nLDPhase == LDP_DONE && ea.nLDKey == nKhoa)
+			return 0;			// khung gio nay da chay xong
+		if (!nHang)
+		{
+			ea.nLDKey = nKhoa;
+			ea.nLDPhase = LDP_DONE;
+			LD_Msg(nPlayerIdx, "<color=Yellow>Ch­a ®ñ cÊp 80 - bá qua khung giê Liªn ®Êu nµy.");
+			return 0;
+		}
+		ea.nLDKey = nKhoa;
+		ea.nLDNeed = 0;
+		ea.nLDBackMap = nMap;
+		ea.nLDBackX = nX;
+		ea.nLDBackY = nY;
+		LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+		LD_Msg(nPlayerIdx, "<color=Cyan>Tíi giê Liªn ®Êu - t¹m dõng viÖc ®ang lµm ®Ó ®i b¸o danh.");
+	}
+
+	if (ea.uLDNext > uCurTime)
+		return ea.nLDHold;
+	ea.uLDNext = uCurTime + 400;
+
+	// han pha: lau qua thi bo khung gio nay, tra may lai cho auto cu
+	if (ea.nLDPhase != LDP_FIGHT && ea.nLDPhase != LDP_PREP && ea.nLDPhase != LDP_WAIT
+	 && ea.nLDPhase != LDP_OFF && ea.nLDPhase != LDP_DONE
+	 && uCurTime - ea.uLDPhaseT > LD_HANPHA)
+	{
+		LD_Msg(nPlayerIdx, "<color=Yellow>Mét b­íc cña auto Liªn ®Êu kÑt qu¸ 3 phót - bá khung giê nµy.");
+		if (nLoai == 1)
+			LD_Pha(nPlayerIdx, LDP_LEAVE, uCurTime);
+		else
+		{
+			ea.nLDPhase = LDP_DONE;
+			ea.nLDHold = 0;
+			return 0;
+		}
+	}
+
+	switch (ea.nLDPhase)
+	{
+	case LDP_GO:
+	{
+		ea.nLDHold = 1;
+		if (nLoai == 3)
+		{
+			LD_Pha(nPlayerIdx, LDP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (nLoai == 2)
+		{
+			LD_Pha(nPlayerIdx, LDP_PREP, uCurTime);
+			return 1;
+		}
+		if (nLoai == 1)
+		{
+			LD_Pha(nPlayerIdx, LDP_STASH, uCurTime);
+			return 1;
+		}
+		{
+			int nCity = LD_ThanhIdx(nMap);
+			if (nCity < 0 || (int)g_LDCity[nCity][1] != nHang)
+			{
+				// khong dung thanh cua hang minh: thu phu ve thanh mot lan roi thoi
+				if (pAp->bLDPhuVe && ea.nLDTry < 2 && DT_HasPortalInBag(nPlayerIdx))
+				{
+					++ea.nLDTry;
+					DT_UsePortal(nPlayerIdx);
+					ea.uLDNext = uCurTime + 6000;
+					return 1;
+				}
+				LD_Msg(nPlayerIdx, "<color=Yellow>§ang kh«ng ë thµnh cã Sø gi¶ ®óng h¹ng - bá khung giê Liªn ®Êu nµy.");
+				ea.nLDPhase = LDP_DONE;
+				ea.nLDHold = 0;
+				return 0;
+			}
+			int nR = LD_ToiNpc(nPlayerIdx, LDM_NPC_SUGIA,
+					(int)g_LDCity[nCity][2], (int)g_LDCity[nCity][3], uCurTime);
+			if (nR == 1)
+			{
+				LD_Pha(nPlayerIdx, LDP_TEAM, uCurTime);
+				ea.uLDNext = uCurTime + 900;
+			}
+			else if (nR < 0)
+			{
+				LD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Sø gi¶ liªn ®Êu quanh ®©y.");
+				ea.uLDNext = uCurTime + 5000;
+			}
+		}
+		return 1;
+	}
+
+	case LDP_TEAM:
+	{
+		ea.nLDHold = 1;
+		if (nLoai == 1)
+		{
+			LD_Msg(nPlayerIdx, "<color=Green>§· vµo héi tr­êng liªn ®Êu.");
+			LD_Pha(nPlayerIdx, LDP_STASH, uCurTime);
+			return 1;
+		}
+		if (nLoai)
+		{
+			LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+			return 1;
+		}
+		if (cap.uInpSeq != ea.uLDInpSeen)
+		{
+			// hop nhap TEN CHIEN DOI vua bung ra
+			ea.uLDInpSeen = cap.uInpSeq;
+			char szTen[20];
+			g_StrCpyLen(szTen, pAp->szLDTen, sizeof(szTen));
+			if (!szTen[0])
+				g_StrCpyLen(szTen, Npc[nSelf].Name, sizeof(szTen));
+			// server cam khoang trang va cac ky tu ngat cau trong ten doi
+			for (char* p = szTen; *p; ++p)
+				if (*p == ' ' || *p == '"' || *p == '/' || *p == '#' || *p == '|' || *p == '\t')
+					*p = '_';
+			SendClientCmdInputBox(1, 0, szTen, cap.szInpFunc);
+			ea.nLDNeed = 0;
+			ea.nLDStep = 0;
+			ea.uLDNext = uCurTime + 2000;
+			LD_Msg(nPlayerIdx, "<color=Cyan>§ang lËp chiÕn ®éi liªn ®Êu.");
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uLDDlgSeen)
+		{
+			ea.uLDDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			if (DT_Has(szBuf, LDM_SAY_DONGCUA))
+			{
+				LD_Huy(nPlayerIdx, nAns);
+				LD_Msg(nPlayerIdx, "<color=Yellow>Héi tr­êng ch­a më - chê tíi giê råi vµo l¹i.");
+				ea.uLDPhaseT = uCurTime;		// dang cho dung gio, khong tinh la ket
+				ea.uLDNext = uCurTime + 20000;
+				ea.nLDStep = 0;
+				return 1;
+			}
+			int nOpt = DT_FindAns(apAns, nAns, LDM_OPT_LAPNHOM);
+			if (nOpt >= 0 && pAp->bLDTuLap)
+			{
+				DT_Answer(nPlayerIdx, nOpt);	// -> hop nhap ten
+				ea.uLDNext = uCurTime + 1200;
+				return 1;
+			}
+			nOpt = DT_FindAns(apAns, nAns, LDM_OPT_LAPDOI);
+			if (nOpt >= 0)
+			{
+				// the loai mot nguoi (Don dau): server tu lap doi, khong hoi ten
+				if (!pAp->bLDTuLap)
+				{
+					LD_Huy(nPlayerIdx, nAns);
+					LD_Msg(nPlayerIdx, "<color=Yellow>Ch­a cã chiÕn ®éi mµ « Tù lËp chiÕn ®éi ®ang t¾t.");
+					ea.nLDPhase = LDP_DONE;
+					ea.nLDHold = 0;
+					return 0;
+				}
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nLDNeed = 0;
+				ea.nLDStep = 0;
+				ea.uLDNext = uCurTime + 2000;
+				return 1;
+			}
+			if (ea.nLDNeed)
+			{
+				nOpt = DT_FindAns(apAns, nAns, LDM_OPT_CHIENDOI);
+				if (nOpt >= 0)
+				{
+					DT_Answer(nPlayerIdx, nOpt);	// vao muc "Chien doi hang ... cua ta"
+					ea.uLDNext = uCurTime + 1200;
+					return 1;
+				}
+				nOpt = DT_FindAns(apAns, nAns, LDM_OPT_LAP);
+				if (nOpt >= 0 && pAp->bLDTuLap)
+				{
+					DT_Answer(nPlayerIdx, nOpt);	// "Ta muon lap ... nhom"
+					ea.uLDNext = uCurTime + 1200;
+					return 1;
+				}
+			}
+			nOpt = DT_FindAns(apAns, nAns, LDM_OPT_KHUTHIDAU);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nLDStep = 1;					// da bam - doi doi map sang hoi truong
+				ea.uLDNext = uCurTime + 2200;
+				return 1;
+			}
+			// thoai khong co dong nao dung -> gan nhu chac chan la loi "chua thay
+			// bao danh chien doi cua ban" => phai lap doi truoc
+			LD_Huy(nPlayerIdx, nAns);
+			if (ea.nLDStep == 1)
+				ea.nLDNeed = 1;
+			ea.nLDStep = 0;
+			if (++ea.nLDTry >= 8)
+			{
+				LD_Msg(nPlayerIdx, "<color=Yellow>ChiÕn ®éi ch­a hîp lÖ - h·y tù vµo Sø gi¶ xö lý råi bËt l¹i.");
+				ea.nLDPhase = LDP_DONE;
+				ea.nLDHold = 0;
+				return 0;
+			}
+			ea.uLDNext = uCurTime + 1500;
+			return 1;
+		}
+		{
+			int nCity = LD_ThanhIdx(nMap);
+			if (nCity < 0)
+			{
+				LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+				return 1;
+			}
+			int nR = LD_ToiNpc(nPlayerIdx, LDM_NPC_SUGIA,
+					(int)g_LDCity[nCity][2], (int)g_LDCity[nCity][3], uCurTime);
+			if (nR == 1)
+				ea.uLDNext = uCurTime + 900;
+			else if (nR < 0)
+				ea.uLDNext = uCurTime + 4000;
+		}
+		return 1;
+	}
+
+	case LDP_STASH:
+	{
+		ea.nLDHold = 1;
+		if (nLoai == 3)
+		{
+			LD_Pha(nPlayerIdx, LDP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (nLoai == 2)
+		{
+			LD_Pha(nPlayerIdx, LDP_PREP, uCurTime);
+			return 1;
+		}
+		if (nLoai != 1)
+		{
+			LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+			return 1;
+		}
+		if (!pAp->bLDCatDoCam)
+		{
+			LD_Pha(nPlayerIdx, LDP_SIGNUP, uCurTime);
+			return 1;
+		}
+		{
+			int nR = LD_CatDoCam(nPlayerIdx, pAp, uCurTime);
+			if (nR == -2)
+			{
+				// dang cho ruong mo khoa (LD_MoRuong da dat uLDNext) - thu lai nhip sau
+				if (++ea.nLDTry < 120)
+					return 1;
+			}
+			else if (nR == 1)
+			{
+				if (ea.uLDNext < uCurTime + 500)
+					ea.uLDNext = uCurTime + 500;
+				if (++ea.nLDTry < 120)
+					return 1;
+			}
+			else if (nR < 0)
+				LD_Msg(nPlayerIdx, "<color=Yellow>Cßn ®å cÊm mµ r­¬ng kh«ng cÊt ®­îc - h·y dän tay råi bËt l¹i.");
+		}
+		LD_Pha(nPlayerIdx, LDP_SIGNUP, uCurTime);
+		return 1;
+	}
+
+	case LDP_SIGNUP:
+	{
+		ea.nLDHold = 1;
+		if (nLoai == 2)
+		{
+			LD_Msg(nPlayerIdx, "<color=Green>§· vµo khu chuÈn bÞ - chê ghÐp cÆp.");
+			LD_Pha(nPlayerIdx, LDP_PREP, uCurTime);
+			return 1;
+		}
+		if (nLoai == 3)
+		{
+			LD_Pha(nPlayerIdx, LDP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (nLoai != 1)
+		{
+			// bi dua ve thanh im lang = chua co chien doi hop le
+			ea.nLDNeed = 1;
+			LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uLDDlgSeen)
+		{
+			ea.uLDDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			if (DT_Has(szBuf, LDM_SAY_DOCAM))
+			{
+				LD_Huy(nPlayerIdx, nAns);
+				if (pAp->bLDCatDoCam && ea.nLDTry < 3)
+				{
+					++ea.nLDTry;
+					LD_Msg(nPlayerIdx, "<color=Yellow>BÞ chÆn v× ®å cÊm - ®ang cÊt vµo r­¬ng råi b¸o danh l¹i.");
+					LD_Pha(nPlayerIdx, LDP_STASH, uCurTime);
+					return 1;
+				}
+				LD_Msg(nPlayerIdx, "<color=Yellow>Trong ng­êi cßn d­îc phÈm cÊm - h·y cÊt vµo r­¬ng råi bËt l¹i.");
+				LD_Pha(nPlayerIdx, LDP_WAIT, uCurTime);
+				return 1;
+			}
+			int nOpt = DT_FindAns(apAns, nAns, LDM_OPT_THAMCHIEN);
+			if (nOpt < 0)
+				nOpt = DT_FindAns(apAns, nAns, LDM_OPT_SANSANG);
+			if (nOpt < 0)
+				nOpt = DT_FindAns(apAns, nAns, LDM_OPT_XACNHAN);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.uLDPhaseT = uCurTime;
+				ea.uLDNext = uCurTime + 1200;
+				return 1;
+			}
+			// chua toi pha bao danh (pha <3 / 3 / 5) hoac bi tu choi -> cho luot sau
+			LD_Huy(nPlayerIdx, nAns);
+			ea.uLDPhaseT = uCurTime;
+			ea.uLDNext = uCurTime + LD_NHIPNPC;
+			return 1;
+		}
+		{
+			// toi Quan vien hoi truong GAN NHAT trong 3 vi tri
+			int nBest = 0, nBestD = 0x7fffffff;
+			for (int i = 0; i < LD_SIGNUP_COUNT; ++i)
+			{
+				int nD = g_GetDistance(nX, nY, TK_O((int)g_LDNpcSignup[i].x), TK_O((int)g_LDNpcSignup[i].y));
+				if (nD < nBestD)
+				{
+					nBestD = nD;
+					nBest = i;
+				}
+			}
+			int nR = LD_ToiNpc(nPlayerIdx, LDM_NPC_QUANVIEN,
+					(int)g_LDNpcSignup[nBest].x, (int)g_LDNpcSignup[nBest].y, uCurTime);
+			if (nR == 1)
+				ea.uLDNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				LD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Quan viªn héi tr­êng quanh ®©y.");
+				ea.uLDNext = uCurTime + 5000;
+			}
+		}
+		return 1;
+	}
+
+	case LDP_PREP:
+	{
+		// khu chuan bi: TUYET DOI dung yen (ra khoi khu = bo cuoc). Chi cho ghep cap.
+		ea.nLDHold = 1;
+		if (nLoai == 3)
+		{
+			LD_Msg(nPlayerIdx, "<color=Green>§· vµo ®Êu tr­êng - ®¸nh theo cÊu h×nh tab PK.");
+			LD_Pha(nPlayerIdx, LDP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (nLoai == 1)
+		{
+			LD_Pha(nPlayerIdx, LDP_WAIT, uCurTime);
+			return 1;
+		}
+		if (nLoai != 2)
+		{
+			LD_Pha(nPlayerIdx, LDP_GO, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uLDDlgSeen)
+		{
+			ea.uLDDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			LD_Huy(nPlayerIdx, nAns);	// dong CUOI = "Tiep tuc thi dau" - dung roi khu
+		}
+		ea.uLDNext = uCurTime + 1500;
+		return 1;
+	}
+
+	case LDP_FIGHT:
+	{
+		ea.nLDHold = 2;
+		if (nLoai == 1)
+		{
+			LD_Msg(nPlayerIdx, "<color=Cyan>HÕt trËn - vÒ héi tr­êng chê l­ît sau.");
+			LD_Pha(nPlayerIdx, LDP_WAIT, uCurTime);
+			return 1;
+		}
+		if (nLoai == 2)
+		{
+			LD_Pha(nPlayerIdx, LDP_PREP, uCurTime);
+			return 1;
+		}
+		if (nLoai != 3)
+		{
+			ea.nLDPhase = LDP_DONE;
+			ea.nLDHold = 0;
+			return 0;
+		}
+		{
+			int nTG = LD_ChonDich(nPlayerIdx, pAp);
+			if (nTG)
+			{
+				ea.uNpcID = Npc[nTG].m_dwID;
+				g_ScenePlace.RemoveFlag();
+				ea.uLDNext = uCurTime + 300;
+			}
+			else
+				ea.uLDNext = uCurTime + 700;
+		}
+		return 2;
+	}
+
+	case LDP_WAIT:
+	{
+		ea.nLDHold = 1;
+		if (nLoai == 2)
+		{
+			LD_Pha(nPlayerIdx, LDP_PREP, uCurTime);
+			return 1;
+		}
+		if (nLoai == 3)
+		{
+			LD_Pha(nPlayerIdx, LDP_FIGHT, uCurTime);
+			return 2;
+		}
+		if (nLoai != 1)
+		{
+			ea.nLDPhase = LDP_DONE;
+			ea.nLDHold = 0;
+			return 0;
+		}
+		if (!nKhung || nConLai <= 1)
+		{
+			LD_Pha(nPlayerIdx, LDP_LEAVE, uCurTime);
+			return 1;
+		}
+		LD_Pha(nPlayerIdx, LDP_SIGNUP, uCurTime);
+		ea.uLDNext = uCurTime + 8000;
+		return 1;
+	}
+
+	case LDP_AWARD:
+	{
+		ea.nLDHold = 1;
+		if (nLoai || LD_ThanhIdx(nMap) < 0)
+		{
+			ea.nLDPhase = LDP_DONE;
+			ea.nLDHold = 0;
+			return 0;
+		}
+		if (cap.uDlgSeq != ea.uLDDlgSeen)
+		{
+			ea.uLDDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			// bam theo thu tu: nhan thuong -> xep hang -> lanh giai -> danh hieu.
+			// Moi muc chi bam MOT lan (nLDMask) de khong quay vong vo tan.
+			static const char* const apMark[4] =
+				{ LDM_OPT_LANHGIAI, LDM_OPT_XEPHANG, LDM_OPT_DANHHIEU, LDM_OPT_THUONGLD };
+			for (int i = 0; i < 4; ++i)
+			{
+				if (i < 3 && (ea.nLDMask & (1 << i)))
+					continue;
+				int nOpt = DT_FindAns(apAns, nAns, apMark[i]);
+				if (nOpt < 0)
+					continue;
+				if (i < 3)
+					ea.nLDMask |= (1 << i);
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.uLDNext = uCurTime + 1500;
+				return 1;
+			}
+			LD_Huy(nPlayerIdx, nAns);
+			if ((ea.nLDMask & 3) == 3 || ++ea.nLDTry >= 6)
+			{
+				LD_Msg(nPlayerIdx, "<color=Cyan>Xong viÖc nhËn th­ëng liªn ®Êu cuèi mïa.");
+				ea.nLDPhase = LDP_DONE;
+				ea.nLDHold = 0;
+				return 0;
+			}
+			ea.uLDNext = uCurTime + 1200;
+			return 1;
+		}
+		{
+			int nCity = LD_ThanhIdx(nMap);
+			int nR = LD_ToiNpc(nPlayerIdx, LDM_NPC_SUGIA,
+					(int)g_LDCity[nCity][2], (int)g_LDCity[nCity][3], uCurTime);
+			if (nR == 1)
+				ea.uLDNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				ea.nLDPhase = LDP_DONE;
+				ea.nLDHold = 0;
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	case LDP_LEAVE:
+	{
+		ea.nLDHold = 1;
+		if (nLoai != 1)
+		{
+			LD_Msg(nPlayerIdx, "<color=Cyan>Xong Liªn ®Êu - tr¶ m¸y l¹i cho auto cò.");
+			ea.nLDPhase = LDP_DONE;
+			ea.nLDHold = 0;
+			return 0;
+		}
+		{
+			// chon dong Xa phu: nguoi choi chon san, hoac ve dung thanh luc di
+			int nVe = pAp->nLDVeThanh;
+			if (nVe < 0 || nVe >= LD_VE_COUNT)
+			{
+				nVe = 0;
+				for (int i = 0; i < LD_VE_COUNT; ++i)
+					if ((int)g_LDVeMap[i] == ea.nLDBackMap)
+					{
+						nVe = i;
+						break;
+					}
+			}
+			if (cap.uDlgSeq != ea.uLDDlgSeen)
+			{
+				ea.uLDDlgSeen = cap.uDlgSeq;
+				char szBuf[2048];
+				char* apAns[16];
+				g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+				int nAns = DT_Split(szBuf, apAns, 16);
+				int nOpt = DT_FindAns(apAns, nAns, g_LDVeOpt[nVe]);
+				if (nOpt >= 0)
+				{
+					DT_Answer(nPlayerIdx, nOpt);
+					ea.uLDNext = uCurTime + 2000;
+					return 1;
+				}
+				// hoi "chien doi dang thi dau, chac chua?" - dong DAU la "Dung vay!"
+				if (nAns >= 2 && ea.nLDTry < 3)
+				{
+					++ea.nLDTry;
+					DT_Answer(nPlayerIdx, 0);
+					ea.uLDNext = uCurTime + 1500;
+					return 1;
+				}
+				LD_Huy(nPlayerIdx, nAns);
+				ea.uLDNext = uCurTime + 1500;
+				return 1;
+			}
+			int nR = LD_ToiNpc(nPlayerIdx, LDM_NPC_XAPHU,
+					(int)g_LDNpcXaPhu.x, (int)g_LDNpcXaPhu.y, uCurTime);
+			if (nR == 1)
+				ea.uLDNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				LD_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa phu ®Ó rêi héi tr­êng.");
+				ea.nLDPhase = LDP_DONE;
+				ea.nLDHold = 0;
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	default:
+		ea.nLDPhase = LDP_OFF;
+		ea.nLDHold = 0;
+		return 0;
+	}
+}
+// ==================== HET AUTO LIEN DAU ====================
+
 
 
 int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nParam)
@@ -12331,6 +13328,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_TONGKIM:
 				{
 					return TK_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_LIENDAU:
+				{
+					return LD_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
 				}
 				case ATYPE_SETSELSV1:
 				{

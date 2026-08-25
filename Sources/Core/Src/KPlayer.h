@@ -232,6 +232,26 @@ struct ExtAuto
 	UINT uTKDestT;       // han cho mot diem den
 	UINT uTKPillT;       // moc an dot thuoc ke tiep
 	int  nTKPillIdx;     // vien thuoc ke tiep trong bang g_TKPill
+	// == Lien dau / WLLS (24/08/2026) - trang thai may ATYPE_LIENDAU, POD (ATYPE_CLEAR memset) ==
+	int  nLDPhase;       // pha LDP_* (CoreShell.cpp)
+	int  nLDStep;        // buoc con trong pha
+	int  nLDHold;        // 0 tha may; 1 dang cam lai; 2 dang o dau truong (may PK danh)
+	int  nLDTry;         // dem thu lai trong pha
+	int  nLDNeed;        // 1 = biet chac chua co chien doi -> phai lap truoc
+	int  nLDKey;         // khoa khung gio da chay xong (ngay*10 + so hieu khung)
+	int  nLDMask;        // co da bam trong pha nhan thuong cuoi mua
+	int  nLDAwardDay;    // yymmdd ngay da di nhan thuong cuoi mua
+	int  nLDBackMap;     // map truoc khi di lien dau (de bao cao)
+	int  nLDBackX;
+	int  nLDBackY;
+	UINT uLDNext;        // moc hanh dong ke tiep
+	UINT uLDPhaseT;      // moc vao pha (de bat ket pha)
+	UINT uLDDlgSeen;     // uDlgSeq da xu ly
+	UINT uLDInpSeen;     // uInpSeq (hop nhap chuoi) da xu ly
+	UINT uLDNewsSeen;    // uNewsSeq (tin toan may chu) da xu ly
+	UINT uLDMsgT;        // throttle bao trang thai
+	UINT uLDMoT;         // moc nghe tin may chu MO BAO DANH gan nhat (pha 4)
+
 	ExtAuto()
 	{
 		uLTime1 = 0;
@@ -345,6 +365,24 @@ struct ExtAuto
 		uTKDestT = 0;
 		uTKPillT = 0;
 		nTKPillIdx = 0;
+		nLDPhase = 0;
+		nLDStep = 0;
+		nLDHold = 0;
+		nLDTry = 0;
+		nLDNeed = 0;
+		nLDKey = 0;
+		nLDMask = 0;
+		nLDAwardDay = 0;
+		nLDBackMap = 0;
+		nLDBackX = 0;
+		nLDBackY = 0;
+		uLDNext = 0;
+		uLDPhaseT = 0;
+		uLDDlgSeen = 0;
+		uLDInpSeen = 0;
+		uLDNewsSeen = 0;
+		uLDMsgT = 0;
+		uLDMoT = 0;
 	}
 };
 

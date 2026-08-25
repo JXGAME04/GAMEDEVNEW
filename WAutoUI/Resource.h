@@ -330,19 +330,50 @@ using namespace std;
 #define IDC_GRP_TAB9			472
 #define IDC_SEP_9A				473
 #define IDC_SEP_9B				474
-#define IDC_INDEX_END			480
+// ==== tab 10 Lien dau / WLLS (24/08/2026) - PHAI nam trong dai an/hien ====
+#define IDC_CHECKBOX_10_ON	481
+#define IDC_STRING_10_K1	482
+#define IDC_CHECKBOX_10_K1	483
+#define IDC_EDITOR_10_G1	484
+#define IDC_STRING_10_H1	485
+#define IDC_EDITOR_10_P1	486
+#define IDC_CHECKBOX_10_K2	487
+#define IDC_EDITOR_10_G2	488
+#define IDC_STRING_10_H2	489
+#define IDC_EDITOR_10_P2	490
+#define IDC_STRING_10_LUOT	491
+#define IDC_EDITOR_10_LUOT	492
+#define IDC_STRING_10_PL	493
+#define IDC_EDITOR_10_PL	494
+#define IDC_STRING_10_SOM	495
+#define IDC_EDITOR_10_SOM	496
+#define IDC_STRING_10_LECH	497
+#define IDC_EDITOR_10_LECH	498
+#define IDC_CHECKBOX_10_LAP	499
+#define IDC_STRING_10_TEN	500
+#define IDC_EDITOR_10_TEN	501
+#define IDC_CHECKBOX_10_CAT	502
+#define IDC_CHECKBOX_10_TH	503
+#define IDC_STRING_10_VE	504
+#define IDC_COMBO_10_VE	505
+#define IDC_CHECKBOX_10_PHU	506
+#define IDC_GRP_TAB10	507
+#define IDC_SEP_10A		508
+#define IDC_SEP_10B		509
+#define IDC_INDEX_END			560
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
-#define IDD_SETSERIES_DIALOG	500
-#define IDD_NOPICK_DIALOG		501
-#define IDC_COMBO_SELNOPICK		502
-#define IDC_LIST_NOPICK			503
-#define IDC_BTN_NOPREMOVE		504
-#define IDC_LIST_SERIES			505
-#define IDC_BTN_SERUP			506
-#define IDC_BTN_SERDOWN			507
-#define IDC_STRING_HOMEPAGE		508
-#define IDC_TABBTN_9			509
-#define IDC_TABBTN_10			510
+#define IDD_SETSERIES_DIALOG	600
+#define IDD_NOPICK_DIALOG		601
+#define IDC_COMBO_SELNOPICK		602
+#define IDC_LIST_NOPICK			603
+#define IDC_BTN_NOPREMOVE		604
+#define IDC_LIST_SERIES			605
+#define IDC_BTN_SERUP			606
+#define IDC_BTN_SERDOWN			607
+#define IDC_STRING_HOMEPAGE		608
+#define IDC_TABBTN_9			609
+#define IDC_TABBTN_10			610
+#define IDC_TABBTN_11			611
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

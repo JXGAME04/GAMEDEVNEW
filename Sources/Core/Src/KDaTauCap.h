@@ -54,6 +54,12 @@ struct KDaTauCapture
 	// chu mo, khong phu thuoc dong ho / mui gio cua may nguoi choi.
 	unsigned int uNewsSeq;
 	char szNews[320];
+	// (24/08) HOP NHAP CHUOI (S2C_INPUT_BOX nType 1 - OpenGetString / AskClientForString):
+	// auto Lien dau phai go TEN CHIEN DOI vao hop nay. szInpFunc = ten ham callback
+	// (truong Value1) - phai gui lai NGUYEN VAN thi server moi goi dung ham.
+	unsigned int uInpSeq;
+	char szInpFunc[32];
+	char szInpHoi[32];
 };
 
 extern KDaTauCapture g_sDTCap;

@@ -4025,6 +4025,11 @@ void KProtocolProcess::s2cInPutBox(BYTE* pMsg)
 	switch (InPutBoxCmd->nType)
 	{
 		case 1:
+			// [LienDau] chup ten ham callback truoc khi bung UI - auto tra loi bang
+			// SendClientCmdInputBox(1, 0, <chuoi go vao>, szInpFunc).
+			g_StrCpyLen(g_sDTCap.szInpHoi, (char*)InPutBoxCmd->Value, sizeof(g_sDTCap.szInpHoi));
+			g_StrCpyLen(g_sDTCap.szInpFunc, (char*)InPutBoxCmd->Value1, sizeof(g_sDTCap.szInpFunc));
+			++g_sDTCap.uInpSeq;
 			CoreDataChanged(GDCNI_OPEN_INPUT, (unsigned int)InPutBoxCmd->Value, (unsigned int)InPutBoxCmd->Value1);
 			break;
 		case 2:

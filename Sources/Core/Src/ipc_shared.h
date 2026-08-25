@@ -263,6 +263,21 @@ struct autoData
 	int		nTKThuocSel;	// 0 = tat ca, 1 = chi tang cong, 2 = chi phong thu, 3 = cong + mau/toc
 	int		nTKUuTien;		// 0 = dich gan nhat, 1 = uu tien Hieu Uy / Pho Tuong / Dai Tuong
 	int		bTKVeCho;		// het tran nho Xa Phu dua ve dung cho luc nay
+	// == Lien dau / WLLS (24/08/2026) - PHAI o cuoi struct, truoc constructor ==
+	int		bLienDau;		// bat/tat auto Lien dau
+	int		bLDKhung[2];	// bat khung gio 1 / 2 (mac dinh 18h va 20h)
+	int		nLDGio[2];		// gio mo khung 1 / 2
+	int		nLDPhut[2];		// phut mo khung 1 / 2
+	int		nLDLuot;		// so luot moi khung (goc 4)
+	int		nLDPhutLuot;	// so phut moi luot (goc 15 - doi duoc o wlls_config.lua)
+	int		nLDSom;			// toi som may phut truoc gio mo
+	int		nLDLech;		// gio may chu lech gio may nay bao nhieu PHUT (co the am)
+	int		bLDTuLap;		// tu lap chien doi neu chua co
+	char	szLDTen[20];	// ten chien doi (de trong = lay ten nhan vat)
+	int		bLDCatDoCam;	// tu cat do CAM (WLLS_FORBID_ITEM) vao ruong truoc khi bao danh
+	int		bLDNhanThuong;	// cuoi mua tu nhan thuong xep hang + danh hieu
+	int		nLDVeThanh;		// het gio ra Xa phu ve thanh nao (0..6); 7 = o lai hoi truong
+	int		bLDPhuVe;		// dung phu ve thanh khi dang o map khong co Su gia
 	autoData()
 	{
 		bCheckiLife = 0;
@@ -442,6 +457,23 @@ struct autoData
 		nTKThuocSel = 0;
 		nTKUuTien = 0;
 		bTKVeCho = 0;
+		bLienDau = 0;
+		for (int ldi = 0; ldi < 2; ++ldi)
+		{
+			bLDKhung[ldi] = 0;
+			nLDGio[ldi] = 0;
+			nLDPhut[ldi] = 0;
+		}
+		nLDLuot = 0;
+		nLDPhutLuot = 0;
+		nLDSom = 0;
+		nLDLech = 0;
+		bLDTuLap = 0;
+		szLDTen[0] = 0;
+		bLDCatDoCam = 0;
+		bLDNhanThuong = 0;
+		nLDVeThanh = 0;
+		bLDPhuVe = 0;
 	}
 };
 
