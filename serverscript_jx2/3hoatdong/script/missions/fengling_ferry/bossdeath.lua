@@ -21,7 +21,7 @@ function OnDeath( nNpcIndex )
 	local nMonth = tonumber(FormatTime2String("%m", nCurtime))
 	local nDay = tonumber(FormatTime2String("%d", nCurtime))
 	for i = 1, maxcount do
-		local nItemIdx = DropItem(world, x, y, PlayerIndex, 6, 1, 1095, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+		local nItemIdx = DropItem(nNpcIndex, 6, 1, 1095, 1, 0, 0);
 		SetSpecItemParam(nItemIdx, 1, nCurtime);
 		SetSpecItemParam(nItemIdx, 2, nYear)
 		SetSpecItemParam(nItemIdx, 3, nMonth)
@@ -30,7 +30,7 @@ function OnDeath( nNpcIndex )
 	end;
 	
 	if (jf0904_shuizei_IsActtime() == 1) then
-		local nItemIdx = DropItem(world, x, y, PlayerIndex, 6,1,2024, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+		local nItemIdx = DropItem(nNpcIndex, 6, 1, 2024, 1, 0, 0);
 		
 		local nCurtime = tonumber(GetLocalDate("%H%M"));
 		local nRestMin = 24 * 60 - (floor(nCurtime/100)*60+floor(mod(nCurtime, 100)));
@@ -41,11 +41,17 @@ function OnDeath( nNpcIndex )
 		local nCurRate	= random(10000000)
 		if (nCurRate <= 10000000 * nRate) then		
 			local x, y, world = GetNpcPos(nNpcIndex);
-			local nItemIdx = DropItem(world, x, y, PlayerIndex, 6,1,2124, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+			local nItemIdx = DropItem(nNpcIndex, 6, 1, 2124, 1, 0, 0);
 		end
 	end
 	
 	-- ÄæÌì¸ÄÃü
 	tbChangeDestiny:completeMission_WaterThief();
 	EventSys:GetType("FengLingDu"):OnEvent("OnShuiZeiDeath", nNpcIndex, PlayerIndex)
+end
+
+-- [3HD 25/08 C41] Engine JX1 goi OnRevive cho MOI NPC co script chet moi lan
+-- hoi sinh; ban Linux khong dinh nghia (engine JX2 khong goi) => ScriptError
+-- "attempt to call a nil value" lap lai moi nhip. Ham rong = giu nguyen hanh vi.
+function OnRevive()
 end

@@ -32,3 +32,9 @@ function OnDeath(index)
 	NewWorld(11,3207,4978)
 	
 end
+
+-- [3HD 25/08 C41] Engine JX1 goi OnRevive cho MOI NPC co script chet moi lan
+-- hoi sinh; ban Linux khong dinh nghia (engine JX2 khong goi) => ScriptError
+-- "attempt to call a nil value" lap lai moi nhip. Ham rong = giu nguyen hanh vi.
+function OnRevive()
+end

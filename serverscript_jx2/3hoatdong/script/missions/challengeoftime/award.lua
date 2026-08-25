@@ -220,12 +220,12 @@ function drop_item(index, count)
 	if (count ~= 0) then
 		for i = 1, count do
 			-- µôÂäÎå»¨
-			DropItem(world, x, y, -1, 1, 2, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0);
+			DropItem(index, 1, 2, 0, 5, 0, 0);
 		end
 	end
 	-- µôÂäÀñÆ·ºĞ
 	if ( random(1,100) <= 5 ) then
-		DropItem(world, x, y, -1, 6, 1, 1401, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		DropItem(index, 6, 1, 1401, 0, 0, 0);
 	end
 end
 
