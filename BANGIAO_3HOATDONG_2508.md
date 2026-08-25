@@ -531,6 +531,59 @@ chiếu với 3 dải map: PLĐ 336-339, Vượt Ải 464-495+957, 40 map boss s
 ⇒ Sau C24, **không còn lời gọi SỐNG nào** sinh NPC / dịch chuyển vào map của 3
 hoạt động ngoài bản Linux. (Không xoá file cũ để giữ lịch sử; chúng đã trơ.)
 
+## C26-C34 — vòng soát chất lượng (thoại · thông báo · item · thưởng · UI)
+
+### Công cụ soát (chạy lại được, dùng cho hệ khác chỉ cần đổi biến `THUMUC`)
+
+| Script | Việc |
+|---|---|
+| `c26_soat_thoai.py` | đối chiếu 40 tệp với Linux: số lời thoại / số lệnh thông báo / số mục ContentList; đo **gói thoại vs trần 511B**; bắt thẻ `<color>` dính chữ có dấu |
+| `c30_soat_item.py` | 58 bộ `(6,1,N)`: có dòng server/client? `.spr` có trong pak? cột `Script` trỏ tệp CÓ THẬT? |
+| `c34_quet_additem_toancay.py` | quét toàn cây `AddItem` thiếu tham số — **đọc ĐA DÒNG** (bản 1 dòng báo nhầm lời gọi trải 2 dòng) |
+
+### Lỗi thật đã vá
+
+1. **C27** `aboutchallenge()` gói 994B > trần 511B ⇒ đọc cụt → chia **4 trang** theo
+   dấu `<enter>` sẵn có, **giữ nguyên từng chữ**. `dragonboat_main:120` thẻ `<color>`
+   dính chữ có dấu (hiện `<co lor>`) → chèn khoảng trắng.
+2. **C28 (LỖI CHẶN)** 10 lời gọi `AddItem` chỉ **6 tham số** — JX1 đòi ≥7, thiếu là
+   **không tạo item và im lặng**: giết boss không ra Sát Thủ lệnh, hợp thành không
+   ra Sát Thủ Giản, thưởng Vượt Ải không vào túi. (Linux viết 6 vì JX2 chấp nhận.)
+3. **C29** Config thưởng Sát Thủ: `HD3_ST_HESO_EXP` / `HD3_ST_SO_LENH` / `HD3_ST_EXP`
+   + hàm `HD3_ST_ThuongBoss` nối vào cả 8 nhóm cấp; đổi `AddOwnExp` → `AddSumExp`
+   (AddOwnExp đặt `m_nExp = 0` khi lên cấp ⇒ **mất exp dư**).
+4. **C31** 2 item **kích không dùng được** vì cột `Script` trỏ tệp bản Việt ĐÃ MẤT:
+   `6,1,2356` Sát Thủ Bí Bảo → `shashou_mibao.lua`; `6,1,3360` Bảo Rương Vượt Ải →
+   `chuangguanbaoxiang.lua`.
+5. **C32** F11 khi **chưa nhận nhiệm vụ**: tự `DT_UsePortal` (thổ địa/hồi thành) về
+   thành → chạy tới NPC (bảng 7 điểm sinh tự động) → tìm NPC theo **template 769**
+   (chắc hơn so tên vì tên TCVN3 có byte cao) → mở thoại.
+6. **C33** Khung Theo dõi: `s_nTracedTaskId` (1 hệ) → **mảng cờ `s_abTraced[16]`**;
+   liệt kê mọi hệ đang theo dõi (2 dòng/hệ), khung vốn là `KScrollMessageListBox`
+   nên **có sẵn thanh cuộn**; **bấm dòng nào là chạy auto hệ đó** (không cần mở F11).
+   API mới cho hệ khác nối vào: `IsTracedTask` / `SetTracedTask` / `GetTracedList` /
+   `BuildTraceLineOf` / `GetTaskTitle`.
+7. **C34** Quét toàn cây: **48 chỗ / 21 tệp** `AddItem` thiếu tham số — đã vá 5 chỗ
+   trong `hd3_admin.lua` (nút admin trước giờ không phát được đồ); phần còn lại
+   thuộc hệ khác, liệt kê ở `audit\C34_additem_toancay.md` để chủ game quyết.
+
+### Đã kiểm và XÁC NHẬN ĐÚNG (không phải lỗi)
+
+- **Hiệu ứng giết boss**: `AddSkillState(541)` + âm thanh `sound_k046` +
+  `StateSpecialId 80`; skill 541 khớp CẢ HAI bản; `lib_killlevel.lua` byte-identical.
+- **Boss hồi sinh**: 160/160 dòng cờ `bNoRevive = 0`; `ReviveFrame` 16200 và JX1 tự
+  **chia đôi** (`KNpcTemplate.cpp:140`) ⇒ **~7,5 phút/lần** (Linux 15 phút).
+- **Đối thoại/thông báo**: 40 tệp, **0 lệch** so với Linux.
+- **Ảnh item**: 58/58 bộ có dòng client + `.spr` có thật trong pak.
+
+### CÒN CHỜ CHỦ GAME QUYẾT
+
+**11 item `6,1,30xxx`** (Đồ Phổ Đằng Long, Đằng Long Thạch…) **không có trong bảng
+item JX1** — nằm trong bảng thưởng nhóm 90 của `kill_level.lua`. Chọn: bỏ khỏi bảng
+thưởng, hoặc thay bằng item JX1 tương đương (đổi qua khoá `HD3_ST_THUONG`).
+
+**Binary chốt: `Game.exe.moi_2508_c33` + `CoreClient.dll.moi_2508_c33` (15:00).**
+
 ## Kiểm sau đợt C
 
 - Build: `Server Release|x64` + `Client Release|Win32` + `Game.exe` (Release|Win32,
