@@ -34,6 +34,13 @@ HD3_PLD_BOAT = {
 -- BOOT
 -- ============================================================================
 function HD3_DriverInit()
+	-- [3HD 25/08 r2] GUARD: neu DLL dang chay CHUA co HD3_AddNpc (chua swap
+	-- CoreServer.dll.moi_2508_3hoatdong) thi THOAT EM DEM - khong duoc de loi
+	-- lan len startgame.lua lam chet cac buoc boot phia sau (tinsu_addnpc...).
+	if (HD3_AddNpc == nil) then
+		print("[3HD] BO QUA HD3_DriverInit: DLL chua co HD3_AddNpc - can swap CoreServer.dll moi.")
+		return
+	end
 	-- nap lazy (chi luc boot): 384 KB killbosshead + bang NPC 769
 	Include("\\script\\global\\autoexec_npc_hd3.lua")
 	Include("\\script\\task\\tollgate\\killbosshead.lua")
