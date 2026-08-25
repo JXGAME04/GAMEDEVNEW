@@ -1,5 +1,7 @@
 # ĐẶC TẢ: AUTO TỰ ĐỘNG THAM GIA TỐNG KIM CHO NGƯỜI CHƠI THẬT (WAuto)
 
+> ✅ **24/08/2026 ĐÃ THI CÔNG XONG theo đặc tả này** (commit `027c7947` + `b319c945`). Kết quả thực tế, bản đồ mã, bốn điều khác đặc tả và 9 bước nghiệm thu: **`BANGIAO_AUTO_TONGKIM_2408.md`** — đọc file đó trước khi sửa tiếp.
+
 > Viết 24/08/2026 theo yêu cầu chủ game: *"làm Auto tự động tham gia tống kim — áp dụng cho
 > người chơi thật nên cần phải thay đổi 1 số cái khác so với bot"*.
 > Mọi khẳng định về server trong tài liệu này đã **kiểm chứng trực tiếp trên script sống**

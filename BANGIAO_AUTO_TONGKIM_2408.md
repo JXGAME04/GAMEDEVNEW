@@ -26,7 +26,7 @@
 | Tệp | Mốc | Bản lùi |
 |---|---|---|
 | `bin\client\CoreClient.dll` | 24/08 17:16 · 2.307.584 B · CRT-TĨNH ĐÚNG | `CoreClient.dll.cu_2408_truoc_tongkim` |
-| `bin\client\Game.exe` | 24/08 17:20 · 1.263.616 B · UCRT-RELEASE ĐÚNG | `Game.exe.cu_2408_truoc_tongkim` |
+| `bin\client\Game.exe` | 24/08 **17:26** · 1.263.616 B · UCRT-RELEASE ĐÚNG (md5 `b303ab4d…`) | `Game.exe.cu_2408_truoc_tongkim` |
 | `bin\client\WAuto.exe` | 24/08 17:16 · 368.128 B | `WAuto.exe.cu_2408_truoc_tongkim` |
 
 🔴 **Bắt buộc đóng cả `Game.exe` lẫn `WAuto.exe` rồi mở lại** — lần này Game.exe CÓ đổi
@@ -55,6 +55,11 @@ Build lại: `Core.vcxproj "Client Release" Win32` → `S3Client.vcxproj Release
 | `Sources/Core/Src/ipc_shared.h` (+ `WAutoUI/`, cây E) | 11 trường cấu hình Tống Kim **ở CUỐI struct** |
 | `Sources/S3Client/S3Client.cpp` | gọi máy TK **trước** Dã Tẩu + 15 điểm nhường quyền |
 | `WAutoUI/{Resource.h,WAuto.rc,WAuto.cpp}` | tab thứ 10 “Tống Kim” (26 điều khiển, tooltip, lưu/nạp, mặc định) |
+
+**Vòng 2 (`b319c945`)** — 2 việc thêm trong `S3Client.cpp`: (a) máy TK cầm lái thì **tự bấm nút
+hồi sinh** kể cả khi người chơi chưa bật “Tự hồi sinh” ở tab Cơ bản; (b) `PRT_GAMELOOP` nhận gói
+IPC **ngắn hơn struct hiện tại** (WAuto.exe cũ) thì chép sang bản sao **đã xoá trắng** rồi mới
+chạy — trước đây các trường mới sẽ đọc phải rác nằm dưới bộ đệm và có thể tự bật auto lung tung.
 
 **S3Client — máy TK cầm lái thì ai nhường:** `nTK != 0` ⇒ bỏ `ATYPE_DATAU` (Dã Tẩu),
 7 điều kiện phù về thành + `bOutWhenTP`, `ATYPE_MOVE`, `ATYPE_FIGHT`, `ATYPE_RETURN`
