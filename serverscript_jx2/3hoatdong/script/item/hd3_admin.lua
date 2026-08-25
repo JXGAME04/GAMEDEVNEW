@@ -13,6 +13,7 @@ function HD3_AdminMenu()
 	"3. V­ît ¶i/HD3_ADM_VA",
 	"4. N¹p l¹i CONFIG/HD3_ADM_Reload",
 	"5. Xem c¸c kho¸ cÊu h×nh HD3 ®ang hiÖu lùc/HD3_ADM_ShowCfg",
+	"6. N¹p l¹i toµn bé script (sau khi gâ ?gm RLAS)/HD3_ADM_ReloadAll",
 	"KÕt thóc ®èi tho¹i./no"})
 end
 
@@ -120,6 +121,18 @@ function HD3_ADM_VA_SetRank()
 	Msg2Player(format("§· ®Æt 2636=%d (h«m qua), 2637=600 (10 phót). GÆp NhiÕp ThÝ TrÇn bÊm nhËn th­ëng xÕp h¹ng.", nHomQua))
 end
 
+-- [3HD 25/08 C42] Nap lai TOAN BO script cho nhanh khi test.
+-- Lenh GM co san:  ?gm RLAS   (= ReLoadAllScript: xoa sach cay script roi nap lai)
+-- NHUNG g_IniScriptEngine CHI quet \script va \scriptjx2\tong_vn, KHONG quet
+-- \settings => 2 tep trigger cua Vuot Ai bi mat sau RLAS. Nut nay nap bu chung.
+function HD3_ADM_ReloadAll()
+	ReLoadScript("\\settings\\trigger_include.lua")
+	ReLoadScript("\\settings\\trigger_challengeoftime.lua")
+	if (HD_NapLaiCauHinh ~= nil) then HD_NapLaiCauHinh() end
+	Msg2Player("§· n¹p bï 2 trigger V­ît ¶i + config. Muèn n¹p l¹i toµn bé script th× gâ trong khung chat: <color=yellow>?gm RLAS<color>")
+	Msg2Player("Thø tù ®óng: gâ ?gm RLAS tr­íc, råi bÊm nót nµy ®Ó n¹p bï trigger.")
+	HD3_AdminMenu()
+end
 function HD3_ADM_Reload()
 	if (HD_NapLaiCauHinh ~= nil) then HD_NapLaiCauHinh() end
 	Msg2Player("§· n¹p l¹i CONFIG (script/header/cauhinh_hoatdong.lua) trong state admin. C¸c kho¸ [RESTART] vÉn cÇn restart.")
