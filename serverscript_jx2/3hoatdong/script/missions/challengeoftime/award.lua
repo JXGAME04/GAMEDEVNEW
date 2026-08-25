@@ -141,7 +141,7 @@ function award_item(item)
 	elseif (getn(item) == 3) then
 		AddGoldItem(item[2], item[3]);
 	elseif (getn(item) == 7) then
-		AddItem(item[2], item[3], item[4], item[5], item[6], item[7]);
+		AddItem(item[2], item[3], item[4], item[5], item[6], item[7], 0);
 	end
 	Msg2Player("<#> B¹n nhËn ®­îc " .. name .. "!");
 	

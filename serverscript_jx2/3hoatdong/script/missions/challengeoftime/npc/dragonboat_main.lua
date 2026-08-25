@@ -117,7 +117,7 @@ function want_playboat()
 			return
 		end
 	else
-		Say("Xin lçi! Khu vùc nµy"..strLevel.."NhiÖm vô Th¸ch thøc thêi gian ch­a ®Õn giai ®o¹n b¸o danh. C¸ch <color=red>mçi giê<color> b¸o danh 1 lÇn. Xin chó ý hÖ thèng th«ng b¸o!",0)
+		Say("Xin lçi! Khu vùc nµy"..strLevel.."NhiÖm vô Th¸ch thøc thêi gian ch­a ®Õn giai ®o¹n b¸o danh. C¸ch <color=red>mçi giê <color> b¸o danh 1 lÇn. Xin chó ý hÖ thèng th«ng b¸o!",0)
 		return
 	end
 	

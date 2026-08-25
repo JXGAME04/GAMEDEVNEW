@@ -1,4 +1,5 @@
 -------------------------------------------------------------------------
+Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD C29] noi cauhinh thuong
 -- FileName		:	lib_killlevel.lua
 -- Author		:	xiaoyang
 -- CreateTime	:	2005-03-31 10:42:00
@@ -67,40 +68,58 @@ function SetMemberTask(myTaskNumber,myOrgValue,myTaskValue,fnCallback, series)
 	
 end;
 
+
+-- [3HD C29] Thuong 1 lan giet boss sat thu - noi cauhinh_hoatdong.lua:
+--   HD3_ST_EXP (bang exp theo nhom cap) / HD3_ST_HESO_EXP (%) / HD3_ST_SO_LENH.
+-- Dung AddSumExp thay AddOwnExp: AddOwnExp dat m_nExp = 0 khi len cap
+-- (KPlayer.cpp:2629) => MAT phan exp du. Day la loi that cua JX1, khong phai
+-- khac biet voi ban Linux.
+function HD3_ST_ThuongBoss(nCapNhom, nExpGoc, nSeries)
+	local tbExp = HD_CFG("HD3_ST_EXP", nil)
+	local nExp = nExpGoc
+	if (tbExp ~= nil and tbExp[nCapNhom] ~= nil) then
+		nExp = tbExp[nCapNhom]
+	end
+	local nHeSo = HD_CFG("HD3_ST_HESO_EXP", 100)
+	if (nHeSo ~= 100) then
+		nExp = floor(nExp * nHeSo / 100)
+	end
+	if (nExp > 0) then
+		AddSumExp(nExp)
+	end
+	local nSo = HD_CFG("HD3_ST_SO_LENH", 1)
+	if (nSo < 1) then nSo = 1 end
+	for i = 1, nSo do
+		AddItem(6, 1, 398, nCapNhom, nSeries, 0, 0)
+	end
+end
 function add_shashouling(nvalue, series)
 	if ( nvalue >= 1 ) and ( nvalue<= 20  ) then
-		AddOwnExp(15000)
-		AddItem(6,1,398,20,series,0)
+		HD3_ST_ThuongBoss(20, 15000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 20")
 	elseif ( nvalue >= 21 ) and ( nvalue<= 40  ) then
-		AddOwnExp(20000)
-		AddItem(6,1,398,30,series,0)
+		HD3_ST_ThuongBoss(30, 20000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 30")
 	elseif ( nvalue >= 41 ) and ( nvalue<= 60  ) then
-		AddOwnExp(30000)
-		AddItem(6,1,398,40,series,0)
+		HD3_ST_ThuongBoss(40, 30000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 40")
 	elseif ( nvalue >= 61 ) and ( nvalue<= 80  ) then
-		AddOwnExp(50000)
-		AddItem(6,1,398,50,series,0)
+		HD3_ST_ThuongBoss(50, 50000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 50")
 	elseif ( nvalue >= 81 ) and ( nvalue<= 100  ) then
-		AddOwnExp(60000)
-		AddItem(6,1,398,60,series,0)
+		HD3_ST_ThuongBoss(60, 60000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 60")
 	elseif ( nvalue >= 101 ) and ( nvalue<= 120  ) then
-		AddOwnExp(80000)
-		AddItem(6,1,398,70,series,0)
+		HD3_ST_ThuongBoss(70, 80000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 70")
 	elseif ( nvalue >= 121 ) and ( nvalue<= 140  ) then
-		AddOwnExp(100000)
-		AddItem(6,1,398,80,series,0)
+		HD3_ST_ThuongBoss(80, 100000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 80")
 	elseif ( nvalue >= 141 ) and ( nvalue<= 160  ) then
-		AddOwnExp(140000)
+
 		--Ö»ÓÐ×ö90¼¶ÉÏµÄ ²ÅÓÐ¿ÉÄÜÑ§Ï°120¼¶¼¼ÄÜ
 		AddExp_Skill_Extend(140000);
-		AddItem(6,1,398,90,series,0)
+		HD3_ST_ThuongBoss(90, 140000, series)
 		Msg2Player("B¹n nhËn ®­îc 1 s¸t thñ lÖnh cÊp 90")
 		tbAwardTemplet:GiveAwardByList({{szName = "S¸t Thñ BÝ B¶o", tbProp = {6,1,2356,1,1,0}, nRate = 50}}, format("Get %s", "S¸t Thñ BÝ B¶o"), 1)
 		jiefangri_award()	

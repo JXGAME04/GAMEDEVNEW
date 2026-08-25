@@ -350,6 +350,17 @@ HD3_VA_LUOT_NGAY = 1,
 -- (A) SAT THU - bang thuong hoan thanh nhom cap 90 (25 dong vat pham +
 --     10.000.000 exp). Goc: kill_level.lua:89-118 OnFinishKillerTask. [RESTART]
 HD3_ST_THUONG = nil,
+-- (A) SAT THU - THUONG MOI LAN GIET 1 BOSS (add_shashouling):
+--   * He so % kinh nghiem: 100 = giu nguyen ban Linux (15.000 exp o nhom cap
+--     20, tang dan den 200.000 o nhom cap 90); 200 = gap doi; 50 = mot nua.
+HD3_ST_HESO_EXP = 100,
+--   * So Sat Thu lenh moi lan giet (ban Linux = 1). Lenh cung CAP va cung NGU
+--     HANH voi con boss vua giet; gop 5 cai cung cap thanh Sat Thu Gian.
+HD3_ST_SO_LENH = 1,
+--   * Bang kinh nghiem theo nhom cap - nil = dung so goc ban Linux. Muon doi:
+--     HD3_ST_EXP = {[20]=15000, [30]=20000, [40]=30000, [50]=50000,
+--                   [60]=60000, [70]=80000, [80]=100000, [90]=200000},
+HD3_ST_EXP = nil,
 -- (A) SAT THU - gia thue xe toi cho boss khi bam dan duong tren F11 (khuon
 --     cu cua ban Viet MONEY_GO_BOSS = 1000 luong). [LIVE]
 HD3_ST_TIEN_XE = 1000,

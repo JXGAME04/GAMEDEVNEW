@@ -50,7 +50,11 @@ ContentList = {
 	"<#>Cø mçi giê hÖ thèng sÏ th«ng b¸o 1 lÇn. Thêi gian b¸o danh lµ 5 phót, thùc hiÖn chØ trong 30 phót. Mçi ng­êi chØ tèi ®a 2 lÇn/ngµy. Ph¶i ®o ®éi tr­ëng ®Õn b¸o danh. <enter>”NhiÖm vô th¸ch thøc thêi gian” gåm 2 khu vùc tham gia. S¬ cÊp: ng­êi ch¬i tõ cÊp 50 ®Õn 89, do ®éi tr­ëng mang 2 s¸t thñ gi¶n d­íi cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. Cao cÊp: ng­êi ch¬i tõ cÊp 90, do ®éi tr­ëng mang 2 s¸t thñ gi¶n cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. <enter>Néi trong thêi gian quy ®Şnh, nÕu v­ît qua hÕt 28 ¶i sÏ hoµn thµnh. Mçi ¶i phÇn th­ëng kinh nghiÖm sÏ kh¸c nhau. NÕu hoµn thµnh nhiÖm vô tr­íc thêi gian h¹n ®Şnh, phÇn th­ëng kinh nghiÖm sÏ cµng cao <enter>NÕu tr­íc thêi h¹n ®· hoµn thµnh, cã thÓ sÏ xuÊt hiÖn thªm 1 ¶i, trong ®ã cã nhiÒu phÇn th­ëng bÊt ngê (vËt phÈm ngÉu nhiªn, trang bŞ Hoµng Kim…). ChØ nh÷ng ®éi ®· v­ît 28 ¶i ®óng thêi gian quy ®Şnh míi cã tªn trong b¶ng xÕp h¹ng.",
 	"<#>Qu¸ quan tÇm b¶o/guoguan_xunbao",
 	"<#>NhËn th­ëng/rank_award",
-	"<#>XÕp h¹ng ngµy./get_top5team"
+	"<#>XÕp h¹ng ngµy./get_top5team",
+	"<#>Cø mçi giê hÖ thèng sÏ th«ng b¸o 1 lÇn. Thêi gian b¸o danh lµ 5 phót, thùc hiÖn chØ trong 30 phót. Mçi ng­êi chØ tèi ®a 2 lÇn/ngµy. Ph¶i ®o ®éi tr­ëng ®Õn b¸o danh. ",	-- 32 [C27] trang 1/4
+	"<#>”NhiÖm vô th¸ch thøc thêi gian” gåm 2 khu vùc tham gia. S¬ cÊp: ng­êi ch¬i tõ cÊp 50 ®Õn 89, do ®éi tr­ëng mang 2 s¸t thñ gi¶n d­íi cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. Cao cÊp: ng­êi ch¬i tõ cÊp 90, do ®éi tr­ëng mang 2 s¸t thñ gi¶n cÊp 90 (ngò hµnh bÊt kú) ®i b¸o danh. ",	-- 33 [C27] trang 2/4
+	"<#>Néi trong thêi gian quy ®Şnh, nÕu v­ît qua hÕt 28 ¶i sÏ hoµn thµnh. Mçi ¶i phÇn th­ëng kinh nghiÖm sÏ kh¸c nhau. NÕu hoµn thµnh nhiÖm vô tr­íc thêi gian h¹n ®Şnh, phÇn th­ëng kinh nghiÖm sÏ cµng cao ",	-- 34 [C27] trang 3/4
+	"<#>NÕu tr­íc thêi h¹n ®· hoµn thµnh, cã thÓ sÏ xuÊt hiÖn thªm 1 ¶i, trong ®ã cã nhiÒu phÇn th­ëng bÊt ngê (vËt phÈm ngÉu nhiªn, trang bŞ Hoµng Kim…). ChØ nh÷ng ®éi ®· v­ît 28 ¶i ®óng thêi gian quy ®Şnh míi cã tªn trong b¶ng xÕp h¹ng.",	-- 35 [C27] trang 4/4
 }
 
 killertabfile = new(KTabFile,"/settings/task/tollgate/killer/killer.txt","KILLER")
@@ -69,7 +73,20 @@ function annealofkiller()
 end
 
 function aboutchallenge()
-	Describe(DescLink_NieShiChen..ContentList[28],1, ContentList[15]);
+	-- [C27] goi 994B vo tran 511B cua JX1 => chia 4 trang, chu giu NGUYEN VAN.
+	Describe(DescLink_NieShiChen..ContentList[32], 2, "<#>TiÕp/#aboutchallenge2", ContentList[15]);
+end
+
+function aboutchallenge2()
+	Describe(DescLink_NieShiChen..ContentList[33], 2, "<#>TiÕp/#aboutchallenge3", ContentList[15]);
+end
+
+function aboutchallenge3()
+	Describe(DescLink_NieShiChen..ContentList[34], 2, "<#>TiÕp/#aboutchallenge4", ContentList[15]);
+end
+
+function aboutchallenge4()
+	Describe(DescLink_NieShiChen..ContentList[35], 1, ContentList[15]);
 end
 
 --function killer20()
@@ -203,7 +220,7 @@ end
 function givesword(attr,level)
 	series = {"metal>Kim", "wood>Méc", "water>Thñy", "fire>Háa", "earth>Thæ "};
 	i = random( 1, 5 );
-	AddItem( 6, 1, 399, level, attr[i], 0);
+	AddItem( 6, 1, 399, level, attr[i], 0, 0);
 	j = attr[i] + 1;
 	Describe(DescLink_NieShiChen..ContentList[22]..series[j]..ContentList[23], 1, ContentList[15]);
 end
