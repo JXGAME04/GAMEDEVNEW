@@ -9,7 +9,8 @@ Include("\\script\\log_game\\save_log.lua")
 Include("\\script\\task\\newtask\\map_index.lua") -- [DA TAU 17/08] tl_getMapInfo cho he tasklink moi
 Include("\\script\\tinhnang\\datau\\lib_datau.lua")
 Include("\\script\\event\\kiemmonquan\\lib_kmq.lua")
-Include("\\script\\missions\\citywar_global\\station_ctc.lua")	-- DOT E (E5): GoCityWar/Attack/Defend
+Include("\\script\\missions\\citywar_global\\station_ctc.lua")
+Include("\\script\\task\\tollgate\\messenger\\wagoner.lua")	-- [TIN SU 21/08] messenger_wagoner (Linux station.lua muc 9)	-- DOT E (E5): GoCityWar/Attack/Defend
 
 STATION_ARRAY = {
 	{1 ,1  ,10072},
@@ -450,13 +451,92 @@ BOT_LC = {
 }
 };
 
+-- ============================================================================
+-- [XAPHU 25/08] Menu luyen cong DU 39 map (nguon: BOT_BAI - da gop tu Than
+-- Hanh Phu). Chia TRANG THEO MOC de khong vo tran 511B/goi thoai. Ten CO DAU
+-- (TCVN3), index KHOP TUNG DONG voi BOT_BAI (bang do giu nguyen cho bot).
+-- ============================================================================
+XP_TEN = {
+	"Hoa S¬n",	-- 1
+	"KiÕm C¸c T©y Nam",
+	"T©n Lang tÇng 1",
+	"Vò L¨ng S¬n",
+	"Vò Di S¬n",
+	"Thæ PhØ §éng",	-- 6
+	"Phôc Ng­u §«ng",
+	"Thôc C­¬ng S¬n",
+	"Thanh Thµnh S¬n",
+	"Diªm Th­¬ng S¬n",
+	"Phôc Ng­u T©y",	-- 11
+	"Hoµng Hµ Nguyªn §Çu",
+	"NghiÖt Long §éng",
+	"Thiªn T©m Th¸p tÇng 1",
+	"L­u Tiªn §éng",
+	"¸c B¸ §Þa §¹o",	-- 16
+	"T­¬ng D­¬ng MËt §¹o",
+	"Hoµnh S¬n ph¸i",
+	"Thiªn T©m Th¸p tÇng 3",
+	"L©m Du Quan",
+	"L·o Hæ §éng",	-- 21
+	"T©n Lang tÇng 2",
+	"Sa M¹c §Þa BiÓu",
+	"Thanh Khª §éng",
+	"Ch©n nói Tr­êng B¹ch",
+	"L­¬ng Thñy §éng",	-- 26
+	"H¾c Sa §éng",
+	"Tr­êng B¹ch S¬n B¾c",
+	"Tr­êng B¹ch S¬n Nam",
+	"Kháa Lang §éng",
+	"Sa M¹c Mª Cung 1",	-- 31
+	"Sa M¹c Mª Cung 2",
+	"Sa M¹c Mª Cung 3",
+	"Phong L¨ng §é",
+	"M¹c Cao QuËt",
+	"D­îc V­¬ng §éng tÇng 4",	-- 36
+	"TiÕn Cóc §éng",
+	"C¸n Viªn §éng",
+	"TuyÕt B¸o §éng tÇng 8",
+}
+
 function LuyenCongFun()
 	if (GetLevel() < 20) then
-		Say("Chua du 20 cap, hay luyen o Hoa Son truoc da.", 0)
+		Say("Ch­a ®ñ 20 cÊp, h·y luyÖn ë Hoa S¬n tr­íc ®·.", 0)
 		return
 	end
-	Say("Muon toi ban do luyen cong nao? (so trong ngoac la cap toi thieu)",
-	    getn(BOT_LC[1]), BOT_LC[1])
+	Say("Muèn tíi b¶n ®å luyÖn c«ng mèc nµo?", 6,
+		"Mèc 20 - 30/#xp_moc(20,30)",
+		"Mèc 40 - 50/#xp_moc(40,50)",
+		"Mèc 60 - 70/#xp_moc(60,70)",
+		"Mèc 80/#xp_moc(80,80)",
+		"Mèc 90/#xp_moc(90,90)",
+		"Kh«ng ®i/no")
+end
+
+function xp_moc(nMoc1, nMoc2)
+	local tb = {}
+	for i = 2, getn(BOT_BAI) do	-- bo dong 1 (Hoa Son - loi di rieng)
+		if (BOT_BAI[i][1] >= nMoc1 and BOT_BAI[i][1] <= nMoc2) then
+			tinsert(tb, XP_TEN[i].." ["..BOT_BAI[i][1].."]".."/#xp_go("..i..")")
+		end
+	end
+	tinsert(tb, "Quay l¹i/LuyenCongFun")
+	tinsert(tb, "Kh«ng ®i/no")
+	Say("Muèn tíi b¶n ®å nµo? (sè trong ngoÆc lµ cÊp tèi thiÓu)", getn(tb), tb)
+end
+
+function xp_go(nIdx)
+	if (nIdx < 2 or nIdx > getn(BOT_BAI)) then
+		return
+	end
+	if (GetLevel() < BOT_BAI[nIdx][1]) then
+		Talk(1,"","Ch­a ®ñ cÊp tíi b¶n ®å nµy, phÝa tr­íc nguy hiÓm.")
+		return
+	end
+	if (NewWorld(BOT_BAI[nIdx][2], BOT_BAI[nIdx][3], BOT_BAI[nIdx][4])) then
+		SetFightState(1)
+		SetProtectTime(18*3)
+		AddSkillState(963, 1, 0, 18*3)
+	end
 end
 
 function sellc(nSel)

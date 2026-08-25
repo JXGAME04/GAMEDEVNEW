@@ -3004,7 +3004,7 @@ static void TG_SatThuTick()
 	if (uCur < g_uTGSTNext)
 		return;
 	g_uTGSTNext = uCur + 400;
-	if (++g_nTGSTTry > 450)	// ~3 phut
+	if (++g_nTGSTTry > ((g_nTGSTPhase == 3) ? 900 : 450))	// pha di bo toi boss duoc ~6 phut (tu waypoint co the xa)
 	{
 		TG_SatThuStop("<color=Yellow>[Chÿ nam] ßi qu∏ l©u - dıng d…n Æ≠Íng.");
 		return;

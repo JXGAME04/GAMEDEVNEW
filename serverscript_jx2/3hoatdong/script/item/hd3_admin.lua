@@ -27,7 +27,7 @@ function HD3_ADM_ST()
 	"Reset sè lÇn giÕt trong ngµy/HD3_ADM_ST_Reset",
 	"Quay l¹i/HD3_AdminMenu"})
 end
-function HD3_ADM_ST_Boot() HD3_DriverInit() Msg2Player("§· gäi HD3_DriverInit (sinh NPC + boss). Gäi lÆp sÏ nh©n b¶n NPC!") end
+function HD3_ADM_ST_Boot() HD3_DriverInit() Msg2Player("§· gäi HD3_DriverInit (tù dän NPC cò cña hÖ råi sinh l¹i - gäi lÆp an toµn).") end
 function HD3_ADM_ST_Tele() NewWorld(1, 1506, 3198) end
 function HD3_ADM_ST_Lenh()
 	for i = 1, 5 do AddItem(6, 1, 398, 90, mod(i, 5), 0) end

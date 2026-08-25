@@ -182,7 +182,15 @@ function st3_goboss()
 	end
 	Pay(nTien)
 	local t = tbST3BossPos[nBoss]
-	NewWorld(t[1], t[2] + 3, t[3] + 3)
+	-- dap xuong TOA DO MAC DINH cua map (waypoint) - dung y chu game: len map
+	-- roi TU DI toi boss (client dan duong); khong tha canh boss.
+	local nW, nX, nY = GetWayPointPos(t[1])
+	if (nW == nil or nW ~= t[1]) then
+		NewWorld(t[1], t[2] + 3, t[3] + 3)	-- map khong co waypoint -> tha gan boss
+	else
+		NewWorld(nW, nX, nY)
+		AddTermini(t[1])	-- ghi diem da di (chuan Than Hanh Phu)
+	end
 	SetFightState(1)
 	Msg2Player("§· tíi gÇn môc tiªu - cÈn thËn!")
 end

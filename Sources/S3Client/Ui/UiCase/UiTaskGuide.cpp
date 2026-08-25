@@ -534,7 +534,9 @@ void KUiTaskGuide::BuildSatThuText()
 	if (nBoss >= 1 && nBoss <= 160)
 	{
 		int nCapNhom = 20 + ((nBoss - 1) / 20) * 10;	// 1-20=cap20 ... 141-160=cap90
-		sprintf(szLine, ST3_CUR_FMT, nBoss, nCapNhom);
+		// [C22] hien 'con thu x/20 cua nhom' - so bang (141..160) lam nguoi choi
+		// tuong nham la so lan nhan; x = thu tu trong nhom nguoi choi da tu chon.
+		sprintf(szLine, ST3_CUR_FMT, ((nBoss - 1) % 20) + 1, nCapNhom);
 		AddLine(szLine);
 		// [C18] muc tieu: ten + noi o (co toa do) tu bang nuong killer.txt
 		sprintf(szLine, ST3_TARGET_FMT, s_szST3BossName[nBoss], s_szST3BossInfo[nBoss]);

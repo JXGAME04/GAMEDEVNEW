@@ -73,6 +73,16 @@ function HD3_DriverInit()
 		print("[3HD] Da xoa "..nXoaCu.." NPC Nhiep Thi Tran cu (ban Viet).")
 	end
 	HD3_DonNpcCu(1)	-- [C16] xoa theo script - lop chac chan
+	-- [C23] IDEMPOTENT: don sach NPC do CHINH MINH sinh truoc khi sinh lai.
+	-- Nut admin HD3_ADM_ST_Boot goi lap HD3_DriverInit tung lam NHAN BAN toan bo
+	-- NPC (2 Nhiep Thi Tran / 2 boss cung toa do chu game bao 14:0x).
+	if (HD3_DelNpcByScript ~= nil) then
+		local nSach = HD3_DelNpcByScript("\tollgate\killer\\")
+		nSach = nSach + HD3_DelNpcByScript("hd3_thuyenphu")
+		if (nSach > 0) then
+			print("[3HD] Don "..nSach.." NPC cu cua chinh he truoc khi sinh lai (goi lap an toan).")
+		end
+	end
 	-- nap lazy (chi luc boot): 384 KB killbosshead + bang NPC 769
 	Include("\\script\\global\\autoexec_npc_hd3.lua")
 	Include("\\script\\task\\tollgate\\killbosshead.lua")
