@@ -70,8 +70,8 @@ bóp thành 4 nút rộng 37. Thêm tab thứ 11 là hết chỗ.
 
 ## 3. ĐÃ LÀM 24/08 (đợt Liên đấu) — bước 1 của thiết kế
 
-**Xếp lại dải nút tab thành LƯỚI ĐỀU 4 cột × 3 hàng**, mỗi nút rộng 37, x = 4 / 43 / 82 / 121,
-y = 72 / 85 / 98.
+**Xếp lại dải nút tab thành LƯỚI ĐỀU 4 cột × 3 hàng**, mỗi nút rộng **39**, x = 2 / 41 / 80 / 119,
+y = 72 / 85 / 98. Bề rộng 39 là **đo thật bằng GDI**, không ước lượng: Segoe UI 9pt cho 1 đơn vị dialog = 6,91/4 px, nên 37 đơn vị chỉ còn ~56 px cho chữ trong khi *Chiến đấu* 59 px / *Di chuyển* 58 px / *Tống Kim* 56 px → **bị cắt chữ**; 39 đơn vị cho ~61 px, đủ cả ba.
 
 * 12 chỗ, đang dùng 11 → còn **1 chỗ trống** cho tính năng kế tiếp.
 * **Không một điều khiển nào khác phải dời** — groupbox mọi tab vẫn bắt đầu ở y = 112,

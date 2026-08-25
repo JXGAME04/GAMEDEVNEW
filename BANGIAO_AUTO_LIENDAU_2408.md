@@ -162,7 +162,7 @@ Cấu hình lưu **nguyên struct** vào `APdata\<ID nhân vật>.dat` như cũ;
 cuối struct** + nhánh di trú `uOldSize <= offsetof(autoData, bLienDau)` ⇒ **file .dat cũ đọc
 lên không hỏng**, tính năng mặc định TẮT.
 
-**Dải nút tab đã xếp lại thành lưới đều 4 cột × 3 hàng** (mỗi nút rộng 37, x = 4/43/82/121),
+**Dải nút tab đã xếp lại thành lưới đều 4 cột × 3 hàng** (mỗi nút rộng 39, x = 2/41/80/119),
 tức **12 chỗ, đang dùng 11** — trước đây hàng 1-2 mỗi hàng 3 nút rộng 49/50 còn hàng 3 bị bóp.
 Không điều khiển nào khác phải dời (groupbox vẫn bắt đầu ở y = 112).
 
