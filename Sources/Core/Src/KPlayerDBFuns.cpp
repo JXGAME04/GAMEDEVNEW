@@ -502,7 +502,13 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 	KASSERT(pRoleBuffer);
 	
 	int nItemCount = ((TRoleData *)pRoleBuffer)->nItemCount;
-	TDBItemData * pItemData = (TDBItemData *)pItemBuffer;
+	// [24/08] NEO LAI theo dwItemOffset o lan doc DAU TIEN (nParam == 0) thay vi
+	// tin vao con tro chay - cung ly do va cung khuon nhu LoadPlayerFightSkillList.
+	// Day la buoc de hong nhat: doc lech mot chut la sai toan bo tui do, roi ban
+	// hong duoc ghi de len o lan luu ke tiep.
+	TDBItemData * pItemData = (nParam == 0)
+		? (TDBItemData *)((BYTE*)pRoleBuffer + ((TRoleData*)pRoleBuffer)->dwItemOffset)
+		: (TDBItemData *)pItemBuffer;
 	
 	if (nItemCount == 0) return 1;
 	if (nParam != 0)
@@ -867,7 +873,16 @@ int	KPlayer::LoadPlayerTaskList(BYTE * pRoleBuffer, BYTE * &pTaskBuffer, unsigne
 	if (nEnd > nTaskCount) 
 		nEnd = nTaskCount;
 	nParam = nEnd;
-	TDBTaskData * pTaskData = (TDBTaskData*) pTaskBuffer;
+	// [24/08] NEO LAI theo offset trong header o lan doc DAU TIEN, thay vi tin
+	// vao con tro chay m_pCurStatusOffset. Day dung la khuon ma
+	// LoadPlayerFightSkillList da dung san ("if (nBegin == 0) ... dwFSkillOffset").
+	// Khong co no thi chi can MOT buoc nap truoc do thoat som la con tro lech, va
+	// buoc nay doc du lieu tu giua vung khac - dem dung so luong cung vo ich.
+	TDBTaskData * pTaskData = NULL;
+	if (nBegin == 0)
+		pTaskData = (TDBTaskData *)((BYTE*)pRoleBuffer + ((TRoleData*)pRoleBuffer)->dwTaskOffset);
+	else
+		pTaskData = (TDBTaskData*) pTaskBuffer;
 	for (int i = nBegin; i < nEnd; i ++ , pTaskData ++)
 	{
 		nTaskId = pTaskData->m_nTaskId;
