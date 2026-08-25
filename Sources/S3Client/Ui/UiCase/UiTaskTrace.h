@@ -43,6 +43,9 @@ private:
 
 	KWndText256				m_Title;
 	KScrollMessageListBox	m_List;		// [TaskInfo] + _List + _Scroll
+	// [C33] dong thu i thuoc he nao (de bam vao dong la tu di chuyen)
+	int						m_anLineTask[32];
+	int						m_nLineCount;
 };
 
 // Nut bat/tat khung theo doi nam TRONG thanh KUiPlayerBar (m_TraceBtn, section

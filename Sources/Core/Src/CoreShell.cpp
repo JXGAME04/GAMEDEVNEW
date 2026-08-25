@@ -2956,6 +2956,35 @@ static UINT g_uTGSTNext = 0;
 static UINT g_uTGSTDlgSeen = 0;
 static int  g_nTGSTNpc = 0;			// idx Xa Phu dang noi chuyen
 
+static int DT_UsePortal(int nPlayerIdx);	// [C32] dinh nghia o duoi (dung chung nghe Da Tau)
+// [C32] tim NPC theo TEMPLATE (m_NpcSettingIdx) - chac chan hon so ten vi ten
+// TCVN3 co byte cao, g_StrLower co the doi byte.
+static int TG_SatThuTimNpc(int nTemplate, int nAtX, int nAtY, int nRadius)
+{
+	int dX, dY;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (Npc[nIdx].m_NpcSettingIdx != nTemplate)
+			continue;
+		if (Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		Npc[nIdx].GetMpsPos(&dX, &dY);
+		if (nRadius > 0 && g_GetDistance(nAtX, nAtY, dX, dY) > nRadius)
+			continue;
+		return nIdx;
+	}
+	return 0;
+}
+
+// [C32] map hien tai co NPC Nhiep Thi Tran khong -> tra chi so trong bang, -1 neu khong
+static int TG_SatThuChiSoNpcMap(int nMap)
+{
+	for (int i = 0; i < ST3_NPC_SO; i++)
+		if (s_nST3NpcMap[i] == nMap)
+			return i;
+	return -1;
+}
 static void TG_SatThuStop(const char* szMsg)
 {
 	if (g_nTGSTOn && szMsg)
@@ -2976,8 +3005,18 @@ static int TG_SatThuStart()
 	int nBoss = (int)Player[nPlayerIdx].m_cTask.GetSaveVal(1082);
 	if (nBoss < 1 || nBoss > ST3_POS_MAX)
 	{
-		DT_Msg(nPlayerIdx, "<color=Yellow>[ChØ nam] Ch­a nhËn nhiÖm vô s¸t thñ.");
-		return 0;
+		// [C32] CHUA nhan nhiem vu -> dan duong VE GAP NPC Nhiep Thi Tran
+		g_nTGSTBoss = 0;
+		g_nTGSTMap = 0;
+		g_nTGSTTry = 0;
+		g_nTGSTDlgTry = 0;
+		g_uTGSTNext = 0;
+		g_nTGSTNpc = 0;
+		g_uTGSTDlgSeen = g_sDTCap.uDlgSeq;
+		g_nTGSTPhase = (TG_SatThuChiSoNpcMap(SubWorld[0].m_SubWorldID) >= 0) ? 11 : 10;
+		g_nTGSTOn = 1;
+		DT_Msg(nPlayerIdx, "<color=Cyan>[ChØ nam] Ch­a nhËn nhiÖm vô - ®ang dïng phï vÒ thµnh gÆp NhiÕp ThÝ TrÇn...");
+		return 1;
 	}
 	g_nTGSTBoss = nBoss;
 	g_nTGSTMap = s_nST3BossMap[nBoss];
@@ -3048,6 +3087,54 @@ static void TG_SatThuTick()
 	if (++g_nTGSTTry > ((g_nTGSTPhase == 6) ? 900 : 450))
 	{
 		TG_SatThuStop("<color=Yellow>[ChØ nam] §i qu¸ l©u - dõng dÉn ®­êng.");
+		return;
+	}
+	// --- pha 10: chua nhan nhiem vu, khong o map co NPC -> dung phu ve thanh ---
+	if (g_nTGSTPhase == 10)
+	{
+		if (TG_SatThuChiSoNpcMap(SubWorld[0].m_SubWorldID) >= 0)
+		{
+			g_nTGSTPhase = 11;
+			g_nTGSTTry = 0;
+			return;
+		}
+		if ((g_nTGSTTry % 12) == 1)	// ~5s thu dung phu mot lan
+		{
+			if (!DT_UsePortal(nPlayerIdx))
+			{
+				TG_SatThuStop("<color=Yellow>[ChØ nam] Kh«ng cã phï vÒ thµnh trong tói - h·y tù vÒ thµnh.");
+				return;
+			}
+		}
+		return;
+	}
+	// --- pha 11: chay toi NPC Nhiep Thi Tran roi mo thoai ---
+	if (g_nTGSTPhase == 11)
+	{
+		int nI = TG_SatThuChiSoNpcMap(SubWorld[0].m_SubWorldID);
+		if (nI < 0)
+		{
+			g_nTGSTPhase = 10;	// bi keo sang map khac - ve thanh lai
+			return;
+		}
+		int nDX = s_nST3NpcX[nI] * 32;
+		int nDY = s_nST3NpcY[nI] * 32;
+		int nNpc = TG_SatThuTimNpc(ST3_NPC_TEMPLATE, nDX, nDY, 600);
+		if (nNpc)
+		{
+			int nX, nY, dX, dY;
+			Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+			Npc[nNpc].GetMpsPos(&dX, &dY);
+			if (g_GetDistance(nX, nY, dX, dY) <= 160)
+			{
+				Player[nPlayerIdx].DialogNpc(nNpc);
+				TG_SatThuStop("<color=Cyan>[ChØ nam] §· tíi NhiÕp ThÝ TrÇn - h·y chän nhiÖm vô s¸t thñ.");
+				return;
+			}
+			DT_WalkTo(nPlayerIdx, dX, dY, 128, uCur);
+			return;
+		}
+		DT_WalkTo(nPlayerIdx, nDX, nDY, 200, uCur);
 		return;
 	}
 	// --- pha 1: chay toi Xa Phu roi mo thoai ---

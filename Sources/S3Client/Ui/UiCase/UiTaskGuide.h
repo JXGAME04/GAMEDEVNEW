@@ -42,6 +42,11 @@ public:
 	static void				BuildBriefLine(char* pOut, int nSize);
 	static void				BuildTraceLine(char* pOut, int nSize);	// [C18] theo tab dang theo doi
 	static int				GetTracedTaskId();						// [C18]
+	static bool				IsTracedTask(int nTaskId);				// [C33] he nay dang theo doi?
+	static void				SetTracedTask(int nTaskId, bool bOn);	// [C33]
+	static int				GetTracedList(int* pOut, int nMax);		// [C33] danh sach he dang theo doi
+	static void				BuildTraceLineOf(int nTaskId, char* pOut, int nSize);	// [C33]
+	static const char*		GetTaskTitle(int nTaskId);				// [C33] ten he (mau vang)
 	// dong bo lai trang thai 3 nut khi trace doi tu ben ngoai (icon mep man hinh)
 	static void				RefreshButtons();
 private:

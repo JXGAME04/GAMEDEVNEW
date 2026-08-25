@@ -7,7 +7,7 @@
        + SetFightState(1)), gia HD_CFG("HD3_ST_TIEN_XE", 1000).
 Chay lai khi killer.txt / killbosshead.lua doi.
 """
-import io, re, sys
+import io, os, re, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.path.insert(0, r"C:\Users\nguye\.claude\skills\swordonline-dev\scripts")
 from vn_to_octal import unicode_to_tcvn3_bytes
@@ -130,6 +130,18 @@ for nm, k in (("Menu", 0), ("Moc", 1)):
     L.append("")
 L.append("// chuoi khop muc menu chinh cua Xa Phu (\"Len ban do luyen cong (20 - 90)\")")
 L.append('#define ST3_MENU_LUYENCONG "%s"' % esc(V("luy\u1ec7n c\u00f4ng")))
+L.append("")
+# --- bang 7 NPC 769 "Nhiep Thi Tran" (tu autoexec_npc_hd3.lua) de auto dan duong
+#     ve gap NPC khi CHUA nhan nhiem vu ---
+ax = io.open(os.path.join(SRV, "script", "global", "autoexec_npc_hd3.lua"), encoding="latin-1", newline="").read()
+npc = re.findall(r"\{769,(\d+),(\d+),(\d+),", ax)
+assert len(npc) == 7, len(npc)
+L.append("// 7 NPC 769 Nhiep Thi Tran (map, o X, o Y) - tu autoexec_npc_hd3.lua")
+L.append("#define ST3_NPC_SO 7")
+L.append("#define ST3_NPC_TEMPLATE 769")
+for nm, k in (("Map", 0), ("X", 1), ("Y", 2)):
+    L.append("static const short s_nST3Npc%s[ST3_NPC_SO] = { %s };"
+             % (nm, ", ".join(npc[i][k] for i in range(7))))
 L.append("")
 L.append("#endif")
 L.append("")

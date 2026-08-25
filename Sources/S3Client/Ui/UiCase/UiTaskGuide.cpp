@@ -619,11 +619,71 @@ void KUiTaskGuide::BuildTinSuText()
 // - Bo nhiem vu: chi khi dang lam (course 1) - gui tg_quit, server mo hop
 //   xac nhan huy CHUAN (du luat phat / tru luot / 100 manh SHXT).
 // - Theo doi / Huy theo doi: bat tat khung KUiTaskTrace.
-// [C18] tab dang duoc 'Theo doi' (mac dinh Da Tau de giu hanh vi cu)
-static int s_nTracedTaskId = TASKGUIDE_DATAU_TASKID;
+// [C33] CAC he dang duoc 'Theo doi' (truoc day chi giu DUY NHAT 1 he).
+// Chi so = TaskId (6..15). Mac dinh khong theo doi he nao - nguoi choi tu bam.
+#define TRACE_MAX_TASKID 16
+static bool s_abTraced[TRACE_MAX_TASKID] = { false };
+
+bool KUiTaskGuide::IsTracedTask(int nTaskId)
+{
+	if (nTaskId < 0 || nTaskId >= TRACE_MAX_TASKID)
+		return false;
+	return s_abTraced[nTaskId];
+}
+
+void KUiTaskGuide::SetTracedTask(int nTaskId, bool bOn)
+{
+	if (nTaskId < 0 || nTaskId >= TRACE_MAX_TASKID)
+		return;
+	s_abTraced[nTaskId] = bOn;
+}
+
+int KUiTaskGuide::GetTracedList(int* pOut, int nMax)
+{
+	int n = 0;
+	for (int i = 0; i < TRACE_MAX_TASKID && n < nMax; i++)
+		if (s_abTraced[i])
+			pOut[n++] = i;
+	return n;
+}
+
+// he dau tien dang theo doi (giu tuong thich cho ma cu)
 int KUiTaskGuide::GetTracedTaskId()
 {
-	return s_nTracedTaskId;
+	for (int i = 0; i < TRACE_MAX_TASKID; i++)
+		if (s_abTraced[i])
+			return i;
+	return TASKGUIDE_DATAU_TASKID;
+}
+
+const char* KUiTaskGuide::GetTaskTitle(int nTaskId)
+{
+	if (nTaskId == TASKGUIDE_SATTHU_TASKID)
+		return ST3_TRACE_TITLE;
+	return DTG_TRACE_TITLE;
+}
+
+// ban rut gon cua MOT he bat ky (khung theo doi liet ke nhieu he)
+void KUiTaskGuide::BuildTraceLineOf(int nTaskId, char* pOut, int nSize)
+{
+	if (nTaskId == TASKGUIDE_SATTHU_TASKID)
+	{
+		int nBoss = DTG_TaskVal(1082);
+		if (nBoss >= 1 && nBoss <= ST3_BOSS_MAX)
+		{
+			int nUsed = DTG_TaskVal(1193);
+			if (nUsed < 0) nUsed = 0;
+			_snprintf(pOut, nSize - 1, ST3_BRIEF_FMT, s_szST3BossName[nBoss], s_szST3BossInfo[nBoss], nUsed);
+			pOut[nSize - 1] = 0;
+		}
+		else
+		{
+			strncpy(pOut, ST3_BRIEF_NONE, nSize - 1);
+			pOut[nSize - 1] = 0;
+		}
+		return;
+	}
+	BuildBriefLine(pOut, nSize);	// mac dinh: Da Tau
 }
 
 void KUiTaskGuide::UpdateButtons()
@@ -636,14 +696,17 @@ void KUiTaskGuide::UpdateButtons()
 	int nCourse = bDT ? DTG_TaskVal(1028) : 0;
 	int nBossST = bST ? DTG_TaskVal(1082) : 0;
 	m_BtnQuit.Enable((bDT && nCourse == 1) || (bST && nBossST >= 1 && nBossST <= ST3_BOSS_MAX));
-	m_BtnTrace.Enable((bDT || bST) && !KUiTaskTrace::IsTraced());
-	m_BtnCancelTrace.Enable((bDT || bST) && KUiTaskTrace::IsTraced());
+	// [C33] moi he theo doi doc lap: bat 'Theo doi' khi he DANG CHON chua theo doi
+	int nCurTask = (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount) ? m_Entries[m_nCurEntry].nTaskId : -1;
+	bool bCoBan = (bDT || bST);	// he da co ban rut gon de hien trong khung
+	m_BtnTrace.Enable(bCoBan && !IsTracedTask(nCurTask));
+	m_BtnCancelTrace.Enable(bCoBan && IsTracedTask(nCurTask));
 }
 
 // [C18] dong rut gon cho khung Theo doi - theo tab da bam 'Theo doi'.
 void KUiTaskGuide::BuildTraceLine(char* pOut, int nSize)
 {
-	if (s_nTracedTaskId == TASKGUIDE_SATTHU_TASKID)
+	if (GetTracedTaskId() == TASKGUIDE_SATTHU_TASKID)
 	{
 		int nBoss = DTG_TaskVal(1082);
 		if (nBoss >= 1 && nBoss <= ST3_BOSS_MAX)
@@ -896,14 +959,23 @@ int KUiTaskGuide::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnTrace)
 		{
 			if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount)
-				s_nTracedTaskId = m_Entries[m_nCurEntry].nTaskId;	// [C18]
+				SetTracedTask(m_Entries[m_nCurEntry].nTaskId, true);	// [C33] them he
 			KUiTaskTrace::SetTraced(true);
 			UpdateButtons();
 			return true;
 		}
 		if (uParam == (unsigned int)(KWndWindow*)&m_BtnCancelTrace)
 		{
-			KUiTaskTrace::SetTraced(false);
+			// [C33] chi bo HE DANG CHON; con he khac thi khung van mo
+			if (m_nCurEntry >= 0 && m_nCurEntry < m_nEntryCount)
+				SetTracedTask(m_Entries[m_nCurEntry].nTaskId, false);
+			{
+				int anTmp[TRACE_MAX_TASKID];
+				if (GetTracedList(anTmp, TRACE_MAX_TASKID) > 0)
+					KUiTaskTrace::OnTaskValueChanged(0);	// con he khac -> chi ve lai
+				else
+					KUiTaskTrace::SetTraced(false);
+			}
 			UpdateButtons();
 			return true;
 		}

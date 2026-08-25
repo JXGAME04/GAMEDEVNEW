@@ -28,6 +28,8 @@ KUiTaskTrace::KUiTaskTrace()
 	// khong nap duoc thi Init() khong chay va Show() se nhay den toa do RAC.
 	m_oFixPos.x = 0;
 	m_oFixPos.y = 0;
+	m_nLineCount = 0;	// [C33]
+	memset(m_anLineTask, 0, sizeof(m_anLineTask));
 }
 
 KUiTaskTrace::~KUiTaskTrace()
@@ -156,26 +158,33 @@ void KUiTaskTrace::UpdateView()
 {
 	KWndMessageListBox* pList = m_List.GetMessageListBox();
 	pList->Clear();
-	pList->SetCapability(4);
+	m_nLineCount = 0;
+
+	// [C33] liet ke MOI he dang theo doi (khung dung KScrollMessageListBox nen
+	// co san thanh cuon); moi he 2 dong: ten he (vang) + ban rut gon.
+	int anTask[16];
+	int nTask = KUiTaskGuide::GetTracedList(anTask, 16);
+	pList->SetCapability(nTask > 0 ? nTask * 2 + 2 : 4);
 
 	char szLine[512];
-
-	// dong 1: ten nhiem vu (mau vang) - theo tab dang theo doi [C18]
-	const char* pTitle = (KUiTaskGuide::GetTracedTaskId() == 10 /*SATTHU*/)
-		? ST3_TRACE_TITLE : DTG_TRACE_TITLE;
-	strncpy(szLine, pTitle, sizeof(szLine) - 1);
-	szLine[sizeof(szLine) - 1] = 0;
-	int nLen = TEncodeText(szLine, strlen(szLine));
-	pList->AddOneMessage(szLine, nLen);
-
-	// dong 2: ban rut gon trang thai hien tai
-	KUiTaskGuide::BuildTraceLine(szLine, sizeof(szLine));	// [C18]
-	if (szLine[0])
+	for (int i = 0; i < nTask; i++)
 	{
-		nLen = TEncodeText(szLine, strlen(szLine));
+		strncpy(szLine, KUiTaskGuide::GetTaskTitle(anTask[i]), sizeof(szLine) - 1);
+		szLine[sizeof(szLine) - 1] = 0;
+		int nLen = TEncodeText(szLine, strlen(szLine));
 		pList->AddOneMessage(szLine, nLen);
+		if (m_nLineCount < 32) m_anLineTask[m_nLineCount++] = anTask[i];
+
+		KUiTaskGuide::BuildTraceLineOf(anTask[i], szLine, sizeof(szLine));
+		if (szLine[0])
+		{
+			nLen = TEncodeText(szLine, strlen(szLine));
+			pList->AddOneMessage(szLine, nLen);
+			if (m_nLineCount < 32) m_anLineTask[m_nLineCount++] = anTask[i];
+		}
 	}
 }
+
 
 int KUiTaskTrace::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {

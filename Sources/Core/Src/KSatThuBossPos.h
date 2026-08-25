@@ -384,4 +384,11 @@ static const char* const s_szST3BossMoc[ST3_POS_MAX + 1] = {
 // chuoi khop muc menu chinh cua Xa Phu ("Len ban do luyen cong (20 - 90)")
 #define ST3_MENU_LUYENCONG "luyÖn c«ng"
 
+// 7 NPC 769 Nhiep Thi Tran (map, o X, o Y) - tu autoexec_npc_hd3.lua
+#define ST3_NPC_SO 7
+#define ST3_NPC_TEMPLATE 769
+static const short s_nST3NpcMap[ST3_NPC_SO] = { 11, 1, 37, 176, 162, 78, 80 };
+static const short s_nST3NpcX[ST3_NPC_SO] = { 3210, 1506, 1647, 1372, 1573, 1512, 1700 };
+static const short s_nST3NpcY[ST3_NPC_SO] = { 4974, 3198, 3050, 3010, 3227, 3206, 2963 };
+
 #endif
