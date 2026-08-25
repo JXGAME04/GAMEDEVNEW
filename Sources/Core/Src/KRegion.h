@@ -125,7 +125,7 @@ public:
 	int			GetRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		AddRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
 	BOOL		DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType);
-	int			FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation);
+	int			FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx = 0);
 	int			FindEquip(int nMapX, int nMapY);
 	int			FindObject(int nMapX, int nMapY, bool bAutoFind = false);
 	int			FindObject(int nObjID);
@@ -177,7 +177,7 @@ public:
 //--------------------------------------------------------------------------
 //	Find Npc
 //--------------------------------------------------------------------------
-inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation)
+inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation, int nPreferIdx)
 {
 	// FIX 24/08: thieu chan CAN TREN => cac ham quet vung tam nhin lon co the doc tran m_pNpcRef.
 	if (nMapX < 0 || nMapY < 0 || nMapX >= m_nWidth || nMapY >= m_nHeight)
@@ -187,6 +187,13 @@ inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation)
 		return 0;
 
 	KIndexNode *pNode = NULL;
+	// FIX 25/08: ham nay von tra ve NPC DAU TIEN trong danh sach vung nam o o do. Khi nhieu con
+	// dung CHUNG mot o, nguoi goi chi thay DUY NHAT con dau tien; KMissle::CheckNearestCollision
+	// xet con do that bai la BO LUON CA O, nen muc tieu that dung ngay canh khong bao gio duoc xet.
+	// Do that 25/08: 1064/1102 vien dan hut la vi le nay (81 ca CUNG O, nDX=nDY=0, khong phep so
+	// nao co the loai duoc - chi co the do con dau tien la XAC). nPreferIdx = muc tieu ma nguoi goi
+	// DANG NHAM; neu no o trong o nay thi tra ve no. nPreferIdx = 0 (mac dinh) giu hanh vi CU Y NGUYEN.
+	int nFallback = 0;
 	
 	pNode = (KIndexNode *)m_NpcList.GetHead();
 	
@@ -196,11 +203,19 @@ inline int KRegion::FindNpc(int nMapX, int nMapY, int nNpcIdx, int nRelation)
 		{
 			if (NpcSet.GetRelation(nNpcIdx, pNode->m_nIndex) & nRelation)
 			{
-				return pNode->m_nIndex;
+				if (nPreferIdx <= 0)
+					return pNode->m_nIndex;		// duong CU: con dau tien, khong doi mot bit nao
+				if (pNode->m_nIndex == nPreferIdx)
+					return pNode->m_nIndex;		// dung muc tieu dang nham
+				if (nFallback == 0)
+					nFallback = pNode->m_nIndex;
+				else if ((Npc[nFallback].m_Doing == do_death || Npc[nFallback].m_Doing == do_revive) &&
+					 Npc[pNode->m_nIndex].m_Doing != do_death && Npc[pNode->m_nIndex].m_Doing != do_revive)
+					nFallback = pNode->m_nIndex;	// XAC khong duoc CHE mat con con song cung o
 			}
 		}
 		pNode = (KIndexNode *)pNode->GetNext();
 	}	
-	return 0;
+	return nFallback;
 }
 #endif

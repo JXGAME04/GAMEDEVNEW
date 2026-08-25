@@ -1845,7 +1845,8 @@ int KMissle::CheckNearestCollision()
 				continue;
 			
 			_ASSERT(nSearchRegion >= 0);
-			nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation);
+			// FIX 25/08: truyen MUC TIEU DANG BAM de FindNpc khong tra con khac dung chung o (xem KRegion.h).
+			nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation, m_nFollowNpcIdx);
 			nS5Cell = (i + 1) * 3 + (j + 1);
 			
 			if (nNpcIdx > 0)
