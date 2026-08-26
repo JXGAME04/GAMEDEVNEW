@@ -501,6 +501,125 @@ mà `m_ClientDoing` == hoạt ảnh nằm (cdoing 8/10 — xem enum cdo_ trướ
 GIỜ phút:giây khi gặp. **Trượt tới-lui:** drift sync còn 1,3 % (mẫu ít) — chờ số FPS để tách
 giật-do-vẽ vs trượt-do-vị-trí; nếu còn thì đặt nhãn S8 theo dõi chuyển động 1 NPC mẫu.
 
+## 9.16 ĐỢT MỔ SÂU 16 TÁC NHÂN (26/08 tối) — RA GỐC CỦA "TRƯỢT" VÀ "MISS", **CHƯA VÁ GÌ**
+
+5 mũi đào độc lập + 2 vòng phản biện + tự kiểm lại. Báo cáo đầy đủ:
+`<scratchpad>/baocao_dot9.md`. Dữ liệu: cặp client+server chồng nhau 21,9 phút (43 cú chết) +
+682 giây log sau fix D. **Trần log thật `[AUTOLOG] bo qua` = 0 ở cả 4 tệp** ⇒ số liệu là đếm
+chính xác (⚠️ `grep -c "bo qua"` ra 2526 là DƯƠNG TÍNH GIẢ — trúng chữ trong thân nhãn
+`[E2-RECV-RANDMOVE] ... bo qua sat thuong`; phải grep `\[AUTOLOG\] bo qua`).
+
+### A. TRƯỢT TỚI-LUI — **GỐC: `KNpcFindPath::GetDir` trả CÙNG MÃ 0 cho hai nghĩa trái ngược**
+
+`KNpcFindPath.cpp:52` trả `0` khi `!CheckDistance(...)` = **ĐÃ TỚI ĐÍCH** (`:250-253` trả TRUE khi
+còn xa hơn một bước); nhưng `:157` và `:166` cũng trả `0` khi **THẬT SỰ BỊ CHẶN**. Chỗ gọi duy nhất
+`KNpc.cpp:4621` gộp cả hai vào một nhánh `nRet == 0` (`:4640`): nhân vật mình thì `DoStand()` (đúng),
+**mọi NPC khác** thì `m_nNeedFixPos++; DoStandBlocked();` (`:4656-4657`) — mà `DoStandBlocked`
+(`:2138-2148`) **chỉ đổi hoạt ảnh, không đặt `m_Doing`** ⇒ cửa `ServeMove` vẫn mở, tick sau lại
+`ret=0`, cờ tăng mãi. Cờ đó mở cửa ghi đè toạ độ (`KProtocolProcess.cpp:2135`) mà chỉ hạ khi gói
+sync đổi vị trí (`:2144-2153`) — NPC đứng yên thì không bao giờ hạ ⇒ **kéo lui liên tục**.
+🔴 Nhánh `else if (nRet == 0)` này CHÍNH LÀ BẢN VÁ CŨ CỦA CHÍNH DỰ ÁN (chú thích ngay trong code:
+*"JX1 truoc day goi DoStand() => dong nguoi la ai cung dung khung roi nhay"*) ⇒ **cấm revert thẳng**,
+phải TÁCH hai nghĩa. Bản `_SERVER` (`:4674-4683`) làm đúng: `else { DoStand(); return; }`.
+
+**Số tự đếm lại (không lấy của tác nhân):** `[E4_MOVE_PATH] ret=0` n=160 → **158 (98,8%) là ĐÃ TỚI
+ĐÍCH** (d < speed); bài đối chứng bắt buộc: `ret=1` n=1116 → **0 dòng** có d < speed (đúng như mã
+đòi hỏi). Ví dụ vàng `npc=92822`: `fix` leo **0→304 qua 53,4 giây**, `cl == sv` từng chữ số.
+Mắt nhìn thấy: **5632 cú kéo ≤2 ô = 8,3 cú/giây** (p50 19 mps), **62,4% ngược hướng đang đi**;
+thêm 1329 cú >2 ô bị SNAP = "biến mất rồi hiện lại". Lớp nội suy (`PAINT_INTERP_SNAP_DIST=64`)
+biến cú nhảy 1 khung thành **cú trượt mượt** — nên bây giờ mới thấy rõ. Số cú nắn còn **TĂNG**
+23,92 → 30,02 lần/giây sau các đợt vá (các đợt trước chạm BIÊN ĐỘ, không chạm SỐ LẦN).
+
+**Vá đề xuất (rẻ, rủi ro thấp, `GetDir` chỉ có 1 nơi gọi):** `KNpcFindPath.cpp:52` `return 2`;
+`KNpc.cpp:4640` thêm nhánh `else if (nRet == 2) { DoStand(); return; }` TRƯỚC nhánh `nRet==0`;
+`KNpc::DoStand()` thêm `m_nNeedFixPos = 0;`.
+
+### B. MISS CẬN CHIẾN — **GỐC: toạ độ CỦA CHÍNH NHÂN VẬT lệch, client CỐ Ý không bao giờ tự nắn**
+
+Phễu đầy đủ (21,9 phút, đếm lại toàn bộ): **6546 gói đánh gửi đi → chỉ 368 đòn có sát thương = 5,6%**.
+Chặng: 649 (9,9%) mục tiêu server không còn · 2330 (35,6%) bị nuốt giữa hoạt ảnh · 2509 (38,3%) bị
+ghi đè trong hàng đợi MỘT khe (`m_Command` là biến đơn) · 1052 tới phân quyết, trong đó **557 (52,9%)
+bị từ chối XA QUA**, 495 thành đòn thật, và **127/495 (25,7%) đòn thật không gây sát thương nào**.
+Đã loại trừ: né đòn (539/539 `missrate=0`), trễ mạng (p50 4 ms, 0 gói mất), tick server, vũ khí/ngựa.
+
+Cơ chế: `SyncNpcMin` có hai chỗ ghi đè vị trí, **cả hai đều loại trừ chính mình**
+(`KProtocolProcess.cpp:2104` và `:2135`), và người quyết định đánh cũng là client (server
+`ProcessPlayer` bản `_SERVER` chỉ có 2 lời gọi trap — **máy chủ không bao giờ tự đuổi bám thay
+người chơi**). ⇒ client tin mình trong tầm, bắn liên tục, **không hề chạy**; server đo bằng toạ độ
+của nó thấy xa → từ chối tại `KSkills.cpp:359-360` (`dist > radius + 20`).
+**Lệch đo được** (`[S6-ME]`, cùng dòng nên không dính bẫy slot): toàn cửa sổ p50 31 / p90 109 /
+max 291 mps; **riêng lúc bị từ chối p50 = 66 mps (2 ô)** — **93,4% ca lệch một mình nó đã đủ giải
+thích phán quyết**. Cụm đóng đinh: client đứng bảng ở (254,400) suốt 1,15 giây bắn 18 gói, server
+cho là (309,349), `dist=135 > 110`.
+**Cộng hưởng:** WAuto kẹp ngưỡng bắn `nNearDist < 75 → 75` (`CoreShell.cpp:14569-14570` và
+`:14782-14783`) ⇒ biên an toàn chỉ **110−75 = 35 mps**, trong khi lệch lúc từ chối p50 = 66 mps
+⇒ auto bắn thẳng vào vùng server chắc chắn từ chối, **và không bao giờ biết mình bị từ chối**.
+
+Thứ tự vá đề xuất: (1) hạ kẹp 75 → ~45-48 (rẻ nhất, ăn ngay vào 52,9%); (2) nắn toạ độ bản thân
+**CÓ ĐIỀU KIỆN — chỉ khi ĐỨNG YÊN và lệch ≥2 ô** (⚠️ đây là chỗ từng đẻ ra lỗi "giựt lùi" tháng 8,
+phải đặt log đo trước rồi mới vá); (3) báo client khi mục tiêu không còn (`:5237` đang im lặng).
+
+### C. CHẾT CHẬM VỀ THÀNH — **ENGINE KHÔNG CHẬM. Cái chậm là ĐIỂM HỒI SINH Ở XA**
+
+41/43 cú xong dưới 1 giây (chết→hết hoạt ảnh p50 835 ms = đúng 15 khung/18fps; nhận lệnh→dời vị trí
+p50 **0 ms**); 2 cú >4 giây là 2 cú **không ai bấm nút** (rơi auto 5 giây). `[S7-REV-NUOT]=0`,
+sổ sách khớp tuyệt đối: `[S7-REV] 57 − [S7-REV-EP] 14 = 43 = [S7-REV-XONG] = [S7-CHET]`.
+**43/43 lần hồi sinh về ĐÚNG MỘT ĐIỂM** `sw=379 mps=(54016,98304)`, cách chỗ chết **p50 296 ô**
+⇒ **từ lúc sống lại đến lúc đánh được tiếp: p50 18,0 giây (min 16,4 max 44,4)**, tổng **14,4 phút
+chạy bộ trong phiên 46,4 phút**. ⇒ việc cần làm là **đổi điểm hồi sinh (script/cấu hình bản đồ 379)**,
+không phải vá C++.
+Điểm chưa chốt: 41/41 lần bấm nút đều rơi đúng dải 803-946 ms (ngay khi hoạt ảnh chết kết thúc) —
+nghi **nút chỉ ăn sau khi hoạt ảnh chạy xong** ⇒ mỗi cú chết ăn thêm ~0,85 giây vô ích. Cần 1 nhãn
+ở chỗ client gửi `c2s_playerrevive` + chỗ mở hộp thoại để chốt.
+
+### D. NẰM BẸP — **CHƯA RA GỐC, 4 giả thuyết mạnh nhất ĐÃ BỊ BÁC BỎ BẰNG MÃ**
+
+47/47 cú chết trong 3 tệp đều kết thúc `doing=1 cdoing∈{1,2}`; 25.755 mẫu nhãn không tiết chế của
+chính nhân vật: `doing=10` và `doing=21` xuất hiện **0 lần**. Bị bác: (1) "gói sync full diễn lại
+hoạt ảnh chết" — `KNpc::NormalSync` chặn ngay đầu (`KNpc.cpp:5764`), server KHÔNG BAO GIỜ gửi gói
+mang `Doing=do_death/do_revive`; (2) "trạng thái nằm chỉ có một đường ra" — còn ≥2 đường (bị đánh
+→ `DoHurt`; đổi bản đồ → `SendCommand(do_stand)`); (3) "mất một gói hồi sinh là nằm vĩnh viễn" —
+server gửi **hai** gói (`KPlayer.cpp:6822`+`:6823`), đo thật 1,96-2,00 gói/cú, và đường truyền là
+**TCP**; (4) "`DoStand()` return sớm là bẫy" — trạng thái kích hoạt **bất khả đạt** (47/47 `cdoing=8`
+đều kèm `doing=21`) ⇒ **vá chỗ đó = mã chết, tạo ảo giác đã vá**.
+Còn lại: **(G1)** `KNpc.cpp:2673-2691` lấy `ClientDoing` từ bảng chiêu, chỉ chặn `>= cdo_count`, nên
+một dòng chiêu có `CharActionId = 8` sẽ lọt và để nhân vật **đứng mà mang tư thế chết** — kiểm bằng
+cách đếm cột action-type = 8 trong bảng chiêu (**lỗi DỮ LIỆU, chưa kiểm**). **(G2)** NPC mồ côi:
+`KNpc::Activate` return ở `:676-677` **trước cả** `m_DataRes.SetAction()` ⇒ đóng băng cả tư thế lẫn
+vị trí; đo thật có nhịp `dung=228/256 mocoi=208` (91% NPC không được cập nhật hoạt ảnh).
+**Cần thêm nhãn `[S8-VE]`** ngay trước `KNpc.cpp:738` (in `m_DataRes.m_nDoing/m_nAction`) — hiện
+**toàn bộ hệ log chưa từng nhìn thấy LỚP VẼ**, nên không thể phân biệt lỗi ở `KNpc`, `KNpcRes` hay
+`Represent`. Kèm 1 vá 1 dòng đáng ngờ: `KNpcRes::Init` (`KNpcRes.cpp:66`) đặt lại `m_nAction=0`
+nhưng **không đặt lại `m_nDoing`**, trong khi `SetAction` mở đầu `if (m_nDoing == nDoing) return TRUE;`
+⇒ khe NPC tái dùng có thể vẽ bằng bộ ảnh sai.
+
+### 🔴 NHỮNG SỐ PHẢI RÚT LẠI (phản biện bác bỏ — cấm dùng lại)
+
+| Kết luận cũ | Vì sao sai |
+|---|---|
+| `[SKILL-REFUSE-FAR]` = đòn bị từ chối vì xa (manh mối tôi đưa cho các mũi) | Nhãn đặt **trước** cửa chặn, bản server in **vô điều kiện** (`KSkills.cpp:353-358` điều kiện nằm trong `#ifndef _SERVER`). 0/62 dòng client có `d ≤ 0,8R` nhưng **44,0%** dòng server có ⇒ từ chối THẬT chỉ 4 dòng |
+| `[MSL-SET-FULL]`/`[MISSLE-POOL-FULL]`/`[E3_MISSLE_ADDFAIL]` = hết khe đạn | Cả 3 đặt trước cửa chặn; có dòng `dang dung=0` mà kêu hết khe |
+| "Dòng `KNpc.cpp:1014` xoá lệnh là nguyên nhân số 1 của miss" | Server không bao giờ tự đuổi bám thay người chơi ⇒ hạ bậc xuống "lưới an toàn bị vô hiệu", xếp thứ 9 |
+| "Nhịp gói tự đồng bộ ~55 ms" | Đo thật p50 **111 ms**, tb 145, max **3.223 ms** |
+| "Mảng nội suy theo khe `idx` bị tái dùng gây trượt" | Guard `dwID` (`CoreShell.cpp:18243`) chặn 5014/5049; chỉ 0,021 lần/giây so với 8,3 cú trượt/giây ⇒ không phải gốc |
+| "Fix D làm tăng `[S6-CMD] ap=0`" | 18,73% → 17,80% — gần như không đổi |
+| "fix càng cao càng trùng khít chứng minh NPC đã tới đích" | Lập luận **tự vòng** (luật reset sinh ra chính nó) ⇒ thay bằng số học từng dòng `[E4_MOVE_PATH]` |
+
+### 🕳️ CHỖ MÙ CỦA HỆ LOG (cần bổ sung)
+
+1. **Chưa hề thấy LỚP VẼ** (`m_DataRes`) — chỗ mù nghiêm trọng nhất, chặn đứng việc chốt "nằm bẹp".
+2. **KHÔNG CÓ CON QUÁI NÀO trong bản ghi**: 682 giây chỉ có `kind=1` (người) và `kind=3` (NPC thoại),
+   **`kind=0` = 0 dòng** ⇒ mọi kết luận về "quái trượt/quái miss" là **suy từ mã, chưa đo được**.
+   Cần một phiên đo ở **bãi có quái**.
+3. Nhãn đặt trước cửa chặn = báo động giả — đã lừa **3 lần**; danh sách nghi thêm: `KSkills.cpp:188`,
+   `:193`, `:230`, `:279`, `:300`, `:357`, `:371-376`.
+4. Không có nhãn cho **hàng đợi lệnh MỘT khe** (38,3% gói biến mất không dấu vết) — cần
+   `[S5-CMD-DEDE]` ngay trước `KNpc.cpp:4947`.
+5. Không đếm được **viên đạn sinh ra** cho riêng một người (nhãn đều là `AUTOLOG_EVERY`), và
+   `[S4-MSL-END]` chỉ ghi trong `DoVanish` nên đạn chết qua `DoCollide` **không bao giờ in**.
+6. `AUTOLOG_IDX` chỉ lọc theo **người tung chiêu** ⇒ mọi thứ CaiBang **bị đánh** đều vô hình.
+7. Chưa có mẫu đối chứng "không cưỡi ngựa" (557/557 dòng TOOFAR đều `ngua=1`).
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
