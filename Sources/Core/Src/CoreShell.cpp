@@ -10638,6 +10638,11 @@ enum STPhase
 #define STM_SAY_GHEPOK		"hîp thµnh mét"
 #define STM_SAY_GHEPSAI		"®Ó kh«ng ®óng"
 #define STM_SAY_GHEPNHIEU	"®Ó qu¸ nhiÒu"
+// (25/08) TIN BAO GIET XONG - may chu phat DUNG luc xoa nhiem vu:
+//   kill_level.lua:76 SetMemberTask(...,0,killbossall,...) -> lib_killlevel.lua:40
+//   nt_setTask(1082,0) roi :42 fnCallback() -> kill_level.lua:84 Msg2Player(...)
+// Nguyen van: "thu phôc ®­îc tªn s¸t thñ" (cat tu chinh script may chu, khong go tay).
+#define STM_TIN_XONG		"thu phôc ®­îc tªn s¸t thñ"
 #define STM_SAY_GHEPIT		"®Ó qu¸ Ýt"
 
 static void ST_Msg(int nPlayerIdx, const char* szMsg)
@@ -10778,6 +10783,25 @@ static void ST_DongHop(int nPlayerIdx)
 {
 	CoreDataChanged(GDCNI_END_AFFAIR_BOX, NULL, NULL);
 	g_sDTCap.nBoxOpen = 0;
+}
+
+// quet 4 khe tin "He Thong" (g_sDTCap.aMsg) cho may Sat Thu - con tro rieng
+// uSTMsgSeen. Giong het TK_CoTin / HD_CoTin.
+static int ST_CoTin(int nPlayerIdx, const char* szMark)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	int nCo = 0;
+	if (cap.uMsgSeq != ea.uSTMsgSeen)
+	{
+		unsigned int uTu = ea.uSTMsgSeen;
+		if (cap.uMsgSeq - uTu > 4)
+			uTu = cap.uMsgSeq - 4;
+		for (unsigned int q = uTu; q != cap.uMsgSeq; ++q)
+			if (DT_Has(cap.aMsg[q & 3], szMark))
+				nCo = 1;
+	}
+	return nCo;
 }
 
 // tim DUNG con boss can giet (theo ten trong bang killer.txt) quanh (nAtX,nAtY)
@@ -11015,6 +11039,23 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			(uCurTime - ea.uSTVongT) / 1000,
 			(int)((ea.uSTNghiT > uCurTime) ? (ea.uSTNghiT - uCurTime) / 1000 : 0),
 			DT_TuiDayTP(nPlayerIdx, pAp) ? 1 : 0, ea.nSTNgay, nNgay);
+
+	// (25/08 - y chu game: "co thong bao giet xong boss thi cho phu, can gi ruom ra")
+	// Nghe THANG thong bao cua may chu thay vi suy tu bien nhiem vu 1082 tren client.
+	// Tin nay phat DUNG luc nhiem vu bi xoa (kill_level.lua:76 -> lib_killlevel.lua:40
+	// nt_setTask(1082,0) -> :42 fnCallback -> kill_level.lua:84 Msg2Player).
+	// Quet o day - TRUOC nhip 400 ms - de khong bo lo khe tin nao.
+	const int nTinXong = ST_CoTin(nPlayerIdx, STM_TIN_XONG);
+	ea.uSTMsgSeen = cap.uMsgSeq;
+	if (nTinXong && pAp->bSatThu
+	 && (ea.nSTPhase == STP_DANH || ea.nSTPhase == STP_TOIBOSS))
+	{
+		ea.uNpcID = 0;
+		ST_Msg(nPlayerIdx, "<color=Green>M¸y chñ b¸o hoµn thµnh nhiÖm vô s¸t thñ - nhÆt ®å råi dïng phï vÒ thµnh nhËn l­ît kÕ.");
+		ST_Pha(nPlayerIdx, STP_NHAT, uCurTime);
+		ea.nSTHold = 3;
+		return 3;
+	}
 
 	// ---- quyet dinh vao cuoc ----
 	if (ea.nSTPhase == STP_OFF || ea.nSTPhase == STP_DONE)
@@ -11531,7 +11572,9 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nSTHold = 1;
 			return 1;
 		}
-		// task ve 0 = boss DA CHET (lib_killlevel.lua SetMemberTask) -> nhat do
+		// Duong THU HAI (du phong): task ve 0. Duong CHINH la thong bao cua may chu
+		// doc o dau ham. Nhanh nay con bat them canh nguoi khac giet ho / nhiem vu
+		// bi huy tu phia may chu.
 		if (nTask == 0)
 		{
 			ea.uNpcID = 0;
