@@ -825,7 +825,34 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						AUTOLOG_EVERY(1000, "[CAST-LINE-VEC] sk=%d launcher=%d src(%d,%d) des(%d,%d) dir=%d childnum=%d movekind=%d", (int)m_nId, nLauncher, nSrcPX, nSrcPY, nDesPX, nDesPY, nDir, m_nChildSkillNum, (m_nChildSkillId > 0 && m_nChildSkillId < MAX_MISSLESTYLE) ? (int)g_MisslesLib[m_nChildSkillId].m_eMoveKind : -1);
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line || g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Parabola) ) 
 						{
-							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
+							// FIX 25/08: MUC TIEU DE LEN NGUOI BAN (dist=0). Truoc day return FALSE nen
+							// KHONG SINH RA VIEN DAN NAO: nguoi choi danh mai ma muc tieu khong mat mau,
+							// phai di chuyen mot buoc moi danh duoc - dung trieu chung chu game bao.
+							// Do that 25/08 (may chu pid 25308): 290/290 lan cast vao id 27062 deu co
+							// dist=0 => 0 vien dan, 0 sat thuong; hai muc tieu khac cung luc van 1,0/cast.
+							// g_GetDirIndex tra -1 khi dx=dy=0 (KMath.h:113) nen nDirIndex/nDir tinh o tren
+							// cung hong => phai lay huong NHAN VAT DANG QUAY (m_Dir cung he 0..63, dat bang
+							// chinh g_GetDirIndex o KNpc.cpp:2636) roi day dich ra 16 mps cho vector co nghia.
+							// nDesPX/nDesPY chi duoc CastExtractiveLineMissle dung cho dan MMK_Parabola (tinh
+							// do cao vong cung); dan MMK_Line bo qua, no bay theo (nCos,nSin) va van bam
+							// m_nFollowNpcIdx = muc tieu that, nen day dich xa hay gan khong doi ket qua.
+							if (nSrcPX == nDesPX && nSrcPY == nDesPY)
+							{
+								// CHI mo cho dan MMK_Line. Dan MMK_Parabola giu nguyen return FALSE nhu cu:
+								// CastExtractiveLineMissle tinh do cao vong cung bang nTime = g_GetDistance(src,des)
+								// / m_nSpeed; day dich ra 16 mps se cho nTime = 0 voi moi dan speed >= 17 =>
+								// m_nHeightSpeed = zacc * (0-1)/2 < 0 => dan roi ngay duoi chan nguoi ban.
+								if (g_MisslesLib[m_nChildSkillId].m_eMoveKind != MISSLE_MMK_Line)
+									return FALSE;
+								// Huong KHONG quan trong: muc tieu nam DUNG diem ban nen vong quet 3x3 cua
+								// CheckNearestCollision co ca o tam. Dat CO DINH 0 de client va server luon
+								// khop - KHONG dung Npc[].m_Dir: phia SERVER no hau nhu luon 0 vi moi cho gan
+								// deu nam trong #ifndef _SERVER (KNpc.cpp 2636/7664/7780), chi con KNpc::TurnTo
+								// (:10310) chay ca hai ben - ma TurnTo cung tra -1 khi hai ben trung diem.
+								nDirIndex = 0;
+								nDir      = g_DirIndex2Dir(nDirIndex, MaxMissleDir);
+								nDesPX    = nSrcPX + 16;	// 16 mps = nua o; nCos=1024 nSin=0, lot ca hai cua abs()>1024
+							}
 							nDistance = g_GetDistance(nSrcPX, nSrcPY, nDesPX, nDesPY);
 							
 							if (nDistance == 0 ) return FALSE;
@@ -915,7 +942,34 @@ BOOL	KSkill::CastMissles(int nLauncher, int nParam1, int nParam2, int nWaitTime 
 						
 						if (m_nChildSkillNum == 1 && (g_MisslesLib[m_nChildSkillId].m_eMoveKind == MISSLE_MMK_Line) ) 
 						{
-							if (nSrcPX == nDesPX && nSrcPY == nDesPY)		return FALSE ;
+							// FIX 25/08: MUC TIEU DE LEN NGUOI BAN (dist=0). Truoc day return FALSE nen
+							// KHONG SINH RA VIEN DAN NAO: nguoi choi danh mai ma muc tieu khong mat mau,
+							// phai di chuyen mot buoc moi danh duoc - dung trieu chung chu game bao.
+							// Do that 25/08 (may chu pid 25308): 290/290 lan cast vao id 27062 deu co
+							// dist=0 => 0 vien dan, 0 sat thuong; hai muc tieu khac cung luc van 1,0/cast.
+							// g_GetDirIndex tra -1 khi dx=dy=0 (KMath.h:113) nen nDirIndex/nDir tinh o tren
+							// cung hong => phai lay huong NHAN VAT DANG QUAY (m_Dir cung he 0..63, dat bang
+							// chinh g_GetDirIndex o KNpc.cpp:2636) roi day dich ra 16 mps cho vector co nghia.
+							// nDesPX/nDesPY chi duoc CastExtractiveLineMissle dung cho dan MMK_Parabola (tinh
+							// do cao vong cung); dan MMK_Line bo qua, no bay theo (nCos,nSin) va van bam
+							// m_nFollowNpcIdx = muc tieu that, nen day dich xa hay gan khong doi ket qua.
+							if (nSrcPX == nDesPX && nSrcPY == nDesPY)
+							{
+								// CHI mo cho dan MMK_Line. Dan MMK_Parabola giu nguyen return FALSE nhu cu:
+								// CastExtractiveLineMissle tinh do cao vong cung bang nTime = g_GetDistance(src,des)
+								// / m_nSpeed; day dich ra 16 mps se cho nTime = 0 voi moi dan speed >= 17 =>
+								// m_nHeightSpeed = zacc * (0-1)/2 < 0 => dan roi ngay duoi chan nguoi ban.
+								if (g_MisslesLib[m_nChildSkillId].m_eMoveKind != MISSLE_MMK_Line)
+									return FALSE;
+								// Huong KHONG quan trong: muc tieu nam DUNG diem ban nen vong quet 3x3 cua
+								// CheckNearestCollision co ca o tam. Dat CO DINH 0 de client va server luon
+								// khop - KHONG dung Npc[].m_Dir: phia SERVER no hau nhu luon 0 vi moi cho gan
+								// deu nam trong #ifndef _SERVER (KNpc.cpp 2636/7664/7780), chi con KNpc::TurnTo
+								// (:10310) chay ca hai ben - ma TurnTo cung tra -1 khi hai ben trung diem.
+								nDirIndex = 0;
+								nDir      = g_DirIndex2Dir(nDirIndex, MaxMissleDir);
+								nDesPX    = nSrcPX + 16;	// 16 mps = nua o; nCos=1024 nSin=0, lot ca hai cua abs()>1024
+							}
 							nDistance = g_GetDistance(nSrcPX, nSrcPY, nDesPX, nDesPY);
 							
 							if (nDistance == 0 ) return FALSE;
