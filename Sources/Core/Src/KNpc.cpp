@@ -723,6 +723,15 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		// VAN DUOC VE voi vi tri DONG BANG trong khi hoat anh van chay
 		// => "dung yen ma chan di chuyen" (thay ro nhat o MEP khung hinh).
 		m_DataRes.Remove(m_Index);
+		// [FIX-C 26/08] XAC (do_death/do_revive) cam sync: SyncNpcMin bo qua goi cua NPC
+		// chet nen xac khong bao gio duoc cap nhat - truoc day thanh mo coi treo den 55 s.
+		// Thoi diem xac BIEN MAT y het cu (cung moc 6,7 s nay - go khoi region la het ve),
+		// chi khac: tra khe ngay. Hoi sinh la teleport di cho khac nen khong mat gi.
+		if ((m_Doing == do_death || m_Doing == do_revive) && m_Kind != kind_partner)
+		{
+			AUTOLOG("[S6-XOAXAC] npc=%u idx=%d kind=%u doing=%d t=%u", m_dwID, m_Index, m_Kind, (int)m_Doing, SubWorld[0].m_dwCurrentTime);
+			NpcSet.Remove(m_Index);
+		}
 		return;
 	}
 

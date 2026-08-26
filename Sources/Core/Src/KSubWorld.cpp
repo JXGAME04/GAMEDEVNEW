@@ -1959,6 +1959,30 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 		SubWorld[0].Close();
 		g_ScenePlace.ClosePlace();
 		// NpcSet.RemoveAll(Player[CLIENT_PLAYER_INDEX].m_nIndex); -- later finish it. spe
+#ifndef _SERVER
+		// [FIX-A 26/08] Hoan thien dung cho bo do o tren ("later finish it"): DOI MAP THAT
+		// thi tra het khe NPC map cu - tru CHINH MINH va BAN DONG HANH (kind_partner).
+		// SubWorld[0].Close() vua go MOI NPC khoi region (RegionIndex=-1) nen Remove o day
+		// la an toan. Truoc day toan bo NPC map cu chiem khe toi 55 s dung luc map moi can
+		// khe nhat: vao Tong Kim 10-24 s la bang day 255/256 (mo coi 254), 1.198 lan NPC
+		// moi KHONG them duoc => dich vo hinh. Nguoi choi/bot map cu van nguyen tren server;
+		// gap lai thi client REQNPC + sync full nhu moi (co che san, chay nghin lan/gio).
+		{
+			extern int S6_UsedSlots();
+			int nS6Me = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			int nS6Xoa = 0;
+			for (int i6 = 1; i6 < MAX_NPC; i6++)
+			{
+				if (Npc[i6].m_dwID == 0 || i6 == nS6Me)
+					continue;
+				if (Npc[i6].m_Kind == kind_partner)
+					continue;
+				NpcSet.Remove(i6);
+				nS6Xoa++;
+			}
+			AUTOLOG("[S6-DONMAP] xoa=%d conlai=%d/%d t=%u", nS6Xoa, S6_UsedSlots(), (int)MAX_NPC, timeGetTime());
+		}
+#endif
 /*
 		char	szKeyName[32], szPathName[FILE_NAME_LENGTH];
 		BOOL	m_bBgPic;

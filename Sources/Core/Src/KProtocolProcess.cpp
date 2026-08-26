@@ -1973,7 +1973,16 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 			}
 			AUTOLOG_EVERY(1000, "SYNCMIN-REGION-BAD npc=%u idx=%d mps=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->MapX, NpcSync->MapY, nRegion, SubWorld[0].m_dwCurrentTime);
 			if (nRegion == -1)
-			{		
+			{
+				// [FIX-B 26/08] NPC MO COI ma vi tri server bao da NGOAI vung nap = no da roi
+				// vung quan sat -> tra khe NGAY thay vi ket den CheckBalance 55 s (truoc day
+				// return im lang). Quay vao tam thi REQNPC + sync full nhu NPC moi. Giu ngoai
+				// le ban dong hanh. NPC lon von RIA 40-48 o van trong vung nap - khong bi dung.
+#ifndef _SERVER
+				AUTOLOG("[S6-XOAXA] npc=%u idx=%d kind=%u doing=%d mps=(%d,%d) t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, (int)NpcSync->Doing, NpcSync->MapX, NpcSync->MapY, SubWorld[0].m_dwCurrentTime);
+#endif
+				if (Npc[nIdx].m_Kind != kind_partner)
+					NpcSet.Remove(nIdx);
 				return;
 			}
 			else
