@@ -6686,6 +6686,12 @@ enum TKPhase
 
 #define TK_O(v)			((v) * 32)		// doi o -> mps
 #define TK_CUATRAN		40				// phut sau moc gio con vao duoc tran
+// Than Hanh Phu: duong VAO TONG KIM KHONG CAN Chieu Thu (chu game 25/08:
+// "khong can item do than hanh phu co len map tong kim"). Menu 3 cap, marker
+// trich tu dong tu script/item/ib/shenxingfu.lua -> KTongKimTables.h.
+#define TK_ITEM_THP_G	6
+#define TK_ITEM_THP_D	1
+#define TK_ITEM_THP_P	1271
 #define TK_HANPHA		180000u			// han mot pha (3 phut) truoc khi bo cuoc
 #define TK_GANTRAI		1440			// mps: gan hau doanh nay = dang trong trai
 
@@ -6781,6 +6787,23 @@ static int TK_TrongTrai(int nX, int nY, int* pnBo)
 	if (pnBo)
 		*pnBo = (dA <= dB) ? 1 : 2;
 	return (dA < TK_GANTRAI || dB < TK_GANTRAI) ? 1 : 0;
+}
+
+// so Than Hanh Phu con trong tui (duong vao Tong Kim khi het Chieu thu)
+static int TK_DemThanHanhPhu(int nPlayerIdx)
+{
+	int nSo = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if ((pIt->nPlace == pos_equiproom || pIt->nPlace == pos_immediacy)
+		 && Item[pIt->nIdx].GetGenre() == TK_ITEM_THP_G
+		 && Item[pIt->nIdx].GetDetailType() == TK_ITEM_THP_D
+		 && Item[pIt->nIdx].GetParticular() == TK_ITEM_THP_P)
+			++nSo;
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return nSo;
 }
 
 // so Tong Kim Chieu Thu con trong tui / thanh mang nhanh
@@ -7070,11 +7093,17 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			TK_Msg(nPlayerIdx, "<color=Yellow>Ch­a ®ñ cÊp 80 - bá qua khung giê Tèng Kim nµy.");
 			return 0;
 		}
-		if (nMap != TK_MAP_BAODANH && nMap != TK_MAP_TRAN && TK_DemChieuThu(nPlayerIdx) <= 0)
+		// (25/08) KHONG con bat buoc Tong Kim Chieu thu: het Chieu thu thi di bang
+		// THAN HANH PHU (menu "Chien truong Tong Kim"). Chi bo khi thieu CA HAI mon,
+		// va KHONG khoa ca khung gio - nhac roi thu lai sau 60 giay vi nguoi choi co
+		// the mua/nhan phu ngay sau do.
+		if (nMap != TK_MAP_BAODANH && nMap != TK_MAP_TRAN
+		 && TK_DemChieuThu(nPlayerIdx) <= 0
+		 && TK_DemThanHanhPhu(nPlayerIdx) <= 0)
 		{
-			ea.nTKKey = nKhoa;
-			ea.nTKPhase = TKP_DONE;
-			TK_Msg(nPlayerIdx, "<color=Yellow>HÕt Tèng Kim Chiªu th­ trong hµnh trang - h·y mua thªm råi bËt l¹i.");
+			TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng cã Tèng Kim Chiªu th­ lÉn ThÇn Hµnh Phï trong tói - thö l¹i sau 1 phót.");
+			ea.nTKPhase = TKP_OFF;
+			ea.uTKNext = uCurTime + 60000;
 			return 0;
 		}
 		if (Player[nPlayerIdx].GetFactionNo() < 0)
@@ -7128,16 +7157,62 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (ea.nTKStep == 0)
 		{
 			ea.uTKDlgSeen = cap.uDlgSeq;
-			if (!Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THU_G, TK_ITEM_THU_D,
+			// duong 1 (nhanh nhat): Tong Kim Chieu thu - thoai 2 dong chon phe ngay
+			if (Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THU_G, TK_ITEM_THU_D,
 					TK_ITEM_THU_P, nPlayerIdx))
 			{
-				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng dïng ®­îc Tèng Kim Chiªu th­ - bá khung giê nµy.");
-				ea.nTKPhase = TKP_DONE;
-				ea.nTKHold = 0;
-				return 0;
+				ea.nTKStep = 1;
+				ea.uTKNext = uCurTime + 700;
+				return 1;
 			}
-			ea.nTKStep = 1;
-			ea.uTKNext = uCurTime + 700;
+			// duong 2: THAN HANH PHU - menu 3 cap (buoc 10/11/12 ben duoi)
+			if (Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THP_G, TK_ITEM_THP_D,
+				TK_ITEM_THP_P, nPlayerIdx))
+			{
+				TK_Msg(nPlayerIdx, "<color=Cyan>HÕt Tèng Kim Chiªu th­ - ®i b¸o danh b»ng ThÇn Hµnh Phï.");
+				ea.nTKStep = 10;
+				ea.uTKNext = uCurTime + 900;
+				return 1;
+			}
+			TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng dïng ®­îc c¶ Chiªu th­ lÉn ThÇn Hµnh Phï - thö l¹i sau 1 phót.");
+			ea.nTKPhase = TKP_OFF;
+			ea.nTKHold = 0;
+			ea.uTKNext = uCurTime + 60000;
+			return 0;
+		}
+		if (ea.nTKStep >= 10)
+		{
+			// menu Than Hanh Phu 3 cap: 10 = chon 'Su dung thuat than hanh...',
+			// 11 = chon 'Chien truong Tong Kim', 12 = chon phe roi cho chuyen map.
+			if (cap.uDlgSeq != ea.uTKDlgSeen)
+			{
+				ea.uTKDlgSeen = cap.uDlgSeq;
+				char szBuf[2048];
+				char* apAns[24];
+				g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+				int nAns = DT_Split(szBuf, apAns, 24);
+				const char* szMuc = TKM_OPT_THP_DI;
+				if (ea.nTKStep == 11)
+					szMuc = TKM_OPT_THP_TK;
+				else if (ea.nTKStep >= 12)
+					szMuc = (ea.nTKPhe == 2) ? TKM_OPT_THP_KIM : TKM_OPT_THP_TONG;
+				int nOpt = DT_FindAns(apAns, nAns, szMuc);
+				if (nOpt >= 0)
+				{
+					DT_Answer(nPlayerIdx, nOpt);
+					if (ea.nTKStep < 12)
+						++ea.nTKStep;
+					ea.uTKNext = uCurTime + 1500;
+					return 1;
+				}
+			}
+			// thoai chua ra / bam truot: go lai phu (moi ~4 giay)
+			if (++ea.nTKTry % 10 == 0)
+			{
+				ea.nTKStep = 10;
+				Player[nPlayerIdx].m_ItemList.AutoUseItem(TK_ITEM_THP_G, TK_ITEM_THP_D,
+					TK_ITEM_THP_P, nPlayerIdx);
+			}
 			return 1;
 		}
 		// giu nguyen uTKDlgSeen de pha BOOK bat duoc hoi thoai vua bat ra

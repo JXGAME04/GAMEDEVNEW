@@ -73,6 +73,7 @@ s_quany = rd(os.path.join(TK, "quany.lua"))
 s_quanquan = rd(os.path.join(TK, "quanquan.lua"))
 s_lib = rd(os.path.join(TK, "lib_tktc.lua"))
 s_timer = rd(os.path.join(SRV, "timerserver.lua"))
+s_thp = rd(os.path.join(SRV, "item", "ib", "shenxingfu.lua"))	# Than Hanh Phu 6/1/1271
 s_tongratrai = rd(os.path.join(TRAP, "tongratrai.lua"))
 s_kimratrai = rd(os.path.join(TRAP, "kimratrai.lua"))
 
@@ -104,6 +105,16 @@ MARK.append(("TKM_MSG_KHOIDONG",
              pick(s_timer, r'AddGlobalCountNewsEx\("' + ANY + r'"\.\.GetMissionName', "tin khoi dong tran")))
 MARK.append(("TKM_MSG_SUKIENBD",
              pick(s_timer, r'(\xaeang \xeb giai \xaeo\xb9n b\xb8o danh)', "tin chat su kien bao danh")))
+
+# Than Hanh Phu (6/1/1271): duong VAO TONG KIM KHONG CAN Chieu Thu.
+# Chu game 25/08: "khong can item do than hanh phu co len map tong kim".
+# Menu 2 cap: chondiadiem1() -> "Chien truong Tong Kim/tongkim"
+#             tongkim()      -> "Bao danh [phe Tong]/ditongtc" | "[phe Kim ]/dikimtc"
+# (menu 3 CAP: dung phu -> chondiadiem1 -> tongkim -> chon phe)
+MARK.append(("TKM_OPT_THP_DI", pick(s_thp, '"' + ANY + '/chondiadiem1"', "dong dung thuat than hanh cua Than Hanh Phu")))
+MARK.append(("TKM_OPT_THP_TK", pick(s_thp, '"' + ANY + '/tongkim"', "dong chien truong Tong Kim cua Than Hanh Phu")))
+MARK.append(("TKM_OPT_THP_TONG", pick(s_thp, '"' + ANY + '/ditongtc"', "dong bao danh phe Tong cua Than Hanh Phu")))
+MARK.append(("TKM_OPT_THP_KIM", pick(s_thp, '"' + ANY + '/dikimtc"', "dong bao danh phe Kim cua Than Hanh Phu")))
 
 # ---- toa do ----
 TONGBINH = toado(s_lib, "TONGBINH_TOADO")

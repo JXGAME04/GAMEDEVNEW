@@ -854,6 +854,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	// nguoi choi dang giua su kien thi van phai song duoc.
 	// Bang map lay TU CHINH may chu (settings/map_type.txt -> KMapSuKien.h).
 	const int nSK = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MAPSUKIEN, 0);
+	// (25/08) mot dong nhat ky cho CONG HOAT DONG: lan sau auto khong chay thi
+	// nhin day la biet ngay may nao tra gi, thay vi phai mo tung ham ra doan.
+	AUTOLOG_EVERY(5000, "[HD-GATE] nTK=%d nLD=%d nHD=%d nST=%d nBS=%d nSK=%d | bat: TK=%d LD=%d BN=%d BC=%d TS=%d ST=%d DT=%d",
+		nTK, nLD, nHD, nST, nBS, nSK, pApData->bTongKim, pApData->bLienDau,
+		pApData->bHDBachNhan, pApData->bHDBangChien, pApData->bHDTinSu,
+		pApData->bSatThu, pApData->bDaTau);
 	// [TongKim] dang cam lai (di bao danh / trong tran) thi TU bam nut hoi sinh du
 	// nguoi choi khong bat 'Tu hoi sinh' - chet la chuyen thuong o Tong Kim.
 	if(nBS && !pApData->bRevive)

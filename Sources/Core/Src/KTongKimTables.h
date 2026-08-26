@@ -26,6 +26,10 @@ static const char TKM_OPT_CHDIEM[] = "Cöa hµng ®iÓm Tèng Kim";
 static const char TKM_MSG_BAODANH[] = "B¸o danh Tèng Kim ®· b¾t ®Çu thêi gian b¸o danh trong vßng ";
 static const char TKM_MSG_KHOIDONG[] = "Tèng kim ®· ®­îc khëi ®éng ph­¬ng thøc ";
 static const char TKM_MSG_SUKIENBD[] = "®ang ë giai ®o¹n b¸o danh";
+static const char TKM_OPT_THP_DI[] = "Sö dông thuËt thÇn hµnh ®i ®Õn n¬i chØ ®Þnh";
+static const char TKM_OPT_THP_TK[] = "ChiÕn tr­êng Tèng Kim";
+static const char TKM_OPT_THP_TONG[] = "B¸o danh [phe Tèng]";
+static const char TKM_OPT_THP_KIM[] = "B¸o danh [phe Kim ]";
 
 // ===== khung gio mo tran (gio, phut) - theo dong ho MAY CHU =====
 #define TK_GIO_COUNT	4
