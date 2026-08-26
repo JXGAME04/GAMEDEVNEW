@@ -31,20 +31,24 @@ def blocked(x, y):
         return 1
     return obs[cy * W + cx]
 
+# (26/08 v2) PHAI mo phong DUNG bo lay mau cua TK_ThayDuoc (CoreShell.cpp:6861),
+# KHONG duoc dung Bresenham: hai cach di HAI DUONG KHAC NHAU. Ban dau tool nay dung
+# Bresenham nen cham diem (1566,3084) la 'sach', trong khi engine lay mau deu thi
+# duong do cham 2 o tuong (1560,3082)+(1559,3082) => auto van huc tuong. Ngoai ra
+# toa do phai tinh bang O*32 (dung nhu macro TK_O), KHONG cong nua o.
 def line_ok(a, b):
-    x0, y0 = a; x1, y1 = b
-    dx = abs(x1 - x0); dy = abs(y1 - y0)
-    sx = 1 if x0 < x1 else -1
-    sy = 1 if y0 < y1 else -1
-    err = dx - dy; x, y = x0, y0
-    while True:
-        if blocked(x, y):
+    ax, ay = a[0] * 32, a[1] * 32
+    bx, by = b[0] * 32, b[1] * 32
+    dx, dy = bx - ax, by - ay
+    nB = max(abs(dx), abs(dy)) // 32
+    if nB < 2:
+        return True
+    if nB > 48:
+        nB = 48
+    for i in range(1, nB):
+        if blocked((ax + dx * i // nB) // 32, (ay + dy * i // nB) // 32):
             return False
-        if x == x1 and y == y1:
-            return True
-        e2 = 2 * err
-        if e2 > -dy: err -= dy; x += sx
-        if e2 < dx:  err += dx; y += sy
+    return True
 
 def clear5(x, y):
     for dx in range(-2, 3):

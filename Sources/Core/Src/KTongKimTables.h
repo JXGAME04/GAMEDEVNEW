@@ -34,7 +34,7 @@ static const char TKM_OPT_THP_KIM[] = "B¸o danh [phe Kim ]";
 // ===== khung gio mo tran (gio, phut) - theo dong ho MAY CHU =====
 #define TK_GIO_COUNT	4
 static const short g_TKGio[TK_GIO_COUNT][2] = {
-	{ 11, 43 },
+	{ 13, 58 },
 	{ 17, 50 },
 	{ 20, 50 },
 	{ 22, 50 },
@@ -57,7 +57,11 @@ static const TKPoint g_TKShopKim   = { 1580, 3074 };	// Quan Nhu Quan Kim (res 4
 // (do tren maps/324_srv.fp bang ReverseTools/tk_pick_vongkim.py: duong thang
 // DapKim->NpcBdKim cham 5 o chan, NpcBdKim->XaPhuKim cung cham 5 o). San trong
 // phia nam, nhin sach toi ca DapKim / NpcBdKim / XaPhuKim / SwapKim, 5x5 thoang.
-static const TKPoint g_TKVongKim   = { 1566, 3084 };
+// (26/08 v2) LUI XUONG y=3085: diem (1566,3084) do bang Bresenham thi sach, nhung
+// bo lay mau CUA ENGINE (TK_ThayDuoc: nB = max(|dx|,|dy|)/32, diem ax+dx*i/nB) lai
+// di duong khac va cham 2 o tuong (1560,3082)+(1559,3082). Diem chon lai bang CHINH
+// bo lay mau do - xem ReverseTools/tk_pick_vongkim.py.
+static const TKPoint g_TKVongKim   = { 1566, 3085 };
 // hau doanh 2 phe tren map tran (TAB_PHE_TONGKIM[..][9]) - DAO theo the tran
 static const TKPoint g_TKHauDoanhA = { 1229, 3561 };
 static const TKPoint g_TKHauDoanhB = { 1689, 3074 };
