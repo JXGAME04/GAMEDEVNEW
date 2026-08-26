@@ -364,6 +364,32 @@ quay lại muộn hơn 10 s phải REQNPC + NPC_SYNC full lại (thêm chút lư
 Lưu ý ngữ nghĩa: NPC mồ côi ngoài vùng KHÔNG được cập nhật `m_SyncSignal` (SyncNpcMin return sớm
 `:1975-1977`) nên timeout tính đúng từ gói cuối trước khi bị gỡ.
 
+## 9.10 NGUYÊN NHÂN GỐC TRÀN BẢNG (chốt 26/08 chiều, đo trực tiếp lúc chủ vào TK 12:38) + 3 FIX ĐÚNG NGỮ NGHĨA CHỜ DUYỆT
+
+Chủ game bác đề xuất "dọn mồ côi 10 s" (vặn ngưỡng = chữa cháy) — yêu cầu nguyên nhân gốc. Chuỗi
+`[S6-BANG]` bắt được cảnh tràn TRỰC TIẾP khi chủ vào Tống Kim: `+1999s` vào map 324 → `+2011s` sang
+map 379 (chiến trường) → **10-24 giây sau: `dung=255, mồ côi 144→254/255`, 1.198 cú ADD-FAIL** —
+tức cả bảng là RÁC map cũ, địch/đồng đội VÔ HÌNH phút đầu trận.
+
+**Số quyết định: nhu cầu khe THẬT tối đa quan sát được = `max(dung − mocoi)` = 156/256** ⇒ trần 256
+KHÔNG thiếu — thiếu là do rác chiếm. (Đo lại sau fix; chỉ khi >200 mới bàn nâng `MAX_NPC`.)
+
+### Ba nguyên nhân gốc, ba fix (client-only, không đổi giao thức, không đổi cảm nhận):
+
+| # | Gốc | Bằng chứng | Fix đúng ngữ nghĩa |
+|---|---|---|---|
+| **A** | **Đổi map không dọn bảng NPC** — `NpcSet.RemoveAll` bị comment từ bản gốc `"later finish it. spe"` (`KSubWorld.cpp:1961`) ⇒ NPC map cũ (100% vô nghĩa ở map mới) chiếm khe tới 55 s đúng lúc map mới cần khe nhất | vào 379: mồ côi 254/255, ADD-FAIL 1.198 | **Hoàn thiện chỗ bỏ dở**: khi `bLoadNew` xoá mọi NPC khỏi `NpcSet` trừ chính mình. NPC map cũ vốn không được vẽ ⇒ trải nghiệm chỉ TỐT LÊN (địch hiện ngay từ giây đầu) |
+| **B** | **NPC còn sống rời vùng quan sát giữ khe theo timeout mù 55 s**: gói sync của NPC mồ côi có mps NGOÀI vùng nạp bị `return` im (`KProtocolProcess.cpp:1975-1977`) | `[S6-BAL]` 551 cú doing=3 + 274 doing=1 + 168 doing=7 (bot còn sống đi xa) | Tại đúng nhánh đó: **trả khe ngay** (`NpcSet.Remove`) — sự kiện chính xác, không hẹn giờ. NPC lởn vởn RÌA 40-48 ô (trong vùng nạp) KHÔNG bị đụng — vẫn gắn lại 197 ms như đo. Quay vào tầm thì REQNPC+full-sync (cơ chế sẵn) |
+| **C** | **Xác chết câm sync** (`SyncNpcMin:1944` bỏ gói doing=10/21) ⇒ xác bị gỡ lúc 6,7 s (`[S6-CAM]`) rồi chiếm khe thêm 55 s; TK chết ồ ạt = 60-120 khe xác | CAM có doing=21×10; BAL doing=10/21 = 36 | Tại khối gỡ-câm-sync (`KNpc.cpp:710`): NPC `do_death/do_revive` thì **xoá khe luôn** thay vì mồ côi. Thời điểm xác BIẾN MẤT y hệt hiện tại (cũng 6,7 s — gỡ region là hết vẽ) ⇒ trải nghiệm không đổi 100 %, chỉ trả khe |
+
+Sau A+B+C, mồ côi steady-state ước ~40 khe (nhóm "đi hẳn không còn sync" vẫn nhờ CheckBalance 55 s —
+1.058 cú/25 phút ≈ 39 khe, chấp nhận được), dung đỉnh ~200 ⇒ hết ADD-FAIL. Nghiệm thu: chơi 1 trận
+TK, `[S6-BANG]` phải giữ `dung < 220`, `ADD idx=0` ≈ 0, và m末 chủ quan: vào trận thấy địch NGAY.
+
+Ghi chú thêm: trận TK "chết rất nhiều lần" chủ kể nằm trong khúc log **đã bị xoá** (client log bị
+reset giữa 11:19-11:45 bởi phiên khác swap DLL) — chưa có mẫu `[S6-ME] doing=10` nào của chính chủ;
+cần chủ chết vài lần trong trận TK tới (log đang bật) để đo nốt triệu chứng "chết về thành nhảy toạ độ".
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
