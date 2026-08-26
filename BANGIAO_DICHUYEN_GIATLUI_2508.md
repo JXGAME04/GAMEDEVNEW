@@ -390,6 +390,29 @@ Ghi chú thêm: trận TK "chết rất nhiều lần" chủ kể nằm trong kh
 reset giữa 11:19-11:45 bởi phiên khác swap DLL) — chưa có mẫu `[S6-ME] doing=10` nào của chính chủ;
 cần chủ chết vài lần trong trận TK tới (log đang bật) để đo nốt triệu chứng "chết về thành nhảy toạ độ".
 
+## 9.11 ĐÃ THI CÔNG FIX A/B/C (chủ duyệt 26/08 chiều) — commit `a197a53f`, DLL client `4922889b` ĐÃ SWAP
+
+| Fix | Chỗ sửa | Nhãn đo mới |
+|---|---|---|
+| **A** dọn bảng khi đổi map (trừ mình + `kind_partner`) | `KSubWorld::LoadMap` ngay dưới dòng comment gốc `"later finish it. spe"` | `[S6-DONMAP] xoa= conlai=` |
+| **B** mồ côi + sync báo ngoài vùng → trả khe (trừ partner) | `SyncNpcMin` nhánh `nRegion == -1` (trước đây `return` im) | `[S6-XOAXA]` |
+| **C** xác câm-sync 6,7 s → trả khe luôn (mốc biến mất y hệt cũ) | `KNpc::Activate` khối gỡ-câm-sync | `[S6-XOAXAC]` |
+
+Backup: `bin\client\CoreClient.dll.cu_2608_truoc_fixABC_<md5>`. Client-only — thoát vào lại là ăn.
+
+**Nghiệm thu (so con số TRƯỚC/SAU trên cùng kịch bản — chơi 1 trận TK):**
+
+```
+TRUOC (do 12:38):                          SAU (ky vong):
+[S6-BANG] dung=255 mocoi=254               dung < 220, mocoi < ~60
+[S6-ADD] idx=0 : 1.198 cu/phien            ~ 0
+[S6-BAL] ~1.058 cu don-55s/25min           giam manh (viec don ve tay A/B/C)
+vao tran: dich vo hinh phut dau            thay dich NGAY; [S6-DONMAP] in moi lan doi map
+```
+
+Lưu ý phân tích sau: `[S6-ORPHAN]` (Close) vẫn in hàng loạt NGAY TRƯỚC `[S6-DONMAP]` mỗi lần đổi map
+(Close chạy trước) — không phải lỗi; và `[S6-XOAXA]` đếm cả ca partner (partner chỉ không bị xoá).
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
