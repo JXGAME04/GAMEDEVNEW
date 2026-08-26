@@ -4126,19 +4126,19 @@ Xİch L©n Chi HuyÕt	6	1	4123	\spr\item\questkey\taskobj073.spr	41	1	1	ÔÚÉñÃØÌú½³´
 Xİch L©n Chi Hån	6	1	4124	\spr\item\yulanpenjie\huolianhua.spr	41	1	1	Nguyªn liÖu hîp thµnh B¶o R­¬ng Trang BŞ Xİch L©n	0	0	1	0	0																
 HuyÒn Háa Than	6	1	4125	\spr\item\script\wusetang.spr	41	1	1	Khi ®èt hÕt nguyªn liÖu nªn chuÈn bŞ nung Tinh Tinh Kho¸ng thµnh V¨n Tinh, còng cã thÓ thİ luyÖn ra V¨n C­¬ng trong trang bŞ dung luyÖn	0	0	1	50	0																
 LÖnh bµi B¾c §Èu	6	1	4126	\spr\item\songjin\token.spr	41	1	1	Hoµn thµnh nhiÖm vô B¾c §Èu	\script\item\bd_lenhbai_info.lua	0	1	50	0																
-LÖnh bµi B¾c §Èu - Phong V©n cÊp 1	6	1	4127	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 2000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Phong V©n cÊp 2	6	1	4128	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 5000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Phong V©n cÊp 3	6	1	4129	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 10000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Phong V©n cÊp 4	6	1	4130	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 20000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - V­ît ¶i cÊp 1	6	1	4131	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 10 cña tİnh n¨ng V­ît ¶i	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - V­ît ¶i cÊp 2	6	1	4132	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 28 cña tİnh n¨ng V­ît ¶i	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Viªm §Õ cÊp 1	6	1	4133	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 6 cña tİnh n¨ng Viªm §Õ	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Viªm §Õ cÊp 2	6	1	4134	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 10 cña tİnh n¨ng Viªm §Õ	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Phong L¨ng §é cÊp 1	6	1	4135	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô thu thËp Truy C«ng LÖnh	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Phong L¨ng §é cÊp 2	6	1	4136	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô thu thËp Truy C«ng LÖnh t¹i c¸c mèc thêi gian 14 giê, 16 giê, 18 giê, 20 giê	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Tİn Sø	6	1	4137	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô Tİn Sø	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Boss s¸t thñ	6	1	4138	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô Boss s¸t thñ	\script\item\bd_lenhbai_info.lua	0	1	0	0																
-LÖnh bµi B¾c §Èu - Thiªn Léc Phóc	6	1	4139	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi trång 10 c©y Thiªn Léc Phóc	\script\item\bd_lenhbai_info.lua	0	1	0	0																
+LÖnh bµi B¾c §Èu - Phong V©n cÊp 1	6	1	4127	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 2000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Phong V©n cÊp 2	6	1	4128	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 5000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Phong V©n cÊp 3	6	1	4129	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 10000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Phong V©n cÊp 4	6	1	4130	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi Tèng Kim kÕt thóc vµ cã 20000 ®iÓm tİch lòy trë lªn	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - V­ît ¶i cÊp 1	6	1	4131	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 10 cña tİnh n¨ng V­ît ¶i	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - V­ît ¶i cÊp 2	6	1	4132	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 28 cña tİnh n¨ng V­ît ¶i	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Viªm §Õ cÊp 1	6	1	4133	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 6 cña tİnh n¨ng Viªm §Õ	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Viªm §Õ cÊp 2	6	1	4134	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi v­ît qua ¶i thø 10 cña tİnh n¨ng Viªm §Õ	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Phong L¨ng §é cÊp 1	6	1	4135	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô thu thËp Truy C«ng LÖnh	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Phong L¨ng §é cÊp 2	6	1	4136	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô thu thËp Truy C«ng LÖnh t¹i c¸c mèc thêi gian 14 giê, 16 giê, 18 giê, 20 giê	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Tİn Sø	6	1	4137	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô Tİn Sø	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Boss s¸t thñ	6	1	4138	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi hoµn thµnh nhiÖm vô Boss s¸t thñ	\script\item\bd_lenhbai_info.lua	0	1	50	0																
+LÖnh bµi B¾c §Èu - Thiªn Léc Phóc	6	1	4139	\spr\item\songjin\token.spr	41	1	1	NhËn th­ëng sau khi trång 10 c©y Thiªn Léc Phóc	\script\item\bd_lenhbai_info.lua	0	1	50	0																
 B¾c §Èu Chi B¶o	6	1	4140	\spr\item\beidou\beidouzhibao.spr	41	1	1	NhÊn chuét ph¶i sö dông ®Ó hoµn thµnh nhiÖm vô B¾c §Èu hiÖn t¹i	\script\item\bd_chibao.lua	0	1	50	0																
 B¾c §Èu HuyÕt Linh §¬n	6	1	4141	\spr\item\beidou\beidouxuelingdan.spr	41	1	1	Tr­íc khi nép nhiÖm vô B¾c §Èu nhÊn chuét ph¶i sö dông sÏ nhËn ®­îc phÇn th­ëng gÊp ®«i	\script\item\bd_linhdan.lua	0	1	50	0																
 ¹³×Ó£¨Ë®µ¾£©	6	1	4142	\spr\item\tianchimijing\dao.spr	41	1	1	ÓÃÀ´ÊÕ¼¯ÔÚÊÕ¼¯Ë®µ¾	0	0	1	250	0																

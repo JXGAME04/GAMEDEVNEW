@@ -207,11 +207,13 @@ end
 
 -- ------------------------------------------- phat lenh bai tu hoat dong
 -- Ban Linux (beidouactivity.lua:334-340 GiveTokens) phat lenh bai RIENG cua
--- tung hoat dong. Port nay giu nguyen. NHUNG: quet toan cay Linux cho thay
--- 13 ma do KHONG CHO NAO TIEU (SubmitToken10/13 chi dem ma 'Lenh bai Bac Dau'),
--- va truong nAwardExp cua chung cung chet (awardtemplet chi biet tbProp/nExp).
--- => them khoa HD3_BD_QUYDOI_LENHBAI (mac dinh 1) phat KEM 1 Lenh bai Bac Dau
--- de hoat dong thuc su nuoi duoc moc doi thuong 15/20. Dat 0 = y het Linux.
+-- tung hoat dong. NHUNG quet toan cay Linux cho thay 13 ma do KHONG CHO NAO
+-- TIEU (SubmitToken10/13 chi dem ma 'Lenh bai Bac Dau'), va truong nAwardExp
+-- cua chung cung chet (awardtemplet chi biet khoa tbProp/nExp).
+-- Them nua 13 ma do de nMaxStack = 0 => KHONG XEP CHONG, moi cai an 1 o tui.
+-- => MAC DINH port nay chi phat 'Lenh bai Bac Dau' (xep chong 50/o, dung de
+--    doi thuong). Muon them lenh bai rieng tung hoat dong nhu ban Linux thi
+--    dat HD3_BD_LENHBAI_RIENG = 1 trong cauhinh_hoatdong.lua.
 function tbBeidou:PhatLenhBai(szKhoa)
 	if (HD_CFG("HD3_BD_BAT", 1) ~= 1) then
 		return 0
@@ -223,14 +225,24 @@ function tbBeidou:PhatLenhBai(szKhoa)
 	if (tb == nil) then
 		return 0
 	end
-	if (CountFreeRoomByWH(1, 1, 2) < 2) then
+	local bRieng = HD_CFG("HD3_BD_LENHBAI_RIENG", 0)
+	local bChung = HD_CFG("HD3_BD_QUYDOI_LENHBAI", 1)
+	local nCanO = 0
+	if (bRieng == 1) then nCanO = nCanO + 1 end
+	if (bChung == 1) then nCanO = nCanO + 1 end
+	if (nCanO < 1) then
+		return 0
+	end
+	if (CountFreeRoomByWH(1, 1, nCanO) < nCanO) then
 		Msg2Player("Hµnh trang ®Çy nªn kh«ng nhËn ®­îc lÖnh bµi B¾c §Èu.")
 		return 0
 	end
 	local nHan = HD_CFG("HD3_BD_HAN_LENHBAI", 1440)
-	tbAwardTemplet:Give({tbProp = {6, 1, tb[1], 1, 0, 0}, nCount = 1, nBindState = -2,
-		nExpiredTime = nHan}, 1, {self.LOG_TITLE, "token "..szKhoa})
-	if (HD_CFG("HD3_BD_QUYDOI_LENHBAI", 1) == 1) then
+	if (bRieng == 1) then
+		tbAwardTemplet:Give({tbProp = {6, 1, tb[1], 1, 0, 0}, nCount = 1, nBindState = -2,
+			nExpiredTime = nHan}, 1, {self.LOG_TITLE, "token "..szKhoa})
+	end
+	if (bChung == 1) then
 		tbAwardTemplet:Give({szName = self.ITEM_LENHBAI.szName, tbProp = self.ITEM_LENHBAI.tbProp,
 			nCount = 1, nBindState = -2, nExpiredTime = nHan}, 1, {self.LOG_TITLE, "lenh bai "..szKhoa})
 	end

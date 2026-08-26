@@ -338,6 +338,13 @@ HD3_BD_LINHDAN_NGAY = 15,
 --     do KHONG CHO NAO TIEU nen chi de suu tap.
 HD3_BD_QUYDOI_LENHBAI = 1,
 
+-- Co phat them 'Lenh bai Bac Dau - <ten hoat dong>' rieng khong.
+-- 0 = KHONG (mac dinh): moi hoat dong chi cho 1 'Lenh bai Bac Dau' - ma nay
+--     xep chong 50 cai/o va la ma DUY NHAT dung de doi thuong 15/20.
+-- 1 = CO, dung y ban Linux: cho them 1 lenh bai rieng cua hoat dong (chi de
+--     suu tap, khong doi thuong duoc) - nguoi choi se nhan 2 vat pham/lan.
+HD3_BD_LENHBAI_RIENG = 0,
+
 HD3_PLD_CAP_TOITHIEU = 1,
 -- Gio mo trong ngay (dang HHMM, moi so = 1 luot dua). Ban Linux relay chay
 -- MOI GIO dung phut :00 (24 luot/ngay) - DUNG 100% Linux (TaskList.ini Task_86
@@ -387,6 +394,10 @@ HD3_ST_THUONG = nil,
 HD3_ST_HESO_EXP = 100,
 --   * So Sat Thu lenh moi lan giet (ban Linux = 1). Lenh cung CAP va cung NGU
 --     HANH voi con boss vua giet; gop 5 cai cung cap thanh Sat Thu Gian.
+-- So kinh nghiem cua o quay thay cho Tui duoc pham trong bang thuong boss
+-- sat thu cap 90 (chiem 68,2639% luot quay). Muc 10 trieu CO DINH van giu.
+HD3_ST_EXP_QUAY = 5000000,
+
 HD3_ST_SO_LENH = 1,
 --   * Bang kinh nghiem theo nhom cap - nil = dung so goc ban Linux. Muon doi:
 --     HD3_ST_EXP = {[20]=15000, [30]=20000, [40]=30000, [50]=50000,
