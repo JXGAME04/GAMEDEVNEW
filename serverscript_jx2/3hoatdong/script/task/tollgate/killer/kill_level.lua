@@ -87,6 +87,11 @@ end
 function OnFinishKillerTask(TSKID_KILL)
 	local Uworld1082 = nt_getTask(TSKID_KILL);
 	if Uworld1082 >= 141 and Uworld1082 <= 160 then
+		-- [3HD 25/08 C51] Ban LINUX danh so khoi hoan duoc bang DETAIL = 0
+		-- (magicscript.txt:6 Dai Luc hoan 6,0,3 / :9 Phi Toc hoan 6,0,6); JX1 danh
+		-- so bang DETAIL = 1 (6,1,3 / 6,1,6, script potion15.lua). Giu nguyen 6,0,*
+		-- thi AddItem IM LANG khong tao gi => 15% + 15% = 30,0024% moi lan giet boss
+		-- cap 90 khong ra vat pham nao. Doi sang ma JX1 - tra THEO TEN.
 		local tbAward = {
 			[1] = {
 				{szName="Tinh Tinh Kho¸ng",tbProp={6,1,4429,1,0,0},nCount=1,nRate=1.04},
@@ -103,8 +108,8 @@ function OnFinishKillerTask(TSKID_KILL)
 				{szName="Phong V©n ChiÕn M·",tbProp={0,10,20,1,0,0},nCount=1,nRate=0.0003,nExpiredTime=43200},
 				{szName="Phong V©n ThÇn M·",tbProp={0,10,21,1,0,0},nCount=1,nRate=0.0001,nExpiredTime=43200},
 				{szName="Tói D­îc PhÈm",tbProp={6,1,4813,1,0,0},nCount=1,nRate=68.2639},
-				{szName="§¹i Lùc hoµn",tbProp={6,0,3,1,0,0},nCount=1,nRate=15},
-				{szName="Phi Tèc hoµn",tbProp={6,0,6,1,0,0},nCount=1,nRate=15},
+				{szName="§¹i Lùc hoµn",tbProp={6,1,3,1,0,0},nCount=1,nRate=15},
+				{szName="Phi Tèc hoµn",tbProp={6,1,6,1,0,0},nCount=1,nRate=15},
 				{szName="§å Phæ §»ng Long Kh«i",tbProp={6,1,30528,1,0,0},nCount=1,nRate=0.0003},
 				{szName="§å Phæ §»ng Long Hµi",tbProp={6,1,30530,1,0,0},nCount=1,nRate=0.0003},
 				{szName="§å Phæ §»ng Long Yªu §¸i",tbProp={6,1,30531,1,0,0},nCount=1,nRate=0.0003},
