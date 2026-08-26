@@ -460,6 +460,19 @@ client `[S7-CHET-CLI]` (nhận gói chết: doing/cdoing/frame) · `[S7-REV-CLI]
 Đo miss-phái-tiếp-cận cần server `config.ini [AutoLog] Name=` đúng **nick chủ đang chơi** (đang là
 `CaiBang` — nếu chủ chơi nick khác thì các nhãn `S1/S4` im lặng). Hỏi chủ nick trước khi đo.
 
+## 9.14 KẾT QUẢ ĐO S7 + FIX D (26/08 ~14:20-14:50, server `44f28af5`, client `ff7814f8`, 28 cú chết CaiBang trong TK)
+
+| Triệu chứng | Số đo | Kết luận |
+|---|---|---|
+| Chết 0 máu lâu về thành | 26/28 cú: chết → về trại **0,85-1,0 s** (0,83 s = hoạt ảnh chết 15 frame, trần vật lý); **2/28 cú 5,9 s** — cả hai là `REV-AUTO` không có `REV-BAM` trước | Fix revive-liền chạy hoàn hảo (7 `REV-EP`, **0 `REV-NUOT`**); 2 cú chậm do **auto TK không bấm nút** → chọn: (a) WAuto bấm bền hơn, (b) hạ auto-rev 90→~27 tick |
+| Nằm bẹp dưới đất | 8/8 cú quan sát từ client: sau `DoStand` `doing=1 cdoing=1` | Không tái hiện — chờ chủ xác nhận cảm quan |
+| Về thành mất NPC vài giây | 40-101 NPC hiện lại trong 3 s đầu sau hồi sinh, đủ sau ~5-10 s | Bản chất giao thức xin-từng-con (REQNPC→full). Muốn nhanh: server chủ động đẩy loạt NPC quanh điểm hồi sinh khi ChangeWorld (server-side, chờ duyệt) |
+| Đánh vào không khí / miss cận chiến | **Drift bot GẦN HẾT: 1,3 % >1 ô, max 1,1 ô** (trước 10,9-16,7 %, max 7,3) — A/B/C/D gián tiếp chữa (NPC được làm mới vị trí qua chu trình xoá/ADD); server: hụt 51/386 = **13,2 %** (trước vá tháng: 29,9 %), 669 cú TOOFAR-đuổi (mục tiêu TK chạy — hành vi đúng) | Hình chủ chụp là bản TRƯỚC fix D. Cần chủ xác nhận phiên mới còn thấy không; nếu còn → đào bằng `S6-ATK tgcell/tgreg` + cần giảm ồn server log |
+
+⚠️ Server log tràn **1.656 cú "bo qua"** (nhãn `E3_/E4_` chiếm) — `S4-CAST` 577 vs `S4-MSL-END` 386 lệch
+chủ yếu do mất mẫu; số miss là ước lượng. Muốn đo miss chuẩn phải tắt bớt `E3_/E4_` (của phiên kia).
+FIX D xác nhận chạy: `boxa=14.442` NPC-xa bị chặn, bảng ổn định 135-137/256, mồ côi ~65.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
