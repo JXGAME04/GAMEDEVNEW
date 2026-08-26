@@ -9674,7 +9674,24 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	}
 
 	if (ea.uHDNext > uCurTime)
+	{
+		// (26/08) khe cho 300 ms cua pha danh Tin Su (hold 5): muc tieu vua chet
+		// thi thoi giu, ha ve 1 de may danh thuong khong tu bat con quai khac
+		// trong khe (dung khuon va khe 300 ms cua may Sat Thu 25/08).
+		if (ea.nHDHold == 5 && ea.uNpcID)
+		{
+			const int nTGCu = NpcSet.SearchID(ea.uNpcID);
+			if (!nTGCu || Npc[nTGCu].m_RegionIndex < 0
+			 || Npc[nTGCu].m_Doing == do_death || Npc[nTGCu].m_Doing == do_revive
+			 || NpcSet.GetRelation(nSelf, nTGCu) != relation_enemy)
+			{
+				ea.uNpcID = 0;
+				ea.nHDHold = 1;
+				return 1;
+			}
+		}
 		return ea.nHDHold;
+	}
 	ea.uHDNext = uCurTime + 400;
 
 	// han pha cho cac pha DI DUONG (trong map hoat dong thi khong tinh)
@@ -9855,8 +9872,10 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					ea.uNpcID = Npc[nTG].m_dwID;
 					g_ScenePlace.RemoveFlag();
 					ea.uHDNext = uCurTime + 300;
-					ea.nHDHold = 2;
-					return 2;
+					// (26/08) 6 = van giao cho may PK nhung theo DUNG o 'Duoi theo muc
+					// tieu' cua nguoi choi - Loi Chu ma bi ep duoi theo la roi dai.
+					ea.nHDHold = 6;
+					return 6;
 				}
 				// Loi Chu dang cho khieu chien: DUNG YEN tren dai (dap trap lai = bo dai)
 				ea.uHDNext = uCurTime + 1200;
@@ -10568,11 +10587,18 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				int nGiu = HD_TimQuai(nPlayerIdx, szGiu, nX, nY, TK_O(500));
 				if (nGiu)
 				{
+					// (26/08) chu game chot: Tin Su / Sat Thu / Da Tau danh bang may
+					// DANH THUONG (tab Chien dau), Tong Kim / Lien Dau tab PK.
+					// 5 = giao muc tieu cho ATYPE_FIGHT (may nay LUON ap sat toi tam
+					// chieu). Moi uFDelayTime de cua chan "khong gay sat thuong" cua
+					// ATYPE_FIGHT khong da nham muc tieu vua giao (300 ms giao lai mot
+					// lan nen deadline luon o tuong lai khi may con giu).
 					ea.uNpcID = Npc[nGiu].m_dwID;
+					ea.uFDelayTime = uCurTime + 5000;
 					g_ScenePlace.RemoveFlag();
 					ea.uHDNext = uCurTime + 300;
-					ea.nHDHold = 2;
-					return 2;
+					ea.nHDHold = 5;
+					return 5;
 				}
 				// ruong vua tra loi qua kenh He Thong "chua ha duoc nguoi giu ruong"
 				// (TaskTemp(181) != so ruong): quai khuat tam nhin hoac dang cho
@@ -11339,9 +11365,9 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		//   uNpcID != 0 = may DANG GIAO mot con cu the (con boss). Con do chet
 		//                 thi thoi ep danh -> ha xuong 3.
 		//   uNpcID == 0 = may CO Y khong giao muc tieu (nhanh dung cho boss hoi
-		//                 sinh) - phai GIU 2 de may PK tu chon ma danh tra, khong
+		//                 sinh) - phai GIU 5 de may DANH THUONG tu chon ma danh tra, khong
 		//                 thi dung im giua o quai 10 phut la chet.
-		if (ea.nSTHold == 2 && ea.uNpcID)
+		if (ea.nSTHold == 5 && ea.uNpcID)
 		{
 			// dung DUNG bo dieu kien cua ATYPE_PKFIGHT (CoreShell.cpp:14129-14132)
 			// de hai ben khong the lech nhau
@@ -11918,14 +11944,18 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			nTG = ST_TimBoss(nPlayerIdx, nBoss, nBX, nBY, TK_O(40));
 		if (nTG)
 		{
-			// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
+			// (26/08) 5 = giao muc tieu cho may DANH THUONG (tab Chien dau) - boss
+			// la muc tieu PvE nen dung chieu/tam nhin/ap sat cua tab Chien dau;
+			// ATYPE_FIGHT luon ap sat toi tam chieu. Moi uFDelayTime de cua chan
+			// "khong gay sat thuong" khong da nham boss vua giao (300 ms/lan).
 			ea.uSTThayT = uCurTime;
 			ea.uSTVongT = uCurTime;	// dang danh that -> gia han dong ho vong
 			ea.uNpcID = Npc[nTG].m_dwID;
+			ea.uFDelayTime = uCurTime + 5000;
 			g_ScenePlace.RemoveFlag();
 			ea.uSTNext = uCurTime + 300;
-			ea.nSTHold = 2;
-			return 2;
+			ea.nSTHold = 5;
+			return 5;
 		}
 		// khong thay boss: chua hoi sinh (ReviveFrame 16200, JX1 chia doi = ~7,5
 		// phut) hoac dang khuat - ve dung diem spawn roi dung cho tai cho
@@ -11951,16 +11981,16 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if ((ea.nSTTry % 25) == 1)
 			ST_Msg(nPlayerIdx, "<color=Gray>Boss ch­a håi sinh - ®øng chê t¹i chç (nhÞp kho¶ng 7,5 phót).");
-		// Tra 2 = EP may PK danh (ke ca khi nguoi choi tat o "danh chu dong").
-		// O DAY LA DUNG - chu game 25/08: "khi doi boss ra thi khong danh npc
-		// xung quanh dan toi bi danh chet". Dung giua o quai suot 10 phut cho boss
-		// hoi sinh ma khong danh tra thi chet chac.
-		// KHONG giao uNpcID nen may PK tu chon muc tieu theo dung tam nhin tab PK.
+		// (26/08) Tra 5 = trong luc dung cho boss hoi sinh, may DANH THUONG (tab
+		// Chien dau) tu chon muc tieu quanh cho (quet quai + danh tra) - chu game
+		// 25/08: "khi doi boss ra thi khong danh npc xung quanh dan toi bi danh
+		// chet"; 26/08 chot toan bo Sat Thu / Tin Su dung tab Chien dau.
+		// KHONG giao uNpcID nen ATYPE_FIGHT tu chon theo tam nhin tab Chien dau.
 		// (Cho khong duoc ep danh la SAU KHI boss chet: pha nhat do va khe 300 ms -
 		//  hai cho do van giu 3.)
-		ea.nSTHold = 2;
+		ea.nSTHold = 5;
 		ea.uSTNext = uCurTime + 1500;
-		return 2;
+		return 5;
 	}
 
 	case STP_NHAT:
@@ -17263,7 +17293,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					// CAN don tui. Chu game: "ban rac phai qua cac bo loc o tab Nhat do,
 					// khong tu y ban bay" - nen KHONG tu viet doan ban nao, goi thang bo Hau
 					// can cua chinh nguoi choi (ban theo bo loc, cat ruong theo tab Hau can).
-					// Tra 1 ra ngoai chu khong tra 4: S3Client chi hieu 0/1/2/3, va 1 = dang
+					// Tra 1 ra ngoai chu khong tra 4: S3Client hieu 0/1/2/3/5/6, va 1 = dang
 					// cam may nen Da Tau khong cuop duoc trong luc don tui.
 					if (nST == 4)
 					{

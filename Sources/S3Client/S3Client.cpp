@@ -869,6 +869,11 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	int nDT = 0;
 	autoData sDTData;
+	// (26/08) bo dem dung chung cho ban sao cau hinh theo nBS (cac truong hop
+	// khong bao gio xay ra cung luc): nBS == 2 -> ep 'Duoi theo muc tieu' cho
+	// may PK; nBS == 5 -> danh bang tab Chien dau, bo 'Bo qua boss vang';
+	// bOnPK / phim tat PK -> cung ep duoi theo (chu game chot 26/08).
+	autoData sBSData;
 	// nSK: dang o map su kien thi KHONG chay Da Tau (vi du dang di Tong Kim /
 	// Phong Lang Do / Tin Su / hoat dong bang hoi / Vuot ai)
 	if(pApData->bDaTau == 1 && nBS == 0 && nSK == 0)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
@@ -989,6 +994,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	//       khong thi theo DUNG o "danh chu dong" cua nguoi choi. Dung cho pha nhat
 	//       do / dung cho boss hoi sinh cua may Sat Thu - truoc day tra 2 nen nhan
 	//       vat quay ra danh NPC xung quanh du nguoi choi da tat bOnPK.
+	//   5 = (26/08) may Tin Su / Sat Thu giao muc tieu cho may DANH THUONG (tab
+	//       Chien dau): chay ATYPE_FIGHT ke ca khi chua bat o 'Chien dau', luon
+	//       ap sat toi tam chieu; van nhat do nhu 2.
+	//   6 = (26/08) rieng Loi Chu Bach Nhan: giao muc tieu cho may PK nhung theo
+	//       DUNG o 'Duoi theo muc tieu' cua nguoi choi (ep duoi theo la bi du
+	//       roi dai mat chuoi).
 	BOOL bLaunch = 0;
 	if(nBS != 1)
 		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
@@ -1046,14 +1057,29 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	if(!Wnd_IsLButtonDown())
 	{
-		if(pApData->bOnPK || nBS == 2)
+		if((pApData->bOnPK && nBS != 5) || nBS == 2 || nBS == 6)
 		{
-			// nBS == 2: muc tieu do may TK/LD/HD vua giao (ea.uNpcID) - khong duoc xoa.
+			// nBS == 2: muc tieu do may TK/LD/BC vua giao (ea.uNpcID) - khong duoc xoa.
+			// nBS == 5: may Tin Su / Sat Thu muon may DANH THUONG - roi xuong nhanh else.
+			// nBS == 6: muc tieu do may Loi Chu Bach Nhan giao - van may PK, khong ep duoi.
 			// (nBS == 3 khong vao duoc day tru khi nguoi choi TU bat 'danh chu dong')
-			if(pApData->bUseFKey && !Wnd_IsPKKeyDown() && nBS != 2)
+			if(pApData->bUseFKey && !Wnd_IsPKKeyDown() && nBS != 2 && nBS != 6)
 				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
-			if(!bLaunch && (nBS == 2 || !pApData->bUseFKey || Wnd_IsPKKeyDown()))
-			bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pApData);
+			if(!bLaunch && (nBS == 2 || nBS == 6 || !pApData->bUseFKey || Wnd_IsPKKeyDown()))
+			{
+				// (26/08) chu game chot: "bat ke khi nao cung phai danh trong pham vi
+				// skill va trong tam quet phai di chuyen den de danh" - may PK LUON
+				// duoi theo / ap sat toi tam chieu, ke ca khi o 'Duoi theo muc tieu'
+				// dang tat. Rieng Loi Chu Bach Nhan (nBS == 6) giu theo o nguoi choi.
+				const autoData* pPKData = pApData;
+				if(nBS != 6 && !pApData->bPKFollowTG)
+				{
+					memcpy(&sBSData, pApData, sizeof(autoData));
+					sBSData.bPKFollowTG = 1;
+					pPKData = &sBSData;
+				}
+				bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PKFIGHT, (int)pPKData);
+			}
 			AUTOLOG_EVERY(1000, "[PK-RET] pass=%u t=%u pkret=%d fkey=%d fkeydown=%d pkvis=%d pknear=%d pkplayer=%d pknpc=%d pkappr=%d", m_GameCounter, timeGetTime(), bLaunch, pApData->bUseFKey, Wnd_IsPKKeyDown(), pApData->nPKVision, pApData->nPKNearDist, pApData->bPKPlayer, pApData->bPKNpc, pApData->bPKAppr);
 		}
 		else
@@ -1065,9 +1091,19 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 				if(nDT == 0 && nBS == 0 && nSK == 0)
 					bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
 					AUTOLOG_EVERY(2000, "[MOVE-RET] pass=%u t=%u moving=%d nDT=%d launch=%d killmons=%d follow=%d around=%d coord=%d uphorse=%d fdist=%d", m_GameCounter, timeGetTime(), bMoving, nDT, bLaunch, pApData->bMoveKillMons, pApData->bMoveFollow, pApData->bAroundPoint, pApData->bMoveCoord, pApData->bMoveUpHorse, pApData->nFollowDist);
-				if(!bMoving && pApData->bFight && nDT != 1 && nBS == 0)
+				// (26/08) nBS == 5: may Tin Su / Sat Thu giao muc tieu cho may DANH
+				// THUONG (tab Chien dau) - chay ke ca khi chua bat o 'Chien dau', va
+				// bo 'Bo qua boss vang' (quai Tin Su / boss sat thu la boss vang).
+				if(!bMoving && (pApData->bFight || nBS == 5) && nDT != 1 && (nBS == 0 || nBS == 5))
 				{
-					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)(nDT == 2 ? &sDTData : pApData));
+					const autoData* pFData = (nDT == 2) ? &sDTData : pApData;
+					if(nBS == 5)
+					{
+						memcpy(&sBSData, pApData, sizeof(autoData));
+						sBSData.bSkipGoldboss = 0;
+						pFData = &sBSData;
+					}
+					bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_FIGHT, (int)pFData);
 					AUTOLOG_EVERY(1000, "[FIGHT-RET] pass=%u t=%u fightret=%d nDT=%d moving=%d vis=%d near=%d appr=%d fback=%d fbvis=%d selfb=%d selboss=%d skipboss=%d fmode=%d", m_GameCounter, timeGetTime(), bLaunch, nDT, bMoving, pApData->nVision, pApData->nNearDist, pApData->bApproach, pApData->bFightBack, pApData->nFBVision, pApData->nSelFBack, pApData->nSelBoss, pApData->bSkipGoldboss, g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_ISFIGHTMODE, 0));
 					if(bLaunch == 2)
 					{
