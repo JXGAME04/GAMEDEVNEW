@@ -11483,8 +11483,11 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 		const int nSK = WA_MapSuKien(nPlayerIdx);
 		if (nSK > 0)
 		{
-			sprintf(szOut, "%s - auto tù do t¹m dõng", s_aTenSuKien[nSK - 1]);
-			szOut[nMax - 1] = 0;
+			// (25/08 VA CRASH) szHoatDong CHI 48 byte ma ten su kien dai nhat 39 byte
+			// cong duoi 22 byte = 61 -> sprintf tran 14 byte, dap vo stack cookie
+			// (0xC0000409 STATUS_STACK_BUFFER_OVERRUN, module CoreClient.dll).
+			// Chi ghi TEN su kien, va ghi bang ham CO CHAN DO DAI.
+			g_StrCpyLen(szOut, s_aTenSuKien[nSK - 1], nMax);
 			return;
 		}
 	}
