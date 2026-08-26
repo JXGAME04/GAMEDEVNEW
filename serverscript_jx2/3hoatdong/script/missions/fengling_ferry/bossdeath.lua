@@ -30,12 +30,18 @@ function OnDeath( nNpcIndex )
 	end;
 	
 	if (jf0904_shuizei_IsActtime() == 1) then
-		local nItemIdx = DropItem(nNpcIndex, 6, 1, 2024, 1, 0, 0);
-		
-		local nCurtime = tonumber(GetLocalDate("%H%M"));
-		local nRestMin = 24 * 60 - (floor(nCurtime/100)*60+floor(mod(nCurtime, 100)));
-		ITEM_SetExpiredTime(nItemIdx, nRestMin);
-		SyncItem(nItemIdx);
+		-- [3HD 25/08 C45] Ban Linux: BOSS dau linh roi Truy Cong Lenh 100% KHONG
+		-- co kiem tra ti le (chi quai thuong moi random - shuizeideath.lua). Day la
+		-- ly do chu game thay 'hau nhu 90% rot'. Giu MAC DINH 100 = y het ban goc;
+		-- muon ha thi sua HD3_PLD_TILE_TRUYCONG_BOSS trong cauhinh_hoatdong.lua.
+		if (random(1, 100) <= HD_CFG("HD3_PLD_TILE_TRUYCONG_BOSS", 100)) then
+			local nItemIdx = DropItem(nNpcIndex, 6, 1, 2024, 1, 0, 0);
+			
+			local nCurtime = tonumber(GetLocalDate("%H%M"));
+			local nRestMin = 24 * 60 - (floor(nCurtime/100)*60+floor(mod(nCurtime, 100)));
+			ITEM_SetExpiredTime(nItemIdx, nRestMin);
+			SyncItem(nItemIdx);
+		end
 		
 		local nRate = HD_CFG("HD3_PLD_TILE_HAILONG", 0.005);
 		local nCurRate	= random(10000000)

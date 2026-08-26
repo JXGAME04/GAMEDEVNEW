@@ -373,6 +373,10 @@ HD3_PLD_TILE_HAILONG = 0.005,
 -- (B) PLD - ti le roi Truy Cong Lenh 6,1,2024 tu Thuy tac thuong trong gio
 --     su kien (goc: nCurRate < 50 tren random(1,100) = 49%). [RESTART]
 HD3_PLD_TILE_TRUYCONG = 50,
+
+-- Ti le phan tram roi Truy Cong Lenh tu BOSS dau linh (moi con, khi trong gio
+-- hoat dong). 100 = luon roi, dung y ban Linux. Ha xuong neu thay ra qua nhieu.
+HD3_PLD_TILE_TRUYCONG_BOSS = 100,
 -- (B) PLD - so Bao Ruong Thuy Tac 6,1,3361 khi cap ben thanh cong. [RESTART]
 HD3_PLD_THUONG_CAPBEN = 2,
 -- (B) PLD - bang do trong Bao Ruong Thuy Tac (theo loai chia khoa). nil = bang
