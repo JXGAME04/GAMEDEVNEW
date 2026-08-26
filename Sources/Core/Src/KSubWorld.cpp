@@ -2018,6 +2018,11 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 	int nY = HIWORD(nRegion);
 
 	int nIdx = FindRegion(nRegion);
+#ifndef _SERVER
+	// [S6 26/08] Moi cu cuon/nap vung phia client. daco=0 = region tam chua nap (se tai
+	// dung slot xa -> KRegion::Close -> mot loat NPC MO COI). loadnew=1 = doi han map.
+	AUTOLOG("[S6-LOADMAP] sw=%d tam=(%d,%d) daco=%d loadnew=%d t=%u", nId, nX, nY, (int)(nIdx >= 0), (int)(bLoadNew ? 1 : 0), timeGetTime());
+#endif
 
 	if (nIdx < 0)
 	{

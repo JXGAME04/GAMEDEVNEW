@@ -338,7 +338,12 @@ void SendClientCmdSkill(int nSkillID, int nX, int nY)
 	// duoc id do trong bang NPC cua minh (thay=0) thi nguoi choi khong nhin thay ai ca
 	// nhung nhan vat van vung -> dung trieu chung "Tong Kim dung danh vao khong khi".
 	if (nX == -1)
-		AUTOLOG("[S6-ATK] skill=%d tgtid=%d thay=%d t=%u", nSkillID, nY, NpcSet.SearchID((DWORD)nY), GetTickCount());
+	{
+		// [S6 26/08] thay>0 ma tgreg=-1 = muc tieu MO COI (con trong bang, KHONG duoc ve)
+		// -> "dung danh vao khong khi" ma phien ban thay=0 cu khong bat duoc.
+		int nS6TgIdx = NpcSet.SearchID((DWORD)nY);
+		AUTOLOG("[S6-ATK] skill=%d tgtid=%d thay=%d tgreg=%d tgdoing=%d tgcell=(%d,%d) t=%u", nSkillID, nY, nS6TgIdx, (nS6TgIdx > 0) ? Npc[nS6TgIdx].m_RegionIndex : -99, (nS6TgIdx > 0) ? (int)Npc[nS6TgIdx].m_Doing : -1, (nS6TgIdx > 0) ? Npc[nS6TgIdx].m_MapX : -1, (nS6TgIdx > 0) ? Npc[nS6TgIdx].m_MapY : -1, GetTickCount());
+	}
 #endif
 	NetCommand.nMpsX = nX;
 	NetCommand.nMpsY = nY;

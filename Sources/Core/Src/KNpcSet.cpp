@@ -762,6 +762,10 @@ void KNpcSet::CheckBalance()
                     if (Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive)
     					SubWorld[0].m_Region[Npc[nIdx].m_RegionIndex].DecRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
 				}
+				// [S6 26/08] Duong don KHE duy nhat theo timeout ~55 s. Neu doing=10/21 ma
+				// reg >= 0 thi nhanh phia tren vua RemoveNpc KHONG DecRef -> nghi RO REF o
+				// (bang dem NPC/o la BYTE, tran 255 = ket o vinh vien). Dem dong nay de biet.
+				AUTOLOG("[S6-BAL] npc=%u idx=%d kind=%u doing=%d reg=%d camtick=%u t=%u", Npc[nIdx].m_dwID, nIdx, Npc[nIdx].m_Kind, (int)Npc[nIdx].m_Doing, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal, SubWorld[0].m_dwCurrentTime);
 				Remove(nIdx);
 			}
 		}

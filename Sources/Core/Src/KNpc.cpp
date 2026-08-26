@@ -696,6 +696,9 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	if (!IsPlayer() && (GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE
 		|| GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE))
 	{
+		// [S6 26/08] Duong MO COI thu 2: NPC cach nguoi choi >= 40 o bi go khoi region
+		// (khong xoa khoi NpcSet). Day la mot lan duong "bot bien mat".
+		AUTOLOG("[S6-VANH] npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) reg=%d t=%u", m_dwID, m_Index, m_Kind, (int)m_Doing, m_MapX, m_MapY, m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
 		SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 		m_RegionIndex = -1;
@@ -709,6 +712,9 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 
 	if (!IsPlayer() && SubWorld[0].m_dwCurrentTime - m_SyncSignal > 120)
 	{
+		// [S6 26/08] Duong MO COI thu 3: NPC cam goi sync > 120 tick (~6,7 s) bi go khoi
+		// region. XAC (doing=10) chac chan roi vao day vi SyncNpcMin bo qua goi cua NPC chet.
+		AUTOLOG("[S6-CAM] npc=%u idx=%d kind=%u doing=%d camtick=%u cell=(%d,%d) reg=%d t=%u", m_dwID, m_Index, m_Kind, (int)m_Doing, SubWorld[0].m_dwCurrentTime - m_SyncSignal, m_MapX, m_MapY, m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 		SubWorld[0].m_Region[m_RegionIndex].RemoveNpc(m_Index);
 		SubWorld[0].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
 		m_RegionIndex = -1;

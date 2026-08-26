@@ -1616,6 +1616,11 @@ void KRegion::Close()		// 清除Region中的几个链表（所指向的内容没有被清除）
 	{
 		pTempNode = pNode;
 		pNode = (KIndexNode *)pNode->GetNext();
+#ifndef _SERVER
+		// [S6 26/08] Duong MO COI thu 1: region-slot bi tai dung (LoadMap cuon vung) hoac
+		// dong map -> MOI NPC cua region nay bi go (RegionIndex=-1, khong xoa khoi NpcSet).
+		AUTOLOG("[S6-ORPHAN] npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) regid=(%d,%d) t=%u", Npc[pTempNode->m_nIndex].m_dwID, pTempNode->m_nIndex, Npc[pTempNode->m_nIndex].m_Kind, (int)Npc[pTempNode->m_nIndex].m_Doing, Npc[pTempNode->m_nIndex].m_MapX, Npc[pTempNode->m_nIndex].m_MapY, (int)LOWORD(m_RegionID), (int)HIWORD(m_RegionID), timeGetTime());
+#endif
 		Npc[pTempNode->m_nIndex].m_RegionIndex = -1;
 		RemoveNpc(pTempNode->m_nIndex);
 	}

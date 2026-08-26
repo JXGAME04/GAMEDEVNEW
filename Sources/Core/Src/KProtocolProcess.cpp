@@ -1986,6 +1986,10 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 				Npc[nIdx].m_dwRegionID = NpcSync->m_fkRegionID;//SubWorld[0].m_Region[nRegion].m_RegionID;
 				SubWorld[0].m_Region[nRegion].AddNpc(nIdx);
 				SubWorld[0].m_Region[nRegion].AddRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+#ifndef _SERVER
+				// [S6 26/08] NPC MO COI duoc GAN LAI vao region theo vi tri server ("hien lai").
+				AUTOLOG("[S6-ORPHAN-BACK] npc=%u idx=%d kind=%u doing=%d cell=(%d,%d) reg=%d dung=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, (int)NpcSync->Doing, nMapX, nMapY, nRegion, S6_UsedSlots(), SubWorld[0].m_dwCurrentTime);
+#endif
 			}
 			
 			if (NpcSync->Doing == do_stand)
@@ -2119,6 +2123,34 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 	// "chet hoi sinh hoac phu ve thanh thi nhay vai toa do bay": may chu doi cho nhung neu
 	// diem den nam trong region DA NAP thi client van giu vi tri cu.
 	AUTOLOG("[S6-ME] nhanh=%s cl=(%d,%d,%d,%d) reg=%d sv=(%d,%d,%d,%d) reg=%d doing=%d t=%u", (Npc[nNpcIdx].m_RegionIndex == -1) ? "vaolandau" : ((nRegion == -1) ? "loadmap" : "GIUNGUYEN"), Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, (int)Npc[nNpcIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
+#endif
+#ifndef _SERVER
+	// [S6 26/08] Bang tong 5 s/lan: tra loi "chet co xoa khong hay tich luy dan toi tran".
+	// dung = khe dang chiem (tran 256) | mocoi = RegionIndex==-1 (khong duoc ve)
+	// xac = doing==do_death | nguoi = kind_player (bot/nguoi) | quai = kind_normal.
+	{
+		static DWORD s_uS6BangT = 0;
+		if (g_AutoLogOn() && (DWORD)(timeGetTime() - s_uS6BangT) >= 5000)
+		{
+			s_uS6BangT = timeGetTime();
+			int nS6Dung = 0, nS6MoCoi = 0, nS6Xac = 0, nS6Nguoi = 0, nS6Quai = 0;
+			for (int i6 = 1; i6 < MAX_NPC; i6++)
+			{
+				if (Npc[i6].m_dwID == 0)
+					continue;
+				nS6Dung++;
+				if (Npc[i6].m_RegionIndex < 0)
+					nS6MoCoi++;
+				if (Npc[i6].m_Doing == do_death)
+					nS6Xac++;
+				if (Npc[i6].m_Kind == kind_player)
+					nS6Nguoi++;
+				if (Npc[i6].m_Kind == kind_normal)
+					nS6Quai++;
+			}
+			AUTOLOG("[S6-BANG] dung=%d/%d mocoi=%d xac=%d nguoi=%d quai=%d t=%u", nS6Dung, (int)MAX_NPC, nS6MoCoi, nS6Xac, nS6Nguoi, nS6Quai, SubWorld[0].m_dwCurrentTime);
+		}
+	}
 #endif
 
 	AUTOLOG_EVERY(1000, "SYNCME-FIRSTREGION me idx=%d regcu=%d svreg=%d cell=(%d,%d) mps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_RegionIndex, nRegion, nMapX, nMapY, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
