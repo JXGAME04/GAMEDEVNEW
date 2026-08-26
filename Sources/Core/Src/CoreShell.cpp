@@ -4486,12 +4486,41 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	// sat thu thi nhan vat dung yen canh NPC; luc do [HD-GATE] da ghi nBS=0 va
 	// [DATAU-GATE] ghi nDT=1 - tuc may Da Tau cam may nhung khong di.
 	// So pha: xem enum DTP_* (0 IDLE, 1 GOTONPC, 2 WAITDLG, 3 EXEC, ...).
-	AUTOLOG_EVERY(3000, "[DT-STATE] pha=%d buoc=%d engaged=%d map=%d otrong=%d "
-		"treogiay=%d du40=%d/%d loainv=%d mapdich=%d retry=%d",
-		ea.nDTPhase, ea.nDTStep, ea.nDTEngaged, nMap,
-		Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment),
-		(int)((ea.uDTHoldUntil > uCurTime) ? (ea.uDTHoldUntil - uCurTime) / 1000 : 0),
-		ea.nDTDoneDay, nToday, ea.nDTQType, ea.nDTMapId, ea.nDTRetry);
+	{
+		// (25/08 dot 2) Do them phan DI DUONG de biet vi sao dung im o pha GOTONPC:
+		//   npc108 = co nhin thay NPC Da Tau khong (nhanh 4818 khong tang retry)
+		//   cotgt/tgt = SubWorld[0].HaveTarget - DT_WalkTo:2787 chi FindPath lai khi
+		//   KHONG co muc tieu hoac muc tieu KHAC dich; muc tieu ket dung bang dich la
+		//   no khong bao gio path lai -> dung im vinh vien.
+		int nLogX = 0, nLogY = 0, nLogTX = 0, nLogTY = 0;
+		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nLogX, &nLogY);
+		const int nLogCoTgt = SubWorld[0].HaveTarget(nLogTX, nLogTY) ? 1 : 0;
+		const int nLogNpc = DT_FindNpcTpl(nPlayerIdx, 108, 0);
+		int nLogDX = 0, nLogDY = 0;
+		if (nLogNpc)
+			Npc[nLogNpc].GetMpsPos(&nLogDX, &nLogDY);
+		else
+		{
+			for (int li = 0; li < g_nDTNpcCount; ++li)
+			{
+				if (g_DTNpc[li].nMapId != nMap)
+					continue;
+				nLogDX = g_DTNpc[li].nX * 32;
+				nLogDY = g_DTNpc[li].nY * 32;
+				break;
+			}
+		}
+		AUTOLOG_EVERY(3000, "[DT-STATE] pha=%d buoc=%d engaged=%d map=%d otrong=%d "
+			"treogiay=%d du40=%d/%d loainv=%d mapdich=%d retry=%d "
+			"npc108=%d toi=(%d,%d) dich=(%d,%d) xa=%d cotgt=%d tgt=(%d,%d)",
+			ea.nDTPhase, ea.nDTStep, ea.nDTEngaged, nMap,
+			Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment),
+			(int)((ea.uDTHoldUntil > uCurTime) ? (ea.uDTHoldUntil - uCurTime) / 1000 : 0),
+			ea.nDTDoneDay, nToday, ea.nDTQType, ea.nDTMapId, ea.nDTRetry,
+			nLogNpc, nLogX, nLogY, nLogDX, nLogDY,
+			g_GetDistance(nLogX, nLogY, nLogDX, nLogDY),
+			nLogCoTgt, nLogTX, nLogTY);
+	}
 
 	// sang ngay moi -> mo lai neu dang nghi vi du 40
 	if (ea.nDTDoneDay && ea.nDTDoneDay != nToday)
