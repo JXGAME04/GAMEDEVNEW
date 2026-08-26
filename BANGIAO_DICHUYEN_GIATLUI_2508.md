@@ -435,6 +435,31 @@ chỉ thêm 1 round-trip REQNPC ~50-200 ms lần đầu). Kỳ vọng: mocoi đ�
 
 Chưa có mẫu chủ chết (me10 = 0 cả phiên — trận đang diễn ra lúc chụp).
 
+## 9.13 FIX D + BỘ LOG S7 LUỒNG CHẾT (26/08 chiều muộn, commit `6abb9914`) — client `ff7814f8` ĐÃ SWAP, server `44f28af5` đặt cạnh `.moi_2608_S7` CHỜ RESTART
+
+Bối cảnh: chủ chết 17 lần trong TK nhưng **log không có mẫu nào** — khúc 13:27-13:35 bị phiên khác
+xoá, VÀ gói sync bản thân **không bao giờ mang doing=10/21** (đo 2 bản log: 0 cú, dù doing=9 có 131)
+⇒ luồng chết vốn KHÔNG quan sát được. Chủ yêu cầu log kỹ luồng server→client. 4 triệu chứng chờ đo:
+(1) chết 0 máu vài giây mới về thành; (2) **nằm bẹp dưới đất sau khi về** (nghi hệ quả fix revive-liền
+`839c14c2` — client nhận `s2c_playerrevive` khi còn giữa hoạt ảnh chết; `ProcNetCommand(do_revive)`
+gọi thẳng `DoStand()` nên lý thuyết phải dậy — cần S7 chỉ chỗ đứt); (3) về thành đông người mất
+NPC vài giây mới hiện đủ; (4) đánh miss phái tiếp cận trong TK.
+
+**FIX D** (`S6_XaQuaTam` ≥40 ô, đồng bộ `MAX_SYNC_RANGE`): không REQNPC NPC lạ ngoài tầm · không ADD
+gói full ngoài tầm · mồ côi ngoài tầm → trả khe (hết flapping dải 40-48) · ngoại lệ `kind_partner` ·
+đếm `g_nS6BoXa`, in `boxa=` trong `[S6-BANG]`.
+
+**S7** (lọc NGƯỜI THẬT `m_nNetConnectIdx>=0` — ~vài người, không ngập bởi 1000 bot):
+client `[S7-CHET-CLI]` (nhận gói chết: doing/cdoing/frame) · `[S7-REV-CLI]`/`[S7-REV-CLI2]`
+(trước/sau `DoStand` — soi "nằm bẹp"); server `[S7-CHET]` DoDeath · `[S7-CHET2]` hết hoạt ảnh→script ·
+`[S7-REV]` mọi lời gọi + `[S7-REV-EP]` (bấm sớm, nhánh fix revive) + `[S7-REV-NUOT]` (bị bỏ qua) ·
+`[S7-REV-AUTO]` (đến hạn 5 s) · `[S7-REV-BAM]` (người bấm nút) · `[S7-REV-XONG]` (ChangeWorld về trại).
+⇒ MỘT cú chết ra trọn timeline: chết → hoạt ảnh → script → nguồn hồi sinh → về trại → client dậy;
+"mất NPC vài giây" đo bằng nhịp `[S6-ADD]` sau `[S7-REV-XONG]`.
+
+Đo miss-phái-tiếp-cận cần server `config.ini [AutoLog] Name=` đúng **nick chủ đang chơi** (đang là
+`CaiBang` — nếu chủ chơi nick khác thì các nhãn `S1/S4` im lặng). Hỏi chủ nick trước khi đo.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
