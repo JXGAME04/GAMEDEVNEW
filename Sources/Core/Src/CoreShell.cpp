@@ -6947,6 +6947,35 @@ static int TK_DemBinh(int nPlayerIdx)
 // tu an thuoc hoat dong Tong Kim (6/1/177..194 - moi vien 3 phut, CHI dung duoc
 // tren map tran). Moi nhip mot vien; het bang thi hen lai sau ~2 phut 50 giay.
 // Tra 1 neu vua dung mot vien (da tieu ton nhip nay).
+// dem so vien mot loai thuoc DANG CO - dung DUNG hai cho ma AutoUseItem tim:
+// pos_equiproom (hanh trang) va pos_immediacy (thanh nhanh), cong ca chong.
+static int TK_DemVien(int nPlayerIdx, int nP)
+{
+	int n = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if ((pIt->nPlace == pos_equiproom || pIt->nPlace == pos_immediacy)
+		 && Item[pIt->nIdx].GetGenre() == 6
+		 && Item[pIt->nIdx].GetDetailType() == 1
+		 && Item[pIt->nIdx].GetParticular() == nP)
+			n += Item[pIt->nIdx].IsStack() ? Item[pIt->nIdx].GetStackNum() : 1;
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return n;
+}
+
+// An het bo thuoc Tong Kim, moi nhip MOT vien.
+//
+// (25/08) Chu game: "chet xong van chua tu an du het cac thuoc". Truoc day ham nay
+// lam  int i = ea.nTKPillIdx++;  roi  if (AutoUseItem(...)) return 1;  - tuc TANG
+// CHI SO NGAY, truoc khi biet ket qua. Ma AutoUseItem (KItemList.cpp:1964) chi tra
+// TRUE khi TIM THAY mon va DA GUI lenh, KHONG phai khi may chu chap nhan. Vien nao
+// bi tu choi (dang hoi chieu, trung nhom buff, sai dieu kien) la bi bo qua luon,
+// phai doi het vong 170 giay moi duoc thu lai - va chet xong an mot loat lien tiep
+// chinh la luc de bi tu choi nhat.
+// Nay XAC NHAN BANG SO LUONG: gui lenh xong cho 500 ms roi dem lai; giam la da an
+// duoc, y nguyen sau 3 lan gui moi coi la may chu tu choi that.
 static int TK_AnThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
@@ -6958,18 +6987,46 @@ static int TK_AnThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return 0;
 	while (ea.nTKPillIdx < TK_PILL_COUNT)
 	{
-		int i = ea.nTKPillIdx++;
-		int nLoai = (int)g_TKPill[i][1];
+		const int i = ea.nTKPillIdx;
+		const int nLoai = (int)g_TKPill[i][1];
+		const int nP = (int)g_TKPill[i][0];
+		// loc theo o cau hinh "Loai thuoc" cua nguoi choi
+		int bBo = 0;
 		if (pAp->nTKThuocSel == 1 && nLoai != 1)
+			bBo = 1;
+		else if (pAp->nTKThuocSel == 2 && nLoai != 2)
+			bBo = 1;
+		else if (pAp->nTKThuocSel == 3 && nLoai == 2)
+			bBo = 1;
+		const int nCo = bBo ? 0 : TK_DemVien(nPlayerIdx, nP);
+		// vien nay xong (khong dung loai / khong co / da an duoc / bi tu choi 3 lan)
+		if (bBo || nCo <= 0
+		 || (ea.nTKPillTry > 0 && nCo < ea.nTKPillSo)
+		 || ea.nTKPillTry >= 3)
+		{
+			if (!bBo && nCo > 0 && ea.nTKPillTry >= 3)
+				AUTOLOG("[TK-PILL] vien %d (nhom %d): gui 3 lan ma so luong van %d - may chu tu choi", nP, nLoai, nCo);
+			++ea.nTKPillIdx;
+			ea.nTKPillTry = 0;
+			ea.nTKPillSo = 0;
 			continue;
-		if (pAp->nTKThuocSel == 2 && nLoai != 2)
-			continue;
-		if (pAp->nTKThuocSel == 3 && nLoai == 2)
-			continue;
-		if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, (int)g_TKPill[i][0], nPlayerIdx))
+		}
+		ea.nTKPillSo = nCo;
+		++ea.nTKPillTry;
+		if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, nP, nPlayerIdx))
+		{
+			// cho may chu tra loi roi moi dem lai - khong thi so luong chua kip doi
+			ea.uTKPillT = uCurTime + 500;
 			return 1;
+		}
+		// dem thay co ma AutoUseItem khong tim ra (mon nam cho khac) - bo qua
+		++ea.nTKPillIdx;
+		ea.nTKPillTry = 0;
+		ea.nTKPillSo = 0;
 	}
 	ea.nTKPillIdx = 0;
+	ea.nTKPillTry = 0;
+	ea.nTKPillSo = 0;
 	ea.uTKPillT = uCurTime + 170000u;
 	return 0;
 }
@@ -7231,6 +7288,8 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// tu dau. Dat o day (khong phai o nhanh 've hau doanh') de moi kieu hoi sinh
 		// deu duoc - hoi sinh tai cho, bi keo ve diem bao danh, hay ve hau doanh.
 		ea.nTKPillIdx = 0;
+		ea.nTKPillTry = 0;
+		ea.nTKPillSo = 0;
 		ea.uTKPillT = 0;
 		if (ea.nTKPhase == TKP_FIGHT || ea.nTKPhase == TKP_TRAP || ea.nTKPhase == TKP_CAMP)
 		{
@@ -7284,6 +7343,8 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nTKMua = 0;
 		ea.nTKChet = 0;
 		ea.nTKPillIdx = 0;
+		ea.nTKPillTry = 0;
+		ea.nTKPillSo = 0;
 		ea.uTKPillT = 0;
 		ea.nTKBangDich = 0;	// tran moi: nhan dien lai bang dich tu dau
 		ea.nTKBackMap = nMap;

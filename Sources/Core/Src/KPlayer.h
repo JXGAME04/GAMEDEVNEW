@@ -234,6 +234,8 @@ struct ExtAuto
 	UINT uTKDestT;       // han cho mot diem den
 	UINT uTKPillT;       // moc an dot thuoc ke tiep
 	int  nTKPillIdx;     // vien thuoc ke tiep trong bang g_TKPill
+	int  nTKPillTry;     // so lan da GUI lenh dung vien hien tai (chan tu choi im lang)
+	int  nTKPillSo;      // so luong vien do truoc khi gui - giam = da an duoc
 	int  nTKBangDich;    // (25/08) bang toa do BEN DICH: 1 = g_TKBinhA, 2 = g_TKBinhB,
 	                     // 0 = chua nhan dien. May chu HOAN DOI hai bang theo the tran
 	                     // (lib_tktc.lua:486-508) nen phai nhin quan dich that ma suy ra.
@@ -427,6 +429,8 @@ struct ExtAuto
 		uTKDestT = 0;
 		uTKPillT = 0;
 		nTKPillIdx = 0;
+		nTKPillTry = 0;
+		nTKPillSo = 0;
 		nTKBangDich = 0;
 		nLDPhase = 0;
 		nLDStep = 0;
