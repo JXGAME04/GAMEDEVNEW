@@ -6789,6 +6789,17 @@ void KPlayer::c2sSetMeridian(SetMeridianData Data) {
 
 void KPlayer::Revive(int nType)
 {
+	// [REV 26/08] Chu game: "chet la bam ve thanh duong suc la hoi sinh lien".
+	// Truoc day bam khi hoat anh chet (do_death) chua chay het thi lenh bi NUOT im
+	// lang, nguoi choi phai nam cho auto ~5 s. Nay: ghi nhan yeu cau bang gia tri
+	// dac biet m_nAutoRevTime = -1 + ep hoat anh chet ket thuc ngay tick sau;
+	// OnDeath van chay DU DeathPunish/death-script roi Active() hoi sinh lien.
+	if (Npc[m_nIndex].m_Doing == do_death && nType == REMOTE_REVIVE_TYPE)
+	{
+		m_nAutoRevTime = -1;
+		Npc[m_nIndex].m_Frames.nCurrentFrame = Npc[m_nIndex].m_Frames.nTotalFrame;
+		return;
+	}
 	if(Npc[m_nIndex].m_Doing != do_revive)
 		return;
 	int	nSubWorldID = 0;

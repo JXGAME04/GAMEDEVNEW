@@ -1631,7 +1631,9 @@ void KNpc::OnDeath()
 			int nPIdx = GetPlayerIdx();
 			if(nPIdx > 0)
 			{
-				Player[nPIdx].m_nAutoRevTime = g_SubWorldSet.GetGameTime() + 90;//5s
+				// [REV 26/08] -1 = nguoi choi DA bam ve thanh trong luc hoat anh chet
+				// -> hoi sinh lien o Active(); con lai giu auto 5 s nhu cu.
+				Player[nPIdx].m_nAutoRevTime = (Player[nPIdx].m_nAutoRevTime == -1) ? (g_SubWorldSet.GetGameTime() - 1) : (g_SubWorldSet.GetGameTime() + 90);//5s
 			}
 #endif		
 #ifndef _SERVER
