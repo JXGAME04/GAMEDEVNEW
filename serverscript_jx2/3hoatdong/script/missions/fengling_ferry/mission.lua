@@ -1,3 +1,4 @@
+Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\missions\\fengling_ferry\\fld_head.lua")
 Include("\\script\\event\\jiefang_jieri\\200904\\taskctrl.lua");
 Include("\\script\\activitysys\\g_activity.lua")
@@ -109,6 +110,12 @@ function Landing()
 	
  	for i= 1, getn(tbPlayer) do 
 	 	PlayerIndex = tbPlayer[i]
+		-- [BAC DAU 25/08] Linux beidouactivity.lua:404-420 OnLanding: nguoi choi
+		-- PHAI DANG MANG Truy Cong Lenh moi duoc lenh bai Bac Dau (KHONG bi tru).
+		-- bShuizeiTask = 1 (khung gio ton phi) -> lenh bai Phong Lang Do cap 2.
+		if (HD3_BD_PhongLangDo ~= nil) then
+			HD3_BD_PhongLangDo(bShuizeiTask)
+		end
 		camp = GetCamp()
 		SetCurCamp(camp)
 		SetCreateTeam(1)

@@ -307,6 +307,37 @@ HD3_ST_MAX_NGAY = 8,
 
 -- ---- (B) PHONG LANG DO ----
 -- Cap toi thieu - CHI HIEN THI (ban Linux chi doi co mon phai, fld_head.lua:40). [HIEN THI]
+-- ==========================================================================
+-- BAC DAU LENH BAI (he gom lenh bai tu cac hoat dong roi doi thuong)
+-- ==========================================================================
+-- 1 = bat he Bac Dau, 0 = tat han (khong sinh NPC, khong phat lenh bai).
+HD3_BD_BAT = 1,
+
+-- Khung gio NPC Bac Dau lam viec (gio may chu). Ban Linux: 8 den 22.
+HD3_BD_GIO_MO = 8,
+HD3_BD_GIO_DONG = 22,
+
+-- Cap toi thieu (hoac da trung sinh). Ban Linux: 150.
+HD3_BD_CAP_TOITHIEU = 150,
+
+-- So lan nhan nhiem vu Bac Dau moi ngay. Ban Linux: 30.
+HD3_BD_SO_LAN_NGAY = 30,
+
+-- Kinh nghiem thuong moi nhiem vu di duong. Ban Linux: 8.000.000.
+HD3_BD_EXP_NHIEMVU = 8000000,
+
+-- Han dung cua lenh bai (phut). Ban Linux: 1440 = 1 ngay.
+HD3_BD_HAN_LENHBAI = 1440,
+
+-- So lan dung Bac Dau Huyet Linh Don moi ngay. Ban Linux: 15.
+HD3_BD_LINHDAN_NGAY = 15,
+
+-- 1 = hoat dong phat KEM 1 'Lenh bai Bac Dau' (ma dung de doi thuong 15/20)
+--     ben canh lenh bai rieng cua hoat dong.
+-- 0 = y het ban Linux: hoat dong CHI phat lenh bai rieng - ma 13 lenh bai rieng
+--     do KHONG CHO NAO TIEU nen chi de suu tap.
+HD3_BD_QUYDOI_LENHBAI = 1,
+
 HD3_PLD_CAP_TOITHIEU = 1,
 -- Gio mo trong ngay (dang HHMM, moi so = 1 luot dua). Ban Linux relay chay
 -- MOI GIO dung phut :00 (24 luot/ngay) - DUNG 100% Linux (TaskList.ini Task_86

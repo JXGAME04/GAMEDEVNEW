@@ -1,3 +1,4 @@
+Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\missions\\challengeoftime\\include.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD] noi cauhinh
 Include("\\script\\misc\\eventsys\\type\\func.lua")
@@ -99,6 +100,11 @@ function award_batch_extend(batch)
 		
 		--加帮会贡献度
 		CallPlayerFunction(nPlayerIndex, award_batch_contribution, batch)
+		-- [BAC DAU 25/08] Linux beidouactivity.lua:429-448 OnPassChuanGuan:
+		-- qua ai thu 10 -> lenh bai Vuot ai cap 1; ai thu 28 -> cap 2.
+		if (HD3_BD_VuotAi ~= nil) then
+			CallPlayerFunction(nPlayerIndex, HD3_BD_VuotAi, batch)
+		end
 		-- 越南生日活动时间挑战赛的过关数
 		CallPlayerFunction(nPlayerIndex, SetTask, tbBirthday0905.tbTask.tsk_toll_cg_passcount, batch)
 		-- 闯关调整 by wangjingjun 2011.03.01

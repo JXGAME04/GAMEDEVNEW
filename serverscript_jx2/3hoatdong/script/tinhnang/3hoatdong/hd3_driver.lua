@@ -111,6 +111,8 @@ function HD3_DriverInit()
 	end
 	-- (B) Phong Lang Do: 6 thuyen phu (Linux fld_head.lua fld_wanttakeboat).
 	HD3_PLD_AddBoatNpc()
+	-- [BAC DAU 25/08] NPC Bac Dau lao nhan o 7 thanh (he Bac Dau lenh bai).
+	HD3_BD_AddNpc()
 	-- (C) Vuot Ai: NPC bao danh Nhiep Thi Tran (npcNhiepThiTran.lua) da gan qua
 	--     station.lua khi client bam Dich Quan 7 thanh - khong can sinh rieng.
 	-- [3HD 25/08] CHAN: g_IniScriptEngine (KSortScript.cpp:51-66) chi nap
@@ -123,6 +125,38 @@ function HD3_DriverInit()
 	print("[3HD] HD3_DriverInit xong (boot 3 hoat dong Linux).")
 end
 
+
+-- ============================================================================
+-- BAC DAU LENH BAI - NPC 'Bac Dau lao nhan'. Ban Linux dat NPC qua activitysys
+-- config 1046 (DA BI CHU THICH, tuc ban Linux cung khong chay) nen o day tu dat.
+-- Moi NPC mang so thu tu thanh (SetNpcValue) de lam nhiem vu di duong.
+-- ============================================================================
+function HD3_BD_AddNpc()
+	if (HD_CFG("HD3_BD_BAT", 1) ~= 1) then
+		return
+	end
+	Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
+	if (tbBeidou == nil or tbBeidou.THANH == nil) then
+		return
+	end
+	if (HD3_DelNpcByScript ~= nil) then
+		HD3_DelNpcByScript("bd_npc")
+	end
+	local n = 0
+	for i = 1, getn(tbBeidou.THANH) do
+		local t = tbBeidou.THANH[i]
+		local nIdx = SubWorldID2Idx(t[2])
+		if (nIdx >= 0) then
+			local npc = HD3_AddNpc(108, 1, nIdx, t[3]*32, t[4]*32, 0, "B¾c §Èu l·o nh©n")
+			if (npc ~= nil and npc > 0) then
+				SetNpcScript(npc, "\\script\\tinhnang\\3hoatdong\\beidou\\bd_npc.lua")
+				SetNpcValue(npc, i)
+				n = n + 1
+			end
+		end
+	end
+	print("[3HD] Bac Dau: sinh "..n.." NPC Bac Dau lao nhan.")
+end
 -- moi thuyen phu: template 240, script wrapper dat BOATID roi goi fld_wanttakeboat
 -- [3HD 25/08 C47] sinh rieng tung bo: bo Nam len thuyen, bo Bac ve Nam.
 function HD3_PLD_AddBoatNpcTab(tb, szScript)

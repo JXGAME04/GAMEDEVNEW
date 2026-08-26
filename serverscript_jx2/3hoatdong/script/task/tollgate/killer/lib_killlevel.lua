@@ -1,4 +1,5 @@
 -------------------------------------------------------------------------
+Include("\\script\\tinhnang\\3hoatdong\\beidou\\bd_activity.lua")
 Include("\\script\\header\\cauhinh_hoatdong.lua")	-- [3HD C29] noi cauhinh thuong
 -- FileName		:	lib_killlevel.lua
 -- Author		:	xiaoyang
@@ -75,6 +76,11 @@ end;
 -- (KPlayer.cpp:2629) => MAT phan exp du. Day la loi that cua JX1, khong phai
 -- khac biet voi ban Linux.
 function HD3_ST_ThuongBoss(nCapNhom, nExpGoc, nSeries)
+	-- [BAC DAU 25/08] Linux beidouactivity.lua:460-472 OnFinishKillerBoss:
+	-- CHI nhom boss cap 90 moi duoc lenh bai (ham tu loc nCapNhom ~= 90).
+	if (HD3_BD_SatThu ~= nil) then
+		HD3_BD_SatThu(nCapNhom)
+	end
 	local tbExp = HD_CFG("HD3_ST_EXP", nil)
 	local nExp = nExpGoc
 	if (tbExp ~= nil and tbExp[nCapNhom] ~= nil) then
