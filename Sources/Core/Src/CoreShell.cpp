@@ -2937,6 +2937,7 @@ static void TG_XaFuTick()
 // Dang o dung map boss thi vao thang pha 3 (khong ton tien).
 //---------------------------------------------------------------------------
 #include "KSatThuBossPos.h"
+#include "KTuiDuocPham.h"		// ban do KHONG mo duoc Tui duoc pham (sinh tu tuiduocpham.lua)
 #include "KMapSuKien.h"	// bang MAP SU KIEN (sinh tu map_type.txt cua may chu)
 
 //---------------------------------------------------------------------------
@@ -4415,6 +4416,30 @@ static int DT_TimMonRac(int nPlayerIdx, const autoData* pAp)
 	return nBan;
 }
 
+// (25/08) Tim NPC DA TAU cho chac: template 108 KEM hang rao toa do.
+//
+// NPC "Bac Dau lao nhan" tung deo chung template 108 voi NPC Da Tau (Bach Bao
+// Tau) - da doi sang 107 o may chu (hd3_driver.lua: HD3_BD_NPC_TPL), nhung giu
+// hang rao nay lam lop phong thu: NPC nao khac lai deo 108 thi auto khong bi lua.
+// DT_FindNpcTpl uu tien NPC co TEN "Da Tau"; khi NPC that o xa (chua nam trong
+// vung client nap) no roi ve nhanh du phong "lay con dau tien co template 108"
+// - dung luc do la bat nham. Bang g_DTNpc sinh tu chinh may chu nen lay lam moc:
+// lech qua 20 o (640 mps) thi KHONG phai NPC Da Tau.
+// (Da do: ca 10 hang g_DTNpc khop voi AddNpcNew(108,...) trong script startgame,
+//  sai so lon nhat ~37 mps, nen bien 640 khong the loai nham NPC that.)
+static int DT_TimNpcDaTau(int nPlayerIdx, const DTNpcRow* pRow)
+{
+	int nIdx = DT_FindNpcTpl(nPlayerIdx, 108, 0);
+	if (nIdx && pRow)
+	{
+		int cX = 0, cY = 0;
+		Npc[nIdx].GetMpsPos(&cX, &cY);
+		if (g_GetDistance(cX, cY, pRow->nX * 32, pRow->nY * 32) > 640)
+			nIdx = 0;	// NPC khac deo chung template - bo qua, di theo bang
+	}
+	return nIdx;
+}
+
 // (21/08) vao pha ban rac tai cho - dung chung cho MOI loi vao (DT_BagRelease / vua ve thanh /
 // bi dua ve thanh luc farm). Nguong thoat mac dinh 8 o, toi thieu 5 (= server doi khi tra);
 // hoi thoai "can it nhat N o" cua moc set se nang nguong SAU khi goi ham nay.
@@ -4495,7 +4520,16 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		int nLogX = 0, nLogY = 0, nLogTX = 0, nLogTY = 0;
 		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nLogX, &nLogY);
 		const int nLogCoTgt = SubWorld[0].HaveTarget(nLogTX, nLogTY) ? 1 : 0;
-		const int nLogNpc = DT_FindNpcTpl(nPlayerIdx, 108, 0);
+		// dung DUNG ham may dang dung (co hang rao toa do), khong thi log chi vao
+		// NPC ma may DA VUT BO - chinh cai log de chan doan lai bao sai.
+		const DTNpcRow* nLogRow = NULL;
+		for (int lr = 0; lr < g_nDTNpcCount; ++lr)
+			if (g_DTNpc[lr].nMapId == nMap)
+			{
+				nLogRow = &g_DTNpc[lr];
+				break;
+			}
+		const int nLogNpc = DT_TimNpcDaTau(nPlayerIdx, nLogRow);
 		int nLogDX = 0, nLogDY = 0;
 		if (nLogNpc)
 			Npc[nLogNpc].GetMpsPos(&nLogDX, &nLogDY);
@@ -4827,27 +4861,10 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nDTRetry = 0;
 			return 1;
 		}
-		int nIdx = DT_FindNpcTpl(nPlayerIdx, 108, 0);
-		// (25/08) NPC "Bac Dau lao nhan" DUNG CHUNG TEMPLATE 108 voi NPC Da Tau:
-		//   hd3_driver.lua:150  HD3_AddNpc(108, 1, nIdx, t[3]*32, t[4]*32, 0, ...)
-		// va no dung ngay canh Nhiep Thi Tran. DT_FindNpcTpl uu tien NPC co TEN
-		// "Da Tau", nhung khi NPC Da Tau that o xa (chua nam trong vung client nap)
-		// thi no rot xuong nhanh du phong "lay con dau tien co template 108" va bat
-		// trung Bac Dau lao nhan.
-		// Do that (nhat ky [DT-STATE], map 78): npc108 o (48576,102592) = o
-		// (1518,3206) - canh Nhiep Thi Tran - trong khi diem Da Tau trong bang la o
-		// (1595,3288), cach 117 O. Nhan vat chay toi do roi ket: duong di bam vao o
-		// di duoc gan nhat, cach NPC 142 mps, ma nhanh mo thoai doi <= 128 con
-		// DT_WalkTo dat nNear = 96 -> khong bao gio "toi noi", dung im vinh vien.
-		// Bang g_DTNpc sinh tu chinh may chu nen lay lam moc: lech qua 20 o thi
-		// KHONG phai NPC Da Tau.
-		if (nIdx)
-		{
-			int cX = 0, cY = 0;
-			Npc[nIdx].GetMpsPos(&cX, &cY);
-			if (g_GetDistance(cX, cY, pRow->nX * 32, pRow->nY * 32) > 640)
-				nIdx = 0;	// NPC khac deo chung template - bo qua, di theo bang
-		}
+		// (25/08) Tim NPC Da Tau qua ham co HANG RAO TOA DO - xem DT_TimNpcDaTau.
+		// Truoc day loi "xong 8 luot sat thu thi dung im canh Nhiep Thi Tran" chinh la
+		// vi cho nay bat trung NPC Bac Dau lao nhan (luc do cung deo template 108).
+		int nIdx = DT_TimNpcDaTau(nPlayerIdx, pRow);
 		if (nIdx)
 		{
 			int nX, nY, dX, dY;
@@ -13962,6 +13979,13 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				{
 					if(!Npc[nNpcIdx].m_FightMode)
 						return 0;
+					// (25/08) Chu game: "dang o trong map Tong Kim auto tu mo tui mau - map
+					// Tong Kim khong cho mo tui mau". Script cua vat pham (tuiduocpham.lua:24-41)
+					// tu choi tren mot loat ban do; truoc day o day khong kiem gi nen cu 3 giay
+					// lai an mot cau "Ban do hien tai nguoi dang dung khong the mo!".
+					// Danh sach ban do sinh TU CHINH script do -> KTuiDuocPham.h.
+					if(TuiDP_CamMap(SubWorld[0].m_SubWorldID))
+						return 0;
 					if(Player[nPlayerIdx].m_sExtAuto.uOpenBagTime >= uCurTime)
 						return 0;
 					Player[nPlayerIdx].m_sExtAuto.uOpenBagTime = uCurTime + 3000;
@@ -13976,7 +14000,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							int nGenre = Item[nIdx].GetGenre();
 							int nDetail = Item[nIdx].GetDetailType();
 							int nPart = Item[nIdx].GetParticular();
-							if(nGenre == item_magicscript && nDetail == 1 && nPart == 4813)
+							if(nGenre == TUIDP_ITEM_G && nDetail == TUIDP_ITEM_D && nPart == TUIDP_ITEM_P)
 							{
 								ItemPos	Pos;
 								Pos.nPlace = pos_equiproom;

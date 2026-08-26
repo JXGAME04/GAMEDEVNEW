@@ -34,7 +34,7 @@ static const char TKM_OPT_THP_KIM[] = "B¸o danh [phe Kim ]";
 // ===== khung gio mo tran (gio, phut) - theo dong ho MAY CHU =====
 #define TK_GIO_COUNT	4
 static const short g_TKGio[TK_GIO_COUNT][2] = {
-	{ 12, 21 },
+	{ 18, 38 },
 	{ 17, 50 },
 	{ 20, 50 },
 	{ 22, 50 },
@@ -322,11 +322,33 @@ static const TKPoint g_TKBinhB[TK_BINHB_COUNT] = {
 #define TK_ITEM_MAU_D	2
 #define TK_ITEM_MAU_P	0
 #define TK_ITEM_MAU_L	5
-// thuoc hoat dong Tong Kim: genre 6 / detail 1 / particular 177..194, moi vien 3 phut,
-// chi dung duoc tren map tran (script/header/forbidmap.lua: checkSJMaps).
+// thuoc hoat dong Tong Kim: genre 6 / detail 1, moi vien vai phut, chi dung duoc
+// tren map tran. DANH SACH SINH TU settings/item/magicscript.txt - lay MOI mon co
+// script nam trong \script\item\battles\ (tru ve vao tran / co hieu / bo cau /
+// binh si hieu phu - khong phai thuoc).
 // cot 2: 1 = tang cong, 2 = phong thu, 3 = mau / toc do (loc theo o cau hinh)
-#define TK_PILL_COUNT	18
+#define TK_PILL_COUNT	41
 static const short g_TKPill[TK_PILL_COUNT][2] = {
+	{ 155, 2 },
+	{ 156, 3 },
+	{ 159, 1 },
+	{ 160, 1 },
+	{ 161, 1 },
+	{ 162, 1 },
+	{ 163, 1 },
+	{ 164, 2 },
+	{ 165, 2 },
+	{ 166, 2 },
+	{ 167, 2 },
+	{ 168, 2 },
+	{ 169, 1 },
+	{ 170, 1 },
+	{ 171, 1 },
+	{ 172, 1 },
+	{ 173, 1 },
+	{ 174, 3 },
+	{ 175, 3 },
+	{ 176, 3 },
 	{ 177, 1 },
 	{ 178, 1 },
 	{ 179, 1 },
@@ -339,12 +361,15 @@ static const short g_TKPill[TK_PILL_COUNT][2] = {
 	{ 186, 3 },
 	{ 187, 2 },
 	{ 188, 2 },
-	{ 189, 1 },
+	{ 189, 3 },
 	{ 190, 2 },
 	{ 191, 2 },
 	{ 192, 2 },
 	{ 193, 2 },
 	{ 194, 2 },
+	{ 214, 3 },
+	{ 215, 3 },
+	{ 216, 3 },
 };
 
 // res id NPC quan quan tren chien truong (lib_tktc.lua addnpcquaitktrungcap):

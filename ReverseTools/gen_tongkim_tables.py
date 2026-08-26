@@ -223,16 +223,69 @@ w("#define TK_ITEM_MAU_G%s1" % TAB)
 w("#define TK_ITEM_MAU_D%s2" % TAB)
 w("#define TK_ITEM_MAU_P%s0" % TAB)
 w("#define TK_ITEM_MAU_L%s5" % TAB)
-w("// thuoc hoat dong Tong Kim: genre 6 / detail 1 / particular 177..194, moi vien 3 phut,")
-w("// chi dung duoc tren map tran (script/header/forbidmap.lua: checkSJMaps).")
+# ---- g_TKPill: DOC THANG tu bang vat pham, khong go tay ----
+# Moi vat pham dung trong tran Tong Kim deu co script trong \\script\\item\\battles\\.
+# Phan loai theo dung loi cua tung script (da doc): 1 = tang cong, 2 = phong thu,
+# 3 = mau / toc do. Cac mon KHONG phai thuoc thi loai tru han.
+PILL_NHOM = {
+	# --- 1: tang cong ---
+	"pneuma_jin": 1, "pneuma_mu": 1, "pneuma_shui": 1, "pneuma_huo": 1, "pneuma_tu": 1,
+	"weapon_jin": 1, "weapon_mu": 1, "weapon_shui": 1, "weapon_huo": 1, "weapon_tu": 1,
+	"sj_waipuwan": 1, "sj_waiduwan": 1, "sj_waibingwan": 1,
+	"sj_neipuwan": 1, "sj_neiduwan": 1, "sj_neibingwan": 1, "sj_neihuowan": 1,
+	"sj_neidianwan": 1,
+	# --- 2: phong thu ---
+	"armor_jin": 2, "armor_mu": 2, "armor_shui": 2, "armor_huo": 2, "armor_tu": 2,
+	"wardrum": 2,          # Chien co - "tang 30% khang va mau"
+	"sj_gaoshanwan": 2, "sj_gaozhongwan": 2,
+	"sj_pufangwan": 2, "sj_bingfangwan": 2, "sj_leifangwan": 2,
+	"sj_huofangwan": 2, "sj_dufangwan": 2,
+	# --- 3: mau / toc do ---
+	"token": 3,            # Lenh bai - "tang 50% toc do di chuyen"
+	"sj_xingjundan": 3, "sj_xiaohuandan": 3, "sj_wuhualu": 3,
+	"sj_changmingwan": 3, "sj_jiapaowan": 3, "sj_feisuwan": 3,
+	"sj_zaohuadan_b": 3, "sj_zaohuadan_m": 3, "sj_zaohuadan_s": 3,
+}
+# KHONG phai thuoc - tu dung la mat do / lam bay
+PILL_BO = {
+	"rescript",      # 154 Tong Kim Chieu thu = VE VAO TRAN
+	"clarion",       # 157 Binh Si hieu phu = trieu hoi NPC
+	"useflagitem",   # 158 Co hieu = cam co
+	"dove",          # 211 Bo cau = chim dua tin
+}
+_mgs = os.path.join(os.path.dirname(SRV.rstrip(chr(92)+chr(47))), "settings", "item", "magicscript.txt")
+PILL = []
+_la = []
+for _l in io.open(_mgs, "rb").read().split(b"\n"):
+	_f = _l.split(b"\t")
+	if len(_f) <= 9 or _f[1].strip() != b"6" or _f[2].strip() != b"1":
+		continue
+	_sc = _f[9].decode("latin-1")
+	if "battles" not in _sc.lower():
+		continue
+	_ten = os.path.basename(_sc.replace("\\", "/")).lower()
+	if _ten.endswith(".lua"):
+		_ten = _ten[:-4]
+	if _ten in PILL_BO:
+		continue
+	if _ten not in PILL_NHOM:
+		_la.append((int(_f[3]), _ten))
+		continue
+	PILL.append((int(_f[3]), PILL_NHOM[_ten]))
+PILL.sort()
+assert PILL, "khong doc duoc mon nao trong battles/ - bang vat pham doi dang, DUNG LAI"
+if _la:
+	print("  [!] script battles/ CHUA PHAN LOAI (bo qua): %s" % _la)
+print("  g_TKPill: %d mon (truoc day go tay 18 mon 177..194)" % len(PILL))
+w("// thuoc hoat dong Tong Kim: genre 6 / detail 1, moi vien vai phut, chi dung duoc")
+w("// tren map tran. DANH SACH SINH TU settings/item/magicscript.txt - lay MOI mon co")
+w("// script nam trong \\script\\item\\battles\\ (tru ve vao tran / co hieu / bo cau /")
+w("// binh si hieu phu - khong phai thuoc).")
 w("// cot 2: 1 = tang cong, 2 = phong thu, 3 = mau / toc do (loc theo o cau hinh)")
-w("#define TK_PILL_COUNT%s18" % TAB)
+w("#define TK_PILL_COUNT%s%d" % (TAB, len(PILL)))
 w("static const short g_TKPill[TK_PILL_COUNT][2] = {")
-PILL = [(177, 1), (178, 1), (179, 1), (180, 1), (181, 1), (182, 1), (183, 1), (184, 1),
-        (185, 3), (186, 3), (187, 2), (188, 2), (189, 1), (190, 2), (191, 2), (192, 2),
-        (193, 2), (194, 2)]
 for p, k in PILL:
-    w("%s{ %d, %d }," % (TAB, p, k))
+	w("%s{ %d, %d }," % (TAB, p, k))
 w("};")
 w("")
 w("// res id NPC quan quan tren chien truong (lib_tktc.lua addnpcquaitktrungcap):")
