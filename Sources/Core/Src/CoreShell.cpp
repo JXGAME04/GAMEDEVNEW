@@ -6872,6 +6872,25 @@ static bool TK_ThayDuoc(int ax, int ay, int bx, int by)
 	return true;
 }
 
+// (26/08) khu Kim: giua cum diem-dap/Xa Phu va hoc NPC bao danh co MANG TUONG
+// (do that tren maps/324_srv.fp - ReverseTools/tk_pick_vongkim.py: duong thang
+// DapKim -> NpcBdKim cham 5 o chan, NpcBdKim -> XaPhuKim cung cham 5 o). Chu game
+// bao: "qua map phe kim thi chay dam thang vao tuong roi moi toi npc bao danh".
+// Chua NHIN THAY dich (TK_ThayDuoc - vat can di chuyen phia client) thi ghe DIEM
+// VONG g_TKVongKim (san trong phia nam, nhin sach toi ca DapKim / NpcBdKim /
+// XaPhuKim) roi moi nham thang. Tra 1 = dang di vong; 0 = cu di thang.
+static int TK_GheVongKim(int nPlayerIdx, int nX, int nY, int nDx, int nDy, UINT uCurTime)
+{
+	if (TK_ThayDuoc(nX, nY, nDx, nDy))
+		return 0;
+	const int wx = TK_O((int)g_TKVongKim.x);
+	const int wy = TK_O((int)g_TKVongKim.y);
+	if (g_GetDistance(nX, nY, wx, wy) <= TK_O(3))
+		return 0;	// dung sat diem vong ma van chua "thay" (lech ban do?) - di thang
+	DT_WalkTo(nPlayerIdx, wx, wy, 96, uCurTime);
+	return 1;
+}
+
 // 1 = dang o gan hau doanh (trong trai), kem *pnBo = nua ban do (1 = bo A, 2 = bo B)
 static int TK_TrongTrai(int nX, int nY, int* pnBo)
 {
@@ -7561,6 +7580,12 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		{
 			const TKPoint& sN = (ea.nTKPhe == 2) ? g_TKNpcBdKim : g_TKNpcBdTong;
+			// (26/08) phe Kim: chua thay NPC bao danh thi vong qua mang tuong truoc
+			if (ea.nTKPhe == 2 && TK_GheVongKim(nPlayerIdx, nX, nY, TK_O((int)sN.x), TK_O((int)sN.y), uCurTime))
+			{
+				ea.uTKNext = uCurTime + 700;
+				return 1;
+			}
 			int nR = TK_ToiNpc(nPlayerIdx, "b¸o danh", (int)sN.x, (int)sN.y, uCurTime);
 			if (nR == 1)
 				ea.uTKNext = uCurTime + 900;
@@ -7610,6 +7635,12 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			// Xa Phu cua PHE KIA moi co dong sang phe minh dang nham
 			const TKPoint& sX = (ea.nTKPhe == 2) ? g_TKXaFuTong : g_TKXaFuKim;
+			// (26/08) dich la Xa Phu KIM (dang dung khu Kim) -> chua thay thi vong tuong
+			if (ea.nTKPhe != 2 && TK_GheVongKim(nPlayerIdx, nX, nY, TK_O((int)sX.x), TK_O((int)sX.y), uCurTime))
+			{
+				ea.uTKNext = uCurTime + 700;
+				return 1;
+			}
 			int nR = TK_ToiNpc(nPlayerIdx, "xa phu", (int)sX.x, (int)sX.y, uCurTime);
 			if (nR == 1)
 				ea.uTKNext = uCurTime + 900;
@@ -7917,6 +7948,12 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		{
 			const TKPoint& sX = (ea.nTKPhe == 2) ? g_TKXaFuKim : g_TKXaFuTong;
+			// (26/08) phe Kim: chua thay Xa Phu thi vong qua mang tuong truoc
+			if (ea.nTKPhe == 2 && TK_GheVongKim(nPlayerIdx, nX, nY, TK_O((int)sX.x), TK_O((int)sX.y), uCurTime))
+			{
+				ea.uTKNext = uCurTime + 700;
+				return 1;
+			}
 			int nR = TK_ToiNpc(nPlayerIdx, "xa phu", (int)sX.x, (int)sX.y, uCurTime);
 			if (nR == 1)
 				ea.uTKNext = uCurTime + 900;
