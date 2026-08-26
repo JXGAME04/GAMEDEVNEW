@@ -10910,14 +10910,31 @@ static int ST_Nghi(int nPlayerIdx, const char* szWhy, UINT uCurTime, UINT uMs)
 }
 
 // Tui day theo DUNG nguong nguoi choi dat o tab Co ban (bCheckTPIBox /
-// nTPiboxSel): nha may 3 phut cho chu trinh Hau can CO SAN (ve thanh, ban
-// rac theo bo loc, cat ruong) chay - khong tu che co che don tui rieng.
+// nTPiboxSel): nha may cho chu trinh Hau can CO SAN (ve thanh, ban rac theo bo
+// loc, cat ruong) chay - khong tu che co che don tui rieng.
+//
+// (25/08) TRUOC DAY nhanh nay goi ST_Nghi(..., 180000u) = NGU CO DINH 3 PHUT.
+// Nhat ky that cho thay do la sai: jx_auto.log pid=31100
+//   t=159505308 nghigiay=179 tuiday=1  -> xong luot 1, tui day, ngu 3 phut
+//   t=159508333 nghigiay=176 tuiday=0  -> 3 GIAY sau tui da het day
+//   t=159644468 pha=1                  -> nhung 136 giay sau moi chay lai
+// Ba phut do Da Tau cam may - dung canh chu game bao "khong nhan tiep nhiem vu
+// cho du 8 ma tu dong di lam da tau".
+// Nay chi THA MAY, KHONG dat dong ho ngu: khoi vao cuoc o dau ST_Process kiem
+// lai moi 1,5 giay nen tui vua thong la san tiep ngay.
 // Tra 1 = da nha may (goi trong pha ket luot).
 static int ST_TuiDayYield(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 {
 	if (!DT_TuiDayTP(nPlayerIdx, pAp))
 		return 0;
-	ST_Nghi(nPlayerIdx, "<color=Yellow>Tói ®Çy theo ng­ìng tab C¬ b¶n - nh¶ m¸y cho HËu cÇn vÒ thµnh dän tói, 3 phót n÷a s¨n tiÕp.", uCurTime, 180000u);
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	// bao MOT lan - luc vua tu pha khac roi vao day; vao lai tu STP_DONE thi im
+	if (ea.nSTPhase != STP_DONE)
+		ST_Msg(nPlayerIdx, "<color=Yellow>Tói ®Çy theo ng­ìng tab C¬ b¶n - nh¶ m¸y cho HËu cÇn dän tói, dän xong lµ s¨n tiÕp ngay.");
+	ea.uLDHopT = 0;
+	ea.nSTPhase = STP_DONE;
+	ea.nSTHold = 0;
+	ea.uNpcID = 0;
 	return 1;
 }
 
@@ -11033,12 +11050,15 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	// bao lau, tui co day khong; khong phai doan.
 	if (pAp->bSatThu)
 		AUTOLOG_EVERY(3000, "[ST-STATE] pha=%d map=%d task=%d muc=%d ke=%d hold=%d "
-			"phagiay=%u thaygiay=%u vonggiay=%u nghigiay=%d tuiday=%d ngay=%d/%d",
+			"phagiay=%u thaygiay=%u vonggiay=%u nghigiay=%d tuiday=%d ngay=%d/%d "
+			"luot=%d/%d ngaysv=%d",
 			ea.nSTPhase, nMap, nTask, ea.nSTMucBoss, ea.nSTKe, ea.nSTHold,
 			(uCurTime - ea.uSTPhaseT) / 1000, (uCurTime - ea.uSTThayT) / 1000,
 			(uCurTime - ea.uSTVongT) / 1000,
 			(int)((ea.uSTNghiT > uCurTime) ? (ea.uSTNghiT - uCurTime) / 1000 : 0),
-			DT_TuiDayTP(nPlayerIdx, pAp) ? 1 : 0, ea.nSTNgay, nNgay);
+			DT_TuiDayTP(nPlayerIdx, pAp) ? 1 : 0, ea.nSTNgay, nNgay,
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_DEM), ST_MucLuot(pAp),
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_NGAY));
 
 	// (25/08 - y chu game: "co thong bao giet xong boss thi cho phu, can gi ruom ra")
 	// Nghe THANG thong bao cua may chu thay vi suy tu bien nhiem vu 1082 tren client.
@@ -11677,6 +11697,18 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nSTMucBoss = 0;
 		ea.nSTGhepTry = 0;
 		++ea.nSTKe;
+		// (25/08 - chu game muon biet "nhiem vu thu may") May chu KHONG phat thong
+		// bao nao ghi so thu tu - da quet het script killer. Nhung SO DEM co that:
+		// task 1193 (TSKID_KILLERMAXCOUNT, newtask_head.lua:16), lib_killlevel.lua:37
+		// va :56 goi nt_setTask(1193, +1) moi lan xong mot luot, va nt_setTask ->
+		// SetSaveVal -> SyncTaskValueToClient (KPlayerTask.cpp:83) nen client luon
+		// co so dung. Bao len man hinh de nguoi choi theo doi tien do.
+		{
+			char szLuot[200];
+			sprintf(szLuot, "<color=Cyan>Xong nhiÖm vô s¸t thñ thø %d/%d h«m nay - ®i nhËn nhiÖm vô kÕ.",
+				(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_DEM), ST_MucLuot(pAp));
+			ST_Msg(nPlayerIdx, szLuot);
+		}
 		if (pAp->nSTNghi > 0)
 		{
 			char szTB[200];
