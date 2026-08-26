@@ -413,6 +413,28 @@ vao tran: dich vo hinh phut dau            thay dich NGAY; [S6-DONMAP] in moi la
 Lưu ý phân tích sau: `[S6-ORPHAN]` (Close) vẫn in hàng loạt NGAY TRƯỚC `[S6-DONMAP]` mỗi lần đổi map
 (Close chạy trước) — không phải lỗi; và `[S6-XOAXA]` đếm cả ca partner (partner chỉ không bị xoá).
 
+## 9.12 NGHIỆM THU FIX A/B/C (26/08 ~13:10-13:27, pid 11252, me=93431, có ~7,5 phút TRONG trận TK 379)
+
+| Số | TRƯỚC (12:38) | SAU (13:10+) |
+|---|---|---|
+| `[S6-ADD] idx=0` (NPC vô hình vì hết khe) | **1.198 cú** | **71 cú (−94%)**, dồn vài giây quanh đỉnh trận |
+| Vào TK bảng khởi đầu | đầy rác map cũ, 10-24 s kịch trần | `[S6-DONMAP] xoa=110 conlai=1/256` — SẠCH tức thì |
+| `[S6-BAL]` dọn vớt 55 s | ~1.058 cú/25 min | 567 cú/16,7 min (đa số việc dọn về tay B/C đúng sự kiện) |
+| Fix B `[S6-XOAXA]` | — | 1.001 cú trả khe theo sự kiện |
+| Fix C `[S6-XOAXAC]` | — | 9 cú xác |
+| RÒ-REF | 0 | 0 ✓ |
+
+**Phần còn lại (đã định danh, chưa fix — FIX D chờ duyệt):** giữa trận TK dung vẫn chạm 255 vài
+nhịp (mocoi 150-192). Nguồn = **220 NPC "cư dân dải rìa 40-48 ô"** flapping gỡ-gắn chu kỳ 0,1-0,4 s
+(92 % cú VANH): server đẩy sync tới ~48 ô (3×3 region) nhưng client **không bao giờ vẽ ngoài 40 ô**
+(`MAX_SYNC_RANGE`, vùng nhìn thật ~31,5 ô) ⇒ client ADD→gỡ→gắn→gỡ vô nghĩa, chiếm 150+ khe.
+**FIX D đề xuất**: không nhận NPC cách ≥ `MAX_SYNC_RANGE` vào bảng ngay từ đầu — (i) `SyncNpcMin`
+NPC lạ + mps cách mình ≥40 ô → không REQNPC; (ii) nhánh gắn-lại mồ côi: cách ≥40 → trả khe thay vì
+gắn. Trải nghiệm không đổi (ngoài 40 ô vốn không vẽ; vào tầm thì ADD ở nhịp sync kế như mọi NPC mới —
+chỉ thêm 1 round-trip REQNPC ~50-200 ms lần đầu). Kỳ vọng: mocoi đỉnh ~30-40, dung đỉnh ~150, ADD-FAIL = 0.
+
+Chưa có mẫu chủ chết (me10 = 0 cả phiên — trận đang diễn ra lúc chụp).
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
