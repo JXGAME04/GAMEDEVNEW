@@ -328,6 +328,42 @@ grep "S6-ATK" | grep "tgreg=-1"                   # danh vao muc tieu mo coi (kh
 grep -c "S6-ORPHAN\]" ; grep -c "S6-VANH" ; grep -c "S6-CAM" # lan duong bien mat nao chiem
 ```
 
+## 9.9 KẾT QUẢ ĐỢT LOG 2 (26/08 ~11:45-12:05, 18 phút, me dwID=94619) — **BẢNG NPC CLIENT ĐẦY THẬT**
+
+> Đảo ngược kết luận mục 9 cũ ("dung max 85/256, không được nghi bảng đầy"): phiên đó auto quanh quẩn.
+> Phiên này chơi lâu + auto chạy rộng: **`dung` chạm 255/256 (mồ côi chiếm tới 250 khe)** và
+> **3.334 cú `[S6-ADD] idx=0`** — trong đó **77,3% xảy ra đúng lúc `dung ≥ 250`** (23% còn lại là
+> NPC ngoài vùng nạp — loại fail vô hại). Hàng nghìn lần NPC quanh người chơi KHÔNG HIỆN ĐƯỢC.
+
+Số đo 18 phút (pid 13704): `[S6-VANH]` **11.166** cú gỡ-vành-đai (**11.165/11.166 là kind=1 bot**) ·
+`[S6-ORPHAN]` (Close do cuộn vùng) 5.145 · `[S6-CAM]` 39 · gắn lại `[S6-ORPHAN-BACK]` 18.167 ·
+`[S6-LOADMAP]` 382 cú cuộn vùng (~1 cú/2,8 s) · `[S6-BAL]` dọn khe 1.058 cú (~1/giây — KHÔNG kịp).
+
+**Phân bố thời gian nằm mồ côi trước khi gắn lại** (15.001 cặp): p50 = **197 ms**, ≤5 s = 80,8%,
+≤10 s = **83,5%**, ≤20 s = 88%, p90 = 22,8 s; ai không được gắn lại thì bị `CheckBalance` xoá đúng
+~55,4 s (p50 55.357 ms). ⇒ khe bị chiếm vô ích tới 55 s cho 16,5% NPC đã đi hẳn.
+
+**Hai giả thuyết bị BÁC trong đợt này:** (1) RÒ REF ô: 0/1.058 cú `[S6-BAL]` rơi vào nhánh
+không-DecRef (`doing=10/21 && reg>=0` = 0) — mọi xác đều đã mồ côi (làn CAM/VANH DecRef đúng) trước
+khi bị xoá khe; (2) đánh-mục-tiêu-mồ-côi: 0/4.605 phát có `tgreg=-1`, `thay=0` cũng 0 — auto lọc tốt.
+⇒ "TK đánh vào không khí" giờ nghiêng hẳn về **địch VÔ HÌNH do bảng đầy** (chưa có mẫu trận TK thật —
+người chơi vào map 324 lúc 12:05, trận vừa khai chiến khi chụp log; phần khu chờ dung chỉ 1-7).
+
+### ĐỀ XUẤT FIX (1 dòng, chờ chủ duyệt) — `KNpcSet::CheckBalance`
+
+NPC **MỒ CÔI** (`m_RegionIndex < 0`) dùng ngưỡng dọn riêng **180 tick (10 s)**; NPC còn trong region
+giữ 1000 tick như cũ:
+
+```cpp
+if (SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal > (DWORD)(Npc[nIdx].m_RegionIndex < 0 ? 180 : 1000))
+```
+
+Cơ sở số: giữ nguyên 83,5% lợi ích cache-gắn-lại, giải phóng khe sớm 5,5 lần ⇒ mồ côi steady-state
+ước 250 → ~45 khe, hết tràn (dung max ước ~130-150), hết loạt ADD-FAIL do đầy. Trả giá: 16,5% NPC
+quay lại muộn hơn 10 s phải REQNPC + NPC_SYNC full lại (thêm chút lưu lượng, không đổi giao thức).
+Lưu ý ngữ nghĩa: NPC mồ côi ngoài vùng KHÔNG được cập nhật `m_SyncSignal` (SyncNpcMin return sớm
+`:1975-1977`) nên timeout tính đúng từ gói cuối trước khi bị gỡ.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
