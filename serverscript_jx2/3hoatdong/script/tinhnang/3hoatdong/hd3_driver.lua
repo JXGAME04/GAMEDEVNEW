@@ -130,7 +130,21 @@ end
 -- BAC DAU LENH BAI - NPC 'Bac Dau lao nhan'. Ban Linux dat NPC qua activitysys
 -- config 1046 (DA BI CHU THICH, tuc ban Linux cung khong chay) nen o day tu dat.
 -- Moi NPC mang so thu tu thanh (SetNpcValue) de lam nhiem vu di duong.
+--
+-- [25/08] TEMPLATE 107 chu KHONG phai 108. Ban Linux (autoexec_npc.lua:154-160)
+-- dung 108 cho NPC nay, va dot port dau chep y nguyen - nhung o may chu NAY,
+-- 108 la template cua NPC DA TAU (Bach Bao Tau). Auto Da Tau cua WAuto tim NPC
+-- THEO TEMPLATE (CoreShell.cpp DT_FindNpcTpl(..., 108, ...)); NPC Bac Dau lai
+-- dung ngay canh Nhiep Thi Tran nen khi NPC Da Tau that o xa (chua nam trong
+-- vung client nap) thi auto bat trung Bac Dau lao nhan, chay toi do roi ket
+-- cung - nhan vat dung im, do that: cach NPC 142 mps trong khi nhanh mo thoai
+-- doi <= 128. Ban Linux khong dinh loi nay vi ben do khong co auto quet 108.
+-- 107 = "Tuyet Xuan Tau" (enemy080), cung ho dang ong gia voi 108 (enemy081),
+-- va khong may auto nao quet (cac so bi quet: 108 Da Tau, 769 Nhiep Thi Tran,
+-- 632/634/635/638/640/641 quan Tong Kim).
+HD3_BD_NPC_TPL = 107
 -- ============================================================================
+
 function HD3_BD_AddNpc()
 	if (HD_CFG("HD3_BD_BAT", 1) ~= 1) then
 		return
@@ -147,7 +161,7 @@ function HD3_BD_AddNpc()
 		local t = tbBeidou.THANH[i]
 		local nIdx = SubWorldID2Idx(t[2])
 		if (nIdx >= 0) then
-			local npc = HD3_AddNpc(108, 1, nIdx, t[3]*32, t[4]*32, 0, "B¾c §Èu l·o nh©n")
+			local npc = HD3_AddNpc(HD3_BD_NPC_TPL, 1, nIdx, t[3]*32, t[4]*32, 0, "B¾c §Èu l·o nh©n")
 			if (npc ~= nil and npc > 0) then
 				SetNpcScript(npc, "\\script\\tinhnang\\3hoatdong\\beidou\\bd_npc.lua")
 				SetNpcValue(npc, i)
