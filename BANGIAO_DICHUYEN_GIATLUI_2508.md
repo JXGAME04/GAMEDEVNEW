@@ -202,3 +202,134 @@ triệu chứng. Khi đó ghép tiếp với `[S6-ADD]/[S6-DEL]` để biết m�
 | `bin\server\CoreServer.dll` | `d44b1233` | **giữ nguyên** — mọi mã S6 đều `#ifndef _SERVER`; bản này đã có vá `dist=0` và **đang chạy** |
 
 Client phải **thoát vào lại** thì mới nạp DLL mới. Máy chủ **không cần** restart cho bộ log này.
+
+---
+
+# 9. KẾT QUẢ MỔ LOG 26/08 — TÌM RA CƠ CHẾ, CHƯA VÁ (chờ chủ duyệt)
+
+Mẫu: 25 phút chơi thật sáng 26/08 (auto Dã Tẩu bật, nhân vật `CaiBang` idx server 91423 / dwID **92422**),
+client log 457.899 dòng + server log. Bản chụp trong scratchpad phiên 26/08
+(`jx_client_2608_b.log`, `jx_server_2608_b.log`).
+
+- DLL client lúc đo: **`0e009f08`** (bản phiên sát-thủ build 25/08 23:19) — **vẫn có đủ `[S6-*]`**
+  (build sau commit `59875e48`). Bản `61b8bff8` đã bị thay nhưng không sao.
+- ⚠️ client log có **22 cú "bo qua"** (chạm trần 1200 dòng/s), server log **205 cú** (nhãn `E3_/E4_`
+  của phiên khác chiếm băng thông) — tỷ lệ tuyệt đối quanh các điểm tràn không tin được.
+
+## 9.1 Triệu chứng A (bot trượt tới/lùi · biến mất · hiện lại chỗ cũ · lặp) — CƠ CHẾ ĐÃ CHỐT
+
+**A1 — trượt & đứng đánh sai chỗ:** client **chỉ nắn NPC khác khi `m_nNeedFixPos > 0`**
+(`KProtocolProcess.cpp:2036`). Bot nhận **rất ít lệnh di chuyển** (đo hồ sơ: bot 92593 nhận **1 lệnh/99 s**,
+bot 92438 **4 lệnh/99 s** — server chỉ phát khi ĐỔI lệnh), và khi NPC vừa ADD thì
+`SendCommand(Doing, <vị trí sync>)` (`:1911`) — đích là **chính chỗ đứng**, không phải đích thật.
+⇒ bot hiện hình **lệch sẵn ~6 ô, đứng đánh (`doing=7`) tại chỗ SAI suốt nhiều giây** (drift giữ nguyên
+6,5 ô), chỉ khi có lệnh run mới thì client cho nó **trượt dần** về đúng. Đo trên 7.766 gói sync bot
+(đã TÁCH nhân vật mình ra): **10,9 % lệch > 1 ô, 1,0 % > 4 ô, max 7,3 ô**; quái chỉ ~1,5 % > 1 ô.
+
+**A2 — biến mất/hiện lại chỗ cũ theo vòng lặp = NPC MỒ CÔI:** khi bộ 9 region-slot cuộn
+(`KSubWorld::LoadMap` 2-arg), slot bị tái dùng gọi `KRegion::Load` → `Close()`
+(`KRegion.cpp:110→1590`): mọi NPC của region đó bị `m_RegionIndex = -1` + `RemoveNpc` **nhưng KHÔNG bị
+xoá khỏi `NpcSet`** ⇒ không được vẽ (BIẾN MẤT) mà id vẫn tra được. Gói sync-min sau đó **gắn lại theo
+vị trí server** (`KProtocolProcess.cpp:1967-1993`) ⇒ HIỆN LẠI đúng chỗ nó "đáng đứng" (nhìn như "chỗ cũ").
+Đo: **186 NPC khác nhau, ≥ 718 cú mồ-côi/gắn-lại trong 25 phút** (`SYNCMIN-REGION-BAD`, cận dưới vì
+nhãn EVERY-1000); từng bot 92xxx dính **10-18 lần/con**. Auto Dã Tẩu chạy con thoi (đổi map 7 lần +
+trap nội map) làm slot cuộn **45 lần/99 s** lúc chạy xa ⇒ vòng này quay liên tục.
+
+## 9.2 Triệu chứng B (trap/chết/phù về thành nhảy toạ độ) — MỘT CA TRAP BẮT ĐƯỢC TẠI TRẬN
+
+Ca trap nội map lúc `t=46519038`: auto chạy tới (54144,103424), server SetPos về **(47232,104768)**
+(cách ~215 ô cùng map). Phía client: gói `NPC_SYNC` full + `SYNCPLAYER`; bộ region được nạp lại
+qua `NpcChangeRegion` → `LoadMap` (`KSubWorld.cpp:2383`) — **nhánh `SYNCME-LOADMAP`/`nhanh=loadmap`
+(`KProtocolProcess.cpp:2146`) KHÔNG chạy lần nào trong cả 25 phút**. Trong chuyển tiếp vài trăm ms:
+NPC vùng cũ mồ côi hàng loạt, NPC vùng mới REQNPC/ADD dần, và có **10 cú `[S6-ME] nhanh=vaolandau`**
+giữa phiên (mình bị "đặt lại như vào lần đầu" — region chứa mình cũng bị Close) — mỗi cú một cú snap.
+**Chết/phù về thành dùng cùng họ cơ chế** (SetPos xa) — nhưng trong 25 phút này **chủ chưa chết/chưa
+phù lần nào** (0 dòng `doing=10/21` cho mình) ⇒ CHƯA có mẫu đo riêng cho chết/phù.
+
+## 9.3 Triệu chứng C (Tống Kim đánh vào không khí) — CHƯA CÓ MẪU, CÓ ỨNG VIÊN
+
+Chưa có trận TK trong log (`S6-ATK thay=0` = 0/5.570 — nhưng nhãn này dùng `SearchID` nên **KHÔNG
+phát hiện được mục tiêu MỒ CÔI** — nó vẫn nằm trong bảng). Ứng viên mạnh: đánh/khoá mục tiêu là NPC
+mồ côi (vô hình) hoặc NPC đang lệch 6-7 ô. Auto giữ-mục-tiêu ĐÃ lọc `m_RegionIndex < 0`
+(`CoreShell.cpp` ~14174) nhưng **đường chọn-mới và auto TK chưa rà**.
+
+## 9.4 Số/kết luận đã RÚT LẠI ngay trong phiên (đừng dùng lại)
+
+| Kết luận | Vì sao rút |
+|---|---|
+| "22 cú client nhảy >2 ô, có cú 9,6 ô" (đo theo cell+slot) | slot đổi nội dung ⇒ so cell giữa 2 bộ region là vô nghĩa; cú 9,6 ô = trap THẬT (hợp lệ) |
+| "Ping-pong 46-305 ô TRUNG-NAP-VUNG" (pt_s6b) | **artifact bảng neo slot→regionID** — RAW cho thấy client chạy liên tục mượt qua biên |
+| "Drift chính mình p50 1,45 ô khi chạy" là lỗi | đó là client-prediction dẫn trước server (18 fps) — đứng yên p50 0,5 ô ⇒ bình thường |
+| 3 cú `E4_POS_CHANGEWORLD npc=92422` là của chủ | nhãn `E4_*` in `npc=<IDX> id=<dwID>` ⇒ đó là bot dwID 93421; chủ = idx 91423 |
+
+## 9.5 HƯỚNG VÁ ĐỀ XUẤT (chưa làm — cần chủ game duyệt từng mục)
+
+1. **Nắn-có-ngưỡng cho NPC khác** trong `SyncNpcMin`: nếu cùng region mà lệch > N ô (đề xuất N=2)
+   thì ghi đè toạ độ kể cả `fix=0` (lệch nhỏ vẫn để prediction + nội suy lo). Trị A1 tận gốc,
+   rủi ro thấp (chỉ kích khi đã lệch rõ; PAINT_INTERP kéo mượt cú snap ≤ 64 px).
+2. **Trị mồ côi:** khi `KRegion::Close` gỡ NPC — hoặc xoá hẳn khỏi `NpcSet` (sẽ REQNPC lại khi gặp),
+   hoặc giữ nhưng **mọi đường chọn mục tiêu phải lọc `m_RegionIndex < 0`** (auto thường + auto TK + click tay).
+3. **Gửi kèm lệnh di chuyển hiện tại khi client REQNPC** (`NpcRequestCommand`, server
+   `KProtocolProcess.cpp:5016`) — NPC vừa hiện hình biết ngay đích đang chạy (đề xuất cũ mục 5.2 vẫn đứng).
+4. **Nhãn log bổ sung** trước khi vá để đo trước/sau: `[S6-ORPHAN]` (Close/gắn-lại, không tiết chế),
+   `S6-ATK` in thêm `tgtreg=`, `[S6-LOADMAP]` trong `KSubWorld::LoadMap` client (đếm + đo ms nạp).
+
+## 9.6 Việc cần chủ game làm để đo nốt B và C
+
+Log đang bật sẵn (`AutoLog=1`): **chết 1 lần** + **dùng phù về thành 1 lần** + **1 trận Tống Kim**,
+rồi báo giờ để phiên sau cắt đúng cửa sổ. Muốn số server sạch thì phải giảm nhãn `E3_/E4_`
+(server đang tràn 205 cú "bo qua").
+
+## 9.8 ĐỢT LOG 2 (26/08 trưa, commit `305be20b`) — chủ duyệt "làm mục 4 trước, chắc chắn mới fix"
+
+Chủ hỏi thêm: *"kiểm tra thêm vùng người chơi - bot chết thì có xoá không hay tích luỹ dẫn tới
+tràn - thêm log chỗ này"*. Đã đặt **8 điểm log, KHÔNG sửa một dòng logic nào**, build
+`CoreClient.dll` **`5d75074a`** swap vào `bin\client` (backup `.cu_2608_truoc_S6b_d4479115` —
+lưu ý bản bị thay là **`d4479115`** = `.moi_2608_danhtheotab` phiên kia vừa swap 11:19, KHÔNG còn
+`0e009f08`; bản mới của tôi build từ HEAD nên **gồm cả** `6723de19` đánh-theo-tab chưa test của họ).
+Server không đổi. Client phải **thoát vào lại**.
+
+### Trả lời sơ bộ từ CODE cho câu "chết có xoá không hay tích luỹ":
+
+Client có **3 làn đường MỒ CÔI** (gỡ khỏi region, KHÔNG xoá khe) + **1 đường xoá khe duy nhất**:
+
+| Đường | Ở đâu | Điều kiện | Nhãn mới |
+|---|---|---|---|
+| Mồ côi 1 | `KRegion::Close` (slot tái dùng/đóng map) | LoadMap cuộn vùng | `[S6-ORPHAN]` |
+| Mồ côi 2 | `KNpc::Activate` client `:696` | cách người chơi ≥ 40 ô | `[S6-VANH]` |
+| Mồ côi 3 | `KNpc::Activate` client `:710` | câm sync > 120 tick (~6,7 s) — **XÁC chắc chắn rơi vào đây** vì `SyncNpcMin` bỏ qua gói của NPC `do_death/do_revive` (`:1944`) | `[S6-CAM]` |
+| **Xoá khe** | `KNpcSet::CheckBalance` `:755` | câm sync > 1000 tick (~55,5 s) → `Remove` trả khe về FreeIdx | `[S6-BAL]` |
+
+⇒ **Khe KHÔNG tích luỹ vô hạn về lý thuyết** (chết ~6,7 s thì biến mất, ~55,5 s thì trả khe).
+NHƯNG hai chỗ NGHI tích luỹ thật, chờ log xác nhận:
+1. **RÒ REF Ô**: `CheckBalance` khi xoá NPC `do_death/do_revive` **cố tình KHÔNG DecRef**
+   (`KNpcSet.cpp:762-763`). Nếu xác vẫn còn trong region lúc đó (chưa qua làn 3 — ví dụ NPC
+   mồ côi không được Activate nên làn 2/3 không chạy cho nó) thì ô đó **+1 vĩnh viễn** trên
+   `m_pNpcRef` (BYTE, trần 255) — y hệt vụ rò ref viên đạn 24/08. Nhận diện: dòng `[S6-BAL]`
+   có `doing=10/21` mà `reg >= 0`.
+2. **NPC mồ côi đóng băng**: mồ côi thì không được Activate (vòng Activate duyệt theo region)
+   ⇒ chỉ còn CheckBalance dọn sau 55,5 s; trong 55 s đó nó chiếm khe. `[S6-BANG]` (5 s/lần)
+   in `dung/mocoi/xac/nguoi/quai` trên 256 — nhìn chuỗi này là biết có tích luỹ hay không.
+
+### 8 điểm log mới (tất cả client-only, tắt cùng `AutoLog=0`):
+
+`[S6-VANH]` `[S6-CAM]` `[S6-BAL]` `[S6-ORPHAN]` `[S6-ORPHAN-BACK]` (gắn lại mồ côi,
+`KProtocolProcess:1989`) · `[S6-BANG]` (bảng tổng 5 s) · `[S6-ATK]` nay in thêm
+**`tgreg=/tgdoing=/tgcell=`** (`thay>0` mà `tgreg=-1` = đánh mục tiêu MỒ CÔI — đúng ca "đánh vào
+không khí" mà bản `thay=0` cũ mù) · `[S6-LOADMAP]` (`KSubWorld::LoadMap` 2-arg, đếm cuộn vùng).
+
+### Cách đọc nhanh khi có log mới
+
+```
+grep -c "bo qua"                                  # phai = 0
+grep "S6-BANG"                                    # dung= co leo thang khong -> TRAN?
+grep "S6-BAL" | grep -E "doing=(10|21)" | grep -v "reg=-1"   # >0 = RO REF o DA xay ra
+grep "S6-ATK" | grep "tgreg=-1"                   # danh vao muc tieu mo coi (khong khi)
+grep -c "S6-ORPHAN\]" ; grep -c "S6-VANH" ; grep -c "S6-CAM" # lan duong bien mat nao chiem
+```
+
+## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
+
+- Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
+  vẫn đánh được qua nhánh `S1-MELEE-NOROLL`, nhưng "chưa học mà vẫn xin đánh" cần soi riêng.
+- Hai phiên Claude vẫn đang chạy song song trên máy (MEMORY.md bị phiên kia ghi chen giữa phiên này).
