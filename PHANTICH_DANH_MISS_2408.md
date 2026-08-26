@@ -1,5 +1,8 @@
 # "ĐÁNH HAY MISS" — TÌM RA GỐC & ĐÃ VÁ (24/08/2026)
 
+> 👉 **ĐỢT 3 và ĐỢT 4 (25/08) nằm ở tài liệu khác** — đọc [`BANGIAO_DANH_MISS_TOANTAP.md`](BANGIAO_DANH_MISS_TOANTAP.md) trước: đó là cửa vào, có bảng tổng 4 đợt, chương **những chỗ làm sai**, và trạng thái binary mới nhất.
+> Tài liệu này chỉ còn giá trị cho **chi tiết đợt 1–2**.
+
 > Chủ game: *"hay đánh miss với các phái tiếp cận, không phải các phái đánh đạn skill bay ra"*.
 > Kết luận: **đúng 1 lỗi 2 dòng** trong `KMissle::CheckNearestCollision()` — trừ toạ độ ô **cục bộ của
 > HAI region khác nhau**. Đã vá ở commit `a0dd86c2`. DLL máy chủ `26f43102` đã đặt vào `bin\server`, **chờ RESTART**.
