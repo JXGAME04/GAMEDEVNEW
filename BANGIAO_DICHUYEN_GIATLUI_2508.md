@@ -473,6 +473,34 @@ client `[S7-CHET-CLI]` (nhận gói chết: doing/cdoing/frame) · `[S7-REV-CLI]
 chủ yếu do mất mẫu; số miss là ước lượng. Muốn đo miss chuẩn phải tắt bớt `E3_/E4_` (của phiên kia).
 FIX D xác nhận chạy: `boxa=14.442` NPC-xa bị chặn, bảng ổn định 135-137/256, mồ côi ~65.
 
+## 9.15 VÒNG ĐO 26/08 ~15:00 (chủ báo 4 triệu chứng còn) — LOẠI TRỪ 4 TẦNG, CÒN FPS CLIENT
+
+Chủ: nằm bẹp VẪN CÒN · miss cận chiến VẪN NHIỀU · "chết lâu về thành do đánh TK lâu bị QUÁ TẢI kẹt" ·
+bot/người/quái trượt tới-lui.
+
+**"Quá tải kẹt" — đo cả 4 tầng đều SẠCH:** server tick 1080-1081/60s trễ 0,1% suốt trận 1001 online
+(`jx_perf_server.log`) · trễ server→client mọi cú hồi sinh **7-122 ms** · vòng logic client **0 khoảng
+câm >300 ms** cả phiên · về-trại thực tế **≤1,4 s** ⇒ tầng duy nhất CHƯA đo = **FPS VẼ client khi đông**
+→ đã bật `PerfHud=1` trong `bin\client\Config.ini` (không cần build) — chủ đọc số FPS lúc đông; nếu
+tụt sâu thì "kẹt/giật/trượt" phần lớn là khung hình → hướng xử = tối ưu vẽ.
+
+⛔ **ĐÍNH CHÍNH thước đo của tôi**: 3 cú "về-trại 9 s" ở 9.14 là ARTIFACT — detector so cell giữa
+2 nội dung slot (slot tái dùng trùng số); RAW cho thấy cú đó về trại sau **333 ms** (`nhanh=loadmap`
+`[S6-LOADMAP] tam=(105,96)`). Đừng dùng lại số 9 s.
+
+**Miss cận chiến (CaiBang, mẫu bị tràn — server 1.656 "bo qua" do E3/E4 phiên kia):** 943 `S4-CAST`
+thi hành + **669 `S2-MELEE-TOOFAR-RUN`** (client vung hoạt ảnh nhưng server từ chối "xa quá→đuổi") ⇒
+**~41 % số lần vung nhìn-như-hụt**; trong đạn thi hành: 51/386 không chạm (13,2 %; trước vá tháng
+29,9 %) — `life=4/4 lasthit=0` = mục tiêu chạy thoát ô; dist lúc cast p50=65 p90=102 (radius 90+20 —
+đánh ở RÌA tầm); dist=0 44 cú vẫn sinh đạn (vá cũ chạy tốt). **Đề xuất chờ duyệt: hạ ngưỡng auto
+phát-đánh near 75 → ~50 mps** (vung ít hụt, TOOFAR giảm mạnh; trade-off: áp sát thêm ~0,1-0,2 s).
+
+**Nằm bẹp:** 23/23 cú trong log dậy sạch (`doing=1 cdoing=1` sau DoStand) — nhãn hiện tại KHÔNG bắt
+được ca chủ thấy → kế: thêm nhãn tự-phát-hiện `[S7-NAMBEP]` (client tự soi mỗi 2 s: `m_Doing==do_stand`
+mà `m_ClientDoing` == hoạt ảnh nằm (cdoing 8/10 — xem enum cdo_ trước khi code)) + nhờ chủ báo
+GIỜ phút:giây khi gặp. **Trượt tới-lui:** drift sync còn 1,3 % (mẫu ít) — chờ số FPS để tách
+giật-do-vẽ vs trượt-do-vị-trí; nếu còn thì đặt nhãn S8 theo dõi chuyển động 1 NPC mẫu.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
