@@ -845,13 +845,24 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		break;
 	case GDCNI_UI_ACT:
 		{
+			// (25/08) PHAI biet CA HAI lop hop thoai.
+			// Thoai co the tag <link=image[...]> trong van ban (vi du
+			// DescLink_NieShiChen o newtask_head.lua:13 - MOI cau cua NPC Nhiep Thi
+			// Tran deu co) thi KPlayer.cpp:7785 mo bang KUiMsgSel2 (hop CO ANH),
+			// khong phai KUiMsgSel - xem GameSpaceChangedNotify.cpp:397.
+			// Truoc day o day chi biet KUiMsgSel nen lenh dong cua auto bay vao lop
+			// khac: khung Nhiep Thi Tran khong ai dong, va cau hoi "con hien khong"
+			// luon tra 0 nen auto tuong da dong roi. Cau tra loi van gui duoc
+			// (DT_Answer goi thang OnSelectFromUI) nen nhiem vu VAN NHAN DUOC, chi
+			// moi cai khung la treo - dung canh chu game bao 25/08.
 			if(uParam == 0)
 			{
-				nRet = KUiMsgSel::GetIfVisible()?1:0;
+				nRet = (KUiMsgSel::GetIfVisible() || KUiMsgSel2::GetIfVisible())?1:0;
 			}
 			else if(uParam == 1)
 			{
 				KUiMsgSel::CloseWindow(false);
+				KUiMsgSel2::CloseWindow(false);
 				g_UiInformation2.Close();
 			}
 			else if(uParam == 2)
