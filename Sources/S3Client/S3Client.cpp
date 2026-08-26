@@ -982,6 +982,9 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	//   1 = cam lai HET: khong nhat do, khong danh (lenh duoi-nhat do_run se de len
 	//       lenh di cua may nen phai bo qua)
 	//   2 = may DANG GIAO muc tieu (ea.uNpcID): nhat do truoc, roi EP may PK danh
+	//   4 = (25/08) chi song BEN TRONG CoreShell: may Sat Thu ve toi thanh ma tui
+	//       day thi xin nhuong cho bo Hau can. case ATYPE_SATTHU tu goi ATYPE_RETURN
+	//       roi doi thanh 1 truoc khi tra ra day, nen ben nay khong bao gio thay 4.
 	//   3 = (25/08) giu may nhung KHONG giao muc tieu: van nhat do, con danh hay
 	//       khong thi theo DUNG o "danh chu dong" cua nguoi choi. Dung cho pha nhat
 	//       do / dung cho boss hoi sinh cua may Sat Thu - truoc day tra 2 nen nhan

@@ -10623,6 +10623,7 @@ enum STPhase
 // bo loc chan, do khong nhat duoc vi tui day) nen no ket o 1.
 #define ST_NHAT_MIN		3000u		// nhat do it nhat 3 giay (cho do roi kip hien)
 #define ST_NHAT_MAX		20000u		// tran cung 20 giay
+#define ST_HANDON		180000u		// nhuong cho Hau can don tui toi da 3 phut
 #define ST_NHAT_IM		3000u		// tui khong nhuc nhich 3 giay = het do nhat duoc
 // (25/08) Han RIENG cho pha danh boss. Han 4 phut mot pha o duoi loai tru STP_DANH,
 // con han 45 phut mot vong thi uSTVongT lai duoc gia han moi lan nhin thay boss.
@@ -11218,6 +11219,22 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case STP_NPC:
 	{
 		ea.nSTHold = 1;
+		// (25/08) Chu game: "lam xong nhiem vu ve thanh full ruong chua ban rac -
+		// ban rac phai qua cac bo loc o tab Nhat do, khong tu y ban bay".
+		// Auto Sat Thu KHONG tu ban gi het. Ve toi thanh ma tui day thi NHUONG
+		// QUYEN (tra 4) cho bo Hau can cua chinh nguoi choi - ATYPE_RETURN chay
+		// theo dung tab Nhat do (bo loc) + tab Hau can (o ban do, cat ruong).
+		// Tra 4 chu khong phai 0: 0 la tha han, Da Tau se cuop may ngay.
+		if (pAp->bReturn && TG_SatThuChiSoNpcMap(nMap) >= 0
+		 && DT_TuiDayTP(nPlayerIdx, pAp)
+		 && uCurTime - ea.uSTPhaseT < ST_HANDON)
+		{
+			if ((ea.nSTTry % 25) == 1)
+				ST_Msg(nPlayerIdx, "<color=Yellow>Tói ®Çy - nh­êng cho HËu cÇn b¸n r¸c theo bé läc råi míi nhËn nhiÖm vô.");
+			ea.nSTHold = 4;
+			ea.uSTNext = uCurTime + 400;
+			return 4;
+		}
 		int nNpc = 0;
 		int nR = ST_ToiNpc769(nPlayerIdx, pAp, uCurTime, &nNpc);
 		if (nR < 0)
@@ -11259,11 +11276,17 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nTask >= 1 && nTask <= ST3_POS_MAX)
 		{
 			ea.nSTMucBoss = nTask;
-			// (25/08) Chu game: "doi thoai voi NPC Nhiep Thi Tran xong thi khong dong
-			// cuoc hoi thoai". Bam ten boss xong, may chu ghi task VA gui thoai CUOI
-			// (ten boss + thong tin + muc \" Dong\" - nieshichen.lua:172
-			// Describe(..., 1, ContentList[15])). Truoc day chi dong khung o CLIENT roi
-			// di luon, phia may chu chua duoc tra loi nen hoi thoai con treo. Phai BAM.
+			// (25/08) CUOC DUA GOI TIN. Bam ten boss xong may chu gui HAI thu roi nhau:
+			//   (a) dong bo task 1082 (nt_setTask -> SyncTaskValueToClient)
+			//   (b) thoai CUOI (nieshichen.lua:172 Describe(..., 1, ContentList[15]))
+			// Nhip may la 400 ms den 1,5 giay nen (a) rat de toi TRUOC (b). Truoc day
+			// thay task hop le la bo di ngay: (b) toi sau, khung thoai bat len va TREO
+			// MAI vi may da roi pha MENU. Nang hon: phia may chu hoi thoai do chua duoc
+			// tra loi, den luc may dang o menu XA PHU thi khung tren man hinh la khung
+			// CU - nguoi choi bam \"Dong\" = tra loi muc so 0 cua hoi thoai HIEN TAI
+			// ben may chu = dong dau bang chon ban do Xa Phu => NHAY QUA MAP KHAC.
+			// (Chu game 25/08: \"toi ma bam dong la nhay qua map khac\".)
+			// Nen: CHO thoai cuoi toi roi bam dong, toi da 10 nhip (~4 giay).
 			if (cap.uDlgSeq != ea.uSTDlgSeen)
 			{
 				ea.uSTDlgSeen = cap.uDlgSeq;
@@ -11272,7 +11295,15 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				g_StrCpyLen(szDong, cap.szDlg, sizeof(szDong));
 				int nDong = DT_Split(szDong, apDong, 24);
 				if (ST_DongThoai(nPlayerIdx, apDong, nDong, uCurTime))
-					return 1;	// da bam Dong / Ta tranh xa - nhip sau moi ra Xa Phu
+				{
+					ea.nSTStep = 100;	// da dong xong - nhip sau khoi cho nua
+					return 1;			// nhip sau moi ra Xa Phu
+				}
+			}
+			else if (++ea.nSTStep < 10)
+			{
+				ea.uSTNext = uCurTime + 400;
+				return 1;			// thoai cuoi chua toi - cho them
 			}
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// dong khung thoai
 			{
@@ -11325,7 +11356,10 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.nSTMucBoss = ST_ChonBoss(nPlayerIdx, pAp);
 			// dang o bang 20 boss: bam DUNG dong ten con muon danh
 			if (ST_BamMuc(nPlayerIdx, apAns, nAns, s_szST3BossTen[ea.nSTMucBoss], uCurTime, 1500))
+			{
+				ea.nSTStep = 0;	// bo dem CHO THOAI CUOI cua nhanh 'nhan duoc roi'
 				return 1;
+			}
 			// con muon danh nam o trang 2 (151..160) -> lat trang
 			if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_TRANGKE, uCurTime, 1200))
 				return 1;
@@ -17004,7 +17038,20 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_SATTHU:
 				{
-					return ST_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+					const int nST = ST_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+					// (25/08) 4 = may Sat Thu ve toi thanh ma tui day, xin nhuong cho bo HAU
+					// CAN don tui. Chu game: "ban rac phai qua cac bo loc o tab Nhat do,
+					// khong tu y ban bay" - nen KHONG tu viet doan ban nao, goi thang bo Hau
+					// can cua chinh nguoi choi (ban theo bo loc, cat ruong theo tab Hau can).
+					// Tra 1 ra ngoai chu khong tra 4: S3Client chi hieu 0/1/2/3, va 1 = dang
+					// cam may nen Da Tau khong cuop duoc trong luc don tui.
+					if (nST == 4)
+					{
+						if (!Player[nPlayerIdx].m_sExtAuto.bPrevFightState)
+							OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RETURN, nParam);	// bo Hau can
+						return 1;
+					}
+					return nST;
 				}
 				case ATYPE_MAPSUKIEN:
 				{
