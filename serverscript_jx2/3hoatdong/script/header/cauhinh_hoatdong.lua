@@ -375,6 +375,10 @@ HD3_PLD_TILE_HAILONG = 0.005,
 HD3_PLD_TILE_TRUYCONG = 50,
 -- (B) PLD - so Bao Ruong Thuy Tac 6,1,3361 khi cap ben thanh cong. [RESTART]
 HD3_PLD_THUONG_CAPBEN = 2,
+-- (B) PLD - bang do trong Bao Ruong Thuy Tac (theo loai chia khoa). nil = bang
+--     GOC BAN LINUX (vnshuizeibaoxiang.lua da port sang
+--     missionsengling_ferry\hd3_baoruongthuytac.lua). [RESTART]
+HD3_PLD_THUONG_RUONG = nil,
 
 -- (C) VUOT AI - bang exp hoan thanh 28 ai (2 cap do, co function tinh theo
 --     thoi gian). Goc: award.lua:58-83 tbAward_Success. [RESTART]

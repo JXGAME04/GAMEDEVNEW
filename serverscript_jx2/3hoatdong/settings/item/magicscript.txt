@@ -3360,7 +3360,7 @@ Cµn Kh«n PhÝch LÞch §¬n	6	1	3357	\spr\item\script\zijinzhendan.spr	41	1	1	Cã thÓ
 §Æc Th¸m B¶o R­¬ng	6	1	3358	\spr\item\script\tetanbaoxiang.spr	41	1	1	Th«ng qua viÖc ®¸nh b¹i §Æc Th¸m sÏ nhËn ®­îc B¶o R­¬ng	\script\item\dacthambaoruong.lua	0	1	50	0																
 Tèng Kim BÝ B¶o	6	1	3359	\spr\item\script\songjinmibao.spr	41	1	1	Th«ng qua tÝnh n¨ng Tèng Kim nhËn ®­îc B¶o R­¬ng, bªn trong chøa ®ùng nh÷ng vËt phÈm quý hiÕm.	\script\item\tongkimbibao.lua	0	1	50	0																
 B¶o R­¬ng V­ît ¶i	6	1	3360	\spr\item\script\chuangguanbaoxiang.spr	41	1	1	PhÇn th­ëng hoµn thµnh V­ît ¶i ®¸nh boss r¬i ra	\script\missions\challengeoftime\item\chuangguanbaoxiang.lua	0	1	50	0																
-B¶o R­¬ng Thñy TÆc	6	1	3361	\spr\item\script\shuizeibaoxiang.spr	41	1	1	Boss Thñy TÆc §¹i §Çu LÜnh r¬i ra.	\script\item\baoruongthuytac.lua	0	1	50	0																
+B¶o R­¬ng Thñy TÆc	6	1	3361	\spr\item\script\shuizeibaoxiang.spr	41	1	1	Boss Thñy TÆc §¹i §Çu LÜnh r¬i ra.	\script\missions\fengling_ferry\hd3_baoruongthuytac.lua	0	1	50	0																
 Ch×a Khãa Nh­ ý	6	1	3362	\spr\item\script\ruyiyaoshi.spr	41	1	1	Cã thÓ sö dông ®Ó më tÊt c¶ c¸c lo¹i B¶o R­¬ng cña tÊt c¶ c¸c tÝnh n¨ng( kh«ng thÓ sö dông cho c¸c lo¹i b¶o r­¬ng ®· cã tr­íc ®©y )	0	0	1	0	0																
 LÖnh Bµi Thñy TÆc	6	1	3363	\spr\item\script\shuizeilingpai.spr	385	1	1	LÖnh Bµi b¸o danh tham gia Phong L¨ng §é ®Æc biÖt	0	0	1	50	0																
 §¹o cô dïng ®Ó thö nghiÖm ®èi víi môc tiªu	6	1	3364	\spr\item\script\zijinzhendan.spr	41	1	1	§¹o cô dïng ®Ó thö nghiÖm ®èi víi môc tiªu	0	0	1	0	0																
