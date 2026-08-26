@@ -4481,6 +4481,18 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	int nToday = DT_Today();
 	int i, idx;
 
+	// (25/08) Nhat ky trang thai may Da Tau - truoc gio chi co [DATAU-GATE] cho
+	// biet no TRA gi, khong biet no KET o dau. Chu game bao 25/08: xong 8 luot
+	// sat thu thi nhan vat dung yen canh NPC; luc do [HD-GATE] da ghi nBS=0 va
+	// [DATAU-GATE] ghi nDT=1 - tuc may Da Tau cam may nhung khong di.
+	// So pha: xem enum DTP_* (0 IDLE, 1 GOTONPC, 2 WAITDLG, 3 EXEC, ...).
+	AUTOLOG_EVERY(3000, "[DT-STATE] pha=%d buoc=%d engaged=%d map=%d otrong=%d "
+		"treogiay=%d du40=%d/%d loainv=%d mapdich=%d retry=%d",
+		ea.nDTPhase, ea.nDTStep, ea.nDTEngaged, nMap,
+		Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment),
+		(int)((ea.uDTHoldUntil > uCurTime) ? (ea.uDTHoldUntil - uCurTime) / 1000 : 0),
+		ea.nDTDoneDay, nToday, ea.nDTQType, ea.nDTMapId, ea.nDTRetry);
+
 	// sang ngay moi -> mo lai neu dang nghi vi du 40
 	if (ea.nDTDoneDay && ea.nDTDoneDay != nToday)
 	{
