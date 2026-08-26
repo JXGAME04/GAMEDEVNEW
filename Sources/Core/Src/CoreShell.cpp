@@ -7222,6 +7222,16 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	// dang cho hoi sinh: nut hoi sinh do o "Tu hoi sinh" (tab Co ban) bam ho
 	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
 	{
+		// (25/08) Chu game: "an thuoc Tong Kim xong chet la bi xoa het, nhung chet
+		// xong thi auto khong tu an thuoc Tong Kim nua".
+		// TK_AnThuoc an het mot luot roi NGHI 170 giay (uTKPillT) - dung bang thoi
+		// gian hieu luc cua buff. Nhung chet la BAY SACH buff NGAY, som hon dong ho
+		// do rat nhieu, nen hoi sinh xong may van ngoi cho het 170 giay moi an lai.
+		// Dat lai vong an thuoc ngay tu luc CON DANG CHET: hoi sinh phat la an lai
+		// tu dau. Dat o day (khong phai o nhanh 've hau doanh') de moi kieu hoi sinh
+		// deu duoc - hoi sinh tai cho, bi keo ve diem bao danh, hay ve hau doanh.
+		ea.nTKPillIdx = 0;
+		ea.uTKPillT = 0;
 		if (ea.nTKPhase == TKP_FIGHT || ea.nTKPhase == TKP_TRAP || ea.nTKPhase == TKP_CAMP)
 		{
 			ea.uTKNext = uCurTime + 600;
