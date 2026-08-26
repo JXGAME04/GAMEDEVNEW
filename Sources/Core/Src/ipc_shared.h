@@ -313,6 +313,8 @@ struct autoData
 	int		bSTGhep;		// tu ghep 5 Sat Thu lenh cung cap -> 1 Sat Thu Gian
 	int		bSTChoHS;		// boss chua hoi sinh: 1 = cho tai cho (~7,5 phut), 0 = doi con khac
 	int		nSTNghi;		// nghi bao nhieu PHUT giua 2 luot (0 = lien tuc)
+	// == Tong Kim ve thanh (26/08/2026) - het tran ve 1 trong 7 thanh ==
+	int		nTKVeThanh;		// 0..6 theo thu tu bang g_LDVeMap (PT/TD/DL/BK/TgD/DC/LA)
 
 	autoData()
 	{
@@ -536,6 +538,7 @@ struct autoData
 		bSTGhep = 1;
 		bSTChoHS = 1;
 		nSTNghi = 0;
+		nTKVeThanh = 0;
 
 	}
 };

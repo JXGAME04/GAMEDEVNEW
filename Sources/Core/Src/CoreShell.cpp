@@ -6770,10 +6770,14 @@ enum TKPhase
 	TKP_TRAP,		// ra vet trap de vao tran
 	TKP_FIGHT,		// trong tran
 	TKP_END,		// het tran: don tui roi ra khoi map bao danh
+	TKP_VETHANH,	// (26/08) da roi 324: di ve THANH nguoi choi chon (Than Hanh Phu / Xa Phu)
 	TKP_DONE		// xong khung gio nay - tha may
 };
 
 #define TK_O(v)			((v) * 32)		// doi o -> mps
+// may 'di toi thanh' cua khoi Lien Dau (dinh nghia o phan LD ben duoi) - Tong
+// Kim dung lai cho duong 'het tran ve thanh da chon' (26/08).
+static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uCurTime);
 #define TK_CUATRAN		40				// phut sau moc gio con vao duoc tran
 // Than Hanh Phu: duong VAO TONG KIM KHONG CAN Chieu Thu (chu game 25/08:
 // "khong can item do than hanh phu co len map tong kim"). Menu 3 cap, marker
@@ -7886,10 +7890,12 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nTKHold = 1;
 		if (nMap != TK_MAP_BAODANH)
 		{
-			TK_Msg(nPlayerIdx, "<color=Cyan>Xong Tèng Kim - tr¶ m¸y l¹i cho auto cò.");
-			ea.nTKPhase = TKP_DONE;
-			ea.nTKHold = 0;
-			return 0;
+			TK_Msg(nPlayerIdx, "<color=Cyan>§· rêi ®iÓm b¸o danh - ®i vÒ thµnh ®· chän.");
+			// (26/08) chu game doi: het tran KHONG ve cho cu nua - ra khoi 324 la
+			// sang pha VE THANH da chon (combo 'Het tran ve', 7 thanh).
+			ea.uLDHopT = 0;	// dong ho rieng cua LD_DiThanh - xoa keo dinh chuyen truoc
+			TK_Pha(nPlayerIdx, TKP_VETHANH, uCurTime);
+			return 1;
 		}
 		// don bot binh thuoc mua nhanh de con cho cho Da Tau (Da Tau can >= 5 o trong)
 		if (pAp->nTKMuaMau == 0 && ea.nTKStep < 2)
@@ -7932,11 +7938,10 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			char* apAns[16];
 			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
 			int nAns = DT_Split(szBuf, apAns, 16);
-			int nOpt = -1;
-			if (pAp->bTKVeCho)
-				nOpt = DT_FindAns(apAns, nAns, TKM_OPT_TROLAI);
-			if (nOpt < 0)
-				nOpt = DT_FindAns(apAns, nAns, TKM_OPT_THANHTHI);
+			// (26/08) khong con re nhanh theo o 'Het tran ve cho cu' nua: luon roi
+			// 324 bang 'Tro lai cho luc nay' (map 324 CAM Than Hanh Phu -
+			// shenxingfu.lua:246), roi pha TKP_VETHANH dua ve dung thanh da chon.
+			int nOpt = DT_FindAns(apAns, nAns, TKM_OPT_TROLAI);
 			if (nOpt >= 0)
 			{
 				DT_Answer(nPlayerIdx, nOpt);
@@ -7960,6 +7965,48 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			else if (nR < 0)
 			{
 				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu ®Ó rêi ®iÓm b¸o danh.");
+				ea.nTKPhase = TKP_DONE;
+				ea.nTKHold = 0;
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	case TKP_VETHANH:
+	{
+		// (26/08) chu game doi: het tran dua nguoi choi VE THANH da chon (7 thanh,
+		// chi so combo theo bang g_LDVeMap). Dung nguyen may LD_DiThanh cua khoi
+		// Lien Dau: uu tien mo Than Hanh Phu roi chon thanh, khong co phu thi nho
+		// Xa Phu 'Nhung thanh thi da di qua', lac map hoang thi dung phu ve thanh
+		// roi nhay tiep; qua 150 giay thi bo tay (dung tai cho, tra may).
+		ea.nTKHold = 1;
+		if (nMap == TK_MAP_BAODANH || nMap == TK_MAP_TRAN)
+		{
+			// bi keo nguoc vao khu Tong Kim - quay lai mach ra cua TKP_END
+			TK_Pha(nPlayerIdx, TKP_END, uCurTime);
+			return 1;
+		}
+		{
+			int nVe = pAp->nTKVeThanh;
+			if (nVe < 0 || nVe >= LD_VE_COUNT)
+				nVe = 0;
+			const int nDest = (int)g_LDVeMap[nVe];
+			if (nMap == nDest)
+			{
+				ea.uLDHopT = 0;
+				TK_Msg(nPlayerIdx, "<color=Cyan>§· vÒ tíi thµnh ®· chän - tr¶ m¸y l¹i cho auto cò.");
+				ea.nTKPhase = TKP_DONE;
+				ea.nTKHold = 0;
+				return 0;
+			}
+			int nDi = LD_DiThanh(nPlayerIdx, pAp, nDest, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uTKNext = ea.uLDNext;	// ton trong nhip noi bo cua LD_DiThanh
+			if (nDi < 0)
+			{
+				ea.uLDHopT = 0;
+				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng ®i tíi ®­îc thµnh ®· chän (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu) - tr¶ m¸y t¹i chç.");
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
 				return 0;
@@ -8491,7 +8538,7 @@ static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uC
 		if (Player[nPlayerIdx].m_ItemList.AutoUseItem(6, 1, 1271, nPlayerIdx))
 		{
 			ea.uLDThpT = (uCurTime > 1) ? uCurTime : 2;
-			LD_Msg(nPlayerIdx, "<color=Cyan>Dïng ThÇn Hµnh Phï ®i tíi thµnh b¸o danh liªn ®Êu...");
+			LD_Msg(nPlayerIdx, "<color=Cyan>Dïng ThÇn Hµnh Phï ®i tíi thµnh ®· chän...");
 			ea.uLDNext = uCurTime + 1200;
 			return 1;
 		}
@@ -12216,6 +12263,7 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 		case TKP_TRAP:   sz = "Tèng Kim: ra trËn"; break;
 		case TKP_FIGHT:  sz = "Tèng Kim: ®ang ®¸nh trËn"; break;
 		case TKP_END:    sz = "Tèng Kim: rêi ®iÓm b¸o danh"; break;
+		case TKP_VETHANH: sz = "Tèng Kim: vÒ thµnh ®· chän"; break;
 		default: break;
 		}
 	}

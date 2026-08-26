@@ -414,7 +414,9 @@ using namespace std;
 #define IDC_EDITOR_13_NGHI	557
 #define IDC_GRP_TAB12		558
 #define IDC_SEP_12A			559
-#define IDC_INDEX_END			560
+#define IDC_STRING_9_VE		560
+#define IDC_COMBO_9_VE		561
+#define IDC_INDEX_END			562
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
 #define IDD_NOPICK_DIALOG		601
