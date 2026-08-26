@@ -1516,6 +1516,10 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	m_Height = 0;
 	//
 #ifdef _SERVER
+	// [S7 26/08] luong chet NGUOI THAT (net>=0, bo ~1000 bot). Chu game: "danh TK lau
+	// chet 0 mau roi vai giay sau moi ve duoc thanh" - do timeline tu day.
+	if (IsPlayer() && m_nPlayerIdx > 0 && Player[m_nPlayerIdx].m_nNetConnectIdx >= 0)
+		AUTOLOG("[S7-CHET] id=%u deathframe=%d mode=%d attacker=%d t=%u", m_dwID, m_DeathFrame, nMode, nAttacker, SubWorld[0].m_dwCurrentTime);
 	int nPlayer = 0;
 	//
 	if (this->m_Kind != kind_player && nAttacker > 0 && nAttacker < MAX_NPC)
@@ -1586,6 +1590,9 @@ void KNpc::OnDeath()
 #else
 		if (IsPlayer())
 		{
+			// [S7 26/08] het hoat anh chet -> chay death-script (TK dua ve trai o day).
+			if (Player[m_nPlayerIdx].m_nNetConnectIdx >= 0)
+				AUTOLOG("[S7-CHET2] id=%u het hoat anh chet -> chay death-script t=%u", m_dwID, SubWorld[0].m_dwCurrentTime);
 			if (Player[m_nPlayerIdx].m_dwDeathScriptId)
 			{
 				// [JX2COMPAT 22/08] script chet cua Linux dat OnDeath(Launcher) (citywar_arena, tongwar,

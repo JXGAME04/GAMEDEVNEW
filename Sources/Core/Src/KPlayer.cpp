@@ -383,6 +383,8 @@ void	KPlayer::Active()
 	//
 	if(Npc[m_nIndex].m_Doing == do_revive && m_nAutoRevTime < g_SubWorldSet.GetGameTime())
 	{
+		if (m_nNetConnectIdx >= 0)
+			AUTOLOG("[S7-REV-AUTO] id=%u autorev den han (autorev=%d now=%d) -> tu hoi sinh t=%u", Npc[m_nIndex].m_dwID, m_nAutoRevTime, g_SubWorldSet.GetGameTime(), SubWorld[0].m_dwCurrentTime);
 		Revive(REMOTE_REVIVE_TYPE);
 		return;
 	}
@@ -6794,14 +6796,22 @@ void KPlayer::Revive(int nType)
 	// lang, nguoi choi phai nam cho auto ~5 s. Nay: ghi nhan yeu cau bang gia tri
 	// dac biet m_nAutoRevTime = -1 + ep hoat anh chet ket thuc ngay tick sau;
 	// OnDeath van chay DU DeathPunish/death-script roi Active() hoi sinh lien.
+	if (m_nNetConnectIdx >= 0)
+		AUTOLOG("[S7-REV] id=%u type=%d doing=%d autorev=%d now=%d t=%u", Npc[m_nIndex].m_dwID, nType, (int)Npc[m_nIndex].m_Doing, m_nAutoRevTime, g_SubWorldSet.GetGameTime(), SubWorld[0].m_dwCurrentTime);
 	if (Npc[m_nIndex].m_Doing == do_death && nType == REMOTE_REVIVE_TYPE)
 	{
+		if (m_nNetConnectIdx >= 0)
+			AUTOLOG("[S7-REV-EP] id=%u bam luc con do_death frame=%d/%d -> ep het hoat anh, hoi sinh lien t=%u", Npc[m_nIndex].m_dwID, Npc[m_nIndex].m_Frames.nCurrentFrame, Npc[m_nIndex].m_Frames.nTotalFrame, SubWorld[0].m_dwCurrentTime);
 		m_nAutoRevTime = -1;
 		Npc[m_nIndex].m_Frames.nCurrentFrame = Npc[m_nIndex].m_Frames.nTotalFrame;
 		return;
 	}
 	if(Npc[m_nIndex].m_Doing != do_revive)
+	{
+		if (m_nNetConnectIdx >= 0)
+			AUTOLOG("[S7-REV-NUOT] id=%u type=%d doing=%d bi bo qua t=%u", Npc[m_nIndex].m_dwID, nType, (int)Npc[m_nIndex].m_Doing, SubWorld[0].m_dwCurrentTime);
 		return;
+	}
 	int	nSubWorldID = 0;
 	int nMpsX = 0, nMpsY = 0;
 
@@ -6819,6 +6829,8 @@ void KPlayer::Revive(int nType)
 		if(Npc[m_nIndex].ChangeWorld(nSubWorldID, nMpsX, nMpsY) != 1)
 			Npc[m_nIndex].ChangeWorld(53, 52032, 101696);
 		Npc[m_nIndex].m_FightMode = 0;
+		if (m_nNetConnectIdx >= 0)
+			AUTOLOG("[S7-REV-XONG] id=%u ve sw=%d mps=(%d,%d) t=%u", Npc[m_nIndex].m_dwID, nSubWorldID, nMpsX, nMpsY, SubWorld[0].m_dwCurrentTime);
 		break;
 	case LOCAL_REVIVE_TYPE:
 		Npc[m_nIndex].m_FightMode = 1;

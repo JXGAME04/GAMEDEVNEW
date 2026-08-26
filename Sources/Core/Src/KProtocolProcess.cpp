@@ -35,6 +35,23 @@ int S6_UsedSlots()
 			n++;
 	return n;
 }
+
+// [FIX-D 26/08] NPC cach nguoi choi >= 40 o (dong bo MAX_SYNC_RANGE o KNpc.cpp:695;
+// vung nhin that ~31,5 o) thi KHONG BAO GIO duoc ve -> khong nhan vao bang 256 khe.
+// Do that tran TK: 220 bot "dai ria 40-48 o" flapping go-gan 0,1-0,4 s chiem 150+
+// khe (92% cu VANH) lam dung cham 255 giua tran du da co FIX A/B/C.
+int g_nS6BoXa = 0;
+BOOL S6_XaQuaTam(int nMpsX, int nMpsY)
+{
+	int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nMe <= 0 || Npc[nMe].m_RegionIndex < 0)
+		return FALSE;	// chua vao map xong: nhan het de nap binh thuong
+	int nMeX = 0, nMeY = 0;
+	SubWorld[0].Map2Mps(Npc[nMe].m_RegionIndex, Npc[nMe].m_MapX, Npc[nMe].m_MapY, Npc[nMe].m_OffX, Npc[nMe].m_OffY, &nMeX, &nMeY);
+	if (nMpsX - nMeX >= 40*32 || nMeX - nMpsX >= 40*32 || nMpsY - nMeY >= 40*32 || nMeY - nMpsY >= 40*32)
+		return TRUE;
+	return FALSE;
+}
 #endif
 
 //#include "MyAssert.h"
@@ -593,6 +610,11 @@ void KProtocolProcess::NetCommandDeath(BYTE* pMsg)
 
 	if (nIdx > 0)
 	{
+#ifndef _SERVER
+		// [S7 26/08] luong chet cua CHINH MINH: moc client BIET minh chet.
+		if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+			AUTOLOG("[S7-CHET-CLI] id=%u doing=%d cdoing=%d frame=%d/%d reg=%d cell=(%d,%d) t=%u", dwNpcID, (int)Npc[nIdx].m_Doing, (int)Npc[nIdx].m_ClientDoing, Npc[nIdx].m_Frames.nCurrentFrame, Npc[nIdx].m_Frames.nTotalFrame, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, SubWorld[0].m_dwCurrentTime);
+#endif
 		//Npc[nIdx].SendCommand(do_death);
 		Npc[nIdx].ProcNetCommand(do_death);
 		AUTOLOG_EVERY(1000, "NET-DEATH npc=%u idx=%d kind=%u cell=(%d,%d) off=(%d,%d) reg=%d lifecu=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
@@ -758,7 +780,16 @@ void KProtocolProcess::PlayerRevive(BYTE* pMsg)
 		}
 		else
 		{
+#ifndef _SERVER
+			// [S7 26/08] nhan hoi sinh tu server - ghi TRUOC/SAU de bat benh "nam bep".
+			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+				AUTOLOG("[S7-REV-CLI] id=%u type=%d doing=%d cdoing=%d frame=%d/%d reg=%d t=%u", pSync->ID, (int)pSync->Type, (int)Npc[nIdx].m_Doing, (int)Npc[nIdx].m_ClientDoing, Npc[nIdx].m_Frames.nCurrentFrame, Npc[nIdx].m_Frames.nTotalFrame, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+#endif
 			Npc[nIdx].ProcNetCommand(do_revive);
+#ifndef _SERVER
+			if (nIdx == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+				AUTOLOG("[S7-REV-CLI2] sau DoStand: doing=%d cdoing=%d reg=%d t=%u", (int)Npc[nIdx].m_Doing, (int)Npc[nIdx].m_ClientDoing, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+#endif
 		}
 	}
 }
@@ -1852,6 +1883,14 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	int nIdx = NpcSet.SearchID(NpcSync->ID);
 	if (!nIdx)
 	{
+#ifndef _SERVER
+		// [FIX-D 26/08] khong nhan NPC ngoai tam ve vao bang.
+		if (S6_XaQuaTam(NpcSync->MapX, NpcSync->MapY))
+		{
+			g_nS6BoXa++;
+			return;
+		}
+#endif
 		nIdx = NpcSet.AddNpcSet2(NpcSync->NpcSettingIdx, NpcSync->m_bySeries, 0, NpcSync->MapX, NpcSync->MapY);
 		AUTOLOG_EVERY(1000, "SYNCNPC-ADDFAIL npc=%u idx=%d set=%d mps=(%d,%d) cell=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
 #ifndef _SERVER
@@ -1947,6 +1986,14 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 	int nIdx = NpcSet.SearchID(NpcSync->ID);
 	if (!nIdx)
 	{
+#ifndef _SERVER
+		// [FIX-D 26/08] NPC la ngoai tam ve -> khong REQNPC, khong chiem khe.
+		if (S6_XaQuaTam(NpcSync->MapX, NpcSync->MapY))
+		{
+			g_nS6BoXa++;
+			return;
+		}
+#endif
 		AUTOLOG_EVERY(1000, "SYNCMIN-HIDE-NEW npc=%u state=0x%02X mps=(%d,%d) doing=%d t=%u", NpcSync->ID, (int)NpcSync->State, NpcSync->MapX, NpcSync->MapY, (int)NpcSync->Doing, SubWorld[0].m_dwCurrentTime);
 		if(NpcSync->State & STATE_HIDE)	//npc khac' dang tang hinh, khong co san~ npc
 			return;
@@ -1987,6 +2034,16 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 			}
 			else
 			{
+#ifndef _SERVER
+				// [FIX-D 26/08] Mo coi ma van ngoai tam ve (dai 40-48 o) -> tra khe thay vi
+				// gan lai roi bi go tick sau (flapping). Vao <40 o se ADD nhu NPC moi.
+				if (Npc[nIdx].m_Kind != kind_partner && S6_XaQuaTam(NpcSync->MapX, NpcSync->MapY))
+				{
+					g_nS6BoXa++;
+					NpcSet.Remove(nIdx);
+					return;
+				}
+#endif
 				Npc[nIdx].m_MapX = nMapX;
 				Npc[nIdx].m_MapY = nMapY;
 				Npc[nIdx].m_OffX = NpcSync->m_fkOffX;//nOffX;
@@ -2157,7 +2214,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 				if (Npc[i6].m_Kind == kind_normal)
 					nS6Quai++;
 			}
-			AUTOLOG("[S6-BANG] dung=%d/%d mocoi=%d xac=%d nguoi=%d quai=%d t=%u", nS6Dung, (int)MAX_NPC, nS6MoCoi, nS6Xac, nS6Nguoi, nS6Quai, SubWorld[0].m_dwCurrentTime);
+			AUTOLOG("[S6-BANG] dung=%d/%d mocoi=%d xac=%d nguoi=%d quai=%d boxa=%d t=%u", nS6Dung, (int)MAX_NPC, nS6MoCoi, nS6Xac, nS6Nguoi, nS6Quai, g_nS6BoXa, SubWorld[0].m_dwCurrentTime);
 		}
 	}
 #endif
@@ -5842,6 +5899,8 @@ void KProtocolProcess::NpcReviveCommand(int nIndex, BYTE* pProtocol)
 		return;
 
 //	NPC_REVIVE_COMMAND*		pCommand = (NPC_REVIVE_COMMAND *)pProtocol;
+	// [S7 26/08] nguoi choi bam nut "ve thanh duong suc".
+	AUTOLOG("[S7-REV-BAM] id=%u nguoi choi bam nut hoi sinh t=%u", Npc[Player[nIndex].m_nIndex].m_dwID, SubWorld[0].m_dwCurrentTime);
 	Player[nIndex].Revive(REMOTE_REVIVE_TYPE);
 }
 
