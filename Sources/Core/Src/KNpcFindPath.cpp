@@ -54,7 +54,15 @@ int	KNpcFindPath::GetDir(int nXpos,int nYpos, int nDir, int nDestX, int nDestY, 
 		m_nFindTimer = 0;
 		m_nFindState = 0;
 		m_nFindTimes = 0;
-		return 0;
+		// [FIX-1 26/08] Cho nay nghia la DA TOI DICH (khoang cach con nho hon MOT BUOC
+		// chan), nhung ham nay con tra 0 o hai cho khac khi THAT SU BI CHAN (:157, :166).
+		// Nguoi goi duy nhat (KNpc.cpp ServeMove) gop hai nghia lam mot => NPC toi dich bi
+		// coi la dang bi chan: m_nNeedFixPos++ vo han, m_Doing giu do_run, ban sao client
+		// dung im va bi goi dong bo KEO tung nac (do that: 158/160 dong ret=0 la da toi
+		// dich; 68% NPC 'dang chay' khong nhuc nhich giua hai goi sync).
+		// Tra ma RIENG de nguoi goi phan biet. Ban _SERVER gop moi ma != 1 vao DoStand()
+		// nen hanh vi may chu KHONG DOI.
+		return 2;
 	}
 
 	if (m_nDestX != nDestX || m_nDestY != nDestY)

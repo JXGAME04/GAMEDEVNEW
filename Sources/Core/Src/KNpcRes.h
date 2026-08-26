@@ -167,6 +167,8 @@ public:
 	void			CreateBlur(int nNpcIdx, int nRange, int nDir);
 	void			SetAdjustColorId(unsigned long ulColorId){m_ulAdjustColorId = ulColorId;};			// 设置偏色情况，如果为0表示不偏色.
 	int				GetAction(){return m_nAction;};
+	// [S9-VE 26/08] chi de doc trang thai lop ve khi chan doan (khong doi bo cuc lop).
+	int				GetResDoing(){return m_nDoing;};
 	void			GetPos(int *pX, int *pY){*pX = m_nXpos; *pY = m_nYpos;};
 	// Chi doi vi tri VE (sprite doc m_nXpos/m_nYpos), KHONG dung cay canh.
 	// Dung cho noi suy moi khung: nut cay chi de sap xep truoc-sau va cat canh,

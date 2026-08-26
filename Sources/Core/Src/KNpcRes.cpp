@@ -63,6 +63,13 @@ BOOL	KNpcRes::Init(char *lpszNpcName, KNpcResList *pNpcResList)
 		return FALSE;
 
 	m_nNpcKind = m_pcResNode->GetNpcKind();
+	// [FIX-5 26/08] Init dat lai m_nAction nhung QUEN m_nDoing, trong khi SetAction mo dau
+	// bang 'if (m_nDoing == nDoing) return TRUE;'. Khe NPC duoc tai su dung rat thuong xuyen
+	// (do that 7,5 lan/giay) va chinh nhan vat cung bi go/nap lai o moi lan doi vung ban do;
+	// neu trang thai cu trung voi trang thai moi thi bo anh MOI KHONG BAO GIO duoc nap =>
+	// ve bang hoat anh cua chu cu (ung vien cho trieu chung 'nam bep duoi dat').
+	// -1 khong phai tu the hop le nao nen lan SetAction ke tiep chac chan chay day du.
+	m_nDoing = -1;
 	m_nAction = 0;
 	m_nHelmType = 0;
 	m_nArmorType = 0;

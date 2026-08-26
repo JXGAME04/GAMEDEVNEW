@@ -735,6 +735,25 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		return;
 	}
 
+#ifndef _SERVER
+	// [S9-VE 26/08] Nhan DUY NHAT nhin thay LOP VE. Toan bo he log truoc day chi chup trang
+	// thai logic (m_Doing/m_ClientDoing) nen khi nguoi choi bao 'nam bep duoi dat' thi khong
+	// the phan biet loi o KNpc, o KNpcRes hay o Represent. Chi ghi cho CHINH NHAN VAT, va chi
+	// khi tu the DOI (hoac 2 giay mot lan) nen rat nhe.
+	// Doc: resdoing=8 => loi o lop ve; cdoing=8 => loi o KNpc; ca ba deu 1 ma van nam => Represent.
+	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+	{
+		static DWORD s_uS9VeT = 0;
+		static int s_nS9VeCu = -999;
+		DWORD uS9Now = timeGetTime();
+		if (s_nS9VeCu != (int)m_ClientDoing || (DWORD)(uS9Now - s_uS9VeT) >= 2000)
+		{
+			s_uS9VeT = uS9Now;
+			s_nS9VeCu = (int)m_ClientDoing;
+			AUTOLOG("[S9-VE] doing=%d cdoing=%d resdoing=%d resaction=%d frame=%d/%d reg=%d t=%u", (int)m_Doing, (int)m_ClientDoing, m_DataRes.GetResDoing(), m_DataRes.GetAction(), m_Frames.nCurrentFrame, m_Frames.nTotalFrame, m_RegionIndex, SubWorld[0].m_dwCurrentTime);
+		}
+	}
+#endif
 	m_DataRes.SetAction(m_ClientDoing);
 	m_DataRes.SetRideHorse(m_bRideHorse);
 	m_DataRes.SetArmor(m_ArmorType, m_MantleType);
@@ -2106,6 +2125,12 @@ void KNpc::DoStand()
 	{
 		FixPos(); //add by Fong KiÒu from KT
 		m_Doing = do_stand;
+#ifndef _SERVER
+		// [FIX-1 26/08] Dung han thi khong con 'dang bi chan' nua - xoa bo dem, neu khong no
+		// giu quyen ghi de toa do cua goi dong bo mai mai (do that: co leo toi 304 qua 53 giay).
+		// (m_nNeedFixPos chi ton tai o ban client - KNpc.h khai bao trong #ifndef _SERVER)
+		m_nNeedFixPos = 0;
+#endif
 		m_Frames.nCurrentFrame = 0;
 		GetMpsPos(&m_DesX, &m_DesY);
 #ifndef _SERVER
@@ -4636,6 +4661,15 @@ void KNpc::ServeMove(int MoveSpeed)
 		}
 		x = g_DirCos(m_Dir, 64) * MoveSpeed;
 		y = g_DirSin(m_Dir, 64) * MoveSpeed;
+	}
+	else if (nRet == 2)
+	{
+		// [FIX-1 26/08] DA TOI DICH (khong phai bi chan): dung that - dat m_Doing =
+		// do_stand va xoa bo dem 'toi dang sai'. Truoc day roi vao nhanh duoi va bi coi
+		// la bi chan nen NPC ket trang thai chay + bo dem tang mai. Ban _SERVER (:4674)
+		// von da lam dung dieu nay.
+		DoStand();
+		return;
 	}
 	else if (nRet == 0)
 	{

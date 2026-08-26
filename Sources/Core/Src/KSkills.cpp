@@ -350,14 +350,15 @@ relationisvalid:
 			{
 				distance = NpcSet.GetDistance(nLauncher, nParam2);
 				AUTOLOG_EVERY(500, "[E3_RANGE_NPC] skill=%d lv=%d launcher=%d target=%d distance=%d radius=%d limit=%d", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), GetAttackRadius() + 20);
-#ifndef _SERVER				
-				if (distance > GetAttackRadius()*0.8)
-#endif
-				{
-				AUTOLOG_EVERY(1000, "[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d client08=%d -> tra ve -1 (bot se chay lai gan)", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), (int)(GetAttackRadius() * 0.8));
-				}
+				// [FIX-4 26/08] Nhan nay TRUOC DAY DAT NGOAI cua chan: dieu kien 0.8R nam trong
+				// #ifndef _SERVER nen ban may chu in VO DIEU KIEN, moi don danh binh thuong cung
+				// in ra 'tra ve -1'. Da lam ca doi chan doan tin nham la don bi tu choi (thuc te
+				// chi 4 dong la tu choi that). Dat vao DUNG TRONG cua chan.
 				if (distance > GetAttackRadius() + 20)
+				{
+					AUTOLOG_EVERY(1000, "[SKILL-REFUSE-FAR] sk=%d lv=%d launcher=%d tgt=%d d=%d radius=%d limit=%d -> TU CHOI THAT", (int)m_nId, (int)m_ulLevel, nLauncher, nParam2, distance, GetAttackRadius(), GetAttackRadius() + 20);
 					return -1;
+				}
 			}
 			else
 			{
@@ -1223,10 +1224,13 @@ int KSkill::CastZone(TOrdinSkillParam * pSkillParam , int nDir, int nRefPX, int 
 					int nDesSubX = nBeginPX + j * SubWorld[nSubWorldId].m_nCellWidth;
 					int nDesSubY = nBeginPY +  i * SubWorld[nSubWorldId].m_nCellHeight;
 					nMissleIndex = MissleSet.Add(nSubWorldId, nDesSubX , nDesSubY);
-					AUTOLOG_EVERY(1000, "[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
-					
-					AUTOLOG_EVERY(1000, "[E3_MISSLE_ADDFAIL] skill=%d launcher=%d subworld=%d pos=(%d,%d) i=%d j=%d childnum=%d", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, m_nChildSkillNum);
-					if (nMissleIndex < 0)	continue;
+					// [FIX-4 26/08] Hai nhan nay truoc day dat TRUOC cua chan nen in ra ca khi
+					// Add THANH CONG (co dong 'Add tra ve 1 -> BO QUA'). Dat vao trong than if.
+					if (nMissleIndex < 0)
+					{
+						AUTOLOG_EVERY(1000, "[MISSLE-POOL-FULL] sk=%d launcher=%d subworld=%d des(%d,%d) i=%d j=%d Add tra ve %d -> BO QUA vien dan THAT", (int)m_nId, nLauncher, nSubWorldId, nDesSubX, nDesSubY, i, j, nMissleIndex);
+						continue;
+					}
 					
 					Missle[nMissleIndex].m_nDir				= nDir;
 					Missle[nMissleIndex].m_nDirIndex		= g_Dir2DirIndex(nDir, MaxMissleDir);
