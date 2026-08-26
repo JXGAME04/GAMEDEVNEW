@@ -21,6 +21,22 @@
 #include "KItemSet.h"
 #include "KBuySell.h"
 #include "KSubWorldSet.h"
+
+#ifndef _SERVER
+// [S6 25/08] Dem KHE NPC dang dung phia client (MAX_NPC = 256, may chu 98000).
+// Chi goi o cac diem TAN SUAT THAP (them/xoa NPC) nen quet 256 o la du re.
+// Tra loi dut diem cau hoi "bang NPC client co day khong" - thu ma cac nhan cu
+// (deu la AUTOLOG_EVERY, tiet che, khong loc ten) KHONG the tra loi.
+int S6_UsedSlots()
+{
+	int n = 0;
+	for (int i = 1; i < MAX_NPC; i++)
+		if (Npc[i].m_dwID != 0)
+			n++;
+	return n;
+}
+#endif
+
 //#include "MyAssert.h"
 #include "Scene/ObstacleDef.h"
 #include "KMath.h"
@@ -632,6 +648,9 @@ void KProtocolProcess::NetCommandRemoveNpc(BYTE* pMsg)
 //			SubWorld[Npc[nIdx].m_SubWorldIndex].m_Region[Npc[nIdx].m_RegionIndex].RemoveNpc(nIdx);
 		}
 		AUTOLOG_EVERY(1000, "NET-RMNPC npc=%u idx=%d kind=%u cell=(%d,%d) reg=%d life=%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, Npc[nIdx].m_CurrentLife, SubWorld[0].m_dwCurrentTime);
+#ifndef _SERVER
+		AUTOLOG("[S6-DEL] npc=%u idx=%d kind=%u cell=(%d,%d) off=(%d,%d) reg=%d dung=%d/%d t=%u", dwNpcID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, S6_UsedSlots(), (int)MAX_NPC, SubWorld[0].m_dwCurrentTime);
+#endif
 		NpcSet.Remove(nIdx);
 	}
 }
@@ -645,6 +664,11 @@ void KProtocolProcess::NetCommandRun(BYTE* pMsg)
 	MapX = *(int *)&pMsg[5];
 	MapY = *(int *)&pMsg[9];
 	int nIdx = NpcSet.SearchID(dwNpcID);
+#ifndef _SERVER
+	// [S6] Ghi TRUOC cua chan: ap=0 nghia la client CHUA CO npc nay nen lenh di chuyen
+	// BI VUT. Do chinh la luc NPC moi vao tam nhin va chi con nhay theo goi dong bo.
+	AUTOLOG("[S6-CMD] lenh=run npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+#endif
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx))
 	{
 		AUTOLOG_EVERY(300, "NET-RUN npc=%u idx=%d dichmps=(%d,%d) cell=(%d,%d) off=(%d,%d) reg=%d doing=%d t=%u", dwNpcID, nIdx, (int)MapX, (int)MapY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, (int)Npc[nIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
@@ -805,6 +829,9 @@ void KProtocolProcess::NetCommandWalk(BYTE* pMsg)
 	MapX = *(int *)&pMsg[5];
 	MapY = *(int *)&pMsg[9];
 	int nIdx = NpcSet.SearchID(dwNpcID);
+#ifndef _SERVER
+	AUTOLOG("[S6-CMD] lenh=walk npc=%u idx=%d ap=%d dich=(%d,%d) t=%u", dwNpcID, nIdx, (int)(Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) ? 1 : 0), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
+#endif
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx))
 	{
 		AUTOLOG_EVERY(300, "NET-WALK npc=%u idx=%d dichmps=(%d,%d) cell=(%d,%d) off=(%d,%d) reg=%d doing=%d t=%u", dwNpcID, nIdx, (int)MapX, (int)MapY, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, Npc[nIdx].m_RegionIndex, (int)Npc[nIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
@@ -1827,6 +1854,10 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	{
 		nIdx = NpcSet.AddNpcSet2(NpcSync->NpcSettingIdx, NpcSync->m_bySeries, 0, NpcSync->MapX, NpcSync->MapY);
 		AUTOLOG_EVERY(1000, "SYNCNPC-ADDFAIL npc=%u idx=%d set=%d mps=(%d,%d) cell=(%d,%d) region=%d t=%u", NpcSync->ID, nIdx, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, SubWorld[0].m_dwCurrentTime);
+#ifndef _SERVER
+		// idx=0 = KHONG THEM DUOC (het khe hoac Mps2Map tra region xau).
+		AUTOLOG("[S6-ADD] npc=%u idx=%d kind=%u set=%d mps=(%d,%d) cell=(%d,%d) reg=%d dung=%d/%d t=%u", NpcSync->ID, nIdx, (unsigned int)NpcSync->m_btKind, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, S6_UsedSlots(), (int)MAX_NPC, SubWorld[0].m_dwCurrentTime);
+#endif
 		Npc[nIdx].m_dwID = NpcSync->ID;
 		Npc[nIdx].m_Kind = NpcSync->m_btKind;
 		Npc[nIdx].m_Height = 0;
@@ -1997,6 +2028,11 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		// Lech <= 64px se duoc lop noi suy ve keo muot (PAINT_INTERP_SNAP_DIST);
 		// lech lon hon thi noi suy tu snap - dung nhu mong muon.
 		AUTOLOG_EVERY(1000, "SYNCMIN-DRIFT npc=%u idx=%d kind=%u cl=(%d,%d) cloff=(%d,%d) sv=(%d,%d) svoff=(%d,%d) d=(%d,%d) reg=%d/%d fix=%d doing=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, nMapX, nMapY, NpcSync->m_fkOffX, NpcSync->m_fkOffY, (Npc[nIdx].m_MapX - nMapX), (Npc[nIdx].m_MapY - nMapY), Npc[nIdx].m_RegionIndex, nRegion, Npc[nIdx].m_nNeedFixPos, (int)Npc[nIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
+#ifndef _SERVER
+		// [S6] Ban KHONG TIET CHE cua SYNCMIN-DRIFT. "nan=1" = client se ghi de toa do
+		// (chi khi m_nNeedFixPos > 0 VA cung region) - do la luc nguoi choi thay NPC GIUT.
+		AUTOLOG("[S6-SYNC] npc=%u idx=%d kind=%u cl=(%d,%d,%d,%d) sv=(%d,%d,%d,%d) reg=%d/%d fix=%d doing=%d nan=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, nMapX, nMapY, NpcSync->m_fkOffX, NpcSync->m_fkOffY, Npc[nIdx].m_RegionIndex, nRegion, Npc[nIdx].m_nNeedFixPos, (int)Npc[nIdx].m_Doing, (int)((Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion) ? 1 : 0), SubWorld[0].m_dwCurrentTime);
+#endif
 		if (Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 		{
 			if (Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion)
@@ -2077,6 +2113,13 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 	AUTOLOG_EVERY(500, "SYNCME-DRIFT me idx=%d cl=(%d,%d) cloff=(%d,%d) reg=%d sv=(%d,%d) svoff=(%d,%d) reg=%d mps=(%d,%d) d=(%d,%d) doing=%d t=%u", Player[CLIENT_PLAYER_INDEX].m_nIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_OffX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_OffY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, pSync->m_dwMapX, pSync->m_dwMapY, (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX - nMapX), (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY - nMapY), (int)Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing, SubWorld[0].m_dwCurrentTime);
 
 	nNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+#ifndef _SERVER
+	// [S6] Ba nhanh cua ham nay: regcu=-1 (vao lan dau) / svreg=-1 (region chua nap -> LoadMap)
+	// / con lai = GIU NGUYEN toa do client, KHONG nan. Nhanh thu ba chinh la nghi can cua loi
+	// "chet hoi sinh hoac phu ve thanh thi nhay vai toa do bay": may chu doi cho nhung neu
+	// diem den nam trong region DA NAP thi client van giu vi tri cu.
+	AUTOLOG("[S6-ME] nhanh=%s cl=(%d,%d,%d,%d) reg=%d sv=(%d,%d,%d,%d) reg=%d doing=%d t=%u", (Npc[nNpcIdx].m_RegionIndex == -1) ? "vaolandau" : ((nRegion == -1) ? "loadmap" : "GIUNGUYEN"), Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, (int)Npc[nNpcIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
+#endif
 
 	AUTOLOG_EVERY(1000, "SYNCME-FIRSTREGION me idx=%d regcu=%d svreg=%d cell=(%d,%d) mps=(%d,%d) t=%u", nNpcIdx, Npc[nNpcIdx].m_RegionIndex, nRegion, nMapX, nMapY, pSync->m_dwMapX, pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
 	if (Npc[nNpcIdx].m_RegionIndex == -1)

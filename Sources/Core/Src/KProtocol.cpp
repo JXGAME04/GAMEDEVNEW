@@ -333,6 +333,13 @@ void SendClientCmdSkill(int nSkillID, int nX, int nY)
 	NetCommand.ProtocolType = (BYTE)c2s_npcskill;
 	NetCommand.nSkillID = nSkillID;
 	AUTOLOG("NET-SKILL-PKT skill=%d x=%d y=%d bytgtid=%d cli=%d t=%u", nSkillID, nX, nY, (int)(nX == -1), (int)(g_pClient != NULL), GetTickCount());
+#ifndef _SERVER
+	// [S6 25/08] nX == -1 nghia la danh THEO ID MUC TIEU (nY = id). Neu client KHONG tim
+	// duoc id do trong bang NPC cua minh (thay=0) thi nguoi choi khong nhin thay ai ca
+	// nhung nhan vat van vung -> dung trieu chung "Tong Kim dung danh vao khong khi".
+	if (nX == -1)
+		AUTOLOG("[S6-ATK] skill=%d tgtid=%d thay=%d t=%u", nSkillID, nY, NpcSet.SearchID((DWORD)nY), GetTickCount());
+#endif
 	NetCommand.nMpsX = nX;
 	NetCommand.nMpsY = nY;
 
