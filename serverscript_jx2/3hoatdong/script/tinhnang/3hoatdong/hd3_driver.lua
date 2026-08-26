@@ -25,9 +25,17 @@ HD3_VA_RANK   = "\\script\\missions\\challengeoftime\\rank_perday.lua"
 
 -- Toa do 6 thuyen phu (3 Nam bo, 3 Bac bo) - map 336, dv O. Tai su dung tu ban
 -- JX1 (lib_phonglangdo TAB_NPCCHUCNANG - toa do dung, script tro sang Linux).
-HD3_PLD_BOAT = {
+-- [3HD 25/08 C47] TACH bo NAM / bo BAC. Truoc day ca 6 NPC deu mang script len
+-- thuyen nen thuyen phu bo Bac hanh xu y het bo Nam (chu game bao loi).
+-- Bo NAM = 3 BEN cua ban Linux (huichengfu.lua:12-14 'Ben 1/2/3').
+-- Bo BAC = 3 cho cap ben (fld_head.lua:15 northMAP_POS nam sat 3 diem nay).
+HD3_PLD_BEN_NAM = {
 	{1147, 3018, 336, 1}, {1280, 2907, 336, 2}, {1535, 2808, 336, 3},
-	{1324, 2886, 336, 1}, {1493, 2809, 336, 2}, {1173, 2981, 336, 3},
+}
+-- Ban Linux KHONG co NPC o bo Bac. Giu lai theo du an cu cho tien duong ve;
+-- muon dung 100% Linux thi dat HD3_PLD_CO_THUYENPHU_BAC = 0 trong cauhinh.
+HD3_PLD_BEN_BAC = {
+	{1324, 2886, 336, 2}, {1493, 2809, 336, 3}, {1173, 2981, 336, 1},
 }
 
 -- ============================================================================
@@ -116,17 +124,25 @@ function HD3_DriverInit()
 end
 
 -- moi thuyen phu: template 240, script wrapper dat BOATID roi goi fld_wanttakeboat
-function HD3_PLD_AddBoatNpc()
-	for i = 1, getn(HD3_PLD_BOAT) do
-		local t = HD3_PLD_BOAT[i]
+-- [3HD 25/08 C47] sinh rieng tung bo: bo Nam len thuyen, bo Bac ve Nam.
+function HD3_PLD_AddBoatNpcTab(tb, szScript)
+	for i = 1, getn(tb) do
+		local t = tb[i]
 		local nIdx = SubWorldID2Idx(t[3])
 		if (nIdx >= 0) then
 			local npc = HD3_AddNpc(240, 1, nIdx, t[1]*32, t[2]*32, 1, "ThuyÒn phu")
 			if (npc ~= nil and npc > 0) then
-				SetNpcScript(npc, "\\script\\missions\\fengling_ferry\\hd3_thuyenphu.lua")
-				SetNpcValue(npc, t[4])   -- BOATID 1/2/3
+				SetNpcScript(npc, szScript)
+				SetNpcValue(npc, t[4])   -- bo Nam: BOATID 1/2/3; bo Bac: so hieu ben ve
 			end
 		end
+	end
+end
+
+function HD3_PLD_AddBoatNpc()
+	HD3_PLD_AddBoatNpcTab(HD3_PLD_BEN_NAM, "\\script\\missions\\fengling_ferry\\hd3_thuyenphu.lua")
+	if (HD_CFG("HD3_PLD_CO_THUYENPHU_BAC", 1) == 1) then
+		HD3_PLD_AddBoatNpcTab(HD3_PLD_BEN_BAC, "\\script\\missions\\fengling_ferry\\hd3_thuyenphubac.lua")
 	end
 end
 

@@ -28,6 +28,7 @@ HD3_RELOAD_LIST = {
 	"\\script\\missions\\fengling_ferry\\fldmap_boat3.lua",
 	"\\script\\missions\\fengling_ferry\\hd3_baoruongthuytac.lua",
 	"\\script\\missions\\fengling_ferry\\hd3_thuyenphu.lua",
+	"\\script\\missions\\fengling_ferry\\hd3_thuyenphubac.lua",
 	"\\script\\missions\\fengling_ferry\\lang.lua",
 	"\\script\\missions\\fengling_ferry\\mission.lua",
 	"\\script\\missions\\fengling_ferry\\shuizeideath.lua",

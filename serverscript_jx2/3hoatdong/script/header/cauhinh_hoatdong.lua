@@ -367,6 +367,13 @@ HD3_ST_TIEN_XE = 1000,
 
 -- (B) PLD - so Thi Gia Chi An (6,1,1095) roi tu boss dau linh 725 (goc 2;
 --     bang co Dao Chu tien dai thi tu x2 theo getSignetDropRate). [RESTART]
+-- Co sinh thuyen phu o BO BAC khong. Ban Linux KHONG co (chi 3 ben bo Nam);
+-- 1 = giu nhu du an cu (co NPC dua ve bo Nam), 0 = dung y ban Linux.
+HD3_PLD_CO_THUYENPHU_BAC = 1,
+
+-- Phi qua song cua thuyen phu bo Bac (quan tien). Du an cu: 1000.
+HD3_PLD_PHI_VENAM = 1000,
+
 HD3_PLD_SO_AN_BOSS = 2,
 -- (B) PLD - ti le roi Hai Long Chau 6,1,2124 tu boss (goc 0.005 = 0,5%). [RESTART]
 HD3_PLD_TILE_HAILONG = 0.005,
