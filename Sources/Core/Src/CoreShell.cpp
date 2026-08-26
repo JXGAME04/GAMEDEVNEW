@@ -10812,6 +10812,56 @@ static int WA_MapSuKien(int nPlayerIdx)
 	return nLoai + 1;
 }
 
+// ================== DOI MAP THI DUNG DI CHUYEN ==================
+// Chu game 25/08: "di chuyen toi xa phu qua phe khac... luc doi map thi bi chay
+// bay kieu nhu ham di chuyen van dang hoat dong khi doi map".
+//
+// Goc: duong di A* nam trong SubWorld[0] (m_nTargetX/Y + m_vRetPath). DT_WalkTo
+// chi tinh lai duong MOI 2,5 GIAY (ea.uDTPath) va truoc do con hoi HaveTarget() -
+// thay van con muc tieu thi KHONG tinh lai. Nen sau khi doi map, nhan vat chay
+// tiep theo duong CU cua MAP CU cho toi nhip tinh lai => di lung tung.
+// ExtAuto cung con giu nTempX/Y, bReachDes, uNpcID, nTKDestX/Y, nHDDestX/Y - deu
+// la toa do cua map cu.
+//
+// Tra 1 = vua doi map (da dung sach). Goi o dau MOI nhip (ATYPE_CHECKTIME).
+static int WA_DoiMapDungDi(int nPlayerIdx, UINT uCurTime)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 0;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	if (nMap <= 0 || nMap == ea.nMapCu)
+		return 0;
+	ea.nMapCu = nMap;
+	// 1) huy duong di dang chay + go co di chuyen tren man hinh
+	SubWorld[0].StopPath();
+	g_ScenePlace.RemoveFlag();
+	// 2) xoa diem den / moc gio cua may di chuyen chung
+	ea.uDTPath = 0;			// cho phep tinh duong lai NGAY o nhip sau
+	ea.nTempX = 0;
+	ea.nTempY = 0;
+	ea.bReachDes = FALSE;
+	ea.nCurMoveRet = 0;
+	ea.uTOutMove = 0;
+	ea.uTJustMove = uCurTime;	// dong ho 'dung yen bao lau' tinh lai tu day
+	ea.uTFollMove1 = 0;
+	ea.uTFollMove2 = 0;
+	ea.uTEncircle = 0;
+	ea.nCurEncircle = 0;
+	// 3) muc tieu cu chac chan khong con o map nay
+	ea.uNpcID = 0;
+	// 4) diem den rieng cua tung may hoat dong
+	ea.nTKDestX = 0;
+	ea.nTKDestY = 0;
+	ea.uTKDestT = 0;
+	ea.nHDDestX = 0;
+	ea.nHDDestY = 0;
+	ea.uHDDestT = 0;
+	return 1;
+}
+
 // ================== MAY CHINH SAN BOSS SAT THU ==================
 // Tra 0 = tha may; 1 = cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
 //     2 = cam lai + may PK (tab PK) danh + bo NHAT DO cua nguoi choi van chay.
@@ -13050,6 +13100,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				}
 				case ATYPE_CHECKTIME:
 				{
+					// (25/08) doi map thi DUNG SACH viec di chuyen dang do - duong di cu
+					// tinh theo toa do map cu, giu lai la chay bay tren map moi.
+					WA_DoiMapDungDi(nPlayerIdx, uCurTime);
 					if(!Player[nPlayerIdx].m_sExtAuto.uUnFightTime)
 					{
 						Player[nPlayerIdx].m_sExtAuto.uUnFightTime = uCurTime;

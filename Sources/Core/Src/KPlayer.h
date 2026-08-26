@@ -299,6 +299,8 @@ struct ExtAuto
 	UINT uSTNghiT;       // nghi den moc nay (giua 2 luot / cho boss hoi sinh)
 	UINT uSTThayT;       // moc gan nhat con THAY boss quanh diem spawn
 	UINT uSTVongT;       // moc bat dau VONG hien tai (chan ket vong pha nay doi pha kia)
+	// == chung cho MOI may auto (25/08) ==
+	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
 
 
 	ExtAuto()
@@ -478,6 +480,7 @@ struct ExtAuto
 		uSTNghiT = 0;
 		uSTThayT = 0;
 		uSTVongT = 0;
+		nMapCu = 0;
 
 	}
 };
