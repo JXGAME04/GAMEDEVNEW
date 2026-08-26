@@ -4828,6 +4828,26 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return 1;
 		}
 		int nIdx = DT_FindNpcTpl(nPlayerIdx, 108, 0);
+		// (25/08) NPC "Bac Dau lao nhan" DUNG CHUNG TEMPLATE 108 voi NPC Da Tau:
+		//   hd3_driver.lua:150  HD3_AddNpc(108, 1, nIdx, t[3]*32, t[4]*32, 0, ...)
+		// va no dung ngay canh Nhiep Thi Tran. DT_FindNpcTpl uu tien NPC co TEN
+		// "Da Tau", nhung khi NPC Da Tau that o xa (chua nam trong vung client nap)
+		// thi no rot xuong nhanh du phong "lay con dau tien co template 108" va bat
+		// trung Bac Dau lao nhan.
+		// Do that (nhat ky [DT-STATE], map 78): npc108 o (48576,102592) = o
+		// (1518,3206) - canh Nhiep Thi Tran - trong khi diem Da Tau trong bang la o
+		// (1595,3288), cach 117 O. Nhan vat chay toi do roi ket: duong di bam vao o
+		// di duoc gan nhat, cach NPC 142 mps, ma nhanh mo thoai doi <= 128 con
+		// DT_WalkTo dat nNear = 96 -> khong bao gio "toi noi", dung im vinh vien.
+		// Bang g_DTNpc sinh tu chinh may chu nen lay lam moc: lech qua 20 o thi
+		// KHONG phai NPC Da Tau.
+		if (nIdx)
+		{
+			int cX = 0, cY = 0;
+			Npc[nIdx].GetMpsPos(&cX, &cY);
+			if (g_GetDistance(cX, cY, pRow->nX * 32, pRow->nY * 32) > 640)
+				nIdx = 0;	// NPC khac deo chung template - bo qua, di theo bang
+		}
 		if (nIdx)
 		{
 			int nX, nY, dX, dY;
