@@ -234,6 +234,9 @@ struct ExtAuto
 	UINT uTKDestT;       // han cho mot diem den
 	UINT uTKPillT;       // moc an dot thuoc ke tiep
 	int  nTKPillIdx;     // vien thuoc ke tiep trong bang g_TKPill
+	int  nTKBangDich;    // (25/08) bang toa do BEN DICH: 1 = g_TKBinhA, 2 = g_TKBinhB,
+	                     // 0 = chua nhan dien. May chu HOAN DOI hai bang theo the tran
+	                     // (lib_tktc.lua:486-508) nen phai nhin quan dich that ma suy ra.
 	// == Lien dau / WLLS (24/08/2026) - trang thai may ATYPE_LIENDAU, POD (ATYPE_CLEAR memset) ==
 	int  nLDPhase;       // pha LDP_* (CoreShell.cpp)
 	int  nLDStep;        // buoc con trong pha
@@ -418,6 +421,7 @@ struct ExtAuto
 		uTKDestT = 0;
 		uTKPillT = 0;
 		nTKPillIdx = 0;
+		nTKBangDich = 0;
 		nLDPhase = 0;
 		nLDStep = 0;
 		nLDHold = 0;

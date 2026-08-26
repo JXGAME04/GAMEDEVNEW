@@ -6784,9 +6784,15 @@ static int TK_TrongTrai(int nX, int nY, int* pnBo)
 {
 	int dA = g_GetDistance(nX, nY, TK_O((int)g_TKHauDoanhA.x), TK_O((int)g_TKHauDoanhA.y));
 	int dB = g_GetDistance(nX, nY, TK_O((int)g_TKHauDoanhB.x), TK_O((int)g_TKHauDoanhB.y));
-	if (pnBo)
+	const int bTrong = (dA < TK_GANTRAI || dB < TK_GANTRAI) ? 1 : 0;
+	// (25/08) CHI chot nua ban do khi THUC SU dang trong trai. Truoc day ham nay
+	// ghi *pnBo MOI LAN GOI, ke ca luc dang o giua san: cang tien sang dat dich
+	// thi 'hau doanh gan nhat' cang doi sang ben dich -> nTKThe LAT -> TK_ChonDiem
+	// quay dau ve chinh quan NHA. Dung la loi chu game bao 25/08: 'van con di
+	// chuyen toi vi tri npc cung phe moi lan doi vi tri'.
+	if (bTrong && pnBo)
 		*pnBo = (dA <= dB) ? 1 : 2;
-	return (dA < TK_GANTRAI || dB < TK_GANTRAI) ? 1 : 0;
+	return bTrong;
 }
 
 // so Than Hanh Phu con trong tui (duong vao Tong Kim khi het Chieu thu)
@@ -6950,12 +6956,73 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
 	return 0;
 }
 
-// diem den ke tiep: boc mot diem trong bang binh doan cua NUA BAN DO BEN DICH
+// khoang cach tu (nX,nY) toi diem GAN NHAT cua mot bang binh doan (mps)
+static int TK_XaBang(int nX, int nY, const TKPoint* pB, int nSo)
+{
+	int nMin = 0x7fffffff;
+	for (int i = 0; i < nSo; ++i)
+	{
+		const int d = g_GetDistance(nX, nY, TK_O((int)pB[i].x), TK_O((int)pB[i].y));
+		if (d < nMin)
+			nMin = d;
+	}
+	return nMin;
+}
+
+// BANG TOA DO CUA BEN DICH la bang nao? 1 = g_TKBinhA, 2 = g_TKBinhB, 0 = chua biet.
+// Nhin mot con QUAN DICH THAT dang dung trong doi hinh roi xem no gan bang nao hon.
+// Chac an hon moi phep doan theo vi tri, va dung duoc ca khi may chu HOAN DOI hai
+// bang toa do theo the tran (lib_tktc.lua:486-508 'hoan doi toa do tren duoi 2 phe').
+static int TK_BangDich(int nPlayerIdx)
+{
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	int nDich = 0, nDichD = 0x7fffffff;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (nIdx == nSelf || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		// chi tin QUAN NPC dung theo doi hinh; nguoi choi chay lung tung
+		if (Npc[nIdx].m_Kind == kind_player)
+			continue;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+			continue;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		const int d = g_GetDistance(nX, nY, x, y);
+		if (d < nDichD)
+		{
+			nDichD = d;
+			nDich = nIdx;
+		}
+	}
+	if (!nDich)
+		return 0;
+	Npc[nDich].GetMpsPos(&x, &y);
+	const int dA = TK_XaBang(x, y, g_TKBinhA, TK_BINHA_COUNT);
+	const int dB = TK_XaBang(x, y, g_TKBinhB, TK_BINHB_COUNT);
+	// con dich phai dung THUC SU trong mot doi hinh, khong thi bo qua
+	if (dA > TK_O(30) && dB > TK_O(30))
+		return 0;
+	return (dA <= dB) ? 1 : 2;
+}
+
+// diem den ke tiep: boc mot diem trong bang binh doan cua BEN DICH
 static void TK_ChonDiem(int nPlayerIdx, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
-	const TKPoint* pB = (ea.nTKThe == 1) ? g_TKBinhB : g_TKBinhA;
-	int nSo = (ea.nTKThe == 1) ? TK_BINHB_COUNT : TK_BINHA_COUNT;
+	const int nNhin = TK_BangDich(nPlayerIdx);
+	if (nNhin)
+		ea.nTKBangDich = nNhin;		// thay quan dich that -> chot lai cho chac
+	else if (!ea.nTKBangDich)
+		ea.nTKBangDich = (ea.nTKThe == 1) ? 2 : 1;	// chua thay ai: tam lay nua doi dien
+	const TKPoint* pB = (ea.nTKBangDich == 1) ? g_TKBinhA : g_TKBinhB;
+	int nSo = (ea.nTKBangDich == 1) ? TK_BINHA_COUNT : TK_BINHB_COUNT;
 	int i = (int)((uCurTime / 37u + (UINT)ea.nTKTry * 11u) % (UINT)nSo);
 	ea.nTKDestX = (int)pB[i].x;
 	ea.nTKDestY = (int)pB[i].y;
@@ -7115,6 +7182,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nTKChet = 0;
 		ea.nTKPillIdx = 0;
 		ea.uTKPillT = 0;
+		ea.nTKBangDich = 0;	// tran moi: nhan dien lai bang dich tu dau
 		ea.nTKBackMap = nMap;
 		ea.nTKBackX = nX;
 		ea.nTKBackY = nY;
@@ -7503,7 +7571,15 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uTKNext = uCurTime + 900;
 			else if (nR < 0)
 			{
-				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Qu©n Y - ra trËn lu«n.");
+				// (25/08) Da toi noi ma CHUA THAY NPC: sau khi hoi sinh / chuyen map, danh
+				// sach NPC chua kip dong bo ve client. Bo cuoc ngay o nhip dau la thanh
+				// 'luc mua duoc mau luc khong' (chu game bao 25/08). Cho toi 8 giay.
+				if (++ea.nTKTry < 20)
+				{
+					ea.uTKNext = uCurTime + 400;
+					return 1;
+				}
+				TK_Msg(nPlayerIdx, "<color=Yellow>Chê 8 gi©y kh«ng thÊy Qu©n Y hiÖn ra - ra trËn lu«n.");
 				ea.nTKMua = 1;
 				TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
 			}
@@ -7586,6 +7662,10 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 2;
 			}
 		}
+		// (25/08) khong co dich hop le: PHAI xoa muc tieu cu, khong thi may PK con om
+		// id cu ma vung vao khong khi (chu game bao: 'khong co doi tuong khac phe ma
+		// van dung danh vao khong khi'). Van tra 2 de con danh tra khi bi danh.
+		ea.uNpcID = 0;
 		// khong co dich hop le -> chay toi mot diem trong bang binh doan ben dich
 		if (!ea.uTKDestT || uCurTime > ea.uTKDestT
 		 || g_GetDistance(nX, nY, TK_O(ea.nTKDestX), TK_O(ea.nTKDestY)) < 200)
