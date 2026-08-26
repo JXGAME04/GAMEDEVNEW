@@ -847,6 +847,13 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	if(pApData->bSatThu == 1 && nTK == 0 && nLD == 0 && nHD == 0)
 		nST = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SATTHU, (int)pApData);
 	const int nBS = nTK ? nTK : (nLD ? nLD : (nHD ? nHD : nST));
+	// [MapSuKien] (25/08) Dang dung tren MAP SU KIEN (Tong Kim, Phong Lang Do,
+	// Tin Su, cac hoat dong bang hoi, Vuot ai, pho ban...)? Khi do MOI auto TU DO
+	// phai nam im: khong Da Tau, khong tu di chuyen theo toa do, khong tu ve thanh
+	// theo dieu kien mau/tui/tien. VAN cho danh tra + nhat do + an thuoc chay -
+	// nguoi choi dang giua su kien thi van phai song duoc.
+	// Bang map lay TU CHINH may chu (settings/map_type.txt -> KMapSuKien.h).
+	const int nSK = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MAPSUKIEN, 0);
 	// [TongKim] dang cam lai (di bao danh / trong tran) thi TU bam nut hoi sinh du
 	// nguoi choi khong bat 'Tu hoi sinh' - chet la chuyen thuong o Tong Kim.
 	if(nBS && !pApData->bRevive)
@@ -856,7 +863,9 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	int nDT = 0;
 	autoData sDTData;
-	if(pApData->bDaTau == 1 && nBS == 0)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
+	// nSK: dang o map su kien thi KHONG chay Da Tau (vi du dang di Tong Kim /
+	// Phong Lang Do / Tin Su / hoat dong bang hoi / Vuot ai)
+	if(pApData->bDaTau == 1 && nBS == 0 && nSK == 0)	// so sanh ==1: WAuto.exe cu gui struct ngan, duoi buffer la rac
 	{
 		nDT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_DATAU, (int)pApData);
 		AUTOLOG("[DATAU-GATE] pass=%u t=%u nDT=%d bDaTau=%d skipboss=%d", m_GameCounter, timeGetTime(), nDT, pApData->bDaTau, pApData->bSkipGoldboss);
@@ -866,7 +875,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			sDTData.bSkipGoldboss = 0;	// Mat Chi chi roi tu boss
 		}
 	}
-	if(pApData->bOutWhenTP && !pApData->bOnPK && nBS == 0)
+	if(pApData->bOutWhenTP && !pApData->bOnPK && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_EXIT, 0))
 		{
@@ -893,37 +902,37 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			nParam[2] = 200;
 		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PUMPMANA, (int)&nParam);
 	}
-	if(pApData->bCheckTPLife && nBS == 0)
+	if(pApData->bCheckTPLife && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKLIFE, pApData->nTPLife))
 			return;
 	}
-	if(pApData->bCheckTPMana && nBS == 0)
+	if(pApData->bCheckTPMana && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_CHECKMANA, pApData->nTPMana))
 			return;
 	}
-	if(pApData->bCheckTPLifeGone && nBS == 0)
+	if(pApData->bCheckTPLifeGone && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_LIFEGONE, 0))
 			return;
 	}
-	if(pApData->bCheckTPManaGone && nBS == 0)
+	if(pApData->bCheckTPManaGone && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_MANAGONE, 0))
 			return;
 	}
-	if(pApData->bCheckTPIBox && nBS == 0)
+	if(pApData->bCheckTPIBox && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLITEM, pApData->nTPiboxSel))
 			return;
 	}
-	if(pApData->bCheckTPMoney && nBS == 0)
+	if(pApData->bCheckTPMoney && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_FULLMONEY, pApData->nTPMoney))
 			return;
 	}
-	if(pApData->bCheckTPIDmg && nBS == 0)
+	if(pApData->bCheckTPIDmg && nBS == 0 && nSK == 0)
 	{
 		if(g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TP_DMGITEM, pApData->nTPDmgItem))
 			return;
@@ -1036,7 +1045,7 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 			{
 				// [DaTau] khi may Da Tau cam lai thi khong cho ATYPE_MOVE gianh quyen di chuyen
 				BOOL bMoving = FALSE;
-				if(nDT == 0 && nBS == 0)
+				if(nDT == 0 && nBS == 0 && nSK == 0)
 					bMoving = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MOVE, (int)pApData);
 					AUTOLOG_EVERY(2000, "[MOVE-RET] pass=%u t=%u moving=%d nDT=%d launch=%d killmons=%d follow=%d around=%d coord=%d uphorse=%d fdist=%d", m_GameCounter, timeGetTime(), bMoving, nDT, bLaunch, pApData->bMoveKillMons, pApData->bMoveFollow, pApData->bAroundPoint, pApData->bMoveCoord, pApData->bMoveUpHorse, pApData->nFollowDist);
 				if(!bMoving && pApData->bFight && nDT != 1 && nBS == 0)

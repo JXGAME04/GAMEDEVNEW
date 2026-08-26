@@ -2937,6 +2937,7 @@ static void TG_XaFuTick()
 // Dang o dung map boss thi vao thang pha 3 (khong ton tien).
 //---------------------------------------------------------------------------
 #include "KSatThuBossPos.h"
+#include "KMapSuKien.h"	// bang MAP SU KIEN (sinh tu map_type.txt cua may chu)
 
 //---------------------------------------------------------------------------
 // [3HD C24] Bam nhiem vu 'San Boss Sat Thu' tren F11 -> dan duong DUNG luong
@@ -9190,6 +9191,8 @@ static int HD_TimQuai(int nPlayerIdx, const char* szSub, int nAtX, int nAtY, int
 	return nBest;
 }
 
+static int WA_MapSuKien(int nPlayerIdx);	// dinh nghia duoi (bang KMapSuKien.h)
+
 // ================== MAY CHINH HOAT DONG ==================
 // Tra 0 = tha may; 1 = cam lai; 2 = cam lai + may PK tab PK danh.
 static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
@@ -9260,6 +9263,11 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.nHDHold = 1;
 			return 1;
 		}
+		// (25/08) khong khoi dong vong moi khi dang trong su kien cua hoat dong KHAC:
+		// cac nhanh 'dang ket san trong map cua minh' o TREN da tra ve roi, nen den
+		// day ma con dung tren map su kien nghia la nguoi choi dang ban viec khac.
+		if (WA_MapSuKien(nPlayerIdx))
+			return 0;
 		// Bang Chien uu tien hon (cua so hep 85 phut)
 		if (pAp->bHDBangChien && ea.nHDKeyBC != nNgay
 		 && HD_TrongCua(pAp, pAp->nHDBCGio, pAp->nHDBCPhut, HD_BC_CUA))
@@ -10712,6 +10720,23 @@ static int ST_TuiDayYield(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	return 1;
 }
 
+// ================== MAP SU KIEN ==================
+// Tra 0 = ban do binh thuong; >0 = dang o MAP SU KIEN va phai DUNG cac auto
+// TU DO (Da Tau, tu di chuyen theo toa do, tu ve thanh theo dieu kien).
+// Gia tri tra ve = chi so loai trong s_aTenSuKien CONG 1 (de 0 la 'khong phai').
+// Van cho danh tra / nhat do / an thuoc chay binh thuong - nguoi choi dang o
+// giua su kien thi van phai song duoc.
+static int WA_MapSuKien(int nPlayerIdx)
+{
+	if (nPlayerIdx <= 0 || Player[nPlayerIdx].m_nIndex <= 0)
+		return 0;
+	int bChan = 0;
+	const int nLoai = KMapSK_Loai(SubWorld[0].m_SubWorldID, &bChan);
+	if (nLoai < 0 || !bChan)
+		return 0;
+	return nLoai + 1;
+}
+
 // ================== MAY CHINH SAN BOSS SAT THU ==================
 // Tra 0 = tha may; 1 = cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
 //     2 = cam lai + may PK (tab PK) danh + bo NHAT DO cua nguoi choi van chay.
@@ -10763,6 +10788,11 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		// tui day thi don truoc da (nhat do xong ma tui day thi luot sau vo ich)
 		if (!(nTask >= 1 && nTask <= ST3_POS_MAX) && ST_TuiDayYield(nPlayerIdx, pAp, uCurTime))
+			return 0;
+		// (25/08) khong khoi dong vong moi khi dang trong su kien: nguoi choi co the
+		// dang o Tong Kim / Phong Lang Do / Vuot ai... - map boss Sat Thu KHONG bao
+		// gio la map su kien (da doi chieu luc sinh KMapSuKien.h) nen chan o day an toan.
+		if (WA_MapSuKien(nPlayerIdx))
 			return 0;
 		ea.nSTGhepTry = 0;
 		ea.uSTVongT = uCurTime;
@@ -11371,6 +11401,18 @@ void WA_HoatDong(int nPlayerIdx, char* szOut, int nMax)
 		return;
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	const char* sz = NULL;
+	// dang o map su kien ma chua may nao cam lai -> bao cho nguoi choi biet
+	// vi sao auto tu do (Da Tau / di chuyen) dang nam im
+	if (!ea.nSTPhase && !ea.nHDPhase && !ea.nLDPhase && !ea.nTKPhase && !ea.nDTPhase)
+	{
+		const int nSK = WA_MapSuKien(nPlayerIdx);
+		if (nSK > 0)
+		{
+			sprintf(szOut, "%s - auto tù do t¹m dõng", s_aTenSuKien[nSK - 1]);
+			szOut[nMax - 1] = 0;
+			return;
+		}
+	}
 	if (ea.nSTPhase)
 	{
 		switch (ea.nSTPhase)
@@ -16535,6 +16577,10 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				case ATYPE_SATTHU:
 				{
 					return ST_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);
+				}
+				case ATYPE_MAPSUKIEN:
+				{
+					return WA_MapSuKien(nPlayerIdx);
 				}
 				case ATYPE_SETSELSV1:
 				{
