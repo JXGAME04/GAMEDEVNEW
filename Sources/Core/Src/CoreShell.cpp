@@ -4355,6 +4355,66 @@ static void DT_SellResume(ExtAuto& ea)
 	ea.nDTRetry = 0;
 }
 
+// (25/08) TACH tu pha DTP_SELLJUNK cua may Da Tau - NGUYEN VAN tung dieu kien -
+// de may San boss Sat Thu dung chung, khong ai tu che luat ban rieng.
+// Chon 1 mon rac dem ban: trang bi TRANG/XANH, khong khoa, ton trong bo loc giu do
+// cua tab Hau can, TRU item dat yeu cau nhiem vu (DT_IsQuestItem).
+// Tra chi so item, 0 = khong con mon nao ban duoc.
+static int DT_TimMonRac(int nPlayerIdx, const autoData* pAp)
+{
+	int nBan = 0;
+	for (int bi = 0; bi < EQUIPMENT_ROOM_HEIGHT && !nBan; ++bi)
+		for (int bj = 0; bj < EQUIPMENT_ROOM_WIDTH; ++bj)
+		{
+			int nIdx2 = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(bj, bi);
+			if (nIdx2 <= 0)
+				continue;
+			if (Item[nIdx2].GetGenre() != item_equip)
+				continue;
+			if (Item[nIdx2].GetColorItem() > green_item)
+				continue;
+			if (Item[nIdx2].GetPlayerItemLock() > 0 || Item[nIdx2].GetPlayerItemHLock() > 0
+			 || Item[nIdx2].GetPlayerItemLock() == -2)
+				continue;
+			if (DT_IsQuestItem(nPlayerIdx, pAp, nIdx2))
+				continue;
+			int nDet = Item[nIdx2].GetDetailType();
+			if (!pAp->bSellHorse && nDet >= equip_horse)
+				continue;
+			if (pAp->bSaveRing && (nDet == equip_ring || nDet == equip_amulet || nDet == equip_pendant)
+			 && Item[nIdx2].GetLevel() > pAp->nSRLevel)
+				continue;
+			// bo loc giu do theo dong ma (nhu may Hau can): +all skill (139) luon giu
+			if (!pAp->nSelSell && pAp->nFtMaCount)
+			{
+				bool bGiu = false;
+				for (int bk = 0; bk < pAp->nFtMaCount && !bGiu; ++bk)
+					for (int bm = 0; bm < 6; ++bm)
+					{
+						if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 139)
+						{
+							bGiu = true;
+							break;
+						}
+						if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 0)
+							break;
+						if (pAp->nFtMagic[bk][0] == Item[nIdx2].m_aryMagicAttrib[bm].nAttribType
+						 && (pAp->nFtMagic[bk][0] == magic_indestructible_b
+							  || Item[nIdx2].m_aryMagicAttrib[bm].nValue[0] >= pAp->nFtMagic[bk][1]))
+						{
+							bGiu = true;
+							break;
+						}
+					}
+				if (bGiu)
+					continue;
+			}
+			nBan = nIdx2;
+			break;
+		}
+	return nBan;
+}
+
 // (21/08) vao pha ban rac tai cho - dung chung cho MOI loi vao (DT_BagRelease / vua ve thanh /
 // bi dua ve thanh luc farm). Nguong thoat mac dinh 8 o, toi thieu 5 (= server doi khi tra);
 // hoi thoai "can it nhat N o" cua moc set se nang nguong SAU khi goi ham nay.
@@ -4545,58 +4605,9 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;
 				}
 			}
-			// chon 1 mon rac dem ban: trang bi trang/xanh, khong khoa, ton trong bo loc
-			// giu do cua tab Hau can, TRU item dat yeu cau nhiem vu (DT_IsQuestItem)
-			int nBan = 0;
-			for (int bi = 0; bi < EQUIPMENT_ROOM_HEIGHT && !nBan; ++bi)
-				for (int bj = 0; bj < EQUIPMENT_ROOM_WIDTH; ++bj)
-				{
-					int nIdx2 = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(bj, bi);
-					if (nIdx2 <= 0)
-						continue;
-					if (Item[nIdx2].GetGenre() != item_equip)
-						continue;
-					if (Item[nIdx2].GetColorItem() > green_item)
-						continue;
-					if (Item[nIdx2].GetPlayerItemLock() > 0 || Item[nIdx2].GetPlayerItemHLock() > 0
-					 || Item[nIdx2].GetPlayerItemLock() == -2)
-						continue;
-					if (DT_IsQuestItem(nPlayerIdx, pAp, nIdx2))
-						continue;
-					int nDet = Item[nIdx2].GetDetailType();
-					if (!pAp->bSellHorse && nDet >= equip_horse)
-						continue;
-					if (pAp->bSaveRing && (nDet == equip_ring || nDet == equip_amulet || nDet == equip_pendant)
-					 && Item[nIdx2].GetLevel() > pAp->nSRLevel)
-						continue;
-					// bo loc giu do theo dong ma (nhu may Hau can): +all skill (139) luon giu
-					if (!pAp->nSelSell && pAp->nFtMaCount)
-					{
-						bool bGiu = false;
-						for (int bk = 0; bk < pAp->nFtMaCount && !bGiu; ++bk)
-							for (int bm = 0; bm < 6; ++bm)
-							{
-								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 139)
-								{
-									bGiu = true;
-									break;
-								}
-								if (Item[nIdx2].m_aryMagicAttrib[bm].nAttribType == 0)
-									break;
-								if (pAp->nFtMagic[bk][0] == Item[nIdx2].m_aryMagicAttrib[bm].nAttribType
-								 && (pAp->nFtMagic[bk][0] == magic_indestructible_b
-								  || Item[nIdx2].m_aryMagicAttrib[bm].nValue[0] >= pAp->nFtMagic[bk][1]))
-								{
-									bGiu = true;
-									break;
-								}
-							}
-						if (bGiu)
-							continue;
-					}
-					nBan = nIdx2;
-					break;
-				}
+			// chon 1 mon rac dem ban - luat chon nam trong DT_TimMonRac (dung chung
+			// voi may San boss Sat Thu)
+			const int nBan = DT_TimMonRac(nPlayerIdx, pAp);
 			if (nBan)
 			{
 				SendClientCmdSell(Item[nBan].GetID());
@@ -11133,6 +11144,8 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (WA_MapSuKien(nPlayerIdx))
 			return 0;
 		ea.nSTGhepTry = 0;
+		ea.nSTBan = 0;
+		ea.uSTBanT = 0;
 		ea.uSTVongT = uCurTime;
 		ea.uLDHopT = 0;
 		if (nTask >= 1 && nTask <= ST3_POS_MAX)
@@ -11221,7 +11234,40 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	case STP_NPC:
 	{
 		ea.nSTHold = 1;
-		// (25/08) Chu game: "lam xong nhiem vu ve thanh full ruong chua ban rac -
+		// (25/08) VE TOI THANH LA BAN RAC - khong doi tui day.
+		// Nhat ky that (pid=13932) cho thay luc ve toi thanh thi tuiday=0 (tui con
+		// lo 2x2) nen dieu kien "tui day" khong bao gio dung -> khong ban gi het.
+		// Luat chon mon lay NGUYEN cua may Da Tau (DT_TimMonRac): chi trang bi
+		// trang/xanh, khong khoa, khong phai item dat yeu cau nhiem vu, ton trong o
+		// "Ban ngua" / "Giu nhan day chuyen" / bo loc giu do theo dong ma cua tab
+		// Hau can. Tat o "Ban vat pham" thi KHONG ban gi ca.
+		// Ban duoc ngay tai cho, khong can dung canh tiem (may Hau can van lam vay).
+		if (pAp->bSellItem && ea.nSTBan >= 0 && TG_SatThuChiSoNpcMap(nMap) >= 0
+		 && ea.uSTBanT <= uCurTime)
+		{
+			ea.uSTBanT = uCurTime + 700;
+			const int nRac = DT_TimMonRac(nPlayerIdx, pAp);
+			if (nRac > 0 && ea.nSTBan < 60)
+			{
+				if (ea.nSTBan == 0)
+					ST_Msg(nPlayerIdx, "<color=Cyan>VÒ thµnh - b¸n r¸c theo bé läc tab HËu cÇn tr­íc khi nhËn nhiÖm vô kÕ.");
+				SendClientCmdSell(Item[nRac].GetID());
+				++ea.nSTBan;
+			}
+			else
+			{
+				if (ea.nSTBan > 0)
+				{
+					char szBan[160];
+					sprintf(szBan, "<color=Cyan>§· b¸n %d mãn r¸c - ®i nhËn nhiÖm vô kÕ.", ea.nSTBan);
+					ST_Msg(nPlayerIdx, szBan);
+				}
+				ea.nSTBan = -1;		// vong nay ban xong
+			}
+		}
+		// Ban xong ma tui VAN day (do quy khong ban duoc) thi nhuong cho Hau can cat
+		// ruong / rut tien theo tab Hau can.
+		// Chu game: "lam xong nhiem vu ve thanh full ruong chua ban rac -
 		// ban rac phai qua cac bo loc o tab Nhat do, khong tu y ban bay".
 		// Auto Sat Thu KHONG tu ban gi het. Ve toi thanh ma tui day thi NHUONG
 		// QUYEN (tra 4) cho bo Hau can cua chinh nguoi choi - ATYPE_RETURN chay
@@ -11824,6 +11870,8 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// nhat xong -> ket luot: doi con boss ke, roi ve thanh nhan luot moi
 		ea.nSTMucBoss = 0;
 		ea.nSTGhepTry = 0;
+		ea.nSTBan = 0;		// vong moi: ve thanh la ban rac lai
+		ea.uSTBanT = 0;
 		++ea.nSTKe;
 		// (25/08 - chu game muon biet "nhiem vu thu may") May chu KHONG phat thong
 		// bao nao ghi so thu tu - da quet het script killer. Nhung SO DEM co that:
