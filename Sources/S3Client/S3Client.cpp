@@ -977,8 +977,15 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 		}
 	}
 	g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUPSET, Wnd_IsLButtonDown());
-	// nBS == 1: may TK/LD/HD dang cam lai DI DUONG - lenh duoi-nhat (do_run) se de
-	// len lenh di cua may nen bo qua; nBS == 2 giu nep cu: nhat truoc, danh pass sau
+	// Y NGHIA GIA TRI TRA VE cua cac may hoat dong (nBS):
+	//   0 = tha may cho auto tu do
+	//   1 = cam lai HET: khong nhat do, khong danh (lenh duoi-nhat do_run se de len
+	//       lenh di cua may nen phai bo qua)
+	//   2 = may DANG GIAO muc tieu (ea.uNpcID): nhat do truoc, roi EP may PK danh
+	//   3 = (25/08) giu may nhung KHONG giao muc tieu: van nhat do, con danh hay
+	//       khong thi theo DUNG o "danh chu dong" cua nguoi choi. Dung cho pha nhat
+	//       do / dung cho boss hoi sinh cua may Sat Thu - truoc day tra 2 nen nhan
+	//       vat quay ra danh NPC xung quanh du nguoi choi da tat bOnPK.
 	BOOL bLaunch = 0;
 	if(nBS != 1)
 		bLaunch = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_PICKUP, (int)pApData);
@@ -1038,7 +1045,8 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	{
 		if(pApData->bOnPK || nBS == 2)
 		{
-			// nBS == 2: muc tieu do may TK/LD/HD vua giao (ea.uNpcID) - khong duoc xoa
+			// nBS == 2: muc tieu do may TK/LD/HD vua giao (ea.uNpcID) - khong duoc xoa.
+			// (nBS == 3 khong vao duoc day tru khi nguoi choi TU bat 'danh chu dong')
 			if(pApData->bUseFKey && !Wnd_IsPKKeyDown() && nBS != 2)
 				g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RESETNPCID, 0);
 			if(!bLaunch && (nBS == 2 || !pApData->bUseFKey || Wnd_IsPKKeyDown()))

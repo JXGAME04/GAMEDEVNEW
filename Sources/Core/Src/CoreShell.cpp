@@ -10618,6 +10618,12 @@ enum STPhase
 #define ST_MAP_NPC_MD	1			// thanh mac dinh co NPC 769 khi phu ve tha nham cho
 #define ST_NHAT_MIN		8000u		// nhat do it nhat 8 giay
 #define ST_NHAT_MAX		60000u		// va nhieu nhat 60 giay (con thay do thi con nhat)
+// (25/08) Han RIENG cho pha danh boss. Han 4 phut mot pha o duoi loai tru STP_DANH,
+// con han 45 phut mot vong thi uSTVongT lai duoc gia han moi lan nhin thay boss.
+// Neu may chu khong ghi nhan cong giet (kill_level.lua:40 doi GetNpcParam(nNpc,1)
+// == task 1082) thi nhiem vu khong bao gio xong, boss cu hoi sinh ~7,5 phut mot lan
+// va may se giet lai VO TAN. Han nay do tu luc VAO pha, khong gia han, nen chan duoc.
+#define ST_HANDANH		900000u		// danh mot con boss toi da 15 phut roi huy nhiem vu
 #define ST_CHO_HOISINH	600000u		// cho boss hoi sinh toi da 10 phut (nhip goc ~7,5 phut)
 
 // -- marker thoai NPC 769 (TCVN3 tho, khop tung byte voi nieshichen.lua) --
@@ -10997,6 +11003,19 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (Player[nPlayerIdx].CheckTrading())
 		return ea.nSTPhase ? 1 : 0;
 
+	// (25/08) Nhat ky rieng cua may San boss Sat Thu. Chu game bao "danh xong boss
+	// thi dung danh npc xung quanh mai, khong chiu ve nhan nhiem vu khac" - lan sau
+	// nhin dong nay la biet ngay ket o pha nao, nhiem vu dang bao nhieu, con nghi
+	// bao lau, tui co day khong; khong phai doan.
+	if (pAp->bSatThu)
+		AUTOLOG_EVERY(3000, "[ST-STATE] pha=%d map=%d task=%d muc=%d ke=%d hold=%d "
+			"phagiay=%u thaygiay=%u vonggiay=%u nghigiay=%d tuiday=%d ngay=%d/%d",
+			ea.nSTPhase, nMap, nTask, ea.nSTMucBoss, ea.nSTKe, ea.nSTHold,
+			(uCurTime - ea.uSTPhaseT) / 1000, (uCurTime - ea.uSTThayT) / 1000,
+			(uCurTime - ea.uSTVongT) / 1000,
+			(int)((ea.uSTNghiT > uCurTime) ? (ea.uSTNghiT - uCurTime) / 1000 : 0),
+			DT_TuiDayTP(nPlayerIdx, pAp) ? 1 : 0, ea.nSTNgay, nNgay);
+
 	// ---- quyet dinh vao cuoc ----
 	if (ea.nSTPhase == STP_OFF || ea.nSTPhase == STP_DONE)
 	{
@@ -11071,6 +11090,12 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	// ho rieng - xem ST_HANDIBO va ST_CHO_HOISINH)
 	if (ea.nSTPhase == STP_TOIBOSS && uCurTime - ea.uSTPhaseT > ST_HANDIBO)
 		return ST_Nghi(nPlayerIdx, "<color=Yellow>§i bé tíi chç boss qu¸ 8 phót (kÑt ®Þa h×nh?) - nghØ 5 phót råi lµm l¹i.", uCurTime, 300000u);
+	if (ea.nSTPhase == STP_DANH && uCurTime - ea.uSTPhaseT > ST_HANDANH)
+	{
+		ST_Msg(nPlayerIdx, "<color=Yellow>§¸nh boss qu¸ 15 phót mµ nhiÖm vô vÉn ch­a xong - hñy nhiÖm vô ®Ó ®æi con kh¸c.");
+		ST_Pha(nPlayerIdx, STP_HUY, uCurTime);
+		return 1;
+	}
 	if (ea.nSTPhase != STP_DANH && ea.nSTPhase != STP_NHAT && ea.nSTPhase != STP_TOIBOSS
 	 && uCurTime - ea.uSTPhaseT > ST_HANPHA)
 		return ST_Nghi(nPlayerIdx, "<color=Yellow>Mét b­íc cña auto S¸t Thñ kÑt qu¸ 4 phót - nghØ 5 phót råi lµm l¹i.", uCurTime, 300000u);
@@ -11476,8 +11501,8 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (nTask == 0)
 		{
 			ST_Pha(nPlayerIdx, STP_NHAT, uCurTime);
-			ea.nSTHold = 2;
-			return 2;
+			ea.nSTHold = 3;
+			return 3;
 		}
 		const int nBX = TK_O((int)s_nST3BossX[nBoss]);
 		const int nBY = TK_O((int)s_nST3BossY[nBoss]);
@@ -11512,8 +11537,8 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ea.uNpcID = 0;
 			ST_Msg(nPlayerIdx, "<color=Green>§· h¹ boss s¸t thñ - nhÆt ®å theo cµi ®Æt tab NhÆt ®å.");
 			ST_Pha(nPlayerIdx, STP_NHAT, uCurTime);
-			ea.nSTHold = 2;
-			return 2;
+			ea.nSTHold = 3;
+			return 3;				// 3 = cho nhat do nhung KHONG ep may PK danh
 		}
 		const int nBX = TK_O((int)s_nST3BossX[nBoss]);
 		const int nBY = TK_O((int)s_nST3BossY[nBoss]);
@@ -11555,20 +11580,25 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		if ((ea.nSTTry % 25) == 1)
 			ST_Msg(nPlayerIdx, "<color=Gray>Boss ch­a håi sinh - ®øng chê t¹i chç (nhÞp kho¶ng 7,5 phót).");
-		// tra 2 chu KHONG phai 1: dung im giua o quai suot 10 phut ma chan
-		// ca PKFIGHT lan PICKUP thi bi danh khong danh tra duoc. KHONG giao
-		// uNpcID nen may PK tu chon muc tieu theo DUNG cau hinh tab PK.
-		ea.nSTHold = 2;
+		// tra 3 chu KHONG phai 1 hay 2: 1 chan ca nhat do, con 2 thi EP may PK
+		// chay bat ke nguoi choi da tat o "danh chu dong" - dung la canh chu game
+		// bao "dung danh npc xung quanh". 3 = van nhat do, con danh hay khong thi
+		// theo DUNG o cau hinh tab PK cua nguoi choi.
+		ea.nSTHold = 3;
 		ea.uSTNext = uCurTime + 1500;
-		return 2;
+		return 3;
 	}
 
 	case STP_NHAT:
 	{
-		// Tra 2 = van cam MOVE/RETURN nhung ExtAutoLoop VAN chay ATYPE_PICKUP,
+		// Tra 3 = van cam MOVE/RETURN nhung ExtAutoLoop VAN chay ATYPE_PICKUP,
 		// tuc la bo NHAT DO cua nguoi choi (tab Nhat do + danh sach Loc) lam viec
-		// binh thuong. KHONG giao muc tieu nen may PK khong bi ep danh gi.
-		ea.nSTHold = 2;
+		// binh thuong.
+		// TRUOC DAY tra 2 - va 2 thi S3Client.cpp:1039 chay ATYPE_PKFIGHT BAT KE
+		// nguoi choi tat o "danh chu dong". Nhat ky that (jx_auto.log pid=32900,
+		// onpk=0) cho thay ngay sau khi boss chet may quay ra danh 27147, 27139,
+		// 27142 - dung canh chu game bao "dung danh npc xung quanh".
+		ea.nSTHold = 3;
 		ea.uNpcID = 0;
 		UINT uDa = uCurTime - ea.uSTPhaseT;
 		int nConDo = 0;
@@ -11598,7 +11628,7 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (uDa < ST_NHAT_MIN || (nConDo && uDa < ST_NHAT_MAX))
 		{
 			ea.uSTNext = uCurTime + 500;
-			return 2;
+			return 3;
 		}
 		// nhat xong -> ket luot: doi con boss ke, roi ve thanh nhan luot moi
 		ea.nSTMucBoss = 0;
