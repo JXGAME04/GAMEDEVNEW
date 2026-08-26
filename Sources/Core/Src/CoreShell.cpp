@@ -11068,14 +11068,16 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	if (pAp->bSatThu)
 		AUTOLOG_EVERY(3000, "[ST-STATE] pha=%d map=%d task=%d muc=%d ke=%d hold=%d "
 			"phagiay=%u thaygiay=%u vonggiay=%u nghigiay=%d tuiday=%d ngay=%d/%d "
-			"luot=%d/%d ngaysv=%d",
+			"luot=%d/%d ngaysv=%d dlg=%u/%u selmo=%d",
 			ea.nSTPhase, nMap, nTask, ea.nSTMucBoss, ea.nSTKe, ea.nSTHold,
 			(uCurTime - ea.uSTPhaseT) / 1000, (uCurTime - ea.uSTThayT) / 1000,
 			(uCurTime - ea.uSTVongT) / 1000,
 			(int)((ea.uSTNghiT > uCurTime) ? (ea.uSTNghiT - uCurTime) / 1000 : 0),
 			DT_TuiDayTP(nPlayerIdx, pAp) ? 1 : 0, ea.nSTNgay, nNgay,
 			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_DEM), ST_MucLuot(pAp),
-			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_NGAY));
+			(int)Player[nPlayerIdx].m_cTask.GetSaveVal(ST_TSK_NGAY),
+			cap.uDlgSeq, ea.uSTDlgSeen,
+			CoreDataChanged(GDCNI_UI_ACT, 0, 0));
 
 	// (25/08 - y chu game: "co thong bao giet xong boss thi cho phu, can gi ruom ra")
 	// Nghe THANG thong bao cua may chu thay vi suy tu bien nhiem vu 1082 tren client.
@@ -11300,12 +11302,26 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 					return 1;			// nhip sau moi ra Xa Phu
 				}
 			}
-			else if (++ea.nSTStep < 10)
+			else if (ea.nSTStep < 10 && !CoreDataChanged(GDCNI_UI_ACT, 0, 0))
 			{
+				++ea.nSTStep;
 				ea.uSTNext = uCurTime + 400;
 				return 1;			// thoai cuoi chua toi - cho them
 			}
-			CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// dong khung thoai
+			// DONG CHO DUT roi moi di. Duong dong (GameSpaceChangedNotify.cpp:846-856):
+			//   GDCNI_UI_ACT 1 = KUiMsgSel::CloseWindow(false)
+			//   GDCNI_UI_ACT 0 = KUiMsgSel::GetIfVisible() - HOI LAI xem con hien khong
+			// Truoc gio chi goi lenh dong roi tin la xong, khong kiem lai bao gio - nen
+			// khung con treo (chu game bao 25/08). Nay ep dong roi hoi lai, con hien thi
+			// nhip sau lam tiep, toi da 20 nhip (~6 giay).
+			// PHAI dong xong TRUOC khi sang pha Xa Phu: neu khong, khung dang hien la
+			// khung CU trong khi may chu da mo bang chon ban do => bam Dong = nhay map.
+			CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+			if (CoreDataChanged(GDCNI_UI_ACT, 0, 0) && ++ea.nSTStep < 20)
+			{
+				ea.uSTNext = uCurTime + 300;
+				return 1;
+			}
 			{
 				char szTB[256];
 				sprintf(szTB, "<color=Green>§· nhËn nhiÖm vô giÕt <color=Yellow>%s <color>- ra Xa Phu ®i b¶n ®å nhiÖm vô.", s_szST3BossTen[nTask]);
