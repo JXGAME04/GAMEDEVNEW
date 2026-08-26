@@ -290,6 +290,8 @@ struct ExtAuto
 	int  nSTHold;        // 0 tha may / 1 cam lai / 2 cam lai + may PK danh
 	int  nSTMucBoss;     // so hieu boss dang truy na (cache cua task 1082)
 	int  nSTKe;          // con tro xoay vong 0..19 cho che do 'lan luot'
+	int  nSTTuiCu;       // so mon trong tui o nhip truoc cua pha NHAT DO
+	UINT uSTNhatT;       // moc gan nhat tui CO thay doi (= vua nhat duoc mon)
 	int  nSTNgay;        // yymmdd da CHOT xong luot hom nay (het luot / bi tu choi)
 	int  nSTGhepTry;     // dem lan da thu ghep sat thu gian (chan ket vong)
 	int  nSTCap;         // cap cua bo 5 Sat Thu lenh dang bo vao hop giao
@@ -474,6 +476,8 @@ struct ExtAuto
 		nSTHold = 0;
 		nSTMucBoss = 0;
 		nSTKe = 0;
+		nSTTuiCu = 0;
+		uSTNhatT = 0;
 		nSTNgay = 0;
 		nSTGhepTry = 0;
 		nSTCap = 0;

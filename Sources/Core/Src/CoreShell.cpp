@@ -10616,8 +10616,14 @@ enum STPhase
 #define ST_BOSS_DAU		141			// nhom cap 90 = so hieu 141..160 (nhom duy nhat con thuong)
 #define ST_BOSS_CUOI	160
 #define ST_MAP_NPC_MD	1			// thanh mac dinh co NPC 769 khi phu ve tha nham cho
-#define ST_NHAT_MIN		8000u		// nhat do it nhat 8 giay
-#define ST_NHAT_MAX		60000u		// va nhieu nhat 60 giay (con thay do thi con nhat)
+// (25/08) Chu game: "danh xong boss roi nhung khong tu phu ve" / "dung lau moi
+// phu ve". Do that tu nhat ky [ST-STATE]: phagiay lon nhat cua pha NHAT DO = 59,
+// tuc LAN NAO CUNG chay du 60 giay. Vi dieu kien giu pha do "con mon do bat ky
+// quanh day" - ma o cho boss thi gan nhu luc nao cung con (do nguoi khac, do bi
+// bo loc chan, do khong nhat duoc vi tui day) nen no ket o 1.
+#define ST_NHAT_MIN		3000u		// nhat do it nhat 3 giay (cho do roi kip hien)
+#define ST_NHAT_MAX		20000u		// tran cung 20 giay
+#define ST_NHAT_IM		3000u		// tui khong nhuc nhich 3 giay = het do nhat duoc
 // (25/08) Han RIENG cho pha danh boss. Han 4 phut mot pha o duoi loai tru STP_DANH,
 // con han 45 phut mot vong thi uSTVongT lai duoc gia han moi lan nhin thay boss.
 // Neu may chu khong ghi nhan cong giet (kill_level.lua:40 doi GetNpcParam(nNpc,1)
@@ -10631,6 +10637,10 @@ enum STPhase
 #define STM_OPT_GHEP		"HÓp thµnh s∏t thÒ gi∂n"
 #define STM_OPT_HUY			"HÒy nhi÷m vÙ"
 #define STM_OPT_TRANGKE		"Trang k’"
+// Bang CHINH cua NPC (nieshichen.lua main()) KHONG co muc " Dong" - muc thoat
+// cua no la ContentList[11] "<#>Ta tranh xa/no". Phai co ca hai thi moi dong
+// duoc thoai o moi bang.
+#define STM_OPT_TRANHXA		"Ta tr∏nh xa"
 #define STM_OPT_DONG		"ß„ng"
 #define STM_SAY_HETLUOT		"khinh kŒ bπi trÀn"
 #define STM_SAY_SAICAP		"c p cÒa ng≠¨i kh´ng phÔ hÓp"
@@ -10659,6 +10669,21 @@ static void ST_Msg(int nPlayerIdx, const char* szMsg)
 	catch (...) {}
 }
 
+// dem so mon dang nam trong TUI (hanh trang). Dung de biet may co dang nhat
+// duoc gi khong - chac chan hon la nhin "con do roi quanh day".
+static int ST_DemTui(int nPlayerIdx)
+{
+	int n = 0;
+	PlayerItem* pIt = Player[nPlayerIdx].m_ItemList.GetFirstItem();
+	while (pIt && pIt->nIdx > 0)
+	{
+		if (pIt->nPlace == pos_equiproom)
+			++n;
+		pIt = Player[nPlayerIdx].m_ItemList.GetNextItem();
+	}
+	return n;
+}
+
 static void ST_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 {
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
@@ -10668,6 +10693,11 @@ static void ST_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	ea.uSTPhaseT = uCurTime;
 	ea.uSTNext = uCurTime + 400;
 	ea.uSTDlgSeen = g_sDTCap.uDlgSeq;
+	if (nPha == STP_NHAT)
+	{
+		ea.uSTNhatT = uCurTime;
+		ea.nSTTuiCu = ST_DemTui(nPlayerIdx);
+	}
 }
 
 // muc tieu luot/ngay theo o cau hinh (kep vao 1..8 = tran cua server)
@@ -10827,6 +10857,21 @@ static int ST_BamMuc(int nPlayerIdx, char* apAns[], int nAns, const char* szMark
 	DT_Answer(nPlayerIdx, nOpt);
 	Player[nPlayerIdx].m_sExtAuto.uSTNext = uCurTime + uCho;
 	return 1;
+}
+
+// Dong hoi thoai NPC cho DUT KHOAT ve phia may chu: thu muc " Dong" truoc,
+// khong co thi thu "Ta tranh xa" (bang chinh). Ca hai deu goi ham `no`.
+// Tra 1 = da bam duoc mot muc (phai doi nhip sau moi lam viec khac).
+//
+// Chu game 25/08: "nhan nhiem vu xong thi khong tat di ma de vay di chuyen" -
+// chi dong khung o phia CLIENT (GDCNI_UI_ACT) thi may chu van giu hoi thoai.
+static int ST_DongThoai(int nPlayerIdx, char* apAns[], int nAns, UINT uCurTime)
+{
+	if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_DONG, uCurTime, 600))
+		return 1;
+	if (ST_BamMuc(nPlayerIdx, apAns, nAns, STM_OPT_TRANHXA, uCurTime, 600))
+		return 1;
+	return 0;
 }
 
 // Ve thanh co NPC 769 va dung canh NPC. Tra: 0 dang di, 1 da dung canh (*pnNpc),
@@ -11226,8 +11271,8 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				char* apDong[24];
 				g_StrCpyLen(szDong, cap.szDlg, sizeof(szDong));
 				int nDong = DT_Split(szDong, apDong, 24);
-				if (ST_BamMuc(nPlayerIdx, apDong, nDong, STM_OPT_DONG, uCurTime, 600))
-					return 1;	// da bam Dong - nhip sau moi ra Xa Phu
+				if (ST_DongThoai(nPlayerIdx, apDong, nDong, uCurTime))
+					return 1;	// da bam Dong / Ta tranh xa - nhip sau moi ra Xa Phu
 			}
 			CoreDataChanged(GDCNI_UI_ACT, 1, 0);	// dong khung thoai
 			{
@@ -11709,7 +11754,19 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				nObj = ObjSet.GetNext(nObj);
 			}
 		}
-		if (uDa < ST_NHAT_MIN || (nConDo && uDa < ST_NHAT_MAX))
+		// Tui co nhuc nhich khong? Nhat duoc mon nao la moc lai dong ho.
+		const int nTuiNay = ST_DemTui(nPlayerIdx);
+		if (nTuiNay != ea.nSTTuiCu)
+		{
+			ea.nSTTuiCu = nTuiNay;
+			ea.uSTNhatT = uCurTime;
+		}
+		// Giu pha khi: chua du thoi gian toi thieu, HOAC con do quanh day VA van
+		// dang nhat duoc (tui vua doi trong ST_NHAT_IM) VA chua cham tran cung.
+		// Dieu kien "van dang nhat duoc" moi la cai chan duoc canh dung du 60 giay:
+		// o cho boss gan nhu luc nao cung con do cua nguoi khac / do bi bo loc chan.
+		if (uDa < ST_NHAT_MIN
+		 || (nConDo && uDa < ST_NHAT_MAX && uCurTime - ea.uSTNhatT < ST_NHAT_IM))
 		{
 			ea.uSTNext = uCurTime + 500;
 			return 3;
@@ -11738,6 +11795,7 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			return ST_Nghi(nPlayerIdx, NULL, uCurTime, (UINT)pAp->nSTNghi * 60000u);
 		}
 		// (25/08) Nhat xong la ve thanh NGAY - tui day hay khong cung ve (y chu game).
+		ST_Msg(nPlayerIdx, "<color=Cyan>Nh∆t xong - dÔng phÔ v“ thµnh nhÀn nhi÷m vÙ k’.");
 		ea.uSTVongT = uCurTime;
 		ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
 		ea.nSTHold = 1;
