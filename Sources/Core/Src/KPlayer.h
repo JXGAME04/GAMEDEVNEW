@@ -304,6 +304,8 @@ struct ExtAuto
 	UINT uSTVongT;       // moc bat dau VONG hien tai (chan ket vong pha nay doi pha kia)
 	// == chung cho MOI may auto (25/08) ==
 	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
+	int  nXCu;           // toa do nhip truoc (mps); nhay xa = bi TRAP dich chuyen
+	int  nYCu;           // trong cung mot map -> cung phai DUNG di chuyen
 
 
 	ExtAuto()
@@ -485,6 +487,8 @@ struct ExtAuto
 		uSTThayT = 0;
 		uSTVongT = 0;
 		nMapCu = 0;
+		nXCu = 0;
+		nYCu = 0;
 
 	}
 };

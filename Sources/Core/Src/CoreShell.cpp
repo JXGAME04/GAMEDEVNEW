@@ -6693,6 +6693,10 @@ enum TKPhase
 #define TK_ITEM_THP_D	1
 #define TK_ITEM_THP_P	1271
 #define TK_HANPHA		180000u			// han mot pha (3 phut) truoc khi bo cuoc
+// (25/08 - yeu cau chu game) hoi sinh ve hau doanh thi DUNG YEN bao lau cho NPC
+// hien ra roi moi di mua thuoc. Danh sach NPC ve client cham sau khi hoi sinh; di
+// ngay thi den noi NPC chua hien, khong mo duoc thoai mua.
+#define TK_CHO_NPC		8000u			// ms
 #define TK_GANTRAI		1440			// mps: gan hau doanh nay = dang trong trai
 
 static int TK_Abs(int v)
@@ -7481,6 +7485,18 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (pAp->nTKMuaMau == 2 || ea.nTKMua)	// 2 = khong mua thuoc
 		{
 			TK_Pha(nPlayerIdx, TKP_TRAP, uCurTime);
+			return 1;
+		}
+		// DUNG YEN cho NPC hien ra roi moi di mua (yeu cau chu game 25/08:
+		// "cho dung 8s roi moi toi mua thuoc tranh khong hien npc").
+		// Dat SAU cac nhanh thoat pha o tren de nhung truong hop do khong cho oan.
+		if (uCurTime - ea.uTKPhaseT < TK_CHO_NPC)
+		{
+			// bao MOT lan o nhip dau cua pha - KHONG dung nTKStep vi phan mua thuoc
+			// ben duoi dang dung bien do lam buoc rieng cua no
+			if (uCurTime - ea.uTKPhaseT < 500u)
+				TK_Msg(nPlayerIdx, "<color=Cyan>VÒ doanh tr¹i - ®øng chê NPC hiÖn ra råi míi ®i mua thuèc.");
+			ea.uTKNext = uCurTime + 400;
 			return 1;
 		}
 		if (pAp->nTKMuaMau == 1)
@@ -10903,18 +10919,36 @@ static int WA_MapSuKien(int nPlayerIdx)
 // ExtAuto cung con giu nTempX/Y, bReachDes, uNpcID, nTKDestX/Y, nHDDestX/Y - deu
 // la toa do cua map cu.
 //
-// Tra 1 = vua doi map (da dung sach). Goi o dau MOI nhip (ATYPE_CHECKTIME).
+// TRAP dich chuyen NGAY TRONG CUNG MOT MAP (trap nem tu hau doanh ra tran Tong
+// Kim...) thi so map KHONG doi - chu game bao 25/08: "WAuto khi di chuyen qua trap
+// thi cung co tinh trang chay bay". Nen phai bat them cu NHAY TOA DO: nhip auto la
+// 54 ms (GAMELOOPINTV, WAuto.cpp:25), chay bo nhanh nhat cung khong qua noi 1 o,
+// nhay hon 8 o trong mot nhip chi co the la BI DICH CHUYEN.
+#define WA_NHAY_XA		256			// 8 o * 32 mps
+
+// Tra 1 = vua doi map, 2 = vua bi trap dich chuyen (deu da dung sach), 0 = binh
+// thuong. Goi o dau MOI nhip (ATYPE_CHECKTIME).
 static int WA_DoiMapDungDi(int nPlayerIdx, UINT uCurTime)
 {
 	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
 		return 0;
-	if (Player[nPlayerIdx].m_nIndex <= 0)
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
 		return 0;
 	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
 	const int nMap = SubWorld[0].m_SubWorldID;
-	if (nMap <= 0 || nMap == ea.nMapCu)
-		return 0;
+	int nX = 0, nY = 0;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	int nDo = 0;
+	if (nMap > 0 && nMap != ea.nMapCu)
+		nDo = ea.nMapCu ? 1 : 0;	// lan dau vao game thi chi ghi nhan, khong bao
+	else if ((ea.nXCu || ea.nYCu) && g_GetDistance(nX, nY, ea.nXCu, ea.nYCu) > WA_NHAY_XA)
+		nDo = 2;				// bi TRAP nem di trong cung map
 	ea.nMapCu = nMap;
+	ea.nXCu = nX;
+	ea.nYCu = nY;
+	if (!nDo)
+		return 0;
 	// 1) huy duong di dang chay + go co di chuyen tren man hinh
 	SubWorld[0].StopPath();
 	g_ScenePlace.RemoveFlag();
@@ -10939,7 +10973,7 @@ static int WA_DoiMapDungDi(int nPlayerIdx, UINT uCurTime)
 	ea.nHDDestX = 0;
 	ea.nHDDestY = 0;
 	ea.uHDDestT = 0;
-	return 1;
+	return nDo;
 }
 
 // ================== MAY CHINH SAN BOSS SAT THU ==================
