@@ -620,6 +620,54 @@ nhưng **không đặt lại `m_nDoing`**, trong khi `SetAction` mở đầu `if
 6. `AUTOLOG_IDX` chỉ lọc theo **người tung chiêu** ⇒ mọi thứ CaiBang **bị đánh** đều vô hình.
 7. Chưa có mẫu đối chứng "không cưỡi ngựa" (557/557 dòng TOOFAR đều `ngua=1`).
 
+## 9.17 ĐỢT 10 — ĐÃ VÁ 1+3+5 (chủ duyệt), client `dde18f1b` ĐÃ SWAP · server `fa6bfb46` chờ restart (commit `7e48620e`)
+
+Chủ chốt: *"ưu tiên là không ảnh hưởng người chơi trải nghiệm game — phải tìm ra lỗi rồi fix chính
+xác lỗi chứ không phải fix chữa cháy"*. Vì vậy **KHÔNG** hạ ngưỡng bắn 75→45 như dự kiến ban đầu
+(đó là vặn số/che triệu chứng) — thay bằng vá đúng cơ chế. Trước khi vá đã đo thêm 2 tầng:
+
+| Số tự đếm (log `dot9/cli.log`, 682 giây) | Kết quả |
+|---|---|
+| `[E4_MOVE_PATH] ret=0` là **đã tới đích** (d<speed) | **158/160 = 98,8%** (đối chứng `ret=1`: **0/1116** — đúng như mã đòi hỏi) |
+| Gói sync có ghi đè toạ độ (`nan=1`) | **20.487 = 30 cú/giây**; 65,2% vô hại (lệch 0), **23,0% dịch > nửa ô**, p99 = 249 mps, max 857 mps |
+| NPC "đang chạy" vừa bị ghi đè, **có tự chạy tới gói sau không** | **67,9% ĐỨNG IM HOÀN TOÀN** (n=17.320) ⇒ bị **kéo từng nấc**, nội suy biến mỗi nấc thành cú trượt mượt |
+| NPC được ADD trong trạng thái chạy | 251/458 — mỗi con được giao đích = **chính chỗ nó đứng** (`KProtocolProcess.cpp:1979`) ⇒ "tới đích" ngay |
+
+⚠️ **Vì thế item 1 làm MỘT MÌNH sẽ thành hồi quy**: cờ hết bị kẹt ⇒ gói sync hết quyền ghi đè ⇒ NPC
+đứng im tại chỗ sai = đúng lỗi "đứng khựng rồi nhảy" mà bản vá tháng trước sinh ra để chữa. Nên phải
+đi kèm FIX-2.
+
+**Bộ vá (13 miếng, 8 tệp):**
+- **FIX-1 (gốc TRƯỢT)** `KNpcFindPath.cpp:52` trả **mã riêng 2** = "đã tới đích" (hai chỗ còn lại vẫn
+  trả 0 = bị chặn thật) · `KNpc.cpp` `ServeMove` thêm nhánh `nRet==2 → DoStand()` · `DoStand()` xoá
+  `m_nNeedFixPos` (bọc `#ifndef _SERVER` — biến chỉ có bản client). Bản `_SERVER` gộp mọi mã ≠1 vào
+  `DoStand()` nên **hành vi máy chủ không đổi**; `GetDir` chỉ có **một** nơi gọi.
+- **FIX-2 (chống hồi quy, cùng gốc)** `SyncNpcMin`: khi máy chủ báo NPC **đang di chuyển** mà bản sao
+  client lệch **≥1 ô và <12 ô** thì **giao đúng đích đó** để nó **tự chạy tới** thay vì bị kéo. Không
+  đụng NPC chạy đúng (lệch p50 chỉ 12 mps < 32) và không đụng dịch chuyển thật (≥12 ô → nhánh nắn cũ).
+  Nhãn `[S9-DICH]`.
+- **FIX-3 (MISS)** lưu vị trí **máy chủ** của chính nhân vật (`g_nS9SvMeX/Y`, ghi trong
+  `SyncNpcMinPlayer`, **không đụng toạ độ client** nên không có rubber-band); máy đánh (cả nhánh
+  thường lẫn PK) lấy **khoảng cách XẤU HƠN** trong hai góc nhìn ⇒ chỉ bắn khi **cả hai** thấy trong
+  tầm ⇒ hết đòn bị từ chối im lặng. Nhãn `[S9-TAM]`/`[S9-TAM-PK]` in cả `dcli`, `dsv`, `lechme`.
+- **FIX-4 (3 nhãn báo động giả)** `SKILL-REFUSE-FAR`, `MSL-SET-FULL`, `MISSLE-POOL-FULL`+
+  `E3_MISSLE_ADDFAIL` → đặt **đúng trong thân `if`**; nay in ra là **từ chối/hết khe THẬT**.
+- **FIX-5 ("nằm bẹp", ứng viên có thật)** `KNpcRes::Init` đặt lại `m_nAction` nhưng **quên `m_nDoing`**,
+  trong khi `SetAction` mở đầu `if (m_nDoing == nDoing) return TRUE;` ⇒ khe NPC tái dùng (7,5 lần/giây)
+  hoặc nhân vật mồ côi qua mỗi lần đổi vùng có thể **không bao giờ nạp bộ ảnh mới** → vẽ bằng hoạt ảnh
+  của chủ cũ. Đặt `m_nDoing = -1`. Kèm nhãn **`[S9-VE]`** — nhãn ĐẦU TIÊN nhìn thấy lớp vẽ
+  (`resdoing`/`resaction`), chỉ ghi cho chính nhân vật và chỉ khi tư thế đổi.
+
+**Nghiệm thu (đo lại đúng 4 số trên):** `ret=0` phải còn ~1,3% (chỉ ca bị chặn thật) · tỷ lệ ghi đè
+`nan=1` giảm mạnh · **"đứng im giữa hai gói" 67,9% → thấp** · `[S9-TAM]` cho thấy `dsv > dcli` bao
+nhiêu và `[S2-MELEE-TOOFAR-RUN]` phải giảm mạnh · nếu "nằm bẹp" tái diễn thì `[S9-VE]` chỉ đích danh
+tầng hỏng.
+
+🔴 **Bẫy vận hành**: hai tệp `KProtocolProcess.cpp` + `CoreShell.cpp` đang là **công trường chung với
+phiên khác** (gói S8 Tống Kim + hệ xúc xắc, chưa commit) ⇒ FIX-2/FIX-3 **cố ý KHÔNG commit** để không
+đè việc của họ; tái áp bằng `ReverseTools/goi_va_dot10_truot_miss.py` (+`_b.py`). DLL đợt này build từ
+cây có cả phần chưa commit của họ — giống hệt bản `dac6f83e` họ đã thả trước đó.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
