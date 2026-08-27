@@ -938,6 +938,27 @@ kiểm `[EXCL-PURGE]` vẫn nhịp 5s ở tab TK + LD (check exclusion là find(
 không cắt — nếu gai thì rải remove ở tầng script, không hạ ngân sách).
 Tái áp file chung: `goi_va_S10_dichthat.py` → `goi_va_S10_ma.py` → `goi_va_S11_chongma.py`.
 
+## 9.25 NGHIỆM THU S11 — **ĐẠT TOÀN BỘ** (phiên 683 s sau restart 23:20, trần log = 0)
+
+| Chỉ số | Trước | Sau S11 |
+|---|---|---|
+| Đợt bám-một-mục-tiêu ≥6 s không tiến bộ | 37 s + 9 s | **0 đợt** (529 emit) |
+| Xác chạy (bản sao đổi chết→chạy) | có | **0** |
+| Bản sao nhận được trạng thái CHẾT | hay mất gói | **311 sync trạng thái chết về đủ** (gói chết miễn ngân sách đã tới nơi) |
+| Chết → về trại (15 cú, đủ 15 hồi sinh) | từng "vài giây" | **p50 = 729 ms, max 842 ms, 0 cú > 2 s** |
+| Đợt đánh-sát-chân kéo dài | 28,7 s | tệ nhất **4 s** (2 ca — có thể là địch thật đứng yên) |
+| Tự-đảo-chiều client/server | 6,1× → 1,7× | **1,4×** |
+| Lệch NPC p90 | 55-66 | **35 mps (~1 ô)**; >4 ô = 1,4% |
+| `S6-BAL` bộ dọn 55 s | 323 ma (có con NHÌN THẤY) | 882 nhưng **100% reg=-1 = mồ côi VÔ HÌNH** (dọn bàn, người chơi không thấy) |
+| Bể REQNPC | — | khoẻ: **4.560 cú ADD** trôi chảy, `[S11-DO]`=0 không chiếm khe |
+
+Điểm đáng chú ý: **các lớp phòng thủ S11 client (`XOAMA/MAPLA/DO/DOIMAP`) chưa cần nổ phát nào** —
+vì miếng tận nguồn (miễn ngân sách gói chết/gỡ) đã chặn ma **hình thành** ngay từ đầu; FIX-6 thậm chí
+không có gì để loại. Đúng thứ tự ưu tiên: fix nguồn gánh chính, lưới phòng thủ nằm im chờ ca hiếm.
+Còn lại theo dõi: (a) `[S8-NAN]` búng 8 ô của CHÍNH MÌNH 9 lần/683 s — việc của phiên kia (gốc lệch
+lưới vật cản); (b) PerfLog không có dòng nào trong cửa sổ nên CHƯA kiểm được gai tick cuối trận
+(gỡ 1000 bot nay broadcast không cắt) — cần bật/soi đợt sau.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
