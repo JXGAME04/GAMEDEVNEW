@@ -703,6 +703,36 @@ dùng đúng khuôn `m_mAutoExcludeNpcID` sẵn có của `[FIGHT-SKIPGOLD]`. Nh
 🔑 **Bài học ghi lại**: FIX-3 đổi "đứng vung vào không khí" thành "chạy húc tường" — cùng một gốc
 (auto không biết mình bị từ chối / không tới được), nên **phải đi kèm bước bỏ cuộc** mới trọn vẹn.
 
+## 9.19 ĐO LẠI "ĐÁNH MISS PHÁI CẬN CHIẾN" SAU FIX-3 — cơ chế miss ĐÃ CHỮA ĐƯỢC, nhưng sát thương/phiên KHÔNG đổi
+
+Hai cửa sổ **cùng độ dài** (21,9 vs 22,3 phút), chỉ dùng nhãn `AUTOLOG_IDX` (lọc tên CaiBang, **không
+tiết chế** ⇒ đếm được); trần log thật = **0 dòng** ở cả hai tệp.
+⚠️ `[SKILL-REFUSE-FAR]/"TU CHOI THAT"` là `AUTOLOG_EVERY` (tiết chế + không lọc tên) ⇒ **cấm** dùng
+701 dòng của nó làm số đếm — đã suýt vấp lại.
+
+| | TRƯỚC vá | SAU FIX-3 |
+|---|---|---|
+| Gói đánh client gửi | 6.546 | 4.558 (−30%, hết bắn vô ích) |
+| **Bị máy chủ từ chối "xa quá"** | **557 (8,5%)** | **75 (1,6%) — giảm 87%** |
+| Đòn thi hành thật (`S4-CAST`) | 495 | 641 |
+| **Hiệu suất mỗi lần bấm (CAST/ATK)** | 7,6% | **14,1% — gần gấp đôi** |
+| **Khoảng cách lúc ra đòn** | p50 **63**, p90 102 (rìa tầm; trần máy chủ 110) | p50 **26**, p90 67 |
+| Đạn hụt hoàn toàn | 11,8% | **8,6%** |
+| Đạn đâm địa hình | 2,9% | **0,5%** |
+| **Nhịp giữa 2 đòn KHI ĐANG ĐÁNH** | p50 **832 ms** | p50 **481 ms** |
+| **Tốc độ đánh khi đang giao tranh** | 78,3 cast/phút | **96,3 cast/phút (+23%)** |
+| Đòn chạm/phút (cả phiên) | 24,7 | 25,2 (**+2%**) |
+
+**Kết luận trung thực:** cơ chế "vung mà không ăn" **đã chữa được** (từ chối −87%, đánh gần hơn 2,4
+lần, đạn hụt/đâm tường giảm). Nhưng **sát thương cả phiên gần như không đổi**, vì:
+**thời gian THỰC SỰ giao tranh chỉ chiếm 29-30% phiên** ở cả hai bản (6,3 vs 6,7 phút/22 phút).
+70% còn lại là: chết 20-23 lần × **18 giây chạy về** (mục 9.14 = 14,4/46,4 phút), chạy tới mục tiêu,
+và **7% húc tường** (mục 9.18).
+
+⇒ Muốn tăng sát thương thật thì hai đòn bẩy còn lại **không nằm ở khâu đánh** nữa:
+1. **FIX-6 bỏ mục tiêu không tới được** (đã viết sẵn) — lấy lại ~7% thời gian.
+2. **Đổi điểm hồi sinh bản đồ 379** (script/cấu hình) — lấy lại tới ~30% thời gian.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
