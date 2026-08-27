@@ -775,6 +775,50 @@ Client **`2145f043`** (r3: FIX-1/2/3 + FIX-6 + `[S9-KET]`) đang chạy từ 17:
 Kéo giật toạ độ: **0/12.447 gói**. "Đã tới đích bị hiểu nhầm": **0**. NPC vô hình vì hết khe: **0**.
 `[S9-KET]` (nằm bẹp THẬT) = **0** — nhưng phiên r3 chưa có cú chết nào nên chưa kết luận được.
 
+## 9.21 ĐO PHIÊN 1486 GIÂY — hai báo cáo của chủ, hai kết luận khác nhau (commit `265e7559`)
+
+### A. "Bot vẫn còn trượt tới - lùi" — **CÓ THẬT, và là lỗi của bản vá r2 của tôi**
+
+Cú ghi đè toạ độ (nghi phạm cũ) đã **về 0**, nên phải đổi thước: đo **hướng di chuyển thật** của bản
+sao client so với vị trí máy chủ.
+
+| | Đảo chiều (>120°) |
+|---|---|
+| **Bản sao CLIENT** | 1.046/52.213 bước = **2,0%** |
+| **Vị trí MÁY CHỦ** | 231/110.914 = **0,2%** |
+
+Gấp **10 lần**. Cá biệt `npc=93103` client 39% / máy chủ 0%; `npc=93353` client 25% / máy chủ 0%.
+Máy chủ đi rất thẳng: **95,7% bước rẽ dưới 30°**. ⇒ bot **không** thật sự đi tới-lui; **bản sao client
+zigzag**. Nguyên nhân: ngoại suy `P + V` của r2 **vọt quá đà** mỗi khi bot dừng hoặc rẽ → client chạy
+quá điểm thật → gói sau kéo lại.
+✅ **r3 (`e5b1176d` đã thả)**: bỏ ngoại suy, giao **đúng vị trí máy chủ**. Bản sao chạy **theo sau đúng
+một nhịp**, không bao giờ vượt lên nên không phải quay lại; vẫn liên tục vì mỗi gói đẩy đích lên một
+nhịp nữa. Giữ nguyên cửa chặn chống-quay-đầu.
+
+### B. "Phù về thành hay bị nhảy toạ độ" — **KHÔNG phải do cú phù**
+
+50 cú dịch chuyển trong 1.486 giây (đa số là hồi sinh Tống Kim), tất cả đi qua nhánh `loadmap` và
+**hạ cánh sạch**: độ lệch client↔máy chủ trong 6 giây sau khi phù còn **THẤP HƠN** lúc bình thường.
+
+| Độ lệch vị trí bản thân | Bình thường | 6 giây sau phù/hồi sinh |
+|---|---|---|
+| p50 | 17 mps | **0 mps** |
+| p90 | 81 | 87 |
+| > 4 ô | 3,3% | **1,4%** |
+| > 8 ô | 0% | 0% |
+
+**Thứ NHẢY THẬT là `[S8-NAN]`** — bản vá "nắn toạ độ bản thân khi lệch ≥ 8 ô" **của phiên Claude kia**:
+bắn **4 lần trong 25 phút**, mỗi lần dịch nhân vật **256-264 mps = 8 ô**, `doing=3` (đang chạy), và
+**cách cú phù gần nhất 8-17 giây** ⇒ hoàn toàn không liên quan tới phù, mà là **nắn sai số tích luỹ
+lúc chạy**. Gốc của sai số 8 ô nhiều khả năng là **client và server đọc hai tệp vật cản khác nhau**
+(phiên kia đo: lệch 25,7% ô ở map 324, 67% ở map 379) ⇒ client chạy đường máy chủ không đi theo.
+⚠️ **Việc này thuộc phiên kia** (họ viết `[S8-NAN]` và tìm ra vụ lệch lưới) — cần phối hợp, không tự sửa
+chồng. Hướng: hoặc nâng ngưỡng/nắn mềm (kéo dần thay vì búng), hoặc chữa gốc lệch lưới.
+
+🔴 Ghi chú vận hành: lúc thả r3 thì DLL đang nằm là **`e28f1e69`** (phiên kia vừa thay), không phải
+`2145f043` của tôi — bản `e5b1176d` build từ cây hiện tại nên **có gồm phần của họ**; backup
+`.cu_2608_r3_e28f1e69`.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
