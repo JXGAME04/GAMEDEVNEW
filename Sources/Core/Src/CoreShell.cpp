@@ -3950,6 +3950,11 @@ static int   g_nDTSapMask = 0;		// bit i = da xem het thanh g_DTNpc[i]
 static DWORD g_aDTSapDone[96];		// dwID cac sap DA XEM trong thanh hien tai
 static int   g_nDTSapDone = 0;
 static DWORD g_dwDTSapCur = 0;		// sap dang mo xem
+// (27/08) chu bao "tim sap xong o Lam An - chay toi npc xa phu dung yen khong
+// lam gi ca": pha GOXAFU co 2 vong lap IM LANG khong chot han (di mai khong ap
+// sat duoc NPC / go thoai mai khong duoc bat). 2 bo dem duoi chot lai chung.
+static int   g_nDTXaFuCam = 0;		// so lan GO thoai Xa Phu chua duoc tra loi/nhan dang
+static int   g_nDTXaFuDi = 0;		// so tick di bo toi NPC Xa Phu ma chua ap sat duoc
 static UINT  g_uDTSapWait = 0;		// han cho sap tra loi (bot trang tri im lang)
 static int   g_nDTSapWpt = 0;		// diem tu tap ke tiep trong thanh
 static UINT  g_uDTSapWptT = 0;
@@ -4572,14 +4577,16 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		}
 		AUTOLOG_EVERY(3000, "[DT-STATE] pha=%d buoc=%d engaged=%d map=%d otrong=%d "
 			"treogiay=%d du40=%d/%d loainv=%d mapdich=%d retry=%d "
-			"npc108=%d toi=(%d,%d) dich=(%d,%d) xa=%d cotgt=%d tgt=(%d,%d)",
+			"npc108=%d toi=(%d,%d) dich=(%d,%d) xa=%d cotgt=%d tgt=(%d,%d) "
+			"dlg=%u/%u xfcam=%d xfdi=%d",
 			ea.nDTPhase, ea.nDTStep, ea.nDTEngaged, nMap,
 			Player[nPlayerIdx].m_ItemList.CalcFreeItemCellCount(1, 1, room_equipment),
 			(int)((ea.uDTHoldUntil > uCurTime) ? (ea.uDTHoldUntil - uCurTime) / 1000 : 0),
 			ea.nDTDoneDay, nToday, ea.nDTQType, ea.nDTMapId, ea.nDTRetry,
 			nLogNpc, nLogX, nLogY, nLogDX, nLogDY,
 			g_GetDistance(nLogX, nLogY, nLogDX, nLogDY),
-			nLogCoTgt, nLogTX, nLogTY);
+			nLogCoTgt, nLogTX, nLogTY,
+			cap.uDlgSeq, ea.uDTDlgSeen, g_nDTXaFuCam, g_nDTXaFuDi);
 	}
 
 	// sang ngay moi -> mo lai neu dang nghi vi du 40
@@ -5087,6 +5094,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTStep = DTI_NONE;
 			ea.nDTQType = 0;
+			g_nDTXaFuCam = 0;	// (27/08) sang nhiem vu ke - bo dem Xa Phu lam lai
+			g_nDTXaFuDi = 0;
 			ea.nDTPhase = DTP_GOTONPC;	// nhiem vu moi se duoc chia, quay lai noi chuyen
 			ea.uDTNext = uCurTime + 1200;
 			return 1;
@@ -5094,6 +5103,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// menu xa phu
 		if ((idx = DT_FindAns(apAns, nAns, DTM_OPT_GODATAU)) >= 0)
 		{
+			g_nDTXaFuCam = 0;	// (27/08) thoai Xa Phu da duoc bat + nhan dang
 			DT_Answer(nPlayerIdx, idx);
 			ea.nDTPhase = DTP_XAFUTALK_DONE;
 			ea.uDTNext = uCurTime + 1500;
@@ -5132,6 +5142,8 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			{
 				ea.nDTLBTry = 0;	// (20/08) nhiem vu MOI: cho phep dung lenh bai lai
 				ea.nDTShopTry = 0;
+				g_nDTXaFuCam = 0;	// (27/08) nhiem vu moi - bo dem Xa Phu lam lai tu dau
+				g_nDTXaFuDi = 0;
 				// (r4) baseline tien do CHI khi nhiem vu moi (PB R3)
 				ea.nDTProg = -1;
 				ea.uDTMsgSeen = cap.uMsgSeq;
@@ -5590,11 +5602,31 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			Npc[nIdx].GetMpsPos(&dX, &dY);
 			if (g_GetDistance(nX, nY, dX, dY) <= 128)
 			{
+				// (27/08) chot vong "go thoai mai khong duoc": WAITDLG khong bat duoc
+				// hoi thoai thi sau 16 vong quay ve NPC Da Tau, Da Tau tra loi lam bo
+				// dem duoc lam moi -> vong qua lai vo han, nguoi ngoai nhin thay nhan
+				// vat dung o Xa Phu khong lam gi. Qua 8 lan go la BO nhiem vu nay (co
+				// thong bao), sang viec khac - giong ung xu "Khong thay Xa Phu".
+				g_nDTXaFuDi = 0;
+				if (++g_nDTXaFuCam > 8)
+				{
+					g_nDTXaFuCam = 0;
+					return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Xa Phu kh«ng tr¶ lêi tho¹i sau nhiÒu lÇn gâ - bá nhiÖm vô nµy.");
+				}
+				ea.nDTRetry = 0;	// WAITDLG dung lai bo dem nay (nguong 60 vong)
 				ea.uDTDlgSeen = cap.uDlgSeq;
 				Player[nPlayerIdx].DialogNpc(nIdx);
 				ea.nDTPhase = DTP_WAITDLG;	// menu xa phu se duoc nhan dang (OPT_GODATAU)
 				ea.uDTNext = uCurTime + 800;
 				return 1;
+			}
+			// (27/08) chot vong "di mai khong ap sat duoc": truoc day nhanh nay
+			// KHONG co han - FindPath hong/ket la dung im lang vo han ngay canh Xa
+			// Phu. Moi tick ~250ms; 480 tick ~2 phut - du di ca thanh, qua han la bo.
+			if (++g_nDTXaFuDi > 480)
+			{
+				g_nDTXaFuDi = 0;
+				return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Kh«ng tíi ®­îc chç Xa Phu (kÑt ®­êng?) - bá nhiÖm vô nµy.");
 			}
 			DT_WalkTo(nPlayerIdx, dX, dY, 96, uCurTime);
 			return 1;
