@@ -819,6 +819,63 @@ chồng. Hướng: hoặc nâng ngưỡng/nắn mềm (kéo dần thay vì búng
 `2145f043` của tôi — bản `e5b1176d` build từ cây hiện tại nên **có gồm phần của họ**; backup
 `.cu_2608_r3_e28f1e69`.
 
+## 9.22 **S10 — SERVER GỬI ĐÍCH THẬT: fix dứt điểm "đang chạy thì quay đầu"** (commit `43036785`, client `638dde7d` + server `43b94b3d` ĐÃ ĐẶT, **chờ restart GameServer + relog**)
+
+Chủ ra lệnh: *"tôi cần phương án giải quyết dứt điểm chứ không đoán mò nữa"* rồi duyệt *"làm và
+phản biện trước khi fix code"*. Quy trình: điều tra 4 tác nhân → thiết kế → **phản biện đối kháng
+3 tác nhân** → mới đặt tay vào code.
+
+### Gốc (chứng cứ từng dòng)
+- Engine **vốn có** kênh đích thật: `KNpc::DoRun` (`KNpc.cpp:2341`) broadcast `s2c_npcrun`
+  {ID, đíchX, đíchY} 13 byte mỗi chặng — cho **cả quái, bot lẫn người chơi thật** (đều hội tụ về
+  `NewPath`, `m_DesX/m_DesY` đơn vị mps).
+- Lỗ hổng: gói ADD (`NPC_SYNC`) **không mang đích** — lỗi thiết kế gốc 2003 (comment `need check
+  later -- spe 03/05/27`); client tự chế lệnh "chạy tới chỗ đang đứng" (`KProtocolProcess.cpp:1987`)
+  ⇒ NPC vào tầm giữa chặng thì bản sao **mù đích**; đo: 10% khoảng chờ lệnh > 2,2 s.
+- Ba bản vá S9 (r1/r2/r3) đoán đích từ vị trí cũ 0,3-1 s ⇒ **chính chúng sinh quay đầu**: bản sao
+  tự đảo chiều **gấp 6,1 lần** server trên cùng NPC (49 vs 8 cú; `93402` client đảo 6 — server
+  thẳng tuyệt đối).
+
+### Bộ vá S10 (3 miếng, không đổi protocol)
+- **M1 server** — cuối `KNpc::SendSyncData` (sau cả PLAYER_SYNC, trước `return bRet`): NPC đang
+  `do_run/do_walk` → gửi kèm `s2c_npcrun/walk` mang `m_DesX/m_DesY` cho riêng client đó. FIFO
+  per-client (`ServerStage.cpp:396+`) ⇒ luôn tới SAU gói ADD, đè lệnh tự chế (khe lệnh một chỗ).
+- **M2 client** — **xoá nguyên khối S9-DICH/S9-LUI 72 dòng**.
+- **M3 client** — lưới hẹp CHỈ cho bản sao **đang đứng** (không có hướng ⇒ không thể quay đầu):
+  `[S10-KEO]` đứng + server báo chạy + lệch 2..12 ô → chạy bù; `[S10-SNAP]` hai bên cùng đứng +
+  lệch ≥2 ô → nắn toạ độ theo khuôn nhánh nắn; `[S10-GAC]` đếm số lần nhường vì khe lệnh đang bận.
+
+### Phản biện đã ép đổi những gì (đọc kỹ trước khi sửa tiếp)
+1. 🔴 CHẾT_NGƯỜI: M3 nguyên bản **không có cận trên** ⇒ NPC dịch chuyển cùng map (SetPos không báo)
+   sẽ bị lệnh **chạy xuyên bản đồ** → thêm cận 12 ô.
+2. 🔴 NẶNG: **race một-khe** — lệnh đích thật vừa ghi vào `m_Command` nhưng `ProcCommand` tick sau
+   mới thi hành, `m_Doing` còn `do_stand` ⇒ M3 tưởng "đang đứng" và đè mất đích thật → gác
+   `GetCommand().CmdKind == do_none` (`m_Command` là **private** — build fail nếu truy cập thẳng).
+3. 🔴 NẶNG: kết quả gói phụ M1 **cấm** đụng `bRet` — chuỗi login theo bước (`KPlayerDBFuns.cpp:46+`)
+   đọc giá trị trả về của `SendSyncData`.
+4. 🔴 NẶNG (KB-C): cặp **đứng-đứng lệch to thì không ai kéo** (nhánh nắn cần `fix>0`, DoStand xoá
+   fix) — mất ~50% lệnh chặng khi region >100 người (`MAX_BROADCAST_COUNT=100`, con trỏ xoay
+   `KRegion.cpp:1395`) ⇒ **bắt buộc** thêm `[S10-SNAP]`.
+5. Gác sống còn `m_DesX>0`: DoSkill mượn `m_DesX=-1/m_DesY=CHỈ-SỐ-KHE` mà không đổi `m_Doing`
+   (`KNpc.cpp:2592`+`:2649` default-return) — thiếu gác là bản sao chạy về góc map.
+6. Đã bác bằng chứng cứ: lo self-run (3 lớp chặn, ConformIdx vứt), lệch struct x64/Win32 (LLP64,
+   pack(1), 13 byte cả hai), bể REQNPC (+13 byte/lần, có tiết lưu 19 khe), do_runattack (client
+   ProcCommand không có case — cấm mở rộng gác).
+7. Giới hạn ghi nhận (không phải lỗi mới khi test): lệnh có thể bị nuốt ≤0,9 s bởi `m_FrozenAction`
+   stale (ZeroMemory bị chú thích `:10293`); đích xa hơn cửa sổ vật cản 3×3 vẫn đứng+giữ đích như
+   hiện trạng; người đi **phím** đích ngắn 2 bước — kém mượt hơn S9 một bậc nhưng không quay đầu.
+
+### Nghiệm thu sau restart (đo bằng nhãn KHÔNG tiết chế)
+`[S9-*]` phải = 0 tuyệt đối · tỷ lệ đảo chiều bản sao/server trên cùng NPC **6,1× → ~1×** ·
+`[S6-CMD] ap=1` ngay sau `[S6-ADD]` với đích ≠ vị trí đứng (M1 chạy) · đếm `[S10-KEO]/[S10-SNAP]/
+[S10-GAC]` — GAC > vài % tổng phát nghĩa là race có thật và gác đang cứu đúng chỗ · lệch p50/p90
+NPC đang chạy không phình quá 2 ô.
+
+🔴 Vận hành: hai DLL đặt bằng rename-backup `.cu_2608_truoc_s10_{e5b1176d|fa6bfb46}`; build ôm cả
+công trường chưa commit của phiên kia (S8+xúc xắc — như mọi bản hôm nay); `KProtocolProcess.cpp`
+vẫn KHÔNG commit (tái áp: `ReverseTools/goi_va_S10_dichthat.py` — lưu ý script gốc dùng
+`m_Command` trực tiếp, bản đã áp đổi sang `GetCommand()`).
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
