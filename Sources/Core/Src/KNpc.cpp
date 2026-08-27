@@ -755,6 +755,29 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	}
 #endif
 	m_DataRes.SetAction(m_ClientDoing);
+#ifndef _SERVER
+	// [S9-KET r2 26/08] Ban tren ghi TRUOC khi doi hoat anh nen luon tre mot nhip (do that
+	// 7/7 ca deu tu hoi ngay sau do => bao dong gia). Cho nay ghi SAU khi da goi SetAction:
+	// neu lop ve VAN khong khop voi trang thai logic thi la KET THAT (SetAction that bai -
+	// vd m_pcResNode = NULL sau khi la cay bi go). Chi ghi cho chinh nhan vat, va chi khi
+	// KET LIEN TIEP 3 nhip tro len de khoi bao dong vi mot khung le.
+	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex)
+	{
+		static int s_nS9KetDem = 0;
+		if (m_DataRes.GetResDoing() != (int)m_ClientDoing)
+		{
+			s_nS9KetDem++;
+			if (s_nS9KetDem == 3 || (s_nS9KetDem > 3 && (s_nS9KetDem % 18) == 0))
+				AUTOLOG("[S9-KET] LOP VE KHONG DOI DUOC: cdoing=%d resdoing=%d resaction=%d doing=%d lien tiep %d nhip t=%u", (int)m_ClientDoing, m_DataRes.GetResDoing(), m_DataRes.GetAction(), (int)m_Doing, s_nS9KetDem, SubWorld[0].m_dwCurrentTime);
+		}
+		else if (s_nS9KetDem)
+		{
+			if (s_nS9KetDem >= 3)
+				AUTOLOG("[S9-KET-HET] lop ve da khop lai sau %d nhip (cdoing=%d) t=%u", s_nS9KetDem, (int)m_ClientDoing, SubWorld[0].m_dwCurrentTime);
+			s_nS9KetDem = 0;
+		}
+	}
+#endif
 	m_DataRes.SetRideHorse(m_bRideHorse);
 	m_DataRes.SetArmor(m_ArmorType, m_MantleType);
 	m_DataRes.SetHelm(m_HelmType);
