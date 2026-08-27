@@ -668,6 +668,41 @@ phiên khác** (gói S8 Tống Kim + hệ xúc xắc, chưa commit) ⇒ FIX-2/FI
 đè việc của họ; tái áp bằng `ReverseTools/goi_va_dot10_truot_miss.py` (+`_b.py`). DLL đợt này build từ
 cây có cả phần chưa commit của họ — giống hệt bản `dac6f83e` họ đã thả trước đó.
 
+## 9.18 HAI HỒI QUY DO CHÍNH ĐỢT 10 GÂY RA — đã định lượng, r2 đã thả, r3 viết sẵn chờ gộp
+
+Chủ báo trong lúc test (chủ **chưa nạp** bản mới nên log đang chạy là `dde18f1b` = r1):
+
+**(a) "người xung quanh đang di chuyển thì QUAY ĐẦU LUI rồi đi tiếp"** — lỗi của **FIX-2 r1**.
+Giao đích = vị trí máy chủ **tại thời điểm gói tin**, mà vị trí đó đã cũ (trễ mạng + nhịp 55 ms);
+bản sao client nếu đã chạy vượt qua thì bị bắt **quay đầu**. Đo: **2.413/22.857 = 10,6%** lệnh giao
+ra nằm **phía sau** hướng đang chạy (tích vô hướng âm); mẫu `npc=92426` lệch 72-96 mps trong khi
+bước máy chủ chỉ 24 mps/gói.
+➜ **r2 (`8b4ef5a0`, client `9fb7cac0` đã thả, CHƯA ai nạp)**: nhớ vị trí máy chủ gói trước (mảng
+static theo khe + `dwID` để biết khe đổi chủ) → suy ra vector V → giao đích **P + V** (một nhịp phía
+trước); nếu vẫn nằm phía sau thì **bỏ qua hẳn**, không bao giờ ép quay đầu. Chặn `|V| > 200` (dịch
+chuyển). Nhãn `[S9-LUI]` đếm số lần bỏ qua.
+
+**(b) "di chuyển ra ngoài rồi CHẠY VÀO TƯỜNG ~30 giây rồi mới đi A* bình thường lại"** — **FIX-3 làm
+nặng thêm một lỗ hổng có sẵn**.
+Đo (cùng một thước, loại các cú dịch chuyển/hồi sinh ra khỏi quãng đường — **bẫy: không loại thì
+mỗi cú chết-hồi sinh 296 ô bị tính thành "đi 9.472 mps", ra 7 ca giả**):
+| Bản | Thời gian "đi nhiều mà không tới đâu" |
+|---|---|
+| `jx_client_i` (trước) | 70/1310 giây = **5,3%** |
+| `dot9` (trước FIX-3) | 19/681 giây = **2,8%** |
+| `dot10 r1` (sau FIX-3) | 94/1337 giây = **7,0%** |
+Hiện trường ca nặng nhất (`t=69379160`, 29 giây): chạy 800 mps rồi **dội qua dội lại trong hộp
+6×8 ô** suốt 25 giây, `doing` nhấp nháy 3↔1.
+Cơ chế: FIX-3 bắt máy đánh dùng **khoảng cách xấu hơn** ⇒ chọn **áp sát** thay vì bắn; mà máy đánh
+**không hề có bước bỏ cuộc** — mục tiêu sau tường/không có đường tới thì nó húc mãi. Lỗ hổng có sẵn
+(khâu chọn mục tiêu không kiểm đường tới), FIX-3 chỉ làm lộ ra.
+➜ **r3 viết sẵn** (`scratchpad/patch_dot10d_bomuctieu.py`, **chưa áp** — chủ muốn gộp một lần):
+đang áp sát mà **quá 4 giây không gần thêm được ≥1 ô** ⇒ loại mục tiêu **30 giây** và chọn con khác,
+dùng đúng khuôn `m_mAutoExcludeNpcID` sẵn có của `[FIGHT-SKIPGOLD]`. Nhãn `[S9-BOMUCTIEU]`.
+
+🔑 **Bài học ghi lại**: FIX-3 đổi "đứng vung vào không khí" thành "chạy húc tường" — cùng một gốc
+(auto không biết mình bị từ chối / không tới được), nên **phải đi kèm bước bỏ cuộc** mới trọn vẹn.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
