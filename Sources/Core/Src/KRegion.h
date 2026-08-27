@@ -10,6 +10,11 @@
 #define	MAX_BROADCAST_COUNT		100
 // Tran cho duong dong bo dinh ky (NormalSync). Ban goc = 100; chu game chon 500.
 #define	NPC_SYNC_BROADCAST_LIMIT	500
+// [S11 26/08] Goi su kien MOT LAN (chet s2c_npcdeath, go s2c_npcremove): hiem (vai
+// cu/giay ca tran) nhung MAT goi la client giu MA - danh vao khong khi, xac 0 mau
+// van di, bung ve trai. Gia tri > so nguoi toi da nghia la KHONG CAT AI; chi phi
+// thuc bi chan boi so node trong danh sach region, khong phai boi so nay.
+#define	NPC_EVENT_BROADCAST_LIMIT	100000
 #else
 #define	MAX_REGION		9						//toi da load 9 region vung xung quanh
 #endif

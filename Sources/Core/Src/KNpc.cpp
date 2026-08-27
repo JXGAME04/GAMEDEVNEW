@@ -1587,7 +1587,8 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 		{16, 32},
 	};
 	//
-	int nMaxCount = MAX_BROADCAST_COUNT;
+	// [S11 26/08] goi CHET mien ngan sach (xem chu thich NPC_EVENT_BROADCAST_LIMIT).
+	int nMaxCount = NPC_EVENT_BROADCAST_LIMIT;
 	CURREGION.BroadCast(&NetCommand, sizeof(NetCommand), nMaxCount, m_MapX, m_MapY);
 	int i;
 	for (i = 0; i < 8; i++)
@@ -8801,7 +8802,7 @@ void KNpc::RestoreLiveData()
 
 #ifdef	_SERVER
 
-void	KNpc::SendDataToNearRegion(void* pBuffer, DWORD dwSize)
+void	KNpc::SendDataToNearRegion(void* pBuffer, DWORD dwSize, int nLimit)
 {
 	_ASSERT(m_RegionIndex >= 0);
 	if (m_RegionIndex < 0)
@@ -8818,7 +8819,8 @@ void	KNpc::SendDataToNearRegion(void* pBuffer, DWORD dwSize)
 		{16, 0},
 		{16, 32},
 	};
-	int nMaxCount = MAX_BROADCAST_COUNT;
+	// [S11] nLimit>0 = goi su kien mot-lan (chet/go) mien ngan sach; mac dinh giu 100.
+	int nMaxCount = (nLimit > 0) ? nLimit : MAX_BROADCAST_COUNT;
 	SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].BroadCast(pBuffer, dwSize, nMaxCount, m_MapX, m_MapY);
 	for (int i= 0; i < 8; i++)
 	{
@@ -9995,7 +9997,7 @@ int KNpc::SetPos(int nX, int nY)
 		NPC_REMOVE_SYNC	RemoveSync;
 		RemoveSync.ProtocolType = s2c_npcremove;
 		RemoveSync.ID = m_dwID;
-		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC));
+		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC), NPC_EVENT_BROADCAST_LIMIT);	// [S11] go khong cat ai
 	}
 
 	m_RegionIndex = nRegion;
@@ -10065,7 +10067,7 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 		NPC_REMOVE_SYNC	RemoveSync;
 		RemoveSync.ProtocolType = s2c_npcremove;
 		RemoveSync.ID = m_dwID;
-		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC));
+		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC), NPC_EVENT_BROADCAST_LIMIT);	// [S11] go khong cat ai
 	}
 
 	int nSourceSubWorld = m_SubWorldIndex;

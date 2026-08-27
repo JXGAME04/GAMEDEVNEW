@@ -558,7 +558,8 @@ void KNpcSet::Remove(int nIdx)
 			{16, 0},
 			{16, 32},
 		};
-		int nMaxCount = MAX_BROADCAST_COUNT;
+		// [S11 26/08] goi GO mien ngan sach (xem chu thich NPC_EVENT_BROADCAST_LIMIT).
+		int nMaxCount = NPC_EVENT_BROADCAST_LIMIT;
 		SubWorld[nSubWorld].m_Region[nRegion].BroadCast(&NetCommand, sizeof(NetCommand), nMaxCount, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY);
 		
 		int nConRegion;

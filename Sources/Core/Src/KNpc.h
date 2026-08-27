@@ -828,7 +828,7 @@ public:
 	void				RestoreLife(){m_CurrentLife = m_CurrentLifeMax;	};
 	void				RestoreMana(){m_CurrentMana = m_CurrentManaMax;};
 	void				RestoreStamina(){m_CurrentStamina = m_CurrentStaminaMax; };
-	void				SendDataToNearRegion(void* pBuffer, DWORD dwSize);
+	void				SendDataToNearRegion(void* pBuffer, DWORD dwSize, int nLimit = -1);	// [S11] nLimit>0 = tran rieng (goi chet/go)
 	int					DeathCalcPKValue(int nKiller);
 	int					FindAroundPlayer(const char* Name);//add by phong kiÒu using vËn tiªu
 	BOOL			CheckPlayerAround(int nPlayerIdx);
