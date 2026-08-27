@@ -733,6 +733,48 @@ và **7% húc tường** (mục 9.18).
 1. **FIX-6 bỏ mục tiêu không tới được** (đã viết sẵn) — lấy lại ~7% thời gian.
 2. **Đổi điểm hồi sinh bản đồ 379** (script/cấu hình) — lấy lại tới ~30% thời gian.
 
+## 9.20 ĐÍNH CHÍNH QUAN TRỌNG + trạng thái bản `2145f043` (26/08 tối muộn)
+
+### 🔴 RÚT LẠI: "FIX-3 làm húc tường nặng lên 2,8% → 7,0% → 12,9%" — **SAI, do thước đo của tôi**
+
+Thước cũ = *quãng đường đi / khoảng cách tới được* trong cửa sổ 20-30 giây. Nó **không phân biệt được**
+"húc tường" với **săn quái bình thường** (chạy từ con này sang con khác trong một bãi nhỏ ⇒ đi nhiều,
+net nhỏ). Bằng chứng: mở hiện trường một "ca húc tường" của bản mới thì thấy chuỗi hoàn toàn lành mạnh
+— `dist 639→351→160→114→46` rồi **đổi mục tiêu** sang con khác `548→357→213→141→69`, tức auto Dã Tẩu
+đang chạy giữa các con quái. (Trước đó tôi cũng đã phải loại "cú chết + hồi sinh 296 ô" khỏi quãng đường
+— thước này dính bẫy hai lần.)
+
+### ✅ Thước ĐÚNG cho "bám mục tiêu mà không tới được"
+
+Định nghĩa theo **hành vi**: cùng một `tgID` liên tục, kéo ≥6 giây, và **khoảng cách tốt nhất không cải
+thiện nổi 1 ô trong ≥4 giây**. Đọc từ `[PK-EMIT]`/`[FIGHT-EMIT]` (dùng theo kiểu *có mặt*, hợp lệ với
+nhãn tiết chế).
+
+| Bản | Thời lượng | Số đoạn kẹt | Tổng thời gian kẹt | Đoạn dài nhất |
+|---|---|---|---|---|
+| Trước mọi fix | 1309 s | 4 | 56 s = **4,2%** | 37 s (tgID 92985) |
+| Trước FIX-3 | 673 s | 5 | 59 s = **8,8%** | 21 s |
+| **Sau FIX-3 (r1)** | 1295 s | 2 | 42 s = **3,3%** | 38 s (tgID 93073, kẹt ở 284 mps) |
+| r3 (118 s, Dã Tẩu) | 95 s | 0 | 0% | — |
+
+⇒ **Hiện tượng này CÓ TỪ TRƯỚC, không phải FIX-3 gây ra** (sau FIX-3 còn thấp hơn). Nhưng nó có thật và
+có những đoạn 21-38 giây — đúng như chủ game mô tả "chạy vào tường khoảng 30 giây".
+**100% các đoạn kẹt đều ở nhánh `PK-EMIT`** ⇒ FIX-6 đặt ở nhánh PK là **đúng chỗ**; với ca 38 giây
+(tgID 93073, `dist` dao động 284-481 suốt 25 giây) FIX-6 sẽ cắt còn ~4 giây rồi đổi mục tiêu.
+⚠️ FIX-6 **chưa được thử lửa**: phiên r3 mới chỉ 118 giây đánh Dã Tẩu, chưa có trận TK nào ⇒
+`[S9-BOMUCTIEU]` = 0 là **do chưa gặp tình huống**, không phải do vá hỏng.
+
+### 🔴 Thước "quay đầu lui" cũng hết nghĩa với r2/r3
+Ở r1 nó đo "lệnh giao ra nằm phía sau" = 9,5-10,6%. Ở r2/r3 client **cố ý chạy hơi trước** (ngoại suy
+P+V) nên dấu tích vô hướng bị lật ⇒ ra 82,5% nhưng **vô nghĩa**. Thước đúng cho r2/r3: đếm `[S9-LUI]`
+(số lần từ chối giao đích lùi — có nổ: 4-21 lần/mẫu) và **độ lệch thật** (`[S6-BANG]`: p50 11-16 mps,
+p90 46-63 mps = dưới 2 ô ⇒ lành).
+
+### Trạng thái binary
+Client **`2145f043`** (r3: FIX-1/2/3 + FIX-6 + `[S9-KET]`) đang chạy từ 17:40. Server `fa6bfb46`.
+Kéo giật toạ độ: **0/12.447 gói**. "Đã tới đích bị hiểu nhầm": **0**. NPC vô hình vì hết khe: **0**.
+`[S9-KET]` (nằm bẹp THẬT) = **0** — nhưng phiên r3 chưa có cú chết nào nên chưa kết luận được.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
