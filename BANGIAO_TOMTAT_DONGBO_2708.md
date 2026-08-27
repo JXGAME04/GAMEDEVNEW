@@ -6,10 +6,10 @@
 
 | Đâu | Bản | Trạng thái |
 |---|---|---|
-| `bin\client\CoreClient.dll` | **795eb6a4** (S12) | ĐÃ ĐẶT — **chờ chủ relog** |
-| `bin\server\CoreServer.dll` | **78515a3d** (S12) | ĐÃ ĐẶT — **chờ chủ RESTART GameServer** |
+| `bin\client\CoreClient.dll` | **7b22c8c6** (phiên WAuto build 13:12 — **ĐÃ ÔM S12**, kiểm nhãn `S12-THEO`=1) | chờ relog |
+| `bin\server\CoreServer.dll` | **f9b4eb37** (phiên WAuto — **ĐÃ ÔM S12**, nhãn `S12-TELE`=1) | chờ RESTART GameServer |
 
-Lùi: `.cu_2708_truoc_s12_{8ffd4243|449e3ecc}` (S11, đã nghiệm thu đạt). Các mốc lùi xa hơn: `.cu_2608_truoc_s11_*` (S10+MA), `.cu_2608_truoc_s10_*`.
+⚠️ Hai phiên build chung một cây nên bản MỚI NHẤT trên đĩa luôn ôm fix của cả hai — **trước khi nghiệm thu chỉ cần kiểm nhãn trong DLL (`grep -c S12-THEO/S12-TELE`), đừng tin md5 trong bàn giao cũ**. Bản S12 nguyên gốc của phiên này: client `795eb6a4` + server `78515a3d` (backup `.cu_2708_truoc_s12_{8ffd4243|449e3ecc}` = S11 đã nghiệm thu đạt).
 
 ## 2. CHUỖI GỐC ĐÃ CHỮA (mỗi dòng một gốc — TẤT CẢ có số nghiệm thu)
 
