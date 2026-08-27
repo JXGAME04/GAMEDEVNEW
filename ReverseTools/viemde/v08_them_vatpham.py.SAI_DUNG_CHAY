@@ -1,0 +1,194 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# BAN NAY SAI - DUNG CHAY. Da lam GameServer DUMP ngay 26/08.
+# No CAT 30 cot dau cua hang ban Linux dan thang vao JX1, trong khi hai bang
+# KHAC NGHIA COT tu cot 9: cot 13 cua JX1 (nPickExecute) la SO nhung nhan
+# chuoi "\script\item
+oscript.lua" -> KBasPropTbl LoadRecord goi GetInteger
+# that bai -> bo do viec nap ban ghi -> bang vat pham hong.
+# DUNG BAN THAY THE: v08b_them_vatpham.py
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+raise SystemExit("Ban nay SAI - dung v08b_them_vatpham.py")
+
+# -*- coding: utf-8 -*-
+"""VIEM DE - buoc 4d: them 5 vat pham ma JX1 chua co, LAY Y NGUYEN dong cua ban Linux.
+
+5 mon:  6,1,30350 Hop Mat Na Chien Truong
+        6,1,30538 Dang Long Thach - Ha
+        6,1,30008 Do Pho Tinh Suong Yeu Dai
+        6,1,30011 Do Pho Tinh Suong Ngoc Boi
+        6,1,30534 Do Pho Dang Long Boi
+
+Cap ma moi noi tiep sau ma 6,1,* lon nhat dang dung o JX1.
+Ghi vao CA HAI bang: server\\settings\\item\\magicscript.txt va client\\...
+(guide: sua bang item phai sua ca hai - neu khong client se hien O DO TRANG).
+
+Anh (.spr): 3/5 mon dung duong dan cua Linux ma client JX1 DA CO san;
+2 mon con lai (longha.spr, dophodanglong.spr) lay tep THAT tu
+D:\\ServerLinux\\Patch\\spr\\vng\\item\\ chep sang client -> giong ban Linux 100%.
+
+Doc/ghi qua bangtxt.Bang: giu nguyen CRLF va ghi qua tep tam (bai hoc 26/08:
+ghi thang bang open(...,"w") ma nem loi giua chung thi CAT CUT tep goc).
+
+*** SAU BUOC NAY PHAI KHOI DONG LAI MAY CHU (doi settings\\item\\*.txt). ***
+"""
+import os
+import shutil
+import struct
+import sys
+import importlib.util
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bangtxt import Bang, uni2tcvn, tcvn2uni, so_sanh_byte
+
+spec = importlib.util.spec_from_file_location("dec2", r"D:\GAMEDEVNEW\ReverseTools\port_3hd\dec2.py")
+dec2 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(dec2)
+
+SRV_ITEM = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\settings\item\magicscript.txt"
+CLI_ITEM = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client\settings\item\magicscript.txt"
+LNX_ITEM = r"D:\ServerLinux\server1\settings\item\004\magicscript.txt"
+CLI = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client"
+SPR_NGUON = r"D:\ServerLinux\Patch"
+BAK = ".truoc_viemde_2608"
+NHAN = "VIEMDE2608"
+
+CAN_TAO = ["6,1,30350", "6,1,30538", "6,1,30008", "6,1,30011", "6,1,30534"]
+
+
+def pid(name):
+    n = name[1:] if name[:1] in ("\\", "/") else name
+    pb = bytes(b + 32 if 65 <= b <= 90 else b for b in ("\\" + n).encode("latin-1"))
+    i = 0
+    idx = 0
+    for b in pb:
+        idx += 1
+        c = b + 32 if 65 <= b <= 90 else b
+        i = ((((i + idx * c) & 0xFFFFFFFF) % 0x8000000B) * 0xFFFFFFEF) & 0xFFFFFFFF
+    return i ^ 0x12345678
+
+
+def nap_pak():
+    s = set()
+    root = CLI + r"\data"
+    for f in sorted(os.listdir(root)):
+        if not f.lower().endswith(".pak"):
+            continue
+        try:
+            fh = open(os.path.join(root, f), "rb")
+        except Exception:
+            continue
+        head = fh.read(32)
+        if head[:4] != b"PACK":
+            fh.close()
+            continue
+        cnt, itoff, _ = struct.unpack_from("<III", head, 4)
+        fh.seek(itoff)
+        raw = fh.read(16 * cnt)
+        fh.close()
+        for k in range(cnt):
+            s.add(struct.unpack_from("<I", raw, 16 * k)[0])
+    return s
+
+
+def main():
+    lnx = {}
+    for r in open(LNX_ITEM, "rb").read().split(b"\n")[1:]:
+        c = dec2.decline2(r.rstrip(b"\r")).split("\t")
+        if len(c) < 14:
+            continue
+        lnx["%s,%s,%s" % (c[1], c[2], c[3])] = c
+
+    bsrv = Bang(SRV_ITEM)
+    bcli = Bang(CLI_ITEM)
+    srv, cli = bsrv.rows, bcli.rows
+    nCot = len(srv[0])
+    assert len(cli[0]) == nCot, "so cot server/client khac nhau"
+    print("bang item JX1: %d cot, server %d dong, client %d dong" % (nCot, len(srv), len(cli)))
+
+    if any(NHAN in "\t".join(c) for c in srv):
+        print("Da them roi (thay nhan %s) - bo qua." % NHAN)
+        return
+
+    mx = 0
+    dung = set()
+    for c in srv[1:]:
+        if len(c) < 4:
+            continue
+        if c[1] == "6" and c[2] == "1":
+            try:
+                v = int(c[3])
+                dung.add(v)
+                mx = max(mx, v)
+            except ValueError:
+                pass
+    ke = mx + 1
+    while ke in dung:
+        ke += 1
+    print("ma 6,1,* lon nhat dang dung = %d  ->  cap moi tu %d" % (mx, ke))
+
+    pak = nap_pak()
+    them_srv, them_cli, bang_tra, chep_spr = [], [], [], []
+    for ma in CAN_TAO:
+        L = lnx.get(ma)
+        assert L, "khong tim thay %s o ban Linux" % ma
+        moi = L[:nCot]
+        while len(moi) < nCot:
+            moi.append("")
+        moi = [uni2tcvn(x) for x in moi]        # MOI o deu phai la byte TCVN3
+        moi[0] = uni2tcvn(L[0].strip())         # ten: giu Y NGUYEN ten ban Linux
+        moi[1], moi[2], moi[3] = "6", "1", str(ke)
+        anh = L[4]
+        if pid(anh) not in pak and not os.path.isfile(CLI + anh):
+            nguon = SPR_NGUON + anh
+            assert os.path.isfile(nguon), "thieu anh %s va khong co o %s" % (anh, nguon)
+            chep_spr.append((nguon, CLI + anh))
+        moi[nCot - 1] = (moi[nCot - 1] + " " + NHAN).strip()
+        them_srv.append(moi)
+        them_cli.append(list(moi))
+        bang_tra.append((ma, "6,1,%d" % ke, L[0].strip(), anh))
+        ke += 1
+        while ke in dung:
+            ke += 1
+
+    for nguon, dich in chep_spr:
+        os.makedirs(os.path.dirname(dich), exist_ok=True)
+        shutil.copyfile(nguon, dich)
+        print("  chep anh: %s  (%d B)" % (dich[len(CLI):], os.path.getsize(dich)))
+
+    for b, them in ((bsrv, them_srv), (bcli, them_cli)):
+        while b.rows and len(b.rows[-1]) <= 1 and not b.rows[-1][0]:
+            b.rows.pop()
+        b.rows.extend(them)
+        n = b.ghi(BAK)
+        print("  da ghi %s\\%s (+%d dong, %d byte)"
+              % (os.path.basename(os.path.dirname(os.path.dirname(b.path))),
+                 os.path.basename(b.path), len(them), n))
+
+    print()
+    print("=== BANG TRA (Linux -> JX1) ===")
+    for a, bb, t, anh in bang_tra:
+        print("   %-11s -> %-10s %-32s %s" % (a, bb, t[:31], anh[-40:]))
+
+    s2 = Bang(SRV_ITEM).rows
+    c2 = Bang(CLI_ITEM).rows
+    n1 = sum(1 for r in s2 if len(r) == nCot and NHAN in r[nCot - 1])
+    n2 = sum(1 for r in c2 if len(r) == nCot and NHAN in r[nCot - 1])
+    print()
+    print("KIEM LAI: server them %d dong, client them %d dong; so cot: server=%s client=%s"
+          % (n1, n2, sorted(set(len(r) for r in s2 if len(r) > 1)),
+             sorted(set(len(r) for r in c2 if len(r) > 1))))
+    assert n1 == n2 == len(CAN_TAO), "so dong them khong khop!"
+    for pth in (SRV_ITEM, CLI_ITEM):
+        kq = so_sanh_byte(pth, BAK, len(CAN_TAO))
+        print("   KIEM BYTE %-7s CRLF %d->%d  LFdon %d->%d  byte_cao %d->%d  FFFD=%d"
+              % (os.path.basename(os.path.dirname(os.path.dirname(pth))),
+                 kq["crlf_truoc"], kq["crlf_sau"], kq["lf_don_truoc"], kq["lf_don_sau"],
+                 kq["byte_cao_truoc"], kq["byte_cao_sau"], kq["fffd"]))
+        assert kq["eol_giu_nguyen"], "KIEU XUONG DONG BI DOI: " + pth
+        assert kq["fffd"] == 0, "co ky tu hong: " + pth
+    print()
+    print("*** PHAI KHOI DONG LAI MAY CHU (doi settings\\item\\magicscript.txt) ***")
+
+
+main()

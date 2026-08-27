@@ -6883,14 +6883,58 @@ static bool TK_ThayDuoc(int ax, int ay, int bx, int by)
 // Chua NHIN THAY dich (TK_ThayDuoc - vat can di chuyen phia client) thi ghe DIEM
 // VONG g_TKVongKim (san trong phia nam, nhin sach toi ca DapKim / NpcBdKim /
 // XaPhuKim) roi moi nham thang. Tra 1 = dang di vong; 0 = cu di thang.
+// Goc hoc chua NPC bao danh Kim: o phia TAY mang tuong va phia BAC hanh lang.
+// So do tu ban do that (ReverseTools/tk_luoi_client_vs_server.py, ca hai luoi).
+#define TK_KIM_HOC_X	1562
+#define TK_KIM_HOC_Y	3082
 static int TK_GheVongKim(int nPlayerIdx, int nX, int nY, int nDx, int nDy, UINT uCurTime)
 {
-	if (TK_ThayDuoc(nX, nY, nDx, nDy))
-		return 0;
+	// ============================================================================
+	// (26/08 v3) DUNG DAN DUONG TAY NUA - LUON TRA 0.
+	//
+	// DT_WalkTo goi SubWorld[0].FindPath, va do la A* THAT tren luoi TOAN BAN DO
+	// (KSubWorld.cpp:148-153 + 950+), no TU vong qua mang tuong x=1559..1563 duoc.
+	// "Di thang" trong ma nay KHONG co nghia la di duong thang. Vi vay viec dan
+	// duong tay khong nhung thua ma con GAY HAI:
+	//   . v1 (dieu kien TK_ThayDuoc): diem vong (1566,3084) khong "nhin thay" NPC
+	//     bao danh (do lai bang chinh bo lay mau cua TK_ThayDuoc: cham 2 o tuong
+	//     (1559,3082)+(1560,3082)), nen loi thoat duy nhat la bong bong 96 mps ->
+	//     tao DAI CHET x=1563..1560 tren hanh lang: bot vua ra khoi bong bong la bi
+	//     KEO NGUOC ve diem vong, moi ~2,5 giay mot nhip (nhip ea.uDTPath) = dung
+	//     trieu chung "chay bay toa do" chu game bao.
+	//   . v2 (dieu kien hinh hoc): van con dai chet do - o tren hanh lang y=3083 thi
+	//     ve hinh hoc van la "khac phia" nen van bi keo nguoc.
+	//
+	// GOC THAT cua viec huc tuong khong nam o day ma o CACHE LUOI A* CUA CLIENT:
+	// bin\client\maps\324.fp la ban 13/04/2026, cu hon moc 18/08 khi doi nghia o goc
+	// (Obstacle_LT..RB) tu "di duoc" thanh "vat can" (KSubWorld.cpp:367-389), va
+	// client chi nap lai khi FINDPATH_VERSION doi - ma so do van la 0
+	// (KSubWorld.cpp:2196-2218). Cache do son trang 1.235 o tuong (100% la o goc),
+	// trong do co dung 2 o ke buc tuong hoc NPC => A* client ve duong XUYEN TUONG.
+	// Da xu ly bang cach doi ten tep cache do cho client tu tinh lai.
+	//
+	// Giu nguyen than ham ben duoi lam ho so; g_TKVongKim thanh du lieu chet, vo hai.
+	// ============================================================================
+	return 0;
+
+	// (26/08 v2) BO dieu kien TK_ThayDuoc. Do ra ngay 26/08: nguon that cua
+	// SubWorld::TestBarrier phia client la KScenePlaceC::GetObstacleInfo, ma ham do
+	// chi tra loi trong CUA SO 3x3 region quanh nguoi choi (INSIDE_AREA(...,1) -
+	// Scene/KScenePlaceC.cpp:1726-1739); ra ngoai cua so no tra thang Obstacle_Normal,
+	// tuc "co tuong", DU CHO DO LA DAT TRONG. Region rong 16 o (RWPP_AREGION_WIDTH
+	// 512 mps) nen moi diem cach hon ~16-31 o deu bi bao la bi chan => "chua nhin
+	// thay" luon dung, dieu kien vo nghia. Do la ly do ban va 26/08 sang khong het loi.
+	// Thay bang HINH HOC TAT DINH: NPC bao danh Kim nam trong mot HOC mo ve phia NAM,
+	// loi ra vao DUY NHAT la hanh lang y = 3083..3084 (A* tung o tren ca luoi client
+	// lan server deu di qua day). Chi can hoi minh va dich co CUNG PHIA hay khong.
+	const int nHocMe   = (nX <= TK_O(TK_KIM_HOC_X) && nY <= TK_O(TK_KIM_HOC_Y));
+	const int nHocDich = (nDx <= TK_O(TK_KIM_HOC_X) && nDy <= TK_O(TK_KIM_HOC_Y));
+	if (nHocMe == nHocDich)
+		return 0;		// cung phia mang tuong - di thang
 	const int wx = TK_O((int)g_TKVongKim.x);
 	const int wy = TK_O((int)g_TKVongKim.y);
 	if (g_GetDistance(nX, nY, wx, wy) <= TK_O(3))
-		return 0;	// dung sat diem vong ma van chua "thay" (lech ban do?) - di thang
+		return 0;		// da toi cua hanh lang - buoc sau di thang vao
 	DT_WalkTo(nPlayerIdx, wx, wy, 96, uCurTime);
 	return 1;
 }
@@ -7314,6 +7358,20 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nTKPillTry = 0;
 		ea.nTKPillSo = 0;
 		ea.uTKPillT = 0;
+		// (26/08) Chu game: "phe kim chet hoi sinh lai thi hay bi bo qua mua mau tai
+		// npc luon ma di thang ra cong". Chet la MAT SACH thuoc, nen phai mua lai:
+		// ea.nTKMua chi duoc dat lai o HAI cho (vao luot moi, va nhanh 've hau doanh'
+		// cua pha FIGHT), khong cho nao chay khi chet o pha khac => co =1 tu luot
+		// truoc thi pha CAMP se day thang sang TRAP ma khong ghe Quan Y.
+		ea.nTKMua = 0;
+		// Chet DUNG LUC dang ra cong (pha TRAP): hoi sinh ve hau doanh thi
+		// case TKP_TRAP thay van "trong trai" nen KHONG doi pha, roi di thang ra vet
+		// trap = dung trieu chung tren. Cua so nay rat rong: bot dung o cua trai toi
+		// 90 giay moi luot (trap tu choi 10 giay dau, dong ho 90 giay moi nem ra).
+		// Dung TK_Pha chu khong gan thang nTKPhase - no dat lai nTKStep/nTKTry/
+		// uTKPhaseT/uTKNext/uTKDlgSeen, khong thi han pha 3 phut tinh tu moc cu.
+		if (ea.nTKPhase == TKP_TRAP)
+			TK_Pha(nPlayerIdx, TKP_CAMP, uCurTime);
 		if (ea.nTKPhase == TKP_FIGHT || ea.nTKPhase == TKP_TRAP || ea.nTKPhase == TKP_CAMP)
 		{
 			ea.uTKNext = uCurTime + 600;
@@ -14366,6 +14424,21 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
 					int nDist = g_GetDistance(nX, nY, x, y);
+					// [FIX-3 26/08] May chu phan quyet don danh bang toa do CUA NO (KSkills.cpp:359
+					// tu choi khi dist > radius + 20) va tu choi IM LANG - auto khong he biet. Toa do
+					// ban than hai ben lech p50 66 mps luc bi tu choi. Nen lay KHOANG CACH XAU HON
+					// trong hai goc nhin: chi ban khi CA HAI deu thay trong tam => het don bi tu choi,
+					// va khong phai vat nguong bang mot con so mo ho.
+					{
+						extern int g_nS9SvMeX, g_nS9SvMeY;
+						if (g_nS9SvMeX || g_nS9SvMeY)
+						{
+							int nS9DSv = g_GetDistance(g_nS9SvMeX, g_nS9SvMeY, x, y);
+							AUTOLOG_EVERY(1000, "[S9-TAM] tgID=%u dcli=%d dsv=%d lechme=%d", Npc[nTGNpcIdx].m_dwID, nDist, nS9DSv, g_GetDistance(nX, nY, g_nS9SvMeX, g_nS9SvMeY));
+							if (nS9DSv > nDist)
+								nDist = nS9DSv;
+						}
+					}
 					AUTOLOG_EVERY(1000, "[FIGHT-DIST] t=%u new=%d tgID=%u tgIdx=%d kind=%d type=%d lv=%d tgDoing=%d tgHP=%d/%d meMps=(%d,%d) tgMps=(%d,%d) meCell=(%d,%d) tgCell=(%d,%d) dist=%d meDoing=%d", uCurTime, bNewFound, Npc[nTGNpcIdx].m_dwID, nTGNpcIdx, (int)Npc[nTGNpcIdx].m_Kind, Npc[nTGNpcIdx].m_Type, Npc[nTGNpcIdx].m_Level, (int)Npc[nTGNpcIdx].m_Doing, Npc[nTGNpcIdx].m_CurrentLife, Npc[nTGNpcIdx].m_CurrentLifeMax, nX, nY, x, y, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nTGNpcIdx].m_MapX, Npc[nTGNpcIdx].m_MapY, nDist, (int)Npc[nNpcIdx].m_Doing);
 					if(Npc[nTGNpcIdx].m_Kind != kind_player)
 					{
@@ -14608,6 +14681,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					Npc[nTGNpcIdx].GetMpsPos(&x, &y);
 					int nDist = g_GetDistance(nX, nY, x, y);
+					// [FIX-3 26/08] xem chu thich cung ten o may danh thuong: lay khoang cach XAU
+					// HON giua goc nhin client va goc nhin may chu de khong ban vao vung bi tu choi.
+					{
+						extern int g_nS9SvMeX, g_nS9SvMeY;
+						if (g_nS9SvMeX || g_nS9SvMeY)
+						{
+							int nS9DSv = g_GetDistance(g_nS9SvMeX, g_nS9SvMeY, x, y);
+							AUTOLOG_EVERY(1000, "[S9-TAM-PK] tgID=%u dcli=%d dsv=%d lechme=%d", Npc[nTGNpcIdx].m_dwID, nDist, nS9DSv, g_GetDistance(nX, nY, g_nS9SvMeX, g_nS9SvMeY));
+							if (nS9DSv > nDist)
+								nDist = nS9DSv;
+						}
+					}
 					int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
 					if(pApData->nSkillIdC)
 					{
@@ -14716,6 +14801,42 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					g_ScenePlace.RemoveFlag();
 					int nSkillRadius = pSkill->GetAttackRadius();
 					AUTOLOG_EVERY(500, "[PK-EMIT] t=%u tgID=%u skill=%d dist=%d radius=%d follow=%d appr=%d near=%d cast=%d run=%d me=(%d,%d) tg=(%d,%d)", uCurTime, Npc[nTGNpcIdx].m_dwID, nMainSkill, nDist, nSkillRadius, pApData->bPKFollowTG, pApData->bPKAppr, pApData->nPKNearDist, (int)bCastState, Player[nPlayerIdx].m_RunStatus, nX, nY, x, y);
+					// [FIX-6 26/08] BO MUC TIEU KHONG TOI DUOC.
+					// Chu game: 'di chuyen ra ngoai roi chay vao tuong khoang 30s roi moi di chuyen
+					// A* binh thuong lai'. Do that: thoi gian 'di nhieu ma khong toi dau' tang tu
+					// 2,8-5,3% len 7,0% sau FIX-3 - vi FIX-3 lam may danh chon AP SAT nhieu hon,
+					// ma may danh KHONG HE co buoc bo cuoc: muc tieu nam sau tuong / khong co duong
+					// toi thi no dam vao tuong mai. Day la LO HONG CO SAN (khau chon muc tieu khong
+					// kiem duong toi), FIX-3 chi lam lo ra.
+					// Luat: dang ap sat mot muc tieu ma qua 4 giay khoang cach KHONG gan them duoc
+					// (>= 1 o) thi loai muc tieu do 30 giay va chon con khac - dung khuon san co cua
+					// [FIGHT-SKIPGOLD]. Chi kich hoat khi that su khong tien bo nen khong dong vao
+					// truong hop danh binh thuong.
+					{
+						static UINT  s_uS9ApID = 0;	// muc tieu dang ap sat
+						static DWORD s_uS9ApT  = 0;	// moc lan cuoi CO tien bo
+						static int   s_nS9ApD  = 0;	// khoang cach tot nhat da dat
+						if (nDist < nSkillRadius)
+						{
+							s_uS9ApID = 0;			// danh duoc roi - khong con ap sat
+						}
+						else if (s_uS9ApID != Npc[nTGNpcIdx].m_dwID)
+						{
+							s_uS9ApID = Npc[nTGNpcIdx].m_dwID; s_uS9ApT = uCurTime; s_nS9ApD = nDist;
+						}
+						else if (nDist + 32 < s_nS9ApD)
+						{
+							s_nS9ApD = nDist; s_uS9ApT = uCurTime;	// con gan them duoc - gia han
+						}
+						else if (uCurTime - s_uS9ApT > 4000)
+						{
+							AUTOLOG("[S9-BOMUCTIEU] tgID=%u d=%d tot nhat=%d qua 4s khong gan them -> loai 30s", Npc[nTGNpcIdx].m_dwID, nDist, s_nS9ApD);
+							Player[nPlayerIdx].m_mAutoExcludeNpcID[Npc[nTGNpcIdx].m_dwID] = uCurTime + 30000;
+							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+							s_uS9ApID = 0;
+							return 0;
+						}
+					}
 					if(pApData->bPKFollowTG)
 					{
 						if(pApData->bPKAppr && !bCastState)
@@ -18208,6 +18329,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		{
 			SendClientBaucua((char*)uParam);
 		}
+	}
+	break;
+	case GOI_DICE_CHOICE:	// DICEITEM 26/08
+	{
+		SendClientDiceItem((int)uParam, nParam);
 	}
 	break;
 	case GOI_MASKFEATURE:

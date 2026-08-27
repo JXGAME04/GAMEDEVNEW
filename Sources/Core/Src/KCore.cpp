@@ -22,6 +22,7 @@
 #include "KSkills.h"
 #include "KPlayerSet.h"
 #include "KPlayerTeam.h"
+#include "KItemDice.h"	// 26/08: he xuc xac chia do (DICEITEM)
 #include "KMissleSet.h"
 #include "KFaction.h"
 #include "KMath.h"
@@ -295,6 +296,7 @@ CORE_API void g_InitCore(char * nParmName)
 	}
 	memset(g_TaskGlobalValue, 0, sizeof(g_TaskGlobalValue));
 	g_TeamSet.Init();
+	g_ItemDiceSet.Init();	// 26/08: he xuc xac chia do (DICEITEM)
 
 	char tempMapSetPath[128];
 	sprintf(tempMapSetPath, "\\maps\\WorldSet_%s.ini", nParmName);

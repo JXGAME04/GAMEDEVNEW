@@ -168,6 +168,7 @@ public:
 	void	s2cSyncBauCuaResult(BYTE* pMsg);
 	void	s2cPlayerSync(BYTE* pMsg);
 	void	s2cRemoveAllItem(BYTE* pMsg);
+	void	s2cDiceItem(BYTE* pMsg);
 	 
 	void	s2cExtend(BYTE* pMsg);
 	void	s2cExtendChat(BYTE* pMsg);
@@ -277,6 +278,7 @@ public:
 	void	c2sBackToTown(int nIndex, BYTE* pProtocol);
 	void 	c2sSetMeridian(int nIndex, BYTE* pProtocol);
 	void 	c2sBauCua(int nIndex, BYTE* pProtocol);
+	void 	c2sDiceItem(int nIndex, BYTE* pProtocol);
 
 #endif
 };

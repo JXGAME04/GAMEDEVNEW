@@ -16,6 +16,7 @@
 #include "KSubWorld.h"
 #include "LuaFuns.h"
 #include "KProtocolProcess.h"
+#include "KItemDice.h"	// 26/08: he xuc xac chia do (DICEITEM)
 #include "KSkills.h"
 #include "KThiefSkill.h"
 #include "KItemSet.h"
@@ -27,6 +28,14 @@
 // Chi goi o cac diem TAN SUAT THAP (them/xoa NPC) nen quet 256 o la du re.
 // Tra loi dut diem cau hoi "bang NPC client co day khong" - thu ma cac nhan cu
 // (deu la AUTOLOG_EVERY, tiet che, khong loc ten) KHONG the tra loi.
+// [FIX-3 26/08] Vi tri MAY CHU dang tin cua CHINH NHAN VAT. Client co y KHONG nan toa do
+// ban than (KProtocolProcess.cpp :2104 va :2135 deu loai tru chinh minh) nen hai ben lech
+// (do that luc bi tu choi don danh: p50 66 mps = 2 o). May danh cua auto lai do bang toa do
+// CLIENT roi ban, con may chu phan quyet bang toa do CUA NO => don bi tu choi IM LANG
+// (557 lan / 21,9 phut) = 'danh vao khong khi'. Luu lai de may danh do bang CA HAI goc nhin.
+int g_nS9SvMeX = 0;
+int g_nS9SvMeY = 0;
+
 int S6_UsedSlots()
 {
 	int n = 0;
@@ -231,6 +240,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncbaucuainfo] = &KProtocolProcess::s2cSyncBauCuaResult;
 	ProcessFunc[s2c_playersync] = &KProtocolProcess::s2cPlayerSync;
 	ProcessFunc[s2c_removeallitem] = &KProtocolProcess::s2cRemoveAllItem;
+	ProcessFunc[s2c_diceitem] = &KProtocolProcess::s2cDiceItem;
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -353,6 +363,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_aibacktotown] = &KProtocolProcess::c2sBackToTown;//Auto by quay l¹i;
 	ProcessFunc[c2s_setmeridian] = &KProtocolProcess::c2sSetMeridian;
 	ProcessFunc[c2s_baucua] = &KProtocolProcess::c2sBauCua;
+	ProcessFunc[c2s_diceitem] = &KProtocolProcess::c2sDiceItem;
 
 
 #endif
@@ -1888,6 +1899,20 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 		if (S6_XaQuaTam(NpcSync->MapX, NpcSync->MapY))
 		{
 			g_nS6BoXa++;
+			// [S8 26/08] PHAI TRA KHE YEU CAU TRUOC KHI BO GOI.
+			// Goi SyncNpc day la TRA LOI cho yeu cau ma CHINH client da gui
+			// (SyncNpcMin thay NPC la -> InsertNpcRequest -> SendClientCmdRequestNpc).
+			// Khe chi duoc tra o duoi (dong ~1906 RemoveNpcRequest) - nam SAU cai
+			// return nay, nen moi goi bi FIX D bo la RO RI MOT KHE.
+			// Be chi co 19 khe dung duoc (MAX_NPC_REQUEST 20 nhung KNpcSet.cpp:90
+			// nap chi so 1..19), va duong thu hoi con lai la quet timeout 100 khung
+			// (~5,5 giay). Trong tran Tong Kim hang tram nguoi lien tuc bang qua vanh
+			// 40 o thi be can khe trong vai giay; luc do InsertNpcRequest tra FALSE
+			// (KNpcSet.cpp:1372) => client KHONG HOI NPC MOI NAO NUA, mu ca NPC TINH
+			// dung sat ben (Quan Y cach diem hoi sinh 12 o) - dung hai trieu chung chu
+			// game bao: auto khong thay NPC bao danh / khong thay Quan Y de mua mau.
+			if (NpcSet.IsNpcRequestExist(NpcSync->ID))
+				NpcSet.RemoveNpcRequest(NpcSync->ID);
 			return;
 		}
 #endif
@@ -1896,6 +1921,18 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 #ifndef _SERVER
 		// idx=0 = KHONG THEM DUOC (het khe hoac Mps2Map tra region xau).
 		AUTOLOG("[S6-ADD] npc=%u idx=%d kind=%u set=%d mps=(%d,%d) cell=(%d,%d) reg=%d dung=%d/%d t=%u", NpcSync->ID, nIdx, (unsigned int)NpcSync->m_btKind, NpcSync->NpcSettingIdx, NpcSync->MapX, NpcSync->MapY, nMapX, nMapY, nRegion, S6_UsedSlots(), (int)MAX_NPC, SubWorld[0].m_dwCurrentTime);
+#endif
+#ifndef _SERVER
+		// [S8 26/08] BANG 256 KHE DA DAY (AddNpcSet2 -> AddNpcSet1 -> FindFree() = 0).
+		// Ban goc van chay tiep va ghi Npc[0].m_dwID/m_Kind - ma Npc[0] la O TRONG
+		// dung lam gia tri "khong tim thay" cua ca he (NpcSet.SearchID / FindFree /
+		// DT_FindNpcName deu coi 0 la khong co). Ghi de vao do vua lam ban o trong,
+		// vua XOA LUON yeu cau dang cho (RemoveNpcRequest ngay duoi) nen client se
+		// KHONG BAO GIO hoi lai con NPC do - voi NPC DUNG YEN (Quan Y, Xa Phu, NPC
+		// bao danh) thi may chu it khi phat lai NormalSync, nghia la mat han.
+		// Dung: bo goi, GIU nguyen yeu cau de khe tu het han (~5,5 giay) roi hoi lai.
+		if (!nIdx)
+			return;
 #endif
 		Npc[nIdx].m_dwID = NpcSync->ID;
 		Npc[nIdx].m_Kind = NpcSync->m_btKind;
@@ -2103,6 +2140,70 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		// (chi khi m_nNeedFixPos > 0 VA cung region) - do la luc nguoi choi thay NPC GIUT.
 		AUTOLOG("[S6-SYNC] npc=%u idx=%d kind=%u cl=(%d,%d,%d,%d) sv=(%d,%d,%d,%d) reg=%d/%d fix=%d doing=%d nan=%d t=%u", NpcSync->ID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_OffX, Npc[nIdx].m_OffY, nMapX, nMapY, NpcSync->m_fkOffX, NpcSync->m_fkOffY, Npc[nIdx].m_RegionIndex, nRegion, Npc[nIdx].m_nNeedFixPos, (int)Npc[nIdx].m_Doing, (int)((Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex && Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion) ? 1 : 0), SubWorld[0].m_dwCurrentTime);
 #endif
+#ifndef _SERVER
+		// [FIX-2 26/08] GOC cua 'truot toi - lui': ban sao client cua NPC KHONG BIET DICH.
+		// NPC vua vao tam duoc giao dich = CHINH CHO no dang dung (:1979) nen 'toi dich'
+		// ngay, dung im, roi moi goi dong bo KEO no mot nac (do that: 30 cu ghi de/giay,
+		// 23% dich chuyen qua nua o; lop noi suy bien moi nac thanh mot cu truot muot).
+		// Sua dung goc: may chu bao NPC nay DANG DI CHUYEN va dang o cho khac => giao cho
+		// ban sao client DUNG DICH DO de no TU CHAY toi bang toc do cua no.
+		// Chi kich hoat khi da lech >= 1 o (NPC chay dung thi lech p50 chi 12 mps) va < 12 o
+		// (xa hon la dich chuyen that - de nguyen cho nhanh nan ben duoi lo).
+		//
+		// [r2 26/08 - chu game: "nguoi xung quanh dang di chuyen thi QUAY DAU LUI roi di tiep"]
+		// Ban r1 giao dich = vi tri may chu TAI THOI DIEM GOI TIN, ma vi tri do da cu (tre
+		// mang + nhip tick). Neu ban sao client da chay VUOT QUA diem do thi lenh moi bat no
+		// quay dau chay nguoc lai. Do that tren log: 2.413/22.857 lan = 10,6% dich giao ra
+		// nam PHIA SAU huong dang chay.
+		// Sua: suy ra HUONG DI CUA MAY CHU tu hai goi lien tiep (V), giao dich o PHIA TRUOC
+		// (P + V, tuc mot nhip nua), va neu dich do VAN nam phia sau thi BO QUA han - tha
+		// cho no chay tiep, goi sau se dung. Khong bao gio ep NPC quay dau.
+		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex &&
+			(NpcSync->Doing == do_run || NpcSync->Doing == do_walk) &&
+			Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion)
+		{
+			// vi tri may chu cua LAN SYNC TRUOC (theo khe NPC; kem dwID de biet khe doi chu)
+			static DWORD s_uS9CuID[MAX_NPC] = {0};
+			static int   s_nS9CuX[MAX_NPC]  = {0};
+			static int   s_nS9CuY[MAX_NPC]  = {0};
+			int nS9Vx = 0, nS9Vy = 0;
+			if (nIdx > 0 && nIdx < MAX_NPC)
+			{
+				if (s_uS9CuID[nIdx] == NpcSync->ID)
+				{
+					nS9Vx = NpcSync->MapX - s_nS9CuX[nIdx];
+					nS9Vy = NpcSync->MapY - s_nS9CuY[nIdx];
+					// chan buoc nhay bat thuong (dich chuyen) - khong ngoai suy theo no
+					if (nS9Vx > 200 || nS9Vx < -200 || nS9Vy > 200 || nS9Vy < -200)
+					{
+						nS9Vx = 0; nS9Vy = 0;
+					}
+				}
+				s_uS9CuID[nIdx] = NpcSync->ID;
+				s_nS9CuX[nIdx]  = NpcSync->MapX;
+				s_nS9CuY[nIdx]  = NpcSync->MapY;
+			}
+			int nS9X = 0, nS9Y = 0;
+			Npc[nIdx].GetMpsPos(&nS9X, &nS9Y);
+			int nS9D = g_GetDistance(nS9X, nS9Y, NpcSync->MapX, NpcSync->MapY);
+			if (nS9D >= 32 && nS9D < 32 * 12)
+			{
+				int nS9DesX = NpcSync->MapX + nS9Vx;	// ngoai suy mot nhip ve PHIA TRUOC
+				int nS9DesY = NpcSync->MapY + nS9Vy;
+				// con nam phia sau huong may chu dang di? (tich vo huong am) => bo qua
+				int nS9Dot = (nS9DesX - nS9X) * nS9Vx + (nS9DesY - nS9Y) * nS9Vy;
+				if ((nS9Vx || nS9Vy) && nS9Dot < 0)
+				{
+					AUTOLOG_EVERY(2000, "[S9-LUI] npc=%u idx=%d lech=%d dich sau lung -> BO QUA (khong ep quay dau) t=%u", NpcSync->ID, nIdx, nS9D, SubWorld[0].m_dwCurrentTime);
+				}
+				else
+				{
+					AUTOLOG_EVERY(1000, "[S9-DICH] npc=%u idx=%d doing=%d lech=%d v=(%d,%d) -> giao dich (%d,%d) t=%u", NpcSync->ID, nIdx, (int)NpcSync->Doing, nS9D, nS9Vx, nS9Vy, nS9DesX, nS9DesY, SubWorld[0].m_dwCurrentTime);
+					Npc[nIdx].SendCommand((NPCCMD)NpcSync->Doing, nS9DesX, nS9DesY);
+				}
+			}
+		}
+#endif
 		if (Npc[nIdx].m_nNeedFixPos > 0 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 		{
 			if (Npc[nIdx].m_RegionIndex >= 0 && Npc[nIdx].m_RegionIndex == nRegion)
@@ -2180,6 +2281,11 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 
 	int nRegion, nMapX, nMapY, nOffX, nOffY, nNpcIdx;
 	SubWorld[0].Mps2Map(pSync->m_dwMapX, pSync->m_dwMapY, &nRegion, &nMapX, &nMapY, &nOffX, &nOffY);
+#ifndef _SERVER
+	// [FIX-3 26/08] ghi lai vi tri may chu tin la cua minh (KHONG dong vao toa do client).
+	g_nS9SvMeX = pSync->m_dwMapX;
+	g_nS9SvMeY = pSync->m_dwMapY;
+#endif
 	AUTOLOG_EVERY(500, "SYNCME-DRIFT me idx=%d cl=(%d,%d) cloff=(%d,%d) reg=%d sv=(%d,%d) svoff=(%d,%d) reg=%d mps=(%d,%d) d=(%d,%d) doing=%d t=%u", Player[CLIENT_PLAYER_INDEX].m_nIndex, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_OffX, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_OffY, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_RegionIndex, nMapX, nMapY, pSync->m_wOffX, pSync->m_wOffY, nRegion, pSync->m_dwMapX, pSync->m_dwMapY, (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapX - nMapX), (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_MapY - nMapY), (int)Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_Doing, SubWorld[0].m_dwCurrentTime);
 
 	nNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
@@ -2271,6 +2377,58 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		return;
 	}
 
+#ifndef _SERVER
+	// [S8 26/08] NAN VI TRI BAN THAN KHI LECH QUA LON (chu game: "chay bay toa do khi
+	// qua map phe kim bao danh" + "chet hoi sinh lai thi hay bi bo qua mua mau tai npc").
+	//
+	// Nhanh thu ba nay = CA HAI region deu da nap. Ban goc CO Y khong nan (du doan phia
+	// client cho muot), va de xuat "nan moi lan sync" da bi phan bien BAC BO hoi 25/08 vi
+	// gay giat rubber-band ~4 o moi goi. Nhung co mot ca ban goc khong luong: may chu
+	// DICH CHUYEN nguoi choi TRONG CUNG MOT MAP - hoi sinh Tong Kim (SetTempRevPos ->
+	// mobinhtk.lua), Xa Phu doi phe (battle_transprot -> xaphu.lua NewWorld cung map),
+	// trap nem ra tran. Luc do KNpc::ChangeWorld thay cung map nen goi thang KNpc::SetPos
+	// (KNpc.cpp:9962), ma SetPos CHI bao cho nguoi xung quanh (s2c_npcremove) chu KHONG
+	// gui goi vi tri moi cho CHINH nguoi choi. Neu diem den lai nam trong khoi region da
+	// nap thi ca hai nhanh tren deu khong chay -> client GIU NGUYEN cho cu vinh vien:
+	//   . may auto tinh duong A* tu diem xuat phat sai  -> "chay bay toa do";
+	//   . may Tong Kim do TK_TrongTrai() bang toa do cu  -> khong nhan ra minh dang o hau
+	//     doanh nen bo qua buoc mua mau o Quan Y, di thang ra trap.
+	//
+	// Nguong 8 o (256 mps) lay bang WA_NHAY_XA cua CoreShell.cpp: nhip client 54 ms, chay
+	// bo nhanh nhat khong qua noi 1 o, nen lech tu 8 o tro len CHI CO THE la bi dich
+	// chuyen. Do that 25/08 (SYNCME-DRIFT): sai so du doan binh thuong p90 = 83 mps, tuc
+	// nguong nay cao gap 3 lan dinh nhieu binh thuong -> khong dung toi duong chay muot.
+	if (nRegion >= 0 && Npc[nNpcIdx].m_RegionIndex >= 0)
+	{
+		int nMeX = 0, nMeY = 0;
+		Npc[nNpcIdx].GetMpsPos(&nMeX, &nMeY);
+		const int nLech = g_GetDistance(nMeX, nMeY, (int)pSync->m_dwMapX, (int)pSync->m_dwMapY);
+		if (nLech >= 256)
+		{
+			AUTOLOG("[S8-NAN] lech=%d cl=(%d,%d) sv=(%d,%d) cell cl=(%d,%d) sv=(%d,%d) regcu=%d regmoi=%d doing=%d t=%u", nLech, nMeX, nMeY, pSync->m_dwMapX, pSync->m_dwMapY, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, nMapX, nMapY, Npc[nNpcIdx].m_RegionIndex, nRegion, (int)Npc[nNpcIdx].m_Doing, SubWorld[0].m_dwCurrentTime);
+			SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+			if (nRegion != Npc[nNpcIdx].m_RegionIndex)
+			{
+				// doi region: dung dung ham cua engine (no tu RemoveNpc/AddNpc, dat lai
+				// m_dwRegionID + m_RegionIndex, va nap map neu can) - hai tham so dau la
+				// REGION ID chu khong phai chi so (KSubWorld.cpp:2386 ban client).
+				SubWorld[0].NpcChangeRegion(Npc[nNpcIdx].m_dwRegionID, SubWorld[0].m_Region[nRegion].m_RegionID, nNpcIdx);
+			}
+			Npc[nNpcIdx].m_MapX = nMapX;
+			Npc[nNpcIdx].m_MapY = nMapY;
+			Npc[nNpcIdx].m_OffX = pSync->m_wOffX;
+			Npc[nNpcIdx].m_OffY = pSync->m_wOffY;
+			if (Npc[nNpcIdx].m_RegionIndex >= 0)
+				SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].AddRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+			// bo noi suy dang dang (khong thi nhan vat truot mot duong dai tu cho cu sang)
+			memset(&Npc[nNpcIdx].m_sSyncPos, 0, sizeof(Npc[nNpcIdx].m_sSyncPos));
+			Npc[nNpcIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
+			// duong di dang chay duoc tinh tu diem xuat phat cu -> huy de tinh lai
+			SubWorld[0].StopPath();
+			return;
+		}
+	}
+#endif
 	BYTE	byBarrier = SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].GetBarrier(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY);
 	AUTOLOG_EVERY(1000, "SYNCME-BARRIER me idx=%d barrier=%d cell=(%d,%d) off=(%d,%d) reg=%d svcell=(%d,%d) t=%u", nNpcIdx, (int)byBarrier, Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, Npc[nNpcIdx].m_OffX, Npc[nNpcIdx].m_OffY, Npc[nNpcIdx].m_RegionIndex, nMapX, nMapY, SubWorld[0].m_dwCurrentTime);
 	if (0 != byBarrier && Obstacle_JumpFly != byBarrier)
@@ -4123,6 +4281,17 @@ void KProtocolProcess::s2cSyncBauCuaResult(BYTE* pMsg)
 	if (pBauCuaResultSync->ProtocolType != s2c_syncbaucuaresult && pBauCuaResultSync->ProtocolType != s2c_syncbaucuainfo)
 		return;
 	CoreDataChanged(GDCNI_PLAYER_BAUCUA_RESULT_SYNC, (unsigned int)pBauCuaResultSync, pBauCuaResultSync->ProtocolType);
+}
+
+// He XUC XAC chia do (DICEITEM) - may chu bao client mo/dong/cap nhat mot o.
+// Chi chuyen tiep len lop giao dien; con tro CHI SONG trong loi goi nay nen ben
+// nhan phai chep ra, khong duoc giu lai (y het s2cSyncBauCuaResult).
+void KProtocolProcess::s2cDiceItem(BYTE* pMsg)
+{
+	DICE_ITEM_SYNC* pSync = (DICE_ITEM_SYNC*)pMsg;
+	if (pSync->ProtocolType != s2c_diceitem)
+		return;
+	CoreDataChanged(GDCNI_DICE_ITEM, (unsigned int)pSync, 0);
 }
 #endif
 
@@ -6945,6 +7114,36 @@ void KProtocolProcess::c2sBauCua(int nIndex, BYTE* pProtocol)
 		g_pServer->PackDataToClient(Player[nIndex].m_nNetConnectIdx, (BYTE*)&sValue, sizeof(BAUCUA_INFO_SYNC));
 	}
 	return;
+}
+
+// He XUC XAC chia do (DICEITEM): nguoi choi bam "Tham du nhan" / "Huy bo nhan".
+// Do dai goi da duoc CoreServerShell::CheckProtocolSize chan TRUOC khi vao day
+// (tra bang g_nProtocolSize, o c2s_diceitem = sizeof(DICE_CHOICE_DATA)), nen o
+// day chi con phai kiem tinh hop le cua nguoi choi va cua phien.
+void KProtocolProcess::c2sDiceItem(int nIndex, BYTE* pProtocol)
+{
+	if (!pProtocol)
+		return;
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+		return;
+	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
+		return;
+	if (Npc[Player[nIndex].m_nIndex].m_Kind != kind_player)
+		return;
+
+	DICE_CHOICE_DATA* pInfo = (DICE_CHOICE_DATA*)pProtocol;
+	if (pInfo->ProtocolType != c2s_diceitem)
+		return;
+
+	KItemDice* pDice = g_ItemDiceSet.Find(pInfo->m_nDiceId);
+	if (!pDice)
+		return;	// phien da chot hoac ma bia - bo qua im lang
+
+	// chi nhan dung 2 gia tri; moi thu khac coi la huy bo
+	int nChoice = (pInfo->m_btChoice == DICE_CHOICE_NEED)
+		? DICE_CHOICE_NEED : DICE_CHOICE_GIVEUP;
+	// SetChoice tu chan bam hai lan va tu chot phien khi moi nguoi da chon
+	pDice->SetChoice(nIndex, nChoice);
 }
 
 void KProtocolProcess::c2sSetImage(int nIndex, BYTE* pProtocol)

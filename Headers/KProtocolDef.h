@@ -202,6 +202,7 @@ enum s2c_PROTOCOL
 	s2c_syncbaucuainfo,
 	s2c_playersync,
 	s2c_removeallitem,
+	s2c_diceitem,			// mo/cap nhat/dong o xuc xac chia do
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM
@@ -361,6 +362,7 @@ enum c2s_PROTOCOL
 	c2s_aibacktotown,//AutoAI by quay l¹i ;
 	c2s_setmeridian,
 	c2s_baucua,
+	c2s_diceitem,			// nguoi choi chon: tham du nhan / huy bo
 
 
 

@@ -399,6 +399,9 @@
     <ClCompile Include="ui\uicase\UiTongManager.cpp">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TONG</Filter>
     </ClCompile>
+    <ClCompile Include="ui\uicase\UiDiceItem.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
     <ClCompile Include="ui\uicase\UiTrembleItem.cpp">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TREMBLE_ITEM</Filter>
     </ClCompile>
@@ -886,6 +889,9 @@
     </ClInclude>
     <ClInclude Include="ui\uicase\UiTongManager.h">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TONG</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiDiceItem.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
     </ClInclude>
     <ClInclude Include="ui\uicase\UiTrembleItem.h">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TREMBLE_ITEM</Filter>

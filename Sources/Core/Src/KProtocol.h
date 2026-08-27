@@ -380,6 +380,10 @@ typedef struct
 	SViewSellItemInfo	m_sInfo[60];
 } VIEW_ITEM_SYNC;
 
+// he XUC XAC chia do - cau truc goi nam o tep rieng vi trong cay nay co
+// HAI ban KProtocol.h dung chung include guard; xem ghi chu dau KDiceProtocol.h
+#include "KDiceProtocol.h"
+
 typedef struct
 {
 	BYTE			ProtocolType;		// Ð­ÒéÀàÐÍ
@@ -3289,6 +3293,7 @@ void SendClientCmdGetCityOwnTong();
 void SendClientCmdRecoverItem(int nPos);
 void SendClientSetMeridian(char* Data);
 void SendClientBaucua(char* Data);
+void SendClientDiceItem(int nDiceId, int nChoice);	// DICEITEM 26/08
 
 extern	int	g_nProtocolSize[MAX_PROTOCOL_NUM];
 #pragma pack(pop, enter_protocol)

@@ -521,6 +521,10 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	//uParam = (BYTE*) goi TONG_JX2_*_SYNC nguyen ven (byte dau ProtocolType)
 	//nParam = kich thuoc goi
 	GDCNI_TASK_VALUE_UPDATE,	// [TaskGuide] uParam = task id, nParam = gia tri
+
+	// He XUC XAC chia do (DICEITEM) 26/08: may chu bao mo/dong/cap nhat mot o.
+	// uParam = con tro DICE_ITEM_SYNC, CHI SONG trong loi goi - phai chep ra ngay.
+	GDCNI_DICE_ITEM,
 };
 
 enum GAMEDEBUGCONTROL
@@ -827,6 +831,12 @@ enum GAMEOPERATION_INDEX
 	GDI_CITY_INFO_CURMAP,		// [CITYINFO 21/08] nParam = KCityInfoView* -> id thanh cua map dang dung / 0
 	GDCNI_CITY_INFO_UPDATE,		// [CITYINFO 21/08] uParam = id thanh vua nhan tu server
 	GOI_TASKGUIDE_GOTO_SATTHU,	// [3HD C20] bam nhiem vu Sat Thu tren F11 -> tu chay toi boss (bam lai = huy)
+
+	// He XUC XAC chia do (DICEITEM) 26/08: nguoi choi bam nut trong cua so.
+	// uParam = ma phien xuc xac, nParam = DICE_CHOICE_GIVEUP / DICE_CHOICE_NEED.
+	// Dat o CUOI enum: enum nay do CA Core lan S3Client bien dich, chen giua
+	// se dich gia tri cua moi thanh vien sau no.
+	GOI_DICE_CHOICE,
 
 };
 

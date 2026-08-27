@@ -165,7 +165,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(BAUCUA_INFO_SYNC),				// s2c_syncbaucuainfo
 	sizeof(S2C_PLAYER_SYNC),				// s2c_playersync
 	sizeof(ITEM_REMOVE_SYNC),				// s2c_removeallitem
-	-1,				//s2c_dynamic_structure
+	sizeof(DICE_ITEM_SYNC),				// s2c_diceitem
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,
@@ -280,6 +280,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(C2SPLAYER_AI_BACKTOTOWN),			// c2s_aibacktotown
 	sizeof(SETMERIDIAN_DATA),			// c2s_setmeridian
 	sizeof(BAUCUA_DATA),					// c2s_baucua
+	sizeof(DICE_CHOICE_DATA),				// c2s_diceitem
 
 #endif
 };
@@ -785,6 +786,20 @@ void SendClientBaucua(char* Data)
 	memcpy((void*)&BauCuaData.Data, Data, sizeof(BauCuaData.Data));
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&BauCuaData, sizeof(BAUCUA_DATA));
+}
+
+// He XUC XAC chia do (DICEITEM): nguoi choi chon "Tham du nhan" / "Huy bo nhan".
+// Truyen thang hai so thay vi con tro - khoi lo vong doi bo nho ben UI.
+void SendClientDiceItem(int nDiceId, int nChoice)
+{
+	DICE_CHOICE_DATA	Data;
+
+	Data.ProtocolType = (BYTE)c2s_diceitem;
+	Data.m_nDiceId    = nDiceId;
+	Data.m_btChoice   = (BYTE)((nChoice == DICE_CHOICE_NEED)
+		? DICE_CHOICE_NEED : DICE_CHOICE_GIVEUP);
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)&Data, sizeof(DICE_CHOICE_DATA));
 }
 
 void SendClientCPSetImageCmd(int ID)

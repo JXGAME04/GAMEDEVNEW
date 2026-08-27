@@ -1546,6 +1546,10 @@ typedef struct
 	int		m_nParam; //s?lÇn s?dông item
 } SViewSellItemInfo;
 
+// he XUC XAC chia do - cau truc goi nam o tep rieng vi trong cay nay co
+// HAI ban KProtocol.h dung chung include guard; xem ghi chu dau KDiceProtocol.h
+#include "KDiceProtocol.h"
+
 typedef struct
 { 
 	BYTE ProtocolType;

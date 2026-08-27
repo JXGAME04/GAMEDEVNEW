@@ -58,6 +58,7 @@
 #include "UiCase/UiMiniMap.h"
 #include "UiCase/UiFinishQuest.h"
 #include "UiCase/UiTrembleItem.h"
+#include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
 #include "UiCase/UiCompoundItem.h"
 #include "UiCase/UiOptions2.h"
 #include "UiSoundSetting.h"
@@ -571,6 +572,12 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 			KUiDaTau::OpenWindow((char*)uParam, nParam);
 		else
 			KUiDaTau1::OpenWindow((char*)uParam, nParam);
+		break;
+	case GDCNI_DICE_ITEM:	// DICEITEM 26/08: uParam = DICE_ITEM_SYNC*
+		if (uParam)
+		{
+			KUiDiceItem::OnDiceMsg((void*)uParam);
+		}
 		break;
 	case GDCNI_OPEN_TREMBLE_ITEM:
 		if (uParam > 0)

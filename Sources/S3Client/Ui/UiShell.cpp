@@ -56,6 +56,7 @@
 #include "UiCase/UiFlashMessage.h"
 #include "UiCase/UiNewsMessage1.h"
 #include "UiCase/UiTrembleItem.h"
+#include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
 #include "UiCase/UiBreakItem.h"
 #include "ShortcutKey.h"
 #include "UiSoundSetting.h"
@@ -526,6 +527,7 @@ bool UiCloseWndsInGame(bool bAll)
 			KUiChooseFace::GetIfVisible()  == NULL &&
 			KUiSuperShop::GetIfVisible()  == NULL &&
 			KUiTrembleItem::GetIfVisible() == NULL &&
+			KUiDiceItem::GetIfVisible() == NULL &&
 			KUiBreakItem::GetIfVisible() == NULL &&
 			KUiJxrPlayer::GetIfVisible() == NULL &&
 			//KUiDaTau::GetIfVisible() == NULL &&
@@ -561,6 +563,7 @@ bool UiCloseWndsInGame(bool bAll)
 		KUiSysMsgCentre::CloseWindow();
 		KUiChatCentre::CloseWindow(true);
 		KUiTrembleItem::CloseWindow(true);
+		KUiDiceItem::CloseWindow(true);
 		KUiBreakItem::CloseWindow(true);
 		MapSetMode(MINIMAP_M_NONE);
 		KUiNewsMessage::CloseWindow(TRUE);
@@ -622,6 +625,7 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiNotice::CloseWindow(bAll);
 	KUiChatCentre::CloseWindow(bAll);
 	KUiTrembleItem::CloseWindow(bAll);
+	KUiDiceItem::CloseWindow(bAll);
 	KUiTongAssignBox::CloseWindow(bAll);
 	KUiTongGrant::CloseWindow(bAll);
 	KUiBreakItem::CloseWindow(bAll);

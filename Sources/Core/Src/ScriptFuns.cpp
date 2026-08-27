@@ -13768,6 +13768,15 @@ extern int LuaJX2_ResumeTimer(Lua_State* L);		// [PORT5 23/08] KJx2League.cpp
 extern int LuaJX2_RemoteExecute(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
 extern int LuaOB_SaveShareData(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
 extern int LuaOB_LoadShareData(Lua_State* L);		// [PORT5 23/08] KJx2SharedStore.cpp
+// --- he XUC XAC chia do (DICEITEM) 26/08 - KItemDice.cpp ---
+extern int LuaApplyItemDice(Lua_State* L);			// Linux 0x81c1c40
+extern int LuaAddDiceItemInfo(Lua_State* L);		// Linux 0x81c1a10
+extern int LuaRollItem(Lua_State* L);				// Linux 0x81c16d0
+extern int LuaGetItemDiceState(Lua_State* L);		// Linux 0x81c05b0
+extern int LuaDiceLootItem(Lua_State* L);			// Linux 0x81c14f0
+extern int LuaGetItemDiceRollInfo(Lua_State* L);	// Linux 0x81c0b80
+extern int LuaGetItemDiceItemInfo(Lua_State* L);	// Linux 0x81c04a0
+extern int LuaGetItemDicePlayerList(Lua_State* L);	// Linux 0x81c0380
 // ==== Port SimCity (KSimCity.cpp): co danh dau bot giu can bang ====
 extern int LuaSC_SetBotFlag(Lua_State* L);
 extern int LuaSC_GetBotFlag(Lua_State* L);
@@ -15384,6 +15393,15 @@ TLua_Funcs GameScriptFuns[] =
 		{ "GetNpcAroundNpcList",	LuaGetNpcAroundNpcList },	// tongcastle (0x08104A20) KJx2WarInfra.cpp
 		{ "NPCINFO_GetNpcCurrentLife",	LuaNPCINFO_GetNpcCurrentLife },	// tongcastle (0x081C06B0)
 		{ "NPCINFO_SetNpcCurrentLife",	LuaNPCINFO_SetNpcCurrentLife },	// (0x081C0070)
+		//--- he XUC XAC chia do (DICEITEM) 26/08 - KItemDice.cpp ---
+		{ "ApplyItemDice",	LuaApplyItemDice },	// yandibaozang/tong_guta (0x081C1C40)
+		{ "AddDiceItemInfo",	LuaAddDiceItemInfo },	// (0x081C1A10)
+		{ "RollItem",	LuaRollItem },	// (0x081C16D0)
+		{ "GetItemDiceState",	LuaGetItemDiceState },	// (0x081C05B0)
+		{ "DiceLootItem",	LuaDiceLootItem },	// (0x081C14F0) - o ta chi TRA THONG TIN
+		{ "GetItemDiceRollInfo",	LuaGetItemDiceRollInfo },	// (0x081C0B80) tra 3 gia tri
+		{ "GetItemDiceItemInfo",	LuaGetItemDiceItemInfo },	// (0x081C04A0) tra 8 gia tri
+		{ "GetItemDicePlayerList",	LuaGetItemDicePlayerList },	// (0x081C0380)
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);
