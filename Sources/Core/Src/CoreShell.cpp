@@ -2746,6 +2746,32 @@ static int DT_FindNpcName(int nPlayerIdx, const char* szSub, int nAtX, int nAtY,
 	return 0;
 }
 
+// (27/08) Lam An (176) la thanh DUY NHAT co 4 tram Xa Phu, va server tha nguoi
+// den NGAU NHIEN mot trong 4 cong (LuaGetStationPos: nRandSect = g_Random(100) %
+// nCount + 1 - ScriptFuns.cpp:10608). Moi may auto truoc day khoa cung tram [0]
+// (cong TAY) nen ~3/4 so lan dap xuong cong khac la phai di bo xuyen thanh lon
+// nhat game (250-440 o), qua han 15 luot / 150 giay roi bo cuoc im lang - chu
+// game: "toi thanh Lam An id 176 la khong kich vao xa phu de di chuyen duoc".
+// Chon TRAM GAN NHAT theo cho dang dung: moi cong Lam An deu co NPC 'Xa phu'
+// that dung cach tram <= 42 mps (laman.lua:20-23, ten tu NpcName.txt hang 44).
+// Khuon lay tu khoi Hau can cu (nHomeStep == 9) von da chon tram gan nhat.
+static sStation& DT_TramGan(StationVector& v, int nPlayerIdx)
+{
+	int nX = 0, nY = 0;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	int nBest = 0, nDist = -1;
+	for (int i = 0; i < (int)v.size(); ++i)
+	{
+		int d = g_GetDistance(nX, nY, v[i].x, v[i].y);
+		if (nDist < 0 || d < nDist)
+		{
+			nDist = d;
+			nBest = i;
+		}
+	}
+	return v[nBest];
+}
+
 // [DaTau] len ngua khi di duong (khuon dung nguyen case PA_RIDE - CoreShell.cpp:9614:
 // phai co ngua o o trang bi, khong dang ngoi, va het gian TIME_RIDE).
 static void DT_Ride(int nPlayerIdx)
@@ -2880,7 +2906,7 @@ static void TG_XaFuTick()
 		TG_XaFuStop("<color=Yellow>[ChØ nam] Kh«ng t×m thÊy Xa Phu ë thµnh nµy.");
 		return;
 	}
-	sStation& s = it->second[0];
+	sStation& s = DT_TramGan(it->second, nPlayerIdx);
 	int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
 	if (nIdx)
 	{
@@ -3148,7 +3174,7 @@ static void TG_SatThuTick()
 			TG_SatThuStop("<color=Yellow>[ChØ nam] Kh«ng thÊy Xa Phu ë map nµy - h·y vÒ thµnh råi bÊm l¹i.");
 			return;
 		}
-		sStation& s = it->second[0];
+		sStation& s = DT_TramGan(it->second, nPlayerIdx);
 		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
 		if (nIdx)
 		{
@@ -5407,7 +5433,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uDTNext = uCurTime + 1000;
 			}
 		}
-		sStation& s = it->second[0];
+		sStation& s = DT_TramGan(it->second, nPlayerIdx);
 		if (DT_WalkTo(nPlayerIdx, s.x, s.y, 250, uCurTime))
 		{
 			ea.nDTPhase = DTP_SHOPTALK;
@@ -5446,7 +5472,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		std::map<int, StationVector>::iterator it = g_ShopStation.find(nMap);
 		if (it == g_ShopStation.end() || it->second.empty())
 			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>MÊt täa ®é tiÖm t¹p hãa.");
-		sStation& s = it->second[0];
+		sStation& s = DT_TramGan(it->second, nPlayerIdx);
 		int nIdx = DT_FindNpcName(nPlayerIdx, "t¹p h", s.x, s.y, 300);
 		if (!nIdx)
 			nIdx = DT_FindNpcName(nPlayerIdx, "t¹p h", s.x, s.y, 600);
@@ -5555,7 +5581,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			}
 			return DT_Skip(nPlayerIdx, pAp, uCurTime, "<color=Red>Thµnh nµy ch­a cã täa ®é Xa Phu.");
 		}
-		sStation& s = it->second[0];
+		sStation& s = DT_TramGan(it->second, nPlayerIdx);
 		int nIdx = DT_FindNpcName(nPlayerIdx, "xa phu", s.x, s.y, 400);
 		if (nIdx)
 		{
@@ -6462,13 +6488,11 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			// het danh ba -> KHONG dung o day: van di tuan cac diem tu tap de quet
 			// not sap ngoai 12 muc server tra ve (thanh dong co the co nhieu hon).
 		}
-		// (r5h - phan bien vong 3) TRUOC day chi di tuan khi danh ba THAT BAI, ma
-		// server chi tra toi da 12 sap -> thanh dong bi tuyen bo "xong" sau 12 sap,
-		// do phu THAP HON ban truoc khi co danh ba. Nay: danh ba di truoc (dia chi
-		// chinh xac), het danh ba thi tour diem tu tap quet not, het CA HAI moi qua
-		// thanh ke.
-		if (DT_SapWaypoint(nPlayerIdx, nMap, uCurTime))
-			return 1;
+		// (r5h) TRUOC day: het danh ba thi con TOUR cac diem tu tap (trung tam /
+		// tiem / xa phu - moi diem toi da 45s + 2,5s dung quet) de vet sap ngoai 12
+		// muc danh ba. (27/08) CHU GAME BO TOUR: "WAuto di tim sap bay ban duoc roi
+		// nen bo phan di tuan diem tu tap 1-4 di ton time" - danh ba da tim dung sap,
+		// het danh ba la NHAY THANH KE luon. DT_SapWaypoint het noi goi (giu lam ho so).
 		// het thanh nay -> danh dau roi qua thanh ke
 		{
 			int nTi = DT_SapTownIndex(nMap);
@@ -6638,7 +6662,7 @@ static int DT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			DT_Msg(nPlayerIdx, "<color=Yellow>ThÇn Hµnh Phï kh«ng ®­a ®i ®­îc - ch¹y tíi Xa Phu vËy.");
 		}
 		// di den Xa Phu + mo thoai (khuon DTP_GOXAFU)
-		sStation& sXa = itXa->second[0];
+		sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
 		int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
 		if (nXaIdx)
 		{
@@ -7123,6 +7147,8 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
 			continue;
 		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
 			continue;
 		if (Npc[nIdx].m_Kind == kind_player)
@@ -7208,6 +7234,8 @@ static int TK_BangDich(int nPlayerIdx)
 			continue;
 		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
 			continue;
 		Npc[nIdx].GetMpsPos(&x, &y);
@@ -7614,6 +7642,20 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				return 1;
 			}
 			// tran chua mo (thoai chi co mot dong "Ta chi ghe ngang qua")
+			// (27/08) chu game: "tong kim xong 'Het tran ve' chua tu toi xa phu".
+			// Neu DA TUNG o trong tran khung nay (nTKThe != 0 - bien nay chi duoc
+			// dat khi TK_TrongTrai xac nhan dang o hau doanh, va chi reset o cho
+			// 'vao cuoc') thi cau 'tran chua mo' nghia la TRAN DA KET THUC -> di
+			// thang sang mach ra ve (TKP_END). Truoc day nhanh nay reset uTKPhaseT
+			// moi vong nen han pha 3 phut khong bao gio no - auto dung goi NPC bao
+			// danh 8 giay/lan VO HAN, khong bao gio toi duoc buoc Xa Phu ve thanh.
+			// (Muon danh tran ke trong cung khung: loa moi se goi lai tu TKP_DONE.)
+			if (ea.nTKThe)
+			{
+				TK_Msg(nPlayerIdx, "<color=Cyan>TrËn ®· kÕt thóc - dän tói råi nhê Xa Phu vÒ thµnh ®· chän.");
+				TK_Pha(nPlayerIdx, TKP_END, uCurTime);
+				return 1;
+			}
 			ea.nTKStep = 0;
 			ea.uTKPhaseT = uCurTime;		// dang cho dung gio, khong tinh la ket
 			ea.uTKNext = uCurTime + 8000;
@@ -7950,7 +7992,9 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		{
 			TK_Msg(nPlayerIdx, "<color=Cyan>§· rêi ®iÓm b¸o danh - ®i vÒ thµnh ®· chän.");
 			// (26/08) chu game doi: het tran KHONG ve cho cu nua - ra khoi 324 la
-			// sang pha VE THANH da chon (combo 'Het tran ve', 7 thanh).
+			// sang pha VE THANH da chon (combo 'Het tran ve', 7 thanh). Duong CHINH
+			// la chon thanh ngay tai Xa Phu map 324 (khoi thoai ben duoi); pha nay
+			// chi con la LUOI DO khi Xa Phu khong liet ke duoc thanh do.
 			ea.uLDHopT = 0;	// dong ho rieng cua LD_DiThanh - xoa keo dinh chuyen truoc
 			TK_Pha(nPlayerIdx, TKP_VETHANH, uCurTime);
 			return 1;
@@ -7996,11 +8040,50 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			char* apAns[16];
 			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
 			int nAns = DT_Split(szBuf, apAns, 16);
-			// (26/08) khong con re nhanh theo o 'Het tran ve cho cu' nua: luon roi
-			// 324 bang 'Tro lai cho luc nay' (map 324 CAM Than Hanh Phu -
-			// shenxingfu.lua:246), roi pha TKP_VETHANH dua ve dung thanh da chon.
-			int nOpt = DT_FindAns(apAns, nAns, TKM_OPT_TROLAI);
-			if (nOpt >= 0)
+			// (26/08 v2) Chu game: "toi quen dung o map bao danh tong kim khong mo
+			// duoc than hanh phu - nen ban sua lai den npc xa phu o map bao danh kich
+			// chon dung thanh da config de ve". Dung: shenxingfu.lua:246 chan thang
+			// map 324, nen KHONG the roi map roi moi mo phu. Xa Phu map bao danh co
+			// san muc "Nhung thanh thi da di qua" (xaphu.lua:17 StationFun) -> danh
+			// sach ten thanh, dung dung duong do.
+			// nTKStep dung lam buoc (2 = menu chinh, 3 = dang o danh sach thanh,
+			// 4 = khong co ten thanh trong danh sach -> roi map bang 'Tro lai cho
+			// luc nay' va de pha TKP_VETHANH lo not).
+			int nVe = pAp->nTKVeThanh;
+			if (nVe < 0 || nVe >= LD_VE_COUNT)
+				nVe = 0;
+			const char* szTenThanh = DT_SapTownMenu((int)g_LDVeMap[nVe]);
+			int nOpt = -1;
+			// 1) ten thanh dich co trong menu dang mo? (buoc 3 - danh sach thanh)
+			if (ea.nTKStep < 4 && szTenThanh
+			 && (nOpt = DT_FindAns(apAns, nAns, szTenThanh)) >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				TK_Msg(nPlayerIdx, "<color=Cyan>Xong Tèng Kim - nhê Xa Phu ®­a vÒ thµnh ®· chän.");
+				ea.uTKNext = uCurTime + 2000;
+				return 1;
+			}
+			// 2) dang o menu chinh -> mo danh sach thanh
+			if (ea.nTKStep < 3 && (nOpt = DT_FindAns(apAns, nAns, DTM_SAP_THANHTHI)) >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nTKStep = 3;
+				ea.uTKNext = uCurTime + 900;
+				return 1;
+			}
+			// 3) da mo danh sach ma KHONG co ten thanh do (nguoi choi chua tung di
+			// qua thanh nay nen Xa Phu khong liet ke): dong thoai, chuyen sang cach
+			// cu - roi map bang 'Tro lai cho luc nay' roi TKP_VETHANH tu lo (co The
+			// dung Than Hanh Phu o map khac vi map do khong bi cam).
+			if (ea.nTKStep == 3)
+			{
+				ea.nTKStep = 4;
+				TK_Msg(nPlayerIdx, "<color=Yellow>Xa Phu kh«ng liÖt kª thµnh ®· chän (ch­a tõng ®i qua?) - rêi map råi tù ®i tiÕp.");
+				CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+				ea.uTKNext = uCurTime + 1200;
+				return 1;
+			}
+			if ((nOpt = DT_FindAns(apAns, nAns, TKM_OPT_TROLAI)) >= 0)
 			{
 				DT_Answer(nPlayerIdx, nOpt);
 				ea.uTKNext = uCurTime + 1500;
@@ -8022,6 +8105,15 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uTKNext = uCurTime + 900;
 			else if (nR < 0)
 			{
+				// (27/08) vua bi keo ve 324, danh sach NPC phia client can vai giay
+				// moi dong bo xong (dung benh voi Quan Y trong TKP_CAMP) - thu lai
+				// toi ~8 giay truoc khi bo, khong thi nhip dau tien da phan 'khong
+				// thay Xa Phu' roi tra may, dung im tai cho khong ve thanh.
+				if (++ea.nTKTry < 20)
+				{
+					ea.uTKNext = uCurTime + 400;
+					return 1;
+				}
 				TK_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Xa Phu ®Ó rêi ®iÓm b¸o danh.");
 				ea.nTKPhase = TKP_DONE;
 				ea.nTKHold = 0;
@@ -8330,6 +8422,8 @@ static int LD_ChonDich(int nPlayerIdx, const autoData* pAp)
 			continue;
 		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		if (Npc[nIdx].m_Kind != kind_player)
 			continue;		// trong san chi co nguoi choi
 		if (nMyGrp > 0)
@@ -8612,7 +8706,7 @@ static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uC
 		ea.uLDThpT = 1;
 	}
 	{
-		sStation& sXa = itXa->second[0];
+		sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
 		int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
 		if (nXaIdx)
 		{
@@ -9575,6 +9669,8 @@ static int HD_ChonDichDai(int nPlayerIdx, int nTam)
 			continue;
 		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
 			continue;
 		Npc[nIdx].GetMpsPos(&x, &y);
@@ -9650,6 +9746,8 @@ static int HD_TimQuai(int nPlayerIdx, const char* szSub, int nAtX, int nAtY, int
 			continue;
 		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
 			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// [S11] dang bi loai (khong toi duoc / ma) - het han purge se tha
 		Npc[nIdx].GetMpsPos(&dX, &dY);
 		int nD = g_GetDistance(nAtX, nAtY, dX, dY);
 		if (nD > nRadius || nD >= nBestD)
@@ -10666,7 +10764,7 @@ static int HD_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				ea.uHDNext = uCurTime + 1500;
 				return 1;
 			}
-			sStation& sXa = itXa->second[0];
+			sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
 			int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
 			if (nXaIdx)
 			{
@@ -11934,7 +12032,7 @@ static int ST_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 			ST_Pha(nPlayerIdx, STP_NPC, uCurTime);
 			return 1;
 		}
-		sStation& sXa = itXa->second[0];
+		sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
 		if (ea.nSTStep == 0)
 		{
 			int nXa = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
@@ -14830,9 +14928,20 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 						else if (uCurTime - s_uS9ApT > 4000)
 						{
-							AUTOLOG("[S9-BOMUCTIEU] tgID=%u d=%d tot nhat=%d qua 4s khong gan them -> loai 30s", Npc[nTGNpcIdx].m_dwID, nDist, s_nS9ApD);
-							Player[nPlayerIdx].m_mAutoExcludeNpcID[Npc[nTGNpcIdx].m_dwID] = uCurTime + 30000;
+							AUTOLOG("[S9-BOMUCTIEU] tgID=%u d=%d tot nhat=%d qua 4s khong gan them -> loai 60s + hoi server", Npc[nTGNpcIdx].m_dwID, nDist, s_nS9ApD);
+							// [S11 26/08] 30s -> 60s: han loai phai VUOT chu ky don rac 55s, khong thi
+							// ma duoc chon lai truoc khi bo don kip hot (phan bien: 34s < 55s).
+							Player[nPlayerIdx].m_mAutoExcludeNpcID[Npc[nTGNpcIdx].m_dwID] = uCurTime + 60000;
 							Player[nPlayerIdx].m_sExtAuto.uNpcID = 0;
+							// [S11] hoi server ve con vua loai (khuon REQNPC chuan, tu tiet luu 19 khe:
+							// Insert FALSE = bo im lang). Server con no cung map -> tra vi tri that de
+							// sua ban sao; khac map/da xoa -> tra fail va [S11-XOAMA] go ma ngay.
+							// Tan suat tu gioi han <= 1 lan/4s (chi chay trong nhanh loai nay).
+							if (!NpcSet.IsNpcRequestExist(Npc[nTGNpcIdx].m_dwID) && NpcSet.InsertNpcRequest(Npc[nTGNpcIdx].m_dwID))
+							{
+								AUTOLOG("[S11-DO] hoi server ve tgID=%u", Npc[nTGNpcIdx].m_dwID);
+								SendClientCmdRequestNpc(Npc[nTGNpcIdx].m_dwID);
+							}
 							s_uS9ApID = 0;
 							return 0;
 						}
