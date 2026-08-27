@@ -903,6 +903,41 @@ cùng tgID) — đợt dài nhất phải tụt từ 28,7 s xuống ≤1 s; `[S6
 (ma bị gỡ chủ động trước khi bộ dọn tới).
 Tái áp phần chưa commit: `goi_va_S10_dichthat.py` **rồi** `goi_va_S10_ma.py`.
 
+## 9.24 **S11 — BỘ CHỐNG MA + miễn ngân sách gói chết/gỡ** (commit `f4ac011e`, client `8ffd4243` + server `449e3ecc` ĐÃ ĐẶT — **chờ restart GameServer + relog**)
+
+Chủ hỏi *"có chắc fix được đúng gốc không?"* rồi duyệt. Phản biện 3 tác nhân **bác miếng probe tổng
+quát** trước khi code vì 2 rủi ro CHẾT_NGƯỜI: (a) ngưỡng 2,5s **thấp hơn nhịp NormalSync hợp lệ của
+đám đông** (server chỉ sync **5 NPC/region/tick** — `KRegion.cpp:691` — region 200 NPC là 40-60
+tick/con) ⇒ probe bắn đại trà, cạn bể REQNPC 19 khe = tái sinh lỗi FIX-D "NPC vô hình"; (b)
+`KNpcSet::SyncNpc` tìm ID **toàn cục mọi map**, `NPC_SYNC` không mang mã map ⇒ probe người đã rời
+map kéo bản sao về toạ độ bay + refresh đồng hồ dọn = **ma bất tử**.
+
+### Bộ đã lên (16 miếng)
+**Client**: ① 5 bộ chọn mục tiêu (`TK_ChonDich`/`TK_BangDich`/`LD_ChonDich`/`HD_ChonDichDai`/
+`HD_TimQuai`) thêm check `m_mAutoExcludeNpcID` — lưu ý mẫu neo `GetMpsPos(&x,&y)` khớp 2 hàm
+(TK_BangDich + HD_ChonDichDai), đã chèn cả hai; ② FIX-6 hạn loại 30s→**60s** (phải vượt chu kỳ dọn
+55s) + khi loại thì **hỏi server** bằng khuôn REQNPC chuẩn (`[S11-DO]`); ③ `RequestNpcFail` **gỡ
+luôn bản sao ma** (`[S11-XOAMA]`) — DecRef **có gác** do_death/do_revive theo khuôn CheckBalance
+(khuôn NetCommandRemoveNpc DecRef vô điều kiện sẽ tràn bảng đếm BYTE tham chiếu ô); ④ `SyncNpc`
+toạ độ ngoài map → gỡ bản sao + trả khe (`[S11-MAPLA]`; trước đây return im lặng giữ ma + kẹt khe
+100 tick).
+**Server**: ⑤ `NpcRequestCommand` ID ở map khác → trả fail (`[S11-DOIMAP]`); ⑥ gói **CHẾT + GỠ miễn
+ngân sách broadcast** (`NPC_EVENT_BROADCAST_LIMIT=100000` trong `KRegion.h`; 3 điểm: DoDeath,
+`KNpcSet::Remove`, `SendDataToNearRegion` thêm tham số `nLimit=-1` chỉ truyền lớn tại SetPos
+`:9998`/ChangeWorld `:10068` — **12 caller còn lại giữ nguyên**). Đây là fix tận nguồn "xác 0 máu
+vẫn đi rồi búng về trại": gói chết 5 byte hiếm nhưng chui chung ngân sách 100 với gói di chuyển,
+và `nMaxCount--` trừ **cả với bot không có kết nối** (90% node) — mất còn nặng hơn 50%.
+🔴 CẤM miễn cho run/walk/hurt/skill (hàng MB/s).
+
+### Nghiệm thu sau restart
+Đếm `[S11-XOAMA]`/`[S11-DOIMAP]`/`[S11-DO]` · đợt bám-một-mục-tiêu ≥6s phải hết (trước: 37s) ·
+`[S6-BAL]` camtick=1001 giảm mạnh (trước 323/282s) · **không còn** xác 0-máu đi lại / búng về trại ·
+kiểm `[EXCL-PURGE]` vẫn nhịp 5s ở tab TK + LD (check exclusion là find()-only, dựa purge) ·
+`SYNCMIN` REQNPC của NPC mới **không** bị InsertNpcRequest trả FALSE (tiêu chí hỏng = tái FIX-D) ·
+`[PerfLog]` gai tick cuối trận TK không vượt nền 6,45/55,5 ms (gỡ ~1000 bot một đợt nay broadcast
+không cắt — nếu gai thì rải remove ở tầng script, không hạ ngân sách).
+Tái áp file chung: `goi_va_S10_dichthat.py` → `goi_va_S10_ma.py` → `goi_va_S11_chongma.py`.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
