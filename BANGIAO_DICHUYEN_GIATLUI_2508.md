@@ -876,6 +876,33 @@ công trường chưa commit của phiên kia (S8+xúc xắc — như mọi bả
 vẫn KHÔNG commit (tái áp: `ReverseTools/goi_va_S10_dichthat.py` — lưu ý script gốc dùng
 `m_Command` trực tiếp, bản đã áp đổi sang `GetCommand()`).
 
+## 9.23 NGHIỆM THU S10 ĐẠT + **[S10-MA] gỡ bóng ma** — chữa "đánh vào không khí" (commit `bc075c64`, server `898900cc` ĐÃ ĐẶT chờ restart, client `638dde7d` giữ nguyên)
+
+### Nghiệm thu S10 (phiên 282 s sau restart 21:53, trần log = 0)
+Tự-đảo-chiều bản sao/server: **6,1× → 1,7×** (client 15,1% / server 9,1% — server đảo nhiều là thật:
+TK rượt nhau) · lệch p90 **55-66 → 33 mps** · >4 ô 3,6% → **1,1%** · `[S9-*]` = **0** · **747** cú ADD
+có lệnh đích thật đi kèm (M1 chạy) · lưới hẹp: KEO 168 / SNAP 71 / **GAC 53** (race một-khe CÓ THẬT
+— gác phản biện đòi đã cứu 53 lần).
+
+### "Đánh vào không khí" = đánh BÓNG MA — server từ chối im lặng
+Hiện trường trọn vẹn: đợt **28,7 s** auto đánh `tgID=92666` ở `dist=5` (bản sao ngay cạnh chân),
+server trả từng cú `[S3-TGT-FIND] tgtid=92666 found=0` (`FindAroundNpc` = vùng 3×3 quanh người chơi,
+`KPlayer.cpp:2045`). Gốc: gói gỡ `s2c_npcremove` **bị rớt bởi ngân sách broadcast 100 người/lượt**
+(`KRegion.cpp:1395`) ⇒ ma kẹt tới ~55 s (bộ dọn 1000 tick `KNpcSet.cpp:755`). Đo: **323 ma bị dọn
+trong 282 giây** (`[S6-BAL]` camtick=1001 toàn bộ) — hệ thống, không cá biệt.
+
+### Fix [S10-MA] (1 miếng, server-only)
+Tại chỗ `FindAroundNpc` trả 0 trong handler skill (`KProtocolProcess.cpp` sau `[S3-TGT-FIND]`):
+gửi `NPC_REMOVE_SYNC {s2c_npcremove, ID}` (gói gốc 5 byte) cho **riêng client** vừa xin đánh ⇒
+client xoá ma ngay, auto đổi mục tiêu nhịp kế (~0,3 s thay vì 28,7-55 s). Bọc `#ifdef _SERVER`
+(file dùng chung). Nhãn `[S10-MA]` = `AUTOLOG_IDX` (đếm được).
+An toàn: ID lạ → client `ConformIdx` vứt (no-op); mục tiêu sống ngoài vùng quay lại → REQNPC tự
+thêm (kèm đích thật nhờ S10-M1); client cũ vẫn hiểu gói gốc.
+**Nghiệm thu sau restart**: đếm `[S10-MA]` (server) vs số đợt đánh-một-chỗ ≥4 s (client, PK-EMIT
+cùng tgID) — đợt dài nhất phải tụt từ 28,7 s xuống ≤1 s; `[S6-BAL]` camtick=1001 phải giảm mạnh
+(ma bị gỡ chủ động trước khi bộ dọn tới).
+Tái áp phần chưa commit: `goi_va_S10_dichthat.py` **rồi** `goi_va_S10_ma.py`.
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
