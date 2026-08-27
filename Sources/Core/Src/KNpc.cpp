@@ -5813,6 +5813,30 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 			return FALSE;
 		}
 	}
+	// [S10-M1 26/08] TRAM LO HONG GOC (co tu ban 2003, comment 'need check later -- spe
+	// 03/05/27' o KProtocolProcess.cpp:1987): goi NPC_SYNC (ADD) khong mang dich den, nen
+	// client thay NPC dang chay giua chang la tu che lenh 'chay toi cho dang dung' - ban
+	// sao mu dich cho toi chang ke tiep (do that: 10% khoang cho > 2,2s; ban sao tu quay
+	// dau gap 6,1 lan server). Gui kem MOT goi lenh CO SAN (s2c_npcrun/s2c_npcwalk, 13
+	// byte, client co handler tu truoc - khong doi protocol) mang DICH THAT m_DesX/m_DesY
+	// cho rieng client nay. Cung hang doi FIFO per-client (ServerStage.cpp:396+) nen luon
+	// toi SAU goi ADD va de len lenh tu che (khe lenh mot cho - ke ghi sau thang).
+	// GAC SONG COT m_DesX>0: DoSkill muon m_DesX=-1/m_DesY=CHI-SO-KHE lam tham so ma khong
+	// doi m_Doing (KNpc.cpp:2592+2649) - thieu gac la ban sao chay ve goc map.
+	// Khong gui cho chinh chu nhan vat (client cung se vut qua ConformIdx) do sach log.
+	// Ket qua goi phu KHONG duoc dong vao bRet: chuoi login theo buoc (KPlayerDBFuns.cpp:46+)
+	// doc gia tri tra ve cua ham nay de quyet dinh buoc nap nhan vat.
+	if (bRet && (m_Doing == do_run || m_Doing == do_walk) && m_DesX > 0 && m_DesY > 0 &&
+		!(IsPlayer() && Player[m_nPlayerIdx].m_nNetConnectIdx == nClient))
+	{
+		NPC_RUN_SYNC RunCmd;
+		RunCmd.ProtocolType = (BYTE)((m_Doing == do_walk) ? s2c_npcwalk : s2c_npcrun);
+		RunCmd.ID = m_dwID;
+		RunCmd.nMpsX = m_DesX;
+		RunCmd.nMpsY = m_DesY;
+		g_pServer->PackDataToClient(nClient, (BYTE*)&RunCmd, sizeof(RunCmd));
+		g_DebugLog("[S10-M1]%d:%s goi dich that (%d,%d) doing=%d cho client %d", SubWorld[m_SubWorldIndex].m_dwCurrentTime, Name, m_DesX, m_DesY, (int)m_Doing, nClient);
+	}
 	return bRet;
 }
 
