@@ -289,6 +289,7 @@ enum GAMEDATA_INDEX
 	NPC_OI_TARGET_INFO, //get target info for showing in client
 
 	GDI_PLAYER_MERIDIAN,			//get Meridian info, return meridian level array
+	GDI_PLAYER_SERIES,				// [KM 27/08] he ngu hanh nhan vat (0..4 theo series_*), -1 neu chua co
 
 	GDI_ITEM_EQUIP_SAME_GERNE,  //get item with same gerne with id in equip
 
@@ -296,6 +297,15 @@ enum GAMEDATA_INDEX
 	//uParam = (UI_GAMBLE_OPER_DATA)eOper For specific meaning, see UI_TRADE_OPER_DATA
 	//nParam The specific application and meaning are determined by the value of uParam, see the description of UI_TRADE_OPER_DATA
 	//Return The specific meaning is determined by the value of uParam, see the description of UI_TRADE_OPER_DATA
+
+	// [UILOREN] 6 khu chua do cua he lo ren - them CUOI enum de khong
+	// xe dich gia tri cac muc cu; doi ung UOC_*/pos_* trong GameDataDef.h
+	GDI_COMPONE_ITEM,		//Lo ren - luyen huyen tinh khoang thach
+	GDI_COMPTWO_ITEM,		//Lo ren - nang cap huyen tinh khoang thach
+	GDI_COMPTHREE_ITEM,		//Lo ren - nang cap khoang thach thuoc tinh
+	GDI_DISTILL_ITEM,		//Lo ren - rut option trang bi
+	GDI_FORGE_ITEM,			//Lo ren - che tao trang bi tim
+	GDI_ENCHASE_ITEM,		//Lo ren - kham nam trang bi
 };
 
 enum GAMEDATA_CHANGED_NOTIFY_INDEX

@@ -807,6 +807,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Src\KItemCompound.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Src\KItemDice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
@@ -1136,6 +1142,8 @@
     <ClInclude Include="Src\KPlayerBot.h">
     </ClInclude>
     <ClInclude Include="Src\KJx2CityWar.h">
+    </ClInclude>
+    <ClInclude Include="Src\KItemCompound.h">
     </ClInclude>
     <ClInclude Include="Src\KItemDice.h">
     </ClInclude>

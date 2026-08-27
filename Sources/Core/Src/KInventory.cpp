@@ -516,6 +516,10 @@ BOOL  KInventory::FindSameItemToSort(int nIdx, int *pnIdx, int *pnX, int *pnY)//
 			&& Item[*pArray].GetParticular() == Item[nIdx].GetParticular()
 			&& Item[*pArray].GetSeries() == Item[nIdx].GetSeries()
 			&& Item[*pArray].GetLevel() == Item[nIdx].GetLevel()
+			// [LOREN] Chin phep so CO DIEU KIEN cua ban goc (0x08065A70), dung
+			// CHUNG ham voi KItem::CanStack. Ban Viet hoa chi khai co cho bon
+			// mon nguyen lieu lo ren, moi vat pham khac giu nguyen hanh vi cu.
+			&& g_HopCoXepChong(*pArray, nIdx)
 			&& Item[*pArray].GetParam() == Item[nIdx].GetParam()
 			&& Item[*pArray].GetTime()->bYear == Item[nIdx].GetTime()->bYear
 			&& Item[*pArray].GetPlayerItemLock() == Item[nIdx].GetPlayerItemLock()

@@ -23,6 +23,7 @@
 #include "KPlayerSet.h"
 #include "KPlayerTeam.h"
 #include "KItemDice.h"	// 26/08: he xuc xac chia do (DICEITEM)
+#include "KItemCompound.h"	// [LOREN] he lo ren (viet moi theo ban Linux)
 #include "KMissleSet.h"
 #include "KFaction.h"
 #include "KMath.h"
@@ -265,6 +266,15 @@ CORE_API void g_InitCore(char * nParmName)
 	ObjSet.Init();
 	MissleSet.Init();
 	g_IniScriptEngine();
+#ifdef _SERVER
+	// [LOREN] he lo ren: nap compoundscript.txt + itemvaluescript.txt.
+	// Phai dat SAU g_IniScriptEngine vi cac kich ban gia tri tu nap bang
+	// rieng cua chung luc chay dong dau tien.
+	g_ItemCompound.Init();
+	// Dieu kien nguyen lieu - kich ban Lua cua ban goc khong tu kiem, thieu
+	// cai nay thi lo ren nhan bat ky vat pham gi.
+	g_FoundryResDemand.Init();
+#endif
 	g_OrdinSkillsSetting.Load(SKILL_SETTING_FILE);
 	g_MeridiantSetting.Load(MERIDIAN_SETTING_FILE);
 	g_MisslesSetting.Load(MISSLES_SETTING_FILE);

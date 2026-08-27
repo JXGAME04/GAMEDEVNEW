@@ -318,6 +318,8 @@ void	KPlayer::Release()
 	m_dwRewardId = 0;
 	m_dwRewardExId = 0;
 	m_dwTrembleItemId = 0;
+	m_dwCompoundItemId = 0;		// [UILOREN] reset khi khe player tai su dung
+	m_szCompoundFun[0] = 0;		// [UILOREN]
 	m_sLoginRevivalPos.m_nSubWorldID = 0;
 	m_sLoginRevivalPos.m_nMpsX = 0;
 	m_sLoginRevivalPos.m_nMpsY = 0;
@@ -2898,6 +2900,13 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentFiveElementsResist = 0;
 	Npc[m_nIndex].m_CurrentManaToSkillEnhanceP	= 0;					//#khi noi cong day tang ky nang cong kich
 	Npc[m_nIndex].m_CurrentSorbDamageP	= 0;								//#triet tieu sat thuong
+	Npc[m_nIndex].m_CurrentBlockRate = 0; Npc[m_nIndex].m_CurrentAntiBlockRate = 0;					// [KM 27/08]
+	Npc[m_nIndex].m_CurrentEnhanceHitRate = 0; Npc[m_nIndex].m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
+	Npc[m_nIndex].m_CurrentAntiAllResP = 0; Npc[m_nIndex].m_CurrentAntiSorbDamageP = 0;				// [KM 27/08]
+	Npc[m_nIndex].m_CurrentEnhanceHitEffect = 0;												// [KM 27/08]
+	Npc[m_nIndex].m_CurrentAntiEnhanceHitEffect = 0;										// [KM 27/08]
+	Npc[m_nIndex].m_CurrentAntiHitRecover = 0;											// [KM 27/08]
+	Npc[m_nIndex].m_CurrentAddDamageP = 100;											// [KM 27/08] goc 100 theo Linux
 	Npc[m_nIndex].m_CurrentExpEnhance	= 0;								//nh©n ®«i nh©n ba nh©n x2 ®iÓm kinh nghiÖm
 	Npc[m_nIndex].m_CurrentExpSkillsEnchance	= 1; // ExpSkills x2
 	Npc[m_nIndex].m_CurrentExpSkillsVip = 1;
@@ -6530,7 +6539,8 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 		pInfo->m_curDurability	= Item[nIdx].GetDurability();
 		pInfo->m_nNature		= Item[nIdx].GetNature();
 		for (j = 0; j < MAX_ITEM_MAGICLEVEL; j++)
-			pInfo->m_btMagicLevel[j] = (BYTE)Item[nIdx].m_GeneratorParam.nGeneratorLevel[j];
+			// [LOREN] khong ep (BYTE) nua - chi so dong chay toi 480
+			pInfo->m_btMagicLevel[j] = Item[nIdx].m_GeneratorParam.nGeneratorLevel[j];
 	}
 	
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));

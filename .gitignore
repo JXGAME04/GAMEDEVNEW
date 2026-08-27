@@ -66,3 +66,15 @@ _build_goddess_2108/
 # Ban sao luu tu dong cua cac ban va (v24-v39): chi de quay lui tai cho,
 # khong dua len kho. Dat ten dang <ten goc>.truoc_<viec>_<ngay>
 *.truoc_*
+
+# [UILOREN 27/08] rac va du lieu SINH RA / RUT TU PAK - khong up, sinh lai duoc bang patcher
+__pycache__/
+*.pyc
+*.truoc_*
+*.hong_fffd_*
+*.SAI_DUNG_CHAY
+ReverseTools/loren/ra/
+ReverseTools/loren/lua_utf8/
+ReverseTools/loren/ui_loren/ra_khamnam/
+ReverseTools/loren/ui_loren/ra_khamnam2/
+ReverseTools/pak_vltk/ra_vltk/

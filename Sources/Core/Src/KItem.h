@@ -280,6 +280,10 @@ public:
 	int		GetObjIdx() { return m_CommonAttrib.nObjIdx;};
 	void*	GetRequirement(IN int);
 	int		GetMaxDurability();
+	// [LOREN] ban Linux co SetMaxDurability (script\item\compound), JX1 chua.
+	// GetMaxDurability doc m_aryBaseAttrib co nAttribType == magic_durability_v
+	// nen Set ghi vao DUNG o do; khong co o thi khong lam gi (tra FALSE).
+	BOOL	SetMaxDurability(IN const int nDur);
 	int		GetTotalMagicLevel();
 	int		GetRepairPrice();
 	void	Remove();
@@ -458,5 +462,11 @@ private:
 };
 
 extern KItem Item[MAX_ITEM];
+
+// [LOREN] Chin phep so xep chong CO DIEU KIEN, doc tu magicscript_stack.txt.
+// Ban goc chi co MOT ham quyet dinh xep chong (0x08065A70) dung cho ca duong
+// keo-tha lan duong nhap tui, nen JX1 cung dung chung mot ham cho ca hai.
+// Tra TRUE khi vat pham khong khai co nao (giu nguyen hanh vi cu cua JX1).
+BOOL g_HopCoXepChong(int nIdxA, int nIdxB);
 
 #endif

@@ -243,6 +243,42 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 				if (pItem)
 					pItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
 			}
+			else if (pObject->eContainer == UOC_COMPONE_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			else if (pObject->eContainer == UOC_COMPTWO_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			else if (pObject->eContainer == UOC_COMPTHREE_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			else if (pObject->eContainer == UOC_DISTILL_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			else if (pObject->eContainer == UOC_FORGE_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			else if (pObject->eContainer == UOC_ENCHASE_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
 			else if (pObject->eContainer == UOC_IN_HAND)
 			{
 				Wnd_DragFinished();

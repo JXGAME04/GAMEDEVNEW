@@ -699,6 +699,8 @@ public:
 	DWORD			m_dwLogoutScriptID;
 	DWORD			m_dwRewardId;
 	DWORD			m_dwRewardExId;
+	DWORD			m_dwCompoundItemId;		// [UILOREN] script id giu cua so lo ren (khuon m_dwTrembleItemId)
+	char			m_szCompoundFun[64];	// [UILOREN] ten ham callback do OpenCompoundItem dang ky
 	DWORD			m_dwTrembleItemId;//kh¶m n¹m
 	
 	char			m_szTaskAnswerFun[MAX_ANSWERNUM][32];

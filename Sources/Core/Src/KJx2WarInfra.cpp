@@ -888,6 +888,11 @@ int LuaGetGiveItemUnit(Lua_State* L)
 
 // (nItemIdx) - tru 1 DON VI (stack-- / xoa khi het) - khop khai trien stack
 // cua give-list nen vong for cua sure_GiveTiaoZhanLing tru dung tung don vi
+// [LOREN 26/08] Them doi THU HAI = so luong can tru (mac dinh 1).
+// He lo ren tinh gia tri nguyen lieu theo CA CHONG nen khi an nguyen lieu
+// cung phai an ca chong; compound_header.lua goi
+//     RemoveItemByIndex( idx, GetItemStackCount(idx) )
+// Goi mot doi van giu nguyen hanh vi cu (tru 1 don vi).
 int LuaRemoveItemByIndex(Lua_State* L)
 {
 	int nOk = 0;
@@ -895,8 +900,15 @@ int LuaRemoveItemByIndex(Lua_State* L)
 	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
 	{
 		int nIdx = (int)Lua_ValueToNumber(L, 1);
+		int nNum = 1;
+		if (Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+		{
+			nNum = (int)Lua_ValueToNumber(L, 2);
+			if (nNum < 1)
+				nNum = 1;
+		}
 		if (nIdx > 0 && nIdx < MAX_ITEM &&
-			Player[nPlayerIndex].m_ItemList.RemoveItemIdx(nIdx, 1))
+			Player[nPlayerIndex].m_ItemList.RemoveItemIdx(nIdx, nNum))
 			nOk = 1;
 	}
 	Lua_PushNumber(L, nOk);

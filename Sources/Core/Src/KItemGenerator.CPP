@@ -572,9 +572,75 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 	return nResult;
 }
 */
+// [LOREN] Dich CHI SO DONG cua bang magicattriblevel.txt thanh mot thuoc
+// tinh cu the. Ban Linux ghi chi so dong vao arynMagLvl, ban JX1 thi cho
+// rang do la cap 1..10 - hai quy uoc khac han nhau.
+// Bang nam o  \settings\item\%03d\magicattriblevel.txt, cot:
+//   0 NAME  1 PREFIX  2 SERIES  3 LEVEL  4 MAGIC_ID
+//   5 MAG_P1_MIN  6 MAG_P1_MAX  7 MAG_P2_MIN  8 MAG_P2_MAX
+//   9 MAG_P3_MIN 10 MAG_P3_MAX 11 BASE_VALUE
+// Nap mot lan cho moi phien ban roi giu lai.
+#define LOREN_MAX_ITEM_VER 8
+static KTabFile   s_LoRenMagTab[LOREN_MAX_ITEM_VER];
+static BOOL       s_LoRenMagTabDaNap[LOREN_MAX_ITEM_VER] = { FALSE };
+
+static KTabFile* sLoRenBangThuocTinh(int nVersion)
+{
+	if (nVersion < 0 || nVersion >= LOREN_MAX_ITEM_VER)
+		return NULL;
+	if (!s_LoRenMagTabDaNap[nVersion])
+	{
+		char szPath[MAX_PATH];
+		_snprintf(szPath, sizeof(szPath) - 1,
+			  "\\settings\\item\\%03d\\magicattriblevel.txt", nVersion);
+		szPath[sizeof(szPath) - 1] = 0;
+		s_LoRenMagTab[nVersion].Load(szPath);
+		s_LoRenMagTabDaNap[nVersion] = TRUE;
+	}
+	if (s_LoRenMagTab[nVersion].GetHeight() < 2)
+		return NULL;
+	return &s_LoRenMagTab[nVersion];
+}
+
+// Tra ve TRUE neu dich duoc. nRow dem tu 1 (dong tieu de la dong 1 cua
+// KTabFile nen dong du lieu thu nRow nam o nRow + 1).
+static BOOL sLoRenDichThuocTinh(int nVersion, int nRow, KItemNormalAttrib* pOut)
+{
+	if (!pOut || nRow <= 0)
+		return FALSE;
+	KTabFile* pTab = sLoRenBangThuocTinh(nVersion);
+	if (!pTab)
+		return FALSE;
+	if (nRow + 1 > pTab->GetHeight())
+		return FALSE;
+
+	int nMagicId = 0;
+	pTab->GetInteger(nRow + 1, (LPSTR)"MAGIC_ID", 0, &nMagicId);
+	if (nMagicId <= 0)
+		return FALSE;
+
+	const char* szMin[3] = { "MAG_P1_MIN", "MAG_P2_MIN", "MAG_P3_MIN" };
+	const char* szMax[3] = { "MAG_P1_MAX", "MAG_P2_MAX", "MAG_P3_MAX" };
+	pOut->nAttribType = nMagicId;
+	for (int k = 0; k < 3; k++)
+	{
+		int nMin = 0, nMax = 0;
+		pTab->GetInteger(nRow + 1, (LPSTR)szMin[k], 0, &nMin);
+		pTab->GetInteger(nRow + 1, (LPSTR)szMax[k], 0, &nMax);
+		// dai am (vd -1,-1) nghia la o nay khong dung - giu nguyen so do
+		if (nMin < 0 || nMax < nMin)
+			pOut->nValue[k] = nMin;
+		else if (nMax == nMin)
+			pOut->nValue[k] = nMin;
+		else
+			pOut->nValue[k] = GetRandomNumber(nMin, nMax);
+	}
+	return TRUE;
+}
+
 BOOL KItemGenerator::Gen_MagicAttrib(
 	int nType, const int* pnaryMALevel, int nSeriesReq, int nLucky,
-	KItemNormalAttrib* pnaryMA, int nGameVersion
+	KItemNormalAttrib* pnaryMA, int nGameVersion, int nItemNature
 )
 {
 	int nResult = false;
@@ -602,11 +668,52 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 	}
 	else
 	{
+		// [LOREN] Xoa sach TRUOC khi sinh.
+		// Ban goc dua vao vong don o cuoi ham de xoa phan con lai, nhung
+		// vong do chi chay khi vong duoi day `break` som. Khi co o kham
+		// nam rong (-1) thi vong duoi day di het MAX_ITEM_MAGICLEVEL,
+		// vong don thanh lenh rong -> mang sMA[] chua khoi tao cua
+		// Gen_ExistEquipment se ro rac vao trang bi.
+		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			pnaryMA[i].nAttribType = 0;
+			pnaryMA[i].nValue[0] = 0;
+			pnaryMA[i].nValue[1] = 0;
+			pnaryMA[i].nValue[2] = 0;
+		}
+
 		for (i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
 		{
 			// Èç¹û·¢ÏÖ¼¶±ðÎªÁã£¬±íÊ¾²»ÐèÒª¼ÌÐø´¦ÀíÁË£¬ÍË³ö
 			if (pnaryMALevel[i] == 0)
 				break;
+			// [LOREN] chan cung: pnaryMA[] chi co MAX_ITEM_MAGICATTRIB
+			// o, trong khi vong nay chay toi MAX_ITEM_MAGICLEVEL. Truoc
+			// day khong no vi vong luon break som; nay co nhanh bo qua
+			// o rong nen phai chan.
+			if (i >= MAX_ITEM_MAGICATTRIB)
+				break;
+			// [LOREN] ma thu ba cua ban Linux: -1 = O KHAM NAM RONG.
+			// Giu khe (de arynMagLvl[j] va m_aryMagicAttrib[j] cung
+			// chi so) nhung khong sinh thuoc tinh. Truoc day -1 roi
+			// vao GetCMIT -> NULL -> break -> cat ngang danh sach.
+			if (pnaryMALevel[i] < 0)
+				continue;
+			// [LOREN] Trang bi tim: con so la CHI SO DONG cua bang thuoc tinh,
+			// da dac ta du ca thuoc tinh lan cap lan dai gia tri. Ghi thang,
+			// khong qua GetCMIT (GetCMIT chi nhan cap 1..10 nen se tra NULL).
+			// Duong dong bo tu may chu ve client khong mang pham chat xuong
+			// (KItemSet::AddItemSet2 -> Gen_Equipment ban 10 tham so), nen nhan
+			// dien them bang CHINH GIA TRI: cap cua JX1 chi chay 1..MATF_LEVEL,
+			// con so lon hon the chac chan la chi so dong cua bang thuoc tinh.
+			if (nItemNature == NATURE_VIOLET || pnaryMALevel[i] > MATF_LEVEL)
+			{
+				if (i < MAX_ITEM_MAGICATTRIB &&
+					sLoRenDichThuocTinh(nGameVersion, pnaryMALevel[i], &pnaryMA[i]))
+					continue;
+				// khong tra duoc thi bo qua o nay, dung cat ca danh sach
+				continue;
+			}
 			SelectedMagicTable.Clear();
 
 			// ¸ù¾ÝÇ°×ººó×º¡¢ÎïÆ·ÀàÐÍ¡¢ÎåÐÐÐèÇó¡¢ÐèÇó¼¶±ð½«ËùÓÐ·ûºÏÌõ¼þµÄÄ§·¨ÊôÐÔÏîÈ¡³öÀ´
@@ -785,17 +892,24 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 
 				}
 				// ¼ì²éÊÇ·ñÒÑ¾­ÓÐÏàÍ¬µÄ¡°ÊôÐÔµ÷ÕûÀà±ð¡±
+				// [LOREN] khe NULL = o kham nam rong, bo qua chu khong deref.
+				// Dung co rieng vi `k < i` khong con nghia sau khi bo qua.
 				int k = 0;
+				BOOL bTrungThuocTinh = FALSE;
 				for (k = 0; k < i; k++)
 				{
-					_ASSERT(pMagicAttrTable[k]);
+					if (!pMagicAttrTable[k])
+						continue;
 
 					if ((pMagicAttrTable[k]->m_MagicAttrib.nPropKind) == (pMAItem->m_MagicAttrib.nPropKind))
+					{
+						bTrungThuocTinh = TRUE;
 						break;
+					}
 				}
 
 				// Èç¹û·¢ÏÖ ¡°ÊôÐÔµ÷ÕûÀà±ð¡±ÏàÍ¬£¬ËµÃ÷ÒÑ¾­ÓÐÒ»¸öÏàÍ¬µÄÖµ±»Ñ¡ÖÐ£¬ÄÇÃ´È¡ÏÂÒ»¸ö
-				if (k < i)
+				if (bTrungThuocTinh)
 					continue;
 
 				SelectedMagicTable.Insert(nMAIndex);
@@ -851,8 +965,11 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 
 	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 	{
+		// [LOREN] khe NULL = o kham nam rong. Truoc day `break` o day
+		// lam cac thuoc tinh PHIA SAU giu co "dang dung" vinh vien,
+		// khien moi lan sinh trang bi ve sau deu bo qua chung.
 		if (!pMagicAttrTable[i])
-			break;
+			continue;
 
 		_ASSERT(pMagicAttrTable[i]->m_nUseFlag);   // È·¶¨ÒÑ¾­Ê¹ÓÃ
 
@@ -1292,7 +1409,7 @@ BOOL KItemGenerator::Gen_ExistEquipment(IN int nItemNature,
 		if (NULL == pnaryMALevel)
 			return TRUE;
 		KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];	// µÀ¾ßµÄÄ§·¨ÊôÐÔ
-		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion);
+		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion, nItemNature);
 		if (bEC)
 			pItem->SetAttrib_MA(sMA);
 
@@ -1355,13 +1472,43 @@ BOOL KItemGenerator::Gen_Mine(IN int nDetailType, IN OUT KItem* pItem,IN int nSt
 	return TRUE;
 }
 
+// [LOREN] Nguyen lieu cua he lo ren: chung co CAP va NGU HANH that, va
+// khoang thuoc tinh con mang MA PHEP o nGeneratorLevel[0].
+// Ban Linux dien ta bang mot cot rieng trong magicscript (cot 17
+// "co khai niem cap"); bang cua JX1 khong co cot do nen phai liet ke.
+//   6/1/146        Huyen Tinh Khoang Thach
+//   6/1/199..204   sau khoang thuoc tinh
+//   6/1/3769,3770  Huyen Kim va Huyen Kim Chi Tinh
+static BOOL sLaNguyenLieuLoRen(int nDetailType, int nParticularType)
+{
+	if (nDetailType != 1)
+		return FALSE;
+	if (nParticularType == 146)
+		return TRUE;
+	// sau NGUYEN KHOANG - nguyen lieu cua thao tac tinh luyen thuoc tinh.
+	// Chung cung nMaxStack = 50 nen cung dinh phep ep, va magic_distill
+	// doc ngu hanh cua chinh chung; thieu day la ca kham nam lan Do pho
+	// deu khong co nguyen lieu.
+	if (nParticularType >= 148 && nParticularType <= 153)
+		return TRUE;
+	if (nParticularType >= 199 && nParticularType <= 204)
+		return TRUE;
+	if (nParticularType == 3769 || nParticularType == 3770)
+		return TRUE;
+	return FALSE;
+}
+
 BOOL KItemGenerator::Gen_MagicScript(IN int nDetailType, IN int nParticularType, IN OUT KItem* pItem, IN int nLevel, IN int nSeries, IN int nLuck, IN int nStackNum)
 {
 	_ASSERT(this != NULL);
 	_ASSERT(pItem != NULL);
 	
 	BOOL bEC = FALSE;
+	// [LOREN] Ma phep cua khoang nam o nGeneratorLevel[0]; xoa la mat.
+	KItemGeneratorParam sGiuParam = pItem->m_GeneratorParam;
 	ZeroMemory(&pItem->m_GeneratorParam, sizeof(pItem->m_GeneratorParam));
+	if (sLaNguyenLieuLoRen(nDetailType, nParticularType))
+		pItem->m_GeneratorParam = sGiuParam;
 	
 	const KBASICPROP_MAGICSCRIPT* pMagicScript = NULL;
 	const int i = nParticularType;
@@ -1372,18 +1519,29 @@ BOOL KItemGenerator::Gen_MagicScript(IN int nDetailType, IN int nParticularType,
 		return bEC;
 	}
 	*pItem = *pMagicScript;
+	// [LOREN] Nguyen lieu lo ren: ngu hanh am nghia la CHUA CO, phai giu
+	// nguyen. Boc ngau nhien o day thi so do se bi ghi xuong CSDL
+	// (KPlayerDBFuns) va khong hoi lai duoc; moi lan dang nhap lai boc
+	// mot so khac. Viec gan ngu hanh that de buoc di tru CSDL lam.
 	if (nSeries < series_metal)
-		pItem->SetSeries(::GetRandomNumber(series_metal, series_earth));
+	{
+		if (sLaNguyenLieuLoRen(nDetailType, nParticularType))
+			pItem->SetSeries(nSeries);
+		else
+			pItem->SetSeries(::GetRandomNumber(series_metal, series_earth));
+	}
 	else
 		pItem->SetSeries(nSeries);
 
 	if(pMagicScript->m_nMaxStack) // xö lý xÕp chång nÕu lµ vËt phÈm xÕp chång kh«ng ph©n biÖt ngò hµnh xep chong
-		pItem->SetSeries(-1);
+		if (!sLaNguyenLieuLoRen(nDetailType, nParticularType))
+			pItem->SetSeries(-1);
 
 	pItem->SetLevel(nLevel);
 
 	if(pMagicScript->m_nMaxStack) // xö lý xÕp chång nÕu lµ vËt phÈm xÕp chång kh«ng ph©n biÖt level hµnh xep chong
-		pItem->SetLevel(10);
+		if (!sLaNguyenLieuLoRen(nDetailType, nParticularType))
+			pItem->SetLevel(10);
 
 	pItem->m_GeneratorParam.nLuck = nLuck;
 	pItem->m_CommonAttrib.nGoldId = 0;
@@ -1556,7 +1714,7 @@ BOOL KItemGenerator::Gen_Equipment(IN int nItemNature,
 			return TRUE;
 
 		KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
-		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion);
+		bEC = Gen_MagicAttrib(nDetailType, pnaryMALevel, nSeriesReq, nLucky, sMA, nGameVersion, nItemNature);
 		if (bEC)
 			pItem->SetAttrib_MA(sMA);
 

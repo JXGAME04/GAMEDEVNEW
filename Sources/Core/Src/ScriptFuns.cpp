@@ -3049,6 +3049,13 @@ static KTabFile* sGetTabFileByName(Lua_State* L, int nArg)
 	}
 	return &g_TabFileLib;
 }
+// [LOREN] KItemCompound.cpp can chinh bang nay de lam TabFile_Search.
+// s_mapTabFiles/sGetTabFileByName la static nen mo mot cua duy nhat.
+KTabFile* g_GetLuaTabFile(Lua_State* L, int nArg)
+{
+	return sGetTabFileByName(L, nArg);
+}
+
 int LuaTabFile_Load(Lua_State* L)
 {
 	int result = 0;
@@ -3104,11 +3111,32 @@ int LuaTabFile_GetCell(Lua_State* L)
 	KTabFile* pTabC = sGetTabFileByName(L, 1);
 	if (nParamNum >= 3 && pTabC->GetHeight())
 	{
+		// [LOREN] doi thu 4 = GIA TRI MAC DINH khi o trong / khong co cot.
+		// Ban Linux goi TabFile_GetCell( path, row, "COL", -1 ) o khap noi;
+		// truoc day JX1 bo qua doi nay va luon tra "" -> tonumber("") = nil.
+		char szDefault[64] = "";
+		if (nParamNum >= 4)
+		{
+			if (Lua_IsNumber(L, 4))
+			{
+				double dDef = Lua_ValueToNumber(L, 4);
+				if (dDef == (double)(int)dDef)
+					_snprintf(szDefault, sizeof(szDefault) - 1, "%d", (int)dDef);
+				else
+					_snprintf(szDefault, sizeof(szDefault) - 1, "%g", dDef);
+				szDefault[sizeof(szDefault) - 1] = 0;
+			}
+			else if (Lua_IsString(L, 4))
+			{
+				strncpy(szDefault, Lua_ValueToString(L, 4), sizeof(szDefault) - 1);
+				szDefault[sizeof(szDefault) - 1] = 0;
+			}
+		}
 		if (Lua_IsNumber(L, 2) && Lua_IsNumber(L, 3))
 		{
 			int nRow = (int)Lua_ValueToNumber(L, 2);
 			int nColumn = (int)Lua_ValueToNumber(L, 3);
-			pTabC->GetString(nRow, nColumn, "", szString, dwCellMax);
+			pTabC->GetString(nRow, nColumn, szDefault, szString, dwCellMax);
 		}
 		else if (Lua_IsNumber(L, 2) && Lua_IsString(L, 3))
 		{
@@ -3116,7 +3144,7 @@ int LuaTabFile_GetCell(Lua_State* L)
 			char szColumn[64];
 			strncpy(szColumn, Lua_ValueToString(L, 3), sizeof(szColumn) - 1);
 			szColumn[sizeof(szColumn) - 1] = 0;
-			pTabC->GetString(nRow, szColumn, "", szString, dwCellMax);
+			pTabC->GetString(nRow, szColumn, szDefault, szString, dwCellMax);
 		}
 		else if (Lua_IsString(L, 2) && Lua_IsString(L, 3))
 		{
@@ -3126,10 +3154,16 @@ int LuaTabFile_GetCell(Lua_State* L)
 			szRow[sizeof(szRow) - 1] = 0;
 			strncpy(szColumn, Lua_ValueToString(L, 3), sizeof(szColumn) - 1);
 			szColumn[sizeof(szColumn) - 1] = 0;
-			pTabC->GetString(szRow, szColumn, "", szString, dwCellMax);
+			pTabC->GetString(szRow, szColumn, szDefault, szString, dwCellMax);
 		}
 		else
 			return 0;
+		// o trong -> KTabFile van tra chuoi rong; ep ve mac dinh
+		if (szString[0] == 0 && szDefault[0] != 0)
+		{
+			strncpy(szString, szDefault, dwCellMax);
+			szString[dwCellMax] = 0;
+		}
 
 		Lua_PushString(L, szString);
 		return 1;
@@ -3146,8 +3180,11 @@ int LuaTabFile_GetRowCount(Lua_State* L)
 		Lua_PushNumber(L, nCount);
 		return 1;
 	}
+	// [LOREN] Truoc day `return 0` khien Lua nhan NIL thay vi so 0:
+	// atlas.lua chay `for j = 2, TabFile_GetRowCount(...)` la no ngay
+	// khi bang chua nap. Bang chua nap phai tra 0 dang hoang.
 	Lua_PushNumber(L, 0);
-	return  0;
+	return 1;
 }
 
 int LuaTabFile_UnLoad(Lua_State* L)
@@ -3160,7 +3197,7 @@ int LuaTabFile_UnLoad(Lua_State* L)
 		return 1;
 	}
 	Lua_PushNumber(L, 0);
-	return 0;
+	return 1;
 }
 
 // ---- IniFile_* : port Hoat dong phuong bang hoi (21/08) ----
@@ -10256,8 +10293,32 @@ int LuaOpenCompoundItem(Lua_State* L)
 	if (nPlayerIndex <= 0)
 		return 0;
 
+	// [UILOREN] luu script id dang chay de nut bam tren cua so goi nguoc ve
+	// (khuon LuaOpenTrembleItem). Doi so 1 (neu co) la ten ham callback.
+	Player[nPlayerIndex].m_dwCompoundItemId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	Player[nPlayerIndex].m_szCompoundFun[0] = 0;
+	if (Lua_GetTopIndex(L) >= 1 && Lua_IsString(L, 1))
+	{
+		strncpy(Player[nPlayerIndex].m_szCompoundFun, Lua_ValueToString(L, 1), sizeof(Player[nPlayerIndex].m_szCompoundFun) - 1);
+		Player[nPlayerIndex].m_szCompoundFun[sizeof(Player[nPlayerIndex].m_szCompoundFun) - 1] = 0;
+	}
+
 	BYTE	NetCommand = (BYTE)s2c_opencompounditem;
 	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(BYTE));
+	return 0;
+}
+
+// [UILOREN] dong phien lo ren: xoa script id dang giu. Op mo cua so
+// s2c_opencompounditem chi co 1 byte (khong co m_nType nhu tremble) nen
+// khong co goi dong rieng phia client - chi xoa id phia may chu.
+int LuaEndCompoundItem(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+		return 0;
+
+	Player[nPlayerIndex].m_dwCompoundItemId = 0;
+	Player[nPlayerIndex].m_szCompoundFun[0] = 0;
 	return 0;
 }
 
@@ -10299,46 +10360,70 @@ int LuaGetIdItem(Lua_State* L)
 		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetTrembleItem(nSocket));
 		break;
 	case 4:
-		if (nSocket > 3)
+		if (nSocket < 0)
 		{
-			nSocket = 3;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetCompOneItem(nSocket));
+		if (nSocket > 7)
+		{
+			nSocket = 7;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetCompOneItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	case 5:
-		if (nSocket > 3)
+		if (nSocket < 0)
 		{
-			nSocket = 3;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetCompTwoItem(nSocket)); 
+		if (nSocket > 7)
+		{
+			nSocket = 7;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetCompTwoItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	case 6:
-		if (nSocket > 3)
+		if (nSocket < 0)
 		{
-			nSocket = 3;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetCompThreeItem(nSocket)); 
+		if (nSocket > 7)
+		{
+			nSocket = 7;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetCompThreeItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	case 7:
-		if (nSocket > 11)
+		if (nSocket < 0)
 		{
-			nSocket = 11;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetDistillItem(nSocket)); 
+		if (nSocket > 10)
+		{
+			nSocket = 10;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetDistillItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	case 8:
-		if (nSocket > 2)
+		if (nSocket < 0)
 		{
-			nSocket = 2;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetForgeItem(nSocket)); 
+		if (nSocket > 1)
+		{
+			nSocket = 1;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetForgeItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	case 9:
-		if (nSocket > 11)
+		if (nSocket < 0)
 		{
-			nSocket = 11;
+			nSocket = 0;
 		}
-		//Lua_PushNumber(L,Player[nPlayerIndex].m_ItemList.GetEnchaseItem(nSocket)); 
+		if (nSocket > 10)
+		{
+			nSocket = 10;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetEnchaseItem(nSocket));	// [UILOREN] 0 = o rong
 		break;
 	default:
 		break;
@@ -13878,6 +13963,23 @@ extern int LuaHD3_FormatTime2Date(Lua_State* L);
 extern int LuaHD3_AddStatData(Lua_State* L);
 extern int LuaHD3_GetItemAllParams(Lua_State* L);
 extern int LuaHD3_GetItemRandSeed(Lua_State* L);
+// [LOREN] he lo ren - KItemCompound.cpp (viet moi theo ban Linux)
+extern int LuaCmp_ITEM_CalcItemValue(Lua_State* L);
+extern int LuaCmp_FoundryCompound(Lua_State* L);
+extern int LuaCmp_ITEM_GetItemVersion(Lua_State* L);
+extern int LuaCmp_ITEM_GetLatestItemVersion(Lua_State* L);
+extern int LuaCmp_AddItemEx(Lua_State* L);
+extern int LuaCmp_TabFile_Search(Lua_State* L);
+extern int LuaCmp_WriteCompoundLog(Lua_State* L);
+extern int LuaCmp_GetMaxDurability(Lua_State* L);
+extern int LuaCmp_GetCurDurability(Lua_State* L);
+extern int LuaCmp_SetMaxDurability(Lua_State* L);
+extern int LuaCmp_SetCurDurability(Lua_State* L);
+extern int LuaCmp_GetItemQuality(Lua_State* L);
+extern int LuaCmp_GetGlodEqIndex(Lua_State* L);
+extern int LuaCmp_GetPlatinaEquipIndex(Lua_State* L);
+extern int LuaCmp_GetPlatinaLevel(Lua_State* L);
+extern int LuaCmp_GetItemBindState(Lua_State* L);
 extern int LuaHD3_GetItemGenTime(Lua_State* L);
 extern int LuaHD3_GetItemQuality(Lua_State* L);
 extern int LuaHD3_GetGlodEqIndex(Lua_State* L);
@@ -14802,6 +14904,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"OpenTrembleItem",		LuaOpenTrembleItem},
 	{"EndTrembleItem",		LuaEndTrembleItem},
 	{"OpenCompoundItem", LuaOpenCompoundItem},
+	{"EndCompoundItem", LuaEndCompoundItem},
 	{"GetIdItem", LuaGetIdItem},
 	{"ChangeInfoItem", LuaChangeInfoItem},
 	{"GetWayPoint",		LuaGetPlayerWayPoint},
@@ -15436,10 +15539,29 @@ TLua_Funcs GameScriptFuns[] =
 		{"GetItemAllParams",	LuaHD3_GetItemAllParams},
 		{"ITEM_GetItemRandSeed",	LuaHD3_GetItemRandSeed},
 		{"GetItemGenTime",	LuaHD3_GetItemGenTime},
-		{"GetItemQuality",	LuaHD3_GetItemQuality},
-		{"GetGlodEqIndex",	LuaHD3_GetGlodEqIndex},
-		{"GetPlatinaEquipIndex",	LuaHD3_GetPlatinaEquipIndex},
-		{"GetPlatinaLevel",	LuaHD3_GetPlatinaLevel},
+		// [LOREN] GetItemQuality ban VO cu luon tra 0; he lo ren song bang
+		// gia tri nay nen doi sang ban doc that tu m_CommonAttrib.nItemNature.
+		{"GetItemQuality",	LuaCmp_GetItemQuality},
+		// [LOREN] 11 ham con lai cua he lo ren
+		{"ITEM_CalcItemValue",	LuaCmp_ITEM_CalcItemValue},
+		// [LOREN] cua vao cua he lo ren: kich ban NPC gom nguyen lieu
+		// roi goi ham nay -> Compound() cua kich ban tuong ung.
+		{"FoundryCompound",	LuaCmp_FoundryCompound},
+		{"ITEM_GetItemVersion",	LuaCmp_ITEM_GetItemVersion},
+		{"ITEM_GetLatestItemVersion",	LuaCmp_ITEM_GetLatestItemVersion},
+		{"AddItemEx",	LuaCmp_AddItemEx},
+		{"TabFile_Search",	LuaCmp_TabFile_Search},
+		{"WriteCompoundLog",	LuaCmp_WriteCompoundLog},
+		{"GetMaxDurability",	LuaCmp_GetMaxDurability},
+		{"GetCurDurability",	LuaCmp_GetCurDurability},
+		{"SetMaxDurability",	LuaCmp_SetMaxDurability},
+		{"SetCurDurability",	LuaCmp_SetCurDurability},
+		{"GetItemBindState",	LuaCmp_GetItemBindState},
+		// [LOREN] ba ham nay phai that cung luc voi GetItemQuality:
+		// bat pham chat len la cac nhanh goi chung song lai.
+		{"GetGlodEqIndex",	LuaCmp_GetGlodEqIndex},
+		{"GetPlatinaEquipIndex",	LuaCmp_GetPlatinaEquipIndex},
+		{"GetPlatinaLevel",	LuaCmp_GetPlatinaLevel},
 		{"GetRoomItems",	LuaHD3_GetRoomItems},
 		{"GetFirstPlayerAtServer",	LuaHD3_GetFirstPlayerAtServer},
 		{"GetNextPlayerAtServer",	LuaHD3_GetNextPlayerAtServer},

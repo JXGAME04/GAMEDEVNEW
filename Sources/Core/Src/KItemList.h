@@ -31,6 +31,12 @@ private:
 	int			m_EquipItem[itempart_num];
 	int			m_AltEquipmentItem[itempart_num];
 	int			m_TrembleItem[compoundpart_num];
+	int			m_CompOneItem[compoundpart_num];
+	int			m_CompTwoItem[compoundpart_num];
+	int			m_CompThreeItem[compoundpart_num];
+	int			m_DistillItem[outinpart_num];
+	int			m_EnchaseItem[outinpart_num];
+	int			m_ForgeItem[forgepart_num];
 
 	PlayerItem	m_sBackItems[MAX_PLAYER_ITEM];				
 	static int	ms_ActiveEquip[itempart_num][MAX_ITEM_ACTIVE];	
@@ -146,6 +152,31 @@ public:
 	BOOL		CheckTrembleItem(int nIdx, int nPlace = -1);	
 	void		UnTrembleItem(int nIdx, int nPlace = -1);					
 	int			GetTrembleItem(int nIdx) { return m_TrembleItem[nIdx]; }
+	// [LOREN] 6 phong do lo ren - khuon chep tu tremble
+	int			GetCompOneItem(int nIdx) { return m_CompOneItem[nIdx]; }
+	int			GetCompTwoItem(int nIdx) { return m_CompTwoItem[nIdx]; }
+	int			GetCompThreeItem(int nIdx) { return m_CompThreeItem[nIdx]; }
+	int			GetDistillItem(int nIdx) { return m_DistillItem[nIdx]; }
+	int			GetEnchaseItem(int nIdx) { return m_EnchaseItem[nIdx]; }
+	int			GetForgeItem(int nIdx) { return m_ForgeItem[nIdx]; }
+	BOOL		CheckCompOneItem(int nIdx, int nPlace = -1);
+	BOOL		AddCompOneItem(int nIdx, int nPlace = -1);
+	void		UnCompOneItem(int nIdx, int nPlace = -1);
+	BOOL		CheckCompTwoItem(int nIdx, int nPlace = -1);
+	BOOL		AddCompTwoItem(int nIdx, int nPlace = -1);
+	void		UnCompTwoItem(int nIdx, int nPlace = -1);
+	BOOL		CheckCompThreeItem(int nIdx, int nPlace = -1);
+	BOOL		AddCompThreeItem(int nIdx, int nPlace = -1);
+	void		UnCompThreeItem(int nIdx, int nPlace = -1);
+	BOOL		CheckDistillItem(int nIdx, int nPlace = -1);
+	BOOL		AddDistillItem(int nIdx, int nPlace = -1);
+	void		UnDistillItem(int nIdx, int nPlace = -1);
+	BOOL		CheckEnchaseItem(int nIdx, int nPlace = -1);
+	BOOL		AddEnchaseItem(int nIdx, int nPlace = -1);
+	void		UnEnchaseItem(int nIdx, int nPlace = -1);
+	BOOL		CheckForgeItem(int nIdx, int nPlace = -1);
+	BOOL		AddForgeItem(int nIdx, int nPlace = -1);
+	void		UnForgeItem(int nIdx, int nPlace = -1);
 	BOOL		GetIfActive();
 	BOOL		GetIfActive(int nItemIdx);
 	BOOL		GetMaskLock() {return m_nMaskLock;};	//#mat na

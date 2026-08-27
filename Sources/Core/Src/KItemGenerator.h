@@ -66,7 +66,10 @@ public:
 
 // 以下是辅助函数
 private:
-	BOOL Gen_MagicAttrib(int, const int*, int, int, KItemNormalAttrib*, int nVersion);
+	// [LOREN] nItemNature cuoi: NATURE_VIOLET thi hieu nGeneratorLevel la
+	// CHI SO DONG cua magicattriblevel.txt (quy uoc ban Linux), khong phai
+	// cap 1..10. Mac dinh -1 = giu nguyen duong cu.
+	BOOL Gen_MagicAttrib(int, const int*, int, int, KItemNormalAttrib*, int nVersion, int nItemNature = -1);
 	const KMAGICATTRIB_TABFILE* GetMARecord(int) const;
 	BOOL GMA_GetAvaliableMA(int);
 	BOOL GMA_GetLevelAndDropRate(int);

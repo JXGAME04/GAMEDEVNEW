@@ -331,6 +331,60 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		m_Items[i].nX = nX;
 		m_Items[i].nY = 0;
 		break;
+	case pos_compone:	// [LOREN]
+		if (nX < 0 || nX >= compoundpart_num)
+			return 0;
+		if (m_CompOneItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_compone;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_comptwo:	// [LOREN]
+		if (nX < 0 || nX >= compoundpart_num)
+			return 0;
+		if (m_CompTwoItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_comptwo;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_compthree:	// [LOREN]
+		if (nX < 0 || nX >= compoundpart_num)
+			return 0;
+		if (m_CompThreeItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_compthree;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_distill:	// [LOREN]
+		if (nX < 0 || nX >= outinpart_num)
+			return 0;
+		if (m_DistillItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_distill;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_enchase:	// [LOREN]
+		if (nX < 0 || nX >= outinpart_num)
+			return 0;
+		if (m_EnchaseItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_enchase;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_forge:	// [LOREN]
+		if (nX < 0 || nX >= forgepart_num)
+			return 0;
+		if (m_ForgeItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_forge;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
 	default:
 		return 0;
 	}
@@ -358,6 +412,30 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	if (m_Items[i].nPlace == pos_tremble)		
 	{
 		CheckTrembleItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_compone)	// [LOREN]
+	{
+		AddCompOneItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_comptwo)	// [LOREN]
+	{
+		AddCompTwoItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_compthree)	// [LOREN]
+	{
+		AddCompThreeItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_distill)	// [LOREN]
+	{
+		AddDistillItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_enchase)	// [LOREN]
+	{
+		AddEnchaseItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_forge)	// [LOREN]
+	{
+		AddForgeItem(m_Items[i].nIdx, nX);
 	}
 	//
 #ifdef _SERVER
@@ -467,6 +545,36 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		pInfo.Region.h = 0;
 		pInfo.Region.v = PartTrembleConvert[nX];
 		pInfo.eContainer = UOC_TREMBLE_ITEM;
+		break;
+	case pos_compone:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_COMPONE_ITEM;
+		break;
+	case pos_comptwo:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_COMPTWO_ITEM;
+		break;
+	case pos_compthree:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_COMPTHREE_ITEM;
+		break;
+	case pos_distill:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_DISTILL_ITEM;
+		break;
+	case pos_enchase:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_ENCHASE_ITEM;
+		break;
+	case pos_forge:	// [LOREN] khong can bang doi, v = nX truc tiep
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_FORGE_ITEM;
 		break;
 	}
 	if (nPlace != pos_equipback) {
@@ -624,6 +732,24 @@ BOOL KItemList::Remove(int nGameIdx)
 	case pos_tremble:
 		UnTrembleItem(m_Items[nIdx].nIdx);
 		break;
+	case pos_compone:	// [LOREN]
+		UnCompOneItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_comptwo:	// [LOREN]
+		UnCompTwoItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_compthree:	// [LOREN]
+		UnCompThreeItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_distill:	// [LOREN]
+		UnDistillItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_enchase:	// [LOREN]
+		UnEnchaseItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_forge:	// [LOREN]
+		UnForgeItem(m_Items[nIdx].nIdx);
+		break;
 	default:
 		return FALSE;
 	}
@@ -731,6 +857,36 @@ BOOL KItemList::Remove(int nGameIdx)
 		pInfo.Region.h = 0;
 		pInfo.Region.v = PartTrembleConvert[m_Items[nIdx].nX];
 		pInfo.eContainer = UOC_TREMBLE_ITEM;
+		break;
+	case pos_compone:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_COMPONE_ITEM;
+		break;
+	case pos_comptwo:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_COMPTWO_ITEM;
+		break;
+	case pos_compthree:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_COMPTHREE_ITEM;
+		break;
+	case pos_distill:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_DISTILL_ITEM;
+		break;
+	case pos_enchase:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_ENCHASE_ITEM;
+		break;
+	case pos_forge:	// [LOREN]
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_FORGE_ITEM;
 		break;
 	}
 	if (m_Items[nIdx].nPlace != pos_trade1)
@@ -3320,6 +3476,235 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			
 		}
 		break;
+	// [LOREN] 6 phong do lo ren - khuon chep tu case pos_tremble
+	case pos_compone:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= compoundpart_num || DesPos->nX < 0 || DesPos->nX >= compoundpart_num)
+			return;
+		nEquipIdx1 = m_CompOneItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddCompOneItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnCompOneItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddCompOneItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnCompOneItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+	case pos_comptwo:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= compoundpart_num || DesPos->nX < 0 || DesPos->nX >= compoundpart_num)
+			return;
+		nEquipIdx1 = m_CompTwoItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddCompTwoItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnCompTwoItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddCompTwoItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnCompTwoItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+	case pos_compthree:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= compoundpart_num || DesPos->nX < 0 || DesPos->nX >= compoundpart_num)
+			return;
+		nEquipIdx1 = m_CompThreeItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddCompThreeItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnCompThreeItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddCompThreeItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnCompThreeItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+	case pos_distill:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= outinpart_num || DesPos->nX < 0 || DesPos->nX >= outinpart_num)
+			return;
+		nEquipIdx1 = m_DistillItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddDistillItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnDistillItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddDistillItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnDistillItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+	case pos_enchase:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= outinpart_num || DesPos->nX < 0 || DesPos->nX >= outinpart_num)
+			return;
+		nEquipIdx1 = m_EnchaseItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddEnchaseItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnEnchaseItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddEnchaseItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnEnchaseItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+	case pos_forge:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= forgepart_num || DesPos->nX < 0 || DesPos->nX >= forgepart_num)
+			return;
+		nEquipIdx1 = m_ForgeItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddForgeItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnForgeItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddForgeItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnForgeItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
 	}
 
 #ifndef _SERVER
@@ -3496,6 +3881,54 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo2.Region.v = PartTrembleConvert[DesPos->nX];
 			pInfo1.eContainer = UOC_TREMBLE_ITEM;
 			pInfo2.eContainer = UOC_TREMBLE_ITEM;
+			break;
+		case pos_compone:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_COMPONE_ITEM;
+			pInfo2.eContainer = UOC_COMPONE_ITEM;
+			break;
+		case pos_comptwo:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_COMPTWO_ITEM;
+			pInfo2.eContainer = UOC_COMPTWO_ITEM;
+			break;
+		case pos_compthree:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_COMPTHREE_ITEM;
+			pInfo2.eContainer = UOC_COMPTHREE_ITEM;
+			break;
+		case pos_distill:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_DISTILL_ITEM;
+			pInfo2.eContainer = UOC_DISTILL_ITEM;
+			break;
+		case pos_enchase:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_ENCHASE_ITEM;
+			pInfo2.eContainer = UOC_ENCHASE_ITEM;
+			break;
+		case pos_forge:	// [LOREN]
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_FORGE_ITEM;
+			pInfo2.eContainer = UOC_FORGE_ITEM;
 			break;
 		}
 		CoreDataChanged(GDCNI_OBJECT_CHANGED, (DWORD)&pInfo1, 0);
@@ -3750,6 +4183,12 @@ void	KItemList::ClearAll() //míi thªm vµo sau nµy
 
 	ZeroMemory(m_EquipItem, sizeof(m_EquipItem));
 	ZeroMemory(m_TrembleItem, sizeof(m_TrembleItem));
+	ZeroMemory(m_CompOneItem, sizeof(m_CompOneItem));
+	ZeroMemory(m_CompTwoItem, sizeof(m_CompTwoItem));
+	ZeroMemory(m_CompThreeItem, sizeof(m_CompThreeItem));
+	ZeroMemory(m_DistillItem, sizeof(m_DistillItem));
+	ZeroMemory(m_EnchaseItem, sizeof(m_EnchaseItem));
+	ZeroMemory(m_ForgeItem, sizeof(m_ForgeItem));
 	ZeroMemory(m_Items, sizeof(m_Items));
 	ZeroMemory(m_AltEquipmentItem, sizeof(m_AltEquipmentItem));
 
@@ -5413,17 +5852,17 @@ void	KItemList::RecoverItem(int nPos)
 			memset(&m_TrembleItem, 0, sizeof(m_TrembleItem));
 #endif
 			break;
-		/*case pos_compone:
+		case pos_compone:	// [LOREN] mo khoi
 #ifdef _SERVER	
 			for(i = 0; i < compoundpart_num; i++)
 			{
 				if(m_CompOneItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_CompOneItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_CompOneItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_CompOneItem[i]);
 						ItemSet.Remove(m_CompOneItem[i]);
 					}
@@ -5439,11 +5878,11 @@ void	KItemList::RecoverItem(int nPos)
 			{
 				if(m_CompTwoItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_CompTwoItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_CompTwoItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_CompTwoItem[i]);
 						ItemSet.Remove(m_CompTwoItem[i]);
 					}
@@ -5459,11 +5898,11 @@ void	KItemList::RecoverItem(int nPos)
 			{
 				if(m_CompThreeItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_CompThreeItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_CompThreeItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_CompThreeItem[i]);
 						ItemSet.Remove(m_CompThreeItem[i]);
 					}
@@ -5479,11 +5918,11 @@ void	KItemList::RecoverItem(int nPos)
 			{
 				if(m_DistillItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_DistillItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_DistillItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_DistillItem[i]);
 						ItemSet.Remove(m_DistillItem[i]);
 					}
@@ -5499,11 +5938,11 @@ void	KItemList::RecoverItem(int nPos)
 			{
 				if(m_ForgeItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_ForgeItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_ForgeItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_ForgeItem[i]);
 						ItemSet.Remove(m_ForgeItem[i]);
 					}
@@ -5519,11 +5958,11 @@ void	KItemList::RecoverItem(int nPos)
 			{
 				if(m_EnchaseItem[i] > 0)
 				{
-					int nIndex = ItemSet.Add(&Item[m_EnchaseItem[i]]);
+					int nIndex = ItemSet.AddI(&Item[m_EnchaseItem[i]]);
 					int nX, nY;
 					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
 					{
-						Add(nIndex, pos_equiproom, nX, nY);
+						AddKIL(nIndex, pos_equiproom, nX, nY);
 						Remove(m_EnchaseItem[i]);
 						ItemSet.Remove(m_EnchaseItem[i]);
 					}
@@ -5532,7 +5971,7 @@ void	KItemList::RecoverItem(int nPos)
 #else
 			memset(&m_EnchaseItem, 0, sizeof(m_EnchaseItem));
 #endif
-			break;*/
+			break;
 		default:
 			break;
 	}
@@ -5667,6 +6106,391 @@ void KItemList::UnTrembleItem(int nIdx, int nPos/* = -1*/)
 	i = 0;
 	return;
 }
+
+// ---------------------------------------------------------------------------
+// [LOREN] 6 phong do lo ren (compone/comptwo/compthree/distill/enchase/forge)
+// Khuon chep tu CheckTrembleItem/UnTrembleItem. CheckXxx cho qua MOI vat pham:
+// kiem tra nguyen lieu that su do KFoundryResDemand lam khi nguoi choi bam nut.
+// Chi chan chi so o khong hop le va o da co do.
+// ---------------------------------------------------------------------------
+BOOL KItemList::CheckCompOneItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= compoundpart_num)
+		return FALSE;
+
+	if (m_CompOneItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddCompOneItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckCompOneItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_CompOneItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_compone;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnCompOneItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < compoundpart_num; i++)
+		{
+			if (m_CompOneItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == compoundpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= compoundpart_num)
+			return;
+		if (m_CompOneItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_CompOneItem[i] = 0;
+}
+
+BOOL KItemList::CheckCompTwoItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= compoundpart_num)
+		return FALSE;
+
+	if (m_CompTwoItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddCompTwoItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckCompTwoItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_CompTwoItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_comptwo;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnCompTwoItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < compoundpart_num; i++)
+		{
+			if (m_CompTwoItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == compoundpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= compoundpart_num)
+			return;
+		if (m_CompTwoItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_CompTwoItem[i] = 0;
+}
+
+BOOL KItemList::CheckCompThreeItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= compoundpart_num)
+		return FALSE;
+
+	if (m_CompThreeItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddCompThreeItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckCompThreeItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_CompThreeItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_compthree;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnCompThreeItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < compoundpart_num; i++)
+		{
+			if (m_CompThreeItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == compoundpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= compoundpart_num)
+			return;
+		if (m_CompThreeItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_CompThreeItem[i] = 0;
+}
+
+BOOL KItemList::CheckDistillItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= outinpart_num)
+		return FALSE;
+
+	if (m_DistillItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddDistillItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckDistillItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_DistillItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_distill;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnDistillItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < outinpart_num; i++)
+		{
+			if (m_DistillItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == outinpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= outinpart_num)
+			return;
+		if (m_DistillItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_DistillItem[i] = 0;
+}
+
+BOOL KItemList::CheckEnchaseItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= outinpart_num)
+		return FALSE;
+
+	if (m_EnchaseItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddEnchaseItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckEnchaseItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_EnchaseItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_enchase;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnEnchaseItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < outinpart_num; i++)
+		{
+			if (m_EnchaseItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == outinpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= outinpart_num)
+			return;
+		if (m_EnchaseItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_EnchaseItem[i] = 0;
+}
+
+BOOL KItemList::CheckForgeItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= forgepart_num)
+		return FALSE;
+
+	if (m_ForgeItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddForgeItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckForgeItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_ForgeItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_forge;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnForgeItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < forgepart_num; i++)
+		{
+			if (m_ForgeItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == forgepart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= forgepart_num)
+			return;
+		if (m_ForgeItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_ForgeItem[i] = 0;
+}
+
 
 int		KItemList::GetItemNum(int nGenre, int nDetailType, int nParticular, int nLevel)
 {

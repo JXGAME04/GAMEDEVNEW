@@ -2418,6 +2418,198 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			nRet = nCount;
 		}
 		break;
+	case GDI_COMPONE_ITEM:		// [UILOREN] lo ren - luyen huyen tinh khoang thach (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < 3 /* _ITEM_COMP_COUNT - UI chi co Ore1..3, quet 8 la tran mang UpdateAllItem */; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompOneItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_COMPTWO_ITEM:		// [UILOREN] lo ren - nang cap huyen tinh khoang thach (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < 3 /* _ITEM_COMP_COUNT */; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompTwoItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_COMPTHREE_ITEM:		// [UILOREN] lo ren - nang cap khoang thach thuoc tinh (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < 3 /* _ITEM_COMP_COUNT */; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompThreeItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_DISTILL_ITEM:		// [UILOREN] lo ren - rut option trang bi (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < outinpart_num; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetDistillItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_FORGE_ITEM:		// [UILOREN] lo ren - che tao trang bi tim (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < forgepart_num; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetForgeItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_ENCHASE_ITEM:		// [UILOREN] lo ren - kham nam trang bi (khuon GDI_TREMBLE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < outinpart_num; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEnchaseItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
 	case GDI_CHAT_ITEM_IMAGE:
 		if (nParam && uParam)
 		{
@@ -2501,6 +2693,12 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			pTargetInfo->nLifePercent = (Npc[idx].m_CurrentLife * 100 / max(Npc[idx].m_CurrentLifeMax, 1));
 			nRet = 1;
 		}
+		break;
+	}
+	case GDI_PLAYER_SERIES:		// [KM 27/08] he ngu hanh nhan vat
+	{
+		int nIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+		nRet = (nIdx > 0 && nIdx < MAX_NPC) ? Npc[nIdx].m_Series : -1;
 		break;
 	}
 	case GDI_PLAYER_MERIDIAN:
@@ -12846,6 +13044,72 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					break;
+				case pos_compone:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < 3 /* _ITEM_COMP_COUNT - UI chi co Ore1..3, quet 8 la tran mang UpdateAllItem */; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompOneItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_comptwo:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < 3 /* _ITEM_COMP_COUNT */; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompTwoItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_compthree:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < 3 /* _ITEM_COMP_COUNT */; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetCompThreeItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_distill:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < outinpart_num; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetDistillItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_forge:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < forgepart_num; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetForgeItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_enchase:	// [UILOREN] khuon case pos_tremble song o tren
+					{
+						for(i = 0; i < outinpart_num; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEnchaseItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
 				/*case pos_compone:
 					{
 						for(i = 0; i < compoundpart_num; i++)
@@ -13158,6 +13422,54 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						P1.nX = PartTrembleConvert[pObject1->Region.v];
 					}
 					break;
+				case UOC_COMPONE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_compone;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
+				case UOC_COMPTWO_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_comptwo;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
+				case UOC_COMPTHREE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_compthree;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
+				case UOC_DISTILL_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_distill;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
+				case UOC_FORGE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_forge;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
+				case UOC_ENCHASE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_enchase;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
 				case UOC_NPC_SHOP:
 					if (CGOG_NPCSELLITEM != pObject1->Obj.uGenre)
 						break;
@@ -13296,6 +13608,54 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							break;
 						P2.nPlace = pos_tremble;
 						P2.nX = PartTrembleConvert[pObject2->Region.v];
+					}
+					break;
+				case UOC_COMPONE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_compone;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_COMPTWO_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_comptwo;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_COMPTHREE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_compthree;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_DISTILL_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_distill;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_FORGE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_forge;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_ENCHASE_ITEM:	// [UILOREN] khuon UOC_TREMBLE_ITEM
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_enchase;
+						P2.nX = pObject2->Region.v;
 					}
 					break;
 				case UOC_NPC_SHOP:

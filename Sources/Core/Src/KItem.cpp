@@ -2446,7 +2446,10 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 		{
 			if (m_CommonAttrib.nItemNature == NATURE_VIOLET)
 			{
-				if (i < m_GeneratorParam.nLuck)
+				// [LOREN] Truoc day dem bang nLuck (may man cua mon do) - khong
+				// lien quan gi toi so o. Trang bi do lo ren duc ra chep nLuck tu
+				// mon goc. Dem dung cai danh dau o trong: nGeneratorLevel == -1.
+				if (i < MAX_ITEM_MAGICLEVEL && m_GeneratorParam.nGeneratorLevel[i] == -1)
 				{
 					if (i == MAX_ITEM_NORMAL_MAGICATTRIB)
 						strcat(pszMsg, "\n");
@@ -2946,6 +2949,22 @@ int KItem::GetMaxDurability()
 	return -1;
 }
 
+// [LOREN] doi ung cua GetMaxDurability - ghi vao chinh o base attrib do.
+BOOL KItem::SetMaxDurability(IN const int nDur)
+{
+	for (int i = 0; i < 7; i++)
+	{
+		if (m_aryBaseAttrib[i].nAttribType == magic_durability_v)
+		{
+			m_aryBaseAttrib[i].nValue[0] = nDur;
+			if (m_nCurrentDur > nDur)
+				m_nCurrentDur = nDur;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 int KItem::GetTotalMagicLevel()
 {
 	int nRet = 0;
@@ -2994,6 +3013,128 @@ BOOL KItem::CanBeRepaired()
 	return TRUE;
 }
 
+//---------------------------------------------------------------------------
+// [LOREN] CHIN CO XEP CHONG - doc tu settings\item\magicscript_stack.txt
+//
+// Ban goc co DUNG MOT ham quyet dinh xep chong (0x08065A70, 5 noi goi). No so
+// 6 truong VO DIEU KIEN, va 9 truong CO DIEU KIEN theo co: cung dang cap,
+// cung ngu hanh, cung may man, cung MagicLevel1..6.
+//
+// *** MO CLIENT VLTK MOI RA DUNG SO LIEU ***
+// Bang cua may chu Linux co 543 dong / 32 dong bat co, nhung ban VIET HOA
+// CHAY THAT (client VLTK, update04.pak) chi co 247 dong / DUNG BON dong bat co,
+// va ca bon deu la nguyen lieu lo ren:
+//     Huyen Tinh Khoang Thach (JX1 6/1/146)  -> doi CUNG DANG CAP
+//     Khong Tuoc Nguyen Thach (JX1 6/1/149)  -> doi CUNG NGU HANH
+//     Phu Dung  Nguyen Thach  (JX1 6/1/151)  -> doi CUNG NGU HANH
+//     Chung Nhu Nguyen Thach  (JX1 6/1/153)  -> doi CUNG NGU HANH
+// 28 dong con lai cua ban Linux (banh kem, nen, thiep hoa hong, hop trang suc...)
+// KHONG co trong ban Viet hoa - khong dua vao.
+// Rieng ba mon NGUYEN KHOANG (148/150/152) KHONG doi cung ngu hanh; chi ba mon
+// NGUYEN THACH moi doi. Truoc day toi gop ca sau, la chat hon ban goc.
+//
+// Chi so cot 1 cua bang la so dong cua magicscript.txt; ma particular = chi so
+// tru 1 (bang magicscript cua JX1 co record index dung bang particular - xem
+// KItemGenerator::Gen_MagicScript goi GetMagicScript(nParticularType)).
+//---------------------------------------------------------------------------
+#define MAGICSCRIPT_STACK_FILE	"\\settings\\item\\magicscript_stack.txt"
+
+struct KCoXepChong
+{
+	int		nParticular;
+	int		bCungCap;
+	int		bCungNguHanh;
+	int		bCungMayMan;
+	int		bCungML[MAX_ITEM_MAGICLEVEL];
+};
+
+static KCoXepChong	s_aryCoXepChong[64];
+static int			s_nCoXepChong = 0;
+static BOOL			s_bDaNapCoXepChong = FALSE;
+
+static void sNapCoXepChong()
+{
+	s_bDaNapCoXepChong = TRUE;
+	s_nCoXepChong = 0;
+
+	KTabFile Tab;
+	if (!Tab.Load((LPSTR)MAGICSCRIPT_STACK_FILE))
+		return;						// khong co tep = khong co co nao, chay nhu cu
+
+	int nRow = Tab.GetHeight();
+	for (int r = 2; r <= nRow; r++)	// dong 1 la tieu de
+	{
+		if (s_nCoXepChong >= (int)(sizeof(s_aryCoXepChong) / sizeof(s_aryCoXepChong[0])))
+			break;
+		int nIdx = 0;
+		Tab.GetInteger(r, 1, 0, &nIdx);
+		if (nIdx <= 0)
+			continue;
+		KCoXepChong C;
+		memset(&C, 0, sizeof(C));
+		C.nParticular = nIdx - 1;	// chi so dong -> ma particular
+		Tab.GetInteger(r, 3, 0, &C.bCungCap);
+		Tab.GetInteger(r, 4, 0, &C.bCungNguHanh);
+		Tab.GetInteger(r, 5, 0, &C.bCungMayMan);
+		for (int j = 0; j < MAX_ITEM_MAGICLEVEL && j < 6; j++)
+			Tab.GetInteger(r, 6 + j, 0, &C.bCungML[j]);
+		// dong khong co co nao thi khong can nho
+		int nTong = C.bCungCap + C.bCungNguHanh + C.bCungMayMan;
+		for (int j = 0; j < MAX_ITEM_MAGICLEVEL && j < 6; j++)
+			nTong += C.bCungML[j];
+		if (nTong <= 0)
+			continue;
+		s_aryCoXepChong[s_nCoXepChong++] = C;
+	}
+	// KTabFile khong co UnLoad; ham huy tu don.
+}
+
+// Chi vat pham bang magicscript (genre 6) moi co chin cot co nay; cac bang
+// khac (questkey 11 cot, questkey_stack 2 cot) khong he co - do da o ca hai ben.
+static const KCoXepChong* sTimCoXepChong(int nGenre, int nDetailType, int nPtc)
+{
+	if (!s_bDaNapCoXepChong)
+		sNapCoXepChong();
+	if (nGenre != item_magicscript || nDetailType != 1)
+		return NULL;
+	for (int i = 0; i < s_nCoXepChong; i++)
+	{
+		if (s_aryCoXepChong[i].nParticular == nPtc)
+			return &s_aryCoXepChong[i];
+	}
+	return NULL;
+}
+
+// Phep so co dieu kien, dung CHUNG cho ca hai duong xep chong cua JX1
+// (KItem::CanStack khi keo tha, KInventory::FindSameItemToSort khi nhap tui).
+// Ban goc cung chi co mot ham (0x08065A70) cho ca hai.
+BOOL g_HopCoXepChong(int nIdxA, int nIdxB)
+{
+	if (nIdxA <= 0 || nIdxA >= MAX_ITEM || nIdxB <= 0 || nIdxB >= MAX_ITEM)
+		return TRUE;
+	KItem* pA = &Item[nIdxA];
+	KItem* pB = &Item[nIdxB];
+	const KCoXepChong* pCo = sTimCoXepChong(pA->GetGenre(), pA->GetDetailType(),
+											pA->GetParticular());
+	if (!pCo)
+		return TRUE;				// khong khai co nao = giu nguyen hanh vi cu
+	if (pCo->bCungCap && pA->GetLevel() != pB->GetLevel())
+		return FALSE;
+	if (pCo->bCungNguHanh && pA->GetSeries() != pB->GetSeries())
+		return FALSE;
+	if (pCo->bCungMayMan
+		&& pA->m_GeneratorParam.nLuck != pB->m_GeneratorParam.nLuck)
+		return FALSE;
+	for (int j = 0; j < MAX_ITEM_MAGICLEVEL && j < 6; j++)
+	{
+		if (pCo->bCungML[j]
+			&& pA->m_GeneratorParam.nGeneratorLevel[j]
+			   != pB->m_GeneratorParam.nGeneratorLevel[j])
+			return FALSE;
+	}
+	return TRUE;
+}
+
 BOOL KItem::CanStack()
 {
 	if (m_CommonAttrib.bStack)
@@ -3016,11 +3157,16 @@ BOOL KItem::CanStack( int nOldIdx, int Dest)
 			&& m_CommonAttrib.nSeries == Item[nOldIdx].GetSeries()
 			&& m_CommonAttrib.nItemGenre != 1
 			&& m_CommonAttrib.LimitTime.bYear == Item[nOldIdx].GetTime()->bYear
-			&& Item[nOldIdx].GetPlayerItemLock() == Item[Dest].GetPlayerItemLock() 
+			&& Item[nOldIdx].GetPlayerItemLock() == Item[Dest].GetPlayerItemLock()
 			&& Item[nOldIdx].GetPlayerItemHLock() == Item[Dest].GetPlayerItemHLock()
 			&& Item[Dest].GetStackNum() < Item[Dest].GetMaxStackNum()
 			&& Item[nOldIdx].GetStackNum() < Item[nOldIdx].GetMaxStackNum())
 		{
+			// [LOREN] Chin phep so CO DIEU KIEN cua ban goc (0x08065A70).
+			// Dung CHUNG mot ham voi KInventory::FindSameItemToSort - ban goc
+			// cung chi co mot ham quyet dinh xep chong cho ca hai duong.
+			if (!g_HopCoXepChong(nOldIdx, Dest))
+				return FALSE;
 			return TRUE;
 		}
 	}

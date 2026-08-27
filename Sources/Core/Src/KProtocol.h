@@ -2179,7 +2179,12 @@ typedef struct
 	BYTE	m_btSeries;			// ÎïÆ·µÄÎåÐÐ
 	BYTE	m_btLevel;			// ÎïÆ·µÄµÈ¼¶
 	BYTE	m_btLuck;			// MF
-	BYTE	m_btMagicLevel[MAX_ITEM_MAGICLEVEL];	// Éú³É²ÎÊý
+	// [LOREN] Ban Linux truyen truong nay bang int 32-bit: trong cung ham
+	// dong goi 0x081F9430, nLuck ra opcode 88 (MOV r/m8) con sau o cap
+	// thuoc tinh ra 89 (MOV r/m32), stride 4. Quet ca doan ma: moi truy
+	// cap vao +0x1E0..+0x200 deu rong 4 byte, khong luot nao 1 hay 2 byte.
+	// Bat buoc phai vay: magicattriblevel_index.txt trai kin 1..480.
+	int		m_btMagicLevel[MAX_ITEM_MAGICLEVEL];	// Éú³É²ÎÊý
 	WORD	m_wVersion;			// ×°±¸°æ±¾
 	DWORD	m_dwRandomSeed;		// Ëæ»úÖÖ×Ó
 	BYTE	m_bPoint;

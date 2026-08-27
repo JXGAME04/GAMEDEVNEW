@@ -133,6 +133,11 @@ KUiCompoundItem* KUiCompoundItem::OpenWindow()
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_CompoundOnePad.UpdateData();
+		// [UILOREN-L5] NPC mo lai luc cua so dang mo: cu chi ep CheckButton the
+		// Tinh luyen ma khong Show/Hide than pad va khong reset nWindow => dang
+		// o the Trich lay thi nut sang "Tinh luyen" ma than van la Trich lay.
+		KUiCompoundItem::ShowWindow(WINDOWS_COMP);
+		m_pSelf->nWindow = WINDOWS_COMP;
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
 
@@ -151,29 +156,18 @@ void KUiCompoundItem::CloseWindow(bool bDestory)
 {
 	if (m_pSelf)
 	{	
-		switch(m_pSelf->nWindow)
-		{	
-			case WINDOWS_COMP:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compone, 0); 
-				break;
-			case WINDOWS_COMP2:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_comptwo, 0); 
-				break;
-			case WINDOWS_COMP3:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compthree, 0); 
-				break;
-			case WINDOWS_DISTILL:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_distill, 0);
-				break;
-			case WINDOWS_FORGE:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_forge, 0); 
-				break;
-			case WINDOWS_ENCHASE:
-				//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_enchase, 0); 
-				break;
-			default:
-				break;
-		}
+		// [UILOREN-L4] dong cua so phai thu hoi do o CA 6 PHONG chu khong chi
+		// phong cua the dang mo: doi the (ShowWindow) chi Hide/Show chu khong
+		// thu hoi, nen do bo o the khac se nam ket trong phong vo hinh.
+		// An toan: CoreShell.cpp GOI_RECOVER_ITEM co gate "if(!bExistId) break;"
+		// (CoreShell.cpp:13182-13185) quet phong truoc khi gui, nen phong rong
+		// khong phat goi thua ra may chu.
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compone, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_comptwo, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compthree, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_distill, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_forge, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_enchase, 0);
 
 		m_pSelf->Hide();
 		if (bDestory)
@@ -834,13 +828,19 @@ void KUiCompoundOne::ProcessComp()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_COMPOUND;
-		return;
-	}
+	// [UILOREN-L2-ONE] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_COMPOUNDING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_COMPOUND;
+	//	return;
+	//}
 	
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)COMPOUND_SCRIPT_FILE, (unsigned int)"CompOneItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_MotOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -866,7 +866,7 @@ void KUiCompoundOne::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compone, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compone, 0); 
 	}
 }
 //------------------------------------------------
@@ -935,7 +935,7 @@ void KUiCompoundOne::UpdateData()
 //-------------------------------------
 void KUiCompoundOne::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
+	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_COMPONE_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
@@ -944,7 +944,7 @@ void KUiCompoundOne::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
@@ -1310,13 +1310,19 @@ void KUiCompoundTwo::ProcessComp()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_COMPOUND;
-		return;
-	}
+	// [UILOREN-L2-TWO] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_COMPOUNDING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_COMPOUND;
+	//	return;
+	//}
 	
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)COMPOUND_SCRIPT_FILE, (unsigned int)"CompTwoItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_HaiOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -1343,7 +1349,7 @@ void KUiCompoundTwo::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_comptwo, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_comptwo, 0); 
 	}
 }
 //------------------------------------------------
@@ -1412,7 +1418,7 @@ void KUiCompoundTwo::UpdateData()
 //-------------------------------------
 void KUiCompoundTwo::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
+	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_COMPTWO_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
@@ -1421,7 +1427,7 @@ void KUiCompoundTwo::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
@@ -1470,7 +1476,7 @@ void KUiCompoundThree::Initialize()
 	{
 		m_ItemBox[i].SetObjectGenre(CGOG_ITEM);
 		AddChild(&m_ItemBox[i]);
-		m_ItemBox[i].SetContainerId((int)UOC_COMPTWO_ITEM);
+		m_ItemBox[i].SetContainerId((int)UOC_COMPTHREE_ITEM);
 	}
 	AddChild(&m_Compound);
 	AddChild(&m_Cancel);
@@ -1526,7 +1532,9 @@ void KUiCompoundThree::LoadScheme( const char* pScheme )
 		KWndImage::Init(&Ini, "Main");
 		for (int i = 0; i < _ITEM_COMP_COUNT; i ++)
 		{
-			m_ItemBox[i].Init(&Ini, CtrlCompTwoItemMap[i].pIniSection);
+			// [UILOREN-L6] loi cung ho: lop Three ma tra bang cua lop Two. Hai bang
+			// dang trung tung byte nen chua no, nhung day la min cho ngay doi bang.
+			m_ItemBox[i].Init(&Ini, CtrlCompThreeItemMap[i].pIniSection);
 		}
 		m_Compound.Init(&Ini,"CompoundBtn");
 		m_Cancel.Init(&Ini,"CancleBtn");
@@ -1863,12 +1871,18 @@ void KUiCompoundThree::ProcessComp()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_COMPOUND;
-		return;
-	}
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)COMPOUND_SCRIPT_FILE, (unsigned int)"CompThreeItem");
+	// [UILOREN-L2-THREE] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_COMPOUNDING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_COMPOUND;
+	//	return;
+	//}
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_BaOre");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -1898,7 +1912,7 @@ void KUiCompoundThree::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compthree, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_compthree, 0); 
 	}
 }
 //------------------------------------------------
@@ -1967,7 +1981,7 @@ void KUiCompoundThree::UpdateData()
 //-------------------------------------
 void KUiCompoundThree::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
+	KUiObjAtRegion	Item[_ITEM_COMP_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_COMPTHREE_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_COMP_COUNT; i++)
@@ -1976,7 +1990,7 @@ void KUiCompoundThree::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
@@ -2331,6 +2345,8 @@ void KUiDistill::ProcessDistill()
 					return;
 				}
 			}
+			// [UILOREN-L7] them break bi thieu (ban Enchase tuong ung co break).
+			break;
 		case 3:
 		case 4:
 		case 5: 
@@ -2446,13 +2462,19 @@ void KUiDistill::ProcessDistill()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_DISTILL;
-		return;
-	}
+	// [UILOREN-L2-DISTILL] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_DISTILLING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_DISTILL (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_DISTILL;
+	//	return;
+	//}
 	
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)DISTILL_SCRIPT_FILE, (unsigned int)"DistillItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Distill");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -2481,7 +2503,7 @@ void KUiDistill::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_distill, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_distill, 0); 
 	}
 }
 //------------------------------------------------
@@ -2550,7 +2572,7 @@ void KUiDistill::UpdateData()
 //-------------------------------------
 void KUiDistill::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
+	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_DISTILL_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
@@ -2559,7 +2581,7 @@ void KUiDistill::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
@@ -2658,7 +2680,7 @@ void KUiForge::LoadScheme( const char* pScheme )
 	if (Ini.Load(Buff))
 	{
 		KWndImage::Init(&Ini, "Main");
-		for (int i = 0; i < _ITEM_COMP_COUNT; i ++)
+		for (int i = 0; i < _ITEM_FORGE_COUNT; i ++)
 		{
 			m_ItemBox[i].Init(&Ini, CtrlForgeItemMap[i].pIniSection);
 		}
@@ -2831,13 +2853,19 @@ void KUiForge::ProcessForge()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_FORGE;
-		return;
-	}
+	// [UILOREN-L2-FORGE] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_GORGING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_FORGE (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_FORGE;
+	//	return;
+	//}
 	
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)FORGE_SCRIPT_FILE, (unsigned int)"ForgeItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Forge");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -2863,7 +2891,7 @@ void KUiForge::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_forge, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_forge, 0); 
 	}
 }
 //------------------------------------------------
@@ -2932,7 +2960,7 @@ void KUiForge::UpdateData()
 //-------------------------------------
 void KUiForge::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_FORGE_COUNT];
+	KUiObjAtRegion	Item[_ITEM_FORGE_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_FORGE_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_FORGE_COUNT; i++)
@@ -2941,7 +2969,7 @@ void KUiForge::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
@@ -3175,7 +3203,7 @@ void KUiEnchase::ProcessEnchase()
 {
 	KUiDraggedObject pObj1, pObj2;
 	int nDetail, nSeries[2], nOption[6], nOpProp;
-	BOOL bCanSet = FALSE;
+	BOOL bCanSet = TRUE; // server kiem that khi bam nut
 	int nMoneyHold = g_pCoreShell->GetGameData(GDI_PLAYER_HOLD_MONEY, 0, 0);
 
 	memset(&pObj1, 0, sizeof(pObj1));
@@ -3252,7 +3280,15 @@ void KUiEnchase::ProcessEnchase()
 	//nOpProp = g_pCoreShell->GetGameData(GDI_ITEM_MAGICTYPE,(unsigned int)(&pObj2), 0);
 	//bCanSet = g_pCoreShell->GetGameData(GDI_OPTION_CAN_SET,(unsigned int)(&pObj1), nOpProp);
 	
-	nDetail = 0;
+	// [UILOREN-L1] nDetail = 0 (cung) roi vao case 0 doi nOption[0] == 53, ma
+	// ca mang nOption bi memset 0 va moi dong doc GDI_ITEM_* con bi chu thich
+	// => nut Kham nam LUON bao ReturnInfo 16 roi return, khong bao gio gui.
+	// Dat -1 de roi vao default (chi break, khong return): moi cong kiem PHIA
+	// CLIENT thanh no-op, may chu kiem that khi bam nut (KFoundryResDemand).
+	// Cac cong con lai sau switch deu an toan voi -1: (-1 > 3) sai nen cong
+	// nSeries :3570 khong kich hoat; bCanSet da TRUE nen cong :3588 khong kich
+	// hoat; cong thieu tien giu nguyen.
+	nDetail = -1;
 	switch(nDetail)
 	{
 		case 0:
@@ -3620,13 +3656,19 @@ void KUiEnchase::ProcessEnchase()
 		return;
 	}
 
-	if(m_nStatus == STATUS_WAITING_MATERIALS)
-	{	
-		m_nStatus = STATUS_BEGIN_ENCHASE;
-		return;
-	}
+	// [UILOREN-L2-ENCHASE] bo nhip "nap". PlayEffect() luon tra 1 nen Breathe ket
+	// o STATUS_ENCHASING, nhanh STATUS_CHANGING_ITEM (noi thiet ke goc goi
+	// ham nay de GUI) khong bao gio toi: cu bam DAU chi "nap" roi bi nuot,
+	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
+	// bao gio vao STATUS_BEGIN_ENCHASE (day la cho duy nhat gan no) nen vua het
+	// treo anh vua giu dung "1 cu bam = 1 lan ep".
+	//if(m_nStatus == STATUS_WAITING_MATERIALS)
+	//{	
+	//	m_nStatus = STATUS_BEGIN_ENCHASE;
+	//	return;
+	//}
 	
-	//g_pCoreShell->OperationRequest(GOI_LOAD_BUTTON_SCRIPT, (unsigned int)ENCHASE_SCRIPT_FILE, (unsigned int)"EnchaseItem");
+	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Enchase");
 	
 	char		Buff[64];
 	KIniFile	Ini;
@@ -3658,7 +3700,7 @@ void KUiEnchase::OnCancel()
 {	
 	if(g_pCoreShell)
 	{
-		//g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_enchase, 0); 
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_enchase, 0); 
 	}
 }
 //------------------------------------------------
@@ -3727,7 +3769,7 @@ void KUiEnchase::UpdateData()
 //-------------------------------------
 void KUiEnchase::UpdateAllItem()
 {
-	/*KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
+	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_ENCHASE_ITEM, (unsigned int)&Item, 0);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
@@ -3736,7 +3778,7 @@ void KUiEnchase::UpdateAllItem()
 	{
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
-	}*/
+	}
 }
 //----------------------------------------------------------------
 // Lam moi tung vat pham
