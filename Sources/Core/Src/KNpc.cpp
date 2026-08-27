@@ -10019,6 +10019,31 @@ int KNpc::SetPos(int nX, int nY)
 	DoStand();
 	m_ProcessAI = 1;
 	m_ProcessState = 1;
+	// [S12-TELE 27/08] SetPos CUNG MAP von KHONG bao cho chinh nguoi choi (chi phat
+	// s2c_npcremove cho nguoi xung quanh) - client mu, chi phat hien qua vong xoay
+	// tu-sync 5 NPC/tick/region (p50 564ms) => chuoi [S8-NAN] bung 4 cu lien tiep sau
+	// moi lan script teleport + dat di (do that 26/08: 8/9 cu bung la loai nay).
+	// Gui NGAY mot goi tu-sync CO SAN (s2c_syncnpcminplayer, 27 byte) cho rieng chu
+	// nhan vat: client snap MOT lan dung luc dich chuyen that (hop mat nguoi choi).
+	// memset bat buoc: khuon goc de m_byDoing/MapID/m_nEquipCount la rac stack.
+	// Gac m_nPlayerIdx > 0: bot SimCity co m_nPlayerIdx = 0; bot thuong co
+	// m_nNetConnectIdx = -1 (PackDataToClient tu chan nhung khoi ton call).
+	if (IsPlayer() && !m_btSimCityBot && m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER &&
+		Player[m_nPlayerIdx].m_nNetConnectIdx >= 0)
+	{
+		NPC_PLAYER_TYPE_NORMAL_SYNC sTeleSync;
+		memset(&sTeleSync, 0, sizeof(sTeleSync));
+		sTeleSync.ProtocolType = s2c_syncnpcminplayer;
+		sTeleSync.m_dwNpcID = m_dwID;
+		int nTeleX = 0, nTeleY = 0;
+		GetMpsPos(&nTeleX, &nTeleY);
+		sTeleSync.m_dwMapX = nTeleX;
+		sTeleSync.m_dwMapY = nTeleY;
+		sTeleSync.m_wOffX = m_OffX;
+		sTeleSync.m_wOffY = m_OffY;
+		g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sTeleSync, sizeof(sTeleSync));
+		g_DebugLog("[S12-TELE]%d:%s setpos cung map -> bao chinh chu (%d,%d)", SubWorld[m_SubWorldIndex].m_dwCurrentTime, Name, nTeleX, nTeleY);
+	}
 	return 1;
 }
 #endif
