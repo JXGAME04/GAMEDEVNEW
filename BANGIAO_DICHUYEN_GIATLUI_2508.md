@@ -959,6 +959,44 @@ Còn lại theo dõi: (a) `[S8-NAN]` búng 8 ô của CHÍNH MÌNH 9 lần/683 s
 lưới vật cản); (b) PerfLog không có dòng nào trong cửa sổ nên CHƯA kiểm được gai tick cuối trận
 (gỡ 1000 bot nay broadcast không cắt) — cần bật/soi đợt sau.
 
+## 9.26 **S12 — chữa "chính mình bị búng 8 ô"** (commit `811513ab`, client `795eb6a4` + server `78515a3d` ĐÃ ĐẶT — **chờ restart GameServer + relog**)
+
+### Điều tra lật đổ giả thuyết chính (workflow 3 mũi + mổ 9 cú búng)
+**8/9 cú búng KHÔNG phải lệch lưới vật cản** mà là **server teleport người chơi ~8.000 mps**
+(`SetPos` cùng map **không báo cho chính client** — lỗ hổng gốc `KNpc.cpp:9997+`) **rồi TỰ DẮT chạy
+~1.100 mps @400 mps/s theo lộ trình script TK** (cú 2 và cú 7 cách nhau 172 s có toạ độ server
+**trùng tuyệt đối** (53540,98779)); lệnh dắt-đi bị client vứt (ConformIdx loại self) ⇒ mỗi sự kiện
+nổ thành 4 cú búng liên tiếp. Chỉ **1/9 cú** là lệch-vật-cản thật (leo 45→315 mps khi cả hai cùng
+chạy, client vượt trước server — khớp lưới 379 lệch 67%: server chặn 298k ô vs client 24k, đo lại
+bằng `tk_luoi_client_vs_server.py`; map 324 nay còn 21,43%). Lệch thường ngày p50=32 mps, chỉ sinh
+lúc chạy (+13,7 mps/s trung vị, đỉnh 38), tự giảm khi đứng/đánh.
+
+### Bộ vá (qua phản biện 3 tác nhân)
+- **[S12-TELE]** server, cuối `KNpc::SetPos`: gửi ngay gói tự-sync `s2c_syncnpcminplayer` CÓ SẴN
+  (27 byte) cho riêng chủ nhân vật ⇒ client snap **một lần đúng lúc dịch chuyển thật**. Điều kiện
+  phản biện: `memset` gói (khuôn gốc để 3 trường rác stack — bẫy nếu ai bật lại check equip-count);
+  gác `!m_btSimCityBot && m_nPlayerIdx > 0` (bot SimCity idx=0); điểm chèn sau `DoStand()` trước
+  `return 1`.
+- **[S12-THEO]** client: sau mỗi cú `S8-NAN` mở **cửa sổ 3000 ms** cho `NetCommandRun/Walk` áp lệnh
+  cho CHÍNH MÌNH ⇒ đoạn dắt-đi thành chạy mượt. Điều kiện phản biện: **gác diệt echo** (`HaveTarget`
+  A* đang chạy HOẶC `m_nSendMoveFrames < 5` ⇒ không áp — lệnh self lúc đó là echo click của mình);
+  đồng hồ **`timeGetTime`** (CẤM `m_dwCurrentTime` — là FRAME ~18/s và bị gán lại theo server mỗi
+  SyncWorld ⇒ cửa sổ 3000 sẽ thành ~167 giây); làm tươi cửa sổ mỗi lần áp; **reset = 0 tại SyncWorld**
+  (lệnh tồn đọng khi region=-1 sẽ thi hành muộn ở map mới); chỉ 2 handler run/walk, áp qua
+  `SendCommand` (giữ cửa nuốt FrozenAction / ProcessAI=0-khi-chết sẵn có).
+- **[KEO] HOÃN** theo phản biện: chỉ nhắm 1/9 cú nhưng mang 2 rủi ro CHẾT_NGƯỜI (kéo về mẫu server
+  có thể đặt mình **vào ô tường theo lưới client** ⇒ GetDir=0 ⇒ chính-mình-DoStand = kẹt vĩnh viễn;
+  sàn 64 < nhiễu p90=83 ⇒ giật CẢ CAMERA 1,8 lần/s) + cần mô hình "nợ kéo ≤2 mps/tick" mới hội tụ
+  (8/gói = 14,4 mps/s chỉ dư 0,7 so tích luỹ). Cú loại này vẫn có S8-NAN đỡ như cũ. **Fix nguồn
+  thật = đồng bộ lưới vật cản** (phương án ĐÃ KHẢO SÁT: sinh lại đoạn obstacle trong `_Region_C.dat`
+  từ dữ liệu `_S`, đặt tệp LOOSE cạnh pak — `KPakFile` mặc định **đọc đĩa trước pak sau**, không cần
+  rebuild pak; bắt buộc xoá cache `.fp` hai bên) — hồ sơ riêng, làm khi chủ duyệt.
+
+### Nghiệm thu sau restart
+Đếm `[S12-TELE]` (DebugLog server) ↔ `[S8-NAN]` client: chuỗi 4-cú-liên-tiếp phải biến mất, thay
+bằng **1 snap ngay lúc teleport + `[S12-THEO]` áp lệnh dắt-đi**; tổng S8-NAN/phiên phải giảm ~8/9;
+kiểm không có `[S12-THEO]` nào nổ lúc đang cầm chuột chạy bình thường (gác echo làm việc).
+
 ## 9.7 Lỗi phụ nhặt được dọc đường (ngoài phạm vi di chuyển)
 
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
