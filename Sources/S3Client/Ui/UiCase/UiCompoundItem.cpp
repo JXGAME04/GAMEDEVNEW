@@ -15,6 +15,7 @@
 #include "UiSysMsgCentre.h"
 #include "../../../core/src/coreshell.h"
 #include "../../../Engine/src/Text.h"
+#include "../../../Engine/src/KTabFile.h"	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
 #include "../UiBase.h"
 #include "crtdbg.h"
 #include "../UiSoundSetting.h"
@@ -3061,6 +3062,12 @@ void KUiAtlas::Initialize()
 	AddChild(&m_Guide);
 	AddChild(&m_ListScroll);
 	AddChild(&m_AtlasEffect);
+	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
+	AddChild(&m_PosAtlas);
+	AddChild(&m_PosCryolite);
+	AddChild(&m_PosConsume);
+	for (int m = 0; m < 6; m++)
+		AddChild(&m_Material[m]);
 	m_Guide.SetScrollbar(&m_ListScroll);
 
 	char Scheme[256];
@@ -3100,6 +3107,42 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 		m_ListScroll.Init(&Ini, "GuideList_Scroll");
 		m_AtlasEffect.Init(&Ini, "ConsumeEffect");
 		m_AtlasEffect.Hide();
+
+		// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang - khuon y het KUiEnchase::LoadScheme.
+		int nX, nY, nColor = 0xFFFFFF;
+		if (Ini.GetString("TextColor", "Font", "", Buff, sizeof(Buff)))
+			nColor = (::GetColor(Buff) & 0xFFFFFF);
+
+		Ini.GetInteger2("AtlasPos", "Pos", &nX, &nY);
+		m_PosAtlas.SetPosition(nX - 28, nY - 4);
+		m_PosAtlas.SetTextColor(nColor);
+		m_PosAtlas.BringToTop();
+		m_PosAtlas.SetText("§å phæ");
+
+		Ini.GetInteger2("CryolitePos", "Pos", &nX, &nY);
+		m_PosCryolite.SetPosition(nX - 28, nY - 4);
+		m_PosCryolite.SetTextColor(nColor);
+		m_PosCryolite.BringToTop();
+		m_PosCryolite.SetText("HuyÒn tinh");
+
+		Ini.GetInteger2("ConsumePos", "Pos", &nX, &nY);
+		m_PosConsume.SetPosition(nX - 28, nY - 4);
+		m_PosConsume.SetTextColor(nColor);
+		m_PosConsume.BringToTop();
+		m_PosConsume.SetText("Nguyªn liÖu");
+
+		for (int m = 0; m < 6; m++)
+		{
+			char szMuc[32];
+			_snprintf(szMuc, sizeof(szMuc) - 1, "Material_%d", m);
+			szMuc[sizeof(szMuc) - 1] = 0;
+			nX = nY = 0;
+			Ini.GetInteger2(szMuc, "Pos", &nX, &nY);
+			m_Material[m].SetPosition(nX - 28, nY - 4);
+			m_Material[m].SetTextColor(nColor);
+			m_Material[m].BringToTop();
+			m_Material[m].SetText("");
+		}
 	}
 }
 
@@ -3241,6 +3284,7 @@ void KUiAtlas::UpdateAllItem()
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
 	}
+	CapNhatNguyenLieu();		// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
 }
 
 void KUiAtlas::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
@@ -3259,6 +3303,66 @@ void KUiAtlas::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 				break;
 			}
 		}
+	}
+}
+
+// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang.
+// Doc ma (Particular) cua vien do pho dang nam trong o AtlasBox, tra bang
+// atlas_compound.txt tim dong co ATLAS_PARTICULAR khop, roi ve ten 6 nguyen
+// lieu vao dung sau vi tri Material_0..5 cua bo cuc goc.
+// Ten trong bang DA la TCVN3 nen chi viec ve, khong phai chuyen ma.
+void KUiAtlas::CapNhatNguyenLieu()
+{
+	for (int k = 0; k < 6; k++)
+		m_Material[k].SetText("");
+
+	KUiDraggedObject Obj;
+	memset(&Obj, 0, sizeof(Obj));
+	m_ItemBox[0].GetObject(Obj);
+	if (Obj.uId <= 0 || !g_pCoreShell)
+		return;
+	int nPtc = g_pCoreShell->GetGameData(GDI_ITEM_PARTICULAR, 0, (int)Obj.uId);
+	if (nPtc <= 0)
+		return;
+
+	KTabFile Tab;
+	if (!Tab.Load("\\Settings\\Item\\atlas_compound.txt"))
+		return;
+	int nHang = 0;
+	for (int r = 2; r <= Tab.GetHeight(); r++)
+	{
+		int nCur = -1;
+		Tab.GetInteger(r, (LPSTR)"ATLAS_PARTICULAR", -1, &nCur);
+		if (nCur == nPtc)
+		{
+			nHang = r;
+			break;
+		}
+	}
+	if (nHang < 2)
+		return;
+
+	for (int i = 1; i <= 6; i++)
+	{
+		char szCot[32];
+		char szTen[64];
+		_snprintf(szCot, sizeof(szCot) - 1, "%d_NAME", i);
+		szCot[sizeof(szCot) - 1] = 0;
+		szTen[0] = 0;
+		Tab.GetString(nHang, (LPSTR)szCot, (LPSTR)"", szTen, sizeof(szTen));
+		if (szTen[0] == 0)
+			continue;
+		int nCap = -1;
+		_snprintf(szCot, sizeof(szCot) - 1, "%d_LEVEL", i);
+		szCot[sizeof(szCot) - 1] = 0;
+		Tab.GetInteger(nHang, (LPSTR)szCot, -1, &nCap);
+		char szDong[96];
+		if (nCap > 0)
+			_snprintf(szDong, sizeof(szDong) - 1, "%s (%d)", szTen, nCap);
+		else
+			_snprintf(szDong, sizeof(szDong) - 1, "%s", szTen);
+		szDong[sizeof(szDong) - 1] = 0;
+		m_Material[i - 1].SetText(szDong);
 	}
 }
 

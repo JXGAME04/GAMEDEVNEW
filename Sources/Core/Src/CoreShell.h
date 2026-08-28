@@ -308,6 +308,7 @@ enum GAMEDATA_INDEX
 	GDI_ENCHASE_ITEM,		//Lo ren - kham nam trang bi
 	GDI_ITEM_IN_PARTNER_BAG,	// [BDH-G4] tui ban dong hanh (them CUOI)
 	GDI_ATLAS_ITEM,		// [LOREN 27/08] THE DO PHO - o cua the Do pho (them CUOI)
+	GDI_ITEM_PARTICULAR,	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang (them CUOI)
 };
 
 enum GAMEDATA_CHANGED_NOTIFY_INDEX

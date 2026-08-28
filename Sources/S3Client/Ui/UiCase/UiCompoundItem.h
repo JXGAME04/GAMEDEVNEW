@@ -330,6 +330,7 @@ private:
 	void	PaintWindow();
 	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
 	void	ProcessAtlas();
+	void	CapNhatNguyenLieu();		// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
 	int		PlayEffect();
 private:
 	enum THIS_INTERFACE_STATUS
@@ -347,6 +348,11 @@ private:
 	KWndScrollBar	m_ListScroll;
 	KWndButton		m_Atlas;
 	KWndImage		m_AtlasEffect;
+	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
+	KWndText32		m_PosAtlas;
+	KWndText32		m_PosCryolite;
+	KWndText32		m_PosConsume;
+	KWndText32		m_Material[6];
 };
 
 class KUiCompoundItem : public KWndPageSet

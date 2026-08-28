@@ -2332,6 +2332,12 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			}
 		}
 		break;
+	case GDI_ITEM_PARTICULAR:	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
+		// nParam = chi so vat pham (khuon y het GDI_ITEM_NAME ngay duoi).
+		nRet = 0;
+		if (nParam > 0 && nParam < MAX_ITEM)
+			nRet = Item[nParam].GetParticular();
+		break;
 	case GDI_ITEM_NAME:			//lay ten item
 		if(uParam)
 		{
