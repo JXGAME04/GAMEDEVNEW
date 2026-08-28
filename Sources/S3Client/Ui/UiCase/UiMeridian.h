@@ -56,7 +56,9 @@ private:
 	int				m_nLastBtn = 0;						// [KM 27/08]
 	KIniFile*		m_pIni = NULL;						// [KM 27/08] nap ini MOT LAN roi dung lai
 	int				m_nLastBuild = 0;					// [KM 27/08] moc gio lan dung lai gan nhat
-	int				m_nTinDenHan = 0;					// [KM 27/08b] moc gio het hien thong bao tam
+	int				m_nTinDenHan = 0;					// [KM 27/08b] nhip lam moi trang Khi Doanh (1s)
+	int				m_nKDChay = 0;						// [KM 27/08b-14] con tro hieu ung chay vong 8 cham
+	BYTE			m_bKDChamGoc[8];					// [KM 27/08b-14] khung goc tung cham (0 toi / 1 sang)
 	KIniFile*		LayIni();							// [KM 27/08]
 	int lastTick = 0;
 };

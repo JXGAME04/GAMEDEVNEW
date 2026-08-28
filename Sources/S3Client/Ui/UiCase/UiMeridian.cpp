@@ -473,6 +473,24 @@ void KUiMeridian::RebuildPage()
 	for (i = 0; i < nSlot; i++)
 	{
 		KMLOG("[KM-UI] 09 o %d: bat dau", i);
+		// [KM 27/08b-14] Trang Khi Doanh: moi cham theo CAP CUA CHINH MACH DO
+		// (luat ban chuan, ham 0x486B00 game_y.exe): 32 = cham cao cap; >=16 =
+		// sang; <16 = toi. Cac trang mach (btnNo>=2) giu nguyen loi cu.
+		if (btnNo == 1)
+		{
+			int nCapMach = (i < MAX_MERIDIAN) ? m_MeridianLevel[i] : 0;
+			if (nCapMach >= MAX_MERIDIAN_LEVEL)
+				sprintf_s(Mer, "Mer1PointP2_%d", i);	// anh diem cao cap
+			else
+				sprintf_s(Mer, "Mer1Point_%d", i);
+			m_Points[i].Init(&Ini, Mer);
+			m_Points[i].GetPosition(&left, &top);
+			m_Points[i].SetPosition(left + nBgLeft, top + nBgTop);
+			m_bKDChamGoc[i] = (nCapMach >= KM_SLOT) ? 1 : 0;
+			m_Points[i].SetFrame(m_bKDChamGoc[i]);
+			m_Points[i].Show();
+			continue;
+		}
 		sprintf_s(Mer, "Mer%dPoint_%d", btnNo, i);
 		m_Points[i].Init(&Ini, Mer);
 		m_Points[i].GetPosition(&left, &top);
@@ -581,6 +599,20 @@ void KUiMeridian::Breathe()
 			KIniFile* pI = LayIni();
 			if (pI)
 				DungChuKhiDoanh(pI);
+			// [KM 27/08b-14] buff dang chay -> vong sang chay quanh 8 cham (ban chuan
+			// nhich con tro ~1 giay/lan, 0x486C2E). Het buff -> tra khung goc.
+			{
+				int nHanKD = g_pCoreShell ? (int)g_pCoreShell->GetGameData(GDI_TASK_SAVE_VALUE, 4450, 0) : 0;
+				int nCu = m_nKDChay & 7;
+				if (nHanKD - (int)time(NULL) > 0)
+				{
+					m_Points[nCu].SetFrame(m_bKDChamGoc[nCu]);	// tra cham truoc
+					m_nKDChay = (nCu + 1) & 7;
+					m_Points[m_nKDChay].SetFrame(m_bKDChamGoc[m_nKDChay] ? 0 : 1);
+				}
+				else
+					m_Points[nCu].SetFrame(m_bKDChamGoc[nCu]);
+			}
 		}
 	}
 }
