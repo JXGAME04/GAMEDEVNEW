@@ -4,6 +4,7 @@
 // Date: 2021
 ------------------------------------------------------------------------------------------
 *****************************************************************************************/
+#include <stdarg.h>
 #include "KWin32.h"
 #include "KIniFile.h"
 #include "../Elem/WndMessage.h"
@@ -3045,6 +3046,20 @@ void KUiForge::PaintWindow()
 // Bo cuc doc tu Dopho.ini (ban goc VLTK). Anh xa o:
 //   0 AtlasBox | 1 CryoliteBox | 2..7 Box1..Box6 | 8 ItemBox (o tu chon)
 //=========================================================================
+// [LOREN 28/08] log chan doan the Do pho - go bo bang x5_log_client_dopho.py --go --ghi
+static void sDoPhoLog(const char* szDinhDang, ...)
+{
+	FILE* f = fopen("loren_dopho.log", "a");
+	if (!f)
+		return;
+	va_list ap;
+	va_start(ap, szDinhDang);
+	vfprintf(f, szDinhDang, ap);
+	va_end(ap);
+	fprintf(f, "\n");
+	fclose(f);
+}
+
 KUiAtlas::KUiAtlas()
 {
 	m_nStatus = STATUS_WAITING_MATERIALS;
@@ -3094,6 +3109,8 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 	char		Buff[128];
 	KIniFile	Ini;
 	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_ATLAS);
+	if (!Ini.Load(Buff))
+		sDoPhoLog("[DOPHO] LoadScheme: KHONG NAP DUOC %s", Buff);
 	if (Ini.Load(Buff))
 	{
 		KWndImage::Init(&Ini, "Main");
@@ -3102,6 +3119,7 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 			if (CtrlAtlasItemMap[i].pIniSection)
 				m_ItemBox[i].Init(&Ini, CtrlAtlasItemMap[i].pIniSection);
 		}
+		sDoPhoLog("[DOPHO] LoadScheme: nap %s = 1", Buff);
 		m_Atlas.Init(&Ini, "AtlasBtn");
 		m_Guide.Init(&Ini, "GuideList");
 		m_ListScroll.Init(&Ini, "GuideList_Scroll");
@@ -3276,11 +3294,14 @@ void KUiAtlas::UpdateAllItem()
 {
 	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
 	int nCount = g_pCoreShell->GetGameData(GDI_ATLAS_ITEM, (unsigned int)&Item, 0);
+	sDoPhoLog("[DOPHO] UpdateAllItem: GDI tra nCount=%d", nCount);
 	int	i;
 	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
 		m_ItemBox[i].Celar();
 	for (i = 0; i < nCount; i++)
 	{
+		sDoPhoLog("[DOPHO]   mon %d: uId=%d genre=%d Region.v=%d",
+			i, (int)Item[i].Obj.uId, (int)Item[i].Obj.uGenre, (int)Item[i].Region.v);
 		if (Item[i].Obj.uGenre != CGOG_NOTHING)
 			UpdateItem(&Item[i], true);
 	}
@@ -3295,6 +3316,9 @@ void KUiAtlas::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 		{
 			if (CtrlAtlasItemMap[i].nPosition == pItem->Region.v)
 			{
+				sDoPhoLog("[DOPHO]   UpdateItem: Region.v=%d -> khop o %d (%s)",
+					(int)pItem->Region.v, i,
+					CtrlAtlasItemMap[i].pIniSection ? CtrlAtlasItemMap[i].pIniSection : "NULL");
 				if (bAdd)
 					m_ItemBox[i].HoldObject(pItem->Obj.uGenre, pItem->Obj.uId,
 						pItem->Region.Width, pItem->Region.Height);
@@ -3322,6 +3346,7 @@ void KUiAtlas::CapNhatNguyenLieu()
 	if (Obj.uId <= 0 || !g_pCoreShell)
 		return;
 	int nPtc = g_pCoreShell->GetGameData(GDI_ITEM_PARTICULAR, 0, (int)Obj.uId);
+	sDoPhoLog("[DOPHO] CapNhatNguyenLieu: uId=%d ptc=%d", (int)Obj.uId, nPtc);
 	if (nPtc <= 0)
 		return;
 
@@ -3339,6 +3364,7 @@ void KUiAtlas::CapNhatNguyenLieu()
 			break;
 		}
 	}
+	sDoPhoLog("[DOPHO] CapNhatNguyenLieu: hang bang=%d (cao=%d)", nHang, Tab.GetHeight());
 	if (nHang < 2)
 		return;
 
