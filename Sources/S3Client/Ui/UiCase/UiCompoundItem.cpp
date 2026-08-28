@@ -500,6 +500,11 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_DistillPadBtn.CheckButton(FALSE);
 		m_pSelf->m_ForgePad.Hide();
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
+		// [LOREN 28/08] 3 loi the Do pho (1): case 5 THIEU hai dong an trang Do pho -
+		// moi case khac deu co. Thieu no thi tu Do pho quay lai Kham nam,
+		// trang Do pho VAN DE LEN => khong con thay o kham nam.
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.UpdateData();
 		break;
 	case 6:
@@ -515,6 +520,9 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
+		// [LOREN 28/08] 3 loi the Do pho (2): case 6 THIEU UpdateData - moi case khac deu
+		// ket bang no de nap lai noi dung o khi mo the.
+		m_pSelf->m_AtlasPad.UpdateData();
 		break;
 	}
 }
@@ -554,6 +562,13 @@ void KUiCompoundItem::UpdateItem(KUiObjAtRegion *pItem, int bAdd)
 		case UOC_ENCHASE_ITEM:
 			{
 				m_pSelf->m_EnchasePad.UpdateItem(pItem, bAdd);
+			}
+			break;
+		// [LOREN 28/08] 3 loi the Do pho (3): THIEU nhanh nay thi keo do vao o Do pho
+		// se KHONG hien len (tin "o vua doi" khong ve toi trang nao).
+		case UOC_ATLAS_ITEM:
+			{
+				m_pSelf->m_AtlasPad.UpdateItem(pItem, bAdd);
 			}
 			break;
 		default:
