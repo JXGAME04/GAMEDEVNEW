@@ -599,20 +599,10 @@ void KUiMeridian::Breathe()
 			KIniFile* pI = LayIni();
 			if (pI)
 				DungChuKhiDoanh(pI);
-			// [KM 27/08b-14] buff dang chay -> vong sang chay quanh 8 cham (ban chuan
-			// nhich con tro ~1 giay/lan, 0x486C2E). Het buff -> tra khung goc.
-			{
-				int nHanKD = g_pCoreShell ? (int)g_pCoreShell->GetGameData(GDI_TASK_SAVE_VALUE, 4450, 0) : 0;
-				int nCu = m_nKDChay & 7;
-				if (nHanKD - (int)time(NULL) > 0)
-				{
-					m_Points[nCu].SetFrame(m_bKDChamGoc[nCu]);	// tra cham truoc
-					m_nKDChay = (nCu + 1) & 7;
-					m_Points[m_nKDChay].SetFrame(m_bKDChamGoc[m_nKDChay] ? 0 : 1);
-				}
-				else
-					m_Points[nCu].SetFrame(m_bKDChamGoc[nCu]);
-			}
+			// [KM 27/08b-17] KHONG lam hieu ung chay vong quanh 8 cham nua: tren man
+			// hinh no thanh ra cac cham DOI MAU lien tuc, ban goc thi cham giu MAU CO
+			// DINH theo cap cua chinh mach do (chu game xac nhan). Khung cua tung cham
+			// da duoc dat mot lan trong RebuildPage.
 		}
 	}
 }
