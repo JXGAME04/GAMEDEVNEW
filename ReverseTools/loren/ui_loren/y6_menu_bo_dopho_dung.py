@@ -167,9 +167,15 @@ def main():
         if l.strip() == "function LR_LayKhoangCap()":
             i0 = i
             break
+    # [BAY DA MAC] Truoc day lay `end` DAU TIEN co strip()=="end" - nhung do la
+    # `end` cua `if` LONG BEN TRONG (dong 215), khong phai cua ham. Cat o do la
+    # de lai duoi thua `end end SayEx end` => Lua bao
+    #     "<eof> expected; last token read `end` at line 269"
+    # va CA TEP test_loren_admin.lua chet, keo theo lenh bai admin chet.
+    # `end` cua HAM luon o COT 0 (khong thut). Doi chieu dung dau hieu do.
     i1 = None
-    for j in range(i0 + 1, min(i0 + 40, len(dong))):
-        if dong[j].strip() == "end":
+    for j in range(i0 + 1, min(i0 + 60, len(dong))):
+        if dong[j] == "end":          # khong strip: phai o cot 0
             i1 = j
             break
     if i0 is None or i1 is None:
@@ -190,9 +196,24 @@ def main():
     except UnicodeEncodeError as e:
         print("!!! LOI TO: ngoai latin-1: %s" % e)
         return 1
-    n_fn = nd.count("function ")
-    n_end = len([l for l in nd.split(eol) if l.strip() == "end"])
-    print("  function=%d | dong 'end'=%d" % (n_fn, n_end))
+    # CHOT CAN BANG: moi `function` khai o COT 0 phai co dung mot `end` o COT 0.
+    # Thieu chot nay chinh la ly do lan truoc ghi ra tep hong ma khong biet.
+    # Khong so tuyet doi: tep nay co ham viet GON MOT DONG
+    # (`function LR_ChayEpTim()  LR_Mo(...) end`) nen so `function` o cot 0 von
+    # da nhieu hon so `end` o cot 0. Cai phai giu nguyen la DO LECH truoc/sau.
+    def dem(s):
+        d = s.split(eol)
+        return (len([l for l in d if l.startswith("function ")]),
+                len([l for l in d if l == "end"]))
+    f0, e0 = dem(raw)
+    f1, e1 = dem(nd)
+    print("  chot: truoc function/end o cot 0 = %d/%d (lech %d)" % (f0, e0, f0 - e0))
+    print("        sau  function/end o cot 0 = %d/%d (lech %d)" % (f1, e1, f1 - e1))
+    if (f1 - e1) != (f0 - e0):
+        print("!!! LOI TO: DO LECH DOI - tep se hong cu phap, KHONG ghi")
+        return 1
+    print("  (tong function=%d | tong dong 'end'=%d)"
+          % (nd.count("function "), len([l for l in nd.split(eol) if l.strip() == "end"])))
 
     if not ghi:
         print("\nDIEN TAP - chua ghi. Chay lai voi --ghi de ap that.")
