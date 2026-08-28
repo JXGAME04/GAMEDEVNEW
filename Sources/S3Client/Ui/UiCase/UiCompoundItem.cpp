@@ -30,6 +30,7 @@ KUiCompoundItem* KUiCompoundItem::m_pSelf = NULL;
 #define 	SCHEME_INI_COMPE			"khamnam/Tinhluyen.ini"
 #define 	SCHEME_INI_BUILD			"khamnam/Chetao.ini"
 #define 	SCHEME_INI_OUTIN			"khamnam/Lay.ini"
+#define 	SCHEME_INI_ATLAS			"khamnam/Dopho.ini"	// [LOREN 27/08] THE DO PHO
 #define		SEL_COM_MENU				1
 #define		MAX_SPR_FRAME				25
 #define		CASH_COMPOUND				5000			
@@ -102,7 +103,26 @@ CtrlEnchaseItemMap[_ITEM_OUTIN_COUNT] =
 	{ UIEP_CONS6,		"Consume6"	},	
 	{ UIEP_CONS7,		"Consume7"	},
 	{ UIEP_CONS8,		"Consume8"	},	
+},
+
+// [LOREN 27/08] THE DO PHO - anh xa o cua trang Do pho, doc tu Dopho.ini (ban goc VLTK).
+// 8 o CHINH (0..7) + 1 o TU CHON (8); hai o cuoi cua _ITEM_OUTIN_COUNT
+// khong dung nen de NULL - LoadScheme bo qua.
+CtrlAtlasItemMap[_ITEM_OUTIN_COUNT] =
+{
+	{ 0,	"AtlasBox"		},
+	{ 1,	"CryoliteBox"	},
+	{ 2,	"Box1"			},
+	{ 3,	"Box2"			},
+	{ 4,	"Box3"			},
+	{ 5,	"Box4"			},
+	{ 6,	"Box5"			},
+	{ 7,	"Box6"			},
+	{ 8,	"ItemBox"		},
+	{ 9,	NULL			},
+	{ 10,	NULL			},
 };
+
 //************************************************* GIAO DIEN CHINH ************************************************
 //-----------------------------------------
 // Kiem tra hop thoai co dang mo hay khong
@@ -168,6 +188,7 @@ void KUiCompoundItem::CloseWindow(bool bDestory)
 		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_distill, 0);
 		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_forge, 0);
 		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_enchase, 0);
+		g_pCoreShell->OperationRequest(GOI_RECOVER_ITEM, (unsigned int)pos_atlas, 0);	// [LOREN 27/08] THE DO PHO
 
 		m_pSelf->Hide();
 		if (bDestory)
@@ -211,8 +232,8 @@ void KUiCompoundItem::Initialize()
 	m_EnchasePad.Initialize();
 	AddPage(&m_EnchasePad,&m_EnchasePadBtn);
 
-	//m_AtlasPad.Initialize();
-	//AddPage(&m_AtlasPad,&m_AtlasPadBtn);
+	m_AtlasPad.Initialize();		// [LOREN 27/08] THE DO PHO
+	AddPage(&m_AtlasPad,&m_AtlasPadBtn);
 
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
@@ -404,8 +425,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
-//		m_pSelf->m_AtlasPad.Hide();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_CompoundOnePad.UpdateData();
 		break;
 	case 1:
@@ -419,8 +440,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
-//		m_pSelf->m_AtlasPad.Hide();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_CompoundTwoPad.UpdateData();
 		break;
 	case 2:
@@ -434,8 +455,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
-//		m_pSelf->m_AtlasPad.Hide();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_CompoundThreePad.UpdateData();
 		break;
 	case 3:
@@ -449,8 +470,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_ForgePadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
-//		m_pSelf->m_AtlasPad.Hide();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_DistillPad.UpdateData();
 		break;
 	case 4:
@@ -464,8 +485,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_DistillPadBtn.CheckButton(FALSE);
 		m_pSelf->m_EnchasePad.Hide();
 		m_pSelf->m_EnchasePadBtn.CheckButton(FALSE);
-//		m_pSelf->m_AtlasPad.Hide();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
+		m_pSelf->m_AtlasPad.Hide();
+		m_pSelf->m_AtlasPadBtn.CheckButton(FALSE);
 		m_pSelf->m_ForgePad.UpdateData();
 		break;
 	case 5:
@@ -482,8 +503,8 @@ void KUiCompoundItem::ShowWindow(int nNum /*= 0*/)
 		m_pSelf->m_EnchasePad.UpdateData();
 		break;
 	case 6:
-//		m_pSelf->m_AtlasPad.Show();
-//		m_pSelf->m_AtlasPadBtn.CheckButton(TRUE);
+		m_pSelf->m_AtlasPad.Show();
+		m_pSelf->m_AtlasPadBtn.CheckButton(TRUE);
 		m_pSelf->m_CompoundOnePad.Hide();
 		m_pSelf->m_CompoundTwoPad.Hide();
 		m_pSelf->m_CompoundThreePad.Hide();
@@ -3002,6 +3023,234 @@ void KUiForge::PaintWindow()
 //--------------------------
 // Khoi tao hop thoai
 //--------------------------
+//=========================================================================
+// [LOREN 27/08] THE DO PHO - than lop KUiAtlas.
+// Bo cuc doc tu Dopho.ini (ban goc VLTK). Anh xa o:
+//   0 AtlasBox | 1 CryoliteBox | 2..7 Box1..Box6 | 8 ItemBox (o tu chon)
+//=========================================================================
+KUiAtlas::KUiAtlas()
+{
+	m_nStatus = STATUS_WAITING_MATERIALS;
+}
+
+void KUiAtlas::Initialize()
+{
+	for (int i = 0; i < _ITEM_OUTIN_COUNT; i ++)
+	{
+		m_ItemBox[i].SetObjectGenre(CGOG_ITEM);
+		AddChild(&m_ItemBox[i]);
+		m_ItemBox[i].SetContainerId((int)UOC_ATLAS_ITEM);
+	}
+	AddChild(&m_Atlas);
+	AddChild(&m_Guide);
+	AddChild(&m_ListScroll);
+	AddChild(&m_AtlasEffect);
+	m_Guide.SetScrollbar(&m_ListScroll);
+
+	char Scheme[256];
+	g_UiBase.GetCurSchemePath(Scheme, 256);
+	LoadScheme(Scheme);
+
+	char		Buff[600];
+	KIniFile	Ini;
+	sprintf(Buff, "%s\\%s", Scheme, SCHEME_INI_SHEET);
+	if (Ini.Load(Buff))
+	{
+		int nLen = sizeof(Buff);
+		ZeroMemory(Buff, nLen);
+		Ini.GetString("RuleInfo", "Atlas", "", Buff, nLen);
+		nLen = TEncodeText(Buff, strlen(Buff));
+		m_Guide.AddOneMessage(Buff, nLen);
+		ZeroMemory(Buff, nLen);
+	}
+	Wnd_AddWindow(this);
+}
+
+void KUiAtlas::LoadScheme( const char* pScheme )
+{
+	char		Buff[128];
+	KIniFile	Ini;
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_ATLAS);
+	if (Ini.Load(Buff))
+	{
+		KWndImage::Init(&Ini, "Main");
+		for (int i = 0; i < _ITEM_OUTIN_COUNT; i ++)
+		{
+			if (CtrlAtlasItemMap[i].pIniSection)
+				m_ItemBox[i].Init(&Ini, CtrlAtlasItemMap[i].pIniSection);
+		}
+		m_Atlas.Init(&Ini, "AtlasBtn");
+		m_Guide.Init(&Ini, "GuideList");
+		m_ListScroll.Init(&Ini, "GuideList_Scroll");
+		m_AtlasEffect.Init(&Ini, "ConsumeEffect");
+		m_AtlasEffect.Hide();
+	}
+}
+
+void KUiAtlas::Breathe()
+{
+	if (m_nStatus == STATUS_BEGIN_ATLAS)
+	{
+		m_AtlasEffect.Show();
+		m_AtlasEffect.SetFrame(0);
+		m_nStatus = STATUS_ATLASING;
+	}
+	else if (m_nStatus == STATUS_ATLASING)
+	{
+		if (!PlayEffect())
+		{
+			m_nStatus = STATUS_CHANGING_ITEM;
+			m_AtlasEffect.Hide();
+		}
+	}
+	else if (m_nStatus == STATUS_CHANGING_ITEM)
+	{
+		ProcessAtlas();
+		m_nStatus = STATUS_WAITING_MATERIALS;
+	}
+}
+
+int KUiAtlas::PlayEffect()
+{
+	if (m_AtlasEffect.GetCurrentFrame() >= MAX_SPR_FRAME)
+	{
+		m_AtlasEffect.SetFrame(0);
+		return 0;
+	}
+	m_AtlasEffect.NextFrame();
+	return 1;
+}
+
+int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
+{
+	switch(uMsg)
+	{
+	case WND_N_SCORLLBAR_POS_CHANGED:
+		if (uParam == (unsigned int)&m_ListScroll)
+		{
+			m_Guide.SetFirstShowLine(nParam);
+		}
+		break;
+	case WND_N_BUTTON_CLICK:
+		if (uParam == (unsigned int)&m_Atlas)
+		{
+			// Nhip "nap": bam nut -> hien hieu ung -> het 25 khung moi GUI lenh,
+			// dung may trang thai goc (xem KUiCompoundOne::Breathe).
+			if (m_nStatus == STATUS_WAITING_MATERIALS)
+			{
+				m_nStatus = STATUS_BEGIN_ATLAS;
+				return 1;
+			}
+		}
+		break;
+	case WND_N_ITEM_PICKDROP:
+		if (g_UiBase.IsOperationEnable(UIS_O_MOVE_ITEM))
+			OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
+		break;
+	default:
+		return KWndImage::WndProc(uMsg, uParam, nParam);
+	}
+	return 1;
+}
+
+void KUiAtlas::ProcessAtlas()
+{
+	// May chu kiem toan bo luat (KFoundryResDemand + atlas.lua), client chi gui.
+	if (g_pCoreShell)
+		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Atlas");
+}
+
+void KUiAtlas::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos)
+{
+	KUiObjAtContRegion	Drop, Pick;
+	KUiDraggedObject	Obj;
+	KWndWindow*			pWnd = NULL;
+
+	if (pPickPos)
+	{
+		((KWndObjectBox*)(pPickPos->pWnd))->GetObject(Obj);
+		Pick.Obj.uGenre = Obj.uGenre;
+		Pick.Obj.uId = Obj.uId;
+		Pick.Region.Width = Obj.DataW;
+		Pick.Region.Height = Obj.DataH;
+		Pick.Region.h = 0;
+		Pick.eContainer = UOC_ATLAS_ITEM;
+		pWnd = pPickPos->pWnd;
+	}
+	else if (pDropPos)
+	{
+		pWnd = pDropPos->pWnd;
+	}
+	else
+		return;
+
+	if (pDropPos)
+	{
+		Wnd_GetDragObj(&Obj);
+		Drop.Obj.uGenre = Obj.uGenre;
+		Drop.Obj.uId = Obj.uId;
+		Drop.Region.Width = Obj.DataW;
+		Drop.Region.Height = Obj.DataH;
+		Drop.Region.h = 0;
+		Drop.eContainer = UOC_ATLAS_ITEM;
+	}
+
+	for (int i = 0; i < _ITEM_OUTIN_COUNT; i++)
+	{
+		if (pWnd == (KWndWindow*)&m_ItemBox[i])
+		{
+			Drop.Region.v = Pick.Region.v = CtrlAtlasItemMap[i].nPosition;
+			break;
+		}
+	}
+	g_pCoreShell->OperationRequest(GOI_SWITCH_OBJECT,
+		pPickPos ? (unsigned int)&Pick : 0,
+		pDropPos ? (int)&Drop : 0);
+}
+
+void KUiAtlas::UpdateData()
+{
+	UpdateAllItem();
+}
+
+void KUiAtlas::UpdateAllItem()
+{
+	KUiObjAtRegion	Item[_ITEM_OUTIN_COUNT];
+	int nCount = g_pCoreShell->GetGameData(GDI_ATLAS_ITEM, (unsigned int)&Item, 0);
+	int	i;
+	for (i = 0; i < _ITEM_OUTIN_COUNT; i++)
+		m_ItemBox[i].Celar();
+	for (i = 0; i < nCount; i++)
+	{
+		if (Item[i].Obj.uGenre != CGOG_NOTHING)
+			UpdateItem(&Item[i], true);
+	}
+}
+
+void KUiAtlas::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
+{
+	if (pItem)
+	{
+		for (int i = 0; i < _ITEM_OUTIN_COUNT; i++)
+		{
+			if (CtrlAtlasItemMap[i].nPosition == pItem->Region.v)
+			{
+				if (bAdd)
+					m_ItemBox[i].HoldObject(pItem->Obj.uGenre, pItem->Obj.uId,
+						pItem->Region.Width, pItem->Region.Height);
+				else
+					m_ItemBox[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
+				break;
+			}
+		}
+	}
+}
+
+void KUiAtlas::PaintWindow()
+{
+	KWndPage::PaintWindow();
+}
+
 KUiEnchase::KUiEnchase()
 {
 	m_nStatus = STATUS_WAITING_MATERIALS;

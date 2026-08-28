@@ -312,6 +312,7 @@ enum INVENTORY_ROOM
 	room_give,				//10
 	room_giveback,		//11
 	room_affairitem,	//12
+	room_partnerbag,	//13 [BDH-G3] tui ban dong hanh (Linux room_partnerbag=14)
 	room_num,			// 
 };
 
@@ -341,6 +342,9 @@ enum ITEM_POSITION
 	pos_skilltakewith,	//skill phim tat index 21 moi nhac len
 	pos_immediacyskill, //skill phim tat index 22 khi dat xuong
 	pos_equipback,		// equip 2
+	pos_partnerbag,	// =25 [BDH-G3] tui ban dong hanh (them CUOI - giu gia tri cu)
+	pos_atlas,		// [LOREN 27/08] PHONG DO PHO - phong the Do pho Hoang Kim
+				// (them CUOI nen KHONG xe dich gia tri cu)
 	pos_num,
 };
 
@@ -366,6 +370,9 @@ enum COMBAT_INFO_TYPE
 };
 // add end
 
+// [BDH-G3] tui ban dong hanh 6x10 (partner_bag.ini Level_10=6,10; o mo theo cap tui)
+#define		PARTNERBAG_ROOM_WIDTH		6
+#define		PARTNERBAG_ROOM_HEIGHT		10
 #define		AFFAIRITEM_ROOM_WIDTH		6
 #define		AFFAIRITEM_ROOM_HEIGHT		4
 #define		MAX_AFFAIR_ITEM				(AFFAIRITEM_ROOM_WIDTH * AFFAIRITEM_ROOM_HEIGHT)
@@ -756,6 +763,8 @@ enum UIOBJECT_CONTAINER
 	UOC_ENCHASE_ITEM,		//Kham nam trang bi
 	UOC_GAMBLE_SELF,		//On the mutual gambling panel, you want to use it for gambling
 	UOC_GAMBLE_OTHER,		//On the mutual gambling panel, others use it for gambling
+	UOC_PARTNER_BAG,	// [BDH-G3] tui ban dong hanh		//On the mutual gambling panel, others use it for gambling
+	UOC_ATLAS_ITEM,		// [LOREN 27/08] PHONG DO PHO - o cua the Do pho Hoang Kim
 };
 
 enum MONEYUNIT

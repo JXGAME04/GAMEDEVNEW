@@ -10368,7 +10368,8 @@ int LuaGetIdItem(Lua_State* L)
 	{
 		nSocket = (int)Lua_ValueToNumber(L, 2);
 	}
-	if (nPos > 9)
+	// [LOREN 27/08] PHONG DO PHO: mo them phong 10 (the Do pho Hoang Kim).
+	if (nPos > 10)
 		return 0;
 
 	switch (nPos)
@@ -10455,6 +10456,17 @@ int LuaGetIdItem(Lua_State* L)
 			nSocket = 10;
 		}
 		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetEnchaseItem(nSocket));	// [UILOREN] 0 = o rong
+		break;
+	case 10:	// [LOREN 27/08] PHONG DO PHO - o cua the Do pho
+		if (nSocket < 0)
+		{
+			nSocket = 0;
+		}
+		if (nSocket > 10)
+		{
+			nSocket = 10;
+		}
+		Lua_PushNumber(L, Player[nPlayerIndex].m_ItemList.GetAtlasItem(nSocket));
 		break;
 	default:
 		break;
@@ -13986,6 +13998,59 @@ extern int LuaPopString(Lua_State* L);
 extern int LuaNW_GetSealInfo(Lua_State* L);
 extern int LuaPARTNER_GetCurPartner(Lua_State* L);
 extern int LuaPARTNER_GetSettingIdx(Lua_State* L);
+// [BDH 27/08] he ban dong hanh - than o KPlayerPartner.cpp (chi _SERVER)
+#ifdef _SERVER
+extern int LuaPARTNER_Count(Lua_State* L);
+extern int LuaPARTNER_GetName(Lua_State* L);
+extern int LuaPARTNER_SetName(Lua_State* L);
+extern int LuaPARTNER_GetLevel(Lua_State* L);
+extern int LuaPARTNER_GetExp(Lua_State* L);
+extern int LuaPARTNER_GetSeries(Lua_State* L);
+extern int LuaPARTNER_GetCharacter(Lua_State* L);
+extern int LuaPARTNER_GetEssentialFeatureID(Lua_State* L);
+extern int LuaPARTNER_GetEmotionDegree(Lua_State* L);
+extern int LuaPARTNER_SetEmotionDegree(Lua_State* L);
+extern int LuaPARTNER_AddEmotionDegree(Lua_State* L);
+extern int LuaPARTNER_GetBirthday(Lua_State* L);
+extern int LuaPARTNER_GetGenData(Lua_State* L);
+extern int LuaPARTNER_GetAptitudes(Lua_State* L);
+extern int LuaPARTNER_GetAttribs(Lua_State* L);
+extern int LuaPARTNER_GetAttribsInc(Lua_State* L);
+extern int LuaPARTNER_SetAttribs(Lua_State* L);
+extern int LuaPARTNER_GetResists(Lua_State* L);
+extern int LuaPARTNER_SetResists(Lua_State* L);
+extern int LuaPARTNER_GetTaskValue(Lua_State* L);
+extern int LuaPARTNER_SetTaskValue(Lua_State* L);
+extern int LuaPARTNER_GetSkillInfo(Lua_State* L);
+extern int LuaPARTNER_GetAllSkill(Lua_State* L);
+extern int LuaPARTNER_AddFightPartner(Lua_State* L);
+extern int LuaPARTNER_RemovePartner(Lua_State* L);
+extern int LuaPARTNER_SetCurPartner(Lua_State* L);
+extern int LuaPARTNER_CallOutCurPartner(Lua_State* L);
+extern int LuaPARTNER_AddExp(Lua_State* L);
+extern int LuaPARTNER_LevelUp(Lua_State* L);
+extern int LuaPARTNER_AddSkill(Lua_State* L);
+extern int LuaPARTNER_RemoveSkill(Lua_State* L);
+extern int LuaPARTNER_RemoveAllSkill(Lua_State* L);
+extern int LuaPARTNER_SetStandbySkill(Lua_State* L);
+extern int LuaPARTNER_ReGenAttribsInc(Lua_State* L);
+extern int LuaPARTNER_ChangeCharacter(Lua_State* L);
+extern int LuaPARTNER_ChangeFeature(Lua_State* L);
+extern int LuaPARTNER_ChangeFeatureOfPeriod(Lua_State* L);
+extern int LuaPARTNER_GetEndure(Lua_State* L);
+extern int LuaPARTNER_SetCallOutSwitch(Lua_State* L);
+extern int LuaPARTNER_AddState(Lua_State* L);
+extern int LuaPARTNER_AddLifeAptitude(Lua_State* L);
+extern int LuaPARTNER_AddStrengthAptitude(Lua_State* L);
+extern int LuaPARTNER_AddHitTargetRateAptitude(Lua_State* L);
+extern int LuaPARTNER_AddDefenceAptitude(Lua_State* L);
+extern int LuaPARTNER_AddSpeedAptitude(Lua_State* L);
+extern int LuaPARTNER_AddLuckAptitude(Lua_State* L);
+extern int LuaPARTNER_GetCurPartner2(Lua_State* L);
+extern int LuaPARTNER_GetSettingIdx2(Lua_State* L);
+extern int LuaGetPartnerBagLevel2(Lua_State* L);
+extern int LuaSetPartnerBagLevel2(Lua_State* L);
+#endif
 extern int LuaSetSiegeVoitureParam(Lua_State* L);
 extern int LuaSetMangonelParam(Lua_State* L);
 // ---- [3HD 25/08] 3 hoat dong ban Linux (than ham: KJx2WarInfra.cpp) ----
@@ -15481,8 +15546,8 @@ TLua_Funcs GameScriptFuns[] =
 		{ "ReplaceString",	LuaReplaceString },
 		{ "PopString",	LuaPopString },
 		{ "NW_GetSealInfo",	LuaNW_GetSealInfo },
-		{ "PARTNER_GetCurPartner",	LuaPARTNER_GetCurPartner },
-		{ "PARTNER_GetSettingIdx",	LuaPARTNER_GetSettingIdx },
+		{ "PARTNER_GetCurPartner",	LuaPARTNER_GetCurPartner2 },	// [BDH 27/08] ban that
+		{ "PARTNER_GetSettingIdx",	LuaPARTNER_GetSettingIdx2 },	// [BDH 27/08] ban that
 		{ "SetSiegeVoitureParam",	LuaSetSiegeVoitureParam },
 		{ "SetMangonelParam",	LuaSetMangonelParam },
 		// SetMissionV = LuaSetMission (m_MissionArray). SetMissionS/GetMissionS
@@ -15656,6 +15721,57 @@ TLua_Funcs GameScriptFuns[] =
 		{ "LayLenhQuanTri", LuaLayLenhQuanTri },
 		{ "UseGiftcodeS", LuaUseGiftcodeS },
 		{ "GiftcodeIsValid", LuaGiftcodeIsValid },
+		// [BDH 27/08] HE BAN DONG HANH (KPlayerPartner.cpp)
+		// (GetCurPartner/GetSettingIdx da thay stub o tren; 2 ham tui dang
+		//  ky DE ban stub vung chung - Lua lay ban dang ky SAU CUNG)
+		{ "PARTNER_Count",	LuaPARTNER_Count },
+		{ "PARTNER_GetName",	LuaPARTNER_GetName },
+		{ "PARTNER_SetName",	LuaPARTNER_SetName },
+		{ "PARTNER_GetLevel",	LuaPARTNER_GetLevel },
+		{ "PARTNER_GetExp",	LuaPARTNER_GetExp },
+		{ "PARTNER_GetSeries",	LuaPARTNER_GetSeries },
+		{ "PARTNER_GetCharacter",	LuaPARTNER_GetCharacter },
+		{ "PARTNER_GetEssentialFeatureID",	LuaPARTNER_GetEssentialFeatureID },
+		{ "PARTNER_GetEmotionDegree",	LuaPARTNER_GetEmotionDegree },
+		{ "PARTNER_SetEmotionDegree",	LuaPARTNER_SetEmotionDegree },
+		{ "PARTNER_AddEmotionDegree",	LuaPARTNER_AddEmotionDegree },
+		{ "PARTNER_GetBirthday",	LuaPARTNER_GetBirthday },
+		{ "PARTNER_GetGenData",	LuaPARTNER_GetGenData },
+		{ "PARTNER_GetAptitudes",	LuaPARTNER_GetAptitudes },
+		{ "PARTNER_GetAttribs",	LuaPARTNER_GetAttribs },
+		{ "PARTNER_GetAttribsInc",	LuaPARTNER_GetAttribsInc },
+		{ "PARTNER_SetAttribs",	LuaPARTNER_SetAttribs },
+		{ "PARTNER_GetResists",	LuaPARTNER_GetResists },
+		{ "PARTNER_SetResists",	LuaPARTNER_SetResists },
+		{ "PARTNER_GetTaskValue",	LuaPARTNER_GetTaskValue },
+		{ "PARTNER_SetTaskValue",	LuaPARTNER_SetTaskValue },
+		{ "PARTNER_GetSkillInfo",	LuaPARTNER_GetSkillInfo },
+		{ "PARTNER_GetAllSkill",	LuaPARTNER_GetAllSkill },
+		{ "PARTNER_AddFightPartner",	LuaPARTNER_AddFightPartner },
+		{ "PARTNER_RemovePartner",	LuaPARTNER_RemovePartner },
+		{ "PARTNER_SetCurPartner",	LuaPARTNER_SetCurPartner },
+		{ "PARTNER_CallOutCurPartner",	LuaPARTNER_CallOutCurPartner },
+		{ "PARTNER_AddExp",	LuaPARTNER_AddExp },
+		{ "PARTNER_LevelUp",	LuaPARTNER_LevelUp },
+		{ "PARTNER_AddSkill",	LuaPARTNER_AddSkill },
+		{ "PARTNER_RemoveSkill",	LuaPARTNER_RemoveSkill },
+		{ "PARTNER_RemoveAllSkill",	LuaPARTNER_RemoveAllSkill },
+		{ "PARTNER_SetStandbySkill",	LuaPARTNER_SetStandbySkill },
+		{ "PARTNER_ReGenAttribsInc",	LuaPARTNER_ReGenAttribsInc },
+		{ "PARTNER_ChangeCharacter",	LuaPARTNER_ChangeCharacter },
+		{ "PARTNER_ChangeFeature",	LuaPARTNER_ChangeFeature },
+		{ "PARTNER_ChangeFeatureOfPeriod",	LuaPARTNER_ChangeFeatureOfPeriod },
+		{ "PARTNER_GetEndure",	LuaPARTNER_GetEndure },
+		{ "PARTNER_SetCallOutSwitch",	LuaPARTNER_SetCallOutSwitch },
+		{ "PARTNER_AddState",	LuaPARTNER_AddState },
+		{ "PARTNER_AddLifeAptitude",	LuaPARTNER_AddLifeAptitude },
+		{ "PARTNER_AddStrengthAptitude",	LuaPARTNER_AddStrengthAptitude },
+		{ "PARTNER_AddHitTargetRateAptitude",	LuaPARTNER_AddHitTargetRateAptitude },
+		{ "PARTNER_AddDefenceAptitude",	LuaPARTNER_AddDefenceAptitude },
+		{ "PARTNER_AddSpeedAptitude",	LuaPARTNER_AddSpeedAptitude },
+		{ "PARTNER_AddLuckAptitude",	LuaPARTNER_AddLuckAptitude },
+		{ "GetPartnerBagLevel",	LuaGetPartnerBagLevel2 },
+		{ "SetPartnerBagLevel",	LuaSetPartnerBagLevel2 },
 		#else 
 			{"PlaySound", LuaPlaySound}, //PlaySound(Sound);
 			{"PlaySprMovie",LuaPlaySprMovie},//PlaySprMovie(npcindex, Movie, times)

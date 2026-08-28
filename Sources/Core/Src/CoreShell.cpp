@@ -1966,6 +1966,35 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			nRet = nCount;
 		}
 		break;
+	case GDI_ITEM_IN_PARTNER_BAG:	// [BDH-G4] tui ban dong hanh
+		nRet = 0;
+		{
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+			PlayerItem* pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetFirstItem();
+			while (pItem)
+			{
+				if (pItem->nPlace == pos_partnerbag)
+				{
+					if (pInfo)
+					{
+						pInfo->Obj.uGenre = CGOG_ITEM;
+						pInfo->Obj.uId = pItem->nIdx;
+						pInfo->Region.h = pItem->nX;
+						pInfo->Region.v = pItem->nY;
+						pInfo->Region.Width = Item[pItem->nIdx].GetWidth();
+						pInfo->Region.Height = Item[pItem->nIdx].GetHeight();
+						pInfo++;
+					}
+					nCount++;
+					if (uParam && nCount > nParam)
+						break;
+				}
+				pItem = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetNextItem();
+			}
+			nRet = nCount;
+		}
+		break;
 	case GDI_ITEM_IN_EX_BOX1:	// mo rong ruong 1
 		nRet = 0;
 		if (uParam)
@@ -2597,6 +2626,38 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			for (int i = 0; i < outinpart_num; i++)
 			{
 				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetEnchaseItem(i);
+				if (pInfo->Obj.uId)
+				{
+					pInfo->Obj.uGenre = CGOG_ITEM;
+
+					pInfo->Region.Width = Item[pInfo->Obj.uId].GetWidth();
+					pInfo->Region.Height = Item[pInfo->Obj.uId].GetHeight();
+					pInfo->Region.h = 0;
+					pInfo->Region.v = i;
+				}
+				else
+				{
+					pInfo->Obj.uGenre = CGOG_NOTHING;
+				}
+				nCount++;
+				pInfo++;
+			}
+			nRet = nCount;
+		}
+		break;
+	case GDI_ATLAS_ITEM:		// [LOREN 27/08] THE DO PHO (khuon GDI_ENCHASE_ITEM)
+		nRet = 0;
+		if (uParam)
+		{
+			if (nParam == 1)
+				break;
+
+			int nCount = 0;
+			KUiObjAtRegion* pInfo = (KUiObjAtRegion*)uParam;
+
+			for (int i = 0; i < outinpart_num; i++)
+			{
+				pInfo->Obj.uId = Player[CLIENT_PLAYER_INDEX].m_ItemList.GetAtlasItem(i);
 				if (pInfo->Obj.uId)
 				{
 					pInfo->Obj.uGenre = CGOG_ITEM;
@@ -13105,6 +13166,17 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					break;
+				case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+					{
+						for(i = 0; i < outinpart_num; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetAtlasItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
 				case pos_enchase:	// [UILOREN] khuon case pos_tremble song o tren
 					{
 						for(i = 0; i < outinpart_num; i++)
@@ -13165,6 +13237,17 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						for(i = 0; i < forgepart_num; i++)
 						{
 							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetForgeItem(i))
+							{
+								bExistId = TRUE;
+							}
+						}
+					}
+					break;
+				case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+					{
+						for(i = 0; i < outinpart_num; i++)
+						{
+							if(Player[CLIENT_PLAYER_INDEX].m_ItemList.GetAtlasItem(i))
 							{
 								bExistId = TRUE;
 							}
@@ -13356,6 +13439,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					P1.nX = pObject1->Region.h;
 					P1.nY = pObject1->Region.v;
 					break;
+				case UOC_PARTNER_BAG:	// [BDH-G4] tui ban dong hanh
+					P1.nPlace = pos_partnerbag;
+					P1.nX = pObject1->Region.h;
+					P1.nY = pObject1->Region.v;
+					break;
 				case UOC_EX_BOX1:	// mo rong ruong 1
 					P1.nPlace = pos_exbox1room;
 					P1.nX = pObject1->Region.h;
@@ -13476,6 +13564,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						P1.nX = pObject1->Region.v;
 					}
 					break;
+				case UOC_ATLAS_ITEM:	// [LOREN 27/08] PHONG DO PHO
+					{
+						if (pObject1->Region.h == 1)
+							break;
+						P1.nPlace = pos_atlas;
+						P1.nX = pObject1->Region.v;
+					}
+					break;
 				case UOC_NPC_SHOP:
 					if (CGOG_NPCSELLITEM != pObject1->Obj.uGenre)
 						break;
@@ -13542,6 +13638,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 				{
 				case UOC_STORE_BOX:
 					P2.nPlace = pos_repositoryroom;
+					P2.nX = pObject2->Region.h;
+					P2.nY = pObject2->Region.v;
+					break;
+				case UOC_PARTNER_BAG:	// [BDH-G4] tui ban dong hanh
+					P2.nPlace = pos_partnerbag;
 					P2.nX = pObject2->Region.h;
 					P2.nY = pObject2->Region.v;
 					break;
@@ -13661,6 +13762,14 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						if (pObject2->Region.h == 1)
 							break;
 						P2.nPlace = pos_enchase;
+						P2.nX = pObject2->Region.v;
+					}
+					break;
+				case UOC_ATLAS_ITEM:	// [LOREN 27/08] PHONG DO PHO
+					{
+						if (pObject2->Region.h == 1)
+							break;
+						P2.nPlace = pos_atlas;
 						P2.nX = pObject2->Region.v;
 					}
 					break;
@@ -18841,6 +18950,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 	case GOI_DICE_CHOICE:	// DICEITEM 26/08
 	{
 		SendClientDiceItem((int)uParam, nParam);
+	}
+	break;
+	case GOI_PARTNER_OP:	// [BDH-G4] cua so ban dong hanh
+	{
+		SendClientPartnerOp((int)uParam, nParam,
+			((int)uParam == PARTNER_OP_RENAME) ? (const char*)nParam : NULL);
 	}
 	break;
 	case GOI_MASKFEATURE:

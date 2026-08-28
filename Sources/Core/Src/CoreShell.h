@@ -306,6 +306,8 @@ enum GAMEDATA_INDEX
 	GDI_DISTILL_ITEM,		//Lo ren - rut option trang bi
 	GDI_FORGE_ITEM,			//Lo ren - che tao trang bi tim
 	GDI_ENCHASE_ITEM,		//Lo ren - kham nam trang bi
+	GDI_ITEM_IN_PARTNER_BAG,	// [BDH-G4] tui ban dong hanh (them CUOI)
+	GDI_ATLAS_ITEM,		// [LOREN 27/08] THE DO PHO - o cua the Do pho (them CUOI)
 };
 
 enum GAMEDATA_CHANGED_NOTIFY_INDEX
@@ -847,6 +849,10 @@ enum GAMEOPERATION_INDEX
 	// Dat o CUOI enum: enum nay do CA Core lan S3Client bien dich, chen giua
 	// se dich gia tri cua moi thanh vien sau no.
 	GOI_DICE_CHOICE,
+
+	// [BDH-G4] cua so Ban Dong Hanh: uParam = PARTNER_OP_*, nParam = tham so.
+	// Op RENAME: nParam = (int)(const char*) ten moi. Dat CUOI enum.
+	GOI_PARTNER_OP,
 
 };
 

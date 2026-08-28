@@ -311,6 +311,44 @@ enum THIS_INTERFACE_STATUS
 
 //************************************* GIAO DIEN CHINH ***************************************************
 
+// [LOREN 27/08] THE DO PHO - trang "Do pho Hoang Kim".
+// Bo cuc theo dung ban goc (Dopho.ini rut tu pak VLTK): 8 o CHINH
+// (AtlasBox + CryoliteBox + Box1..Box6) va 1 o tu chon (ItemBox).
+class KUiAtlas : public KWndPage
+{
+public:
+	KUiAtlas();
+	void	Initialize();
+	void	LoadScheme(const char* pScheme);
+
+	void	UpdateItem(KUiObjAtRegion* pItem, int bAdd);
+	void	UpdateAllItem();
+	void	UpdateData();
+	void	Breathe();
+private:
+	int		WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
+	void	PaintWindow();
+	void	OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE* pDropPos);
+	void	ProcessAtlas();
+	int		PlayEffect();
+private:
+	enum THIS_INTERFACE_STATUS
+	{
+		STATUS_WAITING_MATERIALS,
+		STATUS_BEGIN_ATLAS,
+		STATUS_ATLASING,
+		STATUS_CHANGING_ITEM,
+	};
+
+	int				m_nStatus;
+
+	KWndObjectBox	m_ItemBox[_ITEM_OUTIN_COUNT];
+	KWndMessageListBox	m_Guide;
+	KWndScrollBar	m_ListScroll;
+	KWndButton		m_Atlas;
+	KWndImage		m_AtlasEffect;
+};
+
 class KUiCompoundItem : public KWndPageSet
 {
 public:
@@ -356,6 +394,7 @@ private:
 	KUiDistill		m_DistillPad;
 	KUiForge		m_ForgePad;
 	KUiEnchase		m_EnchasePad;
+	KUiAtlas		m_AtlasPad;		// [LOREN 27/08] THE DO PHO
 
 	KWndButton		m_CompoundPadBtn;
 	KWndButton		m_DistillPadBtn;

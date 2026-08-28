@@ -322,6 +322,13 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		m_Items[i].nX = nX;
 		m_Items[i].nY = nY;		
 		break;
+	case pos_partnerbag:	// [BDH-G3] tui ban dong hanh
+		if (!m_Room[room_partnerbag].PlaceItem(nX, nY, nIdx, Item[nIdx].GetWidth(), Item[nIdx].GetHeight()))
+			return 0;
+		m_Items[i].nPlace = pos_partnerbag;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = nY;
+		break;
 	case pos_tremble:
 		if (nX < 0 || nX >= tremblepart_num)
 			return 0;
@@ -373,6 +380,15 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		if (m_EnchaseItem[nX])
 			return 0;
 		m_Items[i].nPlace = pos_enchase;
+		m_Items[i].nX = nX;
+		m_Items[i].nY = 0;
+		break;
+	case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+		if (nX < 0 || nX >= outinpart_num)
+			return 0;
+		if (m_AtlasItem[nX])
+			return 0;
+		m_Items[i].nPlace = pos_atlas;
 		m_Items[i].nX = nX;
 		m_Items[i].nY = 0;
 		break;
@@ -432,6 +448,10 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 	if (m_Items[i].nPlace == pos_enchase)	// [LOREN]
 	{
 		AddEnchaseItem(m_Items[i].nIdx, nX);
+	}
+	if (m_Items[i].nPlace == pos_atlas)	// [LOREN 27/08] PHONG DO PHO
+	{
+		AddAtlasItem(m_Items[i].nIdx, nX);
 	}
 	if (m_Items[i].nPlace == pos_forge)	// [LOREN]
 	{
@@ -541,6 +561,11 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		pInfo.Region.v = nY;
 		pInfo.eContainer = UOC_AFFAIR_ITEM;
 		break;
+	case pos_partnerbag:	// [BDH-G3]
+		pInfo.Region.h = nX;
+		pInfo.Region.v = nY;
+		pInfo.eContainer = UOC_PARTNER_BAG;
+		break;
 	case pos_tremble: 
 		pInfo.Region.h = 0;
 		pInfo.Region.v = PartTrembleConvert[nX];
@@ -570,6 +595,11 @@ int KItemList::AddKIL(int nIdx, int nPlace, int nX, int nY, BOOL bInit, BOOL bBr
 		pInfo.Region.h = 0;
 		pInfo.Region.v = nX;
 		pInfo.eContainer = UOC_ENCHASE_ITEM;
+		break;
+	case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+		pInfo.Region.h = 0;
+		pInfo.Region.v = nX;
+		pInfo.eContainer = UOC_ATLAS_ITEM;
 		break;
 	case pos_forge:	// [LOREN] khong can bang doi, v = nX truc tiep
 		pInfo.Region.h = 0;
@@ -729,6 +759,14 @@ BOOL KItemList::Remove(int nGameIdx)
 			Item[m_Items[nIdx].nIdx].GetWidth(),
 			Item[m_Items[nIdx].nIdx].GetHeight());
 		break;
+	case pos_partnerbag:	// [BDH-G3]
+		m_Room[room_partnerbag].PickUpItem(
+			nGameIdx,
+			m_Items[nIdx].nX,
+			m_Items[nIdx].nY,
+			Item[m_Items[nIdx].nIdx].GetWidth(),
+			Item[m_Items[nIdx].nIdx].GetHeight());
+		break;
 	case pos_tremble:
 		UnTrembleItem(m_Items[nIdx].nIdx);
 		break;
@@ -746,6 +784,9 @@ BOOL KItemList::Remove(int nGameIdx)
 		break;
 	case pos_enchase:	// [LOREN]
 		UnEnchaseItem(m_Items[nIdx].nIdx);
+		break;
+	case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+		UnAtlasItem(m_Items[nIdx].nIdx);
 		break;
 	case pos_forge:	// [LOREN]
 		UnForgeItem(m_Items[nIdx].nIdx);
@@ -853,6 +894,11 @@ BOOL KItemList::Remove(int nGameIdx)
 		pInfo.Region.v = m_Items[nIdx].nY;
 		pInfo.eContainer = UOC_AFFAIR_ITEM;
 		break;
+	case pos_partnerbag:	// [BDH-G3]
+		pInfo.Region.h = m_Items[nIdx].nX;
+		pInfo.Region.v = m_Items[nIdx].nY;
+		pInfo.eContainer = UOC_PARTNER_BAG;
+		break;
 	case pos_tremble: 
 		pInfo.Region.h = 0;
 		pInfo.Region.v = PartTrembleConvert[m_Items[nIdx].nX];
@@ -882,6 +928,11 @@ BOOL KItemList::Remove(int nGameIdx)
 		pInfo.Region.h = 0;
 		pInfo.Region.v = m_Items[nIdx].nX;
 		pInfo.eContainer = UOC_ENCHASE_ITEM;
+		break;
+	case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+		pInfo.Region.h = 0;
+		pInfo.Region.v = m_Items[nIdx].nX;
+		pInfo.eContainer = UOC_ATLAS_ITEM;
 		break;
 	case pos_forge:	// [LOREN]
 		pInfo.Region.h = 0;
@@ -958,6 +1009,7 @@ int KItemList::FindNumberInAll(int nIdx)
 	nNumberArray += m_Room[room_trade].FindNumberArrayItem(nIdx);
 	nNumberArray += m_Room[room_immediacy].FindNumberArrayItem(nIdx) * nWidth * nHeight;
 	nNumberArray += m_Room[room_affairitem].FindNumberArrayItem(nIdx);
+	nNumberArray += m_Room[room_partnerbag].FindNumberArrayItem(nIdx);	// [BDH-G3]
 	if (m_Hand == nIdx)
 		nNumberArray += nWidth * nHeight;
 
@@ -1038,6 +1090,7 @@ BOOL KItemList::Init(int nPlayerIdx)
 	m_Room[room_give].Init(EQUIPMENT_ROOM_WIDTH, TRADE_ROOM_HEIGHT);
 	m_Room[room_giveback].Init(EQUIPMENT_ROOM_WIDTH, EQUIPMENT_ROOM_HEIGHT);
 	m_Room[room_affairitem].Init(AFFAIRITEM_ROOM_WIDTH, AFFAIRITEM_ROOM_HEIGHT);
+	m_Room[room_partnerbag].Init(PARTNERBAG_ROOM_WIDTH, PARTNERBAG_ROOM_HEIGHT);	// [BDH-G3]
 #ifndef _SERVER
 	m_Room[room_trade1].Init(TRADE_ROOM_WIDTH, TRADE_ROOM_HEIGHT);		// 这个的大小必须与 room_trade 的大小一样
 #endif
@@ -3437,6 +3490,75 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 		}
 		break;
 
+	case pos_partnerbag:	//---------------- [BDH-G3] tui ban dong hanh ----------------
+#ifdef _SERVER
+		// o dich phai nam trong vung da kich hoat theo cap tui (partner_bag.ini)
+		if (m_Hand && !Partner_BagCellActive(m_PlayerIdx, DesPos->nX, DesPos->nY))
+			return;
+#endif
+		nEquipIdx1 = m_Room[room_partnerbag].FindItem(SrcPos->nX, SrcPos->nY);
+		if (nEquipIdx1 < 0)
+			return;
+		if (nEquipIdx1)
+		{
+			if (!m_Room[room_partnerbag].PickUpItem(nEquipIdx1, SrcPos->nX, SrcPos->nY, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight()))
+				return;
+		}
+		if (m_Hand)
+		{
+			if (Item[m_Hand].CanStack(nEquipIdx1, m_Hand))
+			{
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+				if (Item[nEquipIdx1].Stack(Item[m_Hand].GetStackNum()))
+				{
+					Item[m_Hand].Remove();
+					Remove(m_Hand);
+				}
+				else
+				{
+					Item[m_Hand].SetStackNum(Item[nEquipIdx1].GetStackNum() - Def_MAX_STACK_TIENDONG);
+					Item[nEquipIdx1].SetStackNum(Def_MAX_STACK_TIENDONG);
+				}
+				m_Room[room_partnerbag].PlaceItem(SrcPos->nX, SrcPos->nY, nEquipIdx1, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight());
+				return;
+			}
+		}
+		if (m_Hand)
+		{
+			if (m_Room[room_partnerbag].PlaceItem(DesPos->nX, DesPos->nY, m_Hand, Item[m_Hand].GetWidth(), Item[m_Hand].GetHeight()))
+			{
+				int nListIdx = FindSame(m_Hand);
+				m_Items[nListIdx].nPlace = pos_partnerbag;
+				m_Items[nListIdx].nX = DesPos->nX;
+				m_Items[nListIdx].nY = DesPos->nY;
+				m_Hand = nEquipIdx1;
+				if (nEquipIdx1)
+					m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else
+			{
+				m_Room[room_partnerbag].PlaceItem(SrcPos->nX, SrcPos->nY, nEquipIdx1, Item[nEquipIdx1].GetWidth(), Item[nEquipIdx1].GetHeight());
+			}
+		}
+		else
+		{
+			int nListIdx = FindSame(nEquipIdx1);
+			if (nEquipIdx1 && nListIdx)
+			{
+				m_Items[nListIdx].nPlace = pos_hand;
+				m_Hand = nEquipIdx1;
+			}
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
+
 	case pos_tremble:	//--------------------------- kh秏 n筸 ------------------------------------
 		if (Player[this->m_PlayerIdx].CheckTrading())	
 			return;
@@ -3874,6 +3996,14 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo1.eContainer = UOC_AFFAIR_ITEM;
 			pInfo2.eContainer = UOC_AFFAIR_ITEM;
 			break;
+		case pos_partnerbag:	// [BDH-G3]
+			pInfo1.Region.h = SrcPos->nX;
+			pInfo1.Region.v = SrcPos->nY;
+			pInfo2.Region.h = DesPos->nX;
+			pInfo2.Region.v = DesPos->nY;
+			pInfo1.eContainer = UOC_PARTNER_BAG;
+			pInfo2.eContainer = UOC_PARTNER_BAG;
+			break;
 		case pos_tremble: 
 			pInfo1.Region.h = 0;
 			pInfo1.Region.v = PartTrembleConvert[SrcPos->nX];
@@ -3921,6 +4051,14 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 			pInfo2.Region.v = DesPos->nX;
 			pInfo1.eContainer = UOC_ENCHASE_ITEM;
 			pInfo2.eContainer = UOC_ENCHASE_ITEM;
+			break;
+		case pos_atlas:	// [LOREN 27/08] PHONG DO PHO
+			pInfo1.Region.h = 0;
+			pInfo1.Region.v = SrcPos->nX;
+			pInfo2.Region.h = 0;
+			pInfo2.Region.v = DesPos->nX;
+			pInfo1.eContainer = UOC_ATLAS_ITEM;
+			pInfo2.eContainer = UOC_ATLAS_ITEM;
 			break;
 		case pos_forge:	// [LOREN]
 			pInfo1.Region.h = 0;
@@ -4176,6 +4314,7 @@ void	KItemList::ClearAll() //m韎 th猰 v祇 sau n祔
 
 	ClearRoom(room_immediacy);
 	ClearRoom(room_affairitem);
+	ClearRoom(room_partnerbag);	// [BDH-G3]
 
     m_Hand = 0;
 	m_nBackHand = 0;
@@ -4188,6 +4327,7 @@ void	KItemList::ClearAll() //m韎 th猰 v祇 sau n祔
 	ZeroMemory(m_CompThreeItem, sizeof(m_CompThreeItem));
 	ZeroMemory(m_DistillItem, sizeof(m_DistillItem));
 	ZeroMemory(m_EnchaseItem, sizeof(m_EnchaseItem));
+	ZeroMemory(m_AtlasItem, sizeof(m_AtlasItem));	// [LOREN 27/08] PHONG DO PHO
 	ZeroMemory(m_ForgeItem, sizeof(m_ForgeItem));
 	ZeroMemory(m_Items, sizeof(m_Items));
 	ZeroMemory(m_AltEquipmentItem, sizeof(m_AltEquipmentItem));
@@ -5972,6 +6112,26 @@ void	KItemList::RecoverItem(int nPos)
 			memset(&m_EnchaseItem, 0, sizeof(m_EnchaseItem));
 #endif
 			break;
+		case pos_atlas:		// [LOREN 27/08] PHONG DO PHO
+#ifdef _SERVER	
+			for(i = 0; i < outinpart_num; i++)
+			{
+				if(m_AtlasItem[i] > 0)
+				{
+					int nIndex = ItemSet.AddI(&Item[m_AtlasItem[i]]);
+					int nX, nY;
+					if(CheckCanPlaceInEquipment(Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &nX, &nY))
+					{
+						AddKIL(nIndex, pos_equiproom, nX, nY);
+						Remove(m_AtlasItem[i]);
+						ItemSet.Remove(m_AtlasItem[i]);
+					}
+				}
+			}
+#else
+			memset(&m_AtlasItem, 0, sizeof(m_AtlasItem));
+#endif
+			break;
 		default:
 			break;
 	}
@@ -6426,6 +6586,70 @@ void KItemList::UnEnchaseItem(int nIdx, int nPos /* = -1 */)
 		i = nPos;
 	}
 	m_EnchaseItem[i] = 0;
+}
+
+// [LOREN 27/08] PHONG DO PHO - ba ham nhan ban nguyen khuon tu *EnchaseItem.
+BOOL KItemList::CheckAtlasItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (m_PlayerIdx <= 0 || nIdx <= 0)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	if (!nItemListIdx)
+		return FALSE;
+
+	if (nPlace < 0 || nPlace >= outinpart_num)
+		return FALSE;
+
+	if (m_AtlasItem[nPlace])
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL KItemList::AddAtlasItem(int nIdx, int nPlace /* = -1 */)
+{
+	if (CheckAtlasItem(nIdx, nPlace) == FALSE)
+		return FALSE;
+
+	int nItemListIdx = FindSame(nIdx);
+	m_AtlasItem[nPlace] = nIdx;
+	m_Items[nItemListIdx].nPlace = pos_atlas;
+	m_Items[nItemListIdx].nX = nPlace;
+	m_Items[nItemListIdx].nY = 0;
+	return TRUE;
+}
+
+void KItemList::UnAtlasItem(int nIdx, int nPos /* = -1 */)
+{
+	int i = 0;
+	if (m_PlayerIdx <= 0)
+		return;
+
+	if (nIdx <= 0)
+		return;
+
+	if (nPos < 0)
+	{
+		for (i = 0; i < outinpart_num; i++)
+		{
+			if (m_AtlasItem[i] == nIdx)
+			{
+				break;
+			}
+		}
+		if (i == outinpart_num)
+			return;
+	}
+	else
+	{
+		if (nPos >= outinpart_num)
+			return;
+		if (m_AtlasItem[nPos] != nIdx)
+			return;
+		i = nPos;
+	}
+	m_AtlasItem[i] = 0;
 }
 
 BOOL KItemList::CheckForgeItem(int nIdx, int nPlace /* = -1 */)

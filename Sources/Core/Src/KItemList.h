@@ -36,6 +36,7 @@ private:
 	int			m_CompThreeItem[compoundpart_num];
 	int			m_DistillItem[outinpart_num];
 	int			m_EnchaseItem[outinpart_num];
+	int			m_AtlasItem[outinpart_num];		// [LOREN 27/08] PHONG DO PHO
 	int			m_ForgeItem[forgepart_num];
 
 	PlayerItem	m_sBackItems[MAX_PLAYER_ITEM];				
@@ -158,6 +159,7 @@ public:
 	int			GetCompThreeItem(int nIdx) { return m_CompThreeItem[nIdx]; }
 	int			GetDistillItem(int nIdx) { return m_DistillItem[nIdx]; }
 	int			GetEnchaseItem(int nIdx) { return m_EnchaseItem[nIdx]; }
+	int			GetAtlasItem(int nIdx) { return m_AtlasItem[nIdx]; }	// [LOREN 27/08] PHONG DO PHO
 	int			GetForgeItem(int nIdx) { return m_ForgeItem[nIdx]; }
 	BOOL		CheckCompOneItem(int nIdx, int nPlace = -1);
 	BOOL		AddCompOneItem(int nIdx, int nPlace = -1);
@@ -174,6 +176,10 @@ public:
 	BOOL		CheckEnchaseItem(int nIdx, int nPlace = -1);
 	BOOL		AddEnchaseItem(int nIdx, int nPlace = -1);
 	void		UnEnchaseItem(int nIdx, int nPlace = -1);
+	// [LOREN 27/08] PHONG DO PHO
+	BOOL		CheckAtlasItem(int nIdx, int nPlace = -1);
+	BOOL		AddAtlasItem(int nIdx, int nPlace = -1);
+	void		UnAtlasItem(int nIdx, int nPlace = -1);
 	BOOL		CheckForgeItem(int nIdx, int nPlace = -1);
 	BOOL		AddForgeItem(int nIdx, int nPlace = -1);
 	void		UnForgeItem(int nIdx, int nPlace = -1);
