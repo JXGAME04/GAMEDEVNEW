@@ -16,6 +16,8 @@
 #include "KSubWorld.h"
 #include "LuaFuns.h"
 #include "KProtocolProcess.h"
+#include "KPlayerPartner.h"
+#include "KPlayerPet.h"	// [PETSYS]	// [BDH-G4]
 #include "KItemDice.h"	// 26/08: he xuc xac chia do (DICEITEM)
 #include "KSkills.h"
 #include "KThiefSkill.h"
@@ -47,12 +49,26 @@ int g_nS9SvMeY = 0;
 // KHONG ap. Dong ho dung timeGetTime (ms, chiu wrap); CAM dung m_dwCurrentTime (la FRAME
 // ~18/s va bi gan lai theo server moi SyncWorld).
 DWORD g_uS12CuaSoSelf = 0;
-static BOOL S12_ChoPhepSelf(int nIdx)
+// [S12b 28/08] dich move CHINH MINH vua tu gui (ghi tai SendClientCmdRun/Walk,
+// KProtocol.cpp): dung phan biet echo (dich trung) voi lenh DAT-DI cua server (dich la).
+int g_nS12TuGuiX = 0, g_nS12TuGuiY = 0;
+static BOOL S12_ChoPhepSelf(int nIdx, int nDichX, int nDichY)
 {
 	if (nIdx <= 0 || nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 		return FALSE;
 	if (g_uS12CuaSoSelf == 0 || (DWORD)(timeGetTime() - g_uS12CuaSoSelf) >= 3000)
 		return FALSE;
+	// [S12b 28/08] Dich lech >64 mps (2 o) so dich minh vua TU GUI = chac chan KHONG phai
+	// echo cua minh -> cho ap luon, khong xet 2 gac duoi (do that 27/08: auto bat lam
+	// HaveTarget/SendMoveFrames chan sach ca lenh dat that; 42 lenh echo that thi van bi
+	// chan dung nho nhanh trung-dich roi xuong gac cu).
+	if (g_nS12TuGuiX != 0 || g_nS12TuGuiY != 0)
+	{
+		int nS12Lx = nDichX - g_nS12TuGuiX; if (nS12Lx < 0) nS12Lx = -nS12Lx;
+		int nS12Ly = nDichY - g_nS12TuGuiY; if (nS12Ly < 0) nS12Ly = -nS12Ly;
+		if (nS12Lx > 64 || nS12Ly > 64)
+			return TRUE;
+	}
 	int nS12Tx = 0, nS12Ty = 0;
 	if (SubWorld[0].HaveTarget(nS12Tx, nS12Ty))
 		return FALSE;	// dang co duong click A* cua nguoi choi - lenh self la echo
@@ -390,6 +406,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_setmeridian] = &KProtocolProcess::c2sSetMeridian;
 	ProcessFunc[c2s_baucua] = &KProtocolProcess::c2sBauCua;
 	ProcessFunc[c2s_diceitem] = &KProtocolProcess::c2sDiceItem;
+	ProcessFunc[c2s_partnerop] = &KProtocolProcess::c2sPartnerOp;	// [BDH-G4]
 
 
 #endif
@@ -730,7 +747,7 @@ void KProtocolProcess::NetCommandRun(BYTE* pMsg)
 #endif
 	BOOL bS12Self = FALSE;
 #ifndef _SERVER
-	bS12Self = S12_ChoPhepSelf(nIdx);
+	bS12Self = S12_ChoPhepSelf(nIdx, (int)MapX, (int)MapY);
 #endif
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) || bS12Self)
 	{
@@ -935,7 +952,7 @@ void KProtocolProcess::NetCommandWalk(BYTE* pMsg)
 #endif
 	BOOL bS12Self = FALSE;
 #ifndef _SERVER
-	bS12Self = S12_ChoPhepSelf(nIdx);
+	bS12Self = S12_ChoPhepSelf(nIdx, (int)MapX, (int)MapY);
 #endif
 	if (Player[CLIENT_PLAYER_INDEX].ConformIdx(nIdx) || bS12Self)
 	{
@@ -2423,6 +2440,14 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		Npc[nNpcIdx].m_OffY = pSync->m_wOffY;
 		memset(&Npc[nNpcIdx].m_sSyncPos, 0, sizeof(Npc[nNpcIdx].m_sSyncPos));
 		Npc[nNpcIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
+#ifndef _SERVER
+		// [S12b 28/08] Vua duoc DAT LAI tu mo coi = server vua dich chuyen minh (teleport/
+		// vao map). Do that 27+28/08: lenh DAT-DI cua script toi CUNG MILI-GIAY voi cu sync
+		// nay; cua so truoc day chi mo o nhanh S8-NAN (486ms sau) nen lenh bi vut -> thang
+		// bung 8 o moi ~0,6s (11 cu / 5 cu). Mo cua so ngay tai day; gac echo giu nguyen.
+		g_uS12CuaSoSelf = timeGetTime();
+		AUTOLOG("[S12-CUA] mo cua so theo-lenh tai dat-lai sv=(%d,%d) t=%u", (int)pSync->m_dwMapX, (int)pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
+#endif
 		return;
 	}
 
@@ -6513,6 +6538,9 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				{
 					"LR_UI_MotOre", "LR_UI_HaiOre", "LR_UI_BaOre",
 					"LR_UI_Distill", "LR_UI_Forge", "LR_UI_Enchase",
+					// [LOREN 28/08] them LR_UI_Atlas vao danh sach trang: thieu ten nay thi may chu
+					// nhan goi roi IM LANG bo qua - bam nut khong hien gi, ke ca thong bao loi.
+					"LR_UI_Atlas",
 				};
 				char szFun[sizeof(pUiCmd->szFunc) + 1];
 				memcpy(szFun, pUiCmd->szFunc, sizeof(pUiCmd->szFunc));
@@ -7293,6 +7321,72 @@ void KProtocolProcess::c2sDiceItem(int nIndex, BYTE* pProtocol)
 		? DICE_CHOICE_NEED : DICE_CHOICE_GIVEUP;
 	// SetChoice tu chan bam hai lan va tu chot phien khi moi nguoi da chon
 	pDice->SetChoice(nIndex, nChoice);
+}
+
+// [BDH-G4] Ban Dong Hanh: client bam nut tren thanh nhanh / cua so.
+// Do dai goi da duoc CheckProtocolSize chan truoc (g_nProtocolSize).
+void KProtocolProcess::c2sPartnerOp(int nIndex, BYTE* pProtocol)
+{
+#ifdef _SERVER
+	if (!pProtocol)
+		return;
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+		return;
+	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
+		return;
+	if (Npc[Player[nIndex].m_nIndex].m_Kind != kind_player)
+		return;
+
+	PARTNER_OP_DATA* pInfo = (PARTNER_OP_DATA*)pProtocol;
+	if (pInfo->ProtocolType != c2s_partnerop)
+		return;
+
+	// [PETSYS 28/08] he Ban Dong Hanh PC: khong doi hoi co partner mobile
+	if (pInfo->btOp == PARTNER_OP_PETSYS)
+	{
+		Pet_RunProtocol(nIndex, pInfo->nParam);
+		return;
+	}
+
+	KPartnerSys* pSys = &Player[nIndex].m_cPartner;
+	if (pSys->GetG(PTG_VERSION) <= 0 || pSys->Count() <= 0)
+		return;	// chua co dong hanh nao - nut chua co tac dung
+
+	switch (pInfo->btOp)
+	{
+	case PARTNER_OP_CALLOUT:
+		pSys->CallOut(pSys->IsCallOut() ? 0 : 1);
+		break;
+	case PARTNER_OP_SELECT:
+		if (pInfo->nParam >= 1 && pInfo->nParam <= PARTNER_MAX_COUNT)
+			pSys->SetCurPartner(pInfo->nParam);
+		break;
+	case PARTNER_OP_ATTACK:
+		pSys->SetG(PTG_FIGHTMODE, 0);	// 0 = chu dong danh (mac dinh)
+		break;
+	case PARTNER_OP_FOLLOW:
+		pSys->SetG(PTG_FIGHTMODE, 1);	// 1 = chi di theo, khong danh
+		break;
+	case PARTNER_OP_RENAME:
+	{
+		char szTen[PARTNER_NAME_LEN + 1];
+		memset(szTen, 0, sizeof(szTen));
+		strncpy(szTen, pInfo->szName, PARTNER_NAME_LEN);
+		for (int c = 0; szTen[c]; c++)
+			if ((unsigned char)szTen[c] < 32)
+				szTen[c] = ' ';	// chan ky tu dieu khien
+		if (szTen[0])
+			pSys->SetName(pSys->GetCur(), szTen);
+	}
+		break;
+	case PARTNER_OP_TALK:
+	case PARTNER_OP_FORGETSKILL:	// ban goc xu qua menu doi thoai
+	case PARTNER_OP_DELETE:
+	default:
+		Partner_RunTalkScript(nIndex);
+		break;
+	}
+#endif
 }
 
 void KProtocolProcess::c2sSetImage(int nIndex, BYTE* pProtocol)
