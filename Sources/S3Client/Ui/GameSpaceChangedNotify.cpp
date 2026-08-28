@@ -59,6 +59,12 @@
 #include "UiCase/UiFinishQuest.h"
 #include "UiCase/UiTrembleItem.h"
 #include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
+#include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
+#include "UiCase/UiPartnerAttr.h"
+#include "UiCase/UiPartnerSkill.h"
+#include "UiCase/UiPartnerBag.h"
+#include "UiCase/UiPartnerBar.h"
+#include "UiCase/UiPet.h"	// [PETSYS]
 #include "UiCase/UiCompoundItem.h"
 #include "UiCase/UiOptions2.h"
 #include "UiSoundSetting.h"
@@ -213,6 +219,12 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 				if (pExBox3)
 					pExBox3->UpdateItem((KUiObjAtRegion*)uParam, nParam);
 			}
+			else if (pObject->eContainer == UOC_PARTNER_BAG)	// [BDH-G4]
+			{
+				KUiPartnerBag* pPartnerBag = KUiPartnerBag::GetIfVisible();
+				if (pPartnerBag)
+					pPartnerBag->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
 			else if (pObject->eContainer == UOC_ITEM_EX)
 			{
 				KUiItemEX* pItemEX = KUiItemEX::GetIfVisible();
@@ -274,6 +286,15 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
 			}
 			else if (pObject->eContainer == UOC_ENCHASE_ITEM)	// [UILOREN] khuon UOC_TREMBLE_ITEM
+			{
+				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
+				if (pCompItem)
+					pCompItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+			}
+			// [LOREN 28/08] Do pho: bao UI khi o doi - THIEU nhanh nay thi tin "o vua doi" cua
+			// the Do pho roi vao hu khong, cua so khong bao gio biet ma ve lai
+			// (do bang log: ca tep chi co DUNG MOT lan UpdateAllItem luc mo the).
+			else if (pObject->eContainer == UOC_ATLAS_ITEM)
 			{
 				KUiCompoundItem* pCompItem = KUiCompoundItem::GetIfVisible();
 				if (pCompItem)
@@ -538,6 +559,8 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		KUiTaskGuide::AutoTraceOnTask((int)uParam);	// [C35] nhan nhiem vu -> tu theo doi
 		KUiTaskGuide::OnTaskValueChanged((int)uParam);
 		KUiTaskTrace::OnTaskValueChanged((int)uParam);
+		UiPartner_OnTaskValueChanged((int)uParam);	// [BDH-G4]
+		KUiPet::OnTaskValueChanged((int)uParam);	// [PETSYS]
 		break;
 	case GDCNI_PK_SETTING:
 		break;
