@@ -1371,6 +1371,24 @@ int LuaCmp_AddItemEx(Lua_State* L)
 		Lua_PushNumber(L, 0);
 		return 1;
 	}
+	// [LOREN 28/08] HOANG KIM: ma am la hop le.
+	// Cong thuc Do pho ghi mon RA bang CHI SO BANG goldequip trong
+	// DES_DETAILTYPE (atlas.lua:176 da tru 1); particular/level/series de
+	// trong = -1 va KHONG duoc dung: Gen_Equipment (KItemGenerator.CPP:1611)
+	// voi NATURE_GOLD goi thang Gen_GoldEquipment(nDetailType, ...).
+	// Chot "ma am" phia duoi viet cho do thuong, tung chan oan duong nay:
+	// defFinalCompound da removeItems XONG moi goi den day, tu choi o day la
+	// nguyen lieu mat trang ma khong ra mon (su co 28/08 cua chu game).
+	if (nGenre == item_equip &&
+		(nQuality == ITEMQUALITY_GOLD || nQuality == ITEMQUALITY_PLATINA))
+	{
+		if (nParticular < 0)
+			nParticular = 0;
+		if (nLevel < 0)
+			nLevel = 0;
+		if (nSeries < 0)
+			nSeries = 0;
+	}
 	if (nDetailType < 0 || nParticular < 0 || nLevel < 0)
 	{
 		printf("[LOREN] AddItemEx: ma am (%d/%d/%d), tu choi\n",
