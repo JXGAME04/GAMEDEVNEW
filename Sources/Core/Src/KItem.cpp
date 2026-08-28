@@ -1537,58 +1537,6 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcat(pszMsg, "  \n  ");
 	}
 
-	// [LOREN 28/08] Chu giai Do pho: liet ke nguyen lieu.
-	// Ban goc hien du nguyen lieu ngay tren vien do pho. JX1 truoc day khong
-	// co nhanh nao cho do pho (chi Huyen Tinh 146 va khoang 199..204), con
-	// Intro trong magicscript.txt chi ghi mot dong "Do pho Hoang Kim" - nen
-	// phai sinh DONG tu bang cong thuc.
-	// Dai 238..390 la dai THAT sau khi nan atlas_compound.txt sang ma JX1.
-	if (m_CommonAttrib.nItemGenre == item_magicscript && m_CommonAttrib.nDetailType == 1 &&
-		m_CommonAttrib.nParticularType >= 238 && m_CommonAttrib.nParticularType <= 390)
-	{
-		KTabFile AtlasTab;
-		if (AtlasTab.Load("\\Settings\\Item\\atlas_compound.txt"))
-		{
-			int nHang = 0;
-			for (int r = 2; r <= AtlasTab.GetHeight(); r++)
-			{
-				int nPtc = -1;
-				AtlasTab.GetInteger(r, (LPSTR)"ATLAS_PARTICULAR", -1, &nPtc);
-				if (nPtc == m_CommonAttrib.nParticularType)
-				{
-					nHang = r;
-					break;
-				}
-			}
-			if (nHang >= 2)
-			{
-				strcat(pszMsg, " <color=Fire>Nguy\352n li\214u c\254n thi\322t:<color>  \n  ");
-				for (int k = 1; k <= 6; k++)
-				{
-					char szCot[32];
-					char szTen[64];
-					int  nCap = -1;
-					_snprintf(szCot, sizeof(szCot) - 1, "%d_NAME", k);
-					szCot[sizeof(szCot) - 1] = 0;
-					szTen[0] = 0;
-					AtlasTab.GetString(nHang, (LPSTR)szCot, (LPSTR)"", szTen, sizeof(szTen));
-					if (szTen[0] == 0)
-						continue;
-					_snprintf(szCot, sizeof(szCot) - 1, "%d_LEVEL", k);
-					szCot[sizeof(szCot) - 1] = 0;
-					AtlasTab.GetInteger(nHang, (LPSTR)szCot, -1, &nCap);
-					char szMot[128];
-					if (nCap > 0)
-						_snprintf(szMot, sizeof(szMot) - 1, "   <color=Green>%s<color> (c\244p %d)  \n  ", szTen, nCap);
-					else
-						_snprintf(szMot, sizeof(szMot) - 1, "   <color=Green>%s<color>  \n  ", szTen);
-					szMot[sizeof(szMot) - 1] = 0;
-					strcat(pszMsg, szMot);
-				}
-			}
-		}
-	}
-
 	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType >= 199 && m_CommonAttrib.nParticularType <= 204))
 	{
 		char szLevel[128];
