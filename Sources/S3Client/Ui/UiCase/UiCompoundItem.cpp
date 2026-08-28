@@ -3172,6 +3172,12 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 
 void KUiAtlas::Breathe()
 {
+	static int s_nTruoc = -1;
+	if (m_nStatus != s_nTruoc)
+	{
+		sDoPhoLog("[DOPHO] Breathe: m_nStatus %d -> %d", s_nTruoc, m_nStatus);
+		s_nTruoc = m_nStatus;
+	}
 	if (m_nStatus == STATUS_BEGIN_ATLAS)
 	{
 		m_AtlasEffect.Show();
@@ -3195,6 +3201,10 @@ void KUiAtlas::Breathe()
 
 int KUiAtlas::PlayEffect()
 {
+	static int s_nDem = 0;
+	if ((++s_nDem % 10) == 1)
+		sDoPhoLog("[DOPHO] PlayEffect: khung=%d / MAX=%d",
+			m_AtlasEffect.GetCurrentFrame(), MAX_SPR_FRAME);
 	if (m_AtlasEffect.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_AtlasEffect.SetFrame(0);
@@ -3215,6 +3225,8 @@ int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
 		}
 		break;
 	case WND_N_BUTTON_CLICK:
+		sDoPhoLog("[DOPHO] WndProc: BUTTON_CLICK, la nut Ket hop = %d, m_nStatus=%d",
+			(uParam == (unsigned int)&m_Atlas) ? 1 : 0, m_nStatus);
 		if (uParam == (unsigned int)&m_Atlas)
 		{
 			// Nhip "nap": bam nut -> hien hieu ung -> het 25 khung moi GUI lenh,
@@ -3239,6 +3251,7 @@ int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
 void KUiAtlas::ProcessAtlas()
 {
 	// May chu kiem toan bo luat (KFoundryResDemand + atlas.lua), client chi gui.
+	sDoPhoLog("[DOPHO] ProcessAtlas: GUI LENH LR_UI_Atlas len may chu");
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Atlas");
 }
@@ -3334,6 +3347,10 @@ void KUiAtlas::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 			}
 		}
 	}
+	// [LOREN 28/08] log luong bam nut Do pho: duong thuc te chay la UpdateItem (tin bao tung o),
+	// khong phai UpdateAllItem - nen phai goi o day thi nhan ten nguyen
+	// lieu moi duoc lam moi.
+	CapNhatNguyenLieu();
 }
 
 // [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang.
