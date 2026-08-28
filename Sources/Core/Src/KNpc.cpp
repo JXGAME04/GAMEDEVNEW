@@ -397,6 +397,8 @@ void KNpc::Init()
 	m_CurrentSkillEnhancePercent = 0;
 	m_CurrentExpSkillsEnchance = 0;
 	m_CurrentExpSkillsVip = 0;
+	memset(m_nMe2SeriesDamP, 0, sizeof(m_nMe2SeriesDamP));	// [KM 27/08b]
+	memset(m_nSeries2MeDamP, 0, sizeof(m_nSeries2MeDamP));
 	m_CurrentFiveElementsEnhance = 0;
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;
@@ -3527,6 +3529,29 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		    //nDamage = max(nDamage, (nMin + nMax) * 20 / 50); //
 		}
 		
+		// [KM 27/08b] Khi Doanh Dan Dien (va nguon khac sau nay): sat thuong theo
+		// HE cua hai ben. Ban chuan khai bao qua me2Xdamage_p / X2medamage_p cua
+		// ky nang 1501-1505 (\script\skill\special\qiyingdantian.lua). Chi ap don
+		// danh that; kep muc giam toi da 90%.
+		if (!bReturn && nAttacker > 0 && nAttacker < MAX_NPC && nDamage > 0)
+		{
+			if (m_Series >= 0 && m_Series < series_num)
+			{
+				int nTangHe = Npc[nAttacker].m_nMe2SeriesDamP[m_Series];
+				if (nTangHe != 0)
+					nDamage = (int)((__int64)nDamage * (MAX_PERCENT + nTangHe) / MAX_PERCENT);
+			}
+			int nHeDich = Npc[nAttacker].m_Series;
+			if (nHeDich >= 0 && nHeDich < series_num)
+			{
+				int nGiamHe = m_nSeries2MeDamP[nHeDich];
+				if (nGiamHe > 90)
+					nGiamHe = 90;
+				if (nGiamHe != 0)
+					nDamage = (int)((__int64)nDamage * (MAX_PERCENT - nGiamHe) / MAX_PERCENT);
+			}
+		}
+
 		int khang_ngu_hanh_tuong_khac = 0;
 		if ((nMissleSeries == series_metal && m_Series == series_wood) ||
 		    (nMissleSeries == series_water && m_Series == series_fire) ||
@@ -9995,6 +10020,8 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentPoisonDamageReturnPercent = 0;
 	m_CurrentExpEnhance = 0;
 	m_CurrentSkillEnhancePercent = 0;
+	memset(m_nMe2SeriesDamP, 0, sizeof(m_nMe2SeriesDamP));	// [KM 27/08b]
+	memset(m_nSeries2MeDamP, 0, sizeof(m_nSeries2MeDamP));
 	m_CurrentFiveElementsEnhance = 0;
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;					//#khi noi cong day tang ky nang cong kich

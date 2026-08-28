@@ -386,6 +386,11 @@ public:
 	int					m_CurrentSkillEnhancePercent;
 	int					m_CurrentExpSkillsEnchance;// ExpSkills x2
 	int					m_CurrentExpSkillsVip;
+	// [KM 27/08b] Khi Doanh Dan Dien / trang bi sau nay: tang % sat thuong LEN
+	// muc tieu he X (me2Xdamage_p) va giam % sat thuong TU ke dich he X
+	// (X2medamage_p). Chi so = series_metal..series_earth (0..4).
+	int					m_nMe2SeriesDamP[series_num];
+	int					m_nSeries2MeDamP[series_num];
 	int					m_CurrentFiveElementsEnhance;
 	int					m_CurrentFiveElementsResist;
 	int					m_CurrentManaToSkillEnhanceP;					//#khi noi cong day tang ky nang cong kich

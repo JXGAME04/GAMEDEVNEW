@@ -134,6 +134,17 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_autorescueskill] = &KNpcAttribModify::AutoRescueSkill;
 	ProcessFunc[magic_returnres_p] = &KNpcAttribModify::ReturnResP;
 	ProcessFunc[magic_skill_enhance] = &KNpcAttribModify::SkillEnhanceP;
+	// [KM 27/08b] sat thuong theo he (Khi Doanh Dan Dien)
+	ProcessFunc[magic_me2metaldamage_p] = &KNpcAttribModify::Me2MetalDamP;
+	ProcessFunc[magic_metal2medamage_p] = &KNpcAttribModify::Metal2MeDamP;
+	ProcessFunc[magic_me2wooddamage_p] = &KNpcAttribModify::Me2WoodDamP;
+	ProcessFunc[magic_wood2medamage_p] = &KNpcAttribModify::Wood2MeDamP;
+	ProcessFunc[magic_me2waterdamage_p] = &KNpcAttribModify::Me2WaterDamP;
+	ProcessFunc[magic_water2medamage_p] = &KNpcAttribModify::Water2MeDamP;
+	ProcessFunc[magic_me2firedamage_p] = &KNpcAttribModify::Me2FireDamP;
+	ProcessFunc[magic_fire2medamage_p] = &KNpcAttribModify::Fire2MeDamP;
+	ProcessFunc[magic_me2earthdamage_p] = &KNpcAttribModify::Me2EarthDamP;
+	ProcessFunc[magic_earth2medamage_p] = &KNpcAttribModify::Earth2MeDamP;
 	ProcessFunc[magic_five_elements_enhance_v] = &KNpcAttribModify::FiveElementsEnhanceV;
 	ProcessFunc[magic_five_elements_resist_v] = &KNpcAttribModify::FiveElementsResistV;	
 	ProcessFunc[magic_frozen_action] = &KNpcAttribModify::FrozenAction;
@@ -1220,6 +1231,67 @@ void KNpcAttribModify::SkillEnhanceP( KNpc* pNpc, void* pData )
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentSkillEnhancePercent += pMagic->nValue[0];
+}
+
+// [KM 27/08b] cong don vao mang theo he; tru = truyen gia tri am (RemoveMaridian...)
+void KNpcAttribModify::Me2MetalDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nMe2SeriesDamP[0] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Metal2MeDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nSeries2MeDamP[0] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Me2WoodDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nMe2SeriesDamP[1] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Wood2MeDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nSeries2MeDamP[1] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Me2WaterDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nMe2SeriesDamP[2] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Water2MeDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nSeries2MeDamP[2] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Me2FireDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nMe2SeriesDamP[3] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Fire2MeDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nSeries2MeDamP[3] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Me2EarthDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nMe2SeriesDamP[4] += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::Earth2MeDamP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nSeries2MeDamP[4] += pMagic->nValue[0];
 }
 
 void KNpcAttribModify::FiveElementsEnhanceV( KNpc* pNpc, void* pData )

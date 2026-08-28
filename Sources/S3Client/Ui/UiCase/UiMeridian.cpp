@@ -9,6 +9,7 @@
 #include "UiInformation.h"							// [KM 27/08b] UIMessageBox
 #include "../../../core/src/coreshell.h"
 #include <KTabFile.h>
+#include <time.h>								// [KM 27/08b-13] dem nguoc han Khi Doanh
 // [KM 27/08] Khong include KCore.h duoc tu thu muc nay (no dung duong dan
 // tuong doi ../../Headers/IClient.h, chi giai duoc tu S3Client\). Khai bao thang.
 __declspec(dllimport) int  g_AutoLogOn();
@@ -132,11 +133,14 @@ void KUiMeridianBuff::DungNoiDung(KIniFile* pIni)
 	}
 
 	m_szDanhSach[0] = 0;
+	// [KM 27/08b-13] 3 dong dau theo TRANG THAI THAT cua buff Khi Doanh (task 4450)
+	int nHanKD = g_pCoreShell ? (int)g_pCoreShell->GetGameData(GDI_TASK_SAVE_VALUE, 4450, 0) : 0;
+	int bCoKD = (nHanKD - (int)time(NULL)) > 0;
 	sprintf_s(szTen, "S\270t th\255\254ng l\252n %s t\250ng: ", szHe);
-	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, "V\253 H\326 ");
+	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, bCoKD ? "15%" : "V\253 H\326 ");
 	sprintf_s(szTen, "S\270t th\255\254ng t\365 %s gi\266m: ", szHe);
-	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, "V\253 H\326 ");
-	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), "Kh\270ng T\312t C\266 (D\255\254ng) t\250ng: ", "V\253 H\326 ");
+	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, bCoKD ? "15%" : "V\253 H\326 ");
+	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), "Kh\270ng T\312t C\266 (D\255\254ng) t\250ng: ", bCoKD ? "5%" : "V\253 H\326 ");
 	static const char* KM_L32_TEN[8] = {
 		"C\255\352ng H\343a Ng\362 H\265nh %: T\250ng",
 		"Nh\255\356c H\343a Ng\362 H\265nh %: Gi\266m",
@@ -395,10 +399,10 @@ void KUiMeridian::CapNhatNguyenLuc()
 // vi bo ky nang 1501-1505 (mua bang nut 1/7/30 ngay) thuoc dot may chu.
 void KUiMeridian::DungChuKhiDoanh(KIniFile* pIni)
 {
-	// [KM 27/08b] DU CAU nhu ban chuan (anh chu game gui): rut gon cau lam chu
-	// ngat giua tu, nhin xau. O chu nam o dai giua x 78..218 nen khong dam vao
-	// cot tab mach (het o x=82) lan cot nut (bat dau x=221).
-	char szHe[32], szKey[16], szDong[192];
+	// [KM 27/08b-13] Ba dong hien TRANG THAI THAT cua buff (nhu ban chuan dung
+	// GetSkillState voi ky nang 1501-1505). Du an luu HAN o bien nhiem vu 4450,
+	// may chu tu dong bo xuong (UI_TASKVALUE) nen client doc bang GDI_TASK_SAVE_VALUE.
+	char szHe[32], szKey[16], szDong[192], szHan[64];
 	int nSeries = g_pCoreShell ? g_pCoreShell->GetGameData(GDI_PLAYER_SERIES, 0, 0) : -1;
 	szHe[0] = 0;
 	if (nSeries >= 0 && nSeries <= 4)
@@ -406,14 +410,29 @@ void KUiMeridian::DungChuKhiDoanh(KIniFile* pIni)
 		sprintf_s(szKey, "%d_Target", nSeries);
 		pIni->GetString("EffectTarget", szKey, "", szHe, 32);
 	}
+	int nHan = g_pCoreShell ? (int)g_pCoreShell->GetGameData(GDI_TASK_SAVE_VALUE, 4450, 0) : 0;
+	int nConLai = nHan - (int)time(NULL);
+	if (nConLai > 0)
+	{
+		int nNgay = nConLai / 86400;
+		int nGio = (nConLai - nNgay * 86400) / 3600;
+		int nPhut = (nConLai - nNgay * 86400 - nGio * 3600) / 60;
+		if (nNgay > 0)
+			sprintf_s(szHan, "%d ng\265y %d gi\352", nNgay, nGio);
+		else
+			sprintf_s(szHan, "%d gi\352 %d ph\363t", nGio, nPhut);
+	}
+	else
+		strcpy_s(szHan, "Kh\253ng");
+	const char* szMuc = (nConLai > 0) ? "15%" : "Kh\253ng";
 	m_szBreathInfo[0] = 0;
-	sprintf_s(szDong, "Kh\335 Doanh \247an \247i\322n duy tr\327: %s", "Kh\253ng");
+	sprintf_s(szDong, "Kh\335 Doanh \247an \247i\322n duy tr\327: %s", szHan);
 	strcat_s(m_szBreathInfo, szDong);
-	strcat_s(m_szBreathInfo, "\n\n");				// [KM 27/08b] dong trong cho de phan biet
-	sprintf_s(szDong, "S\270t th\255\254ng l\252n h\326 %s t\250ng: %s", szHe, "Kh\253ng");
+	strcat_s(m_szBreathInfo, "\n\n");
+	sprintf_s(szDong, "S\270t th\255\254ng l\252n h\326 %s t\250ng: %s", szHe, szMuc);
 	strcat_s(m_szBreathInfo, szDong);
-	strcat_s(m_szBreathInfo, "\n\n");				// [KM 27/08b] dong trong cho de phan biet
-	sprintf_s(szDong, "S\270t th\255\254ng g\251y ra b\353i h\326 %s gi\266m: %s", szHe, "Kh\253ng");
+	strcat_s(m_szBreathInfo, "\n\n");
+	sprintf_s(szDong, "S\270t th\255\254ng g\251y ra b\353i h\326 %s gi\266m: %s", szHe, szMuc);
 	strcat_s(m_szBreathInfo, szDong);
 	m_BreathBuffInfo.SetText(m_szBreathInfo);
 }
@@ -526,8 +545,7 @@ void KUiMeridian::RebuildPage()
 	if (btnNo == 1)
 	{
 		m_BtnViewBuff.Show();
-		if (m_nTinDenHan == 0)						// [KM 27/08b] dung ghi de thong bao dang hien
-			DungChuKhiDoanh(pIni);
+		DungChuKhiDoanh(pIni);
 		m_BreathBuffInfo.Show();
 	}
 	else
@@ -556,10 +574,10 @@ void KUiMeridian::Breathe()
 		UpdateMeridianLevel();							// [KM 27/08] lay cap moi truoc khi so
 		UpdateMeridian();
 		CapNhatNguyenLuc();								// [KM 27/08] diem co the doi bat cu luc nao
-		// [KM 27/08b] het han hien thong bao tam -> tra lai ba dong Khi Doanh
-		if (m_nTinDenHan && (int)GetTickCount() - m_nTinDenHan > 0)
+		// [KM 27/08b-13] lam moi trang thai Khi Doanh 1 lan/giay (dem nguoc thoi han)
+		if (btnNo == 1 && (int)GetTickCount() - m_nTinDenHan > 0)
 		{
-			m_nTinDenHan = 0;
+			m_nTinDenHan = (int)GetTickCount() + 1000;
 			KIniFile* pI = LayIni();
 			if (pI)
 				DungChuKhiDoanh(pI);
@@ -704,15 +722,9 @@ int KUiMeridian::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 						sprintf_s(szTin, "Ch\255a m\353 \256\255\356c Kh\335 Doanh \247an \247i\322n. \247i\322u ki\326n: c\266 8 kinh m\271ch \256\307u ph\266i \256\271t c\312p 16 tr\353 l\252n.");
 					else
 						sprintf_s(szTin, "G\343i %d ng\265y. Nguy\252n li\326u c\307n: %d %s v\265 %d %s. Kh\251u tr\365 nguy\252n li\326u \256ang ch\352 m\353 \353 \256\356t m\270y ch\361.", nNgay, nGia, szPill, nHon, szSoul);
-					UIMessageBox(szTin);					// van goi (vo hai neu no khong ve)
-					// [KM 27/08b] Hop thoai KUiInformation khong hien (da co bang chung
-					// trong jx_auto.log la cho nay CO chay). Viet thang vao o chu dang
-					// hien tren man hinh de nguoi choi chac chan doc duoc; 8 giay sau
-					// Breathe() tu tra lai ba dong cu.
-					strcpy_s(m_szBreathInfo, szTin);
-					m_BreathBuffInfo.SetText(m_szBreathInfo);
-					m_BreathBuffInfo.Show();
-					m_nTinDenHan = (int)GetTickCount() + 8000;
+					UIMessageBox(szTin);
+					// [KM 27/08b-13] KHONG dong den 3 dong trang Khi Doanh khi bam nut
+					// (y chu game). Ket qua mua do MAY CHU bao ve khung chat.
 					// [KM 27/08b] GUI YEU CAU MUA THAT (ma nguong 100+goi; may chu kiem
 					// dieu kien va tru nguyen lieu, roi bao ket qua ve khung chat).
 					if (nDu && g_pCoreShell)

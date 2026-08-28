@@ -115,6 +115,17 @@ private:
 	void	AutoRescueSkill(KNpc* pNpc, void* pData);
 	void	ReturnResP(KNpc* pNpc, void* pData);
 	void	SkillEnhanceP(KNpc* pNpc, void* pData);
+	// [KM 27/08b] sat thuong theo he (Khi Doanh Dan Dien)
+	void	Me2MetalDamP(KNpc* pNpc, void* pData);
+	void	Metal2MeDamP(KNpc* pNpc, void* pData);
+	void	Me2WoodDamP(KNpc* pNpc, void* pData);
+	void	Wood2MeDamP(KNpc* pNpc, void* pData);
+	void	Me2WaterDamP(KNpc* pNpc, void* pData);
+	void	Water2MeDamP(KNpc* pNpc, void* pData);
+	void	Me2FireDamP(KNpc* pNpc, void* pData);
+	void	Fire2MeDamP(KNpc* pNpc, void* pData);
+	void	Me2EarthDamP(KNpc* pNpc, void* pData);
+	void	Earth2MeDamP(KNpc* pNpc, void* pData);
 	void	FiveElementsEnhanceV(KNpc* pNpc, void* pData);
 	void	FiveElementsResistV(KNpc* pNpc, void* pData);	
 	void	FrozenAction(KNpc* pNpc, void* pData);	

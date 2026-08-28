@@ -344,6 +344,30 @@ int LuaSetPlayerMeridianValue(Lua_State* L)
 	return 0;
 }
 
+
+// [KM 27/08b] Doc cap hien tai cua mot kinh mach (ma mach DEM TU 0 nhu
+// SetMeridian). Truoc gio Lua chi co ham GHI, khong co ham DOC - cac script
+// phai doc nham bien nhiem vu 4001..4008 cua ban chuan (du an nay khong dung).
+int LuaGetPlayerMeridianValue(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nType = 0;
+	if (Lua_GetTopIndex(L) >= 1)
+		nType = (int)Lua_ValueToNumber(L, 1);
+	if (nType < 0 || nType >= MAX_MERIDIAN)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Lua_PushNumber(L, (double)Player[nPlayerIndex].m_cMeridian.getMeridian()[nType]);
+	return 1;
+}
+
 //?????????
 int LuaGetReBornJPoint(Lua_State* L)
 {
@@ -14576,6 +14600,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetFuYuan",		LuaGetPlayerFuYuanValue},
 	{"SetFuYuan", LuaSetPlayerFuYuanValue},
 	{"SetMeridian", LuaSetPlayerMeridianValue},
+	{"GetMeridian", LuaGetPlayerMeridianValue},	// [KM 27/08b] doc cap mach
 	{"GetGameTime",	LuaGetGameTime},
 	{"GetExtPoint", LuaGetExtPoint},
 	{"SetExtPoint", LuaSetExtPoint},
