@@ -7,6 +7,7 @@
 //---------------------------------------------------------------------------
 
 // Core build voi PCH "Use" qua KCore.h - KCore.h PHAI dung dau tien.
+#include <stdarg.h>	// [LOREN 28/08] log kiem ghi ra tep
 #include "KCore.h"
 #include "KWin32.h"
 
@@ -411,16 +412,29 @@ BOOL KFoundryResDemand::Init(int nScheme)
 // [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu.
 // Chi IN, khong doi logic. Goi tu Check()/CheckTuChon() khi TU CHOI, de biet
 // chinh xac mon nao truot thay vi doan. Go bo bang w3_log_kiemnguyenlieu.py --go
+// [LOREN 28/08] log kiem ghi ra tep - ghi ra tep de doc lai duoc (printf chi ra console).
+static void sLoRenGhiLog(const char* szDinhDang, ...)
+{
+	FILE* f = fopen("loren_kiem.log", "a");
+	if (!f)
+		return;
+	va_list ap;
+	va_start(ap, szDinhDang);
+	vfprintf(f, szDinhDang, ap);
+	va_end(ap);
+	fclose(f);
+}
+
 static void sLoRenInMon(const char* szNhan, int nThuTu, int nItemIdx)
 {
 	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
 	{
-		printf("[LOREN-KIEM]   %s o%d: chi so vat pham KHONG HOP LE (%d)\n",
+		sLoRenGhiLog("[LOREN-KIEM]   %s o%d: chi so vat pham KHONG HOP LE (%d)\n",
 			   szNhan, nThuTu, nItemIdx);
 		return;
 	}
 	KItem* p = &Item[nItemIdx];
-	printf("[LOREN-KIEM]   %s o%d: genre=%d detail=%d ptc=%d cap=%d he=%d chong=%d nature=%d\n",
+	sLoRenGhiLog("[LOREN-KIEM]   %s o%d: genre=%d detail=%d ptc=%d cap=%d he=%d chong=%d nature=%d\n",
 		   szNhan, nThuTu, p->GetGenre(), p->GetDetailType(), p->GetParticular(),
 		   p->m_CommonAttrib.nLevel, p->m_CommonAttrib.nSeries,
 		   p->GetStackNum(), p->m_CommonAttrib.nItemNature);
@@ -517,7 +531,7 @@ int KFoundryResDemand::Check(int nCompoundType, const int* pnItem, int nCount) c
 		if (!bDu)
 		{
 			// [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu
-			printf("[LOREN-KIEM] type=%d O CHINH n=%d -> thieu NHOM BAT BUOC thu %d (ma 4)\n",
+			sLoRenGhiLog("[LOREN-KIEM] type=%d O CHINH n=%d -> thieu NHOM BAT BUOC thu %d (ma 4)\n",
 				   nCompoundType, nCount, g);
 			for (int j = 0; j < nCount; j++)
 				sLoRenInMon("CHINH", j, pnItem[j]);
@@ -572,9 +586,9 @@ int KFoundryResDemand::CheckTuChon(int nCompoundType, const int* pnItem, int nCo
 		if (!KhopMotKhoa(pnItem[i], nKhoa))
 		{
 			// [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu
-			printf("[LOREN-KIEM] type=%d O TU CHON n=%d -> tu choi (ma 8) tai o thu %d\n",
+			sLoRenGhiLog("[LOREN-KIEM] type=%d O TU CHON n=%d -> tu choi (ma 8) tai o thu %d\n",
 				   nCompoundType, nCount, i);
-			printf("[LOREN-KIEM]   khoa so %d: co=%d, %d tiet doan\n",
+			sLoRenGhiLog("[LOREN-KIEM]   khoa so %d: co=%d, %d tiet doan\n",
 				   nKhoa, (int)m_bCoKhoa[nKhoa], (int)m_aryKhoa[nKhoa].size());
 			for (int j = 0; j < nCount; j++)
 				sLoRenInMon("TUCHON", j, pnItem[j]);
