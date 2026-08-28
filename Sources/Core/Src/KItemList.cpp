@@ -3789,6 +3789,49 @@ void KItemList::ExchangeItem(ItemPos* SrcPos, ItemPos* DesPos)
 #endif
 		}
 		break;
+
+	// [LOREN 28/08] Do pho: nhanh keo-tha - BO SOT o w4: cac nhanh kia chi lo ke toan,
+	// nhanh NAY moi thuc su nhan mon do tu tay nguoi choi (m_Hand).
+	// Thieu no thi moi cu tha do vao o Do pho deu roi xuong `default`
+	// va khong lam gi => o luon rong.
+	case pos_atlas:
+		if (Player[this->m_PlayerIdx].CheckTrading())
+			return;
+		if (SrcPos->nX < 0 || SrcPos->nX >= outinpart_num || DesPos->nX < 0 || DesPos->nX >= outinpart_num)
+			return;
+		nEquipIdx1 = m_AtlasItem[SrcPos->nX];
+		if (m_Hand)
+		{
+			if(AddAtlasItem(m_Hand, DesPos->nX) == TRUE)
+			{
+				if (nEquipIdx1)
+				{
+					UnAtlasItem(nEquipIdx1, SrcPos->nX);
+				}
+				m_Hand = nEquipIdx1;
+				m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+				g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+			}
+			else if (nEquipIdx1)
+			{
+				AddAtlasItem(nEquipIdx1, SrcPos->nX);
+			}
+		}
+		else
+		{
+			if (nEquipIdx1)
+			{
+				UnAtlasItem(nEquipIdx1, SrcPos->nX);
+			}
+			m_Hand = nEquipIdx1;
+			m_Items[FindSame(nEquipIdx1)].nPlace = pos_hand;
+#ifdef _SERVER
+			g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sMove, sizeof(PLAYER_MOVE_ITEM_SYNC));
+#endif
+		}
+		break;
 	case pos_forge:
 		if (Player[this->m_PlayerIdx].CheckTrading())
 			return;
