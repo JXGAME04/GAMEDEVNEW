@@ -4110,17 +4110,29 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	//                   else                              nMul = 100
 	// Ca hai deu tung TRUOC xuc xac trung/truot, truoc giap va truoc khang.
 	{
-		int nKMBlock = m_CurrentBlockRate - Npc[nLauncher].m_CurrentAntiBlockRate;
-		if (nKMBlock > 0 && nKMBlock > (int)g_Random(MAX_PERCENT))
+		// [KM 27/08b-15] CONG CHAN (audit muc 22): ban chuan Linux 0x0808A51B chi
+		// tung xuc xac Hoa Giai / Trong Kich khi (tham so 8 & 0xC) == 8 - co lay tu
+		// truong +0x30 cua mau chieu thuc (loai don). JX1 khong co truong tuong ung
+		// nen dung phep gan gan nhat: CHI TUNG KHI KE DANH LA NGUOI CHOI. Truoc do
+		// xuc xac chay cho ca don QUAI: sau khi thuoc tinh kinh mach ap dung mach
+		// (p4b), nguoi choi co block_rate that (toi 77) lam quai "danh khong trung"
+		// lien tuc. Nguoi choi danh quai / doi khang nguoi-nguoi giu nguyen.
+		if (Npc[nLauncher].GetKind() == kind_player)
 		{
-			AUTOLOG_IDX(nLauncher, "[KM-BLOCK] tgt=%d lch=%d block=%d -> HOA GIAI, huy don", m_Index, nLauncher, nKMBlock);
-			SyncDamageInfo(nLauncher, 0, COMBAT_INFO_DODGE, 0);
-			return FALSE;
+			int nKMBlock = m_CurrentBlockRate - Npc[nLauncher].m_CurrentAntiBlockRate;
+			if (nKMBlock > 0 && nKMBlock > (int)g_Random(MAX_PERCENT))
+			{
+				AUTOLOG_IDX(nLauncher, "[KM-BLOCK] tgt=%d lch=%d block=%d -> HOA GIAI, huy don", m_Index, nLauncher, nKMBlock);
+				SyncDamageInfo(nLauncher, 0, COMBAT_INFO_DODGE, 0);
+				return FALSE;
+			}
+			int nKMEH = Npc[nLauncher].m_CurrentEnhanceHitRate - m_CurrentAntiEnhanceHitRate;
+			if (nKMEH > 0 && nKMEH > (int)g_Random(MAX_PERCENT))
+				Npc[nLauncher].m_nKMHitPercent = 2 * MAX_PERCENT
+					+ Npc[nLauncher].m_CurrentEnhanceHitEffect - m_CurrentAntiEnhanceHitEffect;
+			else
+				Npc[nLauncher].m_nKMHitPercent = MAX_PERCENT;
 		}
-		int nKMEH = Npc[nLauncher].m_CurrentEnhanceHitRate - m_CurrentAntiEnhanceHitRate;
-		if (nKMEH > 0 && nKMEH > (int)g_Random(MAX_PERCENT))
-			Npc[nLauncher].m_nKMHitPercent = 2 * MAX_PERCENT
-				+ Npc[nLauncher].m_CurrentEnhanceHitEffect - m_CurrentAntiEnhanceHitEffect;
 		else
 			Npc[nLauncher].m_nKMHitPercent = MAX_PERCENT;
 		// [KM 27/08] anti_hitrecover: Linux 0x0807FA30 lay tri cua NGUOI DANH roi
