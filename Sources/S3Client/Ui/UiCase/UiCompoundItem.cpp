@@ -31,6 +31,7 @@ KUiCompoundItem* KUiCompoundItem::m_pSelf = NULL;
 #define 	SCHEME_INI_BUILD			"khamnam/Chetao.ini"
 #define 	SCHEME_INI_OUTIN			"khamnam/Lay.ini"
 #define 	SCHEME_INI_ATLAS			"khamnam/Dopho.ini"	// [LOREN 27/08] THE DO PHO
+#define 	SCHEME_INI_KHAMNAM			"khamnam/Khamnam.ini"	// [LOREN 28/08] Kham nam dung bo cuc rieng
 #define		SEL_COM_MENU				1
 #define		MAX_SPR_FRAME				25
 #define		CASH_COMPOUND				5000			
@@ -3329,7 +3330,7 @@ void KUiEnchase::LoadScheme( const char* pScheme )
 {
 	char		Buff[128];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_OUTIN);
+	sprintf(Buff, "%s\\%s", pScheme, SCHEME_INI_KHAMNAM);
 	if (Ini.Load(Buff))
 	{
 		KWndImage::Init(&Ini, "Main");
@@ -3476,7 +3477,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[64];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3503,7 +3504,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[64];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3524,7 +3525,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[64];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3559,7 +3560,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3580,7 +3581,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3597,7 +3598,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3614,7 +3615,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3635,7 +3636,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3652,7 +3653,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3669,7 +3670,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3694,7 +3695,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3711,7 +3712,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3728,7 +3729,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3753,7 +3754,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3770,7 +3771,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3787,7 +3788,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3812,7 +3813,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3829,7 +3830,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3846,7 +3847,7 @@ void KUiEnchase::ProcessEnchase()
 					char		Buff[64];
 					KIniFile	Ini;
 					
-					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+					sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 					if (Ini.Load(Buff))
 					{
 						ZeroMemory(Buff,sizeof(Buff));
@@ -3869,7 +3870,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[64];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3887,7 +3888,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[128];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3904,7 +3905,7 @@ void KUiEnchase::ProcessEnchase()
 		char		Buff[64];
 		KIniFile	Ini;
 		
-		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+		sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 		if (Ini.Load(Buff))
 		{
 			ZeroMemory(Buff,sizeof(Buff));
@@ -3934,7 +3935,7 @@ void KUiEnchase::ProcessEnchase()
 	char		Buff[64];
 	KIniFile	Ini;
 	
-	sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_OUTIN);
+	sprintf(Buff, "%s\\%s", "Ui\\Ui3", SCHEME_INI_KHAMNAM);
 	if (Ini.Load(Buff))
 	{
 		ZeroMemory(Buff,sizeof(Buff));
