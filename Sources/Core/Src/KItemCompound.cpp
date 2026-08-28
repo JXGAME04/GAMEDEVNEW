@@ -408,6 +408,24 @@ BOOL KFoundryResDemand::Init(int nScheme)
 	return TRUE;
 }
 
+// [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu.
+// Chi IN, khong doi logic. Goi tu Check()/CheckTuChon() khi TU CHOI, de biet
+// chinh xac mon nao truot thay vi doan. Go bo bang w3_log_kiemnguyenlieu.py --go
+static void sLoRenInMon(const char* szNhan, int nThuTu, int nItemIdx)
+{
+	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
+	{
+		printf("[LOREN-KIEM]   %s o%d: chi so vat pham KHONG HOP LE (%d)\n",
+			   szNhan, nThuTu, nItemIdx);
+		return;
+	}
+	KItem* p = &Item[nItemIdx];
+	printf("[LOREN-KIEM]   %s o%d: genre=%d detail=%d ptc=%d cap=%d he=%d chong=%d nature=%d\n",
+		   szNhan, nThuTu, p->GetGenre(), p->GetDetailType(), p->GetParticular(),
+		   p->m_CommonAttrib.nLevel, p->m_CommonAttrib.nSeries,
+		   p->GetStackNum(), p->m_CommonAttrib.nItemNature);
+}
+
 BOOL KFoundryResDemand::KhopTietDoan(const KResDemand& D, int nItemIdx)
 {
 	if (nItemIdx <= 0 || nItemIdx >= MAX_ITEM)
@@ -497,7 +515,14 @@ int KFoundryResDemand::Check(int nCompoundType, const int* pnItem, int nCount) c
 			}
 		}
 		if (!bDu)
+		{
+			// [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu
+			printf("[LOREN-KIEM] type=%d O CHINH n=%d -> thieu NHOM BAT BUOC thu %d (ma 4)\n",
+				   nCompoundType, nCount, g);
+			for (int j = 0; j < nCount; j++)
+				sLoRenInMon("CHINH", j, pnItem[j]);
 			return FOUNDRY_RESULT_LACK_RESOURCE;
+		}
 	}
 
 	// (3) Nguyen lieu con thua phai khop khoa danh cho o thua; khoa -1 nghia la
@@ -545,7 +570,16 @@ int KFoundryResDemand::CheckTuChon(int nCompoundType, const int* pnItem, int nCo
 	for (int i = 0; i < nCount; i++)
 	{
 		if (!KhopMotKhoa(pnItem[i], nKhoa))
+		{
+			// [LOREN 27/08] LOG CHAN DOAN duong kiem nguyen lieu
+			printf("[LOREN-KIEM] type=%d O TU CHON n=%d -> tu choi (ma 8) tai o thu %d\n",
+				   nCompoundType, nCount, i);
+			printf("[LOREN-KIEM]   khoa so %d: co=%d, %d tiet doan\n",
+				   nKhoa, (int)m_bCoKhoa[nKhoa], (int)m_aryKhoa[nKhoa].size());
+			for (int j = 0; j < nCount; j++)
+				sLoRenInMon("TUCHON", j, pnItem[j]);
 			return FOUNDRY_RESULT_RULE_ERROR;
+		}
 	}
 	return FOUNDRY_RESULT_SUCCEED;
 }
