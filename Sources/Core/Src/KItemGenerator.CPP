@@ -682,6 +682,35 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 			pnaryMA[i].nValue[2] = 0;
 		}
 
+		// [LOREN 27/08] NHAN DIEN CHI SO DONG THEO CA MANG.
+		// Truoc day xet TUNG O: `pnaryMALevel[i] > MATF_LEVEL`. Phep doan do
+		// HONG khi chi so dong roi vao 1..10 - va co that: bang
+		// magicattriblevel_index.txt cho MAGIC_ID 126 ("Tang sat thuong vat ly
+		// he Ngoai cong") dai chi so dong dung bang 1..10. O do bi hieu nham la
+		// "cap 10" cua trang bi thuong -> di duong GetCMIT -> SINH THUOC TINH
+		// NGAU NHIEN, nen kham vien da nay vao lai hien ra mot dong khac han.
+		// (Do that: trang bi <29,236,10,340,-1,0>, o thu 3 mang chi so dong 10.)
+		//
+		// Trang bi tim dung chi so dong cho CA SAU O, nen xet CA MANG mot lan:
+		// chi can mot o vuot MATF_LEVEL hoac bang -1 (o kham nam rong - rieng
+		// trang bi tim moi co) thi ca mang la chi so dong. Nho vay o mang gia tri
+		// nho (1..10) cung duoc hieu dung.
+		// Van uu tien nItemNature khi duong goi co truyen (KItemSet::Add); duong
+		// dong bo ve client (AddItemSet2 -> Gen_Equipment ban 10 tham so) khong
+		// mang pham chat xuong nen moi phai suy tu chinh mang.
+		BOOL bChiSoDong = (nItemNature == NATURE_VIOLET);
+		if (!bChiSoDong)
+		{
+			for (int k = 0; k < MAX_ITEM_MAGICATTRIB; k++)
+			{
+				if (pnaryMALevel[k] > MATF_LEVEL || pnaryMALevel[k] == -1)
+				{
+					bChiSoDong = TRUE;
+					break;
+				}
+			}
+		}
+		
 		for (i = 0; i < MAX_ITEM_MAGICLEVEL; i++)
 		{
 			// 如果发现级别为零，表示不需要继续处理了，退出
@@ -706,7 +735,7 @@ BOOL KItemGenerator::Gen_MagicAttrib(
 			// (KItemSet::AddItemSet2 -> Gen_Equipment ban 10 tham so), nen nhan
 			// dien them bang CHINH GIA TRI: cap cua JX1 chi chay 1..MATF_LEVEL,
 			// con so lon hon the chac chan la chi so dong cua bang thuoc tinh.
-			if (nItemNature == NATURE_VIOLET || pnaryMALevel[i] > MATF_LEVEL)
+			if (bChiSoDong)
 			{
 				if (i < MAX_ITEM_MAGICATTRIB &&
 					sLoRenDichThuocTinh(nGameVersion, pnaryMALevel[i], &pnaryMA[i]))
