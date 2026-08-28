@@ -80,14 +80,17 @@ static const int KM_L32_LOAI[9] = {
 	0,
 	magic_five_elements_enhance_v,	// 1 Doc mach   - Cuong Hoa Ngu Hanh
 	magic_five_elements_resist_v,	// 2 Nham mach  - Nhuoc Hoa Ngu Hanh
-	magic_lifemax_yan_v,			// 3 Xung mach  - Sinh Luc Toi Da (duong)
-	magic_physicsres_yan_p,			// 4 Doi mach   - Phong thu vat ly (duong)
-	magic_coldres_yan_p,			// 5 Am duy     - Bang Phong (duong)
-	magic_fireres_yan_p,			// 6 Duong duy  - Hoa Phong (duong)
-	magic_lightingres_yan_p,		// 7 Am khieu   - Loi Phong (duong)
-	magic_poisonres_yan_p,			// 8 Duong khieu- Doc Phong (duong)
+	// [KM 28/08] doi sang ban KHONG "(duong)" theo y chu game (da kiem: ca 6
+	// ban thuong deu co bo xu ly that trong KNpcAttribModify, khong bi nuot).
+	magic_lifemax_v,				// 3 Xung mach  - Sinh Luc Toi Da
+	magic_physicsres_p,				// 4 Doi mach   - Phong thu vat ly
+	magic_coldres_p,				// 5 Am duy     - Bang Phong
+	magic_fireres_p,				// 6 Duong duy  - Hoa Phong
+	magic_lightingres_p,			// 7 Am khieu   - Loi Phong
+	magic_poisonres_p,				// 8 Duong khieu- Doc Phong
 };
-static const int KM_L32_TRI[9] = { 0, 200, 200, 15000, 5, 5, 5, 5, 5 };
+// [KM 28/08] Sinh Luc Toi Da 15000 -> 5000 (chu game can bang)
+static const int KM_L32_TRI[9] = { 0, 200, 200, 5000, 5, 5, 5, 5, 5 };
 
 // bAp = 1 cong vao, 0 tru ra
 static void KM_ThuongCap32(KNpc* pNPC, int nMach, int bAp)

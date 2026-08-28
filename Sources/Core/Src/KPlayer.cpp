@@ -3012,7 +3012,7 @@ void KPlayer::CapNhatKhiDoanh()
 		Dst.nValue[0] = Dst.nValue[1] = Dst.nValue[2] = nDau * 15;
 		Npc[m_nIndex].ModifyAttrib(Npc[m_nIndex].m_Index, &Dst);
 	}
-	Dst.nAttribType = magic_allres_yan_p;
+	Dst.nAttribType = magic_allres_p;				// [KM 28/08] bo ban "(duong)"
 	Dst.nValue[0] = Dst.nValue[1] = Dst.nValue[2] = nDau * 5;
 	Npc[m_nIndex].ModifyAttrib(Npc[m_nIndex].m_Index, &Dst);
 	m_bKDDDDangAp = bCan;

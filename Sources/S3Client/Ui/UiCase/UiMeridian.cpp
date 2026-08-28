@@ -140,18 +140,18 @@ void KUiMeridianBuff::DungNoiDung(KIniFile* pIni)
 	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, bCoKD ? "15%" : "V\253 H\326 ");
 	sprintf_s(szTen, "S\270t th\255\254ng t\365 %s gi\266m: ", szHe);
 	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), szTen, bCoKD ? "15%" : "V\253 H\326 ");
-	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), "Kh\270ng T\312t C\266 (D\255\254ng) t\250ng: ", bCoKD ? "5%" : "V\253 H\326 ");
+	KM_ThemDong(m_szDanhSach, sizeof(m_szDanhSach), "Kh\270ng T\312t C\266 t\250ng: ", bCoKD ? "5%" : "V\253 H\326 ");
 	static const char* KM_L32_TEN[8] = {
 		"C\255\352ng H\343a Ng\362 H\265nh %: T\250ng",
 		"Nh\255\356c H\343a Ng\362 H\265nh %: Gi\266m",
-		"Sinh L\371c T\350i \247a (D\255\254ng): T\250ng ",
-		"Ph\337ng th\361 v\313t l\375 (d\255\254ng) %: T\250ng",
-		"B\250ng Ph\337ng (D\255\254ng) %: T\250ng",
-		"H\341a Ph\337ng (D\255\254ng) %: T\250ng",
-		"L\253i Ph\337ng (D\255\254ng) %: T\250ng",
-		"\247\351c Ph\337ng (D\255\254ng) %: T\250ng",
+		"Sinh L\371c T\350i \247a: T\250ng ",
+		"Ph\337ng th\361 v\313t l\375 %: T\250ng",
+		"B\250ng Ph\337ng %: T\250ng",
+		"H\341a Ph\337ng %: T\250ng",
+		"L\253i Ph\337ng %: T\250ng",
+		"\247\351c Ph\337ng %: T\250ng",
 	};
-	static const char* KM_L32_TRI[8] = { "200", "200", "15000", "5%", "5%", "5%", "5%", "5%" };
+	static const char* KM_L32_TRI[8] = { "200", "200", "5000", "5%", "5%", "5%", "5%", "5%" };	// [KM 28/08]
 	for (i = 0; i < 8; i++)
 	{
 		int nDat = (i < MAX_MERIDIAN && m_CapMach[i] >= MAX_MERIDIAN_LEVEL);
