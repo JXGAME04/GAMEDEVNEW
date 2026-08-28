@@ -326,7 +326,12 @@ typedef struct
 	int			m_nObjIdx;					
 	int			m_nWidth;					
 	int			m_nHeight;					
-	char		m_szIntro[SZBUFLEN_1];		
+	// [LOREN 27/08] 128 byte KHONG du: Intro cua khoang thuoc tinh o ban goc
+	// (Linux 004 + client VLTK) dai 186..191 byte. KTabFile cat o byte 127,
+	// cat trung giua mot the "<color=...>" -> the ho -> bo phan tich the di
+	// tim '>' ra ngoai pham vi. Dich chep sang la szIntro[256] (KItem.h:64)
+	// nen du cho; nap dung sizeof() nen tu dong nap du hon.
+	char		m_szIntro[SZBUFLEN_256];	
 	char		m_szScript[SZBUFLEN_1];		
 	int			m_nPrice;					
 	int			m_bShortKey;	//bá xuèng « phÝm t¾t

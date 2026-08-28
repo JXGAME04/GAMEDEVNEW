@@ -390,6 +390,19 @@ public:
 	int					m_CurrentFiveElementsResist;
 	int					m_CurrentManaToSkillEnhanceP;					//#khi noi cong day tang ky nang cong kich
 	int					m_CurrentSorbDamageP;								//#triet tieu sat thuong
+	// [KM 27/08] sau thuoc tinh he kinh mach, dung chuan ban Linux + client VLTK
+	int					m_CurrentBlockRate;									//#hoa giai sat thuong
+	int					m_CurrentAntiBlockRate;								//#triet tieu hoa giai
+	int					m_CurrentEnhanceHitRate;							//#trong kich
+	int					m_CurrentAntiEnhanceHitRate;						//#khang trong kich
+	int					m_CurrentAntiAllResP;								//#bo qua toan khang
+	int					m_CurrentAntiSorbDamageP;							//#xuyen giam thuong
+	int					m_CurrentEnhanceHitEffect;							//#hieu qua trong kich
+	int					m_nKMHitPercent;									//#he so don danh luot nay
+	int					m_CurrentAntiEnhanceHitEffect;						//#khang hieu qua trong kich
+	int					m_CurrentAddDamageP;								//#cong % sat thuong, goc 100
+	int					m_CurrentAntiHitRecover;							//#keo dai dong tac bi thuong gay ra
+	int					m_nKMAntiHitRecover;								//#tri nhan duoc o don danh nay
 	//
 	int					m_Dir;							// Npc的方向
 	int					m_RedLum;						// Npc的亮度

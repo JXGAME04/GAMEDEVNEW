@@ -220,9 +220,9 @@ int KWndButton::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		}
 		else if (ms_nDisableBtnTip == false && m_szTip[0] && !g_MouseOver.IsMoseHoverWndObj((void*)(KWndWindow*)this, 0))
 		{
-			char szTip[128];
+			char szTip[256];					// [KM 27/08] theo m_szTip
 			
-			int nTipLen = GetToolTipInfo(szTip, 127);
+			int nTipLen = GetToolTipInfo(szTip, 255);	// [KM 27/08]
 			szTip[nTipLen] = 0;
 			
 			g_MouseOver.SetMouseHoverInfo((void*)(KWndWindow*)this, 0,

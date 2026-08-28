@@ -659,6 +659,10 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 		if (nParamLen == 0 && nParamLen >= MAXPICTOKENLEN)
 			break;
 		{
+			// [LOREN 27/08] chot o dong tren viet `&&` (le ra `||`) nen khong bao
+			// gio chan; kep o day cho chac, khong doi dieu kien cu.
+			if (nParamLen > (int)sizeof(szPic) - 1)
+				nParamLen = (int)sizeof(szPic) - 1;
 			memcpy(szPic, pParamBuffer, nParamLen);
 			szPic[nParamLen] = 0;
 			int nPicIndex = atoi(szPic);
@@ -697,6 +701,12 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 				}
 			}
 		}
+		// [LOREN 27/08] CHAN TRAN: nhanh `nParamLen < 8` o tren chi chan khi ten
+		// mau khop bang; khi khong khop ma roi thang xuong day. Mot chuoi bi cat
+		// cut giua the (vd Intro vat pham dai hon 127 byte) lam vong tim '>' bat
+		// nham dau '>' cua the phia sau => nParamLen co the ~21 > Color[13].
+		if (nParamLen > (int)sizeof(Color) - 1)
+			nParamLen = (int)sizeof(Color) - 1;
 		memcpy(Color, pParamBuffer, nParamLen);
 		Color[nParamLen] = 0;
 		KRColor uTextColor;
@@ -736,6 +746,12 @@ static int TEncodeCtrl(int nCtrl, char* pParamBuffer, int nParamLen, char* pEnco
 				}
 			}
 		}
+		// [LOREN 27/08] CHAN TRAN: nhanh `nParamLen < 8` o tren chi chan khi ten
+		// mau khop bang; khi khong khop ma roi thang xuong day. Mot chuoi bi cat
+		// cut giua the (vd Intro vat pham dai hon 127 byte) lam vong tim '>' bat
+		// nham dau '>' cua the phia sau => nParamLen co the ~21 > Color[13].
+		if (nParamLen > (int)sizeof(Color) - 1)
+			nParamLen = (int)sizeof(Color) - 1;
 		memcpy(Color, pParamBuffer, nParamLen);
 		Color[nParamLen] = 0;
 		KRColor uTextColor;

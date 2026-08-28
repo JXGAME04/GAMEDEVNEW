@@ -141,6 +141,17 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_randmove] = &KNpcAttribModify::RandMove;
 	ProcessFunc[magic_manatoskill_enhance] = &KNpcAttribModify::ManaToSkillEnhanceP;
 	ProcessFunc[magic_sorbdamage_p] = &KNpcAttribModify::SorbDamageP;
+	// [KM 27/08] sau thuoc tinh he kinh mach
+	ProcessFunc[magic_block_rate] = &KNpcAttribModify::BlockRate;
+	ProcessFunc[magic_anti_block_rate] = &KNpcAttribModify::AntiBlockRate;
+	ProcessFunc[magic_enhancehit_rate] = &KNpcAttribModify::EnhanceHitRate;
+	ProcessFunc[magic_anti_enhancehit_rate] = &KNpcAttribModify::AntiEnhanceHitRate;
+	ProcessFunc[magic_anti_allres_yan_p] = &KNpcAttribModify::AntiAllResP;
+	ProcessFunc[magic_anti_sorbdamage_yan_p] = &KNpcAttribModify::AntiSorbDamageP;
+	ProcessFunc[magic_enhancehiteffect_rate] = &KNpcAttribModify::EnhanceHitEffectRate;
+	ProcessFunc[magic_anti_enhancehiteffect_rate] = &KNpcAttribModify::AntiEnhanceHitEffectRate;
+	ProcessFunc[magic_add_damage_p] = &KNpcAttribModify::AddDamageP;
+	ProcessFunc[magic_anti_hitrecover] = &KNpcAttribModify::AntiHitRecover;
 	ProcessFunc[magic_expenhance_s] = &KNpcAttribModify::ExpSkillsEnhanceP;// Add magic x2 Skill
 	ProcessFunc[magic_expvip] = &KNpcAttribModify::ExpSkillsVIP;// VIP
 }
@@ -1260,4 +1271,67 @@ void KNpcAttribModify::SorbDamageP( KNpc* pNpc, void* pData ) //#triet tieu sat 
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentSorbDamageP += pMagic->nValue[0];
+}
+
+// [KM 27/08] sau thuoc tinh he kinh mach - dung chuan ban Linux + client VLTK
+void KNpcAttribModify::BlockRate( KNpc* pNpc, void* pData )			//#hoa giai sat thuong
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentBlockRate += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiBlockRate( KNpc* pNpc, void* pData )		//#triet tieu hoa giai
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiBlockRate += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::EnhanceHitRate( KNpc* pNpc, void* pData )		//#trong kich
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentEnhanceHitRate += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiEnhanceHitRate( KNpc* pNpc, void* pData )	//#khang trong kich
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiEnhanceHitRate += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiAllResP( KNpc* pNpc, void* pData )		//#bo qua toan khang
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiAllResP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiSorbDamageP( KNpc* pNpc, void* pData )	//#xuyen giam thuong
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiSorbDamageP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::EnhanceHitEffectRate( KNpc* pNpc, void* pData )	//#hieu qua trong kich
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentEnhanceHitEffect += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiEnhanceHitEffectRate( KNpc* pNpc, void* pData )	//#khang hieu qua trong kich
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiEnhanceHitEffect += pMagic->nValue[0];
+}
+
+// Linux 0x08096130: pNpc[0x1414] += nValue[0], goc dat 0x64 (=100) o 3 cho.
+void KNpcAttribModify::AddDamageP( KNpc* pNpc, void* pData )	//#cong % sat thuong
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAddDamageP += pMagic->nValue[0];
+}
+
+// Linux 0x08096CD0: pNpc[0x12b0] += nValue[0] roi soi sang [0x12b4] (ban dang dung).
+void KNpcAttribModify::AntiHitRecover( KNpc* pNpc, void* pData )	//#keo dai dong tac bi thuong gay ra
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiHitRecover += pMagic->nValue[0];
 }

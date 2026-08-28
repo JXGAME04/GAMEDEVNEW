@@ -89,7 +89,9 @@
 #define MISSION_AVAILABLE_VALUE		1
 #define MAX_GLBMISSION_PARAM		3
 #define	MISSION_STATNUM				10 //add by phong kiÒu using Tèng kim battle 10 ng­êi top ten
-#define MAX_MERIDIAN 8
+// [KM 27/08] 8 -> 12 theo ban chuan (Linux + client VLTK).
+// TRoleData KHONG doi sizeof: cap kinh mach luu trong BaseInfo.szStringduphong2[32], dung 12/32 byte.
+#define MAX_MERIDIAN 12
 #define MAX_MERIDIAN_LEVEL 32
 
 struct TMissionLadderSelfInfo

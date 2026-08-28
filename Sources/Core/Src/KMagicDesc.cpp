@@ -316,7 +316,8 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"ignorenegativestate_p",			//302
 	"expenhance_s",						//303
 	"expvip",						//304
-	"normal_end",						//305
+	"anti_enhancehiteffect_rate",		//305
+	"normal_end",						//306
 };
 
 

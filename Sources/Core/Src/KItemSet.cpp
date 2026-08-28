@@ -205,6 +205,21 @@ int KItemSet::AddItemSet2(int nItemGenre, int nSeries, int nLevel, int nLuck, in
 		return 0;
 
 	KItem*	pItem = &Item[i];
+	// [LOREN 27/08] FindFree() tra ve mot khe DUNG LAI: m_GeneratorParam con
+	// nguyen so lieu cua mon do truoc do. Truoc day vo hai vi Gen_* deu
+	// ZeroMemory khoi nay, nhung Gen_MagicScript nay GIU LAI khoi do cho
+	// nguyen lieu lo ren (de khong mat ma phep khi nap tu CSDL), nen rac se
+	// chay thang vao vat pham moi va lam client sap luc ve mo ta.
+	// Lam sach o day: duong nap tu CSDL (KPlayerDBFuns) khong di qua ham nay
+	// nen van giu duoc so lieu that cua no.
+	ZeroMemory(&pItem->m_GeneratorParam, sizeof(pItem->m_GeneratorParam));
+	// [LOREN 27/08] Ba mang thuoc tinh cung phai sach: Gen_MagicScript chi lam
+	// `*pItem = *pMagicScript` (gan phan co ban tu bang), KHONG dung toi chung,
+	// nen chung se giu so lieu cua mon do truoc do o khe nay. Duong ve mo ta
+	// khoang 199..204 doc thang m_aryBaseAttrib[0].nValue[0] (KItem.cpp:1504).
+	ZeroMemory(pItem->m_aryBaseAttrib, sizeof(pItem->m_aryBaseAttrib));
+	ZeroMemory(pItem->m_aryRequireAttrib, sizeof(pItem->m_aryRequireAttrib));
+	ZeroMemory(pItem->m_aryMagicAttrib, sizeof(pItem->m_aryMagicAttrib));
 	pItem->m_GeneratorParam.nVersion = nVersion;
 	pItem->m_GeneratorParam.uRandomSeed = nRandomSeed;
 	switch(nItemGenre)

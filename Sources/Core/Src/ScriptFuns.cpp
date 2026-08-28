@@ -320,13 +320,20 @@ int LuaSetPlayerMeridianValue(Lua_State* L)
 	int levelDiff = Player[nPlayerIndex].m_cMeridian.setMeridian(nMeridianType, nMeridianLevel);
 	if (levelDiff == 0) //Same level, do nothing
 		return 0;
+	// [KM 27/08b] Ma mach o day DEM TU 0 (setMeridian kiem `< 0 || >= MAX_MERIDIAN`),
+	// nhung ApplyMaridianToNPC/RemoveMaridianFromNPC DEM TU 1 (kiem `<= 0` va tra
+	// bang bang `(nType-1)*MAX_MERIDIAN_LEVEL + cap + 1`). Truoc day dua nguyen si
+	// sang nen: mach 1 (Doc) KHONG duoc cong gi, mach N an thuoc tinh cua mach N-1,
+	// mach 12 khong bao gio dung. Duong nap luc dang nhap von da +1 nen loi chi lo
+	// ra tu luc xung huyet den luc thoat vao lai game. Cong 1 cho khop.
+	int nMachMotGoc = nMeridianType + 1;
 	if (levelDiff > 0) {
 		//[xxxC____] => current level 4
 		//[xxxDDDC_] => DDD levelDiff = 3, new current level 7
-		MeridianManager.ApplyMaridianToNPC(&Npc[Player[nPlayerIndex].m_nIndex], nMeridianType, nMeridianLevel, levelDiff); //Add all new higher levels
+		MeridianManager.ApplyMaridianToNPC(&Npc[Player[nPlayerIndex].m_nIndex], nMachMotGoc, nMeridianLevel, levelDiff); //Add all new higher levels
 	}
 	else {
-		MeridianManager.RemoveMaridianFromNPC(&Npc[Player[nPlayerIndex].m_nIndex], nMeridianType, nMeridianLevel, levelDiff); //Remove diff current meridian effects levels
+		MeridianManager.RemoveMaridianFromNPC(&Npc[Player[nPlayerIndex].m_nIndex], nMachMotGoc, nMeridianLevel, levelDiff); //Remove diff current meridian effects levels
 	}
 	Player[nPlayerIndex].UpdataCurData();
 	//Sync

@@ -891,6 +891,8 @@ public:
 	void			ReCalcEquip();							// 重新计算身上的装备
 	void			ReCalcState();							// 重新计算身上的状态
 	void			ReCalcMeridian();
+	void			CapNhatKhiDoanh();					// [KM 27/08b] Khi Doanh Dan Dien theo han
+	BYTE			m_bKDDDDangAp;						// [KM 27/08b] co: dang cong hieu ung Khi Doanh
 	void			ChangePlayerCamp(int nCamp);			// 改变玩家阵营
 	void			Revive(int nType);						// 重生	
 	BOOL			CheckTrading();

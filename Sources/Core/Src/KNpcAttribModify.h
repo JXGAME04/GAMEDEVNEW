@@ -122,6 +122,17 @@ private:
 	void	RandMove(KNpc* pNpc, void* pData);	
 	void	ManaToSkillEnhanceP(KNpc* pNpc, void* pData);	
 	void	SorbDamageP(KNpc* pNpc, void* pData);	
+	// [KM 27/08] sau thuoc tinh he kinh mach
+	void	BlockRate(KNpc* pNpc, void* pData);
+	void	AntiBlockRate(KNpc* pNpc, void* pData);
+	void	EnhanceHitRate(KNpc* pNpc, void* pData);
+	void	AntiEnhanceHitRate(KNpc* pNpc, void* pData);
+	void	AntiAllResP(KNpc* pNpc, void* pData);
+	void	AntiSorbDamageP(KNpc* pNpc, void* pData);
+	void	EnhanceHitEffectRate(KNpc* pNpc, void* pData);
+	void	AntiEnhanceHitEffectRate(KNpc* pNpc, void* pData);
+	void	AddDamageP(KNpc* pNpc, void* pData);
+	void	AntiHitRecover(KNpc* pNpc, void* pData);
 	void	ExpSkillsEnhanceP(KNpc* pNpc, void* pData); // ExpSkills x2
 	void	ExpSkillsVIP(KNpc* pNpc, void* pData); // VIP
 };

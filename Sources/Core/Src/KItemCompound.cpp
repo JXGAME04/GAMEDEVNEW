@@ -210,7 +210,16 @@ static const int s_g0b[] = { FRK_CompoundCryolite_Necklace };
 static const int s_g0c[] = { FRK_CompoundCryolite_Pendant };
 static const int s_g1[]  = { FRK_UpgradeCryolite };
 static const int s_g2[]  = { FRK_UpgradePropMine };
-static const int s_g3a[] = { FRK_Distill_Equip, FRK_Distill_OrgMine };	// nguon: do HOAC khoang
+// [LOREN 27/08] Ban goc doi CA HAI, khong phai "hoac":
+//   magic_distill.lua:30-37 tim TRANG BI (nGenre == 0)
+//   magic_distill.lua:38-45 tim NGUYEN KHOANG (6/1/149..154 ban Linux)
+//   magic_distill.lua:48    if( nEquipIdx <= 0 or g_nDistillMagicPos <= 0 )
+//                               then return RESULT_LACK_RESOURCE
+// Gop chung mot nhom la sai: cac khoa cung nhom THAY THE nhau va moi nguyen
+// lieu chi phuc vu duoc mot nhom, nen trang bi chiem cho roi thi nguyen
+// khoang thanh "o thua" -> s_anKhoaThua[3] = -1 -> RULE_ERROR (ma 8).
+static const int s_g3a[] = { FRK_Distill_Equip };
+static const int s_g3c[] = { FRK_Distill_OrgMine };
 static const int s_g3b[] = { FRK_Distill_Cryolite };
 static const int s_g4a[] = { FRK_Forge_Equip };
 static const int s_g4b[] = { FRK_Forge_Cryolite };
@@ -225,7 +234,7 @@ static const int s_g8[]  = { FRK_UpgradeFantasyGoldEssence };
 static const KNhomKhoa s_aryNhom0[] = { {s_g0a,1}, {s_g0b,1}, {s_g0c,1} };
 static const KNhomKhoa s_aryNhom1[] = { {s_g1,1} };
 static const KNhomKhoa s_aryNhom2[] = { {s_g2,1} };
-static const KNhomKhoa s_aryNhom3[] = { {s_g3a,2}, {s_g3b,1} };
+static const KNhomKhoa s_aryNhom3[] = { {s_g3a,1}, {s_g3c,1}, {s_g3b,1} };	// trang bi + nguyen khoang + Huyen Tinh
 static const KNhomKhoa s_aryNhom4[] = { {s_g4a,1}, {s_g4b,1} };
 static const KNhomKhoa s_aryNhom5[] = { {s_g5a,1}, {s_g5b,1}, {s_g5c,1} };
 static const KNhomKhoa s_aryNhom6[] = { {s_g6a,1}, {s_g6b,1} };
@@ -275,7 +284,7 @@ static int sLayNhom(int nCompoundType, const KNhomKhoa** ppNhom)
 	struct { const KNhomKhoa* p; int n; } aryBang[COMPOUND_TYPE_COUNT] =
 	{
 		{ s_aryNhom0, 3 }, { s_aryNhom1, 1 }, { s_aryNhom2, 1 },
-		{ s_aryNhom3, 2 }, { s_aryNhom4, 2 }, { s_aryNhom5, 3 },
+		{ s_aryNhom3, 3 }, { s_aryNhom4, 2 }, { s_aryNhom5, 3 },
 		{ s_aryNhom6, 2 }, { s_aryNhom7, 1 }, { s_aryNhom8, 1 },
 	};
 	if (nCompoundType < 0 || nCompoundType >= COMPOUND_TYPE_COUNT)
@@ -521,8 +530,16 @@ int KFoundryResDemand::CheckTuChon(int nCompoundType, const int* pnItem, int nCo
 	if (nKhoa < 0 || !m_bCoKhoa[nKhoa])
 		return FOUNDRY_RESULT_RULE_ERROR;		// thao tac nay khong co o tu chon
 
-	// Khong vuot qua so o chinh - ban goc dung chung tran 8 muc cho ca hai vector.
-	if (nCount > LaySoO(nCompoundType))
+	// [LOREN 27/08] TRUOC DAY LAY NHAM: dung `LaySoO()` - ham tra SO O CHINH
+	// (Kham nam = 3) - lam tran cua vector O TU CHON. Chi can bo qua 3 mon phu
+	// la bi tu choi, du giao dien co han 8 o phu va mon bo vao hoan toan hop le.
+	// So o phu THAT, doc tu chinh giao dien va kich ban dang chay:
+	//   Lay.ini / Khamnam co Consume1..8            -> 8 o
+	//   compound_ui.lua: LR_UI_Lam(7,11,3,3) va (9,11,3,5)
+	//       => 11 o, o 0..2 chinh, o 3..10 PHU     -> dung 8 o
+	// Ba thao tac co o tu chon (Trich lay 3, Kham nam 5, Do pho 6) deu 8 o.
+	const int nSoOTuChon = 8;
+	if (nCount > nSoOTuChon)
 		return FOUNDRY_RESULT_RULE_ERROR;
 
 	for (int i = 0; i < nCount; i++)

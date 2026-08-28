@@ -1463,7 +1463,20 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	if(m_CommonAttrib.nItemGenre == item_magicscript)
 	{
 		int nPar = m_CommonAttrib.nParticularType;
+		// [LOREN 27/08] Vien khoang O AN co ngu hanh that va PHAI hien ra:
+		// ban goc in dong ngu hanh cho chung (prop_ore.lua:21-23 voi day
+		// khoang thuoc tinh, primitive_ore.lua:14-16 voi day nguyen khoang),
+		// vi o AN (pos chan) bat buoc cung ngu hanh voi trang bi
+		// (equip_enchase.lua:67, magic_distill.lua:51). O HIEN thi khong hien.
+		// JX1 lech -1 so voi Linux nen parity DAO:
+		//   nguyen khoang    148..153 -> o AN la ptc LE   (149,151,153)
+		//   khoang thuoc tinh 199..204 -> o AN la ptc CHAN (200,202,204)
+		BOOL bKhoangAn =
+			(nPar >= 148 && nPar <= 153 && (nPar % 2) == 1) ||
+			(nPar >= 199 && nPar <= 204 && (nPar % 2) == 0);
 		if(nPar == 398 || nPar == 399) //s¸t thñ lÖnh, s¸t thñ gi¶n
+			nfkSerial = m_CommonAttrib.nSeries;
+		else if(bKhoangAn)
 			nfkSerial = m_CommonAttrib.nSeries;
 		else
 			nfkSerial = series_nil;
@@ -1500,8 +1513,18 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		char szIntor[64] = "!";
 		KTabFile MagicTab;
 		MagicTab.Load("\\Settings\\Item\\magicattriblevel_index.txt");
-		char szTmp[8];
-		sprintf(szTmp,"%d",m_aryBaseAttrib[0].nValue[0]);
+		// [LOREN 27/08] 8 byte KHONG du: "%d" cua mot int co the dai 11 ky tu
+		// ("-2147483648") + NUL = 12. Khi m_aryBaseAttrib[0].nValue[0] mang so
+		// la (khe vat pham dung lai, xem KItemSet::AddItemSet2) thi sprintf pha
+		// khung stack ngay tai day -> client sap CUNG, bo bat loi khong kip ghi.
+		char szTmp[16];
+		// [LOREN 27/08] Ban goc doc MAGIC_ID cua vien khoang bang
+		// GetItemParam(idx,1) = m_GeneratorParam.nGeneratorLevel[0]
+		// (ScriptFuns.cpp:5811; equip_enchase.lua:68, prop_ore.lua:32), va
+		// duong ghi cung ghi vao do (KItemCompound.cpp:1364).
+		// m_aryBaseAttrib[0].nValue[0] KHONG AI GHI (bi ZeroMemory o
+		// KItem.cpp:890) nen tra bang luon truot -> dong "Thuoc tinh:" rong.
+		sprintf(szTmp,"%d",m_GeneratorParam.nGeneratorLevel[0]);
 
 		MagicTab.GetString(szTmp,"DESC","",szIntor,64);
 		strcat(pszMsg, " <color=Fire>Thuéc tÝnh: ");
@@ -3329,6 +3352,15 @@ BYTE KItem::GetKind()
 	{
 		return gold_item;
 	}
+	// [LOREN 27/08] Trang bi do LO REN duc ra danh dau bang nItemNature =
+	// NATURE_VIOLET chu khong phai nPoint (do tim kieu cu). Thieu nhanh nay
+	// thi GetNatureItem tra ve normal_item va KWndObjectMatrix::PaintWindow
+	// (WndObjContainer.cpp:560) khong ve vong sang tim.
+	// KHONG sua IsPurple(): no ghi vao CSDL qua KPlayerDBFuns.cpp:1061.
+	else if (GetNature() == NATURE_VIOLET)
+	{
+		return purple_item;
+	}
 	else if (IsPurple())
 	{
 		return purple_item;
@@ -3352,6 +3384,15 @@ int KItem::GetColorItem()
 	if (GetNature() == NATURE_PLATINA)
 	{
 		return platinum_item;
+	}
+	// [LOREN 27/08] Trang bi do LO REN duc ra danh dau bang nItemNature =
+	// NATURE_VIOLET chu khong phai nPoint (do tim kieu cu). Thieu nhanh nay
+	// thi GetNatureItem tra ve normal_item va KWndObjectMatrix::PaintWindow
+	// (WndObjContainer.cpp:560) khong ve vong sang tim.
+	// KHONG sua IsPurple(): no ghi vao CSDL qua KPlayerDBFuns.cpp:1061.
+	else if (GetNature() == NATURE_VIOLET)
+	{
+		return purple_item;
 	}
 	else if (IsPurple())
 	{

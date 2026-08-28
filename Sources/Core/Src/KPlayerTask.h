@@ -15,8 +15,13 @@
 // Dinh dang luu la (id, value) THUA - KHONG phu thuoc MAX_TASK (KPlayerDBFuns.cpp:
 // 1126-1140 chi ghi o khac 0; nap co guard id >= MAX_TASK) nen save cu doc binh
 // thuong. Cung go ke tinh trang task 3179 cua citywar (KJx2CityWar.h:57).
-#define		MAX_TASK				4200
-#define		MAX_TEMP_TASK	 4200
+// [KM 27/08] 4200 -> 4600: he kinh mach CHUAN dung task 4318 (diem Huyen Nguyen),
+// 4319-4322 (cap 4 mach moi) va 4440/4441/4491 (dem so lan that bai - bao day).
+// Voi tran 4200 cac SetTask nay bi nuot IM LANG (KPlayerTask.cpp:79) => ca he bao
+// day chet o CA HAI phia. Dinh dang luu (id,value) THUA - khong phu thuoc MAX_TASK
+// (xem chu thich dot 3000->4200 ngay tren).
+#define		MAX_TASK				4600
+#define		MAX_TEMP_TASK	 4600
 
 #ifdef _SERVER
 #define TASKGLOBALVALUENUM 256

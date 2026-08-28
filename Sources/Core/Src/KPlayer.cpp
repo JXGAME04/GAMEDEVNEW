@@ -123,6 +123,7 @@ KPlayer::~KPlayer()
 
 void	KPlayer::Release()
 {
+	m_bKDDDDangAp = 0;									// [KM 27/08b] khoi tao co Khi Doanh
 	m_nMeridianStrength = 0;
 	m_nMeridianDexterity = 0;
 	m_nMeridianVitality = 0;
@@ -2977,6 +2978,46 @@ void KPlayer::ReCalcState()
 	Npc[m_nIndex].ReCalcStateEffect();
 }
 
+
+// [KM 27/08b] ===== KHI DOANH DAN DIEN (mua theo goi 1/7/30 ngay) =====
+// Han luu o bien nhiem vu KM_TASK_KDDD_HAN (giay he thong, cung don vi voi
+// GetCurrentTime() ben Lua = time(NULL)). So lieu lay nguyen tu ban chuan
+// \script\skill\special\qiyingdantian.lua: moi he cong 2 muc sat thuong 15%
+// + khang tat ca (duong) 5%.
+#define	KM_TASK_KDDD_HAN	4450
+void KPlayer::CapNhatKhiDoanh()
+{
+	if (m_nIndex <= 0 || m_nIndex >= MAX_NPC)
+		return;
+	static const int KM_KD[5][2] = {
+		{ magic_me2wooddamage_p,  magic_wood2medamage_p  },	// 0 Kim  -> khac che Moc
+		{ magic_me2earthdamage_p, magic_earth2medamage_p },	// 1 Moc  -> Tho
+		{ magic_me2firedamage_p,  magic_fire2medamage_p  },	// 2 Thuy -> Hoa
+		{ magic_me2metaldamage_p, magic_metal2medamage_p },	// 3 Hoa  -> Kim
+		{ magic_me2waterdamage_p, magic_water2medamage_p },	// 4 Tho  -> Thuy
+	};
+	int nHe = Npc[m_nIndex].m_Series;
+	if (nHe < 0 || nHe > 4)
+		return;
+	int nHan = (int)m_cTask.GetSaveVal(KM_TASK_KDDD_HAN);
+	BYTE bCan = (nHan > (int)time(NULL)) ? 1 : 0;
+	if (bCan == m_bKDDDDangAp)
+		return;										// khong doi trang thai -> khong lam gi
+	int nDau = bCan ? 1 : -1;
+	KMagicAttrib Dst;
+	int k;
+	for (k = 0; k < 2; k++)
+	{
+		Dst.nAttribType = KM_KD[nHe][k];
+		Dst.nValue[0] = Dst.nValue[1] = Dst.nValue[2] = nDau * 15;
+		Npc[m_nIndex].ModifyAttrib(Npc[m_nIndex].m_Index, &Dst);
+	}
+	Dst.nAttribType = magic_allres_yan_p;
+	Dst.nValue[0] = Dst.nValue[1] = Dst.nValue[2] = nDau * 5;
+	Npc[m_nIndex].ModifyAttrib(Npc[m_nIndex].m_Index, &Dst);
+	m_bKDDDDangAp = bCan;
+}
+
 void KPlayer::ReCalcMeridian()
 {
 	_ASSERT(m_nIndex > 0 && m_nIndex < MAX_NPC);
@@ -2985,6 +3026,8 @@ void KPlayer::ReCalcMeridian()
 	m_nMeridianVitality = 0;
 	m_nMeridianEngergy = 0;
 	MeridianManager.ApplyMaridianToNPC(&Npc[m_nIndex], m_cMeridian.getMeridian());
+	m_bKDDDDangAp = 0;								// [KM 27/08b] tinh lai tu dau
+	CapNhatKhiDoanh();								// [KM 27/08b] cong lai neu con han
 }
 
 //-------------------------------------------------------------------------
@@ -6787,6 +6830,18 @@ void KPlayer::c2sSetMeridian(SetMeridianData Data) {
 
 	if (CheckTrading())
 		return;
+	// [KM 27/08b] ma nguong 100/101/102 = mua Khi Doanh Dan Dien goi 1/7/30 ngay.
+	// Dung chinh goi tin nay (truong Type la int) nen KHONG phai them giao thuc.
+	// Phai bat TRUOC canEnhance vi ham do tra bang theo chi so mach.
+	if (Data.Type >= 100 && Data.Type <= 102)
+	{
+		char szTen[255], szTs[32];
+		sprintf(szTs, "%d|%d|%d|%d", Data.Type, 0, 0, 0);
+		sprintf(szTen, "\\script\\player\\setmeridian.lua");
+		ExecuteScript(szTen, "main", szTs, false);
+		CapNhatKhiDoanh();
+		return;
+	}
 	if (!m_cMeridian.canEnhance(Data.Type, Data.Level)) //kiem tra cap do nang co dung khong
 		return;
 	char scriptName[255];

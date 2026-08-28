@@ -31,7 +31,7 @@ private:
 	short			m_nOverStartFrame;
 	short			m_nDisableFrame;
 	static	KWndButton* m_pPressedDownBtn;	//被点击但是没有被释放的按钮
-	char			m_szTip[128];
+	char			m_szTip[256];			// [KM 27/08] 128 -> 256: tooltip huyet kinh mach dai toi 205 byte
 	int				m_nTipLen;
 public:
 	KWndButton();

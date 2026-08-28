@@ -49,6 +49,10 @@ int KWndLine::Init(KIniFile* pIniFile, const char* pSection)
 void KWndLine::PaintWindow()
 {
 	KWndWindow::PaintWindow();
+	// [KM 27/08b] chan tuyet doi: doan dai bat thuong = toa do hong. Ve mot doan
+	// vai trieu diem se lam ket vong ve (xem chu thich o WndLine.h).
+	if (endX > 4096 || endX < -4096 || endY > 4096 || endY < -4096)
+		return;
 	if (m_uColor && g_pRepresentShell)
 	{
 		KRULine	Lines[2];

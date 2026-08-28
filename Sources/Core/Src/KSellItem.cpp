@@ -168,6 +168,12 @@ void	KSellItem::GetData(BYTE* pMsg ,int nUpdate)
 
 			if (nItemIdx <= 0)
 				continue;
+			// [LOREN 27/08] Giu PHAM CHAT de vong sang tim hien ca o day. Duong tao
+			// tren khong mang nItemNature sang (do tim di nhanh AddItemSet2), nhung
+			// may chu DA gui du trong m_nNature. Khong noi dieu kien >= NATURE_GOLD
+			// vi truong m_btDetail duoc ma hoa khac nhau theo pham chat
+			// (CoreShell.cpp:2319) - noi ra se dung sai vat pham.
+			Item[nItemIdx].SetNature(pView->m_sInfo[i].m_nNature);
 			Item[nItemIdx].SetID(pView->m_sInfo[i].m_nID);
 			Item[nItemIdx].SetPrice(pView->m_sInfo[i].m_uPrice);
 			Item[nItemIdx].SetExpTime(pView->m_sInfo[i].m_YearExp,0,0,0);

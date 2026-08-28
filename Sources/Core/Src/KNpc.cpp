@@ -401,6 +401,12 @@ void KNpc::Init()
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;
 	m_CurrentSorbDamageP = 0;
+	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
+	m_CurrentEnhanceHitRate = 0; m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
+	m_CurrentAntiAllResP = 0; m_CurrentAntiSorbDamageP = 0;				// [KM 27/08]
+	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
+	m_CurrentAntiEnhanceHitEffect = 0; m_CurrentAntiHitRecover = 0;		// [KM 27/08]
+	m_CurrentAddDamageP = 100; m_nKMAntiHitRecover = 0;					// [KM 27/08] goc 100 theo Linux
 	m_RedLum = 0;
 	m_GreenLum = 0;
 	m_BlueLum = 0;
@@ -1757,6 +1763,15 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
     {
 		giam_tho_thuong = 80;
     }
+	// [KM 27/08] anti_hitrecover cua NGUOI DANH triet tieu bot suc hoi phuc cua nan nhan.
+	// Linux 0x0807FA30 lay tri nay lam THOI LUONG dong tac bi thuong dat len nan nhan.
+	if (m_nKMAntiHitRecover > 0)
+	{
+		giam_tho_thuong -= m_nKMAntiHitRecover;
+		if (giam_tho_thuong < 0)
+			giam_tho_thuong = 0;
+		m_nKMAntiHitRecover = 0;
+	}
 	//
 	if (!g_RandPercent(nHurtI * 3 / 4 + 60 - giam_tho_thuong / 4))
 	//if (!g_RandPercent(nHurtI / 2 + 50 - giam_tho_thuong / 2))
@@ -3361,6 +3376,25 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 	AUTOLOG_EVERY(500, "[E2-CALC-IN] target=%d(doing=%d region=%d life=%d kind=%u) attacker=%d type=%d min=%d max=%d series=%d fivep=%d phys=%d melee=%d return=%d DS=%d FS=%d", m_Index, (int)m_Doing, m_RegionIndex, m_CurrentLife, m_Kind, nAttacker, (int)nType, nMin, nMax, nMissleSeries, nFiveElements_DamageP, (int)bIsPhysical, (int)bIsMelee, (int)bReturn, (int)bIsDS, (int)bIsFS);
 	if (m_Doing == do_death || m_Doing == do_revive || m_RegionIndex < 0)
 		return FALSE;
+
+	// ===== [KM 27/08] HE SO TRONG KICH =====
+	// Ban chuan Linux 0x0808A5F8..0x0808A687: nMin/nMax duoc nhan he so
+	//   factor = add_damage_p(mac dinh 100) * nHitPercent / 10000, lam tron VE 0.
+	// nHitPercent do xuc xac Trong Kich o ReceiveDamage dat (100 thuong, 200+E khi trong kich).
+	// Chi ap cho don danh that, KHONG ap cho sat thuong phan don (bReturn).
+	if (!bReturn && nAttacker > 0 && nAttacker < MAX_NPC)
+	{
+		int nKMPct = Npc[nAttacker].m_nKMHitPercent;
+		int nKMAdd = Npc[nAttacker].m_CurrentAddDamageP;
+		if (nKMAdd <= 0)					// khe Npc dung lai chua kip dat goc 100
+			nKMAdd = MAX_PERCENT;
+		if (nKMPct != MAX_PERCENT || nKMAdd != MAX_PERCENT)
+		{
+			nMin = (int)((__int64)nMin * nKMAdd * nKMPct / (MAX_PERCENT * MAX_PERCENT));
+			nMax = (int)((__int64)nMax * nKMAdd * nKMPct / (MAX_PERCENT * MAX_PERCENT));
+			AUTOLOG_EVERY(1000, "[KM-CRIT] tgt=%d lch=%d pct=%d add=%d min=%d max=%d", m_Index, nAttacker, nKMPct, nKMAdd, nMin, nMax);
+		}
+	}
 	//
 	AUTOLOG_EVERY(1000, "[E2-CALC-NORANGE] target=%d attacker=%d type=%d min=%d max=%d -> tra FALSE, khong co sat thuong de tinh", m_Index, nAttacker, (int)nType, nMin, nMax);
 	if (nMin + nMax <= 0)
@@ -3633,6 +3667,11 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				nRate = 0;
 				break;
 		}
+		// ===== [KM 27/08] XUYEN KHANG (anti_allres_yan_p) =====
+		// Ban chuan Linux 0x0807BBCD: nRes = ResYan - AntiResYanCur, TRU THANG, don vi diem %,
+		// KHONG kep duoi 0 (chi co tran tren 95). nRate am la HOP LE: se lam TANG sat thuong.
+		if (nType != damage_magic && nAttacker > 0 && nAttacker < MAX_NPC)
+			nRate -= Npc[nAttacker].m_CurrentAntiAllResP;
 		if (nRate > MAX_RESIST)
 		{
 			nRate = MAX_RESIST;
@@ -3675,9 +3714,19 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		//
 
 		//
-		if(m_CurrentSorbDamageP)	//triet tieu sat thuong %
+		// ===== [KM 27/08] TRIET TIEU + XUYEN GIAM THUONG (anti_sorbdamage_yan_p) =====
+		// Ban chuan Linux 0x08089E6F..0x08089EA0:
+		//     nSorb = max(SorbDamageP, SorbDamageYanP) - pAtk->AntiSorbDamageYanP;
+		//     nDamage -= nDamage * nSorb / 1000;      (co so 1000, KHONG kep duoi 0)
+		// JX1 dung MAX_PERCENT=100 cho m_CurrentSorbDamageP nen quy ca bieu thuc ve co so 1000
+		// (x10) de tri cua thuoc tinh kinh mach giu nguyen don vi goc, khong doi can bang cu.
+		if (nDamage > 0)
 		{
-			nDamage -= (nDamage*m_CurrentSorbDamageP) / MAX_PERCENT;
+			int nSorbM = m_CurrentSorbDamageP * 10;
+			if (nAttacker > 0 && nAttacker < MAX_NPC)
+				nSorbM -= Npc[nAttacker].m_CurrentAntiSorbDamageP;
+			if (nSorbM)
+				nDamage -= (nDamage * nSorbM) / 1000;
 		}
 		//
 		AUTOLOG_EVERY(1000, "[E2-CALC-POSTRESIST] target=%d attacker=%d type=%d dmgsaukhang=%d khang=%d pkrate=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, NpcSet.m_nPKDamageRate);
@@ -4026,6 +4075,35 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	AUTOLOG_IDX(nLauncher, "[S1-WHO] tgt=%d(id=%u kind=%u lv=%d life=%d/%d) lch=%d(kind=%u pidx=%d lv=%d) phys=%d melee=%d usear=%d missrate=%d dohurt=%d series=%d", m_Index, m_dwID, m_Kind, (int)m_Level, m_CurrentLife, m_CurrentLifeMax, nLauncher, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)Npc[nLauncher].m_Level, (int)bIsPhysical, (int)bIsMelee, (int)bUseAR, nMissRate, nDoHurtP, nMissleSeries);
 	if (!pData)
 		return FALSE;
+
+	// ================= [KM 27/08] HOA GIAI + TRONG KICH =================
+	// Doc nguyen van tu may chu chuan jx_linux_y, ham ReceiveDamage 0x0808A4A0:
+	//   (d) 0x0808B2C9  nBlock = nan.addblockrate + nan.block_rate - danh.anti_block_rate
+	//                   if (nBlock > 0 && nBlock > Random(100))  -> HUY DON, return FALSE
+	//   (e) 0x0808B3FB  nEH = danh.enhancehit_rate - nan.anti_enhancehit_rate
+	//                   if (nEH > 0 && nEH > Random(100)) nMul = 200 + danh.enhancehiteffect
+	//                   else                              nMul = 100
+	// Ca hai deu tung TRUOC xuc xac trung/truot, truoc giap va truoc khang.
+	{
+		int nKMBlock = m_CurrentBlockRate - Npc[nLauncher].m_CurrentAntiBlockRate;
+		if (nKMBlock > 0 && nKMBlock > (int)g_Random(MAX_PERCENT))
+		{
+			AUTOLOG_IDX(nLauncher, "[KM-BLOCK] tgt=%d lch=%d block=%d -> HOA GIAI, huy don", m_Index, nLauncher, nKMBlock);
+			SyncDamageInfo(nLauncher, 0, COMBAT_INFO_DODGE, 0);
+			return FALSE;
+		}
+		int nKMEH = Npc[nLauncher].m_CurrentEnhanceHitRate - m_CurrentAntiEnhanceHitRate;
+		if (nKMEH > 0 && nKMEH > (int)g_Random(MAX_PERCENT))
+			Npc[nLauncher].m_nKMHitPercent = 2 * MAX_PERCENT
+				+ Npc[nLauncher].m_CurrentEnhanceHitEffect - m_CurrentAntiEnhanceHitEffect;
+		else
+			Npc[nLauncher].m_nKMHitPercent = MAX_PERCENT;
+		// [KM 27/08] anti_hitrecover: Linux 0x0807FA30 lay tri cua NGUOI DANH roi
+		// truyen sang ham dat dong tac bi thuong cua NAN NHAN. DoHurt khong co
+		// tham so nguoi danh nen gui kem qua bien nay, nhu cach lam voi m_nKMHitPercent.
+		m_nKMAntiHitRecover = Npc[nLauncher].m_CurrentAntiHitRecover;
+	}
+	// =====================================================================
 
 	if (Owner[0]) //add by phong kiÒu npc vËn tiªu
 	{
@@ -9921,6 +9999,12 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;					//#khi noi cong day tang ky nang cong kich
 	m_CurrentSorbDamageP = 0;								//#triet tieu sat thuong
+	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
+	m_CurrentEnhanceHitRate = 0; m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
+	m_CurrentAntiAllResP = 0; m_CurrentAntiSorbDamageP = 0;				// [KM 27/08]
+	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
+	m_CurrentAntiEnhanceHitEffect = 0; m_CurrentAntiHitRecover = 0;		// [KM 27/08]
+	m_CurrentAddDamageP = 100; m_nKMAntiHitRecover = 0;					// [KM 27/08] goc 100 theo Linux
 	Player[m_nPlayerIdx].m_nCurLucky = Player[m_nPlayerIdx].m_nLucky;
 	//
 	memset(&m_ManaShield, 0, sizeof(m_ManaShield));

@@ -309,7 +309,8 @@ enum MAGIC_ATTRIB
 	magic_ignorenegativestate_p,			//302
 	magic_expenhance_s,						//303
 	magic_expvip,						//304
-	magic_normal_end,						//304
+	magic_anti_enhancehiteffect_rate,		//305	[KM 27/08] them cho he kinh mach
+	magic_normal_end,						//306
 };
 
 extern const char MAGIC_ATTRIB_STRING[magic_normal_end + 1][100] ; 
