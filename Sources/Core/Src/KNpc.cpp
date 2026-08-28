@@ -2,6 +2,9 @@
 //	Sword3 KNpc.cpp
 //-----------------------------------------------------------------------
 #include "KCore.h"
+#ifdef _SERVER
+extern void Partner_OnNpcDeath(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
+#endif
 //#include <crtdbg.h>
 #include "KNpcAI.h"
 #include "KSkills.h"
@@ -701,8 +704,16 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 	// NPC ngoai man hinh van bi cat canh khi VE (KIpotLeaf.cpp:122-123) nen chi ton
 	// them phan Activate; do that: logic chi chiem 1-27ms MOI GIAY, con nhieu du dia.
 	#define	MAX_SYNC_RANGE	40
-	if (!IsPlayer() && (GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE
-		|| GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex) >= MAX_SYNC_RANGE))
+	// [S12b 28/08] (a) GetMapDis tra VOID_DIS (0x7FFFFFFF) khi CHINH MINH chua duoc dat vao
+	// region (vua LoadMap/teleport) - truoc day VOID_DIS >= 40 nen go SACH moi NPC moi frame
+	// trong khi S6_XaQuaTam cung dieu kien lai "nhan het" -> flap go-gan ~9Hz (do 27+28/08:
+	// 179-208 chu ky <500ms/phien). Self chua dat -> DUNG go, dong quy uoc voi S6_XaQuaTam.
+	// (b) Nguong go +2 o so nguong nhan-lai 40 cua S6_XaQuaTam: hai thuoc do (o-nguyen vs
+	// mps, per-truc) lech nhau <1 o tai bien -> NPC nam dung vanh 40 bi go-gan moi tick.
+	int nS6VDisX = GetMapDisX(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex);
+	int nS6VDisY = GetMapDisY(m_Index, Player[CLIENT_PLAYER_INDEX].m_nIndex);
+	if (!IsPlayer() && nS6VDisX != 0x7FFFFFFF && nS6VDisY != 0x7FFFFFFF
+		&& (nS6VDisX >= MAX_SYNC_RANGE + 2 || nS6VDisY >= MAX_SYNC_RANGE + 2))
 	{
 		// [S6 26/08] Duong MO COI thu 2: NPC cach nguoi choi >= 40 o bi go khoi region
 		// (khong xoa khoi NpcSet). Day la mot lan duong "bot bien mat".
@@ -1073,6 +1084,13 @@ BOOL KNpc::ProcessState()
 	if (!(m_LoopFrames % GAME_FPS))
 	{
 		Player[m_nPlayerIdx].ProcessDouble(); //#time x2 Exp chÕt kh«ng mÊt
+#ifdef _SERVER
+		// [KM 28/08] Khi Doanh Dan Dien: het han GIUA PHIEN thi go hieu ung ngay,
+		// truoc day phai thoat vao lai moi mat. Ham co co chan nen khong doi
+		// trang thai la return luon, gan nhu khong ton gi.
+		if (m_nPlayerIdx > 0 && m_nPlayerIdx < MAX_PLAYER && GetKind() == kind_player)
+			Player[m_nPlayerIdx].CapNhatKhiDoanh();
+#endif
 	}
 /*
 #ifdef _SERVER
@@ -1713,7 +1731,11 @@ void KNpc::OnDeath()
 		}
 		else	
 		{
-			//Not Finish
+			// [BDH 27/08] dong hanh HON ME: khong hoi sinh, khong go theo duong thuong.
+			// Partner_OnNpcDeath dat phat PUNISH_TIME + goi partner_action.lua OnDeath.
+#ifdef _SERVER
+			Partner_OnNpcDeath(m_Index);
+#endif
 		}
 	}
 	else
@@ -10168,7 +10190,9 @@ int KNpc::SetPos(int nX, int nY)
 		sTeleSync.m_wOffX = m_OffX;
 		sTeleSync.m_wOffY = m_OffY;
 		g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, (BYTE*)&sTeleSync, sizeof(sTeleSync));
-		g_DebugLog("[S12-TELE]%d:%s setpos cung map -> bao chinh chu (%d,%d)", SubWorld[m_SubWorldIndex].m_dwCurrentTime, Name, nTeleX, nTeleY);
+		// [S12b 28/08] g_DebugLog chi ban WM_COPYDATA sang DebugWin (khong ghi file) ->
+		// khong the nghiem thu. Doi sang AUTOLOG de dem duoc trong jx_auto_server.log.
+		AUTOLOG("[S12-TELE] %s setpos cung map -> bao chinh chu (%d,%d) t=%u", Name, nTeleX, nTeleY, SubWorld[m_SubWorldIndex].m_dwCurrentTime);
 	}
 	return 1;
 }
@@ -10190,7 +10214,8 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 		return 0;
 	}
 
-	Player[m_nPlayerIdx].m_nPrePayMoney = 0;
+	if (IsPlayer())	// [BDH 27/08] NPC thuong co m_nPlayerIdx=0 -> truoc day ghi de Player[0]
+		Player[m_nPlayerIdx].m_nPrePayMoney = 0;
 	
 	AUTOLOG_EVERY(1000, "[E4_POS_CHANGEWORLD] npc=%d id=%u swid=%u cursw=%d target=%d to=(%d,%d) doing=%d", m_Index, m_dwID, dwSubWorldID, m_SubWorldIndex, nTargetSubWorld, nX, nY, (int)m_Doing);
 	if (nTargetSubWorld == m_SubWorldIndex)
