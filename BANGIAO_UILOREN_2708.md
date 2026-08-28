@@ -341,3 +341,71 @@ hơn, đúng như chủ game mô tả.
 ### Commit
 `8e535085` (kèm `vX` khôi phục hiệu ứng 2-3s của đợt trước, chưa commit).
 Tệp Lua nằm ở cây vận hành `E:\` (không phải git); patcher tái lập được thay đổi.
+
+---
+
+## 0-QUINQUE. ĐỢT 5 (27/08 tối) — "KHẢM VIÊN ĐÁ X, VÀO LẠI RA DÒNG Y"
+
+### Triệu chứng
+> "viên đá sát thương vật lý ngoại công của tôi hiện 2 ép vào vũ khí ra thành
+> dòng nội lực tối đa"
+
+### GỐC THẬT: phép đoán "chỉ số dòng" hỏng ở dải 1..10
+
+Trang bị tím lưu trong `nGeneratorLevel[i]` **chỉ số dòng** của
+`magicattriblevel.txt`; trang bị thường lưu **cấp 1..MATF_LEVEL (=10)**. Đường
+đồng bộ từ máy chủ về client **không mang phẩm chất xuống**
+(`KItemSet::AddItemSet2` → `Gen_Equipment` bản **10 tham số**, `KItemSet.cpp:228`;
+bản 11 tham số có `nItemNature` chỉ dùng ở `KItemSet::Add` dòng 337), nên
+`Gen_MagicAttrib` phải **tự đoán**, và đoán bằng chính giá trị
+(`KItemGenerator.CPP:709`):
+
+```cpp
+if (nItemNature == NATURE_VIOLET || pnaryMALevel[i] > MATF_LEVEL)
+    -> hiểu là chỉ số dòng, dịch qua sLoRenDichThuocTinh   (ĐÚNG)
+else
+    -> hiểu là CẤP 1..10, đi GetCMIT SINH THUỘC TÍNH NGẪU NHIÊN  (SAI)
+```
+
+Tra `settings/item/magicattriblevel_index.txt` (khoá = MAGIC_ID, kèm dải chỉ số dòng):
+
+| MAGIC_ID | Dải | Tên |
+|---|---|---|
+| **126** | **1–10** | Tăng sát thương vật lý hệ **Ngoại công** ⟵ **VÙNG CHẾT** |
+| 166 | 11–20 | Tăng công kích chính xác |
+| 115 | 21–30 | Tăng tốc độ xuất chiêu |
+| 136 | 121–130 | Hút sinh lực |
+| 137 | 131–140 | Hút Nội lực |
+
+**Đúng một** MAGIC_ID rơi vào 1..10, và đó chính là "sát thương vật lý Ngoại
+công" — viên đá chủ game dùng.
+
+### Bằng chứng số (`Logs/KSG_CompoundLog_20260827.txt`)
+Trang bị của chủ game: `<29, 236, 10, 340, -1, 0>` — ô thứ **3** (= "Hiện 2",
+đúng ô chủ game nói) mang chỉ số dòng **10** = MAGIC_ID 126 = "Tăng sát thương
+vật lý hệ Ngoại công". Vì `10 ≤ MATF_LEVEL` nên bị hiểu là "cấp 10" → sinh ngẫu
+nhiên → hiện ra dòng nội lực.
+
+**Đối chiếu**: lần khảm ghi trong log dùng viên MAGIC_ID 136 (dải 121–130 > 10)
+nên **không dính lỗi** — khớp đúng hiện tượng "có lần đúng, có lần sai".
+
+### Miếng vá `w1_nhandien_chisodong.py`
+Trang bị tím dùng chỉ số dòng cho **cả sáu ô**, nên xét **cả mảng một lần**: chỉ
+cần một ô vượt `MATF_LEVEL` hoặc bằng `-1` (ô khảm nạm rỗng — riêng trang bị tím
+mới có) thì cả mảng là chỉ số dòng. Với `<29,236,10,340,-1,0>` thì 29/236/340 và
+`-1` đều báo hiệu, nên ô mang giá trị 10 cũng được hiểu đúng.
+
+**An toàn**: cấp trang bị thường tối đa bằng `MATF_LEVEL`, nên ô > 10 không bao
+giờ xảy ra với đồ thường hợp lệ ⇒ đồ thường giữ nguyên đường cũ, hành vi không
+đổi. Chỉ sót nếu trang bị tím có **cả sáu** ô đều trong 1..10 (tức cả sáu đều là
+MAGIC_ID 126) — `equip_enchase.lua:76-80` đã chặn khảm trùng MagicID nên không thể.
+
+⚠️ **Bẫy tôi suýt mắc lần nữa**: ban đầu tưởng `GetItemMagicAttrib` trả nhầm chỉ
+số dòng thay vì MAGIC_ID. Kiểm lại thấy `115/121/126/168/136/101` **đều là
+MAGIC_ID hợp lệ**, và chuỗi Trích lấy → Khảm nạm trong log **nhất quán** ⇒ giả
+thuyết đó sai, phải bỏ.
+
+### Commit
+`ba087762`. Build sạch cả hai cấu hình, đã đặt `CoreClient.dll` (`0d31641cd41a`)
++ `CoreServer.dll` (`94768bae1095`); lùi được bằng `*.truoc_chisodong`.
+**Cần khởi động lại máy chủ + client** để nhận nhị phân mới.
