@@ -72,6 +72,79 @@ không trục lợi** (vẫn đủ phí + lọc nguyên liệu + trần ngày).
 
 ---
 
+---
+
+## 0-TER. ĐỢT 3 — TEST THẬT VỚI CHỦ GAME (27/08 chiều tối)
+
+Chủ game test trực tiếp, báo 5 lỗi. Mỗi lỗi đều **truy đến gốc bằng cách đọc bản Linux**,
+không đoán. Ba lần đầu tôi vá sai vì đoán — ghi lại đây để phiên sau không lặp.
+
+| # | Chủ game báo | Gốc thật | Vá |
+|---|---|---|---|
+| 1 | Rê chuột vào Chu Sa = **dis client** | Intro khoáng ở bản gốc dài **186–191 byte** (client VLTK chạy tốt) nhưng `KBASICPROP_MAGICSCRIPT::m_szIntro` của JX1 chỉ **128 byte** → `KTabFile` cắt ở byte 127, **cắt trúng giữa thẻ `<color=`** → `TEncodeCtrl` đi tìm `>` ra ngoài phạm vi, bắt nhầm `>` của thẻ phía sau → `nParamLen ≈ 21` → `memcpy` vào `static char Color[13]` (`Text.cpp:700`) → **tràn ngăn xếp, sập cứng, không kịp ghi log** | `vK` chặn biên 3 chỗ chép (`Text.cpp`) · `vM-M1` nới `m_szIntro` → 256 |
+| 2 | Đá "dư dấu `<`" | cùng gốc #1 (chuỗi cắt cụt) | như trên |
+| 3 | Đá **chưa có hệ** | `KItem.cpp:1463-1470` ép `nfkSerial = series_nil` cho **mọi** genre 6 trừ 398/399. Bản gốc IN ngũ hành cho viên **ẨN** (`prop_ore.lua:21-23`, `primitive_ore.lua:14-16`) | `vM-M3` |
+| 4 | Đồ tím **không có vòng sáng** | Client **đã có sẵn** hệ vòng sáng 4 màu vẽ bằng mã (`vongsang.cpp`: `DrawBorder` chạy quanh + `DrawBorder2` nhấp nháy), nhánh tím `ehuyenkim` nằm sẵn ở `WndObjContainer.cpp:562`. Cổng bật là `GetColorItem()`, mà hàm này nhận đồ tím qua `IsPurple()` = `m_CommonAttrib.nPoint` (đồ tím **kiểu cũ**); đồ tím lò rèn dùng `nItemNature = NATURE_VIOLET`, `nPoint = 0` → trượt | `vL` thêm nhánh NATURE_VIOLET vào `GetColorItem`/`GetKind`; `vO` giữ phẩm chất trên 3 đường đồng bộ |
+| 5 | Bỏ đủ liệu vẫn báo **"không đúng luật ghép"** | `KItemCompound.cpp:213` gộp `Distill_Equip` + `Distill_OrgMine` vào **một nhóm "hoặc"**, chú thích ghi *"nguồn: đồ HOẶC khoáng"* — **hiểu sai bản gốc**. `magic_distill.lua:48` đòi **CẢ HAI**: `if( nEquipIdx <= 0 or g_nDistillMagicPos <= 0 ) then return RESULT_LACK_RESOURCE`. Khoá cùng nhóm thay thế nhau + mỗi liệu chỉ phục vụ 1 nhóm ⇒ trang bị chiếm chỗ, viên khoáng thành "ô thừa", mà `s_anKhoaThua[3] = -1` ⇒ RULE_ERROR | `vP` tách 3 nhóm; **nhớ sửa cả bảng đếm `{s_aryNhom3, 2}` → 3** ở `sLayNhom` |
+| 6 | "Lò rèn gặp lỗi không rõ" + `ScriptError` **stack Overflow** ở `calcProbLoop` | ĐANG DỞ — xem dưới | `vR` chốt độ sâu + bật log gốc |
+
+### 🔴 LỖI #6 CÒN DỞ — stack overflow `calcProbLoop`
+
+`ScriptError.log`: `magic_distill.lua / Compound` → `error: stack Overflow`,
+traceback `calcProbLoop` (itemvalue_header.lua:136) lặp nhiều tầng → `TransItemVal:38`
+→ `defFinalCompound:109`.
+
+**Đã loại trừ bằng số** (đừng kiểm lại): bảng giá trị **KHÔNG thiếu** — `settings\item \`
+và `001\` đều đủ 10 tệp `itemvalue\*` + `magicattriblevel(.._index).txt`, trùng từng byte
+với bộ VLTK; `ITEM_VERSION = 1` nên `makeItemFilePath` tìm `001\` — có thật;
+`itemvalue_header.lua` trên máy chủ **trùng băm với bản VLTK** (`aa81d0c147de`);
+`magic_distill.lua` khớp bản Linux (chỉ lệch mã đã nắn).
+
+**Cơ chế tràn**: `calcProbLoop` đệ quy chia đôi, chỉ hội tụ khi dãy giá trị là số thật.
+Nếu một phần tử là **NaN** thì cả ba nhánh so sánh (`:72`, `:77`, `:93`) đều false →
+luôn rơi vào `else` → đệ quy với **đúng khoảng cũ** → vô hạn.
+
+**Điểm nghi chính (CHƯA chứng minh)**: `compound_header.lua:97` gọi
+`ITEM_CalcItemValue` với **10 tham số** (`info[1], info[3]..info[11]`), trong khi
+`getCompoundParam()` nằm ở **`info[12]`** nên **không bao giờ được truyền**;
+`LuaCmp_ITEM_CalcItemValue` (`KItemCompound.cpp:1155`) đọc `szParam` ở **vị trí 11**
+→ luôn nhận `""`. Cần xem `CalcItemValueByInfo` với `szParam` rỗng trả ra gì.
+⚠️ Lưu ý hàm đó chỉ xử lý `nParamNum <= 2` hoặc `>= 8`; rơi vào 3..7 thì trả 0.
+
+**Đã làm để không sập nữa + lấy số liệu** (`vR_chan_tran_calcprob.py`):
+- `CALCPROB_MAX_DEPTH = 64` + tham số `nDepth`: quá ngưỡng thì chia đều xác suất rồi
+  thoát, ghi `WriteLog`. Dãy ≤ 32 phần tử nên độ sâu thật ~32 — chốt không chạm
+  đường chạy đúng.
+- **Bật lại 6 dòng `Msg2Player` gỡ rối vốn có sẵn trong bản gốc**
+  (`compound_header.lua:88-90, 98, 100`) → in `TotalSrcSum` và `DesValue1..10`.
+  Bấm một lần là thấy con số nào bất thường. Tắt lại bằng `python vR_chan_tran_calcprob.py --tat`.
+
+### Bộ vá đợt 3 (đều điền tập, giữ byte, có bản lùi riêng)
+
+`vJ` (bỏ, không áp — tự biên Intro, SAI cách) · `vK` chặn tràn tên màu · `vL` vòng sáng tím ·
+`vM` nới Intro + đọc đúng trường mã thuộc tính + hiện ngũ hành ô ẩn · `vN` bộ test phát
+nguyên khoáng theo `trangbitim.lua` gốc · `vO` giữ phẩm chất 3 đường đồng bộ ·
+`vP` tách 3 nhóm luật Trích lấy · `vQ` (không cần — bảng đã đủ) · `vR` chốt tràn + log.
+
+### 🔑 Nền tảng tra được từ bản Linux (dùng lại cho mọi việc sau)
+
+- **"Hiện"/"Ẩn" (明/暗) là TÊN 6 Ô KHẢM**, không phải thuộc tính bị giấu.
+  pos 1/3/5 = hiện 1/2/3 · pos 2/4/6 = ẩn 1/2/3.
+- Khác biệt **duy nhất**: ô **ẨN (pos chẵn) bắt buộc ngũ hành khoáng = ngũ hành trang bị**
+  (`equip_enchase.lua:67`, `magic_distill.lua:51`); ô hiện không ràng buộc.
+  ⇒ **vì thế viên ẩn mới cần đủ 5 hệ**, viên hiện chỉ 1 (`trangbitim.lua:136-157`).
+- **Hai dãy vật phẩm, đều lệch −1 khi sang JX1** (số vị trí `pos` thì KHÔNG đổi,
+  nên **tính chẵn/lẻ của mã ĐẢO** — bẫy dễ vá sai):
+  nguyên khoáng RỖNG Linux 149..154 → **JX1 148..153** (`pos = ptc - 147`);
+  khoáng ĐÃ mang phép Linux 200..205 → **JX1 199..204** (`pos = ptc - 198`).
+- **Bản gốc KHÔNG BAO GIỜ phát trực tiếp dãy khoáng đã mang phép** — quét cả cây Linux,
+  không một `AddItem`/bảng rơi đồ nào cấp 200..205. Chúng chỉ sinh từ Trích lấy
+  (`magic_distill`) hoặc gộp 3 viên (`ore_upgrade`).
+- Đồ tím đúc ra có **1..5 ô** (`equip_compound.lua:50-56`, `-1` = ô rỗng khảm được),
+  lấp theo thứ tự 1→6 ⇒ món 5 ô = 3 hiện + 2 ẩn. **Ô thứ 6 (ẩn 3) không sinh ra từ
+  đường đúc chuẩn** — chưa tìm được đường nào tạo nó trong cây Linux.
+
+
 ## 0. TRẠNG THÁI MỘT DÒNG
 
 **Mã đã hàn xong 100%, build sạch, đã đặt lên máy chủ + client (băm khớp), menu test đã móc.

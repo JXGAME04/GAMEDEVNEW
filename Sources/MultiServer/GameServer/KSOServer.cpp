@@ -3636,9 +3636,39 @@ void KSwordOnLineSever::PlayerLogoutGateway()
 		}
 		else if (m_pCoreServerShell->IsCharacterQuiting(nIndex))
 		{
+			// [LOREN 27/08] KHE KET VINH VIEN + SPAM CONSOLE.
+			// Truoc day chi `continue` khi luu hong: khe nao luu hong mot lan la
+			// hong mai (KPlayer::Save chan o KPlayer.cpp:1075 khi
+			// m_nNetConnectIdx == -1 va khe da thao khoi danh sach bot) ->
+			// RemoveQuitingPlayer khong bao gio chay -> vong lap in
+			// "thoat game character quiting" voi ten RONG hang chuc dong/giay.
+			// Chinh KPlayerBot.cpp:1228-1232 da mo ta truoc co che nay.
+			// Van THU LAI nhieu vong (nguoi that co the luu hong tam thoi vi
+			// Goddess ban / mang nghen - go ngay la MAT DU LIEU); chi khi qua
+			// nguong moi go khe, va ghi log ro rang.
+			static int s_anQuitFail[MAX_PLAYER] = { 0 };
+			const int nNguongBoQua = 300;		// vai giay - ham chay moi nhip
 			if (m_pCoreServerShell->IsCharacterNeedSave(nIndex)) {
 				if (!SavePlayerData(nIndex, true))
-					continue;
+				{
+					if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+						continue;
+					s_anQuitFail[nIndex]++;
+					if (s_anQuitFail[nIndex] < nNguongBoQua)
+						continue;			// con trong nguong: thu lai vong sau
+					char szTenKet[32] = "";
+					m_pCoreServerShell->GetGameData(SGDI_CHARACTER_NAME, (intptr_t)szTenKet, nIndex);
+					std::ostringstream ossKet;
+					ossKet << "!! Khe " << nIndex << " [" << szTenKet
+						   << "] luu hong " << s_anQuitFail[nIndex]
+						   << " lan lien tiep - GO KHE de khong ket vong lap !!" << endl;
+					GameServerLog::Instance().WriteAndConsole(ossKet.str());
+					s_anQuitFail[nIndex] = 0;
+					// KHONG continue: chay tiep xuong duoi de gui goi roi game va
+					// RemoveQuitingPlayer, giai phong khe.
+				}
+				else if (nIndex > 0 && nIndex < MAX_PLAYER)
+					s_anQuitFail[nIndex] = 0;	// luu duoc: xoa bo dem
 			}
 			else {
 				//unlock role in goddess

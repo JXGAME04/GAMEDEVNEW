@@ -1,16 +1,17 @@
 # -*- coding: ascii -*-
 """vD_khung_ini_2the.py - SINH 2 tep khung CON THIEU cua he lo ren 7 khung:
 
-  A. Khamnam.ini  - the KHAM NAM   (goc VLTK: update03__<CHU TRUNG: dau tao_trang bi kham nam>.ini)
-  B. Dopho.ini    - the DO PHO HK  (goc VLTK: update03__<CHU TRUNG: dau tao_hoang kim do pho>.ini)
+  A. Khamnam.ini  - the KHAM NAM   (goc VLTK: update03__(CHU TRUNG: dau tao_trang bi kham nam).ini)
+  B. Dopho.ini    - the DO PHO HK  (goc VLTK: update03__(CHU TRUNG: dau tao_hoang kim do pho).ini)
 
 Vi sao can:
   - The KHAM NAM hien dang MUON bo cuc cua the TRICH LAY: ca KUiDistill lan KUiEnchase
-    deu doc SCHEME_INI_OUTIN = "khamnam/Lay.ini" (UiCompoundItem.cpp:32, :2092, :3042).
+    deu doc SCHEME_INI_OUTIN = "khamnam/Lay.ini" (#define o dau UiCompoundItem.cpp,
+    dung trong ca KUiDistill::LoadScheme lan KUiEnchase::LoadScheme).
     Ban goc VLTK co tep RIENG cho the nay, lech 18 o so voi ban trich lay.
   - The DO PHO HOANG KIM chua co bo cuc nao ca. (Va cung CHUA co lop KUiAtlas -
-    UiCompoundItem.h chi co m_AtlasPadBtn, moi dong m_AtlasPad deu bi chu thich:
-    :220 :221 :413 :491 ... => Dopho.ini la DU LIEU CHO SAN cho dot sau.)
+    UiCompoundItem.h chi co m_AtlasPadBtn, moi dong m_AtlasPad deu bi chu thich
+    trong KUiCompoundItem::Initialize + ::ShowWindow => Dopho.ini la DU LIEU CHO SAN.)
 
 Nguon goc  : D:\\GAMEDEVNEW\\ReverseTools\\pak_vltk\\ra_vltk\\khung_ini\\update03__*.ini
 Ma doc that: D:\\GAMEDEVNEW\\Sources\\S3Client\\Ui\\UiCase\\UiCompoundItem.cpp (chi DOC, 27/08).
@@ -219,7 +220,7 @@ def tach_itembox(lines, cfg, ten_tep):
 DAU_DE_EN = [
     ';==================================================================',
     ';Khamnam.ini - THE KHAM NAM (KUiEnchase). Sinh boi vD_khung_ini_2the.py',
-    ';Goc VLTK: khung_ini\\update03__<dau tao_trang bi kham nam>.ini - CHEP NGUYEN VAN,',
+    ';Goc VLTK: khung_ini\\update03__(dau tao_trang bi kham nam).ini - CHEP NGUYEN VAN,',
     ';chi lech 4 cho vi ma C++ (UiCompoundItem.cpp) doi khac - xem chu thich tai cho.',
     ';SUA THI SUA O PATCHER, DUNG SUA TAY.',
     ';==================================================================',
@@ -248,10 +249,10 @@ def sinh_khamnam():
         return None
     bi_danh = ['',
                ';[UILOREN-vD] BI DANH cua [EnchaseBtn] o tren, y het tung khoa.',
-               ';KUiEnchase::LoadScheme (UiCompoundItem.cpp:3050) doc DUNG ten "DistillBtn"',
-               ';chu khong phai "EnchaseBtn" -> thieu section nay thi nut Kham nam thanh',
-               ';cua so 0x0 vo hinh (KWndWindow::Init WndWindow.cpp:254 van tra ve TRUE).',
-               ';Giu CA HAI ten de chay duoc ca truoc lan sau khi sua ma.',
+               ';KUiEnchase::LoadScheme goi m_Enchase.Init(&Ini,"DistillBtn") - doc DUNG ten',
+               ';"DistillBtn" chu khong phai "EnchaseBtn" -> thieu section nay thi nut Kham nam',
+               ';thanh cua so 0x0 vo hinh (KWndWindow::Init WndWindow.cpp:254 van tra ve TRUE',
+               ';du section khong ton tai). Giu CA HAI ten de chay duoc ca truoc lan sau khi sua ma.',
                '[DistillBtn]'] + noi_dung[1:] + ['']
     # chen ngay sau block [EnchaseBtn] (truoc dong ';' mo dau block ke tiep)
     lines = lines[:cuoi] + bi_danh + lines[cuoi:]
@@ -274,7 +275,7 @@ def sinh_khamnam():
     dau, cuoi, _ = kq
     bi_danh = ['',
                ';[UILOREN-vD] BI DANH cua [PurpleEquipPos] o tren.',
-               ';KUiEnchase::LoadScheme (:3056) doc Ini.GetInteger2("EquipPos","Pos",..) va',
+               ';KUiEnchase::LoadScheme goi Ini.GetInteger2("EquipPos","Pos",&nX,&nY) va',
                ';KIniFile::GetInteger2 (KIniFile.cpp:989) KHONG dat mac dinh khi thieu khoa',
                ';-> nX,nY giu RAC tren stack -> nhan "Trang bi tim" bay ra toa do ngau nhien.',
                '[EquipPos]',
@@ -306,7 +307,7 @@ def sinh_khamnam():
 def khoi_returninfo_enchase(eol):
     """[ReturnInfo] khoa 12..21 - DUNG khoa ma KUiEnchase::ProcessEnchase doc."""
     out = [';[UILOREN-vD] [ReturnInfo] THAT: khoa 12..21 dung theo ma JX1',
-           ';(KUiEnchase::ProcessEnchase, UiCompoundItem.cpp:3222..3680, char Buff[64]).',
+           ';(KUiEnchase::ProcessEnchase doc Ini.GetString("ReturnInfo","12".."21", char Buff[64]).',
            ';Chu lay tu bang RET_LAY cua v40_khung_ini.py - CUNG mot nguon voi Lay.ini.',
            '[ReturnInfo]']
     for khoa, u, ghi_chu in RET_LAY:
@@ -329,11 +330,11 @@ def khoi_returninfo_enchase(eol):
 DAU_DE_ATLAS = [
     ';==================================================================',
     ';Dopho.ini - THE DO PHO HOANG KIM. Sinh boi vD_khung_ini_2the.py',
-    ';Goc VLTK: khung_ini\\update03__<dau tao_hoang kim do pho>.ini - CHEP NGUYEN VAN 100%,',
+    ';Goc VLTK: khung_ini\\update03__(dau tao_hoang kim do pho).ini - CHEP NGUYEN VAN 100%,',
     ';KHONG sua mot byte nao (ngoai khoi chu thich nay).',
     ';CHUA CO MA NAO DOC TEP NAY: UiCompoundItem.h khong co lop KUiAtlas, chi co',
-    ';m_AtlasPadBtn; moi dong m_AtlasPad deu bi chu thich (UiCompoundItem.cpp:220,221,',
-    ';413,428,443,458,473,491). Day la DU LIEU CHO SAN cho dot sau.',
+    ';m_AtlasPadBtn; moi dong m_AtlasPad deu bi chu thich (trong Initialize + ShowWindow',
+    ';cua KUiCompoundItem). Day la DU LIEU CHO SAN cho dot sau.',
     ';Luu y ban pak: update04__ (nap SAU update03__) chu thich het block [PreviewBtn].',
     ';Ban nay giu [PreviewBtn] SONG theo dung nguon chu game chi dinh (update03).',
     ';==================================================================',
@@ -436,6 +437,13 @@ def doi_chieu(ten, text):
         v = cfg[sec].get('Tip')
         if v is not None and len(v) > 255:
             canh_bao('%s [%s] Tip dai %d byte > 255 (m_szTip[256] se cat)' % (ten, sec, len(v)))
+    # Ten section: KIniFile::CreateIniLink giu vao char szSection[32] KE CA hai dau
+    # ngoac (KIniFile.cpp:514,529) trong khi GetKeyValue ghep lai trong szSection[64]
+    # => ten dai hon 29 ky tu bi cat luc luu nhung KHONG bi cat luc tra => tra truot.
+    for sec in sorted(cfg):
+        if len(sec) + 2 > 31:
+            bao_loi_to('%s ten section [%s] dai %d ky tu (ke ca ngoac) > 31 - '
+                       'CreateIniLink cat con 31, tra khoa se TRUOT' % (ten, sec, len(sec) + 2))
     return cfg
 
 
