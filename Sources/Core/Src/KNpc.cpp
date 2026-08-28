@@ -4110,14 +4110,17 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	//                   else                              nMul = 100
 	// Ca hai deu tung TRUOC xuc xac trung/truot, truoc giap va truoc khang.
 	{
-		// [KM 27/08b-15] CONG CHAN (audit muc 22): ban chuan Linux 0x0808A51B chi
-		// tung xuc xac Hoa Giai / Trong Kich khi (tham so 8 & 0xC) == 8 - co lay tu
-		// truong +0x30 cua mau chieu thuc (loai don). JX1 khong co truong tuong ung
-		// nen dung phep gan gan nhat: CHI TUNG KHI KE DANH LA NGUOI CHOI. Truoc do
-		// xuc xac chay cho ca don QUAI: sau khi thuoc tinh kinh mach ap dung mach
-		// (p4b), nguoi choi co block_rate that (toi 77) lam quai "danh khong trung"
-		// lien tuc. Nguoi choi danh quai / doi khang nguoi-nguoi giu nguyen.
-		if (Npc[nLauncher].GetKind() == kind_player)
+		// [KM 27/08b-16] CONG CHAN - DICH NGUOC NGUYEN VAN tu jx_linux_y:
+		//   0x0808A51B: eax = [ebp+0x24] (tham so thu 8); and eax,0xC; cmp eax,8;
+		//               je 0x0808B2B8 (khoi Hoa Giai + Trong Kich).
+		//   0x08075486 (diem goi): tham so thu 8 <- [esi+0x30] cua doi tuong chieu.
+		// 0xC = 4|8 va JX1 co san relation_ally=4 / relation_enemy=8
+		// (GameDataDef.h:1358) => [esi+0x30] chinh la QUAN HE cua chieu
+		// (KMissle::m_eRelation), va cong chan chuan doc la: CHI TUNG XUC XAC KHI
+		// QUAN HE LA DICH. Nho vay chieu ho tro cua dong doi / phe minh (ally) KHONG
+		// bao gio bi hoa giai - truoc day bi chan nen mat luon vong sang va buff
+		// (KMissle.cpp:1266: ReceiveDamage tra FALSE la bo ca khau ap trang thai).
+		if ((NpcSet.GetRelation(nLauncher, m_Index) & (relation_ally | relation_enemy)) == relation_enemy)
 		{
 			int nKMBlock = m_CurrentBlockRate - Npc[nLauncher].m_CurrentAntiBlockRate;
 			if (nKMBlock > 0 && nKMBlock > (int)g_Random(MAX_PERCENT))
