@@ -237,3 +237,107 @@ Thư mục task của phiên chết: `C:\Users\nguye\AppData\Local\Temp\claude\J
 | `wz7bt76sb.output` (5KB, 14:06) | Vòng phản biện cuối — **rỗng, cả 4 agent chết vì weekly limit** |
 
 Transcript đầy đủ: `C:\Users\nguye\.claude\projects\J--CayChay-Src-Auto-Ngoai-WAuto-WAuto\cfb4f299-f5e4-47c6-a437-773fc54534bb.jsonl` (19,6MB — các mốc: dòng ~9857 sửa lỗi 8↔3, ~9861 áp 4 patcher, ~9869/9883 build, ~9891 rút 5 ảnh, ~9911 đặt script+menu, ~9925/9933 thay 3 nhị phân + kiểm băm, 9947 chết).
+
+---
+
+## 0-QUATER. ĐỢT 4 (27/08 tối) — KHẢM NẠM "BÁO THẤT BẠI, MẤT HẾT NGUYÊN LIỆU"
+
+### Triệu chứng chủ game báo
+> "1 dòng chỉ có khảm 1 lần tùy theo phẩm chất của đá và thủy tinh kèm theo Phúc
+> Duyên và Thủy Tinh bỏ thêm vào mà ra opt tương ứng — hiện tại thì đang bị ép
+> báo thất bại mất hết nguyên liệu"
+> "khảm 100% thành công và xóa hết nguyên liệu - không có thất bại"
+> "tôi dùng bản linux đó chạy khảm 100% thành công — còn thất bại là ép huyền tinh"
+
+### GỐC THẬT: JX1 chạy nhầm PHIÊN BẢN thuật toán chia xác suất
+
+`itemvalue_header.lua` bản Linux gọi bộ chia **qua biến** `transItemValImpl`
+(dòng 42) rồi cuối tệp gán:
+
+```lua
+-- 使用版本2的价值量概率转移函数     ("dùng hàm chuyển xác suất giá trị PHIÊN BẢN 2")
+transItemValImpl = _transItemValImpl_2;      -- dòng 246
+```
+
+Bản JX1 **bỏ lớp gián tiếp này**, gọi thẳng `calcProbLoop` — tức kết cứng ở
+**phiên bản 1**.
+
+| | Phiên bản 1 (JX1 đang chạy) | Phiên bản 2 (bản Linux) |
+|---|---|---|
+| Phạm vi rải xác suất | **toàn bộ** dãy cửa | chỉ **4 cửa lân cận** (idx−2…idx+1) |
+| Cách chia | theo tỉ lệ `dDivVal/giá_trị` | nội suy tuyến tính, `dHiProb = 1 − dLowProb` |
+| Tổng xác suất | < 1 | **= 1** |
+| Cửa rẻ nhất | **luôn** được chia một phần | ra ngoài vùng lân cận thì **đúng 0%** |
+
+Trong khảm nạm, `finalCompound` chèn thêm một cửa mang giá trị **trang bị hiện
+tại** (`nEquipVal`) — trúng cửa đó là "thất bại": giữ trang bị, mất nguyên liệu.
+Cửa này luôn là cửa **thấp nhất** dãy. Với phiên bản 1 nó không bao giờ về 0.
+
+### Đo bằng số trên chính dãy cửa trong log của chủ game
+`Logs/KSG_CompoundLog_Prob.txt` — cửa thất bại = 40.500.000:
+
+| SrcVal | PB1 (đang chạy) | PB2 (bản Linux) |
+|---:|---:|---:|
+| 212.340.000 *(chủ game đã bỏ)* | hỏng **77,97%** | hỏng 52,67% |
+| 300.000.000 | — | hỏng 28,52% |
+| 405.000.000 | — | hỏng 0,78% |
+| **420.000.000** | — | hỏng **0,00%** ✅ |
+| 6.000.000.000 | — | hỏng 0,00% |
+
+Ngưỡng: `SrcVal ≥ 408.300.000` (cửa đích thứ 2) là cửa thất bại rơi ra ngoài
+vùng 4 cửa lân cận → 0,00%.
+
+### Kiểm chéo khớp lời chủ game
+`compound_header.lua:108 defFinalCompound` (đường **ép Huyền Tinh**) **KHÔNG**
+chèn cửa `nEquipVal`, nên vẫn hỏng khi nguyên liệu thiếu — đúng "thất bại là ép
+Huyền Tinh". Hai hành vi khớp chính xác mô tả của chủ game ⇒ bằng chứng mạnh
+rằng PB2 là bản đúng.
+
+### ĐÃ LOẠI TRỪ trước khi sửa (kiểm thật, không đoán)
+- `settings/item/001/itemvalue/*` — JX1 **khớp 100%** bản Linux ver 001 (7/7 tệp
+  byte-identical). ⚠️ **Bẫy tôi suýt mắc**: lúc đầu so với **ver 004** và tưởng
+  `ore.txt` bị chia 10; thực ra Linux ver 000..003 dùng **đúng** số như JX1, chỉ
+  ver 004 mới ×10. JX1 chỉ có ver 000/001 ⇒ bảng **không sai**.
+- `itemvalue/equip_enchasable.lua` — hai bản giống hệt từng dòng (97/97).
+- `compound/equip_enchase.lua` — logic trùng khớp, kể cả nhánh thất bại (giữ
+  trang bị, xoá nguyên liệu còn lại) và việc chèn cửa `nEquipVal`.
+
+### Miếng vá `vZ_transitemval_phienban2.py` — khôi phục nguyên văn bản Linux
+1. `arydDesProb[i] = 1` → `= 0` (Linux khởi tạo 0; PB1 tự đặt lại 1)
+2. gọi thẳng `calcProbLoop` → gọi qua `transItemValImpl`
+3. thêm `_transItemValImpl_1` (bọc `calcProbLoop`, giữ đường lui),
+   `LOW/HI_NEAR_PERCENT = 0.95`, `_transItemValImpl_2` (port 1:1 Linux 185-241),
+   và dòng gán `transItemValImpl = _transItemValImpl_2`
+
+**Nghiệm thu**: `_transItemValImpl_2` **trùng khít 1:1** bản Linux (44/44 lệnh
+sau khi bỏ mọi khoảng trắng); khối Lua cân bằng 44 mở = 44 end; byte cao 152
+không đổi. **Không phải build** — nạp lại script là chạy.
+
+⚠️ **KHÔNG đụng** `calcProbLoop` (bản vòng-lặp chống tràn ngăn xếp Lua của đợt 3
+vẫn giữ nguyên, vẫn dùng được qua `_transItemValImpl_1`).
+
+### Bảng: bỏ gì để khảm 100% thành công (trang bị ví dụ 40.500.000)
+
+| Nguyên liệu | SrcVal | hỏng |
+|---|---:|---:|
+| HT c7 + khoáng c8 + 3 Phúc Duyên *(chủ game đã bỏ)* | 212.340.000 | 52,67% |
+| HT c7 + khoáng c8 + 8 Thuỷ Tinh | 267.340.000 | 37,52% |
+| HT c7 + khoáng c8 + 2 Thần Bí Khoáng Thạch | 387.766.000 | 4,35% |
+| **HT c7 + khoáng c8 + 3 Thần Bí Khoáng Thạch** | 462.192.000 | **0,00%** |
+| **HT c7 + khoáng c9 + 3 Phúc Duyên** | 548.520.000 | **0,00%** |
+| **HT c9 + khoáng c9** | 965.000.000 | **0,00%** |
+
+Công thức `SrcVal` (đã kiểm khớp log tuyệt đối):
+`trang bị + Huyền Tinh + khoáng + nguyên_liệu_phụ_đã_giảm`, trong đó phụ giảm
+theo `arySegmentScale = {{0,1},{0.5,0.9},{1,0.8},{1.5,0.7},{2,0.6}}` tính theo
+bội số của (Huyền Tinh + khoáng). **Cấp khoáng không đổi dãy cửa đích** (dãy chỉ
+phụ thuộc MagicID của đá) — nên đá phẩm chất cao vừa tăng tỉ lệ vừa cho opt cao
+hơn, đúng như chủ game mô tả.
+
+### "1 dòng chỉ khảm 1 lần" — vốn đã đúng, không cần sửa
+- `equip_enchase.lua:51-56` — `g_nEnchasePos` chỉ nhận **ô trống đầu tiên** (`-1`)
+- `equip_enchase.lua:76-80` — chặn khảm trùng MagicID đã có trên trang bị
+
+### Commit
+`8e535085` (kèm `vX` khôi phục hiệu ứng 2-3s của đợt trước, chưa commit).
+Tệp Lua nằm ở cây vận hành `E:\` (không phải git); patcher tái lập được thay đổi.
