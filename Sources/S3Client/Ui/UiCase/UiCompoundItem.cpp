@@ -3133,24 +3133,27 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 		m_AtlasEffect.Hide();
 
 		// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang - khuon y het KUiEnchase::LoadScheme.
+		// [LOREN 28/08] nhan Do pho dung toa do goc: Dopho.ini luu SAN toa do NHAN
+		// (khac Lay.ini luu toa do O), nen KHONG tru 28 - tru vao la nhan
+		// "Huyen tinh" roi xuong duoi o lon giua (ItemBox chiem ngang 84..139).
 		int nX, nY, nColor = 0xFFFFFF;
 		if (Ini.GetString("TextColor", "Font", "", Buff, sizeof(Buff)))
 			nColor = (::GetColor(Buff) & 0xFFFFFF);
 
 		Ini.GetInteger2("AtlasPos", "Pos", &nX, &nY);
-		m_PosAtlas.SetPosition(nX - 28, nY - 4);
+		m_PosAtlas.SetPosition(nX, nY);
 		m_PosAtlas.SetTextColor(nColor);
 		m_PosAtlas.BringToTop();
 		m_PosAtlas.SetText("§å phæ");
 
 		Ini.GetInteger2("CryolitePos", "Pos", &nX, &nY);
-		m_PosCryolite.SetPosition(nX - 28, nY - 4);
+		m_PosCryolite.SetPosition(nX, nY);
 		m_PosCryolite.SetTextColor(nColor);
 		m_PosCryolite.BringToTop();
 		m_PosCryolite.SetText("HuyÒn tinh");
 
 		Ini.GetInteger2("ConsumePos", "Pos", &nX, &nY);
-		m_PosConsume.SetPosition(nX - 28, nY - 4);
+		m_PosConsume.SetPosition(nX, nY);
 		m_PosConsume.SetTextColor(nColor);
 		m_PosConsume.BringToTop();
 		m_PosConsume.SetText("Nguyªn liÖu");
@@ -3162,7 +3165,7 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 			szMuc[sizeof(szMuc) - 1] = 0;
 			nX = nY = 0;
 			Ini.GetInteger2(szMuc, "Pos", &nX, &nY);
-			m_Material[m].SetPosition(nX - 28, nY - 4);
+			m_Material[m].SetPosition(nX, nY);
 			m_Material[m].SetTextColor(nColor);
 			m_Material[m].BringToTop();
 			m_Material[m].SetText("");
