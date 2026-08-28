@@ -692,9 +692,12 @@ void KUiCompoundOne::Breathe()
 //-----------------------------------------------------------
 // Chay hieu ung kham
 //-----------------------------------------------------------
+// [LOREN 27/08] hieu ung chay lai: bo chu thich than ham nay va
+// khoi phuc nhip "nap" - bam nut -> hien hieu ung -> het 25 khung
+// -> moi gui lenh ep, dung may trang thai goc (Breathe:664-691).
 int KUiCompoundOne::PlayEffect()
 {
-	/*if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_CompEffect1.SetFrame(0);
 		m_CompEffect2.SetFrame(0);
@@ -707,8 +710,7 @@ int KUiCompoundOne::PlayEffect()
 		m_CompEffect2.NextFrame();
 		m_CompEffect3.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -834,11 +836,11 @@ void KUiCompoundOne::ProcessComp()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_COMPOUND;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_COMPOUND;
+		return;
+	}
 	
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_MotOre");
 	
@@ -1130,7 +1132,7 @@ void KUiCompoundTwo::Breathe()
 //-----------------------------------------------------------
 int KUiCompoundTwo::PlayEffect()
 {
-	/*if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_CompEffect1.SetFrame(0);
 		m_CompEffect2.SetFrame(0);
@@ -1143,8 +1145,7 @@ int KUiCompoundTwo::PlayEffect()
 		m_CompEffect2.NextFrame();
 		m_CompEffect3.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -1316,11 +1317,11 @@ void KUiCompoundTwo::ProcessComp()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_COMPOUND;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_COMPOUND;
+		return;
+	}
 	
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_HaiOre");
 	
@@ -1614,7 +1615,7 @@ void KUiCompoundThree::Breathe()
 //-----------------------------------------------------------
 int KUiCompoundThree::PlayEffect()
 {
-	/*if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_CompEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_CompEffect1.SetFrame(0);
 		m_CompEffect2.SetFrame(0);
@@ -1627,8 +1628,7 @@ int KUiCompoundThree::PlayEffect()
 		m_CompEffect2.NextFrame();
 		m_CompEffect3.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -1877,11 +1877,11 @@ void KUiCompoundThree::ProcessComp()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_COMPOUND (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_COMPOUND;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_COMPOUND;
+		return;
+	}
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_BaOre");
 	
 	char		Buff[64];
@@ -2172,7 +2172,7 @@ void KUiDistill::Breathe()
 //-----------------------------------------------------------
 int KUiDistill::PlayEffect()
 {
-	/*if(m_DistillEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_DistillEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_DistillEffect1.SetFrame(0);
 		m_DistillEffect2.SetFrame(0);
@@ -2183,8 +2183,7 @@ int KUiDistill::PlayEffect()
 		m_DistillEffect1.NextFrame();
 		m_DistillEffect2.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //----------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -2468,11 +2467,11 @@ void KUiDistill::ProcessDistill()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_DISTILL (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_DISTILL;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_DISTILL;
+		return;
+	}
 	
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Distill");
 	
@@ -2743,7 +2742,7 @@ void KUiForge::Breathe()
 //-----------------------------------------------------------
 int KUiForge::PlayEffect()
 {
-	/*if(m_ForgeEffect.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_ForgeEffect.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_ForgeEffect.SetFrame(0);
 		return 0;
@@ -2752,8 +2751,7 @@ int KUiForge::PlayEffect()
 	{
 		m_ForgeEffect.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //---------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -2859,11 +2857,11 @@ void KUiForge::ProcessForge()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_FORGE (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_FORGE;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_FORGE;
+		return;
+	}
 	
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Forge");
 	
@@ -3150,7 +3148,7 @@ void KUiEnchase::Breathe()
 //-----------------------------------------------------------
 int KUiEnchase::PlayEffect()
 {
-	/*if(m_EnchaseEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
+	if(m_EnchaseEffect1.GetCurrentFrame() >= MAX_SPR_FRAME)
 	{
 		m_EnchaseEffect1.SetFrame(0);
 		m_EnchaseEffect2.SetFrame(0);
@@ -3161,8 +3159,7 @@ int KUiEnchase::PlayEffect()
 		m_EnchaseEffect1.NextFrame();
 		m_EnchaseEffect2.NextFrame();
 		return 1;
-	}*/
-	return 1;
+	}
 }
 //-----------------------------------------------------------------------------
 // Tuong tac hop thoai
@@ -3662,11 +3659,11 @@ void KUiEnchase::ProcessEnchase()
 	// anh hieu ung da Show thi treo vinh vien. Bo nhanh nay thi Breathe khong
 	// bao gio vao STATUS_BEGIN_ENCHASE (day la cho duy nhat gan no) nen vua het
 	// treo anh vua giu dung "1 cu bam = 1 lan ep".
-	//if(m_nStatus == STATUS_WAITING_MATERIALS)
-	//{	
-	//	m_nStatus = STATUS_BEGIN_ENCHASE;
-	//	return;
-	//}
+	if(m_nStatus == STATUS_WAITING_MATERIALS)
+	{	
+		m_nStatus = STATUS_BEGIN_ENCHASE;
+		return;
+	}
 	
 	g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_Enchase");
 	
