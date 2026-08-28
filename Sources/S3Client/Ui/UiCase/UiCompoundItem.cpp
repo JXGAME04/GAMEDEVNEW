@@ -3080,6 +3080,7 @@ void KUiAtlas::Initialize()
 		m_ItemBox[i].SetContainerId((int)UOC_ATLAS_ITEM);
 	}
 	AddChild(&m_Atlas);
+	AddChild(&m_Preview);	// [LOREN 28/08] chu giai + xem truoc Do pho
 	AddChild(&m_Guide);
 	AddChild(&m_ListScroll);
 	AddChild(&m_AtlasEffect);
@@ -3127,6 +3128,7 @@ void KUiAtlas::LoadScheme( const char* pScheme )
 		}
 		sDoPhoLog("[DOPHO] LoadScheme: nap %s = 1", Buff);
 		m_Atlas.Init(&Ini, "AtlasBtn");
+		m_Preview.Init(&Ini, "PreviewBtn");	// [LOREN 28/08] chu giai + xem truoc Do pho
 		m_Guide.Init(&Ini, "GuideList");
 		m_ListScroll.Init(&Ini, "GuideList_Scroll");
 		m_AtlasEffect.Init(&Ini, "ConsumeEffect");
@@ -3239,6 +3241,14 @@ int KUiAtlas::WndProc( unsigned int uMsg, unsigned int uParam, int nParam )
 				m_nStatus = STATUS_BEGIN_ATLAS;
 				return 1;
 			}
+		}
+		else if (uParam == (unsigned int)&m_Preview)
+		{
+			// [LOREN 28/08] chu giai + xem truoc Do pho: nho may chu doi chieu o voi cong thuc va bao ro
+			// mon nao con thieu (LR_UI_AtlasPreview trong test_loren_admin.lua).
+			sDoPhoLog("[DOPHO] WndProc: bam nut Xem truoc");
+			if (g_pCoreShell)
+				g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 7, (unsigned int)"LR_UI_AtlasPreview");
 		}
 		break;
 	case WND_N_ITEM_PICKDROP:

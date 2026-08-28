@@ -347,6 +347,7 @@ private:
 	KWndMessageListBox	m_Guide;
 	KWndScrollBar	m_ListScroll;
 	KWndButton		m_Atlas;
+	KWndButton		m_Preview;	// [LOREN 28/08] chu giai + xem truoc Do pho
 	KWndImage		m_AtlasEffect;
 	// [LOREN 28/08] Do pho: ve ten nguyen lieu tren trang
 	KWndText32		m_PosAtlas;

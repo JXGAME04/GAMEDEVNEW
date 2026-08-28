@@ -1537,6 +1537,77 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		strcat(pszMsg, "  \n  ");
 	}
 
+	// [LOREN 28/08] chu giai + xem truoc Do pho.
+	// Chu game: "item do pho thieu noi dung can nhung nguyen lieu nao pham
+	// chat bao nhieu". Cong thuc doc tu atlas_compound.txt - LAY DONG DAU
+	// TIEN khop ma do pho, dung dong ma isAtlas (atlas.lua:110) dung khi ghep
+	// that, nen tooltip va luat kiem luon khop nhau.
+	// Dai 238..390 = dai ma do pho that sau khi nan bang (132 ma).
+	if (m_CommonAttrib.nItemGenre == item_magicscript && m_CommonAttrib.nDetailType == 1 &&
+		m_CommonAttrib.nParticularType >= 238 && m_CommonAttrib.nParticularType <= 390)
+	{
+		KTabFile AtlasTab;
+		if (AtlasTab.Load("\\Settings\\Item\\atlas_compound.txt"))
+		{
+			int nHang = 0;
+			for (int r = 2; r <= AtlasTab.GetHeight(); r++)
+			{
+				int nG = -1, nD = -1, nP = -1;
+				AtlasTab.GetInteger(r, (LPSTR)"ATLAS_GENRE", -1, &nG);
+				AtlasTab.GetInteger(r, (LPSTR)"ATLAS_DETAILTYPE", -1, &nD);
+				AtlasTab.GetInteger(r, (LPSTR)"ATLAS_PARTICULAR", -1, &nP);
+				if (nG == 6 && nD == 1 && nP == m_CommonAttrib.nParticularType)
+				{
+					nHang = r;
+					break;
+				}
+			}
+			if (nHang >= 2)
+			{
+				KTabFile MagicIdx;
+				BOOL bMagic = MagicIdx.Load("\\Settings\\Item\\magicattriblevel_index.txt");
+				strcat(pszMsg, " <color=Fire>Nguy™n li÷u c«n:  \n  ");
+				for (int k = 1; k <= 6; k++)
+				{
+					char szCot[32];
+					char szTenNl[64];
+					_snprintf(szCot, sizeof(szCot) - 1, "%d_NAME", k);
+					szCot[sizeof(szCot) - 1] = 0;
+					szTenNl[0] = 0;
+					AtlasTab.GetString(nHang, szCot, (LPSTR)"", szTenNl, sizeof(szTenNl));
+					if (szTenNl[0] == 0)
+						continue;
+					int nCap = -1, nMg = -1;
+					_snprintf(szCot, sizeof(szCot) - 1, "%d_LEVEL", k);
+					szCot[sizeof(szCot) - 1] = 0;
+					AtlasTab.GetInteger(nHang, szCot, -1, &nCap);
+					_snprintf(szCot, sizeof(szCot) - 1, "%d_MAGIC_ID", k);
+					szCot[sizeof(szCot) - 1] = 0;
+					AtlasTab.GetInteger(nHang, szCot, -1, &nMg);
+					char szDescNl[64];
+					szDescNl[0] = 0;
+					if (bMagic && nMg > 0)
+					{
+						char szKey[16];
+						_snprintf(szKey, sizeof(szKey) - 1, "%d", nMg);
+						szKey[sizeof(szKey) - 1] = 0;
+						MagicIdx.GetString(szKey, (LPSTR)"DESC", (LPSTR)"", szDescNl, sizeof(szDescNl));
+					}
+					char szDongNl[200];
+					if (nCap > 0 && szDescNl[0])
+						_snprintf(szDongNl, sizeof(szDongNl) - 1, " <color=Green>%s (c p %d) - %s  \n  ", szTenNl, nCap, szDescNl);
+					else if (nCap > 0)
+						_snprintf(szDongNl, sizeof(szDongNl) - 1, " <color=Green>%s (c p %d)  \n  ", szTenNl, nCap);
+					else
+						_snprintf(szDongNl, sizeof(szDongNl) - 1, " <color=Green>%s  \n  ", szTenNl);
+					szDongNl[sizeof(szDongNl) - 1] = 0;
+					strcat(pszMsg, szDongNl);
+				}
+				strcat(pszMsg, " <color=White>KÃm: Huy“n Tinh Kho∏ng Thπch + 100000 l≠Óng  \n  ");
+			}
+		}
+	}
+
 	if (m_CommonAttrib.nItemGenre == item_magicscript && (m_CommonAttrib.nParticularType >= 199 && m_CommonAttrib.nParticularType <= 204))
 	{
 		char szLevel[128];

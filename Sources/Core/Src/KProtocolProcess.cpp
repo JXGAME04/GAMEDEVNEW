@@ -6541,6 +6541,7 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 					// [LOREN 28/08] them LR_UI_Atlas vao danh sach trang: thieu ten nay thi may chu
 					// nhan goi roi IM LANG bo qua - bam nut khong hien gi, ke ca thong bao loi.
 					"LR_UI_Atlas",
+					"LR_UI_AtlasPreview",	// [LOREN 28/08] chu giai + xem truoc Do pho - nut Xem truoc
 				};
 				char szFun[sizeof(pUiCmd->szFunc) + 1];
 				memcpy(szFun, pUiCmd->szFunc, sizeof(pUiCmd->szFunc));
