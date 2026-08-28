@@ -291,6 +291,12 @@ void KUiCompoundItem::Breathe()
 		case WINDOWS_ENCHASE:
 			m_EnchasePad.Breathe();
 			break;
+		// [LOREN 28/08] Do pho: chay nhip trang - THIEU case nay thi bam nut Ket hop
+		// chi dat m_nStatus = STATUS_BEGIN_ATLAS roi KET vinh vien: viec hien
+		// hieu ung va goi ProcessAtlas (gui lenh) deu nam trong KUiAtlas::Breathe.
+		case WINDOWS_ATLAS:
+			m_AtlasPad.Breathe();
+			break;
 		default:
 			break;
 	}
