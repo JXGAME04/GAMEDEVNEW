@@ -622,3 +622,31 @@ Con lai (dot ke tiep): he TRANG BI pet (6 o + nut Duc lai, 4 kenh
 COMPANIONEQUIP - thiet ke server theo client, muc 16); 4 ky nang chien
 dau ext skill (item Bi kip 4808, bang 1670..1687 - kiem skills.txt JX1
 co chua, thieu thi port tu VLTK); go PLOG lua sau khi xong trang bi.
+
+## 18. 29/08 TRUA - DICH NGUOC AI LINUX + TRAN 130 + SKILL HOAN CHINH + TRANG BI V1
+
+Chu nhac LUAT: 'lam giong 100% linux chu khong tu bien' -> thay het tham so
+tu che bang so THAT dich nguoc tu jx_linux_y (re_disasm.py + luamap co san):
+- KPet::Summon 0x081D52F0 -> CreateNpc 0x081D5180: KHONG set toc/mau/AI
+  bang code - moi chi so theo BANG npcs.txt (JX1 bang gan giong Linux,
+  template pet co skill san).
+- KPet follow 0x081D4F80 (goi tu PLAYER TICK moi frame, caller 0x080B7104,
+  wrapper check kind==6 kind_pet): dist^2<=46224 (~6.7 o) DUNG;
+  >562499 (~23.4 o) SetPos VE DUNG TOA DO CHU; giua: WALK toi diem
+  cheo-sau chu 100mps cung phia pet dang dung (khong random).
+  -> Pet_ProcessAI don npc mo coi; follow+fight chay trong Pet_Breathe
+  (CoreServerShell moi frame ~18fps = dung nhip Linux).
+- Pet Linux GOC KHONG DANH; tinh nang danh giu theo yeu cau chu (khuon
+  partner: mode 22 vision 480, moi ~18 frame, skill tu bang npcs).
+TRAN CAP: pet_skill_def.txt = ban PRIVATE VLTK 130 cap (pak); levelup.txt
+noi 21..130 dung quy luat tuyen tinh do tu bang goc (Up=80(n-5), Grown=x2,
+Tame=250(n-5)); MAX_LEVEL common + PET_MAX_LEVEL C = 130.
+SKILL 18 con: goc 'hoc ma khong co gi' = JX1 THIEU \script\skill\petskill.lua
+(LvlSetScript cua 18 dong) -> rut tu pak VLTK, ghep khung chuan JX1;
+o luu SkillId*100+Level, hoc trung = +1 cap (max 5 theo bang);
+icon o 36x36; menu admin vao thang PET; 5 cua so UiPartner* cu bi chan mo.
+TRANG BI V1 (khong co nguon server private - thiet ke toi gian khop UI,
+muc 16): 6 item 4881..4886 dung-la-deo (tra do cu), pct 80..120 duc lai
+(op 10, 5 xu/lan, menu hop thoai server), bonus HP/MP ap khi summon
+(5157/5158); 6 o cua so hien anh item; nut Duc lai -> SendOp(10).
+Binary .moi cuoi: CoreServer addb0811, Game 53f5856e.

@@ -1101,7 +1101,8 @@ void KPartnerSys::Breathe()
 //---------------------------------------------------------------------------
 // AI cua partner (goi tu KNpcAI::Activate khi m_Kind == kind_partner)
 //---------------------------------------------------------------------------
-static int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision)
+// [PET 29/08] bo static: he pet PC tai dung chon-dich nay
+int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision)
 {
 	KNpc* pNpc = &Npc[nNpcIdx];
 	int nSubWorld = pNpc->m_SubWorldIndex;

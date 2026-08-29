@@ -100,6 +100,8 @@ KUiPartnerAttr* KUiPartnerAttr::GetIfVisible()
 
 KUiPartnerAttr* KUiPartnerAttr::OpenWindow()
 {
+    // [29/08] he partner mobile DA GO theo yeu cau chu (dung he PET PC)
+    return NULL;
     if (ms_pSelf == NULL)
     {
         ms_pSelf = new KUiPartnerAttr;

@@ -31,6 +31,8 @@ static DWORD s_dwAuraTick[MAX_PLAYER] = { 0 };
 #define PET_AURA_TIME    (40 * 18)   // 40 giay x 18 khung
 #define PET_AURA_RECAST  60          // re-cast moi 60 luot breathe (~30s)
 
+extern int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision);
+
 //---------------------------------------------------------------------------
 static int sPetG(int nPlayerIdx, int nId)
 {
@@ -86,6 +88,25 @@ static void sPetApplyAura(int nPlayerIdx)
 	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(PET_AURA_SKILL0 + nKind - 1, nLevel);
 	if (pSkill)
 		pSkill->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
+	// [29/08] 4 ky nang BI DONG da hoc (task 5139..5142, bang 1670..1687
+	// port tu VLTK) ap len PET, re-cast cung nhip aura
+	int nPetNpc = s_nPetNpcIdx[nPlayerIdx];
+	if (nPetNpc > 0 && nPetNpc < MAX_NPC)
+	{
+		for (int k = 0; k < 4; k++)
+		{
+			// o luu SkillId*100+Level (bikip.lua); gia tri cu = id tran -> lv 1
+			int nV = sPetG(nPlayerIdx, 5139 + k);
+			if (nV <= 0) continue;
+			int nSk = (nV >= 100000) ? nV / 100 : nV;
+			int nLv = (nV >= 100000) ? nV % 100 : 1;
+			if (nLv < 1) nLv = 1;
+			if (nLv > 5) nLv = 5;
+			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, nLv);
+			if (pExt)
+				pExt->CastStateSkill(nPetNpc, 0, 0, PET_AURA_TIME, TRUE);
+		}
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -130,6 +151,8 @@ static int sPetSummon(int nPlayerIdx)
 	pNpc->SetCamp(pOwner->m_CurrentCamp);
 	pNpc->SetCurrentCamp(pOwner->m_CurrentCamp);
 	pNpc->m_bNpcFollowFindPath = FALSE;
+	// [29/08 - theo Linux] KPet::CreateNpc (0x081D5180) KHONG chinh toc do /
+	// AI - moi chi so theo BANG npcs.txt cua template.
 	memset(pNpc->Owner, 0, sizeof(pNpc->Owner));
 	strncpy(pNpc->Owner, pPlayer->m_PlayerName, sizeof(pNpc->Owner) - 1);
 	char szName[20];
@@ -142,10 +165,15 @@ static int sPetSummon(int nPlayerIdx)
 	// [29/08] mau pet = ATTRIB Sinh luc (o 5122) - template 566.. la NPC
 	// thoai LifeMax=0 nen thanh mau tren dau pet hien 0
 	{
-		int nHp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 4);
+		// [29/08] + bonus trang bi pet (petequip.lua tinh tong vao 5157/5158)
+		int nHp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 4) + sPetG(nPlayerIdx, 5157);
 		if (nHp > 0)
+		{
 			pNpc->m_LifeMax = nHp;
-		int nMp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 5);
+			// thanh mau client tinh theo m_CurrentLifeMax (nhu LuaSetNpcLife)
+			pNpc->m_CurrentLifeMax = nHp;
+		}
+		int nMp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 5) + sPetG(nPlayerIdx, 5158);
 		if (nMp > 0)
 			pNpc->m_ManaMax = nMp;
 		pNpc->m_CurrentMana = pNpc->m_ManaMax;
@@ -170,12 +198,15 @@ static void sPetUnSummon(int nPlayerIdx)
 //---------------------------------------------------------------------------
 void Pet_ProcessAI(int nNpcIdx)
 {
+	// [29/08 - theo Linux] follow KHONG nam o AI npc: jx_linux_y goi
+	// KPet-follow tu PLAYER TICK moi frame (caller 0x080B7104) -> ta lam
+	// trong Pet_Breathe (CoreServerShell goi moi frame). O day chi don
+	// npc mo coi (chu bien mat).
 	KNpc* pNpc = &Npc[nNpcIdx];
 	int nOwner = pNpc->m_nPartnerOwner;
 	if (nOwner <= 0 || nOwner >= MAX_PLAYER || Player[nOwner].m_nIndex <= 0 ||
 		s_nPetNpcIdx[nOwner] != nNpcIdx)
 	{
-		// chu bien mat / khe tai dung -> tu go
 		if (pNpc->m_RegionIndex >= 0)
 		{
 			int sw = pNpc->m_SubWorldIndex, rg = pNpc->m_RegionIndex;
@@ -183,28 +214,69 @@ void Pet_ProcessAI(int nNpcIdx)
 			SubWorld[sw].m_Region[rg].DecRef(pNpc->m_MapX, pNpc->m_MapY, obj_npc);
 		}
 		NpcSet.Remove(nNpcIdx);
-		return;
-	}
-	KNpc* pOwnerNpc = &Npc[Player[nOwner].m_nIndex];
-	if (pNpc->m_SubWorldIndex != pOwnerNpc->m_SubWorldIndex)
-		return;                                  // Pet_Breathe xu ly chuyen map
-	int nPX = 0, nPY = 0, nOX = 0, nOY = 0;
-	pNpc->GetMpsPos(&nPX, &nPY);
-	pOwnerNpc->GetMpsPos(&nOX, &nOY);
-	int nDis = abs(nPX - nOX) + abs(nPY - nOY);
-	if (nDis > PET_FORCE_SYNC * 2)
-	{
-		pNpc->SetPos(nOX + 48, nOY + 48);
-		return;
-	}
-	if (nDis > PET_FOLLOW_DIS)
-	{
-		int nXGo = nOX + 50 - rand() % 100;
-		int nYGo = nOY + 50 - rand() % 100;
-		pNpc->SendCommand(do_walk, nXGo, nYGo);
 	}
 }
 
+//---------------------------------------------------------------------------
+// FOLLOW dung 100%% co che + hang so Linux (KPet 0x081D4F80):
+// dist^2<=46224 dung; >562499 SetPos ve toa do chu; giua: WALK toi diem
+// cheo-sau chu 100mps cung phia dang dung.
+//---------------------------------------------------------------------------
+static void sPetFollowLinux(int nPlayerIdx, int nNpcIdx)
+{
+	KNpc* pNpc = &Npc[nNpcIdx];
+	KNpc* pOwnerNpc = &Npc[Player[nPlayerIdx].m_nIndex];
+	if (pNpc->m_SubWorldIndex != pOwnerNpc->m_SubWorldIndex)
+		return;
+	int nPX = 0, nPY = 0, nOX = 0, nOY = 0;
+	pNpc->GetMpsPos(&nPX, &nPY);
+	pOwnerNpc->GetMpsPos(&nOX, &nOY);
+	int nDX = nOX - nPX, nDY = nOY - nPY;
+	int nDis2 = nDX * nDX + nDY * nDY;
+	if (nDis2 <= 46224)
+		return;
+	if (nDis2 > 562499)
+	{
+		pNpc->SetPos(nOX, nOY);
+		return;
+	}
+	int nGoX = nOX + ((nDX > 0) ? -100 : 100);
+	int nGoY = nOY + ((nDY > 0) ? -100 : 100);
+	pNpc->SendCommand(do_walk, nGoX, nGoY);
+}
+
+//---------------------------------------------------------------------------
+// DANH (tinh nang them theo yeu cau chu - Linux goc pet KHONG danh):
+// moi ~18 frame (~1s) khi chu bat FightMode: chon dich mode 22 (ke vua
+// danh chu / gan nhat, vision 480 nhu bang partner) -> do_skill bang bo
+// skill BANG npcs cua template.
+//---------------------------------------------------------------------------
+static DWORD s_dwFightTick[MAX_PLAYER];
+static void sPetFight(int nPlayerIdx, int nNpcIdx)
+{
+	KNpc* pNpc = &Npc[nNpcIdx];
+	KNpc* pOwnerNpc = &Npc[Player[nPlayerIdx].m_nIndex];
+	if (pNpc->m_CurrentCamp != pOwnerNpc->m_CurrentCamp)
+		pNpc->SetCurrentCamp(pOwnerNpc->m_CurrentCamp);
+	if (pNpc->m_FightMode != pOwnerNpc->m_FightMode)
+		pNpc->m_FightMode = pOwnerNpc->m_FightMode;
+	if (!pOwnerNpc->m_FightMode)
+		return;
+	if (++s_dwFightTick[nPlayerIdx] % 18 != 0)
+		return;
+	int nTarget = sPartnerPickTarget(nNpcIdx, Player[nPlayerIdx].m_nIndex, 22, 480);
+	if (nTarget <= 0)
+		return;
+	int nSkillId = 0;
+	for (int nSlot = 1; nSlot <= 4; nSlot++)
+		if (pNpc->m_SkillList.m_Skills[nSlot].SkillId > 0)
+		{
+			nSkillId = pNpc->m_SkillList.m_Skills[nSlot].SkillId;
+			if (rand() % 2) break;
+		}
+	if (nSkillId > 0)
+		pNpc->SendCommand(do_skill, nSkillId, -1, nTarget);
+}
 //---------------------------------------------------------------------------
 void Pet_Breathe()
 {
@@ -241,6 +313,10 @@ void Pet_Breathe()
 			pNpc->ChangeWorld(SubWorld[pOwner->m_SubWorldIndex].m_SubWorldID,
 				nX + 48, nY + 48);
 		}
+		// [29/08 - theo Linux] follow chay tu PLAYER TICK moi frame
+		// (jx_linux_y goi KPet-follow tu 0x080B7104 trong player tick)
+		sPetFollowLinux(i, nNpc);
+		sPetFight(i, nNpc);
 		if (++s_dwAuraTick[i] >= PET_AURA_RECAST)
 		{
 			s_dwAuraTick[i] = 0;

@@ -131,7 +131,7 @@ class Spr:
                     n = 0
                     while x + n < self.w and px[x+n, y][3] >= 64 and n < 255:
                         n += 1
-                    rle += bytes((n, 31))
+                    rle += bytes((n, 255))  # [29/08] alpha thang 0..255 (do goc: dac=255; 31 = mo 12%)
                     for k in range(n):
                         r, gg, bb, a = px[x+k, y]
                         rle.append(self.near((r, gg, bb)))

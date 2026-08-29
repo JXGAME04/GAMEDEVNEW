@@ -1945,6 +1945,7 @@ BOOL KItemList::RemoveItem_YearExp(int ItemIdx)
 static BOOL sIsJx2ItemScript(const char* szScript)
 {
 	static const char* szJx2[] = {
+		"\\script\\petsys\\",						// [PET 29/08] Thiep/trai/Bi kip - tra ~=1 la engine tru 1 (Linux)
 		"\\script\\item\\messenger\\",					// Tin Su: 5 yeu bai
 		"\\script\\item\\xinshirenwu\\",				// Tin Su: Ngu Hanh Phu, Triet X Phu, Bao Ruong, Thien Bao Kho Lenh
 		"\\script\\item\\bosscharm.lua",				// Lenh bai boss bang hoi (tra 0 sau khi goi boss)

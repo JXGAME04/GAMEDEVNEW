@@ -60,6 +60,30 @@ static const char* s_szValSec[PET_UI_TXT_NUM] =
 // Doc settings/npcs.txt (bang client) cot 12 NpcResType; nhom = phan CHU dau
 // cua res (boss018 -> boss).
 #include "KTabFile.h"
+// [29/08] tra ImageName cua item theo ParticularType (bang magicscript client)
+static void sPetItemImg(int nParticular, char* szOut, int nOutLen)
+{
+    szOut[0] = 0;
+    static KTabFile s_ItemTab;
+    static int s_bLoaded = 0;
+    if (!s_bLoaded)
+    {
+        s_bLoaded = 1;
+        s_ItemTab.Load((LPSTR)"\\settings\\item\\magicscript.txt");
+    }
+    char szNum[16];
+    int nRow = s_ItemTab.GetHeight();
+    for (int r = 2; r <= nRow; r++)
+    {
+        s_ItemTab.GetString(r, 4, (LPSTR)"", szNum, sizeof(szNum));
+        if (atoi(szNum) == nParticular)
+        {
+            s_ItemTab.GetString(r, 5, (LPSTR)"", szOut, nOutLen);
+            return;
+        }
+    }
+}
+
 static void sPetResPath(int nTpl, char* szOut, int nOutLen)
 {
     szOut[0] = 0;
@@ -266,6 +290,45 @@ void KUiPet::UpdateData()
             nLevel, 0);
     else
         m_Skill1.HoldObject(CGOG_NOTHING, 0, 0, 0);
+
+    // [29/08] 4 ky nang bi dong da hoc (task 5139..5142)
+    // [29/08] 6 o trang bi (task 5143..5148 = particular item)
+    for (i = 0; i < PET_UI_EQUIP_NUM && i < 6; i++)
+    {
+        int nP = sPetTV(5143 + i);
+        char szImg[128];
+        szImg[0] = 0;
+        if (nP > 0)
+            sPetItemImg(nP, szImg, sizeof(szImg));
+        if (szImg[0])
+        {
+            m_Equip[i].SetImage(ISI_T_SPR, szImg);
+            m_Equip[i].Show();
+        }
+    }
+
+    for (i = 0; i < PET_UI_EXTSKILL_NUM && i < 4; i++)
+    {
+        int nV = sPetTV(5139 + i);
+        int nSk = (nV >= 100000) ? nV / 100 : nV;
+        int nLv = (nV >= 100000) ? nV % 100 : 1;
+        if (nSk > 0)
+            m_ExtSkill[i].HoldObject(CGOG_SKILL_FIGHT, nSk, nLv, 0);
+        else
+            m_ExtSkill[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
+    }
+}
+
+// [29/08] framework goi Breathe() cho cua so visible (WndWindow.cpp:367)
+// -> quay frame hinh pet ~180ms de dung tho nhu ngoai map
+void KUiPet::Breathe()
+{
+    unsigned int uNow = IR_GetCurrentTime();
+    if (uNow - m_uLastFrameTime < 180)
+        return;
+    m_uLastFrameTime = uNow;
+    if (m_Appearance.IsVisible())
+        m_Appearance.NextFrame();
 }
 
 void KUiPet::SendOp(int nOp)
@@ -293,7 +356,8 @@ int KUiPet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 break;
             }
         }
-        // m_CompanionBtn ("Duc lai") - he trang bi pet chua mo (dot sau)
+        if (uParam == (unsigned int)(KWndWindow*)&m_CompanionBtn)
+            SendOp(10);	// [29/08] mo menu duc lai trang bi (server)
         break;
     default:
         return KWndImage::WndProc(uMsg, uParam, nParam);

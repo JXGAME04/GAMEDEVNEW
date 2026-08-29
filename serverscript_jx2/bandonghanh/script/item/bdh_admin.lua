@@ -3,23 +3,10 @@
 Include("\\script\\partner\\partner_test_bdh.lua")
 
 function BDH_Root()
-	local nCount = PARTNER_Count()
-	local nCur, nSt = PARTNER_GetCurPartner()
-	SayEx({format("§ång hµnh: %d con - ®­¬ng nhiÖm %d - %s",
-		nCount, nCur, (nSt == 1) and "®ang gäi ra" or "®ang nghØ"),
-	"CÊp thó hÖ Kim t­ chÊt 5/BDH_A_CapKim",
-	"CÊp thó ngÉu nhiªn/BDH_A_CapNgau",
-	"Gäi ra - thu vÒ/BDH_A_Goi",
-	"Céng 10000 exp/BDH_A_Exp",
-	"Th¨ng 1 cÊp/BDH_A_LenCap",
-	"Th©n mËt = 100/BDH_A_Emo",
-	"Tói cÊp 10/BDH_A_Tui",
-	"D¹y kü n¨ng thö/BDH_A_Skill",
-	"Xem th«ng tin thó/BDH_A_Info",
-	"Xãa con ®ang chän/BDH_A_Xoa",
-	"Ch¹y FULL bé test tù ®éng/BDH_A_FullTest",
-	"HÖ PET b¶n PC (míi)/BDH_P_Root",
-	"KÕt thóc ®èi tho¹i./no"})
+	-- [29/08] menu partner cu DA GO theo yeu cau chu ("cac dong pet cu khong
+	-- dung thi xoa di") - vao thang he PET ban PC. Ham BDH_A_* giu lai duoi
+	-- file de khoi pha nhung khong con duong vao.
+	BDH_P_Root()
 end
 
 function BDH_A_CapKim()
@@ -123,6 +110,8 @@ function BDH_P_Root()
 	"CÊp ThiÖp + thuèc + 4 tr¸i c©y/BDH_P_CapDo",
 	"T¹o pet nhanh (kh«ng cÇn thiÖp)/BDH_P_TaoNhanh",
 	"Bèn ®iÓm = 9999/BDH_P_Diem",
+	"Cap 6 trang bi pet/BDH_P_TrangBi",
+	"Cap 5 Bi kip ky nang/BDH_P_BiKip",
 	"Cap 2000 chan nguyen (test Tu Chan)/BDH_P_ChanNguyen",
 	"Dong bo diem xuong client/BDH_P_DongBo",
 	"Gäi ra (op 2)/BDH_P_Goi",
@@ -136,6 +125,20 @@ end
 
 -- [PETSYS 29/08] ban lai 29 o task pet xuong client (SetTask -> SetSaveVal
 -- -> SyncTaskValueToClient) - do kenh dong bo / va tam khi login-sync truot
+function BDH_P_TrangBi()
+	local i
+	for i = 4881, 4886 do
+		AddItem(6, 1, i, 1, 0, 0)
+	end
+	Msg2Player("Da cap 6 trang bi Dong Hanh")
+end
+function BDH_P_BiKip()
+	local i
+	for i = 1, 5 do
+		AddItem(6, 1, 4880, 1, 0, 0)
+	end
+	Msg2Player("Da cap 5 Bi kip Dong Hanh")
+end
 function BDH_P_ChanNguyen()
 	SetTask(362, GetTask(362) + 2000)
 	Msg2Player("Da cap 2000 diem chan nguyen (task 362) - tong: " .. GetTask(362))

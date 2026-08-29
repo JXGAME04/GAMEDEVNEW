@@ -40,6 +40,7 @@ private:
 
     void          Initialize();
     void          UpdateData();
+    virtual void  Breathe();	// [29/08] quay frame hinh pet
     void          SendOp(int nOp);
     virtual int   WndProc(unsigned int uMsg, unsigned int uParam, int nParam);
 
@@ -55,6 +56,7 @@ private:
     KWndObjectBox     m_ExtSkill[PET_UI_EXTSKILL_NUM];
     KWndImage         m_Equip[PET_UI_EQUIP_NUM];   // khung 40x40 (hang 1)
     KWndImage         m_Appearance;   // [PETSYS] hinh pet dung (npcres _st01)
+    unsigned int  m_uLastFrameTime = 0;	// [29/08] nhip frame hinh pet
 };
 
 #endif

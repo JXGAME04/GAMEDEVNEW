@@ -3,7 +3,7 @@ Include("\\script\\lib\\log.lua")
 Include("\\script\\petsys\\head.lua")
 
 
-local tbLevelUpNeedItem = {tbProp = {6,1,4875,1,0,0}, nCount = 1}
+local tbLevelUpNeedItem = {tbProp = {6,1,4875,-1,0,0}, nCount = 1}	-- [29/08] level -1: item AddItem ra mang level khac 1 (do: lv1=0 lvAny=10)
 
 local tbLevelUpAttr = 
 {
@@ -38,6 +38,7 @@ function PetSys:LevelUpDlg()
 		return 
 	end
 	PLOG("LevelUpDlg: can " .. tbNextLeveldata[1] .. "/" .. tbNextLeveldata[2] .. "/" .. tbNextLeveldata[3] .. " thuoc=" .. tbNextLeveldata[4])
+	PLOG("LevelUpDlg: dem thuoc lv1=" .. (CalcEquiproomItemCount(6,1,4875,1) or -1) .. " lv0=" .. (CalcEquiproomItemCount(6,1,4875,0) or -1) .. " lvAny=" .. (CalcEquiproomItemCount(6,1,4875,-1) or -1))
 	
 	--如果升级点数不满足
 	if PET_GetUpgradePoint() < tbNextLeveldata[1] or PET_GetGrownPoint() < tbNextLeveldata[2] or PET_GetTamePoint() < tbNextLeveldata[3] then

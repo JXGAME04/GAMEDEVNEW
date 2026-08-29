@@ -74,7 +74,7 @@ RES = ["enemy067", "boss001", "boss011", "boss015", "boss018", "boss005",
        "boss026", "boss132"]
 ra_dir = os.path.join(CL, "spr", "Ui3", "pet", "face")
 os.makedirs(ra_dir, exist_ok=True)
-W, H = 120, 200
+W, H = 113, 132
 
 
 def nhom_of(res):

@@ -25,7 +25,7 @@
 
 #define PET_ATTRIB_COUNT   6
 #define PET_SKILL_COUNT    4
-#define PET_MAX_LEVEL      20
+#define PET_MAX_LEVEL      130	// ban private VLTK (client_common MAX_LEVEL=130)
 #define PET_PARTNER_NO     100                  // m_nPartnerNo danh dau pet petsys
 #define PET_AURA_SKILL0    1600                 // 4 skill aura 1600..1603 (p19a)
 
