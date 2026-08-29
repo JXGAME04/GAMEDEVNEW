@@ -16,7 +16,7 @@ Include("\\script\\header\\cauhinh_hoatdong.lua")
 -- Thieu no la bam "bat dau bao danh" se bao "Khong thay YDBZ_OnTrigger".
 Include("\\script\\tinhnang\\viemde\\ydbz_driver.lua")
 
-TTHD_PHIEN = "26/08/2026"
+TTHD_PHIEN = "28/08/2026"
 
 -- ---------------------------------------------------------------------------
 -- Tien ich
@@ -74,6 +74,8 @@ function TTHD_ChanDoan()
 		.. " | YDBZ_OnTrigger: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_OnTrigger")))
 	TTHD_In("    tbReady (ruét b¸o danh): " .. TTHD_CoKhong(tbReady ~= nil)
 		.. " | YDBZ_restore: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_restore")))
+	TTHD_In("    lib:DoFunInWorld (v¸ 28/08): "
+		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil))
 
 	TTHD_In("<color=yellow>[2] B¶n ®å<color>")
 	local nMapNpc = HD_CFG("YDBZ_NPC_MAP", 37)
@@ -108,7 +110,7 @@ function TTHD_ChanDoan()
 end
 
 -- ---------------------------------------------------------------------------
--- 2) BAO DANH  (4 muc + quay lai = 5 nut)
+-- 2) BAO DANH  (5 muc + quay lai = 6 nut - VUA CHAM tran client)
 -- ---------------------------------------------------------------------------
 function TTHD_BaoDanh()
 	SayEx({"<color=yellow>B¸o danh vµ vµo trËn<color> - ®­êng ®i b×nh th­êng cña ng­êi ch¬i",
@@ -116,6 +118,7 @@ function TTHD_BaoDanh()
 	"2. DÞch chuyÓn tíi NPC b¸o danh ë BiÖn Kinh/TTHD_BD_Tele",
 	"3. Xem ®iÒu kiÖn tham gia/TTHD_BD_YeuCau",
 	"4. V× sao mét tæ ®éi ch­a ®ñ ®Ó më trËn/TTHD_BD_ViSao",
+	"5. §Æt l¹i NPC b¸o danh, hiÖn kÕt qu¶/TTHD_BD_DatNpc",
 	"Quay l¹i/TTHD_Root"})
 end
 
@@ -139,6 +142,27 @@ function TTHD_BD_Tele()
 	NewWorld(HD_CFG("YDBZ_NPC_MAP", 37), 1714, 3173)
 	TTHD_In("§· dÞch chuyÓn tíi NPC b¸o danh thø nhÊt.")
 	TTHD_In("Ba chç cßn l¹i: (1642,3145) (1622,3019) (1857,2968).")
+end
+
+-- Goi lai YDBZ_DriverInit: no TU DON NPC cu roi dat lai (idempotent san trong
+-- driver) va TRA VE so NPC dat duoc => vua "dem" vua "sua" mot nut, khong can
+-- khoi dong lai. Loi in ra console (print) khong doc duoc tu client, nen o day
+-- thuat lai ket qua qua Msg2Player.
+function TTHD_BD_DatNpc()
+	if not TTHD_CoHam("YDBZ_DriverInit") then
+		TTHD_In("<color=red>Kh«ng thÊy YDBZ_DriverInit - kiÓm Include ydbz_driver.lua.<color>")
+		TTHD_BaoDanh()
+		return
+	end
+	local nDat = YDBZ_DriverInit()
+	TTHD_In("Dän NPC cò vµ ®Æt l¹i: <color=gold>" .. nDat .. "/4<color> ®iÓm trªn b¶n ®å "
+		.. HD_CFG("YDBZ_NPC_MAP", 37) .. ".")
+	if nDat == 0 then
+		TTHD_In("<color=red>0 NPC - b¶n ®å ch­a n¹p hoÆc AddNpc lçi, xem console GameServer.<color>")
+	else
+		TTHD_In("Dïng môc 2 ®Ó dÞch chuyÓn tíi NPC xem tËn m¾t.")
+	end
+	TTHD_BaoDanh()
 end
 
 function TTHD_BD_YeuCau()

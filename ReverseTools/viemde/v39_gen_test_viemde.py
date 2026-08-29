@@ -71,7 +71,7 @@ Include("\\script\\header\\cauhinh_hoatdong.lua")
 -- Thieu no la bam "bat dau bao danh" se bao "Khong thay YDBZ_OnTrigger".
 Include("\\script\\tinhnang\\viemde\\ydbz_driver.lua")
 
-TTHD_PHIEN = "26/08/2026"
+TTHD_PHIEN = "28/08/2026"
 
 -- ---------------------------------------------------------------------------
 -- Tien ich
@@ -129,6 +129,8 @@ function TTHD_ChanDoan()
 		.. " | YDBZ_OnTrigger: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_OnTrigger")))
 	TTHD_In("    tbReady (ruột báo danh): " .. TTHD_CoKhong(tbReady ~= nil)
 		.. " | YDBZ_restore: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_restore")))
+	TTHD_In("    lib:DoFunInWorld (vá 28/08): "
+		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil))
 
 	TTHD_In("<color=yellow>[2] Bản đồ<color>")
 	local nMapNpc = HD_CFG("YDBZ_NPC_MAP", 37)
@@ -163,7 +165,7 @@ function TTHD_ChanDoan()
 end
 
 -- ---------------------------------------------------------------------------
--- 2) BAO DANH  (4 muc + quay lai = 5 nut)
+-- 2) BAO DANH  (5 muc + quay lai = 6 nut - VUA CHAM tran client)
 -- ---------------------------------------------------------------------------
 function TTHD_BaoDanh()
 	SayEx({"<color=yellow>Báo danh và vào trận<color> - đường đi bình thường của người chơi",
@@ -171,6 +173,7 @@ function TTHD_BaoDanh()
 	"2. Dịch chuyển tới NPC báo danh ở Biện Kinh/TTHD_BD_Tele",
 	"3. Xem điều kiện tham gia/TTHD_BD_YeuCau",
 	"4. Vì sao một tổ đội chưa đủ để mở trận/TTHD_BD_ViSao",
+	"5. Đặt lại NPC báo danh, hiện kết quả/TTHD_BD_DatNpc",
 	"Quay lại/TTHD_Root"})
 end
 
@@ -194,6 +197,27 @@ function TTHD_BD_Tele()
 	NewWorld(HD_CFG("YDBZ_NPC_MAP", 37), 1714, 3173)
 	TTHD_In("Đã dịch chuyển tới NPC báo danh thứ nhất.")
 	TTHD_In("Ba chỗ còn lại: (1642,3145) (1622,3019) (1857,2968).")
+end
+
+-- Goi lai YDBZ_DriverInit: no TU DON NPC cu roi dat lai (idempotent san trong
+-- driver) va TRA VE so NPC dat duoc => vua "dem" vua "sua" mot nut, khong can
+-- khoi dong lai. Loi in ra console (print) khong doc duoc tu client, nen o day
+-- thuat lai ket qua qua Msg2Player.
+function TTHD_BD_DatNpc()
+	if not TTHD_CoHam("YDBZ_DriverInit") then
+		TTHD_In("<color=red>Không thấy YDBZ_DriverInit - kiểm Include ydbz_driver.lua.<color>")
+		TTHD_BaoDanh()
+		return
+	end
+	local nDat = YDBZ_DriverInit()
+	TTHD_In("Dọn NPC cũ và đặt lại: <color=gold>" .. nDat .. "/4<color> điểm trên bản đồ "
+		.. HD_CFG("YDBZ_NPC_MAP", 37) .. ".")
+	if nDat == 0 then
+		TTHD_In("<color=red>0 NPC - bản đồ chưa nạp hoặc AddNpc lỗi, xem console GameServer.<color>")
+	else
+		TTHD_In("Dùng mục 2 để dịch chuyển tới NPC xem tận mắt.")
+	end
+	TTHD_BaoDanh()
 end
 
 function TTHD_BD_YeuCau()

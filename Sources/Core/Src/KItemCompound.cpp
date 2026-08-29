@@ -1463,9 +1463,38 @@ int LuaCmp_AddItemEx(Lua_State* L)
 		// Hat khac 0 = "tai sinh dung mon nay". Ban Linux cung re nhanh theo
 		// dung dieu kien nay (0x0811F46C test eax,eax / 0x0811F50A jne).
 		ItemGen.Gen_ExistEquipment(nNature, nDetailType, nParticular, nSeries,
-								   nLevel, nMagicLevel, nLuck, nItemVer, pNew);
+							   nLevel, nMagicLevel, nLuck, nItemVer, pNew);
 		pNew->m_GeneratorParam.nVersion = nItemVer;
 		pNew->m_GeneratorParam.uRandomSeed = uRandSeed;
+	}
+
+	// [XEPDO2 28/08] DONG GOI chi so that cho trang bi HOANG KIM / BACH KIM.
+	// He GOLD2 chi tai lap duoc dong phep khi nGeneratorLevel[6] != 0 (co
+	// "custom magic": type o [0..5], MAKELONG(value0, value2) o [6..11] -
+	// Gen_GoldEquipment KItemGenerator.CPP:1818 / Platina :1931; do vang he
+	// thong duoc dong goi qua LuaSetMagicAttrib ScriptFuns.cpp:6455 nen ben).
+	// Thieu buoc nay: moi lan item duoc DUNG LAI (client xep do / doi map,
+	// server load roledb sau restart) la roi ve nhanh RANDOM-tu-bang ->
+	// mon ep giu ten/hinh nhung doi sach ruot ("item la" - su co 28/08).
+	if (nGenre == item_equip &&
+		(nQuality == ITEMQUALITY_GOLD || nQuality == ITEMQUALITY_PLATINA))
+	{
+		int nGoi;
+		for (nGoi = 0; nGoi < MAX_ITEM_MAGICATTRIB; nGoi++)
+		{
+			if (pNew->m_aryMagicAttrib[nGoi].nAttribType <= 0)
+				break;
+			pNew->m_GeneratorParam.nGeneratorLevel[nGoi] =
+				pNew->m_aryMagicAttrib[nGoi].nAttribType;
+			pNew->m_GeneratorParam.nGeneratorLevel[nGoi + MAX_ITEM_MAGICATTRIB] =
+				MAKELONG(pNew->m_aryMagicAttrib[nGoi].nValue[0],
+						 pNew->m_aryMagicAttrib[nGoi].nValue[2]);
+		}
+		for (; nGoi < MAX_ITEM_MAGICATTRIB; nGoi++)
+		{
+			pNew->m_GeneratorParam.nGeneratorLevel[nGoi] = 0;
+			pNew->m_GeneratorParam.nGeneratorLevel[nGoi + MAX_ITEM_MAGICATTRIB] = 0;
+		}
 	}
 
 	// Dat vao hanh trang; het cho thi tha xuong dat nhu LuaAddItem.

@@ -11029,6 +11029,34 @@ int KPlayer::AutoArrangeItem(int nType)
 	}
 	memset(pnCmpArray, 0, sizeof(int)*EQUIPMENT_ROOM_WIDTH*EQUIPMENT_ROOM_HEIGHT);
 	int i;
+	// [XEPDO 28/08] KHU TRUNG: grid rach (mot item ghi o 2 o roi - FindItem khong
+	// nhan ra vi hai o khong ke nhau) lam item vao danh sach xep 2 lan =>
+	// Remove x2 (lan 2 fail) + AddKIL x2 = item co 2 entry THAT tren server.
+	// Xep do phai tu chua grid rach chu khong duoc khuech dai no.
+	{
+		size_t nGiu = 0;
+		for (size_t k1 = 0; k1 < vItems.size(); ++k1)
+		{
+			bool bTrung = false;
+			for (size_t k2 = 0; k2 < nGiu && !bTrung; ++k2)
+				bTrung = (vItems[k2].nIdx == vItems[k1].nIdx);
+			if (!bTrung)
+				vItems[nGiu++] = vItems[k1];
+		}
+		if (nGiu < vItems.size())
+			vItems.resize(nGiu);
+		nGiu = 0;
+		for (size_t k1 = 0; k1 < vSpecIt.size(); ++k1)
+		{
+			bool bTrung = false;
+			for (size_t k2 = 0; k2 < nGiu && !bTrung; ++k2)
+				bTrung = (vSpecIt[k2].nIdx == vSpecIt[k1].nIdx);
+			if (!bTrung)
+				vSpecIt[nGiu++] = vSpecIt[k1];
+		}
+		if (nGiu < vSpecIt.size())
+			vSpecIt.resize(nGiu);
+	}
 	int itemCount = (int)vItems.size();
 	if(itemCount > 0)
 	{

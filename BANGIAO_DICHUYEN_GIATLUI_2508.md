@@ -1002,3 +1002,473 @@ kiểm không có `[S12-THEO]` nào nổ lúc đang cầm chuột chạy bình t
 - Server `[S2-SKILL-NOTLEARNED] npc=91423 id=92422 skill_req=361` lặp ~1,3 s/lần suốt phiên —
   vẫn đánh được qua nhánh `S1-MELEE-NOROLL`, nhưng "chưa học mà vẫn xin đánh" cần soi riêng.
 - Hai phiên Claude vẫn đang chạy song song trên máy (MEMORY.md bị phiên kia ghi chen giữa phiên này).
+
+## 9.27 NGHIỆM THU S12 = **TRƯỢT** + MỔ 2 TRIỆU CHỨNG CHỦ BÁO 27/08 TỐI (log 19:37-19:51, me=92426, map sw=226, 10 lần vào map, CHƯA VÁ GÌ — chờ duyệt)
+
+Chủ báo: (1) "phù về / chết về thành hay bị nhảy toạ độ"; (2) "BOT/người chơi/quái nhảy toạ độ
+ra ngoài map rồi biến mất xong xuất hiện lại vị trí cũ cứ thế mãi".
+Log đã chép về scratchpad phiên này (`logs_2708/`) TRƯỚC khi bị xoay. Binary đang chạy = bản build
+19:28 của phiên kinh mạch (GameServer pid 22064 khởi động 19:36:08, client Game pid 8060 19:37:13;
+đĩa bị swap tiếp 19:49 SAU khi hai tiến trình đã nạp) — **ĐÃ KIỂM: bản 19:28 có đủ nhãn S11+S12**
+(client `.truoc_kmp19_2708` S12-THEO=2, server S12-TELE=1) ⇒ triệu chứng xảy ra VỚI S12 sống.
+
+### A. Triệu chứng 1 = THANG S8-NAN khi bị server dắt đi sau teleport — S12-THEO **0 phát**, vì SAI THỜI ĐIỂM MỞ CỬA SỔ (không phải sai gác)
+
+Hiện trường trọn vẹn (t=166073784-166080441, ngay sau vào TK ~12s):
+1. `[S6-ORPHAN] npc=92426` (CHÍNH MÌNH mồ côi do recenter) → self-sync đặt lại tại
+   **sv=(9,6,0,0) offset (0,0) = điểm SetPos script** — cú teleport ĐÃ snap sạch ngay lập tức.
+2. **Cùng khoảnh khắc** `[S6-CMD] lenh=run npc=92426 ap=0 dich=(55299,106560)` — LỆNH DẮT của
+   server (đích ≠ mọi đích auto) → **BỊ VỨT vì cửa sổ S12 chưa mở**: cửa sổ chỉ mở trong nhánh
+   `nLech>=256` (S8-NAN), mà cú teleport đi qua nhánh ĐẶT-LẠI-MỒ-CÔI (reg=-1) nên không mở.
+   Cú NAN đầu tiên tới **486ms SAU** — muộn rồi.
+3. Server tự đi bộ self (sync 2 gói/tick, `[E4_MOVE_PATH] id=92426 ret=1 des=(55299,106560)
+   speed=24` phía server, ~440 mps/s) — **không gửi thêm lệnh run nào giữa chặng** → client đứng
+   (doing=1, 0 dòng E4_MOVE_PATH client suốt thang) → lệch +256 → snap 263 mps (~8 ô) → lặp:
+   **thang 11 cú NAN/6,1s** (t=166074337) + **thang 4 cú/1,9s** (t=166153218). Đây chính là
+   "bị nhảy toạ độ" (camera nhảy 8 ô mỗi ~0,55s suốt đoạn hộ tống ~90 ô).
+4. Gác diệt-echo VÔ CAN ở thang này nhưng ĐÚNG việc nơi khác: 7.698 lệnh run-self/14' (echo
+   auto), 7.656 rơi ngoài cửa sổ, **42 rơi trong cửa sổ đều bị gác chặn và đều là ECHO THẬT**
+   (đích trùng đích auto vừa gửi `des=(53056,104800)`). ⇒ fix KHÔNG được nới gác mù quáng.
+5. `[S12-TELE]` **KHÔNG kiểm chứng được**: `g_DebugLog` chỉ bắn WM_COPYDATA sang DebugWin,
+   không ghi file nào — khiếm khuyết đo đạc, cần chuyển AUTOLOG.
+
+### B. Triệu chứng 2 = HAI cơ chế đã đo
+
+- **Flap 9Hz "chớp tắt"**: `KNpc::GetMapDisX/Y` trả `VOID_DIS=0x7FFFFFFF` khi **self chưa có
+  region** (LoadMap đặt self=-1; hoặc self vừa mồ côi lúc teleport) ⇒ `S6-VANH` coi MỌI NPC là
+  "≥40 ô" gỡ mỗi frame, trong khi `S6_XaQuaTam` cùng điều kiện lại "nhận hết" ⇒ VANH↔ORPHAN-BACK
+  vô hạn tới khi self được đặt. Đo: **179 chu kỳ <500ms (p50=82ms)**, 14 NPC ≥3 chu kỳ liên tiếp,
+  tệ nhất npc=54614 **8 chu kỳ @110ms** đứng yên cell=(6,24). Hai bên dùng HAI THƯỚC khoảng cách
+  với quy ước "không biết" NGƯỢC NHAU — đây là gốc.
+- **Biến mất 2-60s rồi hiện lại chỗ cũ**: mỗi cú snap của thang A kéo `NpcChangeRegion` +
+  recenter (`S6-LOADMAP` cùng ms với NAN) → `KRegion::Close` mồ côi hàng loạt (761 cú/14') →
+  NPC chỉ hiện lại khi tới lượt NormalSync của NÓ (5 NPC/region/tick — region đông là 2-3,3s+)
+  → `S6-ORPHAN-BACK` (528). Đo: **97 ca biến mất 2-60s**; VANH→BACK p50=82ms nhưng đuôi ≥2s = 62 ca.
+  ⇒ triệu chứng 2 phần lớn là HỆ QUẢ của thang A (bão recenter theo từng cú snap).
+
+### C. BỘ VÁ ĐỀ XUẤT (chưa làm — cần phản biện đối kháng + chủ duyệt từng mục)
+
+- **V1 client (chữa tận gốc thang)**: (a) mở `g_uS12CuaSoSelf` CẢ ở nhánh self được đặt-lại-từ-
+  mồ-côi/teleport trong self-sync (không chỉ ở S8-NAN); (b) gác echo so THÊM ĐÍCH: lưu đích
+  move client vừa tự gửi (một điểm hook SendClientCmdRun/Walk), lệnh self có đích lệch >64 mps
+  so với đích đó = KHÔNG PHẢI echo → được áp. Giữ nguyên 2 gác cũ cho trường hợp trùng đích.
+  Áp được lệnh dắt tại T+0 là client TỰ CHẠY cả chặng — thang biến mất, bão recenter cũng tắt.
+- **V2 client (1 dòng, tắt flap 9Hz)**: trong check S6-VANH, `GetMapDisX==VOID_DIS` thì KHÔNG gỡ
+  (đồng quy ước với S6_XaQuaTam "chưa vào map xong: nhận hết").
+- **V3 server (đo được)**: `[S12-TELE]` g_DebugLog → AUTOLOG (jx_auto_server.log, đếm được).
+- **V4 hoãn tiếp**: [KEO] nắn mềm + đồng bộ lưới vật cản — giữ nguyên trạng thái hoãn/chờ duyệt.
+
+Bẫy thi công nếu duyệt: `KProtocolProcess.cpp` + `CoreShell.cpp` vẫn CHƯA COMMIT dùng chung 2
+phiên (tái áp THEO THỨ TỰ chuỗi script mục 4 tóm tắt); sửa xong build CẢ client lẫn server;
+kiểm nhãn trong DLL trước swap; phiên kinh mạch đang swap liên tục — phối hợp giờ restart.
+Lỗi phụ `[S2-SKILL-NOTLEARNED]` vẫn lặp (317 client / 314 server trong 14') — như mục 9.7.
+
+## 9.28 THI CÔNG S12b (28/08 sáng) — chủ duyệt "xác định chính xác rồi mới làm"; đã xác định bằng tái hiện độc lập lần 2, ĐÃ BUILD + SWAP, **CHỜ RESTART GameServer + relog client**
+
+### Tái hiện lần 2 chốt gốc (log 28/08 09:16-09:42, me=92621, bản 07:27 có đủ S11+S12)
+- **Phù về thành sw=78 t=215278587**: lặp ĐÚNG kịch bản 27/08 từng mili-giây — self mồ côi
+  (recenter) → hạ cánh `sv=(9,6,0,0)` nhánh `vaolandau` → **lệnh dắt `dich=(49076,103456)` tới
+  CÙNG MILI-GIÂY, cửa sổ chưa mở → vứt** → server bò đi, client đứng → **thang 5 cú S8-NAN**.
+  Server xác nhận: `[E4_POS_CHANGEWORLD] id=92621 swid=78 to=(50464,103616)`.
+- **Đối chứng sw=227 t=214964193**: 1 cú NAN mở cửa sổ khi lệnh VẪN đang chảy (~9,5 lệnh/s)
+  → **529 `[S12-THEO]` bám dắt mượt 55,5s, quãng 2.993 mps, tổng chỉ 1 snap** — S12 chạy đúng
+  thiết kế khi lệnh rơi vào cửa sổ đã mở (phiên này KHÔNG auto: MOVE-GATE=0 → gác cho qua).
+- **9 cú phù 78↔225 KHÔNG có dắt** → hạ cánh sạch, 0 NAN → thang CHỈ nổ khi có script dắt sau
+  teleport. Flap NPC vẫn nguyên: 208 chu kỳ <500ms (p50=74ms); **phát hiện thêm cơ chế flap 2**:
+  npc=92689 flap 12 chu kỳ @110ms khi self ĐÃ có region nhưng NPC nằm đúng vành 40 ô lúc mình
+  chạy nhanh — hai thước đo (ô-nguyên GetMapDis vs mps XaQuaTam) không có dải trễ.
+
+### Bộ vá đã lên (script `ReverseTools/goi_va_S12b_cuaso_vanh.py`, 9 hunk, idempotent, ÁP SAU chuỗi S10→S11→S12)
+- **V1a** `KProtocolProcess.cpp` nhánh đặt-lại-mồ-côi của self-sync: mở `g_uS12CuaSoSelf` ngay
+  tại hạ cánh + nhãn đếm được **`[S12-CUA]`** (bọc `#ifndef _SERVER` — nhánh này là mã dùng chung).
+- **V1b** `KProtocol.cpp` SendClientCmdRun/Walk ghi `g_nS12TuGuiX/Y` (đích mình vừa tự gửi);
+  `S12_ChoPhepSelf(nIdx, dichX, dichY)`: đích lệch >64 mps so đích tự gửi ⇒ KHÔNG phải echo ⇒
+  cho áp **trước** 2 gác HaveTarget/SendMoveFrames (giữ nguyên 2 gác cho ca trùng đích — 42 lệnh
+  echo thật 27/08 vẫn bị chặn đúng). Chưa từng tự gửi (idle) ⇒ bỏ qua phép so, về gác cũ.
+- **V2** `KNpc.cpp` check S6-VANH: (a) `GetMapDisX/Y == 0x7FFFFFFF` (VOID_DIS — self chưa có
+  region) ⇒ KHÔNG gỡ; (b) ngưỡng gỡ 40 → **42** tạo dải trễ 2 ô so ngưỡng nhận-lại 40 của
+  `S6_XaQuaTam` ⇒ hết flap biên.
+- **V3** `KNpc.cpp` server: `[S12-TELE]` g_DebugLog → **AUTOLOG** (giờ đếm được trong
+  `jx_auto_server.log`).
+
+### Trạng thái binary
+| Đâu | Bản | Ghi chú |
+|---|---|---|
+| `bin\client\CoreClient.dll` | **33e9412d** (28/08 09:51, nhãn S12-CUA=1) | backup `.cu_2808_truoc_s12b_ad7d2c51` |
+| `bin\server\CoreServer.dll` | **cdc783b7** (28/08 09:51, chuỗi S12-TELE dạng AUTOLOG) | backup `.cu_2808_truoc_s12b_18d22890` |
+
+Build từ cây chung ⇒ ôm cả công trường kinh mạch/lò rèn của phiên kia (như mọi bản gần đây).
+`KProtocolProcess.cpp`/`KProtocol.cpp`/`KNpc.cpp` tiếp tục KHÔNG commit — tái áp theo thứ tự:
+`goi_va_S10_dichthat.py` → `goi_va_S10_ma.py` → `goi_va_S11_chongma.py` → `goi_va_S12_bung8o.py`
+→ **`goi_va_S12b_cuaso_vanh.py`**.
+
+### Nghiệm thu sau restart + relog (đếm nhãn không tiết chế)
+1. `[S12-CUA]` ≈ số lần vào map/teleport (mỗi vaolandau 1 phát).
+2. Cú phù/teleport CÓ dắt: `[S12-THEO]` nổ NGAY sau `[S12-CUA]` (không cần đợi NAN) — **thang
+   4-11 cú S8-NAN phải biến mất**, tổng S8-NAN/phiên giảm ~8/9 (chỉ còn loại lệch-vật-cản đơn lẻ).
+3. Có auto TK bật (như 27/08): thang vẫn phải biến mất nhờ V1b (đích dắt ≠ đích auto).
+4. `[S12-TELE]` xuất hiện trong `jx_auto_server.log` khi script SetPos cùng map.
+5. Flap: chu kỳ VANH→BACK <500ms phải về ~0 (trước: 179-208/phiên); `[S6-VANH]` tổng giảm mạnh;
+   KHÔNG tái "đứng chạm 255" (dải trễ +2 ô chỉ nới vành ~5% diện tích).
+6. Đối chứng gác echo còn sống: cầm chuột/auto chạy bình thường KHÔNG có `[S12-THEO]` nào ngoài
+   các đoạn bị dắt.
+
+## 9.29 SỰ CỐ "GỌI 1000 BOT CỨ CHẶP BỊ XOÁ SẠCH" (28/08 ~10h) — KHÔNG PHẢI S12b; thủ phạm = bộ test tự động BDH/PETSYS của phiên kia, ĐÃ TẮT
+
+- Hiện trường `bot.log`: mọi cú xoá đều rơi ĐÚNG giây :00 (09:58:00 gỡ 1000 · 10:20:00 gỡ 794 ·
+  10:21:00 gỡ 408×2 · 10:24:00 + 10:26:00 gỡ 1000 · …), có từ tối 27/08 (21:54/22:01/… mỗi lần
+  "gỡ 1 bot" nên không ai để ý). Đường gỡ là `PB_RemoveAll()` (KPlayerBot.cpp:1224) — gỡ CHỦ ĐỘNG
+  có trình tự lưu-trước-gỡ, không phải sập.
+- Gốc: `script/partner/partner_test_bdh.lua` (header "SINH TU DONG [BDH 27/08] — GO SAU KHI
+  NGHIEM THU") định nghĩa 3 tick `BDH_TestTick`/`BDH_TalkTick`/`BDH_PetTick` được
+  `timerserver.lua RunTime()` gọi **mỗi phút**; cả 3 đều `PB_AddBot(1,1)` rồi **`PB_ClearBot()`
+  = gỡ SẠCH bot toàn server** (dòng 133/155/210/314/329). GlbValue reset theo restart ⇒ mỗi lần
+  restart GameServer bộ test chạy lại từ đầu ⇒ "cứ chặp" lại quét (nhật ký test:
+  `bin\server\bdh_test.log`).
+- Đã tắt bằng comment 3 dòng `call(BDH_*Tick...)` trong `script/timerserver.lua` (safe_edit,
+  high-byte 1244 nguyên vẹn; `BDH_JitanTick` GIỮ vì không đụng bot). `RunTime()` dofile lại
+  chính nó mỗi phút ⇒ hiệu lực ≤2 phút, KHÔNG cần restart. Muốn chạy lại bộ test: bỏ 3 dấu `--`.
+- S12b VÔ CAN: các sửa S12b là client-sync + 1 dòng log server, không đụng KPlayerBot; hành vi
+  xoá có từ 27/08 tối, TRƯỚC khi S12b tồn tại.
+- ⚠️ Binary: phiên kia lại swap 10:14-10:15 (client `70080172` + server `e0b1c247`) và server
+  restart 10:21 chạy bản ĐÓ (build sau S12b nên vẫn ôm S12b — chưa kiểm nhãn; nghiệm thu S12b
+  vẫn theo mục 9.28).
+
+## 9.30 BOT GÓC KẸT + BÁO DANH KIM BAY VÀO GÓC (28/08 trưa) — TOẠ ĐỘ CHUẨN LẤY TỪ THẦN HÀNH PHÙ, ĐÃ VÁ + SWAP `491c0086`, CHỜ RESTART
+
+Chủ: "gọi bot ra nhiều con đứng trong góc kẹt" + "bot vào báo danh phe Kim bay thẳng vào góc lag"
++ chỉ đích danh nguồn: **"mọi toạ độ chính ở Thần Hành Phù"** (`script/item/ib/shenxingfu.lua`).
+
+- Toạ độ chuẩn trích từ nguồn chủ chỉ: báo danh (map `MAP_BD_TC=324`, qua `battle_transprot`
+  lib_tktc.lua:809/:812): **Tống (1541,3178) · Kim (1570,3085)**; bảng thành/thôn
+  `THON_TT_MP_ARRAY` (shenxingfu.lua:18-48, 27 map).
+- Gốc 1 (báo danh): bot đáp theo toạ độ NPC báo danh (`startgame.lua`: Tống 1550,3179 / Kim
+  1555,3082) chứ KHÔNG phải điểm thả người chơi của Thần Hành Phù → phía Kim cả đàn đáp sát
+  góc kẹt cạnh NPC → dồn cục + lag.
+- Gốc 2 (gọi bot ra góc kẹt): bot vào game đứng nguyên vị trí lưu/mẫu (luật 18/08); con nào
+  lưu ở Ô BỊ CHẶN/ngoài lưới (di sản các lần kẹt trước — vd LyHieu1 map 1 ô(1613,3073) "trong
+  O BI CHAN", [BotLach] lắc không thoát, [BotCuu]/T1 chỉ phủ map bãi) thì đứng góc đó vĩnh viễn.
+- Vá (`ReverseTools/goi_va_botthp_toado.py`, 3 hunk, chỉ `KPlayerBot.cpp` server-only):
+  H1 điểm đáp báo danh = đúng điểm battle_transprot; H2 `[BotTHP]` sau LaunchPlayer2: đứng ô
+  chặn/ngoài lưới → SetPos về điểm Thần Hành Phù của map (bảng 27 map chép nguyên văn, rải
+  9×7 + `pb_ODat`; map ngoài bảng giữ nguyên); H0 prototype `pb_ODat` (định nghĩa :2744 nằm
+  SAU điểm chèn). Vị trí lưu hợp lệ giữ nguyên — không phá luật 18/08.
+- Binary: server **`491c0086`** (12:27, nhãn BotTHP=2, S12-TELE còn nguyên) đè lên `ae8cee24`
+  (backup `.cu_2808_truoc_botthp_ae8cee24` — lưu ý phiên kia đã swap tiếp sau 10:15 nên bản bị
+  thay KHÔNG phải `e0b1c247`). Client KHÔNG swap (sửa server-only; client chỉ build kiểm biên
+  dịch). **Chờ chủ restart GameServer** rồi gọi bot nghiệm thu.
+- Nghiệm thu: gọi 1000 bot → đếm `[BotTHP]` (số con được kéo khỏi góc, lần đầu sẽ cao rồi
+  giảm dần vì bot lưu lại vị trí tốt); tới giờ TK xem phía Kim đáp quanh (1570,3085) tản đều,
+  hết dồn góc; `grep "trong O BI CHAN" bot.log` phải tụt về ~0 sau vài lần gọi.
+
+## 9.31 BOT 100% NGOẠI CÔNG → CHIA 2 ĐƯỜNG NỘI/NGOẠI (28/08 chiều) — server `da940e78` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "bot đang 100% đánh kỹ năng ngoại công (ai cũng được phát vũ khí, 81 còn nâng vũ khí cấp 10)
+→ random tỉ lệ bot 2 đường nội-ngoại cho cân bằng; **nội công là KHÔNG cần vũ khí** — set vũ khí
+là đánh skill theo vũ khí = toàn ngoại".
+- Đo xác nhận: bot.log 27+28/08 dùng 16 chiêu, **15/16 IsPhysical=1** (chỉ 303 Độc Thạch Cốt là
+  phép). Cơ chế bThienNoi 23/08 (dwID lẻ ưu tiên chiêu phép) bất lực vì AI CŨNG CẦM VŨ KHÍ →
+  bậc khớp-vũ-khí (rank 2) toàn thắng chiêu phép -2 (rank 1).
+- Vá (`ReverseTools/goi_va_botnoingoai.py`, 5 hunk, chỉ KPlayerBot.cpp):
+  `pb_BotNoi(nIdx) = dwID & 1` (một nguồn sự thật; ~50/50, ổn định giữa các phiên, TRÙNG nhóm
+  bThienNoi cũ nên chiêu phép được ưu tiên sẵn). H1 `pb_GiveFactionWeapon`: bot nội → tháo vũ khí
+  cũ rồi đi nhánh tay-không có sẵn (nhãn `[BotNoi]`); H2 khối phát-lại-vũ-khí bỏ qua bot nội;
+  H3 `pb_TrangBiTheoCap` (chạy cả lúc login nhờ gate nTrangBiLevel=0): bot nội còn cầm vũ khí
+  di sản → tháo huỷ + chọn lại chiêu (bước "81 nâng vũ khí" tự thành no-op); H4 bThienNoi đọc
+  qua helper. Đường NGOẠI giữ nguyên 100% như cũ.
+- Binary: server **`da940e78`** (13:24, ôm cả BotTHP 9.30 + S12b 9.28) đè `491c0086`, backup
+  `.cu_2808_truoc_botnoi_491c0086`. Client chỉ kiểm biên dịch, không swap. Chuỗi tái áp giờ là:
+  S10_dichthat → S10_ma → S11_chongma → S12_bung8o → S12b_cuaso_vanh → botthp_toado →
+  **botnoingoai**.
+- Nghiệm thu sau restart: `grep BotNoi bot.log` — nửa đàn log "đường NỘI CÔNG"/"tháo vũ khí";
+  phân bố `dung chieu` phải xuất hiện các chiêu IsPhysical=0 (vd 303) ≈ nửa số lượt; phe đánh
+  nhau nhìn thấy cả chưởng/phép lẫn vũ khí. Lưu ý: phái không có chiêu phép -2 (vd Thiếu Lâm
+  đường quyền) bot nội sẽ đấm tay không — yếu hơn, chủ muốn nắn tỉ lệ theo phái thì nói thêm.
+
+## 9.32 DÃ TẨU: PHÙ VỀ TRUNG TÂM THÀNH (Thần Hành Phù) RỒI ĐI BỘ TỚI NPC (28/08 chiều) — server `8cdb8b1e` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "khi bot về trả nhiệm vụ Dã Tẩu tùy thành thì lấy toạ độ TRUNG TÂM thành đó (có sẵn ở
+Thần Hành Phù) để phù về, rồi DI CHUYỂN tới NPC Dã Tẩu".
+- Trước: `pb_DtVeThanh` teleport đáp THẲNG cạnh NPC Dã Tẩu (6..15 ô) — không giống người chơi.
+- Vá (`ReverseTools/goi_va_datau_thp.py`, 5 hunk, KPlayerBot.cpp):
+  H1 nâng bảng `THON_TT_MP_ARRAY` lên cấp file (`s_aThpDiem[27]` + `pb_ThpDiem()` — MỘT nguồn
+  sự thật); H2a-c khối [BotTHP] login (9.30) chuyển sang dùng bảng chung, bỏ bảng cục bộ;
+  H3 `pb_DtVeThanh` đáp quanh TRUNG TÂM thành (lệch 6..15 ô theo chỉ số bot), map ngoài bảng
+  giữ điểm cũ. Pha sẵn có tự lo đoạn đi bộ: DTB_TOI_NPC cưỡi ngựa + quét NPC thật (hạn 600
+  nhịp, xa nhất Đại Lý trung tâm→NPC ~119 ô vẫn dư), đường Xa Phu ngân sách 300s.
+  Ảnh hưởng CẢ 5 điểm gọi (nhận/trả Dã Tẩu, về thành gặp Xa Phu ×3) — đều là "phù về" nên
+  về trung tâm là đúng hành vi phù của người thật.
+- Binary: server **`8cdb8b1e`** (14:28) đè `da940e78`, backup `.cu_2808_truoc_dtthp_da940e78`.
+  ⚠️ GameServer đã được chủ restart 14:18 với `da940e78` (BotNoi+BotTHP+S12b ĐANG SỐNG) —
+  bản `8cdb8b1e` cần RESTART LẦN NỮA. Chuỗi tái áp: …S12b_cuaso_vanh → botthp_toado →
+  botnoingoai → **datau_thp**.
+- Nghiệm thu: log `[BotDT] ... ve thanh` rồi thấy bot xuất hiện ở TRUNG TÂM (toạ độ THP ±15 ô)
+  và chạy/cưỡi ngựa dọc phố tới NPC; không tăng "khong toi duoc NPC Da Tau" (hạn 600 nhịp đủ).
+
+## 9.33 BOT SẠP CHỒNG LÊN NHAU → RẢI ĐỀU QUANH QUẢNG TRƯỜNG (28/08 chiều muộn) — server `bbd45444` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "bot sạp bày bán bị chồng lên nhau không rải đều ra". BA GỐC đo được:
+1. 🔑 **`g_nPbNpcChan` mặc định 0** (KRegion.cpp:29 — dự án CỐ Ý cho người/bot đứng chồng nhau)
+   ⇒ nhánh `GetBarrierMin(bCheckNpc=TRUE)` trong `pb_OSapTot` (ghi chú "chưa ai ngồi") là
+   **NO-OP** ⇒ bot cùng `nLech%8` chọn đúng MỘT ô → chồng cột.
+2. Vòng duyệt chỉ đi **8 TIA × bán kính 3..12** (80 ô) — có kiểm cũng chỉ ra 8 vệt thẳng.
+3. Bot **đang ở sẵn thành nhà** khi bị bốc bán sạp: điều kiện `map != nha.nMap` bỏ qua khối xếp
+   chỗ → ngồi ngay tại đám đông đang đứng (nhất là sau khi gọi bot dồn quanh trung tâm).
+Vá (`ReverseTools/goi_va_sap_raideu.py`, 6 hunk, KPlayerBot.cpp):
+- `pb_OSapTot` tự quét danh sách bot sạp (kể cả con vừa đặt trong CÙNG khung) — không đụng
+  công tắc toàn cục `g_nPbNpcChan` (gameplay giữ nguyên).
+- Duyệt **trọn vành đai** mỗi vòng (8r ô/vòng ≈ 600 ô cho vành 3..12), điểm khởi đầu xoay theo
+  chỉ số bot → toả đều như chợ thật.
+- Cờ mới `b.nSapChoXong`: bot ở sẵn thành nhà cũng phải xếp chỗ (SetPos cùng map — S12-TELE
+  không bắn cho bot vì m_nNetConnectIdx=-1); reset ở login/đóng sạp/bốc mới.
+- Log mới `[BotSap] %s ngoi sap thanh %d o(x,y)` — đếm được khi nghiệm thu.
+Binary: server **`bbd45444`** đè `2ea7def1` (phiên kia lại swap giữa chừng — backup
+`.cu_2808_truoc_sap_2ea7def1`). GameServer vẫn chạy bản 14:18 (`da940e78`) — restart lần tới ăn
+TRỌN GÓI: S12b + BotTHP + BotNoi + DT-THP + SapRai. Chuỗi tái áp: …datau_thp → **sap_raideu**.
+Nghiệm thu: `grep "ngoi sap" bot.log` — mỗi con một ô khác nhau; nhìn quảng trường sạp toả vòng
+quanh NPC Dã Tẩu thay vì chồng cột/8 vệt.
+
+## 9.34 SỬA HỒI QUY 9.31: PHÁI THUẦN NGOẠI (Thiên Vương/Đường Môn) KHÔNG ĐI ĐƯỜNG NỘI (28/08 tối) — server `b5ca4a50` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "fix vũ khí làm lỗi 1 số phái toàn kỹ năng ngoại công cần vũ khí (Thiên Vương - Đường Môn)"
+— đúng lỗ đã cảnh báo ở 9.31: bot nội (dwID lẻ) của phái thuần-ngoại bị tước vũ khí thành phế.
+- Vá (`ReverseTools/goi_va_botnoi_theophai.py`, 4 hunk, KPlayerBot.cpp): thêm
+  `pb_CoChieuNoiTayKhong(nNpcIdx)` — quét danh sách chiêu của CHÍNH BOT bằng đúng bộ lọc
+  pb_PickSkill với nWant=-1 (series khớp hệ · radius>0 · !aura/!self/enemy · style
+  Missles/Melee · **eqt ∈ {-1,-2}** · đủ cấp rq≤80 · có 1/5 đòn phép thật) +
+  `pb_BotNoiThat = dwID lẻ && có chiêu nội` — 3 điểm quyết định vũ khí (phát nhập môn /
+  phát lại / tháo ở TrangBiTheoCap) đổi sang dùng nó. `bThienNoi` trong pb_PickSkill giữ
+  parity (chỉ là ưu tiên xếp hạng, vô hại).
+- **Theo dữ liệu, không liệt kê tay**: TV/ĐM (0 chiêu phép tay-không) tự về đường ngoại;
+  phái nào sau này được thêm chiêu phép thì tự chuyển. Bot chưa đủ cấp dùng chiêu phép
+  thì TẠM giữ vũ khí, lên cấp `pb_TrangBiTheoCap` tháo sau (hội tụ).
+- **Tự hồi phục**: bot TV/ĐM đã bị tước vũ khí từ restart 14:18 sẽ được khối `[BotVuKhi]`
+  phát lại trong ~60s sau relog (gác `!pb_BotNoiThat` giờ cho qua; nVuKhiThu reset khi login).
+- Binary: server **`b5ca4a50`** đè `0cbd9e60` (backup `.cu_2808_truoc_noiphai_0cbd9e60`) —
+  ôm trọn: S12b + BotTHP + BotNoi + BotNoi-PHAI + DT-THP + SapRai. Chuỗi tái áp:
+  …botnoingoai → **botnoi_theophai** → datau_thp → sap_raideu (theo thứ tự tạo file, script
+  nào cũng idempotent nên chạy đúng thứ tự nào trong nhóm bot cũng được — RIÊNG datau_thp
+  phải SAU botthp+botnoingoai; sap_raideu SAU tất cả).
+- Nghiệm thu: `grep BotNoi bot.log` — KHÔNG còn dòng "duong NOI CONG" / "thao vu khi" cho
+  bot Thiên Vương/Đường Môn; `[BotVuKhi] ... phat lai` xuất hiện cho các con TV/ĐM từng bị
+  tước; phái có nội (Ngũ Độc/Nga My/Thúy Yên/Võ Đang/Côn Lôn…) vẫn chia ~50/50.
+
+## 9.35 TK: ~100 BOT TỰ THOÁT SAU VÀI PHÚT, CHỈ MỘT PHE (28/08 tối) — server `07d38030` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "500 bot vào Tống Kim, vài phút sau tự thoát ~100 con, CHỈ 1 PHE chứ không chia đều".
+- Đo (bot.log 17:19-17:21): đợt 500 chia đúng 250 Tống + 250 Kim; đúng **85 con "KET o pha 3
+  qua 120 giay (map 379) -> bo cuoc"** trong ~10 giây, **CẢ 85 ĐỀU PHE TỐNG** (0 Kim), cả 85
+  chưa từng log "RA TRAN" — chúng là ĐUÔI HÀNG ĐỢI.
+- Gốc: pha 3 dồn 250 con/phe về MỘT toạ độ Quân Y rồi MỘT cửa trại (phễu); đồng hồ
+  `PB_TK_PHA_HAN` (120s) KHÔNG được làm tươi suốt đoạn đi bộ (chỉ tươi khi đứng chờ cổng
+  chưa mở) ⇒ đuôi hàng đợi CÓ TIẾN nhưng chậm bị coi là "kẹt" ⇒ cắt oan nguyên một vệt của
+  phe có trại chật/bố cục hẹp hơn (Tống) ⇒ trận lệch hẳn một phe.
+- Vá (`ReverseTools/goi_va_tk_ket_hangdoi.py`, 4 hunk, KPlayerBot.cpp):
+  H3 **nhúc nhích ≥6 ô kể từ mẫu trước ⇒ làm tươi đồng hồ pha** (kẹt thật — đứng im/quanh
+  quẩn <6 ô — vẫn bị cắt 120s như cũ; trần cứng 6×hạn pha = 12' chống treo vĩnh viễn nếu bị
+  đẩy qua lại); H4 **rải điểm đến Quân Y ±8 ô** theo chỉ số bot (mua thuốc là ExecuteScript,
+  không đòi đứng sát NPC; lọc ô đất pb_ODat) — phá phễu từ gốc; H1/H2 4 trường `nTkKet*` +
+  reset login.
+- Binary: server **`07d38030`** (17:33) đè `7f11622c` (backup `.cu_2808_truoc_tkket_7f11622c`).
+  GameServer đang chạy bản 17:12 — restart để ăn. Chuỗi tái áp thêm CUỐI: **tk_ket_hangdoi**.
+- Nghiệm thu trận TK kế (500 bot): "KET o pha 3" phải về ~0 (chỉ còn ca kẹt tường thật);
+  quân số 2 phe giữ ~250/250 suốt trận; bot ra trận trễ nhất trễ hơn nhưng KHÔNG bỏ trận.
+
+## 9.36 TÍNH NĂNG MỚI [BotSan]: BOT TK TỰ ĐỊNH VỊ ĐỐI THỦ GẦN NHẤT VÀ ĐUỔI ĐÁNH (28/08 tối) — server `8fb5dcd2` ĐÃ SWAP, CHỜ RESTART
+
+Chủ yêu cầu: "bot TK di chuyển TÌM đối thủ để đánh, không đi toạ độ cố định nữa; tự định vị
+đối thủ ở đâu, di chuyển THẲNG tới đánh; trên đường gặp mục tiêu khác thì bắt mục tiêu GẦN
+NHẤT, không cố định; bỏ qua mục tiêu đã chết".
+- Hiện trạng pha 4: hết địch gần → bốc toạ độ CỐ ĐỊNH trong bảng doanh trại địch
+  (`pb_TkLayDoanh`) + vòng điểm trung gian; bộ nhắm trong TK XOAY VÒNG ứng viên theo chỉ số
+  bot (thiết kế chống dồn cục 23/08) chứ không lấy gần nhất.
+- Vá (`ReverseTools/goi_va_tk_san_doithu.py`, 5 hunk, KPlayerBot.cpp):
+  H3 `pb_TkTimDichGanNhat`: quét `Player[]` (người + bot, rẻ hơn quét cả bảng Npc) cùng map,
+  `m_CurrentCamp` = phe địch, SỐNG (loại do_death/do_revive/máu≤0) → gần nhất.
+  H4 khối `[BotSan]` trong pha 4 (chỉ chạy khi KHÔNG có mục tiêu đang đánh — giữ luật "đang
+  đánh không đụng lộ trình"): mỗi ~1,2s so-le theo bot (+ ngay khi chưa có đích) định vị lại;
+  có địch → đích = vị trí nó, đi THẲNG (bỏ chặng vòng), đổi-con-gần-hơn/nó-dời->8ô thì tính
+  lại đường; không thấy ai → rơi về lối doanh-trại cũ (dự phòng khi địch chết/ẩn hết).
+  Đang săn thì `nTkDichTick` được làm tươi ⇒ nhánh bốc-doanh-trại ngủ. H5 bộ nhắm TK lấy
+  **gần-nhất-nhìn-thấy-được** (aId đã sắp theo khoảng cách) thay vì xoay vòng.
+- Chi phí: quét MAX_PLAYER × ~24 bot/khung (500 bot ÷ 21 nhịp so-le) — không đáng kể; A*
+  tính lại có ngưỡng (đổi mục tiêu / dời >8 ô) tránh giật đường mỗi giây.
+- ⚠️ Đánh đổi có chủ đích: bỏ xoay-vòng-mục-tiêu nghĩa là nhiều bot có thể dồn đánh CÙNG một
+  nạn nhân gần nhất (đúng yêu cầu "gần nhất"); nếu chủ thấy dồn quá thì nói — thêm giới hạn
+  "tối đa N con săn cùng một mục tiêu" rất dễ (đếm nTkSanIdx trùng).
+- Binary: server **`8fb5dcd2`** (17:44) đè `07d38030` (backup `.cu_2808_truoc_san_07d38030`).
+  GameServer đang chạy bản 17:12 — RESTART ăn cả 9.35 + 9.36. Chuỗi tái áp thêm CUỐI:
+  **tk_san_doithu**.
+- Nghiệm thu trận TK kế: `grep BotSan bot.log` — thấy "duoi <tên> o(x,y) cach N o"; nhìn trận
+  bot lao thẳng về phía địch thay vì chạy tuyến cố định; khi mục tiêu chết bot đổi con khác
+  trong ~1-2s; `[BotLan] vong qua` phải giảm mạnh (chỉ còn khi map sạch địch).
+
+## 9.37 [BotSan] TRẦN 10 CON/MỤC TIÊU + giải đáp cơ chế (28/08 tối) — server swap CHỜ RESTART
+
+Chủ: "tối đa 10 bot định vị cùng 1 mục tiêu" + hỏi (a) 2 bot 2 phe đứng xa có thấy nhau không,
+(b) cách xác định vị trí đối thủ đang di chuyển.
+- Trả lời đã gửi chủ: (a) CÓ — quét `Player[]` phía server đọc toạ độ thật, không giới hạn
+  khoảng cách, chỉ cần cùng map + phe địch + còn sống; (b) tái-định-vị chu kỳ ~1,2s/bot (đọc
+  lại toạ độ server của mục tiêu; dời >8 ô thì re-path), vào tầm thì pb_Fight bám từng khung;
+  xác/hồi sinh bị loại ở lần quét kế.
+- Vá (`ReverseTools/goi_va_tk_san_tran10.py`, 6 hunk): `PB_TK_SAN_TRAN=10` +
+  `s_nTkSanDem[MAX_NPC]` (short) — kế toán SỐNG khi đổi/thả mục tiêu trong khối [BotSan],
+  **dựng lại từ đầu mỗi giây trong `pb_TkNhip`** (tự dọn rác bot chết/rời trận, khỏi móc mọi
+  đường thoát); `pb_TkTimDichGanNhat` thêm tham số `nTuIdx` — ứng viên đủ 10 con săn bị bỏ
+  qua (trừ mục tiêu hiện tại của chính bot — giữ chỗ) ⇒ áp lực tự dàn sang con gần kế tiếp.
+- Nghiệm thu: trong trận, đếm `grep -o "duoi [A-Za-z0-9]*" bot.log | sort | uniq -c` — không
+  tên nào vượt ~10-11 (chênh 1-2 do khe 1 giây giữa hai lần dựng bảng là chấp nhận được).
+
+## 9.38 [BotSan] TẢN RA NHIỀU ĐỐI THỦ + SỬA NỐT "PHE TỐNG VẪN THOÁT" (28/08 tối) — server swap CHỜ RESTART
+
+Hai phản hồi của chủ sau trận 18:0x (bản 17:59 đã chạy BotSan thật — 84 dòng, BotLan=0):
+1. "Bot gom chạy đúng 1 đường, chưa tản ra": log 18:06 cho thấy MỌI cú săn trỏ về cùng tụm
+   địch ô(1542-1549, 3215-3231) — "gần nhất còn slot" của cả đàn nằm trong MỘT cụm ⇒ một làn
+   đường. Vá: `pb_TkTimDichGanNhat` gom **TOP-25** ứng viên gần nhất (vẫn bỏ chết/đủ slot),
+   mỗi bot nhận **HẠNG riêng** `nLech % số ứng viên` ⇒ ~10 con/đích, 25 đích rải nhiều cánh ⇒
+   nhiều làn đường; chạm mặt giữa đường vẫn đánh gần nhất (pb_Fight).
+2. "Bot phe Tống vẫn thoát khi vào trận": 18:05 còn **81 cú KET pha 3** dù đã có vá nhúc-nhích
+   ⇒ đám này ĐỨNG IM thật — đầu trận 500 con cùng xin đường A* (hàng đợi PathSrv) ⇒ đuôi hàng
+   chờ CẤP ĐƯỜNG >120s. Vá kép: **[TK-KET2]** trong hậu doanh phe mình = vùng an toàn (làm
+   tươi đồng hồ, vẫn chịu trần cứng 12'; ra khỏi trại đứng im vẫn bị cắt) + **tiết lưu
+   re-path [BotSan]** (đổi hẳn mục tiêu mới reset ngay; mục tiêu cũ dời chỗ thì ≥3s/lần) giảm
+   áp lực hàng đợi đường từ gốc.
+- Script: `ReverseTools/goi_va_tk_san_tanra.py` (5 hunk — ÁP CUỐI CHUỖI, sau tk_san_tran10).
+  🔴 Bẫy tái diễn: sửa script bằng heredoc bash nuốt backslash → hỏng file; đã viết lại bằng
+  Write. Nghiệm thu trận kế: "KET o pha 3" ~0; `grep "duoi " | uniq -c` thấy ≥15-25 tên khác
+  nhau cùng lúc; nhìn trận bot toả nhiều cánh.
+
+## 9.39 "BOT KẸT TRONG DOANH TRẠI" = BỊ XAY THỊT NGAY CỬA RA — VÙNG CẤM SĂN [TK-CHONGCAMP] (28/08 tối) — server `c88cb289` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "đợt này fix bot kẹt trong doanh trại không ra ngoài được rất nhiều".
+- Đo (sau restart 18:15 bản `dccd069d`): **KET pha 3 = 0** (9.38 ăn — hết mass-quit) NHƯNG
+  **7.8k lượt "RA TRAN"/giờ ≈ 15 lần/bot**; vết VoLam258: ra cửa 18:22:40 → CHẾT 18:22:56
+  (16s), ra 18:23:16 → chết 18:23:26 (10s)... Bot KHÔNG kẹt — chúng bị **giết trong 10-16
+  giây sau khi bước ra** rồi quay về trại hồi sinh/mua thuốc, nên phần lớn quân số lúc nào
+  cũng đứng trong trại. Thủ phạm: [BotSan] hai phe cắm ngay **cụm điểm SetPos ra cửa của
+  địch** (tụm săn (1542-1549,3215-3231) hôm trước = đúng RANDOM_POS_KIM (1544-1592,3173-3227)
+  của kimratrai.lua) — máy xay thịt tại cửa.
+- Vá (`ReverseTools/goi_va_tk_chongcamp.py`, 2 hunk trong `pb_TkTimDichGanNhat`): **vùng cấm
+  săn theo phe của ứng viên** — không định vị mục tiêu còn đứng: (a) quanh hậu doanh phe nó
+  R=45 ô (anchor TKPOS_GO_HDOANH + đảo thế trận), (b) quanh **cụm điểm ra cửa** phe nó R=25 ô
+  (tâm cụm từ RANDOM_POS: Tống (1331,3442) / Kim (1568,3200)). Ra khỏi vùng là bị săn bình
+  thường; đánh-cận (pb_Fight) không đổi — chỉ chặn việc kéo đàn tới cửa trại địch.
+- Binary: server **`c88cb289`** (18:27) đè `dccd069d` (backup `.cu_2808_truoc_chongcamp_dccd069d`).
+  Chuỗi tái áp thêm CUỐI: **tk_chongcamp**. Restart để ăn.
+- Nghiệm thu trận kế: đời sống bot sau khi ra cửa phải tính bằng PHÚT (vết tên bất kỳ:
+  RA TRAN → chết ≥60s); "RA TRAN"/giờ tụt mạnh (<2k); [BotSan] không còn dòng "duoi ... 
+  o(155x-159x,317x-322x)" (cụm cửa Kim) hay quanh (1331,3442); quân số đứng trong trại
+  giảm hẳn bằng mắt.
+
+## 9.40 "VẪN KẸT TRONG TRẠI" = 40% QUÂN SỐ LUÔN TRONG VÒNG ĐỜI CHẾT-HỒI SINH — CHIA HOẢ LỰC TOP-4 [TK-DEU] (28/08 tối) — server `b97d15db` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "vẫn kẹt trong doanh trại nhiều không ra ngoài được". Đo (18:56-18:58, bản chống-camp
+`c88cb289` ĐANG chạy, restart 18:51):
+- Thời gian ĐI QUA trại (hồi sinh → RA TRẬN): **p50=16s, max=23s** — dây chuyền trại KHÔNG tắc.
+- **Chết ~436-535 mạng/PHÚT** (500 bot ⇒ mỗi con chết ~60s/lần); sống sau khi ra cửa
+  **p50=24s, p90=39s**; vòng đời ≈45s ⇒ **~40% quân số (≈200 con) LUÔN đứng trong trại** ở
+  mọi thời điểm — chính là cảnh "kẹt trong trại". Trại đông vì DÒNG CHẢY, không phải tắc ống.
+- Gốc TTK quá nhanh: H5 (9.36) đổi bộ nhắm sang "gần nhất TUYỆT ĐỐI" ⇒ mọi bot quanh một khu
+  cùng đấm đúng MỘT nạn nhân ⇒ xoá 1-2 giây/mạng theo dây chuyền (xoay vòng 23/08 tồn tại
+  chính để chống việc này — đã bị H5 gỡ theo yêu cầu "gần nhất").
+- Vá (`ReverseTools/goi_va_tk_chia_hoaluc.py`, 1 hunk): vẫn "gần" nhưng **chia hoả lực trong
+  NHÓM 4 GẦN NHẤT** theo chỉ số bot (aId đã sắp theo khoảng cách); hết nhóm mới duyệt tiếp.
+  TTK chậm ~4×, bot sống lâu hơn ⇒ trại vãn.
+- Binary: server **`b97d15db`** (19:00) đè `cb4d5419` (phiên kia lại swap giữa chừng; backup
+  `.cu_2808_truoc_deu_cb4d5419`). Chuỗi tái áp CUỐI: **tk_chia_hoaluc**. Restart để ăn.
+- Nghiệm thu: "da chet"/phút phải tụt (< ~200); sống-sau-ra-cửa p50 ≥ 60s; nhìn trại vãn hẳn.
+  Nếu chủ muốn trận còn "lành" hơn nữa: hạ PB_TK_SAN_TRAN 10→5, hoặc tăng hồi sinh chờ —
+  nói là chỉnh (đều 1 dòng).
+
+## 9.41 "BOT ĐỨNG YÊN TRONG TRẠI KHÔNG RA" — LỖI TỒN ĐỌNG (25% từ trận 17:19, TRƯỚC mọi vá TK) + BỘ MỔ [TkCensus] + TỰ CỨU [TkCuu3] (28/08 tối) — server `52680c66` ĐÃ SWAP, CHỜ RESTART
+
+Chủ hỏi "fix gì ảnh hưởng — trước bot đi tới gần trap gọi script ra, giờ đứng yên":
+- Đo 3 trận: tỉ lệ báo-danh-xong-KHÔNG-bao-giờ-ra = **25% trận 17:19 (bản 17:12 — TRƯỚC toàn bộ
+  vá TK chiều nay)** / 12% (18:03) / 16% (19:05) ⇒ KHÔNG phải hồi quy từ các vá hôm nay — lỗi
+  có sẵn, 500 bot làm lộ rõ (60-140 con/trận). Các vá chiều nay thực tế làm GIẢM (25→12-16%).
+- Nhóm "không ra" gồm 2 loại đã bóc: (a) lặng lẽ RỜI TK đi luyện map thường (CaoDuy619 —
+  BotXe/BotBai ngay sau báo danh); (b) CÂM LẶNG tuyệt đối từ lúc báo danh (BuiBao594 — 0 dòng
+  log 15'+). Manh mối cứng cho (b): `[BotKet] bo cuoc sau 3 lan: doing=3 procAI=1 toc ok` =
+  NPC **đang do_run mà không nhúc nhích** ⇒ đứng trên Ô BỊ CHẶN theo lưới server (GetDir=0
+  mỗi tick) — NewWorld của script báo danh thả KHÔNG kiểm vật cản.
+- Vá (`ReverseTools/goi_va_tk_censu_cuu.py`): **[TkCensus]** 10s/lần trong pb_TkNhip — đếm bot
+  theo pha (pha 3 tách map 379/khác) + mổ 3 con pha-3: ô, doing, procAI, **obs=CellObsSrv**,
+  choRa còn chờ bao lâu, đã mua thuốc chưa → trận sau đọc log là chốt giải phẫu; **[TkCuu3]**
+  đầu pha 3: đứng trên ô CHẶN → SetPos sang ô đất cạnh (pb_ODat quanh chỗ đứng, dự phòng quanh
+  anchor trại) — chữa ngay nhóm (b) phổ biến nhất.
+- Binary: server **`52680c66`** đè `b97d15db` (backup `.cu_2808_truoc_census_b97d15db`).
+  Chuỗi tái áp CUỐI: **tk_censu_cuu**. Restart để ăn.
+- Nghiệm thu: đọc `[TkCensus]` — pha3 phải rút về ~0 giữa trận; `[TkCuu3]` đếm số con được
+  cứu khỏi ô chặn; tỉ lệ không-bao-giờ-ra phải < 3%. Nhóm (a) rời-TK-sớm nếu còn nhiều thì
+  mổ tiếp bằng chính census (pha0/nghỉ tăng bất thường).
+
+## 9.42 [BotTan] TẢN ĐÁM ĐÔNG CÙNG PHE >20 CON (28/08 tối) — server `1a3760ac` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "bot tìm đối thủ gom 1 nhóm rất đông — quét: trên 20 bot cùng phe tại chỗ phải tản ra,
+không thì người sau dồn phía xa không đánh được người trước".
+- Vá (`ReverseTools/goi_va_tk_tan_nhom.py`, 3 hunk): lúc SEEK (chỉ chạy khi bot CHƯA có mục
+  tiêu = đúng tuyến sau đang xếp hàng), đếm đồng đội cùng phe trong 12 ô quanh mình; **>20**
+  → `pb_TkTimDichGanNhat` bỏ mọi ứng viên **<20 ô** → nhận mục tiêu ở cánh khác và rời đám.
+  Tuyến đầu đang đánh (b.nTargetNpc>0) đã return trước — không bị đụng. Nhãn `[BotTan]`
+  (tiết chế 3s). Chi phí ~24 bot seek/khung × quét s_bots = không đáng kể.
+- Binary: server **`1a3760ac`** đè `52680c66` (backup `.cu_2808_truoc_tannhom_52680c66`) —
+  gói này ôm: census+cứu-ô-chặn (9.41) + tản-nhóm (9.42) + toàn bộ chuỗi trước. Chuỗi tái áp
+  CUỐI: **tk_tan_nhom**. GameServer đang chạy bản 19:01 — RESTART một lần ăn 9.40→9.42.
+- Nghiệm thu: `grep BotTan bot.log` thấy các cú toả; nhìn trận không còn cục ≥30-40 con một
+  chấm; đám sau tự kéo sang cánh khác thay vì nối đuôi.
+
+## 9.43 [TK-CHIAMAP] CHIA TRẬN THÀNH NHIỀU Ổ KHẮP MAP (28/08 tối) — server `8e59f0a4` ĐÃ SWAP, CHỜ RESTART
+
+Chủ: "[BotTan] đã oke NHƯNG lúc di chuyển phải chia ra NHIỀU đối thủ Ở XA NHAU → nhiều nhóm
+đánh nhau; hiện vẫn gom 1 nhóm, không chia đều map".
+- Gốc: TOPK=25 GẦN NHẤT ⇒ cả 25 ứng viên đều nằm trong chính đám đánh nhau (tiền tuyến là
+  MỘT cụm) ⇒ chia hạng kiểu gì cũng quanh một chỗ.
+- Vá (`ReverseTools/goi_va_tk_chia_map.py`, 2 hunk): **TOPK 25→60** — hạng mỗi bot rải theo
+  toàn phổ khoảng cách tới tận cánh xa, cộng trần 10 con/đích ⇒ mặc định đàn phân tán thành
+  nhiều ổ; **[BotTan] bán kính né khi kẹt đám >20: 20→60 ô** — tuyến sau phải nhận địch ở
+  VÙNG KHÁC HẲN (không phải rìa đám), làm mồi kéo trận tách ổ; ngoài 60 ô không còn ai thì
+  rơi về lang-thang-doanh-trại (cũng xuyên map).
+- Binary: server **`8e59f0a4`** đè `1a3760ac` (backup `.cu_2808_truoc_chiamap_1a3760ac`).
+  Gói chờ restart giờ gồm 9.40→9.43. Chuỗi tái áp CUỐI: **tk_chia_map**.
+- Nghiệm thu: nhìn trận thấy ≥3-5 ổ đánh nhau ở các khu khác nhau thay vì 1 cục; [BotSan]
+  "cach N o" trải rộng (nhiều dòng N>100); [BotTan] vẫn nổ khi có cục >20.
+- Núm chỉnh nếu muốn tản mạnh/yếu hơn: PB_TK_SAN_TOPK (60) và bán kính né (60*32) —
+  mỗi cái 1 dòng.
+
+## 9.44 NGHIỆM THU S12b **ĐẠT** (28/08 ~20h, phiên client 13' pid=15948, nhân vật CaiBang chơi TK + 3 cú phù)
+
+| Thước (đặt ở 9.28) | Trước (27/08) | Nay | Kết |
+|---|---|---|---|
+| Thang S8-NAN 4-11 cú liên tiếp | 2 thang (11+4 cú), THEO=0 | **2 cú ĐƠN LẺ cách nhau 315s — mỗi cú đúng 1 snap, S12-THEO áp lệnh dắt CÙNG MILI-GIÂY rồi bám mượt** | ✅ |
+| Tổng S8-NAN | 15/14' | **2/13'** | ✅ |
+| `[S12-CUA]` ≈ số lần vào map | — | 3 CUA / 3 loadnew=1 | ✅ |
+| `[S12-THEO]` khi bị dắt | 0 | 24 (chuỗi theo từng đoạn 45226→45441, không búng thêm) | ✅ |
+| `[S12-TELE]` đo được (V3) | g_DebugLog không file | **30 dòng trong jx_auto_server.log** ("CaiBang setpos cung map -> bao chinh chu") | ✅ |
+| Phù về nhảy toạ độ | có | 3 phù cuối phiên (324→225→53): **0 NAN sau phù** | ✅ |
+| Flap chớp tắt VANH↔BACK <500ms | 179-208/phiên | **10** | ✅ (V2 VOID_DIS + dải trễ ăn) |
+Ghi chú: cú NAN thứ 2 doing=9 (đang bị khống chế) — server dắt trong lúc choáng, vẫn chỉ 1 snap.
+Log lưu `scratchpad/logs_2808c/`. Chuỗi S9→S12b coi như KHÉP; còn mở phần bot/TK 9.40-9.43
+(chờ restart) + lưới vật cản 379 (hoãn, chờ chủ duyệt).
+
+## 9.45 "PHÙ VỀ CÒN NHẢY TOẠ ĐỘ BẬY" = GIẰNG CO 2 NGƯỜI LÁI (THEO vs WAuto) — VÁ S12c, client `d5c76e64` ĐÃ SWAP, CHỜ RELOG
+
+Chủ báo sau nghiệm thu 9.44: "phù về còn nhảy toạ độ bậy".
+- Pháp y (log 20:15-21:02, CaiBang + WAuto bật): **122/573 mẫu SYNCME-DRIFT lệch ≥4 ô, dao động
+  LẮC QUA LẮC LẠI ~30 ô mỗi 1-2 giây** sau khi ra cửa trại (d=(5,-3)↔(-12,28)↔(5,-3)↔(-12,-5)…)
+  — client bị giằng giữa HAI người lái: `[S12-THEO]` áp lệnh dắt của server, WAuto cùng lúc lái
+  theo mục tiêu của nó. Hai teleport server (hồi sinh 485 ô + qua trap 139 ô — đúng RANDOM_POS)
+  đều HỢP LỆ; cái "bậy" là đoạn ping-pong sau đó.
+- Gốc: **bypass V1b của 9.28** (đích lạ >64 mps ⇒ áp luôn) sống SUỐT cửa sổ 3s ⇒ đè cả lúc auto
+  đang chủ động lái — chính thứ 2 gác nguyên bản (HaveTarget/SendMoveFrames) tồn tại để ngăn.
+- Vá (`ReverseTools/goi_va_S12c_autothang.py`, 4 hunk, CLIENT-only):
+  mốc mới `g_uS12TuGuiTick` (timeGetTime tại SendClientCmdRun/Walk); bypass CHỈ hiệu lực khi
+  **auto chưa tự gửi lệnh nào KỂ TỪ lúc mở cửa sổ** (`g_uS12CuaSoSelf − g_uS12TuGuiTick ≥ 0`,
+  hiệu có dấu chịu wrap) ⇒ cú dắt BÀN GIAO lúc hạ cánh vẫn được nuốt; auto lên tiếng lại là
+  auto THẮNG ngay. Người chơi không auto: gác cũ vẫn cho qua (hành vi 9.44 giữ nguyên).
+- Đánh đổi chấp nhận: khi auto giành lái giữa lúc server còn dắt, lệch có thể tích tới 256 →
+  thêm 1 cú S8-NAN snap đơn lẻ — vẫn hơn hẳn lắc ±30 ô liên tục.
+- Binary: client **`d5c76e64`** (21:05) đè bản cũ (backup `.cu_2808_truoc_s12c_<md5>`).
+  **CHỜ CHỦ RELOG CLIENT** (server không cần restart cho miếng này — client-only; cả hai chỗ
+  sửa nằm trong `#ifndef _SERVER`). Chuỗi tái áp: …S12b_cuaso_vanh → **S12c_autothang**.
+- Nghiệm thu: chơi TK có auto, chết/phù vài lần — `SYNCME-DRIFT` lệch ≥4 ô phải về mức nhiễu
+  (<10/phiên, không còn chuỗi dao động ±30 ô); S8-NAN vẫn đơn lẻ; cảm quan hết "nhảy bậy".

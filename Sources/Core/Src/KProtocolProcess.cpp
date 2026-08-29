@@ -52,6 +52,7 @@ DWORD g_uS12CuaSoSelf = 0;
 // [S12b 28/08] dich move CHINH MINH vua tu gui (ghi tai SendClientCmdRun/Walk,
 // KProtocol.cpp): dung phan biet echo (dich trung) voi lenh DAT-DI cua server (dich la).
 int g_nS12TuGuiX = 0, g_nS12TuGuiY = 0;
+DWORD g_uS12TuGuiTick = 0;   // [S12c] timeGetTime luc client TU GUI lenh move gan nhat
 static BOOL S12_ChoPhepSelf(int nIdx, int nDichX, int nDichY)
 {
 	if (nIdx <= 0 || nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
@@ -66,7 +67,11 @@ static BOOL S12_ChoPhepSelf(int nIdx, int nDichX, int nDichY)
 	{
 		int nS12Lx = nDichX - g_nS12TuGuiX; if (nS12Lx < 0) nS12Lx = -nS12Lx;
 		int nS12Ly = nDichY - g_nS12TuGuiY; if (nS12Ly < 0) nS12Ly = -nS12Ly;
-		if (nS12Lx > 64 || nS12Ly > 64)
+		// [S12c 28/08] chi nuot cu dat BAN GIAO luc ha canh: auto ma DA tu gui lenh
+		// KE TU luc mo cua so thi auto THANG - khong ap de nua (do that 20:15-21:02:
+		// bypass song suot 3s lam client giang co 2 nguoi lai, lac +-30 o moi 1-2s).
+		if ((nS12Lx > 64 || nS12Ly > 64)
+		 && (int)(g_uS12CuaSoSelf - g_uS12TuGuiTick) >= 0)
 			return TRUE;
 	}
 	int nS12Tx = 0, nS12Ty = 0;
@@ -1641,11 +1646,15 @@ void KProtocolProcess::s2cSyncItem(BYTE* pMsg)
 
 		if (pItemSync->m_bIsNew)
 			Player[CLIENT_PLAYER_INDEX].m_ItemList.AddKIL(nIndex, pItemSync->m_btPlace, pItemSync->m_btX, pItemSync->m_btY);
-		else
-			Player[CLIENT_PLAYER_INDEX].m_ItemList.AddKIL(nIndex,
-				Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[nIndex].nPlace,
-				Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[nIndex].nX,
-				Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[nIndex].nY);
+		// [XEPDO 28/08] Goi bIsNew=false la CAP NHAT thuoc tinh (server chi gui no
+		// tu SyncItem(nIdx) mot tham so khi so luong chong doi - place/x/y trong
+		// goi la 0). Ban cu AddKIL them lan nua voi m_Items[nIndex] - nIndex la
+		// chi so ITEMSET tra vao mang SLOT cua KItemList = doc du lieu RAC, lam
+		// item co 2 entry + 2 vung grid client. Auto (ban rac / cat ruong / xep
+		// do) quet grid gap o ma roi gui lenh theo dwID cua ruot hien hanh =>
+		// ban/cat nham mon that (su co 28/08: mat Tho Dia Phu vo han x2, item
+		// 'doi hinh', xep do xong item 'xuat hien lai'). Thuoc tinh da duoc gan
+		// het o khoi tren; item van dung nguyen cho cu - KHONG AddKIL gi them.
 	}
 
 	//int pnMagicParam[6];
