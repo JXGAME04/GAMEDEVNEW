@@ -1,3 +1,12 @@
+-- [29/08] PLOG phai co o MOI state petsys (item script chay state rieng;
+-- thieu -> 'attempt to call global PLOG' lam dut ca ham dung item)
+if (PLOG == nil) then
+	function PLOG(sz)
+		appendto("petops.log")
+		write("    " .. sz .. "\n")
+		writeto()
+	end
+end
 Include("\\script\\petsys\\jx1_compat.lua")
 Include("\\script\\misc\\eventsys\\type\\player.lua")
 Include("\\script\\petsys\\lang.lua")

@@ -104,23 +104,18 @@ end
 Include("\\script\\petsys\\protocol_process_gs.lua")
 
 function BDH_P_Root()
-	SayEx({format("Pet PC: c„=%d g‰i=%d c p=%d - Æi”m %d/%d/%d/%d",
+	SayEx({format("Pet: co=%d goi=%d cap=%d | diem %d/%d/%d/%d | xu %d",
 		PET_IsCreate(), PET_IsSummon(), PET_GetLevel(),
-		PET_GetUpgradePoint(), PET_GetGrownPoint(), PET_GetTamePoint(), PET_GetXiuzhenPoint()),
-	"C p Thi÷p + thuËc + 4 tr∏i c©y/BDH_P_CapDo",
-	"Tπo pet nhanh (kh´ng c«n thi÷p)/BDH_P_TaoNhanh",
-	"BËn Æi”m = 9999/BDH_P_Diem",
-	"Cap 6 trang bi pet/BDH_P_TrangBi",
-	"Cap 5 Bi kip ky nang/BDH_P_BiKip",
-	"Cap 2000 chan nguyen (test Tu Chan)/BDH_P_ChanNguyen",
+		PET_GetUpgradePoint(), PET_GetGrownPoint(), PET_GetTamePoint(),
+		PET_GetXiuzhenPoint(), GetTask(251)),
+	"Cap 5 Thiep + 200 Thuoc + 20 moi loai trai/BDH_P_CapDo",
+	"Cap 5 Bi kip + 6 trang bi/BDH_P_CapKN",
+	"Bon diem = 9999 + 2000 chan nguyen + 500 xu/BDH_P_Diem",
+	"Tao pet nhanh (khong can thiep)/BDH_P_TaoNhanh",
+	"Xoa het ky nang da hoc/BDH_P_XoaKN",
+	"Thao het trang bi/BDH_P_XoaTB",
 	"Dong bo diem xuong client/BDH_P_DongBo",
-	"G‰i ra (op 2)/BDH_P_Goi",
-	"Thu v“ (op 3)/BDH_P_Thu",
-	"Th®ng c p (op 4)/BDH_P_LenCap",
-	"Tu luy÷n (op 7)/BDH_P_TuLuyen",
-	"ßÊi ngoπi quan (op 6)/BDH_P_NgoaiQuan",
-	"X„a pet (op 1)/BDH_P_Xoa",
-	"K’t thÛc ÆËi thoπi./no"})
+	"Ket thuc doi thoai./no"})
 end
 
 -- [PETSYS 29/08] ban lai 29 o task pet xuong client (SetTask -> SetSaveVal
@@ -152,16 +147,20 @@ function BDH_P_DongBo()
 end
 
 function BDH_P_CapDo()
-	AddItem(6, 1, 4874, 1, 0, 0)
 	local i
-	for i = 1, 10 do
+	for i = 1, 5 do
+		AddItem(6, 1, 4874, 1, 0, 0)
+	end
+	for i = 1, 200 do
 		AddItem(6, 1, 4875, 1, 0, 0)
 	end
-	AddItem(6, 1, 4876, 1, 0, 0)
-	AddItem(6, 1, 4877, 1, 0, 0)
-	AddItem(6, 1, 4878, 1, 0, 0)
-	AddItem(6, 1, 4879, 1, 0, 0)
-	Msg2Player("ß∑ c p Thi÷p ßÂng Hµnh + 10 ThuËc T®ng Tr≠Îng + 4 tr∏i c©y.")
+	for i = 1, 20 do
+		AddItem(6, 1, 4876, 1, 0, 0)
+		AddItem(6, 1, 4877, 1, 0, 0)
+		AddItem(6, 1, 4878, 1, 0, 0)
+		AddItem(6, 1, 4879, 1, 0, 0)
+	end
+	Msg2Player("Da cap 5 Thiep + 200 Thuoc + 20 moi loai trai")
 end
 
 function BDH_P_TaoNhanh()
@@ -180,7 +179,9 @@ function BDH_P_Diem()
 	PET_SetGrownPoint(9999)
 	PET_SetTamePoint(9999)
 	PET_SetXiuzhenPoint(9999)
-	Msg2Player("BËn Æi”m = 9999.")
+	SetTask(362, GetTask(362) + 2000)
+	SetTask(251, GetTask(251) + 500)
+	Msg2Player("Da cap 4 diem 9999 + 2000 chan nguyen + 500 xu")
 end
 
 function BDH_P_Goi()
