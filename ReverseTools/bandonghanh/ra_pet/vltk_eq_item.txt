@@ -1,0 +1,21 @@
+Ãû³Æ	ItemGenre	DetailType	ParticularType	¶¯»­ÎÄ¼şÃû	¶ÔÓ¦Îï¼şË÷Òı	¿í¶È	¸ß¶È	ËµÃ÷ÎÄ×Ö	ÎåĞĞÊôĞÔ	¼Û¸ñ	µÈ¼¶	ÊÇ·ñµş·Å	ĞèÇóÊôĞÔ	ĞèÇóÊôĞÔÊıÖµ	»ù´¡ÊôĞÔ1ÀàĞÍ	»ù´¡ÊôĞÔ1×îĞ¡Öµ	»ù´¡ÊôĞÔ1×î´óÖµ	»ù´¡ÊôĞÔ2ÀàĞÍ	»ù´¡ÊôĞÔ2×îĞ¡Öµ	»ù´¡ÊôĞÔ2×î´óÖµ	»ù´¡ÊôĞÔ3ÀàĞÍ	»ù´¡ÊôĞÔ3×îĞ¡Öµ	»ù´¡ÊôĞÔ3×î´óÖµ
+Bİch HuyÕt NhËn	12	0	0	\spr\item\companionequip\±ÌÑªÎäÆ÷.spr	277	1	1	Bİch HuyÕt NhËn	0	4	1	0	36	100	268	8	10	276	3	4	280	3	4
+Bİch HuyÕt ChiÕn Y	12	1	0	\spr\item\companionequip\±ÌÑªÒÂ·ş.spr	277	1	1	Bİch HuyÕt ChiÕn Y	0	4	1	0	36	100	241	8	10	278	3	4	282	3	4
+Bİch HuyÕt Giíi	12	2	0	\spr\item\companionequip\±ÌÑª½äÖ¸.spr	277	1	1	Bİch HuyÕt Giíi	0	4	1	0	36	100	243	83	110	284	3	4	190	11	15
+Bİch HuyÕt Hé UyÓn	12	3	0	\spr\item\companionequip\±ÌÑª»¤Íó.spr	277	1	1	Bİch HuyÕt Hé UyÓn	0	4	1	0	36	100	227	5	7	277	3	4	281	3	4
+Bİch HuyÕt Hé Th©n Phï	12	4	0	\spr\item\companionequip\±ÌÑª»¤Éí·û.spr	277	1	1	Bİch HuyÕt Hé Th©n Phï	0	4	1	0	36	100	271	5	7	279	3	4	283	3	4
+Bİch HuyÕt Thóc Yªu	12	5	0	\spr\item\companionequip\±ÌÑªÑü´ø.spr	277	1	1	Bİch HuyÕt Thóc Yªu	0	4	1	0	36	100	246	750	1000	285	3	4	97	75	100
+Bİch HuyÕt Liªn	12	6	0	\spr\item\companionequip\±ÌÑªÏîÁ´.spr	277	1	1	Bİch HuyÕt Liªn	0	4	1	0	36	100	226	5	7	236	23	30	234	23	30
+Bİch HuyÕt ChiÕn Ngoa	12	7	0	\spr\item\companionequip\±ÌÑªĞ¬×Ó.spr	277	1	1	Bİch HuyÕt ChiÕn Ngoa	0	4	1	0	36	100	247	750	1000	269	75	100	99	75	100
+Bİch HuyÕt Yªu Trôy	12	8	0	\spr\item\companionequip\±ÌÑªÑü×¹.spr	277	1	1	Bİch HuyÕt Yªu Trôy	0	4	1	0	36	100	270	5	7	248	11	15	100	75	100
+Bİch HuyÕt Qu¸n	12	9	0	\spr\item\companionequip\±ÌÑªÃ±×Ó.spr	277	1	1	Bİch HuyÕt Qu¸n	0	4	1	0	36	100	308	38	50	88	15	20	98	75	100
+Kim L©n NhËn	12	0	1	\spr\item\companionequip\½ğÁÛÎäÆ÷.spr	277	1	1	Kim L©n NhËn	0	4	2	0	36	100	268	10	14	276	4	6	280	4	6
+Kim L©n ChiÕn Y	12	1	1	\spr\item\companionequip\½ğÁÛÒÂ·ş.spr	277	1	1	Kim L©n ChiÕn Y	0	4	2	0	36	100	241	10	14	278	4	6	282	4	6
+Kim L©n Giíi	12	2	1	\spr\item\companionequip\½ğÁÛ½äÖ¸.spr	277	1	1	Kim L©n Giíi	0	4	2	0	36	100	243	110	130	284	4	6	190	15	20
+Kim L©n Hé UyÓn	12	3	1	\spr\item\companionequip\½ğÁÛ»¤Íó.spr	277	1	1	Kim L©n Hé UyÓn	0	4	2	0	36	100	227	7	10	277	4	6	281	4	6
+Kim L©n Phï	12	4	1	\spr\item\companionequip\½ğÁÛ»¤Éí·û.spr	277	1	1	Kim L©n Phï	0	4	2	0	36	100	271	7	10	279	4	6	283	4	6
+Kim L©n Thóc Yªu	12	5	1	\spr\item\companionequip\½ğÁÛÑü´ø.spr	277	1	1	Kim L©n Thóc Yªu	0	4	2	0	36	100	246	1000	1250	285	4	6	97	100	125
+Kim L©n Liªn	12	6	1	\spr\item\companionequip\½ğÁÛÏîÁ´.spr	277	1	1	Kim L©n Liªn	0	4	2	0	36	100	226	7	10	236	30	40	234	30	40
+Kim L©n ChiÕn Ngoa	12	7	1	\spr\item\companionequip\½ğÁÛĞ¬×Ó.spr	277	1	1	Kim L©n ChiÕn Ngoa	0	4	2	0	36	100	247	1000	1250	269	100	125	99	100	125
+Kim L©n Yªu Trôy	12	8	1	\spr\item\companionequip\½ğÁÛÑü×¹.spr	277	1	1	Kim L©n Yªu Trôy	0	4	2	0	36	100	270	7	12	248	15	20	100	100	125
+Kim L©n Qu¸n	12	9	1	\spr\item\companionequip\½ğÁÛÃ±×Ó.spr	277	1	1	Kim L©n Qu¸n	0	4	2	0	36	100	308	50	65	88	20	25	98	100	125

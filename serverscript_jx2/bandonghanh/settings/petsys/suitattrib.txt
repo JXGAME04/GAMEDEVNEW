@@ -1,0 +1,4 @@
+EquipParticular	AttribType1	AttribValue1	AttribType2	AttribValue2	AttribType3	AttribValue3
+0	233	5000	308	30	311	1
+1	233	7500	308	40	311	2
+2	233	10000	308	50	311	3

@@ -650,3 +650,45 @@ muc 16): 6 item 4881..4886 dung-la-deo (tra do cu), pct 80..120 duc lai
 (op 10, 5 xu/lan, menu hop thoai server), bonus HP/MP ap khi summon
 (5157/5158); 6 o cua so hien anh item; nut Duc lai -> SendOp(10).
 Binary .moi cuoi: CoreServer addb0811, Game 53f5856e.
+
+## 19. 29/08 CHIEU - TIM RA TRON NGUON HE TRANG BI DONG HANH (VLTK)
+
+Chu: "toi nho 100% la ban linux co item cua pet chu khong can phai che"
+-> DUNG. Truoc do toi quet SOT vi tim chuoi chu THUONG 'ong hanh' trong
+khi ten item viet HOA 'Dong Hanh'. Quet lai + do chuoi trong game_y.exe
+ra tron bo nguon:
+
+1. **Bang item trang bi**: slistcache.pak entry 0xdf37e2dc (20 mon):
+   Genre 12 / DetailType 0..9 = VI TRI / ParticularType 0..1 = BO.
+   Bo 0 'Bich Huyet', bo 1 'Kim Lan' (chuoi con bo 3 'Dan Tam').
+   10 vi tri: Nhan(vu khi), Chien Y, Gioi(nhan), Ho Uyen, Ho Than Phu,
+   Thuc Yeu(dai), Lien(day chuyen), Chien Ngoa(giay), Yeu Truy, Quan(non).
+2. **\settings\companionequip\suitattrib.txt** (thuoc tinh BO theo bac):
+   bac0: 233=5000, 308=30, 311=1 | bac1: 7500/40/2 | bac2: 10000/50/3.
+   233 = sinh luc toi da; 311 = cap 'Van Khoi Long Tuong' (chuoi
+   G_STR_COMPANION_SUIT_ATTRIB: cap cao hon doi phuong -> sat thuong
+   phong dai 10%); 308 CHUA ro (JX1 chi co 305 attrib - ma 308/311
+   NGOAI DAI, ban private mo rong).
+3. **Item lien quan** (bang VLTK 004): 5063 Ket Tinh Dong Hanh,
+   5257 Ket Tinh (Cao), 5064/65/66 Ruong trang bi 1/2/3,
+   5067 Chia Khoa Ruong Dong Hanh.
+4. **Cua so duc lai**: ini 720a151f = 'Duc lai trang bi Dong Hanh':
+   TxtCost 'Tieu hao: Dong Hanh Ket Tinh x%d', ListOldSkill/ListNewSkill
+   (2 danh sach thuoc tinh cu/moi), nut 'Trang bi tay luyen' /
+   'Giu lai' / 'Tu bo', o objEquip dat trang bi.
+5. **Giao thuc** (protocol_def client): 8 ma COMPANIONEQUIP
+   (OPEN / ASKCONSUME / TYR_REBUILD / S2C_TRYREBUILD / DO_REBUILD /
+   S2C_REBUILD / SETCOST_TIP / DOREBUILD).
+6. **UI goc pet_main.ini**: 10 o EquipWeapon/Helm/Armor/Belt/Boot/
+   Amulet/Ring/Cuff/Pendant/Sachet + btnViewEquip1/2 (lat 2 trang).
+
+DA PORT (p62/p63): 26 item vao bang JX1 - JX1 chi co 7 ItemGenre
+(khong co 12) nen dua vao magicscript giu nguyen ten/anh goc; vi tri +
+bo luu o bang phu script\petsys\petequip_def.lua (sinh tu dong).
+Nan id: 4907..4926 = 20 mon, 4927..4932 = ket tinh/ruong/chia khoa
+(4881..4906 DA CO item JX1 khac - phai dung day trong tu 4907).
+suitattrib.txt chep vao settings\petsys\.
+
+CON LAI (dot sau): logic server (deo/thao 10 o, thuoc tinh bo, mo ruong,
+duc lai 2 danh sach) + UI 10 o & cua so duc. Logic server ban private
+KHONG co trong pak -> thiet ke theo dung giao thuc + bang tren.
