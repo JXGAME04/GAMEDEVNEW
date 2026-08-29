@@ -3521,35 +3521,15 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		
 		//-- TÝnh s¸t th­¬ng ngò hµnh t­¬ng kh¾c vµ bÞ t­¬ng kh¾c
 		int nElementDifference = Npc[nAttacker].m_CurrentFiveElementsEnhance - m_CurrentFiveElementsResist;
-		int nOriginalDamage = nDamage;
-		
-		int nReducePercent = nFiveElements_DamageP + (int)((float)(-nElementDifference) / 10.0f);
-		    nReducePercent = max(0, nReducePercent);
-		    nReducePercent = min(nReducePercent, 10);
-		    
-		if ((nMissleSeries == series_metal && m_Series == series_wood) ||
-		    (nMissleSeries == series_water && m_Series == series_fire) ||
-		    (nMissleSeries == series_wood && m_Series == series_earth) ||
-		    (nMissleSeries == series_fire && m_Series == series_metal) ||
-		    (nMissleSeries == series_earth && m_Series == series_water))
-		{
-		    //Tang dame
-		    int nBonusPercent = nFiveElements_DamageP + (int)((float)nElementDifference / 10.0f);
-		    if (nBonusPercent > 0)
-		    {
-		        nDamage += nOriginalDamage * nBonusPercent / MAX_PERCENT;
-		    }
-		}
-		else if ((nMissleSeries == series_metal && m_Series == series_fire) ||
-		         (nMissleSeries == series_water && m_Series == series_earth) ||
-		         (nMissleSeries == series_wood && m_Series == series_metal) ||
-		         (nMissleSeries == series_fire && m_Series == series_water) ||
-		         (nMissleSeries == series_earth && m_Series == series_wood))
-		{
-		    // giam dame
-		    nDamage -= nOriginalDamage * nReducePercent / MAX_PERCENT;
-		    //nDamage = max(nDamage, (nMin + nMax) * 20 / 50); //
-		}
+		// [KM 28/08] DICH NGUOC CHUAN jx_linux_y 0x0807BAA0 (goi tu 0x0808B3C8/0x0808B593/0x0808B5C2):
+		//   delta = (100 + chenh*100/(8*cap_nan_nhan + 200)) * %nguhanh_cua_chieu / 700
+		//   va chi DICH CHUYEN KHANG cua nan nhan (khac he: -delta, bi khac: +delta),
+		//   KHONG nhan thang vao sat thuong. Ban cu tu che "%chieu + chenh/10" cong thang
+		//   khong kep tran: kinh mach day du chenh ~6970 -> +697% moi don khac he,
+		//   phan don La Han Tran doi nguoc con so do lam chinh nguoi danh chet sau 2 don.
+		int nKhacDelta = 0;
+		if (nFiveElements_DamageP > 0)
+			nKhacDelta = (MAX_PERCENT + nElementDifference * 100 / (8 * m_Level + 200)) * nFiveElements_DamageP / 700;
 		
 		// [KM 27/08b] Khi Doanh Dan Dien (va nguon khac sau nay): sat thuong theo
 		// HE cua hai ben. Ban chuan khai bao qua me2Xdamage_p / X2medamage_p cua
@@ -3581,7 +3561,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		    (nMissleSeries == series_fire && m_Series == series_metal) ||
 		    (nMissleSeries == series_earth && m_Series == series_water))
 		{
-			khang_ngu_hanh_tuong_khac -= nReducePercent;
+			khang_ngu_hanh_tuong_khac -= nKhacDelta;
 		}
 		else if ((nMissleSeries == series_metal && m_Series == series_fire) ||
 		         (nMissleSeries == series_water && m_Series == series_earth) ||
@@ -3589,7 +3569,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		         (nMissleSeries == series_fire && m_Series == series_water) ||
 		         (nMissleSeries == series_earth && m_Series == series_wood))
 		{
-			khang_ngu_hanh_tuong_khac += nReducePercent;
+			khang_ngu_hanh_tuong_khac += nKhacDelta;
 		}
 
 		//--End TÝnh Damage Min Max Ngò Hµnh T­¬ng Kh¾c Tinh khang Ngu Hanh Tuong Khac NKTK
