@@ -14001,6 +14001,21 @@ extern int LuaPET_SetSkill(Lua_State* L);
 extern int LuaPET_GetSkill(Lua_State* L);
 extern int LuaPET_SetName(Lua_State* L);
 extern int LuaPET_GetName(Lua_State* L);
+extern int LuaPET_GetStr(Lua_State* L);
+extern int LuaPET_GetDex(Lua_State* L);
+extern int LuaPET_GetVit(Lua_State* L);
+extern int LuaPET_GetEng(Lua_State* L);
+extern int LuaPET_GetLife(Lua_State* L);
+extern int LuaPET_GetMana(Lua_State* L);
+extern int LuaPET_SetStr(Lua_State* L);
+extern int LuaPET_SetDex(Lua_State* L);
+extern int LuaPET_SetVit(Lua_State* L);
+extern int LuaPET_SetEng(Lua_State* L);
+extern int LuaPET_SetLife(Lua_State* L);
+extern int LuaPET_SetMana(Lua_State* L);
+extern int LuaPET_SetAttrib(Lua_State* L);
+extern int LuaPET_ClearSkill(Lua_State* L);
+extern int LuaPET_AddUpgradePoint(Lua_State* L);
 extern int LuaReduceOwnExp(Lua_State* L);
 
 extern int LuaGetLastDiagNpc(Lua_State* L);
@@ -15579,6 +15594,22 @@ TLua_Funcs GameScriptFuns[] =
 		{ "PET_GetSkill",	LuaPET_GetSkill },
 		{ "PET_SetName",	LuaPET_SetName },
 		{ "PET_GetName",	LuaPET_GetName },
+		// [29/08] 15 ham ban Linux con thieu (audit p54)
+		{ "PET_GetStr",	LuaPET_GetStr },
+		{ "PET_GetDex",	LuaPET_GetDex },
+		{ "PET_GetVit",	LuaPET_GetVit },
+		{ "PET_GetEng",	LuaPET_GetEng },
+		{ "PET_GetLife",	LuaPET_GetLife },
+		{ "PET_GetMana",	LuaPET_GetMana },
+		{ "PET_SetStr",	LuaPET_SetStr },
+		{ "PET_SetDex",	LuaPET_SetDex },
+		{ "PET_SetVit",	LuaPET_SetVit },
+		{ "PET_SetEng",	LuaPET_SetEng },
+		{ "PET_SetLife",	LuaPET_SetLife },
+		{ "PET_SetMana",	LuaPET_SetMana },
+		{ "PET_SetAttrib",	LuaPET_SetAttrib },
+		{ "PET_ClearSkill",	LuaPET_ClearSkill },
+		{ "PET_AddUpgradePoint",	LuaPET_AddUpgradePoint },
 		{ "ReduceOwnExp",	LuaReduceOwnExp },	// [PETSYS] Linux API
 
 		{ "GetLastDiagNpc",	LuaGetLastDiagNpc },

@@ -146,6 +146,36 @@ function BDH_P_DongBo()
 	Msg2Player("Da ban lai 29 o diem pet - mo cua so Ban Dong Hanh xem")
 end
 
+function BDH_P_CapKN()
+	local i
+	for i = 1, 5 do
+		AddItem(6, 1, 4880, 1, 0, 0)
+	end
+	for i = 4881, 4886 do
+		AddItem(6, 1, i, 1, 0, 0)
+	end
+	Msg2Player("Da cap 5 Bi kip + 6 trang bi")
+end
+
+function BDH_P_XoaKN()
+	local i
+	for i = 0, 3 do
+		SetTask(5139 + i, 0)
+	end
+	Msg2Player("Da xoa het ky nang pet")
+end
+
+function BDH_P_XoaTB()
+	local i
+	for i = 0, 5 do
+		SetTask(5143 + i, 0)
+		SetTask(5150 + i, 0)
+	end
+	SetTask(5157, 0)
+	SetTask(5158, 0)
+	Msg2Player("Da thao het trang bi pet")
+end
+
 function BDH_P_CapDo()
 	local i
 	for i = 1, 5 do

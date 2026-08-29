@@ -373,6 +373,56 @@ int LuaPET_SetXiuzhenPoint(Lua_State* L) { return sPetSetAt(L, 5115); }
 int LuaPET_GetFeatureId(Lua_State* L)    { return sPetGetAt(L, 5116); }
 int LuaPET_SetFeatureId(Lua_State* L)    { return sPetSetAt(L, 5116); }
 
+// [29/08 - bu theo audit] 15 ham ban Linux co ma JX1 thieu.
+// attrib: 0=Str 1=Dex 2=Vit 3=Eng 4=Life 5=Mana (o PET_TV_ATTRIB0 + i)
+static int sPetGetAttrAt(Lua_State* L, int nIdx)
+{ Lua_PushNumber(L, sPetG(sPetCtx(L), PET_TV_ATTRIB0 + nIdx)); return 1; }
+static int sPetSetAttrAt(Lua_State* L, int nIdx)
+{ sPetS(sPetCtx(L), PET_TV_ATTRIB0 + nIdx, (int)Lua_ValueToNumber(L, 1)); return 0; }
+
+int LuaPET_GetStr(Lua_State* L)  { return sPetGetAttrAt(L, 0); }
+int LuaPET_GetDex(Lua_State* L)  { return sPetGetAttrAt(L, 1); }
+int LuaPET_GetVit(Lua_State* L)  { return sPetGetAttrAt(L, 2); }
+int LuaPET_GetEng(Lua_State* L)  { return sPetGetAttrAt(L, 3); }
+int LuaPET_GetLife(Lua_State* L) { return sPetGetAttrAt(L, 4); }
+int LuaPET_GetMana(Lua_State* L) { return sPetGetAttrAt(L, 5); }
+int LuaPET_SetStr(Lua_State* L)  { return sPetSetAttrAt(L, 0); }
+int LuaPET_SetDex(Lua_State* L)  { return sPetSetAttrAt(L, 1); }
+int LuaPET_SetVit(Lua_State* L)  { return sPetSetAttrAt(L, 2); }
+int LuaPET_SetEng(Lua_State* L)  { return sPetSetAttrAt(L, 3); }
+int LuaPET_SetLife(Lua_State* L) { return sPetSetAttrAt(L, 4); }
+int LuaPET_SetMana(Lua_State* L) { return sPetSetAttrAt(L, 5); }
+
+// PET_SetAttrib(nIndex, nValue) - nIndex 0..5
+int LuaPET_SetAttrib(Lua_State* L)
+{
+	int nIdx = (int)Lua_ValueToNumber(L, 1);
+	if (nIdx < 0 || nIdx >= PET_ATTRIB_COUNT) return 0;
+	sPetS(sPetCtx(L), PET_TV_ATTRIB0 + nIdx, (int)Lua_ValueToNumber(L, 2));
+	return 0;
+}
+
+// PET_ClearSkill() - xoa 4 o ky nang
+int LuaPET_ClearSkill(Lua_State* L)
+{
+	int nIdx = sPetCtx(L);
+	for (int i = 0; i < PET_SKILL_COUNT; i++)
+		sPetS(nIdx, PET_TV_SKILL0 + i, 0);
+	return 0;
+}
+
+// PET_AddUpgradePoint(n) - CONG diem thang cap (Linux: moi hoat dong/ngay +1)
+int LuaPET_AddUpgradePoint(Lua_State* L)
+{
+	int nIdx = sPetCtx(L);
+	int nAdd = (int)Lua_ValueToNumber(L, 1);
+	if (nIdx <= 0 || nAdd == 0) return 0;
+	int nMoi = sPetG(nIdx, PET_TV_UPGRADE) + nAdd;
+	if (nMoi < 0) nMoi = 0;
+	sPetS(nIdx, PET_TV_UPGRADE, nMoi);
+	return 0;
+}
+
 int LuaPET_IsCreate(Lua_State* L)
 {
 	Lua_PushNumber(L, sPetG(sPetCtx(L), PET_TV_CREATE) == 1 ? 1 : 0);
