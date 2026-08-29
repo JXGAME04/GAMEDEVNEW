@@ -22,7 +22,7 @@ Description : [PETSYS] Cua so "Ban Dong Hanh" ban PC - dung 100% bo cuc
 #define PET_UI_BTN_NUM      8
 #define PET_UI_TXT_NUM      12
 #define PET_UI_EXTSKILL_NUM 4
-#define PET_UI_EQUIP_NUM   7
+#define PET_UI_EQUIP_NUM   10
 
 class KUiPet : public KWndImage
 {

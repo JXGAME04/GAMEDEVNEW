@@ -76,6 +76,25 @@ static void sPetSetName(int nPlayerIdx, const char* szName)
 // AURA: ap skill state 1600..1603 (cap = cap pet) len CHU trong 40s;
 // Pet_Breathe re-cast moi ~30s khi con goi ra -> thu ve tu rung.
 //---------------------------------------------------------------------------
+// [29/08] THUOC TINH BO trang bi Dong Hanh - bang goc
+// settings\petsys\suitattrib.txt (EquipParticular = bac bo):
+//   bac0: 233=5000 308=30 311=1 | bac1: 7500/40/2 | bac2: 10000/50/3
+// Ma 233 = sinh luc toi da; 308/311 NGOAI DAI 305 attrib cua JX1 (ban
+// private mo rong) -> hien chi ap 233.
+#define PET_TV_SUITCOUNT   5163      // lua ghi: bo*100 + so mon dang mac
+static int s_nSuitHp[3] = { 5000, 7500, 10000 };
+
+static int sPetSuitAttrib(int nPlayerIdx)
+{
+	int nV = sPetG(nPlayerIdx, PET_TV_SUITCOUNT);
+	if (nV <= 0) return 0;
+	int nBo = nV / 100;
+	int nSo = nV % 100;
+	if (nBo < 0 || nBo > 2) return 0;
+	if (nSo < 10) return 0;             // du 10 mon moi kich bo
+	return s_nSuitHp[nBo];
+}
+
 static void sPetApplyAura(int nPlayerIdx)
 {
 	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);       // loai 1..4
@@ -162,14 +181,14 @@ static int sPetSummon(int nPlayerIdx)
 	// thoai LifeMax=0 nen thanh mau tren dau pet hien 0
 	{
 		// [29/08] + bonus trang bi pet (petequip.lua tinh tong vao 5157/5158)
-		int nHp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 4) + sPetG(nPlayerIdx, 5157);
+		int nHp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 4) + sPetSuitAttrib(nPlayerIdx);
 		if (nHp > 0)
 		{
 			pNpc->m_LifeMax = nHp;
 			// thanh mau client tinh theo m_CurrentLifeMax (nhu LuaSetNpcLife)
 			pNpc->m_CurrentLifeMax = nHp;
 		}
-		int nMp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 5) + sPetG(nPlayerIdx, 5158);
+		int nMp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 5);
 		if (nMp > 0)
 			pNpc->m_ManaMax = nMp;
 		pNpc->m_CurrentMana = pNpc->m_ManaMax;

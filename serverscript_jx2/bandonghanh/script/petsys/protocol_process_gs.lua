@@ -36,6 +36,7 @@ Include("\\script\\petsys\\feature.lua")
 Include("\\script\\petsys\\delete.lua")
 Include("\\script\\petsys\\transferexp.lua")	-- [JX1 28/08] Linux nap ca thu muc luc boot; JX1 Include tuong minh
 Include("\\script\\petsys\\xiuzhen.lua")
+Include("\\script\\petsys\\petequip.lua")
 
 function PetSys:ProtocolProcess(nOperationId)
 	if not self.tbProtocolFunction then

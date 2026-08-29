@@ -149,7 +149,16 @@ function BDH_P_CapKN()
 	for i = 1, 5 do
 		AddItem(6, 1, 4880, 1, 0, 0)
 	end
-	Msg2Player("Da cap 5 Bi kiep ban dong hanh")
+	for i = 4907, 4916 do
+		AddItem(6, 1, i, 1, 0, 0)
+	end
+	for i = 1, 5 do
+		AddItem(6, 1, 4929, 1, 0, 0)
+		AddItem(6, 1, 4930, 1, 0, 0)
+		AddItem(6, 1, 4932, 1, 0, 0)
+		AddItem(6, 1, 4927, 1, 0, 0)
+	end
+	Msg2Player("Da cap 5 Bi kiep + bo Bich Huyet 10 mon + 5 ruong/chia khoa/ket tinh")
 end
 
 function BDH_P_XoaKN()

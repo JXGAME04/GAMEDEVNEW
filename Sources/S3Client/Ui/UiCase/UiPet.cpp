@@ -292,7 +292,26 @@ void KUiPet::UpdateData()
         m_Skill1.HoldObject(CGOG_NOTHING, 0, 0, 0);
 
     // [29/08] 4 ky nang bi dong da hoc (task 5139..5142)
-    // [29/08] 7 o trang bi: he tu che DA GO - se port lai tu nguon that
+    // [29/08] 10 o trang bi Dong Hanh (task 5143..5152 = ParticularType).
+    // Anh lay tu bang item (cot ImageName) - bang goc VLTK da port sang JX1.
+    for (i = 0; i < PET_UI_EQUIP_NUM && i < 10; i++)
+    {
+        int nP = sPetTV(5143 + i);
+        char szImg[128];
+        szImg[0] = 0;
+        if (nP > 0)
+            sPetItemImg(nP, szImg, sizeof(szImg));
+        if (szImg[0])
+        {
+            m_Equip[i].SetImage(ISI_T_SPR, szImg);
+            m_Equip[i].Show();
+        }
+        else
+        {
+            m_Equip[i].SetImage(ISI_T_SPR, (char*)"");
+            m_Equip[i].Hide();
+        }
+    }
 
     for (i = 0; i < PET_UI_EXTSKILL_NUM && i < 4; i++)
     {
@@ -341,7 +360,8 @@ int KUiPet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 break;
             }
         }
-        // m_CompanionBtn ("Duc lai"): he trang bi chua port tu nguon that
+        if (uParam == (unsigned int)(KWndWindow*)&m_CompanionBtn)
+            SendOp(10);	// menu trang bi Dong Hanh (server)
         break;
     default:
         return KWndImage::WndProc(uMsg, uParam, nParam);

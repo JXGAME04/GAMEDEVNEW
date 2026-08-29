@@ -36,6 +36,7 @@ PetSys.tbProtocolFunction =
 	[PET_OPERATION_CHANGE_FEATURE] = "ChangeFeatureDlg",
 	[PET_OPERATION_TAME] = "TransferExp",
 	[PET_OPERATION_XIUZHEN_POINT] = "XiuzhenPointDlg",
+	[10] = "EquipRebuildDlg",	-- trang bi Dong Hanh
 }
 
 PetSys.tbPetSkill = {
