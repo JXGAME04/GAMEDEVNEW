@@ -3721,7 +3721,12 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			if (nDamage < 1)
 				nDamage = 1;
 		}
-		if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player && nRate != m_CurrentMeleeDmgRetPercent && nRate != m_CurrentRangeDmgRetPercent)
+		// [KM 28/08] phan don cung la don PvP - phai an PKDamageRate (20%) nhu moi don khac.
+		// Hai ve cu "nRate != %phan don" (so KHANG voi %PHAN DON) lam don phan (damage_magic,
+		// nRate=0, nguoi nhan ret_p=0) NE mat phep nhan 20% => manh gap 5 lan tuong doi.
+		// Linux phat phan don qua duong nhan chung (0x808A150 -> 0x8089c90), khong mien tru.
+		// damage_magic chi co 3 lenh phan don dung nen bo 2 ve chi anh huong dung phan don.
+		if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player)
 	    {
 	             nDamage = (int)((int64_t)nDamage * NpcSet.m_nPKDamageRate / 100);
 	            
@@ -3858,7 +3863,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 					{
 						nMin = m_CurrentMeleeDmgRet;
 						nMin += nDamage * nMax / MAX_PERCENT;
-								nMin -= nMin *  Npc[nAttacker].m_CurrentReturnResPercent  / MAX_PERCENT;
+								nMin -= nMin * nCurrentDmgRetPercentResist / MAX_PERCENT;	// [KM 28/08] dung ban da kep 0..95
 						if (nMin > 0 && (IsPlayer()|| (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))
 						{
 							Npc[nAttacker].CalcDamage(m_Index, nMin, nMin, damage_magic, -1, FALSE, FALSE, TRUE); // ph¶n ®ßn 
@@ -3868,7 +3873,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 					{
 						nMin = m_CurrentRangeDmgRet;
 						nMin += nDamage * nMax / MAX_PERCENT;
-						nMin -= nMin * - nCurrentDmgRetPercentResist   / MAX_PERCENT;
+						nMin -= nMin * nCurrentDmgRetPercentResist / MAX_PERCENT;	// [KM 28/08] sua LOI DAU: ban cu "* -" la CONG them
 					
 						if (nMin > 0 && (IsPlayer() || (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))  // 
 						{
