@@ -70,8 +70,12 @@ Include("\\script\\header\\cauhinh_hoatdong.lua")
 -- -> readymap\ready.lua (tbReady) -> head.lua (YDBZ_MAP_MAP, YDBZ_BOAT_POS...).
 -- Thieu no la bam "bat dau bao danh" se bao "Khong thay YDBZ_OnTrigger".
 Include("\\script\\tinhnang\\viemde\\ydbz_driver.lua")
+-- Cho muc "Dieu khien tran": can chinh cac ham sinh NPC cua tinh nang
+-- (YDBZ_add_npc / YDBZ_add_final_npc) va bang YDBZ_map_posfiles. npc.lua tu
+-- keo theo head.lua + include.lua nen khong can Include rieng.
+Include("\\script\\missions\\yandibaozang\\npc.lua")
 
-TTHD_PHIEN = "28/08/2026"
+TTHD_PHIEN = "29/08/2026"
 
 -- ---------------------------------------------------------------------------
 -- Tien ich
@@ -130,9 +134,26 @@ function TTHD_ChanDoan()
 	TTHD_In("    tbReady (ruột báo danh): " .. TTHD_CoKhong(tbReady ~= nil)
 		.. " | YDBZ_restore: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_restore")))
 	TTHD_In("    lib:DoFunInWorld (vá 28/08): "
-		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil))
+		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil)
+		.. " | ruột sinh quái: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_add_npc")))
 
-	TTHD_In("<color=yellow>[2] Bản đồ<color>")
+	TTHD_In("<color=yellow>[2] Bảng dữ liệu bắt buộc<color>")
+	local nBang = 0
+	if TTHD_CoHam("YDBZ_GetTabFileHeight") then
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\waya_01.txt") > 0 then
+			nBang = nBang + 1
+		end
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\wayfinial.txt") > 0 then
+			nBang = nBang + 1
+		end
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\trap\\atrap1.txt") > 0 then
+			nBang = nBang + 1
+		end
+	end
+	TTHD_In("    Bảng toạ độ quái và bẫy: <color=gold>" .. nBang .. "/3<color>"
+		.. " (thiếu là vào trận không có quái)")
+
+	TTHD_In("<color=yellow>[3] Bản đồ<color>")
 	local nMapNpc = HD_CFG("YDBZ_NPC_MAP", 37)
 	TTHD_In("    Bản đồ NPC báo danh " .. nMapNpc .. ": " .. TTHD_CoKhong(TTHD_CoMap(nMapNpc) == 1))
 	local nCo = 0
@@ -147,7 +168,7 @@ function TTHD_ChanDoan()
 	end
 	TTHD_In("    Bản đồ trận 853-862: <color=gold>" .. nCo .. "/10<color>")
 
-	TTHD_In("<color=yellow>[3] Hệ xúc xắc trong động cơ<color>")
+	TTHD_In("<color=yellow>[4] Hệ xúc xắc trong động cơ<color>")
 	TTHD_In("    ApplyItemDice: " .. TTHD_CoKhong(TTHD_CoHam("ApplyItemDice"))
 		.. " | AddDiceItemInfo: " .. TTHD_CoKhong(TTHD_CoHam("AddDiceItemInfo"))
 		.. " | RollItem: " .. TTHD_CoKhong(TTHD_CoHam("RollItem")))
@@ -155,7 +176,7 @@ function TTHD_ChanDoan()
 		TTHD_In("    <color=red>Chưa có trong DLL - thay CoreServer.dll rồi khởi động lại.<color>")
 	end
 
-	TTHD_In("<color=yellow>[4] Điều kiện tham gia<color>")
+	TTHD_In("<color=yellow>[5] Điều kiện tham gia<color>")
 	TTHD_In("    Cấp tối thiểu " .. HD_CFG("YDBZ_CAP_TOITHIEU", 120)
 		.. " | Tổ đội cần " .. YDBZ_TEAM_COUNT_LIMIT .. " tới " .. YDBZ_TEAM_COUNT_MAXLIMIT .. " người")
 	TTHD_In("    Cấp của bạn: <color=gold>" .. GetLevel() .. "<color>"
@@ -252,8 +273,157 @@ function TTHD_MotMinh()
 	"1. Vào thẳng trận một mình, bản đồ 853/TTHD_MM_Vao853",
 	"2. Chọn bản đồ trận khác/TTHD_MM_ChonMap",
 	"3. Thoát trận và phục hồi trạng thái/TTHD_MM_Thoat",
-	"4. Chế độ này làm gì, có an toàn không/TTHD_MM_GiaiThich",
+	"4. Điều khiển trận: vượt ải, gọi boss/TTHD_MM_DieuKhien",
+	"5. Chế độ này làm gì, có an toàn không/TTHD_MM_GiaiThich",
 	"Quay lại/TTHD_Root"})
+end
+
+-- ---------------------------------------------------------------------------
+-- DIEU KHIEN TRAN. Vi sao can: moi ai co 60 lau la (YDBZ_map_npc[*][1] phan tu
+-- thu 7 = 60), 10 ai x 3 duong ~ 610 con - danh tay khong noi. Cac nut duoi
+-- goi DUNG ham cua tinh nang (YDBZ_add_npc / YDBZ_add_final_npc) va dat DUNG
+-- bien mission ma npc_death.lua doc, nen luong sau do chay y het that.
+-- ---------------------------------------------------------------------------
+function TTHD_MM_DieuKhien()
+	SayEx({"<color=yellow>Điều khiển trận<color> - dùng khi đang đứng trong bản đồ trận",
+	"1. Xem trạng thái trận đang chạy/TTHD_DK_TrangThai",
+	"2. Gọi thẳng boss ải kế cho tổ mình/TTHD_DK_VuotAi",
+	"3. Vào thẳng giai đoạn tranh đoạt/TTHD_DK_TranhDoat",
+	"4. Gọi boss cuối Lương Mi Nhi ngay/TTHD_DK_BossCuoi",
+	"5. Trận vận hành thế nào/TTHD_DK_GiaiThich",
+	"Quay lại/TTHD_MotMinh"})
+end
+
+-- Dat bien toan cuc SubWorld theo ban do dang dung. Ham mission cua dong co
+-- (GetMissionV/SetMissionV/StartMissionTimer) deu doc bien nay - xem
+-- GetSubWorldIndex (ScriptFuns.cpp:513). Tra ma ban do, nil neu hong.
+function TTHD_DK_SubWorld()
+	local nW = GetWorldPos()
+	if nW == nil then
+		return nil
+	end
+	local nIdx = SubWorldID2Idx(nW)
+	if nIdx == nil or nIdx < 0 then
+		return nil
+	end
+	SubWorld = nIdx
+	return nW
+end
+
+function TTHD_DK_TrangThai()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Không xác định được bản đồ hiện tại.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	TTHD_In("<color=yellow>===== Trạng thái trận - bản đồ " .. nW .. " =====<color>")
+	TTHD_In("Đồng hồ trận: <color=gold>" .. GetMissionV(YDBZ_VARV_STATE) .. "<color>"
+		.. " (3 chờ 5 giây, 4 đang đánh, 5-8 đếm phút, 9 hết giờ)")
+	TTHD_In("Pha tranh đoạt: <color=gold>" .. GetMissionV(YDBZ_STATE_SIGN) .. "<color>"
+		.. " (0 chưa, 1 vừa hạ 4 boss, 2 đang tranh, 3 đã gọi boss cuối, 4 xong)")
+	TTHD_In("Tổ còn sống: <color=gold>" .. GetMissionV(YDBZ_TEAM_COUNT)
+		.. "<color> / ban đầu " .. GetMissionV(YDBZ_TEAM_SUM)
+		.. " | boss trung tâm còn: <color=gold>" .. GetMissionV(YDBZ_NPC_BOSS_COUNT) .. "<color>")
+	local i
+	for i = 1, 3 do
+		TTHD_In("   Tổ " .. i .. ": đã vượt <color=gold>" .. GetMissionV(YDBZ_NPC_WAY[i])
+			.. "<color> ải, bộ đếm quái đang giết: " .. GetMissionV(YDBZ_NPC_COUNT[i])
+			.. " (đủ 60 mới ra boss ải)")
+	end
+	TTHD_In("Phe của bạn: <color=gold>" .. GetTmpCamp() .. "<color>"
+		.. " - quái phải khác phe mới đánh bạn.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_VuotAi()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Không xác định được bản đồ hiện tại.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	if not TTHD_CoHam("YDBZ_add_npc") then
+		TTHD_In("<color=red>Không thấy YDBZ_add_npc - kiểm dòng Include npc.lua.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local nTeam = GetTmpCamp()
+	if nTeam == nil or nTeam < 1 or nTeam > 3 then
+		TTHD_In("<color=red>Bạn không ở trong trận (phe hiện tại: "
+			.. tostring(nTeam) .. ").<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local nWay = GetMissionV(YDBZ_NPC_WAY[nTeam]) + 1
+	if nWay > 10 then
+		TTHD_In("Tổ bạn đã qua đủ 10 ải. Hãy ra khu trung tâm hạ 4 boss,")
+		TTHD_In("hoặc dùng mục 3 để vào thẳng giai đoạn tranh đoạt.")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local file = YDBZ_map_posfiles[1][nTeam][nWay]
+	YDBZ_add_npc(file, nTeam, nWay, 2)
+	if nWay == 3 or nWay == 6 then
+		YDBZ_add_npc(file, nTeam, nWay, 21)
+		SetMissionV(YDBZ_NPC_COUNT[nTeam], 2)
+		TTHD_In("<color=green>Đã gọi boss ải " .. nWay .. " và boss Nộ đi kèm.<color>")
+	else
+		SetMissionV(YDBZ_NPC_COUNT[nTeam], 1)
+		TTHD_In("<color=green>Đã gọi boss ải " .. nWay .. " cho tổ " .. nTeam .. ".<color>")
+	end
+	TTHD_In("Hạ boss này là cửa ải mở và 60 quái ải kế sinh ra - đúng luồng thật.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_TranhDoat()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Không xác định được bản đồ hiện tại.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	SetMissionV(YDBZ_NPC_BOSS_COUNT, 0)
+	SetMissionV(YDBZ_STATE_SIGN, 1)
+	StartMissionTimer(YDBZ_MISSION_MATCH, YDBZ_TIMER_FIGHTSTATE, YDBZ_TIME_WAIT_STATE1 * 18)
+	TTHD_In("<color=green>Đã đặt pha tranh đoạt, hẹn 10 giây.<color>")
+	TTHD_In("Sau 10 giây: mọi người bị gom về điểm trận doanh, mỗi phe được 5")
+	TTHD_In("viện quân (Dung Binh). Nếu chỉ còn một tổ thì boss cuối ra luôn.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_BossCuoi()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Không xác định được bản đồ hiện tại.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	if not TTHD_CoHam("YDBZ_add_final_npc") then
+		TTHD_In("<color=red>Không thấy YDBZ_add_final_npc - kiểm Include npc.lua.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	YDBZ_add_final_npc(SubWorld, 1781 * 32, 3563 * 32)
+	SetMissionV(YDBZ_STATE_SIGN, 3)
+	TTHD_In("<color=green>Đã gọi Lương Mi Nhi tại nơi sâu nhất (1781, 3563).<color>")
+	TTHD_In("Hạ được là nhận 20 triệu kinh nghiệm + bảng thưởng bốn phần.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_GiaiThich()
+	TTHD_In("<color=yellow>===== Trận vận hành thế nào =====<color>")
+	TTHD_In("Mở trận: bốn NPC đặt sẵn ở khu trung tâm, ba lối a b c bị vật cản chắn.")
+	TTHD_In("Mỗi lối 10 ải. Một ải có <color=gold>60 quái thường<color>; giết đủ 60 thì")
+	TTHD_In("boss ải mới ra (riêng ải 3 và 6 có thêm một boss Nộ).")
+	TTHD_In("Hạ boss ải: mở vật cản sang ải kế, nhận kinh nghiệm, và ải chẵn")
+	TTHD_In("2 4 6 8 10 thì thêm một Viêm Đế Bí Bảo, riêng ải 6 tặng thêm")
+	TTHD_In("6 Chân Nguyên Đơn đại.")
+	TTHD_In("Qua ải 10 là tới khu trung tâm - hạ đủ bốn boss ở đó thì cả bản đồ")
+	TTHD_In("chuyển sang <color=yellow>tranh đoạt<color>: bị nhốt lại, mỗi phe thêm viện quân,")
+	TTHD_In("đánh nhau tới khi chỉ còn một tổ thì Lương Mi Nhi mới xuất hiện.")
+	TTHD_In("Cả trận dài 30 phút, cứ 5 phút loa báo một lần.")
+	TTHD_MM_DieuKhien()
 end
 
 -- Ruot cua che do mot minh. Dung DUNG hai ham ma duong bao danh that dung,

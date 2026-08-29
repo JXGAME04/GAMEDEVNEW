@@ -1,14 +1,40 @@
+-- [MA2 29/08] nan ma vat pham con sot cua ban Linux (doi chieu TEN bang magicscript cua du an) - xem ReverseTools\viemde\v26_ma_consot.py
 IL("DICEITEM")
 Include("\\script\\missions\\yandibaozang\\include.lua")
 
 function YDBZ_DiceDice(ng,gd,np,ntime,double)
-	local nRet = ApplyItemDice(1, 100,ntime, "\\script\\missions\\yandibaozang\\saizi.lua", "YDBZ_OnTimeOver", "", GetTeamSize())
+	-- [XX 29/08] gom danh sach nguoi duoc moi gieo (xem chu thich duoi).
+	local tbNhan = {}
+	local nCampXX = GetTmpCamp()
+	local nIdxXX = 0
+	local nPidXX
+	if nCampXX ~= nil and nCampXX > 0 then
+		for i=1, 10 do
+			nIdxXX, nPidXX = GetNextPlayer(YDBZ_MISSION_MATCH, nIdxXX, nCampXX)
+			if nPidXX ~= nil and nPidXX > 0 then
+				tinsert(tbNhan, nPidXX)
+			end
+			if nIdxXX == 0 then
+				break
+			end
+		end
+	end
+	if getn(tbNhan) == 0 then
+		tbNhan[1] = PlayerIndex
+	end
+	local nRet = ApplyItemDice(1, 100,ntime, "\\script\\missions\\yandibaozang\\saizi.lua", "YDBZ_OnTimeOver", "", getn(tbNhan))
 	--print(nRet)
 	local nBody = 0
 	AddDiceItemInfo(nRet,0,ng,gd,np,1,double,1,1,1,1,1)
 	local nPlayerOld = PlayerIndex
-	for i=1, GetTeamSize() do
-		PlayerIndex = GetTeamMember(i)
+	-- [XX 29/08] TRONG TRAN NGUOI CHOI DA ROI TO DOI (readymap\ready.lua:251
+	-- LeaveTeam) nen GetTeamSize() = 0 (ScriptFuns.cpp:2860) => vong cu khong
+	-- moi duoc AI gieo => het gio chot 0 nguoi => Hinh nhan bi thu hoi, khong
+	-- ai nhan. Gom nguoi CUNG PHE trong mission - dung khuon cua chinh tinh
+	-- nang (npc_death.lua:62/:86/:186). PlayerIndex luc nay la nguoi vua ket
+	-- lieu (npc_death.lua:34 dat truoc khi goi) nen GetTmpCamp() ra dung phe.
+	for i=1, getn(tbNhan) do
+		PlayerIndex = tbNhan[i]
 		RollItem(nRet)
 	end
 	PlayerIndex = nPlayerOld
@@ -43,7 +69,7 @@ function YDBZ_show_roll_info(dwID, nWinner, nNumber)
 				str = "<color=yellow>"..value[1].."<color> hñy bá"
 			elseif value[3] == 2 then
 				if value[4] == 1 then
-					if nWinner == value[5] and nSeries == 1 and ndouble == 1 and nPart == 1605 then -- roll
+					if nWinner == value[5] and nSeries == 1 and ndouble == 1 and nPart == 1614 then -- roll
 						if random(1,100) < 50  then		
 							str = str .. "<color=yellow>[Viªm §Õ LÖnh cã hiÖu lùc]<color>"
 							ndsign = 1
@@ -52,10 +78,10 @@ function YDBZ_show_roll_info(dwID, nWinner, nNumber)
 							
 						end
 						--log
-						if nGenre == 6 and nDetial == 1 and nPart == 1606 then
+						if nGenre == 6 and nDetial == 1 and nPart == 1615 then
 							YDBZ_sdl_writeLog("V­ît ¶i b¶o tµng viªm ®Õ","Trong qu¸ tr×nh v­ît ¶i thu ®­îc 1 Viªm §Õ ®å ®»ng")
 						end	
-						if nGenre == 6 and nDetial == 1 and nPart == 1605 then
+						if nGenre == 6 and nDetial == 1 and nPart == 1614 then
 							YDBZ_sdl_writeLog("V­ît ¶i b¶o tµng viªm ®Õ","Trong lóc v­ît ¶i thu ®­îc 1 h×nh ném")
 						end			
 					end

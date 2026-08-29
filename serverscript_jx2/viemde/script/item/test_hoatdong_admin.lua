@@ -15,8 +15,12 @@ Include("\\script\\header\\cauhinh_hoatdong.lua")
 -- -> readymap\ready.lua (tbReady) -> head.lua (YDBZ_MAP_MAP, YDBZ_BOAT_POS...).
 -- Thieu no la bam "bat dau bao danh" se bao "Khong thay YDBZ_OnTrigger".
 Include("\\script\\tinhnang\\viemde\\ydbz_driver.lua")
+-- Cho muc "Dieu khien tran": can chinh cac ham sinh NPC cua tinh nang
+-- (YDBZ_add_npc / YDBZ_add_final_npc) va bang YDBZ_map_posfiles. npc.lua tu
+-- keo theo head.lua + include.lua nen khong can Include rieng.
+Include("\\script\\missions\\yandibaozang\\npc.lua")
 
-TTHD_PHIEN = "28/08/2026"
+TTHD_PHIEN = "29/08/2026"
 
 -- ---------------------------------------------------------------------------
 -- Tien ich
@@ -75,9 +79,26 @@ function TTHD_ChanDoan()
 	TTHD_In("    tbReady (ruét b¸o danh): " .. TTHD_CoKhong(tbReady ~= nil)
 		.. " | YDBZ_restore: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_restore")))
 	TTHD_In("    lib:DoFunInWorld (v¸ 28/08): "
-		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil))
+		.. TTHD_CoKhong(lib ~= nil and lib.DoFunInWorld ~= nil)
+		.. " | ruét sinh qu¸i: " .. TTHD_CoKhong(TTHD_CoHam("YDBZ_add_npc")))
 
-	TTHD_In("<color=yellow>[2] B¶n ®å<color>")
+	TTHD_In("<color=yellow>[2] B¶ng d÷ liÖu b¾t buéc<color>")
+	local nBang = 0
+	if TTHD_CoHam("YDBZ_GetTabFileHeight") then
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\waya_01.txt") > 0 then
+			nBang = nBang + 1
+		end
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\wayfinial.txt") > 0 then
+			nBang = nBang + 1
+		end
+		if YDBZ_GetTabFileHeight("\\settings\\maps\\yandibaozang\\trap\\atrap1.txt") > 0 then
+			nBang = nBang + 1
+		end
+	end
+	TTHD_In("    B¶ng to¹ ®é qu¸i vµ bÉy: <color=gold>" .. nBang .. "/3<color>"
+		.. " (thiÕu lµ vµo trËn kh«ng cã qu¸i)")
+
+	TTHD_In("<color=yellow>[3] B¶n ®å<color>")
 	local nMapNpc = HD_CFG("YDBZ_NPC_MAP", 37)
 	TTHD_In("    B¶n ®å NPC b¸o danh " .. nMapNpc .. ": " .. TTHD_CoKhong(TTHD_CoMap(nMapNpc) == 1))
 	local nCo = 0
@@ -92,7 +113,7 @@ function TTHD_ChanDoan()
 	end
 	TTHD_In("    B¶n ®å trËn 853-862: <color=gold>" .. nCo .. "/10<color>")
 
-	TTHD_In("<color=yellow>[3] HÖ xóc x¾c trong ®éng c¬<color>")
+	TTHD_In("<color=yellow>[4] HÖ xóc x¾c trong ®éng c¬<color>")
 	TTHD_In("    ApplyItemDice: " .. TTHD_CoKhong(TTHD_CoHam("ApplyItemDice"))
 		.. " | AddDiceItemInfo: " .. TTHD_CoKhong(TTHD_CoHam("AddDiceItemInfo"))
 		.. " | RollItem: " .. TTHD_CoKhong(TTHD_CoHam("RollItem")))
@@ -100,7 +121,7 @@ function TTHD_ChanDoan()
 		TTHD_In("    <color=red>Ch­a cã trong DLL - thay CoreServer.dll råi khëi ®éng l¹i.<color>")
 	end
 
-	TTHD_In("<color=yellow>[4] §iÒu kiÖn tham gia<color>")
+	TTHD_In("<color=yellow>[5] §iÒu kiÖn tham gia<color>")
 	TTHD_In("    CÊp tèi thiÓu " .. HD_CFG("YDBZ_CAP_TOITHIEU", 120)
 		.. " | Tæ ®éi cÇn " .. YDBZ_TEAM_COUNT_LIMIT .. " tíi " .. YDBZ_TEAM_COUNT_MAXLIMIT .. " ng­êi")
 	TTHD_In("    CÊp cña b¹n: <color=gold>" .. GetLevel() .. "<color>"
@@ -197,8 +218,157 @@ function TTHD_MotMinh()
 	"1. Vµo th¼ng trËn mét m×nh, b¶n ®å 853/TTHD_MM_Vao853",
 	"2. Chän b¶n ®å trËn kh¸c/TTHD_MM_ChonMap",
 	"3. Tho¸t trËn vµ phôc håi tr¹ng th¸i/TTHD_MM_Thoat",
-	"4. ChÕ ®é nµy lµm g×, cã an toµn kh«ng/TTHD_MM_GiaiThich",
+	"4. §iÒu khiÓn trËn: v­ît ¶i, gäi boss/TTHD_MM_DieuKhien",
+	"5. ChÕ ®é nµy lµm g×, cã an toµn kh«ng/TTHD_MM_GiaiThich",
 	"Quay l¹i/TTHD_Root"})
+end
+
+-- ---------------------------------------------------------------------------
+-- DIEU KHIEN TRAN. Vi sao can: moi ai co 60 lau la (YDBZ_map_npc[*][1] phan tu
+-- thu 7 = 60), 10 ai x 3 duong ~ 610 con - danh tay khong noi. Cac nut duoi
+-- goi DUNG ham cua tinh nang (YDBZ_add_npc / YDBZ_add_final_npc) va dat DUNG
+-- bien mission ma npc_death.lua doc, nen luong sau do chay y het that.
+-- ---------------------------------------------------------------------------
+function TTHD_MM_DieuKhien()
+	SayEx({"<color=yellow>§iÒu khiÓn trËn<color> - dïng khi ®ang ®øng trong b¶n ®å trËn",
+	"1. Xem tr¹ng th¸i trËn ®ang ch¹y/TTHD_DK_TrangThai",
+	"2. Gäi th¼ng boss ¶i kÕ cho tæ m×nh/TTHD_DK_VuotAi",
+	"3. Vµo th¼ng giai ®o¹n tranh ®o¹t/TTHD_DK_TranhDoat",
+	"4. Gäi boss cuèi L­¬ng Mi Nhi ngay/TTHD_DK_BossCuoi",
+	"5. TrËn vËn hµnh thÕ nµo/TTHD_DK_GiaiThich",
+	"Quay l¹i/TTHD_MotMinh"})
+end
+
+-- Dat bien toan cuc SubWorld theo ban do dang dung. Ham mission cua dong co
+-- (GetMissionV/SetMissionV/StartMissionTimer) deu doc bien nay - xem
+-- GetSubWorldIndex (ScriptFuns.cpp:513). Tra ma ban do, nil neu hong.
+function TTHD_DK_SubWorld()
+	local nW = GetWorldPos()
+	if nW == nil then
+		return nil
+	end
+	local nIdx = SubWorldID2Idx(nW)
+	if nIdx == nil or nIdx < 0 then
+		return nil
+	end
+	SubWorld = nIdx
+	return nW
+end
+
+function TTHD_DK_TrangThai()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Kh«ng x¸c ®Þnh ®­îc b¶n ®å hiÖn t¹i.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	TTHD_In("<color=yellow>===== Tr¹ng th¸i trËn - b¶n ®å " .. nW .. " =====<color>")
+	TTHD_In("§ång hå trËn: <color=gold>" .. GetMissionV(YDBZ_VARV_STATE) .. "<color>"
+		.. " (3 chê 5 gi©y, 4 ®ang ®¸nh, 5-8 ®Õm phót, 9 hÕt giê)")
+	TTHD_In("Pha tranh ®o¹t: <color=gold>" .. GetMissionV(YDBZ_STATE_SIGN) .. "<color>"
+		.. " (0 ch­a, 1 võa h¹ 4 boss, 2 ®ang tranh, 3 ®· gäi boss cuèi, 4 xong)")
+	TTHD_In("Tæ cßn sèng: <color=gold>" .. GetMissionV(YDBZ_TEAM_COUNT)
+		.. "<color> / ban ®Çu " .. GetMissionV(YDBZ_TEAM_SUM)
+		.. " | boss trung t©m cßn: <color=gold>" .. GetMissionV(YDBZ_NPC_BOSS_COUNT) .. "<color>")
+	local i
+	for i = 1, 3 do
+		TTHD_In("   Tæ " .. i .. ": ®· v­ît <color=gold>" .. GetMissionV(YDBZ_NPC_WAY[i])
+			.. "<color> ¶i, bé ®Õm qu¸i ®ang giÕt: " .. GetMissionV(YDBZ_NPC_COUNT[i])
+			.. " (®ñ 60 míi ra boss ¶i)")
+	end
+	TTHD_In("Phe cña b¹n: <color=gold>" .. GetTmpCamp() .. "<color>"
+		.. " - qu¸i ph¶i kh¸c phe míi ®¸nh b¹n.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_VuotAi()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Kh«ng x¸c ®Þnh ®­îc b¶n ®å hiÖn t¹i.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	if not TTHD_CoHam("YDBZ_add_npc") then
+		TTHD_In("<color=red>Kh«ng thÊy YDBZ_add_npc - kiÓm dßng Include npc.lua.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local nTeam = GetTmpCamp()
+	if nTeam == nil or nTeam < 1 or nTeam > 3 then
+		TTHD_In("<color=red>B¹n kh«ng ë trong trËn (phe hiÖn t¹i: "
+			.. tostring(nTeam) .. ").<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local nWay = GetMissionV(YDBZ_NPC_WAY[nTeam]) + 1
+	if nWay > 10 then
+		TTHD_In("Tæ b¹n ®· qua ®ñ 10 ¶i. H·y ra khu trung t©m h¹ 4 boss,")
+		TTHD_In("hoÆc dïng môc 3 ®Ó vµo th¼ng giai ®o¹n tranh ®o¹t.")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	local file = YDBZ_map_posfiles[1][nTeam][nWay]
+	YDBZ_add_npc(file, nTeam, nWay, 2)
+	if nWay == 3 or nWay == 6 then
+		YDBZ_add_npc(file, nTeam, nWay, 21)
+		SetMissionV(YDBZ_NPC_COUNT[nTeam], 2)
+		TTHD_In("<color=green>§· gäi boss ¶i " .. nWay .. " vµ boss Né ®i kÌm.<color>")
+	else
+		SetMissionV(YDBZ_NPC_COUNT[nTeam], 1)
+		TTHD_In("<color=green>§· gäi boss ¶i " .. nWay .. " cho tæ " .. nTeam .. ".<color>")
+	end
+	TTHD_In("H¹ boss nµy lµ cöa ¶i më vµ 60 qu¸i ¶i kÕ sinh ra - ®óng luång thËt.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_TranhDoat()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Kh«ng x¸c ®Þnh ®­îc b¶n ®å hiÖn t¹i.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	SetMissionV(YDBZ_NPC_BOSS_COUNT, 0)
+	SetMissionV(YDBZ_STATE_SIGN, 1)
+	StartMissionTimer(YDBZ_MISSION_MATCH, YDBZ_TIMER_FIGHTSTATE, YDBZ_TIME_WAIT_STATE1 * 18)
+	TTHD_In("<color=green>§· ®Æt pha tranh ®o¹t, hÑn 10 gi©y.<color>")
+	TTHD_In("Sau 10 gi©y: mäi ng­êi bÞ gom vÒ ®iÓm trËn doanh, mçi phe ®­îc 5")
+	TTHD_In("viÖn qu©n (Dung Binh). NÕu chØ cßn mét tæ th× boss cuèi ra lu«n.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_BossCuoi()
+	local nW = TTHD_DK_SubWorld()
+	if nW == nil then
+		TTHD_In("<color=red>Kh«ng x¸c ®Þnh ®­îc b¶n ®å hiÖn t¹i.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	if not TTHD_CoHam("YDBZ_add_final_npc") then
+		TTHD_In("<color=red>Kh«ng thÊy YDBZ_add_final_npc - kiÓm Include npc.lua.<color>")
+		TTHD_MM_DieuKhien()
+		return
+	end
+	YDBZ_add_final_npc(SubWorld, 1781 * 32, 3563 * 32)
+	SetMissionV(YDBZ_STATE_SIGN, 3)
+	TTHD_In("<color=green>§· gäi L­¬ng Mi Nhi t¹i n¬i s©u nhÊt (1781, 3563).<color>")
+	TTHD_In("H¹ ®­îc lµ nhËn 20 triÖu kinh nghiÖm + b¶ng th­ëng bèn phÇn.")
+	TTHD_MM_DieuKhien()
+end
+
+function TTHD_DK_GiaiThich()
+	TTHD_In("<color=yellow>===== TrËn vËn hµnh thÕ nµo =====<color>")
+	TTHD_In("Më trËn: bèn NPC ®Æt s½n ë khu trung t©m, ba lèi a b c bÞ vËt c¶n ch¾n.")
+	TTHD_In("Mçi lèi 10 ¶i. Mét ¶i cã <color=gold>60 qu¸i th­êng<color>; giÕt ®ñ 60 th×")
+	TTHD_In("boss ¶i míi ra (riªng ¶i 3 vµ 6 cã thªm mét boss Né).")
+	TTHD_In("H¹ boss ¶i: më vËt c¶n sang ¶i kÕ, nhËn kinh nghiÖm, vµ ¶i ch½n")
+	TTHD_In("2 4 6 8 10 th× thªm mét Viªm §Õ BÝ B¶o, riªng ¶i 6 tÆng thªm")
+	TTHD_In("6 Ch©n Nguyªn §¬n ®¹i.")
+	TTHD_In("Qua ¶i 10 lµ tíi khu trung t©m - h¹ ®ñ bèn boss ë ®ã th× c¶ b¶n ®å")
+	TTHD_In("chuyÓn sang <color=yellow>tranh ®o¹t<color>: bÞ nhèt l¹i, mçi phe thªm viÖn qu©n,")
+	TTHD_In("®¸nh nhau tíi khi chØ cßn mét tæ th× L­¬ng Mi Nhi míi xuÊt hiÖn.")
+	TTHD_In("C¶ trËn dµi 30 phót, cø 5 phót loa b¸o mét lÇn.")
+	TTHD_MM_DieuKhien()
 end
 
 -- Ruot cua che do mot minh. Dung DUNG hai ham ma duong bao danh that dung,

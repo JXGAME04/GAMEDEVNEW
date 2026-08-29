@@ -4,6 +4,10 @@ Include("\\script\\missions\\yandibaozang\\head.lua")
 Include("\\script\\missions\\yandibaozang\\include.lua")
 Include("\\script\\lib\\awardtemplet.lua")
 Include("\\script\\lib\\log.lua")
+-- [LUA4 28/08] JX1 Include = dofile vao state dang goi (moi state Lua rieng, khong
+-- co state dung chung nhu Linux) => 'lib' (DoFunInWorld/ShuffleTable) phai
+-- Include tuong minh; thieu no la "index global 'lib' (nil)" tai :324.
+Include("\\script\\activitysys\\functionlib.lua")
 local nPak = curpack()
 local Party = {}
 Party.nId = 0
@@ -76,6 +80,10 @@ end
 
 function tbReady:OnTime(nParam, nTimerId)
 	print("tbReady:OnTime")
+	-- [LUA4] dong ho mo coi (chua Init hoac da close): tu tat, khong cong nil
+	if self.nCurTime == nil then
+		return 0, nParam
+	end
 	self.nCurTime = self.nCurTime + self.nIntervalTime
 	if self.nState == 1 then
 		if self.nCurTime >= self.nReadyTime then
@@ -305,7 +313,9 @@ function tbReady:GetSignUpPos()
 	local nMapIndex = SubWorldID2Idx(37)
 	if nMapIndex >= 0 then
 		local nIdx = random(1, getn(tbPos))
-		return unpack(tbPos[nIdx])
+		-- [LUA4] unpack la ham Lua 5, JX1 dung Lua 4.0.1 nen unpack = nil
+		local tb = tbPos[nIdx]
+		return tb[1], tb[2], tb[3]
 	end	
 end
 

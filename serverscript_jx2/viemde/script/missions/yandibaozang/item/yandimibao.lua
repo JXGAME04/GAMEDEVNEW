@@ -1,3 +1,4 @@
+-- [MA2 29/08] nan ma vat pham con sot cua ban Linux (doi chieu TEN bang magicscript cua du an) - xem ReverseTools\viemde\v26_ma_consot.py
 Include("\\script\\lib\\awardtemplet.lua")
 
 --Giíi h¹n ®iÓm kinh nghiÖm mçi ngµy lµ 50triÖu khi sö dông c¸c lo¹i b¶o r­¬ng - Modified by DinhHQ - 20110428
@@ -156,7 +157,7 @@ function VnYdbzBoxNewAward(nItemIdx, strKeyType)
 		return
 	end
 	
-	if ConsumeItem(3, 1, 6, 1, 2805, -1) ~= 1 then
+	if ConsumeItem(3, 1, 6, 1, 3423, -1) ~= 1 then
 		Say("Kh«ng t×m thÊy Viªm §Õ BÝ B¶o", 1, "§ãng/no")
 		return
 	end

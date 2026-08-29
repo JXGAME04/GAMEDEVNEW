@@ -113,19 +113,25 @@ local  _Message =  function (nItemIndex)
 end
 
 --
+-- [MA 29/08] Ma vat pham Viem De cua JX1 = ma Linux + 9 (Anh Hung Thiep
+-- 1604->1613, Hinh nhan 1605->1614, Viem De Lenh 1617->1626...). Bang duoi
+-- truoc day con nguyen ma LINUX nen YDBZ_clearitem (include.lua:16, chay moi
+-- lan roi tran qua YDBZ_restore) XOA NHAM do that cua nguoi choi (1605 ben
+-- JX1 la 'Thiep chuc su de'...) va KHONG thu hoi vat pham Viem De that.
+-- Da nan lai theo TEN bang magicscript.txt cua chinh du an.
 YDBZ_ZUANYONG_ITEM =				--
 {
-	[1] = {"H×nh nh©n",6,1,1605}, -- 1
-	[2] = {"Viªm §Õ tr­êng mÖnh hoµn",	6,	0,	1607}, 
-	[3] = {"Viªm §Õ gia bµo hoµn",	6,	0,	1608}, 
-	[4] = {"Viªm §Õ ®¹i lùc hoµn",	6,	0,	1609}, 
-	[5] = {"Viªm §Õ cao thiÓm hoµn",	6,	0,	1610}, 
-	[6] = {"Viªm §Õ cao trung hoµn",	6,	0,	1611}, 
-	[7] = {"Viªm §Õ phi tèc hoµn",	6,	0,	1612}, 
-	[8] = {"Viªm §Õ b¨ng phßng hoµn",	6,	0,	1613}, 
-	[9] = {"Viªm §Õ l«i phßng hoµn",	6,	0,	1614}, 
-	[10] = {"Viªm §Õ hßa phßng hoµn",	6,	0,	1615}, 
-	[11] = {"Viªm §Õ ®éc phßng hoµn",	6,	0,	1616}, 
+	[1] = {"H×nh nh©n",6,1,1614}, -- 1
+	[2] = {"Viªm §Õ tr­êng mÖnh hoµn",	6,	1,	1616}, 
+	[3] = {"Viªm §Õ gia bµo hoµn",	6,	1,	1617}, 
+	[4] = {"Viªm §Õ ®¹i lùc hoµn",	6,	1,	1618}, 
+	[5] = {"Viªm §Õ cao thiÓm hoµn",	6,	1,	1619}, 
+	[6] = {"Viªm §Õ cao trung hoµn",	6,	1,	1620}, 
+	[7] = {"Viªm §Õ phi tèc hoµn",	6,	1,	1621}, 
+	[8] = {"Viªm §Õ b¨ng phßng hoµn",	6,	1,	1622}, 
+	[9] = {"Viªm §Õ l«i phßng hoµn",	6,	1,	1623}, 
+	[10] = {"Viªm §Õ hßa phßng hoµn",	6,	1,	1624}, 
+	[11] = {"Viªm §Õ ®éc phßng hoµn",	6,	1,	1625}, 
 
 }
 

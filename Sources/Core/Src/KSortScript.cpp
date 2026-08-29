@@ -131,6 +131,12 @@ int g_IsJx2Script(Lua_State* L)
 		// [BDH 27/08] script Ban Dong Hanh port tu Linux: GetGameTime tra GIAY nhu goc
 		"\\script\\partner\\",
 		"\\script\\task\\partner\\",
+		// [VIEMDE 29/08] cay Viem De Bao Tang la script Linux chep nguyen van:
+		// GetTeamMember phai theo quy uoc Linux (vi tri 1 = doi truong) - cay nay
+		// viet "for i = 1, GetTeamSize() do GetTeamMember(i)" o yandibaozang_main
+		// :90/:134/:174 (kiem, tru ve, lap danh sach vao tran); va AddSkillState
+		// phai LUON ap skill that (include.lua:37-40 buff 461/458/459).
+		"\\script\\missions\\yandibaozang\\",
 	};
 	const char* szName = g_GetScriptNameByState(L);
 	if (!szName || !szName[0])

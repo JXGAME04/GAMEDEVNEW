@@ -9,6 +9,19 @@
 Include("\\script\\missions\\yandibaozang\\include.lua")
 Include("\\script\\missions\\yandibaozang\\readymap\\include.lua")
 
+-- [CAMP 29/08] QUAI PHAI THU DICH NGUOI CHOI.
+-- Ban Linux: tham so 7 cua AddNpcEx = bNoRevive (chet la bien mat).
+-- Ban JX1: LuaAddNpcEx (ScriptFuns.cpp:7055) lay tham so 7 lam CAMP va ghi de
+-- camp cua npcs.txt => quai Viem De (Camp=5 thu dich) bi ep ve camp 1 = chinh
+-- phai = CUNG PHE voi to doi 1 (ready.lua SetTmpCamp theo so doi) => quai dung
+-- yen khong danh. Doi port 3 hoat dong 25/08 da lam ham HD3_AddNpcEx giu dung
+-- ngu nghia Linux (khong dung camp, tham so 7 = bNoRevive) - dung lai no.
+if HD3_AddNpcEx ~= nil then
+	YDBZ_AddNpcEx = HD3_AddNpcEx
+else
+	YDBZ_AddNpcEx = AddNpcEx
+end
+
 -- <=>
 YDBZ_map_posfiles = {
 	[1]={	--10
@@ -308,7 +321,7 @@ function YDBZ_add_npc(file,nteams,nway,nstate)
 	--		print(format("name:%s", name));
 	--		print(format("pos: %d, %d", px, py));
 	
-			local npc_index = AddNpcEx(
+			local npc_index = YDBZ_AddNpcEx(
 				id,			-- ID
 				level,		-- 
 				series,		-- 
@@ -370,7 +383,7 @@ function YDBZ_add_npcboss(file,nway)
 --		print(format("name:%s", name));
 --		print(format("pos: %d, %d", px, py));
 
-		local npc_index = AddNpcEx(
+		local npc_index = YDBZ_AddNpcEx(
 			id,			-- ID
 			level,		-- 
 			series,		-- 
@@ -411,7 +424,7 @@ function YDBZ_add_final_npc(world,x,y)
 		local nsubworld = world
 		local px = x
 		local py = y
-		local npc_index = AddNpcEx(
+		local npc_index = YDBZ_AddNpcEx(
 				id,			-- ID
 				level,		-- 
 				series,		-- 
@@ -488,7 +501,7 @@ function YDBZ_AddNpc_YuanJun(nTeam,nTmpCamp)
 		local py		= ( tbPos[2]+random(-3,3) ) * 32
 		YDBZ_npc_proceed(item);
 			
-		local npc_index = AddNpcEx(
+		local npc_index = YDBZ_AddNpcEx(
 				id,			-- ID
 				level,		-- 
 				series,		-- 
