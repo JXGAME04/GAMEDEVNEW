@@ -1,4 +1,4 @@
-NOT_ENOUGH_COIN = "Kh«ng ®ñ %d tiÒn ®ång, ®îi cã ®ñ tiÒn råi quay l¹i ®i"
+NOT_ENOUGH_COIN = "Kh«ng ®ñ %d xu, ®îi cã ®ñ xu råi quay l¹i ®i"
 CHANGE_FEATURE_DLG1_TITLE = "§æi ngo¹i quan cña b¹n ®ång hµnh cÇn 5 tiÒn ®ång, x¸c nhËn ®æi kh«ng?"
 CHANGE_NAME_ERROR = "¸Ä±äÍ¬ÐÔºÃÓÑÃû×ÖÐèÒª%dÍ­Ç®£¬ È·¶¨Òª¸ÄÃ´£¿"
 CHANGE_NAME_TITLE = "NhËp tªn míi"

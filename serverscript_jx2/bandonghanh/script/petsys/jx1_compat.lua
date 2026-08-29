@@ -2,18 +2,20 @@
 -- moi khoi chi dinh nghia khi ham C chua ton tai (ban C moi se de len).
 
 if (GetCashCoin == nil) then
-	-- xu cua JX1 = ExtPoint (admin point.lua: tienxu -> EarnExtPoint)
+	-- [29/08] XU hien o HANH TRANG = task 251 (TASKVALUE_STATTASK_XU,
+	-- GDI_PLAYER_HOLD_FKCOIN) - KHONG phai ExtPoint (do sai hom truoc:
+	-- chu co 282 xu ma GetExtPoint tra 0)
 	function GetCashCoin()
-		return GetExtPoint()
+		return GetTask(251)
 	end
 end
 
 if (PayCoin == nil) then
 	function PayCoin(nCoin)
-		if (GetExtPoint() < nCoin) then
+		if (GetTask(251) < nCoin) then
 			return 0
 		end
-		SetExtPoint(GetExtPoint() - nCoin)
+		SetTask(251, GetTask(251) - nCoin)
 		return 1
 	end
 end

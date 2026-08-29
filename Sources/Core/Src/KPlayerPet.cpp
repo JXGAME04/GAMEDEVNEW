@@ -139,6 +139,17 @@ static int sPetSummon(int nPlayerIdx)
 		memset(pNpc->Name, 0, sizeof(pNpc->Name));
 		strncpy(pNpc->Name, szName, sizeof(pNpc->Name) - 1);
 	}
+	// [29/08] mau pet = ATTRIB Sinh luc (o 5122) - template 566.. la NPC
+	// thoai LifeMax=0 nen thanh mau tren dau pet hien 0
+	{
+		int nHp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 4);
+		if (nHp > 0)
+			pNpc->m_LifeMax = nHp;
+		int nMp = sPetG(nPlayerIdx, PET_TV_ATTRIB0 + 5);
+		if (nMp > 0)
+			pNpc->m_ManaMax = nMp;
+		pNpc->m_CurrentMana = pNpc->m_ManaMax;
+	}
 	pNpc->m_CurrentLife = pNpc->m_LifeMax;
 	s_nPetNpcIdx[nPlayerIdx] = nNpcIdx;
 	s_dwPetNpcID[nPlayerIdx] = pNpc->m_dwID;

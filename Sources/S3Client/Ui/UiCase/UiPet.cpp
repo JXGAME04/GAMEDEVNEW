@@ -39,7 +39,7 @@ static const char* s_szBtnSec[PET_UI_BTN_NUM] =
 static const int s_nBtnOp[PET_UI_BTN_NUM] =
 {
     PET_OP_TAME, PET_OP_SUMMON, PET_OP_CHANGE_NAME, PET_OP_UNSUMMON,
-    PET_OP_CHANGE_FEATURE, PET_OP_DELETE, PET_OP_LEVEL_UP, 0,
+    PET_OP_CHANGE_FEATURE, PET_OP_DELETE, PET_OP_LEVEL_UP, 8,	// 8 = XIUZHEN_POINT (ban private VLTK)
 };
 
 // 12 nhan + 12 o gia tri (Txt co Text= san trong ini - tieng Viet nguyen ban)
@@ -86,8 +86,9 @@ static void sPetResPath(int nTpl, char* szOut, int nOutLen)
     szNhom[i] = 0;
     if (!szNhom[0])
         return;
-    _snprintf(szOut, nOutLen - 1, "\\spr\\npcres\\%s\\%s\\%s_st01.spr",
-        szNhom, szRes, szRes);
+    // [29/08] dung spr TINH offset-0 sinh rieng cho khung (spr npcres
+    // goc co offset tam-chan lon -> KWndImage ve lech ra ngoai control)
+    _snprintf(szOut, nOutLen - 1, "\\spr\\Ui3\\pet\\face\\%s.spr", szRes);
     szOut[nOutLen - 1] = 0;
 }
 

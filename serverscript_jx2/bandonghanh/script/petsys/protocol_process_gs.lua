@@ -7,6 +7,15 @@ function PLOG(sz)
 	writeto()
 end
 
+-- [PETSYS 29/08] ban lai 29 o task pet xuong client - login-sync co the
+-- truot khi client con man hinh loading; goi truoc MOI op de cua so luon dung
+function PetSys_ResyncClient()
+	local i
+	for i = 5110, 5138 do
+		SetTask(i, GetTask(i))
+	end
+end
+
 function PetSys_Protocol(nOp)
 	appendto("petops.log")
 	write(GetLocalDate("%H:%M:%S") .. " op=" .. nOp .. " nguoi=" .. GetName() .. "\n")
@@ -15,6 +24,7 @@ function PetSys_Protocol(nOp)
 		Talk(1, "", "He Ban Dong Hanh dang nap thieu module - bao admin xem ScriptError.log")
 		return
 	end
+	PetSys_ResyncClient()
 	PetSys:ProtocolProcess(nOp)
 end
 
@@ -25,6 +35,7 @@ Include("\\script\\petsys\\name.lua")
 Include("\\script\\petsys\\feature.lua")
 Include("\\script\\petsys\\delete.lua")
 Include("\\script\\petsys\\transferexp.lua")	-- [JX1 28/08] Linux nap ca thu muc luc boot; JX1 Include tuong minh
+Include("\\script\\petsys\\xiuzhen.lua")
 
 function PetSys:ProtocolProcess(nOperationId)
 	if not self.tbProtocolFunction then

@@ -123,6 +123,8 @@ function BDH_P_Root()
 	"CÊp ThiÖp + thuèc + 4 tr¸i c©y/BDH_P_CapDo",
 	"T¹o pet nhanh (kh«ng cÇn thiÖp)/BDH_P_TaoNhanh",
 	"Bèn ®iÓm = 9999/BDH_P_Diem",
+	"Cap 2000 chan nguyen (test Tu Chan)/BDH_P_ChanNguyen",
+	"Dong bo diem xuong client/BDH_P_DongBo",
 	"Gäi ra (op 2)/BDH_P_Goi",
 	"Thu vÒ (op 3)/BDH_P_Thu",
 	"Th¨ng cÊp (op 4)/BDH_P_LenCap",
@@ -130,6 +132,20 @@ function BDH_P_Root()
 	"§æi ngo¹i quan (op 6)/BDH_P_NgoaiQuan",
 	"Xãa pet (op 1)/BDH_P_Xoa",
 	"KÕt thóc ®èi tho¹i./no"})
+end
+
+-- [PETSYS 29/08] ban lai 29 o task pet xuong client (SetTask -> SetSaveVal
+-- -> SyncTaskValueToClient) - do kenh dong bo / va tam khi login-sync truot
+function BDH_P_ChanNguyen()
+	SetTask(362, GetTask(362) + 2000)
+	Msg2Player("Da cap 2000 diem chan nguyen (task 362) - tong: " .. GetTask(362))
+end
+function BDH_P_DongBo()
+	local i
+	for i = 5110, 5138 do
+		SetTask(i, GetTask(i))
+	end
+	Msg2Player("Da ban lai 29 o diem pet - mo cua so Ban Dong Hanh xem")
 end
 
 function BDH_P_CapDo()

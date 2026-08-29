@@ -584,3 +584,41 @@ Bonus: lenhbai_def.lua:390-392 (su kien thap nien VNG) goi PET_Set* de CONG
 DIEM PET - go stub xong he nay hoat dong that (dung nguon diem ban private).
 Trang thai khac tu log: daily tu luyen 25/25 (reset qua 0h theo %y%m%d);
 CaiBang xu=0 (can cap xu test doi ten/ngoai quan); map 225/379 cam trieu dung.
+
+## 17. 29/08 SANG - NGHIEM THU DOT 1 (chu: "da oke") + 5 fix cuoi
+
+Da chay tron: 8 nut co ban + diem hien dung tren cua so (77/0/22/0),
+doi ten (MeoMeo), Tu Chan op8 doi 200 chan nguyen/lan (952220->951620,
+diem 0->3), menu chon/callback song, xu tru dung nguon.
+
+Cac goc tim ra + fix trong dot nay:
+1. **Diem khong hien tren UI du client nhan du** (do 3 tang p33: sv gui ok,
+   cl nhan ok, updatedata doc ok) -> Game.exe 16:18 la ban build THIEU;
+   build lai tron bo la hien. (Probe C da GO sau nghiem thu - p37.)
+2. **"Xu" cua game = task 251 (TASKVALUE_STATTASK_XU, hien o HANH TRANG
+   qua GDI_PLAYER_HOLD_FKCOIN)** - KHONG phai ExtPoint. jx1_compat
+   GetCashCoin/PayCoin doi sang GetTask/SetTask(251); lang doi chu
+   'tien dong' -> 'xu'.
+3. **Hinh pet**: client JX1 thieu sach bo anh 21 loai pet - p35 rut tron
+   tu pak VLTK ve spr
+pcres\<nhom>\<res>\ (st/wlk/bat/die/at1/at2)
+   + ban sao _st01.spr cho khung UiPet. Bang npcres JX1 chi map res->
+   thu muc, ten file theo suffix chuan.
+4. **Icon ky nang aura khong hien**: 4 dong skills.txt (id 1600..1603)
+   cot SkillIcon THIEU duoi .spr (skill thuong co) - va ca server+client.
+5. **Nut Tu Chan (op 8 ban private)**: p36 - xiuzhen.lua moi (doi 200
+   chan nguyen = task 362 TASK_CHANGNGUYENDAN lay 1 diem, tran 20000),
+   common +PET_OPERATION_XIUZHEN_POINT=8, head map [8], UiPet op 0->8.
+
+Quy trinh swap MOI (chu yeu cau 'out game la tu cap nhat'):
+- bin\client\ChoiGame.bat + bin\server\ChayGameServer.bat: tu doi
+  <file>.moi -> ten that (ban cu .truoc) roi mo game/server.
+- Tu nay build dat ten CO DINH: Game.exe.moi / CoreClient.dll.moi /
+  CoreServer.dll.moi / WAuto.dll.moi.
+- Dang cho .moi: ban sach da GO log C (sv eaeb269f, cl 446e91a0,
+  game d8316f4c) - chu restart lan toi la an.
+
+Con lai (dot ke tiep): he TRANG BI pet (6 o + nut Duc lai, 4 kenh
+COMPANIONEQUIP - thiet ke server theo client, muc 16); 4 ky nang chien
+dau ext skill (item Bi kip 4808, bang 1670..1687 - kiem skills.txt JX1
+co chua, thieu thi port tu VLTK); go PLOG lua sau khi xong trang bi.
