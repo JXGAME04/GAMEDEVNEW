@@ -8,6 +8,12 @@
 #include "ShortcutKey.h"
 #include "UiBase.h"
 #include "UiCase/UiTeamManage.h"
+#include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
+#include "UiCase/UiPet.h"	// [PETSYS]
+#include "UiCase/UiPartnerAttr.h"
+#include "UiCase/UiPartnerSkill.h"
+#include "UiCase/UiPartnerBag.h"
+#include "UiCase/UiPartnerBar.h"
 #include "UiCase/UiOptions.h"
 #include "UiCase/UiStatus.h"
 #include "UiCase/UiItem.h"
@@ -172,6 +178,16 @@ char* l_WindowList[] =
 	"skillsnew", //28
 	"springgame", //29
 	"NewTask",	//30 [TaskGuide] ten cua so nhu ban goc (F12)
+	"partner",	//31 [BDH-G4] cua so thuoc tinh dong hanh
+	"partnerskill",	//32 [BDH-G4]
+	"partnerbag",	//33 [BDH-G4]
+	"partnerbar",	//34 [BDH-G4] thanh nhanh
+	"partnertalk",	//35 [BDH-G4] doi thoai voi dong hanh
+	"partnercall",	//36 [BDH-G4] goi ra / thu ve
+	"partnerattack",	//37 [BDH-G4] che do chu dong danh
+	"partnerfollow",	//38 [BDH-G4] che do chi theo
+	"partnerselect",	//39 [BDH-G4] doi con duong nhiem
+	"petmain",	//40 [PETSYS] cua so Ban Dong Hanh ban PC
 };
 
 int FindWindow(const char* szname)
@@ -385,6 +401,51 @@ int LuaOpenWindow(Lua_State * L)
 				KUiTaskGuide::CloseWindow(false);
 			else
 				KUiTaskGuide::OpenWindow();
+			break;
+		case 31:	// [BDH-G4] cua so dong hanh
+			if (KUiPartnerAttr::GetIfVisible())
+				KUiPartnerAttr::CloseWindow();
+			else
+				KUiPartnerAttr::OpenWindow();
+			break;
+		case 32:
+			if (KUiPartnerSkill::GetIfVisible())
+				KUiPartnerSkill::CloseWindow();
+			else
+				KUiPartnerSkill::OpenWindow();
+			break;
+		case 33:
+			if (KUiPartnerBag::GetIfVisible())
+				KUiPartnerBag::CloseWindow();
+			else
+				KUiPartnerBag::OpenWindow();
+			break;
+		case 34:
+			if (KUiPartnerBar::GetIfVisible())
+				KUiPartnerBar::CloseWindow();
+			else
+				KUiPartnerBar::OpenWindow();
+			break;
+		case 35:
+			UiPartner_HotKey(0);
+			break;
+		case 36:
+			UiPartner_HotKey(1);
+			break;
+		case 37:
+			UiPartner_HotKey(2);
+			break;
+		case 38:
+			UiPartner_HotKey(3);
+			break;
+		case 39:
+			UiPartner_HotKey(4);
+			break;
+		case 40:	// [PETSYS]
+			if (KUiPet::GetIfVisible())
+				KUiPet::CloseWindow();
+			else
+				KUiPet::OpenWindow();
 			break;
 		}
 	}

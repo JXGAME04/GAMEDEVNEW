@@ -143,6 +143,23 @@ NPC_RELATION KNpcSet::GenOneRelation(NPCKIND Kind1, NPCKIND Kind2, NPCCAMP Camp1
 	if (Camp1 == camp_begin || Camp2 == camp_begin)
 		return relation_ally;
 	
+	// [BDH 28/08] Ban dong hanh - hanh vi ban VLTK/Linux: pet KHONG THE
+	// danh/bi danh boi NGUOI CHOI hay pet khac (ke ca PK - doi thu khong
+	// giet duoc pet); voi NPC thuong theo phe binh thuong (quai va pet van
+	// danh nhau - pet chet thi hon me). Chan o TANG BANG de moi duong
+	// (chon muc tieu, dan/AOE, AI quai, AI pet) cung mot luat.
+	if (Kind1 == kind_partner || Kind2 == kind_partner)
+	{
+		NPCKIND KindKia = (Kind1 == kind_partner) ? Kind2 : Kind1;
+		if (KindKia == kind_partner)
+			return relation_none;
+		if (KindKia == kind_player)
+			return relation_ally;
+		if (Camp1 == Camp2)
+			return relation_ally;
+		return relation_enemy;
+	}
+	
 	if (Kind1 == kind_player && Kind2 == kind_player)
 	{	
 		if (Camp1 == camp_free || Camp2 == camp_free)

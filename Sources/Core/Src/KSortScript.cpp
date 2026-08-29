@@ -128,6 +128,9 @@ int g_IsJx2Script(Lua_State* L)
 		"\\script\\missions\\boss\\",
 		"\\script\\vng_feature\\",
 		"\\settings\\trigger_",
+		// [BDH 27/08] script Ban Dong Hanh port tu Linux: GetGameTime tra GIAY nhu goc
+		"\\script\\partner\\",
+		"\\script\\task\\partner\\",
 	};
 	const char* szName = g_GetScriptNameByState(L);
 	if (!szName || !szName[0])

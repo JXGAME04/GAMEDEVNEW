@@ -363,6 +363,7 @@ enum c2s_PROTOCOL
 	c2s_setmeridian,
 	c2s_baucua,
 	c2s_diceitem,			// nguoi choi chon: tham du nhan / huy bo
+	c2s_partnerop,		// [BDH-G4] lenh cua so ban dong hanh
 
 
 

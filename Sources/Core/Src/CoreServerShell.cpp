@@ -1199,7 +1199,8 @@ int CoreServerShell::Breathe()
 		QueryPerformanceCounter(&t0);
 		SC_Breathe();	// Port SimCity: nhip di chuyen bot
 		QueryPerformanceCounter(&t1);
-		PB_Breathe();	// Bot KPlayer that: rut hang doi sinh + het han cho
+		PB_Breathe();
+	KPartner_Breathe();	// [BDH 27/08] he ban dong hanh (KPlayerPartner.cpp)	// Bot KPlayer that: rut hang doi sinh + het han cho
 		QueryPerformanceCounter(&t2);
 		{ PERF_SCOPE(PERF_SW_MSGLOOP);  g_SubWorldSet.MessageLoop(); }
 		QueryPerformanceCounter(&t3);

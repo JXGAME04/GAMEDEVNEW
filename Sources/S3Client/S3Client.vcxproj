@@ -364,6 +364,12 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiTrade.cpp" />
     <ClCompile Include="Ui\UiCase\UiTradeConfirmWnd.cpp" />
     <ClCompile Include="ui\uicase\UiDiceItem.cpp" />
+    <ClCompile Include="ui\uicase\UiPartnerCommon.cpp" />
+    <ClCompile Include="ui\uicase\UiPartnerAttr.cpp" />
+    <ClCompile Include="ui\uicase\UiPartnerSkill.cpp" />
+    <ClCompile Include="ui\uicase\UiPartnerBag.cpp" />
+    <ClCompile Include="ui\uicase\UiPartnerBar.cpp" />
+    <ClCompile Include="ui\uicase\UiPet.cpp" />
     <ClCompile Include="ui\uicase\UiTrembleItem.cpp" />
     <ClCompile Include="Ui\UiCase\UiUnlockBox.cpp" />
     <ClCompile Include="Ui\UiCase\UiWorldMap.cpp" />
@@ -542,6 +548,12 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiTrade.h" />
     <ClInclude Include="Ui\UiCase\UiTradeConfirmWnd.h" />
     <ClInclude Include="ui\uicase\UiDiceItem.h" />
+    <ClInclude Include="ui\uicase\UiPartnerCommon.h" />
+    <ClInclude Include="ui\uicase\UiPartnerAttr.h" />
+    <ClInclude Include="ui\uicase\UiPartnerSkill.h" />
+    <ClInclude Include="ui\uicase\UiPartnerBag.h" />
+    <ClInclude Include="ui\uicase\UiPartnerBar.h" />
+    <ClInclude Include="ui\uicase\UiPet.h" />
     <ClInclude Include="ui\uicase\UiTrembleItem.h" />
     <ClInclude Include="Ui\UiCase\UiUnlockBox.h" />
     <ClInclude Include="Ui\UiCase\UiWorldMap.h" />

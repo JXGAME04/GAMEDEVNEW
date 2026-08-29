@@ -281,6 +281,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(SETMERIDIAN_DATA),			// c2s_setmeridian
 	sizeof(BAUCUA_DATA),					// c2s_baucua
 	sizeof(DICE_CHOICE_DATA),				// c2s_diceitem
+	sizeof(PARTNER_OP_DATA),				// c2s_partnerop [BDH-G4]
 
 #endif
 };
@@ -305,10 +306,13 @@ void g_InitProtocol()
 #include "../../Headers/IClient.h"
 #include "KCore.h"
 
+// [S12b 28/08] xem KProtocolProcess.cpp: phan biet echo voi lenh dat-di cua server.
+extern int g_nS12TuGuiX, g_nS12TuGuiY;
+extern DWORD g_uS12TuGuiTick;   // [S12c] moc lan tu-gui gan nhat
 void SendClientCmdRun(int nX, int nY)
 {
 	NPC_RUN_COMMAND	NetCommand;
-	
+	g_nS12TuGuiX = nX; g_nS12TuGuiY = nY; g_uS12TuGuiTick = timeGetTime();
 	NetCommand.ProtocolType = (BYTE)c2s_npcrun;
 	NetCommand.nMpsX = nX;
 	NetCommand.nMpsY = nY;
@@ -319,7 +323,7 @@ void SendClientCmdRun(int nX, int nY)
 void SendClientCmdWalk(int nX, int nY)
 {
 	NPC_WALK_COMMAND	NetCommand;
-	
+	g_nS12TuGuiX = nX; g_nS12TuGuiY = nY; g_uS12TuGuiTick = timeGetTime();
 	NetCommand.ProtocolType = (BYTE)c2s_npcwalk;
 	NetCommand.nMpsX = nX;
 	NetCommand.nMpsY = nY;
@@ -800,6 +804,21 @@ void SendClientDiceItem(int nDiceId, int nChoice)
 		? DICE_CHOICE_NEED : DICE_CHOICE_GIVEUP);
 	if (g_pClient)
 		g_pClient->SendPackToServer((BYTE*)&Data, sizeof(DICE_CHOICE_DATA));
+}
+
+// [BDH-G4] Cua so / thanh nhanh Ban Dong Hanh gui lenh len may chu.
+void SendClientPartnerOp(int nOp, int nParam, const char* szName)
+{
+	PARTNER_OP_DATA	Data;
+
+	memset(&Data, 0, sizeof(Data));
+	Data.ProtocolType = (BYTE)c2s_partnerop;
+	Data.btOp = (BYTE)nOp;
+	Data.nParam = nParam;
+	if (szName)
+		strncpy(Data.szName, szName, PARTNER_OP_NAME_LEN - 1);
+	if (g_pClient)
+		g_pClient->SendPackToServer((BYTE*)&Data, sizeof(PARTNER_OP_DATA));
 }
 
 void SendClientCPSetImageCmd(int ID)

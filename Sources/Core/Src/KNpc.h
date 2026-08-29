@@ -479,6 +479,9 @@ public:
 	int				m_nLastTrapParam;		// JX2TRAP_PARAM_NONE = trap JX1
 	int				m_nTmpCamp;				// Linux KNpc+0x1900; 0 = khong dung (SetTmpCamp)
 	BYTE			m_bNoRevive;			// Linux +0x1824 (AddNpcEx tham so 7): chet la bien mat
+	// [BDH 27/08] he ban dong hanh (KPlayerPartner.cpp): chu so huu cua NPC kind_partner
+	int				m_nPartnerOwner;		// player idx cua chu (0 = khong phai partner)
+	int				m_nPartnerNo;			// con so may cua chu (1..3)
 #endif
 	int					m_nPeopleIdx;			// 对象人物
 	int					m_nLastDamageIdx;		// 最后一次伤害的人物索引

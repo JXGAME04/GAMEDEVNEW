@@ -58,6 +58,11 @@
 #include "UiCase/UiTrembleItem.h"
 #include "UiCase/UiCompoundItem.h"	// [UILOREN] he lo ren 7 khung
 #include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
+#include "UiCase/UiPartnerAttr.h"	// [BDH-G4]
+#include "UiCase/UiPartnerSkill.h"
+#include "UiCase/UiPartnerBag.h"
+#include "UiCase/UiPartnerBar.h"
+#include "UiCase/UiPet.h"	// [PETSYS]
 #include "UiCase/UiBreakItem.h"
 #include "ShortcutKey.h"
 #include "UiSoundSetting.h"
@@ -630,6 +635,11 @@ bool UiCloseWndsInGame(bool bAll)
 	KUiTrembleItem::CloseWindow(bAll);
 	KUiCompoundItem::CloseWindow(bAll);
 	KUiDiceItem::CloseWindow(bAll);
+	KUiPartnerAttr::CloseWindow();	// [BDH-G4]
+	KUiPartnerSkill::CloseWindow();
+	KUiPartnerBag::CloseWindow();
+	KUiPartnerBar::CloseWindow();
+	KUiPet::CloseWindow();	// [PETSYS]
 	KUiTongAssignBox::CloseWindow(bAll);
 	KUiTongGrant::CloseWindow(bAll);
 	KUiBreakItem::CloseWindow(bAll);

@@ -891,6 +891,8 @@ int PositionToRoom(int Place)
 			return room_give;
 		case pos_affairitem:
 			return room_affairitem;
+		case pos_partnerbag:	// [BDH-G3]
+			return room_partnerbag;
 		default:
 			return room_equipment;
 	}

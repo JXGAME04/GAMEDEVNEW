@@ -180,6 +180,7 @@ private:
 	KWndButton		m_HideChat;
 	KWndButton		m_HideGraphic;
 	KWndButton		m_SpringGame;
+	KWndButton		m_PartnerIcon;	// [BDH-G4] icon dong hanh (tren icon bau cua)
 	KWndButton		m_Run;
 	KWndButton		m_Sit;
 	KWndButton		m_Horse;

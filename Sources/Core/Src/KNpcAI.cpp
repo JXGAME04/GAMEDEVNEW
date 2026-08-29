@@ -6,6 +6,9 @@
 #include "KObj.h"
 #include "KPlayer.h"
 #include "KNpcAI.h"
+#ifdef _SERVER
+extern void Partner_ProcessAI(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
+#endif
 #include "coreshell.h"
 #include "KTaskFuns.h"
 // flying add here, to use math lib
@@ -48,6 +51,18 @@ void KNpcAI::Activate(int nIndex)// flying modified this function. // Jun.4.2003
 	if (Npc[m_nIndex].m_CurrentLifeMax == 0)
 		return;
 
+	// [BDH 27/08] NPC ban dong hanh: AI rieng (theo chu + 4 tinh cach 21..24),
+	// van huong dieu tiet m_NextAITime/m_AIMAXTime nhu AI thuong.
+	if (Npc[m_nIndex].m_Kind == kind_partner)
+	{
+		int nCurTimeP = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_dwCurrentTime;
+		if (Npc[m_nIndex].m_NextAITime <= nCurTimeP)
+		{
+			Npc[m_nIndex].m_NextAITime = nCurTimeP + Npc[m_nIndex].m_AIMAXTime;
+			Partner_ProcessAI(m_nIndex);
+		}
+		return;
+	}
 	if (Npc[m_nIndex].Owner[0] && Npc[m_nIndex].m_bNpcFollowFindPath)//add by phong kiÒu 19/08/2021
 	{
 		ProcessAIFollow();

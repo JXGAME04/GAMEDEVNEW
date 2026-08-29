@@ -9,6 +9,9 @@
 #include "../Elem/WndMessage.h"
 #include <crtdbg.h>
 #include "UiPlayerBar.h"
+#include "UiPartnerBar.h"	// [BDH-G4]
+#include "UiPet.h"	// [PETSYS]
+#include "UiPartnerAttr.h"
 #include "UiStatus.h"
 #include "UiSkillTree.h"
 #include "UiEscDlg.h"
@@ -546,6 +549,7 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 	m_TraceBtn.Init(pIni, "TraceBtn");	// [TaskGuide] vi tri [Zalo] cu, anh opentracebtn
 	m_HideChat.Init(pIni, "HideChat");
 	m_SpringGame.Init(pIni, "SpringGame");
+	m_PartnerIcon.Init(pIni, "PartnerIcon");	// [BDH-G4]
 
 	pIni->GetInteger2("BuffPos", "XY", &nX, &nY);
 	pIni->GetInteger2("BuffPos", "End", &nBegin, &nEnd);
@@ -624,6 +628,8 @@ void KUiPlayerBar::LoadScheme(KIniFile* pIni)
 		m_HideGraphic.SetPosition(1024 - 30, nY);
 		m_SpringGame.GetPosition(&nX, &nY);
 		m_SpringGame.SetPosition(1024 - 30, nY);
+		m_PartnerIcon.GetPosition(&nX, &nY);	// [BDH-G4] neo cung cot phai
+		m_PartnerIcon.SetPosition(1024 - 30, nY);
 
 		m_HideChat.GetPosition(&nX, &nY);
 		m_HideChat.SetPosition(nX + dX, nY + dY);
@@ -711,6 +717,7 @@ void KUiPlayerBar::Initialize()
 	AddChild(&m_HideChat);
 	AddChild(&m_HideGraphic);
 	AddChild(&m_SpringGame);
+	AddChild(&m_PartnerIcon);	// [BDH-G4]
 	AddChild(&m_Run);
 	AddChild(&m_Sit);
 	AddChild(&m_Horse);
@@ -863,6 +870,14 @@ int KUiPlayerBar::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		else if ((KWndWindow*)uParam == (KWndWindow*)&m_SpringGame)
 		{
 			KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SPRINGGAME);
+		}
+		else if ((KWndWindow*)uParam == (KWndWindow*)&m_PartnerIcon)
+		{
+			// [PETSYS] icon mo cua so Ban Dong Hanh ban PC (UiPet)
+			if (KUiPet::GetIfVisible())
+				KUiPet::CloseWindow();
+			else
+				KUiPet::OpenWindow();
 		}
 		break;
 	case WND_N_LEFT_CLICK_ITEM:

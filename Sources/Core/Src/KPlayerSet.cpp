@@ -78,6 +78,7 @@ BOOL	KPlayerSet::Init()
 		Player[i].m_cReBorn.Init(i);
 		Player[i].m_cTask.Init(i); // task
 		Player[i].m_cMeridian.Init(i);
+		Player[i].m_cPartner.Init(i);	// [BDH 27/08]
 #endif
 		Player[i].m_cTong.Init(i);
 		Player[i].m_ItemList.Init(i);

@@ -891,6 +891,8 @@
     </ClCompile>
     <ClCompile Include="Src\KPlayerPartner.cpp">
     </ClCompile>
+    <ClCompile Include="Src\KPlayerPet.cpp">
+    </ClCompile>
     <ClCompile Include="Src\KPlayerPK.cpp">
     </ClCompile>
     <ClCompile Include="Src\KPlayerReBorn.cpp">
@@ -1183,6 +1185,7 @@
     <ClInclude Include="Src\KPlayerFuYuan.h" />
     <ClInclude Include="Src\KPlayerMenuState.h" />
     <ClInclude Include="Src\KPlayerPartner.h" />
+    <ClInclude Include="Src\KPlayerPet.h" />
     <ClInclude Include="Src\KPlayerPK.h" />
     <ClInclude Include="Src\KPlayerReBorn.h" />
     <ClInclude Include="Src\KPlayerRepute.h" />

@@ -2513,13 +2513,13 @@ int LuaIncludeLib(Lua_State* L)
 	// DOT E (E5): +6 module cong thanh - ham that da nam o C (LG_/BT_/Title_...),
 	// tro noop.lua chi de dofile khong loi. CAM tro LEAGUE vao jx2compat (de ham C).
 	// [WLLS 20/08] +ITEM (leaguematch head.lua:10 IL("ITEM") - ham item da o C)
-	static const char* szMod[21] = {
+	static const char* szMod[22] = {
 		"TONG", "FILE", "LOG", "STRING", "BASIC", "COMMON", "SAY",
 		"PLAYER", "AWARD", "TIMERLIST", "TOPLIST", "MAPDB", "GB_TASK", "FILESYS",
 		"SETTING", "BATTLE", "RELAYLADDER", "TITLE", "LEAGUE", "PARTNER",
-		"ITEM",
+		"ITEM", "PET",	// [PETSYS 28/08] PET: ham that o C (KPlayerPet.cpp)
 	};
-	static const char* szFile[21] = {
+	static const char* szFile[22] = {
 		"scriptjx2\\tong_vn\\tong_header.lua", "scriptjx2\\lib\\file.lua",
 		"scriptjx2\\lib\\log.lua", "scriptjx2\\lib\\string.lua",
 		"scriptjx2\\lib\\basic.lua", "scriptjx2\\lib\\common.lua",
@@ -2530,7 +2530,7 @@ int LuaIncludeLib(Lua_State* L)
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
-		"scriptjx2\\lib\\noop.lua",
+		"scriptjx2\\lib\\noop.lua", "scriptjx2\\lib\\noop.lua",
 	};
 	if (Lua_GetTopIndex(L) <= 0 || !Lua_IsString(L, 1))
 	{
@@ -13974,6 +13974,35 @@ extern int LuaAddObstacleObj(Lua_State* L);
 extern int LuaClearObstacleObj(Lua_State* L);
 extern int LuaGetLoop(Lua_State* L);
 extern int LuaGetNpcSettingIdx(Lua_State* L);
+
+// [PETSYS 28/08] he Ban Dong Hanh PC (KPlayerPet.cpp)
+extern int LuaPET_IsCreate(Lua_State* L);
+extern int LuaPET_Create(Lua_State* L);
+extern int LuaPET_Delete(Lua_State* L);
+extern int LuaPET_IsSummon(Lua_State* L);
+extern int LuaPET_Summon(Lua_State* L);
+extern int LuaPET_UnSummon(Lua_State* L);
+extern int LuaPET_GetLevel(Lua_State* L);
+extern int LuaPET_SetLevel(Lua_State* L);
+extern int LuaPET_GetUpgradePoint(Lua_State* L);
+extern int LuaPET_SetUpgradePoint(Lua_State* L);
+extern int LuaPET_GetGrownPoint(Lua_State* L);
+extern int LuaPET_SetGrownPoint(Lua_State* L);
+extern int LuaPET_GetTamePoint(Lua_State* L);
+extern int LuaPET_SetTamePoint(Lua_State* L);
+extern int LuaPET_GetXiuzhenPoint(Lua_State* L);
+extern int LuaPET_SetXiuzhenPoint(Lua_State* L);
+extern int LuaPET_GetFeatureId(Lua_State* L);
+extern int LuaPET_SetFeatureId2(Lua_State* L);
+extern int LuaPET_ClearAttrib(Lua_State* L);
+extern int LuaPET_AddAttrib(Lua_State* L);
+extern int LuaPET_GetAttrib(Lua_State* L);
+extern int LuaPET_SetSkill(Lua_State* L);
+extern int LuaPET_GetSkill(Lua_State* L);
+extern int LuaPET_SetName(Lua_State* L);
+extern int LuaPET_GetName(Lua_State* L);
+extern int LuaReduceOwnExp(Lua_State* L);
+
 extern int LuaGetLastDiagNpc(Lua_State* L);
 extern int LuaSetPKFlag(Lua_State* L);
 extern int LuaForbidChangePK(Lua_State* L);
@@ -15524,6 +15553,34 @@ TLua_Funcs GameScriptFuns[] =
 		{ "ClearObstacleObj",	LuaClearObstacleObj },
 		{ "GetLoop",	LuaGetLoop },
 		{ "GetNpcSettingIdx",	LuaGetNpcSettingIdx },
+		// [PETSYS 28/08]
+		{ "PET_IsCreate",	LuaPET_IsCreate },
+		{ "PET_Create",	LuaPET_Create },
+		{ "PET_Delete",	LuaPET_Delete },
+		{ "PET_IsSummon",	LuaPET_IsSummon },
+		{ "PET_Summon",	LuaPET_Summon },
+		{ "PET_UnSummon",	LuaPET_UnSummon },
+		{ "PET_GetLevel",	LuaPET_GetLevel },
+		{ "PET_SetLevel",	LuaPET_SetLevel },
+		{ "PET_GetUpgradePoint",	LuaPET_GetUpgradePoint },
+		{ "PET_SetUpgradePoint",	LuaPET_SetUpgradePoint },
+		{ "PET_GetGrownPoint",	LuaPET_GetGrownPoint },
+		{ "PET_SetGrownPoint",	LuaPET_SetGrownPoint },
+		{ "PET_GetTamePoint",	LuaPET_GetTamePoint },
+		{ "PET_SetTamePoint",	LuaPET_SetTamePoint },
+		{ "PET_GetXiuzhenPoint",	LuaPET_GetXiuzhenPoint },
+		{ "PET_SetXiuzhenPoint",	LuaPET_SetXiuzhenPoint },
+		{ "PET_GetFeatureId",	LuaPET_GetFeatureId },
+		{ "PET_SetFeatureId",	LuaPET_SetFeatureId2 },
+		{ "PET_ClearAttrib",	LuaPET_ClearAttrib },
+		{ "PET_AddAttrib",	LuaPET_AddAttrib },
+		{ "PET_GetAttrib",	LuaPET_GetAttrib },
+		{ "PET_SetSkill",	LuaPET_SetSkill },
+		{ "PET_GetSkill",	LuaPET_GetSkill },
+		{ "PET_SetName",	LuaPET_SetName },
+		{ "PET_GetName",	LuaPET_GetName },
+		{ "ReduceOwnExp",	LuaReduceOwnExp },	// [PETSYS] Linux API
+
 		{ "GetLastDiagNpc",	LuaGetLastDiagNpc },
 		{ "SetPKFlag",	LuaSetPKFlag },
 		{ "ForbidChangePK",	LuaForbidChangePK },
@@ -15680,12 +15737,10 @@ TLua_Funcs GameScriptFuns[] =
 		{"BT_GetBattleParam",	LuaHD3_BT_GetBattleParam},
 		{"ST_DoTransLife",	LuaHD3_ST_DoTransLife},
 		{"ST_LevelUp",	LuaHD3_ST_LevelUp},
-		{"PET_GetGrownPoint",	LuaHD3_PET_Stub},
-		{"PET_SetGrownPoint",	LuaHD3_PET_Stub},
-		{"PET_GetTamePoint",	LuaHD3_PET_Stub},
-		{"PET_SetTamePoint",	LuaHD3_PET_Stub},
-		{"PET_GetUpgradePoint",	LuaHD3_PET_Stub},
-		{"PET_SetUpgradePoint",	LuaHD3_PET_Stub},
+		// [PETSYS 28/08 dem] 6 stub PET_* (thoi chua co he pet that) dang ky SAU
+		// nen DE 6 ham that cua khoi PETSYS (dong ~15565) -> diem khong an
+		// (stub push 0 / nuot set). Ham that da co -> XOA stub. lenhbai_def.lua
+		// (thap nien) goi cac ten nay = cong diem pet THAT, dung y ban private.
 		{"TrimString",	LuaHD3_TrimString},
 		// [VA A7-C1] AddNpc/AddNpcEx ngu nghia Linux: KHONG dung camp (giu npcs.txt),
 		// HD3_AddNpc tu random ngu hanh, tham so 6/7 = bNoRevive.

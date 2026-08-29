@@ -1549,6 +1549,7 @@ typedef struct
 // he XUC XAC chia do - cau truc goi nam o tep rieng vi trong cay nay co
 // HAI ban KProtocol.h dung chung include guard; xem ghi chu dau KDiceProtocol.h
 #include "KDiceProtocol.h"
+#include "KPartnerProtocol.h"	// [BDH-G4]
 
 typedef struct
 { 

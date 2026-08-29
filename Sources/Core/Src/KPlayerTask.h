@@ -20,7 +20,11 @@
 // Voi tran 4200 cac SetTask nay bi nuot IM LANG (KPlayerTask.cpp:79) => ca he bao
 // day chet o CA HAI phia. Dinh dang luu (id,value) THUA - khong phu thuoc MAX_TASK
 // (xem chu thich dot 3000->4200 ngay tren).
-#define		MAX_TASK				4600
+// [BDH 27/08] 4600 -> 5200: cap dai 4600..5099 cho he BAN DONG HANH
+// (so do o KPlayerPartner.h) + sua loi task 5100 (npc_chuyensinh.lua) dang bi
+// SetSaveVal nuot im lang vi vuot tran cu. Dinh dang blob (id,value) THUA nen
+// khong doi dinh dang DB. MAX_TEMP_TASK giu 4600 (tiet kiem RAM).
+#define		MAX_TASK				5200
 #define		MAX_TEMP_TASK	 4600
 
 #ifdef _SERVER

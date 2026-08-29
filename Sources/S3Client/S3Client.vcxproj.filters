@@ -402,6 +402,24 @@
     <ClCompile Include="ui\uicase\UiDiceItem.cpp">
       <Filter>BASE_ELEMENT_CASE\UICase</Filter>
     </ClCompile>
+    <ClCompile Include="ui\uicase\UiPartnerCommon.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\uicase\UiPartnerAttr.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\uicase\UiPartnerSkill.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\uicase\UiPartnerBag.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\uicase\UiPartnerBar.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\uicase\UiPet.cpp">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClCompile>
     <ClCompile Include="ui\uicase\UiTrembleItem.cpp">
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TREMBLE_ITEM</Filter>
     </ClCompile>
@@ -891,6 +909,24 @@
       <Filter>BASE_ELEMENT_CASE\UICase\UI_TONG</Filter>
     </ClInclude>
     <ClInclude Include="ui\uicase\UiDiceItem.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPartnerCommon.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPartnerAttr.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPartnerSkill.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPartnerBag.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPartnerBar.h">
+      <Filter>BASE_ELEMENT_CASE\UICase</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\uicase\UiPet.h">
       <Filter>BASE_ELEMENT_CASE\UICase</Filter>
     </ClInclude>
     <ClInclude Include="ui\uicase\UiTrembleItem.h">

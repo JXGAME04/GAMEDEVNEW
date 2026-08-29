@@ -279,6 +279,7 @@ public:
 	void 	c2sSetMeridian(int nIndex, BYTE* pProtocol);
 	void 	c2sBauCua(int nIndex, BYTE* pProtocol);
 	void 	c2sDiceItem(int nIndex, BYTE* pProtocol);
+	void 	c2sPartnerOp(int nIndex, BYTE* pProtocol);	// [BDH-G4]
 
 #endif
 };

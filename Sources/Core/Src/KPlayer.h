@@ -22,6 +22,7 @@
 #include "KSkills.h"
 #include "KPlayerDef.h"
 #include "../KMeridian.h"
+#include "KPlayerPartner.h"	// [BDH 27/08] he ban dong hanh
 
 #define		MAX_ANSWERNUM					50
 #define		PLAYER_LIFE_REPLENISH			0
@@ -663,6 +664,9 @@ public:
 	KPlayerReBorn	m_cReBorn;						// trung sinh
 	KPlayerTong		m_cTong;					
 	KMeridian		m_cMeridian;					//Kinh mach
+#ifdef _SERVER
+	KPartnerSys		m_cPartner;					// [BDH 27/08] he ban dong hanh
+#endif
 #ifndef _SERVER
 	KPlayerAuto		m_cAuto;			//fkauto
 	KAutoMove		m_cAutoMove;
