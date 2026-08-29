@@ -104,17 +104,16 @@ end
 Include("\\script\\petsys\\protocol_process_gs.lua")
 
 function BDH_P_Root()
-	SayEx({format("Pet: co=%d goi=%d cap=%d | diem %d/%d/%d/%d | xu %d",
-		PET_IsCreate(), PET_IsSummon(), PET_GetLevel(),
-		PET_GetUpgradePoint(), PET_GetGrownPoint(), PET_GetTamePoint(),
-		PET_GetXiuzhenPoint(), GetTask(251)),
-	"Cap 5 Thiep + 200 Thuoc + 20 moi loai trai/BDH_P_CapDo",
-	"Cap 5 Bi kip + 6 trang bi/BDH_P_CapKN",
-	"Bon diem = 9999 + 2000 chan nguyen + 500 xu/BDH_P_Diem",
-	"Tao pet nhanh (khong can thiep)/BDH_P_TaoNhanh",
-	"Xoa het ky nang da hoc/BDH_P_XoaKN",
-	"Thao het trang bi/BDH_P_XoaTB",
-	"Dong bo diem xuong client/BDH_P_DongBo",
+	SayEx({format("Pet cap %d - diem %d/%d/%d/%d - xu %d",
+		PET_GetLevel(), PET_GetUpgradePoint(), PET_GetGrownPoint(),
+		PET_GetTamePoint(), PET_GetXiuzhenPoint(), GetTask(251)),
+	"Cap thiep + thuoc + trai/BDH_P_CapDo",
+	"Cap bi kip + trang bi/BDH_P_CapKN",
+	"Diem + chan nguyen + xu/BDH_P_Diem",
+	"Tao pet nhanh/BDH_P_TaoNhanh",
+	"Xoa ky nang/BDH_P_XoaKN",
+	"Thao trang bi/BDH_P_XoaTB",
+	"Dong bo client/BDH_P_DongBo",
 	"Ket thuc doi thoai./no"})
 end
 
