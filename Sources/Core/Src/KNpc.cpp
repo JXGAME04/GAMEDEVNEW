@@ -3828,6 +3828,15 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		    return FALSE;
 		}
 
+		// [KM 28/08] theo y chu game: phan don tinh tren MAU THUC MAT cua nan nhan
+		// (kep boi mau con lai), KHONG tinh phan overkill. Chuan Linux/JX1 goc deu
+		// dung sat thuong tho (Linux tru mau 0x8089F91 SAU khoi phan 0x808A150) -
+		// lech chuan CO CHU DICH vi kinh mach lam overkill gap chuc lan mau.
+		int nKMPhanGoc = nDamage;
+		if (nKMPhanGoc > (int)m_CurrentLife)
+			nKMPhanGoc = (int)m_CurrentLife;
+		if (nKMPhanGoc < 0)
+			nKMPhanGoc = 0;
 		//
 		if (nAttacker > 0)
 		{
@@ -3839,7 +3848,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 					{
 						if (m_PoisonState.nTime)
 						{
-							nMin = nDamage * m_CurrentPoisonDamageReturnPercent / MAX_PERCENT;
+							nMin = nKMPhanGoc * m_CurrentPoisonDamageReturnPercent / MAX_PERCENT;	// [KM 28/08]
 							if (nMin > 0)
 							{
 								Npc[nAttacker].CalcDamage(m_Index, nMin, nMin, damage_magic, -1, FALSE, FALSE, TRUE);
@@ -3862,7 +3871,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				if (bIsMelee ) //
 					{
 						nMin = m_CurrentMeleeDmgRet;
-						nMin += nDamage * nMax / MAX_PERCENT;
+						nMin += nKMPhanGoc * nMax / MAX_PERCENT;	// [KM 28/08] theo mau thuc mat
 								nMin -= nMin * nCurrentDmgRetPercentResist / MAX_PERCENT;	// [KM 28/08] dung ban da kep 0..95
 						if (nMin > 0 && (IsPlayer()|| (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))
 						{
@@ -3872,7 +3881,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 					else
 					{
 						nMin = m_CurrentRangeDmgRet;
-						nMin += nDamage * nMax / MAX_PERCENT;
+						nMin += nKMPhanGoc * nMax / MAX_PERCENT;	// [KM 28/08] theo mau thuc mat
 						nMin -= nMin * nCurrentDmgRetPercentResist / MAX_PERCENT;	// [KM 28/08] sua LOI DAU: ban cu "* -" la CONG them
 					
 						if (nMin > 0 && (IsPlayer() || (m_SubWorldIndex != g_SubWorldSet.SearchWorld(379) && m_SubWorldIndex != g_SubWorldSet.SearchWorld(325) )))  // 
