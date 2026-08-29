@@ -218,7 +218,7 @@ void KUiPet::Initialize()
         }
         for (i = 0; i < PET_UI_EQUIP_NUM; i++)
         {
-            sprintf(szSec, "Equip_%d", i + 1);
+            sprintf(szSec, "PetEquip_%d", i + 1);	// [29/08] 7 o hang TREN
             m_Equip[i].Init(&Ini, szSec);
         }
         m_Appearance.Init(&Ini, "AppearanceImg");
@@ -292,18 +292,23 @@ void KUiPet::UpdateData()
         m_Skill1.HoldObject(CGOG_NOTHING, 0, 0, 0);
 
     // [29/08] 4 ky nang bi dong da hoc (task 5139..5142)
-    // [29/08] 6 o trang bi (task 5143..5148 = particular item)
-    for (i = 0; i < PET_UI_EQUIP_NUM && i < 6; i++)
+    // [29/08] 7 o trang bi hang tren (task 5143..5149 = particular item);
+    // anh CO DINH theo o de khong phu thuoc bang: \spr\item\petequip\pet_N.spr
+    for (i = 0; i < PET_UI_EQUIP_NUM && i < 7; i++)
     {
         int nP = sPetTV(5143 + i);
-        char szImg[128];
-        szImg[0] = 0;
-        if (nP > 0)
-            sPetItemImg(nP, szImg, sizeof(szImg));
-        if (szImg[0])
+        if (nP >= 4881 && nP <= 4887)
         {
+            char szImg[96];
+            _snprintf(szImg, sizeof(szImg) - 1, "\\spr\\item\\petequip\\pet_%d.spr", nP - 4880);
+            szImg[sizeof(szImg) - 1] = 0;
             m_Equip[i].SetImage(ISI_T_SPR, szImg);
             m_Equip[i].Show();
+        }
+        else
+        {
+            m_Equip[i].SetImage(ISI_T_SPR, (char*)"");
+            m_Equip[i].Hide();
         }
     }
 

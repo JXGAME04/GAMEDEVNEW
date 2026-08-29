@@ -11,15 +11,16 @@ PETEQUIP_GOC = {
 	[4884] = {nSlot = 4, nHp = 0, nMp = 200},
 	[4885] = {nSlot = 5, nHp = 200, nMp = 100},
 	[4886] = {nSlot = 6, nHp = 0, nMp = 300},
+	[4887] = {nSlot = 7, nHp = 150, nMp = 150},
 }
-PETEQUIP_TEN = {"VÚ kh›", "N„n", "Y phÙc", "ßai", "Giµy", "HÈ PhÔ"}
+PETEQUIP_TEN = {"VÚ kh›", "N„n", "Y phÙc", "ßai", "Giµy", "HÈ PhÔ", "Nh…n"}
 DUC_PHI_XU = 5
 
 function PetEquip_TinhBonus()
 	local nHp = 0
 	local nMp = 0
 	local i
-	for i = 1, 6 do
+	for i = 1, 7 do
 		local nP = GetTask(5143 + i - 1)
 		local tb = PETEQUIP_GOC[nP]
 		if tb then
@@ -65,7 +66,7 @@ function PetSys:EquipRebuildDlg()
 	end
 	local tbOpt = {}
 	local i
-	for i = 1, 6 do
+	for i = 1, 7 do
 		local nP = GetTask(5143 + i - 1)
 		if PETEQUIP_GOC[nP] then
 			tinsert(tbOpt, {format("%s - ph»m ch t %d%%", PETEQUIP_TEN[i], GetTask(5150 + i - 1)), PetSys.EquipTry, {PetSys, i}})
