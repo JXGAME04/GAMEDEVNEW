@@ -96,13 +96,9 @@ static void sPetApplyAura(int nPlayerIdx)
 		for (int k = 0; k < 4; k++)
 		{
 			// o luu SkillId*100+Level (bikip.lua); gia tri cu = id tran -> lv 1
-			int nV = sPetG(nPlayerIdx, 5139 + k);
-			if (nV <= 0) continue;
-			int nSk = (nV >= 100000) ? nV / 100 : nV;
-			int nLv = (nV >= 100000) ? nV % 100 : 1;
-			if (nLv < 1) nLv = 1;
-			if (nLv > 5) nLv = 5;
-			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, nLv);
+			int nSk = sPetG(nPlayerIdx, 5139 + k);
+			if (nSk <= 0) continue;
+			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, 1);
 			if (pExt)
 				pExt->CastStateSkill(nPetNpc, 0, 0, PET_AURA_TIME, TRUE);
 		}
@@ -251,32 +247,7 @@ static void sPetFollowLinux(int nPlayerIdx, int nNpcIdx)
 // danh chu / gan nhat, vision 480 nhu bang partner) -> do_skill bang bo
 // skill BANG npcs cua template.
 //---------------------------------------------------------------------------
-static DWORD s_dwFightTick[MAX_PLAYER];
-static void sPetFight(int nPlayerIdx, int nNpcIdx)
-{
-	KNpc* pNpc = &Npc[nNpcIdx];
-	KNpc* pOwnerNpc = &Npc[Player[nPlayerIdx].m_nIndex];
-	if (pNpc->m_CurrentCamp != pOwnerNpc->m_CurrentCamp)
-		pNpc->SetCurrentCamp(pOwnerNpc->m_CurrentCamp);
-	if (pNpc->m_FightMode != pOwnerNpc->m_FightMode)
-		pNpc->m_FightMode = pOwnerNpc->m_FightMode;
-	if (!pOwnerNpc->m_FightMode)
-		return;
-	if (++s_dwFightTick[nPlayerIdx] % 18 != 0)
-		return;
-	int nTarget = sPartnerPickTarget(nNpcIdx, Player[nPlayerIdx].m_nIndex, 22, 480);
-	if (nTarget <= 0)
-		return;
-	int nSkillId = 0;
-	for (int nSlot = 1; nSlot <= 4; nSlot++)
-		if (pNpc->m_SkillList.m_Skills[nSlot].SkillId > 0)
-		{
-			nSkillId = pNpc->m_SkillList.m_Skills[nSlot].SkillId;
-			if (rand() % 2) break;
-		}
-	if (nSkillId > 0)
-		pNpc->SendCommand(do_skill, nSkillId, -1, nTarget);
-}
+// [29/08] pet TU DANH da GO - ca Linux lan VLTK deu khong co
 //---------------------------------------------------------------------------
 void Pet_Breathe()
 {
@@ -316,7 +287,6 @@ void Pet_Breathe()
 		// [29/08 - theo Linux] follow chay tu PLAYER TICK moi frame
 		// (jx_linux_y goi KPet-follow tu 0x080B7104 trong player tick)
 		sPetFollowLinux(i, nNpc);
-		sPetFight(i, nNpc);
 		if (++s_dwAuraTick[i] >= PET_AURA_RECAST)
 		{
 			s_dwAuraTick[i] = 0;

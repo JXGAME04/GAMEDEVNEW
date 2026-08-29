@@ -292,33 +292,13 @@ void KUiPet::UpdateData()
         m_Skill1.HoldObject(CGOG_NOTHING, 0, 0, 0);
 
     // [29/08] 4 ky nang bi dong da hoc (task 5139..5142)
-    // [29/08] 7 o trang bi hang tren (task 5143..5149 = particular item);
-    // anh CO DINH theo o de khong phu thuoc bang: \spr\item\petequip\pet_N.spr
-    for (i = 0; i < PET_UI_EQUIP_NUM && i < 7; i++)
-    {
-        int nP = sPetTV(5143 + i);
-        if (nP >= 4881 && nP <= 4887)
-        {
-            char szImg[96];
-            _snprintf(szImg, sizeof(szImg) - 1, "\\spr\\item\\petequip\\pet_%d.spr", nP - 4880);
-            szImg[sizeof(szImg) - 1] = 0;
-            m_Equip[i].SetImage(ISI_T_SPR, szImg);
-            m_Equip[i].Show();
-        }
-        else
-        {
-            m_Equip[i].SetImage(ISI_T_SPR, (char*)"");
-            m_Equip[i].Hide();
-        }
-    }
+    // [29/08] 7 o trang bi: he tu che DA GO - se port lai tu nguon that
 
     for (i = 0; i < PET_UI_EXTSKILL_NUM && i < 4; i++)
     {
-        int nV = sPetTV(5139 + i);
-        int nSk = (nV >= 100000) ? nV / 100 : nV;
-        int nLv = (nV >= 100000) ? nV % 100 : 1;
+        int nSk = sPetTV(5139 + i);
         if (nSk > 0)
-            m_ExtSkill[i].HoldObject(CGOG_SKILL_FIGHT, nSk, nLv, 0);
+            m_ExtSkill[i].HoldObject(CGOG_SKILL_FIGHT, nSk, 1, 0);
         else
             m_ExtSkill[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
     }
@@ -361,8 +341,7 @@ int KUiPet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
                 break;
             }
         }
-        if (uParam == (unsigned int)(KWndWindow*)&m_CompanionBtn)
-            SendOp(10);	// [29/08] mo menu duc lai trang bi (server)
+        // m_CompanionBtn ("Duc lai"): he trang bi chua port tu nguon that
         break;
     default:
         return KWndImage::WndProc(uMsg, uParam, nParam);

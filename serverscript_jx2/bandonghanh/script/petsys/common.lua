@@ -101,3 +101,43 @@ function FinishEvent(nEventIndex)
 	SetTask(TSK_EVENT_FINISHED, nFinish)
 end
 
+
+-- [29/08] nguyen van client_common.lua ban VLTK PC (rut tu pak)
+EXT_SKILL_OPEN_PET_LEVEL = 21
+EXT_SKILL_MAX_COUNT = 4
+EXT_SKILL_GET_NEW_LEVEL = 5
+-- VLTK dung item 4808; JX1 da co item khac o 4808 -> nan ma sang 4880
+PET_MIJI_ITEM = {tbProp = {6, 1, 4880, 0, 0, 0}}
+ZHENYUAN_TO_XIUZHEN_POINT_RATE = 200
+ZHENYUAN_TO_XIUZHEN_POINT_VALUE = 20000
+
+tbPetSkillIDList =
+{
+	[1] = 1670,
+	[2] = 1671,
+	[3] = 1672,
+	[4] = 1673,
+	[5] = 1674,
+	[6] = 1675,
+	[7] = 1676,
+	[8] = 1677,
+	[9] = 1678,
+	[10] = 1679,
+	[11] = 1680,
+	[12] = 1681,
+	[13] = 1682,
+	[14] = 1683,
+	[15] = 1684,
+	[16] = 1685,
+	[17] = 1686,
+	[18] = 1687,
+}
+
+function GetExtSkillCount()
+	local nPetLevel = PET_GetLevel()
+	local nExtSkillCount = floor((nPetLevel - EXT_SKILL_OPEN_PET_LEVEL) / EXT_SKILL_GET_NEW_LEVEL) + 1
+	if nExtSkillCount > EXT_SKILL_MAX_COUNT then
+		nExtSkillCount = EXT_SKILL_MAX_COUNT
+	end
+	return nExtSkillCount
+end

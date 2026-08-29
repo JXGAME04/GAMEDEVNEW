@@ -108,11 +108,10 @@ function BDH_P_Root()
 		PET_GetLevel(), PET_GetUpgradePoint(), PET_GetGrownPoint(),
 		PET_GetTamePoint(), PET_GetXiuzhenPoint(), GetTask(251)),
 	"Cap thiep + thuoc + trai/BDH_P_CapDo",
-	"Cap bi kip + trang bi/BDH_P_CapKN",
+	"Cap 5 Bi kiep ky nang/BDH_P_CapKN",
 	"Diem + chan nguyen + xu/BDH_P_Diem",
 	"Tao pet nhanh/BDH_P_TaoNhanh",
 	"Xoa ky nang/BDH_P_XoaKN",
-	"Thao trang bi/BDH_P_XoaTB",
 	"Dong bo client/BDH_P_DongBo",
 	"Ket thuc doi thoai./no"})
 end
@@ -150,10 +149,7 @@ function BDH_P_CapKN()
 	for i = 1, 5 do
 		AddItem(6, 1, 4880, 1, 0, 0)
 	end
-	for i = 4881, 4886 do
-		AddItem(6, 1, i, 1, 0, 0)
-	end
-	Msg2Player("Da cap 5 Bi kip + 6 trang bi")
+	Msg2Player("Da cap 5 Bi kiep ban dong hanh")
 end
 
 function BDH_P_XoaKN()
