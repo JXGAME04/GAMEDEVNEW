@@ -1,33 +1,32 @@
 Include("\\script\\petsys\\head.lua")
--- [CFGBDH 30/08] hai tep duoi day la LA (khong Include gi).
-Include("\\script\\cauhinh\\ch_lib.lua")
-Include("\\script\\cauhinh\\ch_chung.lua")
--- [CFGBDH 30/08] Bo doc cau hinh cho tep nay. Tra ve MAC DINH (= so cu)
--- khi bo cau hinh chua nap, nen kem nhat cung khong the doi hanh vi.
-function BDH_CFG(szKhoa, macdinh)
-	if (G_CFG ~= nil) then
-		return G_CFG(szKhoa, macdinh)
-	end
-	return macdinh
-end
-
 Include("\\script\\petsys\\lang.lua")
 Include("\\script\\petsys\\petequip_def.lua")
 
--- [PETSYS 29/08] TRANG BI DONG HANH - port theo bang goc VLTK.
--- 10 o: task 5143..5152 (luu ParticularType cua mon dang deo)
--- 5163: so mon cung bo dang mac (C doc de ap thuoc tinh bo)
-PETEQUIP_O_DAU = 5143
-PETEQUIP_O_SO = BDH_CFG("BDH_SO_O_TRANGBI", 10)
-PETEQUIP_O_BOCOUNT = 5163
+-- [PETSYS 30/08] TRANG BI DONG HANH - port theo bang goc VLTK.
 
--- dem so mon cung bo -> ghi 5163 (bo*100 + so mon) cho C doc
+-- roll 3 gia tri thuoc tinh cua mon (theo khoang min..max bang goc)
+function PetEquip_Roll(nId, nSlot)
+	local tb = PETEQUIP_DEF[nId]
+	if not tb then
+		return
+	end
+	local i
+	for i = 1, 3 do
+		local a = tb.tbAttrib[i]
+		local nVal = 0
+		if a then
+			nVal = random(a[2], a[3])
+		end
+		SetTask(PETEQUIP_O_ATTRIB + (nSlot - 1) * 3 + i - 1, nVal)
+	end
+end
+
 function PetEquip_CapNhatBo()
 	local tbDem = {}
 	local i
 	for i = 0, PETEQUIP_O_SO - 1 do
 		local nId = GetTask(PETEQUIP_O_DAU + i)
-		local tb = PETEQUIP_DEF[nId]	-- bo qua id ngoai bang
+		local tb = PETEQUIP_DEF[nId]
 		if tb then
 			tbDem[tb.nSuit] = (tbDem[tb.nSuit] or 0) + 1
 		end
@@ -48,7 +47,7 @@ function PetEquip_CapNhatBo()
 	return nBoTot, nSoTot
 end
 
--- dung item trang bi = DEO vao dung o (tra mon cu ve tui)
+-- dung item trang bi = DEO vao dung o
 function main(nItemIndex)
 	if PET_IsCreate() ~= 1 then
 		Talk(1, "", "Ng­¬i ch­a cã b¹n ®ång hµnh")
@@ -65,6 +64,7 @@ function main(nItemIndex)
 		AddItem(6, 1, nCu, 1, 0, 0, 0)
 	end
 	SetTask(nO, nP)
+	PetEquip_Roll(nP, tb.nSlot)
 	local nBo, nSo = PetEquip_CapNhatBo()
 	Msg2Player(format("B¹n ®ång hµnh ®· trang bÞ [%s] - bé %s %d mãn",
 		PETEQUIP_VITRI[tb.nSlot], PETEQUIP_SUIT_TEN[tb.nSuit] or "?", nSo))
@@ -72,7 +72,26 @@ function main(nItemIndex)
 	return
 end
 
--- op 10: cua so trang bi (menu server) - xem / thao / duc lai
+-- mo ta 3 thuoc tinh hien co cua mot o
+function PetEquip_MoTa(nSlot)
+	local nId = GetTask(PETEQUIP_O_DAU + nSlot - 1)
+	local tb = PETEQUIP_DEF[nId]
+	if not tb then
+		return ""
+	end
+	local sz = ""
+	local i
+	for i = 1, 3 do
+		local a = tb.tbAttrib[i]
+		if a then
+			local v = GetTask(PETEQUIP_O_ATTRIB + (nSlot - 1) * 3 + i - 1)
+			sz = sz .. format("[%d]+%d ", a[1], v)
+		end
+	end
+	return sz
+end
+
+-- op 10: cua so trang bi
 function PetSys:EquipRebuildDlg()
 	if PET_IsCreate() ~= 1 then
 		return
@@ -83,19 +102,71 @@ function PetSys:EquipRebuildDlg()
 		local nId = GetTask(PETEQUIP_O_DAU + i - 1)
 		local tb = PETEQUIP_DEF[nId]
 		if tb then
-			tinsert(tbOpt, {format("%s: %s - th¸o ra", PETEQUIP_VITRI[i],
-				PETEQUIP_SUIT_TEN[tb.nSuit] or "?"), PetSys.EquipThao, {PetSys, i}})
+			tinsert(tbOpt, {format("%s %s", PETEQUIP_VITRI[i], PetEquip_MoTa(i)),
+				PetSys.EquipChon, {PetSys, i}})
 		end
 	end
 	if getn(tbOpt) == 0 then
-		Talk(1, "", "B¹n ®ång hµnh ch­a mÆc trang bÞ nµo (dïng vËt phÈm trang bÞ §ång Hµnh ®Ó mÆc)")
+		Talk(1, "", "B¹n ®ång hµnh ch­a mÆc trang bÞ nµo")
 		return
 	end
-	tinsert(tbOpt, {"§óc l¹i trang bÞ (®ang hoµn thiÖn)", PetSys.EquipDucLai, {PetSys}})
 	tinsert(tbOpt, {%CANCEL})
 	local nBo, nSo = PetEquip_CapNhatBo()
 	CreateNewSayEx(format("Trang bÞ §ång Hµnh - bé %s %d mãn",
 		(nBo >= 0 and PETEQUIP_SUIT_TEN[nBo]) or "-", nSo), tbOpt)
+end
+
+function PetSys:EquipChon(nSlot)
+	local tbOpt = {}
+	tinsert(tbOpt, {format("§óc l¹i (tèn 1 KÕt Tinh §ång Hµnh)"), PetSys.EquipDuc, {PetSys, nSlot}})
+	tinsert(tbOpt, {"Th¸o ra", PetSys.EquipThao, {PetSys, nSlot}})
+	tinsert(tbOpt, {%CANCEL})
+	CreateNewSayEx(format("%s: %s", PETEQUIP_VITRI[nSlot], PetEquip_MoTa(nSlot)), tbOpt)
+end
+
+function PetSys:EquipDuc(nSlot)
+	local nId = GetTask(PETEQUIP_O_DAU + nSlot - 1)
+	local tb = PETEQUIP_DEF[nId]
+	if not tb then
+		return
+	end
+	if CalcItemCount(-1, 6, 1, PETEQUIP_KETTINH, -1) < 1 then
+		Talk(1, "", "Kh«ng ®ñ KÕt Tinh §ång Hµnh")
+		return
+	end
+	local szCu = PetEquip_MoTa(nSlot)
+	ConsumeItem(-1, 1, 6, 1, PETEQUIP_KETTINH)
+	-- roll thu vao o tam 5190.. (khong ghi de gia tri dang mac)
+	local tbMoi = {}
+	local i
+	local szMoi = ""
+	for i = 1, 3 do
+		local a = tb.tbAttrib[i]
+		if a then
+			tbMoi[i] = random(a[2], a[3])
+			szMoi = szMoi .. format("[%d]+%d ", a[1], tbMoi[i])
+		end
+	end
+	PETEQUIP_TAM = tbMoi
+	local tbOpt = {}
+	tinsert(tbOpt, {"Gi÷ l¹i kÕt qu¶ míi", PetSys.EquipNhan, {PetSys, nSlot}})
+	tinsert(tbOpt, {"Tõ bá (gi÷ thuéc tÝnh cò)"})
+	CreateNewSayEx(format("Cò: %s\nMíi: %s", szCu, szMoi), tbOpt)
+	PLOG("PetEquip duc: o=" .. nSlot .. " cu=" .. szCu .. " moi=" .. szMoi)
+end
+
+function PetSys:EquipNhan(nSlot)
+	if PETEQUIP_TAM == nil then
+		return
+	end
+	local i
+	for i = 1, 3 do
+		if PETEQUIP_TAM[i] ~= nil then
+			SetTask(PETEQUIP_O_ATTRIB + (nSlot - 1) * 3 + i - 1, PETEQUIP_TAM[i])
+		end
+	end
+	PETEQUIP_TAM = nil
+	Msg2Player(format("§óc thµnh c«ng: %s", PetEquip_MoTa(nSlot)))
 end
 
 function PetSys:EquipThao(nSlot)
@@ -106,10 +177,10 @@ function PetSys:EquipThao(nSlot)
 	end
 	AddItem(6, 1, nId, 1, 0, 0, 0)
 	SetTask(nO, 0)
+	local i
+	for i = 1, 3 do
+		SetTask(PETEQUIP_O_ATTRIB + (nSlot - 1) * 3 + i - 1, 0)
+	end
 	PetEquip_CapNhatBo()
 	Msg2Player(format("§· th¸o trang bÞ ë vÞ trÝ %s", PETEQUIP_VITRI[nSlot]))
-end
-
-function PetSys:EquipDucLai()
-	Talk(1, "", "§óc l¹i trang bÞ cÇn luËt ®óc cña m¸y chñ gèc - ®ang hoµn thiÖn, ch­a më")
 end

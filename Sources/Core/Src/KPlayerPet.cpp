@@ -87,6 +87,57 @@ static int s_nSuitHp[3] = { 5000, 7500, 10000 };
 
 static int s_nSuitLast[MAX_PLAYER];   // [30/08] theo doi doi bo de cap nhat mau ngay
 
+// [30/08] AP THUOC TINH TRANG BI len NPC pet.
+// Bang goc VLTK cho moi mon 3 thuoc tinh {ma, min, max}; Lua da roll gia
+// tri va luu o 5170..5199, con MA attrib tra o bang
+// settings\petsys\equipattrib.txt (sinh tu petequip_def.lua).
+#define PET_TV_EQUIP0      5143
+#define PET_TV_EQUIPATT0   5170
+
+static KTabFile s_EquipAttTab;
+static int      s_bEquipAttLoaded = 0;
+
+static void sPetApplyEquip(int nPlayerIdx, int nNpcIdx)
+{
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC) return;
+	if (!s_bEquipAttLoaded)
+	{
+		s_bEquipAttLoaded = 1;
+		s_EquipAttTab.Load((LPSTR)"\\settings\\petsys\\equipattrib.txt");
+	}
+	int nRow = s_EquipAttTab.GetHeight();
+	for (int nSlot = 0; nSlot < 10; nSlot++)
+	{
+		int nId = sPetG(nPlayerIdx, PET_TV_EQUIP0 + nSlot);
+		if (nId <= 0) continue;
+		int nMa[3] = { 0, 0, 0 };
+		char szNum[16];
+		for (int r = 2; r <= nRow; r++)
+		{
+			s_EquipAttTab.GetString(r, 1, (LPSTR)"", szNum, sizeof(szNum));
+			if (atoi(szNum) != nId) continue;
+			for (int c = 0; c < 3; c++)
+			{
+				s_EquipAttTab.GetString(r, 2 + c, (LPSTR)"", szNum, sizeof(szNum));
+				nMa[c] = atoi(szNum);
+			}
+			break;
+		}
+		for (int c = 0; c < 3; c++)
+		{
+			int nVal = sPetG(nPlayerIdx, PET_TV_EQUIPATT0 + nSlot * 3 + c);
+			if (nMa[c] > 0 && nVal > 0)
+			{
+				KMagicAttrib sAtt;
+				memset(&sAtt, 0, sizeof(sAtt));
+				sAtt.nAttribType = nMa[c];
+				sAtt.nValue[0] = nVal;
+				Npc[nNpcIdx].ModifyAttrib(0, &sAtt);
+			}
+		}
+	}
+}
+
 static int sPetSuitAttrib(int nPlayerIdx)
 {
 	int nV = sPetG(nPlayerIdx, PET_TV_SUITCOUNT);
@@ -211,6 +262,7 @@ static int sPetSummon(int nPlayerIdx)
 		pNpc->m_CurrentMana = pNpc->m_ManaMax;
 	}
 	pNpc->m_CurrentLife = pNpc->m_LifeMax;
+	sPetApplyEquip(nPlayerIdx, nNpcIdx);	// [30/08] thuoc tinh trang bi
 	s_nPetNpcIdx[nPlayerIdx] = nNpcIdx;
 	s_dwPetNpcID[nPlayerIdx] = pNpc->m_dwID;
 	s_dwAuraTick[nPlayerIdx] = 0;
