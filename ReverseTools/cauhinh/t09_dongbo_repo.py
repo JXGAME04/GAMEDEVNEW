@@ -54,6 +54,7 @@ TEP = [
     "script/lib/lib_sukien.lua",
     "script/global/LuaNpcMonsters/Droprate_normal.lua",
     "script/vng_event/change_request_baoruong/exp_award.lua",
+    "script/event/event_vantieu/tieudau.lua",
     "settings/gamesetting.ini",
 ]
 

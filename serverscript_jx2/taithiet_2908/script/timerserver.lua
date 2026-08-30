@@ -107,30 +107,166 @@ function RunTime()
 		-- Active_LogginAo();
 		-- ThongBao();
 	-- end
-	-- sukien_liendau(nHr,nDy,nMi,nMo)
-	sukien_tongkim(nHr,nMi)
+	if (G_CFG("BAT_LIENDAU", 0) == 1) then
+		if (sukien_liendau ~= nil) then
+			sukien_liendau(nHr,nDy,nMi,nMo)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_LIENDAU bat nhung ham sukien_liendau chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_TONGKIM", 1) == 1) then
+		if (sukien_tongkim ~= nil) then
+			sukien_tongkim(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_TONGKIM bat nhung ham sukien_tongkim chua nap")
+			end
+		end
+	end
 	-- [3HD 25/08] lich Phong Lang Do + Vuot Ai (thay tang S3Relay ban Linux)
-	if (HD3_Tick ~= nil) then HD3_Tick(nHr, nMi) end
-	if (YDBZ_Tick ~= nil) then YDBZ_Tick(nHr, nMi) end	-- [VIEMDE 26/08] lich 8h25/10h25/14h25/16h25/18h25/20h25/22h25
+	if (G_CFG("BAT_HD3", 1) == 1 and HD3_Tick ~= nil) then HD3_Tick(nHr, nMi) end
+	if (G_CFG("BAT_VIEMDE", 1) == 1 and YDBZ_Tick ~= nil) then YDBZ_Tick(nHr, nMi) end	-- [VIEMDE 26/08] lich 8h25/10h25/14h25/16h25/18h25/20h25/22h25
 	-- [21/08] cong thanh JX2 + loi dai bang hoi CN: 0h/18h/19h/20h (guard ngay trong ham)
-	if (CTC_JX2_Tick ~= nil) then
+	if (G_CFG("BAT_CTC_JX2", 1) == 1 and CTC_JX2_Tick ~= nil) then
 		CTC_JX2_Tick(nDyfW, nHr, nMi)
 	end
-	-- sukien_congthanh(nDyfW,nHr,nMi)
-	-- sukien_hathuyhoang(nHr,nMi)
-	-- sukien_bosshk(nHr,nMi)
-	-- sukien_vuotai(nHr,nMi)
-	-- sukien_phonglangdo(nHr,nMi)
-	-- sukien_trangnguyen(nHr,nMi)
-	-- sukien_loidaibanghoi(nDyfW,nHr,nMi)
-	-- sukien_trongbanghoi(nHr,nMi)
-	-- sukien_kiemmonquan(nHr,nMi)
-	-- sukien_vantieu(nHr,nMi)
-	-- XepHangDuaTop()
-	-- songbac(nHr,nMi)
-	-- LoiDaiHonChien(nHr,nMi)
-	-- check_and_kick(nMi,nSe) -- check kich tai khoan
-	-- pubg_runner(nHr,nMi)
+	if (G_CFG("BAT_CONGTHANH_VIET", 0) == 1) then
+		if (sukien_congthanh ~= nil) then
+			sukien_congthanh(nDyfW,nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_CONGTHANH_VIET bat nhung ham sukien_congthanh chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_HATHUYHOANG", 0) == 1) then
+		if (sukien_hathuyhoang ~= nil) then
+			sukien_hathuyhoang(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_HATHUYHOANG bat nhung ham sukien_hathuyhoang chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_BOSS_HOANGKIM", 0) == 1) then
+		if (sukien_bosshk ~= nil) then
+			sukien_bosshk(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_BOSS_HOANGKIM bat nhung ham sukien_bosshk chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_VUOTAI_VIET", 0) == 1) then
+		if (sukien_vuotai ~= nil) then
+			sukien_vuotai(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_VUOTAI_VIET bat nhung ham sukien_vuotai chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_PHONGLANGDO_VIET", 0) == 1) then
+		if (sukien_phonglangdo ~= nil) then
+			sukien_phonglangdo(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_PHONGLANGDO_VIET bat nhung ham sukien_phonglangdo chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_HOADANG", 0) == 1) then
+		if (sukien_trangnguyen ~= nil) then
+			sukien_trangnguyen(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_HOADANG bat nhung ham sukien_trangnguyen chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_LOIDAI_BANGHOI", 0) == 1) then
+		if (sukien_loidaibanghoi ~= nil) then
+			sukien_loidaibanghoi(nDyfW,nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_LOIDAI_BANGHOI bat nhung ham sukien_loidaibanghoi chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_TRONG_BANGHOI", 0) == 1) then
+		if (sukien_trongbanghoi ~= nil) then
+			sukien_trongbanghoi(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_TRONG_BANGHOI bat nhung ham sukien_trongbanghoi chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_KIEMMONQUAN", 0) == 1) then
+		if (sukien_kiemmonquan ~= nil) then
+			sukien_kiemmonquan(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_KIEMMONQUAN bat nhung ham sukien_kiemmonquan chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_VANTIEU_LOA", 0) == 1) then
+		if (sukien_vantieu ~= nil) then
+			sukien_vantieu(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_VANTIEU_LOA bat nhung ham sukien_vantieu chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_DUATOP", 0) == 1) then
+		if (XepHangDuaTop ~= nil) then
+			XepHangDuaTop()
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_DUATOP bat nhung ham XepHangDuaTop chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_SONGBAC", 0) == 1) then
+		if (songbac ~= nil) then
+			songbac(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_SONGBAC bat nhung ham songbac chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_LOIDAI_HONCHIEN", 0) == 1) then
+		if (LoiDaiHonChien ~= nil) then
+			LoiDaiHonChien(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_LOIDAI_HONCHIEN bat nhung ham LoiDaiHonChien chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_CHECK_KICK", 0) == 1) then
+		if (check_and_kick ~= nil) then
+			check_and_kick(nMi,nSe)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_CHECK_KICK bat nhung ham check_and_kick chua nap")
+			end
+		end
+	end
+	if (G_CFG("BAT_PUBG", 0) == 1) then
+		if (pubg_runner ~= nil) then
+			pubg_runner(nHr,nMi)
+		else
+			if (GhiLog ~= nil) then
+				GhiLog("CAUHINH", "BAT_PUBG bat nhung ham pubg_runner chua nap")
+			end
+		end
+	end
 	
 end
 

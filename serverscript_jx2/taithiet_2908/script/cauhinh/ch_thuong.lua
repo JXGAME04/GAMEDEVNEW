@@ -21,5 +21,37 @@
 --    JX1: magicscript cua du an CHI co detail = 1. Xem thieu_vatpham.txt.
 
 tbCFG_THUONG = {
+-- [CFGVT 29/08] THUONG VAN TIEU (script\event\event_vantieu\tieudau.lua)
+--
+-- !! DOC KY TRUOC KHI DOI: hien MOI CHUYEN cong that la
+--      tieu dong    650.000.000 exp  (thong bao ghi  60.000.000)
+--      tieu bac     850.000.000 exp  (thong bao ghi  80.000.000)
+--      tieu vang  1.050.000.000 exp  (thong bao ghi 100.000.000)
+--    Tran 20 luot/ngay => toi da 21 TY exp mot nguoi mot ngay.
+--    Exp nay di qua AddSumExp nen KHONG chiu he so nao - chinh
+--    ExpRate hay nhom [Exp] deu khong cham toi.
+--
+-- Cac so duoi day DUNG BANG gia tri dang chay. Doi la an ngay sau
+-- khi khoi dong lai GameServer.
+
+VT_EXP_NEN_LAN        = 1000        ,	-- so lan cong exp nen
+VT_EXP_NEN_MOI        = 50000       ,	-- moi lan cong bao nhieu (1000 x 50.000 = 50 trieu)
+VT_EXP_NEN_SUM        = 500000000   ,	-- exp nen cong THEM (thong bao chi ghi 50.000.000)
+VT_EXP_DONG           = 100000000   ,	-- tieu dong: exp cong them (thong bao ghi 10.000.000)
+VT_EXP_BAC            = 300000000   ,	-- tieu bac: exp cong them (thong bao ghi 30.000.000)
+VT_EXP_VANG           = 500000000   ,	-- tieu vang: exp cong them (thong bao ghi 50.000.000)
+VT_HOMACH_DONG        = 300         ,	-- tieu dong: so Ho Mach Don
+VT_CHANNGUYEN_DONG    = 50          ,	-- tieu dong: so Chan Nguyen Don
+VT_RUONG_DONG         = 2           ,	-- tieu dong: so ruong trang bi xanh
+VT_HOMACH_BAC         = 400         ,	-- tieu bac: so Ho Mach Don
+VT_CHANNGUYEN_BAC     = 70          ,	-- tieu bac: so Chan Nguyen Don
+VT_RUONG_BAC          = 5           ,	-- tieu bac: so ruong trang bi xanh
+VT_HOMACH_VANG        = 500         ,	-- tieu vang: so Ho Mach Don
+VT_CHANNGUYEN_VANG    = 100         ,	-- tieu vang: so Chan Nguyen Don
+VT_RUONG_VANG         = 10          ,	-- tieu vang: so ruong trang bi xanh
+VT_LENHBAI_BOSS       = 10          ,	-- so Lenh Bai Boss moi chuyen (moi loai tieu)
+VT_DIEM_TONG_DONG     = 100         ,	-- tieu dong: diem cong cho bang hoi
+VT_DIEM_TONG_BAC      = 200         ,	-- tieu bac: diem cong cho bang hoi
+VT_DIEM_TONG_VANG     = 300         ,	-- tieu vang: diem cong cho bang hoi
 
 }
