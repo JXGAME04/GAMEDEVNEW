@@ -13,6 +13,18 @@
 
 tbCFG_CHUNG = {
 
+-- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
+-- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
+
+CTC_DIEM_PHA_LONGTRU      = 300         ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+CTC_EXP_TOP10_BANSAO      = 3000000     ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+CTC_GIA_LENHBAI           = 200000      ,	-- doc tai missions\citywar_global\head.lua
+CTC_GIA_TRA_LAI_LENHBAI   = 10000       ,	-- doc tai missions\citywar_global\head.lua
+CTC_MAX_LIENMINH_CONG_VEBINH= 5           ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+CTC_MAX_LIENMINH_THU_VEBINH= 5           ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+CTC_MAX_NGUOI_PHE_CONG_VEBINH= 50          ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+CTC_MAX_NGUOI_PHE_THU_VEBINH= 50          ,	-- doc tai tinhnang\congthanhchien\lib_ctc.lua
+
 -- [CFGCTC 30/08] CONG THANH CHIEN - tran dia (missions\citywar_city\head.lua)
 -- 
 -- !! MAX_CAMP* o day la ban ma CUA TRAN dung (camper.lua).

@@ -153,13 +153,29 @@ def noi(tep, tep_cfg, bang_cfg, ten_ham, nhan, muc, tieu_de=None,
         return kq
     raw_c = doc(tep_cfg)
     kq["raw_cfg"] = raw_c
-    if nhan in raw_c:
-        kq["log"].append("%s DA VA - bo qua" % os.path.basename(tep_cfg))
+    eol_c = eol_cua(raw_c)
+
+    # LOI DA MAC HAI LAN: truoc day cho nay kiem "nhan da co trong tep cau hinh
+    # thi bo qua". Nhung mot dot co the ghi vao CUNG mot tep cau hinh nhieu lan
+    # (nhieu tep dich cung do vao ch_thuong.lua chang han) - lan thu hai tro di
+    # se bi bo qua het, va khoa BIEN MAT khoi tep cau hinh du script van doc no.
+    # Hau qua: hoat dong van chay dung (vi ham doc tra ve mac dinh), nhung chu
+    # game mo tep cau hinh khong thay khoa dau ma chinh.
+    # Nay kiem TUNG KHOA MOT.
+    con_thieu = [x for x in kq["khoa"]
+                 if not re.search(r"^\s*%s\s*=" % re.escape(x[0]), raw_c, re.M)]
+    if not con_thieu:
+        kq["log"].append("%s: %d khoa deu da co - bo qua"
+                         % (os.path.basename(tep_cfg), len(kq["khoa"])))
         kq["noi_dung_cfg"] = raw_c
         return kq
-    eol_c = eol_cua(raw_c)
+    if len(con_thieu) != len(kq["khoa"]):
+        kq["log"].append("%s: %d/%d khoa da co, chi them %d khoa con thieu"
+                         % (os.path.basename(tep_cfg),
+                            len(kq["khoa"]) - len(con_thieu), len(kq["khoa"]),
+                            len(con_thieu)))
     dong = [""] + ["-- " + x for x in (tieu_de or [])] + [""]
-    for k, v, mo_ta in kq["khoa"]:
+    for k, v, mo_ta in con_thieu:
         dong.append("%-26s= %-12d,\t-- %s" % (k, v, mo_ta))
     moc = bang_cfg + " = {"
     if raw_c.count(moc) != 1:

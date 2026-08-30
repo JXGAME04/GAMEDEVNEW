@@ -22,6 +22,13 @@
 
 tbCFG_THUONG = {
 
+-- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
+-- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
+
+TKT_GIA_DOI_NHACVUONGKIEM = 10000000    ,	-- so tien can de doi Nhac Vuong Kiem
+TKT_PHI_TRINHSAT          = 500         ,	-- phi moi lan dung chuc nang trinh sat
+TKT_SL_HONTHACH_DOI_KIEM  = 100         ,	-- so Nhac Vuong Hon Thach can de doi mot Nhac Vuong Kiem
+
 -- [CFGTKT 30/08] TONG KIM - DIEM, THUONG va DIEU KIEN THAM GIA
 -- (phan THOI GIAN va LICH nam o ch_lich.lua, tien to TK_)
 -- 

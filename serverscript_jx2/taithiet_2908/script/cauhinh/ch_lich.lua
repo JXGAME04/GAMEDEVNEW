@@ -23,6 +23,11 @@
 
 tbCFG_LICH = {
 
+-- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
+-- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
+
+CTC_CHUKY_QUET_MO_TRAN_PHUT= 5           ,	-- doc tai missions\citywar_global\mission.lua
+
 -- [CFGCTC 30/08] LOI DAI DAU TRUONG (missions\citywar_arena\head.lua)
 -- (khoa CTLD_EXP_BANG_THANG la phan THUONG, de chung o day cho
 --  cung mot cho voi cac khoa khac cua Loi Dai)
