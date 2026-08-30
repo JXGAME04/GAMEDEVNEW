@@ -305,6 +305,13 @@ Bảy lỗi thật đã sửa xong trong phiên này:
 | 6 | Vá tràn exp **chưa hết** — còn hai phép nhân `int` ở nhánh bùa kinh nghiệm | Vá nốt cả chuỗi |
 | 7 | Hoàn tác `KDebug.cpp` làm **mất luôn** bản vá tràn bộ đệm thật (`vsprintf` không chặn, điểm gọi in hơn 330 byte vào đệm 256) | Áp lại riêng phần đó |
 
+Bản tổng kết phản biện về sau cùng còn chỉ ra **lỗ hổng thứ tám**, đã vá nốt: khi túi không nhét
+vừa món mới, hàm phát vật phẩm **không báo lỗi** mà lấy món **đang cầm trên tay**, gỡ ra và **ném
+xuống đất** để lấy chỗ (`ScriptFuns.cpp:5001-5006`) — món rơi có hạn sống, hết giờ là mất hẳn. Tệ
+hơn, hàm vẫn trả về "thành công" nên phép kiểm giá trị trả về không phát hiện được. Nay cổng thưởng
+hỏi đúng câu bằng `CheckRoom(rộng, cao, 1)` trước **từng** lần trao, và mục thưởng khai được kích
+thước món (`{ số lượng, {g,d,p}, "tên", cấp, rộng, cao }` — không khai thì coi là 1×1).
+
 Ngoài ra: 23 khoá `[Exp]` nay được **kẹp về khoảng hợp lệ** khi đọc (trước đây chúng là hằng số
 biên dịch nên không thể sai; thành cấu hình rồi thì một dấu trừ gõ nhầm có thể làm exp đứng hoặc
 tụt), và các rào chắn Viêm Đế được kiểm **từng tầng** thay vì một tầng.
