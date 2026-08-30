@@ -84,6 +84,8 @@ static void sPetSetName(int nPlayerIdx, const char* szName)
 #define PET_TV_SUITCOUNT   5163      // lua ghi: bo*100 + so mon dang mac
 static int s_nSuitHp[3] = { 5000, 7500, 10000 };
 
+static int s_nSuitLast[MAX_PLAYER];   // [30/08] theo doi doi bo de cap nhat mau ngay
+
 static int sPetSuitAttrib(int nPlayerIdx)
 {
 	int nV = sPetG(nPlayerIdx, PET_TV_SUITCOUNT);
@@ -91,8 +93,12 @@ static int sPetSuitAttrib(int nPlayerIdx)
 	int nBo = nV / 100;
 	int nSo = nV % 100;
 	if (nBo < 0 || nBo > 2) return 0;
-	if (nSo < 10) return 0;             // du 10 mon moi kich bo
-	return s_nSuitHp[nBo];
+	if (nSo <= 0) return 0;
+	if (nSo > 10) nSo = 10;
+	// [30/08 phan bien] bang goc chi cho 3 gia tri theo BAC BO, khong ghi
+	// nguong so mon; chuoi goc la "Bo <ten> %d mon" -> cong theo ti le
+	// so mon dang mac (du 10 mon = tron gia tri bang goc).
+	return s_nSuitHp[nBo] * nSo / 10;
 }
 
 static void sPetApplyAura(int nPlayerIdx)
@@ -109,8 +115,8 @@ static void sPetApplyAura(int nPlayerIdx)
 		pSkill->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
 	// [29/08] 4 ky nang BI DONG da hoc (task 5139..5142, bang 1670..1687
 	// port tu VLTK) ap len PET, re-cast cung nhip aura
-	int nPetNpc = s_nPetNpcIdx[nPlayerIdx];
-	if (nPetNpc > 0 && nPetNpc < MAX_NPC)
+	// [30/08 phan bien] pet KHONG danh (ca Linux lan VLTK) nen cast ky nang
+	// bi dong len PET la vo nghia -> ap len CHU nhu 4 vong sang.
 	{
 		for (int k = 0; k < 4; k++)
 		{
@@ -119,7 +125,7 @@ static void sPetApplyAura(int nPlayerIdx)
 			if (nSk <= 0) continue;
 			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, 1);
 			if (pExt)
-				pExt->CastStateSkill(nPetNpc, 0, 0, PET_AURA_TIME, TRUE);
+				pExt->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
 		}
 	}
 }
@@ -302,6 +308,23 @@ void Pet_Breathe()
 			pOwner->GetMpsPos(&nX, &nY);
 			pNpc->ChangeWorld(SubWorld[pOwner->m_SubWorldIndex].m_SubWorldID,
 				nX + 48, nY + 48);
+		}
+		// [30/08 phan bien] deo/thao trang bi doi bo -> cap nhat mau NGAY,
+		// khong doi den lan goi pet ke tiep
+		{
+			int nSuit = sPetG(i, PET_TV_SUITCOUNT);
+			if (nSuit != s_nSuitLast[i])
+			{
+				s_nSuitLast[i] = nSuit;
+				int nHp = sPetG(i, PET_TV_ATTRIB0 + 4) + sPetSuitAttrib(i);
+				if (nHp > 0)
+				{
+					Npc[nNpc].m_LifeMax = nHp;
+					Npc[nNpc].m_CurrentLifeMax = nHp;
+					if (Npc[nNpc].m_CurrentLife > nHp)
+						Npc[nNpc].m_CurrentLife = nHp;
+				}
+			}
 		}
 		// [29/08 - theo Linux] follow chay tu PLAYER TICK moi frame
 		// (jx_linux_y goi KPet-follow tu 0x080B7104 trong player tick)

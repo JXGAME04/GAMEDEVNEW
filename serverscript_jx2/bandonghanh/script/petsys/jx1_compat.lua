@@ -27,8 +27,19 @@ if (GetServerDate == nil) then
 end
 
 if (TabFile_GetColCount == nil) then
+	-- [30/08] tra 0 lam LoadSkillData chet ngay (mod(0-1,4) ~= 0) ->
+	-- dem cot THAT bang cach do dong header den khi gap o rong
 	function TabFile_GetColCount(szAlias)
-		return 0
+		local nCot = 0
+		local i
+		for i = 1, 200 do
+			local v = TabFile_GetCell(szAlias, 1, i)
+			if v == nil or v == "" then
+				break
+			end
+			nCot = i
+		end
+		return nCot
 	end
 end
 

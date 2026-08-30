@@ -112,23 +112,17 @@ function BDH_P_Root()
 	"Diem + chan nguyen + xu/BDH_P_Diem",
 	"Tao pet nhanh/BDH_P_TaoNhanh",
 	"Xoa ky nang/BDH_P_XoaKN",
+	"Thao het trang bi/BDH_P_XoaTB",
 	"Dong bo client/BDH_P_DongBo",
 	"Ket thuc doi thoai./no"})
 end
 
 -- [PETSYS 29/08] ban lai 29 o task pet xuong client (SetTask -> SetSaveVal
 -- -> SyncTaskValueToClient) - do kenh dong bo / va tam khi login-sync truot
-function BDH_P_TrangBi()
-	local i
-	for i = 4881, 4886 do
-		AddItem(6, 1, i, 1, 0, 0)
-	end
-	Msg2Player("Da cap 6 trang bi Dong Hanh")
-end
 function BDH_P_BiKip()
 	local i
 	for i = 1, 5 do
-		AddItem(6, 1, 4880, 1, 0, 0)
+		AddItem(6, 1, 4880, 1, 0, 0, 0)
 	end
 	Msg2Player("Da cap 5 Bi kip Dong Hanh")
 end
@@ -138,7 +132,7 @@ function BDH_P_ChanNguyen()
 end
 function BDH_P_DongBo()
 	local i
-	for i = 5110, 5138 do
+	for i = 5110, 5169 do
 		SetTask(i, GetTask(i))
 	end
 	Msg2Player("Da ban lai 29 o diem pet - mo cua so Ban Dong Hanh xem")
@@ -147,16 +141,16 @@ end
 function BDH_P_CapKN()
 	local i
 	for i = 1, 5 do
-		AddItem(6, 1, 4880, 1, 0, 0)
+		AddItem(6, 1, 4880, 1, 0, 0, 0)
 	end
 	for i = 4907, 4916 do
-		AddItem(6, 1, i, 1, 0, 0)
+		AddItem(6, 1, i, 1, 0, 0, 0)
 	end
 	for i = 1, 5 do
-		AddItem(6, 1, 4929, 1, 0, 0)
-		AddItem(6, 1, 4930, 1, 0, 0)
-		AddItem(6, 1, 4932, 1, 0, 0)
-		AddItem(6, 1, 4927, 1, 0, 0)
+		AddItem(6, 1, 4929, 1, 0, 0, 0)
+		AddItem(6, 1, 4930, 1, 0, 0, 0)
+		AddItem(6, 1, 4932, 1, 0, 0, 0)
+		AddItem(6, 1, 4927, 1, 0, 0, 0)
 	end
 	Msg2Player("Da cap 5 Bi kiep + bo Bich Huyet 10 mon + 5 ruong/chia khoa/ket tinh")
 end
@@ -171,28 +165,26 @@ end
 
 function BDH_P_XoaTB()
 	local i
-	for i = 0, 5 do
+	for i = 0, 9 do
 		SetTask(5143 + i, 0)
-		SetTask(5150 + i, 0)
 	end
-	SetTask(5157, 0)
-	SetTask(5158, 0)
-	Msg2Player("Da thao het trang bi pet")
+	SetTask(5163, 0)
+	Msg2Player("Da thao het trang bi pet (don ca o rac he cu)")
 end
 
 function BDH_P_CapDo()
 	local i
 	for i = 1, 5 do
-		AddItem(6, 1, 4874, 1, 0, 0)
+		AddItem(6, 1, 4874, 1, 0, 0, 0)
 	end
 	for i = 1, 200 do
-		AddItem(6, 1, 4875, 1, 0, 0)
+		AddItem(6, 1, 4875, 1, 0, 0, 0)
 	end
 	for i = 1, 20 do
-		AddItem(6, 1, 4876, 1, 0, 0)
-		AddItem(6, 1, 4877, 1, 0, 0)
-		AddItem(6, 1, 4878, 1, 0, 0)
-		AddItem(6, 1, 4879, 1, 0, 0)
+		AddItem(6, 1, 4876, 1, 0, 0, 0)
+		AddItem(6, 1, 4877, 1, 0, 0, 0)
+		AddItem(6, 1, 4878, 1, 0, 0, 0)
+		AddItem(6, 1, 4879, 1, 0, 0, 0)
 	end
 	Msg2Player("Da cap 5 Thiep + 200 Thuoc + 20 moi loai trai")
 end

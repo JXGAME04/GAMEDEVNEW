@@ -15,7 +15,7 @@ function PetEquip_CapNhatBo()
 	local i
 	for i = 0, PETEQUIP_O_SO - 1 do
 		local nId = GetTask(PETEQUIP_O_DAU + i)
-		local tb = PETEQUIP_DEF[nId]
+		local tb = PETEQUIP_DEF[nId]	-- bo qua id ngoai bang
 		if tb then
 			tbDem[tb.nSuit] = (tbDem[tb.nSuit] or 0) + 1
 		end
@@ -50,7 +50,7 @@ function main(nItemIndex)
 	local nO = PETEQUIP_O_DAU + tb.nSlot - 1
 	local nCu = GetTask(nO)
 	if nCu > 0 then
-		AddItem(6, 1, nCu, 1, 0, 0)
+		AddItem(6, 1, nCu, 1, 0, 0, 0)
 	end
 	SetTask(nO, nP)
 	local nBo, nSo = PetEquip_CapNhatBo()
@@ -92,7 +92,7 @@ function PetSys:EquipThao(nSlot)
 	if nId <= 0 then
 		return
 	end
-	AddItem(6, 1, nId, 1, 0, 0)
+	AddItem(6, 1, nId, 1, 0, 0, 0)
 	SetTask(nO, 0)
 	PetEquip_CapNhatBo()
 	Msg2Player(format("§· th¸o trang bÞ ë vÞ trÝ %s", PETEQUIP_VITRI[nSlot]))

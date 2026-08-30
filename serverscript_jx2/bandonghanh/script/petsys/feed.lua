@@ -2,7 +2,7 @@ Include("\\script\\petsys\\head.lua")
 
 ITEM_APPLE = {szName="Tr¸i t¸o", tbProp={6,1,4876,1,0,0}, nTaskId=TSK_APPLE_DAILY}
 ITEM_MAIZE = {szName="B¾p", tbProp={6,1,4878,1,0,0}, nTaskId=TSK_MAIZE_DAILY}
-ITEM_SWEET_POTATO = {szName="Khoai lang", tbProp={6,1,4879,1,0,0}, nTaskId=TSK_SUGARCANE_DAILY}
+ITEM_SWEET_POTATO = {szName="Khoai lang", tbProp={6,1,4879,1,0,0}, nTaskId=TSK_SWEET_POTATO_DAILY}
 ITEM_SUGARCANE = {szName="MÝa", tbProp={6,1,4877,1,0,0}, nTaskId=TSK_SWEET_POTATO_DAILY}
 
 tbFood = {

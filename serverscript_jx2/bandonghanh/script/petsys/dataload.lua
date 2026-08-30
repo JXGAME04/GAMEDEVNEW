@@ -1,6 +1,6 @@
 Include("\\script\\petsys\\head.lua")
 
-szSkillDefFile = ""
+szSkillDefFile = "\\settings\\petsys\\pet_skill_def.txt"
 
 function load_tabfile(szFile, tbColumn)
 	local b1 = TabFile_Load(szFile, szFile)
@@ -11,7 +11,7 @@ function load_tabfile(szFile, tbColumn)
 	
 	local nRowCount = TabFile_GetRowCount(szFile, szFile)
 	local tbData = {}
-	for i=2, 1+nRowCount do
+	for i=2, nRowCount do
 		local tbRow = {}
 		for j=1, getn(tbColumn) do
 			local value = TabFile_GetCell(szFile, i, tbColumn[j])
@@ -78,3 +78,6 @@ function PetSys:LoadSkillData()
 end
 
 PetSys:LoadFeatureData()
+
+-- [30/08] goi SAU khi da dinh nghia ham (Lua4 chay tuan tu)
+PetSys:LoadSkillData()

@@ -31,7 +31,7 @@ function main(nItemIndex)
 	end
 	ConsumeEquiproomItem(1, 6, 1, PETEQUIP_CHIAKHOA)
 	local nChon = tbCo[random(1, getn(tbCo))]
-	AddItem(6, 1, nChon, 1, 0, 0)
+	AddItem(6, 1, nChon, 1, 0, 0, 0)
 	Msg2Player(format("Më r­¬ng nhËn ®­îc trang bÞ §ång Hµnh bé %s", PETEQUIP_SUIT_TEN[nBo]))
 	PLOG("PetBox: ruong=" .. nP .. " ra=" .. nChon)
 	return

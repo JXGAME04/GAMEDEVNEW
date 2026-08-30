@@ -165,7 +165,9 @@ void KUiPet::CloseWindow()
 
 void KUiPet::OnTaskValueChanged(int nTaskId)
 {
-    if (nTaskId < PET_TV_BASE || nTaskId > PET_TV_BASE + 39)
+    // [30/08 phan bien] dai cu +39 cat mat o trang bi 8/9/10 (5150..5152)
+    // va o bo (5163) -> mo rong +59
+    if (nTaskId < PET_TV_BASE || nTaskId > PET_TV_BASE + 59)
         return;
     if (ms_pSelf && ms_pSelf->IsVisible())
         ms_pSelf->UpdateData();
@@ -299,7 +301,10 @@ void KUiPet::UpdateData()
         int nP = sPetTV(5143 + i);
         char szImg[128];
         szImg[0] = 0;
-        if (nP > 0)
+        // [30/08] CHI ve id trong DAI trang bi Dong Hanh (4907..4926 - bang
+        // goc VLTK da port). O con giu id he tu che cu (4881..) thi bo qua,
+        // neu khong se ve nham anh cua item JX1 khac trung id.
+        if (nP >= 4907 && nP <= 4926)
             sPetItemImg(nP, szImg, sizeof(szImg));
         if (szImg[0])
         {

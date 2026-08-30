@@ -40,6 +40,7 @@ Include("\\script\\item\\hd3_admin.lua")	-- [3HD 25/08] menu test 3 hoat dong Li
 Include("\\script\\item\\test_hoatdong_admin.lua")
 Include("\\script\\item\\test_loren_admin.lua")
 Include("\\script\\item\\bdh_admin.lua")	-- [BDH 28/08] bo test Dong hanh	-- [27/08] BO TEST LO REN (ep do tim / do pho)	-- [26/08] BO TEST TOAN BO HOAT DONG
+Include("\\script\\item\\test_phiphong_admin.lua")	-- [PHI PHONG 29/08] bo test phi phong, an, trang suc, mat na
 
 ADMIN_SUPPORT_TEXT = "Chøc n¨ng hç trî qu¶n trÞ viªn"
 PLAYER_INFOMATION = "<sex> - Tªn: <color=pink>%s<color>.\n- Täa ®é: <color=gold>%s (%d/%d) (%d/%d)<color>.\n- PIndex: <color=green>%d<color>"
@@ -98,7 +99,7 @@ function chucnangadmin(itemIdx)
 		"Chøc n¨ng chÝnh/manager",
 		"N¹p l¹i script/reloadfileEvent",
 		"Test bang héi - c«ng thµnh/TX_Root",
-		"BOT ng­êi ch¬i (KPlayer)/PB_Menu",
+		"BOT ng­êi ch¬i/PB_Menu",
 		"D· TÈu: xo¸ ph¹t - thªm l­ît/DT_AdminMenu",
 		"Liªn ®Êu: bé test/LD_AdminMenu",
 		"Bé test BC - BN - Tû Vâ - Thµnh B¶o/HD_AdminMenu",
@@ -109,10 +110,11 @@ function chucnangadmin(itemIdx)
 		--"FKAddAllNpc/FKAddAllNpc",
 		--"Go Map 957/GoMap995VT",
 	"Ho¹t ®éng Linux: S¸t Thñ - PL§ - V­ît ¶i/HD3_AdminMenu",
-		"Bé test Viªm §Õ B¶o Tµng/TTHD_Root",
+		"Bé test Viªm §Õ/TTHD_Root",
 		"Bé test lß rÌn/LR_Root",
 		"Bé test Kinh M¹ch/KM_TestRoot",
 		"Bé test §ång hµnh/BDH_Root",
+		"Bé test Phi Phong/PP_Root",
 		"KÕt thóc ®èi tho¹i/no"})
 	else
 		RemoveItem(itemIdx, 1)

@@ -11,7 +11,7 @@ end
 -- truot khi client con man hinh loading; goi truoc MOI op de cua so luon dung
 function PetSys_ResyncClient()
 	local i
-	for i = 5110, 5138 do
+	for i = 5110, 5169 do
 		SetTask(i, GetTask(i))
 	end
 end
