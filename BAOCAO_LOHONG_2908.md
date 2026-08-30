@@ -222,10 +222,11 @@ nhau** cùng rơi Ngũ Hoa: một cái điều kiện `> 80 và < 85`, một cá
 **cả hai đều đúng** → rơi hai món. Xác nhận có thật, nhưng Phong Lăng Độ bản Việt **đang tắt**
 (`startgame.lua:103` đã comment).
 
-**Kháng vượt 100% ở boss sát thủ.** `deathhksv.lua:182` đặt `SetNpcResist(..., 95, 120, 95, 120,
-95)` — hai hệ ở mức 120. Em đọc hàm C tương ứng: nó **gán thẳng, không kẹp giá trị**. Nhưng em
-chưa đọc tới chỗ engine tính sát thương nên **chưa kết luận** được hậu quả — có thể vô hại nếu chỗ
-tính có kẹp riêng.
+**Kháng vượt 100% ở boss sát thủ — theo tới cùng thì vô hại.** `deathhksv.lua:182` đặt
+`SetNpcResist(..., 95, 120, 95, 120, 95)`. Hàm C gán thẳng không kẹp, nhưng chỗ **tính sát thương
+thì có**: `KNpc.cpp:3702` kẹp về `MAX_RESIST`, mà `MAX_RESIST = 95` (`GameDataDef.h:436`). Thêm
+nữa công thức ở `:3707-3712` là `hệ_số = 2 / (kháng/100 + 2)` — luôn dương, không bao giờ cho sát
+thương âm. Nên **số 120 chỉ bị hạ về 95, không gây hồi máu**. Nghi vấn này khép lại.
 
 **Một nghi vấn bị bác bỏ.** Tài liệu nói `event_cauhoi\lib.lua:346` gán `nRand = 3` đè lên kết quả
 ngẫu nhiên vừa tính, coi đó là lỗi. Đọc tận nơi thì dòng đó có chú thích *"mặc định ra ở Hoa Sơn
