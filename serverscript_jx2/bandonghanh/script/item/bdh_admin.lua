@@ -137,10 +137,14 @@ end
 function BDH_P_DonLoi()
 	local i
 	local nDem = 0
+	-- ConsumeItem dang JX2: (nPos, nCount, g, d, p) voi nPos = -1 = TAY +
+	-- hanh trang + tui mo rong (ScriptFuns.cpp:LuaConsumeItem) -> go duoc
+	-- ca mon dang DINH TREN CHUOT (pos_hand), thu ma ConsumeEquiproomItem
+	-- khong dong toi duoc.
 	for i = 4874, 4932 do
-		local nCo = CalcEquiproomItemCount(6, 1, i, -1)
-		if nCo > 0 then
-			ConsumeEquiproomItem(nCo, 6, 1, i)
+		local nCo = CalcItemCount(-1, 6, 1, i, -1)
+		if nCo ~= nil and nCo > 0 then
+			ConsumeItem(-1, nCo, 6, 1, i)
 			nDem = nDem + nCo
 		end
 	end
@@ -148,7 +152,7 @@ function BDH_P_DonLoi()
 	if PET_ClearHand ~= nil then
 		nTay = PET_ClearHand()
 	end
-	Msg2Player(format("§· dän %d vËt phÈm trong tói vµ %d mãn kÑt trªn tay", nDem, nTay))
+	Msg2Player(format("§· dän %d vËt phÈm (kÓ c¶ mãn dİnh trªn chuét) vµ %d mãn kÑt", nDem, nTay))
 end
 
 function BDH_P_DongBo()
