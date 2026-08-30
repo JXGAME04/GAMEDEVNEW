@@ -1,0 +1,31 @@
+Ma	Ten
+88	Néi lùc tèi ®a
+97	dexterity v
+98	vitality v
+99	energy v
+100	poisonres p
+190	normal reserve5
+226	poisonres yan p
+227	lightingres yan p
+234	Néi lùc tèi ®a
+236	pk punish enhance
+241	Uy lùc kü n¨ng
+243	Håi phôc
+246	anti lightingres yan p
+247	S¸t th­¬ng
+248	reduceskillcd3
+268	Xuyªn ®ì ®ßn
+269	addblockrate
+270	walkrunshadow
+271	returnskill2enemy
+276	S¸t th­¬ng chiªu
+277	S¸t th­¬ng chiªu
+278	S¸t th­¬ng chiªu
+279	S¸t th­¬ng chiªu
+280	S¸t th­¬ng chiªu
+281	S¸t th­¬ng chiªu
+282	S¸t th­¬ng chiªu
+283	S¸t th­¬ng chiªu
+284	missle exp begin
+285	missle range
+308	attrib 308

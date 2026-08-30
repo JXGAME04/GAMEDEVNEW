@@ -4,6 +4,7 @@ create data : 28-08-2026
 Description : [PETSYS] Cua so "Ban Dong Hanh" ban PC (xem UiPet.h).
 *******************************************************************************/
 #include "KWin32.h"
+#include "../Elem/MouseHover.h"	// [30/08] tooltip o trang bi
 #include "KIniFile.h"
 #include "../elem/wnds.h"
 #include "../../../core/src/coreshell.h"
@@ -228,6 +229,91 @@ void KUiPet::Initialize()
     Wnd_AddWindow(this);
 }
 
+// [30/08] ten mon theo id (cot 1 bang magicscript)
+static void sPetItemName(int nParticular, char* szOut, int nOutLen)
+{
+	szOut[0] = 0;
+	static KTabFile s_TenTab;
+	static int s_bLoaded = 0;
+	if (!s_bLoaded)
+	{
+		s_bLoaded = 1;
+		s_TenTab.Load((LPSTR)"\\settings\\item\\magicscript.txt");
+	}
+	// bang JX1: record index = particular -> hang = particular + 2
+	s_TenTab.GetString(nParticular + 2, 1, (LPSTR)"", szOut, nOutLen);
+}
+
+// [30/08] Tooltip o trang bi: ten mon + 3 thuoc tinh (ma tu
+// settings\petsys\equipattrib.txt, ten tu attribname.txt, gia tri tu
+// task 5170 + slot*3). Dung g_MouseOver nhu UiPlayerBar.cpp:2429.
+static KTabFile s_AttNameTab;
+static int      s_bAttNameLoaded = 0;
+
+static void sPetAttName(int nMa, char* szOut, int nOutLen)
+{
+	szOut[0] = 0;
+	if (!s_bAttNameLoaded)
+	{
+		s_bAttNameLoaded = 1;
+		s_AttNameTab.Load((LPSTR)"\\settings\\petsys\\attribname.txt");
+	}
+	char szNum[16];
+	int nRow = s_AttNameTab.GetHeight();
+	for (int r = 2; r <= nRow; r++)
+	{
+		s_AttNameTab.GetString(r, 1, (LPSTR)"", szNum, sizeof(szNum));
+		if (atoi(szNum) == nMa)
+		{
+			s_AttNameTab.GetString(r, 2, (LPSTR)"", szOut, nOutLen);
+			return;
+		}
+	}
+	_snprintf(szOut, nOutLen - 1, "thuoc tinh %d", nMa);
+}
+
+static void sPetEquipTip(int nSlot, char* szOut, int nOutLen)
+{
+	szOut[0] = 0;
+	int nId = sPetTV(5143 + nSlot);
+	if (nId < 4907 || nId > 4926)
+		return;
+	char szTen[64];
+	szTen[0] = 0;
+	sPetItemName(nId, szTen, sizeof(szTen));
+	int nLen = _snprintf(szOut, nOutLen - 1, "%s", szTen);
+	if (nLen < 0) nLen = 0;
+	// 3 thuoc tinh
+	static KTabFile s_EqAttTab;
+	static int s_bLoaded = 0;
+	if (!s_bLoaded)
+	{
+		s_bLoaded = 1;
+		s_EqAttTab.Load((LPSTR)"\\settings\\petsys\\equipattrib.txt");
+	}
+	char szNum[16];
+	int nRow = s_EqAttTab.GetHeight();
+	for (int r = 2; r <= nRow; r++)
+	{
+		s_EqAttTab.GetString(r, 1, (LPSTR)"", szNum, sizeof(szNum));
+		if (atoi(szNum) != nId) continue;
+		for (int c = 0; c < 3; c++)
+		{
+			s_EqAttTab.GetString(r, 2 + c, (LPSTR)"", szNum, sizeof(szNum));
+			int nMa = atoi(szNum);
+			int nVal = sPetTV(5170 + nSlot * 3 + c);
+			if (nMa > 0 && nVal > 0 && nLen < nOutLen - 40)
+			{
+				char szTenAtt[48];
+				sPetAttName(nMa, szTenAtt, sizeof(szTenAtt));
+				nLen += _snprintf(szOut + nLen, nOutLen - nLen - 1,
+					"\n%s +%d", szTenAtt, nVal);
+			}
+		}
+		break;
+	}
+}
+
 void KUiPet::UpdateData()
 {
     char szBuf[64];
@@ -368,6 +454,42 @@ int KUiPet::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
         if (uParam == (unsigned int)(KWndWindow*)&m_CompanionBtn)
             SendOp(10);	// menu trang bi Dong Hanh (server)
         break;
+    case WM_MOUSEMOVE:
+    {
+        // [30/08] tooltip o trang bi: toa do 10 o trong INI (x 328 + k*30,
+        // y 82, 24x24) - uParam/nParam la toa do chuot tuyet doi
+        int nX = (int)uParam - m_nAbsoluteLeft;
+        int nY = nParam - m_nAbsoluteTop;
+        int nO = -1;
+        if (nY >= 82 && nY <= 106)
+        {
+            for (int k = 0; k < 10; k++)
+            {
+                int nL = 328 + k * 30;
+                if (nX >= nL && nX <= nL + 24)
+                {
+                    nO = k;
+                    break;
+                }
+            }
+        }
+        if (nO >= 0 && sPetTV(5143 + nO) >= 4907)
+        {
+            char szTip[256];
+            sPetEquipTip(nO, szTip, sizeof(szTip));
+            if (szTip[0])
+            {
+                g_MouseOver.SetMouseHoverInfo((void*)(KWndWindow*)this, nO,
+                    (int)uParam, nParam, false, true);
+                g_MouseOver.SetMouseHoverTitle(szTip, strlen(szTip), 0xffffffff);
+            }
+        }
+        else if (g_MouseOver.IsMoseHoverWndObj((void*)(KWndWindow*)this, -1) == 0)
+        {
+            g_MouseOver.CancelMouseHoverInfo();
+        }
+        break;
+    }
     default:
         return KWndImage::WndProc(uMsg, uParam, nParam);
     }
