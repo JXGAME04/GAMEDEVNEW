@@ -184,7 +184,7 @@ Tôi cho 8 nhóm kiểm chứng độc lập 10 cảnh báo. Kết quả: **1 c�
 | Cảnh báo | Kết luận | Ghi chú |
 |---|---|---|
 | **NPC Lôi Đài Hỗn Chiến nhốt người chơi** | **đang xảy ra** | Người cấp ≥90 bấm vào NPC ở Ba Lăng Huyện lúc 16h/22h bị **ném vào bản đồ 210 trống**, chỉ thoát được bằng cách thoát game đăng nhập lại. Không mất đồ, nhưng là lỗi khó chịu |
-| Lôi Đài Hỗn Chiến ăn 10 triệu exp/mạng | **đang ngủ** | Kho thưởng còn nguyên: 500 triệu exp + 5 mảnh Hoàng Kim cho "quán quân" **dù không đánh ai**, 10 triệu exp mỗi mạng, và người ăn có thể chính là **người chết**. **Phải vá trước khi bật** |
+| Lôi Đài Hỗn Chiến — sáu điểm hở exp | **đang ngủ** | Xem mục riêng ngay dưới. **Phải xử lý trước khi bật** |
 | Lịch Tống Kim Lua ≠ C++ (23:46 vs 13:58) | đúng | Bảng cho auto/bot đã cũ so với script sống — người dùng auto chờ nhầm giờ |
 | Lôi Đài Bang Hội thu 1 triệu lượng cho trận không mở | đúng một phần | Đường vào NPC hẹp hơn cảnh báo mô tả |
 | Trần bù lượt Vượt Ải lệch cấu hình | đúng | Số nhỏ, sửa lúc nào cũng được |
@@ -192,6 +192,26 @@ Tôi cho 8 nhóm kiểm chứng độc lập 10 cảnh báo. Kết quả: **1 c�
 | Trần bù lượt Vượt Ải "lệch cấu hình" | **cảnh báo SAI** | Số 2 là đúng — nó đếm hệ Vượt Ải **cũ** (2 lượt/ngày); số 1 thuộc một hệ Vượt Ải **khác hoàn toàn**. **Đừng sửa theo cảnh báo này** |
 | Cửa sổ chốt quán quân sai dải phút | đúng một phần | Chỉ nổ khi bật lại hoạt động |
 | `MSTIME_VUOT_AI_BD` dùng hai vai | đang ngủ | Hàm vượt ải cũ đã tắt |
+
+---
+
+## Lôi Đài Hỗn Chiến — sáu điểm hở, phải xử lý trước khi bật
+
+Hoạt động này **đang tắt**, nên chưa mất gì. Nhưng nếu anh bật lên mà chưa xử lý, đây là những gì
+sẽ xảy ra. Em tự đọc `timerserver.lua` để xác nhận từng điểm:
+
+| # | Điểm hở | Vị trí |
+|---|---|---|
+| 1 | **Chỉ cần có mặt là được 50 triệu exp + 100 Hộ Mạch Đơn.** Lúc phút 52, mọi người đang đứng ở bản đồ 210 đều được cộng — không cần đánh ai | `:481-482` |
+| 2 | **Một người báo danh đơn là thành quán quân**, ăn 500 triệu exp + 5 mảnh Hoàng Kim. Điều kiện thắng là `count == 1`, không đòi hỏi chiến đấu | `:511`, `:535-539` |
+| 3 | **Cửa sổ chốt quán quân mở trước khai chiến 40 phút** — từ phút 12 trong khi trận bắt đầu phút 52 | `:497` vs `:469` |
+| 4 | **Trần 4 mạng bị xoá mỗi lần khai chiến** bởi `SetTaskTemp(1,0)` | `:479` |
+| 5 | **Chết không do người chơi thì exp rơi vào chính người vừa chết** | `bigiet.lua:6-8` |
+| 6 | **"Tổng dame" dùng để xếp hạng là số giả** — không nơi nào ghi giá trị đó, nên mọi người đều bằng 0 và quán quân là người đầu bảng ngẫu nhiên | `:579`, `:583` |
+
+Bốn con số (50 triệu, 100 Hộ Mạch Đơn, 500 triệu, 5 mảnh) nay nằm ở `ch_thuong.lua` khoá `LDHC_`,
+giữ nguyên giá trị. Nhưng **sáu điểm trên là lỗi thiết kế chứ không phải con số** — sửa chúng là
+quyết định của anh, em không tự làm.
 
 ---
 

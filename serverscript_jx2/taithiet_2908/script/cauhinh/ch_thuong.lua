@@ -22,6 +22,17 @@
 
 tbCFG_THUONG = {
 
+-- [CFGLDHC 30/08] LOI DAI HON CHIEN (script\timerserver.lua) - DANG TAT
+--
+-- !! Doc ky truoc khi bat. Ngoai cac so duoi day, hoat dong nay con
+-- !! nam diem ho ve THIET KE (khong phai con so) da ghi trong
+-- !! BAOCAO_LOHONG_2908.md - phai xu ly truoc khi bat.
+
+LDHC_EXP_COMAT            = 50000000    ,	-- exp cho MOI NGUOI dang dung o ban do 210 luc khai chien. !! chi can co mat, khong can danh ai
+LDHC_SL_HOMACH_COMAT      = 100         ,	-- so Ho Mach Don cho moi nguoi co mat luc khai chien
+LDHC_EXP_QUANQUAN         = 500000000   ,	-- exp cho quan quan. !! dieu kien thang hien la `count == 1`, tuc mot nguoi bao danh don cung duoc
+LDHC_SL_MANH_HOANGKIM     = 5           ,	-- so manh hoang kim cho quan quan
+
 -- [CFGTAT 30/08] TRONG BANG HOI (event\trongbanghoi\lib.lua) - DANG TAT
 -- 
 -- !! Doc ky truoc khi bat: TBH_EXP_MIN/MAX la exp cho MOI NHIP, va

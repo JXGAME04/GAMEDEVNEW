@@ -3,6 +3,15 @@
 --Function: Timer toan server
 
 Include("\\script\\lib\\lib_ham.lua")
+-- [CFGLDHC 30/08] Bo doc cau hinh cho tep nay (rieng phan Loi Dai Hon Chien).
+-- Tra ve MAC DINH (= so cu) khi bo cau hinh chua nap.
+function LDHC_CFG(szKhoa, macdinh)
+	if (G_CFG ~= nil) then
+		return G_CFG(szKhoa, macdinh)
+	end
+	return macdinh
+end
+
 Include("\\script\\lib\\lib_map.lua")
 Include("\\script\\lib\\lib_task.lua")
 Include("\\script\\lib\\lib_server.lua")
@@ -478,8 +487,8 @@ PlayerIndex = i
 					SetFightState(1)  -- tr¹ng th¸i chiÕn ®Êu
 					SetTaskTemp(1,0)
 					SetPKMode(2,1) -- chuyÓn sang ®å s¸t
-					AddSumExp(50000000)
-					AddItemSL(4844,100,0)
+					AddSumExp(LDHC_CFG("LDHC_EXP_COMAT", 50000000))
+					AddItemSL(4844,LDHC_CFG("LDHC_SL_HOMACH_COMAT", 100),0)
 					
 
 					SetTask(TASK_DSK, GetTask(TASK_DSK) + 20)
@@ -532,8 +541,8 @@ if (nHr == 16 or nHr == 22) and nMi > 11 and nMi <= 54 then
 			PlayerIndex = i
 			if GetName() == NguoiThangCuoc then
 				Msg2SubWorld("<color=pink>ChØ cßn <color=yellow>"..GetName().."<color> sèng sãt ! KÕt thóc trËn L«i §µi Hçn ChiÕn")
-				AddSumExp(500000000)
-				for i=1,5 do
+				AddSumExp(LDHC_CFG("LDHC_EXP_QUANQUAN", 500000000))
+				for i=1,LDHC_CFG("LDHC_SL_MANH_HOANGKIM", 5) do
 					AddItem(4,random(753,770),0,0,0,0,0)
 				end
 				Msg2SubWorld("B¹n nhËn ®­îc 5 m¶nh hoµng kim AB")
