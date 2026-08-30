@@ -1,0 +1,73 @@
+DANH SACH VAT PHAM CHUA CO TRONG DU AN (bang thuong dang tro toi)
+Sinh boi t01_nan_ma_thuong.py - CHU GAME quyet: tao moi / thay the / bo
+==============================================================================
+
+(6,1,30474)  Bộ Trang Bị Minh Phượng - Tự chọn hệ phái
+        vng_event/thapnienlenhbai/lenhbai_def.lua:536
+
+(6,1,30386)  Bộ Xích Lân - Tự chọn hệ phái
+        vng_event/thapnienlenhbai/lenhbai_def.lua:431
+
+(6,1,30218)  Chiến Bị Lễ Bao
+        missions/boss/bigboss.lua:93
+
+(6,1,30246)  Chuyển sinh thuật(cấp 5)
+        vng_event/thapnienlenhbai/lenhbai_def.lua:407
+        task/metempsychosis/task_head.lua:129
+
+(6,1,30215)  Cống Hiến Đại Lễ Bao
+        missions/boss/bigboss.lua:91
+
+(6,1,30216)  Kiến Thiết Lễ Bao
+        missions/boss/bigboss.lua:92
+
+(6,1,30593)  Trang Sức Chi Quang
+        missions/boss/bigboss.lua:70
+
+(6,1,30563)  Trang Sức Tinh Linh
+        missions/boss/bigboss.lua:69
+
+(6,1,30408)  Đại Gia Hạn Phù
+        missions/boss/bigboss.lua:71
+
+(6,1,30446)  Đại Thành Bí Kíp 150
+        missions/boss/bigboss.lua:67
+
+(6,1,30446)  Đại thành bí kíp(150)
+        vng_event/thapnienlenhbai/lenhbai_def.lua:432
+
+(6,1,30010)  Đồ Phổ Tinh Sương Hạng Liên
+        missions/challengeoftime/chuangguang30.lua:52
+
+(6,1,30009)  Đồ Phổ Tinh Sương Hộ Uyển
+        missions/challengeoftime/chuangguang30.lua:51
+
+(6,1,30530)  Đồ Phổ Đằng Long Hài
+        missions/boss/bigboss.lua:102
+        task/tollgate/killer/kill_level.lua:118
+
+(6,1,30536)  Đồ Phổ Đằng Long Hạ Giới Chỉ
+        missions/boss/bigboss.lua:108
+        task/tollgate/killer/kill_level.lua:124
+
+(6,1,30533)  Đồ Phổ Đằng Long Hạng Liên
+        missions/boss/bigboss.lua:105
+        task/tollgate/killer/kill_level.lua:121
+        missions/challengeoftime/chuangguang30.lua:49
+
+(6,1,30532)  Đồ Phổ Đằng Long Hộ Uyển
+        missions/boss/bigboss.lua:104
+        task/tollgate/killer/kill_level.lua:120
+
+(6,1,30528)  Đồ Phổ Đằng Long Khôi
+        missions/boss/bigboss.lua:101
+        task/tollgate/killer/kill_level.lua:117
+
+(6,1,30535)  Đồ Phổ Đằng Long Thượng Giới Chỉ
+        missions/boss/bigboss.lua:107
+        task/tollgate/killer/kill_level.lua:123
+
+(6,1,30531)  Đồ Phổ Đằng Long Yêu Đái
+        missions/boss/bigboss.lua:103
+        task/tollgate/killer/kill_level.lua:119
+
