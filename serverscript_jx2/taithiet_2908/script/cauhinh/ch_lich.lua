@@ -23,6 +23,12 @@
 
 tbCFG_LICH = {
 
+-- [CFGTAT 30/08] LOI DAI HON CHIEN - DANG TAT
+-- 
+-- !! PHAI VA MAY CHO HO EXP TRUOC KHI BAT - xem BAOCAO_LOHONG_2908.md
+
+LDHC_PHI_BAODANH          = 0           ,	-- phi bao danh Loi Dai Hon Chien (luong). Dang de 0 nen vao mien phi
+
 -- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
 -- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
 

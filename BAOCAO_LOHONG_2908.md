@@ -152,6 +152,30 @@ rồi khởi động lại. Nếu chủ muốn giữ nguyên mức hiện tại 
 
 ---
 
+## ⚠️ Đính chính (30/08) — hai chỗ tôi báo sai
+
+**1. Công Thành Quan: tôi báo "lỗi đang xảy ra", thực ra NPC đó không tồn tại.**
+
+Hôm qua tôi báo `congthanhquan.lua:24` đặt ngoặc sai làm mất mục báo danh nửa tiếng mỗi giờ, và
+gọi đó là lỗi đang xảy ra. Kiểm lại kỹ hơn: **cả ba nơi tạo NPC Công Thành Quan đều đã bị
+comment** — `balanghuyen.lua:79` và `lib_ctc.lua:243-244`. Không có NPC nào chạy tệp đó, nên lỗi
+đặt ngoặc **không ảnh hưởng ai**. Bản vá vẫn giữ (nó đúng về logic, sẽ có tác dụng nếu anh bật lại
+NPC), nhưng nó **không gấp** như tôi nói.
+
+Kéo theo: cảnh báo "Lôi Đài Bang Hội thu 1.000.000 lượng" cũng **không còn đường sống** — đường thu
+tiền duy nhất đi qua chính NPC đó.
+
+**2. Tôi vá sai một chỗ và đã hoàn tác.**
+
+Tôi đổi biến `count` thành số `1` trong `citywar_function.lua`, kết luận rằng "biến không được khai
+ở đâu". Sai — hàm chứa nó khai là `function take_tong_award(count)`, tức **`count` là tham số của
+hàm**, hoàn toàn hợp lệ. Tôi đã không đọc dòng khai hàm trước khi kết luận. Đã hoàn tác.
+
+Chỗ thứ hai thì kết luận đúng và giữ nguyên bản vá: hàm `take_tong_resaward()` **không có tham số
+nào**, nên `count` ở đó thật sự chưa khai.
+
+---
+
 ## Các cảnh báo khác — đã kiểm chứng, không cần gấp
 
 Tôi cho 8 nhóm kiểm chứng độc lập 10 cảnh báo. Kết quả: **1 cái đang ngủ, 7 cái đúng một phần**

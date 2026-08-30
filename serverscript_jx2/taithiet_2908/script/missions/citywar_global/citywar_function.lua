@@ -154,10 +154,11 @@ function take_tong_award(count)
 		AddItem(6,1,146,5,1,1);
 		SetTask(TSK_CITYTONG_DATE, today);
 		add_citybonus_task(city_index, CITYINFO_LEAGUETASK_COUNT, 1);
-	-- [VACTC 30/08] bien `count` khong duoc khai o dau trong ham; cac dong
-	-- lan can deu dung ten khac. format voi nil nem loi Lua, cat dut ham
-	-- ngay tai day nen nguoi choi khong nhan duoc cau thong bao. (nhanh nay phat dung MOT vien moi ngay)
-	local msg =	format("%s %s (%s) nhÀn %s huy“n tinh c p 5 tı Kim s¨n ch≠Îng m´n nh©n",GetLocalDate("[%y-%m-%d %H:%M] "),GetAccount(),GetName(),1)
+	-- [HOANTAC 30/08] HOAN TAC: ban va truoc doi `count` thanh 1 o day la
+	-- SAI - `count` la THAM SO cua ham take_tong_award(count) o tren,
+	-- hoan toan hop le. (Cho thu hai trong take_tong_resaward moi that
+	-- su thieu khai, va van giu ban va do.)
+	local msg =	format("%s %s (%s) nhÀn %s huy“n tinh c p 5 tı Kim s¨n ch≠Îng m´n nh©n",GetLocalDate("[%y-%m-%d %H:%M] "),GetAccount(),GetName(),count)
 		WriteLog(msg);
 		Talk(1, "", "<#>ß©y lµ ph«n th≠Îng cÒa ng≠¨i, h∑y nhÀn l y.")
 	else

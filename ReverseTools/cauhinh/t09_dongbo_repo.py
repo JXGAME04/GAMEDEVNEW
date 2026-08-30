@@ -76,6 +76,8 @@ TEP = [
     "script/petsys/petequip.lua",
     "script/task/partner/reward/partner_reward.lua",
     "script/task/newtask/tasklink/tasklink_head.lua",
+    "script/event/trongbanghoi/lib.lua",
+    "script/tinhnang/loidaihonchien/mainloidai.lua",
     "settings/gamesetting.ini",
 ]
 

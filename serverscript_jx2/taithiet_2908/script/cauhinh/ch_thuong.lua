@@ -22,6 +22,20 @@
 
 tbCFG_THUONG = {
 
+-- [CFGTAT 30/08] TRONG BANG HOI (event\trongbanghoi\lib.lua) - DANG TAT
+-- 
+-- !! Doc ky truoc khi bat: TBH_EXP_MIN/MAX la exp cho MOI NHIP, va
+-- !! mot lan danh trong co MUOI nhip (tungtung1.lua:58), moi nhip 5
+-- !! giay. Tran ngay chi duoc kiem TRUOC vong lap nen con vuot them
+-- !! mot nhip.
+
+TBH_PHUT_TRONG_TON_TAI    = 30          ,	-- so PHUT trong do bang chu tu danh ra ton tai (ma viet dang 30*60*18 nen day la con so dau)
+TBH_GIO_MO                = 1900        ,	-- gio som nhat trong ngay duoc dung Trong Khai Hoan, dang HHMM. !! ten bien trong ma rat chung
+TBH_GIO_DONG              = 2359        ,	-- gio muon nhat trong ngay duoc dung Trong Khai Hoan, dang HHMM
+TBH_EXP_TRAN_NGAY         = 200000000   ,	-- tran exp moi nguoi nhan trong mot ngay tu danh trong bang
+TBH_EXP_MIN               = 1000000     ,	-- exp thap nhat cho MOI NHIP (mot lan danh co 10 nhip)
+TBH_EXP_MAX               = 2000000     ,	-- exp cao nhat cho MOI NHIP (mot lan danh co 10 nhip)
+
 -- [CFGBDH 30/08] BAN DONG HANH - danh hieu
 
 BDH_THOIHAN_DANHHIEU_NGAY = 30          ,	-- so NGAY danh hieu Ban Dong Hanh ton tai (ma viet dang 30*24*60*60*18*36 nen day la con so dau tien). !! khai lai y het o partner_reward2.lua
