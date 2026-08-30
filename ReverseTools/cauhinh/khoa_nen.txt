@@ -1,0 +1,588 @@
+KHOA NEN DUA RA CAU HINH (128 khoa o 55 tep)
+Sinh tu workflow phan loai - da xac minh tep va so dong
+==============================================================================
+
+# missions\yandibaozang\head.lua  (10)
+        (":41", "YDBZ_LIMIT_SIGNUP", "VDE_GIAY_CHO_VAO_TRAN",
+         "So GIAY cho tu luc mo phong tran den luc tran chinh thuc chay (mission.lua:16 nhan 18 khung/giay). Bay: cau hinh da co san khoa YDBZ_PHUT_BAODANH = 5 "),
+        (":44", "YDBZ_TIME_WAIT_STATE1", "VDE_GIAY_CHO_GOI_BOSS_CUOI",
+         "So giay cho truoc khi goi boss cuoi (Luong Mi Nhi) sau khi da ha het ai (npc_death.lua:301, nhan 18 khung/giay)."),
+        (":45", "YDBZ_TIME_WAIT_STATE3", "VDE_GIAY_CHO_DONG_PHONG",
+         "So giay cho sau khi boss cuoi chet roi moi day nguoi choi ra va dong phong (npc_death.lua:207). Dat qua nho la nguoi choi khong kip nhat do."),
+        (":46", "YDBZ_LIMIT_SETFIGHTSTATE", "VDE_GIAY_CHO_KHI_CON_1_DOI",
+         "So giay cho khi chi con 1 to doi song sot roi moi ket thuc / goi boss (player_death.lua:59)."),
+        (":48", "YDBZ_LIMIT_PLAYER_LEVEL", "VDE_CAP_TOITHIEU_THAMGIA",
+         "Cap do toi thieu de duoc vao Viem De Bao Tang (npc\yandibaozang_main.lua:43). Bay: cau hinh da co YDBZ_CAP_TOITHIEU=120 nhung chi bo test admin doc, d"),
+        (":49", "YDBZ_LIMIT_WEEK_COUNT", "VDE_LUOT_TUAN",
+         "So luot tham gia toi da moi TUAN cua mot nhan vat (yandibaozang_main.lua:53). Cau hinh YDBZ_LAN_TUAN=10 chi la ban sao khong duoc doc."),
+        (":50", "YDBZ_LIMIT_DAY_COUNT", "VDE_LUOT_NGAY",
+         "So luot tham gia toi da moi NGAY cua mot nhan vat (yandibaozang_main.lua:56). Cau hinh YDBZ_LAN_NGAY=4 chi la ban sao khong duoc doc."),
+        (":54", "YDBZ_AWARD_EXP", "VDE_EXP_QUA_AI",
+         "Diem kinh nghiem thuong cho ca to doi khi vuot xong mot ai (npc_death.lua:90). Nhan doi neu dang mang Viem De Lenh, roi con qua ham nhan doi su kien -"),
+        (":55", "YDBZ_Faninl_AWARD_EXP", "VDE_EXP_BOSS_PHU",
+         "Kinh nghiem thuong ca doi khi giet mot boss phu trong bao tang (npc_death.lua:100). Cung bi nhan doi boi Viem De Lenh va he so su kien."),
+        (":56", "YDBZ_KILLPLAYER_EXP", "VDE_EXP_GIET_NGUOI_CHOI",
+         "Kinh nghiem nhan duoc khi giet mot nguoi choi doi dich trong bao tang (player_death.lua:31), gap doi neu co Viem De Lenh."),
+
+# event\event_huyhoang_dungdb\lib_huyhoang.lua  (10)
+        (":10", "MAX_HUYHOANG_PER_DAY", "HHQ_AN_QUA_HH_NGAY",
+         "So Qua Huy Hoang toi da MOT NGAY duoc an de cong kinh nghiem (item\huihuangzhiguo1/2/3.lua:16). BAY: event\demhuyhoang\event.lua:3 khai lai cung ten c"),
+        (":11", "MAX_QHK_PER_DAY", "HHQ_AN_QUA_HK_NGAY",
+         "So Qua Hoang Kim toi da mot ngay duoc an (item\goldenseed.lua:10). Chu thich ben canh ghi 'toi da 2 qua' nhung gia tri that la 5 - chu thich sai."),
+        (":12", "MAX_COLLECT_PER_DAY_HH", "HHQ_HAI_QUA_HH_NGAY",
+         "So Qua Huy Hoang toi da HAI duoc mot ngay. BAY: quahuyhoang.lua:55 so sanh bang '>' chu khong phai '>=', nen thuc te hai duoc 11 qua chu khong phai 10"),
+        (":13", "MAX_COLLECT_PER_DAY_HK", "HHQ_HAI_QUA_HK_NGAY",
+         "So Qua Hoang Kim toi da hai duoc mot ngay. Cung loi '>' o quahuyhoang.lua:50 nen thuc te la 4 qua."),
+        (":14", "EXP_QHH_T", "HHQ_EXP_QUA_TIEU",
+         "Kinh nghiem cong khi an Qua Huy Hoang loai tieu (item\huihuangzhiguo1.lua:21, cong bang AddSumExp - vao tong kinh nghiem)."),
+        (":15", "EXP_QHH_TR", "HHQ_EXP_QUA_TRUNG",
+         "Kinh nghiem cong khi an Qua Huy Hoang loai trung (item\huihuangzhiguo2.lua:21)."),
+        (":16", "EXP_QHH_C", "HHQ_EXP_QUA_CAO",
+         "Kinh nghiem cong khi an Qua Huy Hoang loai cao (item\huihuangzhiguo3.lua:21)."),
+        (":17", "EXP_QHK", "HHQ_EXP_QUA_HOANGKIM",
+         "Kinh nghiem cong khi an Qua Hoang Kim (item\goldenseed.lua:19). Day la moc lam phat kinh nghiem lon nhat cua he Huy Hoang."),
+        (":18", "TIENVAN_QHK", "HHQ_TIEN_QUA_HOANGKIM",
+         "So tien (luong) tang kem khi an Qua Hoang Kim, phat bang Earn() (item\goldenseed.lua:20) - la tien SINH RA MOI, anh huong lam phat kinh te."),
+        (":25", "TIME_DELAY_TH", "HHQ_GIAY_THU_HOACH",
+         "So giay giu thanh tien trinh khi hai qua (PaceBar o quahuyhoang.lua:60). Dat 0 la hai tuc thi, de bi auto vet sach."),
+
+# missions\leaguematch\head.lua  (10)
+        (":113", "WLLS_TIMER_PREP_FREQ", "LDVL_NHIP_BAODANH_GIAY",
+         "Cu bao nhieu giay thi pha bao danh Lien Dau dap mot nhip (loa bao thoi gian, gom nguoi vao doi). BAY: no vua la chu ky timer (glbmission\mission.lua:6"),
+        (":114", "WLLS_TIMER_PREP_TOTAL", "LDVL_SO_NHIP_BAODANH",
+         "So nhip cua pha bao danh. Thoi gian bao danh that = so nay x LDVL_NHIP_BAODANH_GIAY = 24 x 10 = 240 giay (4 phut). Muon bao danh 6 phut thi de 36."),
+        (":115", "WLLS_TIMER_FIGHT_FREQ", "LDVL_NHIP_TRAN_GIAY",
+         "Cu bao nhieu giay thi san thi dau dap mot nhip (bao tin chien su, dem nguoi con lai). Cung la he so quy doi ra giay/phut o glbmission\combat.lua:21,44"),
+        (":116", "WLLS_TIMER_FIGHT_PREP", "LDVL_SO_NHIP_CHUANBI",
+         "So nhip cho hai ben dan tran truoc khi danh that. Thoi gian that = so nay x LDVL_NHIP_TRAN_GIAY = 2 x 5 = 10 giay."),
+        (":117", "WLLS_TIMER_FIGHT_TOTAL", "LDVL_SO_NHIP_TRAN",
+         "So nhip toi da cua mot tran; het thi xu hoa. Do dai tran that = so nay x LDVL_NHIP_TRAN_GIAY = 120 x 5 = 600 giay (10 phut)."),
+        (":123", "WLLS_LEVEL_JUNIOR", "LDVL_CAP_TAN_TU",
+         "Cap toi thieu de duoc xep vao giai Tan Tu (giai thap). Duoi cap nay khong duoc thi dau (head.lua:355)."),
+        (":124", "WLLS_LEVEL_SENIOR", "LDVL_CAP_VO_LAM",
+         "Cap toi thieu de duoc xep vao giai Vo Lam (giai cao) - head.lua:353, wlls_levelup.lua:30, va duoc in thang ra loi thoai NPC officer.lua:259 nen doi so"),
+        (":126", "WLLS_MIN_TEAM", "LDVL_SO_DOI_TOI_THIEU",
+         "Phai co it nhat bao nhieu chien doi trong phong chuan bi thi moi mo tran (glbmission\schedule.lua:185). It hon la huy vong dau."),
+        (":131", "WLLS_LingQi_PerCOUNT", "LDVL_TRAN_THEM_MOI_LINHKHI",
+         "Moi vien Linh Khi da dung cho chien doi them bao nhieu tran MO RONG (sau tran thu 48) - head.lua:735. BAY: hang nay duoc khai HAI NOI voi cung gia tri"),
+        (":144", "WLLS_MAX_COUNT", "LDVL_SO_DOI_TOI_DA",
+         "So chien doi toi da mot phong chuan bi chua duoc. BAY KEP: (1) no con la CAN TREN vong lap quet phe o 4 cho (head.lua:548, combat\mission.lua:25, glbm"),
+
+# tinhnang\vuot_ai\sugiasatthu.lua  (6)
+        (":14", "MAX_NVSATTHU", "SGST_NHIEMVU_NGAY",
+         "So nhiem vu Sat Thu nhan duoc moi ngay (kiem tra o dong 105). BAY: global\npcchucnang\nhieptran.lua la ban sao gan giong het file nay va cung dat 8 - "),
+        (":15", "MIN_PLAYERINVUOTAI", "SGST_NGUOI_TOITHIEU_TODOI",
+         "So thanh vien to doi toi thieu de duoc vao Vuot Ai (dong 264). Ban sao nhieptran.lua:15 cung dat 5."),
+        (":17", "MONEYGHEPSTG", "SGST_PHI_GHEP_SATTHUGIAN",
+         "Tien phai tra de ghep 5 Sat Thu Lenh thanh 1 Sat Thu Gian (dong 141-161). Ban sao nhieptran.lua cung 80000."),
+        (":18", "MONEYNHANNV", "SGST_PHI_NHAN_NHIEMVU",
+         "Tien moi nguoi phai tra khi nhan nhiem vu sat thu / khi doi truong dang ky vuot ai (dong 94, 110, 373). BAY LON: ban sao nhieptran.lua:18 dat 5000 (ke"),
+        (":19", "MONEY_GO_BOSS", "SGST_PHI_DICH_CHUYEN_BOSS",
+         "Tien tra de duoc dich chuyen thang toi cho boss sat thu (dong 58-62). BAY: nhieptran.lua:19 dat 1000 tren cung ten; chu thich o header\cauhinh_hoatdon"),
+        (":20", "LEVELENOUGH", "SGST_CAP_TOITHIEU",
+         "Cap do toi thieu de nhan nhiem vu sat thu va de vuot ai (dong 99, 253, 283). Luu y cau hinh HD3_VA_CAP_TOITHIEU=50 khong an vao cho nay."),
+
+# global\npcchucnang\nhieptran.lua  (6)
+        (":14", "MAX_NVSATTHU", "NTT_SO_NV_MOI_NGAY",
+         "So nhiem vu Sat Thu toi da moi nhan vat lam trong mot ngay (dem bang bien T_NVSTTRONGNGAY, chan tai dong 102). Hien ra ngay tren menu NPC dang 'x/8'."),
+        (":15", "MIN_PLAYERINVUOTAI", "NTT_SO_NGUOI_TOITHIEU_VUOTAI",
+         "So thanh vien to doi toi thieu de bao danh Vuot Ai (kiem tai dong 261). Ban sao tinhnang\vuot_ai\sugiasatthu.lua cung dat 5 - phai sua ca hai."),
+        (":17", "MONEYGHEPSTG", "NTT_GIA_GHEP_SATTHUGIAN",
+         "So luong (tien) tru khi ghep Sat Thu Gian (kiem dong 138, Pay o dong 158). BAY: loi thoai dong 139 viet '%d ngan luong' trong khi con so la luong tron"),
+        (":18", "MONEYNHANNV", "NTT_GIA_NHAN_NHIEMVU",
+         "So luong tru moi lan nhan nhiem vu Sat Thu, va cung la phi doi truong nop khi bao danh Vuot Ai (Pay o dong 107 va 364). BAY: ban sao tinhnang\vuot_ai\"),
+        (":19", "MONEY_GO_BOSS", "NTT_GIA_DEN_CHO_BOSS",
+         "So luong tru khi bam 'den cho sat thu' de duoc dich chuyen thang toi boss (dong 55-59). Ban sao sugiasatthu.lua dat 5000 - lech. Ghi chu trong header\"),
+        (":20", "LEVELENOUGH", "NTT_CAP_TOITHIEU",
+         "Cap nhan vat toi thieu de nhan nhiem vu Sat Thu va de tham gia Vuot Ai; kiem 3 cho (dong 96, 250, 280) ke ca kiem tung thanh vien to doi."),
+
+# tinhnang\vuot_ai\lib_vuotai.lua  (6)
+        (":12", "MSTIME_VUOT_AI_BD", "VA_PHUT_BAODANH",
+         "So phut bao danh Vuot Ai; het gio ma chua bao danh la mat luot. BAY NANG: so nay bi dung HAI NGHIA trong timerserver.lua - dong 1076 dung lam DO DAI d"),
+        (":13", "MSTIME_VUOT_AI_KT", "VA_PHUT_HAN_TRAN",
+         "So phut toi da de doi vuot het cac ai; het gio la thua. Dung lam do dai timer (timertask\task01.lua:146) va lam moc tinh 'thoi gian hoan thanh' khoe l"),
+        (":15", "LEVEL_SKILL_PHANDON", "VA_CAP_PHANDON_AI27",
+         "Cap cua trang thai ky nang 'phan don' (skill 16) gan cho quai o AI 27 - lib_vuotai.lua:219 AddNpcSkillState(npc, 16, cap nay, 1, 5 phut). Cap cang cao"),
+        (":16", "EXP_BOSS_LAST_D", "VA_EXP_GIET_BOSS_CUOI",
+         "Kinh nghiem thuong cho nguoi ha boss cuoi Vuot Ai. BAY: timertask\task06.lua:52 goi AddOwnExp(EXP_BOSS_LAST_D * EXP_RATE) - tuc con NHAN THEM ti le ex"),
+        (":18", "MAX_NUM_VA_DAY", "VA_LUOT_MIENPHI_NGAY",
+         "So luot Vuot Ai mien phi moi ngay. Chan o nhieptran.lua:274 va sugiasatthu.lua:277, dong thoi duoc in vao loi thoai NPC (dong 191/194 hai tep do)."),
+        (":19", "MAX_NUM_LONGHH_DAY", "VA_LONGHUYETHOAN_NGAY",
+         "So Long Huyet Hoan duoc uong moi ngay. Chan va in ra loi thoai o item\longxuewan.lua:27-28."),
+
+# event\tongwar\npc_shizhe.lua  (5)
+        (":16", "ONETONG_START_SIGNUP", "THDNB_NGAY_BATDAU_BAODANH",
+         "Ngay bat dau cho bang chu bao danh Thien Ha De Nhat Bang, dang YYYYMMDD. NPC so ngay hom nay voi cap so nay (dong 26) de quyet dinh hien menu bao danh"),
+        (":17", "ONETONG_ENDLE_SIGNUP", "THDNB_NGAY_KETTHUC_BAODANH",
+         "Ngay cuoi con bao danh Thien Ha De Nhat Bang (YYYYMMDD), so sanh o dong 26. Phai lon hon ngay bat dau, neu khong NPC chi chao roi thoi."),
+        (":19", "ONETONG_START_TITLE", "THDNB_NGAY_BATDAU_NHAN_DANHHIEU",
+         "Ngay bat dau cho thanh vien bang vo dich den NPC nhan danh hieu 'Cao Cap De Nhat Bang' (dong 37). Luu y: khoang thoi gian nay phai KHONG chong len kho"),
+        (":20", "ONETONG_ENDLE_TITLE", "THDNB_NGAY_KETTHUC_NHAN_DANHHIEU",
+         "Ngay cuoi con nhan danh hieu Thien Ha De Nhat Bang (dong 37). Dang de 14/02/2010 nen chuc nang nhan danh hieu hien khong bao gio mo."),
+        (":22", "ONETONG_MAX_SIGNMEM", "THDNB_SO_THANHVIEN_TOIDA",
+         "So thanh vien toi da duoc ghi vao danh sach Thien Ha De Nhat Bang; day danh sach thi NPC tu choi (dong 228). Moi lan bao danh phai to doi dung 2 nguoi"),
+
+# event\event_vantieu\lib_vt.lua  (5)
+        (":95", "MAX_CUOP_TIEU", "VANT_LAN_CUOP_TIEU_NGAY",
+         "So lan toi da duoc cuop tieu cua nguoi khac trong ngay (death_tieu.lua:16, drop_tieu.lua:24). BAY: so sanh bang '>' nen thuc te la 6 lan."),
+        (":97", "MAXVANTIEU", "VANT_LAN_VANTIEU_NGAY",
+         "So lan toi da nhan van tieu trong mot ngay cua mot nhan vat (tieudau.lua:89)."),
+        (":98", "NEED_MONEY", "VANT_PHI_NHAN_TIEU",
+         "Tien dat coc khi nhan xe tieu (tieudau.lua:97-103) va la co so tinh tien thuong khi van xong (tieudau.lua:326: NEED_MONEY * he so ngau nhien * loai ti"),
+        (":99", "NEED_MONEY_GO", "VANT_PHI_DICH_CHUYEN",
+         "Tien tra de duoc dua thang den vi tri xe tieu / tieu su (tieudau.lua:200-214)."),
+        (":100", "LEVEL_LIMIT_VT", "VANT_CAP_TOITHIEU",
+         "Cap do toi thieu de tham gia van tieu (tieudau.lua:41)."),
+
+# tinhnang\congthanhchien\lib_ctc.lua  (4)
+        (":94", "ENOUGH_LEVEL", "CTHC_CAP_TOITHIEU_THAMGIA",
+         "Dang cap toi thieu de duoc bao danh/tham gia Cong Thanh Chien (congthanhquan.lua kiem GetLevel() < so nay). No con duoc ghep vao cau thong bao tu choi"),
+        (":95", "TICH_LUY_THUONG_CT", "CTHC_TICHLUY_THUONG_MOI_QUANHAM",
+         "Diem cong trang thuong them cho nguoi phe THANG, nhan voi cap quan ham cua nguoi do (nAccum = so nay x quan ham). Doc o lib_ctc.lua:443 va timertask\t"),
+        (":99", "CTC_MINUS_BD", "CTHC_PHUT_CHO_TRUOC_KHAI_CHIEN",
+         "So phut cho tu luc mo mission den luc chinh thuc danh (timerserver.lua:981 StartMissionTimer voi so nay x 1080 tick)."),
+        (":100", "CTC_MINUS_KT", "CTHC_PHUT_DODAI_TRAN",
+         "Do dai toan tran Cong Thanh Chien tinh bang phut. Dung o HAI cho: timerserver.lua:982 dat gio ket thuc tran, VA lib_ctc.lua:205/213 dat gio song cua c"),
+
+# header\fuyuan.lua  (4)
+        (":7", "TIME_UNIT", "FY_GIAY_DOI_1_DIEM",
+         "So GIAY online lien tuc doi duoc 1 diem Phuc Duyen. BAY: no la don vi goc cua ca he - hai moc 2 gio va 4 gio (TIME_FUYUAN_THRESHOLD1/2) deu nhan tu so"),
+        (":11", "FUYUAN_EXTRA", "FY_DIEM_THUONG_THEM",
+         "So diem Phuc Duyen thuong THEM khi nguoi choi linh dung dung luot quy dinh trong ngay."),
+        (":12", "TIMES_IN_DAY_EXTRA", "FY_LAN_THU_MAY_DUOC_THUONG",
+         "Lan linh Phuc Duyen thu may trong ngay thi duoc thuong them. BAY: code so sanh BANG NHAU (== ) chu khong phai >=, nen chi dung lan do moi co thuong."),
+        (":13", "FUYUAN_MAX_GAIN", "FY_TRAN_DIEM_MOI_LAN",
+         "So diem Phuc Duyen toi da nhan duoc trong MOT lan linh; du online lau hon cung bi cat con so nay."),
+
+# tinhnang\loidai\lib_loidai.lua  (3)
+        (":17", "MONEY_BD_LD", "LDBH_PHI_BAODANH_LUONG",
+         "So luong (tien) bang chu phai tra de dang ky bao danh Loi Dai bang hoi (kiem tra + Pay o dong 74-78)."),
+        (":18", "EXP_KT_LOIDAI_L", "LDBH_EXP_THUA",
+         "Kinh nghiem phat cho thanh vien phe THUA khi ket thuc Loi Dai (dong 242). Ban thang dung EXP_KT_LOIDAI_W=2000000 o dong 19."),
+        (":30", "MAX_MEMBER_COUNT", "LDBH_NGUOI_MOI_PHE",
+         "So nguoi toi da moi phe trong Loi Dai bang hoi (kiem tra o dong 138). BAY: cung ten toan cuc bi header\loidai.lua va missions\bw dat 100, clearskill d"),
+
+# missions\citywar_city\head.lua  (3)
+        (":56", "g_nMaxTscPerDoor", "TDC_SO_DAUTHACHXA_MOI_CONG",
+         "So xe ban da (dau thach xa) toi da co the dung o MOI cong thanh trong tran dia Cong Thanh Chien cu. BAY: con so nay con dung de tinh vi tri o bien mis"),
+        (":58", "g_nMaxGccPerDoor", "TDC_SO_CONGTHANHXA_MOI_CONG",
+         "So xe cong thanh toi da phe cong duoc dung o moi cong. BAY: giong tren, no cung dich chuyen bang o bien mission (MS_TOOLBEGIN/MS_DOORBEGIN)."),
+        (":63", "g_nMaxToolCount", "TDC_SO_LINH_DANHTHUE_PHE_THU",
+         "So linh danh thue (yeu ky/loi co) phe thu duoc goi ra cung luc. BAY: cung la kich thuoc vung o bien mission (MS_DOORBEGIN = MS_TOOLBEGIN + so nay)."),
+
+# battles\battlehead.lua  (3)
+        (":20", "BAOMING_TIME", "SJ_PHUT_BAODANH",
+         "So phut mo bao danh Tong Kim (chien truong ban battles). No keo theo 4 so khac ngay ben duoi: TIMER_2 (tong gio tran), RUNGAME_TIME, GO_TIME va TIME_E"),
+        (":21", "FIGHTING_TIME", "SJ_PHUT_GIAO_CHIEN",
+         "So phut giao chien cua tran Tong Kim; cong voi thoi gian bao danh de ra tong gio tran (TIMER_2). Cung duoc doc de in ra bang thong tin cho nguoi choi "),
+        (":22", "ANNOUNCE_TIME", "SJ_GIAY_GIUA_2_LAN_CONGBO",
+         "Cu bao nhieu GIAY thi he thong cong bo tinh hinh chien truong mot lan. BAY: no chinh la nhip dong ho TIMER_1, ma RUNGAME_TIME/GO_TIME lai chia cho TIM"),
+
+# event\event_cauhoi\lib.lua  (3)
+        (":19", "MIN_LEVEL_JOIN", "HDG_CAP_TOITHIEU",
+         "Dang cap toi thieu de tra loi cau hoi Hoa Dang (cauhoi.lua:18). So nay cung duoc ghep vao cau tu choi hien cho nguoi choi."),
+        (":22", "MAX_NUM", "HDG_SO_CAUHOI_MOI_NGAY",
+         "So cau hoi Hoa Dang moi nguoi duoc tra loi trong mot ngay. BAY: cauhoi.lua:28 kiem bang dau LON HON HAN (> MAX_NUM) nen thuc te nguoi choi tra loi duo"),
+        (":23", "NUM_NHANTHUONG", "HDG_SO_CAU_DUNG_DE_NHAN_THUONG",
+         "Phai tra dung it nhat bao nhieu cau moi duoc len Le Quan nhan thuong Hoa Dang (lib.lua:357)."),
+
+# missions\yandibaozang\readymap\include.lua  (3)
+        (":25", "YDBZ_TEAM_COUNT_LIMIT", "VDBT_DOI_TOITHIEU",
+         "So nguoi TOI THIEU mot to doi phai co de bao danh Bao Tang Viem De, va cung la nguong loc luc ghep tran (doi thieu nguoi bi da ra khoi ban do cho). BA"),
+        (":26", "YDBZ_TEAM_COUNT_MAXLIMIT", "VDBT_DOI_TOIDA",
+         "So nguoi TOI DA mot to doi duoc phep mang vao Bao Tang Viem De; chi kiem o luc noi chuyen NPC bao danh (yandibaozang_main.lua:72 va :152), khong kiem "),
+        (":27", "YDBZ_TEAM_START_LIMIT", "VDBT_SO_DOI_MO_TRAN",
+         "So TO DOI toi thieu phai du dieu kien thi tran moi mo (timer_match.lua:26 va include.lua:303). BAY NANG: no vua la nguong vua la CONG TAC CHE DO - dun"),
+
+# event\storm\head.lua  (3)
+        (":54", "STORM_LADDER_WEEK", "PHONGBA_TUAN_BATDAU_XEPHANG",
+         "Mốc tuần (đếm từ năm 2005) để bắt đầu ghi bảng xếp hạng Phong Ba theo tuần. Ở function.lua:238 tính weekid = tuần hiện tại - số này, chỉ ghi bảng khi "),
+        (":62", "STORM_TIMER_YS", "PHONGBA_PHUT_MOI_NHIP_DATAU",
+         "Số phút mỗi nhịp đếm ngược của thử thách Phong Ba trên nhiệm vụ Dã Tẩu. BẪY: dùng ở CẢ HAI chỗ trong một lệnh (function.lua:137) - nhân thành thời lượ"),
+        (":64", "STORM_END_DAY", "PHONGBA_NGAY_DONG_HE",
+         "Ngày đóng cửa hệ tích lũy Phong Ba, tính bằng SỐ NGÀY kể từ 01/01/2005. Quá mốc này thì function.lua:30 báo 'Hệ thống tích lũy Phong Ba đã đóng lại'. "),
+
+# event\jiefang_jieri\200904\taskctrl.lua  (2)
+        (":23", "jf0904_act_dateS", "DTT_NGAY_BATDAU",
+         "Ngay mo su kien diet Thuy Tac (YYYYMMDD). Bay: bi BA cho doc voi hai cach khac nhau - shuizei.lua:109 chi kiem 'hom nay >= ngay nay' nen su kien luon "),
+        (":24", "jf0904_act_dateE", "DTT_NGAY_KETTHUC",
+         "Ngay dong su kien diet Thuy Tac (YYYYMMDD). Vi dang de 01/06/2009 da qua tu lau nen HAI thong bao Thuy Tac tren Phong Lang Do (truoc gio 10 phut va lu"),
+
+# item\hoplevatvuotai.lua  (2)
+        (":8", "EXP_HOPLVVA", "HLV_EXP_MO_HOP",
+         "Kinh nghiem cong thang cho nguoi choi moi lan mo Hop Le Vat Vuot Ai (dong 49, AddOwnExp)."),
+        (":9", "MAX_HOPLEVATVA_DAY", "HLV_LUOT_NGAY",
+         "So hop le vat toi da duoc mo moi ngay, dem bang bien TSK_HOPLEVATVA (=314), reset trong lib_ham.lua:277. BAY: dong 21 tang bo dem TRUOC khi kiem tra h"),
+
+# item\event\eventtet\banhdacbiet.lua  (2)
+        (":9", "DangCapSuDung", "MNQ_CAP_TOITHIEU_SUDUNG",
+         "Dang cap toi thieu de dung duoc Mam Ngu Qua (vat pham su kien Tet doi kinh nghiem)."),
+        (":10", "ToiDaSuDung", "MNQ_SO_LAN_TOIDA",
+         "So lan toi da mot nhan vat duoc dung Mam Ngu Qua (dem trong bien nhiem vu TASK_MAMNGUQUA). BAY: cac moc thuong dac biet ben duoi lai viet cung so (moc"),
+
+# leaguematch\head.lua  (2)
+        (":40", "WLLS_MAX_COUNT", "VLLD_MAX_DOI_MOI_SAN",
+         "So chien doi toi da ma MOT san chuan bi Vo Lam Lien Dau chua duoc (joinmatch.lua:198-215 chan khi day); dong thoi la so vong lap quet cho ghep tran. B"),
+        (":45", "WLLS_LingQi_PerCOUNT", "VLLD_TRAN_THEM_MOI_LINHKHI",
+         "So luot tran mo rong ma mot chien doi duoc cong them cho MOI vien Linh Khi da dung (tran mo rong toi da = so Linh Khi da dung x so nay - head.lua:168 "),
+
+# global\titlefuncs.lua  (2)
+        (":4", "MAX_TITLE_PERPAGE", "DH_SO_DANHHIEU_MOI_TRANG",
+         "Số danh hiệu hiển thị trên mỗi trang của bảng chọn danh hiệu. BẪY: Say/SayEx của engine có trần 512 BYTE dùng chung cho câu hỏi lẫn mọi nhãn, tăng số "),
+        (":25", "TITLE_TIME_FOREVER", "DH_KHUNG_HAN_DANHHIEU_THAITHU",
+         "Thời hạn treo chữ Thái Thú trên đầu nhân vật, truyền vào SetPlayerTitle. BẪY: đơn vị là KHUNG HÌNH, engine quy đổi nSaveTime = time(0) + nTime/18 nên "),
+
+# missions\yandibaozang\yandiduihuan.lua  (1)
+        (":38", "yandiduihuan_CostMoney", "VDTL_GIA_TRUNGLUYEN",
+         "So tien (ngan luong) thu moi lan trung luyen trang bi hoang kim Viem De, thu o dong 107 (Pay). BAY: con so nay con duoc viet CUNG bang chu trong 4 doa"),
+
+# global\map_helper.lua  (1)
+        (":118", "CD_LEVEL_LIMIT", "TTH_CAP_TOITHIEU_THUTHANH",
+         "Cap nhan vat toi thieu de NPC dan di tham gia chien dich Thu Thanh (kiem o dong 153). Con so nay con duoc GHEP THANG vao cau tu choi ma NPC noi (dong "),
+
+# item\compound\ore_upgrade.lua  (1)
+        (":7", "COMPOUND_COST", "LR_PHI_GHEP_KHOANGTHACH",
+         "Phi ngan luong thu MOI LAN thu ghep 3 vien Huyen Tinh / khoang thach ma thuat len cap, tru tien o compound_header.lua:76 truoc khi quay xac suat - THA"),
+
+# item\ib\baoruonghoatdong.lua  (1)
+        (":10", "FREECELL_GETITEMBLUE", "TDP_SO_O_TRONG_TOITHIEU",
+         "So o trong toi thieu trong hanh trang thi Tho Dia Phu moi cho nhan do xanh (kiem hai lan, dong 60 va 98, va so nay duoc ghep thang vao cau thong bao)."),
+
+# item\gongchengche.lua  (1)
+        (":6", "NpcLevel", "VKCT_CAP_NGHIETLONG_XUNGXA",
+         "Cap do dat cho Nghiet Long Xung Xa khi trieu ra (dong 37) - quyet dinh mau/thu cua xe qua npclevelscript, tuc do ben cua vu khi cong thanh. BAY: ten t"),
+
+# task\tollgate\messenger\fengzhiqi\6079\flyboss6079.lua  (1)
+        (":193", "FLYBOSS_RELIVE", "TLG_GIAY_AN_BOSS_PHONGCHIKY",
+         "So giay an boss moc (bien mat roi hien lai) sau khi bi ha o ai Phong Chi Ky - tuc nhip hoi sinh cho nguoi ke tiep (enemy_biaozhiboss.lua:164 HideNpc(."),
+
+# tinhnang\congthanhchien\quanquan.lua  (1)
+        (":9", "NUM_XU_MUA_DC", "QQCT_XU_MUA_DUNGCU",
+         "So Tien Xu phai tra cho moi mon dung cu cong thanh (Nghiet Long Xung Xa / Van Ke Binh Phu / Ngoan Cu Binh Phu) - mot gia dung chung ca ba mon (dong 41"),
+
+# missions\clearskill\head.lua  (1)
+        (":19", "CSP_NEEDLEVEL", "TTY_CAP_TOITHIEU",
+         "Cap nhan vat toi thieu de dung NPC Tay Tuy (dao 242, tao boi startgame\tinhnang\daotaytuy.lua). BAY: loi thoai viet 'khong the roi khoi tay tuy dao' n"),
+
+# item\leigushibing.lua  (1)
+        (":6", "NpcLevel", "CTB_CAP_LINH_TRIEUHOI",
+         "Cap cua linh/xe duoc trieu hoi trong Cong Thanh Chien - quyet dinh mau va suc danh cua no (AddNpc dong 27). Vat pham 'Ngoan co binh phu' (settings\ite"),
+
+# global\npcchucnang\thoren.lua  (1)
+        (":1222", "FREECELL_KHOIPHUC", "TRN_O_TRONG_KHOIPHUC",
+         "So o trong hanh trang toi thieu bat buoc phai co thi tho ren moi cho khoi phuc trang bi (CalcFreeItemCellCount, dong 1239-1240). Con so hien thang tro"),
+
+# item\compound\equip_compound.lua  (1)
+        (":7", "COMPOUND_COST", "HTM_PHI_HOPTHANH",
+         "Phi (luong) tru moi lan hop thanh trang bi mau - tuc mo o kham. compound_header.lua:76 goi Pay(COMPOUND_COST), khong du tien la huy ca luot. Vao qua s"),
+
+# global\seasonnpc.lua  (1)
+        (":169", "MAKING_COST", "LHH_GIA_KET_VONG_LUONG",
+         "So luong (tien) phai tra cho Le Quan de ket mot vong Lien Hoa Hoan. BAY: cau thoai o dong 198 viet cung so '10000 luong' - doi bien ma khong sua cau c"),
+
+# item\battles\clarion.lua  (1)
+        (":10", "MAX_CALLNPCCOUNT", "HGC_SO_LINH_TOIDA_MOI_PHE",
+         "So lan Hieu Giac (binh si hieu phu) duoc thoi trong mot tran Tong Kim, dem RIENG cho moi phe. Moi lan thoi ra 2 linh. BAY: battles\battlehead.lua:172 "),
+
+# task\metempsychosis\task_head.lua  (1)
+        (":18", "NTRANSLIFE_MAX", "CS_MAX_LAN_CHUYENSINH",
+         "Tran so lan chuyen sinh (trung sinh) mot nhan vat duoc phep - task_func.lua:111 chan khi so lan da chuyen >= so nay. BAY: cung so nay la SO COT doc tu"),
+
+# item\compound\equip_enchase.lua  (1)
+        (":9", "COMPOUND_COST", "HT_TIEN_KHAM_NAM",
+         "So tien (dong) tru moi lan kham nam da mau vao trang bi mau; compound_header.lua:76 goi Pay(COMPOUND_COST) va HUY viec kham neu tra khong du. BAY: COM"),
+
+# missions\challengeoftime\include.lua  (1)
+        (":11", "INTERVAL_BOARD", "VAI_PHUT_THONGBAO",
+         "Cu bao nhieu PHUT thi Vuot Ai nhac tien do mot lan (include.lua:218 dat dong ho, timer_board.lua:9 cong don). BAY: no vua la chu ky bao, vua la BUOC D"),
+
+# lib\lib_ham.lua  (1)
+        (":322", "MAX_BU_DAYS", "BUHD_SO_NGAY_TOIDA",
+         "So NGAY toi da duoc cong don de bu hoat dong bo lo. Dong 348 nhan no voi so luot can moi ngay de ra tran luot bu (nMaxLuot = MAX_BU_DAYS * nCan), nen "),
+
+# header\region.lua  (1)
+        (":2", "NUM_OFFLINE_PERMITREGION_MAX", "BAYBAN_BANKINH_CACH_NPC",
+         "Ban kinh (don vi o) quanh cac NPC chuc nang ma trong do CAM bay ban / mo quay. Dung o PermitRegion() dong 251, va do la duong ma DANG CHAY THAT: engin"),
+
+# item\compound\magic_distill.lua  (1)
+        (":8", "COMPOUND_COST", "LOREN_GIA_TINHLUYEN",
+         "Tien cong tho ren thu khi TINH LUYEN THUOC TINH (rut thuoc tinh tu trang bi ra khoang). compound_header.lua:76 goi Pay(COMPOUND_COST), thieu tien thi "),
+
+# item\event\kinhmach\channguyendan.lua  (1)
+        (":17", "KM_CND_TRAN_NGAY", "KMACH_TRAN_DIEM_NGAY",
+         "Tran so diem Chan Nguyen mot nguoi duoc hap thu tu dan duoc trong MOT NGAY (he Kinh Mach). Dong 33 chan khi da du, dong 37-38 cat bot phan vuot. Day l"),
+
+# item\toushiche.lua  (1)
+        (":6", "NpcLevel", "HTL_CAP_NPC",
+         "Cap cua may ban da Hon Thach Liet khi nguoi choi dat xuong o Cong Thanh Chien (AddNpc dong 39); cap nay quyet dinh mau/sat thuong ma engine tra ra tu "),
+
+# task\tollgate\messenger\fengzhiqi\8089\flyboss8089.lua  (1)
+        (":193", "FLYBOSS_RELIVE", "FZQ_GIAY_AN_MOC_BOSS",
+         "So GIAY an moc (NPC danh dau) Phong Chi Ky sau khi nguoi choi cham vao, truoc khi no hien lai cho nguoi tiep theo - quyet dinh nhip xoay tua ai Tin Su"),
+
+# item\tie-luohan.lua  (1)
+        (":5", "GETMAXEXP", "TLH_EXP_TOIDA_NGAY",
+         "Tran tong kinh nghiem mot nhan vat nhan duoc tu Thiet La Han trong MOT NGAY (bo dem o task T_USETLH, reset khi sang ngay moi). BAY: tran chi duoc kiem"),
+
+# tinhnang\phonglangdo\bossthuytacdaulinhpld.lua  (1)
+        (":10", "NPCLIFE", "PLD_MAU_BOSS_DAULINH",
+         "Mau (sinh luc) cua Dai Thuy Tac Dau Linh tren thuyen Phong Lang Do - nut chinh do kho cua boss chinh hoat dong. Dat bang SetNpcLife trong OnRevive (do"),
+
+# global\npcchucnang\tientrang.lua  (1)
+        (":11", "TY_LE_DOI_KNB_XU", "TT_TYLE_KNB_SANG_XU",
+         "Ti le doi tien o Chu Tien Trang: 1 Kim Nguyen Bao an ra bao nhieu Xu (dong 147: nTienDong = n_knb * ti le, roi cong thang vao o task T_PLAYER_XU). Day"),
+
+# item\event\30thang4\huychuongphattong.lua  (1)
+        (":5", "FREECELL_EVENT", "HC304_O_TRONG_PHATTONG",
+         "So o trong hanh trang toi thieu phai co truoc khi dung Huy Chuong Phat Tong (su kien 30/4); doc o dong 7-8 truoc khi goi Bonus(2). BAY: ten bien toan "),
+
+# vng_event\item\biggoldenseed.lua  (1)
+        (":6", "MX_GREAT_LANTERN_COUNT", "DHK_SOLAN_DUNG_MOINGAY",
+         "Số lần tối đa mỗi ngày được ăn Quả Đại Hoàng Kim (PlayerFunLib:CheckTaskDaily đếm trên task 3062). BẪY: câu thông báo từ chối ghi CỨNG chữ 'chỉ có thể"),
+
+# task\tollgate\messenger\qianbaoku\messenger_baoxiangtask.lua  (1)
+        (":11", "nOpendRequire", "TBK_SO_RUONG_PHAI_MO",
+         "Số rương phải mở ĐÚNG THỨ TỰ để hoàn thành nhiệm vụ Thiên Bảo Khố. Phải là số nguyên 1..9 và không vượt nBaoXiangTotal. BẪY: các hàm trong tệp đọc nó "),
+
+# item\compound\atlas.lua  (1)
+        (":12", "COMPOUND_COST", "LR_PHI_GHEP_HOANGKIM_DOPHO",
+         "Phí tiền đồng cho một lần ghép trang bị Hoàng Kim từ Hoàng Kim Đồ Phổ (loại ghép số 6 trong settings\item\compoundscript.txt); trừ ở compound_header.l"),
+
+# item\yaoqishibing.lua  (1)
+        (":6", "NpcLevel", "VKB_CAP_LINH",
+         "Cap cua linh danh thue do Van Ky Binh phu trieu ra (AddNpc dong 28) - quyet dinh mau va suc danh cua linh giu co. BAY: ten toan cuc NpcLevel duoc 3 te"),
+
+# global\signet_head.lua  (1)
+        (":4", "SIGNET_MAXDROP", "TTDC_TRAN_BAOAN_BANG",
+         "Tran cua ca BANG: khi bang da nhan du bay nhieu Thi Gia Chi An nho hieu ung Tui Tien Dao Chu thi thoi khong nhan doi nua (dong 17). Duong chay that: b"),
+
+# item\lenhbaitanthu.lua  (1)
+        (":908", "FREECELL_TANTHU", "HT_OTRONG_MOC_NAPTHE",
+         "So o hanh trang phai con trong de nhan moc nap the (dung o moc 500k dong 911 va moc 2000k dong 1014). Con so hop ly vi cac moc nay phat ca bo trang bi"),
+
+# item\compound\xuanjing_compound.lua  (1)
+        (":7", "COMPOUND_COST", "LR_PHI_HOPTHANH_HUYENTINH",
+         "Phi tien (luong) moi lan hop thanh Huyen Tinh o lo ren; engine tru tien o compound_header.lua:76 bang Pay(COMPOUND_COST). BAY: ten toan cuc nay duoc 5"),
+
+# npcthon\balanghuyen\hotrotanthu.lua  (1)
+        (":239", "FREECELL_TANTHU", "HT_OTRONG_HOTRO_TANTHU",
+         "So o hanh trang phai con trong de nhan goi ho tro tan thu (dong 245) va goi ho tro cap 90 (dong 290). Goi tan thu phat khoang 15 mon nen 50 la rong ra"),
+
+
+
+## HANG SO CHET (khong noi nao doc) - 215
+    petsys\common.lua:30  SKILL_COUNT
+    petsys\common.lua:123  ZHENYUAN_TO_XIUZHEN_POINT_RATE
+    petsys\common.lua:124  ZHENYUAN_TO_XIUZHEN_POINT_VALUE
+    event\eventhead.lua:67  DATESNEWBIELEVELUP
+    event\eventhead.lua:68  DATEENEWBIELEVELUP
+    event\eventhead.lua:70  DATESPLAYERLEVELUP
+    event\eventhead.lua:71  DATEEPLAYERLEVELUP
+    event\eventhead.lua:73  DATESKILLER
+    event\eventhead.lua:74  DATEEKILLER
+    event\eventhead.lua:77  YEARCARD_EX_XUANJING
+    event\eventhead.lua:79  GREAT_NIGHT
+    petsys\petequip_def.lua:47  PETEQUIP_KETTINH
+    petsys\petequip_def.lua:48  PETEQUIP_KETTINH_CAO
+    task\tollgate\messenger\shanshenmiao\6079\templeboss6079.lua:17  TEMBOSS_RELIVE
+    tinhnang\boss_hoangkim\deathhksv.lua:13  PHAMVI_HUONGEXP
+    item\lenhbaiadmin.lua:203  NgauNhienPhut
+    lib\lib_task.lua:259  TMP_NHANNAPTHE
+    lib\lib_task.lua:260  TMP_NHANTRANGBIXANH
+    lib\lib_task.lua:261  TMP_HETRANGBIXANH
+    lib\lib_task.lua:264  TMP_INDEX_OBJ
+    lib\lib_task.lua:265  TMP_LUUMASERIAL
+    lib\lib_task.lua:266  TMP_LOAITHENAP
+    lib\lib_task.lua:267  TMP_LUUMACODE
+    lib\lib_task.lua:268  TMP_TGIANMOTUI
+    lib\lib_task.lua:273  TMP_LienDau_DonDau
+    lib\lib_task.lua:274  TMP_DthuLienDauCao
+    lib\lib_task.lua:275  TMP_DthuLienDau
+    lib\lib_task.lua:288  M_LD_DONDAU
+    lib\lib_task.lua:293  M_VALUE_1
+    lib\lib_task.lua:294  M_VALUE_2
+    lib\lib_task.lua:295  M_VALUE_3
+    lib\lib_task.lua:296  M_VALUE_4
+    lib\lib_task.lua:297  M_VALUE_5
+    lib\lib_task.lua:298  M_VALUE_6
+    lib\lib_task.lua:299  M_VALUE_7
+    lib\lib_task.lua:300  M_VALUE_8
+    lib\lib_task.lua:301  M_VALUE_9
+    lib\lib_task.lua:302  M_VALUE_10
+    lib\lib_task.lua:303  M_VALUE_11
+    lib\lib_task.lua:304  M_VALUE_12
+    lib\lib_task.lua:305  M_VALUE_13
+    lib\lib_task.lua:306  M_VALUE_14
+    lib\lib_task.lua:307  M_VALUE_15
+    lib\lib_task.lua:308  M_VALUE_16
+    lib\lib_task.lua:309  M_VALUE_17
+    lib\lib_task.lua:310  M_VALUE_18
+    lib\lib_task.lua:311  M_VALUE_19
+    lib\lib_task.lua:312  M_VALUE_20
+    lib\lib_task.lua:313  M_VALUE_21
+    lib\lib_task.lua:314  M_VALUE_22
+    lib\lib_task.lua:315  M_VALUE_23
+    lib\lib_task.lua:316  M_VALUE_24
+    lib\lib_task.lua:317  M_VALUE_25
+    lib\lib_task.lua:318  M_VALUE_26
+    lib\lib_task.lua:319  M_VALUE_27
+    lib\lib_task.lua:320  M_VALUE_28
+    lib\lib_task.lua:321  M_VALUE_29
+    lib\lib_task.lua:322  M_VALUE_30
+    lib\lib_task.lua:346  GBM_VALUE_1
+    lib\lib_task.lua:347  GBM_VALUE_2
+    lib\lib_task.lua:348  GBM_VALUE_3
+    lib\lib_task.lua:349  GBM_VALUE_4
+    lib\lib_task.lua:350  GBM_VALUE_5
+    lib\lib_task.lua:351  GBM_VALUE_6
+    lib\lib_task.lua:352  GBM_VALUE_7
+    lib\lib_task.lua:353  GBM_VALUE_8
+    lib\lib_task.lua:354  GBM_VALUE_9
+    lib\lib_task.lua:355  GBM_VALUE_10
+    lib\lib_task.lua:356  GM_BenThuyen1
+    lib\lib_task.lua:357  GM_BenThuyen1
+    lib\lib_task.lua:359  M_LienDau_DonDau
+    lib\lib_task.lua:360  M_SoNguoiLDTrung
+    lib\lib_task.lua:361  M_SoNguoiLDCao
+    lib\lib_task.lua:363  CSP_CTYPE_NONE
+    missions\yandibaozang\head.lua:47  YDBZ_LIMIT_TEAMS_COUNT
+    missions\yandibaozang\head.lua:57  YDBZ_KILLLASTBOSS_EXP
+    tinhnang\loidai\lib_loidai.lua:32  WIN_TONGEXP
+    tinhnang\loidai\lib_loidai.lua:33  LOSE_TONGEXP
+    tinhnang\loidai\lib_loidai.lua:37  PKWINBONUS
+    tinhnang\loidai\lib_loidai.lua:38  LOSEBONUS
+    tinhnang\loidai\lib_loidai.lua:43  JOINSTATE
+    tinhnang\loidai\lib_loidai.lua:44  MISSIONID
+    tinhnang\vuot_ai\sugiasatthu.lua:24  MAX_STACK_NUM
+    event\great_night\huangzhizhang\event.lua:14  GN_HUANG_SWITH
+    event\great_night\huangzhizhang\event.lua:15  GN_HUANG_DATE
+    task\tollgate\messenger\shanshenmiao\90\templeboss90.lua:16  TEMBOSS_RELIVE
+    activitysys\config\32\variables.lua:7  TIME_2000_1_1
+    missions\clearskill\head.lua:4  CSP_TID_RevivalSWID
+    missions\clearskill\head.lua:5  CSP_TID_ReviveID
+    missions\clearskill\head.lua:7  CSP_TID_ClearFreeTime
+    missions\clearskill\head.lua:10  CSP_TID_JewelEnterTime
+    missions\clearskill\head.lua:12  CSP_NEEDJEWEL_SKILL
+    missions\clearskill\head.lua:13  CSP_NEEDJEWEL_PROP
+    missions\clearskill\head.lua:15  CSP_NEEDJEWEL_SKILL2
+    missions\clearskill\head.lua:16  CSP_NEEDJEWEL_PROP2
+    missions\clearskill\head.lua:20  CSP_MAXClearTime
+    missions\clearskill\head.lua:22  CSP_RevieSWID
+    tinhnang\pubg\pubgutils.lua:12  MISSION_BR_PARAM_LASTLAYER
+    missions\tongcastle\guideperson.lua:20  TRANSLIFE_COUNT
+    missions\tongcastle\guideperson.lua:21  MIN_LEVEL
+    task\tollgate\messenger\qianbaoku\6079\tureboss6079.lua:15  TUREBOSS_RELIVE
+    task\tollgate\messenger\qianbaoku\6079\tureboss6079.lua:17  TUREBOSS_MAPID
+    item\event\Copy of 30thang4\huychuongphattong.lua:3  FREECELL_EVENT
+    missions\citywar_city\head.lua:74  CS_RevId
+    missions\citywar_city\head.lua:75  CS_RevData
+    missions\citywar_city\head.lua:89  STONELEVEL2
+    missions\citywar_city\head.lua:208  TV_LASTDEATHTIME
+    event\tongwar\event.lua:10  TONGWAR_LGTASK_TONGCNT
+    event\tongwar\event.lua:16  TONGWAR_LGTASK_CITYID
+    event\tongwar\event.lua:20  TONGWAR_LGTASK_TITLE
+    missions\bw\bwhead.lua:22  MAX_MEMBER_COUNT
+    tinhnang\congthanhchien\lib_ctc.lua:85  MIN_TAX
+    tinhnang\congthanhchien\lib_ctc.lua:86  MAX_TAX
+    tinhnang\congthanhchien\lib_ctc.lua:107  KILL_PLAYER_POINT
+    missions\citywar_global\infocenter_head.lua:23  LGTSK_CITYWAR_SIGNCOUNT
+    global\seasonnpc.lua:170  MAKING_COUNT
+    event\tongwar\headinfo.lua:17  TONGWAR_LGTASK_TONGCNT
+    event\tongwar\headinfo.lua:23  TONGWAR_LGTASK_CITYID
+    event\tongwar\headinfo.lua:31  TONGWAR_LGTASK_TITLE
+    event\tongwar\headinfo.lua:34  TONGWAR_LGTASK_ELDER
+    event\tongwar\headinfo.lua:35  TONGWAR_LGTASK_MASTER
+    event\tongwar\headinfo.lua:59  TV_LASTDEATHTIME
+    task\metempsychosis\task_head.lua:69  ZHUANSHENG_TUITION
+    task\metempsychosis\task_head.lua:76  LG_SHITULEAGUE
+    task\metempsychosis\task_head.lua:77  LG_WLLSLEAGUE
+    task\metempsychosis\task_head.lua:111  ZHUANSHENG_TUITION_4
+    task\metempsychosis\task_head.lua:112  CLEAR_SKILL_4_PRICE
+    task\metempsychosis\task_head.lua:118  NSTARTLEVEL_4
+    task\metempsychosis\task_head.lua:119  NPERPOINTNEEDLEVEL
+    task\metempsychosis\task_head.lua:121  BEIDOU_TRANSFER_MAX
+    lib\worldlibrary.lua:2  SERVER_MODE
+    lib\worldlibrary.lua:5  SERVER_EVENTID
+    event\chuyensinhdaisu.lua:164  nItemWuHang
+    event\chuyensinhdaisu.lua:165  nRoleWuHang
+    task\tollgate\messenger\qianbaoku\8089\tureboss8089.lua:15  TUREBOSS_RELIVE
+    task\tollgate\messenger\qianbaoku\8089\tureboss8089.lua:17  TUREBOSS_MAPID
+    event\trongbanghoi\lib.lua:29  LIMIT_LEVEL_TBH
+    lib\lib_sukien.lua:22  EVENT_ACTIVE
+    item\event\Copy of 30thang4\huychuongthiendieu.lua:3  FREECELL_EVENT
+    missions\challengeoftime\include.lua:12  INTERVAL_MATCH
+    missions\challengeoftime\include.lua:23  SEX_BOY
+    missions\challengeoftime\include.lua:24  SEX_GIRL
+    missions\challengeoftime\include.lua:25  SEX_RENYAO
+    missions\challengeoftime\include.lua:30  CHUANGGUAN30_START_TIME
+    missions\challengeoftime\include.lua:31  CHUANGGUAN30_END_TIME
+    missions\challengeoftime\include.lua:54  USE_NAME_ALL_PLAYERS
+    missions\challengeoftime\include.lua:55  USE_NAME_THE_TOPLIST
+    missions\tongwar\head.lua:12  TONGWAR_MAXDEATH
+    missions\tongwar\head.lua:24  TNPC_FLAG0
+    missions\tongwar\head.lua:25  TNPC_FLAG1
+    missions\tongwar\head.lua:26  TNPC_FLAG2
+    task\newtask\newtask_head.lua:17  TSKID_KILLTASKID_SPE
+    task\newtask\newtask_head.lua:18  TSKID_KILLERDATE_SPE
+    missions\citywar_global\demotimer.lua:1  ARENACOUNT
+    missions\citywar_global\demotimer.lua:2  ARENAWLDIDXBEGIN
+    missions\citywar_global\demotimer.lua:4  CITYCOUNT
+    header\liendau.lua:28  LIENDAU_THANG
+    header\liendau.lua:29  LIENDAU_HOA
+    header\liendau.lua:30  LIENDAU_MAX
+    event\demhuyhoang\event.lua:3  MAX_HUYHOANG_PER_DAY
+    task\tollgate\messenger\qianbaoku\90\tureboss90.lua:18  TUREBOSS_RELIVE
+    task\tollgate\messenger\qianbaoku\90\tureboss90.lua:20  TUREBOSS_MAPID
+    huoyuedu\huoyuedu.lua:17  CLOSED
+    lib\lib_vatpham.lua:11  GOLDITEM
+    lib\lib_vatpham.lua:12  PURPLEITEM
+    lib\lib_vatpham.lua:14  GREENITEM
+    lib\lib_vatpham.lua:18  PARTICULAR
+    lib\lib_vatpham.lua:19  LEVEL
+    lib\lib_vatpham.lua:21  LUCK
+    lib\lib_vatpham.lua:22  VERSION
+    lib\lib_vatpham.lua:23  RANDOMSEED
+    lib\lib_vatpham.lua:49  ROOMEB
+    lib\lib_vatpham.lua:50  ROOMR
+    lib\lib_vatpham.lua:51  ROOME1
+    lib\lib_vatpham.lua:52  ROOME2
+    lib\lib_vatpham.lua:53  ROOME3
+    lib\lib_vatpham.lua:54  ROOMEX
+    lib\lib_vatpham.lua:55  ROOMTRADE
+    lib\lib_vatpham.lua:56  ROOMTRADEB
+    lib\lib_vatpham.lua:57  ROOMTRADE1
+    lib\lib_vatpham.lua:58  ROOMIMMEDIACY
+    lib\lib_vatpham.lua:59  ROOMG
+    lib\lib_vatpham.lua:60  ROOMGB
+    event\tongwar\score.lua:6  TONGWAR_LGTASK_TONGCNT
+    item\tie-luohan.lua:4  MAX_PER_DATE
+    item\tuiduocpham.lua:4  FREECELL_MAUTANTHU
+    event\storm\head.lua:56  STORM_LADDERID_WEEK2
+    event\storm\head.lua:57  STORM_LADDERID_WEEK3
+    event\storm\head.lua:58  STORM_LADDERID_WEEK4
+    header\loidai.lua:2  JOIN_REVID
+    header\loidai.lua:3  JOIN_REVDATA
+    header\loidai.lua:10  FRAME2TIME
+    header\loidai.lua:11  MAX_MEMBER_COUNT
+    header\loidai.lua:12  BW_SIGNPOSWORLD
+    header\loidai.lua:13  BW_SIGNPOSX
+    header\loidai.lua:14  BW_SIGNPOSY
+    header\loidai.lua:17  CITYID
+    header\loidai.lua:18  BW_KEY
+    header\loidai.lua:23  TIMER_SEC
+    header\loidai.lua:25  GO_TIME
+    header\loidai.lua:27  BW_MISSIONID
+    tinhnang\tong_kim_tcap\lib_tktc.lua:42  KILL_PLAYER_POINT
+    header\thongthuong.lua:2  LEVEL_NORMAL
+    header\thongthuong.lua:3  EXP_NORMAL
+    header\thongthuong.lua:4  MONEY_NORMAL
+    header\thongthuong.lua:5  MAX_NVTN
+    item\compound\fantasygoldessence_upgrade.lua:5  RESULT_UNKNOWN
+    missions\citywar_arena\head.lua:32  LOSE_TONGEXP
+    missions\citywar_arena\head.lua:41  PKWINBONUS
+    missions\citywar_arena\head.lua:42  LOSEBONUS
+    tinhnang\vuot_ai\lib_vuotai.lua:14  MSTIME_VUOT_AI_XOANPC
+    missions\yandibaozang\readymap\ydbz_share.lua:23  YDBZ_RV_CURTIME
+    missions\yandibaozang\readymap\ydbz_share.lua:31  YDBZ_TASKTEMP_TRONGTRAN
+    missions\fengling_ferry\fld_head.lua:18  TNPC_THIEF_COUNT
+    task\tollgate\messenger\shanshenmiao\8089\templeboss8089.lua:16  TEMBOSS_RELIVE

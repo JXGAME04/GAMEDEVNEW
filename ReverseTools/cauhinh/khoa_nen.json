@@ -1,0 +1,3171 @@
+{
+ "nen": [
+  {
+   "tep": "event\\tongwar\\npc_shizhe.lua",
+   "dong": 16,
+   "ten": "ONETONG_START_SIGNUP",
+   "gia_tri": 20140407,
+   "loai": "NEN",
+   "ten_khoa": "THDNB_NGAY_BATDAU_BAODANH",
+   "mo_ta": "Ngay bat dau cho bang chu bao danh Thien Ha De Nhat Bang, dang YYYYMMDD. NPC so ngay hom nay voi cap so nay (dong 26) de quyet dinh hien menu bao danh. Hien dat 07/04/2014 nen cua so DA DONG - phai doi ca so nay lan ONETONG_ENDLE_SIGNUP thi NPC moi mo lai.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\tongwar\\npc_shizhe.lua",
+   "dong": 17,
+   "ten": "ONETONG_ENDLE_SIGNUP",
+   "gia_tri": 20140417,
+   "loai": "NEN",
+   "ten_khoa": "THDNB_NGAY_KETTHUC_BAODANH",
+   "mo_ta": "Ngay cuoi con bao danh Thien Ha De Nhat Bang (YYYYMMDD), so sanh o dong 26. Phai lon hon ngay bat dau, neu khong NPC chi chao roi thoi.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\tongwar\\npc_shizhe.lua",
+   "dong": 19,
+   "ten": "ONETONG_START_TITLE",
+   "gia_tri": 20100118,
+   "loai": "NEN",
+   "ten_khoa": "THDNB_NGAY_BATDAU_NHAN_DANHHIEU",
+   "mo_ta": "Ngay bat dau cho thanh vien bang vo dich den NPC nhan danh hieu 'Cao Cap De Nhat Bang' (dong 37). Luu y: khoang thoi gian nay phai KHONG chong len khoang bao danh, vi ma chay theo if/elseif - trung nhau thi nhanh nhan danh hieu bi nuot.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\tongwar\\npc_shizhe.lua",
+   "dong": 20,
+   "ten": "ONETONG_ENDLE_TITLE",
+   "gia_tri": 20100214,
+   "loai": "NEN",
+   "ten_khoa": "THDNB_NGAY_KETTHUC_NHAN_DANHHIEU",
+   "mo_ta": "Ngay cuoi con nhan danh hieu Thien Ha De Nhat Bang (dong 37). Dang de 14/02/2010 nen chuc nang nhan danh hieu hien khong bao gio mo.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\tongwar\\npc_shizhe.lua",
+   "dong": 22,
+   "ten": "ONETONG_MAX_SIGNMEM",
+   "gia_tri": 54,
+   "loai": "NEN",
+   "ten_khoa": "THDNB_SO_THANHVIEN_TOIDA",
+   "mo_ta": "So thanh vien toi da duoc ghi vao danh sach Thien Ha De Nhat Bang; day danh sach thi NPC tu choi (dong 228). Moi lan bao danh phai to doi dung 2 nguoi nen so nay nen la so chan.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\jiefang_jieri\\200904\\taskctrl.lua",
+   "dong": 23,
+   "ten": "jf0904_act_dateS",
+   "gia_tri": 20090428,
+   "loai": "NEN",
+   "ten_khoa": "DTT_NGAY_BATDAU",
+   "mo_ta": "Ngay mo su kien diet Thuy Tac (YYYYMMDD). Bay: bi BA cho doc voi hai cach khac nhau - shuizei.lua:109 chi kiem 'hom nay >= ngay nay' nen su kien luon duoc coi la dang mo, con missions\\fengling_ferry\\mission.lua:84 va fldmap_boat1.lua:26 doi ca ngay bat dau LAN ngay ket thuc. Doi so nay la dong thoi anh huong Phong Lang Do.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\jiefang_jieri\\200904\\taskctrl.lua",
+   "dong": 24,
+   "ten": "jf0904_act_dateE",
+   "gia_tri": 20090601,
+   "loai": "NEN",
+   "ten_khoa": "DTT_NGAY_KETTHUC",
+   "mo_ta": "Ngay dong su kien diet Thuy Tac (YYYYMMDD). Vi dang de 01/06/2009 da qua tu lau nen HAI thong bao Thuy Tac tren Phong Lang Do (truoc gio 10 phut va luc cap ben) VINH VIEN khong hien. Muon bat lai hai thong bao do thi phai keo so nay ve tuong lai.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\yandibaozang\\yandiduihuan.lua",
+   "dong": 38,
+   "ten": "yandiduihuan_CostMoney",
+   "gia_tri": 10000000,
+   "loai": "NEN",
+   "ten_khoa": "VDTL_GIA_TRUNGLUYEN",
+   "mo_ta": "So tien (ngan luong) thu moi lan trung luyen trang bi hoang kim Viem De, thu o dong 107 (Pay). BAY: con so nay con duoc viet CUNG bang chu trong 4 doan thoai NPC ('1000 van ngan luong', dong 82, 101, 198, 205) - doi so ma quen sua 4 chuoi do la NPC noi mot dang thu mot neo.",
+   "dang_chay": true
+  },
+  {
+   "tep": "global\\map_helper.lua",
+   "dong": 118,
+   "ten": "CD_LEVEL_LIMIT",
+   "gia_tri": 80,
+   "loai": "NEN",
+   "ten_khoa": "TTH_CAP_TOITHIEU_THUTHANH",
+   "mo_ta": "Cap nhan vat toi thieu de NPC dan di tham gia chien dich Thu Thanh (kiem o dong 153). Con so nay con duoc GHEP THANG vao cau tu choi ma NPC noi (dong 154) nen doi mot cho la ca hai cho doi theo - day la truong hop hiem duoc lam dung.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\compound\\ore_upgrade.lua",
+   "dong": 7,
+   "ten": "COMPOUND_COST",
+   "gia_tri": 5000,
+   "loai": "NEN",
+   "ten_khoa": "LR_PHI_GHEP_KHOANGTHACH",
+   "mo_ta": "Phi ngan luong thu MOI LAN thu ghep 3 vien Huyen Tinh / khoang thach ma thuat len cap, tru tien o compound_header.lua:76 truoc khi quay xac suat - THAT BAI VAN MAT TIEN. Cac cua so lo ren khac co bien cung ten nhung gia tri khac (equip_enchase 10000, atlas 100000) nen neu dua ra cau hinh phai tach thanh nhieu khoa rieng, khong dung chung mot khoa.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\ib\\baoruonghoatdong.lua",
+   "dong": 10,
+   "ten": "FREECELL_GETITEMBLUE",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "TDP_SO_O_TRONG_TOITHIEU",
+   "mo_ta": "So o trong toi thieu trong hanh trang thi Tho Dia Phu moi cho nhan do xanh (kiem hai lan, dong 60 va 98, va so nay duoc ghep thang vao cau thong bao). BAY: so luong toi da moi lan mo lai la mot so KHAC viet thang trong ma (dong 55: khong qua 10), nen neu ha so o trong xuong ma khong ha so luong thi nguoi choi co the yeu cau 10 mon trong khi tui khong du cho.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 41,
+   "ten": "YDBZ_LIMIT_SIGNUP",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "VDE_GIAY_CHO_VAO_TRAN",
+   "dang_chay": true,
+   "mo_ta": "So GIAY cho tu luc mo phong tran den luc tran chinh thuc chay (mission.lua:16 nhan 18 khung/giay). Bay: cau hinh da co san khoa YDBZ_PHUT_BAODANH = 5 nhung don vi la PHUT va duong ma that KHONG doc khoa do - doi cau hinh khong an gi."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 44,
+   "ten": "YDBZ_TIME_WAIT_STATE1",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "VDE_GIAY_CHO_GOI_BOSS_CUOI",
+   "dang_chay": true,
+   "mo_ta": "So giay cho truoc khi goi boss cuoi (Luong Mi Nhi) sau khi da ha het ai (npc_death.lua:301, nhan 18 khung/giay)."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 45,
+   "ten": "YDBZ_TIME_WAIT_STATE3",
+   "gia_tri": 30,
+   "loai": "NEN",
+   "ten_khoa": "VDE_GIAY_CHO_DONG_PHONG",
+   "dang_chay": true,
+   "mo_ta": "So giay cho sau khi boss cuoi chet roi moi day nguoi choi ra va dong phong (npc_death.lua:207). Dat qua nho la nguoi choi khong kip nhat do."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 46,
+   "ten": "YDBZ_LIMIT_SETFIGHTSTATE",
+   "gia_tri": 3,
+   "loai": "NEN",
+   "ten_khoa": "VDE_GIAY_CHO_KHI_CON_1_DOI",
+   "dang_chay": true,
+   "mo_ta": "So giay cho khi chi con 1 to doi song sot roi moi ket thuc / goi boss (player_death.lua:59)."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 48,
+   "ten": "YDBZ_LIMIT_PLAYER_LEVEL",
+   "gia_tri": 120,
+   "loai": "NEN",
+   "ten_khoa": "VDE_CAP_TOITHIEU_THAMGIA",
+   "dang_chay": true,
+   "mo_ta": "Cap do toi thieu de duoc vao Viem De Bao Tang (npc\\yandibaozang_main.lua:43). Bay: cau hinh da co YDBZ_CAP_TOITHIEU=120 nhung chi bo test admin doc, duong ma that van dung so cung o day."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 49,
+   "ten": "YDBZ_LIMIT_WEEK_COUNT",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "VDE_LUOT_TUAN",
+   "dang_chay": true,
+   "mo_ta": "So luot tham gia toi da moi TUAN cua mot nhan vat (yandibaozang_main.lua:53). Cau hinh YDBZ_LAN_TUAN=10 chi la ban sao khong duoc doc."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 50,
+   "ten": "YDBZ_LIMIT_DAY_COUNT",
+   "gia_tri": 4,
+   "loai": "NEN",
+   "ten_khoa": "VDE_LUOT_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So luot tham gia toi da moi NGAY cua mot nhan vat (yandibaozang_main.lua:56). Cau hinh YDBZ_LAN_NGAY=4 chi la ban sao khong duoc doc."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 54,
+   "ten": "YDBZ_AWARD_EXP",
+   "gia_tri": 600000,
+   "loai": "NEN",
+   "ten_khoa": "VDE_EXP_QUA_AI",
+   "dang_chay": true,
+   "mo_ta": "Diem kinh nghiem thuong cho ca to doi khi vuot xong mot ai (npc_death.lua:90). Nhan doi neu dang mang Viem De Lenh, roi con qua ham nhan doi su kien - so thuc te co the gap 4."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 55,
+   "ten": "YDBZ_Faninl_AWARD_EXP",
+   "gia_tri": 300000,
+   "loai": "NEN",
+   "ten_khoa": "VDE_EXP_BOSS_PHU",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem thuong ca doi khi giet mot boss phu trong bao tang (npc_death.lua:100). Cung bi nhan doi boi Viem De Lenh va he so su kien."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 56,
+   "ten": "YDBZ_KILLPLAYER_EXP",
+   "gia_tri": 200000,
+   "loai": "NEN",
+   "ten_khoa": "VDE_EXP_GIET_NGUOI_CHOI",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem nhan duoc khi giet mot nguoi choi doi dich trong bao tang (player_death.lua:31), gap doi neu co Viem De Lenh."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 17,
+   "ten": "MONEY_BD_LD",
+   "gia_tri": 1000000,
+   "loai": "NEN",
+   "ten_khoa": "LDBH_PHI_BAODANH_LUONG",
+   "dang_chay": true,
+   "mo_ta": "So luong (tien) bang chu phai tra de dang ky bao danh Loi Dai bang hoi (kiem tra + Pay o dong 74-78)."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 18,
+   "ten": "EXP_KT_LOIDAI_L",
+   "gia_tri": 1000000,
+   "loai": "NEN",
+   "ten_khoa": "LDBH_EXP_THUA",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem phat cho thanh vien phe THUA khi ket thuc Loi Dai (dong 242). Ban thang dung EXP_KT_LOIDAI_W=2000000 o dong 19."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 30,
+   "ten": "MAX_MEMBER_COUNT",
+   "gia_tri": 16,
+   "loai": "NEN",
+   "ten_khoa": "LDBH_NGUOI_MOI_PHE",
+   "dang_chay": true,
+   "mo_ta": "So nguoi toi da moi phe trong Loi Dai bang hoi (kiem tra o dong 138). BAY: cung ten toan cuc bi header\\loidai.lua va missions\\bw dat 100, clearskill dat 20, citywar_arena lay tu CTLD_MAX_NGUOI_MOI_PHE - nap sau de nhau."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 10,
+   "ten": "MAX_HUYHOANG_PER_DAY",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_AN_QUA_HH_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So Qua Huy Hoang toi da MOT NGAY duoc an de cong kinh nghiem (item\\huihuangzhiguo1/2/3.lua:16). BAY: event\\demhuyhoang\\event.lua:3 khai lai cung ten cung gia tri - sua mot cho la lech."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 11,
+   "ten": "MAX_QHK_PER_DAY",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_AN_QUA_HK_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So Qua Hoang Kim toi da mot ngay duoc an (item\\goldenseed.lua:10). Chu thich ben canh ghi 'toi da 2 qua' nhung gia tri that la 5 - chu thich sai."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 12,
+   "ten": "MAX_COLLECT_PER_DAY_HH",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_HAI_QUA_HH_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So Qua Huy Hoang toi da HAI duoc mot ngay. BAY: quahuyhoang.lua:55 so sanh bang '>' chu khong phai '>=', nen thuc te hai duoc 11 qua chu khong phai 10."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 13,
+   "ten": "MAX_COLLECT_PER_DAY_HK",
+   "gia_tri": 3,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_HAI_QUA_HK_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So Qua Hoang Kim toi da hai duoc mot ngay. Cung loi '>' o quahuyhoang.lua:50 nen thuc te la 4 qua."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 14,
+   "ten": "EXP_QHH_T",
+   "gia_tri": 20000000,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_EXP_QUA_TIEU",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem cong khi an Qua Huy Hoang loai tieu (item\\huihuangzhiguo1.lua:21, cong bang AddSumExp - vao tong kinh nghiem)."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 15,
+   "ten": "EXP_QHH_TR",
+   "gia_tri": 30000000,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_EXP_QUA_TRUNG",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem cong khi an Qua Huy Hoang loai trung (item\\huihuangzhiguo2.lua:21)."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 16,
+   "ten": "EXP_QHH_C",
+   "gia_tri": 50000000,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_EXP_QUA_CAO",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem cong khi an Qua Huy Hoang loai cao (item\\huihuangzhiguo3.lua:21)."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 17,
+   "ten": "EXP_QHK",
+   "gia_tri": 100000000,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_EXP_QUA_HOANGKIM",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem cong khi an Qua Hoang Kim (item\\goldenseed.lua:19). Day la moc lam phat kinh nghiem lon nhat cua he Huy Hoang."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 18,
+   "ten": "TIENVAN_QHK",
+   "gia_tri": 500000,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_TIEN_QUA_HOANGKIM",
+   "dang_chay": true,
+   "mo_ta": "So tien (luong) tang kem khi an Qua Hoang Kim, phat bang Earn() (item\\goldenseed.lua:20) - la tien SINH RA MOI, anh huong lam phat kinh te."
+  },
+  {
+   "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+   "dong": 25,
+   "ten": "TIME_DELAY_TH",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "HHQ_GIAY_THU_HOACH",
+   "dang_chay": true,
+   "mo_ta": "So giay giu thanh tien trinh khi hai qua (PaceBar o quahuyhoang.lua:60). Dat 0 la hai tuc thi, de bi auto vet sach."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 14,
+   "ten": "MAX_NVSATTHU",
+   "gia_tri": 8,
+   "loai": "NEN",
+   "ten_khoa": "SGST_NHIEMVU_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So nhiem vu Sat Thu nhan duoc moi ngay (kiem tra o dong 105). BAY: global\\npcchucnang\\nhieptran.lua la ban sao gan giong het file nay va cung dat 8 - phai sua ca hai."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 15,
+   "ten": "MIN_PLAYERINVUOTAI",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "SGST_NGUOI_TOITHIEU_TODOI",
+   "dang_chay": true,
+   "mo_ta": "So thanh vien to doi toi thieu de duoc vao Vuot Ai (dong 264). Ban sao nhieptran.lua:15 cung dat 5."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 17,
+   "ten": "MONEYGHEPSTG",
+   "gia_tri": 80000,
+   "loai": "NEN",
+   "ten_khoa": "SGST_PHI_GHEP_SATTHUGIAN",
+   "dang_chay": true,
+   "mo_ta": "Tien phai tra de ghep 5 Sat Thu Lenh thanh 1 Sat Thu Gian (dong 141-161). Ban sao nhieptran.lua cung 80000."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 18,
+   "ten": "MONEYNHANNV",
+   "gia_tri": 50000,
+   "loai": "NEN",
+   "ten_khoa": "SGST_PHI_NHAN_NHIEMVU",
+   "dang_chay": true,
+   "mo_ta": "Tien moi nguoi phai tra khi nhan nhiem vu sat thu / khi doi truong dang ky vuot ai (dong 94, 110, 373). BAY LON: ban sao nhieptran.lua:18 dat 5000 (kem 10 lan) tren cung ten toan cuc - NPC nao chay sau se ap gia cua no cho cac ham goi lai sau do."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 19,
+   "ten": "MONEY_GO_BOSS",
+   "gia_tri": 5000,
+   "loai": "NEN",
+   "ten_khoa": "SGST_PHI_DICH_CHUYEN_BOSS",
+   "dang_chay": true,
+   "mo_ta": "Tien tra de duoc dich chuyen thang toi cho boss sat thu (dong 58-62). BAY: nhieptran.lua:19 dat 1000 tren cung ten; chu thich o header\\cauhinh_hoatdong.lua:407 ghi ban Viet la 1000 luong."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 20,
+   "ten": "LEVELENOUGH",
+   "gia_tri": 90,
+   "loai": "NEN",
+   "ten_khoa": "SGST_CAP_TOITHIEU",
+   "dang_chay": true,
+   "mo_ta": "Cap do toi thieu de nhan nhiem vu sat thu va de vuot ai (dong 99, 253, 283). Luu y cau hinh HD3_VA_CAP_TOITHIEU=50 khong an vao cho nay."
+  },
+  {
+   "tep": "event\\event_vantieu\\lib_vt.lua",
+   "dong": 95,
+   "ten": "MAX_CUOP_TIEU",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "VANT_LAN_CUOP_TIEU_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So lan toi da duoc cuop tieu cua nguoi khac trong ngay (death_tieu.lua:16, drop_tieu.lua:24). BAY: so sanh bang '>' nen thuc te la 6 lan."
+  },
+  {
+   "tep": "event\\event_vantieu\\lib_vt.lua",
+   "dong": 97,
+   "ten": "MAXVANTIEU",
+   "gia_tri": 20,
+   "loai": "NEN",
+   "ten_khoa": "VANT_LAN_VANTIEU_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So lan toi da nhan van tieu trong mot ngay cua mot nhan vat (tieudau.lua:89)."
+  },
+  {
+   "tep": "event\\event_vantieu\\lib_vt.lua",
+   "dong": 98,
+   "ten": "NEED_MONEY",
+   "gia_tri": 500000,
+   "loai": "NEN",
+   "ten_khoa": "VANT_PHI_NHAN_TIEU",
+   "dang_chay": true,
+   "mo_ta": "Tien dat coc khi nhan xe tieu (tieudau.lua:97-103) va la co so tinh tien thuong khi van xong (tieudau.lua:326: NEED_MONEY * he so ngau nhien * loai tieu). BAY: ten toan cuc NEED_MONEY con bi tinhnang\\tong_kim_tcap\\quanquan.lua:24 gan bang TKT_GIA_DOI_NHACVUONGKIEM (10 trieu) - nap sau se lam gia van tieu vot len 10 trieu."
+  },
+  {
+   "tep": "event\\event_vantieu\\lib_vt.lua",
+   "dong": 99,
+   "ten": "NEED_MONEY_GO",
+   "gia_tri": 100000,
+   "loai": "NEN",
+   "ten_khoa": "VANT_PHI_DICH_CHUYEN",
+   "dang_chay": true,
+   "mo_ta": "Tien tra de duoc dua thang den vi tri xe tieu / tieu su (tieudau.lua:200-214)."
+  },
+  {
+   "tep": "event\\event_vantieu\\lib_vt.lua",
+   "dong": 100,
+   "ten": "LEVEL_LIMIT_VT",
+   "gia_tri": 50,
+   "loai": "NEN",
+   "ten_khoa": "VANT_CAP_TOITHIEU",
+   "dang_chay": true,
+   "mo_ta": "Cap do toi thieu de tham gia van tieu (tieudau.lua:41)."
+  },
+  {
+   "tep": "item\\gongchengche.lua",
+   "dong": 6,
+   "ten": "NpcLevel",
+   "gia_tri": 60,
+   "loai": "NEN",
+   "ten_khoa": "VKCT_CAP_NGHIETLONG_XUNGXA",
+   "dang_chay": true,
+   "mo_ta": "Cap do dat cho Nghiet Long Xung Xa khi trieu ra (dong 37) - quyet dinh mau/thu cua xe qua npclevelscript, tuc do ben cua vu khi cong thanh. BAY: ten toan cuc NpcLevel dung chung voi 3 script vu khi cong thanh khac (leigushibing/toushiche/yaoqishibing, deu 60); neu tach cau hinh phai tach ca 4 chu khong dat chung mot khoa."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\fengzhiqi\\6079\\flyboss6079.lua",
+   "dong": 193,
+   "ten": "FLYBOSS_RELIVE",
+   "gia_tri": 120,
+   "loai": "NEN",
+   "ten_khoa": "TLG_GIAY_AN_BOSS_PHONGCHIKY",
+   "dang_chay": true,
+   "mo_ta": "So giay an boss moc (bien mat roi hien lai) sau khi bi ha o ai Phong Chi Ky - tuc nhip hoi sinh cho nguoi ke tiep (enemy_biaozhiboss.lua:164 HideNpc(..., FLYBOSS_RELIVE*18)). BAY: hai file anh em 8089 va 90 cung khai 120, phai sua ca ba."
+  },
+  {
+   "tep": "item\\hoplevatvuotai.lua",
+   "dong": 8,
+   "ten": "EXP_HOPLVVA",
+   "gia_tri": 2000000,
+   "loai": "NEN",
+   "ten_khoa": "HLV_EXP_MO_HOP",
+   "dang_chay": true,
+   "mo_ta": "Kinh nghiem cong thang cho nguoi choi moi lan mo Hop Le Vat Vuot Ai (dong 49, AddOwnExp)."
+  },
+  {
+   "tep": "item\\hoplevatvuotai.lua",
+   "dong": 9,
+   "ten": "MAX_HOPLEVATVA_DAY",
+   "gia_tri": 3,
+   "loai": "NEN",
+   "ten_khoa": "HLV_LUOT_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So hop le vat toi da duoc mo moi ngay, dem bang bien TSK_HOPLEVATVA (=314), reset trong lib_ham.lua:277. BAY: dong 21 tang bo dem TRUOC khi kiem tra hanh trang du 10 o - mo hut vi day tui van bi tru mot luot."
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\quanquan.lua",
+   "dong": 9,
+   "ten": "NUM_XU_MUA_DC",
+   "gia_tri": 100,
+   "loai": "NEN",
+   "ten_khoa": "QQCT_XU_MUA_DUNGCU",
+   "dang_chay": true,
+   "mo_ta": "So Tien Xu phai tra cho moi mon dung cu cong thanh (Nghiet Long Xung Xa / Van Ke Binh Phu / Ngoan Cu Binh Phu) - mot gia dung chung ca ba mon (dong 41-47)."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 19,
+   "ten": "CSP_NEEDLEVEL",
+   "gia_tri": 50,
+   "loai": "NEN",
+   "ten_khoa": "TTY_CAP_TOITHIEU",
+   "dang_chay": true,
+   "mo_ta": "Cap nhan vat toi thieu de dung NPC Tay Tuy (dao 242, tao boi startgame\\tinhnang\\daotaytuy.lua). BAY: loi thoai viet 'khong the roi khoi tay tuy dao' nhung ma nguon (phantang.lua:19 va ban sao Mong Canh) return NGAY, tuc duoi cap 50 la KHONG mo duoc menu tay diem, khong phai chi cam roi dao."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 14,
+   "ten": "MAX_NVSATTHU",
+   "gia_tri": 8,
+   "loai": "NEN",
+   "ten_khoa": "NTT_SO_NV_MOI_NGAY",
+   "dang_chay": true,
+   "mo_ta": "So nhiem vu Sat Thu toi da moi nhan vat lam trong mot ngay (dem bang bien T_NVSTTRONGNGAY, chan tai dong 102). Hien ra ngay tren menu NPC dang 'x/8'."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 15,
+   "ten": "MIN_PLAYERINVUOTAI",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "NTT_SO_NGUOI_TOITHIEU_VUOTAI",
+   "dang_chay": true,
+   "mo_ta": "So thanh vien to doi toi thieu de bao danh Vuot Ai (kiem tai dong 261). Ban sao tinhnang\\vuot_ai\\sugiasatthu.lua cung dat 5 - phai sua ca hai."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 17,
+   "ten": "MONEYGHEPSTG",
+   "gia_tri": 80000,
+   "loai": "NEN",
+   "ten_khoa": "NTT_GIA_GHEP_SATTHUGIAN",
+   "dang_chay": true,
+   "mo_ta": "So luong (tien) tru khi ghep Sat Thu Gian (kiem dong 138, Pay o dong 158). BAY: loi thoai dong 139 viet '%d ngan luong' trong khi con so la luong tron -> hien ra '80000 ngan luong', sai don vi."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 18,
+   "ten": "MONEYNHANNV",
+   "gia_tri": 5000,
+   "loai": "NEN",
+   "ten_khoa": "NTT_GIA_NHAN_NHIEMVU",
+   "dang_chay": true,
+   "mo_ta": "So luong tru moi lan nhan nhiem vu Sat Thu, va cung la phi doi truong nop khi bao danh Vuot Ai (Pay o dong 107 va 364). BAY: ban sao tinhnang\\vuot_ai\\sugiasatthu.lua dat 50000 - LECH 10 LAN so voi tep nay."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 19,
+   "ten": "MONEY_GO_BOSS",
+   "gia_tri": 1000,
+   "loai": "NEN",
+   "ten_khoa": "NTT_GIA_DEN_CHO_BOSS",
+   "dang_chay": true,
+   "mo_ta": "So luong tru khi bam 'den cho sat thu' de duoc dich chuyen thang toi boss (dong 55-59). Ban sao sugiasatthu.lua dat 5000 - lech. Ghi chu trong header\\cauhinh_hoatdong.lua:407 da nhac toi hang nay."
+  },
+  {
+   "tep": "global\\npcchucnang\\nhieptran.lua",
+   "dong": 20,
+   "ten": "LEVELENOUGH",
+   "gia_tri": 90,
+   "loai": "NEN",
+   "ten_khoa": "NTT_CAP_TOITHIEU",
+   "dang_chay": true,
+   "mo_ta": "Cap nhan vat toi thieu de nhan nhiem vu Sat Thu va de tham gia Vuot Ai; kiem 3 cho (dong 96, 250, 280) ke ca kiem tung thanh vien to doi."
+  },
+  {
+   "tep": "item\\leigushibing.lua",
+   "dong": 6,
+   "ten": "NpcLevel",
+   "gia_tri": 60,
+   "loai": "NEN",
+   "ten_khoa": "CTB_CAP_LINH_TRIEUHOI",
+   "dang_chay": true,
+   "mo_ta": "Cap cua linh/xe duoc trieu hoi trong Cong Thanh Chien - quyet dinh mau va suc danh cua no (AddNpc dong 27). Vat pham 'Ngoan co binh phu' (settings\\item\\mine.txt hang 35) goi tep nay. LUU Y: 4 tep item\\gongchengche.lua, toushiche.lua, leigushibing.lua, yaoqishibing.lua deu khai cung ten toan cuc NpcLevel=60 - mot khoa cau hinh phai ap cho ca 4."
+  },
+  {
+   "tep": "global\\npcchucnang\\thoren.lua",
+   "dong": 1222,
+   "ten": "FREECELL_KHOIPHUC",
+   "gia_tri": 20,
+   "loai": "NEN",
+   "ten_khoa": "TRN_O_TRONG_KHOIPHUC",
+   "dang_chay": true,
+   "mo_ta": "So o trong hanh trang toi thieu bat buoc phai co thi tho ren moi cho khoi phuc trang bi (CalcFreeItemCellCount, dong 1239-1240). Con so hien thang trong loi thoai bao nguoi choi. Tach roi khoi lan 'kham anh sang' o cung tep - do khong kiem o trong."
+  },
+  {
+   "tep": "item\\compound\\equip_compound.lua",
+   "dong": 7,
+   "ten": "COMPOUND_COST",
+   "gia_tri": 10000,
+   "loai": "NEN",
+   "ten_khoa": "HTM_PHI_HOPTHANH",
+   "dang_chay": true,
+   "mo_ta": "Phi (luong) tru moi lan hop thanh trang bi mau - tuc mo o kham. compound_header.lua:76 goi Pay(COMPOUND_COST), khong du tien la huy ca luot. Vao qua settings\\item\\compoundscript.txt hang 4. LUU Y: moi kieu hop thanh tu dat lai cung ten toan cuc nay truoc khi dung - equip_enchase=10000, ore_upgrade/xuanjing/magic_distill=5000, atlas=100000; muon dua ra cau hinh phai lam 1 khoa cho tung kieu."
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 56,
+   "ten": "g_nMaxTscPerDoor",
+   "loai": "NEN",
+   "ten_khoa": "TDC_SO_DAUTHACHXA_MOI_CONG",
+   "mo_ta": "So xe ban da (dau thach xa) toi da co the dung o MOI cong thanh trong tran dia Cong Thanh Chien cu. BAY: con so nay con dung de tinh vi tri o bien mission (MS_GCCBEGIN/MS_TOOLBEGIN), doi no la toan bo bang o bien mission truot theo - phai doi khi tran DANG DONG.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 58,
+   "ten": "g_nMaxGccPerDoor",
+   "loai": "NEN",
+   "ten_khoa": "TDC_SO_CONGTHANHXA_MOI_CONG",
+   "mo_ta": "So xe cong thanh toi da phe cong duoc dung o moi cong. BAY: giong tren, no cung dich chuyen bang o bien mission (MS_TOOLBEGIN/MS_DOORBEGIN).",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 63,
+   "ten": "g_nMaxToolCount",
+   "loai": "NEN",
+   "ten_khoa": "TDC_SO_LINH_DANHTHUE_PHE_THU",
+   "mo_ta": "So linh danh thue (yeu ky/loi co) phe thu duoc goi ra cung luc. BAY: cung la kich thuoc vung o bien mission (MS_DOORBEGIN = MS_TOOLBEGIN + so nay).",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 94,
+   "ten": "ENOUGH_LEVEL",
+   "loai": "NEN",
+   "ten_khoa": "CTHC_CAP_TOITHIEU_THAMGIA",
+   "mo_ta": "Dang cap toi thieu de duoc bao danh/tham gia Cong Thanh Chien (congthanhquan.lua kiem GetLevel() < so nay). No con duoc ghep vao cau thong bao tu choi nen doi so la doi luon cau chu.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 95,
+   "ten": "TICH_LUY_THUONG_CT",
+   "loai": "NEN",
+   "ten_khoa": "CTHC_TICHLUY_THUONG_MOI_QUANHAM",
+   "mo_ta": "Diem cong trang thuong them cho nguoi phe THANG, nhan voi cap quan ham cua nguoi do (nAccum = so nay x quan ham). Doc o lib_ctc.lua:443 va timertask\\task02.lua:130.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 99,
+   "ten": "CTC_MINUS_BD",
+   "loai": "NEN",
+   "ten_khoa": "CTHC_PHUT_CHO_TRUOC_KHAI_CHIEN",
+   "mo_ta": "So phut cho tu luc mo mission den luc chinh thuc danh (timerserver.lua:981 StartMissionTimer voi so nay x 1080 tick).",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 100,
+   "ten": "CTC_MINUS_KT",
+   "loai": "NEN",
+   "ten_khoa": "CTHC_PHUT_DODAI_TRAN",
+   "mo_ta": "Do dai toan tran Cong Thanh Chien tinh bang phut. Dung o HAI cho: timerserver.lua:982 dat gio ket thuc tran, VA lib_ctc.lua:205/213 dat gio song cua cong thanh + long tru - doi mot so la doi ca ba.",
+   "dang_chay": true
+  },
+  {
+   "tep": "battles\\battlehead.lua",
+   "dong": 20,
+   "ten": "BAOMING_TIME",
+   "loai": "NEN",
+   "ten_khoa": "SJ_PHUT_BAODANH",
+   "mo_ta": "So phut mo bao danh Tong Kim (chien truong ban battles). No keo theo 4 so khac ngay ben duoi: TIMER_2 (tong gio tran), RUNGAME_TIME, GO_TIME va TIME_EXHIBIT_BOSS - doi mot cho la doi het.",
+   "dang_chay": true
+  },
+  {
+   "tep": "battles\\battlehead.lua",
+   "dong": 21,
+   "ten": "FIGHTING_TIME",
+   "loai": "NEN",
+   "ten_khoa": "SJ_PHUT_GIAO_CHIEN",
+   "mo_ta": "So phut giao chien cua tran Tong Kim; cong voi thoi gian bao danh de ra tong gio tran (TIMER_2). Cung duoc doc de in ra bang thong tin cho nguoi choi (battleinfo.lua).",
+   "dang_chay": true
+  },
+  {
+   "tep": "battles\\battlehead.lua",
+   "dong": 22,
+   "ten": "ANNOUNCE_TIME",
+   "loai": "NEN",
+   "ten_khoa": "SJ_GIAY_GIUA_2_LAN_CONGBO",
+   "mo_ta": "Cu bao nhieu GIAY thi he thong cong bo tinh hinh chien truong mot lan. BAY: no chinh la nhip dong ho TIMER_1, ma RUNGAME_TIME/GO_TIME lai chia cho TIMER_1 - dat so la se lam so vong dem bi le.",
+   "dang_chay": true
+  },
+  {
+   "tep": "header\\fuyuan.lua",
+   "dong": 7,
+   "ten": "TIME_UNIT",
+   "loai": "NEN",
+   "ten_khoa": "FY_GIAY_DOI_1_DIEM",
+   "mo_ta": "So GIAY online lien tuc doi duoc 1 diem Phuc Duyen. BAY: no la don vi goc cua ca he - hai moc 2 gio va 4 gio (TIME_FUYUAN_THRESHOLD1/2) deu nhan tu so nay, nen doi 3600 la doi luon nguong toi thieu va nguong bat dau giam hieu suat.",
+   "dang_chay": true
+  },
+  {
+   "tep": "header\\fuyuan.lua",
+   "dong": 11,
+   "ten": "FUYUAN_EXTRA",
+   "loai": "NEN",
+   "ten_khoa": "FY_DIEM_THUONG_THEM",
+   "mo_ta": "So diem Phuc Duyen thuong THEM khi nguoi choi linh dung dung luot quy dinh trong ngay.",
+   "dang_chay": true
+  },
+  {
+   "tep": "header\\fuyuan.lua",
+   "dong": 12,
+   "ten": "TIMES_IN_DAY_EXTRA",
+   "loai": "NEN",
+   "ten_khoa": "FY_LAN_THU_MAY_DUOC_THUONG",
+   "mo_ta": "Lan linh Phuc Duyen thu may trong ngay thi duoc thuong them. BAY: code so sanh BANG NHAU (== ) chu khong phai >=, nen chi dung lan do moi co thuong.",
+   "dang_chay": true
+  },
+  {
+   "tep": "header\\fuyuan.lua",
+   "dong": 13,
+   "ten": "FUYUAN_MAX_GAIN",
+   "loai": "NEN",
+   "ten_khoa": "FY_TRAN_DIEM_MOI_LAN",
+   "mo_ta": "So diem Phuc Duyen toi da nhan duoc trong MOT lan linh; du online lau hon cung bi cat con so nay.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\event_cauhoi\\lib.lua",
+   "dong": 19,
+   "ten": "MIN_LEVEL_JOIN",
+   "loai": "NEN",
+   "ten_khoa": "HDG_CAP_TOITHIEU",
+   "mo_ta": "Dang cap toi thieu de tra loi cau hoi Hoa Dang (cauhoi.lua:18). So nay cung duoc ghep vao cau tu choi hien cho nguoi choi.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\event_cauhoi\\lib.lua",
+   "dong": 22,
+   "ten": "MAX_NUM",
+   "loai": "NEN",
+   "ten_khoa": "HDG_SO_CAUHOI_MOI_NGAY",
+   "mo_ta": "So cau hoi Hoa Dang moi nguoi duoc tra loi trong mot ngay. BAY: cauhoi.lua:28 kiem bang dau LON HON HAN (> MAX_NUM) nen thuc te nguoi choi tra loi duoc MAX_NUM + 1 cau, trong khi thong bao van in ra MAX_NUM.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\event_cauhoi\\lib.lua",
+   "dong": 23,
+   "ten": "NUM_NHANTHUONG",
+   "loai": "NEN",
+   "ten_khoa": "HDG_SO_CAU_DUNG_DE_NHAN_THUONG",
+   "mo_ta": "Phai tra dung it nhat bao nhieu cau moi duoc len Le Quan nhan thuong Hoa Dang (lib.lua:357).",
+   "dang_chay": true
+  },
+  {
+   "tep": "global\\seasonnpc.lua",
+   "dong": 169,
+   "ten": "MAKING_COST",
+   "loai": "NEN",
+   "ten_khoa": "LHH_GIA_KET_VONG_LUONG",
+   "mo_ta": "So luong (tien) phai tra cho Le Quan de ket mot vong Lien Hoa Hoan. BAY: cau thoai o dong 198 viet cung so '10000 luong' - doi bien ma khong sua cau chu la thanh noi mot dang thu mot neo.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\event\\eventtet\\banhdacbiet.lua",
+   "dong": 9,
+   "ten": "DangCapSuDung",
+   "loai": "NEN",
+   "ten_khoa": "MNQ_CAP_TOITHIEU_SUDUNG",
+   "mo_ta": "Dang cap toi thieu de dung duoc Mam Ngu Qua (vat pham su kien Tet doi kinh nghiem).",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\event\\eventtet\\banhdacbiet.lua",
+   "dong": 10,
+   "ten": "ToiDaSuDung",
+   "loai": "NEN",
+   "ten_khoa": "MNQ_SO_LAN_TOIDA",
+   "mo_ta": "So lan toi da mot nhan vat duoc dung Mam Ngu Qua (dem trong bien nhiem vu TASK_MAMNGUQUA). BAY: cac moc thuong dac biet ben duoi lai viet cung so (moc 1000, khoang 1000-20001, moc 19999) nen doi tran nay ma khong sua cac moc la lech.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\battles\\clarion.lua",
+   "dong": 10,
+   "ten": "MAX_CALLNPCCOUNT",
+   "loai": "NEN",
+   "ten_khoa": "HGC_SO_LINH_TOIDA_MOI_PHE",
+   "mo_ta": "So lan Hieu Giac (binh si hieu phu) duoc thoi trong mot tran Tong Kim, dem RIENG cho moi phe. Moi lan thoi ra 2 linh. BAY: battles\\battlehead.lua:172 dat cung ten bien nay = 10; clarion.lua phai tu dofile chinh no o dau ham main de gianh lai so 20.",
+   "dang_chay": true
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 18,
+   "ten": "NTRANSLIFE_MAX",
+   "gia_tri": 7,
+   "loai": "NEN",
+   "ten_khoa": "CS_MAX_LAN_CHUYENSINH",
+   "dang_chay": true,
+   "mo_ta": "Tran so lan chuyen sinh (trung sinh) mot nhan vat duoc phep - task_func.lua:111 chan khi so lan da chuyen >= so nay. BAY: cung so nay la SO COT doc tu settings\\task\\metempsychosis\\translife.txt (task_head.lua:33 doc MAGICPOINT1..7, PROP1..7, RESIST1..7, SKILLLIMIT1..7) va bang gioi han cap TB_LEVEL_LIMIT chi co dung 7 muc - nang len 8 la doc cot khong ton tai va thieu gioi han cap cho lan thu 8."
+  },
+  {
+   "tep": "leaguematch\\head.lua",
+   "dong": 40,
+   "ten": "WLLS_MAX_COUNT",
+   "gia_tri": 200,
+   "loai": "NEN",
+   "ten_khoa": "VLLD_MAX_DOI_MOI_SAN",
+   "dang_chay": true,
+   "mo_ta": "So chien doi toi da ma MOT san chuan bi Vo Lam Lien Dau chua duoc (joinmatch.lua:198-215 chan khi day); dong thoi la so vong lap quet cho ghep tran. BAY: khai HAI LAN o hai state khac nhau - leaguematch\\head.lua:40 (ben relay) va missions\\leaguematch\\head.lua:144 (ben GameServer). Sua mot ben ma quen ben kia thi hai may dem lech nhau."
+  },
+  {
+   "tep": "leaguematch\\head.lua",
+   "dong": 45,
+   "ten": "WLLS_LingQi_PerCOUNT",
+   "gia_tri": 4,
+   "loai": "NEN",
+   "ten_khoa": "VLLD_TRAN_THEM_MOI_LINHKHI",
+   "dang_chay": true,
+   "mo_ta": "So luot tran mo rong ma mot chien doi duoc cong them cho MOI vien Linh Khi da dung (tran mo rong toi da = so Linh Khi da dung x so nay - head.lua:168 va missions\\leaguematch\\head.lua:735). BAY: cung khai hai lan o hai state (leaguematch\\head.lua:45 va missions\\leaguematch\\head.lua:131), phai sua ca hai."
+  },
+  {
+   "tep": "item\\compound\\equip_enchase.lua",
+   "dong": 9,
+   "ten": "COMPOUND_COST",
+   "gia_tri": 10000,
+   "loai": "NEN",
+   "ten_khoa": "HT_TIEN_KHAM_NAM",
+   "dang_chay": true,
+   "mo_ta": "So tien (dong) tru moi lan kham nam da mau vao trang bi mau; compound_header.lua:76 goi Pay(COMPOUND_COST) va HUY viec kham neu tra khong du. BAY: COMPOUND_COST la mot TEN TOAN CUC dung chung cho 6 kieu hop thanh - atlas.lua 100000, equip_compound.lua 10000, equip_enchase.lua 10000, magic_distill.lua 5000, ore_upgrade.lua 5000, xuanjing_compound.lua 5000. Chung khong dam nhau vi moi tep la mot state rieng nap qua settings\\item\\compoundscript.txt, nhung khoa cau hinh BAT BUOC phai rieng cho tung tep, khong duoc dung mot khoa chung."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 11,
+   "ten": "INTERVAL_BOARD",
+   "loai": "NEN",
+   "gia_tri": 1,
+   "ten_khoa": "VAI_PHUT_THONGBAO",
+   "dang_chay": true,
+   "mo_ta": "Cu bao nhieu PHUT thi Vuot Ai nhac tien do mot lan (include.lua:218 dat dong ho, timer_board.lua:9 cong don). BAY: no vua la chu ky bao, vua la BUOC DEM dong ho tran dau - dat >1 thi dong ho tran chi nhay theo tung khoi phut do, lam moc 've dich trong 13 phut' (CHUANGGUAN30_TIME_LIMIT) va npc_death.lua:50 do sai. Muon doi phai doi ca hai cho cung luc."
+  },
+  {
+   "tep": "lib\\lib_ham.lua",
+   "dong": 322,
+   "ten": "MAX_BU_DAYS",
+   "loai": "NEN",
+   "gia_tri": 7,
+   "ten_khoa": "BUHD_SO_NGAY_TOIDA",
+   "dang_chay": true,
+   "mo_ta": "So NGAY toi da duoc cong don de bu hoat dong bo lo. Dong 348 nhan no voi so luot can moi ngay de ra tran luot bu (nMaxLuot = MAX_BU_DAYS * nCan), nen doi 7 thanh 14 la nguoi nghi lau van bu duoc gap doi. Nhan vao BANG TB_BU_HD (VT/Hang Ngay/Vip/Da Tau...) nen mot con so nay anh huong moi loai hoat dong trong bang do."
+  },
+  {
+   "tep": "header\\region.lua",
+   "dong": 2,
+   "ten": "NUM_OFFLINE_PERMITREGION_MAX",
+   "loai": "NEN",
+   "gia_tri": 10,
+   "ten_khoa": "BAYBAN_BANKINH_CACH_NPC",
+   "dang_chay": true,
+   "mo_ta": "Ban kinh (don vi o) quanh cac NPC chuc nang ma trong do CAM bay ban / mo quay. Dung o PermitRegion() dong 251, va do la duong ma DANG CHAY THAT: engine goi \\script\\global\\script_protocol.lua (Core\\Src\\CoreUseNameDef.h:163) -> PermitTrade() -> PermitRegion(). Tang so nay la day quay hang ra xa NPC hon, giam la cho bay sat NPC. LUU Y co mot ban sao chet cung ten o global\\judgeoffline_limit.lua:15, sua ben do khong an gi."
+  },
+  {
+   "tep": "item\\compound\\magic_distill.lua",
+   "dong": 8,
+   "ten": "COMPOUND_COST",
+   "loai": "NEN",
+   "gia_tri": 5000,
+   "ten_khoa": "LOREN_GIA_TINHLUYEN",
+   "dang_chay": true,
+   "mo_ta": "Tien cong tho ren thu khi TINH LUYEN THUOC TINH (rut thuoc tinh tu trang bi ra khoang). compound_header.lua:76 goi Pay(COMPOUND_COST), thieu tien thi bao loi. BAY QUAN TRONG: moi kich ban lo ren khai bao lai CUNG MOT ten COMPOUND_COST voi gia khac nhau (atlas 100000, equip_compound 10000, equip_enchase 10000, ore_upgrade 5000, xuanjing_compound 5000) - nen phai dat khoa RIENG cho tung thao tac, dung gop chung mot khoa."
+  },
+  {
+   "tep": "item\\event\\kinhmach\\channguyendan.lua",
+   "dong": 17,
+   "ten": "KM_CND_TRAN_NGAY",
+   "loai": "NEN",
+   "gia_tri": 3000,
+   "ten_khoa": "KMACH_TRAN_DIEM_NGAY",
+   "dang_chay": true,
+   "mo_ta": "Tran so diem Chan Nguyen mot nguoi duoc hap thu tu dan duoc trong MOT NGAY (he Kinh Mach). Dong 33 chan khi da du, dong 37-38 cat bot phan vuot. Day la van toc toi da nguoi choi mo kinh mach - noi thang toc do cua ca he. Chu thich trong tep ghi con so nay lay theo chuan Linux vnmeridan_head nMaxValue=3000. Doi la co hieu luc ngay (tep gan truc tiep vao vat pham 4752/4845/4846/4847 trong settings\\item\\magicscript.txt)."
+  },
+  {
+   "tep": "missions\\yandibaozang\\readymap\\include.lua",
+   "dong": 25,
+   "ten": "YDBZ_TEAM_COUNT_LIMIT",
+   "loai": "NEN",
+   "gia_tri": 4,
+   "dang_chay": true,
+   "ten_khoa": "VDBT_DOI_TOITHIEU",
+   "mo_ta": "So nguoi TOI THIEU mot to doi phai co de bao danh Bao Tang Viem De, va cung la nguong loc luc ghep tran (doi thieu nguoi bi da ra khoi ban do cho). BAY: header\\cauhinh_hoatdong.lua:485 da khai san khoa YDBZ_DOI_MIN=4 nhung KHONG CO CHO NAO DOC no - so thuc te dang chay van la so 4 ghi cung o day (chinh test_hoatdong_admin.lua:594-596 cung ghi nhan dieu nay)."
+  },
+  {
+   "tep": "missions\\yandibaozang\\readymap\\include.lua",
+   "dong": 26,
+   "ten": "YDBZ_TEAM_COUNT_MAXLIMIT",
+   "loai": "NEN",
+   "gia_tri": 6,
+   "dang_chay": true,
+   "ten_khoa": "VDBT_DOI_TOIDA",
+   "mo_ta": "So nguoi TOI DA mot to doi duoc phep mang vao Bao Tang Viem De; chi kiem o luc noi chuyen NPC bao danh (yandibaozang_main.lua:72 va :152), khong kiem lai luc mo tran. BAY: khoa YDBZ_DOI_MAX=6 o header\\cauhinh_hoatdong.lua:486 cung KHONG duoc doc - so that la so 6 ghi cung o day."
+  },
+  {
+   "tep": "missions\\yandibaozang\\readymap\\include.lua",
+   "dong": 27,
+   "ten": "YDBZ_TEAM_START_LIMIT",
+   "loai": "NEN",
+   "gia_tri": 2,
+   "dang_chay": true,
+   "ten_khoa": "VDBT_SO_DOI_MO_TRAN",
+   "mo_ta": "So TO DOI toi thieu phai du dieu kien thi tran moi mo (timer_match.lua:26 va include.lua:303). BAY NANG: no vua la nguong vua la CONG TAC CHE DO - dung 2 thi chay nhanh 'neu so doi chia 3 du 1 thi da bot 1 doi', dung 3 thi chay nhanh 'da bot cho den khi chia het cho 3', dat bat ky so nao khac thi BO QUA han phan da bot doi le. Khong phai so tu do."
+  },
+  {
+   "tep": "item\\toushiche.lua",
+   "dong": 6,
+   "ten": "NpcLevel",
+   "loai": "NEN",
+   "gia_tri": 60,
+   "dang_chay": true,
+   "ten_khoa": "HTL_CAP_NPC",
+   "mo_ta": "Cap cua may ban da Hon Thach Liet khi nguoi choi dat xuong o Cong Thanh Chien (AddNpc dong 39); cap nay quyet dinh mau/sat thuong ma engine tra ra tu bang NPC, nen la nut chinh do ben cua khi cong thanh. BAY: NpcLevel la bien TOAN CUC trung ten voi 3 kich ban dao cu cong thanh khac (gongchengche/leigushibing/yaoqishibing, deu = 60) va deu gan o muc tep - phai sua ca 4 cho moi dong bo."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\fengzhiqi\\8089\\flyboss8089.lua",
+   "dong": 193,
+   "ten": "FLYBOSS_RELIVE",
+   "loai": "NEN",
+   "gia_tri": 120,
+   "dang_chay": true,
+   "ten_khoa": "FZQ_GIAY_AN_MOC_BOSS",
+   "mo_ta": "So GIAY an moc (NPC danh dau) Phong Chi Ky sau khi nguoi choi cham vao, truoc khi no hien lai cho nguoi tiep theo - quyet dinh nhip xoay tua ai Tin Su. Dung tai enemy_biaozhiboss.lua:164 duoi dang HideNpc(idx, FLYBOSS_RELIVE*18) vi engine dem 18 nhip = 1 giay. BAY: cung mot ten toan cuc duoc gan lai o ca 3 tep moc cap 6079/8089/90 (deu 120) - sua mot tep thi tep nap sau de len."
+  },
+  {
+   "tep": "item\\tie-luohan.lua",
+   "dong": 5,
+   "ten": "GETMAXEXP",
+   "loai": "NEN",
+   "gia_tri": 150000000,
+   "dang_chay": true,
+   "ten_khoa": "TLH_EXP_TOIDA_NGAY",
+   "mo_ta": "Tran tong kinh nghiem mot nhan vat nhan duoc tu Thiet La Han trong MOT NGAY (bo dem o task T_USETLH, reset khi sang ngay moi). BAY: tran chi duoc kiem o NHANH MAY (dong 59, khi random vuot ti le); nhanh thuong o dong 70-72 van cong exp va cong don vao T_USETLH ma KHONG kiem tran, nen thuc te co the vuot qua so nay."
+  },
+  {
+   "tep": "tinhnang\\phonglangdo\\bossthuytacdaulinhpld.lua",
+   "dong": 10,
+   "ten": "NPCLIFE",
+   "loai": "NEN",
+   "gia_tri": 8000000,
+   "dang_chay": true,
+   "ten_khoa": "PLD_MAU_BOSS_DAULINH",
+   "mo_ta": "Mau (sinh luc) cua Dai Thuy Tac Dau Linh tren thuyen Phong Lang Do - nut chinh do kho cua boss chinh hoat dong. Dat bang SetNpcLife trong OnRevive (dong 144), tuc de len mau lay tu bang npcs moi lan NPC hoi sinh; di kem SetNpcResist 75 va sat thuong tinh tu DAMAGE_UPPER_TTDL nen doi rieng mau khong doi sat thuong."
+  },
+  {
+   "tep": "global\\npcchucnang\\tientrang.lua",
+   "dong": 11,
+   "ten": "TY_LE_DOI_KNB_XU",
+   "loai": "NEN",
+   "gia_tri": 100,
+   "dang_chay": true,
+   "ten_khoa": "TT_TYLE_KNB_SANG_XU",
+   "mo_ta": "Ti le doi tien o Chu Tien Trang: 1 Kim Nguyen Bao an ra bao nhieu Xu (dong 147: nTienDong = n_knb * ti le, roi cong thang vao o task T_PLAYER_XU). Day la nut kinh te truc tiep, NPC nay duoc dat o 5 thanh (Bien Kinh, Duong Chau, La Man, Phuong Tuong, Tuong Duong). BAY: co ban sao thu hai cung = 100 tai npcthanhthi\\laman\\tientranglaman.lua:9 - sua mot cho thi hai NPC lech ti le."
+  },
+  {
+   "tep": "item\\event\\30thang4\\huychuongphattong.lua",
+   "dong": 5,
+   "ten": "FREECELL_EVENT",
+   "loai": "NEN",
+   "gia_tri": 6,
+   "dang_chay": true,
+   "ten_khoa": "HC304_O_TRONG_PHATTONG",
+   "mo_ta": "So o trong hanh trang toi thieu phai co truoc khi dung Huy Chuong Phat Tong (su kien 30/4); doc o dong 7-8 truoc khi goi Bonus(2). BAY: ten bien toan cuc dung chung voi huychuongchiencong.lua (=6) va huychuongthiendieu.lua (=10), lai con mot ban sao trong thu muc 'Copy of 30thang4' - gia tri thuc thi la cua tep nap sau cung, nen dat 3 so khac nhau cho 3 huy chuong la khong dang tin."
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 54,
+   "ten": "STORM_LADDER_WEEK",
+   "gia_tri": 36,
+   "loai": "NEN",
+   "ten_khoa": "PHONGBA_TUAN_BATDAU_XEPHANG",
+   "mo_ta": "Mốc tuần (đếm từ năm 2005) để bắt đầu ghi bảng xếp hạng Phong Ba theo tuần. Ở function.lua:238 tính weekid = tuần hiện tại - số này, chỉ ghi bảng khi weekid nằm trong 0..3, tức là chỉ ăn đúng 4 tuần kể từ mốc. BẪY: đây là mốc cố định của năm 2005 nên hiện nay bảng xếp hạng tuần KHÔNG BAO GIỜ được ghi; muốn bật lại phải dời mốc theo tuần hiện tại.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 62,
+   "ten": "STORM_TIMER_YS",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "PHONGBA_PHUT_MOI_NHIP_DATAU",
+   "mo_ta": "Số phút mỗi nhịp đếm ngược của thử thách Phong Ba trên nhiệm vụ Dã Tẩu. BẪY: dùng ở CẢ HAI chỗ trong một lệnh (function.lua:137) - nhân thành thời lượng mỗi nhịp và chia 60 ra số nhịp, nên tổng thời gian luôn = 60 phút; đổi số này chỉ làm nhịp thưa/dày chứ không đổi tổng thời gian, và phải chọn số chia hết cho 60.",
+   "dang_chay": true
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 64,
+   "ten": "STORM_END_DAY",
+   "gia_tri": 275,
+   "loai": "NEN",
+   "ten_khoa": "PHONGBA_NGAY_DONG_HE",
+   "mo_ta": "Ngày đóng cửa hệ tích lũy Phong Ba, tính bằng SỐ NGÀY kể từ 01/01/2005. Quá mốc này thì function.lua:30 báo 'Hệ thống tích lũy Phong Ba đã đóng lại'. BẪY: đơn vị là ngày-từ-2005 chứ không phải ngày tháng, và số ngày hiện tại được tính bằng bảng TB_STORM_DAYS chỉ có đến năm 2010.",
+   "dang_chay": true
+  },
+  {
+   "tep": "global\\titlefuncs.lua",
+   "dong": 4,
+   "ten": "MAX_TITLE_PERPAGE",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "DH_SO_DANHHIEU_MOI_TRANG",
+   "mo_ta": "Số danh hiệu hiển thị trên mỗi trang của bảng chọn danh hiệu. BẪY: Say/SayEx của engine có trần 512 BYTE dùng chung cho câu hỏi lẫn mọi nhãn, tăng số này quá tay là các mục cuối bị CẮT IM LẶNG.",
+   "dang_chay": true
+  },
+  {
+   "tep": "global\\titlefuncs.lua",
+   "dong": 25,
+   "ten": "TITLE_TIME_FOREVER",
+   "gia_tri": 567648000,
+   "loai": "NEN",
+   "ten_khoa": "DH_KHUNG_HAN_DANHHIEU_THAITHU",
+   "mo_ta": "Thời hạn treo chữ Thái Thú trên đầu nhân vật, truyền vào SetPlayerTitle. BẪY: đơn vị là KHUNG HÌNH, engine quy đổi nSaveTime = time(0) + nTime/18 nên 567648000 tương đương khoảng 18 năm (coi như vĩnh viễn); muốn hạn 30 ngày thì phải điền 30*24*3600*18.",
+   "dang_chay": true
+  },
+  {
+   "tep": "vng_event\\item\\biggoldenseed.lua",
+   "dong": 6,
+   "ten": "MX_GREAT_LANTERN_COUNT",
+   "gia_tri": 1,
+   "loai": "NEN",
+   "ten_khoa": "DHK_SOLAN_DUNG_MOINGAY",
+   "mo_ta": "Số lần tối đa mỗi ngày được ăn Quả Đại Hoàng Kim (PlayerFunLib:CheckTaskDaily đếm trên task 3062). BẪY: câu thông báo từ chối ghi CỨNG chữ 'chỉ có thể sử dụng 1 Quả', đổi số mà không sửa câu chữ là báo sai cho người chơi.",
+   "dang_chay": true
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\messenger_baoxiangtask.lua",
+   "dong": 11,
+   "ten": "nOpendRequire",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "TBK_SO_RUONG_PHAI_MO",
+   "mo_ta": "Số rương phải mở ĐÚNG THỨ TỰ để hoàn thành nhiệm vụ Thiên Bảo Khố. Phải là số nguyên 1..9 và không vượt nBaoXiangTotal. BẪY: các hàm trong tệp đọc nó qua cú pháp upvalue Lua 4 (%nOpendRequire), tức giá trị bị CHỐT ngay lúc nạp tệp - đặt lại biến này sau khi Include sẽ không có tác dụng, phải sửa thẳng dòng 11.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\compound\\atlas.lua",
+   "dong": 12,
+   "ten": "COMPOUND_COST",
+   "gia_tri": 100000,
+   "loai": "NEN",
+   "ten_khoa": "LR_PHI_GHEP_HOANGKIM_DOPHO",
+   "mo_ta": "Phí tiền đồng cho một lần ghép trang bị Hoàng Kim từ Hoàng Kim Đồ Phổ (loại ghép số 6 trong settings\\item\\compoundscript.txt); trừ ở compound_header.lua qua Pay(). BẪY: COMPOUND_COST là biến TOÀN CỤC dùng chung tên với 5 script ghép khác (ore_upgrade/xuanjing 5000, magic_distill 5000, equip_compound/equip_enchase 10000) - script nào nạp sau ghi đè script trước, nên khi làm cấu hình phải tách khóa riêng cho từng loại ghép chứ không dùng chung một khóa.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 113,
+   "ten": "WLLS_TIMER_PREP_FREQ",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_NHIP_BAODANH_GIAY",
+   "mo_ta": "Cu bao nhieu giay thi pha bao danh Lien Dau dap mot nhip (loa bao thoi gian, gom nguoi vao doi). BAY: no vua la chu ky timer (glbmission\\mission.lua:6) vua la he so quy doi ra phut khi hien thong bao (schedule.lua:237,249; housecarl.lua:7) - doi mot minh no la doi luon TONG thoi gian bao danh vi tong = so nhip x so giay nay.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 114,
+   "ten": "WLLS_TIMER_PREP_TOTAL",
+   "gia_tri": 24,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_SO_NHIP_BAODANH",
+   "mo_ta": "So nhip cua pha bao danh. Thoi gian bao danh that = so nay x LDVL_NHIP_BAODANH_GIAY = 24 x 10 = 240 giay (4 phut). Muon bao danh 6 phut thi de 36.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 115,
+   "ten": "WLLS_TIMER_FIGHT_FREQ",
+   "gia_tri": 5,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_NHIP_TRAN_GIAY",
+   "mo_ta": "Cu bao nhieu giay thi san thi dau dap mot nhip (bao tin chien su, dem nguoi con lai). Cung la he so quy doi ra giay/phut o glbmission\\combat.lua:21,44 va npc\\signup.lua:49.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 116,
+   "ten": "WLLS_TIMER_FIGHT_PREP",
+   "gia_tri": 2,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_SO_NHIP_CHUANBI",
+   "mo_ta": "So nhip cho hai ben dan tran truoc khi danh that. Thoi gian that = so nay x LDVL_NHIP_TRAN_GIAY = 2 x 5 = 10 giay.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 117,
+   "ten": "WLLS_TIMER_FIGHT_TOTAL",
+   "gia_tri": 120,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_SO_NHIP_TRAN",
+   "mo_ta": "So nhip toi da cua mot tran; het thi xu hoa. Do dai tran that = so nay x LDVL_NHIP_TRAN_GIAY = 120 x 5 = 600 giay (10 phut).",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 123,
+   "ten": "WLLS_LEVEL_JUNIOR",
+   "gia_tri": 80,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_CAP_TAN_TU",
+   "mo_ta": "Cap toi thieu de duoc xep vao giai Tan Tu (giai thap). Duoi cap nay khong duoc thi dau (head.lua:355).",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 124,
+   "ten": "WLLS_LEVEL_SENIOR",
+   "gia_tri": 120,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_CAP_VO_LAM",
+   "mo_ta": "Cap toi thieu de duoc xep vao giai Vo Lam (giai cao) - head.lua:353, wlls_levelup.lua:30, va duoc in thang ra loi thoai NPC officer.lua:259 nen doi so la doi luon cau noi.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 126,
+   "ten": "WLLS_MIN_TEAM",
+   "gia_tri": 2,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_SO_DOI_TOI_THIEU",
+   "mo_ta": "Phai co it nhat bao nhieu chien doi trong phong chuan bi thi moi mo tran (glbmission\\schedule.lua:185). It hon la huy vong dau.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 131,
+   "ten": "WLLS_LingQi_PerCOUNT",
+   "gia_tri": 4,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_TRAN_THEM_MOI_LINHKHI",
+   "mo_ta": "Moi vien Linh Khi da dung cho chien doi them bao nhieu tran MO RONG (sau tran thu 48) - head.lua:735. BAY: hang nay duoc khai HAI NOI voi cung gia tri - missions\\leaguematch\\head.lua:131 va leaguematch\\head.lua:45 (cay driver) - sua mot ben la lech.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\leaguematch\\head.lua",
+   "dong": 144,
+   "ten": "WLLS_MAX_COUNT",
+   "gia_tri": 200,
+   "loai": "NEN",
+   "ten_khoa": "LDVL_SO_DOI_TOI_DA",
+   "mo_ta": "So chien doi toi da mot phong chuan bi chua duoc. BAY KEP: (1) no con la CAN TREN vong lap quet phe o 4 cho (head.lua:548, combat\\mission.lua:25, glbmission\\combat.lua:29, schedule\\newworld.lua:25) nen nang len la moi nhip timer phai quet them bay nhieu lan; (2) khai HAI NOI - missions\\leaguematch\\head.lua:144 va leaguematch\\head.lua:40.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 12,
+   "ten": "MSTIME_VUOT_AI_BD",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "VA_PHUT_BAODANH",
+   "mo_ta": "So phut bao danh Vuot Ai; het gio ma chua bao danh la mat luot. BAY NANG: so nay bi dung HAI NGHIA trong timerserver.lua - dong 1076 dung lam DO DAI dem nguoc (x60x18), con dong 1083 dung lam PHUT TRONG GIO de kich hoat tran ('nMi == MSTIME_VUOT_AI_BD'). Doi thanh 15 la tran se bat dau luc phut thu 15 cua gio; doi thanh 60+ la tran KHONG BAO GIO bat dau.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 13,
+   "ten": "MSTIME_VUOT_AI_KT",
+   "gia_tri": 30,
+   "loai": "NEN",
+   "ten_khoa": "VA_PHUT_HAN_TRAN",
+   "mo_ta": "So phut toi da de doi vuot het cac ai; het gio la thua. Dung lam do dai timer (timertask\\task01.lua:146) va lam moc tinh 'thoi gian hoan thanh' khoe len loa (die_boss.lua:39), lai duoc in thang vao loi thoai NPC (nhieptran.lua:191, sugiasatthu.lua:194).",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 15,
+   "ten": "LEVEL_SKILL_PHANDON",
+   "gia_tri": 10,
+   "loai": "NEN",
+   "ten_khoa": "VA_CAP_PHANDON_AI27",
+   "mo_ta": "Cap cua trang thai ky nang 'phan don' (skill 16) gan cho quai o AI 27 - lib_vuotai.lua:219 AddNpcSkillState(npc, 16, cap nay, 1, 5 phut). Cap cang cao thi nguoi danh quai cang an nguoc nhieu sat thuong.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 16,
+   "ten": "EXP_BOSS_LAST_D",
+   "gia_tri": 1600000,
+   "loai": "NEN",
+   "ten_khoa": "VA_EXP_GIET_BOSS_CUOI",
+   "mo_ta": "Kinh nghiem thuong cho nguoi ha boss cuoi Vuot Ai. BAY: timertask\\task06.lua:52 goi AddOwnExp(EXP_BOSS_LAST_D * EXP_RATE) - tuc con NHAN THEM ti le exp may chu, so thuc nhan khong phai 1.600.000.",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 18,
+   "ten": "MAX_NUM_VA_DAY",
+   "gia_tri": 2,
+   "loai": "NEN",
+   "ten_khoa": "VA_LUOT_MIENPHI_NGAY",
+   "mo_ta": "So luot Vuot Ai mien phi moi ngay. Chan o nhieptran.lua:274 va sugiasatthu.lua:277, dong thoi duoc in vao loi thoai NPC (dong 191/194 hai tep do).",
+   "dang_chay": true
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 19,
+   "ten": "MAX_NUM_LONGHH_DAY",
+   "gia_tri": 1,
+   "loai": "NEN",
+   "ten_khoa": "VA_LONGHUYETHOAN_NGAY",
+   "mo_ta": "So Long Huyet Hoan duoc uong moi ngay. Chan va in ra loi thoai o item\\longxuewan.lua:27-28.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\yaoqishibing.lua",
+   "dong": 6,
+   "ten": "NpcLevel",
+   "gia_tri": 60,
+   "loai": "NEN",
+   "ten_khoa": "VKB_CAP_LINH",
+   "mo_ta": "Cap cua linh danh thue do Van Ky Binh phu trieu ra (AddNpc dong 28) - quyet dinh mau va suc danh cua linh giu co. BAY: ten toan cuc NpcLevel duoc 3 tep vat pham cong thanh khac (gongchengche/leigushibing/toushiche) khai lai cung gia tri 60, nen dat khoa cau hinh phai dat theo TUNG TEP chu khong theo ten bien.",
+   "dang_chay": true
+  },
+  {
+   "tep": "global\\signet_head.lua",
+   "dong": 4,
+   "ten": "SIGNET_MAXDROP",
+   "gia_tri": 180,
+   "loai": "NEN",
+   "ten_khoa": "TTDC_TRAN_BAOAN_BANG",
+   "mo_ta": "Tran cua ca BANG: khi bang da nhan du bay nhieu Thi Gia Chi An nho hieu ung Tui Tien Dao Chu thi thoi khong nhan doi nua (dong 17). Duong chay that: boss dau linh Phong Lang Do chet -> bossdeath.lua:15-16 goi IsDoubledMoneyBox roi getSignetDropRate. Day la van kinh te truc tiep.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\lenhbaitanthu.lua",
+   "dong": 908,
+   "ten": "FREECELL_TANTHU",
+   "gia_tri": 50,
+   "loai": "NEN",
+   "ten_khoa": "HT_OTRONG_MOC_NAPTHE",
+   "mo_ta": "So o hanh trang phai con trong de nhan moc nap the (dung o moc 500k dong 911 va moc 2000k dong 1014). Con so hop ly vi cac moc nay phat ca bo trang bi. Vat pham 'Lenh bai tan thu' co khai trong settings\\item\\magicscript.txt dong 4814 nen dang chay that.",
+   "dang_chay": true
+  },
+  {
+   "tep": "item\\compound\\xuanjing_compound.lua",
+   "dong": 7,
+   "ten": "COMPOUND_COST",
+   "gia_tri": 5000,
+   "loai": "NEN",
+   "ten_khoa": "LR_PHI_HOPTHANH_HUYENTINH",
+   "mo_ta": "Phi tien (luong) moi lan hop thanh Huyen Tinh o lo ren; engine tru tien o compound_header.lua:76 bang Pay(COMPOUND_COST). BAY: ten toan cuc nay duoc 5 kich ban lo ren khai voi 3 gia tri khac nhau (atlas 100000, equip_compound/equip_enchase 10000, magic_distill/ore_upgrade/xuanjing 5000) - dat khoa phai dat theo tung tep. Duong chay that: settings\\item\\compoundscript.txt dong COMPOUND_TYPE 0 tro thang vao tep nay.",
+   "dang_chay": true
+  },
+  {
+   "tep": "npcthon\\balanghuyen\\hotrotanthu.lua",
+   "dong": 239,
+   "ten": "FREECELL_TANTHU",
+   "gia_tri": 50,
+   "loai": "NEN",
+   "ten_khoa": "HT_OTRONG_HOTRO_TANTHU",
+   "mo_ta": "So o hanh trang phai con trong de nhan goi ho tro tan thu (dong 245) va goi ho tro cap 90 (dong 290). Goi tan thu phat khoang 15 mon nen 50 la rong rai. NPC nay dang song that: duoc dat o startgame.lua dong 75 va 77.",
+   "dang_chay": true
+  }
+ ],
+ "chet": [
+  {
+   "tep": "petsys\\common.lua",
+   "dong": 30,
+   "ten": "SKILL_COUNT",
+   "gia_tri": 4,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Grep ca cay script (tru tep sao luu .truoc_*) chi thay dong dinh nghia nay. So o ky nang thuc su dang chay la EXT_SKILL_MAX_COUNT (dong 119, da co khoa BDH_SO_O_KY_NANG_TOI_DA); ben C++ co macro rieng PET_SKILL_COUNT=4 trong KPlayerPet.h khong lien quan den bien Lua nay."
+  },
+  {
+   "tep": "petsys\\common.lua",
+   "dong": 123,
+   "ten": "ZHENYUAN_TO_XIUZHEN_POINT_RATE",
+   "gia_tri": 200,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ty le doi Chan Nguyen sang diem Tu Chan chep tu ban VLTK nhung phan tinh toan chua duoc port; grep ca cay script va ca cay C++ deu khong co cho doc."
+  },
+  {
+   "tep": "petsys\\common.lua",
+   "dong": 124,
+   "ten": "ZHENYUAN_TO_XIUZHEN_POINT_VALUE",
+   "gia_tri": 20000,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Cap doi cua hang tren, cung chua duoc port sang JX1."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 67,
+   "ten": "DATESNEWBIELEVELUP",
+   "gia_tri": 5032400,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay mo su kien nhan doi kinh nghiem tan thu 24/03/2005 cua ban goc Trung Quoc; ca cay script khong con ham nao tra cuu ten nay."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 68,
+   "ten": "DATEENEWBIELEVELUP",
+   "gia_tri": 5040100,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay dong su kien tan thu 01/04/2005, khong con cho doc."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 70,
+   "ten": "DATESPLAYERLEVELUP",
+   "gia_tri": 5032600,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay mo dot 'toan khu cap toc thang cap' 2005, khong con cho doc."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 71,
+   "ten": "DATEEPLAYERLEVELUP",
+   "gia_tri": 5040300,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay dong dot 'toan khu cap toc thang cap' 2005, khong con cho doc."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 73,
+   "ten": "DATESKILLER",
+   "gia_tri": 5041200,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay mo su kien san sat thu 12/04/2005, khong con cho doc."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 74,
+   "ten": "DATEEKILLER",
+   "gia_tri": 5042600,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ngay dong su kien san sat thu 26/04/2005, khong con cho doc."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 77,
+   "ten": "YEARCARD_EX_XUANJING",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Cong tac bat su kien the nam doi Huyen Tinh, phan xu ly da bi go khoi cay script."
+  },
+  {
+   "tep": "event\\eventhead.lua",
+   "dong": 79,
+   "ten": "GREAT_NIGHT",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Cong tac 'dem hoi', khong con ma nao tra cuu."
+  },
+  {
+   "tep": "petsys\\petequip_def.lua",
+   "dong": 47,
+   "ten": "PETEQUIP_KETTINH",
+   "gia_tri": 4927,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ma vat pham 'Ket Tinh Dong Hanh' (goc VLTK 5063) da nan sang 4927 nhung chuc nang duc lai trang bi dong hanh chua duoc port, ca cay script khong co cho doc."
+  },
+  {
+   "tep": "petsys\\petequip_def.lua",
+   "dong": 48,
+   "ten": "PETEQUIP_KETTINH_CAO",
+   "gia_tri": 4928,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ma vat pham 'Ket Tinh Dong Hanh (Cao)' (goc 5257), cung chua co ma su dung."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\shanshenmiao\\6079\\templeboss6079.lua",
+   "dong": 17,
+   "ten": "TEMBOSS_RELIVE",
+   "gia_tri": 120,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Ghi chu goc noi day la thoi gian hoi sinh cua tung boss moc, nhung ca ba tep templeboss (6079/8089/90) chi dinh nghia chu khong tep nao doc - thoi gian hoi sinh that do engine/bang NPC quyet dinh."
+  },
+  {
+   "tep": "tinhnang\\boss_hoangkim\\deathhksv.lua",
+   "dong": 13,
+   "ten": "PHAMVI_HUONGEXP",
+   "gia_tri": 200,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC TRONG TEP NAY. Pham vi huong kinh nghiem that su khi boss chet duoc viet thang trong ma: 'abs(x-x1) < 40 and abs(y-y1) < 80' (dong 100 va 115). Ba tep anh em deathhkdai/deathhktieu/deathbosspld co bien cung ten VA co doc no (da co khoa BHK_PHAMVI_HUONG_EXP_*), nhung moi tep chay tren mot lua_State rieng nen ban o day khong anh huong gi."
+  },
+  {
+   "tep": "item\\lenhbaiadmin.lua",
+   "dong": 203,
+   "ten": "NgauNhienPhut",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "mo_ta": "KHONG NOI NAO DOC. Bien nay duoc gan 0 o day roi gan lai RandomNew(1,59) o dong 245, nhung khong co mot cho nao doc gia tri cua no - la manh chep nguyen tu timerserver.lua (noi cung chi ghi chu khong doc). Bo di khong anh huong gi."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 259,
+   "ten": "TMP_NHANNAPTHE",
+   "gia_tri": 4,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong tep .lua nao trong cay doc ten nay (chi con trong ban sao luu lib_task.lua.truoc_taskfix2_2408)."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 260,
+   "ten": "TMP_NHANTRANGBIXANH",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 261,
+   "ten": "TMP_HETRANGBIXANH",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 264,
+   "ten": "TMP_INDEX_OBJ",
+   "gia_tri": 9,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc (khac voi TMP_INDEX_NPC/TMP_INDEX_ITEM ke ben)."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 265,
+   "ten": "TMP_LUUMASERIAL",
+   "gia_tri": 10,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 266,
+   "ten": "TMP_LOAITHENAP",
+   "gia_tri": 11,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 267,
+   "ten": "TMP_LUUMACODE",
+   "gia_tri": 12,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 268,
+   "ten": "TMP_TGIANMOTUI",
+   "gia_tri": 13,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 273,
+   "ten": "TMP_LienDau_DonDau",
+   "gia_tri": 18,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 274,
+   "ten": "TMP_DthuLienDauCao",
+   "gia_tri": 19,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 275,
+   "ten": "TMP_DthuLienDau",
+   "gia_tri": 20,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 288,
+   "ten": "M_LD_DONDAU",
+   "gia_tri": 11,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "So hieu Mission cho Loi Dai don dau — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 293,
+   "ten": "M_VALUE_1",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 1 (ghi chu: vuot ai ID doi truong) — khong noi nao doc, ma vuot ai dung so truc tiep."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 294,
+   "ten": "M_VALUE_2",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 2 (ghi chu: so luong quai trong map) — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 295,
+   "ten": "M_VALUE_3",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 3 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 296,
+   "ten": "M_VALUE_4",
+   "gia_tri": 4,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 4 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 297,
+   "ten": "M_VALUE_5",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 5 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 298,
+   "ten": "M_VALUE_6",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 6 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 299,
+   "ten": "M_VALUE_7",
+   "gia_tri": 7,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 7 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 300,
+   "ten": "M_VALUE_8",
+   "gia_tri": 8,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 8 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 301,
+   "ten": "M_VALUE_9",
+   "gia_tri": 9,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 9 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 302,
+   "ten": "M_VALUE_10",
+   "gia_tri": 10,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 10 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 303,
+   "ten": "M_VALUE_11",
+   "gia_tri": 11,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 11 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 304,
+   "ten": "M_VALUE_12",
+   "gia_tri": 12,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 12 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 305,
+   "ten": "M_VALUE_13",
+   "gia_tri": 13,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 13 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 306,
+   "ten": "M_VALUE_14",
+   "gia_tri": 14,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 14 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 307,
+   "ten": "M_VALUE_15",
+   "gia_tri": 15,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 15 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 308,
+   "ten": "M_VALUE_16",
+   "gia_tri": 16,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 16 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 309,
+   "ten": "M_VALUE_17",
+   "gia_tri": 17,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 17 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 310,
+   "ten": "M_VALUE_18",
+   "gia_tri": 18,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 18 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 311,
+   "ten": "M_VALUE_19",
+   "gia_tri": 19,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 19 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 312,
+   "ten": "M_VALUE_20",
+   "gia_tri": 20,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 20 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 313,
+   "ten": "M_VALUE_21",
+   "gia_tri": 21,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 21 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 314,
+   "ten": "M_VALUE_22",
+   "gia_tri": 22,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 22 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 315,
+   "ten": "M_VALUE_23",
+   "gia_tri": 23,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 23 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 316,
+   "ten": "M_VALUE_24",
+   "gia_tri": 24,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 24 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 317,
+   "ten": "M_VALUE_25",
+   "gia_tri": 25,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 25 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 318,
+   "ten": "M_VALUE_26",
+   "gia_tri": 26,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 26 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 319,
+   "ten": "M_VALUE_27",
+   "gia_tri": 27,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 27 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 320,
+   "ten": "M_VALUE_28",
+   "gia_tri": 28,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 28 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 321,
+   "ten": "M_VALUE_29",
+   "gia_tri": 29,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 29 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 322,
+   "ten": "M_VALUE_30",
+   "gia_tri": 30,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien Mission so 30 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 346,
+   "ten": "GBM_VALUE_1",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 1 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 347,
+   "ten": "GBM_VALUE_2",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 2 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 348,
+   "ten": "GBM_VALUE_3",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 3 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 349,
+   "ten": "GBM_VALUE_4",
+   "gia_tri": 4,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 4 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 350,
+   "ten": "GBM_VALUE_5",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 5 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 351,
+   "ten": "GBM_VALUE_6",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 6 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 352,
+   "ten": "GBM_VALUE_7",
+   "gia_tri": 7,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 7 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 353,
+   "ten": "GBM_VALUE_8",
+   "gia_tri": 8,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 8 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 354,
+   "ten": "GBM_VALUE_9",
+   "gia_tri": 9,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 9 — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 355,
+   "ten": "GBM_VALUE_10",
+   "gia_tri": 10,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "O bien GlbMission so 10 (ghi chu: 10 id dau tien cua 10 map vuot ai) — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 356,
+   "ten": "GM_BenThuyen1",
+   "gia_tri": 11,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Bi ghi de ngay lap tuc boi dong 357 va 358 cung ten. Gia tri 11 khong bao gio ton tai luc chay."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 357,
+   "ten": "GM_BenThuyen1",
+   "gia_tri": 12,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Bi ghi de ngay lap tuc boi dong 358 cung ten. Gia tri 12 khong bao gio ton tai luc chay (co ve dinh dat ten BenThuyen2)."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 359,
+   "ten": "M_LienDau_DonDau",
+   "gia_tri": 14,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o GlbMission cho Lien Dau don dau — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 360,
+   "ten": "M_SoNguoiLDTrung",
+   "gia_tri": 15,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o GlbMission dem nguoi Lien Dau bang trung — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 361,
+   "ten": "M_SoNguoiLDCao",
+   "gia_tri": 16,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o GlbMission dem nguoi Lien Dau bang cao — khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_task.lua",
+   "dong": 363,
+   "ten": "CSP_CTYPE_NONE",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Ma enum 'khong tay gi' cua he tay tuy — khong noi nao doc (chi 3 ma PROP/SKILL/ALL duoc dung)."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 47,
+   "ten": "YDBZ_LIMIT_TEAMS_COUNT",
+   "gia_tri": 15,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: chi co dong gan gia tri, khong noi nao doc. Gioi han so phong that dang chay nam o cho khac; cau hinh YDBZ_PHONG_TOIDA=15 cung chi duoc bo test admin doc."
+  },
+  {
+   "tep": "missions\\yandibaozang\\head.lua",
+   "dong": 57,
+   "ten": "YDBZ_KILLLASTBOSS_EXP",
+   "gia_tri": 1000000,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: chi co dong gan gia tri. Thuong giet boss cuoi thuc te duoc phat bang bang vat pham YDBZ_tbaward_item[4], khong dung hang nay."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 32,
+   "ten": "WIN_TONGEXP",
+   "gia_tri": 1200,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Khong duong ma nao trong Loi Dai bang hoi doc hang nay. NGUY: no ghi de bien toan cuc cung ten cua citywar_arena\\head.lua:31 - noi do lay tu cau hinh CTLD_EXP_BANG_THANG roi dung that o dong 158/162. Nap lib_loidai sau la cau hinh Cong Thanh Loi Dai bi vo hieu, quay ve 1200."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 33,
+   "ten": "LOSE_TONGEXP",
+   "gia_tri": 1400,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Khong noi nao doc. Cho duy nhat tung dung (citywar_arena\\head.lua:159,163) da bi chu thich. Nen xoa."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 37,
+   "ten": "PKWINBONUS",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Da grep ca cay: chi co hai dong gan gia tri (day va citywar_arena\\head.lua:41), khong co cho doc nao. Rac tu ban goc."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 38,
+   "ten": "LOSEBONUS",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Khong noi nao doc (chu 'losebonus' viet thuong o tongwar\\match\\head.lua la bien cuc bo khac hoan toan)."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 43,
+   "ten": "JOINSTATE",
+   "gia_tri": 242,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Loi Dai bang hoi khong dung (no dung TMP_TG_LOIDAIB). NGUY: ghi de bien toan cuc cung ten dang duoc citywar_arena va citywar_city dung lam chi so o tam SetTaskTemp - clearskill lai dat 100, ghi lech o la hong du lieu tam cua nguoi choi."
+  },
+  {
+   "tep": "tinhnang\\loidai\\lib_loidai.lua",
+   "dong": 44,
+   "ten": "MISSIONID",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "NGUY HIEM NHAT trong nhom nay: Loi Dai khong doc MISSIONID (no dung MS_LOIDAIBH), nhung dong nay ghi de bien toan cuc MISSIONID ma Tong Kim (battlehead.lua), Tong Chien (tongwar, dat 33), Phong Lang Do va 4 script vat pham cong thanh dang doc. Nap lib_loidai sau la cac he do ban tin/dem nguoi vao NHAM mission 5."
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+   "dong": 24,
+   "ten": "MAX_STACK_NUM",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Khong dong nao trong file nay doc no. NGUY HIEM: dong 28 ham main() goi dofile chinh file nay moi lan mo NPC, nen no ghi de bien toan cuc MAX_STACK_NUM ma global\\npcchucnang\\thoren.lua dat 500 va DUNG THAT o thoren.lua:1341 RemoveItem(nIndexEquip, MAX_STACK_NUM). Sau khi noi chuyen voi Su Gia Sat Thu, Lo Ren co the chi xoa 1 thay vi 500."
+  },
+  {
+   "tep": "event\\great_night\\huangzhizhang\\event.lua",
+   "dong": 14,
+   "ten": "GN_HUANG_SWITH",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 2 (cong tac bat/tat su kien). Cho duy nhat dung no (dong 30) da bi chu thich - khong noi nao doc."
+  },
+  {
+   "tep": "event\\great_night\\huangzhizhang\\event.lua",
+   "dong": 15,
+   "ten": "GN_HUANG_DATE",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 3 (ngay su kien). Da grep ca cay: chi co dong gan gia tri, khong noi nao doc."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\shanshenmiao\\90\\templeboss90.lua",
+   "dong": 16,
+   "ten": "TEMBOSS_RELIVE",
+   "gia_tri": 120,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: ba file templeboss6079/8089/90 deu gan gia tri nay nhung KHONG file nao doc (khac voi FLYBOSS_RELIVE ben Phong Chi Ky co cho doc). Boss San Than Mieu khong dung nhip an nay."
+  },
+  {
+   "tep": "activitysys\\config\\32\\variables.lua",
+   "dong": 7,
+   "ten": "TIME_2000_1_1",
+   "gia_tri": 946656000,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Moc thoi gian Unix cua 01/01/2000 (mui gio +8). Da grep ca cay: chi co dong gan gia tri nay, khong noi nao doc - rac con lai tu khung activitysys ban goc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 4,
+   "ten": "CSP_TID_RevivalSWID",
+   "gia_tri": 204,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID bien nhiem vu 'ban do hoi sinh'. Grep ca cay: chi co dong dinh nghia nay, khong noi nao doc. Tep VAN duoc nap (phantang.lua + 10 trap Mong Canh Include no) nen lenh gan van chay, nhung gia tri chet."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 5,
+   "ten": "CSP_TID_ReviveID",
+   "gia_tri": 205,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID bien nhiem vu 'diem hoi sinh'. Khong noi nao doc (grep toan cay chi ra 1 ket qua = chinh dong nay)."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 7,
+   "ten": "CSP_TID_ClearFreeTime",
+   "gia_tri": 144,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID bien nhiem vu dem so lan tay mien phi. Khong noi nao doc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 10,
+   "ten": "CSP_TID_JewelEnterTime",
+   "gia_tri": 150,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID bien nhiem vu 'so lan vao bang ngoc'. Khong noi nao doc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 12,
+   "ten": "CSP_NEEDJEWEL_SKILL",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "So ngoc can de tay diem ky nang (ban goc Trung Quoc). He tay tuy JX1 hien khong doc, phantang.lua tru tien theo duong khac. Neu song thi day moi la ung vien cau hinh."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 13,
+   "ten": "CSP_NEEDJEWEL_PROP",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "So ngoc can de tay diem tiem nang. Khong noi nao doc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 15,
+   "ten": "CSP_NEEDJEWEL_SKILL2",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Bien the thu 2 cua so ngoc tay ky nang. Khong noi nao doc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 16,
+   "ten": "CSP_NEEDJEWEL_PROP2",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Bien the thu 2 cua so ngoc tay tiem nang. Khong noi nao doc."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 20,
+   "ten": "CSP_MAXClearTime",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "So lan tay toi da moi ngay. Khong noi nao doc; phantang.lua khong gioi han so lan."
+  },
+  {
+   "tep": "missions\\clearskill\\head.lua",
+   "dong": 22,
+   "ten": "CSP_RevieSWID",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID ban do hoi sinh. Khong noi nao doc."
+  },
+  {
+   "tep": "tinhnang\\pubg\\pubgutils.lua",
+   "dong": 12,
+   "ten": "MISSION_BR_PARAM_LASTLAYER",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi so o tham so mission cho 'vong bo cuoi'. Grep ca cay: chi co dong dinh nghia, khong noi nao doc."
+  },
+  {
+   "tep": "missions\\tongcastle\\guideperson.lua",
+   "dong": 20,
+   "ten": "TRANSLIFE_COUNT",
+   "gia_tri": 4,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "So lan chuyen sinh yeu cau de vao Bang Hoi Thanh Bao. Grep ca cay: khong noi nao doc. Chinh chu thich o dong 27 ghi ro '[TONGCASTLE 23/08] chinh sach: bo trung sinh 4 + cap 150' - dieu kien that gio lay tu HD_CFG(\"TC_CAP_TOITHIEU\", 90)."
+  },
+  {
+   "tep": "missions\\tongcastle\\guideperson.lua",
+   "dong": 21,
+   "ten": "MIN_LEVEL",
+   "gia_tri": 150,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "Cap toi thieu cu de vao Thanh Bao, da bi thay bang HD_CFG(\"TC_CAP_TOITHIEU\", 90). Khong noi nao doc bien toan cuc nay. CANH BAO: petsys\\common.lua:67 cung dat MIN_LEVEL = BDH_CFG(\"BDH_CAP_NHANVAT_TOI_THIEU\",150) - trung ten toan cuc, nen xoa ban chet nay thay vi de lai."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\6079\\tureboss6079.lua",
+   "dong": 15,
+   "ten": "TUREBOSS_RELIVE",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "So phut hoi sinh cua boss ai Thien Bao Kho. Noi duy nhat dung no la enemy_tureboss.lua dong 224 va 227, nhung CA HAI DONG DA BI COMMENT (HideNpc). Ban 8089 va 90 cung khai lai =2 y het."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\6079\\tureboss6079.lua",
+   "dong": 17,
+   "ten": "TUREBOSS_MAPID",
+   "gia_tri": 393,
+   "loai": "CHET",
+   "dang_chay": true,
+   "mo_ta": "ID ban do Thien Bao Kho moc 60-79. Chi con xuat hien o enemy_tureboss.lua dong 221-222, deu la dong da comment -> khong noi nao doc that."
+  },
+  {
+   "tep": "item\\event\\Copy of 30thang4\\huychuongphattong.lua",
+   "dong": 3,
+   "ten": "FREECELL_EVENT",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "So o trong hanh trang toi thieu de dung Huy Chuong Phat Tong. TEP NAY KHONG BAO GIO CHAY: settings\\item\\magicscript.txt hang 4829 tro toi \\script\\item\\event\\30thang4\\huychuongphattong.lua, khong phai thu muc 'Copy of 30thang4'. Ca thu muc Copy la ban sao chet (3 tep). Ban song o 30thang4\\huychuongphattong.lua:5 cung =6."
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 74,
+   "ten": "CS_RevId",
+   "loai": "CHET",
+   "mo_ta": "Khong mot tep nao Include head.lua nay roi doc CS_RevId (grep ca cay: chi co dinh nghia). NGUY HIEM: no van ghi de bien toan cuc cung ten ma Loi Dai bang hoi (lib_loidai.lua = 53) va citywar_arena dung - nen xoa chu khong nen giu.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 75,
+   "ten": "CS_RevData",
+   "loai": "CHET",
+   "mo_ta": "Cap doi cua CS_RevId o tren, cung khong noi nao doc tren duong ma cua tep nay; van gay ghi de bien toan cuc sang Loi Dai (=19).",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 89,
+   "ten": "STONELEVEL2",
+   "loai": "CHET",
+   "mo_ta": "Cap Long Tru phe cong. Grep ca cay: chi co dong gan, khong mot noi nao doc (mission.lua va symboldeath.lua deu chi dung STONELEVEL1).",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_city\\head.lua",
+   "dong": 208,
+   "ten": "TV_LASTDEATHTIME",
+   "loai": "CHET",
+   "mo_ta": "Ma bien nhiem vu 2306. Grep ca cay: cho duy nhat doc no la battlehead.lua:194-202 va TAT CA cac dong do da bi chu thich; khong con duong ma nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\tongwar\\event.lua",
+   "dong": 10,
+   "ten": "TONGWAR_LGTASK_TONGCNT",
+   "loai": "CHET",
+   "mo_ta": "O task 'so bang trong lien minh'. Grep ca cay: chi co 3 dong GAN (event.lua, headinfo.lua, score.lua), khong noi nao doc. Chinh chu thich trong score.lua cung ghi la 'vo hieu'.",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\tongwar\\event.lua",
+   "dong": 16,
+   "ten": "TONGWAR_LGTASK_CITYID",
+   "loai": "CHET",
+   "mo_ta": "O task 'ma thanh'. Grep ca cay: chi co 2 dong GAN (event.lua, headinfo.lua), khong noi nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\tongwar\\event.lua",
+   "dong": 20,
+   "ten": "TONGWAR_LGTASK_TITLE",
+   "loai": "CHET",
+   "mo_ta": "O task 'da nhan vong sang chua'. Grep ca cay: chi co 2 dong GAN (event.lua, headinfo.lua), khong noi nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\bw\\bwhead.lua",
+   "dong": 22,
+   "ten": "MAX_MEMBER_COUNT",
+   "loai": "CHET",
+   "mo_ta": "Grep ca cay: khong tep nao Include bwhead.lua roi doc bien nay (Loi Dai nhieu nguoi khong gioi han so nguoi bang no). NGUY HIEM: no ghi de bien toan cuc cung ten ma Loi Dai bang hoi dung (lib_loidai.lua = 16) va Loi Dai cong thanh dung (citywar_arena = 16) - neu bwhead nap sau thi tran cua ho bi noi len 100 nguoi/phe.",
+   "dang_chay": false
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 85,
+   "ten": "MIN_TAX",
+   "loai": "CHET",
+   "mo_ta": "Muc thue toi thieu. Grep ca cay: chi co dong gan trong lib_ctc.lua (va ban sao .truoc_cfgctc), khong noi nao doc - man hinh dat thue khong kiem tra bang bien nay.",
+   "dang_chay": false
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 86,
+   "ten": "MAX_TAX",
+   "loai": "CHET",
+   "mo_ta": "Muc thue toi da. Grep ca cay: khong noi nao doc; SetThueSuat() nhan so tuy y ma khong chan bang MAX_TAX.",
+   "dang_chay": false
+  },
+  {
+   "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+   "dong": 107,
+   "ten": "KILL_PLAYER_POINT",
+   "loai": "CHET",
+   "mo_ta": "Diem thuong khi giet nguoi trong Cong Thanh Chien. Grep ca cay: chi co dong gan (o day va o lib_tktc.lua cua Tong Kim), khong noi nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_global\\infocenter_head.lua",
+   "dong": 23,
+   "ten": "LGTSK_CITYWAR_SIGNCOUNT",
+   "loai": "CHET",
+   "mo_ta": "O task 'so lan da dau gia'. Grep ca cay: 4 cho dung deu da bi chu thich (dong 264, 658, 697 trong chinh tep nay), khong con duong ma nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "global\\seasonnpc.lua",
+   "dong": 170,
+   "ten": "MAKING_COUNT",
+   "loai": "CHET",
+   "mo_ta": "So hoa can de ket mot vong. Grep ca cay: khong noi nao doc - ca ba cho can den so 9 (cau thoai, phep kiem tra so luong, va lenh tru do) deu viet cung so 9.",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 17,
+   "ten": "TONGWAR_LGTASK_TONGCNT",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khai o 3 tep (event.lua:10, headinfo.lua:17, score.lua:6 - score con ghi chu goc 'vo hieu') nhung khong mot dong ma nao doc."
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 23,
+   "ten": "TONGWAR_LGTASK_CITYID",
+   "gia_tri": 7,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Hai tep khai (event.lua:16 va headinfo.lua:23) nhung khong noi nao doc."
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 31,
+   "ten": "TONGWAR_LGTASK_TITLE",
+   "gia_tri": 15,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Hai tep khai (event.lua:20, headinfo.lua:31) nhung khong noi nao doc."
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 34,
+   "ten": "TONGWAR_LGTASK_ELDER",
+   "gia_tri": 18,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi dung mot dong khai tren toan cay, khong noi nao doc (ghi chu goc: 'thuong Truong Lao, 7 suat')."
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 35,
+   "ten": "TONGWAR_LGTASK_MASTER",
+   "gia_tri": 19,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi dung mot dong khai tren toan cay, khong noi nao doc (ghi chu goc: 'thuong Bang Chu, 1 suat')."
+  },
+  {
+   "tep": "event\\tongwar\\headinfo.lua",
+   "dong": 59,
+   "ten": "TV_LASTDEATHTIME",
+   "gia_tri": 2306,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Khai o 3 tep (battlehead.lua:179, headinfo.lua:59, citywar_city\\head.lua:208) nhung MOI dong doc/ghi deu nam trong doan da bi chu thich (battlehead.lua:194-202)."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 69,
+   "ten": "ZHUANSHENG_TUITION",
+   "gia_tri": 100000000,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay. Ban JX1 khong port doan thu tien chuyen sinh - khong mot tep nao trong task\\metempsychosis goi Pay()."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 76,
+   "ten": "LG_SHITULEAGUE",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc (ghi chu goc: chien doi Su Do)."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 77,
+   "ten": "LG_WLLSLEAGUE",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot noi doc duy nhat la task_func.lua:162 va dong do da bi chu thich (kiem tra 'con quan he chien doi Lien Dau thi cam chuyen sinh')."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 111,
+   "ten": "ZHUANSHENG_TUITION_4",
+   "gia_tri": 100000000,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai; cay nay khong co translife_4.lua va khong tep nao trong thu muc goi Pay()."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 112,
+   "ten": "CLEAR_SKILL_4_PRICE",
+   "gia_tri": 10000000,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai; ban JX1 khong port doan tay diem ky nang chuyen sinh 4."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 118,
+   "ten": "NSTARTLEVEL_4",
+   "gia_tri": 105,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai; khong noi nao doc (ghi chu goc: tu cap 105 moi bat dau nhan diem ky nang 4 chuyen)."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 119,
+   "ten": "NPERPOINTNEEDLEVEL",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai; khong noi nao doc (ghi chu goc: moi 5 cap them 1 diem ky nang)."
+  },
+  {
+   "tep": "task\\metempsychosis\\task_head.lua",
+   "dong": 121,
+   "ten": "BEIDOU_TRANSFER_MAX",
+   "gia_tri": 5,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc."
+  },
+  {
+   "tep": "lib\\worldlibrary.lua",
+   "dong": 2,
+   "ten": "SERVER_MODE",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc."
+  },
+  {
+   "tep": "lib\\worldlibrary.lua",
+   "dong": 5,
+   "ten": "SERVER_EVENTID",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc."
+  },
+  {
+   "tep": "event\\chuyensinhdaisu.lua",
+   "dong": 164,
+   "ten": "nItemWuHang",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc. Luu y tep nay CO chay (NPC 1867 'NPC Chuyen Sinh' tao o startgame\\thon\\balanghuyen.lua:95) - rieng hai bien Ngu Hanh nay la rac con sot lai."
+  },
+  {
+   "tep": "event\\chuyensinhdaisu.lua",
+   "dong": 165,
+   "ten": "nRoleWuHang",
+   "gia_tri": 0,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc - giong nItemWuHang ngay tren."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\8089\\tureboss8089.lua",
+   "dong": 15,
+   "ten": "TUREBOSS_RELIVE",
+   "gia_tri": 2,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "So giay hoi sinh cua moc bao ruong. Hai dong doc duy nhat (enemy_tureboss.lua:224 va :227, HideNpc) DEU da bi chu thich. Them nua tep mo coi: ca 101 dong tro toi tureboss8089.lua trong killbosshead.lua deu bi chu thich, chi con moc \\90\\ chay."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\8089\\tureboss8089.lua",
+   "dong": 17,
+   "ten": "TUREBOSS_MAPID",
+   "gia_tri": 394,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "ID ban do Thien Bao Kho moc 80-89. Hai dong doc duy nhat (enemy_tureboss.lua:221-222) deu bi chu thich, va tep chu cung mo coi (moc 80-89 da tat)."
+  },
+  {
+   "tep": "event\\trongbanghoi\\lib.lua",
+   "dong": 29,
+   "ten": "LIMIT_LEVEL_TBH",
+   "gia_tri": 80,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc. Ngay tren no cac so khac cua Trong Bang Hoi da qua TBH_CFG - rieng gioi han cap nay bi bo quen; va tinh nang dang tat (ghi chu o cauhinh\\ch_thuong.lua:25)."
+  },
+  {
+   "tep": "lib\\lib_sukien.lua",
+   "dong": 22,
+   "ten": "EVENT_ACTIVE",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "Chi mot dong khai tren toan cay, khong noi nao doc. Cac so ti le trong cung tep (RANDMAP, RANDPLD, RANDTK...) da qua SKD_CFG, rieng co bat/tat su kien nay khong ai dung."
+  },
+  {
+   "tep": "item\\event\\Copy of 30thang4\\huychuongthiendieu.lua",
+   "dong": 3,
+   "ten": "FREECELL_EVENT",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "dang_chay": false,
+   "mo_ta": "So o hanh trang trong yeu cau truoc khi mo Huy Chuong. Tep MO COI: settings\\item\\magicscript.txt dong 4828 (Huy Chuong Ngao The, ma 4826) tro toi \\script\\item\\event\\30thang4\\huychuongthiendieu.lua - BAN DO dat FREECELL_EVENT = 10, khong phai 6. Thu muc 'Copy of 30thang4' khong duoc bat ky bang hay script nao tro toi nen so 6 nay khong bao gio duoc may chu doc."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 12,
+   "ten": "INTERVAL_MATCH",
+   "loai": "CHET",
+   "gia_tri": 3600,
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: chi xuat hien dung mot lan tai chinh dong khai bao nay. Chu thich goc noi 'moi gio mo tran mot lan' nhung lich thuc te do driver/timer khac quyet dinh."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 23,
+   "ten": "SEX_BOY",
+   "loai": "CHET",
+   "gia_tri": 0,
+   "dang_chay": false,
+   "mo_ta": "Grep ca cay: chi co dung dong khai bao nay. Ma gioi tinh that su duoc viet thang bang so 0/1 trong get_random_npc_id."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 24,
+   "ten": "SEX_GIRL",
+   "loai": "CHET",
+   "gia_tri": 1,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 25,
+   "ten": "SEX_RENYAO",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 30,
+   "ten": "CHUANGGUAN30_START_TIME",
+   "loai": "CHET",
+   "gia_tri": 10,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao. Gio mo/dong Vuot Ai 30 ai thuc te do driver hoat dong quyet dinh, khong doc hang nay."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 31,
+   "ten": "CHUANGGUAN30_END_TIME",
+   "loai": "CHET",
+   "gia_tri": 22,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 54,
+   "ten": "USE_NAME_ALL_PLAYERS",
+   "loai": "CHET",
+   "gia_tri": 1,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao. Che do dat ten NPC theo ten nguoi choi duoc lam bang ham func_npc_get_eachname chu khong tra hang nay."
+  },
+  {
+   "tep": "missions\\challengeoftime\\include.lua",
+   "dong": 55,
+   "ten": "USE_NAME_THE_TOPLIST",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc."
+  },
+  {
+   "tep": "missions\\tongwar\\head.lua",
+   "dong": 12,
+   "ten": "TONGWAR_MAXDEATH",
+   "loai": "CHET",
+   "gia_tri": 10,
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: chi xuat hien dung mot lan tai chinh dong khai bao nay. Gioi han so lan chet trong Bang Chien khong duoc cai dat o dau."
+  },
+  {
+   "tep": "missions\\tongwar\\head.lua",
+   "dong": 24,
+   "ten": "TNPC_FLAG0",
+   "loai": "CHET",
+   "gia_tri": 626,
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc. Chi co 2 lan xuat hien tren ca cay va CA HAI deu la dong khai bao (tep nay va battles\\battlehead.lua:287) - ma JX1 nap trang thai Lua rieng cho tung tep nen hai ban do khong lien quan nhau."
+  },
+  {
+   "tep": "missions\\tongwar\\head.lua",
+   "dong": 25,
+   "ten": "TNPC_FLAG1",
+   "loai": "CHET",
+   "gia_tri": 628,
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc, cung tinh trang nhu TNPC_FLAG0."
+  },
+  {
+   "tep": "missions\\tongwar\\head.lua",
+   "dong": 26,
+   "ten": "TNPC_FLAG2",
+   "loai": "CHET",
+   "gia_tri": 627,
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc, cung tinh trang nhu TNPC_FLAG0."
+  },
+  {
+   "tep": "task\\newtask\\newtask_head.lua",
+   "dong": 17,
+   "ten": "TSKID_KILLTASKID_SPE",
+   "loai": "CHET",
+   "gia_tri": 1793,
+   "dang_chay": false,
+   "mo_ta": "Da grep ca cay: chi co dung dong khai bao nay. Chinh chu thich goc ghi 'ban thu phi khong dung'."
+  },
+  {
+   "tep": "task\\newtask\\newtask_head.lua",
+   "dong": 18,
+   "ten": "TSKID_KILLERDATE_SPE",
+   "loai": "CHET",
+   "gia_tri": 1794,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc; nhanh 'sat thu cao cap' khong ton tai o ban nay."
+  },
+  {
+   "tep": "missions\\citywar_global\\demotimer.lua",
+   "dong": 1,
+   "ten": "ARENACOUNT",
+   "loai": "CHET",
+   "gia_tri": 8,
+   "dang_chay": false,
+   "mo_ta": "Trong tep nay khong noi nao doc (vong lap dung no nam o tep khac la citywar_global\\timer.lua:10, ma tep do co trang thai Lua rieng). Ngoai ra demotimer.lua khong duoc tham chieu o bat ky dau."
+  },
+  {
+   "tep": "missions\\citywar_global\\demotimer.lua",
+   "dong": 2,
+   "ten": "ARENAWLDIDXBEGIN",
+   "loai": "CHET",
+   "gia_tri": 213,
+   "dang_chay": false,
+   "mo_ta": "Khong doc trong tep nay; ban duoc dung that nam o citywar_global\\timer.lua:4,12."
+  },
+  {
+   "tep": "missions\\citywar_global\\demotimer.lua",
+   "dong": 4,
+   "ten": "CITYCOUNT",
+   "loai": "CHET",
+   "gia_tri": 7,
+   "dang_chay": false,
+   "mo_ta": "Khong doc trong tep nay; vong lap dung no nam o citywar_global\\timer.lua:23."
+  },
+  {
+   "tep": "header\\liendau.lua",
+   "dong": 28,
+   "ten": "LIENDAU_THANG",
+   "loai": "CHET",
+   "gia_tri": 10,
+   "dang_chay": false,
+   "mo_ta": "Chi co dung dong khai bao tren ca cay. Ca tep header\\liendau.lua la mo coi: khong tep nao Include, khong NPC nao tro toi; he Lien Dau dang chay la ban WLLS (tinhnang\\lien_dau + KLienDauTables.h)."
+  },
+  {
+   "tep": "header\\liendau.lua",
+   "dong": 29,
+   "ten": "LIENDAU_HOA",
+   "loai": "CHET",
+   "gia_tri": 4,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc; tep mo coi."
+  },
+  {
+   "tep": "header\\liendau.lua",
+   "dong": 30,
+   "ten": "LIENDAU_MAX",
+   "loai": "CHET",
+   "gia_tri": 48,
+   "dang_chay": false,
+   "mo_ta": "Chi co dong khai bao, khong noi nao doc; tep mo coi."
+  },
+  {
+   "tep": "event\\demhuyhoang\\event.lua",
+   "dong": 3,
+   "ten": "MAX_HUYHOANG_PER_DAY",
+   "loai": "CHET",
+   "gia_tri": 5,
+   "dang_chay": false,
+   "mo_ta": "Trong trang thai Lua cua tep nay (event.lua + hathuyhoang.lua) khong noi nao doc. Ban DANG CHAY la bien trung ten o event\\event_huyhoang_dungdb\\lib_huyhoang.lua:10 - do moi la tep ma item\\huihuangzhiguo1/2/3.lua Include."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\90\\tureboss90.lua",
+   "dong": 18,
+   "ten": "TUREBOSS_RELIVE",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Hai cho duy nhat doc no (enemy_tureboss.lua dong 224 va 227) DEU DA BI CHU THICH, nen thuc te khong noi nao doc."
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\qianbaoku\\90\\tureboss90.lua",
+   "dong": 20,
+   "ten": "TUREBOSS_MAPID",
+   "loai": "CHET",
+   "gia_tri": 395,
+   "dang_chay": false,
+   "mo_ta": "Hai cho duy nhat doc no (enemy_tureboss.lua dong 221 va 222) DEU DA BI CHU THICH. Luu y day khac voi TUREBUGBEAR_MAPID cung gia tri 395 o turebug90.lua - ban do la con song."
+  },
+  {
+   "tep": "huoyuedu\\huoyuedu.lua",
+   "dong": 17,
+   "ten": "CLOSED",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Khong noi nao doc: ma chi kiem tra 'STATE ~= OPENED'. Lan xuat hien con lai cua chu CLOSED tren ca cay la mot chuoi van ban trong startgame\\khuvucbang\\taphoatl.lua:4, khong phai bien nay."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 11,
+   "ten": "GOLDITEM",
+   "loai": "CHET",
+   "gia_tri": 0,
+   "dang_chay": false,
+   "mo_ta": "Ma pham chat 'do hoang kim'. Quet ca cay script + Sources C++ + settings: chi co dong khai bao nay, KHONG NOI NAO DOC."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 12,
+   "ten": "PURPLEITEM",
+   "loai": "CHET",
+   "gia_tri": 1,
+   "dang_chay": false,
+   "mo_ta": "Ma pham chat 'do tim'. Chi co 1 hit la chinh dong khai bao."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 14,
+   "ten": "GREENITEM",
+   "loai": "CHET",
+   "gia_tri": 3,
+   "dang_chay": false,
+   "mo_ta": "Ma pham chat 'do luc'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 18,
+   "ten": "PARTICULAR",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 3 trong bo thuoc tinh vat pham. 2 hit con lai (forbiditem.lua:80, equip_enchasable.lua:88) la CHUOI \"PARTICULAR\" ten cot TabFile, khong phai bien nay."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 19,
+   "ten": "LEVEL",
+   "loai": "CHET",
+   "gia_tri": 3,
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 4. Moi hit khac trong cay deu la chuoi \"LEVEL\" (ten cot TabFile_Search/GetCell) hoac chu thich, khong phai bien toan cuc nay."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 21,
+   "ten": "LUCK",
+   "loai": "CHET",
+   "gia_tri": 5,
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 6. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 22,
+   "ten": "VERSION",
+   "loai": "CHET",
+   "gia_tri": 6,
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 7. 3 hit khac la self.VERSION (truong cua bang khac trong qianqiu_yinglie\\head.lua), khong phai bien toan cuc nay."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 23,
+   "ten": "RANDOMSEED",
+   "loai": "CHET",
+   "gia_tri": 7,
+   "dang_chay": false,
+   "mo_ta": "Chi so o thu 8. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 49,
+   "ten": "ROOMEB",
+   "loai": "CHET",
+   "gia_tri": 1,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_equipmentback'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 50,
+   "ten": "ROOMR",
+   "loai": "CHET",
+   "gia_tri": 2,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_repository' (rong). Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 51,
+   "ten": "ROOME1",
+   "loai": "CHET",
+   "gia_tri": 3,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_exbox1'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 52,
+   "ten": "ROOME2",
+   "loai": "CHET",
+   "gia_tri": 4,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_exbox2'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 53,
+   "ten": "ROOME3",
+   "loai": "CHET",
+   "gia_tri": 5,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_exbox3'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 54,
+   "ten": "ROOMEX",
+   "loai": "CHET",
+   "gia_tri": 6,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_equipmentex'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 55,
+   "ten": "ROOMTRADE",
+   "loai": "CHET",
+   "gia_tri": 7,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_trade'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 56,
+   "ten": "ROOMTRADEB",
+   "loai": "CHET",
+   "gia_tri": 8,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_tradeback'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 57,
+   "ten": "ROOMTRADE1",
+   "loai": "CHET",
+   "gia_tri": 9,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_trade1'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 58,
+   "ten": "ROOMIMMEDIACY",
+   "loai": "CHET",
+   "gia_tri": 10,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_immediacy'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 59,
+   "ten": "ROOMG",
+   "loai": "CHET",
+   "gia_tri": 11,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_give'. Khong noi nao doc."
+  },
+  {
+   "tep": "lib\\lib_vatpham.lua",
+   "dong": 60,
+   "ten": "ROOMGB",
+   "loai": "CHET",
+   "gia_tri": 12,
+   "dang_chay": false,
+   "mo_ta": "Ma ngan 'room_giveback'. Khong noi nao doc."
+  },
+  {
+   "tep": "event\\tongwar\\score.lua",
+   "dong": 6,
+   "ten": "TONGWAR_LGTASK_TONGCNT",
+   "loai": "CHET",
+   "gia_tri": 1,
+   "dang_chay": false,
+   "mo_ta": "Khai o 3 tep (score.lua, event.lua, headinfo.lua) nhung KHONG NOI NAO DOC. Chinh chu thich goc ghi 'vo hieu'."
+  },
+  {
+   "tep": "item\\tie-luohan.lua",
+   "dong": 4,
+   "ten": "MAX_PER_DATE",
+   "loai": "CHET",
+   "gia_tri": 20,
+   "dang_chay": false,
+   "mo_ta": "Y dinh la tran so lan dung Thiet La Han moi ngay, nhung cho dung duy nhat (dong 48) DA BI CHU THICH BO. Khong con doan ma nao doc."
+  },
+  {
+   "tep": "item\\tuiduocpham.lua",
+   "dong": 4,
+   "ten": "FREECELL_MAUTANTHU",
+   "loai": "CHET",
+   "gia_tri": 20,
+   "dang_chay": false,
+   "mo_ta": "Y dinh la so o trong can co de mo Tui Duoc Pham, nhung ham main khong dung no ma dung bien cuc bo rieng 'local limitm = 20' (dong 14). Quet ca cay: chi co dong khai bao nay, khong noi nao doc."
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 56,
+   "ten": "STORM_LADDERID_WEEK2",
+   "gia_tri": 10183,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc. Mã đang chạy chỉ dùng STORM_LADDERID_WEEK1 + weekid (function.lua:240) nên 3 hằng WEEK2/3/4 chỉ còn giá trị ghi chú.",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 57,
+   "ten": "STORM_LADDERID_WEEK3",
+   "gia_tri": 10184,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc (chỉ có dòng khai báo này trong cả cây script).",
+   "dang_chay": false
+  },
+  {
+   "tep": "event\\storm\\head.lua",
+   "dong": 58,
+   "ten": "STORM_LADDERID_WEEK4",
+   "gia_tri": 10185,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc (chỉ có dòng khai báo này trong cả cây script).",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 2,
+   "ten": "JOIN_REVID",
+   "gia_tri": 80,
+   "loai": "CHET",
+   "mo_ta": "Tệp header\\loidai.lua KHÔNG được Include ở bất cứ đâu trong cả cây script lẫn thư mục settings, nên dòng gán này không bao giờ chạy. Bản lôi đài đang sống là missions\\bw\\bwhead.lua và tinhnang\\loidai\\lib_loidai.lua.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 3,
+   "ten": "JOIN_REVDATA",
+   "gia_tri": 36,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi header\\loidai.lua - không nơi nào nạp tệp này.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 10,
+   "ten": "FRAME2TIME",
+   "gia_tri": 18,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản FRAME2TIME thật đang chạy nằm ở missions\\bw\\bwhead.lua:20, battles\\battlehead.lua:19, missions\\citywar_*\\head.lua...",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 11,
+   "ten": "MAX_MEMBER_COUNT",
+   "gia_tri": 100,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Giới hạn người mỗi phe đang có hiệu lực nằm ở missions\\citywar_arena\\head.lua:26 (đã có khóa CTLD_MAX_NGUOI_MOI_PHE) và tinhnang\\loidai\\lib_loidai.lua:30.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 12,
+   "ten": "BW_SIGNPOSWORLD",
+   "gia_tri": 60,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản sống là missions\\bw\\bwhead.lua:24 (đã đổi sang 2340 để né trùng task Tống Kim).",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 13,
+   "ten": "BW_SIGNPOSX",
+   "gia_tri": 61,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi header\\loidai.lua.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 14,
+   "ten": "BW_SIGNPOSY",
+   "gia_tri": 62,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi header\\loidai.lua.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 17,
+   "ten": "CITYID",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản sống là missions\\bw\\bwhead.lua:29.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 18,
+   "ten": "BW_KEY",
+   "gia_tri": 7,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản sống là missions\\bw\\bwhead.lua:30.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 23,
+   "ten": "TIMER_SEC",
+   "gia_tri": 20,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi; chỉ được dùng ngay dòng 24 của chính tệp không ai nạp.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 25,
+   "ten": "GO_TIME",
+   "gia_tri": 6,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản sống là missions\\bw\\bwhead.lua:40 (đã có khóa BW_PHUT_CHO).",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\loidai.lua",
+   "dong": 27,
+   "ten": "BW_MISSIONID",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "mo_ta": "Cùng tệp mồ côi. Bản sống là missions\\bw\\bwhead.lua:41 (đã đổi sang khe 11 vì khe 4 là Phong Lăng Độ).",
+   "dang_chay": false
+  },
+  {
+   "tep": "tinhnang\\tong_kim_tcap\\lib_tktc.lua",
+   "dong": 42,
+   "ten": "KILL_PLAYER_POINT",
+   "gia_tri": 30,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc. Đã quét cả cây: chỉ có hai dòng GÁN (tệp này và tinhnang\\congthanhchien\\lib_ctc.lua:107), không có một chỗ nào dùng tên này để tính điểm giết người.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\thongthuong.lua",
+   "dong": 2,
+   "ten": "LEVEL_NORMAL",
+   "gia_tri": 120,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc. Quét cả cây chỉ thấy đúng dòng gán này, và bản thân tệp header\\thongthuong.lua cũng không được Include ở đâu.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\thongthuong.lua",
+   "dong": 3,
+   "ten": "EXP_NORMAL",
+   "gia_tri": 2000000,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc; tệp mồ côi.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\thongthuong.lua",
+   "dong": 4,
+   "ten": "MONEY_NORMAL",
+   "gia_tri": 20000,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc; tệp mồ côi.",
+   "dang_chay": false
+  },
+  {
+   "tep": "header\\thongthuong.lua",
+   "dong": 5,
+   "ten": "MAX_NVTN",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "mo_ta": "Không nơi nào đọc; tệp mồ côi.",
+   "dang_chay": false
+  },
+  {
+   "tep": "item\\compound\\fantasygoldessence_upgrade.lua",
+   "dong": 5,
+   "ten": "RESULT_UNKNOWN",
+   "gia_tri": -1,
+   "loai": "CHET",
+   "mo_ta": "Ma loi 'khong ro'. Da grep ca cay: chi co 3 dong GAN gia tri (compound_header.lua:33 va hai tep upgrade), TUYET DOI khong noi nao doc. Ben C++ co FOUNDRY_RESULT_UNKNOWN=-1 rieng, khong lay tu Lua.",
+   "dang_chay": true
+  },
+  {
+   "tep": "missions\\citywar_arena\\head.lua",
+   "dong": 32,
+   "ten": "LOSE_TONGEXP",
+   "gia_tri": 1400,
+   "loai": "CHET",
+   "mo_ta": "Kinh nghiem bang bi TRU khi thua. Hai cho dung duy nhat (dong 159 va 163) DEU DA BI CHU THICH, va ban khai thu hai o tinhnang\\loidai\\lib_loidai.lua:33 cung khong ai doc. Grep ca cay Lua lan ma nguon C++: khong nguoi doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_arena\\head.lua",
+   "dong": 41,
+   "ten": "PKWINBONUS",
+   "gia_tri": 3,
+   "loai": "CHET",
+   "mo_ta": "Grep ca cay chi ra dung 2 dong, ca hai deu la GAN gia tri (tep nay va tinhnang\\loidai\\lib_loidai.lua:37). Khong mot cho nao doc, ke ca ma nguon C++.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\citywar_arena\\head.lua",
+   "dong": 42,
+   "ten": "LOSEBONUS",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "mo_ta": "Y het PKWINBONUS: chi 2 dong gan gia tri (tep nay va lib_loidai.lua:38), khong noi nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+   "dong": 14,
+   "ten": "MSTIME_VUOT_AI_XOANPC",
+   "gia_tri": 1,
+   "loai": "CHET",
+   "mo_ta": "So phut cho truoc khi xoa NPC trong ban do. Ca BA cho dung deu da bi chu thich: timertask\\task02.lua:204, task06.lua:72, pubgend.lua:53. Khong con nguoi doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\yandibaozang\\readymap\\ydbz_share.lua",
+   "dong": 23,
+   "ten": "YDBZ_RV_CURTIME",
+   "gia_tri": 92,
+   "loai": "CHET",
+   "mo_ta": "Dinh khai o so 92 de dem giay pha bao danh, nhung grep ca cay chi ra DUNG MOT dong - chinh dong khai nay. Khong noi nao doc hay ghi.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\yandibaozang\\readymap\\ydbz_share.lua",
+   "dong": 31,
+   "ten": "YDBZ_TASKTEMP_TRONGTRAN",
+   "gia_tri": 200,
+   "loai": "CHET",
+   "mo_ta": "Dinh khai o bien tam 200 (co 'dang trong hoat dong'), nhung grep ca cay chi ra DUNG MOT dong - chinh dong khai nay. Khong noi nao doc.",
+   "dang_chay": false
+  },
+  {
+   "tep": "missions\\fengling_ferry\\fld_head.lua",
+   "dong": 18,
+   "ten": "TNPC_THIEF_COUNT",
+   "gia_tri": 30,
+   "loai": "CHET",
+   "mo_ta": "Le ra la so thuy tac sinh ra tren thuyen, nhung grep ca cay chi ra DUNG MOT dong - chinh dong khai nay. Bang TNPC_THIEF ngay tren (dong 17) cung chet y het.",
+   "dang_chay": false
+  },
+  {
+   "tep": "task\\tollgate\\messenger\\shanshenmiao\\8089\\templeboss8089.lua",
+   "dong": 16,
+   "ten": "TEMBOSS_RELIVE",
+   "gia_tri": 120,
+   "loai": "CHET",
+   "mo_ta": "Le ra la thoi gian hoi sinh cua boss Son Than Mieu. Grep ca cay: chi co 3 dong, ca ba deu la GAN gia tri (ban 6079, 8089, 90) - khong noi nao doc.",
+   "dang_chay": false
+  }
+ ]
+}
