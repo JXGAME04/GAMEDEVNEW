@@ -13,6 +13,58 @@
 
 tbCFG_CHUNG = {
 
+-- [CFGBDH 30/08] DA TAU - so vong va chu ky
+-- 
+-- !! Moc thuong theo so nhiem vu va gia tri goc de tinh tien/exp
+-- !! KHONG o day - chung nam trong settings\task\award_basic.txt,
+-- !! award_link.txt, award_loop.txt, tasklink_*.txt.
+
+DT_SO_NV_MOI_VONG         = 20          ,	-- so nhiem vu phai lam xong de qua mot vong moi
+DT_SO_VONG_MOI_CHU_KY     = 20          ,	-- so vong nhiem vu trong mot chu ky
+DT_SO_CHU_KY_TOI_DA       = 20          ,	-- so chu ky toi da truoc khi dem quay ve 0
+
+
+BDH_SO_O_TRANGBI          = 10          ,	-- so o trang bi cua Ban Dong Hanh
+
+
+BDH_CHANNGUYEN_DOI_1_TUCHAN= 200         ,	-- so diem chan nguyen bo ra de doi lay 1 diem Tu Chan
+BDH_TUCHAN_TOI_DA         = 20000       ,	-- tran diem Tu Chan cua Ban Dong Hanh
+
+-- [CFGBDH 30/08] BAN DONG HANH - gioi han va gia ca (petsys\common.lua)
+-- 
+-- !! Ti le thanh cong nang cap va so thuoc can KHONG o day - chung
+-- !! nam trong settings\petsys\levelup.txt (cot nSuccessRate,
+-- !! nItemCostCount). Sua o day khong cham toi chung.
+
+BDH_SO_LAN_CHO_AN_MOI_NGAY= 4           ,	-- so lan moi ngay duoc cho an MOI LOAI qua (dem rieng tung loai)
+BDH_GIA_DOI_NGOAI_QUAN    = 5           ,	-- so Xu phai tra de doi ngoai quan
+BDH_GIA_DOI_TEN           = 5           ,	-- so Xu phai tra de doi ten
+BDH_CAP_TOI_DA            = 130         ,	-- cap toi da cua Ban Dong Hanh. !! ten bien nay rat chung - chi doi trong tep petsys\common.lua
+BDH_BUOC_CAP_NGOAI_QUAN   = 10          ,	-- cu moi bao nhieu cap thi mo them mot nhom ngoai quan
+BDH_CAP_NHANVAT_TOI_THIEU = 150         ,	-- cap nhan vat toi thieu de tao duoc Ban Dong Hanh
+BDH_CAP_MO_KYNANG_BIKIP   = 21          ,	-- cap Ban Dong Hanh toi thieu de bat dau hoc ky nang tu Bi kip
+BDH_SO_O_KYNANG_TOI_DA    = 4           ,	-- so o ky nang bi dong toi da
+BDH_BUOC_CAP_MO_O_KYNANG  = 5           ,	-- cu moi bao nhieu cap thi mo them mot o ky nang
+
+-- [CFGBHK 30/08] BOSS HOANG KIM - suc manh va thoi gian ton tai
+-- (tinhnang\boss_hoangkim\lib_bosshk.lua)
+-- 
+-- !! Lich tu dong dang TAT (BAT_BOSS_HOANGKIM = 0), nhung boss van ra
+-- !! duoc bang tay qua menu 'Test Boss' cua lenh bai admin - luc do
+-- !! cac so nay an that.
+-- 
+-- !! BHK_MAU_BOSS_DAI dang la 1 (MOT mau) trong khi ghi chu trong ma
+-- !! noi mac dinh la 18.000.000. So nay dung cho CA boss dai, boss may
+-- !! chu VA boss Phong Lang Do - ca ba deu chet trong mot nhat.
+
+BHK_PHUT_BOSS_TON_TAI     = 120         ,	-- boss song bao lau (phut) roi tu bien mat neu khong ai giet
+BHK_MAU_BOSS_TIEU         = 18000000    ,	-- mau cua Boss Tieu Hoang Kim (ghi chu trong ma: mac dinh cu 8.000.000)
+BHK_MAU_BOSS_DAI          = 1           ,	-- mau cua boss dai + boss may chu + boss PLD. !! dang la 1, ghi chu noi mac dinh 18.000.000
+BHK_NETRANH_BOSS          = 5000        ,	-- chi so ne tranh cua boss - cang cao nguoi choi cang hay danh truot
+BHK_HOIMAU_BOSS           = 300         ,	-- luong mau boss tu hoi moi nhip
+BHK_EXP_NPC_BOSS_DAI      = 0           ,	-- exp gan thang vao con NPC boss dai (dang 0 - exp thuong phat o tep death*)
+BHK_EXP_NPC_BOSS_TIEU     = 0           ,	-- exp gan thang vao con NPC boss tieu (dang 0)
+
 -- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
 -- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
 

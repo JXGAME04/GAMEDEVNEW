@@ -67,6 +67,15 @@ TEP = [
     "script/tinhnang/tong_kim_tcap/trinhsat.lua",
     "script/tinhnang/congthanhchien/congthanhquan.lua",
     "script/missions/citywar_global/citywar_function.lua",
+    "script/tinhnang/boss_hoangkim/lib_bosshk.lua",
+    "script/tinhnang/boss_hoangkim/deathhktieu.lua",
+    "script/tinhnang/boss_hoangkim/deathhkdai.lua",
+    "script/tinhnang/boss_hoangkim/deathbosspld.lua",
+    "script/petsys/common.lua",
+    "script/petsys/xiuzhen.lua",
+    "script/petsys/petequip.lua",
+    "script/task/partner/reward/partner_reward.lua",
+    "script/task/newtask/tasklink/tasklink_head.lua",
     "settings/gamesetting.ini",
 ]
 

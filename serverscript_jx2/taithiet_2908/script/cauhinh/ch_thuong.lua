@@ -22,6 +22,26 @@
 
 tbCFG_THUONG = {
 
+-- [CFGBDH 30/08] BAN DONG HANH - danh hieu
+
+BDH_THOIHAN_DANHHIEU_NGAY = 30          ,	-- so NGAY danh hieu Ban Dong Hanh ton tai (ma viet dang 30*24*60*60*18*36 nen day la con so dau tien). !! khai lai y het o partner_reward2.lua
+
+
+BHK_EXP_GIET_BOSS_PLD     = 50000000    ,	-- exp cho nguoi ha Boss Hoang Kim ban do Phong Lang Do
+BHK_EXP_LANCAN_BOSS_PLD   = 20000000    ,	-- exp cho nguoi dung gan cho ha boss Phong Lang Do
+BHK_PHAMVI_HUONG_EXP_PLD  = 200         ,	-- ban kinh chia exp quanh xac boss Phong Lang Do
+
+
+BHK_EXP_GIET_BOSS_DAI     = 25000000    ,	-- exp cho nguoi ha Boss Dai Hoang Kim va to doi cua ho
+BHK_EXP_LANCAN_BOSS_DAI   = 10000000    ,	-- exp cho nguoi dung gan cho ha boss dai nhung khac to doi
+BHK_PHAMVI_HUONG_EXP_DAI  = 200         ,	-- ban kinh chia exp quanh xac boss dai
+
+-- [CFGBHK 30/08] BOSS HOANG KIM - thuong khi ha boss
+
+BHK_EXP_GIET_BOSS_TIEU    = 20000000    ,	-- exp cho nguoi ha Boss Tieu Hoang Kim va to doi cua ho
+BHK_EXP_LANCAN_BOSS_TIEU  = 10000000    ,	-- exp cho nguoi dung gan cho danh boss tieu nhung khac to doi
+BHK_PHAMVI_HUONG_EXP_TIEU = 200         ,	-- ban kinh quanh xac boss ma nguoi choi phai dung trong do moi duoc chia exp (boss tieu)
+
 -- [BOSUNG 30/08] bo sung cac khoa script DA DOC nhung tep nay
 -- chua khai (loi cua bo khung, da sua goc trong noi_cauhinh.py).
 
