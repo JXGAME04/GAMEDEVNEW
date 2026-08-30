@@ -107,12 +107,15 @@ function BDH_P_Root()
 	SayEx({format("Pet cap %d - diem %d/%d/%d/%d - xu %d",
 		PET_GetLevel(), PET_GetUpgradePoint(), PET_GetGrownPoint(),
 		PET_GetTamePoint(), PET_GetXiuzhenPoint(), GetTask(251)),
-	"Cap thiep + thuoc + trai/BDH_P_CapDo",
-	"Cap 5 Bi kiep ky nang/BDH_P_CapKN",
-	"Diem + chan nguyen + xu/BDH_P_Diem",
+	"Cap thiep/thuoc/trai/BDH_P_CapDo",
+	"Cap 5 Bi kiep/BDH_P_CapKN",
+	"Cap bo Bich Huyet/BDH_P_CapBo1",
+	"Cap bo Kim Lan/BDH_P_CapBo2",
+	"Cap ruong+chia+ket tinh/BDH_P_CapRuong",
+	"Diem+chan nguyen+xu/BDH_P_Diem",
 	"Tao pet nhanh/BDH_P_TaoNhanh",
 	"Xoa ky nang/BDH_P_XoaKN",
-	"Thao het trang bi/BDH_P_XoaTB",
+	"Thao trang bi/BDH_P_XoaTB",
 	"Dong bo client/BDH_P_DongBo",
 	"Ket thuc doi thoai./no"})
 end
@@ -138,21 +141,40 @@ function BDH_P_DongBo()
 	Msg2Player("Da ban lai 29 o diem pet - mo cua so Ban Dong Hanh xem")
 end
 
+function BDH_P_CapBo1()
+	local i
+	for i = 4907, 4916 do
+		AddItem(6, 1, i, 1, 0, 0, 0)
+	end
+	Msg2Player("Da cap bo Bich Huyet 10 mon (4907..4916)")
+end
+
+function BDH_P_CapBo2()
+	local i
+	for i = 4917, 4926 do
+		AddItem(6, 1, i, 1, 0, 0, 0)
+	end
+	Msg2Player("Da cap bo Kim Lan 10 mon (4917..4926)")
+end
+
+function BDH_P_CapRuong()
+	local i
+	for i = 1, 5 do
+		AddItem(6, 1, 4929, 1, 0, 0, 0)
+		AddItem(6, 1, 4930, 1, 0, 0, 0)
+		AddItem(6, 1, 4931, 1, 0, 0, 0)
+		AddItem(6, 1, 4932, 1, 0, 0, 0)
+		AddItem(6, 1, 4927, 1, 0, 0, 0)
+	end
+	Msg2Player("Da cap 5 ruong 1/2/3 + 5 chia khoa + 5 ket tinh")
+end
+
 function BDH_P_CapKN()
 	local i
 	for i = 1, 5 do
 		AddItem(6, 1, 4880, 1, 0, 0, 0)
 	end
-	for i = 4907, 4916 do
-		AddItem(6, 1, i, 1, 0, 0, 0)
-	end
-	for i = 1, 5 do
-		AddItem(6, 1, 4929, 1, 0, 0, 0)
-		AddItem(6, 1, 4930, 1, 0, 0, 0)
-		AddItem(6, 1, 4932, 1, 0, 0, 0)
-		AddItem(6, 1, 4927, 1, 0, 0, 0)
-	end
-	Msg2Player("Da cap 5 Bi kiep + bo Bich Huyet 10 mon + 5 ruong/chia khoa/ket tinh")
+	Msg2Player("Da cap 5 Bi kiep ban dong hanh")
 end
 
 function BDH_P_XoaKN()
