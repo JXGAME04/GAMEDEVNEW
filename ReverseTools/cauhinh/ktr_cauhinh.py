@@ -152,12 +152,27 @@ def main():
                   % (a, b, c[:38], dg, e, f))
 
     # ---- K4: ma vat pham trong bang thuong ----
+    # [SUA 29/08] Tra bang theo CHI SO DONG, khong theo cot ParticularType.
+    # Ly do: KItemGenerator.CPP:1660 dat `const int i = nParticularType;` roi
+    # GetMagicScript(i) -> KBasPropTbl.cpp:1058 tra ve `m_pBuf + i`, tuc PHAN TU
+    # THU i. Cot ParticularType chi la du lieu, may KHONG tra theo no. Hai thu
+    # nay dang LECH o 35 dong ke tu chi so 4881 (them dong vao giua bang la xo
+    # lech toan bo phan sau), nen tra theo cot cho ket qua SAI o vung do.
     ms = {}
+    n_lech = 0
     if os.path.isfile(MS):
-        for l in doc(MS).split("\n")[1:]:
+        for k_dong, l in enumerate(doc(MS).split("\n")[1:]):
             c = [x.strip() for x in l.split("\t")]
             if len(c) > 3 and c[3].isdigit():
-                ms[(c[1], c[2], c[3])] = c[0]
+                # khoa theo CHI SO dong (dung cach may tra)
+                ms[(c[1], c[2], str(k_dong))] = c[0]
+                if int(c[3]) != k_dong:
+                    n_lech += 1
+    if n_lech:
+        print("  !! magicscript.txt co %d dong cot ParticularType KHAC chi so"
+              " dong." % n_lech)
+        print("     May tra theo CHI SO, nen o vung do script va bang khong"
+              " khop nhau.")
     la = []
     mau_item = re.compile(r"\{\s*6\s*,\s*([01])\s*,\s*(\d+)")
     # CHI xet dong THAT SU la bang vat pham: co tbProp / szName / AddItem /

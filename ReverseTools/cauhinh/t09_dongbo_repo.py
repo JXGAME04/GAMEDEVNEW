@@ -51,6 +51,9 @@ TEP = [
     "script/cauhinh/ch_all.lua",
     "script/cauhinh/ch_thuong_lib.lua",
     "script/missions/yandibaozang/npc.lua",
+    "script/lib/lib_sukien.lua",
+    "script/global/LuaNpcMonsters/Droprate_normal.lua",
+    "script/vng_event/change_request_baoruong/exp_award.lua",
     "settings/gamesetting.ini",
 ]
 

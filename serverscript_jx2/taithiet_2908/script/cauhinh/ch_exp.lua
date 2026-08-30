@@ -31,5 +31,13 @@
 -- su nam trong script. Duoc do vao o dot ke tiep.
 
 tbCFG_EXP = {
+-- [CFGTRAN 29/08] TRAN EXP/NGAY TU BAO RUONG (tran kinh te an)
+-- Ap cho CA CHIN loai bao ruong. Don vi: TRIEU exp.
+-- Nguon: script\vng_event\change_request_baoruong\exp_award.lua
+
+BRXP_MOC_CS       = 4    ,	-- moc chuyen sinh: <= so nay dung tran CS4, +1 dung CS5
+BRXP_TRAN_CS4     = 50   ,	-- tran exp/ngay tu MOI bao ruong (trieu) - chuyen sinh thap
+BRXP_TRAN_CS5     = 80   ,	-- tran exp/ngay (trieu) - chuyen sinh dung moc+1
+BRXP_TRAN_CS6     = 100  ,	-- tran exp/ngay (trieu) - chuyen sinh cao hon
 
 }
