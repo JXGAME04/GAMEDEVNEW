@@ -1,10 +1,22 @@
 Include("\\script\\petsys\\head.lua")
+-- [CFGBDH 30/08] hai tep duoi day la LA (khong Include gi).
+Include("\\script\\cauhinh\\ch_lib.lua")
+Include("\\script\\cauhinh\\ch_chung.lua")
+-- [CFGBDH 30/08] Bo doc cau hinh cho tep nay. Tra ve MAC DINH (= so cu)
+-- khi bo cau hinh chua nap, nen kem nhat cung khong the doi hanh vi.
+function BDH_CFG(szKhoa, macdinh)
+	if (G_CFG ~= nil) then
+		return G_CFG(szKhoa, macdinh)
+	end
+	return macdinh
+end
+
 Include("\\script\\petsys\\lang.lua")
 Include("\\script\\lib\\lib_task.lua")
 
 -- [PETSYS 29/08] op 8 ban private VLTK: doi chan nguyen -> diem Tu Chan
-ZHENYUAN_RATE = 200
-XIUZHEN_MAX = 20000
+ZHENYUAN_RATE = BDH_CFG("BDH_CHANNGUYEN_DOI_1_TUCHAN", 200)
+XIUZHEN_MAX = BDH_CFG("BDH_TUCHAN_TOI_DA", 20000)
 
 function PetSys:XiuzhenPointDlg()
 	if PET_IsCreate() ~= 1 then

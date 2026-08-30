@@ -1,3 +1,15 @@
+-- [CFGBDH 30/08] hai tep duoi day la LA (khong Include gi).
+Include("\\script\\cauhinh\\ch_lib.lua")
+Include("\\script\\cauhinh\\ch_chung.lua")
+-- [CFGBDH 30/08] Bo doc cau hinh cho tep nay. Tra ve MAC DINH (= so cu)
+-- khi bo cau hinh chua nap, nen kem nhat cung khong the doi hanh vi.
+function BDH_CFG(szKhoa, macdinh)
+	if (G_CFG ~= nil) then
+		return G_CFG(szKhoa, macdinh)
+	end
+	return macdinh
+end
+
 PET_PROTOCOL = "emSCRIPT_PROTOCOL_PET"
 PET_OPERATION_DELETE = 1
 PET_OPERATION_SUMMON = 2
@@ -46,13 +58,13 @@ TSK_MAIZE_DAILY = 5135
 TSK_SUGARCANE_DAILY = 5136
 TSK_SWEET_POTATO_DAILY = 5134
 
-MAX_FRUIT_COUNT_DAILY = 4
+MAX_FRUIT_COUNT_DAILY = BDH_CFG("BDH_SO_LAN_CHO_AN_MOI_NGAY", 4)
 
-CHANGE_FEATURE_COIN = 5
-CHANGE_NAME_COIN = 5
-MAX_LEVEL = 130
-PET_LEVEL_STEP = 10
-MIN_LEVEL = 150
+CHANGE_FEATURE_COIN = BDH_CFG("BDH_GIA_DOI_NGOAI_QUAN", 5)
+CHANGE_NAME_COIN = BDH_CFG("BDH_GIA_DOI_TEN", 5)
+MAX_LEVEL = BDH_CFG("BDH_CAP_TOI_DA", 130)
+PET_LEVEL_STEP = BDH_CFG("BDH_BUOC_CAP_NGOAI_QUAN", 10)
+MIN_LEVEL = BDH_CFG("BDH_CAP_NHANVAT_TOI_THIEU", 150)
 
 function IsEventFinished(nEventIndex)
 	local tbEventData = EVENT_LIST[nEventIndex]
@@ -103,9 +115,9 @@ end
 
 
 -- [29/08] nguyen van client_common.lua ban VLTK PC (rut tu pak)
-EXT_SKILL_OPEN_PET_LEVEL = 21
-EXT_SKILL_MAX_COUNT = 4
-EXT_SKILL_GET_NEW_LEVEL = 5
+EXT_SKILL_OPEN_PET_LEVEL = BDH_CFG("BDH_CAP_MO_KYNANG_BIKIP", 21)
+EXT_SKILL_MAX_COUNT = BDH_CFG("BDH_SO_O_KYNANG_TOI_DA", 4)
+EXT_SKILL_GET_NEW_LEVEL = BDH_CFG("BDH_BUOC_CAP_MO_O_KYNANG", 5)
 -- VLTK dung item 4808; JX1 da co item khac o 4808 -> nan ma sang 4880
 PET_MIJI_ITEM = {tbProp = {6, 1, 4880, 0, 0, 0}}
 ZHENYUAN_TO_XIUZHEN_POINT_RATE = 200

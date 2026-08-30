@@ -1,4 +1,16 @@
 Include("\\script\\petsys\\head.lua")
+-- [CFGBDH 30/08] hai tep duoi day la LA (khong Include gi).
+Include("\\script\\cauhinh\\ch_lib.lua")
+Include("\\script\\cauhinh\\ch_chung.lua")
+-- [CFGBDH 30/08] Bo doc cau hinh cho tep nay. Tra ve MAC DINH (= so cu)
+-- khi bo cau hinh chua nap, nen kem nhat cung khong the doi hanh vi.
+function BDH_CFG(szKhoa, macdinh)
+	if (G_CFG ~= nil) then
+		return G_CFG(szKhoa, macdinh)
+	end
+	return macdinh
+end
+
 Include("\\script\\petsys\\lang.lua")
 Include("\\script\\petsys\\petequip_def.lua")
 
@@ -6,7 +18,7 @@ Include("\\script\\petsys\\petequip_def.lua")
 -- 10 o: task 5143..5152 (luu ParticularType cua mon dang deo)
 -- 5163: so mon cung bo dang mac (C doc de ap thuoc tinh bo)
 PETEQUIP_O_DAU = 5143
-PETEQUIP_O_SO = 10
+PETEQUIP_O_SO = BDH_CFG("BDH_SO_O_TRANGBI", 10)
 PETEQUIP_O_BOCOUNT = 5163
 
 -- dem so mon cung bo -> ghi 5163 (bo*100 + so mon) cho C doc

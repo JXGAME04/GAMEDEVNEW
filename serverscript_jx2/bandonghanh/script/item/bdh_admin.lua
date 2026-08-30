@@ -104,18 +104,19 @@ end
 Include("\\script\\petsys\\protocol_process_gs.lua")
 
 function BDH_P_Root()
-	SayEx({format("Pet cÊp %d - ®iÓm %d/%d/%d/%d - xu %d",
+	SayEx({format("Pet cÊp %d - ®iÓm %d %d %d %d - xu %d",
 		PET_GetLevel(), PET_GetUpgradePoint(), PET_GetGrownPoint(),
 		PET_GetTamePoint(), PET_GetXiuzhenPoint(), GetTask(251)),
 	"CÊp thiÖp + thuèc + tr¸i/BDH_P_CapDo",
-	"CÊp 5 BÝ kiÕp kü n¨ng/BDH_P_CapKN",
+	"CÊp 5 BÝ kiÕp/BDH_P_CapKN",
 	"CÊp bé BÝch HuyÕt/BDH_P_CapBo1",
 	"CÊp bé Kim L©n/BDH_P_CapBo2",
 	"CÊp r­¬ng + ch×a + kÕt tinh/BDH_P_CapRuong",
-	"§iÓm + ch©n nguyªn + xu/BDH_P_Diem",
+	"Céng ®iÓm + ch©n nguyªn + xu/BDH_P_Diem",
 	"T¹o pet nhanh/BDH_P_TaoNhanh",
-	"Xãa kü n¨ng ®· häc/BDH_P_XoaKN",
+	"Xãa kü n¨ng/BDH_P_XoaKN",
 	"Th¸o hÕt trang bÞ/BDH_P_XoaTB",
+	"Dän item pet lçi/BDH_P_DonLoi",
 	"§ång bé xuèng client/BDH_P_DongBo",
 	"KÕt thóc ®èi tho¹i./no"})
 end
@@ -133,6 +134,23 @@ function BDH_P_ChanNguyen()
 	SetTask(362, GetTask(362) + 2000)
 	Msg2Player("§· cÊp 2000 ®iÓm ch©n nguyªn - tæng: " .. GetTask(362))
 end
+function BDH_P_DonLoi()
+	local i
+	local nDem = 0
+	for i = 4874, 4932 do
+		local nCo = CalcEquiproomItemCount(6, 1, i, -1)
+		if nCo > 0 then
+			ConsumeEquiproomItem(nCo, 6, 1, i)
+			nDem = nDem + nCo
+		end
+	end
+	local nTay = 0
+	if PET_ClearHand ~= nil then
+		nTay = PET_ClearHand()
+	end
+	Msg2Player(format("§· dän %d vËt phÈm trong tói vµ %d mãn kÑt trªn tay", nDem, nTay))
+end
+
 function BDH_P_DongBo()
 	local i
 	for i = 5110, 5169 do

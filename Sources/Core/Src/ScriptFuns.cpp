@@ -2491,6 +2491,24 @@ int LuaDynamicExecute(Lua_State* L)
 // goi ve day, ghi nguyen van vao CUNG file ScriptError.log (fopen append
 // tuong doi nhu KLuaScript::WriteLogScriptErrorFile). Ap dung ca dofile/
 // dostring that bai (deferred dw, DynamicExecute) truoc nay chi thay o console.
+// [HELOG2 29/08] GhiLog("TEN_HE", "noi dung") - cho script chu dong ghi lai
+// dien bien/loi cua chinh no vao logs\hethong.log. Khac WriteLog (ghi
+// logs\script_jx2.log, khong co truong "he") o cho co ten he de loc.
+int LuaGhiLog(Lua_State* L)
+{
+	const char* szHe = Lua_IsString(L, 1)
+		? (const char*)Lua_ValueToString(L, 1) : "SCRIPT";
+	const char* szND = Lua_IsString(L, 2)
+		? (const char*)Lua_ValueToString(L, 2) : NULL;
+	if (!szND)		// goi 1 tham so: coi ca chuoi la noi dung
+	{
+		szND = szHe;
+		szHe = "SCRIPT";
+	}
+	g_GhiLogHeThong(szHe, szND);
+	return 0;
+}
+
 int LuaGameAlert(Lua_State* L)
 {
 	if (Lua_IsString(L, 1))
@@ -2544,7 +2562,10 @@ int LuaIncludeLib(Lua_State* L)
 	// tien (citywar head.lua E5). Cam co global __INCLIB_<MOD> TRUOC khi dofile
 	// de chan ca tu-de-quy lan nap lai. Dong thoi sua tran vong lap 14 -> 20
 	// (6 module moi SETTING/BATTLE/RELAYLADDER/TITLE/LEAGUE/PARTNER bi cam).
-	for (int k = 0; k < 21; k++)
+	// [VA5LOI 29/08] szMod[22] (:2516) co DU 22 chuoi, phan tu cuoi la
+	// "PET" o chi so 21 - vong cu k<21 bo sot no, nen IncludeLib("PET")
+	// khong bao gio khop va he Ban Dong Hanh khong nap duoc thu vien.
+	for (int k = 0; k < 22; k++)
 	{
 		if (strcmp(pszName, szMod[k]) != 0)
 			continue;
@@ -14001,6 +14022,7 @@ extern int LuaPET_SetSkill(Lua_State* L);
 extern int LuaPET_GetSkill(Lua_State* L);
 extern int LuaPET_SetName(Lua_State* L);
 extern int LuaPET_GetName(Lua_State* L);
+extern int LuaPET_ClearHand(Lua_State* L);
 extern int LuaPET_GetStr(Lua_State* L);
 extern int LuaPET_GetDex(Lua_State* L);
 extern int LuaPET_GetVit(Lua_State* L);
@@ -14133,6 +14155,23 @@ extern int LuaHD3_ITEM_SetExpiredTime(Lua_State* L);
 extern int LuaHD3_ITEM_GetExpiredTime(Lua_State* L);
 extern int LuaHD3_ITEM_SetLeftUsageTime(Lua_State* L);
 extern int LuaHD3_SetItemBindState(Lua_State* L);
+// [PHI PHONG 2026-08-29] 12 ham he phi phong (KJx2WarInfra.cpp)
+extern int LuaPF_StarLevelUp(Lua_State* L);
+extern int LuaPF_GetStarLevel(Lua_State* L);
+extern int LuaPF_InlayStarStone(Lua_State* L);
+extern int LuaPF_GetCurEquipWishValue(Lua_State* L);
+extern int LuaPF_SetEquipWishValue(Lua_State* L);
+extern int LuaPF_GetMaxEquipWishValue(Lua_State* L);
+extern int LuaPF_GetLastBreakTime(Lua_State* L);
+extern int LuaPF_SetLastBreakTime(Lua_State* L);
+extern int LuaPF_GetStarStoneOnEquip(Lua_State* L);
+extern int LuaPF_GetStoneLevelOnEquip(Lua_State* L);
+extern int LuaPF_SetStoneLevelOnEquip(Lua_State* L);
+extern int LuaPF_GetEquipMaxStoneNum(Lua_State* L);
+extern int LuaPF_AddGoldEquipByRow(Lua_State* L);
+extern int LuaPF_AddPlatinaItem(Lua_State* L);
+extern int LuaPF_GetItemIndexBydwID(Lua_State* L);
+extern int LuaPF_OpenMantleInlayBox(Lua_State* L);
 extern int LuaHD3_DropItemEx(Lua_State* L);
 extern int LuaHD3_NpcDropMoney(Lua_State* L);
 extern int LuaHD3_JoinMission(Lua_State* L);
@@ -14650,6 +14689,7 @@ TLua_Funcs GameScriptFuns[] =
 	// Loi CO SAN tu dot C; truoc hom nay khong lo vi boot chet som hon o cho khac.
 	{"IL",LuaIncludeLib},
 	{"_ALERT",LuaGameAlert},	// [WLLS 21/08] loi runtime Lua ghi nguyen van vao ScriptError.log
+		{"GhiLog", LuaGhiLog},	// [HELOG2 29/08] script ghi vao logs\hethong.log
 	// == DA TAU TASKLINK (JX2 port) 15/08/2026 - xem DANHSACH_DATAU_PORT.md ==
 	{"C_Random",			LuaC_Random},
 	{"SetRandSeed",			LuaSetRandSeed},
@@ -15594,6 +15634,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "PET_GetSkill",	LuaPET_GetSkill },
 		{ "PET_SetName",	LuaPET_SetName },
 		{ "PET_GetName",	LuaPET_GetName },
+		{ "PET_ClearHand",	LuaPET_ClearHand },	// [30/08] go do ket tren tay
 		// [29/08] 15 ham ban Linux con thieu (audit p54)
 		{ "PET_GetStr",	LuaPET_GetStr },
 		{ "PET_GetDex",	LuaPET_GetDex },
@@ -15755,6 +15796,23 @@ TLua_Funcs GameScriptFuns[] =
 		{"ITEM_GetExpiredTime",	LuaHD3_ITEM_GetExpiredTime},
 		{"ITEM_SetLeftUsageTime",	LuaHD3_ITEM_SetLeftUsageTime},
 		{"SetItemBindState",	LuaHD3_SetItemBindState},
+		// [PHI PHONG 2026-08-29] ten ham GIU NGUYEN nhu ban Linux de script port thang
+		{"StarLevelUp",			LuaPF_StarLevelUp},
+		{"GetStarLevel",		LuaPF_GetStarLevel},
+		{"InlayStarStone",		LuaPF_InlayStarStone},
+		{"GetCurEquipWishValue",	LuaPF_GetCurEquipWishValue},
+		{"SetEquipWishValue",	LuaPF_SetEquipWishValue},
+		{"GetMaxEquipWishValue",	LuaPF_GetMaxEquipWishValue},
+		{"GetLastBreakTime",	LuaPF_GetLastBreakTime},
+		{"SetLastBreakTime",	LuaPF_SetLastBreakTime},
+		{"GetStarStoneOnEquip",	LuaPF_GetStarStoneOnEquip},
+		{"GetStoneLevelOnEquip",	LuaPF_GetStoneLevelOnEquip},
+		{"SetStoneLevelOnEquip",	LuaPF_SetStoneLevelOnEquip},
+		{"GetEquipMaxStoneNum",	LuaPF_GetEquipMaxStoneNum},
+		{"AddGoldEquipByRow",	LuaPF_AddGoldEquipByRow},
+		{"AddPlatinaItem",		LuaPF_AddPlatinaItem},
+		{"GetItemIndexBydwID",	LuaPF_GetItemIndexBydwID},
+		{"OpenMantleInlayBox",	LuaPF_OpenMantleInlayBox},
 		{"DropItemEx",	LuaHD3_DropItemEx},
 		{"NpcDropMoney",	LuaHD3_NpcDropMoney},
 		{"JoinMission",	LuaHD3_JoinMission},

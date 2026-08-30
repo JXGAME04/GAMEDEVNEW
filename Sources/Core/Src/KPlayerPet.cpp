@@ -11,6 +11,7 @@
 #include "KPlayerSet.h"
 #include "KNpc.h"
 #include "KNpcSet.h"
+#include "KItemSet.h"	// [30/08] extern KItemSet ItemSet (PET_ClearHand)
 #include "KSubWorld.h"
 #include "KSubWorldSet.h"
 #include "KSkills.h"
@@ -113,6 +114,15 @@ static void sPetApplyAura(int nPlayerIdx)
 	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(PET_AURA_SKILL0 + nKind - 1, nLevel);
 	if (pSkill)
 		pSkill->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
+	// [30/08] dat CAP SKILL that cho chu: client tra "dang cap hien thoi"
+	// tu KSkillList cua nguoi choi (HoldObject khong truyen cap duoc) ->
+	// thieu buoc nay thi tooltip hien cap 0 va tac dung 0%.
+	for (int nK = 0; nK < PET_SKILL_COUNT; nK++)
+	{
+		int nSkId = PET_AURA_SKILL0 + nK;
+		Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(
+			nSkId, (nK == nKind - 1) ? nLevel : 0);
+	}
 	// [29/08] 4 ky nang BI DONG da hoc (task 5139..5142, bang 1670..1687
 	// port tu VLTK) ap len PET, re-cast cung nhip aura
 	// [30/08 phan bien] pet KHONG danh (ca Linux lan VLTK) nen cast ky nang
@@ -126,6 +136,7 @@ static void sPetApplyAura(int nPlayerIdx)
 			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, 1);
 			if (pExt)
 				pExt->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
+			Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(nSk, 1);
 		}
 	}
 }
@@ -212,6 +223,15 @@ static void sPetUnSummon(int nPlayerIdx)
 {
 	sPetRemoveNpc(nPlayerIdx);
 	sPetS(nPlayerIdx, PET_TV_SUMMON, 0);
+	// [30/08] thu pet -> go cap 4 vong sang khoi chu (khong go ky nang bi
+	// kiep vi do la cua pet da hoc, se ap lai khi goi ra)
+	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
+	if (nOwnerNpc > 0 && nOwnerNpc < MAX_NPC)
+	{
+		for (int nK = 0; nK < PET_SKILL_COUNT; nK++)
+			Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(
+				PET_AURA_SKILL0 + nK, 0);
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -433,6 +453,47 @@ int LuaPET_AddUpgradePoint(Lua_State* L)
 	if (nMoi < 0) nMoi = 0;
 	sPetS(nIdx, PET_TV_UPGRADE, nMoi);
 	return 0;
+}
+
+// [30/08] Go item KET TREN TAY (pos_hand) - con tro dinh mon do lam
+// khong bam duoc NPC. Uu tien tra ve hanh trang; het cho thi xoa han.
+int LuaPET_ClearHand(Lua_State* L)
+{
+	int nIdx = sPetCtx(L);
+	int nDone = 0;
+	if (nIdx <= 0 || nIdx >= MAX_PLAYER)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	for (int nVong = 0; nVong < 32; nVong++)
+	{
+		PlayerItem* pIt = Player[nIdx].m_ItemList.GetFirstItem();
+		int nFound = 0;
+		while (pIt)
+		{
+			if (pIt->nPlace == pos_hand && pIt->nIdx > 0)
+			{
+				nFound = pIt->nIdx;
+				break;
+			}
+			pIt = Player[nIdx].m_ItemList.GetNextItem();
+		}
+		if (!nFound)
+			break;
+		int nX = 0, nY = 0;
+		if (Player[nIdx].m_ItemList.CheckCanPlaceInEquipment(
+			Item[nFound].GetWidth(), Item[nFound].GetHeight(), &nX, &nY))
+			Player[nIdx].m_ItemList.AddKIL(nFound, pos_equiproom, nX, nY);
+		else
+		{
+			Player[nIdx].m_ItemList.Remove(nFound);
+			ItemSet.Remove(nFound);
+		}
+		nDone++;
+	}
+	Lua_PushNumber(L, nDone);
+	return 1;
 }
 
 int LuaPET_IsCreate(Lua_State* L)
