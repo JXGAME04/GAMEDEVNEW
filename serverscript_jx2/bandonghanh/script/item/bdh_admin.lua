@@ -104,20 +104,20 @@ end
 Include("\\script\\petsys\\protocol_process_gs.lua")
 
 function BDH_P_Root()
-	SayEx({format("Pet cap %d - diem %d/%d/%d/%d - xu %d",
+	SayEx({format("Pet cÊp %d - ®iÓm %d/%d/%d/%d - xu %d",
 		PET_GetLevel(), PET_GetUpgradePoint(), PET_GetGrownPoint(),
 		PET_GetTamePoint(), PET_GetXiuzhenPoint(), GetTask(251)),
-	"Cap thiep/thuoc/trai/BDH_P_CapDo",
-	"Cap 5 Bi kiep/BDH_P_CapKN",
-	"Cap bo Bich Huyet/BDH_P_CapBo1",
-	"Cap bo Kim Lan/BDH_P_CapBo2",
-	"Cap ruong+chia+ket tinh/BDH_P_CapRuong",
-	"Diem+chan nguyen+xu/BDH_P_Diem",
-	"Tao pet nhanh/BDH_P_TaoNhanh",
-	"Xoa ky nang/BDH_P_XoaKN",
-	"Thao trang bi/BDH_P_XoaTB",
-	"Dong bo client/BDH_P_DongBo",
-	"Ket thuc doi thoai./no"})
+	"CÊp thiÖp + thuèc + tr¸i/BDH_P_CapDo",
+	"CÊp 5 BÝ kiÕp kü n¨ng/BDH_P_CapKN",
+	"CÊp bé BÝch HuyÕt/BDH_P_CapBo1",
+	"CÊp bé Kim L©n/BDH_P_CapBo2",
+	"CÊp r­¬ng + ch×a + kÕt tinh/BDH_P_CapRuong",
+	"§iÓm + ch©n nguyªn + xu/BDH_P_Diem",
+	"T¹o pet nhanh/BDH_P_TaoNhanh",
+	"Xãa kü n¨ng ®· häc/BDH_P_XoaKN",
+	"Th¸o hÕt trang bÞ/BDH_P_XoaTB",
+	"§ång bé xuèng client/BDH_P_DongBo",
+	"KÕt thóc ®èi tho¹i./no"})
 end
 
 -- [PETSYS 29/08] ban lai 29 o task pet xuong client (SetTask -> SetSaveVal
@@ -131,14 +131,14 @@ function BDH_P_BiKip()
 end
 function BDH_P_ChanNguyen()
 	SetTask(362, GetTask(362) + 2000)
-	Msg2Player("Da cap 2000 diem chan nguyen (task 362) - tong: " .. GetTask(362))
+	Msg2Player("§· cÊp 2000 ®iÓm ch©n nguyªn - tæng: " .. GetTask(362))
 end
 function BDH_P_DongBo()
 	local i
 	for i = 5110, 5169 do
 		SetTask(i, GetTask(i))
 	end
-	Msg2Player("Da ban lai 29 o diem pet - mo cua so Ban Dong Hanh xem")
+	Msg2Player("§· göi l¹i d÷ liÖu xuèng client - më cöa sæ B¹n §ång Hµnh xem")
 end
 
 function BDH_P_CapBo1()
@@ -146,7 +146,7 @@ function BDH_P_CapBo1()
 	for i = 4907, 4916 do
 		AddItem(6, 1, i, 1, 0, 0, 0)
 	end
-	Msg2Player("Da cap bo Bich Huyet 10 mon (4907..4916)")
+	Msg2Player("§· cÊp bé BÝch HuyÕt - 10 mãn")
 end
 
 function BDH_P_CapBo2()
@@ -154,7 +154,7 @@ function BDH_P_CapBo2()
 	for i = 4917, 4926 do
 		AddItem(6, 1, i, 1, 0, 0, 0)
 	end
-	Msg2Player("Da cap bo Kim Lan 10 mon (4917..4926)")
+	Msg2Player("§· cÊp bé Kim L©n - 10 mãn")
 end
 
 function BDH_P_CapRuong()
@@ -166,7 +166,7 @@ function BDH_P_CapRuong()
 		AddItem(6, 1, 4932, 1, 0, 0, 0)
 		AddItem(6, 1, 4927, 1, 0, 0, 0)
 	end
-	Msg2Player("Da cap 5 ruong 1/2/3 + 5 chia khoa + 5 ket tinh")
+	Msg2Player("§· cÊp 5 r­¬ng 1/2/3 + 5 ch×a khãa + 5 kÕt tinh")
 end
 
 function BDH_P_CapKN()
@@ -174,7 +174,7 @@ function BDH_P_CapKN()
 	for i = 1, 5 do
 		AddItem(6, 1, 4880, 1, 0, 0, 0)
 	end
-	Msg2Player("Da cap 5 Bi kiep ban dong hanh")
+	Msg2Player("§· cÊp 5 BÝ kiÕp b¹n ®ång hµnh")
 end
 
 function BDH_P_XoaKN()
@@ -182,7 +182,7 @@ function BDH_P_XoaKN()
 	for i = 0, 3 do
 		SetTask(5139 + i, 0)
 	end
-	Msg2Player("Da xoa het ky nang pet")
+	Msg2Player("§· xãa hÕt kü n¨ng cña b¹n ®ång hµnh")
 end
 
 function BDH_P_XoaTB()
@@ -191,7 +191,7 @@ function BDH_P_XoaTB()
 		SetTask(5143 + i, 0)
 	end
 	SetTask(5163, 0)
-	Msg2Player("Da thao het trang bi pet (don ca o rac he cu)")
+	Msg2Player("§· th¸o hÕt trang bÞ (dän c¶ « d÷ liÖu cò)")
 end
 
 function BDH_P_CapDo()
@@ -208,7 +208,7 @@ function BDH_P_CapDo()
 		AddItem(6, 1, 4878, 1, 0, 0, 0)
 		AddItem(6, 1, 4879, 1, 0, 0, 0)
 	end
-	Msg2Player("Da cap 5 Thiep + 200 Thuoc + 20 moi loai trai")
+	Msg2Player("§· cÊp 5 ThiÖp + 200 Thuèc t¨ng tr­ëng + 20 mçi lo¹i tr¸i")
 end
 
 function BDH_P_TaoNhanh()
@@ -229,7 +229,7 @@ function BDH_P_Diem()
 	PET_SetXiuzhenPoint(9999)
 	SetTask(362, GetTask(362) + 2000)
 	SetTask(251, GetTask(251) + 500)
-	Msg2Player("Da cap 4 diem 9999 + 2000 chan nguyen + 500 xu")
+	Msg2Player("§· cÊp 4 ®iÓm 9999 + 2000 ch©n nguyªn + 500 xu")
 end
 
 function BDH_P_Goi()
