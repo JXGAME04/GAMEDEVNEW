@@ -1,0 +1,634 @@
+[
+ {
+  "tep": "missions\\yandibaozang\\head.lua",
+  "hangso": [
+   {
+    "dong": 13,
+    "ten": "YDBZ_MISSION_MATCH",
+    "gt": 50,
+    "cm": "-- mission"
+   },
+   {
+    "dong": 14,
+    "ten": "YDBZ_TIMER_MATCH",
+    "gt": 87,
+    "cm": "--"
+   },
+   {
+    "dong": 15,
+    "ten": "YDBZ_TIMER_FIGHTSTATE",
+    "gt": 89,
+    "cm": "--"
+   },
+   {
+    "dong": 18,
+    "ten": "YDBZ_SIGNUP_WORLD",
+    "gt": 5,
+    "cm": "--"
+   },
+   {
+    "dong": 19,
+    "ten": "YDBZ_SIGNUP_POSX",
+    "gt": 6,
+    "cm": "-- X"
+   },
+   {
+    "dong": 20,
+    "ten": "YDBZ_SIGNUP_POSY",
+    "gt": 7,
+    "cm": "-- Y"
+   },
+   {
+    "dong": 25,
+    "ten": "YDBZ_TEAM_COUNT",
+    "gt": 16,
+    "cm": "--"
+   },
+   {
+    "dong": 26,
+    "ten": "YDBZ_TEAM_SUM",
+    "gt": 17,
+    "cm": "--"
+   },
+   {
+    "dong": 36,
+    "ten": "YDBZ_TEAMS_TASKID",
+    "gt": 1851,
+    "cm": "-- group"
+   },
+   {
+    "dong": 37,
+    "ten": "YDBZ_PLAY_LIMIT_COUNT",
+    "gt": 1852,
+    "cm": "-- 12 3 4"
+   },
+   {
+    "dong": 39,
+    "ten": "YDBZ_MISSIOM_PLAYER_KEY",
+    "gt": 1854,
+    "cm": "-- key"
+   },
+   {
+    "dong": 41,
+    "ten": "YDBZ_LIMIT_SIGNUP",
+    "gt": 5,
+    "cm": "-- 10"
+   },
+   {
+    "dong": 44,
+    "ten": "YDBZ_TIME_WAIT_STATE1",
+    "gt": 10,
+    "cm": "-- boss10"
+   },
+   {
+    "dong": 45,
+    "ten": "YDBZ_TIME_WAIT_STATE3",
+    "gt": 30,
+    "cm": "-- 30"
+   },
+   {
+    "dong": 46,
+    "ten": "YDBZ_LIMIT_SETFIGHTSTATE",
+    "gt": 3,
+    "cm": "-- 3"
+   },
+   {
+    "dong": 47,
+    "ten": "YDBZ_LIMIT_TEAMS_COUNT",
+    "gt": 15,
+    "cm": "--"
+   },
+   {
+    "dong": 48,
+    "ten": "YDBZ_LIMIT_PLAYER_LEVEL",
+    "gt": 120,
+    "cm": "--"
+   },
+   {
+    "dong": 49,
+    "ten": "YDBZ_LIMIT_WEEK_COUNT",
+    "gt": 10,
+    "cm": "--"
+   },
+   {
+    "dong": 50,
+    "ten": "YDBZ_LIMIT_DAY_COUNT",
+    "gt": 4,
+    "cm": "--"
+   },
+   {
+    "dong": 54,
+    "ten": "YDBZ_AWARD_EXP",
+    "gt": 600000,
+    "cm": "--"
+   },
+   {
+    "dong": 55,
+    "ten": "YDBZ_Faninl_AWARD_EXP",
+    "gt": 300000,
+    "cm": "--boss"
+   },
+   {
+    "dong": 56,
+    "ten": "YDBZ_KILLPLAYER_EXP",
+    "gt": 200000,
+    "cm": "--"
+   },
+   {
+    "dong": 57,
+    "ten": "YDBZ_KILLLASTBOSS_EXP",
+    "gt": 1000000,
+    "cm": "--boss"
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\loidai\\lib_loidai.lua",
+  "hangso": [
+   {
+    "dong": 17,
+    "ten": "MONEY_BD_LD",
+    "gt": 1000000,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "EXP_KT_LOIDAI_L",
+    "gt": 1000000,
+    "cm": "--phan thuong exp"
+   },
+   {
+    "dong": 20,
+    "ten": "CS_RevId",
+    "gt": 53,
+    "cm": ""
+   },
+   {
+    "dong": 21,
+    "ten": "CS_RevData",
+    "gt": 19,
+    "cm": ""
+   },
+   {
+    "dong": 29,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": ""
+   },
+   {
+    "dong": 30,
+    "ten": "MAX_MEMBER_COUNT",
+    "gt": 16,
+    "cm": ""
+   },
+   {
+    "dong": 32,
+    "ten": "WIN_TONGEXP",
+    "gt": 1200,
+    "cm": ""
+   },
+   {
+    "dong": 33,
+    "ten": "LOSE_TONGEXP",
+    "gt": 1400,
+    "cm": ""
+   },
+   {
+    "dong": 37,
+    "ten": "PKWINBONUS",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 38,
+    "ten": "LOSEBONUS",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 43,
+    "ten": "JOINSTATE",
+    "gt": 242,
+    "cm": ""
+   },
+   {
+    "dong": 44,
+    "ten": "MISSIONID",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 45,
+    "ten": "WORLDIDXBEGIN",
+    "gt": 213,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\event_huyhoang_dungdb\\lib_huyhoang.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "MAX_HUYHOANG_PER_DAY",
+    "gt": 5,
+    "cm": "-- sö dông tèi ®a 5 qu¶ huy hoµng"
+   },
+   {
+    "dong": 11,
+    "ten": "MAX_QHK_PER_DAY",
+    "gt": 5,
+    "cm": "-- sö dông tèi ®a 2 qu¶ hoµng kim"
+   },
+   {
+    "dong": 12,
+    "ten": "MAX_COLLECT_PER_DAY_HH",
+    "gt": 10,
+    "cm": "-- h¸i tèi ®a 10 qu¶ huy hoµng"
+   },
+   {
+    "dong": 13,
+    "ten": "MAX_COLLECT_PER_DAY_HK",
+    "gt": 3,
+    "cm": "-- h¸i tèi ®a 3 qu¶ hoµng kim"
+   },
+   {
+    "dong": 14,
+    "ten": "EXP_QHH_T",
+    "gt": 20000000,
+    "cm": ""
+   },
+   {
+    "dong": 15,
+    "ten": "EXP_QHH_TR",
+    "gt": 30000000,
+    "cm": ""
+   },
+   {
+    "dong": 16,
+    "ten": "EXP_QHH_C",
+    "gt": 50000000,
+    "cm": ""
+   },
+   {
+    "dong": 17,
+    "ten": "EXP_QHK",
+    "gt": 100000000,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "TIENVAN_QHK",
+    "gt": 500000,
+    "cm": ""
+   },
+   {
+    "dong": 25,
+    "ten": "TIME_DELAY_TH",
+    "gt": 5,
+    "cm": "-- 5 gi©y thu ho¹ch"
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\vuot_ai\\sugiasatthu.lua",
+  "hangso": [
+   {
+    "dong": 14,
+    "ten": "MAX_NVSATTHU",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 15,
+    "ten": "MIN_PLAYERINVUOTAI",
+    "gt": 5,
+    "cm": "--toi thieu to doi 5 den 8 nguoi moi du ®iÒu kiÖn tham gia v"
+   },
+   {
+    "dong": 17,
+    "ten": "MONEYGHEPSTG",
+    "gt": 80000,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "MONEYNHANNV",
+    "gt": 50000,
+    "cm": ""
+   },
+   {
+    "dong": 19,
+    "ten": "MONEY_GO_BOSS",
+    "gt": 5000,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "LEVELENOUGH",
+    "gt": 90,
+    "cm": "--dang cap toi thieu tham gia vuot ai"
+   },
+   {
+    "dong": 24,
+    "ten": "MAX_STACK_NUM",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\event_vantieu\\lib_vt.lua",
+  "hangso": [
+   {
+    "dong": 95,
+    "ten": "MAX_CUOP_TIEU",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 97,
+    "ten": "MAXVANTIEU",
+    "gt": 20,
+    "cm": "--sè lÇn tèi ®a vËn tiªu trong ngµy"
+   },
+   {
+    "dong": 98,
+    "ten": "NEED_MONEY",
+    "gt": 500000,
+    "cm": ""
+   },
+   {
+    "dong": 99,
+    "ten": "NEED_MONEY_GO",
+    "gt": 100000,
+    "cm": ""
+   },
+   {
+    "dong": 100,
+    "ten": "LEVEL_LIMIT_VT",
+    "gt": 50,
+    "cm": "--dang cap toi thieu tham gia van tieu"
+   }
+  ]
+ },
+ {
+  "tep": "event\\great_night\\huangzhizhang\\event.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "GREATNIGHT_HUANGZHIZHANG",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 13,
+    "ten": "GN_HUANG_EVENTID",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 14,
+    "ten": "GN_HUANG_SWITH",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 15,
+    "ten": "GN_HUANG_DATE",
+    "gt": 3,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\challengeoftime\\item\\chuangguanbaoxiang.lua",
+  "hangso": [
+   {
+    "dong": 115,
+    "ten": "nWidth",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 116,
+    "ten": "nHeight",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 117,
+    "ten": "nFreeItemCellLimit",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\tongwar\\relay\\tongwar.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "LEAGUE_NUMBER",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 10,
+    "ten": "ONETONG_LGTYPE",
+    "gt": 541,
+    "cm": ""
+   },
+   {
+    "dong": 11,
+    "ten": "ONETONG_ACC_LGTYPE",
+    "gt": 542,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\gongchengche.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "CityWarID",
+    "gt": 221,
+    "cm": "--¹¥³ÇÕ½µÄµØÍ¼ID"
+   },
+   {
+    "dong": 5,
+    "ten": "NpcTempl",
+    "gt": 524,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "NpcLevel",
+    "gt": 60,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\6079\\flyboss6079.lua",
+  "hangso": [
+   {
+    "dong": 193,
+    "ten": "FLYBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 196,
+    "ten": "FLYBOSS_MAPID",
+    "gt": 387,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\90\\templeboss90.lua",
+  "hangso": [
+   {
+    "dong": 16,
+    "ten": "TEMBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 18,
+    "ten": "TEMBOSS_MAPID",
+    "gt": 392,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "item\\hoplevatvuotai.lua",
+  "hangso": [
+   {
+    "dong": 8,
+    "ten": "EXP_HOPLVVA",
+    "gt": 2000000,
+    "cm": ""
+   },
+   {
+    "dong": 9,
+    "ten": "MAX_HOPLEVATVA_DAY",
+    "gt": 3,
+    "cm": "--tèi ®a sö dông hép lÔ vËt trªn ngµy"
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\congthanhchien\\quanquan.lua",
+  "hangso": [
+   {
+    "dong": 9,
+    "ten": "NUM_XU_MUA_DC",
+    "gt": 100,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_city\\symboldeath2.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "SymbolId",
+    "gt": 2,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\30thang4\\tuongquan.lua",
+  "hangso": [
+   {
+    "dong": 75,
+    "ten": "FREECELL_TANTHU",
+    "gt": 30,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\rewind\\partner_reward_main_01.lua",
+  "hangso": [
+   {
+    "dong": 35,
+    "ten": "PARID_REWIND_WAITTIME",
+    "gt": 38,
+    "cm": "-- 5·ÖÖÓµÄµÈ´ýÊ±¼ä"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\90\\flypoint90.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYPOINT_MAPID",
+    "gt": 389,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\6079\\tmpbug6079.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TEMBUGBEAR_MAPID",
+    "gt": 390,
+    "cm": "--É½ÉñÃíµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "global\\mantlesystem\\other_func_outputs.lua",
+  "hangso": [
+   {
+    "dong": 6,
+    "ten": "MIN_FREE_ROOM_NEED",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\sutra.lua",
+  "hangso": [
+   {
+    "dong": 3,
+    "ten": "NUM20E",
+    "gt": 2000000000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\event\\30thang4\\huychuongchiencong.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "FREECELL_EVENT",
+    "gt": 6,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "activitysys\\config\\32\\variables.lua",
+  "hangso": [
+   {
+    "dong": 7,
+    "ten": "TIME_2000_1_1",
+    "gt": 946656000,
+    "cm": ""
+   }
+  ]
+ }
+]

@@ -1,0 +1,634 @@
+[
+ {
+  "tep": "lib\\lib_vatpham.lua",
+  "hangso": [
+   {
+    "dong": 11,
+    "ten": "GOLDITEM",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 12,
+    "ten": "PURPLEITEM",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 13,
+    "ten": "BLUEITEM",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 14,
+    "ten": "GREENITEM",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "PARTICULAR",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 19,
+    "ten": "LEVEL",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 21,
+    "ten": "LUCK",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 22,
+    "ten": "VERSION",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 23,
+    "ten": "RANDOMSEED",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 48,
+    "ten": "ROOME",
+    "gt": 0,
+    "cm": "-- room_equipment"
+   },
+   {
+    "dong": 49,
+    "ten": "ROOMEB",
+    "gt": 1,
+    "cm": "-- room_equipmentback"
+   },
+   {
+    "dong": 50,
+    "ten": "ROOMR",
+    "gt": 2,
+    "cm": "-- room_repository"
+   },
+   {
+    "dong": 51,
+    "ten": "ROOME1",
+    "gt": 3,
+    "cm": "-- room_exbox1"
+   },
+   {
+    "dong": 52,
+    "ten": "ROOME2",
+    "gt": 4,
+    "cm": "-- room_exbox2"
+   },
+   {
+    "dong": 53,
+    "ten": "ROOME3",
+    "gt": 5,
+    "cm": "-- room_exbox3"
+   },
+   {
+    "dong": 54,
+    "ten": "ROOMEX",
+    "gt": 6,
+    "cm": "-- room_equipmentex"
+   },
+   {
+    "dong": 55,
+    "ten": "ROOMTRADE",
+    "gt": 7,
+    "cm": "-- room_trade"
+   },
+   {
+    "dong": 56,
+    "ten": "ROOMTRADEB",
+    "gt": 8,
+    "cm": "-- room_tradeback"
+   },
+   {
+    "dong": 57,
+    "ten": "ROOMTRADE1",
+    "gt": 9,
+    "cm": "-- room_trade1"
+   },
+   {
+    "dong": 58,
+    "ten": "ROOMIMMEDIACY",
+    "gt": 10,
+    "cm": "-- room_immediacy"
+   },
+   {
+    "dong": 59,
+    "ten": "ROOMG",
+    "gt": 11,
+    "cm": "-- room_give"
+   },
+   {
+    "dong": 60,
+    "ten": "ROOMGB",
+    "gt": 12,
+    "cm": "-- room_giveback"
+   },
+   {
+    "dong": 61,
+    "ten": "ROOAFFAIR",
+    "gt": 13,
+    "cm": "-- room_affairitem"
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\compound_header.lua",
+  "hangso": [
+   {
+    "dong": 33,
+    "ten": "RESULT_UNKNOWN",
+    "gt": -1,
+    "cm": "-- Î´Öª´íÎó"
+   },
+   {
+    "dong": 34,
+    "ten": "RESULT_SUCCEED",
+    "gt": 0,
+    "cm": "-- [ºÏ³É]³É¹¦"
+   },
+   {
+    "dong": 35,
+    "ten": "RESULT_FAIL",
+    "gt": 1,
+    "cm": "-- [ºÏ³É]Ê§°Ü"
+   },
+   {
+    "dong": 36,
+    "ten": "RESULT_NO_MONEY",
+    "gt": 2,
+    "cm": "-- ½ðÇ®²»×ã"
+   },
+   {
+    "dong": 37,
+    "ten": "RESULT_LEVEL_FULL",
+    "gt": 3,
+    "cm": "-- Ô­ÁÏÒÑ´ïµ½×î¸ßµÈ¼¶"
+   },
+   {
+    "dong": 38,
+    "ten": "RESULT_LACK_RESOURCE",
+    "gt": 4,
+    "cm": "-- Ô­ÁÏ²»×ã"
+   },
+   {
+    "dong": 39,
+    "ten": "RESULT_LEVEL_ERROR",
+    "gt": 5,
+    "cm": "-- Ô­ÁÏµÈ¼¶´íÎó"
+   },
+   {
+    "dong": 40,
+    "ten": "RESULT_MAGIC_ERROR",
+    "gt": 6,
+    "cm": "-- Ô­ÁÏÄ§·¨Öµ´íÎó"
+   },
+   {
+    "dong": 42,
+    "ten": "RESULT_RULE_ERROR",
+    "gt": 8,
+    "cm": "-- Ô­ÁÏ²»·ûºÏ¹æÔò"
+   },
+   {
+    "dong": 45,
+    "ten": "GLBID_LAST_CMP_DATE",
+    "gt": 32,
+    "cm": "-- È«¾Ö±äÁ¿ID of ×îºóÒ»´Î[ºÏ³É]µÄÈÕÆÚ"
+   },
+   {
+    "dong": 46,
+    "ten": "GLBID_COMMON_VAL_SUM",
+    "gt": 33,
+    "cm": "-- È«¾Ö±äÁ¿ID of ÆÕÍ¨ÎïÆ·¼ÛÖµÁ¿»ã×ÜÖµ"
+   },
+   {
+    "dong": 47,
+    "ten": "GLBID_GOLD_VAL_SUM",
+    "gt": 34,
+    "cm": "-- È«¾Ö±äÁ¿ID of »Æ½ð×°±¸¼ÛÖµÁ¿»ã×ÜÖµ"
+   },
+   {
+    "dong": 49,
+    "ten": "SUM_UNIT",
+    "gt": 10000000,
+    "cm": "-- ´æ´¢µ½GlobalValueµÄµ¥Î»£¨Ç§Íò£©"
+   }
+  ]
+ },
+ {
+  "tep": "event\\tongwar\\score.lua",
+  "hangso": [
+   {
+    "dong": 3,
+    "ten": "TONGWAR_LGTYPE",
+    "gt": 10,
+    "cm": "-- Õ½¶ÓÀàÐÍ"
+   },
+   {
+    "dong": 6,
+    "ten": "TONGWAR_LGTASK_TONGCNT",
+    "gt": 1,
+    "cm": "-- ¹²ÁªÃËÊý(ÎÞÐ§)"
+   },
+   {
+    "dong": 7,
+    "ten": "TONGWAR_LGTASK_WIN",
+    "gt": 2,
+    "cm": "-- Ê¤Àû´ÎÊý"
+   },
+   {
+    "dong": 8,
+    "ten": "TONGWAR_LGTASK_LOSE",
+    "gt": 3,
+    "cm": "-- Ê§°Ü´ÎÊý"
+   },
+   {
+    "dong": 9,
+    "ten": "TONGWAR_LGTASK_TIE",
+    "gt": 4,
+    "cm": "-- Æ½¾Ö´ÎÊý"
+   },
+   {
+    "dong": 10,
+    "ten": "TONGWAR_LGTASK_RESULT",
+    "gt": 5,
+    "cm": "-- ±ÈÈü»ý·Ö"
+   },
+   {
+    "dong": 11,
+    "ten": "TONGWAR_LGTASK_POINT",
+    "gt": 6,
+    "cm": "-- ÀÛ¼Ó¾»»ý·Ö"
+   },
+   {
+    "dong": 17,
+    "ten": "RESULT_WIN",
+    "gt": 1,
+    "cm": "-- Ê¤Àû"
+   },
+   {
+    "dong": 18,
+    "ten": "RESULT_LOSE",
+    "gt": 2,
+    "cm": "-- Ê§°Ü"
+   },
+   {
+    "dong": 19,
+    "ten": "RESULT_TIE",
+    "gt": 3,
+    "cm": "-- Æ½¾Ö"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\yandibaozang\\readymap\\include.lua",
+  "hangso": [
+   {
+    "dong": 14,
+    "ten": "YDBZ_READY_MISSION",
+    "gt": 51,
+    "cm": "-- mission"
+   },
+   {
+    "dong": 15,
+    "ten": "YDBZ_READY_TIMER",
+    "gt": 88,
+    "cm": "--"
+   },
+   {
+    "dong": 19,
+    "ten": "YDBZ_READY_TEAM",
+    "gt": 1,
+    "cm": "--"
+   },
+   {
+    "dong": 20,
+    "ten": "YDBZ_READY_TEAM_MAX",
+    "gt": 2,
+    "cm": "--"
+   },
+   {
+    "dong": 25,
+    "ten": "YDBZ_TEAM_COUNT_LIMIT",
+    "gt": 4,
+    "cm": "--"
+   },
+   {
+    "dong": 26,
+    "ten": "YDBZ_TEAM_COUNT_MAXLIMIT",
+    "gt": 6,
+    "cm": "--"
+   },
+   {
+    "dong": 27,
+    "ten": "YDBZ_TEAM_START_LIMIT",
+    "gt": 2,
+    "cm": "--"
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\master\\partner_master_main_03.lua",
+  "hangso": [
+   {
+    "dong": 30,
+    "ten": "PARID_MASTER_KILLER_01",
+    "gt": 20,
+    "cm": "-- Ò»Æ·ÌÃÇ¹±ø"
+   },
+   {
+    "dong": 31,
+    "ten": "PARID_MASTER_KILLER_02",
+    "gt": 21,
+    "cm": "-- Ò»Æ·ÌÃ¹­±ø"
+   },
+   {
+    "dong": 32,
+    "ten": "PARID_MASTER_KILLER_03",
+    "gt": 22,
+    "cm": "-- Ò»Æ·ÌÃ´øµ¶½«Áì"
+   },
+   {
+    "dong": 33,
+    "ten": "PARID_MASTER_KILLER_04",
+    "gt": 23,
+    "cm": "-- ÎäÊ¿"
+   },
+   {
+    "dong": 35,
+    "ten": "GLBID_MASTER_KILLER_NUM",
+    "gt": 830,
+    "cm": "-- ·þÎñÆ÷È«¾Ö±äÁ¿£¬¼ÇÂ¼Ò»Æ·ÌÃÍ³Ë§µÄË¢³öÊýÁ¿"
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\master\\partner_master_main_04.lua",
+  "hangso": [
+   {
+    "dong": 31,
+    "ten": "PARID_MASTER04_BOSS_01",
+    "gt": 25,
+    "cm": "-- Á»Ã¨Ã¨"
+   },
+   {
+    "dong": 32,
+    "ten": "PARID_MASTER04_BOSS_02",
+    "gt": 26,
+    "cm": "-- ÀîÐÉ"
+   },
+   {
+    "dong": 33,
+    "ten": "PARID_MASTER04_BOSS_03",
+    "gt": 27,
+    "cm": "-- Åå¹«×Ó"
+   },
+   {
+    "dong": 34,
+    "ten": "PARID_MASTER04_BOSS_04",
+    "gt": 28,
+    "cm": "-- ÌÆÓã"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\fengling_ferry\\hd3_baoruongthuytac.lua",
+  "hangso": [
+   {
+    "dong": 111,
+    "ten": "nWidth",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 112,
+    "ten": "nHeight",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 113,
+    "ten": "nFreeItemCellLimit",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\yandibaozang\\item\\yandimibao.lua",
+  "hangso": [
+   {
+    "dong": 115,
+    "ten": "nWidth",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 116,
+    "ten": "nHeight",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 117,
+    "ten": "nFreeItemCellLimit",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\toushiche.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "CityWarID",
+    "gt": 221,
+    "cm": "--¹¥³ÇÕ½µÄµØÍ¼ID"
+   },
+   {
+    "dong": 5,
+    "ten": "NpcTempl",
+    "gt": 525,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "NpcLevel",
+    "gt": 60,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\8089\\flyboss8089.lua",
+  "hangso": [
+   {
+    "dong": 193,
+    "ten": "FLYBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 195,
+    "ten": "FLYBOSS_MAPID",
+    "gt": 388,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¨8089£©"
+   }
+  ]
+ },
+ {
+  "tep": "petsys\\petequip.lua",
+  "hangso": [
+   {
+    "dong": 20,
+    "ten": "PETEQUIP_O_DAU",
+    "gt": 5143,
+    "cm": ""
+   },
+   {
+    "dong": 22,
+    "ten": "PETEQUIP_O_BOCOUNT",
+    "gt": 5163,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\tie-luohan.lua",
+  "hangso": [
+   {
+    "dong": 4,
+    "ten": "MAX_PER_DATE",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 5,
+    "ten": "GETMAXEXP",
+    "gt": 150000000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\phonglangdo\\bossthuytacdaulinhpld.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "NPCLIFE",
+    "gt": 8000000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_city\\symboldeath3.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "SymbolId",
+    "gt": 3,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\eventnoel\\main_noel.lua",
+  "hangso": [
+   {
+    "dong": 24,
+    "ten": "FREECELL_TANTHU",
+    "gt": 30,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\killbosshead.lua",
+  "hangso": [
+   {
+    "dong": 1,
+    "ten": "SHOUHUZHE_OFFSET",
+    "gt": 2,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\90\\flyrefresh90.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYREFRESH_MAPID",
+    "gt": 389,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\8089\\templebro8089.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TEMREFRESH_MAPID",
+    "gt": 391,
+    "cm": "--É½ÉñÃíµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "global\\npcchucnang\\tientrang.lua",
+  "hangso": [
+   {
+    "dong": 11,
+    "ten": "TY_LE_DOI_KNB_XU",
+    "gt": 100,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\tuiduocpham.lua",
+  "hangso": [
+   {
+    "dong": 4,
+    "ten": "FREECELL_MAUTANTHU",
+    "gt": 20,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\event\\30thang4\\huychuongphattong.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "FREECELL_EVENT",
+    "gt": 6,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "battles\\battleinfo.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "BALANCE_MAMCOUNT",
+    "gt": 5,
+    "cm": ""
+   }
+  ]
+ }
+]

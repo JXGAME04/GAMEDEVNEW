@@ -1,0 +1,595 @@
+[
+ {
+  "tep": "lib\\lib_task.lua",
+  "hangso": [
+   {
+    "dong": 105,
+    "ten": "TASKID_FY_START_ONLINE_TIME",
+    "gt": 83,
+    "cm": ""
+   },
+   {
+    "dong": 106,
+    "ten": "TASKID_FY_ADDITIONAL_TIME",
+    "gt": 84,
+    "cm": ""
+   },
+   {
+    "dong": 107,
+    "ten": "TASKID_GAIN_LAST_DATE",
+    "gt": 85,
+    "cm": ""
+   },
+   {
+    "dong": 108,
+    "ten": "TASKID_GAIN_TIMES_IN_DAY",
+    "gt": 86,
+    "cm": ""
+   },
+   {
+    "dong": 164,
+    "ten": "LoaiBCH",
+    "gt": 325,
+    "cm": ""
+   },
+   {
+    "dong": 165,
+    "ten": "TaskBCH",
+    "gt": 326,
+    "cm": ""
+   },
+   {
+    "dong": 166,
+    "ten": "TaskDBCH",
+    "gt": 327,
+    "cm": ""
+   },
+   {
+    "dong": 167,
+    "ten": "TaskUyThacOffline",
+    "gt": 327,
+    "cm": ""
+   },
+   {
+    "dong": 168,
+    "ten": "TaskUyThacOffline1",
+    "gt": 329,
+    "cm": ""
+   },
+   {
+    "dong": 169,
+    "ten": "TaskUyThacOffline2",
+    "gt": 330,
+    "cm": ""
+   },
+   {
+    "dong": 170,
+    "ten": "TaskUyThacOffline3",
+    "gt": 331,
+    "cm": ""
+   },
+   {
+    "dong": 171,
+    "ten": "TaskUyThacOffline4",
+    "gt": 332,
+    "cm": ""
+   },
+   {
+    "dong": 202,
+    "ten": "NVTHIENBAOKHO",
+    "gt": 357,
+    "cm": "--[1][2]nhannv+soruong tieptheo [3][4]keymoruong"
+   },
+   {
+    "dong": 258,
+    "ten": "TMP_INDEX_PLAYER",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 259,
+    "ten": "TMP_NHANNAPTHE",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 260,
+    "ten": "TMP_NHANTRANGBIXANH",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 261,
+    "ten": "TMP_HETRANGBIXANH",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 264,
+    "ten": "TMP_INDEX_OBJ",
+    "gt": 9,
+    "cm": ""
+   },
+   {
+    "dong": 265,
+    "ten": "TMP_LUUMASERIAL",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 266,
+    "ten": "TMP_LOAITHENAP",
+    "gt": 11,
+    "cm": ""
+   },
+   {
+    "dong": 267,
+    "ten": "TMP_LUUMACODE",
+    "gt": 12,
+    "cm": ""
+   },
+   {
+    "dong": 268,
+    "ten": "TMP_TGIANMOTUI",
+    "gt": 13,
+    "cm": ""
+   },
+   {
+    "dong": 269,
+    "ten": "TMP_PhongLangDo",
+    "gt": 14,
+    "cm": ""
+   },
+   {
+    "dong": 270,
+    "ten": "TMP_BUY_CTC",
+    "gt": 15,
+    "cm": ""
+   },
+   {
+    "dong": 271,
+    "ten": "TMP_TG_LOIDAIB",
+    "gt": 16,
+    "cm": ""
+   },
+   {
+    "dong": 273,
+    "ten": "TMP_LienDau_DonDau",
+    "gt": 18,
+    "cm": ""
+   },
+   {
+    "dong": 274,
+    "ten": "TMP_DthuLienDauCao",
+    "gt": 19,
+    "cm": ""
+   },
+   {
+    "dong": 275,
+    "ten": "TMP_DthuLienDau",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 276,
+    "ten": "TMP_BAYTK",
+    "gt": 4138,
+    "cm": "-- [FIX TRUNG TASK 24/08] truoc la 21; TaskTemp 21 = diem ky"
+   },
+   {
+    "dong": 288,
+    "ten": "M_LD_DONDAU",
+    "gt": 11,
+    "cm": ""
+   },
+   {
+    "dong": 293,
+    "ten": "M_VALUE_1",
+    "gt": 1,
+    "cm": "--vuot ai ID doi truong"
+   },
+   {
+    "dong": 294,
+    "ten": "M_VALUE_2",
+    "gt": 2,
+    "cm": "--vuot ai so luong quai trong map"
+   },
+   {
+    "dong": 295,
+    "ten": "M_VALUE_3",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 296,
+    "ten": "M_VALUE_4",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 297,
+    "ten": "M_VALUE_5",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 298,
+    "ten": "M_VALUE_6",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 299,
+    "ten": "M_VALUE_7",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 300,
+    "ten": "M_VALUE_8",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 301,
+    "ten": "M_VALUE_9",
+    "gt": 9,
+    "cm": ""
+   },
+   {
+    "dong": 302,
+    "ten": "M_VALUE_10",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 303,
+    "ten": "M_VALUE_11",
+    "gt": 11,
+    "cm": ""
+   },
+   {
+    "dong": 304,
+    "ten": "M_VALUE_12",
+    "gt": 12,
+    "cm": ""
+   },
+   {
+    "dong": 305,
+    "ten": "M_VALUE_13",
+    "gt": 13,
+    "cm": ""
+   },
+   {
+    "dong": 306,
+    "ten": "M_VALUE_14",
+    "gt": 14,
+    "cm": ""
+   },
+   {
+    "dong": 307,
+    "ten": "M_VALUE_15",
+    "gt": 15,
+    "cm": ""
+   },
+   {
+    "dong": 308,
+    "ten": "M_VALUE_16",
+    "gt": 16,
+    "cm": ""
+   },
+   {
+    "dong": 309,
+    "ten": "M_VALUE_17",
+    "gt": 17,
+    "cm": ""
+   },
+   {
+    "dong": 310,
+    "ten": "M_VALUE_18",
+    "gt": 18,
+    "cm": ""
+   },
+   {
+    "dong": 311,
+    "ten": "M_VALUE_19",
+    "gt": 19,
+    "cm": ""
+   },
+   {
+    "dong": 312,
+    "ten": "M_VALUE_20",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 313,
+    "ten": "M_VALUE_21",
+    "gt": 21,
+    "cm": ""
+   },
+   {
+    "dong": 314,
+    "ten": "M_VALUE_22",
+    "gt": 22,
+    "cm": ""
+   },
+   {
+    "dong": 315,
+    "ten": "M_VALUE_23",
+    "gt": 23,
+    "cm": ""
+   },
+   {
+    "dong": 316,
+    "ten": "M_VALUE_24",
+    "gt": 24,
+    "cm": ""
+   },
+   {
+    "dong": 317,
+    "ten": "M_VALUE_25",
+    "gt": 25,
+    "cm": ""
+   },
+   {
+    "dong": 318,
+    "ten": "M_VALUE_26",
+    "gt": 26,
+    "cm": ""
+   },
+   {
+    "dong": 319,
+    "ten": "M_VALUE_27",
+    "gt": 27,
+    "cm": ""
+   },
+   {
+    "dong": 320,
+    "ten": "M_VALUE_28",
+    "gt": 28,
+    "cm": ""
+   },
+   {
+    "dong": 321,
+    "ten": "M_VALUE_29",
+    "gt": 29,
+    "cm": ""
+   },
+   {
+    "dong": 322,
+    "ten": "M_VALUE_30",
+    "gt": 30,
+    "cm": ""
+   },
+   {
+    "dong": 323,
+    "ten": "M_TICHLUYA",
+    "gt": 31,
+    "cm": ""
+   },
+   {
+    "dong": 324,
+    "ten": "M_TICHLUYB",
+    "gt": 32,
+    "cm": ""
+   },
+   {
+    "dong": 325,
+    "ten": "M_HINHTHUC",
+    "gt": 33,
+    "cm": ""
+   },
+   {
+    "dong": 326,
+    "ten": "M_SOCOPHEA",
+    "gt": 34,
+    "cm": ""
+   },
+   {
+    "dong": 327,
+    "ten": "M_SOCOPHEB",
+    "gt": 35,
+    "cm": ""
+   },
+   {
+    "dong": 328,
+    "ten": "M_SOTRAN",
+    "gt": 36,
+    "cm": ""
+   },
+   {
+    "dong": 329,
+    "ten": "M_ADDNPCA",
+    "gt": 37,
+    "cm": "--value 1 ®¸nh dÊu so¸i Tèng xuÊt hiÖn 2 so¸i chÕt 0 lµ ch­a"
+   },
+   {
+    "dong": 330,
+    "ten": "M_ADDNPCB",
+    "gt": 38,
+    "cm": "--value 1 ®¸nh dÊu so¸i Kim xuÊt hiÖn 2 so¸i chÕt 0 lµ ch­a"
+   },
+   {
+    "dong": 331,
+    "ten": "M_CTHANHVO_1",
+    "gt": 39,
+    "cm": "--value 1 ®¸nh dÊu cæng thµnh bÞ vì lËp d­¬ng"
+   },
+   {
+    "dong": 332,
+    "ten": "M_CTHANHVO_2",
+    "gt": 40,
+    "cm": "--value 1 ®¸nh dÊu cæng thµnh bÞ vì ®Þnh xuyªn"
+   },
+   {
+    "dong": 333,
+    "ten": "M_CTHANHVO_3",
+    "gt": 41,
+    "cm": "--value 1 ®¸nh dÊu cæng thµnh bÞ vì b×nh giang"
+   },
+   {
+    "dong": 334,
+    "ten": "M_LONGTRULD",
+    "gt": 42,
+    "cm": "--value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p"
+   },
+   {
+    "dong": 335,
+    "ten": "M_LONGTRUDX",
+    "gt": 43,
+    "cm": "--value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p"
+   },
+   {
+    "dong": 336,
+    "ten": "M_LONGTRUBG",
+    "gt": 44,
+    "cm": "--value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p"
+   },
+   {
+    "dong": 339,
+    "ten": "M_VITRI_TRENDUOI",
+    "gt": 47,
+    "cm": "--value sö dông trong tèng kim x¸c ®Þnh vÞ trÝ trªn d­íi 2 p"
+   },
+   {
+    "dong": 340,
+    "ten": "M_NPCIDX_SOAITONG",
+    "gt": 48,
+    "cm": "--value sö dông l­u npcidx so¸i tèng"
+   },
+   {
+    "dong": 341,
+    "ten": "M_NPCIDX_SOAIKIM",
+    "gt": 49,
+    "cm": "--value sö dông l­u npcidx so¸i kim"
+   },
+   {
+    "dong": 346,
+    "ten": "GBM_VALUE_1",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 347,
+    "ten": "GBM_VALUE_2",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 348,
+    "ten": "GBM_VALUE_3",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 349,
+    "ten": "GBM_VALUE_4",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 350,
+    "ten": "GBM_VALUE_5",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 351,
+    "ten": "GBM_VALUE_6",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 352,
+    "ten": "GBM_VALUE_7",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 353,
+    "ten": "GBM_VALUE_8",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 354,
+    "ten": "GBM_VALUE_9",
+    "gt": 9,
+    "cm": ""
+   },
+   {
+    "dong": 355,
+    "ten": "GBM_VALUE_10",
+    "gt": 10,
+    "cm": "--10 id dau tien 10 map vuot ai"
+   },
+   {
+    "dong": 356,
+    "ten": "GM_BenThuyen1",
+    "gt": 11,
+    "cm": ""
+   },
+   {
+    "dong": 357,
+    "ten": "GM_BenThuyen1",
+    "gt": 12,
+    "cm": ""
+   },
+   {
+    "dong": 358,
+    "ten": "GM_BenThuyen1",
+    "gt": 13,
+    "cm": ""
+   },
+   {
+    "dong": 359,
+    "ten": "M_LienDau_DonDau",
+    "gt": 14,
+    "cm": ""
+   },
+   {
+    "dong": 360,
+    "ten": "M_SoNguoiLDTrung",
+    "gt": 15,
+    "cm": ""
+   },
+   {
+    "dong": 361,
+    "ten": "M_SoNguoiLDCao",
+    "gt": 16,
+    "cm": ""
+   },
+   {
+    "dong": 363,
+    "ten": "CSP_CTYPE_NONE",
+    "gt": 0,
+    "cm": "-- kiÓu lªn ®¶o tÈy tuû"
+   },
+   {
+    "dong": 364,
+    "ten": "CSP_CTYPE_PROP",
+    "gt": 1,
+    "cm": "-- tÈy tiÒm n¨ng"
+   },
+   {
+    "dong": 365,
+    "ten": "CSP_CTYPE_SKILL",
+    "gt": 2,
+    "cm": "-- tÈy kü n¨ng"
+   },
+   {
+    "dong": 366,
+    "ten": "CSP_CTYPE_ALL",
+    "gt": 3,
+    "cm": "-- tÈy c¸c lo¹i"
+   },
+   {
+    "dong": 378,
+    "ten": "MISSION_BR_PARAM_KILLS",
+    "gt": 0,
+    "cm": ""
+   }
+  ]
+ }
+]

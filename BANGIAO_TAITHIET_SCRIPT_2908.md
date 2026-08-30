@@ -350,18 +350,26 @@ Công cụ kiểm (chỉ đọc, chạy lại bất cứ lúc nào):
 Sáu nhóm quét song song toàn bộ hoạt động/sự kiện, kết quả đầy đủ ở
 **`D:\GAMEDEVNEW\KHAOSAT_LICH_THUONG_2908.md`** (hơn 100.000 chữ, mỗi khoá kèm `tệp:dòng`).
 
-### Đã nối xong — 92 khoá
+### Đã nối xong — 191 khoá
 
 Tất cả đều **giữ nguyên giá trị đang chạy**, nên bản thân việc nối không đổi gì.
 
 | Nhóm | Khoá | Nơi chỉnh | Đáng chú ý |
 |---|---|---|---|
 | Bật/tắt hoạt động | 20 | `ch_lich.lua` | Trước đây phải sửa mã nguồn mới bật/tắt được. Mặc định giữ đúng hiện trạng: 4 bật, 16 tắt |
-| Tống Kim (giờ + lịch) | 5 + bảng lịch | `ch_lich.lua` | **Đang chạy cấu hình test** — xem `BAOCAO_LOHONG_2908.md` mục 2 |
+| Tống Kim — giờ + lịch | 5 + bảng | `ch_lich.lua` | **Đang chạy cấu hình test** — xem `BAOCAO_LOHONG_2908.md` mục 2 |
+| Tống Kim — điểm, thưởng, điều kiện | 17 | `ch_thuong.lua` | |
 | Rơi đồ sự kiện | 27 | `ch_drop.lua` | Có chỗ đang là **99%** rơi 10 món, **79%** rơi mảnh đồ phổ |
 | Rơi đồ quái thường | 13 | `ch_drop.lua` | Chi phối mọi bản đồ; kèm vá một lỗi gõ thiếu chữ |
 | Trần exp bảo rương | 4 | `ch_exp.lua` | Trần ẩn 50/80/100 triệu mỗi ngày, áp cho cả chín loại rương |
 | Thưởng Vận Tiêu | 19 | `ch_thuong.lua` | Trả gấp hơn 10 lần con số báo cho người chơi |
+| Hệ số nền toàn cục | 11 | `ch_chung.lua` | Có `GLB_CHE_DO_TEST` — đặt 0 là tắt được hai NPC phát đồ GM |
+| Công Thành + Lôi Đài JX2 | 27 | `ch_chung.lua`, `ch_lich.lua` | Hai bản `MAX_CAMP*` **lệch nhau** (200 vs 50) |
+| Boss Hoàng Kim | 13 | `ch_chung.lua`, `ch_thuong.lua` | **Boss đại đang có 1 máu** |
+| Bạn Đồng Hành | 13 | `ch_chung.lua`, `ch_thuong.lua` | Tỉ lệ nâng cấp nằm ở `settings`, không chỉnh ở đây được |
+| Dã Tẩu | 3 | `ch_chung.lua` | Mốc thưởng nằm ở `settings\task\*.txt` |
+| Trống Bang Hội | 6 | `ch_thuong.lua` | Đang tắt — đọc kỹ trước khi bật |
+| Lôi Đài Hỗn Chiến | 1 | `ch_lich.lua` | Đang tắt — **phải vá lỗ exp trước khi bật** |
 
 Nếu bật một hoạt động đã tắt lâu mà không thấy chạy, xem `logs\hethong.log` — sẽ có dòng
 *"&lt;khoá&gt; bật nhưng hàm &lt;tên&gt; chưa nạp"* (thư viện của hoạt động đó cũng đã bị gỡ khỏi
@@ -369,16 +377,20 @@ Nếu bật một hoạt động đã tắt lâu mà không thấy chạy, xem `
 
 ### Còn lại
 
-| Ưu tiên | Việc | Quy mô |
-|---|---|---|
-| 1 | Công Thành Chiến — giờ báo danh **viết cứng ở sáu nơi khác nhau** | ~30 khoá |
-| 2 | Hệ số nền toàn cục (`lib_server.lua`) — một số nhân vào rất nhiều nơi | ~10 khoá |
-| 3 | Bảng thưởng Tống Kim, Boss Hoàng Kim, Phong Lăng Độ | ~60 khoá |
-| 4 | Dã Tẩu, Bạn Đồng Hành, nhiệm vụ hằng ngày | ~40 khoá |
-| 5 | Chuyển các chỗ trao thưởng sang cổng `G_TraoThuong` để có log và kiểm túi | ~40 bảng, làm dần |
+Tôi quét toàn cây (1.064 tệp `.lua`) tìm mọi hằng số khai ở cấp tệp chưa nối: **1.048 chỗ**. Lọc
+bằng máy những cái rõ ràng là định danh còn **878**, và đang cho mười nhóm đọc từng tệp để phân
+loại cái nào thật sự đáng đưa ra cấu hình — phần lớn là ID nhiệm vụ, ID bản đồ, chỉ số mảng.
 
-Có một bộ khung dùng chung cho việc này ở `ReverseTools\cauhinh\noi_cauhinh.py` — nó tự lấy giá trị
-mặc định từ chính dòng mã đang chạy, nên các đợt sau không thể gõ nhầm số.
+Ngoài ra còn hai loại **khung hiện tại không chạm tới được**, phải làm riêng:
+
+| Loại | Ví dụ | Vì sao |
+|---|---|---|
+| Hằng số nằm **trong thân hàm** | tỉ lệ rơi viết thẳng trong `if random(...) > 80` | Khung chỉ nắn dòng khai ở cấp tệp; sửa trong hàm phải làm từng chỗ có ngữ cảnh |
+| Hằng số nằm **ngoài Lua** | mốc thưởng Dã Tẩu ở `settings\task\*.txt`, tỉ lệ nâng cấp Bạn Đồng Hành ở `settings\petsys\levelup.txt` | Muốn chỉnh trọn vẹn phải đưa cả các bảng `.txt` vào hệ cấu hình |
+
+Bộ khung dùng chung ở `ReverseTools\cauhinh\noi_cauhinh.py` — nó tự lấy giá trị mặc định từ chính
+dòng mã đang chạy, nên các đợt sau không thể gõ nhầm số. Kèm `t27_bo_sung_khoa_thieu.py` quét hai
+chiều (khoá script đọc mà cấu hình chưa khai, và ngược lại).
 
 Khảo sát cũng nêu vài chỗ **cùng một con số bị chép ở hai nơi và đã lệch nhau** — đó là loại lỗi
 âm thầm mà bộ kiểm `ktr_cauhinh.py` sinh ra để bắt.

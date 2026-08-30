@@ -1,0 +1,624 @@
+[
+ {
+  "tep": "missions\\challengeoftime\\include.lua",
+  "hangso": [
+   {
+    "dong": 7,
+    "ten": "MISSION_MATCH",
+    "gt": 22,
+    "cm": "-- ±ÈÈümission"
+   },
+   {
+    "dong": 8,
+    "ten": "TIMER_MATCH",
+    "gt": 41,
+    "cm": "-- ±ÈÈü¿ªÊ¼¶¨Ê±Æ÷"
+   },
+   {
+    "dong": 9,
+    "ten": "TIMER_BOARD",
+    "gt": 42,
+    "cm": "-- Í¨¸æ¶¨Ê±Æ÷"
+   },
+   {
+    "dong": 10,
+    "ten": "TIMER_CLOSE",
+    "gt": 43,
+    "cm": "-- ±ÈÈü½áÊø¶¨Ê±Æ÷"
+   },
+   {
+    "dong": 11,
+    "ten": "INTERVAL_BOARD",
+    "gt": 1,
+    "cm": "-- Í¨±¨¼ä¸ô£¨·ÖÖÓ£©£ºÃ¿·ÖÖÓÍ¨±¨Ò»´Î"
+   },
+   {
+    "dong": 12,
+    "ten": "INTERVAL_MATCH",
+    "gt": 3600,
+    "cm": "-- Ã¿Ð¡Ê±±ÈÈüÒ»´Î£¨Ãë£©"
+   },
+   {
+    "dong": 13,
+    "ten": "TIME_SIGNUP",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 16,
+    "ten": "BOAT_POSX",
+    "gt": 1559,
+    "cm": "-- Íæ¼Ò±»´«ËÍµ½ÁúÖÛµÄx×ø±ê"
+   },
+   {
+    "dong": 17,
+    "ten": "BOAT_POSY",
+    "gt": 3226,
+    "cm": "-- Íæ¼Ò±»´«ËÍµ½ÁúÖÛµÄy×ø±ê"
+   },
+   {
+    "dong": 18,
+    "ten": "LIMIT_PLAYER_COUNT",
+    "gt": 8,
+    "cm": "-- Íæ¼ÒÊýÁ¿µÄ×î´óÏÞÖÆ"
+   },
+   {
+    "dong": 19,
+    "ten": "AWARD_COUNT",
+    "gt": 10,
+    "cm": "-- È«²¿´³¹Ø³É¹¦Ö®ºó¿ÉÒÔ¹Ï·Ö10¸ö´³¹Ø±¦Ïä"
+   },
+   {
+    "dong": 23,
+    "ten": "SEX_BOY",
+    "gt": 0,
+    "cm": "-- ÄÐÐÔ"
+   },
+   {
+    "dong": 24,
+    "ten": "SEX_GIRL",
+    "gt": 1,
+    "cm": "-- Å®ÐÔ"
+   },
+   {
+    "dong": 25,
+    "ten": "SEX_RENYAO",
+    "gt": 2,
+    "cm": "-- ÈËÑý"
+   },
+   {
+    "dong": 30,
+    "ten": "CHUANGGUAN30_START_TIME",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 31,
+    "ten": "CHUANGGUAN30_END_TIME",
+    "gt": 22,
+    "cm": ""
+   },
+   {
+    "dong": 33,
+    "ten": "COUNT_LIMIT",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 54,
+    "ten": "USE_NAME_ALL_PLAYERS",
+    "gt": 1,
+    "cm": "-- Ê¹ÓÃÈ«ÌåÍæ¼ÒÃû×Ö"
+   },
+   {
+    "dong": 55,
+    "ten": "USE_NAME_THE_TOPLIST",
+    "gt": 2,
+    "cm": "-- Ê¹ÓÃËæ»ú°ñÉÏÃû"
+   },
+   {
+    "dong": 57,
+    "ten": "VARS_TEAM_NAME",
+    "gt": 1,
+    "cm": "-- ¶ÓÎéÃû³Æ"
+   },
+   {
+    "dong": 59,
+    "ten": "VARS_PLAYER_NAME",
+    "gt": 2,
+    "cm": "-- Íæ¼ÒÃû×Ö"
+   },
+   {
+    "dong": 60,
+    "ten": "VARS_TEAMLEADER_FACTION",
+    "gt": 11,
+    "cm": "-- ¶Ó³¤ÃÅÅÉ"
+   },
+   {
+    "dong": 61,
+    "ten": "VARS_TEAMLEADER_GENDER",
+    "gt": 12,
+    "cm": "-- ¶Ó³¤ÐÔ±ð"
+   },
+   {
+    "dong": 65,
+    "ten": "VARV_PLAYER_COUNT",
+    "gt": 3,
+    "cm": "-- Íæ¼ÒµÄÊýÁ¿"
+   },
+   {
+    "dong": 67,
+    "ten": "VARV_SIGNUP_WORLD",
+    "gt": 5,
+    "cm": "-- ±¨ÃûµØÍ¼"
+   },
+   {
+    "dong": 68,
+    "ten": "VARV_SIGNUP_POSX",
+    "gt": 6,
+    "cm": "-- ±¨ÃûµØµãµÄX×ø±ê"
+   },
+   {
+    "dong": 69,
+    "ten": "VARV_SIGNUP_POSY",
+    "gt": 7,
+    "cm": "-- ±¨ÃûµØµãµÄY×ø±ê"
+   },
+   {
+    "dong": 70,
+    "ten": "VARV_BOARD_TIMER",
+    "gt": 8,
+    "cm": "-- ±ÈÈü½øÐÐµÄÊ±¼ä£¨Ãë£©"
+   },
+   {
+    "dong": 71,
+    "ten": "VARV_PLAYER_TOTAL_COUNT",
+    "gt": 9,
+    "cm": "-- Íæ¼Ò×ÜµÄÊýÁ¿(²»¹ÜÊÇ·ñÒÑ¾­ËÀÍö)"
+   },
+   {
+    "dong": 72,
+    "ten": "VARV_PLAYER_USE_INDEX",
+    "gt": 10,
+    "cm": "-- Ê¹ÓÃµ½µÄÍæ¼ÒË÷Òý"
+   },
+   {
+    "dong": 74,
+    "ten": "VARV_MISSION_RESULT",
+    "gt": 12,
+    "cm": "-- ÈÎÎñ½á¹û£¬£±ÎªÊ¤ÀûÍ¨¹Ø£¬£°ÎªÊ§°Ü"
+   },
+   {
+    "dong": 75,
+    "ten": "VARV_PLAYER_SEX",
+    "gt": 13,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\tongwar\\head.lua",
+  "hangso": [
+   {
+    "dong": 3,
+    "ten": "MISSIONID",
+    "gt": 33,
+    "cm": ""
+   },
+   {
+    "dong": 4,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": "--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ"
+   },
+   {
+    "dong": 12,
+    "ten": "TONGWAR_MAXDEATH",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "TNPC_DOCTOR1",
+    "gt": 55,
+    "cm": "--¾üÒ½µÄNpcÄ£°åIDºÅ"
+   },
+   {
+    "dong": 19,
+    "ten": "TNPC_DOCTOR2",
+    "gt": 49,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "TNPC_SYMBOL1",
+    "gt": 629,
+    "cm": ""
+   },
+   {
+    "dong": 21,
+    "ten": "TNPC_SYMBOL2",
+    "gt": 630,
+    "cm": ""
+   },
+   {
+    "dong": 22,
+    "ten": "TNPC_DEPOSIT",
+    "gt": 625,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "TNPC_FLAG0",
+    "gt": 626,
+    "cm": ""
+   },
+   {
+    "dong": 25,
+    "ten": "TNPC_FLAG1",
+    "gt": 628,
+    "cm": ""
+   },
+   {
+    "dong": 26,
+    "ten": "TNPC_FLAG2",
+    "gt": 627,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "global\\equip_system.lua",
+  "hangso": [
+   {
+    "dong": 23,
+    "ten": "CMP_XUANJING",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "CMP_ORE_UPGRADE",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 25,
+    "ten": "CMP_MAGIC_DISTILL",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 26,
+    "ten": "CMP_EQUIP_COMPOUND",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 27,
+    "ten": "CMP_EQUIP_ENCHASE",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 28,
+    "ten": "CMP_ATLAS",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 29,
+    "ten": "CMP_FANTASYGOLD",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 30,
+    "ten": "CMP_FANTASYGOLD_ESS",
+    "gt": 8,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\newtask\\newtask_head.lua",
+  "hangso": [
+   {
+    "dong": 14,
+    "ten": "TSKID_KILLTASKID",
+    "gt": 1082,
+    "cm": "-- ½ÓÊÜµÄÄÄ¸öÈÎÎñ"
+   },
+   {
+    "dong": 15,
+    "ten": "TSKID_KILLERDATE",
+    "gt": 1192,
+    "cm": "--½ÓÈÎÎñÊ±µÄÈÕÆÚ"
+   },
+   {
+    "dong": 16,
+    "ten": "TSKID_KILLERMAXCOUNT",
+    "gt": 1193,
+    "cm": "--Ã¿ÌìÉ±ÈË´ÎÊý"
+   },
+   {
+    "dong": 17,
+    "ten": "TSKID_KILLTASKID_SPE",
+    "gt": 1793,
+    "cm": "-- ÊÇ·ñ½ÓÊÜ¸ß¼¶É±ÊÖÈÎÎñ\t-- ÊÕ·Ñ°æ²»ÓÃ"
+   },
+   {
+    "dong": 18,
+    "ten": "TSKID_KILLERDATE_SPE",
+    "gt": 1794,
+    "cm": "--½Ó¸ß¼¶É±ÊÖÈÎÎñÊ±µÄÈÕÆÚºÍ´ÎÊý\t-- ÊÕ·Ñ°æ²»ÓÃ"
+   },
+   {
+    "dong": 20,
+    "ten": "KILLER_MAXCOUNT",
+    "gt": 8,
+    "cm": "--Ã¿ÌìÉ±ÈËÉÏÏÞ8ÈË"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_global\\demotimer.lua",
+  "hangso": [
+   {
+    "dong": 1,
+    "ten": "ARENACOUNT",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 2,
+    "ten": "ARENAWLDIDXBEGIN",
+    "gt": 213,
+    "cm": ""
+   },
+   {
+    "dong": 3,
+    "ten": "CITYWARIDX",
+    "gt": 221,
+    "cm": ""
+   },
+   {
+    "dong": 4,
+    "ten": "CITYCOUNT",
+    "gt": 7,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "lib\\objbuffer_head.lua",
+  "hangso": [
+   {
+    "dong": 1,
+    "ten": "OBJTYPE_NUMBER",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 2,
+    "ten": "OBJTYPE_STRING",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 3,
+    "ten": "OBJTYPE_TABLE",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 4,
+    "ten": "OBJTYPE_NIL",
+    "gt": 4,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\tongwar\\tongwar_driver.lua",
+  "hangso": [
+   {
+    "dong": 8,
+    "ten": "TONGWAR_DRV_MSKEY",
+    "gt": 29,
+    "cm": "-- khoa missionId rieng cho GlbTimer (27 = WLLS, 28 = TONG)"
+   },
+   {
+    "dong": 9,
+    "ten": "TONGWAR_DRV_TIMERID",
+    "gt": 54,
+    "cm": "-- settings\\TimerTask.txt khoa 54 tro nguoc ve tep nay"
+   },
+   {
+    "dong": 10,
+    "ten": "TONGWAR_DRV_LASTQ",
+    "gt": -1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "header\\liendau.lua",
+  "hangso": [
+   {
+    "dong": 28,
+    "ten": "LIENDAU_THANG",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 29,
+    "ten": "LIENDAU_HOA",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 30,
+    "ten": "LIENDAU_MAX",
+    "gt": 48,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\demhuyhoang\\event.lua",
+  "hangso": [
+   {
+    "dong": 3,
+    "ten": "MAX_HUYHOANG_PER_DAY",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 4,
+    "ten": "TIME_SWITCH",
+    "gt": 5400,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\qianbaoku\\90\\tureboss90.lua",
+  "hangso": [
+   {
+    "dong": 18,
+    "ten": "TUREBOSS_RELIVE",
+    "gt": 2,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 20,
+    "ten": "TUREBOSS_MAPID",
+    "gt": 395,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼Ç§±¦¿âµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "lib\\lib_ham.lua",
+  "hangso": [
+   {
+    "dong": 6,
+    "ten": "MAX_PLAYER",
+    "gt": 400,
+    "cm": ""
+   },
+   {
+    "dong": 322,
+    "ten": "MAX_BU_DAYS",
+    "gt": 7,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "huoyuedu\\huoyuedu.lua",
+  "hangso": [
+   {
+    "dong": 16,
+    "ten": "OPENED",
+    "gt": 1,
+    "cm": "-- »îÔ¾¶È¿ªÆô×´Ì¬"
+   },
+   {
+    "dong": 17,
+    "ten": "CLOSED",
+    "gt": 2,
+    "cm": "-- »îÔ¾¶È¹Ø±Õ×´Ì¬"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\fengling_ferry\\hd3_thuyenphubac.lua",
+  "hangso": [
+   {
+    "dong": 16,
+    "ten": "HD3_PLD_PHI_VENAM",
+    "gt": 1000,
+    "cm": "-- MONEY_VETHANH cua du an cu, giu nguyen"
+   }
+  ]
+ },
+ {
+  "tep": "task\\metempsychosis\\translife_5.lua",
+  "hangso": [
+   {
+    "dong": 25,
+    "ten": "TRANSLIFE5_SKILL",
+    "gt": 1262,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\8089\\flypoint8089.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYPOINT_MAPID",
+    "gt": 388,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\qianbaoku\\90\\turebug90.lua",
+  "hangso": [
+   {
+    "dong": 18,
+    "ten": "TUREBUGBEAR_MAPID",
+    "gt": 395,
+    "cm": "--Ç§±¦¿âµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "global\\judgeoffline_limit.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "NUM_OFFLINE_PERMITREGION_MAX",
+    "gt": 10,
+    "cm": "-- Àë²»ÔÊÐíÍÐ¹ÜµãµÄ×îÐ¡°ë¾¶"
+   }
+  ]
+ },
+ {
+  "tep": "header\\region.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "NUM_OFFLINE_PERMITREGION_MAX",
+    "gt": 10,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\magic_distill.lua",
+  "hangso": [
+   {
+    "dong": 8,
+    "ten": "COMPOUND_COST",
+    "gt": 5000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\event\\kinhmach\\channguyendan.lua",
+  "hangso": [
+   {
+    "dong": 17,
+    "ten": "KM_CND_TRAN_NGAY",
+    "gt": 3000,
+    "cm": ""
+   }
+  ]
+ }
+]

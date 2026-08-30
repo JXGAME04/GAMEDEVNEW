@@ -1,0 +1,623 @@
+[
+ {
+  "tep": "missions\\citywar_city\\head.lua",
+  "hangso": [
+   {
+    "dong": 36,
+    "ten": "MISSIONID",
+    "gt": 7,
+    "cm": "-- DOT E: goc 6 (6 = Loi Dai BH cua ta dang song - Q3 KEHOAC"
+   },
+   {
+    "dong": 37,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": "--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ"
+   },
+   {
+    "dong": 56,
+    "ten": "g_nMaxTscPerDoor",
+    "gt": 3,
+    "cm": "--Ã¿¸öÃÅ×î´ó¿ÉÒÔ³öÏÖµÄÍ¶Ê¯³µÊýÁ¿"
+   },
+   {
+    "dong": 58,
+    "ten": "g_nMaxGccPerDoor",
+    "gt": 1,
+    "cm": "--¹¥·½Ã¿¸öÃÅ×î¶à´æÔÚ¹¥³Ç³µµÄÊýÁ¿"
+   },
+   {
+    "dong": 63,
+    "ten": "g_nMaxToolCount",
+    "gt": 6,
+    "cm": "--ÊØ·½×î´óÍ¬Ê±´æÔÚµÄ¹ÍÓ¶±øÈËÊý"
+   },
+   {
+    "dong": 69,
+    "ten": "TV_TASKID",
+    "gt": 230,
+    "cm": "--¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñID"
+   },
+   {
+    "dong": 70,
+    "ten": "TV_TASKVALUE",
+    "gt": 231,
+    "cm": "--¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñµÄÖµ,¼ÇÂ¼ËùÊô·½,ËÎÎª1£¬½ðÎª2"
+   },
+   {
+    "dong": 71,
+    "ten": "TV_TASKKEY",
+    "gt": 232,
+    "cm": "--¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñµÄkeyºÅ"
+   },
+   {
+    "dong": 72,
+    "ten": "TV_CITYID",
+    "gt": 233,
+    "cm": ""
+   },
+   {
+    "dong": 74,
+    "ten": "CS_RevId",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 75,
+    "ten": "CS_RevData",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 86,
+    "ten": "STONENPCID1",
+    "gt": 528,
+    "cm": "--Ê¯0±®µÄNpcÄ£°åID"
+   },
+   {
+    "dong": 87,
+    "ten": "STONENPCID2",
+    "gt": 530,
+    "cm": ""
+   },
+   {
+    "dong": 89,
+    "ten": "STONELEVEL2",
+    "gt": 20,
+    "cm": "--¹¥·½µÄÊ¯Öù"
+   },
+   {
+    "dong": 91,
+    "ten": "DOORNPCID",
+    "gt": 532,
+    "cm": ""
+   },
+   {
+    "dong": 108,
+    "ten": "DOCTORNPCID",
+    "gt": 230,
+    "cm": ""
+   },
+   {
+    "dong": 208,
+    "ten": "TV_LASTDEATHTIME",
+    "gt": 2306,
+    "cm": ""
+   },
+   {
+    "dong": 209,
+    "ten": "TV_LASTDEATHMAPX",
+    "gt": 2307,
+    "cm": ""
+   },
+   {
+    "dong": 210,
+    "ten": "TV_LASTDEATHMAPY",
+    "gt": 2308,
+    "cm": ""
+   },
+   {
+    "dong": 211,
+    "ten": "TV_SERIESKILL_REALY",
+    "gt": 2305,
+    "cm": "--Íæ¼Òµ±Ç°µÄÊµ¼ÊÁ¬Õ¶Öµ£¨¸ß¼¶É±±È½ÏµÍ¼¶µÄÍæ¼Ò£¬¼ÆÁ¬Õ¶£¬µ«²»¼Æ"
+   }
+  ]
+ },
+ {
+  "tep": "event\\tongwar\\event.lua",
+  "hangso": [
+   {
+    "dong": 4,
+    "ten": "TONGWAR_LGTYPE",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 7,
+    "ten": "TONGWAR_LGMTASK_JOB",
+    "gt": 1,
+    "cm": "--¶Ó³¤Îª1£»¶ÓÔ±Îª0"
+   },
+   {
+    "dong": 10,
+    "ten": "TONGWAR_LGTASK_TONGCNT",
+    "gt": 1,
+    "cm": "--¹²ÁªÃËÊý"
+   },
+   {
+    "dong": 11,
+    "ten": "TONGWAR_LGTASK_WIN",
+    "gt": 2,
+    "cm": "--Ê¤Àû´ÎÊý"
+   },
+   {
+    "dong": 12,
+    "ten": "TONGWAR_LGTASK_LOSE",
+    "gt": 3,
+    "cm": "--Ê§°Ü´ÎÊý"
+   },
+   {
+    "dong": 13,
+    "ten": "TONGWAR_LGTASK_TIE",
+    "gt": 4,
+    "cm": "--Æ½¾Ö´ÎÊý"
+   },
+   {
+    "dong": 14,
+    "ten": "TONGWAR_LGTASK_RESULT",
+    "gt": 5,
+    "cm": "--±ÈÈü×Ü»ý·Ö"
+   },
+   {
+    "dong": 15,
+    "ten": "TONGWAR_LGTASK_POINT",
+    "gt": 6,
+    "cm": "--Ã¿³¡¾»»ý·ÖÀÛ¼Ó"
+   },
+   {
+    "dong": 16,
+    "ten": "TONGWAR_LGTASK_CITYID",
+    "gt": 7,
+    "cm": "--¸Ã³ÇÊÐid"
+   },
+   {
+    "dong": 19,
+    "ten": "TONGWAR_LGTASK_RANK",
+    "gt": 10,
+    "cm": "--±ÈÈü×îÖÕÅÅÃû"
+   },
+   {
+    "dong": 20,
+    "ten": "TONGWAR_LGTASK_TITLE",
+    "gt": 15,
+    "cm": "--°ï»áÁªÃËÊÇ·ñÁìÈ¡ÁË¹â»·"
+   },
+   {
+    "dong": 21,
+    "ten": "TONGWAR_LGTASK_TONGID",
+    "gt": 16,
+    "cm": "--³ÇÖ÷°ï»áID"
+   },
+   {
+    "dong": 22,
+    "ten": "TONGWAR_LGTASK_SEASON",
+    "gt": 17,
+    "cm": "--Èü¼¾"
+   },
+   {
+    "dong": 25,
+    "ten": "TONGWAR_RLTASK_POINT",
+    "gt": 1323,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\bw\\bwhead.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "CS_RevId",
+    "gt": 80,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "CS_RevData",
+    "gt": 36,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": ""
+   },
+   {
+    "dong": 22,
+    "ten": "MAX_MEMBER_COUNT",
+    "gt": 100,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "BW_SIGNPOSWORLD",
+    "gt": 2340,
+    "cm": "-- [BW 23/08] 300-302 cua JX1 = task luu/khoi phuc Tong Kim"
+   },
+   {
+    "dong": 25,
+    "ten": "BW_SIGNPOSX",
+    "gt": 2341,
+    "cm": ""
+   },
+   {
+    "dong": 26,
+    "ten": "BW_SIGNPOSY",
+    "gt": 2342,
+    "cm": ""
+   },
+   {
+    "dong": 29,
+    "ten": "CITYID",
+    "gt": 6,
+    "cm": "--³ÇÊÐID"
+   },
+   {
+    "dong": 30,
+    "ten": "BW_KEY",
+    "gt": 7,
+    "cm": "-- 0-100000000µÄËæ»úÊý"
+   },
+   {
+    "dong": 41,
+    "ten": "BW_MISSIONID",
+    "gt": 11,
+    "cm": "-- [BW 23/08] khe mission: 4 cua JX1 = Phong Lang Do; 11 = m"
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\congthanhchien\\lib_ctc.lua",
+  "hangso": [
+   {
+    "dong": 85,
+    "ten": "MIN_TAX",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 86,
+    "ten": "MAX_TAX",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 94,
+    "ten": "ENOUGH_LEVEL",
+    "gt": 80,
+    "cm": ""
+   },
+   {
+    "dong": 95,
+    "ten": "TICH_LUY_THUONG_CT",
+    "gt": 100,
+    "cm": ""
+   },
+   {
+    "dong": 99,
+    "ten": "CTC_MINUS_BD",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 100,
+    "ten": "CTC_MINUS_KT",
+    "gt": 60,
+    "cm": ""
+   },
+   {
+    "dong": 107,
+    "ten": "KILL_PLAYER_POINT",
+    "gt": 30,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "battles\\battlehead.lua",
+  "hangso": [
+   {
+    "dong": 19,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": "--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ"
+   },
+   {
+    "dong": 20,
+    "ten": "BAOMING_TIME",
+    "gt": 10,
+    "cm": "-- 10·ÖÖÓ±¨ÃûÊ±¼ä"
+   },
+   {
+    "dong": 21,
+    "ten": "FIGHTING_TIME",
+    "gt": 60,
+    "cm": "-- 60·ÖÖÓ±ÈÈüÊ±¼ä"
+   },
+   {
+    "dong": 22,
+    "ten": "ANNOUNCE_TIME",
+    "gt": 20,
+    "cm": "-- 20Ãë¹«²¼Ò»ÏÂÕ½¿ö"
+   },
+   {
+    "dong": 29,
+    "ten": "SONGJIN_SIGNUP_FEES",
+    "gt": 200000,
+    "cm": "-- ±¨Ãû·Ñ"
+   },
+   {
+    "dong": 34,
+    "ten": "JUNGONGPAI",
+    "gt": 1773,
+    "cm": "--ËÎ½ð¾ü¹¦ÅÆID 6£¬1£¬1477"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_global\\infocenter_head.lua",
+  "hangso": [
+   {
+    "dong": 22,
+    "ten": "LGTSK_QINGTONGDING_COUNT",
+    "gt": 1,
+    "cm": "--±¨Ãû¾ºÍ¶µÄ ÌôÕ½ÁîÊýÁ¿"
+   },
+   {
+    "dong": 23,
+    "ten": "LGTSK_CITYWAR_SIGNCOUNT",
+    "gt": 2,
+    "cm": "--µ±Ç°¾ºÍ¶µÄ´ÎÊý"
+   },
+   {
+    "dong": 25,
+    "ten": "LEAGUETYPE_CITYWAR_SIGN",
+    "gt": 508,
+    "cm": ""
+   },
+   {
+    "dong": 26,
+    "ten": "LEAGUETYPE_CITYWAR_FIRST",
+    "gt": 509,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "header\\fuyuan.lua",
+  "hangso": [
+   {
+    "dong": 7,
+    "ten": "TIME_UNIT",
+    "gt": 3600,
+    "cm": ""
+   },
+   {
+    "dong": 11,
+    "ten": "FUYUAN_EXTRA",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 12,
+    "ten": "TIMES_IN_DAY_EXTRA",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 13,
+    "ten": "FUYUAN_MAX_GAIN",
+    "gt": 100,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\event_cauhoi\\lib.lua",
+  "hangso": [
+   {
+    "dong": 19,
+    "ten": "MIN_LEVEL_JOIN",
+    "gt": 80,
+    "cm": ""
+   },
+   {
+    "dong": 22,
+    "ten": "MAX_NUM",
+    "gt": 5,
+    "cm": "-- 5 c©u hái 1 ngµy"
+   },
+   {
+    "dong": 23,
+    "ten": "NUM_NHANTHUONG",
+    "gt": 3,
+    "cm": "--3 c©u liªn tiÕp ®­îc nhËn thªm th­ëng ë lÔ quan"
+   }
+  ]
+ },
+ {
+  "tep": "item\\xinshirenwu\\xinshibaoxiang.lua",
+  "hangso": [
+   {
+    "dong": 106,
+    "ten": "nWidth",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 107,
+    "ten": "nHeight",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 108,
+    "ten": "nFreeItemCellLimit",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\90\\flyboss90.lua",
+  "hangso": [
+   {
+    "dong": 193,
+    "ten": "FLYBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 195,
+    "ten": "FLYBOSS_MAPID",
+    "gt": 389,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "global\\seasonnpc.lua",
+  "hangso": [
+   {
+    "dong": 169,
+    "ten": "MAKING_COST",
+    "gt": 10000,
+    "cm": ""
+   },
+   {
+    "dong": 170,
+    "ten": "MAKING_COUNT",
+    "gt": 9,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\event\\eventtet\\banhdacbiet.lua",
+  "hangso": [
+   {
+    "dong": 9,
+    "ten": "DangCapSuDung",
+    "gt": 60,
+    "cm": ""
+   },
+   {
+    "dong": 10,
+    "ten": "ToiDaSuDung",
+    "gt": 20000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\tong_kim_tcap\\xaphu.lua",
+  "hangso": [
+   {
+    "dong": 9,
+    "ten": "CurStation",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_city\\zhongzhuan_map\\chefu.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "CurStation",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\event_demhuyhoang\\lib.lua",
+  "hangso": [
+   {
+    "dong": 41,
+    "ten": "TIME_TOCHANGE",
+    "gt": 5400,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\6079\\flybugbear6079.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYBUGBEAR_MAPID",
+    "gt": 387,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\qianbaoku\\6079\\turebug6079.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TUREBUGBEAR_MAPID",
+    "gt": 393,
+    "cm": "--Ç§±¦¿âµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\8089\\tmpbug8089.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TEMBUGBEAR_MAPID",
+    "gt": 391,
+    "cm": "--É½ÉñÃíµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "lib\\common.lua",
+  "hangso": [
+   {
+    "dong": 3,
+    "ten": "COMMON_HEAD",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\battles\\clarion.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "MAX_CALLNPCCOUNT",
+    "gt": 20,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\event\\30thang4\\huychuongthiendieu.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "FREECELL_EVENT",
+    "gt": 10,
+    "cm": ""
+   }
+  ]
+ }
+]

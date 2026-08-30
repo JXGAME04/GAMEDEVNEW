@@ -1,0 +1,634 @@
+[
+ {
+  "tep": "petsys\\common.lua",
+  "hangso": [
+   {
+    "dong": 14,
+    "ten": "PET_OPERATION_DELETE",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 15,
+    "ten": "PET_OPERATION_SUMMON",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 16,
+    "ten": "PET_OPERATION_UNSUMMON",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 17,
+    "ten": "PET_OPERATION_LEVEL_UP",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "PET_OPERATION_CHANGE_NAME",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 19,
+    "ten": "PET_OPERATION_CHANGE_FEATURE",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "PET_OPERATION_TAME",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 21,
+    "ten": "PET_OPERATION_XIUZHEN_POINT",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 23,
+    "ten": "INDEX_STR",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "INDEX_DEX",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 25,
+    "ten": "INDEX_VIT",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 26,
+    "ten": "INDEX_ENG",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 27,
+    "ten": "INDEX_HP",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 28,
+    "ten": "INDEX_MP",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 29,
+    "ten": "ATTRIB_COUNT",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 30,
+    "ten": "SKILL_COUNT",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 32,
+    "ten": "SONGJIN",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 33,
+    "ten": "CHANGE_OF_TIME",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 34,
+    "ten": "YAN_DI",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 35,
+    "ten": "TIAN_LU_TREE",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 37,
+    "ten": "HUO_YUE_DU",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 38,
+    "ten": "YE_SOU",
+    "gt": 7,
+    "cm": ""
+   },
+   {
+    "dong": 39,
+    "ten": "JIAN_ZHONG_MI_GONG",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 123,
+    "ten": "ZHENYUAN_TO_XIUZHEN_POINT_RATE",
+    "gt": 200,
+    "cm": ""
+   },
+   {
+    "dong": 124,
+    "ten": "ZHENYUAN_TO_XIUZHEN_POINT_VALUE",
+    "gt": 20000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\fantasygold_upgrade.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "RESULT_UNKNOWN",
+    "gt": -1,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "RESULT_SUCCEED",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 7,
+    "ten": "RESULT_FAIL",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 8,
+    "ten": "RESULT_NO_MONEY",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 9,
+    "ten": "RESULT_LEVEL_FULL",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 10,
+    "ten": "RESULT_LACK_RESOURCE",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 11,
+    "ten": "RESULT_LEVEL_ERROR",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 12,
+    "ten": "RESULT_MAGIC_ERROR",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 14,
+    "ten": "RESULT_RULE_ERROR",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 17,
+    "ten": "g_nOreGenre",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "g_nOreDetailType",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 19,
+    "ten": "g_nOreParticular",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "g_nOreLevel",
+    "gt": 0,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\eventhead.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "EVENTHEAD_LUA",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 67,
+    "ten": "DATESNEWBIELEVELUP",
+    "gt": 5032400,
+    "cm": "--ÐÂÊÖ·è¿ñ¾­Ñé·­±¶»î¶¯ÓÚ2005-3-24ÈÕ0µã0·ÖÆô¶¯"
+   },
+   {
+    "dong": 68,
+    "ten": "DATEENEWBIELEVELUP",
+    "gt": 5040100,
+    "cm": "--ÐÂÊÖ·è¿ñ¾­Ñé·­±¶»î¶¯ÓÚ2005-4-1ÈÕ0µã0·Ö¹Ø±Õ"
+   },
+   {
+    "dong": 70,
+    "ten": "DATESPLAYERLEVELUP",
+    "gt": 5032600,
+    "cm": "--È«ÇøÉÁµç³å¼¶ÐÐ¶¯ÓÚ2004-3-24ÈÕ0Ê±0·ÖÆô¶¯(¿ªÆô)"
+   },
+   {
+    "dong": 71,
+    "ten": "DATEEPLAYERLEVELUP",
+    "gt": 5040300,
+    "cm": "--È«ÇøÉÁµç³å¼¶ÐÐ¶¯ÓÚ2004-4-1ÈÕ0Ê±0·Ö¹Ø±Õ(¿ªÆô)"
+   },
+   {
+    "dong": 73,
+    "ten": "DATESKILLER",
+    "gt": 5041200,
+    "cm": ""
+   },
+   {
+    "dong": 74,
+    "ten": "DATEEKILLER",
+    "gt": 5042600,
+    "cm": ""
+   },
+   {
+    "dong": 77,
+    "ten": "YEARCARD_EX_XUANJING",
+    "gt": 1,
+    "cm": "--½£ÍøÄê¿¨»î¶¯"
+   },
+   {
+    "dong": 79,
+    "ten": "GREAT_NIGHT",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\tongwar\\npc_shizhe.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "ONETONG_LGTYPE",
+    "gt": 541,
+    "cm": ""
+   },
+   {
+    "dong": 11,
+    "ten": "ONETONG_ACC_LGTYPE",
+    "gt": 542,
+    "cm": ""
+   },
+   {
+    "dong": 16,
+    "ten": "ONETONG_START_SIGNUP",
+    "gt": 20140407,
+    "cm": "-- ÌìÏÂµÚÒ»°ï¿ªÊ¼µÇ¼ÇÊ±¼ä"
+   },
+   {
+    "dong": 17,
+    "ten": "ONETONG_ENDLE_SIGNUP",
+    "gt": 20140417,
+    "cm": "-- ÌìÏÂµÚÒ»°ï½áÊøµÇ¼ÇÊ±¼ä"
+   },
+   {
+    "dong": 19,
+    "ten": "ONETONG_START_TITLE",
+    "gt": 20100118,
+    "cm": "-- ÌìÏÂÒ»°ïÁìÈ¡Í·ÏÎ¿ªÊ¼Ê±¼ä"
+   },
+   {
+    "dong": 20,
+    "ten": "ONETONG_ENDLE_TITLE",
+    "gt": 20100214,
+    "cm": "-- ÌìÏÂÒ»°ïÁìÈ¡Í·ÏÎ½áÊøÊ±¼ä"
+   },
+   {
+    "dong": 22,
+    "ten": "ONETONG_MAX_SIGNMEM",
+    "gt": 54,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\rewind\\partner_reward_main_03.lua",
+  "hangso": [
+   {
+    "dong": 27,
+    "ten": "PARID_REWIND_KILLER_01",
+    "gt": 39,
+    "cm": "-- Ò»Æ·ÌÃÇ¹±ø"
+   },
+   {
+    "dong": 28,
+    "ten": "PARID_REWIND_KILLER_02",
+    "gt": 40,
+    "cm": "-- Ò»Æ·ÌÃ¹­±ø"
+   },
+   {
+    "dong": 29,
+    "ten": "PARID_REWIND_KILLER_03",
+    "gt": 41,
+    "cm": "-- Ò»Æ·ÌÃ´øµ¶½«Áì"
+   },
+   {
+    "dong": 30,
+    "ten": "PARID_REWIND_KILLER_04",
+    "gt": 42,
+    "cm": "-- ÎäÊ¿"
+   },
+   {
+    "dong": 32,
+    "ten": "GLBID_MASTER_KILLER_NUM",
+    "gt": 830,
+    "cm": "-- ·þÎñÆ÷È«¾Ö±äÁ¿£¬¼ÇÂ¼Ò»Æ·ÌÃÍ³Ë§µÄË¢³öÊýÁ¿"
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\rewind\\partner_reward_main_04.lua",
+  "hangso": [
+   {
+    "dong": 28,
+    "ten": "PARID_REWIND04_BOSS_01",
+    "gt": 43,
+    "cm": "-- Á»Ã¨Ã¨"
+   },
+   {
+    "dong": 29,
+    "ten": "PARID_REWIND04_BOSS_02",
+    "gt": 44,
+    "cm": "-- ÀîÐÉ"
+   },
+   {
+    "dong": 30,
+    "ten": "PARID_REWIND04_BOSS_03",
+    "gt": 45,
+    "cm": "-- Åå¹«×Ó"
+   },
+   {
+    "dong": 31,
+    "ten": "PARID_REWIND04_BOSS_04",
+    "gt": 46,
+    "cm": "-- ÌÆÓã"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\tong\\tong_driver.lua",
+  "hangso": [
+   {
+    "dong": 17,
+    "ten": "TONG_DRV_MSKEY",
+    "gt": 28,
+    "cm": "-- khoa missionId rieng cho GlbTimer cua driver (27 = WLLS)"
+   },
+   {
+    "dong": 18,
+    "ten": "TONG_DRV_TIMERID",
+    "gt": 53,
+    "cm": "-- settings\\TimerTask.txt khoa 53 tro nguoc ve file nay"
+   },
+   {
+    "dong": 19,
+    "ten": "TONG_DRV_LASTQ",
+    "gt": -1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "petsys\\petequip_def.lua",
+  "hangso": [
+   {
+    "dong": 47,
+    "ten": "PETEQUIP_KETTINH",
+    "gt": 4927,
+    "cm": "-- Ket Tinh Dong Hanh (goc 5063)"
+   },
+   {
+    "dong": 48,
+    "ten": "PETEQUIP_KETTINH_CAO",
+    "gt": 4928,
+    "cm": "-- Ket Tinh Dong Hanh (Cao) (goc 5257)"
+   },
+   {
+    "dong": 50,
+    "ten": "PETEQUIP_CHIAKHOA",
+    "gt": 4932,
+    "cm": "-- Chia khoa ruong (goc 5067)"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_global\\head.lua",
+  "hangso": [
+   {
+    "dong": 36,
+    "ten": "TIAOZHANLING_LGTYPE",
+    "gt": 538,
+    "cm": "--ÌôÕ½ÁîÕ¾¶ÓÀàÐÍ"
+   },
+   {
+    "dong": 38,
+    "ten": "LGTSK_TIAOZHANLING_COUNT",
+    "gt": 1,
+    "cm": "--ÌôÕ½ÁîÕ¾¶Ó¼ÇÂ¼ÌôÕ½Áî¸öÊýTaskID"
+   }
+  ]
+ },
+ {
+  "tep": "event\\jiefang_jieri\\200904\\taskctrl.lua",
+  "hangso": [
+   {
+    "dong": 23,
+    "ten": "jf0904_act_dateS",
+    "gt": 20090428,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "jf0904_act_dateE",
+    "gt": 20090601,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\6079\\templeboss6079.lua",
+  "hangso": [
+   {
+    "dong": 17,
+    "ten": "TEMBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 19,
+    "ten": "TEMBOSS_MAPID",
+    "gt": 390,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "header\\timerhead.lua",
+  "hangso": [
+   {
+    "dong": 4,
+    "ten": "FramePerSec",
+    "gt": 18,
+    "cm": "-- Ã¿ÃëÖ¡Êýµ±×÷³£Á¿´¦Àí"
+   },
+   {
+    "dong": 5,
+    "ten": "CTime",
+    "gt": 3600,
+    "cm": "-- Ã¿¸öÊ±³½°´600Ãë£¨10·ÖÖÓ£©¼ÆËã"
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\boss_hoangkim\\deathhksv.lua",
+  "hangso": [
+   {
+    "dong": 13,
+    "ten": "PHAMVI_HUONGEXP",
+    "gt": 200,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\challengeoftime\\rank_perday.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "DailyRankLadderId",
+    "gt": 10235,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\yandibaozang\\yandiduihuan.lua",
+  "hangso": [
+   {
+    "dong": 38,
+    "ten": "yandiduihuan_CostMoney",
+    "gt": 10000000,
+    "cm": "--1QW"
+   }
+  ]
+ },
+ {
+  "tep": "task\\metempsychosis\\translife_6.lua",
+  "hangso": [
+   {
+    "dong": 24,
+    "ten": "TRANSLIFE5_SKILL_ENHANCE",
+    "gt": 1344,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\8089\\flyrefresh8089.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYREFRESH_MAPID",
+    "gt": 388,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\qianbaoku\\90\\turezei90.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TUREREFRESH_MAPID",
+    "gt": 395,
+    "cm": "--Ç§±¦¿âµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "global\\map_helper.lua",
+  "hangso": [
+   {
+    "dong": 118,
+    "ten": "CD_LEVEL_LIMIT",
+    "gt": 80,
+    "cm": "--×îµÍ²Î¼ÓÊØ³ÇµÈ¼¶"
+   }
+  ]
+ },
+ {
+  "tep": "item\\lenhbaiadmin.lua",
+  "hangso": [
+   {
+    "dong": 203,
+    "ten": "NgauNhienPhut",
+    "gt": 0,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\ore_upgrade.lua",
+  "hangso": [
+   {
+    "dong": 7,
+    "ten": "COMPOUND_COST",
+    "gt": 5000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\ib\\baoruonghoatdong.lua",
+  "hangso": [
+   {
+    "dong": 10,
+    "ten": "FREECELL_GETITEMBLUE",
+    "gt": 10,
+    "cm": ""
+   }
+  ]
+ }
+]

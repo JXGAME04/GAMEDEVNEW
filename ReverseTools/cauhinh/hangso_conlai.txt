@@ -1,0 +1,1442 @@
+HANG SO CAP TEP CHUA NOI VAO HE CAU HINH
+Sinh boi ReverseTools/cauhinh/t33_quet_hangso_conlai.py - CHI DOC
+Tieu chi: dong dang TEN = <so nguyen> o cap tep, ten kieu hang so,
+chua co dang TEN = *_CFG(...). Da loai ten co ve la ID/toa do.
+==============================================================================
+
+Tong: 1048 hang so o 193 tep
+
+## lib\lib_task.lua  (205)
+    :6     T_VAOPHAI                          = 1            
+    :7     T_XUATSU                           = 2            
+    :9     T_NOUSE1                           = 3            
+    :10    T_HOCKHINHCONG                     = 4            
+    :12    T_VLMT                             = 5            
+    :13    T_TTK                              = 6            
+    :15    T_HOTRO                            = 7            
+    :17    T_NPCID                            = 8            
+    :18    T_LOAITIEUXA                       = 9            
+    :19    T_NHANNVVTIEU                      = 10           
+    :22    T_TIMDOCHI                         = 12           
+    :23    T_TIMMATCHI                        = 13           
+    :24    T_TIENDONV                         = 14           --tiÕn ®é nhiÖm vô d· tÈu
+    :25    T_TAYTUYFREE                       = 15           
+    :26    T_USEHUYHOANG                      = 16           
+    :27    T_USEHATHKIM                       = 4137         -- [FIX TRUNG TASK 24/08] truoc la 17; 17 = SetByte cua map 
+    :29    T_RUONGFB                          = 18           
+    :31    T_CHUYENSINH1                      = 19           
+    :32    T_LUUSKILL1                        = 20           
+    :33    T_LUUSKILL2                        = 21           
+    :34    T_LUUSKILL3                        = 22           
+    :35    T_LUUSKILL4                        = 23           
+    :36    T_NHANLAISKILL                     = 24           
+    :38    T_USETLH                           = 25           
+    :39    T_CONGNGUYET                       = 26           
+    :40    T_PHUNGNGUYET                      = 27           
+    :42    T_USESIRO5SAC                      = 28           
+    :43    T_USEKEMCVONG                      = 29           
+    :44    T_USEHHSAOVANG                     = 30           
+    :45    T_USEHHSAODO                       = 31           
+    :47    T_NOUSE2                           = 32           --®ang dïng ®Ó häc khinh c«ng
+    :48    T_USEHUYHIEU                       = 33           
+    :49    T_PASSWORD                         = 34           
+    :50    T_NAPTHESAI                        = 35           
+    :52    T_X2EXP                            = 36           -- ®Þnh nghÜa trong source kh«ng ®­îc dïng thêi gian x2 ®iÓm
+    :53    T_LIENDAU                          = 37           -- da co code ®iÓm tÝch luü liªn ®Êu
+    :54    T_TONGKIM                          = 38           -- da co code	®iÓm tÝch luü tèng kim
+    :55    T_TICHLUYCT                        = 39           -- da co code ®iÓm tÝch luü c«ng tr¹ng uy danh
+    :57    T_NVSTTRONGNGAY                    = 40           
+    :58    T_LOAIBOSS                         = 41           
+    :59    T_NHANNVSTHU                       = 42           
+    :61    T_NVVATRONGNGAY                    = 43           
+    :63    T_REPCAUHOI                        = 4136         -- [FIX TRUNG TASK 24/08] truoc la 44; 44 = TASK_NVTHONGTHUO
+    :64    T_CUOPTIEU                         = 45           
+    :65    T_DUATOP                           = 46           
+    :66    T_NHANGIFTCODE                     = 47           
+    :67    T_RIGHTQUESTION                    = 48           
+    :68    T_NVVTTRONGNGAY                    = 49           
+    :88    T_NhiemVuPLD                       = 66           
+    :89    T_SoQuaiPLD                        = 67           
+    :90    T_SoLanNhanNVPLD                   = 68           
+    :91    T_DiThuyen                         = 69           
+    :92    T_MOTUIDUOCPHAM                    = 70           
+    :94    T_TITLE_TIME                       = 72           --®Þnh nghÜa trong source kh«ng ®­îc dïng
+    :95    T_DANHVONG                         = 73           -- da co code ®iÓm danh väng ®Þnh nghÜa trong source kh«ng ®
+    :96    T_PHUCDUYEN                        = 74           -- da co code ®iÓm phóc duyªn ®Þnh nghÜa trong source kh«ng 
+    :97    T_SONHAXATAC                       = 75           -- Task mËt ®å thÇn bÝ s¬n hµ x· t¾c ®Þnh nghÜa trong source
+    :99    T_RSLienDau                        = 77           
+    :100   T_ThanhLapChienDoi                 = 78           --luu kien chien doi lien dau
+    :101   T_NhanLD2                          = 79           --kiem tra nhan thuong lien dau
+    :102   T_NhanDiemOnline                   = 80           
+    :103   T_LuuSoTran                        = 81           
+    :104   T_LuuSoTranThang                   = 82           
+    :105   TASKID_FY_START_ONLINE_TIME        = 83           
+    :106   TASKID_FY_ADDITIONAL_TIME          = 84           
+    :107   TASKID_GAIN_LAST_DATE              = 85           
+    :108   TASKID_GAIN_TIMES_IN_DAY           = 86           
+    :110   T_SoNVTrongNgay                    = 87           
+    :111   T_TimVatPham                       = 88           
+    :112   T_DanhQuai                         = 89           --®Þnh nghÜa trong source kh«ng dc thay ®æi
+    :113   T_NDPhucDuyen                      = 90           
+    :114   T_NDDanhVong                       = 91           
+    :115   T_NDTongKim                        = 92           
+    :116   T_DiemYeuCau                       = 93           
+    :117   T_DiemHienCo                       = 94           
+    :118   T_NDTriSoPK                        = 95           
+    :119   T_HuyNhiemVu                       = 96           
+    :120   T_SoLanHuyNV                       = 97           
+    :121   T_SoNVHoanThanh                    = 98           
+    :122   T_MayMan                           = 99           
+    :123   T_CH_SAILIENTIEP                   = 100          
+    :125   T_CH_DANHANTHG                     = 104          
+    :126   T_EXP_TRONGBH                      = 105          
+    :127   T_CHECKPHETK                       = 106          
+    :128   T_CHECKDATETK                      = 107          
+    :129   T_ANTI_HACK1                       = 108          --®Þnh nghÜa trong src	t¹m thêi ch­a sö dông
+    :130   T_ANTI_HACK2                       = 109          --®Þnh nghÜa trong src	t¹m thêi ch­a sö dông
+    :133   T_NOUSE3                           = 201          
+    :134   T_NOUSE3                           = 203          --MateName
+    :135   T_NOUSE4                           = 210          
+    :136   T_NOUSE5                           = 220          
+    :137   T_NOUSE6                           = 221          
+    :138   T_RUT_KNB                          = 250          
+    :139   T_PLAYER_XU                        = 251          -- ®­îc ®Þnh nghÜa trong src
+    :141   T_SAVE_TK_KILLPLAYER               = 300          
+    :142   T_SAVE_TK_KILLNPC                  = 301          
+    :143   T_SAVE_TK_DEATH                    = 302          
+    :144   T_SAVE_TK_MAXLT                    = 303          
+    :145   T_SAVE_TK_POINT                    = 304          --save l¹i ®iÓm tÝch luü khi bÞ ®Èy ra ngoµi Tèng Kim khi tr
+    :146   T_SAVE_TK_CURLT                    = 305          
+    :147   T_SAVE_TK_NUMLAG                   = 306          
+    :148   T_SAVE_TK_RANK                     = 307          --save l¹i qu©n hµm khi bÞ ®Èy ra ngoµi Tèng Kim khi trËn mí
+    :149   T_SAVE_TK_NHATBV                   = 308          
+    :150   T_SAVE_TK_POINTKILLPL              = 309          
+    :151   T_SAVE_TK_POINTKILLNPC             = 310          
+    :152   T_SAVE_TK_POINTLT                  = 311          
+    :153   T_SAVE_TK_POINTBV                  = 312          
+    :154   T_SAVE_TK_POINTFLAG                = 313          
+    :158   T_NVDTLienTiepDay                  = 317          --sè lÇn tr¶ nhiÖm vô liªn tiÕp trong ngµy d· tÈu
+    :159   T_MAX_SDLBHT                       = 318          
+    :164   LoaiBCH                            = 325          
+    :165   TaskBCH                            = 326          
+    :166   TaskDBCH                           = 327          
+    :167   TaskUyThacOffline                  = 327          
+    :168   TaskUyThacOffline1                 = 329          
+    :169   TaskUyThacOffline2                 = 330          
+    :170   TaskUyThacOffline3                 = 331          
+    :171   TaskUyThacOffline4                 = 332          
+    :202   NVTHIENBAOKHO                      = 357          --[1][2]nhannv+soruong tieptheo [3][4]keymoruong
+    :218   T_NVPUBGTRONGNGAY                  = 371          
+    :258   TMP_INDEX_PLAYER                   = 3            
+    :259   TMP_NHANNAPTHE                     = 4            
+    :260   TMP_NHANTRANGBIXANH                = 5            
+    :261   TMP_HETRANGBIXANH                  = 6            
+    :264   TMP_INDEX_OBJ                      = 9            
+    :265   TMP_LUUMASERIAL                    = 10           
+    :266   TMP_LOAITHENAP                     = 11           
+    :267   TMP_LUUMACODE                      = 12           
+    :268   TMP_TGIANMOTUI                     = 13           
+    :269   TMP_PhongLangDo                    = 14           
+    :270   TMP_BUY_CTC                        = 15           
+    :271   TMP_TG_LOIDAIB                     = 16           
+    :273   TMP_LienDau_DonDau                 = 18           
+    :274   TMP_DthuLienDauCao                 = 19           
+    :275   TMP_DthuLienDau                    = 20           
+    :276   TMP_BAYTK                          = 4138         -- [FIX TRUNG TASK 24/08] truoc la 21; TaskTemp 21 = diem ky
+    :288   M_LD_DONDAU                        = 11           
+    :293   M_VALUE_1                          = 1            --vuot ai ID doi truong
+    :294   M_VALUE_2                          = 2            --vuot ai so luong quai trong map
+    :295   M_VALUE_3                          = 3            
+    :296   M_VALUE_4                          = 4            
+    :297   M_VALUE_5                          = 5            
+    :298   M_VALUE_6                          = 6            
+    :299   M_VALUE_7                          = 7            
+    :300   M_VALUE_8                          = 8            
+    :301   M_VALUE_9                          = 9            
+    :302   M_VALUE_10                         = 10           
+    :303   M_VALUE_11                         = 11           
+    :304   M_VALUE_12                         = 12           
+    :305   M_VALUE_13                         = 13           
+    :306   M_VALUE_14                         = 14           
+    :307   M_VALUE_15                         = 15           
+    :308   M_VALUE_16                         = 16           
+    :309   M_VALUE_17                         = 17           
+    :310   M_VALUE_18                         = 18           
+    :311   M_VALUE_19                         = 19           
+    :312   M_VALUE_20                         = 20           
+    :313   M_VALUE_21                         = 21           
+    :314   M_VALUE_22                         = 22           
+    :315   M_VALUE_23                         = 23           
+    :316   M_VALUE_24                         = 24           
+    :317   M_VALUE_25                         = 25           
+    :318   M_VALUE_26                         = 26           
+    :319   M_VALUE_27                         = 27           
+    :320   M_VALUE_28                         = 28           
+    :321   M_VALUE_29                         = 29           
+    :322   M_VALUE_30                         = 30           
+    :323   M_TICHLUYA                         = 31           
+    :324   M_TICHLUYB                         = 32           
+    :325   M_HINHTHUC                         = 33           
+    :326   M_SOCOPHEA                         = 34           
+    :327   M_SOCOPHEB                         = 35           
+    :328   M_SOTRAN                           = 36           
+    :329   M_ADDNPCA                          = 37           --value 1 ®¸nh dÊu so¸i Tèng xuÊt hiÖn 2 so¸i chÕt 0 lµ ch­a
+    :330   M_ADDNPCB                          = 38           --value 1 ®¸nh dÊu so¸i Kim xuÊt hiÖn 2 so¸i chÕt 0 lµ ch­a 
+    :331   M_CTHANHVO_1                       = 39           --value 1 ®¸nh dÊu cæng thµnh bÞ vì lËp d­¬ng
+    :332   M_CTHANHVO_2                       = 40           --value 1 ®¸nh dÊu cæng thµnh bÞ vì ®Þnh xuyªn
+    :333   M_CTHANHVO_3                       = 41           --value 1 ®¸nh dÊu cæng thµnh bÞ vì b×nh giang
+    :334   M_LONGTRULD                        = 42           --value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p
+    :335   M_LONGTRUDX                        = 43           --value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p
+    :336   M_LONGTRUBG                        = 44           --value 1 ®¸nh dÊu trô thuéc vÒ phe thñ value = 2 thuéc vÒ p
+    :339   M_VITRI_TRENDUOI                   = 47           --value sö dông trong tèng kim x¸c ®Þnh vÞ trÝ trªn d­íi 2 p
+    :340   M_NPCIDX_SOAITONG                  = 48           --value sö dông l­u npcidx so¸i tèng
+    :341   M_NPCIDX_SOAIKIM                   = 49           --value sö dông l­u npcidx so¸i kim
+    :346   GBM_VALUE_1                        = 1            
+    :347   GBM_VALUE_2                        = 2            
+    :348   GBM_VALUE_3                        = 3            
+    :349   GBM_VALUE_4                        = 4            
+    :350   GBM_VALUE_5                        = 5            
+    :351   GBM_VALUE_6                        = 6            
+    :352   GBM_VALUE_7                        = 7            
+    :353   GBM_VALUE_8                        = 8            
+    :354   GBM_VALUE_9                        = 9            
+    :355   GBM_VALUE_10                       = 10           --10 id dau tien 10 map vuot ai
+    :356   GM_BenThuyen1                      = 11           
+    :357   GM_BenThuyen1                      = 12           
+    :358   GM_BenThuyen1                      = 13           
+    :359   M_LienDau_DonDau                   = 14           
+    :360   M_SoNguoiLDTrung                   = 15           
+    :361   M_SoNguoiLDCao                     = 16           
+    :363   CSP_CTYPE_NONE                     = 0            -- kiÓu lªn ®¶o tÈy tuû
+    :364   CSP_CTYPE_PROP                     = 1            -- tÈy tiÒm n¨ng
+    :365   CSP_CTYPE_SKILL                    = 2            -- tÈy kü n¨ng
+    :366   CSP_CTYPE_ALL                      = 3            -- tÈy c¸c lo¹i
+    :378   MISSION_BR_PARAM_KILLS             = 0            
+
+## missions\leaguematch\head.lua  (54)
+    :8     WLLS_HEAD                          = 1            
+    :32    GLB_WLLS_PHASE                     = 820          --±ÈÈüµ±Ç°Ëù´¦½×¶Î
+    :33    GLB_WLLS_SID                       = 821          --µ±Ç°Èü¼¾±àºÅ
+    :34    GLB_WLLS_MATCHID                   = 822          --µ±Ç°±ÈÈü±àºÅ
+    :36    GLB_WLLS_NEXT                      = 824          --ÏÂÒ»Èü¼¾µÄÁªÈüÄ£Ê½
+    :37    GLB_WLLS_TIME                      = 825          --¼ÆÊ±Æ÷¼ÆÊý
+    :38    GLB_WLLS_CLOSE                     = 826          --¹Ø±Õ¸ß¼¶ÁªÈü£¨2£© + ¹Ø±ÕÐÂÐãÁªÈü£¨1£©
+    :41    WLLS_LGTASK_MTYPE                  = 11           --±ÈÈüÀàÐÍ
+    :42    WLLS_LGTASK_LAST                   = 1            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈü±àºÅ£¨½øÈë×¼±¸³¡¾ÍËã£©
+    :43    WLLS_LGTASK_SVRID                  = 2            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈü·þÎñÆ÷
+    :44    WLLS_LGTASK_MSCAMP                 = 3            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈüMSÕóÓª
+    :45    WLLS_LGTASK_POINT                  = 4            --Õ½¶Ó»ñµÃ»ý·Ö
+    :46    WLLS_LGTASK_RANK                   = 5            --Õ½¶ÓÅÅÃû
+    :47    WLLS_LGTASK_WIN                    = 6            --Ê¤Àû´ÎÊý
+    :48    WLLS_LGTASK_TIE                    = 7            --Æ½¾Ö´ÎÊý
+    :49    WLLS_LGTASK_TOTAL                  = 8            --²ÎÈü´ÎÊý£¨Ê§°Ü´ÎÊý = TOTAL - WIN - TIE£©
+    :50    WLLS_LGTASK_JOIN                   = 9            --ÒÑ¾­½øÈë×¼±¸³¡µÄÈËÊý
+    :51    WLLS_LGTASK_TIME                   = 10           --Õ½¶·Ê±¼ä×Ü¼Æ
+    :52    WLLS_LGTASK_STYPE                  = 12           --×é½¨Ê±µÄÁªÈüÄ£Ê½
+    :53    WLLS_LGTASK_EMY1                   = 13           --×îºóµÄÒ»³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ£¨Õ½¶ÓÃûString2ID£©
+    :54    WLLS_LGTASK_EMY2                   = 14           --µ¹ÊýµÚ¶þ³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ
+    :55    WLLS_LGTASK_EMY3                   = 15           --µ¹ÊýµÚÈý³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ
+    :56    WLLS_LGTASK_TOTAL_EX               = 16           --Ê¹ÓÃÑªÕ½ÁîÆìµÄ¸öÊý
+    :57    WLLS_LGTASK_USE_LingQi_COUNT       = 17           --À©Õ¹´ÎÊý²Î¼ÓµÄ¼¸´Î
+    :60    WLLS_LGMTASK_JOB                   = 1            --Ö°Î»:0¡¢¶ÓÔ±£»1¡¢¶Ó³¤
+    :62    WLLS_LGMTASK_ADDSID                = 3            --ÔÚÄÄ¸öÈü¼¾¼ÓÈëÁË±¾Õ½¶Ó
+    :63    WLLS_LGMTASK_WIN                   = 4            --ÐèÒª²¹¼ÓµÄÊ¤Àû´ÎÊý
+    :64    WLLS_LGMTASK_TIE                   = 5            --ÐèÒª²¹¼ÓµÄÆ½¾Ö´ÎÊý
+    :65    WLLS_LGMTASK_TOTAL                 = 6            --ÐèÒª²¹¼ÓµÄ²ÎÈü´ÎÊý
+    :66    WLLS_LGMTASK_OVER                  = 7            --ÔÚÄÄ¸öÈü¼¾¼¶·¢ÉúÔ½¼¶
+    :69    WLLS_TB                            = 1715         
+    :79    WLLS_TASKID_POINT                  = 2500         --¸öÈËÀÛ¼Æ»ý·Ö
+    :80    WLLS_TASKID_HONOUR                 = 37           -- [WLLS port] goc 2501; dung 37 = TASKVALUE_STATTASK_HONOR 
+    :98    WLLS_TEMPTASK                      = 246          
+    :99    WLLS_STRINGTASK                    = 5            
+    :102   WLLS_MSID_SCHEDULE                 = 24           -- ×¼±¸³¡ MissionID
+    :103   WLLS_MSID_COMBAT                   = 25           -- ±ÈÈü³¡ MissionID
+    :104   WLLS_MSID_GLB                      = 26           -- È«¾Ö MissionID
+    :106   WLLS_MSV_MSID                      = 1            --±¾MissionµÄMissionID
+    :109   WLLS_TIMERID_SCHEDULE              = 50           --È«¾Ö¼ÆÊ±Æ÷
+    :110   WLLS_TIMERID_COMBAT                = 51           --±ÈÈü³¡¼ÆÊ±Æ÷
+    :112   WLLS_FRAME2TIME                    = 18           --18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
+    :113   WLLS_TIMER_PREP_FREQ               = 10           --×¼±¸³¡¼ÆÊ±Æ÷´¥·¢ÆµÂÊ10Ãë
+    :114   WLLS_TIMER_PREP_TOTAL              = 24           --×¼±¸Ê±¼ä4·ÖÖÓ£¨24¸ö±¨¸æÕ½¿öÊ±¼ä£©
+    :115   WLLS_TIMER_FIGHT_FREQ              = 5            --Õ½¶·³¡±¨¸æÕ½¿öÆµÂÊ5Ãë
+    :116   WLLS_TIMER_FIGHT_PREP              = 2            --Õ½¶·×¼±¸Ê±¼ä10Ãë £¨2¸ö±¨¸æÕ½¿öÊ±¼ä£©
+    :117   WLLS_TIMER_FIGHT_TOTAL             = 120          --Õ½¶·Ê±¼ä10·ÖÖÓ £¨10*60/5¸ö±¨¸æÕ½¿öÊ±¼ä£©
+    :120   WLLS_LGTYPE                        = 5            --Õ½¶ÓÀàÐÍ
+    :121   WLLS_REG_LGTYPE                    = 2            --µÇ¼Ç´¦Õ½¶ÓÀàÐÍ
+    :123   WLLS_LEVEL_JUNIOR                  = 80           --²Î¼ÓÐÂÐãÈüËùÐè×îÐ¡¼¶±ð
+    :124   WLLS_LEVEL_SENIOR                  = 120          --²Î¼ÓÎäÁÖÈüËùÐè×îÐ¡¼¶±ð
+    :126   WLLS_MIN_TEAM                      = 2            --±ÈÈü³¡ÖÁÉÙ¶àÉÙ²ÎÈü¶ÓÎé²Å¿ÉÒÔ¿ªÕ½
+    :131   WLLS_LingQi_PerCOUNT               = 4            
+    :144   WLLS_MAX_COUNT                     = 200          --Ã¿¸ö×¼±¸³¡×î¶àÈÝÄÉ¶àÉÙÕ½¶Ó
+
+## event\tongwar\headinfo.lua  (33)
+    :11    TONGWAR_LGTYPE                     = 10           
+    :14    TONGWAR_LGMTASK_JOB                = 1            --¶Ó³¤Îª1£»¶ÓÔ±Îª0
+    :17    TONGWAR_LGTASK_TONGCNT             = 1            --¹²ÁªÃËÊý
+    :18    TONGWAR_LGTASK_WIN                 = 2            --Ê¤Àû´ÎÊý
+    :19    TONGWAR_LGTASK_LOSE                = 3            --Ê§°Ü´ÎÊý
+    :20    TONGWAR_LGTASK_TIE                 = 4            --Æ½¾Ö´ÎÊý
+    :21    TONGWAR_LGTASK_RESULT              = 5            --±ÈÈü×Ü»ý·Ö
+    :22    TONGWAR_LGTASK_POINT               = 6            --Ã¿³¡¾»»ý·ÖÀÛ¼Ó
+    :23    TONGWAR_LGTASK_CITYID              = 7            --¸Ã³ÇÊÐid
+    :26    TONGWAR_LGTASK_RANK                = 10           --±ÈÈü×îÖÕÅÅÃû
+    :31    TONGWAR_LGTASK_TITLE               = 15           --°ï»áÁªÃËÊÇ·ñÁìÈ¡ÁË¹â»·
+    :32    TONGWAR_LGTASK_TONGID              = 16           --³ÇÖ÷°ï»áID
+    :33    TONGWAR_LGTASK_SEASON              = 17           --Èü¼¾
+    :34    TONGWAR_LGTASK_ELDER               = 18           --³¤ÀÏ½±Àø£¬¹²7¸ö
+    :35    TONGWAR_LGTASK_MASTER              = 19           --°ïÖ÷½±Àø£¬¹²1¸ö
+    :36    TONGWAR_LGTASK_MSTITLE             = 20           --°ïÖ÷³ÆºÅ
+    :40    TONGWAR_RLTASK_POINT               = 2369         
+    :41    TONGWAR_RLTASK_NDEATH              = 2370         
+    :42    TONGWAR_RLTASK_KILLPLAYER          = 2371         
+    :43    TONGWAR_RLTASK_LASTDTIME           = 2372         
+    :44    TONGWAR_RLTASK_CURRANK             = 2373         
+    :45    TONGWAR_RLTASK_SERIESKILL          = 2374         
+    :46    TONGWAR_RLTASK_MAXSERIESKILL       = 2375         
+    :47    TONGWAR_RLTASK_MAXDEATH            = 2376         
+    :48    TONGWAR_RLTASK_KEYNUMBER           = 2377         
+    :49    TONGWAR_RLTASK_TOTALPOINT          = 2378         
+    :50    TONGWAR_RLTASK_AWARD               = 1737         --BYTE1=season ÁìÈ¡¹ýÆÕÍ¨½±Àø
+    :57    PL_TEMPTASK_SECURITY               = 193          
+    :59    TV_LASTDEATHTIME                   = 2306         
+    :60    TV_LASTDEATHMAPX                   = 2307         
+    :61    TV_LASTDEATHMAPY                   = 2308         
+    :62    TV_SERIESKILL_REALY                = 2305         --Íæ¼Òµ±Ç°µÄÊµ¼ÊÁ¬Õ¶Öµ£¨¸ß¼¶É±±È½ÏµÍ¼¶µÄÍæ¼Ò£¬¼ÆÁ¬Õ¶£¬µ«²»¼Æ
+    :136   PHB_WULIN                          = 10227        --ÎäÁÖÊ®´óÅÅÃû
+
+## missions\challengeoftime\include.lua  (32)
+    :7     MISSION_MATCH                      = 22           -- ±ÈÈümission
+    :8     TIMER_MATCH                        = 41           -- ±ÈÈü¿ªÊ¼¶¨Ê±Æ÷
+    :9     TIMER_BOARD                        = 42           -- Í¨¸æ¶¨Ê±Æ÷
+    :10    TIMER_CLOSE                        = 43           -- ±ÈÈü½áÊø¶¨Ê±Æ÷
+    :11    INTERVAL_BOARD                     = 1            -- Í¨±¨¼ä¸ô£¨·ÖÖÓ£©£ºÃ¿·ÖÖÓÍ¨±¨Ò»´Î
+    :12    INTERVAL_MATCH                     = 3600         -- Ã¿Ð¡Ê±±ÈÈüÒ»´Î£¨Ãë£©
+    :13    TIME_SIGNUP                        = 10           
+    :16    BOAT_POSX                          = 1559         -- Íæ¼Ò±»´«ËÍµ½ÁúÖÛµÄx×ø±ê
+    :17    BOAT_POSY                          = 3226         -- Íæ¼Ò±»´«ËÍµ½ÁúÖÛµÄy×ø±ê
+    :18    LIMIT_PLAYER_COUNT                 = 8            -- Íæ¼ÒÊýÁ¿µÄ×î´óÏÞÖÆ
+    :19    AWARD_COUNT                        = 10           -- È«²¿´³¹Ø³É¹¦Ö®ºó¿ÉÒÔ¹Ï·Ö10¸ö´³¹Ø±¦Ïä
+    :23    SEX_BOY                            = 0            -- ÄÐÐÔ
+    :24    SEX_GIRL                           = 1            -- Å®ÐÔ
+    :25    SEX_RENYAO                         = 2            -- ÈËÑý
+    :30    CHUANGGUAN30_START_TIME            = 10           
+    :31    CHUANGGUAN30_END_TIME              = 22           
+    :33    COUNT_LIMIT                        = 1            
+    :54    USE_NAME_ALL_PLAYERS               = 1            -- Ê¹ÓÃÈ«ÌåÍæ¼ÒÃû×Ö
+    :55    USE_NAME_THE_TOPLIST               = 2            -- Ê¹ÓÃËæ»ú°ñÉÏÃû
+    :57    VARS_TEAM_NAME                     = 1            -- ¶ÓÎéÃû³Æ
+    :59    VARS_PLAYER_NAME                   = 2            -- Íæ¼ÒÃû×Ö
+    :60    VARS_TEAMLEADER_FACTION            = 11           -- ¶Ó³¤ÃÅÅÉ
+    :61    VARS_TEAMLEADER_GENDER             = 12           -- ¶Ó³¤ÐÔ±ð
+    :65    VARV_PLAYER_COUNT                  = 3            -- Íæ¼ÒµÄÊýÁ¿
+    :67    VARV_SIGNUP_WORLD                  = 5            -- ±¨ÃûµØÍ¼
+    :68    VARV_SIGNUP_POSX                   = 6            -- ±¨ÃûµØµãµÄX×ø±ê
+    :69    VARV_SIGNUP_POSY                   = 7            -- ±¨ÃûµØµãµÄY×ø±ê
+    :70    VARV_BOARD_TIMER                   = 8            -- ±ÈÈü½øÐÐµÄÊ±¼ä£¨Ãë£©
+    :71    VARV_PLAYER_TOTAL_COUNT            = 9            -- Íæ¼Ò×ÜµÄÊýÁ¿(²»¹ÜÊÇ·ñÒÑ¾­ËÀÍö)
+    :72    VARV_PLAYER_USE_INDEX              = 10           -- Ê¹ÓÃµ½µÄÍæ¼ÒË÷Òý
+    :74    VARV_MISSION_RESULT                = 12           -- ÈÎÎñ½á¹û£¬£±ÎªÊ¤ÀûÍ¨¹Ø£¬£°ÎªÊ§°Ü
+    :75    VARV_PLAYER_SEX                    = 13           
+
+## leaguematch\head.lua  (31)
+    :5     RLGLB_WLLS_PHASE                   = 121          --±ÈÈüµ±Ç°Ëù´¦½×¶Î
+    :6     RLGLB_WLLS_SEASONID                = 122          --µ±Ç°Èü¼¾±àºÅ
+    :7     RLGLB_WLLS_MATCHID                 = 123          --µ±Ç°±ÈÈü±àºÅ
+    :8     RLGLB_WLLS_SVRCOUNT                = 123          -- +i Ä³×¼±¸³¡µ±Ç°ÈËÊý(124~143)
+    :11    WLLS_LGTASK_MTYPE                  = 11           --±ÈÈüÀàÐÍ
+    :12    WLLS_LGTASK_LAST                   = 1            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈü±àºÅ£¨½øÈë×¼±¸³¡¾ÍËã£©
+    :13    WLLS_LGTASK_SVRID                  = 2            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈü·þÎñÆ÷
+    :14    WLLS_LGTASK_MSCAMP                 = 3            --Ëù²Î¼ÓµÄ×îºóÒ»³¡±ÈÈüMSÕóÓª
+    :15    WLLS_LGTASK_POINT                  = 4            --Õ½¶Ó»ñµÃ»ý·Ö
+    :16    WLLS_LGTASK_RANK                   = 5            --Õ½¶ÓÅÅÃû
+    :17    WLLS_LGTASK_WIN                    = 6            --Ê¤Àû´ÎÊý
+    :18    WLLS_LGTASK_TIE                    = 7            --Æ½¾Ö´ÎÊý
+    :19    WLLS_LGTASK_TOTAL                  = 8            --²ÎÈü´ÎÊý£¨Ê§°Ü´ÎÊý = TOTAL - WIN - TIE£©
+    :20    WLLS_LGTASK_JOIN                   = 9            --ÒÑ¾­½øÈë×¼±¸³¡µÄÈËÊý
+    :21    WLLS_LGTASK_TIME                   = 10           --Õ½¶·Ê±¼ä×Ü¼Æ
+    :22    WLLS_LGTASK_STYPE                  = 12           --×é½¨Ê±µÄÁªÈüÄ£Ê½
+    :23    WLLS_LGTASK_EMY1                   = 13           --×îºóµÄÒ»³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ£¨Õ½¶ÓÃûString2ID£©
+    :24    WLLS_LGTASK_EMY2                   = 14           --µ¹ÊýµÚ¶þ³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ
+    :25    WLLS_LGTASK_EMY3                   = 15           --µ¹ÊýµÚÈý³¡±ÈÈüÓöµ½µÄ¶ÔÊÖ
+    :26    WLLS_LGTASK_TOTAL_EX               = 16           --À©Õ¹²Î¼Ó´ÎÊý
+    :27    WLLS_LGTASK_USE_LingQi_COUNT       = 17           --À©Õ¹²Î¼Ó´ÎÊý
+    :29    WLLS_LGMTASK_JOB                   = 1            --Ö°Î»:0¡¢¶ÓÔ±£»1¡¢¶Ó³¤
+    :31    WLLS_LGMTASK_ADDSID                = 3            --ÔÚÄÄ¸öÈü¼¾¼ÓÈëÁË±¾Õ½¶Ó
+    :32    WLLS_LGMTASK_WIN                   = 4            --ÐèÒª²¹¼ÓµÄÊ¤Àû´ÎÊý
+    :33    WLLS_LGMTASK_TIE                   = 5            --ÐèÒª²¹¼ÓµÄÆ½¾Ö´ÎÊý
+    :34    WLLS_LGMTASK_TOTAL                 = 6            --ÐèÒª²¹¼ÓµÄ²ÎÈü´ÎÊý
+    :35    WLLS_LGMTASK_OVER                  = 7            --ÔÚÄÄ¸öÈü¼¾¼¶·¢ÉúÔ½¼¶
+    :38    WLLS_LGTYPE                        = 5            --Õ½¶ÓÀàÐÍ
+    :40    WLLS_MAX_COUNT                     = 200          --Ã¿¸ö×¼±¸³¡×î¶àÈÝÄÉ¶àÉÙÕ½¶Ó
+    :42    WLLS_MATCHTIME                     = 15           --Ã¿³¡±ÈÈüµÄÊ±¼ä£¨·ÖÖÓ£©
+    :45    WLLS_LingQi_PerCOUNT               = 4            
+
+## petsys\common.lua  (25)
+    :14    PET_OPERATION_DELETE               = 1            
+    :15    PET_OPERATION_SUMMON               = 2            
+    :16    PET_OPERATION_UNSUMMON             = 3            
+    :17    PET_OPERATION_LEVEL_UP             = 4            
+    :18    PET_OPERATION_CHANGE_NAME          = 5            
+    :19    PET_OPERATION_CHANGE_FEATURE       = 6            
+    :20    PET_OPERATION_TAME                 = 7            
+    :21    PET_OPERATION_XIUZHEN_POINT        = 8            
+    :23    INDEX_STR                          = 1            
+    :24    INDEX_DEX                          = 2            
+    :25    INDEX_VIT                          = 3            
+    :26    INDEX_ENG                          = 4            
+    :27    INDEX_HP                           = 5            
+    :28    INDEX_MP                           = 6            
+    :29    ATTRIB_COUNT                       = 6            
+    :30    SKILL_COUNT                        = 4            
+    :32    SONGJIN                            = 1            
+    :33    CHANGE_OF_TIME                     = 2            
+    :34    YAN_DI                             = 3            
+    :35    TIAN_LU_TREE                       = 4            
+    :37    HUO_YUE_DU                         = 6            
+    :38    YE_SOU                             = 7            
+    :39    JIAN_ZHONG_MI_GONG                 = 8            
+    :123   ZHENYUAN_TO_XIUZHEN_POINT_RATE     = 200          
+    :124   ZHENYUAN_TO_XIUZHEN_POINT_VALUE    = 20000        
+
+## missions\yandibaozang\head.lua  (23)
+    :13    YDBZ_MISSION_MATCH                 = 50           -- mission
+    :14    YDBZ_TIMER_MATCH                   = 87           --
+    :15    YDBZ_TIMER_FIGHTSTATE              = 89           --
+    :18    YDBZ_SIGNUP_WORLD                  = 5            --
+    :19    YDBZ_SIGNUP_POSX                   = 6            -- X
+    :20    YDBZ_SIGNUP_POSY                   = 7            -- Y
+    :25    YDBZ_TEAM_COUNT                    = 16           --
+    :26    YDBZ_TEAM_SUM                      = 17           --
+    :36    YDBZ_TEAMS_TASKID                  = 1851         -- group
+    :37    YDBZ_PLAY_LIMIT_COUNT              = 1852         -- 12 3 4
+    :39    YDBZ_MISSIOM_PLAYER_KEY            = 1854         -- key
+    :41    YDBZ_LIMIT_SIGNUP                  = 5            -- 10
+    :44    YDBZ_TIME_WAIT_STATE1              = 10           -- boss10
+    :45    YDBZ_TIME_WAIT_STATE3              = 30           -- 30
+    :46    YDBZ_LIMIT_SETFIGHTSTATE           = 3            -- 3
+    :47    YDBZ_LIMIT_TEAMS_COUNT             = 15           --
+    :48    YDBZ_LIMIT_PLAYER_LEVEL            = 120          --
+    :49    YDBZ_LIMIT_WEEK_COUNT              = 10           --
+    :50    YDBZ_LIMIT_DAY_COUNT               = 4            --
+    :54    YDBZ_AWARD_EXP                     = 600000       --
+    :55    YDBZ_Faninl_AWARD_EXP              = 300000       --boss
+    :56    YDBZ_KILLPLAYER_EXP                = 200000       --
+    :57    YDBZ_KILLLASTBOSS_EXP              = 1000000      --boss
+
+## lib\lib_vatpham.lua  (23)
+    :11    GOLDITEM                           = 0            
+    :12    PURPLEITEM                         = 1            
+    :13    BLUEITEM                           = 2            
+    :14    GREENITEM                          = 3            
+    :18    PARTICULAR                         = 2            
+    :19    LEVEL                              = 3            
+    :21    LUCK                               = 5            
+    :22    VERSION                            = 6            
+    :23    RANDOMSEED                         = 7            
+    :48    ROOME                              = 0            -- room_equipment
+    :49    ROOMEB                             = 1            -- room_equipmentback
+    :50    ROOMR                              = 2            -- room_repository
+    :51    ROOME1                             = 3            -- room_exbox1
+    :52    ROOME2                             = 4            -- room_exbox2
+    :53    ROOME3                             = 5            -- room_exbox3
+    :54    ROOMEX                             = 6            -- room_equipmentex
+    :55    ROOMTRADE                          = 7            -- room_trade
+    :56    ROOMTRADEB                         = 8            -- room_tradeback
+    :57    ROOMTRADE1                         = 9            -- room_trade1
+    :58    ROOMIMMEDIACY                      = 10           -- room_immediacy
+    :59    ROOMG                              = 11           -- room_give
+    :60    ROOMGB                             = 12           -- room_giveback
+    :61    ROOAFFAIR                          = 13           -- room_affairitem
+
+## missions\citywar_city\head.lua  (20)
+    :36    MISSIONID                          = 7            -- DOT E: goc 6 (6 = Loi Dai BH cua ta dang song - Q3 KEHOAC
+    :37    FRAME2TIME                         = 18           --18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
+    :56    g_nMaxTscPerDoor                   = 3            --Ã¿¸öÃÅ×î´ó¿ÉÒÔ³öÏÖµÄÍ¶Ê¯³µÊýÁ¿
+    :58    g_nMaxGccPerDoor                   = 1            --¹¥·½Ã¿¸öÃÅ×î¶à´æÔÚ¹¥³Ç³µµÄÊýÁ¿
+    :63    g_nMaxToolCount                    = 6            --ÊØ·½×î´óÍ¬Ê±´æÔÚµÄ¹ÍÓ¶±øÈËÊý
+    :69    TV_TASKID                          = 230          --¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñID
+    :70    TV_TASKVALUE                       = 231          --¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñµÄÖµ,¼ÇÂ¼ËùÊô·½,ËÎÎª1£¬½ðÎª2
+    :71    TV_TASKKEY                         = 232          --¼ÇÂ¼Íæ¼Òµ±Ç°ÈÎÎñµÄkeyºÅ
+    :72    TV_CITYID                          = 233          
+    :74    CS_RevId                           = 20           
+    :75    CS_RevData                         = 10           
+    :86    STONENPCID1                        = 528          --Ê¯0±®µÄNpcÄ£°åID
+    :87    STONENPCID2                        = 530          
+    :89    STONELEVEL2                        = 20           --¹¥·½µÄÊ¯Öù
+    :91    DOORNPCID                          = 532          
+    :108   DOCTORNPCID                        = 230          
+    :208   TV_LASTDEATHTIME                   = 2306         
+    :209   TV_LASTDEATHMAPX                   = 2307         
+    :210   TV_LASTDEATHMAPY                   = 2308         
+    :211   TV_SERIESKILL_REALY                = 2305         --Íæ¼Òµ±Ç°µÄÊµ¼ÊÁ¬Õ¶Öµ£¨¸ß¼¶É±±È½ÏµÍ¼¶µÄÍæ¼Ò£¬¼ÆÁ¬Õ¶£¬µ«²»¼Æ
+
+## event\storm\head.lua  (16)
+    :27    STORM_TASKIDX_START                = 1            --»î¶¯¿ªÊ¼µÄÊ±¼ä£¨³¡´Î£©
+    :28    STORM_TASKIDX_TRYCOUNT             = 2            --»î¶¯½øÐÐ¹ýµÄ´ÎÊý
+    :29    STORM_TASKIDX_POINTCUR             = 3            --»î¶¯µÄµ±Ç°·ç±©»ý·Ö
+    :30    STORM_TASKIDX_POINTEX              = 4            --»î¶¯µÄµ±Ç°·ç±©»ý·Ö½±Àø·Ö£¨Ê±¼ä½±Àø/²ÎÓë½±Àø£©
+    :31    STORM_TASKIDX_POINTMAX             = 5            --»î¶¯µÄµ±ÈÕ×î¸ß·ç±©»ý·Ö¼ÍÂ¼
+    :32    STORM_TASKIDX_EXTRA                = 6            --¼ÆËã»ý·ÖÓÃµ½µÄ¶îÍâ±äÁ¿£¨µ±Ç°Ô­Ê¼·Ö/»î¶¯³õÊ¼·Ö£©
+    :33    STORM_TASKIDX_MODE                 = 7            --Ëù²Î¼ÓµÄ»î¶¯µÄÏêÏ¸Ä£Ê½/¼¶±ð
+    :54    STORM_LADDER_WEEK                  = 36           --´ÓµÚ¼¸ÖÜ¿ªÊ¼ËãÅÅÐÐ
+    :55    STORM_LADDERID_WEEK1               = 10182        --µÚÒ»ÖÜÅÅÐÐ
+    :56    STORM_LADDERID_WEEK2               = 10183        --µÚ¶þÖÜÅÅÐÐ
+    :57    STORM_LADDERID_WEEK3               = 10184        --µÚÈýÖÜÅÅÐÐ
+    :58    STORM_LADDERID_WEEK4               = 10185        --µÚËÄÖÜÅÅÐÐ
+    :59    STORM_LADDERID_MONTH               = 10186        --±¾ÔÂÅÅÐÐ£¨ÔÝ¶¨È«²¿£¿£©
+    :61    STORM_TIMERID_YS                   = 44           --Ò°ÛÅÈÎÎñµ¹¼ÆÊ±
+    :62    STORM_TIMER_YS                     = 5            --Ò°ÛÅÈÎÎñµ¹¼ÆÊ±ÆµÂÊ£¬5·ÖÖÓ
+    :64    STORM_END_DAY                      = 275          --»ý·Ö·ç±©½áÊøÊ±¼ä
+
+## missions\clearskill\head.lua  (15)
+    :4     CSP_TID_RevivalSWID                = 204          -- script viet hoa By http://tranhba.com  ##Ðó##Ý#ID
+    :5     CSP_TID_ReviveID                   = 205          -- script viet hoa By http://tranhba.com  ##Ðó#·ID
+    :7     CSP_TID_ClearFreeTime              = 144          
+    :10    CSP_TID_JewelEnterTime             = 150          -- script viet hoa By http://tranhba.com  £#ã·±#£¯##Ì##Ä´#£ý
+    :12    CSP_NEEDJEWEL_SKILL                = 3            -- script viet hoa By http://tranhba.com  #Ì##Ä######Ä##£ý
+    :13    CSP_NEEDJEWEL_PROP                 = 6            -- script viet hoa By http://tranhba.com  #Ì#±Ä#±#£¯#Ä##£ý
+    :15    CSP_NEEDJEWEL_SKILL2               = 1            -- script viet hoa By http://tranhba.com  1##°#ã#
+    :16    CSP_NEEDJEWEL_PROP2                = 1            -- script viet hoa By http://tranhba.com  1####ã#
+    :19    CSP_NEEDLEVEL                      = 50           -- script viet hoa By http://tranhba.com  ¿Ð#´#·#Ä######±ð
+    :20    CSP_MAXClearTime                   = 1            -- script viet hoa By http://tranhba.com  ##´ã#´#·´#£ý
+    :22    CSP_RevieSWID                      = 1            -- script viet hoa By http://tranhba.com  ##Ðó#·ID
+    :23    CSP_MaxTestMapCount                = 10           -- script viet hoa By http://tranhba.com ·¿ß##ÐPK#´#Ä£ý¸¿
+    :37    MISSIONID                          = 10           
+    :38    JOINSTATE                          = 100          
+    :52    MAX_MEMBER_COUNT                   = 20           
+
+## header\taskid.lua  (15)
+    :3     ITEMINDEX                          = 0            
+    :4     NPCINDEX                           = 1            
+    :5     DESPLAYERID                        = 3            --for gm
+    :6     SELSKILLNO                         = 4            --skill cua phai' so' x
+    :7     HAVELOVE_MALE                      = 5            --Dang cau hon
+    :8     HAVELOVE_FEMALE                    = 6            --playerindex cua nam
+    :9     SEL_MOVEARRAY                      = 7            --lua chon mang~di chuyen
+    :10    SEL_MOVEBEGIN                      = 8            --lua chon di chuyen
+    :68    DATA_DICEMONEY                     = 0            -- tien chu song bac
+    :69    DATA_DUATOP                        = 11           
+    :70    DATA_DATCUOC                       = 12           --dat cuoc
+    :71    DATA_DCHAVERES                     = 13           --dat cuoc
+    :72    DATA_DCBEGIN                       = 21           --dat cuoc
+    :73    DATA_DCEND                         = 30           --dat cuoc
+    :74    DATA_MAPVUOTAI                     = 40           --40-46
+
+## tinhnang\phonglangdo\lib_phonglangdo.lua  (14)
+    :9     MSTIME_PLD_XOANPC                  = 1            --so phut hoan thanh phong lang do 30 * 60 * 18
+    :10    MONEY_VETHANH                      = 1000         
+    :11    EXPQUAITHUONG                      = 100000       
+    :12    EXP_BOSS_TTDL                      = 50000000     
+    :14    EXP_TRA_NVTT                       = 50000000     
+    :15    EXP_CAPBEN_BACPLD                  = 0            
+    :16    NUM_NHAN_NVTTINDAY                 = 1            --sè lÇn ®i PLD b»ng lÖnh bµi nhËn nhiÖm vô giao truy c«ng l
+    :21    REQ_MDTB                           = 200          
+    :22    M_TB_TIMER                         = 30           --30 giay bao 1 lan
+    :23    NUM_TT_NV                          = 188          --so thuy tac can tieu diet khi nhan nhiem vu
+    :25    LIFE_THUYTAC                       = 100000       
+    :26    LIFE_BOSS_THUYTAC                  = 8000000      
+    :115   MAX_DI_PLD_NGAY                    = 2            
+    :116   MAX_GIAO_TRUYCONGL                 = 1            
+
+## event\tongwar\event.lua  (14)
+    :4     TONGWAR_LGTYPE                     = 10           
+    :7     TONGWAR_LGMTASK_JOB                = 1            --¶Ó³¤Îª1£»¶ÓÔ±Îª0
+    :10    TONGWAR_LGTASK_TONGCNT             = 1            --¹²ÁªÃËÊý
+    :11    TONGWAR_LGTASK_WIN                 = 2            --Ê¤Àû´ÎÊý
+    :12    TONGWAR_LGTASK_LOSE                = 3            --Ê§°Ü´ÎÊý
+    :13    TONGWAR_LGTASK_TIE                 = 4            --Æ½¾Ö´ÎÊý
+    :14    TONGWAR_LGTASK_RESULT              = 5            --±ÈÈü×Ü»ý·Ö
+    :15    TONGWAR_LGTASK_POINT               = 6            --Ã¿³¡¾»»ý·ÖÀÛ¼Ó
+    :16    TONGWAR_LGTASK_CITYID              = 7            --¸Ã³ÇÊÐid
+    :19    TONGWAR_LGTASK_RANK                = 10           --±ÈÈü×îÖÕÅÅÃû
+    :20    TONGWAR_LGTASK_TITLE               = 15           --°ï»áÁªÃËÊÇ·ñÁìÈ¡ÁË¹â»·
+    :21    TONGWAR_LGTASK_TONGID              = 16           --³ÇÖ÷°ï»áID
+    :22    TONGWAR_LGTASK_SEASON              = 17           --Èü¼¾
+    :25    TONGWAR_RLTASK_POINT               = 1323         
+
+## tinhnang\loidai\lib_loidai.lua  (13)
+    :17    MONEY_BD_LD                        = 1000000      
+    :18    EXP_KT_LOIDAI_L                    = 1000000      --phan thuong exp
+    :20    CS_RevId                           = 53           
+    :21    CS_RevData                         = 19           
+    :29    FRAME2TIME                         = 18           
+    :30    MAX_MEMBER_COUNT                   = 16           
+    :32    WIN_TONGEXP                        = 1200         
+    :33    LOSE_TONGEXP                       = 1400         
+    :37    PKWINBONUS                         = 3            
+    :38    LOSEBONUS                          = 1            
+    :43    JOINSTATE                          = 242          
+    :44    MISSIONID                          = 5            
+    :45    WORLDIDXBEGIN                      = 213          
+
+## item\compound\compound_header.lua  (13)
+    :33    RESULT_UNKNOWN                     = -1           -- Î´Öª´íÎó
+    :34    RESULT_SUCCEED                     = 0            -- [ºÏ³É]³É¹¦
+    :35    RESULT_FAIL                        = 1            -- [ºÏ³É]Ê§°Ü
+    :36    RESULT_NO_MONEY                    = 2            -- ½ðÇ®²»×ã
+    :37    RESULT_LEVEL_FULL                  = 3            -- Ô­ÁÏÒÑ´ïµ½×î¸ßµÈ¼¶
+    :38    RESULT_LACK_RESOURCE               = 4            -- Ô­ÁÏ²»×ã
+    :39    RESULT_LEVEL_ERROR                 = 5            -- Ô­ÁÏµÈ¼¶´íÎó
+    :40    RESULT_MAGIC_ERROR                 = 6            -- Ô­ÁÏÄ§·¨Öµ´íÎó
+    :42    RESULT_RULE_ERROR                  = 8            -- Ô­ÁÏ²»·ûºÏ¹æÔò
+    :45    GLBID_LAST_CMP_DATE                = 32           -- È«¾Ö±äÁ¿ID of ×îºóÒ»´Î[ºÏ³É]µÄÈÕÆÚ
+    :46    GLBID_COMMON_VAL_SUM               = 33           -- È«¾Ö±äÁ¿ID of ÆÕÍ¨ÎïÆ·¼ÛÖµÁ¿»ã×ÜÖµ
+    :47    GLBID_GOLD_VAL_SUM                 = 34           -- È«¾Ö±äÁ¿ID of »Æ½ð×°±¸¼ÛÖµÁ¿»ã×ÜÖµ
+    :49    SUM_UNIT                           = 10000000     -- ´æ´¢µ½GlobalValueµÄµ¥Î»£¨Ç§Íò£©
+
+## item\compound\fantasygoldessence_upgrade.lua  (13)
+    :5     RESULT_UNKNOWN                     = -1           
+    :6     RESULT_SUCCEED                     = 0            
+    :7     RESULT_FAIL                        = 1            
+    :8     RESULT_NO_MONEY                    = 2            
+    :9     RESULT_LEVEL_FULL                  = 3            
+    :10    RESULT_LACK_RESOURCE               = 4            
+    :11    RESULT_LEVEL_ERROR                 = 5            
+    :12    RESULT_MAGIC_ERROR                 = 6            
+    :14    RESULT_RULE_ERROR                  = 8            
+    :17    g_nOreGenre                        = 0            
+    :18    g_nOreDetailType                   = 0            
+    :19    g_nOreParticular                   = 0            
+    :20    g_nOreLevel                        = 0            
+
+## item\compound\fantasygold_upgrade.lua  (13)
+    :5     RESULT_UNKNOWN                     = -1           
+    :6     RESULT_SUCCEED                     = 0            
+    :7     RESULT_FAIL                        = 1            
+    :8     RESULT_NO_MONEY                    = 2            
+    :9     RESULT_LEVEL_FULL                  = 3            
+    :10    RESULT_LACK_RESOURCE               = 4            
+    :11    RESULT_LEVEL_ERROR                 = 5            
+    :12    RESULT_MAGIC_ERROR                 = 6            
+    :14    RESULT_RULE_ERROR                  = 8            
+    :17    g_nOreGenre                        = 0            
+    :18    g_nOreDetailType                   = 0            
+    :19    g_nOreParticular                   = 0            
+    :20    g_nOreLevel                        = 0            
+
+## header\loidai.lua  (12)
+    :2     JOIN_REVID                         = 80           
+    :3     JOIN_REVDATA                       = 36           
+    :10    FRAME2TIME                         = 18           
+    :11    MAX_MEMBER_COUNT                   = 100          
+    :12    BW_SIGNPOSWORLD                    = 60           
+    :13    BW_SIGNPOSX                        = 61           
+    :14    BW_SIGNPOSY                        = 62           
+    :17    CITYID                             = 6            
+    :18    BW_KEY                             = 7            
+    :23    TIMER_SEC                          = 20           
+    :25    GO_TIME                            = 6            
+    :27    BW_MISSIONID                       = 1            
+
+## item\liendau_admin.lua  (12)
+    :7     LD_GLB_PHASE                       = 820          
+    :8     LD_GLB_SID                         = 821          
+    :9     LD_GLB_MATCHID                     = 822          
+    :11    LD_GLB_NEXT                        = 824          
+    :12    LD_GLB_CLOSE                       = 826          
+    :13    LD_LGTYPE                          = 5            
+    :14    LD_T_WIN                           = 1720         
+    :15    LD_T_TIE                           = 1721         
+    :16    LD_T_TOTAL                         = 1722         
+    :17    LD_T_POINT                         = 2500         
+    :18    LD_T_HONOUR                        = 37           
+    :19    LD_T_RESPECT                       = 39           
+
+## missions\tongwar\head.lua  (11)
+    :3     MISSIONID                          = 33           
+    :4     FRAME2TIME                         = 18           --18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
+    :12    TONGWAR_MAXDEATH                   = 10           
+    :18    TNPC_DOCTOR1                       = 55           --¾üÒ½µÄNpcÄ£°åIDºÅ
+    :19    TNPC_DOCTOR2                       = 49           
+    :20    TNPC_SYMBOL1                       = 629          
+    :21    TNPC_SYMBOL2                       = 630          
+    :22    TNPC_DEPOSIT                       = 625          
+    :24    TNPC_FLAG0                         = 626          
+    :25    TNPC_FLAG1                         = 628          
+    :26    TNPC_FLAG2                         = 627          
+
+## task\metempsychosis\task_head.lua  (11)
+    :18    NTRANSLIFE_MAX                     = 7            -- ×ªÉú´ÎÊýÉÏÏÞ
+    :69    ZHUANSHENG_TUITION                 = 100000000    -- ×ªÉúËùÐèJXB
+    :76    LG_SHITULEAGUE                     = 1            -- Ê¦Í½Õ½¶Ó
+    :77    LG_WLLSLEAGUE                      = 5            -- ÎäÁÖÁªÈüÕ½¶Ó
+    :97    TSKM_ZHUANSHENG_RESISTID           = 199          -- ÁÙÊ±´æ·ÅÑ¡ÔñÔö¼ÓµÄ¿¹ÐÔ
+    :111   ZHUANSHENG_TUITION_4               = 100000000    -- µÚ4´Î×ªÉúËùÐèJXB
+    :112   CLEAR_SKILL_4_PRICE                = 10000000     -- 4×ª¼¼ÄÜµãÏ´µãµÄ¼Û¸ñ
+    :118   NSTARTLEVEL_4                      = 105          -- 4×ª¼¼ÄÜ´Ó105¼¶¿ªÊ¼»ñµÃ¼¼ÄÜµã
+    :119   NPERPOINTNEEDLEVEL                 = 5            -- Ã¿5¼¶»ñµÃÒ»¸ö¼¼ÄÜµã
+    :121   BEIDOU_TRANSFER_MAX                = 5            
+    :125   N_TRANSLIFE_TREE_MIN               = 40           -- 5×ªÖÖÊ÷ÒªÇó
+
+## missions\bw\bwhead.lua  (10)
+    :5     CS_RevId                           = 80           
+    :6     CS_RevData                         = 36           
+    :20    FRAME2TIME                         = 18           
+    :22    MAX_MEMBER_COUNT                   = 100          
+    :24    BW_SIGNPOSWORLD                    = 2340         -- [BW 23/08] 300-302 cua JX1 = task luu/khoi phuc Tong Kim
+    :25    BW_SIGNPOSX                        = 2341         
+    :26    BW_SIGNPOSY                        = 2342         
+    :29    CITYID                             = 6            --³ÇÊÐID
+    :30    BW_KEY                             = 7            -- 0-100000000µÄËæ»úÊý
+    :41    BW_MISSIONID                       = 11           -- [BW 23/08] khe mission: 4 cua JX1 = Phong Lang Do; 11 = m
+
+## event\event_huyhoang_dungdb\lib_huyhoang.lua  (10)
+    :10    MAX_HUYHOANG_PER_DAY               = 5            -- sö dông tèi ®a 5 qu¶ huy hoµng
+    :11    MAX_QHK_PER_DAY                    = 5            -- sö dông tèi ®a 2 qu¶ hoµng kim
+    :12    MAX_COLLECT_PER_DAY_HH             = 10           -- h¸i tèi ®a 10 qu¶ huy hoµng
+    :13    MAX_COLLECT_PER_DAY_HK             = 3            -- h¸i tèi ®a 3 qu¶ hoµng kim
+    :14    EXP_QHH_T                          = 20000000     
+    :15    EXP_QHH_TR                         = 30000000     
+    :16    EXP_QHH_C                          = 50000000     
+    :17    EXP_QHK                            = 100000000    
+    :18    TIENVAN_QHK                        = 500000       
+    :25    TIME_DELAY_TH                      = 5            -- 5 gi©y thu ho¹ch
+
+## event\tongwar\score.lua  (10)
+    :3     TONGWAR_LGTYPE                     = 10           -- Õ½¶ÓÀàÐÍ
+    :6     TONGWAR_LGTASK_TONGCNT             = 1            -- ¹²ÁªÃËÊý(ÎÞÐ§)
+    :7     TONGWAR_LGTASK_WIN                 = 2            -- Ê¤Àû´ÎÊý
+    :8     TONGWAR_LGTASK_LOSE                = 3            -- Ê§°Ü´ÎÊý
+    :9     TONGWAR_LGTASK_TIE                 = 4            -- Æ½¾Ö´ÎÊý
+    :10    TONGWAR_LGTASK_RESULT              = 5            -- ±ÈÈü»ý·Ö
+    :11    TONGWAR_LGTASK_POINT               = 6            -- ÀÛ¼Ó¾»»ý·Ö
+    :17    RESULT_WIN                         = 1            -- Ê¤Àû
+    :18    RESULT_LOSE                        = 2            -- Ê§°Ü
+    :19    RESULT_TIE                         = 3            -- Æ½¾Ö
+
+## missions\citywar_arena\head.lua  (9)
+    :16    CS_RevId                           = 20           
+    :17    CS_RevData                         = 10           
+    :24    FRAME2TIME                         = 18           
+    :32    LOSE_TONGEXP                       = 1400         
+    :41    PKWINBONUS                         = 3            
+    :42    LOSEBONUS                          = 1            
+    :49    JOINSTATE                          = 242          
+    :50    MISSIONID                          = 9            -- DOT E: goc 5 (5 = Kiem Mon Quan cua ta dang song - Q3 KEH
+    :51    WORLDIDXBEGIN                      = 213          
+
+## event\eventhead.lua  (9)
+    :15    EVENTHEAD_LUA                      = 1            
+    :67    DATESNEWBIELEVELUP                 = 5032400      --ÐÂÊÖ·è¿ñ¾­Ñé·­±¶»î¶¯ÓÚ2005-3-24ÈÕ0µã0·ÖÆô¶¯
+    :68    DATEENEWBIELEVELUP                 = 5040100      --ÐÂÊÖ·è¿ñ¾­Ñé·­±¶»î¶¯ÓÚ2005-4-1ÈÕ0µã0·Ö¹Ø±Õ
+    :70    DATESPLAYERLEVELUP                 = 5032600      --È«ÇøÉÁµç³å¼¶ÐÐ¶¯ÓÚ2004-3-24ÈÕ0Ê±0·ÖÆô¶¯(¿ªÆô)
+    :71    DATEEPLAYERLEVELUP                 = 5040300      --È«ÇøÉÁµç³å¼¶ÐÐ¶¯ÓÚ2004-4-1ÈÕ0Ê±0·Ö¹Ø±Õ(¿ªÆô)
+    :73    DATESKILLER                        = 5041200      
+    :74    DATEEKILLER                        = 5042600      
+    :77    YEARCARD_EX_XUANJING               = 1            --½£ÍøÄê¿¨»î¶¯
+    :79    GREAT_NIGHT                        = 1            
+
+## global\fuyuan.lua  (9)
+    :4     TASKID_FY                          = 151          --ÈÎÎñ±äÁ¿ID of Íæ¼Ò¸£ÔµÖµ
+    :5     TASKID_FY_START_ONLINE_TIME        = 152          --ÈÎÎñ±äÁ¿ID of Íæ¼Ò×îºóÒ»´Î¿ªÊ¼»ýÔÜ¸£ÔµÊ±µÄÔÚÏßÊ±¼ä£¨Ãë£©£¬
+    :6     TASKID_FY_ADDITIONAL_TIME          = 153          --ÈÎÎñ±äÁ¿ID of Íæ¼Ò¸£Ôµ±»ÔÝÍ£Ç°¿É»»¸£ÔµµÄÔÚÏßÊ±¼ä£¨Ãë£©
+    :7     TASKID_GAIN_LAST_DATE              = 154          --ÈÎÎñ±äÁ¿ID of Íæ¼Ò×îºóÒ»´ÎÁìÈ¡¸£ÔµÈÕÆÚ
+    :8     TASKID_GAIN_TIMES_IN_DAY           = 155          --ÈÎÎñ±äÁ¿ID of Íæ¼Ò×îºóÒ»´ÎÁìÈ¡¸£Ôµµ±ÌìÁìÈ¡¸£ÔµµÄ´ÎÊý
+    :10    TIME_UNIT                          = 3600         --»ù±¾Ê±¼äµ¥Î»£¨1Ð¡Ê±£©
+    :14    FUYUAN_EXTRA                       = 2            --½±ÀøµÄ¸£Ôµµã
+    :15    TIMES_IN_DAY_EXTRA                 = 2            --»ñÈ¡½±ÀøËùÐèÒ»ÌìÁìÈ¡¸£ÔµµÄ´ÎÊý
+    :17    FUYUAN_MAX_GAIN                    = 100          --Ò»´Î×î¶à¿É»»È¡¶àÉÙµã¸£Ôµ
+
+## item\simcity_admin.lua  (9)
+    :21    SC_CHATRATE                        = 40           -- 40/1000 moi giay moi bot (~1 cau / 25 giay / bot)
+    :22    SC_ChatLoaded                      = 0            
+    :23    SC_ChatState                       = 0            
+    :26    SC_LastBot                         = 0            -- bot vua sinh
+    :27    SC_LastRoute                       = -1           -- lo trinh vua nap
+    :28    SC_MoveState                       = 0            -- 1 = driver di chuyen dang BAT (chi de hien thi tren menu)
+    :74    SC_CitySeq                         = 0            
+    :432   SC_NameSeq                         = 0            
+    :442   SC_ResReported                     = 0            
+
+## tinhnang\pubg\pubgutils.lua  (8)
+    :7     BIENKINHPUBG                       = 996          
+    :8     BIENKINHPUBGWAIT                   = 997          
+    :10    MISSION_BR_PARAM_KILLS             = 1            
+    :11    MISSION_BR_PARAM_JOINED            = 0            
+    :12    MISSION_BR_PARAM_LASTLAYER         = 2            
+    :20    MSTIME_PUBG_BD                     = 1            -- bao danh 4
+    :21    MSTIME_PUBG_KT                     = 5            
+    :23    PUBG_MIN_PLAYER                    = 1            
+
+## global\equip_system.lua  (8)
+    :23    CMP_XUANJING                       = 0            
+    :24    CMP_ORE_UPGRADE                    = 1            
+    :25    CMP_MAGIC_DISTILL                  = 3            
+    :26    CMP_EQUIP_COMPOUND                 = 4            
+    :27    CMP_EQUIP_ENCHASE                  = 5            
+    :28    CMP_ATLAS                          = 6            
+    :29    CMP_FANTASYGOLD                    = 7            
+    :30    CMP_FANTASYGOLD_ESS                = 8            
+
+## tinhnang\congthanhchien\lib_ctc.lua  (7)
+    :85    MIN_TAX                            = 0            
+    :86    MAX_TAX                            = 20           
+    :94    ENOUGH_LEVEL                       = 80           
+    :95    TICH_LUY_THUONG_CT                 = 100          
+    :99    CTC_MINUS_BD                       = 10           
+    :100   CTC_MINUS_KT                       = 60           
+    :107   KILL_PLAYER_POINT                  = 30           
+
+## tinhnang\vuot_ai\lib_vuotai.lua  (7)
+    :12    MSTIME_VUOT_AI_BD                  = 10           --thoi gian bao danh neu sau 10p khong bao danh sÏ hÕt l­ît
+    :13    MSTIME_VUOT_AI_KT                  = 30           --thoi gian vuot qua het cac ai neu sau 30p khong vuot qua t
+    :14    MSTIME_VUOT_AI_XOANPC              = 1            --thoi gian ket thuc sau 1p xoa npc trong map
+    :15    LEVEL_SKILL_PHANDON                = 10           --level skill ph¶n ®ßn la h¸n trËn ¶i 27
+    :16    EXP_BOSS_LAST_D                    = 1600000      --exp nguoi giet boss cuoi
+    :18    MAX_NUM_VA_DAY                     = 2            --sè lÇn v­ît ¶i miÔn phÝ trong ngµy
+    :19    MAX_NUM_LONGHH_DAY                 = 1            --sè lÇn sö dông long huyÕt hoµn trong ngµy
+
+## tinhnang\vuot_ai\sugiasatthu.lua  (7)
+    :14    MAX_NVSATTHU                       = 8            
+    :15    MIN_PLAYERINVUOTAI                 = 5            --toi thieu to doi 5 den 8 nguoi moi du ®iÒu kiÖn tham gia v
+    :17    MONEYGHEPSTG                       = 80000        
+    :18    MONEYNHANNV                        = 50000        
+    :19    MONEY_GO_BOSS                      = 5000         
+    :20    LEVELENOUGH                        = 90           --dang cap toi thieu tham gia vuot ai
+    :24    MAX_STACK_NUM                      = 1            
+
+## missions\yandibaozang\readymap\include.lua  (7)
+    :14    YDBZ_READY_MISSION                 = 51           -- mission
+    :15    YDBZ_READY_TIMER                   = 88           --
+    :19    YDBZ_READY_TEAM                    = 1            --
+    :20    YDBZ_READY_TEAM_MAX                = 2            --
+    :25    YDBZ_TEAM_COUNT_LIMIT              = 4            --
+    :26    YDBZ_TEAM_COUNT_MAXLIMIT           = 6            --
+    :27    YDBZ_TEAM_START_LIMIT              = 2            --
+
+## event\tongwar\npc_shizhe.lua  (7)
+    :10    ONETONG_LGTYPE                     = 541          
+    :11    ONETONG_ACC_LGTYPE                 = 542          
+    :16    ONETONG_START_SIGNUP               = 20140407     -- ÌìÏÂµÚÒ»°ï¿ªÊ¼µÇ¼ÇÊ±¼ä
+    :17    ONETONG_ENDLE_SIGNUP               = 20140417     -- ÌìÏÂµÚÒ»°ï½áÊøµÇ¼ÇÊ±¼ä
+    :19    ONETONG_START_TITLE                = 20100118     -- ÌìÏÂÒ»°ïÁìÈ¡Í·ÏÎ¿ªÊ¼Ê±¼ä
+    :20    ONETONG_ENDLE_TITLE                = 20100214     -- ÌìÏÂÒ»°ïÁìÈ¡Í·ÏÎ½áÊøÊ±¼ä
+    :22    ONETONG_MAX_SIGNMEM                = 54           
+
+## global\npcchucnang\nhieptran.lua  (7)
+    :14    MAX_NVSATTHU                       = 8            
+    :15    MIN_PLAYERINVUOTAI                 = 5            --toi thieu to doi 5 den 8 nguoi moi du ®iÒu kiÖn tham gia v
+    :17    MONEYGHEPSTG                       = 80000        
+    :18    MONEYNHANNV                        = 5000         
+    :19    MONEY_GO_BOSS                      = 1000         
+    :20    LEVELENOUGH                        = 90           --dang cap toi thieu tham gia vuot ai
+    :24    MAX_STACK_NUM                      = 100          
+
+## missions\tong\tong_head.lua  (6)
+    :14    TK_LEAVERMAPID                     = 2392         --´æ´¢Àë¿ªÓÎÏ·µÄmapid
+    :15    TK_LEAVERPOSX                      = 2393         --´æ´¢Àë¿ªÓÎÏ·µÄx×ø±êµã
+    :16    TK_LEAVERPOSY                      = 2394         --´æ´¢Àë¿ªÓÎÏ·µÄy×ø±êµã
+    :18    TK_GROUPID                         = 2399         --¼ÇÂ¼Íæ¼ÒµÄGroupºÅ
+    :19    TK_EXP_BEISHU                      = 2400         --
+    :20    TK_EXP_TIME                        = 2401         
+
+## task\newtask\newtask_head.lua  (6)
+    :14    TSKID_KILLTASKID                   = 1082         -- ½ÓÊÜµÄÄÄ¸öÈÎÎñ
+    :15    TSKID_KILLERDATE                   = 1192         --½ÓÈÎÎñÊ±µÄÈÕÆÚ
+    :16    TSKID_KILLERMAXCOUNT               = 1193         --Ã¿ÌìÉ±ÈË´ÎÊý
+    :17    TSKID_KILLTASKID_SPE               = 1793         -- ÊÇ·ñ½ÓÊÜ¸ß¼¶É±ÊÖÈÎÎñ	-- ÊÕ·Ñ°æ²»ÓÃ
+    :18    TSKID_KILLERDATE_SPE               = 1794         --½Ó¸ß¼¶É±ÊÖÈÎÎñÊ±µÄÈÕÆÚºÍ´ÎÊý	-- ÊÕ·Ñ°æ²»ÓÃ
+    :20    KILLER_MAXCOUNT                    = 8            --Ã¿ÌìÉ±ÈËÉÏÏÞ8ÈË
+
+## battles\battlehead.lua  (6)
+    :19    FRAME2TIME                         = 18           --18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
+    :20    BAOMING_TIME                       = 10           -- 10·ÖÖÓ±¨ÃûÊ±¼ä
+    :21    FIGHTING_TIME                      = 60           -- 60·ÖÖÓ±ÈÈüÊ±¼ä
+    :22    ANNOUNCE_TIME                      = 20           -- 20Ãë¹«²¼Ò»ÏÂÕ½¿ö
+    :29    SONGJIN_SIGNUP_FEES                = 200000       -- ±¨Ãû·Ñ
+    :34    JUNGONGPAI                         = 1773         --ËÎ½ð¾ü¹¦ÅÆID 6£¬1£¬1477
+
+## tinhnang\tong_kim_tcap\lib_tktc.lua  (5)
+    :26    PT_CuuSat                          = 1            --Khai b¸o Id c¸c thÓ thøc tèng kim
+    :27    PT_BaoVeNguyenSoai                 = 2            
+    :28    PT_DoatCo                          = 3            
+    :42    KILL_PLAYER_POINT                  = 30           
+    :82    TK_VARV_KEY                        = 1            
+
+## missions\yandibaozang\readymap\ydbz_share.lua  (5)
+    :15    YDBZ_NEO_MAPID                     = 852          -- ban do khuon, dung lam noi giu so lieu chung
+    :20    YDBZ_MISSION_READY                 = 60           -- mission giu danh sach nguoi dang bao danh
+    :22    YDBZ_RV_MAXPARTY                   = 91           -- bo dem id to doi
+    :23    YDBZ_RV_CURTIME                    = 92           -- so giay da troi qua trong pha bao danh
+    :31    YDBZ_TASKTEMP_TRONGTRAN            = 200          
+
+## event\event_vantieu\lib_vt.lua  (5)
+    :95    MAX_CUOP_TIEU                      = 5            
+    :97    MAXVANTIEU                         = 20           --sè lÇn tèi ®a vËn tiªu trong ngµy
+    :98    NEED_MONEY                         = 500000       
+    :99    NEED_MONEY_GO                      = 100000       
+    :100   LEVEL_LIMIT_VT                     = 50           --dang cap toi thieu tham gia van tieu
+
+## task\partner\master\partner_master_main_03.lua  (5)
+    :30    PARID_MASTER_KILLER_01             = 20           -- Ò»Æ·ÌÃÇ¹±ø
+    :31    PARID_MASTER_KILLER_02             = 21           -- Ò»Æ·ÌÃ¹­±ø
+    :32    PARID_MASTER_KILLER_03             = 22           -- Ò»Æ·ÌÃ´øµ¶½«Áì
+    :33    PARID_MASTER_KILLER_04             = 23           -- ÎäÊ¿
+    :35    GLBID_MASTER_KILLER_NUM            = 830          -- ·þÎñÆ÷È«¾Ö±äÁ¿£¬¼ÇÂ¼Ò»Æ·ÌÃÍ³Ë§µÄË¢³öÊýÁ¿
+
+## task\partner\rewind\partner_reward_main_03.lua  (5)
+    :27    PARID_REWIND_KILLER_01             = 39           -- Ò»Æ·ÌÃÇ¹±ø
+    :28    PARID_REWIND_KILLER_02             = 40           -- Ò»Æ·ÌÃ¹­±ø
+    :29    PARID_REWIND_KILLER_03             = 41           -- Ò»Æ·ÌÃ´øµ¶½«Áì
+    :30    PARID_REWIND_KILLER_04             = 42           -- ÎäÊ¿
+    :32    GLBID_MASTER_KILLER_NUM            = 830          -- ·þÎñÆ÷È«¾Ö±äÁ¿£¬¼ÇÂ¼Ò»Æ·ÌÃÍ³Ë§µÄË¢³öÊýÁ¿
+
+## global\titlefuncs.lua  (5)
+    :4     MAX_TITLE_PERPAGE                  = 5            
+    :21    TITLE_JX2_VICEROY_MIN              = 153          
+    :22    TITLE_JX2_VICEROY_MAX              = 159          
+    :23    TITLE_JX1_OFFSET                   = 15           
+    :25    TITLE_TIME_FOREVER                 = 567648000    
+
+## missions\basemission\dungeon.lua  (4)
+    :15    DG_V_BUSY                          = 90           -- 0 = ranh, khac 0 = mot to doi dang dung
+    :16    DG_V_TPL                           = 91           -- id ban do khuon ma phong nay nhan ban tu do
+    :17    DG_V_COUNT                         = 92           -- so nguoi dang dung trong phong
+    :19    DG_V_SERIAL                        = 94           -- so thu tu lan cap phat, de phan biet hai luot dung chung 
+
+## missions\citywar_global\demotimer.lua  (4)
+    :1     ARENACOUNT                         = 8            
+    :2     ARENAWLDIDXBEGIN                   = 213          
+    :3     CITYWARIDX                         = 221          
+    :4     CITYCOUNT                          = 7            
+
+## missions\citywar_global\infocenter_head.lua  (4)
+    :22    LGTSK_QINGTONGDING_COUNT           = 1            --±¨Ãû¾ºÍ¶µÄ ÌôÕ½ÁîÊýÁ¿
+    :23    LGTSK_CITYWAR_SIGNCOUNT            = 2            --µ±Ç°¾ºÍ¶µÄ´ÎÊý
+    :25    LEAGUETYPE_CITYWAR_SIGN            = 508          
+    :26    LEAGUETYPE_CITYWAR_FIRST           = 509          
+
+## missions\citywar_global\timer.lua  (4)
+    :3     ARENACOUNT                         = 8            
+    :4     ARENAWLDIDXBEGIN                   = 213          
+    :5     CITYWARIDX                         = 221          
+    :6     CITYCOUNT                          = 7            
+
+## missions\fengling_ferry\fld_head.lua  (4)
+    :11    MISSIONID                          = 15           --Î´¶¨
+    :12    FRAME2TIME                         = 18           --18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ
+    :15    northMAP                           = 336          
+    :18    TNPC_THIEF_COUNT                   = 30           
+
+## event\great_night\huangzhizhang\event.lua  (4)
+    :2     GREATNIGHT_HUANGZHIZHANG           = 1            
+    :13    GN_HUANG_EVENTID                   = 1            
+    :14    GN_HUANG_SWITH                     = 2            
+    :15    GN_HUANG_DATE                      = 3            
+
+## task\partner\master\partner_master_main_04.lua  (4)
+    :31    PARID_MASTER04_BOSS_01             = 25           -- Á»Ã¨Ã¨
+    :32    PARID_MASTER04_BOSS_02             = 26           -- ÀîÐÉ
+    :33    PARID_MASTER04_BOSS_03             = 27           -- Åå¹«×Ó
+    :34    PARID_MASTER04_BOSS_04             = 28           -- ÌÆÓã
+
+## task\partner\rewind\partner_reward_main_04.lua  (4)
+    :28    PARID_REWIND04_BOSS_01             = 43           -- Á»Ã¨Ã¨
+    :29    PARID_REWIND04_BOSS_02             = 44           -- ÀîÐÉ
+    :30    PARID_REWIND04_BOSS_03             = 45           -- Åå¹«×Ó
+    :31    PARID_REWIND04_BOSS_04             = 46           -- ÌÆÓã
+
+## global\thanh\npc\npc_chuyensinh.lua  (4)
+    :11    MaxCS                              = 100          -- gií h¹n chuyÓn sinh
+    :12    regMoney                           = 100000       
+    :14    PropCS                             = 100          --Sè point nhËn ®­îc sau khi chuyÓn sinh
+    :15    regLevel                           = 200          -- yªu cÇu ®¼ng cÊp ®Ó chuyÓn sinh
+
+## lib\objbuffer_head.lua  (4)
+    :1     OBJTYPE_NUMBER                     = 1            
+    :2     OBJTYPE_STRING                     = 2            
+    :3     OBJTYPE_TABLE                      = 3            
+    :4     OBJTYPE_NIL                        = 4            
+
+## header\fuyuan.lua  (4)
+    :7     TIME_UNIT                          = 3600         
+    :11    FUYUAN_EXTRA                       = 2            
+    :12    TIMES_IN_DAY_EXTRA                 = 2            
+    :13    FUYUAN_MAX_GAIN                    = 100          
+
+## header\thongthuong.lua  (4)
+    :2     LEVEL_NORMAL                       = 120          
+    :3     EXP_NORMAL                         = 2000000      
+    :4     MONEY_NORMAL                       = 20000        
+    :5     MAX_NVTN                           = 3            
+
+## item\leigushibing.lua  (4)
+    :2     CityWarID                          = 221          --¹¥³ÇÕ½µÄµØÍ¼ID
+    :5     NpcTempl                           = 526          
+    :6     NpcLevel                           = 60           
+    :24    bAdd                               = 0            
+
+## item\yaoqishibing.lua  (4)
+    :2     CityWarID                          = 221          --¹¥³ÇÕ½µÄµØÍ¼ID
+    :5     NpcTempl                           = 527          
+    :6     NpcLevel                           = 60           
+    :25    bAdd                               = 0            
+
+## missions\challengeoftime\item\chuangguanbaoxiang.lua  (3)
+    :115   nWidth                             = 1            
+    :116   nHeight                            = 1            
+    :117   nFreeItemCellLimit                 = 1            
+
+## missions\fengling_ferry\hd3_baoruongthuytac.lua  (3)
+    :111   nWidth                             = 1            
+    :112   nHeight                            = 1            
+    :113   nFreeItemCellLimit                 = 1            
+
+## missions\tong\tong_driver.lua  (3)
+    :17    TONG_DRV_MSKEY                     = 28           -- khoa missionId rieng cho GlbTimer cua driver (27 = WLLS)
+    :18    TONG_DRV_TIMERID                   = 53           -- settings\TimerTask.txt khoa 53 tro nguoc ve file nay
+    :19    TONG_DRV_LASTQ                     = -1           
+
+## missions\tongcastle\tongcastle_driver.lua  (3)
+    :8     TC_DRV_MSKEY                       = 30           -- khoa missionId GlbTimer (27 WLLS / 28 TONG / 29 TONGWAR)
+    :9     TC_DRV_TIMERID                     = 55           -- settings\TimerTask.txt khoa 55
+    :10    TC_DRV_LASTMIN                     = -1           
+
+## missions\tongwar\tongwar_driver.lua  (3)
+    :8     TONGWAR_DRV_MSKEY                  = 29           -- khoa missionId rieng cho GlbTimer (27 = WLLS, 28 = TONG)
+    :9     TONGWAR_DRV_TIMERID                = 54           -- settings\TimerTask.txt khoa 54 tro nguoc ve tep nay
+    :10    TONGWAR_DRV_LASTQ                  = -1           
+
+## missions\tongwar\relay\tongwar.lua  (3)
+    :5     LEAGUE_NUMBER                      = 7            
+    :10    ONETONG_LGTYPE                     = 541          
+    :11    ONETONG_ACC_LGTYPE                 = 542          
+
+## missions\yandibaozang\item\yandimibao.lua  (3)
+    :115   nWidth                             = 1            
+    :116   nHeight                            = 1            
+    :117   nFreeItemCellLimit                 = 1            
+
+## event\event_cauhoi\lib.lua  (3)
+    :19    MIN_LEVEL_JOIN                     = 80           
+    :22    MAX_NUM                            = 5            -- 5 c©u hái 1 ngµy
+    :23    NUM_NHANTHUONG                     = 3            --3 c©u liªn tiÕp ®­îc nhËn thªm th­ëng ë lÔ quan
+
+## vng_event\item\biggoldenseed.lua  (3)
+    :6     MX_GREAT_LANTERN_COUNT             = 1            
+    :9     TASKIDDAY                          = 2321         
+    :10    TASKEATCOUNT                       = 2322         
+
+## task\partner\master\partner_master_main_02.lua  (3)
+    :29    BIT_PASSED_001                     = 1            
+    :30    BIT_PASSED_002                     = 2            
+    :31    BIT_PASSED_003                     = 3            
+
+## petsys\petequip_def.lua  (3)
+    :47    PETEQUIP_KETTINH                   = 4927         -- Ket Tinh Dong Hanh (goc 5063)
+    :48    PETEQUIP_KETTINH_CAO               = 4928         -- Ket Tinh Dong Hanh (Cao) (goc 5257)
+    :50    PETEQUIP_CHIAKHOA                  = 4932         -- Chia khoa ruong (goc 5067)
+
+## global\signet_head.lua  (3)
+    :2     TASKID_MONEYBOX_LASTTIME           = 2446         --ÌÕÖìÇ®´üÐ§Á¦½ØÖ¹Ê±¼ä
+    :3     TONGTSK_MONEYBOX_DROPMAX           = 1035         --ÌÕÖìÇ®´ü·­±¶µôÂäboss±¦Ó¡µÄÏÞÖÆ
+    :4     SIGNET_MAXDROP                     = 180          
+
+## lib\worldlibrary.lua  (3)
+    :2     SERVER_MODE                        = 0            
+    :4     SERVER_OPEN                        = 2104011900   -- yy/mm/dd - hh//mm [21-nam] [03-thang] [14-ngay] [19gio] [
+    :5     SERVER_EVENTID                     = 0            
+
+## header\liendau.lua  (3)
+    :28    LIENDAU_THANG                      = 10           
+    :29    LIENDAU_HOA                        = 4            
+    :30    LIENDAU_MAX                        = 48           
+
+## item\gongchengche.lua  (3)
+    :2     CityWarID                          = 221          --¹¥³ÇÕ½µÄµØÍ¼ID
+    :5     NpcTempl                           = 524          
+    :6     NpcLevel                           = 60           
+
+## item\toushiche.lua  (3)
+    :2     CityWarID                          = 221          --¹¥³ÇÕ½µÄµØÍ¼ID
+    :5     NpcTempl                           = 525          
+    :6     NpcLevel                           = 60           
+
+## item\xinshirenwu\xinshibaoxiang.lua  (3)
+    :106   nWidth                             = 1            
+    :107   nHeight                            = 1            
+    :108   nFreeItemCellLimit                 = 1            
+
+## leaguematch\gsdriver.lua  (3)
+    :17    WLLS_DRV_MSKEY                     = 27           -- khoa missionId rieng cho GlbTimer cua driver (khong dung 
+    :18    WLLS_DRV_TIMERID                   = 52           -- settings\TimerTask.txt dong 53 tro nguoc ve file nay
+    :19    WLLS_DRV_LASTQ                     = -1           
+
+## missions\citywar_global\citywar_function.lua  (2)
+    :245   LEAGUETYPE_CITYWAR_SIGN            = 508          
+    :246   LEAGUETYPE_CITYWAR_FIRST           = 509          
+
+## missions\citywar_global\head.lua  (2)
+    :36    TIAOZHANLING_LGTYPE                = 538          --ÌôÕ½ÁîÕ¾¶ÓÀàÐÍ
+    :38    LGTSK_TIAOZHANLING_COUNT           = 1            --ÌôÕ½ÁîÕ¾¶Ó¼ÇÂ¼ÌôÕ½Áî¸öÊýTaskID
+
+## missions\citywar_global\ladder.lua  (2)
+    :12    LEAGUETYPE_CITYWAR_SIGN            = 508          --ÌôÕ½ÁîÕ¾¶ÓÀàÐÍ
+    :14    LGTSK_QINGTONGDING_COUNT           = 1            --ÌôÕ½ÁîÕ¾¶Ó¼ÇÂ¼ÌôÕ½Áî¸öÊýTaskID
+
+## missions\tongcastle\guideperson.lua  (2)
+    :20    TRANSLIFE_COUNT                    = 4            
+    :21    MIN_LEVEL                          = 150          
+
+## event\chuyensinhdaisu.lua  (2)
+    :164   nItemWuHang                        = 0            
+    :165   nRoleWuHang                        = 0            
+
+## event\demhuyhoang\event.lua  (2)
+    :3     MAX_HUYHOANG_PER_DAY               = 5            
+    :4     TIME_SWITCH                        = 5400         
+
+## event\jiefang_jieri\200904\taskctrl.lua  (2)
+    :23    jf0904_act_dateS                   = 20090428     
+    :24    jf0904_act_dateE                   = 20090601     
+
+## task\newtask\tasklink\tasklink_head.lua  (2)
+    :33    DEBUG_TASKVALUE                    = 1046         -- ÓÃÓÚ×·²éË¢È¡Ïû»ú»á BUG µÄ±äÁ¿
+    :39    TKS_TASKLINK_SPITEM                = 2690         -- ¼ÇÂ¼ÁìÈ¡Ò°ÛÅµÄÉñÃØ±¦ÏäÊ±ÈÎÎñ´ÎÊý
+
+## task\tollgate\messenger\fengzhiqi\6079\flyboss6079.lua  (2)
+    :193   FLYBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :196   FLYBOSS_MAPID                      = 387          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\fengzhiqi\8089\flyboss8089.lua  (2)
+    :193   FLYBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :195   FLYBOSS_MAPID                      = 388          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¨8089£©
+
+## task\tollgate\messenger\fengzhiqi\90\flyboss90.lua  (2)
+    :193   FLYBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :195   FLYBOSS_MAPID                      = 389          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\qianbaoku\messenger_baoxiangtask.lua  (2)
+    :10    nBaoXiangTotal                     = 9            --×Ü¹²µÄ±¦Ïä¸öÊý
+    :11    nOpendRequire                      = 5            --ÈÎÎñÐèÒª¿ªÏä¸öÊý
+
+## task\tollgate\messenger\qianbaoku\6079\tureboss6079.lua  (2)
+    :15    TUREBOSS_RELIVE                    = 2            --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :17    TUREBOSS_MAPID                     = 393          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼Ç§±¦¿âµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\qianbaoku\8089\tureboss8089.lua  (2)
+    :15    TUREBOSS_RELIVE                    = 2            --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :17    TUREBOSS_MAPID                     = 394          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼Ç§±¦¿âµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\qianbaoku\90\tureboss90.lua  (2)
+    :18    TUREBOSS_RELIVE                    = 2            --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :20    TUREBOSS_MAPID                     = 395          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼Ç§±¦¿âµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\shanshenmiao\6079\templeboss6079.lua  (2)
+    :17    TEMBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :19    TEMBOSS_MAPID                      = 390          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\shanshenmiao\8089\templeboss8089.lua  (2)
+    :16    TEMBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :18    TEMBOSS_MAPID                      = 391          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## task\tollgate\messenger\shanshenmiao\90\templeboss90.lua  (2)
+    :16    TEMBOSS_RELIVE                     = 120          --Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä
+    :18    TEMBOSS_MAPID                      = 392          --µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿
+
+## petsys\petequip.lua  (2)
+    :20    PETEQUIP_O_DAU                     = 5143         
+    :22    PETEQUIP_O_BOCOUNT                 = 5163         
+
+## global\seasonnpc.lua  (2)
+    :169   MAKING_COST                        = 10000        
+    :170   MAKING_COUNT                       = 9            
+
+## global\TimerHead.lua  (2)
+    :4     FramePerSec                        = 18           
+    :5     CTime                              = 600          
+
+## global\npcchucnang\thoren.lua  (2)
+    :19    MAX_STACK_NUM                      = 500          
+    :1222  FREECELL_KHOIPHUC                  = 20           
+
+## global\ÌØÊâÓÃµØ\ËÎ½ð±¨Ãûµã\npc\songjin_shophead.lua  (2)
+    :164   nWidth                             = 1            
+    :165   nHeight                            = 1            
+
+## lib\lib_ham.lua  (2)
+    :6     MAX_PLAYER                         = 400          
+    :322   MAX_BU_DAYS                        = 7            
+
+## header\timerhead.lua  (2)
+    :4     FramePerSec                        = 18           -- Ã¿ÃëÖ¡Êýµ±×÷³£Á¿´¦Àí
+    :5     CTime                              = 3600         -- Ã¿¸öÊ±³½°´600Ãë£¨10·ÖÖÓ£©¼ÆËã
+
+## startgame\tinhnang\tongkim\songjin_shophead.lua  (2)
+    :164   nWidth                             = 1            
+    :165   nHeight                            = 1            
+
+## item\hoplevatvuotai.lua  (2)
+    :8     EXP_HOPLVVA                        = 2000000      
+    :9     MAX_HOPLEVATVA_DAY                 = 3            --tèi ®a sö dông hép lÔ vËt trªn ngµy
+
+## item\tie-luohan.lua  (2)
+    :4     MAX_PER_DATE                       = 20           
+    :5     GETMAXEXP                          = 150000000    
+
+## item\event\eventtet\banhdacbiet.lua  (2)
+    :9     DangCapSuDung                      = 60           
+    :10    ToiDaSuDung                        = 20000        
+
+## npcthon\giangtanthon\nguyetlao.lua  (2)
+    :8     REQ_LEVEL_MATENAME                 = 50           
+    :9     NGANLUONG_LYHON                    = 50000        
+
+## leaguematch\switch.lua  (2)
+    :2     WLLS_SWITCH_JUNIOR                 = 0            --	0.Close;	1.Open	(Level 80~119)
+    :3     WLLS_SWITCH_SENIOR                 = 1            --	0.Close;	1.Open	(Level 120~)
+
+## mission\citywar_global\ladder.lua  (2)
+    :12    LEAGUETYPE_CITYWAR_SIGN            = 508          --ÌôÕ½ÁîÕ¾¶ÓÀàÐÍ
+    :14    LGTSK_QINGTONGDING_COUNT           = 1            --ÌôÕ½ÁîÕ¾¶Ó¼ÇÂ¼ÌôÕ½Áî¸öÊýTaskID
+
+## huoyuedu\huoyuedu.lua  (2)
+    :16    OPENED                             = 1            -- »îÔ¾¶È¿ªÆô×´Ì¬
+    :17    CLOSED                             = 2            -- »îÔ¾¶È¹Ø±Õ×´Ì¬
+
+## tinhnang\boss_hoangkim\deathhksv.lua  (1)
+    :13    PHAMVI_HUONGEXP                    = 200          
+
+## tinhnang\congthanhchien\congthanhquan.lua  (1)
+    :12    MAX_NUM_AWD                        = 200          
+
+## tinhnang\congthanhchien\quanquan.lua  (1)
+    :9     NUM_XU_MUA_DC                      = 100          
+
+## tinhnang\phonglangdo\bossthuytacdaulinhpld.lua  (1)
+    :10    NPCLIFE                            = 8000000      
+
+## tinhnang\tong_kim_tcap\xaphu.lua  (1)
+    :9     CurStation                         = 1            
+
+## tinhnang\viemde\ydbz_driver.lua  (1)
+    :77    YDBZ_MOC_CUOI                      = -1           -- chong goi hai lan trong cung mot phut
+
+## missions\challengeoftime\rank_perday.lua  (1)
+    :10    DailyRankLadderId                  = 10235        
+
+## missions\citywar_city\symboldeath1.lua  (1)
+    :2     SymbolId                           = 1            
+
+## missions\citywar_city\symboldeath2.lua  (1)
+    :2     SymbolId                           = 2            
+
+## missions\citywar_city\symboldeath3.lua  (1)
+    :2     SymbolId                           = 3            
+
+## missions\citywar_city\zhongzhuan_map\chefu.lua  (1)
+    :2     CurStation                         = 1            
+
+## missions\citywar_global\mission.lua  (1)
+    :13    FRAME2TIME                         = 18           
+
+## missions\citywar_global\station_ctc.lua  (1)
+    :9     TV_VALUE                           = 0            
+
+## missions\fengling_ferry\bossdeath.lua  (1)
+    :7     SIGNET_DROPCOUNT                   = 2            
+
+## missions\fengling_ferry\hd3_thuyenphubac.lua  (1)
+    :16    HD3_PLD_PHI_VENAM                  = 1000         -- MONEY_VETHANH cua du an cu, giu nguyen
+
+## missions\yandibaozang\yandiduihuan.lua  (1)
+    :38    yandiduihuan_CostMoney             = 10000000     --1QW
+
+## event\20thang10\npcevent.lua  (1)
+    :24    FREECELL_TANTHU                    = 30           
+
+## event\30thang4\tuongquan.lua  (1)
+    :75    FREECELL_TANTHU                    = 30           
+
+## event\eventnoel\main_noel.lua  (1)
+    :24    FREECELL_TANTHU                    = 30           
+
+## event\event_demhuyhoang\lib.lua  (1)
+    :41    TIME_TOCHANGE                      = 5400         
+
+## event\kiemmonquan\lib_kmq.lua  (1)
+    :13    TIME_KMQKT                         = 60           -- diÔn ra trong thêi gian 60 phót
+
+## event\storm\custom.lua  (1)
+    :3     STORM_GAMEID_MAX                   = 4            --¿ÉÄÜ´æÔÚµÄGameID×î´óÖµ
+
+## event\trongbanghoi\lib.lua  (1)
+    :29    LIMIT_LEVEL_TBH                    = 80           
+
+## task\metempsychosis\translife_5.lua  (1)
+    :25    TRANSLIFE5_SKILL                   = 1262         
+
+## task\metempsychosis\translife_6.lua  (1)
+    :24    TRANSLIFE5_SKILL_ENHANCE           = 1344         
+
+## task\partner\master\partner_master_main_05.lua  (1)
+    :27    PARID_MASTER05_TIMES               = 68           -- Íæ¼ÒÃ¿ÈÕÍê³ÉµÄÐÞÁ¶ÈÎÎñ¼ÆÊý
+
+## task\partner\rewind\partner_reward_main_01.lua  (1)
+    :35    PARID_REWIND_WAITTIME              = 38           -- 5·ÖÖÓµÄµÈ´ýÊ±¼ä
+
+## task\tollgate\killbosshead.lua  (1)
+    :1     SHOUHUZHE_OFFSET                   = 2            
+
+## task\tollgate\messenger\fengzhiqi\6079\flybugbear6079.lua  (1)
+    :15    FLYBUGBEAR_MAPID                   = 387          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\6079\flypoint6079.lua  (1)
+    :15    FLYPOINT_MAPID                     = 387          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\6079\flyrefresh6079.lua  (1)
+    :15    FLYREFRESH_MAPID                   = 387          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\8089\flybugbear8089.lua  (1)
+    :15    FLYBUGBEAR_MAPID                   = 388          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\8089\flypoint8089.lua  (1)
+    :15    FLYPOINT_MAPID                     = 388          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\8089\flyrefresh8089.lua  (1)
+    :15    FLYREFRESH_MAPID                   = 388          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\90\flybugbear90.lua  (1)
+    :15    FLYBUGBEAR_MAPID                   = 389          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\90\flypoint90.lua  (1)
+    :15    FLYPOINT_MAPID                     = 389          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\fengzhiqi\90\flyrefresh90.lua  (1)
+    :15    FLYREFRESH_MAPID                   = 389          --·çÖ®ÆïµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\6079\turebug6079.lua  (1)
+    :15    TUREBUGBEAR_MAPID                  = 393          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\6079\turezei6079.lua  (1)
+    :16    TUREREFRESH_MAPID                  = 393          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\8089\turebug8089.lua  (1)
+    :15    TUREBUGBEAR_MAPID                  = 394          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\8089\turezei8089.lua  (1)
+    :15    TUREREFRESH_MAPID                  = 394          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\90\turebug90.lua  (1)
+    :18    TUREBUGBEAR_MAPID                  = 395          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\qianbaoku\90\turezei90.lua  (1)
+    :15    TUREREFRESH_MAPID                  = 395          --Ç§±¦¿âµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\6079\templebro6079.lua  (1)
+    :15    TEMREFRESH_MAPID                   = 390          --É½ÉñÃíµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\6079\tmpbug6079.lua  (1)
+    :15    TEMBUGBEAR_MAPID                   = 390          --É½ÉñÃíµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\8089\templebro8089.lua  (1)
+    :15    TEMREFRESH_MAPID                   = 391          --É½ÉñÃíµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\8089\tmpbug8089.lua  (1)
+    :15    TEMBUGBEAR_MAPID                   = 391          --É½ÉñÃíµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\90\templebro90.lua  (1)
+    :15    TEMREFRESH_MAPID                   = 392          --É½ÉñÃíµÄµØÍ¼id
+
+## task\tollgate\messenger\shanshenmiao\90\tmpbug90.lua  (1)
+    :15    TEMBUGBEAR_MAPID                   = 392          --É½ÉñÃíµÄµØÍ¼id
+
+## global\forbidmap.lua  (1)
+    :3     BAN_HEAD                           = 1            
+
+## global\judgeoffline_limit.lua  (1)
+    :15    NUM_OFFLINE_PERMITREGION_MAX       = 10           -- Àë²»ÔÊÐíÍÐ¹ÜµãµÄ×îÐ¡°ë¾¶
+
+## global\map_helper.lua  (1)
+    :118   CD_LEVEL_LIMIT                     = 80           --×îµÍ²Î¼ÓÊØ³ÇµÈ¼¶
+
+## global\trangbixanh.lua  (1)
+    :5     FREECELL_GETITEMBLUE               = 10           
+
+## global\mantlesystem\other_func_outputs.lua  (1)
+    :6     MIN_FREE_ROOM_NEED                 = 1            
+
+## global\npcchucnang\tientrang.lua  (1)
+    :11    TY_LE_DOI_KNB_XU                   = 100          
+
+## lib\common.lua  (1)
+    :3     COMMON_HEAD                        = 1            
+
+## lib\gb_taskfuncs.lua  (1)
+    :11    RELAYTASK_LEAGUEID                 = 500          
+
+## lib\lib_map.lua  (1)
+    :58    MAX_PLAYER                         = 1500         
+
+## lib\lib_sukien.lua  (1)
+    :22    EVENT_ACTIVE                       = 1            
+
+## header\region.lua  (1)
+    :2     NUM_OFFLINE_PERMITREGION_MAX       = 10           
+
+## item\lenhbaiadmin.lua  (1)
+    :203   NgauNhienPhut                      = 0            
+
+## item\lenhbaitanthu.lua  (1)
+    :908   FREECELL_TANTHU                    = 50           
+
+## item\sutra.lua  (1)
+    :3     NUM20E                             = 2000000000   
+
+## item\tuiduocpham.lua  (1)
+    :4     FREECELL_MAUTANTHU                 = 20           
+
+## item\battles\clarion.lua  (1)
+    :10    MAX_CALLNPCCOUNT                   = 20           
+
+## item\compound\atlas.lua  (1)
+    :12    COMPOUND_COST                      = 100000       
+
+## item\compound\equip_compound.lua  (1)
+    :7     COMPOUND_COST                      = 10000        
+
+## item\compound\equip_enchase.lua  (1)
+    :9     COMPOUND_COST                      = 10000        
+
+## item\compound\magic_distill.lua  (1)
+    :8     COMPOUND_COST                      = 5000         
+
+## item\compound\ore_upgrade.lua  (1)
+    :7     COMPOUND_COST                      = 5000         
+
+## item\compound\xuanjing_compound.lua  (1)
+    :7     COMPOUND_COST                      = 5000         
+
+## item\event\30thang4\huychuongchiencong.lua  (1)
+    :5     FREECELL_EVENT                     = 6            
+
+## item\event\30thang4\huychuongphattong.lua  (1)
+    :5     FREECELL_EVENT                     = 6            
+
+## item\event\30thang4\huychuongthiendieu.lua  (1)
+    :5     FREECELL_EVENT                     = 10           
+
+## item\event\Copy of 30thang4\huychuongchiencong.lua  (1)
+    :3     FREECELL_EVENT                     = 6            
+
+## item\event\Copy of 30thang4\huychuongphattong.lua  (1)
+    :3     FREECELL_EVENT                     = 6            
+
+## item\event\Copy of 30thang4\huychuongthiendieu.lua  (1)
+    :3     FREECELL_EVENT                     = 6            
+
+## item\event\kinhmach\channguyendan.lua  (1)
+    :17    KM_CND_TRAN_NGAY                   = 3000         
+
+## item\ib\baoruonghoatdong.lua  (1)
+    :10    FREECELL_GETITEMBLUE               = 10           
+
+## npcthon\balanghuyen\hotrotanthu.lua  (1)
+    :239   FREECELL_TANTHU                    = 50           
+
+## activitysys\config\32\variables.lua  (1)
+    :7     TIME_2000_1_1                      = 946656000    
+
+## battles\battleinfo.lua  (1)
+    :2     BALANCE_MAMCOUNT                   = 5            
+

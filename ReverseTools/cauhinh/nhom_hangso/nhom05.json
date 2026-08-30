@@ -1,0 +1,634 @@
+[
+ {
+  "tep": "missions\\leaguematch\\head.lua",
+  "hangso": [
+   {
+    "dong": 8,
+    "ten": "WLLS_HEAD",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 69,
+    "ten": "WLLS_TB",
+    "gt": 1715,
+    "cm": ""
+   },
+   {
+    "dong": 79,
+    "ten": "WLLS_TASKID_POINT",
+    "gt": 2500,
+    "cm": "--¸öÈËÀÛ¼Æ»ý·Ö"
+   },
+   {
+    "dong": 80,
+    "ten": "WLLS_TASKID_HONOUR",
+    "gt": 37,
+    "cm": "-- [WLLS port] goc 2501; dung 37 = TASKVALUE_STATTASK_HONOR"
+   },
+   {
+    "dong": 98,
+    "ten": "WLLS_TEMPTASK",
+    "gt": 246,
+    "cm": ""
+   },
+   {
+    "dong": 99,
+    "ten": "WLLS_STRINGTASK",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 102,
+    "ten": "WLLS_MSID_SCHEDULE",
+    "gt": 24,
+    "cm": "-- ×¼±¸³¡ MissionID"
+   },
+   {
+    "dong": 103,
+    "ten": "WLLS_MSID_COMBAT",
+    "gt": 25,
+    "cm": "-- ±ÈÈü³¡ MissionID"
+   },
+   {
+    "dong": 104,
+    "ten": "WLLS_MSID_GLB",
+    "gt": 26,
+    "cm": "-- È«¾Ö MissionID"
+   },
+   {
+    "dong": 106,
+    "ten": "WLLS_MSV_MSID",
+    "gt": 1,
+    "cm": "--±¾MissionµÄMissionID"
+   },
+   {
+    "dong": 109,
+    "ten": "WLLS_TIMERID_SCHEDULE",
+    "gt": 50,
+    "cm": "--È«¾Ö¼ÆÊ±Æ÷"
+   },
+   {
+    "dong": 110,
+    "ten": "WLLS_TIMERID_COMBAT",
+    "gt": 51,
+    "cm": "--±ÈÈü³¡¼ÆÊ±Æ÷"
+   },
+   {
+    "dong": 112,
+    "ten": "WLLS_FRAME2TIME",
+    "gt": 18,
+    "cm": "--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ"
+   },
+   {
+    "dong": 113,
+    "ten": "WLLS_TIMER_PREP_FREQ",
+    "gt": 10,
+    "cm": "--×¼±¸³¡¼ÆÊ±Æ÷´¥·¢ÆµÂÊ10Ãë"
+   },
+   {
+    "dong": 114,
+    "ten": "WLLS_TIMER_PREP_TOTAL",
+    "gt": 24,
+    "cm": "--×¼±¸Ê±¼ä4·ÖÖÓ£¨24¸ö±¨¸æÕ½¿öÊ±¼ä£©"
+   },
+   {
+    "dong": 115,
+    "ten": "WLLS_TIMER_FIGHT_FREQ",
+    "gt": 5,
+    "cm": "--Õ½¶·³¡±¨¸æÕ½¿öÆµÂÊ5Ãë"
+   },
+   {
+    "dong": 116,
+    "ten": "WLLS_TIMER_FIGHT_PREP",
+    "gt": 2,
+    "cm": "--Õ½¶·×¼±¸Ê±¼ä10Ãë £¨2¸ö±¨¸æÕ½¿öÊ±¼ä£©"
+   },
+   {
+    "dong": 117,
+    "ten": "WLLS_TIMER_FIGHT_TOTAL",
+    "gt": 120,
+    "cm": "--Õ½¶·Ê±¼ä10·ÖÖÓ £¨10*60/5¸ö±¨¸æÕ½¿öÊ±¼ä£©"
+   },
+   {
+    "dong": 121,
+    "ten": "WLLS_REG_LGTYPE",
+    "gt": 2,
+    "cm": "--µÇ¼Ç´¦Õ½¶ÓÀàÐÍ"
+   },
+   {
+    "dong": 123,
+    "ten": "WLLS_LEVEL_JUNIOR",
+    "gt": 80,
+    "cm": "--²Î¼ÓÐÂÐãÈüËùÐè×îÐ¡¼¶±ð"
+   },
+   {
+    "dong": 124,
+    "ten": "WLLS_LEVEL_SENIOR",
+    "gt": 120,
+    "cm": "--²Î¼ÓÎäÁÖÈüËùÐè×îÐ¡¼¶±ð"
+   },
+   {
+    "dong": 126,
+    "ten": "WLLS_MIN_TEAM",
+    "gt": 2,
+    "cm": "--±ÈÈü³¡ÖÁÉÙ¶àÉÙ²ÎÈü¶ÓÎé²Å¿ÉÒÔ¿ªÕ½"
+   },
+   {
+    "dong": 131,
+    "ten": "WLLS_LingQi_PerCOUNT",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 144,
+    "ten": "WLLS_MAX_COUNT",
+    "gt": 200,
+    "cm": "--Ã¿¸ö×¼±¸³¡×î¶àÈÝÄÉ¶àÉÙÕ½¶Ó"
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\fantasygoldessence_upgrade.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "RESULT_UNKNOWN",
+    "gt": -1,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "RESULT_SUCCEED",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 7,
+    "ten": "RESULT_FAIL",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 8,
+    "ten": "RESULT_NO_MONEY",
+    "gt": 2,
+    "cm": ""
+   },
+   {
+    "dong": 9,
+    "ten": "RESULT_LEVEL_FULL",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 10,
+    "ten": "RESULT_LACK_RESOURCE",
+    "gt": 4,
+    "cm": ""
+   },
+   {
+    "dong": 11,
+    "ten": "RESULT_LEVEL_ERROR",
+    "gt": 5,
+    "cm": ""
+   },
+   {
+    "dong": 12,
+    "ten": "RESULT_MAGIC_ERROR",
+    "gt": 6,
+    "cm": ""
+   },
+   {
+    "dong": 14,
+    "ten": "RESULT_RULE_ERROR",
+    "gt": 8,
+    "cm": ""
+   },
+   {
+    "dong": 17,
+    "ten": "g_nOreGenre",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "g_nOreDetailType",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 19,
+    "ten": "g_nOreParticular",
+    "gt": 0,
+    "cm": ""
+   },
+   {
+    "dong": 20,
+    "ten": "g_nOreLevel",
+    "gt": 0,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_arena\\head.lua",
+  "hangso": [
+   {
+    "dong": 16,
+    "ten": "CS_RevId",
+    "gt": 20,
+    "cm": ""
+   },
+   {
+    "dong": 17,
+    "ten": "CS_RevData",
+    "gt": 10,
+    "cm": ""
+   },
+   {
+    "dong": 24,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": ""
+   },
+   {
+    "dong": 32,
+    "ten": "LOSE_TONGEXP",
+    "gt": 1400,
+    "cm": ""
+   },
+   {
+    "dong": 41,
+    "ten": "PKWINBONUS",
+    "gt": 3,
+    "cm": ""
+   },
+   {
+    "dong": 42,
+    "ten": "LOSEBONUS",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 49,
+    "ten": "JOINSTATE",
+    "gt": 242,
+    "cm": ""
+   },
+   {
+    "dong": 50,
+    "ten": "MISSIONID",
+    "gt": 9,
+    "cm": "-- DOT E: goc 5 (5 = Kiem Mon Quan cua ta dang song - Q3 KEH"
+   },
+   {
+    "dong": 51,
+    "ten": "WORLDIDXBEGIN",
+    "gt": 213,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\vuot_ai\\lib_vuotai.lua",
+  "hangso": [
+   {
+    "dong": 12,
+    "ten": "MSTIME_VUOT_AI_BD",
+    "gt": 10,
+    "cm": "--thoi gian bao danh neu sau 10p khong bao danh sÏ hÕt l­ît"
+   },
+   {
+    "dong": 13,
+    "ten": "MSTIME_VUOT_AI_KT",
+    "gt": 30,
+    "cm": "--thoi gian vuot qua het cac ai neu sau 30p khong vuot qua t"
+   },
+   {
+    "dong": 14,
+    "ten": "MSTIME_VUOT_AI_XOANPC",
+    "gt": 1,
+    "cm": "--thoi gian ket thuc sau 1p xoa npc trong map"
+   },
+   {
+    "dong": 15,
+    "ten": "LEVEL_SKILL_PHANDON",
+    "gt": 10,
+    "cm": "--level skill ph¶n ®ßn la h¸n trËn ¶i 27"
+   },
+   {
+    "dong": 16,
+    "ten": "EXP_BOSS_LAST_D",
+    "gt": 1600000,
+    "cm": "--exp nguoi giet boss cuoi"
+   },
+   {
+    "dong": 18,
+    "ten": "MAX_NUM_VA_DAY",
+    "gt": 2,
+    "cm": "--sè lÇn v­ît ¶i miÔn phÝ trong ngµy"
+   },
+   {
+    "dong": 19,
+    "ten": "MAX_NUM_LONGHH_DAY",
+    "gt": 1,
+    "cm": "--sè lÇn sö dông long huyÕt hoµn trong ngµy"
+   }
+  ]
+ },
+ {
+  "tep": "missions\\yandibaozang\\readymap\\ydbz_share.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "YDBZ_NEO_MAPID",
+    "gt": 852,
+    "cm": "-- ban do khuon, dung lam noi giu so lieu chung"
+   },
+   {
+    "dong": 20,
+    "ten": "YDBZ_MISSION_READY",
+    "gt": 60,
+    "cm": "-- mission giu danh sach nguoi dang bao danh"
+   },
+   {
+    "dong": 22,
+    "ten": "YDBZ_RV_MAXPARTY",
+    "gt": 91,
+    "cm": "-- bo dem id to doi"
+   },
+   {
+    "dong": 23,
+    "ten": "YDBZ_RV_CURTIME",
+    "gt": 92,
+    "cm": "-- so giay da troi qua trong pha bao danh"
+   },
+   {
+    "dong": 31,
+    "ten": "YDBZ_TASKTEMP_TRONGTRAN",
+    "gt": 200,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\fengling_ferry\\fld_head.lua",
+  "hangso": [
+   {
+    "dong": 11,
+    "ten": "MISSIONID",
+    "gt": 15,
+    "cm": "--Î´¶¨"
+   },
+   {
+    "dong": 12,
+    "ten": "FRAME2TIME",
+    "gt": 18,
+    "cm": "--18Ö¡ÓÎÏ·Ê±¼äÏàµ±ÓÚ1ÃëÖÓ"
+   },
+   {
+    "dong": 15,
+    "ten": "northMAP",
+    "gt": 336,
+    "cm": ""
+   },
+   {
+    "dong": 18,
+    "ten": "TNPC_THIEF_COUNT",
+    "gt": 30,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\yaoqishibing.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "CityWarID",
+    "gt": 221,
+    "cm": "--¹¥³ÇÕ½µÄµØÍ¼ID"
+   },
+   {
+    "dong": 5,
+    "ten": "NpcTempl",
+    "gt": 527,
+    "cm": ""
+   },
+   {
+    "dong": 6,
+    "ten": "NpcLevel",
+    "gt": 60,
+    "cm": ""
+   },
+   {
+    "dong": 25,
+    "ten": "bAdd",
+    "gt": 0,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "global\\signet_head.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "TASKID_MONEYBOX_LASTTIME",
+    "gt": 2446,
+    "cm": "--ÌÕÖìÇ®´üÐ§Á¦½ØÖ¹Ê±¼ä"
+   },
+   {
+    "dong": 3,
+    "ten": "TONGTSK_MONEYBOX_DROPMAX",
+    "gt": 1035,
+    "cm": "--ÌÕÖìÇ®´ü·­±¶µôÂäboss±¦Ó¡µÄÏÞÖÆ"
+   },
+   {
+    "dong": 4,
+    "ten": "SIGNET_MAXDROP",
+    "gt": 180,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_global\\ladder.lua",
+  "hangso": [
+   {
+    "dong": 12,
+    "ten": "LEAGUETYPE_CITYWAR_SIGN",
+    "gt": 508,
+    "cm": "--ÌôÕ½ÁîÕ¾¶ÓÀàÐÍ"
+   },
+   {
+    "dong": 14,
+    "ten": "LGTSK_QINGTONGDING_COUNT",
+    "gt": 1,
+    "cm": "--ÌôÕ½ÁîÕ¾¶Ó¼ÇÂ¼ÌôÕ½Áî¸öÊýTaskID"
+   }
+  ]
+ },
+ {
+  "tep": "task\\newtask\\tasklink\\tasklink_head.lua",
+  "hangso": [
+   {
+    "dong": 33,
+    "ten": "DEBUG_TASKVALUE",
+    "gt": 1046,
+    "cm": "-- ÓÃÓÚ×·²éË¢È¡Ïû»ú»á BUG µÄ±äÁ¿"
+   },
+   {
+    "dong": 39,
+    "ten": "TKS_TASKLINK_SPITEM",
+    "gt": 2690,
+    "cm": "-- ¼ÇÂ¼ÁìÈ¡Ò°ÛÅµÄÉñÃØ±¦ÏäÊ±ÈÎÎñ´ÎÊý"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\8089\\templeboss8089.lua",
+  "hangso": [
+   {
+    "dong": 16,
+    "ten": "TEMBOSS_RELIVE",
+    "gt": 120,
+    "cm": "--Ã¿¸ö±êÖ¾µÄÖØÉúÊ±¼ä"
+   },
+   {
+    "dong": 18,
+    "ten": "TEMBOSS_MAPID",
+    "gt": 391,
+    "cm": "--µ±Ç°Íæ¼ÒËùÔÚµØÍ¼·çÖ®ÆïµÄµØÍ¼±àºÅ£¿£¿ÊÇ¶àÉÙ£¿£¿"
+   }
+  ]
+ },
+ {
+  "tep": "startgame\\tinhnang\\tongkim\\songjin_shophead.lua",
+  "hangso": [
+   {
+    "dong": 164,
+    "ten": "nWidth",
+    "gt": 1,
+    "cm": ""
+   },
+   {
+    "dong": 165,
+    "ten": "nHeight",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "tinhnang\\congthanhchien\\congthanhquan.lua",
+  "hangso": [
+   {
+    "dong": 12,
+    "ten": "MAX_NUM_AWD",
+    "gt": 200,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "missions\\citywar_city\\symboldeath1.lua",
+  "hangso": [
+   {
+    "dong": 2,
+    "ten": "SymbolId",
+    "gt": 1,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "event\\20thang10\\npcevent.lua",
+  "hangso": [
+   {
+    "dong": 24,
+    "ten": "FREECELL_TANTHU",
+    "gt": 30,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "task\\partner\\master\\partner_master_main_05.lua",
+  "hangso": [
+   {
+    "dong": 27,
+    "ten": "PARID_MASTER05_TIMES",
+    "gt": 68,
+    "cm": "-- Íæ¼ÒÃ¿ÈÕÍê³ÉµÄÐÞÁ¶ÈÎÎñ¼ÆÊý"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\fengzhiqi\\90\\flybugbear90.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "FLYBUGBEAR_MAPID",
+    "gt": 389,
+    "cm": "--·çÖ®ÆïµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "task\\tollgate\\messenger\\shanshenmiao\\6079\\templebro6079.lua",
+  "hangso": [
+   {
+    "dong": 15,
+    "ten": "TEMREFRESH_MAPID",
+    "gt": 390,
+    "cm": "--É½ÉñÃíµÄµØÍ¼id"
+   }
+  ]
+ },
+ {
+  "tep": "global\\trangbixanh.lua",
+  "hangso": [
+   {
+    "dong": 5,
+    "ten": "FREECELL_GETITEMBLUE",
+    "gt": 10,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\lenhbaitanthu.lua",
+  "hangso": [
+   {
+    "dong": 908,
+    "ten": "FREECELL_TANTHU",
+    "gt": 50,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "item\\compound\\xuanjing_compound.lua",
+  "hangso": [
+   {
+    "dong": 7,
+    "ten": "COMPOUND_COST",
+    "gt": 5000,
+    "cm": ""
+   }
+  ]
+ },
+ {
+  "tep": "npcthon\\balanghuyen\\hotrotanthu.lua",
+  "hangso": [
+   {
+    "dong": 239,
+    "ten": "FREECELL_TANTHU",
+    "gt": 50,
+    "cm": ""
+   }
+  ]
+ }
+]
