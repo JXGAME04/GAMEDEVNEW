@@ -311,6 +311,44 @@ void Pet_ProcessAI(int nNpcIdx)
 }
 
 //---------------------------------------------------------------------------
+// [30/08 - CHU CHON "bat danh"] PHAN THEM NGOAI BAN GOC: ca Linux lan VLTK
+// pet CHI DI THEO. Khuon lay tu he partner: chu bat FightMode -> moi ~1s
+// chon dich mode 22 (ke vua danh chu / gan nhat, tam 480) -> do_skill bang
+// bo skill cua ngoai quan (bang npcs.txt).
+//---------------------------------------------------------------------------
+extern int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision);
+static DWORD s_dwFightTick[MAX_PLAYER];
+
+static void sPetFight(int nPlayerIdx, int nNpcIdx)
+{
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC) return;
+	KNpc* pNpc = &Npc[nNpcIdx];
+	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
+	if (nOwnerNpc <= 0 || nOwnerNpc >= MAX_NPC) return;
+	KNpc* pOwnerNpc = &Npc[nOwnerNpc];
+	if (pNpc->m_CurrentCamp != pOwnerNpc->m_CurrentCamp)
+		pNpc->SetCurrentCamp(pOwnerNpc->m_CurrentCamp);
+	if (pNpc->m_FightMode != pOwnerNpc->m_FightMode)
+		pNpc->m_FightMode = pOwnerNpc->m_FightMode;
+	if (!pOwnerNpc->m_FightMode)
+		return;
+	if (++s_dwFightTick[nPlayerIdx] % 18 != 0)
+		return;
+	int nTarget = sPartnerPickTarget(nNpcIdx, nOwnerNpc, 22, 480);
+	if (nTarget <= 0)
+		return;
+	int nSkillId = 0;
+	for (int nSlot = 1; nSlot <= 4; nSlot++)
+		if (pNpc->m_SkillList.m_Skills[nSlot].SkillId > 0)
+		{
+			nSkillId = pNpc->m_SkillList.m_Skills[nSlot].SkillId;
+			if (rand() % 2) break;
+		}
+	if (nSkillId > 0)
+		pNpc->SendCommand(do_skill, nSkillId, -1, nTarget);
+}
+
+//---------------------------------------------------------------------------
 // FOLLOW dung 100%% co che + hang so Linux (KPet 0x081D4F80):
 // dist^2<=46224 dung; >562499 SetPos ve toa do chu; giua: WALK toi diem
 // cheo-sau chu 100mps cung phia dang dung.
@@ -401,10 +439,12 @@ void Pet_Breathe()
 		// [29/08 - theo Linux] follow chay tu PLAYER TICK moi frame
 		// (jx_linux_y goi KPet-follow tu 0x080B7104 trong player tick)
 		sPetFollowLinux(i, nNpc);
+		sPetFight(i, nNpc);	// [30/08] pet tu danh (phan them)
 		if (++s_dwAuraTick[i] >= PET_AURA_RECAST)
 		{
 			s_dwAuraTick[i] = 0;
 			sPetApplyAura(i);
+			sPetApplyEquip(i, 0);	// [30/08] thuoc tinh trang bi cho CHU
 		}
 	}
 }
