@@ -69,7 +69,15 @@ def _gon_manh(s):
     t = _bo_dau(_gon(s))
     for tu in ("cap ", "lv ", "level ", "lv."):
         t = t.replace(tu, "")
-    return re.sub(r"\s+", " ", t).strip()
+    # Bo moi ky tu khong phai chu/so: ten trong bang co the co dau gach dai
+    # (byte 0x97) hoac dau cham, ma khi in ra bao cao thi bi rot mat - vi du
+    # "<Bac Dau Truong Sinh Thuat\x97Dai Thua Tam Phap>". Khong bo thi phep
+    # doi khop bao lech du la CUNG MOT MON.
+    t = re.sub(r"[^0-9a-z\s]+", " ", t)
+    # Nen HET khoang trang: mot ky tu la bi thay bang khoang trang o chuoi nay
+    # ma khong co o chuoi kia van lam hai ben lech ("thuat dai" vs "thuatdai").
+    # Day la phep doi khop GAN DUNG nen nen het la dung muc dich.
+    return re.sub(r"\s+", "", t)
 
 
 def nap(duong_dan=None):

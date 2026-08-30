@@ -71,7 +71,17 @@ def main():
                 k, cach = bv.tim_theo_ten(ten, tt, ttm)
                 muc = (rel, i, g, d, p_, ten,
                        that[0] if that else None, k, cach)
-                if that and k == p_:
+                # [SUA] Xet theo TEN MAY TRA RA, khong theo chi so tra nguoc.
+                # Ly do: co nhung mon TRUNG TEN NHAU trong bang (vi du
+                # "Qua Huy Hoang (cao)" co o ca chi so 907 lan 3440). Neu chi
+                # so sanh chi so thi ma 3440 - von DUNG - se bi xep nham vao
+                # nhom "can doi", va doi no la doi sang mot mon khac.
+                if that and bv._gon(that[0]) == bv._gon(ten):
+                    khop.append(muc)
+                elif k == p_:
+                    # Doi khop "gan dung" tra ve CHINH ma dang dung => ma DUNG,
+                    # chi la ten trong script viet khac mot chut (vi du
+                    # "Dai Thanh Bi Kip cap 90" vs "Dai Thanh Bi Kip 90").
                     khop.append(muc)
                 elif k is not None:
                     gan.append(muc)

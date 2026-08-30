@@ -350,7 +350,7 @@ Công cụ kiểm (chỉ đọc, chạy lại bất cứ lúc nào):
 Sáu nhóm quét song song toàn bộ hoạt động/sự kiện, kết quả đầy đủ ở
 **`D:\GAMEDEVNEW\KHAOSAT_LICH_THUONG_2908.md`** (hơn 100.000 chữ, mỗi khoá kèm `tệp:dòng`).
 
-### Đã nối xong — 108 khoá
+### Đã nối xong — 92 khoá
 
 Tất cả đều **giữ nguyên giá trị đang chạy**, nên bản thân việc nối không đổi gì.
 

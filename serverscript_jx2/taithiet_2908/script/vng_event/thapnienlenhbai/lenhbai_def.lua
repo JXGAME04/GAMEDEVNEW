@@ -1,3 +1,5 @@
+-- [NAN5MA 30/08] nan ma vat pham theo TEN, tra bang DUNG cach may tra (theo chi so dong).
+-- Xem ReverseTools/cauhinh/t23_nan_5_ma_con_lai.py va ra_soat_ma_thuong.txt
 -- [MATHUONG 29/08] nan ma vat pham bang thuong theo TEN (xem ReverseTools\cauhinh\t01_nan_ma_thuong.py)
 Include("\\script\\activitysys\\playerfunlib.lua")
 Include("\\script\\misc\\eventsys\\type\\npc.lua")
@@ -430,7 +432,7 @@ tbThapnienLenhbai.tbAward_List = {
 	},
 	[6] = {
 		[1] = {szName="Bé XÝch L©n - Tù chän hÖ ph¸i",tbProp={6,1,30386,1,0,0},nCount=1,nBindState = -2,tbParam={11,1,86400,0,0,0}},
-		[2] = {szName="§¹i thµnh bÝ kÝp(150)",tbProp={6,1,30446,1,0,0},nBindState = -2,nCount=1},
+		[2] = {szName="§¹i thµnh bÝ kÝp(150)",tbProp={6,1,3208,1,0,0},nBindState = -2,nCount=1},
 		[3] = {szName="MÆt na-Anh hïng chiÕn tr­êng(60 ngµy)",tbProp={0,11,482,1,0,0},nBindState = -2,nCount=1,nExpiredTime=86400},
 		[4] = {szName="Phi phong ngù phong(Hãa gi¶i, 60 ngµy)",tbProp={0,3474},nQuality=1,nBindState = -2,nCount=1,nExpiredTime=86400},
 		[5] = {szName="Phi phong ngù phong(Träng kÝch, 60 ngµy)",tbProp={0,3475},nQuality=1,nBindState = -2,nCount=1,nExpiredTime=86400},

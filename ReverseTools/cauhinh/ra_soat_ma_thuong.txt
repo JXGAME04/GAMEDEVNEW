@@ -3,112 +3,82 @@ Sinh boi ReverseTools/cauhinh/t15_ra_soat_ma_thuong.py - CHI DOC
 Tra bang theo CHI SO DONG (dung cach may tra: KItemGenerator.CPP:1660)
 ==============================================================================
 
-## A) MA SAI - DA TIM DUOC MON DUNG THEO TEN (6 cho)
+## A) MA SAI - DA TIM DUOC MON DUNG THEO TEN (0 cho)
 Doi ma theo cot 'nen doi thanh' la nguoi choi nhan dung mon ghi trong bang.
 !! Luu y: nhung o nay TRUOC DAY khong ra gi (ma sai) - doi xong la chung
    BAT DAU RA DO THAT. Do la thay doi ve kinh te, can chu game duyet.
-
-  missions/boss/bigboss.lua:68
-      bang ghi   : {6,1,30446}  "Đại Thành Bí Kíp 150"
-      may tra ra : (khong co dong nay)
-      nen doi thanh: {6,1,3208}   (Đại Thành Bí Kíp cấp 150, khop gan dung)
-
-  task/tollgate/killer/mibao_head.lua:19
-      bang ghi   : {6,1,2024}  "Khiêu chiến lễ bao"
-      may tra ra : Truy công lệnh
-      nen doi thanh: {6,1,2015}   (Khiêu chiến Lễ bao, khop chinh xac)
-
-  task/tollgate/killer/mibao_head.lua:20
-      bang ghi   : {6,1,3440}  "Quả Huy Hoàng (cao)"
-      may tra ra : Quả Huy Hoàng (cao)
-      nen doi thanh: {6,1,907}   (Quả Huy Hoàng (cao), khop chinh xac)
-
-  vng_event/thapnienlenhbai/lenhbai_def.lua:433
-      bang ghi   : {6,1,30446}  "Đại thành bí kíp(150)"
-      may tra ra : (khong co dong nay)
-      nen doi thanh: {6,1,3208}   (Đại Thành Bí Kíp cấp 150, khop gan dung)
-
-  task/metempsychosis/task_head.lua:56
-      bang ghi   : {6,1,2973}  "Tích Lịch đơn"
-      may tra ra : ễẵÄẽìễảăềồàÀắò304
-      nen doi thanh: {6,1,3591}   (Tích Lịch đơn, khop chinh xac)
-
-  task/metempsychosis/task_head.lua:57
-      bang ghi   : {6,1,2974}  "<Bắc Đẩu Trường Sinh ThuậtĐại Thừa Tâm Pháp>"
-      may tra ra : ễẵÄẽìễảăềồàÀắò305
-      nen doi thanh: {6,1,3592}   (<Bắc Đẩu Trường Sinh ThuậtĐại Thừa Tâm Pháp>, khop chinh xac)
 
 
 ## B) KHONG TRA DUOC TEN TRONG DU AN (43 cho)
 Chu game quyet: tao vat pham moi / thay mon khac / bo khoi bang thuong.
 Cot 'ung vien' la nhung mon co ten gan giong, de doi chieu cho nhanh.
 
-  missions/boss/bigboss.lua:66
+  missions/boss/bigboss.lua:68
       bang ghi   : {6,1,4755}  "Kĩ năng cấp 150 cấp 22"
       may tra ra : Sách kĩ năng cấp 150 cấp 22
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:70
+  missions/boss/bigboss.lua:72
       bang ghi   : {6,1,30563}  "Trang Sức Tinh Linh"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:71
+  missions/boss/bigboss.lua:73
       bang ghi   : {6,1,30593}  "Trang Sức Chi Quang"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:72
+  missions/boss/bigboss.lua:74
       bang ghi   : {6,1,30408}  "Đại Gia Hạn Phù"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:92
+  missions/boss/bigboss.lua:94
       bang ghi   : {6,1,30215}  "Cống Hiến Đại Lễ Bao"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:93
+  missions/boss/bigboss.lua:95
       bang ghi   : {6,1,30216}  "Kiến Thiết Lễ Bao"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:94
+  missions/boss/bigboss.lua:96
       bang ghi   : {6,1,30218}  "Chiến Bị Lễ Bao"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:102
+  missions/boss/bigboss.lua:104
       bang ghi   : {6,1,30528}  "Đồ Phổ Đằng Long Khôi"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:103
+  missions/boss/bigboss.lua:105
       bang ghi   : {6,1,30530}  "Đồ Phổ Đằng Long Hài"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:104
+  missions/boss/bigboss.lua:106
       bang ghi   : {6,1,30531}  "Đồ Phổ Đằng Long Yêu Đái"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:105
+  missions/boss/bigboss.lua:107
       bang ghi   : {6,1,30532}  "Đồ Phổ Đằng Long Hộ Uyển"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:106
+  missions/boss/bigboss.lua:108
       bang ghi   : {6,1,30533}  "Đồ Phổ Đằng Long Hạng Liên"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:108
+  missions/boss/bigboss.lua:110
       bang ghi   : {6,1,30535}  "Đồ Phổ Đằng Long Thượng Giới Chỉ"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  missions/boss/bigboss.lua:109
+  missions/boss/bigboss.lua:111
       bang ghi   : {6,1,30536}  "Đồ Phổ Đằng Long Hạ Giới Chỉ"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
@@ -148,7 +118,7 @@ Cot 'ung vien' la nhung mon co ten gan giong, de doi chieu cho nhanh.
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  task/tollgate/killer/mibao_head.lua:12
+  task/tollgate/killer/mibao_head.lua:14
       bang ghi   : {6,1,71}  "Tiên Thảo Lộ"
       may tra ra : Tiên Thảo Lộ Thường
       ung vien   : (khong co)
@@ -168,95 +138,95 @@ Cot 'ung vien' la nhung mon co ten gan giong, de doi chieu cho nhanh.
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:408
+  vng_event/thapnienlenhbai/lenhbai_def.lua:410
       bang ghi   : {6,1,30246}  "Chuyển sinh thuật(cấp 5)"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:409
+  vng_event/thapnienlenhbai/lenhbai_def.lua:411
       bang ghi   : {6,1,1399}  "Bắc đẩu trường sinh thuật-Cơ sở thiên(7 ngày)"
       may tra ra : <Bắc Đẩu Trường Sinh Thuật - Cơ Sở Thiên>
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:415
+  vng_event/thapnienlenhbai/lenhbai_def.lua:417
       bang ghi   : {6,1,2434}  "Đại Thành Bí Kíp 120(7 ngày)"
       may tra ra : Đại Thành Bí Kíp 120
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:426
+  vng_event/thapnienlenhbai/lenhbai_def.lua:428
       bang ghi   : {6,1,3539}  "Võ Học Kinh Nhu(14 ngày)"
       may tra ra : Võ Học Kinh Nhu
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:432
+  vng_event/thapnienlenhbai/lenhbai_def.lua:434
       bang ghi   : {6,1,30386}  "Bộ Xích Lân - Tự chọn hệ phái"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:441
+  vng_event/thapnienlenhbai/lenhbai_def.lua:443
       bang ghi   : {6,1,2228}  "Càn khôn song tuyệt bội(7 ngày)"
       may tra ra : Càn Khôn Song Tuyệt Bội
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:451
+  vng_event/thapnienlenhbai/lenhbai_def.lua:453
       bang ghi   : {6,1,3051}  "Huyết long đằng cấp 5"
       may tra ra : Huyết Long Đằng
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:461
+  vng_event/thapnienlenhbai/lenhbai_def.lua:463
       bang ghi   : {6,1,3821}  "2000 Hộ Mạch Đơn"
       may tra ra : Hộ Mạch Đơn
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:465
+  vng_event/thapnienlenhbai/lenhbai_def.lua:467
       bang ghi   : {6,1,3051}  "Huyết long đằng 6"
       may tra ra : Huyết Long Đằng
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:469
+  vng_event/thapnienlenhbai/lenhbai_def.lua:471
       bang ghi   : {6,1,3821}  "2000 Hộ Mạch Đơn"
       may tra ra : Hộ Mạch Đơn
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:483
+  vng_event/thapnienlenhbai/lenhbai_def.lua:485
       bang ghi   : {6,1,3051}  "Huyết long đằng cấp 8"
       may tra ra : Huyết Long Đằng
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:502
+  vng_event/thapnienlenhbai/lenhbai_def.lua:504
       bang ghi   : {6,1,3051}  "Huyết long đằng cấp 9"
       may tra ra : Huyết Long Đằng
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:517
+  vng_event/thapnienlenhbai/lenhbai_def.lua:519
       bang ghi   : {6,1,3051}  "Huyết long đằng cấp 12"
       may tra ra : Huyết Long Đằng
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:525
+  vng_event/thapnienlenhbai/lenhbai_def.lua:527
       bang ghi   : {6,1,1399}  "Bắc đẩu trường sinh thuật-Cơ sở thiên(7 ngày)"
       may tra ra : <Bắc Đẩu Trường Sinh Thuật - Cơ Sở Thiên>
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:526
+  vng_event/thapnienlenhbai/lenhbai_def.lua:528
       bang ghi   : {6,1,4175}  "Ngọc chuyển sinh(7 ngày)"
       may tra ra : Ngọc Chuyển Sinh
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:527
+  vng_event/thapnienlenhbai/lenhbai_def.lua:529
       bang ghi   : {6,1,4176}  "Phục sinh hoàn(7 ngày)"
       may tra ra : Phục Sinh Hoàn
       ung vien   : (khong co)
 
-  vng_event/thapnienlenhbai/lenhbai_def.lua:537
+  vng_event/thapnienlenhbai/lenhbai_def.lua:539
       bang ghi   : {6,1,30474}  "Bộ Trang Bị Minh Phượng - Tự chọn hệ phái"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
-  task/metempsychosis/task_head.lua:129
+  task/metempsychosis/task_head.lua:131
       bang ghi   : {6,1,30246}  "Chuyển sinh thuật(cấp 5)"
       may tra ra : (khong co dong nay)
       ung vien   : (khong co)
 
 
-## C) MA DUNG (68 cho) - khong phai lam gi
+## C) MA DUNG (74 cho) - khong phai lam gi

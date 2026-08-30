@@ -1,3 +1,5 @@
+-- [NAN5MA 30/08] nan ma vat pham theo TEN, tra bang DUNG cach may tra (theo chi so dong).
+-- Xem ReverseTools/cauhinh/t23_nan_5_ma_con_lai.py va ra_soat_ma_thuong.txt
 -- [MATHUONG 29/08] nan ma vat pham bang thuong theo TEN (xem ReverseTools\cauhinh\t01_nan_ma_thuong.py)
 Include("\\script\\lib\\objbuffer_head.lua")
 Include("\\script\\lib\\sharedata.lua")
@@ -65,7 +67,7 @@ BigBoss.tbVngNewAward =
 	[1] = {--PhÇn 1
 		{szName="KÜ n¨ng cÊp 150 cÊp 22",tbProp={6,1,4755,1,0,0},nCount=1,nRate=45},
 		{szName="Cµn Kh«n Song TuyÖt Béi",tbProp={6,1,2228,1,0,0},nCount=1,nRate=25,nExpiredTime=43200},
-		{szName="§¹i Thµnh BÝ KÝp 150",tbProp={6,1,30446,1,0,0},nCount=1,nRate=0.7},
+		{szName="§¹i Thµnh BÝ KÝp 150",tbProp={6,1,3208,1,0,0},nCount=1,nRate=0.7},
 		{szName="Thiªn S¬n Th¸nh Thñy (®¹i)",tbProp={6,1,3211,1,0,0},nCount=1,nRate=7.95,nExpiredTime=43200},
 		{szName="Trang Søc Tinh Linh",tbProp={6,1,30563,1,0,0},nCount=1,nRate=3,nExpiredTime=10080},
 		{szName="Trang Søc Chi Quang",tbProp={6,1,30593,1,0,0},nCount=1,nRate=6,nExpiredTime=10080},
