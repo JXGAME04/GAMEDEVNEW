@@ -21,6 +21,26 @@
 --    JX1: magicscript cua du an CHI co detail = 1. Xem thieu_vatpham.txt.
 
 tbCFG_THUONG = {
+
+-- [CFGTKT 30/08] TONG KIM - DIEM, THUONG va DIEU KIEN THAM GIA
+-- (phan THOI GIAN va LICH nam o ch_lich.lua, tien to TK_)
+-- 
+-- Moi so DUNG BANG gia tri dang chay. Sua xong KHOI DONG LAI GameServer.
+
+TKT_CAP_TOI_THIEU         = 80          ,	-- cap toi thieu moi duoc bao danh
+TKT_LECH_QUANSO_TOIDA     = 20          ,	-- chenh lech quan so toi da giua hai phe; qua muc nay phe dong hon bi chan bao danh
+TKT_PHI_BAO_DANH          = 20000       ,	-- phi bao danh. !! hien CHI HIEN CHU, khong tru tien - moi lenh Pay da bi comment
+TKT_THUONG_TICHLUY_THANG  = 1200        ,	-- diem tich luy cong them cho phe THANG, nhan voi cap quan ham 1-6
+TKT_THUONG_TICHLUY_THUA   = 300         ,	-- diem tich luy cong them cho phe THUA, nhan voi cap quan ham
+TKT_THUONG_TICHLUY_HOA    = 600         ,	-- diem tich luy cong them khi tran HOA, nhan voi cap quan ham
+TKT_DIEM_TOITHIEU_NHAN_THUONG= 1000        ,	-- duoi nguong diem nay thi het tran KHONG duoc goi qua
+TKT_SO_CO_TOIDA           = 30          ,	-- moi phe chi duoc cam toi da bay nhieu la co trong mot tran
+TKT_DIEM_CAM_CO           = 300         ,	-- diem moi lan mang co ve cam thanh cong (cong ca ca nhan lan phe)
+TKT_MUC_GIAM_TOCDO_GIU_CO = 60          ,	-- muc giam toc do chay cua nguoi dang vac co
+TKT_GIAY_TRONG_DOANHTRAI  = 90          ,	-- so GIAY toi da duoc dung trong doanh trai truoc khi bi day ra
+TKT_GIAY_DELAY_RA_TRAI    = 10          ,	-- so GIAY con lai duoc giu khi buoc ra khoi trai
+TKT_MAU_NGUYENSOAI        = 5000000     ,	-- mau cua Nguyen Soai hai phe. !! con duoc nhan them voi GLB_MANH_NGUYENSOAI_TK
+TKT_DIEM_GIET_NGUYENSOAI  = 5000        ,	-- diem cho nguoi ha guc Nguyen Soai (nguoi danh don cuoi an tron)
 -- [CFGVT 29/08] THUONG VAN TIEU (script\event\event_vantieu\tieudau.lua)
 --
 -- !! DOC KY TRUOC KHI DOI: hien MOI CHUYEN cong that la

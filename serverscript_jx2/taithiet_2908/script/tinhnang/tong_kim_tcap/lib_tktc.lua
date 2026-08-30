@@ -3,6 +3,8 @@
 -- Function: Lib Tèng Kim
 
 Include("\\script\\lib\\lib_server.lua")
+-- [CFGTKT 30/08] hai tep duoi day la LA (khong Include gi).
+Include("\\script\\cauhinh\\ch_thuong.lua")
 -- [CFGTK 29/08] hai tep duoi day la LA (khong Include gi).
 Include("\\script\\cauhinh\\ch_lib.lua")
 Include("\\script\\cauhinh\\ch_lich.lua")
@@ -28,15 +30,15 @@ PT_DoatCo 												= 3
 Pos_Tren													= 1
 Pos_Duoi													= 2
 
-LEVEL_ENOUGH_TK 							= 80		--®¼ng cÊp tèi thiÓu khi tham gia
-MAX_PLAYER_CL 								= 20			--chªnh lÖch qu©n sè 2 bªn mÆc ®Þnh lµ 5 ng­êi
-NEEDMONEY 										= 20000--tiÒn b¸o danh tham gia tèng kim
-TICH_LUY_THUONG_TK_W				= 1200	--®iÓm th­ëng tÝch luü céng thªm cho phe th¾ng
-TICH_LUY_THUONG_TK_L 				= 300		--®iÓm th­ëng tÝch luü céng thªm cho phe thua
-TICH_LUY_THUONG_TK_H 				= 600		--®iÓm th­ëng tÝch luü céng thªm hai phe hoµ nhau
-MIN_POINT_AWARD							= 1000	--®iÓm tÝch luü tèi thiÓu ®Ó kÕt thóc trËn nhËn ®­îc quµ
-MAX_CAMCO											=	30		--sè cê tèi ®a hai bªn cã thÓ c¾m
-FLAG_POINT 											= 300 		-- ®iÓm sè tÝch luü trong tèng kim khi c¾m cê
+LEVEL_ENOUGH_TK 							= TK_CFG("TKT_CAP_TOI_THIEU", 80)		--®¼ng cÊp tèi thiÓu khi tham gia
+MAX_PLAYER_CL 								= TK_CFG("TKT_LECH_QUANSO_TOIDA", 20)			--chªnh lÖch qu©n sè 2 bªn mÆc ®Þnh lµ 5 ng­êi
+NEEDMONEY 										= TK_CFG("TKT_PHI_BAO_DANH", 20000)--tiÒn b¸o danh tham gia tèng kim
+TICH_LUY_THUONG_TK_W				= TK_CFG("TKT_THUONG_TICHLUY_THANG", 1200)	--®iÓm th­ëng tÝch luü céng thªm cho phe th¾ng
+TICH_LUY_THUONG_TK_L 				= TK_CFG("TKT_THUONG_TICHLUY_THUA", 300)		--®iÓm th­ëng tÝch luü céng thªm cho phe thua
+TICH_LUY_THUONG_TK_H 				= TK_CFG("TKT_THUONG_TICHLUY_HOA", 600)		--®iÓm th­ëng tÝch luü céng thªm hai phe hoµ nhau
+MIN_POINT_AWARD							= TK_CFG("TKT_DIEM_TOITHIEU_NHAN_THUONG", 1000)	--®iÓm tÝch luü tèi thiÓu ®Ó kÕt thóc trËn nhËn ®­îc quµ
+MAX_CAMCO											=	TK_CFG("TKT_SO_CO_TOIDA", 30)		--sè cê tèi ®a hai bªn cã thÓ c¾m
+FLAG_POINT 											= TK_CFG("TKT_DIEM_CAM_CO", 300) 		-- ®iÓm sè tÝch luü trong tèng kim khi c¾m cê
 KILL_PLAYER_POINT							= 30
 
 ITEM_BV_POINT									= {
@@ -73,10 +75,10 @@ ID_ShopQuanYTongKim 						= 29
 ID_LUU_RUONG_TONG						= 42
 ID_LUU_RUONG_KIM							= 43
 ITEM_CO_HIEU										= {6,1,158}	--Item cê hiÖu ®Ó tham gia thÓ thøc ®o¹t cê
-RUN_SPEDD_DOW_ONFLAG				= 60 --gi¶m tèc ®é khi gi÷ cê
-TIME_IN_TRAI										= 90 --thêi gian tèi ®a ë trong doanh tr¹i
-TIME_DELAY_RA_TRAI						= 10 --thêi gian delay khi ra tr¹i
-LIFE_NGUYEN_SOAI							= 5000000*STRONGBOSS_NSTK --m¸u boss nguyªn so¸i
+RUN_SPEDD_DOW_ONFLAG				= TK_CFG("TKT_MUC_GIAM_TOCDO_GIU_CO", 60) --gi¶m tèc ®é khi gi÷ cê
+TIME_IN_TRAI										= TK_CFG("TKT_GIAY_TRONG_DOANHTRAI", 90) --thêi gian tèi ®a ë trong doanh tr¹i
+TIME_DELAY_RA_TRAI						= TK_CFG("TKT_GIAY_DELAY_RA_TRAI", 10) --thêi gian delay khi ra tr¹i
+LIFE_NGUYEN_SOAI							= TK_CFG("TKT_MAU_NGUYENSOAI", 5000000)*STRONGBOSS_NSTK --m¸u boss nguyªn so¸i
 TK_VARV_KEY = 1
 
 TAB_TIME_TONG_KIM = TK_CFG("TK_LICH", {{23,46,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}})
@@ -134,7 +136,7 @@ TICHLUYTK = { --point tÝch luü ®¸nh npc gi¶m 1 nöa
 }
 
 
-TICHLUY_GIETSOAI = 5000
+TICHLUY_GIETSOAI = TK_CFG("TKT_DIEM_GIET_NGUYENSOAI", 5000)
 
 COTONG_TOADO = {
 	{1313, 3433},

@@ -109,19 +109,34 @@ def noi(tep, tep_cfg, bang_cfg, ten_ham, nhan, muc, tieu_de=None,
         kq["khoa"].append((ten_khoa, gia_tri, mo_ta))
         kq["log"].append("  %-26s %s = %d" % (ten_khoa, ten_bien, gia_tri))
 
+    # Chi chen ham doc cau hinh khi tep CHUA co. Mot tep co the duoc noi day
+    # lam nhieu dot (vi du lib_tktc.lua: dot truoc da co TK_CFG) - chen lai la
+    # dinh nghia trung, thua va de gay nham.
+    da_co_ham = re.search(r"^function\s+%s\s*\(" % re.escape(ten_ham),
+                          nd, re.M) is not None
     duong = tep_cfg_include
     if duong is None:
         duong = "\\\\script\\\\cauhinh\\\\" + os.path.basename(tep_cfg)
-    m = re.search(r'^Include\("[^"]+"\)', nd, re.M)
-    them = eol.join([
-        "-- " + nhan + " hai tep duoi day la LA (khong Include gi).",
-        'Include("\\\\script\\\\cauhinh\\\\ch_lib.lua")',
-        'Include("%s")' % duong,
-    ]) + _ham_cfg(ten_ham, nhan, eol)
-    if m:
-        nd = nd.replace(m.group(0), m.group(0) + eol + them, 1)
+    da_co_inc = ('Include("%s")' % duong) in nd
+
+    phan = []
+    if not da_co_inc:
+        phan.append("-- " + nhan + " hai tep duoi day la LA (khong Include gi).")
+        if 'Include("\\\\script\\\\cauhinh\\\\ch_lib.lua")' not in nd:
+            phan.append('Include("\\\\script\\\\cauhinh\\\\ch_lib.lua")')
+        phan.append('Include("%s")' % duong)
+    them = eol.join(phan) if phan else ""
+    if not da_co_ham:
+        them = them + _ham_cfg(ten_ham, nhan, eol)
     else:
-        nd = them + eol + nd
+        kq["log"].append("  (ham %s da co san - khong chen lai)" % ten_ham)
+
+    if them:
+        m = re.search(r'^Include\("[^"]+"\)', nd, re.M)
+        if m:
+            nd = nd.replace(m.group(0), m.group(0) + eol + them, 1)
+        else:
+            nd = them + eol + nd
 
     if sum(1 for c in nd if ord(c) > 127) != hi0:
         kq["loi"].append("byte tieng Viet doi")

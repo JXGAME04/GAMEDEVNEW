@@ -13,6 +13,26 @@
 
 tbCFG_CHUNG = {
 
+-- [CFGCTC 30/08] CONG THANH CHIEN - tran dia (missions\citywar_city\head.lua)
+-- 
+-- !! MAX_CAMP* o day la ban ma CUA TRAN dung (camper.lua).
+-- !! Con NPC ve binh quan doanh dung ban KHAC o lib_ctc.lua - xem cac khoa
+-- !! CTC_MAX_*_VEBINH ben duoi. Hai ban dang LECH NHAU.
+
+CTC_CHUKY_LOA_GIAY        = 60          ,	-- chu ky loa trong tran: bao nhieu giay bao mot lan tinh hinh
+CTC_DODAI_TRAN_PHUT       = 90          ,	-- do dai mot tran Cong Thanh (phut)
+CTC_EXP_TOP10             = 3000000     ,	-- kinh nghiem thuong cho 10 nguoi dan dau bang cong trang. !! co mot ban nua o lib_ctc.lua
+CTC_SO_LONGTRU            = 3           ,	-- so Long Tru trong tran. Pha du ca ba la thang ngay
+CTC_SO_CONG_THANH         = 3           ,	-- so cong thanh phai pha. !! phai khop so dong trong bang DoorPos
+CTC_MAX_NGUOI_PHE_THU     = 200         ,	-- so nguoi toi da phe THU vao tran (ban CUA TRAN dung). !! NPC ve binh dung so khac
+CTC_MAX_NGUOI_PHE_CONG    = 200         ,	-- so nguoi toi da phe CONG vao tran (ban CUA TRAN dung)
+CTC_MAX_LIENMINH_THU      = 50          ,	-- so nguoi ngoai bang tro giup phe THU (ban CUA TRAN dung)
+CTC_MAX_LIENMINH_CONG     = 50          ,	-- so nguoi ngoai bang tro giup phe CONG (ban CUA TRAN dung)
+CTC_CAP_LONGTRU           = 10          ,	-- cap do NPC Long Tru khi sinh ra (anh huong mau)
+CTC_CAP_CONG_THANH        = 60          ,	-- cap do NPC cong thanh - quyet dinh cong kho pha den dau
+CTC_DIEM_GIET_NGUOI       = 75          ,	-- diem cong trang co ban moi lan ha guc doi phuong
+CTC_DIEM_LIEN_TRAM        = 150         ,	-- diem thuong moi lan dat moc lien tram
+
 -- [CFGNEN 30/08] HE SO NEN TOAN CUC (script\lib\lib_server.lua)
 -- 
 -- Day la tep 14 dong khai cac he so nhan vao rat nhieu noi khac.

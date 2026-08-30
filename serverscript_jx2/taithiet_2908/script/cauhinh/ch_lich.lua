@@ -23,6 +23,16 @@
 
 tbCFG_LICH = {
 
+-- [CFGCTC 30/08] LOI DAI DAU TRUONG (missions\citywar_arena\head.lua)
+-- (khoa CTLD_EXP_BANG_THANG la phan THUONG, de chung o day cho
+--  cung mot cho voi cac khoa khac cua Loi Dai)
+
+CTLD_MAX_NGUOI_MOI_PHE    = 16          ,	-- so nguoi toi da moi bang vao dau truong Loi Dai
+CTLD_CHUKY_LOA_GIAY       = 20          ,	-- chu ky loa trong Loi Dai (giay)
+CTLD_DODAI_TRAN_PHUT      = 25          ,	-- do dai mot tran Loi Dai (phut). !! chu thich trong ma ghi nham la mot tieng
+CTLD_GIAY_CHO_VAO_DAUTRUONG= 480         ,	-- thoi gian cho hai ben vao dau truong (giay). !! chu thich ghi nham la 10 phut
+CTLD_EXP_BANG_THANG       = 1200        ,	-- kinh nghiem bang hoi cong cho ben thang mot tran Loi Dai
+
 -- [CFGTK 29/08] TONG KIM (script\tinhnang\tong_kim_tcap\lib_tktc.lua)
 --
 -- !! CAN CHU XEM LAI: tep lib_tktc.lua duoc luu luc 28/08 23:45:56

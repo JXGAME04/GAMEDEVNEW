@@ -58,6 +58,13 @@ TEP = [
     "script/tinhnang/tong_kim_tcap/lib_tktc.lua",
     "script/task/metempsychosis/task_head.lua",
     "script/lib/lib_server.lua",
+    "script/missions/citywar_city/head.lua",
+    "script/tinhnang/congthanhchien/lib_ctc.lua",
+    "script/missions/citywar_arena/head.lua",
+    "script/missions/citywar_global/head.lua",
+    "script/missions/citywar_global/mission.lua",
+    "script/tinhnang/tong_kim_tcap/quanquan.lua",
+    "script/tinhnang/tong_kim_tcap/trinhsat.lua",
     "settings/gamesetting.ini",
 ]
 
