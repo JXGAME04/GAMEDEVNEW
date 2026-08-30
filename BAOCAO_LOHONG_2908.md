@@ -215,6 +215,24 @@ quyết định của anh, em không tự làm.
 
 ---
 
+## Ba nghi vấn khác — em tự kiểm chứng
+
+**Rơi hai món thay vì một (Phong Lăng Độ bản Việt).** `drop.lua:51-55` có **hai lệnh `if` rời
+nhau** cùng rơi Ngũ Hoa: một cái điều kiện `> 80 và < 85`, một cái `> 20`. Số bốc rơi vào 81–84 thì
+**cả hai đều đúng** → rơi hai món. Xác nhận có thật, nhưng Phong Lăng Độ bản Việt **đang tắt**
+(`startgame.lua:103` đã comment).
+
+**Kháng vượt 100% ở boss sát thủ.** `deathhksv.lua:182` đặt `SetNpcResist(..., 95, 120, 95, 120,
+95)` — hai hệ ở mức 120. Em đọc hàm C tương ứng: nó **gán thẳng, không kẹp giá trị**. Nhưng em
+chưa đọc tới chỗ engine tính sát thương nên **chưa kết luận** được hậu quả — có thể vô hại nếu chỗ
+tính có kẹp riêng.
+
+**Một nghi vấn bị bác bỏ.** Tài liệu nói `event_cauhoi\lib.lua:346` gán `nRand = 3` đè lên kết quả
+ngẫu nhiên vừa tính, coi đó là lỗi. Đọc tận nơi thì dòng đó có chú thích *"mặc định ra ở Hoa Sơn
+add by Fong Kiều theo kịch bản 2021"* — tức **cố ý**, không phải lỗi.
+
+---
+
 ## Việc đã làm kèm trong đợt này
 
 Ngoài hai lỗ hổng trên, tôi đã nối **83 khoá cấu hình** nữa, tất cả **giữ nguyên giá trị đang
