@@ -55,11 +55,55 @@ vừa làm. Chủ quyết.
 
 ---
 
-## 🔴 2. Vận Tiêu trả gấp hơn 10 lần con số báo cho người chơi
+## 🔴 2. Tống Kim đang chạy **cấu hình thử nghiệm** — người chơi chỉ có 1 phút báo danh
+
+Đây là thứ ảnh hưởng **mỗi ngày, toàn máy chủ**, và tôi suýt bỏ sót.
+
+`script\tinhnang\tong_kim_tcap\lib_tktc.lua` được lưu lúc **28/08 23:45:56**, và khung giờ đầu
+tiên trong bảng lịch là **`{23,46,...}`** — tức đặt để nổ sau đúng **4 giây**. Đó là dấu vết của
+một lần chỉnh để thử, rồi bị bỏ quên.
+
+Ba con số thời gian đều lệch hẳn với chú thích nằm ngay cạnh chúng:
+
+| Dòng | Đang chạy | Chú thích ngay cạnh ghi |
+|---|---|---|
+| `:56` `TIME_BD_TK` | **1 phút** báo danh | "10 phut báo danh" |
+| `:57` `TIME_KT_TK` | **30 phút** cả trận | "70 phut chiến đấu" |
+| `:58` `TIME_NS_TK` | **1 phút** đến lúc ra Nguyên Soái | "30 phut ... nguyên soái" |
+
+Nghĩa là người chơi chỉ có **đúng một phút** để báo danh Tống Kim thay vì mười phút. Tống Kim là
+hoạt động cày chính hằng ngày nên việc này chạm tới tất cả mọi người.
+
+Bảng lịch hiện tại: `{23,46,19,1}` · `{17,50,18,3}` · `{20,50,21,4}` · `{22,50,23,5}` — ba khung
+sau bình thường, riêng khung đầu là dấu vết test.
+
+**Tôi không tự đổi** vì không biết số đúng: riêng khung giờ đầu đã từng có **ba giá trị khác nhau**
+(13h23, 13h58, 23h46), và chú thích lại nói một đằng.
+
+Mọi con số nay nằm ở `script\cauhinh\ch_lich.lua`, khoá `TK_`, **mặc định bằng đúng giá trị đang
+chạy**. Anh chỉ cần sửa, ví dụ:
+
+```
+TK_PHUT_BAODANH = 10
+TK_PHUT_TRAN    = 70
+TK_LICH         = {{17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
+```
+
+rồi khởi động lại.
+
+---
+
+## 🔴 3. Vận Tiêu trả gấp hơn 10 lần con số báo cho người chơi
 
 Hoạt động này **đang mở**: `startgame.lua:220` gọi `addnpcvantieu()` và dòng đó **không bị
 comment**. (Chỉ phần loa thông báo ở `timerserver.lua:128` bị tắt — nên rất dễ tưởng nhầm là hoạt
 động đã đóng.)
+
+> **Đính chính quan trọng, để anh khỏi lo quá mức:** bộ kiểm chứng soi nhật ký 410 ngày và
+> **không thấy lượt lĩnh thưởng nào từ 17/05/2024**, dù người chơi vẫn mua Hộ Tiêu Lệnh đến tận
+> 12/2025. Nhiều khả năng có một cổng chặn ở `tieusu.lua:36-40` (phải giết đủ 3 boss đúng thứ tự)
+> khiến chưa ai đi hết được chuỗi. Nên đây là **mìn đã cài, ngòi còn nguyên** chứ chưa phải đang
+> chảy máu — nhưng chỉ cần ai nới cổng boss đó mà không biết chuyện dòng 250 là nó nổ ngay hôm sau.
 
 Đọc `script\event\event_vantieu\tieudau.lua:246-280`:
 
@@ -115,11 +159,13 @@ Tôi cho 8 nhóm kiểm chứng độc lập 10 cảnh báo. Kết quả: **1 c�
 
 | Cảnh báo | Kết luận | Ghi chú |
 |---|---|---|
-| Lôi Đài Hỗn Chiến ăn 10 triệu exp/mạng | **đang ngủ** | NPC báo danh còn sống và vẫn ném người chơi vào map 210, nhưng hoạt động chưa mở. **Phải vá trước khi bật** |
+| **NPC Lôi Đài Hỗn Chiến nhốt người chơi** | **đang xảy ra** | Người cấp ≥90 bấm vào NPC ở Ba Lăng Huyện lúc 16h/22h bị **ném vào bản đồ 210 trống**, chỉ thoát được bằng cách thoát game đăng nhập lại. Không mất đồ, nhưng là lỗi khó chịu |
+| Lôi Đài Hỗn Chiến ăn 10 triệu exp/mạng | **đang ngủ** | Kho thưởng còn nguyên: 500 triệu exp + 5 mảnh Hoàng Kim cho "quán quân" **dù không đánh ai**, 10 triệu exp mỗi mạng, và người ăn có thể chính là **người chết**. **Phải vá trước khi bật** |
 | Lịch Tống Kim Lua ≠ C++ (23:46 vs 13:58) | đúng | Bảng cho auto/bot đã cũ so với script sống — người dùng auto chờ nhầm giờ |
 | Lôi Đài Bang Hội thu 1 triệu lượng cho trận không mở | đúng một phần | Đường vào NPC hẹp hơn cảnh báo mô tả |
 | Trần bù lượt Vượt Ải lệch cấu hình | đúng | Số nhỏ, sửa lúc nào cũng được |
-| Hai tệp trùng tên biến toàn cục | đúng số, sai lý do | Mỗi tệp Lua là một vùng riêng nên không giẫm nhau như lo ngại |
+| Hai tệp trùng tên biến toàn cục | **cảnh báo SAI** | Ba con số đúng, nhưng lý do sai: mỗi tệp Lua có vùng riêng nên **không thể giẫm nhau**. Hơn nữa cả hai tệp đều không còn NPC nào gọi |
+| Trần bù lượt Vượt Ải "lệch cấu hình" | **cảnh báo SAI** | Số 2 là đúng — nó đếm hệ Vượt Ải **cũ** (2 lượt/ngày); số 1 thuộc một hệ Vượt Ải **khác hoàn toàn**. **Đừng sửa theo cảnh báo này** |
 | Cửa sổ chốt quán quân sai dải phút | đúng một phần | Chỉ nổ khi bật lại hoạt động |
 | `MSTIME_VUOT_AI_BD` dùng hai vai | đang ngủ | Hàm vượt ải cũ đã tắt |
 

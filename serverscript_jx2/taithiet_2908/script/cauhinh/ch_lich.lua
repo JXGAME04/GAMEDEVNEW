@@ -22,6 +22,28 @@
 -- Cac hoat dong con lai duoc do vao day o dot ke tiep (dang khao sat).
 
 tbCFG_LICH = {
+
+-- [CFGTK 29/08] TONG KIM (script\tinhnang\tong_kim_tcap\lib_tktc.lua)
+--
+-- !! CAN CHU XEM LAI: tep lib_tktc.lua duoc luu luc 28/08 23:45:56
+--    va khung gio dau trong bang lich la 23h46 - tuc dat de no sau
+--    dung 4 giay. Rat co the do la cau hinh THU NGHIEM bi bo quen.
+--    Ba con so thoi gian cung lech han voi chu thich ngay canh:
+--      bao danh dang la 1 phut  (chu thich ghi 10)
+--      ca tran   dang la 30 phut (chu thich ghi 70)
+--      nguyen soai dang la 1 phut (chu thich ghi 30)
+--    Toi khong tu doi vi khong biet so dung - rieng khung gio dau
+--    da tung co ba gia tri khac nhau (13h23 / 13h58 / 23h46).
+
+-- Bang lich: moi khung la {gio, phut, gio_ket_thuc, so_hieu_tran}
+-- TK_LICH = {{17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
+
+TK_PHUT_BAODANH       = 1     ,	-- so PHUT bao danh. !! chu thich trong ma ghi 10 - dang chay 1
+TK_PHUT_TRAN          = 30    ,	-- so PHUT ca tran. !! chu thich trong ma ghi 70 - dang chay 30
+TK_PHUT_NGUYENSOAI    = 1     ,	-- so PHUT den luc ra Nguyen Soai. !! chu thich ghi 30 - dang chay 1
+TK_PHUT_XOANPC        = 1     ,	-- so PHUT xoa NPC sau tran
+TK_NGUOI_MOI_PHE      = 2000  ,	-- so nguoi toi da moi phe
+TK_LICH               = {{23,46,19,1}, {17,50,18,3}, {20,50,21,4}, {22,50,23,5}},
 -- [CONGTAC 29/08] CONG TAC BAT/TAT HOAT DONG
 -- 1 = bat, 0 = tat. Gia tri duoi day DUNG BANG trang thai dang chay
 -- hom nay, nen file nay khong lam doi gi ca cho toi khi ban sua.
