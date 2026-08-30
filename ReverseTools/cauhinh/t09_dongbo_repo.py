@@ -65,6 +65,8 @@ TEP = [
     "script/missions/citywar_global/mission.lua",
     "script/tinhnang/tong_kim_tcap/quanquan.lua",
     "script/tinhnang/tong_kim_tcap/trinhsat.lua",
+    "script/tinhnang/congthanhchien/congthanhquan.lua",
+    "script/missions/citywar_global/citywar_function.lua",
     "settings/gamesetting.ini",
 ]
 
