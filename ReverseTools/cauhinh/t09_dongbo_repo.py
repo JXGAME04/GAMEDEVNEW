@@ -57,6 +57,7 @@ TEP = [
     "script/event/event_vantieu/tieudau.lua",
     "script/tinhnang/tong_kim_tcap/lib_tktc.lua",
     "script/task/metempsychosis/task_head.lua",
+    "script/lib/lib_server.lua",
     "settings/gamesetting.ini",
 ]
 

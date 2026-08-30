@@ -13,6 +13,31 @@
 
 tbCFG_CHUNG = {
 
+-- [CFGNEN 30/08] HE SO NEN TOAN CUC (script\lib\lib_server.lua)
+-- 
+-- Day la tep 14 dong khai cac he so nhan vao rat nhieu noi khac.
+-- Moi so DUNG BANG gia tri dang chay. Sua xong KHOI DONG LAI GameServer.
+-- 
+-- !! GLB_CHE_DO_TEST dang la 1: hai NPC 'Ho Tro Test' o lang tan thu (ban do 53)
+-- !! mo menu GM day du cho MOI nguoi choi - 1 ty luong + 100.000 Xu + len
+-- !! thang cap 200, khong kiem tai khoan GM, khong gioi han so lan.
+-- !! Dat 0 de doi ve NPC tan thu that. Xem BAOCAO_LOHONG_2908.md muc 1.
+-- 
+-- !! GLB_GIO_MO_SERVER bi TRUNG TEN voi mot ban trong script\lib\worldlibrary.lua:4
+-- !! (gia tri cu 2104011900). Ban do van chay nhung khong bao gio thang.
+
+GLB_GIO_MO_SERVER         = 2506251900  ,	-- moc gio mo cua, dang yymmddHHMM. 7 cho trong game doc de chan nguoi choi
+GLB_CHE_DO_TEST           = 1           ,	-- 1 = MO che do thu nghiem. !! Dang mo: hai NPC 'Ho Tro Test' o lang tan thu phat do GM cho MOI nguoi choi. Dat 0 de tat
+GLB_TILE_TIEN             = 1           ,	-- he so nhan tien thuong toan server (1 = giu nguyen)
+GLB_TILE_EXP              = 20          ,	-- he so nhan kinh nghiem toan server. NUT CHINH de dieu chinh toc do len cap
+GLB_SATTHUONG_BOSS_HK     = 1           ,	-- he so sat thuong Boss Hoang Kim tieu. (dang tat cung hoat dong)
+GLB_SATTHUONG_QUAI_PLD    = 1           ,	-- he so sat thuong quai Thuy Tac tren thuyen Phong Lang Do ban Viet cu. (dang tat)
+GLB_SATTHUONG_BOSS_TTDL   = 1           ,	-- he so sat thuong boss Thuy Tac Dau Linh ban Viet cu. (dang tat)
+GLB_MANH_BOSS_SATTHU      = 1           ,	-- he so mau + sat thuong 20 boss Sat Thu ban Viet cu. (dang tat)
+GLB_MANH_BOSS_VUOTAI      = 1           ,	-- he so mau + sat thuong quai va boss Vuot Ai ban Viet cu. (dang tat)
+GLB_MANH_NGUYENSOAI_TK    = 1           ,	-- he so mau + sat thuong Nguyen Soai hai phe trong Tong Kim - DANG CHAY
+GLB_MAX_DONG_THUOCTINH    = 10          ,	-- tran so dong thuoc tinh do roi tu quai. !! khong tep script nao doc so nay - so that dang chan nam trong ma C++
+
 -- ---------------------------------------------------------------------------
 -- NHIP NAP LAI SCRIPT
 -- ---------------------------------------------------------------------------
