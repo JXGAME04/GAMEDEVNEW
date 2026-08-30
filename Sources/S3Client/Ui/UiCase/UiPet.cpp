@@ -180,6 +180,10 @@ void KUiPet::Initialize()
     AddChild(&m_CloseBtn);
     for (i = 0; i < PET_UI_BTN_NUM; i++)
         AddChild(&m_Btn[i]);
+    // [30/08] khung anh pet (40,303 260x120) TRUM len nut "Duc lai"
+    // (235,390) - control them SAU nam TREN va nuot cu bam. Them
+    // m_Appearance TRUOC de nut nam tren cung.
+    AddChild(&m_Appearance);
     AddChild(&m_CompanionBtn);
     for (i = 0; i < PET_UI_TXT_NUM; i++)
     {
@@ -191,7 +195,6 @@ void KUiPet::Initialize()
         AddChild(&m_ExtSkill[i]);
     for (i = 0; i < PET_UI_EQUIP_NUM; i++)
         AddChild(&m_Equip[i]);
-    AddChild(&m_Appearance);
 
     char Scheme[256];
     KIniFile Ini;
