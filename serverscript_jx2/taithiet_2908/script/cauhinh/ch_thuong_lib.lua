@@ -70,7 +70,7 @@ end
 --   duoc doc khi co DU 15 tham so (ScriptFuns.cpp:4959-4966). Khuon nay chep
 --   theo global\vatpham.lua:38.
 function G_TraoMotMon(nGenre, nDetail, nParticular, nSoLuong, nCapDo, szTen,
-		szNguon)
+		szNguon, nRong, nCao)
 	local nSL = nSoLuong
 	if (nSL == nil or nSL < 1) then
 		nSL = 1
@@ -81,6 +81,28 @@ function G_TraoMotMon(nGenre, nDetail, nParticular, nSoLuong, nCapDo, szTen,
 	end
 	local szT = G_Chuoi(szTen)
 	local szN = G_Chuoi(szNguon, "?")
+
+	-- [CHOTRONG 29/08] HOI DUNG CAU "mon nay co cho dat khong" TRUOC KHI TRAO.
+	-- Ly do that: neu tui khong nhet vua, AddItem KHONG bao loi ma LAY MON
+	-- DANG CAM TREN TAY, go ra va NEM XUONG DAT (ScriptFuns.cpp:5001-5006) de
+	-- lay cho dat mon moi len tay. Mon roi xuong dat co han song - het gio la
+	-- mat han. Va ham VAN tra ve chi so > 0 nen kiem tri tra ve khong phat hien
+	-- duoc. CheckRoom(w, h, 1) hoi SearchPosition nen tra loi dung.
+	local nW = nRong
+	local nH = nCao
+	if (nW == nil or nW < 1) then
+		nW = 1
+	end
+	if (nH == nil or nH < 1) then
+		nH = 1
+	end
+	if (CheckRoom ~= nil) then
+		if (CheckRoom(nW, nH, 1) ~= 1) then
+			G_LogThuong("KHONG DU CHO ("..nW.."x"..nH.."): "..szN.." | "..szT)
+			Msg2Player("Hµnh trang kh«ng ®ñ chç cho "..szT..".")
+			return 0
+		end
+	end
 
 	local nIdx = AddItem(nGenre, nDetail, nParticular, nCap, 0, 0, 0,
 		0, 0, 0, 0, 0, nSL, 0, 0)
@@ -125,11 +147,9 @@ function G_TraoThuong(szKhoaBang, szNguon)
 		return 0
 	end
 
-	-- [PHANBIEN 29/08] Kiem so o trong TRUOC khi trao. Luu y that: goi khong tham so
-	-- thi CalcFreeItemCellCount chi DEM SO O 1x1 CON TRONG, RAI RAC
-	-- (ScriptFuns.cpp:5981 -> KInventory::FindFreeCell(1,1)). No KHONG bao dam
-	-- mon to (1x3, 2x3) nhet vua. Vi vay day chi la RAO SO BO de tranh truong
-	-- hop tui day han - khong hua chac chan.
+	-- [CHOTRONG 29/08] Rao SO BO: dem o trong 1x1 de loai truong hop tui day han.
+	-- Phep kiem THAT SU nam trong G_TraoMotMon - no goi CheckRoom voi dung
+	-- kich thuoc tung mon, nen mon 1x3 hay 2x3 cung duoc hoi dung cau.
 	local nOTrong = CalcFreeItemCellCount()
 	if (nOTrong ~= nil and nOTrong < nSoMuc) then
 		G_LogThuong("TUI DAY: "..szKhoa.." can "..nSoMuc.." o, con "..nOTrong
@@ -147,8 +167,11 @@ function G_TraoThuong(szKhoaBang, szNguon)
 			local tbMa = tbMuc[2]
 			if (tbMa ~= nil and type(tbMa) == "table" and tbMa[1] ~= nil
 				and tbMa[2] ~= nil and tbMa[3] ~= nil) then
+				-- [CHOTRONG 29/08] muc [5], [6] la RONG x CAO cua mon (mac dinh 1x1).
+				-- Trang bi PHAI khai - do la loai lam mat do tren tay khi thieu cho.
 				nDaTrao = nDaTrao + G_TraoMotMon(tbMa[1], tbMa[2], tbMa[3],
-					tbMuc[1], tbMuc[4], tbMuc[3], szN.." | "..szKhoa)
+					tbMuc[1], tbMuc[4], tbMuc[3], szN.." | "..szKhoa,
+					tbMuc[5], tbMuc[6])
 			else
 				G_LogThuong("MUC SAI DINH DANG: "..szKhoa.." muc "..i)
 			end
@@ -161,14 +184,10 @@ function G_TraoThuong(szKhoaBang, szNguon)
 end
 
 -- Trao mot mon le, van co rao so bo + ghi log. Dung cho cho chi trao 1 mon.
-function G_TraoMon(nGenre, nDetail, nParticular, nSoLuong, szTen, szNguon)
-	local szN = G_Chuoi(szNguon, "?")
-	local nOTrong = CalcFreeItemCellCount()
-	if (nOTrong ~= nil and nOTrong < 1) then
-		G_LogThuong("TUI DAY khi trao "..G_Chuoi(szTen).." (nguon "..szN..")")
-		Msg2Player("Hµnh trang ®· ®Çy, kh«ng"
-			.." nhËn ®­îc phÇn th­ëng.")
-		return 0
-	end
-	return G_TraoMotMon(nGenre, nDetail, nParticular, nSoLuong, 0, szTen, szN)
+function G_TraoMon(nGenre, nDetail, nParticular, nSoLuong, szTen, szNguon,
+		nRong, nCao)
+	-- [CHOTRONG 29/08] phep kiem cho nam trong G_TraoMotMon (CheckRoom theo dung kich
+	-- thuoc mon), khong con dem o 1x1 rai rac o day nua.
+	return G_TraoMotMon(nGenre, nDetail, nParticular, nSoLuong, 0, szTen,
+		szNguon, nRong, nCao)
 end
