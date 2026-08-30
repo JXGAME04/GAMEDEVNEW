@@ -271,7 +271,18 @@ function get_batch_count()
 end
 
 -- NPCNPC
+-- [PBLUA 29/08] Ham nay nay TRA VE 0 khi khong sinh duoc quai/boss.
+-- Phia goi (npc_death.lua) HIEN CHUA doc gia tri nay - no van ghi so
+-- nhu da sinh xong, nen mot ai thieu tep toa do se lam to doi ket ma
+-- khong bao gi. Sua phia goi la viec cua dot sau (can nghiem thu rieng).
 function YDBZ_add_npc(file,nteams,nway,nstate)
+	-- [PBLUA 29/08] rao NGAY DAU HAM. Ba dong duoi day moi la cho no
+	-- THAT SU cua loi toa do: file nil, hoac file[2] <= 0 lam
+	-- random(1, pos_count) nem loi truoc khi toi duoc cac chot ben duoi.
+	if (file == nil or file[1] == nil or file[2] == nil or file[2] < 1) then
+		print("[VIEMDE] YDBZ_add_npc: tham so file khong hop le")
+		return 0
+	end
 	local file_name = file[1];	-- 
 	local pos_count = file[2];	-- 
 	local column = 2 * (random(1, pos_count) - 1) + 1;
@@ -280,13 +291,21 @@ function YDBZ_add_npc(file,nteams,nway,nstate)
 	--for npcitem=1,getn(items) do
 		local item = items[nstate]
 		if nstate == 21 then
-			item = YDBZ_map_npcBossEx[nteams][nway]
+			-- [PBLUA 29/08] kiem TUNG TANG: chot cu dat sau phep tra hai
+			-- tang nen neu nteams ngoai 1..3 thi no ngay tai day, chot
+			-- khong bao gio chay toi.
+			local tbBossEx = YDBZ_map_npcBossEx[nteams]
+			if (tbBossEx == nil) then
+				print("[VIEMDE] khong co bang boss cho to "..nteams)
+				return 0
+			end
+			item = tbBossEx[nway]
 			-- [RAOCHAN 29/08] bang do chi khai [nteams][3] va [nteams][6];
 			-- goi voi nway khac se cho nil roi no o YDBZ_get_npc_count.
 			-- Moi noi goi hien nay deu da co rao nen KHONG doi hanh vi.
 			if (item == nil) then
 				print("[VIEMDE] khong co boss ai cho to "..nteams.." ai "..nway)
-				return
+				return 0
 			end
 		end
 		local npc_count = YDBZ_get_npc_count(item);			-- NPC
@@ -302,7 +321,7 @@ function YDBZ_add_npc(file,nteams,nway,nstate)
 		-- duoi day KHONG BAO GIO chay - ti le/vi tri giu nguyen.
 		if (npc_create_point <= 0) then
 			print("[VIEMDE] thieu hoac khong doc duoc tep toa do: "..file_name)
-			return
+			return 0
 		end
 		local nlistsum = 0 
 		if npc_create_point < npc_count then
@@ -370,6 +389,13 @@ function YDBZ_add_npc(file,nteams,nway,nstate)
 end
 
 function YDBZ_add_npcboss(file,nway)
+	-- [PBLUA 29/08] rao NGAY DAU HAM. Ba dong duoi day moi la cho no
+	-- THAT SU cua loi toa do: file nil, hoac file[2] <= 0 lam
+	-- random(1, pos_count) nem loi truoc khi toi duoc cac chot ben duoi.
+	if (file == nil or file[1] == nil or file[2] == nil or file[2] < 1) then
+		print("[VIEMDE] YDBZ_add_npc: tham so file khong hop le")
+		return 0
+	end
 	local file_name = file[1];	-- 
 	local pos_count = file[2];	-- 
 	local column = 2 * (random(1, pos_count) - 1) + 1;

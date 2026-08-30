@@ -51,10 +51,21 @@ function RunTime()
 		nNhipNap = G_CFG("CH_NAPLAI_PHUT", 1)
 	end
 	if (nNhipNap ~= nil and nNhipNap > 0) then
+		-- [PBLUA 29/08] RunTime KHONG chay dung mot lan moi phut.
+		-- CoreServerShell.cpp:1165-1171 goi khi (bo dem KHUNG % 18 == 0)
+		-- VA giay == 0; khi may chu khung lai roi chay don thi nhieu boi
+		-- so cua 18 cung roi vao giay 0 => RunTime chay 2-3 lan trong
+		-- cung mot phut. Nen dung DAU MOC thay cho phep chia du.
+		-- g_nMocNapLai CHI duoc gan trong ham (khong khai o cap tep) de
+		-- song qua dofile - dung khuon ma tep nay da dung cho
+		-- g_nTongMaintainDay.
 		local nYrN, nMoN, nDyN, nHrN, nMiN = GetTimeNow()
-		-- RunTime chay moi phut nen chi can chia du theo phut trong ngay;
-		-- KHONG dung bien dem vi bien se mat sau moi lan dofile.
-		if (nNhipNap <= 1 or mod(nHrN * 60 + nMiN, nNhipNap) == 0) then
+		local nPhutNay = nDyN * 1440 + nHrN * 60 + nMiN
+		if (g_nMocNapLai == nil) then
+			g_nMocNapLai = -99999
+		end
+		if (nPhutNay - g_nMocNapLai >= nNhipNap) then
+			g_nMocNapLai = nPhutNay
 			dofile("script/timerserver.lua")
 		end
 	end

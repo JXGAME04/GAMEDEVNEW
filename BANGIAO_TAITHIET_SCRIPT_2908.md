@@ -179,25 +179,22 @@ dòng comment ở `lequan.lua:114` nhắc tới. Nếu chủ muốn dùng lại 
 
 ## 9. ✅ CHECKLIST ĐỂ TEST — làm đúng thứ tự
 
-Nhị phân mới đã build sạch **cả hai cấu hình** và đặt sẵn cạnh bản đang chạy.
+Nhị phân mới đã build sạch **cả hai cấu hình** và đặt sẵn theo đúng quy trình swap bằng `.bat`:
 
-**1) Tắt GameServer** (chờ chủ cho phép — tôi không tự tắt).
-
-**2) Đổi tên nhị phân:**
-
-```bash
-cd "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/server" && mv CoreServer.dll CoreServer.dll.truoc_2908_taithiet && mv CoreServer.dll.moi_2908_taithiet CoreServer.dll
+```
+bin\server\CoreServer.dll.moi     18.201.088 B
+bin\client\CoreClient.dll.moi      2.420.736 B
 ```
 
-```bash
-cd "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client" && mv CoreClient.dll CoreClient.dll.truoc_2908_taithiet && mv CoreClient.dll.moi_2908_taithiet CoreClient.dll
-```
+**1) Tắt GameServer** (chờ chủ — tôi không tự tắt).
 
-**3) Bật lại GameServer.**
+**2) Chạy `bin\server\ChayGameServer.bat`** — nó tự đổi `CoreServer.dll.moi` thành tên thật (bản
+cũ giữ lại đuôi `.truoc`) rồi mở GameServer.
 
-**4) Thoát HẲN client** (tắt hết cửa sổ game rồi mở lại — không chỉ thoát nhân vật).
+**3) Thoát HẲN client** rồi **chạy `bin\client\ChoiGame.bat`** — tự cập nhật `CoreClient.dll` rồi
+mở game.
 
-**5) Test theo thứ tự:**
+**4) Test theo thứ tự:**
 
 | # | Việc | Dấu hiệu ĐÚNG |
 |---|---|---|
@@ -210,18 +207,71 @@ cd "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client" && mv CoreClient.dll
 | 7 | Dùng thử vật phẩm Bạn Đồng Hành | Thư viện `PET` nạp được |
 | 8 | Xem `logs\hethong.log` | Có tệp, có dòng, giờ đúng |
 
-**6) Nếu có gì lạ** — gửi tôi 3 tệp: `ScriptError.log`, `logs\hethong.log`, `GameServer.log`.
+**5) Nếu có gì lạ** — gửi tôi 3 tệp: `ScriptError.log`, `logs\hethong.log`, `GameServer.log`.
 
-**Quay lui:** đổi tên ngược lại (bản cũ đã lưu tên `.truoc_2908_taithiet`) rồi khởi động lại.
+**Quay lui:** bản cũ được `.bat` giữ lại với đuôi `.truoc` — đổi tên ngược rồi khởi động lại.
+
+---
+
+## 9b. ⚠️ HAI VIỆC PHẢI XEM TRƯỚC KHI SWAP
+
+### (a) Sửa mã vật phẩm làm một số ô thưởng "sống lại" — đây là thay đổi kinh tế
+
+Bộ phản biện chỉ ra một điều tôi đã bỏ sót: những ô thưởng mã sai **trước đây không ra gì**, sửa
+xong là chúng **bắt đầu phát đồ thật**. Về kỹ thuật là sửa lỗi, nhưng về kinh tế máy chủ là thay
+đổi, nên chủ nên biết trước:
+
+| Nơi | Món | Số lượng | Tỉ lệ |
+|---|---|---|---|
+| `missions\boss\bigboss.lua:110` | Đằng Long Thạch - Hạ | **10 viên** | **77%** mỗi lần boss chết |
+| `missions\challengeoftime\chuangguang30.lua` | Thiên Sơn Thánh Thủy (đại) | theo bảng | theo bảng |
+| 14 chỗ còn lại | Đại Lực hoàn / Phi Tốc hoàn / Đồ Phổ Đằng Long Bội | theo bảng | theo bảng |
+
+Nếu chủ chỉ muốn **hết lỗi** chứ không muốn bơm thêm nguồn cung, thì phải chỉnh số lượng/tỉ lệ
+kèm theo — và đó là quyết định của chủ, không phải của tôi.
+
+Muốn hoàn tác riêng phần này: các tệp gốc còn nguyên với đuôi `.truoc_nanthuong` cạnh bản đang
+chạy.
+
+### (b) Hệ Phi Phong đang phát **nhầm vật phẩm** — lỗi có sẵn, không do đợt này
+
+Khi rà soát tôi phát hiện `settings\item\magicscript.txt` có **35 dòng mà cột `ParticularType`
+lệch khỏi chỉ số dòng**, bắt đầu từ chỉ số 4881. Engine tra bảng **theo chỉ số dòng**
+(`KItemGenerator.CPP:1660` → `KBasPropTbl.cpp:1058`), không theo cột — nên ở vùng lệch, script ghi
+một món mà người chơi nhận món khác:
+
+| Mã script dùng | Script tưởng là | Người chơi thực nhận |
+|---|---|---|
+| 4881 | Tinh Ngọc | Vương Thiết Tượng Lệnh Phù |
+| 4882 | Thiên Tinh Ngọc | Tinh Ngọc |
+| 4883 | Mảnh Thiên Tinh Ngọc | Thiên Tinh Ngọc |
+| 4885 | Tinh Ngọc Nguyên Thạch | Bách Luyện Thành Cương |
+| 4887 | Tinh Thần Khoáng | Tinh Hỏa Than |
+| 4889 | Vương Thiết Tượng Lệnh Phù | Tinh Thần Thạch |
+
+Chỗ dùng: `global\mantlesystem\*.lua` và `event\equip_publish\wuxingyin\wuxingyin.lua:57`.
+
+Nhiều khả năng do việc thêm dòng vào giữa `magicscript.txt` (đợt port Phi Phong hôm nay) làm xô
+lệch chỉ số. **Tôi không tự sửa** — sửa bảng vật phẩm là đổi dữ liệu và thuộc phần việc đang làm
+song song. Cần chủ báo lại cho phần đó.
 
 ---
 
 ## 10. Việc còn chờ chủ quyết
 
-1. **20 món thưởng không tồn tại trong dự án** — bảng thưởng đang trỏ tới 29 mã vật phẩm mà
-   `magicscript.txt` không có (mã bản Linux chưa nắn). Danh sách đầy đủ ở
-   `ReverseTools\cauhinh\thieu_vatpham.txt`. Ba lựa chọn: **tạo vật phẩm mới** / **thay bằng món
-   khác** / **bỏ khỏi bảng thưởng**. Tôi **không tự thay** vì đó là đổi cân bằng.
+1. **Mã vật phẩm trong bảng thưởng — bản rà soát lại**
+   (`ReverseTools\cauhinh\ra_soat_ma_thuong.txt`, tra đúng cách máy tra):
+   - **68 chỗ đúng** — không phải làm gì.
+   - **6 chỗ sai nhưng đã tra ra món đúng theo tên** — sửa được ngay, nhưng chờ chủ duyệt vì cùng
+     lý do ở mục 9b(a). Đáng chú ý `mibao_head.lua:19` ghi "Khiêu chiến lễ bao" mà người chơi
+     nhận **"Truy công lệnh"**, và `task_head.lua:56-57` trả về hai dòng tên tiếng Trung rác.
+   - **43 chỗ không tra được tên** — chủ quyết: tạo vật phẩm mới / thay món khác / bỏ khỏi bảng.
+     Tệp có kèm **danh sách ứng viên tên gần giống** cho từng chỗ.
+
+   Bản `thieu_vatpham.txt` cũ đã lỗi thời: bộ phản biện chỉ ra nó báo nhầm "Đại Thánh Bí Kíp 150"
+   là không có, trong khi món đó có thật ở chỉ số 3208 — script chỉ viết sai chính tả ("Thánh"
+   thay vì "Thành"). Suýt nữa chủ tạo thêm một món trùng tên. Công cụ nay đã đối khớp gần đúng
+   (bỏ dấu) và **in ứng viên thay vì kết luận "không có"**.
 
 2. **`Engine.vcxproj` không build được** (mục 6) — sửa hay để nguyên?
 
@@ -234,6 +284,30 @@ cd "E:/SourceTuanLe/SourceVs22/TESTLOFFF_ONLINE/bin/client" && mv CoreClient.dll
    xong đợt này.
 
 5. **Kho 3.000 mã quà tặng** hiện không ai đọc (mục 8) — dùng lại hay bỏ?
+
+---
+
+## 10b. Phản biện đối kháng — đã chạy, đã sửa
+
+Chủ yêu cầu *"chạy lại phản biện"*. Tôi cho 6 nhóm soi độc lập từng bản vá, rồi **mỗi phát hiện
+nặng lại giao cho một người thứ hai cố chứng minh là sai**. Kết quả: 20 lần kiểm chứng ngược, **16
+xác nhận có thật, 4 bị bác bỏ**.
+
+Bảy lỗi thật đã sửa xong trong phiên này:
+
+| # | Lỗi phản biện bắt được | Đã sửa thế nào |
+|---|---|---|
+| 1 | **Cả nhóm `[Exp]` và `[Log]` không bao giờ đọc được** — tôi viết `MocCap1&nbsp;&nbsp;= 50` có dấu cách trước `=`, mà `KIniFile::SplitKeyValue` giữ nguyên dấu cách trong tên khoá | Ghi lại đúng khuôn `Tên=Giá trị` |
+| 2 | Gọi **sai chữ ký `AddItem`** — tham số 4 là *cấp độ*, không phải số lượng; số lượng ở vị trí 13 và chỉ đọc khi đủ 15 tham số | Viết lại theo khuôn `global\vatpham.lua:38` |
+| 3 | Bỏ qua giá trị trả về của `AddItem` → log ghi "đã trao" cả khi người chơi **không nhận được gì** | Kiểm giá trị trả về, thất bại thì ghi log riêng |
+| 4 | Tiền đề của bộ vá nhịp **sai**: `RunTime` không chạy đúng một lần mỗi phút (lag dồn khung thì chạy 2–3 lần) | Đổi từ phép chia dư sang dấu mốc lần chạy cuối |
+| 5 | Tràn số khi tính ngưỡng xoay vòng log (`long` là 32 bit) → đặt `TranMB=2048` sẽ xoay vòng **sau mỗi dòng** | Tính bằng phép chia |
+| 6 | Vá tràn exp **chưa hết** — còn hai phép nhân `int` ở nhánh bùa kinh nghiệm | Vá nốt cả chuỗi |
+| 7 | Hoàn tác `KDebug.cpp` làm **mất luôn** bản vá tràn bộ đệm thật (`vsprintf` không chặn, điểm gọi in hơn 330 byte vào đệm 256) | Áp lại riêng phần đó |
+
+Ngoài ra: 23 khoá `[Exp]` nay được **kẹp về khoảng hợp lệ** khi đọc (trước đây chúng là hằng số
+biên dịch nên không thể sai; thành cấu hình rồi thì một dấu trừ gõ nhầm có thể làm exp đứng hoặc
+tụt), và các rào chắn Viêm Đế được kiểm **từng tầng** thay vì một tầng.
 
 ---
 
@@ -258,4 +332,34 @@ Công cụ kiểm (chỉ đọc, chạy lại bất cứ lúc nào):
 
 - `cauhinh\ktr_cauhinh.py` — 7 phép kiểm cấu hình (mã vật phẩm sai, số khai hai nơi, giờ trùng…)
 - `cauhinh\t08_liet_ke_thua.py` — liệt kê tệp thừa
+- `cauhinh\_kiem_droprate.py` — quét 49 tệp `.ini`, tìm tệp có thể treo server
+- `cauhinh\_kiem_exp_macdinh.py` — đối chiếu 3 nơi cho từng hệ số exp
 - `cauhinh\dem_ma.py` — đếm trên mã thật, bỏ chú thích (dùng cho chốt tự kiểm của các bộ vá sau)
+
+---
+
+## 12. Đợt sau — đã khảo sát xong, chưa nối dây
+
+Sáu nhóm quét song song toàn bộ hoạt động/sự kiện, kết quả đầy đủ ở
+**`D:\GAMEDEVNEW\KHAOSAT_LICH_THUONG_2908.md`** (hơn 100.000 chữ, mỗi khoá kèm `tệp:dòng`).
+
+Đợt này mới nối dây phần **rẻ nhất mà đắt giá nhất**: 20 công tắc bật/tắt hoạt động. Trước đây
+muốn bật một hoạt động phải **sửa mã nguồn** (bỏ dấu `--` trong `timerserver.lua`); nay đổi một số
+trong `script\cauhinh\ch_lich.lua`. Trạng thái mặc định giữ đúng hiện tại — 4 hoạt động đang chạy
+(Tống Kim, cụm 3 hoạt động Linux, Viêm Đế, Công Thành JX2) và 16 đang tắt.
+
+Nếu bật một hoạt động đã tắt lâu mà không thấy chạy, xem `logs\hethong.log` — sẽ có dòng
+*"&lt;khoá&gt; bật nhưng hàm &lt;tên&gt; chưa nạp"* (thư viện của hoạt động đó cũng đã bị gỡ khỏi
+`timerserver.lua`, phải nối lại).
+
+Việc còn lại của đợt sau, xếp theo giá trị:
+
+| Ưu tiên | Việc | Quy mô |
+|---|---|---|
+| 1 | Lịch Tống Kim (4 khung giờ báo danh) + Công Thành (giờ báo danh **viết cứng ở 6 nơi**) | ~30 khoá |
+| 2 | Bảng thưởng các hoạt động lớn — chuyển sang cổng `G_TraoThuong` để có log và kiểm túi | ~40 bảng |
+| 3 | Hằng số rơi đồ trong `lib_sukien.lua` và `Droprate_normal.lua` | ~20 khoá |
+| 4 | Exp thưởng nhiệm vụ/hoạt động (hàng trăm hằng số rải rác) | lớn, làm dần |
+
+Khảo sát cũng nêu vài chỗ **cùng một con số bị chép ở hai nơi và đã lệch nhau** — đó là loại lỗi
+âm thầm mà bộ kiểm `ktr_cauhinh.py` sinh ra để bắt.

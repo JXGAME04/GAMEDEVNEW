@@ -15,6 +15,12 @@
 -- Bang nao chua nap thi bo qua - khong loi, khong canh bao.
 -- Bang cuoi cung la tbCHD cua cauhinh_hoatdong.lua (tuong thich nguoc: moi
 -- khoa TW_/BR_/BW_/TC_/YDBZ_ cu van tra duoc bang G_CFG).
+-- [PHANBIEN 29/08] LUAT KHONG GIAN KHOA (quan trong):
+--   Du an da co san ham HD_CFG doc bang tbCHD (header\cauhinh_hoatdong.lua).
+--   HD_CFG CHI doc tbCHD, con G_CFG doc cac bang moi TRUOC roi moi den tbCHD.
+--   => Neu mot khoa duoc khai o CA HAI noi thi hai ham cho HAI gia tri khac
+--   nhau tuy cho goi. Vi vay: 5 tien to cu TW_ BR_ BW_ TC_ YDBZ_ VAN THUOC
+--   tbCHD - CAM khai lai chung trong cac bang tbCFG_*.
 function G_CFG(szKhoa, macdinh)
 	if (szKhoa == nil) then
 		return macdinh
@@ -43,12 +49,19 @@ end
 -- Ban NGHIEM NGAT: thieu khoa thi ghi log de con biet ma sua, roi van tra
 -- gia tri mac dinh (khong bao gio nem loi lam dut ca hoat dong).
 function G_CFG_BUOC(szKhoa, macdinh)
+	-- [PHANBIEN 29/08] szKhoa co the la nil (ten khoa lay tu bien chua gan);
+	-- noi chuoi voi nil lam DUT ca hoat dong, dung cai ma ham nay hua la
+	-- khong bao gio nem loi.
+	local szK = szKhoa
+	if (szK == nil or type(szK) ~= "string") then
+		szK = "(khong ten)"
+	end
 	local ra = G_CFG(szKhoa, nil)
 	if (ra == nil) then
 		if (GhiLog ~= nil) then
-			GhiLog("CAUHINH", "thieu khoa: "..szKhoa)
+			GhiLog("CAUHINH", "thieu khoa: "..szK)
 		else
-			print("[CAUHINH] thieu khoa: "..szKhoa)
+			print("[CAUHINH] thieu khoa: "..szK)
 		end
 		return macdinh
 	end
