@@ -350,23 +350,35 @@ Công cụ kiểm (chỉ đọc, chạy lại bất cứ lúc nào):
 Sáu nhóm quét song song toàn bộ hoạt động/sự kiện, kết quả đầy đủ ở
 **`D:\GAMEDEVNEW\KHAOSAT_LICH_THUONG_2908.md`** (hơn 100.000 chữ, mỗi khoá kèm `tệp:dòng`).
 
-Đợt này mới nối dây phần **rẻ nhất mà đắt giá nhất**: 20 công tắc bật/tắt hoạt động. Trước đây
-muốn bật một hoạt động phải **sửa mã nguồn** (bỏ dấu `--` trong `timerserver.lua`); nay đổi một số
-trong `script\cauhinh\ch_lich.lua`. Trạng thái mặc định giữ đúng hiện tại — 4 hoạt động đang chạy
-(Tống Kim, cụm 3 hoạt động Linux, Viêm Đế, Công Thành JX2) và 16 đang tắt.
+### Đã nối xong — 108 khoá
+
+Tất cả đều **giữ nguyên giá trị đang chạy**, nên bản thân việc nối không đổi gì.
+
+| Nhóm | Khoá | Nơi chỉnh | Đáng chú ý |
+|---|---|---|---|
+| Bật/tắt hoạt động | 20 | `ch_lich.lua` | Trước đây phải sửa mã nguồn mới bật/tắt được. Mặc định giữ đúng hiện trạng: 4 bật, 16 tắt |
+| Tống Kim (giờ + lịch) | 5 + bảng lịch | `ch_lich.lua` | **Đang chạy cấu hình test** — xem `BAOCAO_LOHONG_2908.md` mục 2 |
+| Rơi đồ sự kiện | 27 | `ch_drop.lua` | Có chỗ đang là **99%** rơi 10 món, **79%** rơi mảnh đồ phổ |
+| Rơi đồ quái thường | 13 | `ch_drop.lua` | Chi phối mọi bản đồ; kèm vá một lỗi gõ thiếu chữ |
+| Trần exp bảo rương | 4 | `ch_exp.lua` | Trần ẩn 50/80/100 triệu mỗi ngày, áp cho cả chín loại rương |
+| Thưởng Vận Tiêu | 19 | `ch_thuong.lua` | Trả gấp hơn 10 lần con số báo cho người chơi |
 
 Nếu bật một hoạt động đã tắt lâu mà không thấy chạy, xem `logs\hethong.log` — sẽ có dòng
 *"&lt;khoá&gt; bật nhưng hàm &lt;tên&gt; chưa nạp"* (thư viện của hoạt động đó cũng đã bị gỡ khỏi
 `timerserver.lua`, phải nối lại).
 
-Việc còn lại của đợt sau, xếp theo giá trị:
+### Còn lại
 
 | Ưu tiên | Việc | Quy mô |
 |---|---|---|
-| 1 | Lịch Tống Kim (4 khung giờ báo danh) + Công Thành (giờ báo danh **viết cứng ở 6 nơi**) | ~30 khoá |
-| 2 | Bảng thưởng các hoạt động lớn — chuyển sang cổng `G_TraoThuong` để có log và kiểm túi | ~40 bảng |
-| 3 | Hằng số rơi đồ trong `lib_sukien.lua` và `Droprate_normal.lua` | ~20 khoá |
-| 4 | Exp thưởng nhiệm vụ/hoạt động (hàng trăm hằng số rải rác) | lớn, làm dần |
+| 1 | Công Thành Chiến — giờ báo danh **viết cứng ở sáu nơi khác nhau** | ~30 khoá |
+| 2 | Hệ số nền toàn cục (`lib_server.lua`) — một số nhân vào rất nhiều nơi | ~10 khoá |
+| 3 | Bảng thưởng Tống Kim, Boss Hoàng Kim, Phong Lăng Độ | ~60 khoá |
+| 4 | Dã Tẩu, Bạn Đồng Hành, nhiệm vụ hằng ngày | ~40 khoá |
+| 5 | Chuyển các chỗ trao thưởng sang cổng `G_TraoThuong` để có log và kiểm túi | ~40 bảng, làm dần |
+
+Có một bộ khung dùng chung cho việc này ở `ReverseTools\cauhinh\noi_cauhinh.py` — nó tự lấy giá trị
+mặc định từ chính dòng mã đang chạy, nên các đợt sau không thể gõ nhầm số.
 
 Khảo sát cũng nêu vài chỗ **cùng một con số bị chép ở hai nơi và đã lệch nhau** — đó là loại lỗi
 âm thầm mà bộ kiểm `ktr_cauhinh.py` sinh ra để bắt.
