@@ -277,9 +277,12 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
 		if (!pszInfo || !pszInfo[0])
 			continue;
-		strcat(pszMsg, "<color=Green>");
+		// [VA 31/08e] ban chuan to khoi thuoc tinh da mau TIM (thuoc tinh an);
+		// dau cach truoc <color> dong de TEncodeText khong nuot dau < khi dong
+		// mo ta ket thuc bang so le byte cao (luat RULE 0).
+		strcat(pszMsg, "<color=200,120,255>");
 		strcat(pszMsg, pszInfo);
-		strcat(pszMsg, "<color>  \n  ");
+		strcat(pszMsg, " <color>  \n  ");
 	}
 #endif
 	strcat(pszMsg, "<color=255,255,255>");
@@ -920,6 +923,31 @@ void KItem::operator = (const KBASICPROP_STARSTONE& sData)
 	pCA->LimitTime.bDay = 0;
 	pCA->LimitTime.bHour = 0;
 	pCA->uPrice = 0;
+	// [VA 31/08e] ve sinh khe tai su dung: AddItemSet2 KHONG zero m_CommonAttrib,
+	// truong nao khong gan o day la giu RAC cua mon truoc do trong cung khe.
+	pCA->szScript[0]	 = 0;
+	pCA->nPickExecute	 = 0;
+	pCA->nIsSell		 = 1;
+	pCA->nIsTrade		 = 1;
+#ifndef _SERVER
+	// [VA 31/08e] khoi CLIENT bi bo sot khi port 29/08 (moi operator= khac deu
+	// co): khong chep ten anh + mo ta va khong khoi tao m_Image -> vien da nhan
+	// ve VO HINH, chuot phai khong co thong tin. Server khong dung cac truong
+	// nay nen khong ai thay tu 29/08.
+	::strcpy(pCA->szImageName, sData.m_szImageName);
+	::strcpy(pCA->szIntro,	   sData.m_szIntro);
+#endif
+	ZeroMemory(m_aryBaseAttrib, sizeof(m_aryBaseAttrib));
+	ZeroMemory(m_aryRequireAttrib, sizeof(m_aryRequireAttrib));
+	ZeroMemory(m_aryMagicAttrib, sizeof(m_aryMagicAttrib));
+#ifndef _SERVER
+	m_Image.Color.Color_b.a = 255;
+	m_Image.nFrame = 0;
+	m_Image.nISPosition = IMAGE_IS_POSITION_INIT;
+	m_Image.nType = ISI_T_SPR;
+	::strcpy(m_Image.szImage, pCA->szImageName);
+	m_Image.uImage = 0;
+#endif
 }
 
 void KItem::operator = (const KBASICPROP_QUEST& sData)
