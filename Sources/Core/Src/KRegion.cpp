@@ -1192,7 +1192,18 @@ BOOL KRegion::DecRef(int nMapX, int nMapY, MOVE_OBJ_KIND nType)
 			return FALSE;
 		}
 		if (nRef == 0)
+		{
+			// [DO 31/08] Ai do vua tru mot o VON DA RONG => ke toan AddRef/DecRef da lech.
+			// O nao bi tru oan se doc ra 0 trong khi van con NPC dung do, va KRegion::FindNpc
+			// (KRegion.h:191) thoat ngay o cua chan == 0 => moi thu dung tren o ay TANG HINH
+			// truoc va cham. Nhan nay de nghiem thu ban va KNpc.cpp:2344 (DecRef thua trong
+			// OnRevive nhanh m_bNoRevive). Chi chay trong nhanh VON DA that bai => duong
+			// chay binh thuong khong ton them gi. KHONG kep nhip: bo dem bi kep khong con
+			// la bo dem (AutoLog da tu chan tran 1200 dong/giay).
+			AUTOLOG("[REFOAN] DecRef tru o RONG: o=(%d,%d) type=%d rgn=(%d,%d)",
+				nMapX, nMapY, (int)nType, (int)LOWORD(m_RegionID), (int)HIWORD(m_RegionID));
 			return FALSE;
+		}
 		pBuffer[index]--;
 		return TRUE;
 	}

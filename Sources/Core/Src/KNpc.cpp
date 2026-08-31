@@ -2341,7 +2341,15 @@ void KNpc::OnRevive()
 			if (m_SubWorldIndex >= 0 && m_RegionIndex >= 0)
 			{
 				SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].RemoveNpc(m_Index);
-				SubWorld[m_SubWorldIndex].m_Region[m_RegionIndex].DecRef(m_MapX, m_MapY, obj_npc);
+				// [VA 31/08] BO DecRef o day: DoRevive (KNpc.cpp:2306) DA tra phan dem cua o
+				// nay 18 khung truoc. m_RegionIndex con >= 0 chi vi NpcChangeRegion
+				// (KSubWorld.cpp:2368) CO Y khong reset khi dich la VOID_REGION - do la gia
+				// tri CU, khong phai bang chung NPC con chiem o. Tru lan hai se AN MAT phan
+				// dem cua NPC KHAC dung chung o (g_nPbNpcChan=0 cho chong o) => bo dem ve 0
+				// trong khi van con quai song => KRegion::FindNpc (KRegion.h:191) thoat ngay
+				// => con do TANG HINH truoc moi phep va cham du van song va van danh tra.
+				// Do that: o (vung 37, 7,2) 440 lan quet 0 cham; cung con quai do o ba o khac
+				// cham 25-50%. Khuon chot nay da co san o KRegion.cpp:659.
 				NpcSet.Remove(m_Index);
 			}
 			return;
