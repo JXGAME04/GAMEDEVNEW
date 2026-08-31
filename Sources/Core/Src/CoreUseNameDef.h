@@ -108,6 +108,7 @@
 #define		TABFILE_GOLDITEM_FULL_O			"\\Settings\\Item\\GoldItem.txt"
 #define		PLATINA_EQUIP_FILE			"\\settings\\item\\platinaequip.txt"
 #define		TABFILE_GOLDITEM_FULL_N			"\\Settings\\Item\\goldequip.txt"
+#define		TABFILE_STARSTONE				"\\settings\\item\\starstone.txt"	// [PHI PHONG]
 #define		GOLD_EQUIP_MAGIC_FILE_N		"\\settings\\item\\magicattrib_ge.txt"
 #define		GOLD_EQUIP_MAGIC_FILE_O		"\\Settings\\Item\\GoldMagic.txt"
 #define		ITEM_ABRADE_FILE				"\\settings\\item\\AbradeRate.ini"

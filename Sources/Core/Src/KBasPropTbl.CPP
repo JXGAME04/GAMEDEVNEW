@@ -147,6 +147,7 @@ BOOL KLibOfBPT::Init()
 											&m_PlatinaDurability,
 											&m_PlatinaMagicRate,
 											&m_PlatinaMagicAttrib,
+											&m_BPTStarStone,	// [PHI PHONG] PHAI o CUOI mang
 										};
 
 	const int cbNumOfTables = sizeof(paryBPT)/sizeof(paryBPT[0]);
@@ -199,7 +200,23 @@ BOOL KLibOfBPT::Init()
 		}
 
 		if (FALSE == paryBPT[i]->Load())
-			{ _ASSERT(FALSE); return FALSE; }
+		{
+			// [VA 29/08] Truoc day cho nay im lang: mot bang hong la BO DO ca day
+			// bang phia sau (dump 17:48 cho thay paryBPT[25] tro di deu rong, keo
+			// theo ext_suite rong -> Gen_Equipment sap vi doc con tro NULL).
+			// Ghi ro TEN TEP hong de lan sau biet ngay thay vi phai mo dump.
+			// g_DebugLog chi gui toi CUA SO go roi qua WM_COPYDATA; khong co cua so
+			// do la MAT HUT. Vi vay ghi thang ra tep de lan sau doc duoc.
+			FILE* fpBpt = fopen("bpt_load_error.log", "a");
+			if (fpBpt)
+			{
+				fprintf(fpBpt, "[BPT] NAP HONG bang thu %d (%s) -- %d bang phia sau KHONG duoc nap!\n",
+					i, paryBPT[i]->GetTabFileName(), cbNumOfTables - i - 1);
+				fclose(fpBpt);
+			}
+			_ASSERT(FALSE);
+			return FALSE;
+		}
 	}
 
 	InitMALib();
@@ -1098,6 +1115,81 @@ const KBASICPROP_TOWNPORTAL* KBPT_TownPortal::GetRecord(IN int i) const
 	return (i >= 0 && i < m_nNumOfEntries) ?
 		(((KBASICPROP_TOWNPORTAL*)m_pBuf) + i) : NULL;
 }
+
+// ===== [PHI PHONG 2026-08-29] bang Tinh Than Thach =====
+KBPT_StarStone::KBPT_StarStone()
+{
+	m_nSizeOfEntry = sizeof(KBASICPROP_STARSTONE);
+	// [VA 29/08 - doc tu dump] Load() TU ghep TABFILE_PATH vao truoc, nen o
+	// day phai la TEN TRAN nhu moi bang khac (mine.txt, potion.txt...).
+	// Dung TABFILE_STARSTONE (co san ca duong dan) thi thanh
+	// \settings\item\settings\item\starstone.txt -> khong bao gio nap duoc.
+	::strcpy(m_szTabFile, "starstone.txt");
+}
+
+KBPT_StarStone::~KBPT_StarStone()
+{
+}
+
+BOOL KBPT_StarStone::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	KBASICPROP_STARSTONE* pBuf = (KBASICPROP_STARSTONE*)m_pBuf;
+	pBuf = pBuf + i;
+	const PROPINFO aryPI[] =
+	{
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szName,      sizeof(pBuf->m_szName) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nItemGenre),    0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nDetailType),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nParticurType), 0 },
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szImageName, sizeof(pBuf->m_szImageName) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nObjIdx),  0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nWidth),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nHeight),  0 },
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szIntro,     sizeof(pBuf->m_szIntro) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSeries),  0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPrice),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nLevel),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_bStack),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMagicAttribIdx), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[0]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[1]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[2]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[3]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[4]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[5]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[6]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[7]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[8]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nValue[9]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMaxStack), 0 },	// cot 25
+	};
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KBASICPROP_STARSTONE* KBPT_StarStone::GetRecord(IN int i) const
+{
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KBASICPROP_STARSTONE*)m_pBuf) + i) : NULL;
+}
+
+// Tra ban ghi theo ParticularType (1..34), khong phai theo chi so dong.
+const KBASICPROP_STARSTONE* KBPT_StarStone::FindRecord(IN int nParticular) const
+{
+	KBASICPROP_STARSTONE* p = (KBASICPROP_STARSTONE*)m_pBuf;
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		if ((p + i)->m_nParticurType == nParticular)
+			return p + i;
+	}
+	return NULL;
+}
+
+const KBASICPROP_STARSTONE* KLibOfBPT::GetStarStoneRecord(IN int nParticular) const
+{
+	return m_BPTStarStone.FindRecord(nParticular);
+}
+// ===== het bang Tinh Than Thach =====
 
 KBPT_Quest::KBPT_Quest()
 {

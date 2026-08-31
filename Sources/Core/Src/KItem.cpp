@@ -40,6 +40,8 @@ void KItem::Reset() {
 	nExpPointSec = 0;
 	InsuranceCourse = 0;
 	m_MaxOptMultiply = 1;
+	// [PHI PHONG 2026-08-29] xoa sach du lieu sao/da khi tai su dung o vat pham
+	::memset(m_nPfPack, 0, sizeof(m_nPfPack));
 	m_bHorseScaleOnly = false;
 #ifndef _SERVER
 	::memset(&m_Image, 0, sizeof(KRUImage));
@@ -100,6 +102,191 @@ Exit 	: Magic is applied.
 The specific work is completed by the member functions of KNpc.
 No member variables of the KItem object itself are modified
 ******************************************************************************/
+// ======== [PHI PHONG 2026-08-29] thuoc tinh Tinh Than Thach kham tren phi phong ========
+// Ban Linux: starstone.txt cot 14 = CHI SO 0-BASED cua dong trong magicattrib_ge.txt
+// (do that: gia tri 3933 -> dong 1-based 3934, ten bat dau bang 'Tinh Than Thach_'),
+// cot 15..24 = gia tri theo CAP SAO CUA LO (1..10).
+// Loai thuoc tinh lay o magicattrib_ge cot 5.
+// Da do: 34/34 vien co dong magicattrib_ge TRUNG KHIT giua Linux va JX1, va JX1 co
+// dung 34 dong da sao -> KHONG phai nan ma thuoc tinh, dung thang so cua ban Linux.
+#define PF_STARSTONE_FILE	"\\settings\\item\\starstone.txt"
+#define PF_MAGICATTRIB_GE	"\\settings\\item\\magicattrib_ge.txt"
+#define PF_MAX_STONE_ID		64
+
+struct KPfStoneInfo
+{
+	int		nAttribType;
+	int		nValue[10];
+	char	szName[64];		// ten vien da, cot 1 starstone.txt -- de in ra bang mo ta
+};
+
+// Nap 1 lan roi cache. Tra NULL neu vien da khong hop le.
+static const KPfStoneInfo* PF_GetStoneInfo(int nStoneId)
+{
+	static BOOL			s_bLoaded = FALSE;
+	static KPfStoneInfo	s_tb[PF_MAX_STONE_ID];
+	if (!s_bLoaded)
+	{
+		s_bLoaded = TRUE;
+		memset(s_tb, 0, sizeof(s_tb));
+		KTabFile tfS, tfG;
+		if (tfS.Load(PF_STARSTONE_FILE) && tfG.Load(PF_MAGICATTRIB_GE))
+		{
+			int nHS = tfS.GetHeight();
+			int nHG = tfG.GetHeight();
+			for (int r = 2; r <= nHS; r++)
+			{
+				int nP = 0, nGe = 0, nType = 0;
+				tfS.GetInteger(r, 4, 0, &nP);
+				tfS.GetInteger(r, 14, 0, &nGe);
+				if (nP <= 0 || nP >= PF_MAX_STONE_ID)
+					continue;
+				if (nGe <= 0 || nGe + 1 > nHG)
+					continue;
+				tfG.GetInteger(nGe + 1, 5, 0, &nType);	// 0-based -> dong KTabFile
+				if (nType <= 0)
+					continue;
+				s_tb[nP].nAttribType = nType;
+				tfS.GetString(r, 1, "", s_tb[nP].szName, sizeof(s_tb[nP].szName));
+				for (int lv = 0; lv < 10; lv++)
+					tfS.GetInteger(r, 15 + lv, 0, &s_tb[nP].nValue[lv]);
+			}
+		}
+	}
+	if (nStoneId <= 0 || nStoneId >= PF_MAX_STONE_ID)
+		return NULL;
+	if (s_tb[nStoneId].nAttribType <= 0)
+		return NULL;
+	return &s_tb[nStoneId];
+}
+
+// Ap (bAdd=TRUE) hoac go (bAdd=FALSE) thuoc tinh cua toi da 5 lo kham.
+// Lo 0 sao khong cho gi -- dung nhu ban Linux (CheckInlayStarStone chan kham vao lo 0 sao).
+void KItem::PF_ModifyStoneAttrib(KNpc* pNPC, BOOL bAdd) const
+{
+	if (!pNPC)
+		return;
+	if (GetMaxStoneNum() <= 0)
+		return;
+	for (int i = 1; i <= PF_MAX_STONE; i++)
+	{
+		int nStone = GetStoneId(i);
+		if (nStone <= 0)
+			continue;
+		int nLv = GetStoneLevel(i);
+		if (nLv < 1 || nLv > 10)
+			continue;
+		const KPfStoneInfo* p = PF_GetStoneInfo(nStone);
+		if (!p)
+			continue;
+		int nVal = p->nValue[nLv - 1];
+		if (nVal == 0)
+			continue;
+		KItemNormalAttrib sA;
+		sA.nAttribType = p->nAttribType;
+		sA.nValue[0] = bAdd ? nVal : -nVal;
+		sA.nValue[1] = -1;
+		sA.nValue[2] = 0;
+		pNPC->ModifyAttrib(pNPC->m_Index, (void*)&sA);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Tien to so sao dat truoc TEN mon do: "10 sao <ten>".
+// Tra chuoi rong neu mon khong phai do co he sao -> moi mon khac giu nguyen.
+//////////////////////////////////////////////////////////////////////////
+const char* KItem::PF_StarPrefix() const
+{
+	static char s_sz[32];
+	s_sz[0] = 0;
+	int nStar = GetStarLevel();
+	if (nStar > 0)
+		sprintf(s_sz, "%d sao ", nStar);
+	return s_sz;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Phan rieng cua Phi Phong trong bang mo ta:
+//   - diem chuc phuc hien tai / toi da
+//   - moi lo kham mot dong: "<cap> sao <ten da>" hoac "<ten> Lo kham trong"
+//   - cac dong thuoc tinh do da cong lai (dung g_MagicDesc cho khop cach
+//     hanh van voi moi dong khac trong bang)
+// Mon khong co lo kham thi ham nay khong in gi ca.
+//////////////////////////////////////////////////////////////////////////
+void KItem::PF_AppendDesc(char* pszMsg) const
+{
+	if (!pszMsg)
+		return;
+	int nHole = GetMaxStoneNum();
+	int nStar = GetStarLevel();
+	int nWishMax = GetMaxWishValue();
+	if (nHole <= 0 && nStar <= 0 && nWishMax <= 0)
+		return;
+
+	char szLine[256];
+
+	// --- diem chuc phuc: G_STR_MANTLESYSTEM_BLESS_VALUE ---
+	if (nWishMax > 0)
+	{
+		strcat(pszMsg, "  \n  ");
+		sprintf(szLine, "<color=HBlue>\247\351t ph\270 \256i\323m ch\363c ph\363c %d/%d<color>",
+			GetCurWishValue(), nWishMax);
+		strcat(pszMsg, szLine);
+		strcat(pszMsg, "  \n  ");
+	}
+
+	if (nHole <= 0)
+		return;
+
+	// --- tung lo kham ---
+	// So truoc chu "sao" la CAP CUA LO, khong phai cap cua mon: lo chua co da
+	// van co cap rieng (ProcessSecBreakThrough dat cap TRUOC khi kham da).
+	int i;
+	for (i = 1; i <= nHole && i <= PF_MAX_STONE; i++)
+	{
+		int nStone = GetStoneId(i);
+		int nLv    = GetStoneLevel(i);
+		const KPfStoneInfo* p = (nStone > 0) ? PF_GetStoneInfo(nStone) : NULL;
+		if (p && p->szName[0])
+			sprintf(szLine, "<color=Green>%d sao %s<color>", nLv, p->szName);	// G_STR_COLOR_XING
+		else
+			sprintf(szLine, "<color=Green>%d sao L\347 kh\266m tr\350ng<color>", nLv);	// G_STR_COLOR_EMPTY_XING
+		strcat(pszMsg, szLine);
+		strcat(pszMsg, "  \n  ");
+	}
+
+	// --- thuoc tinh cua tung vien da: MOI VIEN MOT DONG, khong gop ---
+#ifndef _SERVER
+	for (i = 1; i <= nHole && i <= PF_MAX_STONE; i++)
+	{
+		int nStone = GetStoneId(i);
+		if (nStone <= 0)
+			continue;
+		int nLv = GetStoneLevel(i);
+		if (nLv < 1 || nLv > 10)
+			continue;
+		const KPfStoneInfo* p = PF_GetStoneInfo(nStone);
+		if (!p || p->nValue[nLv - 1] == 0)
+			continue;
+		KItemNormalAttrib sA;
+		memset(&sA, 0, sizeof(sA));
+		sA.nAttribType = p->nAttribType;
+		sA.nValue[0] = p->nValue[nLv - 1];
+		sA.nValue[1] = -1;
+		sA.nValue[2] = 0;
+		char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
+		if (!pszInfo || !pszInfo[0])
+			continue;
+		strcat(pszMsg, "<color=Green>");
+		strcat(pszMsg, pszInfo);
+		strcat(pszMsg, "<color>  \n  ");
+	}
+#endif
+	strcat(pszMsg, "<color=255,255,255>");
+}
+
+// ======== het khoi Tinh Than Thach ========
+
 void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, IN int nMagicActiveE /* = 0 */) const
 {
 	_ASSERT(this != NULL);
@@ -135,6 +322,9 @@ void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, 
 			pNPC->ModifyAttrib(pNPC->m_Index, (void*)&AddAttrib);
 		}
 	}
+
+	// [PHI PHONG] ap thuoc tinh cua Tinh Than Thach da kham
+	PF_ModifyStoneAttrib(pNPC, TRUE);
 
 	// ----------------- Magic attribute -----------------
 	for (i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
@@ -220,6 +410,9 @@ void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 *
 
 	int nCount = nMagicActive;
 	int nCountE = nMagicActiveE;
+
+	// [PHI PHONG] go thuoc tinh cua Tinh Than Thach khi thao trang bi
+	PF_ModifyStoneAttrib(pNPC, FALSE);
 
 	float fScale = 1.0f;
 
@@ -697,6 +890,36 @@ void KItem::operator = (const KBASICPROP_MINE& sData)
 	::strcpy(m_Image.szImage, pCA->szImageName);
 	m_Image.uImage = 0;
 #endif
+}
+
+// [PHI PHONG 2026-08-29] nap ban ghi Tinh Than Thach vao vat pham.
+void KItem::operator = (const KBASICPROP_STARSTONE& sData)
+{
+	KItemCommonAttrib* pCA = &m_CommonAttrib;
+	pCA->nItemGenre		 = sData.m_nItemGenre;
+	pCA->nDetailType	 = sData.m_nDetailType;
+	pCA->nParticularType = sData.m_nParticurType;
+	pCA->nObjIdx		 = sData.m_nObjIdx;
+	pCA->nWidth			 = sData.m_nWidth;
+	pCA->nHeight		 = sData.m_nHeight;
+	pCA->nPrice			 = sData.m_nPrice;
+	pCA->nLevel			 = sData.m_nLevel > 0 ? sData.m_nLevel : 1;
+	pCA->nSeries		 = -1;
+	pCA->nSet			 = 0;
+	pCA->nSetId			 = 0;
+	pCA->nSetNum		 = 0;
+	pCA->nGoldId		 = 0;
+	pCA->nStackNum		 = 1;
+	pCA->nEnChance		 = 0;
+	pCA->nPoint			 = 0;
+	pCA->bStack			 = sData.m_bStack;
+	pCA->nMaxStack		 = sData.m_nMaxStack > 0 ? sData.m_nMaxStack : 1;
+	::strcpy(pCA->szItemName, sData.m_szName);
+	pCA->LimitTime.bYear = 0;
+	pCA->LimitTime.bMonth = 0;
+	pCA->LimitTime.bDay = 0;
+	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
 }
 
 void KItem::operator = (const KBASICPROP_QUEST& sData)
@@ -1296,10 +1519,12 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 			{
 				sprintf(TextLevel, "%s [CÊp %d]", sItemName, LevelItem);
 			}
+			strcat(pszMsg, PF_StarPrefix());	// "10 sao " neu la do co he sao
 			strcat(pszMsg, TextLevel);
 		}
 		else
 		{
+			strcat(pszMsg, PF_StarPrefix());
 			strcat(pszMsg, sItemName);
 		}
 	}
@@ -1339,11 +1564,13 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 			{
 				sprintf(TextLevel, "%s [CÊp %d]", m_CommonAttrib.szItemName, LevelItem);
 			}
+			strcat(pszMsg, PF_StarPrefix());
 			strcat(pszMsg, TextLevel);
 		}
 		else
 		{
 			strcat(pszMsg, "<color=White>");
+			strcat(pszMsg, PF_StarPrefix());
 			strcat(pszMsg, m_CommonAttrib.szItemName);
 		}
 	}
@@ -1797,6 +2024,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 				break;		
 			}
 		}
+	PF_AppendDesc(pszMsg);	// diem chuc phuc + tung lo kham + thuoc tinh da
 }
 /*
 	if (GetAttribType() || m_CommonAttrib.nPoint)
@@ -2209,6 +2437,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 		strcat(pszMsg, "<bclr=100,100,255><color=255,255,0>");
 		break;
 	}
+	strcat(pszMsg, PF_StarPrefix());	// "10 sao " neu la do co he sao
 	strcat(pszMsg, m_CommonAttrib.szItemName);
 
 	if (m_CommonAttrib.nItemGenre == item_equip)
@@ -2665,6 +2894,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 		strcat(pszMsg, "\n");
 		strcat(pszMsg, "<color=255,255,255>");
 	}
+	PF_AppendDesc(pszMsg);	// diem chuc phuc + tung lo kham + thuoc tinh da
 	if (m_CommonAttrib.uPrice > 0)
 	{
 		strcat(pszMsg, "  \n  ");
@@ -3001,7 +3231,10 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 			strcat(pszMsg, (char*)Lua_ValueToString(pScript->m_LuaState, Lua_GetTopIndex(pScript->m_LuaState)));
 			strcat(pszMsg, "\n<color=255,255,255>");
 		}
-		nSafeIndex = pScript->SafeCallBegin();
+		// [VA5LOI 29/08] bo dong `nSafeIndex = SafeCallBegin();` o day: no ghi
+		// de nSafeIndex bang dinh ngan xep HIEN TAI (da co ket qua GetDesc
+		// tren do), khien SafeCallEnd khoi phuc ve chinh no = KHONG don gi.
+		// Dinh dung phai la cai lay o SafeCallBegin() truoc CallFunction.
 		pScript->SafeCallEnd(nSafeIndex);
 	}
 

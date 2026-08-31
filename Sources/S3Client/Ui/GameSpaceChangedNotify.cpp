@@ -49,6 +49,7 @@
 #include "UiCase/UiBattleReport.h"
 #include "UiCase/UiSuperShop.h"
 #include "UiCase/UiAffairItem.h"
+#include "UiCase/UiMantleInlay.h"	// [PHI PHONG] panel kham Tinh Than Thach
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiTimeBox.h"
 #include "UiCase/UiInformation3.h"
@@ -248,6 +249,11 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 				KUiAffairItem* pItem = KUiAffairItem::GetIfVisible();
 				if (pItem)
 					pItem->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+				// [PHI PHONG] bang kham dung CHUNG khoang chua nay. Truoc day chi
+				// KUiAffairItem duoc bao, nen bo do vao bang kham thi khong hien.
+				KUiMantleInlay* pInlay = KUiMantleInlay::GetIfVisible();
+				if (pInlay)
+					pInlay->UpdateItem((KUiObjAtRegion*)uParam, nParam);
 			}
 			else if (pObject->eContainer == UOC_TREMBLE_ITEM)
 			{
@@ -782,7 +788,16 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	case GDCNI_END_AFFAIR_BOX:
 		if (KUiAffairItem::GetIfVisible())
 			KUiAffairItem::CloseWindow(false);
+		if (KUiMantleInlay::GetIfVisible())
+			KUiMantleInlay::CloseWindow(false);
 		break;
+	case GDCNI_OPEN_MANTLE_INLAY:
+	{
+		// [PHI PHONG] panel kham Tinh Than Thach
+		KUiGiveBox* pInfo = (KUiGiveBox*)uParam;
+		KUiMantleInlay::OpenWindow(pInfo->szTitle, pInfo->szInitString, pInfo->szAction1);
+	}
+	break;
 	case GDCNI_OPEN_TALK_EX:
 		KUiInformation3::OpenWindow((char*)uParam, nParam);
 		break;

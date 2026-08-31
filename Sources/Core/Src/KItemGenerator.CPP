@@ -11,6 +11,110 @@
 #include "KPlayer.h"
 #include "KSubWorldSet.h"
 #include "KItemGenerator.h"
+#include "CoreUseNameDef.h"	// [PHI PHONG] TABFILE_GOLDITEM_FULL_N / PLATINA_EQUIP_FILE
+
+// ======== [PHI PHONG 2026-08-29] doc 3 cot cuoi cua bang trang bi vang / bach kim ========
+// Cot 60 = co the tang sao | 61 = so lo kham Tinh Than Thach | 62 = tran diem chuc phuc.
+// Ban Linux nap thang 3 so nay len vat pham (jx_linux_y: item+0x2A8 so lo, +0x2AC tran
+// chuc phuc). JX1 KHONG doc chung: KBPT_Equipment_Gold2::LoadRecord anh xa cot THEO VI TRI
+// va trong danh sach do da co 2 muc bi chu thich (m_nNeedToActive1/2) roi lai chen
+// m_aryMagicAttribs[6],[7] sau, nen them 3 muc vao duoi la cuoc vao mot anh xa da lech.
+// Vi vay doc rieng o day cho CO LAP: hong cung chi hong phi phong.
+// Quy uoc dong: mirror dung ::LoadRecord (KBasPropTbl.CPP:84) -> KTabFile row = nIndex + 2.
+// Toan bang 5940 dong chi co 5 dong mang gia tri (5374..5378) nen nap 1 lan roi cache.
+// goldequip.txt  (62 cot): nhan tieu de DUNG vi tri.
+#define PF_GCOL_CANUPSTAR	60
+#define PF_GCOL_MAXSTONE	61
+#define PF_GCOL_MAXWISH		62
+#define PF_GOLD_WIDTH		62
+// platinaequip.txt (71 cot): LECH 1 O so voi goldequip. Bang nay co THEM mot cot
+// KHONG TEN o vi tri 68 (gia tri 6400/200/600/24...) ma dong tieu de khong dat ten,
+// nen tu do tro di nhan bi day sang trai 1 o. Doc theo nhan la SAI.
+// Bang chung (khop 100%, 5 dong x 3 cot) -- cung mot mon do o hai bang:
+//   gold 5374..5378 cot 60/61/62 = (1,1,4) (1,2,6) (1,3,8) (1,4,14) (1,5,_)
+//   plat 5300..5304 cot 69/70/71 = (1,1,4) (1,2,6) (1,3,8) (1,4,13) (1,5,_)
+// va dong 4835..4839 ("Phi phong Vo Cuc" 1..5 o kham) co cot 70 = 1,2,3,4,5.
+// Doc 68/69/70 thi MaxStone thanh hang so 1 con MaxWish thanh 1..5: vo nghia.
+#define PF_PCOL_CANUPSTAR	69
+#define PF_PCOL_MAXSTONE	70
+#define PF_PCOL_MAXWISH		71
+#define PF_PLAT_WIDTH		71
+
+struct KPfRowInfo
+{
+	int	nCanUpStar;
+	int	nMaxStone;
+	int	nMaxWish;
+};
+
+static BOOL PF_GetRowInfo(BOOL bPlatina, int nIndex, KPfRowInfo* pOut)
+{
+	static BOOL			s_bLoaded[2] = { FALSE, FALSE };
+	static KPfRowInfo*	s_pTab[2]    = { NULL, NULL };
+	static int			s_nRows[2]   = { 0, 0 };
+
+	int t = bPlatina ? 1 : 0;
+	if (!s_bLoaded[t])
+	{
+		s_bLoaded[t] = TRUE;
+		KTabFile tf;
+		if (tf.Load(bPlatina ? PLATINA_EQUIP_FILE : TABFILE_GOLDITEM_FULL_N))
+		{
+			// Moi bang mot bo cot rieng -- xem khoi #define o tren.
+			const int nColStar  = bPlatina ? PF_PCOL_CANUPSTAR : PF_GCOL_CANUPSTAR;
+			const int nColStone = bPlatina ? PF_PCOL_MAXSTONE  : PF_GCOL_MAXSTONE;
+			const int nColWish  = bPlatina ? PF_PCOL_MAXWISH   : PF_GCOL_MAXWISH;
+			const int nNeedWid  = bPlatina ? PF_PLAT_WIDTH     : PF_GOLD_WIDTH;
+			int nH = tf.GetHeight();
+			// Doi DU be rong: bang thieu cot la doc trung vao cot khac (da dinh mot lan).
+			if (nH > 0 && tf.GetWidth() >= nNeedWid)
+			{
+				s_nRows[t] = nH;
+				s_pTab[t] = new KPfRowInfo[nH + 2];
+				memset(s_pTab[t], 0, sizeof(KPfRowInfo) * (nH + 2));
+				for (int r = 1; r <= nH; r++)
+				{
+					int a = 0, b = 0, c = 0;
+					tf.GetInteger(r, nColStar,  0, &a);
+					tf.GetInteger(r, nColStone, 0, &b);
+					tf.GetInteger(r, nColWish,  0, &c);
+					s_pTab[t][r].nCanUpStar = a;
+					s_pTab[t][r].nMaxStone  = b;
+					s_pTab[t][r].nMaxWish   = c;
+				}
+			}
+		}
+	}
+
+	if (!pOut)
+		return FALSE;
+	pOut->nCanUpStar = 0;
+	pOut->nMaxStone  = 0;
+	pOut->nMaxWish   = 0;
+
+	int nRow = nIndex + 2;	// mirror ::LoadRecord
+	if (!s_pTab[t] || nRow < 1 || nRow > s_nRows[t])
+		return FALSE;
+	*pOut = s_pTab[t][nRow];
+	return TRUE;
+}
+
+// Gan 3 so tren vao vat pham vua sinh. Chi dung cho trang bi CO cot 61 > 0
+// (thuc te chi 5 dong phi phong), cac mon khac giu nguyen 0 nhu truoc.
+static void PF_ApplyRowInfo(BOOL bPlatina, int nIndex, KItem* pItem)
+{
+	if (!pItem)
+		return;
+	KPfRowInfo sInfo;
+	if (!PF_GetRowInfo(bPlatina, nIndex, &sInfo))
+		return;
+	if (sInfo.nMaxStone <= 0 && sInfo.nMaxWish <= 0 && sInfo.nCanUpStar <= 0)
+		return;
+	pItem->SetMaxStoneNum(sInfo.nMaxStone);
+	pItem->SetMaxWishValue(sInfo.nMaxWish);
+	pItem->SetCanUpStar(sInfo.nCanUpStar ? TRUE : FALSE);
+}
+// ======== het khoi doc cot phi phong ========
 
 KItemGenerator	ItemGen;			
 
@@ -1449,6 +1553,19 @@ BOOL KItemGenerator::Gen_ExistEquipment(IN int nItemNature,
 	}
 }
 
+// [PHI PHONG 2026-08-29] sinh Tinh Than Thach theo ParticularType (1..34).
+BOOL KItemGenerator::Gen_StarStone(IN int nParticular, IN OUT KItem* pItem, IN int nStackNum)
+{
+	_ASSERT(pItem != NULL);
+	ZeroMemory(&pItem->m_GeneratorParam, sizeof(pItem->m_GeneratorParam));
+	const KBASICPROP_STARSTONE* p = m_BPTLib.GetStarStoneRecord(nParticular);
+	if (NULL == p)
+		return FALSE;
+	*pItem = *p;
+	pItem->SetStackNum(nStackNum > 0 ? nStackNum : 1);
+	return TRUE;
+}
+
 BOOL KItemGenerator::Gen_Quest(IN int nDetailType, IN OUT KItem* pItem,IN int nStackNum)
 {
 	_ASSERT(this != NULL);
@@ -1737,8 +1854,21 @@ BOOL KItemGenerator::Gen_Equipment(IN int nItemNature,
 		else
 			pItem->SetSeries(nSeriesReq);
 		const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pItem->GetGroup());
-		pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
-		pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+		// [VA 29/08 - dump 17:48 va 17:50] GetExtActiveSuiteRecord tra NULL khi
+		// bang ext_suite rong, va cho nay doc thang ActiveEquip->... -> sap
+		// 0xC0000005 doc dia chi 0x4 (chinh la lenh CoreServer.dll+0x16982A).
+		// Hai cho goi con lai (dong 1533 va 1922) VON DA kiem NULL; lay -1 cho
+		// giong khuon dong 1533 vi cung la duong trang bi thuong.
+		if (ActiveEquip)
+		{
+			pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+			pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+		}
+		else
+		{
+			pItem->SetNeedToActive1(-1);
+			pItem->SetNeedToActive2(-1);
+		}
 		if (NULL == pnaryMALevel)
 			return TRUE;
 
@@ -1797,6 +1927,7 @@ BOOL KItemGenerator::Gen_GoldEquipment(IN int nIndex, IN const int* pnaryMALevel
 	if (pTemp == NULL)
 		return FALSE;
 	pItem->SetAttrib_CBR((KBASICPROP_EQUIPMENT_GOLD2*)pTemp);
+	PF_ApplyRowInfo(FALSE, nIndex, pItem);	// [PHI PHONG] nap cot 60/61/62
 	int setNum = m_BPTLib.GetActiveSuiteCount(pTemp->m_nGroup); //get number items in set
 	pItem->SetSetNum(setNum); //return nActiveCount1 => setNum
 	//pItem->SetSetId(setNum);
@@ -1948,6 +2079,7 @@ BOOL KItemGenerator::Gen_PlatinaEquipment(IN int nIndex, IN const int* pnaryMALe
 			}
 	}
 	pItem->SetAttrib_CBR((KBASICPROP_EQUIPMENT_PLATINA*)pTemp); //Set Base & Require Attributes
+	PF_ApplyRowInfo(TRUE, nIndex, pItem);	// [PHI PHONG] nap cot 60/61/62
 	//reset durability
 	if (nLevel > 5) {
 		for (i = 0; i < 7; i++)
@@ -1962,8 +2094,18 @@ BOOL KItemGenerator::Gen_PlatinaEquipment(IN int nIndex, IN const int* pnaryMALe
 	//pItem->SetSetId(setNum);
 
 	const KSUITE_ACTIVE_COUNT* ActiveEquip = m_BPTLib.GetExtActiveSuiteRecord(pTemp->m_nGroup);
-	pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
-	pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+	// [VA 29/08] cung lo hong nhu dong 1856; lay 0 cho giong khuon dong 1922
+	// (Gen_GoldEquipment) vi cung la duong trang bi cao cap.
+	if (ActiveEquip)
+	{
+		pItem->SetNeedToActive1(ActiveEquip->nActiveCount1);
+		pItem->SetNeedToActive2(ActiveEquip->nActiveCount2);
+	}
+	else
+	{
+		pItem->SetNeedToActive1(0);
+		pItem->SetNeedToActive2(0);
+	}
 	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
 
 	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB])

@@ -304,6 +304,27 @@ typedef struct
 	int			m_bStack;
 } KBASICPROP_QUEST;
 
+// [PHI PHONG 2026-08-29] Tinh Than Thach -- 24 cot cua settings\item\starstone.txt
+typedef struct
+{
+	char		m_szName[SZBUFLEN_0];		// 1  ten
+	int			m_nItemGenre;				// 2  = 9
+	int			m_nDetailType;				// 3
+	int			m_nParticurType;			// 4
+	char		m_szImageName[SZBUFLEN_0];	// 5
+	int			m_nObjIdx;					// 6
+	int			m_nWidth;					// 7
+	int			m_nHeight;					// 8
+	char		m_szIntro[SZBUFLEN_1];		// 9
+	int			m_nSeries;					// 10
+	int			m_nPrice;					// 11
+	int			m_nLevel;					// 12
+	int			m_bStack;					// 13
+	int			m_nMagicAttribIdx;			// 14 chi so 0-based trong magicattrib_ge
+	int			m_nValue[10];				// 15..24 gia tri theo cap sao cua lo
+	int			m_nMaxStack;				// 25 muc xep chong toi da
+} KBASICPROP_STARSTONE;
+
 typedef struct
 {
 	char		m_szName[SZBUFLEN_0];		// Ãû³Æ
@@ -355,6 +376,8 @@ protected:
 public:
 	virtual BOOL Load();
 	int NumOfEntries() const { return m_nNumOfEntries; }
+	// [VA 29/08] de vong nap o KLibOfBPT::Init() ghi duoc TEN BANG khi nap hong
+	const char* GetTabFileName() const { return m_szTabFile; }
 
 protected:
 	BOOL GetMemory();
@@ -413,6 +436,22 @@ public:
 public:
 	const KBASICPROP_QUEST* GetRecord(IN int) const;
 	const KBASICPROP_QUEST* FindRecord(IN int) const;
+
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+// [PHI PHONG 2026-08-29] bang Tinh Than Thach
+class KBPT_StarStone : public KBasicPropertyTable
+{
+public:
+	KBPT_StarStone();
+	~KBPT_StarStone();
+
+public:
+	const KBASICPROP_STARSTONE* GetRecord(IN int) const;
+	const KBASICPROP_STARSTONE* FindRecord(IN int) const;	// theo ParticularType
+	int GetCount() const { return m_nNumOfEntries; };
 
 protected:
 	virtual BOOL LoadRecord(int i, KTabFile* pTF);
@@ -646,6 +685,7 @@ protected:
 	KBPT_MagicScript		m_BPTMagicScript;
 	KBPT_Event				m_BPTEvent;
 	KBPT_Quest				m_BPTQuest;
+	KBPT_StarStone			m_BPTStarStone;	// [PHI PHONG]
 	KBPT_Mine				m_BPTMine;
 	KBPT_Equipment			m_BPTHorse;
 	KBPT_Equipment			m_BPTMeleeWeapon;
@@ -723,6 +763,8 @@ public:
 	const int					GetMedicineRecordNumber() const;
 	const KBASICPROP_QUEST*		GetQuestRecord(IN int) const;
 	const int					GetQuestRecordNumber() const;
+	// [PHI PHONG] tra ban ghi Tinh Than Thach theo ParticularType
+	const KBASICPROP_STARSTONE*	GetStarStoneRecord(IN int) const;
 	const KBASICPROP_TOWNPORTAL*	GetTownPortalRecord(IN int) const;
 	const int					GetTownPortalRecordNumber() const;
 	const KBASICPROP_MINE*		GetMine(IN int) const;

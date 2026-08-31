@@ -149,6 +149,16 @@ private:
 	int		m_nCurrentDur;		
 	DWORD	m_dwOwner;
 	int		m_MaxOptMultiply;
+	// ---- [PHI PHONG 2026-08-29] port he phi phong tu ban Linux ----
+	// Tham chieu: script\global\mantlesystem\mantleupgrade_head.lua + jx_linux_y.
+	// Toan bo du lieu dong goi vao 4 o DU PHONG CO SAN cua ban ghi vat pham
+	// (iiduphong5..8) nen TDBItemData GIU NGUYEN 233 byte, schema MySQL khong doi.
+	//   m_nPfPack[0] : bit 0-3 cap sao | 4-11 chuc phuc | 12-14 so lo
+	//                  | 15-22 tran chuc phuc | 23 co the tang sao
+	//   m_nPfPack[1] : 5 x 6 bit ma Tinh Than Thach tung lo (0 = trong)
+	//   m_nPfPack[2] : 5 x 4 bit cap sao cua tung lo
+	//   m_nPfPack[3] : time_t lan dot pha gan nhat
+	int		m_nPfPack[4];
 	XMethod m_xMethod;
 #ifndef _SERVER
 	KRUImage	m_Image;
@@ -266,6 +276,82 @@ public:
 	int		GetFortune() { return m_CommonAttrib.nFortune; };
 	void	SetMaxOptMultiply(int x) { if (x <= 0) x = 1;  m_MaxOptMultiply = x; };
 	int		GetMaxOptMultiply() { return m_MaxOptMultiply; };
+
+	// ======== [PHI PHONG 2026-08-29] tang sao / dot pha / kham Tinh Than Thach ========
+	// Ban Linux luu cac truong nay THANG TREN VAT PHAM (jx_linux_y, sai buoc 0x368):
+	//   +0x2A8 so lo kham | +0x2AC tran chuc phuc | +0x2B4 chuc phuc hien co
+	//   +0x2B8 cap sao (va mang ma da) | +0x2CC cap sao cua tung lo
+	// JX1 dong goi lai vao m_nPfPack[4] de KHONG phai doi ban ghi luu tru.
+	// Chi so lo chay 1..5 dung nhu ban Linux.
+	enum { PF_MAX_STONE = 5 };
+	int		GetPfPack(int i) const { return (i >= 0 && i < 4) ? m_nPfPack[i] : 0; };
+	void	SetPfPack(int i, int v) { if (i >= 0 && i < 4) m_nPfPack[i] = v; };
+
+	int		GetStarLevel() const { return m_nPfPack[0] & 0xF; };
+	void	SetStarLevel(int n)
+	{
+		if (n < 0) n = 0;
+		if (n > 10) n = 10;
+		m_nPfPack[0] = (m_nPfPack[0] & ~0xF) | n;
+	};
+	int		GetCurWishValue() const { return (m_nPfPack[0] >> 4) & 0xFF; };
+	void	SetCurWishValue(int n)
+	{
+		if (n < 0) n = 0;
+		if (n > 255) n = 255;
+		m_nPfPack[0] = (m_nPfPack[0] & ~(0xFF << 4)) | (n << 4);
+	};
+	int		GetMaxStoneNum() const { return (m_nPfPack[0] >> 12) & 0x7; };
+	void	SetMaxStoneNum(int n)
+	{
+		if (n < 0) n = 0;
+		if (n > PF_MAX_STONE) n = PF_MAX_STONE;
+		m_nPfPack[0] = (m_nPfPack[0] & ~(0x7 << 12)) | (n << 12);
+	};
+	int		GetMaxWishValue() const { return (m_nPfPack[0] >> 15) & 0xFF; };
+	void	SetMaxWishValue(int n)
+	{
+		if (n < 0) n = 0;
+		if (n > 255) n = 255;
+		m_nPfPack[0] = (m_nPfPack[0] & ~(0xFF << 15)) | (n << 15);
+	};
+	BOOL	GetCanUpStar() const { return (m_nPfPack[0] >> 23) & 0x1; };
+	void	SetCanUpStar(BOOL b) { m_nPfPack[0] = (m_nPfPack[0] & ~(0x1 << 23)) | ((b ? 1 : 0) << 23); };
+
+	int		GetStoneId(int nSlot) const
+	{
+		if (nSlot < 1 || nSlot > PF_MAX_STONE) return 0;
+		return (m_nPfPack[1] >> ((nSlot - 1) * 6)) & 0x3F;
+	};
+	void	SetStoneId(int nSlot, int nId)
+	{
+		if (nSlot < 1 || nSlot > PF_MAX_STONE) return;
+		if (nId < 0) nId = 0;
+		if (nId > 63) nId = 63;
+		int nSh = (nSlot - 1) * 6;
+		m_nPfPack[1] = (m_nPfPack[1] & ~(0x3F << nSh)) | (nId << nSh);
+	};
+	int		GetStoneLevel(int nSlot) const
+	{
+		if (nSlot < 1 || nSlot > PF_MAX_STONE) return 0;
+		return (m_nPfPack[2] >> ((nSlot - 1) * 4)) & 0xF;
+	};
+	void	SetStoneLevel(int nSlot, int nLv)
+	{
+		if (nSlot < 1 || nSlot > PF_MAX_STONE) return;
+		if (nLv < 0) nLv = 0;
+		if (nLv > 10) nLv = 10;
+		int nSh = (nSlot - 1) * 4;
+		m_nPfPack[2] = (m_nPfPack[2] & ~(0xF << nSh)) | (nLv << nSh);
+	};
+	int		GetLastBreakTime() const { return m_nPfPack[3]; };
+	void	SetLastBreakTime(int nTime) { m_nPfPack[3] = nTime; };
+	// Ap / go thuoc tinh cua Tinh Than Thach da kham (dinh nghia trong KItem.cpp)
+	void	PF_ModifyStoneAttrib(KNpc* pNPC, BOOL bAdd) const;
+	const char*	PF_StarPrefix() const;			// "10 sao " dat truoc ten mon
+	void	PF_AppendDesc(char* pszMsg) const;	// phan lo kham trong bang mo ta
+	void	ClearPhiPhong() { m_nPfPack[0] = 0; m_nPfPack[1] = 0; m_nPfPack[2] = 0; m_nPfPack[3] = 0; };
+	// ======== het khoi phi phong ========
 	//
 #ifndef _SERVER
 	char*	GetImageName() const // post item
@@ -450,6 +536,7 @@ private:
 	void operator = (const KBASICPROP_MINE&);
 	void operator = (const KBASICPROP_MEDICINE&);
 	void operator = (const KBASICPROP_QUEST&);
+	void operator = (const KBASICPROP_STARSTONE&);	// [PHI PHONG]
 	void operator = (const KBASICPROP_TOWNPORTAL&);
 	void operator = (const KBASICPROP_MAGICSCRIPT&);
 	void operator = (const KBASICPROP_EQUIPMENT_GOLD&);
