@@ -148,8 +148,11 @@ void KUiMantleInlay::Initialize()
 // Chi so obj_N cua 6 o NHAN DO, xep theo dung thu tu ma server cho doi:
 //   phan tu 0..4 -> Region.h 0..4 = Tinh Than Thach (tbItemIdx[1..5])
 //   phan tu 5    -> Region.h 5    = Phi Phong       (tbItemIdx[6])
-// obj_13 nam chinh giua hoa van ngoi sao nen dung lam o Phi Phong.
-static const int PF_UI_INPUT[PF_UI_INPUT_COUNT] = { 10, 11, 12, 0, 1, 13 };
+// [CHONLO 31/08] Doc anh nen \spr\Ui3\...spr (424x233) chot theo 5.7: 5 hoc
+// da that la VONG NGOAI obj_0..4 - trung khit 5 hoa van mui nhon cua ngoi sao
+// (2 tren, 2 hong, 1 duoi). obj_5..9 vong trong chi trang tri; obj_10..12 cu
+// nam tren nen TRONG (bo {10,11,12,0,1} la mot mo chap va). obj_13 = Phi Phong.
+static const int PF_UI_INPUT[PF_UI_INPUT_COUNT] = { 0, 1, 2, 3, 4, 13 };
 
 void KUiMantleInlay::LoadScheme(const char* pScheme)
 {
@@ -213,7 +216,7 @@ void KUiMantleInlay::LoadScheme(const char* pScheme)
 				m_pSelf->m_Obj[i].Init(&Ini, Sect);
 				m_pSelf->m_Obj[i].EnablePickPut(false);
 			}
-			// Chi 6 o duoi day nhan tha do; obj_2..obj_9 la lo cua hoa van, de xem thoi.
+			// Chi 6 o duoi day nhan tha do; obj_5..obj_12 chi de xem (trang tri).
 			for (i = 0; i < PF_UI_INPUT_COUNT; i++)
 				m_pSelf->m_Obj[PF_UI_INPUT[i]].EnablePickPut(true);
 

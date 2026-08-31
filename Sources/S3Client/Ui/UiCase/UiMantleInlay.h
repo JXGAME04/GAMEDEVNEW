@@ -37,8 +37,9 @@ protected:
 	}
 };
 
-// Tep ini goc co obj_0..obj_13 = 14 o (3 o cuoi la cho dat PHI PHONG),
-// kem imgBottom_0..13 va imgUp_0..12 la anh KHUNG cua tung o.
+// Tep ini goc co obj_0..obj_13 = 14 o, kem imgBottom_0..13 va imgUp_0..12 la
+// anh KHUNG cua tung o. [CHONLO 31/08] obj_0..4 = 5 hoc da (vong ngoai ngoi
+// sao, chot bang anh nen); obj_13 = o Phi Phong chinh giua; con lai trang tri.
 #define PF_UI_SLOT_COUNT	14
 #define PF_UI_IMGBOTTOM		14
 #define PF_UI_IMGUP			13
