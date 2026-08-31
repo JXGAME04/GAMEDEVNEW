@@ -231,7 +231,12 @@ BOOL	KMission::RemoveNpc(unsigned long ulNpcIndex, unsigned long ulNpcID)
 		if (Npc[ulNpcIndex].m_RegionIndex >= 0 && !Npc[ulNpcIndex].IsPlayer())
 		{
 			SubWorld[Npc[ulNpcIndex].m_SubWorldIndex].m_Region[Npc[ulNpcIndex].m_RegionIndex].RemoveNpc(ulNpcIndex);
-			SubWorld[Npc[ulNpcIndex].m_SubWorldIndex].m_Region[Npc[ulNpcIndex].m_RegionIndex].DecRef(Npc[ulNpcIndex].m_MapX, Npc[ulNpcIndex].m_MapY, obj_npc);
+			// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+			// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+			// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+			// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+			if (Npc[ulNpcIndex].m_Doing != do_revive)
+				SubWorld[Npc[ulNpcIndex].m_SubWorldIndex].m_Region[Npc[ulNpcIndex].m_RegionIndex].DecRef(Npc[ulNpcIndex].m_MapX, Npc[ulNpcIndex].m_MapY, obj_npc);
 		}
 		NpcSet.Remove(ulNpcIndex);
 	}

@@ -79,7 +79,12 @@ int LuaClearMapNpc(Lua_State* L)
 			if (Npc[i].m_RegionIndex >= 0)
 			{
 				SubWorld[w].m_Region[Npc[i].m_RegionIndex].RemoveNpc(i);
-				SubWorld[w].m_Region[Npc[i].m_RegionIndex].DecRef(Npc[i].m_MapX, Npc[i].m_MapY, obj_npc);
+				// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+				// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+				// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+				// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+				if (Npc[i].m_Doing != do_revive)
+					SubWorld[w].m_Region[Npc[i].m_RegionIndex].DecRef(Npc[i].m_MapX, Npc[i].m_MapY, obj_npc);
 				NpcSet.Remove(i);
 				nCount++;
 			}
@@ -1844,7 +1849,12 @@ int LuaHD3_DelNpcByName(Lua_State* L)
 	{
 		int n = s_anGom[i];
 		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
-		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+		// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+		// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+		// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+		if (Npc[n].m_Doing != do_revive)
+			SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
 		NpcSet.Remove(n);
 		nXoa++;
 	}
@@ -1903,7 +1913,12 @@ int LuaHD3_DelNpcByNameEx(Lua_State* L)
 		g_DebugLog("[3HD C19] xoa NPC cu idx=%d setting=%d map=%d script=%s",
 			n, Npc[n].m_NpcSettingIdx, SubWorld[Npc[n].m_SubWorldIndex].m_SubWorldID, Npc[n].ActionScript);
 		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
-		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+		// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+		// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+		// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+		if (Npc[n].m_Doing != do_revive)
+			SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
 		NpcSet.Remove(n);
 		nXoa++;
 	}
@@ -1940,7 +1955,12 @@ int LuaHD3_DelNpcByScript(Lua_State* L)
 	{
 		int n = s_anGomS[i];
 		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].RemoveNpc(n);
-		SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
+		// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+		// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+		// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+		// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+		if (Npc[n].m_Doing != do_revive)
+			SubWorld[Npc[n].m_SubWorldIndex].m_Region[Npc[n].m_RegionIndex].DecRef(Npc[n].m_MapX, Npc[n].m_MapY, obj_npc);
 		NpcSet.Remove(n);
 		nXoa++;
 	}

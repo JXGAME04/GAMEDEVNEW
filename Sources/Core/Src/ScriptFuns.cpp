@@ -7173,7 +7173,14 @@ int LuaDelNpc(Lua_State* L)
 		if (!Npc[nNpcIndex].IsPlayer() && Npc[nNpcIndex].m_SubWorldIndex >= 0 && Npc[nNpcIndex].m_RegionIndex >= 0)
 		{
 			SubWorld[Npc[nNpcIndex].m_SubWorldIndex].m_Region[Npc[nNpcIndex].m_RegionIndex].RemoveNpc(nNpcIndex);
-			SubWorld[Npc[nNpcIndex].m_SubWorldIndex].m_Region[Npc[nNpcIndex].m_RegionIndex].DecRef(Npc[nNpcIndex].m_MapX, Npc[nNpcIndex].m_MapY, obj_npc);
+#ifdef _SERVER
+			// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o trong DoRevive
+			// (KNpc.cpp:2307); m_RegionIndex chi la gia tri cu, khong phai bang chung con
+			// chiem o. DecRef nua la tru LAN HAI -> "o chet" (quai song tang hinh truoc
+			// va cham - xem KNpc.cpp:2344). Khuon chot co san: KRegion.cpp:659.
+			if (Npc[nNpcIndex].m_Doing != do_revive)
+#endif
+				SubWorld[Npc[nNpcIndex].m_SubWorldIndex].m_Region[Npc[nNpcIndex].m_RegionIndex].DecRef(Npc[nNpcIndex].m_MapX, Npc[nNpcIndex].m_MapY, obj_npc);
 			NpcSet.Remove(nNpcIndex);
 		}
 
@@ -7926,6 +7933,15 @@ int LuaNpcEnterNewWorld(Lua_State* L)
 	if ((nParamCount = Lua_GetTopIndex(L)) < 3) return 0;
 	int nNpcIndex = (int)Lua_ValueToNumber(L, 1);
 	if (nNpcIndex <= 0) return 0;
+#ifdef _SERVER
+	// [REFOAN-VS 31/08] xac cho hoi sinh (do_revive) DA tra bo dem o (DoRevive
+	// KNpc.cpp:2307) nhung m_RegionIndex con cu -> ChangeWorld (KNpc.cpp:10272)
+	// se DecRef LAN HAI va AddNpc noi m_Node vao region list trong khi node con
+	// nam trong m_NoneRegionNpcList (hong lien ket). Xac thi khong chuyen map.
+	// Chi phia server: client khong DecRef trong DoRevive (KNpc.cpp:2313-2328).
+	if (nNpcIndex >= MAX_NPC || (!Npc[nNpcIndex].IsPlayer() && Npc[nNpcIndex].m_Doing == do_revive))
+		return 0;
+#endif
 
 	int nResult = 0;
 	if (Lua_GetTopIndex(L) > 3)
