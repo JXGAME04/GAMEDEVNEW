@@ -806,11 +806,23 @@ struct KJx2GiveSession
 	std::vector<int> vItems;
 	std::vector<int> vSlots;	// [CHONLO 31/08] song nhip vItems: so hieu O (nX) tung muc, -1 = hang duoi
 };
-static std::map<int, KJx2GiveSession>	s_GiveSessions;	// playerIdx -> phien
-static std::map<int, DWORD>				s_GivePending;	// playerIdx -> script id da mo
-                                                        // (phan bien E4 CAO-2: phai KHOP
-                                                        // m_dwGiveBoxId luc xac nhan, khong
-                                                        // thi phien JX1 cu bi nuot)
+// [VA 31/08c] static CUC BO HAM (magic static) thay cho static toan cuc:
+// KPlayer::KPlayer() -> Release() -> KJx2WarInfra_ClearGiveSession chay ngay
+// trong static init cua DLL (mang Player[MAX_PLAYER] toan cuc); static toan
+// cuc o day chi song sot nho thu tu file trong vcxproj - doi thu tu la
+// null-deref luc nap DLL. Magic static khoi tao lan goi dau, mien nhiem.
+// sGivePending(): playerIdx -> script id da mo (phan bien E4 CAO-2: phai KHOP
+// m_dwGiveBoxId luc xac nhan, khong thi phien JX1 cu bi nuot).
+static std::map<int, KJx2GiveSession>& sGiveSessions()
+{
+	static std::map<int, KJx2GiveSession> m;
+	return m;
+}
+static std::map<int, DWORD>& sGivePending()
+{
+	static std::map<int, DWORD> m;
+	return m;
+}
 
 int LuaGiveItemUI(Lua_State* L)
 {
@@ -831,7 +843,7 @@ int LuaGiveItemUI(Lua_State* L)
 	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, Lua_ValueToString(L, 3),
 		sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
 	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
-	s_GivePending[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
+	sGivePending()[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
 	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_GIVE_BOX));
 	return 0;
 }
@@ -840,18 +852,18 @@ int LuaGiveItemUI(Lua_State* L)
 // -1 = khong phai phien JX2 (giu nguyen duong OpenGiveBox cu, callback "" 0 doi)
 int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx)
 {
-	std::map<int, DWORD>::iterator itP = s_GivePending.find(nPlayerIdx);
-	if (itP == s_GivePending.end())
+	std::map<int, DWORD>::iterator itP = sGivePending().find(nPlayerIdx);
+	if (itP == sGivePending().end())
 		return -1;
 	// phien treo tu truoc (nguoi choi dong hop khong xac nhan roi mo hop
 	// GiveBox JX1 khac): id script khong khop -> tra phien ve duong JX1 cu
 	if (nPlayerIdx > 0 && itP->second != Player[nPlayerIdx].m_dwGiveBoxId)
 	{
-		s_GivePending.erase(itP);
+		sGivePending().erase(itP);
 		return -1;
 	}
-	s_GivePending.erase(itP);
-	KJx2GiveSession& s = s_GiveSessions[nPlayerIdx];
+	sGivePending().erase(itP);
+	KJx2GiveSession& s = sGiveSessions()[nPlayerIdx];
 	s.vItems.clear();
 	s.vSlots.clear();	// [CHONLO 31/08]
 	if (nPlayerIdx <= 0)
@@ -887,8 +899,8 @@ int LuaGetGiveItemUnit(Lua_State* L)
 	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
 	{
 		int i = (int)Lua_ValueToNumber(L, 1);
-		std::map<int, KJx2GiveSession>::iterator it = s_GiveSessions.find(nPlayerIndex);
-		if (it != s_GiveSessions.end() && i >= 1 && (size_t)i <= it->second.vItems.size())
+		std::map<int, KJx2GiveSession>::iterator it = sGiveSessions().find(nPlayerIndex);
+		if (it != sGiveSessions().end() && i >= 1 && (size_t)i <= it->second.vItems.size())
 			nIdx = it->second.vItems[i - 1];
 	}
 	Lua_PushNumber(L, nIdx);
@@ -904,8 +916,8 @@ int LuaGetGiveItemSlot(Lua_State* L)
 	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
 	{
 		int i = (int)Lua_ValueToNumber(L, 1);
-		std::map<int, KJx2GiveSession>::iterator it = s_GiveSessions.find(nPlayerIndex);
-		if (it != s_GiveSessions.end() && i >= 1 && (size_t)i <= it->second.vSlots.size())
+		std::map<int, KJx2GiveSession>::iterator it = sGiveSessions().find(nPlayerIndex);
+		if (it != sGiveSessions().end() && i >= 1 && (size_t)i <= it->second.vSlots.size())
 			nSlot = it->second.vSlots[i - 1];
 	}
 	Lua_PushNumber(L, nSlot);
@@ -914,11 +926,11 @@ int LuaGetGiveItemSlot(Lua_State* L)
 
 // [PHIEN 31/08] don phien give-box: goi khi nguoi choi Huy/ESC thu hoi do
 // (RecoveryBoxCmd) va khi khe player duoc tai su dung (KPlayer init).
-// Truoc day s_GivePending chi duoc xoa khi bam OK nen o lai vinh vien.
+// Truoc day sGivePending() chi duoc xoa khi bam OK nen o lai vinh vien.
 void KJx2WarInfra_ClearGiveSession(int nPlayerIdx)
 {
-	s_GiveSessions.erase(nPlayerIdx);
-	s_GivePending.erase(nPlayerIdx);
+	sGiveSessions().erase(nPlayerIdx);
+	sGivePending().erase(nPlayerIdx);
 }
 
 // (nItemIdx) - tru 1 DON VI (stack-- / xoa khi het) - khop khai trien stack
@@ -2451,7 +2463,7 @@ int LuaPF_OpenMantleInlayBox(Lua_State* L)
 	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, Lua_ValueToString(L, 3),
 		sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
 	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
-	s_GivePending[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
+	sGivePending()[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
 	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_GIVE_BOX));
 	return 0;
 }

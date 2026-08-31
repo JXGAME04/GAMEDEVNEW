@@ -6520,11 +6520,18 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				// give-list roi goi callback dang fn(nCount); phien GiveBox JX1
 				// thuong (tra -1) giu nguyen duong cu fn("")
 				int nJx2Cnt = KJx2WarInfra_GiveBoxCollect(nIndex);
-				if (nJx2Cnt >= 0)
-					Player[nIndex].ExecuteScript(Player[nIndex].m_dwGiveBoxId, Player[nIndex].m_szTaskExcuteFun, nJx2Cnt);
-				else
-					Player[nIndex].ExecuteScript(Player[nIndex].m_dwGiveBoxId, Player[nIndex].m_szTaskExcuteFun, "");
+				// [VA 31/08c] tieu thu phien TRUOC khi goi callback: callback co the
+				// MO LAI hop (PF_InlayMoLai / PF_MoLaiHopNangCap / OpenGiveBox gan
+				// m_dwGiveBoxId MOI ngay ben trong ExecuteScript dong bo). Ban cu gan
+				// 0 SAU callback nen de mat id moi -> nut OK lan hai chet im lang.
+				// GiveBoxCollect phai chay TRUOC (no doi chieu s_GivePending voi
+				// m_dwGiveBoxId hien tai) roi moi duoc xoa.
+				DWORD dwBox = Player[nIndex].m_dwGiveBoxId;
 				Player[nIndex].m_dwGiveBoxId = 0;
+				if (nJx2Cnt >= 0)
+					Player[nIndex].ExecuteScript(dwBox, Player[nIndex].m_szTaskExcuteFun, nJx2Cnt);
+				else
+					Player[nIndex].ExecuteScript(dwBox, Player[nIndex].m_szTaskExcuteFun, "");
 			}
 			break;
 		case 2:
