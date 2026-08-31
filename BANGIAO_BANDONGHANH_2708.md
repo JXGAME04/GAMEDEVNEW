@@ -692,3 +692,99 @@ suitattrib.txt chep vao settings\petsys\.
 CON LAI (dot sau): logic server (deo/thao 10 o, thuoc tinh bo, mo ruong,
 duc lai 2 danh sach) + UI 10 o & cua so duc. Logic server ban private
 KHONG co trong pak -> thiet ke theo dung giao thuc + bang tren.
+
+## 20. TONG KET 30-31/08 - TRANG THAI DE PHIEN SAU TIEP TUC
+
+### 20.1 He dang chay (petsys ban PC/VLTK)
+- Cua so `UiPet` (`\Ui\Ui3\pet_main.ini`): 4 diem, ten/cap, 6 thuoc tinh,
+  10 O TRANG BI (hang tren, x 328 + k*30, y 82, 24x24), 5 o ky nang
+  (x 376..520 buoc 36, y 167, 26x26), khung anh pet (40,303 260x120),
+  nut Duc lai (235,390 62x24), 8 nut thao tac.
+- 8 thao tac: 1 Xoa / 2 Goi / 3 Thu / 4 Thang cap / 5 Doi ten /
+  6 Doi ngoai quan / 7 Tu luyen / 8 Tu Chan; + op 10 = menu TRANG BI.
+- Tran cap 130 (VLTK), levelup noi 21..130 theo quy luat bang goc.
+- 4 vong sang 1600..1603 + 18 ky nang bi kiep 1670..1687 (buff CHU).
+- Trang bi: 20 mon (2 bo Bich Huyet/Kim Lan) x 10 vi tri; moi mon 3
+  thuoc tinh {ma, min, max}; deo -> roll gia tri; Duc lai ton 1 Ket
+  Tinh Dong Hanh -> roll lai, chon Giu lai / Tu bo.
+- CHU CHOT 30/08: PET TU DANH (phan THEM ngoai ban goc) + thuoc tinh
+  trang bi & bo cong cho PET; vong sang + bi kiep buff CHU.
+
+### 20.2 O luu (task value)
+```
+5110 create   5111 level    5112 upgrade  5113 grown   5114 tame
+5115 xiuzhen  5116 feature  5117 summon   5118..5123 6 thuoc tinh
+5124..5127 4 o skill aura   5128..5131 ten pet (16 byte)
+5132..5138 hang task he (transfer/trai cay/su kien)
+5139..5142 4 ky nang bi kiep da hoc (id tran)
+5143..5152 10 o trang bi (ParticularType)   5163 bo*100 + so mon
+5170..5199 3 gia tri thuoc tinh da roll cua tung mon
+251 = XU (hanh trang)   362 = chan nguyen   MAX_TASK = 5200
+```
+
+### 20.3 Item (bang magicscript, id JX1)
+- 4874 Thiep / 4875 Thuoc tang truong (stack 200) / 4876..4879 4 trai
+- 4880 Bi kiep ban dong hanh (VLTK 4808 - JX1 da co item khac nen nan)
+- 4890..4906 = 17 ban ghi GIU CHO (bat buoc, xem 20.5)
+- 4907..4926 = 20 mon trang bi | 4927/4928 Ket tinh (+Cao)
+- 4929..4931 Ruong 1/2/3 | 4932 Chia khoa ruong
+
+### 20.4 Tep da them
+- server: script\petsys\{petequip, petequip_def, petbox, bikip,
+  xiuzhen, jx1_compat}.lua; script\skill\petskill.lua;
+  script\skill\petsys\aura.lua; settings\petsys\{suitattrib,
+  equipattrib, attribname, pet_skill_def, levelup, feature}.txt
+- client: ban sao bang item/skills + settings\petsys\{equipattrib,
+  attribname}.txt + anh spr\item\companionequip\* (20),
+  spr\Ui3\pet\{face,extskill}\*
+- C: KPlayerPet.cpp/.h (40 ham PET_*), UiPet.cpp/.h
+
+### 20.5 BAY DA CAN THAT (doc truoc khi sua!)
+1. **Bang magicscript: RECORD INDEX = ma particular**
+   (KItemGenerator.CPP:1660 `const int i = nParticularType;
+   GetMagicScript(i)`). Xoa/them dong giua bang la LECH TOAN BO ->
+   item vo hinh, dinh chuot, khong nhan duoc. Chi duoc THEM O CUOI,
+   thieu ma nao phai chen ban ghi GIU CHO.
+2. **Nhan menu KHONG duoc chua dau '/'** - LuaSelectUI cat ten ham tai
+   dau '/' DAU TIEN (ScriptFuns.cpp:747).
+3. **AddItem CAN 7 THAM SO** (ScriptFuns.cpp:4932) - goi 6 thi khong
+   them item nao (mat do khi tra ve tui).
+4. **Say/SayEx tran 512 BYTE** cho tieu de + moi nhan cong lai.
+5. **`<enter>` la tag ENGINE TU CHEN khi wrap** (KItem.cpp:2662) -
+   viet tay se hien tho.
+6. **HoldObject(uGenre, uId, nDataW, nDataH)** - tham so 3/4 la KICH
+   THUOC, khong phai cap; muon tooltip skill hien dung cap phai
+   SetSkillLevelDirectlyUsingId cho nguoi choi.
+7. **Z-ORDER: control AddChild SAU nam TREN** - khung anh pet trum
+   len nut Duc lai lam nut khong bam duoc.
+8. **pos_hand khong nam trong luoi o** -> ConsumeEquiproomItem khong
+   voi toi; dung PET_ClearHand() (duyet m_ItemList).
+9. **Build song song voi phien khac** -> loi PCH C1853; build bang
+   `-p:IntDir=x64\SRpet\ -p:OutDir=x64\SRpetOut\` (output cuoi van
+   ve x64\ServerRelease qua post-build).
+10. **TCVN3 khong co chu HOA co dau**; **quet chuoi phai thu ca HOA
+    lan thuong** (tim 'ong hanh' chu thuong da lam SOT ca he trang bi).
+11. `Include` khong guard -> head.lua phai tu guard `if PetSys == nil`.
+12. Callback `"nhan/#Obj:Fn()"` KHONG chay - dung CreateNewSayEx.
+
+### 20.6 Binary moi nhat (CHO CHU SWAP)
+- `bin\server\CoreServer.dll.moi` = **b2526657**
+- `bin\client\Game.exe.moi` = **8886fac8**
+- Swap bang `ChayGameServer.bat` / `ChoiGame.bat` (tu doi ten .moi).
+
+### 20.7 CON TON DONG (viec phien sau)
+1. Chu chua swap 2 binary tren -> ky nang van hien cap 0, nut Duc lai
+   chua bam duoc, do ket tay chua go duoc.
+2. Bo 3 **Dan Tam** co chuoi ten nhung KHONG co item trong bang goc.
+3. Ma thuoc tinh **308/311** (Van Khoi Long Tuong) NGOAI DAI 305
+   attrib cua JX1 -> muon co phai them attrib moi vao engine.
+4. **8 hoat dong cap diem Thang cap** chua noi (Linux:
+   `activitysys\config\44\extend.lua` goi FinishEvent + 
+   PET_AddUpgradePoint(1) moi hoat dong/ngay). Ham C da co.
+5. Cach LEN CAP ky nang bi kiep: nguon VLTK khong mo ta -> hien moi o
+   hoc 1 ky nang, chua co nang cap.
+6. Cua so **Duc lai rieng** (ini goc 720a151f: 2 danh sach cu/moi +
+   3 nut) chua dung - hien dung menu hoi thoai server.
+7. Go PLOG + petops.log sau khi nghiem thu.
+8. He partner mobile (UiPartner*) da bi CHAN mo - neu can dung lai thi
+   go `return NULL` trong 4 tep UiPartner*.cpp.

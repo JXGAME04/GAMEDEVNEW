@@ -13,9 +13,12 @@ Include("\\script\\global\\admin\\item.lua")
 Include("\\script\\global\\admin\\point.lua")
 Include("\\script\\global\\admin\\quanly.lua")
 Include("\\script\\tinhnang\\boss_hoangkim\\lib_bosshk.lua")
-Include("\\script\\tinhnang\\boss_satthu\\lib_boss_st.lua")
-Include("\\script\\tinhnang\\vuot_ai\\lib_vuotai.lua")
-Include("\\script\\tinhnang\\phonglangdo\\lib_phonglangdo.lua")
+-- [GOHECU 30/08] menu admin khong goi ham nao cua thu vien nay
+-- Include("\\script\\tinhnang\\boss_satthu\\lib_boss_st.lua")
+-- [GOHECU 30/08] menu admin khong goi ham nao cua thu vien nay
+-- Include("\\script\\tinhnang\\vuot_ai\\lib_vuotai.lua")
+-- [GOHECU 30/08] menu admin khong goi ham nao cua thu vien nay
+-- Include("\\script\\tinhnang\\phonglangdo\\lib_phonglangdo.lua")
 Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
 -- Include("\\script\\tinhnang\\tong_kim_tcap\\lib_tktc.lua")
 -- Include("\\script\\tinhnang\\congthanhchien\\lib_ctc.lua")
@@ -506,7 +509,8 @@ end
 function hamlinhtinh()
 	SayEx({ADMIN_SUPPORT_TEXT,
 	"Tong kim/AdminTestTK",
-	"Test Phong L¨ng §é/admintestPLD",
+	-- [GOHECU 30/08] ham admintestPLD chi co trong he Phong Lang Do CU (da go) - bam vao la goi ham nil
+	-- "Test Phong L¨ng §é/admintestPLD",
 	"TÝnh n¨ng Boss/admintestboss",
 	"Test Boss TiÓu/addnpcbosstieuhk",
 	"Test Boss §¹i/addnpcbossdaihk",
