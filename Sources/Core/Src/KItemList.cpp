@@ -1954,6 +1954,8 @@ static BOOL sIsJx2ItemScript(const char* szScript)
 		"\\script\\vng_event\\item\\biggoldenseed.lua",			// [PORT5 23/08]
 		"\\script\\missions\\tongcastle\\shenmuling.lua",		// [TONGCASTLE 23/08 phan bien F13] Than Moc Lenh 3205-3207 (thanh cong tra nil -> engine tru)			// [PORT5 23/08] Qua Dai Hoang Kim (tongwar)
 		"\\script\\task\\tollgate\\killer\\shashou_mibao.lua",	// [3HD C35] Sat Thu Bi Bao: thanh cong tra nil -> engine tru 1 cai
+		"\\script\\global\\mantlesystem\\",						// [ITEM-01 31/08] item_starore/item_starstone: nhanh thanh cong roi khoi main() KHONG return
+																		// -> engine phai tu tru 1, khong thi PT 4885/4887 sinh Tinh Ngoc/Khoang VO HAN
 	};
 	if (!szScript || !szScript[0])
 		return FALSE;
@@ -4715,6 +4717,20 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 		g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC));
 	else
 		g_pServer->PackDataToClient(Player[m_PlayerIdx].m_nNetConnectIdx, (BYTE*)&sItem, sizeof(ITEM_SYNC));
+	// [PFSYNC 31/08] ITEM_SYNC khong mang m_nPfPack nen client mu sao/lo/da phi
+	// phong (PF_StarPrefix/PF_AppendDesc thoat som). Gui kem goi rieng, CHI cho
+	// vat pham co du lieu phi phong -> vat pham thuong khong ton them byte nao.
+	if (Item[nIdx].GetPfPack(0) || Item[nIdx].GetPfPack(1) || Item[nIdx].GetPfPack(2))
+	{
+		ITEM_SYNC_PFPACK sPf;
+		sPf.ProtocolType = s2c_syncpfpack;
+		sPf.m_dwID = Item[nIdx].GetID();
+		for (int k = 0; k < 4; k++)
+			sPf.m_nPfPack[k] = Item[nIdx].GetPfPack(k);
+		int nConnIdx = nPlayerIndex ? Player[nPlayerIndex].m_nNetConnectIdx
+									: Player[m_PlayerIdx].m_nNetConnectIdx;
+		g_pServer->PackDataToClient(nConnIdx, (BYTE*)&sPf, sizeof(ITEM_SYNC_PFPACK));
+	}
 }
 
 void KItemList::SyncItemMagicAttrib(int nIdx)

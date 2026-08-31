@@ -1550,6 +1550,7 @@ typedef struct
 // HAI ban KProtocol.h dung chung include guard; xem ghi chu dau KDiceProtocol.h
 #include "KDiceProtocol.h"
 #include "KPartnerProtocol.h"	// [BDH-G4]
+#include "KMantleProtocol.h"	// [PFSYNC 31/08]
 
 typedef struct
 { 

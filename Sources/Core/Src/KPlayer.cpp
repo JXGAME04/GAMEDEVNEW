@@ -297,6 +297,10 @@ void	KPlayer::Release()
 	m_nJX2DeathType = 0;		// [PORT5 23/08]
 	m_dwDamageScriptId = 0;
 	m_dwGiveBoxId = 0;
+	{	// [PHIEN 31/08] khe player tai su dung -> don phien give-box JX2 cua khe cu
+		extern void KJx2WarInfra_ClearGiveSession(int nPlayerIdx);
+		KJx2WarInfra_ClearGiveSession((int)(this - Player));
+	}
 	m_dwTimeBoxId = 0;
 	m_dwStrBoxId = 0;
 	// [WLLS 20/08] init truong lien dau (khe player duoc tai su dung)

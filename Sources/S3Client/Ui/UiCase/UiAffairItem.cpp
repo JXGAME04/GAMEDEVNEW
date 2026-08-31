@@ -64,7 +64,11 @@ void KUiAffairItem::CloseWindow(bool bDestroy)
 {
 	if (m_pSelf)
 	{
-		Wnd_GameSpaceHandleInput(true);		
+		Wnd_GameSpaceHandleInput(true);
+		// [VA 31/08b] OnCancel truoc khi huy: ban cu goi qua con tro NULL sau
+		// Destroy (hanh vi khong xac dinh - "chay duoc" chi vi OnCancel khong
+		// cham bien thanh vien). Cung khuon voi KUiMantleInlay::CloseWindow.
+		m_pSelf->OnCancel();
 		if (bDestroy)
 		{
 			m_pSelf->Destroy();
@@ -72,9 +76,6 @@ void KUiAffairItem::CloseWindow(bool bDestroy)
 		}
 		else
 			m_pSelf->Hide();
-			
-		m_pSelf->OnCancel();			
-	
 	}
 }
 

@@ -14056,6 +14056,7 @@ extern int LuaGetItemLife(Lua_State* L);
 extern int LuaGetItemProp(Lua_State* L);
 extern int LuaGiveItemUI(Lua_State* L);
 extern int LuaGetGiveItemUnit(Lua_State* L);
+extern int LuaGetGiveItemSlot(Lua_State* L);	// [CHONLO 31/08]
 extern int LuaRemoveItemByIndex(Lua_State* L);
 extern int LuaPushString(Lua_State* L);
 extern int LuaAppendString(Lua_State* L);
@@ -15669,6 +15670,7 @@ TLua_Funcs GameScriptFuns[] =
 		{ "GetItemProp",	LuaGetItemProp },
 		{ "GiveItemUI",	LuaGiveItemUI },
 		{ "GetGiveItemUnit",	LuaGetGiveItemUnit },
+		{ "GetGiveItemSlot",	LuaGetGiveItemSlot },	// [CHONLO 31/08]
 		{ "RemoveItemByIndex",	LuaRemoveItemByIndex },
 		{ "PushString",	LuaPushString },
 		{ "AppendString",	LuaAppendString },

@@ -169,6 +169,7 @@ public:
 	void	s2cPlayerSync(BYTE* pMsg);
 	void	s2cRemoveAllItem(BYTE* pMsg);
 	void	s2cDiceItem(BYTE* pMsg);
+	void	s2cSyncItemPfPack(BYTE* pMsg);	// [PFSYNC 31/08]
 	 
 	void	s2cExtend(BYTE* pMsg);
 	void	s2cExtendChat(BYTE* pMsg);

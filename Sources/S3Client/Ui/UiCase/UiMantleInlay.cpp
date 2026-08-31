@@ -46,6 +46,9 @@ KUiMantleInlay* KUiMantleInlay::OpenWindow(const char* pszTitle, const char* psz
 		if (!KUiItem::GetIfVisible())
 			KUiItem::OpenWindow();
 
+		// [VA 31/08b] dung tieu de script gui len (truoc day pszTitle bi vut bo)
+		if (pszTitle && pszTitle[0])
+			m_pSelf->m_Title.SetText(pszTitle);
 		m_pSelf->m_Guide.Clear();
 		if (pszInitString)
 			m_pSelf->m_Guide.AddOneMessage(pszInitString, strlen(pszInitString));
@@ -74,6 +77,11 @@ void KUiMantleInlay::CloseWindow(bool bDestroy)
 	if (m_pSelf)
 	{
 		Wnd_GameSpaceHandleInput(true);
+		// [VA 31/08b] tra do ve tui TRUOC khi huy: ban cu gan m_pSelf = NULL roi
+		// moi kiem if (m_pSelf) nen OnCancel() khong bao gio chay tren ca ba
+		// duong dong (Huy / nut X / ESC deu truyen bDestroy = true) -> do ket
+		// lai trong pos_affairitem, phai gap lai NPC moi thay.
+		m_pSelf->OnCancel();
 		if (bDestroy)
 		{
 			m_pSelf->Destroy();
@@ -81,9 +89,6 @@ void KUiMantleInlay::CloseWindow(bool bDestroy)
 		}
 		else
 			m_pSelf->Hide();
-
-		if (m_pSelf)
-			m_pSelf->OnCancel();
 	}
 }
 
@@ -228,11 +233,24 @@ void KUiMantleInlay::LoadScheme(const char* pScheme)
 					Ini.GetInteger(Sect, "Height", 24, &nH);
 					// 48px khong du cho "Tinh Than Thach" -> cat chu. Cho 96px va
 					// can giua theo o.
-					m_pSelf->m_Nhan[i].SetPosition(nX + nW / 2 - 48, nY + nH + 1);
-					m_pSelf->m_Nhan[i].SetSize(96, 14);
+					// [CHONLO 31/08] danh so o dung so lo server nhan (Region.h = i)
+					// va kep x vao long m_Pad de nhan khong tran ra ngoai vien trai /
+					// de len khung huong dan (obj_10 cu ra x=-24, obj_12 de GuideList).
+					int nNhanW = 60;
+					int nLx = nX + nW / 2 - nNhanW / 2;
+					int nPadW = 0, nPadH = 0;
+					m_pSelf->m_Pad.GetSize(&nPadW, &nPadH);
+					if (nPadW > nNhanW && nLx > nPadW - nNhanW)
+						nLx = nPadW - nNhanW;
+					if (nLx < 0)
+						nLx = 0;
+					char szNhan[32];
+					sprintf(szNhan, "L\347 kh\266m %d", i + 1);
+					m_pSelf->m_Nhan[i].SetPosition(nLx, nY + nH + 1);
+					m_pSelf->m_Nhan[i].SetSize(nNhanW, 14);
 					m_pSelf->m_Nhan[i].SetTextColor(nMau);
 					m_pSelf->m_Nhan[i].SetText(i == PF_UI_INPUT_COUNT - 1
-						? "Phi Phong" : "Tinh Th\307n Th\271ch");
+						? "Phi Phong" : szNhan);
 					m_pSelf->m_Nhan[i].BringToTop();
 				}
 			}
@@ -257,6 +275,8 @@ int KUiMantleInlay::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 			CloseWindow(true);
 		else if (uParam == (unsigned int)(KWndWindow*)&m_Close)
 			CloseWindow(true);		// nut X cua lop ngoai
+		else if (uParam == (unsigned int)(KWndWindow*)&m_TabStone)
+			m_TabStone.CheckButton(TRUE);	// [VA 31/08b] the duy nhat -> giu CHECKED
 		break;
 	case WM_KEYDOWN:
 		if (uParam == VK_RETURN)
@@ -399,6 +419,12 @@ void KUiMantleInlay::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 		return;
 	}
 	if (pItem->Obj.uGenre == CGOG_MONEY)
+		return;
+	// [VA 31/08b] mon o hang duoi (v != 0) la do phien give-box khac de lai:
+	// panel nay pick/drop deu gui v = 0 nen ve no ra chi tao "bong ma" khong
+	// keo ra duoc / hai mon gop mot o. An di; nguoi choi don bang nut Huy
+	// (thu hoi tat ca) hoac hop dat do thuong.
+	if (pItem->Region.v != 0)
 		return;
 	int nSlot = pItem->Region.h;
 	if (nSlot < 0 || nSlot >= PF_UI_INPUT_COUNT)

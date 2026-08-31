@@ -203,6 +203,7 @@ enum s2c_PROTOCOL
 	s2c_playersync,
 	s2c_removeallitem,
 	s2c_diceitem,			// mo/cap nhat/dong o xuc xac chia do
+	s2c_syncpfpack,			// [PFSYNC 31/08] dong bo m_nPfPack phi phong theo dwID
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

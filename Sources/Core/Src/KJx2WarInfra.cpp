@@ -804,6 +804,7 @@ int LuaGetItemProp(Lua_State* L)
 struct KJx2GiveSession
 {
 	std::vector<int> vItems;
+	std::vector<int> vSlots;	// [CHONLO 31/08] song nhip vItems: so hieu O (nX) tung muc, -1 = hang duoi
 };
 static std::map<int, KJx2GiveSession>	s_GiveSessions;	// playerIdx -> phien
 static std::map<int, DWORD>				s_GivePending;	// playerIdx -> script id da mo
@@ -852,6 +853,7 @@ int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx)
 	s_GivePending.erase(itP);
 	KJx2GiveSession& s = s_GiveSessions[nPlayerIdx];
 	s.vItems.clear();
+	s.vSlots.clear();	// [CHONLO 31/08]
 	if (nPlayerIdx <= 0)
 		return 0;
 	KItemList* pList = &Player[nPlayerIdx].m_ItemList;
@@ -865,7 +867,14 @@ int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx)
 		if (nUnits < 1)
 			nUnits = 1;
 		for (int u = 0; u < nUnits && (int)s.vItems.size() < JX2GIVE_MAX; u++)
+		{
+			// [CHONLO 31/08] day SONG NHIP trong cung than vong de hai mang khong
+			// lech khi cham tran JX2GIVE_MAX. nX = so hieu O (Region.h) client ghi
+			// luc tha do; mon o hang duoi khoang chua (nY != 0 - phien give-box
+			// khac de lai) danh dau -1 de script phan biet duoc.
 			s.vItems.push_back(p->nIdx);
+			s.vSlots.push_back(p->nY == 0 ? p->nX : -1);
+		}
 	}
 	return (int)s.vItems.size();
 }
@@ -884,6 +893,32 @@ int LuaGetGiveItemUnit(Lua_State* L)
 	}
 	Lua_PushNumber(L, nIdx);
 	return 1;
+}
+
+// [CHONLO 31/08] (i 1-based) -> so hieu O cua muc give thu i; -1 khi khong co
+// hoac muc nam o hang duoi. vSlots song nhip vItems nen chi so i dung chung.
+int LuaGetGiveItemSlot(Lua_State* L)
+{
+	int nSlot = -1;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_IsNumber(L, 1))
+	{
+		int i = (int)Lua_ValueToNumber(L, 1);
+		std::map<int, KJx2GiveSession>::iterator it = s_GiveSessions.find(nPlayerIndex);
+		if (it != s_GiveSessions.end() && i >= 1 && (size_t)i <= it->second.vSlots.size())
+			nSlot = it->second.vSlots[i - 1];
+	}
+	Lua_PushNumber(L, nSlot);
+	return 1;
+}
+
+// [PHIEN 31/08] don phien give-box: goi khi nguoi choi Huy/ESC thu hoi do
+// (RecoveryBoxCmd) va khi khe player duoc tai su dung (KPlayer init).
+// Truoc day s_GivePending chi duoc xoa khi bam OK nen o lai vinh vien.
+void KJx2WarInfra_ClearGiveSession(int nPlayerIdx)
+{
+	s_GiveSessions.erase(nPlayerIdx);
+	s_GivePending.erase(nPlayerIdx);
 }
 
 // (nItemIdx) - tru 1 DON VI (stack-- / xoa khi het) - khop khai trien stack

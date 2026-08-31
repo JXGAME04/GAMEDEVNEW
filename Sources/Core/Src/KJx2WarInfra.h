@@ -45,6 +45,8 @@ int LuaGetItemProp(Lua_State* L);         // (nItemIdx) -> 3 gia tri: genre, det
 int LuaGiveItemUI(Lua_State* L);          // (szTitle, szDesc, szOkCb, szCancelCb) - mo hop giao do;
                                           // xac nhan -> KProtocolProcess goi cb(nCount) qua GiveBoxCollect
 int LuaGetGiveItemUnit(Lua_State* L);     // (i 1-based) -> item idx (stack N = N muc lien tiep)
+int LuaGetGiveItemSlot(Lua_State* L);     // [CHONLO 31/08] (i 1-based) -> so hieu O (nX); -1 khi khong co
+void KJx2WarInfra_ClearGiveSession(int nPlayerIdx);  // [PHIEN 31/08] don phien give-box
 int LuaRemoveItemByIndex(Lua_State* L);   // (nItemIdx) - tru 1 don vi (stack-- / xoa khi het)
 int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx);  // -1 = khong phai phien JX2; >=0 = so don vi da gom
 

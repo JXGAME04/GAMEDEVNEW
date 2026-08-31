@@ -288,6 +288,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_playersync] = &KProtocolProcess::s2cPlayerSync;
 	ProcessFunc[s2c_removeallitem] = &KProtocolProcess::s2cRemoveAllItem;
 	ProcessFunc[s2c_diceitem] = &KProtocolProcess::s2cDiceItem;
+	ProcessFunc[s2c_syncpfpack] = &KProtocolProcess::s2cSyncItemPfPack;	// [PFSYNC 31/08]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -4411,6 +4412,22 @@ void KProtocolProcess::s2cDiceItem(BYTE* pMsg)
 		return;
 	CoreDataChanged(GDCNI_DICE_ITEM, (unsigned int)pSync, 0);
 }
+
+// [PFSYNC 31/08] nhan goi sao/lo/da phi phong - khuon y het s2cSyncMagic:
+// tra vat pham theo dwID roi do 4 o m_nPfPack vao ban sao client. Sau do
+// PF_StarPrefix / PF_AppendDesc (KItem.cpp) tu song, khong sua them gi.
+void KProtocolProcess::s2cSyncItemPfPack(BYTE* pMsg)
+{
+	ITEM_SYNC_PFPACK* pSync = (ITEM_SYNC_PFPACK*)pMsg;
+	if (pSync->ProtocolType != s2c_syncpfpack)
+		return;
+	DWORD nIdx = ItemSet.SearchID(pSync->m_dwID);
+	if (nIdx > 0 && nIdx < MAX_ITEM)
+	{
+		for (int i = 0; i < 4; i++)
+			Item[nIdx].SetPfPack(i, pSync->m_nPfPack[i]);
+	}
+}
 #endif
 
 void KProtocolProcess::s2cOpenQuestFinishDlg(BYTE* pMsg)
@@ -6384,7 +6401,15 @@ void KProtocolProcess::RecoveryBoxCmd(int nIndex, BYTE* pProtocol)
 		return;
 
 	RECOVERY_BOX_CMD *pCmd = (RECOVERY_BOX_CMD *)pProtocol;;
-	Player[nIndex].RecoveryBox(pCmd->dwID, pCmd->nX, pCmd->nY);			
+	Player[nIndex].RecoveryBox(pCmd->dwID, pCmd->nX, pCmd->nY);
+	// [PHIEN 31/08] Huy/ESC = phien give-box ket thuc: don s_GivePending (truoc
+	// day chi duoc xoa khi bam OK nen o lai vinh vien) va vo hieu m_dwGiveBoxId
+	// de goi OK mo coi (client hack) khong goi callback voi hop rong.
+	{
+		extern void KJx2WarInfra_ClearGiveSession(int nPlayerIdx);
+		KJx2WarInfra_ClearGiveSession(nIndex);
+		Player[nIndex].m_dwGiveBoxId = 0;
+	}			
 }
 
 void KProtocolProcess::c2sPlayerThrowAllItem(int nIndex, BYTE* pProtocol)
