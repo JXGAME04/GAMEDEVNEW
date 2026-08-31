@@ -43,6 +43,22 @@ def _chuan(s):
     return s.lstrip("\\")
 
 
+def _co_nhac(dong_chuan, can):
+    """Dong co nhac toi duong dan `can` KHONG tinh khop tien to nham.
+
+    BAY DA VAP: `can = "tinhnang\\loidai"` khop ca "tinhnang\\loidaihonchien"
+    - hai he KHAC NHAU. Phai doi ky tu ngay sau `can` la het chuoi hoac mot
+    dau phan cach (\\ hoac ") - tuc `can` la mot DOAN DUONG DAN tron ven.
+    """
+    i = dong_chuan.find(can)
+    while i >= 0:
+        j = i + len(can)
+        if j >= len(dong_chuan) or dong_chuan[j] in "\\\"' \t,)":
+            return True
+        i = dong_chuan.find(can, i + 1)
+    return False
+
+
 def ai_goi(duong_tuong_doi, bo_qua=None):
     """Tim moi tep con nhac toi tep/thu muc nay (khong tinh chinh no).
 
@@ -73,7 +89,7 @@ def ai_goi(duong_tuong_doi, bo_qua=None):
                 for i, l in enumerate(d, 1):
                     if l.strip().startswith("--"):
                         continue
-                    if can in _chuan(l):
+                    if _co_nhac(_chuan(l), can):
                         ra.append((os.path.relpath(p, SV), i, l.strip()[:120]))
     return ra
 
