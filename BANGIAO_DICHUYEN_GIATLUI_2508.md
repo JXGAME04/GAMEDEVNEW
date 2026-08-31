@@ -1472,3 +1472,112 @@ Chủ báo sau nghiệm thu 9.44: "phù về còn nhảy toạ độ bậy".
   sửa nằm trong `#ifndef _SERVER`). Chuỗi tái áp: …S12b_cuaso_vanh → **S12c_autothang**.
 - Nghiệm thu: chơi TK có auto, chết/phù vài lần — `SYNCME-DRIFT` lệch ≥4 ô phải về mức nhiễu
   (<10/phiên, không còn chuỗi dao động ±30 ô); S8-NAN vẫn đơn lẻ; cảm quan hết "nhảy bậy".
+
+## 9.46 "BOT/NPC/NGƯỜI CHƠI NHẢY TOẠ ĐỘ, BIẾN MẤT HIỆN LẠI" — GẮN LẠI NHANH BẢN SAO MỒ CÔI [S6-GANNHANH] (28/08 ~21h20) — client `284115d7` ĐÃ SWAP, CHỜ RELOG
+
+Chủ: "xem log không thấy BOT - NPC - Người chơi hay bị nhảy tọa độ à?" — đo phần BẢN SAO
+NGƯỜI KHÁC (client log 20:15-21:02, trận TK 500 bot):
+- **90 cú BIẾN MẤT rồi hiện lại 2-60s, trung vị 8,4 giây** = mồ côi do RECENTER (KRegion::Close)
+  rồi phải chờ vòng quay sync server (5 npc/tick/region, region đông ~150 con) — đây chính là
+  "nhảy tọa độ + biến mất + hiện lại chỗ khác" với mắt người chơi.
+- 131 cú `S10-SNAP` nắn 3-5 ô ("hai bên cùng đứng") — nắn trôi bình thường, ít gây khó chịu.
+- `S6-BAL` 247 cú toàn reg=-1 → **ma nhìn thấy vẫn = 0** ✓ (thành quả S11 giữ nguyên).
+- Vá (`ReverseTools/goi_va_S6_gannhanh.py`, 1 hunk, `KNpcSet::CheckBalance` — chạy MỖI TICK
+  client): con mồ côi có `SyncSignal` còn TƯƠI ≤36 khung (~2s — server VỪA sync = còn sống,
+  vị trí chuẩn, tự loại ma cũ) + không phải chết/hồi sinh (kế toán ref có gác death) + không
+  phải partner + còn trong 38 ô + region cũ ĐÃ NẠP LẠI (khớp m_RegionID VÀ trong cửa sổ 3×3
+  quanh region mình) → **AddNpc + AddRef gắn lại NGAY** (khuôn [S6-ORPHAN-BACK]). Kỳ vọng:
+  90 cú chờ-8-giây → gắn lại trong 1 tick (~55ms), người chơi không kịp thấy biến mất.
+- Binary: client **`284115d7`** (chứa cả S12c 9.45; bản bị thay `c02cbd9a` của phiên kia —
+  backup `.cu_2808_truoc_gannhanh_c02cbd9a`). **CHỜ RELOG** — một lần relog ăn cả 9.45+9.46.
+  Server không đổi. Chuỗi tái áp: …S12c_autothang → **S6_gannhanh**.
+- Nghiệm thu: `grep -c S6-GANNHANH` phải ≈ số cú ORPHAN tươi; cặp ORPHAN→BACK trễ 2-60s phải
+  tụt từ 90 → <10/47'; SNAP giữ nguyên mức; soi thêm không có [S6-GANNHANH] nào cho npc đã
+  chết (gác death hoạt động).
+
+## 9.47 "BOT CẤP 20 ĐƯỜNG MÔN KHÔNG ĐÁNH ĐƯỢC NPC" — KHÔNG PHẢI LẪN CHIÊU PHÁI KHÁC (30/08 chiều) + VÁ [CAST-LECH], server `9c1c572a` ĐÃ SWAP, CHỜ RESTART
+
+Chủ hỏi: ĐM cấp 20 không đánh được — đúng chiêu ĐM hay lỗi chiêu phái khác?
+**Trả lời: KHÔNG lẫn chiêu phái khác** (3 tầng đều sạch: bộ chọn lọc series khớp hệ; RemoveAllSkill
+từ 18/08 dọn chiêu thừa kế; [BotChon] thất bại = 0 cả ngày). Gốc là **DỮ LIỆU chiêu ĐM**:
+- skills.txt: chiêu sát thương ĐM SỚM NHẤT đòi **ReqLevel=30** (Đoạt Hồn Tiêu eqt=100 / Truy Tâm
+  Tiễn 101 / Mãn Thiên Hoa Vũ 102 — phủ đủ 3 họ vũ khí); chủ lực 60/80+ (302/339/342 đều rq=80).
+- ⇒ Bot ĐM cấp 20 KHÔNG có chiêu phái nào đủ cấp → bộ chọn rơi về đòn-đánh-thường (id 1/2/53,
+  eqt=-2, rq=0) → đánh như gãi → nhìn là "không đánh được". Từ **cấp 30** tự có chiêu khớp họ
+  vũ khí đang cầm (3 chiêu-30 phủ cả 3 họ). Đối chứng: Ngũ Độc có 303 rq=20 nên đánh được từ 20.
+- Muốn ĐM đánh được từ cấp 20 = QUYẾT ĐỊNH DATA của chủ: hạ ReqLevel (cột 54) 3 dòng id 47/50/54
+  trong `settings/skills.txt` 30→20 (tôi không tự đổi cân bằng).
+
+**Phát hiện kèm + ĐÃ VÁ [CAST-LECH]** (`ReverseTools/goi_va_botcast_repick.py`, 2 hunk):
+82.971 cú `[BotCast] BI TU CHOI`/ngày đến từ vỏn vẹn 2 bot hệ kiếm (Nga My/Võ Đang) bốc trúng
+"đường QUYỀN" (tay không, PB_WPN_NONE có sẵn trong pool) nhưng `b.nAtkSkill` vẫn giữ chiêu kiếm
+cũ — chiêu chỉ được chọn lại khi ĐỔI CẤP, nhánh phát-lại-vũ-khí bốc trúng NONE cũng không reset
+⇒ cast lệch vũ khí bị từ chối VĨNH VIỄN. Vá: tại chỗ thăm dò CanCastSkill==0, chiêu LỆCH vũ khí
+đang cầm (quy ước eqt y hệt pb_PickSkill) ⇒ `nAtkSkill=0` chọn lại ngay (từ chối vì mana/thế
+cưỡi giữ nguyên); gác không phát chiêu 0. Binary: server **`9c1c572a`** đè `cadd97da` (backup
+`.cu_3008_truoc_castlech_cadd97da`). Chuỗi tái áp CUỐI: **botcast_repick**.
+
+**Còn treo đáng điều tra tiếp** (nếu chủ muốn): 199k cú/ngày "10 giây không sụt máu" của **chiêu
+303 Độc Thạch Cốt (Ngũ Độc nội) vs quái HP600** — chiêu phép độc gần như 0 sát thương với quái
+bãi; + 46k cú vs quái HP 30000 (chiêu vật lý trần-20 không xuyên nổi giáp quái cao cấp).
+
+## 9.48 [DM20] BOT THIẾU CHIÊU PHÁI ĐỦ CẤP → TỰ HỌC + DÙNG ĐÒN ĐÁNH THƯỜNG (30/08) — server `7f0909fc` ĐÃ SWAP, CHỜ RESTART
+
+Chủ chốt 2 luật: **KHÔNG được sửa skills.txt**; phải VIẾT code "cấp 20 không có skill đánh được
+thì lấy skill đánh được cấp thấp hơn".
+- Vá (`ReverseTools/goi_va_dm20_donthuong.py`, 1 hunk cuối `pb_PickSkill`): quét xong mà
+  nBest==0 (Đường Môn <30: mọi chiêu phái bị lọc CAP; RemoveAllSkill lúc tạo bot đã xoá cả đòn
+  đánh thường của mẫu, hockynang chỉ dạy chiêu phái) → **học id 1 "Công kích vật lý"** (rq=0,
+  eqt=-2 mọi vũ khí, series=-1 không vướng lọc hệ — đã kiểm skills.txt) nếu chưa có, rồi dùng
+  nó đánh tạm — y hệt người chơi thấp cấp đánh đòn trắng. Đủ cấp chiêu phái (30) thì gate
+  đổi-cấp tự pick lại chiêu xịn. Nhãn: `[BotChon] ... -> dung DON DANH THUONG (id 1)`.
+- Binary: server **`7f0909fc`** đè `9c1c572a` (backup `.cu_3008_truoc_dm20_9c1c572a`) — gói
+  gồm cả [CAST-LECH] 9.47. Chuỗi tái áp CUỐI: botcast_repick → **dm20_donthuong**.
+- Nghiệm thu: thả batch bot ĐM mới cấp 20 → thấy dòng "dung DON DANH THUONG (id 1)"; bot NÉM
+  đòn trắng vào quái (sát thương nhỏ nhưng > 0, giết được quái HP 600); lên 30 tự chuyển sang
+  Đoạt Hồn Tiêu/Truy Tâm Tiễn/Mãn Thiên Hoa Vũ theo họ vũ khí.
+
+## 9.49 RA GỐC THẬT "BOT ĐM CẤP 20 KHÔNG ĐÁNH ĐƯỢC": CHIÊU 303 ĐỘC-THUẦN 0 SÁT THƯƠNG VỚI QUÁI — [303-DOC] (30/08 ~16h40) — server `d3486293` ĐÃ SWAP, CHỜ RESTART
+
+Chủ đúng cả hai lần; chẩn đoán rq=30 của tôi (9.47) SAI MỘT NỬA — bỏ sót chiêu vì lọc eqt≥100:
+- **303 "Độc Thạch Cốt" là chiêu ĐƯỜNG MÔN** (data từ `\script\skill\tangmen.lua` bảng `duci_gu`),
+  rq=20, eqt=-2 ⇒ là chiêu DUY NHẤT ĐM dùng được ở cấp 20 ⇒ bộ chọn LUÔN chọn nó (vì thế
+  fallback đòn-thường 9.48 không bao giờ nổ — 0 dòng sau restart 16:27).
+- `duci_gu` CHỈ có `poisondamage_v` (8→40) + `seriesdamage_p` — KHÔNG đòn tức thời; syncheck
+  cú pháp OK. Đo thật: **199k cú (29-30/08) + 308 cú (sau 16:27) "10 giây không sụt máu" của
+  303 vào quái HP600 còn nguyên máu** ⇒ trên build này ĐỘC KHÔNG BÀO MÒN QUÁI.
+- Hệ quả kép: ĐM cấp 20 ôm 303 đánh cả ngày = 0 sát thương, kẹt cấp 20 vĩnh viễn; 303 mang đòn
+  phép nên pb_CoChieuNoiTayKhong đếm ĐM là "phái có nội" ⇒ bot ĐM lẻ bị TƯỚC vũ khí rồi cũng ôm
+  303 vô dụng.
+- Vá (`ReverseTools/goi_va_303_docthuan.py`, 2 hunk KPlayerBot.cpp — không đụng engine/skills.txt):
+  H1 pb_PickSkill LOẠI HẲN ứng viên **phép độc-thuần** (IsPhysical=0 && mọi đòn đều poison;
+  PB_DIAG `DOCTHUAN`) — chiêu vật lý mang độc phụ vẫn giữ; H2 bỏ poison khỏi danh sách đòn-phép
+  trong pb_CoChieuNoiTayKhong ⇒ ĐM hết bị coi là phái-có-nội, bot lẻ GIỮ vũ khí (con đã bị tước
+  thì [BotVuKhi] tự phát lại như cơ chế 9.34).
+- Kỳ vọng sau restart: ĐM cấp 20 → `[BotChon] ... dung DON DANH THUONG (id 1)` → ném đòn trắng
+  giết quái 600 máu → lên 30 nhận Đoạt Hồn Tiêu/Truy Tâm Tiễn/Mãn Thiên Hoa Vũ; "khong sut mau"
+  của 303 tụt từ ~20k/giờ về ~0; ĐM lẻ cấp cao cầm lại vũ khí đánh chiêu tầm xa.
+- Binary: server **`d3486293`** đè `7f0909fc` (backup `.cu_3008_truoc_docthuan_7f0909fc`).
+  Chuỗi tái áp CUỐI: dm20_donthuong → **303_docthuan**. Nếu chủ muốn ĐỘC bào mòn được quái
+  (sửa engine poison-vs-mob) — việc riêng, đụng gameplay, cần chủ duyệt trước.
+
+### 9.49b ĐÍNH CHÍNH (chủ chỉ ra): ĐM **CÓ** chiêu cấp 10 dùng mọi vũ khí — bot bỏ qua vì XẾP HẠNG, không phải vì thiếu chiêu
+
+Chủ: "Đường Môn có skill đánh cấp 10 dùng được toàn bộ vũ khí sao mà không dùng mà đi đánh thường?"
+— ĐÚNG. Kiểm lại tận gốc:
+- **id 45 "Phích Lịch Đạn"**: rq=**10**, eqt=**-2 (mọi vũ khí: phi đao/phi tiêu/tụ tiễn)**,
+  IsPhysical=1, tầm 400, TargetEnemy=1, series=1 (khớp hệ ĐM) — và **bot CÓ HỌC** nó
+  (`factionhead.lua SKILLNORMAL[3]` dòng ĐẦU TIÊN). Dữ liệu `pili_dan` trong tangmen.lua:
+  physicsenhance_p 20→80%, deadlystrike_p, addskilldamage1-4 ⇒ đòn THẬT, ăn sát thương vũ khí.
+- **Vì sao bot vẫn ôm 303**: cả hai cùng eqt=-2, cùng có đòn sát thương, cùng mang poison
+  ⇒ hoà hết 3 bậc đầu (nNoi/nRank/nDmg) → xuống bậc **rqTier: 303 (rq20) > 45 (rq10) ⇒ 303
+  thắng**. Bậc rqTier thêm 18/08 để bot khỏi đấm-tay thay chiêu phái — đúng ý đồ, nhưng ở
+  ĐM nó chọn trúng chiêu độc-thuần 0 sát thương.
+- **Bot CHƯA HỀ dùng đòn thường** (0 dòng `DON DANH THUONG` cả ngày) — fallback 9.48 chỉ là
+  lưới an toàn cho cấp <10, không phải thứ đang chạy.
+- Vá 9.49 (`d3486293`, ĐÃ nằm trên đĩa) **giải đúng ca này**: loại 303 (phép độc-thuần) khỏi
+  ứng viên ⇒ ở cấp 20 chỉ còn **45** hợp lệ (đã soát: 305/306 Thanh Mộc Công TargetSelf=1;
+  49 Địa Diêm cơ quan TargetEnemy=0; 347 Địa Diêm Hoả series=3 lệch hệ; 47/50/54 đòi cấp 30)
+  ⇒ **bot ĐM cấp 10-29 sẽ dùng Phích Lịch Đạn**, cấp 30 lên Đoạt Hồn Tiêu/Truy Tâm Tiễn/Mãn
+  Thiên Hoa Vũ theo họ vũ khí đang cầm.
+- ⚠️ **GameServer vẫn chạy bản 16:27 (`7f0909fc`) — CHƯA có vá này**; `d3486293` chờ RESTART.

@@ -709,6 +709,11 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		NewItem.SetExpTime(pItemData->iyear,pItemData->imonth,pItemData->iday,pItemData->ihour);
 
 		NewItem.m_CommonAttrib.uPrice = pItemData->iiduphong9; //Load gia bay ban
+		// [PHI PHONG 2026-08-29] nap cap sao / ma da / cap lo / chuc phuc tu 4 o du phong
+		NewItem.SetPfPack(0, pItemData->iiduphong5);
+		NewItem.SetPfPack(1, pItemData->iiduphong6);
+		NewItem.SetPfPack(2, pItemData->iiduphong7);
+		NewItem.SetPfPack(3, pItemData->iiduphong8);
 
 		pItemData ++;
 		
@@ -1070,6 +1075,11 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->iiduphong3 = Item[nItemIndex].GetItemGlowLight(); //thay ®æi ngo¹i trang m? ¸o, v?kh?ph¸t s¸ng
 		pItemData->iiduphong4 = Item[nItemIndex].GetMaxOptMultiply();
 		pItemData->iiduphong9 = Item[nItemIndex].m_CommonAttrib.uPrice; //Luu gia bay ban cua Item
+		// [PHI PHONG 2026-08-29] ghi cap sao / ma da / cap lo / chuc phuc xuong 4 o du phong
+		pItemData->iiduphong5 = Item[nItemIndex].GetPfPack(0);
+		pItemData->iiduphong6 = Item[nItemIndex].GetPfPack(1);
+		pItemData->iiduphong7 = Item[nItemIndex].GetPfPack(2);
+		pItemData->iiduphong8 = Item[nItemIndex].GetPfPack(3);
 		pItemData->ilocksell = Item[nItemIndex].m_CommonAttrib.bLockSell;
 		pItemData->ilocktrade = Item[nItemIndex].m_CommonAttrib.bLockTrade;
 		pItemData->ilockdrop = Item[nItemIndex].m_CommonAttrib.bLockDrop;

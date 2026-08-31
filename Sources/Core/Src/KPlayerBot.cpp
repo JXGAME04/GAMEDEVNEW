@@ -423,9 +423,11 @@ static int pb_CoChieuNoiTayKhong(int nNpcIdx)
 		for (int a = 0; a < nDaNum && a < MAX_MISSLE_DAMAGEATTRIB; a++)
 		{
 			const int nT = pDa[a].nAttribType;
+			// [303-DOC 30/08] BO poisondamage: doc khong bao mon quai tren build nay
+			// (199k cu do that) - chieu doc-thuan khong du tu cach "chieu noi danh duoc",
+			// tranh DM bi tuoc vu khi oan roi om 303 vo dung.
 			if (nT == magic_magicdamage_v  || nT == magic_colddamage_v
-			 || nT == magic_firedamage_v   || nT == magic_lightingdamage_v
-			 || nT == magic_poisondamage_v)
+			 || nT == magic_firedamage_v   || nT == magic_lightingdamage_v)
 				return 1;
 		}
 	}
@@ -4915,6 +4917,26 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 				}
 			}
 		}
+		// [303-DOC 30/08] chieu PHEP ma MOI don sat thuong deu la POISON (303 Doc
+		// Thach Cot cua DM: duci_gu chi co poisondamage_v): do that 29-30/08 co
+		// 199k cu "10 giay khong sut mau" vao quai HP600 con nguyen mau - doc khong
+		// bao mon quai tren build nay. LOAI HAN ung vien loai nay: DM cap 20 se roi
+		// ve don danh thuong (fallback DM20) va len 30 co chieu that. Chieu VAT LY
+		// mang doc phu van giu (con sat thuong vu khi).
+		if (bNoi && !p->IsPhysical())
+		{
+			int bDamKhacDoc = 0;
+			KMagicAttrib* pDa3 = p->GetDamageAttribs();
+			const int nDaNum3 = p->GetDamageAttribsNum();
+			for (int a3 = 0; a3 < nDaNum3 && a3 < MAX_MISSLE_DAMAGEATTRIB; a3++)
+				if (pDa3[a3].nAttribType != magic_poisondamage_v)
+				{
+					bDamKhacDoc = 1;
+					break;
+				}
+			if (!bDamKhacDoc)
+			{ PB_DIAG(" %d:DOCTHUAN", id); continue; }
+		}
 		const int nNoi = bThienNoi ? bNoi : 0;
 		PB_DIAG(" %d:OK(lv%d,r%d,rq%d,d%d,n%d)", id, lv, nRank, nRq, nDmg, bNoi);
 
@@ -4930,6 +4952,33 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 			nBestRq   = nRq;
 			nBest     = id;
 			nBestLv   = lv;
+		}
+	}
+	// [DM20 30/08] (chu game: "KHONG doi skills.txt; cap thap khong co skill phai
+	// thi lay skill danh duoc cap thap hon"). Duong Mon: chieu som nhat rq=30 ->
+	// bot cap < 30 khong co ung vien nao qua loc CAP; RemoveAllSkill luc tao bot
+	// da xoa ca don danh thuong cua mau, hockynang chi day chieu phai -> nBest=0
+	// -> bot dung nhin. Day lai DON DANH THUONG id 1 (rq=0, eqt=-2 moi vu khi,
+	// series=-1 khong vuong loc he) roi dung no danh tam - y het nguoi choi thap
+	// cap danh don trang; du cap chieu phai thi gate doi-cap tu pick lai chieu xin.
+	if (nBest == 0)
+	{
+		int nCoCb = 0;
+		for (int q9 = 1; q9 < MAX_NPCSKILL; q9++)
+			if (sl.m_Skills[q9].SkillId == 1)
+			{
+				nCoCb = 1;
+				break;
+			}
+		if (!nCoCb)
+			sl.Add(1, 1);
+		if (g_SkillManager.GetSkill(1, 1))
+		{
+			nBest   = 1;
+			nBestLv = 1;
+			pb_Log("[BotChon] %s (he %d, vu khi %d) khong co chieu phai du cap"
+			       " -> dung DON DANH THUONG (id 1)\n",
+			       Player[nIdx].m_PlayerName, (int)Npc[nNpcIdx].m_Series, nWant);
 		}
 	}
 	// 1000 bot: chi in nhat ky chon chieu khi THAT BAI (nBest = 0) - truong hop
@@ -6548,20 +6597,48 @@ static int pb_Fight(int nIdx, int nNpcIdx, int nSub, PB_Bot& b)
 				      && Player[nIdx].m_ItemList.GetEquipment(itempart_horse) > 0)
 					Player[nIdx].CheckRideHorse(FALSE);     // chieu doi cuoi -> len ngua
 				int nP1 = -1, nP2 = t;
-				if (pDo->CanCastSkill(nNpcIdx, nP1, nP2) == 0
-				 && now - b.nUongTick >= (unsigned int)(GAME_FPS * 5))
+				if (pDo->CanCastSkill(nNpcIdx, nP1, nP2) == 0)
 				{
-					pb_Log("[BotCast] %s chieu %d cap %d BI TU CHOI (eqt=%d,"
-					       " vukhi detail=%d parti=%d, mana=%d/%d)\n",
-					       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv,
-					       pDo->GetEquipLimit(),
-					       Player[nIdx].m_ItemList.GetWeaponType(),
-					       Player[nIdx].m_ItemList.GetWeaponParticular(),
-					       (int)Npc[nNpcIdx].m_CurrentMana, (int)Npc[nNpcIdx].m_CurrentManaMax);
+					// [CAST-LECH 30/08] 83k cu tu choi/ngay = bot he kiem boc trung
+					// "duong quyen" (tay khong) nhung van giu chieu kiem cu: chieu chi
+					// duoc chon lai khi DOI CAP, nhanh phat-lai vu khi boc trung NONE
+					// cung khong reset -> ket vinh vien. Chieu LECH vu khi dang cam
+					// (quy uoc eqt y het pb_PickSkill) -> ep chon lai ngay; tu choi vi
+					// ly do khac (mana, the cuoi...) giu nguyen.
+					const int eqC = pDo->GetEquipLimit();
+					int nWantC = -1;
+					{
+						const int nWpnC = Player[nIdx].m_ItemList.GetEquipment(itempart_weapon);
+						if (nWpnC > 0)
+						{
+							const int nDetC = Item[nWpnC].GetDetailType();
+							const int nParC = Item[nWpnC].GetParticular();
+							nWantC = (nParC == HAND_PARTICULAR) ? -1
+							       : ((nDetC == 1) ? (nParC + 100) : nParC);
+						}
+					}
+					if (eqC != -2 && eqC != nWantC)
+					{
+						pb_Log("[BotCast] %s chieu %d LECH vu khi (eqt=%d want=%d)"
+						       " -> chon lai chieu theo vu khi hien tai\n",
+						       Player[nIdx].m_PlayerName, b.nAtkSkill, eqC, nWantC);
+						b.nAtkSkill = 0;
+					}
+					else if (now - b.nUongTick >= (unsigned int)(GAME_FPS * 5))
+					{
+						pb_Log("[BotCast] %s chieu %d cap %d BI TU CHOI (eqt=%d,"
+						       " vukhi detail=%d parti=%d, mana=%d/%d)\n",
+						       Player[nIdx].m_PlayerName, b.nAtkSkill, b.nAtkSkillLv,
+						       pDo->GetEquipLimit(),
+						       Player[nIdx].m_ItemList.GetWeaponType(),
+						       Player[nIdx].m_ItemList.GetWeaponParticular(),
+						       (int)Npc[nNpcIdx].m_CurrentMana, (int)Npc[nNpcIdx].m_CurrentManaMax);
+					}
 				}
 			}
 		}
-		Npc[nNpcIdx].SendCommand(do_skill, b.nAtkSkill, -1, t);
+		if (b.nAtkSkill > 0)   // [CAST-LECH] vua bi ep chon lai -> nhip sau phat chieu moi
+			Npc[nNpcIdx].SendCommand(do_skill, b.nAtkSkill, -1, t);
 	}
 	return 1;
 }

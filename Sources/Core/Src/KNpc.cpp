@@ -1695,7 +1695,11 @@ void KNpc::OnDeath()
 					ExecuteScript2(ActionScript, "OnDeath", m_Index, m_nLastDamageIdx); //#khi player giet chet npc hoac player
 				}
 								
-				ExecuteScript2("\\script\\tinhnang\\datau\\danhquai.lua", "OnDeathMonsterDaTau", m_Index, m_nLastDamageIdx); //#nhiÃ–m vÃ´ dÂ· tÃˆu Â®Â¸nh quÂ¸i				
+				// Truoc day moc nay goi thang vao \script\tinhnang\datau\danhquai.lua cua he Da Tau CU.
+				// He do da go (ban thay = script\task\newtask\tasklink, port 15-16/08); phan con
+				// phai chay moi lan giet quai chi la moc dem cua Ban Dong Hanh, nay o onkillnpc.lua.
+				// CHU Y: ham nay chay MOI LAN co NPC chet vi tay nguoi choi - dung them viec nang.
+				ExecuteScript2("\\script\\global\\onkillnpc.lua", "OnPlayerKillNpc", m_Index, m_nLastDamageIdx);	// [DONDATAU 30/08] moc "nguoi choi giet NPC".
 			}
 		}
 
@@ -9255,8 +9259,33 @@ void KNpc::DropRateItem(int nCount, const char* pszFileName, int nUnknown, int n
 	int j = 0;
 	GetMpsPos(&nX, &nY);
 
+	// [VA5LOI 29/08] CHONG TREO MAY CHU. `j++` chi nam trong nhanh trung
+	// (cuoi ham), nen neu TONG RandRate = 0 thi khong muc nao trung duoc
+	// va vong while duoi day KHONG BAO GIO THOAT. Co tep .ini nhu the
+	// that: npcdroprate_fenglindubei.ini khai Count=86 ma khong co muc
+	// [n] nao (KNpcTemplate.cpp:41-44 cho moi truong mac dinh 0).
+	int nTongRate = 0;
+	for (int nT = 0; nT < m_pDropRate->nCount; nT++)
+		nTongRate += m_pDropRate->pItemParam[nT].nRate;
+	// [NOICHOT 29/08] chi chan dung cai gay TREO. g_Random(0) tra ve 0 chu
+	// khong chia cho 0 (Engine\Src\KRandom.cpp), nen tep .ini co
+	// RandRange = 0 ma tong rate > 0 van rot do binh thuong (luon trung
+	// muc dau). Chan ca truong hop do la DOI HANH VI, khong phai chong treo.
+	if (nTongRate <= 0 || m_pDropRate->nMaxRandRate < 0)
+		return;
+	// [PBLUA 29/08] Tran so lan roll, dat theo SO DO THAT (da quet ca 49
+	// tep settings\droprate\**\*.ini): tep te nhat la
+	// npcdroprate110.ini voi RandRange 400.000 / tong rate 4.300 = 93
+	// lan roll ky vong cho MOI mon. Voi so mon nhieu nhat ma script yeu
+	// cau, ky vong xau nhat van duoi 2.000 lan. Tran 2.000.000 gap hon
+	// mot nghin lan con so do, nen du lieu dung KHONG BAO GIO cham toi
+	// va ti le rot do giu nguyen y het truoc khi va.
+	int nRollConLai = 2000000;
+
 	while (j < nCount)
 	{
+		if (--nRollConLai < 0)
+			break;
 		nRand = g_Random(m_pDropRate->nMaxRandRate);
 		nCheckRand = 0;
 

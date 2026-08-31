@@ -46,13 +46,20 @@ void g_DebugLog(LPSTR Fmt, ...)
 #ifndef __linux
 	if (m_hWndDebug)
 	{
-		char buffer[256];
+		// [TRANLOG 29/08] TRAN BO DEM THAT: vsprintf khong co chan do dai, ma
+		// diem goi ScriptFuns.cpp:2483 in ca cau lenh Lua
+		// ("%.128s -> %.200s" = hon 330 byte) vao buffer 256 byte => dam
+		// ngan xep. Dung _vsnprintf co chan va tu ket NUL.
+		char buffer[2048];
 		va_list va;
 
 		COPYDATASTRUCT data;
 		va_start(va, Fmt);
-		int n = vsprintf(buffer, Fmt, va);
+		int n = _vsnprintf(buffer, sizeof(buffer) - 1, Fmt, va);
 		va_end(va);
+		if (n < 0)			// bi cat bot: _vsnprintf khong tu ket NUL
+			n = (int)sizeof(buffer) - 1;
+		buffer[n] = 0;
 		data.dwData = 1;
 		data.cbData = n + 1;
 		data.lpData = buffer;

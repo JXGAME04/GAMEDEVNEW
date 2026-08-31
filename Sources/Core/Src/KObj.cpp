@@ -1242,9 +1242,14 @@ void	KObj::ExecScript(int nPlayerIdx)
 		TCHAR buff[80];
 		int len = 0;
 		sprintf(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
+		// [VA5LOI 29/08] fopen co the tra NULL (het handle / tep bi khoa /
+		// dia day) - truoc day fprintf(NULL) lam SAP may chu.
 		FILE* pFile = fopen("ScripObjectDialog.log", "a");
-		fprintf(pFile, "%s \t [%s] \t %s\n", buff , m_szName ,m_szScriptName);
-		fclose(pFile);
+		if (pFile)
+		{
+			fprintf(pFile, "%s \t [%s] \t %s\n", buff , m_szName ,m_szScriptName);
+			fclose(pFile);
+		}
 	}
 #endif
 

@@ -42,6 +42,7 @@ public:
 	BOOL Get_SizeItem(IN int,IN int,IN int,IN int,IN OUT int*,IN OUT int*);
 	BOOL Gen_MagicScript(IN int,IN int, IN OUT KItem*,IN int,IN int,IN int, IN int);
 	BOOL Gen_Quest(IN int, IN OUT KItem*,IN int);
+	BOOL Gen_StarStone(IN int, IN OUT KItem*, IN int);	// [PHI PHONG]
 	BOOL Gen_Mine(IN int, IN OUT KItem*,IN int,IN int,IN int,IN int);
 	BOOL Gen_TownPortal(IN OUT KItem*);
 	BOOL Gen_Medicine(IN int, IN int, IN int, IN int, IN OUT KItem*, IN int);

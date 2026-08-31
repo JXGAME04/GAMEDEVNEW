@@ -2109,4 +2109,316 @@ int LuaHD3_TrimString(Lua_State* L)
 	return 0;
 }
 
+// ===========================================================================
+// [PHI PHONG 2026-08-29] 12 ham Lua cua he phi phong, port tu ban Linux.
+// Doi chieu jx_linux_y (bang dang ky Lua @0x082e36b0, sai buoc vat pham 0x368):
+//   GetEquipMaxStoneNum  @0x080fc800 -> item+0x2A8   so lo kham
+//   GetMaxEquipWishValue @0x080fcd80 -> item+0x2AC   tran diem chuc phuc
+//   GetCurEquipWishValue @0x080fce00 -> item+0x2B4   chuc phuc hien co
+//   GetStarLevel         @0x080fce80 -> item+0x2B8   cap sao
+//   GetStarStoneOnEquip  @0x080fca40 -> item+0x2B8 + i*4  ma da tung lo
+//   GetStoneLevelOnEquip @0x080fc980 -> item+0x2CC + i*4  cap sao tung lo
+// JX1 luu cung nhung so do trong KItem::m_nPfPack[4] (xem KItem.h).
+// Chi so lo chay 1..5 giong het ban Linux.
+// ===========================================================================
+
+// Tra ve chi so vat pham hop le, hoac 0 neu tham so sai.
+static int PF_ItemIdx(Lua_State* L, int nArg)
+{
+	if (Lua_GetTopIndex(L) < nArg || !Lua_IsNumber(L, nArg))
+		return 0;
+	int nIdx = (int)Lua_ValueToNumber(L, nArg);
+	if (nIdx <= 0 || nIdx >= MAX_ITEM)
+		return 0;
+	return nIdx;
+}
+
+int LuaPF_GetStarLevel(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	Lua_PushNumber(L, n ? Item[n].GetStarLevel() : 0);
+	return 1;
+}
+
+// Tang 1 sao. Tra 1 = thanh cong, 0 = khong the (het 10 sao / vat pham sai).
+// Ban Linux tra ma loi khac 1 khi that bai noi bo - giu dung quy uoc do.
+int LuaPF_StarLevelUp(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	if (!n)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nCur = Item[n].GetStarLevel();
+	if (nCur >= 10)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[n].SetStarLevel(nCur + 1);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaPF_GetCurEquipWishValue(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	Lua_PushNumber(L, n ? Item[n].GetCurWishValue() : 0);
+	return 1;
+}
+
+int LuaPF_SetEquipWishValue(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	if (!n || Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[n].SetCurWishValue((int)Lua_ValueToNumber(L, 2));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+int LuaPF_GetMaxEquipWishValue(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	Lua_PushNumber(L, n ? Item[n].GetMaxWishValue() : 0);
+	return 1;
+}
+
+int LuaPF_GetEquipMaxStoneNum(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	Lua_PushNumber(L, n ? Item[n].GetMaxStoneNum() : 0);
+	return 1;
+}
+
+int LuaPF_GetLastBreakTime(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	Lua_PushNumber(L, n ? Item[n].GetLastBreakTime() : 0);
+	return 1;
+}
+
+int LuaPF_SetLastBreakTime(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	if (!n || Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[n].SetLastBreakTime((int)Lua_ValueToNumber(L, 2));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// GetStarStoneOnEquip(nItemIdx, nSlot)
+// nSlot = -1 -> tra VE DU 5 GIA TRI (mantleupgrade_head.lua goi
+// pack(GetStarStoneOnEquip(idx, -1)) roi lay tbHasStone[1..5]).
+int LuaPF_GetStarStoneOnEquip(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	int nSlot = (Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+				? (int)Lua_ValueToNumber(L, 2) : -1;
+	if (nSlot == -1)
+	{
+		for (int i = 1; i <= KItem::PF_MAX_STONE; i++)
+			Lua_PushNumber(L, n ? Item[n].GetStoneId(i) : 0);
+		return KItem::PF_MAX_STONE;
+	}
+	Lua_PushNumber(L, n ? Item[n].GetStoneId(nSlot) : 0);
+	return 1;
+}
+
+int LuaPF_GetStoneLevelOnEquip(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	int nSlot = (Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
+				? (int)Lua_ValueToNumber(L, 2) : 0;
+	Lua_PushNumber(L, n ? Item[n].GetStoneLevel(nSlot) : 0);
+	return 1;
+}
+
+int LuaPF_SetStoneLevelOnEquip(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	if (!n || Lua_GetTopIndex(L) < 3 || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[n].SetStoneLevel((int)Lua_ValueToNumber(L, 2), (int)Lua_ValueToNumber(L, 3));
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// InlayStarStone(nItemIdx, nSlot, nStoneParticular)
+// Kham vinh vien: ban Linux khong co duong go ra.
+int LuaPF_InlayStarStone(Lua_State* L)
+{
+	int n = PF_ItemIdx(L, 1);
+	if (!n || Lua_GetTopIndex(L) < 3 || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nSlot = (int)Lua_ValueToNumber(L, 2);
+	int nStone = (int)Lua_ValueToNumber(L, 3);
+	if (nSlot < 1 || nSlot > Item[n].GetMaxStoneNum())
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	Item[n].SetStoneId(nSlot, nStone);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// ===========================================================================
+// [PHI PHONG 2026-08-29] 3 ham con thieu cho bo script phi phong ban Linux.
+//
+// VI SAO PHAI THEM AddGoldEquipByRow THAY VI DUNG AddGoldItem CO SAN:
+//   Linux  AddGoldItem(0, 5375)  -> dong 5375 cua goldequip.txt
+//   JX1    AddGoldItem(nEventId) -> doc g_GoldItemTab = settings\item\GoldItem.txt
+//   Hai ngu nghia HOAN TOAN KHAC NHAU. Ghi de AddGoldItem se lam hong moi script
+//   JX1 dang dung no, nen them ham TEN MOI va nan lai loi goi trong script port.
+//   AddPlatinaItem thi JX1 chua co nen GIU DUNG TEN ban Linux.
+//
+// Duong tao: KItemSet::Add(nItemNature, item_equip, nSeries, nLevel, nLuck, nRow)
+//   -> KItemGenerator::Gen_Equipment (KItemGenerator.cpp:1406-1421) chuyen nRow
+//      thang vao Gen_GoldEquipment / Gen_PlatinaEquipment roi SetRow(nRow).
+// ===========================================================================
+
+// Dat vat pham vua tao vao hanh trang, khong con cho thi cho vao tay.
+// Tra ve chi so vat pham, 0 = hong.
+static int PF_PlaceNewItem(int nPlayerIndex, int nIndex)
+{
+	if (nIndex <= 0)
+		return 0;
+	int x = 0, y = 0;
+	if (Player[nPlayerIndex].m_ItemList.CheckCanPlaceInEquipment(
+			Item[nIndex].GetWidth(), Item[nIndex].GetHeight(), &x, &y))
+	{
+		Player[nPlayerIndex].m_ItemList.AddKIL(nIndex, pos_equiproom, x, y);
+	}
+	else
+	{
+		Player[nPlayerIndex].m_ItemList.AddKIL(nIndex, pos_hand, 0, 0);
+	}
+	return nIndex;
+}
+
+// Doc tham so chi so dong: chap nhan ca (nIdx) lan (0, nIdx) de giu nguyen
+// cach goi cua ban Linux -- AddPlatinaItem(unpack({0, 4835})).
+static int PF_ReadRowArg(Lua_State* L)
+{
+	int nTop = Lua_GetTopIndex(L);
+	if (nTop >= 2 && Lua_IsNumber(L, 2))
+		return (int)Lua_ValueToNumber(L, 2);
+	if (nTop >= 1 && Lua_IsNumber(L, 1))
+		return (int)Lua_ValueToNumber(L, 1);
+	return -1;
+}
+
+// AddGoldEquipByRow(nRow [, nSeries]) -> chi so vat pham (0 = hong)
+int LuaPF_AddGoldEquipByRow(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRow = PF_ReadRowArg(L);
+	if (nPlayerIndex <= 0 || nRow < 1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nSeries = 0;
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsNumber(L, 3))
+		nSeries = (int)Lua_ValueToNumber(L, 3);
+	// [VA 29/08 - phan bien] chi so script nhin thay = GetRow() + 1
+	// (LuaCmp_GetGlodEqIndex, KItemCompound.cpp:1782) nen phai tru 1 o day,
+	// khong thi tao nham mon ke ben va chuoi dot pha khong khop bang Lua.
+	int nIndex = ItemSet.Add(NATURE_GOLD, item_equip, nSeries, 0, 10, nRow - 1);
+	Lua_PushNumber(L, PF_PlaceNewItem(nPlayerIndex, nIndex));
+	return 1;
+}
+
+// AddPlatinaItem(0, nRow [, nLevel]) -> chi so vat pham (0 = hong)
+// Giu dung ten ban Linux vi JX1 chua co ham nao trung ten.
+int LuaPF_AddPlatinaItem(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	int nRow = PF_ReadRowArg(L);
+	if (nPlayerIndex <= 0 || nRow < 1)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nLevel = 0;
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsNumber(L, 3))
+		nLevel = (int)Lua_ValueToNumber(L, 3);
+	// [VA 29/08 - phan bien] xem ghi chu o AddGoldEquipByRow
+	int nIndex = ItemSet.Add(NATURE_PLATINA, item_equip, 0, nLevel, 10, nRow - 1);
+	Lua_PushNumber(L, PF_PlaceNewItem(nPlayerIndex, nIndex));
+	return 1;
+}
+
+// GetItemIndexBydwID(dwID) -> chi so vat pham cua CHINH nguoi choi, 0 = khong thay.
+// Ban Linux dung de doi dwID ma client gui len thanh chi so (mantleupgrade_npc.lua:137).
+// Chi quet tui cua nguoi choi hien tai nen khong the tra ve do cua nguoi khac.
+int LuaPF_GetItemIndexBydwID(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	DWORD dwID = (DWORD)Lua_ValueToNumber(L, 1);
+	if (dwID == 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KItemList* pList = &Player[nPlayerIndex].m_ItemList;
+	for (PlayerItem* p = pList->GetFirstItem(); p; p = pList->GetNextItem())
+	{
+		int nIdx = p->nIdx;
+		if (nIdx > 0 && nIdx < MAX_ITEM && Item[nIdx].GetID() == dwID)
+		{
+			Lua_PushNumber(L, nIdx);
+			return 1;
+		}
+	}
+	Lua_PushNumber(L, 0);
+	return 1;
+}
+
+// [PHI PHONG 2026-08-29] OpenMantleInlayBox(szTieuDe, szNoiDung, szHamNop)
+// Giong het LuaGiveItemUI nhung nType = 3 -> client mo panel kham thay vi
+// hop dat do thuong. Duong THU DO va NOP DO van la duong cu nen phia server
+// khong phai them gi (doMantleMosaicStoneBox nhan y nguyen).
+int LuaPF_OpenMantleInlayBox(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0)
+		return 0;
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsString(L, 3))
+		return 0;
+	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	S2C_GIVE_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_openaffairbox;
+	NetCommand.nType = 3;
+	sWStrCpy(NetCommand.Value,  Lua_ValueToString(L, 1), sizeof(NetCommand.Value));
+	sWStrCpy(NetCommand.Value1, Lua_ValueToString(L, 2), sizeof(NetCommand.Value1));
+	sWStrCpy(NetCommand.Value2, Lua_ValueToString(L, 3), sizeof(NetCommand.Value2));
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, Lua_ValueToString(L, 3),
+		sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
+	s_GivePending[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_GIVE_BOX));
+	return 0;
+}
+
 #endif // _SERVER

@@ -657,6 +657,13 @@ enum ITEMGENRE
 	item_task,				
 	item_townportal,
 	item_magicscript,
+	// [PHI PHONG 2026-08-29] noi them 3 loai cho KHOP BAN LINUX
+	// (Linux: 7 brokenequip, 8 fusion, 9 starstone -- da doi chieu bang du lieu).
+	// An toan: item_number chi dung 2 cho trong toan nguon, va mang
+	// szColor[item_number][32] (KItem.cpp) von chi co 5 dong khoi tao tren 7.
+	item_brokenequip,	// 7
+	item_fusion,		// 8
+	item_starstone,		// 9 -- Tinh Than Thach kham phi phong
 	item_number,			
 };
 

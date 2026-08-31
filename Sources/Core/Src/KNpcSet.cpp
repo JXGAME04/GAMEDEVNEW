@@ -770,6 +770,46 @@ void KNpcSet::CheckBalance()
 	while(nIdx)
 	{
 		int nTmpIdx = m_UseIdx.GetNext(nIdx);
+		// [S6-GANNHANH 28/08] (chu game: "BOT/NPC/nguoi choi hay nhay toa do, bien mat
+		// roi hien lai") Do 20:15-21:02: 90 cu bien-mat 2-60s (p50 8,4s) = mo coi do
+		// RECENTER roi cho vong quay sync server qua lau. Con mo coi ma SyncSignal con
+		// TUOI (<=36 khung ~2s: server VUA sync = con song, vi tri chuan - tu loai ma cu)
+		// va region cu DA NAP LAI trong cua so 3x3 -> gan lai NGAY, khoi cho 8s.
+		// Gac: bo chet/hoi sinh (ke toan ref co gac death), partner (he rieng), chi gan
+		// khi con trong 38 o (ngoai hon la de VANH 42 go lai = flap).
+		if (Npc[nIdx].m_RegionIndex < 0
+		 && nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex
+		 && Npc[nIdx].m_Kind != kind_partner
+		 && Npc[nIdx].m_Doing != do_death && Npc[nIdx].m_Doing != do_revive
+		 && SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal <= 36)
+		{
+			const int nSelf6 = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			if (nSelf6 > 0 && nSelf6 < MAX_NPC && Npc[nSelf6].m_RegionIndex >= 0)
+			{
+				const int nGx6 = (int)LOWORD(Npc[nIdx].m_dwRegionID) - (int)LOWORD(Npc[nSelf6].m_dwRegionID);
+				const int nGy6 = (int)HIWORD(Npc[nIdx].m_dwRegionID) - (int)HIWORD(Npc[nSelf6].m_dwRegionID);
+				const int nRw6 = SubWorld[0].m_nRegionWidth;
+				const int nRh6 = SubWorld[0].m_nRegionHeight;
+				const int nDx6 = nGx6 * nRw6 + Npc[nIdx].m_MapX - Npc[nSelf6].m_MapX;
+				const int nDy6 = nGy6 * nRh6 + Npc[nIdx].m_MapY - Npc[nSelf6].m_MapY;
+				const int nAx6 = (nDx6 < 0) ? -nDx6 : nDx6;
+				const int nAy6 = (nDy6 < 0) ? -nDy6 : nDy6;
+				if (nGx6 >= -1 && nGx6 <= 1 && nGy6 >= -1 && nGy6 <= 1
+				 && nAx6 <= 38 && nAy6 <= 38)
+				{
+					for (int r6 = 0; r6 < MAX_REGION; r6++)
+					{
+						if (SubWorld[0].m_Region[r6].m_RegionID != Npc[nIdx].m_dwRegionID)
+							continue;
+						Npc[nIdx].m_RegionIndex = r6;
+						SubWorld[0].m_Region[r6].AddNpc(nIdx);
+						SubWorld[0].m_Region[r6].AddRef(Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, obj_npc);
+						AUTOLOG("[S6-GANNHANH] npc=%u idx=%d kind=%u cell=(%d,%d) reg=%d t=%u", Npc[nIdx].m_dwID, nIdx, Npc[nIdx].m_Kind, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, r6, SubWorld[0].m_dwCurrentTime);
+						break;
+					}
+				}
+			}
+		}
 		if (SubWorld[0].m_dwCurrentTime - Npc[nIdx].m_SyncSignal > 1000)
 		{
 			if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)

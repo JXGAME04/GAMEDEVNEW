@@ -127,6 +127,81 @@ KIniFile 		g_MapTraffic;
 
 int				g_MaxOptMultiply = 1;
 int				g_xMethod = 1;
+// [CFGEXP2 29/08] 23 bien he so exp phai nam NGOAI vung
+// bien dich chi-may-chu: KPlayer::AddSelfExp dung chung cho
+// ca client lan server.
+
+// [CFGEXP 29/08] He so exp truoc day nam CUNG trong KPlayer.cpp.
+// Gia tri mac dinh duoi day DUNG BANG so cung cu, nen neu
+// gamesetting.ini khong co nhom [Exp] thi hanh vi KHONG DOI.
+int				g_nExpMocCap1 = 50;	// duoi cap nay dung HeSo1
+int				g_nExpHeSo1 = 80;	// he so exp cho cap < MocCap1
+int				g_nExpMocCap2 = 80;	// duoi cap nay dung HeSo2
+int				g_nExpHeSo2 = 70;	// he so exp cho cap < MocCap2
+int				g_nExpMocCap3 = 140;	// duoi cap nay dung HeSo3
+int				g_nExpHeSo3 = 280;	// he so exp cho cap < MocCap3 (dang chi phoi 8x-13x)
+int				g_nExpHeSo4 = 100;	// he so exp cho cap >= MocCap3
+int				g_nExpVipCong = 20;	// VIP cong them vao he so
+int				g_nExpCsMap = 341;	// map ap dung luat chuyen sinh
+int				g_nExpCsLanToiThieu = 3;	// so lan chuyen sinh toi thieu
+int				g_nExpCsDuoi = 160;	// he so chuyen sinh khi cap < MocCap3
+int				g_nExpCsTren = 50;	// he so chuyen sinh khi cap >= MocCap3
+int				g_nExpChenhCapMax = 9;	// chenh cap toi da con an du exp
+int				g_nExpChiaKhiChenh = 10;	// chenh qua muc thi chia cho so nay
+int				g_nExpMienTruCap = 90;	// tu cap nay tro len bo moi phat chenh cap
+int				g_nExpToDoi2 = 80;	// % exp moi nguoi khi to doi 2 nguoi
+int				g_nExpToDoi3 = 70;	// % exp moi nguoi khi to doi 3 nguoi
+int				g_nExpToDoi4 = 60;	// % exp moi nguoi khi to doi 4 nguoi
+int				g_nExpToDoi5 = 55;	// % exp moi nguoi khi to doi 5 nguoi
+int				g_nExpToDoi6 = 55;	// % exp moi nguoi khi to doi 6 nguoi
+int				g_nExpToDoi7 = 50;	// % exp moi nguoi khi to doi 7 nguoi
+int				g_nExpToDoi8 = 50;	// % exp moi nguoi khi to doi 8 nguoi
+int				g_nExpToDoiKhac = 60;	// % exp khi so nguoi ngoai 2..8
+
+//---------------------------------------------------------------------------
+// [HELOG2 29/08] GHI LOG HE THONG (ban chi-Core)
+// Khong dung g_DebugLog cua Engine vi Core lien ket engine.lib dung san va
+// Engine hien khong build duoc (KWin32App.cpp thieu ipc_shared.h) - xem
+// ReverseTools\cauhinh\t06b_log_chi_core.py.
+// Cong tac o gamesetting.ini nhom [Log].
+//---------------------------------------------------------------------------
+int  g_nGhiLogHeThong = 1;
+char g_szTepLogHeThong[260] = "logs\\hethong.log";
+int  g_nLogHeThongTranMB = 64;
+
+void g_GhiLogHeThong(const char* szHe, const char* szNoiDung)
+{
+	if (!g_nGhiLogHeThong || !szNoiDung || !szNoiDung[0] || !g_szTepLogHeThong[0])
+		return;
+
+	FILE* pFile = fopen(g_szTepLogHeThong, "a");
+	if (!pFile)		// dia day / thu muc chua co / tep bi khoa: bo qua im lang.
+		return;		// TUYET DOI khong duoc lam sap may chu chi vi ghi log.
+
+	SYSTEMTIME systm;
+	::GetLocalTime(&systm);
+	fprintf(pFile, "%04d/%02d/%02d %02d:%02d:%02d.%03d\t[%s]\t%s\n",
+		systm.wYear, systm.wMonth, systm.wDay,
+		systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds,
+		(szHe && szHe[0]) ? szHe : "?", szNoiDung);
+
+	long nCo = ftell(pFile);
+	fclose(pFile);
+	// [PBCPP 29/08] `long` tren MSVC la 32 bit o CA Win32 lan x64,
+	// nen TranMB >= 2048 lam phep nhan tran ra SO AM => xoay vong
+	// sau MOI DONG va mat sach log. So sanh bang phep chia.
+	if (g_nLogHeThongTranMB > 0 &&
+		(nCo / 1024 / 1024) > (long)g_nLogHeThongTranMB)
+	{
+		char szCu[300];
+		_snprintf(szCu, sizeof(szCu) - 1, "%s.1", g_szTepLogHeThong);
+		szCu[sizeof(szCu) - 1] = 0;
+		remove(szCu);
+		rename(g_szTepLogHeThong, szCu);
+	}
+}
+
+
 #ifdef _SERVER
 int				g_ExpRate = 1;
 int				g_MoneyRate = 1;
@@ -279,6 +354,7 @@ CORE_API void g_InitCore(char * nParmName)
 	g_MeridiantSetting.Load(MERIDIAN_SETTING_FILE);
 	g_MisslesSetting.Load(MISSLES_SETTING_FILE);
 	g_NpcSetting.Load(NPC_SETTING_FILE);
+
 	InitGameSetting();
 	g_DebugLog("[Script] %d", sizeof(g_ScriptSet));
 	InitSkillSetting();
@@ -717,11 +793,95 @@ BOOL InitGameSetting()
 	{
 		g_GameSetting.GetInteger("ServerConfig", "MaxOptMultiply", 1, &g_MaxOptMultiply);
 		g_GameSetting.GetInteger("ServerConfig", "xMethod", 1, &g_xMethod);
+		// [PBCPP 29/08] khoi nay phai nam NGOAI vung bien dich
+		// chi-may-chu: ba bien va ham g_GhiLogHeThong deu o
+		// ngoai, va LuaGhiLog bien dich cho ca client - de
+		// trong day thi ban client ket cung o gia tri mac dinh.
+		// (mac dinh GhiTep = 1: he log chi ghi khi script goi
+		//  GhiLog, hien chua noi vao dau nen khong ton gi.)
+		// Mac dinh 0 = tat, y het hanh vi truoc day.
+		g_GameSetting.GetInteger("Log", "GhiTep", 1, &g_nGhiLogHeThong);
+		g_GameSetting.GetInteger("Log", "TranMB", 64, &g_nLogHeThongTranMB);
+		g_GameSetting.GetString("Log", "TepLog", "logs\\hethong.log", g_szTepLogHeThong, sizeof(g_szTepLogHeThong));
+
 #ifdef _SERVER
 		g_GameSetting.GetInteger("ServerConfig", "ExpRate", 1, &g_ExpRate);
 		g_GameSetting.GetInteger("ServerConfig", "MoneyRate", 1, &g_MoneyRate);
 		g_GameSetting.GetInteger("ServerConfig", "Skill90Rate", 0, &g_Skill90ExpRate);					//#trong file config khong duoc duoi 100
 		g_GameSetting.GetInteger("ServerConfig", "Skill120Rate", 0, &g_Skill120ExpRate);			//#trong file config khong duoc duoi 100
+
+
+
+		// [CFGEXP 29/08] nhom [Exp] - moi khoa mac dinh = so cung cu
+		g_GameSetting.GetInteger("Exp", "MocCap1", 50, &g_nExpMocCap1);
+		g_GameSetting.GetInteger("Exp", "HeSo1", 80, &g_nExpHeSo1);
+		g_GameSetting.GetInteger("Exp", "MocCap2", 80, &g_nExpMocCap2);
+		g_GameSetting.GetInteger("Exp", "HeSo2", 70, &g_nExpHeSo2);
+		g_GameSetting.GetInteger("Exp", "MocCap3", 140, &g_nExpMocCap3);
+		g_GameSetting.GetInteger("Exp", "HeSo3", 280, &g_nExpHeSo3);
+		g_GameSetting.GetInteger("Exp", "HeSo4", 100, &g_nExpHeSo4);
+		g_GameSetting.GetInteger("Exp", "VipCong", 20, &g_nExpVipCong);
+		g_GameSetting.GetInteger("Exp", "CsMap", 341, &g_nExpCsMap);
+		g_GameSetting.GetInteger("Exp", "CsLanToiThieu", 3, &g_nExpCsLanToiThieu);
+		g_GameSetting.GetInteger("Exp", "CsDuoi", 160, &g_nExpCsDuoi);
+		g_GameSetting.GetInteger("Exp", "CsTren", 50, &g_nExpCsTren);
+		g_GameSetting.GetInteger("Exp", "ChenhCapMax", 9, &g_nExpChenhCapMax);
+		g_GameSetting.GetInteger("Exp", "ChiaKhiChenh", 10, &g_nExpChiaKhiChenh);
+		g_GameSetting.GetInteger("Exp", "MienTruCap", 90, &g_nExpMienTruCap);
+		g_GameSetting.GetInteger("Exp", "ToDoi2", 80, &g_nExpToDoi2);
+		g_GameSetting.GetInteger("Exp", "ToDoi3", 70, &g_nExpToDoi3);
+		g_GameSetting.GetInteger("Exp", "ToDoi4", 60, &g_nExpToDoi4);
+		g_GameSetting.GetInteger("Exp", "ToDoi5", 55, &g_nExpToDoi5);
+		g_GameSetting.GetInteger("Exp", "ToDoi6", 55, &g_nExpToDoi6);
+		g_GameSetting.GetInteger("Exp", "ToDoi7", 50, &g_nExpToDoi7);
+		g_GameSetting.GetInteger("Exp", "ToDoi8", 50, &g_nExpToDoi8);
+		g_GameSetting.GetInteger("Exp", "ToDoiKhac", 60, &g_nExpToDoiKhac);
+
+		// [PBCPP 29/08] kep tung khoa ve khoang hop ly. Truoc ban va
+		// chung la hang so bien dich nen khong the sai; nay mot dau
+		// tru go nham trong ini co the lam exp dung hoac tut.
+		{
+			struct { int* p; int nMin; int nMax; const char* sz; } aKep[] = {
+				{ &g_nExpMocCap1, 1, 200, "g_nExpMocCap1" },
+				{ &g_nExpMocCap2, 1, 200, "g_nExpMocCap2" },
+				{ &g_nExpMocCap3, 1, 200, "g_nExpMocCap3" },
+				{ &g_nExpHeSo1, 1, 100000, "g_nExpHeSo1" },
+				{ &g_nExpHeSo2, 1, 100000, "g_nExpHeSo2" },
+				{ &g_nExpHeSo3, 1, 100000, "g_nExpHeSo3" },
+				{ &g_nExpHeSo4, 1, 100000, "g_nExpHeSo4" },
+				{ &g_nExpVipCong, 0, 100000, "g_nExpVipCong" },
+				{ &g_nExpCsMap, 0, 100000, "g_nExpCsMap" },
+				{ &g_nExpCsLanToiThieu, 0, 100, "g_nExpCsLanToiThieu" },
+				{ &g_nExpCsDuoi, 1, 100000, "g_nExpCsDuoi" },
+				{ &g_nExpCsTren, 1, 100000, "g_nExpCsTren" },
+				{ &g_nExpChenhCapMax, 0, 200, "g_nExpChenhCapMax" },
+				{ &g_nExpChiaKhiChenh, 1, 100000, "g_nExpChiaKhiChenh" },
+				{ &g_nExpMienTruCap, 1, 200, "g_nExpMienTruCap" },
+				{ &g_nExpToDoi2, 1, 100, "g_nExpToDoi2" },
+				{ &g_nExpToDoi3, 1, 100, "g_nExpToDoi3" },
+				{ &g_nExpToDoi4, 1, 100, "g_nExpToDoi4" },
+				{ &g_nExpToDoi5, 1, 100, "g_nExpToDoi5" },
+				{ &g_nExpToDoi6, 1, 100, "g_nExpToDoi6" },
+				{ &g_nExpToDoi7, 1, 100, "g_nExpToDoi7" },
+				{ &g_nExpToDoi8, 1, 100, "g_nExpToDoi8" },
+				{ &g_nExpToDoiKhac, 1, 100, "g_nExpToDoiKhac" },
+			};
+			for (int iKep = 0; iKep < sizeof(aKep)/sizeof(aKep[0]); iKep++)
+			{
+				if (*aKep[iKep].p < aKep[iKep].nMin)
+				{
+					g_DebugLog((LPSTR)"[Exp] %s = %d ngoai khoang, kep ve %d",
+						(LPSTR)aKep[iKep].sz, *aKep[iKep].p, aKep[iKep].nMin);
+					*aKep[iKep].p = aKep[iKep].nMin;
+				}
+				else if (*aKep[iKep].p > aKep[iKep].nMax)
+				{
+					g_DebugLog((LPSTR)"[Exp] %s = %d ngoai khoang, kep ve %d",
+						(LPSTR)aKep[iKep].sz, *aKep[iKep].p, aKep[iKep].nMax);
+					*aKep[iKep].p = aKep[iKep].nMax;
+				}
+			}
+		}
 		g_GameSetting.GetInteger("ServerConfig", "NotAddNpcNormal", 1, &g_NotAddNpcNormal); //#cÊu h×nh kh«ng add npc normal 1 lµ kh«ng add 0 lµ cho phÐp add
 #endif
 		g_GameSetting.GetInteger("ServerConfig", "WriteScriptNpcLog", 0, &g_WriteScriptNpcLog);	//cÊu h×nh ghi log ®­êng dÉn script khi ®èi tho¹i víi npc

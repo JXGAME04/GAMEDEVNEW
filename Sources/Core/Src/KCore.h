@@ -101,6 +101,43 @@ extern KLuaScript * 			pTimeScript;
 
 extern int				g_MaxOptMultiply;
 extern int				g_xMethod;
+// [CFGEXP2 29/08] 23 bien he so exp phai nam NGOAI vung
+// bien dich chi-may-chu: KPlayer::AddSelfExp dung chung cho
+// ca client lan server.
+// [CFGEXP 29/08] he so exp doc tu gamesetting.ini nhom [Exp]
+extern int		 		g_nExpMocCap1;
+extern int		 		g_nExpHeSo1;
+extern int		 		g_nExpMocCap2;
+extern int		 		g_nExpHeSo2;
+extern int		 		g_nExpMocCap3;
+extern int		 		g_nExpHeSo3;
+extern int		 		g_nExpHeSo4;
+extern int		 		g_nExpVipCong;
+extern int		 		g_nExpCsMap;
+extern int		 		g_nExpCsLanToiThieu;
+extern int		 		g_nExpCsDuoi;
+extern int		 		g_nExpCsTren;
+extern int		 		g_nExpChenhCapMax;
+extern int		 		g_nExpChiaKhiChenh;
+extern int		 		g_nExpMienTruCap;
+extern int		 		g_nExpToDoi2;
+extern int		 		g_nExpToDoi3;
+extern int		 		g_nExpToDoi4;
+extern int		 		g_nExpToDoi5;
+extern int		 		g_nExpToDoi6;
+extern int		 		g_nExpToDoi7;
+extern int		 		g_nExpToDoi8;
+extern int		 		g_nExpToDoiKhac;
+
+// [HELOG3 29/08] khoi nay phai nam NGOAI vung bien dich
+// chi-may-chu: LuaGhiLog trong ScriptFuns.cpp bien dich ca ben client.
+// [HELOG2 29/08] he log cua Core (KHONG dung g_DebugLog cua Engine -
+// xem ReverseTools/cauhinh/t06b_log_chi_core.py)
+extern int  g_nGhiLogHeThong;
+extern char g_szTepLogHeThong[260];
+extern int  g_nLogHeThongTranMB;
+void g_GhiLogHeThong(const char* szHe, const char* szNoiDung);
+
 #ifdef _SERVER
 extern int		 		g_ExpRate;
 extern int		 		g_MoneyRate;

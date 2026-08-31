@@ -238,6 +238,10 @@ int KItemSet::AddItemSet2(int nItemGenre, int nSeries, int nLevel, int nLuck, in
 	case item_task:				
 		ItemGen.Gen_Quest(nDetailType, pItem, nStackNum);
 		break;
+	case item_starstone:	// [PHI PHONG] Tinh Than Thach
+		ItemGen.Gen_StarStone(nParticularType, pItem, nStackNum);
+		break;
+
 	case item_townportal:
 		ItemGen.Gen_TownPortal(pItem);
 		break;

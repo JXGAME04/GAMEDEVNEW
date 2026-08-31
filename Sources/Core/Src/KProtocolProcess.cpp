@@ -4603,6 +4603,17 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 		CoreDataChanged(GDCNI_END_AFFAIR_BOX, NULL, NULL);
 		g_sDTCap.nBoxOpen = 0; // [DaTau] give-box dong
 		break;
+	case 3:
+		{
+			// [PHI PHONG] panel kham Tinh Than Thach -- dung lai chinh goi nay
+			// nen KHONG phai them ProtocolType moi.
+			KUiGiveBox	pInfo;
+			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
+			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
+			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
+			CoreDataChanged(GDCNI_OPEN_MANTLE_INLAY, (unsigned int)&pInfo, NULL);
+		}
+		break;
 	default:
 		break;
 	}

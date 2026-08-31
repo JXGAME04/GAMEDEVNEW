@@ -538,6 +538,10 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	// He XUC XAC chia do (DICEITEM) 26/08: may chu bao mo/dong/cap nhat mot o.
 	// uParam = con tro DICE_ITEM_SYNC, CHI SONG trong loi goi - phai chep ra ngay.
 	GDCNI_DICE_ITEM,
+
+	// [PHI PHONG 2026-08-29] mo panel kham Tinh Than Thach.
+	// PHAI o CUOI enum: gia tri GDCNI di qua ranh gioi CoreClient.dll <-> Game.exe.
+	GDCNI_OPEN_MANTLE_INLAY,
 };
 
 enum GAMEDEBUGCONTROL

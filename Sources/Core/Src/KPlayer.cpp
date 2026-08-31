@@ -2452,22 +2452,24 @@ SharePlace:
 
 	int ShareExp;
 	nTotalPlayer = g_Team[m_cTeam.m_nID].m_nMemNum + 1;
+	// [CFGEXP 29/08] % exp moi nguoi theo so thanh vien - doc tu
+	// gamesetting.ini nhom [Exp] khoa ToDoi2..ToDoi8 / ToDoiKhac.
 	if (nTotalPlayer == 2)
-		ShareExp = 80;
+		ShareExp = g_nExpToDoi2;
 	else if (nTotalPlayer == 3)
-		ShareExp = 70;
+		ShareExp = g_nExpToDoi3;
 	else if (nTotalPlayer == 4)
-		ShareExp = 60;
+		ShareExp = g_nExpToDoi4;
 	else if (nTotalPlayer == 5)
-		ShareExp = 55;
+		ShareExp = g_nExpToDoi5;
 	else if (nTotalPlayer == 6)
-		ShareExp = 55;
+		ShareExp = g_nExpToDoi6;
 	else if (nTotalPlayer == 7)
-		ShareExp = 50;
+		ShareExp = g_nExpToDoi7;
 	else if (nTotalPlayer == 8)
-		ShareExp = 50;
+		ShareExp = g_nExpToDoi8;
 	else
-		ShareExp = 60;
+		ShareExp = g_nExpToDoiKhac;
 	
 	if (nShareFlag[0]) //nguoi dau tien nShareFlag doi truong
 	{
@@ -2513,47 +2515,50 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 
 	int	nGetExp = 0;
     
+	// [CFGEXP 29/08] moi so duoi day doc tu gamesetting.ini nhom [Exp];
+	// mac dinh trong KCore.cpp DUNG BANG so cung cu (80/70/280/100...).
     int nxExpVip = 0;
     if (Npc[m_nIndex].m_CurrentExpSkillsVip == 2)
-		nxExpVip = 20;
+		nxExpVip = g_nExpVipCong;
 	else
 		nxExpVip = 0;
 	
 	int Map = SubWorld[Npc[m_nIndex].m_SubWorldIndex].m_SubWorldID;
 	int nxExpTanThu;
 	int level = Npc[m_nIndex].m_Level;	
-    if (level < 50)
-	    nxExpTanThu = 80 + nxExpVip;
-	else if (level < 80)
-	    nxExpTanThu = 70 + nxExpVip;
-	else if (level < 140)
-	    nxExpTanThu = 280 + nxExpVip;
+    if (level < g_nExpMocCap1)
+	    nxExpTanThu = g_nExpHeSo1 + nxExpVip;
+	else if (level < g_nExpMocCap2)
+	    nxExpTanThu = g_nExpHeSo2 + nxExpVip;
+	else if (level < g_nExpMocCap3)
+	    nxExpTanThu = g_nExpHeSo3 + nxExpVip;
 	else
-	    nxExpTanThu = 100 + nxExpVip;
+	    nxExpTanThu = g_nExpHeSo4 + nxExpVip;
 	    
-	if (m_cReBorn.GetReBornNum() > 3 && Map == 341)
+	if (m_cReBorn.GetReBornNum() > g_nExpCsLanToiThieu && Map == g_nExpCsMap)
 	{
-	    if (level < 140)
-	        nxExpTanThu = 160 + nxExpVip;
+	    if (level < g_nExpMocCap3)
+	        nxExpTanThu = g_nExpCsDuoi + nxExpVip;
 	    else
-	        nxExpTanThu = 50 + nxExpVip;
+	        nxExpTanThu = g_nExpCsTren + nxExpVip;
 	}
 //	else if (Npc[m_nIndex].m_Level < 150)
 //		nxExpTanThu = 100;
 	int	nSubLevel = Npc[m_nIndex].m_Level - nTarLevel;
 	if(Npc[m_nIndex].m_Level >= nTarLevel )	// 
 	{
-		if (nSubLevel <= 9)
+		if (nSubLevel <= g_nExpChenhCapMax)	// [CFGEXP 29/08]
 			nGetExp = nExp;
 		else
-			nGetExp = nExp /10;
+			nGetExp = (g_nExpChiaKhiChenh > 0) ? (nExp / g_nExpChiaKhiChenh) : nExp;
 	}
 	else														
 	{
 		if (nSubLevel < 0)   
 			nGetExp = 1;
 	}
-	if (nTarLevel >= 90 && Npc[m_nIndex].m_Level >= 90)
+	// [CFGEXP 29/08] nguong mien tru phat chenh cap (cu la 90)
+	if (nTarLevel >= g_nExpMienTruCap && Npc[m_nIndex].m_Level >= g_nExpMienTruCap)
 	{
 		nGetExp = nExp;
 	}
@@ -2563,10 +2568,19 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 
 	if(Npc[m_nIndex].m_CurrentExpEnhance > 0)
 	{
+		// [PBCPP 29/08] hai phep nhan nay cung tinh trong `int` nen cung
+		// tran nhu dong ben duoi (bua x2 exp lam nguong tran tut con
+		// mot nua). Va nua voi khong va la tinh trang xau nhat, nen doi
+		// ca chuoi sang double.
+		double dEnh = (double)nGetExp;
 		if(Npc[m_nIndex].m_CurrentExpEnhance <= MAX_PERCENT)
-			nGetExp = nGetExp * (Npc[m_nIndex].m_CurrentExpEnhance + MAX_PERCENT) / MAX_PERCENT;
+			dEnh = dEnh * (double)(Npc[m_nIndex].m_CurrentExpEnhance + MAX_PERCENT) / (double)MAX_PERCENT;
 		else
-			nGetExp = nGetExp * Npc[m_nIndex].m_CurrentExpEnhance / MAX_PERCENT;
+			dEnh = dEnh * (double)Npc[m_nIndex].m_CurrentExpEnhance / (double)MAX_PERCENT;
+		if (dEnh > 2147483647.0)
+			nGetExp = 2147483647;
+		else
+			nGetExp = (int)dEnh;
 	}
 
   
@@ -2576,8 +2590,17 @@ void	KPlayer::AddSelfExp(int nExp, int nTarLevel)
 
 	if(g_ExpRate) //#x2 exp trong config
 	{
-		nGetExp = nGetExp * g_ExpRate * nxExpTanThu;	
-		m_nExp += nGetExp;
+		// [CFGEXP 29/08] VA TRAN SO: phep nhan nay truoc day tinh trong
+		// `int`, tran int32 khi nGetExp > 7.669.584 (voi he so 280) va
+		// cho ra SO AM => nguoi choi BI TRU exp khi giet quai/boss co
+		// m_Experience lon. m_nExp la double (KPlayer.h:646) nen thua
+		// suc chua. Tinh bang double roi moi cong.
+		double dGetExp = (double)nGetExp * (double)g_ExpRate * (double)nxExpTanThu;
+		m_nExp += dGetExp;
+		if (dGetExp > 2147483647.0)	// chi de ghi log ben duoi
+			nGetExp = 2147483647;
+		else
+			nGetExp = (int)dGetExp;
 	}
 	else
 	{
@@ -4967,9 +4990,23 @@ BOOL	KPlayer::ServerPickUpItem(BYTE* pProtocol)
 					// (truoc day huy vo dieu kien = moi that bai script deu nuot cuon trang)
 					BOOL bPickOk;
 					if (Item[nPickItemId].GetParticular() == 205)
-						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods.lua", (char*)"PickUp", nObjIndex);
+						// [ACTIONSCRIPT 30/08] bGlobal = false. Mac dinh la true (KPlayer.h:857),
+						// ma nhanh do ghi Npc[m_nIndex].m_ActionScriptID = dwScriptId (KPlayer.cpp:7129)
+						// - dung bien ma menu tra loi dieu phoi qua (KPlayer.cpp:7621/7626). Nhat
+						// cuon giua luc dang mo menu la cuop mat ngu canh hoi thoai: cu bam tiep
+						// theo goi vao tasklink_goods.lua tim ham khong co o do -> nut im lang.
+						// ScriptError.log da ghi nhieu lan: cFuncName StationFun / g_DailogBack /
+						// BDH_Root / ruong / psthanhthi deu tro toi tasklink_goods.lua.
+						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods.lua", (char*)"PickUp", nObjIndex, false);
 					else
-						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex);
+						// [ACTIONSCRIPT 30/08] bGlobal = false. Mac dinh la true (KPlayer.h:857),
+						// ma nhanh do ghi Npc[m_nIndex].m_ActionScriptID = dwScriptId (KPlayer.cpp:7129)
+						// - dung bien ma menu tra loi dieu phoi qua (KPlayer.cpp:7621/7626). Nhat
+						// cuon giua luc dang mo menu la cuop mat ngu canh hoi thoai: cu bam tiep
+						// theo goi vao tasklink_goods.lua tim ham khong co o do -> nut im lang.
+						// ScriptError.log da ghi nhieu lan: cFuncName StationFun / g_DailogBack /
+						// BDH_Root / ruong / psthanhthi deu tro toi tasklink_goods.lua.
+						bPickOk = ExecuteScript((char*)"\\script\\item\\tasklink_goods_secret.lua", (char*)"PickUp", nObjIndex, false);
 					if (!bPickOk)
 						return FALSE;
 					Object[nObjIndex].SyncRemove(TRUE);
@@ -8467,9 +8504,14 @@ void KPlayer::DialogNpc(BYTE * pProtocol)
 						TCHAR buff[64];
 						int len = 0;
 						sprintf(buff, "%04d/%02d/%02d %02d:%02d:%02d.%03d", systm.wYear, systm.wMonth, systm.wDay, systm.wHour, systm.wMinute, systm.wSecond, systm.wMilliseconds);
+						// [VA5LOI 29/08] fopen co the tra NULL (het handle / tep bi khoa /
+						// dia day) - truoc day fprintf(NULL) lam SAP may chu.
 						FILE* pFile = fopen("ScripNpcDialog.log", "a");
-						fprintf(pFile, "%s \t [%s] \t %s\n", buff , Npc[nIdx].Name ,Npc[nIdx].ActionScript);
-						fclose(pFile);
+						if (pFile)
+						{
+							fprintf(pFile, "%s \t [%s] \t %s\n", buff , Npc[nIdx].Name ,Npc[nIdx].ActionScript);
+							fclose(pFile);
+						}
 					}
 				}
 			}
