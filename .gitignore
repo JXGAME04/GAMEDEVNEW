@@ -84,3 +84,6 @@ ReverseTools/bandonghanh/ra_pet/eqspr/
 ReverseTools/bandonghanh/ra_pet/vltk_item/
 ReverseTools/bandonghanh/ra_pet/*.bin
 ReverseTools/cauhinh/*.log
+ReverseTools/cauhinh/mocoi_*.txt
+ReverseTools/cauhinh/phuthuoc_*.txt
+ReverseTools/cauhinh/duongnap_*.txt
