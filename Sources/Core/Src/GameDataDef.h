@@ -530,7 +530,7 @@ enum ITEM_IN_ENVIRO_PROP
 	IIEP_SPECIAL,		//特定的不同情况
 };
 
-#define	GOD_MAX_OBJ_TITLE_LEN	2048	//128临时改为1024为了兼容旧代码 to be modified
+#define	GOD_MAX_OBJ_TITLE_LEN	4096	// [PF13 31/08b] cu 2048: GetDesc ghi TOAN BO tooltip noi tiep tu szTitle, 13 dong da + khoi an vuot 2048	//128临时改为1024为了兼容旧代码 to be modified
 #define	GOD_MAX_OBJ_PROP_LEN	2560	// [PF13 31/08] cu 1024: 13 dong da + 13 dong thuoc tinh + khoi an vuot 1024 (strcat khong chan). Chi la dem UI client, khong nam trong goi tin.
 #define	GOD_MAX_OBJ_DESC_LEN	1024
 

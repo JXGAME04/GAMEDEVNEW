@@ -213,6 +213,25 @@ const char* KItem::PF_StarPrefix() const
 //     hanh van voi moi dong khac trong bang)
 // Mon khong co lo kham thi ham nay khong in gi ca.
 //////////////////////////////////////////////////////////////////////////
+// [PF13 31/08b] chep desc vao dem rieng + VIET HOA chu cai dau (chi ASCII
+// a-z: TCVN3 khong ma hoa duoc hau het chu hoa co dau - RULE 0, nen chu
+// dau la ky tu co dau thi giu nguyen). GetDesc tra con tro dem tinh noi
+// bo cua g_MagicDesc - khong duoc sua thang tren do.
+static void sPF_ChepHoaDau(char* pszDich, int nDich, const char* pszNguon)
+{
+	if (!pszDich || nDich <= 0)
+		return;
+	pszDich[0] = 0;
+	if (!pszNguon)
+		return;
+	int n = 0;
+	for (; n < nDich - 1 && pszNguon[n]; n++)
+		pszDich[n] = pszNguon[n];
+	pszDich[n] = 0;
+	if (pszDich[0] >= 'a' && pszDich[0] <= 'z')
+		pszDich[0] = (char)(pszDich[0] - 'a' + 'A');
+}
+
 void KItem::PF_AppendDesc(char* pszMsg) const
 {
 	if (!pszMsg)
@@ -238,9 +257,12 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 			char* pszTen = (char*)g_MagicDesc.GetDesc(&sA);
 			if (pszTen && pszTen[0])
 			{
+				// [PF13 31/08b] viet hoa chu cai dau nhu moi dong thuoc tinh khac
+				char szHoaDa[256];
+				sPF_ChepHoaDau(szHoaDa, sizeof(szHoaDa), pszTen);
 				strcat(pszMsg, "  \n  ");
 				strcat(pszMsg, "<color=200,120,255>");
-				strcat(pszMsg, pszTen);
+				strcat(pszMsg, szHoaDa);
 				strcat(pszMsg, " <color>  \n  ");
 				// dai gia tri theo cap lo, de nguoi choi uoc luong truoc khi kham
 				char szDai[128];
@@ -293,6 +315,10 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		strcat(pszMsg, "  \n  ");
 	}
 
+	// [PF13 31/08b] tach phan nhu ban chuan VLTK: dong trong giua danh sach
+	// lo kham va khoi thuoc tinh do da cong
+	strcat(pszMsg, "  \n  ");
+
 	// --- thuoc tinh cua tung vien da: MOI VIEN MOT DONG, khong gop ---
 #ifndef _SERVER
 	for (i = 1; i <= nHole && i <= PF_MAX_STONE; i++)
@@ -315,12 +341,40 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
 		if (!pszInfo || !pszInfo[0])
 			continue;
-		// [VA 31/08e] ban chuan to khoi thuoc tinh da mau TIM (thuoc tinh an);
-		// dau cach truoc <color> dong de TEncodeText khong nuot dau < khi dong
-		// mo ta ket thuc bang so le byte cao (luat RULE 0).
-		strcat(pszMsg, "<color=200,120,255>");
-		strcat(pszMsg, pszInfo);
+		// [PF13 31/08b] khoi thuoc tinh DA mau GREEN (chu khong phai tim -
+		// tim danh RIENG cho khoi dong an ben duoi, theo ban chuan VLTK);
+		// viet hoa chu cai dau; dau cach truoc <color> dong (RULE 0).
+		char szHoa[256];
+		sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
+		strcat(pszMsg, "<color=Green>");
+		strcat(pszMsg, szHoa);
 		strcat(pszMsg, " <color>  \n  ");
+	}
+
+	// --- [PF13 31/08b] khoi THUOC TINH AN: khe 6-7 cua m_aryMagicAttrib
+	// (PF_RollAnAttr ghi khi dat 10 sao; vong hien thi chuan chi ve khe 0-5
+	// nen khong trung lap). Tach phan bang dong trong + tieu de rieng. ---
+	{
+		int nCoAn = 0;
+		for (i = MAX_ITEM_NORMAL_MAGICATTRIB; i < MAX_ITEM_MAGICATTRIB; i++)
+		{
+			if (m_aryMagicAttrib[i].nAttribType <= 0)
+				continue;
+			char* pszInfo = (char*)g_MagicDesc.GetDesc((void*)&m_aryMagicAttrib[i]);
+			if (!pszInfo || !pszInfo[0])
+				continue;
+			if (nCoAn == 0)
+			{
+				strcat(pszMsg, "  \n  ");
+				strcat(pszMsg, "<color=200,120,255>[Thuéc tÝnh Èn]<color>  \n  ");
+			}
+			nCoAn++;
+			char szHoa[256];
+			sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
+			strcat(pszMsg, "<color=200,120,255>");
+			strcat(pszMsg, szHoa);
+			strcat(pszMsg, " <color>  \n  ");
+		}
 	}
 #endif
 	strcat(pszMsg, "<color=255,255,255>");
@@ -376,6 +430,11 @@ void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, 
 
 	int nCount = nMagicActive;
 	int nCountE = nMagicActiveE;
+	// [PF13 31/08b] khe 6-7 cua phi phong = DONG AN (roll khi 10 sao):
+	// moi cho goi deu truyen nMagicActiveE = 0 nen nhanh 'Hidden magic'
+	// khong bao gio chay - phi phong thi luon ap du 2 khe an.
+	if (sPF_LaPhiPhong(&m_CommonAttrib))
+		nCountE = MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB;
 	int i;
 
 	float fScale = 1.0f;
@@ -492,6 +551,9 @@ void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 *
 
 	int nCount = nMagicActive;
 	int nCountE = nMagicActiveE;
+	// [PF13 31/08b] doi xung voi ApplyMagicAttribToNPC: go du 2 khe an 6-7
+	if (sPF_LaPhiPhong(&m_CommonAttrib))
+		nCountE = MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB;
 
 	// [PHI PHONG] go thuoc tinh cua Tinh Than Thach khi thao trang bi
 	PF_ModifyStoneAttrib(pNPC, FALSE);
@@ -2546,6 +2608,13 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 	}
 	strcat(pszMsg, PF_StarPrefix());	// "10 sao " neu la do co he sao
 	strcat(pszMsg, m_CommonAttrib.szItemName);
+	// [PF13 31/08b] phi phong hien "(Cap N)" theo cach goi VNG: nLevel cot 12
+	// goldequip = 2..14, bac VNG = nLevel - 1 (Tuyet The = 1, So Phuong = 13)
+	if (sPF_LaPhiPhong(&m_CommonAttrib) && m_CommonAttrib.nLevel >= 2)
+	{
+		sprintf(pszTemp, " (CÊp %d)", m_CommonAttrib.nLevel - 1);
+		strcat(pszMsg, pszTemp);
+	}
 
 	if (m_CommonAttrib.nItemGenre == item_equip)
 	{
