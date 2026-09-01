@@ -29,8 +29,8 @@ static DWORD s_dwAuraTick[MAX_PLAYER] = { 0 };
 
 #define PET_FORCE_SYNC   1500     // keo ve canh chu khi cach qua xa (mps)
 #define PET_FOLLOW_DIS   128
-#define PET_AURA_TIME    (40 * 18)   // 40 giay x 18 khung
-#define PET_AURA_RECAST  60          // re-cast moi 60 luot breathe (~30s)
+// [PETKN 31/08] PET_AURA_TIME da bo - bi kip gio la passive -1 tren NPC pet
+#define PET_AURA_RECAST  60          // lam moi skill pet moi 60 luot breathe (~30s)
 
 extern int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision);
 
@@ -74,8 +74,16 @@ static void sPetSetName(int nPlayerIdx, const char* szName)
 }
 
 //---------------------------------------------------------------------------
-// AURA: ap skill state 1600..1603 (cap = cap pet) len CHU trong 40s;
-// Pet_Breathe re-cast moi ~30s khi con goi ra -> thu ve tu rung.
+// [PETKN 31/08 - yeu cau chu] KY NANG PET AP LEN CHINH PET, khong ap len chu:
+// - Skill MAC DINH 1600..1603 da doi thanh DON DANH vat ly (skills.txt) -
+//   dat vao slot 10 skill-list NPC pet, sPetFight do_skill bang no.
+//   Cap skill = (cap pet + 1) / 2, tran 63 (MAX_SKILLLEVEL=64).
+// - 4 bi kip (id o task 5139..5142, CAP o 5166..5169 nang bang diem Tu Chan):
+//   SetNpcSkill slot 11..14 - style 3 tu CastPassivitySkill ap m_StateAttribs
+//   len PET vinh vien (-1); SetStateSkillEffect cung id cung cap chi refresh
+//   gio (KHONG cong don - KNpc.cpp:7721), cap cao hon thi go cu ap moi.
+// Tooltip client khong doc skill-list nguoi choi nua ma doc thang task value
+// (CoreShell.cpp nhanh CGOG_SKILL_FIGHT [PETKN]).
 //---------------------------------------------------------------------------
 // [29/08] THUOC TINH BO trang bi Dong Hanh - bang goc
 // settings\petsys\suitattrib.txt (EquipParticular = bac bo):
@@ -153,42 +161,45 @@ static int sPetSuitAttrib(int nPlayerIdx)
 	return s_nSuitHp[nBo] * nSo / 10;
 }
 
-static void sPetApplyAura(int nPlayerIdx)
+// [PETKN 31/08] cap skill mac dinh theo cap pet: (cap+1)/2, tran 63
+static int sPetSkillLevel(int nPetLevel)
 {
-	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);       // loai 1..4
-	if (nKind < 1 || nKind > PET_SKILL_COUNT) return;
+	int nLv = (nPetLevel + 1) / 2;
+	if (nLv < 1) nLv = 1;
+	if (nLv >= MAX_SKILLLEVEL) nLv = MAX_SKILLLEVEL - 1;
+	return nLv;
+}
+
+// [PETKN 31/08] cap bi kip o thu k (0..3): o 5166+k, chua nang = 1, tran 63
+static int sPetExtLevel(int nPlayerIdx, int k)
+{
+	int nLv = sPetG(nPlayerIdx, PET_TV_EXTLV0 + k);
+	if (nLv < 1) nLv = 1;
+	if (nLv >= MAX_SKILLLEVEL) nLv = MAX_SKILLLEVEL - 1;
+	return nLv;
+}
+
+static void sPetApplyPetSkills(int nPlayerIdx)
+{
+	int nNpc = s_nPetNpcIdx[nPlayerIdx];
+	if (nNpc <= 0 || nNpc >= MAX_NPC) return;
+	KNpc* pNpc = &Npc[nNpc];
+	if (pNpc->m_dwID != s_dwPetNpcID[nPlayerIdx] ||
+		pNpc->m_nPartnerNo != PET_PARTNER_NO) return;
 	int nLevel = sPetG(nPlayerIdx, PET_TV_LEVEL);
 	if (nLevel < 1) return;
-	if (nLevel > PET_MAX_LEVEL) nLevel = PET_MAX_LEVEL;
-	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
-	if (nOwnerNpc <= 0 || nOwnerNpc >= MAX_NPC) return;
-	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(PET_AURA_SKILL0 + nKind - 1, nLevel);
-	if (pSkill)
-		pSkill->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
-	// [30/08] dat CAP SKILL that cho chu: client tra "dang cap hien thoi"
-	// tu KSkillList cua nguoi choi (HoldObject khong truyen cap duoc) ->
-	// thieu buoc nay thi tooltip hien cap 0 va tac dung 0%.
-	for (int nK = 0; nK < PET_SKILL_COUNT; nK++)
+	// don danh mac dinh (style 0) - chi dat vao list, sPetFight se do_skill
+	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);       // loai 1..4
+	if (nKind >= 1 && nKind <= PET_SKILL_COUNT)
+		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_ATK,
+			PET_AURA_SKILL0 + nKind - 1, sPetSkillLevel(nLevel));
+	// 4 bi kip (style 3): SetNpcSkill tu CastPassivitySkill len PET (-1)
+	for (int k = 0; k < 4; k++)
 	{
-		int nSkId = PET_AURA_SKILL0 + nK;
-		Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(
-			nSkId, (nK == nKind - 1) ? nLevel : 0);
-	}
-	// [29/08] 4 ky nang BI DONG da hoc (task 5139..5142, bang 1670..1687
-	// port tu VLTK) ap len PET, re-cast cung nhip aura
-	// [30/08 phan bien] pet KHONG danh (ca Linux lan VLTK) nen cast ky nang
-	// bi dong len PET la vo nghia -> ap len CHU nhu 4 vong sang.
-	{
-		for (int k = 0; k < 4; k++)
-		{
-			// o luu SkillId*100+Level (bikip.lua); gia tri cu = id tran -> lv 1
-			int nSk = sPetG(nPlayerIdx, 5139 + k);
-			if (nSk <= 0) continue;
-			KSkill* pExt = (KSkill*)g_SkillManager.GetSkill(nSk, 1);
-			if (pExt)
-				pExt->CastStateSkill(nOwnerNpc, 0, 0, PET_AURA_TIME, TRUE);
-			Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(nSk, 1);
-		}
+		int nSk = sPetG(nPlayerIdx, 5139 + k);          // id tran (bikip.lua)
+		if (nSk < PET_BIKIP_SKILL0 || nSk > PET_BIKIP_SKILL_MAX) continue;
+		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_EXT0 + k, nSk,
+			sPetExtLevel(nPlayerIdx, k));
 	}
 }
 
@@ -267,23 +278,16 @@ static int sPetSummon(int nPlayerIdx)
 	s_dwPetNpcID[nPlayerIdx] = pNpc->m_dwID;
 	s_dwAuraTick[nPlayerIdx] = 0;
 	sPetS(nPlayerIdx, PET_TV_SUMMON, 1);
-	sPetApplyAura(nPlayerIdx);
+	sPetApplyPetSkills(nPlayerIdx);
 	return 1;
 }
 
 static void sPetUnSummon(int nPlayerIdx)
 {
+	// [PETKN 31/08] buff bi kip nam tren NPC pet - go npc la mat theo,
+	// khong con gi phai go khoi CHU nua (truoc day go 4 vong sang).
 	sPetRemoveNpc(nPlayerIdx);
 	sPetS(nPlayerIdx, PET_TV_SUMMON, 0);
-	// [30/08] thu pet -> go cap 4 vong sang khoi chu (khong go ky nang bi
-	// kiep vi do la cua pet da hoc, se ap lai khi goi ra)
-	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
-	if (nOwnerNpc > 0 && nOwnerNpc < MAX_NPC)
-	{
-		for (int nK = 0; nK < PET_SKILL_COUNT; nK++)
-			Npc[nOwnerNpc].m_SkillList.SetSkillLevelDirectlyUsingId(
-				PET_AURA_SKILL0 + nK, 0);
-	}
 }
 
 //---------------------------------------------------------------------------
@@ -312,12 +316,16 @@ void Pet_ProcessAI(int nNpcIdx)
 
 //---------------------------------------------------------------------------
 // [30/08 - CHU CHON "bat danh"] PHAN THEM NGOAI BAN GOC: ca Linux lan VLTK
-// pet CHI DI THEO. Khuon lay tu he partner: chu bat FightMode -> moi ~1s
-// chon dich mode 22 (ke vua danh chu / gan nhat, tam 480) -> do_skill bang
-// bo skill cua ngoai quan (bang npcs.txt).
+// pet CHI DI THEO. Chu bat FightMode -> moi ~1s chon dich mode 22 (ke vua
+// danh chu / gan nhat, tam 480).
+// [PETKN 31/08] doi sang danh bang SKILL MAC DINH 1600..1603 (don danh
+// vat ly theo cap pet) thay cho bo skill template npcs.txt.
 //---------------------------------------------------------------------------
 extern int sPartnerPickTarget(int nNpcIdx, int nOwnerNpcIdx, int nMode, int nVision);
 static DWORD s_dwFightTick[MAX_PLAYER];
+// [PETKN 31/08] so khung con lai dang DUOI DANH muc tieu - sPetFollowLinux
+// nhuong quyen di chuyen trong luc nay (chi giu luoi keo ve khi qua xa chu)
+static int   s_nChaseTick[MAX_PLAYER];
 
 static void sPetFight(int nPlayerIdx, int nNpcIdx)
 {
@@ -334,18 +342,35 @@ static void sPetFight(int nPlayerIdx, int nNpcIdx)
 		return;
 	if (++s_dwFightTick[nPlayerIdx] % 18 != 0)
 		return;
-	int nTarget = sPartnerPickTarget(nNpcIdx, nOwnerNpc, 22, 480);
-	if (nTarget <= 0)
+	// [PETKN 31/08] danh bang SKILL MAC DINH 1600..1603 theo cap pet
+	// (khong dung skill template npcs.txt nua - template la NPC thoai,
+	// dame ~100 phang, day chinh la goc "pet khong co dame")
+	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);
+	if (nKind < 1 || nKind > PET_SKILL_COUNT)
 		return;
-	int nSkillId = 0;
-	for (int nSlot = 1; nSlot <= 4; nSlot++)
-		if (pNpc->m_SkillList.m_Skills[nSlot].SkillId > 0)
-		{
-			nSkillId = pNpc->m_SkillList.m_Skills[nSlot].SkillId;
-			if (rand() % 2) break;
-		}
-	if (nSkillId > 0)
+	int nSkillId = PET_AURA_SKILL0 + nKind - 1;
+	int nWantLv = sPetSkillLevel(sPetG(nPlayerIdx, PET_TV_LEVEL));
+	if (pNpc->m_SkillList.m_Skills[PET_SKILLSLOT_ATK].SkillId != nSkillId ||
+		(int)pNpc->m_SkillList.m_Skills[PET_SKILLSLOT_ATK].SkillLevel != nWantLv)
+		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_ATK, nSkillId, nWantLv);
+	int nTarget = sPartnerPickTarget(nNpcIdx, nOwnerNpc, 22, 480);
+	if (nTarget <= 0 || nTarget >= MAX_NPC)
+		return;
+	// khuon KNpcAI::FollowAttack: trong tam thi danh, ngoai tam thi chay lai
+	if (!pNpc->SetActiveSkill(PET_SKILLSLOT_ATK))
+		return;
+	int nDis = NpcSet.GetDistance(nNpcIdx, nTarget);
+	if (nDis <= pNpc->m_CurrentAttackRadius)
+	{
 		pNpc->SendCommand(do_skill, nSkillId, -1, nTarget);
+	}
+	else
+	{
+		int nX = 0, nY = 0;
+		Npc[nTarget].GetMpsPos(&nX, &nY);
+		pNpc->SendCommand(do_walk, nX, nY);
+		s_nChaseTick[nPlayerIdx] = 18;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -371,18 +396,21 @@ static void sPetFollowLinux(int nPlayerIdx, int nNpcIdx)
 		pNpc->SetPos(nOX, nOY);
 		return;
 	}
+	// [PETKN 31/08] dang duoi danh muc tieu (sPetFight vua ra lenh do_walk):
+	// khong keo nguoc ve chu trong ~1s, tranh giang co lenh di chuyen
+	if (s_nChaseTick[nPlayerIdx] > 0)
+	{
+		s_nChaseTick[nPlayerIdx]--;
+		return;
+	}
 	int nGoX = nOX + ((nDX > 0) ? -100 : 100);
 	int nGoY = nOY + ((nDY > 0) ? -100 : 100);
 	pNpc->SendCommand(do_walk, nGoX, nGoY);
 }
 
 //---------------------------------------------------------------------------
-// DANH (tinh nang them theo yeu cau chu - Linux goc pet KHONG danh):
-// moi ~18 frame (~1s) khi chu bat FightMode: chon dich mode 22 (ke vua
-// danh chu / gan nhat, vision 480 nhu bang partner) -> do_skill bang bo
-// skill BANG npcs cua template.
-//---------------------------------------------------------------------------
-// [29/08] pet TU DANH da GO - ca Linux lan VLTK deu khong co
+// Nhip pet: don npc, theo chu qua map, follow, danh ([PETKN 31/08] bang
+// skill mac dinh), lam moi skill/passive dinh ky.
 //---------------------------------------------------------------------------
 void Pet_Breathe()
 {
@@ -443,8 +471,9 @@ void Pet_Breathe()
 		if (++s_dwAuraTick[i] >= PET_AURA_RECAST)
 		{
 			s_dwAuraTick[i] = 0;
-			sPetApplyAura(i);
-			sPetApplyEquip(i, 0);	// [30/08] thuoc tinh trang bi cho CHU
+			// [PETKN 31/08] lam moi skill/passive tren PET (refresh cung
+			// cap = chi refresh gio, khong cong don)
+			sPetApplyPetSkills(i);
 		}
 	}
 }
@@ -685,7 +714,7 @@ int LuaPET_SetSkill(Lua_State* L)
 	{
 		sPetS(nIdx, PET_TV_SKILL0 + nSlot - 1, nVal);
 		if (s_nPetNpcIdx[nIdx] > 0)
-			sPetApplyAura(nIdx);
+			sPetApplyPetSkills(nIdx);	// [PETKN 31/08] Lua dung lam "refresh"
 	}
 	return 0;
 }

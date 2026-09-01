@@ -27,7 +27,14 @@
 #define PET_SKILL_COUNT    4
 #define PET_MAX_LEVEL      130	// ban private VLTK (client_common MAX_LEVEL=130)
 #define PET_PARTNER_NO     100                  // m_nPartnerNo danh dau pet petsys
-#define PET_AURA_SKILL0    1600                 // 4 skill aura 1600..1603 (p19a)
+#define PET_AURA_SKILL0    1600                 // 4 skill MAC DINH 1600..1603 (don danh - [PETKN 31/08])
+
+// [PETKN 31/08] ky nang bi kip nang bang diem Tu Chan, buff ap len PET
+#define PET_TV_EXTLV0      5166                 // 4 o CAP bi kip (di cap voi o id 5139..5142)
+#define PET_BIKIP_SKILL0   1670                 // 18 skill bi kip 1670..1687
+#define PET_BIKIP_SKILL_MAX 1687
+#define PET_SKILLSLOT_ATK  10                   // slot skill-list NPC pet: don danh mac dinh
+#define PET_SKILLSLOT_EXT0 11                   // slot 11..14: 4 bi kip (style 3 tu ap passive)
 
 #ifdef _SERVER
 void Pet_ProcessAI(int nNpcIdx);        // KPlayerPartner.cpp re sang khi nNo==100

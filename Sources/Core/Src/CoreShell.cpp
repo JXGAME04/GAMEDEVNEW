@@ -1088,6 +1088,37 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					int nLevel = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SkillList.GetLevel(pObj->Obj.uId);
 					if(nLevel > 0)
 						nLevel = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_SkillList.GetCurrentLevel(pObj->Obj.uId);
+					// [PETKN 31/08] skill cua Ban Dong Hanh (1600..1603 don danh,
+					// 1670..1687 bi kip) KHONG nam trong skill-list nguoi choi -
+					// cap that doc tu ban sao task value (dai 5110..5169 tu sync).
+					if (nLevel <= 0 && pObj->Obj.uId >= 1600 && pObj->Obj.uId <= 1687)
+					{
+						KPlayerTask* pPetTask = &Player[CLIENT_PLAYER_INDEX].m_cTask;
+						if (pObj->Obj.uId <= 1603)
+						{
+							// don danh mac dinh: cap = (cap pet + 1) / 2, tran 63
+							if ((int)pPetTask->GetSaveVal(5110) == 1 &&
+								(int)pPetTask->GetSaveVal(5124) == (int)pObj->Obj.uId - 1599)
+							{
+								nLevel = ((int)pPetTask->GetSaveVal(5111) + 1) / 2;
+								if (nLevel < 1) nLevel = 1;
+								if (nLevel > 63) nLevel = 63;
+							}
+						}
+						else if (pObj->Obj.uId >= 1670)
+						{
+							// bi kip: tim o id 5139..5142, cap o 5166..5169
+							for (int nPK = 0; nPK < 4; nPK++)
+							{
+								if ((int)pPetTask->GetSaveVal(5139 + nPK) != (int)pObj->Obj.uId)
+									continue;
+								nLevel = (int)pPetTask->GetSaveVal(5166 + nPK);
+								if (nLevel < 1) nLevel = 1;
+								if (nLevel > 63) nLevel = 63;
+								break;
+							}
+						}
+					}
 					_ASSERT(nLevel >= 0);
 					if (pObj->Obj.uId >0)
 					{						

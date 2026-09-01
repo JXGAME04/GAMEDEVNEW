@@ -411,7 +411,13 @@ void KUiPet::UpdateData()
     {
         int nSk = sPetTV(5139 + i);
         if (nSk > 0)
-            m_ExtSkill[i].HoldObject(CGOG_SKILL_FIGHT, nSk, 1, 0);
+        {
+            // [PETKN 31/08] cap that cua bi kip o 5166..5169 (nang bang diem
+            // Tu Chan); tooltip doc task value trong CoreShell, nDataW du phong
+            int nLv = sPetTV(5166 + i);
+            if (nLv < 1) nLv = 1;
+            m_ExtSkill[i].HoldObject(CGOG_SKILL_FIGHT, nSk, nLv, 0);
+        }
         else
             m_ExtSkill[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
     }
