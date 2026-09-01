@@ -42,6 +42,10 @@ int LuaGetItemLife(Lua_State* L);         // (nEventId) -> 0 khi co (luon "con h
 int LuaGetItemProp(Lua_State* L);         // (nItemIdx) -> 3 gia tri: genre, detail, particular
 
 // --- giao vat pham (map len GiveBox/pos_affairitem co san cua JX1) ---
+// [BOXSOT 01/09] don do sot pos_affairitem truoc khi mo box moi (an toan, khong nem do)
+void KJx2WarInfra_ClearAffairBox(int nPlayerIdx);
+// [BOXSOT 01/09] danh dau dang chay callback give-box (ClearAffairBox se bo qua)
+void KJx2WarInfra_SetInGiveCallback(int nPlayerIdx, bool bIn);
 int LuaGiveItemUI(Lua_State* L);          // (szTitle, szDesc, szOkCb, szCancelCb) - mo hop giao do;
                                           // xac nhan -> KProtocolProcess goi cb(nCount) qua GiveBoxCollect
 int LuaGetGiveItemUnit(Lua_State* L);     // (i 1-based) -> item idx (stack N = N muc lien tiep)

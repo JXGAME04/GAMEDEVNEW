@@ -5,6 +5,7 @@
 #include "../Elem/Wnds.h"
 #include "../UiBase.h"
 #include "UiMantleWash.h"
+#include "UiAffairItem.h"	// [BOXMAU 01/09] UiAffair_EncodeDesc
 #include "UiItem.h"
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
@@ -44,7 +45,13 @@ KUiMantleWash* KUiMantleWash::OpenWindow(const char* pszTitle, const char* pszIn
 			m_pSelf->m_Title.SetText(pszTitle);
 		m_pSelf->m_Desc.Clear();
 		if (pszInitString && pszInitString[0])
-			m_pSelf->m_Desc.AddOneMessage(pszInitString, strlen(pszInitString));
+		{
+			// [BOXMAU 01/09] ma hoa the <color> truoc khi do vao khung mo ta
+			char szDesc[600];
+			int nDescLen = UiAffair_EncodeDesc(pszInitString, szDesc, sizeof(szDesc));
+			if (nDescLen > 0)
+				m_pSelf->m_Desc.AddOneMessage(szDesc, nDescLen);
+		}
 
 		m_pSelf->m_szFunc[0] = 0;
 		if (pszFunc)

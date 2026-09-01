@@ -3066,6 +3066,12 @@ int LuaOpenGiveBox(Lua_State* L)
 		Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
 	}
 
+#ifdef _SERVER
+	{	// [BOXSOT 01/09] don do sot phien truoc (KJx2WarInfra.cpp - chi build server)
+		extern void KJx2WarInfra_ClearAffairBox(int nPlayerIdx);
+		KJx2WarInfra_ClearAffairBox(nPlayerIndex);
+	}
+#endif
 	S2C_GIVE_BOX NetCommand;
 	NetCommand.ProtocolType = s2c_openaffairbox;
 	NetCommand.nType = 1;

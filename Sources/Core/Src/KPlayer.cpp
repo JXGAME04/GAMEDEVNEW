@@ -300,6 +300,9 @@ void	KPlayer::Release()
 	{	// [PHIEN 31/08] khe player tai su dung -> don phien give-box JX2 cua khe cu
 		extern void KJx2WarInfra_ClearGiveSession(int nPlayerIdx);
 		KJx2WarInfra_ClearGiveSession((int)(this - Player));
+		// [BOXSOT 01/09] bao hiem: co tai nhap give-box khong duoc ket true sang khe moi
+		extern void KJx2WarInfra_SetInGiveCallback(int nPlayerIdx, bool bIn);
+		KJx2WarInfra_SetInGiveCallback((int)(this - Player), false);
 	}
 	m_dwTimeBoxId = 0;
 	m_dwStrBoxId = 0;

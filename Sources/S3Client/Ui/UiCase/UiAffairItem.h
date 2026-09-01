@@ -40,3 +40,9 @@ private:
 	char 				szFunc2[32];		
 };
 
+// [BOXMAU 01/09] Ma hoa the <color=...> cho o mo ta cac box giao nop (AffairItem/
+// MantleInlay/MantleWash dung chung). Chuoi Lua den con THO; KWndMessageListBox::
+// AddOneMessage khong tu ma hoa (WndMessageListBox.cpp:121 chi memcpy) nen the mau
+// hien nguyen van. Tra ve so byte sau ma hoa (dung lam tham so AddOneMessage).
+int UiAffair_EncodeDesc(const char* pszSrc, char* pszDst, int nDstCap);
+

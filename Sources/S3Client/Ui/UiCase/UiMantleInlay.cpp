@@ -5,6 +5,7 @@
 #include "../Elem/Wnds.h"
 #include "../UiBase.h"
 #include "UiMantleInlay.h"
+#include "UiAffairItem.h"	// [BOXMAU 01/09] UiAffair_EncodeDesc
 #include "UiItem.h"
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
@@ -51,7 +52,13 @@ KUiMantleInlay* KUiMantleInlay::OpenWindow(const char* pszTitle, const char* psz
 			m_pSelf->m_Title.SetText(pszTitle);
 		m_pSelf->m_Guide.Clear();
 		if (pszInitString)
-			m_pSelf->m_Guide.AddOneMessage(pszInitString, strlen(pszInitString));
+		{
+			// [BOXMAU 01/09] ma hoa the <color> truoc khi do vao khung mo ta
+			char szDesc[600];
+			int nDescLen = UiAffair_EncodeDesc(pszInitString, szDesc, sizeof(szDesc));
+			if (nDescLen > 0)
+				m_pSelf->m_Guide.AddOneMessage(szDesc, nDescLen);
+		}
 		m_pSelf->UpdateData();		// nap noi dung o ngay khi mo
 
 		m_pSelf->m_szFunc[0] = 0;

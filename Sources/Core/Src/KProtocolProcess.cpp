@@ -6540,10 +6540,24 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				// m_dwGiveBoxId hien tai) roi moi duoc xoa.
 				DWORD dwBox = Player[nIndex].m_dwGiveBoxId;
 				Player[nIndex].m_dwGiveBoxId = 0;
+				// [BOXSOT 01/09] callback co the MO LAI hop voi do van trong khay
+				// (PF_InlayMoLai/PF_MoLaiWashBox/PF_MoLaiHopNangCap) - bao cho
+				// ClearAffairBox biet de KHONG don giua phien.
+				extern void KJx2WarInfra_SetInGiveCallback(int nPlayerIdx, bool bIn);
+				KJx2WarInfra_SetInGiveCallback(nIndex, true);
+				// [WASHFIX 01/09] case 1 xua nay chi chay m_szTaskExcuteFun va VUT szFunc
+				// client gui len -> nut "Giu nguyen"/"Ap dung" cua box tay luyen bi chay
+				// nham doWashRoll (roll lai + tru nguyen lieu). Whitelist DUNG 2 ten nay
+				// (khong chay szFunc tuy y de khoi mo duong client hack goi ham bat ky).
+				char* szRunFun = Player[nIndex].m_szTaskExcuteFun;
+				pUiCmd->szFunc[sizeof(pUiCmd->szFunc) - 1] = 0;
+				if (!strcmp(pUiCmd->szFunc, "doWashKeep") || !strcmp(pUiCmd->szFunc, "doWashApply"))
+					szRunFun = pUiCmd->szFunc;
 				if (nJx2Cnt >= 0)
-					Player[nIndex].ExecuteScript(dwBox, Player[nIndex].m_szTaskExcuteFun, nJx2Cnt);
+					Player[nIndex].ExecuteScript(dwBox, szRunFun, nJx2Cnt);
 				else
-					Player[nIndex].ExecuteScript(dwBox, Player[nIndex].m_szTaskExcuteFun, "");
+					Player[nIndex].ExecuteScript(dwBox, szRunFun, "");
+				KJx2WarInfra_SetInGiveCallback(nIndex, false);
 			}
 			break;
 		case 2:

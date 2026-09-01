@@ -839,6 +839,7 @@ int LuaGiveItemUI(Lua_State* L)
 	// callback = ham trong CHINH script dang thoai (ActionScript cua npc dialog
 	// da duoc engine gan vao Npc nguoi choi - khuon OpenGiveBox 4 doi :2445)
 	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	KJx2WarInfra_ClearAffairBox(nPlayerIndex);	// [BOXSOT 01/09] don do sot phien truoc
 	S2C_GIVE_BOX NetCommand;
 	NetCommand.ProtocolType = s2c_openaffairbox;
 	NetCommand.nType = 1;
@@ -894,6 +895,69 @@ int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx)
 		}
 	}
 	return (int)s.vItems.size();
+}
+
+// [BOXSOT 01/09] co tai nhap: true khi dang chay callback give-box (UiCommandScript
+// case 1). Cac ham PF_InlayMoLai / PF_MoLaiWashBox / PF_MoLaiHopNangCap CO Y mo lai
+// box khi do van nam trong khay - luc do TUYET DOI khong duoc don.
+static bool sInGiveCb[MAX_PLAYER] = { false };
+void KJx2WarInfra_SetInGiveCallback(int nPlayerIdx, bool bIn)
+{
+	if (nPlayerIdx > 0 && nPlayerIdx < MAX_PLAYER)
+		sInGiveCb[nPlayerIdx] = bIn;
+}
+
+// [BOXSOT 01/09] Don khoang chua give-box (pos_affairitem) TRUOC khi mo box moi.
+// Trieu chung: bo do vao box Da Tau roi thoat, mo box Phi Phong tang sao/kham nam
+// thi nguyen lieu cu VAN trong o - vi do dat vao box nam THANG trong m_ItemList
+// (nPlace = pos_affairitem) va KHONG duong mo box nao don; GiveBoxCollect (:877)
+// quet moi mon pos_affairitem khong loc theo phien nen do sot bi tinh nham sang
+// tinh nang sau. AN TOAN KHONG MAT DO: kiem CheckCanPlaceInEquipment TRUOC roi moi
+// Remove; AddKIL that bai (0) thi tra ve DUNG O CU; tui het cho thi DE NGUYEN mon
+// trong box. TUYET DOI KHONG dung KPlayer::RecoveryBox (tui day -> pos_hand -> mon
+// dang cam bi nem xuong dat, KPlayer.cpp:6680; canh bao CoreShell.cpp:3722).
+// Remove/AddKIL tu gui s2c_removeitem + SyncItem nen client tu khop, khong them goi tin.
+void KJx2WarInfra_ClearAffairBox(int nPlayerIdx)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return;
+	if (Player[nPlayerIdx].m_nIndex <= 0)
+		return;
+	if (sInGiveCb[nPlayerIdx])
+		return;	// dang trong callback: script mo lai box, do phai o nguyen khay
+	if (Player[nPlayerIdx].CheckTrading())
+		return;	// dang trao doi: khong dong cham hanh trang
+	// gom TRUOC roi moi sua - khong vua duyet GetFirstItem/GetNextItem vua Remove
+	int aIdx[64], aX[64], aY[64];
+	int nCount = 0;
+	KItemList* pList = &Player[nPlayerIdx].m_ItemList;
+	for (PlayerItem* pIt = pList->GetFirstItem(); pIt && nCount < 64; pIt = pList->GetNextItem())
+	{
+		if (pIt->nIdx <= 0 || pIt->bIsSkill)
+			continue;
+		if (pIt->nPlace != pos_affairitem)
+			continue;
+		aIdx[nCount] = pIt->nIdx;
+		aX[nCount] = pIt->nX;
+		aY[nCount] = pIt->nY;
+		nCount++;
+	}
+	for (int i = 0; i < nCount; i++)
+	{
+		int nIdx = aIdx[i];
+		if (nIdx <= 0 || nIdx >= MAX_ITEM || Item[nIdx].GetID() == 0)
+			continue;
+		int x = 0, y = 0;
+		if (!pList->CheckCanPlaceInEquipment(Item[nIdx].GetWidth(), Item[nIdx].GetHeight(), &x, &y))
+			continue;	// tui het cho: de nguyen trong box, khong bao gio nem
+		if (!pList->Remove(nIdx))
+			continue;
+		if (pList->AddKIL(nIdx, pos_equiproom, x, y) == 0)
+		{
+			// khong dat duoc (khong the xay ra vi vua kiem cho trong) - tra ve o cu
+			pList->AddKIL(nIdx, pos_affairitem, aX[i], aY[i]);
+		}
+	}
 }
 
 // (i 1-based) -> item idx / 0
@@ -2474,6 +2538,7 @@ int LuaPF_OpenMantleInlayBox(Lua_State* L)
 	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsString(L, 3))
 		return 0;
 	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	KJx2WarInfra_ClearAffairBox(nPlayerIndex);	// [BOXSOT 01/09] don do sot phien truoc
 	S2C_GIVE_BOX NetCommand;
 	NetCommand.ProtocolType = s2c_openaffairbox;
 	NetCommand.nType = 3;
@@ -2497,6 +2562,7 @@ int LuaPF_OpenMantleWashBox(Lua_State* L)
 	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsString(L, 3))
 		return 0;
 	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	KJx2WarInfra_ClearAffairBox(nPlayerIndex);	// [BOXSOT 01/09] don do sot phien truoc
 	S2C_GIVE_BOX NetCommand;
 	NetCommand.ProtocolType = s2c_openaffairbox;
 	NetCommand.nType = 4;

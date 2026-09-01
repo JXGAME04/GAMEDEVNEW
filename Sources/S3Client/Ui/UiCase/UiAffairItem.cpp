@@ -10,11 +10,65 @@
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
 #include "../../../Engine/src/KDebug.h"
+#include "../../../Engine/src/Text.h"	// [BOXMAU 01/09] TEncodeText cho o mo ta
 extern iCoreShell*		g_pCoreShell;
 
 #define	SCHEME_INI 	"UiGiveItem.ini"
 
 KUiAffairItem* KUiAffairItem::m_pSelf = NULL;
+
+// [BOXMAU 01/09] Chuoi mo ta tu Lua den con THO ("<color=red>" chua phai byte dieu
+// khien). Phai TEncodeText truoc khi do vao KWndMessageListBox - y het khuon
+// UiCompoundItem.cpp:641. Truoc do nan truong hop '<' dung NGAY SAU chu Viet:
+// TEncodeText (Text.cpp:468) coi byte >0x80 la chu 2 byte nen se nuot '<' - chen
+// 1 dau cach lam byte-duoi thay the (khuon DTG_FixTagAfterVn UiTaskGuide.cpp:774).
+// Sau ma hoa chuoi co the CHUA BYTE 0 (RGB) - phai dung so byte tra ve, cam strlen.
+int UiAffair_EncodeDesc(const char* pszSrc, char* pszDst, int nDstCap)
+{
+	if (!pszSrc || !pszDst || nDstCap <= 0)
+		return 0;
+	char szTmp[1024];
+	size_t i = 0, o = 0;
+	size_t nLen = strlen(pszSrc);
+	while (i < nLen && o + 3 < sizeof(szTmp))
+	{
+		unsigned char c = (unsigned char)pszSrc[i];
+		if (c > 0x80 && i + 1 < nLen)
+		{
+			if (pszSrc[i + 1] == '<')
+			{
+				szTmp[o++] = pszSrc[i];
+				szTmp[o++] = ' ';	// byte-duoi gia, hy sinh thay cho '<'
+				i++;
+			}
+			else
+			{
+				szTmp[o++] = pszSrc[i];
+				szTmp[o++] = pszSrc[i + 1];
+				i += 2;
+			}
+		}
+		else
+		{
+			// [BOXMAU 01/09b] byte Viet don le o CUOI chuoi: TEncodeText se DROP
+			// (Text.cpp:476 nhanh else chi break) -> mat chu cuoi. Chen 1 dau cach
+			// lam byte-duoi gia, cung meo da dung cho '<'.
+			szTmp[o++] = pszSrc[i];
+			if (c > 0x80 && i + 1 >= nLen)
+				szTmp[o++] = ' ';
+			i++;
+		}
+	}
+	szTmp[o] = 0;
+	int nOut = TEncodeText(szTmp, (int)o);
+	if (nOut < 0)
+		nOut = 0;
+	if (nOut > nDstCap - 1)
+		nOut = nDstCap - 1;
+	memcpy(pszDst, szTmp, nOut);
+	pszDst[nOut] = 0;
+	return nOut;
+}
 
 KUiAffairItem::KUiAffairItem()
 {
@@ -45,7 +99,13 @@ KUiAffairItem* KUiAffairItem::OpenWindow(const char* pszTitle, const char* pszIn
 		m_pSelf->m_ContentList.Clear();
 			
 		if (pszInitString)
-			m_pSelf->m_ContentList.AddOneMessage(pszInitString, strlen(pszInitString));			
+		{
+			// [BOXMAU 01/09] ma hoa the <color> truoc khi do vao khung mo ta
+			char szDesc[600];
+			int nDescLen = UiAffair_EncodeDesc(pszInitString, szDesc, sizeof(szDesc));
+			if (nDescLen > 0)
+				m_pSelf->m_ContentList.AddOneMessage(szDesc, nDescLen);
+		}
 			
 		strcpy(m_pSelf->szFunc1, pszFunc1);
 		
