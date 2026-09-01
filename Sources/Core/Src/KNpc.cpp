@@ -3510,17 +3510,12 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			        nDamage = (int)((int64_t)nDamage * MAX_DEATLY_STRIKE_ENHANCEP / MAX_PERCENT);
 			    }
 			}
-			if (bIsFS)
-				{
-				    float fReduction = 1.0f - m_nDamageReduction / 100.0f;
-				
-				    if (fReduction < 0.0f)
-				        fReduction = 0.0f;
-				
-				    int nRand = GetRandomNumber(MIN_FATALLY_STRIKE_ENHANCEP, MAX_FATALLY_STRIKE_ENHANCEP);
-				
-				    nDamage = (int)(m_CurrentLife * fReduction * nRand / MAX_PERCENT);
-				}
+			// [CHITU 01/09] DA GO khoi chi tu khoi CalcDamage. Linux khong he xu ly chi tu
+			// trong ham sat thuong 0x08089C90; toan ELF chi doc FatallyStrikeRes DUNG 1 LAN
+			// tai 0x0808B097 (trong ReceiveDamage). De o day sinh 2 loi: (a) no toi 4 lan moi
+			// don vi CalcDamage duoc goi rieng cho tung he lanh/hoa/loi/doc; (b) sat thuong
+			// chi tu con bi khang/giap/sorb/PK-rate xu ly tiep. Khau ap moi dat o ReceiveDamage,
+			// ngay truoc khe choang - dung vi tri cua Linux.
 
 			if(this->m_Kind == kind_normal && this->m_cGold.GetGoldType() > 0)
 			{
@@ -4079,7 +4074,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		Player[m_nPlayerIdx].m_bWllsDmgCounterOn && nDamage > 0)
 		Player[m_nPlayerIdx].m_nWllsDmgCounter += (nDamage > (int)m_CurrentLife ? (int)m_CurrentLife : nDamage);
 #endif
-	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS || bIsFS);
+	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS);	// [CHITU 01/09] chi tu khong con di qua day
 	AUTOLOG_EVERY(1000, "[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
 	m_CurrentLife -= nDamage;
 	nRealDamage += nDamage;
@@ -4239,7 +4234,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	pTemp++; 
 	BOOL bIsFS = FALSE;
-	if (g_RandPercent(pTemp->nValue[0] - m_CurrentFatallyStrikeResP)) //fatallystrike[5]
+	// [CHITU 01/09] Linux 0x0808B068-0x0808B076: xac suat CHI la nValue[0], KHONG tru
+	// khang. Khang chi tu (m_CurrentFatallyStrikeResP) tru vao SAT THUONG - xem khoi ap
+	// ben duoi. JX1 truoc day tru vao XAC SUAT (dat sai cho): nan nhan du khang thi
+	// MIEN NHIEM tuyet doi, con Linux van trung nhung an it sat thuong hon.
+	if (g_RandPercent(pTemp->nValue[0])) //fatallystrike[5]
 		bIsFS = TRUE;
 
 	pTemp++;
@@ -4258,7 +4257,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
+	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))
 	{
 		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
 		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
@@ -4280,13 +4279,13 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; //fire damage[11]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS);
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);
 	
 	pTemp++; //lighting damage[12]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS);
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);
 
 	pTemp++; //poison damage[13]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
+	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))
 	{
 		// [PF 31/08k] anti_poisontimereduce_p (204): ke danh keo dai thoi gian doc
 		// bang cach triet tieu chi so giam cua nan nhan (nGiamDoc thay the
@@ -4357,6 +4356,34 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 			}
 			if (m_PoisonState.nValue[0] > MAX_POISON_DAMAGE)
 				m_PoisonState.nValue[0] = MAX_POISON_DAMAGE;
+		}
+	}
+
+	// [CHITU 01/09] KHAU CHI TU DUY NHAT - dung vi tri cua Linux (0x0808B068-0x0808B13F:
+	// sau moi sat thuong + hut mau + day lui, NGAY TRUOC khe choang 0x0808A8A8).
+	// nFS = (mau HIEN TAI / 4) * max(0, 100 - khang chi tu) / 100, cat so nguyen.
+	// Tru THANG vao mau: khong qua ngu hanh / khang / giap / sorb / khien noi luc / PK-rate.
+	// Linux KHONG goi chet trong khoi nay (nan nhan co the dung voi mau am) - JX1 phai tu
+	// them, sao khuon khoi chet cua ReceiveDamage.
+	if (bIsFS && m_CurrentLife > 0)
+	{
+		int nFsK = MAX_PERCENT - m_CurrentFatallyStrikeResP;	// 0x0808B097
+		if (nFsK < 0)
+			nFsK = 0;	// 0x0808B0A3 cmovns - KHONG kep tran tren, giong Linux
+		int nFSDamage = (int)((float)(m_CurrentLife / 4) * nFsK / 100.0f);
+		if (nFSDamage > 0)
+		{
+			SyncDamageInfo(nLauncher, nFSDamage > m_CurrentLife ? m_CurrentLife : nFSDamage, COMBAT_INFO_DAMAGE_LIFE, 0, TRUE);
+			m_CurrentLife -= nFSDamage;	// 0x0808B0F8 ghi thang mau
+			if (m_CurrentLife <= 0 && m_Doing != do_death && m_Doing != do_revive)
+			{
+				if ((m_DeathSkill[0].nSkillId > 0 && m_DeathSkill[0].nSkillId < MAX_SKILL) && m_Level >= LEVEL_EXPLOSIVE)
+					DeathSkill();
+				int nMode = DeathCalcPKValue(m_nLastDamageIdx);
+				DoDeath(nMode, nLauncher);
+				if (m_Kind == kind_player)
+					Player[m_nPlayerIdx].m_cPK.CloseAll();
+			}
 		}
 	}
 
