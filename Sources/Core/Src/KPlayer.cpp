@@ -2940,6 +2940,8 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentAddDamageP = 100;											// [KM 27/08] goc 100 theo Linux
 	Npc[m_nIndex].m_CurrentSorbDamageYanP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentAntiStunTimeReduceP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentDoStunP = 0;				// [CHOANG 01/09]
+	Npc[m_nIndex].m_CurrentAntiDoStunP = 0;			// [CHOANG 01/09]
 	Npc[m_nIndex].m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentDoHurtP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]

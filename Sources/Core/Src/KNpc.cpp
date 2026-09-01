@@ -414,6 +414,8 @@ void KNpc::Init()
 	m_CurrentAddDamageP = 100; m_nKMAntiHitRecover = 0;					// [KM 27/08] goc 100 theo Linux
 	m_CurrentSorbDamageYanP = 0;	// [PF 31/08k]
 	m_CurrentAntiStunTimeReduceP = 0;	// [PF 31/08k]
+	m_CurrentDoStunP = 0;			// [CHOANG 01/09]
+	m_CurrentAntiDoStunP = 0;		// [CHOANG 01/09]
 	m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
 	m_CurrentDoHurtP = 0;	// [PF 31/08k]
 	m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]
@@ -1378,7 +1380,11 @@ BOOL KNpc::ProcessState()
 		m_LifeState.nTime--;
 		if (!(m_LifeState.nTime % GAME_UPDATE_TIME))
 		{
-			m_CurrentLife += m_LifeState.nValue[0];
+		// [PHUCHOI 01/09] LAM CHUAN THEO LINUX (0x0808B9B2 log "AddLifeState: %d * %d%% = %d").
+		// Linux nhan lifereplenish_p vao CA hoi tu nhien LAN moi nhip cua THUOC UONG.
+		// JX1 truoc day chi nhan o hoi tu nhien, ma nen hoi tu nhien cua nguoi choi = 0
+		// (PLAYER_LIFE_REPLENISH) nen 130 dong trang bi + kinh mach deu vo dung.
+		m_CurrentLife += m_LifeState.nValue[0] + (m_LifeState.nValue[0] * m_CurrentLifeReplenishPercent / MAX_PERCENT);
 			if (m_CurrentLife > m_CurrentLifeMax)
 			{
 				m_CurrentLife = m_CurrentLifeMax;
@@ -4254,12 +4260,22 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	pTemp++; //cold damage[10]
 	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
 	{
+		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
+		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
+		// Ma co che chan luot lai chi chan o nhip LE (KNpc.cpp ProcessState: nTime--
+		// roi 'if (nTime & 1)'), nen thoi luong 1 tick la KHONG CHAN GI CA: nguoi choi
+		// van an sat thuong bang nhung khong he thay bi dong bang.
+		// Linux khong co nhanh /4: no KEP muc giam tai FreezeTimeReduceMax (gamesetting.ini
+		// cua ban Linux = 77) roi tru tuyen tinh -> bang LUON con it nhat 23% thoi luong.
 		if (m_FreezeState.nTime <= 0)
 		{
-			if (m_CurrentFreezeTimeReducePercent > MAX_REDUCE) //Thêi gian lµm chËm gi¶m bít
-				m_FreezeState.nTime = pTemp->nValue[1] / 4;
-			else
-				m_FreezeState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentFreezeTimeReducePercent / MAX_PERCENT;
+			const int FREEZE_TIME_REDUCE_MAX = 77;	// Linux [ServerConfig] FreezeTimeReduceMax
+			int nGiam = m_CurrentFreezeTimeReducePercent;
+			if (nGiam < 0)
+				nGiam = 0;
+			if (nGiam > FREEZE_TIME_REDUCE_MAX)
+				nGiam = FREEZE_TIME_REDUCE_MAX;
+			m_FreezeState.nTime = pTemp->nValue[1] * (MAX_PERCENT - nGiam) / MAX_PERCENT;
 		}
 	}
 
@@ -4347,20 +4363,37 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	pTemp++; //stun[14]
 	if (m_StunState.nTime <= 0)
 	{
-		if (g_RandPercent(pTemp->nValue[0]))
+		// [CHOANG 01/09] XAC SUAT theo Linux (0x0808A8C5-0x0808A941):
+		//   rate = nValue[0] cua chieu
+		//   neu nan nhan co ignorenegativestate: rate = rate * (100 - ign) / 100
+		//   rate += do_stun_p(ke danh) - anti_do_stun_p(nan nhan)
+		// Truoc day JX1 chi roll tho nValue[0]: hai thuoc tinh 261/219 tren trang bi
+		// khong co duong nao vao cong thuc (261 khong handler, 219 du lieu nam nham o 262).
+		// CHUA LAM (cho chu game duyet): Linux con cong m_CurrentStunStrike - tuc dong
+		// Trong Kich tren vu khi cung gay choang; do la thay doi PvP nang nen tach rieng.
+		int nRateChoang = pTemp->nValue[0];
+		if (m_CurrentIgnoreNegativeStateP > 0)
+			nRateChoang = nRateChoang * (MAX_PERCENT - m_CurrentIgnoreNegativeStateP) / MAX_PERCENT;
+		if (nLauncher > 0 && nLauncher < MAX_NPC)
+			nRateChoang += Npc[nLauncher].m_CurrentDoStunP;
+		nRateChoang -= m_CurrentAntiDoStunP;
+		if (g_RandPercent(nRateChoang))
 		{
 			// [PF 31/08k] anti_stuntimereduce_p (220): ke danh triet tieu bot chi so
 			// giam-thoi-gian-choang cua nan nhan. Ban toi thieu: KHONG nhan he so
 			// Trong Kich nhu Linux (doi chu game duyet - anh huong PvP).
+			// [CHOANG 01/09] THOI LUONG theo Linux (0x0808A95F-0x0808A9D1 + 0x0808B549):
+			// diff = stuntimereduce(nan nhan) - anti_stuntimereduce(ke danh), KHONG kep 0
+			// (Linux cho diff AM -> choang DAI HON goc); nguong nhay /4 la diff > 74.
 			int nGiamChoang = m_CurrentStunTimeReducePercent;
 			if (nLauncher > 0 && nLauncher < MAX_NPC)
 				nGiamChoang -= Npc[nLauncher].m_CurrentAntiStunTimeReduceP;
-			if (nGiamChoang < 0)
-				nGiamChoang = 0;
-			if (nGiamChoang > MAX_REDUCE)
+			if (nGiamChoang > 74)
 				m_StunState.nTime = pTemp->nValue[1] / 4;
 			else
 				m_StunState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * nGiamChoang / MAX_PERCENT;
+			if (m_StunState.nTime < 0)
+				m_StunState.nTime = 0;
 		}
 	}
 

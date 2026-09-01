@@ -410,6 +410,8 @@ public:
 	int					m_nKMAntiHitRecover;								//#tri nhan duoc o don danh nay
 	int					m_CurrentSorbDamageYanP;	// [PF 31/08k] triet tieu sat thuong ban Duong, PHAN NGHIN, tran 500 (237)
 	int					m_CurrentAntiStunTimeReduceP;	// [PF 31/08k] keo dai thoi gian choang TA GAY RA (220)
+	int					m_CurrentDoStunP;				// [CHOANG 01/09] do_stun_p (261) - cong vao XAC SUAT gay choang (Linux +0x1334)
+	int					m_CurrentAntiDoStunP;			// [CHOANG 01/09] anti_do_stun_p (219) - tru vao xac suat bi choang (Linux +0x132c)
 	int					m_CurrentAntiPoisonTimeReduceP;	// [PF 31/08k] keo dai thoi gian doc TA GAY RA (204)
 	int					m_CurrentDoHurtP;	// [PF 31/08k] cong xac suat gay dong tac bi thuong (205)
 	int					m_CurrentAntiDoHurtP;	// [PF 31/08k] khang dong tac bi thuong (223)

@@ -164,7 +164,9 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_add_damage_p] = &KNpcAttribModify::AddDamageP;
 	ProcessFunc[magic_anti_hitrecover] = &KNpcAttribModify::AntiHitRecover;
 	ProcessFunc[magic_sorbdamage_yan_p] = &KNpcAttribModify::SorbDamageYanP;	// [PF 31/08k]
-	ProcessFunc[magic_anti_stuntimereduce_p] = &KNpcAttribModify::AntiStunTimeReduceP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_stuntimereduce_p] = &KNpcAttribModify::AntiStunTimeReduceP;
+	ProcessFunc[magic_do_stun_p] = &KNpcAttribModify::DoStunP;			// [CHOANG 01/09] 261
+	ProcessFunc[magic_anti_do_stun_p] = &KNpcAttribModify::AntiDoStunP;	// [CHOANG 01/09] 219	// [PF 31/08k]
 	ProcessFunc[magic_anti_poisontimereduce_p] = &KNpcAttribModify::AntiPoisonTimeReduceP;	// [PF 31/08k]
 	ProcessFunc[magic_do_hurt_p] = &KNpcAttribModify::DoHurtP;	// [PF 31/08k]
 	ProcessFunc[magic_anti_do_hurt_p] = &KNpcAttribModify::AntiDoHurtP;	// [PF 31/08k]
@@ -223,81 +225,30 @@ void KNpcAttribModify::ModifyAttrib(KNpc* pNpc, void* pData)
 }
 
 void KNpcAttribModify::AddColdDamageV(KNpc* pNpc, void* pData)
-{	
+{
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	int COLD_DAMAGE_TIME_Count = 0;
-	if (pMagic->nValue[0] <= 0)
+	// [BANGSAT 01/09] LAM CHUAN THEO LINUX (handler addcolddamage_v 0x08098FA0).
+	// Ban cu JX1 co HAI loi:
+	//  (1) bac thang 16 nac roi GAN DE nValue[1] = bac cua RIENG mon dang xu ly
+	//      -> deo mon A (+200, bac 50) roi mon B (+20, bac 8) thi thoi luong con 8,
+	//      tuc deo THEM do bang sat lai thay bang NGAN DI.
+	//  (2) duong cong lech han Linux o vung thap (v=9: JX1 6 tick vs Linux 10 tick).
+	// Linux: time = min(54, (v/10)*4 + 10) tinh tren TUNG dong, roi giu MAX giua cac dong.
+	int nTime = 0;
+	if (pMagic->nValue[0] > 0)
 	{
-	COLD_DAMAGE_TIME_Count = 0;
-	}
-	else if (pMagic->nValue[0] < 9)
-	{
-	COLD_DAMAGE_TIME_Count = 4;
-	}
-	else if (pMagic->nValue[0] < 18)
-	{
-	COLD_DAMAGE_TIME_Count = 6;
-	}
-	else if (pMagic->nValue[0] < 27)
-	{
-	COLD_DAMAGE_TIME_Count = 8;
-	}
-	else if (pMagic->nValue[0] < 36)
-	{
-	COLD_DAMAGE_TIME_Count = 10;
-	}
-	else if (pMagic->nValue[0] < 45)
-	{
-	COLD_DAMAGE_TIME_Count = 12;
-	}
-	else if (pMagic->nValue[0] < 54)
-	{
-	COLD_DAMAGE_TIME_Count = 14;
-	}
-	else if (pMagic->nValue[0] < 63)
-	{
-	COLD_DAMAGE_TIME_Count = 16;
-	}
-	else if (pMagic->nValue[0] < 72)
-	{
-	COLD_DAMAGE_TIME_Count = 18;
-	}
-	else if (pMagic->nValue[0] < 81)
-	{
-	COLD_DAMAGE_TIME_Count = 20;
-	}
-	else if (pMagic->nValue[0] < 90)
-	{
-	COLD_DAMAGE_TIME_Count = 24;
-	}
-	else if (pMagic->nValue[0] < 99)
-	{
-	COLD_DAMAGE_TIME_Count = 28;
-	}
-	else if (pMagic->nValue[0] < 108)
-	{
-	COLD_DAMAGE_TIME_Count = 32;
-	}
-	else if (pMagic->nValue[0] < 117)
-	{
-	COLD_DAMAGE_TIME_Count = 36;
-	}
-	else if (pMagic->nValue[0] < 126)
-	{
-	COLD_DAMAGE_TIME_Count = 40;
-	}
-	else if (pMagic->nValue[0] < 135)
-	{
-	COLD_DAMAGE_TIME_Count = 44;
-	}
-	else
-	{
-	COLD_DAMAGE_TIME_Count = 50;
+		nTime = (pMagic->nValue[0] / 10) * 4 + 10;
+		if (nTime > 54)
+			nTime = 54;		// tran cung cua Linux (0x08098FF3 cmp 0x36)
 	}
 	pNpc->m_CurrentColdDamage.nValue[0] += pMagic->nValue[0];
 	pNpc->m_CurrentColdDamage.nValue[2] += pMagic->nValue[0];
 	if (pNpc->m_CurrentColdDamage.nValue[0] > 0 && pNpc->m_CurrentColdDamage.nValue[2] > 0)
-		pNpc->m_CurrentColdDamage.nValue[1] = COLD_DAMAGE_TIME_Count;
+	{
+		// GIU MAX (Linux 0x08098FF9 cmp/jge) - khong gan de
+		if (nTime > pNpc->m_CurrentColdDamage.nValue[1])
+			pNpc->m_CurrentColdDamage.nValue[1] = nTime;
+	}
 	else
 	{
 		pNpc->m_CurrentColdDamage.nValue[0] = 0;
@@ -1427,6 +1378,20 @@ void KNpcAttribModify::AntiStunTimeReduceP( KNpc* pNpc, void* pData )	// [PF 31/
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentAntiStunTimeReduceP += pMagic->nValue[0];
+}
+
+// [CHOANG 01/09] do_stun_p (261) - Linux handler 0x080968F0 'DoStunP:%d'
+void KNpcAttribModify::DoStunP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentDoStunP += pMagic->nValue[0];
+}
+
+// [CHOANG 01/09] anti_do_stun_p (219) - Linux handler 0x080968B0 'AntiDoStunP:%d'
+void KNpcAttribModify::AntiDoStunP(KNpc* pNpc, void* pData)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiDoStunP += pMagic->nValue[0];
 }
 
 void KNpcAttribModify::AntiPoisonTimeReduceP( KNpc* pNpc, void* pData )	// [PF 31/08k] keo dai thoi gian doc TA GAY RA (204)

@@ -146,6 +146,8 @@ private:
 	void	AntiHitRecover(KNpc* pNpc, void* pData);
 	void	SorbDamageYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
 	void	AntiStunTimeReduceP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void DoStunP(KNpc* pNpc, void* pData);			// [CHOANG 01/09] 261
+	void AntiDoStunP(KNpc* pNpc, void* pData);		// [CHOANG 01/09] 219
 	void	AntiPoisonTimeReduceP(KNpc* pNpc, void* pData);	// [PF 31/08k]
 	void	DoHurtP(KNpc* pNpc, void* pData);	// [PF 31/08k]
 	void	AntiDoHurtP(KNpc* pNpc, void* pData);	// [PF 31/08k]
