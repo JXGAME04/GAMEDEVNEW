@@ -268,6 +268,11 @@ struct PB_Bot
 	int          nTkKetY;
 	int          nTkMuaXong;                  // 1 = da ghe Quan Y mua thuoc
 	unsigned int nTkRaTick;                   // moc goi lai trap ra trai
+	unsigned int uKet3Tick;                   // [TKKET3 01/09] dung yen mot cho o pha 3 tu luc nao (CHI de log)
+	int          nKet3X;                      // [TKKET3] neo toa do do dung-yen
+	int          nKet3Y;
+	unsigned int uKet3Log;                    // [TKKET3] tiet che dong [TkKet3] 10 giay/con
+	unsigned int uKet3Trap;                   // [TKKET3] tiet che dong [TkKet3-TRAP] 15 giay/con
 	unsigned int nTkChoRa;                    // moc SOM NHAT duoc phep ra khoi trai
 	int          nTkDaBoc;                    // (21/08) 0 = chua boc diem trung gian
 	                                          // cho chang nay, 1 = boc roi
@@ -383,6 +388,34 @@ static int pb_BotNoi(int nIdx)
 // TV/DM khong co chieu nao nhu vay -> tu roi ve duong NGOAI giu vu khi; phai khac
 // (Ngu Doc/Nga My/Thuy Yen/Vo Dang/Con Lon...) van chia doi nhu chu muon. Bot chua
 // du cap dung chieu phep thi TAM giu vu khi, len cap pb_TrangBiTheoCap se thao sau.
+// [SPARSE 31/08] m_DamageAttribs la MANG THUA 17 o danh chi so theo LOAI don
+// (KSkills.cpp: [2]magic [9]physics [10]cold [11]fire [12]lighting [13]poison),
+// GetDamageAttribsNum() chi la BO DEM. Quet "a < nDaNum" (ban cu) chi doc vai o DAU
+// thuong rong => moi phep thu don-phep luon 0. Mang KHONG duoc memset nen phai so
+// DUNG enum chu khong the chi kiem khac 0.
+#define PB_DA_LA(p, slot, val)  ((p)->GetDamageAttribs()[(slot)].nAttribType == (val))
+
+// don sat thuong PHEP THAT (KHONG tinh doc: do that 199k cu cho thay doc khong bao
+// mon quai tren build nay - xem 303-DOC)
+static int pb_DonPhepThat(KSkill* p)
+{
+	return PB_DA_LA(p, 2,  magic_magicdamage_v)
+	    || PB_DA_LA(p, 10, magic_colddamage_v)
+	    || PB_DA_LA(p, 11, magic_firedamage_v)
+	    || PB_DA_LA(p, 12, magic_lightingdamage_v);
+}
+
+static int pb_DonDoc(KSkill* p)
+{
+	return PB_DA_LA(p, 13, magic_poisondamage_v);
+}
+
+// o [9] dung chung cho physicsdamage_v va physicsenhance_p (KSkills.cpp cung mot case)
+static int pb_DonVatLy(KSkill* p)
+{
+	return PB_DA_LA(p, 9, magic_physicsdamage_v) || PB_DA_LA(p, 9, magic_physicsenhance_p);
+}
+
 static int pb_CoChieuNoiTayKhong(int nNpcIdx)
 {
 	KSkillList& sl = Npc[nNpcIdx].m_SkillList;
@@ -418,31 +451,41 @@ static int pb_CoChieuNoiTayKhong(int nNpcIdx)
 		if (nRq > 80) nRq = 80;
 		if (Npc[nNpcIdx].m_Level < nRq)
 			continue;              // chua du cap - cast se bi tu choi im lang
-		KMagicAttrib* pDa = p->GetDamageAttribs();
-		const int nDaNum = p->GetDamageAttribsNum();
-		for (int a = 0; a < nDaNum && a < MAX_MISSLE_DAMAGEATTRIB; a++)
-		{
-			const int nT = pDa[a].nAttribType;
-			// [303-DOC 30/08] BO poisondamage: doc khong bao mon quai tren build nay
-			// (199k cu do that) - chieu doc-thuan khong du tu cach "chieu noi danh duoc",
-			// tranh DM bi tuoc vu khi oan roi om 303 vo dung.
-			if (nT == magic_magicdamage_v  || nT == magic_colddamage_v
-			 || nT == magic_firedamage_v   || nT == magic_lightingdamage_v)
-				return 1;
-		}
+		// [SPARSE 31/08] doc theo O (ban cu quet "a < nDaNum" nen luon tra 0 -> duong
+		// noi/ngoai nam im tu 28/08). Doc bi loai theo 303-DOC.
+		if (pb_DonPhepThat(p))
+			return 1;
 	}
 	return 0;
 }
 
+// [NOI-HOAN 31/08] Duong NOI CONG (28/08) tren thuc te NAM IM tu dau: ban cu quet
+// "a < GetDamageAttribsNum()" tren MANG THUA nen pb_CoChieuNoiTayKhong luon tra 0
+// ("[BotNoi]" = 0 dong tren toan bo 115 MB bot.log). Ban va [SPARSE 31/08] lam no
+// SONG LAI - ma dau ra cua no gac khoi HUY VU KHI trong pb_TrangBiTheoCap
+// (RemoveItemIdx) va chan pb_GiveFactionWeapon phat lai.
+// Do that (skills.txt x factionhead.lua SKILLNORMAL, cap bot 110): 8/10 phai co
+// chieu phep tay khong hop le (TL 271 / NM 80,82,91 / TY 102,113,111 / CB 122,128 /
+// TN 145,138,148 / VD 153,164,165 / CL 179,182). Voi pb_BotNoi = dwID&1 (~50%%) thi
+// ~400/1000 bot se bi huy vu khi NGAY lan pb_TrangBiTheoCap dau sau restart.
+// Chu game CHUA duyet, va viec do KHONG lien quan loi "bot Duong Mon dung yen".
+// => TAM NGAT, giu nguyen hanh vi dang chay. Doi 0 -> 1 khi muon test rieng.
+#define PB_BAT_DUONG_NOI  0
+
 // duong NOI THAT SU = dwID le VA phai co chieu noi tay khong dung duoc ngay bay gio
 static int pb_BotNoiThat(int nIdx)
 {
+#if PB_BAT_DUONG_NOI
 	if (!pb_BotNoi(nIdx))
 		return 0;
 	const int nNpcIdx = Player[nIdx].m_nIndex;
 	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
 		return 0;
 	return pb_CoChieuNoiTayKhong(nNpcIdx);
+#else
+	(void)nIdx;   // [NOI-HOAN 31/08] xem ghi chu ngay tren
+	return 0;
+#endif
 }
 
 // [DT-THP 28/08] Toa do TRUNG TAM thanh/thon cua Than Hanh Phu - chep nguyen van
@@ -4890,6 +4933,31 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// duoc ca (chu game bat 18/08 ngay sau ban rqTier).
 		if (Npc[nNpcIdx].m_Level < nRq)
 		{ PB_DIAG(" %d:CAP=%d", id, nRq); continue; }
+		// [MANA 31/08] Chi phi chieu VUOT TRAN tai nguyen cua bot = te liet IM LANG:
+		// KNpc::DoSkill (KNpc.cpp:2604-2606) chay `if (!IsPlayer() || Cost(...))`, Cost
+		// tra FALSE thi bo ca than lenh va roi thang xuong nhan Exit: -> DoStand()
+		// = DUNG YEN, khong mot dong bao loi (nhanh bao het noi luc chi co ban client).
+		// CanCastSkill KHONG kiem cost nen bo tham do cung khong bat duoc.
+		// Do that 31/08: chieu 303 cap 20 ton 60 mana, nhan vat cap 20 tran chi 45-57
+		// -> 1.963/1.963 mau deu thieu, 0 lan ra chieu, bot Duong Mon ket vinh vien.
+		// Loai han ung vien khong bao gio tra noi (so voi TRAN, khong so voi hien tai:
+		// hien tai con dao dong theo hoi mana / uong thuoc).
+		{
+			const int nGia = p->GetSkillCost((void*)&Npc[nNpcIdx]);
+			if (nGia > 0)
+			{
+				int nTran = -1;
+				switch (p->GetSkillCostType())
+				{
+				case attrib_mana_v:     nTran = Npc[nNpcIdx].m_CurrentManaMax;    break;
+				case attrib_stamina_v:  nTran = Npc[nNpcIdx].m_CurrentStaminaMax; break;
+				case attrib_life_v:     nTran = Npc[nNpcIdx].m_CurrentLifeMax;    break;
+				default: break;      // loai tai nguyen khac -> khong chan
+				}
+				if (nTran >= 0 && nGia > nTran)
+				{ PB_DIAG(" %d:COST=%d>%d", id, nGia, nTran); continue; }
+			}
+		}
 		// UU TIEN chieu CO DON SAT THUONG (khuon DealsDamage cua ban tham khao,
 		// KBotManager.cpp:1247). Lam dang UU TIEN chu khong chan cung: neu ca danh
 		// sach deu khong co don sat thuong thi van chon duoc, khong tai dien canh
@@ -4901,42 +4969,22 @@ static int pb_PickSkill(int nIdx, int nNpcIdx, int* pnLv)
 		// ca phep dan bay (67 Cuu Thien Cuong Loi: lightingdamage_v) lan chuong
 		// can chien. CHI tinh 5 loai don phep that (59, 62..65) - khong tinh
 		// attackrating/ignoredefense/seriesdamage cung nam trong khoang do.
-		int bNoi = 0;
-		{
-			KMagicAttrib* pDa = p->GetDamageAttribs();
-			const int nDaNum = p->GetDamageAttribsNum();
-			for (int a = 0; a < nDaNum && a < MAX_MISSLE_DAMAGEATTRIB; a++)
-			{
-				const int nT = pDa[a].nAttribType;
-				if (nT == magic_magicdamage_v  || nT == magic_colddamage_v
-				 || nT == magic_firedamage_v   || nT == magic_lightingdamage_v
-				 || nT == magic_poisondamage_v)
-				{
-					bNoi = 1;
-					break;
-				}
-			}
-		}
+		// [SPARSE 31/08] doc theo O; BO doc khoi "don phep" (doc = 0 sat thuong voi quai)
+		// nen chieu doc khong con duoc uu tien lam "chieu noi cong".
+		const int bNoi = pb_DonPhepThat(p);
 		// [303-DOC 30/08] chieu PHEP ma MOI don sat thuong deu la POISON (303 Doc
 		// Thach Cot cua DM: duci_gu chi co poisondamage_v): do that 29-30/08 co
 		// 199k cu "10 giay khong sut mau" vao quai HP600 con nguyen mau - doc khong
 		// bao mon quai tren build nay. LOAI HAN ung vien loai nay: DM cap 20 se roi
 		// ve don danh thuong (fallback DM20) va len 30 co chieu that. Chieu VAT LY
 		// mang doc phu van giu (con sat thuong vu khi).
-		if (bNoi && !p->IsPhysical())
-		{
-			int bDamKhacDoc = 0;
-			KMagicAttrib* pDa3 = p->GetDamageAttribs();
-			const int nDaNum3 = p->GetDamageAttribsNum();
-			for (int a3 = 0; a3 < nDaNum3 && a3 < MAX_MISSLE_DAMAGEATTRIB; a3++)
-				if (pDa3[a3].nAttribType != magic_poisondamage_v)
-				{
-					bDamKhacDoc = 1;
-					break;
-				}
-			if (!bDamKhacDoc)
-			{ PB_DIAG(" %d:DOCTHUAN", id); continue; }
-		}
+		// [SPARSE 31/08] doc lap khoi bNoi: chieu KHONG an theo vu khi (IsPhysical=0)
+		// ma don sat thuong DUY NHAT la doc -> vo dung voi quai (303 Doc Thach Cot).
+		// 303 con co seriesdamage_p (o [3]) nen phai so theo O DON THAT, khong the
+		// "co attrib khac doc" nhu ban cu.
+		if (!p->IsPhysical() && pb_DonDoc(p)
+		 && !pb_DonPhepThat(p) && !pb_DonVatLy(p))
+		{ PB_DIAG(" %d:DOCTHUAN", id); continue; }
 		const int nNoi = bThienNoi ? bNoi : 0;
 		PB_DIAG(" %d:OK(lv%d,r%d,rq%d,d%d,n%d)", id, lv, nRank, nRq, nDmg, bNoi);
 
@@ -8049,7 +8097,14 @@ static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 		}
 	}
 	pb_LenNguaDuongXa(nIdx, nNpcIdx, b, now);
+	// [TKKET3 01/09] bot dung yen >60s (neo dat o dau pha 3): in ket qua tung
+	// buoc cua duong ra cua de tim dung cho ket. CHI GHI LOG.
+	const int bKet3 = (b.uKet3Tick != 0
+	                && now - b.uKet3Tick > (unsigned int)(GAME_FPS * 60));
 	const int nW = PB_WalkTo(nNpcIdx, nOx, nOy, nSub, b.walk, PB_FAC_ARRIVE_MPS);
+	if (bKet3 && ((now + (unsigned int)nLech9 * 7u) % (unsigned int)(GAME_FPS * 10)) == 0)
+		pb_Log("[TkKet3-RA] %s nW=%d o(%d,%d) dich o(%d,%d) k=%d\n",
+		       Player[nIdx].m_PlayerName, nW, bx / 32, by / 32, nOx / 32, nOy / 32, k);
 	if (nW == 0)
 		return 0;                      // dang di bo toi cua trai
 	if (nW < 0)
@@ -8083,6 +8138,9 @@ static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 			// at qua trap trong cung mot giay - lai "tap trung chay voi nhau".
 			// Moc nay dong thoi la nhip kiem tra lai cong (pha 3 chan o
 			// "now < b.nTkChoRa" truoc khi goi lai ham nay).
+			if (bKet3)
+				pb_Log("[TkKet3-CONG] %s cong dong t1=%u -> doi tiep\n",
+				       Player[nIdx].m_PlayerName, (unsigned int)pM9->GetTimerRestTimer(1));
 			b.nTkChoRa = now + (unsigned int)(GAME_FPS * (1 + ((nLech9 * 13 + 7) % 15)));
 			return 0;
 		}
@@ -8104,7 +8162,19 @@ static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 	// trong khi no van dung nguyen o cua trai.
 	int nTx9 = 0, nTy9 = 0;
 	Npc[nNpcIdx].GetMpsPos(&nTx9, &nTy9);
-	Player[nIdx].ExecuteScript(
+	// [TKKET3 01/09] dung yen >60s: ghi lai dung gia tri dong ho ma script trap
+	// se doc (GetRestTime) + vi tri truoc/sau, de biet no TU CHOI hay SetPos hut.
+	int bLogTrap9 = 0;
+	if (bKet3 && now - b.uKet3Trap >= (unsigned int)(GAME_FPS * 15))
+	{
+		b.uKet3Trap = now;
+		bLogTrap9 = 1;
+		pb_Log("[TkKet3-TRAP] %s goi trap k=%d rest=%u truoc o(%d,%d)\n",
+		       Player[nIdx].m_PlayerName, k,
+		       (unsigned int)Player[nIdx].m_TimerTask.GetRestTime(),
+		       nTx9 / 32, nTy9 / 32);
+	}
+	BOOL bScr9 = Player[nIdx].ExecuteScript(
 	    (char*)((k == 0) ? "\\script\\maps\\tongkim\\trap\\tongratrai.lua"
 	                     : "\\script\\maps\\tongkim\\trap\\kimratrai.lua"),
 	    (char*)"main", nIdx, false);
@@ -8113,7 +8183,12 @@ static int pb_TkRaTrai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int 
 		int nSx9 = 0, nSy9 = 0;
 		Npc[nNpcIdx].GetMpsPos(&nSx9, &nSy9);
 		if (nSx9 == nTx9 && nSy9 == nTy9)
+		{
+			if (bLogTrap9)
+				pb_Log("[TkKet3-TRAP2] %s script=%d TU CHOI - dung nguyen o(%d,%d)\n",
+				       Player[nIdx].m_PlayerName, (int)bScr9, nSx9 / 32, nSy9 / 32);
 			return 0;                  // kich ban tu choi - dung cho, thu lai sau
+		}
 	}
 	return 1;
 }
@@ -8559,6 +8634,35 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 			b.nTkTick = now;
 			return;
 		}
+		// [TKKET3 01/09] (chu game: "nhieu bot TK dung yen khong danh") MO XE bot
+		// pha 3 dung nguyen mot cho >60s: do 3 tran 31/08 co 45-79 con/tran (15-32%,
+		// LUON o phe dong trai DONG 1688,3072) khong bao gio qua cua. Khong dung
+		// nTkTick vi vung-an-toan hau doanh (9.38, :8387) lam tuoi no moi tick -
+		// phai neo rieng theo toa do. CHI GHI LOG, khong doi hanh vi.
+		{
+			int nKq3 = 0, nKr3 = 0;
+			Npc[nNpcIdx].GetMpsPos(&nKq3, &nKr3);
+			int dKx3 = (nKq3 - b.nKet3X) / 32;  if (dKx3 < 0) dKx3 = -dKx3;
+			int dKy3 = (nKr3 - b.nKet3Y) / 32;  if (dKy3 < 0) dKy3 = -dKy3;
+			if (b.uKet3Tick == 0 || dKx3 >= 2 || dKy3 >= 2)
+			{
+				b.nKet3X = nKq3;  b.nKet3Y = nKr3;  b.uKet3Tick = now;
+			}
+			else if (now - b.uKet3Tick > (unsigned int)(GAME_FPS * 60)
+			      && now - b.uKet3Log >= (unsigned int)(GAME_FPS * 10))
+			{
+				b.uKet3Log = now;
+				KMission* pMk3 = pb_TkMission(NULL);
+				pb_Log("[TkKet3] %s phe %d dung %us o(%d,%d) doing=%d mua=%d choRa=%d"
+				       " timer=%u t1=%u\n",
+				       Player[nIdx].m_PlayerName, b.nTkPhe,
+				       (now - b.uKet3Tick) / GAME_FPS, nKq3 / 32, nKr3 / 32,
+				       (int)Npc[nNpcIdx].m_Doing, b.nTkMuaXong,
+				       (int)(b.nTkChoRa > now ? (b.nTkChoRa - now) / GAME_FPS : 0),
+				       (unsigned int)Player[nIdx].m_TimerTask.GetRestTime(),
+				       pMk3 ? (unsigned int)pMk3->GetTimerRestTimer(1) : 0);
+			}
+		}
 		// (21/08 - chu game: "khi chet vao lai hau doanh thi cho thoi gian 5 giay
 		// roi di mua mau roi 5 giay sau moi di chuyen toi trap de goi ra ngoai")
 		// Nhip nay dung cho CA luot dau (vua bao danh xong) lan moi lan chet hoi
@@ -8637,11 +8741,19 @@ static void pb_TkLai(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, int nLech)
 				}
 				const int nWq = PB_WalkTo(nNpcIdx, nQtx, nQty, nSub, b.walk,
 				                          PB_FAC_ARRIVE_MPS);
+				// [TKKET3 01/09] dung yen >60s ngay khau di mua thuoc -> in nWq (CHI LOG)
+				if (b.uKet3Tick != 0 && now - b.uKet3Tick > (unsigned int)(GAME_FPS * 60)
+				 && ((now + (unsigned int)nLech * 7u) % (unsigned int)(GAME_FPS * 10)) == 0)
+					pb_Log("[TkKet3-QY] %s nWq=%d dich o(%d,%d)\n",
+					       Player[nIdx].m_PlayerName, nWq, nQtx / 32, nQty / 32);
 				if (nWq == 0)
 					return;                // dang di bo toi Quan Y cua PHE MINH
 				if (nWq > 0)
 					Player[nIdx].ExecuteScript((char*)"\\script\\global\\bot_tongkim.lua",
 					                           (char*)"bot_tk_muamau", 0, false);
+				else
+					pb_Log("[TkKet3-MUA] %s KHONG duong toi Quan Y (nWq=%d) -> bo qua mua"
+					       " + bo qua StopTimer\n", Player[nIdx].m_PlayerName, nWq);
 			}
 			b.nTkMuaXong = 1;              // mua roi, hoac khong co Quan Y -> thoi
 			b.nTkChoRa   = now + (unsigned int)(GAME_FPS * 5);   // 5 giay roi moi ra cua
