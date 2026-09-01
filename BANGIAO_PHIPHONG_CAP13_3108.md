@@ -157,6 +157,44 @@ P=9 Viên Nhuận, P=10 Kiên Cường, P=11 Đoạn Liệt, P=12 Ổn Cố, P=1
 7. Mã **161** `coldenhance_p` (viên P=20 Băng Hàn): mô tả ghi "%" nhưng mã **cộng thẳng** đơn vị thời gian.
 8. Mã **97** `strength_v` có một nhánh chết (`m_nMeridianStrength` không ai đọc) — 3 nhánh anh em (Dexterity/Vitality/Energy) đều có người đọc.
 
+## 6f. ĐỢT 01/09 — CHỦ GIAO 7 VIỆC (đá + KHÁNG giống Linux + UI tẩy luyện)
+
+Chủ duyệt mục 1+2+3 điều tra và giao thêm: kháng + dame hệ giống Linux, hiệu ứng trạng thái/nội lực chính xác Linux, 5 điểm phát hiện làm như Linux, port UI tẩy luyện VLTK, **chạy phản biện chống mất cân bằng hệ phái**.
+
+### Việc 1+2+3 — sửa đá (t130/t132, thuần dữ liệu)
+- 3 viên vô dụng: **P15 Thiểm Diệu**→mã 88 (hồi sinh lực phẳng), **P16 Hoa Lệ**→mã 92 (hồi nội lực phẳng), **P7 Chí Mật** trả giá trị gốc Linux (1..18, vượt ngưỡng cắt-cụt-bội-10).
+- 5 viên mất đường cong sao (P9/10/11/12/18): trả **giá trị GỐC Linux** (bản chia 10 làm sao1=sao10).
+- **P1 Phác Tố**: 193→**237** (Linux phần nghìn, trần 500, cộng dồn — map cũ làm viên này thoát đợt giảm 90%).
+`starstone` md5 `fa709277e064`, `magicattrib_ge` md5 `20148c819040` — 2 cây khớp.
+
+### Việc 4 — KHÁNG dựng lại GIỐNG LINUX (t136, mổ ELF `jx_linux_y`, đã phản biện 3 tác tử)
+Mổ hàm `BeHurt 0x08089C90` rút công thức thật:
+```
+a = max(D_yin - A_yin, D_yan - A_yan)     // 2 kênh kháng trừ xuyên
+b = D_max - A_max                          // trần mềm
+r = (a<=b) ? a : b + (a-b)*(95-b)/400      // SOFT-CAP (sub_8078910, chia 400)
+rate = min(r, 95)                          // trần cứng 95, KHÔNG kẹp sàn
+nDamage = nDamage * (100-rate) / 100       // TUYẾN TÍNH, áp ĐÚNG 1 LẦN
+```
+**JX1 cũ SAI 2 điểm** (đều là DI SẢN từ commit cũ, không phải PF13): ① áp kháng **HAI LẦN** (phi tuyến `2/(rate/100+2)` ở 3744 + tuyến tính 3805) → kháng mạnh gấp bội; ② kẹp CỨNG `min(ResistMax=75)` → vứt bỏ kháng vượt 75.
+**Vá** (KNpc.cpp CalcDamage, 1 kênh của JX1 làm `a`, `m_Current*ResistMax` làm `b`): bỏ khối phi tuyến (còn 1 lần tuyến tính = Linux); thay kẹp cứng bằng soft-cap `/400` + trần 95; **guard 01/09b**: chỉ soft-cap khi `ResistMax>0` (người chơi = 75+reborn, xác nhận KPlayer.cpp:2877-2881), quái ResistMax=0 giữ kẹp cứng cũ → **không regression PvE**.
+
+**Phản biện 3 tác tử** (opus): công thức **ĐÚNG 100% khớp Linux** (thứ tự trừ-xuyên-trước-softcap, hằng số /400 & trần 95, áp 1 lần). Bảng cân bằng người chơi (ResistMax=75): kháng yếu đi đồng đều vì bỏ double-apply — sát thương NHẬN tăng tương đối: R30 +15%, R45 +22.5%, R60 +30%, R75 +37.5%. **Đây ĐÚNG Linux** (bản cũ áp 2 lần làm mọi build thủ quá tanky). `damage_magic` (phản đòn) không đổi. Rủi ro quái-tanky đã chặn bằng guard.
+
+⚠️ **Chủ cần biết**: đây là thay đổi cân bằng LỚN — mọi người chơi thủ kháng cao sẽ "giấy" hơn (giảm ~20-37% khả năng chịu đòn ở dải kháng 45-75). Đề nghị chủ ra soát/nâng HP-kháng boss PvE nếu chúng được tune dưới thời công thức cũ.
+
+### Việc 5 — DAME CÁC HỆ (ngũ hành): CẦN CHỦ QUYẾT, chưa làm
+Mổ ELF: **Linux BỎ bảng tương-khắc-cứng**, thay bằng hệ **data-driven** — mỗi item mang thuộc tính `me2Xdamage_p[5]` (tấn công +% theo hệ) và `X2medamage_p[5]` (phòng thủ −% theo hệ); `delta = atk.me2X[def.hệ] − def.X2me[atk.hệ]`, `dmg *= (1 + delta/100)`. Cộng `five_elements_enhance/resist_v` chuẩn hoá theo cấp `bonus = dmg*(100+(enh−res)*100/(cấp*8+200))/700` và `add_damage_p` (buff % chung). **JX1 hiện dùng bảng tương-khắc-cứng với `seriesdamage_p/2`** — KHÁC HẲN. Port đầy đủ cần: thêm 2 mảng 5 phần tử vào KNpc + 10 handler + **toàn bộ dữ liệu item me2X/X2me (JX1 KHÔNG có)**. Đây là dự án con lớn + cần data → **đề nghị chủ quyết**: (a) giữ hệ ngũ hành JX1 hiện tại, hay (b) port đầy đủ Linux (cần thời gian + dữ liệu item).
+
+### Việc 6 — hiệu ứng trạng thái + nội lực: phần lớn ĐÃ khớp Linux
+Đối chiếu (đã mổ Linux): **choáng** JX1 `base*(100-net)/100`, net = reduce−antiReduce trừ thẳng, trần 75% — **KHỚP Linux**. **Băng** JX1 tuyến tính trần 75 — gần khớp (Linux dùng config FreezeTimeReduceMax thay 75). **Sorb** JX1 cơ số 1000 trừ AntiSorb — **KHỚP Linux** (chỉ thiếu kẹp trần 500 cho nhánh SorbP kinh mạch — minor). **Poison2Mana / mana shield**: Linux mana-shield chặn theo %đòn (JX1 chặn phẳng nValue) — KHÁC, cần mổ thêm. **Poison time** JX1 `factor=1+(75−giảm)/75` (nhân đôi base khi không kháng) — Linux chưa mổ rõ vị trí. → 2 điểm này để đợt sau (cần mổ thêm), không đụng khi chưa chắc.
+
+### Việc 7 — 5 điểm phát hiện
+- **Kháng áp 2 lần** → ✅ ĐÃ SỬA (chính việc 4).
+- **Trần 75 không phải 95** → ✅ xử lý bằng soft-cap (kháng vượt 75 giờ có lợi giảm dần đúng Linux).
+- **Nhịp hồi máu 0,556s** (GAME_FPS=18): là hằng số toàn engine, KHÔNG nên đụng — chỉ tooltip ghi "nửa giây" gây hiểu nhầm. Để nguyên.
+- **Mã 152 chí mạng không áp sát thương vật lý** + **mã 161 mô tả "%" nhưng cộng thẳng** → 2 điểm nhỏ, xử ở đợt kèm.
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.

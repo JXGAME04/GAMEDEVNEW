@@ -3603,15 +3603,13 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 
 
+		int nResistMax = 0;	// [PF13 01/09] tran mem khang cua he dang chiu don
 		//
 		switch (nType)
 		{
 			case damage_physics:
 				nRate = m_CurrentPhysicsResist + khang_ngu_hanh_tuong_khac;
-				if (nRate > m_CurrentPhysicsResistMax)
-				{
-					nRate = m_CurrentPhysicsResistMax;
-				}
+				nResistMax = m_CurrentPhysicsResistMax;	// [PF13 01/09] soft-cap sau (giong Linux), khong kep cung
 				AUTOLOG_IDX_EVERY(nAttacker, 1000, "[S2-ARMOR] tgt=%d(id=%u) lch=%d dmg_truoc=%d armor_truoc=%d presist=%d presistmax=%d rate=%d", m_Index, m_dwID, nAttacker, nDamage, m_PhysicsArmor.nValue[0], m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, nRate);
 				m_PhysicsArmor.nValue[0] -= nDamage;
 				if (m_PhysicsArmor.nValue[0] < 0)
@@ -3636,10 +3634,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				break;
 			case damage_cold:
 				nRate = m_CurrentColdResist + khang_ngu_hanh_tuong_khac;
-				if (nRate > m_CurrentColdResistMax)
-				{
-					nRate = m_CurrentColdResistMax;
-				}			
+				nResistMax = m_CurrentColdResistMax;	// [PF13 01/09] soft-cap sau (giong Linux), khong kep cung			
 				m_ColdArmor.nValue[0] -= nDamage;
 				if (m_ColdArmor.nValue[0] < 0)
 				{
@@ -3655,10 +3650,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				break;
 			case damage_fire:
 				nRate = m_CurrentFireResist + khang_ngu_hanh_tuong_khac;
-				if (nRate > m_CurrentFireResistMax)
-				{
-					nRate = m_CurrentFireResistMax;
-				}
+				nResistMax = m_CurrentFireResistMax;	// [PF13 01/09] soft-cap sau (giong Linux), khong kep cung
 				m_FireArmor.nValue[0] -= nDamage;
 				if (m_FireArmor.nValue[0] < 0)
 				{
@@ -3674,10 +3666,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				break;
 			case damage_light:
 				nRate = m_CurrentLightResist + khang_ngu_hanh_tuong_khac;
-				if (nRate > m_CurrentLightResistMax)
-				{
-					nRate = m_CurrentLightResistMax;
-				}
+				nResistMax = m_CurrentLightResistMax;	// [PF13 01/09] soft-cap sau (giong Linux), khong kep cung
 				m_LightArmor.nValue[0] -= nDamage;
 				if (m_LightArmor.nValue[0] < 0)
 				{
@@ -3693,10 +3682,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				break;
 			case damage_poison:
 				nRate = m_CurrentPoisonResist + khang_ngu_hanh_tuong_khac;
-				if (nRate > m_CurrentPoisonResistMax)
-				{
-					nRate = m_CurrentPoisonResistMax;
-				}
+				nResistMax = m_CurrentPoisonResistMax;	// [PF13 01/09] soft-cap sau (giong Linux), khong kep cung
 				m_PoisonArmor.nValue[0] -= nDamage;
 				if (m_PoisonArmor.nValue[0] < 0)
 				{
@@ -3736,17 +3722,33 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			default: break;
 			}
 		}
-		if (nRate > MAX_RESIST)
+		// [PF13 01/09] SOFT-CAP khang theo tran mem, giong Linux sub_8078910:
+		// vuot ResistMax thi nen phan du * (95-Max)/400 thay vi vut bo -> nguoi
+		// choi khang cao van co loi giam dan; roi kep tran cung 95.
 		{
+			int nMaxCap = nResistMax;
+			if (nMaxCap > MAX_RESIST)
+				nMaxCap = MAX_RESIST;
+			// [PF13 01/09b] theo phan bien: CHI soft-cap khi co tran mem that
+			// (nguoi choi = BASE_FANGYU_ALL_MAX 75). Quai/pet khong set tran
+			// (ResistMax = 0 mac dinh) GIU hanh vi cu (kep cung) de khong lam
+			// quai bong tanky hon - tranh regression PvE ngoai y muon.
+			if (nMaxCap > 0)
+			{
+				if (nRate > nMaxCap)
+					nRate = nMaxCap + (nRate - nMaxCap) * (MAX_RESIST - nMaxCap) / 400;
+			}
+			else if (nRate > nMaxCap)
+			{
+				nRate = nMaxCap;
+			}
+		}
+		if (nRate > MAX_RESIST)
 			nRate = MAX_RESIST;
-		}
 		AUTOLOG_EVERY(1000, "[E2-CALC-PRERESIST] target=%d attacker=%d type=%d dmgtruockhang=%d khang=%d manashield=%d sorb=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, m_ManaShield.nValue[0], m_CurrentSorbDamageP);
-		if (nDamage > 0 && nRate > 0) {
-		    float fResistRatio = nRate / 100.0f;
-		    float k = 2.0f; 
-		    float fFactor = k / (fResistRatio + k);
-		    nDamage = (int)(nDamage * fFactor);
-		}
+		// [PF13 01/09] DA BO khoi phi tuyen 2/(rate/100+2) o day: Linux (BeHurt
+		// 0x0808A0A0) chi ap khang DUNG 1 LAN, tuyen tinh, o duoi (nDamage -=
+		// nDamage*nRate/MAX_PERCENT). Truoc day ap 2 lan lam khang manh gap boi.
 	
 
    		if (!nDamage)
