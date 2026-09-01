@@ -63,10 +63,10 @@ Phát hiện: JX1 Lăng Tuyệt raw 37 → hàng 36 **NGOÀI bảng 35 hàng** =
 
 Nhị phân đã đặt `.moi` (commit `071192bd`, build 18:43-18:44 — chủ tự chạy `ChayGameServer.bat`/`ChoiGame.bat`; PHẢI cùng lúc như đợt chiều, gói 215 không đổi cỡ nên bản chiều→tối không thêm ràng buộc mới):
 
-| Tệp | md5 (12 đầu, bản 31/08c — ĐÈ mọi bản trước) | Ghi chú |
+| Tệp | md5 (12 đầu, bản 31/08d — ĐÈ mọi bản trước) | Ghi chú |
 |---|---|---|
-| `bin\server\CoreServer.dll.moi` | `2472B5E16147` | superset: vá ô chết `aaf5bb24` + `[REFOAN-VS]` `837a29b4` + PF13 + 31/08b + 31/08c |
-| `bin\client\CoreClient.dll.moi` | `8BB4DBE6F035` | tooltip (Cấp N ×1, khối tím như mẫu, hở dòng) + hết mất dòng ẩn |
+| `bin\server\CoreServer.dll.moi` | `151C930D4B0B` | superset: vá ô chết `aaf5bb24` + `[REFOAN-VS]` `837a29b4` + PF13 + 31/08b + 31/08c |
+| `bin\client\CoreClient.dll.moi` | `9DADA039BBAF` | tooltip (Cấp N ×1, khối tím như mẫu, hở dòng) + hết mất dòng ẩn |
 | `bin\client\Game.exe.moi` | `79623AEAEF28` | panel khảm 14 ô + KGameObjDesc 4096 (phải đi cùng CoreClient) |
 
 ⚠️ 31/08b đổi cỡ `KGameObjDesc` (header dùng chung CoreClient ↔ Game.exe) — **hai file client PHẢI swap cùng nhau**, không được lệch bản.
