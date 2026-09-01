@@ -312,8 +312,9 @@ enum MAGIC_ATTRIB
 	magic_anti_enhancehiteffect_rate,		//305	[KM 27/08] them cho he kinh mach
 	magic_normal_reserve9,					//306	[KM 01/09] DE TRONG: magicattrib_ge co 20 hang VLTK id 306 (noi cong cong kich) dang chet, khong duoc gan handler
 	magic_anti_allres_p,					//307	[KM 01/09] ban KHONG-DUONG cua 224 anti_allres_yan_p (cung handler AntiAllResP)
-	magic_anti_sorbdamage_p,				//308	[KM 01/09] ban KHONG-DUONG cua 269 anti_sorbdamage_yan_p (cung handler, don vi phan nghin)
-	magic_normal_end,						//306
+	magic_normal_reserve10,					//308	[PB 01/09] DE TRONG: he pet dung 308 'Uy luc Dong Hanh' (petsys\attribname.txt, petequip_def.lua) - khong duoc gan handler
+	magic_anti_sorbdamage_p,				//309	[KM 01/09] ban KHONG-DUONG cua 269 anti_sorbdamage_yan_p (cung handler, don vi phan nghin)
+	magic_normal_end,						//310
 };
 
 extern const char MAGIC_ATTRIB_STRING[magic_normal_end + 1][100] ; 

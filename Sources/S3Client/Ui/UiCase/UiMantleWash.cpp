@@ -278,11 +278,15 @@ KUiMantleWash* KUiMantleWash::OpenWindow(const char* pszTitle, const char* pszIn
 			strncpy(m_pSelf->m_szFunc, pszFunc, sizeof(m_pSelf->m_szFunc) - 1);
 			m_pSelf->m_szFunc[sizeof(m_pSelf->m_szFunc) - 1] = 0;
 		}
-		m_pSelf->m_bDaTay = false;
-		for (int i = 0; i < PF_WASH_LINE; i++)
-			m_pSelf->m_szTruoc[i][0] = 0;
-
-		m_pSelf->ActivePage(0);
+		// [PB 01/09] server MO LAI box sau moi lan roll (PF_MoLaiWashBox) -> chi xoa snapshot
+		// cot TRUOC khi box dang AN (phien moi); mo lai giua phien thi GIU de so sanh truoc/sau.
+		if (!m_pSelf->IsVisible())
+		{
+			m_pSelf->m_bDaTay = false;
+			for (int i = 0; i < PF_WASH_LINE; i++)
+				m_pSelf->m_szTruoc[i][0] = 0;
+			m_pSelf->ActivePage(0);
+		}
 		m_pSelf->UpdateData();
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
@@ -427,6 +431,8 @@ void KUiMantleWash::OnWash()
 
 void KUiMantleWash::OnKeepOld()
 {
+	// [PB 01/09] giu nguyen -> server khoi phuc dong cu = dong hien tai -> xoa snapshot
+	m_bDaTay = false;
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)"doWashKeep");
 }
