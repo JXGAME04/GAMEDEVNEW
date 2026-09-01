@@ -200,7 +200,18 @@ static void sPetApplyPetSkills(int nPlayerIdx)
 		pNpc->m_nPartnerNo != PET_PARTNER_NO) return;
 	int nLevel = sPetG(nPlayerIdx, PET_TV_LEVEL);
 	if (nLevel < 1) return;
-	// [PETKN2 01/09] don danh mac dinh = chieu 90 theo HE cua CHU (style 0)
+	// [PETKN2 01/09] suc danh co ban theo CAP PET - template goc la NPC
+	// thoai Min/MaxDamage=100 AR=100 nen chieu physicsenhance/AR danh nhu
+	// gai (goc "danh khong co sat thuong"). Cong thuc o KPlayerPet.h.
+	// Dat o day de len cap giua chung an ngay (goi tu summon/levelup/30s).
+	{
+		int nLvD = nLevel;
+		if (nLvD > PET_MAX_LEVEL) nLvD = PET_MAX_LEVEL;
+		pNpc->m_PhysicsDamage.nValue[0] = PET_DMGMIN(nLvD);
+		pNpc->m_PhysicsDamage.nValue[1] = PET_DMGMAX(nLvD);
+		pNpc->m_AttackRating = PET_ATKRATING(nLvD);
+	}
+	// don danh mac dinh = chieu 90 theo HE cua CHU (style 0)
 	// - chi dat vao list + ghi id ra 5156 (client ve icon), sPetFight do_skill
 	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
 	if (nOwnerNpc > 0 && nOwnerNpc < MAX_NPC)
@@ -297,16 +308,9 @@ static int sPetSummon(int nPlayerIdx)
 		if (nMp > 0)
 			pNpc->m_ManaMax = nMp;
 		pNpc->m_CurrentMana = pNpc->m_ManaMax;
-		// [PETKN2 01/09] suc danh co ban theo CAP PET - template goc la NPC
-		// thoai Min/MaxDamage=100 AR=100 nen chieu physicsenhance/AR danh
-		// nhu gai (goc "danh khong co sat thuong"). Cong thuc o KPlayerPet.h.
-		int nLvD = sPetG(nPlayerIdx, PET_TV_LEVEL);
-		if (nLvD < 1) nLvD = 1;
-		if (nLvD > PET_MAX_LEVEL) nLvD = PET_MAX_LEVEL;
-		pNpc->m_PhysicsDamage.nValue[0] = PET_DMGMIN(nLvD);
-		pNpc->m_PhysicsDamage.nValue[1] = PET_DMGMAX(nLvD);
-		pNpc->m_AttackRating = PET_ATKRATING(nLvD);
 	}
+	// (suc danh co ban theo cap dat trong sPetApplyPetSkills - de len cap
+	// giua chung cung an ngay, khong doi goi lai)
 	sPetApplyEquip(nPlayerIdx, nNpcIdx);	// [30/08] thuoc tinh trang bi
 	s_nPetNpcIdx[nPlayerIdx] = nNpcIdx;
 	s_dwPetNpcID[nPlayerIdx] = pNpc->m_dwID;
