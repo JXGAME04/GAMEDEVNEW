@@ -144,6 +144,17 @@ private:
 	void	AntiEnhanceHitEffectRate(KNpc* pNpc, void* pData);
 	void	AddDamageP(KNpc* pNpc, void* pData);
 	void	AntiHitRecover(KNpc* pNpc, void* pData);
+	void	SorbDamageYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiStunTimeReduceP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiPoisonTimeReduceP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	DoHurtP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiDoHurtP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	ManaReplenishPercent(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiPhysicsResYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiFireResYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiColdResYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiPoisonResYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
+	void	AntiLightingResYanP(KNpc* pNpc, void* pData);	// [PF 31/08k]
 	void	ExpSkillsEnhanceP(KNpc* pNpc, void* pData); // ExpSkills x2
 	void	ExpSkillsVIP(KNpc* pNpc, void* pData); // VIP
 };

@@ -408,6 +408,17 @@ public:
 	int					m_CurrentAddDamageP;								//#cong % sat thuong, goc 100
 	int					m_CurrentAntiHitRecover;							//#keo dai dong tac bi thuong gay ra
 	int					m_nKMAntiHitRecover;								//#tri nhan duoc o don danh nay
+	int					m_CurrentSorbDamageYanP;	// [PF 31/08k] triet tieu sat thuong ban Duong, PHAN NGHIN, tran 500 (237)
+	int					m_CurrentAntiStunTimeReduceP;	// [PF 31/08k] keo dai thoi gian choang TA GAY RA (220)
+	int					m_CurrentAntiPoisonTimeReduceP;	// [PF 31/08k] keo dai thoi gian doc TA GAY RA (204)
+	int					m_CurrentDoHurtP;	// [PF 31/08k] cong xac suat gay dong tac bi thuong (205)
+	int					m_CurrentAntiDoHurtP;	// [PF 31/08k] khang dong tac bi thuong (223)
+	int					m_CurrentManaReplenishPercent;	// [PF 31/08k] hoi noi luc % (254, muon o reserve6)
+	int					m_CurrentAntiPhysicsResYanP;	// [PF 31/08k] bo qua pho phong doi phuong (244)
+	int					m_CurrentAntiFireResYanP;	// [PF 31/08k] bo qua hoa phong (217)
+	int					m_CurrentAntiColdResYanP;	// [PF 31/08k] bo qua bang phong (222)
+	int					m_CurrentAntiPoisonResYanP;	// [PF 31/08k] bo qua doc phong (221)
+	int					m_CurrentAntiLightingResYanP;	// [PF 31/08k] bo qua loi phong (248)
 	//
 	int					m_Dir;							// Npc的方向
 	int					m_RedLum;						// Npc的亮度

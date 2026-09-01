@@ -163,6 +163,17 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_anti_enhancehiteffect_rate] = &KNpcAttribModify::AntiEnhanceHitEffectRate;
 	ProcessFunc[magic_add_damage_p] = &KNpcAttribModify::AddDamageP;
 	ProcessFunc[magic_anti_hitrecover] = &KNpcAttribModify::AntiHitRecover;
+	ProcessFunc[magic_sorbdamage_yan_p] = &KNpcAttribModify::SorbDamageYanP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_stuntimereduce_p] = &KNpcAttribModify::AntiStunTimeReduceP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_poisontimereduce_p] = &KNpcAttribModify::AntiPoisonTimeReduceP;	// [PF 31/08k]
+	ProcessFunc[magic_do_hurt_p] = &KNpcAttribModify::DoHurtP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_do_hurt_p] = &KNpcAttribModify::AntiDoHurtP;	// [PF 31/08k]
+	ProcessFunc[magic_manareplenish_p] = &KNpcAttribModify::ManaReplenishPercent;	// [PF 31/08k]
+	ProcessFunc[magic_anti_physicsres_yan_p] = &KNpcAttribModify::AntiPhysicsResYanP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_fireres_yan_p] = &KNpcAttribModify::AntiFireResYanP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_coldres_yan_p] = &KNpcAttribModify::AntiColdResYanP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_poisonres_yan_p] = &KNpcAttribModify::AntiPoisonResYanP;	// [PF 31/08k]
+	ProcessFunc[magic_anti_lightingres_yan_p] = &KNpcAttribModify::AntiLightingResYanP;	// [PF 31/08k]
 	ProcessFunc[magic_expenhance_s] = &KNpcAttribModify::ExpSkillsEnhanceP;// Add magic x2 Skill
 	ProcessFunc[magic_expvip] = &KNpcAttribModify::ExpSkillsVIP;// VIP
 }
@@ -1400,6 +1411,78 @@ void KNpcAttribModify::AddDamageP( KNpc* pNpc, void* pData )	//#cong % sat thuon
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentAddDamageP += pMagic->nValue[0];
 }
+
+void KNpcAttribModify::SorbDamageYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] triet tieu sat thuong ban Duong, PHAN NGHIN, tran 500 (237)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentSorbDamageYanP += pMagic->nValue[0];
+	// Linux 0x08095EB0: kep tran 500 (=50%), san 0
+	if (pNpc->m_CurrentSorbDamageYanP > 500)
+		pNpc->m_CurrentSorbDamageYanP = 500;
+	if (pNpc->m_CurrentSorbDamageYanP < 0)
+		pNpc->m_CurrentSorbDamageYanP = 0;
+}
+
+void KNpcAttribModify::AntiStunTimeReduceP( KNpc* pNpc, void* pData )	// [PF 31/08k] keo dai thoi gian choang TA GAY RA (220)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiStunTimeReduceP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiPoisonTimeReduceP( KNpc* pNpc, void* pData )	// [PF 31/08k] keo dai thoi gian doc TA GAY RA (204)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiPoisonTimeReduceP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::DoHurtP( KNpc* pNpc, void* pData )	// [PF 31/08k] cong xac suat gay dong tac bi thuong (205)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentDoHurtP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiDoHurtP( KNpc* pNpc, void* pData )	// [PF 31/08k] khang dong tac bi thuong (223)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiDoHurtP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::ManaReplenishPercent( KNpc* pNpc, void* pData )	// [PF 31/08k] hoi noi luc % (254, muon o reserve6)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentManaReplenishPercent += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiPhysicsResYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] bo qua pho phong doi phuong (244)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiPhysicsResYanP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiFireResYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] bo qua hoa phong (217)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiFireResYanP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiColdResYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] bo qua bang phong (222)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiColdResYanP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiPoisonResYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] bo qua doc phong (221)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiPoisonResYanP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AntiLightingResYanP( KNpc* pNpc, void* pData )	// [PF 31/08k] bo qua loi phong (248)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAntiLightingResYanP += pMagic->nValue[0];
+}
+
 
 // Linux 0x08096CD0: pNpc[0x12b0] += nValue[0] roi soi sang [0x12b4] (ban dang dung).
 void KNpcAttribModify::AntiHitRecover( KNpc* pNpc, void* pData )	//#keo dai dong tac bi thuong gay ra

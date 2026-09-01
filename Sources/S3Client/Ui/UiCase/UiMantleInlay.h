@@ -45,9 +45,9 @@ protected:
 #define PF_UI_IMGUP			13
 
 // Vai tro o CO DINH THEO CHI SO, chot tu ma server (CheckInlayStarStone):
-//   Region.h 0..4 = Tinh Than Thach, Region.h 5 = Phi Phong (tbItemIdx[6]).
-// Cac o con lai (hoa van ngoi sao) chi de HIEN THI, khong nhan tha do.
-#define PF_UI_INPUT_COUNT	6
+//   [PF13 31/08] Region.h 0..12 = 13 lo Tinh Than Thach, Region.h 13 = Phi
+//   Phong (phan tu CUOI bang tbItemIdx ben server). Toan bo 14 o deu nhan do.
+#define PF_UI_INPUT_COUNT	14
 
 class KUiMantleInlay : protected KWndImage
 {

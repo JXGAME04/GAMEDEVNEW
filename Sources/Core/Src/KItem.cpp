@@ -326,6 +326,47 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 	strcat(pszMsg, "<color=255,255,255>");
 }
 
+// [PF13 31/08] 3 hang so cua DONG BANG - tra thang tu bang (cache trong
+// KItemGenerator.CPP), khong luu trong pfpack nua. Doc m_CommonAttrib.nRow
+// truc tiep, KHONG dung GetLine() (ham do thieu return o nhanh cuoi).
+extern BOOL PF_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCanUpStar, int* pnMaxStone, int* pnMaxWish);
+
+static BOOL sPF_LaPhiPhong(const KItemCommonAttrib* pCA)
+{
+	return pCA->nItemGenre == item_equip && pCA->nDetailType == equip_mantle && pCA->nRow >= 0;
+}
+
+int KItem::GetMaxStoneNum() const
+{
+	if (!sPF_LaPhiPhong(&m_CommonAttrib))
+		return 0;
+	int n = 0;
+	PF_TraRowInfo(m_CommonAttrib.nItemNature == NATURE_PLATINA, m_CommonAttrib.nRow, NULL, &n, NULL);
+	if (n > PF_MAX_STONE)
+		n = PF_MAX_STONE;
+	if (n < 0)
+		n = 0;
+	return n;
+}
+
+int KItem::GetMaxWishValue() const
+{
+	if (!sPF_LaPhiPhong(&m_CommonAttrib))
+		return 0;
+	int n = 0;
+	PF_TraRowInfo(m_CommonAttrib.nItemNature == NATURE_PLATINA, m_CommonAttrib.nRow, NULL, NULL, &n);
+	return n < 0 ? 0 : n;
+}
+
+BOOL KItem::GetCanUpStar() const
+{
+	if (!sPF_LaPhiPhong(&m_CommonAttrib))
+		return FALSE;
+	int n = 0;
+	PF_TraRowInfo(m_CommonAttrib.nItemNature == NATURE_PLATINA, m_CommonAttrib.nRow, &n, NULL, NULL);
+	return n ? TRUE : FALSE;
+}
+
 // ======== het khoi Tinh Than Thach ========
 
 void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, IN int nMagicActiveE /* = 0 */) const

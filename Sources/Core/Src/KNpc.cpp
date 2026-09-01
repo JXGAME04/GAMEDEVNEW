@@ -412,6 +412,17 @@ void KNpc::Init()
 	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
 	m_CurrentAntiEnhanceHitEffect = 0; m_CurrentAntiHitRecover = 0;		// [KM 27/08]
 	m_CurrentAddDamageP = 100; m_nKMAntiHitRecover = 0;					// [KM 27/08] goc 100 theo Linux
+	m_CurrentSorbDamageYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiStunTimeReduceP = 0;	// [PF 31/08k]
+	m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
+	m_CurrentDoHurtP = 0;	// [PF 31/08k]
+	m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]
+	m_CurrentManaReplenishPercent = 0;	// [PF 31/08k]
+	m_CurrentAntiPhysicsResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiFireResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiColdResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiPoisonResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiLightingResYanP = 0;	// [PF 31/08k]
 	m_RedLum = 0;
 	m_GreenLum = 0;
 	m_BlueLum = 0;
@@ -1132,7 +1143,8 @@ BOOL KNpc::ProcessState()
 			else if(m_CurrentLife < 0)
 				m_CurrentLife = 0;
 		
-			m_CurrentMana += m_CurrentManaReplenish;
+			// [PF 31/08k] manareplenish_p (254): hoi noi luc theo %, doi xung voi ve % cua sinh luc o tren
+			m_CurrentMana += m_CurrentManaReplenish + (m_CurrentManaReplenish * m_CurrentManaReplenishPercent / MAX_PERCENT);
 			if (m_CurrentMana > m_CurrentManaMax)
 				m_CurrentMana = m_CurrentManaMax;
 			else if(m_CurrentMana < 0)
@@ -3710,7 +3722,20 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		// Ban chuan Linux 0x0807BBCD: nRes = ResYan - AntiResYanCur, TRU THANG, don vi diem %,
 		// KHONG kep duoi 0 (chi co tran tren 95). nRate am la HOP LE: se lam TANG sat thuong.
 		if (nType != damage_magic && nAttacker > 0 && nAttacker < MAX_NPC)
+		{
 			nRate -= Npc[nAttacker].m_CurrentAntiAllResP;
+			// [PF 31/08k] xuyen khang THEO HE (anti_*res_yan_p) - tru them ve theo he,
+			// cung don vi diem %, cung luat khong kep duoi 0 nhu anti_allres o tren.
+			switch (nType)
+			{
+			case damage_physics: nRate -= Npc[nAttacker].m_CurrentAntiPhysicsResYanP; break;
+			case damage_fire:    nRate -= Npc[nAttacker].m_CurrentAntiFireResYanP; break;
+			case damage_cold:    nRate -= Npc[nAttacker].m_CurrentAntiColdResYanP; break;
+			case damage_light:   nRate -= Npc[nAttacker].m_CurrentAntiLightingResYanP; break;
+			case damage_poison:  nRate -= Npc[nAttacker].m_CurrentAntiPoisonResYanP; break;
+			default: break;
+			}
+		}
 		if (nRate > MAX_RESIST)
 		{
 			nRate = MAX_RESIST;
@@ -3767,6 +3792,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		if (nDamage > 0)
 		{
 			int nSorbM = m_CurrentSorbDamageP * 10;
+			// [PF 31/08k] ve MAX voi ban Duong (phan nghin) - dung cong thuc Linux o chu thich tren
+			if (m_CurrentSorbDamageYanP > nSorbM)
+				nSorbM = m_CurrentSorbDamageYanP;
 			if (nAttacker > 0 && nAttacker < MAX_NPC)
 				nSorbM -= Npc[nAttacker].m_CurrentAntiSorbDamageP;
 			if (nSorbM)
@@ -4288,6 +4316,14 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	pTemp++; //poison damage[13]
 	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, bIsFS))
 	{
+		// [PF 31/08k] anti_poisontimereduce_p (204): ke danh keo dai thoi gian doc
+		// bang cach triet tieu chi so giam cua nan nhan (nGiamDoc thay the
+		// m_CurrentPoisonTimeReducePercent trong toan khoi nay).
+		int nGiamDoc = m_CurrentPoisonTimeReducePercent;
+		if (nLauncher > 0 && nLauncher < MAX_NPC)
+			nGiamDoc -= Npc[nLauncher].m_CurrentAntiPoisonTimeReduceP;
+		if (nGiamDoc < 0)
+			nGiamDoc = 0;
 
 		if (m_PoisonState.nValue[0] > MAX_POISON_DAMAGE)
 		{
@@ -4296,20 +4332,20 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 		if (m_PoisonState.nTime <= 0)
 		{
-			if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+			if (nGiamDoc > MAX_REDUCE)
 			{
 				m_PoisonState.nTime = pTemp->nValue[1]; //
 			}
 			else
 			{
-				float factor = 1.0f + (float)(MAX_REDUCE - m_CurrentPoisonTimeReducePercent) / MAX_REDUCE;
+				float factor = 1.0f + (float)(MAX_REDUCE - nGiamDoc) / MAX_REDUCE;
 				m_PoisonState.nTime = (int)(pTemp->nValue[1] * factor);
 			}
 
-			/*if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+			/*if (nGiamDoc > MAX_REDUCE)
 				m_PoisonState.nTime = pTemp->nValue[1] / 2;
 			else
-				m_PoisonState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;*/
+				m_PoisonState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * nGiamDoc / MAX_PERCENT;*/
 
 			m_PoisonState.nValue[0] = pTemp->nValue[0];
 			m_PoisonState.nValue[1] = pTemp->nValue[2];
@@ -4323,20 +4359,20 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 			d1 = m_PoisonState.nValue[0];
 			d2 = pTemp->nValue[0];
 			t1 = m_PoisonState.nTime;
-			if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+			if (nGiamDoc > MAX_REDUCE)
 			{
 				t2 = pTemp->nValue[1];
 			}
 			else
 			{
-				float factor = 1.0f + (float)(MAX_REDUCE - m_CurrentPoisonTimeReducePercent) / MAX_REDUCE;
+				float factor = 1.0f + (float)(MAX_REDUCE - nGiamDoc) / MAX_REDUCE;
 				t2 = (int)(pTemp->nValue[1] * factor);
 			}
 
-			/*if (m_CurrentPoisonTimeReducePercent > MAX_REDUCE)
+			/*if (nGiamDoc > MAX_REDUCE)
 				t2 = pTemp->nValue[1] / 2;
 			else
-				t2 = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentPoisonTimeReducePercent / MAX_PERCENT;*/
+				t2 = pTemp->nValue[1] - pTemp->nValue[1] * nGiamDoc / MAX_PERCENT;*/
 
 			c1 = m_PoisonState.nValue[1];
 			c2 = pTemp->nValue[2];
@@ -4357,10 +4393,18 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	{
 		if (g_RandPercent(pTemp->nValue[0]))
 		{
-			if (m_CurrentStunTimeReducePercent > MAX_REDUCE)
+			// [PF 31/08k] anti_stuntimereduce_p (220): ke danh triet tieu bot chi so
+			// giam-thoi-gian-choang cua nan nhan. Ban toi thieu: KHONG nhan he so
+			// Trong Kich nhu Linux (doi chu game duyet - anh huong PvP).
+			int nGiamChoang = m_CurrentStunTimeReducePercent;
+			if (nLauncher > 0 && nLauncher < MAX_NPC)
+				nGiamChoang -= Npc[nLauncher].m_CurrentAntiStunTimeReduceP;
+			if (nGiamChoang < 0)
+				nGiamChoang = 0;
+			if (nGiamChoang > MAX_REDUCE)
 				m_StunState.nTime = pTemp->nValue[1] / 4;
 			else
-				m_StunState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * m_CurrentStunTimeReducePercent / MAX_PERCENT;
+				m_StunState.nTime = pTemp->nValue[1] - pTemp->nValue[1] * nGiamChoang / MAX_PERCENT;
 		}
 	}
 
@@ -4418,8 +4462,16 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		return FALSE;
 
 	AUTOLOG_EVERY(1000, "[E2-RECV-OK] target=%d launcher=%d lifeconlai=%d doing=%d -> ReceiveDamage se tra TRUE", m_Index, nLauncher, m_CurrentLife, (int)m_Doing);
-	if (g_RandPercent(nDoHurtP))
-		DoHurt();
+	{
+		// [PF 31/08k] do_hurt_p (205) / anti_do_hurt_p (223): cong/tru quanh gia
+		// tri goc cua chieu (cot DoHurt trong skills.txt).
+		int nHurtP = nDoHurtP;
+		if (nLauncher > 0 && nLauncher < MAX_NPC)
+			nHurtP += Npc[nLauncher].m_CurrentDoHurtP;
+		nHurtP -= m_CurrentAntiDoHurtP;
+		if (nHurtP > 0 && g_RandPercent(nHurtP))
+			DoHurt();
+	}
 
 	int	kpRelation = NpcSet.GetRelation(m_Index, nLauncher);//Add by Phong KiÒu fix lçi Npc Set Skill5 kh«ng nhËn diÖn ®­îc m_nPeopleIdx
 	AUTOLOG_IDX(nLauncher, "[S1-RELATION] tgt=%d(kind=%u) lch=%d(kind=%u) relation=%d peopleidx_truoc=%d lifeconlai=%d", m_Index, m_Kind, nLauncher, Npc[nLauncher].m_Kind, kpRelation, m_nPeopleIdx, m_CurrentLife);
@@ -10100,6 +10152,17 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
 	m_CurrentAntiEnhanceHitEffect = 0; m_CurrentAntiHitRecover = 0;		// [KM 27/08]
 	m_CurrentAddDamageP = 100; m_nKMAntiHitRecover = 0;					// [KM 27/08] goc 100 theo Linux
+	m_CurrentSorbDamageYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiStunTimeReduceP = 0;	// [PF 31/08k]
+	m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
+	m_CurrentDoHurtP = 0;	// [PF 31/08k]
+	m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]
+	m_CurrentManaReplenishPercent = 0;	// [PF 31/08k]
+	m_CurrentAntiPhysicsResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiFireResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiColdResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiPoisonResYanP = 0;	// [PF 31/08k]
+	m_CurrentAntiLightingResYanP = 0;	// [PF 31/08k]
 	Player[m_nPlayerIdx].m_nCurLucky = Player[m_nPlayerIdx].m_nLucky;
 	//
 	memset(&m_ManaShield, 0, sizeof(m_ManaShield));

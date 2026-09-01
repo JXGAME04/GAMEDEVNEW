@@ -714,6 +714,29 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 		NewItem.SetPfPack(1, pItemData->iiduphong6);
 		NewItem.SetPfPack(2, pItemData->iiduphong7);
 		NewItem.SetPfPack(3, pItemData->iiduphong8);
+		// [PF13 31/08] don bo cuc pfpack:
+		// - mon KHONG phai phi phong: 4 o nay vo nghia, ban ghi truoc 29/08 co the
+		//   mang byte RAC (m_SaveBuffer chi ZeroMemory mot lan luc dang nhap) -> xoa.
+		// - phi phong bo cuc v1 (chua co bit PF_CO_V2): pack[3] la time_t lan dot
+		//   pha (~1,7 ty) se bi bo cuc v2 doc thanh MA DA LO 6-10 -> xoa pack[3],
+		//   xoa bit cap-lo-cao cua pack[2], xoa bit 12-23 cu cua pack[0] (so lo/
+		//   tran chuc phuc/canupstar - gio tra tu bang), roi bat bit v2.
+		if (NewItem.GetGenre() != item_equip || NewItem.GetDetailType() != equip_mantle)
+		{
+			if (NewItem.GetPfPack(0) || NewItem.GetPfPack(1) || NewItem.GetPfPack(2) || NewItem.GetPfPack(3))
+			{
+				NewItem.SetPfPack(0, 0);
+				NewItem.SetPfPack(1, 0);
+				NewItem.SetPfPack(2, 0);
+				NewItem.SetPfPack(3, 0);
+			}
+		}
+		else if (!(NewItem.GetPfPack(0) & KItem::PF_CO_V2))
+		{
+			NewItem.SetPfPack(0, (NewItem.GetPfPack(0) & 0x00000FFF) | KItem::PF_CO_V2);
+			NewItem.SetPfPack(2, NewItem.GetPfPack(2) & 0x000FFFFF);
+			NewItem.SetPfPack(3, 0);
+		}
 
 		pItemData ++;
 		

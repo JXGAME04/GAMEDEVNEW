@@ -110,9 +110,21 @@ static void PF_ApplyRowInfo(BOOL bPlatina, int nIndex, KItem* pItem)
 		return;
 	if (sInfo.nMaxStone <= 0 && sInfo.nMaxWish <= 0 && sInfo.nCanUpStar <= 0)
 		return;
-	pItem->SetMaxStoneNum(sInfo.nMaxStone);
-	pItem->SetMaxWishValue(sInfo.nMaxWish);
-	pItem->SetCanUpStar(sInfo.nCanUpStar ? TRUE : FALSE);
+	// [PF13 31/08] 3 setter gio la no-op (hang so tra tu bang). Viec that o day:
+	// danh dau BO CUC V2 cho mon phi phong MOI sinh, de duong nap CSDL khong don
+	// nham du lieu cua no (xem KItem.h PF_CO_V2 + KPlayerDBFuns.cpp).
+	pItem->SetPfPack(0, pItem->GetPfPack(0) | KItem::PF_CO_V2);
+}
+// [PF13 31/08] cho KItem tra 3 hang so theo dong bang (khong con luu trong pfpack)
+BOOL PF_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCanUpStar, int* pnMaxStone, int* pnMaxWish)
+{
+	KPfRowInfo s;
+	if (!PF_GetRowInfo(bPlatina, nIndex, &s))
+		return FALSE;
+	if (pnCanUpStar) *pnCanUpStar = s.nCanUpStar;
+	if (pnMaxStone)  *pnMaxStone  = s.nMaxStone;
+	if (pnMaxWish)   *pnMaxWish   = s.nMaxWish;
+	return TRUE;
 }
 // ======== het khoi doc cot phi phong ========
 

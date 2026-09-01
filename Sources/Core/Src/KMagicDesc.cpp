@@ -265,7 +265,7 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"clearallcd",						//251
 	"anti_enhancehit_rate",				//252
 	"me2metaldamage_p",					//253
-	"normal_reserve6",					//254
+	"manareplenish_p",					//254  [PF 31/08k] muon o reserve6
 	"normal_reserve7",					//255
 	"wood2medamage_p",					//256
 	"me2waterdamage_p",					//257

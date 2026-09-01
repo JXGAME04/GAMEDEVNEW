@@ -373,7 +373,9 @@ enum COMBAT_INFO_TYPE
 // [BDH-G3] tui ban dong hanh 6x10 (partner_bag.ini Level_10=6,10; o mo theo cap tui)
 #define		PARTNERBAG_ROOM_WIDTH		6
 #define		PARTNERBAG_ROOM_HEIGHT		10
-#define		AFFAIRITEM_ROOM_WIDTH		6
+#define		AFFAIRITEM_ROOM_WIDTH		14	// [PF13 31/08] cu 6; panel kham 13 lo gui Region.h toi 13,
+													// khoang 6xN se tu choi PlaceItem o 6..13. Chi la SUC CHUA trong
+													// bo nho (nuoi MAX_PLAYER_ITEM), khong nam trong goi tin hay DB.
 #define		AFFAIRITEM_ROOM_HEIGHT		4
 #define		MAX_AFFAIR_ITEM				(AFFAIRITEM_ROOM_WIDTH * AFFAIRITEM_ROOM_HEIGHT)
 #define		MAX_HAND_ITEM				1
@@ -529,7 +531,7 @@ enum ITEM_IN_ENVIRO_PROP
 };
 
 #define	GOD_MAX_OBJ_TITLE_LEN	2048	//128临时改为1024为了兼容旧代码 to be modified
-#define	GOD_MAX_OBJ_PROP_LEN	1024
+#define	GOD_MAX_OBJ_PROP_LEN	2560	// [PF13 31/08] cu 1024: 13 dong da + 13 dong thuoc tinh + khoi an vuot 1024 (strcat khong chan). Chi la dem UI client, khong nam trong goi tin.
 #define	GOD_MAX_OBJ_DESC_LEN	1024
 
 //==================================

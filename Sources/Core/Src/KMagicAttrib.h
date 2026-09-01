@@ -258,7 +258,7 @@ enum MAGIC_ATTRIB
 	magic_clearallcd,						//251
 	magic_anti_enhancehit_rate,				//252
 	magic_me2metaldamage_p,					//253
-	magic_normal_reserve6,					//254
+	magic_manareplenish_p,					//254  [PF 31/08k] muon o reserve6: hoi noi luc % (du lieu Linux ma 248 da nan ve day)
 	magic_normal_reserve7,					//255
 	magic_wood2medamage_p,					//256
 	magic_me2waterdamage_p,					//257

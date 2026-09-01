@@ -283,7 +283,12 @@ public:
 	//   +0x2B8 cap sao (va mang ma da) | +0x2CC cap sao cua tung lo
 	// JX1 dong goi lai vao m_nPfPack[4] de KHONG phai doi ban ghi luu tru.
 	// Chi so lo chay 1..5 dung nhu ban Linux.
-	enum { PF_MAX_STONE = 5 };
+	// [PF13 31/08] bo cuc v2: 13 lo (bang goldequip co bac toi da 13 lo - So Phuong/15/16pifeng).
+	// Bit 12 pack[0] = CO PHIEN BAN: ban ghi cu (bit 0) duoc don mot lan o duong nap
+	// (KPlayerDBFuns.cpp) vi pack[3] cu chua time_t lan dot pha ~1,7 ty - khong don
+	// thi moi phi phong da dot pha se MOC RA DA MA o lo 6-10.
+	enum { PF_MAX_STONE = 13 };
+	enum { PF_CO_V2 = (1 << 12) };
 	int		GetPfPack(int i) const { return (i >= 0 && i < 4) ? m_nPfPack[i] : 0; };
 	void	SetPfPack(int i, int v) { if (i >= 0 && i < 4) m_nPfPack[i] = v; };
 
@@ -301,51 +306,79 @@ public:
 		if (n > 255) n = 255;
 		m_nPfPack[0] = (m_nPfPack[0] & ~(0xFF << 4)) | (n << 4);
 	};
-	int		GetMaxStoneNum() const { return (m_nPfPack[0] >> 12) & 0x7; };
-	void	SetMaxStoneNum(int n)
-	{
-		if (n < 0) n = 0;
-		if (n > PF_MAX_STONE) n = PF_MAX_STONE;
-		m_nPfPack[0] = (m_nPfPack[0] & ~(0x7 << 12)) | (n << 12);
-	};
-	int		GetMaxWishValue() const { return (m_nPfPack[0] >> 15) & 0xFF; };
-	void	SetMaxWishValue(int n)
-	{
-		if (n < 0) n = 0;
-		if (n > 255) n = 255;
-		m_nPfPack[0] = (m_nPfPack[0] & ~(0xFF << 15)) | (n << 15);
-	};
-	BOOL	GetCanUpStar() const { return (m_nPfPack[0] >> 23) & 0x1; };
-	void	SetCanUpStar(BOOL b) { m_nPfPack[0] = (m_nPfPack[0] & ~(0x1 << 23)) | ((b ? 1 : 0) << 23); };
+	// [PF13 31/08] so lo la HANG SO CUA DONG BANG -> tra tu bang (KItem.cpp),
+	// khong luu trong pfpack nua; bit 12-14 cu duoc don o duong nap.
+	int		GetMaxStoneNum() const;
+	void	SetMaxStoneNum(int n) { (void)n; };	// [PF13] no-op - tra tu bang
+	int		GetMaxWishValue() const;	// [PF13] tra tu bang
+	void	SetMaxWishValue(int n) { (void)n; };	// [PF13] no-op
+	BOOL	GetCanUpStar() const;	// [PF13] tra tu bang
+	void	SetCanUpStar(BOOL b) { (void)b; };	// [PF13] no-op
 
+	// [PF13 31/08] ma da 6 bit: lo 1-5 o pack[1] (giu nguyen), lo 6-10 o pack[3]
+	// (thu hoi time_t), lo 11/12/13 o pack[0] bit 13-18/19-24/25-30.
 	int		GetStoneId(int nSlot) const
 	{
 		if (nSlot < 1 || nSlot > PF_MAX_STONE) return 0;
-		return (m_nPfPack[1] >> ((nSlot - 1) * 6)) & 0x3F;
+		if (nSlot <= 5)  return (m_nPfPack[1] >> ((nSlot - 1) * 6)) & 0x3F;
+		if (nSlot <= 10) return (m_nPfPack[3] >> ((nSlot - 6) * 6)) & 0x3F;
+		return (m_nPfPack[0] >> (13 + (nSlot - 11) * 6)) & 0x3F;
 	};
 	void	SetStoneId(int nSlot, int nId)
 	{
 		if (nSlot < 1 || nSlot > PF_MAX_STONE) return;
 		if (nId < 0) nId = 0;
 		if (nId > 63) nId = 63;
-		int nSh = (nSlot - 1) * 6;
-		m_nPfPack[1] = (m_nPfPack[1] & ~(0x3F << nSh)) | (nId << nSh);
+		int nSh;
+		if (nSlot <= 5)
+		{
+			nSh = (nSlot - 1) * 6;
+			m_nPfPack[1] = (m_nPfPack[1] & ~(0x3F << nSh)) | (nId << nSh);
+		}
+		else if (nSlot <= 10)
+		{
+			nSh = (nSlot - 6) * 6;
+			m_nPfPack[3] = (m_nPfPack[3] & ~(0x3F << nSh)) | (nId << nSh);
+		}
+		else
+		{
+			nSh = 13 + (nSlot - 11) * 6;
+			m_nPfPack[0] = (m_nPfPack[0] & ~(0x3F << nSh)) | (nId << nSh);
+		}
 	};
+	// [PF13 31/08] cap lo: lo 1-5 giu 4 bit cu (tuong thich du lieu); lo 6-13 chi
+	// 1 bit (da do: toan bo script chi dung 0 hoac 10) - bit bat = TRA VE 10 de
+	// PF_ModifyStoneAttrib lay dung nValue[9], KHONG duoc 'toi uu' thanh 1.
 	int		GetStoneLevel(int nSlot) const
 	{
 		if (nSlot < 1 || nSlot > PF_MAX_STONE) return 0;
-		return (m_nPfPack[2] >> ((nSlot - 1) * 4)) & 0xF;
+		if (nSlot <= 5) return (m_nPfPack[2] >> ((nSlot - 1) * 4)) & 0xF;
+		return ((m_nPfPack[2] >> (20 + (nSlot - 6))) & 0x1) ? 10 : 0;
 	};
 	void	SetStoneLevel(int nSlot, int nLv)
 	{
 		if (nSlot < 1 || nSlot > PF_MAX_STONE) return;
 		if (nLv < 0) nLv = 0;
 		if (nLv > 10) nLv = 10;
-		int nSh = (nSlot - 1) * 4;
-		m_nPfPack[2] = (m_nPfPack[2] & ~(0xF << nSh)) | (nLv << nSh);
+		if (nSlot <= 5)
+		{
+			int nSh = (nSlot - 1) * 4;
+			m_nPfPack[2] = (m_nPfPack[2] & ~(0xF << nSh)) | (nLv << nSh);
+		}
+		else
+		{
+			int nSh = 20 + (nSlot - 6);
+			if (nLv >= 1)
+				m_nPfPack[2] |= (1 << nSh);
+			else
+				m_nPfPack[2] &= ~(1 << nSh);
+		}
 	};
-	int		GetLastBreakTime() const { return m_nPfPack[3]; };
-	void	SetLastBreakTime(int nTime) { m_nPfPack[3] = nTime; };
+	// [PF13 31/08] pack[3] da thu hoi cho ma da lo 6-10. Khoi kiem '15 ngay giua
+	// hai lan dot pha' von BI CHU THICH tu ban goc (head.lua:655-658) nen khong
+	// mat tinh nang nao dang chay; script van goi SetLastBreakTime -> no-op.
+	int		GetLastBreakTime() const { return 0; };
+	void	SetLastBreakTime(int nTime) { (void)nTime; };
 	// Ap / go thuoc tinh cua Tinh Than Thach da kham (dinh nghia trong KItem.cpp)
 	void	PF_ModifyStoneAttrib(KNpc* pNPC, BOOL bAdd) const;
 	const char*	PF_StarPrefix() const;			// "10 sao " dat truoc ten mon

@@ -2935,6 +2935,17 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentAntiEnhanceHitEffect = 0;										// [KM 27/08]
 	Npc[m_nIndex].m_CurrentAntiHitRecover = 0;											// [KM 27/08]
 	Npc[m_nIndex].m_CurrentAddDamageP = 100;											// [KM 27/08] goc 100 theo Linux
+	Npc[m_nIndex].m_CurrentSorbDamageYanP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiStunTimeReduceP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentDoHurtP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentManaReplenishPercent = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiPhysicsResYanP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiFireResYanP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiColdResYanP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiPoisonResYanP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].m_CurrentAntiLightingResYanP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentExpEnhance	= 0;								//nh©n ®«i nh©n ba nh©n x2 ®iÓm kinh nghiÖm
 	Npc[m_nIndex].m_CurrentExpSkillsEnchance	= 1; // ExpSkills x2
 	Npc[m_nIndex].m_CurrentExpSkillsVip = 1;
