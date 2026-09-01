@@ -159,6 +159,8 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_anti_enhancehit_rate] = &KNpcAttribModify::AntiEnhanceHitRate;
 	ProcessFunc[magic_anti_allres_yan_p] = &KNpcAttribModify::AntiAllResP;
 	ProcessFunc[magic_anti_sorbdamage_yan_p] = &KNpcAttribModify::AntiSorbDamageP;
+	ProcessFunc[magic_anti_allres_p] = &KNpcAttribModify::AntiAllResP;			// [KM 01/09] ban khong-Duong
+	ProcessFunc[magic_anti_sorbdamage_p] = &KNpcAttribModify::AntiSorbDamageP;	// [KM 01/09] ban khong-Duong
 	ProcessFunc[magic_enhancehiteffect_rate] = &KNpcAttribModify::EnhanceHitEffectRate;
 	ProcessFunc[magic_anti_enhancehiteffect_rate] = &KNpcAttribModify::AntiEnhanceHitEffectRate;
 	ProcessFunc[magic_add_damage_p] = &KNpcAttribModify::AddDamageP;

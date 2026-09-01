@@ -310,6 +310,9 @@ enum MAGIC_ATTRIB
 	magic_expenhance_s,						//303
 	magic_expvip,						//304
 	magic_anti_enhancehiteffect_rate,		//305	[KM 27/08] them cho he kinh mach
+	magic_normal_reserve9,					//306	[KM 01/09] DE TRONG: magicattrib_ge co 20 hang VLTK id 306 (noi cong cong kich) dang chet, khong duoc gan handler
+	magic_anti_allres_p,					//307	[KM 01/09] ban KHONG-DUONG cua 224 anti_allres_yan_p (cung handler AntiAllResP)
+	magic_anti_sorbdamage_p,				//308	[KM 01/09] ban KHONG-DUONG cua 269 anti_sorbdamage_yan_p (cung handler, don vi phan nghin)
 	magic_normal_end,						//306
 };
 

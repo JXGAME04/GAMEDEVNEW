@@ -317,6 +317,9 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"expenhance_s",						//303
 	"expvip",						//304
 	"anti_enhancehiteffect_rate",		//305
+	"normal_reserve9",					//306  [KM 01/09] de trong (VLTK id 306)
+	"anti_allres_p",					//307  [KM 01/09]
+	"anti_sorbdamage_p",				//308  [KM 01/09]
 	"normal_end",						//306
 };
 
