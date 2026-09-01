@@ -63,10 +63,10 @@ Phát hiện: JX1 Lăng Tuyệt raw 37 → hàng 36 **NGOÀI bảng 35 hàng** =
 
 Nhị phân đã đặt `.moi` (commit `071192bd`, build 18:43-18:44 — chủ tự chạy `ChayGameServer.bat`/`ChoiGame.bat`; PHẢI cùng lúc như đợt chiều, gói 215 không đổi cỡ nên bản chiều→tối không thêm ràng buộc mới):
 
-| Tệp | md5 (12 đầu, bản 31/08b — ĐÈ bản `B6AA3FB08486`/`E861E84E6518`/`5E1BD319B5AC` chưa kịp swap) | Ghi chú |
+| Tệp | md5 (12 đầu, bản 31/08c — ĐÈ mọi bản trước) | Ghi chú |
 |---|---|---|
-| `bin\server\CoreServer.dll.moi` | `FF758CED1F76` | superset: vá ô chết `aaf5bb24` + `[REFOAN-VS]` `837a29b4` + PF13 + 31/08b |
-| `bin\client\CoreClient.dll.moi` | `E0643B45341E` | tooltip mới (Cấp N, khối ẩn tím, viết hoa, tách phần) |
+| `bin\server\CoreServer.dll.moi` | `2472B5E16147` | superset: vá ô chết `aaf5bb24` + `[REFOAN-VS]` `837a29b4` + PF13 + 31/08b + 31/08c |
+| `bin\client\CoreClient.dll.moi` | `8BB4DBE6F035` | tooltip (Cấp N ×1, khối tím như mẫu, hở dòng) + hết mất dòng ẩn |
 | `bin\client\Game.exe.moi` | `79623AEAEF28` | panel khảm 14 ô + KGameObjDesc 4096 (phải đi cùng CoreClient) |
 
 ⚠️ 31/08b đổi cỡ `KGameObjDesc` (header dùng chung CoreClient ↔ Game.exe) — **hai file client PHẢI swap cùng nhau**, không được lệch bản.
@@ -105,6 +105,22 @@ Bẫy ghi thêm: (a) `iiduphong2/3/4` KHÔNG rảnh (nParam/GlowLight/MaxOptMult
 3. **Màu khối thuộc tính** — trả về **tím 200,120,255 đúng ảnh mẫu VLTK** (Green của đợt 31/08b là tôi sửa lố).
 4. **Đá khảm chưa hiện thuộc tính** — vẫn không tìm thấy lỗi tĩnh (đường đi + dữ liệu + INI đều sạch); thêm **lưới an toàn**: GetDesc trả rỗng thì in thô "Thuộc tính khi khảm (lỗ 10 sao): +N" — nếu build này viên đá hiện dòng thô ⇒ MagicDesc thiếu mẫu cho mã đó; nếu vẫn trống hoàn toàn ⇒ khối không được gọi, phiên sau gắn log.
 5. **Chúc phúc hở dòng** — "Đột phá điểm chúc phúc" giờ cách phần dưới 1 dòng trống; danh sách lỗ thêm dấu cách trước `<color>` đóng (RULE 0).
+
+## 6d. ĐỢT 31/08d — KIỂM CHỨNG CHUẨN DÒNG ẨN + 5 việc chủ giao thêm (t123-t126)
+
+**Câu hỏi chủ: "dưới 10 sao hiện 1 dòng ẩn, đủ 10 sao mới hiện 2 dòng — đúng không?" — KIỂM CHỨNG 3 NGUỒN:**
+1. **Linux (D:\ServerLinux)**: quét 12.005 file lua/txt/ini + ELF `jx_linux_y` — **KHÔNG có khái niệm dòng ẩn phi phong** (cột ẩn 55-56 goldequip rỗng toàn bộ; sao chỉ khuếch đại giá trị đá + điều kiện đột phá; mẫu gần nhất: platina cặp index (0级)/(10级) — 10 sao NÂNG GIÁ TRỊ chứ không thêm dòng).
+2. **Bảng client VLTK**: goldequip để trống cả 8 khe magic cho toàn dải phi phong ⇒ dòng ẩn do server VNG roll, điều kiện không nằm trong data client.
+3. **Trang VNG** (nguyên văn chú thích ảnh): *"[Phi Phong cấp 13 – Long Ngâm (10 sao) mới có hiện dòng ẩn 2]"* ⇒ **luật chủ nêu ĐÚNG**: dòng 1 có trước, dòng 2 mở ở 10 sao.
+
+**Thiết kế chốt (t123 C++ + t126 Lua):** roll đủ 2 dòng NGAY khi lên Long Ngâm lần đầu (đột phá — hoặc lưới cũ: 9→10 sao/GM/tẩy cho món có sẵn); **dòng 1 hiện + phát huy từ đầu; dòng 2 chỉ hiện + phát huy từ 10 sao** — gate ở: (a) đầu vòng magic GetDesc overload 2 (`i > 6 && sao < 10 → continue`), (b) `nCountE = sao>=10 ? 2 : 1` trong Apply/Remove. Phi phong luôn đi nhánh màu SÁNG khe ẩn (magenta 255,0,255 gốc engine), guard `nGoldActiveAttrib--` khỏi âm.
+
+**5 việc kèm:**
+- **Bỏ khối [Thuộc tính ẩn] đáy tooltip** (chủ: dư thừa) — hoá ra vòng magic gốc overload 2 (2961+) VỐN vẽ khe 6-7 sáng/mờ theo `nGoldActiveAttrib` (tác tử tìm ra ở 3048-3087) ⇒ đợt 31/08b từng làm dòng ẩn hiện HAI lần.
+- **Tooltip viên đá**: khối tự-giới-thiệu DỜI từ cuối hàm lên **ngay sau intro** overload 1 (~1920) — vị trí đã chứng minh hiển thị bằng ảnh chủ chụp (phần cuối hàm không hiện được với đá, cơ chế nuốt chưa rõ — mọi đường tĩnh đã rà sạch: DLL sống chứa khối ✓ md5 khớp ✓ disk-first mode 0 nên pak KHÔNG che settings ✓ data đủ ✓). PF_AppendDesc nhánh genre-9 giờ return trần (tránh in đôi).
+- **"(Dương)" (t124)**: map data-driven từ MagicDesc.Ini + enum thực + bảng ProcessFunc — **7 mã đá đổi sang bản cùng tên có handler** (kháng ngũ hành 228-232→101-105, triệt tiêu 237→193, hồi phục 245→113); **9 mã không có bản tương ứng đăng ký** (anti_*_yan_p, lifemax_yan_v 233, manamax_yan_v 235, anti_sorbdamage 269) → **xoá chữ "(Dương)" khỏi mô tả** MagicDesc.Ini 2 cây (9 dòng, chỉ mã đá/phi phong/pool đang dùng — không đụng hệ khác). Sinh lực tối đa giữ mã 233 (bản 85 lifemax_v KHÔNG có handler — đổi là câm), chỉ bỏ chữ (Dương) ✓ đúng yêu cầu hiển thị.
+- **Giảm 90% (t124 + vá bổ sung)**: 34/34 viên đá cột giá trị 15-24 tính lại TỪ BẢN GỐC backup (`max(1, round(v/10))` — Cường Công 228→23, Triệt tiêu 50→5); HP 11 dòng phi phong ÷10 (20000..70000 → 2000..7000). ⚠️ **CẤM chạy lại t124** (guard HP `v>=1000` không idempotent tuyệt đối); muốn chỉnh nữa thì làm từ backup `.truoc_duong_3108`/`.truoc_giam90_3108`.
+- Ghi chú nền tảng: `KPakFile::Open` mode 0 (mặc định, `g_SetPakFileMode` không ai gọi) = **ĐĨA THẮNG PAK** — pak client tuy chứa magicattrib_ge/goldequip/MagicDesc cũ nhưng không che bản đĩa.
 
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).

@@ -243,46 +243,8 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 	// THEM MOI theo yeu cau chu game 31/08.
 	if (m_CommonAttrib.nItemGenre == item_starstone)
 	{
-#ifndef _SERVER
-		const KPfStoneInfo* pDa = PF_GetStoneInfo(m_CommonAttrib.nParticularType);
-		if (pDa && pDa->nAttribType > 0)
-		{
-			KItemNormalAttrib sA;
-			memset(&sA, 0, sizeof(sA));
-			sA.nAttribType = pDa->nAttribType;
-			sA.nValue[1] = -1;
-			sA.nValue[2] = 0;
-			// dong chinh: gia tri khi kham vao lo DA KICH HOAT (10 sao)
-			sA.nValue[0] = pDa->nValue[9];
-			char* pszTen = (char*)g_MagicDesc.GetDesc(&sA);
-			if (pszTen && pszTen[0])
-			{
-				// [PF13 31/08b] viet hoa chu cai dau nhu moi dong thuoc tinh khac
-				char szHoaDa[256];
-				sPF_ChepHoaDau(szHoaDa, sizeof(szHoaDa), pszTen);
-				strcat(pszMsg, "  \n  ");
-				strcat(pszMsg, "<color=200,120,255>");
-				strcat(pszMsg, szHoaDa);
-				strcat(pszMsg, " <color>  \n  ");
-				// dai gia tri theo cap lo, de nguoi choi uoc luong truoc khi kham
-				char szDai[128];
-				sprintf(szDai, "<color=Green>Lç 1 sao: %d  ®Õn  lç 10 sao: %d<color>",
-					pDa->nValue[0], pDa->nValue[9]);
-				strcat(pszMsg, szDai);
-				strcat(pszMsg, "  \n  ");
-				strcat(pszMsg, "<color=Yellow>Kh¶m vµo lç ch­a kÝch ho¹t (0 sao) sÏ n»m ngñ, kh«ng céng g×. <color>");
-				strcat(pszMsg, "  \n  <color=255,255,255>");
-			}
-			else
-			{
-				// [PF13 31/08c] luoi an toan: MagicDesc khong co mau cho ma nay
-				// thi van in gia tri tho, khong de vien da cam
-				char szTho[96];
-				sprintf(szTho, "  \n  <color=200,120,255>Thuéc tÝnh khi kh¶m (lç 10 sao): +%d <color>  \n  <color=255,255,255>", pDa->nValue[9]);
-				strcat(pszMsg, szTho);
-			}
-		}
-#endif
+		// [PF13 31/08d] mo ta rieng cua vien da genre-9 gio hien o overload 1
+		// ngay sau intro (GetDesc ~1920) - de day se in DOI. Return tran.
 		return;
 	}
 	int nHole = GetMaxStoneNum();
@@ -360,31 +322,8 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		strcat(pszMsg, " <color>  \n  ");
 	}
 
-	// --- [PF13 31/08b] khoi THUOC TINH AN: khe 6-7 cua m_aryMagicAttrib
-	// (PF_RollAnAttr ghi khi dat 10 sao; vong hien thi chuan chi ve khe 0-5
-	// nen khong trung lap). Tach phan bang dong trong + tieu de rieng. ---
-	{
-		int nCoAn = 0;
-		for (i = MAX_ITEM_NORMAL_MAGICATTRIB; i < MAX_ITEM_MAGICATTRIB; i++)
-		{
-			if (m_aryMagicAttrib[i].nAttribType <= 0)
-				continue;
-			char* pszInfo = (char*)g_MagicDesc.GetDesc((void*)&m_aryMagicAttrib[i]);
-			if (!pszInfo || !pszInfo[0])
-				continue;
-			if (nCoAn == 0)
-			{
-				strcat(pszMsg, "  \n  ");
-				strcat(pszMsg, "<color=200,120,255>[Thuéc tÝnh Èn]<color>  \n  ");
-			}
-			nCoAn++;
-			char szHoa[256];
-			sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
-			strcat(pszMsg, "<color=200,120,255>");
-			strcat(pszMsg, szHoa);
-			strcat(pszMsg, " <color>  \n  ");
-		}
-	}
+	// [PF13 31/08d] khoi an duoi day DA GO (chu: du thua) - vong magic goc
+	// cua GetDesc overload 2 (KItem.cpp ~2961+) von da ve khe 6-7, gate sao.
 #endif
 	strcat(pszMsg, "<color=255,255,255>");
 }
@@ -443,7 +382,8 @@ void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, 
 	// moi cho goi deu truyen nMagicActiveE = 0 nen nhanh 'Hidden magic'
 	// khong bao gio chay - phi phong thi luon ap du 2 khe an.
 	if (sPF_LaPhiPhong(&m_CommonAttrib))
-		nCountE = MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB;
+		nCountE = (GetStarLevel() >= 10)
+			? (MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB) : 1;	// [PF13 31/08d] dong 2 chi phat huy tu 10 sao
 	int i;
 
 	float fScale = 1.0f;
@@ -562,7 +502,8 @@ void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 *
 	int nCountE = nMagicActiveE;
 	// [PF13 31/08b] doi xung voi ApplyMagicAttribToNPC: go du 2 khe an 6-7
 	if (sPF_LaPhiPhong(&m_CommonAttrib))
-		nCountE = MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB;
+		nCountE = (GetStarLevel() >= 10)
+			? (MAX_ITEM_MAGICATTRIB - MAX_ITEM_NORMAL_MAGICATTRIB) : 1;	// [PF13 31/08d]
 
 	// [PHI PHONG] go thuoc tinh cua Tinh Than Thach khi thao trang bi
 	PF_ModifyStoneAttrib(pNPC, FALSE);
@@ -1918,6 +1859,51 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	TEnterTextFromCharArray(m_CommonAttrib.szIntro, szIntroEnter, 40); //50 ký tù enter xuèng //add by phong kiÒu enter xuèng dßng
 	strcat(pszMsg, szIntroEnter);//strcat(pszMsg, m_CommonAttrib.szIntro); 
 	strcat(pszMsg, "  \n  ");
+	// [PF13 31/08d] VIEN DA KHAM tu gioi thieu NGAY SAU INTRO - vi tri nay
+	// chac chan hien (anh chu chup co intro); ban dat o cuoi ham/PF_AppendDesc
+	// khong hien duoc voi vien da (chua ro co che nuot phan duoi).
+	if (m_CommonAttrib.nItemGenre == item_starstone)
+	{
+#ifndef _SERVER
+		const KPfStoneInfo* pDa = PF_GetStoneInfo(m_CommonAttrib.nParticularType);
+		if (pDa && pDa->nAttribType > 0)
+		{
+			KItemNormalAttrib sA;
+			memset(&sA, 0, sizeof(sA));
+			sA.nAttribType = pDa->nAttribType;
+			sA.nValue[1] = -1;
+			sA.nValue[2] = 0;
+			// dong chinh: gia tri khi kham vao lo DA KICH HOAT (10 sao)
+			sA.nValue[0] = pDa->nValue[9];
+			char* pszTen = (char*)g_MagicDesc.GetDesc(&sA);
+			if (pszTen && pszTen[0])
+			{
+				// [PF13 31/08b] viet hoa chu cai dau nhu moi dong thuoc tinh khac
+				char szHoaDa[256];
+				sPF_ChepHoaDau(szHoaDa, sizeof(szHoaDa), pszTen);
+				strcat(pszMsg, "  \n  ");
+				strcat(pszMsg, "<color=200,120,255>");
+				strcat(pszMsg, szHoaDa);
+				strcat(pszMsg, " <color>  \n  ");
+				// dai gia tri theo cap lo, de nguoi choi uoc luong truoc khi kham
+				char szDai[128];
+				sprintf(szDai, "<color=Green>Lç 1 sao: %d  ®Õn  lç 10 sao: %d<color>",
+					pDa->nValue[0], pDa->nValue[9]);
+				strcat(pszMsg, szDai);
+				strcat(pszMsg, "  \n  ");
+				strcat(pszMsg, "<color=Yellow>Kh¶m vµo lç ch­a kÝch ho¹t (0 sao) sÏ n»m ngñ, kh«ng céng g×. <color>");
+				strcat(pszMsg, "  \n  <color=255,255,255>");
+			}
+			else
+			{
+				// luoi an toan: MagicDesc khong co mau cho ma nay van in gia tri tho
+				char szTho[96];
+				sprintf(szTho, "  \n  <color=200,120,255>Thuéc tÝnh khi kh¶m (lç 10 sao): +%d <color>  \n  <color=255,255,255>", pDa->nValue[9]);
+				strcat(pszMsg, szTho);
+			}
+		}
+#endif
+	}
 
 	if (m_CommonAttrib.nItemGenre == item_magicscript &&  m_CommonAttrib.nParticularType >= 199 &&  m_CommonAttrib.nParticularType <= 204)
 	{
@@ -2960,6 +2946,11 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 
 	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 	{
+		// [PF13 31/08d] dong an phi phong gate theo SAO (VNG: "Long Ngam 10 sao
+		// moi co hien dong an 2"): khe 7 = dong an 2 chi hien khi du 10 sao;
+		// khe 6 = dong an 1 hien tu dau.
+		if (i > MAX_ITEM_NORMAL_MAGICATTRIB && sPF_LaPhiPhong(&m_CommonAttrib) && GetStarLevel() < 10)
+			continue;
 		if (!m_aryMagicAttrib[i].nAttribType)
 		{
 			if (m_CommonAttrib.nItemNature == NATURE_VIOLET)
@@ -3047,7 +3038,9 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 		}
 		else
 		{
-			if (nGoldActiveAttrib)
+			// [PF13 31/08d] phi phong: dong an duoc phep hien = dang co tac dung
+			// (gate sao o dau vong) -> luon nhanh mau sang, khong phu thuoc bo
+			if (nGoldActiveAttrib || sPF_LaPhiPhong(&m_CommonAttrib))
 			{
 				switch (m_CommonAttrib.nItemNature)
 				{
@@ -3064,7 +3057,8 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 					strcat(pszMsg, "<color=100,100,255>");
 					break;
 				}
-				nGoldActiveAttrib--;
+				if (nGoldActiveAttrib > 0)
+					nGoldActiveAttrib--;
 			}
 			else
 			{
