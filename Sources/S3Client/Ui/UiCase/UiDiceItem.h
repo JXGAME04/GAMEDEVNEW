@@ -26,6 +26,7 @@ Description : He XUC XAC chia do (DICEITEM) - cua so ben client.
 #include "../elem/wndobjcontainer.h"
 #include "../elem/wndlabeledbutton.h"
 #include "../elem/wndimage.h"
+#include "../elem/WndPage.h"
 #include "../elem/wndtext.h"
 
 #define DICE_ROW_COUNT      4       // khung chua dung 4 o (Img0..Img3)
@@ -62,7 +63,14 @@ private:
     int           VisibleRowCount();
 
 private:
-    KWndImage         m_Row[DICE_ROW_COUNT];
+    // [DICECLICK 01/09] PHAI la KWndPage chu KHONG phai KWndImage: KWndButton
+    // chi bao WND_N_BUTTON_CLICK cho CHA TRUC TIEP (WndButton.cpp:326), ma hai
+    // nut Can/Bo qua la CON cua m_Row[i] - de KWndImage thi thong bao chet tai
+    // o hang, SendChoice khong bao gio chay, goi c2s_diceitem khong bao gio
+    // duoc gui => bam "Can" cam lang, het 20 giay thanh "0 diem". KWndPage
+    // (WndPage.cpp:20-28) sinh ra dung cho viec nay: chuyen tiep
+    // WND_N_BUTTON_CLICK (va chuot) len cha - khop khuon PropertiePage goc.
+    KWndPage          m_Row[DICE_ROW_COUNT];
     KWndObjectBox     m_ItemBox[DICE_ROW_COUNT];
     // PHAI la KWndText80 chu KHONG phai KWndText: KWndText de m_pText = NULL
     // va SetText() co chot `if (m_pText && ...)` nen KHONG LAM GI CA. Chi cac
