@@ -3523,6 +3523,23 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 		//
+		// [HOTHAN 01/09] KHIEN TINH (staticmagicshield_p) - LAM CHUAN THEO LINUX BeHurt 0x08089D5D-0x08089DD9:
+		// hap thu SAT THUONG VUA QUAY, TRUOC khang/giap/sorb. dmg < be -> be -= dmg, don nay khong mat mau
+		// (Linux tra ve 1 - van la trung don); dmg >= be -> dmg -= be, be = 0. Ban cu ap o CUOI ham va co
+		// bug 'nDamage = 0 roi be -= nDamage' nen be khong bao gio can.
+		if (!bReturn && m_CurrentStaticMagicShieldP > 0 && nDamage > 0)
+		{
+			if (nDamage < m_CurrentStaticMagicShieldP)
+			{
+				m_CurrentStaticMagicShieldP -= nDamage;
+				AUTOLOG_EVERY(1000, "[HOTHAN] tgt=%d lch=%d khien tinh hap thu tron %d, con %d", m_Index, nAttacker, nDamage, m_CurrentStaticMagicShieldP);
+				m_nLastDamageIdx = nAttacker;
+				return TRUE;
+			}
+			AUTOLOG_EVERY(1000, "[HOTHAN] tgt=%d lch=%d khien tinh vo: %d - %d", m_Index, nAttacker, nDamage, m_CurrentStaticMagicShieldP);
+			nDamage -= m_CurrentStaticMagicShieldP;
+			m_CurrentStaticMagicShieldP = 0;
+		}
 		if(!bReturn)
 		{
 			if(m_Level >= LEVEL_EXPLOSIVE)
@@ -3760,12 +3777,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
    		if (!nDamage)
 			return FALSE;
 		
-		if (nType != damage_poison && nDamage > 0 && m_ManaShield.nValue[0] > 0)
-	    {
-			nDamage -= m_ManaShield.nValue[0];
-			if (nDamage < 1)
-				nDamage = 1;
-		}
+		// [HOTHAN 01/09] DA GO khau tru PHANG m_ManaShield (manashield_p la %, khong phai diem) - Linux BeHurt
+		// khong co khau nay; % nay chi dung o khoi chuyen sat thuong sang noi luc ben duoi.
 		// [KM 28/08] phan don cung la don PvP - phai an PKDamageRate (20%) nhu moi don khac.
 		// Hai ve cu "nRate != %phan don" (so KHANG voi %PHAN DON) lam don phan (damage_magic,
 		// nRate=0, nguoi nhan ret_p=0) NE mat phep nhan 20% => manh gap 5 lan tuong doi.
@@ -3962,22 +3975,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 
 
 		
-	if (!bReturn)//120 con lon chuan.
-	{
-		if (m_CurrentStaticMagicShieldP > 0)
-		{
-			if (m_CurrentStaticMagicShieldP > nDamage)
-			{
-				nDamage = 0;
-				m_CurrentStaticMagicShieldP -= nDamage;
-			}
-			else
-			{
-				nDamage -= m_CurrentStaticMagicShieldP;
-				m_CurrentStaticMagicShieldP = 0;
-			}
-		}
-	}
+	// [HOTHAN 01/09] DA DOI khoi khien tinh len dau ham (sau khi quay sat thuong) theo Linux - xem [HOTHAN] o tren.
 	AUTOLOG_EVERY(1000, "[E2-CALC-CLAMP] target=%d attacker=%d type=%d dmgtruockep=%d lifehientai=%d staticshield=%d", m_Index, nAttacker, (int)nType, nDamage, m_CurrentLife, m_CurrentStaticMagicShieldP);
 	if(nDamage > (int)m_CurrentLife)
 		nDamage = (int)m_CurrentLife;

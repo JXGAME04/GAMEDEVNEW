@@ -1046,7 +1046,13 @@ void KNpcAttribModify::DynamicMagicShieldV( KNpc* pNpc, void* pData )//#giam thi
 void KNpcAttribModify::StaticMagicShieldP(KNpc* pNpc, void* pData)
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	pNpc->m_CurrentStaticMagicShieldP += pMagic->nValue[0];
+	// [HOTHAN 01/09] LAM CHUAN THEO LINUX (handler 0x08096DC0, log "StaticMagicShieldP + %d * %d%% = %d"):
+	// khien tinh = NOI LUC TOI DA * pct / 100 cong vao be; go thuoc tinh (gia tri am / het hieu luc)
+	// -> XOA be (0x08096E50 "StaticMagicShieldP Clear"). Ban cu cong thang pct nhu DIEM.
+	if (pMagic->nValue[0] > 0)
+		pNpc->m_CurrentStaticMagicShieldP += (int)((__int64)pNpc->m_CurrentManaMax * pMagic->nValue[0] / MAX_PERCENT);
+	else
+		pNpc->m_CurrentStaticMagicShieldP = 0;
 }
 
 void KNpcAttribModify::ExpEnhanceP( KNpc* pNpc, void* pData )
