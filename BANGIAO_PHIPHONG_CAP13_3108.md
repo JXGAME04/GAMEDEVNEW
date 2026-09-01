@@ -195,6 +195,20 @@ Mổ ELF: **Linux BỎ bảng tương-khắc-cứng**, thay bằng hệ **data-d
 - **Nhịp hồi máu 0,556s** (GAME_FPS=18): là hằng số toàn engine, KHÔNG nên đụng — chỉ tooltip ghi "nửa giây" gây hiểu nhầm. Để nguyên.
 - **Mã 152 chí mạng không áp sát thương vật lý** + **mã 161 mô tả "%" nhưng cộng thẳng** → 2 điểm nhỏ, xử ở đợt kèm.
 
+## 6g. ĐỢT 01/09 (tiếp) — UI TẨY LUYỆN + phát hiện NGŨ HÀNH
+
+### UI Tẩy luyện VLTK — ✅ DỰNG XONG (build sạch cả 3, chờ chủ test in-game)
+Chủ chọn cơ chế **"xem trước rồi chọn"** đúng mẫu VLTK. Đã trích box ini + 6 spr (`\spr\Ui4\主界面\新五行印\ui\`), đặt `Ui/Ui3/mantlewash.ini`. **Không thêm gói server→client mới** (né Gate 2): tái dùng give-box `nType=4` để mở + `ITEM_SYNC_MAGIC` sẵn có để cập nhật item; thêm 1 `GetGameData(GDI_MANTLE_HIDDEN_DESC)` để panel đọc 2 dòng ẩn (khe 6-7) hiển thị.
+- **Panel** `KUiMantleWash` (S3Client, `UiMantleWash.h/.cpp`): ô đặt phi phong + cột TRƯỚC (xám, snapshot lúc bấm Tẩy) + mũi tên + cột SAU (xanh, dòng hiện tại) + 3 nút. Client tự nhớ dòng cũ khi bấm Tẩy.
+- **Nối**: `KProtocolProcess::OpenAffairBox` case 4 → `GDCNI_OPEN_MANTLE_WASH`; `GameSpaceChangedNotify` mở panel + đóng theo `END_AFFAIR_BOX` + cập nhật item; `CoreShell.h` +2 enum (`GDCNI_OPEN_MANTLE_WASH`, `GDI_MANTLE_HIDDEN_DESC`); `KJx2WarInfra` `LuaPF_OpenMantleWashBox`; `ScriptFuns` register `OpenMantleWashBox`.
+- **Lua** (npc.lua): menu "Tẩy luyện thuộc tính ẩn (bảng xem trước)"; `doWashRoll` (lưu dòng cũ vào `tb.tbWashCu` + trừ nguyên liệu 1 Lệnh Bài / 2 ĐBL + 20000 vạn + `PF_RollAnAttr` ghi dòng mới + mở lại panel); `doWashKeep` (khôi phục `tbWashCu`); `doWashApply` (giữ dòng mới). Mỗi lần bấm Tẩy trừ nguyên liệu (như VLTK).
+- Cơ chế: bấm Tẩy → item bị ghi dòng mới ngay (đã sync), "Giữ nguyên" khôi phục dòng cũ từ session; nếu thoát giữa chừng thì giữ dòng mới (chấp nhận được).
+
+### Việc 5 — NGŨ HÀNH: điều tra xong, CÓ BẪY ENUM nghiêm trọng, cần đợt riêng
+Mổ dữ liệu Linux: hệ ngũ hành Linux dùng `me2Xdamage_p`/`X2medamage_p` (10 mã, 2 mảng 5 phần tử) + `five_elements_enhance/resist_v`. **Dữ liệu Ấn ngũ hành ĐÃ có trong TESTLOFFF** (goldequip `Ngũ Hành Ấn mới` :5099/:5104 mang các mã này). **NHƯNG BẪY**: dữ liệu dùng bố cục mã **liền mạch Linux 276-285** (đã kiểm: dòng 5099 cột magic → GE record mã **276** `对金系伤害增加`), trong khi **engine JX1 (D:\GAMEDEVNEW) đọc 276-285 = `range_returnres_p` + `addskilldamage1-9`** — nghĩa HOÀN TOÀN KHÁC. Mã me2X/X2me thật của JX1 nằm RẢI RÁC: me2metal=253, metal2me=249, me2wood=206, wood2me=256, me2water=257, water2me=258, me2fire=259, fire2me=260, me2earth=242, earth2me=262.
+⇒ **Các Ấn ngũ hành trong TESTLOFFF ĐANG BỊ HỎNG** (thuộc tính đọc sai thành addskilldamage) — đây là bug hiện có, ngoài phạm vi phi phong nhưng chủ nên biết.
+**Để port hệ ngũ hành Linux** cần (dự án con lớn, rủi ro cân bằng cực cao → làm ĐỢT RIÊNG với nhiều vòng phản biện): (1) NẮN dữ liệu item 276-285 → mã JX1 tương ứng theo TÊN HÀNG (như t100 nắn đá); (2) thêm 2 mảng `me2X[5]`/`X2me[5]` vào KNpc + 10 handler đăng ký (JX1 hiện chỉ KHAI enum, KHÔNG dùng); (3) sửa CalcDamage áp `delta = atk.me2X[def.hệ] − def.X2me[atk.hệ]; dmg *= (1+delta/100)`; (4) phản biện cân bằng đa vòng. Vì JX1 hiện dùng bảng-tương-khắc-cứng, chuyển sang data-driven là thay đổi cân bằng toàn cục.
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.
