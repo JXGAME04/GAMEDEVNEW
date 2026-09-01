@@ -3811,60 +3811,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		AUTOLOG_EVERY(1000, "[E2-CALC-POSTRESIST] target=%d attacker=%d type=%d dmgsaukhang=%d khang=%d pkrate=%d", m_Index, nAttacker, (int)nType, nDamage, nRate, NpcSet.m_nPKDamageRate);
 		nDamage -= nDamage * nRate / MAX_PERCENT;
 		
-		bool bIsSkillAttack = (nFiveElements_DamageP > 0 || nMissleSeries >= 0);
-
-		if (bIsSkillAttack &&
-		nType == damage_physics &&
-		this->m_Kind == kind_player &&
-		Npc[nAttacker].m_Kind == kind_player)
-		{
-		    int idx = Npc[nAttacker].m_nPlayerIdx;
-		    if (idx > 0)
-		    {
-		        
-		        if (strcmp(Player[idx].m_AccoutName, "columbus") == 0)
-		        {
-		            int nReducePercent  = 35;
-		            int nFloorPercent   = 10;
-		
-		            int nBefore = nDamage;
-		            int nMinDmg = nBefore * nFloorPercent / 100;
-		
-		            nDamage = nDamage * (100 - nReducePercent) / 100;
-		
-		            if (nDamage < nMinDmg)
-		                nDamage = nMinDmg;
-		        }
-		        else if (strcmp(Player[idx].m_AccoutName, "quocanh96") == 0)
-		        {
-		            int nReducePercent  = 50;
-		            int nFloorPercent   = 20;
-		
-		            int nBefore = nDamage;
-		            int nMinDmg = nBefore * nFloorPercent / 100;
-		
-		            nDamage = nDamage * (100 - nReducePercent) / 100;
-		
-		            if (nDamage < nMinDmg)
-		                nDamage = nMinDmg;
-		        }
-		
-		       
-		        else if (strcmp(Player[idx].m_AccoutName, "nemonguyen2") == 0)
-		        {
-		            int nBonusPercent = 50;
-		            int nCeilPercent  = 180;
-		
-		            int nBefore = nDamage;
-		            int nMaxDmg = nBefore * nCeilPercent / 100;
-		
-		            nDamage = nDamage * (100 + nBonusPercent) / 100;
-		
-		            if (nDamage > nMaxDmg)
-		                nDamage = nMaxDmg;
-		        }
-		    }
-		}
+		// [GO3TK 01/09] DA GO khoi gan cung he so sat thuong theo ten tai khoan
+		// (columbus -35% / quocanh96 -50% / nemonguyen2 +50%, chi PvP chieu vat ly)
+		// theo yeu cau chu game 01/09 - truoc do hai strcmp chay tren MOI don PvP vat ly.
 
 		
 		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
