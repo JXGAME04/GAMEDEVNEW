@@ -61,6 +61,23 @@ Khởi tạo tại khối reset lúc sinh bot (cạnh `nPmCamToi`).
 grep -E "BotBang|BotNhomNguoi" bot.log | tail -50
 ```
 
-## 5. Chuỗi tái áp
+## 5. Đợt b — phản biện 5 tác tử trên bản đã thi công (`goi_va_bot_bang_nhom_b.py`, 13 hunk KPlayerBot.cpp)
 
-… → tkket3_moxe → **bot_bang_nhom** (KPlayerBot.cpp/.h + KPlayerTeam.cpp). Ba tệp đã commit cùng script.
+| Lỗ hổng tìm ra | Vá |
+|---|---|
+| Bot hồi sinh ở map khác → báo sai "Ban doi map roi" | So subworld HIỆN TẠI của người mời với subworld **lúc vào nhóm** (`nNhomNguoiSub`) — chỉ người chơi đổi map mới rời |
+| Giờ Tống Kim kéo bot đang ở nhóm người thật đi (rời nhóm im lặng) | `pb_TkDuTuCach`: `nNhomNguoiIdx` → không gọi quân |
+| `SetCanTeamFlag(TRUE)` ép qua map cấm tổ đội | Bỏ ép; cờ FALSE → để đường cũ báo "không thể mời" |
+| Từ khoá `bang` quá rộng với người gõ không dấu ("cap bang nhau", "bang gia") | Phải kèm `vao` / `vo bang` / `gia nh` / `xin` / `moi` / `ru ` / `join` / `bang h` |
+| Câu "Ok! Minh ve NPC…" bị nuốt khi bot đang có câu trả lời chờ (`nPmDenHan`) | Xoá cả `nPmDenHan` trong nhánh bang |
+| Bot đang bán sạp / giữa nhiệm vụ Dã Tẩu bị ChangeWorld về map 53 bỏ dở | Trả lời lịch sự, không nhận việc (`nBanSap`, `nDtPha != DTB_NGHI`); `PB_MoiVaoNhom` cũng từ chối khi giữa Dã Tẩu / đang xin bang |
+| Rời nhóm người thật để đi xin bang mà không báo | Nhắn "Minh roi nhom di xin vao bang, xong viec quay lai nhe." trước khi rời |
+| ChangeWorld cả loạt cùng khung; log từ chối spam theo cú bấm | So le 3-5s theo chỉ số bot; log từ chối giãn 3s |
+
+Phản biện xác nhận: `PackDataToClient(-1)` **không sập** trên cây Windows (GameServer nạp heaven.dll, guard `ulnClientID < m_nPlayerMaxCount`; chỉ sập nếu build `_STANDALONE` — cấm); blob bot **có** lưu `dwTongID` (`KPlayerDBFuns.cpp:954` chạy cả cho bot) nhưng bot không qua `KPlayerTong::Login` sau restart nên tên bang/camp trống — việc chờ chủ quyết.
+
+**Chờ chủ quyết (chưa làm):** (a) bot có theo sau người chơi không; (b) các nhánh tự đổi map khác của bot (ra bãi / về thành / Dã Tẩu) khi đang ở nhóm người thật — hiện vẫn tự rời như trước, chỉ Tống Kim đã gác; (c) người rủ là bang chủ thì tự duyệt luôn?; (d) PM "cảm ơn" khi được duyệt (cần móc `SSOI_TONG_ADD`); (e) đồng bộ tên bang/camp cho bot sau restart (gửi `GET_LOGIN_DATA` lúc `PB_OnRoleData`).
+
+## 6. Chuỗi tái áp
+
+… → tkket3_moxe → **bot_bang_nhom** → **bot_bang_nhom_b** (KPlayerBot.cpp/.h + KPlayerTeam.cpp). Cả ba tệp đã commit cùng script (`90f13d30` + đợt b).
