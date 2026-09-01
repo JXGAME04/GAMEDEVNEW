@@ -1639,7 +1639,9 @@ void KProtocolProcess::s2cSyncItem(BYTE* pMsg)
 		Item[nIndex].SetBackLocal(&pItemSync->m_BackLocal);
 		Item[nIndex].SetFortune(pItemSync->m_Fortune);
 		Item[nIndex].SetStackNum(pItemSync->m_StackNum);
-		memcpy(Item[nIndex].m_GeneratorParam.nGeneratorLevel, pItemSync->m_MagicLevel, sizeof(int) * MAX_ITEM_MAGICATTRIB);
+		// [PF13 31/08c] goi mang du 16 int (8 type + 8 gia tri MAKELONG) nhung
+		// ban cu chi chep 8 -> nua gia tri khong bao gio duoc lam tuoi phia client
+		memcpy(Item[nIndex].m_GeneratorParam.nGeneratorLevel, pItemSync->m_MagicLevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
 		Item[nIndex].m_GeneratorParam.uRandomSeed = pItemSync->m_RandomSeed;
 		Item[nIndex].m_GeneratorParam.nVersion = pItemSync->m_Version;
 		Item[nIndex].m_GeneratorParam.nLuck = pItemSync->m_Luck;

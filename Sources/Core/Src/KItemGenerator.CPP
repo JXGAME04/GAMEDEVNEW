@@ -1958,12 +1958,32 @@ BOOL KItemGenerator::Gen_GoldEquipment(IN int nIndex, IN const int* pnaryMALevel
 
 	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
 
-	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB]) //custom magic already set 
+	// [PF13 31/08c] cong gac quet CA 8 khe: ban cu chi nhin [8] (gia tri khe 0)
+	// - phi phong chi co DONG AN o khe 6-7 thi truot cong, roi ve nhanh bang va
+	// MAT dong an moi lan client/DB dung lai item. Khe trong thi GAN RONG roi
+	// continue (ban cu break -> chat cut khe 6-7 dung sau khe trong).
+	BOOL bCoCustomMagic = FALSE;
+	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		if (pItem->m_GeneratorParam.nGeneratorLevel[i] > 0 &&
+			pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB])
+		{
+			bCoCustomMagic = TRUE;
+			break;
+		}
+	}
+	if (bCoCustomMagic) //custom magic already set
 	{
 		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 		{
 			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
-				break;
+			{
+				sMA[i].nAttribType = 0;
+				sMA[i].nValue[0] = 0;
+				sMA[i].nValue[1] = 0;
+				sMA[i].nValue[2] = 0;
+				continue;
+			}
 			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
 			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
 			sMA[i].nValue[1] = -1;
@@ -2120,12 +2140,32 @@ BOOL KItemGenerator::Gen_PlatinaEquipment(IN int nIndex, IN const int* pnaryMALe
 	}
 	KItemNormalAttrib	sMA[MAX_ITEM_MAGICATTRIB];
 
-	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB])
+	// [PF13 31/08c] cong gac quet CA 8 khe: ban cu chi nhin [8] (gia tri khe 0)
+	// - phi phong chi co DONG AN o khe 6-7 thi truot cong, roi ve nhanh bang va
+	// MAT dong an moi lan client/DB dung lai item. Khe trong thi GAN RONG roi
+	// continue (ban cu break -> chat cut khe 6-7 dung sau khe trong).
+	BOOL bCoCustomMagic = FALSE;
+	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		if (pItem->m_GeneratorParam.nGeneratorLevel[i] > 0 &&
+			pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB])
+		{
+			bCoCustomMagic = TRUE;
+			break;
+		}
+	}
+	if (bCoCustomMagic)
 	{
 		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 		{
 			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
-				break;
+			{
+				sMA[i].nAttribType = 0;
+				sMA[i].nValue[0] = 0;
+				sMA[i].nValue[1] = 0;
+				sMA[i].nValue[2] = 0;
+				continue;
+			}
 			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
 			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
 			sMA[i].nValue[1] = -1;
@@ -2265,12 +2305,32 @@ BOOL KItemGenerator::UpgradePlatinaEquip(int nVersion, KItem* pItem) {
 			}
 	}
 
-	if (pItem->m_GeneratorParam.nGeneratorLevel[MAX_ITEM_MAGICATTRIB])
+	// [PF13 31/08c] cong gac quet CA 8 khe: ban cu chi nhin [8] (gia tri khe 0)
+	// - phi phong chi co DONG AN o khe 6-7 thi truot cong, roi ve nhanh bang va
+	// MAT dong an moi lan client/DB dung lai item. Khe trong thi GAN RONG roi
+	// continue (ban cu break -> chat cut khe 6-7 dung sau khe trong).
+	BOOL bCoCustomMagic = FALSE;
+	for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
+	{
+		if (pItem->m_GeneratorParam.nGeneratorLevel[i] > 0 &&
+			pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB])
+		{
+			bCoCustomMagic = TRUE;
+			break;
+		}
+	}
+	if (bCoCustomMagic)
 	{
 		for (i = 0; i < MAX_ITEM_MAGICATTRIB; i++)
 		{
 			if (pItem->m_GeneratorParam.nGeneratorLevel[i] <= 0)
-				break;
+			{
+				sMA[i].nAttribType = 0;
+				sMA[i].nValue[0] = 0;
+				sMA[i].nValue[1] = 0;
+				sMA[i].nValue[2] = 0;
+				continue;
+			}
 			sMA[i].nAttribType = pItem->m_GeneratorParam.nGeneratorLevel[i];
 			sMA[i].nValue[0] = LOWORD(pItem->m_GeneratorParam.nGeneratorLevel[i + MAX_ITEM_MAGICATTRIB]);
 			sMA[i].nValue[1] = -1;

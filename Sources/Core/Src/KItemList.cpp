@@ -4731,6 +4731,22 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 									: Player[m_PlayerIdx].m_nNetConnectIdx;
 		g_pServer->PackDataToClient(nConnIdx, (BYTE*)&sPf, sizeof(ITEM_SYNC_PFPACK));
 	}
+	// [PF13 31/08c] ITEM_SYNC bIsNew lam client HUY va DUNG LAI item bang
+	// Gen_GoldEquipment; du da va cong gac, van gui kem goi magic day du de
+	// client luon co dung ruot (197B, CHI cho item co khe an 6-7 - vat pham
+	// thuong khong ton them byte nao). Goi den SAU ITEM_SYNC tren cung luong
+	// TCP nen de lai ket qua dung.
+	if (Item[nIdx].m_aryMagicAttrib[MAX_ITEM_NORMAL_MAGICATTRIB].nAttribType > 0)
+	{
+		ITEM_SYNC_MAGIC sMg;
+		sMg.ProtocolType = s2c_syncmagic;
+		sMg.m_dwID = Item[nIdx].GetID();
+		memcpy(sMg.m_MagicLevel, Item[nIdx].m_GeneratorParam.nGeneratorLevel, sizeof(int) * MAX_ITEM_MAGICLEVEL);
+		memcpy(sMg.m_MagicAttrib, Item[nIdx].m_aryMagicAttrib, sizeof(sMg.m_MagicAttrib));
+		int nConnIdx2 = nPlayerIndex ? Player[nPlayerIndex].m_nNetConnectIdx
+									 : Player[m_PlayerIdx].m_nNetConnectIdx;
+		g_pServer->PackDataToClient(nConnIdx2, (BYTE*)&sMg, sizeof(ITEM_SYNC_MAGIC));
+	}
 }
 
 void KItemList::SyncItemMagicAttrib(int nIdx)

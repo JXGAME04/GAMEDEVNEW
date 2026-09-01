@@ -273,6 +273,14 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 				strcat(pszMsg, "<color=Yellow>Kh¶m vµo lç ch­a kÝch ho¹t (0 sao) sÏ n»m ngñ, kh«ng céng g×. <color>");
 				strcat(pszMsg, "  \n  <color=255,255,255>");
 			}
+			else
+			{
+				// [PF13 31/08c] luoi an toan: MagicDesc khong co mau cho ma nay
+				// thi van in gia tri tho, khong de vien da cam
+				char szTho[96];
+				sprintf(szTho, "  \n  <color=200,120,255>Thuéc tÝnh khi kh¶m (lç 10 sao): +%d <color>  \n  <color=255,255,255>", pDa->nValue[9]);
+				strcat(pszMsg, szTho);
+			}
 		}
 #endif
 		return;
@@ -292,7 +300,8 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		sprintf(szLine, "<color=HBlue>\247\351t ph\270 \256i\323m ch\363c ph\363c %d/%d<color>",
 			GetCurWishValue(), nWishMax);
 		strcat(pszMsg, szLine);
-		strcat(pszMsg, "  \n  ");
+		// [PF13 31/08c] ho han 1 dong trong voi phan duoi (chu yeu cau)
+		strcat(pszMsg, "  \n    \n  ");
 	}
 
 	if (nHole <= 0)
@@ -308,9 +317,9 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		int nLv    = GetStoneLevel(i);
 		const KPfStoneInfo* p = (nStone > 0) ? PF_GetStoneInfo(nStone) : NULL;
 		if (p && p->szName[0])
-			sprintf(szLine, "<color=Green>%d sao %s<color>", nLv, p->szName);	// G_STR_COLOR_XING
+			sprintf(szLine, "<color=Green>%d sao %s <color>", nLv, p->szName);	// G_STR_COLOR_XING ([PF13 31/08c] dau cach truoc tag dong - RULE 0)
 		else
-			sprintf(szLine, "<color=Green>%d sao L\347 kh\266m tr\350ng<color>", nLv);	// G_STR_COLOR_EMPTY_XING
+			sprintf(szLine, "<color=Green>%d sao L\347 kh\266m tr\350ng <color>", nLv);	// G_STR_COLOR_EMPTY_XING
 		strcat(pszMsg, szLine);
 		strcat(pszMsg, "  \n  ");
 	}
@@ -341,12 +350,12 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
 		if (!pszInfo || !pszInfo[0])
 			continue;
-		// [PF13 31/08b] khoi thuoc tinh DA mau GREEN (chu khong phai tim -
-		// tim danh RIENG cho khoi dong an ben duoi, theo ban chuan VLTK);
+		// [PF13 31/08c] khoi thuoc tinh DA mau TIM 200,120,255 nhu ANH MAU VLTK
+		// (chu doi chieu anh mau lan 2 - Green cua dot truoc la sai);
 		// viet hoa chu cai dau; dau cach truoc <color> dong (RULE 0).
 		char szHoa[256];
 		sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
-		strcat(pszMsg, "<color=Green>");
+		strcat(pszMsg, "<color=200,120,255>");
 		strcat(pszMsg, szHoa);
 		strcat(pszMsg, " <color>  \n  ");
 	}
@@ -1704,7 +1713,13 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 		{
 			int        LevelItem = m_CommonAttrib.nLevel;
 
-			if(LevelItem > 10)
+			// [PF13 31/08c] phi phong: ten + "(Cap <so lo>)" duy nhat, khong qua
+			// bo giai ma [Cap] cu (mon nGoldId di duong nay tung hien "[cap 11]")
+			if (sPF_LaPhiPhong(&m_CommonAttrib) && GetMaxStoneNum() > 0)
+			{
+				sprintf(TextLevel, "%s (CÊp %d)", m_CommonAttrib.szItemName, GetMaxStoneNum());
+			}
+			else if(LevelItem > 10)
 			{
 				if (LevelItem < 100)
 				{
@@ -2608,12 +2623,16 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 	}
 	strcat(pszMsg, PF_StarPrefix());	// "10 sao " neu la do co he sao
 	strcat(pszMsg, m_CommonAttrib.szItemName);
-	// [PF13 31/08b] phi phong hien "(Cap N)" theo cach goi VNG: nLevel cot 12
-	// goldequip = 2..14, bac VNG = nLevel - 1 (Tuyet The = 1, So Phuong = 13)
-	if (sPF_LaPhiPhong(&m_CommonAttrib) && m_CommonAttrib.nLevel >= 2)
+	// [PF13 31/08c] phi phong hien "(Cap N)" DUNG 1 LAN. Cap VNG = SO LO KHAM
+	// (Tuyet The 1 lo = Cap 1 ... So Phuong 13 lo = Cap 13) - khong suy tu
+	// nLevel vi co mon mang nLevel ma hoa kieu cu (%10/%100). Phai XOA pszTemp
+	// ngay sau khi dung: khoi [cap] cu ben duoi co "if (pszTemp[0]) strcat"
+	// se in TRUNG lan hai (loi "(Cap 13) (Cap 13)" chu bao).
+	if (sPF_LaPhiPhong(&m_CommonAttrib) && GetMaxStoneNum() > 0)
 	{
-		sprintf(pszTemp, " (CÊp %d)", m_CommonAttrib.nLevel - 1);
+		sprintf(pszTemp, " (CÊp %d)", GetMaxStoneNum());
 		strcat(pszMsg, pszTemp);
+		pszTemp[0] = 0;
 	}
 
 	if (m_CommonAttrib.nItemGenre == item_equip)

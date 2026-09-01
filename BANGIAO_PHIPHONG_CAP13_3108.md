@@ -63,11 +63,13 @@ Phát hiện: JX1 Lăng Tuyệt raw 37 → hàng 36 **NGOÀI bảng 35 hàng** =
 
 Nhị phân đã đặt `.moi` (commit `071192bd`, build 18:43-18:44 — chủ tự chạy `ChayGameServer.bat`/`ChoiGame.bat`; PHẢI cùng lúc như đợt chiều, gói 215 không đổi cỡ nên bản chiều→tối không thêm ràng buộc mới):
 
-| Tệp | md5 (12 đầu) | Ghi chú |
+| Tệp | md5 (12 đầu, bản 31/08b — ĐÈ bản `B6AA3FB08486`/`E861E84E6518`/`5E1BD319B5AC` chưa kịp swap) | Ghi chú |
 |---|---|---|
-| `bin\server\CoreServer.dll.moi` | `B6AA3FB08486` | superset: chứa cả vá ô chết `aaf5bb24` + 7 rào `[REFOAN-VS]` `837a29b4` của phiên song song |
-| `bin\client\CoreClient.dll.moi` | `E861E84E6518` | đè bản `.moi` cũ `50AF3C60656C` (đợt chiều) — đã gộp, không mất gì |
-| `bin\client\Game.exe.moi` | `5E1BD319B5AC` | panel khảm 14 ô |
+| `bin\server\CoreServer.dll.moi` | `FF758CED1F76` | superset: vá ô chết `aaf5bb24` + `[REFOAN-VS]` `837a29b4` + PF13 + 31/08b |
+| `bin\client\CoreClient.dll.moi` | `E0643B45341E` | tooltip mới (Cấp N, khối ẩn tím, viết hoa, tách phần) |
+| `bin\client\Game.exe.moi` | `79623AEAEF28` | panel khảm 14 ô + KGameObjDesc 4096 (phải đi cùng CoreClient) |
+
+⚠️ 31/08b đổi cỡ `KGameObjDesc` (header dùng chung CoreClient ↔ Game.exe) — **hai file client PHẢI swap cùng nhau**, không được lệch bản.
 
 Lua đã nằm trên đĩa (nạp lúc boot): `mantleupgrade_head.lua`, `mantleupgrade_npc.lua` (backup `.truoc_13lo_3108`, `.truoc_chuoicao_3108`, `.truoc_an_3108`), `test_phiphong_admin.lua` (`.truoc_pf13_3108`). Bảng: `goldequip.txt` (`.truoc_capcao_3108`), `magicscript.txt` (`.truoc_pf13_3108`) — cả 2 cây, md5 trùng.
 
@@ -95,6 +97,14 @@ Lua đã nằm trên đĩa (nạp lúc boot): `mantleupgrade_head.lua`, `mantleu
 + **Đệm tiêu đề** `GOD_MAX_OBJ_TITLE_LEN` 2048→4096 (GetDesc ghi TOÀN BỘ tooltip nối tiếp từ szTitle — tác tử chứng minh không có con trỏ riêng cho szProp — 13 dòng đá + khối ẩn vượt 2048).
 
 Bẫy ghi thêm: (a) `iiduphong2/3/4` KHÔNG rảnh (nParam/GlowLight/MaxOptMultiply) — đừng trưng dụng; (b) `<color=R,G,B>` được engine parse thật (Text.cpp:191-225) — luật "tên màu ≥8 ký tự vẽ đen" chỉ áp cho TÊN màu; (c) mọi lời gọi GetDesc ở CoreShell đều khớp overload 2 (tham số bool), overload 1 chỉ chạy qua trạm chuyển tiếp 2516.
+
+## 6c. ĐỢT VÁ 31/08c — 5 LỖI CHỦ BÁO LẦN 2 (t119-t120, nhãn `[PF13 31/08c]`)
+
+1. **"(Cấp 13) (Cấp 13)" in 2 lần** — GỐC: khối `[cấp]` cũ cuối tiêu đề overload 2 kết bằng `if (pszTemp[0]) strcat` mà pszTemp còn nguyên chuỗi của tôi (mantle bị cổng `detail <= equip_horse` loại nên không ai ghi đè pszTemp). Vá: `pszTemp[0] = 0` ngay sau khi dùng. **Cấp giờ suy từ SỐ LỖ KHẢM** (`GetMaxStoneNum()` — trùng khít cấp VNG toàn chuỗi: Tuyệt Thế 1 lỗ = Cấp 1 … Sồ Phượng 13 lỗ = Cấp 13), KHÔNG suy từ `nLevel` (có món mang nLevel mã hoá kiểu cũ — Kình Thiên hiện "[cấp 11]"). Overload 1 (món `nGoldId≠0` đi đường này) cũng vá: phi phong đi nhánh riêng, không qua bộ giải mã `[Cấp]` %10/%100 cũ.
+2. **"Dòng ẩn hiện rồi biến mất"** — GỐC (tác tử lần đủ 2 đầu): mỗi lần item được DỰNG LẠI (relog/đổi map/AddKIL/`SetLevelItem`… gửi `ITEM_SYNC bIsNew`; server load roledb) thì `Gen_Gold/PlatinaEquipment` dựng lại `m_aryMagicAttrib` từ `nGeneratorLevel` với **cổng gác chỉ nhìn `[8]`** (giá trị khe 0) + **`break` tại khe trống đầu tiên** → khe ẩn 6-7 bị chặt/rơi về nhánh bảng = 0. Comment `KItemCompound.cpp:1472` về gate "[6]" là **comment nói dối** (mã thật [8]). 4 vá, KHÔNG đổi layout gói nào: ① cổng gác quét cả 8 khe (type>0 && có value word) + khe trống thì gán rỗng rồi `continue` — sửa ở CẢ BA bản sao `Gen_GoldEquipment`/`Gen_PlatinaEquipment`/`UpgradePlatinaEquip`; ② handler client `s2cSyncItem` memcpy 8→16 int (`KProtocolProcess.cpp:1642` — gói vốn mang đủ 16, bản cũ vứt nửa giá trị); ③ server `SyncItem` gửi kèm gói `s2c_syncmagic` 197B (khuôn PFSYNC) cho item có khe ẩn — client dù bị Gen dựng sai cũng bị đè lại đúng ngay sau đó trên cùng luồng TCP; ④ (từ t117) Lua chỉ ghi khe 6-7, giữ nguyên khe 0-5.
+3. **Màu khối thuộc tính** — trả về **tím 200,120,255 đúng ảnh mẫu VLTK** (Green của đợt 31/08b là tôi sửa lố).
+4. **Đá khảm chưa hiện thuộc tính** — vẫn không tìm thấy lỗi tĩnh (đường đi + dữ liệu + INI đều sạch); thêm **lưới an toàn**: GetDesc trả rỗng thì in thô "Thuộc tính khi khảm (lỗ 10 sao): +N" — nếu build này viên đá hiện dòng thô ⇒ MagicDesc thiếu mẫu cho mã đó; nếu vẫn trống hoàn toàn ⇒ khối không được gọi, phiên sau gắn log.
+5. **Chúc phúc hở dòng** — "Đột phá điểm chúc phúc" giờ cách phần dưới 1 dòng trống; danh sách lỗ thêm dấu cách trước `<color>` đóng (RULE 0).
 
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
