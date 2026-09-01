@@ -122,6 +122,41 @@ Bẫy ghi thêm: (a) `iiduphong2/3/4` KHÔNG rảnh (nParam/GlowLight/MaxOptMult
 - **Giảm 90% (t124 + vá bổ sung)**: 34/34 viên đá cột giá trị 15-24 tính lại TỪ BẢN GỐC backup (`max(1, round(v/10))` — Cường Công 228→23, Triệt tiêu 50→5); HP 11 dòng phi phong ÷10 (20000..70000 → 2000..7000). ⚠️ **CẤM chạy lại t124** (guard HP `v>=1000` không idempotent tuyệt đối); muốn chỉnh nữa thì làm từ backup `.truoc_duong_3108`/`.truoc_giam90_3108`.
 - Ghi chú nền tảng: `KPakFile::Open` mode 0 (mặc định, `g_SetPakFileMode` không ai gọi) = **ĐĨA THẮNG PAK** — pak client tuy chứa magicattrib_ge/goldequip/MagicDesc cũ nhưng không che bản đĩa.
 
+## 6e. CUỘC ĐIỀU TRA 01/09 — "thuộc tính có tác dụng thật không, có đúng Linux không"
+
+Chủ giao mở điều tra. Quy mô: **13 tác tử, 2,7 triệu token, 653 lượt công cụ** (workflow `wf_4e536be5-66d`, chạy 2 đợt vì đợt đầu chạm hạn mức phiên). Phương pháp 4 cửa cho mỗi mã: có handler → handler ghi field gì → **có ai ĐỌC field trong công thức chiến đấu không** → công thức có đúng nghĩa không; rồi tác tử phản biện thử bác bỏ từng kết luận; song song mổ ELF Linux + bảng Linux đối chiếu.
+
+### Kết quả tổng: 57 mã đang dùng, 56 có handler sống, KHÔNG mã nào "câm vì không ai đọc"
+Tự kiểm chéo (không qua tác tử): 11 field mới của đợt PF13 đều có đúng 1 điểm đọc, nằm trong `CalcDamage`/`ReceiveDamage`/`ProcessState`, đều trong `#ifdef _SERVER` → chạy thật trên máy chủ.
+
+### 3 viên đá VÔ DỤNG (giá trị luôn về 0 khi chạy) — cần chủ quyết
+| Viên | Mã | Gốc bệnh |
+|---|---|---|
+| P=16 Hoa Lệ | 254 `manareplenish_p` | công thức lấy % CỦA chỉ số hồi nội lực phẳng, mà nền người chơi `PLAYER_MANA_REPLENISH = 0` (KPlayer.h) → 0 × X% = 0 |
+| P=15 Thiểm Diệu | 190 `lifereplenish_p` | cùng bệnh, `PLAYER_LIFE_REPLENISH = 0` |
+| P=7 Chí Mật | 113 `fasthitrecover_v` | `giam_tho_thuong = (m_CurrentHitRecover/10)*10` (KNpc.cpp:1800) cắt cụt bội 10; nền 6 + đá 2 = 8 → 0. Phải ≥ +4 mới nhảy bậc |
+
+Hệ quả kèm: mã **196** `anti_hitrecover` (viên P=6 Xuyên Thích) cũng vô hiệu khi đánh mục tiêu có hit-recover < 10 — tức hầu hết người chơi.
+
+### 1 LỖI THẬT — ĐÃ SỬA (t130, thuần dữ liệu, không cần build lại)
+**P=1 Phác Tố**: Linux dùng mã **237** `sorbdamage_yan_p` (đơn vị **phần nghìn**, trần 500, cộng dồn với ~150 dòng trang bị "Dương"). Đợt t124 map 237→**193** `sorbdamage_p` (đơn vị **phần trăm**, công thức `KNpc.cpp:3794` nhân 10) → hậu quả: viên này **thoát khỏi đợt giảm 90%** (sao 10 = 50‰ = đúng bằng Linux, trong khi 33 viên kia còn 10%), **mất trần 500**, và **mất cộng dồn** (công thức lấy `max()` giữa hai nhánh chứ không cộng) nên nó *tranh chấp* với trang bị Dương thay vì cộng vào. Đã trả về **237** ở cả 2 cây (`magicattrib_ge` md5 `4c428bd8551c`) và vẫn xoá chữ "(Dương)" khỏi mô tả theo yêu cầu chủ (`MagicDesc.Ini` md5 `f23180a59f8c`).
+
+### Đối chiếu Linux: ánh xạ mã ĐÚNG 100%
+Tác tử mổ ELF `jx_linux_y` lấy được **nguyên bảng tên→mã 341 mục** của engine Linux (mảng trong `.bss` tại VA 0x0830E640) → đối chiếu xác nhận **18/18 ánh xạ** của các đợt t100/t124 trùng khít ngữ nghĩa (Linux 219=`anti_hitrecover`, 258=`anti_poisontimereduce_p`, 259=`do_hurt_p`, 263-267=`anti_*res_yan_p`, 271=`anti_enhancehit_rate`, 248=`manareplenish_p`…). 34/34 dòng bảng đá JX1 có **tên hàng trùng từng ký tự** với Linux → không viên nào trỏ nhầm hàng; 5 viên kháng hệ + viên hồi phục nắn xuống mã cơ bản đều **dùng chung handler** với mã `_yan` gốc ⇒ tương đương tuyệt đối. Công thức Linux (rút từ chuỗi log trong ELF): `anti_hitrecover`, `anti_stuntimereduce` đều **trừ thẳng**; kháng lưu theo bộ ba **Yin/Yan/Max** riêng.
+
+### Hệ quả của đợt giảm 90%: 5 viên mất hết đường cong sao
+P=9 Viên Nhuận, P=10 Kiên Cường, P=11 Đoạn Liệt, P=12 Ổn Cố, P=18 Quỷ Bí — trị gốc chỉ 4-12 nên sau khi chia 10 và làm tròn thì **sao 1 = sao 10 = 1**: nâng đá từ 1 lên 10 sao **không tăng gì**. 6 viên khác (P4/5/6/7/15/16) gần phẳng (8 cấp đầu như nhau).
+
+### Phát hiện DI SẢN của dự án (không do đợt PF13 — đã truy commit, KHÔNG tự sửa)
+1. **Kháng bị áp HAI LẦN** trong `CalcDamage`: khối phi tuyến `nDamage *= 2/(rate/100+2)` (3744-3748) rồi lại `nDamage -= nDamage*nRate/100` (3805). Cả hai đều có từ commit cũ (`9bc7936a` và `43bca2e0`) ⇒ mọi thuộc tính kháng/xuyên kháng mạnh hơn thiết kế Linux.
+2. **Trần kháng thực tế là 75**, không phải 95 — `KPlayer::UpdataCurData` ghi đè `m_Current*ResistMax = BASE_FANGYU_ALL_MAX(75) + chuyển sinh`. Điểm kháng vượt 75 bị vứt bỏ trong chiến đấu (chỉ còn hiện số cosmetic).
+3. **Kháng hệ vô tác dụng hoàn toàn khi đánh quái/pet** (`*ResistMax` mặc định 0 trong `KNpcTemplate`).
+4. Công thức lợi ích giảm dần: +100 điểm kháng chỉ giảm **33%** sát thương (không phải 100%) — tooltip "#d1+%" gây hiểu nhầm nặng.
+5. Nhịp hồi máu/nội lực thật là **0,556 s** (GAME_UPDATE_TIME 10 / GAME_FPS 18), tooltip ghi "mỗi nửa giây" ⇒ thực nhận ít hơn ~10%.
+6. Mã **152** `fatallystrikeenhance_p` (dòng ẩn "tấn công chí mạng"): cờ `bIsFS` không được truyền cho lần `CalcDamage` sát thương **vật lý** ⇒ build thuần vật lý gần như vô hiệu; thêm nữa mô tả trong `MagicDesc.Ini` trùng nguyên văn với `deadlystrike_p` (nên sửa chuỗi).
+7. Mã **161** `coldenhance_p` (viên P=20 Băng Hàn): mô tả ghi "%" nhưng mã **cộng thẳng** đơn vị thời gian.
+8. Mã **97** `strength_v` có một nhánh chết (`m_nMeridianStrength` không ai đọc) — 3 nhánh anh em (Dexterity/Vitality/Energy) đều có người đọc.
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.
