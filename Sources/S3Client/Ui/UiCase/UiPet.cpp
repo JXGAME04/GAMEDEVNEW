@@ -15,8 +15,10 @@ Description : [PETSYS] Cua so "Ban Dong Hanh" ban PC (xem UiPet.h).
 #include "UiPet.h"
 #include "../UiSoundSetting.h"
 #include "../UiBase.h"
+#include "../../../Represent/iRepresent/iRepresentShell.h"	// [PETKN3] g_pRepresentShell
 
 extern iCoreShell* g_pCoreShell;
+extern iRepresentShell*	g_pRepresentShell;	// [PETKN3] nhu MouseHover.cpp:16
 
 #define SCHEME_INI_PET  "pet_main.ini"
 
@@ -317,6 +319,38 @@ static void sPetEquipTip(int nSlot, char* szOut, int nOutLen)
 	}
 }
 
+// [PETKN3 01/09] o skill 1: giu HoldObject (tooltip/hover) nhung ve icon 24x24
+// rieng thay cho icon chieu nguoi choi 36x36 (KSkill::DrawSkillIcon ve SPR
+// native khong scale -> tran o 26x26). Khuon: KWndImage::SetImage/PaintWindow.
+void KWndPetAtkBox::SetSmallIcon(const char* pszSpr)
+{
+    m_bSmall = (pszSpr != NULL && pszSpr[0] != 0);
+    if (!m_bSmall)
+        return;
+    m_SmallImg.nType = ISI_T_SPR;
+    strncpy(m_SmallImg.szImage, pszSpr, sizeof(m_SmallImg.szImage));
+    m_SmallImg.szImage[sizeof(m_SmallImg.szImage) - 1] = 0;
+    m_SmallImg.nNumFrames = 0;
+    m_SmallImg.uImage = 0;
+    m_SmallImg.nFlipTime = IR_GetCurrentTime();
+}
+
+void KWndPetAtkBox::PaintWindow()
+{
+    if (!m_bSmall)
+    {
+        KWndObjectBox::PaintWindow();
+        return;
+    }
+    KWndWindow::PaintWindow();
+    if (g_pRepresentShell && m_Object.uGenre != CGOG_NOTHING)
+    {
+        m_SmallImg.oPosition.nX = m_nAbsoluteLeft;
+        m_SmallImg.oPosition.nY = m_nAbsoluteTop;
+        g_pRepresentShell->DrawPrimitives(1, &m_SmallImg, RU_T_IMAGE, true);
+    }
+}
+
 void KUiPet::UpdateData()
 {
     char szBuf[64];
@@ -385,12 +419,25 @@ void KUiPet::UpdateData()
     int nAtkSkill = sPetTV(5156);
     int nKind = sPetTV(PET_TV_SKILL0);
     if (nAtkSkill > 0)
+    {
+        // [PETKN3 01/09] icon chieu nguoi choi 36x36 tran o 26x26 (engine ve
+        // SPR native) -> ve ban 24x24 rieng do p92 sinh; tooltip giu nguyen
+        char szIco[64];
+        sprintf(szIco, "\\spr\\Ui3\\pet\\atkskill\\atk_%d.spr", nAtkSkill);
         m_Skill1.HoldObject(CGOG_SKILL_FIGHT, nAtkSkill, 0, 0);
+        m_Skill1.SetSmallIcon(szIco);
+    }
     else if (nKind >= 1 && nKind <= 4 && nLevel >= 1)
+    {
+        m_Skill1.SetSmallIcon(NULL);
         m_Skill1.HoldObject(CGOG_SKILL_FIGHT, PET_AURA_SKILL0 + nKind - 1,
             nLevel, 0);
+    }
     else
+    {
+        m_Skill1.SetSmallIcon(NULL);
         m_Skill1.HoldObject(CGOG_NOTHING, 0, 0, 0);
+    }
 
     // [29/08] 4 ky nang bi dong da hoc (task 5139..5142)
     // [29/08] 10 o trang bi Dong Hanh (task 5143..5152 = ParticularType).

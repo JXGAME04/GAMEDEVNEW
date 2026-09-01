@@ -24,6 +24,23 @@ Description : [PETSYS] Cua so "Ban Dong Hanh" ban PC - dung 100% bo cuc
 #define PET_UI_EXTSKILL_NUM 4
 #define PET_UI_EQUIP_NUM   10
 
+// [PETKN3 01/09] O ky nang 1 cua cua so pet: chieu danh theo he chu la skill
+// NGUOI CHOI, icon goc 36x36 (\spr\Ui\skill\*) trong khi o chi 26x26 va engine
+// ve SPR native khong scale (KSkill::DrawSkillIcon) -> tran o ('qua to').
+// Lop nay GIU HoldObject (tooltip/hover nhu cu) nhung ve ban icon 24x24 rieng
+// (\spr\Ui3\pet\atkskill\atk_<id>.spr, sinh boi p92) thay cho icon goc.
+class KWndPetAtkBox : public KWndObjectBox
+{
+public:
+    KWndPetAtkBox() : m_bSmall(false) { IR_InitUiImageRef(m_SmallImg); }
+    void          SetSmallIcon(const char* pszSpr);   // NULL = ve nhu KWndObjectBox
+protected:
+    virtual void  PaintWindow();
+private:
+    KUiImageRef   m_SmallImg;
+    bool          m_bSmall;
+};
+
 class KUiPet : public KWndImage
 {
 public:
@@ -52,7 +69,7 @@ private:
     // 12 nhan tinh (Text= trong ini) + 12 o gia tri
     KWndText32        m_Txt[PET_UI_TXT_NUM];
     KWndText32        m_Val[PET_UI_TXT_NUM];
-    KWndObjectBox     m_Skill1;
+    KWndPetAtkBox     m_Skill1;   // [PETKN3] ve icon 24x24 rieng
     KWndObjectBox     m_ExtSkill[PET_UI_EXTSKILL_NUM];
     KWndImage         m_Equip[PET_UI_EQUIP_NUM];   // khung 40x40 (hang 1)
     KWndImage         m_Appearance;   // [PETSYS] hinh pet dung (npcres _st01)

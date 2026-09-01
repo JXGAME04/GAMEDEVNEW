@@ -211,6 +211,13 @@ static void sPetApplyPetSkills(int nPlayerIdx)
 		pNpc->m_PhysicsDamage.nValue[1] = PET_DMGMAX(nLvD);
 		pNpc->m_AttackRating = PET_ATKRATING(nLvD);
 	}
+	// [PETKN3 01/09] GOC 'buff bi kip khong an': m_SkillList.m_nNpcIndex cua
+	// NPC pet = 0 - KNpcSet.cpp:496 gan index TRUOC khi Load() chep de ca
+	// struct m_SkillList tu template (KNpc.cpp:8333, memberwise copy) ->
+	// SetNpcSkill tu-cast passive goi Cast(0,-1,0) va bi KSkills.cpp:420 tu
+	// choi im lang (Npc[0].m_Index<=0). Loi engine chung cho MOI NPC; chi
+	// sua cuc bo cho pet de khong doi hanh vi quai (Gate 4).
+	pNpc->m_SkillList.m_nNpcIndex = nNpc;
 	// don danh mac dinh = chieu 90 theo HE cua CHU (style 0)
 	// - chi dat vao list + ghi id ra 5156 (client ve icon), sPetFight do_skill
 	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
