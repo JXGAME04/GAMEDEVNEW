@@ -1,6 +1,6 @@
 /*******************************************************************************
 // FileName			:	ScriptFuns.cpp
-// FileAuthor		:	Fong Kiï¿½u
+// FileAuthor		:	Fong KiÒu
 // FileCreateDate	:	2002-11-19 15:58:20
 *******************************************************************************/
 #ifndef WIN32
@@ -419,7 +419,7 @@ int LuaModifyRepute(Lua_State* L)
 	return 0;
 }
 
-int LuaModifyAttrib(Lua_State* L)//add by phong kiï¿½u vï¿½t phï¿½m mï¿½u lï¿½n tï¿½ng kim
+int LuaModifyAttrib(Lua_State* L)//add by phong kiÒu vËt phÈm m¸u lín tèng kim
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex <= 0)
@@ -444,7 +444,7 @@ int LuaModifyAttrib(Lua_State* L)//add by phong kiï¿½u vï¿½t phï¿½m mï¿½u lï¿½n 
 	return 0;
 }
 
-int LuaST_IsRideHorse(Lua_State* L)//add by phong kiï¿½u check player trï¿½n ngï¿½a
+int LuaST_IsRideHorse(Lua_State* L)//add by phong kiÒu check player trªn ngùa
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex < 0)
@@ -613,7 +613,7 @@ Say(sMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
 Say(nMainInfo, nSelCount, sSel1, sSel2, sSel3, .....,sSeln)
 Say(nMainInfo, nSelCount, SelTab)
   Say(100, 3, 10, 23,43)
-  Say("Ñ¡ï¿½ï¿½Ê²Ã´ï¿½ï¿½", 2, "ï¿½ï¿½/yes", "ï¿½ï¿½/no");
+  Say("Ñ¡ÔñÊ²Ã´£¿", 2, "ÊÇ/yes", "·ñ/no");
   Say("Ñ¡Ê²Ã´Ñ½", 2, SelTab);
 */
 // FIX 14/08: noi dap an CO CHAN BIEN vao dem goi PLAYER_SCRIPTACTION_SYNC
@@ -3423,11 +3423,11 @@ int LuaGetLocalDate(Lua_State* L)
 
 int LuaGetTimeByMiao(Lua_State* L)
 {
-	time_t rawtime;                  //ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½long ï¿½Í´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	time(&rawtime);                 //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Ê±ï¿½ä£¨ï¿½ë£©
+	time_t rawtime;                  //¶¨ÒåÒ»¸ölong ÐÍ´æ·ÅÃëÊý
+	time(&rawtime);                 //¾àÀëÏÖÔÚµÄÊ±¼ä£¨Ãë£©
 	char nTimeInfo[32] = { 0 };
 	sprintf(nTimeInfo, "%u", rawtime);
-	//printf("---ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½:%s ----\n",nTimeInfo);
+	//printf("---²âÊÔÊ±¼ä:%s ----\n",nTimeInfo);
 	Lua_PushString(L, nTimeInfo);
 	return 1;
 }
@@ -4189,7 +4189,7 @@ int LuaAddObj(Lua_State* L)
 	Lua_PushNumber(L, nObj);
 	return 1;
 }
-int LuaAddObstacle(Lua_State* L) //#Set Vï¿½t Cï¿½n
+int LuaAddObstacle(Lua_State* L) //#Set VËt C¶n
 {
 	if (Lua_GetTopIndex(L) < 4)
 	{
@@ -4540,7 +4540,7 @@ int LuaDropItem(Lua_State* L)//#lua drop item
 	}
 	int nSeries = (int)Lua_ValueToNumber(L, 6);
 	int nLuck = (int)Lua_ValueToNumber(L, 7);
-	//-------------------------------Fix by Fong Kiï¿½u thï¿½m MagicLevel khi drop item
+	//-------------------------------Fix by Fong KiÒu thªm MagicLevel khi drop item
 	int nMagicLevel = 1;
 	if (nParamNum > 7)
 		nMagicLevel = (int)Lua_ValueToNumber(L, 8);
@@ -4633,7 +4633,7 @@ int LuaDropItemPUBG(Lua_State* L)//#lua drop item
 	int nSeries = (int)Lua_ValueToNumber(L, 6);
 	int nLuck = (int)Lua_ValueToNumber(L, 7);
 	int nKind = (int)Lua_ValueToNumber(L, 8); //gold, platina
-	//-------------------------------Fix by Fong Kiï¿½u thï¿½m MagicLevel khi drop item
+	//-------------------------------Fix by Fong KiÒu thªm MagicLevel khi drop item
 	int nMagicLevel = 1;
 	if (nParamNum > 8)
 		nMagicLevel = (int)Lua_ValueToNumber(L, 9);
@@ -4708,7 +4708,7 @@ int LuaAddEventItem(Lua_State *L)/*AddEventItem(id)*/
 	{
 		char * szEventItm = (char *)Lua_ValueToString(L,1);
 		
-		if (!g_EventItemTab.GetInteger(szEventItm, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", 0, &nEventId))
+		if (!g_EventItemTab.GetInteger(szEventItm, "¾ßÌåÀà±ð", 0, &nEventId))
 		{
 			Lua_PushNumber(L,0);
 			return 1;
@@ -4895,7 +4895,7 @@ int LuaAddTimeItem(Lua_State* L)
 	int nParamNum = Lua_GetTopIndex(L);
 	if (nParamNum < 2)
 	{
-		g_DebugLog("[Script]Ê¹ï¿½ï¿½AddItemï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!");
+		g_DebugLog("[Script]Ê¹ÓÃAddItem²ÎÊýÊýÁ¿²»·û!");
 		Lua_PushNumber(L, 0);
 		return 0;
 	}
@@ -6082,7 +6082,7 @@ int LuaGetTaskItemCount(Lua_State* L)
 			{
 				char* szEventItm = (char*)Lua_ValueToString(L, 1);
 
-				if (!g_EventItemTab.GetInteger(szEventItm, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", 0, &nEventId))
+				if (!g_EventItemTab.GetInteger(szEventItm, "¾ßÌåÀà±ð", 0, &nEventId))
 				{
 					Lua_PushNumber(L, 0);
 					return 1;
@@ -6100,7 +6100,7 @@ int LuaGetTaskItemCount(Lua_State* L)
 	}
 	else
 	{
-		g_DebugLog("GetItem ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!");
+		g_DebugLog("GetItem ²ÎÊý²»¹»!");
 		Lua_PushNumber(L, 0);
 	}
 
@@ -6398,7 +6398,7 @@ int LuaHaveItem(Lua_State* L)/*HaveItem(nItemTemplateId);*/
 			{
 				char* szEventItm = (char*)Lua_ValueToString(L, 1);
 
-				if (!g_EventItemTab.GetInteger(szEventItm, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", 0, &nEventId))
+				if (!g_EventItemTab.GetInteger(szEventItm, "¾ßÌåÀà±ð", 0, &nEventId))
 				{
 					Lua_PushNumber(L, 0);
 					return 1;
@@ -6416,7 +6416,7 @@ int LuaHaveItem(Lua_State* L)/*HaveItem(nItemTemplateId);*/
 	}
 	else
 	{
-		g_DebugLog("HaveItem ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!");
+		g_DebugLog("HaveItem ²ÎÊý²»¹»!");
 		Lua_PushNumber(L, 0);
 	}
 
@@ -6804,8 +6804,8 @@ if (nParamCount < 1) return 0;
 */
 
 /*nNpcTemplateId GetNpcTmpId(sName)
-sName:Npcï¿½ï¿½ï¿½ï¿½
-nNpcTemplateID:Ä£ï¿½ï¿½ï¿½ï¿½Id
+sName:NpcÃû³Æ
+nNpcTemplateID:Ä£°åÖÐId
 */
 int LuaGetNpcTemplateID(Lua_State* L)
 {
@@ -6959,14 +6959,14 @@ int LuaGetNpcOwner(Lua_State* L)
 /*
 nNpcIndex AddNpc(nNpcTemplateId,nLevel, nSubWorldIndex, nPosX, nPosY )
 
-  ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½NPC
-  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-  nNpcTemplateId: NPCï¿½ï¿½NPCÄ£ï¿½ï¿½ï¿½Ðµï¿½id
-  nLevel:Npcï¿½ÄµÈ¼ï¿½
-  nSubWorldIndex:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
-  nPosXï¿½ï¿½X (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
-  nPosYï¿½ï¿½Y (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
-  nNpcIndex:ï¿½ï¿½ï¿½Óºó£¬½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½Npcï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½Indexï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½nil
+  ¹¦ÄÜ£ºÔö¼ÓÒ»¸öÌØ¶¨µÄNPC
+  ²ÎÊý£º
+  nNpcTemplateId: NPCÔÚNPCÄ£°åÖÐµÄid
+  nLevel:NpcµÄµÈ¼¶
+  nSubWorldIndex:Ëù´¦µÄÊÀ½çid
+  nPosX£ºX (µã×ø±ê)
+  nPosY£ºY (µã×ø±ê)
+  nNpcIndex:Ôö¼Óºó£¬½«·µ»Ø¸ÃNpcÔÚÓÎÏ·ÊÀ½çµÄIndex£¬Èç¹û²»³É¹¦·µ»Ønil
 */
 
 int LuaAddNpc(Lua_State* L)
@@ -7162,7 +7162,7 @@ int LuaSetNpcGoldBoss(Lua_State* L)
 }
 
 /*nResult DelNpc (nNpcIndex)
-nResult:ï¿½ï¿½ï¿½Ø³É¹ï¿½ï¿½ï¿½ï¿½,1Îªï¿½É¹ï¿½,0ÎªÊ§ï¿½ï¿½
+nResult:·µ»Ø³É¹¦Óë·ñ,1Îª³É¹¦,0ÎªÊ§°Ü
 */
 int LuaDelNpc(Lua_State* L)
 {
@@ -7190,8 +7190,8 @@ int LuaDelNpc(Lua_State* L)
 
 /*
 nDelCount DelNpcsInRgn(nSubWorld,nRegionId, nKind)
-ï¿½ï¿½ï¿½Ü£ï¿½É¾ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½Regionï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½NPC
-ï¿½ï¿½ï¿½ï¿½:É¾ï¿½ï¿½ï¿½ï¿½Npcï¿½ï¿½ï¿½ï¿½
+¹¦ÄÜ£ºÉ¾³ýÄ³¸öÓÎÏ·ÊÀ½çÖÐÄ³¸öRegionÄÚµÄËùÓÐÄ³ÀàµÄNPC
+·µ»Ø:É¾³ýµÄNpc¸öÊý
 */
 int LuaDelNpcsInRgn(Lua_State* L)
 {
@@ -7200,7 +7200,7 @@ int LuaDelNpcsInRgn(Lua_State* L)
 }
 /*
 nDelCount DelNpcsInWld(nSubWorldId, nKind)
-ï¿½ï¿½ï¿½Ü£ï¿½É¾ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½Npc
+¹¦ÄÜ£ºÉ¾³ýÄ³¸öÓÎÏ·ÊÀ½çÖÐµÄËùÓÐNpc
 */
 int LuaDelNpcsInWld(Lua_State* L)
 {
@@ -7209,11 +7209,11 @@ int LuaDelNpcsInWld(Lua_State* L)
 
 /*
 SetNpcPos (nNpcIndex, x, y)
-ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Þ¸ï¿½Ò»ï¿½ï¿½NPCï¿½ï¿½Î»ï¿½ï¿½
-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-nNpcIndex:Npcï¿½ï¿½id
-xï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½
-yï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½
+¹¦ÄÜ£ºÉèÖÃ/ÐÞ¸ÄÒ»¸öNPCµÄÎ»ÖÃ
+²ÎÊý£º
+nNpcIndex:NpcµÄid
+x£ºX×ø±ê
+y£ºY×ø±ê
 */
 int LuaSetNpcPos(Lua_State* L)
 {
@@ -7297,7 +7297,7 @@ int LuaSetNpcActionScript(Lua_State* L)
 	//
 	if (Npc[nNpcIndex].m_Kind == kind_normal)
 	{
-		Npc[nNpcIndex].ExecuteScript(szScript, "OnRevive", nNpcIndex);		// monster #idx cï¿½a npc khi hï¿½i sinh
+		Npc[nNpcIndex].ExecuteScript(szScript, "OnRevive", nNpcIndex);		// monster #idx cña npc khi håi sinh
 	}
 	//
 	return 0;
@@ -7823,7 +7823,7 @@ int LuaTongSetMoveSpeed(Lua_State* L)
 	return 0;
 }
 
-int LuaSetNpcHitRecover(Lua_State *L) //Set thï¿½i gian phï¿½c hï¿½i
+int LuaSetNpcHitRecover(Lua_State *L) //Set thêi gian phôc håi
 {
 	int nParamNum = Lua_GetTopIndex(L);
 	if (nParamNum < 2)
@@ -7974,7 +7974,7 @@ int LuaGetNpcPos(Lua_State* L)
 	return 3;
 }
 
-//É¾ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½Ü±ï¿½Å£ï¿½
+//É¾³ý¼¼ÄÜ£¨¼¼ÄÜ±àºÅ£©
 int LuaDelAllMagic(Lua_State* L)
 {
 	int nPlayerIndex = 0;
@@ -8613,7 +8613,7 @@ int LuaChangePlayerFaction(Lua_State* L)
 	return 1;
 }
 
-//0ï¿½ï¿½Ê¾ï¿½ï¿½Ç°,1ï¿½ï¿½Ê¾Ô­Ê¼ï¿½ï¿½,2ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+//0±íÊ¾µ±Ç°,1±íÊ¾Ô­Ê¼µÄ,2±íÊ¾×î´óµÄ
 int LuaGetPlayerColdResist(Lua_State* L)
 {
 	int nPlayerIndex = GetPlayerIndex(L);
@@ -9198,7 +9198,7 @@ int LuaGetSubWorldPlayerCount(Lua_State* L)
 	int nSubWorldIndex;
 	if (nParamNum <= 0)
 	{
-		nSubWorldIndex = GetSubWorldIndex(L);    //ï¿½ï¿½Í¼ 
+		nSubWorldIndex = GetSubWorldIndex(L);    //µØÍ¼ 
 		if (nSubWorldIndex >= 0)
 			ulCount = SubWorld[nSubWorldIndex].CountAllPlayer();
 	}
@@ -10258,7 +10258,7 @@ int LuaGetStationName(Lua_State* L)
 	}
 	int nStationId = (int)Lua_ValueToNumber(L, 1);
 	char szName[50];
-	g_StationTabFile.GetString(nStationId + 1, "DESC", "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", szName, 50);
+	g_StationTabFile.GetString(nStationId + 1, "DESC", "ÎÞÃû³Ç", szName, 50);
 	Lua_PushString(L, szName);
 	return 1;
 }
@@ -10275,7 +10275,7 @@ int LuaGetWayPointName(Lua_State* L)
 	}
 	int nWayPointId = (int)Lua_ValueToNumber(L, 1);
 	char szName[50];
-	g_WayPointTabFile.GetString(nWayPointId + 1, "DESC", "Î´ï¿½ï¿½Â¼", szName, 50);
+	g_WayPointTabFile.GetString(nWayPointId + 1, "DESC", "Î´¼ÇÂ¼", szName, 50);
 	Lua_PushString(L, szName);
 	return 1;
 }
@@ -10523,13 +10523,13 @@ int LuaSetLevel(Lua_State* L)
 	if (nValue < 1)
 		return 0;
 
-	Npc[Player[nPlayerIndex].m_nIndex].m_Level = 1;	           //ï¿½È¼ï¿½Îª1ï¿½ï¿½
+	Npc[Player[nPlayerIndex].m_nIndex].m_Level = 1;	           //µÈ¼¶Îª1¼¶
 
-	Lua_PushNumber(L, Player[nPlayerIndex].m_nSkillPoint);	   //ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ä¼ï¿½ï¿½Üµï¿½
-	Lua_PushNumber(L, Player[nPlayerIndex].m_nAttributePoint); //ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ 
+	Lua_PushNumber(L, Player[nPlayerIndex].m_nSkillPoint);	   //·µ»ØÔ­À´µÄÊ£ÓàµÄ¼¼ÄÜµã
+	Lua_PushNumber(L, Player[nPlayerIndex].m_nAttributePoint); //·µ»ØÔ­À´µÄÊôÐÔµã 
 
-	Player[nPlayerIndex].m_nSkillPoint = 0;//Player[nPlayerIndex].m_cReBorn.GetReBornKeepJpiont();		//ï¿½ï¿½ï¿½Üµï¿½ï¿½ï¿½ï¿½
-	Player[nPlayerIndex].m_nAttributePoint = 0;//Player[nPlayerIndex].m_cReBorn.GetReBornKeepQpiont();	    //ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½ï¿½
+	Player[nPlayerIndex].m_nSkillPoint = 0;//Player[nPlayerIndex].m_cReBorn.GetReBornKeepJpiont();		//¼¼ÄÜµã¹éÁã
+	Player[nPlayerIndex].m_nAttributePoint = 0;//Player[nPlayerIndex].m_cReBorn.GetReBornKeepQpiont();	    //ÊôÐÔµã¹éÁã
 
 	if (Npc[Player[nPlayerIndex].m_nIndex].m_Series == 0)
 	{
@@ -10565,14 +10565,14 @@ int LuaSetLevel(Lua_State* L)
 	Npc[Player[nPlayerIndex].m_nIndex].m_StaminaMax = 100;
 
 	for (int chay = 1; chay <= nValue - 1; chay++)
-	{//Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	{//Ñ­»·Éý¼¶
 		Player[nPlayerIndex].LevelUp();
 	}
 
 	return 2;
 }
 
-// ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// ÖØÖÃ»ù±¾ÊôÐÔ
 // ResetBaseAttribute(type,data);
 int LuaResetBaseAttribute(Lua_State* L)
 {
@@ -11156,11 +11156,11 @@ int LuaGetDockName(Lua_State* L)
 
 	if (nDock > g_DockPriceTabFile.GetHeight() - 1)
 	{
-		strcpy(szName, "Î´Öªï¿½ï¿½Í·");
+		strcpy(szName, "Î´ÖªÂëÍ·");
 		goto DockName;
 	}
 
-	g_DockTabFile.GetString(nDock + 1, "DESC", "Î´Öªï¿½ï¿½Í·", szName, 100);
+	g_DockTabFile.GetString(nDock + 1, "DESC", "Î´ÖªÂëÍ·", szName, 100);
 
 DockName:
 	Lua_PushString(L, szName);
@@ -11388,7 +11388,7 @@ int LuaInitMission(Lua_State* L)
 	{
 		pMission->m_MissionPlayer.Clear();
 		pMission->SetMissionId(nMissionId);
-		if (Lua_GetTopIndex(L) > 4) //add by phong kiï¿½u using tï¿½ng kim
+		if (Lua_GetTopIndex(L) > 4) //add by phong kiÒu using tèng kim
 		{
 			int nParam[MAX_GLBMISSION_PARAM];
 			for (int i = 0; i < MAX_GLBMISSION_PARAM; i++)
@@ -11634,7 +11634,7 @@ int LuaStartMissionTimer(Lua_State* L)//StartMissionTimer(missionid, timerid, ti
 	return 0;
 }
 
-int LuaSetDeathRevivalPos(Lua_State* L)//SetTempRev(worldid, x, y) khi chï¿½t s?quay v?
+int LuaSetDeathRevivalPos(Lua_State* L)//SetTempRev(worldid, x, y) khi chÕt s?quay v?
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	
@@ -11718,13 +11718,13 @@ int LuaAddMissionPlayer(Lua_State* L)
 
 int LuaDelAllNpcInWro(Lua_State * L)
 {
-//	int nSubWorldIndex = GetSubWorldIndex(L); //ï¿½ï¿½Í¼
+//	int nSubWorldIndex = GetSubWorldIndex(L); //µØÍ¼
 	int nParamNum = Lua_GetTopIndex(L);
     int ulCount=0;
 	int nSubWorldIndex;
 	if (nParamNum <=0)
 	{
-       nSubWorldIndex= GetSubWorldIndex(L);    //ï¿½ï¿½Í¼ 
+       nSubWorldIndex= GetSubWorldIndex(L);    //µØÍ¼ 
        if (nSubWorldIndex >= 0) 
 	      ulCount=SubWorld[nSubWorldIndex].DelAllNpcInWro();
 	}
@@ -11739,13 +11739,13 @@ int LuaDelAllNpcInWro(Lua_State * L)
 }
 int LuaDelAllNpcInWroName(Lua_State* L)
 {
-	//	int nSubWorldIndex = GetSubWorldIndex(L); //ï¿½ï¿½Í¼
+	//	int nSubWorldIndex = GetSubWorldIndex(L); //µØÍ¼
 	int nParamNum = Lua_GetTopIndex(L);
 	int ulCount = 0;
 	int nSubWorldIndex;
 	if (nParamNum <= 0)
 	{
-		nSubWorldIndex = GetSubWorldIndex(L);    //ï¿½ï¿½Í¼ 
+		nSubWorldIndex = GetSubWorldIndex(L);    //µØÍ¼ 
 		if (nSubWorldIndex >= 0)
 			ulCount = SubWorld[nSubWorldIndex].DelAllNpcInWro();
 	}
@@ -12164,10 +12164,10 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 			int m_nKNpc = pMission->m_MissionPlayer.GetParam(nValue[0], 3);//kill npc
 			int m_nCurKill = pMission->m_MissionPlayer.GetParam(nValue[0], 7);//lien tram hien tai
 
-			BYTE m_btRobFlag = pMission->m_MissionPlayer.GetParam(nValue[0], 9);//nhï¿½t c?
-			int m_nTPPoint = pMission->m_MissionPlayer.GetParam(nValue[0], 6);//tï¿½ch lu?
-			int m_nTPDeath = pMission->m_MissionPlayer.GetParam(nValue[0], 4);//s?lï¿½n chï¿½t
-			int m_nTPKill = pMission->m_MissionPlayer.GetParam(nValue[0], 5);//max liï¿½n trï¿½m
+			BYTE m_btRobFlag = pMission->m_MissionPlayer.GetParam(nValue[0], 9);//nhÆt c?
+			int m_nTPPoint = pMission->m_MissionPlayer.GetParam(nValue[0], 6);//tÝch lu?
+			int m_nTPDeath = pMission->m_MissionPlayer.GetParam(nValue[0], 4);//s?lÇn chÕt
+			int m_nTPKill = pMission->m_MissionPlayer.GetParam(nValue[0], 5);//max liªn tr¶m
 
 			sprintf(szBattleDesc, "%s|%d|%d|%d|%d|%d|%d|%d|%d|%d", szName, nTT, m_btGroup, m_nKPlayer, m_nKNpc, m_nTPPoint, m_nTPDeath, m_nCurKill, m_nTPKill, m_btRobFlag);
 			nKind = 5;
@@ -12201,12 +12201,12 @@ int LuaUpdateBattleBox(Lua_State* L)// UpdateBattleBox
 			BYTE m_btGroup = pMission->GetMissionPlayer_GroupId(nValue[0]);
 			int m_nKPlayer = pMission->m_MissionPlayer.GetParam(nValue[0], 2);//kill player
 			int m_nKNpc = pMission->m_MissionPlayer.GetParam(nValue[0], 3);//kill npc
-			int m_nCurKill = pMission->m_MissionPlayer.GetParam(nValue[0], 7);//liï¿½n trï¿½m hiï¿½n tï¿½i
+			int m_nCurKill = pMission->m_MissionPlayer.GetParam(nValue[0], 7);//liªn tr¶m hiÖn t¹i
 
-			BYTE m_btRobFlag = pMission->m_MissionPlayer.GetParam(nValue[0], 9);//nhï¿½t c?
-			int m_nTPPoint = pMission->m_MissionPlayer.GetParam(nValue[0], 6);//tï¿½ch lu?
-			int m_nTPDeath = pMission->m_MissionPlayer.GetParam(nValue[0], 4);//s?lï¿½n chï¿½t
-			int m_nTPKill = pMission->m_MissionPlayer.GetParam(nValue[0], 5);//max liï¿½n trï¿½m
+			BYTE m_btRobFlag = pMission->m_MissionPlayer.GetParam(nValue[0], 9);//nhÆt c?
+			int m_nTPPoint = pMission->m_MissionPlayer.GetParam(nValue[0], 6);//tÝch lu?
+			int m_nTPDeath = pMission->m_MissionPlayer.GetParam(nValue[0], 4);//s?lÇn chÕt
+			int m_nTPKill = pMission->m_MissionPlayer.GetParam(nValue[0], 5);//max liªn tr¶m
 
 			sprintf(szBattleDesc, "%s|%d|%d|%d|%d|%d|%d|%d|%d|%d", szName, nTT, m_btGroup, m_nKPlayer, m_nKNpc, m_nTPPoint, m_nTPDeath, m_nCurKill, m_nTPKill, m_btRobFlag);
 			nKind = 3;
@@ -12498,7 +12498,7 @@ int LuaSetMissionPlayerParam(Lua_State* L)//SetMPParam(missionid, nDidx, vid, v)
 		if (pMission)
 		{
 			//pMission->m_MissionPlayer.SetParam(nDataIndex, nParamId, nValue);
-			pMission->SetPlayerParam(nDataIndex, nParamId, nValue); //add by phong kiï¿½u using tï¿½ng kim
+			pMission->SetPlayerParam(nDataIndex, nParamId, nValue); //add by phong kiÒu using tèng kim
 		}
 	}
 	return 0;
@@ -12587,7 +12587,7 @@ int LuaIsMission(Lua_State* L)
 	return 1;
 }
 
-int LuaGetMSLadder(Lua_State* L)//add by phong kiï¿½u using tï¿½ng kim
+int LuaGetMSLadder(Lua_State* L)//add by phong kiÒu using tèng kim
 {
 	int nParamCount = Lua_GetTopIndex(L);
 	if (nParamCount < 2)
@@ -12979,7 +12979,7 @@ int LuaNpcCastSkill(Lua_State* L)
 	return 0;
 }
 
-int LuaIgnoreState(Lua_State* L) //Loï¿½i b?cï¿½c miniskill trï¿½n ngï¿½ï¿½i, lï¿½nh bï¿½i, chiï¿½n c?
+int LuaIgnoreState(Lua_State* L) //Lo¹i b?c¸c miniskill trªn ng­êi, lÖnh bµi, chiÕn c?
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex <= 0)
@@ -13009,7 +13009,7 @@ int LuaIsMyItem(Lua_State* L)
 	return 1;
 }
 
-int LuaSetProtectTime(Lua_State* L) //vong tron bat tu, vï¿½ng trï¿½n bï¿½t t?
+int LuaSetProtectTime(Lua_State* L) //vong tron bat tu, vßng trßn bÊt t?
 {
 	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex <= 0)
@@ -13060,12 +13060,12 @@ int LuaAddSkillState(Lua_State* L)
 		return 0;
 	}
 	//
-	if (nIfMagic)//khï¿½ng ï¿½ï¿½a thuï¿½c tï¿½nh skill vï¿½o
+	if (nIfMagic)//kh«ng ®­a thuéc tÝnh skill vµo
 	{
 		KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
 		pSkill->CastStateSkill(Player[nPlayerIndex].m_nIndex, 0, 0, nTime, bOverLook);
 	}
-	else//ï¿½ï¿½a thuï¿½c tï¿½nh skill vï¿½o
+	else//®­a thuéc tÝnh skill vµo
 	{
 		KMagicAttrib DamageMagicAttribs[MAX_MISSLE_DAMAGEATTRIB];
 		memset(DamageMagicAttribs, 0, sizeof(DamageMagicAttribs));
@@ -13109,12 +13109,12 @@ int LuaAddNpcSkillState(Lua_State* L)
 	int nIfMagic = (int)Lua_ValueToNumber(L, 4);
 	int nTime = (int)Lua_ValueToNumber(L, 5);
 	//
-	if (nIfMagic)//khï¿½ng ï¿½ï¿½a thuï¿½c tï¿½nh skill vï¿½o
+	if (nIfMagic)//kh«ng ®­a thuéc tÝnh skill vµo
 	{
 		KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
 		pSkill->CastStateSkill(nNpcIndex, 0, 0, nTime, TRUE);
 	}
-	else//ï¿½ï¿½a thuï¿½c tï¿½nh skill vï¿½o
+	else//®­a thuéc tÝnh skill vµo
 	{
 		KMagicAttrib DamageMagicAttribs[MAX_MISSLE_DAMAGEATTRIB];
 		memset(DamageMagicAttribs, 0, sizeof(DamageMagicAttribs));
@@ -14316,17 +14316,17 @@ int LuaWllsGetSkillState(Lua_State* L)
 int LuaWllsGetLastAddFaction(Lua_State* L)
 {
 	static char* s_szFaction[11] = {
-		(char*)"Thiï¿½u Lï¿½m",
-		(char*)"Thiï¿½n Vï¿½ï¿½ng",
-		(char*)"ï¿½ï¿½ï¿½ng Mï¿½n",
-		(char*)"Ngï¿½ ï¿½ï¿½c",
+		(char*)"ThiÕu L©m",
+		(char*)"Thiªn V­¬ng",
+		(char*)"§­êng M«n",
+		(char*)"Ngò §éc",
 		(char*)"Nga Mi",
-		(char*)"Thï¿½y Yï¿½n",
-		(char*)"Cï¿½i Bang",
-		(char*)"Thiï¿½n Nhï¿½n",
-		(char*)"Vï¿½ ï¿½ang",
-		(char*)"Cï¿½n Lï¿½n",
-		(char*)"Hoa Sï¿½n"
+		(char*)"Thóy Yªn",
+		(char*)"C¸i Bang",
+		(char*)"Thiªn NhÉn",
+		(char*)"Vâ §ang",
+		(char*)"C«n L«n",
+		(char*)"Hoa S¬n"
 	};
 	int nPlayerIndex = GetPlayerIndex(L);
 	int nNo = -1;
@@ -14748,8 +14748,8 @@ TLua_Funcs GameScriptFuns[] =
 	{"AddLocalTimeNewsEx",LuaAddLocalTimeNewsEx},
 	{"AddLocalCountNewsEx",LuaAddLocalCountNewsEx	},
 #ifdef _SERVER
-	{"ST_IsRideHorse", LuaST_IsRideHorse},//add by phong kiï¿½u check player trï¿½n ngï¿½a
-	{"ModifyAttrib",	LuaModifyAttrib}, //add by phong kiï¿½u vï¿½t phï¿½m mï¿½u lï¿½n tï¿½ng kim
+	{"ST_IsRideHorse", LuaST_IsRideHorse},//add by phong kiÒu check player trªn ngùa
+	{"ModifyAttrib",	LuaModifyAttrib}, //add by phong kiÒu vËt phÈm m¸u lín tèng kim
 	{"GetEquipCount",           LuaCountEquipPlayer},
 	{"RemoveAllItem", LuaRemoveAllItem},
 	{"AddRepute", LuaModifyRepute},	
@@ -14776,19 +14776,19 @@ TLua_Funcs GameScriptFuns[] =
 	{"IsMyItem",		LuaIsMyItem},
 	{"AddSkillState",	LuaAddSkillState},
 	{"RemoveSkillState",	LuaRemoveSkillState},
-	{"SetProtectTime",	LuaSetProtectTime}, //vong tron bat tu, vï¿½ng trï¿½n bï¿½t t?
+	{"SetProtectTime",	LuaSetProtectTime}, //vong tron bat tu, vßng trßn bÊt t?
 	{"AddNpcSkillState",	LuaAddNpcSkillState},
 	{"IgnoreState",		LuaIgnoreState},
 	{"CastSkill",		LuaCastSkill},
 	{"CastNpcSkill",		LuaNpcCastSkill},
 	{"GetNpcIdx", LuaGetCurNpcIndex},
-	{"SetTimer",		LuaSetTimer},		//SetTimer(Ê±ï¿½ï¿½ï¿½ï¿½, Ê±ï¿½ï¿½TaskId):ï¿½ï¿½ï¿½ï¿½Ò´ò¿ª¼ï¿½Ê±ï¿½ï¿½,Ê±ï¿½äµ½Ê±ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½OnTimerï¿½ï¿½ï¿½ï¿½
-	{"StopTimer",		LuaStopTimer},		//StopTimer()ï¿½ï¿½ï¿½Ø±Õµï¿½Ç°ï¿½ï¿½ÒµÄ¼ï¿½Ê±ï¿½ï¿½
-	{"GetRestTime",		LuaGetRestTime},	//GetRestTime:ï¿½ï¿½Ã¼ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ê±ï¿½ï¿½	
-	{"GetTimerId",		LuaGetCurTimerId},	//CurTimerId = GetTimerId():ï¿½ï¿½Ãµï¿½Ç°Ö´ï¿½ÐµÄ¼ï¿½Ê±ï¿½ï¿½ï¿½ï¿½id,ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ò·µ»ï¿½0
-	{"GetTask",			LuaGetTaskValue},	//GetTask(ï¿½ï¿½ï¿½ï¿½ï¿½):ï¿½ï¿½Ãµï¿½Ç°ï¿½ï¿½Ò¸ï¿½ï¿½ï¿½ï¿½ï¿½Åµï¿½Öµ
-	{"SetTask",			LuaSetTaskValue},	//SetTask(ï¿½ï¿½ï¿½ï¿½ï¿½,Öµ):ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
-	{"IsCaptain",		LuaIsLeader},		//IsCaptain()ï¿½Ç·ï¿½Îªï¿½Ó³ï¿½
+	{"SetTimer",		LuaSetTimer},		//SetTimer(Ê±¼äÁ¿, Ê±¼äTaskId):¸øÍæ¼Ò´ò¿ª¼ÆÊ±Æ÷,Ê±¼äµ½Ê±½«×Ô¶¯µ÷ÓÃOnTimerº¯Êý
+	{"StopTimer",		LuaStopTimer},		//StopTimer()£º¹Ø±Õµ±Ç°Íæ¼ÒµÄ¼ÆÊ±Æ÷
+	{"GetRestTime",		LuaGetRestTime},	//GetRestTime:»ñµÃ¼ÆÊ±Æ÷½«´¥·¢µÄÊ£ÓÚÊ±¼ä	
+	{"GetTimerId",		LuaGetCurTimerId},	//CurTimerId = GetTimerId():»ñµÃµ±Ç°Ö´ÐÐµÄ¼ÆÊ±Æ÷µÄid,Èç¹ûÃ»ÓÐÔò·µ»Ø0
+	{"GetTask",			LuaGetTaskValue},	//GetTask(ÈÎÎñºÅ):»ñµÃµ±Ç°Íæ¼Ò¸ÃÈÎÎñºÅµÄÖµ
+	{"SetTask",			LuaSetTaskValue},	//SetTask(ÈÎÎñºÅ,Öµ):ÉèÖÃÈÎÎñÖµ
+	{"IsCaptain",		LuaIsLeader},		//IsCaptain()ÊÇ·ñÎª¶Ó³¤
 	{"GetTeam",			LuaGetTeamId},		//GetTeam()
 	{"GetTeamSize",		LuaGetTeamSize},	//GetTeamSize()
 	{"LeaveTeam",		LuaLeaveTeam},		//LeaveTeam()
@@ -14828,11 +14828,11 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetPos",			LuaGetPos},			//GetPos() return x,y,subworldindex
 	{"GetWorldPos",		LuaGetNewWorldPos},	//W,X,Y = GetWorldPos()
 	{"NewWorld",		LuaEnterNewWorld},
-	{"RandomNew",			LuaRandomNew},	//SetTask(ï¿½ï¿½ï¿½ï¿½ï¿½,Öµ):ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+	{"RandomNew",			LuaRandomNew},	//SetTask(ÈÎÎñºÅ,Öµ):ÉèÖÃÈÎÎñÖµ
 	{"AddTrap",			LuaAddTrap},
 	{"AddMapTrap",		LuaAddMapTrap},	// [TONG 21/08] (mapId,x,y,script|id) 1 o
 	{"AddObj",			LuaAddObj},
-	{"AddObstacle",			LuaAddObstacle}, //#Set Vï¿½t Cï¿½n
+	{"AddObstacle",			LuaAddObstacle}, //#Set VËt C¶n
 	{"DropItem",		LuaDropItem},		//DropItem
 	{"DropItemPUBG", LuaDropItemPUBG}, //DropItemPUBG DropItemPUBG(NpcIndex, 4, 353, 0, 0, 0, 0, nKind) nKind = gold or platina
 	{"DropRateItem",		LuaDropRateItem},
@@ -14846,8 +14846,8 @@ TLua_Funcs GameScriptFuns[] =
 	//{ "AddItemIdx",			LuaAddItemIdx },
 	{"AddTimeItem",			LuaAddTimeItem},
 	{"AddGoldItem",			LuaAddGoldItem},
-	{"AddEventItem",	LuaAddEventItem	},	//AddEventItem(ï¿½Â¼ï¿½ï¿½ï¿½Æ·ID)
-	{"AddMineItem",		LuaAddMineItem	},	//AddMineItem(ï¿½Â¼ï¿½ï¿½ï¿½Æ·ID)	
+	{"AddEventItem",	LuaAddEventItem	},	//AddEventItem(ÊÂ¼þÎïÆ·ID)
+	{"AddMineItem",		LuaAddMineItem	},	//AddMineItem(ÊÂ¼þÎïÆ·ID)	
 	{"DelItem",			LuaDelItem},
 	{"HaveItem",		LuaHaveItem},
 	{"GetNameItem",		LuaGetNameItem},
@@ -14895,7 +14895,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"DelMagic",		LuaDelMagic},		//DelMagic
 	{"HaveMagic",		LuaHaveMagic},		//HaveMagic
 	{"GetMagicLevel",	LuaGetMagicLevel},	//GetMagicLevel
-	{ "DelAllMagic",		LuaDelAllMagic },    //É¾ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	
+	{ "DelAllMagic",		LuaDelAllMagic },    //É¾³ýÈ«²¿¼¼ÄÜ	
 	{"AddMagicPoint",	LuaAddMagicPoint},
 	{"GetMagicPoint",	LuaGetMagicPoint},
 	{"CheckItemEquipCS",LuaCheckItemEquipCS},
@@ -14991,7 +14991,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcDamage",	LuaSetNpcDamage},
 	{"SetNpcDmgEx",		LuaSetNpcDmgEx},
 	{"SetNpcResist",	LuaSetNpcResist},
-	{"SetNpcRevTime",	LuaSetNpcRevTime},	//Set thï¿½i gian hï¿½i sinh
+	{"SetNpcRevTime",	LuaSetNpcRevTime},	//Set thêi gian håi sinh
 	{"SetNpcSpeed",		LuaSetNpcSpeed},
 	{"SetPlayerSpeed",	LuaSetPlayerSpeed },
 	{"SetMoveSpeed",		LuaTongSetMoveSpeed },	// [TONG 21/08] tren PlayerIndex
@@ -15002,7 +15002,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcSkill",		LuaSetNpcSkill},
 	{"RemoveNpcSkill",		LuaRemoveNpcSkill},
 	{"NpcNewWorld",		LuaNpcEnterNewWorld},
-	{"SetNpcPos",		LuaSetNpcPos},			//SetNpcPos(x,y)ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½	
+	{"SetNpcPos",		LuaSetNpcPos},			//SetNpcPos(x,y)½øÈëÄ³µã	
 	{"GetNpcPos",		LuaGetNpcPos},			//GetNpcPos() return x,y,subworldindex
 	{"GetNpcWorldPos",	LuaGetNpcNewWorldPos},
 	{"GetNpcCamp",		LuaGetNpcCamp},
@@ -15014,18 +15014,18 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetNpcFightState", LuaSetNpcFightState},
 	{"GetNpcFightState", LuaGetNpcFightState},
 	{"Rev2Pos",			LuaGetPlayerRevivalPos},
-	{"SetRevPos",		LuaSetPlayerRevivalPos},//SetRevPos(ï¿½ï¿½Î»ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Y)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+	{"SetRevPos",		LuaSetPlayerRevivalPos},//SetRevPos(µãÎ»ÖÃX£¬µãÎ»ÖÃY)ÉèÖÃÍæ¼ÒµÄµ±Ç°ÊÀ½çµÄµÈÈëµãÎ»ÖÃ
 	{"SetTempRevPos",	LuaSetDeathRevivalPos}, //SetTempRevPos(subworldid, x, y ) or SetTempRevPos(id);
-	{"GetCurCamp",		LuaGetPlayerCurrentCamp},//GetCurCamp()ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½Óª
-	{"GetCamp",			LuaGetPlayerCamp	},//GetCamp()ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óª
-	{"SetCurCamp",		LuaSetPlayerCurrentCamp},//SetCurCamp(ï¿½ï¿½Óªï¿½ï¿½):ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Ç°ï¿½ï¿½Óª
-	{"SetCamp",			LuaSetPlayerCamp},		  //SetCamp(ï¿½ï¿½Óªï¿½ï¿½):ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óª	
-	{"RestoreCamp",		LuaRestorePlayerCamp	},//RestoreCamp()ï¿½Ö¸ï¿½ï¿½ï¿½Óª
-	{"GetFaction",		LuaGetPlayerFaction,	},//GetFaction()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
-	{"GetFactionValueName",		LuaGetPlayerFactionValueName,	},//GetFaction()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	{"GetCurCamp",		LuaGetPlayerCurrentCamp},//GetCurCamp()»ñµÃÍæ¼ÒµÄµ±Ç°ÕóÓª
+	{"GetCamp",			LuaGetPlayerCamp	},//GetCamp()»ñµÃÍæ¼ÒÕóÓª
+	{"SetCurCamp",		LuaSetPlayerCurrentCamp},//SetCurCamp(ÕóÓªºÅ):ÉèÖÃÍæ¼Òµ±Ç°ÕóÓª
+	{"SetCamp",			LuaSetPlayerCamp},		  //SetCamp(ÕóÓªºÅ):ÉèÖÃÕóÓª	
+	{"RestoreCamp",		LuaRestorePlayerCamp	},//RestoreCamp()»Ö¸´ÕóÓª
+	{"GetFaction",		LuaGetPlayerFaction,	},//GetFaction()»ñµÃÍæ¼ÒµÄÃÅÅÉÃû 
+	{"GetFactionValueName",		LuaGetPlayerFactionValueName,	},//GetFaction()»ñµÃÍæ¼ÒµÄÃÅÅÉÃû 
 	{"GetFactionNo",	LuaGetPlayerFactionNo},
 	{"GetFirstAddFaction",	LuaGetPlayerFirstAddFaction},
-	{"SetFaction",		LuaChangePlayerFaction},  //SetFaction(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½):ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	{"SetFaction",		LuaChangePlayerFaction},  //SetFaction(ÃÅÅÉÃû):ÉèÖÃÍæ¼ÒÃÅÅÉÃû
 	{"ClearFactionIfnfo",LuaClearFactionIfnfo },
 	{"GetColdR",		LuaGetPlayerColdResist},	
 	{"SetColdR",		LuaGetPlayerColdResist},
@@ -15037,61 +15037,61 @@ TLua_Funcs GameScriptFuns[] =
 	{"SetPoisonR",		LuaSetPlayerPoisonResist},
 	{"GetPhyR",			LuaGetPlayerPhysicsResist	},
 	{"SetPhyR",			LuaSetPlayerPhysicsResist	},
-	{"GetExp",			LuaGetPlayerExp	},			//GetExp():ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Öµ
-	{"GetNextExp",		LuaGetNextExp},			//GetExp():ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Öµ
-	{"AddExp",			LuaModifyPlayerExp},		//AddExp(ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ô·ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ó¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ)
-	{"GetNpcSkillsExpRate",		LuaGetNpcExpSkillsRate },			//GetExp2Skill():ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Öµ
-	{ "GetNpcVip",		LuaGetNpcVip },			//GetExp2Skill():ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Öµ
-	{"AddOwnExp",		LuaAddOwnExp	},			//AddOwnExp(Exp)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó¼Ó¾ï¿½ï¿½ï¿½
+	{"GetExp",			LuaGetPlayerExp	},			//GetExp():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
+	{"GetNextExp",		LuaGetNextExp},			//GetExp():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
+	{"AddExp",			LuaModifyPlayerExp},		//AddExp(¾­ÑéÖµ£¬¶Ô·½µÈ¼¶£¬ÊÇ·ñ×é¶Ó¹²Ïí¾­ÑéÖµ)
+	{"GetNpcSkillsExpRate",		LuaGetNpcExpSkillsRate },			//GetExp2Skill():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
+	{ "GetNpcVip",		LuaGetNpcVip },			//GetExp2Skill():»ñµÃÍæ¼ÒµÄµ±Ç°¾­ÑéÖµ
+	{"AddOwnExp",		LuaAddOwnExp	},			//AddOwnExp(Exp)£¬¸øÍæ¼ÒÖ±½Ó¼Ó¾­Ñé
 	{"AddSumExp",		LuaAddSumExp	},
 	{"SetLevel",		LuaSetLevel },
 	{"ResetBaseAttrib",	LuaResetBaseAttribute },
-	{"SetBasePoint",	  LuaSetBasePoint },       //ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½
-	{"GetLife",			LuaGetPlayerLife},			//GetLife()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½Öµ
-	{"RestoreLife",		LuaRestorePlayerLife},		//RestoreLife()ï¿½Ö¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½
-	{"GetMana",			LuaGetPlayerMana},			//GetMana()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Mana
-	{"RestoreMana",		LuaRestorePlayerMana},		//RestoreMana()ï¿½Ö¸ï¿½ï¿½ï¿½Òµï¿½Mana
-	{"GetStamina",		LuaGetPlayerStamina},		//GetStamina()ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Stamina
-	{"RestoreStamina",	LuaRestorePlayerStamina},	//RestoreMana()ï¿½Ö¸ï¿½ï¿½ï¿½Òµï¿½Stamina
-	{"GetDefend",		LuaGetPlayerDefend},		//GetDefend()ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄ·ï¿½ï¿½ï¿½ï¿½ï¿½
-	{"GetSex",			LuaGetPlayerSex},			//GetSex()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ô±ï¿½
+	{"SetBasePoint",	  LuaSetBasePoint },       //ÉèÖÃ»ù±¾ÊôÐÔµã
+	{"GetLife",			LuaGetPlayerLife},			//GetLife()»ñµÃÍæ¼ÒµÄÉúÃüÖµ
+	{"RestoreLife",		LuaRestorePlayerLife},		//RestoreLife()»Ö¸´Íæ¼ÒµÄÉúÃü
+	{"GetMana",			LuaGetPlayerMana},			//GetMana()»ñµÃÍæ¼ÒµÄMana
+	{"RestoreMana",		LuaRestorePlayerMana},		//RestoreMana()»Ö¸´Íæ¼ÒµÄMana
+	{"GetStamina",		LuaGetPlayerStamina},		//GetStamina()»ñµÃÍæ¼ÒStamina
+	{"RestoreStamina",	LuaRestorePlayerStamina},	//RestoreMana()»Ö¸´Íæ¼ÒµÄStamina
+	{"GetDefend",		LuaGetPlayerDefend},		//GetDefend()»ñµÃÍæ¼ÒµÄ·ÀÓùÁ¦
+	{"GetSex",			LuaGetPlayerSex},			//GetSex()»ñµÃÍæ¼ÒµÄÐÔ±ð
 	{"SetSex",          LuaSetPlayerSex},
-	{"GetSeries",		LuaGetPlayerSeries},		//GetSeries()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Ïµ0man/1woman
-	{"SetSeries",		LuaSetPlayerSeries},		//SetSeries(ï¿½Ô±ï¿½ï¿½)
-	{"GetName",			LuaGetPlayerName},			//GetName()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½
+	{"GetSeries",		LuaGetPlayerSeries},		//GetSeries()»ñµÃÍæ¼ÒµÄÏµ0man/1woman
+	{"SetSeries",		LuaSetPlayerSeries},		//SetSeries(ÐÔ±ðºÅ)
+	{"GetName",			LuaGetPlayerName},			//GetName()»ñµÃÍæ¼ÒµÄÐÕÃû
 	{"GetAccount",		LuaGetPlayerAccount},		//Edit by phong kieu ham lua viet them GetAccount
-	{"GetUUID",			LuaGetPlayerID},			//GetUUID()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Î¨Ò»ID
-	{"GetLeadExp",		LuaGetPlayerLeadExp},		//GetLeadExp()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Í³ï¿½Ê¾ï¿½ï¿½ï¿½Öµ
-	{"GetLeadLevel",	LuaGetPlayerLeadLevel},		//GetLeadLevel()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Í³ï¿½ÊµÈ¼ï¿½
+	{"GetUUID",			LuaGetPlayerID},			//GetUUID()»ñµÃÍæ¼ÒµÄÎ¨Ò»ID
+	{"GetLeadExp",		LuaGetPlayerLeadExp},		//GetLeadExp()»ñµÃÍæ¼ÒµÄÍ³ÂÊ¾­ÑéÖµ
+	{"GetLeadLevel",	LuaGetPlayerLeadLevel},		//GetLeadLevel()»ñµÃÍæ¼ÒµÄÍ³ÂÊµÈ¼¶
 	{"GetLevel",		LuaGetLevel},				//GetLevel()GetPlayers Level
 	{"KiemTraKhoaRuong",LuaGetKhoa},				//Get status lock
 	{"SetPKState",		LuaSetPKState},				//Set PK status
 	{"GetPKState",		LuaGetPKState},				//Get PK status
 	{"SetPKMode", 		LuaSetPlayerPKState},  //pkValue = GetPK() 
-	{"GetRestAP",		LuaGetPlayerRestAttributePoint},//GetRestAP()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½
-	{"GetRestSP",		LuaGetPlayerRestSkillPoint},	//GetRestSP()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Ê£ï¿½Ú¼ï¿½ï¿½Üµï¿½ï¿½ï¿½	
-	{"GetLucky",		LuaGetPlayerLucky},			//GetLucky()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½Öµ
-	{"GetEng",			LuaGetPlayerEngergy},		//GetEng()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ÖµEng
-	{"AddEng",			LuaSetPlayerEngergy},		//AddEng(Value)ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ÖµEng
-	{"GetDex",			LuaGetPlayerDexterity},		//GetDex()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Dex
-	{"AddDex",			LuaSetPlayerDexterity},		//AddDex(Value)ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ÖµEng
+	{"GetRestAP",		LuaGetPlayerRestAttributePoint},//GetRestAP()»ñµÃÍæ¼ÒµÄÊ£ÓÚÊôÐÔµãÊý
+	{"GetRestSP",		LuaGetPlayerRestSkillPoint},	//GetRestSP()»ñµÃÍæ¼ÒµÄÊ£ÓÚ¼¼ÄÜµãÊý	
+	{"GetLucky",		LuaGetPlayerLucky},			//GetLucky()»ñµÃÍæ¼ÒµÄÐÒÔËÖµ
+	{"GetEng",			LuaGetPlayerEngergy},		//GetEng()»ñµÃÍæ¼ÒµÄÁ¦Á¿ÖµEng
+	{"AddEng",			LuaSetPlayerEngergy},		//AddEng(Value)»ñµÃÍæ¼ÒµÄÁ¦Á¿ÖµEng
+	{"GetDex",			LuaGetPlayerDexterity},		//GetDex()»ñµÃÍæ¼ÒµÄDex
+	{"AddDex",			LuaSetPlayerDexterity},		//AddDex(Value)»ñµÃÍæ¼ÒµÄÁ¦Á¿ÖµEng
 	{"GetStrg",			LuaGetPlayerStrength},		//GetStrg()
-	{"AddStrg",			LuaSetPlayerStrength},		//AddStrg(Value)ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ÖµEng
+	{"AddStrg",			LuaSetPlayerStrength},		//AddStrg(Value)»ñµÃÍæ¼ÒµÄÁ¦Á¿ÖµEng
 	{"GetVit",			LuaGetPlayerVitality},		//GetVit()
-	{"AddVit",			LuaSetPlayerVitality},		//AddVit(Value)ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ÖµEng
-	{"GetCash",			LuaGetPlayerCashMoney},		//GetCash()ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ö½ï¿½
+	{"AddVit",			LuaSetPlayerVitality},		//AddVit(Value)»ñµÃÍæ¼ÒµÄÁ¦Á¿ÖµEng
+	{"GetCash",			LuaGetPlayerCashMoney},		//GetCash()»ñµÃÍæ¼ÒµÄÏÖ½ð
 	{"GetSaveMoney",	LuaGetSaveMoney},
-	{"Pay",				LuaPlayerPayMoney},			//Pay(ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½Û³ï¿½ï¿½ï¿½Ò½ï¿½Ç®ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½Ê§ï¿½Ü·ï¿½ï¿½ï¿½0
-	{"Earn",			LuaPlayerEarnMoney},		//Earn(ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò½ï¿½Ç®
-	{"PrePay",			LuaPlayerPrePayMoney},		//ï¿½ï¿½ï¿½ï¿½ï¿½ð£¬³É¹ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½Ê§ï¿½Ü·ï¿½ï¿½ï¿½0
-	{"Sale",			LuaSale},					//Sale(SaleId)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SaleIdÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½Ï¢ï¿½Ð±ï¿½id
+	{"Pay",				LuaPlayerPayMoney},			//Pay(½ð¶îÊý)¿Û³ýÍæ¼Ò½ðÇ®³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø0
+	{"Earn",			LuaPlayerEarnMoney},		//Earn(½ð¶îÊý)Ôö¼ÓÍæ¼Ò½ðÇ®
+	{"PrePay",			LuaPlayerPrePayMoney},		//¸¶¶¨½ð£¬³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø0
+	{"Sale",			LuaSale},					//Sale(SaleId)ÂòÂô£¬SaleIdÎª±ãÂôµÄÎïÆ·ÐÅÏ¢ÁÐ±íid
 	{"NewSale",			LuaNewSale},
 	{"UseTownPortal",	LuaUseTownPortal	},
 	{"ReturnFromPortal",LuaReturnFromTownPortal	},
 	{"SetNpcCurCamp",	LuaSetNpcCurCamp},
 	{"OpenBox",			LuaOpenBox},
 	{"AddStation",		LuaAddPlayerStation},
-	{"AddTermini",		LuaAddPlayerWayPoint},//add nhï¿½ng nï¿½i ï¿½ï¿½ ï¿½i qua
+	{"AddTermini",		LuaAddPlayerWayPoint},//add nh÷ng n¬i ®· ®i qua
 	{"GetStation",		LuaGetPlayerStation	},
 	{"GetStationCount", LuaGetPlayerStationCount},
 	{"GetCityCount", LuaGetAllStationCount},
@@ -15116,7 +15116,7 @@ TLua_Funcs GameScriptFuns[] =
 	{"GetPlayerCount",	LuaGetPlayerCount},
 	{"GetSubWorldPlayerCount",	LuaGetSubWorldPlayerCount },
 	{"GetSubWorldLastPlayer",	LuaGetSubWorldLastPlayer },
-	{"GetWordRank",		LuaGetWordRank},//GetRankInW Xï¿½p hï¿½ng th?giï¿½i
+	{"GetWordRank",		LuaGetWordRank},//GetRankInW XÕp h¹ng th?giíi
 	{"OpenGetString",	LuaOpenGetString},
 	{"OpenGetNumber",	LuaOpenGetNumber},
 	{"GetStringFromUI", LuaGetStringFromUI},
@@ -15181,7 +15181,7 @@ TLua_Funcs GameScriptFuns[] =
 		{"GetMSRestTime", LuaGetMissionRestTime}, //GetMSRestTime(missionid, timerid)
 		{"GetMSIdxGroup",LuaGetPlayerMissionGroup},//GetPlayerGroup(missionid, playerid);
 		{"IsMission",LuaIsMission},
-		{"GetMSLadder",LuaGetMSLadder}, //add by phong kiï¿½u using tï¿½ng kim
+		{"GetMSLadder",LuaGetMSLadder}, //add by phong kiÒu using tèng kim
 		{"AddMSPlayer", LuaAddMissionPlayer},			//AddMSPlayer(MissionId, PlayerIndex, groupid); / AddMSPlayer(MissionId, groupid)
 		{"DelMSPlayer", LuaRemoveMissionPlayer},
 		{"AddMSNpc",	LuaAddMissionNpc},
@@ -15194,9 +15194,9 @@ TLua_Funcs GameScriptFuns[] =
 		{"GetMSPlayerCount", LuaMissionPlayerCount},//GetMSPlayerCount(missionid, group = 0)
 		{"GetMSNpcCount", LuaMissionNpcCount},
 		{"RevivalAllNpc",	LuaRevivalAllNpc},
-		{"DelAllNpc",	      LuaDelAllNpcInWro},    //É¾ï¿½ï¿½NPC
+		{"DelAllNpc",	      LuaDelAllNpcInWro},    //É¾³ýNPC
 		{"DelAllNpcName",	      LuaDelAllNpcInWroName },
-		{"SetPMParam", LuaSetMissionPlayerParam }, //add by phong kiï¿½u using tï¿½ng kim
+		{"SetPMParam", LuaSetMissionPlayerParam }, //add by phong kiÒu using tèng kim
 		{"GetPMParam", LuaGetMissionPlayerParam},
 		{"Msg2MSGroup", LuaMissionMsg2Group},
 		{"Msg2MSAll", LuaMissionMsg2All},
@@ -15213,13 +15213,13 @@ TLua_Funcs GameScriptFuns[] =
 		{"ShowLadder", LuaShowLadder}, //ShowLadder(LadderCount, LadderId1,LadderId2,...);
 		//------------------------------------------------
 		{"OpenTongJX2",	LuaOpenTongJX2},	// JX2 port
-	{"OpenTong",	LuaOpenTong},	//OpenTong()Í¨Öªï¿½ï¿½Ò´ò¿ª°ï¿½ï¿½ï¿½ï¿½ï¿½
+	{"OpenTong",	LuaOpenTong},	//OpenTong()Í¨ÖªÍæ¼Ò´ò¿ª°ï»á½çÃæ
 		{"GetTongName",			LuaGetTongName},
 		{"GetTongInfo"	 ,	LuaGetTongInfo},
 		{"GetTongFlag",			LuaGetTongFlag},
 		{"SetViewTongOwnCity", LuaSetViewTongOwnCity},
 		{"SetThueTongOwnCity", LuaSetThueTongOwnCity},
-		{"SetPunish",	LuaSetDeathPunish},// SetPunish(0/1) 0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ÎºÎ³Í·ï¿½
+		{"SetPunish",	LuaSetDeathPunish},// SetPunish(0/1) 0±íÊ¾²»ÊÜÈÎºÎ³Í·£
 		{ "GetTongLevel",			LuaGetTongLevel },
 		{ "SetTongLevel",			LuaSetTongLevel },
 		{ "GetTongExp",			LuaGetTongExp },
@@ -15753,12 +15753,12 @@ TLua_Funcs GameScriptFuns[] =
 #endif
 		//-------------------------------------------------
 		{ "SwearBrother", LuaSwearBrother}, // ret = SwearBrother(TeamId);
-		{"MakeEnemy",	LuaMakeEnemy}, //ï¿½ï¿½ï¿½ MakeEnemy(enemyname)
+		{"MakeEnemy",	LuaMakeEnemy}, //½á³ð MakeEnemy(enemyname)
 		{"RollbackSkill", LuaRollBackSkills},
 		{"UpdateSkill", LuaUpdateSkillList},
 		//-------------------------------------------------
-		{"AddProp",		LuaAddPropPoint},//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½
-		{"AddPropPoint",LuaAddPropPoint},//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½
+		{"AddProp",		LuaAddPropPoint},//¼ÓÍæ¼ÒÊôÐÔµã
+		{"AddPropPoint",LuaAddPropPoint},//¼ÓÍæ¼ÒÊôÐÔµã
 		{"ResetProp",		LuaResetProp},
 		{"GetProp",		LuaGetRestPropPoint },
 		{"GetTimeNow",		LuaGetTimeNow},
@@ -15861,11 +15861,11 @@ TLua_Funcs GameScriptFuns[] =
 		// alias: ten Linux -> ham JX1 co san (cung ngu nghia - 15_bosung muc 1)
 		{"ITEM_DropRateItem",	LuaDropRateItem},
 		{"NPCINFO_GetSeries",	LuaGetNpcSeries},
-		//{"Trade",			LuaTrade	},				//Trade("maininfo", "IniFileName.iniï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½")
+		//{"Trade",			LuaTrade	},				//Trade("maininfo", "IniFileName.iniµÄÂ·¾¶Ãû")
 		//Trade("MainInfo", n, "item1|price1|function1", "item2|price2|function2", ......, "itemn|pricen|functionn")
-		{"RANDOM",				LuaRANDOM},  // thï¿½m hï¿½m mï¿½i load npc theo tuyï¿½t th?
-		{"RANDOMC",				LuaRANDOMC}, // thï¿½m hï¿½m mï¿½i load npc theo tuyï¿½t th?
-		{"SetNpcKind",		LuaSetNpcKind}, // thï¿½m hï¿½m mï¿½i load npc theo tuyï¿½t th?
+		{"RANDOM",				LuaRANDOM},  // thªm hµm míi load npc theo tuyÖt th?
+		{"RANDOMC",				LuaRANDOMC}, // thªm hµm míi load npc theo tuyÖt th?
+		{"SetNpcKind",		LuaSetNpcKind}, // thªm hµm míi load npc theo tuyÖt th?
 		{"SetNpcBoss2",	LuaSetNpcBoss2},
 		//	{"IsBlueBoss",		LuaIsBlueBoss},
 		{ "GenNewPUBGMap", LuaGenNewPUBGMap },
@@ -15952,7 +15952,7 @@ TLua_Funcs WorldScriptFuns[] =
 	{"AddLoaclTimeNews",LuaAddLocalTimeNews},
 	{"AddLocalCountNews",LuaAddLocalCountNews	},
 #ifdef _SERVER
-	{"Msg2SubWorld",	LuaMsgToSubWorld},	//Msg2SubWorld(ï¿½ï¿½Ï¢)Í¨Öªï¿½ï¿½ï¿½ï¿½
+	{"Msg2SubWorld",	LuaMsgToSubWorld},	//Msg2SubWorld(ÏûÏ¢)Í¨ÖªÊÀ½ç
 	{"Msg2IP",			LuaMsgToIP}, //Msg2IP(IP, ID, StrInfo)	
 	{"SubWorldID2Idx",	LuaSubWorldIDToIndex}, //SubWorldID2Idx
 	{"GetServerName",	LuaGetServerName},
