@@ -36,6 +36,17 @@
 #define PET_SKILLSLOT_ATK  10                   // slot skill-list NPC pet: don danh mac dinh
 #define PET_SKILLSLOT_EXT0 11                   // slot 11..14: 4 bi kip (style 3 tu ap passive)
 
+// [PETKN2 01/09] don danh mac dinh = chieu noi cong 90 theo HE cua CHU
+// (id ghi o 5156 de client ve icon/tooltip); cap CHI theo cap pet
+// (cap_pet * MaxLevel / 130 lam tron len - khong nang bang Tu Chan).
+#define PET_TV_ATKSKILL    5156                 // id chieu danh hien tai cua pet
+#define PET_TV_SHOWHP      5159                 // sinh luc toi da HIEU LUC (goc+trang bi+bi kip)
+// suc danh co ban cua NPC pet theo cap (template goc la NPC thoai dame ~100):
+// min = 60+30xCap, max = 90+45xCap, chinh xac AR = 200+40xCap - DOI SO O DAY
+#define PET_DMGMIN(nLv)    (60 + 30 * (nLv))
+#define PET_DMGMAX(nLv)    (90 + 45 * (nLv))
+#define PET_ATKRATING(nLv) (200 + 40 * (nLv))
+
 #ifdef _SERVER
 void Pet_ProcessAI(int nNpcIdx);        // KPlayerPartner.cpp re sang khi nNo==100
 void Pet_Breathe();                     // KPartner_Breathe goi (moi ~0.5s)

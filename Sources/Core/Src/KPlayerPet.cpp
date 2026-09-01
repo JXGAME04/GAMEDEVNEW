@@ -161,12 +161,24 @@ static int sPetSuitAttrib(int nPlayerIdx)
 	return s_nSuitHp[nBo] * nSo / 10;
 }
 
-// [PETKN 31/08] cap skill mac dinh theo cap pet: (cap+1)/2, tran 63
-static int sPetSkillLevel(int nPetLevel)
+// [PETKN2 01/09 - chu chot] don danh mac dinh cua pet = chieu NOI CONG 90
+// theo HE cua CHU (vd chu he Hoa -> Phi Long Tai Thien cua Cai Bang - rong).
+// Chon theo cot Series trong skills.txt, uu tien ban flat-damage/npc:
+//   Kim(0)=327 Truy Tinh Truc Nguyet | Moc(1)=437 Truy Tinh Truc Dien npc
+//   Thuy(2)=336 Bang Tung Vo Anh     | Hoa(3)=357 Phi Long Tai Thien
+//   Tho(4)=438 Thai Cuc Vo Y npc     -- DOI CHIEU THI SUA O DAY
+static const int s_nPetAtkBySeries[5] = { 327, 437, 336, 357, 438 };
+
+// [PETKN2 01/09] cap chieu danh CHI theo cap pet (khong nang bang Tu Chan):
+// cap = cap_pet * MaxLevel(bang skills.txt) / 130, lam tron len, tran 63.
+// CLIENT tooltip dung CUNG cong thuc (CoreShell.cpp nhanh [PETKN]).
+static int sPetAtkLevel(int nPetLevel, int nSkillId)
 {
-	int nLv = (nPetLevel + 1) / 2;
+	int nMax = (int)g_SkillManager.GetSkillMaxLevel(nSkillId);
+	if (nMax < 1 || nMax >= MAX_SKILLLEVEL) nMax = MAX_SKILLLEVEL - 1;
+	int nLv = (nPetLevel * nMax + PET_MAX_LEVEL - 1) / PET_MAX_LEVEL;
 	if (nLv < 1) nLv = 1;
-	if (nLv >= MAX_SKILLLEVEL) nLv = MAX_SKILLLEVEL - 1;
+	if (nLv > nMax) nLv = nMax;
 	return nLv;
 }
 
@@ -188,11 +200,21 @@ static void sPetApplyPetSkills(int nPlayerIdx)
 		pNpc->m_nPartnerNo != PET_PARTNER_NO) return;
 	int nLevel = sPetG(nPlayerIdx, PET_TV_LEVEL);
 	if (nLevel < 1) return;
-	// don danh mac dinh (style 0) - chi dat vao list, sPetFight se do_skill
-	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);       // loai 1..4
-	if (nKind >= 1 && nKind <= PET_SKILL_COUNT)
-		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_ATK,
-			PET_AURA_SKILL0 + nKind - 1, sPetSkillLevel(nLevel));
+	// [PETKN2 01/09] don danh mac dinh = chieu 90 theo HE cua CHU (style 0)
+	// - chi dat vao list + ghi id ra 5156 (client ve icon), sPetFight do_skill
+	int nOwnerNpc = Player[nPlayerIdx].m_nIndex;
+	if (nOwnerNpc > 0 && nOwnerNpc < MAX_NPC)
+	{
+		int nSeries = Npc[nOwnerNpc].m_Series;
+		if (nSeries >= 0 && nSeries < 5)
+		{
+			int nAtk = s_nPetAtkBySeries[nSeries];
+			pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_ATK, nAtk,
+				sPetAtkLevel(nLevel, nAtk));
+			if (sPetG(nPlayerIdx, PET_TV_ATKSKILL) != nAtk)
+				sPetS(nPlayerIdx, PET_TV_ATKSKILL, nAtk);
+		}
+	}
 	// 4 bi kip (style 3): SetNpcSkill tu CastPassivitySkill len PET (-1)
 	for (int k = 0; k < 4; k++)
 	{
@@ -201,6 +223,10 @@ static void sPetApplyPetSkills(int nPlayerIdx)
 		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_EXT0 + k, nSk,
 			sPetExtLevel(nPlayerIdx, k));
 	}
+	// [PETKN2 01/09] sinh luc toi da HIEU LUC (goc + trang bi + buff bi kip
+	// vua ap o tren) - ghi ra 5159 cho cua so pet hien dung tong
+	if (sPetG(nPlayerIdx, PET_TV_SHOWHP) != pNpc->m_CurrentLifeMax)
+		sPetS(nPlayerIdx, PET_TV_SHOWHP, pNpc->m_CurrentLifeMax);
 }
 
 //---------------------------------------------------------------------------
@@ -271,14 +297,26 @@ static int sPetSummon(int nPlayerIdx)
 		if (nMp > 0)
 			pNpc->m_ManaMax = nMp;
 		pNpc->m_CurrentMana = pNpc->m_ManaMax;
+		// [PETKN2 01/09] suc danh co ban theo CAP PET - template goc la NPC
+		// thoai Min/MaxDamage=100 AR=100 nen chieu physicsenhance/AR danh
+		// nhu gai (goc "danh khong co sat thuong"). Cong thuc o KPlayerPet.h.
+		int nLvD = sPetG(nPlayerIdx, PET_TV_LEVEL);
+		if (nLvD < 1) nLvD = 1;
+		if (nLvD > PET_MAX_LEVEL) nLvD = PET_MAX_LEVEL;
+		pNpc->m_PhysicsDamage.nValue[0] = PET_DMGMIN(nLvD);
+		pNpc->m_PhysicsDamage.nValue[1] = PET_DMGMAX(nLvD);
+		pNpc->m_AttackRating = PET_ATKRATING(nLvD);
 	}
-	pNpc->m_CurrentLife = pNpc->m_LifeMax;
 	sPetApplyEquip(nPlayerIdx, nNpcIdx);	// [30/08] thuoc tinh trang bi
 	s_nPetNpcIdx[nPlayerIdx] = nNpcIdx;
 	s_dwPetNpcID[nPlayerIdx] = pNpc->m_dwID;
 	s_dwAuraTick[nPlayerIdx] = 0;
 	sPetS(nPlayerIdx, PET_TV_SUMMON, 1);
 	sPetApplyPetSkills(nPlayerIdx);
+	// [PETKN2 01/09] hoi day SAU khi trang bi + passive bi kip da cong vao
+	// m_CurrentLifeMax (truoc day hoi theo m_LifeMax goc -> pet ra tran
+	// trong nhu bi thieu mau khi co buff sinh luc)
+	pNpc->m_CurrentLife = pNpc->m_CurrentLifeMax;
 	return 1;
 }
 
@@ -342,14 +380,12 @@ static void sPetFight(int nPlayerIdx, int nNpcIdx)
 		return;
 	if (++s_dwFightTick[nPlayerIdx] % 18 != 0)
 		return;
-	// [PETKN 31/08] danh bang SKILL MAC DINH 1600..1603 theo cap pet
-	// (khong dung skill template npcs.txt nua - template la NPC thoai,
-	// dame ~100 phang, day chinh la goc "pet khong co dame")
-	int nKind = sPetG(nPlayerIdx, PET_TV_SKILL0);
-	if (nKind < 1 || nKind > PET_SKILL_COUNT)
+	// [PETKN2 01/09] danh bang chieu 90 theo HE cua CHU (id o 5156, do
+	// sPetApplyPetSkills ghi khi goi pet); cap CHI theo cap pet
+	int nSkillId = sPetG(nPlayerIdx, PET_TV_ATKSKILL);
+	if (nSkillId <= 0)
 		return;
-	int nSkillId = PET_AURA_SKILL0 + nKind - 1;
-	int nWantLv = sPetSkillLevel(sPetG(nPlayerIdx, PET_TV_LEVEL));
+	int nWantLv = sPetAtkLevel(sPetG(nPlayerIdx, PET_TV_LEVEL), nSkillId);
 	if (pNpc->m_SkillList.m_Skills[PET_SKILLSLOT_ATK].SkillId != nSkillId ||
 		(int)pNpc->m_SkillList.m_Skills[PET_SKILLSLOT_ATK].SkillLevel != nWantLv)
 		pNpc->m_SkillList.SetNpcSkill(PET_SKILLSLOT_ATK, nSkillId, nWantLv);
@@ -457,10 +493,18 @@ void Pet_Breathe()
 				int nHp = sPetG(i, PET_TV_ATTRIB0 + 4) + sPetSuitAttrib(i);
 				if (nHp > 0)
 				{
+					// [PETKN2 01/09] chi dich phan GOC (m_LifeMax), GIU
+					// nguyen phan buff dang cong tren m_CurrentLifeMax
+					// (bi kip Thiem Quang + thuoc tinh trang bi) - truoc
+					// day ghi de tong lam MAT buff moi lan doi bo.
+					int nDelta = nHp - Npc[nNpc].m_LifeMax;
 					Npc[nNpc].m_LifeMax = nHp;
-					Npc[nNpc].m_CurrentLifeMax = nHp;
-					if (Npc[nNpc].m_CurrentLife > nHp)
-						Npc[nNpc].m_CurrentLife = nHp;
+					Npc[nNpc].m_CurrentLifeMax += nDelta;
+					if (Npc[nNpc].m_CurrentLifeMax < 1)
+						Npc[nNpc].m_CurrentLifeMax = 1;
+					if (Npc[nNpc].m_CurrentLife > Npc[nNpc].m_CurrentLifeMax)
+						Npc[nNpc].m_CurrentLife = Npc[nNpc].m_CurrentLifeMax;
+					sPetS(i, PET_TV_SHOWHP, Npc[nNpc].m_CurrentLifeMax);
 				}
 			}
 		}

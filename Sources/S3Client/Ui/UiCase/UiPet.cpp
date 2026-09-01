@@ -370,13 +370,23 @@ void KUiPet::UpdateData()
     // 6 thuoc tinh: STR DEX VIT ENG HP MP
     for (i = 0; i < 6; i++)
     {
-        sprintf(szBuf, "%d", sPetTV(PET_TV_ATTRIB0 + i));
+        int nV = sPetTV(PET_TV_ATTRIB0 + i);
+        // [PETKN2 01/09] dong Sinh luc hien TONG HIEU LUC (goc + trang bi
+        // + bi kip Thiem Quang) do server ghi o 5159; =0 (chua goi pet lan
+        // nao tren ban moi) thi hien so goc nhu cu
+        if (i == 4 && sPetTV(5159) > 0)
+            nV = sPetTV(5159);
+        sprintf(szBuf, "%d", nV);
         m_Val[6 + i].SetText(szBuf);
     }
 
-    // icon aura: loai 1..4 -> skill 1600..1603, cap = cap pet
+    // [PETKN2 01/09] o skill 1: chieu danh theo HE cua chu (server ghi id
+    // o 5156 khi goi pet); du lieu cu chua co 5156 -> ve loai aura cu
+    int nAtkSkill = sPetTV(5156);
     int nKind = sPetTV(PET_TV_SKILL0);
-    if (nKind >= 1 && nKind <= 4 && nLevel >= 1)
+    if (nAtkSkill > 0)
+        m_Skill1.HoldObject(CGOG_SKILL_FIGHT, nAtkSkill, 0, 0);
+    else if (nKind >= 1 && nKind <= 4 && nLevel >= 1)
         m_Skill1.HoldObject(CGOG_SKILL_FIGHT, PET_AURA_SKILL0 + nKind - 1,
             nLevel, 0);
     else
