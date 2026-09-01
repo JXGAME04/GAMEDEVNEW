@@ -217,6 +217,44 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 {
 	if (!pszMsg)
 		return;
+	// [VA 31/08i] VIEN DA KHAM (genre 9) tu gioi thieu thuoc tinh cua chinh no.
+	// Ban Linux khong lam viec nay - moi vien dung chung mot cau gioi thieu
+	// chung chung trong starstone.txt (da doi chieu: cot mo ta trung tung byte
+	// giua hai cay), nen nguoi choi khong biet vien nao cho thuoc tinh gi.
+	// THEM MOI theo yeu cau chu game 31/08.
+	if (m_CommonAttrib.nItemGenre == item_starstone)
+	{
+#ifndef _SERVER
+		const KPfStoneInfo* pDa = PF_GetStoneInfo(m_CommonAttrib.nParticularType);
+		if (pDa && pDa->nAttribType > 0)
+		{
+			KItemNormalAttrib sA;
+			memset(&sA, 0, sizeof(sA));
+			sA.nAttribType = pDa->nAttribType;
+			sA.nValue[1] = -1;
+			sA.nValue[2] = 0;
+			// dong chinh: gia tri khi kham vao lo DA KICH HOAT (10 sao)
+			sA.nValue[0] = pDa->nValue[9];
+			char* pszTen = (char*)g_MagicDesc.GetDesc(&sA);
+			if (pszTen && pszTen[0])
+			{
+				strcat(pszMsg, "  \n  ");
+				strcat(pszMsg, "<color=200,120,255>");
+				strcat(pszMsg, pszTen);
+				strcat(pszMsg, " <color>  \n  ");
+				// dai gia tri theo cap lo, de nguoi choi uoc luong truoc khi kham
+				char szDai[128];
+				sprintf(szDai, "<color=Green>Lç 1 sao: %d  ®Õn  lç 10 sao: %d<color>",
+					pDa->nValue[0], pDa->nValue[9]);
+				strcat(pszMsg, szDai);
+				strcat(pszMsg, "  \n  ");
+				strcat(pszMsg, "<color=Yellow>Kh¶m vµo lç ch­a kÝch ho¹t (0 sao) sÏ n»m ngñ, kh«ng céng g×. <color>");
+				strcat(pszMsg, "  \n  <color=255,255,255>");
+			}
+		}
+#endif
+		return;
+	}
 	int nHole = GetMaxStoneNum();
 	int nStar = GetStarLevel();
 	int nWishMax = GetMaxWishValue();
