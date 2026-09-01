@@ -2952,6 +2952,18 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentExpEnhance	= 0;								//nh©n ®«i nh©n ba nh©n x2 ®iÓm kinh nghiÖm
 	Npc[m_nIndex].m_CurrentExpSkillsEnchance	= 1; // ExpSkills x2
 	Npc[m_nIndex].m_CurrentExpSkillsVip = 1;
+	// [NGUHANH 01/09] A1 - LOI CONG DON VO HAN: hai mang ngu hanh KHONG nam trong
+	// pipeline reset cua UpdataCurData. Grep toan cay: chung chi duoc memset o
+	// KNpc.cpp:403-404 (khoi tao) va KNpc.cpp:10145 (RestoreNpcBaseInfo - duong NPC,
+	// KHONG chay cho nguoi choi). Trong khi do ReCalcMeridian() ngay duoi dat
+	// m_bKDDDDangAp = 0 roi goi CapNhatKhiDoanh() -> cua chan 'if (bCan ==
+	// m_bKDDDDangAp) return;' khong bao gio chan duoc -> moi lan doi trang bi / len cap /
+	// dang nhap (47 diem goi UpdataCurData) lai cong THEM +15 vao ca hai mang.
+	// Hau qua do duoc: chieu GIAM bi kep 90% (KNpc.cpp:3574) => sau 6 lan doi do la
+	// giam 90% sat thuong tu he khac minh; chieu TANG (KNpc.cpp:3566) KHONG CO TRAN.
+	// Xoa o day = tra ve dung thiet ke +15/+15 cua Khi Doanh Dan Dien.
+	ZeroMemory(Npc[m_nIndex].m_nMe2SeriesDamP, sizeof(Npc[m_nIndex].m_nMe2SeriesDamP));
+	ZeroMemory(Npc[m_nIndex].m_nSeries2MeDamP, sizeof(Npc[m_nIndex].m_nSeries2MeDamP));
 
 	ReCalcMeridian();
 	ReCalcState();

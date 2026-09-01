@@ -1797,7 +1797,12 @@ void KNpc::DoHurt(int nHurtFrames, int nX, int nY,int nHurtI)
 	int giam_tho_thuong = 0;
 	if (m_CurrentHitRecover <= 80)
     {
-		giam_tho_thuong = (m_CurrentHitRecover / 10) * 10;
+		// [PHUCHOI 01/09] A2 - bo lam tron xuong boi 10: moi diem le duoi 10 bi vut
+		// trang (nen nguoi choi 6 + full mach 28 = 34 -> chi an 30), va mon 'thoi gian
+		// phuc hoi' cap thap 1-9 diem KHONG doi gi het cho toi khi vuot boi 10 ke tiep.
+		// Day la trieu chung chu game bao "thoi gian phuc hoi chua dung tac dung".
+		// Giu nguyen nhanh tran 80 ben duoi de khong doi can bang dau tren.
+		giam_tho_thuong = m_CurrentHitRecover;
     }
 	else
     {
