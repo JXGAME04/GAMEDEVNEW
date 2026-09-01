@@ -271,9 +271,9 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_taskvalue] = &KProtocolProcess::s2cTaskValueSync; // protocol task
 	ProcessFunc[s2c_playermissiondata] = &KProtocolProcess::s2cSetMissionData;
 	ProcessFunc[s2c_inputbox] = &KProtocolProcess::s2cInPutBox;
-	ProcessFunc[s2c_setobstacle] = &KProtocolProcess::s2cSetObstacle; //#Set vËt c¶n
+	ProcessFunc[s2c_setobstacle] = &KProtocolProcess::s2cSetObstacle; //#Set vï¿½t cï¿½n
 	ProcessFunc[s2c_returncityowntong] = &KProtocolProcess::s2cReturnCityOwnTong;
-	ProcessFunc[s2c_playerloginreplay] = &KProtocolProcess::s2cPlayerLoginReplay; //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
+	ProcessFunc[s2c_playerloginreplay] = &KProtocolProcess::s2cPlayerLoginReplay; //fix by phong kiï¿½u chuyï¿½n gs bï¿½ mï¿½t skill
 	ProcessFunc[s2c_openquestfinishdlg] = &KProtocolProcess::s2cOpenQuestFinishDlg;// protocol quest finish
 	ProcessFunc[s2c_imagenpc] = &KProtocolProcess::s2cImageNpcSync;
 	ProcessFunc[s2c_opentrembleitem] = &KProtocolProcess::s2cOpenTrembleItem;
@@ -408,7 +408,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_getcityowntong] = &KProtocolProcess::c2sGetCityOwnTong;
 	ProcessFunc[c2s_recoveritem] = &KProtocolProcess::RecoverItemCommand;
 	ProcessFunc[c2s_playerthrowallitem] = &KProtocolProcess::c2sPlayerThrowAllItem;
-	ProcessFunc[c2s_aibacktotown] = &KProtocolProcess::c2sBackToTown;//Auto by quay l¹i;
+	ProcessFunc[c2s_aibacktotown] = &KProtocolProcess::c2sBackToTown;//Auto by quay lï¿½i;
 	ProcessFunc[c2s_setmeridian] = &KProtocolProcess::c2sSetMeridian;
 	ProcessFunc[c2s_baucua] = &KProtocolProcess::c2sBauCua;
 	ProcessFunc[c2s_diceitem] = &KProtocolProcess::c2sDiceItem;
@@ -498,7 +498,7 @@ void 	KProtocolProcess::s2cSyncSuperShop(BYTE* pMsg)
 	BuySell.OpenSale(pInfo->m_nSaleType, (BuySellInfo*)&pInfo->m_BuySellInfo);
 }
 
-void	KProtocolProcess::IgnoreState(BYTE* pMsg) //Bá qua tr¹ng th¸i
+void	KProtocolProcess::IgnoreState(BYTE* pMsg) //Bï¿½ qua trï¿½ng thï¿½i
 {
 	IGNORE_STATE_SYNC	*pSync = (IGNORE_STATE_SYNC*)pMsg;
 	Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].IgnoreState((BOOL)pSync->bNegative);
@@ -524,7 +524,7 @@ void	KProtocolProcess::s2cAutoPlaySync(BYTE* pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			sprintf(sMsg.szMessage, "§· bËt auto!");
+			sprintf(sMsg.szMessage, "ï¿½ï¿½ bï¿½t auto!");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 		}
 		else
@@ -534,7 +534,7 @@ void	KProtocolProcess::s2cAutoPlaySync(BYTE* pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			sprintf(sMsg.szMessage, "T¾t auto!");
+			sprintf(sMsg.szMessage, "Tï¿½t auto!");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);		
 		}
 		Player[CLIENT_PLAYER_INDEX].SetAutoFlag((BOOL)bActive);
@@ -824,10 +824,10 @@ void KProtocolProcess::s2cPlayerItemLockSync(BYTE* pMsg)
 		int nIdx = ItemSet.SearchID(pSync->m_ItemIdx);
 		Item[nIdx].SetPlayerItemLock(pSync->m_InsuranceCourse);
 		Item[nIdx].SetPlayerItemHLock(pSync->m_InsuranceHourCourse);
-		Item[nIdx].SetPrice(pSync->sPrice);//#Fix ban vat pham khoa bao hiem // vËt phÈm kho¸ kh«ng thÓ b¸n set gi¸ b»ng 0
+		Item[nIdx].SetPrice(pSync->sPrice);//#Fix ban vat pham khoa bao hiem // vï¿½t phï¿½m khoï¿½ khï¿½ng thï¿½ bï¿½n set giï¿½ bï¿½ng 0
 
 		KSystemMessage	sMsg;
-		sprintf(sMsg.szMessage, "Thao t¸c b¶o hiÓm trang bÞ hoµn tÊt.");
+		sprintf(sMsg.szMessage, "Thao tï¿½c bï¿½o hiï¿½m trang bï¿½ hoï¿½n tï¿½t.");
 		sMsg.eType = SMT_NORMAL;
 		sMsg.byConfirmType = SMCT_NONE;
 		sMsg.byPriority = 0;
@@ -913,7 +913,7 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	if (MapY < 0)
 		return ;
 
-	//µ±Ö¸¶¨Ä³¸öÄ¿±êÊ±(MapX == -1),MapYÎªÄ¿±êµÄNpcdwID£¬ÐèÒª×ª»»³É±¾µØµÄNpcIndex²ÅÐÐ
+	//ï¿½ï¿½Ö¸ï¿½ï¿½Ä³ï¿½ï¿½Ä¿ï¿½ï¿½Ê±(MapX == -1),MapYÎªÄ¿ï¿½ï¿½ï¿½NpcdwIDï¿½ï¿½ï¿½ï¿½Òª×ªï¿½ï¿½ï¿½É±ï¿½ï¿½Øµï¿½NpcIndexï¿½ï¿½ï¿½ï¿½
 	if (MapX < 0)
 	{
 		AUTOLOG_EVERY(1000, "NETSKILL-SKIP-X npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
@@ -1017,7 +1017,7 @@ void KProtocolProcess::s2cApplyCreateTeamFalse(BYTE* pMsg)
 //-------------------------------------------------------------------------
 void KProtocolProcess::s2cApplyTeamInfoFalse(BYTE* pMsg)
 {
-	// ½çÃæÏÔÊ¾¶ÓÎé²éÑ¯Ê§°Ü(not end)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê§ï¿½ï¿½(not end)
 }
 
 //-------------------------------------------------------------------------
@@ -1192,7 +1192,7 @@ void KProtocolProcess::s2cChatLoginFriendNoName(BYTE* pMsg)
 	nTeamNo = Player[CLIENT_PLAYER_INDEX].m_cChat.CheckTeamNo(Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name, NULL);
 	if (nTeamNo < 0)
 	{
-		if (Player[CLIENT_PLAYER_INDEX].m_cChat.m_nLoginGetFirstOneFriendFlag == 0)		// ÉêÇëÖØÐÂ·¢ËÍËùÓÐºÃÓÑÊý¾Ý£¬´øÃû×Ö
+		if (Player[CLIENT_PLAYER_INDEX].m_cChat.m_nLoginGetFirstOneFriendFlag == 0)		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Player[CLIENT_PLAYER_INDEX].m_cChat.m_nLoginGetFirstOneFriendFlag = 1;
 
@@ -1363,15 +1363,15 @@ void KProtocolProcess::s2cGetSkillLevel(BYTE* pMsg)
 			
 	switch(eStyle)
 	{
-	case SKILL_SS_Missles:			//	×Óµ¯Àà		±¾¼¼ÄÜÓÃÓÚ·¢ËÍ×Óµ¯Àà
+	case SKILL_SS_Missles:			//	ï¿½Óµï¿½ï¿½ï¿½		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½
 	case SKILL_SS_Melee:
-	case SKILL_SS_InitiativeNpcState:	//	Ö÷¶¯Àà		±¾¼¼ÄÜÓÃÓÚ¸Ä±äµ±Ç°NpcµÄÖ÷¶¯×´Ì¬
-	case SKILL_SS_PassivityNpcState:		//	±»¶¯Àà		±¾¼¼ÄÜÓÃÓÚ¸Ä±äNpcµÄ±»¶¯×´Ì¬
+	case SKILL_SS_InitiativeNpcState:	//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸Ä±äµ±Ç°Npcï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
+	case SKILL_SS_PassivityNpcState:		//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸Ä±ï¿½Npcï¿½Ä±ï¿½ï¿½ï¿½×´Ì¬
 		{
 			if(pOrdinSkill->IsBase())
 				return;
 		}break;
-	case SKILL_SS_Thief:					//	ÍµÇÔÀà
+	case SKILL_SS_Thief:					//	Íµï¿½ï¿½ï¿½ï¿½
 		{
 			
 		}
@@ -1697,8 +1697,8 @@ void KProtocolProcess::s2cSyncItem(BYTE* pMsg)
 	//	Item[nIndex].SetPlayerItemLock(pItemSync->m_InsuranceCourse);
 	//	Item[nIndex].SetPlayerItemHLock(pItemSync->m_HInsuranceCourse);
 	//	Item[nIndex].SetMantle(pItemSync->m_Mantle); //#phi phong
-	//	Item[nIndex].SetParam(pItemSync->m_Param); //#s?lÇn s?dông item
-	//	Item[nIndex].SetItemGlowLight(pItemSync->m_GlowLight); //#ngo¹i trang v?kh?ph¸t s¸ng
+	//	Item[nIndex].SetParam(pItemSync->m_Param); //#s?lï¿½n s?dï¿½ng item
+	//	Item[nIndex].SetItemGlowLight(pItemSync->m_GlowLight); //#ngoï¿½i trang v?kh?phï¿½t sï¿½ng
 	//	Item[nIndex].SetPrice(pItemSync->m_Price);
 	//	Player[CLIENT_PLAYER_INDEX].m_ItemList.AddKIL(nIndex, pItemSync->m_btPlace, pItemSync->m_btX, pItemSync->m_btY);
 	//}
@@ -1822,7 +1822,7 @@ void KProtocolProcess::s2cUpdataSelfTeamInfo(BYTE* pMsg)
 	int		i;
 	PLAYER_SEND_SELF_TEAM_INFO	*pSelfInfo = (PLAYER_SEND_SELF_TEAM_INFO*)pMsg;
 
-	// Êý¾Ý°ü³ö´í
+	// ï¿½ï¿½ï¿½Ý°ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (pSelfInfo->m_dwNpcID[0] == 0)
 		return;
 
@@ -1833,11 +1833,11 @@ void KProtocolProcess::s2cUpdataSelfTeamInfo(BYTE* pMsg)
 	if (Player[CLIENT_PLAYER_INDEX].m_dwNextLevelLeadExp == 0)
 		Player[CLIENT_PLAYER_INDEX].m_dwNextLevelLeadExp = Player[CLIENT_PLAYER_INDEX].m_dwLeadLevel;
 
-	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID == pSelfInfo->m_dwNpcID[0])	// ¶Ó³¤
+	if (Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID == pSelfInfo->m_dwNpcID[0])	// ï¿½Ó³ï¿½
 	{
 		Player[CLIENT_PLAYER_INDEX].m_cTeam.m_nFigure = TEAM_CAPTAIN;
 	}
-	else													// ¶ÓÔ±
+	else													// ï¿½ï¿½Ô±
 	{
 		Player[CLIENT_PLAYER_INDEX].m_cTeam.m_nFigure = TEAM_MEMBER;
 		for (i = 0; i < MAX_TEAM_APPLY_LIST; i++)
@@ -1974,12 +1974,12 @@ void KProtocolProcess::SyncCurNormalData(BYTE* pMsg)
 	}
 }
 
-void KProtocolProcess::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 lÇn chÝnh m×nh
+void KProtocolProcess::SyncCurPlayer(BYTE* pMsg) //Sync Player 1 lï¿½n chï¿½nh mï¿½nh
 {
 	Player[CLIENT_PLAYER_INDEX].SyncCurPlayer(pMsg);
 }
 
-void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã player
+void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lï¿½n khi npc trong ï¿½ï¿½ cï¿½ player
 {
 	NPC_SYNC* NpcSync = (NPC_SYNC *)pMsg;
 
@@ -2126,14 +2126,14 @@ void KProtocolProcess::SyncNpc(BYTE* pMsg)	//Sync 1 lÇn khi npc trong ®ã cã play
 	Npc[nIdx].m_WalkSpeed			= NpcSync->m_WalkSpeed;
 	Npc[nIdx].m_CurrentRunSpeed		= NpcSync->m_CurrentRunSpeed;
 	Npc[nIdx].m_RunSpeed			= NpcSync->m_RunSpeed;
-	Npc[nIdx].m_CurrentHitRecover   = NpcSync->m_CurrentHitRecover;		//thêi gian phôc håi
-	Npc[nIdx].m_HitRecover		    = NpcSync->m_HitRecover;		//thêi gian phôc håi
+	Npc[nIdx].m_CurrentHitRecover   = NpcSync->m_CurrentHitRecover;		//thï¿½i gian phï¿½c hï¿½i
+	Npc[nIdx].m_HitRecover		    = NpcSync->m_HitRecover;		//thï¿½i gian phï¿½c hï¿½i
 	Npc[nIdx].m_nMissionGroup	= NpcSync->MissionGroup;//#NpcMissionGroup
 	memset(Npc[nIdx].Name, 0, sizeof(Npc[nIdx].Name));
 	memcpy(Npc[nIdx].Name, NpcSync->m_szName, NpcSync->m_wLength - (sizeof(NPC_SYNC) - 1 - sizeof(NpcSync->m_szName)));
 }
 
-void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã player vµ npc
+void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liï¿½n tï¿½c npc trong ï¿½ï¿½ cï¿½ player vï¿½ npc
 {
 	NPC_NORMAL_SYNC* NpcSync = (NPC_NORMAL_SYNC *)pMsg;
 
@@ -2161,7 +2161,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 			if (NpcSet.InsertNpcRequest(NpcSync->ID))
 				SendClientCmdRequestNpc(NpcSync->ID);
 		}
-		return;//add by Fong KiÒu from KT
+		return;//add by Fong Kiï¿½u from KT
 	}
 	else
 	{
@@ -2340,14 +2340,14 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 			}
 		}
 
-		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)	// ·ÇÍæ¼?
+		if (nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)	// ï¿½ï¿½ï¿½ï¿½?
 		{
 			int	nOldLife = Npc[nIdx].m_CurrentLife;
 			AUTOLOG_EVERY(1000, "SYNCMIN-LIFE npc=%u idx=%d life %d->%d max=%d cell=(%d,%d) reg=%d t=%u", NpcSync->ID, nIdx, nOldLife, NpcSync->m_CurrentLife, NpcSync->m_CurrentLifeMax, Npc[nIdx].m_MapX, Npc[nIdx].m_MapY, Npc[nIdx].m_RegionIndex, SubWorld[0].m_dwCurrentTime);
 			Npc[nIdx].m_CurrentLife = NpcSync->m_CurrentLife;
 			//if (Npc[nIdx].m_Kind == kind_normal)
 			//{
-			//	Npc[nIdx].SetBlood(nOldLife - Npc[nIdx].m_CurrentLife); // M¸u qu¸i b?gi¶m hiÓn th?lªn ®Çu
+			//	Npc[nIdx].SetBlood(nOldLife - Npc[nIdx].m_CurrentLife); // Mï¿½u quï¿½i b?giï¿½m hiï¿½n th?lï¿½n ï¿½ï¿½u
 			//}
 			Npc[nIdx].m_Series				= NpcSync->m_bySeries;
 		}
@@ -2362,7 +2362,7 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 		//Npc[nIdx].m_ForbidAttack.nTime	= (NpcSync->State & STATE_FBDATK);
 		Npc[nIdx].m_WalkRun.nTime		= NpcSync->State & STATE_WALKRUN;
 		//
-		Npc[nIdx].m_nProtectedTime = NpcSync->m_nProtectedTime;			//vong tron bat tu, vßng trßn bÊt t?
+		Npc[nIdx].m_nProtectedTime = NpcSync->m_nProtectedTime;			//vong tron bat tu, vï¿½ng trï¿½n bï¿½t t?
 		Npc[nIdx].m_CurrentLife			= NpcSync->m_CurrentLife;
 		Npc[nIdx].m_CurrentLifeMax	= NpcSync->m_CurrentLifeMax;
 		Npc[nIdx].m_LifeMax				= NpcSync->m_LifeMax;
@@ -2380,12 +2380,12 @@ void KProtocolProcess::SyncNpcMin(BYTE* pMsg)	//Sync liªn tôc npc trong ®ã cã pl
 	}
 }
 
-void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?l?khi vµo c¸c region < 0
+void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liï¿½n tï¿½c ch?player x?l?khi vï¿½o cï¿½c region < 0
 {	
 	NPC_PLAYER_TYPE_NORMAL_SYNC	*pSync = (NPC_PLAYER_TYPE_NORMAL_SYNC*)pMsg;
 	
 	_ASSERT(pSync->m_dwNpcID == Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID);
-	if (pSync->m_dwNpcID != Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID) //kh¸c b¶n th©n m×nh th?kh«ng thùc hiÖn
+	if (pSync->m_dwNpcID != Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_dwID) //khï¿½c bï¿½n thï¿½n mï¿½nh th?khï¿½ng thï¿½c hiï¿½n
 		return;
 
 	int nRegion, nMapX, nMapY, nOffX, nOffY, nNpcIdx;
@@ -2463,7 +2463,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		return;
 	}
 
-	// `ø`«Ô¶£¬³¬³ö9ÆÁ·¶Î§
+	// `ï¿½`ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½9ï¿½ï¿½ï¿½ï¿½Î§
 	if (nRegion == -1)
 	{
 		SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
@@ -2636,7 +2636,7 @@ void KProtocolProcess::SyncObjectAdd(BYTE* pMsg)
 }
 
 //-------------------------------------------------------------------------
-//	¹¦ÄÜ£ºÊÕµ½·þÎñÆ÷ÏûÏ¢¸üÐÂÄ³¸öobj·½Ïò
+//	ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½objï¿½ï¿½ï¿½ï¿½
 //-------------------------------------------------------------------------
 void KProtocolProcess::SyncObjectDir(BYTE* pMsg)
 {
@@ -2645,7 +2645,7 @@ void KProtocolProcess::SyncObjectDir(BYTE* pMsg)
 	nObjIndex = ObjSet.FindID(pObjSyncDir->m_nID);
 	if (nObjIndex <= 0)
 	{
-		// Ïò·þÎñÆ÷·¢Ìí¼ÓÇëÇó
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		OBJ_CLIENT_SYNC_ADD	sObjClientSyncAdd;
 		sObjClientSyncAdd.ProtocolType = c2s_requestobj;
 		sObjClientSyncAdd.m_nID = pObjSyncDir->m_nID;
@@ -2653,13 +2653,13 @@ void KProtocolProcess::SyncObjectDir(BYTE* pMsg)
 			g_pClient->SendPackToServer(&sObjClientSyncAdd, sizeof(sObjClientSyncAdd));
 	}
 	else
-	{	// Í¬²½·½Ïò
+	{	// Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Object[nObjIndex].SetDir(pObjSyncDir->m_btDir);
 	}
 }
 
 //-------------------------------------------------------------------------
-//	¹¦ÄÜ£ºÊÕµ½·þÎñÆ÷ÏûÏ¢É¾³ýÄ³¸öobj
+//	ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢É¾ï¿½ï¿½Ä³ï¿½ï¿½obj
 //-------------------------------------------------------------------------
 void KProtocolProcess::SyncObjectRemove(BYTE* pMsg)
 {
@@ -2710,7 +2710,7 @@ void KProtocolProcess::SyncObjectTrap(BYTE* pMsg)
 	nObjIndex = ObjSet.FindID(pObjTrapSync->m_nID);
 	if (nObjIndex <= 0)
 	{
-		// Ïò·þÎñÆ÷·¢Ìí¼ÓÇëÇó
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		OBJ_CLIENT_SYNC_ADD	sObjClientSyncAdd;
 		sObjClientSyncAdd.ProtocolType = c2s_requestobj;
 		sObjClientSyncAdd.m_nID = pObjTrapSync->m_nID;
@@ -2726,7 +2726,7 @@ void KProtocolProcess::SyncObjectTrap(BYTE* pMsg)
 	}
 }
 
-void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
+void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lï¿½n ï¿½ï¿½u tiï¿½n
 {
 	PLAYER_SYNC*	pPlaySync = (PLAYER_SYNC *)pMsg;
 	AUTOLOG_EVERY(1000, "SYNCPLAYER-NOIDX player=%u idx=%d t=%u", pPlaySync->ID, NpcSet.SearchID(pPlaySync->ID), SubWorld[0].m_dwCurrentTime);
@@ -2786,7 +2786,7 @@ void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 		Player[CLIENT_PLAYER_INDEX].m_CUnlocked			= pPlaySync->CUnlocked;
 	Npc[nIdx].m_ExItemId			= pPlaySync->ExItemID; // hanh trang
 	Npc[nIdx].m_ExBoxId				= pPlaySync->ExBoxID; // ruong mo rong
-	Npc[nIdx].nRankInWorld			= pPlaySync->RankInWorld; //xÕp h¹ng thÕ giíi
+	Npc[nIdx].nRankInWorld			= pPlaySync->RankInWorld; //xï¿½p hï¿½ng thï¿½ giï¿½i
 	Npc[nIdx].nRepute				= pPlaySync->Repute;
 	Npc[nIdx].nFuYuan				= pPlaySync->FuYuan;
 	Npc[nIdx].nPKValue				= pPlaySync->PKValue;
@@ -2824,7 +2824,7 @@ void KProtocolProcess::SyncPlayer(BYTE* pMsg) //sync player 1 lÇn ®Çu tiªn
 	}
 }
 
-void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
+void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liï¿½n tï¿½c
 {
 	PLAYER_NORMAL_SYNC* pPlaySync = (PLAYER_NORMAL_SYNC *)pMsg;
 	AUTOLOG_EVERY(2000, "SYNCPLAYERMIN-NOIDX player=%u idx=%d t=%u", pPlaySync->ID, NpcSet.SearchID(pPlaySync->ID), SubWorld[0].m_dwCurrentTime);
@@ -2884,7 +2884,7 @@ void KProtocolProcess::SyncPlayerMin(BYTE* pMsg) //Sync Player liªn tôc
 		Player[CLIENT_PLAYER_INDEX].m_CUnlocked			= pPlaySync->CUnlocked;
 	Npc[nIdx].m_ExItemId			= pPlaySync->ExItemID; // hanh trang
 	Npc[nIdx].m_ExBoxId				= pPlaySync->ExBoxID; // ruong mo rong
-	Npc[nIdx].nRankInWorld			= pPlaySync->RankInWorld; //xÕp h¹ng thÕ giíi
+	Npc[nIdx].nRankInWorld			= pPlaySync->RankInWorld; //xï¿½p hï¿½ng thï¿½ giï¿½i
 	Npc[nIdx].nRepute				= pPlaySync->Repute;
 	Npc[nIdx].nFuYuan				= pPlaySync->FuYuan;
 	Npc[nIdx].nPKValue				= pPlaySync->PKValue;
@@ -2960,23 +2960,23 @@ void KProtocolProcess::SyncWorld(BYTE* pMsg)
 
 	if (SubWorld[0].m_dwCurrentTime > WorldSync->Frame)
 	{
-		// ¿Í»§¶Ë¿ìÁË£¬¼õËÙ´¦Àí£¬»òÕßÊÇLagÒýÆðµÄ¾ÉÏûÏ¢£¬ÐèÒª´¦Àí
+		// ï¿½Í»ï¿½ï¿½Ë¿ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½Ù´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lagï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½
 	}
 	else if (SubWorld[0].m_dwCurrentTime < WorldSync->Frame)
 	{
-		// ¿Í»§¶ËÂýÁË£¬¼ÓËÙ´¦Àí
+		// ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½Ù´ï¿½ï¿½ï¿½
 	}
 	
 	SubWorld[0].m_dwCurrentTime = WorldSync->Frame;
 	
 	
-	// Í¬²½ÌìÆø
+	// Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	SubWorld[0].m_nWeather = WorldSync->Weather;
 	g_ScenePlace.ChangeWeather(WorldSync->Weather);
 }
 
 //-------------------------------------------------------------------------
-//	¹¦ÄÜ£ºÊÕµ½·þÎñÆ÷ÏûÏ¢Ä³Íæ¼ÒÖÕÖ¹ÁËÓë±¾¿Í»§¶ËµÄºÃÓÑ¹ØÏµ
+//	ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ë±¾ï¿½Í»ï¿½ï¿½ËµÄºï¿½ï¿½Ñ¹ï¿½Ïµ
 //-------------------------------------------------------------------------
 void	KProtocolProcess::s2cChatDeleteFriend(BYTE* pMsg)
 {
@@ -2993,7 +2993,7 @@ void	KProtocolProcess::s2cChatDeleteFriend(BYTE* pMsg)
 				pFriend->Remove();
 				Player[CLIENT_PLAYER_INDEX].m_cChat.m_cFriendTeam[i].m_nFriendNo--;
 
-				// Í¨Öª½çÃæ Ä³Íæ¼ÒÖÕÖ¹ÁËÓë±¾¿Í»§¶ËµÄºÃÓÑ¹ØÏµ
+				// Í¨Öªï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ë±¾ï¿½Í»ï¿½ï¿½ËµÄºï¿½ï¿½Ñ¹ï¿½Ïµ
 //				CoreDataChanged(GDCNI_CHAT_GROUP, 0, 0);
 				CoreDataChanged(GDCNI_CHAT_FRIEND, 0, i);
 
@@ -3014,7 +3014,7 @@ void	KProtocolProcess::s2cChatDeleteFriend(BYTE* pMsg)
 }
 
 //-------------------------------------------------------------------------
-//	¹¦ÄÜ£ºÊÕµ½·þÎñÆ÷Í¨ÖªÄ³ÁÄÌìºÃÓÑÏÂÏß
+//	ï¿½ï¿½ï¿½Ü£ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ÖªÄ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //-------------------------------------------------------------------------
 void	KProtocolProcess::s2cChatFriendOffLine(BYTE* pMsg)
 {
@@ -3177,7 +3177,7 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	MapX = *(int *)&pMsg[13];
 	MapY = *(int *)&pMsg[17];
 	
-	//µ±Ö¸¶¨Ä³¸öÄ¿±êÊ±(MapX == -1),MapYÎªÄ¿±êµÄNpcdwID£¬ÐèÒª×ª»»³É±¾µØµÄNpcIndex²ÅÐÐ
+	//ï¿½ï¿½Ö¸ï¿½ï¿½Ä³ï¿½ï¿½Ä¿ï¿½ï¿½Ê±(MapX == -1),MapYÎªÄ¿ï¿½ï¿½ï¿½NpcdwIDï¿½ï¿½ï¿½ï¿½Òª×ªï¿½ï¿½ï¿½É±ï¿½ï¿½Øµï¿½NpcIndexï¿½ï¿½ï¿½ï¿½
 	if (MapX == -1)
 	{
 		if (MapY < 0 ) return;
@@ -3293,7 +3293,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			}
 			else
 			{
-				sprintf(sMsg.szMessage, MSG_TEAM_LEAVE, "ÓÐÈË");
+				sprintf(sMsg.szMessage, MSG_TEAM_LEAVE, "ï¿½ï¿½ï¿½ï¿½");
 				for (int i = 0; i < MAX_TEAM_MEMBER; i++)
 				{
 					if ((DWORD)g_Team[0].m_nMember[i] == dwID)
@@ -3680,7 +3680,7 @@ void	KProtocolProcess::s2cShowMsg(BYTE *pMsg)
 			sMsg.byConfirmType = SMCT_NONE;
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
-			sprintf(sMsg.szMessage, "Bang héi cña %s ®ãng gia nhËp thµnh viªn", szName);
+			sprintf(sMsg.szMessage, "Bang hï¿½i cï¿½a %s ï¿½ï¿½ng gia nhï¿½p thï¿½nh viï¿½n", szName);
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 		}
 		break;
@@ -4317,7 +4317,7 @@ void KProtocolProcess::s2cReturnCityOwnTong(BYTE* pMsg)
 	CoreDataChanged(GDCNI_RETURN_CITY_OWN_TONG, 0, (unsigned int)pData->szTongName);
 }
 
-void KProtocolProcess::s2cPlayerLoginReplay(BYTE* pMsg) //fix by phong kiÒu chuyÓn gs bÞ mÊt skill
+void KProtocolProcess::s2cPlayerLoginReplay(BYTE* pMsg) //fix by phong kiï¿½u chuyï¿½n gs bï¿½ mï¿½t skill
 {
 	PLAYER_LOGIN_REPLAY	*pData = (PLAYER_LOGIN_REPLAY*)pMsg;
 	CoreDataChanged(GDCNI_PLAYER_LOGIN_REPLAY, pData->m_nPlayerIdx, 0); 
@@ -4460,7 +4460,7 @@ void	KProtocolProcess::s2cImageNpcSync(BYTE* pMsg)
 	}
 }
 
-void KProtocolProcess::s2cSetObstacle(BYTE* pMsg) //#Set VËt C¶n
+void KProtocolProcess::s2cSetObstacle(BYTE* pMsg) //#Set Vï¿½t Cï¿½n
 {
 	S2C_SET_OBSTACLE	*setibsCmd = (S2C_SET_OBSTACLE *)pMsg;
 	
@@ -4633,6 +4633,16 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			CoreDataChanged(GDCNI_OPEN_MANTLE_INLAY, (unsigned int)&pInfo, NULL);
 		}
 		break;
+	case 4:
+		{
+			// [PF13 01/09] panel TAY LUYEN thuoc tinh an - dung lai chinh goi nay
+			KUiGiveBox	pInfo;
+			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
+			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
+			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
+			CoreDataChanged(GDCNI_OPEN_MANTLE_WASH, (unsigned int)&pInfo, NULL);
+		}
+		break;
 	default:
 		break;
 	}
@@ -4697,20 +4707,20 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 	void* pExPckg = pExHdr + 1;
 	BYTE protocol = *(BYTE*)(pExPckg);
 
-	if (protocol == chat_someonechat)//Chat mËt
+	if (protocol == chat_someonechat)//Chat mï¿½t
 	{
 		CHAT_SOMEONECHAT_SYNC* pCscSync = (CHAT_SOMEONECHAT_SYNC*)pExPckg;
 		l_pDataChangedNotifyFunc->MSNMessageArrival(
 			pCscSync->someone, Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].Name,
 			(const char*)(pCscSync + 1), pCscSync->sentlen, true);
 	}
-	else if (protocol == chat_channelchat)//Chat kªnh
+	else if (protocol == chat_channelchat)//Chat kï¿½nh
 	{
 		CHAT_CHANNELCHAT_SYNC* pCccSync = (CHAT_CHANNELCHAT_SYNC*)pExPckg;
 		// [DaTau] chup thong diep 'He Thong' (tien do nhat cuon / manh SHXT).
 		// (20/08 r3) ghi VONG 4 KHE - 2 tin trong cung tick khong de mat tin truoc.
 		bool bDTSapMap = false;	// (r5f) chi TIN DANH BA that su moi bi an khoi khung chat
-		if (!strcmp(pCccSync->someone, "HÖ Thèng"))
+		if (!strcmp(pCccSync->someone, "Hï¿½ Thï¿½ng"))
 		{
 			int nDTLen = pCccSync->sentlen;
 			if (nDTLen > (int)sizeof(g_sDTCap.aMsg[0]) - 1)
@@ -4736,7 +4746,7 @@ void KProtocolProcess::s2cExtendChat(BYTE* pMsg)
 				pDTKhe[nDTLen] = 0;
 				++g_sDTCap.uMsgSeq;
 				// (r4) tin TIEN DO ("tong cong") vao kenh rieng - spam khong de duoc
-				if (strstr(pDTKhe, "tæng céng") != 0)
+				if (strstr(pDTKhe, "tï¿½ng cï¿½ng") != 0)
 				{
 					memcpy(g_sDTCap.szTien, pDTKhe, nDTLen + 1);
 					++g_sDTCap.uTienSeq;
@@ -4910,58 +4920,58 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sMsg.byPriority = 0;
 			sMsg.byParamSize = 0;
 
-			sprintf(sMsg.szMessage, "Thµnh lËp bang héi thÊt b¹i!");
+			sprintf(sMsg.szMessage, "Thï¿½nh lï¿½p bang hï¿½i thï¿½t bï¿½i!");
 			CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 
 			switch (pFail->m_btFailId)
 			{
 			case enumTONG_CREATE_ERROR_ID1:		// Player[m_nPlayerIndex].m_nIndex <= 0
 				break;
-			case enumTONG_CREATE_ERROR_ID2:		// ½»Ò×¹ý³ÌÖÐ
+			case enumTONG_CREATE_ERROR_ID2:		// ï¿½ï¿½ï¿½×¹ï¿½ï¿½ï¿½ï¿½ï¿½
 				break;
-			case enumTONG_CREATE_ERROR_ID3:		// °ï»áÃûÎÊÌâ
+			case enumTONG_CREATE_ERROR_ID3:		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR09);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID4:		// °ï»áÕóÓªÎÊÌâ
+			case enumTONG_CREATE_ERROR_ID4:		// ï¿½ï¿½ï¿½ï¿½ï¿½Óªï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR02);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID5:		// ÒÑ¾­ÊÇ°ï»á³ÉÔ±
+			case enumTONG_CREATE_ERROR_ID5:		// ï¿½Ñ¾ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ô±
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR03);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID6:		// ×Ô¼ºµÄÕóÓªÎÊÌâ
+			case enumTONG_CREATE_ERROR_ID6:		// ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½Óªï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR04);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID7:		// µÈ¼¶ÎÊÌâ
+			case enumTONG_CREATE_ERROR_ID7:		// ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR05);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID8:		// Ç®ÎÊÌâ
+			case enumTONG_CREATE_ERROR_ID8:		// Ç®ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR10);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID9:		// ×é¶Ó²»ÄÜ½¨°ï»á
+			case enumTONG_CREATE_ERROR_ID9:		// ï¿½ï¿½Ó²ï¿½ï¿½Ü½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR08);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID10:	// °ï»áÄ£¿é³ö´í
+			case enumTONG_CREATE_ERROR_ID10:	// ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½
 				break;
-			case enumTONG_CREATE_ERROR_ID11:	// Ãû×Ö×Ö·û´®³ö´í
+			case enumTONG_CREATE_ERROR_ID11:	// ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID12:	// Ãû×Ö×Ö·û´®¹ý³¤
+			case enumTONG_CREATE_ERROR_ID12:	// ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID13:	// °ï»áÍ¬Ãû´íÎó
+			case enumTONG_CREATE_ERROR_ID13:	// ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR11);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
-			case enumTONG_CREATE_ERROR_ID14:	// °ï»á²úÉúÊ§°Ü
+			case enumTONG_CREATE_ERROR_ID14:	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
 				sprintf(sMsg.szMessage, MSG_TONG_CREATE_ERROR12);
 				CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				break;
@@ -4980,10 +4990,10 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			dwNameID = g_FileName2Id(szName);
 			nPlayerIdx = pApply->m_nPlayerIdx;
 
-			// ¸ø½çÃæ·¢ÏûÏ¢£¬ÊÕµ½ÉêÇë£¬ÊÇ·ñÍ¬Òâ
+			// ï¿½ï¿½ï¿½ï¿½ï¿½æ·¢ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ë£¬ï¿½Ç·ï¿½Í¬ï¿½ï¿½
 			KSystemMessage	sMsg;
-			//sprintf(sMsg.szMessage, "%sÉêÇë¼ÓÈë°ï»á£¡ enumTONG_SYNC_ID_TRANSFER_ADD_APPLY", szName);
-			sprintf(sMsg.szMessage, "%s xin gia nhËp bang", szName);
+			//sprintf(sMsg.szMessage, "%sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á£¡ enumTONG_SYNC_ID_TRANSFER_ADD_APPLY", szName);
+			sprintf(sMsg.szMessage, "%s xin gia nhï¿½p bang", szName);
 			sMsg.eType = SMT_CLIQUE;
 			sMsg.byConfirmType = SMCT_UI_TONG_JOIN_APPLY;
 			sMsg.byPriority = 3;
@@ -5007,7 +5017,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			memcpy(szMaster, pAdd->m_szMaster, sizeof(szMaster));
 
 			Player[CLIENT_PLAYER_INDEX].m_cTong.AddTong(pAdd->m_btCamp, szName, szTitle, szMaster);
-			// Í¨Öª½çÃæ¸üÐÂÊý¾Ý
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			KUiGameObjectWithName	sUi;
 			memset(&sUi, 0, sizeof(sUi));
 			strcpy(sUi.szName, szName);
@@ -5023,7 +5033,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 		{
 			TONG_HEAD_INFO_SYNC	*pInfo = (TONG_HEAD_INFO_SYNC*)pMsg;
 
-			// Í¨Öª½çÃæµÃµ½Ä³°ï»áÐÅÏ¢
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½Ãµï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 			int nIdx = NpcSet.SearchID(pInfo->m_dwNpcID);
 			if (nIdx <= 0)
 				break;
@@ -5048,7 +5058,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sInfo.nMoney = pInfo->m_dwMoney;
 			strcpy(sInfo.szMasterName, pInfo->m_sMember[0].m_szName);
 			strcpy(sInfo.szName, pInfo->m_szTongName);
-			// == add by Fong KiÒu ==
+			// == add by Fong Kiï¿½u ==
 			sInfo.nStatusGuide = pInfo->m_nStatusGuide;
 			strcpy(sInfo.szWayEdit, pInfo->m_szWayEdit);
 			strcpy(sInfo.szNextTargetEdit, pInfo->m_szNextTargetEdit);
@@ -5056,7 +5066,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 			sInfo.nCityGuide = pInfo->m_nCityGuide;
 			sInfo.nTongLevel = pInfo->m_nTongLevel;
 			strcpy(sInfo.szLeagueTName, pInfo->m_szLeagueTName);
-			// == end add by Fong KiÒu ==
+			// == end add by Fong Kiï¿½u ==
 			CoreDataChanged(GDCNI_TONG_INFO, (unsigned int)&sUi, (unsigned int)&sInfo);
 			//
 			KUiGameObjectWithName	sObj;
@@ -5090,7 +5100,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 		{
 			TONG_MANAGER_INFO_SYNC	*pInfo = (TONG_MANAGER_INFO_SYNC*)pMsg;
 
-			// Í¨Öª½çÃæµÃµ½Ä³°ï»á¶Ó³¤ÐÅÏ¢
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½Ãµï¿½Ä³ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½Ï¢
 			KUiGameObjectWithName	sObj;
 			strcpy(sObj.szName, pInfo->m_szTongName);
 			sObj.nData = enumTONG_FIGURE_MANAGER;
@@ -5115,7 +5125,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 		{
 			TONG_MEMBER_INFO_SYNC	*pInfo = (TONG_MEMBER_INFO_SYNC*)pMsg;
 
-			// Í¨Öª½çÃæµÃµ½Ä³°ï»á°ïÖÚÐÅÏ¢
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½Ãµï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 			KUiGameObjectWithName	sObj;
 			strcpy(sObj.szName, pInfo->m_szTongName);
 			sObj.nData = enumTONG_FIGURE_MEMBER;
@@ -5144,7 +5154,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 	case enumTONG_SYNC_ID_INSTATE:
 		{
 			TONG_INSTATE_SYNC	*pInstate = (TONG_INSTATE_SYNC*)pMsg;
-			// Í¨Öª½çÃæÈÎÃüÊÇ·ñ³É¹¦
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É¹ï¿½
 			KUiGameObjectWithName	sUi;
 			strcpy(sUi.szName, pInstate->m_szName);
 			sUi.nData = TONG_ACTION_ASSIGN;
@@ -5157,7 +5167,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 	case enumTONG_SYNC_ID_KICK:
 		{
 			TONG_KICK_SYNC	*pKick = (TONG_KICK_SYNC*)pMsg;
-			// Í¨Öª½çÃæÌßÈËÊÇ·ñ³É¹¦
+			// Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É¹ï¿½
 			KUiGameObjectWithName	sUi;
 			strcpy(sUi.szName, pKick->m_szName);
 			sUi.nData = TONG_ACTION_DISMISS;
@@ -5173,36 +5183,36 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 
 			switch (pFail->m_btFailID)
 			{
-			case 0:		// ¶Ô·½²»ÔÚÏß
+			case 0:		// ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					KSystemMessage	sMsg;
 					sMsg.eType = SMT_NORMAL;
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, ®èi ph­¬ng kh«ng online!");
+					sprintf(sMsg.szMessage, "Phong chï¿½c thï¿½t bï¿½i, ï¿½ï¿½i phï¿½ï¿½ng khï¿½ng online!");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
-			case 1:		// ¶Ô·½ÄÜÁ¦²»¹»£¡
+			case 1:		// ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					KSystemMessage	sMsg;
 					sMsg.eType = SMT_NORMAL;
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, ®èi ph­¬ng kh«ng ®ñ tµi l·nh ®¹o!");
+					sprintf(sMsg.szMessage, "Phong chï¿½c thï¿½t bï¿½i, ï¿½ï¿½i phï¿½ï¿½ng khï¿½ng ï¿½ï¿½ tï¿½i lï¿½nh ï¿½ï¿½o!");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
-			case 2:		// Ãû×Ö²»¶Ô£¡
+			case 2:		// ï¿½ï¿½ï¿½Ö²ï¿½ï¿½Ô£ï¿½
 				{
 					KSystemMessage	sMsg;
 					sMsg.eType = SMT_NORMAL;
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "Phong chøc thÊt b¹i, bæn bang kh«ng cã ng­êi nµy!");
+					sprintf(sMsg.szMessage, "Phong chï¿½c thï¿½t bï¿½i, bï¿½n bang khï¿½ng cï¿½ ngï¿½ï¿½i nï¿½y!");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
@@ -5225,7 +5235,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, ®èi ph­¬ng kh«ng trªn m¹ng.");
+					sprintf(sMsg.szMessage, "ï¿½ï¿½i tï¿½n thï¿½t bï¿½i, ï¿½ï¿½i phï¿½ï¿½ng khï¿½ng trï¿½n mï¿½ng.");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
@@ -5236,7 +5246,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, ®èi ph­¬ng kh«ng ®ñ tµi l·nh ®¹o.");
+					sprintf(sMsg.szMessage, "ï¿½ï¿½i tï¿½n thï¿½t bï¿½i, ï¿½ï¿½i phï¿½ï¿½ng khï¿½ng ï¿½ï¿½ tï¿½i lï¿½nh ï¿½ï¿½o.");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
@@ -5247,7 +5257,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byConfirmType = SMCT_NONE;
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
-					sprintf(sMsg.szMessage, "§æi tªn thÊt b¹i, bæn bang kh«ng cã ng­êi nµy.");
+					sprintf(sMsg.szMessage, "ï¿½ï¿½i tï¿½n thï¿½t bï¿½i, bï¿½n bang khï¿½ng cï¿½ ngï¿½ï¿½i nï¿½y.");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 				}
 				break;
@@ -5266,7 +5276,7 @@ void KProtocolProcess::s2cExtendTong(BYTE* pMsg)
 					sMsg.byPriority = 0;
 					sMsg.byParamSize = 0;
 					
-					sprintf(sMsg.szMessage, "Kh«ng thÓ thay ®æi mµu bang héi ");
+					sprintf(sMsg.szMessage, "Khï¿½ng thï¿½ thay ï¿½ï¿½i mï¿½u bang hï¿½i ");
 					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsg, 0);
 					
 					switch (pFail->m_btFailID)
@@ -5987,7 +5997,7 @@ void	KProtocolProcess::GambleApplyClose(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::TradeApplyStart(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6001,7 +6011,7 @@ void	KProtocolProcess::TradeApplyStart(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::GambleApplyStart(int nIndex, BYTE* pProtocol)
 {
-	if (!pProtocol) return;//add by phong kiÒu antihack
+	if (!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6012,7 +6022,7 @@ void	KProtocolProcess::GambleApplyStart(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::TradeMoveMoney(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6023,7 +6033,7 @@ void	KProtocolProcess::TradeMoveMoney(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::GambleMoveMoney(int nIndex, BYTE* pProtocol)
 {
-	if (!pProtocol) return;//add by phong kiÒu antihack
+	if (!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6034,7 +6044,7 @@ void	KProtocolProcess::GambleMoveMoney(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::TradeDecision(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6045,7 +6055,7 @@ void	KProtocolProcess::TradeDecision(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::GambleDecision(int nIndex, BYTE* pProtocol)
 {
-	if (!pProtocol) return;//add by phong kiÒu antihack
+	if (!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6056,7 +6066,7 @@ void	KProtocolProcess::GambleDecision(int nIndex, BYTE* pProtocol)
 
 void	KProtocolProcess::DialogNpc(int nIndex, BYTE * pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6067,7 +6077,7 @@ void	KProtocolProcess::DialogNpc(int nIndex, BYTE * pProtocol)
 
 void	KProtocolProcess::TeamInviteAdd(int nIndex, BYTE * pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6078,7 +6088,7 @@ void	KProtocolProcess::TeamInviteAdd(int nIndex, BYTE * pProtocol)
 
 void	KProtocolProcess::ChangeAuraSkill(int nIndex, BYTE * pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6098,7 +6108,7 @@ void	KProtocolProcess::ChangeAuraSkill(int nIndex, BYTE * pProtocol)
 
 void	KProtocolProcess::TeamReplyInvite(int nIndex, BYTE * pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6139,7 +6149,7 @@ void	KProtocolProcess::TeamReplyInvite(int nIndex, BYTE * pProtocol)
 
 void KProtocolProcess::NpcSitCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6160,7 +6170,7 @@ void KProtocolProcess::NpcSitCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::ObjMouseClick(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6198,18 +6208,18 @@ void KProtocolProcess::ObjMouseClick(int nIndex, BYTE* pProtocol)
 		&nObjX,
 		&nObjY);
 /*
-	Obj_Kind_MapObj = 0,		// µØÍ¼Îï¼þ£¬Ö÷ÒªÓÃÓÚµØÍ¼¶¯»­
-	Obj_Kind_Body,				// npc µÄÊ¬Ìå
-	Obj_Kind_Box,				// ±¦Ïä
-	Obj_Kind_Item,				// µôÔÚµØÉÏµÄ×°±¸
-	Obj_Kind_Money,				// µôÔÚµØÉÏµÄÇ®
-	Obj_Kind_LoopSound,			// Ñ­»·ÒôÐ§	//Loop
-	Obj_Kind_RandSound,			// Ëæ»úÒôÐ§
-	Obj_Kind_Light,				// ¹âÔ´£¨3DÄ£Ê½ÖÐ·¢¹âµÄ¶«Î÷£©
-	Obj_Kind_Door,				// ÃÅÀà
-	Obj_Kind_Trap,				// ÏÝÚå
-	Obj_Kind_Prop,				// Ð¡µÀ¾ß£¬¿ÉÖØÉú
-	Obj_Kind_Num,				// Îï¼þµÄÖÖÀàÊý
+	Obj_Kind_MapObj = 0,		// ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Úµï¿½Í¼ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Body,				// npc ï¿½ï¿½Ê¬ï¿½ï¿½
+	Obj_Kind_Box,				// ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Item,				// ï¿½ï¿½ï¿½Úµï¿½ï¿½Ïµï¿½×°ï¿½ï¿½
+	Obj_Kind_Money,				// ï¿½ï¿½ï¿½Úµï¿½ï¿½Ïµï¿½Ç®
+	Obj_Kind_LoopSound,			// Ñ­ï¿½ï¿½ï¿½ï¿½Ð§	//Loop
+	Obj_Kind_RandSound,			// ï¿½ï¿½ï¿½ï¿½ï¿½Ð§
+	Obj_Kind_Light,				// ï¿½ï¿½Ô´ï¿½ï¿½3DÄ£Ê½ï¿½Ð·ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Door,				// ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Trap,				// ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Prop,				// Ð¡ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	Obj_Kind_Num,				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 	switch (Object[nObjIdx].m_nKind)
 	{
@@ -6232,7 +6242,7 @@ void KProtocolProcess::ObjMouseClick(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::StoreMoneyCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6248,7 +6258,7 @@ void KProtocolProcess::StoreMoneyCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcReviveCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6262,7 +6272,7 @@ void KProtocolProcess::NpcReviveCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sTradeReplyStart(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6273,7 +6283,7 @@ void KProtocolProcess::c2sTradeReplyStart(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sGambleReplyStart(int nIndex, BYTE* pProtocol)
 {
-	if (!pProtocol) return;//add by phong kiÒu antihack
+	if (!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6284,7 +6294,7 @@ void KProtocolProcess::c2sGambleReplyStart(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sPKApplyChangeNormalFlag(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6299,7 +6309,7 @@ void KProtocolProcess::c2sPKApplyChangeNormalFlag(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sPKApplyEnmity(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6333,7 +6343,7 @@ void KProtocolProcess::c2sPKApplyEnmity(int nIndex, BYTE* pProtocol)
 #define		defMAX_VIEW_EQUIP_TIME			30
 void	KProtocolProcess::c2sViewEquip(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6354,7 +6364,7 @@ void	KProtocolProcess::c2sViewEquip(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::LadderQuery(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6381,7 +6391,7 @@ void KProtocolProcess::LadderQuery(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::ItemRepair(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6396,7 +6406,7 @@ void KProtocolProcess::ItemRepair(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::RecoveryBoxCmd(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6416,7 +6426,7 @@ void KProtocolProcess::RecoveryBoxCmd(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sPlayerThrowAllItem(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6426,7 +6436,7 @@ void KProtocolProcess::c2sPlayerThrowAllItem(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sGetCityOwnTong(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6438,7 +6448,7 @@ void KProtocolProcess::c2sGetCityOwnTong(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::RecoverItemCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6451,7 +6461,7 @@ void KProtocolProcess::RecoverItemCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sInputCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6505,7 +6515,7 @@ extern int KJx2WarInfra_GiveBoxCollect(int nPlayerIdx);
 
 void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6577,7 +6587,7 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				Player[nIndex].ExecuteScript("\\script\\task\\tollgate\\killer\\nieshichen.lua", "cancel", 0);
 			}
 			break;
-		case 5://kh¶m n¹m
+		case 5://khï¿½m nï¿½m
 			{
 				Player[nIndex].ExecuteScript(Player[nIndex].m_dwTrembleItemId, Player[nIndex].m_szTaskExcuteFun, "");
 				Player[nIndex].m_dwTrembleItemId = 0;
@@ -6619,7 +6629,7 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcRideCommand(int nIndex, BYTE* pProtocol)//edit by phong kieu len xuong ngua
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6639,7 +6649,7 @@ void KProtocolProcess::NpcRideCommand(int nIndex, BYTE* pProtocol)//edit by phon
 
 void KProtocolProcess::NpcCPUnlockCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6655,7 +6665,7 @@ void KProtocolProcess::NpcCPUnlockCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcCPLockCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6667,7 +6677,7 @@ void KProtocolProcess::NpcCPLockCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcSwitchEquipSet(int nIndex, BYTE* pProtocol)
 {
-	if (!pProtocol) return;//add by phong kiÒu antihack
+	if (!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6679,7 +6689,7 @@ void KProtocolProcess::NpcSwitchEquipSet(int nIndex, BYTE* pProtocol)
 }
 void KProtocolProcess::NpcCPChangeCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6697,7 +6707,7 @@ void KProtocolProcess::NpcCPChangeCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcCPResetCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6711,7 +6721,7 @@ void KProtocolProcess::NpcCPResetCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::SetPrice(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
 		return;
 	PLAYER_SET_PRICE *pSP=(PLAYER_SET_PRICE *)pProtocol;
@@ -6723,7 +6733,7 @@ void KProtocolProcess::SetPrice(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::StartTrade(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6744,7 +6754,7 @@ void KProtocolProcess::StartTrade(int nIndex, BYTE* pProtocol)
 			if(s_CityTax > 0)
 			{
 				char szTemp[64];
-				sprintf(szTemp, "ThuÕ suÊt khu vùc nµy %d %s. ", s_CityTax, "%");
+				sprintf(szTemp, "Thuï¿½ suï¿½t khu vï¿½c nï¿½y %d %s. ", s_CityTax, "%");
 				Player[nIndex].ExecuteScript("\\script\\player\\mgs2player_from_c.lua","main", szTemp, false);
 			}
 		}
@@ -6755,7 +6765,7 @@ void KProtocolProcess::StartTrade(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sViewItem(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6772,7 +6782,7 @@ void KProtocolProcess::c2sViewItem(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2supdateitem(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6789,7 +6799,7 @@ void KProtocolProcess::c2supdateitem(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6872,7 +6882,7 @@ void KProtocolProcess::c2sNeedCount(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sTradeBuy(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6916,7 +6926,7 @@ void KProtocolProcess::c2sTradeBuy(int nIndex, BYTE* pProtocol)
 	if(Player[nPlayerIdx].Save())
 		Player[nPlayerIdx].m_uMustSave = SAVE_REQUEST;
 
-	//nPlayerIdx ng­êi b¸n //nIndex ng­êi mua //add by phong ki?u log giao d~ch
+	//nPlayerIdx ngï¿½ï¿½i bï¿½n //nIndex ngï¿½ï¿½i mua //add by phong ki?u log giao d~ch
 	Player[nPlayerIdx].ExecuteScript2("\\script\\log_game\\log_giaodich.lua","linebegin", nIndex, false);
 	Player[nPlayerIdx].ExecuteScript2("\\script\\log_game\\log_giaodich.lua","trademoney", nPrice, nPrice, false);
 	Player[nPlayerIdx].ExecuteScript2("\\script\\log_game\\log_giaodich.lua","tradeitem", nIdx, 1, false);
@@ -6924,7 +6934,7 @@ void KProtocolProcess::c2sTradeBuy(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sSysShop(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6935,7 +6945,7 @@ void KProtocolProcess::c2sSysShop(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sNeedShopName(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6955,7 +6965,7 @@ void KProtocolProcess::c2sNeedShopName(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sLiXian(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6966,7 +6976,7 @@ void KProtocolProcess::c2sLiXian(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::RemoveItemYearExpCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -6985,7 +6995,7 @@ void KProtocolProcess::RemoveItemYearExpCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::ItemBreak(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -7000,7 +7010,7 @@ void KProtocolProcess::ItemBreak(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcDaTauCommand(int nIndex, BYTE* pProtocol)
 {
-	/*if(!pProtocol) return;//add by phong kiÒu antihack
+	/*if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -7013,7 +7023,7 @@ void KProtocolProcess::NpcDaTauCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcDaTau1Command(int nIndex, BYTE* pProtocol)
 {
-	/*if(!pProtocol) return;//add by phong kiÒu antihack
+	/*if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
@@ -7035,7 +7045,7 @@ void KProtocolProcess::c2sPlayerStopNotify(int nIndex, BYTE *pProtocol)
 
 void KProtocolProcess::AutoPlayerSellItem(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	if (Player[nIndex].CheckTrading())
@@ -7130,7 +7140,7 @@ void KProtocolProcess::C2SPlayerActionChatCmd(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sSetAutoSync(int nIndex, BYTE* pProtocol)
 {
-	/*if(!pProtocol) return;//add by phong kiÒu antihack
+	/*if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	PLAYER_REQUEST_AUTO* pInfo = (PLAYER_REQUEST_AUTO*)pProtocol;
@@ -7145,7 +7155,7 @@ void KProtocolProcess::c2sSetAutoSync(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::PlayerCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 
@@ -7446,7 +7456,7 @@ void KProtocolProcess::c2sPartnerOp(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::c2sSetImage(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 	CP_DATAU *pSetImgCmd;
@@ -7459,7 +7469,7 @@ void KProtocolProcess::c2sSetImage(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::C2SClientOpenShopCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 
@@ -7472,7 +7482,7 @@ void KProtocolProcess::C2SClientOpenShopCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcLockPlayerItemCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 
@@ -7485,7 +7495,7 @@ void KProtocolProcess::NpcLockPlayerItemCommand(int nIndex, BYTE* pProtocol)
 
 void KProtocolProcess::NpcPKValueCommand(int nIndex, BYTE* pProtocol)
 {
-	if(!pProtocol) return;//add by phong kiÒu antihack
+	if(!pProtocol) return;//add by phong kiï¿½u antihack
 	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
 		return;
 

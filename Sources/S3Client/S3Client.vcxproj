@@ -243,6 +243,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClCompile Include="Ui\UiCase\UiAddPoint.cpp" />
     <ClCompile Include="Ui\UiCase\UiAffairItem.cpp" />
     <ClCompile Include="Ui\UiCase\UiMantleInlay.cpp" />
+    <ClCompile Include="Ui\UiCase\UiMantleWash.cpp" />
     <ClCompile Include="Ui\UiCase\UiAuto.cpp" />
     <ClCompile Include="Ui\UiCase\UiAutoParty.cpp" />
     <ClCompile Include="Ui\UiCase\UiAutoPlay.cpp" />
@@ -446,6 +447,7 @@ copy Release\Game.map ..\..\..\bin\Client\release\Game.map</Command>
     <ClInclude Include="Ui\UiCase\UiAddPoint.h" />
     <ClInclude Include="Ui\UiCase\UiAffairItem.h" />
     <ClInclude Include="Ui\UiCase\UiMantleInlay.h" />
+    <ClInclude Include="Ui\UiCase\UiMantleWash.h" />
     <ClInclude Include="Ui\UiCase\UiAuto.h" />
     <ClInclude Include="Ui\UiCase\UiAutoParty.h" />
     <ClInclude Include="Ui\UiCase\UiAutoPlay.h" />

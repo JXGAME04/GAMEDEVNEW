@@ -2488,4 +2488,27 @@ int LuaPF_OpenMantleInlayBox(Lua_State* L)
 	return 0;
 }
 
+// [PF13 01/09] mo panel TAY LUYEN thuoc tinh an (nType=4). Khuon y het OpenMantleInlayBox.
+int LuaPF_OpenMantleWashBox(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0)
+		return 0;
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsString(L, 3))
+		return 0;
+	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	S2C_GIVE_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_openaffairbox;
+	NetCommand.nType = 4;
+	sWStrCpy(NetCommand.Value,  Lua_ValueToString(L, 1), sizeof(NetCommand.Value));
+	sWStrCpy(NetCommand.Value1, Lua_ValueToString(L, 2), sizeof(NetCommand.Value1));
+	sWStrCpy(NetCommand.Value2, Lua_ValueToString(L, 3), sizeof(NetCommand.Value2));
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, Lua_ValueToString(L, 3),
+		sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
+	sGivePending()[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_GIVE_BOX));
+	return 0;
+}
+
 #endif // _SERVER
