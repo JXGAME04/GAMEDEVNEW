@@ -20,6 +20,10 @@
 #include	"KPlayer.h"
 #include	"KPlayerSet.h"
 #include	"KPlayerTeam.h"
+#ifdef _SERVER
+#include	"LuaLib.h"       // KPlayerBot.h khai Lua_State
+#include	"KPlayerBot.h"   // [BOTNHOM-NGUOI 01/09] PB_IsBot / PB_MoiVaoNhom
+#endif
 //#include	"MyAssert.h"
 
 enum
@@ -386,6 +390,11 @@ void	KPlayerTeam::InviteAdd(int nIdx, TEAM_INVITE_ADD_COMMAND *pAdd)
 		return;
 	int nTargetIdx = Player[nIdx].FindAroundPlayer(pAdd->m_dwNpcID);
 	if (nTargetIdx == -1)
+		return;
+	// [BOTNHOM-NGUOI 01/09] (chu game) "bot duoc nguoi choi moi vao party - neu chua co
+	// party thi vao party nguoi choi": bot khong co client de bam dong y, nen bot module
+	// tu ghi m_nInviteList + GetInviteReply(...,1) ngay tai day (khuon pb_GhepNhom).
+	if (PB_IsBot(nTargetIdx) && PB_MoiVaoNhom(nIdx, nTargetIdx))
 		return;
 	if (!Player[nTargetIdx].m_cTeam.m_bCanTeamFlag)
 	{

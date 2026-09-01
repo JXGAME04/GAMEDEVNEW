@@ -198,6 +198,10 @@ int  PB_SaveAll();                             // xep hang luu NGAY toan bo bot 
 int  PB_OnSaveFailed(int nPlayerIdx);          // Goddess vut bai luu -> hen luu lai (1 = la bot)
 // Tra 1 = da nhan la bot VA da tra loi (GameServer khong chuyen tiep nua); 0 = khong phai bot.
 int  PB_WhisperReply(const PB_WHISPER* p);
+// [BOTNHOM-NGUOI 01/09] nguoi choi THAT moi bot vao to doi - goi tu KPlayerTeam::InviteAdd
+// (server). Tra 1 = bot da tu "dong y" va vao nhom (caller return luon); 0 = tu choi ->
+// roi xuong duong cu (bot khong bat m_bCanTeamFlag nen nguoi moi thay "khong the moi").
+int  PB_MoiVaoNhom(int nMoi, int nBot);
 // Hoc bang ten -> id kenh chat (goi tu KNewProtocolProcess khi relay cap id cho
 // client). Bot can id kenh THE GIOI de chat kenh nhu ban goc linux.
 void PB_GhiNhoKenh(const char* szTen, unsigned long dwId);
