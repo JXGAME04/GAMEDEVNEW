@@ -1581,3 +1581,178 @@ Chủ: "Đường Môn có skill đánh cấp 10 dùng được toàn bộ vũ k
   ⇒ **bot ĐM cấp 10-29 sẽ dùng Phích Lịch Đạn**, cấp 30 lên Đoạt Hồn Tiêu/Truy Tâm Tiễn/Mãn
   Thiên Hoa Vũ theo họ vũ khí đang cầm.
 - ⚠️ **GameServer vẫn chạy bản 16:27 (`7f0909fc`) — CHƯA có vá này**; `d3486293` chờ RESTART.
+
+## 9.50 GỐC THẬT (2 TẦNG) CỦA "BOT ĐƯỜNG MÔN ĐI TỚI QUÁI RỒI ĐỨNG YÊN" — server `2e748b7d` ĐÃ SWAP, CHỜ RESTART (31/08 ~11:56)
+
+Điều tra bằng workflow 5 hướng + phản biện đối kháng (mọi kết luận đều `con_dung=true`, tự đọc mã/log).
+
+### TẦNG 1 — LỖI LẬP TRÌNH CỦA TÔI: đọc sai `m_DamageAttribs` (mảng THƯA)
+`m_DamageAttribs` là mảng **17 ô đánh chỉ số theo LOẠI đòn** (KSkills.cpp:2592-2704):
+`[0]attackrating [1]ignoredefense [2]MAGIC [3]seriesdamage [4]deadlystrike [5]fatallystrike
+[6]steallife [7]stealmana [8]stealstamina [9]PHYSICS [10]COLD [11]FIRE [12]LIGHTING [13]POISON
+[14]stun [16]randmove`; còn `GetDamageAttribsNum()` chỉ là **bộ đếm số ô đã điền**.
+Cả **3 vòng quét** trong KPlayerBot.cpp viết `for (a = 0; a < nDaNum; a++)` ⇒ với 303 (nDaNum=2:
+poison ở [13] + series ở [3]) chỉ đọc ô [0],[1] rỗng ⇒ **mọi phép thử đòn-phép luôn = 0**:
+- `bNoi` luôn 0 ⇒ cơ chế "nửa đàn thiên nội công" (23/08) **nằm im từ đầu**;
+- khối `DOCTHUAN` (30/08) gate trên bNoi ⇒ **không bao giờ chạy** (log DOCTHUAN = 0 đúng như đo);
+- `pb_CoChieuNoiTayKhong` luôn 0 ⇒ đường nội/ngoại (28/08) **cũng nằm im**.
+⇒ 303 không bị loại, và bậc phụ **rqTier** (rq20 > rq10) cho nó **thắng tuyệt đối** chiêu
+**45 "Phích Lịch Đạn"** (rq10, eqt-2, IsPhysical=1, tầm 400) — đúng chiêu chủ chỉ ra.
+**Vá** (`goi_va_damageattrib_thua.py`, 4 hunk): 3 phép thử `pb_DonPhepThat/pb_DonDoc/pb_DonVatLy`
+đọc **theo Ô + so ĐÚNG enum** (mảng không được memset nên không thể chỉ kiểm ≠0); DOCTHUAN tách
+độc lập khỏi bNoi (303 còn `seriesdamage_p` ở ô [3] nên phép "có attrib khác độc" của bản cũ sai).
+
+### TẦNG 2 — TƯỜNG NỘI LỰC (workflow tìm ra, tôi đã bỏ sót)
+- `duci_gu` (303): `skill_cost_v = {{1,20},{20,60}}` ⇒ **cấp kỹ năng 20 tốn 60 nội lực**.
+  Nhân vật **cấp 20 trần nội lực chỉ 45-57**. Đo `jx_auto_server.log`: **1.963/1.963 mẫu
+  `[E4_SKILL_COST] skill=303 cost=60` với mana ĐẦY nhưng < 60 — chưa một lần nào đủ.**
+- `KNpc.cpp:2604-2606` `case 1: ... if (!IsPlayer() || Cost(...))` — Cost FALSE ⇒ bỏ cả thân lệnh,
+  rơi thẳng xuống nhãn `Exit:` (2712) ⇒ **`DoStand()` = ĐỨNG YÊN**, không một dòng báo lỗi
+  (nhánh báo "hết nội lực" nằm trong `#ifndef _SERVER`). Đếm: **5.061/5.079 dòng
+  `[E4_SKILL_ABORT]` là 303 (99,6%)**; `[E3_CAST_ENTRY]` của 303 = **0** (chưa hề ra chiêu).
+- `CanCastSkill` (KSkills.cpp:195-397) **không kiểm cost** ⇒ bộ thăm dò của bot cũng không bắt được.
+- Đối chứng: chiêu 45 tốn **12 nội lực ở MỌI cấp** ⇒ luôn trả nổi. Bot phái khác cùng trả 60 nhưng
+  cấp 103-115 có bể mana ~1.000 nên vô sự ⇒ biến phân biệt là **CẤP NHÂN VẬT**, không phải phái.
+- **Vá** (`goi_va_loc_noiluc.py`, 1 hunk): pb_PickSkill **loại ứng viên có chi phí VƯỢT TRẦN tài
+  nguyên** của bot (mana/stamina/life theo `GetSkillCostType`, so với TRẦN chứ không so hiện tại).
+  Nhãn `PB_DIAG "COST=<giá>><trần>"`. Đây là bẫy CHUNG cho mọi phái/mọi cấp, không riêng ĐM.
+
+### Số liệu phân biệt (đã phản biện)
+- 303: **106.341 lần bỏ mục tiêu, 0,0000% quái mất máu**. Mọi chiêu khác: 26.316 lần bỏ,
+  **40,67% quái ĐÃ mất máu** ⇒ **không phải lỗi chung của bot**, chỉ 39 bot ĐM cấp 20-26 tê liệt.
+
+### Trạng thái
+Server **`2e748b7d`** (11:56, có `DOCTHUAN` + `DON DANH THUONG` + `COST=`) đè `448d63cc`
+(backup `.cu_3108_truoc_mana_448d63cc`). GameServer vẫn chạy bản 11:05 (`f8d819cd`) ⇒ **RESTART**.
+Chuỗi tái áp thêm CUỐI: **damageattrib_thua** → **loc_noiluc**.
+⚠️ Vá tầng 1 **kích hoạt lần đầu** đường nội/ngoại (28/08) vốn nằm im — sau restart nửa đàn của các
+phái CÓ chiêu phép thật (Nga My/Võ Đang/Côn Lôn/Thúy Yên/Cái Bang/Thiên Nhẫn) sẽ bỏ vũ khí đánh
+phép. ĐM/Thiên Vương KHÔNG bị (không có chiêu phép cùng hệ dùng tay không). Nếu chủ thấy nhóm đó
+yếu đi thì nói — gỡ bằng 1 dòng.
+
+### Nghiệm thu sau restart
+`grep "dung chieu 45" bot.log` phải có (ĐM cấp 10-29) · `[E3_CAST_ENTRY] skill=45` xuất hiện ·
+`[E4_SKILL_ABORT] skill=303` về 0 · quái bị ĐM đánh phải sụt máu · bot ĐM bắt đầu **lên cấp** ·
+`grep BotNoi bot.log` xem đường nội/ngoại có kích hoạt đúng phái không.
+
+### 9.50b ĐÍNH CHÍNH + CHẶN RỦI RO (kết quả workflow 11 agent, phản biện đối kháng)
+
+**a) ĐÍNH CHÍNH giả thuyết của tôi ở 9.49: "độc không bào mòn quái" là SAI — đã bị bác bỏ.**
+Độc chưa hề có cơ hội chạm quái: đo `jx_auto_server.log` (485.472 dòng) cho skill 303:
+`E4_SKILL_IN`=6.912 · `E4_SKILL_CANCAST`=6.912 · **`E3_CAST_ENTRY`=0 · `E3_MISSLE_BORN`=0 ·
+`E4_DMG_IN`=0** · `E4_SKILL_ABORT`=7.513/7.531 (99,8%). Chuỗi `HP 600/600` là chữ ký của chiêu
+**không bao giờ nổ**, không phải chiêu nổ mà vô hại. ⇒ KHÔNG cần điều tra hệ sát thương độc.
+
+**b) TẦNG 3 (workflow bổ sung): chính bot tự đẩy giá chiêu lên trần.**
+`KPlayerBot.cpp` khối "nâng full kỹ năng theo cấp" ép MỌI kỹ năng lên cấp = cấp nhân vật (trần 20).
+`duci_gu.skill_cost_v={{1,20},{20,60}}` ⇒ bot cấp 20 tự nâng 303 lên cấp kỹ năng 20 = **60 nội lực**,
+trong khi **người chơi thật** cấp 20 giữ 303 ở cấp kỹ năng thấp (~20 nội lực) nên **vẫn dùng được**.
+Đo: `[E3_LIST_CURLEVEL] skill=303 level=20 cur_level=20` = 1.352/1.352 mẫu.
+⇒ Cải tiến NÊN làm sau (chưa làm, chờ chủ duyệt): **giới hạn cấp nâng kỹ năng theo khả năng chi
+trả** để bot cấp thấp của MỌI phái không tự làm mình liệt (hiện chúng rơi về đòn thường — vẫn tốt
+hơn đứng yên, nhưng chưa tối ưu).
+
+**c) 🔴 CHẶN KỊP RỦI RO HUỶ VŨ KHÍ ~400 BOT (vá `goi_va_noi_hoan.py`).**
+Vá SPARSE hồi sinh `pb_CoChieuNoiTayKhong` (trước đó luôn trả 0 — `[BotNoi]` = **0 dòng trên toàn bộ
+115 MB bot.log** ⇒ đường nội/ngoại 28/08 thực tế NẰM IM từ đầu). Đầu ra của nó gác khối
+**`RemoveItemIdx` = HUỶ vũ khí đang cầm** trong `pb_TrangBiTheoCap`, đồng thời chặn phát lại.
+Đo `skills.txt × factionhead.lua` ở cấp bot 110: **8/10 phái** có chiêu phép tay-không hợp lệ
+(TL 271 · NM 80,82,91 · TY 102,113,111 · CB 122,128 · TN 145,138,148 · VĐ 153,164,165 · CL 179,182);
+ĐM + Thiên Vương an toàn. Với `pb_BotNoi = dwID&1` ⇒ **~400/1000 bot bị huỷ vũ khí ngay lần
+`pb_TrangBiTheoCap` đầu sau restart**. Chủ CHƯA duyệt việc này và nó không liên quan lỗi đang sửa
+⇒ **tạm ngắt bằng công tắc biên dịch `#define PB_BAT_DUONG_NOI 0`** trong `pb_BotNoiThat`
+(giữ nguyên hành vi đang chạy; đổi 0→1 khi muốn test riêng đường nội công).
+Xác nhận tắt thật: chuỗi `"duong NOI CONG, khong nhan vu khi"` **biến mất khỏi binary** (trình biên
+dịch loại nhánh chết).
+
+**d) TRẠNG THÁI CHỐT:** server **`74b55a4f`** (31/08 12:06) — có `COST=` (lọc nội lực) + `DOCTHUAN`
++ `DON DANH THUONG`, KHÔNG có đường nội công. Backups: `.cu_3108_truoc_sparse_f8d819cd` ·
+`.cu_3108_truoc_mana_448d63cc` · `.cu_3108_truoc_noihoan_2e748b7d`.
+GameServer vẫn chạy `f8d819cd` (11:05) ⇒ **CHỜ CHỦ RESTART**.
+Chuỗi tái áp thêm CUỐI: **damageattrib_thua** → **loc_noiluc** → **noi_hoan**.
+
+## 9.51 "NHIỀU BOT TK ĐỨNG YÊN KHÔNG ĐÁNH KHI ĐÁNH ĐÔNG" (01/09 đêm) — ĐO XONG 3 TRẬN, ĐẶT BỘ LOG [TkKet3], server `66c1f6d1` ĐÃ ĐẶT `.moi` CHỜ RESTART
+
+Chủ nghi "phần làm bot tản ra". **Đã GIẢI OAN phần tản ra** — bot kẹt chưa từng vào pha 4
+(nơi 9.42/9.43 hoạt động); `[BotSan]`/`[BotTan]` nổ bình thường (870/560 cú trận 20:50).
+
+### Số đo 3 trận 31/08 (mỗi trận 500 bot, đếm theo TÊN trên nhãn không tiết chế)
+
+| Trận (báo danh) | Thế trận | Không bao giờ "qua cua trai RA TRAN" | Thuộc phe |
+|---|---|---|---|
+| 20:50 | Tống ở trại ĐÔNG (1688,3072) | **79/500 (Tống 79/250 = 32%)** | 100% Tống |
+| 22:50 | Kim ở trại ĐÔNG | **45/500** | 100% Kim |
+| 23:46 | Tống ở trại ĐÔNG | **73/500** | 100% Tống |
+
+- Nhóm kẹt **bám theo TRẠI ĐÔNG, không theo phe**; phe trại TÂY (1242,3549): **0 con cả 3 trận**.
+- Giao trận 1 ∩ trận 3 (cùng thế trận, cùng chỉ số mảng bot): chỉ **10/79 trùng tên** ⇒ KHÔNG
+  bền theo con — yếu tố **ĐỘNG mỗi trận**, không phải ô trap gán theo chỉ số.
+- Census tóm quả tang bot đóng băng `doing=1 procAI=1 obs=0 choRa=0 mua=1` đứng nguyên MỘT ô
+  8-12+ phút ngay **vết trap cửa ra** (NguyenHieu9/CaoNam20 ô(1666,3102), LeTrung10/PhamHieu21
+  ô(1670,3103) — trùng ô giữa các trận!), tại **điểm đáp** (1242,3549)/(1688,3072) và **cạnh
+  Quân Y** (1692-1699,306x). Bot khoẻ ra trận 20-40 lần/con; bot kẹt = 0 (hỏng nhị phân).
+- Luồng cửa toàn cục vẫn khoẻ: RA TRAN 400-700 cú/phút suốt trận; "da chet" ~480/phút.
+- **Nhóm "đứng yên" thứ hai KHÔNG phải lỗi**: chu trình chết→hồi sinh→5s→mua thuốc→5s→ra cửa
+  ≈30s/vòng × ~480 chết/phút ⇒ lúc nào cũng ~220-250 con (≈nửa quân) đứng/đi trong trại —
+  churn theo thiết kế (hai quãng chờ 5s là yêu cầu chủ 21/08); muốn giảm là quyết định gameplay.
+
+### Đã LOẠI bằng mã + log (đỡ phiên sau đi lại)
+
+1. **A\* lỗi lặp**: cả đêm chỉ 22 dòng `[BotA*]` (throttle 3 dòng/s — nếu hàng chục con fail
+   mỗi tick phải thấy ~nghìn dòng).
+2. **Nhánh chờ cổng** (`GetTimerRestTimer(1)>0`): luôn nạp lại `nTkChoRa` 1-15s ⇒ census phải
+   thấy choRa>0; thực tế choRa=0 ở 45/45 mẫu con kẹt.
+3. **Đồng hồ cá nhân**: `GetRestTime` = deadline trừ `m_nLoopRate` (KSubWorldSet.cpp:91 tăng
+   mỗi khung) ⇒ tự cạn ≤90s; mobinhtk `common_tong/kim` LUÔN `StopTimer()` rồi `SetTimer(90*18,2)`
+   khi báo danh ⇒ không thể từ chối quá 90 giây sau báo danh.
+4. **Lỗi Lua trong trap**: `ExecuteScript` không nuốt lỗi; ScriptError.log = 0 dòng trap cả đêm
+   (chỉ có lỗi mantle `PushByType` nil — việc khác).
+5. **Khác kịch bản hai cửa**: `kimratrai.lua` ≡ `tongratrai.lua` về logic (diff chỉ toạ độ
+   RANDOM_POS + đảo SetDeathScript).
+
+### Phát hiện kèm (chưa vá, có log canh)
+
+- **a. "mua=1 rởm"**: khâu Quân Y — `PB_WalkTo` trả −1 (không đường) thì code đặt
+  `nTkMuaXong=1` mà **bỏ qua `bot_tk_muamau` = bỏ qua `StopTimer()`** (KPlayerBot.cpp khối
+  `!b.nTkMuaXong`). Nhãn mới `[TkKet3-MUA]` đếm ca này.
+- **b. Kẹt-vô-hình do 9.38**: vùng-an-toàn hậu doanh làm tươi `nTkTick` MỖI TICK khi bot trong
+  hộp 40 ô quanh trại (:8387) ⇒ bot kẹt trong trại **không bao giờ** bị sweeper 120s đá ⇒ kẹt
+  thành vĩnh viễn và lọt mọi thống kê KET.
+- **c. `tongtu/kimtu.lua` vừa là script BÁO DANH vừa là SetDeathScript** — mỗi cái chết nạp lại
+  `SetTimer(90*18,2)`; chu trình sống nhờ `bot_tk_muamau` StopTimer (liên quan mục a).
+
+### Bước mù cuối + bộ log [TkKet3] (`ReverseTools/goi_va_tkket3_moxe.py`, 6 hunk, CHỈ GHI LOG)
+
+Còn đúng MỘT điều không quan sát được: mỗi tick pha 3 của con kẹt kết thúc ở dòng nào
+(PB_WalkTo trả gì / cổng đóng / script trap từ chối hay SetPos hụt). 7 nhãn mới, tất cả gate
+"đứng nguyên một chỗ >60s" bằng neo toạ độ riêng (`uKet3Tick` — không dùng `nTkTick` vì mục b):
+
+| Nhãn | Trả lời |
+|---|---|
+| `[TkKet3]` (10s/con) | mọi con pha-3 đứng >60s: pos, doing, mua, choRa, **timer cá nhân**, t1 cổng |
+| `[TkKet3-QY]` (10s/con) | kẹt ở khâu đi Quân Y: nWq của PB_WalkTo |
+| `[TkKet3-MUA]` (luôn in) | đường "mua=1 rởm" — bỏ mua + bỏ StopTimer |
+| `[TkKet3-RA]` (10s/con) | kẹt ở khâu ra cửa: nW, vị trí, đích, cửa k |
+| `[TkKet3-CONG]` | qua được walk nhưng cổng đóng (t1>0) |
+| `[TkKet3-TRAP]` (15s/con) | gọi script trap: **GetRestTime đúng giá trị script sẽ đọc** + pos trước |
+| `[TkKet3-TRAP2]` | script trả về gì + có bị TỪ CHỐI (không đổi chỗ) không |
+
+### Trạng thái binary + nghiệm thu
+
+- **`CoreServer.dll.moi` = `66c1f6d1`** (01/09 00:26) đè `.moi` PF13 cũ `3d4e6f9f`
+  (backup `.moi.cu_0109_truoc_tkket3_3d4e6f9f`) — superset: đủ marker mantle/REFOAN/COST=/
+  DOCTHUAN + TkKet3×7. GameServer đang chạy `2472b5e1` (31/08 20:19) ⇒ **CHỜ CHỦ RESTART**.
+- `Client Release|Win32` biên dịch sạch (file dùng chung) — **KHÔNG deploy client**, các `.moi`
+  client PF13 giữ nguyên.
+- Chuỗi tái áp CUỐI: … → noi_hoan → **tkket3_moxe**.
+- Nghiệm thu sau restart, chơi/để chạy 1 trận TK rồi:
+
+```
+grep -c "TkKet3\]"  bot.log        # phai >0 neu con hien tuong (moi con dung >60s deu bi diem danh)
+grep "TkKet3-TRAP"  bot.log        # doc rest= : >1440 (80s*18) la thu pham dong ho; nguoc lai xem TRAP2
+grep "TkKet3-TRAP2" bot.log        # script=1 + TU CHOI lien tuc = SetPos hut / nRemain — chot goc
+grep "TkKet3-RA"    bot.log        # nW=-1 lap = A* ; nW=0 lap ma doing=1 = lenh di bi nuot
+grep "TkKet3-MUA"   bot.log        # dem ca "mua rom" (bo StopTimer)
+```
+
+  Chốt được nhánh nào thì **vá gốc nhánh đó** (chủ đã dặn không vá chữa cháy kiểu hẹn giờ).
