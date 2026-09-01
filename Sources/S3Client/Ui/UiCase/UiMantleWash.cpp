@@ -5,7 +5,7 @@
 #include "../Elem/Wnds.h"
 #include "../UiBase.h"
 #include "UiMantleWash.h"
-#include "UiAffairItem.h"	// [BOXMAU 01/09] UiAffair_EncodeDesc
+#include "UiAffairItem.h"	// UiAffair_EncodeDesc (ma hoa <color>/<enter>)
 #include "UiItem.h"
 #include "../UiSoundSetting.h"
 #include "../../../core/src/coreshell.h"
@@ -14,11 +14,241 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern iCoreShell*		g_pCoreShell;
 
-// Ten tep bo cuc (ASCII, tu tao - da chep box tay luyen VLTK vao Ui\Ui3\mantlewash.ini)
-#define	WASH_SCHEME_INI	"mantlewash.ini"
+// 3 tep bo cuc rut tu pak client VLTK (chu Viet TCVN3 giu nguyen byte, spr doi sang ASCII)
+#define	WASH_INI_MAIN		"mantleimplicit_main.ini"
+#define	WASH_INI_SHIFT		"mantleimplicit_pageshift.ini"
+#define	WASH_INI_ACTIVATE	"mantleimplicit_pageactivate.ini"
 
 KUiMantleWash* KUiMantleWash::m_pSelf = NULL;
 
+// Doc khoa Text cua mot section (co the dai > 256) roi ma hoa the, do vao listbox.
+static void sNapMoTa(KIniFile* pIni, const char* pSection, KWndMessageListBox& Box)
+{
+	char szRaw[1024];
+	szRaw[0] = 0;
+	Box.Clear();
+	if (!pIni->GetString(pSection, "Text", "", szRaw, sizeof(szRaw)))
+		return;
+	if (!szRaw[0])
+		return;
+	char szDesc[1200];
+	int nLen = UiAffair_EncodeDesc(szRaw, szDesc, sizeof(szDesc));
+	if (nLen > 0)
+		Box.AddOneMessage(szDesc, nLen);
+}
+
+// Dat mot day thanh/chu theo template (Left/Top/StepY) - khuon VLTK.
+static void sDatTheoTemplate(KIniFile* pIni, const char* pSection, KWndWindow* pWnd, int nIdx)
+{
+	int nL = 0, nT = 0, nStep = 22;
+	pIni->GetInteger(pSection, "Left", 0, &nL);
+	pIni->GetInteger(pSection, "Top", 0, &nT);
+	pIni->GetInteger(pSection, "StepY", 22, &nStep);
+	pWnd->SetPosition(nL, nT + nIdx * nStep);
+}
+
+// ======================= TRANG 1 =======================
+KUiMantleWashPageShift::KUiMantleWashPageShift()
+{
+}
+
+void KUiMantleWashPageShift::Initialize()
+{
+	AddChild(&m_ImgBg);
+	int i;
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_BarBefore[i]);
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_BarAfter[i]);
+	AddChild(&m_ImgArrow);
+	AddChild(&m_ImgItemFrame);
+	AddChild(&m_DescTitle);
+	AddChild(&m_Desc);
+	AddChild(&m_TxtBeforeHdr);
+	AddChild(&m_TxtAfterHdr);
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_TxtBefore[i]);
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_TxtAfter[i]);
+	AddChild(&m_TxtConsume);
+	AddChild(&m_BtnKeep);
+	AddChild(&m_BtnApply);
+	AddChild(&m_BtnWash);
+	AddChild(&m_ItemSlot);
+	m_ItemSlot.SetContainerId((int)UOC_AFFAIR_ITEM);
+}
+
+void KUiMantleWashPageShift::LoadScheme(const char* pScheme)
+{
+	char		Buff[256];
+	KIniFile	Ini;
+	sprintf(Buff, "%s\\%s", pScheme, WASH_INI_SHIFT);
+	if (!Ini.Load(Buff))
+		return;
+	Init(&Ini, "Main");
+	m_ImgBg.Init(&Ini, "ImgBg");
+	m_DescTitle.Init(&Ini, "DescTitle");
+	m_Desc.Init(&Ini, "Desc");
+	sNapMoTa(&Ini, "Desc", m_Desc);
+	m_TxtBeforeHdr.Init(&Ini, "TxtAttribBefore");
+	m_TxtAfterHdr.Init(&Ini, "TxtAttribAfter");
+	m_ImgArrow.Init(&Ini, "ImgArrow");
+	m_ImgItemFrame.Init(&Ini, "ImgItemFrame");
+	m_ItemSlot.Init(&Ini, "ObjBoxItem");
+	m_ItemSlot.EnablePickPut(true);
+	m_TxtConsume.Init(&Ini, "TxtConsume");
+	m_BtnKeep.Init(&Ini, "BtnRemain");
+	m_BtnApply.Init(&Ini, "BtnApply");
+	m_BtnWash.Init(&Ini, "BtnKeepOn");
+
+	// day thanh + chu theo template; chu dat TUONG DOI so voi thanh (Left/Top cua _Txt)
+	int nTxL = 0, nTxT = 0;
+	int i;
+	Ini.GetInteger("AttribBefore_ItemTemplate_Txt", "Left", 0, &nTxL);
+	Ini.GetInteger("AttribBefore_ItemTemplate_Txt", "Top", 0, &nTxT);
+	for (i = 0; i < PF_WASH_LINE; i++)
+	{
+		m_BarBefore[i].Init(&Ini, "AttribBefore_ItemTemplate");
+		sDatTheoTemplate(&Ini, "AttribBefore_ItemTemplate", &m_BarBefore[i], i);
+		m_TxtBefore[i].Init(&Ini, "AttribBefore_ItemTemplate_Txt");
+		int x = 0, y = 0;
+		m_BarBefore[i].GetPosition(&x, &y);
+		m_TxtBefore[i].SetPosition(x + nTxL + 3, y + nTxT);
+		m_TxtBefore[i].SetText("");
+	}
+	Ini.GetInteger("AttribAfter_ItemTemplate_Txt", "Left", 0, &nTxL);
+	Ini.GetInteger("AttribAfter_ItemTemplate_Txt", "Top", 0, &nTxT);
+	for (i = 0; i < PF_WASH_LINE; i++)
+	{
+		m_BarAfter[i].Init(&Ini, "AttribAfter_ItemTemplate");
+		sDatTheoTemplate(&Ini, "AttribAfter_ItemTemplate", &m_BarAfter[i], i);
+		m_TxtAfter[i].Init(&Ini, "AttribAfter_ItemTemplate_Txt");
+		int x = 0, y = 0;
+		m_BarAfter[i].GetPosition(&x, &y);
+		m_TxtAfter[i].SetPosition(x + nTxL + 3, y + nTxT);
+		m_TxtAfter[i].SetText("");
+	}
+}
+
+void KUiMantleWashPageShift::VeHaiCot(const char szTruoc[PF_WASH_LINE][128], const char szSau[PF_WASH_LINE][128])
+{
+	for (int i = 0; i < PF_WASH_LINE; i++)
+	{
+		m_TxtBefore[i].SetText(szTruoc[i]);
+		m_TxtAfter[i].SetText(szSau[i]);
+	}
+}
+
+int KUiMantleWashPageShift::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+	if (uMsg == WND_N_ITEM_PICKDROP)
+	{
+		if (KUiMantleWash::Instance())
+			KUiMantleWash::Instance()->OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
+		return 0;
+	}
+	// nut trong trang: KWndPage chuyen WND_N_BUTTON_CLICK len cha (KUiMantleWash)
+	return KWndPage::WndProc(uMsg, uParam, nParam);
+}
+
+// ======================= TRANG 2 =======================
+KUiMantleWashPageActivate::KUiMantleWashPageActivate()
+{
+}
+
+void KUiMantleWashPageActivate::Initialize()
+{
+	AddChild(&m_ImgBg);
+	int i;
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_AttrBgInactive[i]);
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_AttrBgActive[i]);
+	AddChild(&m_ImgItemFrame);
+	AddChild(&m_DescTitle);
+	AddChild(&m_Desc);
+	for (i = 0; i < PF_WASH_LINE; i++)
+		AddChild(&m_AttrTxt[i]);
+	AddChild(&m_TxtActivate);
+	AddChild(&m_TxtConsume);
+	AddChild(&m_BtnActivate);
+	AddChild(&m_ItemSlot);
+	m_ItemSlot.SetContainerId((int)UOC_AFFAIR_ITEM);
+}
+
+void KUiMantleWashPageActivate::LoadScheme(const char* pScheme)
+{
+	char		Buff[256];
+	KIniFile	Ini;
+	sprintf(Buff, "%s\\%s", pScheme, WASH_INI_ACTIVATE);
+	if (!Ini.Load(Buff))
+		return;
+	Init(&Ini, "Main");
+	m_ImgBg.Init(&Ini, "ImgBg");
+	m_DescTitle.Init(&Ini, "DescTitle");
+	m_Desc.Init(&Ini, "Desc");
+	sNapMoTa(&Ini, "Desc", m_Desc);
+	m_ImgItemFrame.Init(&Ini, "ImgItemFrame");
+	m_ItemSlot.Init(&Ini, "ObjBoxItem");
+	m_ItemSlot.EnablePickPut(true);
+	m_TxtActivate.Init(&Ini, "TxtActivate");
+	m_TxtConsume.Init(&Ini, "TxtConsume");
+	m_BtnActivate.Init(&Ini, "BtnActivate");
+	// JX1: dong an luon hieu luc, khong co co che kich hoat co thoi han -> tat nut
+	m_BtnActivate.Enable(FALSE);
+
+	int nTxL = 0, nTxT = 0;
+	Ini.GetInteger("Attrib_Template_Desc", "Left", 0, &nTxL);
+	Ini.GetInteger("Attrib_Template_Desc", "Top", 0, &nTxT);
+	for (int i = 0; i < PF_WASH_LINE; i++)
+	{
+		m_AttrBgInactive[i].Init(&Ini, "Attrib_Template_Bg");
+		sDatTheoTemplate(&Ini, "Attrib_Template", &m_AttrBgInactive[i], i);
+		m_AttrBgActive[i].Init(&Ini, "Attrib_Template_BgActive");
+		sDatTheoTemplate(&Ini, "Attrib_Template", &m_AttrBgActive[i], i);
+		m_AttrBgActive[i].Hide();
+		m_AttrTxt[i].Init(&Ini, "Attrib_Template_Desc");
+		int x = 0, y = 0;
+		m_AttrBgInactive[i].GetPosition(&x, &y);
+		m_AttrTxt[i].SetPosition(x + nTxL, y + nTxT);
+		m_AttrTxt[i].SetText("");
+	}
+}
+
+void KUiMantleWashPageActivate::VeDongAn(const char szDong[PF_WASH_LINE][128], int nCo)
+{
+	for (int i = 0; i < PF_WASH_LINE; i++)
+	{
+		bool bCo = (i < nCo && szDong[i][0] != 0);
+		m_AttrTxt[i].SetText(bCo ? szDong[i] : "");
+		// co dong -> nen "da kich hoat" + chu xanh; khong -> nen "chua kich hoat" + chu xam
+		if (bCo)
+		{
+			m_AttrBgActive[i].Show();
+			m_AttrBgInactive[i].Hide();
+			m_AttrTxt[i].SetTextColor((::GetColor("HGreen") & 0xFFFFFF));
+		}
+		else
+		{
+			m_AttrBgActive[i].Hide();
+			m_AttrBgInactive[i].Show();
+			m_AttrTxt[i].SetTextColor((::GetColor("Gray") & 0xFFFFFF));
+		}
+	}
+}
+
+int KUiMantleWashPageActivate::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
+{
+	if (uMsg == WND_N_ITEM_PICKDROP)
+	{
+		if (KUiMantleWash::Instance())
+			KUiMantleWash::Instance()->OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
+		return 0;
+	}
+	return KWndPage::WndProc(uMsg, uParam, nParam);
+}
+
+// ======================= KHUNG CHA =======================
 KUiMantleWash::KUiMantleWash()
 {
 	m_szFunc[0] = 0;
@@ -41,18 +271,7 @@ KUiMantleWash* KUiMantleWash::OpenWindow(const char* pszTitle, const char* pszIn
 		if (!KUiItem::GetIfVisible())
 			KUiItem::OpenWindow();
 
-		if (pszTitle && pszTitle[0])
-			m_pSelf->m_Title.SetText(pszTitle);
-		m_pSelf->m_Desc.Clear();
-		if (pszInitString && pszInitString[0])
-		{
-			// [BOXMAU 01/09] ma hoa the <color> truoc khi do vao khung mo ta
-			char szDesc[600];
-			int nDescLen = UiAffair_EncodeDesc(pszInitString, szDesc, sizeof(szDesc));
-			if (nDescLen > 0)
-				m_pSelf->m_Desc.AddOneMessage(szDesc, nDescLen);
-		}
-
+		// Tieu de + mo ta lay tu ini (dung chu VLTK); tham so Lua chi giu ten ham nop.
 		m_pSelf->m_szFunc[0] = 0;
 		if (pszFunc)
 		{
@@ -63,6 +282,7 @@ KUiMantleWash* KUiMantleWash::OpenWindow(const char* pszTitle, const char* pszIn
 		for (int i = 0; i < PF_WASH_LINE; i++)
 			m_pSelf->m_szTruoc[i][0] = 0;
 
+		m_pSelf->ActivePage(0);
 		m_pSelf->UpdateData();
 		m_pSelf->BringToTop();
 		m_pSelf->Show();
@@ -96,32 +316,19 @@ KUiMantleWash* KUiMantleWash::GetIfVisible()
 
 void KUiMantleWash::Initialize()
 {
-	// Bo cuc don lop (khac box kham 2 lop): moi thanh phan la con truc tiep cua Main.
-	// Thu tu AddChild = thu tu ve: nen/khung truoc, o dat do + chu sau cung.
-	AddChild(&m_ImgBg);
-	AddChild(&m_ImgArrow);
-	AddChild(&m_ImgItemFrame);
-	AddChild(&m_Close);
 	AddChild(&m_Title);
-	AddChild(&m_Desc);
-	AddChild(&m_TxtBeforeHdr);
-	AddChild(&m_TxtAfterHdr);
-	int i;
-	for (i = 0; i < PF_WASH_LINE; i++)
-		AddChild(&m_TxtBefore[i]);
-	for (i = 0; i < PF_WASH_LINE; i++)
-		AddChild(&m_TxtAfter[i]);
-	AddChild(&m_TxtConsume);
-	AddChild(&m_BtnWash);
-	AddChild(&m_BtnKeep);
-	AddChild(&m_BtnApply);
-	AddChild(&m_ItemSlot);		// o dat do ve tren cung
+	AddChild(&m_Close);
+	AddChild(&m_TabBtn[0]);
+	AddChild(&m_TabBtn[1]);
+
+	m_PageShift.Initialize();
+	AddPage(&m_PageShift, &m_TabBtn[0]);
+	m_PageActivate.Initialize();
+	AddPage(&m_PageActivate, &m_TabBtn[1]);
 
 	char Scheme[256];
 	g_UiBase.GetCurSchemePath(Scheme, 256);
 	LoadScheme(Scheme);
-
-	m_ItemSlot.SetContainerId((int)UOC_AFFAIR_ITEM);
 
 	Wnd_AddWindow(this);
 }
@@ -132,49 +339,17 @@ void KUiMantleWash::LoadScheme(const char* pScheme)
 		return;
 	char		Buff[256];
 	KIniFile	Ini;
-	sprintf(Buff, "%s\\%s", pScheme, WASH_SCHEME_INI);
+	sprintf(Buff, "%s\\%s", pScheme, WASH_INI_MAIN);
 	if (!Ini.Load(Buff))
 		return;
 
 	m_pSelf->Init(&Ini, "Main");
-	m_pSelf->m_ImgBg.Init(&Ini, "ImgBg");
-	m_pSelf->m_ImgArrow.Init(&Ini, "ImgArrow");
-	m_pSelf->m_ImgItemFrame.Init(&Ini, "ImgItemFrame");
-	m_pSelf->m_Title.Init(&Ini, "DescTitle");
-	m_pSelf->m_Desc.Init(&Ini, "Desc");
-	m_pSelf->m_TxtBeforeHdr.Init(&Ini, "TxtAttribBefore");
-	m_pSelf->m_TxtAfterHdr.Init(&Ini, "TxtAttribAfter");
-	m_pSelf->m_TxtConsume.Init(&Ini, "TxtConsume");
-	m_pSelf->m_ItemSlot.Init(&Ini, "ObjBoxItem");
-	m_pSelf->m_ItemSlot.EnablePickPut(true);
-	m_pSelf->m_BtnWash.Init(&Ini, "BtnKeepOn");
-	m_pSelf->m_BtnKeep.Init(&Ini, "BtnRemain");
-	m_pSelf->m_BtnApply.Init(&Ini, "BtnApply");
-	m_pSelf->m_Close.Init(&Ini, "CloseBtn");
-
-	// 2 dong an moi cot: dat theo o goc cua template + buoc StepY (giong VLTK).
-	int nBx = 0, nBy = 0, nStepB = 22, nBw = 160, nBh = 18;
-	int nAx = 0, nAy = 0, nStepA = 22, nAw = 160, nAh = 18;
-	Ini.GetInteger("AttribBefore_ItemTemplate", "Left", 9, &nBx);
-	Ini.GetInteger("AttribBefore_ItemTemplate", "Top", 39, &nBy);
-	Ini.GetInteger("AttribBefore_ItemTemplate", "StepY", 22, &nStepB);
-	Ini.GetInteger("AttribBefore_ItemTemplate", "Width", 160, &nBw);
-	Ini.GetInteger("AttribAfter_ItemTemplate", "Left", 185, &nAx);
-	Ini.GetInteger("AttribAfter_ItemTemplate", "Top", 39, &nAy);
-	Ini.GetInteger("AttribAfter_ItemTemplate", "StepY", 22, &nStepA);
-	Ini.GetInteger("AttribAfter_ItemTemplate", "Width", 160, &nAw);
-	int i;
-	for (i = 0; i < PF_WASH_LINE; i++)
-	{
-		m_pSelf->m_TxtBefore[i].SetPosition(nBx + 4, nBy + i * nStepB);
-		m_pSelf->m_TxtBefore[i].SetSize(nBw, nBh);
-		m_pSelf->m_TxtBefore[i].SetTextColor((::GetColor("Gray") & 0xFFFFFF));
-		m_pSelf->m_TxtBefore[i].SetText("");
-		m_pSelf->m_TxtAfter[i].SetPosition(nAx + 4, nAy + i * nStepA);
-		m_pSelf->m_TxtAfter[i].SetSize(nAw, nAh);
-		m_pSelf->m_TxtAfter[i].SetTextColor((::GetColor("HGreen") & 0xFFFFFF));
-		m_pSelf->m_TxtAfter[i].SetText("");
-	}
+	m_pSelf->m_Title.Init(&Ini, "Title");
+	m_pSelf->m_Close.Init(&Ini, "Close");
+	m_pSelf->m_TabBtn[0].Init(&Ini, "PageButton_0");
+	m_pSelf->m_TabBtn[1].Init(&Ini, "PageButton_1");
+	m_pSelf->m_PageShift.LoadScheme(pScheme);
+	m_pSelf->m_PageActivate.LoadScheme(pScheme);
 
 	if (SCREEN_WIDTH > 0 && SCREEN_HEIGHT > 0)
 	{
@@ -187,46 +362,61 @@ void KUiMantleWash::LoadScheme(const char* pScheme)
 
 int KUiMantleWash::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 {
-	int nRet = 0;
 	switch (uMsg)
 	{
 	case WND_N_BUTTON_CLICK:
-		if (uParam == (unsigned int)(KWndWindow*)&m_BtnWash)
-			OnWash();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnKeep)
-			OnKeepOld();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_BtnApply)
-			OnApplyNew();
-		else if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		if (uParam == (unsigned int)(KWndWindow*)&m_Close)
+		{
 			CloseWindow(true);
-		break;
+			return 0;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnWash)
+		{
+			OnWash();
+			return 0;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnKeep)
+		{
+			OnKeepOld();
+			return 0;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_PageShift.m_BtnApply)
+		{
+			OnApplyNew();
+			return 0;
+		}
+		if (uParam == (unsigned int)(KWndWindow*)&m_PageActivate.m_BtnActivate)
+			return 0;	// JX1 khong co kich hoat co thoi han
+		// con lai: 2 nut tab -> KWndPageSet tu doi trang
+		return KWndPageSet::WndProc(uMsg, uParam, nParam);
 	case WM_KEYDOWN:
 		if (uParam == VK_ESCAPE)
 		{
 			CloseWindow(true);
-			nRet = 1;
+			return 1;
 		}
 		break;
 	case WND_N_ITEM_PICKDROP:
 		OnItemPickDrop((ITEM_PICKDROP_PLACE*)uParam, (ITEM_PICKDROP_PLACE*)nParam);
-		break;
+		return 0;
 	default:
-		return KWndImage::WndProc(uMsg, uParam, nParam);
+		break;
 	}
-	return nRet;
+	return KWndPageSet::WndProc(uMsg, uParam, nParam);
 }
 
-// Bam "Tay luyen": chup dong an HIEN TAI lam cot TRUOC, roi goi ham Lua roll.
+// "Tay luyen": chup dong an HIEN TAI lam cot TRUOC, roi goi ham Lua roll.
 void KUiMantleWash::OnWash()
 {
-	// chup 2 dong hien tai (truoc khi roll) -> cot trai
 	char szDong[PF_WASH_LINE][128];
-	int nCo = LayDongAn(szDong);
-	int i;
-	for (i = 0; i < PF_WASH_LINE; i++)
+	int nCo = LayDongAn(m_PageShift.m_ItemSlot, szDong);
+	for (int i = 0; i < PF_WASH_LINE; i++)
 	{
 		if (i < nCo)
-			strncpy(m_szTruoc[i], szDong[i], sizeof(m_szTruoc[i]) - 1), m_szTruoc[i][sizeof(m_szTruoc[i]) - 1] = 0;
+		{
+			strncpy(m_szTruoc[i], szDong[i], sizeof(m_szTruoc[i]) - 1);
+			m_szTruoc[i][sizeof(m_szTruoc[i]) - 1] = 0;
+		}
 		else
 			m_szTruoc[i][0] = 0;
 	}
@@ -235,14 +425,12 @@ void KUiMantleWash::OnWash()
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)m_szFunc);
 }
 
-// "Giu nguyen": khoi phuc dong cu (Lua doWashKeep)
 void KUiMantleWash::OnKeepOld()
 {
 	if (g_pCoreShell)
 		g_pCoreShell->OperationRequest(GOI_ADD_UI_CMD_SCRIPT, 1, (unsigned int)"doWashKeep");
 }
 
-// "Ap dung": giu dong moi (da ghi) -> chi dong box
 void KUiMantleWash::OnApplyNew()
 {
 	if (g_pCoreShell)
@@ -297,13 +485,14 @@ void KUiMantleWash::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_
 
 void KUiMantleWash::UpdateData()
 {
-	m_ItemSlot.Celar();		// ten ham goc viet sai chinh ta, giu nguyen
+	m_PageShift.m_ItemSlot.Celar();		// ten ham goc viet sai chinh ta, giu nguyen
+	m_PageActivate.m_ItemSlot.Celar();
 	if (!g_pCoreShell)
 		return;
 	int nCount = g_pCoreShell->GetGameData(GDI_AFFAIR_ITEM, 0, 0);
 	if (nCount <= 0)
 	{
-		VeHaiCot();
+		VeLai();
 		return;
 	}
 	KUiObjAtRegion* pObjs = (KUiObjAtRegion*)malloc(sizeof(KUiObjAtRegion) * nCount);
@@ -327,21 +516,26 @@ void KUiMantleWash::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 	if (pItem->Region.v != 0)
 		return;
 	if (bAdd)
-		m_ItemSlot.HoldObject(pItem->Obj.uGenre, pItem->Obj.uId, pItem->Region.Width, pItem->Region.Height);
+	{
+		m_PageShift.m_ItemSlot.HoldObject(pItem->Obj.uGenre, pItem->Obj.uId, pItem->Region.Width, pItem->Region.Height);
+		m_PageActivate.m_ItemSlot.HoldObject(pItem->Obj.uGenre, pItem->Obj.uId, pItem->Region.Width, pItem->Region.Height);
+	}
 	else
-		m_ItemSlot.Celar();
-	VeHaiCot();
+	{
+		m_PageShift.m_ItemSlot.Celar();
+		m_PageActivate.m_ItemSlot.Celar();
+	}
+	VeLai();
 }
 
-// Doc 2 dong an (khe 6-7) cua phi phong dang trong o -> text. Tra so dong.
-int KUiMantleWash::LayDongAn(char szDong[PF_WASH_LINE][128])
+int KUiMantleWash::LayDongAn(KWndObjectBox& Slot, char szDong[PF_WASH_LINE][128])
 {
 	for (int i = 0; i < PF_WASH_LINE; i++)
 		szDong[i][0] = 0;
 	if (!g_pCoreShell)
 		return 0;
 	KUiDraggedObject Obj;
-	m_ItemSlot.GetObject(Obj);
+	Slot.GetObject(Obj);
 	if (Obj.uId == 0)
 		return 0;
 	char szBuf[512];
@@ -349,17 +543,12 @@ int KUiMantleWash::LayDongAn(char szDong[PF_WASH_LINE][128])
 	int nCo = g_pCoreShell->GetGameData(GDI_MANTLE_HIDDEN_DESC, (unsigned int)Obj.uId, (int)szBuf);
 	if (nCo <= 0)
 		return 0;
-	// tach theo '\n'
 	int nLine = 0;
 	char* p = szBuf;
 	while (p && *p && nLine < PF_WASH_LINE)
 	{
 		char* q = strchr(p, '\n');
-		int nLen;
-		if (q)
-			nLen = (int)(q - p);
-		else
-			nLen = (int)strlen(p);
+		int nLen = q ? (int)(q - p) : (int)strlen(p);
 		if (nLen > 127)
 			nLen = 127;
 		memcpy(szDong[nLine], p, nLen);
@@ -372,23 +561,15 @@ int KUiMantleWash::LayDongAn(char szDong[PF_WASH_LINE][128])
 	return nLine;
 }
 
-void KUiMantleWash::VeHaiCot()
+// Ve lai ca 2 trang tu item dang trong o.
+void KUiMantleWash::VeLai()
 {
 	char szNay[PF_WASH_LINE][128];
-	int nCo = LayDongAn(szNay);
-	int i;
-	// cot PHAI = dong HIEN TAI cua item
-	for (i = 0; i < PF_WASH_LINE; i++)
-		m_TxtAfter[i].SetText(i < nCo ? szNay[i] : "");
-	// cot TRAI: neu da tay it nhat 1 lan thi hien snapshot truoc; chua tay thi = hien tai
+	int nCo = LayDongAn(m_PageShift.m_ItemSlot, szNay);
+	// cot PHAI = dong hien tai; cot TRAI = snapshot neu da tay, khong thi = hien tai
 	if (m_bDaTay)
-	{
-		for (i = 0; i < PF_WASH_LINE; i++)
-			m_TxtBefore[i].SetText(m_szTruoc[i]);
-	}
+		m_PageShift.VeHaiCot(m_szTruoc, szNay);
 	else
-	{
-		for (i = 0; i < PF_WASH_LINE; i++)
-			m_TxtBefore[i].SetText(i < nCo ? szNay[i] : "");
-	}
+		m_PageShift.VeHaiCot(szNay, szNay);
+	m_PageActivate.VeDongAn(szNay, nCo);
 }
