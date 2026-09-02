@@ -1141,14 +1141,22 @@ BOOL KNpc::ProcessState()
 		
 		if (m_StunState.nTime <= 0)
 		{
-			m_CurrentLife += m_CurrentLifeReplenish + (m_CurrentLifeReplenish * m_CurrentLifeReplenishPercent / MAX_PERCENT);
+			// [HOASON 02/09] CHUAN LINUX 0x0808B65F-0x0808B6BD (log 'AddLife: %d * %d%% = %d'): % hoi (lifereplenish_p) CHI nhan
+			// khi tong hoi > 0; hoi AM (rut mau) cong thang, khong nhan %.
+			if (m_CurrentLifeReplenish > 0)
+				m_CurrentLife += m_CurrentLifeReplenish * (MAX_PERCENT + m_CurrentLifeReplenishPercent) / MAX_PERCENT;
+			else
+				m_CurrentLife += m_CurrentLifeReplenish;
 			if (m_CurrentLife > m_CurrentLifeMax)
 				m_CurrentLife = m_CurrentLifeMax;
 			else if(m_CurrentLife < 0)
 				m_CurrentLife = 0;
 		
-			// [PF 31/08k] manareplenish_p (254): hoi noi luc theo %, doi xung voi ve % cua sinh luc o tren
-			m_CurrentMana += m_CurrentManaReplenish + (m_CurrentManaReplenish * m_CurrentManaReplenishPercent / MAX_PERCENT);
+			// [HOASON 02/09] CHUAN LINUX 0x0808B6FA-0x0808B721: noi luc += (hoi goc + tong manareplenish_v) KHONG nhan %.
+			// manareplenish_p ([0x119c]) o Linux CHI nhan vao thuoc hoi noi luc theo thoi gian (0x0808B826 'AddManaState') - xem m_ManaState.
+			// Ban cu R + R*p/100: Kiem Tong Hoa Son (1349/1364/1369: v = -10000, p = -200) ra (goc-10000)*(-1) = +9950/nhip -> DAY noi luc,
+			// nguoc voi Linux (rut ve 0 - Kiem Tong khong dung noi luc). Cac phai khac p = 0 -> khong doi.
+			m_CurrentMana += m_CurrentManaReplenish;
 			if (m_CurrentMana > m_CurrentManaMax)
 				m_CurrentMana = m_CurrentManaMax;
 			else if(m_CurrentMana < 0)
@@ -1401,7 +1409,8 @@ BOOL KNpc::ProcessState()
 		m_ManaState.nTime--;
 		if (!(m_ManaState.nTime % GAME_UPDATE_TIME))
 		{
-			m_CurrentMana += m_ManaState.nValue[0];
+			// [HOASON 02/09] Linux 0x0808B826 ('AddManaState: %d * %d%% = %d'): thuoc hoi noi luc theo thoi gian nhan manareplenish_p
+			m_CurrentMana += m_ManaState.nValue[0] * (MAX_PERCENT + m_CurrentManaReplenishPercent) / MAX_PERCENT;
 			if (m_CurrentMana > m_CurrentManaMax)
 			{
 				m_CurrentMana = m_CurrentManaMax;
@@ -3302,89 +3311,116 @@ void KNpc::ModifyAttrib(int nAttacker, void* pData)
 }
 
 #ifdef _SERVER
-void KNpc::ReplySkill(int nLauncher)	// [HOASON 01/09e]
+// [HOASON 02/09] TU PHONG NHAM MUC TIEU (autoreply loai 1 -> ke danh; autoattack loai 0 -> nan nhan).
+// Linux Fire 0x08188BB0: sau Cast (0x080EA920) PHAT GOI skillcast 0x85 (0x0807A870) cho ca vung. JX1 dot e chi Cast tren may
+// chu: JX1 KHONG dong bo tung vien dan, client chi tu mo phong dan khi nhan s2c_skillcast/s2c_castskilldirectly => nguoi choi
+// thay muc tieu mat mau (log S4-MSL-HIT 1363) ma KHONG THAY 3 kiem bay => 'skill chua co tac dung'. Nay phat s2c_castskilldirectly
+// (client s2cDirectlyCastSkill: nMpsX=-1, nMpsY=ID muc tieu -> Cast tai vi tri muc tieu, ap dung ca cho chinh nguoi choi).
+void KNpc::CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget)
+{
+	if (!m_Index || m_RegionIndex < 0)
+		return;
+	if (nSkillId <= 0 || nSkillId >= MAX_SKILL || nSkillLevel <= 0 || nSkillLevel >= MAX_SKILLLEVEL)
+		return;
+	if (nTarget <= 0 || nTarget >= MAX_NPC || Npc[nTarget].m_Index <= 0 || Npc[nTarget].m_SubWorldIndex != m_SubWorldIndex)
+		return;
+	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
+	if (!pSkill)
+		return;
+	NPC_SKILL_SYNC SkillCmd;
+	SkillCmd.ProtocolType = s2c_castskilldirectly;
+	SkillCmd.ID = m_dwID;
+	SkillCmd.nSkillID = nSkillId;
+	SkillCmd.nSkillLevel = nSkillLevel;
+	SkillCmd.nMpsX = -1;
+	SkillCmd.nMpsY = Npc[nTarget].m_dwID;
+	static const POINT POff[8] = { {0, 32}, {-16, 32}, {-16, 0}, {-16, -32}, {0, -32}, {16, -32}, {16, 0}, {16, 32} };
+	int nMaxCount = MAX_BROADCAST_COUNT;
+	CURREGION.BroadCast(&SkillCmd, sizeof(SkillCmd), nMaxCount, m_MapX, m_MapY);
+	for (int i = 0; i < 8; i++)
+	{
+		if (CONREGIONIDX(i) == -1)
+			continue;
+		CONREGION(i).BroadCast(&SkillCmd, sizeof(SkillCmd), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
+	}
+	pSkill->Cast(m_Index, -1, nTarget);
+}
+
+// [HOASON 02/09] autoreplyskill: Linux Fire(+0x1850, chu, KE DANH) tai ReceiveDamage 0x0808B4F9 (mot lan moi don, quan he DICH).
+// loai 1 -> muc tieu = ke danh (1364 Doat Menh -> 1363 Thai Nhac Tam Thanh Phong bay ve ke danh), khac -> chinh minh.
+// ty le: rate > Random(100); hoi chieu: NextCast = now + wait (khung).
+void KNpc::ReplySkill(int nLauncher)
 {
 	if (!m_Index)
 		return;
-
 	if (m_Doing == do_death || m_Doing == do_revive)
 		return;
-
 	for (int i = 0; i < MAX_AUTOSKILL; i ++)
 	{
-		if (m_ReplySkill[i].nSkillId > 0 && m_ReplySkill[i].nSkillId < MAX_SKILL && 
-			m_ReplySkill[i].nSkillLevel > 0 && m_ReplySkill[i].nSkillLevel < MAX_SKILLLEVEL)
-		{
-			if (m_ReplySkill[i].dwNextCastTime < SubWorld[m_SubWorldIndex].m_dwCurrentTime)
-			{
-				if (g_RandPercent(m_ReplySkill[i].nRate))
-				{
-					// [HOASON 01/09e] Linux 0x08188D0B: loai 1 -> muc tieu = ke danh (Doat Menh 1364 -> 1363 Thai Nhac Tam Thanh Phong bay ve phia ke danh),
-					// loai khac -> chinh minh. Chieu dan (1363) can muc tieu nen Cast(m_Index, -1, nTarget) nhu AttackSkill.
-					KSkill* pReply = (m_ReplySkill[i].nType == 1) ? (KSkill*)g_SkillManager.GetSkill(m_ReplySkill[i].nSkillId, m_ReplySkill[i].nSkillLevel) : NULL;
-					if (pReply && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0)
-						pReply->Cast(m_Index, -1, nLauncher);	// loai 1: bay ve phia ke danh (Linux)
-					else
-						this->Cast(m_ReplySkill[i].nSkillId, m_ReplySkill[i].nSkillLevel);	// loai khac: nhu cu (tu buff len minh)
-					m_ReplySkill[i].dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + m_ReplySkill[i].nWaitCastTime;
-				}
-			}
-		}
+		KMagicAutoSkill& rA = m_ReplySkill[i];
+		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
+			continue;
+		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+			continue;
+		if (!g_RandPercent(rA.nRate))
+			continue;
+		if (rA.nType == 1 && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0)
+			CastAutoSkillAt(rA.nSkillId, rA.nSkillLevel, nLauncher);
+		else
+			this->Cast(rA.nSkillId, rA.nSkillLevel);	// nham minh (Cast(id,cap) da phat s2c_castskilldirectly)
+		rA.dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + rA.nWaitCastTime;
 	}
 }
 
-void KNpc::RescueSkill()
+// [HOASON 02/09] autorescueskill: Linux Fire(+0x1898, chu, ke danh) khi mau VUOT XUONG duoi 25% max (BeHurt 0x0808A003,
+// ReceiveDamage 0x0808B0E3). loai 1 -> nham ke danh, khac -> chinh minh (1365 Tu Ha Kiem Khi -> 1366 loai 0).
+void KNpc::RescueSkill(int nAttacker)
 {
 	if (!m_Index)
 		return;
-
 	if (m_Doing == do_death || m_Doing == do_revive)
 		return;
-
 	for (int i = 0; i < MAX_AUTOSKILL; i ++)
 	{
-		if (m_RescueSkill[i].nSkillId > 0 && m_RescueSkill[i].nSkillId < MAX_SKILL && 
-			m_RescueSkill[i].nSkillLevel > 0 && m_RescueSkill[i].nSkillLevel < MAX_SKILLLEVEL)
-		{
-			if (m_RescueSkill[i].dwNextCastTime < SubWorld[m_SubWorldIndex].m_dwCurrentTime)
-			{
-				if (g_RandPercent(m_RescueSkill[i].nRate))
-				{
-					this->Cast(m_RescueSkill[i].nSkillId, m_RescueSkill[i].nSkillLevel);
-					m_RescueSkill[i].dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + m_RescueSkill[i].nWaitCastTime;
-				}
-			}
-		}
+		KMagicAutoSkill& rA = m_RescueSkill[i];
+		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
+			continue;
+		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+			continue;
+		if (!g_RandPercent(rA.nRate))
+			continue;
+		if (rA.nType == 1 && nAttacker > 0 && nAttacker < MAX_NPC && Npc[nAttacker].m_Index > 0)
+			CastAutoSkillAt(rA.nSkillId, rA.nSkillLevel, nAttacker);
+		else
+			this->Cast(rA.nSkillId, rA.nSkillLevel);
+		rA.dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + rA.nWaitCastTime;
 	}
 }
 
+// [HOASON 02/09] autoattackskill: Linux Fire(+0x1874 cua KE DANH, nan nhan, ke danh) tai ReceiveDamage 0x0808B1D3.
+// loai 1 -> nham chinh minh (ke danh), khac -> nham nan nhan (1369 Cuu Kiem Hop Nhat -> 1368 Doc Co Cuu Kiem, loai 0).
 void KNpc::AttackSkill(int nLauncher)
 {
-	if (!m_Index || !Npc[nLauncher].m_Index)
+	if (!m_Index || nLauncher <= 0 || nLauncher >= MAX_NPC || !Npc[nLauncher].m_Index)
 		return;
-
 	if (m_Doing == do_death || m_Doing == do_revive)
 		return;
-
 	if (Npc[nLauncher].m_Doing == do_death || Npc[nLauncher].m_Doing == do_revive)
 		return;
-
 	for (int i = 0; i < MAX_AUTOSKILL; i ++)
 	{
-		if (m_AttackSkill[i].nSkillId > 0 && m_AttackSkill[i].nSkillId < MAX_SKILL && 
-			m_AttackSkill[i].nSkillLevel > 0 && m_AttackSkill[i].nSkillLevel < MAX_SKILLLEVEL)
-		{
-			if (m_AttackSkill[i].dwNextCastTime < SubWorld[m_SubWorldIndex].m_dwCurrentTime)
-			{
-				if (g_RandPercent(m_AttackSkill[i].nRate))
-				{
-					KSkill * pSkill = (KSkill *) g_SkillManager.GetSkill(m_AttackSkill[i].nSkillId, m_AttackSkill[i].nSkillLevel);
-					if(pSkill)
-						pSkill->Cast(m_Index, -1, nLauncher);
-					m_AttackSkill[i].dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + m_AttackSkill[i].nWaitCastTime;
-				}
-			}
-		}
+		KMagicAutoSkill& rA = m_AttackSkill[i];
+		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
+			continue;
+		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+			continue;
+		if (!g_RandPercent(rA.nRate))
+			continue;
+		if (rA.nType == 1)
+			this->Cast(rA.nSkillId, rA.nSkillLevel);
+		else
+			CastAutoSkillAt(rA.nSkillId, rA.nSkillLevel, nLauncher);
+		rA.dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + rA.nWaitCastTime;
 	}
 }
 
@@ -3398,7 +3434,8 @@ void KNpc::DeathSkill()
 
 	for (int i = 0; i < MAX_AUTOSKILL; i ++)
 	{
-		if (m_DeathSkill[i].nSkillId > 0 && m_ReplySkill[i].nSkillId < MAX_SKILL && 
+		if (m_DeathSkill[i].nSkillId > 0 && m_DeathSkill[i].nSkillId < MAX_SKILL && 	// [HOASON 02/09] loi go cu: kiem m_ReplySkill
+			
 			m_DeathSkill[i].nSkillLevel > 0 && m_DeathSkill[i].nSkillLevel < MAX_SKILLLEVEL)
 		{
 			if (m_DeathSkill[i].dwNextCastTime < SubWorld[m_SubWorldIndex].m_dwCurrentTime)
@@ -3650,21 +3687,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			if (nDamage <= 0)
 				nDamage = 1;
 		}
-		if(!bReturn)
-		{
-			// [HOASON 01/09e] Linux (0x0808B4F9 goi Fire ngay, khong so cap) khong co cong cap 120: Hoa Son 1364 la chieu 90.
-			if(m_Level > 0)
-			{
-				ReplySkill(nAttacker);
-				if (m_CurrentLife < (m_CurrentLifeMax * LIFE_EXPLOSIVE / MAX_PERCENT))
-					RescueSkill();
-			}
-			
-			if(Npc[nAttacker].m_Level > 0)	// [HOASON 01/09e] bo cong cap 120 (1369 Cuu Kiem Hop Nhat la chieu 150, khong anh huong; giu dung Linux)
-			{
-				Npc[nAttacker].AttackSkill(m_Index);
-			}
-		}
+		// [HOASON 02/09] Tu phong (autoreply/autoattack) DA CHUYEN sang ReceiveDamage: mot lan moi DON TRUNG, chi quan he DICH,
+		// sau khi tru mau (Linux 0x0808AACF-0x0808B1D8). Truoc day nam o day => moi he lanh/hoa/loi/doc va moi NHIP DOC deu tung
+		// them mot lan, ca don khong sat thuong. Cuu nguy (autorescue) xet tai khe tru mau ben duoi (Linux BeHurt 0x0808A003).
 		//
 		if (nDamage <= 0 && Npc[nAttacker].GetKind() == kind_player)
 			AUTOLOG_IDX_EVERY(nAttacker, 500, "[S2-DODGE-1] tgt=%d(id=%u kind=%u lv=%d) lch=%d dmg=%d min=%d max=%d phys=%d melee=%d armor=%d def=%d presist=%d -> bao NE (COMBAT_INFO_DODGE) vi sat thuong <= 0", m_Index, m_dwID, m_Kind, m_Level, nAttacker, nDamage, nMin, nMax, (int)bIsPhysical, (int)bIsMelee, m_PhysicsArmor.nValue[0], m_CurrentDefend, m_CurrentPhysicsResist);
@@ -4180,6 +4205,14 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 	AUTOLOG_EVERY(1000, "[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
 	m_CurrentLife -= nDamage;
 	nRealDamage += nDamage;
+	// [HOASON 02/09] autorescueskill CHUAN LINUX (BeHurt 0x0808A003-0x0808A01A): chi ban khi DON NAY dua mau tu >= 25% max
+	// xuong < 25% max va con song (Lua 1365: 'Sinh menh thap hon 25% trong chop mat'). Ban cu: moi don khi mau dang < 25%.
+	if (nDamage > 0 && m_CurrentLife > 0 && m_Level > 0)
+	{
+		int nHSNguong = m_CurrentLifeMax / 4;
+		if (m_CurrentLife < nHSNguong && m_CurrentLife + nDamage >= nHSNguong)
+			RescueSkill(nAttacker);
+	}
 	if (m_CurrentLife <= 0)
 	{
 		nRealDamage += m_CurrentLife;
@@ -4305,6 +4338,7 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	AUTOLOG_EVERY(1000, "[E2-RECV-PASSGATE] target=%d(doing=%d) launcher=%d(doing=%d kind=%u playeridx=%d) owner=%d -> qua het cua chan dau, bat dau tinh sat thuong", m_Index, (int)m_Doing, nLauncher, (int)Npc[nLauncher].m_Doing, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)(Owner[0] != 0));
 	KMagicAttrib *pTemp = NULL;
+	BOOL bHSTrung = FALSE;	// [HOASON 02/09] co it nhat mot he gay sat thuong (Linux 0x0808AAC7: ket qua BeHurt >= 0) -> moi tung tu phong
 
 	pTemp = (KMagicAttrib *)pData;
 	int nAr = pTemp->nValue[0]; //attackrating[0]	//§é chÝnh x¸c
@@ -4376,11 +4410,13 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		}
 	}
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-PRE] tgt=%d(id=%u kind=%u) lch=%d physmin=%d physmax=%d lifetruoc=%d resist=%d resistmax=%d armor=%d sorb=%d manashield=%d DS=%d FS=%d series=%d fivep=%d", m_Index, m_dwID, m_Kind, nLauncher, pTemp->nValue[0], pTemp->nValue[2], m_CurrentLife, m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, m_PhysicsArmor.nValue[0], m_CurrentSorbDamageP, m_ManaShield.nValue[0], (int)bIsDS, (int)bIsFS, nMissleSeries, nFiveElementsDamageP);
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS, FALSE, nTotalAvg);
+	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS, FALSE, nTotalAvg);	// [HOASON 02/09]
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg))
+	BOOL bHSCold = CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
+	bHSTrung |= bHSCold;
+	if (bHSCold)
 	{
 		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
 		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
@@ -4402,13 +4438,15 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; //fire damage[11]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
+	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
 	
 	pTemp++; //lighting damage[12]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
+	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
 
 	pTemp++; //poison damage[13]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))
+	BOOL bHSPoison = CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);	// [HOASON 02/09]
+	bHSTrung |= bHSPoison;
+	if (bHSPoison)
 	{
 		// [PF 31/08k] anti_poisontimereduce_p (204): ke danh keo dai thoi gian doc
 		// bang cach triet tieu chi so giam cua nan nhan (nGiamDoc thay the
@@ -4498,6 +4536,9 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		{
 			SyncDamageInfo(nLauncher, nFSDamage > m_CurrentLife ? m_CurrentLife : nFSDamage, COMBAT_INFO_DAMAGE_LIFE, 0, TRUE);
 			m_CurrentLife -= nFSDamage;	// 0x0808B0F8 ghi thang mau
+			// [HOASON 02/09] cuu nguy khi khe chi tu dua mau xuong duoi 25% max (Linux ReceiveDamage 0x0808B0E3-0x0808B13A)
+			if (m_CurrentLife > 0 && m_Level > 0 && m_CurrentLife < m_CurrentLifeMax / 4 && m_CurrentLife + nFSDamage >= m_CurrentLifeMax / 4)
+				RescueSkill(nLauncher);
 			if (m_CurrentLife <= 0 && m_Doing != do_death && m_Doing != do_revive)
 			{
 				if ((m_DeathSkill[0].nSkillId > 0 && m_DeathSkill[0].nSkillId < MAX_SKILL) && m_Level >= LEVEL_EXPLOSIVE)
@@ -4508,6 +4549,19 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 					Player[m_nPlayerIdx].m_cPK.CloseAll();
 			}
 		}
+	}
+
+	// [HOASON 02/09] TU PHONG CHUAN LINUX ReceiveDamage 0x0808AACF-0x0808B1D8: sau khi tru mau, CHI khi quan he la DICH
+	// ([ebp+0x24] & 0xC == 8) va don co sat thuong: (1) NAN NHAN ban autoreplyskill (+0x1850) nham ke danh/minh,
+	// (2) KE DANH ban autoattackskill (+0x1874) nham nan nhan/minh. Moi don MOT lan. Hai bang cong 'khong ban lai'
+	// (0x8fc62a0/0x8fc4360) cua Linux khong bao gio duoc dien (vector 0x8fbfe04/0x8fbfe10 khong co noi ghi) -> luon mo.
+	if (bHSTrung && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0
+		&& (NpcSet.GetRelation(nLauncher, m_Index) & (relation_ally | relation_enemy)) == relation_enemy)
+	{
+		if (m_Level > 0)
+			ReplySkill(nLauncher);
+		if (Npc[nLauncher].m_Level > 0)
+			Npc[nLauncher].AttackSkill(m_Index);
 	}
 
 	pTemp++; //stun[14]

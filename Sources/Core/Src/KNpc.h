@@ -853,9 +853,10 @@ public:
 	BOOL		    ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, void *pData, BOOL bUseAR, int nDoHurtP, int nMissRate);
 	void			    Cast(int nSkillId, int nSkillLevel);
 	void				ReplySkill(int nLauncher = 0);	// [HOASON 01/09e] Linux Fire(list, chu, KE DANH): loai 1 nham ke danh
-	void				RescueSkill();
+	void				RescueSkill(int nAttacker = 0);	// [HOASON 02/09] Linux Fire(+0x1898, chu, ke danh): loai 1 nham ke danh, khac nham minh
 	void				AttackSkill(int nUnderAttacker);
 	void				DeathSkill();
+	void				CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget);	// [HOASON 02/09] tu phong nham muc tieu: phat s2c_castskilldirectly (client ve dan) roi Cast(m_Index, -1, nTarget)
 	// mode == 0 npc  == 1 player  == 2 player 	// DoDeath enumDEATH_MODE
 	void				DeathPunish(int nMode, int nBelongPlayer);		//edit by phong kieu hut hit
 	void				RestoreLiveData();								// 重生后恢复Npc的基本数据

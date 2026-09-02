@@ -379,7 +379,7 @@ const char* KMagicDesc::GetDesc(void *pData)
 			switch(*(pTempDesc + 2))
 			{
 			case 'A':
-				nValue = (int)(pAttrib->nValue[0] / 256);
+				nValue = (int)((pAttrib->nValue[0] & 0xffffff) / 256);	// [HOASON 02/09] bo byte LOAI (bit 24-31, Linux 0x080973D0): 1364 autoreplyskill v0 = (1*65536+1363)*256+cap -> truoc ra id 66899, ten ky nang trong
 				break;			
 			case '1':
 				nValue = pAttrib->nValue[0];

@@ -1101,45 +1101,80 @@ void KNpcAttribModify::Poison2DecManaP( KNpc* pNpc, void* pData )
 	pNpc->m_LoseMana.nValue[0] = pNpc->m_CurrentMana * pMagic->nValue[0] / MAX_PERCENT / (pNpc->m_LoseMana.nTime / GAME_FPS);
 }
 
+// [HOASON 02/09] AUTO SKILL (autodeath/autoattack/autoreply/autorescueskill) CHUAN LINUX 0x08189000 (danh sach +0x18bc/+0x1874/+0x1850/+0x1898):
+// khoa = (|v0| & 0xffffff) = id*256 + cap (byte cao cua |v0| = LOAI nham: 1 = ke danh/muc tieu, khac = chinh minh);
+// ty le = v2 & 0xff, hoi chieu = v2 >> 8 (khung). v2 > 0 (ap trang thai): cung khoa -> CONG DON ty le, chua co -> them muc.
+// v2 < 0 (go trang thai - gia tri bi dao dau o KStateNode): TRU ty le, ve 0 -> XOA muc. Ban cu: (a) go trang thai tao muc rac
+// id 64172 (so am & 0xffffff) chiem cho, (b) muc them lan dau KHONG BAO GIO bi go -> buff het han van tu phong, buff lai -> 2 muc.
+static void HS_AutoSkillModify(KMagicAutoSkill* pList, KNpc* pNpc, KMagicAttrib* pMagic)
+{
+	if (!pList || !pNpc || !pMagic || pMagic->nValue[0] == 0)
+		return;
+	int nV0 = pMagic->nValue[0];
+	if (nV0 < 0)
+		nV0 = -nV0;
+	int nKey = nV0 & 0xffffff;
+	int nSkillId = nKey / 256;
+	int nLevel = nKey % 256;
+	int nType = nV0 >> 24;
+	int nV2 = pMagic->nValue[2];
+	int nRate, nWait;
+	if (nV2 > 0)
+	{
+		nRate = nV2 % 256;
+		nWait = nV2 / 256;
+	}
+	else
+	{
+		nRate = -((-nV2) % 256);
+		nWait = (-nV2) / 256;
+	}
+	if (nSkillId <= 0)
+		return;
+	int nFound = -1, nFree = -1;
+	for (int i = 0; i < MAX_AUTOSKILL; i++)
+	{
+		if (pList[i].nSkillId == nSkillId && pList[i].nSkillLevel == nLevel)
+		{
+			nFound = i;
+			break;
+		}
+		if (nFree < 0 && pList[i].nSkillId <= 0)
+			nFree = i;
+	}
+	if (nFound >= 0)
+	{
+		pList[nFound].nRate += nRate;
+		if (pList[nFound].nRate <= 0)
+		{
+			memset(&pList[nFound], 0, sizeof(KMagicAutoSkill));	// Linux xoa nut khi ty le ve 0
+			return;
+		}
+		if (nV2 > 0)
+		{
+			pList[nFound].nType = nType;
+			pList[nFound].nWaitCastTime = nWait;
+		}
+		return;
+	}
+	if (nV2 <= 0 || nFree < 0)
+		return;		// go ma khong co muc (Linux tao nut ty le am - vo tac dung) hoac het cho
+	pList[nFree].nSkillId = nSkillId;
+	pList[nFree].nSkillLevel = nLevel;
+	pList[nFree].nType = nType;
+	pList[nFree].nRate = nRate;
+	pList[nFree].nWaitCastTime = nWait;
+	pList[nFree].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
+}
+
 void KNpcAttribModify::AutoDeathSkill( KNpc* pNpc, void* pData )
 {
-	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	if (pMagic->nValue[0])
-	{
-		for (int i = 0; i < MAX_AUTOSKILL; i ++)
-		{
-			if (pNpc->m_DeathSkill[i].nSkillId <= 0)
-			{
-				pNpc->m_DeathSkill[i].nSkillId = pMagic->nValue[0] / 256;
-				pNpc->m_DeathSkill[i].nSkillLevel = pMagic->nValue[0] % 256;
-				pNpc->m_DeathSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
-				pNpc->m_DeathSkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
-				pNpc->m_DeathSkill[i].nRate = pMagic->nValue[2] % 256;
-				break;
-			}
-		}
-	}
+	HS_AutoSkillModify(pNpc->m_DeathSkill, pNpc, (KMagicAttrib *)pData);	// [HOASON 02/09] Linux 0x08189000 (cong don / go dung khoa)
 }
 
 void KNpcAttribModify::AutoAttackSkill( KNpc* pNpc, void* pData )
 {
-	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	if (pMagic->nValue[0])
-	{
-		for (int i = 0; i < MAX_AUTOSKILL; i ++)
-		{
-			if (pNpc->m_AttackSkill[i].nSkillId <= 0)
-			{
-				pNpc->m_AttackSkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
-				pNpc->m_AttackSkill[i].nSkillLevel = pMagic->nValue[0] % 256;
-				pNpc->m_AttackSkill[i].nType = pMagic->nValue[0] >> 24;
-				pNpc->m_AttackSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
-				pNpc->m_AttackSkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
-				pNpc->m_AttackSkill[i].nRate = pMagic->nValue[2] % 256;
-				break;
-			}
-		}
-	}
+	HS_AutoSkillModify(pNpc->m_AttackSkill, pNpc, (KMagicAttrib *)pData);	// [HOASON 02/09] Linux 0x08189000 (cong don / go dung khoa)
 }
 
 void KNpcAttribModify::Hide( KNpc* pNpc, void* pData )
@@ -1157,44 +1192,12 @@ void KNpcAttribModify::IgnoreNegativeStateP( KNpc* pNpc, void* pData )
 
 void KNpcAttribModify::AutoReplySkill( KNpc* pNpc, void* pData )
 {
-	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	if (pMagic->nValue[0])
-	{
-		for (int i = 0; i < MAX_AUTOSKILL; i ++)
-		{
-			if (pNpc->m_ReplySkill[i].nSkillId <= 0)
-			{
-				pNpc->m_ReplySkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
-				pNpc->m_ReplySkill[i].nSkillLevel = pMagic->nValue[0] % 256;
-				pNpc->m_ReplySkill[i].nType = pMagic->nValue[0] >> 24;
-				pNpc->m_ReplySkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
-				pNpc->m_ReplySkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
-				pNpc->m_ReplySkill[i].nRate = pMagic->nValue[2] % 256;
-				break;
-			}
-		}
-	}
+	HS_AutoSkillModify(pNpc->m_ReplySkill, pNpc, (KMagicAttrib *)pData);	// [HOASON 02/09] Linux 0x08189000 (cong don / go dung khoa)
 }
 
 void KNpcAttribModify::AutoRescueSkill( KNpc* pNpc, void* pData )
 {
-	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	if (pMagic->nValue[0])
-	{
-		for (int i = 0; i < MAX_AUTOSKILL; i ++)
-		{
-			if (pNpc->m_RescueSkill[i].nSkillId <= 0)
-			{
-				pNpc->m_RescueSkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
-				pNpc->m_RescueSkill[i].nSkillLevel = pMagic->nValue[0] % 256;
-				pNpc->m_RescueSkill[i].nType = pMagic->nValue[0] >> 24;
-				pNpc->m_RescueSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
-				pNpc->m_RescueSkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
-				pNpc->m_RescueSkill[i].nRate = pMagic->nValue[2] % 256;
-				break;
-			}
-		}
-	}
+	HS_AutoSkillModify(pNpc->m_RescueSkill, pNpc, (KMagicAttrib *)pData);	// [HOASON 02/09] Linux 0x08189000 (cong don / go dung khoa)
 }
 
 void KNpcAttribModify::ReturnResP( KNpc* pNpc, void* pData )
