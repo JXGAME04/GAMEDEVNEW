@@ -81,3 +81,64 @@ Phản biện xác nhận: `PackDataToClient(-1)` **không sập** trên cây Wi
 ## 6. Chuỗi tái áp
 
 … → tkket3_moxe → **bot_bang_nhom** → **bot_bang_nhom_b** (KPlayerBot.cpp/.h + KPlayerTeam.cpp). Cả ba tệp đã commit cùng script (`90f13d30` + đợt b).
+
+## 7. Đợt c (01/09 tối, phiên wauto-34) — chủ ĐÍNH CHÍNH ý + 2 lỗi Tống Kim — `ReverseTools/goi_va_bot_nhom_bang_tk_c.py` (36 hunk, CHỈ KPlayerBot.cpp), commit **`f58c1fdc`**, `CoreServer.dll.moi` = **`bf680d6aa3c2`** (19:01) **CHỜ RESTART**
+
+> Chủ: *"ở phiên trước đang bị hiểu sai ý tôi"* — 4 việc, nguyên văn ở đầu script. Không đổi giao thức, không đụng header,
+> client KHÔNG cần deploy cho đợt này (KPlayerBot.cpp không biên dịch phía client — Core.vcxproj:798). `.moi` cũ `b71341e6`
+> (DUNG LUYỆN phiên wauto-e7, 16:24) lưu ở `bin\server\_moi_backup\0109_b71341e6\`; bản mới là superset HEAD `2815d2d3`.
+> ⚠️ Vì HEAD đã chứa DUNG LUYỆN server (chưa phản biện) mà `CoreClient.dll.moi`/`Game.exe.moi` 16:24 chưa có handler
+> `s2c_syncfusion`, phiên wauto-e7 sẽ build lại và ghi đè cả 3 `.moi` (superset, có cả bot đợt c) — **restart sau khi họ đặt xong**;
+> lệch chỉ bung khi có item Văn Cương/dung luyện.
+
+### 7.1 Tổ đội với người chơi — luật mới
+
+| Luật chủ giao | Làm ở đâu |
+|---|---|
+| Bot chưa có party (hoặc đang ở nhóm toàn bot) → tự vào party người mời, không cần PM | `PB_MoiVaoNhom` như cũ; **Dã Tẩu đang FARM (loại 4 trên map nhiệm vụ / loại 5-6 vừa luyện vừa làm) nay CŨNG nhận**; chỉ từ chối khi đang ĐI (tới NPC / thoại / lọc / Xa Phu / về trả / thưởng), TK, sạp, chết, đang xin bang. Cờ tổ đội mặc định của bot = 0 (Player[] mảng tĩnh, server không có ctor KPlayerTeam) → **bật `SetCanTeamFlag(TRUE)`** thay vì trả "không thể mời" oan. |
+| Bot theo sau người chơi (đội trưởng) | Khối **bám theo đội trưởng** (`pb_DriveBot`, trước `pb_RaBai`) nhận cả đội trưởng NGƯỜI THẬT (`bTheoNguoi`): cách >200 MPS bỏ đánh chạy về, trong 200 đánh quanh; không cần "đúng bãi". Người chơi ở map khác (phù về thành) → bot luyện tại chỗ chờ. |
+| Người chơi phù về thành/thôn → KHÔNG giải tán; lên map luyện công khác / map hoạt động → tự rời | Khối canh mỗi nhịp: subworld hiện tại của người mời ≠ lúc vào nhóm **và** map đó không phải thành/thôn (`pb_LaThanhThon` = 10 thành `s_dtNpc` + 6 thôn `THON_TT_MP_ARRAY` 20/53/99/100/101/121) → `pb_RoiNhomNguoi` (PM "Ban di map khac roi, minh roi nhom nhe."). Về thành rồi quay lại đúng map cũ → bám tiếp. |
+| Bot không tự bỏ đi | `pb_RaBai`: đang ở đúng map nhóm → `return 1` (không chọn lại bãi, không đổi map); lúc vào nhóm đặt `nBaiIdx` = bãi của map nhóm (nếu có trong `s_bai`) để khi lạc (hồi sinh ở thành) đường Xa Phu đưa **về lại map nhóm mà không rời nhóm** (3 chỗ `pb_RoiNhom` trong pb_RaBai gác `!nNhomNguoiIdx`). Bot lạc khỏi map nhóm >5 phút mà người chơi vẫn ở map cũ → rời nhóm có PM. `PB_SetDaTau` / `PB_SetBanSap` không bốc bot đang ở nhóm người thật. |
+| Đang làm Dã Tẩu → xong nhiệm vụ tự rời nhóm về trả | Loại 4: đủ cuốn (`DTB_FARM_NV` → `DTB_VE_TRA`) → PM "Minh xong nhiem vu Da Tau roi, roi nhom di tra nhiem vu nhe." rồi rời. Loại 5/6: tới kỳ 5 phút về NPC thử trả (= "xong" của bot) → rời có PM ở nhánh đổi map. Mọi nhánh tự đổi map của bot (Dã Tẩu tới NPC/Xa Phu, TK, về thành, xin bang) đi qua **một hàm `pb_RoiNhomNguoi`** — luôn PM trước khi rời. |
+
+### 7.2 Bang hội — luật mới
+
+1. Từ khoá (hạ chữ thường, ASCII): chứa **`vao bang`** / **`vo bang`** / **`tham gia bang`** (bao trọn 6 câu chủ liệt kê). Bỏ bộ khoá rộng đợt b.
+2. Người nhắn **phải là BANG CHỦ**: `g_TongJX2.FindMember(bang, g_FileName2Id(tên))->btFigure == 0`; không phải → "Ban khong phai bang chu bang X, nho bang chu nhan cho minh nhe."
+3. Thứ tự từng bước (`pb_XinVaoBang`): **B1** rời tổ đội (PM nếu nhóm người thật) → **B2** khác map thì dịch chuyển về map 53 cạnh NPC môn phái của bot (so le 3-5s) → **B3** đi bộ tới NPC → **B4 XUẤT SƯ**: nếu `GetSaveVal(4134)` (TASK_DUNGCHUNG2) == 0: cần cấp ≥60 (luật menu `thieulam.lua:19`), gọi `ExecuteScript(<script NPC môn phái>, "xuatsu")` = `factionhead.lua:32` (SetCamp(4)+SetCurCamp(4)+LeaveTeam()+SetTask(4134,1)), kiểm task = 1, nghỉ 2 giây → **B5** nộp đơn `DoClientOpBody(APPLY_JOIN)` như cũ + PM kết quả. Dã Tẩu đang làm vẫn nhận (xin bang xong máy trạng thái Dã Tẩu tự đồng bộ theo course).
+4. ⚠️ **Hệ quả luật sẵn có của máy chủ**: xuất sư = **camp 4** → `mobinhtk.lua:100/:217` từ chối *"Chữ đỏ không thể vào Tống Kim"* và `pb_TkDuTuCach` chặn camp 4 → **bot đã xuất sư/vào bang sẽ KHÔNG được gọi đi Tống Kim nữa** (đúng luật đang áp cho người chơi thật). Chủ quyết: giữ luật hay mở camp 4 cho TK.
+
+### 7.3 Bot Tống Kim đứng yên — GỐC đã tìm ra bằng log [TkKet3] + lưới thật, vá [TKKET4]
+
+Đo trận 17:50–18:20 (server `3730dc63`, log TkKet3 sống từ restart 14:09): **81 bot kẹt, 100% trại Đông**, 6.160 dòng `[TkKet3-RA]` đều `nW=-1`, chỉ 5 đích: (1665,3106) (1666,3107) (1666,3109) (1667,3110) (1674,3108); **0 dòng `[BotA*]` trên map 379**; `[TkKet3-TRAP]/[TRAP2]/[CONG]/[QY]` = 0 ⇒ bot chết ở khâu `PB_WalkTo` nhưng A* không "lỗi" — rơi vào nhánh **ĐƯỜNG CỤT im lặng** (`FindPathServer` trả 2). Đọc `Maps\379_srv.fp` (magic SFP06, node 20 B, obs offset 16):
+
+```
+     x=1652 ..                                  1689
+3098 .......##XT...................########      T = ô trap đi được   X = ô trap là VẬT CẢN
+3102 .........####TT.................######      hành lang trap kimratrai (1661+i,3098+i) là KHE TƯỜNG
+3103 .........#####XX##..............######      từ i>=6 các ô trap nằm trong tường
+3106 ..............###XX#######..........##      (1665,3106) = đích pb_ODat chọn = phía NGOÀI tường
+```
+
+`pb_ODat` quét xoắn ốc quanh ô trap chỉ hỏi "engine trống + lưới không chặn" → chọn ô trống **bên kia tường** → A* dẫn tới block gần nhất rồi `-1` mỗi nhịp → bot đứng sát cửa, vùng-an-toàn làm tươi `nTkTick` nên 12 phút sau mới bị cắt "KẾT pha 3" và **rời trận luôn**. Kèm: 152 dòng `[BotTrap] id=1975C4C8` (kimratrai) + 224 `EA163CE9` (tongratrai) = bot **có đạp đúng trap ra trại** nhưng bị "miễn".
+
+Vá (`pb_TkRaTrai` + `PB_TrapLog` + pha 3): (a) đứng trong **2 ô** quanh bất kỳ ô trap nào của vết (cả hàng nY và nY-1) = đã tới cửa → bước qua trap; (b) đích = **chính ô trap** có `CellObsSrv==0` **và** `FindPathServer==1` (nối được từ chỗ bot), xoay theo `b.nTkRaXoay`; (c) `PB_WalkTo` thua → xoay ô khác; (d) **bot pha 3 đạp trap ra trại → chạy kịch bản như người chơi** ngay trong `PB_TrapLog` (`ExecuteScript(id,"main",idx)` — đúng chỗ engine gọi cho người thật), pha 3 thấy mình ngoài hộp 40 ô quanh hậu doanh → pha 4 "RA TRAN". Log mới: `[BotTK] X dap trap ra trai ... DA RA TRAN|kich ban tu choi`, `[BotTK] X phe ... da o ngoai trai ... -> RA TRAN`, `[TkKet3-RA] ... xoay=%d noi=%d`.
+
+### 7.4 "Bot TK xong đứng trong map báo danh" — GỐC + vá [TKCHET]
+
+Sau 18:20:01 (TRẬN ĐÓNG) census `pha5=13` đứng im 17 phút; 13 con đó mỗi giây ghi `da chet (mau 0, doing 1) -> tu hoi sinh` ×991 lần. `doing 1 = do_stand` mà máu 0: task03 hết trận `NewWorld` cả đàn về 324 **đúng lúc bot đang chết** → `KNpc::ChangeWorld` gọi `DoStand()` (KNpc.cpp:10368) xoá do_death/do_revive; `KPlayer::Revive` (KPlayer.cpp:6944) đòi **đúng do_revive** mới hồi sinh → nuốt mãi = xác đứng thẳng giữa map báo danh. Vá ở khối tự hồi sinh của bot: máu ≤0 mà doing không phải do_death/do_revive → ép `m_Doing = do_revive` (đúng trạng thái OnDeath đặt ở KNpc.cpp:2316) rồi Revive như thường; log `[Bot] X XAC DUNG THANG (...) -> ep ve do_revive`.
+
+### 7.5 Nghiệm thu sau restart
+
+```
+grep -E "BotNhomNguoi|BotBang|XAC DUNG THANG|dap trap ra trai|da o ngoai trai|TkKet3-RA" bot.log | tail -80
+```
+1. Mời bot (đang luyện / đang farm Dã Tẩu) vào tổ đội → vào ngay, PM "Ok, minh vao nhom nhe!", bot chạy theo khi cách >6 ô. Phù về thành (Thổ Địa Phù / Thần Hành Phù về Ba Lăng Huyện…) → bot **không** rời; sang map luyện khác / TK / hoạt động → bot rời + PM. Bot Dã Tẩu đủ cuốn → PM "xong nhiem vu ... di tra" rồi rời.
+2. Bang chủ nhắn mật "vao bang" → bot PM "Ok! Minh ve Ba Lang Huyen gap NPC mon phai xuat su roi xin vao bang X ngay day." → log `[BotBang] ... da XUAT SU tai NPC ...` → `nop don ... ket qua=0|7`; người không phải bang chủ → "Ban khong phai bang chu...". Bot <60 → PM huỷ.
+3. Trận TK kế: `[TkKet3-RA] nW=-1` phải về ~0, `[TkKet3]` "dung Ns" chỉ còn churn (<60-90s), xuất hiện `dap trap ra trai ... DA RA TRAN`; sau trận census `pha5` về 0 trong ~1 phút, không còn dòng `da chet (mau 0`.
+
+**Chờ chủ quyết:** (a) bot xuất sư/vào bang bị luật camp 4 cấm Tống Kim — giữ hay mở; (b) bộ log `[TkKet3]` (6.000 dòng/trận) giữ thêm 1 trận để nghiệm thu rồi tắt; (c) 619 dòng `[TkKet3-MUA]` "không đường tới Quân Y" cùng gốc pb_ODat — bot chỉ bỏ mua thuốc, chưa vá (vá tương tự nếu chủ muốn).
+
+## 8. Chuỗi tái áp
+
+… → tkket3_moxe → bot_bang_nhom → bot_bang_nhom_b → **bot_nhom_bang_tk_c** (`--thu` = chỉ kiểm neo). Tất cả đã commit.
