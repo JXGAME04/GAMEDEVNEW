@@ -12,9 +12,9 @@ Mọi chỗ sửa đều có marker `[HOASON 01/09]`. Tool sinh/vá idempotent n
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Engine 13 phái (10 gốc + Hoa Sơn 10 + chỗ trống Vũ Hồn 11 / Tiêu Dao 12) | build sạch 4 binary, **.moi chờ swap** (mục 8) |
+| Engine 13 phái + đợt b port 4 nhóm thuộc tính Linux (mục 10.2) | build sạch 4 binary, **.moi chờ swap** (mục 8) |
 | Dữ liệu server + client (faction, skills, rank, npcs, item, map) | đã ghi vào cây chạy thật `E:\...\bin\{server,client}` |
-| Script server (Linux huashan.lua + 79 tệp huashan2013 + shim) | đã ghi, `syncheck` 100 tệp cú pháp OK, `t71` 0 lỗi gọi hàm thân chunk |
+| Script server (Linux huashan.lua; đợt b: bỏ nhiệm vụ, chỉ còn NPC phát kỹ năng — mục 10.1) | đã ghi, `syncheck` OK, `t71` 0 lỗi |
 | Client UI bảng kỹ năng Hoa Sơn | ini + `khung_hs.spr` vẽ mới, chưa xem trong game |
 | Vũ Hồn / Tiêu Dao | chỉ có ô engine (id 11/12, icon tổ đội, tên); chưa có dữ liệu/script/UI |
 
@@ -139,9 +139,9 @@ Engine đã có chỗ (id, tên TCVN3, icon tổ đội, bot table); FactionInfo
 ## 8. CHECKLIST SWAP (chủ chạy `ChoiGame.bat` / `ChayGameServer.bat`; KHÔNG tự restart)
 Bộ 4 tệp `.moi` build từ cây `D:\GAMEDEVNEW` HEAD `3ea76dc1` + vá Hoa Sơn (superset bộ bot 01/09 đã swap lúc 19:01):
 
-1. `bin\server\CoreServer.dll.moi` — 18.241.536 byte, md5 `8aa54325` (Server Release x64, 22:1x).
+1. `bin\server\CoreServer.dll.moi` — 18.244.608 byte, md5 `eed8dff8` (Server Release x64, 23:15, gồm đợt b mục 10).
 2. `bin\multiserver\Goddess.exe.moi` — 2.386.432 byte, md5 `73f10c62` — **PHẢI swap cùng lúc với CoreServer** (cỡ `TStatData`/`TGAME_STAT_DATA` đổi 11→14; lệch nhau thì bảng xếp hạng/thống kê bị từ chối).
-3. `bin\client\CoreClient.dll.moi` — 2.438.656 byte, md5 `988b7e74` (Client Release Win32).
+3. `bin\client\CoreClient.dll.moi` — 2.439.680 byte, md5 `fa3f667c` (Client Release Win32, 23:15, gồm giao thức `s2c_reduceskillcd` — PHẢI đi cùng CoreServer mới).
 4. `bin\client\Game.exe.moi` — 1.373.696 byte, md5 `c1b575f8` (Release Win32) — cùng bộ với CoreClient (MAX_FACTION_NUM, bảng kỹ năng).
 5. Dữ liệu/script đã ghi thẳng vào cây chạy thật (server: settings, Maps, package.ini, Pak, script; client: settings, Ui, Spr, script\skill) — có bản sao `.truoc_hoason_0109` cạnh tệp cũ. Server đọc khi khởi động lại; client đọc khi mở lại.
 6. Sau swap: xem console GameServer có `ScriptError` không; kiểm `World926=987` nạp (log "Load map 987"); vào game với nhân vật hệ Thủy chưa phái → Ba Lăng Huyện (1632,3191) gặp Hoa Sơn Kiếm Khách.
@@ -150,3 +150,36 @@ Bộ 4 tệp `.moi` build từ cây `D:\GAMEDEVNEW` HEAD `3ea76dc1` + vá Hoa S�
 
 ## 9. Tool (ReverseTools\phai3\hoason_thicong)
 `hs_engine_patch.py` (engine, `--kiem`), `hs_data1.py` (dữ liệu + script khung), `hs_port2013.py` (79 tệp + shim + item + startgame), `hs_map_pak.py` (pak map 987), `spr_hs.py` + `khung_hs_make.py` (SPR), `hs_scan.py` (quét phụ thuộc), `fix1-4.py` (vá tool), `hs_items_vltk.tsv` (36 cột VLTK của 29 item), `khung_hs_preview.png`.
+
+
+---
+
+## 10. ĐỢT b (01/09 khuya) — bỏ nhiệm vụ + KIỂM TOÁN 46 THUỘC TÍNH KỸ NĂNG THEO LINUX
+
+Chủ quyết: *"không cần nhiệm vụ, chỉ cần nhận skill như các phái có sẵn"* và *"chủ yếu làm skill đúng chuẩn Linux"*.
+
+### 10.1 Gia nhập / nhận kỹ năng như 9 phái cũ (tool `hs_simplify.py`)
+- 74 tệp nhiệm vụ `script\global\huashan2013\*.lua` đưa ra kho `ReverseTools\phai3\hoason_thicong\huashan2013_nhiemvu_linux_khongdung\` (không nạp lúc boot). Còn lại: `npc_hoason.lua` (bảng spawn rút gọn), `hs_shim.lua`, `trap\` (4 tệp bẫy của map 987).
+- `npc_hoason.lua`: Hoa Sơn Kiếm Khách (2096) ở 8 thôn (53/20/99/100/101/121/153/174, toạ độ Linux) + Nam Cung Tuyết (2098) và Lận Hạo Thiên (2096) ở map 987 + Rương chứa đồ — tất cả chạy `npcthon
+pcmonphai\hoason.lua` (khuôn conlon.lua): vào phái = `gianhapmonphai(10)` → SetFaction/Camp/Rank + `hockynang` (SKILLNORMAL[11] 15 chiêu 10–70), kỹ năng 9x qua `hotrokn` (SKILL90_ARRAY[11]), 120 sách `lvl120skillbook` [10], 150 qua `hocvocong`, xuất sư / trùng phản như cũ. `factionhead.lua hotrokn` nới `nCurFac > 10` → `> 12`.
+
+### 10.2 Kiểm toán thuộc tính (46 tên trong 38 dòng skills.txt Linux 1347–1384)
+Phương pháp: tên → enum `KMagicAttrib.h` → đếm chỗ dùng ngoài bảng tên (`KNpcAttribModify.cpp`, `KSkills.cpp`, `KNpc.cpp`…). Kết quả: **32 có mã xử lý**, **12 có tên nhưng KHÔNG có mã** (chết im), **2 không có cả tên** (`skill_skillexp_v`, `addskillexp1`).
+
+Dịch ngược `jx_linux_y` (tool `lin_re.py`): bảng tên thuộc tính Linux = mảng `char*` tại VA `0x830e640` (điền bởi mã `0x80724dd..`), bảng handler `KNpcAttribModify` `[this+4+8*idx]` điền tại `0x8099a36..` (kiểm bằng do_stun_p 261 → `0x080968F0`). Kết quả từng thuộc tính chết:
+
+| Thuộc tính (Linux idx) | Handler Linux | Ngữ nghĩa dịch ngược | JX1 sau đợt b |
+|---|---|---|---|
+| `meleedamagereturnmana_p` (286) / `rangedamagereturnmana_p` (287) — 1378 Khí Chấn Sơn Hà {10..25, −1} | `0x080963D0`/`0x080963F0`: `[0x137c]`/`[0x1380] += v0` trên NPC mang thuộc tính | Hàm sát thương `0x08089C90` (`0x08089F19–0x08089F5F`, nhánh xa `0x0808A240`): **sau khi trừ máu NẠN NHÂN**, `mana(KẺ ĐÁNH) += sát_thương × p / 100` (cắt lẻ, `[ebp+0x1c]` = bIsMelee chọn melee/range), âm → 0 (`0x0808A390`), không kẹp trần | handler `MeleeDamageReturnManaP`/`RangeDamageReturnManaP` + `KNpc::CalcDamage` (thêm kẹp trần mana tối đa). ⚠️ Với giá trị dương của 1378, **kẻ đánh trúng người Hoa Sơn được cộng nội lực** — đúng như asm Linux dù mô tả kỹ năng nói "tiêu hao nội công đối thủ" |
+| `addblockrate` (292) — 1370 Hạo Nhiên Chi Khí {10→3, −1, 1→2} | `0x08096430`: `[0x1388] += v0`, `[0x138c] += v2` | `0x0808C078` (tính lại thuộc tính): nếu v0>0 && v2>0 → `[0x1390] = min(25, Random(256)/v0 × v2)`; `0x0808B2C0` (ReceiveDamage): `nBlock = [0x1390] + block_rate[0x1408] − anti_block_rate(kẻ đánh)` | handler `AddBlockRate` + `KNpc::ReceiveDamage` cộng `nKMAddBlock` vào hoá giải (JX1 tung mỗi lần bị đánh thay vì mỗi lần tính lại thuộc tính — cùng phân bố) |
+| `reduceskillcd1/2` (288/289) — 1347/1348/1351/1353/1355/1357/1360 {id kỹ năng, 0, 6..18 khung} | `0x08097250(this, pLauncher, pNpc, attr)` | `KSkillList(NGƯỜI PHÁT)::ReduceCD 0x080E4740`: ô có SkillId: `NextCastTime > f → −= f`; `f < WaitCastTime → −= f`; rồi gửi gói `0xdd` (attr) cho client | `KSkillList::ReduceCoolDown` + chặn trong `KNpc::ModifyAttrib` (có nAttacker) + **giao thức mới `s2c_reduceskillcd`** (`S2C_REDUCE_SKILL_CD {BYTE; WORD skill; WORD frames}`, đặt sau `s2c_syncfusion` — không đổi số các giao thức cũ; handler client `s2cReduceSkillCD`) |
+| `candetonate1/2/3` (295–297) — 1352 {323/326/329·256+1, 10..128}, 1356, 1373 {419·256}, 1377 {421·256, 360}, 1381, 1384 {419/428·256, 100..560} | `0x08097110` → `0x08079870(launcher, style=v0>>8, radius=v2, flag=v0&0xff, region)` + 8 vùng kề `[region+0x78+i*4]` | duyệt danh sách đạn của vùng: `m_nMissleId == style`; quan hệ chủ đạn ↔ người phát: cờ 0 → self|ally (`test al,6`), cờ 1 → enemy (`test al,8`); `sqrt(dx²+dy²)` (mps) ≤ radius → `0x08075210(m, 1)` = sự kiện tan của kỹ năng mẹ (`DoEvent(4)` = VanishedEvent, VD 1380 → 1411) + `GWM_MISSLE_DEL` + trạng thái tan | `KNpc::DetonateMissles` + `KMissle::Detonate()` (= `DoVanish`, JX1 đã làm VanishedEvent + GWM_MISSLE_DEL) chặn trong `ModifyAttrib`. Ý nghĩa: 1352 "phá đao kiếm" tan đạn địch 323/326/329; Khí tông kích nổ kiếm khí phe ta (419/421/423/428 — Linux dùng lại 4 dòng "NPC chiến đấu" làm đạn kiếm khí, JX1 có sẵn y hệt) |
+| `addskilldamage1-3` (304–306) | không có handler (thuộc tính mức kỹ năng) | `KSkill::Parse 0x080EE1EC` lưu {id, ?, %} vào mảng KSkill+0x120; khi thi triển kỹ năng X cộng % từ các kỹ năng khác có addskilldamage trỏ tới X | **JX1 đã có**: `KSkills.cpp:2510` lưu `m_AddSkillDamage`, `KSkillList::GetAddSkillDamage` cộng `nValue[2]`, dùng ở `KNpc::AppendSkillEffect` |
+| `skill_skillexp_v` (8) — 1363/1364/1365/1368/1369/1382/1384 | không có handler | `KSkill::Parse 0x080EE278` lưu vào KSkill+0x11c; `KSkillList 0x080E4F9D/0x080E5F21` dùng làm **ngưỡng exp mỗi cấp** (tiến độ = exp×1024/ngưỡng) | JX1 dùng bảng `settings
+pc\player\magic_level_exp.txt` (`KMagicLevelExp::GetNextExp`, `IsExpSkill=1` đã có trong dòng skills.txt) → **+5 dòng 1364/1365/1369/1382/1384 tính từ Lua** (`hs_exp_table.py`; 5 dòng cùng id trong tệp Linux có giá trị KHÁC Lua và Linux không đọc tệp đó cho các kỹ năng này) |
+| `addskillexp1` (73) — 1382 {0,1,0} | **không có handler ở Linux** | chết ở cả Linux | bỏ (đúng Linux) |
+
+32 thuộc tính còn lại: JX1 có handler (`KNpcAttribModify` / `KSkills`) — chưa đối chiếu công thức từng cái với asm trong đợt này (các đợt trước đã kiểm `anti_hitrecover`, `add_damage_p`, khiên, Khí Doanh…).
+
+### 10.3 Engine đợt b (`hs_engine_patch2.py`, marker `[HOASON 01/09b]`)
+`Headers\KProtocolDef.h` (+`s2c_reduceskillcd`), `KProtocol.cpp` (kích thước), `KProtocol.h` (struct), `KProtocolProcess.h/.cpp` (đăng ký + handler client), `KSkillList.h/.cpp` (`ReduceCoolDown`), `KMissle.h` (`Detonate`), `KNpc.h` (4 trường + `DetonateMissles`), `KNpcAttribModify.h/.cpp` (3 handler + đăng ký), `KNpc.cpp` (reset ×2, hoá giải, hồi nội lực trong `CalcDamage`, `DetonateMissles`, `ModifyAttrib`). Kiểm lưới giao thức (`kiem_luoi_giaothuc.py`): 7 chỗ lệch **như trước** (chú thích cũ), không lệch mới.

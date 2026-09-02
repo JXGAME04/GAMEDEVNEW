@@ -155,6 +155,9 @@ KNpcAttribModify::KNpcAttribModify()
 	// [KM 27/08] sau thuoc tinh he kinh mach
 	ProcessFunc[magic_block_rate] = &KNpcAttribModify::BlockRate;
 	ProcessFunc[magic_anti_block_rate] = &KNpcAttribModify::AntiBlockRate;
+	ProcessFunc[magic_meleedamagereturnmana_p] = &KNpcAttribModify::MeleeDamageReturnManaP;	// [HOASON 01/09b]
+	ProcessFunc[magic_rangedamagereturnmana_p] = &KNpcAttribModify::RangeDamageReturnManaP;
+	ProcessFunc[magic_addblockrate] = &KNpcAttribModify::AddBlockRate;
 	ProcessFunc[magic_enhancehit_rate] = &KNpcAttribModify::EnhanceHitRate;
 	ProcessFunc[magic_anti_enhancehit_rate] = &KNpcAttribModify::AntiEnhanceHitRate;
 	ProcessFunc[magic_anti_allres_yan_p] = &KNpcAttribModify::AntiAllResP;
@@ -1326,6 +1329,27 @@ void KNpcAttribModify::AntiBlockRate( KNpc* pNpc, void* pData )		//#triet tieu h
 {
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	pNpc->m_CurrentAntiBlockRate += pMagic->nValue[0];
+}
+
+// [HOASON 01/09b] Linux 0x080963D0 / 0x080963F0: [0x137c] / [0x1380] += nValue[0] (tren NAN NHAN); ap dung o KNpc::CalcDamage
+void KNpcAttribModify::MeleeDamageReturnManaP( KNpc* pNpc, void* pData )
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentMeleeDamageReturnManaP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::RangeDamageReturnManaP( KNpc* pNpc, void* pData )
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentRangeDamageReturnManaP += pMagic->nValue[0];
+}
+
+// Linux 0x08096430: [0x1388] += nValue[0], [0x138c] += nValue[2]; phan tram do ngau nhien tinh o KNpc::ReceiveDamage (Linux 0x0808C078)
+void KNpcAttribModify::AddBlockRate( KNpc* pNpc, void* pData )
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentAddBlockRateV0 += pMagic->nValue[0];
+	pNpc->m_CurrentAddBlockRateV2 += pMagic->nValue[2];
 }
 
 void KNpcAttribModify::EnhanceHitRate( KNpc* pNpc, void* pData )		//#trong kich

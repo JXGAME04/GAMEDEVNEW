@@ -404,6 +404,12 @@ public:
 	int					m_CurrentAntiSorbDamageP;							//#xuyen giam thuong
 	int					m_CurrentEnhanceHitEffect;							//#hieu qua trong kich
 	int					m_nKMHitPercent;									//#he so don danh luot nay
+	// [HOASON 01/09b] Linux KNpc [0x137c] meleedamagereturnmana_p, [0x1380] rangedamagereturnmana_p (NAN NHAN giu, ke danh +mana),
+	// [0x1388]/[0x138c] addblockrate v0/v2 -> phan tram do ngau nhien min(25, Random(256)/v0*v2) cong vao hoa giai
+	int					m_CurrentMeleeDamageReturnManaP;
+	int					m_CurrentRangeDamageReturnManaP;
+	int					m_CurrentAddBlockRateV0;
+	int					m_CurrentAddBlockRateV2;
 	int					m_CurrentAntiEnhanceHitEffect;						//#khang hieu qua trong kich
 	int					m_CurrentAddDamageP;								//#cong % sat thuong, goc 100
 	int					m_CurrentAntiHitRecover;							//#keo dai dong tac bi thuong gay ra
@@ -755,6 +761,7 @@ public:
 	BOOL				Cost(NPCATTRIB nType, int nCost, BOOL bOnlyCheckCanCast = FALSE);				//OnlyCheckCanCost TRUE
 	void				Load(int nNpcSettingIdx, int nLevel, int nSeries);						//fix by phong ki“u
 	void				GetMpsPos(int * pPosX, int *pPosY);
+	int					DetonateMissles(int nStyle, int nRadius, int nFlag);	// [HOASON 01/09b] Linux 0x08079870 (candetonate1-3)
 #ifndef _SERVER
 	VOID				ClientGotoPos(INT nX, INT nY, INT nMode = 0);	// nMode: 0.Auto; 1.Walk; 2.Run
 	INT					  GetMapDisX(INT nIdx1, INT nIdx2);

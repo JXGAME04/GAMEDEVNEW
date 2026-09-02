@@ -290,6 +290,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_diceitem] = &KProtocolProcess::s2cDiceItem;
 	ProcessFunc[s2c_syncpfpack] = &KProtocolProcess::s2cSyncItemPfPack;	// [PFSYNC 31/08]
 	ProcessFunc[s2c_syncfusion] = &KProtocolProcess::s2cSyncItemFusion;	// [DUNGLUYEN 01/09]
+	ProcessFunc[s2c_reduceskillcd] = &KProtocolProcess::s2cReduceSkillCD;	// [HOASON 01/09b]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -4450,6 +4451,17 @@ void KProtocolProcess::s2cSyncItemFusion(BYTE* pMsg)
 			Player[CLIENT_PLAYER_INDEX].m_nIndex > 0)
 			Player[CLIENT_PLAYER_INDEX].UpdataCurData();
 	}
+}
+
+// [HOASON 01/09b] Linux 0xdd (tu handler reduceskillcd1/2): giam hoi chieu ky nang cua chinh minh tren client
+void KProtocolProcess::s2cReduceSkillCD(BYTE* pMsg)
+{
+	S2C_REDUCE_SKILL_CD* pSync = (S2C_REDUCE_SKILL_CD*)pMsg;
+	if (pSync->ProtocolType != s2c_reduceskillcd)
+		return;
+	int nNpc = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nNpc > 0 && nNpc < MAX_NPC)
+		Npc[nNpc].m_SkillList.ReduceCoolDown((int)pSync->m_wSkillId, (int)pSync->m_wFrames);
 }
 #endif
 

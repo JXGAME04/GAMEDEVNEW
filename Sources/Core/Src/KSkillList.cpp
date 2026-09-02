@@ -616,6 +616,22 @@ void KSkillList::SetNextCastTime(int nSkillID, DWORD dwCurrentTime, DWORD dwNext
 #endif
 }	
 
+// [HOASON 01/09b] Linux KSkillList 0x080E4740 (goi tu handler reduceskillcd1/2 0x08097250 voi (skillId=nValue[0], frames=nValue[2])):
+// tim o co SkillId; NextCastTime > frames -> tru frames; frames < WaitCastTime -> tru frames (so sanh KHONG dau).
+// Khong kiem 'dang hoi chieu hay khong' - dung nhu Linux (tru mot moc da qua la vo hai).
+void KSkillList::ReduceCoolDown(int nSkillID, int nFrames)
+{
+	if (nSkillID <= 0 || nFrames <= 0)
+		return;
+	int i = FindSame(nSkillID);
+	if (!i)
+		return;
+	if (m_Skills[i].NextCastTime > (DWORD)nFrames)
+		m_Skills[i].NextCastTime -= (DWORD)nFrames;
+	if ((DWORD)nFrames < (DWORD)m_Skills[i].WaitCastTime)
+		m_Skills[i].WaitCastTime -= nFrames;
+}
+
 #ifndef _SERVER
 #define MAX_FIGHTSKILL_SORTLIST 50
 #define MAX_LRSKILL_SORTLIST 65

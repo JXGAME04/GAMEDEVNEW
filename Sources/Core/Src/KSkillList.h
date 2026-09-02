@@ -175,6 +175,7 @@ public:
 	int			FindFree();
 	BOOL		CanCast(int nSkillID, DWORD dwTime);
 	void		SetNextCastTime(int nSkillID, DWORD dwCurrentTime, DWORD dwNextCastTime);
+	void		ReduceCoolDown(int nSkillID, int nFrames);	// [HOASON 01/09b] Linux 0x080E4740
 	int			GetSkillId(int nListIndex)
 	{
 		if (nListIndex < MAX_NPCSKILL && nListIndex > 0)

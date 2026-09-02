@@ -958,6 +958,15 @@ typedef struct
 	int		m_nLeavePoint;		// Ê£ÓàÎ´·ÖÅä¼¼ÄÜµã
 } PLAYER_SKILL_LEVEL_SYNC;		// Íæ¼ÒÍ¬²½¼¼ÄÜµã
 
+// [HOASON 01/09b] Linux handler reduceskillcd (0x08097250) gui goi 0xdd (type, v0, v1, v2) toi client cua NGUOI PHAT
+// de client giam NextCastTime/WaitCastTime cua ky nang v0 di v2 khung (KSkillList::ReduceCoolDown).
+typedef struct
+{
+	BYTE	ProtocolType;		// s2c_reduceskillcd
+	WORD	m_wSkillId;
+	WORD	m_wFrames;
+} S2C_REDUCE_SKILL_CD;
+
 //typedef struct
 //{
 //	BYTE	ProtocolType;		// Ð­ÒéÃû³Æ

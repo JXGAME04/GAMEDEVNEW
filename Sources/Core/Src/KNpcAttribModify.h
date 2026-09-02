@@ -136,6 +136,9 @@ private:
 	// [KM 27/08] sau thuoc tinh he kinh mach
 	void	BlockRate(KNpc* pNpc, void* pData);
 	void	AntiBlockRate(KNpc* pNpc, void* pData);
+	void	MeleeDamageReturnManaP(KNpc* pNpc, void* pData);	// [HOASON 01/09b]
+	void	RangeDamageReturnManaP(KNpc* pNpc, void* pData);
+	void	AddBlockRate(KNpc* pNpc, void* pData);
 	void	EnhanceHitRate(KNpc* pNpc, void* pData);
 	void	AntiEnhanceHitRate(KNpc* pNpc, void* pData);
 	void	AntiAllResP(KNpc* pNpc, void* pData);

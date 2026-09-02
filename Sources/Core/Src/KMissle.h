@@ -234,6 +234,7 @@ public:
 	BOOL				GetInfoFromTabFile(int nMissleId);
 	BOOL				GetInfoFromTabFile(KITabFile * pTabFile, int nMissleId);
 	void				GetMpsPos(int *pPosX, int *pPosY);
+	void				Detonate() { DoVanish(); }	// [HOASON 01/09b] kich no (Linux 0x08075210: su kien tan + GWM_MISSLE_DEL + trang thai tan)
 	int					Activate();
 static	BOOL			GetOffsetAxis(int nSubWorld, int nSrcRegionId, int nSrcMapX, int nSrcMapY,
 							int nOffsetMapX, int nOffsetMapY, 

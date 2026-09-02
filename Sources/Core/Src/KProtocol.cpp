@@ -168,6 +168,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(DICE_ITEM_SYNC),				// s2c_diceitem
 	sizeof(ITEM_SYNC_PFPACK),			// s2c_syncpfpack [PFSYNC 31/08]
 	sizeof(ITEM_SYNC_FUSION),			// s2c_syncfusion [DUNGLUYEN 01/09]
+	sizeof(S2C_REDUCE_SKILL_CD),		// s2c_reduceskillcd [HOASON 01/09b]
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,

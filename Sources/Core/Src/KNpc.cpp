@@ -18,6 +18,7 @@ extern void Partner_OnNpcDeath(int nNpcIdx);	// [BDH 27/08] KPlayerPartner.cpp
 #include "KSubWorldSet.h"
 #include "KPlayerBot.h"	// PB_IsBot / PB_TrapLog - bot mien trap
 #include "KRegion.h"
+#include <math.h>	// [HOASON 01/09b] sqrt cho DetonateMissles
 #include "KNpcTemplate.h"
 #include "KItemSet.h"
 #include "KSortScript.h"
@@ -407,6 +408,7 @@ void KNpc::Init()
 	m_CurrentManaToSkillEnhanceP = 0;
 	m_CurrentSorbDamageP = 0;
 	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
+	m_CurrentMeleeDamageReturnManaP = 0; m_CurrentRangeDamageReturnManaP = 0; m_CurrentAddBlockRateV0 = 0; m_CurrentAddBlockRateV2 = 0;	// [HOASON 01/09b]
 	m_CurrentEnhanceHitRate = 0; m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
 	m_CurrentAntiAllResP = 0; m_CurrentAntiSorbDamageP = 0;				// [KM 27/08]
 	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
@@ -3203,10 +3205,100 @@ void KNpc::OnWalk()
 //
 }
 
+#ifdef _SERVER
+// [HOASON 01/09b] Linux 0x08079870 (goi tu handler candetonate1-3 0x08097110 voi launcher=[ebp+0xc]): duyet dan trong vung cua NGUOI PHAT
+// va 8 vung ke ([region+0x78+i*4]); dan co m_nMissleId == nStyle; quan he chu dan <-> nguoi phat: flag 0 -> self|ally (test al,6),
+// flag 1 -> enemy (test al,8), khac -> khong kiem; khoang cach mps sqrt(dx^2+dy^2) <= nRadius -> 0x08075210 = tan ngay (DoVanish:
+// su kien tan cua ky nang me (VD 1380 Ma Van Kiem Khi -> 1411) + GWM_MISSLE_DEL). Tra so dan da kich no.
+int KNpc::DetonateMissles(int nStyle, int nRadius, int nFlag)
+{
+	if (m_Index <= 0 || m_SubWorldIndex < 0 || m_RegionIndex < 0 || nStyle <= 0 || nRadius < 0)
+		return 0;
+	int nMyX = 0, nMyY = 0;
+	GetMpsPos(&nMyX, &nMyY);
+	KSubWorld* pSW = &SubWorld[m_SubWorldIndex];
+	int nRegions[9];
+	int nR = 0;
+	nRegions[nR++] = m_RegionIndex;
+	for (int k = 0; k < 8; k++)
+	{
+		int r = pSW->m_Region[m_RegionIndex].m_nConnectRegion[k];
+		if (r >= 0 && r < pSW->m_nTotalRegion)	// MAX_REGION chi co o client; server dung m_nTotalRegion
+			nRegions[nR++] = r;
+	}
+	int nDem = 0;
+	for (int ri = 0; ri < nR; ri++)
+	{
+		KRegion* pRegion = &pSW->m_Region[nRegions[ri]];
+		KIndexNode* pNode = (KIndexNode*)pRegion->m_MissleList.GetHead();
+		while (pNode)
+		{
+			KIndexNode* pNext = (KIndexNode*)pNode->GetNext();	// lay next TRUOC: DoVanish co the go dan khoi danh sach
+			int nIdx = pNode->m_nIndex;
+			if (nIdx > 0 && nIdx < MAX_MISSLE && Missle[nIdx].m_nMissleId == nStyle
+				&& Missle[nIdx].m_nLauncher > 0 && Missle[nIdx].m_nLauncher < MAX_NPC && Npc[Missle[nIdx].m_nLauncher].m_Index > 0)
+			{
+				int nRel = (int)NpcSet.GetRelation(m_Index, Missle[nIdx].m_nLauncher);
+				BOOL bOk = TRUE;
+				if (nFlag == 0)
+					bOk = (nRel & (relation_self | relation_ally)) != 0;
+				else if (nFlag == 1)
+					bOk = (nRel & relation_enemy) != 0;
+				if (bOk)
+				{
+					int nMX = 0, nMY = 0;
+					Missle[nIdx].GetMpsPos(&nMX, &nMY);
+					int nDx = nMX - nMyX, nDy = nMY - nMyY;
+					int nDist = (int)sqrt((double)(nDx * nDx + nDy * nDy));
+					if (nDist >= 0 && nRadius >= nDist)
+					{
+						AUTOLOG_IDX(m_Index, "[HS-DETONATE] lch=%d style=%d msl=%d(sk=%d owner=%d rel=%d) dist=%d/%d flag=%d", m_Index, nStyle, nIdx, Missle[nIdx].m_nSkillId, Missle[nIdx].m_nLauncher, nRel, nDist, nRadius, nFlag);
+						Missle[nIdx].Detonate();
+						nDem++;
+					}
+				}
+			}
+			pNode = pNext;
+		}
+	}
+	return nDem;
+}
+#endif
+
 void KNpc::ModifyAttrib(int nAttacker, void* pData)
 {
-	if (pData != NULL)
-		g_NpcAttribModify.ModifyAttrib(this, pData);
+	if (pData == NULL)
+		return;
+#ifdef _SERVER
+	// [HOASON 01/09b] 2 nhom thuoc tinh Linux can NGUOI PHAT (handler Linux nhan (this, pLauncher, pNpc, pAttrib), JX1 chi co (pNpc, pData)):
+	KMagicAttrib* pMA = (KMagicAttrib*)pData;
+	if (pMA->nAttribType == magic_reduceskillcd1 || pMA->nAttribType == magic_reduceskillcd2)
+	{
+		// Linux 0x08097250: giam hoi chieu ky nang nValue[0] cua NGUOI PHAT di nValue[2] khung, roi gui 0xdd cho client cua nguoi phat
+		if (nAttacker > 0 && nAttacker < MAX_NPC && Npc[nAttacker].m_Index > 0 && pMA->nValue[0] > 0)
+		{
+			Npc[nAttacker].m_SkillList.ReduceCoolDown(pMA->nValue[0], pMA->nValue[2]);
+			if (Npc[nAttacker].m_Kind == kind_player && Npc[nAttacker].m_nPlayerIdx > 0 && Npc[nAttacker].m_nPlayerIdx < MAX_PLAYER
+				&& g_pServer && Player[Npc[nAttacker].m_nPlayerIdx].m_nNetConnectIdx != -1)
+			{
+				S2C_REDUCE_SKILL_CD sSync;
+				sSync.ProtocolType = s2c_reduceskillcd;
+				sSync.m_wSkillId = (WORD)pMA->nValue[0];
+				sSync.m_wFrames = (WORD)(pMA->nValue[2] > 0 ? pMA->nValue[2] : 0);
+				g_pServer->PackDataToClient(Player[Npc[nAttacker].m_nPlayerIdx].m_nNetConnectIdx, &sSync, sizeof(sSync));
+			}
+		}
+		return;
+	}
+	if (pMA->nAttribType >= magic_candetonate1 && pMA->nAttribType <= magic_candetonate3)
+	{
+		// Linux 0x08097110: nValue[0] = id_dan*256 + co (0 = dan phe ta, 1 = dan dich), nValue[2] = ban kinh (mps), quanh NGUOI PHAT
+		if (nAttacker > 0 && nAttacker < MAX_NPC && Npc[nAttacker].m_Index > 0 && pMA->nValue[0] > 0)
+			Npc[nAttacker].DetonateMissles(pMA->nValue[0] >> 8, pMA->nValue[2], pMA->nValue[0] & 0xff);
+		return;
+	}
+#endif
+	g_NpcAttribModify.ModifyAttrib(this, pData);
 }
 
 #ifdef _SERVER
@@ -4050,6 +4142,23 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 	}
 #ifdef _SERVER
+	// [HOASON 01/09b] melee/rangedamagereturnmana_p (Khi Chan Son Ha 1378) - Linux ham sat thuong 0x08089C90 (0x08089F19-0x08089F5F, 0x0808A240):
+	// truong nam tren NAN NHAN; sau khi tru mau: mana(KE DANH) += sat_thuong * p / 100 (cat phan le), am -> 0 (0x0808A390).
+	// Linux khong kep tran; JX1 kep tran mana toi da de khong vuot UI. bIsMelee chon melee/range nhu [ebp+0x1c] Linux.
+	if (nAttacker > 0 && nAttacker < MAX_NPC && nAttacker != m_Index && Npc[nAttacker].m_Index > 0 && nDamage > 0)
+	{
+		int nRetManaP = bIsMelee ? m_CurrentMeleeDamageReturnManaP : m_CurrentRangeDamageReturnManaP;
+		if (nRetManaP != 0)
+		{
+			int nNewMana = Npc[nAttacker].m_CurrentMana + (int)((double)nDamage * nRetManaP / 100.0);
+			if (nNewMana < 0)
+				nNewMana = 0;
+			if (nNewMana > Npc[nAttacker].m_CurrentManaMax)
+				nNewMana = Npc[nAttacker].m_CurrentManaMax;
+			AUTOLOG_EVERY(1000, "[HS-RETMANA] tgt=%d atk=%d melee=%d dmg=%d p=%d mana %d->%d", m_Index, nAttacker, (int)bIsMelee, nDamage, nRetManaP, Npc[nAttacker].m_CurrentMana, nNewMana);
+			Npc[nAttacker].m_CurrentMana = nNewMana;
+		}
+	}
 	// [WLLS 21/08] bo dem sat thuong HUNG CHIU (ST_*DamageCounter): dat NGAY
 	// truoc dong tru mau duy nhat - SAU chuyen-noi-luc, khien tinh va clamp
 	// overkill - de dem dung MAU MAT THAT (tie-break xu thang thua theo damage
@@ -4119,7 +4228,16 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		// (KMissle.cpp:1266: ReceiveDamage tra FALSE la bo ca khau ap trang thai).
 		if ((NpcSet.GetRelation(nLauncher, m_Index) & (relation_ally | relation_enemy)) == relation_enemy)
 		{
-			int nKMBlock = m_CurrentBlockRate - Npc[nLauncher].m_CurrentAntiBlockRate;
+			// [HOASON 01/09b] addblockrate (Hao Nhien Chi Khi 1370) - Linux 0x0808C078: neu v0>0 && v2>0 thi [0x1390] = min(25, Random(256)/v0*v2)
+			// (Linux tinh moi lan tinh lai thuoc tinh; JX1 tung moi lan bi danh - cung phan bo), 0x0808B2C0 cong [0x1390] vao block_rate.
+			int nKMAddBlock = 0;
+			if (m_CurrentAddBlockRateV0 > 0 && m_CurrentAddBlockRateV2 > 0)
+			{
+				nKMAddBlock = ((int)g_Random(256) / m_CurrentAddBlockRateV0) * m_CurrentAddBlockRateV2;
+				if (nKMAddBlock > 25)
+					nKMAddBlock = 25;
+			}
+			int nKMBlock = m_CurrentBlockRate + nKMAddBlock - Npc[nLauncher].m_CurrentAntiBlockRate;
 			if (nKMBlock > 0 && nKMBlock > (int)g_Random(MAX_PERCENT))
 			{
 				AUTOLOG_IDX(nLauncher, "[KM-BLOCK] tgt=%d lch=%d block=%d -> HOA GIAI, huy don", m_Index, nLauncher, nKMBlock);
@@ -10159,6 +10277,7 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentManaToSkillEnhanceP = 0;					//#khi noi cong day tang ky nang cong kich
 	m_CurrentSorbDamageP = 0;								//#triet tieu sat thuong
 	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
+	m_CurrentMeleeDamageReturnManaP = 0; m_CurrentRangeDamageReturnManaP = 0; m_CurrentAddBlockRateV0 = 0; m_CurrentAddBlockRateV2 = 0;	// [HOASON 01/09b]
 	m_CurrentEnhanceHitRate = 0; m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
 	m_CurrentAntiAllResP = 0; m_CurrentAntiSorbDamageP = 0;				// [KM 27/08]
 	m_CurrentEnhanceHitEffect = 0; m_nKMHitPercent = 100;				// [KM 27/08]
