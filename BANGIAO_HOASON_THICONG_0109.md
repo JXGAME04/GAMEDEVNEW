@@ -244,3 +244,5 @@ Không có lỗi nạp kỹ năng trong log server/client (không dòng "Cap ky 
 3. Cổng `m_Level >= LEVEL_EXPLOSIVE (120)` trước `ReplySkill/RescueSkill/AttackSkill` (KNpc.cpp:3649/3656): Linux không có → bỏ (1364 là chiêu 90; các auto-skill 120 của phái khác vẫn cần học ở 120 nên không đổi).
 
 Đã kiểm 65 dòng skills.txt Linux dùng auto*skill: chỉ Hoa Sơn 1364 có byte loại; phái khác v0 = id·256 + cấp → sau mặt nạ vẫn đúng.
+
+**Bộ nhị phân đợt e (02/09 00:17, commit `40e3be2e`):** `bin\server\CoreServer.dll.moi` md5 `9d7ae996` (18.245.632 B) + `bin\client\CoreClient.dll.moi` md5 `741b2d5b` — PHẢI swap cùng nhau (giao thức s2c_reduceskillcd đợt d). Game.exe/Goddess.exe `.moi` đợt d đã được chủ swap lúc 00:00 (không còn `.moi`), không cần swap lại.

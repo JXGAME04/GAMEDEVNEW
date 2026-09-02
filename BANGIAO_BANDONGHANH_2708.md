@@ -323,7 +323,8 @@ Các dòng nhãn **"GO SAU KHI NGHIEM THU"**:
 
 ### 11.1 Bản VN gốc TẮT hệ nhiệm vụ ngẫu nhiên đồng hành
 
-`D:\ServerLinux\server1\script	ask\systemandom.lua:36-40` (trigger 12 phút/lần):
+`D:\ServerLinux\server1\script	ask\system
+andom.lua:36-40` (trigger 12 phút/lần):
 
 ```lua
 local szRegion = GetProductRegion();
@@ -339,7 +340,8 @@ thiếu hàm là chết thoại).
 
 ### 11.2 Compat đã đặt (`bin\server\script	ask\system	ask_main.lua` — tệp MỚI)
 
-- ID_RANDOMTASK 1301 … ID_RANDOMTASKNUM 1309 (đúng số `taskandom	ask_head.lua:50-66`).
+- ID_RANDOMTASK 1301 … ID_RANDOMTASKNUM 1309 (đúng số `task
+andom	ask_head.lua:50-66`).
 - `get/setRandomTaskState` THẬT (đọc/ghi task 1303); các hàm khung TASKSYS
   (TaskName/TaskNo/GetTaskStatus/SetTaskStatus/CloseTask/ApplyTask/GetTaskText/
   checkTaskBookEnable/checkRandomTaskEnable/initRandomTask/_confirmRandomTask) trả
@@ -361,8 +363,11 @@ thiếu hàm là chết thoại).
 Khối lượng đã đo: C-API TASKSYS phải dịch ngược từ binary Linux (TaskName/TaskNo/
 GetTaskStatus/SetTaskStatus/CloseTask/GetTaskText/TaskEvent/EnumEventList…), framework Lua
 `task\system\` (task_head 920 + task_main 852 + tools/function/string/random ≈ 2.5k dòng),
-bảng `settings	askandomate_*.txt` (6 bảng) + định nghĩa nhiệm vụ, item Mật đồ
-(id Linux 904 — NGOÀI dải item partner đã port), `taskandom	ask_head.lua` + treasure_head
+bảng `settings	ask
+andom
+ate_*.txt` (6 bảng) + định nghĩa nhiệm vụ, item Mật đồ
+(id Linux 904 — NGOÀI dải item partner đã port), `task
+andom	ask_head.lua` + treasure_head
 (đào bảo 577 dòng), client bảng nhiệm vụ (bản gốc dùng Lua UI mobile `taskui_partner_random.lua`
 — JX1 cần nối vào TaskGuide F12). Các hệ Linux khác (activitysys/event/giftcode) cũng dùng
 TASKSYS — port chung một thể sẽ lợi.
@@ -788,3 +793,153 @@ KHONG co trong pak -> thiet ke theo dung giao thuc + bang tren.
 7. Go PLOG + petops.log sau khi nghiem thu.
 8. He partner mobile (UiPartner*) da bi CHAN mo - neu can dung lai thi
    go `return NULL` trong 4 tep UiPartner*.cpp.
+
+## 21. ĐỢT 31/08 ĐÊM [PETKN] — KỸ NĂNG PET: DAME + NÂNG BẰNG TU CHÂN + BUFF VÀO PET
+
+Chủ chốt: (1) kỹ năng mặc định pet PHẢI CÓ DAME; (2) kỹ năng thuộc tính (18 bí kíp)
+nâng bằng điểm Tu Chân — tối đa 30 điểm/kỹ năng, cấp N→N+1 tốn N×10 điểm;
+(3) mọi kỹ năng + vào PET, không + vào nhân vật.
+
+### 21.1 Đã làm (commit `2df5441d`, bộ vá `p91_kynang_pet_tuchan.py`, marker `[PETKN 31/08]`)
+- **Gốc "pet không có dame"**: template pet là NPC thoại `Min/MaxDamageParam=100` phẳng,
+  sPetFight cũ đánh bằng skill template (324/40) ⇒ gãi ghẻ. **Đổi**: skill 1600..1603
+  từ buff-state (cast lên CHỦ) → **ĐÒN ĐÁNH vật lý** style 0 khuôn skill 53 (melee,
+  missle line child 63, IsPhysical/IsUseAR, DoHurt 80, MaxLevel 63); dame + độ chính xác
+  theo cấp trong `aura.lua` (`attackrating_v` {1:300→63:5200}, `physicsdamage_v`
+  min {1:80→63:4000} max {1:120→63:6000}; **loại 2 hiếm 10% = +20% dame**); đổi tên
+  4 loại: Trảm/Cuồng/Liệt/Phá Kích (skills.txt + head.lua). Cấp skill = (cấp pet+1)/2
+  trần 63 (`MAX_SKILLLEVEL=64` — GetSkill chặn cứng; aura cũ cấp >63 vốn MẤT buff ngầm).
+  sPetFight: đặt skill vào **slot 10** skill-list NPC pet, chọn địch mode 22 tầm 480,
+  trong tầm (m_CurrentAttackRadius) thì do_skill, ngoài tầm thì do_walk áp sát
+  (khuôn KNpcAI::FollowAttack; `s_nChaseTick` 18 khung để follow-chủ không kéo ngược).
+- **Bí kíp nâng bằng Tu Chân**: cấp lưu **task 5166..5169** (ô sạch tuyệt đối, nằm trong
+  cổng sync client 5110..5169; đi cặp với ô id 5139..5142). Menu nút **Tu Chân (op 8)**
+  giờ có: đổi chân nguyên (như cũ) + "Nâng [tên] cấp N lên N+1 (tốn N×10 điểm)" từng
+  kỹ năng đã học; trần 30. Cấu hình `ch_chung.lua`: `BDH_KYNANG_BIKIP_CAP_TOI_DA=30`,
+  `BDH_TUCHAN_MOI_CAP_KYNANG=10`. Nâng đủ 4 kỹ năng 1→30 tốn 17.400 điểm (trần Tu Chân
+  20.000 — vừa khớp). `petskill.lua` nối 18 đường cong 20→30 (tuyến tính đoạn cuối,
+  5 kháng giữ 100 kịch trần); skills.txt MaxLevel 1670..1687: 5→30. BIKIP_SKILLS chuyển
+  `bikip.lua`→`common.lua` (xiuzhen dùng chung); học bí kíp đặt cấp khởi điểm 1.
+- **Buff vào PET**: sPetApplyAura → `sPetApplyPetSkills` — bí kíp `SetNpcSkill` slot
+  11..14 của NPC PET (style 3 tự CastPassivitySkill **vĩnh viễn −1**, mất theo npc khi
+  thu về; KNpc.cpp:7721 refresh cùng cấp CHỈ làm mới giờ — không cộng dồn; cấp cao hơn
+  gỡ giá trị cũ áp mới). GỠ HẾT cast lên chủ + SetSkillLevelDirectlyUsingId lên chủ
+  (soi ra vốn là **no-op**: FindSame không thấy skill chưa học ⇒ tooltip trước giờ luôn
+  cấp 0). Tooltip mới: client `CoreShell.cpp` nhánh CGOG_SKILL_FIGHT đọc thẳng task
+  value (aura: (5111+1)/2 nếu 5124 khớp; bí kíp: quét 5139..5142 → cấp 5166..5169);
+  `UiPet.cpp` truyền cấp thật vào HoldObject. `BDH_P_XoaKN` dọn cả 5166..5169.
+
+### 21.2 Nhị phân `.moi` ĐANG CHỜ SWAP (đè bộ PF13 — bản này là SUPERSET: PF13 31/08d
++ REFOAN-VS + ô chết + bot/TK `KPlayerBot.cpp` + PETKN; build 01/09 00:0x, 0 lỗi)
+| Tệp | md5(12) |
+|---|---|
+| `bin\server\CoreServer.dll.moi` | `3d4e6f9f628f` |
+| `bin\client\CoreClient.dll.moi` | `cbcfbd333b19` |
+| `bin\client\Game.exe.moi` | `b1f606a58e38` |
+PHẢI cùng lúc cả 3 (skills.txt đã đổi SkillStyle 1600..1603 CẢ server+client — binary cũ
++ data mới hoặc ngược lại đều lệch hiển thị/hành vi; data .txt/.lua đã nằm sẵn trên đĩa
+2 cây, backup `.truoc_petkn`). Swap bằng `ChayGameServer.bat`/`ChoiGame.bat` như thường.
+
+### 21.3 Nghiệm thu sau restart
+1. Lệnh bài admin → Bộ test Đồng hành → Tạo pet nhanh → gọi ra, bật chiến đấu, kéo quái:
+   pet CHẠY LẠI GẦN quái và đánh ra số dame (thử pet cấp thấp ~100+ dame, có trượt/né).
+2. Cấp 9999 điểm → nút Tu Chân: thấy dòng "Nâng [kỹ năng] cấp 1 lên 2 (tốn 10 điểm)";
+   nâng liền vài cấp, kiểm điểm trừ đúng 10/20/30…; tooltip icon bí kíp hiện đúng cấp.
+3. Buff KHÔNG còn trên người chơi: trước quen thấy kháng/HP tăng khi gọi pet — giờ phải
+   KHÔNG đổi; đánh quái xem HP pet (lifemax bí kíp Thiểm Quang) tăng theo cấp nâng.
+4. Pet cấp >63 (nếu có sẵn): vẫn đánh được (trần cấp skill 63 là chủ đích).
+5. Hình/icon 4 skill mặc định giữ nguyên, tên mới Trảm/Cuồng/Liệt/Phá Kích.
+
+### 21.4 Ghi chú tồn
+- Số dame/AR chỉnh trong `aura.lua` (2 cây), số cấp/giá chỉnh `ch_chung.lua` — không cần build C.
+- UI chưa vẽ SỐ cấp lên icon bí kíp (chỉ tooltip); vẽ số = việc đánh bóng sau.
+- Bí kíp đã học KHÔNG bị xoá khi xoá pet (hành vi cũ giữ nguyên).
+- Phản biện đa tác tử đợt này bị đứt do hết hạn mức phiên (5 agent chết giữa chừng) —
+  các điểm chí mạng đã tự kiểm bằng mã thật (FindSame/refresh-state/enum-range/512B/sync-gate);
+  nếu muốn soát thêm vòng nữa thì chạy lại workflow phản biện sau.
+
+### 21.5 ĐỢT 2 [PETKN2 01/09] — theo nghiệm thu đợt 1 của chủ (commit `d844f0af`)
+
+Chủ báo: đánh không có sát thương · Thiểm Quang +HP không thấy trên pet · đổi chiêu
+mặc định thành chiêu nội công 90 theo HỆ của chủ · cấp chiêu chỉ theo cấp pet ·
+menu Đúc lại hiện tiếng Việt có dấu.
+
+1. **Chiêu đánh theo HỆ chủ** (chọn theo cột Series skills.txt, ưu tiên bản
+   flat-damage/npc): Kim=**327** Truy Tinh Trục Nguyệt · Mộc=**437** Truy Tinh Trục
+   Điện npc (độc) · Thủy=**336** Băng Tung Vô Ảnh (băng) · Hỏa=**357 Phi Long Tại
+   Thiên (rồng Cái Bang)** · Thổ=**438** Thái Cực Vô Ý npc (lôi). Đổi chiêu: sửa
+   `s_nPetAtkBySeries[]` trong `KPlayerPet.cpp`. Id chiêu hiện tại ghi **task 5156**
+   (client vẽ icon ô 1 + tooltip; dữ liệu cũ 5156=0 → vẽ kiểu cũ tới lần gọi pet đầu).
+2. **Cấp chiêu CHỈ theo cấp pet**: cấp = cấp_pet × MaxLevel(bảng) / 130 làm tròn lên
+   (MaxLevel các chiêu này = 20 → pet 130 đạt kịch; công thức `sPetAtkLevel`, client
+   CoreShell dùng CÙNG công thức). KHÔNG nâng bằng Tu Chân (menu Tu Chân chỉ có bí kíp).
+3. **Gốc "không có sát thương"**: template pet là NPC thoại Min/MaxDamage=100 AR=100
+   → chiêu ăn theo `physicsenhance`/AR thành gãi ghẻ. Đặt sức đánh cơ bản theo CẤP khi
+   triệu: min 60+30×cấp, max 90+45×cấp, AR 200+40×cấp (macro `PET_DMGMIN/MAX/ATKRATING`
+   trong `KPlayerPet.h` — chỉnh số ở đấy).
+4. **Thiểm Quang +HP thấy được**: hồi đầy máu SAU khi áp trang bị + passive; nhánh
+   đổi-bộ trong Breathe chỉ dịch phần GỐC `m_LifeMax`, giữ nguyên phần buff trên
+   `m_CurrentLifeMax` (trước ghi đè tổng làm MẤT buff mỗi lần đổi bộ — lỗi cũ);
+   **tổng sinh lực hiệu lực ghi task 5159** — dòng Sinh lực cửa sổ pet hiện số này.
+5. **Đúc lại tiếng Việt**: `petequip.lua` tra tên từ `settings\petsysttribname.txt`
+   (đủ 30/30 mã) thay `[233]+5000`; danh sách 10 ô chỉ hiện vị trí (10 dòng kèm mô tả
+   sẽ tràn trần 512 byte của SayEx — chi tiết xem ở menu con từng ô). Backup
+   `.truoc_petkn2`.
+
+Nhị phân `.moi` MỚI (build 01/09 08:54 — **superset toàn bộ cây**: PETKN + PETKN2 +
+TkKet3 54634cb3 + PF13 tẩy luyện/kháng 7e5c2599 + font-fix + xúc xắc d64e288a):
+| Tệp | md5(12) |
+|---|---|
+| `bin\server\CoreServer.dll.moi` | `27f7960839bc` |
+| `bin\client\CoreClient.dll.moi` | `0d12f8d31206` |
+| `bin\client\Game.exe.moi` | `f060aa862648` |
+(Đè bộ TkKet3 `66c1f6d1` + Viêm Đế `F08DE7D1` — nội dung hai bộ đó GỘP nguyên.)
+
+Nghiệm thu đợt 2: (1) chủ hệ Hỏa gọi pet → ô kỹ năng 1 hiện Phi Long Tại Thiên, bật
+chiến đấu thấy pet phun RỒNG có số dame; (2) đổi nhân vật hệ khác thấy chiêu khác;
+(3) nâng Thiểm Quang → dòng Sinh lực cửa sổ pet TĂNG ngay, thanh máu trên đầu pet
+tăng theo; (4) menu Đúc lại hiện "Sinh lực tối đa +5000" thay "[233]+5000".
+
+### 21.6 ĐỢT 3 [PETKN3 01/09] — nghiệm thu đợt 2 của chủ (commit `ef99c3a3`)
+
+Chủ báo: icon kỹ năng mặc định quá to · Thiểm Quang +12800 sinh lực mà dòng Sinh lực chỉ 6210.
+
+1. **HP buff không vào — GỐC ENGINE**: NPC pet có `m_SkillList.m_nNpcIndex == 0`.
+   `KNpcSet.cpp:496` gán index TRƯỚC khi `Load()` chép đè cả struct `m_SkillList` từ
+   template (`KNpc.cpp:8333`, memberwise copy, KSkillList không có operator=) ⇒
+   `SetNpcSkill` tự-cast passive gọi `Cast(0,-1,0)` và bị `KSkills.cpp:420` từ chối im
+   lặng (`Npc[0].m_Index<=0`) ⇒ 4 bí kíp CHƯA TỪNG áp lên pet; 6210 = đúng gốc+bộ.
+   Sửa cục bộ: `pNpc->m_SkillList.m_nNpcIndex = nNpc` trong `sPetApplyPetSkills` trước
+   SetNpcSkill. **KHÔNG sửa engine** dù lỗi này khiến passive template (style 1/3) của
+   MỌI NPC thường xưa nay cũng chết im — sửa toàn cục = đổi sức mạnh quái (Gate 4), để
+   chủ quyết riêng. Số +12800 = khối "(Đang cấp kế tiếp)" cấp 31 ngoại suy trong tooltip
+   (GetDesc luôn in cấp+1, GetSkill không chặn MaxLevel) — không phải server áp 12800.
+   Bug ngủ ghi nhận: nhánh nâng cấp của `SetStateSkillEffect` (KNpc.cpp:7754) không
+   cập nhật `pNode->m_Level` ⇒ mỗi 30s refresh đi lại nhánh gỡ-rồi-áp (net 0, vô hại).
+2. **Icon to — GỐC**: ô Skill_1 26×26 (`pet_main.ini`), icon chiêu người chơi 36×36
+   (`\spr\Ui\skill\*`), `KSkill::DrawSkillIcon` vẽ SPR NATIVE không scale
+   (`RU_T_IMAGE_STRETCH` chỉ cho bitmap16) ⇒ tràn 10px. Sửa: lớp `KWndPetAtkBox`
+   (UiPet.h/.cpp) giữ HoldObject (tooltip/hover y cũ) nhưng vẽ icon 24×24 riêng
+   `\spr\Ui3\pet\atkskill\atk_<id>.spr` — 5 file do `p92_icon_pet_atk24.py` thu nhỏ
+   từ icon gốc (giữ palette, LANCZOS, cùng cỡ bộ icon pet 24×24 có sẵn). CẤM sửa cột
+   SkillIcon skills.txt (luật 30/08 + làm nhỏ icon người chơi thật).
+
+Nhị phân `.moi` (build 01/09 13:11, HEAD `ef99c3a3` = pet 3 đợt + bot + box + chí tử
+d22b24ca + kiểm toán 0af3ac52 + bot bang hội/tổ đội 90f13d30 — commit 13:03, TRƯỚC build,
+working tree Core sạch lúc build nên KHÔNG cuốn tệp dở nào; riêng Game.exe 2fa9c1fd lúc
+link 13:15 có thể cuốn UiMantleWash.cpp/.h đang sửa dở của phiên box → đã bị chính phiên
+box đè bằng bản sạch f71c0529 từ 9dd11893, coi như bỏ):
+| Tệp | md5(12) |
+|---|---|
+| `bin\server\CoreServer.dll.moi` | `3730dc63` |
+(CoreServer do phiên bot `wauto-af` build 13:16 = HEAD ef99c3a3 + `be1d5753` bot đợt b — superset bản cbc44ea9a0d7 của pet, backup `_moi_backup\0109_cbc44ea9\`.)
+| `bin\client\CoreClient.dll.moi` | `c2b3d6b4100f` |
+| `bin\client\Game.exe.moi` | `f71c0529bde5` |
+(Game.exe do phiên box `wauto-ec` build 13:15 = HEAD ef99c3a3 + `9dd11893` UiMantleWash làm lại — superset bản 2fa9c1fd của pet, backup `_moi_backup\0109_wash_truoc\`.)
+Bộ trước (CoreServer `fb284d90` của phiên khác + CoreClient `0d12f8d3`) sao lưu
+`_moi_backup\0109_27f79608\`; `Game.exe.moi` cũ đã được chủ swap trước đó (không còn).
+
+Nghiệm thu đợt 3: (1) gọi pet → ô kỹ năng 1 icon vừa ô 26×26, tooltip vẫn hiện; (2) dòng
+Sinh lực cửa sổ pet = gốc + bộ + Thiểm Quang (vd 6210 + 12400 = 18610), thanh máu trên
+đầu pet cũng tăng; nâng thêm cấp thấy tăng ngay; (3) các bí kíp khác (kháng, hóa giải…)
+giờ mới thật sự có hiệu lực trên pet — pet trâu hơn rõ khi bị quái đánh.

@@ -1739,9 +1739,11 @@ Còn đúng MỘT điều không quan sát được: mỗi tick pha 3 của con 
 
 ### Trạng thái binary + nghiệm thu
 
-- **`CoreServer.dll.moi` = `66c1f6d1`** (01/09 00:26) đè `.moi` PF13 cũ `3d4e6f9f`
-  (backup `.moi.cu_0109_truoc_tkket3_3d4e6f9f`) — superset: đủ marker mantle/REFOAN/COST=/
-  DOCTHUAN + TkKet3×7. GameServer đang chạy `2472b5e1` (31/08 20:19) ⇒ **CHỜ CHỦ RESTART**.
+- ~~`CoreServer.dll.moi` = `66c1f6d1` (01/09 00:26)~~ → bị bộ [PETKN2] `1c39f1d34b37` (08:58)
+  rồi bộ BOX `27f7960839bc` (01/09 sáng, phiên wauto-9c) đè — **TkKet3×7 + COST=/DOCTHUAN đã
+  KIỂM GREP còn nguyên trong bản cuối** (backup bộ giữa ở `_moi_backup\0109_1c39f1d3\`).
+  KPlayerBot.cpp (chuỗi 9.50 + TkKet3) đã **commit `efa6180e`** theo yêu cầu phiên wauto-9c —
+  hết cảnh file-dùng-chung-không-commit. GameServer đang chạy bản cũ ⇒ **CHỜ CHỦ RESTART**.
 - `Client Release|Win32` biên dịch sạch (file dùng chung) — **KHÔNG deploy client**, các `.moi`
   client PF13 giữ nguyên.
 - Chuỗi tái áp CUỐI: … → noi_hoan → **tkket3_moxe**.

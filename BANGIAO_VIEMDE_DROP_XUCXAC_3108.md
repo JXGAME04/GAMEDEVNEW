@@ -1,4 +1,44 @@
-# BÀN GIAO 31/08 tối — Viêm Đế: **spam `nItemGenre=59082`** + **xúc xắc bấm "Cần" ra 0 điểm**
+# BÀN GIAO 31/08 tối (cập nhật 01/09 sáng) — Viêm Đế: **spam `nItemGenre=59082`** + **xúc xắc bấm "Cần" ra 0 điểm**
+
+> ## ⚡ CẬP NHẬT 01/09 — GỐC THẬT CỦA LỖI XÚC XẮC LÀ TẦNG CLIENT, ĐÃ VÁ
+>
+> Sau restart 7:43 sáng 01/09 (hai vá script dưới ĐÃ sống) chủ báo **bấm "Cần" vẫn
+> không ra điểm** ⇒ mở lại điều tra, tìm ra **tầng gốc thật**:
+>
+> **`KWndButton` chỉ báo `WND_N_BUTTON_CLICK` cho CHA TRỰC TIẾP** (`WndButton.cpp:326`),
+> mà hai nút Cần/Bỏ qua là **con của ô hàng `m_Row[i]`** (`UiDiceItem.cpp:112-113`),
+> không phải của cửa sổ chính — trong khi `KUiDiceItem::WndProc` mới là nơi bắt sự kiện.
+> Thông báo bấm nút **chết ngay tại `m_Row` (KWndImage)** ⇒ `SendChoice` không bao giờ
+> chạy ⇒ **gói `c2s_diceitem` không bao giờ được gửi** ⇒ server không thấy gì, hết 20
+> giây chốt hết-giờ, người bấm vẫn ở trạng thái CHỜ ⇒ "0 điểm". Hằng số, mọi cú bấm —
+> giải thích trọn triệu chứng cả 31/08 lẫn 01/09, kể cả khi không có bot.
+>
+> **Vá (commit `d64e288a`):** `UiDiceItem.h` — `m_Row` đổi `KWndImage` → **`KWndPage`**
+> (`WndPage.cpp:20-28`, lớp Kingsoft gốc 2002 sinh ra đúng cho việc này: chuyển tiếp
+> `WND_N_BUTTON_CLICK` + chuột lên cha, khuôn PropertiePage). 1 dòng kiểu + 1 include,
+> không đổi bố cục. Quét toàn cây S3Client: **chỉ UiDiceItem** dính bẫy này.
+>
+> **`Game.exe.moi` md5 `F08DE7D14F9E`** (build 8:31 từ HEAD `18a3930b` + vá — superset
+> bộ 8:12 của phiên wauto-9c, đã đối chiếu chéo: S3Client sạch ở HEAD). Hai `.moi` Core
+> của wauto-9c (`51821825D4EE` / `F9D077F2A653`) **giữ nguyên, swap cùng lượt**.
+>
+> **Xếp tầng chẩn đoán lại cho đúng:** vá lọc bot 31/08 (dưới) là **tầng phụ vẫn đúng
+> và vẫn cần** (khôi phục chốt-sớm như Linux + hết dòng "0 điểm" của bot), nhưng **không
+> phải gốc** — gốc là tầng UI client này. Phần "race đồng hồ trễ 1-2s" hôm qua là
+> suy luận thừa khi chưa thấy tầng UI; giữ lại làm ghi chú, không phải cơ chế chính.
+>
+> **Nghiệm thu 01/09:** riêng lỗi xúc xắc chỉ cần **thoát game → `ChoiGame.bat`** (ăn
+> `Game.exe.moi` + `CoreClient.dll.moi`; đã kiểm: không có thay đổi giao thức nào sau
+> PF13 nên client mới nói chuyện server đang chạy vẫn khớp). Muốn ăn trọn bộ kể cả
+> `CoreServer.dll.moi` của phiên wauto-9c thì theo quy trình chuẩn: tắt server →
+> `ChayGameServer.bat` → `ChoiGame.bat`. Sau đó vào Viêm Đế → bấm "Cần": phải ra
+> **điểm 1-100 ngay lập tức** + cửa sổ đóng liền + nhận đồ nếu điểm cao nhất.
+>
+> **Phân định khi nghiệm thu (tránh chẩn nhầm "vẫn lỗi"):** thước đo vá UI sống là
+> **ĐIỂM hiện NGAY khi bấm**. Đi solo (lọc bot đang sống) thì chốt + trao đồ cũng tức
+> thì (m_nSize=1). Đi NHIỀU người thật thì chia đồ đợi **mọi người bấm xong hoặc hết
+> 20 giây** — đó là thiết kế gốc (ai cũng được gieo), KHÔNG phải lỗi. Chỉ khi bấm mà
+> điểm KHÔNG hiện ngay mới là vá chưa ăn (kiểm md5 Game.exe đang chạy = `F08DE7D14F9E`).
 
 Chủ báo hai triệu chứng khi đánh qua ải Viêm Đế trên bản vừa swap:
 1. Console GameServer spam liên tục `KItemSet::AddItemSet2 khong tim thay nItemGenre=59082`.
