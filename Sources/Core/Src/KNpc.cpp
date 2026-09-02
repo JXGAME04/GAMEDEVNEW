@@ -4633,8 +4633,11 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	int nMinDamage = m_PhysicsDamage.nValue[0] + m_CurrentAddPhysicsDamage;
 	int	nMaxDamage = m_PhysicsDamage.nValue[2] + m_CurrentAddPhysicsDamage;
 	int nAddDamageP = this->m_SkillList.GetAddSkillDamage(nSkillID) + this->m_CurrentSkillEnhancePercent;
-	if(m_CurrentMana == m_CurrentManaMax)					//#khi noi cong day tang ky nang cong kich
-		nAddDamageP += m_CurrentManaToSkillEnhanceP;
+	// [HOASON 01/09d] manatoskill_enhance (Khi Quan Truong Hong 1379) CHUAN LINUX 0x0808C002-0x0808C04D: [0x139c] = v * (mana*100/manaMax)/100
+	// (ty le NOI LUC HIEN CO, tinh moi lan tinh lai thuoc tinh) roi cong vao % sat thuong ky nang (0x080EA0DE cung voi skill_enhance [0x1280]).
+	// Ban cu chi cong khi noi luc DAY 100% (m_CurrentMana == m_CurrentManaMax) -> gan nhu khong bao gio co tac dung.
+	if (m_CurrentManaToSkillEnhanceP != 0 && m_CurrentManaMax > 0 && m_CurrentMana > 0)
+		nAddDamageP += m_CurrentManaToSkillEnhanceP * (m_CurrentMana * 100 / m_CurrentManaMax) / 100;
 
 	int DamePecentToLevel = 0;
 

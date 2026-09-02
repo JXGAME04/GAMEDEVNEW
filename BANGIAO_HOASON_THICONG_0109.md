@@ -139,10 +139,11 @@ Engine đã có chỗ (id, tên TCVN3, icon tổ đội, bot table); FactionInfo
 ## 8. CHECKLIST SWAP (chủ chạy `ChoiGame.bat` / `ChayGameServer.bat`; KHÔNG tự restart)
 Bộ 4 tệp `.moi` build từ cây `D:\GAMEDEVNEW` HEAD `3ea76dc1` + vá Hoa Sơn (superset bộ bot 01/09 đã swap lúc 19:01):
 
-1. `bin\server\CoreServer.dll.moi` — 18.244.608 byte, md5 `eed8dff8` (Server Release x64, 23:15, gồm đợt b mục 10).
+1. `bin\server\CoreServer.dll.moi` — 18.245.120 byte, md5 `f2dcad97` (Server Release x64, 02/09 00:00, gồm đợt b mục 10 + đợt d mục 12.3).
 2. `bin\multiserver\Goddess.exe.moi` — 2.386.432 byte, md5 `73f10c62` — **PHẢI swap cùng lúc với CoreServer** (cỡ `TStatData`/`TGAME_STAT_DATA` đổi 11→14; lệch nhau thì bảng xếp hạng/thống kê bị từ chối).
-3. `bin\client\CoreClient.dll.moi` — 2.439.680 byte, md5 `fa3f667c` (Client Release Win32, 23:15, gồm giao thức `s2c_reduceskillcd` — PHẢI đi cùng CoreServer mới).
+3. `bin\client\CoreClient.dll.moi` — 2.439.680 byte, md5 `45ce8b62` (Client Release Win32, 02/09 00:00, gồm giao thức `s2c_reduceskillcd` — PHẢI đi cùng CoreServer mới).
 4. `bin\client\Game.exe.moi` — 1.373.696 byte, md5 `c1b575f8` (Release Win32) — cùng bộ với CoreClient (MAX_FACTION_NUM, bảng kỹ năng).
+4b. `bin\client\WAuto.exe.moi` — md5 `ab6f9286` (mục 12.1; tắt WAuto cũ rồi thay).
 5. Dữ liệu/script đã ghi thẳng vào cây chạy thật (server: settings, Maps, package.ini, Pak, script; client: settings, Ui, Spr, script\skill) — có bản sao `.truoc_hoason_0109` cạnh tệp cũ. Server đọc khi khởi động lại; client đọc khi mở lại.
 6. Sau swap: xem console GameServer có `ScriptError` không; kiểm `World926=987` nạp (log "Load map 987"); vào game với nhân vật hệ Thủy chưa phái → Ba Lăng Huyện (1632,3191) gặp Hoa Sơn Kiếm Khách.
 
@@ -202,3 +203,30 @@ angskillkieumoi5x|9x|tp.lua` (NPC lĩnh ngộ): hàng 11 Hoa Sơn ({1349,1374}�
 - Không sửa (đúng với Linux / đã hỏng sẵn): `skills_table.lua check_faction/update_*` (Linux cũng không có nhánh Hoa Sơn), `FactionHelper.lua skill_help` (`fact_num = 1` cứng), `simcity_admin.lua` bot chọn phái 0–9.
 
 Kiểm: `syncheck` 9 tệp OK, `t71` 0 lỗi. Không cần build lại binary.
+
+
+---
+
+## 12. ĐỢT d (02/09 rạng sáng) — WAuto không hiện buff Hoa Sơn · "thiếu hiệu ứng / tác dụng" · thuộc tính chưa đúng Linux
+
+### 12.1 WAuto: combo "skill buff hỗ trợ" không có kỹ năng Hoa Sơn
+- Nguồn danh sách: client `KSkillList::GetAllSkillByType` (`IPCSkillInfo`: nStyle, bAlly = !TargetEnemy, bState = `StateSpecialId > 0`, bAura). WAuto (`E:\Src_Auto_Ngoai\WAuto\WAuto\WAuto.cpp:2651`) xếp vào "hỗ trợ" khi `bState && bAlly`. Ba buff Hoa Sơn 1358 Huyễn Nhãn Vân Yên, 1364 Đoạt Mệnh Liên Hoàn Tam Tiên Kiếm, 1369 Cửu Kiếm Hợp Nhất là kiểu 2 (trạng thái chủ động, nhắm bản thân) nhưng dữ liệu Linux **và** VLTK đều để `StateSpecialId = 0` → bị loại.
+- Sửa trong bộ lọc có sẵn: `(bState || nStyle == 2) && bAlly`. Tác dụng phụ (tốt): 4 buff 120 của phái khác cùng tình trạng nay cũng chọn được (712 Bế Nguyệt Phất Trần, 713 Ngự Tuyết Ẩn, 715 Ma Âm Phệ Phách, 722 Lưỡng Nghi Chân Khí Gia Tốc). Build `WAuto.vcxproj` Release|Win32 → `bin\client\WAuto.exe.moi` (md5 `ab6f9286`). Không đổi engine.
+
+### 12.2 "Thiếu hiệu ứng": rà 83 kỹ năng liên quan (38 Hoa Sơn + kỹ năng con/đạn/sự kiện) — 127 đường dẫn sprite/âm thanh
+- Chỉ thiếu 2 tệp phụ trong pak JX1 (không có cả ở VLTK): `\sound\skill\刀剑刺中声.wav`, `\spr\skill\天忍\mag_tr_09_偷天换日.spr` (nhánh Thiên Nhẫn). Hiệu ứng Hoa Sơn không thiếu tệp.
+- Nhưng 7 dòng kỹ năng con/đạn mà Hoa Sơn dùng chung **khác bản Linux** trong `skills.txt` JX1 → chép lại theo Linux (server + client, bản cũ `.truoc_hoason_0109b`): 203 Vô Hình Độc (nổ của kiếm khí 419: JX1 thiếu `fastwalkrun_p`, thừa `skill_eventskill`), 64 Bằng Lam Huyền Tinh (+`coldresmax_p`), 69 Vô Hình Độc (+`fastwalkrun_p`), 92/208 Phật Tâm Tự Hựu và 275 Sương Ngạo Côn Luân (+`lifemax_yan_p`), 1420 Kiếm Pháp Thái Nhạc (ReqLevel 80→90 như Linux). Các dòng này thuộc phái khác nên hành vi của họ cũng về đúng Linux.
+
+### 12.3 Thuộc tính: so handler Linux (bảng `[this+4+8*idx]`) với JX1 cho 27 thuộc tính còn lại
+| Thuộc tính | Linux | JX1 | Kết luận |
+|---|---|---|---|
+| `attackspeed_yan_v` (239) | `[0x1a38] += v0` = chính trường tốc độ đánh (được chép vào gói sync) | `AttackSpeedV` | trùng |
+| `lifemax_yan_p` / `manamax_yan_p` (234/236) | `[0x1a18] += LifeMax[0x15ac]*v0/100` (0x1a18 = sinh lực tối đa hiện tại, kẹp bởi [0x1a14]) | `LifeMaxP`/`ManaMaxP` | trùng phần gốc |
+| `manatoskill_enhance` (298) — 1379 Khí Quán Trường Hồng {30..100} | handler đặt cờ [0x1398] + giá trị [0x13a0]; lúc tính lại thuộc tính (0x0808C002-4D): `[0x139c] = v × (nội lực × 100 / nội lực tối đa) / 100`; 0x080EA0DE cộng `[0x139c] + skill_enhance[0x1280]` vào % sát thương kỹ năng | **chỉ cộng khi nội lực ĐẦY 100%** (`m_CurrentMana == m_CurrentManaMax`) → gần như vô tác dụng | **SAI → đã sửa** `KNpc::AppendSkillEffect`: `+= v × (mana×100/manaMax)/100` (`[HOASON 01/09d]`) |
+| `walkrunshadow` (293) — 1358 | cờ `[0x1394] = v0 > 0` | `m_WalkRun.nTime += v1` (thời gian) | tương đương (Lua cho [2] = thời gian) |
+| `manareplenish_p` (248) — kiếm tông −200 | `[0x119c] += v0`, [0x119c] mặc định 100 (%) | `Replenish × (100 + p)/100` | trùng |
+| `sorbdamage_yan_p`, `anti_do_hurt_p`, `skill_enhance`, `autoattack/reply/rescueskill` | += v0 (sorb kẹp 500) | tương tự | trùng |
+| `deadlystrike_p` → `m_CurrentDeadlyStrikeEnhanceP` | — | theo đợt chí tử `d22b24ca` (Linux có lỗi đấu chéo, JX1 giữ đúng) | giữ |
+| 12 thuộc tính gốc (colddamage_v, physicsenhance_p, seriesdamage_p, lifereplenish_v, lifemax_p, coldenhance_p, damage2addmana_p, fastwalkrun_p, addcoldmagic_v, addphysicsdamage_p, deadlystrikeenhance_p, attackspeed_v) | không nằm trong bảng handler Linux (xử lý ở switch gốc) | cùng gốc mã | chưa đối chiếu asm |
+
+Không có lỗi nạp kỹ năng trong log server/client (không dòng "Cap ky nang … da xay ra loi", không lỗi `huashan.lua`).
