@@ -7704,6 +7704,22 @@ int	KNpc::PaintLife(int nHeightOffset, bool bSelect)
 	Blood.oEndPos.nX = nMpsX + nWid / 2;
 	g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
 	
+		// [VHTD 02/09k] khien tinh (Lac Nhan Binh Sa 2139 / Phat Y 2134 / Hoa Son): thanh XANH ngay tren thanh mau duoi ten (chinh minh) - chu: 'ong mau
+	// thu 2 nam o thanh mau phia duoi ten nhan vat, khong phai tren ong mau'. Gia tri qua s2c_syncvhtd (dot 4). Header Player_Shield da go (UiHeaderControlBar.ini).
+	if (m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex && m_nHSShieldMax > 0 && m_CurrentStaticMagicShieldP > 0)
+	{
+		int nVhS = m_CurrentStaticMagicShieldP * 100 / m_nHSShieldMax;
+		if (nVhS > 100) nVhS = 100;
+		if (nVhS < 0) nVhS = 0;
+		Blood.Color.Color_b.r = 70; Blood.Color.Color_b.g = 170; Blood.Color.Color_b.b = 255; Blood.Color.Color_b.a = 0;
+		Blood.oPosition.nX = nMpsX - nWid / 2; Blood.oPosition.nY = nMpsY; Blood.oPosition.nZ = nHeightOffset + nHei * 2 + 1;
+		Blood.oEndPos.nX = Blood.oPosition.nX + nWid * nVhS / 100; Blood.oEndPos.nY = nMpsY; Blood.oEndPos.nZ = nHeightOffset + nHei + 1;
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		Blood.Color.Color_b.r = 90; Blood.Color.Color_b.g = 90; Blood.Color.Color_b.b = 120;
+		Blood.oPosition.nX = Blood.oEndPos.nX; Blood.oEndPos.nX = nMpsX + nWid / 2;
+		g_pRepresent->DrawPrimitives(1, &Blood, RU_T_SHADOW, FALSE);
+		return nHeightOffset + nHei * 2 + 1;
+	}
 	return nHeightOffset + nHei;
 }
 

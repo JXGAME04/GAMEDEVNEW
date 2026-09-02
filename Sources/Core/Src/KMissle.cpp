@@ -14,6 +14,16 @@
 #include <math.h>
 #include "KSkillSpecial.h"
 #include "KOption.h"
+// [VHTD 02/09k] dan THOI VLTK (su kien 2013 400-411, Hoa Son 412-441, Vu Hon/Tieu Dao >= 500): ngu nghia va cham cua client VLTK game_y.exe
+// (ProcessCollision 0x6fb6c0: tim NPC trong BAN KINH nRange o, khong chia doi; CheckCollision 0x6fba60: CollidRange > 1 -> NPC song trong
+// ban kinh CollidRange, DmgRange == 1 danh dung con do, khac thi no tai dan ban kinh DmgRange). Dan JX1 (< 400) giu +-nRange/2 (can bang cu).
+static inline BOOL VhIsVltkMissle(int nMissleType) { return nMissleType >= 400; }
+// m_nMissleId = CHI SO instance trong Missle[] (KMissleSet::Add ghi de), KHONG phai id dan trong missles.txt -> lay kieu dan qua ky nang tao dan
+// (KSkill::Cast: GetInfoFromTabFile(m_nChildSkillId)). Khoi [VHTD 02/09g] cu so m_nMissleId >= 500 = so chi so instance -> NGAU NHIEN (goc danh 4-5 lan moi trung).
+static inline int VhMissleType(int nSkillId, int nLevel) { KSkill* pVhS = (KSkill*)g_SkillManager.GetSkill(nSkillId, nLevel); return pVhS ? pVhS->GetChildSkillId() : 0; }
+static inline BOOL VhIsNewFactionSkill(int nSkillId) { return (nSkillId >= 1363 && nSkillId <= 1384) || (nSkillId >= 1965 && nSkillId <= 1991) || (nSkillId >= 2114 && nSkillId <= 2143); }
+// log toan bo dan ky nang 3 phai: server = nhan vat [AutoLog] Name (AUTOLOG_IDX), client = moi launcher (g_AutoLogWho tra 1)
+#define VHLOG(...) do { if (VhIsNewFactionSkill(m_nSkillId)) { AUTOLOG_IDX(m_nLauncher, __VA_ARGS__); } } while (0)
 //#include "myassert.h"
 #ifndef _SERVER
 #include "../../Represent/iRepresent/iRepresentshell.h"
@@ -665,6 +675,7 @@ int KMissle::CheckCollision()
 	int nColMapY = m_nCurrentMapY;
 		
 	AUTOLOG_EVERY(1000, "[MIS-COL-ENTER] id=%d skill=%d colRange=%d dmgRange=%d rel=%d region=%d map=%d,%d off=%d,%d z=%d lastHit=%d", m_nMissleId, m_nSkillId, m_nCollideRange, m_nDamageRange, m_eRelation, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, m_nLastDoCollisionIdx);
+	VHLOG("[VH-COL-IN] msl=%d sk=%d lv=%d colrange=%d dmgrange=%d rangedmg=%d dan(r=%d,%d,%d off %d,%d z=%d) life=%d/%d follow=%d lasthit=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nCollideRange, m_nDamageRange, (int)m_bRangeDamage, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, m_nCurrentLife, m_nLifeTime, m_nFollowNpcIdx, m_nLastDoCollisionIdx);
 	if (m_nCollideRange == 1)
 	{
 		/*if(this->m_eMoveKind == MISSLE_MMK_Follow)
@@ -721,10 +732,19 @@ int KMissle::CheckCollision()
 					// bi sat thuong ma dan van DoCollision/tan (ColVanish 1). Do that (jx_auto_server.log 02/09): Tran Bien Thuy 1967 phong 87,
 					// trung 2; 86 lan S4-MSL-END 'early lasthit=0'. Nay: NPC nam ngoai o quanh dan -> gay sat thuong TAI NPC do
 					// (don muc tieu: chi no; dien rong: DmgRange quanh no). Dan cu (< 500) giu nguyen.
-					if (m_nMissleId >= 500 && (abs(i) > m_nDamageRange / 2 || abs(j) > m_nDamageRange / 2))
+					// [VHTD 02/09k] dan VLTK (game_y.exe CheckCollision 0x6fba60): bo qua xac; DmgRange == 1 -> danh DUNG NPC nay (ProcessCollision tai NPC,
+					// range 1); nguoc lai ProcessCollision() tai dan voi BAN KINH DmgRange. Thay khoi [VHTD 02/09g] (danh tai NPC khi ngoai DmgRange/2).
+					if (VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)))
 					{
-						if (!m_bClientSend)
-							ProcessCollision(m_nLauncher, nSearchRegion, nRMx, nRMy, m_bRangeDamage ? m_nDamageRange : 1, m_eRelation, nNpcIdx);
+						if (Npc[nNpcIdx].m_Doing == do_death || Npc[nNpcIdx].m_Doing == do_revive)
+							continue;
+						VHLOG("[VH-COL-FOUND] msl=%d sk=%d lv=%d colrange=%d dmgrange=%d npc=%d(id=%u doing=%d life=%d) o(%d,%d) dan(r=%d,%d,%d off %d,%d z=%d) life=%d/%d clientsend=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nCollideRange, m_nDamageRange, nNpcIdx, (unsigned int)Npc[nNpcIdx].m_dwID, (int)Npc[nNpcIdx].m_Doing, Npc[nNpcIdx].m_CurrentLife, i, j, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, m_nCurrentLife, m_nLifeTime, (int)m_bClientSend);
+						if (m_nDamageRange == 1)
+							ProcessCollision(m_nLauncher, nSearchRegion, nRMx, nRMy, 1, m_eRelation, nNpcIdx);
+						else
+							ProcessCollision();
+						if (this->m_eMoveKind == MISSLE_MMK_Line)
+							m_nLastDoCollisionIdx = nNpcIdx;
 						DoCollision();
 						return 1;
 					}
@@ -735,6 +755,7 @@ int KMissle::CheckCollision()
 			}
 	}
 	
+	VHLOG("[VH-COL-NONE] msl=%d sk=%d colrange=%d dan(r=%d,%d,%d) life=%d/%d follow=%d", m_nMissleId, m_nSkillId, m_nCollideRange, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentLife, m_nLifeTime, m_nFollowNpcIdx);
 	return 0;
 }
 
@@ -768,8 +789,14 @@ void KMissle::OnFly()
 	}
 	
 	AUTOLOG_EVERY(1000, "[MSL-BARRIER] msl=%d sk=%d launcher=%d pos(r=%d,%d,%d off %d,%d z=%d) life=%d/%d -> chan dia hinh, DoVanish", m_nMissleId, m_nSkillId, m_nLauncher, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, m_nCurrentLife, m_nLifeTime);
+	{
+		int nVhTx = -1, nVhTy = -1, nVhMx = 0, nVhMy = 0; GetMpsPos(&nVhMx, &nVhMy);
+		if (m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) Npc[m_nFollowNpcIdx].GetMpsPos(&nVhTx, &nVhTy);
+		VHLOG("[VH-MSL-TICK] msl=%d sk=%d life=%d/%d st=%d pos(r=%d,%d,%d off %d,%d z=%d) mps(%d,%d) follow=%d tgt(%d,%d) dcell=%d barrier=%d lasthit=%d", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, (int)m_eMissleStatus, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, nVhMx, nVhMy, m_nFollowNpcIdx, nVhTx, nVhTy, (nVhTx >= 0) ? (int)(sqrt((double)((nVhTx - nVhMx) * (nVhTx - nVhMx) + (nVhTy - nVhMy) * (nVhTy - nVhMy))) / 32) : -1, (int)TestBarrier(), m_nLastDoCollisionIdx);
+	}
 	if (TestBarrier()) 
 	{
+		VHLOG("[VH-END-BARRIER] msl=%d sk=%d life=%d/%d pos(r=%d,%d,%d)", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY);
 #ifndef _SERVER 
 		int nSrcX3 = 0 ;
 		int nSrcY3 = 0 ;
@@ -992,6 +1019,7 @@ void KMissle::OnFly()
 		if (CheckCollision() == -1) 
 		{
 			AUTOLOG_EVERY(1000, "[MIS-FLY-COLFAIL] id=%d skill=%d life=%d/%d region=%d map=%d,%d z=%d autoExplode=%d", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, m_bAutoExplode);
+			VHLOG("[VH-END-COLFAIL] msl=%d sk=%d life=%d/%d z=%d region=%d explode=%d", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, m_nCurrentMapZ, m_nRegionId, (int)m_bAutoExplode);
 			if (m_bAutoExplode)
 			{
 				ProcessCollision();//´¦ÀíÅö×²
@@ -1008,6 +1036,7 @@ void KMissle::OnFly()
 	}
 	else//Èç¹û×Óµ¯·ÉÐÐ¹ý³ÌÖÐ½øÈëÁËÒ»¸öÎÞÐ§µÄRegionÔò×Óµ¯×Ô¶¯ÏûÍö
 	{
+		VHLOG("[VH-END-REGION] msl=%d sk=%d life=%d/%d pos(r=%d,%d,%d)", m_nMissleId, m_nSkillId, m_nCurrentLife, m_nLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY);
 		DoVanish();
 	}
 }
@@ -1259,6 +1288,7 @@ BOOL KMissle::ProcessDamage(int nNpcId)
 	AUTOLOG_EVERY(500, "[E2-PDMG-IN] missle=%d skill=%d/%d launcher=%d(id=%u kind=%u) target=%d(id=%u kind=%u doing=%d life=%d camp=%d) relFlag=%d relReal=%d melee=%d phys=%d useAR=%d missrate=%d dohurt=%d attr=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, Npc[m_nLauncher].m_dwID, Npc[m_nLauncher].m_Kind, nNpcId, Npc[nNpcId].m_dwID, Npc[nNpcId].m_Kind, (int)Npc[nNpcId].m_Doing, Npc[nNpcId].m_CurrentLife, Npc[nNpcId].m_CurrentCamp, m_eRelation, (int)NpcSet.GetRelation(m_nLauncher, nNpcId), (int)m_bIsMelee, (int)m_bIsPhysical, (int)m_bUseAttackRating, m_nMissRate, (int)m_nDoHurtP, (m_pMagicAttribsData ? m_pMagicAttribsData->m_nDamageMagicAttribsNum : -1));
 
 	AUTOLOG_EVERY(1000, "[MIS-DMG-NOATTRIB] id=%d skill=%d lv=%d launcher=%d npc=%d attribs=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcId, (m_pMagicAttribsData ? 1 : 0));
+	VHLOG("[VH-DMG-IN] msl=%d sk=%d npc=%d attribs=%d", m_nMissleId, m_nSkillId, nNpcId, (m_pMagicAttribsData ? 1 : 0));
 	if (m_pMagicAttribsData) 
 	{
 		KSkill * pSkill = (KSkill *) g_SkillManager.GetSkill(m_nSkillId, m_nLevel);//Add by Phong KiÒu
@@ -1267,17 +1297,26 @@ BOOL KMissle::ProcessDamage(int nNpcId)
 		{
 			AUTOLOG_EVERY(500, "[DMG-SKIP-TARGETKIND] msl=%d sk=%d lv=%d launcher=%d npc=%d isplayer=%d aura=%d nonpc=%d ally=%d camp_l=%d camp_t=%d -> return TRUE khong sat thuong", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcId, (int)Npc[nNpcId].IsPlayer(), (int)pSkill->IsAura(), (int)pSkill->IsTargetNoNpc(), (int)pSkill->IsTargetAlly(), (int)Npc[m_nLauncher].m_CurrentCamp, (int)Npc[nNpcId].m_CurrentCamp);
 			if (!Npc[nNpcId].IsPlayer() && pSkill->IsAura() && pSkill->IsTargetNoNpc())
+			{
+				VHLOG("[VH-DMG-SKIP] msl=%d sk=%d npc=%d ly_do=aura_khong_npc", m_nMissleId, m_nSkillId, nNpcId);
 				return TRUE;
+			}
 			//Fix lçi ch÷ ®á cïng PT vÉn BUFF ®­îc cho nhau chu do cung pt van nhan duoc vong ho tro tu nhan vat khac
 			AUTOLOG_EVERY(1000, "[E2-PDMG-DENY-ALLY] missle=%d skill=%d/%d launcher=%d(camp=%d) target=%d(camp=%d) targetally=%d -> BO QUA, tra TRUE khong sat thuong", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, Npc[m_nLauncher].m_CurrentCamp, nNpcId, Npc[nNpcId].m_CurrentCamp, (int)pSkill->IsTargetAlly());
 			if(Npc[nNpcId].IsPlayer() && Npc[m_nLauncher].IsPlayer() && pSkill->IsTargetAlly() && Npc[nNpcId].m_CurrentCamp == camp_free && Npc[m_nLauncher].m_CurrentCamp == camp_free)
+			{
+				VHLOG("[VH-DMG-SKIP] msl=%d sk=%d npc=%d ly_do=dong_minh_camp_free", m_nMissleId, m_nSkillId, nNpcId);
 				return TRUE;
+			}
 		}
 
 		AUTOLOG_EVERY(500, "[DMG-TRY] t=%u msl=%d sk=%d lv=%d launcher=%d(id=%u) npc=%d(id=%u) doing=%d hp=%d series=%d phys=%d melee=%d useAR=%d hurtp=%d missrate=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, Npc[m_nLauncher].m_dwID, nNpcId, Npc[nNpcId].m_dwID, (int)Npc[nNpcId].m_Doing, Npc[nNpcId].m_CurrentLife, m_nMissleSeries, (int)m_bIsPhysical, (int)m_bIsMelee, (int)m_bUseAttackRating, m_nDoHurtP, m_nMissRate);
+		VHLOG("[VH-DMG-TRY] msl=%d sk=%d lv=%d launcher=%d npc=%d(id=%u doing=%d) life=%d series=%d phys=%d melee=%d ar=%d hurtp=%d miss=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcId, (unsigned int)Npc[nNpcId].m_dwID, (int)Npc[nNpcId].m_Doing, Npc[nNpcId].m_CurrentLife, m_nMissleSeries, (int)m_bIsPhysical, (int)m_bIsMelee, (int)m_bUseAttackRating, m_nDoHurtP, m_nMissRate);
+		int nVhLifeTruoc = Npc[nNpcId].m_CurrentLife;
 		if (Npc[nNpcId].ReceiveDamage(m_nLauncher, m_nMissleSeries, m_bIsPhysical, m_bIsMelee, m_pMagicAttribsData->m_pDamageMagicAttribs, m_bUseAttackRating, m_nDoHurtP, m_nMissRate))
 		{
 			AUTOLOG_EVERY(500, "[E2-PDMG-HIT] missle=%d skill=%d/%d launcher=%d target=%d ReceiveDamage=TRUE lifeconlai=%d statenum=%d immediatenum=%d", m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, nNpcId, Npc[nNpcId].m_CurrentLife, m_pMagicAttribsData->m_nStateMagicAttribsNum, m_pMagicAttribsData->m_nImmediateMagicAttribsNum);
+			VHLOG("[VH-DMG-HIT] msl=%d sk=%d npc=%d life %d -> %d", m_nMissleId, m_nSkillId, nNpcId, nVhLifeTruoc, Npc[nNpcId].m_CurrentLife);
 			if (m_pMagicAttribsData->m_nStateMagicAttribsNum > 0)
 			{
 				//---ViÕt thªm xö lý skill 120
@@ -1342,6 +1381,7 @@ void KMissle::DoVanish()
 		m_nStartLifeTime, m_nLastDoCollisionIdx, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, (int)TestBarrier());
 #endif
 	AUTOLOG_EVERY(1000, "[MSL-END] t=%u msl=%d sk=%d lv=%d launcher=%d follow=%d status=%d life=%d/%d start=%d pos(r=%d,%d,%d off %d,%d z=%d) barrier=%d lasthit=%d", SubWorld[m_nSubWorldId].m_dwCurrentTime, m_nMissleId, m_nSkillId, m_nLevel, m_nLauncher, m_nFollowNpcIdx, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, (int)TestBarrier(), m_nLastDoCollisionIdx);
+	VHLOG("[VH-MSL-END] msl=%d id=%d sk=%d lv=%d st=%d life=%d/%d start=%d lasthit=%d follow=%d pos(r=%d,%d,%d z=%d) hitcount=%d", m_nMissleId, VhMissleType(m_nSkillId, m_nLevel), m_nSkillId, m_nLevel, (int)m_eMissleStatus, m_nCurrentLife, m_nLifeTime, m_nStartLifeTime, m_nLastDoCollisionIdx, m_nFollowNpcIdx, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nCurrentMapZ, m_nHitCount);
 #ifndef _SERVER
 	m_MissleRes.m_bHaveEnd = TRUE;
 	m_nCollideOrVanishTime = m_nCurrentLife;
@@ -1512,8 +1552,10 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 	if (nRange <= 0) return 0;
 	if (nRegionId < 0) return 0; //#can kiem tra
 	AUTOLOG_EVERY(2000, "[COLL-SCAN] msl=%d sk=%d launcher=%d region=%d map(%d,%d) range=%d (nRangeX=%d) rel=%d hitcount=%d dmginterval=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRange / 2, eRelation, m_nHitCount, (int)m_ulDamageInterval);
-	int nRangeX = nRange / 2;
+	// [VHTD 02/09k] dan VLTK: ban kinh = nRange (game_y.exe 0x6fb6c0 -> tim NPC theo ban kinh, khong chia doi); dan JX1: +-nRange/2 nhu cu
+	int nRangeX = VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) ? nRange : nRange / 2;
 	int	nRangeY = nRangeX;
+	VHLOG("[VH-SCAN-IN] msl=%d sk=%d lv=%d launcher=%d tai(r=%d,%d,%d) range=%d quet=+-%d rel=%d prefer=%d hitmax=%d clientsend=%d", m_nMissleId, m_nSkillId, m_nLevel, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRangeX, eRelation, nPreferIdx, m_nHitCount, (int)m_bClientSend);
 	int	nSubWorld = Npc[nLauncherIdx].m_SubWorldIndex;
 	
 	_ASSERT(Npc[nLauncherIdx].m_SubWorldIndex >= 0);
@@ -1545,6 +1587,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 					continue; //FIX 24/08: bo qua RIENG muc tieu bat tu, KHONG bo ca vung quet - return 0 cu lam MOT con bat tu chan het sat thuong dien rong cua ca vien dan va pha luon bo dem nRet/m_nHitCount. vong tron bat tu, vßng trßn bÊt tö
 				AUTOLOG_EVERY(2000, "[COLL-NPC-FOUND] msl=%d sk=%d launcher=%d npc=%d(id=%u) o(%d,%d) region=%d rel=%d protect=%d doing=%d nRet=%d hitcount=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nNpcIdx, Npc[nNpcIdx].m_dwID, nRMx, nRMy, nSearchRegion, eRelation, Npc[nNpcIdx].GetProtectTime(), (int)Npc[nNpcIdx].m_Doing, nRet, m_nHitCount);
 				nRet++;
+				VHLOG("[VH-SCAN-NPC] msl=%d sk=%d npc=%d(id=%u kind=%u doing=%d life=%d) o(%d,%d) region=%d nret=%d", m_nMissleId, m_nSkillId, nNpcIdx, (unsigned int)Npc[nNpcIdx].m_dwID, (unsigned int)Npc[nNpcIdx].m_Kind, (int)Npc[nNpcIdx].m_Doing, Npc[nNpcIdx].m_CurrentLife, i, j, nSearchRegion, nRet);
 #ifndef _SERVER
 				int nSrcX = 0;
 				int nSrcY = 0;
@@ -1570,6 +1613,7 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			}
 		}
 	}
+	VHLOG("[VH-SCAN-OUT] msl=%d sk=%d nret=%d range=%d", m_nMissleId, m_nSkillId, nRet, nRange);
 	return nRet;
 }
 
@@ -1800,6 +1844,11 @@ BOOL	KMissle::PrePareFly()
 		
 	}
 	
+	{
+		int nVhTx = -1, nVhTy = -1, nVhMx = 0, nVhMy = 0; GetMpsPos(&nVhMx, &nVhMy);
+		if (m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) Npc[m_nFollowNpcIdx].GetMpsPos(&nVhTx, &nVhTy);
+		VHLOG("[VH-MSL-NEW] msl=%d id=%d sk=%d lv=%d launcher=%d(id=%u) move=%d speed=%d life=%d..%d col=%d dmg=%d rangedmg=%d itv=%lu colvanish=%d explode=%d follow=%d(id=%u) pos(r=%d,%d,%d off %d,%d z=%d) mps(%d,%d) tgt(%d,%d) dir=%d f(%d,%d) clientsend=%d", m_nMissleId, VhMissleType(m_nSkillId, m_nLevel), m_nSkillId, m_nLevel, m_nLauncher, (unsigned int)m_dwLauncherId, (int)m_eMoveKind, m_nSpeed, m_nStartLifeTime, m_nLifeTime, m_nCollideRange, m_nDamageRange, (int)m_bRangeDamage, m_ulDamageInterval, (int)m_bCollideVanish, (int)m_bAutoExplode, m_nFollowNpcIdx, (unsigned int)m_dwFollowNpcID, m_nRegionId, m_nCurrentMapX, m_nCurrentMapY, m_nXOffset, m_nYOffset, m_nCurrentMapZ, nVhMx, nVhMy, nVhTx, nVhTy, m_nDir, m_nXFactor, m_nYFactor, (int)m_bClientSend);
+	}
 	return true;
 	
 }

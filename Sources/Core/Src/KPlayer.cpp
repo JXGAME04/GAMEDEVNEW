@@ -10034,6 +10034,16 @@ void KPlayer::GetEchoDamage(int* nMin, int* nMax, int nType)
 	}
 	pMagicData++;
 
+	// [VHTD 02/09k] cam Tieu Dao (lightingdamage_p o [12]): 'luc tay' = sat thuong Loi theo NOI LUC TOI DA (cong thuc KNpc::AppendSkillEffect dot 4);
+	// truoc chi cong sat thuong vat ly -> bang trang thai hien 0/0 khi dat ky nang cam (chu 02/09).
+	if (magic_lightingdamage_p == pMagicData->nAttribType)
+	{
+		int nVhMin = (int)((__int64)(Npc[m_nIndex].m_CurrentManaMax + Npc[m_nIndex].m_PhysicsMagic.nValue[0] + Npc[m_nIndex].m_CurrentLightMagic.nValue[0]) * (100 + Npc[m_nIndex].m_nHSAddLightMagicP) / 100);
+		int nVhMax = (int)((__int64)(Npc[m_nIndex].m_CurrentManaMax + Npc[m_nIndex].m_PhysicsMagic.nValue[2] + Npc[m_nIndex].m_CurrentLightMagic.nValue[2]) * (100 + Npc[m_nIndex].m_nHSAddLightMagicP) / 100);
+		if (nVhMax < nVhMin) nVhMax = nVhMin;
+		*nMin += (int)((__int64)nVhMin * pMagicData->nValue[0] / 100 * (100 + nAddDamageP) / 100);
+		*nMax += (int)((__int64)nVhMax * pMagicData->nValue[0] / 100 * (100 + nAddDamageP) / 100);
+	}
 	// Calc lighting damage[12]
 	if (magic_lightingdamage_v == pMagicData->nAttribType)
 	{

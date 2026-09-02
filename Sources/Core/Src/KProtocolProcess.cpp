@@ -910,6 +910,8 @@ void KProtocolProcess::NetCommandSkill(BYTE* pMsg)
 	MapX = *(int *)&pMsg[13];
 	MapY = *(int *)&pMsg[17];
 	nSkillEnChance = *(int *)&pMsg[21];
+	if ((nSkillID >= 1363 && nSkillID <= 1384) || (nSkillID >= 1965 && nSkillID <= 1991) || (nSkillID >= 2114 && nSkillID <= 2143))	// [VHTD 02/09k]
+		AUTOLOG("[VH-CL-CAST-NET] npc=%u idx=%d skill=%d lv=%d map=(%d,%d) ench=%d me=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, nSkillEnChance, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	AUTOLOG_EVERY(200, "NETSKILL-RX npc=%u idx=%d skill=%d lv=%d mapx=%d mapy=%d muctieuidx=%d ench=%d t=%u", dwNpcID, NpcSet.SearchID(dwNpcID), nSkillID, nSkillLevel, MapX, MapY, NpcSet.SearchID(MapY), nSkillEnChance, SubWorld[0].m_dwCurrentTime);
 	
 	AUTOLOG_EVERY(1000, "NETSKILL-SKIP-Y npc=%u skill=%d lv=%d mapx=%d mapy=%d t=%u", dwNpcID, nSkillID, nSkillLevel, MapX, MapY, SubWorld[0].m_dwCurrentTime);
@@ -3197,6 +3199,8 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	}
 	
 	int nIdx = NpcSet.SearchID(dwNpcID);
+	if ((nSkillID >= 1363 && nSkillID <= 1384) || (nSkillID >= 1965 && nSkillID <= 1991) || (nSkillID >= 2114 && nSkillID <= 2143))	// [VHTD 02/09k] log nhan lenh phong ky nang 3 phai (client)
+		AUTOLOG("[VH-CL-CAST-DIRECT] npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) tgt=%d me=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, nVhtdTargetIdx, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
 	
 	//_ASSERT (nSkillID > 0 && nSkillLevel > 0);
 	AUTOLOG_EVERY(1000, "CAST-RX npc=%u idx=%d skill=%d lv=%d mps=(%d,%d) me_idx=%d t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)MapX, (int)MapY, Player[CLIENT_PLAYER_INDEX].m_nIndex, SubWorld[0].m_dwCurrentTime);
