@@ -20,14 +20,14 @@ Nguồn: **client VLTK Level Up** (`C:\Users\nguye\Level Up Games\Vo Lam Truyen 
 | Vật phẩm 10 món (4967–4976) | **XONG** | `vhtd_items.py`; 4970 (Bí kíp 150) script VLTK không có ở JX1 → 0 |
 | UI bảng kỹ năng phái 11/12 | **XONG** | `vhtd_ui.py` + `khung_wh.spr`/`khung_xy.spr` |
 | Mô tả kỹ năng MagicDesc.ini | **XONG** | 5 dòng VLTK + 10 dòng tự viết TCVN3 |
-| **Vũ khí Đao Thuẫn/Thuẫn Đao (particular 7/8) + Cầm (range 3)** | **CHỜ tác tử khảo sát** (mục 8) | không có vũ khí thì kỹ năng Vũ Hồn (EqtLimit 7/8) và Cầm Pháp (103) **bị từ chối** ở `KSkills.cpp:280` |
+| **Vũ khí Đao Thuẫn/Thuẫn Đao (particular 7/8) + Cầm (range 3)** | **XONG dữ liệu** (mục 8) — **chờ chủ** mục 8.1 (WeaponType BYTE) | `vhtd_weapons.py`: 40 hàng item + res + objdata + ClientWeaponSkill; không có vũ khí thì kỹ năng Vũ Hồn (EqtLimit 7/8) và Cầm Pháp (103) bị từ chối ở `KSkills.cpp:280` |
 | **Bẫy cũ Hoa Sơn:** `maps_hoason2013.pak` header 16 byte bị `XPackFile::Open` từ chối | **ĐÃ SỬA** (mục 7) | pak mới đã đặt tại `bin\server\Pak\`, bản cũ `.truoc_vhtd_0209`; hiệu lực khi restart |
 
 ---
 
 ## 2. Dữ liệu kỹ năng — `vhtd_skills.py`
 
-- **skills.txt** (server + client, header 114 cột trùng VLTK): +62 dòng id **1963–1992** (Vũ Hồn), **2114–2143** (Tiêu Dao), **1733/1734** (đòn thường cầm Đao Thuẫn/Thuẫn Đao — `ClientWeaponSkill` cần trỏ tới khi có vũ khí). Client còn hơn server 2 dòng cũ 1561/1562 (có từ trước).
+- **skills.txt** (server + client, header 114 cột trùng VLTK): +62 dòng id **1963–1992** (Vũ Hồn), **2114–2143** (Tiêu Dao), **1733/1734** (bản id cũ của 1972 Đoạt Cơ / 1974 Trường Anh Huy Xích trong dữ liệu VLTK — giữ để đủ bộ, không dùng; đòn thường thuẫn dùng 53, cầm dùng 2135). Client còn hơn server 2 dòng cũ 1561/1562 (có từ trước).
 - **missles.txt**: +27 dòng đạn 523,525–529,531,574–580,637–649 → `MAX_MISSLESTYLE 450 → 700` (`SkillDef.h:10`).
 - **Lua**: `script\skill\wuhuntang.lua` (26.301 byte), `xiaoyao.lua` (19.467) chép nguyên byte + đổi khoá yan; `advancedskill.lua` chèn hàm `LineWith8Byte` và bảng `SKILLS.xy_adskill` (tiến giai Tiêu Dao 2132/2133/2134) — không đụng `sl/tw/gb_adskill`.
 - **magic_level_exp.txt** +10 dòng: 1967, 1969, 1983, 1984, 1985, 2124, 2127, 2129, 2141, 2142 (ngưỡng tính từ `SkillExpFunc` trong Lua VLTK). **1970** (Huy Sư Diệt Lỗ thức 2) khai `skill_skillexp_v` nhưng bảng Lua `huishi_mielu_2` không có khoá → `GetSkillLevelData` trả rỗng (không lỗi) → không thêm.
@@ -145,5 +145,12 @@ Chỉ số engine phải giữ: `KItemGenerator.CPP:302/478/1415` record = `P*10
 4. Dữ liệu đã ghi thẳng, đọc khi khởi động: server `skills.txt`, `missles.txt`, `script\**`, `settings\npcs.txt`, `magicscript.txt`, `MagicDesc.ini`, `magic_level_exp.txt`, `package.ini` (`8=maps_vuhon_tieudao.pak`), `Pak\maps_hoason2013.pak` (mới), `Pak\maps_vuhon_tieudao.pak`, `Maps\WorldSet_GameServer.ini`, `MapList.ini`, `faction\FactionInfo.ini`; client: các tệp cùng tên + `package.ini` (`36=`, `37=`), `data\sprvuhontieudao.pak`, `data\maps_vuhon_tieudao.pak`, `ui\Ui3\UiSkill*.ini`, `Spr\Ui3\UiSkills\khung_wh.spr`/`khung_xy.spr`, `settings\gamesetting.ini`, `NpcRes\*`.
 5. Nghiệm thu: (a) log server không ScriptError khi boot; nhân vật hệ Hoả/Thổ chưa phái gặp "Vũ Hồn Hậu Quân"/"Tiêu Dao Mật Sứ" ở Ba Lăng Huyện (53) → gia nhập → bảng kỹ năng F? hiện khung mới; (b) học kỹ năng qua NPC `hocvocong` "Học võ công môn phái Vũ Hồn/Tiêu Dao"; (c) mô tả kỹ năng không còn `<color>` thô; (d) **kỹ năng Vũ Hồn/Cầm Pháp chỉ dùng được sau khi có vũ khí thuẫn/cầm (mục 8)**; kỹ năng Tiêu Dao Kiếm Pháp (EqtLimit 0) dùng kiếm được ngay; (e) map 987 Hoa Sơn vào được (mục 7).
 
-## 11. Bộ .moi
-(điền sau build cuối)
+## 11. Bộ .moi (build 05:09, sau patch1b)
+
+| Tệp | Byte | md5 (8) | Giờ |
+|---|---|---|---|
+| `server\CoreServer.dll.moi` | 18.251.776 | `e515d1cf` | 05:20 |
+| `client\CoreClient.dll.moi` | 2.443.776 | `e27bc12b` | 05:20 |
+| `client\Game.exe.moi` | 1.374.208 | `359536c5` | 05:20 |
+
+HEAD `94aa3c91` (superset đợt g `d715746b` + bot đợt d). Swap 3 tệp cùng lúc; Goddess/WAuto không đổi.
