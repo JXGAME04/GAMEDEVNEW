@@ -246,3 +246,73 @@ Không có lỗi nạp kỹ năng trong log server/client (không dòng "Cap ky 
 Đã kiểm 65 dòng skills.txt Linux dùng auto*skill: chỉ Hoa Sơn 1364 có byte loại; phái khác v0 = id·256 + cấp → sau mặt nạ vẫn đúng.
 
 **Bộ nhị phân đợt e (02/09 00:17, commit `40e3be2e`):** `bin\server\CoreServer.dll.moi` md5 `9d7ae996` (18.245.632 B) + `bin\client\CoreClient.dll.moi` md5 `741b2d5b` — PHẢI swap cùng nhau (giao thức s2c_reduceskillcd đợt d). Game.exe/Goddess.exe `.moi` đợt d đã được chủ swap lúc 00:00 (không còn `.moi`), không cần swap lại.
+
+
+---
+
+## 14. ĐỢT f (02/09 rạng sáng) — "skill như trên hình (1364) vẫn chưa có tác dụng" → kiểm toán chức năng 38 kỹ năng theo Linux
+
+### 14.1 Bằng chứng log (bin\server\jx_auto_server.log.1, máy chủ pid 27612 khởi động 00:19:05 với CoreServer đợt e md5 9d7ae996)
+- Người chơi npc 91434 (plr=1) cast 1364 mười lần (`[S4-CAST] … skill=1364 style=2`), buff áp thành công (`E3_INIT_DAMAGE_RESULT hit=1 … state_num=3`).
+- Tự phóng ĐÃ chạy đúng 1 lần: t=614552736 ba đạn 1363 (msl 1747/542/651, `lch=91434`) mà KHÔNG có `[S4-CAST] skill=1363` → do `ReplySkill`; 2 đạn trúng quái 53815 (30000→18825), 1 đạn bay hết 34 khung.
+- Sau đó không bắn thêm dù bị đánh liên tục (52 dòng E2-CALC, throttle 1 s) — đúng với dữ liệu Linux: tỷ lệ 3 %/đòn, hồi chiêu 15 s (`15*18*256+3`).
+- **Gốc "không thấy tác dụng"**: JX1 KHÔNG đồng bộ từng viên đạn; client chỉ tự mô phỏng đạn khi nhận `s2c_skillcast` (`NetCommandSkill` — bỏ qua chính người chơi qua `ConformIdx`) hoặc `s2c_castskilldirectly` (`s2cDirectlyCastSkill`: nMpsX = -1 → nMpsY là ID mục tiêu, áp cho cả bản thân). `ReplySkill` đợt e chỉ `Cast` trên máy chủ → mọi client (kể cả chủ nhân) không thấy 3 kiếm, chỉ thấy quái mất máu. Linux `Fire 0x08188BB0` sau `Cast` (0x080EA920) phát gói skillcast 0x85 (0x0807A870, 25 byte) cho cả vùng.
+
+### 14.2 Sửa engine đợt f — tool `ReverseTools\phai3\hoason_thicong\hs_engine_patch4.py` + `hs_engine_patch4b.py` (idempotent, `--kiem`), marker `[HOASON 02/09]`, commit `c0d787bd` + `3e7a5c38` (sửa theo phản biện)
+| Tệp | Sửa | Linux đối chiếu |
+|---|---|---|
+| `KNpc.cpp` | thêm `KNpc::CastAutoSkillAt(id, cấp, mục tiêu)`: phát `NPC_SKILL_SYNC s2c_castskilldirectly` (nMpsX=-1, nMpsY=dwID mục tiêu) cho vùng + 8 vùng kề, rồi `pSkill->Cast(m_Index, -1, target)`, đặt hồi chiêu server như `KNpc::Cast(int,int)` (client `s2cDirectlyCastSkill` luôn SetNextCastTime) | Fire 0x08188D4C Cast → 0x0807A870 phát gói |
+| `KNpc.cpp` | `ReplySkill(nLauncher)`: loại 1 → `CastAutoSkillAt(kẻ đánh)`, khác → `Cast(id,cấp)` (đã phát castskilldirectly). `RescueSkill(nAttacker)`: loại 1 → kẻ đánh, khác → mình. `AttackSkill(nạn nhân)`: loại 1 → **chính mình**, khác → nạn nhân | Fire: `cmp node->[0x38],1; cmovne ecx, ebx` (0x08188D0B) |
+| `KNpc.cpp` | Tự phóng CHUYỂN từ `CalcDamage` (mỗi hệ lạnh/hoả/lôi/độc + mỗi nhịp độc) sang `ReceiveDamage`: MỘT lần mỗi đòn qua cửa trúng (`CheckHitTarget`), chỉ khi quan hệ ĐỊCH, sau khi trừ máu, trước khe choáng; KHÔNG gate theo sát thương từng hệ (phản biện: `[ebp-0x48]` Linux là độ dịch kháng ngũ hành, không phải kết quả đòn) | ReceiveDamage 0x0808AACF `cmp [ebp-0x5c],8` ([ebp+0x24]&0xC), 0x0808B4F9 reply, 0x0808B1D3 attack |
+| `KNpc.cpp` | `autorescueskill` chỉ bắn khi ĐÒN NÀY đưa máu từ ≥ 25 % max xuống < 25 % và còn sống (đặt tại khe trừ máu của `CalcDamage` và khe chí tử của `ReceiveDamage`); bản cũ bắn mỗi đòn khi máu đang < 25 % | BeHurt 0x0808A003-0x0808A01A, ReceiveDamage 0x0808B0E3-0x0808B13A (`max/4`, `old >= 25%`) |
+| `KNpcAttribModify.cpp` | 4 handler auto*skill dùng chung `HS_AutoSkillModify`: khoá = (|v0| & 0xffffff) = id·256+cấp, loại = |v0|>>24; v2>0 cộng dồn tỷ lệ (v2&0xff), chờ = v2>>8; v2<0 (gỡ trạng thái, giá trị đảo dấu) trừ tỷ lệ, về 0 → xoá ô. Sửa 2 lỗi cũ: gỡ trạng thái tạo ô rác id 64172 chiếm chỗ (3 ô); ô thêm lần đầu không bao giờ bị gỡ → buff hết vẫn tự phóng, buff lại → 2 ô = tỷ lệ đôi | 0x08189000 (map theo khoá, `node->[0x14] += rate`, `== 0` erase) |
+| `KNpc.cpp` nhịp hồi | nội lực `+= m_CurrentManaReplenish` (gốc + Σmanareplenish_v) KHÔNG nhân %; `manareplenish_p` chỉ nhân vào thuốc hồi nội lực theo thời gian (`m_ManaState`); sinh lực: % chỉ nhân khi tổng hồi > 0, hồi âm cộng thẳng | 0x0808B6FA `[0x11a0] += [0x11a4]`; 0x0808B826 "AddManaState: %d * %d%%"; 0x0808B65F-6BD "AddLife" (`jle` → cộng thẳng) |
+| `KMagicDesc.cpp` | `#lA-` lấy `(v0 & 0xffffff)/256` → mô tả 1364 hiện "[ Thái Nhạc Tam Thanh Phong ]" (trước ra id 66899 → trống, đúng như ảnh chủ gửi) | byte cao = loại (0x080973D0) |
+| `KNpc.cpp` | `DeathSkill`: lỗi gõ cũ kiểm `m_ReplySkill[i]` thay vì `m_DeathSkill[i]` | — |
+
+Hệ quả cho Kiếm Tông: 1349/1364/1369 mang `manareplenish_v = -10000, manareplenish_p = -200`; công thức cũ `R + R·p/100` = (gốc−10000)·(−1) = **+9950 nội lực mỗi nhịp** (đầy nội lực vĩnh viễn — ngược Linux); nay rút về 0 mỗi nửa giây như Linux (Kiếm Tông không dùng nội lực, chiêu Kiếm Tông `skill_cost_v` bị comment). Các phái khác `p = 0` → không đổi; `lifereplenish_p` chỉ khác khi tổng hồi âm.
+
+### 14.3 Kiểm toán thuộc tính bổ sung (dịch ngược bảng handler `[this+4+8*idx]` đầy đủ 216 mục — scan `mov [edx+off], func` 0x08099000-0x0809B000; đợt b/d chỉ thấy 109)
+| Thuộc tính (idx) | Linux | JX1 | Kết luận |
+|---|---|---|---|
+| steallife_p 66 / stealmana_p 67 | `[0x13dc]/[0x13e0] += v0` | `m_CurrentLifeStolen/ManaStolen += v0` | trùng |
+| deadlystrike_p 70 / deadlystrikeenhance_p 146 | CÙNG handler 0x08098BD0 `[0x13fc] += v0` | `DeadlyStrikeP`/`DeadlyStrikeEnhanceP` đều `+= m_CurrentDeadlyStrikeEnhanceP` | trùng |
+| attackrating_p 57 / attackratingenhance_p 167 | `[0x1258] += base[0x15c4]·v0/100` | `AttackRatingP` + phần kinh mạch JX1 | trùng gốc |
+| castspeed_v 116 | `[0x1a3c] += v0` | `m_CurrentCastSpeed += v0` | trùng |
+| addlightingdamage_v 124 / addlightingmagic_v 171 / addcoldmagic_v 169 | `min += v0; max += v0` (KHÔNG đặt thời gian) | JX1 `AddColdMagicV` còn đặt nValue[1] bảng 16 bậc | **lệch** (mục 14.4-2) |
+| manareplenish_v 92 | `[0x11a4] += v0` → nhịp cộng thẳng | đã sửa nhịp (14.2) | trùng sau vá |
+| lifemax_p 86 → `[0x1a14]`, lifemax_yan_p 234 → `[0x1a18]`; manamax_p 90 → `[0x1a1c]`, manamax_yan_p 236 → `[0x1a20]`; attackspeed_v 115 → `[0x1a34]`, attackspeed_yan_v 239 → `[0x1a38]`; fastwalkrun_p 111 → `[0x1a2c]` vs nhánh yan `[0x1a30]` | mọi nơi dùng lấy **MAX(hai nhánh)** (`cmovge`, 13 chỗ sinh lực, 0x080787A9 tốc độ đánh, handler 0x08098A50) | JX1 một biến cộng dồn (`LifeMaxP`/`ManaMaxP`/`AttackSpeedV` đăng ký cho cả hai tên) | **lệch** (mục 14.4-1) |
+| sorbdamage_p 218 `[0x1a24]` / sorbdamage_yan_p 237 `[0x1a28]` kẹp 500 | max hai nhánh | JX1 `max(m_CurrentSorbDamageYanP, nSorbM)` (PF 31/08k) | trùng |
+| coldenhance_p 161 | `[0x1430] += v0`; 0x0807C993 cộng vào THỜI GIAN đông (`max(v1, [0x1430]+[0x11e0])`) | `pDes->nValue[1] = v1 + m_CurrentColdEnhance` | trùng |
+| damage2addmana_p 134 | `[0x13cc]`; BeHurt 0x0808A9A7 `mana(NẠN NHÂN) += dmg·p/100` | KNpc.cpp:4146 cộng cho `this` (nạn nhân) | trùng |
+| addphysicsdamage_p 126 | 0x0809A7F0: |v2| 0..5 → ô vũ khí cận chiến `[0x1440 + 4·map(v2)]`, 6 = ALL, 7 = tay không, 8 = MELEE_ALL, 9 = tầm xa | `AddPhysicsDamageP` cùng bố cục; v2 = 0 → ô 0 = kiếm (EqtLimit 151 Võ Đang Kiếm Pháp = 0, Hoa Sơn = 0) | trùng |
+| allres_p 114 | += v0 vào 5 kháng | `AllresP` | trùng |
+| anti_do_hurt_p 260, skill_enhance 243, walkrunshadow 293, frozen_action 251, manareplenish_p 248 (`[0x119c] += v0`), lifemax_yan_p (`[0x1a18] += LifeMax·v0/100`) | += v0 / cờ | tương đương | trùng (chi tiết mục 12.3) |
+| Cổng "không bắn lại" 0x8fc62a0/0x8fc4360 (trước Fire) | điền từ vector 0x8fbfe04/0x8fbfe10 — KHÔNG có nơi ghi trong toàn ELF (xref chỉ có đoạn init) → luôn 0 | không cần port | trùng |
+
+Dữ liệu: so 38 dòng Hoa Sơn + 45 dòng con/sự kiện (418…430, 1410/1411/1420/1421, 203/64/69/92/208/275, 412–417…) Linux ↔ JX1: **0 khác biệt cột chức năng** (chỉ khác dấu cách cuối tên, dấu ngoặc kép mô tả, 1411 tên GBK→Việt). skills.txt client ≠ server chỉ ở 2 dòng 1561/1562 (Túy Tiên Tá Cốt/VIP 90 — không thuộc đợt này). `huashan.lua` server = client = Linux (cmp).
+
+### 14.4 Lệch còn lại — CHỜ CHỦ QUYẾT (đổi cơ chế chung, ảnh hưởng 9 phái cũ nên không tự sửa)
+1. **Nhánh "(Dương)" lấy MAX**: Linux giữ hai nhánh (thường / yan) và dùng `max`; JX1 cộng dồn. Với Hoa Sơn: 1349 có CẢ `attackspeed_v` và `attackspeed_yan_v` cùng 6..32 → Linux +32, JX1 +64; 1376/1381 có cả `lifemax_p` 5..30 % và `lifemax_yan_p` 5..20 % → Linux +30 %, JX1 +50 %; 1349/1358 `lifemax_yan_p`, 1374 `manamax_yan_p` 35..200 % ở JX1 cộng thêm vào % trang bị thường (Linux lấy max với nhánh trang bị). Sửa = `LifeMaxP/ManaMaxP/AttackSpeedV/FastWalkRunP` tách hai bộ đếm + `max` khi tính lại (kể cả Phi Phong "(Dương)" đang cộng dồn).
+2. **addcoldmagic_v không sinh thời gian đóng băng** ở Linux (1358 Huyễn Nhãn Vân Yên +20..315): JX1 bảng 16 bậc (≤ 64 khung) + `max` vào thời gian đông của chiêu nội công → Khí Tông đóng băng lâu hơn Linux; đổi ảnh hưởng Thúy Yên và mọi phái dùng thuộc tính này.
+3. **Kinh nghiệm kỹ năng**: Linux cộng cho ĐÚNG kỹ năng gây sát thương (0x080E5D90 tại 0x0808AA97, kể cả 1363 tự phóng); JX1 `AddSkillExp90` chỉ cộng cho kỹ năng đang chọn, `AddSkillExp120` cộng mọi buff exp khi gây sát thương.
+4. Auto-skill: Linux giữ nút tỷ lệ âm khi gỡ quá tay; JX1 xoá khi ≤ 0 (giữ 3 ô trống). Linux có cờ `v1 == 1` (tôn trọng CD kỹ năng thật) — Hoa Sơn không dùng.
+
+### 14.5 CHECKLIST SWAP đợt f (chủ chạy `ChoiGame.bat`/`ChayGameServer.bat`; KHÔNG tự restart)
+1. `bin\server\CoreServer.dll.moi` — 18.246.144 byte, md5 `7dde5ff4` (Server Release x64, 02/09 01:29, build từ HEAD `3e7a5c38` = superset bot đợt d `7f041f8d`; bản `.moi` cũ của phiên bot md5 `3bedd3ac` đã lưu thành `CoreServer.dll.moi.bot_3bedd3ac_0021`, không cần dùng nữa).
+2. `bin\client\CoreClient.dll.moi` — 2.439.168 byte, md5 `21f02991` (01:30) — swap CÙNG CoreServer (giao thức không đổi so với đợt e; mô tả `#lA-` và nhịp thuốc hồi nội lực nằm ở client).
+3. Game.exe / Goddess.exe / dữ liệu / script: không đổi.
+4. Nghiệm thu: buff 1364 → để quái ĐỊCH đánh: kỳ vọng thấy 3 kiếm bay về quái kèm hoạt ảnh xuất chiêu (~3 % mỗi đòn trúng, hồi 15 s); mô tả kỹ năng hiện "[ Thái Nhạc Tam Thanh Phong ]"; nội lực Kiếm Tông tụt về 0 sau nửa giây khi có 1349/1364/1369; buff hết 10 phút → không còn tự phóng; 1369 (150) đánh trúng → 9 kiếm 1368 bay về nạn nhân (5 %); 1365 Tử Hà Kiếm Khí chỉ bắn 1366 khi máu VƯỢT XUỐNG dưới 25 %.
+
+### 14.6 Phản biện (một tác tử độc lập, chỉ đọc, 26 lượt tool) — 0 lỗi cứng, 3 nghi ngờ → xử lý ở commit `3e7a5c38`
+| Mục | Kết luận | Xử lý |
+|---|---|---|
+| `HS_AutoSkillModify`: ngữ nghĩa, memset `KMagicAutoSkill` (POD), v2 = 0, không cộng đôi qua `UpdataCurData` (ZeroMemory) → `ReCalcStateEffect` (áp lại giá trị đảo của node), `SetStateSkillEffect` lên cấp = gỡ khoá cũ + thêm khoá mới | OK | — |
+| Luồng `ReceiveDamage`: 5 `CalcDamage` giữ luồng, marker `pTemp++; //stun[14]` đúng hàm (chỗ thứ 2 ở `AppendSkillEffect`), không `return` giữa, chết giữa chừng an toàn, quan hệ `& 0xC == 8` | OK | — |
+| Cổng `bHSTrung` (đòn bị né hoàn toàn không kích) | NGHI NGỜ | Kiểm asm: `[ebp-0x48]` = độ dịch kháng ngũ hành (`seriesdamage_p − seriesres_p [0x13e8]`, đảo dấu để hoàn kháng), KHÔNG phải kết quả đòn → Linux không gate theo sát thương → **bỏ `bHSTrung`**, trả 5 lời gọi `CalcDamage` về nguyên bản |
+| Khe cứu nguy 25 % chạy cả `bReturn = TRUE` (nhịp độc `m_nLastPoisonDamageIdx` có thể 0, nhịp cháy attacker = mình, phản đòn) | NGHI NGỜ | Kiểm asm: nhịp độc/cháy Linux (0x0808BDF9) và phản đòn đều gọi chung BeHurt 0x08089C90 → khe 25 % trong BeHurt áp cho cả → **giữ**; attacker 0/mình → rơi về tự cast lên mình, an toàn |
+| `CastAutoSkillAt` không SetNextCastTime server trong khi client `s2cDirectlyCastSkill` luôn khoá | NGHI NGỜ nhẹ | **Thêm** SetNextCastTime như `KNpc::Cast(int,int)` |
+| Gói `NPC_SKILL_SYNC` pack(1) offset 1/5/9/13/17 khớp client; `CURREGION` đã kiểm `m_RegionIndex`; `KSkill::Cast(-1, target)` đường có sẵn | OK | — |
+| Nhịp hồi (R > 0 nhân %, R ≤ 0 cộng thẳng; nội lực không %; thuốc × (100+p), p = −200 → âm rồi kẹp 0) | OK | — |
+| Chữ ký/`#ifdef _SERVER`/link client; encoding ASCII (0 byte ≥ 0x80 trong dòng +) | OK | — |
+| Ghi nhận ngoài phạm vi (không sửa): `SetStateSkillEffect` nhánh `nTime == 0` memset node mà không `ModifyAttrib` gỡ → mọi thuộc tính của trạng thái đó kẹt (pre-existing); `DeathSkill` còn gate cấp 120 (Linux DoDeath không gate); `dwNextCastTime >= now` lệch 1 khung so Linux `jb` → đã đổi thành `>` | — | ghi nhận |
