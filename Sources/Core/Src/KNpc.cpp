@@ -6290,7 +6290,7 @@ BOOL KNpc::SendSyncData(int nClient)	//Sync npc vµ player to Server v? Client 1
 		PlayerSync.m_bBaiTan = m_BaiTan;
 		PlayerSync.RunSpeed			= (BYTE)m_CurrentRunSpeed;
 		PlayerSync.WalkSpeed		= (BYTE)m_CurrentWalkSpeed;
-		PlayerSync.WeaponType		= (BYTE)m_WeaponType;
+		PlayerSync.WeaponType		= (WORD)m_WeaponType;	// [VHTD 02/09d]
 		PlayerSync.RankID			= (BYTE)m_btRankId;
 		PlayerSync.RankBattleID			= (DWORD)m_btRankBattleId;//#RankBattle
 		PlayerSync.PlayerTitle			= (DWORD)m_btPlayerTitle;//#PlayerTitle
@@ -6495,7 +6495,7 @@ void KNpc::NormalSync() //Sync npc min liªn tôc tõ server vÒ client
 		PlayerSync.CastSpeed	= m_CurrentCastSpeed;
 		PlayerSync.HelmType		= (BYTE)m_HelmType;
 		PlayerSync.ArmorType	= (BYTE)m_ArmorType;
-		PlayerSync.WeaponType	= (BYTE)m_WeaponType;
+		PlayerSync.WeaponType	= (WORD)m_WeaponType;	// [VHTD 02/09d]
 		PlayerSync.MantleType	= (BYTE)m_MantleType; 
 		PlayerSync.MaskType		= m_MaskType;		//#mat na
 		PlayerSync.HonorID		= (BYTE)m_btHonorId;	//#HonorID

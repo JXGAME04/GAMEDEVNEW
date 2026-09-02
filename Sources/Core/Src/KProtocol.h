@@ -36,7 +36,7 @@ typedef struct
 	BYTE	m_bBaiTan;	// ban hang
 	BYTE	RunSpeed;
 	BYTE	WalkSpeed;
-	BYTE	WeaponType;
+	WORD	WeaponType;	// [VHTD 02/09d] BYTE -> WORD: res vu khi thuan/cam 268/269/276 > 255 (PLAYER_SYNC + PLAYER_NORMAL_SYNC, pack(1) -> +1 byte; client+server swap cung luc)
 	BYTE	RankID;
 	DWORD	RankBattleID;//#RankBattle
 	DWORD	PlayerTitle;//#PlayerTitle
@@ -432,7 +432,7 @@ typedef struct
 	int			CastSpeed;			//Fix lçi bïa ©m tèc ®é ®¸nh am toc do danh
 	BYTE	HelmType;
 	BYTE	ArmorType;
-	BYTE	WeaponType;
+	WORD	WeaponType;	// [VHTD 02/09d] BYTE -> WORD: res vu khi thuan/cam 268/269/276 > 255 (PLAYER_SYNC + PLAYER_NORMAL_SYNC, pack(1) -> +1 byte; client+server swap cung luc)
 	BYTE	MantleType;
 	int			MaskType;
 	BYTE	HorseType;
