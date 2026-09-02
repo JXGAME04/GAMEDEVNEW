@@ -28,6 +28,16 @@ typedef struct
 	int		m_nPfPack[4];	// xem chu thich KItem.h:156-160 (sao/chuc phuc/lo | ma da | cap lo | lan dot pha)
 } ITEM_SYNC_PFPACK;
 
+// [DUNGLUYEN 01/09] dong bo 6 o Van Cuong + seed cua mot vat pham (khuon y het PFPACK). 41 byte.
+// Chi gui cho trang bi da dung luyen hoac vien Van Cuong (genre 8). Client tai sinh thuoc tinh tu (P, seed).
+typedef struct
+{
+	BYTE	ProtocolType;	// s2c_syncfusion
+	DWORD	m_dwID;			// dwID vat pham
+	WORD	m_wFusionP[6];	// P Van Cuong tung o (vien genre 8: [0] = da thi luyen)
+	DWORD	m_dwSeed[6];	// seed tung o (vien genre 8: [0] = seed cua vien)
+} ITEM_SYNC_FUSION;
+
 #pragma pack(pop, enter_mantle_protocol)
 
 #endif	// KMANTLEPROTOCOL_H

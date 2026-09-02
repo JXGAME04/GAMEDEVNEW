@@ -148,6 +148,7 @@ BOOL KLibOfBPT::Init()
 											&m_PlatinaMagicRate,
 											&m_PlatinaMagicAttrib,
 											&m_BPTStarStone,	// [PHI PHONG] PHAI o CUOI mang
+											&m_BPTFusion,		// [DUNGLUYEN 01/09] fusion.txt - sau starstone, cung nhanh mac dinh (khong Init)
 										};
 
 	const int cbNumOfTables = sizeof(paryBPT)/sizeof(paryBPT[0]);
@@ -1190,6 +1191,75 @@ const KBASICPROP_STARSTONE* KLibOfBPT::GetStarStoneRecord(IN int nParticular) co
 	return m_BPTStarStone.FindRecord(nParticular);
 }
 // ===== het bang Tinh Than Thach =====
+
+// ===== [DUNGLUYEN 01/09] bang Van Cuong (fusion.txt) =====
+KBPT_Fusion::KBPT_Fusion()
+{
+	m_nSizeOfEntry = sizeof(KBASICPROP_FUSION);
+	// Load() TU ghep TABFILE_PATH vao truoc -> TEN TRAN (xem ghi chu KBPT_StarStone)
+	::strcpy(m_szTabFile, "fusion.txt");
+}
+
+KBPT_Fusion::~KBPT_Fusion()
+{
+}
+
+BOOL KBPT_Fusion::LoadRecord(int i, KTabFile* pTF)
+{
+	_ASSERT(pTF != NULL);
+	KBASICPROP_FUSION* pBuf = (KBASICPROP_FUSION*)m_pBuf;
+	pBuf = pBuf + i;
+	const PROPINFO aryPI[] =
+	{
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szName,      sizeof(pBuf->m_szName) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nItemGenre),    0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nDetailType),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nParticurType), 0 },
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szImageName, sizeof(pBuf->m_szImageName) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nObjIdx),  0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nWidth),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nHeight),  0 },
+		{ PI_VARTYPE_CHAR, (char*)pBuf->m_szIntro,     sizeof(pBuf->m_szIntro) },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nSeries),  0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nPrice),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nLevel),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_bStack),   0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nQuality), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nMagicAttribIdx), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[0]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[1]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[2]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[3]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[4]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nEquipType[5]), 0 },
+		{ PI_VARTYPE_INT,  (char*)&(pBuf->m_nBind),    0 },	// cot 22
+	};
+	return ::LoadRecord(pTF, i, aryPI, sizeof(aryPI) / sizeof(aryPI[0]));
+}
+
+const KBASICPROP_FUSION* KBPT_Fusion::GetRecord(IN int i) const
+{
+	return (i >= 0 && i < m_nNumOfEntries) ?
+		(((KBASICPROP_FUSION*)m_pBuf) + i) : NULL;
+}
+
+// Tra ban ghi theo ParticularType (1..350), khong phai theo chi so dong.
+const KBASICPROP_FUSION* KBPT_Fusion::FindRecord(IN int nParticular) const
+{
+	KBASICPROP_FUSION* p = (KBASICPROP_FUSION*)m_pBuf;
+	for (int i = 0; i < m_nNumOfEntries; i++)
+	{
+		if ((p + i)->m_nParticurType == nParticular)
+			return p + i;
+	}
+	return NULL;
+}
+
+const KBASICPROP_FUSION* KLibOfBPT::GetFusionRecord(IN int nParticular) const
+{
+	return m_BPTFusion.FindRecord(nParticular);
+}
+// ===== het bang Van Cuong =====
 
 KBPT_Quest::KBPT_Quest()
 {

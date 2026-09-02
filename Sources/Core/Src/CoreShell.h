@@ -544,6 +544,8 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_OPEN_MANTLE_INLAY,
 	// [PF13 01/09] mo panel TAY LUYEN thuoc tinh an (van o CUOI enum)
 	GDCNI_OPEN_MANTLE_WASH,
+	// [DUNGLUYEN 01/09] mo box DUNG LUYEN Van Cuong (van o CUOI enum)
+	GDCNI_OPEN_SMELT_BOX,
 };
 
 enum GAMEDEBUGCONTROL
@@ -865,6 +867,10 @@ enum GAMEOPERATION_INDEX
 	// >=512 byte -> ghi 2 dong an (khe 6-7) da dinh dang, cach nhau '\n'; tra so dong.
 	// Dat CUOI enum (Core + S3Client cung dich).
 	GDI_MANTLE_HIDDEN_DESC,
+
+	// [DUNGLUYEN 01/09] box dung luyen: uParam = dwID vat pham, nParam = (char*) dem >= 1024 byte -> bang
+	// thong tin (cac dong cach <enter>, co the <color>); tra so dong. Dat CUOI enum.
+	GDI_FUSION_INFO,
 
 };
 

@@ -859,6 +859,16 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			}
 		}
 		break;
+	case GDI_FUSION_INFO:	// [DUNGLUYEN 01/09] bang thong tin mon dat vao box dung luyen
+		if (nParam)
+		{
+			char* pszBuf = (char*)nParam;
+			pszBuf[0] = 0;
+			int nIdx = ItemSet.SearchID((DWORD)uParam);
+			if (nIdx > 0 && nIdx < MAX_ITEM)
+				nRet = Item[nIdx].FUS_BuildInfo(pszBuf, 1024);
+		}
+		break;
 #endif
 	case GDI_TASK_SAVE_VALUE:	// [TaskGuide] ban sao task value (dong bo qua UI_TASKVALUE)
 		nRet = (int)Player[CLIENT_PLAYER_INDEX].m_cTask.GetSaveVal((int)uParam);

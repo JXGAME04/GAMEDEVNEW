@@ -40,11 +40,21 @@
 #define PF_PCOL_MAXWISH		71
 #define PF_PLAT_WIDTH		71
 
+// [DUNGLUYEN 01/09] 2 cot "co the dung luyen" (so Van Cuong toi da / pham chat toi da):
+// goldequip.txt 1-based 58/59, platinaequip.txt 1-based 66/67 (truoc cot khong ten 68 nen KHONG lech).
+// Chua ai doc chung truoc day. Doc cung mot lan voi 3 cot phi phong.
+#define FUS_GCOL_CAP		58
+#define FUS_GCOL_QUAL		59
+#define FUS_PCOL_CAP		66
+#define FUS_PCOL_QUAL		67
+
 struct KPfRowInfo
 {
 	int	nCanUpStar;
 	int	nMaxStone;
 	int	nMaxWish;
+	int	nFusionCap;		// [DUNGLUYEN]
+	int	nFusionQual;	// [DUNGLUYEN]
 };
 
 static BOOL PF_GetRowInfo(BOOL bPlatina, int nIndex, KPfRowInfo* pOut)
@@ -72,15 +82,21 @@ static BOOL PF_GetRowInfo(BOOL bPlatina, int nIndex, KPfRowInfo* pOut)
 				s_nRows[t] = nH;
 				s_pTab[t] = new KPfRowInfo[nH + 2];
 				memset(s_pTab[t], 0, sizeof(KPfRowInfo) * (nH + 2));
+				const int nColCap  = bPlatina ? FUS_PCOL_CAP  : FUS_GCOL_CAP;	// [DUNGLUYEN]
+				const int nColQual = bPlatina ? FUS_PCOL_QUAL : FUS_GCOL_QUAL;
 				for (int r = 1; r <= nH; r++)
 				{
-					int a = 0, b = 0, c = 0;
+					int a = 0, b = 0, c = 0, f1 = 0, f2 = 0;
 					tf.GetInteger(r, nColStar,  0, &a);
 					tf.GetInteger(r, nColStone, 0, &b);
 					tf.GetInteger(r, nColWish,  0, &c);
+					tf.GetInteger(r, nColCap,   0, &f1);	// [DUNGLUYEN] o trong -> 0 = khong dung luyen duoc
+					tf.GetInteger(r, nColQual,  0, &f2);
 					s_pTab[t][r].nCanUpStar = a;
 					s_pTab[t][r].nMaxStone  = b;
 					s_pTab[t][r].nMaxWish   = c;
+					s_pTab[t][r].nFusionCap  = f1;
+					s_pTab[t][r].nFusionQual = f2;
 				}
 			}
 		}
@@ -91,6 +107,8 @@ static BOOL PF_GetRowInfo(BOOL bPlatina, int nIndex, KPfRowInfo* pOut)
 	pOut->nCanUpStar = 0;
 	pOut->nMaxStone  = 0;
 	pOut->nMaxWish   = 0;
+	pOut->nFusionCap  = 0;	// [DUNGLUYEN]
+	pOut->nFusionQual = 0;
 
 	int nRow = nIndex + 2;	// mirror ::LoadRecord
 	if (!s_pTab[t] || nRow < 1 || nRow > s_nRows[t])
@@ -124,6 +142,16 @@ BOOL PF_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCanUpStar, int* pnMaxStone,
 	if (pnCanUpStar) *pnCanUpStar = s.nCanUpStar;
 	if (pnMaxStone)  *pnMaxStone  = s.nMaxStone;
 	if (pnMaxWish)   *pnMaxWish   = s.nMaxWish;
+	return TRUE;
+}
+// [DUNGLUYEN 01/09] cho KItem tra 2 cot "co the dung luyen" theo dong bang
+BOOL FUS_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCap, int* pnQual)
+{
+	KPfRowInfo s;
+	if (!PF_GetRowInfo(bPlatina, nIndex, &s))
+		return FALSE;
+	if (pnCap)  *pnCap  = s.nFusionCap;
+	if (pnQual) *pnQual = s.nFusionQual;
 	return TRUE;
 }
 // ======== het khoi doc cot phi phong ========
@@ -1575,6 +1603,29 @@ BOOL KItemGenerator::Gen_StarStone(IN int nParticular, IN OUT KItem* pItem, IN i
 		return FALSE;
 	*pItem = *p;
 	pItem->SetStackNum(nStackNum > 0 ? nStackNum : 1);
+	return TRUE;
+}
+
+// [DUNGLUYEN 01/09] sinh vien Van Cuong theo ParticularType (1..350). Seed sinh luc TAO vien
+// (Linux 0x080696A0: rand() -> item+0x218); DB/goi sync se ghi de sau khi nap/nhan. Seed 0 = "khong co"
+// nen tranh 0. Client sinh tam 1 roi nhan seed that qua s2c_syncfusion.
+BOOL KItemGenerator::Gen_Fusion(IN int nParticular, IN OUT KItem* pItem, IN int nStackNum)
+{
+	_ASSERT(pItem != NULL);
+	ZeroMemory(&pItem->m_GeneratorParam, sizeof(pItem->m_GeneratorParam));
+	const KBASICPROP_FUSION* p = m_BPTLib.GetFusionRecord(nParticular);
+	if (NULL == p)
+		return FALSE;
+	*pItem = *p;
+	pItem->SetStackNum(nStackNum > 0 ? nStackNum : 1);
+	pItem->ClearFusion();
+	unsigned uSeed = 1;
+#ifdef _SERVER
+	uSeed = (unsigned)g_GetRandomSeed() ^ ((unsigned)nParticular * 2654435761u);
+	if (uSeed == 0)
+		uSeed = 1;
+#endif
+	pItem->SetFusion(0, 0, uSeed);
 	return TRUE;
 }
 

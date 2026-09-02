@@ -51,6 +51,7 @@
 #include "UiCase/UiAffairItem.h"
 #include "UiCase/UiMantleInlay.h"
 #include "UiCase/UiMantleWash.h"	// [PF13 01/09] panel Tay Luyen thuoc tinh an	// [PHI PHONG] panel kham Tinh Than Thach
+#include "UiCase/UiSmelt.h"	// [DUNGLUYEN 01/09] box dung luyen Van Cuong
 #include "UiCase/UiConnectInfo.h"
 #include "UiCase/UiTimeBox.h"
 #include "UiCase/UiInformation3.h"
@@ -259,6 +260,10 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 				KUiMantleWash* pWash = KUiMantleWash::GetIfVisible();
 				if (pWash)
 					pWash->UpdateItem((KUiObjAtRegion*)uParam, nParam);
+				// [DUNGLUYEN 01/09] box dung luyen cung dung khoang chua nay
+				KUiSmelt* pSmelt = KUiSmelt::GetIfVisible();
+				if (pSmelt)
+					pSmelt->UpdateItem((KUiObjAtRegion*)uParam, nParam);
 			}
 			else if (pObject->eContainer == UOC_TREMBLE_ITEM)
 			{
@@ -797,6 +802,8 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 			KUiMantleInlay::CloseWindow(false);
 		if (KUiMantleWash::GetIfVisible())
 			KUiMantleWash::CloseWindow(false);
+		if (KUiSmelt::GetIfVisible())
+			KUiSmelt::CloseWindow(false);	// [DUNGLUYEN 01/09]
 		break;
 	case GDCNI_OPEN_MANTLE_INLAY:
 	{
@@ -810,6 +817,13 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		// [PF13 01/09] panel Tay Luyen thuoc tinh an
 		KUiGiveBox* pInfo = (KUiGiveBox*)uParam;
 		KUiMantleWash::OpenWindow(pInfo->szTitle, pInfo->szInitString, pInfo->szAction1);
+	}
+	break;
+	case GDCNI_OPEN_SMELT_BOX:
+	{
+		// [DUNGLUYEN 01/09] box dung luyen Van Cuong (2 the)
+		KUiGiveBox* pInfo = (KUiGiveBox*)uParam;
+		KUiSmelt::OpenWindow(pInfo->szTitle, pInfo->szInitString, pInfo->szAction1);
 	}
 	break;
 	case GDCNI_OPEN_TALK_EX:

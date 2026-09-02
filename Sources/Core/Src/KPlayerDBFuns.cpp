@@ -738,6 +738,41 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 			NewItem.SetPfPack(3, 0);
 		}
 
+		// [DUNGLUYEN 01/09] giai nen 6 o Van Cuong + seed (xem SavePlayerItemList). Ban ghi khong co dau 'FUS1'
+		// (moi ban ghi truoc 01/09) -> de trong: iid/iBaiTanPrice cu co the mang byte RAC. Chi nhan P co trong
+		// fusion.txt va chi tren trang bi vang/bach kim (hoac vien Van Cuong).
+		NewItem.ClearFusion();
+		if (pItemData->iidentify == 0x46555331)
+		{
+			int aP[6];
+			aP[0] = pItemData->iid & 0x3FF;
+			aP[1] = (pItemData->iid >> 10) & 0x3FF;
+			aP[2] = (pItemData->iid >> 20) & 0x3FF;
+			aP[3] = pItemData->iBaiTanPrice & 0x3FF;
+			aP[4] = (pItemData->iBaiTanPrice >> 10) & 0x3FF;
+			aP[5] = (pItemData->iBaiTanPrice >> 20) & 0x3FF;
+			unsigned aS[6];
+			aS[0] = (unsigned)pItemData->iequipcode;
+			aS[1] = (unsigned)pItemData->ilocksell;
+			aS[2] = (unsigned)pItemData->ilocktrade;
+			aS[3] = (unsigned)pItemData->ilockdrop;
+			aS[4] = (unsigned)pItemData->ifortune;
+			aS[5] = (unsigned)pItemData->iowner;
+			if (NewItem.GetGenre() == item_fusion)
+			{
+				NewItem.SetFusion(0, aP[0] ? 1 : 0, aS[0] ? aS[0] : 1);
+			}
+			else if (NewItem.GetGenre() == item_equip &&
+				(NewItem.GetNature() == NATURE_GOLD || NewItem.GetNature() == NATURE_PLATINA))
+			{
+				for (int k = 0; k < 6; k++)
+				{
+					if (aP[k] > 0 && KItem::FUS_GetQuality(aP[k]) > 0)
+						NewItem.SetFusion(k, aP[k], aS[k]);
+				}
+			}
+		}
+
 		pItemData ++;
 		
 		int nIndex = ItemSet.AddI(&NewItem);
@@ -1068,7 +1103,6 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		//*****************************************************************
 		pItemData->iequipnaturecode = Item[nItemIndex].m_CommonAttrib.nItemNature;
 		pItemData->iequipclasscode =  Item[nItemIndex].m_CommonAttrib.nItemGenre;
-		pItemData->iequipcode =  Item[nItemIndex].GetID();
 		pItemData->idetailtype =  Item[nItemIndex].m_CommonAttrib.nDetailType;
 		pItemData->iparticulartype =  Item[nItemIndex].m_CommonAttrib.nParticularType;
 		pItemData->ilevel =  Item[nItemIndex].m_CommonAttrib.nLevel;
@@ -1083,7 +1117,6 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->ilucky = 	 Item[nItemIndex].GetItemParam()->nLuck;
 		pItemData->idurability = Item[nItemIndex].GetDurability();
 		pItemData->istacknum = Item[nItemIndex].GetStackNum();
-		pItemData->iidentify = 0;
 		pItemData->igoldid = Item[nItemIndex].GetGoldId();
 		pItemData->ienchance = Item[nItemIndex].GetEnChance();
 		pItemData->ipoint = Item[nItemIndex].IsPurple();
@@ -1103,13 +1136,45 @@ int	KPlayer::SavePlayerItemList(BYTE * pRoleBuffer)
 		pItemData->iiduphong6 = Item[nItemIndex].GetPfPack(1);
 		pItemData->iiduphong7 = Item[nItemIndex].GetPfPack(2);
 		pItemData->iiduphong8 = Item[nItemIndex].GetPfPack(3);
-		pItemData->ilocksell = Item[nItemIndex].m_CommonAttrib.bLockSell;
-		pItemData->ilocktrade = Item[nItemIndex].m_CommonAttrib.bLockTrade;
-		pItemData->ilockdrop = Item[nItemIndex].m_CommonAttrib.bLockDrop;
 		pItemData->imantle = Item[nItemIndex].GetMantle();
 		pItemData->irow = Item[nItemIndex].GetRow();
-		pItemData->ifortune = Item[nItemIndex].GetFortune();
-		pItemData->iowner = Item[nItemIndex].GetOwner();
+		// [DUNGLUYEN 01/09] 6 o Van Cuong + 6 seed dong goi vao 9 truong TDBItemData KHONG AI DOC LAI khi nap
+		// (iid, iequipcode, iidentify, iBaiTanPrice, ilocksell, ilocktrade, ilockdrop, ifortune, iowner - da do
+		// 49.332 mon: co khoa/fortune/owner deu sinh lai tu bang, iid/iBaiTanPrice mang rac) -> ban ghi GIU 233
+		// byte, schema MySQL khong doi. Dau hieu hop le 'FUS1' o iidentify (moi ban ghi cu ghi 0).
+		// PHAI ghi tuong minh ca 9 o moi lan save: m_SaveBuffer chi ZeroMemory luc dang nhap.
+		{
+			const KItem& sIt = Item[nItemIndex];
+			BOOL bCo = (sIt.GetGenre() == item_fusion);
+			int k;
+			for (k = 0; k < KItem::FUS_MAX_SLOT; k++)
+				if (sIt.GetFusionP(k) || sIt.GetFusionSeed(k))
+					bCo = TRUE;
+			if (bCo)
+			{
+				pItemData->iidentify = 0x46555331;	// 'FUS1'
+				pItemData->iid = (sIt.GetFusionP(0) & 0x3FF) | ((sIt.GetFusionP(1) & 0x3FF) << 10) | ((sIt.GetFusionP(2) & 0x3FF) << 20);
+				pItemData->iBaiTanPrice = (sIt.GetFusionP(3) & 0x3FF) | ((sIt.GetFusionP(4) & 0x3FF) << 10) | ((sIt.GetFusionP(5) & 0x3FF) << 20);
+				pItemData->iequipcode = (int)sIt.GetFusionSeed(0);
+				pItemData->ilocksell  = (int)sIt.GetFusionSeed(1);
+				pItemData->ilocktrade = (int)sIt.GetFusionSeed(2);
+				pItemData->ilockdrop  = (int)sIt.GetFusionSeed(3);
+				pItemData->ifortune   = (int)sIt.GetFusionSeed(4);
+				pItemData->iowner     = (DWORD)sIt.GetFusionSeed(5);
+			}
+			else
+			{
+				pItemData->iidentify = 0;
+				pItemData->iid = 0;
+				pItemData->iBaiTanPrice = 0;
+				pItemData->iequipcode = 0;
+				pItemData->ilocksell = 0;
+				pItemData->ilocktrade = 0;
+				pItemData->ilockdrop = 0;
+				pItemData->ifortune = 0;
+				pItemData->iowner = 0;
+			}
+		}
 		//*****************************************************************************
 		pItemData++;
 		nItemCount ++;

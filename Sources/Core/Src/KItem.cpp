@@ -42,6 +42,9 @@ void KItem::Reset() {
 	m_MaxOptMultiply = 1;
 	// [PHI PHONG 2026-08-29] xoa sach du lieu sao/da khi tai su dung o vat pham
 	::memset(m_nPfPack, 0, sizeof(m_nPfPack));
+	// [DUNGLUYEN 01/09] xoa sach 6 o Van Cuong + seed khi tai su dung khe
+	::memset(m_nFusionP, 0, sizeof(m_nFusionP));
+	::memset(m_uFusionSeed, 0, sizeof(m_uFusionSeed));
 	m_bHorseScaleOnly = false;
 #ifndef _SERVER
 	::memset(&m_Image, 0, sizeof(KRUImage));
@@ -371,6 +374,357 @@ BOOL KItem::GetCanUpStar() const
 
 // ======== het khoi Tinh Than Thach ========
 
+// ======== [DUNGLUYEN 01/09] VAN CUONG (fusion) - port 100% ban Linux ========
+// jx_linux_y: thuoc tinh Van Cuong KHONG nam trong mang magic attrib cua trang bi ma duoc SINH LAI moi
+// lan mac/thao/dang nhap (0x080684A0 -> 0x0806BD00): srand(seed) + 3 lan rand-range trong [min,max] cua
+// dong magicattrib_ge ma fusion.txt cot 15 tro toi, roi ModifyAttrib thang len NPC. JX1 lam y het nhung
+// dung LCG rieng (khong cham g_Random; client Win32 cho cung ket qua tu cung (P, seed)).
+// fusion.txt: cot 1 ten | 4 P | 14 pham chat | 15 chi so 0-based magicattrib_ge | 16-21 DetailType duoc
+// kham (o trong = 0 = bo qua; muc 1 = vu khi, khop ca melee 0 - Linux 0x08200C20) | 22 thi luyen xong khoa.
+#define FUS_FILE		"\\settings\\item\\fusion.txt"
+#define FUS_MAX_P		512
+
+struct KFusInfo
+{
+	int		nAttribType;
+	int		nMin[3];
+	int		nMax[3];
+	int		nQuality;
+	int		nEquipType[6];
+	int		nBind;
+	char	szName[64];
+};
+
+// Nap 1 lan roi cache. Tra NULL neu P khong hop le.
+static const KFusInfo* FUS_GetInfo(int nP)
+{
+	static BOOL		s_bLoaded = FALSE;
+	static KFusInfo*	s_pTb = NULL;
+	if (!s_bLoaded)
+	{
+		s_bLoaded = TRUE;
+		s_pTb = new KFusInfo[FUS_MAX_P];
+		memset(s_pTb, 0, sizeof(KFusInfo) * FUS_MAX_P);
+		KTabFile tfF, tfG;
+		if (tfF.Load(FUS_FILE) && tfG.Load(PF_MAGICATTRIB_GE))
+		{
+			int nHF = tfF.GetHeight();
+			int nHG = tfG.GetHeight();
+			for (int r = 2; r <= nHF; r++)
+			{
+				int nP = 0, nGe = 0, nType = 0;
+				tfF.GetInteger(r, 4, 0, &nP);
+				tfF.GetInteger(r, 15, 0, &nGe);
+				if (nP <= 0 || nP >= FUS_MAX_P)
+					continue;
+				if (nGe <= 0 || nGe + 1 > nHG)
+					continue;
+				tfG.GetInteger(nGe + 1, 5, 0, &nType);	// 0-based -> dong KTabFile
+				if (nType <= 0)
+					continue;
+				KFusInfo* p = &s_pTb[nP];
+				p->nAttribType = nType;
+				for (int j = 0; j < 3; j++)
+				{
+					tfG.GetInteger(nGe + 1, 6 + j * 2, 0, &p->nMin[j]);
+					tfG.GetInteger(nGe + 1, 7 + j * 2, 0, &p->nMax[j]);
+				}
+				tfF.GetInteger(r, 14, 0, &p->nQuality);
+				for (int k = 0; k < 6; k++)
+					tfF.GetInteger(r, 16 + k, 0, &p->nEquipType[k]);
+				tfF.GetInteger(r, 22, 0, &p->nBind);
+				tfF.GetString(r, 1, "", p->szName, sizeof(p->szName));
+			}
+		}
+	}
+	if (!s_pTb || nP <= 0 || nP >= FUS_MAX_P)
+		return NULL;
+	if (s_pTb[nP].nAttribType <= 0)
+		return NULL;
+	return &s_pTb[nP];
+}
+
+// LCG rieng (msvc rand): deterministic, KHONG dung rand() cua tien trinh
+static unsigned FUS_Rand(unsigned& s)
+{
+	s = s * 214013u + 2531011u;
+	return (s >> 16) & 0x7FFF;
+}
+
+// Sinh thuoc tinh tu (P, seed) - Linux 0x0806BD00: v_j = min_j + Random(max_j - min_j + 1)
+BOOL KItem::FUS_GenAttrib(int nP, unsigned uSeed, KItemNormalAttrib* pOut)
+{
+	if (!pOut)
+		return FALSE;
+	memset(pOut, 0, sizeof(KItemNormalAttrib));
+	const KFusInfo* p = FUS_GetInfo(nP);
+	if (!p)
+		return FALSE;
+	unsigned s = uSeed;
+	pOut->nAttribType = p->nAttribType;
+	for (int j = 0; j < 3; j++)
+	{
+		unsigned r = FUS_Rand(s);	// luon tieu 1 so nhu Linux
+		int nMin = p->nMin[j], nMax = p->nMax[j];
+		if (nMin > nMax)
+		{
+			pOut->nValue[j] = nMin;
+			continue;
+		}
+		int nRange = nMax - nMin + 1;
+		pOut->nValue[j] = nMin + (nRange > 1 ? (int)(r % (unsigned)nRange) : 0);
+	}
+	return TRUE;
+}
+
+int KItem::FUS_GetQuality(int nP)
+{
+	const KFusInfo* p = FUS_GetInfo(nP);
+	return p ? p->nQuality : 0;
+}
+
+int KItem::FUS_GetBind(int nP)
+{
+	const KFusInfo* p = FUS_GetInfo(nP);
+	return p ? p->nBind : 0;
+}
+
+const char* KItem::FUS_GetName(int nP)
+{
+	const KFusInfo* p = FUS_GetInfo(nP);
+	return p ? p->szName : "";
+}
+
+// Linux 0x08200C20-0x08200C4B: so 6 muc cot 16-21 voi DetailType; muc <= 1 = vu khi (khop 0 lan 1)
+BOOL KItem::FUS_CanInlayDetail(int nP, int nDetailType)
+{
+	const KFusInfo* p = FUS_GetInfo(nP);
+	if (!p)
+		return FALSE;
+	for (int k = 0; k < 6; k++)
+	{
+		int t = p->nEquipType[k];
+		if (t <= 0)
+			continue;
+		if (t == nDetailType)
+			return TRUE;
+		if (t == 1 && nDetailType <= 1)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int KItem::GetFusionNum() const
+{
+	if (m_CommonAttrib.nItemGenre != item_equip)
+		return 0;
+	int n = 0;
+	for (int i = 0; i < FUS_MAX_SLOT; i++)
+		if (m_nFusionP[i] > 0)
+			n++;
+	return n;
+}
+
+// 2 cot "co the dung luyen" (so Van Cuong / pham chat) cua goldequip/platinaequip - doc rieng o KItemGenerator.CPP
+extern BOOL FUS_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCap, int* pnQual);
+
+static BOOL sFUS_LaTrangBiVang(const KItemCommonAttrib* pCA)
+{
+	return pCA->nItemGenre == item_equip && pCA->nRow >= 0 &&
+		(pCA->nItemNature == NATURE_GOLD || pCA->nItemNature == NATURE_PLATINA);
+}
+
+int KItem::GetFusionCap() const
+{
+	if (!sFUS_LaTrangBiVang(&m_CommonAttrib))
+		return 0;
+	int n = 0;
+	FUS_TraRowInfo(m_CommonAttrib.nItemNature == NATURE_PLATINA, m_CommonAttrib.nRow, &n, NULL);
+	if (n > FUS_MAX_SLOT)
+		n = FUS_MAX_SLOT;	// Linux +0x270 = min(bang, 6)
+	if (n < 0)
+		n = 0;
+	return n;
+}
+
+int KItem::GetFusionQual() const
+{
+	if (!sFUS_LaTrangBiVang(&m_CommonAttrib))
+		return 0;
+	int q = 0;
+	FUS_TraRowInfo(m_CommonAttrib.nItemNature == NATURE_PLATINA, m_CommonAttrib.nRow, NULL, &q);
+	if (q < 0)
+		q = 0;
+	return q;
+}
+
+int KItem::GetFusionAttribType(int i) const
+{
+	int nP = GetFusionP(i);
+	if (nP <= 0)
+		return 0;
+	const KFusInfo* p = FUS_GetInfo(nP);
+	return p ? p->nAttribType : 0;
+}
+
+// Ap (bAdd) / go thuoc tinh 6 o Van Cuong - Linux 0x080684A0 (them) / 0x08068360 (go: neg 3 gia tri).
+// Ap THO, khong nhan m_fHorseScale (Linux khong nhan).
+void KItem::FUS_ModifyAttrib(KNpc* pNPC, BOOL bAdd) const
+{
+	if (!pNPC)
+		return;
+	if (m_CommonAttrib.nItemGenre != item_equip)
+		return;
+	for (int i = 0; i < FUS_MAX_SLOT; i++)
+	{
+		if (m_nFusionP[i] <= 0)
+			continue;
+		KItemNormalAttrib sA;
+		if (!FUS_GenAttrib(m_nFusionP[i], m_uFusionSeed[i], &sA))
+			continue;
+		if (!bAdd)
+		{
+			sA.nValue[0] = -sA.nValue[0];
+			sA.nValue[1] = -sA.nValue[1];
+			sA.nValue[2] = -sA.nValue[2];
+		}
+		pNPC->ModifyAttrib(pNPC->m_Index, (void*)&sA);
+	}
+}
+
+static void sFUS_Noi(char* pszBuf, int nSize, const char* pszThem)
+{
+	if (!pszBuf || !pszThem)
+		return;
+	int nCo = (int)strlen(pszBuf);
+	int nThem = (int)strlen(pszThem);
+	if (nCo + nThem + 1 > nSize)
+		return;
+	strcat(pszBuf, pszThem);
+}
+
+// Tooltip trang bi: "So luong Van Cuong da dung luyen: n / cap" + moi o mot dong (mau tim nhu da phi phong)
+void KItem::FUS_AppendDesc(char* pszMsg) const
+{
+#ifndef _SERVER
+	if (!pszMsg)
+		return;
+	if (m_CommonAttrib.nItemGenre != item_equip)
+		return;
+	int nNum = GetFusionNum();
+	if (nNum <= 0)
+		return;
+	char szLine[320];
+	strcat(pszMsg, "  \n  ");
+	sprintf(szLine, "<color=Green>SË l≠Óng V®n C≠¨ng Æ∑ dung luy÷n: %d / %d <color>", nNum, GetFusionCap());
+	strcat(pszMsg, szLine);
+	strcat(pszMsg, "  \n  ");
+	for (int i = 0; i < FUS_MAX_SLOT; i++)
+	{
+		if (m_nFusionP[i] <= 0)
+			continue;
+		KItemNormalAttrib sA;
+		if (!FUS_GenAttrib(m_nFusionP[i], m_uFusionSeed[i], &sA))
+			continue;
+		char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
+		if (!pszInfo || !pszInfo[0])
+			continue;
+		char szHoa[256];
+		sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
+		sprintf(szLine, "<color=200,120,255>%s [V®n C≠¨ng c p %d] <color>", szHoa, FUS_GetQuality(m_nFusionP[i]));
+		strcat(pszMsg, szLine);
+		strcat(pszMsg, "  \n  ");
+	}
+	strcat(pszMsg, "<color=255,255,255>");
+#endif
+}
+
+// Bang thong tin trong box dung luyen (client, GDI_FUSION_INFO) - theo bo chuoi G_STR_SMELTINFO_* cua VLTK.
+// Cac dong cach nhau bang <enter>; tra so dong.
+int KItem::FUS_BuildInfo(char* pszBuf, int nSize) const
+{
+	if (!pszBuf || nSize < 64)
+		return 0;
+	pszBuf[0] = 0;
+	int nLine = 0;
+#ifndef _SERVER
+	static const char* s_szLoai[14] = { "VÚ kh›", "Y phÙc", "Nh…n", "Hπng li™n", "Giµy", "Thæt l≠ng", "N„n", "HÈ uy”n", "Ng‰c bÈi", "Ng˘a", "M∆t nπ", "Phi phong", "Hoµng kim  n", "Trang s¯c" };
+	char szLine[400];
+	if (m_CommonAttrib.nItemGenre == item_fusion)
+	{
+		int nP = m_CommonAttrib.nParticularType;
+		const KFusInfo* p = FUS_GetInfo(nP);
+		if (!p)
+			return 0;
+		strcpy(szLine, "<color=yellow>Loπi trang bﬁ c„ th” dung luy÷n: ");
+		int nCo = 0;
+		for (int k = 0; k < 6; k++)
+		{
+			int t = p->nEquipType[k];
+			if (t < 1 || t > 14)
+				continue;
+			if (nCo)
+				strcat(szLine, ", ");
+			strcat(szLine, s_szLoai[t - 1]);
+			nCo++;
+		}
+		strcat(szLine, " <color><enter>");
+		sFUS_Noi(pszBuf, nSize, szLine); nLine++;
+		sprintf(szLine, "<color=Blue>Ph»m ch t: c p %d <color><enter>", p->nQuality);
+		sFUS_Noi(pszBuf, nSize, szLine); nLine++;
+		KItemNormalAttrib sA;
+		if (FUS_GenAttrib(nP, m_uFusionSeed[0], &sA))
+		{
+			char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
+			if (pszInfo && pszInfo[0])
+			{
+				char szHoa[256];
+				sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
+				sprintf(szLine, "<color=200,120,255>%s <color><enter>", szHoa);
+				sFUS_Noi(pszBuf, nSize, szLine); nLine++;
+			}
+		}
+		if (m_nFusionP[0] != 0)
+		{
+			sFUS_Noi(pszBuf, nSize, "<color=yellow>ß∑ qua th› luy÷n <color><enter>"); nLine++;
+		}
+		if (p->nBind)
+		{
+			sFUS_Noi(pszBuf, nSize, "<color=Gray>Th› luy÷n xong sœ kh„a v‹nh vi‘n <color><enter>"); nLine++;
+		}
+	}
+	else if (m_CommonAttrib.nItemGenre == item_equip)
+	{
+		int nCap = GetFusionCap();
+		if (nCap <= 0)
+		{
+			sFUS_Noi(pszBuf, nSize, "<color=Red>Trang bﬁ nµy kh´ng th” dung luy÷n V®n C≠¨ng <color><enter>");
+			return 1;
+		}
+		sprintf(szLine, "<color=green>SË l≠Óng V®n C≠¨ng Æ∑ dung luy÷n: %d / %d<enter>C p ÆÈ tËi Æa c„ th” dung luy÷n V®n C≠¨ng %d <color><enter>",
+			GetFusionNum(), nCap, GetFusionQual());
+		sFUS_Noi(pszBuf, nSize, szLine); nLine += 2;
+		for (int i = 0; i < FUS_MAX_SLOT; i++)
+		{
+			if (m_nFusionP[i] <= 0)
+				continue;
+			KItemNormalAttrib sA;
+			if (!FUS_GenAttrib(m_nFusionP[i], m_uFusionSeed[i], &sA))
+				continue;
+			char* pszInfo = (char*)g_MagicDesc.GetDesc(&sA);
+			if (!pszInfo || !pszInfo[0])
+				continue;
+			char szHoa[256];
+			sPF_ChepHoaDau(szHoa, sizeof(szHoa), pszInfo);
+			sprintf(szLine, "<color=200,120,255>%s [V®n C≠¨ng c p %d] <color><enter>", szHoa, FUS_GetQuality(m_nFusionP[i]));
+			sFUS_Noi(pszBuf, nSize, szLine); nLine++;
+		}
+	}
+#endif
+	return nLine;
+}
+// ======== het khoi Van Cuong ========
+
 void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, IN int nMagicActiveE /* = 0 */) const
 {
 	_ASSERT(this != NULL);
@@ -415,6 +769,7 @@ void KItem::ApplyMagicAttribToNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 */, 
 
 	// [PHI PHONG] ap thuoc tinh cua Tinh Than Thach da kham
 	PF_ModifyStoneAttrib(pNPC, TRUE);
+	FUS_ModifyAttrib(pNPC, TRUE);	// [DUNGLUYEN 01/09] thuoc tinh Van Cuong
 
 	// ----------------- Magic attribute -----------------
 	for (i = 0; i < sizeof(m_aryMagicAttrib) / sizeof(m_aryMagicAttrib[0]); i++)
@@ -507,6 +862,7 @@ void KItem::RemoveMagicAttribFromNPC(IN KNpc* pNPC, IN int nMagicActive /* = 0 *
 
 	// [PHI PHONG] go thuoc tinh cua Tinh Than Thach khi thao trang bi
 	PF_ModifyStoneAttrib(pNPC, FALSE);
+	FUS_ModifyAttrib(pNPC, FALSE);	// [DUNGLUYEN 01/09]
 
 	float fScale = 1.0f;
 
@@ -1008,6 +1364,61 @@ void KItem::operator = (const KBASICPROP_STARSTONE& sData)
 	pCA->nPoint			 = 0;
 	pCA->bStack			 = sData.m_bStack;
 	pCA->nMaxStack		 = sData.m_nMaxStack > 0 ? sData.m_nMaxStack : 1;
+	::strcpy(pCA->szItemName, sData.m_szName);
+	pCA->LimitTime.bYear = 0;
+	pCA->LimitTime.bMonth = 0;
+	pCA->LimitTime.bDay = 0;
+	pCA->LimitTime.bHour = 0;
+	pCA->uPrice = 0;
+	// [VA 31/08e] ve sinh khe tai su dung: AddItemSet2 KHONG zero m_CommonAttrib,
+	// truong nao khong gan o day la giu RAC cua mon truoc do trong cung khe.
+	pCA->szScript[0]	 = 0;
+	pCA->nPickExecute	 = 0;
+	pCA->nIsSell		 = 1;
+	pCA->nIsTrade		 = 1;
+#ifndef _SERVER
+	// [VA 31/08e] khoi CLIENT bi bo sot khi port 29/08 (moi operator= khac deu
+	// co): khong chep ten anh + mo ta va khong khoi tao m_Image -> vien da nhan
+	// ve VO HINH, chuot phai khong co thong tin. Server khong dung cac truong
+	// nay nen khong ai thay tu 29/08.
+	::strcpy(pCA->szImageName, sData.m_szImageName);
+	::strcpy(pCA->szIntro,	   sData.m_szIntro);
+#endif
+	ZeroMemory(m_aryBaseAttrib, sizeof(m_aryBaseAttrib));
+	ZeroMemory(m_aryRequireAttrib, sizeof(m_aryRequireAttrib));
+	ZeroMemory(m_aryMagicAttrib, sizeof(m_aryMagicAttrib));
+#ifndef _SERVER
+	m_Image.Color.Color_b.a = 255;
+	m_Image.nFrame = 0;
+	m_Image.nISPosition = IMAGE_IS_POSITION_INIT;
+	m_Image.nType = ISI_T_SPR;
+	::strcpy(m_Image.szImage, pCA->szImageName);
+	m_Image.uImage = 0;
+#endif
+}
+
+// [DUNGLUYEN 01/09] nap ban ghi Van Cuong (fusion.txt) vao vat pham - clone tu ban Tinh Than Thach.
+void KItem::operator = (const KBASICPROP_FUSION& sData)
+{
+	KItemCommonAttrib* pCA = &m_CommonAttrib;
+	pCA->nItemGenre		 = sData.m_nItemGenre;
+	pCA->nDetailType	 = sData.m_nDetailType;
+	pCA->nParticularType = sData.m_nParticurType;
+	pCA->nObjIdx		 = sData.m_nObjIdx;
+	pCA->nWidth			 = sData.m_nWidth;
+	pCA->nHeight		 = sData.m_nHeight;
+	pCA->nPrice			 = sData.m_nPrice;
+	pCA->nLevel			 = sData.m_nLevel > 0 ? sData.m_nLevel : 1;
+	pCA->nSeries		 = -1;
+	pCA->nSet			 = 0;
+	pCA->nSetId			 = 0;
+	pCA->nSetNum		 = 0;
+	pCA->nGoldId		 = 0;
+	pCA->nStackNum		 = 1;
+	pCA->nEnChance		 = 0;
+	pCA->nPoint			 = 0;
+	pCA->bStack			 = sData.m_bStack;
+	pCA->nMaxStack		 = sData.m_bStack ? 200 : 1;
 	::strcpy(pCA->szItemName, sData.m_szName);
 	pCA->LimitTime.bYear = 0;
 	pCA->LimitTime.bMonth = 0;
@@ -1862,6 +2273,33 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 	// [PF13 31/08d] VIEN DA KHAM tu gioi thieu NGAY SAU INTRO - vi tri nay
 	// chac chan hien (anh chu chup co intro); ban dat o cuoi ham/PF_AppendDesc
 	// khong hien duoc voi vien da (chua ro co che nuot phan duoi).
+	// [DUNGLUYEN 01/09] VIEN VAN CUONG (genre 8) tu gioi thieu: thuoc tinh sinh tu seed cua chinh vien
+	// (Linux tai sinh y het khi kham nen gia tri nay chinh la gia tri se len trang bi), pham chat, da thi luyen.
+	if (m_CommonAttrib.nItemGenre == item_fusion)
+	{
+#ifndef _SERVER
+		KItemNormalAttrib sF;
+		if (FUS_GenAttrib(m_CommonAttrib.nParticularType, m_uFusionSeed[0], &sF) && sF.nAttribType > 0)
+		{
+			char* pszTenF = (char*)g_MagicDesc.GetDesc(&sF);
+			if (pszTenF && pszTenF[0])
+			{
+				char szHoaF[256];
+				sPF_ChepHoaDau(szHoaF, sizeof(szHoaF), pszTenF);
+				strcat(pszMsg, "  \n  <color=200,120,255>");
+				strcat(pszMsg, szHoaF);
+				strcat(pszMsg, " <color>  \n  ");
+			}
+		}
+		char szQF[96];
+		sprintf(szQF, "<color=Blue>Ph»m ch t: c p %d <color>  \n  ", FUS_GetQuality(m_CommonAttrib.nParticularType));
+		strcat(pszMsg, szQF);
+		if (m_nFusionP[0] != 0)
+			strcat(pszMsg, "<color=Yellow>ß∑ qua th› luy÷n <color>  \n  ");
+		if (FUS_GetBind(m_CommonAttrib.nParticularType))
+			strcat(pszMsg, "<color=Gray>Th› luy÷n xong sœ kh„a v‹nh vi‘n <color>  \n  ");
+#endif
+	}
 	if (m_CommonAttrib.nItemGenre == item_starstone)
 	{
 #ifndef _SERVER
@@ -2194,6 +2632,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, int nPriceScale, int nActiveA
 				break;		
 			}
 		}
+	FUS_AppendDesc(pszMsg);	// [DUNGLUYEN 01/09] cac o Van Cuong da dung luyen
 	PF_AppendDesc(pszMsg);	// diem chuc phuc + tung lo kham + thuoc tinh da
 }
 /*
@@ -3083,6 +3522,7 @@ void KItem::GetDesc(char* pszMsg, bool bShowPrice, bool bPriceScale, int nActive
 		strcat(pszMsg, "\n");
 		strcat(pszMsg, "<color=255,255,255>");
 	}
+	FUS_AppendDesc(pszMsg);	// [DUNGLUYEN 01/09] cac o Van Cuong da dung luyen
 	PF_AppendDesc(pszMsg);	// diem chuc phuc + tung lo kham + thuoc tinh da
 	if (m_CommonAttrib.uPrice > 0)
 	{

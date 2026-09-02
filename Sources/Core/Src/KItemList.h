@@ -183,6 +183,13 @@ public:
 	BOOL		CheckForgeItem(int nIdx, int nPlace = -1);
 	BOOL		AddForgeItem(int nIdx, int nPlace = -1);
 	void		UnForgeItem(int nIdx, int nPlace = -1);
+#ifdef _SERVER
+	// [DUNGLUYEN 01/09] loi dung luyen Van Cuong - Linux KItemList::SmeltEquip 0x08200BA0 / UnSmeltEquip 0x081FADC0.
+	// Tra MA KET QUA cua smelt_system.lua (1 OK, 3..10 loi; 15 OK, 18/19 loi).
+	int			SmeltEquip(int nEqu, int nFusion, BOOL bCheckOnly);
+	int			UnSmeltEquip(int nEqu, BOOL bCheckOnly);
+	BOOL		FUS_DangMac(int nIdx);	// mon nIdx dang o pos_equip?
+#endif
 	BOOL		GetIfActive();
 	BOOL		GetIfActive(int nItemIdx);
 	BOOL		GetMaskLock() {return m_nMaskLock;};	//#mat na

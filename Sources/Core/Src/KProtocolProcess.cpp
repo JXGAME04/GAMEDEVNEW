@@ -289,6 +289,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_removeallitem] = &KProtocolProcess::s2cRemoveAllItem;
 	ProcessFunc[s2c_diceitem] = &KProtocolProcess::s2cDiceItem;
 	ProcessFunc[s2c_syncpfpack] = &KProtocolProcess::s2cSyncItemPfPack;	// [PFSYNC 31/08]
+	ProcessFunc[s2c_syncfusion] = &KProtocolProcess::s2cSyncItemFusion;	// [DUNGLUYEN 01/09]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -4430,6 +4431,26 @@ void KProtocolProcess::s2cSyncItemPfPack(BYTE* pMsg)
 			Item[nIdx].SetPfPack(i, pSync->m_nPfPack[i]);
 	}
 }
+
+// [DUNGLUYEN 01/09] nhan 6 o Van Cuong + seed - khuon y het s2cSyncItemPfPack. Goi den SAU ITEM_SYNC
+// (cung luong TCP) nen ghi de duoc seed tam ma Gen_Fusion sinh o client. Neu mon dang MAC thi tinh
+// lai chi so nhan vat (UpdataCurData) de bang chi so client khop server ngay.
+void KProtocolProcess::s2cSyncItemFusion(BYTE* pMsg)
+{
+	ITEM_SYNC_FUSION* pSync = (ITEM_SYNC_FUSION*)pMsg;
+	if (pSync->ProtocolType != s2c_syncfusion)
+		return;
+	DWORD nIdx = ItemSet.SearchID(pSync->m_dwID);
+	if (nIdx > 0 && nIdx < MAX_ITEM)
+	{
+		for (int i = 0; i < KItem::FUS_MAX_SLOT; i++)
+			Item[nIdx].SetFusion(i, (int)pSync->m_wFusionP[i], (unsigned)pSync->m_dwSeed[i]);
+		int nList = Player[CLIENT_PLAYER_INDEX].m_ItemList.FindSame((int)nIdx);
+		if (nList > 0 && Player[CLIENT_PLAYER_INDEX].m_ItemList.m_Items[nList].nPlace == pos_equip &&
+			Player[CLIENT_PLAYER_INDEX].m_nIndex > 0)
+			Player[CLIENT_PLAYER_INDEX].UpdataCurData();
+	}
+}
 #endif
 
 void KProtocolProcess::s2cOpenQuestFinishDlg(BYTE* pMsg)
@@ -4641,6 +4662,16 @@ void KProtocolProcess::OpenAffairBox(BYTE* pMsg)
 			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
 			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
 			CoreDataChanged(GDCNI_OPEN_MANTLE_WASH, (unsigned int)&pInfo, NULL);
+		}
+		break;
+	case 5:
+		{
+			// [DUNGLUYEN 01/09] box DUNG LUYEN Van Cuong (2 the: dung luyen / thi luyen) - dung lai chinh goi nay
+			KUiGiveBox	pInfo;
+			strcpy(pInfo.szTitle, GiveBoxCmd->Value);
+			strcpy(pInfo.szInitString, GiveBoxCmd->Value1);
+			strcpy(pInfo.szAction1, GiveBoxCmd->Value2);
+			CoreDataChanged(GDCNI_OPEN_SMELT_BOX, (unsigned int)&pInfo, NULL);
 		}
 		break;
 	default:
@@ -6551,7 +6582,9 @@ void KProtocolProcess::UiCommandScript(int nIndex, BYTE* pProtocol)
 				// (khong chay szFunc tuy y de khoi mo duong client hack goi ham bat ky).
 				char* szRunFun = Player[nIndex].m_szTaskExcuteFun;
 				pUiCmd->szFunc[sizeof(pUiCmd->szFunc) - 1] = 0;
-				if (!strcmp(pUiCmd->szFunc, "doWashKeep") || !strcmp(pUiCmd->szFunc, "doWashApply"))
+				// [DUNGLUYEN 01/09] them 2 nut cua box dung luyen (2 the = 2 ham nop)
+				if (!strcmp(pUiCmd->szFunc, "doWashKeep") || !strcmp(pUiCmd->szFunc, "doWashApply") ||
+					!strcmp(pUiCmd->szFunc, "doSmeltBox") || !strcmp(pUiCmd->szFunc, "doUnSmeltBox"))
 					szRunFun = pUiCmd->szFunc;
 				if (nJx2Cnt >= 0)
 					Player[nIndex].ExecuteScript(dwBox, szRunFun, nJx2Cnt);

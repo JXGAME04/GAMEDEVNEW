@@ -3430,7 +3430,7 @@ void KNpc::SyncDamageInfo(int nLauncher, int nDamage, COMBAT_INFO_TYPE damType, 
 #endif
 
 #ifdef _SERVER
-BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn /* = FALSE */, int nFiveElements_DamageP /*0*/, int nStolen_Life/*0*/, int nStolen_Mana/*0*/, int nStolen_Stamina/*0*/, BOOL bIsDS /*= FALSE*/, BOOL bIsFS /*= FALSE*/)
+BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn /* = FALSE */, int nFiveElements_DamageP /*0*/, int nStolen_Life/*0*/, int nStolen_Mana/*0*/, int nStolen_Stamina/*0*/, BOOL bIsDS /*= FALSE*/, BOOL bIsFS /*= FALSE*/, int nTotalAvg /*= 0*/)
 {
 	AUTOLOG_EVERY(500, "[E2-CALC-IN] target=%d(doing=%d region=%d life=%d kind=%u) attacker=%d type=%d min=%d max=%d series=%d fivep=%d phys=%d melee=%d return=%d DS=%d FS=%d", m_Index, (int)m_Doing, m_RegionIndex, m_CurrentLife, m_Kind, nAttacker, (int)nType, nMin, nMax, nMissleSeries, nFiveElements_DamageP, (int)bIsPhysical, (int)bIsMelee, (int)bReturn, (int)bIsDS, (int)bIsFS);
 	if (m_Doing == do_death || m_Doing == do_revive || m_RegionIndex < 0)
@@ -3539,6 +3539,18 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			AUTOLOG_EVERY(1000, "[HOTHAN] tgt=%d lch=%d khien tinh vo: %d - %d", m_Index, nAttacker, nDamage, m_CurrentStaticMagicShieldP);
 			nDamage -= m_CurrentStaticMagicShieldP;
 			m_CurrentStaticMagicShieldP = 0;
+		}
+		// [HOTHAN2 01/09] KHIEN DIEM dynamicmagicshield_v (JX1 dat ten m_CurrentManaShield) - CHUAN LINUX BeHurt
+		// 0x0808A070-0x0808A096: giam = ((nMin+nMax)/2 * V) / tongTrungBinh4He, ap SAU khien tinh va TRUOC khang,
+		// san 1, KHONG hao noi luc, doc khong duoc che (ReceiveDamage truyen nTotalAvg = 0). nMin/nMax da nhan
+		// Trong Kich nhu Linux 0x0808A659. Ban cu 10%/40% moi don + "nDamage = 1 + rand()%20" la tu che - da bo.
+		if (!bReturn && nType != damage_poison && nTotalAvg > 0 && m_CurrentManaShield > 0 && nDamage > 0)
+		{
+			int nGiam = (int)(((__int64)((nMin + nMax) / 2)) * m_CurrentManaShield / nTotalAvg);
+			AUTOLOG_EVERY(1000, "[HOTHAN2] tgt=%d lch=%d khien diem V=%d tong=%d giam=%d dmg %d", m_Index, nAttacker, m_CurrentManaShield, nTotalAvg, nGiam, nDamage);
+			nDamage -= nGiam;
+			if (nDamage <= 0)
+				nDamage = 1;
 		}
 		if(!bReturn)
 		{
@@ -3903,31 +3915,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			}
 		}
 		//
-		if (m_CurrentManaShield > 0) // noi luc ho than con lon diem
-		{
-			int nShieldPercent = 10; 
-			int nMagicShield = m_CurrentManaShield;  		
-					   
-			  if (this->m_Kind == kind_player 
-				 && Npc[nAttacker].m_Kind == kind_player 
-			     && bReturn == FALSE)
-			  	{
-			      nShieldPercent = 40;
-				}
-			int kShieldPerHit = (nMagicShield * nShieldPercent) / 100;
-			int nAbsorb = (nDamage < kShieldPerHit) ? nDamage : kShieldPerHit;
-				
-			if(nMagicShield > kShieldPerHit) 
-				nMagicShield = kShieldPerHit;
-			if(nDamage > nMagicShield)
-			{
-				nDamage -= nAbsorb;
-			}
-			else
-			{
-				nDamage = 1 + (rand() % 20);
-			}	
-		}
+		// [HOTHAN2 01/09] khoi m_CurrentManaShield tu che (10%/40%, rand 1..20) DA DOI len tren (khien diem truoc khang).
 	if (this->m_Kind == kind_player && Npc[nAttacker].m_Kind == kind_player && !m_btSimCityBot && !Npc[nAttacker].m_btSimCityBot)
 	{
 
@@ -3940,28 +3928,26 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 
 	}
 
-		if (nType != damage_poison)
+		// [HOTHAN2 01/09] manashield_p CHUAN LINUX BeHurt 0x08089EC3-0x08089EF7 + 0x0808A408: cut = dmg*p/100 (KHONG
+		// kep 100); du noi luc -> noi luc -= cut, dmg -= cut; THIEU -> noi luc = 0 va dmg GIU NGUYEN (ban cu tru
+		// phan noi luc con lai). Ap ca DOC (Linux Poison2Mana 0x0808A0C8 cung roi ve 0x08089E6A).
 		{
-				int nCurenManaShield = m_ManaShield.nValue[0];
-				if (nCurenManaShield > 100)
-					nCurenManaShield = 100;
-			
-				if (nCurenManaShield > 0)
+			int nCurenManaShield = m_ManaShield.nValue[0];
+			if (nCurenManaShield > 0)
+			{
+				int nManaDamage = (int)((__int64)nDamage * nCurenManaShield / 100);
+				if (nManaDamage > 0)
 				{
-				
-					int nManaDamage = nDamage * nCurenManaShield / 100;
-			
-					if (nManaDamage < m_CurrentMana)
+					if (m_CurrentMana - nManaDamage >= 0)
 					{
-					m_CurrentMana -= nManaDamage;
-					nDamage -= nManaDamage;
+						m_CurrentMana -= nManaDamage;
+						nDamage -= nManaDamage;
 					}
 					else
 					{
-					nDamage -= m_CurrentMana;
-					m_CurrentMana = 0;       
+						m_CurrentMana = 0;
+					}
 				}
-			
 			}
 		}
 		if (m_Kind != kind_player && Npc[nAttacker].m_Kind == kind_player && Npc[nAttacker].m_nPlayerIdx > 0) 
@@ -4250,12 +4236,24 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	int nStolenStaminaP = pTemp->nValue[0]; //stealstamina[8]
 
 	pTemp++; //physics damage[9]
+	// [HOTHAN2 01/09] Linux ReceiveDamage 0x0808A566-0x0808A5B9: tong trung binh (min+max)/2 cua 4 he vat ly/bang/hoa/loi
+	// (bo doc, chi cong phan > 0) khi co khien diem -> BeHurt chia V theo ti le tung he.
+	int nTotalAvg = 0;
+	if (m_CurrentManaShield > 0)
+	{
+		for (int kAvg = 9; kAvg <= 12; kAvg++)
+		{
+			int nA = (((KMagicAttrib *)pData)[kAvg].nValue[0] + ((KMagicAttrib *)pData)[kAvg].nValue[2]) / 2;
+			if (nA > 0)
+				nTotalAvg += nA;
+		}
+	}
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-PRE] tgt=%d(id=%u kind=%u) lch=%d physmin=%d physmax=%d lifetruoc=%d resist=%d resistmax=%d armor=%d sorb=%d manashield=%d DS=%d FS=%d series=%d fivep=%d", m_Index, m_dwID, m_Kind, nLauncher, pTemp->nValue[0], pTemp->nValue[2], m_CurrentLife, m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, m_PhysicsArmor.nValue[0], m_CurrentSorbDamageP, m_ManaShield.nValue[0], (int)bIsDS, (int)bIsFS, nMissleSeries, nFiveElementsDamageP);
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS);
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS, FALSE, nTotalAvg);
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
-	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))
+	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg))
 	{
 		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
 		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
@@ -4277,10 +4275,10 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; //fire damage[11]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
 	
 	pTemp++; //lighting damage[12]
-	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
 
 	pTemp++; //poison damage[13]
 	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))

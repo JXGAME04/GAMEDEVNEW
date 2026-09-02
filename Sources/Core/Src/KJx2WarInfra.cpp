@@ -2577,4 +2577,173 @@ int LuaPF_OpenMantleWashBox(Lua_State* L)
 	return 0;
 }
 
+// ======== [DUNGLUYEN 01/09] DUNG LUYEN VAN CUONG - Lua API ten GIU NHU BAN LINUX ========
+static int sFUS_LayItemArg(Lua_State* L, int nArg)
+{
+	if (!Lua_IsNumber(L, nArg))
+		return 0;
+	int nIdx = (int)Lua_ValueToNumber(L, nArg);
+	if (nIdx <= 0 || nIdx >= MAX_ITEM || Item[nIdx].GetID() == 0)
+		return 0;
+	return nIdx;
+}
+
+// SmeltEquip(nEqu, nFusion, bCheckOnly) -> ma ket qua (Linux 0x0810A8D0)
+int LuaFUS_SmeltEquip(Lua_State* L)
+{
+	int nRet = 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 3)
+	{
+		int nEqu = sFUS_LayItemArg(L, 1);
+		int nFus = sFUS_LayItemArg(L, 2);
+		BOOL bCheck = Lua_IsNumber(L, 3) ? ((int)Lua_ValueToNumber(L, 3) != 0) : TRUE;
+		nRet = Player[nPlayerIndex].m_ItemList.SmeltEquip(nEqu, nFus, bCheck);
+	}
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// UnSmeltEquip(nEqu, bCheckOnly) -> ma ket qua (Linux 0x0810A7E0)
+int LuaFUS_UnSmeltEquip(Lua_State* L)
+{
+	int nRet = 0;
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0 && Lua_GetTopIndex(L) >= 2)
+	{
+		int nEqu = sFUS_LayItemArg(L, 1);
+		BOOL bCheck = Lua_IsNumber(L, 2) ? ((int)Lua_ValueToNumber(L, 2) != 0) : TRUE;
+		nRet = Player[nPlayerIndex].m_ItemList.UnSmeltEquip(nEqu, bCheck);
+	}
+	Lua_PushNumber(L, nRet);
+	return 1;
+}
+
+// GetFusionInEquipInfo(nEqu) -> bang { [P] = seed } (Linux 0x0810A6F0). Bang rong neu khong co.
+int LuaFUS_GetFusionInEquipInfo(Lua_State* L)
+{
+	Lua_NewTable(L);
+	int nEqu = sFUS_LayItemArg(L, 1);
+	if (nEqu <= 0 || Item[nEqu].GetGenre() != item_equip)
+		return 1;
+	for (int i = 0; i < KItem::FUS_MAX_SLOT; i++)
+	{
+		int nP = Item[nEqu].GetFusionP(i);
+		if (nP <= 0)
+			continue;
+		Lua_PushNumber(L, nP);
+		Lua_PushNumber(L, (double)Item[nEqu].GetFusionSeed(i));
+		Lua_SetTable(L, -3);
+	}
+	return 1;
+}
+
+// SetFusionIsSmelted(nIdx, v) - chi vien genre 8 (Linux 0x0810A610 cmp [item],8)
+int LuaFUS_SetFusionIsSmelted(Lua_State* L)
+{
+	int nOk = 0;
+	int nIdx = sFUS_LayItemArg(L, 1);
+	if (nIdx > 0 && Item[nIdx].GetGenre() == item_fusion && Lua_IsNumber(L, 2))
+	{
+		Item[nIdx].SetFusionSmelted((int)Lua_ValueToNumber(L, 2) != 0);
+		nOk = 1;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// SetFusionMagicSeed(nIdx, seed) - chi vien genre 8 (Linux 0x0810A530)
+int LuaFUS_SetFusionMagicSeed(Lua_State* L)
+{
+	int nOk = 0;
+	int nIdx = sFUS_LayItemArg(L, 1);
+	if (nIdx > 0 && Item[nIdx].GetGenre() == item_fusion && Lua_IsNumber(L, 2))
+	{
+		unsigned uSeed = (unsigned)Lua_ValueToNumber(L, 2);
+		if (uSeed == 0)
+			uSeed = 1;
+		Item[nIdx].SetFusion(0, Item[nIdx].GetFusionP(0), uSeed);
+		nOk = 1;
+	}
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// GetFusionIsSmelted(nIdx) -> 0/1
+int LuaFUS_GetFusionIsSmelted(Lua_State* L)
+{
+	int nIdx = sFUS_LayItemArg(L, 1);
+	Lua_PushNumber(L, (nIdx > 0 && Item[nIdx].IsFusionSmelted()) ? 1 : 0);
+	return 1;
+}
+
+// UnSmeltIsBind(nIdx) -> cot 22 fusion.txt (Linux 0x080FF160)
+int LuaFUS_UnSmeltIsBind(Lua_State* L)
+{
+	int nIdx = sFUS_LayItemArg(L, 1);
+	int nBind = 0;
+	if (nIdx > 0 && Item[nIdx].GetGenre() == item_fusion)
+		nBind = KItem::FUS_GetBind(Item[nIdx].GetParticular()) ? 1 : 0;
+	Lua_PushNumber(L, nBind);
+	return 1;
+}
+
+// GetItemBillType(nIdx) -> 1 co han su dung | 2 dang bay ban (uPrice) | 0 (Linux 0x0810DD30)
+int LuaFUS_GetItemBillType(Lua_State* L)
+{
+	int nIdx = sFUS_LayItemArg(L, 1);
+	int nType = 0;
+	if (nIdx > 0)
+	{
+		if (Item[nIdx].GetTime()->bYear > 0 || Item[nIdx].GetExpireTime() > 0)
+			nType = 1;
+		else if (Item[nIdx].m_CommonAttrib.uPrice > 0)
+			nType = 2;
+	}
+	Lua_PushNumber(L, nType);
+	return 1;
+}
+
+// GetFusionCap(nEqu) -> (so o toi da, pham chat toi da, so o da dung)
+int LuaFUS_GetFusionCap(Lua_State* L)
+{
+	int nEqu = sFUS_LayItemArg(L, 1);
+	int nCap = 0, nQual = 0, nNum = 0;
+	if (nEqu > 0)
+	{
+		nCap = Item[nEqu].GetFusionCap();
+		nQual = Item[nEqu].GetFusionQual();
+		nNum = Item[nEqu].GetFusionNum();
+	}
+	Lua_PushNumber(L, nCap);
+	Lua_PushNumber(L, nQual);
+	Lua_PushNumber(L, nNum);
+	return 3;
+}
+
+// OpenSmeltBox(szTieuDe, szNoiDung, szHamNop): mo box dung luyen (give-box nType=5). Khuon y het OpenMantleWashBox.
+int LuaFUS_OpenSmeltBox(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Player[nPlayerIndex].m_nIndex <= 0)
+		return 0;
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsString(L, 1) || !Lua_IsString(L, 2) || !Lua_IsString(L, 3))
+		return 0;
+	Player[nPlayerIndex].m_dwGiveBoxId = Npc[Player[nPlayerIndex].m_nIndex].m_ActionScriptID;
+	KJx2WarInfra_ClearAffairBox(nPlayerIndex);	// don do sot phien truoc (khong don khi dang trong callback)
+	S2C_GIVE_BOX NetCommand;
+	NetCommand.ProtocolType = s2c_openaffairbox;
+	NetCommand.nType = 5;
+	sWStrCpy(NetCommand.Value,  Lua_ValueToString(L, 1), sizeof(NetCommand.Value));
+	sWStrCpy(NetCommand.Value1, Lua_ValueToString(L, 2), sizeof(NetCommand.Value1));
+	sWStrCpy(NetCommand.Value2, Lua_ValueToString(L, 3), sizeof(NetCommand.Value2));
+	strncpy(Player[nPlayerIndex].m_szTaskExcuteFun, Lua_ValueToString(L, 3),
+		sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1);
+	Player[nPlayerIndex].m_szTaskExcuteFun[sizeof(Player[nPlayerIndex].m_szTaskExcuteFun) - 1] = 0;
+	sGivePending()[nPlayerIndex] = Player[nPlayerIndex].m_dwGiveBoxId;
+	g_pServer->PackDataToClient(Player[nPlayerIndex].m_nNetConnectIdx, &NetCommand, sizeof(S2C_GIVE_BOX));
+	return 0;
+}
+// ======== het Lua API dung luyen ========
+
 #endif // _SERVER

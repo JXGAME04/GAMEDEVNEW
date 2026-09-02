@@ -4731,6 +4731,22 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 									: Player[m_PlayerIdx].m_nNetConnectIdx;
 		g_pServer->PackDataToClient(nConnIdx, (BYTE*)&sPf, sizeof(ITEM_SYNC_PFPACK));
 	}
+	// [DUNGLUYEN 01/09] goi 6 o Van Cuong + seed - CHI cho mon co du lieu (trang bi da dung luyen hoac
+	// vien Van Cuong genre 8) -> vat pham thuong khong ton them byte nao. Den SAU ITEM_SYNC cung luong.
+	if (Item[nIdx].GetFusionNum() > 0 || Item[nIdx].GetGenre() == item_fusion)
+	{
+		ITEM_SYNC_FUSION sFu;
+		sFu.ProtocolType = s2c_syncfusion;
+		sFu.m_dwID = Item[nIdx].GetID();
+		for (int k = 0; k < KItem::FUS_MAX_SLOT; k++)
+		{
+			sFu.m_wFusionP[k] = (WORD)Item[nIdx].GetFusionP(k);
+			sFu.m_dwSeed[k] = (DWORD)Item[nIdx].GetFusionSeed(k);
+		}
+		int nConnIdxF = nPlayerIndex ? Player[nPlayerIndex].m_nNetConnectIdx
+									 : Player[m_PlayerIdx].m_nNetConnectIdx;
+		g_pServer->PackDataToClient(nConnIdxF, (BYTE*)&sFu, sizeof(ITEM_SYNC_FUSION));
+	}
 	// [PF13 31/08c] ITEM_SYNC bIsNew lam client HUY va DUNG LAI item bang
 	// Gen_GoldEquipment; du da va cong gac, van gui kem goi magic day du de
 	// client luon co dung ruot (197B, CHI cho item co khe an 6-7 - vat pham
@@ -6791,6 +6807,103 @@ void KItemList::UnForgeItem(int nIdx, int nPos /* = -1 */)
 	m_ForgeItem[i] = 0;
 }
 
+#ifdef _SERVER
+// ======== [DUNGLUYEN 01/09] DUNG LUYEN VAN CUONG - port Linux KItemList::SmeltEquip 0x08200BA0 ========
+BOOL KItemList::FUS_DangMac(int nIdx)
+{
+	int nList = FindSame(nIdx);
+	if (nList <= 0)
+		return FALSE;
+	return m_Items[nList].nPlace == pos_equip;
+}
+
+// Ma ket qua khop smelt_system.lua: 1 OK | 3 khong phai HK/BK | 4 trang bi khong dung luyen duoc (cap 0)
+// | 5 du o | 6 pham chat vien > tran trang bi | 7 trung LOAI thuoc tinh voi o da kham | 8 vien khong phai
+// Van Cuong | 9 sai loai trang bi (cot 16-21) | 10 loi xoa vien. Thu tu kiem tra y het Linux.
+int KItemList::SmeltEquip(int nEqu, int nFusion, BOOL bCheckOnly)
+{
+	if (m_PlayerIdx <= 0)
+		return 0;
+	if (nEqu <= 0 || nEqu >= MAX_ITEM || Item[nEqu].GetGenre() != item_equip)
+		return 3;
+	if (Item[nEqu].GetNature() != NATURE_GOLD && Item[nEqu].GetNature() != NATURE_PLATINA)
+		return 3;
+	if (!FindSame(nEqu))
+		return 3;
+	if (nFusion <= 0 || nFusion >= MAX_ITEM || Item[nFusion].GetGenre() != item_fusion)
+		return 8;
+	if (!FindSame(nFusion))
+		return 8;
+	int nP = Item[nFusion].GetParticular();
+	if (KItem::FUS_GetQuality(nP) <= 0)
+		return 8;
+	if (!KItem::FUS_CanInlayDetail(nP, Item[nEqu].GetDetailType()))
+		return 9;
+	int nCap = Item[nEqu].GetFusionCap();
+	if (nCap <= 0)
+		return 4;
+	if (Item[nEqu].GetFusionNum() >= nCap)
+		return 5;
+	if (KItem::FUS_GetQuality(nP) > Item[nEqu].GetFusionQual())
+		return 6;
+	KItemNormalAttrib sNew;
+	if (!KItem::FUS_GenAttrib(nP, 1, &sNew))
+		return 8;
+	int i;
+	for (i = 0; i < KItem::FUS_MAX_SLOT; i++)
+	{
+		if (Item[nEqu].GetFusionP(i) > 0 && Item[nEqu].GetFusionAttribType(i) == sNew.nAttribType)
+			return 7;	// Linux 0x08065CE0: trung loai thuoc tinh
+	}
+	if (bCheckOnly)
+		return 1;
+	int nSlot = -1;
+	for (i = 0; i < KItem::FUS_MAX_SLOT; i++)
+	{
+		if (Item[nEqu].GetFusionP(i) <= 0)
+		{
+			nSlot = i;
+			break;
+		}
+	}
+	if (nSlot < 0)
+		return 5;
+	// seed cua vien di theo trang bi (Linux: equip+0x258 = fusion+0x218). Vien tao truoc khi co he -> seed moi.
+	unsigned uSeed = Item[nFusion].GetFusionSeed(0);
+	if (uSeed == 0)
+		uSeed = (unsigned)GetRandomNumber(1, 0x7FFFFFF0) | 1;
+	BOOL bMac = FUS_DangMac(nEqu);
+	if (!RemoveItemIdx(nFusion, 1))
+		return 10;
+	Item[nEqu].SetFusion(nSlot, nP, uSeed);
+	if (bMac)
+		Player[m_PlayerIdx].UpdataCurData();	// Linux ap ngay khi mac; JX1 tinh lai toan bo
+	return 1;
+}
+
+// 15 OK | 18 khong phai HK/BK | 19 chua dung luyen. Xoa sach 6 o; viec tra vien do Lua (AddItem + SetFusionMagicSeed).
+int KItemList::UnSmeltEquip(int nEqu, BOOL bCheckOnly)
+{
+	if (m_PlayerIdx <= 0)
+		return 0;
+	if (nEqu <= 0 || nEqu >= MAX_ITEM || Item[nEqu].GetGenre() != item_equip)
+		return 18;
+	if (Item[nEqu].GetNature() != NATURE_GOLD && Item[nEqu].GetNature() != NATURE_PLATINA)
+		return 18;
+	if (!FindSame(nEqu))
+		return 18;
+	if (Item[nEqu].GetFusionNum() <= 0)
+		return 19;
+	if (bCheckOnly)
+		return 15;
+	BOOL bMac = FUS_DangMac(nEqu);
+	Item[nEqu].ClearFusion();
+	if (bMac)
+		Player[m_PlayerIdx].UpdataCurData();
+	return 15;
+}
+// ======== het khoi dung luyen ========
+#endif
 
 int		KItemList::GetItemNum(int nGenre, int nDetailType, int nParticular, int nLevel)
 {

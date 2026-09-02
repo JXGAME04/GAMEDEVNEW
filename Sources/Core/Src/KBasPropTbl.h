@@ -325,6 +325,28 @@ typedef struct
 	int			m_nMaxStack;				// 25 muc xep chong toi da
 } KBASICPROP_STARSTONE;
 
+// [DUNGLUYEN 01/09] Van Cuong -- 22 cot cua settings\item\fusion.txt (chep nguyen ban Linux 004\fusion.txt)
+typedef struct
+{
+	char		m_szName[SZBUFLEN_0];		// 1  ten
+	int			m_nItemGenre;				// 2  = 8
+	int			m_nDetailType;				// 3  = 1
+	int			m_nParticurType;			// 4  P 1..350
+	char		m_szImageName[SZBUFLEN_0];	// 5
+	int			m_nObjIdx;					// 6
+	int			m_nWidth;					// 7
+	int			m_nHeight;					// 8
+	char		m_szIntro[SZBUFLEN_1];		// 9
+	int			m_nSeries;					// 10
+	int			m_nPrice;					// 11
+	int			m_nLevel;					// 12
+	int			m_bStack;					// 13
+	int			m_nQuality;					// 14 pham chat 1..10
+	int			m_nMagicAttribIdx;			// 15 chi so 0-based trong magicattrib_ge
+	int			m_nEquipType[6];			// 16..21 DetailType duoc kham (0 = trong)
+	int			m_nBind;					// 22 thi luyen xong khoa vinh vien
+} KBASICPROP_FUSION;
+
 typedef struct
 {
 	char		m_szName[SZBUFLEN_0];		// Ãû³Æ
@@ -451,6 +473,22 @@ public:
 public:
 	const KBASICPROP_STARSTONE* GetRecord(IN int) const;
 	const KBASICPROP_STARSTONE* FindRecord(IN int) const;	// theo ParticularType
+	int GetCount() const { return m_nNumOfEntries; };
+
+protected:
+	virtual BOOL LoadRecord(int i, KTabFile* pTF);
+};
+
+// [DUNGLUYEN 01/09] bang Van Cuong
+class KBPT_Fusion : public KBasicPropertyTable
+{
+public:
+	KBPT_Fusion();
+	~KBPT_Fusion();
+
+public:
+	const KBASICPROP_FUSION* GetRecord(IN int) const;
+	const KBASICPROP_FUSION* FindRecord(IN int) const;	// theo ParticularType
 	int GetCount() const { return m_nNumOfEntries; };
 
 protected:
@@ -686,6 +724,7 @@ protected:
 	KBPT_Event				m_BPTEvent;
 	KBPT_Quest				m_BPTQuest;
 	KBPT_StarStone			m_BPTStarStone;	// [PHI PHONG]
+	KBPT_Fusion				m_BPTFusion;	// [DUNGLUYEN 01/09]
 	KBPT_Mine				m_BPTMine;
 	KBPT_Equipment			m_BPTHorse;
 	KBPT_Equipment			m_BPTMeleeWeapon;
@@ -765,6 +804,8 @@ public:
 	const int					GetQuestRecordNumber() const;
 	// [PHI PHONG] tra ban ghi Tinh Than Thach theo ParticularType
 	const KBASICPROP_STARSTONE*	GetStarStoneRecord(IN int) const;
+	// [DUNGLUYEN 01/09] tra ban ghi Van Cuong theo ParticularType
+	const KBASICPROP_FUSION*	GetFusionRecord(IN int) const;
 	const KBASICPROP_TOWNPORTAL*	GetTownPortalRecord(IN int) const;
 	const int					GetTownPortalRecordNumber() const;
 	const KBASICPROP_MINE*		GetMine(IN int) const;

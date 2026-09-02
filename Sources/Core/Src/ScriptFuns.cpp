@@ -14196,6 +14196,17 @@ extern int LuaPF_AddPlatinaItem(Lua_State* L);
 extern int LuaPF_GetItemIndexBydwID(Lua_State* L);
 extern int LuaPF_OpenMantleInlayBox(Lua_State* L);
 extern int LuaPF_OpenMantleWashBox(Lua_State* L);	// [PF13 01/09]
+// [DUNGLUYEN 01/09] 10 ham he dung luyen Van Cuong (KJx2WarInfra.cpp)
+extern int LuaFUS_SmeltEquip(Lua_State* L);
+extern int LuaFUS_UnSmeltEquip(Lua_State* L);
+extern int LuaFUS_GetFusionInEquipInfo(Lua_State* L);
+extern int LuaFUS_SetFusionIsSmelted(Lua_State* L);
+extern int LuaFUS_SetFusionMagicSeed(Lua_State* L);
+extern int LuaFUS_GetFusionIsSmelted(Lua_State* L);
+extern int LuaFUS_UnSmeltIsBind(Lua_State* L);
+extern int LuaFUS_GetItemBillType(Lua_State* L);
+extern int LuaFUS_GetFusionCap(Lua_State* L);
+extern int LuaFUS_OpenSmeltBox(Lua_State* L);
 extern int LuaHD3_DropItemEx(Lua_State* L);
 extern int LuaHD3_NpcDropMoney(Lua_State* L);
 extern int LuaHD3_JoinMission(Lua_State* L);
@@ -15839,6 +15850,17 @@ TLua_Funcs GameScriptFuns[] =
 		{"GetItemIndexBydwID",	LuaPF_GetItemIndexBydwID},
 		{"OpenMantleInlayBox",	LuaPF_OpenMantleInlayBox},
 		{"OpenMantleWashBox",	LuaPF_OpenMantleWashBox},	// [PF13 01/09]
+		// [DUNGLUYEN 01/09] ten GIU NHU BAN LINUX de smelt_system.lua port thang
+		{"SmeltEquip",			LuaFUS_SmeltEquip},
+		{"UnSmeltEquip",		LuaFUS_UnSmeltEquip},
+		{"GetFusionInEquipInfo",	LuaFUS_GetFusionInEquipInfo},
+		{"SetFusionIsSmelted",	LuaFUS_SetFusionIsSmelted},
+		{"SetFusionMagicSeed",	LuaFUS_SetFusionMagicSeed},
+		{"GetFusionIsSmelted",	LuaFUS_GetFusionIsSmelted},
+		{"UnSmeltIsBind",		LuaFUS_UnSmeltIsBind},
+		{"GetItemBillType",		LuaFUS_GetItemBillType},
+		{"GetFusionCap",		LuaFUS_GetFusionCap},
+		{"OpenSmeltBox",		LuaFUS_OpenSmeltBox},
 		{"DropItemEx",	LuaHD3_DropItemEx},
 		{"NpcDropMoney",	LuaHD3_NpcDropMoney},
 		{"JoinMission",	LuaHD3_JoinMission},

@@ -159,6 +159,13 @@ private:
 	//   m_nPfPack[2] : 5 x 4 bit cap sao cua tung lo
 	//   m_nPfPack[3] : time_t lan dot pha gan nhat
 	int		m_nPfPack[4];
+	// ---- [DUNGLUYEN 01/09] VAN CUONG (fusion) - port ban Linux (jx_linux_y item+0x240 / +0x258) ----
+	// Trang bi vang/bach kim: m_nFusionP[i] = ParticularType Van Cuong o o i (0 = trong),
+	//   m_uFusionSeed[i] = seed sinh thuoc tinh (deterministic - server va client cung LCG).
+	// Vien Van Cuong (genre item_fusion): m_nFusionP[0] = da qua thi luyen, m_uFusionSeed[0] = seed cua vien.
+	// Luu DB: dong goi vao 9 truong TRONG cua TDBItemData (KPlayerDBFuns.cpp) -> ban ghi GIU 233 byte.
+	int		m_nFusionP[6];
+	unsigned	m_uFusionSeed[6];
 	XMethod m_xMethod;
 #ifndef _SERVER
 	KRUImage	m_Image;
@@ -291,6 +298,27 @@ public:
 	enum { PF_CO_V2 = (1 << 12) };
 	int		GetPfPack(int i) const { return (i >= 0 && i < 4) ? m_nPfPack[i] : 0; };
 	void	SetPfPack(int i, int v) { if (i >= 0 && i < 4) m_nPfPack[i] = v; };
+
+	// ======== [DUNGLUYEN 01/09] Van Cuong ========
+	enum { FUS_MAX_SLOT = 6 };
+	int		GetFusionP(int i) const { return (i >= 0 && i < FUS_MAX_SLOT) ? m_nFusionP[i] : 0; };
+	unsigned	GetFusionSeed(int i) const { return (i >= 0 && i < FUS_MAX_SLOT) ? m_uFusionSeed[i] : 0; };
+	void	SetFusion(int i, int nP, unsigned uSeed) { if (i >= 0 && i < FUS_MAX_SLOT) { m_nFusionP[i] = nP; m_uFusionSeed[i] = uSeed; } };
+	void	ClearFusion() { ::memset(m_nFusionP, 0, sizeof(m_nFusionP)); ::memset(m_uFusionSeed, 0, sizeof(m_uFusionSeed)); };
+	int		GetFusionNum() const;				// so o da dung luyen (trang bi)
+	BOOL	IsFusionSmelted() const { return m_CommonAttrib.nItemGenre == item_fusion && m_nFusionP[0] != 0; };
+	void	SetFusionSmelted(BOOL b) { if (m_CommonAttrib.nItemGenre == item_fusion) m_nFusionP[0] = b ? 1 : 0; };
+	int		GetFusionCap() const;				// so Van Cuong toi da (goldequip cot 58 / platina cot 66), <= 6
+	int		GetFusionQual() const;				// pham chat Van Cuong toi da (cot 59 / 67)
+	int		GetFusionAttribType(int i) const;	// loai thuoc tinh cua o i (0 = trong)
+	void	FUS_ModifyAttrib(KNpc* pNPC, BOOL bAdd) const;
+	void	FUS_AppendDesc(char* pszMsg) const;
+	int		FUS_BuildInfo(char* pszBuf, int nSize) const;	// bang thong tin cho box dung luyen (client)
+	static BOOL	FUS_GenAttrib(int nP, unsigned uSeed, KItemNormalAttrib* pOut);
+	static int	FUS_GetQuality(int nP);
+	static int	FUS_GetBind(int nP);
+	static BOOL	FUS_CanInlayDetail(int nP, int nDetailType);
+	static const char*	FUS_GetName(int nP);
 
 	int		GetStarLevel() const { return m_nPfPack[0] & 0xF; };
 	void	SetStarLevel(int n)
@@ -570,6 +598,7 @@ private:
 	void operator = (const KBASICPROP_MEDICINE&);
 	void operator = (const KBASICPROP_QUEST&);
 	void operator = (const KBASICPROP_STARSTONE&);	// [PHI PHONG]
+	void operator = (const KBASICPROP_FUSION&);	// [DUNGLUYEN]
 	void operator = (const KBASICPROP_TOWNPORTAL&);
 	void operator = (const KBASICPROP_MAGICSCRIPT&);
 	void operator = (const KBASICPROP_EQUIPMENT_GOLD&);
