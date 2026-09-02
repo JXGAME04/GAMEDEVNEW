@@ -1,7 +1,7 @@
 #ifndef __SKILLDEF_H__
 #define __SKILLDEF_H__
 
-#define MAX_SKILL							2000
+#define MAX_SKILL							2300	// [VHTD 02/09e] 2000 -> 2300: ky nang Tieu Dao 2114-2143 (client VLTK) - KSkillManager bo qua id >= MAX_SKILL
 #define	MAX_LIVESKILL						10
 #define MAX_SKILLLEVEL						64
 #define MAX_TRAIN_SKILLEXPLEVEL				20

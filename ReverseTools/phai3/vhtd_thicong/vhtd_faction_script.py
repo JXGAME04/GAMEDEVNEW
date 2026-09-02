@@ -357,6 +357,9 @@ def npc_scripts():
         out.append('\tMsg2Player("%s")' % V(u"Ng\u1ed3i y\u00ean, ch\u00fang ta \u0111\u1ebfn " + ten_phai))
         out.append("\tNewWorld(%d, %d, %d)" % go_world)
         out.append("end")
+        out.append("")
+        out.append("function OnRevive()\t-- [VHTD 02/09e] engine goi khi spawn (KNpc.cpp:9352 / ScriptFuns.cpp:7346); thieu -> ScriptError 4 + m_ActionScriptID = 0")
+        out.append("end")
         s = nl.join(out)
         if hib(s) == 0: raise SystemExit("npc script rong?")
         p = os.path.join(SCR, r"npcthon\npcmonphai", fname)
@@ -439,7 +442,7 @@ def npc_spawn():
     # script chao (NPC trang tri Linux la NPC nhiem vu wuhun2020 - JX1 khong co nhiem vu -> chao)
     _ghi(r"global\vhtd\npc_chao.lua", nl.join([
         "-- [VHTD 02/09d] NPC mon phai Vu Hon/Tieu Dao khong co nhiem vu o JX1 (Linux: script\\wumumenpai\\*.lua nhiem vu wuhun2020) - chi chao.",
-        "function main()", '\tTalk(1, "", "%s")' % V(u"Hoan ngh\u00eanh ng\u01b0\u01a1i \u0111\u1ebfn th\u0103m b\u1ed5n m\u00f4n. Ch\u01b0\u1edfng m\u00f4n \u0111ang \u0111\u1ee3i ng\u01b0\u01a1i \u1edf \u0111\u1ea1i \u0111i\u1ec7n."), "end", ""]))
+        "function main()", '\tTalk(1, "", "%s")' % V(u"Hoan ngh\u00eanh ng\u01b0\u01a1i \u0111\u1ebfn th\u0103m b\u1ed5n m\u00f4n. Ch\u01b0\u1edfng m\u00f4n \u0111ang \u0111\u1ee3i ng\u01b0\u01a1i \u1edf \u0111\u1ea1i \u0111i\u1ec7n."), "end", "", "function OnRevive()", "end", ""]))
     # Thuyen Phu: port Linux wumumenpai\thuyenphu.lua (Ba Lang Huyen 53 / Lam An 176) va xiaoyao\npc\thuyenphu.lua (Tay Son Thon 175 / Lam An 176)
     def tp(rel, o1, w1):
         _ghi(rel, nl.join([
@@ -447,7 +450,7 @@ def npc_spawn():
             "function main()",
             '\tSay("%s", 3, "%s/di1", "%s/di2", "%s/no")' % (V(u"Thuy\u1ec1n Phu: Ng\u01b0\u01a1i mu\u1ed1n \u0111i \u0111\u00e2u?"), V(o1), V(u"\u0110\u1ebfn L\u00e2m An"), V(u"Ta kh\u00f4ng \u0111i \u0111\u00e2u c\u1ea3")),
             "end", "", "function di1()", "\tNewWorld(%d, %d, %d)" % w1, "\tSetFightState(1)", "end", "",
-            "function di2()", "\tNewWorld(176, 1607, 2553)", "\tSetFightState(1)", "end", "", "function no()", "end", ""]))
+            "function di2()", "\tNewWorld(176, 1607, 2553)", "\tSetFightState(1)", "end", "", "function no()", "end", "", "function OnRevive()", "end", ""]))
     tp(r"global\vhtd\thuyenphu_vuhon.lua", u"\u0110\u1ebfn Ba L\u0103ng Huy\u1ec7n", (53, 1794, 3157))
     tp(r"global\vhtd\thuyenphu_tieudao.lua", u"\u0110\u1ebfn T\u00e2y S\u01a1n Th\u00f4n", (175, 1712, 3125))
     f = F("startgame.lua"); nl = f.nl

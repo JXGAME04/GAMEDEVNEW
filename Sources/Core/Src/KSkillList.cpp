@@ -633,7 +633,7 @@ void KSkillList::ReduceCoolDown(int nSkillID, int nFrames)
 }
 
 #ifndef _SERVER
-#define MAX_FIGHTSKILL_SORTLIST 50
+#define MAX_FIGHTSKILL_SORTLIST 100	// [VHTD 02/09e] 50 -> 100 (khop FIGHT_SKILL_COUNT S3Client): nhan vat hoc nhieu phai > 50 chieu
 #define MAX_LRSKILL_SORTLIST 65
 int	KSkillList::GetSkillSortList(KUiSkillData * pSkillList)
 {

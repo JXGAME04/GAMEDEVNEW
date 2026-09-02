@@ -14,9 +14,9 @@
 #include "../../../core/src/gamedatadef.h"
 
 #define LIVE_SKILL_COUNT			10
-#define	FIGHT_SKILL_COUNT			50
+#define	FIGHT_SKILL_COUNT			100	// [VHTD 02/09e] khop MAX_FIGHTSKILL_SORTLIST (KSkillList.cpp)
 #define FIGHT_SKILL_COUNT_PER_PAGE	25
-#define FIGHT_SKILL_UI_MAX			50
+#define FIGHT_SKILL_UI_MAX			100	// [VHTD 02/09e]
 #define	FIGHT_SKILL_SUB_PAGE_COUNT	1
 
 class KUiFightSkillSubPageNew : public KWndPage
