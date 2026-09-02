@@ -185,3 +185,48 @@ grep -E "BotBang|BotNhomNguoi" bot.log | tail -60
 ### 9.5 Chuỗi tái áp (cập nhật)
 
 … → tkket3_moxe → bot_bang_nhom → bot_bang_nhom_b → bot_nhom_bang_tk_c → **bot_bang_mau_d** (`--thu` = chỉ kiểm neo). Tất cả đã commit + push.
+
+## 10. Đợt e (02/09) — "vào party bot chưa hiện icon môn phái ở mini party" — `ReverseTools/goi_va_bot_phaidau_e.py` (3 hunk, CHỈ KPlayerBot.cpp), commit **`36901402`**
+
+### 10.1 Lần ngược đường mã (không đoán một bước nào)
+
+```
+mini party  KUiTeamManager2::SetFactionIcon(m_pPlayersList[i].nFaction, …)   UiTeamManager2.cpp:186 + :82-129
+              switch 0..12 -> icon_zd_sl/tw/tm/wd/em/cy/gb/tr/wu/kl/hsp/wht/xy.spr
+              default:  icon_zd_new.spr   <-- ĐÚNG CÁI CHỦ THẤY (ô trống, không phải icon phái)
+   <- nFaction  KTeam::GetMemberInfo (KPlayerTeam.cpp:871 và :890, khối #ifndef _SERVER)
+                 pList[].nFaction = Npc[nNpcIdx].nFirstFaction;
+   <- client   KProtocolProcess.cpp:2796 / :2894   Npc[nIdx].nFirstFaction = pPlaySync->nFirstFaction
+   <- server   KNpc::SendSyncData (KNpc.cpp:6086) / SendSyncDataToNearRegion (:6303)
+                 PlayerSync.nFirstFaction = (BYTE)Player[m_nPlayerIdx].GetFirstAddFaction()
+   <-          KPlayer.h:849  ->  m_cFaction.m_nFirstAddFaction
+```
+
+**Gốc:** `m_nFirstAddFaction` chỉ được gán ở **đúng một chỗ** — `KPlayerFaction::AddFaction` (KPlayerFaction.cpp:88):
+
+```cpp
+m_nAddTimes++;
+if (m_nAddTimes == 1)          // <-- chỉ lần gia nhập ĐẦU TIÊN của cả đời nhân vật
+    m_nFirstAddFaction = nFactionID;
+```
+
+mà `m_nAddTimes` **nạp từ blob** (`KPlayerDBFuns.cpp:376` = `BaseInfo.ijoincount`, lưu lại ở `:1016`). Bot nhân bản từ **nhân vật mẫu đã từng vào phái** ⇒ `ijoincount ≥ 1` ngay khi nạp ⇒ lúc bot chạy `gianhapmonphai` → `SetFaction` → `KPlayer::AddFaction` (KPlayer.cpp:4249) thì `m_nAddTimes` thành 2/3/… **không bao giờ bằng 1** ⇒ `m_nFirstAddFaction` giữ nguyên giá trị của nhân vật mẫu (−1 = chưa vào phái) ⇒ gói sync mang `nFirstFaction = 255` ⇒ mini party rơi vào `default:` = ô trống.
+
+### 10.2 Vá (chỉ chạm bot)
+
+Ép `m_nFirstAddFaction` = **phái hiện tại** của bot, ở hai chỗ:
+1. **Ngay khi vào phái xong** (nhánh `PB_AI_GOTO_FACTION` thành công, cạnh dòng log `[Bot] X da vao <phái>`).
+2. **Nhịp 10 giây/con** `pb_SuaPhaiDau` (lệch pha với `pb_DongBoBang`) — cho bot đã nạp từ blob cũ, không cần đợi vào phái lại.
+
+Log: `[BotPhai] X sua PHAI DAU (first faction) A -> B …`. Kèm giữ bất biến `m_nAddTimes ≥ 1`.
+
+Đúng nghĩa với một nhân vật chỉ từng vào **một** phái, và **kéo theo đúng hướng** hai chỗ khác cùng đọc trường này: item `magic_requiremenpai` (KItemList.cpp:1204) và bảng thành viên bang hội JX2 (KTongJX2.cpp:2428 — icon phái trong cửa sổ bang).
+
+**Hiển thị:** `KPlayer::SendFactionData` (KPlayer.cpp:1922) chỉ gửi cho **chính chủ** (`m_nNetConnectIdx`) — bot không có client nên là no-op; người chơi quanh đó nhận giá trị mới ở **lần đồng bộ vùng kế tiếp** (PLAYER_SYNC), y hệt người chơi thật đổi phái. Vì vậy vá sửa **sớm** (lúc nạp / vừa vào phái) và giá trị được lưu vào blob nên chỉ phải sửa một lần cho mỗi bot.
+
+### 10.3 Nghiệm thu
+
+```
+grep "BotPhai" bot.log | head -20
+```
+Sau restart: mỗi bot in **một** dòng `[BotPhai] … sua PHAI DAU … -> N`. Mời bot vào tổ đội → mini party hiện **đúng icon phái của bot** (Thiếu Lâm / Thiên Vương / … / Hoa Sơn); bot trong bang cũng hiện đúng icon phái ở cửa sổ bang hội.
