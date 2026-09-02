@@ -157,12 +157,12 @@ Chỉ số engine phải giữ: `KItemGenerator.CPP:302/478/1415` record = `P*10
 4. Dữ liệu đã ghi thẳng, đọc khi khởi động: server `skills.txt`, `missles.txt`, `script\**`, `settings\npcs.txt`, `magicscript.txt`, `MagicDesc.ini`, `magic_level_exp.txt`, `package.ini` (`8=maps_vuhon_tieudao.pak`), `Pak\maps_hoason2013.pak` (mới), `Pak\maps_vuhon_tieudao.pak`, `Maps\WorldSet_GameServer.ini`, `MapList.ini`, `faction\FactionInfo.ini`; client: các tệp cùng tên + `package.ini` (`36=`, `37=`), `data\sprvuhontieudao.pak`, `data\maps_vuhon_tieudao.pak`, `ui\Ui3\UiSkill*.ini`, `Spr\Ui3\UiSkills\khung_wh.spr`/`khung_xy.spr`, `settings\gamesetting.ini`, `NpcRes\*`.
 5. Nghiệm thu: (a) log server không ScriptError khi boot; nhân vật hệ Hoả/Thổ chưa phái gặp "Vũ Hồn Hậu Quân"/"Tiêu Dao Mật Sứ" ở Ba Lăng Huyện (53) → gia nhập → bảng kỹ năng F? hiện khung mới; (b) học kỹ năng qua NPC `hocvocong` "Học võ công môn phái Vũ Hồn/Tiêu Dao"; (c) mô tả kỹ năng không còn `<color>` thô; (d) **kỹ năng Vũ Hồn/Cầm Pháp chỉ dùng được sau khi có vũ khí thuẫn/cầm (mục 8)**; kỹ năng Tiêu Dao Kiếm Pháp (EqtLimit 0) dùng kiếm được ngay; (e) map 987 Hoa Sơn vào được (mục 7).
 
-## 11. Bộ .moi (build 05:09, sau patch1b)
+## 11. Bộ .moi (Core build 05:44 sau patch1c; Game.exe 05:09 — không đổi header nên không build lại)
 
 | Tệp | Byte | md5 (8) | Giờ |
 |---|---|---|---|
-| `server\CoreServer.dll.moi` | 18.251.776 | `e515d1cf` | 05:20 |
-| `client\CoreClient.dll.moi` | 2.443.776 | `e27bc12b` | 05:20 |
+| `server\CoreServer.dll.moi` | 18.251.776 | `f96a64fd` | 05:45 |
+| `client\CoreClient.dll.moi` | 2.443.776 | `4eb23293` | 05:45 |
 | `client\Game.exe.moi` | 1.374.208 | `359536c5` | 05:20 |
 
-HEAD `94aa3c91` (superset đợt g `d715746b` + bot đợt d). Swap 3 tệp cùng lúc; Goddess/WAuto không đổi.
+HEAD sau commit engine patch1c (superset đợt g `d715746b` + bot đợt d). Swap 3 tệp cùng lúc; Goddess/WAuto không đổi.

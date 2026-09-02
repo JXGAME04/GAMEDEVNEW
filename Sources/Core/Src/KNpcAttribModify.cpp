@@ -1134,7 +1134,19 @@ void KNpcAttribModify::AutoAttackSkill( KNpc* pNpc, void* pData )
 // [VHTD 02/09] ==================== VU HON / TIEU DAO (client VLTK) ====================
 void KNpcAttribModify::AutoCastSkill( KNpc* pNpc, void* pData )	// Linux 0x08097420: danh sach +0x182c, Fire moi khung voi ke danh -1 (chi nham minh)
 {
-	HS_AutoSkillModify(pNpc->m_CastSkill, pNpc, (KMagicAttrib *)pData);
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	int nKey = abs(pMagic->nValue[0]) & 0xffffff;
+	BOOL bCoTruoc = FALSE;
+	int i;
+	for (i = 0; i < MAX_AUTOSKILL; i++)
+		if (pNpc->m_CastSkill[i].nRate > 0 && pNpc->m_CastSkill[i].nSkillId * 256 + pNpc->m_CastSkill[i].nSkillLevel == nKey) { bCoTruoc = TRUE; break; }
+	HS_AutoSkillModify(pNpc->m_CastSkill, pNpc, pMagic);
+	// [VHTD 02/09c] phan bien A2: muc MOI tao (ke ca sau HS_ResetVhtd + ReCalcState khi doi trang bi/len cap) -> lan phong dau sau 'wait' khung,
+	// khong phong ngay (chan khai thac doi trang bi = +tang No/Am Luat tuc thi). Muc da co giu dong ho cu.
+	if (!bCoTruoc && pNpc->m_SubWorldIndex >= 0)
+		for (i = 0; i < MAX_AUTOSKILL; i++)
+			if (pNpc->m_CastSkill[i].nRate > 0 && pNpc->m_CastSkill[i].nSkillId * 256 + pNpc->m_CastSkill[i].nSkillLevel == nKey)
+				pNpc->m_CastSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime + pNpc->m_CastSkill[i].nWaitCastTime;
 }
 
 // bo dem tang (No / Am Luat): v0 = id ky nang khoa, v2 = tran. Ap qua trang thai thu dong (v1 = -1) -> ap lai moi lan tinh lai thuoc tinh;

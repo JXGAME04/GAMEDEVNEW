@@ -1116,6 +1116,9 @@ BOOL KNpc::ProcessState()
 	}
 #endif		*/
 
+#ifdef _SERVER
+	HS_AutoCastTick();	// [VHTD 02/09c] autocastskill MOI KHUNG (Linux 0x0808BEC0 Fire +0x182c moi khung; phan bien A2: ban truoc nam trong khoi % GAME_UPDATE_TIME = 10 khung)
+#endif
 	if (!(m_LoopFrames % GAME_UPDATE_TIME))
 	{
 #ifdef _SERVER
@@ -1179,9 +1182,6 @@ BOOL KNpc::ProcessState()
 		}
 #endif
 	
-#ifdef _SERVER
-		HS_AutoCastTick();	// [VHTD 02/09] autocastskill (Linux 0x0808BEC0: moi khung Fire danh sach +0x182c)
-#endif
 		if (m_ActiveAuraID)
 		{
 			if (m_SkillList.GetLevel(m_ActiveAuraID) > 0)
@@ -2656,13 +2656,13 @@ void KNpc::DoSkill(int nX, int nY)
 				// [VHTD 02/09] forbit_attack (2131) va cost_sp (dieu kien tang No/Am Luat) - chi may chu (client khong biet so tang)
 				if (IsPlayer() && m_bHSForbidAttack)
 					goto Exit;
-				if (IsPlayer() && ((KSkill*)pSkill)->GetCostSpKey() > 0 && HS_SpGet(((KSkill*)pSkill)->GetCostSpKey()) < ((KSkill*)pSkill)->GetCostSp())
+				if (IsPlayer() && eStyle != SKILL_SS_Thief && ((KSkill*)pSkill)->GetCostSpKey() > 0 && HS_SpGet(((KSkill*)pSkill)->GetCostSpKey()) < ((KSkill*)pSkill)->GetCostSp())	// [VHTD 02/09c] B4: KThiefSkill khong phai KSkill
 					goto Exit;
 #endif
 				if(!IsPlayer() || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
 				{
 #ifdef _SERVER
-					if (IsPlayer() && ((KSkill*)pSkill)->GetCostSpKey() > 0)
+					if (IsPlayer() && eStyle != SKILL_SS_Thief && ((KSkill*)pSkill)->GetCostSpKey() > 0)	// [VHTD 02/09c] B4
 						HS_SpCost(((KSkill*)pSkill)->GetCostSpKey(), ((KSkill*)pSkill)->GetCostSp());	// [VHTD 02/09]
 #endif
 					#ifdef _SERVER
@@ -3421,7 +3421,7 @@ void KNpc::HS_OnStateRemoved(KStateNode* pNode)	// cast_when_buff_removed {id, c
 		int nRef = -pNode->m_State[i].nValue[2];
 		if (nLevel <= 0 && nRef > 0 && nRef < MAX_SKILL)
 			nLevel = m_SkillList.GetCurrentLevel(nRef);
-		if (nLevel <= 0) nLevel = 1;
+		if (nLevel <= 0) continue;	// [VHTD 02/09c] phan bien A1: chua hoc ky nang tham chieu (1984 cap 120) -> KHONG cast (truoc ep cap 1 -> 1991 hoi 30% mau mien phi)
 		if (nSkill > 0 && nSkill < MAX_SKILL && nLevel < MAX_SKILLLEVEL)
 			this->Cast(nSkill, nLevel);
 	}
@@ -4341,8 +4341,11 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		Player[m_nPlayerIdx].m_nWllsDmgCounter += (nDamage > (int)m_CurrentLife ? (int)m_CurrentLife : nDamage);
 #endif
 	// [VHTD 02/09] lock_life (Vu Muc Di Thu 1982): che do 1 - mau khong the giam duoi gia tri khoa
-	if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && nDamage > 0 && m_CurrentLife > m_nHSLockLife && m_CurrentLife - nDamage < m_nHSLockLife)
-		nDamage = m_CurrentLife - m_nHSLockLife;
+	if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && nDamage > 0)	// [VHTD 02/09c] phan bien B2: mau da <= khoa -> khong mat them (dung nghia 'khong the giam duoi X')
+	{
+		if (m_CurrentLife <= m_nHSLockLife) nDamage = 0;
+		else if (m_CurrentLife - nDamage < m_nHSLockLife) nDamage = m_CurrentLife - m_nHSLockLife;
+	}
 	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS);	// [CHITU 01/09] chi tu khong con di qua day
 	AUTOLOG_EVERY(1000, "[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
 	m_CurrentLife -= nDamage;
@@ -4476,8 +4479,10 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	if (Npc[nLauncher].m_Doing == do_death || Npc[nLauncher].m_Doing == do_revive)
 		return TRUE;
-	if (m_bHSInvincible)	// [VHTD 02/09] invincibility (Thap Bo Nhat Sat_Buff 2130): khong nhan sat thuong/trang thai
-		return TRUE;
+	// [VHTD 02/09c] invincibility (Thap Bo Nhat Sat_Buff 2130): don cua DICH -> FALSE = truot (khong sat thuong, khong trang thai - nguoi goi chi ap trang thai khi TRUE);
+	// buff tu than / phe ta (2130, 2131, 1989, 2117 di qua ReceiveDamage(self)) van qua binh thuong. (phan bien B1)
+	if (m_bHSInvincible && nLauncher != m_Index && (NpcSet.GetRelation(nLauncher, m_Index) & relation_enemy))
+		return FALSE;
 
 
 	AUTOLOG_EVERY(1000, "[E2-RECV-PASSGATE] target=%d(doing=%d) launcher=%d(doing=%d kind=%u playeridx=%d) owner=%d -> qua het cua chan dau, bat dau tinh sat thuong", m_Index, (int)m_Doing, nLauncher, (int)Npc[nLauncher].m_Doing, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)(Owner[0] != 0));
@@ -4673,8 +4678,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		int nFSDamage = (int)((float)(m_CurrentLife / 4) * nFsK / 100.0f);
 		if (nFSDamage > 0)
 		{
-			if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && m_CurrentLife > m_nHSLockLife && m_CurrentLife - nFSDamage < m_nHSLockLife)	// [VHTD 02/09] lock_life
-				nFSDamage = m_CurrentLife - m_nHSLockLife;
+			if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && nFSDamage > 0)	// [VHTD 02/09] lock_life ([VHTD 02/09c] B2)
+			{
+				if (m_CurrentLife <= m_nHSLockLife) nFSDamage = 0;
+				else if (m_CurrentLife - nFSDamage < m_nHSLockLife) nFSDamage = m_CurrentLife - m_nHSLockLife;
+			}
 			SyncDamageInfo(nLauncher, nFSDamage > m_CurrentLife ? m_CurrentLife : nFSDamage, COMBAT_INFO_DAMAGE_LIFE, 0, TRUE);
 			m_CurrentLife -= nFSDamage;	// 0x0808B0F8 ghi thang mau
 			// [HOASON 02/09] cuu nguy khi khe chi tu dua mau xuong duoi 25% max (Linux ReceiveDamage 0x0808B0E3-0x0808B13A)
@@ -5786,6 +5794,8 @@ void KNpc::Cast(int nSkillId, int nSkillLevel)
 		}
 			
 		KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(nSkillId, nSkillLevel);
+		if (!pOrdinSkill)	// [VHTD 02/09c] phan bien B3: id tu du lieu (autocastskill/cast_when_buff_removed) co the khong co dong skills.txt
+			return;
 		pOrdinSkill->Cast(m_Index, nMpsX, nMpsY);
 
 		if(!pOrdinSkill->IsAura())
