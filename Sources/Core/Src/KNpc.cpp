@@ -860,7 +860,7 @@ void	KNpc::ReSetRes(int nMark)
 		if (m_NpcSettingIdx == PLAYER_MALE_NPCTEMPLATEID)
 		{
 			strcpy(szNpcTypeName, "MainMan");
-			//strcpy(szNpcTypeName, "脛脨脰梅陆脟");		ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
+			//strcpy(szNpcTypeName, "男主角");		ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(TRUE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(TRUE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(TRUE);
@@ -868,7 +868,7 @@ void	KNpc::ReSetRes(int nMark)
 		else
 		{
 			strcpy(szNpcTypeName, "MainLady");
-			//strcpy(szNpcTypeName, "脜庐脰梅陆脟");		ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
+			//strcpy(szNpcTypeName, "女主角");		ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(FALSE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(FALSE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(FALSE);
@@ -887,7 +887,7 @@ void	KNpc::ReSetRes(int nMark)
 		g_NpcSetting.GetString(m_MaskType + 2, "NpcResType", "", szNpcTypeName, sizeof(szNpcTypeName));
 		if (!szNpcTypeName[0])
 		{
-			g_NpcKindFile.GetString(2, "脠脣脦茂脙没鲁脝", "", szNpcTypeName, sizeof(szNpcTypeName));
+			g_NpcKindFile.GetString(2, "人物名称", "", szNpcTypeName, sizeof(szNpcTypeName));
 		}
 #endif
 	}
@@ -1503,7 +1503,7 @@ BOOL KNpc::ProcessState()
 	//
 	if (m_StunState.nTime > 0)
 	{
-		m_DataRes.SetSpecialSpr("\\spr\\skill\\虏鹿鲁盲\\mag_spe_脩拢脭脦.spr");
+		m_DataRes.SetSpecialSpr("\\spr\\skill\\补充\\mag_spe_眩晕.spr");
 		nRet = TRUE;
 	}
 	//
@@ -3288,7 +3288,9 @@ int KNpc::DetonateMissles(int nStyle, int nRadius, int nFlag)
 		{
 			KIndexNode* pNext = (KIndexNode*)pNode->GetNext();	// lay next TRUOC: DoVanish co the go dan khoi danh sach
 			int nIdx = pNode->m_nIndex;
-			if (nIdx > 0 && nIdx < MAX_MISSLE && Missle[nIdx].m_nMissleId == nStyle
+			// [VHTD 02/09n] m_nMissleId = CHI SO instance (KMissleSet::Add ghi de), khong phai kieu dan -> so kieu qua ky nang tao dan (ChildSkillId)
+			KSkill* pVhMs = (nIdx > 0 && nIdx < MAX_MISSLE) ? (KSkill*)g_SkillManager.GetSkill(Missle[nIdx].m_nSkillId, Missle[nIdx].m_nLevel) : NULL;
+			if (nIdx > 0 && nIdx < MAX_MISSLE && pVhMs && pVhMs->GetChildSkillId() == nStyle
 				&& Missle[nIdx].m_nLauncher > 0 && Missle[nIdx].m_nLauncher < MAX_NPC && Npc[Missle[nIdx].m_nLauncher].m_Index > 0)
 			{
 				int nRel = (int)NpcSet.GetRelation(m_Index, Missle[nIdx].m_nLauncher);
@@ -6014,7 +6016,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		if (nNpcSettingIdx == PLAYER_MALE_NPCTEMPLATEID)
 		{
 			strcpy(szNpcTypeName, "MainMan");
-			//strcpy(szNpcTypeName, "脛脨脰梅陆脟"); //ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
+			//strcpy(szNpcTypeName, "男主角"); //ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(TRUE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(TRUE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(TRUE);
@@ -6022,7 +6024,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		else
 		{
 			strcpy(szNpcTypeName, "MainLady");
-			//strcpy(szNpcTypeName, "脜庐脰梅陆脟"); ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
+			//strcpy(szNpcTypeName, "女主角"); ki脫u npc kieu npc bao g氓m nam v碌 n梅 man and lady
 			m_StandFrame = NpcSet.GetPlayerStandFrame(FALSE);
 			m_WalkFrame = NpcSet.GetPlayerWalkFrame(FALSE);
 			m_RunFrame = NpcSet.GetPlayerRunFrame(FALSE);
@@ -6042,7 +6044,7 @@ void KNpc::Load(int nNpcSettingIdx, int nLevel, int nSeries)
 		g_NpcSetting.GetString(nNpcSettingIdx + 2, "NpcResType", "", szNpcTypeName, sizeof(szNpcTypeName));
 		if (!szNpcTypeName[0])//khong tim thay npc gan mac dinh ten npc dau tien
 		{
-			g_NpcKindFile.GetString(2, "脠脣脦茂脙没鲁脝", "", szNpcTypeName, sizeof(szNpcTypeName));
+			g_NpcKindFile.GetString(2, "人物名称", "", szNpcTypeName, sizeof(szNpcTypeName));
 		}
 		//g_NpcSetting.GetString(nNpcSettingIdx + 2, "DescName", "", DescName, sizeof(DescName));
 		g_NpcSetting.GetInteger(nNpcSettingIdx + 2, "AIMode", 12, &m_AiMode);
@@ -7220,7 +7222,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			int nWid = nFontSize * g_StrLen(ShopName) / 2 + 10;
 			int nHei = nFontSize + 12;
 				
-			char*sOutm = "\\Spr\\Ui3\\掳脷虁炉\\掳脷虁炉脥路露楼虁啤拢颅脰膼.spr"; //Head
+			char*sOutm = "\\Spr\\Ui3\\摆摊\\摆摊头顶条－中.spr"; //Head
 			KRUImage RUIconImageR;
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
@@ -7254,7 +7256,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			else
 				g_pRepresent->OutputText(nFontSize, ShopName, KRF_ZERO_END, nMpsX - nFontSize * g_StrLen(ShopName) / 4, nMpsY - 62, 0xffebb200, 0, nHeightOff - 11, dwBorderColor);
 
-			char* sOutR = "\\Spr\\Ui3\\掳脷虁炉\\掳脷虁炉脥路露楼虁啤拢颅脫虊.spr";	//Head
+			char* sOutR = "\\Spr\\Ui3\\摆摊\\摆摊头顶条－右.spr";	//Head
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
 			RUIconImageR.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
@@ -7268,7 +7270,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 			RUIconImageR.nFrame = 0;
 			g_pRepresent->DrawPrimitives(1, &RUIconImageR, RU_T_IMAGE, FALSE);
 			
-			char* sOutL = "\\Spr\\Ui3\\掳脷虁炉\\掳脷虁炉脥路露楼虁啤拢颅脳贸.spr";	//Head
+			char* sOutL = "\\Spr\\Ui3\\摆摊\\摆摊头顶条－左.spr";	//Head
 			RUIconImageR.nType = ISI_T_SPR;
 			RUIconImageR.Color.Color_b.a = 255;
 			RUIconImageR.bRenderStyle = IMAGE_RENDER_STYLE_ALPHA;
