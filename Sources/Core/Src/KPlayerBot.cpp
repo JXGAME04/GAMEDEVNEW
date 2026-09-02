@@ -7435,6 +7435,46 @@ int PB_MoiVaoNhom(int nMoi, int nBot)
 }
 
 // ===========================================================================
+// [BOTPHAI-DAU 02/09] (chu game) "khi vao paty thi bot chua hien icon theo mon phai cua bot o
+// mini paty".
+//
+// Icon do CLIENT ve tu KTeam::GetMemberInfo (KPlayerTeam.cpp:871/:890, khoi #ifndef _SERVER):
+//   pList[].nFaction = Npc[].nFirstFaction   <- PLAYER_SYNC (KProtocolProcess.cpp:2796/:2894)
+//   <- may chu dien o KNpc::SendSyncData (KNpc.cpp:6086/:6303):
+//      PlayerSync.nFirstFaction = Player[].GetFirstAddFaction() = m_cFaction.m_nFirstAddFaction
+//
+// m_nFirstAddFaction chi duoc dat o DUNG MOT cho - KPlayerFaction::AddFaction (:88):
+//      m_nAddTimes++;  if (m_nAddTimes == 1) m_nFirstAddFaction = nFactionID;
+// ma m_nAddTimes NAP TU BLOB (KPlayerDBFuns.cpp:376 = BaseInfo.ijoincount). Bot nhan ban tu
+// nhan vat mau DA tung vao phai nen ijoincount >= 1 => luc bot chay gianhapmonphai, m_nAddTimes
+// thanh 2/3/... khong bao gio bang 1 => m_nFirstAddFaction giu nguyen gia tri cua nhan vat mau
+// (-1 "chua vao phai", hoac phai cua mau) => bot gui xuong client nFirstFaction = 255 va mini
+// party khong co icon nao de ve.
+//
+// Sua: ep m_nFirstAddFaction = phai HIEN TAI cua bot. Dung nghia voi mot nhan vat chi tung vao
+// mot phai, va keo theo dung huong hai cho khac cung doc truong nay: item magic_requiremenpai
+// (KItemList.cpp:1204) + bang thanh vien bang hoi JX2 (KTongJX2.cpp:2428).
+// KHONG dong vao duong nguoi choi that (ham nay chi chay trong nhip bot).
+// ===========================================================================
+static void pb_SuaPhaiDau(int nIdx, int nNpcIdx, unsigned int now, int nLech)
+{
+	if (((now + (unsigned int)nLech * 3u) % (unsigned int)(GAME_FPS * 10)) != 0)
+		return;                            // 10 giay/con, le pha voi pb_DongBoBang
+	KPlayerFaction& f = Player[nIdx].m_cFaction;
+	const int nCur = f.m_nCurFaction;
+	if (nCur < 0 || nCur >= MAX_FACTION)
+		return;                            // bot chua vao phai - khong co gi de dong bo
+	if (f.m_nFirstAddFaction == nCur)
+		return;
+	pb_Log("[BotPhai] %s sua PHAI DAU (first faction) %d -> %d de client ve duoc icon mon phai"
+	       " (mini party / bang hoi)\n", Player[nIdx].m_PlayerName,
+	       f.m_nFirstAddFaction, nCur);
+	f.m_nFirstAddFaction = nCur;
+	if (f.m_nAddTimes <= 0)
+		f.m_nAddTimes = 1;                 // giu bat bien cua KPlayerFaction (da vao phai = >= 1)
+}
+
+// ===========================================================================
 // [BOTBANG-MAU 01/09 toi] (chu game) "bot da vao bang thanh cong se co MAU RIENG THEO BANG".
 //
 // "Mau" = m_CurrentCamp cua KNpc; bang hoi dat no = camp CUA BANG (KTongJX2Tong::btCamp,
@@ -10124,6 +10164,9 @@ static void pb_DriveBot(PB_Bot& b)
 	// [BOTBANG-MAU 01/09] dong bo bang + mau theo bang (10 giay/con, so le). Dat truoc moi
 	// nhanh return de bot dang Tong Kim / ban sap / Da Tau cung giu dung ho so bang.
 	pb_DongBoBang(nIdx, nNpcIdx, b, nowAll, (int)(&b - s_bots));
+	// [BOTPHAI-DAU 02/09] icon mon phai o mini party doc "phai dau tien" - bot nhan ban co
+	// ijoincount >= 1 nen khong bao gio duoc dat. Sua o day, gia tri se di theo goi PLAYER_SYNC.
+	pb_SuaPhaiDau(nIdx, nNpcIdx, nowAll, (int)(&b - s_bots));
 
 	// ap CHE DO cho bot den muon (sinh / vao phai xong SAU khi chu game bam lenh)
 	if (s_nPbCheDoNhapMon && b.nAi == PB_AI_IDLE && b.nFaction >= 0)
@@ -10995,6 +11038,18 @@ static void pb_DriveBot(PB_Bot& b)
 		pb_Log("[Bot] %s da vao %s (phai %d, he %d)\n",
 		       Player[nIdx].m_PlayerName, s_facNpc[b.nFaction].szTen,
 		       b.nFaction, Npc[nNpcIdx].m_Series);
+		// [BOTPHAI-DAU 02/09] chot "phai dau tien" NGAY: KPlayerFaction::AddFaction chi dat no
+		// khi m_nAddTimes == 1, ma bot nhan ban tu nhan vat mau da co ijoincount >= 1 nen dieu
+		// kien do khong bao gio dung -> mini party khong co icon mon phai (xem pb_SuaPhaiDau).
+		if (Player[nIdx].m_cFaction.m_nFirstAddFaction != b.nFaction)
+		{
+			pb_Log("[BotPhai] %s sua PHAI DAU (first faction) %d -> %d ngay khi vao phai\n",
+			       Player[nIdx].m_PlayerName,
+			       Player[nIdx].m_cFaction.m_nFirstAddFaction, b.nFaction);
+			Player[nIdx].m_cFaction.m_nFirstAddFaction = b.nFaction;
+			if (Player[nIdx].m_cFaction.m_nAddTimes <= 0)
+				Player[nIdx].m_cFaction.m_nAddTimes = 1;
+		}
 
 		// Trao vu khi nhap mon MOT LAN. Ban tham khao lam y het o day: vao phai xong moi trao,
 		// va dat co de KHONG boc lai moi lan len cap (KBotManager.cpp:2950-2956).
