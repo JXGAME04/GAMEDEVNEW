@@ -230,3 +230,25 @@ Log: `[BotPhai] X sua PHAI DAU (first faction) A -> B …`. Kèm giữ bất bi�
 grep "BotPhai" bot.log | head -20
 ```
 Sau restart: mỗi bot in **một** dòng `[BotPhai] … sua PHAI DAU … -> N`. Mời bot vào tổ đội → mini party hiện **đúng icon phái của bot** (Thiếu Lâm / Thiên Vương / … / Hoa Sơn); bot trong bang cũng hiện đúng icon phái ở cửa sổ bang hội.
+
+## 11. Đợt f (02/09) — bot vào bang hội **im lặng** — `ReverseTools/goi_va_bot_bang_imlang_f.py` (7 hunk, CHỈ KPlayerBot.cpp), commit **`848ba913`**
+
+> Chủ: *"và bot tự vào bang hội cũng vậy cứ âm thầm vào thôi ko cần chat mật lại. Bạn toàn làm việc dư thừa không chịu hỏi trước khi làm"*
+
+Gỡ **toàn bộ** nhắn mật của luồng bang hội (đợt d mới chỉ gỡ phần tổ đội):
+
+| Chỗ | Trước | Sau |
+|---|---|---|
+| `PB_WhisperReply` nhánh bang hội | trả lời 7 câu (nhận việc / đã có bang / không phải bang chủ / chưa đủ cấp / đang đi / bán sạp) | **im lặng**; chỉ vọng lại echo câu của chính người gửi rồi `return 1`. Lý do đi vào `bot.log`: `[BotBang] X BO QUA loi ru vao bang cua Y (…)`, giãn 3 giây |
+| `pb_XinVaoBang` huỷ (hết hạn / bang mất) | "Minh khong toi duoc NPC mon phai…" | im lặng |
+| chưa đủ cấp xuất sư | "Minh chua du cap 60…" | im lặng |
+| xuất sư không ăn | "Minh xuat su khong duoc…" | im lặng |
+| kết quả nộp đơn (5 mã) | "Minh da gia nhap bang…" / "…nop don…" | im lặng, chỉ log `ket qua=N` |
+
+Bỏ luôn hai biến `nAi` / `bNguoiCon` không còn nội dung. **Đường bot → người chơi còn lại**: `PB_WhisperReply` / `pb_XuLyPmCho` chỉ **trả lời khi người chơi hỏi** (tính năng chủ giao 18/08) và `pb_Chat` (kênh/gần, không phải nhắn mật). Không còn chỗ nào bot **tự** nhắn cho người chơi.
+
+**Bẫy công cụ (ghi lại để đừng lặp):** helper `ap()` của các bộ vá trước nhận biết "đã áp" bằng `moi in s` — với hunk **XOÁ** (`moi` rỗng hoặc là đoạn vốn đã có sẵn) thì luôn dương tính giả và **bỏ qua sạch**. Bộ này thêm tham số `bo` = chuỗi chắc chắn biến mất sau khi áp.
+
+**Kiểm chứng trên nhị phân** (`grep -c` trong DLL): 9/9 chuỗi nhắn mật (tổ đội + bang hội) = **0** trong `.moi` mới, trong khi bản đang chạy `9d7ae996` vẫn còn 7/9 — đó là lý do chủ còn thấy bot nhắn tin.
+
+**Binary:** `CoreServer.dll.moi` = **`c769f6f8a3de`** (00:45) = bản dung luyện `B0D3596B` (phiên wauto-da) + đợt e + đợt f. Client giữ nguyên `CoreClient.dll.moi` `2c148668` + `Game.exe.moi` `6aa1feb9` — **swap cùng bộ 3**.
