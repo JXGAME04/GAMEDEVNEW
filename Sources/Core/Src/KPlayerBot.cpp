@@ -7573,9 +7573,6 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 {
 	if (b.nBangTick == 0)
 		b.nBangTick = now;
-	const int nAi = b.nBangNguoiIdx;
-	const int bNguoiCon = (nAi > 0 && nAi < MAX_PLAYER && Player[nAi].m_dwID == b.dwBangNguoiID
-	                    && Player[nAi].m_nIndex > 0);
 	const int bDaCoBang = (Player[nIdx].m_cTong.m_nFlag != 0);
 	const int bBangMat  = (g_TongJX2.FindTong(b.dwBangID) == NULL);
 	if (now - b.nBangTick > (unsigned int)(GAME_FPS * 360) || bDaCoBang || bBangMat)
@@ -7583,11 +7580,6 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 		pb_Log("[BotBang] %s HUY xin vao bang %u (het han %d / da co bang %d / bang mat %d)\n",
 		       Player[nIdx].m_PlayerName, (unsigned int)b.dwBangID,
 		       (int)(now - b.nBangTick > (unsigned int)(GAME_FPS * 360)), bDaCoBang, bBangMat);
-		if (bNguoiCon && !bDaCoBang)
-		{
-			const char* szHuy = "Minh khong toi duoc NPC mon phai, de khi khac nhe.";
-			pb_GuiChatMat(nAi, nIdx, szHuy, (int)strlen(szHuy));
-		}
 		b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
 		b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
 		b.walk.Reset();
@@ -7666,11 +7658,6 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 		{
 			pb_Log("[BotBang] %s cap %d chua du %d de xuat su -> HUY xin vao bang %u\n",
 			       Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, PB_CAP_XUATSU, (unsigned int)b.dwBangID);
-			if (bNguoiCon)
-			{
-				const char* szCap = "Minh chua du cap 60 de xuat su nen chua xin vao bang duoc, thong cam nhe.";
-				pb_GuiChatMat(nAi, nIdx, szCap, (int)strlen(szCap));
-			}
 			b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
 			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
 			b.walk.Reset();
@@ -7682,11 +7669,6 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 			pb_Log("[BotBang] %s goi 'xuatsu' cua %s KHONG an (task %d = %d) -> HUY\n",
 			       Player[nIdx].m_PlayerName, s_facNpc[nFac].szTen, PB_TASK_XUATSU,
 			       (int)Player[nIdx].m_cTask.GetSaveVal(PB_TASK_XUATSU));
-			if (bNguoiCon)
-			{
-				const char* szXs = "Minh xuat su khong duoc, de khi khac xin vao bang nhe.";
-				pb_GuiChatMat(nAi, nIdx, szXs, (int)strlen(szXs));
-			}
 			b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
 			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
 			b.walk.Reset();
@@ -7706,21 +7688,10 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 	const int nKq = g_TongJX2.DoClientOpBody(nIdx, &sCmd);
 	const KTongJX2Tong* pT = g_TongJX2.FindTong(b.dwBangID);
 	const char* szTen = (pT && pT->szName[0]) ? pT->szName : "cua ban";
-	char szMsg[200];
-	if (nKq == 7)
-		sprintf(szMsg, "Minh da gia nhap bang %s roi, cam on ban!", szTen);
-	else if (nKq == 0)
-		sprintf(szMsg, "Minh da nop don xin vao bang %s, ban nho nhac bang chu duyet nhe.", szTen);
-	else if (nKq == 12)
-		sprintf(szMsg, "Minh da nop don vao bang %s tu truoc roi, dang cho duyet.", szTen);
-	else if (nKq == 11)
-		sprintf(szMsg, "Bang %s dat nguong cap cao hon cap cua minh, chua xin duoc.", szTen);
-	else
-		sprintf(szMsg, "Minh xin vao bang %s khong duoc (ma %d).", szTen, nKq);
+	// [f 02/09] (chu game: "bot tu vao bang hoi cu am tham vao thoi, ko can chat mat lai")
+	// KHONG nhan mat bao ket qua nua - chi ghi bot.log.
 	pb_Log("[BotBang] %s nop don vao bang %s (id %u) tai NPC %s: ket qua=%d\n",
 	       Player[nIdx].m_PlayerName, szTen, (unsigned int)b.dwBangID, s_facNpc[nFac].szTen, nKq);
-	if (bNguoiCon)
-		pb_GuiChatMat(nAi, nIdx, szMsg, (int)strlen(szMsg));
 	b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
 	b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
 	b.walk.Reset();
@@ -7779,32 +7750,39 @@ int PB_WhisperReply(const PB_WHISPER* p)
 			                          g_FileName2Id((LPSTR)Player[p->nSenderIdx].m_PlayerName));
 			bBangChu = (pMe && pMe->btFigure == 0) ? 1 : 0;
 		}
-		if (Player[nBot].m_cTong.m_nFlag)
-			sprintf(szTraLoi, "Minh co bang hoi roi, cam on ban nhe.");
-		else if (!pTg)
-			sprintf(szTraLoi, "Ban chua co bang hoi ma, ru minh vao dau?");
-		else if (!bBangChu)
-			sprintf(szTraLoi, "Ban khong phai bang chu bang %s, nho bang chu nhan cho minh nhe.", pTg->szName);
-		else if (nCapBot < PB_CAP_VAOBANG)
-			sprintf(szTraLoi, "Minh moi cap %d, phai tu cap %d tro len minh moi dam xuat su xin vao bang.",
-			        nCapBot, PB_CAP_VAOBANG);
-		else if (pB->nBangPha)
-			sprintf(szTraLoi, "Minh dang tren duong ve NPC mon phai xin vao bang roi, cho chut.");
-		else if (pB->nBanSap)
-			sprintf(szTraLoi, "Minh dang ngoi ban sap, de khi khac minh xin vao bang nhe.");
+		// [f 02/09] (chu game: "bot tu vao bang hoi cu am tham vao thoi, ko can chat mat lai")
+		// MOI nhanh o day deu IM LANG: nhan duoc thi lang le di lam, khong nhan duoc thi thoi.
+		// Ly do tung truong hop chi di vao bot.log (gion 3 giay toan cuc).
+		if (Player[nBot].m_cTong.m_nFlag || !pTg || !bBangChu || nCapBot < PB_CAP_VAOBANG
+		 || pB->nBangPha || pB->nBanSap)
+		{
+			static unsigned int s_uBoQuaLog = 0;
+			const unsigned int uNowBq = (unsigned int)GetTickCount();
+			if (uNowBq - s_uBoQuaLog >= 3000)
+			{
+				s_uBoQuaLog = uNowBq;
+				pb_Log("[BotBang] %s BO QUA loi ru vao bang cua %s (da co bang %d / nguoi ru khong co bang %d"
+				       " / khong phai bang chu %d / cap %d < %d / dang di xin %d / ban sap %d)\n",
+				       Player[nBot].m_PlayerName, Player[p->nSenderIdx].m_PlayerName,
+				       (int)(Player[nBot].m_cTong.m_nFlag != 0), (int)(pTg == NULL), (int)(!bBangChu),
+				       nCapBot, PB_CAP_VAOBANG, pB->nBangPha, pB->nBanSap);
+			}
+		}
 		else
 		{
 			pB->nBangPha = 1;  pB->dwBangID = dwNg;
 			pB->nBangNguoiIdx = p->nSenderIdx;  pB->dwBangNguoiID = Player[p->nSenderIdx].m_dwID;
 			pB->nBangTick = 0;  pB->nBangThu = 0;  pB->nBangNghiToi = 0;  pB->nBangDoiMapTick = 0;
-			sprintf(szTraLoi, "Ok! Minh ve Ba Lang Huyen gap NPC mon phai xuat su roi xin vao bang %s ngay day.", pTg->szName);
 			pb_Log("[BotBang] %s nhan PM ru vao bang %s (id %u) tu %s%s\n",
 			       Player[nBot].m_PlayerName, pTg->szName, (unsigned int)dwNg,
 			       Player[p->nSenderIdx].m_PlayerName,
 			       pB->nTk ? " - dang Tong Kim, xong tran moi di" : "");
 		}
-		pB->nPmCamToi = 0;                 // cau nay quan trong - khong "lam ngo" theo han cam
-		pB->nPmDenHan = 0;                 // [b] bo ca cau dang cho, uu tien cau nay
+		// [f 02/09] IM LANG: chi vong lai tieng cua CHINH nguoi gui (de ho van thay dong minh vua
+		// go trong cua so chat rieng) roi thoi - khong soan cau tra loi nao, va KHONG de roi
+		// xuong khoi "cau chung" ben duoi.
+		pb_GuiChatMatEcho(p->nSenderIdx, Player[nBot].m_PlayerName, p->szMsg, nLen, p->nPackageID);
+		return 1;
 	}
 	// ---- bat y dinh ----
 	// Thu tu co chu y: "bot" xet TRUOC (nguoi choi hay thu "ban la bot ha"), roi cac cau
