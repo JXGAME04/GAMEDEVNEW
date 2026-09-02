@@ -2256,6 +2256,15 @@ void KUiPlayerBar::SetChatItem(ChatItem CItem, unsigned int uId)
 				nOffset++;
 			}
 		}
+		// [PFCHAT 02/09] 40..43: 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong), moi so + dau phay -> NUM_INFO_ITEM_CHAT = 43
+		for (int nPf = 0; nPf < 4; nPf++)
+		{
+			sprintf(Buffer, "%d", CItem.m_nPfPack[nPf]);
+			strcat(&m_pSelf->m_ChatItemInfo[nOffset], Buffer);
+			nOffset += strlen(Buffer);
+			m_pSelf->m_ChatItemInfo[nOffset] = ',';
+			nOffset++;
+		}
 		m_pSelf->m_ChatItemInfo[nOffset] = ']';
 		nOffset++;
 

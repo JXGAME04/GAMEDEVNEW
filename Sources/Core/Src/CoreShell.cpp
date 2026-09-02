@@ -2394,6 +2394,10 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 						Item[nItemIdx].SetPlayerItemHLock(m_sInfo->m_HLock);
 						Item[nItemIdx].SetDurability(m_sInfo->m_nDurability);
 						Item[nItemIdx].SetMaxOptMultiply(m_sInfo->m_nMaxOptMultiply);
+						// [PFCHAT 02/09] phi phong: do lai 4 o sao/chuc phuc/13 lo da (KItem::m_nPfPack) ma chuoi chat [..] mang theo;
+						// mon khac 4 o = 0 (KPlayerDBFuns.cpp ~736 da don) nen chep thang, hanh vi cu khong doi.
+						for (int nPf = 0; nPf < 4; nPf++)
+							Item[nItemIdx].SetPfPack(nPf, m_sInfo->m_nPfPack[nPf]);
 						nRet = nItemIdx;
 					}
 				}
@@ -2459,6 +2463,9 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			}
 			pInfo->m_bPoint = Item[nIdx].IsPurple();
 			pInfo->m_nDurability = Item[nIdx].GetDurability();
+			// [PFCHAT 02/09] mang theo sao/chuc phuc/13 lo da phi phong (4 o m_nPfPack) de ben nhan dung lai dung mon
+			for (int nPf = 0; nPf < 4; nPf++)
+				pInfo->m_nPfPack[nPf] = Item[nIdx].GetPfPack(nPf);
 			nRet = 1;
 		}
 		break;

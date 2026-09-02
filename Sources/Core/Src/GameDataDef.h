@@ -20,7 +20,8 @@
 #define		OBJ_NAME_LENGHT						64
 #define		MAX_TEAM_MEMBER						7		
 #define		MAX_SENTENCE_LENGTH					256
-#define		NUM_INFO_ITEM_CHAT					39				//26 th南g tin 悌蟃 slipt trong string g鑀 展
+// [PFCHAT 02/09] 39 -> 43: chuoi item-chat [..] mang them 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) sau 16 khe magic
+#define		NUM_INFO_ITEM_CHAT					43				//26 th南g tin 悌蟃 slipt trong string g鑀 展
 #define		FILE_NAME_LENGTH					80
 #define		PLAYER_PICKUP_CLIENT_DISTANCE		75//63
 #define		defMAX_EXEC_OBJ_SCRIPT_DISTANCE		200
@@ -628,6 +629,7 @@ typedef struct
 	int		m_nDurability;
 	int		m_nNature; //goldequip
 	int		m_nMaxOptMultiply;
+	int		m_nPfPack[4];		// [PFCHAT 02/09] = KItem::m_nPfPack (sao/chuc phuc/13 lo da phi phong). Cuoi struct. LUU Y: ChatItem nam trong goi s2c_diceitem (Headers\KDiceProtocol.h) -> CoreServer + CoreClient swap CUNG LUC.
 } ChatItem;
 
 struct KOneMsgInfo

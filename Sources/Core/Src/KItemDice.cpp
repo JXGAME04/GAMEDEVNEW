@@ -313,6 +313,9 @@ void KItemDice::FillItemDesc(ChatItem* pDesc)
             pDesc->m_btMagicLevel[i + MAX_ITEM_MAGICATTRIB] =
                 (short)Item[nIdx].m_aryMagicAttrib[i].nValue[0];
     }
+    // [PFCHAT 02/09] 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) - cung khuon GDI_GET_ITEM_PARAM (CoreShell.cpp)
+    for (int k = 0; k < 4; k++)
+        pDesc->m_nPfPack[k] = Item[nIdx].GetPfPack(k);
 }
 
 // szWho: ten nguoi vua gieo, chi dung khi btAction = DICE_ACT_NUMBER

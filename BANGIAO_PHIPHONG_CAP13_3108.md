@@ -209,6 +209,53 @@ Mổ dữ liệu Linux: hệ ngũ hành Linux dùng `me2Xdamage_p`/`X2medamage_p
 ⇒ **Các Ấn ngũ hành trong TESTLOFFF ĐANG BỊ HỎNG** (thuộc tính đọc sai thành addskilldamage) — đây là bug hiện có, ngoài phạm vi phi phong nhưng chủ nên biết.
 **Để port hệ ngũ hành Linux** cần (dự án con lớn, rủi ro cân bằng cực cao → làm ĐỢT RIÊNG với nhiều vòng phản biện): (1) NẮN dữ liệu item 276-285 → mã JX1 tương ứng theo TÊN HÀNG (như t100 nắn đá); (2) thêm 2 mảng `me2X[5]`/`X2me[5]` vào KNpc + 10 handler đăng ký (JX1 hiện chỉ KHAI enum, KHÔNG dùng); (3) sửa CalcDamage áp `delta = atk.me2X[def.hệ] − def.X2me[atk.hệ]; dmg *= (1+delta/100)`; (4) phản biện cân bằng đa vòng. Vì JX1 hiện dùng bảng-tương-khắc-cứng, chuyển sang data-driven là thay đổi cân bằng toàn cục.
 
+## 6h. ĐỢT 02/09 — PHI PHONG POST LÊN KÊNH CHAT THIẾU HIỂN THỊ (nhãn `[PFCHAT 02/09]`)
+
+Chủ báo kèm 2 ảnh: mặc trên người tooltip đủ (10 sao, 13 đá, khối tím, 2 dòng ẩn); post lên kênh chat rồi bấm xem chỉ còn "0 sao Lỗ khảm trống" ×13, tên không có "10 sao", mất dòng ẩn 2.
+
+### Cơ chế item-chat (mổ 02/09) — KHÔNG phải gói nhị phân
+- Ctrl+click item → `GDI_GET_ITEM_PARAM` (CoreShell.cpp ~2421) đổ `KItem` → struct `ChatItem` (GameDataDef.h ~613, `#pragma pack 1`) → `KUiPlayerBar::SetChatItem` (UiPlayerBar.cpp ~2093) đóng thành CHUỖI `[23 trường,16 khe magic,]` — mỗi số kèm dấu phẩy, tổng **39 dấu phẩy = `NUM_INFO_ITEM_CHAT`** — thay cho `<tên>` trong tin nhắn lúc gửi (UiPlayerBar.cpp ~1298).
+- Phía nhận: `UiMsgCentrePad.cpp` có **hai** bộ giải mã (kênh ~323, chat mật ~810) tìm `[`…`]` đúng số dấu phẩy rồi đọc từng số → `GDI_ITEM_CHAT` (CoreShell.cpp ~2327) dựng item **TẠM** (`ItemSet.Add` theo nature/row) để lấy tên/màu; bấm tên → `KUiChatItem` gọi `GDI_CHAT_ITEM_DESC` = `KItem::GetDesc` trên item tạm dựng lại từ `ChatItem` lưu trong nút (`KWndPureTextBtn::m_Item`) / tin nhắn (`KOneMsgInfo::sItem`).
+- `CoreShell.cpp:19293` (`ChatSpecialPlayer`) chỉ đếm dấu phẩy để chặn chat NPC. Bot server cũng sinh chuỗi này: `KPlayerBot.cpp pb_TaoLinkDo` (số dấu phẩy phải khớp, không thì link bot thành chữ thô).
+- `ChatItem` còn nằm TRONG gói `s2c_diceitem` (`Headers\KDiceProtocol.h`, `KItemDice::FillItemDesc`) — xúc xắc Viêm Đế dùng chung đường `GDI_ITEM_CHAT`.
+
+### Gốc lỗi
+Chuỗi **không mang `KItem::m_nPfPack[4]`** (sao / chúc phúc / 13 lỗ đá — item của chính mình nhận qua gói riêng `s2c_syncpfpack`, PFSYNC 31/08) → item tạm 0 sao, 13 lỗ trống; dòng ẩn 2 bị cổng `sao < 10` (KItem.cpp ~3393) giấu; dòng ẩn 1 vẫn hiện vì khe 6 nằm trong 16 khe magic của chuỗi. Tooltip đá/thuộc tính đá được `PF_AppendDesc` tính từ pfpack + bảng ở client nên chỉ cần đủ 4 ô là hiện y hệt.
+**Bẫy kèm**: `KUiChatItem` (cửa sổ xem item chat) dùng đệm **2048** (`szTitle` trên stack + `m_ObjTitle`) trong khi `GetDesc` ghi cả tooltip nối tiếp (13 đá vượt 2048 — chính lý do 31/08b nâng `GOD_MAX_OBJ_TITLE_LEN` lên 4096). Chỉ truyền pfpack mà không nới đệm = **tràn stack Game.exe** khi bấm xem.
+
+### Vá — 9 tệp, build sạch `-t:Rebuild` (đổi header dùng chung GameDataDef.h)
+1. `GameDataDef.h`: `ChatItem` thêm `int m_nPfPack[4]` **cuối struct** (89 → 105 byte); `NUM_INFO_ITEM_CHAT` 39 → **43**.
+2. `CoreShell.cpp`: `GDI_GET_ITEM_PARAM` chép 4 ô từ item thật; `GDI_ITEM_CHAT` đổ 4 ô vào item tạm (`SetPfPack`) — phủ luôn nút trong khung chat (`UpdateChatItem`), chat mật, xúc xắc. Món không phải phi phong 4 ô = 0 (KPlayerDBFuns.cpp ~736 đã dọn) nên hành vi cũ không đổi.
+3. `UiPlayerBar.cpp/.h`: `SetChatItem` ghi thêm 4 số (mỗi số + dấu phẩy) sau 16 khe magic; đệm `m_ChatItemInfo` 128 → 320 (chuỗi tối đa ~264 ký tự).
+4. `UiMsgCentrePad.cpp`: 2 bộ giải mã đọc thêm 4 số → `CItem.m_nPfPack` (có chặn `nLeng` khỏi tràn `szNum`).
+5. `KPlayerBot.cpp pb_TaoLinkDo`: ghi thêm `0,0,0,0,` (+ cập nhật comment 44 trường).
+6. `KItemDice.cpp FillItemDesc`: gói xúc xắc mang pfpack.
+7. `UiChatItem.h/.cpp`: đệm 2048 → `GOD_MAX_OBJ_TITLE_LEN`, thêm `#include GameDataDef.h`, điều kiện `<= sizeof(m_ObjTitle)`.
+Mô phỏng python bộ mã hoá/giải mã: 43 dấu phẩy, đọc lại đúng 16 magic + 4 pfpack; 4 ô pfpack bố cục v2 không dùng bit 31 → `%d`/`atoi` an toàn. Encoding: số byte cao 9 tệp giữ nguyên, FFFD = 0 (chỉ còn `CoreServerShell.cpp` hỏng sẵn từ trước).
+
+### ⚠️ RÀNG BUỘC SWAP + giới hạn
+- `ChatItem` nằm trong gói `s2c_diceitem` (cỡ = `sizeof`) → gói lớn thêm 16 byte → **CoreServer.dll + CoreClient.dll + Game.exe PHẢI đổi tên cùng lúc** (lệch bản = client tách gói sai khi có xúc xắc). WAuto PC (`E:\Src_Auto_Ngoai`) không dùng `ChatItem`/gói này — đã grep.
+- GameServer vứt gói chat ≥ 255 byte (`KSOServer.cpp:2778`, chặn có sẵn): link phi phong dài ~150-160 ký tự → chữ kèm theo còn ~80 ký tự (kênh) / ~50 (chat mật), trước là ~125/~95. Link đồ thường dài thêm 8 ký tự.
+- Tin nhắn link cũ (định dạng 39 dấu phẩy) nếu còn được kênh phát lại sau swap sẽ hiện thành chữ thô `[...]` — vô hại, tạm thời.
+
+### Phát hiện thêm — DI SẢN, CHƯA sửa (chờ chủ quyết)
+`GDI_GET_ITEM_PARAM` (CoreShell.cpp ~2450): vòng `for (i < MAX_ITEM_MAGICLEVEL=16)` ghi `m_btMagicLevel[i + 8]` với i ≥ 8 → **tràn ngoài mảng 16 short** → đè `m_wVersion` / `m_dwRandomSeed` / `m_nIdx` / `m_uPrice` (và đọc `m_aryMagicAttrib[8..15]` ngoài mảng 8) mỗi khi khe giá trị 8-10 > 10 — tức đồ hoàng kim có value ở khe 0-2. Đây là gốc của ghi chú cũ "fix loi m_dwRandomSeed sai option đồ xanh chatitem" ở bộ giải mã. Không chạm pfpack (nằm sau `m_nMaxOptMultiply`). Sửa đúng = giới hạn vòng ở 8 (`MAX_ITEM_MAGICATTRIB`); chưa làm vì ngoài phạm vi chủ giao.
+
+### Nhị phân `.moi` CHỜ SWAP (build 02/09 06:38-06:39, obj đồng nhất một mốc)
+| Tệp | md5 (12 đầu) | Bản đang chạy trước swap |
+|---|---|---|
+| `bin\server\CoreServer.dll.moi` | `fba0955f6893` | `0a0cc35205a0` (HEAD `5a975674` VHTD 02/09d) |
+| `bin\client\CoreClient.dll.moi` | `50e1f30e72eb` | `f52ddc8e7219` |
+| `bin\client\Game.exe.moi` | `8911735e768f` | `359536c5b29b` |
+Bản mới = HEAD + vá này (superset, không rơi đợt nào trước).
+
+### Checklist test cho chủ
+1. Tắt GameServer → chạy `ChayGameServer.bat` (đổi `CoreServer.dll.moi` → `CoreServer.dll`); thoát hẳn Game.exe → chạy `ChoiGame.bat` (đổi `CoreClient.dll.moi` + `Game.exe.moi`). Restart mà chưa đổi tên thì vẫn chạy bản cũ.
+2. Ctrl+click phi phong 10 sao đủ 13 đá → gửi kênh → bấm tên item trong khung chat: cửa sổ phải hiện "10 sao … (Cấp 13)", "Đột phá điểm chúc phúc x/44", 13 dòng "10 sao <tên đá>", khối tím thuộc tính đá, cả 2 dòng ẩn — y hệt tooltip mặc trên người. Thử cả từ máy khác nhận.
+3. Chat mật kèm link phi phong: như 2.
+4. Link đồ thường (vũ khí/áo hoàng kim, đồ xanh) vẫn mở được; link bot post lên kênh thế giới vẫn bấm được (không thành chữ thô).
+5. Xúc xắc Viêm Đế: chia 1 món → ô hiện đúng icon + chú giải (gói đổi cỡ).
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.

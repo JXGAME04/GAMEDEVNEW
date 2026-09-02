@@ -82,13 +82,13 @@ void KUiChatItem::CloseWindow()
 
 void KUiChatItem::SetInfomation(int nIdx)
 {
-	char	szTitle[2048];
+	char	szTitle[GOD_MAX_OBJ_TITLE_LEN];	// [PFCHAT 02/09] 2048 -> 4096 cung co m_ObjTitle
 	szTitle[0] = 0;
 	int	nLenTitle = 0;
 	m_nMaxLineLen = 0;
 	g_pCoreShell->GetGameData(GDI_CHAT_ITEM_DESC, (unsigned int)nIdx, (int)&szTitle);
 	nLenTitle = TEncodeText(szTitle, strlen(szTitle));
-	if (nLenTitle > 0 && szTitle[0] && nLenTitle <= 2048)
+	if (nLenTitle > 0 && szTitle[0] && nLenTitle <= (int)sizeof(m_ObjTitle))
 	{
 		memcpy(m_ObjTitle, szTitle, nLenTitle);
 		m_nTitleLen = nLenTitle;

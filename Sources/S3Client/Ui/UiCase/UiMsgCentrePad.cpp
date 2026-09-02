@@ -641,6 +641,22 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		}
 		CItem.m_btMagicLevel[i] = atoi(szNum);			//22 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
 	}
+	// [PFCHAT 02/09] 40..43: 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) - cung khuon vong magic tren;
+	// chan nLeng de khong tran szNum khi chuoi hong.
+	for (i = 0; i < 4; i++)
+	{
+		ZeroMemory(szNum, sizeof(szNum));
+		nLeng = 0;
+		pszCheck1++;
+		while(1)
+		{
+			if(*pszCheck1 == ',' || *pszCheck1 == ']' || *pszCheck1 == 0 || nLeng >= (int)sizeof(szNum) - 1) break;
+			szNum[nLeng] = (*pszCheck1);
+			pszCheck1++;
+			nLeng++;
+		}
+		CItem.m_nPfPack[i] = atoi(szNum);
+	}
 
 	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);
 	if(nIdx)
@@ -1121,6 +1137,22 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 			nLeng++;
 		}
 		CItem.m_btMagicLevel[i] = atoi(szNum);		//23 m_btMagicLevel[0] 23 24 25 26 27 m_btMagicLevel[5]
+	}
+	// [PFCHAT 02/09] 40..43: 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) - cung khuon vong magic tren;
+	// chan nLeng de khong tran szNum khi chuoi hong.
+	for (i = 0; i < 4; i++)
+	{
+		ZeroMemory(szNum, sizeof(szNum));
+		nLeng = 0;
+		pszCheck1++;
+		while(1)
+		{
+			if(*pszCheck1 == ',' || *pszCheck1 == ']' || *pszCheck1 == 0 || nLeng >= (int)sizeof(szNum) - 1) break;
+			szNum[nLeng] = (*pszCheck1);
+			pszCheck1++;
+			nLeng++;
+		}
+		CItem.m_nPfPack[i] = atoi(szNum);
 	}
 
 	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);

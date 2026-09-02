@@ -8,6 +8,7 @@
 
 #include "../Elem/WndImage.h"
 #include "../Elem/WndButton.h"
+#include "../../../core/src/GameDataDef.h"	// [PFCHAT 02/09] GOD_MAX_OBJ_TITLE_LEN
 class KUiChatItem : protected KWndImage
 {
 public:
@@ -29,7 +30,7 @@ private:
 	int		m_nTitleLen;
 	int     m_nMaxLineLen;
 	int     m_nTitleLineNum;
-	char    m_ObjTitle[2048];
+	char    m_ObjTitle[GOD_MAX_OBJ_TITLE_LEN];	// [PFCHAT 02/09] 2048 -> 4096: tooltip phi phong 13 da vuot 2048 (GetDesc ghi ca bang tu szTitle)
 	int		m_ImageWidth;
 	int		m_ImageHeight;
 	int		m_BorderPieces; //vien` khung
