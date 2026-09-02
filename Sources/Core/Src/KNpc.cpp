@@ -3344,6 +3344,17 @@ void KNpc::CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget)
 		CONREGION(i).BroadCast(&SkillCmd, sizeof(SkillCmd), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
 	}
 	pSkill->Cast(m_Index, -1, nTarget);
+	// hoi chieu server nhu KNpc::Cast(int,int): client s2cDirectlyCastSkill luon SetNextCastTime cho nguoi phat -> dong nhat hai ben
+	if (!pSkill->IsAura())
+	{
+		DWORD dwCastTime = 0;
+		eSkillStyle eStyle = (eSkillStyle)pSkill->GetSkillStyle();
+		if (eStyle == SKILL_SS_Missles || eStyle == SKILL_SS_Melee || eStyle == SKILL_SS_InitiativeNpcState || eStyle == SKILL_SS_PassivityNpcState)
+			dwCastTime = pSkill->GetDelayPerCast(m_bRideHorse);
+		else if (eStyle == SKILL_SS_Thief)
+			dwCastTime = ((KThiefSkill*)pSkill)->GetDelayPerCast();
+		m_SkillList.SetNextCastTime(nSkillId, SubWorld[m_SubWorldIndex].m_dwCurrentTime, SubWorld[m_SubWorldIndex].m_dwCurrentTime + dwCastTime);
+	}
 }
 
 // [HOASON 02/09] autoreplyskill: Linux Fire(+0x1850, chu, KE DANH) tai ReceiveDamage 0x0808B4F9 (mot lan moi don, quan he DICH).
@@ -3360,7 +3371,7 @@ void KNpc::ReplySkill(int nLauncher)
 		KMagicAutoSkill& rA = m_ReplySkill[i];
 		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
 			continue;
-		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+		if (rA.dwNextCastTime > SubWorld[m_SubWorldIndex].m_dwCurrentTime)	// Linux 0x08188EB8: now < nextTime -> bo qua
 			continue;
 		if (!g_RandPercent(rA.nRate))
 			continue;
@@ -3385,7 +3396,7 @@ void KNpc::RescueSkill(int nAttacker)
 		KMagicAutoSkill& rA = m_RescueSkill[i];
 		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
 			continue;
-		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+		if (rA.dwNextCastTime > SubWorld[m_SubWorldIndex].m_dwCurrentTime)	// Linux 0x08188EB8: now < nextTime -> bo qua
 			continue;
 		if (!g_RandPercent(rA.nRate))
 			continue;
@@ -3412,7 +3423,7 @@ void KNpc::AttackSkill(int nLauncher)
 		KMagicAutoSkill& rA = m_AttackSkill[i];
 		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
 			continue;
-		if (rA.dwNextCastTime >= SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+		if (rA.dwNextCastTime > SubWorld[m_SubWorldIndex].m_dwCurrentTime)	// Linux 0x08188EB8: now < nextTime -> bo qua
 			continue;
 		if (!g_RandPercent(rA.nRate))
 			continue;
@@ -4338,7 +4349,6 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 
 	AUTOLOG_EVERY(1000, "[E2-RECV-PASSGATE] target=%d(doing=%d) launcher=%d(doing=%d kind=%u playeridx=%d) owner=%d -> qua het cua chan dau, bat dau tinh sat thuong", m_Index, (int)m_Doing, nLauncher, (int)Npc[nLauncher].m_Doing, Npc[nLauncher].m_Kind, Npc[nLauncher].m_nPlayerIdx, (int)(Owner[0] != 0));
 	KMagicAttrib *pTemp = NULL;
-	BOOL bHSTrung = FALSE;	// [HOASON 02/09] co it nhat mot he gay sat thuong (Linux 0x0808AAC7: ket qua BeHurt >= 0) -> moi tung tu phong
 
 	pTemp = (KMagicAttrib *)pData;
 	int nAr = pTemp->nValue[0]; //attackrating[0]	//§é chÝnh x¸c
@@ -4410,13 +4420,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		}
 	}
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-PRE] tgt=%d(id=%u kind=%u) lch=%d physmin=%d physmax=%d lifetruoc=%d resist=%d resistmax=%d armor=%d sorb=%d manashield=%d DS=%d FS=%d series=%d fivep=%d", m_Index, m_dwID, m_Kind, nLauncher, pTemp->nValue[0], pTemp->nValue[2], m_CurrentLife, m_CurrentPhysicsResist, m_CurrentPhysicsResistMax, m_PhysicsArmor.nValue[0], m_CurrentSorbDamageP, m_ManaShield.nValue[0], (int)bIsDS, (int)bIsFS, nMissleSeries, nFiveElementsDamageP);
-	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS, FALSE, nTotalAvg);	// [HOASON 02/09]
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_physics, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, nStolenLifeP, nStolenManaP, nStolenStaminaP, bIsDS, FALSE, nTotalAvg);
 	AUTOLOG_IDX_EVERY(nLauncher, 1000, "[S1-PHYS-POST] tgt=%d lch=%d physmin=%d physmax=%d lifesau=%d doing=%d armorsau=%d", m_Index, nLauncher, ((KMagicAttrib *)pData)[9].nValue[0], ((KMagicAttrib *)pData)[9].nValue[2], m_CurrentLife, (int)m_Doing, m_PhysicsArmor.nValue[0]);
 
 	pTemp++; //cold damage[10]
-	BOOL bHSCold = CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
-	bHSTrung |= bHSCold;
-	if (bHSCold)
+	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_cold, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg))
 	{
 		// [BANGSAT 01/09] LAM CHUAN THEO LINUX (0x0808B1E0-0x0808B280).
 		// Ban cu: reduce > 75 thi nhay sang nhanh CHIA 4 -> thoi luong tut ve 1-2 tick.
@@ -4438,15 +4446,13 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	pTemp++; //fire damage[11]
-	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_fire, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
 	
 	pTemp++; //lighting damage[12]
-	bHSTrung |= CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);	// [HOASON 02/09]
+	CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_light, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE, FALSE, nTotalAvg);
 
 	pTemp++; //poison damage[13]
-	BOOL bHSPoison = CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE);	// [HOASON 02/09]
-	bHSTrung |= bHSPoison;
-	if (bHSPoison)
+	if (CalcDamage(nLauncher, pTemp->nValue[0], pTemp->nValue[2], damage_poison, nMissleSeries, bIsPhysical, bIsMelee, FALSE, nFiveElementsDamageP, 0, 0, 0, FALSE))
 	{
 		// [PF 31/08k] anti_poisontimereduce_p (204): ke danh keo dai thoi gian doc
 		// bang cach triet tieu chi so giam cua nan nhan (nGiamDoc thay the
@@ -4552,10 +4558,11 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 	}
 
 	// [HOASON 02/09] TU PHONG CHUAN LINUX ReceiveDamage 0x0808AACF-0x0808B1D8: sau khi tru mau, CHI khi quan he la DICH
-	// ([ebp+0x24] & 0xC == 8) va don co sat thuong: (1) NAN NHAN ban autoreplyskill (+0x1850) nham ke danh/minh,
-	// (2) KE DANH ban autoattackskill (+0x1874) nham nan nhan/minh. Moi don MOT lan. Hai bang cong 'khong ban lai'
+	// ([ebp+0x24] & 0xC == 8): (1) NAN NHAN ban autoreplyskill (+0x1850) nham ke danh/minh, (2) KE DANH ban autoattackskill
+	// (+0x1874) nham nan nhan/minh. Moi don qua cua trung (CheckHitTarget) MOT lan, KHONG gate theo sat thuong tung he
+	// (phan bien 02/09: [ebp-0x48] Linux la do dich khang ngu hanh, khong phai ket qua don). Hai bang cong 'khong ban lai'
 	// (0x8fc62a0/0x8fc4360) cua Linux khong bao gio duoc dien (vector 0x8fbfe04/0x8fbfe10 khong co noi ghi) -> luon mo.
-	if (bHSTrung && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0
+	if (nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0
 		&& (NpcSet.GetRelation(nLauncher, m_Index) & (relation_ally | relation_enemy)) == relation_enemy)
 	{
 		if (m_Level > 0)
