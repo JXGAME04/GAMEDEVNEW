@@ -716,6 +716,18 @@ int KMissle::CheckCollision()
 				nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation);
 				if (nNpcIdx > 0)
 				{
+					// [VHTD 02/09g] dan VLTK (id >= 500, Vu Hon/Tieu Dao: CollidRange = DmgRange 2..4, du lieu chep nguyen client VLTK): NPC lam dan
+					// 'cham' co the nam CACH dan toi CollidRange o, nhung ProcessCollision() chi quet DmgRange/2 o quanh DAN -> khong ai
+					// bi sat thuong ma dan van DoCollision/tan (ColVanish 1). Do that (jx_auto_server.log 02/09): Tran Bien Thuy 1967 phong 87,
+					// trung 2; 86 lan S4-MSL-END 'early lasthit=0'. Nay: NPC nam ngoai o quanh dan -> gay sat thuong TAI NPC do
+					// (don muc tieu: chi no; dien rong: DmgRange quanh no). Dan cu (< 500) giu nguyen.
+					if (m_nMissleId >= 500 && (abs(i) > m_nDamageRange / 2 || abs(j) > m_nDamageRange / 2))
+					{
+						if (!m_bClientSend)
+							ProcessCollision(m_nLauncher, nSearchRegion, nRMx, nRMy, m_bRangeDamage ? m_nDamageRange : 1, m_eRelation, nNpcIdx);
+						DoCollision();
+						return 1;
+					}
 					ProcessCollision();//处理碰撞
 					DoCollision();//子弹作碰撞后的效果
 					return 1;

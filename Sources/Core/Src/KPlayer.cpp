@@ -2924,7 +2924,10 @@ void	KPlayer::UpdataCurData()
 	ZeroMemory(&Npc[m_nIndex].m_AttackSkill, sizeof(KMagicAutoSkill) * MAX_AUTOSKILL);
 	ZeroMemory(&Npc[m_nIndex].m_DeathSkill, sizeof(KMagicAutoSkill) * MAX_AUTOSKILL);
 	Npc[m_nIndex].m_CurrentManaShield = 0;	//#giam thieu sat thuong ganh chiu HTVC con lon
-	Npc[m_nIndex].m_CurrentStaticMagicShieldP = 0;
+#ifdef _SERVER
+	Npc[m_nIndex].m_CurrentStaticMagicShieldP = 0;	// [VHTD 02/09g] client: gia tri khien chi tu s2c_syncvhtd (khong xoa khi tinh lai)
+	Npc[m_nIndex].m_nHSShieldMax = 0;
+#endif
 	Npc[m_nIndex].m_CurrentReturnResPercent = 0;
 	Npc[m_nIndex].m_CurrentFiveElementsEnhance	= 0;
 	Npc[m_nIndex].m_CurrentSkillEnhancePercent = 0;

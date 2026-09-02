@@ -999,10 +999,15 @@ void KNpcAttribModify::StaticMagicShieldP(KNpc* pNpc, void* pData)
 	// [HOTHAN 01/09] LAM CHUAN THEO LINUX (handler 0x08096DC0, log "StaticMagicShieldP + %d * %d%% = %d"):
 	// khien tinh = NOI LUC TOI DA * pct / 100 cong vao be; go thuoc tinh (gia tri am / het hieu luc)
 	// -> XOA be (0x08096E50 "StaticMagicShieldP Clear"). Ban cu cong thang pct nhu DIEM.
+#ifndef _SERVER
+	return;	// [VHTD 02/09g] client: gia tri khien chi nhan tu s2c_syncvhtd
+#endif
 	if (pMagic->nValue[0] > 0)
 		pNpc->m_CurrentStaticMagicShieldP += (int)((__int64)pNpc->m_CurrentManaMax * pMagic->nValue[0] / MAX_PERCENT);
 	else
 		pNpc->m_CurrentStaticMagicShieldP = 0;
+	pNpc->m_nHSShieldMax = pNpc->m_CurrentStaticMagicShieldP;	// [VHTD 02/09g] tran thanh khien = be luc ap (0 khi go)
+	pNpc->HS_SyncShield();
 }
 
 void KNpcAttribModify::ExpEnhanceP( KNpc* pNpc, void* pData )
@@ -1156,6 +1161,9 @@ void KNpcAttribModify::SpecialPointBase( KNpc* pNpc, void* pData )
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
 	if (pMagic->nValue[0] <= 0)
 		return;
+#ifndef _SERVER
+	return;	// [VHTD 02/09g] client: khoa/tran chi nhan tu s2c_syncvhtd
+#endif
 	int nFree = -1;
 	for (int i = 0; i < MAX_HS_SP; i++)
 	{
@@ -1163,6 +1171,7 @@ void KNpcAttribModify::SpecialPointBase( KNpc* pNpc, void* pData )
 		{
 			pNpc->m_HSSp[i].nMax = pMagic->nValue[2];
 			if (pNpc->m_HSSp[i].nCount > pNpc->m_HSSp[i].nMax) pNpc->m_HSSp[i].nCount = pNpc->m_HSSp[i].nMax;
+			pNpc->HS_SyncSp(pMagic->nValue[0]);	// [VHTD 02/09g]
 			return;
 		}
 		if (nFree < 0 && pNpc->m_HSSp[i].nKey == 0) nFree = i;
@@ -1172,6 +1181,7 @@ void KNpcAttribModify::SpecialPointBase( KNpc* pNpc, void* pData )
 		pNpc->m_HSSp[nFree].nKey = pMagic->nValue[0];
 		pNpc->m_HSSp[nFree].nMax = pMagic->nValue[2];
 		pNpc->m_HSSp[nFree].nCount = 0;
+		pNpc->HS_SyncSp(pMagic->nValue[0]);	// [VHTD 02/09g]
 	}
 }
 

@@ -1309,6 +1309,8 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 				pInfo->byAction |= PA_RIDE;
 
 			pInfo->wReserved = 0;
+			pInfo->nShield = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_CurrentStaticMagicShieldP;	// [VHTD 02/09g]
+			pInfo->nShieldFull = Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex].m_nHSShieldMax;
 		}
 		break;
 
@@ -2821,6 +2823,27 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			nRet = nCount;
 		}
 		break;	
+	case GDI_HS_SP:	// [VHTD 02/09g] uParam = KHsSpView[nParam]; tra so muc No/Am Luat co tran > 0
+		nRet = 0;
+		{
+			int nMe = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+			if (nMe > 0 && nMe < MAX_NPC)
+			{
+				KHsSpView* pV = (KHsSpView*)uParam;
+				for (int i = 0; i < MAX_HS_SP; i++)
+				{
+					if (Npc[nMe].m_HSSp[i].nKey <= 0 || Npc[nMe].m_HSSp[i].nMax <= 0) continue;
+					if (pV && nRet < nParam)
+					{
+						pV[nRet].nKey = Npc[nMe].m_HSSp[i].nKey;
+						pV[nRet].nCount = Npc[nMe].m_HSSp[i].nCount;
+						pV[nRet].nMax = Npc[nMe].m_HSSp[i].nMax;
+					}
+					nRet++;
+				}
+			}
+		}
+		break;
 	case GDI_EXBOX_ID: 				// truyen id mo rong ruong
 		{	
 			int nExBoxId = 0;

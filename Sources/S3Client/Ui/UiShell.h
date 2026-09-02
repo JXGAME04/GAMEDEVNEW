@@ -44,6 +44,15 @@ public:
 	static bool m_bText;
 };
 
+// [VHTD 02/09g] thanh khien tinh (staticmagicshield_p: Tieu Dao Vu 2139, Phat Y_Thuan 2134...) - 'ong mau thu 2' de len thanh sinh luc
+class Player_Shield : public KWndImageTextButton
+{
+public:
+	DECLARE_COMCLASS(Player_Shield)
+	void UpdateData();
+	void OnButtonClick();
+};
+
 //ÃÂ¡¶
 class Player_Stamina : public KWndImageTextButton
 {

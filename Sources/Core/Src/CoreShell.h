@@ -872,6 +872,9 @@ enum GAMEOPERATION_INDEX
 	// thong tin (cac dong cach <enter>, co the <color>); tra so dong. Dat CUOI enum.
 	GDI_FUSION_INFO,
 
+	// [VHTD 02/09g] so tang No (1976) / Am Luat (2116) cua chinh minh: uParam = KHsSpView[nParam], tra so muc co tran > 0. Dat CUOI enum.
+	GDI_HS_SP,
+
 };
 
 // [CITYINFO 21/08] ban sao 7 thanh (KJx2CityWar server -> UI_CITYINFO -> Core client)

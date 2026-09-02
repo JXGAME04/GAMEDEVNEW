@@ -378,6 +378,7 @@ public:
 	int					m_nHSAddLightMagicP;	// [VHTD 02/09] addlightingmagic_p
 	int					m_nHSMeleeReturnResP;	// [VHTD 02/09] melee_returnres_p
 	int					m_nHSUnravel;			// [VHTD 02/09] unravel_effect (chua co co che)
+	int					m_nHSShieldMax;		// [VHTD 02/09g] khien tinh toi da luc ap (client: thanh Player_Shield)
 	// [VHTD 02/09] ham dung ca 2 ben (KNpcAttribModify goi HS_SpAdd) - khai bao ngoai #ifdef _SERVER
 	void				HS_AutoCastTick();				// [VHTD 02/09] moi khung: autocastskill
 	void				HS_OnStateRemoved(KStateNode* pNode);	// [VHTD 02/09] cast_when_buff_removed
@@ -386,6 +387,8 @@ public:
 	void				HS_SpAdd(int nKey, int nAdd);		// [VHTD 02/09]
 	BOOL				HS_SpCost(int nKey, int nCost);		// [VHTD 02/09] tru tang, FALSE neu khong du
 	void				HS_ResetVhtd();					// [VHTD 02/09] reset truong tinh lai thuoc tinh (khong reset so tang)
+	void				HS_SyncSp(int nKey);				// [VHTD 02/09g] server: gui so tang toi client cua chinh minh (client: rong)
+	void				HS_SyncShield();				// [VHTD 02/09g] server: gui khien tinh hien tai/toi da (client: rong)
 	int					m_CurrentIgnoreNegativeStateP;
 	int					m_CurrentFireEnhance;			// 火加强
 	int					m_CurrentColdEnhance;			// 冰加强

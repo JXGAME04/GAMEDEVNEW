@@ -397,6 +397,7 @@ void KNpc::Init()
 	m_CurrentSerisesEnhance = 0;
 	m_CurrentManaShield = 0;
 	m_CurrentStaticMagicShieldP = 0;
+	m_nHSShieldMax = 0;	// [VHTD 02/09g]
 	m_CurrentExpEnhance = 0;
 	m_CurrentSkillEnhancePercent = 0;
 	m_CurrentExpSkillsEnchance = 0;
@@ -2134,6 +2135,14 @@ BOOL KNpc::DoBlurMove()
 			}
 		}
 		}
+		// [VHTD 02/09g] Tap Dap Luu Tinh 2118: chieu con 2119 ('Khoi' - dan 638 dung yen, khong thuoc tinh) phong tai diem xuat phat huong
+		// diem den, ca client (ve hieu ung) lan server (vo hai). Cac chieu MoveWithBlur cu (710/732/995) ChildSkillId = 0 -> khong doi.
+		if (pSkill->GetChildSkillId() > 0 && pSkill->GetChildSkillId() < MAX_SKILL)
+		{
+			KSkill* pChildBlur = (KSkill*)g_SkillManager.GetSkill(pSkill->GetChildSkillId(), pSkill->GetSkillLevel());
+			if (pChildBlur)
+				pChildBlur->Cast(m_Index, m_DesX, m_DesY);
+		}
 		m_Doing = do_blurmove;
 		break;
 	case 1:
@@ -3453,12 +3462,17 @@ int KNpc::HS_SpGet(int nKey)
 
 void KNpc::HS_SpAdd(int nKey, int nAdd)
 {
+#ifndef _SERVER
+	return;	// [VHTD 02/09g] client: so tang chi nhan tu s2c_syncvhtd (khong tu cong khi Cast/ReCalc de khoi lech server)
+#endif
 	for (int i = 0; i < MAX_HS_SP; i++)
 	{
 		if (m_HSSp[i].nKey != nKey) continue;
+		int nTruoc = m_HSSp[i].nCount;	// [VHTD 02/09g]
 		m_HSSp[i].nCount += nAdd;
 		if (m_HSSp[i].nMax > 0 && m_HSSp[i].nCount > m_HSSp[i].nMax) m_HSSp[i].nCount = m_HSSp[i].nMax;
 		if (m_HSSp[i].nCount < 0) m_HSSp[i].nCount = 0;
+		if (m_HSSp[i].nCount != nTruoc) HS_SyncSp(nKey);	// [VHTD 02/09g]
 		return;
 	}
 }
@@ -3470,6 +3484,7 @@ BOOL KNpc::HS_SpCost(int nKey, int nCost)
 		if (m_HSSp[i].nKey != nKey) continue;
 		if (m_HSSp[i].nCount < nCost) return FALSE;
 		m_HSSp[i].nCount -= nCost;
+		HS_SyncSp(nKey);	// [VHTD 02/09g]
 		return TRUE;
 	}
 	return FALSE;
@@ -3481,6 +3496,47 @@ void KNpc::HS_ResetVhtd()	// goi o khoi tao / RestoreNpcBaseInfo / KPlayer::Upda
 	m_nHSLockLife = 0; m_nHSLockLifeMode = 0;
 	m_bHSInvincible = FALSE; m_bHSForbidAttack = FALSE;
 	m_nHSAddLightMagicP = 0; m_nHSMeleeReturnResP = 0; m_nHSUnravel = 0;
+}
+
+// [VHTD 02/09g] gui so tang No/Am Luat (m_HSSp[nKey]) toi client cua CHINH NGUOI CHOI (UiPlayerBar ve o icon + chu so)
+void KNpc::HS_SyncSp(int nKey)
+{
+#ifdef _SERVER
+	if (m_Kind != kind_player || m_nPlayerIdx <= 0 || m_nPlayerIdx >= MAX_PLAYER || !g_pServer)
+		return;
+	if (Player[m_nPlayerIdx].m_nNetConnectIdx == -1)
+		return;
+	for (int i = 0; i < MAX_HS_SP; i++)
+	{
+		if (m_HSSp[i].nKey != nKey) continue;
+		S2C_SYNC_VHTD sSync;
+		sSync.ProtocolType = s2c_syncvhtd;
+		sSync.btKind = 0;
+		sSync.wKey = (WORD)nKey;
+		sSync.nV1 = m_HSSp[i].nCount;
+		sSync.nV2 = m_HSSp[i].nMax;
+		g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, &sSync, sizeof(sSync));
+		return;
+	}
+#endif
+}
+
+// [VHTD 02/09g] gui khien tinh (staticmagicshield_p: hien tai / toi da) toi client cua chinh minh - thanh 'ong mau thu 2' (Player_Shield)
+void KNpc::HS_SyncShield()
+{
+#ifdef _SERVER
+	if (m_Kind != kind_player || m_nPlayerIdx <= 0 || m_nPlayerIdx >= MAX_PLAYER || !g_pServer)
+		return;
+	if (Player[m_nPlayerIdx].m_nNetConnectIdx == -1)
+		return;
+	S2C_SYNC_VHTD sSync;
+	sSync.ProtocolType = s2c_syncvhtd;
+	sSync.btKind = 1;
+	sSync.wKey = 0;
+	sSync.nV1 = m_CurrentStaticMagicShieldP;
+	sSync.nV2 = m_nHSShieldMax;
+	g_pServer->PackDataToClient(Player[m_nPlayerIdx].m_nNetConnectIdx, &sSync, sizeof(sSync));
+#endif
 }
 #ifdef _SERVER
 // [HOASON 02/09] autoreplyskill: Linux Fire(+0x1850, chu, KE DANH) tai ReceiveDamage 0x0808B4F9 (mot lan moi don, quan he DICH).
@@ -3804,6 +3860,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			if (nDamage < m_CurrentStaticMagicShieldP)
 			{
 				m_CurrentStaticMagicShieldP -= nDamage;
+				HS_SyncShield();	// [VHTD 02/09g]
 				AUTOLOG_EVERY(1000, "[HOTHAN] tgt=%d lch=%d khien tinh hap thu tron %d, con %d", m_Index, nAttacker, nDamage, m_CurrentStaticMagicShieldP);
 				m_nLastDamageIdx = nAttacker;
 				return TRUE;
@@ -3811,6 +3868,7 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			AUTOLOG_EVERY(1000, "[HOTHAN] tgt=%d lch=%d khien tinh vo: %d - %d", m_Index, nAttacker, nDamage, m_CurrentStaticMagicShieldP);
 			nDamage -= m_CurrentStaticMagicShieldP;
 			m_CurrentStaticMagicShieldP = 0;
+			HS_SyncShield();	// [VHTD 02/09g]
 		}
 		// [HOTHAN2 01/09] KHIEN DIEM dynamicmagicshield_v (JX1 dat ten m_CurrentManaShield) - CHUAN LINUX BeHurt
 		// 0x0808A070-0x0808A096: giam = ((nMin+nMax)/2 * V) / tongTrungBinh4He, ap SAU khien tinh va TRUOC khang,
@@ -5077,8 +5135,12 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	{
 		// [VHTD 02/09] lightingdamage_p (Tieu Dao cam 2136/2138/2140/2141/2142/2143): sat thuong Loi = % cua (noi cong co ban + noi cong Loi cua nguoi phat
 		// x (100 + addlightingmagic_p)/100). Thiet ke theo mo ta client VLTK 'Sat thuong Loi: #d1-%' (khong co ban server chuan de doi chieu).
-		int nLMin = m_PhysicsMagic.nValue[0] + m_CurrentLightMagic.nValue[0] * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT;
-		int nLMax = m_PhysicsMagic.nValue[2] + m_CurrentLightMagic.nValue[2] * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT;
+		// [VHTD 02/09g] goc Loi % = NOI LUC TOI DA (+ noi cong co ban + noi cong Loi vu khi neu co) x (100 + addlightingmagic_p)/100.
+		// Ban cu chi m_PhysicsMagic (KPlayer.cpp nMagicBase = 0) + m_CurrentLightMagic (Moc Cam P3 khong co dong noi cong) -> luon 0
+		// ('tang diem khong thay dame'). Tieu Dao VLTK thiet ke quanh noi luc toi da (ho thuan 2139/2134 = x lan noi luc toi da);
+		// GIA DINH - chua doi chieu duoc nhi phin game_y.exe (bang nhay), chu quyet neu muon he so khac.
+		int nLMin = (int)((__int64)(m_CurrentManaMax + m_PhysicsMagic.nValue[0] + m_CurrentLightMagic.nValue[0]) * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT);
+		int nLMax = (int)((__int64)(m_CurrentManaMax + m_PhysicsMagic.nValue[2] + m_CurrentLightMagic.nValue[2]) * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT);
 		if (nLMax < nLMin) nLMax = nLMin;
 		pDes->nAttribType = magic_lightingdamage_v;
 		pDes->nValue[0] = (int)((__int64)nLMin * pTemp->nValue[0] / MAX_PERCENT * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT);

@@ -192,6 +192,7 @@ int	UiInit()
 {
 	Player_Life::RegisterSelfClass();
 	Player_Mana::RegisterSelfClass();
+	Player_Shield::RegisterSelfClass();	// [VHTD 02/09g]
 	Player_Stamina::RegisterSelfClass();
 	Player_Exp::RegisterSelfClass();
 	Player_Level::RegisterSelfClass();
@@ -747,6 +748,33 @@ void Player_Mana::UpdateData()
 void Player_Mana::OnButtonClick()
 {
 	KShortcutKeyCentre::ExcuteScript(SCK_SHORTCUT_SHOWPLAYERNUMBER);
+	UpdateData();
+}
+
+// [VHTD 02/09g] thanh khien tinh: chi hien khi con khien (UiHeaderControlBar.ini [Shield] ClassType=Player_Shield)
+IMPLEMENT_COMCLASS(Player_Shield)
+void Player_Shield::UpdateData()
+{
+	if (g_pCoreShell)
+	{
+		KUiPlayerRuntimeInfo	Info;
+		memset(&Info, 0, sizeof(KUiPlayerRuntimeInfo));
+		g_pCoreShell->GetGameData(GDI_PLAYER_RT_INFO, (int)&Info, 0);
+		if (Info.nShield <= 0 || Info.nShieldFull <= 0)
+		{
+			Hide();
+			return;
+		}
+		if (Info.nShield > Info.nShieldFull)
+			Info.nShieldFull = Info.nShield;
+		Show();
+		Set2IntValue(Info.nShield, Info.nShieldFull);
+		SetText(NULL, 0);
+	}
+}
+
+void Player_Shield::OnButtonClick()
+{
 	UpdateData();
 }
 

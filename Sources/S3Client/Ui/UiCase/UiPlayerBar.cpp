@@ -1831,6 +1831,33 @@ void KUiPlayerBar::Breathe()
 		m_StateImg[i].Hide();
 		m_StateLife[i].Hide();
 	}
+	// [VHTD 02/09g] o icon TANG No (1976) / Am Luat (2116) ngay sau cac trang thai: anh = StatePos.ini [id khoa], chu so = tang hien co,
+	// tooltip 'ten / mo ta / tang/tran'. Du lieu tu s2c_syncvhtd (GDI_HS_SP).
+	{
+		KHsSpView sp[MAX_HS_SP];
+		int nSp = g_pCoreShell->GetGameData(GDI_HS_SP, (unsigned int)sp, MAX_HS_SP);
+		if (nSp > MAX_HS_SP) nSp = MAX_HS_SP;
+		int nBase = nCount;
+		if (nBase < 0) nBase = 0;
+		for (int k = 0; k < nSp && nBase + k < MAX_BUTTON_STATE - 5; k++)
+		{
+			int s = nBase + k;
+			int nKey = sp[k].nKey;
+			BOOL bCo = (ms_pStateList && nKey > 0 && nKey < MAX_SKILL);
+			if (bCo && ms_pStateList[nKey].szImage[0])
+				m_StateImg[s].SetImage(ISI_T_SPR, ms_pStateList[nKey].szImage, true);
+			else
+				m_StateImg[s].SetImage(ISI_T_SPR, "\\spr\\item\\medecine\\obj-potion-15.spr", true);
+			m_StateImg[s].Show();
+			char szSpTip[160] = "";
+			sprintf(szSpTip, "%s \n%s \n %d/%d", bCo ? ms_pStateList[nKey].szName : "", bCo ? ms_pStateList[nKey].szDesc : "", sp[k].nCount, sp[k].nMax);
+			m_StateImg[s].SetToolTipInfo(szSpTip, strlen(szSpTip));
+			char szSpNum[16];
+			sprintf(szSpNum, "%d", sp[k].nCount);
+			m_StateLife[s].SetText(szSpNum);
+			m_StateLife[s].Show();
+		}
+	}
 }
 
 int KUiPlayerBar::IsHasCost(BYTE cost, int nMoney, int nLevel, int nMana, int nFullMana, int& nUseMoney, int& nUseLevel, int& nUseMana)

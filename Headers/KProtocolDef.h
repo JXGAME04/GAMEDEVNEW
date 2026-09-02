@@ -206,6 +206,7 @@ enum s2c_PROTOCOL
 	s2c_syncpfpack,			// [PFSYNC 31/08] dong bo m_nPfPack phi phong theo dwID
 	s2c_syncfusion,			// [DUNGLUYEN 01/09] dong bo 6 o Van Cuong + seed theo dwID
 	s2c_reduceskillcd,		// [HOASON 01/09b] Linux goi 0xdd: giam hoi chieu ky nang (reduceskillcd1/2 Hoa Son)
+	s2c_syncvhtd,			// [VHTD 02/09g] dong bo so tang No/Am Luat + khien tinh toi client cua chinh minh (S2C_SYNC_VHTD)
 //	s2c_dynamic_structure,	//dynamic structure
 
 //	s2c_gmgateway2relaysvr,		//GM

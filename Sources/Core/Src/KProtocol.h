@@ -967,6 +967,17 @@ typedef struct
 	WORD	m_wFrames;
 } S2C_REDUCE_SKILL_CD;
 
+// [VHTD 02/09g] dong bo Vu Hon/Tieu Dao toi client cua NGUOI CHOI: btKind 0 = so tang (wKey = id ky nang khoa 1976 No / 2116 Am Luat,
+// nV1 = tang hien co, nV2 = tran); btKind 1 = khien tinh staticmagicshield_p (nV1 = con lai, nV2 = toi da luc ap).
+typedef struct
+{
+	BYTE	ProtocolType;		// s2c_syncvhtd
+	BYTE	btKind;
+	WORD	wKey;
+	int		nV1;
+	int		nV2;
+} S2C_SYNC_VHTD;
+
 //typedef struct
 //{
 //	BYTE	ProtocolType;		// Ð­ÒéÃû³Æ

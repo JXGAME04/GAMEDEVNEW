@@ -1040,6 +1040,8 @@ struct KUiPlayerRuntimeInfo
 	unsigned char	byActionDisable;//是否不可进行各种动作，为枚举PLAYER_ACTION_LIST取值的组合
 	unsigned char	byAction;	//正在进行的行为动作，为枚举PLAYER_ACTION_LIST取值的组合
 	unsigned short	wReserved;	//保留
+	int		nShield;		// [VHTD 02/09g] khien tinh con lai (0 = khong co)
+	int		nShieldFull;	// [VHTD 02/09g] khien tinh toi da luc ap
 };
 
 enum UI_PLAYER_ATTRIBUTE
@@ -1201,6 +1203,14 @@ struct KStateTempNode
 {
 	int		nSkillId;
 	int		nLeftTime;
+};
+
+// [VHTD 02/09g] o 'tang' No/Am Luat (GDI_HS_SP)
+struct KHsSpView
+{
+	int		nKey;
+	int		nCount;
+	int		nMax;
 };
 
 //==================================

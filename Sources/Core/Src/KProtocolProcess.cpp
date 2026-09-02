@@ -291,6 +291,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncpfpack] = &KProtocolProcess::s2cSyncItemPfPack;	// [PFSYNC 31/08]
 	ProcessFunc[s2c_syncfusion] = &KProtocolProcess::s2cSyncItemFusion;	// [DUNGLUYEN 01/09]
 	ProcessFunc[s2c_reduceskillcd] = &KProtocolProcess::s2cReduceSkillCD;	// [HOASON 01/09b]
+	ProcessFunc[s2c_syncvhtd] = &KProtocolProcess::s2cSyncVhtd;	// [VHTD 02/09g]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -3180,6 +3181,7 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 	MapY = *(int *)&pMsg[17];
 	
 	//当指定某个目标时(MapX == -1),MapY为目标的NpcdwID，需要转换成本地的NpcIndex才行
+	int nVhtdTargetIdx = 0;	// [VHTD 02/09g] chi so NPC muc tieu (MapX == -1): truyen thang cho Cast nhu server -> dan Follow (1363) bam muc tieu
 	if (MapX == -1)
 	{
 		if (MapY < 0 ) return;
@@ -3187,6 +3189,7 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
 		if (MapY == 0)	return;
 		if (Npc[MapY].m_RegionIndex < 0)
 			return;
+		nVhtdTargetIdx = (int)MapY;
 		int nX, nY;
 		nX = Npc[MapY].m_MapX;
 		nY = Npc[MapY].m_MapY;
@@ -3203,7 +3206,10 @@ void	KProtocolProcess::s2cDirectlyCastSkill(BYTE * pMsg)
         return ;
 	
     AUTOLOG_EVERY(1000, "CAST-DO npc=%u idx=%d skill=%d lv=%d style=%d aura=%d mps=(%d,%d) t=%u", dwNpcID, nIdx, nSkillID, nSkillLevel, (int)pOrdinSkill->GetSkillStyle(), (int)pOrdinSkill->IsAura(), (int)MapX, (int)MapY, SubWorld[0].m_dwCurrentTime);
-    pOrdinSkill->Cast(nIdx, MapX, MapY);
+    if (nVhtdTargetIdx > 0)
+        pOrdinSkill->Cast(nIdx, -1, nVhtdTargetIdx);	// [VHTD 02/09g] nhu KNpc::Cast(int,int)/CastAutoSkillAt tren server (KSkill::Cast nhan -1 + chi so)
+    else
+        pOrdinSkill->Cast(nIdx, MapX, MapY);
 
 	if(!pOrdinSkill->IsAura())
 	{
@@ -4462,6 +4468,42 @@ void KProtocolProcess::s2cReduceSkillCD(BYTE* pMsg)
 	int nNpc = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 	if (nNpc > 0 && nNpc < MAX_NPC)
 		Npc[nNpc].m_SkillList.ReduceCoolDown((int)pSync->m_wSkillId, (int)pSync->m_wFrames);
+}
+
+// [VHTD 02/09g] so tang No/Am Luat (btKind 0) + khien tinh (btKind 1) cua CHINH MINH - UiPlayerBar / Player_Shield doc qua GDI
+void KProtocolProcess::s2cSyncVhtd(BYTE* pMsg)
+{
+	S2C_SYNC_VHTD* pSync = (S2C_SYNC_VHTD*)pMsg;
+	if (pSync->ProtocolType != s2c_syncvhtd)
+		return;
+	int nNpc = Player[CLIENT_PLAYER_INDEX].m_nIndex;
+	if (nNpc <= 0 || nNpc >= MAX_NPC)
+		return;
+	if (pSync->btKind == 0)
+	{
+		int nFree = -1;
+		for (int i = 0; i < MAX_HS_SP; i++)
+		{
+			if (Npc[nNpc].m_HSSp[i].nKey == (int)pSync->wKey)
+			{
+				Npc[nNpc].m_HSSp[i].nCount = pSync->nV1;
+				Npc[nNpc].m_HSSp[i].nMax = pSync->nV2;
+				return;
+			}
+			if (nFree < 0 && Npc[nNpc].m_HSSp[i].nKey == 0) nFree = i;
+		}
+		if (nFree >= 0)
+		{
+			Npc[nNpc].m_HSSp[nFree].nKey = (int)pSync->wKey;
+			Npc[nNpc].m_HSSp[nFree].nCount = pSync->nV1;
+			Npc[nNpc].m_HSSp[nFree].nMax = pSync->nV2;
+		}
+	}
+	else if (pSync->btKind == 1)
+	{
+		Npc[nNpc].m_CurrentStaticMagicShieldP = pSync->nV1;
+		Npc[nNpc].m_nHSShieldMax = pSync->nV2;
+	}
 }
 #endif
 
