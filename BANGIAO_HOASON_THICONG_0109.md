@@ -183,3 +183,22 @@ pc\player\magic_level_exp.txt` (`KMagicLevelExp::GetNextExp`, `IsExpSkill=1` đ�
 
 ### 10.3 Engine đợt b (`hs_engine_patch2.py`, marker `[HOASON 01/09b]`)
 `Headers\KProtocolDef.h` (+`s2c_reduceskillcd`), `KProtocol.cpp` (kích thước), `KProtocol.h` (struct), `KProtocolProcess.h/.cpp` (đăng ký + handler client), `KSkillList.h/.cpp` (`ReduceCoolDown`), `KMissle.h` (`Detonate`), `KNpc.h` (4 trường + `DetonateMissles`), `KNpcAttribModify.h/.cpp` (3 handler + đăng ký), `KNpc.cpp` (reset ×2, hoá giải, hồi nội lực trong `CalcDamage`, `DetonateMissles`, `ModifyAttrib`). Kiểm lưới giao thức (`kiem_luoi_giaothuc.py`): 7 chỗ lệch **như trước** (chú thích cũ), không lệch mới.
+
+
+---
+
+## 11. ĐỢT c (01/09 khuya) — "đổi phái chỉ có 9x/12x, không có 1x–6x"
+
+**Nguyên nhân (bằng chứng `bin\server\ScriptError.log` 23:23:55):** `hockynang` tại `global\hocvocong.lua:774` lỗi `getn(nil)`, gọi từ `hvccl` (NPC Hỗ Trợ Test → "Học võ công"). `hocvocong.lua` có bảng `SKILLNORMAL` **riêng** (10 phái) khác bảng trong `factionhead.lua`; đợt 1 tôi chỉ nối `SKILL90/120/150` ở tệp này, bỏ sót `SKILLNORMAL`. Ngoài ra, vì `lenhbaitanthu.lua` Include `hocvocong.lua` SAU `factionhead.lua`, hàm `hockynang` của `hocvocong.lua` **đè** bản `factionhead.lua` trong luồng đổi phái (`doiphai1`) — bản này chỉ phát 9x (cấp 20) + 12x + khinh công qua `show_kynang90` (vòng phát 1x–6x vốn bị comment). Chủ game đã tự bỏ comment vòng đó và đổi `hvccl` sang `hockynang(11)` (23:23:40) → chạm bảng thiếu → lỗi. **Không liên quan mã bot**: `PB_OnRoleData` (xoá kỹ năng mẫu) chỉ chạy cho gói DB của bot (`CoreServerShell.cpp:1046 SSOI_PBOT_ROLEDATA_RES`), `PB_IsBot` so cả `dwID`; lưu/nạp DB (`UpdateDBSkillList`/`LoadPlayerFightSkillList`) giữ cả kỹ năng cấp 0.
+
+**Đã sửa (tool `hs_hocvocong.py`, `hs_hocvocong_fix.py`, `hs_script2.py`, marker `[HOASON 01/09c]`):**
+- `global\hocvocong.lua`: `SKILLNORMAL[11]` 15 chiêu 10–70; `hvccl` trả về `hockynang(10)` (Côn Lôn); thêm `hvchs` + mục menu "Học võ công môn phái Hoa Sơn"; `tbAllSkill2.huashan`; menu test 90 thêm "Hoa Sơn 90/skillhoason" (`add_hs(90)`).
+- `skill\skillfaction.lua` (NPC nâng trấn phái): tên GBK 华山派 → 11, `mainskill[11] = {1358}`.
+- `skill
+angskillkieumoi5x|9x|tp.lua` (NPC lĩnh ngộ): hàng 11 Hoa Sơn ({1349,1374}→{1355,1379}; 9x {1364,1382}; trấn phái {1347,1372}→1358) + nhánh tên phái.
+- `item\daithanhbk90.lua` `[10] = {1364, 1382}`, `daithanhbk120.lua` `[10] = {1365}` (sách Đại Thành 2433/2434).
+- `lib\lib_faction.lua`: `tbSkillBase[11]`, `tbSkill120` +1365, `tbSkill150` +{1369,1384}, nhánh 2 kỹ năng (`add_skill_90`/`add_skill_150`) nhận id 11.
+- `npcthonalanghuyen\hotrotest.lua` (PUBG): hệ Thủy có thể trúng Hoa Sơn khi chưa phái.
+- Không sửa (đúng với Linux / đã hỏng sẵn): `skills_table.lua check_faction/update_*` (Linux cũng không có nhánh Hoa Sơn), `FactionHelper.lua skill_help` (`fact_num = 1` cứng), `simcity_admin.lua` bot chọn phái 0–9.
+
+Kiểm: `syncheck` 9 tệp OK, `t71` 0 lỗi. Không cần build lại binary.
