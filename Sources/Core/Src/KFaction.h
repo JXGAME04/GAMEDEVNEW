@@ -13,7 +13,7 @@
 #include "GameDataDef.h"
 
 #define		FACTIONS_PRR_SERIES				2			
-#define		MAX_FACTION						(FACTIONS_PRR_SERIES * series_num)	
+#define		MAX_FACTION						(MAX_FACTION_NUM)	// [HOASON 01/09] 13 phai; FACTIONS_PRR_SERIES chi con la 'so phai goc moi he' cho code cu (bot)
 
 class KFaction
 {
@@ -32,6 +32,7 @@ public:
 	BOOL			Init();								// 初始化，载入门派说明文件
 	int				GetID(int nSeries, int nNo);		// 根据五行属性和本属性第几个门派得到门派编号
 	int				GetID(int nSeries, char *lpszName);	// 根据五行属性和门派名得到门派编号
+	int				GetIDByValueName(const char* lpszValueName);	// [HOASON 01/09] huashan/wuhun/xiaoyao -> id
 	int				GetCamp(int nFactionID);			// 获得某个门派的阵营
 };
 

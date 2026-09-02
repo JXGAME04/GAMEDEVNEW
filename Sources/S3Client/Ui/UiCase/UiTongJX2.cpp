@@ -117,11 +117,12 @@ static const char* s_szWsIcon[8][3] =
 };
 
 // ten 10 mon phai JX1 (id 1..10) - TCVN3
-static const char* s_szFaction[11] =
+static const char* s_szFaction[MAX_FACTION_NUM + 1] =	// [HOASON 01/09] 13 phai (id 1..13)
 {
 	"-", "ThiÕu L©m", "Thiªn V­¬ng", "§­êng M«n",
 	"Ngò §éc", "Nga My", "Thóy Yªn", "C¸i Bang",
 	"Thiªn NhÉn", "Vâ §ang", "C«n L«n",
+	"Hoa S¬n", "Vò Hån", "Tiªu Dao",
 };
 
 // Ten 5 chuc vu - NGUYEN VAN bang chuoi ban Linux (stringtable_client.txt:481-485).

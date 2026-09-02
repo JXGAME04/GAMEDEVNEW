@@ -3,7 +3,7 @@
 
 #include "KProtocol.h"
 
-#define	MAX_FAC series_num * FACTIONS_PRR_SERIES + 1
+#define	MAX_FAC (MAX_FACTION_NUM + 1)	// [HOASON 01/09] 13 phai + 1 (o [0] = chua vao phai)
 enum
 {
 	enumLadderBegin = 0,

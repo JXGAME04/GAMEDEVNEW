@@ -331,7 +331,31 @@ static const std::unordered_map<unsigned int, int> g_uIdToIndexMap = {
 	{ 1055, 18 }, // dat ma kim cuong chuong 1
 	{ 1056, 19 }, // 15x bong 2
 	{ 1057, 20 },  // Tam Giêi Quy Thiên 3
-	{ 273, 21 }  // Nhu Lai Thien Diep - Tran phai
+	{ 273, 21 },  // Nhu Lai Thien Diep - Tran phai
+	//{ 210,   22 }, // Khinh cong
+
+	// Faction 10 Hoa Son [HOASON 01/09] - o theo [Skill_10_i] trong UiSkillFlySub.ini
+	{ 1347, 0 },   // Bach Hong Quan Nhat (kiem tong, nhap mon)
+	{ 1351, 1 },   // Kim Nhan Hoanh Khong (30)
+	{ 1355, 2 },   // Thien Than Dao Huyen (50)
+	{ 1360, 3 },   // Thuong Tung Nghenh Khach (60)
+	{ 1364, 4 },   // Doat Menh Lien Hoan Tam Tien Kiem (90 kiem)
+	{ 1369, 5 },   // Cuu Kiem Hop Nhat (150 kiem)
+	{ 1372, 6 },   // Thanh Phong Tong Sang (khi tong, nhap mon)
+	{ 1376, 7 },   // Long Huyen Kiem Khi (30)
+	{ 1380, 8 },   // Ma Van Kiem Khi (60)
+	{ 1382, 9 },   // Phach Thach Pha Ngoc (90 khi)
+	{ 1384, 10 },  // Than Quang Toan Nhieu (150 khi)
+	{ 1358, 11 },  // Huyen Nhan Van Yen - tran phai
+	{ 1349, 12 },  // Kiem Tong Tong Quyet (10)
+	{ 1350, 13 },  // Duong Ngo Kiem Phap (20)
+	{ 1354, 14 },  // Hi Di Kiem Phap (40)
+	{ 1374, 15 },  // Long Nhieu Than (10)
+	{ 1375, 16 },  // Hai Nap Bach Xuyen (20)
+	{ 1378, 17 },  // Khi Chan Son Ha (40)
+	{ 1379, 18 },  // Khi Quan Truong Hong (50)
+	{ 1365, 19 },  // Tu Ha Kiem Khi (120)
+	{ 1370, 20 }   // Hao Nhien Chi Khi (tien giai)
 	//{ 210,   22 }, // Khinh cong
 };
 
@@ -784,7 +808,7 @@ void KUiSkillsNew::LoadScheme(const char* pScheme)
 			m_pSelf->GetPosition(&nX, &nY);
 			m_pSelf->SetPosition(nX + dX, nY + dY);
 			if (Info.nFirstAddFaction == 8 || Info.nFirstAddFaction == 4	
-				|| Info.nFirstAddFaction == 5 || Info.nFirstAddFaction == 6) {
+				|| Info.nFirstAddFaction == 5 || Info.nFirstAddFaction == 6 || Info.nFirstAddFaction == 10) {	// [HOASON 01/09]
 				m_pSelf->m_Close.GetPosition(&nX, &nY);
 				m_pSelf->m_Close.SetPosition(nX - 30, nY);
 			}

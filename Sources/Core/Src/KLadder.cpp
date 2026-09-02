@@ -1,6 +1,7 @@
 #include "KCore.h"
 #include "KPlayerFaction.h"
 #include "KLadder.h"
+// [HOASON 01/09] bien nFac 0..12 (MAX_FACTION_NUM), mang TGAME_STAT_DATA [MAX_FACTION_NUM+1]
 
 KLadder	Ladder;
 
@@ -25,14 +26,14 @@ BOOL KLadder::Init(void* pData, size_t uSize)
 
 const TRoleList* KLadder::TopTenFacMasterHand(int nFac)
 {
-	if (nFac < - 1 || nFac >= series_num * FACTIONS_PRR_SERIES)
+	if (nFac < - 1 || nFac >= MAX_FACTION_NUM)
 		return NULL;
 	return GameStatData.LevelStatBySect[nFac + 1];
 }
 
 const TRoleList* KLadder::TopTenFacRich(int nFac)
 {
-	if (nFac < - 1 || nFac >= series_num * FACTIONS_PRR_SERIES)
+	if (nFac < - 1 || nFac >= MAX_FACTION_NUM)
 		return NULL;
 	return GameStatData.MoneyStatBySect[nFac + 1];
 }
@@ -54,21 +55,21 @@ const TRoleList* KLadder::TopTenRich()
 
 int KLadder::GetFacMasterHandPercent(int nFac)
 {
-	if (nFac < - 1 || nFac >= series_num * FACTIONS_PRR_SERIES)
+	if (nFac < - 1 || nFac >= MAX_FACTION_NUM)
 		return 0;
 	return GameStatData.SectLevelMost[nFac + 1];
 }
 
 int KLadder::GetFacMoneyPercent(int nFac)
 {
-	if (nFac < - 1 || nFac >= series_num * FACTIONS_PRR_SERIES)
+	if (nFac < - 1 || nFac >= MAX_FACTION_NUM)
 		return NULL;
 	return GameStatData.SectMoneyMost[nFac + 1];
 }
 
 int KLadder::GetFacMemberCount(int nFac)
 {
-	if (nFac < - 1 || nFac >= series_num * FACTIONS_PRR_SERIES)
+	if (nFac < - 1 || nFac >= MAX_FACTION_NUM)
 		return NULL;
 	return GameStatData.SectPlayerNum[nFac + 1];
 }

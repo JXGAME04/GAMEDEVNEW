@@ -37,24 +37,26 @@ BOOL	KFaction::Init()
 	for (i = 0; i < MAX_FACTION; i++)
 	{
 		sprintf(szSection, "%d", i);
+		// [HOASON 01/09] muc [11]/[12] chua co trong FactionInfo.ini: doc Name KHONG mac dinh, rong -> bo qua
+		// (neu khong, GetString tra mac dinh 'Thieu Lam/kim' -> 2 phai ma 'Thieu Lam' gia o id 11/12)
+		Ini.GetString(szSection, "Name", "", m_sAttribute[i].m_szName, sizeof(m_sAttribute[i].m_szName));
+		if (m_sAttribute[i].m_szName[0] == 0)
+			continue;
 		Ini.GetString(szSection, "Series", "Ω", szBuffer, sizeof(szBuffer));
 
+		// [HOASON 01/09] id phai = SO MUC [i] trong FactionInfo.ini (khong con 'o trong dau tien cua he'
+		// nua - cong thuc he*2+k sup do khi 13 phai chia 5 he khong deu). 10 muc goc giu nguyen id 0..9.
+		nArrayPos = i;
 		for (j = 0; j < series_num; j++)
 		{
-			if (strcmp(szBuffer, szSeries[j]) != 0)
-				continue;
-			for (k = 0; k < FACTIONS_PRR_SERIES; k++)
+			if (strcmp(szBuffer, szSeries[j]) == 0)
 			{
-				if (m_sAttribute[j * FACTIONS_PRR_SERIES + k].m_szName[0] == 0)
-				{
-					nArrayPos = j * FACTIONS_PRR_SERIES + k;
-					m_sAttribute[nArrayPos].m_nSeries = j;
-					break;
-				}
+				m_sAttribute[nArrayPos].m_nSeries = j;
+				break;
 			}
-			break;
 		}
-		_ASSERT(j < series_num);
+		if (j >= series_num)
+			continue;						// muc khong co / he la -> bo qua, ten de trong
 		Ini.GetString(szSection, "Name", "…Ÿ¡÷≈…", m_sAttribute[nArrayPos].m_szName, sizeof(m_sAttribute[nArrayPos].m_szName));
 		Ini.GetString(szSection, "ValueName", "shaolin", m_sAttribute[nArrayPos].m_szValueName, sizeof(m_sAttribute[nArrayPos].m_szValueName));
 		Ini.GetString(szSection, "ShowName", "Thi’u L©m", m_sAttribute[nArrayPos].m_szShowName, sizeof(m_sAttribute[nArrayPos].m_szShowName));
@@ -75,9 +77,31 @@ BOOL	KFaction::Init()
 
 int		KFaction::GetID(int nSeries, int nNo)
 {
-	if (nSeries < series_metal || nSeries >= series_num || nNo < 0 || nNo >= FACTIONS_PRR_SERIES)
+	// [HOASON 01/09] phai thu nNo (0..) trong so cac phai cung he, duyet bang thay vi he*2+nNo
+	if (nSeries < series_metal || nSeries >= series_num || nNo < 0)
 		return -1;
-	return nSeries * FACTIONS_PRR_SERIES + nNo;
+	int nDem = 0;
+	for (int i = 0; i < MAX_FACTION; i++)
+	{
+		if (m_sAttribute[i].m_szName[0] == 0 || m_sAttribute[i].m_nSeries != nSeries)
+			continue;
+		if (nDem == nNo)
+			return i;
+		nDem++;
+	}
+	return -1;
+}
+
+int		KFaction::GetIDByValueName(const char* lpszValueName)
+{
+	if (!lpszValueName || !lpszValueName[0])
+		return -1;
+	for (int i = 0; i < MAX_FACTION; i++)
+	{
+		if (m_sAttribute[i].m_szName[0] && strcmp(lpszValueName, m_sAttribute[i].m_szValueName) == 0)
+			return i;
+	}
+	return -1;
 }
 
 int		KFaction::GetID(int nSeries, char *lpszName)
@@ -86,9 +110,12 @@ int		KFaction::GetID(int nSeries, char *lpszName)
 		return -1;
 	if ( !lpszName || !lpszName[0])
 		return -1;
-	for (int i = nSeries * FACTIONS_PRR_SERIES; i < (nSeries + 1) * FACTIONS_PRR_SERIES; i++)
+	// [HOASON 01/09] duyet toan bang, chi lay phai cung he; nhan CA ten GBK (Name=) LAN ValueName (huashan...)
+	for (int i = 0; i < MAX_FACTION; i++)
 	{
-		if (strcmp(lpszName, m_sAttribute[i].m_szName) == 0)
+		if (m_sAttribute[i].m_szName[0] == 0 || m_sAttribute[i].m_nSeries != nSeries)
+			continue;
+		if (strcmp(lpszName, m_sAttribute[i].m_szName) == 0 || strcmp(lpszName, m_sAttribute[i].m_szValueName) == 0)
 			return i;
 	}
 	return -1;

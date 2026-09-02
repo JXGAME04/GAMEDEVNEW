@@ -2264,6 +2264,48 @@ int LuaCallPlayerFunction(Lua_State* L)
 	return nRes;
 }
 
+// [HOASON 01/09] SetLastFactionNumber(n) - Linux: ghi 'last' cua faction record. JX1 chi co
+// cur/first/addTimes va GetLastFactionNumber() = cur, nen o day = dat cur (va first neu
+// chua co) roi dong bo client + game title. Script Hoa Son goi SAU SetFaction("huashan")
+// (idempotent). Tra 1 khi hop le.
+int LuaSetLastFactionNumber(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex <= 0 || Lua_GetTopIndex(L) < 1 || !Lua_IsNumber(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nNo = (int)Lua_ValueToNumber(L, 1);
+	if (nNo < 0 || nNo >= MAX_FACTION_NUM)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KPlayerFaction& cF = Player[nPlayerIndex].m_cFaction;
+	cF.m_nCurFaction = nNo;
+	if (cF.m_nFirstAddFaction < 0)
+		cF.m_nFirstAddFaction = nNo;
+#ifdef _SERVER
+	if (Player[nPlayerIndex].m_nIndex > 0)
+		Npc[Player[nPlayerIndex].m_nIndex].UpdateGameTitle();
+	// SendFactionData() la private cua KPlayer; script goi SetFaction("huashan") ngay truoc do da dong bo client roi.
+#endif
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+
+// [HOASON 01/09] GetFactionNumber() - Linux: so hieu phai hien tai (= GetFactionNo)
+int LuaGetFactionNumber(Lua_State* L)
+{
+	int nPlayerIndex = GetPlayerIndex(L);
+	if (nPlayerIndex > 0)
+		Lua_PushNumber(L, Player[nPlayerIndex].GetFactionNo());
+	else
+		Lua_PushNumber(L, -1);
+	return 1;
+}
+
 // GetLastFactionNumber() - JX2: so hieu mon phai 0..9 (Thieu Lam=0 ... Con
 // Lon=9), -1 = chua vao phai. JX1 GetFactionNo() cung he so (KPlayer.cpp).
 int LuaGetLastFactionNumber(Lua_State* L)
@@ -14332,7 +14374,7 @@ int LuaWllsGetSkillState(Lua_State* L)
 // GetLastAddFaction() -> TEN mon phai hien tai (schedule.lua:136 in danh sach doi thu)
 int LuaWllsGetLastAddFaction(Lua_State* L)
 {
-	static char* s_szFaction[11] = {
+	static char* s_szFaction[MAX_FACTION_NUM] = {	// [HOASON 01/09] 13 phai
 		(char*)"ThiÕu L©m",
 		(char*)"Thiªn V­¬ng",
 		(char*)"§­êng M«n",
@@ -14343,13 +14385,15 @@ int LuaWllsGetLastAddFaction(Lua_State* L)
 		(char*)"Thiªn NhÉn",
 		(char*)"Vâ §ang",
 		(char*)"C«n L«n",
-		(char*)"Hoa S¬n"
+		(char*)"Hoa S¬n",
+		(char*)"Vò Hån",
+		(char*)"Tiªu Dao"
 	};
 	int nPlayerIndex = GetPlayerIndex(L);
 	int nNo = -1;
 	if (nPlayerIndex > 0)
 		nNo = Player[nPlayerIndex].GetFactionNo();
-	if (nNo >= 0 && nNo < 11)
+	if (nNo >= 0 && nNo < MAX_FACTION_NUM)
 		Lua_PushString(L, s_szFaction[nNo]);
 	else
 		Lua_PushString(L, (char*)"");
@@ -14744,6 +14788,9 @@ TLua_Funcs GameScriptFuns[] =
 	{"usepack",				LuaUsePack},
 	{"CallPlayerFunction",	LuaCallPlayerFunction},
 	{"GetLastFactionNumber",LuaGetLastFactionNumber},
+	{"SetLastFactionNumber",LuaSetLastFactionNumber},	// [HOASON 01/09]
+	{"GetFactionNumber",LuaGetFactionNumber},
+	// ClearFactionRecord (Linux) = ClearFactionIfnfo (JX1, chi _SERVER) -> shim Lua trong hs_shim.lua
 	{"TM_SetTimer",			LuaTM_SetTimer},		// storm ngu dong
 	{"TM_GetRestCount",		LuaTM_GetRestCount},	// tra nil -> storm_valid_game=false
 	{"BT_GetGameData",		LuaBT_GetDataStub},

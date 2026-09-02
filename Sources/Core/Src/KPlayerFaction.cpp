@@ -77,7 +77,10 @@ BOOL	KPlayerFaction::AddFaction(int nSeries, int nFactionID)
 {
 	if (nSeries < series_metal || nSeries >= series_num)
 		return FALSE;
-	if (nFactionID < nSeries * FACTIONS_PRR_SERIES || nFactionID >= (nSeries + 1) * FACTIONS_PRR_SERIES)
+	// [HOASON 01/09] cua vao duy nhat cua AddFaction: kiem theo bang (13 phai) thay vi khoang [he*2, he*2+2)
+	if (nFactionID < 0 || nFactionID >= MAX_FACTION)
+		return FALSE;
+	if (g_Faction.m_sAttribute[nFactionID].m_szName[0] == 0 || g_Faction.m_sAttribute[nFactionID].m_nSeries != nSeries)
 		return FALSE;
 
 	SetSeries(nSeries);

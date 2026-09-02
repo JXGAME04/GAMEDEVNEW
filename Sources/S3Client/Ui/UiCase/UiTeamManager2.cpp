@@ -116,6 +116,12 @@ void KUiTeamManager2::SetFactionIcon(BYTE faction, KWndButton &btn)
 		case 10:
 			btn.SetImage(ISI_T_SPR, "\\spr\\Ui4\\主界面\\组队预览\\icon_zd_hsp.spr",true); 
 			break;
+		case 11:	// [HOASON 01/09] Vu Hon (icon co san updatejx15.pak)
+			btn.SetImage(ISI_T_SPR, "\\spr\\Ui4\\主界面\\组队预览\\icon_zd_wht.spr",true); 
+			break;
+		case 12:	// Tieu Dao (icon co san updatejx16.pak)
+			btn.SetImage(ISI_T_SPR, "\\spr\\Ui4\\主界面\\组队预览\\icon_zd_xy.spr",true); 
+			break;
 		default:
 			btn.SetImage(ISI_T_SPR, "\\spr\\Ui4\\主界面\\组队预览\\icon_zd_new.spr",true); 
 			break;

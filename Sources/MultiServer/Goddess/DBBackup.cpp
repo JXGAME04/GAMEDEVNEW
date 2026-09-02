@@ -445,9 +445,9 @@ void CDBBackup::Backup()
 	fstream aDBSOutput(aDBSFullPath,ios::out);
 	aDBSOutput<<"账号名\t角色名\t门派\t等级\t金钱"<<endl;
 	int aDBSPlayerCount=0;
-	int aDBSSectPlayerCount[12] = {0};
+	int aDBSSectPlayerCount[15] = {0};	// [HOASON 01/09] 13 phai + [13] chua nhap + [14] xuat su
 	double aDBSMoneyCount=0;
-	double aDBSSectMoneyCount[12] = {0};
+	double aDBSSectMoneyCount[15] = {0};
 	int aDBSLevelPlayerCount[200] = {0};
 	//==================
 
@@ -506,6 +506,9 @@ void CDBBackup::Backup()
 			case 7:strcpy(aDBSSect,"天忍教");break;
 			case 8:strcpy(aDBSSect,"武当派");break;
 			case 9:strcpy(aDBSSect,"昆仑派");break;
+			case 10:strcpy(aDBSSect,"华山派");break;	// [HOASON 01/09]
+			case 11:strcpy(aDBSSect,"武魂");break;
+			case 12:strcpy(aDBSSect,"逍遥派");break;
 			default:
 				if(pRoleData->BaseInfo.ijoincount == 0)
 					{strcpy(aDBSSect,"新手");break;}
@@ -516,13 +519,13 @@ void CDBBackup::Backup()
 		{
 			if(pRoleData->BaseInfo.ijoincount == 0)
 			{
-				++aDBSSectPlayerCount[10];
-			aDBSSectMoneyCount[10] += pRoleData->BaseInfo.isavemoney + pRoleData->BaseInfo.imoney;
+				++aDBSSectPlayerCount[13];
+			aDBSSectMoneyCount[13] += pRoleData->BaseInfo.isavemoney + pRoleData->BaseInfo.imoney;
 			}
 			else
 			{
-				++aDBSSectPlayerCount[11];
-				aDBSSectMoneyCount[11] += pRoleData->BaseInfo.isavemoney + pRoleData->BaseInfo.imoney;
+				++aDBSSectPlayerCount[14];
+				aDBSSectMoneyCount[14] += pRoleData->BaseInfo.isavemoney + pRoleData->BaseInfo.imoney;
 			}
 		}
 		else
@@ -575,7 +578,7 @@ void CDBBackup::Backup()
 		}
 		
 		//各门派对金钱排序
-		if( (pRoleData->BaseInfo.nSect <=10) && (pRoleData->BaseInfo.nSect >= 1) )
+		if( (pRoleData->BaseInfo.nSect <= 12) && (pRoleData->BaseInfo.nSect >= 0) )
 		{
 			tmpData = GetMin(aStatData.MoneyStatBySect[pRoleData->BaseInfo.nSect + 1], SECTMAXSTATNUM, stMoney);
 		}
@@ -589,7 +592,7 @@ void CDBBackup::Backup()
 		}
 
 		//各门派对级别排序
-		if( (pRoleData->BaseInfo.nSect <=10) && (pRoleData->BaseInfo.nSect >= 1) )
+		if( (pRoleData->BaseInfo.nSect <= 12) && (pRoleData->BaseInfo.nSect >= 0) )
 		{
 			tmpData = GetMin(aStatData.LevelStatBySect[pRoleData->BaseInfo.nSect + 1], SECTMAXSTATNUM, stMoney);
 		}
@@ -604,7 +607,7 @@ void CDBBackup::Backup()
 		
 		//////////////////////////////门派统计////////////////////////////////////
 		//各个门派的玩家数统计
-		if( (pRoleData->BaseInfo.nSect <=10) && (pRoleData->BaseInfo.nSect >= 1) )
+		if( (pRoleData->BaseInfo.nSect <= 12) && (pRoleData->BaseInfo.nSect >= 0) )
 		{
 			++aStatData.SectPlayerNum[pRoleData->BaseInfo.nSect + 1];
 		}
@@ -645,7 +648,7 @@ void CDBBackup::Backup()
 	aDBSOutput<<"==记录结束=="<<endl<<endl;
 	aDBSOutput<<"==统计=="<<endl;
 	aDBSOutput<<"总人数："<<aDBSPlayerCount<<endl;
-	for(i=0;i<12;++i)
+	for(i=0;i<15;++i)
 	{
 		char aDBSSect[32] = {0};
 		switch(i)
@@ -660,14 +663,17 @@ void CDBBackup::Backup()
 			case 7:strcpy(aDBSSect,"天忍教");break;
 			case 8:strcpy(aDBSSect,"武当派");break;
 			case 9:strcpy(aDBSSect,"昆仑派");break;
-			case 10:strcpy(aDBSSect,"新手");break;
-			case 11:strcpy(aDBSSect,"出师");break;
+			case 10:strcpy(aDBSSect,"华山派");break;	// [HOASON 01/09]
+			case 11:strcpy(aDBSSect,"武魂");break;
+			case 12:strcpy(aDBSSect,"逍遥派");break;
+			case 13:strcpy(aDBSSect,"新手");break;
+			case 14:strcpy(aDBSSect,"出师");break;
 		}		
 		aDBSOutput<<aDBSSect<<"人数："<<aDBSSectPlayerCount[i]<<endl;
 	}
 	aDBSOutput<<"------------------------------------------------"<<endl;
 	aDBSOutput<<"总金钱数："<<aDBSMoneyCount<<endl;
-	for(i=0;i<12;++i)
+	for(i=0;i<15;++i)
 	{
 		char aDBSSect[32] = {0};
 		switch(i)
@@ -682,8 +688,11 @@ void CDBBackup::Backup()
 			case 7:strcpy(aDBSSect,"天忍教");break;
 			case 8:strcpy(aDBSSect,"武当派");break;
 			case 9:strcpy(aDBSSect,"昆仑派");break;
-			case 10:strcpy(aDBSSect,"新手");break;
-			case 11:strcpy(aDBSSect,"出师");break;
+			case 10:strcpy(aDBSSect,"华山派");break;	// [HOASON 01/09]
+			case 11:strcpy(aDBSSect,"武魂");break;
+			case 12:strcpy(aDBSSect,"逍遥派");break;
+			case 13:strcpy(aDBSSect,"新手");break;
+			case 14:strcpy(aDBSSect,"出师");break;
 		}		
 		aDBSOutput<<aDBSSect<<"金钱数："<<aDBSSectMoneyCount[i]<<endl;
 	}

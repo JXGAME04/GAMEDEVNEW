@@ -28,11 +28,11 @@ public://统计列表的数据结构
 	{
 		TRoleList MoneyStat[100];			//金钱最多排名列表（一百个玩家）
 		TRoleList LevelStat[100];			//级别最多排名列表（一百个玩家）
-		TRoleList MoneyStatBySect[11][10];	//各门派金钱最多排名列表[门派][玩家数]
-		TRoleList LevelStatBySect[11][10];	//各门派级别最多排名列表[门派][玩家数]
-		int SectPlayerNum[11];				//各个门派的玩家数
-		int SectMoneyMost[11];				//财富排名前一百玩家中各门派所占比例数
-		int SectLevelMost[11];				//级别排名前一百玩家中各门派所占比例数
+		TRoleList MoneyStatBySect[14][10];	// [HOASON 01/09]	//各门派金钱最多排名列表[门派][玩家数]
+		TRoleList LevelStatBySect[14][10];	//各门派级别最多排名列表[门派][玩家数]
+		int SectPlayerNum[14];				//各个门派的玩家数
+		int SectMoneyMost[14];				//财富排名前一百玩家中各门派所占比例数
+		int SectLevelMost[14];				//级别排名前一百玩家中各门派所占比例数
 		
 	};
 private:

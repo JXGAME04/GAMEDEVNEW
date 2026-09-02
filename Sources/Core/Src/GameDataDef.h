@@ -483,6 +483,11 @@ enum OBJ_ATTRIBYTE_TYPE
 	series_earth,			//	Õ¡œµ
 	series_nil,
 	series_num = series_nil,
+	// [HOASON 01/09] so mon phai TOI DA (13 = 10 goc + Hoa Son 10 + Vu Hon 11 + Tieu Dao 12);
+	// truoc day MAX_FACTION = 2 phai x 5 he (KFaction.h). Dung o KProtocol.h TGAME_STAT_DATA,
+	// KLadder.h, KNpc.cpp - CORE va GODDESS (DBBackup.h) phai cung con so nay.
+	MAX_FACTION_NUM = 13,
+
 	series_minus,
 };
 

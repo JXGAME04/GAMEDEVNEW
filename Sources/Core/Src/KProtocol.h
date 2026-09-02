@@ -2220,13 +2220,14 @@ typedef struct
 	TRoleList KillerStat[10];			//É±ÈË×î¶àÅÅÃûÁÐ±í
 	
 	//[ÃÅÅÉºÅ][Íæ¼ÒÊý]£¬ÆäÖÐ[0]ÊÇÃ»ÓÐ¼ÓÈëÃÅÅÉµÄÍæ¼Ò
-	TRoleList MoneyStatBySect[11][10];	//¸÷ÃÅÅÉ½ðÇ®×î¶àÅÅÃûÁÐ±í
-	TRoleList LevelStatBySect[11][10];	//¸÷ÃÅÅÉ¼¶±ð×î¶àÅÅÃûÁÐ±í
+	// [HOASON 01/09] [11] -> [MAX_FACTION_NUM + 1] (14): 13 phai + o [0] chua vao phai. Goddess DBBackup.h TStatData PHAI cung co (sizeof kiem o KLadder::Init).
+	TRoleList MoneyStatBySect[MAX_FACTION_NUM + 1][10];	//¸÷ÃÅÅÉ½ðÇ®×î¶àÅÅÃûÁÐ±í
+	TRoleList LevelStatBySect[MAX_FACTION_NUM + 1][10];	//¸÷ÃÅÅÉ¼¶±ð×î¶àÅÅÃûÁÐ±í
 
 	//[ÃÅÅÉºÅ]£¬ÆäÖÐ[0]ÊÇÃ»ÓÐ¼ÓÈëÃÅÅÉµÄÍæ¼Ò
-	int SectPlayerNum[11];				//¸÷¸öÃÅÅÉµÄÍæ¼ÒÊý
-	int SectMoneyMost[11];				//²Æ¸»ÅÅÃûÇ°Ò»°ÙÍæ¼ÒÖÐ¸÷ÃÅÅÉËùÕ¼±ÈÀýÊý
-	int SectLevelMost[11];				//¼¶±ðÅÅÃûÇ°Ò»°ÙÍæ¼ÒÖÐ¸÷ÃÅÅÉËùÕ¼±ÈÀýÊý
+	int SectPlayerNum[MAX_FACTION_NUM + 1];				//¸÷¸öÃÅÅÉµÄÍæ¼ÒÊý
+	int SectMoneyMost[MAX_FACTION_NUM + 1];				//²Æ¸»ÅÅÃûÇ°Ò»°ÙÍæ¼ÒÖÐ¸÷ÃÅÅÉËùÕ¼±ÈÀýÊý
+	int SectLevelMost[MAX_FACTION_NUM + 1];				//¼¶±ðÅÅÃûÇ°Ò»°ÙÍæ¼ÒÖÐ¸÷ÃÅÅÉËùÕ¼±ÈÀýÊý
 }  TGAME_STAT_DATA;
 
 typedef struct

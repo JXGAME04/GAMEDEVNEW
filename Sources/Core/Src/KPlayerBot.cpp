@@ -120,6 +120,9 @@ static const PB_FacNpc s_facNpc[MAX_FACTION] =
 	{ 3, "\\script\\npcthon\\npcmonphai\\thiennhan.lua",  "Thien Nhan"  },  // 7
 	{ 4, "\\script\\npcthon\\npcmonphai\\vodang.lua",     "Vo Dang"     },  // 8
 	{ 4, "\\script\\npcthon\\npcmonphai\\conlon.lua",     "Con Lon"     },  // 9
+	{ 2, "\\script\\npcthon\\npcmonphai\\hoason.lua",     "Hoa Son"     },  // 10 [HOASON 01/09]
+	{ 3, "\\script\\npcthon\\npcmonphai\\vuhon.lua",      "Vu Hon"      },  // 11 (chua co script)
+	{ 4, "\\script\\npcthon\\npcmonphai\\tieudao.lua",    "Tieu Dao"    },  // 12 (chua co script)
 };
 
 // ---------------------------------------------------------------------------
@@ -2605,7 +2608,7 @@ static void pb_GiveFactionWeapon(int nIdx, int nFaction)
 	case 0: pPool = s_wTL;   nPool = 3; break;
 	case 1: pPool = s_wTV;   nPool = 3; break;
 	case 2: pPool = s_wDM;   nPool = 3; break;
-	case 4: case 8: pPool = s_wKiem; nPool = 2; break;
+	case 4: case 8: case 10: pPool = s_wKiem; nPool = 2; break;	// [HOASON 01/09] Hoa Son: kiem hoac tay khong (khi tong)
 	case 6: pPool = s_wBong; nPool = 2; break;
 	case 7: pPool = s_wKich; nPool = 2; break;
 	default: break;          // 3 Ngu Doc / 5 Thuy Yen / 9 Con Lon = Dao hoac tay khong

@@ -11771,17 +11771,20 @@ void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 	}
 	
 		
-	static const char* const FactionName[] = {
-		"ThiÃ•u LÂ©m",
-		"ThiÂªn VÂ­Â¬ng Bang",
-		"Â§Â­Ãªng MÂ«n",
-		"NgÃ± Â§Ã©c",
-		"Nga My",
-		"ThÃ³y YÂªn",
-		"CÂ¸i Bang",
-		"ThiÂªn NhÃ‰n",
-		"VÃ¢ Â§ang",
-		"CÂ«n LÂ«n"
+	static const char* const FactionName[MAX_FACTION_NUM] = {	// [HOASON 01/09] 13 phai, TCVN3 (bang cu 10 ten bi hong ma hoa)
+		"ThiÕu L©m",	// 0
+		"Thiªn V­¬ng Bang",	// 1
+		"§­êng M«n",	// 2
+		"Ngò §éc",	// 3
+		"Nga My",	// 4
+		"Thóy Yªn",	// 5
+		"C¸i Bang",	// 6
+		"Thiªn NhÉn",	// 7
+		"Vâ §ang",	// 8
+		"C«n L«n",	// 9
+		"Hoa S¬n",	// 10
+		"Vò Hån",	// 11
+		"Tiªu Dao"	// 12
 	};
 
 	// Bot lay so mon phai tu KNpc::nFirstFaction (truong san co, VON DA duoc truyen xuong
@@ -11789,7 +11792,7 @@ void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 	// nen phep kiem <= 9 o duoi vua lam cong chan chi so mang vua loc gia tri "chua vao phai".
 	int nFaction;
 	if (m_btSimCityBot)
-		nFaction = (nFirstFaction <= 9) ? (int)nFirstFaction : -1;
+		nFaction = (nFirstFaction < MAX_FACTION_NUM) ? (int)nFirstFaction : -1;	// [HOASON 01/09]
 	else
 		nFaction = Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo();
 	int nLevel = m_Level;
@@ -11797,7 +11800,7 @@ void KNpc::UpdateGameTitle() // Added by TinKer for Faction and Level display
 	if (nLevel > 0)
 	{
 		const char* szFactionName;
-		if (nFaction >= 0 && nFaction <= 9)
+		if (nFaction >= 0 && nFaction < MAX_FACTION_NUM)
 		{
 			szFactionName = FactionName[nFaction];
 			sprintf(m_szGameTitle, "%s/Lv:%d", szFactionName, nLevel);
