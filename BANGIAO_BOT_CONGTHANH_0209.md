@@ -244,3 +244,53 @@ Không đổi giao thức, không đổi cấu trúc save, không đụng client
 1. **Việc 1**: bot làm đúng tới bước xuất sư, nhưng script `xuatsu()` ghi nhầm task **0** thay vì **4134** vì `TASK_DUNGCHUNG2` không được Include vào script NPC môn phái (mỗi `.lua` một state riêng). Sửa = 1 dòng Include ở đầu `factionhead.lua` (đặt trước `lib_task.lua`), cần restart. **Chờ chủ gật** vì đụng script người thật (menu "Xuất sư" hiện lại 1 lần cho ai đã xuất sư).
 2. **Việc 2**: CTC bản JX2 chạy bằng lịch tuần (18h đấu thầu lôi đài → 19h chốt → 20h lôi đài → 20h hôm sau công thành 90 phút map 221: phá cổng → hạ 3 Long trụ). Hiện **7 thành vô chủ** → bang đầu tiên đấu thầu sẽ chiếm không cần đánh. Khiêu chiến lệnh không còn quyết định gì.
 3. **Việc 3**: sơ đồ 6 pha theo khuôn bot Tống Kim, ~900 dòng, 3 đợt; **chặn đường** hiện tại: bot phải ở trong bang **≥ 5 ngày** (hoặc chủ đổi luật sang cấp ≥ 90 như lôi đài) và lưới A* server chưa có map 221-223.
+
+---
+
+## 5. (02/09 chiều) VIỆC 1 ĐÃ ÁP + Ý TƯỞNG "5 BANG BOT": TẠO BANG · TUYỂN 100-150 BOT/BANG · ĐÚNG GIỜ ĐĂNG KÝ CÔNG THÀNH (CHƯA LÀM)
+
+### 5.1 Việc 1 — đã áp, chờ restart
+
+- `factionhead.lua` dòng 1 = `Include("\\script\\header\\taskid.lua")` (trước `lib_task.lua`), tool idempotent `ReverseTools\goi_va_factionhead_taskid.py` (latin-1, giữ CRLF, high-byte 829 → 829, `lua4.exe` parse OK), mirror `serverscript_jx2\jx1_edits\factionhead.lua`, commit **`c90483b4`** đã push `origin main`. Không đổi binary — **restart GameServer** là đủ (script NPC nạp lúc boot); gộp với đợt swap `.moi` đang chờ.
+- Nghiệm thu: bang chủ nhắn mật `vao bang` cho bot ≥ 90 → `grep -a BotBang bot.log | tail` phải có `da XUAT SU tai NPC` rồi `nop don ... ket qua=0|7`.
+
+### 5.2 Sự thật đo được về hệ bang (quyết định cách làm)
+
+| Điểm | Đo được (tệp:dòng) | Hệ quả cho 5 bang bot |
+|---|---|---|
+| Đường tạo bang của người thật | client → GS.exe `KSOServer.cpp:4312` → Core `CheckCreateCondition` (`KPlayerTong.cpp:227`: cấp ≥ 50 theo `settings\tong\TongSet.ini`, lead level ≥ 10 (khoá ini gõ sai `LeadLeval` → mặc định 10), ≥ 500.000 lượng, task item 195 Nhạc Vương Kiếm (thưởng Tống Kim `quanquan.lua:26`), camp 4 tự do, chưa bang, không tổ đội) → GS.exe gói `STONG_CREATE_COMMAND` lên relay (`:4327-4341`) → relay `CTongSet::Create` (`KTongSet.cpp`: tên ≤ 12 byte `defTONG_NAME_MAX_LENGTH`, tên bang + tên bang chủ chưa ai dùng) → `enumS2C_TONG_CREATE_SUCCESS` → GS.exe `SSOI_TONG_CREATE` → Core `KPlayerTong::Create` (`:269`, KHÔNG kiểm lại; trừ 500.000 sàn 0, xoá item 195, camp = camp bang, log `log_tong.lua creattong`) | Bot có lead level 1 (`KPlayer.cpp:175`) nên không qua nổi `CheckCreateCondition` → **Core tự đóng gói `STONG_CREATE_COMMAND` y hệt GS.exe rồi `g_NewProtocolProcess.PushMsgInTong`** (cửa Core đã dùng cho `sJX2_SendAddMember`); đường trả về dùng nguyên. Không đụng GS.exe / relay / client / giao thức. |
+| Trần thành viên | relay `bin\multiserver\relay_config.ini` `[tong] tongcap = 30` (`KTongControl.cpp:34,151`: mọi đường thêm người `fromAdd=true` từ chối khi đủ 30) | CTC đòi ≥ 37 người → **hiện KHÔNG bang nào (người hay bot) đăng ký nổi**. Muốn 100-150 bot/bang: đặt `tongcap = 160` (0 = bỏ trần) + **restart S3Relay** (đang chạy từ 01/09 22:45, PID 62260, thư mục `bin\multiserver`). Không cần build. |
+| "Cấp bang ≥ 18" (`citywar.ini MinTongLevel`) | C++ đọc **field 6 = kinh nghiệm bang JX2**, không phải cấp: relay `JX2_MoneyToExpTick` (`KTongJX2Relay.cpp:1690`) mỗi 750 s: quỹ > 1.000.000 → quỹ −5.000 (−50/người trên 100 người), exp +120; quỹ ≤ 1.000.000 → giữ nguyên | Bang bot chỉ cần **quỹ > 1 triệu qua một nhịp 12,5 phút** là "cấp 18". Quỹ còn dùng: phí đấu thầu ≥ 1.000.000 (bị trừ), Chiêu mộ tự nhận 10 triệu/lần lưu. Quỹ tiêu ~576.000/ngày cho exp → cần nạp (bot `COP_DEPOSIT_MONEY` ≤ 2 tỷ/lần từ tiền túi, hoặc GM `TONG_ApplyAddMoney` — bộ test `bangthanh_f.lua TBH_MonGo` có sẵn). |
+| Vào bang | `sJX2_DoApplyJoin` (`KTongJX2.cpp:575`): tự nhận khi cấp ≥ field 65, không thì hàng đợi (GS giữ 64 đơn, sync relay) → bang chủ `COP_ACCEPT_APPLY` (`:3060`, duyệt được cả khi người xin offline, ghi field 2 = giờ vào) | Bang chủ bot duyệt bằng chính `g_TongJX2.DoClientOpBody(nLeaderIdx, ACCEPT_APPLY, dwTargetNameID)` — đường người thật, không cần export mới, không tốn quỹ. |
+| Luật 5 ngày (`GetJoinTongTime ≥ 7200 phút`) | field 2 = giờ được nhận | Bot vào bang ngày D → **thủ/công thành được từ D+5**; đấu thầu/lôi đài không đòi. |
+| Đấu thầu | `sSignUpArena` (`KJx2CityWar.cpp:1032`) là `static`, nhận Lua state; 10 cửa (bang chủ · state SIGNUP 18h-19h ngày báo danh · chưa báo danh thành khác · không là khiêu chiến giả/chủ thành · ≥ 37 người `mapMember.size()` · field 6 ≥ 18 · phí ≥ 1.000.000 & quỹ đủ) | Tách thân thành `KJx2CityWar_SignUpArenaC(nPlayerIdx, c, nFee)` giữ nguyên 10 cửa, Lua wrapper gọi lại. |
+| Camp bang (1 chính / 2 tà / 3 trung lập) | `KPlayerTong::Create` đặt camp bot = camp bang | Bot chỉ nhắm người trong TK/CTC (`pb_FindTarget` gác) nên khác camp cũng không đánh nhau ngoài bãi; chủ chọn cùng một camp hay xen kẽ. |
+
+### 5.3 Ba lệnh mới (lệnh bài admin → `PB_Menu` → "Bang hội bot")
+
+1. **`PB_TaoBang(n)`** (n ≤ 5): chọn n bot cấp cao nhất đang luyện công (AI FIGHT), chưa bang, không sạp/TK/Dã Tẩu đang đi; tên/camp/thành mục tiêu đọc từ **`settings\simcity\botbang.txt`** (tên ≤ 12 byte TCVN3). Mỗi bang chủ: về NPC môn phái **xuất sư** (tái dùng `pb_XinVaoBang` B1-B4, đã sửa) → Core gửi `STONG_CREATE_COMMAND` (so le 3 s/con) → chờ `m_cTong.m_nFlag = 1` + `btFigure == 0` → log `[BotBang] TAO BANG <tên> bang chu <bot> (camp c)`. Hết hạn 5 phút → thử lại tối đa 3 lần (tên trùng → báo). Bang mới: field 65/66 = 0, quỹ 0.
+2. **`PB_TuyenBang(bang, soLuong)`**: chiến dịch tuyển. Ứng viên = bot đủ tư cách (cấp ≥ ngưỡng chủ chọn, chưa bang, không sạp/TK/nhóm người thật), xáo trộn, so le 5 s/con; mỗi bot đi đúng `pb_XinVaoBang` (thay "PM bang chủ" bằng lệnh; xuất sư → nộp đơn); **bang chủ bot duyệt `ACCEPT_APPLY` mỗi giây** (hàng đợi ≤ 64 → ~12 đơn/phút → 150 bot ≈ 15-20 phút/bang); dừng khi đủ hoặc relay báo đầy (tongcap). Bước cuối mỗi bot: **nạp quỹ** X lượng (`COP_DEPOSIT_MONEY`, nếu túi có) — mục tiêu quỹ ≥ 3 triệu (1 triệu ngưỡng exp + 1 triệu phí thầu + dự phòng) — hoặc GM nạp. Bot trong bang giữ màu/tên bang qua `pb_DongBoBang` sẵn có.
+3. **`PB_BangCTC(bat)`**: đồng hồ 1 phút. Với mỗi bang bot có **thành mục tiêu**: đúng **ngày báo danh của thành, 18h00-18h55**, state SIGNUP, bang chưa là chủ/khiêu chiến giả, ≥ 37 người, quỹ ≥ phí → bang chủ bot về map 53, đi tới NPC Sứ Giả Công Thành (1625,3170) (giống người) → `KJx2CityWar_SignUpArenaC(leader, city, phí = SignUpFee 1.000.000 hoặc cấu hình)` → log `[BotBang] DAU THAU thanh X phi Y: ket qua`. Không cần Khiêu chiến lệnh (đường đó là mã chết, mục 2.2).
+   - Phân thành **5 bang → 5 thành khác nhau** (tuần đầu không đụng nhau ở lôi đài): 19h bang duy nhất → khiêu chiến giả → 20h hôm sau **chiếm luôn** (thành vô chủ, không đánh). Tuần sau người chơi khiêu chiến → bot **thủ thành** (bot CTC mục 3). Tuỳ chọn: cho 2 bang bot cùng thầu 1 thành để có lôi đài bot-bot (cần bot lôi đài — Q4).
+
+### 5.4 Trình tự vận hành (ví dụ bắt đầu T5 03/09; lịch thành mục 2.2)
+
+| Ngày | Việc |
+|---|---|
+| D0 | restart GS (vá xuất sư) · `tongcap` 30 → 160 + restart relay · `PB_TaoBang(5)` · `PB_TuyenBang` 5 × 120 · nạp quỹ → sau 750 s exp ≥ 120 ("cấp 18") |
+| D0 → D+4 | bot luyện công như thường; tới 18h ngày báo danh của thành mục tiêu → bang bot đấu thầu (không cần 5 ngày) → hôm sau 20h chiếm thành (không đánh). Gợi ý 5 thành: Tương Dương (báo T5), Biện Kinh (T6), Lâm An (T7), Dương Châu (CN), Thành Đô (T2) → trong 1 tuần 5 bang có 5 thành |
+| D+5 trở đi | bot đủ 5 ngày → tham chiến **thủ thành** khi bị khiêu chiến (cần bot CTC mục 3 đợt 1-2); thuế/thưởng tuần của bang bot: chủ quyết có dùng không |
+
+### 5.5 Chủ quyết / làm tay trước khi thi công
+
+1. `bin\multiserver\relay_config.ini` `tongcap` 30 → 160 (hay 0) + restart S3Relay (tôi không tự restart).
+2. Tên 5 bang (≤ 12 byte) + camp + thành mục tiêu — tôi soạn mẫu `botbang.txt`, chủ sửa.
+3. Cấp tối thiểu bot vào bang bot: 90 (như luật PM đợt d) hay 60 (luật game).
+4. Nguồn quỹ: bot tự nạp bao nhiêu/con, hay GM nạp.
+5. Cho 2 bang bot thầu trùng thành để thử lôi đài không (kéo theo Q4 mục 3.1).
+6. Luật 5 ngày: giữ (bot thủ thành từ D+5) hay đổi sang cấp ≥ 90 như lôi đài (Q2 mục 3.1).
+
+### 5.6 Ước lượng + rủi ro
+
+- `KPlayerBot.cpp` ~500-700 dòng (3 máy trạng thái + lệnh), `KJx2CityWar.cpp` +40 (`SignUpArenaC`), `KTongJX2.cpp` +30 (export gửi `STONG_CREATE_COMMAND`), `ScriptFuns.cpp` +6, `simcity_admin.lua` +80, `botbang.txt`. Không đổi giao thức (gói relay có sẵn), không đụng client.
+- Rủi ro: relay `Sleep(5)`/thành viên khi phát tin bang 150 người (~0,75 s chặn relay mỗi thao tác cấp bang — BANGIAO_BANGHOI.md:162) → so le thao tác, tránh giờ đông; 750 bản ghi thành viên bot trong DB relay; tên trùng → relay từ chối (log + đổi tên); bot chết/lạc giữa chiến dịch → hết hạn pha tự bỏ; quỹ tụt dưới 1 triệu → mất "cấp 18" → thầu bị từ chối (đồng hồ kiểm quỹ trước 18h, nạp bù).
