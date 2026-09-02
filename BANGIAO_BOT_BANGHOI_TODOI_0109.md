@@ -142,3 +142,46 @@ grep -E "BotNhomNguoi|BotBang|XAC DUNG THANG|dap trap ra trai|da o ngoai trai|Tk
 ## 8. Chuỗi tái áp
 
 … → tkket3_moxe → bot_bang_nhom → bot_bang_nhom_b → **bot_nhom_bang_tk_c** (`--thu` = chỉ kiểm neo). Tất cả đã commit.
+
+## 9. Đợt d (02/09 00:2x) — màu bang cho bot + ngưỡng cấp 90 + tắt nhắn mật tổ đội — `ReverseTools/goi_va_bot_bang_mau_d.py` (18 hunk, CHỈ KPlayerBot.cpp), commit **`7f041f8d`**, `CoreServer.dll.moi` = **`3bedd3ac7b3f`** (00:21) **CHỜ RESTART**
+
+> Chủ giao thêm: *"Bot đã vào bang thành công sẽ có màu riêng theo bang (thêm giới hạn bot trên cấp 90 người chơi nhắn chat mật mới về xuất sư - xin vào bang)"* và *"khi bot vào paty và rời paty không cần nhắn chat mật cho người chơi — bạn hãy tắt cái đó đi"*.
+> Đợt c đã **CHẠY THẬT** từ 00:19 (server `9d7ae996`, bản của phiên Hoa Sơn đã cuốn commit `f58c1fdc`).
+
+### 9.1 Màu riêng theo bang
+
+"Màu" của một người chơi = `KNpc::m_CurrentCamp`; bang hội đặt màu này = **camp của bang** (`KTongJX2Tong::btCamp` — 1 chính phái / 2 tà phái / 3 trung lập). Đường của người thật: relay báo về → `SSOI_TONG_ADD` → `KPlayerTong::AddTong` (KPlayerTong.cpp:571) gán `Npc.m_Camp` + `m_CurrentCamp`; đăng nhập lại thì `SGDI_TONG_LOGIN` → `KPlayerTong::Login` (:1364) làm y hệt. Camp 4 (tự do) là **điều kiện bắt buộc để xin vào bang** — chính là lý do phải xuất sư trước.
+
+Bot vấp **hai lỗ hổng**, hàm mới `pb_DongBoBang` (10 giây/con, so le theo chỉ số bot) vá cả hai, không thêm gói tin, không đổi cấu trúc:
+
+| Lỗ hổng | Vá |
+|---|---|
+| `AddTong` gán **thẳng** `m_CurrentCamp` nên **không phát gói** → người đang đứng cạnh bot không thấy đổi màu cho tới khi đồng bộ lại vùng | Gọi `KNpc::SetCurrentCamp` (KNpc.cpp:475) — đúng hàm **BROADCAST** `s2c_npcchgcurcamp` cho 9 vùng mà engine dùng cho mọi thay đổi màu khác |
+| Sau **restart** bot không qua `KPlayerTong::Login` (không có bắt tay với relay): blob chỉ trả lại `dwTongID` (KPlayerDBFuns.cpp:357 `DBSetTongNameID`, có đặt `m_nFlag = 1`) còn **tên bang / camp / chức vụ đều trống** → bot mất màu bang và mất tên bang trên đầu | Đọc bản sao `g_TongJX2` (relay đồng bộ về): `FindTong(id)->btCamp/szName` + `FindMember(...)->btFigure` + tên bang chủ (thành viên `btFigure == 0`) → điền lại `m_cTong` |
+
+Tên bang trên đầu tự có: `KNpc::SendSyncData` (KNpc.cpp:5966) lấy thẳng từ `Player[].m_cTong.GetTongName()` — bot là `KPlayer` **thật** nên điền `m_cTong` là đủ.
+
+Không đụng vào màu khi: đang **Tống Kim** (script đặt camp phe Tống/Kim) và đang ở **tổ đội** (`AcceptTeam` ghi đè camp thành viên bằng camp đội trưởng — đúng luật `KPlayerTong::Login` chỉ đặt `CurrentCamp` khi `!m_cTeam.m_nFlag`). Bang giải tán / bot bị đuổi lúc offline → xoá hồ sơ bang, **cố ý không đụng vào camp** (đổi là đổi gameplay).
+
+**🔴 ĐÍNH CHÍNH mục 7.2 điểm 4:** xuất sư đặt camp 4 chỉ là trạng thái **TẠM**. Vào bang xong `AddTong` đặt camp = camp của bang (1/2/3) nên bot **lại đủ tư cách đi Tống Kim** (`mobinhtk.lua:100` chỉ chặn camp 4). Chỉ bot đã xuất sư mà đơn **chưa được duyệt** mới tạm mang camp 4.
+
+### 9.2 Ngưỡng cấp 90
+
+`PB_CAP_VAOBANG 90`, kiểm ngay trong `PB_WhisperReply` — trước khi bot bỏ việc đang làm. Chặt hơn luật của chính game (client đòi cấp ≥ 60 để gia nhập, KPlayerTong.cpp:196). Bot dưới 90 trả lời *"Minh moi cap N, phai tu cap 90 tro len minh moi dam xuat su xin vao bang."*
+
+### 9.3 Tắt nhắn mật khi vào / rời tổ đội
+
+Bỏ câu "Ok, minh vao nhom nhe!" trong `PB_MoiVaoNhom` và bỏ tham số `szPm` của `pb_RoiNhomNguoi` (9 chỗ gọi: người chơi sang map khác, bot lạc 5 phút, Dã Tẩu tới NPC / Xa Phu / về trả / đủ cuốn, về thành, Tống Kim, đi xin bang). Lý do rời nhóm **chỉ còn vào `bot.log`**. Vẫn giữ câu **trả lời** khi người chơi hỏi trực tiếp (kể cả câu "Ban cu moi minh vao nhom di, minh dong y lien.").
+
+### 9.4 Nghiệm thu (sau restart)
+
+```
+grep -E "BotBang|BotNhomNguoi" bot.log | tail -60
+```
+1. Mời bot vào tổ đội / bot rời nhóm → **không** còn tin nhắn riêng nào, chỉ có dòng log.
+2. Bang chủ nhắn "vao bang" cho bot **dưới 90** → bot trả lời từ chối theo cấp; bot ≥ 90 → chạy chuỗi xuất sư → nộp đơn như mục 7.2.
+3. Bot đã ở trong bang: đứng cạnh nó thấy **màu theo camp bang** + tên bang trên đầu; log `[BotBang] X doi mau theo bang 'Y': camp A -> B`. Restart server rồi vào lại: sau ~10 giây bot tự hiện lại màu/tên bang, log `[BotBang] X dong bo bang 'Y' (id ..., camp ..., chuc vu ...) tu ban sao relay`.
+
+### 9.5 Chuỗi tái áp (cập nhật)
+
+… → tkket3_moxe → bot_bang_nhom → bot_bang_nhom_b → bot_nhom_bang_tk_c → **bot_bang_mau_d** (`--thu` = chỉ kiểm neo). Tất cả đã commit + push.
