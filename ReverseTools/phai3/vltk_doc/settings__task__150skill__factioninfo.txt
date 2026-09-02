@@ -1,0 +1,15 @@
+FactionName	FactionId	FinishStep
+Thiếu Lâm	0	6
+Thiên Vương	1	4
+Đường Môn	2	7
+Ngũ Độc	3	5
+Nga Mi	4	7
+Thúy Yên	5	6
+Cái Bang	6	9
+Thiên Nhẫn	7	9
+Võ Đang	8	5
+Côn Lôn	9	5
+Nguyệt Ca Đảo	13	14
+ Hoa Sơn	10	9
+Vũ Hồn 	11	3
+Phái Tiêu Dao	12	6

@@ -1,0 +1,106 @@
+RANKID	RANKSTR
+1	Tảo Địa Tăng
+2	Hộ Viện Võ Tăng
+3	Hộ Tự Kim Cang 
+4	Hộ Pháp La Hán
+5	Truyền Kinh La Hán
+6	Phục Ma Thiên Vương 
+7	Đạo Đồng
+8	Nhàn Tản Đạo Sư 
+9	Thanh Tu Đạo Sư 
+10	Tuần Sơn Đạo Nhân
+11	Nhập Quan Đạo Nhân
+12	Chưởng Kinh Đạo Nhân
+13	Bố Y Ni
+14	Vũ Y Ni
+15	Cẩm Y Ni
+16	Bạch Liên Tiên Tử 
+17	Thanh Liên Tiên Tử 
+18	Tản Hoa Thiên Nữ 
+19	Phất Trần Đệ Tử 
+20	Phụng Kiếm Đệ Tử 
+21	Tử Vi Hộ Pháp
+22	Thái Vi Hộ Pháp
+23	Thiên Vi Hộ Pháp
+24	Thụ Phù Thiên Tướng
+25	Tạp dịch
+26	Làng D
+27	Hộ Viện
+28	Giới Tiền Hộ Vệ
+29	Nhập Các Đệ Tử
+30	Tỷ Lão Môn Nhân
+31	Hoa Tì
+32	Tam Phẩm Hoa Sứ
+33	Nhị Phẩm Hoa Sứ
+34	Nhất Phẩm Hoa Sứ
+35	Hoa Tiên
+36	Hoa Tinh
+37	Vô Đại Đệ Tử
+38	Chấp Đại Đệ Tử
+39	Chấp Bát Đệ Tử
+40	Chấp Bổng Đệ Tử
+41	Long Đầu
+42	Đại Long Đầu
+43	Thị vệ
+44	 Thị vệ trưởng
+45	Thủ Trại Hãn Tướng
+46	Chưởng Đá Đầu Lĩnh
+47	Thủy Đạo Thống Lĩnh
+48	Hộ Đảo Tướng Quân
+49	Ngũ Độc Đồng Tử
+50	Đoạt Hồn Tản Nhân
+51	Thôi Mệnh Sứ Giả
+52	Hắc ám Diêm La
+53	Vô Động La Sát
+54	Co Độc Tôn Giả
+55	Sát Thủ
+56	Vô ảnh Sát Thủ
+57	Tử Sĩ
+58	U Minh Tử Sĩ
+59	Chưởng Kỳ Sứ
+60	Hộ Giáo Sứ
+61	Vô Danh Tiểu Bối
+62	Vô Lượng Giải Tôn
+63	Huyền Võ Thần Thị
+64	Kim Đỉnh Thánh Nữ
+65	Tiên Phù Chân Quân
+66	Thiên Thủ Thần Vệ
+67	Hoa Thần
+68	Tiêu Dao Thần Cái
+69	Kình Thiên Nguyên Soái
+70	U Minh Quỷ Sứ
+71	Tát Mãn Pháp Vương
+72	Hộ Pháp Trưởng Lão
+73	Huyền Võ Chân Nhân
+74	Thánh nữ
+75	Hộ Phái Chân Quân
+76	Lục Các Trưởng Lão
+77	Hoa Thần Sứ
+78	Cửu Đại Trưởng Lão
+79	Trấn Bang Nguyên Soái
+80	U Minh Quỷ Vương
+81	Thánh Giáo Trưởng Lão
+82	Thư Đồng
+83	Đệ tử phụng trà
+84	Đệ tử Tư Mặc
+85	Đệ tử chấp kiếm
+86	Đan Thanh Sứ
+87	Dịch Thu Sứ
+88	Lục Nghệ Truyền Nhân
+89	Thái Học Các Chủ
+90	Hậu Quân
+91	Trung Quân
+92	Phá Địch Quân
+93	Đạp Bạch Quân
+94	Du Dịch Quân
+95	Thắng Tiệp Quân
+96	Bối Ngôi Quân
+97	Thần Hành Quân
+98	Tiên Đảo Cư Sĩ
+99	ỷ Mai Cư Sĩ
+100	Ngọc Sơn Dã Sĩ
+101	Phũ Cầm Cư Sĩ
+102	Khinh Châu Tán Nhân
+103	Đông Hải Tán Nhân
+104	Kiếm Tiên
+105	Kiếm Thánh

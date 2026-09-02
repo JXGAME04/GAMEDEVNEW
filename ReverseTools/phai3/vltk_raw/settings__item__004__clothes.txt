@@ -1,0 +1,78 @@
+Ãû³Æ	ItemGenre	DetailType	ParticularType	¶¯»­ÎÄ¼þÃû	¶ÔÓ¦Îï¼þË÷Òý	¿í¶È	¸ß¶È	ËµÃ÷ÎÄ×Ö	ÎåÐÐÊôÐÔ	¼Û¸ñ	µÈ¼¶	ÊÇ·ñµþ·Å	»ù´¡ÊôÐÔ1ÀàÐÍ	»ù´¡ÊôÐÔ1×îÐ¡Öµ	»ù´¡ÊôÐÔ1×î´óÖµ	»ù´¡ÊôÐÔ2ÀàÐÍ	»ù´¡ÊôÐÔ2×îÐ¡Öµ	»ù´¡ÊôÐÔ2×î´óÖµ	»ù´¡ÊôÐÔ3ÀàÐÍ	»ù´¡ÊôÐÔ3×îÐ¡Öµ	»ù´¡ÊôÐÔ3×î´óÖµ	»ù´¡ÊôÐÔ4ÀàÐÍ	»ù´¡ÊôÐÔ4×îÐ¡Öµ	»ù´¡ÊôÐÔ4×î´óÖµ	»ù´¡ÊôÐÔ5ÀàÐÍ	»ù´¡ÊôÐÔ5×îÐ¡Öµ	»ù´¡ÊôÐÔ5×î´óÖµ	»ù´¡ÊôÐÔ6ÀàÐÍ	»ù´¡ÊôÐÔ6×îÐ¡Öµ	»ù´¡ÊôÐÔ6×î´óÖµ	»ù´¡ÊôÐÔ7ÀàÐÍ	»ù´¡ÊôÐÔ7×îÐ¡Öµ	»ù´¡ÊôÐÔ7×î´óÖµ	ÐèÇóÊôÐÔ1ÀàÐÍ	ÐèÇóÊôÐÔ1ÊýÖµ	ÐèÇóÊôÐÔ2ÀàÐÍ	ÐèÇóÊôÐÔ2ÊýÖµ	ÐèÇóÊôÐÔ3ÀàÐÍ	ÐèÇóÊôÐÔ3ÊýÖµ	ÐèÇóÊôÐÔ4ÀàÐÍ	ÐèÇóÊôÐÔ4ÊýÖµ	ÐèÇóÊôÐÔ5ÀàÐÍ	ÐèÇóÊôÐÔ5ÊýÖµ	ÐèÇóÊôÐÔ6ÀàÐÍ	ÐèÇóÊôÐÔ6ÊýÖµ	Ä§·¨ÊôÐÔË÷Òý1	Ä§·¨ÊôÐÔË÷Òý2	Ä§·¨ÊôÐÔË÷Òý3	Ä§·¨ÊôÐÔË÷Òý4	Ä§·¨ÊôÐÔË÷Òý5	Ä§·¨ÊôÐÔË÷Òý6
+Sa Di Giíi C« 	10	0	1	\spr\item\equip\cap\obj-ma-cap01-1.spr	28	2	2	§ai cña c¸c tiÓu Sa Di th­êng ®eo. 	0	0	10	0	31	300	300																			36	1	38	0														
+Phóc §iÒnGiíi C«	10	0	2	\spr\item\equip\cap\obj-ma-cap02-1.spr	28	2	2	§ai cña c¸c tiÓu Sa Di th­êng ®eo. 	0	0	10	0	31	300	300																			36	1	38	0														
+Hçn Nguyªn Qu¸n	10	0	3	\spr\item\equip\cap\obj-ma-cap04-1.spr	29	2	2	Lo¹i Tr©m C¸c §¹o sÜ th­êng dïng. 	0	0	10	0	31	300	300																			36	1	38	0														
+HuyÒn Thiªn Qu¸n	10	0	4	\spr\item\equip\cap\obj-ma-cap05-1.spr	28	2	2	Lo¹i kh¨n §¹o sÜ th­êng quÊn, lµm b»ng lôa th­îng ®¼ng. 	0	0	10	0	31	300	300																			36	1	38	0														
+Cµn Kh«n Qu¸n	10	0	5	\spr\item\equip\cap\obj-ma-cap06-3.spr	28	2	2	Lo¹i t¬ th­îng ®¼ng, khi hµnh ®éng phiªu diªu ph¶ng phÊt	0	0	10	0	31	300	300																			36	1	38	0														
+Tróc L¹p	10	0	6	\spr\item\equip\cap\obj-ma-cap07-3.spr	28	2	2	Lo¹i mò th­êng thÊy ë vïng Giang Nam. 	0	0	10	0	31	300	300																			36	1	38	0														
+ThÝch Kh¸ch Qu¸n	10	0	7	\spr\item\equip\cap\obj-ma-cap08-3.spr	28	2	2	Lo¹i mÆt n¹ thÝch kh¸ch th­êng sö dông	0	0	10	0	31	300	300																			36	1	38	0														
+Thï Du M·o	10	0	8	\spr\item\equip\cap\obj-ma-cap09-3.spr	28	2	2	Lo¹i mò ®­îc tinh chÕ tõ nh÷ng loµi cá quý hiÕm. o. 	0	0	10	0	31	300	300																			36	1	38	0														
+Nho C©n	10	0	9	\spr\item\equip\cap\obj-ma-cap10-3.spr	28	2	2	Lo¹i kh¨n c¸c tó tµi th­êng quÊn, ®i ®©u còng thÊy. 	0	0	10	0	31	300	300																			36	1	38	0														
+Vò L¨ng Ph¸t Qu¸n	10	0	10	\spr\item\equip\cap\obj-ma-cap11-3.spr	28	2	2	Lo¹i mò rÊt ®Ñp, danh sÜ ­a dïng. 	0	0	10	0	31	300	300																			36	1	38	0														
+Tö Kim ph¸t Qu¸n	10	0	11	\spr\item\equip\cap\obj-ma-cap12-3.spr	28	2	2	Dïng nh÷ng lo¹i b¹ch kim vµ b¶o th¹ch quý hiÕm chÕ thµnh, cù kú cao quý. 	0	0	10	0	31	300	300																			36	1	38	0														
+Träng Gi¸p Kh«i	10	0	12	\spr\item\equip\cap\obj-ma-cap13-3.spr	29	2	2	Lo¹i kh«i lµm b»ng tinh thÐp th­îng ®¼ng. 	0	0	10	0	31	300	300																			36	1	38	0														
+Tú H­u Kh«i	10	0	13	\spr\item\equip\cap\obj-ma-cap14-3.spr	29	2	2	Lo¹i kh«i b»ng b¹c nguyªn chÊt. 	0	0	10	0	31	300	300																			36	1	38	0														
+KhiÕu Hoa C©n	10	0	14	\spr\item\equip\cap\obj-ma-cap16-1.spr	28	2	2	Lo¹i kh¨n nh÷ng ng­êi an mµy th­êng quÊn trªn ®Çu, rÊt r¸ch n¸t. 	0	0	10	0	31	300	300																			36	1	38	0														
+TÇm Ma Qu¸n	10	0	15	\spr\item\equip\cap\obj-ma-cap17-3.spr	28	2	2	Qu¸n ®­îc chÕ t¸c tõ TÇm Ma	0	0	10	0	31	300	300																			36	1	38	0														
+Th« Bè §Çu C©n	10	0	16	\spr\item\equip\cap\obj-ma-cap19-1.spr	28	2	2	Lo¹i kh¨n th­êng ®éi cña nh÷ng ng­êi b×nh d©n. 	0	0	10	0	31	300	300																			36	1	38	0														
+Hoµng CÈm Ph¸t Qu¸n	10	0	17	\spr\item\equip\cap\obj-ma-cap20-1.spr	28	2	2	Dïng lo¹i t¬ tinh phÈm dÖt thµnh, kiÓu d¸ng rÊt ®Ñp. 	0	0	10	0	31	300	300																			36	1	38	0														
+BÝch Hoa M·o	10	0	18	\spr\item\equip\cap\obj-ma-cap21-1.spr	28	2	2	Lo¹i mò dÖt b»ng t¬ th­îng phÈm cã ®iÓm thªm nhiÒu h¹t ngäc nhá, gi¸ rÊt ®¾t. 	0	0	10	0	31	300	300																			36	1	38	0														
+Sa Di phôc	10	1	19	\spr\item\equip\armor\obj-ma-cloth01-1_0.spr	22	2	2	T¨ng y dµnh cho c¸c tiÓu Sa Di võa nhËp m«n	0	0	10	0	31	300	300																			36	1	38	0														
+Phóc §iÒn Y	10	1	20	\spr\item\equip\armor\obj-ma-cloth02-1_0.spr	22	2	2	Y phôc t¨ng nh©n th­êng mÆc	0	0	10	0	31	300	300																			36	1	38	0														
+Hçn Nguyªn Y	10	1	21	\spr\item\equip\armor\obj-ma-cloth04-1_0.spr	24	2	2	Lµ y phôc cña c¸c ®¹o sÜ th­êng mÆc khi luyÖn vâ 	0	0	10	0	31	300	300																			36	1	38	0														
+HuyÒn Thiªn Y	10	1	22	\spr\item\equip\armor\obj-ma-cloth05-1_0.spr	24	2	2	Y phôc chØ dµnh cho nh÷ng ng­êi ®¹o h¹nh th©m s©u, ®­îc t«n danh Thiªn S­ 	0	0	10	0	31	300	300																			36	1	38	0														
+Cµn Kh«n Y	10	1	23	\spr\item\equip\armor\obj-ma-cloth06-1_0.spr	24	2	2	Y phôc chØ dµnh cho nh÷ng ng­êi ®¹o h¹nh th©m s©u, ®­îc t«n danh Thiªn S­ 	0	0	10	0	31	300	300																			36	1	38	0														
+Cæn y	10	1	24	\spr\item\equip\armor\obj-ma-cloth07-1_0.spr	22	2	2	Thoa Y th­êng ®­îc sö dông trªn ¸o m­a cña Giang Nam NhÊt §íi Nh©n	0	0	10	0	31	300	300																			36	1	38	0														
+ThÝch Kh¸ch Y	10	1	25	\spr\item\equip\armor\obj-ma-cloth08-3_0.spr	22	2	2	Phôc søc th­êng mÆc cña thÝch kh¸ch	0	0	10	0	31	300	300																			36	1	38	0														
+Méng mÞ y	10	1	26	\spr\item\equip\armor\obj-ma-cloth09-3_0.spr	22	2	2	Dïng c¸c vËt liÖu ®Æc biÖt mµ chÕ thµnh, sö dông linh ho¹t. 	0	0	10	0	31	300	300																			36	1	38	0														
+Nho Sam	10	1	27	\spr\item\equip\armor\obj-ma-cloth10-3_0.spr	22	2	2	Do c¸c lo¹i v¶i th« dÖt thµnh	0	0	10	0	31	300	300																			36	1	38	0														
+Vò L¨ng Y	10	1	28	\spr\item\equip\armor\obj-ma-cloth11-3_0.spr	22	2	2	Lµ lo¹i y phôc mµ c¸c hiÖp kh¸ch ë Ngò L¨ng th­êng mÆc. 	0	0	10	0	31	300	300																			36	1	38	0														
+Tö Kim Y	10	1	29	\spr\item\equip\armor\obj-ma-cloth12-3_0.spr	22	2	2	Dïng Tµm t¬ phèi hîp víi Kim t¬ chÕ thµnh, võa danh quý võa cã thÓ hé th©n. 	0	0	10	0	31	300	300																			36	1	38	0														
+Träng Gi¸p Trang	10	1	30	\spr\item\equip\armor\obj-ma-cloth13-3_0.spr	23	2	2	Do nhiÒu miÕng thÐp máng ghÐp thµnh, gän nhÑ linh ho¹t. 	0	0	10	0	31	300	300																			36	1	38	0														
+Tú H­u Trang	10	1	31	\spr\item\equip\armor\obj-ma-cloth14-3_0.spr	23	2	2	Dïng toµn da cña qu¸i thó vµ da Gi¶i Tr¹i kÕt thµnh, kiªn cè v« cïng. 	0	0	10	0	31	300	300																			36	1	38	0														
+Kiªu Hoa Y	10	1	32	\spr\item\equip\armor\obj-ma-cloth16-1_0.spr	22	2	2	Lµ y phôc cña nh÷ng ng­êi ¨n mµy b×nh th­êng, gièng nh­ Bè y, cã rÊt nhiÒu tói	0	0	10	0	31	300	300																			36	1	38	0														
+TÇm Ma Y	10	1	33	\spr\item\equip\armor\obj-ma-cloth17-3_0.spr	22	2	2	Dïng tÇm ma chÕ t¸c, réng nh­ng kh«ng v­íng, thÝch hîp gi¸c ®Êu	0	0	10	0	31	300	300																			36	1	38	0														
+¸o v¶i th« 	10	1	34	\spr\item\equip\armor\obj-ma-cloth19-1_0.spr	22	2	2	¸o v¶i th« s¬, kh«ng cã tªn gäi	0	0	10	0	31	300	300																			36	1	38	0														
+Hoµng CÈm ®o¶n y	10	1	35	\spr\item\equip\armor\obj-ma-cloth20-1_0.spr	22	2	2	CÈm y tinh chÕ, gän nhÑ linh ho¹t. 	0	0	10	0	31	300	300																			36	1	38	0														
+BÝch Hoa Bµo	10	1	36	\spr\item\equip\armor\obj-ma-cloth21-1_0.spr	22	2	2	DÖt tõ t¬ BÝch Tµm, mÒm m¹i 	0	0	10	0	31	300	300																			36	1	38	0														
+ThÝch Ni §Çu	10	0	37	\spr\item\equip\cap\obj-fm-cap01-1.spr	28	2	2	M·o ®­îc dïng bëi tiÓu ni c«	0	0	10	0	31	300	300																			36	1	38	1														
+Thanh Anh M·o	10	0	38	\spr\item\equip\cap\obj-fm-cap02-2.spr	28	2	2	Mò ®éi b»ng b«ng th­îng h¹ng. 	0	0	10	0	31	300	300																			36	1	38	1														
+Minh TÞnh M·o	10	0	39	\spr\item\equip\cap\obj-fm-cap03-1.spr	22	2	2	Trang phôc th­êng ngµy cña n÷ ni ®¾c ®¹o	0	0	10	0	31	300	300																			36	1	38	1														
+tu Ch©n Tr©m	10	0	40	\spr\item\equip\cap\obj-fm-cap04-1.spr	30	2	2	TiÓu thoa ®­îc n÷ ®¹o sÜ th­êng dïng ®Ó kÕt tãc	0	0	10	0	31	300	300																			36	1	38	1														
+V« Cùc Tr©m	10	0	41	\spr\item\equip\cap\obj-fm-cap05-2.spr	30	2	2	TiÓu thoa ®­îc n÷ ®¹o sÜ cã tu vi nhÊt ®Þnh sö dông ®Ó kÕt tãc	0	0	10	0	31	300	300																			36	1	38	1														
+PhØ Thóy Tr©m	10	0	42	\spr\item\equip\cap\obj-fm-cap06-1.spr	30	2	2	Lo¹i tr©m cµi tãc b»ng lôa, cã ®iÓm vµng. 	0	0	10	0	31	300	300																			36	1	38	1														
+Thôc CÈm DiÖn Tr¸o	10	0	43	\spr\item\equip\cap\obj-fm-cap07-1.spr	28	2	2	Phßng hé m·o ®­îc gia c«ng tõ Thôc CÈm, cã t¸c dông kh¸ng c«ng kÝch lín	0	0	10	0	31	300	300																			36	1	38	1														
+Thó Cèt Tr©m	10	0	44	\spr\item\equip\cap\obj-fm-cap08-1.spr	30	2	2	Lo¹i Tr©m lµm b»ng x­¬ng thó. 	0	0	10	0	31	300	300																			36	1	38	1														
+HuyÒn Tª Ph¸t Tr©m	10	0	45	\spr\item\equip\cap\obj-fm-cap09-3.spr	28	2	2	Lo¹i mò phßng hé th­îng ®¼ng b»ng da tª gi¸c, cùc kú quý hiÕm. 	0	0	10	0	31	300	300																			36	1	38	1														
+Y NØ §Çu Hoµn	10	0	46	\spr\item\equip\cap\obj-fm-cap10-1.spr	28	2	2	§Çu hoµn ®­îc lµm tõ Ngò S¾c Bµn Hoµn, phÝa trªn cã kh¶m lôc th¹ch	0	0	10	0	31	300	300																			36	1	38	1														
+Kª VÜ Thoa	10	0	47	\spr\item\equip\cap\obj-fm-cap11-3.spr	30	2	2	Tr©m h×nh kª vÜ, trang søc kh«ng tÖ cña n÷ giíi	0	0	10	0	31	300	300																			36	1	38	1														
+L¨ng La Tr©m	10	0	48	\spr\item\equip\cap\obj-fm-cap12-3.spr	28	2	2	Lo¹i mò b¶o hé tinhchÕ tõ vµng cùc kú quý hiÕm. 	0	0	10	0	31	300	300																			36	1	38	1														
+Thanh Phông Tr©m	10	0	49	\spr\item\equip\cap\obj-fm-cap13-1.spr	28	2	2	Trang søc mµu xanh, ®Çu qu¸n ®­îc n÷ sö dông kÕt tãc, tiÖn hµnh ®éng	0	0	10	0	31	300	300																			36	1	38	1														
+Hång NhÜ Tr©m	10	0	50	\spr\item\equip\cap\obj-fm-cap14-3.spr	28	2	2	Mét lo¹i kh¨n mµ c¸c n÷ t­íng rÊt thÝch quÊn. 	0	0	10	0	31	300	300																			36	1	38	1														
+Kim Phông Kh«i	10	0	51	\spr\item\equip\cap\obj-fm-cap15-1.spr	31	2	2	Lo¹i mò b¶o hé tinh chÕ tõ vµng, trïm kÝn c¶ ®Çu. 	0	0	10	0	31	300	300																			36	1	38	1														
+Ma Bè M·o	10	0	52	\spr\item\equip\cap\obj-fm-cap16-1.spr	28	2	2	Lo¹i mò b»ng v¶i cã ®Ønh trßn. 	0	0	10	0	31	300	300																			36	1	38	1														
+XÝch HuyÕt Thoa	10	0	53	\spr\item\equip\cap\obj-fm-cap17-2.spr	30	2	2	Mét lo¹i tr©m thoa quý hiÕm, cã mµu ®á nh­ huyÕt. 	0	0	10	0	31	300	300																			36	1	38	1														
+L­u Ly Thoa	10	0	54	\spr\item\equip\cap\obj-fm-cap18-3.spr	30	2	2	Thoa cã kh¶m thñy tinh, cùc kú quý hiÕm. 	0	0	10	0	31	300	300																			36	1	38	1														
+Thanh L­u Ly Thoa	10	0	55	\spr\item\equip\cap\obj-fm-cap20-3.spr	30	2	2	Lo¹i tr©m cµi b»ng L­u Ly pha lÉn nhiÒu lo¹i b¶o th¹ch. 	0	0	10	0	31	300	300																			36	1	38	1														
+Sa Di phôc	10	1	56	\spr\item\equip\armor\obj-fm-cloth01-1_0.spr	22	2	2	T¨ng y ®­îc n÷ ni c« míi nhËp m«n sö dông	0	0	10	0	31	300	300																			36	1	38	1														
+C«n L­ Y	10	1	57	\spr\item\equip\armor\obj-fm-cloth02-1_0.spr	22	2	2	N÷ ni th­îng y	0	0	10	0	31	300	300																			36	1	38	1														
+Minh TÞnh Y	10	1	58	\spr\item\equip\armor\obj-fm-cloth03-2_0.spr	22	2	2	Trang phôc sö dông th­êng ngµy cña ni c« ®¾c ®¹o	0	0	10	0	31	300	300																			36	1	38	1														
+tu Ch©n Y	10	1	59	\spr\item\equip\armor\obj-fm-cloth04-1_0.spr	24	2	2	Y phôc th­êng nhËt cña c¸c n÷ ®¹o sÜ. 	0	0	10	0	31	300	300																			36	1	38	1														
+V« Cùc Y	10	1	60	\spr\item\equip\armor\obj-fm-cloth05-3_0.spr	24	2	2	§¹i thµnh v« dông, ®¹i ®¹o v« cùc. 	0	0	10	0	31	300	300																			36	1	38	1														
+B¨ng TÇm Y	10	1	61	\spr\item\equip\armor\obj-fm-cloth06-2_0.spr	24	2	2	T¬ cña B¨ng Tµm kÕt thµnh, ng­êi mÆc vµo cèt c¸ch nh­ thÇn tiªn	0	0	10	0	31	300	300																			36	1	38	1														
+Thôc CÈm y	10	1	62	\spr\item\equip\armor\obj-fm-cloth07-3_0.spr	24	2	2	Dïng thôc cÈm chÕ t¸c, nh­ da r¾n dÝnh trªn ng­êi, hµnh ®éng linh ho¹t, cã chót mª lùc	0	0	10	0	31	300	300																			36	1	38	1														
+HuyÒn Ly y	10	1	63	\spr\item\equip\armor\obj-fm-cloth08-1_0.spr	24	2	2	N÷ phôc, ®­îc may b»ng da r¸i c¸. 	0	0	10	0	31	300	300																			36	1	38	1														
+Cöu VÜ B¹ch Hå trang	10	1	64	\spr\item\equip\armor\obj-fm-cloth09-3_0.spr	28	2	2	§­îc may tõ ®u«i cña 9 con Hå Ly tinh, mÆc vµo n¨ng lùc v« song	0	0	10	0	31	300	300																			36	1	38	1														
+Y NØ Th­êng	10	1	65	\spr\item\equip\armor\obj-fm-cloth10-1_0.spr	24	2	2	Y phôc ®Ñp nh­ hoa t­¬i cña n÷ ®¹o sÜ. 	0	0	10	0	31	300	300																			36	1	38	1														
+Tèng CÈm Sam	10	1	66	\spr\item\equip\armor\obj-fm-cloth11-3_0.spr	24	2	2	Lµ lo¹i y phôc ®­îc chÕ thµnh tõ nhiÒu lo¹i th¶o ®Þa næi tiÕng ë T« Ch©u. 	0	0	10	0	31	300	300																			36	1	38	1														
+L¨ng La sam	10	1	67	\spr\item\equip\armor\obj-fm-cloth12-2_0.spr	24	2	2	Dïng toµn lµ nh÷ng th¶o d­îc quý chÕ thµnh, ®Ñp ®Ï l¹ kú. 	0	0	10	0	31	300	300																			36	1	38	1														
+Thanh Phông Sam	10	1	68	\spr\item\equip\armor\obj-fm-cloth13-1_0.spr	25	2	2	Lµ ¸o gi¸p cña n÷, ®­îc kÕt b»ng ngh÷ng miÕng ®ång xanh, cã kh¶ n¨ng phßng ngù cùc tèt. 	0	0	10	0	31	300	300																			36	1	38	1														
+Hång NhÜ gi¸p	10	1	69	\spr\item\equip\armor\obj-fm-cloth14-1_0.spr	25	2	2	Lµ lo¹i ¸o gi¸p cao cÊp cña c¸c n÷ t­íng. 	0	0	10	0	31	300	300																			36	1	38	1														
+HuyÒn ThiÕt Gi¸p	10	1	70	\spr\item\equip\armor\obj-fm-cloth15-2_0.spr	25	2	2	Lµ lo¹i gi¸p kÕt hîp ThiÕt vµ B¹c, c¸c n÷ t­íng th­êng rÊt thÝch dïng. 	0	0	10	0	31	300	300																			36	1	38	1														
+Ma Y	10	1	71	\spr\item\equip\armor\obj-fm-cloth16-1_0.spr	24	2	2	Lµ lo¹i ¸o ®­îc lµm tõ vá c©y Ma thô. 	0	0	10	0	31	300	300																			36	1	38	1														
+Thiªn bæ y	10	1	72	\spr\item\equip\armor\obj-fm-cloth17-1_0.spr	24	2	2	Lo¹i ¸o ®­îc may tõ v« sè ¸o cò r¸ch kh¸c, dµy vµ Êm. 	0	0	10	0	31	300	300																			36	1	38	1														
+Ph©n §iÖp Sam	10	1	73	\spr\item\equip\armor\obj-fm-cloth18-3_0.spr	24	2	2	ThÓ hiÖn tinh thÇn ®oµn kÕt cña C¸i bang, trªn d­íi ®ång lßng, viÖc g× còng xong. 	0	0	10	0	31	300	300																			36	1	38	1														
+NguyÖt Hoa quÇn	10	1	74	\spr\item\equip\armor\obj-fm-cloth20-3_0.spr	24	2	2	DÖt b»ng l«ng §æng T­íc, võa cao quý võa cã tÝnh n¨ng b¶o vÖ. 	0	0	10	0	31	300	300																			36	1	38	1														
+B¸ch Phong TriÒu D­¬ng quÇn	10	1	75	\spr\item\equip\armor\obj-fm-cloth21-2_0.spr	24	2	2	¸nh s¸ng huyÒn diÖu nh­ buæi chiÒu tµ. 	0	0	10	0	31	300	300																			36	1	38	1														
+KhÊp §Þa quÇn	10	1	76	\spr\item\equip\armor\obj_fm_lf_001_0.spr	41	2	2	Lµ lo¹i ¸o dµi th­êng thÊy, s¾c th¸i uy phong, t­îng tr­ng cho sù cao quý. 	0	0	10	0	31	300	300																			36	1	38	1														
+B¨ng Tinh QuÇn	10	1	77	\spr\item\equip\armor\obj_fm_lf_002_0.spr	41	2	2	Lo¹i ¸o dµi n÷ t­íng thÝch mÆc, thÓ hiÖn vÎ ®Ñp nhu m× hoµn mü cña n÷ tÝnh. 	0	0	10	0	31	300	300																			36	1	38	1														

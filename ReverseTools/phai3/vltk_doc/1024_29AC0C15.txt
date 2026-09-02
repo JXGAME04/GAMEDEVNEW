@@ -1,0 +1,765 @@
+[List]
+Count=118
+;MAX_ID = 10270
+;10261记录帮会的竞投排名数量
+;10262
+;10263,10264,10265,10266
+;10267兵甲周排名
+;10268玩家自己的兵甲排名情况
+;10269乱战九州谷
+;10270成就系统
+
+[0]
+Name=Thập đại cao thủ 
+Unit=
+Class=-1
+ID=-1
+
+[1]
+Name=+Thập đại cao thủ thế giới
+Unit=
+Class=1
+ID=1
+
+[2]
+Name=+Hoang dã Thập đại cao thủ 
+Unit=
+Class=1
+ID=4
+
+[3]
+Name=+Môn phái cao thủ 
+Unit=
+Class=-1
+ID=-1
+
+[4]
+Name=++Thiếu Lâm Thập đại cao thủ 
+Unit=
+Class=1
+ID=5
+
+[5]
+Name=++Thiên Vương Thập đại cao thủ 
+Unit=
+Class=1
+ID=6
+
+[6]
+Name=++Đường Môn Thập đại cao thủ 
+Unit=
+Class=1
+ID=7
+
+[7]
+Name=++Ngũ Độc Thập đại cao thủ 
+Unit=
+Class=1
+ID=8
+
+[8]
+Name=++Nga Mi Thập đại cao thủ 
+Unit=
+Class=1
+ID=9
+
+[9]
+Name=++Thúy Yên Thập đại cao thủ 
+Unit=
+Class=1
+ID=10
+
+[10]
+Name=++Cái Bang Thập đại cao thủ 
+Unit=
+Class=1
+ID=11
+
+[11]
+Name=++Thiên Nhẫn Thập đại cao thủ 
+Unit=
+Class=1
+ID=12
+
+[12]
+Name=++Võ Đang Thập đại cao thủ 
+Unit=
+Class=1
+ID=13
+
+[13]
+Name=++Côn Lôn Thập đại cao thủ 
+Unit=
+Class=1
+ID=14
+
+[14]
+Name=++Thập đại cao thủ Hoa Sơn
+Unit=
+Class=1
+ID=15
+
+[15]
+Name=++Vũ Hồn Thập Đại Cao Thủ
+Unit=
+Class=1
+ID=16
+
+[16]
+Name=++Tiêu Dao Thập Đại Cao Thủ
+Unit=
+Class=1
+ID=17
+
+[17]
+Name=Thập đại phú hộ 
+Unit=
+Class=-1
+ID=-1
+
+
+[18]
+Name=+Thế giới Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=2
+
+[19]
+Name=+Hoang dã Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=17
+
+[20]
+Name=+Môn Phái phú hộ 
+Unit=lượng
+Class=-1
+ID=-1
+
+[21]
+Name=++Thiếu Lâm Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=18
+
+[22]
+Name=++Thiên Vương Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=19
+
+[23]
+Name=++Đường Môn Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=20
+
+[24]
+Name=++Ngũ Độc Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=21
+
+[25]
+Name=++Nga Mi Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=22
+
+[26]
+Name=++Thúy Yên Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=23
+
+[27]
+Name=++Cái Bang Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=24
+
+[28]
+Name=++Thiên Nhẫn Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=25
+
+
+[29]
+Name=++Võ Đang Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=26
+
+[30]
+Name=++Côn Lôn Thập đại Phú Hào
+Unit=lượng
+Class=1
+ID=27
+
+[31]
+Name=++Thập đại phú hào Hoa Sơn
+Unit=lượng
+Class=1
+ID=28
+
+[32]
+Name=++Vũ Hồn Thập Đại Phú Hào
+Unit=lượng
+Class=1
+ID=29
+
+[33]
+Name=++Tiêu Dao Thập Đại Phú Hào
+Unit=lượng
+Class=1
+ID=30
+
+[34]
+Name=Tống Kim 
+Unit=
+Class=-1
+ID=-1
+
+[35]
+Name=+Phong vân
+Unit=
+Class=-1
+ID=-1
+
+[36]
+Name=++Kỷ lục thế giới
+Unit=
+Class=2
+ID=10083
+
+[37]
+Name=++Phương thức đoạt cờ ngẫu nhiên
+Unit=
+Class=2
+ID=10006
+
+[38]
+Name=++Phương thức đoạt cờ cố định
+Unit=
+Class=2
+ID=10007
+
+[39]
+Name=++Phương thức Bảo vệ Nguyên soái
+Unit=
+Class=2
+ID=10093
+
+[40]
+Name=++Phương thức Tống Kim Sát Lục
+Unit=
+Class=2
+ID=10143
+
+
+[41]
+Name=+Chiến trường
+Unit=
+Class=-1
+ID=-1
+
+[42]
+Name=++Chiến trường Cao cấp
+Unit=
+Class=-1
+ID=-1
+
+[43]
+Name=+++Phương thức đoạt cờ ngẫu nhiên
+Unit=
+Class=2
+ID=10027
+
+[44]
+Name=+++Phương thức đoạt cờ cố định
+Unit=
+Class=2
+ID=10028
+
+[45]
+Name=+++Phương thức Bảo vệ Nguyên soái
+Unit=
+Class=2
+ID=10094
+
+[46]
+Name=+++Phương thức Tống Kim Sát Lục
+Unit=
+Class=2
+ID=10144
+
+[47]
+Name=++Chiến trường Trung cấp
+Unit=
+Class=-1
+ID=-1
+
+[48]
+Name=+++Phương thức đoạt cờ ngẫu nhiên
+Unit=
+Class=2
+ID=10030
+
+[49]
+Name=+++Phương thức đoạt cờ cố định
+Unit=
+Class=2
+ID=10031
+
+[50]
+Name=+++Phương thức Bảo vệ Nguyên soái
+Unit=
+Class=2
+ID=10095
+
+[51]
+Name=+++Phương thức Tống Kim Sát Lục
+Unit=
+Class=2
+ID=10145
+
+[52]
+Name=++Chiến trường sơ cấp
+Unit=
+Class=-1
+ID=-1
+
+[53]
+Name=+++Phương thức đoạt cờ ngẫu nhiên
+Unit=
+Class=2
+ID=10033
+
+[54]
+Name=+++Phương thức đoạt cờ cố định
+Unit=
+Class=2
+ID=10034
+
+[55]
+Name=+++Phương thức Bảo vệ Nguyên soái
+Unit=
+Class=2
+ID=10096
+
+[56]
+Name=+++Phương thức Tống Kim Sát Lục
+Unit=
+Class=2
+ID=10146
+
+[57]
+Name=+Đánh giá 
+Unit=
+Class=-1
+ID=-1
+
+[58]
+Name=++Định Quốc Nguyên Soái
+Unit=Tích điểm
+Class=1
+ID=10001
+
+[59]
+Name=++An Bang ĐạiTướng Quân
+Unit=Tích điểm
+Class=1
+ID=10002
+
+[60]
+Name=++Phiêu mã đại tướng quân
+Unit=Tích điểm
+Class=1
+ID=10003
+
+[61]
+Name=++Vũ Lâm Trung Lang Tướng
+Unit=Tích điểm
+Class=1
+ID=10004
+
+[62]
+Name=++Chiêu Võ Hiệu úy
+Unit=Tích điểm
+Class=1
+ID=10005
+
+[63]
+Name=Liên đấu
+Unit=
+Class=-1
+ID=-1
+
+[64]
+Name=+Xếp hạng chung kết
+Unit=cường
+Class=1
+ID=10197
+Flag=-1
+
+; [63]
+; Name=++武林联赛
+; Unit=轮
+; Class=1
+; ID=10197
+; Flag=-1
+
+; [64]
+; Name=+师徒双人赛排行
+; Unit=
+; Class=-1
+; ID=-1
+
+; [65]
+; Name=++武林联赛
+; Unit=名
+; Class=1
+; ID=10257
+; Flag=-1
+
+; [66]
+; Name=+单人门派赛排行
+; Unit=
+; Class=-1
+; ID=-1
+
+
+; [67]
+; Name=++武林联赛
+; Unit=
+; Class=-1
+; ID=-1
+
+; [68]
+; Name=+++少林
+; Unit=名
+; Class=1
+; ID=10211
+; Flag=-1
+
+; [69]
+; Name=+++天王
+; Unit=名
+; Class=1
+; ID=10212
+; Flag=-1
+
+; [70]
+; Name=+++唐门
+; Unit=名
+; Class=1
+; ID=10213
+; Flag=-1
+
+; [71]
+; Name=+++五毒
+; Unit=名
+; Class=1
+; ID=10214
+; Flag=-1
+
+; [72]
+; Name=+++峨嵋
+; Unit=名
+; Class=1
+; ID=10215
+; Flag=-1
+
+; [73]
+; Name=+++翠烟
+; Unit=名
+; Class=1
+; ID=10216
+; Flag=-1
+
+; [74]
+; Name=+++丐帮
+; Unit=名
+; Class=1
+; ID=10217
+; Flag=-1
+
+; [75]
+; Name=+++天忍
+; Unit=名
+; Class=1
+; ID=10218
+; Flag=-1
+
+; [76]
+; Name=+++武当
+; Unit=名
+; Class=1
+; ID=10219
+; Flag=-1
+
+; [77]
+; Name=+++昆仑
+; Unit=名
+; Class=1
+; ID=10220
+; Flag=-1
+
+; [78]
+; Name=+++华山
+; Unit=名
+; Class=1
+; ID=10222
+; Flag=-1
+
+; [79]
+; Name=+++武魂
+; Unit=名
+; Class=1
+; ID=10223
+; Flag=-1
+
+; [80]
+; Name=+三人赛排行
+; Unit=
+; Class=-1
+; ID=-1
+
+
+; [81]
+; Name=++武林联赛
+; Unit=名
+; Class=1
+; ID=10224
+; Flag=-1
+
+; [82]
+; Name=+单人混合赛排行
+; Unit=
+; Class=-1
+; ID=-1
+
+
+; [83]
+; Name=++武林联赛
+; Unit=名
+; Class=1
+; ID=10236
+; Flag=-1
+
+; [84]
+; Name=+同系双人赛排行
+; Unit=
+; Class=-1
+; ID=-1
+
+; [85]
+; Name=++武林联赛
+; Unit=
+; Class=-1
+; ID=-1
+
+; [86]
+; Name=+++金系
+; Unit=名
+; Class=1
+; ID=10243
+; Flag=-1
+
+; [87]
+; Name=+++ľϵ
+; Unit=名
+; Class=1
+; ID=10244
+; Flag=-1
+
+; [88]
+; Name=+++ˮϵ
+; Unit=名
+; Class=1
+; ID=10245
+; Flag=-1
+
+; [89]
+; Name=+++火系
+; Unit=名
+; Class=1
+; ID=10246
+; Flag=-1
+
+; [90]
+; Name=+++土系
+; Unit=名
+; Class=1
+; ID=10247
+; Flag=-1
+
+[91]
+Name=Nhiệm vụ 
+Unit=
+Class=-1
+ID=-1
+
+[92]
+Name=+Nhiệm vụ thập đại quái kiệt
+Unit= lần
+Class=1
+ID=10118
+
+[93]
+Name=Xông ải
+Unit=
+Class=-1
+ID=-1
+
+[94]
+Name=+Nhiệm vụ Thách thức thời gian Sơ cấp 
+Unit= giây 
+Class=1
+ID=10179
+
+[95]
+Name=+ 'Nhiệm vụ Thách thức thời gian' Cao cấp 
+Unit= giây 
+Class=1
+ID=10180
+
+[96]
+Name=Khác
+Unit=
+Class=-1
+ID=-1
+
+[97]
+Name=+Thưởng ngân lượng cho 10 người thợ săn
+Unit=người 
+Class=1
+ID=10119
+
+[98]
+Name=Thập đại bang phái
+Unit=
+Class=-1
+ID=-1
+
+[99]
+Name=+Thành viên
+Unit=người 
+Class=1
+ID=20001
+
+[100]
+Name=+Đẳng cấp
+Unit=tên
+Class=1
+ID=20002
+
+[101]
+Name=Võ Lâm Đệ Nhất Bang
+Unit=
+Class=-1
+ID=-1
+
+[102]
+Name=+Xếp hạng bang hội
+Unit=Tích điểm
+Class=1
+ID=10225
+
+[103]
+Name=+Xếp hạng cá nhân
+Unit=Tích điểm
+Class=-1
+ID=-1
+
+[104]
+Name=++Võ lâm thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10227
+
+[105]
+Name=++Thành Đô thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10228
+
+[106]
+Name=++Phượng Tường thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10229
+
+[107]
+Name=++Biện Kinh thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10230
+
+[108]
+Name=++Lâm An thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10231
+
+[109]
+Name=++Đại Lý thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10232
+
+[110]
+Name=++Tương Dương thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10233
+
+[111]
+Name=++Dương Châu thập đại anh hùng
+Unit=Tích điểm
+Class=1
+ID=10234
+
+[112]
+Name=Bảng xếp hạng binh giáp
+Unit=
+Class=-1
+ID=-1
+
+[113]
+Name=+Cá nhân
+Unit=
+Class=1
+ID=10268
+SDBKey=FUNC_RANK_EQUIPVALUE_MY
+
+[114]
+Name=Bảng xếp hạng Hệ Thống Thành Tựu
+Unit=Điểm Thành Tựu
+Class=1
+ID=10270
+
+
+[115]
+;szName
+;szUnit用于显示
+;nRankType
+;nRankID
+;SDBKey
+Name=Bảng xếp hạng Huyết Chiến Thương Lang.
+Unit=
+Class=-1
+ID=-1
+
+[116]
+Name=+Bảng xếp hạng Huyết Chiến Liên Trảm
+Unit=Liên trảm
+Class=1
+ID=10271
+
+[117]
+Name=+Bảng xếp hạng Huyết Chiến Công Huân
+Unit=Điểm công huân
+Class=1
+ID=10272

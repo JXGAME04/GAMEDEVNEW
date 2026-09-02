@@ -1,0 +1,15 @@
+FactionName	FactionId	FinishStep
+ThiÕu L©m	0	6
+Thiªn V­¬ng	1	4
+§­êng M«n	2	7
+Ngò §éc	3	5
+Nga Mi	4	7
+Thóy Yªn	5	6
+C¸i Bang	6	9
+Thiªn NhÉn	7	9
+Vâ §ang	8	5
+C«n L«n	9	5
+NguyÖt Ca §¶o	13	14
+ Hoa S¬n	10	9
+Vò Hån 	11	3
+Ph¸i Tiªu Dao	12	6

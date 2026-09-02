@@ -284,7 +284,7 @@ void KItem::PF_AppendDesc(char* pszMsg) const
 		if (p && p->szName[0])
 			sprintf(szLine, "<color=Green>%d sao %s <color>", nLv, p->szName);	// G_STR_COLOR_XING ([PF13 31/08c] dau cach truoc tag dong - RULE 0)
 		else
-			sprintf(szLine, "<color=Green>%d sao L\347 kh\266m tr\350ng <color>", nLv);	// G_STR_COLOR_EMPTY_XING
+			sprintf(szLine, "<color=Green>%d sao Lç kh¶m trèng <color>", nLv);	// G_STR_COLOR_EMPTY_XING
 		strcat(pszMsg, szLine);
 		strcat(pszMsg, "  \n  ");
 	}

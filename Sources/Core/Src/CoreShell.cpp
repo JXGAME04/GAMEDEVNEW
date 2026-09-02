@@ -2789,7 +2789,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					KSkill * pOrdinSkill = (KSkill *)g_SkillManager.GetSkill(pNode->m_SkillID, pNode->m_Level);
 					if (pOrdinSkill)
 					{
-						if(pOrdinSkill->GetSkillStyle() == SKILL_SS_Missles || pOrdinSkill->GetSkillStyle() == SKILL_SS_InitiativeNpcState)
+						if((pOrdinSkill->GetSkillStyle() == SKILL_SS_Missles || pOrdinSkill->GetSkillStyle() == SKILL_SS_InitiativeNpcState) && pNode->m_LeftTime != 0)	// [VHTD 02/09h] node 0 giay (thuoc tinh tuc thoi 2117 Am Luat...) = rac, khong ve icon '00s'
 						{
 							pInfo->nSkillId = pNode->m_SkillID;
 							pInfo->nLeftTime = pNode->m_LeftTime;
@@ -2812,7 +2812,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 					KSkill * pOrdinSkill = (KSkill *)g_SkillManager.GetSkill(pNode->m_SkillID, pNode->m_Level);
 					if (pOrdinSkill)
 					{
-						if(pOrdinSkill->GetSkillStyle() == SKILL_SS_Missles || pOrdinSkill->GetSkillStyle() == SKILL_SS_InitiativeNpcState)
+						if((pOrdinSkill->GetSkillStyle() == SKILL_SS_Missles || pOrdinSkill->GetSkillStyle() == SKILL_SS_InitiativeNpcState) && pNode->m_LeftTime != 0)	// [VHTD 02/09h] node 0 giay (thuoc tinh tuc thoi 2117 Am Luat...) = rac, khong ve icon '00s'
 						{
 							nCount++;
 						}

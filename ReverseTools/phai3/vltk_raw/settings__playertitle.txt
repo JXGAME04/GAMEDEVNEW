@@ -1,0 +1,412 @@
+TitleName	TitleId	SprPath	Color	SpeicalGraphic	FaceId	AuraSkill	AuraSkillLevel	ExtSkill1	ExtSkillLevel1	ExtSkill2	ExtSkillLevel2	ExtSkill3	ExtSkillLevel3	ExtSkill4	ExtSkillLevel4	ExtSkill5	ExtSkillLevel5	Memo	HidSkill1	HidSkillLevel1	HidSkill2	HidSkillLevel2	HidSkill3	HidSkillLevel3	HidSkill4	HidSkillLevel4	HidSkill5	HidSkillLevel5
+Binh sÜ 	1		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+HiÖu óy 	2		225,0,225	7	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thèng LÜnh 	3		225,0,225	13	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Phã t­íng 	4		225,0,225	21	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§¹i t­íng 	5		225,0,225	32	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Nguyªn So¸i 	6		225,0,225	43	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Tæng l·nh ®éi	7		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ThËp ®¹i cao thñ 	8		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ThiÕu L©m cao thñ 	9		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn V­¬ng cao thñ 	10		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi §­êng M«n cao thñ 	11		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Ngò §éc cao thñ 	12		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Nga Mi cao thñ 	13		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thóy Yªn cao thñ 	14		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C¸i Bang cao thñ 	15		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn NhÉn  cao thñ 	16		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Vâ §ang cao thñ 	17		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C«n L«n cao thñ 	18		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi tuyÓn thñ 	19		225,0,225	82	0	0	0	0	0	0	0	0	0	0	0	0	0											
+ThiÕu L©m kiÖt xuÊt	20		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thiªn V­¬ng kiÖt xuÊt	21		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§­êng M«n  kiÖt xuÊt	22		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Ngò §éc kiÖt xuÊt	23		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Nga Mi  kiÖt xuÊt	24		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thóy Yªn kiÖt xuÊt	25		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+C¸i Bang kiÖt xuÊt	26		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thiªn NhÉn  kiÖt xuÊt	27		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ §ang  kiÖt xuÊt	28		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+C«n L«n  kiÖt xuÊt	29		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi phãng viªn chiÕn tr­êng	30		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi nh©n viªn c«ng t¸c	31		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ThiÕu L©m Qu¸n qu©n	32		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn V­¬ng  Qu¸n qu©n	33		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi §­êng M«n Qu¸n qu©n	34		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Ngò §éc Qu¸n qu©n	35		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Nga Mi Qu¸n qu©n	36		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thóy Yªn Qu¸n qu©n	37		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C¸i Bang Qu¸n qu©n	38		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn NhÉn Qu¸n qu©n	39		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Vâ §ang Qu¸n qu©n	40		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C«n L«n Qu¸n qu©n	41		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ThiÕu L©m ¸ qu©n	42		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn V­¬ng ¸ qu©n	43		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi §­êng M«n ¸ qu©n	44		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Ngò §éc ¸ qu©n	45		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Nga Mi ¸ qu©n	46		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thóy Yªn ¸ qu©n	47		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C¸i Bang ¸ qu©n	48		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn NhÉn ¸ qu©n	49		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Vâ §ang ¸ qu©n	50		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C«n L«n ¸ qu©n	51		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ThiÕu L©m h¹ng 3	52		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn V­¬ng h¹ng 3	53		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi §­êng M«n h¹ng 3	54		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Ngò §éc h¹ng 3	55		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Nga Mi h¹ng 3	56		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thóy Yªn h¹ng 3	57		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C¸i Bang h¹ng 3	58		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Thiªn NhÉn h¹ng 3	59		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Vâ §ang h¹ng 3	60		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi C«n L«n h¹ng 3	61		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Qu¸n qu©n Song ®Êu	62		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ¸ qu©n Song ®Êu	63		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi h¹ng 3 Song ®Êu	64		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Qu¸n qu©n Ngò hµnh ®Êu	65		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ¸ qu©n Ngò hµnh ®Êu	66		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi h¹ng 3 Ngò hµnh ®Êu	67		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Qu¸n qu©n ThËp ®Êu	68		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ¸ qu©n ThËp ®Êu	69		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi h¹ng 3 ThËp ®Êu	70		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Qu¸n qu©n ThËp lôc ®Êu	71		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ¸ qu©n ThËp lôc ®Êu	72		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi h¹ng 3 ThËp lôc ®Êu	73		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi Qu¸n qu©n toµn khu vùc	74		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi ¸ qu©n toµn khu vùc	75		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §¹i héi h¹ng 3 toµn khu vùc	76		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thanh Long Vâ sÜ 	77		225,0,225	96	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thanh Long KiÕm S¸t 	78		225,0,225	97	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thanh Long Vò TuyÖt 	79		225,0,225	98	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Long ThÇn KiÕm 	80		225,0,225	99	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu Qu¸n Qu©n	81		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu ¸ Qu©n	82		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng 3	83		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng t­ 	84		225,0,225	82	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m kiÖt xuÊt liªn ®Êu Qu¸n qu©n	85		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m kiÖt xuÊt liªn ®Êu ¸ qu©n	86		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m kiÖt xuÊt liªn ®Êu h¹ng 3	87		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ l©m kiÖt xuÊt liªn ®Êu h¹ng t­ 	88		225,0,225	82	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tèng binh	89		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tèng HiÖu óy	90		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tèng Thèng lÜnh	91		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tèng Phã t­íng	92		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tèng §¹i t­íng	93		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Kim binh	94		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Kim HiÖu óy	95		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Kim Thèng LÜnh	96		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Kim Phã t­íng	97		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Kim §¹i t­íng	98		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TuyÓn thñ vâ l©m lÇn 2	99		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Binh sÜ 	100		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+HiÖu óy 	101		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thèng LÜnh 	102		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Phã t­íng 	103		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§¹i t­íng 	104		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §Ö NhÊt Bang	105		225,0,225	107	0	0	0	990	2	991	10	976	2	977	10	0	0											
+Vâ L©m §Ö NhÊt Bang	106		225,0,225	108	0	0	0	990	2	991	10	976	2	977	10	0	0											
+Qu¸n qu©n ThiÕu L©m ®¹i héi Vâ L©m lÇn 2	107		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Thiªn V­¬ng ®¹i héi Vâ L©m lÇn 2	108		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n §­êng M«n ®¹i héi Vâ L©m lÇn 2	109		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Ngò §éc ®¹i héi Vâ L©m lÇn 2	110		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Nga Mi ®¹i héi Vâ L©m lÇn 2	111		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Thóy Yªn ®¹i héi Vâ L©m lÇn 2	112		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n C¸i Bang ®¹i héi Vâ L©m lÇn 2	113		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Thiªn NhÉn ®¹i héi Vâ L©m lÇn 2	114		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n Vâ §ang ®¹i héi Vâ L©m lÇn 2	115		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n C«n Lu©n ®¹i héi Vâ L©m lÇn 2	116		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n ThiÕu L©m ®¹i héi Vâ L©m lÇn 2	117		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Thiªn V­¬ng ®¹i héi Vâ L©m lÇn 2	118		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n §­êng M«n ®¹i héi Vâ L©m lÇn 2	119		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Ngò §éc ®¹i héi Vâ L©m lÇn 2	120		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Nga Mi ®¹i héi Vâ L©m lÇn 2	121		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Thóy Yªn ®¹i héi Vâ L©m lÇn 2	122		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n C¸i Bang ®¹i héi Vâ L©m lÇn 2	123		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Thiªn NhÉn ®¹i héi Vâ L©m lÇn 2	124		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n Vâ §ang ®¹i héi Vâ L©m lÇn 2	125		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n C«n Lu©n ®¹i héi Vâ L©m lÇn 2	126		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n ThiÕu L©m ®¹i héi Vâ L©m lÇn 2	127		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Thiªn V­¬ng ®¹i héi Vâ L©m lÇn 2	128		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n §­êng M«n ®¹i héi Vâ L©m lÇn 2	129		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Ngò §éc ®¹i héi Vâ L©m lÇn 2	130		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Nga Mi ®¹i héi Vâ L©m lÇn 2	131		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Thóy Yªn ®¹i héi Vâ L©m lÇn 2	132		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n C¸i Bang ®¹i héi Vâ L©m lÇn 2	133		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Thiªn NhÉn ®¹i héi Vâ L©m lÇn 2	134		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n Vâ §ang ®¹i héi Vâ L©m lÇn 2	135		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n C«n Lu©n ®¹i héi Vâ L©m lÇn 2	136		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n song ®Êu ®¹i héi Vâ L©m lÇn 2	137		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n song ®Êu ®¹i héi Vâ L©m lÇn 2	138		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n song ®Êu ®¹i héi Vâ L©m lÇn 2	139		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n chiÕn ®éi ngò hµnh ®¹i héi Vâ L©m lÇn 2	140		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n chiÕn ®éi ngò hµnh ®¹i héi Vâ L©m lÇn 2	141		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n chiÕn ®éi ngò hµnh ®¹i héi Vâ L©m lÇn 2	142		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n ChiÕn ®éi thËp toµn ®¹i héi Vâ L©m lÇn 2	143		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n ChiÕn ®éi thËp toµn ®¹i héi Vâ L©m lÇn 2	144		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n ChiÕn ®éi thËp toµn ®¹i héi Vâ L©m lÇn 2	145		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n tam ®Êu ®¹i héi Vâ L©m lÇn 2	146		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n tam ®Êu ®¹i héi Vâ L©m lÇn 2	147		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n tam ®Êu ®¹i héi Vâ L©m lÇn 2	148		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n qu©n chiÕn ®éi server ®¹i héi Vâ L©m lÇn 2	149		225,0,225	84	0	0	0	0	0	0	0	0	0	0	0	0	0											
+¸ qu©n chiÕn ®éi server ®¹i héi Vâ L©m lÇn 2	150		225,0,225	81	0	0	0	0	0	0	0	0	0	0	0	0	0											
+TÕ qu©n chiÕn ®éi server ®¹i héi Vâ L©m lÇn 2	151		225,0,225	83	0	0	0	0	0	0	0	0	0	0	0	0	0											
+ThËp ®¹i cao thñ vâ l©m	152		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó Ph­îng T­êng	153		225,0,225	107	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó Thµnh §«	154		225,0,225	107	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó §¹i Lý	155		225,0,225	107	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó BiÖn Kinh	156		225,0,225	85	642	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó T­¬ng D­¬ng	157		225,0,225	107	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó D­¬ng Ch©u	158		225,0,225	107	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th¸i thó L©m An	159		225,0,225	85	636	0	0	0	0	0	0	0	0	0	0	0	0											
+Méng long v« ¶nh thÇn ch­ëng	160		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Phôc ma hé quèc thÇn binh	161		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tø kh«ng kim ®ao hé ph¸p	162		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+KÕ nghiÖp kim th­¬ng b¸o quèc	163		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+H¸m thiªn tÕ thÕ thÇn chïy	164		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Ngù long cuång ®ao b¸ kh¸ch	165		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+V« yÓm thanh ®¨ng hång nhan	166		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+V« gi¸n kiÕm tr¶m t×nh t¬	167		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thª phông phong vò cöu thiªn	168		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+BÝch h¶i tuyÖt thÕ khuynh thµnh	169		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+U long ®éc bé vâ l©m	170		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Minh hoan hoµnh ®ao ®o¹t mÖnh	171		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+B¨ng hµn nh©n nghÜa v« song	172		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Thiªn quang v¹n hoa ®o¹t hån	173		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+S©m hoang thiªn lý tuyÖt s¸t	174		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§ång cõu long gi¸ng tø h¶i	175		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§Þch kh¸i c«n t¶o bÊt b×nh	176		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Ma s¸t thiªn diÖm chiÕn háa	177		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Ma phÖ xÝch nhËt mª t×nh	178		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+L¨ng nh¹c khÝ qu¸n tr­êng kh«ng	179		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+CËp phong ®¹o cèt tiªn phong	180		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+S­¬ng tinh phong khiÕu tuyÕt vò	181		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+L«i khung diÖt ma thÇn l«i	182		225,0,225	135	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Chiªu Vâ HiÖu óy	183		225,0,225	0	0	0	0	830	2	0	0	0	0	0	0	0	0											
+Vò L©m Trung Lang T­íng	184		225,0,225	0	0	0	0	831	4	0	0	0	0	0	0	0	0											
+Phiªu m· ®¹i t­íng qu©n	185		225,0,225	0	0	0	0	832	6	0	0	0	0	0	0	0	0											
+An Bang §¹i T­íng Qu©n	186		225,0,225	0	0	0	0	833	8	0	0	0	0	0	0	0	0											
+§Þnh Quèc Nguyªn So¸i	187		225,0,225	0	0	0	0	834	10	0	0	0	0	0	0	0	0											
+Vâ L©m Minh Chñ	188		225,0,225	145	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Vâ L©m §Ö NhÊt Bang 	189		225,0,225	145	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Nh©n vËt Næi BËt 2008	190		225,0,225	151	0	0	0	0	0	0	0	0	0	0	0	0	0											
+ThËp §¹i M·nh T­íng	191		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+ThËp ®¹i cao thñ vâ l©m	192		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+H¹ng 1 Thi §Êu §éi 2008	193		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+H¹ng 2 Thi §Êu §éi 2008	194		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+H¹ng 3 Thi §Êu §éi 2008	195		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§èc Qu©n Tèng	196		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§èc Qu©n Kim	197		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Siªu CÊp §Ö NhÊt Bang	198		225,0,225	157	0	0	0	976	3	977	20	990	3	0	0	0	0											
+Cao CÊp §Ö NhÊt Bang	199		225,0,225	158	0	0	0	976	3	990	3	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu Qu¸n Qu©n	200		225,0,225	84	0	0	0	976	5	977	20	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu ¸ Qu©n	201		225,0,225	81	0	0	0	976	4	977	10	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng 3	202		225,0,225	83	0	0	0	976	3	977	10	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng t­ 	203		225,0,225	82	0	0	0	976	2	977	10	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu Qu¸n Qu©n	204		225,0,225	84	0	0	0	976	5	978	5	0	0	0	0	0	0											
+Vâ L©m Liªn §Êu ¸ Qu©n	205		225,0,225	81	0	0	0	976	4	978	3	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng 3	206		225,0,225	83	0	0	0	976	3	978	3	0	0	0	0	0	0											
+Vâ l©m liªn ®Êu h¹ng t­ 	207		225,0,225	82	0	0	0	976	2	978	3	0	0	0	0	0	0											
+Vâ L©m Cao Thñ	208		225,0,225	145	0	0	0	830	2	0	0	0	0	0	0	0	0											
+Vâ L©m Hµo KiÖt	209		225,0,225	162	0	0	0	830	3	0	0	0	0	0	0	0	0											
+Vâ L©m ChÝ T«n	210		225,0,225	163	0	0	0	830	4	0	0	0	0	0	0	0	0											
+Thiªn H¹ V« Song	211		225,0,225	164	0	0	0	830	5	0	0	0	0	0	0	0	0											
+Tµi Cao B¸t §Èu	212		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§Ö NhÊt Tµi Tö	213		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§Ö NhÊt Tµi N÷	214		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+V« Së BÊt Tri	215		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tr¹ng Nguyªn Lang	216		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Häc Cao HiÓu Réng	217		225,0,225	165	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Giang Hå HiÖp SÜ	218		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Giang Hå TiÒn Bèi	219		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Giang Hå L·o Thñ	220		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Giang Hå Nguyªn L·o	221		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Phi Hæ M·nh T­íng	222		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Qu¸n Qu©n Thµnh Chñ	223		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Th­ H­¬ng MÆc ¶nh Ng¹o QuÇn Hïng	224		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Th­ëng Bµi ViÕt Hay 2010										
+Lo¹n ThÕ Hµo KiÖt Thiªn B«i Èm	225		225,0,225	145	0	0	0	0	0	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2011										
+HiÖp Cèt §an T©m DiÖu Cöu Ch©u	226		225,0,225	162	0	0	0	0	0	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2011										
+Ng¹o ThÕ KiÕm QuyÕt ChÊn Th­¬ng Khung	227		225,0,225	163	0	0	0	0	0	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2011										
+Thiªn H¹ Anh Hïng Khã S¸nh B»ng	228		225,0,225	164	0	0	0	0	0	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2011										
+ThËp §¹i Bang Héi	229		225,0,225	149	0	0	0	0	0	0	0	0	0	0	0	0	0											
+H¹ng 1 Thi §Êu Giao L­u LÇn §Çu	230		225,0,225	170	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Héi Tô Anh Hïng LuËn KiÕm LÇn 1	231		225,0,225	171	0	0	0	0	0	0	0	0	0	0	0	0	0	LuËn KiÕm LÇn 1										
+Giang Hå Cao Thñ	232		225,0,225	172	0	0	0	0	2	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2012-1										
+Vâ L©m Hµo KiÖt	233		225,0,225	173	0	0	0	0	3	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2012-2										
+KiÕm HiÖp ChÝ T«n	234		225,0,225	174	0	0	0	0	4	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2012-3										
+§éc Bé Thiªn H¹	235		225,0,225	175	0	0	0	0	5	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2012-4										
+Long Tranh Hæ ®Êu	236		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§éc C« CÇu B¹i	237		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+Vâ L©m ChÝ T«n	238		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+NhÊt §¹i T«ng s­ 	239		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+TuyÖt ThÕ Cao Thñ	240		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+Danh M·n Giang Hå	241		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+HiÖp Danh ViÔn B¸	242		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+Vâ L©m T©n Tó	243		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+Míi nhËp giang hå 	244		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+NhËp M«n §Ö Tö	245		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu §Êu Tr­êng										
+Vâ L©m Minh Chñ	3000		225,0,225	162	0	0	0	976	10	977	20	990	10	1205	4	0	0	2011VLMC										
+ThËp §¹i Cao Thñ	3001		225,0,225	162	0	0	0	976	6	977	20	990	6	0	0	0	0	2011VLMC										
+§Ö NhÊt Chñ So¸i	246		225,0,225	0	0	0	0	0	4	0	0	0	0	0	0	0	0	Danh hiÖu §Ö NhÊt Chñ So¸i										
+TÝch NhËt §¹i HiÖp	247		225,0,225	176	0	0	0	0	0	0	0	0	0	0	0	0	0	Ho¹t ®éng TÝch NhËt §¹i HiÖp 1										
+Vâ L©m Thiªn Kiªu	248		225,0,225	176	0	0	0	0	0	0	0	0	0	0	0	0	0	Ho¹t ®éng TÝch NhËt §¹i HiÖp 2										
+Giang Hå Hµo HiÖp	249		225,0,225	176	0	0	0	0	0	0	0	0	0	0	0	0	0	Ho¹t ®éng TÝch NhËt §¹i HiÖp 3										
+KiÕm DiÖu Cöu Ch©u	250		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Vßng Lo¹i §Êu Giao L­u										
+S¬ Khuy M«n KÝnh	251		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	S¬ Khuy M«n KÝnh										
+§Ö NhÊt Bang Vßng Lo¹i Giao L­u	252		225,0,225	187	0	0	0	0	3	0	0	0	0	0	0	0	0	§Ö NhÊt Bang Vßng Lo¹i Giao L­u										
+Top 8 Vßng Lo¹i Giao L­u	253		225,0,225	187	0	0	0	0	3	0	0	0	0	0	0	0	0	Top 8 Vßng Lo¹i Giao L­u										
+§éi Rång §Êu Giao L­u LÇn 2	254		225,0,225	186	0	0	0	0	0	0	0	0	0	0	0	0	0	Top 8 Vßng Lo¹i Giao L­u										
+Thiªn H¹ V« Song	255		225,0,225	193	0	0	0	990	20	1205	6	0	0	0	0	0	0	§iÓm Tèng Kim Long Hæ TuÇn-H¹ng 1										
+Th©n Thñ BÊt Phµm	256		225,0,225	194	0	0	0	990	10	1205	4	0	0	0	0	0	0	§iÓm Tèng Kim Long Hæ TuÇn-H¹ng 2										
+Vang Danh Tø Ph­¬ng	257		225,0,225	195	0	0	0	990	5	1205	2	0	0	0	0	0	0	§iÓm Tèng Kim Long Hæ TuÇn-H¹ng 3										
+Vâ Häc Kú Tµi	258		225,0,225	196	0	0	0	1205	2	0	0	0	0	0	0	0	0	§iÓm Tèng Kim Long Hæ TuÇn-H¹ng 4										
+Huynh §Ö V« Sè	259		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Ng­êi ®Çu tiªn ®¹t cÊp 200	260		225,0,225	197	0	0	0	0	0	0	0	0	0	0	0	0	0	§¨ng Phong T¹o Cùc (Ng­êi ®Çu tiªn ®¹t ChuyÓn 200)										
+Giang Hå Nhi N÷	261		225,0,225	172	0	0	0	1277	2	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2013-1										
+Tø H¶i HiÖp Kh¸ch	262		225,0,225	173	0	0	0	1277	3	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2013-2										
+Vâ L©m Hµo HiÖp	263		225,0,225	174	0	0	0	1277	4	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2013-3										
+Thiªn H¹ ChÝ T«n	264		225,0,225	175	0	0	0	1277	5	0	0	0	0	0	0	0	0	Vßng S¸ng VIP 2013-4										
+NhÊt Nh©n §¾c §¹o	265		225,0,225	0	0	0	0	1281	1	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+NhÞ Long §»ng Phi	266		225,0,225	0	0	0	0	1281	2	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Tam D­¬ng Khai Th¸i	267		225,0,225	0	0	0	0	1281	3	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Tø Ph­¬ng Bøc ThÊu	268		225,0,225	0	0	0	0	1281	4	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Ngò Phóc L©m M«n	269		225,0,225	0	0	0	0	1281	5	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Lôc Hîp §ång Phong	270		225,0,225	0	0	0	0	1281	6	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+ThÊt Tinh Cao ChiÕu	271		225,0,225	0	0	0	0	1281	7	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+B¸t DiÖn Uy Phong	272		225,0,225	0	0	0	0	1281	8	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Cöu ChuyÓn C«ng Thµnh	273		225,0,225	0	0	0	0	1281	9	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+ThËp Toµn ThËp Mü	274		225,0,225	0	0	0	0	1281	10	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Vò Ch­íc	275		225,0,225	0	0	0	0	1282	1	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Kim Thoa	276		225,0,225	0	0	0	0	1282	2	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+§Ëu KhÊu	277		225,0,225	0	0	0	0	1282	3	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+BÝch Ngäc 	278		225,0,225	0	0	0	0	1282	4	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+§µo Lý	279		225,0,225	0	0	0	0	1282	5	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Mïa Hoa	280		225,0,225	0	0	0	0	1282	6	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Nh­îc Qu¸n	281		225,0,225	0	0	0	0	1282	7	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Nhi LËp	282		225,0,225	0	0	0	0	1282	8	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+BÊt HoÆc	283		225,0,225	0	0	0	0	1282	9	0	0	0	0	0	0	0	0	Ho¹t ®éng nhËn danh hiÖu										
+Niªn Niªn H÷u D­	284		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+§¹i Phó §¹i Quý	285		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+B»ng Tr×nh V¹n Lý	286		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+§¹i TriÓn Hïng §å	287		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Hîp Gia §oµn Viªn	288		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+TuÕ TuÕ B×nh An	289		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Bé Bé Cao Th¨ng	290		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Hång ¸n TÒ Mi	291		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Cha MÑ M¹nh Kháe	292		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Tµi Léc gÆt hoµi kh«ng hÕt	293		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+§¹i C¸t §¹i Lîi	294		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Long Phông Tr×nh T­êng	295		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Kim Ngäc M·n §­êng	296		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Phóc Nh­ §«ng H¶i	297		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+Thä TØ Nam S¬n	298		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu ho¹t ®éng Mõng Xu©n Mäi Nhµ										
+§éc C« V« §Þch	299		0,255,0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	§éc C« V« §Þch										
+Kû niÖm buæi gÆp mÆt offline cña bang héi n¨m 2012	300		225,0,225	199	0	0	0	1174	4	0	0	0	0	0	0	0	0	Kû niÖm buæi gÆp mÆt offline cña bang héi n¨m 2012										
+Thiªn H¹ §Ö NhÊt - Bang V« Song V­¬ng	301		225,0,225	200	0	0	0	0	0	0	0	0	0	0	0	0	0	Hµo quang Thiªn H¹ §Ö NhÊt Bang n¨m 2012										
+§éc Bé Giang Hå - C¸i ThÕ Hïng S­	302		225,0,225	201	0	0	0	0	0	0	0	0	0	0	0	0	0	Hµo quang Thiªn H¹ §Ö NhÊt Bang n¨m 2012										
+16 C­êng Thiªn H¹ §Ö NhÊt Bang n¨m 2012	303		225,0,225	202	0	0	0	0	0	0	0	0	0	0	0	0	0	Hµo quang Thiªn H¹ §Ö NhÊt Bang n¨m 2012										
+§¨ng Phong T¹o Cùc	304		225,0,225	197	0	0	0	0	0	0	0	0	0	0	0	0	0	§¨ng Phong T¹o Cùc										
+Hµo HiÖp Wechat	305		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Ho¹t ®éng Wechat										
+Tèng binh	306		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Tèng HiÖu óy	307		225,0,225	0	0	0	0	1313	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Tèng Thèng lÜnh	308		225,0,225	0	0	0	0	1314	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Tèng Phã t­íng	309		225,0,225	0	0	0	0	1315	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Tèng §¹i t­íng	310		225,0,225	0	0	0	0	1316	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Kim binh	311		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Kim HiÖu óy	312		225,0,225	0	0	0	0	1313	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Kim Thèng LÜnh	313		225,0,225	0	0	0	0	1314	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Kim Phã t­íng	314		225,0,225	0	0	0	0	1315	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Kim §¹i t­íng	315		225,0,225	0	0	0	0	1316	1	0	0	0	0	0	0	0	0	Danh hiÖu chiÕn tr­êng Tao Ngé ChiÕn										
+Cao Thñ §å Long	316		225,0,225	0	0	0	0	1281	8	1282	8	0	0	0	0	0	0	Danh hiÖu ƒc Lang §Õn TËp										
+Kim Qua ThiÕt M·	317		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Danh hiÖu server míi										
+ChÊn ViÔn §¹i T­íng Qu©n	318		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Tuyªn Uy T­íng Qu©n	319		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+§Þnh ViÔn T­íng Qu©n	320		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Du Kú T­íng Qu©n	321		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Chiªu Vâ HiÖu óy	322		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Nh©n Dòng T­íng Qu©n	323		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0											
+Phó Kh¶ §Þch Quèc	324		225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Hoµn thµnh thµnh tùu ThÕ Giíi Phó Hµo nhËn ®­îc										
+Ph¸ Qu©n	325		255,127,0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Hoµn thµnh thµnh tùu Cao Thñ Tèng Kim nhËn ®­îc										
+Vâ Khóc	326		255,127,0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Hoµn thµnh thµnh tùu Cao Thñ Liªn §Êu nhËn ®­îc										
+Tham Lang	327		255,215,0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Hoµn thµnh thµnh tùu Cao Thñ Thµnh ChiÕn nhËn ®­îc										
+HuyÕt Dôc	404		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	HuyÕt Dôc										
+ChiÕn Thiªn	405		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	ChiÕn Thiªn										
+Th­¬ng Hång	406		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Th­¬ng Hång										
+Lang H¹o	407		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Lang H¹o										
+TriÖu M·nh	408		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	TriÖu M·nh										
+Th­¬ng Lang	414		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	NhËn ®­îc hoµn thµnh thµnh tùu cao thñ HuyÕt ChiÕn										
+Tèng binh	415		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	HuyÕt ChiÕn Th­¬ng Lang Tèng										
+Kim binh	416		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	HuyÕt ChiÕn Th­¬ng Lang Kim										
+HuyÒn Vò Hµo HiÖp	3002		34,139,34	165	0	0	0	976	2	990	2	0	0	0	0	0	0	2011VLMC										
+Qu¸n Qu©n Vâ L©m Ngò B¸	3003		225,0,225	124	0	0	0	977	20	1205	6	0	0	0	0	0	0	Vßng Hµo Quang Vâ L©m Ngò B¸ (20 tèc ®é, 30% c«ng kÝch kü n¨ng)										
+TiÒm Long NhÊt Héi	3004		225,0,225	135	0	0	0	977	10	1205	1	0	0	0	0	0	0	TiÒm Long NhÊt Héi										
+§¹i Phó Hµo	3005		225,0,225	172	0	0	0	990	10	0	0	0	0	0	0	0	0	T¨ng 1000 sinh lùc d­¬ng										
+ThËp §¹i Kú Nh©n	3006		225,0,225	173	0	0	0	0	0	0	0	0	0	0	0	0	0	Kh«ng cã thuéc tÝnh										
+Hïng Binh L­u Danh	3007		225,0,225	145	0	0	0	0	0	0	0	0	0	0	0	0	0	Kh«ng cã thuéc tÝnh										
+NhËt NguyÖt Kim Quang	3008		225,0,225	186	0	0	0	990	5	977	20	1205	2	0	0	0	0	500 Sinh lùc, 20 tèc ®é, 10% c«ng kÝch kü n¨ng										
+T©n Thñ	3009		225,0,225	135	0	0	0	990	30	977	20	0	0	0	0	0	0	2000 Sinh lùc, 30 tèc ®é										
+H¹ng Nh× Vâ L©m Ngò B¸	3010		225,0,225	124	0	0	0	977	20	1205	4	0	0	0	0	0	0	Vßng HQ ¸ Qu©n Vâ L©m Ngò B¸(20 tèc ®é, 20% c«ng kÝch kü n¨ng)										
+H¹ng Ba Vâ L©m Ngò B¸	3011		225,0,225	124	0	0	0	977	20	1205	4	0	0	0	0	0	0	Vßng HQ H¹ng 3 Qu©n Vâ L©m Ngò B¸(20 tèc ®é, 20% c«ng kÝch kü n¨ng)										
+Ngäc Thô L©m Phong	3012		225,0,225	172	0	0	0	990	5	977	10	0	0	0	0	0	0	500 Sinh lùc, 10 tèc ®é										
+TuyÓn U23 ViÖt Nam	3013		225,0,225	172	0	0	0	990	5	977	10	0	0	0	0	0	0	500 Sinh lùc, 10 tèc ®é										
+ViÖt Nam QuyÕt Th¾ng	3014		225,0,225	172	0	0	0	990	5	977	10	0	0	0	0	0	0	500 Sinh lùc, 10 tèc ®é										
+ThÞ Uy	417		225,0,225	0	0	0	0	1205	3	0	0	0	0	0	0	0	0	Trang bÞ trªn ng­êi kh¶m 15 côc V¨n C­¬ng cÊp 9	1205	3								
+KÝch c«ng	418		225,0,225	0	0	0	0	1205	6	0	0	0	0	0	0	0	0	Trang bÞ trªn ng­êi kh¶m 20 côc V¨n C­¬ng cÊp 9	1205	6								
+Th©m hËu	419		225,0,225	0	0	0	0	1205	12	0	0	0	0	0	0	0	0	Trang bÞ trªn ng­êi kh¶m 15 côc V¨n C­¬ng cÊp 10	1205	12								
+Cµn Kh«n	420		225,0,225	0	0	0	0	1205	14	0	0	0	0	0	0	0	0	Trang bÞ trªn ng­êi kh¶m 20 côc V¨n C­¬ng cÊp 10	1205	14								
+Siªu Phµm	421		225,0,225	0	0	0	0	1205	2	990	10	0	0	0	0	0	0		1205	2	990	10						
+Kinh Hång	422		225,0,225	0	0	0	0	1205	3	990	10	0	0	0	0	0	0		1205	3	990	10						
+L¨ng TuyÖt	423		225,0,225	0	0	0	0	1205	4	990	10	0	0	0	0	0	0		1205	4	990	10						
+Kinh ThÕ	424		225,0,225	0	0	0	0	1205	5	990	15	0	0	0	0	0	0		1205	5	990	15						
+Ngù Kh«ng	425		225,0,225	0	0	0	0	1205	6	990	15	0	0	0	0	0	0		1205	6	990	15						
+Hçn Thiªn	426		225,0,225	0	0	0	0	1205	7	990	15	0	0	0	0	0	0		1205	7	990	15						
+Så Ph­îng	427		225,0,225	0	0	0	0	1205	8	990	20	0	0	0	0	0	0		1205	8	990	20						
+TiÒm Long	428		225,0,225	0	0	0	0	1205	10	990	20	0	0	0	0	0	0		1205	10	990	20						
+ChÝ T«n	429		225,0,225	0	0	0	0	1205	12	990	25	0	0	0	0	0	0		1205	12	990	25						
+V« Song	430		225,0,225	0	0	0	0	1205	14	990	25	0	0	0	0	0	0		1205	14	990	25						
+§¹i Th¸nh	431		225,0,225	0	0	0	0	1205	14	990	30	1678	5	0	0	0	0		1205	14	990	30	1678	5				
+ViÖt Nam V« §Þch	432		225,0,225	158	0	0	0	990	20	977	20	1205	2	0	0	0	0	2000 ®iÓm sinh lùc, 20 ®iÓm tèc ®é di chuyÓn, 10% c«ng kÝch kü n¨ng										
+Vâ L©m ChÝ T«n	433		225,0,225	85	0	0	0	0	0	0	0	0	0	0	0	0	0	C«ng kÝch kÜ n¨ng +30%, bá qua kh¸ng tÝnh +10%, bá qua hãa gi¶i +5%, tØ lÖ träng kÝch +5%										
+Vâ L©m Minh Chñ	434	\spr\Ui4\title\wulinmengzhu.spr	225,255,0	162	0	0	0	1484	20	1483	20	1481	10	0	0	0	0	Vâ L©m Minh Chñ										
+B¸ch ChiÕn B¸ch Th¾ng	435	\spr\Ui4\title\baizhanbaisheng.spr	225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	B¸ch ChiÕn B¸ch Th¾ng										
+§éc C« CÇu B¹i	436	\spr\Ui4\title\duguqiubai.spr	225,0,225	0	0	0	0	2160	1	0	0	0	0	0	0	0	0	§éc C« CÇu B¹i	2160	1								
+Hoµng §å V« Song	437	\spr\Ui4\title\huangtuwudi.spr	225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Hoµng §å V« Song										
+Vang Danh Giang Hå	438	\spr\Ui4\title\mingzhengjianghu.spr	225,0,225	0	0	0	0	1484	20	1705	5	1706	1	0	0	0	0	Vang Danh Giang Hå										
+Thiªn H¹ V« §Þch	439	\spr\Ui4\title\tianxiawudi.spr	225,0,225	0	0	0	0	0	0	0	0	0	0	0	0	0	0	Thiªn H¹ V« §Þch										
+Thiªn H¹ V« Song	440	\spr\Ui4\title\tianxiawushuang.spr	225,0,225	0	0	0	0	1484	20	1707	5	1708	5	0	0	0	0	Thiªn H¹ V« Song										
+Hïng B¸ Thiªn H¹	441	\spr\Ui4\title\xiongbatianxia.spr	225,0,225	0	0	0	0	1484	20	1482	10	1709	10	0	0	0	0	Hïng B¸ Thiªn H¹										
+§¹i HiÖp May M¾n	442		225,0,225	0	0	0	0	1712	10	1713	1	1710	1	1711	1	0	0	Quµ ­u ®·i hoÆc Danh hiÖu Rót th­ëng xu©n	1712	10	1713	1	1710	1	1711	1	0	0
+T«ng S­ May M¾n	443		225,0,225	0	0	0	0	1716	10	1717	1	1718	1	1719	1	1714	1	Quµ ­u ®·i hoÆc Danh hiÖu Rót th­ëng xu©n	1716	10	1717	1	1718	1	1719	1	1714	1
+Th¸nh May M¾n	444		225,0,225	158	0	0	0	1483	10	1484	10	1715	1	0	0	0	0	Danh hiÖu Rót th­ëng xu©n	1483	10	1484	10	1715	1				
+TuyÖt §Ønh Phong	445		225,0,225	158	0	0	0	1732	1	0	0	0	0	0	0	0	0	Danh hiÖu th­ëng xÕp h¹ng Anh Hïng Th¸p cã thêi h¹n (Sinh lùc D­¬ng +1000, Èn cã hiÖu qu¶, 7 ngµy)	1732	1								
+Vâ L©m Minh Chñ	446	\spr\Ui4\title\wulinmengzhu.spr	225,0,225	162	0	0	0	1994	1	0	0	0	0	0	0	0	0	Vâ L©m Minh Chñ	1994	1	0							
+ThËp ®¹i cao thñ	447		225,0,225	162	0	0	0	1995	1	0	0	0	0	0	0	0	0	ThËp §¹i Cao Thñ	1995	1	0							
+Thiªn H¹ V« §Þch	448	\spr\Ui4\title\tianxiawudi.spr	225,0,225	193	0	0	0	1993	1	0	0	0	0	0	0	0	0	Thiªn H¹ V« §Þch	1993	1	0							
+Vâ L©m §Ö NhÊt Bang	449		225,0,225	107	0	0	0	1996	1	0	0	0	0	0	0	0	0	Vâ L©m §Ö NhÊt Bang	1996	1	0							
+TuyÖt §Ønh PK	450		225,0,225	170	0	0	0	1997	1	0	0	0	0	0	0	0	0	TuyÖt §Ønh PK	1997	1	0							
+Uy ChÊn Thiªn H¹	451		225,0,225	107	0	0	0	2100	1	0	0	0	0	0	0	0	0	Uy ChÊn Thiªn H¹	2100	1	0							
+Vâ L©m Minh Chñ	452	\spr\Ui4\title\volamminhchu.spr	225,0,225	164	0	0	0	2101	1	0	0	0	0	0	0	0	0	Vâ L©m Minh Chñ	2101	1	0							
+ThËp ®¹i cao thñ	453	\spr\Ui4\title\thapdaicaothu.spr	225,0,225	164	0	0	0	2102	1	0	0	0	0	0	0	0	0	ThËp §¹i Cao Thñ	2102	1	0							
+TuyÖt §Ønh PK	454	\spr\Ui4\title\tuyet_dinh_pk.spr	225,0,225	241	0	0	0	2103	1	0	0	0	0	0	0	0	0	TuyÖt §Ønh PK	2103	1	0							
+Thiªn H¹ V« §Þch	455	\spr\Ui4\title\tianxiawudi.spr	225,0,225	193	0	0	0	2144	1	0	0	0	0	0	0	0	0	Thiªn H¹ V« §Þch	2144	1	0							
+Vâ L©m §Ö NhÊt Bang	456		225,0,225	107	0	0	0	2145	1	0	0	0	0	0	0	0	0	Vâ L©m §Ö NhÊt Bang	2145	1	0							
+Thiªn H¹ §Ö NhÊt	457		225,0,225	247	0	0	0	2146	1	0	0	0	0	0	0	0	0	Thiªn H¹ §Ö NhÊt	2146	1	0							
+TuyÖt ThÕ Cao Thñ	458		225,0,225	175	0	0	0	2147	1	0	0	0	0	0	0	0	0	TuyÖt ThÕ Cao Thñ	2147	1	0							
+Vâ L©m Cao Thñ	459		225,0,225	173	0	0	0	2148	1	0	0	0	0	0	0	0	0	Vâ L©m Cao Thñ	2148	1	0							
+Vâ L©m Hµo KiÖt	460		225,0,225	174	0	0	0	2149	1	0	0	0	0	0	0	0	0	Vâ L©m Hµo KiÖt	2149	1	0							
+Kim Ngäc M·n §­êng	461		225,0,225	248	0	0	0	2150	1	0	0	0	0	0	0	0	0	Kim Ngäc M·n §­êng	2150	1	0							
+Vâ L©m Minh Chñ	462	\spr\Ui4\title\wulinmengzhu2.spr	225,0,225	162	0	0	0	2157	1	0	0	0	0	0	0	0	0	Vâ L©m Minh Chñ	2157	1	0							
+TuyÖt §Ønh PK	463		225,0,225	162	0	0	0	2158	1	0	0	0	0	0	0	0	0	TuyÖt §Ønh PK	2158	1	0							
+Vang Danh Giang Hå	464		225,0,225	170	0	0	0	2159	1	0	0	0	0	0	0	0	0	Vang Danh Giang Hå	2159	1	0							
+Vâ L©m Liªn §Êu Qu¸n Qu©n	465		255,200,0	84	0	0	0	2161	1	0	0	0	0	0	0	0	0	Vâ L©m Liªn §Êu Qu¸n Qu©n	2161	1								
+Vâ L©m Liªn §Êu ¸ Qu©n	466		204,51,0	81	0	0	0	2162	1	0	0	0	0	0	0	0	0	Vâ L©m Liªn §Êu ¸ Qu©n	2162	1								
+Vâ L©m Liªn §Êu Tø C­êng	467		225,0,225	83	0	0	0	2163	1	0	0	0	0	0	0	0	0	Vâ L©m Liªn §Êu Tø C­êng	2163	1								
+Vâ L©m Liªn §Êu B¸t C­êng	468		0,255,255	82	0	0	0	2164	1	0	0	0	0	0	0	0	0	Vâ L©m Liªn §Êu B¸t C­êng	2164	1								
+Vâ L©m Liªn §Êu ThËp Lôc C­êng	469		34,139,34	108	0	0	0	2165	1	0	0	0	0	0	0	0	0	Vâ L©m Liªn §Êu ThËp Lôc C­êng	2165	1								
+HiÖp Phong LuËn KiÕm Qu¸n Qu©n	470		255,200,0	84	0	0	0	2166	1	0	0	0	0	0	0	0	0	HiÖp Phong LuËn KiÕm Qu¸n Qu©n	2166	1								
+HiÖp Phong LuËn KiÕm Siªu CÊp	471		204,51,0	81	0	0	0	2167	1	0	0	0	0	0	0	0	0	HiÖp Phong LuËn KiÕm Siªu CÊp	2167	1								
+HiÖp Phong LuËn KiÕm Cao CÊp	472		225,0,225	83	0	0	0	2168	1	0	0	0	0	0	0	0	0	HiÖp Phong LuËn KiÕm Cao CÊp	2168	1								
+Vang Danh Giang Hå	473	\spr\Ui4\title\mingzhengjianghu.spr	225,0,225	250	0	0	0	2176	1	0	0	0	0	0	0	0	0	Vang Danh Giang Hå	2176	1								
+ThËp §¹i Cao Thñ	474		225,0,225	171	0	0	0	2177	1	0	0	0	0	0	0	0	0	ThËp §¹i Cao Thñ	2177	1								
+Danh M·n Giang Hå	475		225,0,225	107	0	0	0	2178	1	0	0	0	0	0	0	0	0	Danh M·n Giang Hå	2178	1	0							
+XÝch DiÖm	476		34,139,34	0	0	0	0	0	0	0	0	0	0	0	0	0	0	XÝch DiÖm										
+§Ønh Phong Thiªn H¹	477		225,0,225	252	0	0	0	2181	1	0	0	0	0	0	0	0	0	§Ønh Phong Thiªn H¹	2181	1								

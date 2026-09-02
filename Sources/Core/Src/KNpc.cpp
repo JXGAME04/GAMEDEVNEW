@@ -1,4 +1,4 @@
-ï»¿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 //	Sword3 KNpc.cpp
 //-----------------------------------------------------------------------
 #include "KCore.h"
@@ -2135,14 +2135,7 @@ BOOL KNpc::DoBlurMove()
 			}
 		}
 		}
-		// [VHTD 02/09g] Tap Dap Luu Tinh 2118: chieu con 2119 ('Khoi' - dan 638 dung yen, khong thuoc tinh) phong tai diem xuat phat huong
-		// diem den, ca client (ve hieu ung) lan server (vo hai). Cac chieu MoveWithBlur cu (710/732/995) ChildSkillId = 0 -> khong doi.
-		if (pSkill->GetChildSkillId() > 0 && pSkill->GetChildSkillId() < MAX_SKILL)
-		{
-			KSkill* pChildBlur = (KSkill*)g_SkillManager.GetSkill(pSkill->GetChildSkillId(), pSkill->GetSkillLevel());
-			if (pChildBlur)
-				pChildBlur->Cast(m_Index, m_DesX, m_DesY);
-		}
+		// [VHTD 02/09h] chieu con cua chieu luot (2119) nay phong o BUOC 2 (diem den) - xem duoi.
 		m_Doing = do_blurmove;
 		break;
 	case 1:
@@ -2198,6 +2191,15 @@ BOOL KNpc::DoBlurMove()
 			SubWorld[0].NpcChangeRegion(SubWorld[0].m_Region[nOldRegion].m_RegionID, SubWorld[0].m_Region[m_RegionIndex].m_RegionID, m_Index);
 			m_dwRegionID = SubWorld[0].m_Region[m_RegionIndex].m_RegionID;
 #endif
+		}
+		// [VHTD 02/09h] Tap Dap Luu Tinh 2118 (form 13): chieu con 2119 phong TAI DIEM DEN, form 7 (tai nguoi phat) + dan 638 dung yen
+		// CollidRange/DmgRange 2 (du lieu vhtd_data_patch5) -> hieu ung 'Khoi' + sat thuong dien rong quanh diem den (ca client ve, server tinh).
+		// Cac chieu MoveWithBlur cu (710/732/995) ChildSkillId = 0 -> khong doi.
+		if (pSkill->GetChildSkillId() > 0 && pSkill->GetChildSkillId() < MAX_SKILL)
+		{
+			KSkill* pChildBlur = (KSkill*)g_SkillManager.GetSkill(pSkill->GetChildSkillId(), pSkill->GetSkillLevel());
+			if (pChildBlur)
+				pChildBlur->Cast(m_Index, -1, m_Index);
 		}
 #ifndef _SERVER
 		m_DataRes.CreateBlur(m_Index, g_GetDistance(nX, nY, m_DesX, m_DesY), m_Dir);
@@ -2667,6 +2669,21 @@ void KNpc::DoSkill(int nX, int nY)
 					goto Exit;
 				if (IsPlayer() && eStyle != SKILL_SS_Thief && ((KSkill*)pSkill)->GetCostSpKey() > 0 && HS_SpGet(((KSkill*)pSkill)->GetCostSpKey()) < ((KSkill*)pSkill)->GetCostSp())	// [VHTD 02/09c] B4: KThiefSkill khong phai KSkill
 					goto Exit;
+#endif
+#ifndef _SERVER
+				// [VHTD 02/09h] CLIENT: thieu tang No (1976) / Am Luat (2116) -> chan tai cho + thong bao. So tang da dong bo qua s2c_syncvhtd
+				// (dot 4). Truoc chi server chan im lang -> client van dien hoat / tu luot (Tap Dap Luu Tinh) roi bi keo ve = 'het van dung duoc'.
+				if (IsPlayer() && eStyle != SKILL_SS_Thief && ((KSkill*)pSkill)->GetCostSpKey() > 0 && HS_SpGet(((KSkill*)pSkill)->GetCostSpKey()) < ((KSkill*)pSkill)->GetCostSp())
+				{
+					KSystemMessage sMsgSp;
+					sprintf(sMsgSp.szMessage, "Kh«ng ®ñ %d tÇng %s", ((KSkill*)pSkill)->GetCostSp(), (((KSkill*)pSkill)->GetCostSpKey() == 2116) ? "¢m LuËt" : "Né");
+					sMsgSp.eType = SMT_NORMAL;
+					sMsgSp.byConfirmType = SMCT_NONE;
+					sMsgSp.byPriority = 0;
+					sMsgSp.byParamSize = 0;
+					CoreDataChanged(GDCNI_SYSTEM_MESSAGE, (unsigned int)&sMsgSp, 0);
+					goto Exit;
+				}
 #endif
 				if(!IsPlayer() || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
 				{
@@ -6894,7 +6911,7 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		char	szString[128];
 		if (SubWorld[Npc[CLIENT_PLAYER_INDEX].m_SubWorldIndex].m_SubWorldID == 209 && m_nPlayerIdx != CLIENT_PLAYER_INDEX)
 		{
-			strcpy(szString, "NhÂ©n SÃ¼ VÃ¢ LÂ©m");
+			strcpy(szString, "Nh©n Sü Vâ L©m");
 		}
 		else
 		{
@@ -6904,15 +6921,15 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		{
 			strcat(szString, "(");
 			if (m_FreezeState.nTime)
-				strcat(szString, "BÂ¨ng");
+				strcat(szString, "B¨ng");
 			if (m_PoisonState.nTime)
-				strcat(szString, "Â§Ã©c");
+				strcat(szString, "§éc");
 			if (m_FrozenAction.nTime)
-				strcat(szString, "MÂª");
+				strcat(szString, "Mª");
 			if (m_StunState.nTime)
-				strcat(szString, "ChoÂ¸ng");
+				strcat(szString, "Cho¸ng");
 			if(m_HideState.nTime > 0)
-				strcat(szString, "Ãˆn");
+				strcat(szString, "Èn");
 
 			strcat(szString, ")");
 		}
@@ -6972,16 +6989,16 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 					switch(m_nFigure)
 					{
 					case enumTONG_FIGURE_MEMBER:
-						strcat(szTong, "[MÂ«n Â§Ã–]");
+						strcat(szTong, "[M«n §Ö]");
 						break;
 					case enumTONG_FIGURE_MANAGER:
-						strcat(szTong, "[Â§Â­Ãªng ChÃ±]");
+						strcat(szTong, "[§­êng Chñ]");
 						break;
 					case enumTONG_FIGURE_DIRECTOR:
-						strcat(szTong, "[TrÂ­Ã«ng LÂ·o]");
+						strcat(szTong, "[Tr­ëng L·o]");
 						break;
 					case enumTONG_FIGURE_MASTER:
-						strcat(szTong, "[Bang ChÃ±]");
+						strcat(szTong, "[Bang Chñ]");
 						break;
 					}
 				}
@@ -7326,15 +7343,15 @@ int KNpc::PaintInfo(int nHeightOffset, bool bSelect, int nFontSize, DWORD dwBord
 		{
 			strcat(szString, "("); 
 			if (m_FreezeState.nTime)
-				strcat(szString, "BÂ¨ng");
+				strcat(szString, "B¨ng");
 			if (m_PoisonState.nTime)
-				strcat(szString, "Â§Ã©c");
+				strcat(szString, "§éc");
 			if (m_FrozenAction.nTime)
-				strcat(szString, "MÂª");
+				strcat(szString, "Mª");
 			if (m_StunState.nTime)
-				strcat(szString, "ChoÂ¸ng");
+				strcat(szString, "Cho¸ng");
 			if(m_HideState.nTime > 0)
-				strcat(szString, "Ãˆn");
+				strcat(szString, "Èn");
 			strcat(szString, ")");
 		}*/
 	

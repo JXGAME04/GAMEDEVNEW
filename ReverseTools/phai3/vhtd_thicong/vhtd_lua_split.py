@@ -86,7 +86,8 @@ def lua_dump(exe, luafile):
     finally:
         os.remove(tp)
 
-for p in FILES:
+def main():
+  for p in FILES:
     s = io.open(p, "r", encoding="latin-1", newline="").read()
     res = split_skills(s)
     if res is None: print("  [=] %s da tach" % p); continue
@@ -107,4 +108,7 @@ for p in FILES:
         if not os.path.exists(p + BAK): shutil.copy2(p, p + BAK)
         io.open(p, "w", encoding="latin-1", newline="").write(s2)
     print("  [+] %s: tach %d bang%s" % (p, ne, " (KIEM)" if KIEM else ""))
-print("XONG.")
+  print("XONG.")
+
+if __name__ == "__main__":   # [VHTD 02/09i] de vhtd_data_patch6.py import split_skills/lua_dump
+    main()

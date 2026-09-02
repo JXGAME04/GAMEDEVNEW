@@ -1,0 +1,82 @@
+RANKID	RANKSTR	FACTION
+1	Tảo Địa Tăng	1
+2	Hộ Viện Võ Tăng	1
+3	Hộ Tự Kim Cang 	1
+4	Hộ Pháp La Hán	1
+5	Truyền Kinh La Hán	1
+6	Phục Ma Thiên Vương 	1
+7	Đạo Đồng	2
+8	Nhàn Tản Đạo Sư 	2
+9	Thanh Tu Đạo Sư 	2
+10	Tuần Sơn Đạo Nhân	2
+11	Nhập Quan Đạo Nhân	2
+12	Chưởng Kinh Đạo Nhân	2
+13	Bố Y Ni	3
+14	Vũ Y Ni	3
+15	Cẩm Y Ni	3
+16	Bạch Liên Tiên Tử 	3
+17	Thanh Liên Tiên Tử 	3
+18	Tản Hoa Thiên Nữ 	3
+19	Phất Trần Đệ Tử 	4
+20	Phụng Kiếm Đệ Tử 	4
+21	Tử Vi Hộ Pháp	4
+22	Thái Vi Hộ Pháp	4
+23	Thiên Vi Hộ Pháp	4
+24	Thụ Phù Thiên Tướng	4
+25	Tạp dịch	5
+26	Làng D	5
+27	Hộ Viện	5
+28	Giới Tiền Hộ Vệ	5
+29	Nhập Các Đệ Tử	5
+30	Tỷ Lão Môn Nhân	5
+31	Hoa Tì	6
+32	Tam Phẩm Hoa Sứ	6
+33	Nhị Phẩm Hoa Sứ	6
+34	Nhất Phẩm Hoa Sứ	6
+35	Hoa Tiên	6
+36	Hoa Tinh	6
+37	Vô Đại Đệ Tử	7
+38	Chấp Đại Đệ Tử	7
+39	Chấp Bát Đệ Tử	7
+40	Chấp Bổng Đệ Tử	7
+41	Long Đầu	7
+42	Đại Long Đầu	7
+43	Thị vệ	8
+44	 Thị vệ trưởng	8
+45	Thủ Trại Hãn Tướng	8
+46	Chưởng Đá Đầu Lĩnh	8
+47	Thủy Đạo Thống Lĩnh	8
+48	Hộ Đảo Tướng Quân	8
+49	Ngũ Độc Đồng Tử	9
+50	Đoạt Hồn Tản Nhân	9
+51	Thôi Mệnh Sứ Giả	9
+52	Hắc ám Diêm La	9
+53	Vô Động La Sát	9
+54	Co Độc Tôn Giả	9
+55	Sát Thủ	10
+56	Vô ảnh Sát Thủ	10
+57	Tử Sĩ	10
+58	U Minh Tử Sĩ	10
+59	Chưởng Kỳ Sứ	10
+60	Hộ Giáo Sứ	10
+61	Vô Danh Tiểu Bối	0
+62	Vô Lượng Giải Tôn	1
+63	Huyền Võ Thần Thị	2
+64	Kim Đỉnh Thánh Nữ	3
+65	Tiên Phù Chân Quân	4
+66	Thiên Thủ Thần Vệ	5
+67	Hoa Thần	6
+68	Tiêu Dao Thần Cái	7
+69	Kình Thiên Nguyên Soái	8
+70	U Minh Quỷ Sứ	9
+71	Tát Mãn Pháp Vương	10
+72	Hộ Pháp Trưởng Lão	1
+73	Huyền Võ Chân Nhân	2
+74	Thánh nữ	3
+75	Hộ Phái Chân Quân	4
+76	Lục Các Trưởng Lão	5
+77	Hoa Thần Sứ	6
+78	Cửu Đại Trưởng Lão	7
+79	Trấn Bang Nguyên Soái	8
+80	U Minh Quỷ Vương	9
+81	Thánh Giáo Trưởng Lão	10

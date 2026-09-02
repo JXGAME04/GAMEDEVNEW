@@ -3068,6 +3068,48 @@ void	KSkill::GetDesc(unsigned long ulSkillId, unsigned long ulCurLevel, char * p
 	}
 }
 
+// [VHTD 02/09i] tooltip ky nang tu phong (Hoa Son 1364/1369/1365, Tieu Dao 2127, ...) theo tooltip client VLTK: 3 dong
+// 'Don danh co R% ty le xuat TEN' / 'So luong kiem xuat ra: N/9 kiem' / 'Thoi gian hoi chieu: CD giay'. Ma hoa gia tri: v1 = (loai*65536 + id)*256 + cap,
+// v3 = khung_hoi_chieu*256 + ty_le_% (KNpc::HS_AutoSkill / CastAutoSkillAt). Truoc in cau MagicDesc chung chung -> chu: 'hien thi sai 1 so thuoc tinh'.
+static BOOL VhtdIsAutoSkillAttrib(int nType)
+{
+	return (nType == magic_autoreplyskill || nType == magic_autoattackskill || nType == magic_autorescueskill || nType == magic_autodeathskill || nType == magic_autocastskill);
+}
+static void VhtdAutoSkillDesc(const KMagicAttrib* pA, char* pszMsg)
+{
+	char szLine[256];
+	int nSkillId = (pA->nValue[0] >> 8) & 0xFFFF;
+	int nSkillLv = pA->nValue[0] & 0xFF;
+	int nRate = pA->nValue[2] & 0xFF;
+	int nCdSec = (pA->nValue[2] >> 8) / 18;
+	if (nSkillId <= 0 || nSkillId >= MAX_SKILL) return;
+	KSkill* pEv = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLv > 0 ? nSkillLv : 1);
+	if (!pEv) return;
+	if (pA->nAttribType == magic_autocastskill)
+		sprintf(szLine, "Mçi <color=orange>%d gi©y<color> tù thi triÓn <color=blue>%s<color> (tû lÖ %d%%)\n", nCdSec, pEv->GetSkillName(), nRate);
+	else if (pA->nAttribType == magic_autorescueskill)
+		sprintf(szLine, "Sinh lùc thÊp cã <color=orange>%d%%<color> tû lÖ xuÊt <color=blue>%s<color>\n", nRate, pEv->GetSkillName());
+	else if (pA->nAttribType == magic_autodeathskill)
+		sprintf(szLine, "Khi chÕt xuÊt <color=blue>%s<color>\n", pEv->GetSkillName());
+	else
+		sprintf(szLine, "§ßn ®¸nh cã <color=orange>%d%%<color> tû lÖ xuÊt <color=blue>%s<color>\n", nRate, pEv->GetSkillName());
+	strcat(pszMsg, szLine);
+	int nNum = pEv->GetChildSkillNum();
+	if (nNum > 1)
+	{
+		if (nSkillId == 1363 || nSkillId == 1368)
+			sprintf(szLine, "Sè l­îng kiÕm xuÊt ra: <color=orange>%d/9<color> kiÕm\n", nNum);
+		else
+			sprintf(szLine, "Sè l­îng xuÊt ra: <color=orange>%d<color>\n", nNum);
+		strcat(pszMsg, szLine);
+	}
+	if (nCdSec > 0 && pA->nAttribType != magic_autocastskill)
+	{
+		sprintf(szLine, "Thêi gian håi chiªu: <color=orange>%d gi©y<color>\n", nCdSec);
+		strcat(pszMsg, szLine);
+	}
+}
+
 void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNextLevel/* = FALSE*/, BOOL bAddSkillDamage/* = FALSE*/, BOOL bEventSkill/* = FALSE*/)
 {
 	char pszInfo[SZBUFLEN_0];
@@ -3108,6 +3150,18 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 			strcat(pszMsg, pszInfo); 
 			strcat(pszMsg, "\n");
 		} 
+	}
+	// [VHTD 02/09h] lightingdamage_p (cam Tieu Dao 2136/2138/2140/2141/2142/2143): so sat thuong Loi tinh theo NOI LUC TOI DA cua chinh minh
+	// (cong thuc KNpc::AppendSkillEffect dot 4) - tooltip truoc chi co dong '%' nen 'khong hien luc tay'.
+	for (i = 0; i < MAX_MISSLE_DAMAGEATTRIB; i++)
+	{
+		if ((DamageAttribs + i)->nAttribType != magic_lightingdamage_p) continue;
+		KNpc* pMeLoi = &Npc[Player[CLIENT_PLAYER_INDEX].m_nIndex];
+		int nGocLoi = (int)((__int64)(pMeLoi->m_CurrentManaMax + pMeLoi->m_PhysicsMagic.nValue[0] + pMeLoi->m_CurrentLightMagic.nValue[0]) * (MAX_PERCENT + pMeLoi->m_nHSAddLightMagicP) / MAX_PERCENT);
+		int nDmgLoi = (int)((__int64)nGocLoi * (DamageAttribs + i)->nValue[0] / MAX_PERCENT);
+		sprintf(pszInfo, "S¸t th­¬ng L«i (theo néi lùc tèi ®a): %d", nDmgLoi);
+		strcat(pszMsg, pszInfo);
+		strcat(pszMsg, "\n");
 	}
 	int nGetCost = GetSkillCost(NULL);
 
@@ -3169,6 +3223,11 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 
 	if (m_szMagicSkillDesc[0])
 		strcat(pszMsg, m_szMagicSkillDesc);	
+	// [VHTD 02/09i] ky nang tu phong: 3 dong theo tooltip VLTK (thay cau MagicDesc chung chung)
+	for (i = 0; i < m_nStateAttribsNum; i++)
+		if (VhtdIsAutoSkillAttrib(m_StateAttribs[i].nAttribType)) VhtdAutoSkillDesc(&m_StateAttribs[i], pszMsg);
+	for (i = 0; i < m_nImmediateAttribsNum; i++)
+		if (VhtdIsAutoSkillAttrib(m_ImmediateAttribs[i].nAttribType)) VhtdAutoSkillDesc(&m_ImmediateAttribs[i], pszMsg);
 
 	for (i  = 0; i < MAX_MISSLE_DAMAGEATTRIB; i ++) 
 	{ 
@@ -3211,6 +3270,7 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 
 	for (i  = 0; i < m_nStateAttribsNum; i ++)
 	{
+		if (VhtdIsAutoSkillAttrib(m_StateAttribs[i].nAttribType)) continue;	// [VHTD 02/09i]
 		if (!m_StateAttribs[i].nAttribType || 
 			(m_StateAttribs[i].nAttribType > magic_damage_begin && 
 			m_StateAttribs[i].nAttribType < magic_damage_end)) continue;
