@@ -1,0 +1,1201 @@
+nhanvat	part	bang	dong_tep	equipNo	k	action	o	path	uid	cham_toi	trang_thai
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	0	SwordShieldWFreeStand	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	1	ShieldSwordWFreeStand	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	2	FreeStand1	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	3	FreeStand2	MA_RW_164_ST02.spr	\spr\npcres\man\MA_RW_164_ST02.spr	2B81293B	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	4	FreeStand3	MA_RW_000_ST03.spr	\spr\npcres\man\MA_RW_000_ST03.spr	EE61338D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	5	MeleeWStand	MA_RW_000_ST04.spr	\spr\npcres\man\MA_RW_000_ST04.spr	EBFF260F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	6	RangeWStand	MA_RW_000_ST05.spr	\spr\npcres\man\MA_RW_000_ST05.spr	E5752C81	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	7	DoubleWStand	MA_RW_000_ST06.spr	\spr\npcres\man\MA_RW_000_ST06.spr	E683D303	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	8	SwordShieldWStand	MA_RW_164_ST07.spr	\spr\npcres\man\MA_RW_164_ST07.spr	3F37E5B5	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	9	ShieldSwordWStand	MA_RW_164_ST07.spr	\spr\npcres\man\MA_RW_164_ST07.spr	3F37E5B5	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	10	GuqinWStand1	MA_RW_000_ST08.spr	\spr\npcres\man\MA_RW_000_ST08.spr	FD97CC07	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	11	GuqinWStand2	MA_RW_000_ST09.spr	\spr\npcres\man\MA_RW_000_ST09.spr	FF2DF379	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	12	FreeWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	13	NormalWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	14	MeleeWWalk	MA_RW_000_WK02.spr	\spr\npcres\man\MA_RW_000_WK02.spr	6969F98D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	15	RangeWWalk	MA_RW_000_WK03.spr	\spr\npcres\man\MA_RW_000_WK03.spr	6AE7EC0F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	16	DoubleWWalk	MA_RW_000_WK04.spr	\spr\npcres\man\MA_RW_000_WK04.spr	647D9281	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	17	SwordShieldWWalk	MA_RW_164_WK05.spr	\spr\npcres\man\MA_RW_164_WK05.spr	3CA1A27E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	18	ShieldSwordWWalk	MA_RW_164_WK05.spr	\spr\npcres\man\MA_RW_164_WK05.spr	3CA1A27E	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	19	GuqinWWalk	MA_RW_000_WK06.spr	\spr\npcres\man\MA_RW_000_WK06.spr	63018F85	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	20	FreeRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	21	NormalRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	22	MeleeWRun	MA_RW_000_RN02.spr	\spr\npcres\man\MA_RW_000_RN02.spr	A3A53D3D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	23	RangeWRun	MA_RW_000_RN03.spr	\spr\npcres\man\MA_RW_000_RN03.spr	BD3323BF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	24	DoubleWRun	MA_RW_000_RN04.spr	\spr\npcres\man\MA_RW_000_RN04.spr	BE49D631	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	25	SwordShieldWRun	MA_RW_164_RN05.spr	\spr\npcres\man\MA_RW_164_RN05.spr	76FDF448	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	26	ShieldSwordWRun	MA_RW_164_RN06.spr	\spr\npcres\man\MA_RW_164_RN06.spr	700BFACA	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	27	GuqinWRun	MA_RW_000_RN07.spr	\spr\npcres\man\MA_RW_000_RN07.spr	B6EBC9B7	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	28	FreeWound	MA_RW_000_IJ01.spr	\spr\npcres\man\MA_RW_000_IJ01.spr	293E712D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	29	MeleeWWound	MA_RW_000_IJ02.spr	\spr\npcres\man\MA_RW_000_IJ02.spr	2AB467AF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	30	RangeWWound	MA_RW_000_IJ03.spr	\spr\npcres\man\MA_RW_000_IJ03.spr	27C26A21	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	31	DoubleWWound	MA_RW_000_IJ04.spr	\spr\npcres\man\MA_RW_000_IJ04.spr	215810A3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	32	SwordShieldWWound	MA_RW_164_IJ05.spr	\spr\npcres\man\MA_RW_164_IJ05.spr	F98C2390	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	33	ShieldSwordWWound	MA_RW_164_IJ05.spr	\spr\npcres\man\MA_RW_164_IJ05.spr	F98C2390	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	34	GuqinWWound	MA_RW_000_IJ06.spr	\spr\npcres\man\MA_RW_000_IJ06.spr	3C6C0DA7	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	35	FreeDie	MA_RW_000_DE01.spr	\spr\npcres\man\MA_RW_000_DE01.spr	45EEF038	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	36	MeleeWDie	MA_RW_000_DE02.spr	\spr\npcres\man\MA_RW_000_DE02.spr	4764E6BA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	37	RangeWDie	MA_RW_000_DE03.spr	\spr\npcres\man\MA_RW_000_DE03.spr	40F2ED3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	38	DoubleWDie	MA_RW_000_DE04.spr	\spr\npcres\man\MA_RW_000_DE04.spr	420893BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	39	SwordShieldWDie	MA_RW_164_DE05.spr	\spr\npcres\man\MA_RW_164_DE05.spr	1ABCB1D5	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	40	ShieldSwordWDie	MA_RW_164_DE05.spr	\spr\npcres\man\MA_RW_164_DE05.spr	1ABCB1D5	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	41	GuqinWDie	MA_RW_000_DE06.spr	\spr\npcres\man\MA_RW_000_DE06.spr	591C8CB2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	42	FreeAttack	MA_RW_000_AT01.spr	\spr\npcres\man\MA_RW_000_AT01.spr	3A9E6528	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	43	MeleeWPuncture	MA_RW_000_AT02.spr	\spr\npcres\man\MA_RW_000_AT02.spr	34146BAA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	44	MeleeWCut	MA_RW_000_AT03.spr	\spr\npcres\man\MA_RW_000_AT03.spr	31A21E2C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	45	RangeWPuncture	MA_RW_000_AT04.spr	\spr\npcres\man\MA_RW_000_AT04.spr	333804AE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	46	RangeWCut	MA_RW_000_AT05.spr	\spr\npcres\man\MA_RW_000_AT05.spr	0CB60B20	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	47	DoubleWPull	MA_RW_000_AT06.spr	\spr\npcres\man\MA_RW_000_AT06.spr	09CC31A2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	48	DoubleWPound	MA_RW_000_AT07.spr	\spr\npcres\man\MA_RW_000_AT07.spr	0B5A2424	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	49	SwordShieldWChop	MA_RW_164_AT08.spr	\spr\npcres\man\MA_RW_164_AT08.spr	438EF6D6	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	50	SwordShieldWCut	MA_RW_164_AT09.spr	\spr\npcres\man\MA_RW_164_AT09.spr	5D04FD48	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	51	ShieldSwordWChop	MA_RW_164_AT08.spr	\spr\npcres\man\MA_RW_164_AT08.spr	438EF6D6	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	52	ShieldSwordWCut	MA_RW_164_AT09.spr	\spr\npcres\man\MA_RW_164_AT09.spr	5D04FD48	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	53	GuqinWPuncture	MA_RW_000_AT10.spr	\spr\npcres\man\MA_RW_000_AT10.spr	46D970B3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	54	GuqinWCut	MA_RW_000_AT11.spr	\spr\npcres\man\MA_RW_000_AT11.spr	40576735	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	55	DartThrow	MA_RW_000_MG01.spr	\spr\npcres\man\MA_RW_000_MG01.spr	38A75538	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	56	FreeMagic	MA_RW_000_MG02.spr	\spr\npcres\man\MA_RW_000_MG02.spr	3A3D5BBA	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	57	MeleeWMagic	MA_RW_000_MG03.spr	\spr\npcres\man\MA_RW_000_MG03.spr	374B4E3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	58	RangeWMagic	MA_RW_000_MG04.spr	\spr\npcres\man\MA_RW_000_MG04.spr	30C174BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	59	DoubleWMagic	MA_RW_000_MG05.spr	\spr\npcres\man\MA_RW_000_MG05.spr	325F7B30	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	60	SwordShieldWMagic	MA_RW_164_MG06.spr	\spr\npcres\man\MA_RW_164_MG06.spr	4A830DE2	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	61	ShieldSwordWMagic	MA_RW_164_MG06.spr	\spr\npcres\man\MA_RW_164_MG06.spr	4A830DE2	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	62	GuqinWMagic	MA_RW_000_MG07.spr	\spr\npcres\man\MA_RW_000_MG07.spr	09631434	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	63	SitDown	MA_RW_000_ZZ01.spr	\spr\npcres\man\MA_RW_000_ZZ01.spr	FE781C7E	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	64	JumpFly	MA_RW_000_JP01.spr	\spr\npcres\man\MA_RW_000_JP01.spr	9A6C41FB	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	65	RideStand	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	66	RideWalk	MA_RW_164_HW01.spr	\spr\npcres\man\MA_RW_164_HW01.spr	C6EA4C7C	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	67	RideRun	MA_RW_164_HR01.spr	\spr\npcres\man\MA_RW_164_HR01.spr	273445A8	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	68	RideCut	MA_RW_164_HA01.spr	\spr\npcres\man\MA_RW_164_HA01.spr	3D3973F9	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	69	RidePuncture	MA_RW_164_HA02.spr	\spr\npcres\man\MA_RW_164_HA02.spr	3EB7667B	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	70	RideMagic	MA_RW_164_HM01.spr	\spr\npcres\man\MA_RW_164_HM01.spr	07165A99	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	71	RideWound	MA_RW_164_HI01.spr	\spr\npcres\man\MA_RW_164_HI01.spr	5A443974	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	72	RideDie	MA_RW_164_HD01.spr	\spr\npcres\man\MA_RW_164_HD01.spr	BAA63EA0	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	73	RideStand1	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	270	268	74	RideStand2	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	0	SwordShieldWFreeStand	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	1	ShieldSwordWFreeStand	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	2	FreeStand1	MA_RW_164_ST01.spr	\spr\npcres\man\MA_RW_164_ST01.spr	2E0B22B9	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	3	FreeStand2	MA_RW_164_ST02.spr	\spr\npcres\man\MA_RW_164_ST02.spr	2B81293B	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	4	FreeStand3	MA_RW_000_ST03.spr	\spr\npcres\man\MA_RW_000_ST03.spr	EE61338D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	5	MeleeWStand	MA_RW_000_ST04.spr	\spr\npcres\man\MA_RW_000_ST04.spr	EBFF260F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	6	RangeWStand	MA_RW_000_ST05.spr	\spr\npcres\man\MA_RW_000_ST05.spr	E5752C81	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	7	DoubleWStand	MA_RW_000_ST06.spr	\spr\npcres\man\MA_RW_000_ST06.spr	E683D303	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	8	SwordShieldWStand	MA_RW_164_ST07.spr	\spr\npcres\man\MA_RW_164_ST07.spr	3F37E5B5	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	9	ShieldSwordWStand	MA_RW_164_ST07.spr	\spr\npcres\man\MA_RW_164_ST07.spr	3F37E5B5	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	10	GuqinWStand1	MA_RW_000_ST08.spr	\spr\npcres\man\MA_RW_000_ST08.spr	FD97CC07	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	11	GuqinWStand2	MA_RW_000_ST09.spr	\spr\npcres\man\MA_RW_000_ST09.spr	FF2DF379	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	12	FreeWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	13	NormalWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	14	MeleeWWalk	MA_RW_000_WK02.spr	\spr\npcres\man\MA_RW_000_WK02.spr	6969F98D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	15	RangeWWalk	MA_RW_000_WK03.spr	\spr\npcres\man\MA_RW_000_WK03.spr	6AE7EC0F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	16	DoubleWWalk	MA_RW_000_WK04.spr	\spr\npcres\man\MA_RW_000_WK04.spr	647D9281	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	17	SwordShieldWWalk	MA_RW_164_WK05.spr	\spr\npcres\man\MA_RW_164_WK05.spr	3CA1A27E	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	18	ShieldSwordWWalk	MA_RW_164_WK05.spr	\spr\npcres\man\MA_RW_164_WK05.spr	3CA1A27E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	19	GuqinWWalk	MA_RW_000_WK06.spr	\spr\npcres\man\MA_RW_000_WK06.spr	63018F85	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	20	FreeRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	21	NormalRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	22	MeleeWRun	MA_RW_000_RN02.spr	\spr\npcres\man\MA_RW_000_RN02.spr	A3A53D3D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	23	RangeWRun	MA_RW_000_RN03.spr	\spr\npcres\man\MA_RW_000_RN03.spr	BD3323BF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	24	DoubleWRun	MA_RW_000_RN04.spr	\spr\npcres\man\MA_RW_000_RN04.spr	BE49D631	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	25	SwordShieldWRun	MA_RW_164_RN05.spr	\spr\npcres\man\MA_RW_164_RN05.spr	76FDF448	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	26	ShieldSwordWRun	MA_RW_164_RN06.spr	\spr\npcres\man\MA_RW_164_RN06.spr	700BFACA	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	27	GuqinWRun	MA_RW_000_RN07.spr	\spr\npcres\man\MA_RW_000_RN07.spr	B6EBC9B7	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	28	FreeWound	MA_RW_000_IJ01.spr	\spr\npcres\man\MA_RW_000_IJ01.spr	293E712D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	29	MeleeWWound	MA_RW_000_IJ02.spr	\spr\npcres\man\MA_RW_000_IJ02.spr	2AB467AF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	30	RangeWWound	MA_RW_000_IJ03.spr	\spr\npcres\man\MA_RW_000_IJ03.spr	27C26A21	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	31	DoubleWWound	MA_RW_000_IJ04.spr	\spr\npcres\man\MA_RW_000_IJ04.spr	215810A3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	32	SwordShieldWWound	MA_RW_164_IJ05.spr	\spr\npcres\man\MA_RW_164_IJ05.spr	F98C2390	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	33	ShieldSwordWWound	MA_RW_164_IJ05.spr	\spr\npcres\man\MA_RW_164_IJ05.spr	F98C2390	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	34	GuqinWWound	MA_RW_000_IJ06.spr	\spr\npcres\man\MA_RW_000_IJ06.spr	3C6C0DA7	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	35	FreeDie	MA_RW_000_DE01.spr	\spr\npcres\man\MA_RW_000_DE01.spr	45EEF038	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	36	MeleeWDie	MA_RW_000_DE02.spr	\spr\npcres\man\MA_RW_000_DE02.spr	4764E6BA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	37	RangeWDie	MA_RW_000_DE03.spr	\spr\npcres\man\MA_RW_000_DE03.spr	40F2ED3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	38	DoubleWDie	MA_RW_000_DE04.spr	\spr\npcres\man\MA_RW_000_DE04.spr	420893BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	39	SwordShieldWDie	MA_RW_164_DE05.spr	\spr\npcres\man\MA_RW_164_DE05.spr	1ABCB1D5	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	40	ShieldSwordWDie	MA_RW_164_DE05.spr	\spr\npcres\man\MA_RW_164_DE05.spr	1ABCB1D5	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	41	GuqinWDie	MA_RW_000_DE06.spr	\spr\npcres\man\MA_RW_000_DE06.spr	591C8CB2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	42	FreeAttack	MA_RW_000_AT01.spr	\spr\npcres\man\MA_RW_000_AT01.spr	3A9E6528	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	43	MeleeWPuncture	MA_RW_000_AT02.spr	\spr\npcres\man\MA_RW_000_AT02.spr	34146BAA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	44	MeleeWCut	MA_RW_000_AT03.spr	\spr\npcres\man\MA_RW_000_AT03.spr	31A21E2C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	45	RangeWPuncture	MA_RW_000_AT04.spr	\spr\npcres\man\MA_RW_000_AT04.spr	333804AE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	46	RangeWCut	MA_RW_000_AT05.spr	\spr\npcres\man\MA_RW_000_AT05.spr	0CB60B20	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	47	DoubleWPull	MA_RW_000_AT06.spr	\spr\npcres\man\MA_RW_000_AT06.spr	09CC31A2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	48	DoubleWPound	MA_RW_000_AT07.spr	\spr\npcres\man\MA_RW_000_AT07.spr	0B5A2424	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	49	SwordShieldWChop	MA_RW_164_AT08.spr	\spr\npcres\man\MA_RW_164_AT08.spr	438EF6D6	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	50	SwordShieldWCut	MA_RW_164_AT09.spr	\spr\npcres\man\MA_RW_164_AT09.spr	5D04FD48	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	51	ShieldSwordWChop	MA_RW_164_AT08.spr	\spr\npcres\man\MA_RW_164_AT08.spr	438EF6D6	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	52	ShieldSwordWCut	MA_RW_164_AT09.spr	\spr\npcres\man\MA_RW_164_AT09.spr	5D04FD48	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	53	GuqinWPuncture	MA_RW_000_AT10.spr	\spr\npcres\man\MA_RW_000_AT10.spr	46D970B3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	54	GuqinWCut	MA_RW_000_AT11.spr	\spr\npcres\man\MA_RW_000_AT11.spr	40576735	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	55	DartThrow	MA_RW_000_MG01.spr	\spr\npcres\man\MA_RW_000_MG01.spr	38A75538	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	56	FreeMagic	MA_RW_000_MG02.spr	\spr\npcres\man\MA_RW_000_MG02.spr	3A3D5BBA	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	57	MeleeWMagic	MA_RW_000_MG03.spr	\spr\npcres\man\MA_RW_000_MG03.spr	374B4E3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	58	RangeWMagic	MA_RW_000_MG04.spr	\spr\npcres\man\MA_RW_000_MG04.spr	30C174BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	59	DoubleWMagic	MA_RW_000_MG05.spr	\spr\npcres\man\MA_RW_000_MG05.spr	325F7B30	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	60	SwordShieldWMagic	MA_RW_164_MG06.spr	\spr\npcres\man\MA_RW_164_MG06.spr	4A830DE2	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	61	ShieldSwordWMagic	MA_RW_164_MG06.spr	\spr\npcres\man\MA_RW_164_MG06.spr	4A830DE2	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	62	GuqinWMagic	MA_RW_000_MG07.spr	\spr\npcres\man\MA_RW_000_MG07.spr	09631434	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	63	SitDown	MA_RW_000_ZZ01.spr	\spr\npcres\man\MA_RW_000_ZZ01.spr	FE781C7E	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	64	JumpFly	MA_RW_000_JP01.spr	\spr\npcres\man\MA_RW_000_JP01.spr	9A6C41FB	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	65	RideStand	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	66	RideWalk	MA_RW_164_HW01.spr	\spr\npcres\man\MA_RW_164_HW01.spr	C6EA4C7C	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	67	RideRun	MA_RW_164_HR01.spr	\spr\npcres\man\MA_RW_164_HR01.spr	273445A8	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	68	RideCut	MA_RW_164_HA01.spr	\spr\npcres\man\MA_RW_164_HA01.spr	3D3973F9	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	69	RidePuncture	MA_RW_164_HA02.spr	\spr\npcres\man\MA_RW_164_HA02.spr	3EB7667B	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	70	RideMagic	MA_RW_164_HM01.spr	\spr\npcres\man\MA_RW_164_HM01.spr	07165A99	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	71	RideWound	MA_RW_164_HI01.spr	\spr\npcres\man\MA_RW_164_HI01.spr	5A443974	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	72	RideDie	MA_RW_164_HD01.spr	\spr\npcres\man\MA_RW_164_HD01.spr	BAA63EA0	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	73	RideStand1	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	0	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	271	269	74	RideStand2	MA_RW_164_RD01.spr	\spr\npcres\man\MA_RW_164_RD01.spr	3D012E9E	1	JX1:updatejx15.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	0	SwordShieldWFreeStand	MA_RW_000_ST01.spr	\spr\npcres\man\MA_RW_000_ST01.spr	135D0689	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	1	ShieldSwordWFreeStand	MA_RW_000_ST01.spr	\spr\npcres\man\MA_RW_000_ST01.spr	135D0689	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	2	FreeStand1	MA_RW_000_ST01.spr	\spr\npcres\man\MA_RW_000_ST01.spr	135D0689	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	3	FreeStand2	MA_RW_000_ST02.spr	\spr\npcres\man\MA_RW_000_ST02.spr	ECEB0D0B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	4	FreeStand3	MA_RW_000_ST03.spr	\spr\npcres\man\MA_RW_000_ST03.spr	EE61338D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	5	MeleeWStand	MA_RW_000_ST04.spr	\spr\npcres\man\MA_RW_000_ST04.spr	EBFF260F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	6	RangeWStand	MA_RW_000_ST05.spr	\spr\npcres\man\MA_RW_000_ST05.spr	E5752C81	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	7	DoubleWStand	MA_RW_000_ST06.spr	\spr\npcres\man\MA_RW_000_ST06.spr	E683D303	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	8	SwordShieldWStand	MA_RW_000_ST07.spr	\spr\npcres\man\MA_RW_000_ST07.spr	E019D985	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	9	ShieldSwordWStand	MA_RW_000_ST07.spr	\spr\npcres\man\MA_RW_000_ST07.spr	E019D985	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	10	GuqinWStand1	MA_RW_180_ST08.spr	\spr\npcres\man\MA_RW_180_ST08.spr	FE4D5188	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	11	GuqinWStand2	MA_RW_180_ST09.spr	\spr\npcres\man\MA_RW_180_ST09.spr	FBDB440A	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	12	FreeWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	13	NormalWalk	MA_RW_000_WK01.spr	\spr\npcres\man\MA_RW_000_WK01.spr	6FD3F30B	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	14	MeleeWWalk	MA_RW_000_WK02.spr	\spr\npcres\man\MA_RW_000_WK02.spr	6969F98D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	15	RangeWWalk	MA_RW_000_WK03.spr	\spr\npcres\man\MA_RW_000_WK03.spr	6AE7EC0F	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	16	DoubleWWalk	MA_RW_000_WK04.spr	\spr\npcres\man\MA_RW_000_WK04.spr	647D9281	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	17	SwordShieldWWalk	MA_RW_000_WK05.spr	\spr\npcres\man\MA_RW_000_WK05.spr	618B9903	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	18	ShieldSwordWWalk	MA_RW_000_WK05.spr	\spr\npcres\man\MA_RW_000_WK05.spr	618B9903	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	19	GuqinWWalk	MA_RW_180_WK06.spr	\spr\npcres\man\MA_RW_180_WK06.spr	FC3F3687	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	20	FreeRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	21	NormalRun	MA_RW_000_RN01.spr	\spr\npcres\man\MA_RW_000_RN01.spr	A62F36BB	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	22	MeleeWRun	MA_RW_000_RN02.spr	\spr\npcres\man\MA_RW_000_RN02.spr	A3A53D3D	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	23	RangeWRun	MA_RW_000_RN03.spr	\spr\npcres\man\MA_RW_000_RN03.spr	BD3323BF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	24	DoubleWRun	MA_RW_000_RN04.spr	\spr\npcres\man\MA_RW_000_RN04.spr	BE49D631	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	25	SwordShieldWRun	MA_RW_000_RN05.spr	\spr\npcres\man\MA_RW_000_RN05.spr	BBC7DCB3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	26	ShieldSwordWRun	MA_RW_000_RN06.spr	\spr\npcres\man\MA_RW_000_RN06.spr	B55DC335	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	27	GuqinWRun	MA_RW_180_RN07.spr	\spr\npcres\man\MA_RW_180_RN07.spr	33815B83	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	28	FreeWound	MA_RW_000_IJ01.spr	\spr\npcres\man\MA_RW_000_IJ01.spr	293E712D	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	29	MeleeWWound	MA_RW_000_IJ02.spr	\spr\npcres\man\MA_RW_000_IJ02.spr	2AB467AF	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	30	RangeWWound	MA_RW_000_IJ03.spr	\spr\npcres\man\MA_RW_000_IJ03.spr	27C26A21	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	31	DoubleWWound	MA_RW_000_IJ04.spr	\spr\npcres\man\MA_RW_000_IJ04.spr	215810A3	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	32	SwordShieldWWound	MA_RW_000_IJ05.spr	\spr\npcres\man\MA_RW_000_IJ05.spr	22D60725	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	33	ShieldSwordWWound	MA_RW_000_IJ05.spr	\spr\npcres\man\MA_RW_000_IJ05.spr	22D60725	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	34	GuqinWWound	MA_RW_180_IJ06.spr	\spr\npcres\man\MA_RW_180_IJ06.spr	B919B499	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	35	FreeDie	MA_RW_000_DE01.spr	\spr\npcres\man\MA_RW_000_DE01.spr	45EEF038	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	36	MeleeWDie	MA_RW_000_DE02.spr	\spr\npcres\man\MA_RW_000_DE02.spr	4764E6BA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	37	RangeWDie	MA_RW_000_DE03.spr	\spr\npcres\man\MA_RW_000_DE03.spr	40F2ED3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	38	DoubleWDie	MA_RW_000_DE04.spr	\spr\npcres\man\MA_RW_000_DE04.spr	420893BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	39	SwordShieldWDie	MA_RW_000_DE05.spr	\spr\npcres\man\MA_RW_000_DE05.spr	5F868630	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	40	ShieldSwordWDie	MA_RW_000_DE05.spr	\spr\npcres\man\MA_RW_000_DE05.spr	5F868630	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	41	GuqinWDie	MA_RW_180_DE06.spr	\spr\npcres\man\MA_RW_180_DE06.spr	D5CA1E8E	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	42	FreeAttack	MA_RW_000_AT01.spr	\spr\npcres\man\MA_RW_000_AT01.spr	3A9E6528	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	43	MeleeWPuncture	MA_RW_000_AT02.spr	\spr\npcres\man\MA_RW_000_AT02.spr	34146BAA	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	44	MeleeWCut	MA_RW_000_AT03.spr	\spr\npcres\man\MA_RW_000_AT03.spr	31A21E2C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	45	RangeWPuncture	MA_RW_000_AT04.spr	\spr\npcres\man\MA_RW_000_AT04.spr	333804AE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	46	RangeWCut	MA_RW_000_AT05.spr	\spr\npcres\man\MA_RW_000_AT05.spr	0CB60B20	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	47	DoubleWPull	MA_RW_000_AT06.spr	\spr\npcres\man\MA_RW_000_AT06.spr	09CC31A2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	48	DoubleWPound	MA_RW_000_AT07.spr	\spr\npcres\man\MA_RW_000_AT07.spr	0B5A2424	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	49	SwordShieldWChop	MA_RW_000_AT08.spr	\spr\npcres\man\MA_RW_000_AT08.spr	04D02AA6	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	50	SwordShieldWCut	MA_RW_000_AT09.spr	\spr\npcres\man\MA_RW_000_AT09.spr	066ED118	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	51	ShieldSwordWChop	MA_RW_000_AT08.spr	\spr\npcres\man\MA_RW_000_AT08.spr	04D02AA6	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	52	ShieldSwordWCut	MA_RW_000_AT09.spr	\spr\npcres\man\MA_RW_000_AT09.spr	066ED118	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	53	GuqinWPuncture	MA_RW_180_AT10.spr	\spr\npcres\man\MA_RW_180_AT10.spr	43F6F71A	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	54	GuqinWCut	MA_RW_180_AT11.spr	\spr\npcres\man\MA_RW_180_AT11.spr	5D0CFD9C	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	55	DartThrow	MA_RW_000_MG01.spr	\spr\npcres\man\MA_RW_000_MG01.spr	38A75538	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	56	FreeMagic	MA_RW_000_MG02.spr	\spr\npcres\man\MA_RW_000_MG02.spr	3A3D5BBA	0	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	57	MeleeWMagic	MA_RW_000_MG03.spr	\spr\npcres\man\MA_RW_000_MG03.spr	374B4E3C	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	58	RangeWMagic	MA_RW_000_MG04.spr	\spr\npcres\man\MA_RW_000_MG04.spr	30C174BE	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	59	DoubleWMagic	MA_RW_000_MG05.spr	\spr\npcres\man\MA_RW_000_MG05.spr	325F7B30	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	60	SwordShieldWMagic	MA_RW_000_MG06.spr	\spr\npcres\man\MA_RW_000_MG06.spr	0FD561B2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	61	ShieldSwordWMagic	MA_RW_000_MG06.spr	\spr\npcres\man\MA_RW_000_MG06.spr	0FD561B2	0	THIEU CA HAI
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	62	GuqinWMagic	MA_RW_180_MG07.spr	\spr\npcres\man\MA_RW_180_MG07.spr	0A18E74B	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	63	SitDown	MA_RW_000_ZZ01.spr	\spr\npcres\man\MA_RW_000_ZZ01.spr	FE781C7E	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	64	JumpFly	MA_RW_000_JP01.spr	\spr\npcres\man\MA_RW_000_JP01.spr	9A6C41FB	1	JX1:spr.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	65	RideStand	MA_RW_180_RD01.spr	\spr\npcres\man\MA_RW_180_RD01.spr	6300953A	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	66	RideWalk	MA_RW_180_HW01.spr	\spr\npcres\man\MA_RW_180_HW01.spr	84E926B3	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	67	RideRun	MA_RW_180_HR01.spr	\spr\npcres\man\MA_RW_180_HR01.spr	64CB3FA4	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	68	RideCut	MA_RW_180_HA01.spr	\spr\npcres\man\MA_RW_180_HA01.spr	E338D180	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	69	RidePuncture	MA_RW_180_HA02.spr	\spr\npcres\man\MA_RW_180_HA02.spr	FCB6C402	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	70	RideMagic	MA_RW_180_HM01.spr	\spr\npcres\man\MA_RW_180_HM01.spr	C51535D0	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	71	RideWound	MA_RW_180_HI01.spr	\spr\npcres\man\MA_RW_180_HI01.spr	185B93AB	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	72	RideDie	MA_RW_180_HD01.spr	\spr\npcres\man\MA_RW_180_HD01.spr	78A5E9E7	1	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	73	RideStand1	MA_RW_180_RD01.spr	\spr\npcres\man\MA_RW_180_RD01.spr	6300953A	0	JX1:updatejx16.pak
+MainMan	RightWeapon	ManRightWeapon.txt	278	276	74	RideStand2	MA_RW_180_RD01.spr	\spr\npcres\man\MA_RW_180_RD01.spr	6300953A	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	0	SwordShieldWFreeStand	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	1	ShieldSwordWFreeStand	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	2	FreeStand1	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	3	FreeStand2	MA_LW_164_ST02.spr	\spr\npcres\man\MA_LW_164_ST02.spr	38750833	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	4	FreeStand3	MA_LW_000_ST03.spr	\spr\npcres\man\MA_LW_000_ST03.spr	4E3005A4	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	5	MeleeWStand	MA_LW_000_ST04.spr	\spr\npcres\man\MA_LW_000_ST04.spr	4B4E0826	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	6	RangeWStand	MA_LW_000_ST05.spr	\spr\npcres\man\MA_LW_000_ST05.spr	44C43E98	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	7	DoubleWStand	MA_LW_000_ST06.spr	\spr\npcres\man\MA_LW_000_ST06.spr	4652251A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	8	SwordShieldWStand	MA_LW_164_ST07.spr	\spr\npcres\man\MA_LW_164_ST07.spr	0FBBC4AD	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	9	ShieldSwordWStand	MA_LW_164_ST07.spr	\spr\npcres\man\MA_LW_164_ST07.spr	0FBBC4AD	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	10	GuqinWStand1	MA_LW_000_ST08.spr	\spr\npcres\man\MA_LW_000_ST08.spr	5D66DE1E	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	11	GuqinWStand2	MA_LW_000_ST09.spr	\spr\npcres\man\MA_LW_000_ST09.spr	5EFCC490	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	12	FreeWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	13	NormalWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	14	MeleeWWalk	MA_LW_000_WK02.spr	\spr\npcres\man\MA_LW_000_WK02.spr	493F819F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	15	RangeWWalk	MA_LW_000_WK03.spr	\spr\npcres\man\MA_LW_000_WK03.spr	4AB5B411	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	16	DoubleWWalk	MA_LW_000_WK04.spr	\spr\npcres\man\MA_LW_000_WK04.spr	47C3BA93	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	17	SwordShieldWWalk	MA_LW_164_WK05.spr	\spr\npcres\man\MA_LW_164_WK05.spr	8D158901	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	18	ShieldSwordWWalk	MA_LW_164_WK05.spr	\spr\npcres\man\MA_LW_164_WK05.spr	8D158901	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	19	GuqinWWalk	MA_LW_000_WK06.spr	\spr\npcres\man\MA_LW_000_WK06.spr	42D05797	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	20	FreeRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	21	NormalRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	22	MeleeWRun	MA_LW_000_RN02.spr	\spr\npcres\man\MA_LW_000_RN02.spr	83740F9F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	23	RangeWRun	MA_LW_000_RN03.spr	\spr\npcres\man\MA_LW_000_RN03.spr	9C823211	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	24	DoubleWRun	MA_LW_000_RN04.spr	\spr\npcres\man\MA_LW_000_RN04.spr	9E183893	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	25	SwordShieldWRun	MA_LW_164_RN05.spr	\spr\npcres\man\MA_LW_164_RN05.spr	C761DBDB	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	26	ShieldSwordWRun	MA_LW_164_RN06.spr	\spr\npcres\man\MA_LW_164_RN06.spr	C0FFCE5D	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	27	GuqinWRun	MA_LW_000_RN07.spr	\spr\npcres\man\MA_LW_000_RN07.spr	96BAD809	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	28	FreeWound	MA_LW_000_IJ01.spr	\spr\npcres\man\MA_LW_000_IJ01.spr	088D78B5	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	29	MeleeWWound	MA_LW_000_IJ02.spr	\spr\npcres\man\MA_LW_000_IJ02.spr	0A1B6F37	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	30	RangeWWound	MA_LW_000_IJ03.spr	\spr\npcres\man\MA_LW_000_IJ03.spr	079115A9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	31	DoubleWWound	MA_LW_000_IJ04.spr	\spr\npcres\man\MA_LW_000_IJ04.spr	012F182B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	32	SwordShieldWWound	MA_LW_164_IJ05.spr	\spr\npcres\man\MA_LW_164_IJ05.spr	4E703723	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	33	ShieldSwordWWound	MA_LW_164_IJ05.spr	\spr\npcres\man\MA_LW_164_IJ05.spr	4E703723	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	34	GuqinWWound	MA_LW_000_IJ06.spr	\spr\npcres\man\MA_LW_000_IJ06.spr	1C33352F	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	35	FreeDie	MA_LW_000_DE01.spr	\spr\npcres\man\MA_LW_000_DE01.spr	25BDC514	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	36	MeleeWDie	MA_LW_000_DE02.spr	\spr\npcres\man\MA_LW_000_DE02.spr	26CBCB96	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	37	RangeWDie	MA_LW_000_DE03.spr	\spr\npcres\man\MA_LW_000_DE03.spr	2041FE08	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	38	DoubleWDie	MA_LW_000_DE04.spr	\spr\npcres\man\MA_LW_000_DE04.spr	3DDFE48A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	39	SwordShieldWDie	MA_LW_164_DE05.spr	\spr\npcres\man\MA_LW_164_DE05.spr	EB20841D	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	40	ShieldSwordWDie	MA_LW_164_DE05.spr	\spr\npcres\man\MA_LW_164_DE05.spr	EB20841D	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	41	GuqinWDie	MA_LW_000_DE06.spr	\spr\npcres\man\MA_LW_000_DE06.spr	38E3918E	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	42	FreeAttack	MA_LW_000_AT01.spr	\spr\npcres\man\MA_LW_000_AT01.spr	9A6D774F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	43	MeleeWPuncture	MA_LW_000_AT02.spr	\spr\npcres\man\MA_LW_000_AT02.spr	97FB7DC1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	44	MeleeWCut	MA_LW_000_AT03.spr	\spr\npcres\man\MA_LW_000_AT03.spr	91716043	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	45	RangeWPuncture	MA_LW_000_AT04.spr	\spr\npcres\man\MA_LW_000_AT04.spr	928F16C5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	46	RangeWCut	MA_LW_000_AT05.spr	\spr\npcres\man\MA_LW_000_AT05.spr	6C051D47	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	47	DoubleWPull	MA_LW_000_AT06.spr	\spr\npcres\man\MA_LW_000_AT06.spr	699303B9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	48	DoubleWPound	MA_LW_000_AT07.spr	\spr\npcres\man\MA_LW_000_AT07.spr	6B29363B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	49	SwordShieldWChop	MA_LW_164_AT08.spr	\spr\npcres\man\MA_LW_164_AT08.spr	5072DAA4	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	50	SwordShieldWCut	MA_LW_164_AT09.spr	\spr\npcres\man\MA_LW_164_AT09.spr	2D88C126	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	51	ShieldSwordWChop	MA_LW_164_AT08.spr	\spr\npcres\man\MA_LW_164_AT08.spr	5072DAA4	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	52	ShieldSwordWCut	MA_LW_164_AT09.spr	\spr\npcres\man\MA_LW_164_AT09.spr	2D88C126	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	53	GuqinWPuncture	MA_LW_000_AT10.spr	\spr\npcres\man\MA_LW_000_AT10.spr	A6A842CA	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	54	GuqinWCut	MA_LW_000_AT11.spr	\spr\npcres\man\MA_LW_000_AT11.spr	A026494C	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	55	DartThrow	MA_LW_000_MG01.spr	\spr\npcres\man\MA_LW_000_MG01.spr	9875A75F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	56	FreeMagic	MA_LW_000_MG02.spr	\spr\npcres\man\MA_LW_000_MG02.spr	9583ADD1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	57	MeleeWMagic	MA_LW_000_MG03.spr	\spr\npcres\man\MA_LW_000_MG03.spr	971A5053	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	58	RangeWMagic	MA_LW_000_MG04.spr	\spr\npcres\man\MA_LW_000_MG04.spr	909046D5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	59	DoubleWMagic	MA_LW_000_MG05.spr	\spr\npcres\man\MA_LW_000_MG05.spr	922E4D57	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	60	SwordShieldWMagic	MA_LW_164_MG06.spr	\spr\npcres\man\MA_LW_164_MG06.spr	5B7711B0	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	61	ShieldSwordWMagic	MA_LW_164_MG06.spr	\spr\npcres\man\MA_LW_164_MG06.spr	5B7711B0	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	62	GuqinWMagic	MA_LW_000_MG07.spr	\spr\npcres\man\MA_LW_000_MG07.spr	6932664B	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	63	SitDown	MA_LW_000_ZZ01.spr	\spr\npcres\man\MA_LW_000_ZZ01.spr	59CE2745	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	64	JumpFly	MA_LW_000_JP01.spr	\spr\npcres\man\MA_LW_000_JP01.spr	7A334BFD	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	65	RideStand	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	66	RideWalk	MA_LW_164_HW01.spr	\spr\npcres\man\MA_LW_164_HW01.spr	D75E52C4	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	67	RideRun	MA_LW_164_HR01.spr	\spr\npcres\man\MA_LW_164_HR01.spr	37BFA8F0	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	68	RideCut	MA_LW_164_HA01.spr	\spr\npcres\man\MA_LW_164_HA01.spr	0DAD4B27	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	69	RidePuncture	MA_LW_164_HA02.spr	\spr\npcres\man\MA_LW_164_HA02.spr	0F3B7199	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	70	RideMagic	MA_LW_164_HM01.spr	\spr\npcres\man\MA_LW_164_HM01.spr	9799AE2C	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	71	RideWound	MA_LW_164_HI01.spr	\spr\npcres\man\MA_LW_164_HI01.spr	AAC80C07	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	72	RideDie	MA_LW_164_HD01.spr	\spr\npcres\man\MA_LW_164_HD01.spr	8B2A05E8	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	73	RideStand1	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	270	268	74	RideStand2	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	0	SwordShieldWFreeStand	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	1	ShieldSwordWFreeStand	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	2	FreeStand1	MA_LW_164_ST01.spr	\spr\npcres\man\MA_LW_164_ST01.spr	3EFF05B1	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	3	FreeStand2	MA_LW_164_ST02.spr	\spr\npcres\man\MA_LW_164_ST02.spr	38750833	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	4	FreeStand3	MA_LW_000_ST03.spr	\spr\npcres\man\MA_LW_000_ST03.spr	4E3005A4	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	5	MeleeWStand	MA_LW_000_ST04.spr	\spr\npcres\man\MA_LW_000_ST04.spr	4B4E0826	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	6	RangeWStand	MA_LW_000_ST05.spr	\spr\npcres\man\MA_LW_000_ST05.spr	44C43E98	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	7	DoubleWStand	MA_LW_000_ST06.spr	\spr\npcres\man\MA_LW_000_ST06.spr	4652251A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	8	SwordShieldWStand	MA_LW_164_ST07.spr	\spr\npcres\man\MA_LW_164_ST07.spr	0FBBC4AD	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	9	ShieldSwordWStand	MA_LW_164_ST07.spr	\spr\npcres\man\MA_LW_164_ST07.spr	0FBBC4AD	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	10	GuqinWStand1	MA_LW_000_ST08.spr	\spr\npcres\man\MA_LW_000_ST08.spr	5D66DE1E	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	11	GuqinWStand2	MA_LW_000_ST09.spr	\spr\npcres\man\MA_LW_000_ST09.spr	5EFCC490	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	12	FreeWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	13	NormalWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	14	MeleeWWalk	MA_LW_000_WK02.spr	\spr\npcres\man\MA_LW_000_WK02.spr	493F819F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	15	RangeWWalk	MA_LW_000_WK03.spr	\spr\npcres\man\MA_LW_000_WK03.spr	4AB5B411	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	16	DoubleWWalk	MA_LW_000_WK04.spr	\spr\npcres\man\MA_LW_000_WK04.spr	47C3BA93	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	17	SwordShieldWWalk	MA_LW_164_WK05.spr	\spr\npcres\man\MA_LW_164_WK05.spr	8D158901	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	18	ShieldSwordWWalk	MA_LW_164_WK05.spr	\spr\npcres\man\MA_LW_164_WK05.spr	8D158901	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	19	GuqinWWalk	MA_LW_000_WK06.spr	\spr\npcres\man\MA_LW_000_WK06.spr	42D05797	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	20	FreeRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	21	NormalRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	22	MeleeWRun	MA_LW_000_RN02.spr	\spr\npcres\man\MA_LW_000_RN02.spr	83740F9F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	23	RangeWRun	MA_LW_000_RN03.spr	\spr\npcres\man\MA_LW_000_RN03.spr	9C823211	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	24	DoubleWRun	MA_LW_000_RN04.spr	\spr\npcres\man\MA_LW_000_RN04.spr	9E183893	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	25	SwordShieldWRun	MA_LW_164_RN05.spr	\spr\npcres\man\MA_LW_164_RN05.spr	C761DBDB	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	26	ShieldSwordWRun	MA_LW_164_RN06.spr	\spr\npcres\man\MA_LW_164_RN06.spr	C0FFCE5D	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	27	GuqinWRun	MA_LW_000_RN07.spr	\spr\npcres\man\MA_LW_000_RN07.spr	96BAD809	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	28	FreeWound	MA_LW_000_IJ01.spr	\spr\npcres\man\MA_LW_000_IJ01.spr	088D78B5	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	29	MeleeWWound	MA_LW_000_IJ02.spr	\spr\npcres\man\MA_LW_000_IJ02.spr	0A1B6F37	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	30	RangeWWound	MA_LW_000_IJ03.spr	\spr\npcres\man\MA_LW_000_IJ03.spr	079115A9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	31	DoubleWWound	MA_LW_000_IJ04.spr	\spr\npcres\man\MA_LW_000_IJ04.spr	012F182B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	32	SwordShieldWWound	MA_LW_164_IJ05.spr	\spr\npcres\man\MA_LW_164_IJ05.spr	4E703723	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	33	ShieldSwordWWound	MA_LW_164_IJ05.spr	\spr\npcres\man\MA_LW_164_IJ05.spr	4E703723	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	34	GuqinWWound	MA_LW_000_IJ06.spr	\spr\npcres\man\MA_LW_000_IJ06.spr	1C33352F	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	35	FreeDie	MA_LW_000_DE01.spr	\spr\npcres\man\MA_LW_000_DE01.spr	25BDC514	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	36	MeleeWDie	MA_LW_000_DE02.spr	\spr\npcres\man\MA_LW_000_DE02.spr	26CBCB96	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	37	RangeWDie	MA_LW_000_DE03.spr	\spr\npcres\man\MA_LW_000_DE03.spr	2041FE08	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	38	DoubleWDie	MA_LW_000_DE04.spr	\spr\npcres\man\MA_LW_000_DE04.spr	3DDFE48A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	39	SwordShieldWDie	MA_LW_164_DE05.spr	\spr\npcres\man\MA_LW_164_DE05.spr	EB20841D	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	40	ShieldSwordWDie	MA_LW_164_DE05.spr	\spr\npcres\man\MA_LW_164_DE05.spr	EB20841D	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	41	GuqinWDie	MA_LW_000_DE06.spr	\spr\npcres\man\MA_LW_000_DE06.spr	38E3918E	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	42	FreeAttack	MA_LW_000_AT01.spr	\spr\npcres\man\MA_LW_000_AT01.spr	9A6D774F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	43	MeleeWPuncture	MA_LW_000_AT02.spr	\spr\npcres\man\MA_LW_000_AT02.spr	97FB7DC1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	44	MeleeWCut	MA_LW_000_AT03.spr	\spr\npcres\man\MA_LW_000_AT03.spr	91716043	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	45	RangeWPuncture	MA_LW_000_AT04.spr	\spr\npcres\man\MA_LW_000_AT04.spr	928F16C5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	46	RangeWCut	MA_LW_000_AT05.spr	\spr\npcres\man\MA_LW_000_AT05.spr	6C051D47	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	47	DoubleWPull	MA_LW_000_AT06.spr	\spr\npcres\man\MA_LW_000_AT06.spr	699303B9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	48	DoubleWPound	MA_LW_000_AT07.spr	\spr\npcres\man\MA_LW_000_AT07.spr	6B29363B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	49	SwordShieldWChop	MA_LW_164_AT08.spr	\spr\npcres\man\MA_LW_164_AT08.spr	5072DAA4	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	50	SwordShieldWCut	MA_LW_164_AT09.spr	\spr\npcres\man\MA_LW_164_AT09.spr	2D88C126	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	51	ShieldSwordWChop	MA_LW_164_AT08.spr	\spr\npcres\man\MA_LW_164_AT08.spr	5072DAA4	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	52	ShieldSwordWCut	MA_LW_164_AT09.spr	\spr\npcres\man\MA_LW_164_AT09.spr	2D88C126	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	53	GuqinWPuncture	MA_LW_000_AT10.spr	\spr\npcres\man\MA_LW_000_AT10.spr	A6A842CA	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	54	GuqinWCut	MA_LW_000_AT11.spr	\spr\npcres\man\MA_LW_000_AT11.spr	A026494C	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	55	DartThrow	MA_LW_000_MG01.spr	\spr\npcres\man\MA_LW_000_MG01.spr	9875A75F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	56	FreeMagic	MA_LW_000_MG02.spr	\spr\npcres\man\MA_LW_000_MG02.spr	9583ADD1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	57	MeleeWMagic	MA_LW_000_MG03.spr	\spr\npcres\man\MA_LW_000_MG03.spr	971A5053	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	58	RangeWMagic	MA_LW_000_MG04.spr	\spr\npcres\man\MA_LW_000_MG04.spr	909046D5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	59	DoubleWMagic	MA_LW_000_MG05.spr	\spr\npcres\man\MA_LW_000_MG05.spr	922E4D57	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	60	SwordShieldWMagic	MA_LW_164_MG06.spr	\spr\npcres\man\MA_LW_164_MG06.spr	5B7711B0	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	61	ShieldSwordWMagic	MA_LW_164_MG06.spr	\spr\npcres\man\MA_LW_164_MG06.spr	5B7711B0	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	62	GuqinWMagic	MA_LW_000_MG07.spr	\spr\npcres\man\MA_LW_000_MG07.spr	6932664B	0	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	63	SitDown	MA_LW_000_ZZ01.spr	\spr\npcres\man\MA_LW_000_ZZ01.spr	59CE2745	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	64	JumpFly	MA_LW_000_JP01.spr	\spr\npcres\man\MA_LW_000_JP01.spr	7A334BFD	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	65	RideStand	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	66	RideWalk	MA_LW_164_HW01.spr	\spr\npcres\man\MA_LW_164_HW01.spr	D75E52C4	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	67	RideRun	MA_LW_164_HR01.spr	\spr\npcres\man\MA_LW_164_HR01.spr	37BFA8F0	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	68	RideCut	MA_LW_164_HA01.spr	\spr\npcres\man\MA_LW_164_HA01.spr	0DAD4B27	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	69	RidePuncture	MA_LW_164_HA02.spr	\spr\npcres\man\MA_LW_164_HA02.spr	0F3B7199	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	70	RideMagic	MA_LW_164_HM01.spr	\spr\npcres\man\MA_LW_164_HM01.spr	9799AE2C	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	71	RideWound	MA_LW_164_HI01.spr	\spr\npcres\man\MA_LW_164_HI01.spr	AAC80C07	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	72	RideDie	MA_LW_164_HD01.spr	\spr\npcres\man\MA_LW_164_HD01.spr	8B2A05E8	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	73	RideStand1	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	0	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	271	269	74	RideStand2	MA_LW_164_RD01.spr	\spr\npcres\man\MA_LW_164_RD01.spr	0DF50196	1	JX1:updatejx15.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	0	SwordShieldWFreeStand	MA_LW_000_ST01.spr	\spr\npcres\man\MA_LW_000_ST01.spr	732C68A0	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	1	ShieldSwordWFreeStand	MA_LW_000_ST01.spr	\spr\npcres\man\MA_LW_000_ST01.spr	732C68A0	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	2	FreeStand1	MA_LW_000_ST01.spr	\spr\npcres\man\MA_LW_000_ST01.spr	732C68A0	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	3	FreeStand2	MA_LW_000_ST02.spr	\spr\npcres\man\MA_LW_000_ST02.spr	4CBA1F22	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	4	FreeStand3	MA_LW_000_ST03.spr	\spr\npcres\man\MA_LW_000_ST03.spr	4E3005A4	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	5	MeleeWStand	MA_LW_000_ST04.spr	\spr\npcres\man\MA_LW_000_ST04.spr	4B4E0826	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	6	RangeWStand	MA_LW_000_ST05.spr	\spr\npcres\man\MA_LW_000_ST05.spr	44C43E98	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	7	DoubleWStand	MA_LW_000_ST06.spr	\spr\npcres\man\MA_LW_000_ST06.spr	4652251A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	8	SwordShieldWStand	MA_LW_000_ST07.spr	\spr\npcres\man\MA_LW_000_ST07.spr	43E82B9C	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	9	ShieldSwordWStand	MA_LW_000_ST07.spr	\spr\npcres\man\MA_LW_000_ST07.spr	43E82B9C	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	10	GuqinWStand1	MA_LW_000_ST08.spr	\spr\npcres\man\MA_LW_000_ST08.spr	5D66DE1E	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	11	GuqinWStand2	MA_LW_000_ST09.spr	\spr\npcres\man\MA_LW_000_ST09.spr	5EFCC490	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	12	FreeWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	13	NormalWalk	MA_LW_000_WK01.spr	\spr\npcres\man\MA_LW_000_WK01.spr	4FA19B1D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	14	MeleeWWalk	MA_LW_000_WK02.spr	\spr\npcres\man\MA_LW_000_WK02.spr	493F819F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	15	RangeWWalk	MA_LW_000_WK03.spr	\spr\npcres\man\MA_LW_000_WK03.spr	4AB5B411	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	16	DoubleWWalk	MA_LW_000_WK04.spr	\spr\npcres\man\MA_LW_000_WK04.spr	47C3BA93	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	17	SwordShieldWWalk	MA_LW_000_WK05.spr	\spr\npcres\man\MA_LW_000_WK05.spr	4159A115	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	18	ShieldSwordWWalk	MA_LW_000_WK05.spr	\spr\npcres\man\MA_LW_000_WK05.spr	4159A115	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	19	GuqinWWalk	MA_LW_000_WK06.spr	\spr\npcres\man\MA_LW_000_WK06.spr	42D05797	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	20	FreeRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	21	NormalRun	MA_LW_000_RN01.spr	\spr\npcres\man\MA_LW_000_RN01.spr	81FE191D	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	22	MeleeWRun	MA_LW_000_RN02.spr	\spr\npcres\man\MA_LW_000_RN02.spr	83740F9F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	23	RangeWRun	MA_LW_000_RN03.spr	\spr\npcres\man\MA_LW_000_RN03.spr	9C823211	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	24	DoubleWRun	MA_LW_000_RN04.spr	\spr\npcres\man\MA_LW_000_RN04.spr	9E183893	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	25	SwordShieldWRun	MA_LW_000_RN05.spr	\spr\npcres\man\MA_LW_000_RN05.spr	9B962F15	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	26	ShieldSwordWRun	MA_LW_000_RN06.spr	\spr\npcres\man\MA_LW_000_RN06.spr	952CD597	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	27	GuqinWRun	MA_LW_000_RN07.spr	\spr\npcres\man\MA_LW_000_RN07.spr	96BAD809	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	28	FreeWound	MA_LW_000_IJ01.spr	\spr\npcres\man\MA_LW_000_IJ01.spr	088D78B5	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	29	MeleeWWound	MA_LW_000_IJ02.spr	\spr\npcres\man\MA_LW_000_IJ02.spr	0A1B6F37	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	30	RangeWWound	MA_LW_000_IJ03.spr	\spr\npcres\man\MA_LW_000_IJ03.spr	079115A9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	31	DoubleWWound	MA_LW_000_IJ04.spr	\spr\npcres\man\MA_LW_000_IJ04.spr	012F182B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	32	SwordShieldWWound	MA_LW_000_IJ05.spr	\spr\npcres\man\MA_LW_000_IJ05.spr	02A50EAD	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	33	ShieldSwordWWound	MA_LW_000_IJ05.spr	\spr\npcres\man\MA_LW_000_IJ05.spr	02A50EAD	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	34	GuqinWWound	MA_LW_000_IJ06.spr	\spr\npcres\man\MA_LW_000_IJ06.spr	1C33352F	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	35	FreeDie	MA_LW_000_DE01.spr	\spr\npcres\man\MA_LW_000_DE01.spr	25BDC514	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	36	MeleeWDie	MA_LW_000_DE02.spr	\spr\npcres\man\MA_LW_000_DE02.spr	26CBCB96	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	37	RangeWDie	MA_LW_000_DE03.spr	\spr\npcres\man\MA_LW_000_DE03.spr	2041FE08	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	38	DoubleWDie	MA_LW_000_DE04.spr	\spr\npcres\man\MA_LW_000_DE04.spr	3DDFE48A	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	39	SwordShieldWDie	MA_LW_000_DE05.spr	\spr\npcres\man\MA_LW_000_DE05.spr	3F55EB0C	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	40	ShieldSwordWDie	MA_LW_000_DE05.spr	\spr\npcres\man\MA_LW_000_DE05.spr	3F55EB0C	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	41	GuqinWDie	MA_LW_000_DE06.spr	\spr\npcres\man\MA_LW_000_DE06.spr	38E3918E	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	42	FreeAttack	MA_LW_000_AT01.spr	\spr\npcres\man\MA_LW_000_AT01.spr	9A6D774F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	43	MeleeWPuncture	MA_LW_000_AT02.spr	\spr\npcres\man\MA_LW_000_AT02.spr	97FB7DC1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	44	MeleeWCut	MA_LW_000_AT03.spr	\spr\npcres\man\MA_LW_000_AT03.spr	91716043	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	45	RangeWPuncture	MA_LW_000_AT04.spr	\spr\npcres\man\MA_LW_000_AT04.spr	928F16C5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	46	RangeWCut	MA_LW_000_AT05.spr	\spr\npcres\man\MA_LW_000_AT05.spr	6C051D47	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	47	DoubleWPull	MA_LW_000_AT06.spr	\spr\npcres\man\MA_LW_000_AT06.spr	699303B9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	48	DoubleWPound	MA_LW_000_AT07.spr	\spr\npcres\man\MA_LW_000_AT07.spr	6B29363B	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	49	SwordShieldWChop	MA_LW_000_AT08.spr	\spr\npcres\man\MA_LW_000_AT08.spr	64A73CBD	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	50	SwordShieldWCut	MA_LW_000_AT09.spr	\spr\npcres\man\MA_LW_000_AT09.spr	663D233F	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	51	ShieldSwordWChop	MA_LW_000_AT08.spr	\spr\npcres\man\MA_LW_000_AT08.spr	64A73CBD	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	52	ShieldSwordWCut	MA_LW_000_AT09.spr	\spr\npcres\man\MA_LW_000_AT09.spr	663D233F	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	53	GuqinWPuncture	MA_LW_000_AT10.spr	\spr\npcres\man\MA_LW_000_AT10.spr	A6A842CA	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	54	GuqinWCut	MA_LW_000_AT11.spr	\spr\npcres\man\MA_LW_000_AT11.spr	A026494C	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	55	DartThrow	MA_LW_000_MG01.spr	\spr\npcres\man\MA_LW_000_MG01.spr	9875A75F	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	56	FreeMagic	MA_LW_000_MG02.spr	\spr\npcres\man\MA_LW_000_MG02.spr	9583ADD1	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	57	MeleeWMagic	MA_LW_000_MG03.spr	\spr\npcres\man\MA_LW_000_MG03.spr	971A5053	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	58	RangeWMagic	MA_LW_000_MG04.spr	\spr\npcres\man\MA_LW_000_MG04.spr	909046D5	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	59	DoubleWMagic	MA_LW_000_MG05.spr	\spr\npcres\man\MA_LW_000_MG05.spr	922E4D57	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	60	SwordShieldWMagic	MA_LW_000_MG06.spr	\spr\npcres\man\MA_LW_000_MG06.spr	6FA473C9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	61	ShieldSwordWMagic	MA_LW_000_MG06.spr	\spr\npcres\man\MA_LW_000_MG06.spr	6FA473C9	0	THIEU CA HAI
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	62	GuqinWMagic	MA_LW_000_MG07.spr	\spr\npcres\man\MA_LW_000_MG07.spr	6932664B	1	JX1:updatejx16.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	63	SitDown	MA_LW_000_ZZ01.spr	\spr\npcres\man\MA_LW_000_ZZ01.spr	59CE2745	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	64	JumpFly	MA_LW_000_JP01.spr	\spr\npcres\man\MA_LW_000_JP01.spr	7A334BFD	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	65	RideStand	MA_LW_000_RD01.spr	\spr\npcres\man\MA_LW_000_RD01.spr	C63A143A	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	66	RideWalk	MA_LW_000_HW01.spr	\spr\npcres\man\MA_LW_000_HW01.spr	EB82B263	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	67	RideRun	MA_LW_000_HR01.spr	\spr\npcres\man\MA_LW_000_HR01.spr	CBECBC2A	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	68	RideCut	MA_LW_000_HA01.spr	\spr\npcres\man\MA_LW_000_HA01.spr	41D25E16	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	69	RidePuncture	MA_LW_000_HA02.spr	\spr\npcres\man\MA_LW_000_HA02.spr	43684488	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	70	RideMagic	MA_LW_000_HM01.spr	\spr\npcres\man\MA_LW_000_HM01.spr	2BCEB266	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	71	RideWound	MA_LW_000_HI01.spr	\spr\npcres\man\MA_LW_000_HI01.spr	7F7D12AB	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	72	RideDie	MA_LW_000_HD01.spr	\spr\npcres\man\MA_LW_000_HD01.spr	DF5F68E7	1	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	73	RideStand1	MA_LW_000_RD01.spr	\spr\npcres\man\MA_LW_000_RD01.spr	C63A143A	0	JX1:spr.pak
+MainMan	LeftWeapon	ManLeftWeapon.txt	278	276	74	RideStand2	MA_LW_000_RD01.spr	\spr\npcres\man\MA_LW_000_RD01.spr	C63A143A	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	0	SwordShieldWFreeStand	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	1	ShieldSwordWFreeStand	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	2	FreeStand1	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	3	FreeStand2	FM_RW_164_ST02.spr	\spr\npcres\woman\FM_RW_164_ST02.spr	148149B9	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	4	FreeStand3	FM_RW_000_ST03.spr	\spr\npcres\woman\FM_RW_000_ST03.spr	9A10C1F5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	5	MeleeWStand	FM_RW_000_ST04.spr	\spr\npcres\woman\FM_RW_000_ST04.spr	975B1B15	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	6	RangeWStand	FM_RW_000_ST05.spr	\spr\npcres\woman\FM_RW_000_ST05.spr	908E5535	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	7	DoubleWStand	FM_RW_000_ST06.spr	\spr\npcres\woman\FM_RW_000_ST06.spr	9230EF55	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	8	SwordShieldWStand	FM_RW_164_ST07.spr	\spr\npcres\woman\FM_RW_164_ST07.spr	EB1EFB59	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	9	ShieldSwordWStand	FM_RW_164_ST07.spr	\spr\npcres\woman\FM_RW_164_ST07.spr	EB1EFB59	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	10	GuqinWStand1	FM_RW_000_ST08.spr	\spr\npcres\woman\FM_RW_000_ST08.spr	68AE7295	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	11	GuqinWStand2	FM_RW_000_ST09.spr	\spr\npcres\woman\FM_RW_000_ST09.spr	65D08CB5	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	12	FreeWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	13	NormalWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	14	MeleeWWalk	FM_RW_000_WK02.spr	\spr\npcres\woman\FM_RW_000_WK02.spr	2FD7AA9C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	15	RangeWWalk	FM_RW_000_WK03.spr	\spr\npcres\woman\FM_RW_000_WK03.spr	291AE4BC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	16	DoubleWWalk	FM_RW_000_WK04.spr	\spr\npcres\woman\FM_RW_000_WK04.spr	2A4D3EDC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	17	SwordShieldWWalk	FM_RW_164_WK05.spr	\spr\npcres\woman\FM_RW_164_WK05.spr	A3AB0AE0	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	18	ShieldSwordWWalk	FM_RW_164_WK05.spr	\spr\npcres\woman\FM_RW_164_WK05.spr	A3AB0AE0	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	19	GuqinWWalk	FM_RW_144_WK06.spr	\spr\npcres\woman\FM_RW_144_WK06.spr	3AACD30E	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	20	FreeRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	21	NormalRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	22	MeleeWRun	FM_RW_000_RN02.spr	\spr\npcres\woman\FM_RW_000_RN02.spr	B143BB26	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	23	RangeWRun	FM_RW_000_RN03.spr	\spr\npcres\woman\FM_RW_000_RN03.spr	B2F6F546	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	24	DoubleWRun	FM_RW_000_RN04.spr	\spr\npcres\woman\FM_RW_000_RN04.spr	8C390F66	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	25	SwordShieldWRun	FM_RW_164_RN05.spr	\spr\npcres\woman\FM_RW_164_RN05.spr	85070F05	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	26	ShieldSwordWRun	FM_RW_164_RN06.spr	\spr\npcres\woman\FM_RW_164_RN06.spr	864A5925	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	27	GuqinWRun	FM_RW_000_RN07.spr	\spr\npcres\woman\FM_RW_000_RN07.spr	87D92CC6	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	28	FreeWound	FM_RW_000_IJ01.spr	\spr\npcres\woman\FM_RW_000_IJ01.spr	26AD146F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	29	MeleeWWound	FM_RW_000_IJ02.spr	\spr\npcres\woman\FM_RW_000_IJ02.spr	23D7A18F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	30	RangeWWound	FM_RW_000_IJ03.spr	\spr\npcres\woman\FM_RW_000_IJ03.spr	3D1AFBAF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	31	DoubleWWound	FM_RW_000_IJ04.spr	\spr\npcres\woman\FM_RW_000_IJ04.spr	3E4D35CF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	32	SwordShieldWWound	FM_RW_164_IJ05.spr	\spr\npcres\woman\FM_RW_164_IJ05.spr	B7AB1CFD	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	33	ShieldSwordWWound	FM_RW_164_IJ05.spr	\spr\npcres\woman\FM_RW_164_IJ05.spr	B7AB1CFD	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	34	GuqinWWound	FM_RW_000_IJ06.spr	\spr\npcres\woman\FM_RW_000_IJ06.spr	353A990F	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	35	FreeDie	FM_RW_000_DE01.spr	\spr\npcres\woman\FM_RW_000_DE01.spr	1A2A166E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	36	MeleeWDie	FM_RW_000_DE02.spr	\spr\npcres\woman\FM_RW_000_DE02.spr	175CA38E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	37	RangeWDie	FM_RW_000_DE03.spr	\spr\npcres\woman\FM_RW_000_DE03.spr	1087FDAE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	38	DoubleWDie	FM_RW_000_DE04.spr	\spr\npcres\woman\FM_RW_000_DE04.spr	EDCA37CE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	39	SwordShieldWDie	FM_RW_164_DE05.spr	\spr\npcres\woman\FM_RW_164_DE05.spr	6B1003D2	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	40	ShieldSwordWDie	FM_RW_164_DE05.spr	\spr\npcres\woman\FM_RW_164_DE05.spr	6B1003D2	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	41	GuqinWDie	FM_RW_000_DE06.spr	\spr\npcres\woman\FM_RW_000_DE06.spr	E8A79B0E	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	42	FreeAttack	FM_RW_000_AT01.spr	\spr\npcres\woman\FM_RW_000_AT01.spr	AE425ABB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	43	MeleeWPuncture	FM_RW_000_AT02.spr	\spr\npcres\woman\FM_RW_000_AT02.spr	ABF494DB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	44	MeleeWCut	FM_RW_000_AT03.spr	\spr\npcres\woman\FM_RW_000_AT03.spr	A53F2EFB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	45	RangeWPuncture	FM_RW_000_AT04.spr	\spr\npcres\woman\FM_RW_000_AT04.spr	A662781B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	46	RangeWCut	FM_RW_000_AT05.spr	\spr\npcres\woman\FM_RW_000_AT05.spr	A394B23B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	47	DoubleWPull	FM_RW_000_AT06.spr	\spr\npcres\woman\FM_RW_000_AT06.spr	BCDFCC5B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	48	DoubleWPound	FM_RW_000_AT07.spr	\spr\npcres\woman\FM_RW_000_AT07.spr	BE02067B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	49	SwordShieldWChop	FM_RW_164_AT08.spr	\spr\npcres\woman\FM_RW_164_AT08.spr	376F3209	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	50	SwordShieldWCut	FM_RW_164_AT09.spr	\spr\npcres\woman\FM_RW_164_AT09.spr	30924C29	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	51	ShieldSwordWChop	FM_RW_164_AT08.spr	\spr\npcres\woman\FM_RW_164_AT08.spr	376F3209	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	52	ShieldSwordWCut	FM_RW_164_AT09.spr	\spr\npcres\woman\FM_RW_164_AT09.spr	30924C29	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	53	GuqinWPuncture	FM_RW_000_AT10.spr	\spr\npcres\woman\FM_RW_000_AT10.spr	F9F0A5DA	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	54	GuqinWCut	FM_RW_000_AT11.spr	\spr\npcres\woman\FM_RW_000_AT11.spr	FB3BFFFA	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	55	DartThrow	FM_RW_000_MG01.spr	\spr\npcres\woman\FM_RW_000_MG01.spr	A71AC3F2	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	56	FreeMagic	FM_RW_000_MG02.spr	\spr\npcres\woman\FM_RW_000_MG02.spr	A04D1D12	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	57	MeleeWMagic	FM_RW_000_MG03.spr	\spr\npcres\woman\FM_RW_000_MG03.spr	BDF05732	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	58	RangeWMagic	FM_RW_000_MG04.spr	\spr\npcres\woman\FM_RW_000_MG04.spr	BF3AE152	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	59	DoubleWMagic	FM_RW_000_MG05.spr	\spr\npcres\woman\FM_RW_000_MG05.spr	B86D3B72	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	60	SwordShieldWMagic	FM_RW_164_MG06.spr	\spr\npcres\woman\FM_RW_164_MG06.spr	314B3686	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	61	ShieldSwordWMagic	FM_RW_164_MG06.spr	\spr\npcres\woman\FM_RW_164_MG06.spr	314B3686	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	62	GuqinWMagic	FM_RW_000_MG07.spr	\spr\npcres\woman\FM_RW_000_MG07.spr	B6DA8EB2	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	63	SitDown	FM_RW_000_ZZ01.spr	\spr\npcres\woman\FM_RW_000_ZZ01.spr	9DDF36CB	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	64	JumpFly	FM_RW_000_JP01.spr	\spr\npcres\woman\FM_RW_000_JP01.spr	89CF4AAD	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	65	RideStand	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	66	RideWalk	FM_RW_164_HW01.spr	\spr\npcres\woman\FM_RW_164_HW01.spr	41C1AD10	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	67	RideRun	FM_RW_164_HR01.spr	\spr\npcres\woman\FM_RW_164_HR01.spr	BA98FDE6	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	68	RideCut	FM_RW_164_HA01.spr	\spr\npcres\woman\FM_RW_164_HA01.spr	7078A3EE	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	69	RidePuncture	FM_RW_164_HA02.spr	\spr\npcres\woman\FM_RW_164_HA02.spr	4DA3FD0E	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	70	RideMagic	FM_RW_164_HM01.spr	\spr\npcres\woman\FM_RW_164_HM01.spr	EF5718D6	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	71	RideWound	FM_RW_164_HI01.spr	\spr\npcres\woman\FM_RW_164_HI01.spr	E66F8A19	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	72	RideDie	FM_RW_164_HD01.spr	\spr\npcres\woman\FM_RW_164_HD01.spr	5B26DAEF	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	73	RideStand1	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	270	268	74	RideStand2	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	0	SwordShieldWFreeStand	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	1	ShieldSwordWFreeStand	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	2	FreeStand1	FM_RW_164_ST01.spr	\spr\npcres\woman\FM_RW_164_ST01.spr	1B5E3F99	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	3	FreeStand2	FM_RW_164_ST02.spr	\spr\npcres\woman\FM_RW_164_ST02.spr	148149B9	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	4	FreeStand3	FM_RW_000_ST03.spr	\spr\npcres\woman\FM_RW_000_ST03.spr	9A10C1F5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	5	MeleeWStand	FM_RW_000_ST04.spr	\spr\npcres\woman\FM_RW_000_ST04.spr	975B1B15	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	6	RangeWStand	FM_RW_000_ST05.spr	\spr\npcres\woman\FM_RW_000_ST05.spr	908E5535	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	7	DoubleWStand	FM_RW_000_ST06.spr	\spr\npcres\woman\FM_RW_000_ST06.spr	9230EF55	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	8	SwordShieldWStand	FM_RW_164_ST07.spr	\spr\npcres\woman\FM_RW_164_ST07.spr	EB1EFB59	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	9	ShieldSwordWStand	FM_RW_164_ST07.spr	\spr\npcres\woman\FM_RW_164_ST07.spr	EB1EFB59	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	10	GuqinWStand1	FM_RW_000_ST08.spr	\spr\npcres\woman\FM_RW_000_ST08.spr	68AE7295	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	11	GuqinWStand2	FM_RW_000_ST09.spr	\spr\npcres\woman\FM_RW_000_ST09.spr	65D08CB5	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	12	FreeWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	13	NormalWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	14	MeleeWWalk	FM_RW_000_WK02.spr	\spr\npcres\woman\FM_RW_000_WK02.spr	2FD7AA9C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	15	RangeWWalk	FM_RW_000_WK03.spr	\spr\npcres\woman\FM_RW_000_WK03.spr	291AE4BC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	16	DoubleWWalk	FM_RW_000_WK04.spr	\spr\npcres\woman\FM_RW_000_WK04.spr	2A4D3EDC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	17	SwordShieldWWalk	FM_RW_164_WK05.spr	\spr\npcres\woman\FM_RW_164_WK05.spr	A3AB0AE0	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	18	ShieldSwordWWalk	FM_RW_164_WK05.spr	\spr\npcres\woman\FM_RW_164_WK05.spr	A3AB0AE0	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	19	GuqinWWalk	FM_RW_144_WK06.spr	\spr\npcres\woman\FM_RW_144_WK06.spr	3AACD30E	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	20	FreeRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	21	NormalRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	22	MeleeWRun	FM_RW_000_RN02.spr	\spr\npcres\woman\FM_RW_000_RN02.spr	B143BB26	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	23	RangeWRun	FM_RW_000_RN03.spr	\spr\npcres\woman\FM_RW_000_RN03.spr	B2F6F546	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	24	DoubleWRun	FM_RW_000_RN04.spr	\spr\npcres\woman\FM_RW_000_RN04.spr	8C390F66	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	25	SwordShieldWRun	FM_RW_164_RN05.spr	\spr\npcres\woman\FM_RW_164_RN05.spr	85070F05	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	26	ShieldSwordWRun	FM_RW_164_RN06.spr	\spr\npcres\woman\FM_RW_164_RN06.spr	864A5925	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	27	GuqinWRun	FM_RW_000_RN07.spr	\spr\npcres\woman\FM_RW_000_RN07.spr	87D92CC6	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	28	FreeWound	FM_RW_000_IJ01.spr	\spr\npcres\woman\FM_RW_000_IJ01.spr	26AD146F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	29	MeleeWWound	FM_RW_000_IJ02.spr	\spr\npcres\woman\FM_RW_000_IJ02.spr	23D7A18F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	30	RangeWWound	FM_RW_000_IJ03.spr	\spr\npcres\woman\FM_RW_000_IJ03.spr	3D1AFBAF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	31	DoubleWWound	FM_RW_000_IJ04.spr	\spr\npcres\woman\FM_RW_000_IJ04.spr	3E4D35CF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	32	SwordShieldWWound	FM_RW_164_IJ05.spr	\spr\npcres\woman\FM_RW_164_IJ05.spr	B7AB1CFD	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	33	ShieldSwordWWound	FM_RW_164_IJ05.spr	\spr\npcres\woman\FM_RW_164_IJ05.spr	B7AB1CFD	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	34	GuqinWWound	FM_RW_000_IJ06.spr	\spr\npcres\woman\FM_RW_000_IJ06.spr	353A990F	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	35	FreeDie	FM_RW_000_DE01.spr	\spr\npcres\woman\FM_RW_000_DE01.spr	1A2A166E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	36	MeleeWDie	FM_RW_000_DE02.spr	\spr\npcres\woman\FM_RW_000_DE02.spr	175CA38E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	37	RangeWDie	FM_RW_000_DE03.spr	\spr\npcres\woman\FM_RW_000_DE03.spr	1087FDAE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	38	DoubleWDie	FM_RW_000_DE04.spr	\spr\npcres\woman\FM_RW_000_DE04.spr	EDCA37CE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	39	SwordShieldWDie	FM_RW_164_DE05.spr	\spr\npcres\woman\FM_RW_164_DE05.spr	6B1003D2	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	40	ShieldSwordWDie	FM_RW_164_DE05.spr	\spr\npcres\woman\FM_RW_164_DE05.spr	6B1003D2	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	41	GuqinWDie	FM_RW_000_DE06.spr	\spr\npcres\woman\FM_RW_000_DE06.spr	E8A79B0E	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	42	FreeAttack	FM_RW_000_AT01.spr	\spr\npcres\woman\FM_RW_000_AT01.spr	AE425ABB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	43	MeleeWPuncture	FM_RW_000_AT02.spr	\spr\npcres\woman\FM_RW_000_AT02.spr	ABF494DB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	44	MeleeWCut	FM_RW_000_AT03.spr	\spr\npcres\woman\FM_RW_000_AT03.spr	A53F2EFB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	45	RangeWPuncture	FM_RW_000_AT04.spr	\spr\npcres\woman\FM_RW_000_AT04.spr	A662781B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	46	RangeWCut	FM_RW_000_AT05.spr	\spr\npcres\woman\FM_RW_000_AT05.spr	A394B23B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	47	DoubleWPull	FM_RW_000_AT06.spr	\spr\npcres\woman\FM_RW_000_AT06.spr	BCDFCC5B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	48	DoubleWPound	FM_RW_000_AT07.spr	\spr\npcres\woman\FM_RW_000_AT07.spr	BE02067B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	49	SwordShieldWChop	FM_RW_164_AT08.spr	\spr\npcres\woman\FM_RW_164_AT08.spr	376F3209	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	50	SwordShieldWCut	FM_RW_164_AT09.spr	\spr\npcres\woman\FM_RW_164_AT09.spr	30924C29	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	51	ShieldSwordWChop	FM_RW_164_AT08.spr	\spr\npcres\woman\FM_RW_164_AT08.spr	376F3209	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	52	ShieldSwordWCut	FM_RW_164_AT09.spr	\spr\npcres\woman\FM_RW_164_AT09.spr	30924C29	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	53	GuqinWPuncture	FM_RW_000_AT10.spr	\spr\npcres\woman\FM_RW_000_AT10.spr	F9F0A5DA	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	54	GuqinWCut	FM_RW_000_AT11.spr	\spr\npcres\woman\FM_RW_000_AT11.spr	FB3BFFFA	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	55	DartThrow	FM_RW_000_MG01.spr	\spr\npcres\woman\FM_RW_000_MG01.spr	A71AC3F2	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	56	FreeMagic	FM_RW_000_MG02.spr	\spr\npcres\woman\FM_RW_000_MG02.spr	A04D1D12	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	57	MeleeWMagic	FM_RW_000_MG03.spr	\spr\npcres\woman\FM_RW_000_MG03.spr	BDF05732	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	58	RangeWMagic	FM_RW_000_MG04.spr	\spr\npcres\woman\FM_RW_000_MG04.spr	BF3AE152	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	59	DoubleWMagic	FM_RW_000_MG05.spr	\spr\npcres\woman\FM_RW_000_MG05.spr	B86D3B72	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	60	SwordShieldWMagic	FM_RW_164_MG06.spr	\spr\npcres\woman\FM_RW_164_MG06.spr	314B3686	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	61	ShieldSwordWMagic	FM_RW_164_MG06.spr	\spr\npcres\woman\FM_RW_164_MG06.spr	314B3686	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	62	GuqinWMagic	FM_RW_000_MG07.spr	\spr\npcres\woman\FM_RW_000_MG07.spr	B6DA8EB2	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	63	SitDown	FM_RW_000_ZZ01.spr	\spr\npcres\woman\FM_RW_000_ZZ01.spr	9DDF36CB	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	64	JumpFly	FM_RW_000_JP01.spr	\spr\npcres\woman\FM_RW_000_JP01.spr	89CF4AAD	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	65	RideStand	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	66	RideWalk	FM_RW_164_HW01.spr	\spr\npcres\woman\FM_RW_164_HW01.spr	41C1AD10	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	67	RideRun	FM_RW_164_HR01.spr	\spr\npcres\woman\FM_RW_164_HR01.spr	BA98FDE6	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	68	RideCut	FM_RW_164_HA01.spr	\spr\npcres\woman\FM_RW_164_HA01.spr	7078A3EE	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	69	RidePuncture	FM_RW_164_HA02.spr	\spr\npcres\woman\FM_RW_164_HA02.spr	4DA3FD0E	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	70	RideMagic	FM_RW_164_HM01.spr	\spr\npcres\woman\FM_RW_164_HM01.spr	EF5718D6	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	71	RideWound	FM_RW_164_HI01.spr	\spr\npcres\woman\FM_RW_164_HI01.spr	E66F8A19	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	72	RideDie	FM_RW_164_HD01.spr	\spr\npcres\woman\FM_RW_164_HD01.spr	5B26DAEF	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	73	RideStand1	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	1	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	271	269	74	RideStand2	FM_RW_164_RD01.spr	\spr\npcres\woman\FM_RW_164_RD01.spr	D941B55C	0	JX1:updatejx15.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	0	SwordShieldWFreeStand	FM_RW_000_ST01.spr	\spr\npcres\woman\FM_RW_000_ST01.spr	9FBB7DB5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	1	ShieldSwordWFreeStand	FM_RW_000_ST01.spr	\spr\npcres\woman\FM_RW_000_ST01.spr	9FBB7DB5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	2	FreeStand1	FM_RW_000_ST01.spr	\spr\npcres\woman\FM_RW_000_ST01.spr	9FBB7DB5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	3	FreeStand2	FM_RW_000_ST02.spr	\spr\npcres\woman\FM_RW_000_ST02.spr	98EDB7D5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	4	FreeStand3	FM_RW_000_ST03.spr	\spr\npcres\woman\FM_RW_000_ST03.spr	9A10C1F5	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	5	MeleeWStand	FM_RW_000_ST04.spr	\spr\npcres\woman\FM_RW_000_ST04.spr	975B1B15	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	6	RangeWStand	FM_RW_000_ST05.spr	\spr\npcres\woman\FM_RW_000_ST05.spr	908E5535	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	7	DoubleWStand	FM_RW_000_ST06.spr	\spr\npcres\woman\FM_RW_000_ST06.spr	9230EF55	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	8	SwordShieldWStand	FM_RW_000_ST07.spr	\spr\npcres\woman\FM_RW_000_ST07.spr	6F7B3975	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	9	ShieldSwordWStand	FM_RW_000_ST07.spr	\spr\npcres\woman\FM_RW_000_ST07.spr	6F7B3975	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	10	GuqinWStand1	FM_RW_180_ST08.spr	\spr\npcres\woman\FM_RW_180_ST08.spr	C11400A3	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	11	GuqinWStand2	FM_RW_180_ST09.spr	\spr\npcres\woman\FM_RW_180_ST09.spr	C25F5AC3	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	12	FreeWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	13	NormalWalk	FM_RW_000_WK01.spr	\spr\npcres\woman\FM_RW_000_WK01.spr	52AD117C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	14	MeleeWWalk	FM_RW_000_WK02.spr	\spr\npcres\woman\FM_RW_000_WK02.spr	2FD7AA9C	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	15	RangeWWalk	FM_RW_000_WK03.spr	\spr\npcres\woman\FM_RW_000_WK03.spr	291AE4BC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	16	DoubleWWalk	FM_RW_000_WK04.spr	\spr\npcres\woman\FM_RW_000_WK04.spr	2A4D3EDC	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	17	SwordShieldWWalk	FM_RW_000_WK05.spr	\spr\npcres\woman\FM_RW_000_WK05.spr	27F048FC	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	18	ShieldSwordWWalk	FM_RW_000_WK05.spr	\spr\npcres\woman\FM_RW_000_WK05.spr	27F048FC	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	19	GuqinWWalk	FM_RW_180_WK06.spr	\spr\npcres\woman\FM_RW_180_WK06.spr	99A1502A	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	20	FreeRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	21	NormalRun	FM_RW_000_RN01.spr	\spr\npcres\woman\FM_RW_000_RN01.spr	B4196106	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	22	MeleeWRun	FM_RW_000_RN02.spr	\spr\npcres\woman\FM_RW_000_RN02.spr	B143BB26	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	23	RangeWRun	FM_RW_000_RN03.spr	\spr\npcres\woman\FM_RW_000_RN03.spr	B2F6F546	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	24	DoubleWRun	FM_RW_000_RN04.spr	\spr\npcres\woman\FM_RW_000_RN04.spr	8C390F66	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	25	SwordShieldWRun	FM_RW_000_RN05.spr	\spr\npcres\woman\FM_RW_000_RN05.spr	896C5886	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	26	ShieldSwordWRun	FM_RW_000_RN06.spr	\spr\npcres\woman\FM_RW_000_RN06.spr	8A9692A6	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	27	GuqinWRun	FM_RW_180_RN07.spr	\spr\npcres\woman\FM_RW_180_RN07.spr	7C47FB1F	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	28	FreeWound	FM_RW_000_IJ01.spr	\spr\npcres\woman\FM_RW_000_IJ01.spr	26AD146F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	29	MeleeWWound	FM_RW_000_IJ02.spr	\spr\npcres\woman\FM_RW_000_IJ02.spr	23D7A18F	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	30	RangeWWound	FM_RW_000_IJ03.spr	\spr\npcres\woman\FM_RW_000_IJ03.spr	3D1AFBAF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	31	DoubleWWound	FM_RW_000_IJ04.spr	\spr\npcres\woman\FM_RW_000_IJ04.spr	3E4D35CF	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	32	SwordShieldWWound	FM_RW_000_IJ05.spr	\spr\npcres\woman\FM_RW_000_IJ05.spr	3BF04FEF	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	33	ShieldSwordWWound	FM_RW_000_IJ05.spr	\spr\npcres\woman\FM_RW_000_IJ05.spr	3BF04FEF	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	34	GuqinWWound	FM_RW_180_IJ06.spr	\spr\npcres\woman\FM_RW_180_IJ06.spr	6DA0A247	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	35	FreeDie	FM_RW_000_DE01.spr	\spr\npcres\woman\FM_RW_000_DE01.spr	1A2A166E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	36	MeleeWDie	FM_RW_000_DE02.spr	\spr\npcres\woman\FM_RW_000_DE02.spr	175CA38E	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	37	RangeWDie	FM_RW_000_DE03.spr	\spr\npcres\woman\FM_RW_000_DE03.spr	1087FDAE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	38	DoubleWDie	FM_RW_000_DE04.spr	\spr\npcres\woman\FM_RW_000_DE04.spr	EDCA37CE	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	39	SwordShieldWDie	FM_RW_000_DE05.spr	\spr\npcres\woman\FM_RW_000_DE05.spr	EF7D41EE	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	40	ShieldSwordWDie	FM_RW_000_DE05.spr	\spr\npcres\woman\FM_RW_000_DE05.spr	EF7D41EE	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	41	GuqinWDie	FM_RW_180_DE06.spr	\spr\npcres\woman\FM_RW_180_DE06.spr	412DA91C	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	42	FreeAttack	FM_RW_000_AT01.spr	\spr\npcres\woman\FM_RW_000_AT01.spr	AE425ABB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	43	MeleeWPuncture	FM_RW_000_AT02.spr	\spr\npcres\woman\FM_RW_000_AT02.spr	ABF494DB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	44	MeleeWCut	FM_RW_000_AT03.spr	\spr\npcres\woman\FM_RW_000_AT03.spr	A53F2EFB	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	45	RangeWPuncture	FM_RW_000_AT04.spr	\spr\npcres\woman\FM_RW_000_AT04.spr	A662781B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	46	RangeWCut	FM_RW_000_AT05.spr	\spr\npcres\woman\FM_RW_000_AT05.spr	A394B23B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	47	DoubleWPull	FM_RW_000_AT06.spr	\spr\npcres\woman\FM_RW_000_AT06.spr	BCDFCC5B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	48	DoubleWPound	FM_RW_000_AT07.spr	\spr\npcres\woman\FM_RW_000_AT07.spr	BE02067B	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	49	SwordShieldWChop	FM_RW_000_AT08.spr	\spr\npcres\woman\FM_RW_000_AT08.spr	BBB5539B	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	50	SwordShieldWCut	FM_RW_000_AT09.spr	\spr\npcres\woman\FM_RW_000_AT09.spr	B4FFEDBB	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	51	ShieldSwordWChop	FM_RW_000_AT08.spr	\spr\npcres\woman\FM_RW_000_AT08.spr	BBB5539B	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	52	ShieldSwordWCut	FM_RW_000_AT09.spr	\spr\npcres\woman\FM_RW_000_AT09.spr	B4FFEDBB	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	53	GuqinWPuncture	FM_RW_180_AT10.spr	\spr\npcres\woman\FM_RW_180_AT10.spr	567F73E8	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	54	GuqinWCut	FM_RW_180_AT11.spr	\spr\npcres\woman\FM_RW_180_AT11.spr	53A18D08	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	55	DartThrow	FM_RW_000_MG01.spr	\spr\npcres\woman\FM_RW_000_MG01.spr	A71AC3F2	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	56	FreeMagic	FM_RW_000_MG02.spr	\spr\npcres\woman\FM_RW_000_MG02.spr	A04D1D12	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	57	MeleeWMagic	FM_RW_000_MG03.spr	\spr\npcres\woman\FM_RW_000_MG03.spr	BDF05732	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	58	RangeWMagic	FM_RW_000_MG04.spr	\spr\npcres\woman\FM_RW_000_MG04.spr	BF3AE152	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	59	DoubleWMagic	FM_RW_000_MG05.spr	\spr\npcres\woman\FM_RW_000_MG05.spr	B86D3B72	0	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	60	SwordShieldWMagic	FM_RW_000_MG06.spr	\spr\npcres\woman\FM_RW_000_MG06.spr	B5907492	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	61	ShieldSwordWMagic	FM_RW_000_MG06.spr	\spr\npcres\woman\FM_RW_000_MG06.spr	B5907492	0	THIEU CA HAI
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	62	GuqinWMagic	FM_RW_180_MG07.spr	\spr\npcres\woman\FM_RW_180_MG07.spr	EF415CC0	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	63	SitDown	FM_RW_000_ZZ01.spr	\spr\npcres\woman\FM_RW_000_ZZ01.spr	9DDF36CB	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	64	JumpFly	FM_RW_000_JP01.spr	\spr\npcres\woman\FM_RW_000_JP01.spr	89CF4AAD	1	JX1:spr.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	65	RideStand	FM_RW_180_RD01.spr	\spr\npcres\woman\FM_RW_180_RD01.spr	BA148086	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	66	RideWalk	FM_RW_180_HW01.spr	\spr\npcres\woman\FM_RW_180_HW01.spr	2294B93A	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	67	RideRun	FM_RW_180_HR01.spr	\spr\npcres\woman\FM_RW_180_HR01.spr	9763C900	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	68	RideCut	FM_RW_180_HA01.spr	\spr\npcres\woman\FM_RW_180_HA01.spr	2CC3A0EE	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	69	RidePuncture	FM_RW_180_HA02.spr	\spr\npcres\woman\FM_RW_180_HA02.spr	2E76FA0E	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	70	RideMagic	FM_RW_180_HM01.spr	\spr\npcres\woman\FM_RW_180_HM01.spr	C83A19D6	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	71	RideWound	FM_RW_180_HI01.spr	\spr\npcres\woman\FM_RW_180_HI01.spr	C3328D93	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	72	RideDie	FM_RW_180_HD01.spr	\spr\npcres\woman\FM_RW_180_HD01.spr	3789DA59	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	73	RideStand1	FM_RW_180_RD01.spr	\spr\npcres\woman\FM_RW_180_RD01.spr	BA148086	1	JX1:updatejx16.pak
+MainLady	RightWeapon	LadyRightWeapon.txt	278	276	74	RideStand2	FM_RW_180_RD01.spr	\spr\npcres\woman\FM_RW_180_RD01.spr	BA148086	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	0	SwordShieldWFreeStand	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	1	ShieldSwordWFreeStand	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	2	FreeStand1	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	3	FreeStand2	FM_LW_164_ST02.spr	\spr\npcres\woman\FM_LW_164_ST02.spr	B8A015A1	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	4	FreeStand3	FM_LW_000_ST03.spr	\spr\npcres\woman\FM_LW_000_ST03.spr	2EF13F5D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	5	MeleeWStand	FM_LW_000_ST04.spr	\spr\npcres\woman\FM_LW_000_ST04.spr	2824497D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	6	RangeWStand	FM_LW_000_ST05.spr	\spr\npcres\woman\FM_LW_000_ST05.spr	256E829D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	7	DoubleWStand	FM_LW_000_ST06.spr	\spr\npcres\woman\FM_LW_000_ST06.spr	2691DCBD	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	8	SwordShieldWStand	FM_LW_164_ST07.spr	\spr\npcres\woman\FM_LW_164_ST07.spr	8F3D8741	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	9	ShieldSwordWStand	FM_LW_164_ST07.spr	\spr\npcres\woman\FM_LW_164_ST07.spr	8F3D8741	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	10	GuqinWStand1	FM_LW_000_ST08.spr	\spr\npcres\woman\FM_LW_000_ST08.spr	3D0EA0FD	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	11	GuqinWStand2	FM_LW_000_ST09.spr	\spr\npcres\woman\FM_LW_000_ST09.spr	3EB1FA1D	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	12	FreeWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	13	NormalWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	14	MeleeWWalk	FM_LW_000_WK02.spr	\spr\npcres\woman\FM_LW_000_WK02.spr	E0B1ED50	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	15	RangeWWalk	FM_LW_000_WK03.spr	\spr\npcres\woman\FM_LW_000_WK03.spr	FDE42770	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	16	DoubleWWalk	FM_LW_000_WK04.spr	\spr\npcres\woman\FM_LW_000_WK04.spr	FF2F7090	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	17	SwordShieldWWalk	FM_LW_164_WK05.spr	\spr\npcres\woman\FM_LW_164_WK05.spr	474AD6C8	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	18	ShieldSwordWWalk	FM_LW_164_WK05.spr	\spr\npcres\woman\FM_LW_164_WK05.spr	474AD6C8	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	19	GuqinWWalk	FM_LW_000_WK06.spr	\spr\npcres\woman\FM_LW_000_WK06.spr	F584C4D0	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	20	FreeRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	21	NormalRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	22	MeleeWRun	FM_LW_000_RN02.spr	\spr\npcres\woman\FM_LW_000_RN02.spr	4A2C9A64	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	23	RangeWRun	FM_LW_000_RN03.spr	\spr\npcres\woman\FM_LW_000_RN03.spr	4757D784	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	24	DoubleWRun	FM_LW_000_RN04.spr	\spr\npcres\woman\FM_LW_000_RN04.spr	409A61A4	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	25	SwordShieldWRun	FM_LW_164_RN05.spr	\spr\npcres\woman\FM_LW_164_RN05.spr	A9262752	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	26	ShieldSwordWRun	FM_LW_164_RN06.spr	\spr\npcres\woman\FM_LW_164_RN06.spr	AA697172	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	27	GuqinWRun	FM_LW_000_RN65.spr	\spr\npcres\woman\FM_LW_000_RN65.spr	49A6CC4E	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	28	FreeWound	FM_LW_000_IJ01.spr	\spr\npcres\woman\FM_LW_000_IJ01.spr	FB0E76AD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	29	MeleeWWound	FM_LW_000_IJ02.spr	\spr\npcres\woman\FM_LW_000_IJ02.spr	F4B080CD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	30	RangeWWound	FM_LW_000_IJ03.spr	\spr\npcres\woman\FM_LW_000_IJ03.spr	F1FBDAED	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	31	DoubleWWound	FM_LW_000_IJ04.spr	\spr\npcres\woman\FM_LW_000_IJ04.spr	F32E140D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	32	SwordShieldWWound	FM_LW_164_IJ05.spr	\spr\npcres\woman\FM_LW_164_IJ05.spr	5B4A38E5	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	33	ShieldSwordWWound	FM_LW_164_IJ05.spr	\spr\npcres\woman\FM_LW_164_IJ05.spr	5B4A38E5	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	34	GuqinWWound	FM_LW_000_IJ64.spr	\spr\npcres\woman\FM_LW_000_IJ64.spr	FE87B897	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	35	FreeDie	FM_LW_000_DE01.spr	\spr\npcres\woman\FM_LW_000_DE01.spr	AE8B48AC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	36	MeleeWDie	FM_LW_000_DE02.spr	\spr\npcres\woman\FM_LW_000_DE02.spr	A83D82CC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	37	RangeWDie	FM_LW_000_DE03.spr	\spr\npcres\woman\FM_LW_000_DE03.spr	A560DCEC	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	38	DoubleWDie	FM_LW_000_DE04.spr	\spr\npcres\woman\FM_LW_000_DE04.spr	A6AB160C	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	39	SwordShieldWDie	FM_LW_164_DE05.spr	\spr\npcres\woman\FM_LW_164_DE05.spr	0F372FBA	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	40	ShieldSwordWDie	FM_LW_164_DE05.spr	\spr\npcres\woman\FM_LW_164_DE05.spr	0F372FBA	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	41	GuqinWDie	FM_LW_000_DE06.spr	\spr\npcres\woman\FM_LW_000_DE06.spr	BD00FA4C	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	42	FreeAttack	FM_LW_000_AT01.spr	\spr\npcres\woman\FM_LW_000_AT01.spr	63228823	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	43	MeleeWPuncture	FM_LW_000_AT02.spr	\spr\npcres\woman\FM_LW_000_AT02.spr	7C55C243	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	44	MeleeWCut	FM_LW_000_AT03.spr	\spr\npcres\woman\FM_LW_000_AT03.spr	79981C63	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	45	RangeWPuncture	FM_LW_000_AT04.spr	\spr\npcres\woman\FM_LW_000_AT04.spr	7AC2A983	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	46	RangeWCut	FM_LW_000_AT05.spr	\spr\npcres\woman\FM_LW_000_AT05.spr	7475E3A3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	47	DoubleWPull	FM_LW_000_AT06.spr	\spr\npcres\woman\FM_LW_000_AT06.spr	71B83DC3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	48	DoubleWPound	FM_LW_000_AT07.spr	\spr\npcres\woman\FM_LW_000_AT07.spr	72E377E3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	49	SwordShieldWChop	FM_LW_164_AT08.spr	\spr\npcres\woman\FM_LW_164_AT08.spr	DB0F3E77	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	50	SwordShieldWCut	FM_LW_164_AT09.spr	\spr\npcres\woman\FM_LW_164_AT09.spr	D4B24B97	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	51	ShieldSwordWChop	FM_LW_164_AT08.spr	\spr\npcres\woman\FM_LW_164_AT08.spr	DB0F3E77	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	52	ShieldSwordWCut	FM_LW_164_AT09.spr	\spr\npcres\woman\FM_LW_164_AT09.spr	D4B24B97	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	53	GuqinWPuncture	FM_LW_000_AT10.spr	\spr\npcres\woman\FM_LW_000_AT10.spr	B2519342	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	54	GuqinWCut	FM_LW_000_AT11.spr	\spr\npcres\woman\FM_LW_000_AT11.spr	8F842D62	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	55	DartThrow	FM_LW_000_MG01.spr	\spr\npcres\woman\FM_LW_000_MG01.spr	7BFB3EE0	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	56	FreeMagic	FM_LW_000_MG02.spr	\spr\npcres\woman\FM_LW_000_MG02.spr	752E4800	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	57	MeleeWMagic	FM_LW_000_MG03.spr	\spr\npcres\woman\FM_LW_000_MG03.spr	76508220	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	58	RangeWMagic	FM_LW_000_MG04.spr	\spr\npcres\woman\FM_LW_000_MG04.spr	739BDC40	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	59	DoubleWMagic	FM_LW_000_MG05.spr	\spr\npcres\woman\FM_LW_000_MG05.spr	4CCE1660	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	60	SwordShieldWMagic	FM_LW_164_MG06.spr	\spr\npcres\woman\FM_LW_164_MG06.spr	D56AD36E	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	61	ShieldSwordWMagic	FM_LW_164_MG06.spr	\spr\npcres\woman\FM_LW_164_MG06.spr	D56AD36E	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	62	GuqinWMagic	FM_LW_000_MG07.spr	\spr\npcres\woman\FM_LW_000_MG07.spr	4BBBFDA0	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	63	SitDown	FM_LW_000_ZZ01.spr	\spr\npcres\woman\FM_LW_000_ZZ01.spr	D6AF75BA	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	64	JumpFly	FM_LW_000_JP01.spr	\spr\npcres\woman\FM_LW_000_JP01.spr	42A8513B	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	65	RideStand	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	66	RideWalk	FM_LW_164_HW01.spr	\spr\npcres\woman\FM_LW_164_HW01.spr	E5E149F8	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	67	RideRun	FM_LW_164_HR01.spr	\spr\npcres\woman\FM_LW_164_HR01.spr	DEBF9883	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	68	RideCut	FM_LW_164_HA01.spr	\spr\npcres\woman\FM_LW_164_HA01.spr	94187061	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	69	RidePuncture	FM_LW_164_HA02.spr	\spr\npcres\woman\FM_LW_164_HA02.spr	91428D81	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	70	RideMagic	FM_LW_164_HM01.spr	\spr\npcres\woman\FM_LW_164_HM01.spr	33762949	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	71	RideWound	FM_LW_164_HI01.spr	\spr\npcres\woman\FM_LW_164_HI01.spr	8A0F5A51	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	72	RideDie	FM_LW_164_HD01.spr	\spr\npcres\woman\FM_LW_164_HD01.spr	7EC5EB62	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	73	RideStand1	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	270	268	74	RideStand2	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	0	SwordShieldWFreeStand	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	1	ShieldSwordWFreeStand	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	2	FreeStand1	FM_LW_164_ST01.spr	\spr\npcres\woman\FM_LW_164_ST01.spr	BF7DDB81	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	3	FreeStand2	FM_LW_164_ST02.spr	\spr\npcres\woman\FM_LW_164_ST02.spr	B8A015A1	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	4	FreeStand3	FM_LW_000_ST03.spr	\spr\npcres\woman\FM_LW_000_ST03.spr	2EF13F5D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	5	MeleeWStand	FM_LW_000_ST04.spr	\spr\npcres\woman\FM_LW_000_ST04.spr	2824497D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	6	RangeWStand	FM_LW_000_ST05.spr	\spr\npcres\woman\FM_LW_000_ST05.spr	256E829D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	7	DoubleWStand	FM_LW_000_ST06.spr	\spr\npcres\woman\FM_LW_000_ST06.spr	2691DCBD	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	8	SwordShieldWStand	FM_LW_164_ST07.spr	\spr\npcres\woman\FM_LW_164_ST07.spr	8F3D8741	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	9	ShieldSwordWStand	FM_LW_164_ST07.spr	\spr\npcres\woman\FM_LW_164_ST07.spr	8F3D8741	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	10	GuqinWStand1	FM_LW_000_ST08.spr	\spr\npcres\woman\FM_LW_000_ST08.spr	3D0EA0FD	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	11	GuqinWStand2	FM_LW_000_ST09.spr	\spr\npcres\woman\FM_LW_000_ST09.spr	3EB1FA1D	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	12	FreeWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	13	NormalWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	14	MeleeWWalk	FM_LW_000_WK02.spr	\spr\npcres\woman\FM_LW_000_WK02.spr	E0B1ED50	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	15	RangeWWalk	FM_LW_000_WK03.spr	\spr\npcres\woman\FM_LW_000_WK03.spr	FDE42770	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	16	DoubleWWalk	FM_LW_000_WK04.spr	\spr\npcres\woman\FM_LW_000_WK04.spr	FF2F7090	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	17	SwordShieldWWalk	FM_LW_164_WK05.spr	\spr\npcres\woman\FM_LW_164_WK05.spr	474AD6C8	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	18	ShieldSwordWWalk	FM_LW_164_WK05.spr	\spr\npcres\woman\FM_LW_164_WK05.spr	474AD6C8	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	19	GuqinWWalk	FM_LW_000_WK06.spr	\spr\npcres\woman\FM_LW_000_WK06.spr	F584C4D0	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	20	FreeRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	21	NormalRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	22	MeleeWRun	FM_LW_000_RN02.spr	\spr\npcres\woman\FM_LW_000_RN02.spr	4A2C9A64	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	23	RangeWRun	FM_LW_000_RN03.spr	\spr\npcres\woman\FM_LW_000_RN03.spr	4757D784	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	24	DoubleWRun	FM_LW_000_RN04.spr	\spr\npcres\woman\FM_LW_000_RN04.spr	409A61A4	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	25	SwordShieldWRun	FM_LW_164_RN05.spr	\spr\npcres\woman\FM_LW_164_RN05.spr	A9262752	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	26	ShieldSwordWRun	FM_LW_164_RN06.spr	\spr\npcres\woman\FM_LW_164_RN06.spr	AA697172	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	27	GuqinWRun	FM_LW_000_RN66.spr	\spr\npcres\woman\FM_LW_000_RN66.spr	4AE9066E	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	28	FreeWound	FM_LW_000_IJ01.spr	\spr\npcres\woman\FM_LW_000_IJ01.spr	FB0E76AD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	29	MeleeWWound	FM_LW_000_IJ02.spr	\spr\npcres\woman\FM_LW_000_IJ02.spr	F4B080CD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	30	RangeWWound	FM_LW_000_IJ03.spr	\spr\npcres\woman\FM_LW_000_IJ03.spr	F1FBDAED	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	31	DoubleWWound	FM_LW_000_IJ04.spr	\spr\npcres\woman\FM_LW_000_IJ04.spr	F32E140D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	32	SwordShieldWWound	FM_LW_164_IJ05.spr	\spr\npcres\woman\FM_LW_164_IJ05.spr	5B4A38E5	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	33	ShieldSwordWWound	FM_LW_164_IJ05.spr	\spr\npcres\woman\FM_LW_164_IJ05.spr	5B4A38E5	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	34	GuqinWWound	FM_LW_000_IJ65.spr	\spr\npcres\woman\FM_LW_000_IJ65.spr	FBCAF2B7	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	35	FreeDie	FM_LW_000_DE01.spr	\spr\npcres\woman\FM_LW_000_DE01.spr	AE8B48AC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	36	MeleeWDie	FM_LW_000_DE02.spr	\spr\npcres\woman\FM_LW_000_DE02.spr	A83D82CC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	37	RangeWDie	FM_LW_000_DE03.spr	\spr\npcres\woman\FM_LW_000_DE03.spr	A560DCEC	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	38	DoubleWDie	FM_LW_000_DE04.spr	\spr\npcres\woman\FM_LW_000_DE04.spr	A6AB160C	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	39	SwordShieldWDie	FM_LW_164_DE05.spr	\spr\npcres\woman\FM_LW_164_DE05.spr	0F372FBA	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	40	ShieldSwordWDie	FM_LW_164_DE05.spr	\spr\npcres\woman\FM_LW_164_DE05.spr	0F372FBA	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	41	GuqinWDie	FM_LW_000_DE06.spr	\spr\npcres\woman\FM_LW_000_DE06.spr	BD00FA4C	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	42	FreeAttack	FM_LW_000_AT01.spr	\spr\npcres\woman\FM_LW_000_AT01.spr	63228823	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	43	MeleeWPuncture	FM_LW_000_AT02.spr	\spr\npcres\woman\FM_LW_000_AT02.spr	7C55C243	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	44	MeleeWCut	FM_LW_000_AT03.spr	\spr\npcres\woman\FM_LW_000_AT03.spr	79981C63	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	45	RangeWPuncture	FM_LW_000_AT04.spr	\spr\npcres\woman\FM_LW_000_AT04.spr	7AC2A983	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	46	RangeWCut	FM_LW_000_AT05.spr	\spr\npcres\woman\FM_LW_000_AT05.spr	7475E3A3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	47	DoubleWPull	FM_LW_000_AT06.spr	\spr\npcres\woman\FM_LW_000_AT06.spr	71B83DC3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	48	DoubleWPound	FM_LW_000_AT07.spr	\spr\npcres\woman\FM_LW_000_AT07.spr	72E377E3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	49	SwordShieldWChop	FM_LW_164_AT08.spr	\spr\npcres\woman\FM_LW_164_AT08.spr	DB0F3E77	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	50	SwordShieldWCut	FM_LW_164_AT09.spr	\spr\npcres\woman\FM_LW_164_AT09.spr	D4B24B97	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	51	ShieldSwordWChop	FM_LW_164_AT08.spr	\spr\npcres\woman\FM_LW_164_AT08.spr	DB0F3E77	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	52	ShieldSwordWCut	FM_LW_164_AT09.spr	\spr\npcres\woman\FM_LW_164_AT09.spr	D4B24B97	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	53	GuqinWPuncture	FM_LW_000_AT10.spr	\spr\npcres\woman\FM_LW_000_AT10.spr	B2519342	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	54	GuqinWCut	FM_LW_000_AT11.spr	\spr\npcres\woman\FM_LW_000_AT11.spr	8F842D62	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	55	DartThrow	FM_LW_000_MG01.spr	\spr\npcres\woman\FM_LW_000_MG01.spr	7BFB3EE0	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	56	FreeMagic	FM_LW_000_MG02.spr	\spr\npcres\woman\FM_LW_000_MG02.spr	752E4800	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	57	MeleeWMagic	FM_LW_000_MG03.spr	\spr\npcres\woman\FM_LW_000_MG03.spr	76508220	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	58	RangeWMagic	FM_LW_000_MG04.spr	\spr\npcres\woman\FM_LW_000_MG04.spr	739BDC40	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	59	DoubleWMagic	FM_LW_000_MG05.spr	\spr\npcres\woman\FM_LW_000_MG05.spr	4CCE1660	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	60	SwordShieldWMagic	FM_LW_164_MG06.spr	\spr\npcres\woman\FM_LW_164_MG06.spr	D56AD36E	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	61	ShieldSwordWMagic	FM_LW_164_MG06.spr	\spr\npcres\woman\FM_LW_164_MG06.spr	D56AD36E	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	62	GuqinWMagic	FM_LW_000_MG07.spr	\spr\npcres\woman\FM_LW_000_MG07.spr	4BBBFDA0	0	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	63	SitDown	FM_LW_000_ZZ01.spr	\spr\npcres\woman\FM_LW_000_ZZ01.spr	D6AF75BA	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	64	JumpFly	FM_LW_000_JP01.spr	\spr\npcres\woman\FM_LW_000_JP01.spr	42A8513B	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	65	RideStand	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	66	RideWalk	FM_LW_164_HW01.spr	\spr\npcres\woman\FM_LW_164_HW01.spr	E5E149F8	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	67	RideRun	FM_LW_164_HR01.spr	\spr\npcres\woman\FM_LW_164_HR01.spr	DEBF9883	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	68	RideCut	FM_LW_164_HA01.spr	\spr\npcres\woman\FM_LW_164_HA01.spr	94187061	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	69	RidePuncture	FM_LW_164_HA02.spr	\spr\npcres\woman\FM_LW_164_HA02.spr	91428D81	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	70	RideMagic	FM_LW_164_HM01.spr	\spr\npcres\woman\FM_LW_164_HM01.spr	33762949	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	71	RideWound	FM_LW_164_HI01.spr	\spr\npcres\woman\FM_LW_164_HI01.spr	8A0F5A51	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	72	RideDie	FM_LW_164_HD01.spr	\spr\npcres\woman\FM_LW_164_HD01.spr	7EC5EB62	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	73	RideStand1	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	1	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	271	269	74	RideStand2	FM_LW_164_RD01.spr	\spr\npcres\woman\FM_LW_164_RD01.spr	7D615144	0	JX1:updatejx15.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	0	SwordShieldWFreeStand	FM_LW_000_ST01.spr	\spr\npcres\woman\FM_LW_000_ST01.spr	501BAB1D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	1	ShieldSwordWFreeStand	FM_LW_000_ST01.spr	\spr\npcres\woman\FM_LW_000_ST01.spr	501BAB1D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	2	FreeStand1	FM_LW_000_ST01.spr	\spr\npcres\woman\FM_LW_000_ST01.spr	501BAB1D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	3	FreeStand2	FM_LW_000_ST02.spr	\spr\npcres\woman\FM_LW_000_ST02.spr	2D4EE53D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	4	FreeStand3	FM_LW_000_ST03.spr	\spr\npcres\woman\FM_LW_000_ST03.spr	2EF13F5D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	5	MeleeWStand	FM_LW_000_ST04.spr	\spr\npcres\woman\FM_LW_000_ST04.spr	2824497D	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	6	RangeWStand	FM_LW_000_ST05.spr	\spr\npcres\woman\FM_LW_000_ST05.spr	256E829D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	7	DoubleWStand	FM_LW_000_ST06.spr	\spr\npcres\woman\FM_LW_000_ST06.spr	2691DCBD	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	8	SwordShieldWStand	FM_LW_000_ST07.spr	\spr\npcres\woman\FM_LW_000_ST07.spr	23C416DD	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	9	ShieldSwordWStand	FM_LW_000_ST07.spr	\spr\npcres\woman\FM_LW_000_ST07.spr	23C416DD	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	10	GuqinWStand1	FM_LW_000_ST08.spr	\spr\npcres\woman\FM_LW_000_ST08.spr	3D0EA0FD	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	11	GuqinWStand2	FM_LW_000_ST09.spr	\spr\npcres\woman\FM_LW_000_ST09.spr	3EB1FA1D	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	12	FreeWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	13	NormalWalk	FM_LW_000_WK01.spr	\spr\npcres\woman\FM_LW_000_WK01.spr	E70F5330	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	14	MeleeWWalk	FM_LW_000_WK02.spr	\spr\npcres\woman\FM_LW_000_WK02.spr	E0B1ED50	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	15	RangeWWalk	FM_LW_000_WK03.spr	\spr\npcres\woman\FM_LW_000_WK03.spr	FDE42770	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	16	DoubleWWalk	FM_LW_000_WK04.spr	\spr\npcres\woman\FM_LW_000_WK04.spr	FF2F7090	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	17	SwordShieldWWalk	FM_LW_000_WK05.spr	\spr\npcres\woman\FM_LW_000_WK05.spr	F8518AB0	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	18	ShieldSwordWWalk	FM_LW_000_WK05.spr	\spr\npcres\woman\FM_LW_000_WK05.spr	F8518AB0	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	19	GuqinWWalk	FM_LW_000_WK06.spr	\spr\npcres\woman\FM_LW_000_WK06.spr	F584C4D0	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	20	FreeRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	21	NormalRun	FM_LW_000_RN01.spr	\spr\npcres\woman\FM_LW_000_RN01.spr	48FA4044	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	22	MeleeWRun	FM_LW_000_RN02.spr	\spr\npcres\woman\FM_LW_000_RN02.spr	4A2C9A64	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	23	RangeWRun	FM_LW_000_RN03.spr	\spr\npcres\woman\FM_LW_000_RN03.spr	4757D784	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	24	DoubleWRun	FM_LW_000_RN04.spr	\spr\npcres\woman\FM_LW_000_RN04.spr	409A61A4	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	25	SwordShieldWRun	FM_LW_000_RN05.spr	\spr\npcres\woman\FM_LW_000_RN05.spr	5DCCBBC4	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	26	ShieldSwordWRun	FM_LW_000_RN06.spr	\spr\npcres\woman\FM_LW_000_RN06.spr	5F77F5E4	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	27	GuqinWRun	FM_LW_000_RN07.spr	\spr\npcres\woman\FM_LW_000_RN07.spr	58BA0F04	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	28	FreeWound	FM_LW_000_IJ01.spr	\spr\npcres\woman\FM_LW_000_IJ01.spr	FB0E76AD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	29	MeleeWWound	FM_LW_000_IJ02.spr	\spr\npcres\woman\FM_LW_000_IJ02.spr	F4B080CD	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	30	RangeWWound	FM_LW_000_IJ03.spr	\spr\npcres\woman\FM_LW_000_IJ03.spr	F1FBDAED	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	31	DoubleWWound	FM_LW_000_IJ04.spr	\spr\npcres\woman\FM_LW_000_IJ04.spr	F32E140D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	32	SwordShieldWWound	FM_LW_000_IJ05.spr	\spr\npcres\woman\FM_LW_000_IJ05.spr	CC50AE2D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	33	ShieldSwordWWound	FM_LW_000_IJ05.spr	\spr\npcres\woman\FM_LW_000_IJ05.spr	CC50AE2D	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	34	GuqinWWound	FM_LW_000_IJ06.spr	\spr\npcres\woman\FM_LW_000_IJ06.spr	C99BF84D	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	35	FreeDie	FM_LW_000_DE01.spr	\spr\npcres\woman\FM_LW_000_DE01.spr	AE8B48AC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	36	MeleeWDie	FM_LW_000_DE02.spr	\spr\npcres\woman\FM_LW_000_DE02.spr	A83D82CC	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	37	RangeWDie	FM_LW_000_DE03.spr	\spr\npcres\woman\FM_LW_000_DE03.spr	A560DCEC	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	38	DoubleWDie	FM_LW_000_DE04.spr	\spr\npcres\woman\FM_LW_000_DE04.spr	A6AB160C	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	39	SwordShieldWDie	FM_LW_000_DE05.spr	\spr\npcres\woman\FM_LW_000_DE05.spr	A3DDA02C	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	40	ShieldSwordWDie	FM_LW_000_DE05.spr	\spr\npcres\woman\FM_LW_000_DE05.spr	A3DDA02C	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	41	GuqinWDie	FM_LW_000_DE06.spr	\spr\npcres\woman\FM_LW_000_DE06.spr	BD00FA4C	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	42	FreeAttack	FM_LW_000_AT01.spr	\spr\npcres\woman\FM_LW_000_AT01.spr	63228823	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	43	MeleeWPuncture	FM_LW_000_AT02.spr	\spr\npcres\woman\FM_LW_000_AT02.spr	7C55C243	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	44	MeleeWCut	FM_LW_000_AT03.spr	\spr\npcres\woman\FM_LW_000_AT03.spr	79981C63	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	45	RangeWPuncture	FM_LW_000_AT04.spr	\spr\npcres\woman\FM_LW_000_AT04.spr	7AC2A983	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	46	RangeWCut	FM_LW_000_AT05.spr	\spr\npcres\woman\FM_LW_000_AT05.spr	7475E3A3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	47	DoubleWPull	FM_LW_000_AT06.spr	\spr\npcres\woman\FM_LW_000_AT06.spr	71B83DC3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	48	DoubleWPound	FM_LW_000_AT07.spr	\spr\npcres\woman\FM_LW_000_AT07.spr	72E377E3	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	49	SwordShieldWChop	FM_LW_000_AT08.spr	\spr\npcres\woman\FM_LW_000_AT08.spr	4C158103	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	50	SwordShieldWCut	FM_LW_000_AT09.spr	\spr\npcres\woman\FM_LW_000_AT09.spr	4958DB23	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	51	ShieldSwordWChop	FM_LW_000_AT08.spr	\spr\npcres\woman\FM_LW_000_AT08.spr	4C158103	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	52	ShieldSwordWCut	FM_LW_000_AT09.spr	\spr\npcres\woman\FM_LW_000_AT09.spr	4958DB23	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	53	GuqinWPuncture	FM_LW_000_AT10.spr	\spr\npcres\woman\FM_LW_000_AT10.spr	B2519342	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	54	GuqinWCut	FM_LW_000_AT11.spr	\spr\npcres\woman\FM_LW_000_AT11.spr	8F842D62	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	55	DartThrow	FM_LW_000_MG01.spr	\spr\npcres\woman\FM_LW_000_MG01.spr	7BFB3EE0	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	56	FreeMagic	FM_LW_000_MG02.spr	\spr\npcres\woman\FM_LW_000_MG02.spr	752E4800	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	57	MeleeWMagic	FM_LW_000_MG03.spr	\spr\npcres\woman\FM_LW_000_MG03.spr	76508220	0	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	58	RangeWMagic	FM_LW_000_MG04.spr	\spr\npcres\woman\FM_LW_000_MG04.spr	739BDC40	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	59	DoubleWMagic	FM_LW_000_MG05.spr	\spr\npcres\woman\FM_LW_000_MG05.spr	4CCE1660	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	60	SwordShieldWMagic	FM_LW_000_MG06.spr	\spr\npcres\woman\FM_LW_000_MG06.spr	4E70A380	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	61	ShieldSwordWMagic	FM_LW_000_MG06.spr	\spr\npcres\woman\FM_LW_000_MG06.spr	4E70A380	0	THIEU CA HAI
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	62	GuqinWMagic	FM_LW_000_MG07.spr	\spr\npcres\woman\FM_LW_000_MG07.spr	4BBBFDA0	1	JX1:updatejx16.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	63	SitDown	FM_LW_000_ZZ01.spr	\spr\npcres\woman\FM_LW_000_ZZ01.spr	D6AF75BA	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	64	JumpFly	FM_LW_000_JP01.spr	\spr\npcres\woman\FM_LW_000_JP01.spr	42A8513B	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	65	RideStand	FM_LW_000_RD01.spr	\spr\npcres\woman\FM_LW_000_RD01.spr	960F211B	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	66	RideWalk	FM_LW_000_HW01.spr	\spr\npcres\woman\FM_LW_000_HW01.spr	9E8FCA6A	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	67	RideRun	FM_LW_000_HR01.spr	\spr\npcres\woman\FM_LW_000_HR01.spr	73461DF5	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	68	RideCut	FM_LW_000_HA01.spr	\spr\npcres\woman\FM_LW_000_HA01.spr	0926F4D3	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	69	RidePuncture	FM_LW_000_HA02.spr	\spr\npcres\woman\FM_LW_000_HA02.spr	0A690EF3	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	70	RideMagic	FM_LW_000_HM01.spr	\spr\npcres\woman\FM_LW_000_HM01.spr	A41CADBB	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	71	RideWound	FM_LW_000_HI01.spr	\spr\npcres\woman\FM_LW_000_HI01.spr	BF15DF0E	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	72	RideDie	FM_LW_000_HD01.spr	\spr\npcres\woman\FM_LW_000_HD01.spr	13EC6FD4	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	73	RideStand1	FM_LW_000_RD01.spr	\spr\npcres\woman\FM_LW_000_RD01.spr	960F211B	1	JX1:spr.pak
+MainLady	LeftWeapon	LadyLeftWeapon.txt	278	276	74	RideStand2	FM_LW_000_RD01.spr	\spr\npcres\woman\FM_LW_000_RD01.spr	960F211B	0	JX1:spr.pak
+MainMan	Body	ManBody.txt	158	156	0	SwordShieldWFreeStand	MA_BD_160_ST01.spr	\spr\npcres\man\MA_BD_160_ST01.spr	0B2CCBE6	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	1	ShieldSwordWFreeStand	MA_BD_160_ST01.spr	\spr\npcres\man\MA_BD_160_ST01.spr	0B2CCBE6	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	2	FreeStand1	MA_BD_160_ST01.spr	\spr\npcres\man\MA_BD_160_ST01.spr	0B2CCBE6	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	3	FreeStand2	MA_BD_160_ST02.spr	\spr\npcres\man\MA_BD_160_ST02.spr	04BAFE58	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	4	FreeStand3	MA_BD_160_ST03.spr	\spr\npcres\man\MA_BD_160_ST03.spr	0630E4DA	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	5	MeleeWStand	MA_BD_160_ST04.spr	\spr\npcres\man\MA_BD_160_ST04.spr	034EEB5C	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	6	RangeWStand	MA_BD_160_ST05.spr	\spr\npcres\man\MA_BD_160_ST05.spr	1CC491DE	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	7	DoubleWStand	MA_BD_160_ST06.spr	\spr\npcres\man\MA_BD_160_ST06.spr	1E528450	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	8	SwordShieldWStand	MA_BD_160_ST07.spr	\spr\npcres\man\MA_BD_160_ST07.spr	1BE88AD2	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	9	ShieldSwordWStand	MA_BD_160_ST07.spr	\spr\npcres\man\MA_BD_160_ST07.spr	1BE88AD2	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	10	GuqinWStand1	MA_BD_141_ST08.spr	\spr\npcres\man\MA_BD_141_ST08.spr	601B42F8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	11	GuqinWStand2	MA_BD_141_ST09.spr	\spr\npcres\man\MA_BD_141_ST09.spr	7D91497A	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	12	FreeWalk	MA_BD_160_WK01.spr	\spr\npcres\man\MA_BD_160_WK01.spr	07A35679	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	13	NormalWalk	MA_BD_160_WK01.spr	\spr\npcres\man\MA_BD_160_WK01.spr	07A35679	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	14	MeleeWWalk	MA_BD_160_WK02.spr	\spr\npcres\man\MA_BD_160_WK02.spr	01395CFB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	15	RangeWWalk	MA_BD_160_WK03.spr	\spr\npcres\man\MA_BD_160_WK03.spr	02B7437D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	16	DoubleWWalk	MA_BD_160_WK04.spr	\spr\npcres\man\MA_BD_160_WK04.spr	1FCD49FF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	17	SwordShieldWWalk	MA_BD_160_WK05.spr	\spr\npcres\man\MA_BD_160_WK05.spr	195B7C71	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	18	ShieldSwordWWalk	MA_BD_160_WK05.spr	\spr\npcres\man\MA_BD_160_WK05.spr	195B7C71	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	19	GuqinWWalk	MA_BD_141_WK06.spr	\spr\npcres\man\MA_BD_141_WK06.spr	E1F5375C	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	20	FreeRun	MA_BD_160_RN01.spr	\spr\npcres\man\MA_BD_160_RN01.spr	59FEF853	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	21	NormalRun	MA_BD_160_RN01.spr	\spr\npcres\man\MA_BD_160_RN01.spr	59FEF853	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	22	MeleeWRun	MA_BD_160_RN02.spr	\spr\npcres\man\MA_BD_160_RN02.spr	5B74EED5	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	23	RangeWRun	MA_BD_160_RN03.spr	\spr\npcres\man\MA_BD_160_RN03.spr	54829557	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	24	DoubleWRun	MA_BD_160_RN04.spr	\spr\npcres\man\MA_BD_160_RN04.spr	56189BC9	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	25	SwordShieldWRun	MA_BD_160_RN05.spr	\spr\npcres\man\MA_BD_160_RN05.spr	53968E4B	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	26	ShieldSwordWRun	MA_BD_160_RN06.spr	\spr\npcres\man\MA_BD_160_RN06.spr	2D2CB4CD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	27	GuqinWRun	MA_BD_141_RN07.spr	\spr\npcres\man\MA_BD_141_RN07.spr	355F4FA8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	28	FreeWound	MA_BD_160_IJ01.spr	\spr\npcres\man\MA_BD_160_IJ01.spr	C08D22C5	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	29	MeleeWWound	MA_BD_160_IJ02.spr	\spr\npcres\man\MA_BD_160_IJ02.spr	C21B2947	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	30	RangeWWound	MA_BD_160_IJ03.spr	\spr\npcres\man\MA_BD_160_IJ03.spr	DF91DFB9	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	31	DoubleWWound	MA_BD_160_IJ04.spr	\spr\npcres\man\MA_BD_160_IJ04.spr	D92FC23B	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	32	SwordShieldWWound	MA_BD_160_IJ05.spr	\spr\npcres\man\MA_BD_160_IJ05.spr	DAA5C8BD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	33	ShieldSwordWWound	MA_BD_160_IJ05.spr	\spr\npcres\man\MA_BD_160_IJ05.spr	DAA5C8BD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	34	GuqinWWound	MA_BD_141_IJ06.spr	\spr\npcres\man\MA_BD_141_IJ06.spr	A2E18BF8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	35	FreeDie	MA_BD_160_DE01.spr	\spr\npcres\man\MA_BD_160_DE01.spr	FDBDA5D0	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	36	MeleeWDie	MA_BD_160_DE02.spr	\spr\npcres\man\MA_BD_160_DE02.spr	FECBA852	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	37	RangeWDie	MA_BD_160_DE03.spr	\spr\npcres\man\MA_BD_160_DE03.spr	F8425ED4	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	38	DoubleWDie	MA_BD_160_DE04.spr	\spr\npcres\man\MA_BD_160_DE04.spr	F5D84556	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	39	SwordShieldWDie	MA_BD_160_DE05.spr	\spr\npcres\man\MA_BD_160_DE05.spr	F7564BC8	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	40	ShieldSwordWDie	MA_BD_160_DE05.spr	\spr\npcres\man\MA_BD_160_DE05.spr	F7564BC8	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	41	GuqinWDie	MA_BD_141_DE06.spr	\spr\npcres\man\MA_BD_141_DE06.spr	DF920A13	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	42	FreeAttack	MA_BD_160_AT01.spr	\spr\npcres\man\MA_BD_160_AT01.spr	526D2235	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	43	MeleeWPuncture	MA_BD_160_AT02.spr	\spr\npcres\man\MA_BD_160_AT02.spr	2FFB28B7	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	44	MeleeWCut	MA_BD_160_AT03.spr	\spr\npcres\man\MA_BD_160_AT03.spr	2971DF29	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	45	RangeWPuncture	MA_BD_160_AT04.spr	\spr\npcres\man\MA_BD_160_AT04.spr	2A8FC5AB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	46	RangeWCut	MA_BD_160_AT05.spr	\spr\npcres\man\MA_BD_160_AT05.spr	2405C82D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	47	DoubleWPull	MA_BD_160_AT06.spr	\spr\npcres\man\MA_BD_160_AT06.spr	2193FEAF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	48	DoubleWPound	MA_BD_160_AT07.spr	\spr\npcres\man\MA_BD_160_AT07.spr	2329E521	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	49	SwordShieldWChop	MA_BD_160_AT08.spr	\spr\npcres\man\MA_BD_160_AT08.spr	3CA7EBA3	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	50	SwordShieldWCut	MA_BD_160_AT09.spr	\spr\npcres\man\MA_BD_160_AT09.spr	3E3D9E25	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	51	ShieldSwordWChop	MA_BD_160_AT08.spr	\spr\npcres\man\MA_BD_160_AT08.spr	3CA7EBA3	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	52	ShieldSwordWCut	MA_BD_160_AT09.spr	\spr\npcres\man\MA_BD_160_AT09.spr	3E3D9E25	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	53	GuqinWPuncture	MA_BD_141_AT10.spr	\spr\npcres\man\MA_BD_141_AT10.spr	C55ECAC4	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	54	GuqinWCut	MA_BD_141_AT11.spr	\spr\npcres\man\MA_BD_141_AT11.spr	C6D4F146	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	55	DartThrow	MA_BD_160_MG01.spr	\spr\npcres\man\MA_BD_160_MG01.spr	50761245	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	56	FreeMagic	MA_BD_160_MG02.spr	\spr\npcres\man\MA_BD_160_MG02.spr	2D8C18C7	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	57	MeleeWMagic	MA_BD_160_MG03.spr	\spr\npcres\man\MA_BD_160_MG03.spr	2F1A0F39	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	58	RangeWMagic	MA_BD_160_MG04.spr	\spr\npcres\man\MA_BD_160_MG04.spr	289035BB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	59	DoubleWMagic	MA_BD_160_MG05.spr	\spr\npcres\man\MA_BD_160_MG05.spr	2A2E383D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	60	SwordShieldWMagic	MA_BD_160_MG06.spr	\spr\npcres\man\MA_BD_160_MG06.spr	27A42EBF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	61	ShieldSwordWMagic	MA_BD_160_MG06.spr	\spr\npcres\man\MA_BD_160_MG06.spr	27A42EBF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	62	GuqinWMagic	MA_BD_141_MG07.spr	\spr\npcres\man\MA_BD_141_MG07.spr	8FD69F0B	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	158	156	63	SitDown	MA_BD_160_ZZ01.spr	\spr\npcres\man\MA_BD_160_ZZ01.spr	11CFC0CB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	64	JumpFly	MA_BD_160_JP01.spr	\spr\npcres\man\MA_BD_160_JP01.spr	B233272E	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	65	RideStand	MA_BD_160_RD01.spr	\spr\npcres\man\MA_BD_160_RD01.spr	1E3AF7BB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	66	RideWalk	MA_BD_160_HW01.spr	\spr\npcres\man\MA_BD_160_HW01.spr	A3836149	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	67	RideRun	MA_BD_160_HR01.spr	\spr\npcres\man\MA_BD_160_HR01.spr	03ED6685	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	68	RideCut	MA_BD_160_HA01.spr	\spr\npcres\man\MA_BD_160_HA01.spr	19D21826	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	69	RidePuncture	MA_BD_160_HA02.spr	\spr\npcres\man\MA_BD_160_HA02.spr	1B680E98	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	70	RideMagic	MA_BD_160_HM01.spr	\spr\npcres\man\MA_BD_160_HM01.spr	E3CF7C76	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	71	RideWound	MA_BD_160_HI01.spr	\spr\npcres\man\MA_BD_160_HI01.spr	377DDA41	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	72	RideDie	MA_BD_160_HD01.spr	\spr\npcres\man\MA_BD_160_HD01.spr	975FD07D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	73	RideStand1	MA_BD_160_RD01.spr	\spr\npcres\man\MA_BD_160_RD01.spr	1E3AF7BB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	158	156	74	RideStand2	MA_BD_160_RD01.spr	\spr\npcres\man\MA_BD_160_RD01.spr	1E3AF7BB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	0	SwordShieldWFreeStand	MA_BD_161_ST01.spr	\spr\npcres\man\MA_BD_161_ST01.spr	A82F3055	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	1	ShieldSwordWFreeStand	MA_BD_161_ST01.spr	\spr\npcres\man\MA_BD_161_ST01.spr	A82F3055	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	2	FreeStand1	MA_BD_161_ST01.spr	\spr\npcres\man\MA_BD_161_ST01.spr	A82F3055	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	3	FreeStand2	MA_BD_161_ST02.spr	\spr\npcres\man\MA_BD_161_ST02.spr	A5A526D7	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	4	FreeStand3	MA_BD_161_ST03.spr	\spr\npcres\man\MA_BD_161_ST03.spr	A7332D49	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	5	MeleeWStand	MA_BD_161_ST04.spr	\spr\npcres\man\MA_BD_161_ST04.spr	A049D3CB	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	6	RangeWStand	MA_BD_161_ST05.spr	\spr\npcres\man\MA_BD_161_ST05.spr	BDC7C64D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	7	DoubleWStand	MA_BD_161_ST06.spr	\spr\npcres\man\MA_BD_161_ST06.spr	BF5DCCCF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	8	SwordShieldWStand	MA_BD_161_ST07.spr	\spr\npcres\man\MA_BD_161_ST07.spr	B8EBF341	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	9	ShieldSwordWStand	MA_BD_161_ST07.spr	\spr\npcres\man\MA_BD_161_ST07.spr	B8EBF341	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	10	GuqinWStand1	MA_BD_141_ST08.spr	\spr\npcres\man\MA_BD_141_ST08.spr	601B42F8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	11	GuqinWStand2	MA_BD_141_ST09.spr	\spr\npcres\man\MA_BD_141_ST09.spr	7D91497A	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	12	FreeWalk	MA_BD_161_WK01.spr	\spr\npcres\man\MA_BD_161_WK01.spr	24AD91AD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	13	NormalWalk	MA_BD_161_WK01.spr	\spr\npcres\man\MA_BD_161_WK01.spr	24AD91AD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	14	MeleeWWalk	MA_BD_161_WK02.spr	\spr\npcres\man\MA_BD_161_WK02.spr	263B842F	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	15	RangeWWalk	MA_BD_161_WK03.spr	\spr\npcres\man\MA_BD_161_WK03.spr	23B18AA1	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	16	DoubleWWalk	MA_BD_161_WK04.spr	\spr\npcres\man\MA_BD_161_WK04.spr	3CCFB123	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	17	SwordShieldWWalk	MA_BD_161_WK05.spr	\spr\npcres\man\MA_BD_161_WK05.spr	3E45A7A5	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	18	ShieldSwordWWalk	MA_BD_161_WK05.spr	\spr\npcres\man\MA_BD_161_WK05.spr	3E45A7A5	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	19	GuqinWWalk	MA_BD_141_WK06.spr	\spr\npcres\man\MA_BD_141_WK06.spr	E1F5375C	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	20	FreeRun	MA_BD_161_RN01.spr	\spr\npcres\man\MA_BD_161_RN01.spr	7EF92387	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	21	NormalRun	MA_BD_161_RN01.spr	\spr\npcres\man\MA_BD_161_RN01.spr	7EF92387	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	22	MeleeWRun	MA_BD_161_RN02.spr	\spr\npcres\man\MA_BD_161_RN02.spr	7877D6F9	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	23	RangeWRun	MA_BD_161_RN03.spr	\spr\npcres\man\MA_BD_161_RN03.spr	758DDD7B	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	24	DoubleWRun	MA_BD_161_RN04.spr	\spr\npcres\man\MA_BD_161_RN04.spr	771BC3FD	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	25	SwordShieldWRun	MA_BD_161_RN05.spr	\spr\npcres\man\MA_BD_161_RN05.spr	7091F67F	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	26	ShieldSwordWRun	MA_BD_161_RN06.spr	\spr\npcres\man\MA_BD_161_RN06.spr	722FFCF1	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	27	GuqinWRun	MA_BD_141_RN07.spr	\spr\npcres\man\MA_BD_141_RN07.spr	355F4FA8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	28	FreeWound	MA_BD_161_IJ01.spr	\spr\npcres\man\MA_BD_161_IJ01.spr	E1881FCF	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	29	MeleeWWound	MA_BD_161_IJ02.spr	\spr\npcres\man\MA_BD_161_IJ02.spr	E3060241	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	30	RangeWWound	MA_BD_161_IJ03.spr	\spr\npcres\man\MA_BD_161_IJ03.spr	FC9C08C3	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	31	DoubleWWound	MA_BD_161_IJ04.spr	\spr\npcres\man\MA_BD_161_IJ04.spr	FE2A3F45	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	32	SwordShieldWWound	MA_BD_161_IJ05.spr	\spr\npcres\man\MA_BD_161_IJ05.spr	FBA025C7	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	33	ShieldSwordWWound	MA_BD_161_IJ05.spr	\spr\npcres\man\MA_BD_161_IJ05.spr	FBA025C7	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	34	GuqinWWound	MA_BD_141_IJ06.spr	\spr\npcres\man\MA_BD_141_IJ06.spr	A2E18BF8	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	35	FreeDie	MA_BD_161_DE01.spr	\spr\npcres\man\MA_BD_161_DE01.spr	02BF8D8E	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	36	MeleeWDie	MA_BD_161_DE02.spr	\spr\npcres\man\MA_BD_161_DE02.spr	1C35B000	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	37	RangeWDie	MA_BD_161_DE03.spr	\spr\npcres\man\MA_BD_161_DE03.spr	1943A682	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	38	DoubleWDie	MA_BD_161_DE04.spr	\spr\npcres\man\MA_BD_161_DE04.spr	1AD9AD04	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	39	SwordShieldWDie	MA_BD_161_DE05.spr	\spr\npcres\man\MA_BD_161_DE05.spr	14505386	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	40	ShieldSwordWDie	MA_BD_161_DE05.spr	\spr\npcres\man\MA_BD_161_DE05.spr	14505386	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	41	GuqinWDie	MA_BD_141_DE06.spr	\spr\npcres\man\MA_BD_141_DE06.spr	DF920A13	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	42	FreeAttack	MA_BD_161_AT01.spr	\spr\npcres\man\MA_BD_161_AT01.spr	F36F2054	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	43	MeleeWPuncture	MA_BD_161_AT02.spr	\spr\npcres\man\MA_BD_161_AT02.spr	CCE5D6D6	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	44	MeleeWCut	MA_BD_161_AT03.spr	\spr\npcres\man\MA_BD_161_AT03.spr	CE73DD48	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	45	RangeWPuncture	MA_BD_161_AT04.spr	\spr\npcres\man\MA_BD_161_AT04.spr	CB89C3CA	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	46	RangeWCut	MA_BD_161_AT05.spr	\spr\npcres\man\MA_BD_161_AT05.spr	C507F64C	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	47	DoubleWPull	MA_BD_161_AT06.spr	\spr\npcres\man\MA_BD_161_AT06.spr	C69DFCCE	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	48	DoubleWPound	MA_BD_161_AT07.spr	\spr\npcres\man\MA_BD_161_AT07.spr	C02BE340	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	49	SwordShieldWChop	MA_BD_161_AT08.spr	\spr\npcres\man\MA_BD_161_AT08.spr	DDA1E9C2	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	50	SwordShieldWCut	MA_BD_161_AT09.spr	\spr\npcres\man\MA_BD_161_AT09.spr	DF3F9C44	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	51	ShieldSwordWChop	MA_BD_161_AT08.spr	\spr\npcres\man\MA_BD_161_AT08.spr	DDA1E9C2	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	52	ShieldSwordWCut	MA_BD_161_AT09.spr	\spr\npcres\man\MA_BD_161_AT09.spr	DF3F9C44	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	53	GuqinWPuncture	MA_BD_141_AT10.spr	\spr\npcres\man\MA_BD_141_AT10.spr	C55ECAC4	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	54	GuqinWCut	MA_BD_141_AT11.spr	\spr\npcres\man\MA_BD_141_AT11.spr	C6D4F146	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	55	DartThrow	MA_BD_161_MG01.spr	\spr\npcres\man\MA_BD_161_MG01.spr	F1715AB4	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	56	FreeMagic	MA_BD_161_MG02.spr	\spr\npcres\man\MA_BD_161_MG02.spr	F28F4136	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	57	MeleeWMagic	MA_BD_161_MG03.spr	\spr\npcres\man\MA_BD_161_MG03.spr	CC0577A8	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	58	RangeWMagic	MA_BD_161_MG04.spr	\spr\npcres\man\MA_BD_161_MG04.spr	C9937A2A	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	59	DoubleWMagic	MA_BD_161_MG05.spr	\spr\npcres\man\MA_BD_161_MG05.spr	CB2960AC	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	60	SwordShieldWMagic	MA_BD_161_MG06.spr	\spr\npcres\man\MA_BD_161_MG06.spr	C4A7172E	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	61	ShieldSwordWMagic	MA_BD_161_MG06.spr	\spr\npcres\man\MA_BD_161_MG06.spr	C4A7172E	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	62	GuqinWMagic	MA_BD_141_MG07.spr	\spr\npcres\man\MA_BD_141_MG07.spr	8FD69F0B	1	JX1:updatejx16.pak
+MainMan	Body	ManBody.txt	159	157	63	SitDown	MA_BD_161_ZZ01.spr	\spr\npcres\man\MA_BD_161_ZZ01.spr	B6CA093A	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	64	JumpFly	MA_BD_161_JP01.spr	\spr\npcres\man\MA_BD_161_JP01.spr	533E6E17	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	65	RideStand	MA_BD_161_RD01.spr	\spr\npcres\man\MA_BD_161_RD01.spr	BF253C2A	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	66	RideWalk	MA_BD_161_HW01.spr	\spr\npcres\man\MA_BD_161_HW01.spr	C08DA97D	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	67	RideRun	MA_BD_161_HR01.spr	\spr\npcres\man\MA_BD_161_HR01.spr	A0EFAE6E	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	68	RideCut	MA_BD_161_HA01.spr	\spr\npcres\man\MA_BD_161_HA01.spr	BEDD4095	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	69	RidePuncture	MA_BD_161_HA02.spr	\spr\npcres\man\MA_BD_161_HA02.spr	B86B7717	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	70	RideMagic	MA_BD_161_HM01.spr	\spr\npcres\man\MA_BD_161_HM01.spr	00C9A79A	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	71	RideWound	MA_BD_161_HI01.spr	\spr\npcres\man\MA_BD_161_HI01.spr	54780275	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	72	RideDie	MA_BD_161_HD01.spr	\spr\npcres\man\MA_BD_161_HD01.spr	B45A1BA1	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	73	RideStand1	MA_BD_161_RD01.spr	\spr\npcres\man\MA_BD_161_RD01.spr	BF253C2A	1	JX1:updatejx15.pak
+MainMan	Body	ManBody.txt	159	157	74	RideStand2	MA_BD_161_RD01.spr	\spr\npcres\man\MA_BD_161_RD01.spr	BF253C2A	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	0	SwordShieldWFreeStand	FM_BD_160_ST01.spr	\spr\npcres\woman\FM_BD_160_ST01.spr	43774242	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	1	ShieldSwordWFreeStand	FM_BD_160_ST01.spr	\spr\npcres\woman\FM_BD_160_ST01.spr	43774242	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	2	FreeStand1	FM_BD_160_ST01.spr	\spr\npcres\woman\FM_BD_160_ST01.spr	43774242	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	3	FreeStand2	FM_BD_160_ST02.spr	\spr\npcres\woman\FM_BD_160_ST02.spr	5CB99C62	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	4	FreeStand3	FM_BD_160_ST03.spr	\spr\npcres\woman\FM_BD_160_ST03.spr	59EC2982	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	5	MeleeWStand	FM_BD_160_ST04.spr	\spr\npcres\woman\FM_BD_160_ST04.spr	5B1763A2	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	6	RangeWStand	FM_BD_160_ST05.spr	\spr\npcres\woman\FM_BD_160_ST05.spr	5459BDC2	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	7	DoubleWStand	FM_BD_160_ST06.spr	\spr\npcres\woman\FM_BD_160_ST06.spr	518CF7E2	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	8	SwordShieldWStand	FM_BD_160_ST07.spr	\spr\npcres\woman\FM_BD_160_ST07.spr	53370102	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	9	ShieldSwordWStand	FM_BD_160_ST07.spr	\spr\npcres\woman\FM_BD_160_ST07.spr	53370102	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	10	GuqinWStand1	FM_BD_144_ST08.spr	\spr\npcres\woman\FM_BD_144_ST08.spr	408A57A8	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	11	GuqinWStand2	FM_BD_144_ST09.spr	\spr\npcres\woman\FM_BD_144_ST09.spr	423CE1C8	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	12	FreeWalk	FM_BD_160_WK01.spr	\spr\npcres\woman\FM_BD_160_WK01.spr	16796D59	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	13	NormalWalk	FM_BD_160_WK01.spr	\spr\npcres\woman\FM_BD_160_WK01.spr	16796D59	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	14	MeleeWWalk	FM_BD_160_WK02.spr	\spr\npcres\woman\FM_BD_160_WK02.spr	13A3A779	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	15	RangeWWalk	FM_BD_160_WK03.spr	\spr\npcres\woman\FM_BD_160_WK03.spr	ECD6F099	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	16	DoubleWWalk	FM_BD_160_WK04.spr	\spr\npcres\woman\FM_BD_160_WK04.spr	EE190AB9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	17	SwordShieldWWalk	FM_BD_160_WK05.spr	\spr\npcres\woman\FM_BD_160_WK05.spr	EB4C44D9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	18	ShieldSwordWWalk	FM_BD_160_WK05.spr	\spr\npcres\woman\FM_BD_160_WK05.spr	EB4C44D9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	19	GuqinWWalk	FM_BD_144_WK06.spr	\spr\npcres\woman\FM_BD_144_WK06.spr	1906EA8F	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	20	FreeRun	FM_BD_160_RN01.spr	\spr\npcres\woman\FM_BD_160_RN01.spr	7BD57B69	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	21	NormalRun	FM_BD_160_RN01.spr	\spr\npcres\woman\FM_BD_160_RN01.spr	7BD57B69	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	22	MeleeWRun	FM_BD_160_RN02.spr	\spr\npcres\woman\FM_BD_160_RN02.spr	751FB489	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	23	RangeWRun	FM_BD_160_RN03.spr	\spr\npcres\woman\FM_BD_160_RN03.spr	7642CEA9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	24	DoubleWRun	FM_BD_160_RN04.spr	\spr\npcres\woman\FM_BD_160_RN04.spr	73F518C9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	25	SwordShieldWRun	FM_BD_160_RN05.spr	\spr\npcres\woman\FM_BD_160_RN05.spr	4D3852E9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	26	ShieldSwordWRun	FM_BD_160_RN06.spr	\spr\npcres\woman\FM_BD_160_RN06.spr	4E62EC09	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	27	GuqinWRun	FM_BD_144_RN07.spr	\spr\npcres\woman\FM_BD_144_RN07.spr	7C2532BF	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	28	FreeWound	FM_BD_160_IJ01.spr	\spr\npcres\woman\FM_BD_160_IJ01.spr	EA79604C	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	29	MeleeWWound	FM_BD_160_IJ02.spr	\spr\npcres\woman\FM_BD_160_IJ02.spr	E7A3BA6C	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	30	RangeWWound	FM_BD_160_IJ03.spr	\spr\npcres\woman\FM_BD_160_IJ03.spr	E0D6F78C	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	31	DoubleWWound	FM_BD_160_IJ04.spr	\spr\npcres\woman\FM_BD_160_IJ04.spr	E21901AC	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	32	SwordShieldWWound	FM_BD_160_IJ05.spr	\spr\npcres\woman\FM_BD_160_IJ05.spr	FF4C5BCC	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	33	ShieldSwordWWound	FM_BD_160_IJ05.spr	\spr\npcres\woman\FM_BD_160_IJ05.spr	FF4C5BCC	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	34	GuqinWWound	FM_BD_144_IJ06.spr	\spr\npcres\woman\FM_BD_144_IJ06.spr	ED06EE72	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	35	FreeDie	FM_BD_160_DE01.spr	\spr\npcres\woman\FM_BD_160_DE01.spr	D9E663D1	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	36	MeleeWDie	FM_BD_160_DE02.spr	\spr\npcres\woman\FM_BD_160_DE02.spr	DB28BDF1	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	37	RangeWDie	FM_BD_160_DE03.spr	\spr\npcres\woman\FM_BD_160_DE03.spr	D453F711	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	38	DoubleWDie	FM_BD_160_DE04.spr	\spr\npcres\woman\FM_BD_160_DE04.spr	D1860131	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	39	SwordShieldWDie	FM_BD_160_DE05.spr	\spr\npcres\woman\FM_BD_160_DE05.spr	D2C95B51	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	40	ShieldSwordWDie	FM_BD_160_DE05.spr	\spr\npcres\woman\FM_BD_160_DE05.spr	D2C95B51	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	41	GuqinWDie	FM_BD_144_DE06.spr	\spr\npcres\woman\FM_BD_144_DE06.spr	C083E107	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	42	FreeAttack	FM_BD_160_AT01.spr	\spr\npcres\woman\FM_BD_160_AT01.spr	921DA348	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	43	MeleeWPuncture	FM_BD_160_AT02.spr	\spr\npcres\woman\FM_BD_160_AT02.spr	6F40FD68	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	44	MeleeWCut	FM_BD_160_AT03.spr	\spr\npcres\woman\FM_BD_160_AT03.spr	688B3688	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	45	RangeWPuncture	FM_BD_160_AT04.spr	\spr\npcres\woman\FM_BD_160_AT04.spr	6A3E40A8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	46	RangeWCut	FM_BD_160_AT05.spr	\spr\npcres\woman\FM_BD_160_AT05.spr	67609AC8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	47	DoubleWPull	FM_BD_160_AT06.spr	\spr\npcres\woman\FM_BD_160_AT06.spr	60ABD4E8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	48	DoubleWPound	FM_BD_160_AT07.spr	\spr\npcres\woman\FM_BD_160_AT07.spr	7DDE6E08	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	49	SwordShieldWChop	FM_BD_160_AT08.spr	\spr\npcres\woman\FM_BD_160_AT08.spr	7F00B828	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	50	SwordShieldWCut	FM_BD_160_AT09.spr	\spr\npcres\woman\FM_BD_160_AT09.spr	784BF248	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	51	ShieldSwordWChop	FM_BD_160_AT08.spr	\spr\npcres\woman\FM_BD_160_AT08.spr	7F00B828	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	52	ShieldSwordWCut	FM_BD_160_AT09.spr	\spr\npcres\woman\FM_BD_160_AT09.spr	784BF248	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	53	GuqinWPuncture	FM_BD_144_AT10.spr	\spr\npcres\woman\FM_BD_144_AT10.spr	D1D3AAD7	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	54	GuqinWCut	FM_BD_144_AT11.spr	\spr\npcres\woman\FM_BD_144_AT11.spr	D306E4F7	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	55	DartThrow	FM_BD_160_MG01.spr	\spr\npcres\woman\FM_BD_160_MG01.spr	6AD62B8F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	56	FreeMagic	FM_BD_160_MG02.spr	\spr\npcres\woman\FM_BD_160_MG02.spr	641965AF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	57	MeleeWMagic	FM_BD_160_MG03.spr	\spr\npcres\woman\FM_BD_160_MG03.spr	6143BFCF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	58	RangeWMagic	FM_BD_160_MG04.spr	\spr\npcres\woman\FM_BD_160_MG04.spr	62F6C9EF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	59	DoubleWMagic	FM_BD_160_MG05.spr	\spr\npcres\woman\FM_BD_160_MG05.spr	7C39030F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	60	SwordShieldWMagic	FM_BD_160_MG06.spr	\spr\npcres\woman\FM_BD_160_MG06.spr	796C5D2F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	61	ShieldSwordWMagic	FM_BD_160_MG06.spr	\spr\npcres\woman\FM_BD_160_MG06.spr	796C5D2F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	62	GuqinWMagic	FM_BD_144_MG07.spr	\spr\npcres\woman\FM_BD_144_MG07.spr	6F2694AB	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	158	156	63	SitDown	FM_BD_160_ZZ01.spr	\spr\npcres\woman\FM_BD_160_ZZ01.spr	41990C2E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	64	JumpFly	FM_BD_160_JP01.spr	\spr\npcres\woman\FM_BD_160_JP01.spr	4D9B4860	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	65	RideStand	FM_BD_160_RD01.spr	\spr\npcres\woman\FM_BD_160_RD01.spr	017ADB05	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	66	RideWalk	FM_BD_160_HW01.spr	\spr\npcres\woman\FM_BD_160_HW01.spr	89FAF3B9	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	67	RideRun	FM_BD_160_HR01.spr	\spr\npcres\woman\FM_BD_160_HR01.spr	E2B137DF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	68	RideCut	FM_BD_160_HA01.spr	\spr\npcres\woman\FM_BD_160_HA01.spr	3811EFF8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	69	RidePuncture	FM_BD_160_HA02.spr	\spr\npcres\woman\FM_BD_160_HA02.spr	35443918	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	70	RideMagic	FM_BD_160_HM01.spr	\spr\npcres\woman\FM_BD_160_HM01.spr	D70844E0	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	71	RideWound	FM_BD_160_HI01.spr	\spr\npcres\woman\FM_BD_160_HI01.spr	2E00C9E8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	72	RideDie	FM_BD_160_HD01.spr	\spr\npcres\woman\FM_BD_160_HD01.spr	02DF1973	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	73	RideStand1	FM_BD_160_RD01.spr	\spr\npcres\woman\FM_BD_160_RD01.spr	017ADB05	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	158	156	74	RideStand2	FM_BD_160_RD01.spr	\spr\npcres\woman\FM_BD_160_RD01.spr	017ADB05	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	0	SwordShieldWFreeStand	FM_BD_161_ST01.spr	\spr\npcres\woman\FM_BD_161_ST01.spr	254D1578	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	1	ShieldSwordWFreeStand	FM_BD_161_ST01.spr	\spr\npcres\woman\FM_BD_161_ST01.spr	254D1578	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	2	FreeStand1	FM_BD_161_ST01.spr	\spr\npcres\woman\FM_BD_161_ST01.spr	254D1578	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	3	FreeStand2	FM_BD_161_ST02.spr	\spr\npcres\woman\FM_BD_161_ST02.spr	26F7AE98	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	4	FreeStand3	FM_BD_161_ST03.spr	\spr\npcres\woman\FM_BD_161_ST03.spr	203AF8B8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	5	MeleeWStand	FM_BD_161_ST04.spr	\spr\npcres\woman\FM_BD_161_ST04.spr	3D6D32D8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	6	RangeWStand	FM_BD_161_ST05.spr	\spr\npcres\woman\FM_BD_161_ST05.spr	3E904CF8	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	7	DoubleWStand	FM_BD_161_ST06.spr	\spr\npcres\woman\FM_BD_161_ST06.spr	3BDA8618	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	8	SwordShieldWStand	FM_BD_161_ST07.spr	\spr\npcres\woman\FM_BD_161_ST07.spr	350DD038	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	9	ShieldSwordWStand	FM_BD_161_ST07.spr	\spr\npcres\woman\FM_BD_161_ST07.spr	350DD038	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	10	GuqinWStand1	FM_BD_144_ST08.spr	\spr\npcres\woman\FM_BD_144_ST08.spr	408A57A8	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	11	GuqinWStand2	FM_BD_144_ST09.spr	\spr\npcres\woman\FM_BD_144_ST09.spr	423CE1C8	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	12	FreeWalk	FM_BD_161_WK01.spr	\spr\npcres\woman\FM_BD_161_WK01.spr	F8B7084F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	13	NormalWalk	FM_BD_161_WK01.spr	\spr\npcres\woman\FM_BD_161_WK01.spr	F8B7084F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	14	MeleeWWalk	FM_BD_161_WK02.spr	\spr\npcres\woman\FM_BD_161_WK02.spr	F5FA426F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	15	RangeWWalk	FM_BD_161_WK03.spr	\spr\npcres\woman\FM_BD_161_WK03.spr	F72C9F8F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	16	DoubleWWalk	FM_BD_161_WK04.spr	\spr\npcres\woman\FM_BD_161_WK04.spr	F05729AF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	17	SwordShieldWWalk	FM_BD_161_WK05.spr	\spr\npcres\woman\FM_BD_161_WK05.spr	CD9A63CF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	18	ShieldSwordWWalk	FM_BD_161_WK05.spr	\spr\npcres\woman\FM_BD_161_WK05.spr	CD9A63CF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	19	GuqinWWalk	FM_BD_144_WK06.spr	\spr\npcres\woman\FM_BD_144_WK06.spr	1906EA8F	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	20	FreeRun	FM_BD_161_RN01.spr	\spr\npcres\woman\FM_BD_161_RN01.spr	42230DAF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	21	NormalRun	FM_BD_161_RN01.spr	\spr\npcres\woman\FM_BD_161_RN01.spr	42230DAF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	22	MeleeWRun	FM_BD_161_RN02.spr	\spr\npcres\woman\FM_BD_161_RN02.spr	5F5647CF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	23	RangeWRun	FM_BD_161_RN03.spr	\spr\npcres\woman\FM_BD_161_RN03.spr	589891EF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	24	DoubleWRun	FM_BD_161_RN04.spr	\spr\npcres\woman\FM_BD_161_RN04.spr	55C32B0F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	25	SwordShieldWRun	FM_BD_161_RN05.spr	\spr\npcres\woman\FM_BD_161_RN05.spr	5776652F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	26	ShieldSwordWRun	FM_BD_161_RN06.spr	\spr\npcres\woman\FM_BD_161_RN06.spr	50B8BF4F	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	27	GuqinWRun	FM_BD_144_RN07.spr	\spr\npcres\woman\FM_BD_144_RN07.spr	7C2532BF	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	28	FreeWound	FM_BD_161_IJ01.spr	\spr\npcres\woman\FM_BD_161_IJ01.spr	CCB71BE2	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	29	MeleeWWound	FM_BD_161_IJ02.spr	\spr\npcres\woman\FM_BD_161_IJ02.spr	C9FA5502	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	30	RangeWWound	FM_BD_161_IJ03.spr	\spr\npcres\woman\FM_BD_161_IJ03.spr	CB2CEF22	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	31	DoubleWWound	FM_BD_161_IJ04.spr	\spr\npcres\woman\FM_BD_161_IJ04.spr	C4573942	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	32	SwordShieldWWound	FM_BD_161_IJ05.spr	\spr\npcres\woman\FM_BD_161_IJ05.spr	C19A7362	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	33	ShieldSwordWWound	FM_BD_161_IJ05.spr	\spr\npcres\woman\FM_BD_161_IJ05.spr	C19A7362	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	34	GuqinWWound	FM_BD_144_IJ06.spr	\spr\npcres\woman\FM_BD_144_IJ06.spr	ED06EE72	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	35	FreeDie	FM_BD_161_DE01.spr	\spr\npcres\woman\FM_BD_161_DE01.spr	A03C0EC7	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	36	MeleeWDie	FM_BD_161_DE02.spr	\spr\npcres\woman\FM_BD_161_DE02.spr	BD6758E7	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	37	RangeWDie	FM_BD_161_DE03.spr	\spr\npcres\woman\FM_BD_161_DE03.spr	BEA99207	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	38	DoubleWDie	FM_BD_161_DE04.spr	\spr\npcres\woman\FM_BD_161_DE04.spr	BBDC2C27	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	39	SwordShieldWDie	FM_BD_161_DE05.spr	\spr\npcres\woman\FM_BD_161_DE05.spr	B5076647	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	40	ShieldSwordWDie	FM_BD_161_DE05.spr	\spr\npcres\woman\FM_BD_161_DE05.spr	B5076647	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	41	GuqinWDie	FM_BD_144_DE06.spr	\spr\npcres\woman\FM_BD_144_DE06.spr	C083E107	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	42	FreeAttack	FM_BD_161_AT01.spr	\spr\npcres\woman\FM_BD_161_AT01.spr	7454758E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	43	MeleeWPuncture	FM_BD_161_AT02.spr	\spr\npcres\woman\FM_BD_161_AT02.spr	719E8FAE	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	44	MeleeWCut	FM_BD_161_AT03.spr	\spr\npcres\woman\FM_BD_161_AT03.spr	72C1D9CE	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	45	RangeWPuncture	FM_BD_161_AT04.spr	\spr\npcres\woman\FM_BD_161_AT04.spr	4C7413EE	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	46	RangeWCut	FM_BD_161_AT05.spr	\spr\npcres\woman\FM_BD_161_AT05.spr	49BEAD0E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	47	DoubleWPull	FM_BD_161_AT06.spr	\spr\npcres\woman\FM_BD_161_AT06.spr	4AE1E72E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	48	DoubleWPound	FM_BD_161_AT07.spr	\spr\npcres\woman\FM_BD_161_AT07.spr	4414314E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	49	SwordShieldWChop	FM_BD_161_AT08.spr	\spr\npcres\woman\FM_BD_161_AT08.spr	415F4B6E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	50	SwordShieldWCut	FM_BD_161_AT09.spr	\spr\npcres\woman\FM_BD_161_AT09.spr	4281848E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	51	ShieldSwordWChop	FM_BD_161_AT08.spr	\spr\npcres\woman\FM_BD_161_AT08.spr	415F4B6E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	52	ShieldSwordWCut	FM_BD_161_AT09.spr	\spr\npcres\woman\FM_BD_161_AT09.spr	4281848E	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	53	GuqinWPuncture	FM_BD_144_AT10.spr	\spr\npcres\woman\FM_BD_144_AT10.spr	D1D3AAD7	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	54	GuqinWCut	FM_BD_144_AT11.spr	\spr\npcres\woman\FM_BD_144_AT11.spr	D306E4F7	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	55	DartThrow	FM_BD_161_MG01.spr	\spr\npcres\woman\FM_BD_161_MG01.spr	4D2CF84B	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	56	FreeMagic	FM_BD_161_MG02.spr	\spr\npcres\woman\FM_BD_161_MG02.spr	4E57326B	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	57	MeleeWMagic	FM_BD_161_MG03.spr	\spr\npcres\woman\FM_BD_161_MG03.spr	4B9A4F8B	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	58	RangeWMagic	FM_BD_161_MG04.spr	\spr\npcres\woman\FM_BD_161_MG04.spr	44CC99AB	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	59	DoubleWMagic	FM_BD_161_MG05.spr	\spr\npcres\woman\FM_BD_161_MG05.spr	4677D3CB	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	60	SwordShieldWMagic	FM_BD_161_MG06.spr	\spr\npcres\woman\FM_BD_161_MG06.spr	43BA6DEB	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	61	ShieldSwordWMagic	FM_BD_161_MG06.spr	\spr\npcres\woman\FM_BD_161_MG06.spr	43BA6DEB	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	62	GuqinWMagic	FM_BD_144_MG07.spr	\spr\npcres\woman\FM_BD_144_MG07.spr	6F2694AB	1	JX1:updatejx16.pak
+MainLady	Body	LadyBody.txt	159	157	63	SitDown	FM_BD_161_ZZ01.spr	\spr\npcres\woman\FM_BD_161_ZZ01.spr	2BD6FD74	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	64	JumpFly	FM_BD_161_JP01.spr	\spr\npcres\woman\FM_BD_161_JP01.spr	57D16270	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	65	RideStand	FM_BD_161_RD01.spr	\spr\npcres\woman\FM_BD_161_RD01.spr	EBB0EA3B	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	66	RideWalk	FM_BD_161_HW01.spr	\spr\npcres\woman\FM_BD_161_HW01.spr	903082FF	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	67	RideRun	FM_BD_161_HR01.spr	\spr\npcres\woman\FM_BD_161_HR01.spr	C48FD2C5	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	68	RideCut	FM_BD_161_HA01.spr	\spr\npcres\woman\FM_BD_161_HA01.spr	026F9908	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	69	RidePuncture	FM_BD_161_HA02.spr	\spr\npcres\woman\FM_BD_161_HA02.spr	1F92D328	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	70	RideMagic	FM_BD_161_HM01.spr	\spr\npcres\woman\FM_BD_161_HM01.spr	B94663D6	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	71	RideWound	FM_BD_161_HI01.spr	\spr\npcres\woman\FM_BD_161_HI01.spr	305E94DE	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	72	RideDie	FM_BD_161_HD01.spr	\spr\npcres\woman\FM_BD_161_HD01.spr	E5153009	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	73	RideStand1	FM_BD_161_RD01.spr	\spr\npcres\woman\FM_BD_161_RD01.spr	EBB0EA3B	1	JX1:updatejx15.pak
+MainLady	Body	LadyBody.txt	159	157	74	RideStand2	FM_BD_161_RD01.spr	\spr\npcres\woman\FM_BD_161_RD01.spr	EBB0EA3B	1	JX1:updatejx15.pak
