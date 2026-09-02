@@ -1956,6 +1956,8 @@ static BOOL sIsJx2ItemScript(const char* szScript)
 		"\\script\\task\\tollgate\\killer\\shashou_mibao.lua",	// [3HD C35] Sat Thu Bi Bao: thanh cong tra nil -> engine tru 1 cai
 		"\\script\\global\\mantlesystem\\",						// [ITEM-01 31/08] item_starore/item_starstone: nhanh thanh cong roi khoi main() KHONG return
 																		// -> engine phai tu tru 1, khong thi PT 4885/4887 sinh Tinh Ngoc/Khoang VO HAN
+		"\\script\\item\\item_jingtiekuang.lua",				// [DUNGLUYEN-PB 01/09] Tinh Thiet Khoang (4428): main() thanh cong roi khoi KHONG return
+		"\\script\\item\\item_jingjingkuang.lua",				// [DUNGLUYEN-PB 01/09] Tinh Tinh Khoang (4429): chi tu tru Huyen Hoa Than, khong tu tru khoang
 	};
 	if (!szScript || !szScript[0])
 		return FALSE;
@@ -4733,7 +4735,9 @@ void KItemList::SyncItem(int nIdx, int nPlace, int nX, int nY, int nPlayerIndex,
 	}
 	// [DUNGLUYEN 01/09] goi 6 o Van Cuong + seed - CHI cho mon co du lieu (trang bi da dung luyen hoac
 	// vien Van Cuong genre 8) -> vat pham thuong khong ton them byte nao. Den SAU ITEM_SYNC cung luong.
-	if (Item[nIdx].GetFusionNum() > 0 || Item[nIdx].GetGenre() == item_fusion)
+	// [DUNGLUYEN-PB 01/09] gui cho MOI trang bi HK/BK co the dung luyen (cap > 0) ke ca khi 6 o = 0 -> sau UnSmelt
+	// (ClearFusion) client duoc ghi de ve 0, khong giu Van Cuong ma toi khi relogin.
+	if (Item[nIdx].GetGenre() == item_fusion || Item[nIdx].GetFusionCap() > 0)
 	{
 		ITEM_SYNC_FUSION sFu;
 		sFu.ProtocolType = s2c_syncfusion;
@@ -5815,6 +5819,7 @@ void KItemList::SetPrice( int nIdx, int nPrice)
 	else
 	{
 		m_Items[nId].nPrice = 0;
+		Item[nGameId].m_CommonAttrib.uPrice = 0;	// [DUNGLUYEN-PB 01/09] go khoi sap = xoa gia that (truoc: uPrice dinh mai, luu DB, AddKIL chep lai -> tu bay lai sau relogin)
 	}
 }
 

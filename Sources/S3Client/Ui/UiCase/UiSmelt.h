@@ -4,7 +4,7 @@
 //   smeltsystem\smelt.ini       : the 1 "Dung luyen Van Cuong" - BigBox trang bi, SmallBox Van Cuong,
 //                                  GuideList + thanh cuon, nut Dung luyen / Huy, hieu ung, [ReturnInfo] 1..24
 //   smeltsystem\distill.ini     : the 2 "Van Cuong Thi Luyen" - SmallBox = Huyen Hoa Than, nut Tinh Che / Huy
-// Co che du lieu: give-box UOC_AFFAIR_ITEM (S2C_GIVE_BOX nType=5). Region.h = 0 trang bi | 1 nguyen lieu.
+// Co che du lieu: give-box UOC_AFFAIR_ITEM (S2C_GIVE_BOX nType=5). Region.h = 0 trang bi | 2 nguyen lieu (cot 2 khong bi trang bi rong 2 o de).
 // Nut -> GOI_ADD_UI_CMD_SCRIPT(1, "doSmeltBox" | "doUnSmeltBox"); Huy/dong -> GOI_RECOVERY_BOX_COMMAND.
 // Ket qua server bao bang Msg2Player (JX1 khong co goi s2c 0xDC cua Linux); client chi kiem so bo 2 o.
 // Thong tin mon dat vao o: GDI_FUSION_INFO (KItem::FUS_BuildInfo) in vao GuideList.

@@ -321,7 +321,7 @@ int KUiSmelt::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 		if (uParam == (unsigned int)(KWndWindow*)&m_Page[0].m_BtnCancel ||
 			uParam == (unsigned int)(KWndWindow*)&m_Page[1].m_BtnCancel)
 		{
-			OnCancel();	// Huy = thu hoi do ve tui, box van mo
+			CloseWindow(true);	// [DUNGLUYEN-PB 01/09] Huy = thu hoi do + DONG box (RecoveryBoxCmd server xoa m_dwGiveBoxId -> box mo tiep bi nuot im lang); y het UiAffairItem/UiMantleInlay/UiMantleWash
 			return 0;
 		}
 		// con lai: 2 nut the -> KWndPageSet tu doi trang
@@ -402,14 +402,15 @@ void KUiSmelt::OnItemPickDrop(ITEM_PICKDROP_PLACE* pPickPos, ITEM_PICKDROP_PLACE
 		Drop.Region.h = 0;
 		Drop.eContainer = UOC_AFFAIR_ITEM;
 	}
-	// Region.h = vai tro cua o (server doc bang GetGiveItemSlot): 0 trang bi | 1 nguyen lieu
+	// Region.h = vai tro cua o (server doc bang GetGiveItemSlot): 0 trang bi | 2 nguyen lieu
+	// [DUNGLUYEN-PB 01/09] cot 2, KHONG phai 1: trang bi rong 2 o dat tai (0,0) chiem cot 0-1 -> nX=1 bi PlaceItem tu choi
 	int nSlot = 0;
 	for (int i = 0; i < 2; i++)
 	{
 		if (pWnd == (KWndWindow*)&m_Page[i].m_BoxEquip)
 			nSlot = 0;
 		else if (pWnd == (KWndWindow*)&m_Page[i].m_BoxMat)
-			nSlot = 1;
+			nSlot = 2;
 	}
 	Pick.Region.h = nSlot;
 	Drop.Region.h = nSlot;
@@ -456,7 +457,7 @@ void KUiSmelt::UpdateItem(KUiObjAtRegion* pItem, int bAdd)
 	if (pItem->Region.v != 0)
 		return;	// hang duoi khoang chua (phien give-box khac de lai): an
 	int nSlot = pItem->Region.h;
-	if (nSlot < 0 || nSlot > 1)
+	if (nSlot != 0 && nSlot != 2)	// [DUNGLUYEN-PB 01/09] 0 = trang bi | 2 = nguyen lieu
 		return;
 	int i;
 	for (i = 0; i < 2; i++)

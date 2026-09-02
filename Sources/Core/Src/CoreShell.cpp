@@ -839,7 +839,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 		{
 			char* pszBuf = (char*)nParam;
 			pszBuf[0] = 0;
-			int nIdx = ItemSet.SearchID((DWORD)uParam);
+			int nIdx = (int)uParam;	// [DUNGLUYEN-PB 01/09] uParam = CHI SO item (Obj.uId cua GDI_AFFAIR_ITEM la pItem->nIdx), KHONG phai dwID
 			if (nIdx > 0 && nIdx < MAX_ITEM)
 			{
 				int nCo = 0;
@@ -864,7 +864,7 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 		{
 			char* pszBuf = (char*)nParam;
 			pszBuf[0] = 0;
-			int nIdx = ItemSet.SearchID((DWORD)uParam);
+			int nIdx = (int)uParam;	// [DUNGLUYEN-PB 01/09] uParam = CHI SO item (Obj.uId cua GDI_AFFAIR_ITEM la pItem->nIdx), KHONG phai dwID
 			if (nIdx > 0 && nIdx < MAX_ITEM)
 				nRet = Item[nIdx].FUS_BuildInfo(pszBuf, 1024);
 		}

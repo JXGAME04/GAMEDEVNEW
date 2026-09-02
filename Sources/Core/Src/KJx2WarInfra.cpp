@@ -2697,8 +2697,14 @@ int LuaFUS_GetItemBillType(Lua_State* L)
 	{
 		if (Item[nIdx].GetTime()->bYear > 0 || Item[nIdx].GetExpireTime() > 0)
 			nType = 1;
-		else if (Item[nIdx].m_CommonAttrib.uPrice > 0)
-			nType = 2;
+		else
+		{
+			// [DUNGLUYEN-PB 01/09] "dang bay ban" = gia trong DANH SACH sap (m_Items[].nPrice), KHONG phai uPrice:
+			// SetPrice(0) cu khong xoa uPrice va DB luu no (iiduphong9) -> mon tung bay ban / mua tu sap bi chan vinh vien.
+			int nPl = GetPlayerIndex(L);
+			if (nPl > 0 && Player[nPl].m_ItemList.GetPrice(nIdx) > 0)
+				nType = 2;
+		}
 	}
 	Lua_PushNumber(L, nType);
 	return 1;

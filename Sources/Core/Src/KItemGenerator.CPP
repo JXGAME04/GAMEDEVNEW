@@ -412,6 +412,28 @@ BOOL KItemGenerator::Get_SizeItem(IN int nItemGenre, IN int nDetailType, IN int 
 
 			}
 			break;
+		case item_fusion:	// [DUNGLUYEN-PB 01/09] vien Van Cuong - CheckFreeBoxItem(8,...) truoc day luon 0
+			{
+				const KBASICPROP_FUSION* pFus = m_BPTLib.GetFusionRecord(nParticularType);
+				if (pFus != NULL)
+				{
+					*nWidth = pFus->m_nWidth;
+					*nHeight = pFus->m_nHeight;
+					bCheck = TRUE;
+				}
+			}
+			break;
+		case item_starstone:	// [DUNGLUYEN-PB 01/09] Tinh Than Thach - cung thieu tu 29/08
+			{
+				const KBASICPROP_STARSTONE* pSt = m_BPTLib.GetStarStoneRecord(nParticularType);
+				if (pSt != NULL)
+				{
+					*nWidth = pSt->m_nWidth;
+					*nHeight = pSt->m_nHeight;
+					bCheck = TRUE;
+				}
+			}
+			break;
 		default:
 			break;
 	}
@@ -1617,11 +1639,13 @@ BOOL KItemGenerator::Gen_Fusion(IN int nParticular, IN OUT KItem* pItem, IN int 
 	if (NULL == p)
 		return FALSE;
 	*pItem = *p;
-	pItem->SetStackNum(nStackNum > 0 ? nStackNum : 1);
+	pItem->SetStackNum(1);	// [DUNGLUYEN-PB 01/09] vien KHONG xep chong (nMaxStack = 1): 1 vien = 1 seed, bo qua nStackNum
 	pItem->ClearFusion();
 	unsigned uSeed = 1;
 #ifdef _SERVER
-	uSeed = (unsigned)g_GetRandomSeed() ^ ((unsigned)nParticular * 2654435761u);
+	// [DUNGLUYEN-PB 01/09] g_GetRandomSeed() chi doi khi co g_Random -> 2 vien tao lien tiep co the trung seed;
+	// dung GetRandomNumber (tien LCG moi lan goi) nhu duong du phong trong KItemList::SmeltEquip.
+	uSeed = (unsigned)GetRandomNumber(1, 0x7FFFFFF0) ^ ((unsigned)nParticular * 2654435761u);
 	if (uSeed == 0)
 		uSeed = 1;
 #endif

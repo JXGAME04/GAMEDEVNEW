@@ -4035,6 +4035,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 			if (nCurenManaShield > 0)
 			{
 				int nManaDamage = (int)((__int64)nDamage * nCurenManaShield / 100);
+				if (nManaDamage > nDamage)
+					nManaDamage = nDamage;	// [DUNGLUYEN-PB 01/09] gac p > 100 (cong don nhieu nguon) khong cho sat thuong AM
 				if (nManaDamage > 0)
 				{
 					if (m_CurrentMana - nManaDamage >= 0)

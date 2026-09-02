@@ -698,6 +698,16 @@ int	KPlayer::LoadPlayerItemList(BYTE * pRoleBuffer , BYTE* &pItemBuffer, unsigne
 					NewItem.m_GeneratorParam.nLuck, NewItem.m_CommonAttrib.nStackNum);
 			}
 			break;
+		case item_fusion:	// [DUNGLUYEN-PB 01/09] vien Van Cuong (genre 8): duong nap DB PHAI qua Gen_Fusion nhu
+			{				// KItemSet::AddItemSet2 - khong thi NewItem genre 0 / kich thuoc 0 -> AddKIL that bai -> vien MAT sau relogin
+				bGetEquiptResult = ItemGen.Gen_Fusion(NewItem.m_CommonAttrib.nParticularType, &NewItem, NewItem.m_CommonAttrib.nStackNum);
+			}
+			break;
+		case item_starstone:	// [DUNGLUYEN-PB 01/09] Tinh Than Thach (genre 9): cung loi tu 29/08 (chua bao gio co case nap DB)
+			{
+				bGetEquiptResult = ItemGen.Gen_StarStone(NewItem.m_CommonAttrib.nParticularType, &NewItem, NewItem.m_CommonAttrib.nStackNum);
+			}
+			break;
 		}
 
 		//if (pItemData->idurability != 0)

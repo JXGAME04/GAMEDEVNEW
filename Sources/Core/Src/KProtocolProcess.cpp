@@ -6960,6 +6960,8 @@ void KProtocolProcess::c2sTradeBuy(int nIndex, BYTE* pProtocol)
 	if (Player[nIndex].m_ItemList.GetEquipmentMoney() < nPrice || nPrice == 0)
 		return;
 	int nIdx = ItemSet.AddI(&Item[pPlayer->m_Idx]);
+	if (nIdx > 0 && nIdx < MAX_ITEM)
+		Item[nIdx].m_CommonAttrib.uPrice = 0;	// [DUNGLUYEN-PB 01/09] ban sao nguoi mua khong mang gia sap nguoi ban (AddKIL chep uPrice -> nPrice: tu len sap nguoi mua)
 	
 	Player[nIndex].m_ItemList.AddKIL(nIdx,pPlayer->m_Place,pPlayer->m_X,pPlayer->m_Y);
 	

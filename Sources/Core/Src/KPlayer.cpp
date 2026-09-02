@@ -6656,6 +6656,23 @@ void	KPlayer::SendEquipItemInfo(int nTargetPlayer)
 	}
 	
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
+	// [DUNGLUYEN-PB 01/09] kem 6 o Van Cuong cua tung mon dang mac cho NGUOI XEM (client dung item tam co SetID(m_nID)
+	// -> s2cSyncItemFusion tim bang dwID). Chi gui mon co du lieu -> nguoi chua dung luyen khong ton byte nao.
+	for (i = 0; i < itempart_num; i++)
+	{
+		nIdx = m_ItemList.m_EquipItem[i];
+		if (nIdx <= 0 || nIdx >= MAX_ITEM || Item[nIdx].GetFusionNum() <= 0)
+			continue;
+		ITEM_SYNC_FUSION sFu;
+		sFu.ProtocolType = s2c_syncfusion;
+		sFu.m_dwID = Item[nIdx].GetID();
+		for (j = 0; j < KItem::FUS_MAX_SLOT; j++)
+		{
+			sFu.m_wFusionP[j] = (WORD)Item[nIdx].GetFusionP(j);
+			sFu.m_dwSeed[j] = (DWORD)Item[nIdx].GetFusionSeed(j);
+		}
+		g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sFu, sizeof(ITEM_SYNC_FUSION));
+	}
 }
 
 // DOT E (E3): tra chu thanh theo MAP NGUOI CHOI dang dung (het hardcode 78,
@@ -10789,6 +10806,24 @@ void KPlayer::SendSellItemInfo( int nTargetPlayer, int nPrcess, BOOL bUpdate)
 	}
 
 	g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sView, sizeof(sView));
+	// [DUNGLUYEN-PB 01/09] kem 6 o Van Cuong cua cac mon vua dong goi (m_nIdx = chi so server) cho nguoi xem sap
+	for (i = 0; i < k; i++)
+	{
+		nIdx = sView.m_sInfo[i].m_nIdx;
+		if (nIdx <= 0 || nIdx >= MAX_ITEM)
+			continue;
+		if (Item[nIdx].GetFusionNum() <= 0 && Item[nIdx].GetGenre() != item_fusion)
+			continue;
+		ITEM_SYNC_FUSION sFu;
+		sFu.ProtocolType = s2c_syncfusion;
+		sFu.m_dwID = Item[nIdx].GetID();
+		for (j = 0; j < KItem::FUS_MAX_SLOT; j++)
+		{
+			sFu.m_wFusionP[j] = (WORD)Item[nIdx].GetFusionP(j);
+			sFu.m_dwSeed[j] = (DWORD)Item[nIdx].GetFusionSeed(j);
+		}
+		g_pServer->PackDataToClient(Player[nTargetPlayer].m_nNetConnectIdx, (BYTE*)&sFu, sizeof(ITEM_SYNC_FUSION));
+	}
 }
 
 void KPlayer::SendSellItemCount( int nIndex )

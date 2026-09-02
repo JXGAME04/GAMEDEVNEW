@@ -868,7 +868,7 @@ enum GAMEOPERATION_INDEX
 	// Dat CUOI enum (Core + S3Client cung dich).
 	GDI_MANTLE_HIDDEN_DESC,
 
-	// [DUNGLUYEN 01/09] box dung luyen: uParam = dwID vat pham, nParam = (char*) dem >= 1024 byte -> bang
+	// [DUNGLUYEN 01/09] box dung luyen: uParam = CHI SO item (Obj.uId khay), nParam = (char*) dem >= 1024 byte -> bang
 	// thong tin (cac dong cach <enter>, co the <color>); tra so dong. Dat CUOI enum.
 	GDI_FUSION_INFO,
 

@@ -530,7 +530,9 @@ extern BOOL FUS_TraRowInfo(BOOL bPlatina, int nIndex, int* pnCap, int* pnQual);
 
 static BOOL sFUS_LaTrangBiVang(const KItemCommonAttrib* pCA)
 {
-	return pCA->nItemGenre == item_equip && pCA->nRow >= 0 &&
+	// [DUNGLUYEN-PB 01/09] nGoldId != 0 = mon sinh tu GoldItem.txt (GetGoldItemByIndex), KHONG co dong goldequip/nRow
+	// -> khong tra duoc cot 58/59, coi nhu khong dung luyen duoc (cap 0) thay vi doc nham dong 0.
+	return pCA->nItemGenre == item_equip && pCA->nRow >= 0 && pCA->nGoldId == 0 &&
 		(pCA->nItemNature == NATURE_GOLD || pCA->nItemNature == NATURE_PLATINA);
 }
 
