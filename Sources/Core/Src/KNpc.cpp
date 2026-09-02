@@ -4870,7 +4870,8 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 		if (!bIsPhysical)
 		{
 			pDes->nValue[0] += m_PhysicsMagic.nValue[0] + m_CurrentColdMagic.nValue[0];
-			pDes->nValue[1] = max(pDes->nValue[1], m_CurrentColdMagic.nValue[1] + m_CurrentColdEnhance);
+			// [HOASON 02/09g] Linux 0x0807C9C0 (nhanh phi vat ly): chi cong v0/v2, KHONG doi v1 (thoi gian dong) - addcoldmagic_v khong sinh dong bang.
+			// v1 = v1 goc + coldenhance da dat o tren (Linux 0x0807CA27) - giu.
 			pDes->nValue[2] += m_PhysicsMagic.nValue[0] + m_CurrentColdMagic.nValue[2];
 			if (nSkillID == 337 || nSkillID == 380)
 			{

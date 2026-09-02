@@ -264,86 +264,13 @@ void KNpcAttribModify::AddColdDamageV(KNpc* pNpc, void* pData)
 
 void KNpcAttribModify::AddColdMagicV(KNpc* pNpc, void* pData)
 {	
+	// [HOASON 02/09g] CHUAN LINUX 0x08097AD0 (addcoldmagic_v idx 169): CHI cong v0 vao min [0x121c] va max [0x1224] noi cong bang.
+	// Ban cu JX1 con tinh nValue[1] (thoi gian dong bang) theo bang 16 bac (toi da 64 khung) va AppendSkillEffect max() vao
+	// thoi gian dong cua chieu noi cong -> Huyen Nhan Van Yen 1358 (+20..315) lam Khi Tong Hoa Son dong bang lau hon Linux.
+	// Linux khong co khau ve 0 khi am (khong can: du lieu deu duong). Chu game duyet 02/09 (anh huong ca phai khac dung thuoc tinh nay).
 	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
-	int COLD_DAMAGE_TIME_Count_1 = 0;
-	if (pMagic->nValue[0] <= 0)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 0;
-	}
-	else if (pMagic->nValue[0] < 9)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 4;
-	}
-	else if (pMagic->nValue[0] < 18)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 8;
-	}
-	else if (pMagic->nValue[0] < 27)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 12;
-	}
-	else if (pMagic->nValue[0] < 36)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 16;
-	}
-	else if (pMagic->nValue[0] < 45)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 20;
-	}
-	else if (pMagic->nValue[0] < 54)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 24;
-	}
-	else if (pMagic->nValue[0] < 63)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 28;
-	}
-	else if (pMagic->nValue[0] < 72)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 32;
-	}
-	else if (pMagic->nValue[0] < 81)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 18;
-	}
-	else if (pMagic->nValue[0] < 90)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 40;
-	}
-	else if (pMagic->nValue[0] < 99)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 44;
-	}
-	else if (pMagic->nValue[0] < 108)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 48;
-	}
-	else if (pMagic->nValue[0] < 117)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 52;
-	}
-	else if (pMagic->nValue[0] < 126)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 56;
-	}
-	else if (pMagic->nValue[0] < 135)
-	{
-	COLD_DAMAGE_TIME_Count_1 = 60;
-	}
-	else
-	{
-	COLD_DAMAGE_TIME_Count_1 = 64;
-	}
 	pNpc->m_CurrentColdMagic.nValue[0] += pMagic->nValue[0];
 	pNpc->m_CurrentColdMagic.nValue[2] += pMagic->nValue[0];
-	if (pNpc->m_CurrentColdMagic.nValue[0] > 0 && pNpc->m_CurrentColdMagic.nValue[2] > 0)
-		pNpc->m_CurrentColdMagic.nValue[1] = COLD_DAMAGE_TIME_Count_1;
-	else
-	{
-		pNpc->m_CurrentColdMagic.nValue[0] = 0;
-		pNpc->m_CurrentColdMagic.nValue[1] = 0;
-		pNpc->m_CurrentColdMagic.nValue[2] = 0;
-	}
 }
 
 void KNpcAttribModify::AddFireDamageV(KNpc* pNpc, void* pData)
@@ -1145,9 +1072,9 @@ static void HS_AutoSkillModify(KMagicAutoSkill* pList, KNpc* pNpc, KMagicAttrib*
 	if (nFound >= 0)
 	{
 		pList[nFound].nRate += nRate;
-		if (pList[nFound].nRate <= 0)
+		if (pList[nFound].nRate == 0)
 		{
-			memset(&pList[nFound], 0, sizeof(KMagicAutoSkill));	// Linux xoa nut khi ty le ve 0
+			memset(&pList[nFound], 0, sizeof(KMagicAutoSkill));	// Linux 0x0818908F: xoa nut CHI khi tong ve dung 0; nut am giu lai (vo tac dung)
 			return;
 		}
 		if (nV2 > 0)
@@ -1157,8 +1084,15 @@ static void HS_AutoSkillModify(KMagicAutoSkill* pList, KNpc* pNpc, KMagicAttrib*
 		}
 		return;
 	}
-	if (nV2 <= 0 || nFree < 0)
-		return;		// go ma khong co muc (Linux tao nut ty le am - vo tac dung) hoac het cho
+	// [HOASON 02/09g] Linux 0x08189169: go ma chua co nut -> van tao nut (ty le am, khong ban) - chu game duyet lam dung Linux.
+	// Linux dung map khong gioi han; JX1 co MAX_AUTOSKILL o -> het cho thi thay cho nut tro (ty le <= 0).
+	if (nFree < 0)
+	{
+		for (int j = 0; j < MAX_AUTOSKILL; j++)
+			if (pList[j].nRate <= 0) { nFree = j; break; }
+		if (nFree < 0 || nV2 <= 0)
+			return;
+	}
 	pList[nFree].nSkillId = nSkillId;
 	pList[nFree].nSkillLevel = nLevel;
 	pList[nFree].nType = nType;
