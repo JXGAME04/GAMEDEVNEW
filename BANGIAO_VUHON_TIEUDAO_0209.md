@@ -168,18 +168,30 @@ Nguồn: `D:\ServerLinux\server1\script\wumumenpai\npc_wumumenpai.lua:110-167` (
 `vuhon.lua`/`tieudao.lua`: thêm lựa chọn **"Đến Vũ Hồn Đường/go_vuhon"** → `NewWorld(1042,1625,3130)` và **"Đến Tiêu Dao phái/go_tieudao"** → `NewWorld(1057,1641,3288)` (toạ độ Linux `hauquan_vuhon.lua`/`detu_xiaoyao.lua`) ở menu nhập môn (3 mục) và 3 menu thành viên (5/4/5 mục). Chưa port: nhiệm vụ nhập môn Linux (`SetTask(4406/4464)`, `nt_setTask(137,71)`), danh hiệu qua `AddNote`.
 Tool nay **idempotent thật** (chạy lại = toàn `[=]`; phần chèn-sau kiểm "phần thêm đã có"); `--chi-npc` chỉ sinh lại NPC.
 
+## 13. ĐỢT 3 (02/09 ~07:10) — 4 lỗi chủ test sau swap: NPC sai hình · chưa nhận vũ khí ở NPC test · bảng kỹ năng Tiêu Dao trống · kỹ năng Vũ Hồn thiếu thuộc tính
+
+| # | Lỗi chủ báo | Gốc (đã đo) | Vá |
+|---|---|---|---|
+| 1 | **Kỹ năng Vũ Hồn không hiện thuộc tính** | Client `ScriptError.log`: `ScriptError 4:[1] (\script\skill\wuhuntang.lua)` ×6 = `KLuaScript::ExecuteCode` lỗi khi chạy **thân chunk**. Client nạp Lua kỹ năng bằng `KLuaScript Script; Script.Init()` (`KSkills.cpp:2210-2222`, nhánh `#ifndef _SERVER`) → ctor mặc định `lua_open(100)` (`KLuaScript.cpp:6`) và `Init()` không đổi stack ⇒ **stack Lua 4 chỉ 100 ô**. `wuhuntang.lua` (client VLTK) khai `SKILLS={ 31 bảng lồng 5 tầng }` **một constructor** → "stack Overflow" (tái hiện bằng `lua4.exe -s100`, host build từ `Sources\Library\LuaLib\src`); server dùng `g_ScriptSet` (`Init()` → 1024 ô) nên không lỗi. `huashan.lua`/`xiaoyao.lua` vừa đủ 100. | `vhtd_lua_split.py`: tách `SKILLS={}` + `SKILLS.<bảng>={...}` (server+client, bản lưu `.truoc_vhtd_split_0209`); kiểm lua4: chạy chính + `dofile` ở stack 100 đều OK, giá trị `GetSkillLevelData` mọi (bảng, thuộc tính) cấp 1/10/20 giống 100 % (xiaoyao so trực tiếp; wuhuntang gốc không chạy được ở dofile). |
+| 2 | **Bảng kỹ năng Tiêu Dao trống** | `SkillDef.h:4 MAX_SKILL 2000` — id Tiêu Dao **2114–2143 ≥ 2000** → `KSkillManager` (`m_SkillInfo[MAX_SKILL]`, `m_pOrdinSkill[MAX_SKILL][64]`) bỏ qua ⇒ `AddMagic` thất bại, client không có kỹ năng để vẽ. Thêm: `MAX_FIGHTSKILL_SORTLIST 50` (`KSkillList.cpp:636`) + `FIGHT_SKILL_COUNT/UI_MAX 50` — nhân vật test học nhiều phái > 50 chiêu → chiêu học sau không vào `GDI_FIGHT_SKILLS`. | `vhtd_engine_patch3.py`: `MAX_SKILL 2300`; `MAX_FIGHTSKILL_SORTLIST 100`; `UiSkillsNew.h`/`UiSkills.h` `FIGHT_SKILL_COUNT`/`FIGHT_SKILL_UI_MAX` 100 → build lại **3 binary** (Game.exe đổi). |
+| 3 | **Chưa nhận được vũ khí 2 phái ở NPC test Ba Lăng Huyện** | `header\testgame.lua` `selvk` (menu "Nhận trang bị Xanh → Vũ khí hệ X"): vòng cận chiến `for i=0,5` (P0–5), tầm xa `for i=0,2` (P0–2). | `vhtd_testgame_vukhi.py`: cận chiến `0,8` (+P6 Triền Thủ, P7 Đao Thuẫn, P8 Thuẫn Đao), tầm xa `0,3` (+Mộc Cầm), cùng hệ chọn, cấp 10, cùng dòng thuộc tính. Bản lưu `.truoc_vhtd_0209`. |
+| 4 | **NPC Vũ Hồn/Tiêu Dao sai hình** | Tác tử kiểm bằng uid (`vhtd_npc_spr.py`, `vhtd_npc_spr_danhsach.tsv`): 227 kiểu NpcResType của 460 NPC → 865 tệp: JX1 có 829, thêm VLTK 4, thiếu cả hai 32 (NPC không spawn). **2467 passerby410 / 2607 boss202: bảng kind/normal_res/spr_info đủ, spr có trong updatejx15/16 và giống hệt VLTK** → dữ liệu hiện tại không còn lỗi. Đồng thời sửa 7 hàng `npc_normal_res_file.txt` hỏng byte GBK (passerby341_*/342/344), boss166/167 `ResFilePath`, thêm kind passerby465–468 (pak `sprvuhontieudao2.pak` 4 tệp, md5 67f57bdb, `package.ini 38=`). Khả năng: chủ test trên tiến trình client cũ / chưa nạp lại bảng. | Không sửa thêm; **cần chủ tả rõ** sau khi khởi động lại client: NPC nào, hiện thành hình gì. |
+| + | ScriptError server `tieudao.lua`/`npc_chao.lua cFuncName:(OnRevive)` | Engine gọi `OnRevive` khi spawn (`KNpc.cpp:9352`, `ScriptFuns.cpp:7346`); thiếu hàm → lỗi 4 và `KNpc::ExecuteScript` đặt `m_ActionScriptID = 0` | thêm `function OnRevive() end` vào 5 script mới (tool `--chi-npc`). |
+
+Kiểm đợt 3: build sạch 3 binary; `cmp` server = client cho `wuhuntang.lua`/`xiaoyao.lua`/`testgame.lua`... ; lua4 (engine Lua 4 build riêng, `scratchpad\lua4\lua4.exe`, cách build ghi trong memory) chạy 4 tệp skill ở stack 100 OK; `t71` = 0.
+
 ## 10. CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`) — điền md5 ở mục 11
 1. `bin\server\CoreServer.dll.moi` — swap cùng 2.
 2. `bin\client\CoreClient.dll.moi` + 3. `bin\client\Game.exe.moi` — swap cùng lúc (enum thuộc tính 310–325 phải khớp 2 bên; Game.exe có bảng ô kỹ năng 11/12).
 4. Dữ liệu đã ghi thẳng, đọc khi khởi động: server `skills.txt`, `missles.txt`, `script\**`, `settings\npcs.txt`, `magicscript.txt`, `MagicDesc.ini`, `magic_level_exp.txt`, `package.ini` (`8=maps_vuhon_tieudao.pak`), `Pak\maps_hoason2013.pak` (mới), `Pak\maps_vuhon_tieudao.pak`, `Maps\WorldSet_GameServer.ini`, `MapList.ini`, `faction\FactionInfo.ini`; client: các tệp cùng tên + `package.ini` (`36=`, `37=`), `data\sprvuhontieudao.pak`, `data\maps_vuhon_tieudao.pak`, `ui\Ui3\UiSkill*.ini`, `Spr\Ui3\UiSkills\khung_wh.spr`/`khung_xy.spr`, `settings\gamesetting.ini`, `NpcRes\*`.
 5. Nghiệm thu: (a) log server không ScriptError khi boot; nhân vật hệ Hoả/Thổ chưa phái gặp "Vũ Hồn Hậu Quân"/"Tiêu Dao Mật Sứ" ở Ba Lăng Huyện (53) → gia nhập → bảng kỹ năng F? hiện khung mới; (b) học kỹ năng qua NPC `hocvocong` "Học võ công môn phái Vũ Hồn/Tiêu Dao"; (c) mô tả kỹ năng không còn `<color>` thô; (d) **kỹ năng Vũ Hồn/Cầm Pháp chỉ dùng được sau khi có vũ khí thuẫn/cầm (mục 8)**; kỹ năng Tiêu Dao Kiếm Pháp (EqtLimit 0) dùng kiếm được ngay; (e) map 987 Hoa Sơn vào được (mục 7).
 
-## 11. Bộ .moi (Core build 06:17 sau patch2 WORD; Game.exe 05:09 — không tham chiếu PLAYER_SYNC nên không build lại)
+## 11. Bộ .moi (build 06:58–06:59 sau patch3; đủ 3 tệp, Game.exe ĐỔI)
 
 | Tệp | Byte | md5 (8) | Giờ |
 |---|---|---|---|
-| `server\CoreServer.dll.moi` | 18.251.776 | `0a0cc352` | 06:19 |
-| `client\CoreClient.dll.moi` | 2.443.776 | `f52ddc8e` | 06:19 |
-| `client\Game.exe.moi` | 1.374.208 | `359536c5` | 05:20 |
+| `server\CoreServer.dll.moi` | 18.252.288 | `6084cd4e` | 07:02 |
+| `client\CoreClient.dll.moi (đã swap, đang chạy)` | 2.444.288 | `c25890a5` | 07:02 |
+| `client\Game.exe.moi (đã swap, đang chạy)` | 1.374.720 | `1ba35427` | 07:02 |
 
-HEAD `6a63af68`+ (superset đợt g `d715746b` + bot đợt d). **Swap 3 tệp cùng lúc — bắt buộc vì gói PLAYER_SYNC/PLAYER_NORMAL_SYNC đổi kích cỡ (+1 byte).** Goddess/WAuto không đổi.
+**Swap 3 tệp cùng lúc** (WORD giao thức + MAX_SKILL 2300 hai bên + Game.exe bảng 100 ô). Sau swap: khởi động lại client để nạp lại `skills.txt`/Lua/`npcs.txt`/bảng NpcRes/pak 36–38.
