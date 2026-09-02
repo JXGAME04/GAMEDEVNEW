@@ -74,7 +74,17 @@ def d2_huashan():
         seg = s[m.start(): seg_end if seg_end > 0 else len(s)]
         if new in seg: print("  [=] %s duoming_start.autoreplyskill da 5 s / 1..10 %%" % side); continue
         if seg.count(old) != 1: raise SystemExit("neo autoreplyskill %d lan trong %s" % (seg.count(old), p))
-        s = s[:m.start()] + seg.replace(old, new + "\t-- [VHTD 02/09i] GIA DINH theo tooltip VLTK chu gui: hoi chieu 5 s, ty le 10 % (Level Up/Linux: 15 s, 1..3 %)") + s[m.start() + len(seg):]
+        # KHONG chen chu thich "--" giua dong: 02/09 13:20 chu thich nuot dau "}," -> huashan.lua loi cu phap -> "skill Hoa Son mat het sach thuoc tinh"
+        s = s[:m.start()] + seg.replace(old, new) + s[m.start() + len(seg):]
+        # bat buoc: kiem cu phap ban MOI bang lua4 -s100 (stack client) TRUOC khi ghi
+        import subprocess
+        tmpf = p + ".p7tmp"; io.open(tmpf, "w", encoding="latin-1", newline="").write(s)
+        chk = os.path.join(os.environ.get("TEMP", "."), "_t_p7.lua")
+        io.open(chk, "w", encoding="latin-1", newline="\n").write('SKILLS={}\ndofile("%s")\nlocal n=0 for k,v in SKILLS do n=n+1 end print("bang",n)\n' % tmpf.replace("\\", "/"))
+        r = subprocess.run([r"D:\GAMEDEVNEW\ReverseTools\lua4\lua4.exe", "-s100", chk], capture_output=True)
+        os.remove(tmpf)
+        if r.returncode != 0 or b"bang" not in r.stdout: raise SystemExit("lua4 loi sau khi sua: " + r.stderr.decode("latin-1")[:200])
+        print("  lua4 -s100 OK:", r.stdout.decode("latin-1").strip())
         wr(p, s, "duoming_start.autoreplyskill 5 s / 1..10 %")
 
 if __name__ == "__main__":
