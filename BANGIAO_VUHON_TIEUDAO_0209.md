@@ -139,6 +139,18 @@ Chỉ số engine phải giữ: `KItemGenerator.CPP:302/478/1415` record = `P*10
 - `t71_quet_goi_nil_thanchunk.py`: 0; 18 tệp script: không `EF BF BD`, ngoặc `{}` cân, CRLF (startgame.lua có 5 LF lẻ từ trước).
 - Mã hoá: mọi chữ Việt tự viết dùng bộ `vn_to_octal.unicode_to_tcvn3_bytes` (skill swordonline-dev) — bảng tự gõ ban đầu SAI vị trí dấu, đã thay và ghi lại (gamesetting.ini, MagicDesc, script).
 
+## 9.1 PHẢN BIỆN (tác tử đối kháng, chỉ đọc) → vá `vhtd_engine_patch1c.py` (marker `[VHTD 02/09c]`)
+
+| # | Mức | Phát hiện (tệp:dòng trước vá) | Vá |
+|---|---|---|---|
+| A1 | **Lỗi chắc chắn** | `HS_OnStateRemoved` (`KNpc.cpp:3419-3426`): `cast_when_buff_removed = {1991,-1,1984}` — cấp −1 lấy cấp của 1984 (kỹ năng **120**), chưa học → `GetCurrentLevel` = 0 → mã cũ ép cấp 1 ⇒ mọi người có 1982 (cấp 70) được 1991 = `resume_life_p` hồi **30 % máu miễn phí** | chưa học kỹ năng tham chiếu → **không cast** (`continue`) |
+| A2 | **Lỗi chắc chắn** | `HS_AutoCastTick()` đặt trong khối `if (!(m_LoopFrames % GAME_UPDATE_TIME))` (`KNpc.cpp:1119`, = 10 khung) → chu kỳ 18 khung (2117 Âm Luật, 2134 Phất Y) thành 20; hộ thuẫn 17 khung hở 3 khung/chu kỳ. Khai thác: `UpdataCurData` → `HS_ResetVhtd` (memset `m_CastSkill`) → `ReCalcState` tạo mục mới `dwNextCastTime = now` ⇒ đổi trang bị/lên cấp = **+tầng Nộ/Âm Luật tức thì** | tick chuyển ra **mỗi khung** (đúng Linux 0x0808BEC0); `AutoCastSkill`: mục **mới** tạo → lần đầu sau `wait` khung, mục cũ giữ đồng hồ |
+| B1 | Nghi ngờ | `ReceiveDamage` bất tử `return TRUE` = "trúng" → `KMissle.cpp:1266-1311`, `KSkills.cpp:2427-2456` vẫn áp trạng thái (choáng/độc) lên người bất tử | đòn của **địch** → `return FALSE` (trượt: không sát thương, không trạng thái); buff tự thân/phe ta (2130/2131/1989/2117 đi qua `ReceiveDamage(self)`) vẫn qua |
+| B2 | Nghi ngờ (cân bằng) | `lock_life` chỉ kẹp khi máu **đang trên** ngưỡng; máu đã ≤ khoá (100..3400 tuyệt đối của 1982) thì buff vô tác dụng | theo nghĩa chữ chế độ 1 "không thể giảm dưới X": máu ≤ khoá → sát thương 0 (cả `CalcDamage` và khe chí tử). **Chủ cân nhắc** nếu muốn khác |
+| B3 | Nghi ngờ | `KNpc::Cast(int,int)` (`KNpc.cpp:5788`) không kiểm NULL `GetSkill` — nay gọi bằng id từ dữ liệu | thêm `if (!pOrdinSkill) return;` |
+| B4 | Nghi ngờ | `DoSkill` ép `(KSkill*)pSkill` — `KThiefSkill` (style 13) không kế thừa KSkill (dữ liệu hiện không có style 13) | chỉ ép khi `eStyle != SKILL_SS_Thief` |
+| C | Ghi chú | desync `cost_sp`/`forbit_attack` (client vẫn diễn hoạt + trừ nội lực cục bộ, server im lặng) — đã khai mục 3; `HS_ResetBuffTime` đúng nạn nhân/đúng dấu, chỉ lệch đồng hồ icon client; `lightingdamage_p` ô [12] không đôi sát thương, **tooltip client chiêu cầm không hiện dòng Lôi** (`KPlayer.cpp ~10035` chỉ xét `_v`); duyệt `m_StateSkillList` khi cast không UAF; `#ifdef _SERVER` nhất quán; bảng tên/enum 326 = 325+1 khớp; Lua: menu 9/13 mục đúng, Say ≤ 390/512 byte, `doiphai1` nCurFac = nsel+1 khớp hệ; `Include(...npcmonphai\FactionHelper.lua)` 1 gạch chéo sao chép từ hoason.lua — vô hại (`gianhapmonphai` ở factionhead.lua:21); `addskillexp1`/`skill_skillexp_v` không có trong KMagicDesc → bỏ qua im lặng (quy ước Hoa Sơn: exp qua magic_level_exp.txt) | không đổi |
+
 ## 10. CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`) — điền md5 ở mục 11
 1. `bin\server\CoreServer.dll.moi` — swap cùng 2.
 2. `bin\client\CoreClient.dll.moi` + 3. `bin\client\Game.exe.moi` — swap cùng lúc (enum thuộc tính 310–325 phải khớp 2 bên; Game.exe có bảng ô kỹ năng 11/12).
