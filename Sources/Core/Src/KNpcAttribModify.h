@@ -113,6 +113,18 @@ private:
 	void	IgnoreNegativeStateP(KNpc* pNpc, void* pData);
 	void	AutoReplySkill(KNpc* pNpc, void* pData);
 	void	AutoRescueSkill(KNpc* pNpc, void* pData);
+	void	AutoCastSkill(KNpc* pNpc, void* pData);		// [VHTD 02/09]
+	void	SpecialPointBase(KNpc* pNpc, void* pData);	// [VHTD 02/09]
+	void	SpecialPointAdd(KNpc* pNpc, void* pData);	// [VHTD 02/09]
+	void	LockLife(KNpc* pNpc, void* pData);			// [VHTD 02/09]
+	void	ResumeLifeP(KNpc* pNpc, void* pData);		// [VHTD 02/09]
+	void	LifeReplenishDecP(KNpc* pNpc, void* pData);	// [VHTD 02/09]
+	void	UnravelEffect(KNpc* pNpc, void* pData);		// [VHTD 02/09]
+	void	AddLightingMagicP(KNpc* pNpc, void* pData);	// [VHTD 02/09]
+	void	HideBodyUnlock(KNpc* pNpc, void* pData);	// [VHTD 02/09]
+	void	Invincibility(KNpc* pNpc, void* pData);		// [VHTD 02/09]
+	void	ForbitAttack(KNpc* pNpc, void* pData);		// [VHTD 02/09]
+	void	MeleeReturnResP(KNpc* pNpc, void* pData);	// [VHTD 02/09]
 	void	ReturnResP(KNpc* pNpc, void* pData);
 	void	SkillEnhanceP(KNpc* pNpc, void* pData);
 	// [KM 27/08b] sat thuong theo he (Khi Doanh Dan Dien)

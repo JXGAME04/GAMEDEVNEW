@@ -97,6 +97,7 @@ KSkill::KSkill()
 	m_bByMissle = FALSE;
 	m_bIsPhysical = FALSE;
 	m_nCost = 0;
+	m_nCostSpKey = 0; m_nCostSp = 0;	// [VHTD 02/09]
 	m_nMinTimePerCast = 0;
 	m_nMinTimePerCastOnHorse = 0;
 	m_nChildSkillNum = 0;
@@ -2196,6 +2197,7 @@ void		KSkill::LoadSkillLevelData(unsigned long  nLevel /* =0*/, int nParam)
 	m_nAddSkillDamageNum = 0;
 	m_nImmediateAttribsNum = 0;
 	m_nStateAttribsNum	= 0;		
+	m_nCostSpKey = 0; m_nCostSp = 0;	// [VHTD 02/09]
 		
 	char szSettingScriptName[MAX_PATH];
 	char szSettingNameValue[100];
@@ -2514,6 +2516,31 @@ BOOL	KSkill::ParseString2MagicAttrib(unsigned long ulLevel, char * szMagicAttrib
 				m_AddSkillDamage[m_nAddSkillDamageNum].nValue[1] = nValue2; 
 				m_AddSkillDamage[m_nAddSkillDamageNum].nValue[2] = nValue3; 
 				m_nAddSkillDamageNum++;
+				return TRUE;
+			}
+			// [VHTD 02/09] thuoc tinh moi Vu Hon / Tieu Dao (client VLTK)
+			if (i == magic_cost_sp)	// dieu kien tang: {id khoa, 0, so tang} -> muc ky nang, KHONG ap len muc tieu
+			{
+				m_nCostSpKey = nValue1;
+				m_nCostSp = nValue3;
+				return TRUE;
+			}
+			if (i == magic_lightingdamage_p)	// sat thuong Loi % -> o damage[12] (cung o voi lightingdamage_v)
+			{
+				m_DamageAttribs[12].nAttribType = i;
+				m_DamageAttribs[12].nValue[0] = nValue1;
+				m_DamageAttribs[12].nValue[1] = nValue2;
+				m_DamageAttribs[12].nValue[2] = nValue3;
+				m_nDamageAttribsNum ++;
+				return TRUE;
+			}
+			if (i == magic_reset_bufftime)	// ap NGAY moi don trung (khong tao nut trang thai -1 tren nan nhan)
+			{
+				m_ImmediateAttribs[m_nImmediateAttribsNum].nAttribType = i;
+				m_ImmediateAttribs[m_nImmediateAttribsNum].nValue[0] = nValue1;
+				m_ImmediateAttribs[m_nImmediateAttribsNum].nValue[1] = nValue2;
+				m_ImmediateAttribs[m_nImmediateAttribsNum].nValue[2] = nValue3;
+				m_nImmediateAttribsNum ++;
 				return TRUE;
 			}
 			if (i > magic_skill_begin && i < magic_skill_end)
@@ -2971,6 +2998,18 @@ void	KSkill::GetDesc(unsigned long ulSkillId, unsigned long ulCurLevel, char * p
 			break;
 		case 5:
 			g_GameSetting.GetString("WeaponLimit", "5", "", szTemp, sizeof(szTemp));
+			strcat(pszMsg, szTemp);
+			break;
+		case 7:	// [VHTD 02/09] Dao Thuan (Vu Hon)
+			g_GameSetting.GetString("WeaponLimit", "7", "", szTemp, sizeof(szTemp));
+			strcat(pszMsg, szTemp);
+			break;
+		case 8:	// [VHTD 02/09] Thuan Dao (Vu Hon)
+			g_GameSetting.GetString("WeaponLimit", "8", "", szTemp, sizeof(szTemp));
+			strcat(pszMsg, szTemp);
+			break;
+		case 103:	// [VHTD 02/09] Cam (Tieu Dao) = range particular 3 + 100
+			g_GameSetting.GetString("WeaponLimit", "103", "", szTemp, sizeof(szTemp));
 			strcat(pszMsg, szTemp);
 			break;
 		case 101:

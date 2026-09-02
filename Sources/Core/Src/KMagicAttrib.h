@@ -314,7 +314,22 @@ enum MAGIC_ATTRIB
 	magic_anti_allres_p,					//307	[KM 01/09] ban KHONG-DUONG cua 224 anti_allres_yan_p (cung handler AntiAllResP)
 	magic_normal_reserve10,					//308	[PB 01/09] DE TRONG: he pet dung 308 'Uy luc Dong Hanh' (petsys\attribname.txt, petequip_def.lua) - khong duoc gan handler
 	magic_anti_sorbdamage_p,				//309	[KM 01/09] ban KHONG-DUONG cua 269 anti_sorbdamage_yan_p (cung handler, don vi phan nghin)
-	magic_normal_end,						//310
+	magic_autocastskill,	//310	[VHTD 02/09] 310 VLTK/Linux 0x08097420: tu thi trien ky nang con theo chu ky {id*256+cap, 1=tinh CD/-1, khung*256+ty le}
+	magic_special_point_base,	//311	[VHTD 02/09] 311 VLTK: bo dem tang (No 1976 / Am Luat 2116) {id khoa, -1 buff/0, tran tang}
+	magic_special_point_add,	//312	[VHTD 02/09] 312 VLTK: cong tang vao bo dem {id khoa, 0, so tang}
+	magic_cost_sp,			//313	[VHTD 02/09] 313 VLTK: dieu kien thi trien = du tang, thi trien thi tru {id khoa, 0, so tang} (xu ly o KSkill/KNpc::DoSkill)
+	magic_lock_life,		//314	[VHTD 02/09] 314 VLTK: khoa sinh luc {gia tri, khung, che do 1 = khong thap hon}
+	magic_cast_when_buff_removed,	//315	[VHTD 02/09] 315 VLTK: buff het -> phong ky nang {id, cap (-1 = cap cua v2), id tham chieu}
+	magic_reset_bufftime,	//316	[VHTD 02/09] 316 VLTK: dat lai thoi gian buff {id buff, -1, 0} tren muc tieu (immediate)
+	magic_resume_life_p,	//317	[VHTD 02/09] 317 VLTK: hoi % sinh luc toi da {%, khung}
+	magic_lifereplenish_dec_p,	//318	[VHTD 02/09] 318 VLTK: giam hieu suat hoi sinh luc {%, khung}
+	magic_unravel_effect,	//319	[VHTD 02/09] 319 VLTK: Ta luc {diem} - CHUA RO CO CHE, chi luu + mo ta
+	magic_lightingdamage_p,	//320	[VHTD 02/09] 320 VLTK: sat thuong Loi % (theo noi cong Loi cua nguoi phat) - o damage[12]
+	magic_addlightingmagic_p,	//321	[VHTD 02/09] 321 VLTK: noi cong Loi %
+	magic_hidebodyunlock,	//322	[VHTD 02/09] 322 VLTK: an than {1, khung}
+	magic_invincibility,	//323	[VHTD 02/09] 323 VLTK/Linux 0x080961B0: bat tu {1, khung}
+	magic_forbit_attack,	//324	[VHTD 02/09] 324 VLTK/Linux 0x08096150: cam cong kich {1, khung}
+	magic_normal_end,						//325	[VHTD 02/09]
 };
 
 extern const char MAGIC_ATTRIB_STRING[magic_normal_end + 1][100] ; 

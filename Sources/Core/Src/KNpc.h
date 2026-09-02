@@ -369,6 +369,23 @@ public:
 	KMagicAutoSkill 	m_RescueSkill[MAX_AUTOSKILL];
 	KMagicAutoSkill 	m_AttackSkill[MAX_AUTOSKILL];
 	KMagicAutoSkill 	m_DeathSkill[MAX_AUTOSKILL];
+	KMagicAutoSkill 	m_CastSkill[MAX_AUTOSKILL];	// [VHTD 02/09] autocastskill: tu phong theo chu ky (Linux +0x182c)
+	struct { int nKey; int nCount; int nMax; } m_HSSp[MAX_HS_SP];	// [VHTD 02/09] bo dem tang No (1976) / Am Luat (2116)
+	int					m_nHSLockLife;			// [VHTD 02/09] lock_life gia tri
+	int					m_nHSLockLifeMode;		// [VHTD 02/09] lock_life che do (1 = khong thap hon)
+	BOOL				m_bHSInvincible;		// [VHTD 02/09] invincibility
+	BOOL				m_bHSForbidAttack;		// [VHTD 02/09] forbit_attack
+	int					m_nHSAddLightMagicP;	// [VHTD 02/09] addlightingmagic_p
+	int					m_nHSMeleeReturnResP;	// [VHTD 02/09] melee_returnres_p
+	int					m_nHSUnravel;			// [VHTD 02/09] unravel_effect (chua co co che)
+	// [VHTD 02/09] ham dung ca 2 ben (KNpcAttribModify goi HS_SpAdd) - khai bao ngoai #ifdef _SERVER
+	void				HS_AutoCastTick();				// [VHTD 02/09] moi khung: autocastskill
+	void				HS_OnStateRemoved(KStateNode* pNode);	// [VHTD 02/09] cast_when_buff_removed
+	void				HS_ResetBuffTime(int nBuffSkillId);	// [VHTD 02/09] reset_bufftime
+	int					HS_SpGet(int nKey);				// [VHTD 02/09] so tang hien co
+	void				HS_SpAdd(int nKey, int nAdd);		// [VHTD 02/09]
+	BOOL				HS_SpCost(int nKey, int nCost);		// [VHTD 02/09] tru tang, FALSE neu khong du
+	void				HS_ResetVhtd();					// [VHTD 02/09] reset truong tinh lai thuoc tinh (khong reset so tang)
 	int					m_CurrentIgnoreNegativeStateP;
 	int					m_CurrentFireEnhance;			// 火加强
 	int					m_CurrentColdEnhance;			// 冰加强
@@ -376,7 +393,7 @@ public:
 	int					m_CurrentLightEnhance;			// 电加强
 	int					m_CurrentAddPhysicsDamage;		// 直接的物理伤害加强点数
 	int					m_CurrentAddPhysicsMagic;		// Sat thuong vat ly noi cong
-	int					m_CurrentMeleeEnhance[MAX_MELEE_WEAPON+1];	// 近程物理加强
+	int					m_CurrentMeleeEnhance[MAX_MELEE_WEAPON_VHTD+1];	// [VHTD 02/09] 0..8 vu khi (7/8 thuan) + 9 du	// 近程物理加强
 	int					m_CurrentRangeEnhance;			// 远程物理加强
 	int					m_CurrentHandEnhance;			// 空手物理加强
 	int					m_CurrentSerisesEnhance;

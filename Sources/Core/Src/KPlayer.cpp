@@ -2945,6 +2945,7 @@ void	KPlayer::UpdataCurData()
 	Npc[m_nIndex].m_CurrentAntiPoisonTimeReduceP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentDoHurtP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentAntiDoHurtP = 0;	// [PF 31/08k]
+	Npc[m_nIndex].HS_ResetVhtd();	// [VHTD 02/09] (so tang No/Am Luat GIU)
 	Npc[m_nIndex].m_CurrentManaReplenishPercent = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentAntiPhysicsResYanP = 0;	// [PF 31/08k]
 	Npc[m_nIndex].m_CurrentAntiFireResYanP = 0;	// [PF 31/08k]

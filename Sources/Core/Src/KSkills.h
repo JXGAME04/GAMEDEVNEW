@@ -73,6 +73,8 @@ private:
 	BOOL				m_bBaseSkill;			//	是否为最基本技能
 	BOOL				m_bByMissle;			//	当由父技能产生时，是否是根据玩家为基点还是以当前的子弹为基点
 	BOOL				m_bIsPhysical;			
+	int					m_nCostSpKey;			// [VHTD 02/09] cost_sp
+	int					m_nCostSp;				// [VHTD 02/09] cost_sp
 	int					m_nCost;				//	技能使用时所需要花费的内力、体力、精力、金钱的类型
 	NPCATTRIB			m_nSkillCostType;		//	发该技能所需的内力、体力等的消耗
 	int					m_nMinTimePerCast;		//	发该技能的最小间阁时间
@@ -175,6 +177,9 @@ public:
 	void				LoadSkillLevelData(unsigned long  ulLevel , int nParam); 
 	friend	class		KMissle;
 	int					GetSkillCost(void *)const{return m_nCost;};
+	int					GetCostSpKey() const { return m_nCostSpKey; };	// [VHTD 02/09] cost_sp: id ky nang khoa (1976 No / 2116 Am Luat)
+	int					GetCostSp() const { return m_nCostSp; };		// [VHTD 02/09] cost_sp: so tang can
+	int					GetStateAttribsNum() const { return m_nStateAttribsNum; };	// [VHTD 02/09]
 	NPCATTRIB			GetSkillCostType()const{return m_nSkillCostType;};
 	BOOL				GetItemLimit(int)const;
 	CLIENTACTION		GetActionType()const{return m_nCharActionId;};

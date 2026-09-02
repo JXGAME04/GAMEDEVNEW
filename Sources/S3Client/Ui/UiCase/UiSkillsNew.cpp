@@ -355,7 +355,17 @@ static const std::unordered_map<unsigned int, int> g_uIdToIndexMap = {
 	{ 1378, 17 },  // Khi Chan Son Ha (40)
 	{ 1379, 18 },  // Khi Quan Truong Hong (50)
 	{ 1365, 19 },  // Tu Ha Kiem Khi (120)
-	{ 1370, 20 }   // Hao Nhien Chi Khi (tien giai)
+	{ 1370, 20 },  // Hao Nhien Chi Khi (tien giai)
+	// Faction 11 Vu Hon [VHTD 02/09] - o theo [Skill_11_i] (cot Thuan Phap / Dao Phap / Ho Tro / 120+)
+	{ 1972, 0 }, { 1965, 1 }, { 1963, 2 }, { 1967, 3 }, { 1969, 4 },
+	{ 1974, 6 }, { 1977, 7 }, { 1979, 8 }, { 1981, 9 }, { 1983, 10 }, { 1985, 11 },
+	{ 1964, 12 }, { 1975, 13 }, { 1976, 14 }, { 1980, 15 }, { 1971, 16 }, { 1982, 17 },
+	{ 1984, 18 }, { 1986, 19 },
+	// Faction 12 Tieu Dao [VHTD 02/09] - o theo [Skill_12_i] (cot Kiem Phap / Cam Phap / Ho Tro / 120+)
+	{ 2114, 0 }, { 2118, 1 }, { 2120, 2 }, { 2124, 3 }, { 2129, 4 },
+	{ 2136, 6 }, { 2138, 7 }, { 2140, 8 }, { 2141, 9 }, { 2142, 10 }, { 2123, 11 },
+	{ 2115, 12 }, { 2137, 13 }, { 2116, 14 }, { 2121, 15 }, { 2122, 16 },
+	{ 2127, 18 }, { 2132, 19 }
 	//{ 210,   22 }, // Khinh cong
 };
 
@@ -808,7 +818,8 @@ void KUiSkillsNew::LoadScheme(const char* pScheme)
 			m_pSelf->GetPosition(&nX, &nY);
 			m_pSelf->SetPosition(nX + dX, nY + dY);
 			if (Info.nFirstAddFaction == 8 || Info.nFirstAddFaction == 4	
-				|| Info.nFirstAddFaction == 5 || Info.nFirstAddFaction == 6 || Info.nFirstAddFaction == 10) {	// [HOASON 01/09]
+				|| Info.nFirstAddFaction == 5 || Info.nFirstAddFaction == 6 || Info.nFirstAddFaction == 10
+				|| Info.nFirstAddFaction == 11 || Info.nFirstAddFaction == 12) {	// [HOASON 01/09] [VHTD 02/09]
 				m_pSelf->m_Close.GetPosition(&nX, &nY);
 				m_pSelf->m_Close.SetPosition(nX - 30, nY);
 			}

@@ -181,6 +181,20 @@ KNpcAttribModify::KNpcAttribModify()
 	ProcessFunc[magic_anti_coldres_yan_p] = &KNpcAttribModify::AntiColdResYanP;	// [PF 31/08k]
 	ProcessFunc[magic_anti_poisonres_yan_p] = &KNpcAttribModify::AntiPoisonResYanP;	// [PF 31/08k]
 	ProcessFunc[magic_anti_lightingres_yan_p] = &KNpcAttribModify::AntiLightingResYanP;	// [PF 31/08k]
+	// [VHTD 02/09] Vu Hon / Tieu Dao (client VLTK)
+	ProcessFunc[magic_anti_lightingres_p] = &KNpcAttribModify::AntiLightingResYanP;	// chu game bo (Duong): cung handler (Linux 0x08096B50 cung += vao [0x12d8])
+	ProcessFunc[magic_autocastskill] = &KNpcAttribModify::AutoCastSkill;
+	ProcessFunc[magic_special_point_base] = &KNpcAttribModify::SpecialPointBase;
+	ProcessFunc[magic_special_point_add] = &KNpcAttribModify::SpecialPointAdd;
+	ProcessFunc[magic_lock_life] = &KNpcAttribModify::LockLife;
+	ProcessFunc[magic_resume_life_p] = &KNpcAttribModify::ResumeLifeP;
+	ProcessFunc[magic_lifereplenish_dec_p] = &KNpcAttribModify::LifeReplenishDecP;
+	ProcessFunc[magic_unravel_effect] = &KNpcAttribModify::UnravelEffect;
+	ProcessFunc[magic_addlightingmagic_p] = &KNpcAttribModify::AddLightingMagicP;
+	ProcessFunc[magic_hidebodyunlock] = &KNpcAttribModify::HideBodyUnlock;
+	ProcessFunc[magic_invincibility] = &KNpcAttribModify::Invincibility;
+	ProcessFunc[magic_forbit_attack] = &KNpcAttribModify::ForbitAttack;
+	ProcessFunc[magic_melee_returnres_p] = &KNpcAttribModify::MeleeReturnResP;
 	ProcessFunc[magic_expenhance_s] = &KNpcAttribModify::ExpSkillsEnhanceP;// Add magic x2 Skill
 	ProcessFunc[magic_expvip] = &KNpcAttribModify::ExpSkillsVIP;// VIP
 }
@@ -317,7 +331,7 @@ void KNpcAttribModify::AddPhysicsDamageP(KNpc* pNpc, void* pData)
 	
 	if (nType == WEAPON_ALL)
 	{
-		for (int i = 0; i < (MAX_MELEE_WEAPON + 1); i++)
+		for (int i = 0; i < MAX_MELEE_WEAPON_VHTD; i++)	// [VHTD 02/09] 0..8 (them o 7/8 thuan)
 		{
 			pNpc->m_CurrentMeleeEnhance[i] += pMagic->nValue[0];
 		}
@@ -334,7 +348,7 @@ void KNpcAttribModify::AddPhysicsDamageP(KNpc* pNpc, void* pData)
 	}
 	else if (nType == WEAPON_MELEE_ALL)
 	{
-		for (int i = 0; i < (MAX_MELEE_WEAPON + 1); i++)
+		for (int i = 0; i < MAX_MELEE_WEAPON_VHTD; i++)	// [VHTD 02/09] 0..8 (them o 7/8 thuan)
 		{
 			pNpc->m_CurrentMeleeEnhance[i] += pMagic->nValue[0];
 		}
@@ -342,6 +356,12 @@ void KNpcAttribModify::AddPhysicsDamageP(KNpc* pNpc, void* pData)
 	else if (nType >= 0 && nType < MAX_MELEE_WEAPON)
 	{
 		pNpc->m_CurrentMeleeEnhance[nType] += pMagic->nValue[0];
+	}
+	// [VHTD 02/09] VLTK (Linux 0x0809A7F0 map): ma 10 -> o 6, 11 -> o 7 (Dao Thuan, Vu Hon Dao Phap 1975), 12 -> o 8 (Thuan Dao, Vu Hon Thuan Phap 1964).
+	// 6..9 van la ma dac biet ALL/RANGE/MELEE/NONE cua du lieu item JX1 (KHONG doi).
+	else if (nType >= 10 && nType <= 12)
+	{
+		pNpc->m_CurrentMeleeEnhance[nType - 4] += pMagic->nValue[0];
 	}
 }
 
@@ -1109,6 +1129,116 @@ void KNpcAttribModify::AutoDeathSkill( KNpc* pNpc, void* pData )
 void KNpcAttribModify::AutoAttackSkill( KNpc* pNpc, void* pData )
 {
 	HS_AutoSkillModify(pNpc->m_AttackSkill, pNpc, (KMagicAttrib *)pData);	// [HOASON 02/09] Linux 0x08189000 (cong don / go dung khoa)
+}
+
+// [VHTD 02/09] ==================== VU HON / TIEU DAO (client VLTK) ====================
+void KNpcAttribModify::AutoCastSkill( KNpc* pNpc, void* pData )	// Linux 0x08097420: danh sach +0x182c, Fire moi khung voi ke danh -1 (chi nham minh)
+{
+	HS_AutoSkillModify(pNpc->m_CastSkill, pNpc, (KMagicAttrib *)pData);
+}
+
+// bo dem tang (No / Am Luat): v0 = id ky nang khoa, v2 = tran. Ap qua trang thai thu dong (v1 = -1) -> ap lai moi lan tinh lai thuoc tinh;
+// so tang hien co GIU (khong reset theo UpdataCurData), chi tran duoc dat lai. Gia tri dao dau (go trang thai) -> bo qua.
+void KNpcAttribModify::SpecialPointBase( KNpc* pNpc, void* pData )
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pMagic->nValue[0] <= 0)
+		return;
+	int nFree = -1;
+	for (int i = 0; i < MAX_HS_SP; i++)
+	{
+		if (pNpc->m_HSSp[i].nKey == pMagic->nValue[0])
+		{
+			pNpc->m_HSSp[i].nMax = pMagic->nValue[2];
+			if (pNpc->m_HSSp[i].nCount > pNpc->m_HSSp[i].nMax) pNpc->m_HSSp[i].nCount = pNpc->m_HSSp[i].nMax;
+			return;
+		}
+		if (nFree < 0 && pNpc->m_HSSp[i].nKey == 0) nFree = i;
+	}
+	if (nFree >= 0)
+	{
+		pNpc->m_HSSp[nFree].nKey = pMagic->nValue[0];
+		pNpc->m_HSSp[nFree].nMax = pMagic->nValue[2];
+		pNpc->m_HSSp[nFree].nCount = 0;
+	}
+}
+
+void KNpcAttribModify::SpecialPointAdd( KNpc* pNpc, void* pData )	// v0 = id khoa, v2 = so tang cong (byte thap; 1990 cu dung max*256+add)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pMagic->nValue[0] <= 0 || pMagic->nValue[2] == 0)
+		return;
+	pNpc->HS_SpAdd(pMagic->nValue[0], pMagic->nValue[2] & 0xff);
+}
+
+void KNpcAttribModify::LockLife( KNpc* pNpc, void* pData )	// {gia tri khoa, khung, che do}: 1 = mau khong thap hon gia tri (Vu Muc Di Thu 1982)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pMagic->nValue[0] > 0)
+	{
+		pNpc->m_nHSLockLife = pMagic->nValue[0];
+		pNpc->m_nHSLockLifeMode = pMagic->nValue[2];
+	}
+	else
+	{
+		pNpc->m_nHSLockLife = 0;
+		pNpc->m_nHSLockLifeMode = 0;
+	}
+}
+
+void KNpcAttribModify::ResumeLifeP( KNpc* pNpc, void* pData )	// {%, khung=1}: hoi ngay % sinh luc toi da khi ap (Trung Vu Luu Phong BUFF 1991); go -> bo qua
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pMagic->nValue[0] <= 0 || pNpc->m_CurrentLifeMax <= 0)
+		return;
+	if (pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive)
+		return;
+	int nAdd = (int)((__int64)pNpc->m_CurrentLifeMax * pMagic->nValue[0] / MAX_PERCENT);
+	pNpc->m_CurrentLife += nAdd;
+	if (pNpc->m_CurrentLife > pNpc->m_CurrentLifeMax) pNpc->m_CurrentLife = pNpc->m_CurrentLifeMax;
+}
+
+void KNpcAttribModify::LifeReplenishDecP( KNpc* pNpc, void* pData )	// giam hieu suat hoi sinh luc % (debuff Ham Son Kich 1988)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_CurrentLifeReplenishPercent -= pMagic->nValue[0];
+}
+
+void KNpcAttribModify::UnravelEffect( KNpc* pNpc, void* pData )	// 'Ta luc' (Hiep Cot Nhu Tinh 2122) - co che chua ro, chi luu de mo ta
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nHSUnravel += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::AddLightingMagicP( KNpc* pNpc, void* pData )	// noi cong Loi % (Tieu Dao Cam Phap 2137, Thien Ly Doc Hanh 2123)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nHSAddLightMagicP += pMagic->nValue[0];
+}
+
+void KNpcAttribModify::HideBodyUnlock( KNpc* pNpc, void* pData )	// {1, khung}: an than (Thap Bo Nhat Sat_Buff 2130) - dung m_HideState nhu magic_hide
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	if (pMagic->nValue[0] == 1 && pMagic->nValue[1] > 0)
+		pNpc->m_HideState.nTime = pMagic->nValue[1];
+}
+
+void KNpcAttribModify::Invincibility( KNpc* pNpc, void* pData )	// Linux 0x080961B0: byte [0x147b] = (v0 == 1)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_bHSInvincible = (pMagic->nValue[0] == 1) ? TRUE : FALSE;
+}
+
+void KNpcAttribModify::ForbitAttack( KNpc* pNpc, void* pData )	// Linux 0x08096150: byte [0x1478] = (v0 == 1)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_bHSForbidAttack = (pMagic->nValue[0] == 1) ? TRUE : FALSE;
+}
+
+void KNpcAttribModify::MeleeReturnResP( KNpc* pNpc, void* pData )	// Linux 0x08096390: [0x1264] += v0 - khang phan don CAN CHIEN (Co Tuong Bach Chien Ham 1980)
+{
+	KMagicAttrib* pMagic = (KMagicAttrib *)pData;
+	pNpc->m_nHSMeleeReturnResP += pMagic->nValue[0];
 }
 
 void KNpcAttribModify::Hide( KNpc* pNpc, void* pData )

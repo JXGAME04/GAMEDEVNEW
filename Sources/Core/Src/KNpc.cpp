@@ -407,6 +407,7 @@ void KNpc::Init()
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;
 	m_CurrentSorbDamageP = 0;
+	HS_ResetVhtd(); memset(m_HSSp, 0, sizeof(m_HSSp));	// [VHTD 02/09]
 	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
 	m_CurrentMeleeDamageReturnManaP = 0; m_CurrentRangeDamageReturnManaP = 0; m_CurrentAddBlockRateV0 = 0; m_CurrentAddBlockRateV2 = 0;	// [HOASON 01/09b]
 	m_CurrentEnhanceHitRate = 0; m_CurrentAntiEnhanceHitRate = 0;		// [KM 27/08]
@@ -1178,6 +1179,9 @@ BOOL KNpc::ProcessState()
 		}
 #endif
 	
+#ifdef _SERVER
+		HS_AutoCastTick();	// [VHTD 02/09] autocastskill (Linux 0x0808BEC0: moi khung Fire danh sach +0x182c)
+#endif
 		if (m_ActiveAuraID)
 		{
 			if (m_SkillList.GetLevel(m_ActiveAuraID) > 0)
@@ -1536,6 +1540,9 @@ BOOL KNpc::ProcessState()
 		//
 		if (pTempNode->m_LeftTime == 0)
 		{
+#ifdef _SERVER
+			HS_OnStateRemoved(pTempNode);	// [VHTD 02/09] cast_when_buff_removed (Vu Muc Di Thu 1982 -> 1991)
+#endif
 			int i;
 			for (i = 0; i < MAX_SKILL_STATE; i++)
 			{
@@ -2645,8 +2652,19 @@ void KNpc::DoSkill(int nX, int nY)
 				break;
 			case 1: //!IsPlayer() -> chuan cho ca server va client
 				AUTOLOG_EVERY(500, "[E4_SKILL_COST] npc=%d id=%u skill=%d costtype=%d cost=%d mana=%d/%d stam=%d life=%d/%d", m_Index, m_dwID, m_ActiveSkillID, (int)pSkill->GetSkillCostType(), pSkill->GetSkillCost(this), m_CurrentMana, m_CurrentManaMax, m_CurrentStamina, m_CurrentLife, m_CurrentLifeMax);
+#ifdef _SERVER
+				// [VHTD 02/09] forbit_attack (2131) va cost_sp (dieu kien tang No/Am Luat) - chi may chu (client khong biet so tang)
+				if (IsPlayer() && m_bHSForbidAttack)
+					goto Exit;
+				if (IsPlayer() && ((KSkill*)pSkill)->GetCostSpKey() > 0 && HS_SpGet(((KSkill*)pSkill)->GetCostSpKey()) < ((KSkill*)pSkill)->GetCostSp())
+					goto Exit;
+#endif
 				if(!IsPlayer() || Cost(pSkill->GetSkillCostType(), pSkill->GetSkillCost(this)))
 				{
+#ifdef _SERVER
+					if (IsPlayer() && ((KSkill*)pSkill)->GetCostSpKey() > 0)
+						HS_SpCost(((KSkill*)pSkill)->GetCostSpKey(), ((KSkill*)pSkill)->GetCostSp());	// [VHTD 02/09]
+#endif
 					#ifdef _SERVER
 					NPC_SKILL_SYNC	NetCommand;
 					
@@ -3306,6 +3324,12 @@ void KNpc::ModifyAttrib(int nAttacker, void* pData)
 			Npc[nAttacker].DetonateMissles(pMA->nValue[0] >> 8, pMA->nValue[2], pMA->nValue[0] & 0xff);
 		return;
 	}
+	if (pMA->nAttribType == magic_reset_bufftime)	// [VHTD 02/09] Tru Gian Diet Ninh 1985: dat lai thoi gian debuff 1988 tren nan nhan (this)
+	{
+		if (pMA->nValue[0] > 0)
+			HS_ResetBuffTime(pMA->nValue[0]);
+		return;
+	}
 #endif
 	g_NpcAttribModify.ModifyAttrib(this, pData);
 }
@@ -3357,6 +3381,108 @@ void KNpc::CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget)
 	}
 }
 
+// [VHTD 02/09] ==================== VU HON / TIEU DAO ====================
+void KNpc::HS_AutoCastTick()	// autocastskill: Linux 0x0808BEC0 moi khung Fire(+0x182c, this, -1) -> chi nham CHINH MINH (loai 1 -> muc tieu -1 = hong)
+{
+	if (!m_Index || m_RegionIndex < 0)
+		return;
+	if (m_Doing == do_death || m_Doing == do_revive)
+		return;
+	for (int i = 0; i < MAX_AUTOSKILL; i++)
+	{
+		KMagicAutoSkill& rA = m_CastSkill[i];
+		if (rA.nSkillId <= 0 || rA.nSkillId >= MAX_SKILL || rA.nSkillLevel <= 0 || rA.nSkillLevel >= MAX_SKILLLEVEL)
+			continue;
+		if (rA.dwNextCastTime > SubWorld[m_SubWorldIndex].m_dwCurrentTime)
+			continue;
+		if (rA.nRate < 100 && !g_RandPercent(rA.nRate))
+		{
+			rA.dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + rA.nWaitCastTime;	// Linux: hut ty le van dat lai chu ky
+			continue;
+		}
+		if (rA.nType != 1)
+			this->Cast(rA.nSkillId, rA.nSkillLevel);
+		rA.dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + rA.nWaitCastTime;
+	}
+}
+
+void KNpc::HS_OnStateRemoved(KStateNode* pNode)	// cast_when_buff_removed {id, cap (-1 = cap ky nang v2 cua chu), id tham chieu} - node luu GIA TRI DAO DAU
+{
+	if (!pNode || !m_Index || m_RegionIndex < 0)
+		return;
+	if (m_Doing == do_death || m_Doing == do_revive)
+		return;
+	for (int i = 0; i < MAX_SKILL_STATE; i++)
+	{
+		if (pNode->m_State[i].nAttribType != magic_cast_when_buff_removed)
+			continue;
+		int nSkill = -pNode->m_State[i].nValue[0];
+		int nLevel = -pNode->m_State[i].nValue[1];
+		int nRef = -pNode->m_State[i].nValue[2];
+		if (nLevel <= 0 && nRef > 0 && nRef < MAX_SKILL)
+			nLevel = m_SkillList.GetCurrentLevel(nRef);
+		if (nLevel <= 0) nLevel = 1;
+		if (nSkill > 0 && nSkill < MAX_SKILL && nLevel < MAX_SKILLLEVEL)
+			this->Cast(nSkill, nLevel);
+	}
+}
+
+void KNpc::HS_ResetBuffTime(int nBuffSkillId)	// reset_bufftime: tra thoi gian con lai cua trang thai nBuffSkillId ve thoi luong goc (nValue[1] thuoc tinh trang thai dau)
+{
+	KStateNode* pNode = (KStateNode*)m_StateSkillList.GetTail();
+	while (pNode)
+	{
+		if (pNode->m_SkillID == nBuffSkillId && pNode->m_LeftTime > 0)
+		{
+			KSkill* pS = (KSkill*)g_SkillManager.GetSkill(nBuffSkillId, pNode->m_Level);
+			if (pS && pS->GetStateAttribsNum() > 0 && pS->GetStateAttribs()[0].nValue[1] > 0)
+				pNode->m_LeftTime = pS->GetStateAttribs()[0].nValue[1];
+			return;
+		}
+		pNode = (KStateNode*)pNode->GetPrev();
+	}
+}
+#endif	// _SERVER (HS_AutoCastTick/HS_OnStateRemoved/HS_ResetBuffTime chi may chu)
+
+int KNpc::HS_SpGet(int nKey)
+{
+	for (int i = 0; i < MAX_HS_SP; i++)
+		if (m_HSSp[i].nKey == nKey) return m_HSSp[i].nCount;
+	return 0;
+}
+
+void KNpc::HS_SpAdd(int nKey, int nAdd)
+{
+	for (int i = 0; i < MAX_HS_SP; i++)
+	{
+		if (m_HSSp[i].nKey != nKey) continue;
+		m_HSSp[i].nCount += nAdd;
+		if (m_HSSp[i].nMax > 0 && m_HSSp[i].nCount > m_HSSp[i].nMax) m_HSSp[i].nCount = m_HSSp[i].nMax;
+		if (m_HSSp[i].nCount < 0) m_HSSp[i].nCount = 0;
+		return;
+	}
+}
+
+BOOL KNpc::HS_SpCost(int nKey, int nCost)
+{
+	for (int i = 0; i < MAX_HS_SP; i++)
+	{
+		if (m_HSSp[i].nKey != nKey) continue;
+		if (m_HSSp[i].nCount < nCost) return FALSE;
+		m_HSSp[i].nCount -= nCost;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void KNpc::HS_ResetVhtd()	// goi o khoi tao / RestoreNpcBaseInfo / KPlayer::UpdataCurData (truoc khi ap lai trang thai + trang bi)
+{
+	memset(m_CastSkill, 0, sizeof(m_CastSkill));
+	m_nHSLockLife = 0; m_nHSLockLifeMode = 0;
+	m_bHSInvincible = FALSE; m_bHSForbidAttack = FALSE;
+	m_nHSAddLightMagicP = 0; m_nHSMeleeReturnResP = 0; m_nHSUnravel = 0;
+}
+#ifdef _SERVER
 // [HOASON 02/09] autoreplyskill: Linux Fire(+0x1850, chu, KE DANH) tai ReceiveDamage 0x0808B4F9 (mot lan moi don, quan he DICH).
 // loai 1 -> muc tieu = ke danh (1364 Doat Menh -> 1363 Thai Nhac Tam Thanh Phong bay ve ke danh), khac -> chinh minh.
 // ty le: rate > Random(100); hoi chieu: NextCast = now + wait (khung).
@@ -4019,6 +4145,8 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 				if (nDamage > 0 && nType != damage_poison)
 				{
 					int nCurrentDmgRetPercentResist = Npc[nAttacker].m_CurrentReturnResPercent;
+					if (bIsMelee)	// [VHTD 02/09] melee_returnres_p (Linux [0x1264]): khang phan don rieng cho don can chien
+						nCurrentDmgRetPercentResist += Npc[nAttacker].m_nHSMeleeReturnResP;
 						if (nCurrentDmgRetPercentResist < 0)
 							nCurrentDmgRetPercentResist = 0;
 
@@ -4212,6 +4340,9 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		Player[m_nPlayerIdx].m_bWllsDmgCounterOn && nDamage > 0)
 		Player[m_nPlayerIdx].m_nWllsDmgCounter += (nDamage > (int)m_CurrentLife ? (int)m_CurrentLife : nDamage);
 #endif
+	// [VHTD 02/09] lock_life (Vu Muc Di Thu 1982): che do 1 - mau khong the giam duoi gia tri khoa
+	if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && nDamage > 0 && m_CurrentLife > m_nHSLockLife && m_CurrentLife - nDamage < m_nHSLockLife)
+		nDamage = m_CurrentLife - m_nHSLockLife;
 	SyncDamageInfo(nAttacker, nDamage > m_CurrentLife ? m_CurrentLife : nDamage, COMBAT_INFO_DAMAGE_LIFE, 0, bIsDS);	// [CHITU 01/09] chi tu khong con di qua day
 	AUTOLOG_EVERY(1000, "[E2-CALC-FINAL] target=%d(id=%u kind=%u) attacker=%d type=%d SATTHUONGCUOI=%d lifetruoc=%d lifesau=%d DS=%d FS=%d", m_Index, m_dwID, m_Kind, nAttacker, (int)nType, nDamage, m_CurrentLife, (m_CurrentLife - nDamage), (int)bIsDS, (int)bIsFS);
 	m_CurrentLife -= nDamage;
@@ -4344,6 +4475,8 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		return TRUE;
 
 	if (Npc[nLauncher].m_Doing == do_death || Npc[nLauncher].m_Doing == do_revive)
+		return TRUE;
+	if (m_bHSInvincible)	// [VHTD 02/09] invincibility (Thap Bo Nhat Sat_Buff 2130): khong nhan sat thuong/trang thai
 		return TRUE;
 
 
@@ -4540,6 +4673,8 @@ BOOL KNpc::ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOO
 		int nFSDamage = (int)((float)(m_CurrentLife / 4) * nFsK / 100.0f);
 		if (nFSDamage > 0)
 		{
+			if (m_nHSLockLife > 0 && m_nHSLockLifeMode == 1 && m_CurrentLife > m_nHSLockLife && m_CurrentLife - nFSDamage < m_nHSLockLife)	// [VHTD 02/09] lock_life
+				nFSDamage = m_CurrentLife - m_nHSLockLife;
 			SyncDamageInfo(nLauncher, nFSDamage > m_CurrentLife ? m_CurrentLife : nFSDamage, COMBAT_INFO_DAMAGE_LIFE, 0, TRUE);
 			m_CurrentLife -= nFSDamage;	// 0x0808B0F8 ghi thang mau
 			// [HOASON 02/09] cuu nguy khi khe chi tu dua mau xuong duoi 25% max (Linux ReceiveDamage 0x0808B0E3-0x0808B13A)
@@ -4930,7 +5065,21 @@ void KNpc::AppendSkillEffect(int nSkillID, BOOL bIsPhysical, BOOL bIsMelee, void
 	
 	pTemp++; //lighting damage[12]
 	pDes++;
-	if (pTemp->nAttribType == magic_lightingdamage_v)
+	if (pTemp->nAttribType == magic_lightingdamage_p)
+	{
+		// [VHTD 02/09] lightingdamage_p (Tieu Dao cam 2136/2138/2140/2141/2142/2143): sat thuong Loi = % cua (noi cong co ban + noi cong Loi cua nguoi phat
+		// x (100 + addlightingmagic_p)/100). Thiet ke theo mo ta client VLTK 'Sat thuong Loi: #d1-%' (khong co ban server chuan de doi chieu).
+		int nLMin = m_PhysicsMagic.nValue[0] + m_CurrentLightMagic.nValue[0] * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT;
+		int nLMax = m_PhysicsMagic.nValue[2] + m_CurrentLightMagic.nValue[2] * (MAX_PERCENT + m_nHSAddLightMagicP) / MAX_PERCENT;
+		if (nLMax < nLMin) nLMax = nLMin;
+		pDes->nAttribType = magic_lightingdamage_v;
+		pDes->nValue[0] = (int)((__int64)nLMin * pTemp->nValue[0] / MAX_PERCENT * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT);
+		pDes->nValue[1] = pTemp->nValue[1];
+		pDes->nValue[2] = (int)((__int64)nLMax * pTemp->nValue[0] / MAX_PERCENT * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT);
+		pDes->nValue[0] += (pDes->nValue[0] * DamePecentToLevel) / MAX_PERCENT;
+		pDes->nValue[2] += (pDes->nValue[2] * DamePecentToLevel) / MAX_PERCENT;
+	}
+	else if (pTemp->nAttribType == magic_lightingdamage_v)
 	{
 		pDes->nAttribType = magic_lightingdamage_v;
 		pDes->nValue[0] = pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT + (pTemp->nValue[2] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT - pTemp->nValue[0] * (MAX_PERCENT + nAddDamageP) / MAX_PERCENT) * m_CurrentLightEnhance / MAX_PERCENT;
@@ -10349,6 +10498,7 @@ void	KNpc::RestoreNpcBaseInfo()
 	m_CurrentFiveElementsEnhance = 0;
 	m_CurrentFiveElementsResist = 0;
 	m_CurrentManaToSkillEnhanceP = 0;					//#khi noi cong day tang ky nang cong kich
+	HS_ResetVhtd();	// [VHTD 02/09]
 	m_CurrentSorbDamageP = 0;								//#triet tieu sat thuong
 	m_CurrentBlockRate = 0; m_CurrentAntiBlockRate = 0;					// [KM 27/08]
 	m_CurrentMeleeDamageReturnManaP = 0; m_CurrentRangeDamageReturnManaP = 0; m_CurrentAddBlockRateV0 = 0; m_CurrentAddBlockRateV2 = 0;	// [HOASON 01/09b]

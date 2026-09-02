@@ -40,7 +40,8 @@ def main():
     # ghi pak: header 16 + index 16*n + data
     uids = sorted(got)
     n = len(uids)
-    hdr_size = 16; idx_size = 16 * n
+    # [VHTD 02/09] SUA: ban 01/09 ghi header 16 byte -> XPackFile::Open (XPackFile.cpp:101) tu choi vi uIndexTableOffset < sizeof(XPackFileHeader) = 32
+    hdr_size = 32; idx_size = 16 * n
     data = bytearray(); index = bytearray()
     off = hdr_size + idx_size
     for u in uids:
@@ -48,7 +49,7 @@ def main():
         index += struct.pack("<IIiI", u, off, len(d), len(d))   # flag 0 (RAW), csize = size
         data += d; off += len(d)
     with open(out, "wb") as w:
-        w.write(struct.pack("<4sIII", b"PACK", n, hdr_size, hdr_size + idx_size))
+        w.write(struct.pack("<4sIIII", b"PACK", n, hdr_size, hdr_size + idx_size, 0) + bytes(12))   # cSignature, uCount, uIndexTableOffset, uDataOffset, uCrc32, cReserved[12]
         w.write(index); w.write(data)
     # doi chung: doc lai bang pakdump
     f2, es2 = P.entries(out)

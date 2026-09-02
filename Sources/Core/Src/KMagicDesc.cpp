@@ -321,7 +321,22 @@ const char MAGIC_ATTRIB_STRING[][100] =
 	"anti_allres_p",					//307  [KM 01/09]
 	"normal_reserve10",				//308  [PB 01/09] de trong (pet Uy luc Dong Hanh)
 	"anti_sorbdamage_p",				//309  [KM 01/09]
-	"normal_end",						//310
+	"autocastskill",			//310 [VHTD 02/09]
+	"special_point_base",		//311 [VHTD 02/09]
+	"special_point_add",		//312 [VHTD 02/09]
+	"cost_sp",					//313 [VHTD 02/09]
+	"lock_life",				//314 [VHTD 02/09]
+	"cast_when_buff_removed",	//315 [VHTD 02/09]
+	"reset_bufftime",			//316 [VHTD 02/09]
+	"resume_life_p",			//317 [VHTD 02/09]
+	"lifereplenish_dec_p",		//318 [VHTD 02/09]
+	"unravel_effect",			//319 [VHTD 02/09]
+	"lightingdamage_p",			//320 [VHTD 02/09]
+	"addlightingmagic_p",		//321 [VHTD 02/09]
+	"hidebodyunlock",			//322 [VHTD 02/09]
+	"invincibility",			//323 [VHTD 02/09]
+	"forbit_attack",			//324 [VHTD 02/09]
+	"normal_end",						//325 [VHTD 02/09]
 };
 
 

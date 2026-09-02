@@ -409,6 +409,8 @@ enum COMBAT_INFO_TYPE
 #define		REMOTE_REVIVE_TYPE			0
 #define		LOCAL_REVIVE_TYPE			1
 #define		MAX_MELEE_WEAPON			6
+#define		MAX_MELEE_WEAPON_VHTD		9	// [VHTD 02/09] o vu khi can chien 0..8: 6 Trien Thu, 7 Dao Thuan, 8 Thuan Dao (VLTK)
+#define		MAX_HS_SP					4	// [VHTD 02/09] so bo dem tang (No/Am Luat) moi NPC
 #define		HAND_PARTICULAR			6
 #define		MAX_RANGE_WEAPON			3
 #define		MAX_ARMOR					14

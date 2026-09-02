@@ -7,7 +7,7 @@
 #define MAX_TRAIN_SKILLEXPLEVEL				20
 #define MaxMissleDir						64
 #define MAXSKILLLEVELSETTINGNUM				20  
-#define MAX_MISSLESTYLE						450
+#define MAX_MISSLESTYLE						700	// [VHTD 02/09] dan VLTK Vu Hon/Tieu Dao toi 649 (missles.txt)
 #define MISSLE_MIN_COLLISION_ZHEIGHT		0	  
 #define MISSLE_MAX_COLLISION_ZHEIGHT		20   	
 #define MAX_ADDSKILLDAMAGE					9
