@@ -316,3 +316,25 @@ Dữ liệu: so 38 dòng Hoa Sơn + 45 dòng con/sự kiện (418…430, 1410/14
 | Nhịp hồi (R > 0 nhân %, R ≤ 0 cộng thẳng; nội lực không %; thuốc × (100+p), p = −200 → âm rồi kẹp 0) | OK | — |
 | Chữ ký/`#ifdef _SERVER`/link client; encoding ASCII (0 byte ≥ 0x80 trong dòng +) | OK | — |
 | Ghi nhận ngoài phạm vi (không sửa): `SetStateSkillEffect` nhánh `nTime == 0` memset node mà không `ModifyAttrib` gỡ → mọi thuộc tính của trạng thái đó kẹt (pre-existing); `DeathSkill` còn gate cấp 120 (Linux DoDeath không gate); `dwNextCastTime >= now` lệch 1 khung so Linux `jb` → đã đổi thành `>` | — | ghi nhận |
+
+
+---
+
+## 15. ĐỢT g (02/09 ~04:00) — chủ quyết 4 lệch mục 14.4: "bỏ (Dương) làm 1 · làm 2 · làm 3 · làm 4 · làm xong tôi test luôn"
+
+Commit `d715746b`. Tool `hs_data_boyan.py` (dữ liệu) + `hs_engine_patch5.py` (engine, marker `[HOASON 02/09g]`).
+
+| Mục | Quyết | Đã làm |
+|---|---|---|
+| 1 "(Dương)" | **bỏ nhánh (Dương)** ở Hoa Sơn (không đưa cơ chế MAX hai nhánh vào engine) | Dữ liệu server + client (`skills.txt` cột LvlSetting theo tên, `huashan.lua` khoá bảng; bản lưu `.truoc_hoason_0209`): 1349 bỏ `attackspeed_yan_v` (trùng giá trị `attackspeed_v` → hiệu dụng = MAX Linux), `lifemax_yan_p`→`lifemax_p`; 1358 `lifemax_yan_p`→`lifemax_p`; 1374 `manamax_yan_p`→`manamax_p`; 1376/1381 bỏ `lifemax_yan_p` (`lifemax_p` ≥ yan mọi cấp → = MAX Linux). **Giữ `sorbdamage_yan_p`** (1376/1381): JX1 đã `max()` + đơn vị phần nghìn đúng Linux, còn `sorbdamage_p` của JX1 là phần trăm (×10) → đổi tên sẽ mạnh gấp 10. |
+| 2 addcoldmagic_v | làm chuẩn Linux | `AddColdMagicV` chỉ cộng min/max (Linux 0x08097AD0), bỏ bảng 16 bậc; `AppendSkillEffect` nhánh nội công không `max()` thời gian đông từ `m_CurrentColdMagic` (Linux 0x0807C9C0). Ảnh hưởng mọi phái dùng thuộc tính này (chủ duyệt). |
+| 3 exp kỹ năng | làm | **KHÔNG đổi — đính chính:** Linux cộng exp qua mảng 9 thuộc tính `addskillexpN` của chiêu (vòng 0x0808AA38: 60 % mỗi đòn, nạn nhân kind 1/2, v0 = id chiêu nhận, v1 = exp, `KSkillList::AddExp 0x080E5D90` có trần ngày `MAXEXP_PERDAY` 33.000.000); Hoa Sơn chỉ 1382 mang `addskillexp1` với v0 = 0 → chết ở Linux (đúng như đợt b ghi). Cơ chế "đánh quái lên exp 90/120" (`AddSkillExp90/120`, `g_Skill90ExpRate`) là của JX1 và đã áp cho 6 chiêu exp Hoa Sơn — làm "chuẩn Linux" nghĩa là Hoa Sơn **mất** exp khi đánh → giữ nguyên. |
+| 4 auto-skill âm | làm | `HS_AutoSkillModify`: xoá ô CHỈ khi tổng về đúng 0 (Linux 0x0818908F), ô âm giữ lại (vô tác dụng); gỡ mà chưa có ô → tạo ô âm (Linux 0x08189169); hết 3 ô → thay ô trơ (tỷ lệ ≤ 0) vì Linux dùng map không giới hạn. |
+
+Kiểm: `huashan.lua` server = client (cmp); `skills.txt` server ≠ client chỉ 2 dòng 1561/1562 cũ; 0 byte ≥ 0x80 trong dòng thêm của engine; build Server Release x64 + Client Release Win32 sạch.
+
+### 15.1 CHECKLIST SWAP đợt g (chủ chạy `ChayGameServer.bat`/`ChoiGame.bat`)
+1. `bin\server\CoreServer.dll.moi` — 18.246.144 byte, md5 `71664443` (03:58, HEAD `d715746b`, superset đợt f + bot đợt d).
+2. `bin\client\CoreClient.dll.moi` — 2.438.656 byte, md5 `c083d5a7` — swap **cùng** CoreServer.
+3. Dữ liệu đã ghi thẳng (server + client): `settings\skills.txt` (5 dòng 1349/1358/1374/1376/1381), `script\skill\huashan.lua` (6 chỗ) — server đọc lại khi khởi động, client khi mở lại. Game.exe/Goddess không đổi.
+4. Nghiệm thu thêm so với 14.5: mô tả 1349/1358/1374/1376/1381 không còn chữ "(Dương)", tốc độ đánh 1349 chỉ +1 lần; Huyễn Nhãn Vân Yên không còn làm chiêu nội công đóng băng lâu hơn.
