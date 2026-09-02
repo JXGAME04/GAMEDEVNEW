@@ -1,4 +1,13 @@
 #include "KCore.h"
+
+// [VHTD 02/09m] EventSkillLevel -1 (VLTK) = cap cua chinh ky nang; JX1 doi > 0 nen su kien Start/Fly/Collide/Vanish KHONG phong
+// (1965 -> 1966 vong khien Thinh Anh De Nhue Lu, 1376 -> 1377). Chi ap cho ky nang thoi VLTK (id >= 1347); ky nang co dien giu cu.
+static inline int VhEventLevel(int nEventSkillLevel, int nSkillId, int nSkillLevel)
+{
+	if (nEventSkillLevel > 0) return nEventSkillLevel;
+	if (nSkillId >= 1347 && nSkillLevel > 0 && nSkillLevel < MAX_SKILLLEVEL) return nSkillLevel;
+	return 0;
+}
 #ifdef _STANDALONE
 #include "KSG_StringProcess.h"
 #else
@@ -26,6 +35,8 @@
 #include "KMagicDesc.h"
 #include "KOption.h"
 #include "../../Engine/Src/Text.h"
+
+
 #endif
 
 #define	 NPCINDEXOFOBJECT 0
@@ -554,9 +565,10 @@ BOOL	KSkill::Cast(int nLauncher, int nParam1, int nParam2, int nWaitTime, eSkill
 		break;
 	}
 	//printf("m_bStartEvent %d %d %d\n", m_bStartEvent, m_nStartSkillId, m_nEventSkillLevel);
-	if (m_bStartEvent && m_nStartSkillId > 0 && m_nEventSkillLevel > 0)
+	int nVhEvLv = VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel);	// [VHTD 02/09m]
+	if (m_bStartEvent && m_nStartSkillId > 0 && nVhEvLv > 0)
 	{
-		KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, m_nEventSkillLevel);
+		KSkill * pOrdinSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, nVhEvLv);
 		AUTOLOG_EVERY(1000, "[E3_STARTSKILL_MISSING] skill=%d start_skill=%d start_lv=%d launcher=%d", (int)m_nId, m_nStartSkillId, m_nEventSkillLevel, nLauncher);
 		if (!pOrdinSkill) 
             return FALSE;
@@ -601,31 +613,31 @@ BOOL KSkill::OnMissleEvent(unsigned short usEvent, KMissle * pMissle)  const
 	switch(usEvent)
 	{
 	case Missle_FlyEvent:
-		if (!m_bFlyingEvent || m_nFlySkillId <= 0 || m_nEventSkillLevel <= 0)
+		if (!m_bFlyingEvent || m_nFlySkillId <= 0 || VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel) <= 0)
 			return FALSE;
 		nEventSkillId = m_nFlySkillId ;
-		nEventSkillLevel = m_nEventSkillLevel;
+		nEventSkillLevel = VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel);	// [VHTD 02/09m]
 		break;
 		
 	case Missle_StartEvent:
-		if (!m_bStartEvent || m_nStartSkillId <= 0 || m_nEventSkillLevel <= 0)
+		if (!m_bStartEvent || m_nStartSkillId <= 0 || VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel) <= 0)
 			return FALSE;
 		nEventSkillId = m_nStartSkillId ;
-		nEventSkillLevel = m_nEventSkillLevel;
+		nEventSkillLevel = VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel);	// [VHTD 02/09m]
 		break;
 		
 	case Missle_VanishEvent:
-		if (!m_bVanishedEvent || m_nVanishedSkillId <= 0 || m_nEventSkillLevel <= 0)
+		if (!m_bVanishedEvent || m_nVanishedSkillId <= 0 || VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel) <= 0)
 			return FALSE;
 		nEventSkillId = m_nVanishedSkillId ;
-		nEventSkillLevel = m_nEventSkillLevel;
+		nEventSkillLevel = VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel);	// [VHTD 02/09m]
 		break;
 		
 	case Missle_CollideEvent:
-		if (!m_bCollideEvent || m_nCollideSkillId <= 0 || m_nEventSkillLevel <= 0)
+		if (!m_bCollideEvent || m_nCollideSkillId <= 0 || VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel) <= 0)
 			return FALSE;
 		nEventSkillId = m_nCollideSkillId;
-		nEventSkillLevel = m_nEventSkillLevel;
+		nEventSkillLevel = VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel);	// [VHTD 02/09m]
 		break;
 	default:
 		return FALSE;
@@ -3289,7 +3301,7 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 		{
 			if (m_ImmediateAttribs[i].nAttribType >= magic_skill_collideevent && m_ImmediateAttribs[i].nAttribType <= magic_skill_flyevent && m_ImmediateAttribs[i].nValue[0])
 			{
-				KSkill * pTempSkill = (KSkill *) g_SkillManager.GetSkill(m_ImmediateAttribs[i].nValue[2], m_nEventSkillLevel);
+				KSkill * pTempSkill = (KSkill *) g_SkillManager.GetSkill(m_ImmediateAttribs[i].nValue[2], VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel));	// [VHTD 02/09m]
 				if(bEventSkill)
 					sprintf(pszInfo, "\n<color=100,100,255>TÇng phô %d:<color><color=255,255,0> ", nNum+2);
 				else
@@ -3307,9 +3319,9 @@ void KSkill::GetDescAboutLevel(unsigned long ulSkillId, char * pszMsg, BOOL bNex
 
 		if(nNum <= 0)
 		{
-			if(m_bStartEvent && m_nStartSkillId && m_nEventSkillLevel)
+			if(m_bStartEvent && m_nStartSkillId && VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel))	// [VHTD 02/09m]
 			{
-				KSkill * pTempSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, m_nEventSkillLevel);
+				KSkill * pTempSkill = (KSkill *) g_SkillManager.GetSkill(m_nStartSkillId, VhEventLevel(m_nEventSkillLevel, (int)m_nId, (int)m_ulLevel));
 				if(bEventSkill)
 					sprintf(pszInfo, "\n<color=100,100,255>TÇng phô %d:<color><color=255,255,0> ", nNum+2);
 				else
