@@ -3302,7 +3302,7 @@ void KNpc::ModifyAttrib(int nAttacker, void* pData)
 }
 
 #ifdef _SERVER
-void KNpc::ReplySkill()
+void KNpc::ReplySkill(int nLauncher)	// [HOASON 01/09e]
 {
 	if (!m_Index)
 		return;
@@ -3319,7 +3319,13 @@ void KNpc::ReplySkill()
 			{
 				if (g_RandPercent(m_ReplySkill[i].nRate))
 				{
-					this->Cast(m_ReplySkill[i].nSkillId, m_ReplySkill[i].nSkillLevel);
+					// [HOASON 01/09e] Linux 0x08188D0B: loai 1 -> muc tieu = ke danh (Doat Menh 1364 -> 1363 Thai Nhac Tam Thanh Phong bay ve phia ke danh),
+					// loai khac -> chinh minh. Chieu dan (1363) can muc tieu nen Cast(m_Index, -1, nTarget) nhu AttackSkill.
+					KSkill* pReply = (m_ReplySkill[i].nType == 1) ? (KSkill*)g_SkillManager.GetSkill(m_ReplySkill[i].nSkillId, m_ReplySkill[i].nSkillLevel) : NULL;
+					if (pReply && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0)
+						pReply->Cast(m_Index, -1, nLauncher);	// loai 1: bay ve phia ke danh (Linux)
+					else
+						this->Cast(m_ReplySkill[i].nSkillId, m_ReplySkill[i].nSkillLevel);	// loai khac: nhu cu (tu buff len minh)
 					m_ReplySkill[i].dwNextCastTime = SubWorld[m_SubWorldIndex].m_dwCurrentTime + m_ReplySkill[i].nWaitCastTime;
 				}
 			}
@@ -3646,14 +3652,15 @@ BOOL KNpc::CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int 
 		}
 		if(!bReturn)
 		{
-			if(m_Level >= LEVEL_EXPLOSIVE)
+			// [HOASON 01/09e] Linux (0x0808B4F9 goi Fire ngay, khong so cap) khong co cong cap 120: Hoa Son 1364 la chieu 90.
+			if(m_Level > 0)
 			{
-				ReplySkill();
+				ReplySkill(nAttacker);
 				if (m_CurrentLife < (m_CurrentLifeMax * LIFE_EXPLOSIVE / MAX_PERCENT))
 					RescueSkill();
 			}
 			
-			if(Npc[nAttacker].m_Level >= LEVEL_EXPLOSIVE)
+			if(Npc[nAttacker].m_Level > 0)	// [HOASON 01/09e] bo cong cap 120 (1369 Cuu Kiem Hop Nhat la chieu 150, khong anh huong; giu dung Linux)
 			{
 				Npc[nAttacker].AttackSkill(m_Index);
 			}

@@ -1130,8 +1130,9 @@ void KNpcAttribModify::AutoAttackSkill( KNpc* pNpc, void* pData )
 		{
 			if (pNpc->m_AttackSkill[i].nSkillId <= 0)
 			{
-				pNpc->m_AttackSkill[i].nSkillId = pMagic->nValue[0] / 256;
+				pNpc->m_AttackSkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
 				pNpc->m_AttackSkill[i].nSkillLevel = pMagic->nValue[0] % 256;
+				pNpc->m_AttackSkill[i].nType = pMagic->nValue[0] >> 24;
 				pNpc->m_AttackSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
 				pNpc->m_AttackSkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
 				pNpc->m_AttackSkill[i].nRate = pMagic->nValue[2] % 256;
@@ -1163,8 +1164,9 @@ void KNpcAttribModify::AutoReplySkill( KNpc* pNpc, void* pData )
 		{
 			if (pNpc->m_ReplySkill[i].nSkillId <= 0)
 			{
-				pNpc->m_ReplySkill[i].nSkillId = pMagic->nValue[0] / 256;
+				pNpc->m_ReplySkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
 				pNpc->m_ReplySkill[i].nSkillLevel = pMagic->nValue[0] % 256;
+				pNpc->m_ReplySkill[i].nType = pMagic->nValue[0] >> 24;
 				pNpc->m_ReplySkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
 				pNpc->m_ReplySkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
 				pNpc->m_ReplySkill[i].nRate = pMagic->nValue[2] % 256;
@@ -1183,8 +1185,9 @@ void KNpcAttribModify::AutoRescueSkill( KNpc* pNpc, void* pData )
 		{
 			if (pNpc->m_RescueSkill[i].nSkillId <= 0)
 			{
-				pNpc->m_RescueSkill[i].nSkillId = pMagic->nValue[0] / 256;
+				pNpc->m_RescueSkill[i].nSkillId = (pMagic->nValue[0] & 0xffffff) / 256;	// [HOASON 01/09e] Linux 0x080973D0: mat 24 bit thap (byte cao = loai)
 				pNpc->m_RescueSkill[i].nSkillLevel = pMagic->nValue[0] % 256;
+				pNpc->m_RescueSkill[i].nType = pMagic->nValue[0] >> 24;
 				pNpc->m_RescueSkill[i].dwNextCastTime = SubWorld[pNpc->m_SubWorldIndex].m_dwCurrentTime;
 				pNpc->m_RescueSkill[i].nWaitCastTime = pMagic->nValue[2] / 256;
 				pNpc->m_RescueSkill[i].nRate = pMagic->nValue[2] % 256;

@@ -1249,7 +1249,8 @@ struct KMagicAutoSkill
 	int				nRate;						// Ù–‘≤Œ ˝
 	DWORD			dwNextCastTime;
 	int				nWaitCastTime;
-	KMagicAutoSkill(){nSkillId = nSkillLevel = nRate = dwNextCastTime = nWaitCastTime = 0;};
+	int				nType;						// [HOASON 01/09e] byte cao nValue[0] (Linux): 1 = nham ke danh/muc tieu, khac = nham minh
+	KMagicAutoSkill(){nSkillId = nSkillLevel = nRate = dwNextCastTime = nWaitCastTime = nType = 0;};
 };
 #else
 struct KMagicAttrib;

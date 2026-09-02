@@ -852,7 +852,7 @@ public:
 	BOOL		    CalcDamage(int nAttacker, int nMin, int nMax, DAMAGE_TYPE nType, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, BOOL bReturn = FALSE , int nSeries_DamageP = 0, int nStole_Life = 0, int nStole_Mana = 0, int nStole_Stamina = 0, BOOL bIsDS = FALSE, BOOL bIsFS = FALSE, int nTotalAvg = 0);	// [HOTHAN2 01/09] nTotalAvg = tong trung binh 4 he (khien diem)
 	BOOL		    ReceiveDamage(int nLauncher, int nMissleSeries, BOOL bIsPhysical, BOOL bIsMelee, void *pData, BOOL bUseAR, int nDoHurtP, int nMissRate);
 	void			    Cast(int nSkillId, int nSkillLevel);
-	void				ReplySkill();
+	void				ReplySkill(int nLauncher = 0);	// [HOASON 01/09e] Linux Fire(list, chu, KE DANH): loai 1 nham ke danh
 	void				RescueSkill();
 	void				AttackSkill(int nUnderAttacker);
 	void				DeathSkill();

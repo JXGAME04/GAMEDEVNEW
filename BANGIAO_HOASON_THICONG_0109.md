@@ -230,3 +230,17 @@ Kiểm: `syncheck` 9 tệp OK, `t71` 0 lỗi. Không cần build lại binary.
 | 12 thuộc tính gốc (colddamage_v, physicsenhance_p, seriesdamage_p, lifereplenish_v, lifemax_p, coldenhance_p, damage2addmana_p, fastwalkrun_p, addcoldmagic_v, addphysicsdamage_p, deadlystrikeenhance_p, attackspeed_v) | không nằm trong bảng handler Linux (xử lý ở switch gốc) | cùng gốc mã | chưa đối chiếu asm |
 
 Không có lỗi nạp kỹ năng trong log server/client (không dòng "Cap ky nang … da xay ra loi", không lỗi `huashan.lua`).
+
+
+---
+
+## 13. ĐỢT e (02/09) — "Đoạt Mệnh Liên Hoàn Tam Tiên Kiếm ở Linux bắn nhiều kiếm liên tục"
+
+**Cơ chế Linux:** 1364 (buff tự thân, kiểu 2) mang `autoreplyskill` = {v0 = (1·65536 + 1363)·256 + cấp, v1 = 10 phút, v2 = 15·18·256 + 3}: khi **bị đánh**, 3 % tỷ lệ tự phóng 1363 Thái Nhạc Tam Thanh Phong (đạn 3 kiếm, `MisslesForm 2`, `ChildSkill 418 ×3`) cấp = cấp buff, hồi chiêu 15 s. 1369 Cửu Kiếm Hợp Nhất tương tự với `autoattackskill` → 1368 Độc Cô Cửu Kiếm (9 kiếm, `skill_misslenum_v`). Handler Linux `0x080973D0`: id = (|v0| & 0xFFFFFF) >> 8, cấp = v0 & 0xFF, **loại = |v0| >> 24** (1 = nhắm kẻ đánh), chờ = v2 >> 8, tỷ lệ = v2 & 0xFF. Hàm bắn `0x08188BB0 Fire(list, chủ, kẻ đánh)`: tỷ lệ > Random(100) → lấy skill → `loại == 1 ? mục tiêu = kẻ đánh : chính mình` → `Cast(chủ, -1, mục tiêu)`. Không có cổng cấp.
+
+**JX1 sai ở 3 chỗ (đã sửa, marker `[HOASON 01/09e]`, tool `hs_engine_patch3.py` + `3b`):**
+1. `KNpcAttribModify::AutoReplySkill/AutoAttackSkill/AutoRescueSkill`: `nSkillId = nValue[0] / 256` không mặt nạ byte loại → 1364 cho id **66899** (≥ MAX_SKILL) → `ReplySkill()` bỏ qua → **không bao giờ bắn**. Nay `(v0 & 0xFFFFFF) / 256` + lưu `nType = v0 >> 24` (`KMagicAutoSkill` thêm trường).
+2. `KNpc::ReplySkill()` bắn `this->Cast(id, cấp)` không mục tiêu; nay `ReplySkill(nAttacker)`: loại 1 → `pSkill->Cast(m_Index, -1, nAttacker)` (3 kiếm bay về kẻ đánh như Linux); loại khác giữ đường cũ (buff lên mình) để 9 phái kia không đổi.
+3. Cổng `m_Level >= LEVEL_EXPLOSIVE (120)` trước `ReplySkill/RescueSkill/AttackSkill` (KNpc.cpp:3649/3656): Linux không có → bỏ (1364 là chiêu 90; các auto-skill 120 của phái khác vẫn cần học ở 120 nên không đổi).
+
+Đã kiểm 65 dòng skills.txt Linux dùng auto*skill: chỉ Hoa Sơn 1364 có byte loại; phái khác v0 = id·256 + cấp → sau mặt nạ vẫn đúng.
