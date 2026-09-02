@@ -20,7 +20,8 @@ Nguồn: **client VLTK Level Up** (`C:\Users\nguye\Level Up Games\Vo Lam Truyen 
 | Vật phẩm 10 món (4967–4976) | **XONG** | `vhtd_items.py`; 4970 (Bí kíp 150) script VLTK không có ở JX1 → 0 |
 | UI bảng kỹ năng phái 11/12 | **XONG** | `vhtd_ui.py` + `khung_wh.spr`/`khung_xy.spr` |
 | Mô tả kỹ năng MagicDesc.ini | **XONG** | 5 dòng VLTK + 10 dòng tự viết TCVN3 |
-| **Vũ khí Đao Thuẫn/Thuẫn Đao (particular 7/8) + Cầm (range 3)** | **XONG dữ liệu** (mục 8) — **chờ chủ** mục 8.1 (WeaponType BYTE) | `vhtd_weapons.py`: 40 hàng item + res + objdata + ClientWeaponSkill; không có vũ khí thì kỹ năng Vũ Hồn (EqtLimit 7/8) và Cầm Pháp (103) bị từ chối ở `KSkills.cpp:280` |
+| **Vũ khí Đao Thuẫn/Thuẫn Đao (particular 7/8) + Cầm (range 3)** | **XONG** dữ liệu (mục 8) + **giao thức WeaponType WORD** (mục 12.1, chủ quyết 02/09) | `vhtd_weapons.py`: 40 hàng item + res + objdata + ClientWeaponSkill; không có vũ khí thì kỹ năng Vũ Hồn (EqtLimit 7/8) và Cầm Pháp (103) bị từ chối ở `KSkills.cpp:280` |
+| NPC môn phái theo **vị trí Linux** (6 thôn Vũ Hồn, 8 thôn Tiêu Dao, 17 NPC map 1042, 9 NPC map 1057) + Thuyền Phu về thành + lựa chọn "Đến phái" | **XONG** (mục 12.3) | `vhtd_faction_script.py --chi-npc`; `npc_chao.lua` / `thuyenphu_*.lua` |
 | **Bẫy cũ Hoa Sơn:** `maps_hoason2013.pak` header 16 byte bị `XPackFile::Open` từ chối | **ĐÃ SỬA** (mục 7) | pak mới đã đặt tại `bin\server\Pak\`, bản cũ `.truoc_vhtd_0209`; hiệu lực khi restart |
 
 ---
@@ -151,18 +152,34 @@ Chỉ số engine phải giữ: `KItemGenerator.CPP:302/478/1415` record = `P*10
 | B4 | Nghi ngờ | `DoSkill` ép `(KSkill*)pSkill` — `KThiefSkill` (style 13) không kế thừa KSkill (dữ liệu hiện không có style 13) | chỉ ép khi `eStyle != SKILL_SS_Thief` |
 | C | Ghi chú | desync `cost_sp`/`forbit_attack` (client vẫn diễn hoạt + trừ nội lực cục bộ, server im lặng) — đã khai mục 3; `HS_ResetBuffTime` đúng nạn nhân/đúng dấu, chỉ lệch đồng hồ icon client; `lightingdamage_p` ô [12] không đôi sát thương, **tooltip client chiêu cầm không hiện dòng Lôi** (`KPlayer.cpp ~10035` chỉ xét `_v`); duyệt `m_StateSkillList` khi cast không UAF; `#ifdef _SERVER` nhất quán; bảng tên/enum 326 = 325+1 khớp; Lua: menu 9/13 mục đúng, Say ≤ 390/512 byte, `doiphai1` nCurFac = nsel+1 khớp hệ; `Include(...npcmonphai\FactionHelper.lua)` 1 gạch chéo sao chép từ hoason.lua — vô hại (`gianhapmonphai` ở factionhead.lua:21); `addskillexp1`/`skill_skillexp_v` không có trong KMagicDesc → bỏ qua im lặng (quy ước Hoa Sơn: exp qua magic_level_exp.txt) | không đổi |
 
+## 12. ĐỢT 2 (02/09 ~06:20) — 3 lệnh chủ: "đổi sang WORD" · "băng sát Hoa Sơn / choáng Tiêu Dao, đối chiếu Linux" · "Linux có sẵn vị trí NPC môn phái"
+
+### 12.1 Giao thức `WeaponType` BYTE → WORD — `vhtd_engine_patch2.py` (marker `[VHTD 02/09d]`)
+`KProtocol.h:39` (`PLAYER_SYNC`, `s2c_syncplayer`) và `:435` (`PLAYER_NORMAL_SYNC`, `s2c_syncplayermin`) `BYTE WeaponType` → `WORD`; `KNpc.cpp:6293/6498` bỏ ép `(BYTE)`. `#pragma pack(1)` → mỗi gói dài thêm 1 byte; bảng độ dài `KProtocol.cpp:21-22` dùng `sizeof` nên tự cập nhật; client `KProtocolProcess.cpp:2780/2852` gán từ struct, không đổi mã. **Kiểm phạm vi:** S3Client không tham chiếu 2 struct này (Game.exe không cần build lại); WAuto cây dự án `E:\Src_Auto_Ngoai\WAuto\WAuto` dùng IPC bộ nhớ chung, **không có** `WeaponType` (cây bẫy `J:\CayChay\...` mới có `KProtocolProcess.cpp` đọc gói — không dùng); `MultiServer\ClientClone` có tham chiếu nhưng không có trong cây chạy thật; DB không lưu (`KPlayerDBFuns.cpp:1004` đã comment). `KSimCity.cpp:974` bot Lua `sc_Byte(...)` vẫn kẹp byte (bot cầm thuẫn sẽ sai hình — chỉ bot). ⇒ **CoreServer + CoreClient phải swap CÙNG LÚC** (client cũ đọc gói mới = lệch 1 byte từ trường `MantleType` trở đi).
+
+### 12.2 Băng sát Hoa Sơn / choáng Tiêu Dao — đối chiếu Linux: KHÔNG cần sửa
+- **Hoa Sơn (hệ Thủy):** 11 kỹ năng mang `colddamage_v` (1347, 1351, 1355, 1360, 1361, 1362, 1363, 1368, 1372, 1382, 1383) + 1358 `addcoldmagic_v`/`coldenhance_p` — bảng Lua `huashan.lua` JX1 = Linux **11/11 giống hệt**. Engine: `KSkills.cpp:2691` nạp ô damage[10]; `AppendSkillEffect` cộng nội công băng + `coldenhance` vào thời gian đông (chuẩn Linux 0x0807C9C0/0x0807CA27, đợt g); `ReceiveDamage` `KNpc.cpp:4574-4582` đóng băng = `v1 × (100 − freezetimereduce)/100`, kẹp giảm tối đa 77 (Linux `FreezeTimeReduceMax`), không làm mới khi đang đông — **đã đối chiếu Linux ở đợt 01/09 (KIỂM TOÁN THUỘC TÍNH)**. Tooltip dùng khoá `colddamage_v` ("Băng sát") có sẵn.
+- **Tiêu Dao (choáng):** 8 kỹ năng `stun_p` — 2120 (5→15 %), 2124/2125/2126 (5→20 %), 2129 (5→20 %), 2138 Lạc Nhạn Bình Sa (5→90 %), 2141 Cao Sơn Lưu Thủy (3→60 %), 2143 (5 %); thụ động 2116 Âm Luật `do_stun_p` (1→20 %); 2130 `frozen_action`; trấn phái 1982 Vũ Hồn `anti_do_stun_p` + `stuntimereduce_p`. Engine `KNpc.cpp:4718-4750` `[CHOANG 01/09]`: xác suất = v0 × (100 − ignorenegativestate)/100 + do_stun_p(kẻ đánh) − anti_do_stun_p(nạn nhân); thời lượng = v1 − v1 × (stuntimereduce − anti_stuntimereduce)/100, > 74 → /4 — **theo Linux 0x0808A8C5-0x0808A941 / 0x0808A95F-0x0808A9D1** (đối chiếu 01/09). Linux không có kỹ năng Tiêu Dao để so số liệu; số liệu lấy client VLTK.
+- Kiểm 75 thuộc tính của 62 kỹ năng mới: mọi tên đều có handler (`ProcessFunc`) hoặc xử lý trong `KSkills.cpp` (addskilldamage1-9 theo dải `KSkills.cpp:2512`); chỉ `skill_desc` (mô tả client), `addskillexp1`/`skill_skillexp_v` (không enum — quy ước Hoa Sơn) không có → đúng dự kiến.
+
+### 12.3 NPC môn phái theo vị trí Linux — `vhtd_faction_script.py --chi-npc`
+Nguồn: `D:\ServerLinux\server1\script\wumumenpai\npc_wumumenpai.lua:110-167` (map 1042 + 6 thôn 53/20/99/100/101/121), `xiaoyao\npc\npc_xiaoyao.lua:6-23` (map **1046 Linux** + 8 thôn). Linux `xiaoyao.wor` md5 = `.wor` trong `maps_vuhon_tieudao.pak` → cùng bản đồ; JX1 đặt Tiêu Dao ở **1057** (`MapList.ini: 1057=map_publish\xiaoyao`; 1043–1046 JX1 là bản sao Vũ Hồn "Luyện Võ Trường") → toạ độ Linux 1046 dùng nguyên cho 1057. id NPC Linux = id JX1 (npcs.txt VLTK) cho toàn khối — tool in tên đối chiếu từng id (2473 "Hàn Khởi Phụng", 2483 "Nhạc Phi Y Quán Chúng", 2490 "Giáo Quan Luyện Võ" khác chính tả, cùng NPC). **Bỏ:** Linux 2476/2477 Cát Khang/Thư Nhuệ (JX1 là Nam/Nữ Đệ Tử Vũ Hồn), 2501 Đệ Tử Khả Nghi ×5, 2495 Thi Thể (NPC nhiệm vụ `wuhun2020` JX1 không có).
+`npc_vhtd.lua` 40 NPC: 6 "Vũ Hồn Đường Hậu Quân" (2467) + 8 "Tiêu Dao Mật Sứ" (2607) ở thôn; map 1042: Nhạc Lôi 2468 (menu phái = `vuhon.lua`), 13 NPC chào (`global\vhtd\npc_chao.lua`), 2 Thuyền Phu 1846 (`thuyenphu_vuhon.lua` port Linux: Ba Lăng Huyện 53 (1794,3157) / Lâm An 176 (1607,2553), `SetFightState(1)`), Rương 625 (`ruongchua.lua`); map 1057: Văn Bán Sơn 2608 (menu phái = `tieudao.lua`), Lý Sấu Ngọc/Hướng Nam Chi/Liễu Tam Biến/Bùi Linh Lung/Cầm Đồng/Kiếm Đồng chào, Thuyền Phu (`thuyenphu_tieudao.lua`: Tây Sơn Thôn 175 (1712,3125) / Lâm An), Rương 625.
+`vuhon.lua`/`tieudao.lua`: thêm lựa chọn **"Đến Vũ Hồn Đường/go_vuhon"** → `NewWorld(1042,1625,3130)` và **"Đến Tiêu Dao phái/go_tieudao"** → `NewWorld(1057,1641,3288)` (toạ độ Linux `hauquan_vuhon.lua`/`detu_xiaoyao.lua`) ở menu nhập môn (3 mục) và 3 menu thành viên (5/4/5 mục). Chưa port: nhiệm vụ nhập môn Linux (`SetTask(4406/4464)`, `nt_setTask(137,71)`), danh hiệu qua `AddNote`.
+Tool nay **idempotent thật** (chạy lại = toàn `[=]`; phần chèn-sau kiểm "phần thêm đã có"); `--chi-npc` chỉ sinh lại NPC.
+
 ## 10. CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`) — điền md5 ở mục 11
 1. `bin\server\CoreServer.dll.moi` — swap cùng 2.
 2. `bin\client\CoreClient.dll.moi` + 3. `bin\client\Game.exe.moi` — swap cùng lúc (enum thuộc tính 310–325 phải khớp 2 bên; Game.exe có bảng ô kỹ năng 11/12).
 4. Dữ liệu đã ghi thẳng, đọc khi khởi động: server `skills.txt`, `missles.txt`, `script\**`, `settings\npcs.txt`, `magicscript.txt`, `MagicDesc.ini`, `magic_level_exp.txt`, `package.ini` (`8=maps_vuhon_tieudao.pak`), `Pak\maps_hoason2013.pak` (mới), `Pak\maps_vuhon_tieudao.pak`, `Maps\WorldSet_GameServer.ini`, `MapList.ini`, `faction\FactionInfo.ini`; client: các tệp cùng tên + `package.ini` (`36=`, `37=`), `data\sprvuhontieudao.pak`, `data\maps_vuhon_tieudao.pak`, `ui\Ui3\UiSkill*.ini`, `Spr\Ui3\UiSkills\khung_wh.spr`/`khung_xy.spr`, `settings\gamesetting.ini`, `NpcRes\*`.
 5. Nghiệm thu: (a) log server không ScriptError khi boot; nhân vật hệ Hoả/Thổ chưa phái gặp "Vũ Hồn Hậu Quân"/"Tiêu Dao Mật Sứ" ở Ba Lăng Huyện (53) → gia nhập → bảng kỹ năng F? hiện khung mới; (b) học kỹ năng qua NPC `hocvocong` "Học võ công môn phái Vũ Hồn/Tiêu Dao"; (c) mô tả kỹ năng không còn `<color>` thô; (d) **kỹ năng Vũ Hồn/Cầm Pháp chỉ dùng được sau khi có vũ khí thuẫn/cầm (mục 8)**; kỹ năng Tiêu Dao Kiếm Pháp (EqtLimit 0) dùng kiếm được ngay; (e) map 987 Hoa Sơn vào được (mục 7).
 
-## 11. Bộ .moi (Core build 05:44 sau patch1c; Game.exe 05:09 — không đổi header nên không build lại)
+## 11. Bộ .moi (Core build 06:17 sau patch2 WORD; Game.exe 05:09 — không tham chiếu PLAYER_SYNC nên không build lại)
 
 | Tệp | Byte | md5 (8) | Giờ |
 |---|---|---|---|
-| `server\CoreServer.dll.moi` | 18.251.776 | `f96a64fd` | 05:45 |
-| `client\CoreClient.dll.moi` | 2.443.776 | `4eb23293` | 05:45 |
+| `server\CoreServer.dll.moi` | 18.251.776 | `0a0cc352` | 06:19 |
+| `client\CoreClient.dll.moi` | 2.443.776 | `f52ddc8e` | 06:19 |
 | `client\Game.exe.moi` | 1.374.208 | `359536c5` | 05:20 |
 
-HEAD sau commit engine patch1c (superset đợt g `d715746b` + bot đợt d). Swap 3 tệp cùng lúc; Goddess/WAuto không đổi.
+HEAD `6a63af68`+ (superset đợt g `d715746b` + bot đợt d). **Swap 3 tệp cùng lúc — bắt buộc vì gói PLAYER_SYNC/PLAYER_NORMAL_SYNC đổi kích cỡ (+1 byte).** Goddess/WAuto không đổi.

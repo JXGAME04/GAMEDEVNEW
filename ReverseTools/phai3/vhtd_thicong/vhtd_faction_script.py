@@ -62,18 +62,24 @@ class F:
         self.nl = "\r\n" if "\r\n" in self.s else "\n"
     def has(self, t): return t in self.s
     def rep(self, old, new, tag, count=1):
+        if new in self.s: print("  [=] %s: da ap (%s)" % (self.rel, tag)); return False
+        them = new.replace(old, "", 1) if old in new else ""
+        if them.strip() and them in self.s: print("  [=] %s: da ap (%s) - phan them da co" % (self.rel, tag)); return False
         c = self.s.count(old)
         if c == 0:
-            if new in self.s or M in self.s and tag in self.s: print("  [=] %s: da ap (%s)" % (self.rel, tag)); return False
+            if M in self.s and tag in self.s: print("  [=] %s: da ap (%s)" % (self.rel, tag)); return False
             raise SystemExit("KHONG THAY anchor %s (%s):\n%r" % (self.rel, tag, old[:160]))
         if count and c != count: raise SystemExit("anchor %s (%s) xuat hien %d lan (cho %d)" % (self.rel, tag, c, count))
         self.s = self.s.replace(old, new); self.n += 1; print("  [+] %s: %s" % (self.rel, tag)); return True
     def rep_re(self, pat, fn, tag, flags=re.M):
         m = re.search(pat, self.s, flags)
         if not m:
+            if M in self.s: print("  [=] %s: da ap (%s) - regex khong khop, file da co marker" % (self.rel, tag)); return False
             raise SystemExit("KHONG THAY regex %s (%s): %s" % (self.rel, tag, pat))
         new = fn(m)
         if new == m.group(0): print("  [=] %s: da ap (%s)" % (self.rel, tag)); return False
+        them = new.replace(m.group(0), "", 1) if m.group(0) in new else ""
+        if them.strip() and them in self.s: print("  [=] %s: da ap (%s) - phan them da co" % (self.rel, tag)); return False
         self.s = self.s[:m.start()] + new + self.s[m.end():]; self.n += 1; print("  [+] %s: %s" % (self.rel, tag)); return True
     def save(self):
         if self.s == self.orig: print("  (khong doi) %s" % self.rel); return
@@ -319,7 +325,7 @@ def skills_table():
 def npc_scripts():
     src = rd(os.path.join(SCR, r"npcthon\npcmonphai\hoason.lua")); nl = "\r\n" if "\r\n" in src else "\n"
     lines = src.split(nl)
-    def make(fname, gbk, romaji, fac_id, series, ten_phai, ten_dv, mota, kn1, kn2):
+    def make(fname, gbk, romaji, fac_id, series, ten_phai, ten_dv, mota, kn1, kn2, go_fn, go_label, go_world):
         out = []
         for l in lines:
             if l.startswith("--[HOASON 01/09]"):
@@ -335,10 +341,22 @@ def npc_scripts():
                 out.append(l.replace("GetSeries() == 2", "GetSeries() == %d" % series)); continue
             if V(u"Gia nh\u1eadp Hoa S\u01a1n/go") in l:
                 ind = l[:len(l) - len(l.lstrip())]
-                out.append(ind + 'Say("%s", 2, "%s/go", "%s/nothing")' % (V(u"B\u1ee9c m\u00f4n ch\u00fang ta l\u1ea5y %s l\u00e0m g\u1ed1c, %s. Ng\u01b0\u01a1i c\u00f3 mu\u1ed1n gia nh\u1eadp %s kh\u00f4ng?".replace(u"B\u1ee9c", u"B\u1ea3n") % (kn1, kn2, ten_phai)), V(u"Gia nh\u1eadp " + ten_phai), V(u"\u0110\u1ec3 ta suy ngh\u0129 k\u1ef9 l\u1ea1i xem"))); continue
+                out.append(ind + 'Say("%s", 3, "%s/go", "%s/%s", "%s/nothing")' % (V(u"B\u1ee9c m\u00f4n ch\u00fang ta l\u1ea5y %s l\u00e0m g\u1ed1c, %s. Ng\u01b0\u01a1i c\u00f3 mu\u1ed1n gia nh\u1eadp %s kh\u00f4ng?".replace(u"B\u1ee9c", u"B\u1ea3n") % (kn1, kn2, ten_phai)), V(u"Gia nh\u1eadp " + ten_phai), V(go_label), go_fn, V(u"\u0110\u1ec3 ta suy ngh\u0129 k\u1ef9 l\u1ea1i xem"))); continue
             if "gianhapmonphai(10)" in l:
                 out.append("\tgianhapmonphai(%d)\t-- %s nhu hoason.lua: SetFaction/Camp/Rank + hockynang (SKILLNORMAL[%d])" % (fac_id, M, fac_id + 1)); continue
             out.append(l)
+        # [Linux hauquan_vuhon.lua / detu_xiaoyao.lua] lua chon 'Ve phai' (NewWorld) cho thanh vien: them vao 3 menu Say cua main() (dong co /no"))
+        out2 = []
+        for l in out:
+            if 'Say("<npc>' in l and '/no")' in l:
+                l = re.sub(r'(Say\("[^"]*",)(\d+),', lambda m: m.group(1) + str(int(m.group(2)) + 1) + ',"' + V(go_label) + '/' + go_fn + '",', l, count=1)
+            out2.append(l)
+        out = out2
+        out.append("")
+        out.append("function %s()\t-- [VHTD 02/09d] Linux: NewWorld toa do mon phai" % go_fn)
+        out.append('\tMsg2Player("%s")' % V(u"Ng\u1ed3i y\u00ean, ch\u00fang ta \u0111\u1ebfn " + ten_phai))
+        out.append("\tNewWorld(%d, %d, %d)" % go_world)
+        out.append("end")
         s = nl.join(out)
         if hib(s) == 0: raise SystemExit("npc script rong?")
         p = os.path.join(SCR, r"npcthon\npcmonphai", fname)
@@ -347,49 +365,91 @@ def npc_scripts():
         print("  [+] ghi npcthon\\npcmonphai\\%s (%d dong)" % (fname, len(out)))
     make("vuhon.lua", WH_GBK, "Wuhuntang", 11, 3, u"V\u0169 H\u1ed3n \u0110\u01b0\u1eddng", u"H\u1ead u Qu\u00e2n",
          u"V\u0169 H\u1ed3n \u0110\u01b0\u1eddng do Nh\u1ea1c Phi l\u1ead p n\u00ean, quy t\u1ee5 tinh binh Nh\u1ea1c gia qu\u00e2n, l\u1ea5y \u0111ao thu\u1eabn l\u00e0m v\u0169 kh\u00ed, l\u1ea5y ch\u1eef trung ngh\u0129a l\u00e0m g\u1ed1c. Ng\u01b0\u01a1i c\u00f3 mu\u1ed1n c\u00f9ng ta b\u1ea3o v\u1ec7 bi\u00ean c\u01b0\u01a1ng kh\u00f4ng?".replace(u"l\u1ead p", u"l\u1eadp"),
-         u"V\u0169 H\u1ed3n Thu\u1eabn Ph\u00e1p", u"V\u0169 H\u1ed3n \u0110ao Ph\u00e1p c\u00f4ng th\u1ee7 to\u00e0n di\u1ec7n")
+         u"V\u0169 H\u1ed3n Thu\u1eabn Ph\u00e1p", u"V\u0169 H\u1ed3n \u0110ao Ph\u00e1p c\u00f4ng th\u1ee7 to\u00e0n di\u1ec7n", "go_vuhon", u"\u0110\u1ebfn V\u0169 H\u1ed3n \u0110\u01b0\u1eddng", (1042, 1625, 3130))
     make("tieudao.lua", XY_GBK, "Xiaoyao", 12, 4, u"Ti\u00eau Dao ph\u00e1i", u"Ti\u00eau Dao C\u01b0 S\u0129",
          u"Ti\u00eau Dao ph\u00e1i ta \u1ea9n c\u01b0 gi\u1ee5a n\u00fai r\u1eebng, l\u1ea5y ki\u1ebfm v\u00e0 c\u1ea7m l\u00e0m b\u1ea1n, ti\u00eau dao t\u1ef1 t\u1ea1i ngo\u00e0i v\u00f2ng danh l\u1ee3i. Ng\u01b0\u01a1i c\u00f3 mu\u1ed1n c\u00f9ng ta ng\u1eafm c\u1ea3nh th\u01b0\u1edfng nh\u1ea1c kh\u00f4ng?".replace(u"gi\u1ee5a", u"gi\u1eefa"),
-         u"Ti\u00eau Dao Ki\u1ebfm Ph\u00e1p", u"Ti\u00eau Dao C\u1ea7m Ph\u00e1p \u00e2m lu\u1ead t s\u00e1t \u0111\u1ecbch".replace(u"lu\u1ead t", u"lu\u1eadt"))
+         u"Ti\u00eau Dao Ki\u1ebfm Ph\u00e1p", u"Ti\u00eau Dao C\u1ea7m Ph\u00e1p \u00e2m lu\u1ead t s\u00e1t \u0111\u1ecbch".replace(u"lu\u1ead t", u"lu\u1eadt"), "go_tieudao", u"\u0110\u1ebfn Ti\u00eau Dao ph\u00e1i", (XY_MAP, 1641, 3288))
 
-# spawn: 8 thon + map mon phai. NPC mau (npcs.txt) lay theo TEN tu client VLTK npcs.txt (agent noi NPC); toa do 8 thon = canh De Tu Hoa Son (x-4/x-8).
+# spawn theo LINUX (D:\ServerLinux\server1\script\wumumenpai\npc_wumumenpai.lua:110-167, xiaoyao\npc\npc_xiaoyao.lua:6-23) - lenh chu 02/09.
+# id NPC Linux == id JX1 (npcs.txt VLTK, id = dong-2) cho ca khoi 2467..2501 va 2607..2614 (kiem ten khi chay); Linux 2476/2477 (Cat Khang/Thu Nhue)
+# o JX1 la Nam/Nu De Tu Vu Hon -> BO. Linux 1046 (xiaoyao) = cung .wor voi map JX1 tro map_publish\xiaoyao (md5 khop) -> toa do dung nguyen.
 NPC_WH, NPC_XY = 2467, 2607          # npcs.txt may chu (id = dong-2): 2467 Hau Quan Vu Hon (kind 3), 2607 Tieu Dao Cu Si (kind 3) - ten VLTK
-TOWNS_HS = [(53,1632,3191),(20,3567,6190),(99,1641,3189),(100,1653,3129),(101,1693,3167),(121,1966,4508),(153,1638,3240),(174,1596,3271)]
+def _map_xiaoyao():
+    ml = rd(os.path.join(SRV, r"settings\MapList.ini"))
+    m = re.search(r"(?m)^(\d+)=map_publish" + re.escape(BS) + r"xiaoyao\s*$", ml)
+    if not m: raise SystemExit("MapList.ini may chu khong co map map_publish\\xiaoyao")
+    return int(m.group(1))
+XY_MAP = _map_xiaoyao()
+SC = lambda name: BS + BS + "script" + BS + BS + name.replace("/", BS + BS)
+SC_WH, SC_XY = SC("npcthon/npcmonphai/vuhon.lua"), SC("npcthon/npcmonphai/tieudao.lua")
+SC_CHAO, SC_TP_WH, SC_TP_XY = SC("global/vhtd/npc_chao.lua"), SC("global/vhtd/thuyenphu_vuhon.lua"), SC("global/vhtd/thuyenphu_tieudao.lua")
+SC_RUONG = SC("global/npcchucnang/ruongchua.lua")
+TOWNS_WH_LINUX = [(53,1624,3197),(20,3556,6187),(99,1654,3196),(100,1616,3172),(101,1690,3114),(121,1962,4511)]
 TOWNS_XY_LINUX = [(53,1609,3215),(20,3575,6222),(99,1691,3193),(100,1641,3209),(101,1703,3125),(121,1966,4480),(153,1650,3201),(174,1579,3267)]
+# (id, map, x, y, script, ten) - map 1042 Vu Hon theo Linux npc_wumumenpai.lua (chuong mon Nhac Loi dung menu phai; NPC khac: chao; Thuyen Phu: ve thanh)
+MAP_WH = [(2468,1042,1693,3046,SC_WH,u"Nh\u1ea1c L\u00f4i"), (2469,1042,1683,3048,SC_CHAO,u"Ng\u01b0u Th\u00f4ng"), (2470,1042,1693,3059,SC_CHAO,u"H\u00e0n Th\u01b0\u1ee3ng \u0110\u1ee9c"),
+          (2471,1042,1749,3254,SC_CHAO,u"Thi Phong"), (2472,1042,1775,3197,SC_CHAO,u"Thang Anh"), (2473,1042,1601,3020,SC_CHAO,u"H\u00e0n Kh\u1edfi Ph\u01b0\u1ee3ng"),
+          (2474,1042,1591,2999,SC_CHAO,u"Nh\u1ea1c \u0110\u1ecbnh"), (2475,1042,1625,3130,SC_CHAO,u"Ng\u0169 Li\u00ean"), (2480,1042,1787,3205,SC_CHAO,u"Y S\u01b0"),
+          (2481,1042,1806,3237,SC_CHAO,u"D\u01b0 \u0110\u1ea1i Ch\u00f9y"), (2482,1042,1673,3304,SC_CHAO,u"Nh\u1ea1c Nh\u1ecb N\u01b0\u01a1ng"), (2483,1042,1649,3023,SC_CHAO,u"Nh\u1ea1c Phi Y Quan Gia"),
+          (2490,1042,1552,3067,SC_CHAO,u"Luy\u1ec7n V\u00f5 Tr\u00e0ng Gi\u00e1o Quan"), (2494,1042,1574,3210,SC_CHAO,u"Manh M\u1ed1i"),
+          (1846,1042,1773,3268,SC_TP_WH,u"Thuy\u1ec1n Phu"), (1846,1042,1688,3314,SC_TP_WH,u"Thuy\u1ec1n Phu"), (625,1042,1558,3195,SC_RUONG,u"R\u01b0\u01a1ng Ch\u1ee9a \u0110\u1ed3")]
+# map Tieu Dao theo Linux npc_xiaoyao.lua (Linux 1046 -> XY_MAP): Van Ban Son = chuong mon (menu phai), Ly Sau Ngoc/... chao
+MAP_XY = [(2608,None,1629,3216,SC_XY,u"V\u0103n B\u00e1n S\u01a1n"), (2611,None,1750,3225,SC_CHAO,u"Ch\u01b0\u1edfng M\u00f4n L\u00fd S\u1ea5u Ng\u1ecdc"), (2609,None,1645,3281,SC_CHAO,u"H\u01b0\u1edbng Nam Chi"),
+          (2610,None,1666,3112,SC_CHAO,u"Li\u1ec5u Tam Bi\u1ebfn"), (2612,None,1578,3251,SC_CHAO,u"B\u00f9i Linh Lung"), (2613,None,1697,3151,SC_CHAO,u"C\u1ea7m \u0110\u1ed3ng"),
+          (2614,None,1696,3168,SC_CHAO,u"Ki\u1ebfm \u0110\u1ed3ng"), (1846,None,1726,3426,SC_TP_XY,u"Thuy\u1ec1n Phu"), (625,None,1674,3323,SC_RUONG,u"R\u01b0\u01a1ng Ch\u1ee9a \u0110\u1ed3")]
+
+def _ghi(rel, body):
+    p = os.path.join(SCR, rel)
+    if os.path.exists(p) and rd(p) == body: print("  [=] %s da dung" % rel); return
+    if not KIEM:
+        os.makedirs(os.path.dirname(p), exist_ok=True); io.open(p, "w", encoding="latin-1", newline="").write(body)
+    print("  [+] ghi %s" % rel)
+
 def npc_spawn():
-    # npcs.txt: KHONG co cot id - id engine = so dong (0-based, dong 0 = header) - 1 (KNpc.cpp:5804 GetString(id+2))
     npcs = rd(os.path.join(SRV, r"settings\npcs.txt")).split("\r\n")
-    for n, ten in ((NPC_WH, "Hau Quan Vu Hon"), (NPC_XY, "Tieu Dao Cu Si")):
-        if n + 1 >= len(npcs) or not npcs[n + 1].strip():
-            msg = "npcs.txt may chu CHUA co dong NPC id %d (%s)" % (n, ten)
+    def ten(n):
+        if n + 1 >= len(npcs) or not npcs[n + 1].strip(): return None
+        return npcs[n + 1].split("\t")[0]
+    for n, t in ((NPC_WH, "Hau Quan Vu Hon"), (NPC_XY, "Tieu Dao Cu Si")):
+        if ten(n) is None:
+            msg = "npcs.txt may chu CHUA co dong NPC id %d (%s)" % (n, t)
             if "--bo-kiem-npc" in sys.argv: print("  [!] " + msg)
             else: raise SystemExit(msg)
-        else:
-            f = npcs[n + 1].split("\t")
-            print("  NPC mau %d: %s (kind %s) - mong doi %s" % (n, asc(f[0]), f[1] if len(f) > 1 else "?", ten))
+        else: print("  NPC mau %d: %s - mong doi %s" % (n, asc(ten(n)), t))
     nl = "\r\n"
     rows = []
-    sc_wh = BS + BS + "script" + BS + BS + "npcthon" + BS + BS + "npcmonphai" + BS + BS + "vuhon.lua"
-    sc_xy = BS + BS + "script" + BS + BS + "npcthon" + BS + BS + "npcmonphai" + BS + BS + "tieudao.lua"
-    for (mp, x, y) in TOWNS_HS:
-        rows.append('{%d,%d,%d,%d,"%s","%s"},' % (NPC_WH, mp, x - 4, y + 2, sc_wh, V(u"V\u0169 H\u1ed3n H\u1eadu Qu\u00e2n")))
-    for (mp, x, y) in TOWNS_XY_LINUX:
-        rows.append('{%d,%d,%d,%d,"%s","%s"},' % (NPC_XY, mp, x, y, sc_xy, V(u"Ti\u00eau Dao M\u1ead t S\u1ee9".replace(u"M\u1ead t", u"M\u1eadt"))))
-    body = (nl.join([
-        "-- %s NPC nhap mon Vu Hon (11) / Tieu Dao (12) o 8 thon - khuon npc_hoason.lua. Toa do Tieu Dao = Linux script (Tieu Dao Mat Su);" % M,
-        "-- Vu Hon = canh De Tu Hoa Son (x-4, y+2) vi Linux chi co toa do thon 53 (1624,3197). NPC mau theo TEN client VLTK npcs.txt.",
-        "-- Map mon phai (1042 Vu Hon / 1057 Tieu Dao): NPC chuong mon + ruong them o dot sau khi ban do da nap (xem BANGIAO).",
-        "vhtd_parserby = {"] + rows + ["}", "",
+    for (mp, x, y) in TOWNS_WH_LINUX: rows.append((NPC_WH, mp, x, y, SC_WH, V(u"V\u0169 H\u1ed3n \u0110\u01b0\u1eddng H\u1eadu Qu\u00e2n")))
+    for (mp, x, y) in TOWNS_XY_LINUX: rows.append((NPC_XY, mp, x, y, SC_XY, V(u"Ti\u00eau Dao M\u1eadt S\u1ee9")))
+    for (i, mp, x, y, sc, name) in MAP_WH + MAP_XY:
+        t = ten(i)
+        print("  NPC %d '%s' (npcs.txt: %s)" % (i, asc(V(name)), asc(t) if t else "!!! KHONG CO"))
+        if t is None: raise SystemExit("npcs.txt thieu id %d" % i)
+        rows.append((i, mp if mp else XY_MAP, x, y, sc, V(name)))
+    body = nl.join([
+        "-- [VHTD 02/09d] NPC Vu Hon (11) / Tieu Dao (12) - TOA DO LINUX: script\\wumumenpai\\npc_wumumenpai.lua (6 thon + map 1042),",
+        "-- script\\xiaoyao\\npc\\npc_xiaoyao.lua (8 thon + map xiaoyao; Linux 1046 = map JX1 %d, cung .wor). id NPC Linux = id JX1 (VLTK)." % XY_MAP,
+        "-- Bo: Linux 2476 Cat Khang / 2477 Thu Nhue (JX1 la Nam/Nu De Tu Vu Hon), De Tu Kha Nghi 2501, Thi The 2495 (NPC nhiem vu Linux).",
+        "vhtd_parserby = {"] + ['{%d,%d,%d,%d,"%s","%s"},' % r for r in rows] + ["}", "",
         "function add_npc_vhtd()", "\tvhtd_bynpc(vhtd_parserby)", "end", "",
         "function vhtd_bynpc(Tab)", "\tfor i = 1 , getn(Tab) do", "\t\tlocal SId = SubWorldID2Idx(Tab[i][2]);", "\t\tif (SId >= 0) then",
         "\t\t\tlocal npcindex = AddNpc(Tab[i][1],1,SId,Tab[i][3]*32,Tab[i][4]*32,1,Tab[i][6]);", "\t\t\tif (npcindex > 0) then",
-        "\t\t\t\tSetNpcScript(npcindex, Tab[i][5]);", "\t\t\t\tSetNpcValue(npcindex, 10);", "\t\t\tend", "\t\tend;", "\tend", "end;", ""]))
-    d = os.path.join(SCR, r"global\vhtd"); p = os.path.join(d, "npc_vhtd.lua")
-    if os.path.exists(p) and rd(p) == body: print("  [=] npc_vhtd.lua da dung")
-    else:
-        if not KIEM:
-            os.makedirs(d, exist_ok=True); io.open(p, "w", encoding="latin-1", newline="").write(body)
-        print("  [+] ghi global\\vhtd\\npc_vhtd.lua (%d NPC)" % len(rows))
+        "\t\t\t\tSetNpcScript(npcindex, Tab[i][5]);", "\t\t\t\tSetNpcValue(npcindex, 10);", "\t\t\tend", "\t\tend;", "\tend", "end;", ""])
+    _ghi(r"global\vhtd\npc_vhtd.lua", body)
+    print("  npc_vhtd.lua: %d NPC (6 thon VH + 8 thon TD + %d map 1042 + %d map %d)" % (len(rows), len(MAP_WH), len(MAP_XY), XY_MAP))
+    # script chao (NPC trang tri Linux la NPC nhiem vu wuhun2020 - JX1 khong co nhiem vu -> chao)
+    _ghi(r"global\vhtd\npc_chao.lua", nl.join([
+        "-- [VHTD 02/09d] NPC mon phai Vu Hon/Tieu Dao khong co nhiem vu o JX1 (Linux: script\\wumumenpai\\*.lua nhiem vu wuhun2020) - chi chao.",
+        "function main()", '\tTalk(1, "", "%s")' % V(u"Hoan ngh\u00eanh ng\u01b0\u01a1i \u0111\u1ebfn th\u0103m b\u1ed5n m\u00f4n. Ch\u01b0\u1edfng m\u00f4n \u0111ang \u0111\u1ee3i ng\u01b0\u01a1i \u1edf \u0111\u1ea1i \u0111i\u1ec7n."), "end", ""]))
+    # Thuyen Phu: port Linux wumumenpai\thuyenphu.lua (Ba Lang Huyen 53 / Lam An 176) va xiaoyao\npc\thuyenphu.lua (Tay Son Thon 175 / Lam An 176)
+    def tp(rel, o1, w1):
+        _ghi(rel, nl.join([
+            "-- [VHTD 02/09d] port Linux %s (Describe -> Say, cung API JX1: NewWorld, SetFightState)" % rel.split(BS)[-1],
+            "function main()",
+            '\tSay("%s", 3, "%s/di1", "%s/di2", "%s/no")' % (V(u"Thuy\u1ec1n Phu: Ng\u01b0\u01a1i mu\u1ed1n \u0111i \u0111\u00e2u?"), V(o1), V(u"\u0110\u1ebfn L\u00e2m An"), V(u"Ta kh\u00f4ng \u0111i \u0111\u00e2u c\u1ea3")),
+            "end", "", "function di1()", "\tNewWorld(%d, %d, %d)" % w1, "\tSetFightState(1)", "end", "",
+            "function di2()", "\tNewWorld(176, 1607, 2553)", "\tSetFightState(1)", "end", "", "function no()", "end", ""]))
+    tp(r"global\vhtd\thuyenphu_vuhon.lua", u"\u0110\u1ebfn Ba L\u0103ng Huy\u1ec7n", (53, 1794, 3157))
+    tp(r"global\vhtd\thuyenphu_tieudao.lua", u"\u0110\u1ebfn T\u00e2y S\u01a1n Th\u00f4n", (175, 1712, 3125))
     f = F("startgame.lua"); nl = f.nl
     old = 'Include("' + BS + BS + "script" + BS + BS + "global" + BS + BS + "huashan2013" + BS + BS + 'npc_hoason.lua");\t-- [HOASON 01/09] NPC/quai Hoa Son 2013 (Linux)'
     f.rep(old, old + nl + 'Include("' + BS + BS + "script" + BS + BS + "global" + BS + BS + "vhtd" + BS + BS + 'npc_vhtd.lua");\t-- %s NPC nhap mon Vu Hon / Tieu Dao' % M, "Include npc_vhtd")
@@ -398,6 +458,10 @@ def npc_spawn():
     f.save()
 
 if __name__ == "__main__":
+    if "--chi-npc" in sys.argv:
+        print("== npc mon phai (chi NPC)"); npc_scripts()
+        print("== spawn"); npc_spawn()
+        print("XONG%s." % (" (KIEM)" if KIEM else "")); raise SystemExit
     print("== factionhead"); factionhead()
     print("== hocvocong"); hocvocong()
     print("== lib_faction"); lib_faction()
