@@ -256,6 +256,22 @@ Bản mới = HEAD + vá này (superset, không rơi đợt nào trước).
 4. Link đồ thường (vũ khí/áo hoàng kim, đồ xanh) vẫn mở được; link bot post lên kênh thế giới vẫn bấm được (không thành chữ thô).
 5. Xúc xắc Viêm Đế: chia 1 món → ô hiện đúng icon + chú giải (gói đổi cỡ).
 
+## 6i. ĐỢT 02/09 — "Tẩy thuộc tính ẩn: bấm Giữ thuộc tính báo lỗi script" (nhãn `[WASH-KEEP 02/09]`)
+
+**Bằng chứng** `bin/server/ScriptError.log` 06:38:42: `error: stack Overflow` — traceback `getn` ← `unpack` (script/lib/common.lua:20/23) lặp 24 tầng ← `doWashKeep` (mantleupgrade_npc.lua:485), Script Name = thoren.lua (hàm chạy trong state của Thợ Rèn, nơi Include mantleupgrade_npc.lua).
+
+**Gốc**: `unpack` của `script/lib/common.lua` là hàm ĐỆ QUY, mỗi phần tử tốn một tầng gọi. `doWashKeep` gọi `SetMagicAttrib(idx, unpack(tb.tbWashCu))` với `tbWashCu = pack(GetMagicAttrib(idx))` = **24 giá trị** (8 khe × 3: type, value0, value2 — ScriptFuns.cpp LuaGetMagicAttrib). Engine mở mỗi state Lua chỉ **100 ô stack** (`Engine/Src/KLuaScript.cpp:23 lua_open(100)`) nên 24 tầng đệ quy tràn. Các nơi khác dùng `unpack` chỉ với bảng 2–6 phần tử nên chưa bao giờ lộ. Nút "Tẩy" không lỗi vì `pack` không đệ quy; "Áp dụng" không đụng unpack.
+
+**Vá (thuần Lua, không build)**: `mantleupgrade_npc.lua doWashKeep` truyền thẳng 24 ô `c[1]..c[24]` y như `PF_GhiKheAn` (head.lua:110) — không dùng `unpack`. Backup `mantleupgrade_npc.lua.truoc_washkeep_0209`. `syncheck` (Lua 4.0 thật) OK cho npc.lua, head.lua, thoren.lua; TCVN3 giữ nguyên (1087 byte cao).
+
+**Có hiệu lực khi**: script được nạp sẵn lúc boot và Include vào state thoren.lua → cần **restart GameServer** (đằng nào cũng phải restart để swap `CoreServer.dll.moi` mục 6h). Không có lệnh reload sẵn cho thoren.lua (`hoatdong_admin.lua HD_RELOAD_LIST` chỉ reload danh sách cố định) — muốn có nút reload riêng thì báo, chưa tự thêm.
+
+**Không sửa `common.lua unpack`** (dùng chung ~20 chỗ; đổi thành `call()` là đổi hành vi toàn cục). Ghi nhớ luật: trên JX1 KHÔNG dùng `unpack` với bảng > ~10 phần tử; bảng lớn thì truyền thẳng chỉ số hoặc `call(f, tb)` (Lua 4.0 có sẵn, dailogsay.lua:58 đang dùng).
+
+**Thấy thêm trong log (không thuộc phi phong, chưa đụng)**: 06:26:25 hàng loạt `ScriptError attempt to call a nil value` ở `npcthon/npcmonphai/tieudao.lua` và `global/vhtd/npc_chao.lua` hàm `OnRevive` — thuộc đợt Vũ Hồn/Tiêu Dao 02/09.
+
+**Test**: Thợ Rèn → Tẩy luyện thuộc tính ẩn → đặt Long Ngâm 10 sao → Tẩy → **Giữ nguyên**: không còn báo lỗi script, 2 dòng ẩn trở về đúng dòng cũ (cột trước), bảng mở lại; rồi Tẩy → Áp dụng: giữ dòng mới.
+
 ## 7. VIỆC KẾ TIẾP
 1. Chủ duyệt 3 lệch VNG (mục 3) + số nguyên liệu nội suy (mục 2) + Phệ Quang/Khấp Thần dùng chung hình 7 (muốn hình riêng từng bậc như JX1 cũ thì trả goldequipres 5939/5940 về 8/9).
 2. Cho 4 nguyên liệu mới vào tiệm 186 (onMaterialShop) nếu muốn bán cho người chơi.
