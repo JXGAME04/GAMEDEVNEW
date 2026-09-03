@@ -15468,10 +15468,38 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							nSkillRadius = nNearDist;
 					}
 					g_ScenePlace.RemoveFlag();
-					if(nDist < nSkillRadius)
+					// (02/09) CHIEU KHONG CO TAM DANH (AttackRadius = 0). Vi du Tap Dap Luu
+					// Tinh 2118 cua Tieu Dao: settings\skills.txt ghi AttackRadius 0,
+					// TargetEnemy/Self/Ally deu 0 (chieu LUOT, khong nham ai; phan sat thuong
+					// la con 2119 'Khoi Chieu'). Voi loai nay phep 'nDist < nSkillRadius'
+					// KHONG BAO GIO dung -> may danh cu di theo quai mai ma khong ban
+					// (chu game: "di chuyen toi quai khong lam gi ma di theo"). Nen:
+					//   - KHONG cho vao tam, ban ngay tai cho;
+					//   - ban THEO TOA DO (khuon co san cua may PK, CoreShell.cpp:15806)
+					//     chu khong theo chi so muc tieu: chieu tu len minh thi ban tai
+					//     cho dung, con chieu luot thi lay toa do muc tieu de luot toi.
+					bool bBanRoi = false;
+					if(nSkillRadius <= 0)
+					{
+						int nCX = x, nCY = y;		// mac dinh: huong ve muc tieu
+						if(pSkill->IsTargetSelf() && !pSkill->IsTargetEnemy())
+						{
+							nCX = nX;				// chieu len chinh minh
+							nCY = nY;
+						}
+						AUTOLOG_EVERY(1000, "[FIGHT-R0] t=%u skill=%d radius0 self=%d enemy=%d dist=%d ban tai (%d,%d) me=(%d,%d)", uCurTime, nMainSkill, (int)pSkill->IsTargetSelf(), (int)pSkill->IsTargetEnemy(), nDist, nCX, nCY, nX, nY);
+						Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, nCX, nCY);
+						SendClientCmdSkill(nMainSkill, nCX, nCY);
+						bBanRoi = true;
+					}
+					else if(nDist < nSkillRadius)
 					{
 						Npc[nNpcIdx].SendCommand(do_skill, nMainSkill, -1, nTGNpcIdx);
 						SendClientCmdSkill(nMainSkill, -1, Npc[nTGNpcIdx].m_dwID);
+						bBanRoi = true;
+					}
+					if(bBanRoi)
+					{
 						g_nComboSkillCuoi = nMainSkill;
 						if(bTCCast)
 						{	// (02/09) CHI dat moc khi that su ban duoc. Ban Thai dat moc hoi
@@ -15499,7 +15527,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					else
-					{
+					{	// ngoai tam - di toi muc tieu
 						if (!Player[nPlayerIdx].m_RunStatus)
 						{
 							Npc[nNpcIdx].SendCommand(do_walk, x, y);
