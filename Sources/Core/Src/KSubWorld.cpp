@@ -1092,6 +1092,14 @@ static void SubWorld_DanhThucQuetRegion(const KSubWorld* pSubWorld)
 }
 #endif
 
+#ifdef _SERVER
+// [S13i 03/09] Chi so vung DANG duoc duyet trong KSubWorld::Activate (-1 = ngoai vong duyet; 0x7FFFFFFF = dang duyet
+// danh sach VOID sau cac vung). Dung trong NpcChangeRegion de chi dat co 'da kich hoat' khi NPC sang vung con duoc
+// duyet trong CUNG khung (chong kich hoat 2 lan); truoc day dat co cho MOI lan doi vung, sang vung chi so NHO hon (da
+// duyet) thi co con nguyen sang khung sau -> KNpc::Activate tra ve ngay = NPC MAT MOT KHUNG (do: 39/44 khung mat cua
+// nguoi choi ngay luc doi vung, lech troi ~14 mps/s so voi client; bot/quai cung bi). Client xoa co dau moi khung.
+static int s_nS13iVungDangDuyet = -1;
+#endif
 void KSubWorld::Activate()
 {
 	if (m_SubWorldID < 0)
@@ -1125,11 +1133,13 @@ void KSubWorld::Activate()
 		{
 			if (m_Region[i].IsActive())
 			{
+				s_nS13iVungDangDuyet = i;	// [S13i]
 				m_Region[i].Activate();
 				nActiveRegionCount++;
 				nCoActive++;
 			}
 		}
+		s_nS13iVungDangDuyet = -1;	// [S13i]
 		if (pNgu && nCoActive == 0)
 			*pNgu = SUBWORLD_KHUNG_NGU;
 	}
@@ -1146,12 +1156,14 @@ void KSubWorld::Activate()
 #endif
 
 #ifdef _SERVER
+	s_nS13iVungDangDuyet = 0x7FFFFFFF;	// [S13i] danh sach VOID: NPC hoi sinh ve vung (da duyet) -> khong dat co
 	KIndexNode* pNode = (KIndexNode *)m_NoneRegionNpcList.GetHead();
 	while(pNode)
 	{
 		Npc[pNode->m_nIndex].Activate();
 		pNode = (KIndexNode *)pNode->GetNext();
 	}
+	s_nS13iVungDangDuyet = -1;	// [S13i]
 
 	if(m_pWeatherMgr)
 	{
@@ -2348,7 +2360,13 @@ void KSubWorld::NpcChangeRegion(int nSrcRnidx, int nDesRnIdx, int nIdx)
 	if (nIdx <= 0 || nIdx >= MAX_NPC)
 		return;
 
-	Npc[nIdx].SetActiveFlag(TRUE);
+	// [S13i 03/09] Chi dat co khi NPC se con duoc duyet lai trong CUNG khung: dang trong vong duyet vung va (dich = VOID
+	// - danh sach VOID duyet sau cac vung; hoac dich >= vung dang duyet - AddNpc noi DUOI). Sang vung da duyet, hoac doi
+	// vung ngoai vong duyet (MessageLoop/script/SetPos/hoi sinh trong danh sach VOID): khong dat -> khung sau kich hoat
+	// binh thuong. Truoc day dat cho MOI truong hop -> mat mot khung (xem chu thich tren s_nS13iVungDangDuyet).
+	if (s_nS13iVungDangDuyet >= 0 && s_nS13iVungDangDuyet != 0x7FFFFFFF
+		&& (nDesRnIdx == VOID_REGION || nDesRnIdx >= s_nS13iVungDangDuyet))
+		Npc[nIdx].SetActiveFlag(TRUE);
 	if (nSrcRnidx == -1)
 	{
 		_ASSERT(nDesRnIdx >= 0);
