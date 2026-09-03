@@ -17,10 +17,10 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `5b56367c` | `2.489.344` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) **+ vá S13 giựt tới/lùi của phiên wauto-6a (đè bản `96c3085d` lúc 13:50, build từ cùng `f2fa3c2b`; kèm `CoreServer.dll.moi cb4cf7f0` bên server — xem `BANGIAO_GIATLUI_PHUVE_FPS_0309.md` mục 10)** **+ S13e 811f93ac (14:17, chủ báo "chạy nhanh rồi chậm, đánh không trúng quái": KEO chỉ khi đứng yên + ân hạn 600 ms sau dash)**. Bộ 13:50 (CoreClient `9976e63f` · Game · WAuto · CoreServer) chủ ĐÃ swap lúc ~14:00 → lần này chỉ còn đổi `CoreClient.dll.moi`, ba tệp kia giữ nguyên. |
+| `CoreClient.dll.moi` | `62730ed9` | `2.501.120` | **MAIL đợt 1** (phiên wauto-d9, main `258f0948` = 3223f8ac + nhánh mail-0309: kênh ScriptProtocol, 2 gói mới nối CUỐI enum) — tập cha của `5b56367c` (S13e) **đang chạy** từ 14:17; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto/header. Lịch sử: 96c3085d (CT gốc) → 9976e63f (S13) → 5b56367c (S13e) → 62730ed9 (MAIL). |
 | `Game.exe.moi` | `d3d626ba` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
-| `CoreServer.dll.moi` (**bin\server**) | `7b3423c2` | `18.277.888` | vá S13 phía máy chủ (khe lệnh di chuyển riêng + giữ-chờ cho người chơi thật — phiên wauto-6a, commit `4aad2613`); **bắt buộc lên cùng** `CoreClient.dll.moi 9976e63f` **+ S13g/h 41fdaf9c (15:19, chỉ `#ifdef _SERVER`)**. Bản `cb4cf7f0` chủ đã swap lúc 13:50; client 5b56367c KHÔNG đổi, không có CoreClient.dll.moi nào chờ. |
+| `CoreServer.dll.moi` (**bin\server**) | `dc7032d2` | `18.281.472` | **MAIL đợt 1** (wauto-d9, main `258f0948`) — tập cha của `7b3423c2` (S13g/h) **đang chạy** từ 15:21. Phải lên CÙNG `CoreClient.dll.moi 62730ed9` (hai gói protocol mới). |
 
 ### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
 
@@ -30,7 +30,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
 5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
 6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `5b56367c…`, `CoreServer.dll` = `7b3423c2…`.
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `62730ed9…`, `CoreServer.dll` = `dc7032d2…`.
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```
