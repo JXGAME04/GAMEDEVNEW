@@ -43,6 +43,7 @@
 #include "KLienDauTables.h"
 #include "KHoatDongTables.h"
 #include "KCongThanhTables.h"
+#include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu
 
 #define	NPC_TRADE_BOX_WIDTH		6
 #define	NPC_TRADE_BOX_HEIGHT	10
@@ -21120,6 +21121,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 		{
 			SendClientBaucua((char*)uParam);
 		}
+	}
+	break;
+	case GOI_MAIL_UI:	// [MAIL 03/09 D2] cua so thu -> Lua uimail.lua (KMailClient.cpp)
+	{
+		MailUi_OnRequest(uParam, nParam);
 	}
 	break;
 	case GOI_DICE_CHOICE:	// DICEITEM 26/08

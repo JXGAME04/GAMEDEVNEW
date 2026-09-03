@@ -62,6 +62,7 @@
 #include "UiCase/UiFinishQuest.h"
 #include "UiCase/UiTrembleItem.h"
 #include "UiCase/UiDiceItem.h"	// DICEITEM 26/08
+#include "UiCase/UiMail.h"	// [MAIL 03/09 D2] cua so thu
 #include "UiCase/UiPartnerCommon.h"	// [BDH-G4]
 #include "UiCase/UiPartnerAttr.h"
 #include "UiCase/UiPartnerSkill.h"
@@ -653,6 +654,9 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		{
 			KUiDiceItem::OnDiceMsg((void*)uParam);
 		}
+		break;
+	case GDCNI_MAIL_UI:	// [MAIL 03/09 D2] uParam = MAILUI_CMD_*, nParam = con tro / so (song trong loi goi)
+		KUiMail_OnCoreCmd(uParam, nParam);
 		break;
 	case GDCNI_OPEN_TREMBLE_ITEM:
 		if (uParam > 0)

@@ -112,6 +112,9 @@ static void SP_Dispatch(const char* szScript, int nPlayerIdx, int nProtocolId, i
 #else
 	Lua_PushNumber(L, 1);
 	pScript->SetGlobalName((LPSTR)"MODEL_GAMECLIENT");
+	// [MAIL 03/09 D2] client: PlayerIndex = 1 de Talk/Say trong handler chay duoc
+	Lua_PushNumber(L, CLIENT_PLAYER_INDEX);
+	pScript->SetGlobalName((LPSTR)SCRIPT_PLAYERINDEX);
 #endif
 	char szCall[128];
 	sprintf(szCall, "ScriptProtocol:ProtocolProcess(%d, %d)", nProtocolId, hOB);
@@ -237,6 +240,35 @@ void SP_OnClientRecv(BYTE* pMsg)
 		return;
 	SP_Dispatch(SP_SCRIPT_C, 0, nId, h);
 	KJx2OB_Release(h);
+}
+
+// [MAIL 03/09 D2] chay mot cau Lua (vi du "UIMail:OnSelect(5)") trong state cua szScript; nap neu chua.
+// Dat MODEL_GAMECLIENT + PlayerIndex nhu SP_Dispatch. Tra 1 neu chay duoc.
+int SP_RunClientLua(const char* szScript, const char* szCall)
+{
+	if (!szCall || !szCall[0])
+		return 0;
+	KLuaScript* pScript = SP_GetScript(szScript, 1);
+	if (!pScript)
+	{
+		g_DebugLog((LPSTR)"[SP] RunClientLua: khong nap duoc %.128s", szScript);
+		return 0;
+	}
+	Lua_State* L = pScript->m_LuaState;
+	Lua_PushNumber(L, 1);
+	pScript->SetGlobalName((LPSTR)"MODEL_GAMECLIENT");
+	Lua_PushNumber(L, CLIENT_PLAYER_INDEX);
+	pScript->SetGlobalName((LPSTR)SCRIPT_PLAYERINDEX);
+	int nTop = 0;
+	pScript->SafeCallBegin(&nTop);
+	int nRet = 1;
+	if (lua_dostring(L, szCall) != 0)
+	{
+		g_DebugLog((LPSTR)"[SP] RunClientLua loi %.128s: %.200s", szScript, szCall);
+		nRet = 0;
+	}
+	pScript->SafeCallEnd(nTop);
+	return nRet;
 }
 
 // SendScriptDataToServer(nProtocolId, hOB) -> 1/0

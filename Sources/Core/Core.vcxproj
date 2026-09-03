@@ -691,6 +691,7 @@
     </ClCompile>
     <ClCompile Include="Src\BauCua.cpp" />
     <ClCompile Include="Src\KScriptProtocol.cpp" />
+    <ClCompile Include="Src\KMailClient.cpp" />
     <ClCompile Include="Src\CoreDrawGameObj.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
