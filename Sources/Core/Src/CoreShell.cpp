@@ -7253,6 +7253,42 @@ static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uC
 // ngay thi den noi NPC chua hien, khong mo duoc thoai mua.
 #define TK_CHO_NPC		8000u			// ms
 #define TK_GANTRAI		1440			// mps: gan hau doanh nay = dang trong trai
+// ================= SAN NGUOI / BOT KHAC PHE (03/09) =================
+// Chu game: "hien tai dang cho di chuyen theo toa do npc phe doi phuong - toi muon
+// tu dong xac dinh bot or nguoi choi khac phe roi di chuyen toi danh luon".
+// GOC: lan du phong cua TKP_FIGHT chay toi mot diem trong g_TKBinhA[78]/g_TKBinhB[139]
+// - do la toa do SINH BINH DOAN, chep tu TONGBINH_TOADO / KIMBINH_TOADO trong
+// script/tinhnang/tong_kim_tcap/lib_tktc.lua. Nhung the thuc CUU SAT thi may chu
+// KHONG sinh con nao: script/timertask/task01.lua:66-67 ghi nguyen van
+//     if (nPThuc == PT_CuuSat) then
+//         -- cuu sat khong add npc hay object gi het
+// => auto chay toi BAI DAT TRONG. (Hai the thuc kia - Bao Ve Nguyen Soai / Doat Co -
+// thi NPC co that nen lan do van dung, vi vay GIU LAI lam lan du phong.)
+//
+// Tang SAN duoi day chen TRUOC lan do. Khac tang DANH (TK_ChonDich) dung HAI diem:
+//   1. KHONG kep theo o 'Tam nhin PK' (mac dinh 800 mps = 25 o; .dat cu co the la 0
+//      -> bi kep con 100 mps = 3 o) ma lay toi tran vat ly cua client;
+//   2. KHONG doi duong nhin (TK_ThayDuoc): tuong khong can viec DI - DT_WalkTo co A*
+//      di vong. Tang DANH moi can duong nhin de ra don.
+// GIOI HAN KHONG VUOT DUOC: client vut moi goi NPC cach >= 40 o (S6_XaQuaTam,
+// KProtocolProcess.cpp:107) va bang NPC chi 256 khe, nen KHONG quet duoc ca ban do
+// nhu bot phia may chu (bot duyet Player[] toan cuc). Xa hon 40 o van phai di theo
+// bang toa do nhu cu.
+#define TK_SAN_TAM		TK_O(40)		// tran vat ly cua client (1280 mps)
+#define TK_SAN_CAMTRAI	1440			// mps: khong san nguoi dang dung trong hau doanh DICH
+static UINT s_uTKSanQuyen = 0;		// con han = tang san dang hanh quan, may PK nhuong khe lenh
+static UINT s_uTKSanID = 0;			// dwID muc tieu dang san (khoa muc tieu)
+static int  s_nTKSanMyX = 0;		// vi tri minh lan cuoi con nhuc nhich
+static int  s_nTKSanMyY = 0;
+static UINT s_uTKSanMoveT = 0;		// moc lan cuoi con nhuc nhich
+static int  s_nTKSanRepath = 0;		// da ep tinh lai duong may lan cho muc tieu nay
+
+static void TK_SanBo(void)			// xoa khoa muc tieu san
+{
+	s_uTKSanID = 0;
+	s_uTKSanMoveT = 0;
+	s_nTKSanRepath = 0;
+}
 
 static int TK_Abs(int v)
 {
@@ -7279,6 +7315,11 @@ static void TK_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
 	ea.nTKPhase = nPha;
 	ea.nTKStep = 0;
 	ea.nTKTry = 0;
+	// (03/09) doi pha (chet -> hau doanh -> ra tran lai) ma con om khoa san cu thi
+	// nhan vat lao nguoc ve cho muc tieu da bien mat; quyen hanh quan cung phai tat
+	// ngay khi roi TKP_FIGHT, khong thi may PK bi khoa oan.
+	s_uTKSanQuyen = 0;
+	TK_SanBo();
 	ea.uTKPhaseT = uCurTime;
 	ea.uTKNext = uCurTime + 400;
 	ea.uTKDlgSeen = g_sDTCap.uDlgSeq;
@@ -7635,6 +7676,165 @@ static int TK_ChonDich(int nPlayerIdx, const autoData* pAp)
 	if (nMu && nMuD <= 160)
 		return nMu;
 	return 0;
+}
+
+// Tim NGUOI / BOT khac phe gan nhat trong bong bong dong bo cua client va tra ve
+// chi so NPC; xuat DIEM NHAM (mps) ra pnAimX/pnAimY. Tra 0 = khong thay ai.
+static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
+						int* pnAimX, int* pnAimY)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0 || !pAp->bPKPlayer)
+		return 0;		// cung cong tac voi tang danh (o 'Danh nguoi' tab PK)
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	// Vung cam: CHI quanh hau doanh DICH. KHONG dung TK_TrongTrai vi ham do tra 1 cho
+	// CA HAI trai -> se lam auto mu voi dich dang tran vao trai NHA, dung luc can danh
+	// nhat. Nguon duy nhat mien nhiem hoan doi the tran la ea.nTKThe (chi duoc ghi khi
+	// THUC SU dung trong trai); chua biet the tran thi khong cam gi ca.
+	int nCamX = 0, nCamY = 0;
+	if (ea.nTKThe == 1)
+	{
+		nCamX = TK_O((int)g_TKHauDoanhB.x);
+		nCamY = TK_O((int)g_TKHauDoanhB.y);
+	}
+	else if (ea.nTKThe == 2)
+	{
+		nCamX = TK_O((int)g_TKHauDoanhA.x);
+		nCamY = TK_O((int)g_TKHauDoanhA.y);
+	}
+	int nBest = 0, nBestD = 0x7fffffff;
+	int nCu = 0, nCuD = 0x7fffffff;
+	int nThay = 0, nLoaiPhe = 0, nLoaiCam = 0;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (nIdx == nSelf || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].m_Kind != kind_player)
+			continue;	// NPC quan quan de tang DANH lo (o 'Uu tien danh' - the thuc
+						// Bao Ve Nguyen Soai uu tien Hieu Uy / Pho Tuong / Dai Tuong)
+		++nThay;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID)
+			!= Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;	// dung CHUNG danh sach den voi tang danh / [S11], khong de bang moi
+		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+		{
+			++nLoaiPhe;
+			continue;	// dung DUNG phep thu cua tang danh, khong doc camp tho: camp bi
+						// to doi ghi de (KPlayer.cpp SetCurrentCamp theo doi truong)
+		}
+		Npc[nIdx].GetMpsPos(&x, &y);
+		const int nD = g_GetDistance(nX, nY, x, y);
+		if (nD > TK_SAN_TAM)
+			continue;
+		if (nCamX && g_GetDistance(x, y, nCamX, nCamY) < TK_SAN_CAMTRAI)
+		{
+			++nLoaiCam;
+			continue;	// dang dung trong hau doanh dich - doi vao la chet, may nhay ve TKP_CAMP
+		}
+		if (Npc[nIdx].m_dwID == s_uTKSanID)
+		{
+			nCu = nIdx;
+			nCuD = nD;
+		}
+		if (nD < nBestD)
+		{
+			nBestD = nD;
+			nBest = nIdx;
+		}
+	}
+	// KHOA MUC TIEU + tre truot: trong dam dong 'gan nhat' doi vai lan moi giay, doi
+	// lien tuc thi chay qua chay lai khong danh duoc ai. Giu con cu, chi doi khi con
+	// moi gan hon it nhat 25%.
+	int nChon = 0, nChonD = 0;
+	if (nCu)
+	{
+		nChon = nCu;
+		nChonD = nCuD;
+		if (nBest && nBest != nCu && nBestD * 4 < nCuD * 3)
+		{
+			nChon = nBest;
+			nChonD = nBestD;
+		}
+	}
+	else
+	{
+		nChon = nBest;
+		nChonD = nBestD;
+	}
+	if (!nChon)
+	{
+		TK_SanBo();
+		AUTOLOG_EVERY(3000, "[TK-SAN] khong thay ai: nguoi thay=%d loaiphe=%d loaicam=%d the=%d me=(%d,%d)", nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, nX, nY);
+		return 0;
+	}
+	const UINT uID = Npc[nChon].m_dwID;
+	if (uID != s_uTKSanID)
+	{	// doi muc tieu -> dat lai bo do ket
+		s_uTKSanID = uID;
+		s_nTKSanRepath = 0;
+		s_uTKSanMoveT = uCurTime;
+		s_nTKSanMyX = nX;
+		s_nTKSanMyY = nY;
+	}
+	// DO KET: WAuto hien khong co chot nao o duong nay (DT_WalkTo con VUT gia tri tra
+	// ve cua FindPath nen no khong he biet 'khong co duong'). Khong nhuc nhich 3 giay
+	// thi ep tinh lai duong 2 lan; van khong duoc thi BO va cam 60 giay.
+	if (g_GetDistance(nX, nY, s_nTKSanMyX, s_nTKSanMyY) >= 32)
+	{
+		s_nTKSanMyX = nX;
+		s_nTKSanMyY = nY;
+		s_uTKSanMoveT = uCurTime;
+	}
+	else if (uCurTime - s_uTKSanMoveT > 3000u)
+	{
+		if (s_nTKSanRepath < 2)
+		{	// PHAI co RemoveFlag: chi ha uDTPath la vo tac dung vi DT_WalkTo con cua
+			// thu hai so dich cu ("tx != nX || ty != nY") ma dich thi khong doi.
+			g_ScenePlace.RemoveFlag();
+			ea.uDTPath = 0;
+			++s_nTKSanRepath;
+			s_uTKSanMoveT = uCurTime;
+		}
+		else
+		{
+			Player[nPlayerIdx].m_mAutoExcludeNpcID[uID] = uCurTime + 60000;
+			TK_SanBo();
+			AUTOLOG("[TK-SAN-BO] khong toi duoc id=%u - cam 60 giay", uID);
+			return 0;
+		}
+	}
+	// DIEM NHAM: KHONG nham vao dung o cua muc tieu - JX1 tinh NPC la vat can nen di
+	// thang vao o do la ket ngay canh nguoi ta. Lui lai mot doan tren doan thang noi
+	// hai ben, nhung khong duoc lui xa hon nua tam nhin cua tang DANH, neu khong se
+	// dung ngoai tam va khong bao gio ban giao duoc cho tang danh.
+	Npc[nChon].GetMpsPos(&x, &y);
+	int nTam = pAp->nPKVision;
+	if (nTam < 100)
+		nTam = 100;
+	else if (nTam > 1200)
+		nTam = 1200;
+	int nLui = TK_O(3);
+	if (nLui > nTam / 2)
+		nLui = nTam / 2;
+	if (nLui < 32)
+		nLui = 32;
+	int ax = x, ay = y;
+	if (nChonD > nLui)
+	{
+		ax = x + (nX - x) * nLui / nChonD;
+		ay = y + (nY - y) * nLui / nChonD;
+	}
+	if (pnAimX)
+		*pnAimX = ax;
+	if (pnAimY)
+		*pnAimY = ay;
+	AUTOLOG_EVERY(2000, "[TK-SAN] san id=%u xa=%d | nguoi thay=%d loaiphe=%d loaicam=%d the=%d nham=(%d,%d) me=(%d,%d) repath=%d", uID, nChonD, nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, ax, ay, nX, nY, s_nTKSanRepath);
+	return nChon;
 }
 
 // khoang cach tu (nX,nY) toi diem GAN NHAT cua mot bang binh doan (mps)
@@ -8406,6 +8606,8 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 				// giao muc tieu cho may PK (tab PK) danh - no nhan luon uNpcID nay
 				ea.uNpcID = Npc[nTG].m_dwID;
 				ea.uTKDestT = 0;
+				s_uTKSanQuyen = 0;	// (03/09) da co dich danh duoc - tra toan quyen cho may PK
+				TK_SanBo();
 				g_ScenePlace.RemoveFlag();
 				ea.uTKNext = uCurTime + 300;
 				return 2;
@@ -8415,6 +8617,22 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// id cu ma vung vao khong khi (chu game bao: 'khong co doi tuong khac phe ma
 		// van dung danh vao khong khi'). Van tra 2 de con danh tra khi bi danh.
 		ea.uNpcID = 0;
+		// (03/09) LAN SAN: truoc khi roi ve bang toa do, tu tim NGUOI / BOT khac phe
+		// gan nhat roi di toi. Xem chu thich day du o TK_SanNguoi.
+		{
+			int nAimX = 0, nAimY = 0;
+			const int nSan = TK_SanNguoi(nPlayerIdx, pAp, uCurTime, &nAimX, &nAimY);
+			if (nSan)
+			{
+				// giu khe lenh 700 ms: nhip TK la 300-400 ms nen quyen tu het han neu
+				// tang san ngung chay, khong can ai go
+				s_uTKSanQuyen = uCurTime + 700;
+				ea.uTKDestT = 0;	// bo diem tho dang chay; quay lai lan do se chon diem moi
+				DT_WalkTo(nPlayerIdx, nAimX, nAimY, TK_O(4), uCurTime);
+				return 2;
+			}
+		}
+		s_uTKSanQuyen = 0;	// khong san ai - tra quyen cho may PK
 		// khong co dich hop le -> chay toi mot diem trong bang binh doan ben dich
 		if (!ea.uTKDestT || uCurTime > ea.uTKDestT
 		 || g_GetDistance(nX, nY, TK_O(ea.nTKDestX), TK_O(ea.nTKDestY)) < 200)
@@ -15646,6 +15864,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					if(!Player[nPlayerIdx].m_sExtAuto.uNpcID)
 					{
+						// (03/09) tang SAN cua Tong Kim dang hanh quan thi NHUONG khe lenh.
+						// FindTargetNpc ben duoi KHONG loc duong nhin: bat duoc ai la chay
+						// tiep toi g_ScenePlace.RemoveFlag() (xoa sach lo trinh A*) roi
+						// do_walk/do_run DUONG THANG vao tuong - ma con no bat duoc chinh la
+						// con tang san vua chon de DI VONG toi. Hai chu tranh mot khe lenh.
+						// Chi chan nhanh TU BOC muc tieu; khi lan A da giao uNpcID thi khoi
+						// nay khong chay nen viec danh khong he bi anh huong.
+						if (s_uTKSanQuyen > uCurTime)
+						{
+							AUTOLOG_EVERY(2000, "[TK-SAN-QUYEN] nhuong khe lenh cho tang san t=%u", uCurTime);
+							return 0;
+						}
 						if(pApData->nPriority)
 						nTGNpcIdx = Player[nPlayerIdx].FindTargetNpc(
 						pApData->nPKVision, pApData->bPKPlayer,
