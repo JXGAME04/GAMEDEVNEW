@@ -655,3 +655,47 @@ Hậu quả: nội lực chưa đầy thì ô lực tay hiện **thấp hơn** s
    (a) Hoa Sơn nội, đủ kỹ năng, đầy nội lực → ô lực tay khoảng **10.400**, không còn 60k.
    (b) Tooltip Thanh Vân Tống Sảng và Long Huyền Kiếm Khí **không còn** dòng hỗ trợ sát thương; Ma Vân Kiếm Khí **vẫn còn**.
    (c) Ngoại công không đổi (khoảng 10k) → hai đường cân nhau.
+
+### 22.8 BỔ SUNG — đo đúng kịch bản "full kỹ năng full mạch" của chủ
+
+Bảng ở 22.4 mới tính phần kỹ năng. Chủ nói **"full mạch"** nên phải cộng thêm phần kinh mạch. Đã lần đường mã:
+
+`KMeridianManager::ApplyMaridianToNPC` (`Sources\Core\KMeridian.cpp:122-131`) đọc cột 7 của `meridian_level.txt` ra một mã, tra sang `settings\item\magicattrib_ge.txt` lấy loại và trị. Cộng dồn **12 mạch × 32 cấp**:
+
+| Mã | Thuộc tính | Tổng khi full |
+|---|---|---|
+| 246 | `five_elements_enhance_v` | 2.002 |
+| 247 | `five_elements_resist_v` | 2.002 |
+| 97-100 | sức mạnh / thân pháp / thể chất / nội lực | ~200 mỗi loại |
+| **243** | **`skill_enhance`** | **+101** |
+| 307 | `anti_allres_p` | 61 |
+| 114 | `allres_p` | 60 |
+| 86 | `lifemax_p` | 79 |
+
+**Mã 243 mới là mã quan trọng.** `KNpcAttribModify.cpp:136` ánh xạ `magic_skill_enhance` → `m_CurrentSkillEnhancePercent`, và đường hiển thị `KPlayer.cpp:9922` cộng thẳng biến này vào hệ số:
+```
+nAddDamageP = GetAddSkillDamage(nSkillId) + m_CurrentSkillEnhancePercent;
+```
+Nghĩa là **kinh mạch đầy cộng +101% vào hệ số nhân của kỹ năng**, không phải cộng phẳng.
+
+Kinh mạch **không** cho `colddamage_v` (mã 62) chút nào — tổng bằng 0 — nên không có khoản cộng phẳng nào khác vào ô lực tay.
+
+**Bảng cuối cùng, full kỹ năng + full mạch + đầy nội lực:**
+
+| Cấp 1382 | Băng gốc | Buff | Nội lực | Kinh mạch | Hệ số | LỰC TAY |
+|---|---|---|---|---|---|---|
+| **20 (trần MaxLevel)** | 4.000 | +60 | +100 | +101 | 361% | **14.440** |
+| 25 (cần trang bị cộng cấp) | 5.000 | +64 | +118 | +101 | 383% | 19.198 |
+| 30 (cần cộng +10 cấp) | 6.000 | +69 | +136 | +101 | 406% | 24.415 |
+
+**Trước khi sửa, cùng kịch bản đó:**
+
+| Cấp | Băng gốc | 3 buff | Nội lực | Kinh mạch | Hệ số | LỰC TAY |
+|---|---|---|---|---|---|---|
+| 20 | 11.433 | +180 | +100 | +101 | 481% | **54.994** |
+| 25 | 14.400 | +193 | +118 | +101 | 513% | 73.880 |
+| 30 | 21.600 | +207 | +136 | +101 | 545% | 117.744 |
+
+Con số **54.994** ở mốc trần khớp đúng mức 60k chủ báo (chủ có thể đang có trang bị cộng thêm một hai cấp kỹ năng).
+
+**Kết luận:** ở mốc trần thật (`MaxLevel` của cả 1372/1376/1380/1382/1383 đều là **20**), full kỹ năng full mạch ra **14.440** — đạt yêu cầu "không hơn 20k". Chỉ vượt 20k nếu trang bị cộng thêm khoảng **+10 cấp** kỹ năng, khi đó lên 24.415. Nếu chủ muốn chặn cả trường hợp đó thì hạ tiếp băng gốc, một dòng dữ liệu, vẫn không cần build.
