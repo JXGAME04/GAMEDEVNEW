@@ -14,7 +14,7 @@ Toàn bộ khối việc này **chưa được test lần nào**. Chủ game nó
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
 | `CoreClient.dll.moi` | `7efb5720` | 2.466.816 | commit `4d7b1df6` — gồm TẤT CẢ việc bên dưới |
-| `WAuto.exe.moi` | `d0efa1f5` | 403.968 | giao diện: bỏ 3 ô cũ, thêm tab 13 "Chiêu KH" |
+| `WAuto.exe.moi` | `237f6281` | 403.968 | commit `1ed55c62` — tab 13 "Chiêu KH" + vá 3 ô "Bật hỗ trợ" |
 
 `Game.exe` (`0411771f`) **không đổi**, không cần đụng.
 
@@ -57,6 +57,7 @@ Tất cả đã push lên `main`.
 | `b02736bd` | Tống Kim **r2**: nhận địch bằng **CAMP (màu phe)** y như bot, bỏ phép kẹp tầm |
 | `e32e68b2` | **Máy PK nhận cấu hình tab "Chiêu KH"** |
 | `4d7b1df6` | **Vá 2 lỗi của khối chống-kẹt `[S9-BOMUCTIEU]`** — xem mục 5.7 |
+| `1ed55c62` | **Ba ô "Bật hỗ trợ" bên tab Chiến đấu rỗng trơn** — xem mục 5.8 |
 
 ---
 
@@ -194,6 +195,45 @@ watchdog **sẽ nổ** — việc trước nay nó chưa từng làm. Đuổi m�
 mà 4 giây không rút được 1 ô sẽ bị **cấm 60 giây**. Ở cấu hình đó bot **đang không gây sát
 thương** (nó đi bộ, không bắn) nên đổi mục tiêu là lời — nhưng trận thưa người sẽ thấy bot
 "bỏ đi" 60 giây. Ô "Tiếp cận" **mặc định TẮT** nên phần lớn người chơi không thấy gì đổi.
+
+### 5.8 🔴🔴 Chèn một `if` vào giữa `if/else if` là **cướp mất `else`**
+
+Lỗi thật, chủ game báo 03/09: *"bên tab chiến đấu các kỹ năng bật hỗ trợ tôi chọn skill hỗ
+trợ thì không có"* — cả ba ô chỉ còn dòng "Không thiết lập".
+
+Mã gốc trong `WAuto.cpp` (vòng phân loại kỹ năng, `PRG_MAINSYNC`) là một chuỗi:
+
+```cpp
+if(gnode.arSkill[i].bAura)
+    gnode.SkillAAr[gnode.SkillANum++] = i;
+else if((bState || nStyle == 2) && bAlly)
+    gnode.SkillSAr[gnode.SkillSNum++] = i;   // <- danh sách ô "Bật hỗ trợ"
+```
+
+Hôm 02/09 (`15c56493`) tôi thêm danh sách `SkillKAr` cho tab "Chiêu KH" và chèn **ngay
+giữa hai vế**:
+
+```cpp
+if(gnode.arSkill[i].bAura) ...
+if(!gnode.arSkill[i].bAura)              // <- IF MỚI CƯỚP MẤT `else`
+    gnode.SkillKAr[gnode.SkillKNum++] = i;
+else if((bState || nStyle == 2) && bAlly)  // <- giờ nối vào IF MỚI
+    gnode.SkillSAr[gnode.SkillSNum++] = i;
+```
+
+Điều kiện thật sự của `SkillSAr` biến thành **"`bAura == TRUE` VÀ là buff nhắm phe ta"**.
+Vòng sáng không bao giờ đồng thời là buff phe ta ⇒ **không chiêu nào thoả** ⇒
+`SkillSNum = 0` ⇒ ba hàm điền combo không thêm được dòng nào.
+
+**Vá** (`1ed55c62`): đưa cả hai khối vào trong `else` của `bAura`. Hành vi của `SkillSAr`
+trở lại **y hệt** trước 02/09, không nới lỏng thêm điều kiện nào. Đo lại trên
+`settings\skills.txt`: **107 chiêu** thoả `(StateSpecialId != 0 || SkillStyle == 2) &&
+TargetAlly && !IsAura` (Thanh Phong phù, Nhất Khí Tam Thanh, La Hán Trận…) nên danh sách
+chắc chắn có nội dung.
+
+**Luật rút ra:** trước khi chèn một `if` mới vào giữa mã có sẵn, **nhìn xem dòng ngay dưới
+có phải `else` không**. Trình biên dịch không hề cảnh báo, và triệu chứng hiện ra ở một
+tính năng **hoàn toàn khác** với tính năng đang sửa.
 
 ### 5.6 Bẫy chung của dự án (nhắc lại)
 
