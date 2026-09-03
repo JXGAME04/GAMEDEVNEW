@@ -117,6 +117,43 @@ KNpc* Npc = new KNpc[MAX_NPC];
 #endif
 KNpcTemplate	* g_pNpcTemplate[MAX_NPCSTYLE][MAX_NPC_LEVEL][MAX_NPC_SERIES];
 
+// [S13 03/09] DUONG ONG LENH cho NGUOI CHOI THAT: khe DI CHUYEN rieng + GIU CHO khi AI tat.
+// Goc do duoc (BANGIAO_GIATLUI_PHUVE_FPS_0309.md muc 9): m_Command la MOT khe ghi de; server gom het
+// goi den trong MessageLoop() roi moi MainLoop() => chum goi [chieu, chay] cua mot khung client chi
+// con goi CUOI; con ProcCommand nhanh nAI==0 VUT lenh chay/chieu toi luc dang hoat anh. Client tieu
+// thu khe GIUA khung nen lam CA hai => hai ben khac trang thai 33,8% thoi gian, moi lan bat dau chay
+// lech them ~31 mps, khong bao gio xa => nan 8-13 o (3,5 cu/phut).
+// Sua: (1) walk/run cua nguoi choi that vao khe rieng s_S13Move[m_Index] (mang tinh theo chi so -
+// KHONG doi layout KNpc, khong dung header); (2) lenh toi luc AI tat thi GIU, thi hanh khi AI bat lai
+// (chieu: giu lenh moi nhat; chay: giu dich moi nhat). Moi NPC khac (quai, bot, SimCity) di NGUYEN
+// duong cu. Khe bi xoa khi: Init/Remove, chet, SetPos/ChangeWorld (server), dat lai vi tri / doi map
+// (client, goi tu KProtocolProcess.cpp va KSubWorld.cpp qua S13_ClearCmd).
+static NPC_COMMAND	s_S13Move[MAX_NPC];
+static BOOL S13_IsRealPlayer(KNpc* pNpc)
+{
+	if (pNpc->m_Index <= 0 || pNpc->m_Index >= MAX_NPC)
+		return FALSE;
+#ifdef _SERVER
+	if (pNpc->m_Kind != kind_player)
+		return FALSE;
+	const int nS13Plr = pNpc->GetPlayerIdx();	// m_nPlayerIdx la private
+	if (nS13Plr <= 0 || nS13Plr >= MAX_PLAYER)
+		return FALSE;
+	return Player[nS13Plr].m_nNetConnectIdx >= 0;
+#else
+	return pNpc->m_Index == Player[CLIENT_PLAYER_INDEX].m_nIndex;
+#endif
+}
+// Goi tu tep khac (client): xoa CA hai khe cua chinh minh khi bi dat lai vi tri / doi map.
+void S13_ClearCmd(int nIdx)
+{
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return;
+	s_S13Move[nIdx].CmdKind = do_none;
+	if (S13_IsRealPlayer(&Npc[nIdx]))
+		Npc[nIdx].SendCommand(do_none, 0, 0, 0);	// m_Command private: do_none qua het cua chan va xoa khe
+}
+
 KNpc::KNpc()
 {
 #ifdef _SERVER
@@ -138,6 +175,9 @@ inline int KNpc::GetKind() const
 
 void KNpc::Init()
 {
+	// [S13] xoa khe di chuyen rieng theo chi so CU (Init duoc Remove goi khi thu hoi khe)
+	if (m_Index > 0 && m_Index < MAX_NPC)
+		s_S13Move[m_Index].CmdKind = do_none;
 	memset(m_btStateInfo, 0, sizeof(m_btStateInfo));
 	m_dwID = 0;
 	m_Index = 0;
@@ -980,7 +1020,11 @@ void KNpc::ProcStatus()
 void KNpc::ProcCommand(int nAI)
 {
 	AUTOLOG_EVERY(2000, "[E4_PROCCMD_IN] npc=%d id=%u ai=%d cmd=%d p=(%d,%d,%d) exch=%d rgn=%d doing=%d", m_Index, m_dwID, nAI, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, m_bExchangeServer, m_RegionIndex, (int)m_Doing);
-	if (m_Command.CmdKind == do_none || m_bExchangeServer)
+	// [S13] khe di chuyen rieng cua nguoi choi that (NULL voi moi NPC khac => hanh vi cu nguyen ven)
+	NPC_COMMAND* pS13Move = S13_IsRealPlayer(this) ? &s_S13Move[m_Index] : (NPC_COMMAND*)0;
+	if (m_bExchangeServer)
+		return;
+	if (m_Command.CmdKind == do_none && !(pS13Move && pS13Move->CmdKind != do_none))
 		return;
 
 	if (nAI)
@@ -1078,6 +1122,19 @@ void KNpc::ProcCommand(int nAI)
 
 		case do_skill: // Linq Sau khi luot bi do, ket cac skill tao du anh
 		case do_run:
+			// [S13] nguoi choi that: GIU lenh chieu moi nhat toi khi AI bat lai (thay cho vut roi cho client gui lai)
+			if (pS13Move && m_Command.CmdKind == do_skill)
+			{
+				if (m_Doing == do_death || m_Doing == do_revive)
+				{
+					m_Command.CmdKind = do_none;	// [S13c] phan bien #6: dang nam - khong giu, keo hoi sinh xong chieu cu no
+					goto S13_Move;
+				}
+				AUTOLOG_IDX_EVERY(m_Index, 1000, "[S13-GIU-CHIEU] npc=%d skill=%d doing=%d frame=%d/%d", m_Index, m_Command.Param_X, (int)m_Doing, m_Frames.nCurrentFrame, m_Frames.nTotalFrame);
+				if (0 == m_ProcessAI && m_Doing == do_stand)
+					m_ProcessAI = 1;
+				goto S13_Move;
+			}
 			if (IsPlayer() && m_Command.CmdKind == do_skill)
 				AUTOLOG_IDX(m_Index, "[S3-CMD-SWALLOW] npc=%d plr=%d cmd=%d skill=%d p=(%d,%d) doing=%d procai=%d rgn=%d", m_Index, m_nPlayerIdx, (int)m_Command.CmdKind, m_Command.Param_X, m_Command.Param_Y, m_Command.Param_Z, (int)m_Doing, m_ProcessAI, m_RegionIndex);
 			if (0 == m_ProcessAI && IsPlayer() && m_Doing == do_stand /* && Player[m_nPlayerIdx].m_cFaction.GetCurFactionNo() <= 2 */ )
@@ -1097,6 +1154,34 @@ void KNpc::ProcCommand(int nAI)
 		}
 	}
 	m_Command.CmdKind = do_none;
+S13_Move:
+	// [S13] khe di chuyen rieng: AI bat -> thi hanh; AI tat -> GIU dich moi nhat (nguoi choi that)
+	if (pS13Move && pS13Move->CmdKind != do_none)
+	{
+		// [S13c] phan bien #1: dung m_ProcessAI HIEN TAI, KHONG dung nAI chup luc vao ham - chieu vua thi hanh
+		// o khe hanh dong ben tren da tat AI; RunTo ngay luc nay se ghi m_Doing=do_run cat dut hoat anh chieu
+		// (mana da tru, chieu khong Cast, con nam trong do_run voi AI tat). Phai GIU cho toi khi AI bat lai.
+		if (m_Doing == do_death || m_Doing == do_revive)
+			pS13Move->CmdKind = do_none;	// [S13c] phan bien #6: dang nam/hoi sinh - khong giu lenh cu
+		else if (nAI && m_ProcessAI)
+		{
+			if (m_RegionIndex >= 0)
+			{
+				if (pS13Move->CmdKind == do_walk)
+					Goto(pS13Move->Param_X, pS13Move->Param_Y);
+				else
+					RunTo(pS13Move->Param_X, pS13Move->Param_Y);
+				pS13Move->CmdKind = do_none;
+			}
+		}
+		else if (pS13Move->CmdKind == do_walk && m_RandMove.nTime > 0)
+		{
+			Goto(pS13Move->Param_X, pS13Move->Param_Y);
+			pS13Move->CmdKind = do_none;
+		}
+		else if (0 == m_ProcessAI && m_Doing == do_stand)
+			m_ProcessAI = 1;	// dung ma AI tat: bat lai, lenh giu se thi hanh nhip sau (nhu nhanh cu)
+	}
 }
 
 BOOL KNpc::ProcessState()
@@ -1622,6 +1707,12 @@ void KNpc::DoDeath(int nMode/* = 0*/, int nAttacker)
 	m_Doing = do_death;
 	m_ProcessAI	= 0;
 	m_ProcessState = 0;
+	// [S13] chet: xoa lenh dang giu (khong de chieu/chay cu no sau khi hoi sinh)
+	if (S13_IsRealPlayer(this))
+	{
+		s_S13Move[m_Index].CmdKind = do_none;
+		m_Command.CmdKind = do_none;
+	}
 	//
 	m_Frames.nTotalFrame = m_DeathFrame;
 	m_Frames.nCurrentFrame = 0;
@@ -2658,7 +2749,11 @@ void KNpc::DoSkill(int nX, int nY)
 					Npc[nY].GetMpsPos(&nDesX, &nDesY);
 					if (IsPlayer())
 						AUTOLOG_IDX(m_Index, "[S2-MELEE-TOOFAR-RUN] npc=%d id=%u skill=%d tgt_idx=%d dist=%d radius=%d cong=%d curradius=%d chay_toi=(%d,%d) map=(%d,%d) doing=%d ngua=%d", m_Index, m_dwID, m_ActiveSkillID, nY, NpcSet.GetDistance(m_Index, nY), pSkill->GetAttackRadius(), pSkill->GetAttackRadius() + 20, m_CurrentAttackRadius, nDesX, nDesY, m_MapX, m_MapY, (int)m_Doing, (int)m_bRideHorse);
-					SendCommand(do_run, nDesX, nDesY);
+					// [S13c] phan bien #2: voi nguoi choi that, lenh nay TRUOC S13 la MA CHET (bi dong cuoi ProcCommand
+					// xoa ngay trong cung luot). Khe di chuyen rieng lam no song lai CHI o may chu -> may chu tu duoi bam
+					// ma client khong biet = lech moi. Giu dung hieu luc cu; NPC khac (bot) van nhu truoc.
+					if (!S13_IsRealPlayer(this))
+						SendCommand(do_run, nDesX, nDesY);
 					return;
 				}
 				#endif
@@ -5688,6 +5783,15 @@ void KNpc::SendCommand(NPCCMD cmd,int x,int y, int z)
 	}
 #endif
 	AUTOLOG_EVERY(2000, "[E4_CMD_ACCEPT] npc=%d id=%u cmd=%d p=(%d,%d,%d) doing=%d skill=%d map=(%d,%d) rgn=%d", m_Index, m_dwID, (int)cmd, x, y, z, (int)m_Doing, m_ActiveSkillID, m_MapX, m_MapY, m_RegionIndex);
+	// [S13] nguoi choi that: walk/run vao khe di chuyen rieng - khong de len lenh chieu va nguoc lai
+	if ((cmd == do_walk || cmd == do_run) && S13_IsRealPlayer(this))
+	{
+		s_S13Move[m_Index].CmdKind = cmd;
+		s_S13Move[m_Index].Param_X = x;
+		s_S13Move[m_Index].Param_Y = y;
+		s_S13Move[m_Index].Param_Z = z;
+		return;
+	}
 	m_Command.CmdKind = cmd;
 	m_Command.Param_X = x;
 	m_Command.Param_Y = y;
@@ -10739,6 +10843,12 @@ int KNpc::SetPos(int nX, int nY)
 		return 0;
 	}
 
+	// [S13] dich chuyen: lenh chay/chieu dang giu la cua CHO CU -> xoa
+	if (S13_IsRealPlayer(this))
+	{
+		s_S13Move[m_Index].CmdKind = do_none;
+		m_Command.CmdKind = do_none;
+	}
 	int nOldRegion = m_RegionIndex;
 	if (m_RegionIndex >= 0)
 	{
@@ -10848,6 +10958,12 @@ int KNpc::ChangeWorld(DWORD dwSubWorldID, int nX, int nY)
 		SendDataToNearRegion(&RemoveSync, sizeof(NPC_REMOVE_SYNC), NPC_EVENT_BROADCAST_LIMIT);	// [S11] go khong cat ai
 	}
 
+	// [S13] doi map: lenh chay/chieu dang giu la cua MAP CU -> xoa
+	if (S13_IsRealPlayer(this))
+	{
+		s_S13Move[m_Index].CmdKind = do_none;
+		m_Command.CmdKind = do_none;
+	}
 	int nSourceSubWorld = m_SubWorldIndex;
 	int nSourceRegion = m_RegionIndex;
 

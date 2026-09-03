@@ -26,6 +26,7 @@
 #include <queue>
 #include <algorithm>
 extern BOOL			g_bPaintInterpFocus;	// CoreShell.cpp: PaintFps interpolation drives the camera
+extern void			S13_ClearCmd(int nIdx);	// [S13] KNpc.cpp: xoa khe lenh dang giu cua chinh minh
 #endif
 #include "KSubWorld.h"
 
@@ -1954,6 +1955,7 @@ BOOL KSubWorld::LoadMap(int nId, int nRegion)
 	if (nId != m_SubWorldID)
 	{
 		StopPath();
+		S13_ClearCmd(Player[CLIENT_PLAYER_INDEX].m_nIndex);	// [S13] doi map: lenh dang giu la cua map cu
 		m_uPaintTime = timeGetTime() + 2000;
 		bLoadNew = true;
 		SubWorld[0].Close();

@@ -53,12 +53,34 @@ DWORD g_uS12CuaSoSelf = 0;
 // KProtocol.cpp): dung phan biet echo (dich trung) voi lenh DAT-DI cua server (dich la).
 int g_nS12TuGuiX = 0, g_nS12TuGuiY = 0;
 DWORD g_uS12TuGuiTick = 0;   // [S12c] timeGetTime luc client TU GUI lenh move gan nhat
+// [S13 03/09] xem KNpc.cpp: xoa khe lenh dang giu cua chinh minh khi bi dat lai vi tri / doi map.
+extern void S13_ClearCmd(int nIdx);
+// [S13-KEO] hoa giai MEM vi tri ban than: duoi vung chet KHONG dung (giu du doan), phan doi ra keo
+// ve phia may chu 1/S13_CHIA moi goi sync (~18 goi/s => ~90%/giay). Do 03/09: dan truoc lanh p50 ~1 o,
+// phan benh dung phang 6,5 o => vung chet 2 o. Nan cung 256 (S8) giu nguyen lam lan an toan.
+#define S13_VUNGCHET	64
+#define S13_CHIA		8
+int g_nS13KeoCount = 0;
 static BOOL S12_ChoPhepSelf(int nIdx, int nDichX, int nDichY)
 {
 	if (nIdx <= 0 || nIdx != Player[CLIENT_PLAYER_INDEX].m_nIndex)
 		return FALSE;
 	if (g_uS12CuaSoSelf == 0 || (DWORD)(timeGetTime() - g_uS12CuaSoSelf) >= 3000)
 		return FALSE;
+	// [S13-XA 03/09] dich cach minh > 128 o (4096 mps) = lenh TON DONG cua map cu lot qua luc vua ha canh
+	// (do that: ha canh Thanh Do ma nhan lenh chay toi toa do sa mac cach 81.192 mps) -> vut. Script
+	// dat-di that (Tong Kim ~1100 mps) van qua duoc.
+	{
+		int nS13MeX = 0, nS13MeY = 0;
+		Npc[nIdx].GetMpsPos(&nS13MeX, &nS13MeY);
+		int nS13Dx = nDichX - nS13MeX; if (nS13Dx < 0) nS13Dx = -nS13Dx;
+		int nS13Dy = nDichY - nS13MeY; if (nS13Dy < 0) nS13Dy = -nS13Dy;
+		if (nS13Dx > 4096 || nS13Dy > 4096)
+		{
+			AUTOLOG("[S13-XA] vut lenh self dich=(%d,%d) me=(%d,%d) t=%u", nDichX, nDichY, nS13MeX, nS13MeY, SubWorld[0].m_dwCurrentTime);
+			return FALSE;
+		}
+	}
 	// [S12b 28/08] Dich lech >64 mps (2 o) so dich minh vua TU GUI = chac chan KHONG phai
 	// echo cua minh -> cho ap luon, khong xet 2 gac duoi (do that 27/08: auto bat lam
 	// HaveTarget/SendMoveFrames chan sach ca lenh dat that; 42 lenh echo that thi van bi
@@ -2405,6 +2427,14 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 
 	nNpcIdx = Player[CLIENT_PLAYER_INDEX].m_nIndex;
 #ifndef _SERVER
+	// [S13c] khoang thoi gian giua hai goi tu-sync lien tiep (S13-KEO tinh buoc theo thoi gian that: vung dong
+	// KRegion::Activate chi sync 5 NPC/nhip/region => chinh chu ~1 goi/2 s, vung vang 18 goi/s)
+	static DWORD s_uS13LastSync = 0;
+	DWORD uS13Now = timeGetTime();
+	int nS13Dt = (s_uS13LastSync == 0) ? 55 : (int)(uS13Now - s_uS13LastSync);
+	s_uS13LastSync = uS13Now;
+#endif
+#ifndef _SERVER
 	// [S6] Ba nhanh cua ham nay: regcu=-1 (vao lan dau) / svreg=-1 (region chua nap -> LoadMap)
 	// / con lai = GIU NGUYEN toa do client, KHONG nan. Nhanh thu ba chinh la nghi can cua loi
 	// "chet hoi sinh hoac phu ve thanh thi nhay vai toa do bay": may chu doi cho nhung neu
@@ -2463,6 +2493,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		// vao map). Do that 27+28/08: lenh DAT-DI cua script toi CUNG MILI-GIAY voi cu sync
 		// nay; cua so truoc day chi mo o nhanh S8-NAN (486ms sau) nen lenh bi vut -> thang
 		// bung 8 o moi ~0,6s (11 cu / 5 cu). Mo cua so ngay tai day; gac echo giu nguyen.
+		S13_ClearCmd(nNpcIdx);	// [S13] lenh dang giu la cua cho cu
 		g_uS12CuaSoSelf = timeGetTime();
 		AUTOLOG("[S12-CUA] mo cua so theo-lenh tai dat-lai sv=(%d,%d) t=%u", (int)pSync->m_dwMapX, (int)pSync->m_dwMapY, SubWorld[0].m_dwCurrentTime);
 #endif
@@ -2478,6 +2509,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		int nRegionX = pSync->m_dwMapX / (SubWorld[0].m_nCellWidth * SubWorld[0].m_nRegionWidth);
 		int nRegionY = pSync->m_dwMapY / (SubWorld[0].m_nCellHeight * SubWorld[0].m_nRegionHeight);
 		
+		S13_ClearCmd(nNpcIdx);	// [S13] lenh dang giu la cua cho cu
 		DWORD	dwRegionID = MAKELONG(nRegionX, nRegionY);
 		SubWorld[0].LoadMap(SubWorld[0].m_SubWorldID, dwRegionID);
 
@@ -2550,8 +2582,53 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 			memset(&Npc[nNpcIdx].m_sSyncPos, 0, sizeof(Npc[nNpcIdx].m_sSyncPos));
 			Npc[nNpcIdx].m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 			// duong di dang chay duoc tinh tu diem xuat phat cu -> huy de tinh lai
+			S13_ClearCmd(nNpcIdx);
 			SubWorld[0].StopPath();
 			return;
+		}
+		else if (nLech > S13_VUNGCHET
+			&& Npc[nNpcIdx].m_Doing != do_runattack && Npc[nNpcIdx].m_Doing != do_blurmove
+			&& Npc[nNpcIdx].m_Doing != do_jump && Npc[nNpcIdx].m_Doing != do_jumpattack
+			&& Npc[nNpcIdx].m_Doing != do_hurt && Npc[nNpcIdx].m_Doing != do_death)
+		{
+			// [S13-KEO 03/09] HOA GIAI MEM: phan lech vuot vung chet keo ve phia may chu 1/S13_CHIA.
+			// Buoc <= (255-64)/8 = 24 mps < PAINT_INTERP_SNAP_DIST 64 => lop noi suy ve keo muot, mat
+			// khong thay giat. KHONG StopPath, KHONG dung m_DesX/Y: duong dang chay tiep tuc tu vi tri
+			// moi. Bo qua luc dang luot/nhay/bi danh/chet (client hop phap di truoc vai tram mps trong
+			// ~0,4 s; nan cung 256 o tren van la lan an toan).
+			// [S13c] phan bien #4: buoc theo THOI GIAN THAT giua hai goi (tau ~450 ms => 55 ms ~ 1/8 phan doi),
+			// kep [2, 40] mps: chua 24 mps cho buoc chay cung nhip de tong dich chuyen van <= PAINT_INTERP_SNAP_DIST 64.
+			if (nS13Dt < 1)
+				nS13Dt = 1;
+			if (nS13Dt > 3000)
+				nS13Dt = 3000;
+			int nS13Buoc = (int)(((__int64)(nLech - S13_VUNGCHET)) * nS13Dt / 450);
+			if (nS13Buoc < 2)
+				nS13Buoc = 2;
+			if (nS13Buoc > 40)
+				nS13Buoc = 40;	// [S13d] 64 + buoc chay <=31 vuot nguong snap noi suy -> giat 2-3 o o vung dong
+			int nS13X = nMeX + (int)(((__int64)((int)pSync->m_dwMapX - nMeX)) * nS13Buoc / nLech);
+			int nS13Y = nMeY + (int)(((__int64)((int)pSync->m_dwMapY - nMeY)) * nS13Buoc / nLech);
+			int nS13R = -1, nS13MX = 0, nS13MY = 0, nS13OX = 0, nS13OY = 0;
+			SubWorld[0].Mps2Map(nS13X, nS13Y, &nS13R, &nS13MX, &nS13MY, &nS13OX, &nS13OY);
+			// [S13c] phan bien #5: diem keo trung gian roi vao o vat can (cat goc tuong) -> bo cu keo nay, cho goi sau
+			// [S13d] phan bien vong 2: KRegion::GetBarrier ban client KHONG doc vat can dia hinh (chi bao o co NPC khi
+			// g_nPbNpcChan); dia hinh client nam o g_ScenePlace, doc qua SubWorld::TestBarrier(mps) - dung ham GetDir dung.
+			BYTE byS13B = (nS13R >= 0) ? SubWorld[0].TestBarrier(nS13X, nS13Y) : (BYTE)0xFF;
+			if (nS13R >= 0 && (byS13B == 0 || byS13B == Obstacle_JumpFly))
+			{
+				SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].DecRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+				if (nS13R != Npc[nNpcIdx].m_RegionIndex)
+					SubWorld[0].NpcChangeRegion(Npc[nNpcIdx].m_dwRegionID, SubWorld[0].m_Region[nS13R].m_RegionID, nNpcIdx);
+				Npc[nNpcIdx].m_MapX = nS13MX;
+				Npc[nNpcIdx].m_MapY = nS13MY;
+				Npc[nNpcIdx].m_OffX = nS13OX;
+				Npc[nNpcIdx].m_OffY = nS13OY;
+				if (Npc[nNpcIdx].m_RegionIndex >= 0)
+					SubWorld[0].m_Region[Npc[nNpcIdx].m_RegionIndex].AddRef(Npc[nNpcIdx].m_MapX, Npc[nNpcIdx].m_MapY, obj_npc);
+				g_nS13KeoCount++;
+				AUTOLOG_EVERY(1000, "[S13-KEO] lech=%d buoc=%d dt=%d doing=%d dem=%d t=%u", nLech, nS13Buoc, nS13Dt, (int)Npc[nNpcIdx].m_Doing, g_nS13KeoCount, SubWorld[0].m_dwCurrentTime);
+			}
 		}
 	}
 #endif
