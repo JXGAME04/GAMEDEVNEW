@@ -3265,7 +3265,8 @@ void KNpc::OnWalk()
 //
 }
 
-#ifdef _SERVER
+// [VHTD 02/09w] BO #ifdef _SERVER: client CUNG can DetonateMissles de tu don khi truong khi nhan goi s2c_detonate.
+// Moi thu ham nay dung deu ton tai phia client, moi chan bien con nguyen, pNext lay truoc khi Detonate nen an toan voi viec go nut.
 // [HOASON 01/09b] Linux 0x08079870 (goi tu handler candetonate1-3 0x08097110 voi launcher=[ebp+0xc]): duyet dan trong vung cua NGUOI PHAT
 // va 8 vung ke ([region+0x78+i*4]); dan co m_nMissleId == nStyle; quan he chu dan <-> nguoi phat: flag 0 -> self|ally (test al,6),
 // flag 1 -> enemy (test al,8), khac -> khong kiem; khoang cach mps sqrt(dx^2+dy^2) <= nRadius -> 0x08075210 = tan ngay (DoVanish:
@@ -3283,7 +3284,7 @@ int KNpc::DetonateMissles(int nStyle, int nRadius, int nFlag)
 	for (int k = 0; k < 8; k++)
 	{
 		int r = pSW->m_Region[m_RegionIndex].m_nConnectRegion[k];
-		if (r >= 0 && r < pSW->m_nTotalRegion)	// MAX_REGION chi co o client; server dung m_nTotalRegion
+		if (r >= 0 && r < pSW->m_nTotalRegion)	// [VHTD 02/09w] m_nTotalRegion co CA HAI phia (client = 3*3 = 9, bang MAX_REGION); TUYET DOI khong doi sang MAX_REGION vi hang do CHI dinh nghia phia client.
 			nRegions[nR++] = r;
 	}
 	int nDem = 0;
@@ -3325,7 +3326,6 @@ int KNpc::DetonateMissles(int nStyle, int nRadius, int nFlag)
 	}
 	return nDem;
 }
-#endif
 
 void KNpc::ModifyAttrib(int nAttacker, void* pData)
 {
@@ -3356,7 +3356,15 @@ void KNpc::ModifyAttrib(int nAttacker, void* pData)
 	{
 		// Linux 0x08097110: nValue[0] = id_dan*256 + co (0 = dan phe ta, 1 = dan dich), nValue[2] = ban kinh (mps), quanh NGUOI PHAT
 		if (nAttacker > 0 && nAttacker < MAX_NPC && Npc[nAttacker].m_Index > 0 && pMA->nValue[0] > 0)
-			Npc[nAttacker].DetonateMissles(pMA->nValue[0] >> 8, pMA->nValue[2], pMA->nValue[0] & 0xff);
+		{
+			int nStyleDt = pMA->nValue[0] >> 8;
+			int nFlagDt = pMA->nValue[0] & 0xff;
+			int nRadiusDt = pMA->nValue[2];
+			// [VHTD 02/09w] no o may chu chi gui GWM_MISSLE_DEL vao hang doi NOI BO -> man hinh khong hay biet.
+			// Bao cho client de no tu don khi truong va sinh dan hieu ung no ngay, thay vi cho het 20 giay.
+			if (Npc[nAttacker].DetonateMissles(nStyleDt, nRadiusDt, nFlagDt) > 0)
+				Npc[nAttacker].HS_BroadcastDetonate(nStyleDt, nRadiusDt, nFlagDt);
+		}
 		return;
 	}
 	if (pMA->nAttribType == magic_reset_bufftime)	// [VHTD 02/09] Tru Gian Diet Ninh 1985: dat lai thoi gian debuff 1988 tren nan nhan (this)
@@ -3416,6 +3424,29 @@ void KNpc::CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget)
 		else if (eStyle == SKILL_SS_Thief)
 			dwCastTime = ((KThiefSkill*)pSkill)->GetDelayPerCast();
 		m_SkillList.SetNextCastTime(nSkillId, SubWorld[m_SubWorldIndex].m_dwCurrentTime, SubWorld[m_SubWorldIndex].m_dwCurrentTime + dwCastTime);
+	}
+}
+
+// [VHTD 02/09w] Phat lenh kich no cho moi client trong tam nhin. Chi may chu (KRegion::BroadCast la server-only).
+// Dung dung mau quang ba cua CastAutoSkillAt ngay tren.
+void KNpc::HS_BroadcastDetonate(int nStyle, int nRadius, int nFlag)
+{
+	if (!m_Index || m_SubWorldIndex < 0 || m_RegionIndex < 0)
+		return;
+	S2C_DETONATE sD;
+	sD.ProtocolType = s2c_detonate;
+	sD.dwLauncherId = m_dwID;
+	sD.wStyle = (WORD)nStyle;
+	sD.wRadius = (WORD)(nRadius > 0 ? nRadius : 0);
+	sD.btFlag = (BYTE)nFlag;
+	static const POINT POff[8] = { {0, 32}, {-16, 32}, {-16, 0}, {-16, -32}, {0, -32}, {16, -32}, {16, 0}, {16, 32} };
+	int nMaxCount = MAX_BROADCAST_COUNT;
+	CURREGION.BroadCast(&sD, sizeof(sD), nMaxCount, m_MapX, m_MapY);
+	for (int i = 0; i < 8; i++)
+	{
+		if (CONREGIONIDX(i) == -1)
+			continue;
+		CONREGION(i).BroadCast(&sD, sizeof(sD), nMaxCount, m_MapX - POff[i].x, m_MapY - POff[i].y);
 	}
 }
 

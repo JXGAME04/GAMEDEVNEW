@@ -173,6 +173,7 @@ public:
 	void	s2cSyncItemFusion(BYTE* pMsg);	// [DUNGLUYEN 01/09]
 	void	s2cReduceSkillCD(BYTE* pMsg);	// [HOASON 01/09b]
 	void	s2cSyncVhtd(BYTE* pMsg);	// [VHTD 02/09g]
+	void	s2cDetonate(BYTE* pMsg);	// [VHTD 02/09w]
 	 
 	void	s2cExtend(BYTE* pMsg);
 	void	s2cExtendChat(BYTE* pMsg);

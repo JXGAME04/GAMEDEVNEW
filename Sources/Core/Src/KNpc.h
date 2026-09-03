@@ -782,6 +782,7 @@ public:
 	void				Load(int nNpcSettingIdx, int nLevel, int nSeries);						//fix by phong ki“u
 	void				GetMpsPos(int * pPosX, int *pPosY);
 	int					DetonateMissles(int nStyle, int nRadius, int nFlag);	// [HOASON 01/09b] Linux 0x08079870 (candetonate1-3)
+	void				HS_BroadcastDetonate(int nStyle, int nRadius, int nFlag);	// [VHTD 02/09w] chi dinh nghia phia may chu
 #ifndef _SERVER
 	VOID				ClientGotoPos(INT nX, INT nY, INT nMode = 0);	// nMode: 0.Auto; 1.Walk; 2.Run
 	INT					  GetMapDisX(INT nIdx1, INT nIdx2);

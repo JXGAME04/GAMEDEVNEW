@@ -292,6 +292,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_syncfusion] = &KProtocolProcess::s2cSyncItemFusion;	// [DUNGLUYEN 01/09]
 	ProcessFunc[s2c_reduceskillcd] = &KProtocolProcess::s2cReduceSkillCD;	// [HOASON 01/09b]
 	ProcessFunc[s2c_syncvhtd] = &KProtocolProcess::s2cSyncVhtd;	// [VHTD 02/09g]
+	ProcessFunc[s2c_detonate] = &KProtocolProcess::s2cDetonate;	// [VHTD 02/09w]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -4508,6 +4509,23 @@ void KProtocolProcess::s2cSyncVhtd(BYTE* pMsg)
 		Npc[nNpc].m_CurrentStaticMagicShieldP = pSync->nV1;
 		Npc[nNpc].m_nHSShieldMax = pSync->nV2;
 	}
+}
+
+// [VHTD 02/09w] Client nhan lenh kich no. JX1 khong dong bo tung vien dan nen ban sao tren may nguoi choi
+// van song den het LifeTime (360 khung ~ 20 giay) sau khi may chu da no -> khi truong khong tan, khong
+// thay hieu ung. Goi DetonateMissles phia client de no tu chay DoVanish -> Vanish() sinh dan 420 tai cho
+// (= hieu ung no) va don khi truong. Khong sinh sat thuong: KMissle::ProcessDamage la server-only.
+void KProtocolProcess::s2cDetonate(BYTE* pMsg)
+{
+	S2C_DETONATE* pD = (S2C_DETONATE*)pMsg;
+	if (pD->ProtocolType != s2c_detonate)
+		return;
+	int nIdx = NpcSet.SearchID(pD->dwLauncherId);
+	if (nIdx <= 0 || nIdx >= MAX_NPC)
+		return;
+	if (Npc[nIdx].m_Index <= 0 || Npc[nIdx].m_RegionIndex < 0)
+		return;
+	Npc[nIdx].DetonateMissles((int)pD->wStyle, (int)pD->wRadius, (int)pD->btFlag);
 }
 #endif
 

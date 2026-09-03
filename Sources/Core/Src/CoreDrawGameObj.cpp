@@ -127,6 +127,12 @@ void	CoreDrawGameObj(unsigned int uObjGenre, unsigned int uId, int x, int y, int
 		}
 		break;
 	
+	// [VHTD 02/09w] A-1: SetNextNo chay chi so o 0..6 va dang ky CGOG_NPC_BLUR_DETAIL(m_nCurNo).
+	// DETAIL(0) rut gon DUNG BANG CGOG_NPC_BLUR = 8 nhung switch nay truoc gio chi co case 1..7
+	// -> anh o o 0 roi vao default va bi vut, vet bong mo thieu deu 1/7 (ca chieu luot).
+	case CGOG_NPC_BLUR:
+		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(0);
+		break;
 	case CGOG_NPC_BLUR_DETAIL(1):
 		Npc[uId].GetNpcRes()->m_cNpcBlur.Draw(1);
 		break;

@@ -699,3 +699,92 @@ Kinh mạch **không** cho `colddamage_v` (mã 62) chút nào — tổng bằng 
 Con số **54.994** ở mốc trần khớp đúng mức 60k chủ báo (chủ có thể đang có trang bị cộng thêm một hai cấp kỹ năng).
 
 **Kết luận:** ở mốc trần thật (`MaxLevel` của cả 1372/1376/1380/1382/1383 đều là **20**), full kỹ năng full mạch ra **14.440** — đạt yêu cầu "không hơn 20k". Chỉ vượt 20k nếu trang bị cộng thêm khoảng **+10 cấp** kỹ năng, khi đó lên 24.415. Nếu chủ muốn chặn cả trường hợp đó thì hạ tiếp băng gốc, một dòng dữ liệu, vẫn không cần build.
+
+
+---
+
+## 23. ĐỢT 13 (02/09 ~21:30) — KÍCH NỔ MA VÂN KIẾM KHÍ + BÓNG MỜ MƯỢT + VÒNG SÁNG DƯỚI CHÂN
+
+Ba mục còn lại của đợt 11. Công cụ `vhtd_engine_patch12.py` và `vhtd_data_patch13_vongsang.py`, marker `[VHTD 02/09w]`.
+
+### 23.1 Ma Vân Kiếm Khí không nổ, không tan — BA TẦNG cùng chặn
+
+Chủ báo: bấm Thần Quang Toàn Nhiễu (1384) khi đang có Ma Vân Kiếm Khí (1380) thì khí trường đứng nguyên, không hiệu ứng; khoảng **20 giây sau** mới thấy một hiệu ứng nổ lạc lõng rồi mới tan.
+
+**Tầng 1 — hàm kích nổ chỉ có trong bản máy chủ.** `KNpc::DetonateMissles` bị bọc `#ifdef _SERVER` (`KNpc.cpp:3268…3328`), khối gọi trong `ModifyAttrib` cũng vậy. Đo trên chính nhị phân đang chạy: chuỗi `HS-DETONATE` có **1 lần** trong `CoreServer.dll`, **0 lần** trong `CoreClient.dll`.
+
+**Tầng 2 — JX1 không đồng bộ từng viên đạn qua mạng.** Khi máy chủ nổ, nó gửi `GWM_MISSLE_DEL` vào `SubWorld[..].m_WorldMessage` — đó là hàng đợi **nội bộ** (`KWorldMsg::m_LocalMsgQueue`, rút ra ngay trong cùng tiến trình). Chốt cứng: grep `BroadCast|PackDataToClient|SendToClient` trên `KMissle.cpp` + `KMissleSet.cpp` = **0 kết quả**. Bản sao đạn trên máy người chơi vẫn sống đến hết `LifeTime = 360` khung ≈ **20 giây** — đúng y hiện tượng chủ mô tả.
+
+**Tầng 3 — bỏ `#ifdef` thôi thì vô ích**, vì cả đường áp thuộc tính `candetonate` đều là mã máy chủ (`KSkills.cpp:2393`, `KMissle.cpp:1322-1405`). **Bắt buộc thêm gói mạng.**
+
+**Nửa còn lại client đã có sẵn.** `KMissle::DoVanish` phía client đặt `m_bHaveEnd = TRUE` rồi chạy `if (m_bVanishedEvent) pOrdinSkill->Vanish(this);` — khối này **không nằm trong guard nào**. Chỉ cần báo cho client, nó **tự sinh đạn 420 tại chỗ = hiệu ứng nổ** và tự dọn khí trường. Không có nguy cơ sát thương kép vì `ProcessDamage` là server-only.
+
+**Đã vá — thêm gói `s2c_detonate` (9 điểm):**
+
+| Tệp | Việc |
+|---|---|
+| `Headers\KProtocolDef.h` | thêm `s2c_detonate` ngay sau `s2c_syncvhtd` |
+| `KProtocol.h` | cấu trúc `S2C_DETONATE` 10 byte (`#pragma pack(1)`) |
+| `KProtocol.cpp` | thêm `sizeof(S2C_DETONATE)` **đúng vị trí tương ứng** |
+| `KProtocolProcess.h/.cpp` | khai báo + đăng ký + thân `s2cDetonate` (trong `#ifndef _SERVER`) |
+| `KNpc.cpp` | bỏ `#ifdef _SERVER` quanh `DetonateMissles`; thêm `HS_BroadcastDetonate` (trong khối server); phát gói khi nổ thật |
+| `KNpc.h` | khai báo `HS_BroadcastDetonate` |
+
+**Đã kiểm bảng giao thức theo VỊ TRÍ** (đây là rủi ro lệch âm thầm, không báo lỗi biên dịch). Mô phỏng giá trị enum rồi đối chiếu chỉ số mảng:
+
+| Mục | Giá trị enum | Chỉ số bảng | Mục trong bảng |
+|---|---|---|---|
+| `s2c_reduceskillcd` | 217 | 152 | `sizeof(S2C_REDUCE_SKILL_CD)` ở 152 ✓ |
+| `s2c_syncvhtd` | 218 | 153 | `sizeof(S2C_SYNC_VHTD)` ở 153 ✓ |
+| `s2c_detonate` | **219** | **154** | `sizeof(S2C_DETONATE)` ở **154** ✓ |
+
+**Nghiệm thu nhị phân đã đạt:** `HS-DETONATE` giờ có mặt trong `CoreClient.dll.moi` (trước là 0).
+
+**Lưu ý về hình ảnh:** khí trường sẽ biến mất **tức khắc, không có hoạt ảnh tan** — `DoVanish` phía client không gọi `CreateSpecialEffect`. "Hiệu ứng nổ" chủ nhìn thấy chính là **đạn 420 mới sinh** (LifeTime 28, có hoạt ảnh riêng). Đúng yêu cầu "nổ xong là mất khí trường", nhưng đừng chờ nó mờ dần.
+
+**Còn tồn:** sai số rìa bán kính. Đạn 419 đứng yên nên toạ độ hai bên gần trùng, nhưng đúng ở rìa client có thể nổ thừa hoặc thiếu một viên. **Không khắc phục được** bằng thiết kế hiện tại vì đạn JX1 không hề có id đồng bộ.
+
+### 23.2 Bóng mờ Huyền Nhãn Vân Yên ngắn và giựt — HAI lỗi độc lập
+
+**A-1: một trong bảy ảnh KHÔNG BAO GIỜ được vẽ.** `SetNextNo` chạy chỉ số ô 0..6 và đăng ký bằng `CGOG_NPC_BLUR_DETAIL(m_nCurNo)`. `DETAIL(0)` rút gọn **đúng bằng** `CGOG_NPC_BLUR = 8`, nhưng `switch` trong `CoreDrawGameObj.cpp` chỉ có case cho 1..7 → ảnh ở ô 0 rơi vào `default` và bị vứt. Ngược lại `case DETAIL(7)` là **mã chết** (`KNpcBlur::Draw` chặn `nIdx >= 7`). Lỗi có từ bản gốc, ảnh hưởng **cả bóng mờ chiêu lướt**.
+
+**A-2: nhịp chụp bám theo SỐ LẦN VẼ chứ không phải nhịp logic.** `NowGetBlur()` trả `TRUE` khi `m_dwTimer == 0`; `m_dwTimer` chỉ nhích ở khung vẽ **đầu tiên** của mỗi nhịp và chỉ về 0 mỗi 3 nhịp. Vậy ở đúng nhịp bộ đếm vừa về 0, hàm trả `TRUE` cho **mọi khung vẽ** của nhịp đó. Client chạy `PaintFps=60` trên nhịp logic 18 = **3,33 khung/nhịp** → cứ 3 nhịp lại hạ **một chùm 3-4 ảnh chồng khít** rồi im 2 nhịp. Bảy ô bị hai chùm ăn hết trong ~0,33 giây, alpha chưa kịp giảm nên các bóng gần như **đặc**.
+
+**Vá:** thêm `case CGOG_NPC_BLUR:` cho ô 0; và chốt **một ảnh mỗi nhịp logic** cho mỗi npc bằng một mảng tĩnh phạm vi tệp (`MAX_NPC` phía client = 256 nên chỉ 1 KB). **Không** dùng biến thành viên — `KNpcBlur` nằm trong `KNpcRes` nằm trong `KNpc`, thêm trường là lệch bố cục struct qua ranh giới `CoreClient.dll` ↔ `Game.exe`.
+
+**Kết quả:** 7 bóng riêng biệt cách đều 3 nhịp, vệt trải **21 nhịp ≈ 1,17 giây**, alpha giảm đều 128 → 16 — tức trở về **đúng thiết kế gốc**.
+
+**CẤM** đổi `MAX_BLUR_FRAME`, `BLUR_ALPHA_CHANGE`, `START_BLUR_ALPHA`, `m_dwInterval = 3` — đều dùng chung với bóng mờ chiêu lướt.
+
+**Chủ nghiệm thu cả chiêu lướt**, vì vá A-1 cũng làm vệt bóng chiêu lướt dày thêm đúng một ảnh (ảnh đang bị vứt). Đây là sửa đúng, nhưng là thay đổi nhìn thấy được.
+
+### 23.3 Vòng sáng xanh dưới chân — ĐÃ LÀM, nhưng cần chủ đọc kỹ đoạn này
+
+**Cơ chế:** không phải `SetSpecialSpr`. Đây là nhóm trạng thái kiểu **`Foot`** — `KNpcRes.cpp:361-389` duyệt ô 12..17 đặt `nZ = 0`, dòng 461 vẽ **trước** thân người. Đường đi: `skills.txt` cột `StateSpecialId` → `CastInitiativeSkill` → `SetStateSkillEffect` → `m_StateGraphics` → gói đồng bộ → client `SetState`. Hết buff thì `KNpc.cpp:1580-1583` tự tắt. **Chỉ sửa dữ liệu.**
+
+**Đã đặt** `skills.txt` hàng 1358, cột `StateSpecialId`: `0` → **`147`**. `Status147` = `\spr\skill\others\lvguagnhuan.spr`, kiểu `Foot`, `Loop`, ghi chú 绿色光环 = **vòng sáng xanh lá**, đã có sẵn và đang được kỹ năng **887 / 943 / 944 / 1532** dùng với `StatePriority = 0` — ta theo đúng mẫu đó.
+
+**CẢNH BÁO — chủ cần biết:** đo thật thì bản VLTK **cũng** để 1358 `StateSpecialId = 0`, bảng trạng thái VLTK **không có dòng nào** cho 1358, và thư mục spr Hoa Sơn không có tệp vòng sáng của 1358. Nên đây là **mở rộng theo yêu cầu chủ**, không phải khôi phục đúng bản VLTK. Có thể chủ nhớ nhầm sang kỹ năng khác. Nếu không ưng thì hoàn tác bằng một lệnh. Đổi màu: 146 = đỏ, 148 = xanh dương, 149 = vàng.
+
+**TUYỆT ĐỐI KHÔNG** thêm dòng `Status244` vào bảng trạng thái: đã đo, `SkillId 1598` đang có `StateSpecialId = 244` và `1599 = 245`. Hôm nay chúng không vẽ gì **chỉ vì** bảng dừng ở `Status243` → tên tệp rỗng → engine bỏ qua. Thêm `Status244` thì 1598 lập tức mọc vòng sáng. Bảng đọc theo **VỊ TRÍ** nên cũng không nhảy cóc được.
+
+Nếu sau này tự thêm dòng vào bảng: bảng **của ta 11 cột**, bản **VLTK 12 cột** (có cột nam/nữ riêng). Bê nguyên dòng VLTK sang là **lệch một cột** → hỏng toàn bộ hiệu ứng trạng thái.
+
+### 23.4 CHECKLIST SWAP đợt 13
+
+1. `bin\server\CoreServer.dll.moi` — 18.276.864 byte, md5 `58c95058` (21:26).
+2. `bin\client\CoreClient.dll.moi` — 2.457.600 byte, md5 `a4c048dd` (21:26).
+   **Hai tệp PHẢI swap CÙNG LÚC** (gói mạng mới). `Game.exe` **giữ nguyên** `f6a2229c` — gói mới nằm cuối dãy nên không dịch chuyển giá trị nào đang dùng.
+3. Dữ liệu đã ghi thẳng, **không cần build**: `settings\skills.txt` (server `2ae1a332` / client `6e0b63cd`) — hàng 1358 vòng sáng; bản cũ ở `.truoc_vongsang_0209`. Và `script\skill\huashan.lua` của đợt 12 (`e42d4f3b`).
+4. Trình tự: đặt hai `.moi` → `ChayGameServer.bat` → `ChoiGame.bat`.
+5. Nghiệm thu:
+   (a) Bật Ma Vân Kiếm Khí rồi bấm Thần Quang Toàn Nhiễu → khí trường **biến mất ngay**, có hiệu ứng nổ tại chỗ. Không còn phải chờ 20 giây.
+   (b) Bật Huyền Nhãn Vân Yên rồi chạy → vệt bóng mờ **trải dài, mượt, nhạt dần**, không còn cụm giựt.
+   (c) **Kiểm cả chiêu lướt** (Tạp Đạp Lưu Tinh) — vệt bóng dày thêm một ảnh.
+   (d) Có **vòng sáng xanh lá dưới chân** khi buff 1358, tự tắt khi hết buff.
+   (e) Nếu không thấy vòng sáng: kiểm tuỳ chọn giảm hiệu ứng của client trước (`KNpcRes.cpp:363` ẩn hiệu ứng chân khi bật `LowMissle`).
+   (f) Bật AutoLog: `jx_auto.log` phía client phải có `[MIS-STATE-VANISH] ... skill=1380` **ngay lúc bấm**, không phải 20 giây sau.
+
+### 23.5 Đính chính báo cáo điều tra
+
+Điểm neo "`KNpc.h` dòng 879 nằm sẵn trong `#ifdef _SERVER`" là **sai** — chỉ thị tiền xử lý gần nhất trước đó là `#endif` ở dòng 792. Đã theo đúng mẫu sẵn có của `HS_ResetBuffTime`: **khai báo** trong `.h` không guard, **định nghĩa** trong `.cpp` bên trong `#ifdef _SERVER`.

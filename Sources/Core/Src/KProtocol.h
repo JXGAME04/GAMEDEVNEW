@@ -978,6 +978,16 @@ typedef struct
 	int		nV2;
 } S2C_SYNC_VHTD;
 
+// [VHTD 02/09w] may chu bao client kich no dan quanh nguoi phat. Tep dang o #pragma pack(1) -> 10 byte, khong dem.
+typedef struct
+{
+	BYTE	ProtocolType;		// s2c_detonate
+	DWORD	dwLauncherId;		// m_dwID cua NPC kich no
+	WORD	wStyle;			// ChildSkillId cua dan bi kich (419)
+	WORD	wRadius;			// ban kinh mps
+	BYTE	btFlag;			// 0 = dan phe ta, 1 = dan dich
+} S2C_DETONATE;
+
 //typedef struct
 //{
 //	BYTE	ProtocolType;		// Ð­ÒéÃû³Æ

@@ -184,6 +184,24 @@ BOOL	KNpcRes::IgnoreShowRes()
 	return FALSE;
 }
 
+// [VHTD 02/09w] A-2: NowGetBlur() tra TRUE khi m_dwTimer == 0, ma m_dwTimer chi nhich o khung ve DAU TIEN
+// cua moi nhip logic va chi ve 0 moi m_dwInterval = 3 nhip. Vay o dung nhip bo dem vua ve 0, ham do tra
+// TRUE cho MOI khung ve cua nhip -> PaintFps=60 tren nhip logic 18 (3,33 khung/nhip) ha MOT CHUM 3-4 anh
+// chong khit roi im 2 nhip. Bay o bi hai chum an het trong ~0,33 giay nen vet vua NGAN vua GIUT.
+// Chot dung MOT anh moi nhip logic cho moi npc -> 7 bong cach deu 3 nhip, vet trai ~1,17 giay.
+// KHONG dung bien thanh vien (KNpcBlur nam trong KNpcRes nam trong KNpc: them truong la lech bo cuc
+// struct qua ranh gioi CoreClient.dll <-> Game.exe). MAX_NPC phia client = 256 nen mang nay chi 1 KB.
+static DWORD s_dwNhipHaBong[MAX_NPC] = { 0 };
+static BOOL HaBongMoNhipNay(int nNpcIdx)
+{
+	if (nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return TRUE;
+	if (s_dwNhipHaBong[nNpcIdx] == SubWorld[0].m_dwCurrentTime)
+		return FALSE;
+	s_dwNhipHaBong[nNpcIdx] = SubWorld[0].m_dwCurrentTime;
+	return TRUE;
+}
+
 void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bInMenu, BOOL bPaintBody)
 {
 	int		i, nGetFrame = 1, nGetDir = 1, nFirst, nPos;
@@ -664,7 +682,7 @@ void	KNpcRes::Draw(int nNpcIdx, int nDir, int nAllFrame, int nCurFrame, BOOL bIn
 // ----------------------------------- ¥¶¿Ì≤–”∞ ----------------------------------
 	int j = 0;
 	m_cNpcBlur.ChangeAlpha();
-	if (m_nBlurState == TRUE && m_cNpcBlur.NowGetBlur())
+	if (m_nBlurState == TRUE && m_cNpcBlur.NowGetBlur() && HaBongMoNhipNay(nNpcIdx))	// [VHTD 02/09w] A-2
 	{
 		m_cNpcBlur.ClearCurNo();
 		for (i = 0, j = 0; i < MAX_PART; i++)
