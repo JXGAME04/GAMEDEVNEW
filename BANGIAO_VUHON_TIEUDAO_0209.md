@@ -333,3 +333,47 @@ Tool: `vhtd_engine_patch7.py` (marker `[VHTD 02/09k]`: KMissle.cpp 18 hunk, KNpc
 2. `bin\client\CoreClient.dll.moi` — 2.454.016 byte, md5 `768b9ad6` (13:45).
 3. Dữ liệu đã ghi thẳng: `script\skill\huashan.lua` (`f5be47ce` cả hai — **cần restart server**), `settings\missles.txt` (`4dc8f06f` cả hai, đạn 426), client `ui\Ui3\UiHeaderControlBar.ini` (`c367e20a`, bỏ Button6=Shield), `ui\StatePos.ini` (`8ca86c8d`, đã phục hồi).
 4. Nghiệm thu: (a) Hoa Sơn tooltip có thuộc tính lại; (b) Thập Bộ Nhất Sát / Lạc Nhạn Bình Sa / Dương Quan Tam Điệp: quái trong cả vòng tròn (bán kính 8 / 8 / 3 ô) đều mất máu; (c) cầm: Tùy Ý Khúc/Quảng Lăng Tán trúng liên tục, log `[VH-DMG-HIT]`; (d) bảng trạng thái với kỹ năng cầm: Lực tay ≠ 0/0; (e) Lạc Nhạn Bình Sa: thanh xanh dưới tên, không còn trên ống máu; (f) gửi `jx_auto_server.log` + `jx_auto.log` sau 5–10 phút test để tôi đọc `VH-*`.
+
+
+## 17. ĐỢT 8 (02/09 ~14:45–19:30) — 2 ảnh Thỉnh Anh Đề Nhuệ Lữ, "kéo log về xem lỗi thì fix", 3 mục Hoa Sơn, sự cố "mất đường dẫn spr bày bán"
+
+Tool: `vhtd_engine_patch8.py` (`[VHTD 02/09m]`), `vhtd_engine_patch9.py` (`[VHTD 02/09n]`), `unwrap_cp1258.py` (`[VHTD 02/09p]`), `vhtd_engine_patch10.py` (`[VHTD 02/09q]`, 8 hunk). Điều tra log bằng 6 tác tử đọc `server_1443.log` (41 MB) + `client_1438_prev.log` (67 MB) → 23 phát hiện có bằng chứng; theo luật chủ, chỉ phản biện phần có nguy cơ.
+
+### 17.1 Sáu lỗi "đánh hụt" tìm ra từ log (đều đã vá, chỉ áp cho đạn/kỹ năng thời VLTK)
+
+| | Gốc | Bằng chứng | Vá |
+|---|---|---|---|
+| **A. Ô đạn bị trễ** | `KMissle::CheckBeyondRegion` chuẩn hoá offset chỉ lùi/tiến **đúng một ô mỗi khung** (`if/else if`). Đạn VLTK nhanh (528 = 55 px/khung, 529 = 45, 580 = 60, 641 = 80) vượt 1 ô (32 px) mỗi khung → dư ~0,7 ô dồn lại, sau 6–7 khung ô hiện tại **trễ 3–6 ô** so với vị trí thật. Toạ độ pixel vẫn đúng (nên log nhìn bình thường) nhưng vòng quét va chạm quét **phía sau** đạn. | 1969 phóng 103, **48 lần (47 %)** trượt đúng kiểu này; offset chưa chuẩn hoá lên tới 167936 = 5 ô. | Đổi `if/else if` → `while` cho đạn VLTK. Đạn cổ điển ≤ 1 ô/khung nên `while` chạy đúng 1 vòng = y hệt cũ. |
+| **B. Bộ đếm sát thương kế thừa** | `m_ulNextCalDamageTime` chỉ đặt 0 ở hàm khởi tạo; `Release` phía server không đặt lại → đạn mới sinh vào ô cũ **kế thừa khoá sát thương** của đạn trước (17 khung = 0,94 s với 645/646/647; 21 khung với 527) → bị khoá ngay từ khung đầu. | 1967: **24/65** lần phóng bị chặn kiểu này (đúng mô tả "4–5 lần mới trúng"). | Đặt lại 0 (cả `m_nHitCount`) trong `KMissleSet::Add`. Đây là khởi tạo, không đổi hành vi chiêu cũ. |
+| **C. Xác che mục tiêu** | Nhánh VLTK gọi `FindNpc` không truyền mục tiêu → trả **con đầu tiên** của ô; nếu là xác thì `continue` bỏ **luôn cả ô** → mục tiêu còn sống đứng chung ô không bao giờ được xét. | 1969 bắn 4 lần liên tiếp vào con 30000 máu đứng trên xác, cả 4 lần `VH-COL-NONE`. | Truyền mục tiêu đang bám (hoặc mốc `MAX_NPC`) để `FindNpc` dùng nhánh sẵn có: ưu tiên mục tiêu, và **con sống hơn xác**. |
+| **D. Hồi quy bản vá đợt 7 của tôi** | `nRangeX = VLTK ? nRange : nRange/2` áp cả cho lời gọi `nRange = 1` (đánh **đúng một** NPC đã chọn) → quét 3×3 thay vì 1 ô → đạn đơn mục tiêu đánh lan con đứng cạnh. | Chính chú thích đợt 7 ghi "DmgRange == 1 → đánh ĐÚNG NPC này". | Chỉ bỏ `/2` khi `nRange > 1`. |
+| **E. Xác ăn lượt quét** | Vòng quét sát thương đếm xác vào `nRet`/`m_nHitCount` và gọi sát thương lên xác → đạn giới hạn số mục tiêu hết lượt vì xác. | — | Đạn VLTK bỏ qua `do_death`/`do_revive` (log `[VH-SCAN-XAC]`). |
+| **F. Auto-skill bắn vào xác** | `AttackSkill`/`ReplySkill`/`CastAutoSkillAt` chỉ loại `do_death`/`do_revive`, **không loại máu ≤ 0** — nạn nhân vừa bị đòn cuối về 0 máu (chưa kịp đổi trạng thái) vẫn được chọn. | 1368: **130/234** kiếm bay hết đời không trúng ai; 1969: 19 lần phóng vào mục tiêu đã chết; 1970: 39/93. | Loại luôn mục tiêu hết máu ở cả 3 chỗ. |
+
+### 17.2 Ba mục còn lại của đợt 8
+
+| Mục | Gốc | Vá |
+|---|---|---|
+| **Vòng khiên Thỉnh Anh Đề Nhuệ Lữ nhỏ, không duy trì** | Đạn 525 (1965) **không có ảnh** — vô hình, sống đủ 20 s, chỉ áp buff. Vòng khiên thật là đạn **526** do kỹ năng sự kiện **1966** tạo. `KSkill::Cast`/`OnMissleEvent` đòi `EventSkillLevel > 0` nhưng dữ liệu VLTK ghi **−1** (= cấp của chính kỹ năng) → 1966 chưa bao giờ phóng: log 0 dòng 1966/526 cả server lẫn client. Cùng lỗi ở 1376 → 1377. Vòng nhỏ chủ thấy là ảnh thi triển. | `VhEventLevel()`: −1 → cấp kỹ năng, chỉ cho kỹ năng id ≥ 1347 (23 kỹ năng cổ điển giữ nguyên). 526 lặp ảnh nên vòng khiên tồn tại đủ thời gian buff. |
+| **"Mất đường dẫn các spr bày bán"** (lỗi của tôi, đợt 6) | `KNpc.cpp` lưu mọi chuỗi kiểu **cp1258→UTF-8** kèm BOM (trình biên dịch giải ngược đúng). Đợt 6 tôi cắt BOM nhưng chỉ giải bọc 15 chuỗi chữ Việt → **10 chuỗi GBK** còn bọc thành byte đôi: `\Spr\Ui3\摆摊\摆摊头顶条－中/右/左.spr` (biển sạp hàng), `mag_spe_眩晕.spr`, `男主角/女主角/人物名称`. | `unwrap_cp1258.py` giải bọc toàn bộ đúng ánh xạ cp1258. Bản mới: 3 đường dẫn sạp hàng + `mag_spe_` đúng GBK, **0** chuỗi `.spr` còn dấu vết bọc. Đã ghi luật vào bộ nhớ. |
+| **Thần Quang Toàn Nhiễu không kích nổ Ma Vân Kiếm Khí** | 1384 có thuộc tính kích nổ trỏ đạn 419/428, nhưng `KNpc::DetonateMissles` so `m_nMissleId` — **chỉ số ô đạn**, không phải kiểu đạn → không bao giờ khớp 419 (cùng bẫy với bản vá đợt 4). | So kiểu đạn qua kỹ năng tạo đạn. Kích nổ → đạn tan → sự kiện tan của 1380 → 1411 Kiếm Khí Vô Định (băng sát + đóng băng). Log `[HS-DETONATE]`. |
+
+### 17.3 Đã kiểm và thấy bình thường (tác tử đối chiếu log)
+- 2124 → 2125 sinh đủ 4 đạn mỗi lần phóng (183 = 46×4−1, một đạn chết vì địa hình); 2125 trúng ~2 lần/lần phóng — đúng thiết kế.
+- 2141 Cao Sơn Lưu Thủy 51/55 trúng; 2138 Lạc Nhạn Bình Sa 2/2, sự kiện 2139 nổ đủ; 2143 Dương Quan Tam Điệp 44/44 đạn sống trọn đời.
+- Nhịp tự phóng 1364 → 1363 (10 %, hồi 5 s) và 1369 → 1368 (20 %, hồi 5 s) đo trong log **khớp** dữ liệu đợt 7: 8 lần / 572 s và 27 lần, khoảng cách nhỏ nhất đúng 5,0 s.
+- Client thấy đủ kiếm: 237 đạn 418 = toàn bộ lần phóng của server nằm trong cửa sổ log.
+- 1965 sống trọn 365/365 khung (20 s) cả hai phía; 1972/1974/1978/1973 đều đủ đời, sự kiện con nổ đúng.
+
+### 17.4 Còn lại — chờ chủ quyết (không tự sửa)
+1. **2129 Thập Bộ Nhất Sát**: đạn 642 hồi sát thương **1 khung**, đời 10 khung, bán kính 8 ô → mỗi quái trong vòng tròn ăn **10 đòn**. Đây là dữ liệu VLTK y hệt; muốn giảm thì đặt trần số đòn mỗi mục tiêu (cần thêm mã) hoặc sửa dữ liệu.
+2. **Kỹ năng của chính mình đôi khi không hiện hình** (1979 rõ nhất, 4/10 lần): client tự đoán trước và **tự từ chối** vì "quá xa" theo vị trí client, trong khi server chấp nhận; gói phát lại của server chỉ vẽ cho **người khác**, không vẽ cho chính mình. Sửa được ở client nhưng đụng luồng vẽ chung → cần chủ duyệt.
+3. **Đạn đường thẳng có cờ tan-khi-chạm (527/528/645/647)** biến mất ngay khung đầu khi chạm, nên nhìn như "không có hiệu ứng". Sửa được kiểu hoãn tan phần hình ở client.
+4. **2142 Mai Hoa Tam Lộng**: hai nốt bên lệch 16,9° nên quá 220 px là trượt mục tiêu đơn — đúng dữ liệu VLTK; muốn khác thì sửa dữ liệu.
+5. **Huyền Nhãn Vân Yên (bóng mờ)** và **lực tay nội công 60k**: workflow điều tra bị dừng giữa chừng do hết hạn mức phiên, chưa có kết luận có bằng chứng. Số liệu thô đã có: 1382 dùng băng sát VLTK `{25: 14400, 40: 36000}` cộng dồn `addskilldamage1` từ nhiều buff (+60 % mỗi cái) và `manatoskill_enhance` 100 % khi đầy nội lực → 60k là **cộng dồn dữ liệu**, không phải công thức hiển thị sai; ngoại công tính theo lực tay vũ khí × phần trăm nên ~10k. Sẽ xác nhận ở đợt sau.
+
+### 17.5 CHECKLIST SWAP đợt 8 (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; 2 tệp CÙNG LÚC, Game.exe giữ `5db988fc`)
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `244a3a18` (19:11).
+2. `bin\client\CoreClient.dll.moi` — 2.455.040 byte, md5 `f73cd480` (19:11).
+3. Không có tệp dữ liệu nào đổi ở đợt này.
+4. Nghiệm thu: (a) Thỉnh Anh Đề Nhuệ Lữ: vòng khiên to hiện đủ thời gian buff; (b) sạp hàng "bày bán": biển hiện lại; (c) Ma Vân Kiếm Khí rồi Thần Quang Toàn Nhiễu: khí trường nổ; (d) Kinh Đào Phách Ngạn / Trấn Biên Chuỳ / Trừ Gian Diệt Nịnh: bắn trúng liên tục, hết cảnh "đạn bay qua mà không mất máu"; (e) kiếm tự phóng Hoa Sơn không còn bay vào xác; (f) gửi lại log sau 5–10 phút để tôi đo lại tỷ lệ trúng.

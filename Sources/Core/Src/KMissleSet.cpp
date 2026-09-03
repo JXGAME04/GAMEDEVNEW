@@ -40,6 +40,13 @@ int KMissleSet::Add(int nSubWorldId, int nRegionID,int nMapX, int nMapY, int nOf
 	Missle[nFreeIndex].m_nYOffset		= nOffsetY;
 	Missle[nFreeIndex].m_nSubWorldId	= nSubWorldId;
 	Missle[nFreeIndex].m_nLastDoCollisionIdx = 0;
+	// [VHTD 02/09q] O DAN TAI SU DUNG: m_ulNextCalDamageTime / m_nHitCount chi duoc dat 0 o constructor; KMissle::Release phia server
+	// khong dat lai -> dan moi sinh trong vong DmgInterval cua dan truoc (17 khung = 0,94 s voi 645/646/647; 21 khung voi 527)
+	// bi khoa sat thuong ngay tu khung dau => "phong 4-5 lan moi trung 1 lan". Day la KHOI TAO, khong doi hanh vi chieu cu.
+#ifdef _SERVER	// m_ulNextCalDamageTime chi co o ban server (KMissle.h:165)
+	Missle[nFreeIndex].m_ulNextCalDamageTime = 0;
+#endif
+	Missle[nFreeIndex].m_nHitCount = 0;
 	
 	m_FreeIdx.Remove(nFreeIndex);
 	m_UseIdx.Insert(nFreeIndex);
@@ -80,6 +87,13 @@ int KMissleSet::Add(int nSubWorldId, int nPX, int nPY)
 	Missle[nFreeIndex].m_nSubWorldId = nSubWorldId;
 	Missle[nFreeIndex].m_bRemoving = FALSE;
 	Missle[nFreeIndex].m_nLastDoCollisionIdx = 0;
+	// [VHTD 02/09q] O DAN TAI SU DUNG: m_ulNextCalDamageTime / m_nHitCount chi duoc dat 0 o constructor; KMissle::Release phia server
+	// khong dat lai -> dan moi sinh trong vong DmgInterval cua dan truoc (17 khung = 0,94 s voi 645/646/647; 21 khung voi 527)
+	// bi khoa sat thuong ngay tu khung dau => "phong 4-5 lan moi trung 1 lan". Day la KHOI TAO, khong doi hanh vi chieu cu.
+#ifdef _SERVER	// m_ulNextCalDamageTime chi co o ban server (KMissle.h:165)
+	Missle[nFreeIndex].m_ulNextCalDamageTime = 0;
+#endif
+	Missle[nFreeIndex].m_nHitCount = 0;
 	SubWorld[nSubWorldId].m_Region[Missle[nFreeIndex].m_nRegionId].AddMissle(nFreeIndex);//m_WorldMessage.Send(GWM_MISSLE_ADD, Missle[nFreeIndex].m_nRegionId, nFreeIndex );
 	SubWorld[nSubWorldId].m_Region[Missle[nFreeIndex].m_nRegionId].AddRef(Missle[nFreeIndex].m_nCurrentMapX, Missle[nFreeIndex].m_nCurrentMapY, obj_missle);
 	m_FreeIdx.Remove(nFreeIndex);

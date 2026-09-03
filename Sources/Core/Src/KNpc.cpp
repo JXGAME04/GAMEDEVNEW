@@ -3376,6 +3376,9 @@ void KNpc::CastAutoSkillAt(int nSkillId, int nSkillLevel, int nTarget)
 		return;
 	if (nTarget <= 0 || nTarget >= MAX_NPC || Npc[nTarget].m_Index <= 0 || Npc[nTarget].m_SubWorldIndex != m_SubWorldIndex)
 		return;
+	// [VHTD 02/09q] chot cuoi: khong phong auto-skill vao muc tieu da chet / dang hoi sinh / het mau
+	if (Npc[nTarget].m_CurrentLife <= 0 || Npc[nTarget].m_Doing == do_death || Npc[nTarget].m_Doing == do_revive)
+		return;
 	KSkill* pSkill = (KSkill*)g_SkillManager.GetSkill(nSkillId, nSkillLevel);
 	if (!pSkill)
 		return;
@@ -3576,7 +3579,8 @@ void KNpc::ReplySkill(int nLauncher)
 			continue;
 		if (!g_RandPercent(rA.nRate))
 			continue;
-		if (rA.nType == 1 && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0)
+		// [VHTD 02/09q] khong phan don vao XAC: nan nhan vua bi don cuoi ve 0 mau van con m_Doing != do_death mot vai khung
+		if (rA.nType == 1 && nLauncher > 0 && nLauncher < MAX_NPC && Npc[nLauncher].m_Index > 0 && Npc[nLauncher].m_CurrentLife > 0)
 			CastAutoSkillAt(rA.nSkillId, rA.nSkillLevel, nLauncher);
 		else
 			this->Cast(rA.nSkillId, rA.nSkillLevel);	// nham minh (Cast(id,cap) da phat s2c_castskilldirectly)
@@ -3618,6 +3622,10 @@ void KNpc::AttackSkill(int nLauncher)
 	if (m_Doing == do_death || m_Doing == do_revive)
 		return;
 	if (Npc[nLauncher].m_Doing == do_death || Npc[nLauncher].m_Doing == do_revive)
+		return;
+	// [VHTD 02/09q] nan nhan het mau (chua kip doi sang do_death) khong duoc chon lam muc tieu auto-skill:
+	// do 02/09 (log VH-*): 130/234 kiem 1368 bay het doi ma khong trung ai vi duoi theo xac.
+	if (m_CurrentLife <= 0 || Npc[nLauncher].m_CurrentLife <= 0)
 		return;
 	for (int i = 0; i < MAX_AUTOSKILL; i ++)
 	{

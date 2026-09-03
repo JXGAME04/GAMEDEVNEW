@@ -724,7 +724,12 @@ int KMissle::CheckCollision()
 					continue;
 				
 				_ASSERT(nSearchRegion >= 0);
-				nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation);
+				// [VHTD 02/09q] XAC CHE MUC TIEU: FindNpc khong co moc uu tien tra CON DAU TIEN cua o; neu do la xac thi khoi VLTK duoi
+				// `continue` bo LUON CA O -> muc tieu con song dung chung o khong bao gio duoc xet (do 02/09: 1969 ban 4 lan vao con
+				// 30000 mau dung tren xac, ca 4 lan VH-COL-NONE). Truyen muc tieu dang bam (hoac MAX_NPC lam moc khong bao gio trung)
+				// de FindNpc dung nhanh fallback co san: uu tien muc tieu, va CON SONG hon XAC. Dan co dien truyen 0 = y nguyen.
+				int nVhPrefer = VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) ? ((m_nFollowNpcIdx > 0 && m_nFollowNpcIdx < MAX_NPC) ? m_nFollowNpcIdx : MAX_NPC) : 0;
+				nNpcIdx = SubWorld[m_nSubWorldId].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, m_nLauncher, m_eRelation, nVhPrefer);
 				if (nNpcIdx > 0)
 				{
 					// [VHTD 02/09g] dan VLTK (id >= 500, Vu Hon/Tieu Dao: CollidRange = DmgRange 2..4, du lieu chep nguyen client VLTK): NPC lam dan
@@ -1116,26 +1121,58 @@ BOOL	KMissle::CheckBeyondRegion(int nDOffsetX, int nDOffsetY)
 	//	´¦ÀíNPCµÄ×ø±ê±ä»Ã
 	//	CELLWIDTH¡¢CELLHEIGHT¡¢OffX¡¢OffY¾ùÊÇ·Å´óÁË1024±¶
 	
-	if (nNewXOffset < 0)
+	// [VHTD 02/09q] O DAN BI TRE: khoi if/else if duoi chi lui/tien DUNG MOT o moi khung. Dan VLTK nhanh (528 = 55 px/khung,
+	// 529 = 45, 580 = 60, 641 = 80) vuot 1 o (32 px) moi khung -> du ~0,7 o/khung don lai, sau 6-7 khung m_nCurrentMapX/Y TRE 3-6 o
+	// so voi vi tri that. Map2Mps van ra dung mps (log nhin binh thuong) nhung CheckCollision/ProcessCollision quet quanh O CU
+	// -> quet phia SAU dan, muc tieu ngay truoc mui dan khong bao gio thay (do 02/09: 1969 phong 103, 48 lan truot kieu nay,
+	// offset chua chuan hoa toi 167936 = 5 o). Chieu co dien JX1 <= 1 o/khung nen while chay dung 1 vong = y het cu.
+	BOOL bVhCell = VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel));
+	if (bVhCell)
 	{
-		nNewMapX--;
-		nNewXOffset += CellWidth;
+		while (nNewXOffset < 0)
+		{
+			nNewMapX--;
+			nNewXOffset += CellWidth;
+		}
+		while (nNewXOffset > CellWidth)
+		{
+			nNewMapX++;
+			nNewXOffset -= CellWidth;
+		}
+		while (nNewYOffset < 0)
+		{
+			nNewMapY--;
+			nNewYOffset += CellHeight;
+		}
+		while (nNewYOffset > CellHeight)
+		{
+			nNewMapY++;
+			nNewYOffset -= CellHeight;
+		}
 	}
-	else if (nNewXOffset > CellWidth)
+	else
 	{
-		nNewMapX++;
-		nNewXOffset -= CellWidth;
-	}
+		if (nNewXOffset < 0)
+		{
+			nNewMapX--;
+			nNewXOffset += CellWidth;
+		}
+		else if (nNewXOffset > CellWidth)
+		{
+			nNewMapX++;
+			nNewXOffset -= CellWidth;
+		}
 	
-	if (nNewYOffset < 0)
-	{
-		nNewMapY--;
-		nNewYOffset += CellHeight;
-	}
-	else if (nNewYOffset > CellHeight)
-	{
-		nNewMapY++;
-		nNewYOffset -= CellHeight;
+		if (nNewYOffset < 0)
+		{
+			nNewMapY--;
+			nNewYOffset += CellHeight;
+		}
+		else if (nNewYOffset > CellHeight)
+		{
+			nNewMapY++;
+			nNewYOffset -= CellHeight;
+		}
 	}
 	
 	AUTOLOG_EVERY(1000, "[MIS-REGION-CROSS] id=%d oldRegion=%d newMap=%d,%d newOff=%d,%d rw=%lu rh=%lu dOff=%d,%d", m_nMissleId, nOldRegion, nNewMapX, nNewMapY, nNewXOffset, nNewYOffset, nRegionWidth, nRegionHeight, nDOffsetX, nDOffsetY);
@@ -1553,7 +1590,9 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 	if (nRegionId < 0) return 0; //#can kiem tra
 	AUTOLOG_EVERY(2000, "[COLL-SCAN] msl=%d sk=%d launcher=%d region=%d map(%d,%d) range=%d (nRangeX=%d) rel=%d hitcount=%d dmginterval=%d", m_nMissleId, m_nSkillId, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRange / 2, eRelation, m_nHitCount, (int)m_ulDamageInterval);
 	// [VHTD 02/09k] dan VLTK: ban kinh = nRange (game_y.exe 0x6fb6c0 -> tim NPC theo ban kinh, khong chia doi); dan JX1: +-nRange/2 nhu cu
-	int nRangeX = VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) ? nRange : nRange / 2;
+	// [VHTD 02/09q] SUA HOI QUY dot 7: khoi tren ap ca cho loi goi nRange = 1 tu CheckCollision (danh DUNG mot NPC da chon)
+	// -> quet 3x3 thay vi 1 o, dan don muc tieu danh lan con dung canh. Chi bo /2 khi nRange > 1 (dan dien rong).
+	int nRangeX = (VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) && nRange > 1) ? nRange : nRange / 2;
 	int	nRangeY = nRangeX;
 	VHLOG("[VH-SCAN-IN] msl=%d sk=%d lv=%d launcher=%d tai(r=%d,%d,%d) range=%d quet=+-%d rel=%d prefer=%d hitmax=%d clientsend=%d", m_nMissleId, m_nSkillId, m_nLevel, nLauncherIdx, nRegionId, nMapX, nMapY, nRange, nRangeX, eRelation, nPreferIdx, m_nHitCount, (int)m_bClientSend);
 	int	nSubWorld = Npc[nLauncherIdx].m_SubWorldIndex;
@@ -1581,6 +1620,13 @@ int KMissle::ProcessCollision(int nLauncherIdx, int nRegionId, int nMapX, int nM
 			// do that 25/08: 166/2733 lan cham la XAC (doing=10) lot qua duong nay du CheckNearestCollision
 			// da loc xac, vi no goi lai FindNpc tren CHINH o cua muc tieu ma khong noi minh muon ai.
 			int nNpcIdx = SubWorld[nSubWorld].m_Region[nSearchRegion].FindNpc(nRMx, nRMy, nLauncherIdx, eRelation, nPreferIdx);
+			// [VHTD 02/09q] dan VLTK: XAC khong duoc tinh vao nRet / m_nHitCount (dan gioi han so muc tieu se het luot vi xac)
+			if (nNpcIdx > 0 && VhIsVltkMissle(VhMissleType(m_nSkillId, m_nLevel)) &&
+				(Npc[nNpcIdx].m_Doing == do_death || Npc[nNpcIdx].m_Doing == do_revive))
+			{
+				VHLOG("[VH-SCAN-XAC] msl=%d sk=%d bo qua xac npc=%d(id=%u doing=%d) o(%d,%d)", m_nMissleId, m_nSkillId, nNpcIdx, (unsigned int)Npc[nNpcIdx].m_dwID, (int)Npc[nNpcIdx].m_Doing, i, j);
+				continue;
+			}
 			if (nNpcIdx > 0)	
 			{
 				if(Npc[nNpcIdx].GetProtectTime() > 0 && eRelation == relation_enemy) //®ang trong tr¹ng th¸i bÊt tö bÞ kÎ thï ®¸nh vµo return
