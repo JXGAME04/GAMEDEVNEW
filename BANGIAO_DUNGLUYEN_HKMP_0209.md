@@ -239,12 +239,22 @@ chữ thô `[...]` — vô hại, tạm thời.
 
 ### 6.5 CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; **3 tệp CÙNG LÚC**)
 1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `2f9bb7de798b` (19:45).
-2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `a9f4f516e6c1` (19:45).
+2. `bin\client\CoreClient.dll.moi` — 2.456.576 byte, md5 `227895cf1ac6` (19:53) — **bản thay thế**
+   do phiên `wauto-16` build lại tại `7cab3e26` (WAuto Hậu cần). Đã đối chiếu
+   `git show 7cab3e26:GameDataDef.h`: `NUM_INFO_ITEM_CHAT` = 44 + `m_nFusionP`/`m_uFusionSeed`
+   ⇒ vẫn đủ FUSCHAT, `ChatItem` vẫn 153 byte. *(bản `a9f4f516e6c1` 19:45 không dùng nữa)*
 3. `bin\client\Game.exe.moi` — 1.377.792 byte, md5 `f6a2229c290a` (19:45).
 4. Bản đang chạy trước swap: CoreServer `244a3a18085d` · CoreClient `f73cd48037e0` · Game.exe
-   `5db988fc529f`. **Bộ mới = HEAD `431f2e50`** = Vũ Hồn/Tiêu Dao **đợt 9** (phiên `wauto-6a`) **+
-   vá FUSCHAT này** — superset, không rơi đợt nào trước. Cùng bộ với
-   `BANGIAO_VUHON_TIEUDAO_0209.md` mục 18.4 (một bộ duy nhất, không phải hai).
+   `5db988fc529f`. **Bộ mới = HEAD `7cab3e26`** = Vũ Hồn/Tiêu Dao **đợt 9** (phiên `wauto-6a`)
+   **+ vá FUSCHAT này + WAuto Hậu cần** (phiên `wauto-16`) — superset, không rơi đợt nào trước.
+   Cùng bộ với `BANGIAO_VUHON_TIEUDAO_0209.md` mục 18.4 và `BANGIAO_HAUCAN_DUNGYEN_0209.md`
+   (một bộ duy nhất cho cả ba luồng, không phải ba bộ).
+
+   *Vì sao chỉ CoreClient phải build lại*: `Core.vcxproj:705-710` đặt `CoreShell.cpp`
+   `ExcludedFromBuild` ở **cả 4 cấu hình Server** (và tệp này không nằm trong Game.exe), còn
+   `KItemDice.cpp` / `KPlayerBot.cpp` bị loại ở **cả 4 cấu hình Client**. Chia trọn vẹn:
+   CoreServer nhận `KItemDice + KPlayerBot + GameDataDef.h`; CoreClient nhận
+   `CoreShell + GameDataDef.h`; Game.exe nhận `UiPlayerBar + UiMsgCentrePad + GameDataDef.h`.
 5. Không có tệp dữ liệu nào đổi ở **đợt này**; nhưng đợt 9 đi kèm đã ghi thẳng `settings\skills.txt`
    → **vẫn phải khởi động lại máy chủ** (xem mục 18.4 tệp kia).
 6. Nghiệm thu:
