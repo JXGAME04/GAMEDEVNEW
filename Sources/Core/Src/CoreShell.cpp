@@ -394,6 +394,8 @@ static int   g_nComboSkillCuoi = 0;	// chieu VUA ban (de ATYPE_DRAWVISION ve dun
 static UINT  g_uTCMuc = 0;			// dwID muc tieu da ban tien chieu (kieu 0 va 2)
 static UINT  g_uTCLan = 0;			// moc tick lan phat tien chieu gan nhat (kieu 1)
 static UINT  g_uTCHoiT = 0;			// moc het hoi chieu RIENG cua tien chieu
+static UINT  g_uNoGuard = 0;		// chan 700 ms sau khi ban chieu AN TANG cua bang
+									// ket hop (cho s2c_syncvhtd tra ve so tang moi)
 static int g_GoMapID[] = 
 {
 	875,
@@ -14588,6 +14590,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					g_uTCMuc = 0;
 					g_uTCLan = 0;
 					g_uTCHoiT = 0;
+					g_uNoGuard = 0;
 					Player[nPlayerIdx].m_sExtAuto.uChatTime = uCurTime + 5*1000;
 					if(!nParam && nNpcIdx > 0)
 					{
@@ -15276,14 +15279,17 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						if(Player[nPlayerIdx].m_sExtAuto.uFDelayTime < g_uComboNghi + 2500)
 							Player[nPlayerIdx].m_sExtAuto.uFDelayTime = g_uComboNghi + 2500;
 					}
-					if(pApData->bCombo && !bComboNghi)
+					if(pApData->bCombo)
 					{
 						if(g_nComboKhe < 0 || g_nComboKhe > 5)
 							g_nComboKhe = 0;
 						// (a) CHIEU AN TANG (No 1976 / Am Luat 2116) da DU TANG thi chen len
 						// ban ngay, khong doi toi luot xoay vong - chu game: "no khong tinh
 						// thoi gian hoi chieu ma tinh du no la danh".
-						if(pApData->bComboNoUT)
+						// (02/09 r2) chay KE CA khi dang trong cua so nghi giua 2 khe: chu game
+						// "khong tinh thoi gian hoi chieu ma tinh du no la danh". Phanh rieng la
+						// g_uNoGuard 700 ms (cho so tang moi dong bo ve), khong phai g_uComboNghi.
+						if(pApData->bComboNoUT && g_uNoGuard <= uCurTime)
 						{
 							for(int ck = 0; ck < 6; ++ck)
 							{
@@ -15297,8 +15303,9 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								}
 							}
 						}
-						// (b) xoay vong binh thuong tu khe dang toi luot
-						if(nKheBan < 0)
+						// (b) xoay vong binh thuong tu khe dang toi luot - cai NAY moi phai cho
+						// het o 'tre (ms)' cua khe vua ban
+						if(nKheBan < 0 && !bComboNghi)
 						{
 							for(int ct = 0; ct < 6; ++ct)
 							{
@@ -15510,7 +15517,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					// thuong, NHUNG chieu cuu mang (bChecked = Sinh luc %/Noi luc %) va tien
 					// chieu van duoc ban - khan cap khong duoc cho. Cac phan khac cua nhip
 					// (danh tra, ap sat, di chuyen) da chay binh thuong o tren.
-					const bool bCamBan = (bComboNghi && !bChecked && !bTCCast);
+					const bool bCamBan = (bComboNghi && !bChecked && !bTCCast && !bChenNo);
 					bool bBanRoi = false;
 					if(bCamBan)
 					{
@@ -15544,7 +15551,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							// chieu TRUOC khi xet dieu kien nen an oan mot luot (Class7.cs:1762).
 							g_uTCMuc = Npc[nTGNpcIdx].m_dwID;
 							g_uTCLan = uCurTime ? uCurTime : 1;
-							UINT uHoi = 1000 * (UINT)pApData->nTCHoi;
+							// (02/09 r2) kieu 3 "du tang No / Am Luat thi ban": SO TANG chinh la
+							// phanh roi, KHONG duoc chan them bang o 'Hoi chieu (giay)' - de o do
+							// (mac dinh 6) thi du tang van phai cho 6 giay moi ban, dung trieu
+							// chung chu game bao: "du no roi ma chap lau no moi dung".
+							UINT uHoi = (pApData->nTCKieu == 3 && nTCCanBan > 0)
+										? 0 : 1000 * (UINT)pApData->nTCHoi;
 							if(nTCCanBan > 0 && uHoi < 700)
 								uHoi = 700;	// chieu an tang: cho so tang moi dong bo ve
 							g_uTCHoiT = uCurTime + uHoi;
@@ -15554,14 +15566,17 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							int nTre = pApData->nComboDelay[nKheBan];
 							if(nTre < 0)
 								nTre = 0;
-							if(bChenNo && nTre < 700)
-								nTre = 700;	// cho s2c_syncvhtd tra ve so tang moi da bi tru;
-											// khong cho thi ban them mot nhip vo ich vi client
-											// van con thay du tang.
-							g_uComboNghi = uCurTime + (UINT)nTre;
-							// chen ngang thi GIU NGUYEN vong xoay, xong quay lai khe dang do
-							if(!bChenNo)
+							if(bChenNo)
+							{	// (02/09 r2) chen ngang: CHI dat phanh 700 ms cho so tang dong bo
+								// ve, KHONG dung nhip xoay vong va KHONG day khe - de lan sau du
+								// tang la ban duoc ngay.
+								g_uNoGuard = uCurTime + 700;
+							}
+							else
+							{
+								g_uComboNghi = uCurTime + (UINT)nTre;
 								g_nComboKhe = (nKheBan + 1) % 6;
+							}
 						}
 					}
 					else
