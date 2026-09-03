@@ -183,6 +183,13 @@ local Def =
         "tbExchangeShopServer:OnRecvProtocol",
 		{OBJTYPE_STRING, OBJTYPE_TABLE},
 	},
+	-- [MAIL 03/09] he THU (uimail.lua 2.0 gui) -> \script\mail\mailmanager.lua
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_HEADERLIST", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestHeaderList", {OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_DELETE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestDelete", {OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_WHOLEMAIL", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestWholeMail", {OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_STATECHANGE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestStateChange", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_AUTODELETE", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestAutoDelete", nil },
+	{ "emSCRIPT_PROTOCOL_MAIL_REQUEST_OPENURL", "\\script\\mail\\mailmanager.lua", "MailManager_OnRequestOpenUrl", {OBJTYPE_STRING} },
 }
 
 ScriptProtocol:RegProtocolSet(Def)

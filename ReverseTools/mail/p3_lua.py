@@ -1,0 +1,533 @@
+# -*- coding: utf-8 -*-
+"""[MAIL 03/09] Dot 3 - script MAY CHU cua he thu (cay chay that E:\\...\\bin\\server) + guong worktree.
+  Sinh : script\\mail\\mailmanager.lua (thu vien), script\\mail\\mailpoll.lua (timer do web), script\\mail\\maildef.lua
+  Va   : script\\script_protocol\\protocol_def_gs.lua (6 handler MAIL), script\\player\\playerlogin.lua (moc dang nhap),
+         script\\global\\npcchucnang\\dichquan.lua (menu "Nhan thu"), script\\item\\lenhbaiadmin.lua (2 muc thu)
+Chu Viet = TCVN3 tho (vn_to_octal), tep ghi latin-1. Chay: python p3_lua.py [--check]
+"""
+import io, os, re, sys
+
+SV = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server"
+CL = r"E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client"
+MIRROR = r"D:\GAMEDEVNEW_wt_mail\serverscript_jx2\mail\server"
+CHECK = "--check" in sys.argv
+sys.path.insert(0, r"C:\Users\nguye\.claude\skills\swordonline-dev\scripts")
+from vn_to_octal import unicode_to_tcvn3_bytes
+
+MARK = "[MAIL 03/09]"
+E = "\r\n"
+
+
+def V(s):
+    return unicode_to_tcvn3_bytes(s).decode("latin-1")
+
+
+def G(s):
+    return s.encode("gbk").decode("latin-1")
+
+
+def rd(p):
+    return io.open(p, "r", encoding="latin-1", newline="").read()
+
+
+def wr(p, s):
+    if CHECK:
+        print("  (check) ghi", p, len(s))
+        return
+    d = os.path.dirname(p)
+    if not os.path.isdir(d):
+        os.makedirs(d)
+    io.open(p, "w", encoding="latin-1", newline="").write(s)
+    print("  ghi:", p, len(s))
+
+
+def wr2(rel, s):
+    wr(os.path.join(SV, rel), s)
+    wr(os.path.join(MIRROR, rel), s)
+
+
+def hb(s):
+    return sum(1 for c in s if ord(c) >= 0x80)
+
+
+# ---------------------------------------------------------------- mailmanager.lua
+def build_mailmanager():
+    L = [
+        "-- mailmanager.lua - [MAIL 03/09] he THU phia MAY CHU (thay \\script\\mail\\MailManager.lua cua VLTK 2.0 - khong co o dau).",
+        "-- Thu nam trong bang MySQL `mail` (KMailServer.cpp: MailDB_*). Nguon gui: web admin ghi thang bang (state 0),",
+        "-- hoat dong / top tuan-thang / dua top goi MailManager_SendMail(...). Client = uimail.lua cua 2.0, giao thuc giu nguyen.",
+        "-- Cac ham MailManager_OnRequest* duoc goi qua DynamicExecuteByPlayer (PlayerIndex da dat) tu protocol_def_gs.lua.",
+        "-- Dinh kem (cot award): \"item:genre,detail,particular,level,series,luck,soluong;money:N;xu:N;exp:N\" (nhieu muc cach ;).",
+        "Include(\"\\\\script\\\\protocol.lua\")",
+        "Include(\"\\\\script\\\\mail\\\\maildef.lua\")",
+        "",
+        "MAILMGR_PAGE        = 12              -- so header moi goi (ObjBuffer 4 KB)",
+        "MAILMGR_MAX_CONTENT = 2000            -- MAILUI_CONTENT_LEN client = 2048",
+        "MAILMGR_ICON_MONEY  = \"\\\\spr\\\\Ui4\\\\email\\\\" + G("银两图标") + ".spr\"",
+        "MAILMGR_ICON_XU     = \"\\\\spr\\\\item\\\\script\\\\jinding.spr\"",
+        "MAILMGR_ICON_EXP    = \"\\\\spr\\\\item\\\\exp.spr\"",
+        "MAILMGR_SENDER_SYS  = \"" + V("Thư hệ thống") + "\"",
+        "MAILMGR_SENDER_NPH  = \"" + V("Nhà phát hành") + "\"",
+        "MAILMGR_XU_TASK     = 251             -- xu hien o hanh trang = task 251 (petsys\\jx1_compat.lua)",
+        "MailAutoDel = MailAutoDel or {}      -- [ten nhan vat] = 1: tu xoa thu khong dinh kem sau khi doc",
+        "",
+        "function MailManager_Split(s, sep)",
+        "    local tb = {}",
+        "    if type(s) ~= \"string\" then",
+        "        return tb",
+        "    end",
+        "    local nPos = 1",
+        "    while 1 do",
+        "        local a, b = strfind(s, sep, nPos, 1)",
+        "        if not a then",
+        "            tinsert(tb, strsub(s, nPos))",
+        "            break",
+        "        end",
+        "        tinsert(tb, strsub(s, nPos, a - 1))",
+        "        nPos = b + 1",
+        "    end",
+        "    return tb",
+        "end",
+        "",
+        "function MailManager_Trim(s)",
+        "    local _, _, t = strfind(s or \"\", \"^%s*(.-)%s*$\")",
+        "    return t or \"\"",
+        "end",
+        "",
+        "-- \"item:6,1,4139,0,0,0,1;money:1000;xu:10;exp:5000\" -> bang cac muc",
+        "function MailManager_ParseAward(szAward)",
+        "    local tb = {}",
+        "    if type(szAward) ~= \"string\" or szAward == \"\" then",
+        "        return tb",
+        "    end",
+        "    local parts = MailManager_Split(szAward, \";\")",
+        "    for i = 1, getn(parts) do",
+        "        local p = MailManager_Trim(parts[i])",
+        "        local _, _, kind, val = strfind(p, \"^(%a+)%s*:%s*(.*)$\")",
+        "        if kind then",
+        "            kind = strlower(kind)",
+        "            val = MailManager_Trim(val)",
+        "            if kind == \"item\" then",
+        "                local nums = MailManager_Split(val, \",\")",
+        "                if getn(nums) >= 6 then",
+        "                    tinsert(tb, {szKind = \"item\", nGenre = tonumber(nums[1]) or 0, nDetail = tonumber(nums[2]) or 0,",
+        "                        nParticular = tonumber(nums[3]) or 0, nLevel = tonumber(nums[4]) or 0, nSeries = tonumber(nums[5]) or 0,",
+        "                        nLuck = tonumber(nums[6]) or 0, nCount = tonumber(nums[7]) or 1})",
+        "                end",
+        "            elseif kind == \"money\" or kind == \"xu\" or kind == \"exp\" then",
+        "                local n = tonumber(val) or 0",
+        "                if n > 0 then",
+        "                    tinsert(tb, {szKind = kind, nCount = n})",
+        "                end",
+        "            end",
+        "        end",
+        "    end",
+        "    return tb",
+        "end",
+        "",
+        "-- mo ta cho client (uimail.lua PackAwardInfo): item giu nguyen thuoc tinh, tien/xu/exp thanh bieu tuong",
+        "function MailManager_AwardInfo(tbAward)",
+        "    local tb = {}",
+        "    for i = 1, getn(tbAward) do",
+        "        local a = tbAward[i]",
+        "        if a.szKind == \"item\" then",
+        "            tinsert(tb, a)",
+        "        elseif a.szKind == \"money\" then",
+        "            tinsert(tb, {szKind = \"icon\", szIcon = MAILMGR_ICON_MONEY, szName = \"" + V("Ngân lượng") + "\", szDesc = a.nCount..\" " + V("Ngân lượng") + "\", nCount = a.nCount})",
+        "        elseif a.szKind == \"xu\" then",
+        "            tinsert(tb, {szKind = \"icon\", szIcon = MAILMGR_ICON_XU, szName = \"Xu\", szDesc = a.nCount..\" xu\", nCount = a.nCount})",
+        "        elseif a.szKind == \"exp\" then",
+        "            tinsert(tb, {szKind = \"icon\", szIcon = MAILMGR_ICON_EXP, szName = \"" + V("Kinh nghiệm") + "\", szDesc = a.nCount..\" " + V("kinh nghiệm") + "\", nCount = a.nCount})",
+        "        end",
+        "    end",
+        "    return tb",
+        "end",
+        "",
+        "function MailManager_SendTo(nPlayerIdx, szEnum, h)",
+        "    return SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)",
+        "end",
+        "",
+        "-- trang header: tbList[nId] = {szSender, szTitle, nState, nExpiredTime, nSendTime, nAwardCount}; nComplete = 1 neu het",
+        "function MailManager_Headers(szRole, nMinId)",
+        "    local tb = MailDB_Headers(szRole, nMinId or 0, MAILMGR_PAGE + 1)",
+        "    local n = getn(tb)",
+        "    local nComplete = 1",
+        "    if n > MAILMGR_PAGE then",
+        "        nComplete = 0",
+        "        n = MAILMGR_PAGE",
+        "    end",
+        "    local tbList = {}",
+        "    for i = 1, n do",
+        "        local r = tb[i]",
+        "        tbList[r.id] = {szSender = r.sender, szTitle = r.title, nState = r.state, nExpiredTime = r.expire,",
+        "            nSendTime = r.send, nAwardCount = r.award_count}",
+        "    end",
+        "    return tbList, nComplete",
+        "end",
+        "",
+        "function MailManager_PushHeaders(nPlayerIdx, szRole, nMinId)",
+        "    if nPlayerIdx <= 0 then",
+        "        return",
+        "    end",
+        "    local tbList, nComplete = MailManager_Headers(szRole, nMinId)",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nMinId or 0)",
+        "    ObjBuffer:PushByType(h, OBJTYPE_TABLE, tbList)",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nComplete)",
+        "    MailManager_SendTo(nPlayerIdx, \"emSCRIPT_PROTOCOL_MAIL_HEADERLIST\", h)",
+        "    OB_Release(h)",
+        "end",
+        "",
+        "function MailManager_ReplyState(nId, nToState, nOk)",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nToState)",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nOk)",
+        "    SendScriptData(ScriptProtocol[\"emSCRIPT_PROTOCOL_MAIL_STATECHANGE\"], h)",
+        "    OB_Release(h)",
+        "end",
+        "",
+        "function MailManager_ReplyDelete(nId, nReason)",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nReason)",
+        "    SendScriptData(ScriptProtocol[\"emSCRIPT_PROTOCOL_MAIL_DELETE\"], h)",
+        "    OB_Release(h)",
+        "end",
+        "",
+        "-- ======== handler (PlayerIndex da dat) ========",
+        "function MailManager_OnRequestHeaderList(nMinId)",
+        "    MailManager_PushHeaders(PlayerIndex, GetName(), nMinId or 0)",
+        "end",
+        "",
+        "function MailManager_OnRequestWholeMail(nId)",
+        "    local szRole = GetName()",
+        "    local r = MailDB_Get(szRole, nId)",
+        "    if not r then",
+        "        Msg2Player(\"" + V("Thư không tồn tại!") + "\")",
+        "        return",
+        "    end",
+        "    local tbAward = MailManager_ParseAward(r.award)",
+        "    local tbMail = {",
+        "        nPrivateId = r.id, szRoleName = szRole, szSender = r.sender, szTitle = r.title,",
+        "        szDescribe = strsub(r.content or \"\", 1, MAILMGR_MAX_CONTENT),",
+        "        nSendTime = r.send, nCacheTime = r.send, nRecvTime = r.send, nExpiredTime = r.expire,",
+        "        nState = r.state, tbAward = {}, nAwardCount = r.award_count,",
+        "        tbAwardInfo = MailManager_AwardInfo(tbAward),",
+        "    }",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_TABLE, tbMail)",
+        "    SendScriptData(ScriptProtocol[\"emSCRIPT_PROTOCOL_MAIL_WHOLEMAIL\"], h)",
+        "    OB_Release(h)",
+        "end",
+        "",
+        "function MailManager_GiveAward(tbAward)",
+        "    for i = 1, getn(tbAward) do",
+        "        local a = tbAward[i]",
+        "        if a.szKind == \"item\" then",
+        "            for c = 1, a.nCount do",
+        "                local nIdx = AddItem(a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, 0)",
+        "                if nIdx <= 0 then",
+        "                    GhiLog(\"MAIL\", format(\"AddItem that bai %d,%d,%d,%d,%d,%d cho %s\", a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, GetName()))",
+        "                end",
+        "            end",
+        "        elseif a.szKind == \"money\" then",
+        "            Earn(a.nCount)",
+        "        elseif a.szKind == \"xu\" then",
+        "            SetTask(MAILMGR_XU_TASK, GetTask(MAILMGR_XU_TASK) + a.nCount)",
+        "        elseif a.szKind == \"exp\" then",
+        "            AddOwnExp(a.nCount)",
+        "        end",
+        "    end",
+        "end",
+        "",
+        "function MailManager_OnRequestStateChange(nId, nToState)",
+        "    local szRole = GetName()",
+        "    if nToState == MAILDEF.tbState.READED then",
+        "        if MailDB_SetState(szRole, nId, MAILDEF.tbState.READED, MAILDEF.tbState.READED) == 1 then",
+        "            MailManager_ReplyState(nId, MAILDEF.tbState.READED, 1)",
+        "            if MailAutoDel[szRole] == 1 then",
+        "                local r = MailDB_Get(szRole, nId)",
+        "                if r and r.award_count == 0 and MailDB_Delete(szRole, nId) == 1 then",
+        "                    MailManager_ReplyDelete(nId, MAILDEF.tbDeleteReson.REQUEST)",
+        "                end",
+        "            end",
+        "        end",
+        "        return",
+        "    end",
+        "    if nToState ~= MAILDEF.tbState.DRAWED then",
+        "        return",
+        "    end",
+        "    local r = MailDB_Get(szRole, nId)",
+        "    if not r then",
+        "        Msg2Player(\"" + V("Thư không tồn tại!") + "\")",
+        "        return",
+        "    end",
+        "    local tbAward = MailManager_ParseAward(r.award)",
+        "    if getn(tbAward) == 0 then",
+        "        Msg2Player(\"" + V("Thư này không có đính kèm!") + "\")",
+        "        return",
+        "    end",
+        "    local nItems = 0",
+        "    for i = 1, getn(tbAward) do",
+        "        if tbAward[i].szKind == \"item\" then",
+        "            nItems = nItems + tbAward[i].nCount",
+        "        end",
+        "    end",
+        "    if nItems > 0 and CalcFreeItemCellCount(1, 1) < nItems * 6 then",
+        "        Msg2Player(\"" + V("Hành trang không đủ chỗ trống, hãy dọn bớt rồi nhận lại!") + "\")",
+        "        return",
+        "    end",
+        "    -- nguyen tu: chi mot lan doi duoc state < 3 -> 3",
+        "    if MailDB_SetState(szRole, nId, MAILDEF.tbState.DRAWED, MAILDEF.tbState.DRAWED) ~= 1 then",
+        "        Msg2Player(\"" + V("Đính kèm đã được nhận rồi!") + "\")",
+        "        return",
+        "    end",
+        "    MailManager_GiveAward(tbAward)",
+        "    MailManager_ReplyState(nId, MAILDEF.tbState.DRAWED, 1)",
+        "    Msg2Player(\"" + V("Đã nhận đính kèm trong thư.") + "\")",
+        "    GhiLog(\"MAIL\", format(\"%s nhan dinh kem thu %d: %s\", szRole, nId, r.award or \"\"))",
+        "end",
+        "",
+        "function MailManager_OnRequestDelete(nId)",
+        "    if MailDB_Delete(GetName(), nId) == 1 then",
+        "        MailManager_ReplyDelete(nId, MAILDEF.tbDeleteReson.REQUEST)",
+        "    end",
+        "end",
+        "",
+        "function MailManager_OnRequestAutoDelete(nHandle)",
+        "    local szRole = GetName()",
+        "    if MailAutoDel[szRole] == 1 then",
+        "        MailAutoDel[szRole] = 0",
+        "    else",
+        "        MailAutoDel[szRole] = 1",
+        "    end",
+        "end",
+        "",
+        "function MailManager_OnRequestOpenUrl(szUrl)",
+        "    -- chu chot: bo tinh nang mo URL",
+        "end",
+        "",
+        "-- ======== goi tu NPC / dang nhap / script khac (PlayerIndex da dat) ========",
+        "function MailManager_OpenWindow()",
+        "    local szRole = GetName()",
+        "    MailManager_PushHeaders(PlayerIndex, szRole, 0)",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, 1)",
+        "    SendScriptData(ScriptProtocol[\"emSCRIPT_PROTOCOL_MAIL_OPENWINDOW\"], h)",
+        "    OB_Release(h)",
+        "end",
+        "",
+        "function MailManager_OnLogin()",
+        "    local szRole = GetName()",
+        "    if MailDB_Count(szRole) > 0 then",
+        "        MailManager_PushHeaders(PlayerIndex, szRole, 0)   -- client tu bat bieu tuong neu co thu chua doc",
+        "    end",
+        "end",
+        "",
+        "-- thu moi cho nguoi choi dang online (web admin / SendMail): bao NEWMAIL + gui header thu do",
+        "function MailManager_NotifyNew(szRole, nId)",
+        "    local nIdx = FindPlayer(szRole)",
+        "    if type(nIdx) ~= \"number\" or nIdx <= 0 then",
+        "        return 0",
+        "    end",
+        "    local h = OB_Create()",
+        "    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)",
+        "    MailManager_SendTo(nIdx, \"emSCRIPT_PROTOCOL_MAIL_NEWMAIL\", h)",
+        "    OB_Release(h)",
+        "    MailManager_PushHeaders(nIdx, szRole, nId - 1)",
+        "    return 1",
+        "end",
+        "",
+        "-- API cho hoat dong / top tuan-thang / dua top: MailManager_SendMail(ten, nguoi gui, tieu de, noi dung, dinh kem, so ngay, nguon)",
+        "-- noi dung xuong dong bang <enter>; dinh kem theo dinh dang o dau tep; tra id thu (0 = loi)",
+        "function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nExpireDays, szSource)",
+        "    local tbAward = MailManager_ParseAward(szAward or \"\")",
+        "    local nId = MailDB_Send(szRole, szSender or MAILMGR_SENDER_SYS, szTitle or \"\", szContent or \"\", szAward or \"\",",
+        "        getn(tbAward), (nExpireDays or 30) * 86400, szSource or \"script\")",
+        "    if nId > 0 then",
+        "        MailManager_NotifyNew(szRole, nId)",
+        "    else",
+        "        GhiLog(\"MAIL\", format(\"MailDB_Send that bai cho %s: %s\", szRole or \"?\", szTitle or \"\"))",
+        "    end",
+        "    return nId",
+        "end",
+        "",
+        "-- lenh bai admin: gui thu thu cho chinh minh (1 = tien/xu/exp, 2 = them vat pham 6,1,4139)",
+        "function MailManager_SendTest(nKind)",
+        "    local szAward = \"money:10000;xu:10;exp:50000\"",
+        "    if nKind == 2 then",
+        "        szAward = \"item:6,1,4139,0,0,0,1;\"..szAward",
+        "    end",
+        "    local szContent = \"" + V("Đại hiệp thân mến,") + "<enter>\"",
+        "        ..\"" + V("Đây là thư thử của hệ thống thư mới. Hãy bấm Nhận để lấy đính kèm.") + "<enter>\"",
+        "        ..\"" + V("Trân trọng") + "\"",
+        "    local nId = MailManager_SendMail(GetName(), MAILMGR_SENDER_NPH, \"" + V("Thư thử hệ thống thư") + "\", szContent, szAward, 30, \"gm\")",
+        "    Msg2Player(\"" + V("Đã gửi thư thử (id ") + "\"..nId..\"). " + V("Đến Tín Sứ để mở hộp thư.") + "\")",
+        "end",
+        "",
+    ]
+    return E.join(L)
+
+
+# ---------------------------------------------------------------- mailpoll.lua
+def build_mailpoll():
+    L = [
+        "-- mailpoll.lua - [MAIL 03/09] do thu moi do web admin ghi thang bang `mail` (state 0) moi 30 giay,",
+        "-- quet thu het han moi 10 phut. CHI tep nay dang ky timer (AddTimer chay trong state cua tep dang ky,",
+        "-- KJx2League.cpp: ham tra so khung thi timer tiep tuc). KHONG Include tep nay o noi khac.",
+        "Include(\"\\\\script\\\\mail\\\\mailmanager.lua\")",
+        "",
+        "MAILPOLL_FRAMES = 30 * 18",
+        "MAILPOLL_LASTID = 0",
+        "MAILPOLL_TICKS  = 0",
+        "MAILPOLL_GLB    = 9001   -- GlbValue: chi mot state dang ky timer",
+        "",
+        "function MailPoll_Tick(nParam, nTimerId)",
+        "    if MAILPOLL_LASTID == 0 then",
+        "        -- lan dau: chi bao thu ghi SAU khi may chu chay; thu cu giao luc nguoi choi dang nhap",
+        "        MAILPOLL_LASTID = MailDB_MaxId() or 0",
+        "    end",
+        "    local tb = MailDB_PollNew(MAILPOLL_LASTID, 50)",
+        "    for i = 1, getn(tb) do",
+        "        local r = tb[i]",
+        "        if r.id > MAILPOLL_LASTID then",
+        "            MAILPOLL_LASTID = r.id",
+        "        end",
+        "        MailManager_NotifyNew(r.role, r.id)",
+        "    end",
+        "    MAILPOLL_TICKS = MAILPOLL_TICKS + 1",
+        "    if MAILPOLL_TICKS >= 20 then",
+        "        MAILPOLL_TICKS = 0",
+        "        MailDB_Sweep()",
+        "    end",
+        "    return MAILPOLL_FRAMES",
+        "end",
+        "",
+        "if GetGlbValue(MAILPOLL_GLB) ~= 1 then",
+        "    SetGlbValue(MAILPOLL_GLB, 1)",
+        "    AddTimer(MAILPOLL_FRAMES, \"MailPoll_Tick\", 0)",
+        "end",
+        "",
+    ]
+    return E.join(L)
+
+
+# ---------------------------------------------------------------- va cac tep co san
+def patch_def_gs():
+    p = os.path.join(SV, r"script\script_protocol\protocol_def_gs.lua")
+    s = rd(p)
+    if "MAIL_REQUEST_HEADERLIST" in s:
+        print("  da va:", p)
+        return s
+    e = "\r\n" if "\r\n" in s else "\n"
+    anchor = "ScriptProtocol:RegProtocolSet(Def)"
+    assert s.count(anchor) == 1
+    i = s.index(anchor)
+    # dong '}' dong bang Def ngay truoc anchor
+    j = s.rfind(e + "}" + e, 0, i)
+    assert j > 0
+    block = e.join([
+        "\t-- [MAIL 03/09] he THU (uimail.lua 2.0 gui) -> \\script\\mail\\mailmanager.lua",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_HEADERLIST\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestHeaderList\", {OBJTYPE_NUMBER} },",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_DELETE\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestDelete\", {OBJTYPE_NUMBER} },",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_WHOLEMAIL\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestWholeMail\", {OBJTYPE_NUMBER} },",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_STATECHANGE\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestStateChange\", {OBJTYPE_NUMBER, OBJTYPE_NUMBER} },",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_AUTODELETE\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestAutoDelete\", nil },",
+        "\t{ \"emSCRIPT_PROTOCOL_MAIL_REQUEST_OPENURL\", \"\\\\script\\\\mail\\\\mailmanager.lua\", \"MailManager_OnRequestOpenUrl\", {OBJTYPE_STRING} },",
+    ])
+    s2 = s[:j] + e + block + s[j:]
+    assert hb(s2) == hb(s)
+    wr(p, s2)
+    wr(os.path.join(MIRROR, r"script\script_protocol\protocol_def_gs.lua"), s2)
+    return s2
+
+
+def patch_playerlogin():
+    p = os.path.join(SV, r"script\player\playerlogin.lua")
+    s = rd(p)
+    if MARK in s:
+        print("  da va:", p)
+        return
+    e = "\r\n" if "\r\n" in s else "\n"
+    a1 = 'Include("\\\\script\\\\global\\\\titlefuncs.lua")'
+    assert s.count(a1) == 1, "playerlogin: include anchor"
+    s = s.replace(a1, a1 + e + 'Include("\\\\script\\\\mail\\\\mailmanager.lua")\t-- ' + MARK + ' he thu')
+    a2 = "\tAddSkillHoTro()"
+    assert s.count(a2) == 1, "playerlogin: AddSkillHoTro x%d" % s.count(a2)
+    s = s.replace(a2, a2 + e + "\tMailManager_OnLogin()\t-- " + MARK + " co thu -> gui header, client bat bieu tuong bo cau")
+    wr(p, s)
+    wr(os.path.join(MIRROR, r"script\player\playerlogin.lua"), s)
+
+
+def patch_dichquan():
+    p = os.path.join(SV, r"script\global\npcchucnang\dichquan.lua")
+    s = rd(p)
+    if MARK in s:
+        print("  da va:", p)
+        return
+    e = "\r\n" if "\r\n" in s else "\n"
+    lines = s.split(e)
+    idx = [i for i, l in enumerate(lines) if "/especiallymessenger\"" in l and not l.lstrip().startswith("--")]
+    assert len(idx) == 1, "dichquan: especiallymessenger x%d" % len(idx)
+    lines.insert(idx[0] + 1, "\t\t\"" + V("Nhận thư") + "/nhanthu\",\t-- " + MARK + " hop thu (uimail.lua 2.0)")
+    s = e.join(lines)
+    tail = e.join([
+        "",
+        "-- " + MARK + " hop thu: Tin Su 7 thanh mo cua so thu (2.0: 'hay den Tin Su cac thanh mo xem')",
+        "function nhanthu()",
+        "\tInclude(\"\\\\script\\\\mail\\\\mailmanager.lua\")",
+        "\tMailManager_OpenWindow()",
+        "end",
+        "",
+    ])
+    if not s.endswith(e):
+        s += e
+    s += tail
+    wr(p, s)
+    wr(os.path.join(MIRROR, r"script\global\npcchucnang\dichquan.lua"), s)
+
+
+def patch_lenhbai():
+    p = os.path.join(SV, r"script\item\lenhbaiadmin.lua")
+    s = rd(p)
+    if "mailtest1" in s:
+        print("  da va:", p)
+        return
+    e = "\r\n" if "\r\n" in s else "\n"
+    a1 = '\t\t"Thu kenh ScriptProtocol (ECHO)/specho",\t-- [MAIL 03/09]'
+    assert s.count(a1) == 1, "lenhbai: anchor ECHO"
+    s = s.replace(a1, a1 + e +
+        '\t\t"' + V("Gửi thư thử: tiền/xu/exp") + '/mailtest1",\t-- [MAIL 03/09]' + e +
+        '\t\t"' + V("Gửi thư thử: có vật phẩm") + '/mailtest2",\t-- [MAIL 03/09]')
+    tail = e.join([
+        "",
+        "-- [MAIL 03/09] gui thu thu cho chinh minh (mailmanager.lua)",
+        "function mailtest1()",
+        "\tInclude(\"\\\\script\\\\mail\\\\mailmanager.lua\")",
+        "\tMailManager_SendTest(1)",
+        "end",
+        "",
+        "function mailtest2()",
+        "\tInclude(\"\\\\script\\\\mail\\\\mailmanager.lua\")",
+        "\tMailManager_SendTest(2)",
+        "end",
+        "",
+    ])
+    if not s.endswith(e):
+        s += e
+    s += tail
+    wr(p, s)
+    wr(os.path.join(MIRROR, r"script\item\lenhbaiadmin.lua"), s)
+
+
+if __name__ == "__main__":
+    wr2(r"script\mail\mailmanager.lua", build_mailmanager())
+    wr2(r"script\mail\mailpoll.lua", build_mailpoll())
+    # maildef.lua may chu = ban client (2.0 + shim)
+    wr2(r"script\mail\maildef.lua", rd(os.path.join(CL, r"script\mail\maildef.lua")))
+    patch_def_gs()
+    patch_playerlogin()
+    patch_dichquan()
+    patch_lenhbai()
+    print("XONG" + (" (chi kiem tra)" if CHECK else ""))

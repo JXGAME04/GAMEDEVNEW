@@ -213,8 +213,10 @@ function UIMail:ShowMailContent(nId)
     end
 end
 
--- [MAIL 03/09 JX1] tbAwardInfo do MailManager.lua may chu gui: {{szIcon, szName, szDesc, nCount}, ...}
--- -> "icon|ten|mo ta|so luong\n..." (C++ KMailClient.cpp tach). Ky tu | va xuong dong trong mo ta bi thay.
+-- [MAIL 03/09 JX1] tbAwardInfo do mailmanager.lua may chu gui, moi phan tu la bang:
+--   {szKind="item", nGenre, nDetail, nParticular, nLevel, nSeries, nLuck, nCount}  -> vat pham (client dung lai tam)
+--   {szKind="icon", szIcon, szName, szDesc, nCount}                              -> Ngan luong / xu / EXP
+-- -> "item|g|d|p|l|s|k|n\n" hoac "icon|spr|ten|mo ta|n\n" (C++ KMailClient.cpp tach).
 function UIMail:PackAwardInfo(tbAwardInfo)
     local szAll = ""
     if type(tbAwardInfo) ~= "table" then
@@ -222,12 +224,13 @@ function UIMail:PackAwardInfo(tbAwardInfo)
     end
     for _, tbInfo in tbAwardInfo do
         if type(tbInfo) == "table" then
-            local szIcon = tbInfo[1] or tbInfo.szIcon or ""
-            local szName = tbInfo[2] or tbInfo.szName or ""
-            local szDesc = tbInfo[3] or tbInfo.szDesc or ""
-            local nCount = tbInfo[4] or tbInfo.nCount or 1
-            szDesc = gsub(gsub(szDesc, "|", "/"), "\n", "<enter>")
-            szAll = szAll..szIcon.."|"..szName.."|"..szDesc.."|"..nCount.."\n"
+            if tbInfo.szKind == "item" then
+                szAll = szAll.."item|"..(tbInfo.nGenre or 0).."|"..(tbInfo.nDetail or 0).."|"..(tbInfo.nParticular or 0)
+                    .."|"..(tbInfo.nLevel or 0).."|"..(tbInfo.nSeries or 0).."|"..(tbInfo.nLuck or 0).."|"..(tbInfo.nCount or 1).."\n"
+            else
+                local szDesc = gsub(gsub(tbInfo.szDesc or "", "|", "/"), "\n", "<enter>")
+                szAll = szAll.."icon|"..(tbInfo.szIcon or "").."|"..(tbInfo.szName or "").."|"..szDesc.."|"..(tbInfo.nCount or 1).."\n"
+            end
         end
     end
     return szAll

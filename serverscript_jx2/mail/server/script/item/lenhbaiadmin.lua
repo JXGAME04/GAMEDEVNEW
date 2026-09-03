@@ -101,6 +101,8 @@ function chucnangadmin(itemIdx)
 		-- "LÊy M¸u/laymau001",
 		"Qu¶n lý m¸y chñ/system",
 		"Thu kenh ScriptProtocol (ECHO)/specho",	-- [MAIL 03/09]
+		"Göi th­ thö: tiÒn/xu/exp/mailtest1",	-- [MAIL 03/09]
+		"Göi th­ thö: cã vËt phÈm/mailtest2",	-- [MAIL 03/09]
 		"Chøc n¨ng chÝnh/manager",
 		"N¹p l¹i script/reloadfileEvent",
 		"Test bang héi - c«ng thµnh/TX_Root",
@@ -526,4 +528,15 @@ end
 function specho()
 	Include("\\script\\script_protocol\\echo_gs.lua")
 	EchoTest()
+end
+
+-- [MAIL 03/09] gui thu thu cho chinh minh (mailmanager.lua)
+function mailtest1()
+	Include("\\script\\mail\\mailmanager.lua")
+	MailManager_SendTest(1)
+end
+
+function mailtest2()
+	Include("\\script\\mail\\mailmanager.lua")
+	MailManager_SendTest(2)
 end

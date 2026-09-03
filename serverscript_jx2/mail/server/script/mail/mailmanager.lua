@@ -1,0 +1,312 @@
+-- mailmanager.lua - [MAIL 03/09] he THU phia MAY CHU (thay \script\mail\MailManager.lua cua VLTK 2.0 - khong co o dau).
+-- Thu nam trong bang MySQL `mail` (KMailServer.cpp: MailDB_*). Nguon gui: web admin ghi thang bang (state 0),
+-- hoat dong / top tuan-thang / dua top goi MailManager_SendMail(...). Client = uimail.lua cua 2.0, giao thuc giu nguyen.
+-- Cac ham MailManager_OnRequest* duoc goi qua DynamicExecuteByPlayer (PlayerIndex da dat) tu protocol_def_gs.lua.
+-- Dinh kem (cot award): "item:genre,detail,particular,level,series,luck,soluong;money:N;xu:N;exp:N" (nhieu muc cach ;).
+Include("\\script\\protocol.lua")
+Include("\\script\\mail\\maildef.lua")
+
+MAILMGR_PAGE        = 12              -- so header moi goi (ObjBuffer 4 KB)
+MAILMGR_MAX_CONTENT = 2000            -- MAILUI_CONTENT_LEN client = 2048
+MAILMGR_ICON_MONEY  = "\\spr\\Ui4\\email\\ÒøÁ½Í¼±ê.spr"
+MAILMGR_ICON_XU     = "\\spr\\item\\script\\jinding.spr"
+MAILMGR_ICON_EXP    = "\\spr\\item\\exp.spr"
+MAILMGR_SENDER_SYS  = "Th­ hÖ thèng"
+MAILMGR_SENDER_NPH  = "Nhµ ph¸t hµnh"
+MAILMGR_XU_TASK     = 251             -- xu hien o hanh trang = task 251 (petsys\jx1_compat.lua)
+MailAutoDel = MailAutoDel or {}      -- [ten nhan vat] = 1: tu xoa thu khong dinh kem sau khi doc
+
+function MailManager_Split(s, sep)
+    local tb = {}
+    if type(s) ~= "string" then
+        return tb
+    end
+    local nPos = 1
+    while 1 do
+        local a, b = strfind(s, sep, nPos, 1)
+        if not a then
+            tinsert(tb, strsub(s, nPos))
+            break
+        end
+        tinsert(tb, strsub(s, nPos, a - 1))
+        nPos = b + 1
+    end
+    return tb
+end
+
+function MailManager_Trim(s)
+    local _, _, t = strfind(s or "", "^%s*(.-)%s*$")
+    return t or ""
+end
+
+-- "item:6,1,4139,0,0,0,1;money:1000;xu:10;exp:5000" -> bang cac muc
+function MailManager_ParseAward(szAward)
+    local tb = {}
+    if type(szAward) ~= "string" or szAward == "" then
+        return tb
+    end
+    local parts = MailManager_Split(szAward, ";")
+    for i = 1, getn(parts) do
+        local p = MailManager_Trim(parts[i])
+        local _, _, kind, val = strfind(p, "^(%a+)%s*:%s*(.*)$")
+        if kind then
+            kind = strlower(kind)
+            val = MailManager_Trim(val)
+            if kind == "item" then
+                local nums = MailManager_Split(val, ",")
+                if getn(nums) >= 6 then
+                    tinsert(tb, {szKind = "item", nGenre = tonumber(nums[1]) or 0, nDetail = tonumber(nums[2]) or 0,
+                        nParticular = tonumber(nums[3]) or 0, nLevel = tonumber(nums[4]) or 0, nSeries = tonumber(nums[5]) or 0,
+                        nLuck = tonumber(nums[6]) or 0, nCount = tonumber(nums[7]) or 1})
+                end
+            elseif kind == "money" or kind == "xu" or kind == "exp" then
+                local n = tonumber(val) or 0
+                if n > 0 then
+                    tinsert(tb, {szKind = kind, nCount = n})
+                end
+            end
+        end
+    end
+    return tb
+end
+
+-- mo ta cho client (uimail.lua PackAwardInfo): item giu nguyen thuoc tinh, tien/xu/exp thanh bieu tuong
+function MailManager_AwardInfo(tbAward)
+    local tb = {}
+    for i = 1, getn(tbAward) do
+        local a = tbAward[i]
+        if a.szKind == "item" then
+            tinsert(tb, a)
+        elseif a.szKind == "money" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_MONEY, szName = "Ng©n l­îng", szDesc = a.nCount.." Ng©n l­îng", nCount = a.nCount})
+        elseif a.szKind == "xu" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_XU, szName = "Xu", szDesc = a.nCount.." xu", nCount = a.nCount})
+        elseif a.szKind == "exp" then
+            tinsert(tb, {szKind = "icon", szIcon = MAILMGR_ICON_EXP, szName = "Kinh nghiÖm", szDesc = a.nCount.." kinh nghiÖm", nCount = a.nCount})
+        end
+    end
+    return tb
+end
+
+function MailManager_SendTo(nPlayerIdx, szEnum, h)
+    return SendScriptDataToPlayer(nPlayerIdx, ScriptProtocol[szEnum], h)
+end
+
+-- trang header: tbList[nId] = {szSender, szTitle, nState, nExpiredTime, nSendTime, nAwardCount}; nComplete = 1 neu het
+function MailManager_Headers(szRole, nMinId)
+    local tb = MailDB_Headers(szRole, nMinId or 0, MAILMGR_PAGE + 1)
+    local n = getn(tb)
+    local nComplete = 1
+    if n > MAILMGR_PAGE then
+        nComplete = 0
+        n = MAILMGR_PAGE
+    end
+    local tbList = {}
+    for i = 1, n do
+        local r = tb[i]
+        tbList[r.id] = {szSender = r.sender, szTitle = r.title, nState = r.state, nExpiredTime = r.expire,
+            nSendTime = r.send, nAwardCount = r.award_count}
+    end
+    return tbList, nComplete
+end
+
+function MailManager_PushHeaders(nPlayerIdx, szRole, nMinId)
+    if nPlayerIdx <= 0 then
+        return
+    end
+    local tbList, nComplete = MailManager_Headers(szRole, nMinId)
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nMinId or 0)
+    ObjBuffer:PushByType(h, OBJTYPE_TABLE, tbList)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nComplete)
+    MailManager_SendTo(nPlayerIdx, "emSCRIPT_PROTOCOL_MAIL_HEADERLIST", h)
+    OB_Release(h)
+end
+
+function MailManager_ReplyState(nId, nToState, nOk)
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nToState)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nOk)
+    SendScriptData(ScriptProtocol["emSCRIPT_PROTOCOL_MAIL_STATECHANGE"], h)
+    OB_Release(h)
+end
+
+function MailManager_ReplyDelete(nId, nReason)
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nReason)
+    SendScriptData(ScriptProtocol["emSCRIPT_PROTOCOL_MAIL_DELETE"], h)
+    OB_Release(h)
+end
+
+-- ======== handler (PlayerIndex da dat) ========
+function MailManager_OnRequestHeaderList(nMinId)
+    MailManager_PushHeaders(PlayerIndex, GetName(), nMinId or 0)
+end
+
+function MailManager_OnRequestWholeMail(nId)
+    local szRole = GetName()
+    local r = MailDB_Get(szRole, nId)
+    if not r then
+        Msg2Player("Th­ kh«ng tån t¹i!")
+        return
+    end
+    local tbAward = MailManager_ParseAward(r.award)
+    local tbMail = {
+        nPrivateId = r.id, szRoleName = szRole, szSender = r.sender, szTitle = r.title,
+        szDescribe = strsub(r.content or "", 1, MAILMGR_MAX_CONTENT),
+        nSendTime = r.send, nCacheTime = r.send, nRecvTime = r.send, nExpiredTime = r.expire,
+        nState = r.state, tbAward = {}, nAwardCount = r.award_count,
+        tbAwardInfo = MailManager_AwardInfo(tbAward),
+    }
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_TABLE, tbMail)
+    SendScriptData(ScriptProtocol["emSCRIPT_PROTOCOL_MAIL_WHOLEMAIL"], h)
+    OB_Release(h)
+end
+
+function MailManager_GiveAward(tbAward)
+    for i = 1, getn(tbAward) do
+        local a = tbAward[i]
+        if a.szKind == "item" then
+            for c = 1, a.nCount do
+                local nIdx = AddItem(a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, 0)
+                if nIdx <= 0 then
+                    GhiLog("MAIL", format("AddItem that bai %d,%d,%d,%d,%d,%d cho %s", a.nGenre, a.nDetail, a.nParticular, a.nLevel, a.nSeries, a.nLuck, GetName()))
+                end
+            end
+        elseif a.szKind == "money" then
+            Earn(a.nCount)
+        elseif a.szKind == "xu" then
+            SetTask(MAILMGR_XU_TASK, GetTask(MAILMGR_XU_TASK) + a.nCount)
+        elseif a.szKind == "exp" then
+            AddOwnExp(a.nCount)
+        end
+    end
+end
+
+function MailManager_OnRequestStateChange(nId, nToState)
+    local szRole = GetName()
+    if nToState == MAILDEF.tbState.READED then
+        if MailDB_SetState(szRole, nId, MAILDEF.tbState.READED, MAILDEF.tbState.READED) == 1 then
+            MailManager_ReplyState(nId, MAILDEF.tbState.READED, 1)
+            if MailAutoDel[szRole] == 1 then
+                local r = MailDB_Get(szRole, nId)
+                if r and r.award_count == 0 and MailDB_Delete(szRole, nId) == 1 then
+                    MailManager_ReplyDelete(nId, MAILDEF.tbDeleteReson.REQUEST)
+                end
+            end
+        end
+        return
+    end
+    if nToState ~= MAILDEF.tbState.DRAWED then
+        return
+    end
+    local r = MailDB_Get(szRole, nId)
+    if not r then
+        Msg2Player("Th­ kh«ng tån t¹i!")
+        return
+    end
+    local tbAward = MailManager_ParseAward(r.award)
+    if getn(tbAward) == 0 then
+        Msg2Player("Th­ nµy kh«ng cã ®Ýnh kÌm!")
+        return
+    end
+    local nItems = 0
+    for i = 1, getn(tbAward) do
+        if tbAward[i].szKind == "item" then
+            nItems = nItems + tbAward[i].nCount
+        end
+    end
+    if nItems > 0 and CalcFreeItemCellCount(1, 1) < nItems * 6 then
+        Msg2Player("Hµnh trang kh«ng ®ñ chç trèng, h·y dän bít råi nhËn l¹i!")
+        return
+    end
+    -- nguyen tu: chi mot lan doi duoc state < 3 -> 3
+    if MailDB_SetState(szRole, nId, MAILDEF.tbState.DRAWED, MAILDEF.tbState.DRAWED) ~= 1 then
+        Msg2Player("§Ýnh kÌm ®· ®­îc nhËn råi!")
+        return
+    end
+    MailManager_GiveAward(tbAward)
+    MailManager_ReplyState(nId, MAILDEF.tbState.DRAWED, 1)
+    Msg2Player("§· nhËn ®Ýnh kÌm trong th­.")
+    GhiLog("MAIL", format("%s nhan dinh kem thu %d: %s", szRole, nId, r.award or ""))
+end
+
+function MailManager_OnRequestDelete(nId)
+    if MailDB_Delete(GetName(), nId) == 1 then
+        MailManager_ReplyDelete(nId, MAILDEF.tbDeleteReson.REQUEST)
+    end
+end
+
+function MailManager_OnRequestAutoDelete(nHandle)
+    local szRole = GetName()
+    if MailAutoDel[szRole] == 1 then
+        MailAutoDel[szRole] = 0
+    else
+        MailAutoDel[szRole] = 1
+    end
+end
+
+function MailManager_OnRequestOpenUrl(szUrl)
+    -- chu chot: bo tinh nang mo URL
+end
+
+-- ======== goi tu NPC / dang nhap / script khac (PlayerIndex da dat) ========
+function MailManager_OpenWindow()
+    local szRole = GetName()
+    MailManager_PushHeaders(PlayerIndex, szRole, 0)
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, 1)
+    SendScriptData(ScriptProtocol["emSCRIPT_PROTOCOL_MAIL_OPENWINDOW"], h)
+    OB_Release(h)
+end
+
+function MailManager_OnLogin()
+    local szRole = GetName()
+    if MailDB_Count(szRole) > 0 then
+        MailManager_PushHeaders(PlayerIndex, szRole, 0)   -- client tu bat bieu tuong neu co thu chua doc
+    end
+end
+
+-- thu moi cho nguoi choi dang online (web admin / SendMail): bao NEWMAIL + gui header thu do
+function MailManager_NotifyNew(szRole, nId)
+    local nIdx = FindPlayer(szRole)
+    if type(nIdx) ~= "number" or nIdx <= 0 then
+        return 0
+    end
+    local h = OB_Create()
+    ObjBuffer:PushByType(h, OBJTYPE_NUMBER, nId)
+    MailManager_SendTo(nIdx, "emSCRIPT_PROTOCOL_MAIL_NEWMAIL", h)
+    OB_Release(h)
+    MailManager_PushHeaders(nIdx, szRole, nId - 1)
+    return 1
+end
+
+-- API cho hoat dong / top tuan-thang / dua top: MailManager_SendMail(ten, nguoi gui, tieu de, noi dung, dinh kem, so ngay, nguon)
+-- noi dung xuong dong bang <enter>; dinh kem theo dinh dang o dau tep; tra id thu (0 = loi)
+function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nExpireDays, szSource)
+    local tbAward = MailManager_ParseAward(szAward or "")
+    local nId = MailDB_Send(szRole, szSender or MAILMGR_SENDER_SYS, szTitle or "", szContent or "", szAward or "",
+        getn(tbAward), (nExpireDays or 30) * 86400, szSource or "script")
+    if nId > 0 then
+        MailManager_NotifyNew(szRole, nId)
+    else
+        GhiLog("MAIL", format("MailDB_Send that bai cho %s: %s", szRole or "?", szTitle or ""))
+    end
+    return nId
+end
+
+-- lenh bai admin: gui thu thu cho chinh minh (1 = tien/xu/exp, 2 = them vat pham 6,1,4139)
+function MailManager_SendTest(nKind)
+    local szAward = "money:10000;xu:10;exp:50000"
+    if nKind == 2 then
+        szAward = "item:6,1,4139,0,0,0,1;"..szAward
+    end
+    local szContent = "§¹i hiÖp th©n mÕn,<enter>"
+        .."§©y lµ th­ thö cña hÖ thèng th­ míi. H·y bÊm NhËn ®Ó lÊy ®Ýnh kÌm.<enter>"
+        .."Tr©n träng"
+    local nId = MailManager_SendMail(GetName(), MAILMGR_SENDER_NPH, "Th­ thö hÖ thèng th­", szContent, szAward, 30, "gm")
+    Msg2Player("§· göi th­ thö (id "..nId.."). §Õn TÝn Sø ®Ó më hép th­.")
+end
