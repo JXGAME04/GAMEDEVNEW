@@ -2739,6 +2739,17 @@ void KNpc::DoSkill(int nX, int nY)
 		if (m_SkillList.CanCast(m_ActiveSkillID, SubWorld[m_SubWorldIndex].m_dwCurrentTime))
 		{
 			AUTOLOG_EVERY(300, "[E4_SKILL_CANCAST] npc=%d id=%u skill=%d style=%d tgt=(%d,%d) map=(%d,%d) off=(%d,%d) dir=%d radius=%d", m_Index, m_dwID, m_ActiveSkillID, (int)eStyle, nX, nY, m_MapX, m_MapY, m_OffX, m_OffY, m_Dir, m_CurrentAttackRadius);
+#ifdef _SERVER
+			// [S13i 03/09] Nguoi choi that nham NPC DA CHET (doing=death/revive hoac het mau): client TU CHOI chieu nay
+			// (KNpcSet::GetRelation ban client kiem IsAlive -> relation_none -> case 0), may chu KHONG kiem -> thi hanh
+			// chieu dang giu vao XAC (do 03/09: 121/911 chieu, ~5 lan/phut), dung tron hoat anh ~560 ms trong khi client
+			// da chay sang quai khac -> lech >256 -> nan keo lui. Bo qua chieu, KHONG DoStand (giu nguyen dang chay/dung).
+			if (S13_IsRealPlayer(this) && nX == -1 && nY > 0 && nY < MAX_NPC && !Npc[nY].IsAlive())
+			{
+				AUTOLOG_IDX_EVERY(m_Index, 500, "[S13-XAC] bo chieu vao muc tieu chet npc=%d skill=%d tgt=%d tgtdoing=%d life=%d medoing=%d", m_Index, m_ActiveSkillID, nY, (int)Npc[nY].m_Doing, Npc[nY].m_CurrentLife, (int)m_Doing);
+				return;
+			}
+#endif
 			switch (pSkill->CanCastSkill(m_Index, nX, nY))
 			{
 			case -1:
