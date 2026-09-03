@@ -180,7 +180,7 @@ việc ngay theo map + FightMode (không cần đúng giờ).
 
 ## 7. Nghiệm thu (theo thứ tự)
 
-1. Swap 3 tệp (mục 1) → mở WAuto → nhóm Sự kiện → tab **Công Thành** hiện đủ 13 ô; chỉnh vài ô, đóng mở lại → giá trị còn nguyên; tab cũ (Tống Kim, Liên đấu, Chiêu KH…) không đổi.
+1. Swap 4 tệp `.moi` (mục 1, cả `CoreServer.dll.moi` phía server) → mở WAuto → nhóm Sự kiện → tab **Công Thành** hiện đủ 13 ô; chỉnh vài ô, đóng mở lại → giá trị còn nguyên; tab cũ (Tống Kim, Liên đấu, Chiêu KH…) không đổi.
 2. Nhân vật **trong bang tham chiến ≥ 5 ngày**, bật "Bật auto Công Thành Chiến", tick auto ở dòng nhân vật, đứng ở map luyện công. Tới **19:57** (giờ máy chủ): chat `[Công Thành] Tới giờ Công Thành Chiến - đi tới Xa Phu đăng ký tham chiến.` → nhân vật phù về thành (nếu map không có Xa Phu) → **đi bộ** tới Xa Phu → mở thoại.
 3. Chưa khai chiến: `Chưa có trận công thành nào đang mở - 60 giây hỏi lại Xa Phu.` lặp tới khi loa `… công thành chiến chính thức bắt đầu!` → chọn "Đi Chiến trường công thành" → `Đăng ký bên công/thủ …` → sang 222/223.
 4. Hậu phương: đi tới cửa tập kết → (nếu "Phe ta hiện đang tập hợp" thì 30 s sau đạp lại) → `Đã vào doanh trại` → (r3) đứng 3 s → tới Tùy Quân dược Y → cửa sổ shop mở → mua tới đủ số bình → `Đã đủ thuốc - ra cửa doanh.` → đi tới cửa doanh → `Đã ra trận - đánh theo cấu hình tab PK.`
