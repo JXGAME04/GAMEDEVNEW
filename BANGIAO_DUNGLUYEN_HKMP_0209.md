@@ -238,13 +238,15 @@ Tin nhắn link **cũ** (44 trường) còn trong lịch sử kênh, nếu đư�
 chữ thô `[...]` — vô hại, tạm thời.
 
 ### 6.5 CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; **3 tệp CÙNG LÚC**)
-1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `06e7a2b6f61d` (19:33).
-2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `3e66c3caa8ab` (19:34).
-3. `bin\client\Game.exe.moi` — 1.377.792 byte, md5 `8ba5ded1a63d` (19:35).
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `2f9bb7de798b` (19:45).
+2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `a9f4f516e6c1` (19:45).
+3. `bin\client\Game.exe.moi` — 1.377.792 byte, md5 `f6a2229c290a` (19:45).
 4. Bản đang chạy trước swap: CoreServer `244a3a18085d` · CoreClient `f73cd48037e0` · Game.exe
-   `5db988fc529f` (= HEAD, Vũ Hồn/Tiêu Dao đợt 8 vừa swap lúc ~19:3x). **Bộ mới = HEAD + vá này**
-   (superset, không rơi đợt nào trước).
-5. Không có tệp dữ liệu nào đổi ở đợt này.
+   `5db988fc529f`. **Bộ mới = HEAD `431f2e50`** = Vũ Hồn/Tiêu Dao **đợt 9** (phiên `wauto-6a`) **+
+   vá FUSCHAT này** — superset, không rơi đợt nào trước. Cùng bộ với
+   `BANGIAO_VUHON_TIEUDAO_0209.md` mục 18.4 (một bộ duy nhất, không phải hai).
+5. Không có tệp dữ liệu nào đổi ở **đợt này**; nhưng đợt 9 đi kèm đã ghi thẳng `settings\skills.txt`
+   → **vẫn phải khởi động lại máy chủ** (xem mục 18.4 tệp kia).
 6. Nghiệm thu:
    (a) Ctrl+click một món hoàng kim **đã dung luyện 2–4 ô** → gửi kênh → bấm tên món trong khung chat:
        cửa sổ phải hiện *"Số lượng Văn Cương đã dung luyện n / cap"* + đúng n dòng tím
@@ -254,3 +256,22 @@ chữ thô `[...]` — vô hại, tạm thời.
    (d) Link phi phong 10 sao 13 đá → vẫn đủ như đợt PFCHAT.
    (e) Link bot post lên kênh thế giới → vẫn bấm được (không thành chữ thô).
    (f) Xúc xắc Viêm Đế: chia 1 món → ô hiện đúng icon + chú giải.
+
+### 6.6 Ghi chú vận hành — hai phiên build chung một cây (lần 2 trong ngày)
+Đợt này đụng đúng bẫy `jx1-build-song-song-obj-lech`: phiên `wauto-6a` (Vũ Hồn/Tiêu Dao đợt 9) và
+phiên này cùng sửa + build trong `D:\GAMEDEVNEW\Sources`. Hậu quả đã xảy ra và đã xử lý:
+- Build 19:30 của họ **nuốt** 7 tệp FUSCHAT còn dở của tôi → bộ `eaa0390c`/`21f903c7` bỏ.
+- Build 19:33 của tôi (cây chung) nuốt phần dở của họ → bộ `06e7a2b6`/`3e66c3ca`/`8ba5ded1` bỏ.
+- Commit `431f2e50` của họ **quét luôn 7 tệp tôi đã `git add`** → mã FUSCHAT nằm trong HEAD nhưng
+  thông điệp commit không nhắc; nội dung nguyên vẹn (đã đối chiếu `git show HEAD:GameDataDef.h`).
+- Có lúc `bin` giữ **bộ lệch**: CoreServer/CoreClient không có FUSCHAT (ChatItem 105 byte) còn
+  `Game.exe.moi` có (153 byte) — swap lúc đó là hỏng link chat + gói xúc xắc.
+
+**Cách đã dứt điểm**: `git worktree add --detach D:\GAMEDEVNEW_wt_fuschat 431f2e50`, chép
+`D:\GAMEDEVNEW\lib` (73 MB, KHÔNG nằm trong git — thiếu là `LNK1181 common.lib`) vào worktree, rồi
+build **cả 3 tệp** ở đó bằng `-t:Rebuild -m:1` từng dự án một. `.obj` mỗi dự án cùng một mốc giờ.
+
+**Luật rút ra** (bổ sung cho `jx1-build-song-song-obj-lech`): trước mỗi lần build chạy
+`git status`; thấy tệp sửa dở **không phải của mình** thì build ở worktree riêng, và **nhắn cho
+phiên kia** trước khi ghi `.moi` — `.moi` là tài nguyên dùng chung, ghi đè âm thầm là làm hỏng bộ
+của người khác. Trước khi `git add`, kiểm tra staging có tệp của phiên khác không.

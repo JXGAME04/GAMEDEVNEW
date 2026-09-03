@@ -433,8 +433,11 @@ Phần trăm cộng thêm đến từ `addskilldamage1` trỏ vào 1382 của **
 >
 > Hai bản `ce444da3` / `d1ec5e41` tôi build lúc 19:47 lấy ở commit `65076c82` — **trước** phần FUSCHAT — nên **KHÔNG dùng nữa**. Bộ đúng do phiên `wauto-6e` build lại cả 3 tệp từ HEAD `431f2e50` (HEAD đã gồm cả hai luồng: đợt 9 Hoa Sơn của tôi và FUSCHAT của họ).
 
-1. `bin\server\CoreServer.dll.moi` — md5 do phiên `wauto-6e` điền.
-2. `bin\client\CoreClient.dll.moi` — md5 do phiên `wauto-6e` điền.
-3. `bin\client\Game.exe.moi` — md5 do phiên `wauto-6e` điền.
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `2f9bb7de798b` (19:45).
+2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `a9f4f516e6c1` (19:45).
+3. `bin\client\Game.exe.moi` — 1.377.792 byte, md5 `f6a2229c290a` (19:45).
+   *(cả 3 do phiên `wauto-6e` build từ **cây sạch** `git worktree D:\GAMEDEVNEW_wt_fuschat` tại HEAD
+   `431f2e50`, `-t:Rebuild -m:1` từng dự án một — `bc2d29a7` chỉ đổi tài liệu nên nhị phân không đổi.
+   Bản đang chạy trước swap: CoreServer `244a3a18085d` · CoreClient `f73cd48037e0` · Game.exe `5db988fc529f`.)*
 4. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
 5. Nghiệm thu phần đợt 9: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát; (d) phần FUSCHAT: post trang bị đã dung luyện lên kênh chat → hiện đủ thông tin Vân Cương.
