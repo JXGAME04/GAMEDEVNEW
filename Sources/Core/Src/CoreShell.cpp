@@ -7266,15 +7266,20 @@ static int LD_DiThanh(int nPlayerIdx, const autoData* pAp, int nDestMap, UINT uC
 // thi NPC co that nen lan do van dung, vi vay GIU LAI lam lan du phong.)
 //
 // Tang SAN duoi day chen TRUOC lan do. Khac tang DANH (TK_ChonDich) dung HAI diem:
-//   1. KHONG kep theo o 'Tam nhin PK' (mac dinh 800 mps = 25 o; .dat cu co the la 0
-//      -> bi kep con 100 mps = 3 o) ma lay toi tran vat ly cua client;
+//   1. KHONG kep tam gi ca - khong theo o 'Tam nhin PK', khong dong cung con so nao.
+//      Bot cung khong kep (pb_TkTimDichGanNhat quet het roi lay gan nhat), va ban
+//      than may chu da ngung gui goi NPC cach >= 40 o (S6_XaQuaTam,
+//      KProtocolProcess.cpp:107) nen kep them chi la thua.
 //   2. KHONG doi duong nhin (TK_ThayDuoc): tuong khong can viec DI - DT_WalkTo co A*
 //      di vong. Tang DANH moi can duong nhin de ra don.
-// GIOI HAN KHONG VUOT DUOC: client vut moi goi NPC cach >= 40 o (S6_XaQuaTam,
-// KProtocolProcess.cpp:107) va bang NPC chi 256 khe, nen KHONG quet duoc ca ban do
-// nhu bot phia may chu (bot duyet Player[] toan cuc). Xa hon 40 o van phai di theo
-// bang toa do nhu cu.
-#define TK_SAN_TAM		TK_O(40)		// tran vat ly cua client (1280 mps)
+// LAM THEO BOT (KPlayerBot.cpp:9661 pb_TkTimDichGanNhat + 10449-10490):
+//   - nhan dich bang CAMP (mau phe), KHONG dung GetRelation - xem chu thich ben duoi;
+//   - doi dich thi di THANG toi toa do no, bo chang trung gian;
+//   - tiet luu nham lai: muc tieu cu chi dich > 8 o VA qua 3 giay moi nham lai
+//     (KPlayerBot.cpp:10455-10457 - [TK-KET2]).
+// KHAC BOT MOT DIEM KY THUAT: bot quet Player[1..1500] phia may chu; phia client
+// MAX_PLAYER = 2 (KPlayerDef.h:21) nen mang Player[] chi co chinh minh -> phai quet
+// bang Npc[] (NpcSet.GetNextIdx) nhu tang danh van lam.
 #define TK_SAN_CAMTRAI	1440			// mps: khong san nguoi dang dung trong hau doanh DICH
 static UINT s_uTKSanQuyen = 0;		// con han = tang san dang hanh quan, may PK nhuong khe lenh
 static UINT s_uTKSanID = 0;			// dwID muc tieu dang san (khoa muc tieu)
@@ -7282,12 +7287,18 @@ static int  s_nTKSanMyX = 0;		// vi tri minh lan cuoi con nhuc nhich
 static int  s_nTKSanMyY = 0;
 static UINT s_uTKSanMoveT = 0;		// moc lan cuoi con nhuc nhich
 static int  s_nTKSanRepath = 0;		// da ep tinh lai duong may lan cho muc tieu nay
+static int  s_nTKAimX = 0;			// diem nham dang dung (mps)
+static int  s_nTKAimY = 0;
+static UINT s_uTKAimT = 0;			// moc lan cuoi doi diem nham
 
 static void TK_SanBo(void)			// xoa khoa muc tieu san
 {
 	s_uTKSanID = 0;
 	s_uTKSanMoveT = 0;
 	s_nTKSanRepath = 0;
+	s_nTKAimX = 0;
+	s_nTKAimY = 0;
+	s_uTKAimT = 0;
 }
 
 static int TK_Abs(int v)
@@ -7689,6 +7700,26 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		return 0;		// cung cong tac voi tang danh (o 'Danh nguoi' tab PK)
 	int nX, nY, x, y;
 	Npc[nSelf].GetMpsPos(&nX, &nY);
+	// NHAN DICH BANG CAMP (mau phe) - y nhu bot, KPlayerBot.cpp:9699:
+	//     if ((int)Npc[nn].m_CurrentCamp != nCampDich) continue;
+	// Doc script may chu de chac chan, khong doan: mobinhtk.lua la script BAO DANH cua
+	// NGUOI CHOI - common_tong() goi SetCurCamp(1) (dong 393 va 437) + SetTask(
+	// T_CHECKPHETK,1) + bao 'gia nhap phe Tong'; common_kim() goi SetCurCamp(2)
+	// (dong 323 va 367) + SetTask(T_CHECKPHETK,2) + bao 'gia nhap phe Kim'.
+	//     => CAMP 1 = phe TONG, CAMP 2 = phe KIM.
+	// Client nhan camp qua goi dong bo (NpcSync.CurrentCamp - KNpc.cpp:6343) va chinh
+	// no quyet MAU TEN hai phe (KNpc.cpp:6930: camp 1 mau cam, camp 2 mau hong tim) -
+	// dung cai chu game noi 'set co dinh 2 phe 2 mau roi'.
+	// KHONG dung GetRelation nua. Noi lo 'to doi ghi de camp' KHONG ton tai trong Tong
+	// Kim: chinh mobinhtk.lua goi LeaveTeam() + SetCreateTeam(0) ngay luc bao danh
+	// (dong 321-322 va 391-392) - trong tran khong ai co to doi.
+	const int nCampToi = Npc[nSelf].m_CurrentCamp;
+	if (nCampToi != 1 && nCampToi != 2)
+	{	// chua bao danh xong / chua ro phe -> khong san, de lan toa do lo
+		AUTOLOG_EVERY(5000, "[TK-SAN] chua ro phe cua minh (camp=%d) - khong san", nCampToi);
+		return 0;
+	}
+	const int nCampDich = (nCampToi == 1) ? 2 : 1;
 	// Vung cam: CHI quanh hau doanh DICH. KHONG dung TK_TrongTrai vi ham do tra 1 cho
 	// CA HAI trai -> se lam auto mu voi dich dang tran vao trai NHA, dung luc can danh
 	// nhat. Nguon duy nhat mien nhiem hoan doi the tran la ea.nTKThe (chi duoc ghi khi
@@ -7721,16 +7752,15 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID)
 			!= Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
 			continue;	// dung CHUNG danh sach den voi tang danh / [S11], khong de bang moi
-		if (NpcSet.GetRelation(nSelf, nIdx) != relation_enemy)
+		if ((int)Npc[nIdx].m_CurrentCamp != nCampDich)
 		{
 			++nLoaiPhe;
-			continue;	// dung DUNG phep thu cua tang danh, khong doc camp tho: camp bi
-						// to doi ghi de (KPlayer.cpp SetCurrentCamp theo doi truong)
+			continue;	// cung phe (hoac chua co phe) - dung phep thu cua bot
 		}
+		if (Npc[nIdx].m_CurrentLife <= 0)
+			continue;	// bot bo xac theo ca mau, khong chi theo m_Doing (KPlayerBot.cpp:9703)
 		Npc[nIdx].GetMpsPos(&x, &y);
 		const int nD = g_GetDistance(nX, nY, x, y);
-		if (nD > TK_SAN_TAM)
-			continue;
 		if (nCamX && g_GetDistance(x, y, nCamX, nCamY) < TK_SAN_CAMTRAI)
 		{
 			++nLoaiCam;
@@ -7769,13 +7799,14 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 	if (!nChon)
 	{
 		TK_SanBo();
-		AUTOLOG_EVERY(3000, "[TK-SAN] khong thay ai: nguoi thay=%d loaiphe=%d loaicam=%d the=%d me=(%d,%d)", nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, nX, nY);
+		AUTOLOG_EVERY(3000, "[TK-SAN] khong thay ai: campminh=%d campdich=%d thay=%d cungphe=%d trongtrai=%d the=%d me=(%d,%d)", nCampToi, nCampDich, nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, nX, nY);
 		return 0;
 	}
 	const UINT uID = Npc[nChon].m_dwID;
 	if (uID != s_uTKSanID)
 	{	// doi muc tieu -> dat lai bo do ket
 		s_uTKSanID = uID;
+		s_uTKAimT = 0;		// doi muc tieu HAN -> nham lai ngay
 		s_nTKSanRepath = 0;
 		s_uTKSanMoveT = uCurTime;
 		s_nTKSanMyX = nX;
@@ -7829,11 +7860,25 @@ static int TK_SanNguoi(int nPlayerIdx, const autoData* pAp, UINT uCurTime,
 		ax = x + (nX - x) * nLui / nChonD;
 		ay = y + (nY - y) * nLui / nChonD;
 	}
+	// TIET LUU NHAM LAI - y luat [TK-KET2] cua bot (KPlayerBot.cpp:10455-10457):
+	// doi muc tieu han thi nham lai ngay; muc tieu cu chi dich cho thi phai dich
+	// qua 8 o VA da qua 3 giay moi nham lai. Khong the thi moi nhip mot diem dich
+	// khac -> DT_WalkTo tinh lai duong lien tuc, nhan vat giat tai cho.
+	if (!s_uTKAimT
+	 || (g_GetDistance(ax, ay, s_nTKAimX, s_nTKAimY) > TK_O(8)
+	  && uCurTime - s_uTKAimT >= 3000u))
+	{
+		s_nTKAimX = ax;
+		s_nTKAimY = ay;
+		s_uTKAimT = uCurTime ? uCurTime : 1;
+	}
+	ax = s_nTKAimX;
+	ay = s_nTKAimY;
 	if (pnAimX)
 		*pnAimX = ax;
 	if (pnAimY)
 		*pnAimY = ay;
-	AUTOLOG_EVERY(2000, "[TK-SAN] san id=%u xa=%d | nguoi thay=%d loaiphe=%d loaicam=%d the=%d nham=(%d,%d) me=(%d,%d) repath=%d", uID, nChonD, nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, ax, ay, nX, nY, s_nTKSanRepath);
+	AUTOLOG_EVERY(2000, "[TK-SAN] san id=%u camp=%d xa=%d | campminh=%d campdich=%d thay=%d cungphe=%d trongtrai=%d the=%d nham=(%d,%d) me=(%d,%d) repath=%d", uID, (int)Npc[nChon].m_CurrentCamp, nChonD, nCampToi, nCampDich, nThay, nLoaiPhe, nLoaiCam, ea.nTKThe, ax, ay, nX, nY, s_nTKSanRepath);
 	return nChon;
 }
 
