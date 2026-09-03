@@ -17,10 +17,10 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `f2ad5ca3` | `2.507.776` | **S13i/j** (phiên wauto-6a, 16:42: main `5c8b8736` + vá S13i/j — ⚠️ **nguồn S13i/j CHƯA có commit trên main lúc ghi dòng này**, wauto-6a phải commit + push trước khi chủ swap) — tập cha của MAIL 3 `e4ac910a` và của `5b56367c` (S13e) **đang chạy**; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto. Lịch sử: 96c3085d → 9976e63f → 5b56367c → 62730ed9 → f94b5100 → e4ac910a (MAIL 3) → f2ad5ca3 (S13i/j). |
+| `CoreClient.dll.moi` | `f2ad5ca3` | `2.507.776` | **S13i/j** (phiên wauto-6a, 16:42: main `5c8b8736` + vá S13i/j — nguồn = commit `68694127` trên main ("S13i/S13j 03/09", KNpc.cpp +11 / KSubWorld.cpp +20 / KProtocolProcess.cpp +24)) — tập cha của MAIL 3 `e4ac910a` và của `5b56367c` (S13e) **đang chạy**; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto. Lịch sử: 96c3085d → 9976e63f → 5b56367c → 62730ed9 → f94b5100 → e4ac910a (MAIL 3) → f2ad5ca3 (S13i/j). |
 | `Game.exe.moi` | `24762253` | `1.399.808` | **MAIL đợt 3** (wauto-d9, main `5c8b8736`): cửa sổ Hộp thư `UiMail.cpp`, struct `KMailUiAward` dùng chung CoreClient + Game.exe; vẫn có cổng máy CT trong `S3Client.cpp` (chuỗi "[HD-GATE] nCT=" đếm = 1) — tập cha của `d3d626ba` **đang chạy**. Phải lên CÙNG `CoreClient.dll.moi e4ac910a`. |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
-| `CoreServer.dll.moi` (**bin\server**) | `bad8e293` | `18.298.368` | **S13i/j** (wauto-6a, 16:42: main `5c8b8736` + S13i/j máy chủ: bỏ chiêu vào xác `[S13-XAC]`, hết mất khung khi NPC đổi vùng — ⚠️ nguồn chưa commit lúc ghi) — tập cha của MAIL 3 `cca51fdf` và của `7b3423c2` **đang chạy**. Ba tệp (kèm `Game.exe.moi 24762253` của MAIL 3, giữ nguyên) phải lên CÙNG LÚC. |
+| `CoreServer.dll.moi` (**bin\server**) | `bad8e293` | `18.298.368` | **S13i/j** (wauto-6a, 16:42: main `5c8b8736` + S13i/j máy chủ: bỏ chiêu vào xác `[S13-XAC]`, hết mất khung khi NPC đổi vùng — nguồn = commit `68694127`) — tập cha của MAIL 3 `cca51fdf` và của `7b3423c2` **đang chạy**. Ba tệp (kèm `Game.exe.moi 24762253` của MAIL 3, giữ nguyên) phải lên CÙNG LÚC. |
 
 ### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
 
