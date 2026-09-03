@@ -333,6 +333,9 @@ struct ExtAuto
 	UINT uCTMucT;        // moc doi tru dang canh (ben thu)
 	char szCTCong[32];   // ten bang ben cong (doc tu thoai Xa Phu)
 	char szCTThu[32];    // ten bang ben thu
+	int  nCTMua;         // (r3) 1 = da mua thuoc o Tuy Quan duoc Y cho mang nay
+	int  nCTMuaTry;      // (r3) dem nhip tim duoc Y / cho shop mo
+	UINT uCTMuaT;        // (r3) han mua thuoc mot mang (60 s), 0 = chua bat dau
 	// == chung cho MOI may auto (25/08) ==
 	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
 	int  nXCu;           // toa do nhip truoc (mps); nhay xa = bi TRAP dich chuyen
@@ -546,6 +549,9 @@ struct ExtAuto
 		uCTMucT = 0;
 		szCTCong[0] = 0;
 		szCTThu[0] = 0;
+		nCTMua = 0;
+		nCTMuaTry = 0;
+		uCTMuaT = 0;
 		nMapCu = 0;
 		nXCu = 0;
 		nYCu = 0;

@@ -138,6 +138,8 @@ MARK.append(("CTM_NEWS_KHAICHIEN", fmt[fmt.index("%s ") + 3:fmt.index("!")]))
 MARK.append(("CTM_NEWS_CHUNGCUOC", pick(s_head, r'str\s*=\s*"([^"]+)"\s*\.\.\s*"', "tin chung cuoc")))
 # Su gia cong thanh (map 53) - chi de ghi chu / doi chieu
 MARK.append(("CTM_OPT_LOIDAI", pick(s_infoc, '"' + ANY + '/PreEnterGame"', "dong tham gia loi dai").strip()))
+# ten NPC Tuy Quan duoc Y (ha chu ASCII de khop DT_FindNpcName) - dien sau khi doc head.lua
+MARK.append(("CTM_NPC_DUOCY", None))
 
 # ---------------- 2. toa do / hang so (head.lua, ctrap*.lua) ----------------
 def pos3(text, name):
@@ -158,6 +160,14 @@ CAMP1 = pos3(s_head, "CS_CampPos1")
 CAMP2 = pos3(s_head, "CS_CampPos2")
 STONE = posxy_list(s_head, "StonePos")
 DOOR = posxy_list(s_head, "DoorPos")
+# Tuy Quan duoc Y: DoctorPos = { {x, y, "ten"}, ... } (mps) - NPC Sale(53) trong doanh
+m = re.search(r"DoctorPos\s*=\s*" + NL + r"?\s*\{(.*?)" + NL + r"\}", s_head, re.S)
+if not m:
+    raise SystemExit("KHONG doc duoc DoctorPos")
+DUOCY = re.findall(r'\{\s*(\d+)\s*,\s*(\d+)\s*,\s*"([^"]*)"\s*\}', m.group(1))
+if not DUOCY:
+    raise SystemExit("DoctorPos rong")
+DUOCY_TEN = "".join((c.lower() if "A" <= c <= "Z" else c) for c in DUOCY[0][2])  # ha chu ASCII nhu g_StrLower
 OUTER = re.findall(r"\{\s*(22[23])\s*,\s*(\d+)\s*,\s*(\d+)\s*\}", s_head[s_head.index("OuterPos"):s_head.index("OuterPos") + 200])
 NPC_TRU_THU = num(s_head, "STONENPCID1")
 NPC_TRU_CONG = num(s_head, "STONENPCID2")
@@ -457,6 +467,8 @@ w("#define CT_NGAY_BANG%s%d%s// phai o trong bang du N ngay moi duoc tham chien 
 w("")
 w("// ===== marker hoi thoai / tin (RAW TCVN3) =====")
 for name, s in MARK:
+    if name == "CTM_NPC_DUOCY":
+        s = DUOCY_TEN
     w("static const char %s[] = %s;" % (name, cstr(s)))
 w("")
 w("// ===== toa do (don vi O; MPS = O * 32) =====")
@@ -475,6 +487,12 @@ w("// 3 Long tru (StonePos, tu MPS) - NPC %d (thu giu) / %d (cong chiem)" % (NPC
 w("static const CTPoint g_CTTru[CT_SO_TRU] = {")
 for x, y in STONE:
     w("%s{ %d, %d }," % (TAB, x // 32, y // 32))
+w("};")
+w("// Tuy Quan duoc Y trong doanh map 221 (DoctorPos, tu MPS) - NPC Sale(53): shop thuoc thuong")
+w("#define CT_DUOCY_COUNT%s%d" % (TAB, len(DUOCY)))
+w("static const CTPoint g_CTDuocY[CT_DUOCY_COUNT] = {")
+for x, y, ten in DUOCY:
+    w("%s{ %d, %d }," % (TAB, int(x) // 32, int(y) // 32))
 w("};")
 w("// Xa Phu tren hau phuong 222/223 (chefu.lua, tu Npc_S.dat)")
 w("#define CT_XAPHU_HP_COUNT%s%d" % (TAB, len(XAPHU_HP)))

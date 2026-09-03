@@ -9334,6 +9334,123 @@ static int CT_ChonMucTieu(int nPlayerIdx, const autoData* pAp, UINT uCurTime, in
 	return 0;
 }
 
+// dem binh Ngu Hoa Ngoc Lo (item_medicine / detail 2 = mau + noi luc) dung cap trong hanh trang
+static int CT_DemBinh(int nPlayerIdx, int nCap)
+{
+	int nSo = 0;
+	for (int i = 0; i < EQUIPMENT_ROOM_HEIGHT; ++i)
+		for (int j = 0; j < EQUIPMENT_ROOM_WIDTH; ++j)
+		{
+			int nIdx = Player[nPlayerIdx].m_ItemList.m_Room[room_equipment].FindItem(j, i);
+			if (nIdx <= 0)
+				continue;
+			if (Item[nIdx].GetGenre() != item_medicine || Item[nIdx].GetDetailType() != 2
+			 || Item[nIdx].GetLevel() != nCap)
+				continue;
+			nSo += Item[nIdx].IsStack() ? Item[nIdx].GetStackNum() : 1;
+		}
+	return nSo;
+}
+
+// MUA THUOC o Tuy Quan duoc Y trong doanh (03/09 - chu game: "lam mua thuoc o cong thanh").
+// NPC nay chi goi Sale(53) = mo CUA SO SHOP (khong phai thoai chon dong nhu Quan Y Tong
+// Kim); shop 53 ban thuoc thuong cap 1..5 (buysell.txt) nen tab Phuc hoi san co tu uong.
+// Mua Ngu Hoa Ngoc Lo (detail 2, ca mau lan noi luc) cap nCTCapBinh toi khi tui co du
+// nCTSoBinh; moi mang mot lan (nCTMua). Tra 1 = dang lam; 0 = xong / bo (nCTMua = 1).
+static int CT_MuaThuoc(int nPlayerIdx, const autoData* pAp, UINT uCurTime, int nX, int nY)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	int nCan = pAp->nCTSoBinh;
+	if (nCan <= 0)
+		nCan = 10;
+	else if (nCan > 60)
+		nCan = 60;
+	int nCap = pAp->nCTCapBinh;
+	if (nCap < 1 || nCap > 5)
+		nCap = 5;
+	if (!ea.uCTMuaT)
+	{
+		ea.uCTMuaT = uCurTime + 60000u;
+		ea.nCTMuaTry = 0;
+	}
+	if (uCurTime > ea.uCTMuaT)
+	{
+		CT_Msg(nPlayerIdx, "<color=Yellow>Qu¸ 60 gi©y ch­a mua xong thuèc - ra trËn lu«n.");
+		CoreDataChanged(GDCNI_UI_ACT, 3, 0);
+		ea.nCTMua = 1;
+		return 0;
+	}
+	if (CT_DemBinh(nPlayerIdx, nCap) >= nCan)
+	{
+		if (CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+			CoreDataChanged(GDCNI_UI_ACT, 3, 0);
+		CT_Msg(nPlayerIdx, "<color=Cyan>§· ®ñ thuèc - ra cöa doanh.");
+		ea.nCTMua = 1;
+		return 0;
+	}
+	if (CoreDataChanged(GDCNI_UI_ACT, 2, 0))
+	{
+		// cua so shop dang mo: mua tung binh mot (250 ms/nhip, khuon TKP_CAMP)
+		const int nShop = Player[nPlayerIdx].m_BuyInfo.m_nShopIdx[Player[nPlayerIdx].m_BuyInfo.m_nCurShop];
+		const char* szThoi = "<color=Yellow>Shop d­îc Y kh«ng cã Ngò Hoa Ngäc Lé cÊp ®· chän - ra trËn.";
+		for (int b = 0; b < BuySell.GetWidth(); ++b)
+		{
+			KItem* pItem = BuySell.GetItem(BuySell.GetItemIndex(nShop, b));
+			if (!pItem)
+				break;
+			if (pItem->GetGenre() != item_medicine || pItem->GetDetailType() != 2
+			 || pItem->GetLevel() != nCap)
+				continue;
+			int x2, y2;
+			if (!Player[nPlayerIdx].m_ItemList.CheckCanPlaceInEquipment(1, 1, &x2, &y2))
+			{
+				szThoi = "<color=Yellow>Tói ®Çy - kh«ng mua thªm thuèc, ra trËn.";
+				break;
+			}
+			if (Player[nPlayerIdx].m_ItemList.GetEquipmentMoney() < pItem->GetPrice())
+			{
+				szThoi = "<color=Yellow>Kh«ng ®ñ tiÒn mua thªm thuèc - ra trËn.";
+				break;
+			}
+			SendClientCmdBuy(Player[nPlayerIdx].m_BuyInfo.m_nCurShop, b, 1, 0);
+			ea.uCTNext = uCurTime + 250;
+			return 1;
+		}
+		CT_Msg(nPlayerIdx, szThoi);
+		CoreDataChanged(GDCNI_UI_ACT, 3, 0);
+		ea.nCTMua = 1;
+		return 0;
+	}
+	{
+		// chua mo shop: di toi Tuy Quan duoc Y gan nhat (4 NPC moi doanh, head.lua DoctorPos)
+		int nBest = 0, nBestD = 0x7fffffff;
+		for (int i = 0; i < CT_DUOCY_COUNT; ++i)
+		{
+			int nD = g_GetDistance(nX, nY, TK_O((int)g_CTDuocY[i].x), TK_O((int)g_CTDuocY[i].y));
+			if (nD < nBestD)
+			{
+				nBestD = nD;
+				nBest = i;
+			}
+		}
+		int nR = TK_ToiNpc(nPlayerIdx, CTM_NPC_DUOCY, (int)g_CTDuocY[nBest].x, (int)g_CTDuocY[nBest].y, uCurTime);
+		if (nR == 1)
+			ea.uCTNext = uCurTime + 900;
+		else if (nR < 0)
+		{
+			// vua vao doanh / hoi sinh: danh sach NPC can vai giay moi dong bo (khuon Quan Y TK)
+			if (++ea.nCTMuaTry >= 20)
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng thÊy Tïy Qu©n d­îc Y quanh doanh - ra trËn lu«n.");
+				ea.nCTMua = 1;
+				return 0;
+			}
+			ea.uCTNext = uCurTime + 400;
+		}
+	}
+	return 1;
+}
+
 // di toi Xa Phu cua map hien tai (bang tram g_MoveStation) roi mo thoai.
 // Tra: 1 vua go thoai; 0 dang di; -1 map nay khong co Xa Phu trong bang
 static int CT_ToiXaPhu(int nPlayerIdx, UINT uCurTime)
@@ -9476,6 +9593,8 @@ static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nCTChet = 0;
 		ea.nCTDaVao = 0;
 		ea.nCTHetTran = 0;
+		ea.nCTMua = 0;
+		ea.uCTMuaT = 0;
 		ea.nCTBackMap = nMap;
 		ea.uLDHopT = 0;
 		CT_Pha(nPlayerIdx, CTP_GO, uCurTime);
@@ -9770,6 +9889,12 @@ static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		// dung 3 giay cho NPC / map dong bo sau khi vao doanh (hoac hoi sinh)
 		if (uCurTime - ea.uCTPhaseT < 3000u)
 			return 1;
+		// mua thuoc o Tuy Quan duoc Y (moi mang mot lan) roi moi ra cua doanh
+		if (pAp->bCTMua && !ea.nCTMua)
+		{
+			if (CT_MuaThuoc(nPlayerIdx, pAp, uCurTime, nX, nY))
+				return 1;
+		}
 		if (ea.nCTPhe == 2)
 			CT_DapTrap(nPlayerIdx, g_CTTrapCong, CT_TRAPCONG_COUNT, uCurTime);
 		else
@@ -9795,6 +9920,8 @@ static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		if (!Npc[nSelf].m_FightMode)
 		{
 			++ea.nCTChet;		// hoi sinh ve doanh (hoac dap nham trap ve doanh)
+			ea.nCTMua = 0;		// mang moi: mua lai thuoc theo cau hinh
+			ea.uCTMuaT = 0;
 			CT_Pha(nPlayerIdx, CTP_DOANH, uCurTime);
 			return 1;
 		}

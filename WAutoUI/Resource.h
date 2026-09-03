@@ -483,6 +483,11 @@ using namespace std;
 #define IDC_GRP_TAB14		620
 #define IDC_SEP_14A			621
 #define IDC_SEP_14B			622
+#define IDC_CHECKBOX_15_MUA	623
+#define IDC_STRING_15_SB	624
+#define IDC_EDITOR_15_SB	625
+#define IDC_STRING_15_CAP	626
+#define IDC_COMBO_15_CAP	627
 #define IDC_INDEX_END			640
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	700

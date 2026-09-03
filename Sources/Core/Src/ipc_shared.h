@@ -346,6 +346,9 @@ struct autoData
 	int		nCTThu;			// ben thu: 0 = canh Long tru / chiem lai, 1 = chi danh nguoi
 	int		nCTVe;			// het tran ve: 0..6 thanh theo g_LDVeMap, 7 = diem luu (Roi khoi dau truong)
 	int		bCTLoa;			// nghe loa "cong thanh chien chinh thuc bat dau" cua may chu la di ngay
+	int		bCTMua;			// (r3) mua Ngu Hoa Ngoc Lo o Tuy Quan duoc Y trong doanh truoc khi ra tran
+	int		nCTSoBinh;		// (r3) mua toi khi tui co du so binh nay (moi mang mot lan)
+	int		nCTCapBinh;		// (r3) cap binh 1..5 (shop 53: cap 5 = 3000 luong/binh)
 
 	autoData()
 	{
@@ -596,6 +599,9 @@ struct autoData
 		nCTThu = 0;
 		nCTVe = 7;
 		bCTLoa = 1;
+		bCTMua = 1;
+		nCTSoBinh = 10;
+		nCTCapBinh = 5;
 
 	}
 };

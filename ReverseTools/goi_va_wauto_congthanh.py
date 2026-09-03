@@ -179,6 +179,12 @@ def va_kplayer_h():
     t = Tep(os.path.join(CORE, "KPlayer.h"))
     t.them("\tUINT uSTVongT;", KP_FIELDS)
     t.them("\t\tuSTVongT = 0;", KP_INIT)
+    # r3 (mua thuoc o Tuy Quan duoc Y)
+    t.them("\tchar szCTThu[32];",
+           "\tint  nCTMua;         // (r3) 1 = da mua thuoc o Tuy Quan duoc Y cho mang nay\n"
+           "\tint  nCTMuaTry;      // (r3) dem nhip tim duoc Y / cho shop mo\n"
+           "\tUINT uCTMuaT;        // (r3) han mua thuoc mot mang (60 s), 0 = chua bat dau\n", dau="nCTMua;")
+    t.them("\t\tszCTThu[0] = 0;", "\t\tnCTMua = 0;\n\t\tnCTMuaTry = 0;\n\t\tuCTMuaT = 0;\n", dau="nCTMua = 0;")
     t.ghi()
 
 
@@ -195,9 +201,20 @@ def va_coreshell_cpp():
         blk += "\n"
     hi_blk = hi(blk)
     hi_truoc = hi(t.s)
-    t.them("// ==================== HET AUTO TONG KIM ====================", blk,
-           dau="// ==================== AUTO CONG THANH CHIEN (03/09/2026) ====================")
-    da_co_khoi = (hi(t.s) == hi_truoc)
+    A = "// ==================== AUTO CONG THANH CHIEN (03/09/2026) ===================="
+    B = "// ==================== HET AUTO CONG THANH CHIEN ====================\n"
+    hi_mong = hi_truoc + hi_blk
+    if A in t.s and B in t.s:
+        # khoi da co: thay bang ban moi trong ct_block.cpp.txt (tep do la nguon su that)
+        i = t.s.index(A)
+        j = t.s.index(B) + len(B)
+        cur = t.s[i:j]
+        hi_mong = hi_truoc - hi(cur) + hi_blk
+        if cur != blk:
+            t.s = t.s[:i] + blk + t.s[j:]
+            t.doi += 1
+    else:
+        t.them("// ==================== HET AUTO TONG KIM ====================", blk, dau=A)
     t.them("\t// LOA may chu la duong vao CHINH: admin doi gio trong TAB_TIME_TONG_KIM",
            "\t// (03/09) may Cong Thanh Chien dang cam lai -> Tong Kim nhuong (hai may loai tru nhau;\n"
            "\t// S3Client goi CT truoc TK nen binh thuong khong toi day, giu lam luoi do)\n"
@@ -208,8 +225,8 @@ def va_coreshell_cpp():
            "\t\t\t\t{\n"
            "\t\t\t\t\treturn CT_Process(nPlayerIdx, (const autoData*)nParam, uCurTime);\n"
            "\t\t\t\t}\n", sau=False)
-    if not da_co_khoi and hi(t.s) != hi_truoc + hi_blk:
-        LOI.append("CoreShell.cpp: high byte lech: truoc %d + khoi %d != sau %d" % (hi_truoc, hi_blk, hi(t.s)))
+    if hi(t.s) != hi_mong:
+        LOI.append("CoreShell.cpp: high byte lech: mong %d (truoc %d, khoi %d) != sau %d" % (hi_mong, hi_truoc, hi_blk, hi(t.s)))
     t.ghi()
 
 
@@ -283,6 +300,12 @@ def va_ipc():
     t = Tep(p)
     t.them("bComboNoUT;", IPC_FIELDS)
     t.them("bComboNoUT = 1;", IPC_INIT)
+    # r3: mua thuoc o Tuy Quan duoc Y (shop 53 trong doanh) - van o CUOI struct
+    t.them("bCTLoa;",
+           "\tint\t\tbCTMua;\t\t\t// (r3) mua Ngu Hoa Ngoc Lo o Tuy Quan duoc Y trong doanh truoc khi ra tran\n"
+           "\tint\t\tnCTSoBinh;\t\t// (r3) mua toi khi tui co du so binh nay (moi mang mot lan)\n"
+           "\tint\t\tnCTCapBinh;\t\t// (r3) cap binh 1..5 (shop 53: cap 5 = 3000 luong/binh)\n", dau="bCTMua;")
+    t.them("bCTLoa = 1;", "\t\tbCTMua = 1;\n\t\tnCTSoBinh = 10;\n\t\tnCTCapBinh = 5;\n", dau="bCTMua = 1;")
     t.ghi()
     if not THU:
         for q in (os.path.join(WA_E, "ipc_shared.h"), os.path.join(WA_D, "ipc_shared.h")):
@@ -347,6 +370,10 @@ def va_resource():
         t.s = pat.sub(lambda m: m.group(1) + "640" + m.group(2), t.s)
         t.doi += 1
         t.them("#define IDC_INDEX_END", RES_NEW, sau=False)
+    # r3: mua thuoc (623..627, van < IDC_INDEX_END 640)
+    t.them("#define IDC_SEP_14B",
+           "#define IDC_CHECKBOX_15_MUA\t623\n#define IDC_STRING_15_SB\t624\n#define IDC_EDITOR_15_SB\t625\n"
+           "#define IDC_STRING_15_CAP\t626\n#define IDC_COMBO_15_CAP\t627\n", dau="IDC_CHECKBOX_15_MUA")
     t.ghi()
     if not THU:
         shutil.copyfile(p, os.path.join(WA_D, "Resource.h"))
@@ -388,6 +415,14 @@ def va_rc():
     p = os.path.join(WA_E, "WAuto.rc")
     t = Tep(p, "utf-16")
     t.them('    CTEXT "Võ Lâm Ngạo Thế",IDC_STRING_HOMEPAGE', RC_NEW, sau=False)
+    # r3: mua thuoc o Tuy Quan duoc Y
+    t.them('IDC_CHECKBOX_15_LOA, "Button"',
+           '\t\tCONTROL "Mua Ngũ Hoa Ngọc Lộ ở Tùy Quân dược Y trước khi ra trận", IDC_CHECKBOX_15_MUA, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 4, 246, 152, 10\n'
+           '\t\tLTEXT "Số bình:", IDC_STRING_15_SB, 4, 258, 34, 10, SS_CENTERIMAGE\n'
+           '\t\tEDITTEXT IDC_EDITOR_15_SB, 40, 258, 24, 10, ES_NUMBER | WS_TABSTOP\n'
+           '\t\tLTEXT "Cấp bình:", IDC_STRING_15_CAP, 76, 258, 36, 10, SS_CENTERIMAGE\n'
+           '\t\tCOMBOBOX IDC_COMBO_15_CAP, 114, 257, 42, 70, WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_HASSTRINGS\n',
+           dau="IDC_CHECKBOX_15_MUA")
     t.ghi()
     if not THU:
         shutil.copyfile(p, os.path.join(WA_D, "WAuto.rc"))
@@ -530,15 +565,19 @@ def va_wauto_cpp():
     t.thay("#define WA_SO_TAB\t\t14", "#define WA_SO_TAB\t\t15")
     t.thay('{ L"Sự kiện",   { 9, 10 },             2 },', '{ L"Sự kiện",   { 9, 10, 14 },         3 },')
     t.thay('L"H.động", L"Sát thủ", L"Chiêu KH",', 'L"H.động", L"Sát thủ", L"Chiêu KH", L"Công Thành",')
-    t.thay("330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335",
-           "330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335, 246")
+    # (hunk chuoi: r3 doi 246 -> 270; hunk nay chi ap khi CHUA co ca hai - khong thi 'cu' la
+    #  tien to cua 'moi' r3 va bi ap lai thanh "335, 246, 270" = thua phan tu, loi bien dich)
+    if "335, 246" not in t.s and "335, 270" not in t.s:
+        t.thay("330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335",
+               "330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335, 246")
     t.them("\t// tab 10 Lien dau\n\tgnode.apdata.bLienDau =", CPP_SAVE, sau=False,
            dau="gnode.apdata.bCongThanh = (IsDlgButtonChecked")
     t.them("\tCheckDlgButton(hDlg, IDC_CHECKBOX_10_ON, gnode.apdata.bLienDau?BST_CHECKED:BST_UNCHECKED);", CPP_UI, sau=False,
            dau="CheckDlgButton(hDlg, IDC_CHECKBOX_15_ON,")
     t.them("\t\t// tab 10 Lien dau: tinh nang mac dinh TAT;", CPP_DEF, sau=False,
            dau="// tab 14 Cong Thanh Chien (03/09): mac dinh TAT")
-    t.thay("\t\t\tgnode.apdata.bComboNoUT = 1;\n\t\t}\n\t}\n\tif(bUpUI)", CPP_MIGR)
+    if "offsetof(autoData, bCongThanh)" not in t.s:	# r3 chen them khoi bCTMua ngay sau -> neo cu khong con
+        t.thay("\t\t\tgnode.apdata.bComboNoUT = 1;\n\t\t}\n\t}\n\tif(bUpUI)", CPP_MIGR)
     t.them('IDC_CHECKBOX_14_TCP, L"', CPP_TIPS, dau='IDC_CHECKBOX_15_ON, L"')
     t.them("\telse if(nTabBtn == 10)\n\t{\n\t\tfor(i=IDC_CHECKBOX_10_ON;i<=IDC_COMBO_10_BD;++i)", CPP_SHOWTAB, sau=False,
            dau="else if(nTabBtn == 14)")
@@ -564,6 +603,47 @@ def va_wauto_cpp():
     t.them("\t\t\tcase IDC_COMBO_13_CHON:",
            "\t\t\tcase IDC_COMBO_15_BD:\n\t\t\tcase IDC_COMBO_15_PHE:\n\t\t\tcase IDC_COMBO_15_CONG:\n"
            "\t\t\tcase IDC_COMBO_15_THU:\n\t\t\tcase IDC_COMBO_15_VE:\n", sau=False)
+    # ---- r3: mua thuoc o Tuy Quan duoc Y (03/09 chieu, chu game "lam mua thuoc o cong thanh") ----
+    t.thay("330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335, 246",
+           "330, 279, 279, 304, 282, 260, 266, 303, 294, 268, 326, 328, 225, 335, 270")
+    t.thay("for(i=IDC_CHECKBOX_15_ON;i<=IDC_SEP_14B;++i)", "for(i=IDC_CHECKBOX_15_ON;i<=IDC_COMBO_15_CAP;++i)")
+    t.them("\tgnode.apdata.bCTLoa = (IsDlgButtonChecked(hDlg, IDC_CHECKBOX_15_LOA) == BST_CHECKED);",
+           "\tgnode.apdata.bCTMua = (IsDlgButtonChecked(hDlg, IDC_CHECKBOX_15_MUA) == BST_CHECKED);\n"
+           "\tGetDlgItemTextA(hDlg, IDC_EDITOR_15_SB, szRootPath, MAX_PATH);\n"
+           "\tgnode.apdata.nCTSoBinh = atoi(szRootPath);\n"
+           "\tgnode.apdata.nCTCapBinh = (int)SendMessage(GetDlgItem(hDlg, IDC_COMBO_15_CAP), CB_GETCURSEL, 0, 0) + 1;\n"
+           "\tif(gnode.apdata.nCTCapBinh < 1 || gnode.apdata.nCTCapBinh > 5) gnode.apdata.nCTCapBinh = 5;\n",
+           dau="gnode.apdata.bCTMua = (IsDlgButtonChecked")
+    t.them("\tCheckDlgButton(hDlg, IDC_CHECKBOX_15_LOA, gnode.apdata.bCTLoa?BST_CHECKED:BST_UNCHECKED);",
+           "\tCheckDlgButton(hDlg, IDC_CHECKBOX_15_MUA, gnode.apdata.bCTMua?BST_CHECKED:BST_UNCHECKED);\n"
+           "\t{ wchar_t wct[16]; _itow_s(gnode.apdata.nCTSoBinh, wct, 10); SetDlgItemText(hDlg, IDC_EDITOR_15_SB, wct); }\n"
+           "\tComboBox_SetCurSel(GetDlgItem(hDlg, IDC_COMBO_15_CAP), (gnode.apdata.nCTCapBinh >= 1 && gnode.apdata.nCTCapBinh <= 5) ? gnode.apdata.nCTCapBinh - 1 : 4);\n",
+           dau="CheckDlgButton(hDlg, IDC_CHECKBOX_15_MUA,")
+    t.thay("\t\tgnode.apdata.bCTLoa = 1;\n\t\t// tab 10 Lien dau",
+           "\t\tgnode.apdata.bCTLoa = 1;\n\t\tgnode.apdata.bCTMua = 1;\n\t\tgnode.apdata.nCTSoBinh = 10;\n"
+           "\t\tgnode.apdata.nCTCapBinh = 5;\n\t\t// tab 10 Lien dau")
+    t.thay("\t\t\tgnode.apdata.bCTLoa = 1;\n\t\t}\n\t}\n\tif(bUpUI)",
+           "\t\t\tgnode.apdata.bCTLoa = 1;\n\t\t}\n"
+           "\t\tif(uOldSize <= offsetof(autoData, bCTMua))\n"
+           "\t\t{\t// .dat truoc r3 (mua thuoc o Tuy Quan duoc Y) 03/09\n"
+           "\t\t\tgnode.apdata.bCTMua = 1;\n\t\t\tgnode.apdata.nCTSoBinh = 10;\n\t\t\tgnode.apdata.nCTCapBinh = 5;\n"
+           "\t\t}\n\t}\n\tif(bUpUI)")
+    t.them('IDC_CHECKBOX_15_LOA, L"',
+           '\t{ IDC_CHECKBOX_15_MUA, L"Trong doanh (trước khi đạp trap ra trận, và sau mỗi lần hồi sinh) đi tới Tùy Quân dược Y mở shop mua Ngũ Hoa Ngọc Lộ Hoàn (hồi cả máu lẫn nội lực) cho tới đủ số bình; thuốc mua xong do tab Phục hồi tự uống. Túi đầy / hết tiền / quá 60 giây thì ra trận luôn." },\n'
+           '\t{ IDC_EDITOR_15_SB, L"Số bình muốn có trong túi mỗi mạng (1-60). Chỉ mua phần còn thiếu." },\n'
+           '\t{ IDC_COMBO_15_CAP, L"Cấp bình Ngũ Hoa Ngọc Lộ mua ở shop dược Y (cấp 5 hồi nhiều nhất, 3000 lượng/bình)." },\n',
+           dau='IDC_CHECKBOX_15_MUA, L"')
+    t.them("\t\t\tcase IDC_CHECKBOX_13_GHEP:", "\t\t\tcase IDC_CHECKBOX_15_MUA:\n", sau=False, dau="case IDC_CHECKBOX_15_MUA:")
+    t.them("\t\t\tcase IDC_EDITOR_13_NGHI:", "\t\t\tcase IDC_EDITOR_15_SB:\n", sau=False, dau="case IDC_EDITOR_15_SB:")
+    t.them("\t\t\tcase IDC_COMBO_13_CHON:", "\t\t\tcase IDC_COMBO_15_CAP:\n", sau=False, dau="case IDC_COMBO_15_CAP:")
+    t.them("\t\thCtrl = ::GetDlgItem(hDlg, IDC_COMBO_9_VE);",
+           '\t\thCtrl = ::GetDlgItem(hDlg, IDC_COMBO_15_CAP);\n'
+           '\t\tSendMessage(hCtrl, CB_ADDSTRING, 0, (LPARAM)L"Cấp 1");\n'
+           '\t\tSendMessage(hCtrl, CB_ADDSTRING, 0, (LPARAM)L"Cấp 2");\n'
+           '\t\tSendMessage(hCtrl, CB_ADDSTRING, 0, (LPARAM)L"Cấp 3");\n'
+           '\t\tSendMessage(hCtrl, CB_ADDSTRING, 0, (LPARAM)L"Cấp 4");\n'
+           '\t\tSendMessage(hCtrl, CB_ADDSTRING, 0, (LPARAM)L"Cấp 5");\n'
+           '\t\tSendMessage(hCtrl, CB_SETCURSEL, 4, 0);\n', sau=False, dau="IDC_COMBO_15_CAP);")
     t.ghi()
     if not THU:
         shutil.copyfile(p, os.path.join(WA_D, "WAuto.cpp"))

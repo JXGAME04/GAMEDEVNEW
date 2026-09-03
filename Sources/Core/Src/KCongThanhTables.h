@@ -33,6 +33,7 @@ static const char CTM_OPT_THANHTHI[] = "Nh÷ng thµnh thÞ ®· ®i qua";
 static const char CTM_NEWS_KHAICHIEN[] = "c«ng thµnh chiÕn chÝnh thøc b¾t ®Çu";
 static const char CTM_NEWS_CHUNGCUOC[] = "Chung cuéc";
 static const char CTM_OPT_LOIDAI[] = "Tham gia L«i ®µi bang héi";
+static const char CTM_NPC_DUOCY[] = "tïy qu©n d­îc y";
 
 // ===== toa do (don vi O; MPS = O * 32) =====
 struct CTPoint { short x, y; };
@@ -52,6 +53,18 @@ static const CTPoint g_CTTru[CT_SO_TRU] = {
 	{ 1726, 3279 },
 	{ 1661, 3345 },
 	{ 1593, 3406 },
+};
+// Tuy Quan duoc Y trong doanh map 221 (DoctorPos, tu MPS) - NPC Sale(53): shop thuoc thuong
+#define CT_DUOCY_COUNT	8
+static const CTPoint g_CTDuocY[CT_DUOCY_COUNT] = {
+	{ 1537, 3206 },
+	{ 1564, 3236 },
+	{ 1515, 3238 },
+	{ 1529, 3255 },
+	{ 1912, 3568 },
+	{ 1925, 3581 },
+	{ 1879, 3599 },
+	{ 1896, 3613 },
 };
 // Xa Phu tren hau phuong 222/223 (chefu.lua, tu Npc_S.dat)
 #define CT_XAPHU_HP_COUNT	2

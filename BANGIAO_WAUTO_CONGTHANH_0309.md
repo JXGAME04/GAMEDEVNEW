@@ -16,9 +16,9 @@ cùng lúc** vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) t
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `c5a6aece` | `2.484.736` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) |
-| `Game.exe.moi` | `b8846266` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
-| `WAuto.exe.moi` | `b80fb551` | `412.160` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
+| `CoreClient.dll.moi` | `96c3085d` | `2.486.272` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) |
+| `Game.exe.moi` | `d3d626ba` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
+| `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
 
 ### Checklist swap
 
@@ -44,13 +44,14 @@ Kết quả: `Sources\Core\ClientRelease\CoreClient.dll` · `Sources\S3Client\Re
 
 | # | Câu | Mặc định đang chạy |
 |---|---|---|
-| Q1 | **Công Thành vs Tống Kim trùng giờ** (TK 20h50 nằm trong trận CTC 20h00–21h30): máy nào ưu tiên? | Hai máy **loại trừ nhau**, máy nào đang cầm lái thì giữ; cả hai rảnh thì **Công Thành trước** (mỗi thành 1 trận/tuần, TK ngày 4 trận). Muốn TK trước: đổi thứ tự 2 khối trong `S3Client.cpp` (`nCT` / `nTK`). |
+| Q1 | **Công Thành vs Tống Kim trùng giờ** (TK 20h50 nằm trong trận CTC 20h00–21h30): máy nào ưu tiên? | Hai máy **loại trừ nhau**, máy nào đang cầm lái thì giữ; cả hai rảnh thì **Công Thành trước**. **Chủ trả lời 03/09 chiều:** *"tống kim đang mở test nên chưa cố định giờ, sau này sẽ không trùng giờ CTC"* → giữ nguyên, không đổi. |
 | Q2 | Bên công **có nên nhắm cổng/trụ** hay chỉ PK người? | Combo *Bên công* = "Phá cổng rồi hạ Long trụ" (đủ 3 trụ = thắng). Combo *Bên thủ* = "Canh Long trụ, chiếm lại nếu mất". Đều có lựa chọn "Chỉ đánh người (tuần tra)". |
 | Q3 | Người **không thuộc 2 bang** nhưng có *Thành chiến lệnh bài* (event item 354–367, bang chủ mua ở Sứ Giả) | Combo *Phe*: "Tự theo bang hội" (mặc định) / "Bên công" / "Bên thủ". Ép phe khi có lệnh bài; không có thì máy chủ từ chối "Thân phận nghĩa sĩ chưa phù hợp" → auto bỏ lượt. |
 | Q4 | Hết trận về đâu? | Combo *Hết trận về*: 7 thành (qua "Những thành thị đã đi qua" của Xa Phu hậu phương) hoặc **"Điểm lưu (Rời khỏi đấu trường)"** (mặc định). |
 | Q5 | **Lôi đài bang hội** 20h ngày báo danh (Sứ Giả map 53 → map 213–220, ≤16/phe, cấp ≥90) có làm auto không? | **Chưa làm** — máy này chỉ lo **trận công thành map 221**. Khuôn Sứ Giả → NPC camper "Ta thích hợp với điều kiện…" (marker `CTM_OPT_LOIDAI` đã trích sẵn). |
 | Q6 | **Đấu thầu 18h** (bang chủ, nhập phí ≥ 1.000.000) có tự làm không? | **Không** — quyết định tiền của bang chủ, để bấm tay. |
-| Q7 | Mua thuốc công thành ở *Tùy Quân dược Y* (4 loại 1307–1310, có hạn số lượng) | Chưa làm; thuốc thường theo tab Phục hồi vẫn chạy trong trận. |
+| Q7 | Mua thuốc công thành ở *Tùy Quân dược Y* | **ĐÃ LÀM (r3, chủ giao 03/09 chiều)** — xem mục 4a. Ô "Mua Ngũ Hoa Ngọc Lộ ở Tùy Quân dược Y trước khi ra trận" (mặc định BẬT, 10 bình, cấp 5). |
+| Q8 | Nhân vật đang ở **map luyện công không có Xa Phu** | **Chủ chốt 03/09 chiều:** *"nhân vật ở map luyện công thì phù về thành"* → giữ như đang làm (dùng phù về thành rồi đi bộ tới Xa Phu). |
 
 ---
 
@@ -62,9 +63,9 @@ Kết quả: `Sources\Core\ClientRelease\CoreClient.dll` · `Sources\S3Client\Re
 | Bộ sinh bảng `KCongThanhTables.h` (marker byte-exact + toạ độ + **ô trap đọc từ Region_S.dat**) | `ReverseTools\gen_congthanh_tables.py` (+ cache `congthanh_trap_cache.json`) |
 | Máy trạng thái `CT_Process` (9 pha) | `Sources\Core\Src\CoreShell.cpp` khối `AUTO CONG THANH CHIEN` (sau `HET AUTO TONG KIM`), `case ATYPE_CONGTHANH` |
 | Bộ vá idempotent 9 tệp (`--thu` = chỉ kiểm neo) | `ReverseTools\goi_va_wauto_congthanh.py` + `ReverseTools\wauto_ct\ct_block.cpp.txt` |
-| 12 trường cấu hình cuối `autoData` + 23 trường `ExtAuto` + `ATYPE_CONGTHANH` | `ipc_shared.h` (3 bản), `KPlayer.h`, `CoreShell.h` |
+| 15 trường cấu hình cuối `autoData` + 26 trường `ExtAuto` + `ATYPE_CONGTHANH` | `ipc_shared.h` (3 bản), `KPlayer.h`, `CoreShell.h` |
 | Cổng gọi máy CT trước Tống Kim, gộp `nBS` | `S3Client.cpp` `ExtAutoLoop` |
-| Tab "Công Thành" (13 ô, tooltip, lưu/nạp/di trú/mặc định) | `WAuto.cpp`, `WAuto.rc`, `Resource.h` (E:\ + mirror `WAutoUI`) |
+| Tab "Công Thành" (16 ô, tooltip, lưu/nạp/di trú/mặc định) | `WAuto.cpp`, `WAuto.rc`, `Resource.h` (E:\ + mirror `WAutoUI`) |
 
 **Học từ auto Thái Lan** (`Form1.cs` tab *CTC › Thất thành*, `Class83.cs`, `Class104.cs`, `FormXaphuCT.cs`):
 nó có 2 đường vào — *"Đi xa phu vào CTC"* (bảng toạ độ Xa Phu công thành 7 thành, nút "Lấy vị trí xa phu CTC")
@@ -106,6 +107,19 @@ CTP_VETHANH  LD_DiThanh tới thành chọn (nếu khác) → CTP_DONE (khoá th
 ```
 Mọi pha đi đường/thoại kẹt quá **3 phút** → bỏ lượt, trả máy. Relog giữa trận: đang ở 221/222/223 → nhận
 việc ngay theo map + FightMode (không cần đúng giờ).
+
+### 4a. (r3) Mua thuốc ở Tùy Quân dược Y — trong `CTP_DOANH`, trước khi đạp trap ra trận
+
+- **Sự thật đo được:** `chengzhan_map\yaoshang.lua` chỉ gọi `Sale(53)` = mở **cửa sổ shop 53** (không phải thoại chọn dòng như
+  Quân Y Tống Kim). `buysell.txt` dòng 53 = goods 1–15, 21–25 = **thuốc thường** cấp 1–5: máu (1/0), nội lực (1/1), Ngũ Hoa
+  Ngọc Lộ máu+nội (1/2, cấp 5 = 3000 lượng), giải độc (1/4). 4 "Hộp thuốc Công Thành Chiến" 1307–1310 và viên 1303–1306 là
+  đồ JX2 **không có script** (`magicscript.txt Script=0`, `tb_CW_MEDICINE` không ai gọi) → bỏ qua.
+- 8 NPC "Tùy Quân dược Y" (`head.lua DoctorPos`, 4 quanh mỗi doanh) do `mission.lua` AddNpc lúc mở trận → `g_CTDuocY[8]`,
+  tên hạ chữ ASCII `CTM_NPC_DUOCY` để `DT_FindNpcName` khớp.
+- Máy: mỗi mạng một lần (`nCTMua`, đặt lại khi hồi sinh): đứng 3 s chờ NPC đồng bộ → tới dược Y gần nhất → `DialogNpc` → shop mở
+  (`CoreDataChanged(GDCNI_UI_ACT, 2)`) → mua từng bình `item_medicine` detail 2 đúng **cấp** đã chọn (`SendClientCmdBuy`, 250 ms/bình)
+  tới khi túi có đủ **số bình**; túi đầy / hết tiền / không có hàng / quá 60 s → đóng shop (`GDCNI_UI_ACT, 3`) ra trận luôn.
+  Uống thuốc do **tab Phục hồi** sẵn có (máy PUMPLIFE/PUMPMANA nhận detail 2). Ô cấu hình: `bCTMua`, `nCTSoBinh`, `nCTCapBinh`.
 
 ### Sự thật máy chủ đã kiểm chứng (tệp:dòng)
 
@@ -153,6 +167,9 @@ việc ngay theo map + FightMode (không cần đúng giờ).
 6. `WAuto.cpp`/`.rc` UTF-16LE **CRLF**; đọc bằng `newline=''` (universal newline biến CRLF→LF làm neo có `\r\n` trượt).
 7. `IDC_INDEX_END` là biên của vòng ẩn `ShowTab`; đẩy nó qua 600 thì phải dời khối ID ngoài dải (hộp thoại rời, nút tab, dòng trạng thái) — đã dời 600–615 → 700–715.
 8. Post-build của `Core.vcxproj`/`S3Client.vcxproj` **chép đè thẳng `bin\client`** → build với `-p:PostBuildEventUseInBuild=false` rồi tự đặt `.moi`; `S3Client` link `Sources\lib\release\CoreClient.lib` — chép tay sau khi build Core.
+10. 🔴 **Hunk "thêm phần tử vào cuối danh sách" bị áp chồng khi đợt sau đổi giá trị** (r3): hunk cũ `"…335" → "…335, 246"`
+   có `cu` là tiền tố của bản r3 `"…335, 270"` → chạy lại tool là thành `"…335, 246, 270"` (thừa phần tử, lỗi biên dịch). Mọi hunk
+   kiểu này phải gác bằng **trạng thái cuối** (`if "335, 246" not in s and "335, 270" not in s`), không dựa vào `moi in s`.
 9. Map 222/223 (`特殊用地\剑门关中转`) **không có trên đĩa máy chủ này** — trích từ `D:\ServerLinux\server1\pak\maps.pak` (giải nén UCL NRV2B thuần Python trong `gen_congthanh_tables.py`, đã kiểm bằng map 221 khớp 100% bản trên đĩa). Cache ở `ReverseTools\congthanh_trap_cache.json`.
 
 ---
@@ -162,7 +179,7 @@ việc ngay theo map + FightMode (không cần đúng giờ).
 1. Swap 3 tệp (mục 1) → mở WAuto → nhóm Sự kiện → tab **Công Thành** hiện đủ 13 ô; chỉnh vài ô, đóng mở lại → giá trị còn nguyên; tab cũ (Tống Kim, Liên đấu, Chiêu KH…) không đổi.
 2. Nhân vật **trong bang tham chiến ≥ 5 ngày**, bật "Bật auto Công Thành Chiến", tick auto ở dòng nhân vật, đứng ở map luyện công. Tới **19:57** (giờ máy chủ): chat `[Công Thành] Tới giờ Công Thành Chiến - đi tới Xa Phu đăng ký tham chiến.` → nhân vật phù về thành (nếu map không có Xa Phu) → **đi bộ** tới Xa Phu → mở thoại.
 3. Chưa khai chiến: `Chưa có trận công thành nào đang mở - 60 giây hỏi lại Xa Phu.` lặp tới khi loa `… công thành chiến chính thức bắt đầu!` → chọn "Đi Chiến trường công thành" → `Đăng ký bên công/thủ …` → sang 222/223.
-4. Hậu phương: đi tới cửa tập kết → (nếu "Phe ta hiện đang tập hợp" thì 30 s sau đạp lại) → `Đã vào doanh trại` → đi tới cửa doanh → `Đã ra trận - đánh theo cấu hình tab PK.`
+4. Hậu phương: đi tới cửa tập kết → (nếu "Phe ta hiện đang tập hợp" thì 30 s sau đạp lại) → `Đã vào doanh trại` → (r3) đứng 3 s → tới Tùy Quân dược Y → cửa sổ shop mở → mua tới đủ số bình → `Đã đủ thuốc - ra cửa doanh.` → đi tới cửa doanh → `Đã ra trận - đánh theo cấu hình tab PK.`
 5. Trong trận: có địch thì đánh; không thì bên công chạy tới cổng gần nhất đánh cổng (NPC 532), cổng vỡ → `Cổng đã vỡ - tiến vào đánh Long trụ.`; bên thủ đứng cạnh trụ. Chết → tự hồi sinh → đạp trap ra lại.
 6. Hết trận (server kéo về hậu phương) → `Hết trận Công Thành - rời hậu phương.` → Xa Phu hậu phương → về điểm lưu / thành chọn → `… trả máy lại cho auto cũ.` → auto cũ chạy tiếp.
 7. Nhân vật **không có bang** → `Chưa có bang hội - không tự tham gia…`, không đi. Bang không tham chiến → `Bang của mình không tham chiến trận này (công: X / thủ: Y)`.
@@ -172,7 +189,7 @@ việc ngay theo map + FightMode (không cần đúng giờ).
 
 ## 8. Chưa làm / nợ
 
-- Lôi đài bang hội (Q5), đấu thầu 18h (Q6), mua thuốc Tùy Quân dược Y (Q7), dụng cụ công thành (Kim Nguyên Bảo).
+- Lôi đài bang hội (Q5), đấu thầu 18h (Q6), dụng cụ công thành (Kim Nguyên Bảo). (Q7 mua thuốc: đã làm r3.)
 - Chưa đo thật trên máy chủ (không có trận trong phiên này). Cần 1 trận thật để chỉnh: bán kính tìm cổng/trụ (8 ô), ngưỡng "cổng vỡ" (12 ô), nhịp đạp trap.
 - Phản biện tác tử **chưa chạy** (luật 01-02/09: chỉ chạy khi thật cần) — nên chạy 1 vòng chọn lọc trên `CT_ChonMucTieu` + `CT_DapTrap` trước khi thả cho người chơi đông.
 
