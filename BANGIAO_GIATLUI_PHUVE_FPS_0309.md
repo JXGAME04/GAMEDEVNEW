@@ -840,3 +840,59 @@ của bản họ; đã kiểm chuỗi `[Công Thành]` TCVN3 còn trong DLL (đi
   vẫn còn gắn với `runatk` thì đây là bước kế.
 - **F4** `KRegion::BroadCast` trừ ngân sách 100 cho cả bot không kết nối — cần thiết kế lại (CPU khi vùng 500 bot).
 - Mất thứ tự trong tick (phản biện #7) — nếu đo thấy client "đứng sau chiêu" nhiều thì thêm dấu thứ tự cho hai khe.
+
+## 10.7 SAU SWAP LẦN 1 (14:01) — chủ báo "chạy nhanh rồi chậm, đánh không trúng quái" → đo → S13e
+
+Bản đang chạy khi chủ báo: client `9976e63f`, server `cb4cf7f0` (đã kiểm md5 + StartTime tiến trình 14:01). Log client
+chứa **13 phút trước swap + 6,4 phút sau swap cùng một phiên** ⇒ so trực tiếp (`logsnap2\post.py`, `confus2.py`).
+
+### Số đo trước → sau S13 (cùng phiên, cùng bãi)
+
+| chỉ số | trước | sau |
+|---|---|---|
+| offset client↔server p90 / p99 | 149 / 241 mps | **77 / 155 mps** |
+| mẫu ≥ 128 mps (4 ô) | 12,8 % | **2,9 %** |
+| `[S8-NAN]` / phút | 3,85 | **1,88** (chưa đạt < 0,5) |
+| khác trạng thái client×server (chỉ nhãn `S2-NETSKILL-IN`, cùng ngữ nghĩa hai giai đoạn) | 39,0 % | **33,5 %** |
+| client đứng mà server chạy | 5,5 % mẫu | **2,8 %** |
+| đứng ì khi có mục tiêu (`FIGHT-EMIT` ≤1,5 s trước) | 42 % | **14 %** |
+| đánh trúng / phút (server `S4-MSL-HIT`) | 110,8 | 89,8 |
+| trúng / chiêu | 2,05 | 2,01 |
+| `FIGHT-EMIT` / phút · mục tiêu khác nhau / phút | 82 · 28,9 | 60 · 20,5 |
+
+⇒ Đồng bộ **tốt hơn**, không hồi quy về trạng thái; "trúng/chiêu" không đổi. Số chiêu và số mục tiêu/phút giảm cùng
+tỉ lệ ⇒ **đánh ít hơn vì ít mục tiêu hơn trong 6 phút đó**, không phải "trượt nhiều hơn". Cảm giác của chủ đến từ hai
+thứ **nhìn thấy được**, đo được rõ:
+
+**(1) KEO kéo lúc đang chạy / đang đánh.** 680 cú kéo / 6,4 phút (≈1,8/s); trong 102 dòng log: **67 lúc `run`, 20 `stand`,
+14 `attack`**; bước p90 = 29 mps mỗi gói (~9 gói/s) ≈ kéo lùi 260 mps/s so tốc chạy ~400 mps/s ⇒ **hụt 30–40 % tốc độ theo
+từng đợt** = "chạy nhanh rồi chậm"; kéo giữa lúc đánh làm nhân vật trượt, máy đánh (ngưỡng 75 mps, `[FIX-3]` lấy khoảng
+cách xấu hơn) rơi ngoài tầm rồi chạy lại. Lúc chạy, phần lệch chủ yếu là **dẫn trước lành + trễ khởi động chặng** — kéo là
+sai chỗ.
+
+**(2) 12/12 cú `[S8-NAN]` còn lại đều trong/ngay sau DASH 1977** (`doing=runatk` 11/12, lệch 256–303 = vừa chạm ngưỡng):
+client dash ngay, máy chủ **giữ** rồi dash trễ 1–2 nhịp ⇒ vài trăm ms client đi trước > 256 ⇒ nắn cứng + `StopPath` = giựt.
+Chính lớp "chiêu lướt giật lùi" đã ghi buổi sáng (ngưỡng 256 < tầm lướt).
+
+**(3) Ghi nhận, chưa đụng:** máy chủ **giữ** chiêu **1967** (WAuto bắn xen kẽ 1967/1985/1977; 1967 **luôn bị từ chối** —
+188 deny / 0 cast) **63/149 lần** ⇒ mỗi chu kỳ tốn 1 nhịp deny trước khi 1985 thật chạy. Cấu hình chiêu 1967 của WAuto
+nên xem lại; engine có thể xét "không giữ chiêu vừa bị từ chối".
+
+### S13e (client-only, `KProtocolProcess.cpp`, commit `S13e 03/09`)
+
+- **KEO chỉ khi `m_Doing == do_stand`** — lúc đứng, hai bên cùng đứng ⇒ lệch là lệch thật, kéo về đúng và không đụng
+  tốc độ chạy / máy đánh.
+- **Cửa ân hạn dash cho S8**: đang `runattack/blurmove/jump/jumpattack` hoặc vừa rời < 600 ms ⇒ **không nắn** khi
+  256 ≤ lệch < 512 (log `[S13-DASH-GRACE]`); lệch ≥ 512 (16 ô) = dịch chuyển thật vẫn nắn.
+
+| tệp | md5 | kích thước |
+|---|---|---|
+| `bin\client\CoreClient.dll.moi` | **`5b56367c`** | 2.489.344 |
+| `bin\server\CoreServer.dll` (đang chạy, **không đổi**) | `cb4cf7f0` | 18.277.888 |
+
+**Swap:** thoát hẳn `Game.exe` (+ `WAuto.exe`) → chạy `ChoiGame.bat` → mở lại. Không cần đụng server.
+
+**Nghiệm thu S13e:** `[S8-NAN]`/phút phải rơi về **< 0,5** (dash không còn kích nắn; `[S13-DASH-GRACE]` xuất hiện thay);
+`[S13-KEO]` chỉ còn `doing=1`; tốc độ chạy đều (p10 ≥ 330 mps/s như sau S13, không còn đợt hụt); trúng/chiêu ~2,0 giữ nguyên.
+Nếu còn "đánh không trúng": bước kế là (a) không giữ chiêu vừa bị máy chủ từ chối / rà cấu hình 1967 của WAuto, (b) **F2**
+dash theo `s2c_skillcast` của máy chủ.
