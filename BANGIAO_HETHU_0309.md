@@ -86,8 +86,15 @@ Người nhận đang online được báo ngay; offline nhận lúc đăng nh�
 
 ## 5. Thử nghiệm
 
+Đã swap 16:47 03/09 (bad8e293 / f2ad5ca3 / 24762253). Lần thử đầu của chủ (16:49, 16:50) báo `ScriptError 4 ... lenhbaiadmin.lua
+cFuncName:(xu/exp/mailtest1)`: nhãn menu "Gửi thư thử: tiền/xu/exp/mailtest1" có dấu `/` thừa — Say tách tên hàm ở dấu `/` ĐẦU TIÊN
+(luật cũ: cấm `/` `|` trong nhãn). Đã sửa thành "Gửi thư thử: tiền, xu, exp" (commit bfa7cd24). Nạp lại script mà không khởi động lại
+GameServer: gõ vào ô chat `?gm RLS \script\item\lenhbaiadmin.lua` (`KGMCommand.cpp`, mở bằng `_CHAT_SCRIPT_OPEN` trong `GameDataDef.h`;
+🔴 lệnh này KHÔNG kiểm tra quyền GM — mọi người chơi đều gõ được `?gm ds <lua>`, cần chặn trước khi mở server thật).
+
+0. Nạp lại script lệnh bài (chat `?gm RLS \script\item\lenhbaiadmin.lua`) hoặc khởi động lại GameServer.
 1. Lệnh bài admin → "Thu kenh ScriptProtocol (ECHO)": khung thoại `[ECHO] xin chao tu may chu` + chat `May chu da nhan ECHO: ...`.
-2. Lệnh bài admin → "Gửi thư thử: tiền/xu/exp" → chat "Đã gửi thư thử (id N)"; bồ câu góc phải nhấp nháy.
+2. Lệnh bài admin → "Gửi thư thử: tiền, xu, exp" → chat "Đã gửi thư thử (id N)"; bồ câu góc phải nhấp nháy.
 3. Đến **Tín Sứ** (Quan Dịch Trạm) bất kỳ thành nào → "Nhận thư" → cửa sổ Hộp thư: hàng thư "Nhà phát hành / Thư thử hệ thống thư / 30 ngày" (kẹp đính kèm).
 4. Bấm hàng → chi tiết (người gửi, tiêu đề, nội dung 3 dòng, 3 ô thưởng) → "Nhận" → chat "Đã nhận đính kèm trong thư." + Ngân lượng/xu/exp tăng; bấm Nhận lần 2 → "Đính kèm đã được nhận rồi!".
 5. "Gửi thư thử: có vật phẩm" → ô vật phẩm (Lệnh bài Bắc Đẩu 6,1,4139) có chú giải khi rê chuột → Nhận → vật phẩm vào túi.
