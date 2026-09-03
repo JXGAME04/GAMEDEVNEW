@@ -8,7 +8,8 @@
 #include "KGameKV.h"
 #include "KWin32.h"
 
-#ifdef _SERVER
+// [MAIL 03/09] ObjBuffer bien dich cho CA client (kenh ScriptProtocol); RemoteExecute, ShareData,
+// Ladder, GlbValue van nam trong #ifdef _SERVER phia duoi.
 
 #include "KEngine.h"
 #include "KDebug.h"
@@ -97,6 +98,7 @@ int LuaOB_Release(Lua_State* L)
 	return 1;
 }
 
+#ifdef _SERVER	// [MAIL 03/09] RemoteExecute + ShareData: chi may chu
 // [PORT5 23/08] RemoteExecute (Linux GS 0x08100740 / relay 0x0810363A): RPC GS<->relay qua
 // ObjBuffer. Du an 1 GS khong relay -> thuc thi TAI CHO dong bo: fn(hParam, hRes, 0) trong
 // state cua szScript (co remap \script\lib -> \scriptjx2\lib nhu Include); co callback ->
@@ -262,6 +264,7 @@ int LuaOB_LoadShareData(Lua_State* L)
 	Lua_PushNumber(L, 1);
 	return 1;
 }
+#endif // _SERVER (RemoteExecute + ShareData) [MAIL 03/09]
 
 int LuaOB_IsEmpty(Lua_State* L)
 {
@@ -425,6 +428,45 @@ int LuaOB_PopString(Lua_State* L)
 	return 0;
 }
 
+// [MAIL 03/09] truy cap byte tho cho kenh ScriptProtocol (KScriptProtocol.cpp)
+int KJx2OB_CreateFromBytes(const void* pData, int nLen)
+{
+	if (nLen < 0 || nLen > JX2OB_BUF_SIZE || (nLen > 0 && !pData))
+		return 0;
+	KJx2ObjBuffer* p = new KJx2ObjBuffer;
+	if (!p)
+		return 0;
+	if (nLen > 0)
+		memcpy(p->Buf, pData, nLen);
+	p->nWrite = nLen;
+	p->nRead = 0;
+	int h = ++s_nOBNextHandle;
+	s_OBMap[h] = p;
+	return h;
+}
+
+int KJx2OB_GetBytes(int h, const unsigned char** ppData)
+{
+	if (h <= 0 || !ppData)
+		return -1;
+	std::map<int, KJx2ObjBuffer*>::iterator it = s_OBMap.find(h);
+	if (it == s_OBMap.end())
+		return -1;
+	*ppData = it->second->Buf;
+	return it->second->nWrite;
+}
+
+int KJx2OB_Release(int h)
+{
+	std::map<int, KJx2ObjBuffer*>::iterator it = s_OBMap.find(h);
+	if (it == s_OBMap.end())
+		return 0;
+	delete it->second;
+	s_OBMap.erase(it);
+	return 1;
+}
+
+#ifdef _SERVER	// [MAIL 03/09] Ladder + GlbValue: chi may chu (dong bang #endif cuoi tep)
 //////////////////////////////////////////////////////////////////////
 // 2) Ladder - top 10 moi id, id > 10000, persist \settings\jx2ladder.txt
 //////////////////////////////////////////////////////////////////////

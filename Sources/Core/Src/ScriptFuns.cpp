@@ -58,6 +58,8 @@
 #include <MapHandler.h>
 #include <GiftCodeManager.h>
 #include "KGameKV.h"
+#include "KJx2SharedStore.h"	// [MAIL 03/09] OB_* dung ca client
+#include "KScriptProtocol.h"	// [MAIL 03/09] kenh ScriptProtocol
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14805,6 +14807,29 @@ TLua_Funcs GameScriptFuns[] =
 	{"BT_GetData",			LuaBT_GetDataStub},
 	{"Prise",				LuaPrise},
 	{"DynamicExecuteByPlayer",	LuaDynamicExecuteByPlayer},
+	// [MAIL 03/09] kenh ScriptProtocol that (KScriptProtocol.cpp) - dung chung hai phia
+	{"EnsureScript",		LuaEnsureScript},
+#ifndef _SERVER
+	// client: may chu da dang ky DynamicExecute + OB_* trong khoi _SERVER phia duoi
+	{"DynamicExecute",	LuaDynamicExecute},
+	{"SendScriptDataToServer",	LuaSendScriptDataToServer},
+	{ "OB_Create",	LuaOB_Create },
+	{ "OB_Release",	LuaOB_Release },
+	{ "OB_IsEmpty",	LuaOB_IsEmpty },
+	{ "OB_Clear",	LuaOB_Clear },
+	{ "OB_Append",	LuaOB_Append },
+	{ "OB_Copy",	LuaOB_Copy },
+	{ "OB_PushByte",	LuaOB_PushByte },
+	{ "OB_PopByte",	LuaOB_PopByte },
+	{ "OB_PushInt",	LuaOB_PushInt },
+	{ "OB_PopInt",	LuaOB_PopInt },
+	{ "OB_PushDouble",	LuaOB_PushDouble },
+	{ "OB_PopDouble",	LuaOB_PopDouble },
+	{ "OB_PushString",	LuaOB_PushString },
+	{ "OB_PopString",	LuaOB_PopString },
+#else
+	{"SendScriptDataToPlayer",	LuaSendScriptDataToPlayer},
+#endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
 	{"AddGlobalNews",LuaAddGlobalNews},
@@ -15931,7 +15956,7 @@ TLua_Funcs GameScriptFuns[] =
 		{"OpenProgressBar",	LuaHD3_OpenProgressBar},
 		{"Add120SkillExp",	LuaHD3_Add120SkillExp},
 		{"ST_IsTransLife",	LuaHD3_ST_IsTransLife},
-		{"SendScriptData",	LuaHD3_SendScriptData},
+		{"SendScriptData",	LuaSendScriptData},	// [MAIL 03/09] ban that (KScriptProtocol.cpp), thay stub LuaHD3_SendScriptData
 		{"QueryWiseManForSB",	LuaHD3_QueryWiseManForSB},
 		{"BT_GetBattleParam",	LuaHD3_BT_GetBattleParam},
 		{"ST_DoTransLife",	LuaHD3_ST_DoTransLife},

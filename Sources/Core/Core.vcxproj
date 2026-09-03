@@ -690,6 +690,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\BauCua.cpp" />
+    <ClCompile Include="Src\KScriptProtocol.cpp" />
     <ClCompile Include="Src\CoreDrawGameObj.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Server Debug|x64'">true</ExcludedFromBuild>
@@ -825,12 +826,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Src\KJx2SharedStore.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Src\KJx2SharedStore.cpp" />
     <ClCompile Include="Src\KTongJX2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Client Debug|x64'">true</ExcludedFromBuild>

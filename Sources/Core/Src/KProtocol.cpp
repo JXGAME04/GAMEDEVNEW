@@ -171,6 +171,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(S2C_REDUCE_SKILL_CD),		// s2c_reduceskillcd [HOASON 01/09b]
 	sizeof(S2C_SYNC_VHTD),			// s2c_syncvhtd [VHTD 02/09g]
 	sizeof(S2C_DETONATE),			// s2c_detonate [VHTD 02/09w]
+	-1,							// s2c_scriptdata [MAIL 03/09] do dai dong: WORD sau ProtocolType
 	
 #else
 	sizeof(LOGIN_COMMAND),		//	c2s_login,
@@ -287,6 +288,7 @@ int	g_nProtocolSize[MAX_PROTOCOL_NUM] =
 	sizeof(BAUCUA_DATA),					// c2s_baucua
 	sizeof(DICE_CHOICE_DATA),				// c2s_diceitem
 	sizeof(PARTNER_OP_DATA),				// c2s_partnerop [BDH-G4]
+	-1,							// c2s_scriptdata [MAIL 03/09] do dai dong: WORD sau ProtocolType
 
 #endif
 };

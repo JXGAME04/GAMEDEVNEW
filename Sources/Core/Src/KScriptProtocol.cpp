@@ -1,0 +1,267 @@
+// KScriptProtocol.cpp - [MAIL 03/09] kenh ScriptProtocol (ObjBuffer) hai chieu. Xem KScriptProtocol.h.
+// Bien dich cho CA client (Win32) lan may chu (x64): phan khac nhau nam trong #ifdef _SERVER.
+// LUU Y: Core build voi PCH qua KCore.h - KCore.h phai dung dau tien.
+#include "KCore.h"
+#include "KWin32.h"
+#include "KEngine.h"
+#include "KDebug.h"
+#include "LuaLib.h"
+#include "KLuaScript.h"
+#include "KSortScript.h"
+#include "KProtocol.h"
+#include "KPlayerDef.h"
+#include "KJx2SharedStore.h"
+#include "KScriptProtocol.h"
+#ifdef _SERVER
+#include "KNpc.h"
+#include "KNpcSet.h"
+#include "KPlayer.h"
+#include "KPlayerSet.h"
+#else
+#include "../../Headers/IClient.h"
+#endif
+#include <stdio.h>
+#include <string.h>
+
+#define SP_SCRIPT_GS	"\\script\\script_protocol\\protocol_def_gs.lua"
+#define SP_SCRIPT_C		"\\script\\script_protocol\\protocol_def_c.lua"
+
+//////////////////////////////////////////////////////////////////////
+// Dong goi / boc goi
+//////////////////////////////////////////////////////////////////////
+int SP_BuildPacket(BYTE btType, int nProtocolId, int hOB, BYTE* pOut, int nOutSize)
+{
+	const unsigned char* pData = NULL;
+	int nLen = KJx2OB_GetBytes(hOB, &pData);
+	if (nLen < 0 || !pData || !pOut)
+		return 0;
+	if (nProtocolId <= 0 || nProtocolId > 0xFFFF)
+		return 0;
+	int nTotal = (int)sizeof(SCRIPT_DATA_HEAD) + nLen;
+	if (nLen > SCRIPT_DATA_MAXLEN || nTotal > nOutSize)
+		return 0;
+	SCRIPT_DATA_HEAD* pHead = (SCRIPT_DATA_HEAD*)pOut;
+	pHead->ProtocolType = btType;
+	pHead->wLength = (WORD)(nTotal - 1);
+	pHead->wProtocolId = (WORD)nProtocolId;
+	pHead->wDataLen = (WORD)nLen;
+	if (nLen > 0)
+		memcpy(pOut + sizeof(SCRIPT_DATA_HEAD), pData, nLen);
+	return nTotal;
+}
+
+// Tra so byte du lieu (>= 0), -1 neu goi hong. *ppData tro vao trong pMsg.
+static int SP_ParsePacket(BYTE* pMsg, BYTE btType, int* pnProtocolId, const BYTE** ppData)
+{
+	if (!pMsg || !pnProtocolId || !ppData)
+		return -1;
+	SCRIPT_DATA_HEAD* pHead = (SCRIPT_DATA_HEAD*)pMsg;
+	if (pHead->ProtocolType != btType)
+		return -1;
+	if ((int)pHead->wLength < (int)sizeof(SCRIPT_DATA_HEAD) - 1)
+		return -1;
+	int nLen = (int)pHead->wDataLen;
+	if (nLen > SCRIPT_DATA_MAXLEN)
+		return -1;
+	if ((int)pHead->wLength != (int)sizeof(SCRIPT_DATA_HEAD) - 1 + nLen)
+		return -1;
+	if (pHead->wProtocolId == 0)
+		return -1;
+	*pnProtocolId = (int)pHead->wProtocolId;
+	*ppData = pMsg + sizeof(SCRIPT_DATA_HEAD);
+	return nLen;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Tim / nap script va goi bo dieu phoi Lua
+//////////////////////////////////////////////////////////////////////
+// g_FileName2Id KHONG doi chu thuong, con LoadScriptToSortList luu ten CHU THUONG
+// (KSortScript.cpp) -> luon ha chu truoc khi tra.
+static KLuaScript* SP_GetScript(const char* szScript, int bLoad)
+{
+	if (!szScript || !szScript[0])
+		return NULL;
+	char szLow[MAX_PATH];
+	g_StrCpyLen(szLow, (char*)szScript, MAX_PATH);
+	g_StrLower(szLow);
+	KLuaScript* pScript = (KLuaScript*)g_GetScript(szLow);
+	if (!pScript && bLoad)
+	{
+		if (ReLoadScript(szLow))
+			pScript = (KLuaScript*)g_GetScript(szLow);
+	}
+	return pScript;
+}
+
+static void SP_Dispatch(const char* szScript, int nPlayerIdx, int nProtocolId, int hOB)
+{
+	KLuaScript* pScript = SP_GetScript(szScript, 1);
+	if (!pScript)
+	{
+		g_DebugLog((LPSTR)"[SP] khong nap duoc bo dieu phoi %.128s (id=%d)", szScript, nProtocolId);
+		return;
+	}
+	Lua_State* L = pScript->m_LuaState;
+	// protocol.lua:ProtocolProcess re nhanh theo MODEL_GAMESERVER / MODEL_GAMECLIENT; may chu con can
+	// PlayerIndex cho DynamicExecuteByPlayer (khuon LuaDynamicExecuteByPlayer, ScriptFuns.cpp).
+#ifdef _SERVER
+	Lua_PushNumber(L, 1);
+	pScript->SetGlobalName((LPSTR)"MODEL_GAMESERVER");
+	Lua_PushNumber(L, nPlayerIdx);
+	pScript->SetGlobalName((LPSTR)SCRIPT_PLAYERINDEX);
+#else
+	Lua_PushNumber(L, 1);
+	pScript->SetGlobalName((LPSTR)"MODEL_GAMECLIENT");
+#endif
+	char szCall[128];
+	sprintf(szCall, "ScriptProtocol:ProtocolProcess(%d, %d)", nProtocolId, hOB);
+	int nTop = 0;
+	pScript->SafeCallBegin(&nTop);
+	if (lua_dostring(L, szCall) != 0)
+		g_DebugLog((LPSTR)"[SP] loi chay %.128s: %s", szScript, szCall);
+	pScript->SafeCallEnd(nTop);
+}
+
+int LuaEnsureScript(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 1 || !Lua_IsString(L, 1))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	KLuaScript* pScript = SP_GetScript(Lua_ValueToString(L, 1), 1);
+	Lua_PushNumber(L, pScript ? 1 : 0);
+	return 1;
+}
+
+#ifdef _SERVER
+//////////////////////////////////////////////////////////////////////
+// MAY CHU
+//////////////////////////////////////////////////////////////////////
+void SP_OnServerRecv(int nIndex, BYTE* pMsg)
+{
+	if (!pMsg)
+		return;
+	if (nIndex <= 0 || nIndex >= MAX_PLAYER)
+		return;
+	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
+		return;
+	if (Npc[Player[nIndex].m_nIndex].m_Kind != kind_player)
+		return;
+	int nId = 0;
+	const BYTE* pData = NULL;
+	int nLen = SP_ParsePacket(pMsg, (BYTE)c2s_scriptdata, &nId, &pData);
+	if (nLen < 0)
+	{
+		g_DebugLog((LPSTR)"[SP] goi c2s_scriptdata hong tu nguoi choi %d", nIndex);
+		return;
+	}
+	int h = KJx2OB_CreateFromBytes(pData, nLen);
+	if (h <= 0)
+		return;
+	SP_Dispatch(SP_SCRIPT_GS, nIndex, nId, h);
+	KJx2OB_Release(h);
+}
+
+int SP_SendToPlayer(int nPlayerIdx, int nProtocolId, int hOB)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return 0;
+	if (Player[nPlayerIdx].m_nNetConnectIdx < 0)	// bot / chua co ket noi
+		return 0;
+	if (!g_pServer)
+		return 0;
+	BYTE szBuf[SCRIPT_DATA_MAXLEN + sizeof(SCRIPT_DATA_HEAD) + 8];
+	int n = SP_BuildPacket((BYTE)s2c_scriptdata, nProtocolId, hOB, szBuf, sizeof(szBuf));
+	if (n <= 0)
+		return 0;
+	g_pServer->PackDataToClient(Player[nPlayerIdx].m_nNetConnectIdx, szBuf, n);
+	return 1;
+}
+
+// PlayerIndex cua state dang goi (khuon GetPlayerIndex trong ScriptFuns.cpp)
+static int SP_PlayerIdxOf(Lua_State* L)
+{
+	lua_getglobal(L, SCRIPT_PLAYERINDEX);
+	int n = 0;
+	if (lua_isnumber(L, -1))
+		n = (int)lua_tonumber(L, -1);
+	lua_settop(L, -2);
+	return n;
+}
+
+// SendScriptData(nProtocolId, hOB) -> 1/0
+int LuaSendScriptData(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nIdx = SP_PlayerIdxOf(L);
+	int nOk = SP_SendToPlayer(nIdx, (int)Lua_ValueToNumber(L, 1), (int)Lua_ValueToNumber(L, 2));
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+// SendScriptDataToPlayer(nPlayerIdx, nProtocolId, hOB) -> 1/0
+int LuaSendScriptDataToPlayer(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 3 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2) || !Lua_IsNumber(L, 3))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	int nOk = SP_SendToPlayer((int)Lua_ValueToNumber(L, 1), (int)Lua_ValueToNumber(L, 2),
+		(int)Lua_ValueToNumber(L, 3));
+	Lua_PushNumber(L, nOk);
+	return 1;
+}
+
+#else
+//////////////////////////////////////////////////////////////////////
+// CLIENT
+//////////////////////////////////////////////////////////////////////
+void SP_OnClientRecv(BYTE* pMsg)
+{
+	int nId = 0;
+	const BYTE* pData = NULL;
+	int nLen = SP_ParsePacket(pMsg, (BYTE)s2c_scriptdata, &nId, &pData);
+	if (nLen < 0)
+	{
+		g_DebugLog((LPSTR)"[SP] goi s2c_scriptdata hong");
+		return;
+	}
+	int h = KJx2OB_CreateFromBytes(pData, nLen);
+	if (h <= 0)
+		return;
+	SP_Dispatch(SP_SCRIPT_C, 0, nId, h);
+	KJx2OB_Release(h);
+}
+
+// SendScriptDataToServer(nProtocolId, hOB) -> 1/0
+int LuaSendScriptDataToServer(Lua_State* L)
+{
+	if (Lua_GetTopIndex(L) < 2 || !Lua_IsNumber(L, 1) || !Lua_IsNumber(L, 2))
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	if (!g_pClient)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	BYTE szBuf[SCRIPT_DATA_MAXLEN + sizeof(SCRIPT_DATA_HEAD) + 8];
+	int n = SP_BuildPacket((BYTE)c2s_scriptdata, (int)Lua_ValueToNumber(L, 1),
+		(int)Lua_ValueToNumber(L, 2), szBuf, sizeof(szBuf));
+	if (n <= 0)
+	{
+		Lua_PushNumber(L, 0);
+		return 1;
+	}
+	g_pClient->SendPackToServer(szBuf, n);
+	Lua_PushNumber(L, 1);
+	return 1;
+}
+#endif

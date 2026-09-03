@@ -175,6 +175,17 @@ static BOOL LoadScriptToSortListA(char * szRelativeFile)
 			Lua_PushNumber(g_ScriptSet[nCurrentScriptNum].m_LuaState, 1);
 			lua_setglobal(g_ScriptSet[nCurrentScriptNum].m_LuaState, "MODEL_GAMESERVER");
 		}
+		// [MAIL 03/09] bo dieu phoi ScriptProtocol (script_protocol\protocol_def_gs.lua /
+		// protocol_def_c.lua) mo dau bang 'if MODEL_GAME* ~= 1 then return end' - dat co theo phia.
+		if (strstr(szRelativeFile, "script_protocol") != NULL)
+		{
+			Lua_PushNumber(g_ScriptSet[nCurrentScriptNum].m_LuaState, 1);
+#ifdef _SERVER
+			lua_setglobal(g_ScriptSet[nCurrentScriptNum].m_LuaState, "MODEL_GAMESERVER");
+#else
+			lua_setglobal(g_ScriptSet[nCurrentScriptNum].m_LuaState, "MODEL_GAMECLIENT");
+#endif
+		}
 		g_StrCpyLen(g_ScriptSet[nCurrentScriptNum].m_szScriptName, szRelativeFile, 100);
 		if (g_ScriptSet[nCurrentScriptNum].Load(szRelativeFile))
 		{

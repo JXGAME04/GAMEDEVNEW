@@ -174,6 +174,7 @@ public:
 	void	s2cReduceSkillCD(BYTE* pMsg);	// [HOASON 01/09b]
 	void	s2cSyncVhtd(BYTE* pMsg);	// [VHTD 02/09g]
 	void	s2cDetonate(BYTE* pMsg);	// [VHTD 02/09w]
+	void	s2cScriptData(BYTE* pMsg);	// [MAIL 03/09] kenh ScriptProtocol (KScriptProtocol.cpp)
 	 
 	void	s2cExtend(BYTE* pMsg);
 	void	s2cExtendChat(BYTE* pMsg);
@@ -285,6 +286,7 @@ public:
 	void 	c2sBauCua(int nIndex, BYTE* pProtocol);
 	void 	c2sDiceItem(int nIndex, BYTE* pProtocol);
 	void 	c2sPartnerOp(int nIndex, BYTE* pProtocol);	// [BDH-G4]
+	void 	c2sScriptData(int nIndex, BYTE* pProtocol);	// [MAIL 03/09] kenh ScriptProtocol
 
 #endif
 };

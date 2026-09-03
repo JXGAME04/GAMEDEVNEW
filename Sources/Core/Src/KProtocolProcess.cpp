@@ -24,6 +24,7 @@
 #include "KItemSet.h"
 #include "KBuySell.h"
 #include "KSubWorldSet.h"
+#include "KScriptProtocol.h"	// [MAIL 03/09] kenh ScriptProtocol (ObjBuffer)
 
 #ifndef _SERVER
 // [S6 25/08] Dem KHE NPC dang dung phia client (MAX_NPC = 256, may chu 98000).
@@ -315,6 +316,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[s2c_reduceskillcd] = &KProtocolProcess::s2cReduceSkillCD;	// [HOASON 01/09b]
 	ProcessFunc[s2c_syncvhtd] = &KProtocolProcess::s2cSyncVhtd;	// [VHTD 02/09g]
 	ProcessFunc[s2c_detonate] = &KProtocolProcess::s2cDetonate;	// [VHTD 02/09w]
+	ProcessFunc[s2c_scriptdata] = &KProtocolProcess::s2cScriptData;	// [MAIL 03/09]
 	//ProcessFunc[s2c_dynamic_structure] = &KProtocolProcess::s2cDynamicStruct;
 	
 
@@ -439,6 +441,7 @@ KProtocolProcess::KProtocolProcess()
 	ProcessFunc[c2s_baucua] = &KProtocolProcess::c2sBauCua;
 	ProcessFunc[c2s_diceitem] = &KProtocolProcess::c2sDiceItem;
 	ProcessFunc[c2s_partnerop] = &KProtocolProcess::c2sPartnerOp;	// [BDH-G4]
+	ProcessFunc[c2s_scriptdata] = &KProtocolProcess::c2sScriptData;	// [MAIL 03/09]
 
 
 #endif
@@ -7721,5 +7724,19 @@ void KProtocolProcess::NpcPKValueCommand(int nIndex, BYTE* pProtocol)
 	if (Player[nIndex].m_nIndex <= 0 || Player[nIndex].m_nIndex >= MAX_NPC)
 		return;
 	Player[nIndex].Change_PK_Status(pPKValueCmd->nbutton);
+}
+#endif
+
+// [MAIL 03/09] kenh ScriptProtocol (ObjBuffer): chi chuyen tiep sang KScriptProtocol.cpp.
+// Goi do dai dong (-1): may chu da qua CheckProtocolSize, client tu doc wLength trong goi.
+#ifndef _SERVER
+void KProtocolProcess::s2cScriptData(BYTE* pMsg)
+{
+	SP_OnClientRecv(pMsg);
+}
+#else
+void KProtocolProcess::c2sScriptData(int nIndex, BYTE* pProtocol)
+{
+	SP_OnServerRecv(nIndex, pProtocol);
 }
 #endif

@@ -9,7 +9,8 @@
 #ifndef KJX2SHAREDSTORE_H
 #define KJX2SHAREDSTORE_H
 
-#ifdef _SERVER
+// [MAIL 03/09] ObjBuffer dung cho CA client (kenh ScriptProtocol, KScriptProtocol.cpp);
+// Ladder / GlbValue van chi may chu (#ifdef _SERVER phia duoi).
 
 typedef struct lua_State Lua_State;
 
@@ -28,6 +29,13 @@ int LuaOB_PushDouble(Lua_State* L);
 int LuaOB_PopDouble(Lua_State* L);
 int LuaOB_PushString(Lua_State* L);
 int LuaOB_PopString(Lua_State* L);
+
+// [MAIL 03/09] truy cap byte tho cho kenh ScriptProtocol (KScriptProtocol.cpp)
+int  KJx2OB_CreateFromBytes(const void* pData, int nLen);     // -> handle (>0), 0 = fail
+int  KJx2OB_GetBytes(int h, const unsigned char** ppData);   // -> so byte da ghi, -1 neu handle xau
+int  KJx2OB_Release(int h);                                  // -> 1/0
+
+#ifdef _SERVER
 
 // ---- Ladder (goc gui goi 52B len relay; ta 1 GS -> store tai cho + persist) ----
 int LuaLadder_NewLadder(Lua_State* L);     // (id>10000, szName, nValue[,nType][,nSect][,nGender]) -> 0 gia tri
