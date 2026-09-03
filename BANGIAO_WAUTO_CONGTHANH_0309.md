@@ -17,10 +17,10 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `e4ac910a` | `2.507.776` | **MAIL đợt 3** (phiên wauto-d9, main `5c8b8736`, commit c72aaa8c — xem `BANGIAO_HETHU_0309.md`) — tập cha của `5b56367c` (S13e) **đang chạy**; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto. Lịch sử: 96c3085d (CT gốc) → 9976e63f (S13) → 5b56367c (S13e) → 62730ed9 → f94b5100 (MAIL 1-2) → e4ac910a (MAIL 3). |
+| `CoreClient.dll.moi` | `f2ad5ca3` | `2.507.776` | **S13i/j** (phiên wauto-6a, 16:42: main `5c8b8736` + vá S13i/j — ⚠️ **nguồn S13i/j CHƯA có commit trên main lúc ghi dòng này**, wauto-6a phải commit + push trước khi chủ swap) — tập cha của MAIL 3 `e4ac910a` và của `5b56367c` (S13e) **đang chạy**; vẫn chứa máy `CT_Process` + bảng `KCongThanhTables.h` (chuỗi "[Công Thành]" TCVN3 đếm = 1), không đổi autoData/ExtAuto. Lịch sử: 96c3085d → 9976e63f → 5b56367c → 62730ed9 → f94b5100 → e4ac910a (MAIL 3) → f2ad5ca3 (S13i/j). |
 | `Game.exe.moi` | `24762253` | `1.399.808` | **MAIL đợt 3** (wauto-d9, main `5c8b8736`): cửa sổ Hộp thư `UiMail.cpp`, struct `KMailUiAward` dùng chung CoreClient + Game.exe; vẫn có cổng máy CT trong `S3Client.cpp` (chuỗi "[HD-GATE] nCT=" đếm = 1) — tập cha của `d3d626ba` **đang chạy**. Phải lên CÙNG `CoreClient.dll.moi e4ac910a`. |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
-| `CoreServer.dll.moi` (**bin\server**) | `cca51fdf` | `18.297.856` | **MAIL đợt 3** (wauto-d9, main `5c8b8736`: `KMailServer.cpp` + MySQL bảng `mail`, script mail) — tập cha của `7b3423c2` (S13g/h) **đang chạy** từ 15:21. Ba tệp CÙNG một commit, phải lên CÙNG LÚC. wauto-6a nếu đè bằng S13i phải build từ ≥ 5c8b8736 — chờ md5. |
+| `CoreServer.dll.moi` (**bin\server**) | `bad8e293` | `18.298.368` | **S13i/j** (wauto-6a, 16:42: main `5c8b8736` + S13i/j máy chủ: bỏ chiêu vào xác `[S13-XAC]`, hết mất khung khi NPC đổi vùng — ⚠️ nguồn chưa commit lúc ghi) — tập cha của MAIL 3 `cca51fdf` và của `7b3423c2` **đang chạy**. Ba tệp (kèm `Game.exe.moi 24762253` của MAIL 3, giữ nguyên) phải lên CÙNG LÚC. |
 
 ### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
 
@@ -30,7 +30,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
 5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
 6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `e4ac910a…`, `Game.exe` = `24762253…`, `CoreServer.dll` = `cca51fdf…`.
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `f2ad5ca3…`, `Game.exe` = `24762253…`, `CoreServer.dll` = `bad8e293…`.
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```

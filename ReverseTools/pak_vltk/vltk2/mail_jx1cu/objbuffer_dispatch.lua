@@ -1,0 +1,734 @@
+if MODEL_GAMECLIENT ~= 1 then
+	return
+end
+
+Include("\\script\\lib\\objbuffer_head.lua")
+
+T_PROTOCOL_DEF =
+{
+	{
+		"emSCRIPT_PROTOCOL_STORES_REQUEST_ITEM",
+		"\\script\\item\\dynamic_shop\\logic_c.lua",
+		"DynamicShop:RecvItem",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_TABLE}
+	},
+	{
+		"emSCRIPT_PROTOCOL_BATTLE",
+		"\\script\\missions\\battle\\protocol_c.lua",
+		"show_battle_select",
+		{OBJTYPE_TABLE}
+	},
+	{
+		"emSCRIPT_PROTOCOL_BINGO_MACHINE",
+		"\\script\\event\\bingo_machine\\bingo_machine_c.lua",
+		"BingoMachine:RecvResult",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER, 
+			OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_BINGO_OPENWINDOW",
+		"\\script\\event\\bingo_machine\\bingo_machine_c.lua",
+		"BingoMachine:OpenWindow",
+		{ OBJTYPE_NUMBER, OBJTYPE_NUMBER, 
+			OBJTYPE_NUMBER, OBJTYPE_NUMBER, 
+			OBJTYPE_NUMBER, OBJTYPE_NUMBER },
+	},		
+	{
+		"emSCRIPT_PROTOCOL_BINGO_COIN",
+		"\\script\\event\\bingo_machine\\bingo_machine_c.lua",
+		"BingoMachine:RecvCoin",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},		
+	{
+		"emSCRIPT_PROTOCOL_BINGO_GET_AWARD_RESULT",
+		"\\script\\event\\bingo_machine\\bingo_machine_c.lua",
+		"BingoMachine:GetAwardResult",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_QIANCHONGLOU",
+		"\\script\\missions\\qianchonglou\\ui.lua",
+		"process_protocol",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_FLIP_CARD",
+		"\\script\\flipcard\\flipcard_c.lua",
+		"tbFlipCard:ProcessProtocol",
+		{OBJTYPE_NUMBER,OBJTYPE_NUMBER,OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_LOGIN_PRIZE",
+		"\\script\\event\\prize\\ui.lua",
+		"tbLoginPrize:ProcessProtocol",
+		{OBJTYPE_NUMBER,OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	--{
+	--	"emSCRIPT_PROTOCOL_ACC_TIME_PRIZE",
+	--	"\\script\\event\\prize\\acc_time_prize_c.lua",
+	--	"OnRecvData",
+	--	{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	--},
+	{
+		"emSCRIPT_PROTOCOL_FULI_REPORT",
+		"\\script\\missions\\miniencounter\\report_ui.lua",
+		"DataUpdated",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_OPEN_URL",
+		"\\script\\event\\questionnaire\\ui.lua",
+		"OpenQuestionnaire",
+		{OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_POP_BLACK_TIPS",
+		"",
+		"PopBlackTips",
+		{OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_ACHIEVEMENT_ACHIEVED",
+		"",
+		"PopAchievement",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_TONG_GUTA",
+		"\\script\\missions\\tong_guta\\ui_client.lua",
+		"GuTaUI:OnReceiveData",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_TONG_PKMESSAGE",
+		"\\script\\tongpkmessage\\tong_pk_message.lua",
+		"tbTongPkMessage:OnRecvProtocol",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MANTLE_OPENUI",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:OpenMantleInlayUi",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_MANTLE_INLAYRESULT",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:OnMantleInlayCallBack",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_OPENWINDOW",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:OnOpenWindow",
+		{OBJTYPE_STRING}
+	},
+	{
+		"emSCRIPT_PROTOCOL_NEW_CLOTHES_SHOP",
+			"\\script\\global\\appearancesystem\\shop_c.lua",
+			"tbAppearanceShopClient:OnRecvProtocol",
+			{OBJTYPE_STRING, OBJTYPE_TABLE},
+
+	},
+	{
+		"emSCRIPT_PROTOCOL_NEW_CLOTHES_WARDROBE",
+			"\\script\\global\\appearancesystem\\wardrobe_c.lua",
+			"tbAppearanceWardrobeClient:OnRecvProtocol",
+			{OBJTYPE_STRING, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_EXCHANGE_SHOP",
+			"\\script\\global\\exchangeshop\\main_c.lua",
+			"tbExchangeShopClient:OnRecvProtocol",
+			{OBJTYPE_STRING, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_UPDATE_CLOTH_ENCHANTING_UI",
+		"\\script\\global\\appearancesystem\\clothenchanting_c.lua",
+		"ClothEnchanting:UpdateUI",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_UPDATE_MONTHLYRECHARGE",
+		"\\script\\monthlyrecharge\\monthlyrecharge_c.lua",
+		"tbMonthlyRechargeC:UpdatePage",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MONTHLYRECHARGE_SETLOTTERYSCROLL",
+		"\\script\\monthlyrecharge\\monthlyrecharge_c.lua",
+		"tbMonthlyRechargeC:S2C_UpdateScroll",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MONTHLYRECHARGE_SETLOTTERYDATA",
+		"\\script\\monthlyrecharge\\monthlyrecharge_c.lua",
+		"tbMonthlyRechargeC:S2C_UpdateLotteryData",
+		{OBJTYPE_STRING, OBJTYPE_STRING, OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_CLOSEWINDSINGAME",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:CloseWndsInGame",
+		{OBJTYPE_NUMBER},
+	},
+	-- 决战巅峰
+	{
+		"emSCRIPT_PROTOCOL_S2C_JZDF_ENTER",
+		"\\script\\missions\\juezhandianfeng\\client\\juezhandianfeng_c.lua",
+		"tbJueZhanDianFengC:OpenReport",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_JZDF_LEAVE",
+		"\\script\\missions\\juezhandianfeng\\client\\juezhandianfeng_c.lua",
+		"tbJueZhanDianFengC:CloseReportUI",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_JZDF_UPDATE",
+		"\\script\\missions\\juezhandianfeng\\client\\juezhandianfeng_c.lua",
+		"tbJueZhanDianFengC:UpdateReport",
+		{OBJTYPE_TABLE, OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_JZDF_OPEN_URL",
+		"\\script\\missions\\juezhandianfeng\\client\\juezhandianfeng_c.lua",
+		"JZDF_OpenUrl",
+		{OBJTYPE_STRING}
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_GOLDBOSSREPORT_NODATA",
+		"\\script\\missions\\boss\\dmgcount\\dmgcount_c.lua",
+		"tbGoldBossDamageCountC:ResetBossReprotData",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_GOLDBOSSREPORT_SYNCDATA",
+		"\\script\\missions\\boss\\dmgcount\\dmgcount_c.lua",
+		"tbGoldBossDamageCountC:OnReceiveBossReprotData",
+		{OBJTYPE_STRING, OBJTYPE_TABLE, OBJTYPE_TABLE, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_HEADERLIST",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:HeaderListArrival",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_NEWMAIL",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:NewMailEventArrival",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_STATECHANGE",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:StateChangeEventArrival",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_DELETE",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:DeleteEventArrival",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_WHOLEMAIL",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:WholeMailArrival",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_MAIL_OPENWINDOW",
+		"\\script\\ui\\uimail.lua",
+		"UIMail:OpenMailWindow",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_OPENNEWYEARENTRANCE2020",
+		"\\script\\ui\\newyear2020\\newyear2020.lua",
+		"tbNewYearLottery2020_C:OpenEntrance",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_NEWYEAR_SETLOTTERYSCROLL",
+		"\\script\\ui\\newyear2020\\newyear2020.lua",
+		"tbNewYearLottery2020_C:SetLotteryScroll",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_NEWYEAR_SETLOTTERYDATA",
+		"\\script\\ui\\newyear2020\\newyear2020.lua",
+		"tbNewYearLottery2020_C:SetLotteryData",
+		{OBJTYPE_STRING, OBJTYPE_STRING, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_CONSUME_MSG",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_GetConsumeMsg",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_OPEN_MAIN_WINDOW",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:OpenMainWindow",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_RANDOM_BASE_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_RandomBaseAttrib",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_APPLY_BASE_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_ApplyBaseAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_CANCLE_BASE_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_CancleBaseAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_ENGRAVE",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_Engrave",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_UPGRADE",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_Upgrade",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_ACTIVATE",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_Activate",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_RANDOM_IMPLICIT_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_RandomImplicitAttrib",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_APPLY_IMPLICIT_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_ApplyImplicitAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_CANCLE_IMPLICIT_ATTRIB",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_CancleImplicitAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SS_REBUILD",
+		"\\script\\series_stamp\\series_stamp_c.lua",
+		"tbSeriesStampC:s2c_Rebuild",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	-- 英雄塔
+	{
+		"emSCRIPT_PROTOCOL_TOGGLE_TOWERTASKBTN",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerToggleBtn",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_TOGGLE_TOWERTASK",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerToggle",
+		{OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_TOWERTASK_SETACCEPT",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerSetAccept",
+		{OBJTYPE_STRING,OBJTYPE_STRING,OBJTYPE_STRING,OBJTYPE_NUMBER,OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_TOWERTASK_SETTASK",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerSetTask",
+		{OBJTYPE_STRING,OBJTYPE_STRING}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_TOWERTASK_SETTIMER",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerSetTimer",
+		{OBJTYPE_STRING,OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_TOWERTASK_ADDTARGET",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerAddTarget",
+		{OBJTYPE_STRING,OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_TOWERTASK_ADDTARGETCOUNT",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:TaskTowerAddTargetCount",
+		{OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_HTLISTClOSE",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListClose",
+		{OBJTYPE_NUMBER}
+	},
+
+	{
+		"emSCRIPT_PROTOCOL_HTLISTOPEN",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListOpen",
+		{OBJTYPE_TABLE}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTQUERYOTHER_DATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListOtherFacton",
+		{OBJTYPE_TABLE}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTOLDSETDATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListOldSetData",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTOLDdELDATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListOldDelData",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTOLDDELDATAS",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListOldDelDatas",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTNOWSETDATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListNowSetData",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTNOWSETMINEDATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListNowSetMyData",
+		{OBJTYPE_NUMBER, OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTNOWDELDATA",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListNowDelData",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_HTLISTNOWDELDATAS",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:HTListNowDelDatas",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_OPENWNDFLIPS",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:OpenWndFlips",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_CLOSEWNDFLIPS",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:CloseWndFlips",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_WNDFLIPSPLAYSINGLE",
+		"\\script\\lib\\clientcmd.lua",
+		"ClientCmd:WndFlipsPlaySingle",
+		{OBJTYPE_NUMBER}
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_WLL_SYNC_INFO",
+		"\\script\\hall\\wll_daily_award\\wll_daily_award_c.lua",
+		"WLL_DAILY_AWARD:UpdateOpenState",
+		{OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_WLL_SYNC_LEVELUP_TASK_INFO",
+		"\\script\\hall\\wll_levelup_task\\wll_levelup_task_c.lua",
+		"WLL_LEVELUP_TASK:UpdateOpenState",
+		{OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+    },
+    -- 门派挂件
+    {
+        "emSCRIPT_PROTOCOL_PENDANT_OPENUI",
+        "\\script\\lib\\clientcmd.lua",
+        "ClientCmd:OpenPendantInlayUi",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_PENDANT_OPENSCOURUI",
+        "\\script\\lib\\clientcmd.lua",
+        "ClientCmd:OpenScourInlayUi",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_PENDANTRANK_RETURN",
+        "\\script\\lib\\clientcmd.lua",
+        "ClientCmd:UpdateFactionPendantRank",
+        {OBJTYPE_TABLE}
+    },
+    {
+        "emSCRIPT_PROTOCOL_PENDANT_INLAYRESULT",
+        "\\script\\lib\\clientcmd.lua",
+        "ClientCmd:OnPendantInlayCallBack",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_PENDANT_INLAYSCOURRESULT",
+        "\\script\\lib\\clientcmd.lua",
+        "ClientCmd:OnScourInlayCallBack",
+        {OBJTYPE_NUMBER}
+    },
+	-- 门派挂件End
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_OFFERPRICERET",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnOfferPriceResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_REFUNDRET",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnRefundResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ACTIVITYLIST",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnActivityListResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ACTIVITYINFO",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnActivityContentResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_TABLE, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ITEMINFO",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnItemContentResponse",
+		{OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_MEMBERLIST",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnMemberListResponse",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_NEWACTIVITY",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnNewActivityEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ENDACTIVITY",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnEndActivityEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_NEWITEM",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnNewItemEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_ENDITEM",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnEndItemEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_AUCTION_TPRICECHANGE",
+		"\\script\\ui\\uiauction_house.lua",
+		"UIAuctionHouse:OnPriceChangeEvent",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+    -- 五行大阵
+    {
+        "emSCRIPT_PROTOCOL_FIVESERIESZONE_BEGIN",
+        "\\script\\ui\\uifive_series_zone.lua",
+        "UIFiveSeriesZone:ShowSignIcon",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_FIVESERIESZONE_END",
+        "\\script\\ui\\uifive_series_zone.lua",
+        "UIFiveSeriesZone:HideSignIcon",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_LINGLONGTOWER_SHOW_HELPER",
+        "\\script\\ui\\uiling_long_tower.lua",
+        "UILingLongTower:ShowLingLongTowerHelper",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_LINGLONGTOWER_HIDE_HELPER",
+        "\\script\\ui\\uiling_long_tower.lua",
+        "UILingLongTower:HideLingLongTowerHelper",
+        {OBJTYPE_NUMBER}
+    },
+    {
+        "emSCRIPT_PROTOCOL_LINGLONGTOWER_UPDATE_HELPER",
+        "\\script\\ui\\uiling_long_tower.lua",
+        "UILingLongTower:UpdateLingLongTowerHelper",
+        {OBJTYPE_NUMBER,OBJTYPE_NUMBER,OBJTYPE_NUMBER,OBJTYPE_NUMBER,OBJTYPE_NUMBER}
+    },
+    -- 五行大阵
+	{
+        "emSCRIPT_PROTOCOL_S2C_REBUILD_COMPANIONEQUIP",
+        "\\script\\petsys\\ui.lua",
+        "s2c_OpenRebuildCompanionEquipUI",
+        {OBJTYPE_NUMBER}
+    },
+	{
+		"emSCRIPT_PROTOCOL_S2C_COMPANIONEQUIP_SETCOST_TIP",
+		"\\script\\petsys\\ui.lua",
+		"s2c_SetCompanionEquipCostTip",
+		{OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_TRYREBUILD_COMPANIONEQUIP",
+		"\\script\\petsys\\ui.lua",
+		"s2c_TryRebuild",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_COMPANIONEQUIP_DOREBUILD",
+		"\\script\\petsys\\ui.lua",
+		"s2c_DoRebuild",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LIANSAI_SYNCREPORTUI",
+		"\\script\\event\\liansai\\liansai_c.lua",
+		"tbLianSai_c:SyncReport",
+		{OBJTYPE_STRING, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LIANSAI_CLOSEREPORTUI",
+		"\\script\\event\\liansai\\liansai_c.lua",
+		"tbLianSai_c:CloseReport",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LIANSAI_SYNCTEAMLIST",
+		"\\script\\event\\liansai\\liansai_c.lua",
+		"tbLianSai_c:SycnTeamList",
+		{OBJTYPE_TABLE, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER, OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LIANSAI_STARTFINAL",
+		"\\script\\event\\liansai\\liansai_c.lua",
+		"tbLianSai_c:OpenEntrance",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LIANSAI_CLOSEENTERANCE",
+		"\\script\\event\\liansai\\liansai_c.lua",
+		"tbLianSai_c:CloseEntrance",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SIGNACT_ENTRANCE",
+		"\\script\\ui\\signact_icon.lua",
+		"SignAct:OpenSignActWindow",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_SIGNACT_SYNCDATA",
+		"\\script\\ui\\sign_act.lua",
+		"SignAct:UpdatePage",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_OPEN_IMPLICIT_WINDOW",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:OpenMantleImplicitUI",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_IMPLICIT_CONSUME_MSG",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:s2c_GetConsumeMsg",
+		{OBJTYPE_NUMBER, OBJTYPE_STRING},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_IMPLICIT_RANDOM_ATTRIB",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:s2c_RandomImplicitAttrib",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_APPLY_IMPLICIT_ATTRIB",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:s2c_ApplyImplicitAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_CANCLE_IMPLICIT_ATTRIB",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:s2c_CancleImplicitAttrib",
+		{OBJTYPE_NUMBER},
+	},
+    {
+		"emSCRIPT_PROTOCOL_S2C_OPEN_JUEXUE",
+		"\\script\\ui\\ui_juexue.lua",
+		"JueXue:OpenJueXue",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_MANTLE_IMPLICIT_ACTIVATE",
+		"\\script\\global\\mantlesystem\\mantle_c.lua",
+		"tbMantleC:s2c_ActivateImplicitAttrib",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_OPEN_ACTIVITYHALL",
+		"\\script\\hall\\wll_levelup_task\\wll_levelup_task_c.lua",
+		"WLL_LEVELUP_TASK:OpenActivityHallUI",
+		{OBJTYPE_NUMBER},
+	},
+	{
+		"emSCRIPT_PROTOCOL_S2C_LOGINAWARD2024",
+		"script\\ui\\ui_login_award2024.lua",
+		"LoginAwardProtocolFunc_C",
+		{OBJTYPE_NUMBER, OBJTYPE_TABLE},
+	},
+	{
+        "emScript_PROTOCOL_S2C_GREATTEAMFIGHT_SYNC",
+        "\\script\\missions\\greatteamfight\\client\\recvsync.lua",
+        "RecvSync:Recv",
+        {OBJTYPE_TABLE}
+    },
+}

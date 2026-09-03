@@ -1,0 +1,623 @@
+# D:/ServerLinux/server1/script/skill/xiaoyao.lua : 622 dong
+    1| --迭代函数，用于计算技能熟练度
+    2| --具体方法：
+    3| --根据1级熟练度，升级加速度，级数，重复伤害次数，范围，计算出相应等级熟练度
+    4| -- SkillExp(i) = Exp1*a^(i-1)*time*range
+    5| 
+    6| function SkillExpFunc(Exp0,a,Level,Time,Range)
+    7| 	return floor(Exp0*(a^(Level-1))*Time*Range/2)
+    8| end
+    9| 
+   10| 
+   11| SKILLS={
+   12| 	--剑逍遥
+   13| 	wugoushuangxue={ --吴钩霜雪
+   14| 		seriesdamage_p={{{1,1},{20,10}}},
+   15| 		physicsenhance_p={{{1,5*1.5},{20,75*1.5}}},
+   16| 		lightingdamage_v={
+   17| 			[1]={{1,15},{20,180}},
+   18| 			[3]={{1,15},{20,180}}
+   19| 		},
+   20| 		addskilldamage1={
+   21| 			[1]={{1,1887},{2,1887}},
+   22| 			[3]={{1,1},{20,60}}
+   23| 		},
+   24| 		addskilldamage2={
+   25| 			[1]={{1,1892},{2,1892}},
+   26| 			[3]={{1,1},{20,50}}
+   27| 		},
+   28| 		addskilldamage3={
+   29| 			[1]={{1,1896},{2,1896}},
+   30| 			[3]={{1,1},{20,35}}
+   31| 		},
+   32| 		skill_cost_v={{{1,10},{20,10}}}
+   33| 	},
+   34| 
+   35| 	xiaoyaojianfa ={ --逍遥剑法
+   36| 		addphysicsdamage_p={{{1,25},{20,215}},{{1,-1},{2,-1}},{{1,0},{2,0}}},
+   37| 		deadlystrikeenhance_p={{{1,6},{20,25}},{{1,-1},{2,-1}}}
+   38| 	},
+   39| 
+   40| 	yigonghuanyu={ --移宫换羽
+   41| 		freezetimereduce_p={{{1,1},{20,30}},{{1,-1},{2,-1}}},
+   42| 		skill_desc=
+   43| 			function(level)
+   44| 				return "Mỗi <color=orange> "..floor(Link(level,SKILLS.yigonghuanyu.autocastskill[3]) / 18/256).." giây<color> tự động nhận <color=orange>"..floor(Link(level,SKILLS.yinlv.special_point_add[3])).." tầng [Âm Luật]<color>"
+   45| 				--.."最多拥有<color=orange>"..floor(Link(level,SKILLS.yigonghuanyu.special_point_base[3])).."层【音律】<color>"
+   46| 			end,
+   47| 		autocastskill = {
+   48| 			{{1,1884*256 + 1},{20,1884*256 + 20}},--目标技能id * 256 + 等级
+   49| 			{{1,-1},{20,-1}},-- 为1表示算CD，不算CD填-1
+   50| 			{{1, (1*18*256 + 100)},{20, (1*18*256 + 100)}},-- 间隔帧数 * 256 + 发动几率
+   51| 		},
+   52| 		special_point_base={
+   53| 			{{1,1883},{20,1883}},-- 目标技能id
+   54| 			{{1,-1},{20,-1}},-- 配在主动技能属性上填0，作为buff属性填-1
+   55| 			{{1,10},{20,10}},-- 增加个数
+   56| 		}
+   57| 	},
+   58| 	yinlv={ --移宫换羽-音律（主动）
+   59| 		special_point_add={
+   60| 			{{1,1883},{20,1883}},-- 目标技能id
+   61| 			{{1,0},{20,0}},-- 配在主动技能属性上填0，作为buff属性填-1
+   62| 			{{1,1},{20,1}},-- 增加个数
+   63| 		}
+   64| 	},
+   65| 
+   66| 	sataliuxing={ --飒沓流星
+   67| 		cost_sp={
+   68| 			{{1,1883},{20,1883}},  -- 目标技能id
+   69| 			{{1,0},{20,0}}, -- 填零
+   70| 			{{1,8},{20,3},{21,3}}, -- 吃几个
+   71| 		},
+   72| 		skill_param1_v={{{1,280},{15,280}}},
+   73| 		skill_eventskilllevel={{{1,1},{20,20}}},
+   74| 		skill_desc=
+   75| 			function(level)
+   76| 				return "<color=orange>Điều kiện thi triển:<color> <color=yellow>"..floor(Link(level,SKILLS.sataliuxing.cost_sp[3])).." tầng [Âm Luật]<color>\n"..
+   77| 				"Khoảng cách di hình tối đa: <color=orange>"..floor(Link(level,SKILLS.sataliuxing.skill_param1_v[1])).."<color>\n"
+   78| 			end
+   79| 	},
+   80| 	
+   81| 	yijianfutian={ --倚剑拂天
+   82| 		seriesdamage_p={{{1,10},{20,50},{21,52}}},
+   83| 		physicsenhance_p={{{1,55},{20,386}}},
+   84| 		stun_p={{{1,5},{20,15},{21,15}},{{1,1},{20,12},{21,12}}},
+   85| 		lightingdamage_v={
+   86| 			[1]={{1,45},{20,532}},
+   87| 			[3]={{1,45},{20,532}}
+   88| 		},
+   89| 		addskilldamage1={
+   90| 			[1]={{1,1892},{2,1892}},
+   91| 			[3]={{1,1},{20,70}}
+   92| 		},
+   93| 		addskilldamage2={
+   94| 			[1]={{1,1896},{2,1896}},
+   95| 			[3]={{1,1},{20,60}}
+   96| 		},
+   97| 		skill_cost_v={{{1,15},{20,40}}}
+   98| 	},
+   99| 
+  100| 	yinanbaima={ --银鞍白马
+  101| 		fastwalkrun_p={{{1,9},{20,30}},{{1,-1},{20,-1}}},
+  102| 	},
+  103| 
+  104| 	xiagurouqing={	--侠骨柔情
+  105| 		lifemax_yan_v={{{1,180},{35,6400},{36,6480}},{{1,-1},{20,-1}}},
+  106| 		unravel_effect={{{1,7},{2,15},{40,300},{41,300}},{{1,-1},{20,-1}}},
+  107| 	},
+  108| 
+  109| 	qianliduxing={ --千里独行（镇派）
+  110| 		deadlystrikeenhance_p={{{1,6},{30,15}},{{1,-1},{2,-1}}},
+  111| 		castspeed_v={{{1,25},{30,65},{34,73},{35,90},{36,92}},{{1,-1},{30,-1}}},
+  112| 		attackspeed_v={{{1,25},{20,65},{33,92},{35,118},{38,124},{39,126}},{{1,-1},{30,-1}}},
+  113| 		--addlightingmagic_p={{{1,5},{20,43}},{{1,-1},{2,-1}}},
+  114|                                   addlightingmagic_v={{{1,45},{30,315}},{{1,-1},{2,-1}}},
+  115| 		addlightingdamage_v={{{1,45},{30,315}},{{1,-1},{2,-1}}},
+  116| 		lifemax_yan_p={{{1,21},{35,80},{36,81}},{{1,-1},{30,-1}}},
+  117| 	},
+  118| 
+  119| 	jianjuefuyun={ --剑决浮云（剑逍遥90）
+  120| 		physicsenhance_p={{{1,24},{33,790}}},
+  121| 		seriesdamage_p={{{1,20},{15,20},{20,60},{21,62}}},
+  122| 		stun_p={{{1,5},{20,20},{21,20}},{{1,1},{20,12},{21,12}}},
+  123| 		deadlystrike_p={{{1,16},{20,25}}},
+  124| 		lightingdamage_v={
+  125| 			[1]={{1,39},{15,200},{20,673}},
+  126| 			[3]={{1,39},{15,200},{20,673}}
+  127| 		},
+  128| 		skill_cost_v={{{1,35},{20,60}}},
+  129| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  130| 		skill_vanishedevent={
+  131| 			[1]={{1,0},{10,0},{10,1},{20,1}},
+  132| 			[3]={{1,1893},{20,1893}}
+  133| 		},
+  134| 		addskilldamage1={
+  135| 			[1]={{1,1896},{2,1896}},
+  136| 			[3]={{1,1},{20,35}}
+  137| 		},
+  138| 		skill_desc=
+  139| 			function(level)
+  140| 				if (level > 10) then
+  141| 				return "<color=orange>Sát thương cuối và hiệu ứng khống chế x2<color>\n "
+  142| 				end
+  143| 				return ""
+  144| 			end,
+  145| 		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
+  146| 		skill_showevent={{{1,2},{20,2}}},
+  147| 		skill_skillexp_v={
+  148| 			{
+  149| 				{1,SkillExpFunc(6860,1.15,1,5,1)},
+  150| 				{2,SkillExpFunc(6860,1.15,2,5,1)},
+  151| 				{3,SkillExpFunc(6860,1.16,3,5,1)},
+  152| 				{4,SkillExpFunc(6860,1.17,4,5,1)},
+  153| 				{5,SkillExpFunc(6860,1.18,5,5,1)},
+  154| 				{6,SkillExpFunc(6860,1.19,6,5,1)},
+  155| 				{7,SkillExpFunc(6860,1.20,7,5,1)},
+  156| 				{8,SkillExpFunc(6860,1.21,8,5,1)},
+  157| 				{9,SkillExpFunc(6860,1.22,9,5,1)},
+  158| 				{10,SkillExpFunc(6860,1.23,10,5,1)},
+  159| 				{11,SkillExpFunc(6860,1.24,11,5,1)},
+  160| 				{12,SkillExpFunc(6860,1.23,12,5,1)},
+  161| 				{13,SkillExpFunc(6860,1.22,13,5,1)},
+  162| 				{14,SkillExpFunc(6860,1.21,14,5,1)},
+  163| 				{15,SkillExpFunc(6860,1.20,15,5,1)},
+  164| 				{16,SkillExpFunc(6860,1.19,16,5,1)},
+  165| 				{17,SkillExpFunc(6860,1.18,17,5,1)},
+  166| 				{18,SkillExpFunc(6860,1.17,18,5,1)},
+  167| 				{19,SkillExpFunc(6860,1.16,19,5,1)},
+  168| 				{20,SkillExpFunc(6860,1.15,20,5,1)},
+  169| 			}
+  170| 		},
+  171| 	},
+  172| 
+  173| 	danzhichishang={ --啖炙持觞（120）
+  174| 		autoattackskill={
+  175| 			{{1,1895*256 + 1},{20,1895*256 + 20},{21,1895*256 + 21}},--技能id*256 + 技能等级
+  176| 			{{1,-1},{20,-1}},
+  177| 			{{1,20*18*256 + 1},{30,20*18*256 + 10},{31,20*18*256 + 10}}--冷却时间*256+概率
+  178| 		},
+  179| 		skill_desc=
+  180| 			function(level)
+  181| 				return "Trúng mục tiêu có <color=orange> "..floor(Link(level,SKILLS.danzhichishang.autoattackskill[3]) - 20*18*256).." %<color> kích hoạt trạng thái <color=water>[Say]<color>\n"..
+  182| 				"Sau mỗi lần thi triển <color=orange>"..floor((Link(level,SKILLS.danzhichishang.autoattackskill[3]) / (18*256))).." giây<color> sẽ không kích hoạt lại\n\n"..
+  183| 				"Trạng thái <color=water>[Say]<color>: Tấn công tăng <color=orange>"..floor(Link(level,SKILLS.danzhichishang_Buff.add_damage_p[1])).." %<color>?"..
+  184| 				" trong <color=orange>"..floor(Link(level,SKILLS.danzhichishang_Buff.add_damage_p[2]) / 18).."<color> giây "
+  185| 			end,
+  186| 		skill_skillexp_v={
+  187| 			{
+  188| 				{1,17851239},
+  189| 				{2,19487603},
+  190| 				{3,22760330},
+  191| 				{4,27669421},
+  192| 				{5,34214875},
+  193| 				{6,42396694},
+  194| 				{7,52214875},
+  195| 				{8,63669421},
+  196| 				{9,76760330},
+  197| 				{10,91487603},
+  198| 				{11,107851239},
+  199| 				{12,135669421},
+  200| 				{13,174942148},
+  201| 				{14,225669421},
+  202| 				{15,274418181},
+  203| 				{16,344618181},
+  204| 				{17,425738181},
+  205| 				{18,517778181},
+  206| 				{19,620738181},
+  207| 				{20,620738181},
+  208| 			}
+  209| 		},
+  210| 	},
+  211| 	danzhichishang_Buff={ --啖炙持觞_Buff
+  212| 		add_damage_p={{{1,1},{2,1},{20,10}},{{1,7*18},{20,7*18},{21,7*18}}},
+  213| 	},
+  214| 
+  215| 	shibuyisha={ --十步一杀（剑逍遥150）
+  216| 		physicsenhance_p={{{1,50},{33,1643}}},
+  217| 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
+  218| 		lightingdamage_v={
+  219| 			[1]={{1,48},{15,240},{20,806},{23,1485},{26,1824}},
+  220| 			[3]={{1,48},{15,240},{20,806},{23,1485},{26,1824}}
+  221| 		},
+  222| 		deadlystrike_p={{{1,20},{20,30},{23,33},{26,34}}},
+  223| 		stun_p={{{1,5},{20,20},{21,20}},{{1,1},{20,12},{21,12}}},
+  224| 		cost_sp={
+  225| 			{{1,1883},{20,1883}},  -- 目标技能id
+  226| 			{{1,0},{20,0}}, -- 填零
+  227| 			{{1,3},{20,3}}, -- 吃几个
+  228| 		},
+  229| 		skill_cost_v={{{1,40},{20,72},{23,82},{26,87}}},
+  230| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  231| 		missle_hitcount={{{1,25},{20,25}}},
+  232| 		skill_desc=
+  233| 			function(level)
+  234| 				return "Khiến địch trong phạm vi chịu <color=orange>"..floor(Link(level,SKILLS.shibuyisha.missle_hitcount[1])).." lần <color> trảm kích, mỗi mục tiêu tối đa trảm trảm kích <color=orange>5 lần<color>\n"..
+  235| 				"<color=orange>Thi triển nhận trạng thái không thể bị chọn<color>\n"..
+  236| 				"<color=orange>Điều kiện thi triển: <color><color=yellow>"..floor(Link(level,SKILLS.shibuyisha.cost_sp[3])).." tầng [Âm Luật]<color>\n"
+  237| 			end,
+  238| 		skill_skillexp_v={
+  239| 			{
+  240| 				{1,300},
+  241| 				{2,600},
+  242| 				{3,1000},
+  243| 				{4,1500},
+  244| 				{5,2100},
+  245| 				{6,2800},
+  246| 				{7,3600},
+  247| 				{8,4500},
+  248| 				{9,5500},
+  249| 				{10,6600},
+  250| 				{11,7800},
+  251| 				{12,9100},
+  252| 				{13,10500},
+  253| 				{14,12000},
+  254| 				{15,13600},
+  255| 				{16,15300},
+  256| 				{17,17100},
+  257| 				{18,19000},
+  258| 				{19,21400},
+  259| 				{20,21000},
+  260| 			}
+  261| 		},
+  262| 	},
+  263| 
+  264| 	shibuyisha_Buff={ --十步一杀_Buff
+  265| 		hidebodyunlock={{{1,1},{2,1}},{{1,10},{2,10}}},
+  266| 		forbit_attack={{{1,1},{2,1}},{{1,7},{2,7}}},
+  267| 		frozen_action={{{1,1},{2,1}},{{1,10},{2,10}}},
+  268| 		invincibility={{{1,1},{2,1}},{{1,10},{2,10}}},
+  269| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  270| 	},
+  271| 
+  272| 	suiyiqu={ --随意曲
+  273| 		--lightingdamage_p={{{1,1},{20,16}}},
+  274| 		lightingdamage_v={
+  275| 			[1]={{1,15},{20,180}},
+  276| 			[3]={{1,15},{20,180}}
+  277| 		},
+  278| 		seriesdamage_p={{{1,1},{20,10}}},
+  279| 		addskilldamage1={
+  280| 			[1]={{1,1909},{2,1909}},
+  281| 			[3]={{1,1},{20,60}}
+  282| 		},
+  283| 		addskilldamage2={
+  284| 			[1]={{1,1910},{2,1910}},
+  285| 			[3]={{1,1},{20,50}}
+  286| 		},
+  287| 		addskilldamage3={
+  288| 			[1]={{1,1911},{2,1911}},
+  289| 			[3]={{1,1},{20,35}}
+  290| 		},
+  291| 		skill_cost_v={{{1,15},{20,20}}}
+  292| 	},
+  293| 
+  294| 	xiaoyaoqinfa={ --逍遥琴法
+  295| 		--addlightingmagic_p={{{1,5},{20,43}},{{1,-1},{2,-1}}},
+  296| 		addlightingmagic_v={{{1,5},{20,200}},{{1,-1},{2,-1}}},
+  297| 	},
+  298| 
+  299| 	luoyanpingsha={ --落雁平沙
+  300| 		seriesdamage_p={{{1,5},{20,30}}},
+  301| 		--lightingdamage_p={{{1,1},{20,10}}},
+  302| 		lightingdamage_v={
+  303| 			[1]={{1,15},{20,180}},
+  304| 			[3]={{1,15},{20,180}}
+  305| 		},
+  306| 		stun_p={{{1,5},{20,90},{21,90}},{{1,1},{20,12},{21,12}}},
+  307| 		cost_sp={
+  308| 			{{1,1883},{20,1883}},  -- 目标技能id
+  309| 			{{1,0},{20,0}}, -- 填零
+  310| 			{{1,8},{20,8}}, -- 吃几个
+  311| 		},
+  312| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  313| 		skill_showevent={{{1,1},{20,1}}},
+  314| 		skill_desc=
+  315| 			function(level)
+  316| 				return "<color=orange>Điều kiện thi triển:<color> <color=yellow>"..floor(Link(level,SKILLS.luoyanpingsha.cost_sp[3])).." tầng [Âm Luật]<color>\n"..
+  317| 				"Khi thi triển, bản thân và <color=orange>"..floor(Link(level,SKILLS.xiaoyaoyu.missle_hitcount[1])).."<color> đồng đội nhận được Hộ Thuẫn Âm Luật\n"..
+  318| 				"Hộ thuẫn kháng sát thương bằng <color=orange>"..floor(Link(level,SKILLS.xiaoyaoyu.staticmagicshield_p[1])/100).." lần<color> nội lực tối đa, duy trì <color=orange>"..floor(Link(level,SKILLS.xiaoyaoyu.staticmagicshield_p[2])/18).." giây<color>\n"
+  319| 			end,
+  320| 	},
+  321| 	xiaoyaoyu={ --逍遥羽，落雁平沙_Buff
+  322| 		--do_stun_p={{{1,1},{20,25},{21,25}},{{1,5*18},{20,5*18}}},
+  323| 		--lightingenhance_p={{{1,1},{20,20}},{{1,5*18},{2,5*18}}},
+  324| 		staticmagicshield_p={{{1,100},{20,1000},{21,1050}},{{1,5*18},{20,5*18}}},
+  325| 		missle_hitcount={{{1,1},{20,7},{21,7}}},
+  326| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  327| 	},
+  328| 
+  329| 	guanglingsan={ --广陵散
+  330| 		--lightingdamage_p={{{1,1},{20,16}}},
+  331| 		lightingdamage_v={
+  332| 			[1]={{1,15},{20,180}},
+  333| 			[3]={{1,15},{20,180}}
+  334| 		},
+  335| 		seriesdamage_p={{{1,10},{20,50},{21,52}}},
+  336| 		skill_misslenum_v={{{1,2},{11,3},{16,4},{20,4}}},
+  337| 		skill_cost_v={{{1,70},{20,130}}},
+  338| 		addskilldamage1={
+  339| 			[1]={{1,1910},{2,1910}},
+  340| 			[3]={{1,1},{20,70}}
+  341| 		},
+  342| 		addskilldamage2={
+  343| 			[1]={{1,1911},{2,1911}},
+  344| 			[3]={{1,1},{20,60}}
+  345| 		},
+  346| 	},
+  347| 
+  348| 	gaoshanliushui={ --高山流水（琴逍遥90）
+  349| 		seriesdamage_p={{{1,20},{15,20},{20,60},{21,62}}},
+  350| 		--lightingdamage_p={{{1,1},{33,39}}},
+  351| 		lightingdamage_v={
+  352| 			[1]={{1,15},{20,180}},
+  353| 			[3]={{1,15},{20,180}}
+  354| 		},
+  355| 		stun_p={{{1,3},{20,60},{21,60}},{{1,1},{20,12},{21,12}}},
+  356| 		addskilldamage1={
+  357| 			[1]={{1,1911},{2,1911}},
+  358| 			[3]={{1,1},{20,35}}
+  359| 		},
+  360| 		skill_cost_v={{{1,60},{20,150}}},
+  361| 		addskillexp1={{{1,0},{2,0}},{{1,1},{20,1}},{{1,0},{2,0}}},
+  362| 		skill_skillexp_v={
+  363| 			{
+  364| 				{1,SkillExpFunc(5330,1.15,1,8,1)},
+  365| 				{2,SkillExpFunc(5330,1.15,2,8,1)},
+  366| 				{3,SkillExpFunc(5330,1.16,3,8,1)},
+  367| 				{4,SkillExpFunc(5330,1.17,4,8,1)},
+  368| 				{5,SkillExpFunc(5330,1.18,5,8,1)},
+  369| 				{6,SkillExpFunc(5330,1.19,6,8,1)},
+  370| 				{7,SkillExpFunc(5330,1.20,7,8,1)},
+  371| 				{8,SkillExpFunc(5330,1.21,8,8,1)},
+  372| 				{9,SkillExpFunc(5330,1.22,9,8,1)},
+  373| 				{10,SkillExpFunc(5330,1.23,10,8,1)},
+  374| 				{11,SkillExpFunc(5330,1.24,11,8,1)},
+  375| 				{12,SkillExpFunc(5330,1.23,12,8,1)},
+  376| 				{13,SkillExpFunc(5330,1.22,13,8,1)},
+  377| 				{14,SkillExpFunc(5330,1.21,14,8,1)},
+  378| 				{15,SkillExpFunc(5330,1.20,15,8,1)},
+  379| 				{16,SkillExpFunc(5330,1.19,16,8,1)},
+  380| 				{17,SkillExpFunc(5330,1.18,17,8,1)},
+  381| 				{18,SkillExpFunc(5330,1.17,18,8,1)},
+  382| 				{19,SkillExpFunc(5330,1.16,19,8,1)},
+  383| 				{20,SkillExpFunc(5330,1.15,20,8,1)},
+  384| }
+  385| 		},
+  386| 	},
+  387| 
+  388| 	meihuasannong={ --梅花三弄（琴逍遥150）
+  389| 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
+  390| 		--lightingdamage_p={{{1,2},{33,75}}},
+  391| 		lightingdamage_v={
+  392| 			[1]={{1,15},{20,180}},
+  393| 			[3]={{1,15},{20,180}}
+  394| 		},
+  395| 		skill_collideevent={
+  396| 			[1]={{1,0},{10,0},{11,1},{20,1}},
+  397| 			[3]={{1,1912},{20,1912}}
+  398| 		},
+  399| 		skill_eventskilllevel={{{1,1},{20,20}}},
+  400| 		skill_showevent={{{1,0},{10,0},{11,4},{20,4}}},
+  401| 		skill_cost_v={{{1,72},{20,180},{23,214},{26,231}}},
+  402| 		skill_skillexp_v={
+  403| 			{
+  404| 				{1,300},
+  405| 				{2,600},
+  406| 				{3,1000},
+  407| 				{4,1500},
+  408| 				{5,2100},
+  409| 				{6,2800},
+  410| 				{7,3600},
+  411| 				{8,4500},
+  412| 				{9,5500},
+  413| 				{10,6600},
+  414| 				{11,7800},
+  415| 				{12,9100},
+  416| 				{13,10500},
+  417| 				{14,12000},
+  418| 				{15,13600},
+  419| 				{16,15300},
+  420| 				{17,17100},
+  421| 				{18,19000},
+  422| 				{19,21400},
+  423| 				{20,21000},
+  424| 			}
+  425| 		},
+  426| 	},
+  427| 	yangguansandie={ --阳关三叠（梅花三弄子技能）
+  428| 		seriesdamage_p={{{1,40},{15,40},{20,80},{21,82}}},
+  429| 		--lightingdamage_p={{{1,1},{33,33}}},
+  430| 		lightingdamage_v={
+  431| 			[1]={{1,15},{20,180}},
+  432| 			[3]={{1,15},{20,180}}
+  433| 		},
+  434| 		stun_p={{{1,5},{20,55},{21,55}},{{1,1},{20,12},{21,12}}},
+  435| 	},
+  436| 
+  437| 	zhizunyinjian={ --逍遥派至尊印鉴技能
+  438| 		special_point_base={
+  439| 			{{1,1883},{20,1883}},-- 目标技能id
+  440| 			{{1,-1},{20,-1}},-- 配在主动技能属性上填0，作为buff属性填-1
+  441| 			{{1,2},{20,2}},-- 增加个数
+  442| 		}
+  443| 	},
+  444| }
+  445| -----------------------------------------------
+  446| --Create by yfeng 2004-05-20
+  447| -----------------------------------------------
+  448| 
+  449| -----------------------------------------------
+  450| --根据2个点，求线形函数f(x)=k*x+b
+  451| --y= (y2-y1)*(x-x1)/(x2-x1)+y1
+  452| --当x2=x1, 有x=c,该直线是一条垂直于x轴的直线
+  453| --这是可以取得y=任意值
+  454| --因此，如果已知两点(x1,y1),(x2,y2)可求得过此2点的
+  455| --函数为：
+  456| function Line(x,x1,y1,x2,y2)
+  457| 	if(x2==x1) then
+  458| 		return y2
+  459| 	end
+  460| 	return (y2-y1)*(x-x1)/(x2-x1)+y1
+  461| end
+  462| 
+  463| -----------------------------------------------
+  464| --根据2个点，求2次形函数f(x)=a*x2+c
+  465| --y= (y2-y1)*x*x/(x2*x2-x1*x1)-(y2-y1)*x1*x1/(x2*x2-x1*x1)+y1
+  466| --当x1或者x2 < 0 ,y =0
+  467| --当x2=x1, 有x=c,是一条垂直于x轴的直线
+  468| --这是可以取得y=任意值
+  469| --因此，如果已知两点(x1,y1),(x2,y2)可求得过此2点的
+  470| --函数为：extrac
+  471| function Conic(x,x1,y1,x2,y2)
+  472| 	if((x1 < 0) or (x2<0))then 
+  473| 		return 0
+  474| 	end
+  475| 	if(x2==x1) then
+  476| 		return y2
+  477| 	end
+  478| 	return (y2-y1)*x*x/(x2*x2-x1*x1)-(y2-y1)*x1*x1/(x2*x2-x1*x1)+y1
+  479| end
+  480| 
+  481| -----------------------------------------------
+  482| --根据2个点，求-2次形函数f(x)=a*sqrt(x2)+c
+  483| --y=(y2-y1)*x/(sqrt(x2)-sqrt(x1))+y1-(y2-y1)/((sqrt(x2)-sqrt(x1))
+  484| --当x2或者x1<0, y=0,
+  485| --当x1=x2,有x=c,是一条垂直于x轴的直线
+  486| --这是可以取得y=任意值
+  487| --因此，如果已知两点(x1,y1),(x2,y2)可求得过此2点的
+  488| --函数为：extrac
+  489| function Extrac(x,x1,y1,x2,y2)
+  490| 	if((x1 < 0) or (x2<0))then 
+  491| 		return 0
+  492| 	end
+  493| 	if(x2==x1) then
+  494| 		return y2
+  495| 	end
+  496| 	return (y2-y1)*(x-x1)/(x2-x1)+y1
+  497| end
+  498| 
+  499| -----------------------------------------------
+  500| --描绘连接线:Link(x,points)
+  501| --根据points提供的一系列点，用相邻的两个点描绘曲线
+  502| --return yệà
+  503| --x 输入值
+  504| --points 点集合
+  505| --形如：points是形如{{x1,y1,func=xxx},{x2,y2,func=xxx},...{xn,yn,func=xxx}}的映射
+  506| function Link(x,points)
+  507| 	num = getn(points)
+  508| 	if(num<2) then
+  509| 		return -1
+  510| 	end
+  511| 	for i=1,num do
+  512| 		if(points[i][3]==nil) then
+  513| 			points[i][3]=Line
+  514| 		end
+  515| 	end
+  516| 	if(x < points[1][1]) then
+  517| 		return points[1][3](x,points[1][1],points[1][2],points[2][1],points[2][2])
+  518| 	end
+  519| 	if(x > points[num][1]) then
+  520| 		return points[num][3](x,points[num-1][1],points[num-1][2],points[num][1],points[num][2])
+  521| 	end
+  522| 	
+  523| 	c = 2
+  524| 	for i=2,num do
+  525| 		if((x >= points[i-1][1]) and (x <= points[i][1])) then
+  526| 			c = i
+  527| 			break
+  528| 		end
+  529| 	end
+  530| 	return points[c][3](x,points[c-1][1],points[c-1][2],points[c][1],points[c][2])
+  531| end
+  532| 
+  533| ------------------------------------------------------
+  534| --技能设定格式如下：
+  535| --SKILLS={
+  536| --	技能名称=	{
+  537| --		魔法属性=	{
+  538| --			[1]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  539| --			[2]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  540| --			[3]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，	
+  541| --		}Êơ
+  542| --		魔法属性=	{
+  543| --			[1]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  544| --			[2]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  545| --			[3]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，	
+  546| --		}Êơ
+  547| --		。。。。。
+  548| --	}Êơ
+  549| --	技能名称=	{
+  550| --		魔法属性=	{
+  551| --			[1]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  552| --			[2]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  553| --			[3]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，	
+  554| --		}Êơ
+  555| --		魔法属性=	{
+  556| --			[1]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  557| --			[2]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，
+  558| --			[3]={{级别,数值，曲线}，{级别，数值，曲线}，。。。。}，	
+  559| --		}Êơ
+  560| --		。。。。。
+  561| --	}Êơ
+  562| --	。。。。。
+  563| --}
+  564| --如：
+  565| --SKILLS={
+  566| --	Sanhuan-taoyue={
+  567| --		physicsenhance_p={
+  568| --			[1]={{1,50},{20,335}},--魔法属性physicsenhance_p参数1，1级时为35，20级时为335，曲线不填，默认线形
+  569| --			[2]={{1,0},{20,0}},
+  570| --		},--没有[3]，表示魔法属性physicsenhance_p参数2，默认为任何时候都是0
+  571| --		lightingdamage_v={
+  572| --			[1]={{1,65},{20,350}},
+  573| --			[3]={{1,65},{20,350}},
+  574| --		}
+  575| --	}
+  576| --}
+  577| --以上描述技能“三环套月”的魔法属性和数值
+  578| -----------------------------------------------------------
+  579| --函数GetSkillLevelData(levelname, data, level)
+  580| --levelname：魔法属性名称
+  581| --data：技能名称
+  582| --level：技能等级
+  583| --return：当技能名称为data，技能等级为level
+  584| --			时的魔法属性levelname所需求的三个参数的具体值
+  585| -----------------------------------------------------------
+  586| function GetSkillLevelData(levelname, data, level)
+  587| 	if(data==nil) then
+  588| 		return ""
+  589| 	end
+  590| 	if(data == "") then
+  591| 		return ""
+  592| 	end
+  593| 	if(SKILLS[data]==nil) then
+  594| 		return ""
+  595| 	end
+  596| 	if(SKILLS[data][levelname]==nil) then
+  597| 		return ""
+  598| 	end
+  599| 	if(type(SKILLS[data][levelname]) == "function") then
+  600| 		return SKILLS[data][levelname](level)
+  601| 	end
+  602| 	if(SKILLS[data][levelname][1]==nil) then
+  603| 		SKILLS[data][levelname][1]={{0,0},{20,0}}
+  604| 	end
+  605| 	if(SKILLS[data][levelname][2]==nil) then
+  606| 		SKILLS[data][levelname][2]={{0,0},{20,0}}
+  607| 	end
+  608| 	if(SKILLS[data][levelname][3]==nil) then
+  609| 		SKILLS[data][levelname][3]={{0,0},{20,0}}
+  610| 	end
+  611| 	p1=floor(Link(level,SKILLS[data][levelname][1]))
+  612| 	p2=floor(Link(level,SKILLS[data][levelname][2]))
+  613| 	p3=floor(Link(level,SKILLS[data][levelname][3]))
+  614| 	return Param2String(p1,p2,p3)
+  615| end;
+  616| 
+  617| 
+  618| function Param2String(Param1, Param2, Param3)
+  619| return Param1..","..Param2..","..Param3
+  620| end;
+  621| 
+  622| 

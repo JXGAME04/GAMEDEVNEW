@@ -1,0 +1,474 @@
+################################################################################
+## agent1
+################################################################################
+KET LUAN: MOT_PHAN
+
+TOM TAT:
+JX1 hien trang: (1) DOI PHAI da CO san o tang engine + script: SetFaction->LuaChangePlayerFaction (LeaveCurFaction + AddFaction, chi doi m_cFaction/camp, KHONG xoa ky nang, KHONG hoan diem, KHONG thao trang bi; dong bo client bang goi s2c_playerfactiondata {camp, curFaction, firstFaction, addTimes}), RollbackSkill->KSkillList::RollBackSkills (dua level moi skill non-base ve 0, tra tong diem), SetSeries/SetSex chi ghi m_Series/m_nSex tren KNpc KHONG gui goi dong bo rieng, ClearFactionIfnfo reset m_cFaction (cur=-1, first=-1, addTimes=0). Script song da co NPC/item "Chuc nang chuyen phai" (item Lenh Bai Tan Thu, item/lenhbaitanthu.lua chuyenphai/doiphai1: doi hoi thao het trang bi, da vao phai, phi 0 Tien Dong; DelAllMagic+ClearFactionIfnfo+SetSeries/SetSex+SetFaction+SetCamp/SetCurCamp/SetRank+hockynang, chuyen cap skill 90/150/120 sang phai moi, ResetAP+ResetJN(RollbackSkill(0)+AddMagicPoint)+KickOutSelf) va nhieu NPC tay tuy (phantang.lua DoClearSkillCore, quanly.lua taykynang, chuyen sinh task_func.lua). Port doi phai tu Linux = CHI SCRIPT (co the them dieu kien bang hoi/ket hon/vat pham). (2) DOI TEN: JX1 HOAN TOAN KHONG CO - khong co Lua API RenameRole/QueryRoleName, khong co goi tin, khong co lenh GM, khong co op Goddess, client chi nhap ten luc tao nhan vat (UiNewPlayer). RUI RO CUC CAO: khoa CSDL nhan vat = TEN (MySQL role_name la khoa "ON DUPLICATE KEY", acc_name chi la chi muc phu; Goddess GetRoleInfo/DeleteRole/IsRoleLock deu theo ten; blob TRoleData.BaseInfo.szName cung chua ten; role_history/role_anomaly/role_delete_log/role_save_fail khoa role_name); ID runtime Player.m_dwID = g_FileName2Id(ten) nen doi ten = doi ID -> bang hoi (S3Relay STONG_MEMBER {m_dwNameID,m_szName} so ca ID lan ten; Heaven KTongJX2/KPlayerTong deu bam g_FileName2Id(m_PlayerName)), ban be (S3Relay FriendMgr khoa DB = ten thuan NameToDBKey(name)=name, danh sach ban luu ten ban), hon nhan (m_PlayerMateName luu chuoi ten ban doi trong blob szStringduphong1), xep hang DBBackup (TRoleList.Name), thanh chien KJx2CityWar (szMaster so strcmp ten), Tieu xa Owner, pet/partner Owner, PlayerTrack relay (map theo role string), Bishop bang online theo ten. Port doi ten can: C++ Goddess (op moi rename: doi PK role_name + sua szName trong blob + kiem trung ten + loc ten), C++ Heaven/Core (Lua API + cap nhat m_PlayerName/Npc.Name/m_dwID + dong bo), S3Relay (doi khoa friend DB + tong member + rewrite ten trong ban be cua nguoi khac), DB migration cac bang phu, va tot nhat client (goi sync ten). Khong co ban ghi ID so on dinh de dua vao -> nen lam theo huong "offline + kich nguoi choi + doi ten khi nhan vat khong online" va chap nhan mot so du lieu (ban be nguoi khac, thu/log) chi cap nhat bang script quet.
+
+--- [1] (cao)
+LuaChangePlayerFaction (Lua SetFaction(ten)): goi Player.LeaveCurFaction() roi neu ten rong tra 1, khong thi Player.AddFaction(ten). Khong dung den ky nang/diem/trang bi.
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:8601-8620
+
+--- [2] (cao)
+KPlayer::AddFaction(char*): doi hoi m_nLicReg khac 0 (khong thi tra FALSE), goi m_cFaction.AddFaction(Npc.m_Series, ten) -> KFaction.GetID(series, ten) PHAI khop ngu hanh (nFactionID trong [series*FACTIONS_PRR_SERIES, (series+1)*...)), roi SetCamp(GetGurFactionCamp()), UpdateGameTitle(), SendFactionData(). KPlayerFaction::SetSeries va OpenCurSkillLevel la stub rong (return).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.cpp:4245-4261; KPlayerFaction.cpp:40-58, 63-90, 103-105
+
+--- [3] (cao)
+LeaveCurFaction: m_nCurFaction=-1, SetCamp(camp_free), gui goi s2c_playerleavefaction (chi 1 byte). Khong xoa ky nang.
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.cpp:4291-4304; KPlayerFaction.cpp:95-98
+
+--- [4] (cao)
+Dong bo client mon phai bang goi PLAYER_FACTION_DATA s2c_playerfactiondata {m_btCamp, m_btCurFaction, m_btFirstFaction, m_nAddTimes}; client s2cSetFactionData ghi SetCamp + m_cFaction.* + CoreDataChanged(GDCNI_PLAYER_BASE_INFO). Client KUiSkillsNew chon bang ky nang theo Info.nFirstAddFaction -> doi phai PHAI reset firstFaction (ClearFactionIfnfo lam viec nay).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\KPlayer.cpp:1921-1932; KProtocol.h:789-796; KProtocolProcess.cpp:1504-1513; S3Client\Ui\UiCase\UiSkillsNew.cpp:758-767
+
+--- [5] (cao)
+LuaSetPlayerSex/LuaSetPlayerSeries chi goi KNpc::SetSex (chi nhan 0/1) / KNpc::SetSeries (ngoai khoang -> series_metal) ghi thang m_nSex/m_Series; KHONG gui goi dong bo, KHONG tinh lai thuoc tinh. Luu DB qua BaseInfo.bSex/ifiveprop khi save.
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:9131-9162; KNpc.cpp:7675-7687; KPlayerDBFuns.cpp:392,394,990,992
+
+--- [6] (cao)
+LuaRollBackSkills (Lua RollbackSkill(rAll)) -> KSkillList::RollBackSkills(bRbAll): duyet MAX_NPCSKILL, bo qua skill IsBase; neu !bRbAll bo qua skill IsExp; cong SkillLevel cua skill khong-Exp vao tong; dat SkillLevel=0, AddLevel=m_nAllSkillV, CurrentSkillLevel=0; tra tong diem. KHONG tu cong diem ky nang, KHONG gui SendSyncData_Skill (script phai tu AddMagicPoint va thuong KickOutSelf).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:6732-6746; KSkillList.cpp:919-941
+
+--- [7] (cao)
+Lua ClearFactionIfnfo -> m_cFaction.Release() (cur=-1, first=-1, addTimes=0); Lua DelAllMagic -> m_SkillList.RemoveAllSkill() + SendSyncData_Skill(). Day la 2 ham JX1 tu che cho doi phai (Linux dung ClearFactionRecord).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:7984-8012, 15035, 14904; KPlayerFaction.cpp:30-35
+
+--- [8] (cao)
+JX1 dang ky them: GetFaction (ten GBK phai), GetFactionNo, GetFirstAddFaction, GetLastFactionNumber (=GetFactionNo), GetLastAddFaction (ten tieng Viet theo bang 11 phai), GetFactionValueName, GetEquipCount->LuaCountEquipPlayer. KHONG co RenameRole/QueryRoleName/ReloadSkill/ClearFactionRecord.
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:2269-2277, 8543-8599, 14322-14346, 14735, 15030-15035, 15341, 14759 (grep RenameRole/QueryRoleName trong ScriptFuns.cpp = 0 ket qua)
+
+--- [9] (cao)
+Script song DA CO tinh nang DOI PHAI hoan chinh: item Lenh Bai Tan Thu (item/lenhbaitanthu.lua main(itemIdx)) menu 'Chuc nang chuyen phai/chuyenphai' mo cho MOI nguoi (dong 47) -> chuyenphai() Say 10 phai -> doiphai1(nsel): dieu kien GetEquipCount()>0 -> tu choi (Talk 13014); GetCamp()==0 hoac 4 -> 'chua gia nhap mon phai' tu choi; phi KNBDP=0 Tien Dong (4835). Quy trinh: luu cap skill 90/150 cua phai cu (SKILL90_ARRAY/SKILL150_ARRAY cot [3]==1) + skill 120; DelAllMagic; ClearFactionIfnfo; SetSeries/SetSex theo phai (Kim->nam, Thuy->nu); SetFaction(FACTION_INFO[n][2]); SetCamp/SetCurCamp/SetRank; hockynang(n); AddMagic lai skill 90/150 theo thu tu + skill 120 + IncSkillExp; Msg2SubWorld; SetFightState(0); ResetAP (SetBasePoint theo ngu hanh + AddProp(T_TTK*5) + ResetBaseAttrib); ResetJN (RollbackSkill(0), AddMagicPoint(level-restSP-1+T_VLMT+ReBornJPoint), KickOutSelf).
+   BC: E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script\item\lenhbaitanthu.lua:29-85, 1047-1266
+
+--- [10] (cao)
+Ham gia nhap phai chuan cua nguoi choi: gianhapmonphai(newfac) trong header/factionhead.lua = check_yes(series) -> SetFaction -> SetCamp -> SetCurCamp -> SetRank -> hockynang -> Msg2Player; FACTION_INFO[n] = {series, tenGBK, camp, rank, msg}. lib/lib_faction.lua AddFaction(nCamp,nIndex,sName) tuong tu + SetTask(T_VAOPHAI). Bot cung di duong nay (KPlayerBot.cpp ghi chu AddFaction thieu SetCurCamp/hockynang).
+   BC: E:\...\bin\server\script\header\factionhead.lua:5-30, 89-101; lib\lib_faction.lua:187-195; D:\GAMEDEVNEW\Sources\Core\Src\KPlayerBot.cpp:1200-1224
+
+--- [11] (cao)
+Tay tuy (reset ky nang) da co nhieu NPC: global/npcchucnang/phantang.lua DoClearSkillCore (giu skill 210 khinh cong, 400; RollbackSkill(0); AddMagicPoint((level-1)+T_VLMT); Talk->KickOutSelf); global/admin/quanly.lua taykynang (giong het); task/metempsychosis/task_func.lua zhuansheng_clear_skill (chuyen sinh); event/chuyensinhdaisu.lua ZHUANZHIYEB (SetSeries doi ngu hanh nhung nJinBi hardcode=3, OpenGetString bi comment -> nhanh doi ngu hanh dang CHET/stub); npcthon/balanghuyen/hotrotest.lua ResetJN; global/skills_table.lua:1035.
+   BC: phantang.lua:111-148; quanly.lua:325-356; task_func.lua:60-75; chuyensinhdaisu.lua:144-160, 168-240; hotrotest.lua:181-192
+
+--- [12] (cao)
+DOI TEN: khong co bat ky duong nao trong Core/MultiServer/Client. Grep ChangeName|RenameRole|SetPlayerName|CHANGE_NAME|ROLE_RENAME toan Sources chi ra: rename NPC table (NpcName.txt), doi ten nhom chat (GOI_CHAT_GROUP_RENAME), doi ten pet (PET_OP_CHANGE_NAME), doi ten ban dong hanh (PARTNER_OP_RENAME), doi ten to doi (MSG_CHAT_RENAME_TEAM_FAIL). Lua chi co GetName/GetAccount (doc). KGMProcess chi doc m_PlayerName. Client chi nhap ten o UiNewPlayer.cpp (tao nhan vat).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\CoreShell.h:681,861; KProtocolProcess.cpp:7449; S3Client\Ui\UiCase\UiPet.cpp:30-44; UiPartnerAttr.cpp:359; ScriptFuns.cpp:9405-9425, 15067-15068; KGMProcess.cpp:68; UiNewPlayer.cpp:356
+
+--- [13] (cao)
+KHOA CSDL nhan vat = TEN. Goddess MySQL: SELECT ... WHERE role_name=? (index<0), INSERT ... ON DUPLICATE KEY UPDATE voi role_name la khoa (acc_name chi la chi muc phu, 'index 0 == chi muc theo tai khoan'); bang phu role_history/role_anomaly/role_delete_log/role_save_fail deu cot role_name; open() KHONG tu tao bang (schema nam ngoai source). IDBRoleServer: SaveRoleInfo khoa pName = BaseInfo.szName (hoac strUser), tao moi kiem trung ten bang search(pName) + dem role theo acc; GetRoleInfo(strUser)/DeleteRole(strUser) theo ten; ClientNode IsRoleLock/IsRoleLockBySelf(szName) theo ten; loc ten CRoleNameFilter luc tao.
+   BC: D:\GAMEDEVNEW\Sources\MultiServer\Goddess\DBTable_MySQL.cpp:813-829, 1180-1198, 960, 1038, 1066, 1365-1366, 524-548; IDBRoleServer.cpp:489-608, 444-456, 666-673; ClientNode.cpp:363-395, 424-433, 480-496, 586-618; ClientNode.h:127-128
+
+--- [14] (cao)
+ID runtime cua nguoi choi = bam ten: KPlayerSet::Add(szPlayerID) dat Player.m_dwID = g_FileName2Id(szPlayerID) voi szPlayerID = BaseInfo.szName (CoreServerShell::AddCharacter), roi strcpy m_PlayerName. Ten con nam trong Npc.Name (KPlayerDBFuns:343) va duoc ghi lai vao blob BaseInfo.szName khi save (:943). => doi ten dong nghia doi m_dwID; moi noi so sanh m_dwID (chat friend, mission, team) deu bi anh huong.
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\KPlayerSet.cpp:194-213; CoreServerShell.cpp:135-146; KPlayerDBFuns.cpp:343,943; KPlayerChat.h:64-74; KPlayerSet.cpp:364,376
+
+--- [15] (cao)
+BANG HOI luu theo ten + hash ten: S3Relay STONG_MEMBER {m_dwNameID, m_szName, m_nSex}; TTongStruct.szMasterName; CTongControl m_szMasterName/m_szDirectorName[]/m_szManagerName[] + m_dwMasterID/m_dwDirectorID[]/m_dwManagerID[]; nhan dien thanh vien can khop CA m_dwNameID LAN strcmp ten (KTongControl.cpp:1317-1318). Heaven gui m_dwPlayerNameID = g_FileName2Id(m_PlayerName) (KTongJX2.cpp:533) va KPlayerTong so g_FileName2Id(Npc.Name) != dwNameID -> tu choi (KPlayerTong.cpp:472); KPlayerTong.cpp co 40 cho goi g_FileName2Id. Blob nhan vat chi giu dwTongID (KPlayerDBFuns:357,954). S3Relay luu MySQL relay_kv (store,k,v, idx0). Ban be: S3Relay FriendMgr khoa DB = ten (NameToDBKey tra ve name nguyen ven), map PLAYERSMAP<ten> va FRIENDSMAP<ten ban>; PlayerTrack ROLEMAP theo role string.
+   BC: D:\GAMEDEVNEW\Sources\MultiServer\S3Relay\KTongControl.h:24-131; KTongControl.cpp:1313-1329; FriendMgr.h:46-67,107-144; FriendMgr.cpp:823-826,836,849,950; PlayerTrack.h:32-59; DBTable_MySQL.cpp(S3Relay):516-533,645-646; D:\GAMEDEVNEW\Sources\Core\Src\KTongJX2.cpp:514,533,601,678; KPlayerTong.cpp:472
+
+--- [16] (cao)
+Cac noi khac luu/so TEN dang chuoi phai dong bo khi doi ten: hon nhan m_PlayerMateName <-> BaseInfo.szStringduphong1 (ten ban doi luu trong blob CUA NGUOI KIA, dong bo client qua PlayerSync.MateName; Lua SetMateName tai ScriptFuns 5727); xep hang DBBackup TRoleList.Name (RoleFilter.ini); thanh chien KJx2CityWar szMaster strcmp m_PlayerName (566,1052,1752); KJx2Battle sBtMember theo ten; KJx2WarInfra tim theo ten + g_FileName2Id; Tieu xa Npc.Owner strcmp m_PlayerName (KNpc.cpp:3467,4161); pet/partner pNpc->Owner = m_PlayerName; xuc xac KItemDice szName; Bishop bang online CGamePlayer::Add/Get/Del theo pRoleName, m_sRoleName, role list tu Goddess theo acc_name; KMission Desc->Name.
+   BC: KPlayerDBFuns.cpp:349,980; KNpc.cpp:5948,6165; ScriptFuns.cpp:5714-5739; Goddess\DBBackup.cpp:39,126-129; KJx2CityWar.cpp:566,1052,1752; KJx2Battle.cpp:146,340; KJx2WarInfra.cpp:622,647; KNpc.cpp:3467,4161; KPlayerPet.cpp:295; KPlayerPartner.cpp:754; KItemDice.cpp:130; Bishop\GamePlayer.cpp:1060-1157,1677-1679,1743-1806; KMission.cpp:40
+
+--- [17] (cao)
+Client S3Client: KHONG co UI doi ten/doi phai nhan vat. 'Faction' trong Ui chi la hien thi (UiPlayerBar m_Faction, UiTargetInfo/UiTeamManager2 SetFactionIcon, UiRankData, UiSkillsNew UpdateFaction, UiMsgCentrePad kenh mon phai, GameSpaceChangedNotify FactionTips). Nhap chuoi chung co KUiGetString/KUiGetString2 (dung cho ten nhom chat, ten partner) co the tai dung neu can nhap ten moi; hoac dung Say/OpenGetString phia script. Khong co goi c2s doi phai (chi co PLAYER_APPLY_FACTION_DATA xin cap nhat du lieu).
+   BC: S3Client\Ui\UiCase\UiPlayerBar.cpp:540,707,792; UiTargetInfo.cpp:82,136-139; UiSkillsNew.cpp:361,522,560,758-796; UiChatCentre.cpp:666-670; UiGetString.cpp:16; UiGetString2.cpp:18; GameSpaceChangedNotify.cpp:123-131,1470-1498; KProtocol.h:809-813
+
+--- [18] (cao)
+KHOANG CACH PORT - DOI PHAI: CHI SCRIPT (0 dong C++). Engine da du ham; JX1 da co lenhbaitanthu.lua lam mau. Neu muon giong Linux (NPC chuong mon, dieu kien, vat pham, ghi task LastFaction/so lan) chi can viet script moi tren cac API: SetFaction/ClearFactionIfnfo/DelAllMagic/RollbackSkill/SetSeries/SetSex/GetEquipCount/GetFirstAddFaction/GetFactionNo + task. Can them dieu kien Linux khong co trong JX1 (vd cam khi dang trong bang hoi/ket hon) bang GetTongFlag/GetMateName. Luu y: SetSeries/SetSex khong sync client -> phai KickOutSelf (script hien co da lam). Khong can DB migration (nSect/nFirstSect/ijoincount/ifiveprop/bSex da trong blob + cot MySQL sect/first_sect/series/sex).
+   BC: ScriptFuns.cpp:8601-8620,7984-8012,6732-6746,9131-9162; KPlayerDBFuns.cpp:374-376,969-971,990-992; Goddess\DBTable_MySQL.cpp:1182-1191; lenhbaitanthu.lua:1062-1232
+
+--- [19] (trung)
+KHOANG CACH PORT - DOI TEN: can C++ o 4 tang + DB migration + (khuyen nghi) client. (a) Goddess: op moi 'rename' (kiem trung ten bang search(pName), loc CRoleNameFilter, cap nhat PK role_name + rewrite BaseInfo.szName trong role_blob + CRC + acc index, cap nhat role_history/anomaly/delete_log theo ten cu neu muon tra cuu; hien khong co ham nao). (b) Heaven/Core: Lua API RenameRole (Linux 0x0810A9C0) + QueryRoleName; thuc thi an toan nhat la ghi task/co, KickOutSelf, va doi ten khi role OFFLINE (vi m_dwID = hash ten, doi luc online pha friend/team/mission dang so ID). (c) S3Relay: doi khoa FriendMgr (DB_DeleteSomeone ten cu + DB_StoreSomeone ten moi) + quet ten cu trong FRIENDSMAP cua moi nguoi khac; tong: sua STONG_MEMBER.m_szName/m_dwNameID, m_szMasterName/m_dwMasterID, director/manager (Linux co RenameTong 0x0810A010 tuong tu). (d) Bishop: khong can sua (bang online tam thoi, role list doc tu Goddess theo acc_name). (e) Blob nguoi khac: m_PlayerMateName (ban doi) phai sua trong blob nguoi kia -> can Goddess mo blob nguoi kia hoac script khi nguoi kia dang nhap kiem QueryRoleName. (f) Client: khong bat buoc (ten ve tu Npc.Name khi relog) nhung can UI nhap ten -> co the dung KUiGetString2/Say script.
+   BC: Goddess\IDBRoleServer.cpp:567-602; Goddess\ClientNode.cpp:363-395; KPlayerSet.cpp:206-213; S3Relay\FriendMgr.cpp:834-842,904-952; S3Relay\KTongControl.h:64-69,114-121; Bishop\GamePlayer.cpp:1060-1129; KPlayerDBFuns.cpp:349,980
+
+--- [20] (trung)
+Rui ro dac thu JX1 khi doi ten: (1) Goddess role lock theo ten (IsRoleLock) -> doi ten khi role dang khoa/online se lam ban ghi cu ket khoa; (2) blob luu ten trong BaseInfo.szName va Heaven save lai bang m_PlayerName (:943) -> neu chi doi PK MySQL ma quen sua blob thi lan save ke tiep ghi tro lai ten cu vao khoa cu (tao ban sao nhan vat); (3) doi ten qua UPDATE PK role_name tren MySQL: ON DUPLICATE KEY o put() se INSERT ban ghi MOI voi ten moi neu Heaven save truoc khi Goddess cap nhat -> hai ban ghi cung tai khoan; (4) Tong/friend khong co ID on dinh, hash ten nen 'ten moi' = 'nguoi la' voi bang hoi/ban be neu quen quet; (5) ten trong log/chat lich su (szJX2Event/History bang hoi) khong sua duoc.
+   BC: Goddess\ClientNode.cpp:431-433; ClientNode.h:127-128; KPlayerDBFuns.cpp:943; Goddess\DBTable_MySQL.cpp:1180-1198; S3Relay\KTongControl.h:56-58
+
+################################################################################
+## agent2
+################################################################################
+KET LUAN: CO_TINH_NANG
+
+TOM TAT:
+LINUX (JX2/Kiem The) CO tinh nang DOI PHAI cho nguoi choi thuong: "DAI NGHE DAU SU" (daiyitoushi), menu nam trong NPC chuong mon moi phai (10 tep chuongmoncacphai/*.lua, dong `"Dai nghe dau su/#daiyitoushi_main(N)"` trong oldentence()). Luong: (1) o CHUONG MON CU nop item "Tin Vat Mon Phai" {6,1,1670} -> SetTask(1881,1); (2) o CHUONG MON MOI: kiem tra (toushiCheckTransFactState) roi chon nhanh ky nang 90 -> toushiDoTransPlayer() lam tron: LeaveTeam -> RollbackSkill()+AddMagicPoint (hoan toan bo diem ky nang, giu khinh cong 210/400) -> ghi cap+%exp skill 90/120/150 cu -> DelMagic toan bo skill phai cu -> AddMagic skill phai moi 10..70 (cap 0), 90/120/150 map cap theo bang cu -> doi skill ngu hanh 445-449/534-538 + trang thai Khi Doanh 1501+series -> zhuansheng_clear_prop (reset tiem nang theo he moi) -> SetSeries(newSeries) -> reset MaxLife/MaxMana theo he -> SetLastFactionNumber(newId) -> UpdateMeridianSkill (xoa 1220..1229/1370, cap lai theo phai moi) -> SetTask(task phai cu,0) -> neu chua xuat su: SetFaction(ten moi)+SetCamp/SetCurCamp(camp moi)+SetTask(task phai moi,80*256) / neu da xuat su: chi SetTask(70*256) (khong SetFaction, giu camp 4) -> SetRank -> SetTask(137,..),(144,0),(1881,0),(1883,+1) -> tang 2 vien Tran Phai Linh Dan/Duoc (1704/1705) 1 lan -> xu ly chuyen sinh 7 -> Msg2Faction + WriteLog -> KickOutSelf. DIEU KIEN: cong tac module gb_GetModule("SWITH_DAIYITOUSHI")==1 (league task 502/1); cap >=120; dang co so hieu phai (GetLastFactionNumber ~= -1); gioi tinh (nam khong vao Nga Mi 4/Thuy Yen 5, nu khong vao Thieu Lam 0; nu vao Thien Vuong 1 can them item {6,1,1671}); phai dich != phai hien tai; Hoa Son(10) can item 4328 trong tui trang bi + >=5 lan chuyen sinh; KHONG o lien dau WLLS; PHAI COI HET TRANG BI (CalcItemCount(2,0,-1,-1,-1)==0); lan dau can 2 o tui trong; dang lam nhiem vu ky nang 150 (task 2885 <14xx) thi chan; KHONG ton tien; cooldown 60 ngay (TOUSHI_COLDDOWN_TIME) DA BI COMMENT (ThanhLD 20131024) nhung task 2604 van ghi thoi diem; so lan: task 1883 chi dem tang, KHONG co tran. CAC MENU KHAC trong chuong mon: xuat su (goff_yes/L60_prise: SetTask 70*256, SetFaction(""), SetCamp/SetCurCamp(4)), trung phan phai cu (return_complete: Pay(50000), SetTask 80*256, SetFaction(ten), SetCamp(camp), SetRank, add_xx(70)), phan su sang phai cung he (defection_yes: DelMagic tay + AddMagicPoint + tru 200 danh vong) = MA CHET (loi vao bi comment; conlon.lua:99 con goi defection_yes nhung ham khong ton tai). Vao phai lan dau cho tan thu: npc_vocong.lua / lenhbaitanthu.lua choose_faction (chi khi GetLastFactionNumber==-1, "mot khi gia nhap khong the thay doi") + task\guide (medicine_task.lua:74-85 dung GetFactionNumber engine + SetLastFactionNumber). ENGINE (jx_linux_y): 'faction record' = struct 16 byte tai Player+0x59CC {m_nCurFaction(+0), m_nFirstAddFaction(+4), m_nLastAddFaction(+8)=GetLastFactionNumber (script ghi duoc), m_nAddTimes(+0xC)} - KHONG phai danh sach nhieu phai; DB chi luu 3 truong {cur byte, LAST byte, addTimes int} vao DUNG slot ma JX1 dung cho {cur, FIRST, addTimes} => JX1 co the tai su dung m_nFirstAddFaction lam "so hieu phai gan nhat". SetFaction(s): LUON LeaveCurFaction (cur=-1, camp=4, goi 0x7C 1 byte s2c_playerleavefaction) roi neu s!="" -> g_Faction.GetID(series=Npc+0x28, name) (11 entry, so ten o +0xC) -> kiem tra entry.series==series && entry.idx==id (nen PHAI SetSeries TRUOC SetFaction) -> cur=id, addTimes++, first(neu ==1), last=id -> SetCamp(GetGurFactionCamp) -> goi 0x7B 8 byte {camp,cur,LAST,addTimes}. SetFaction KHONG dung den ky nang/series/rank/task. RollbackSkill(): KHONG tham so, duyet 80 slot skill, bo qua IsBase/IsExp, tong += SkillLevel, ha cap ve 0, tra tong; sau do goi 0x5E 15 byte sync m_nSkillPoint(Player+0x5928) - KHONG tu cong diem (script AddMagicPoint). SetSeries: Npc+0x28=(n<=4?n:0) KHONG sync client; SetSex: Npc+0x152C=(n>0) KHONG sync => script KickOutSelf. ClearFactionRecord: cur=first=last=-1, addTimes=0, khong sync, KHONG script nao goi. ReloadSkill: GM reload bang skill (memset 0x830ED80 + nap lai), khong lien quan, khong script goi. GetLastAddFaction: TEN cua g_Faction[last]. GetFactionNumber: cur (engine). KHOANG CACH VOI JX1: (1) JX1 LuaGetLastFactionNumber = GetFactionNo() = m_nCurFaction -> sau xuat su tra -1 (Linux van giu so phai) - mo ban cho ky nang 90/120/150/kinh mach/BXH; (2) JX1 thieu SetLastFactionNumber/GetFactionNumber/ClearFactionRecord (JX1 live skills_table.lua:70-110 DANG GOI SetLastFactionNumber chua dang ky); (3) JX1 LuaRollBackSkills BAT BUOC 1 tham so, khong co thi tra nil -> moi script Linux goi RollbackSkill() khong doi so se loi; (4) JX1 MAX_FACTION=10, kiem tra id theo khoang nSeries*2 - Linux 11 entry (Hoa Son=10) kiem tra theo truong series; (5) goi s2c_playerfactiondata JX1 mang FIRST, Linux mang LAST; (6) Linux GetFaction tra truong Name(+0xC) va ini Name= chua gia tri kieu "shaolin" - JX1 co Name(CN)+ValueName, can chot ham nao dang ky "GetFaction". SO DO:
+[Player lv>=120, dang co phai A]
+   |-- NPC chuong mon A: "Dai nghe dau su" -> toushiApplyEnter -> GiveItemUI nop item 1670 --> SetTask(1881,1)
+   v
+[NPC chuong mon B: "Dai nghe dau su, bai nhap mon ho"] -> toushiTransEnter -> toushiCheckTransFactState(B,1)
+   |-> (7 chuyen sinh: chon thuoc tinh) -> toushiTransSureTodo: chon nhanh skill 90 -> toushiTransSure -> Check(B,2): coi trang bi, khong WLLS, tui trong
+   v
+toushiDoTransPlayer(A,B,branch)
+   LeaveTeam -> zhuansheng_clear_skill{RollbackSkill(); AddMagic(210/400 lai); AddMagicPoint(n)}
+   -> luu cap/exp 90/120/150 cua A -> DelMagic(all skill A) -> AddMagic(all skill B: 10..70 lv0; 90/120/150 map)
+   -> toushiAddWuXingSkill(seriesA,seriesB){Del 44x/53x A, Add B; meridian ChangeFullBreathByNewSeries}
+   -> zhuansheng_clear_prop(seriesB) -> SetSeries(seriesB) -> NPCINFO_SetMaxLife/Mana -> SetTask(1982,1)
+   -> SetLastFactionNumber(B) -> UpdateMeridianSkill() -> SetTask(taskA,0)
+   -> [GetFaction()~="So Nhap Giang Ho"] ? SetFaction("B")+SetCamp/SetCurCamp(campB)+SetTask(taskB,80*256) : SetTask(taskB,70*256)
+   -> SetRank(rankB) -> SetTask(137,v137B) -> SetTask(144,0) -> SetTask(1881,0) -> SetTask(1883,+1)
+   -> AddItem 1704/1705 (1 lan) -> ProcessTransLife7Skill -> Msg2Faction -> WriteLog -> KickOutSelf
+ENGINE SetFaction("B"): LeaveCurFaction{cur=-1; camp=4; send 0x7C} -> GetID(series,"B") -> check series -> cur=B,last=B,addTimes++ -> SetCamp -> send 0x7B{camp,cur,last,addTimes}
+
+--- [1] (cao)
+Menu DOI PHAI cho nguoi choi thuong = 'Dai nghe dau su' gan trong oldentence() cua ca 10 NPC chuong mon; tham so la so hieu phai 0..9
+   BC: thienvuong.lua:69, caibang.lua:74, thieulam.lua:73, thuyyen.lua:63, ngamy.lua:73, conlon.lua:68, duongmon.lua:83, ngudoc.lua:83, thiennhan.lua:79, vodang.lua:80 (D:\ServerLinux\server1\script\global\pgaming\npc\chuongmoncacphai\)
+
+--- [2] (cao)
+Cong tac tinh nang: gb_GetModule('SWITH_DAIYITOUSHI') ~= 1 thi bao 'tam thoi dong'; gia tri doc tu league task 502/1 (relay), khong phai settings
+   BC: misc\daiyitoushi\toushi_function.lua:119-122; lib\gb_modulefuncs.lua:10-19
+
+--- [3] (cao)
+Buoc 1 o chuong mon CU: nop item Tin Vat Mon Phai {6,1,1670} qua GiveItemUI -> RemoveItemByIndex + SetTask(1881,1) + WriteLog; yeu cau cap>=120 va GetLastFactionNumber~=-1
+   BC: toushi_function.lua:144-229; toushi_head.lua:45,75 (TSK_TOUSHI_FLAG=1881, TB_TOUSHI_MENPAIXINWU)
+
+--- [4] (cao)
+Dieu kien buoc 2 (toushiCheckTransFactState): task1881==1; co phai; gioi tinh (nam cam 4/5, nu cam 0); dich!=hien tai; cap>=120; Hoa Son(10) can item 4328 trong tui trang bi + >=5 chuyen sinh; stage2: khong WLLS league, CalcItemCount(2,0,-1,-1,-1)==0 (coi het trang bi), lan dau can 2 o tui; nu vao Thien Vuong can item {6,1,1671}
+   BC: toushi_function.lua:34-92, 316-334; toushi_head.lua:71-76
+
+--- [5] (cao)
+Cooldown 60 ngay (TOUSHI_COLDDOWN_TIME=60*24*60*60) da bi comment o ca 2 cho kiem tra; task 2604 van duoc ghi thoi diem; so lan doi luu task 1883 chi tang, khong co tran; khong ton tien
+   BC: toushi_head.lua:49,55; toushi_function.lua:53-55,161-167 (comment 'ThanhLD 20131024'),339-340,500
+
+--- [6] (cao)
+Chan doi phai neu dang lam nhiem vu ky nang 150 (task 2885, buoc <14) va chuyen sinh 7 phai chon thuoc tinh truoc (TSK_ZHUANSHENG_7_PROPERTY)
+   BC: toushi_function.lua:146-151, 233-238, 261-290
+
+--- [7] (cao)
+Chuoi goi tron trong toushiDoTransPlayer: LeaveTeam -> zhuansheng_clear_skill(RollbackSkill+AddMagicPoint) -> luu cap/exp 90/120/150 -> DelMagic all cu -> AddMagic all moi -> toushiAddWuXingSkill -> zhuansheng_clear_prop -> SetSeries -> reset MaxLife/MaxMana -> SetLastFactionNumber -> UpdateMeridianSkill -> SetTask(task cu,0) -> SetFaction/SetCamp/SetCurCamp (chi khi chua xuat su) -> SetRank -> tasks 137/144/1881/1883 -> 2 vien linh dan -> translife7 -> KickOutSelf
+   BC: toushi_function.lua:349-529 (350,359,361-418,421-440,442-462,467,469,471,473-475,477,478,480,482-491,493,495-500,502-507,513-515,528)
+
+--- [8] (cao)
+RollbackSkill duoc goi KHONG tham so trong moi script Linux; script tu tru lai cap khinh cong 210/400 va AddMagicPoint
+   BC: task\metempsychosis\task_func.lua:60-75; task\newtask\master\clearskillpoint.lua:6-20; global\general\thunghiem\taytuynhanh.lua:18-34; global\skills_table.lua:1095-1106; vng_feature\getskills.lua:83-95
+
+--- [9] (cao)
+ClearFactionRecord va ReloadSkill KHONG duoc goi o bat ky script Linux nao
+   BC: grep toan cay D:\ServerLinux\server1\script cho 'ClearFactionRecord|ReloadSkill' -> No matches
+
+--- [10] (cao)
+Engine SetFaction 0x0811A540: LUON goi KPlayer::LeaveCurFaction 0x080AEDE0 (m_nCurFaction=-1 qua 0x080C25F0; KNpc::SetCamp(npc,4) 0x0807B7B0; gui goi 1 byte 0x7C); neu chuoi khac rong goi 0x080AEEC0 AddFaction; tra 1/0. Khong dong den ky nang/series/rank/task
+   BC: disasm 0x0811A540-0x0811A5CA; 0x080AEDE0-0x080AEE3D; 0x080AEEC0-0x080AEF2B
+
+--- [11] (cao)
+KPlayerFaction::AddFaction(series,name) 0x080C2750 -> g_Faction.GetID 0x08060C00 (series>4 -> -1; strcmp ten tai entry+0xC, 11 entry stride 0xCC) -> 0x080C26F0: kiem tra 0x08060BB0 entry.series==series && entry.idx==id; cur=id; addTimes++; first=id neu addTimes==1; LAST(+8)=id; sau do SetCamp(GetGurFactionCamp 0x080C2610) va SendFactionData 0x080A8880 goi 0x7B 8 byte {camp(Npc+0x21C), cur(+0x59CC), LAST(+0x59D4), addTimes(+0x59D8)}
+   BC: disasm 0x080C2750-0x080C27A3; 0x080C26F0-0x080C274B; 0x08060BB0-0x08060BF4; 0x08060C00-0x08060C64; 0x080A8880-0x080A88DA
+
+--- [12] (cao)
+'Faction record' = 16 byte tai Player+0x59CC: {cur(+0), first(+4), last(+8), addTimes(+0xC)}; ClearFactionRecord 0x0811A480 -> 0x080C25C0 dat 3 so=-1, addTimes=0, khong sync client; GetFactionNumber 0x08113C60 tra +0x59CC; GetLastFactionNumber 0x0810E6D0 tra +0x59D4 (tra -1 neu goi CO tham so); SetLastFactionNumber 0x0810E4B0 ghi +0x59D4; GetLastAddFaction 0x0811A4C0 -> 0x080C27B0 tra TEN g_Faction[last]
+   BC: disasm 0x080C25C0-0x080C25E2; 0x08113C60-0x08113CC1; 0x0810E6D0-0x0810E73E; 0x0810E4B0-0x0810E52D; 0x0811A4C0-0x0811A51B; 0x080C27B0-0x080C2814
+
+--- [13] (cao)
+DB Linux chi luu 3 truong: pack cur->byte[+0x6A], LAST->byte[+0x69], addTimes->dword[+0x6F]; unpack byte[+0x66]->cur, byte[+0x65]->last, dword[+0x6B]->addTimes; login sync gui cur/last/addTimes byte/byte/word; m_nFirstAdd (+0x59D0) KHONG co tham chieu truc tiep nao => JX1 slot m_btFirstFaction/m_nFirstAddFaction tuong duong 'so hieu phai gan nhat' cua Linux
+   BC: disasm 0x080BFBC1-0x080BFBD9; 0x080C1A62-0x080C1A79; 0x080B23B9-0x080B23D1; scan imm 0x59D0 = 0 ref (t2f_dump); doi chieu JX1 KProtocol.h:1158-1160, KPlayer.cpp:1194-1197, 9411-9413
+
+--- [14] (cao)
+Engine RollbackSkill 0x0811C640: khong doc tham so; goi KSkillList::RollBackSkills 0x080E5370 tren Npc+0x248: duyet 80 slot x0x30, bo qua neu vtbl+0x50 (IsBase) hoac vtbl+0x24 (IsExp) khac 0, tong += SkillLevel(+0xC), goi 0x080E5010 ha cap -level; sau do neu Player+0x3F8 (net idx)!=0 gui goi 0x5E 15 byte {0,0,Player+0x5928,0}; tra tong. Player+0x5928 = m_nSkillPoint (AddMagicPoint/GetMagicPoint doc/ghi cung offset va cung goi 0x5E)
+   BC: disasm 0x0811C640-0x0811C6FB; 0x080E5370-0x080E5419; AddMagicPoint 0x0810FE50-0x0810FEE1; GetMagicPoint 0x0810FE10-0x0810FE3C
+
+--- [15] (cao)
+SetSeries 0x0811A0C0 -> KNpc::SetSeries 0x08078D30: Npc+0x28 = (n<=4 ? n : 0), KHONG gui goi client; SetSex 0x08116560: Npc+0x152C=(n>0), KHONG sync; vi the script luon KickOutSelf/KickOutPlayer sau khi doi
+   BC: disasm 0x0811A0C0-0x0811A139; 0x08078D30-0x08078D45; 0x08116560-0x081165EF; npc_vocong.lua:57,63,72; toushi_function.lua:528
+
+--- [16] (trung)
+ReloadSkill 0x08104C40 = cong cu GM nap lai bang ky nang (0x080E7200 tren g_SkillManager 0x8BC99E0, memset 0x830ED80 0x5FB40 byte, 0x0805D210 nap lai) - khong lien quan nguoi choi
+   BC: disasm 0x08104C40-0x08104C76
+
+--- [17] (cao)
+g_Faction Linux tai 0x830BEC0: 11 entry (0..10, Hoa Son=10) x 0xCC {idx,series,camp,name[64],valuename[64],showname[64]} nap tu '\settings\faction\'+chuoi toan cuc [0x978a090], khoa 'Name', series S_GOLD..S_EARTH, camp C_BEGIN..C_EVENT; GetFaction tra truong +0xC (Name) => ini Linux Name= mang gia tri kieu 'shaolin'; ban copy D:\ServerLinux thieu ini nay (chi co factionskill.txt FactionId->SkillId 0..10)
+   BC: disasm 0x08060C70-0x08060DAA; 0x080C2680-0x080C26E4; ls D:\ServerLinux\server1\settings\faction; JX1 KFaction.h:15-29, FactionInfo.ini (E:\...\bin\server\settings\faction)
+
+--- [18] (cao)
+Xuat su (roi phai giu ho so): goff_yes/L60_prise = SetTask(taskPhai,70*256); SetFaction(''); SetCamp(4); SetCurCamp(4). Trung phan phai cu: return_complete = Pay(50000); SetTask(80*256); SetFaction(ten); SetCamp(camp); SetRank; add_xx(70). Phan su cung he (defection_yes) la ma chet: loi vao bi comment; conlon.lua:99 con goi defection_yes nhung ham khong dinh nghia trong tep
+   BC: thienvuong.lua:124-132,191-213,227-239,92-93,134-168; thieulam.lua:137-178; ngamy.lua:119-120,151-241; duongmon.lua:143-144,181-263; conlon.lua:93-100,131-176; vodang.lua:122-123; thiennhan.lua:115-116
+
+--- [19] (cao)
+Moi oldentence() co khoi 'He thong phat hien sai sot' tu sua lech giua task phai, GetFaction(), GetCamp(), GetLastFactionNumber() va bang hoi (GetTong) - ca ban port can giu
+   BC: thienvuong.lua:38-68; caibang.lua:36-72; thieulam.lua:35-71 (tuong tu 7 tep con lai)
+
+--- [20] (cao)
+Vao phai lan dau cho tan thu: choose_faction/do_set_faction chi khi GetLastFactionNumber()==-1, SetFaction tra 0 thi dung (series lech), text 'Mot khi gia nhap mon phai khong the thay doi'; task\guide dung GetFactionNumber (engine) + SetLastFactionNumber
+   BC: global\thinh\npc\npc_vocong.lua:171-181,272-296,338-361; global\general\lenhbaitanthu.lua:355-398; task\guide\tasks\medicine_task.lua:74-85; faction_task.lua:236-242; teacher_task.lua:49-59,89-95
+
+--- [21] (cao)
+Luong doi phai GM/the: card_shitu.lua ChooseFaction->ChooseBranch->ApplyTransfer goi thang toushiDoTransPlayer (khong kiem tra); ex_lib_function.lua change_phai/joinMonphai dung tbFacDef DelFacSkill/AddFacSkill + SetSeries + SetFaction + SetLastFactionNumber + DoClearPropCore; gmcommand_1.lua JoinFaction chi SetLastFactionNumber + AddSkills
+   BC: item\card_shitu.lua:783-828; global\gm\ex_lib_function.lua:110-168; gmscript\gmcommand_1.lua:90-94; faction_def.lua:1089-1133
+
+--- [22] (cao)
+GetLastFactionNumber la khoa tra cuu cua ky nang 120/150, sach dai thanh, kinh mach, BXH, log, Tong Kim/lien dau... vi sau xuat su GetFaction()=='' nhung so phai van giu; menu 'Hoc ky nang cap 120' o chuong mon dieu kien GetLastFactionNumber()==N
+   BC: thienvuong.lua:25; task\lv120skill\head.lua:237,291; task\150skilltask\150skilltaskhead.lua:11; item\lv150skillbook.lua:33; item\dachengmiji_90/120/150.lua; global\meridian\meridian.lua:129-156; worldrank\xephang.lua:54,87; lib\log.lua:28,94; misc\daiyitoushi\toushi_function.lua:25,36
+
+--- [23] (cao)
+Rang buoc he khac khi doi phai: ky nang 90/120/150 bao toan cap+%exp theo thu tu (toushiAdd90/120/150Skill, tbLvUp150Limit); task 90 (121..130=255) va 150 (2885) chuyen sang phai moi; ngu hanh doi skill 445-449/534-538 + Khi Doanh 1501+series; kinh mach cap lai skill 1220..1229/1370 theo GetAvgMeridianLevel; bang hoi KHONG chan; chuyen sinh: Hoa Son >=5, TL7 chon thuoc tinh; trang bi: coi het + reset tiem nang/HP/MP theo he moi (toushiResetBase chay luc login neu 1883>0 va 1982~=1); SetTask(144,0)
+   BC: toushi_function.lua:620-704,732-738,743-855,858-876,879-887,890-929; meridian.lua:130-156,223-234; toushi_resetbase.lua:83-137; toushi_head.lua:56-73
+
+--- [24] (trung)
+Cac phai Vu Hon(11)/Tieu Dao(12) chi ton tai o script (faction_def.lua); engine g_Faction chi 0..10 nen SetFaction('wuhun'/'xiaoyao') that bai (GetID -1), script chi dua vao SetLastFactionNumber(11/12)
+   BC: faction_def.lua:3-18,842-1000; disasm 0x08060C5F cmp ebx,0xB; npc_vocong.lua:214-249
+
+--- [25] (cao)
+JX1 GAP 1: LuaGetLastFactionNumber JX1 = GetFactionNo() = m_cFaction.m_nCurFaction -> sau xuat su tra -1, khac Linux (giu so phai gan nhat o +0x59D4); JX1 KPlayerFaction khong co truong 'last' (chi cur/first/addTimes)
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:2267-2277; KPlayerFaction.h:19-21; KPlayer.cpp:7782-7785
+
+--- [26] (cao)
+JX1 GAP 2: chua dang ky SetLastFactionNumber, GetFactionNumber, ClearFactionRecord (ReloadSkill khong can) - trong khi script song JX1 skills_table.lua:70-110 dang goi SetLastFactionNumber
+   BC: grep ScriptFuns.cpp chi thay GetLastFactionNumber(14735), GetLastAddFaction(15341), RollbackSkill(15763), SetFaction(15034), SetSex(15064), SetSeries(15066); E:\...\bin\server\script\global\skills_table.lua:70-106
+
+--- [27] (cao)
+JX1 GAP 3: LuaRollBackSkills bat buoc 1 tham so (nParamCount<1 -> return 0 = nil) trong khi Linux RollbackSkill() khong tham so; ngu nghia Linux (bo qua IsBase va IsExp, tong chi non-Exp) tuong duong JX1 bRbAll=false; JX1 khong gui goi sync diem sau rollback (Linux gui 0x5E; JX1 AddMagicPoint gui s2c_playersync_magic_attr MAGICPOINT)
+   BC: ScriptFuns.cpp:6732-6746, 12777-12798; KSkillList.cpp:919-941; disasm 0x0811C640, 0x080E5370
+
+--- [28] (cao)
+JX1 GAP 4: MAX_FACTION=10 (FACTIONS_PRR_SERIES*series_num) va AddFaction kiem tra id trong [series*2,(series+1)*2) - Linux 11 entry (Hoa Son=10, he Thuy) kiem tra theo truong series cua entry; JX1 FactionInfo.ini co 10 muc [0]..[9]
+   BC: KFaction.h:15-16; KPlayerFaction.cpp:76-90; FactionInfo.ini E:\...\settings\faction; disasm 0x08060BB0-0x08060BE5 (cmp ebx,0xA; cmp eax,0x8C4=11*0xCC)
+
+--- [29] (cao)
+JX1 GAP 5: goi s2c_playerfactiondata JX1 {camp,cur,FIRST,addTimes} vs Linux 0x7B {camp,cur,LAST,addTimes}; s2c_playerleavefaction JX1 1 byte trung voi Linux 0x7C; ca hai deu goi LeaveCurFaction truoc AddFaction
+   BC: KPlayer.cpp:1921-1932, 4245-4304; KProtocolProcess.cpp:1418-1420; ScriptFuns.cpp:8601-8620; disasm 0x080A8880
+
+--- [30] (cao)
+Thu tu bat buoc khi port: SetSeries(newSeries) PHAI truoc SetFaction(ten) vi ca Linux (0x08060BB0) lan JX1 (KPlayerFaction.cpp:80) tu choi phai khong khop he hien tai; SetFaction khong xoa ky nang nen script phai tu RollbackSkill/DelMagic/AddMagic
+   BC: toushi_function.lua:471 vs 483; disasm 0x080AEEC0 doc Npc+0x28 truoc khi goi 0x080C2750
+
+--- [31] (cao)
+Tai san can mang theo neu port: misc\daiyitoushi\{toushi_head,toushi_function,toushi_resetbase}.lua, task\metempsychosis\task_func.lua (zhuansheng_clear_skill/prop, TB_BASE_*), skill\lvlup150_limit.lua, global\meridian\meridian.lua, translife_7*.lua, lib\gb_modulefuncs.lua (IncludeLib LEAGUE), settings\npc\player\magic_level_exp.txt (TB_TOUSHI_SKILLEXP), item 1670/1671/1704/1705/4328, task 1881/1882/1883/2604/1982/2885/2463/144/137/121-130/1..10/3481
+   BC: toushi_function.lua:10-17; toushi_head.lua:10-55; toushi_resetbase.lua:9-14; task_func.lua:10-16
+
+--- [32] (trung)
+item\card\toushi_function.lua la ban sao cu hon (880 dong, thieu xu ly chuyen sinh 7) cua misc\daiyitoushi\toushi_function.lua (929 dong); card_shitu.lua include ban card
+   BC: diff hai tep (t2 bash); grep toushiDoTransPlayer: misc:336 vs item\card:305
+
+################################################################################
+## agent3
+################################################################################
+KET LUAN: CO_TINH_NANG
+
+TOM TAT:
+LINUX (JX2/Kiem The) CO tinh nang DOI TEN NHAN VAT hoan chinh, van hanh BAT DONG BO qua relay/DB, nguoi choi bi KICK va doi ~3 phut roi dang nhap lai.
+
+(a) KICH HOAT: 3 duong. (1) Vat pham "Tinh Danh Chi Lenh" = G6/D1/P30448 (magicscript.txt:3199, script \script\vng_event\item\rename_func.lua) -> chi BAT bit 1 cua task 2320 (TASKVALUE_BLEND) + ghi task 3060 = gio dung; sau do phai den NPC Su Gia (misc\spreader\spreader.lua menu "Dat lai ten cho nhan vat/about_rename_role") -> rename_func.lua. (2) Sat nhap may chu: tool KG_SyncD/goddess tu doi ten trung va bat bit 1 (TASKVALUE_MASK_RENAME trong libgoddesscfg.so), login_hint.lua:213 nhac nguoi choi di doi lai; duong "rename_role_tranfer" cung NPC. (3) GM/NPC test: lbadmin.lua:1931, ex_lib_function.lua:445, thinh\npc\npc_vocong.lua:30, thunghiem\doiten.lua:36 (thu 50 Xu = item 4/417/1), npc_thunghiem.lua:330 - goi RenameRole thang, khong dieu kien.
+
+(b) DIEU KIEN (script): bit 1 task 2320 = 1 (rename_head.lua:14-19); KHONG o trong bang hoi (rename_func.lua:42-46); ten moi ~= ten cu (:52); item: cooldown 7 ngay theo task 3060 (vng_event\item\rename_func.lua:12-15) va "chi 1 co hoi" (bit bi xoa khi... - luu y: script Linux KHONG xoa bit 1 sau khi doi thanh cong, chi tong co ChangeTongNameResult xoa bit 2; tongname_change.lua:6-8). Do dai: AskClientForString 1..20 ky tu (rename_func.lua:47); engine KPlayer::RenameRole tu choi strlen>31 (0x080AA57D). Kiem tra trung/tu cam/hop le: KHONG lam tai GameServer - QueryRoleName la CALLBACK bat dong bo: gui goi 0x9C kenh 0 -> goddess/relay tra goi id 0xBE dai 0x66 -> engine goi script \script\global\rolename_op.lua:QueryNameResult(ten, ketqua 0 FREE/1 INVALID/2 USED) (0x081D77A0-CB). Bo loc ten: \settings\rolename.flt (0x08251DEA, 2207 byte, dang "=tu" va "@+GM") va goddess_rolename.flt phia goddess_y.
+
+(c) CHUOI GOI: on_change_rolename(new) -> RenameRole(new) [0x0810A9C0: 1 tham so chuoi, PlayerIndex tu global] -> KPlayer::RenameRole(0x080AA560): check len<=31 & khac ten cu (+0x5974) -> new KRoleRenameCmd{player, std::string ten moi} (vtable 0x8256f18) push vao list KPlayer+0x86d4 -> KickOut(2) (0x080A9140, log "[ShutdownClient] Kick Out, ReasonId (2)") -> tra 1. KHONG doi m_szName tai cho. Khi logout ("Del %s(%s): quit" 0x080C6680:0x080C669F) engine chay ExecLogoutCmds 0x080AA4D0 -> KRoleRenameCmd::Execute 0x080AA630: gui (i) goi 0x9D {account(+0x264), dword 0xB4=180} dai 0x25 KENH 1 (suy doan: khoa tai khoan 180s = "3 phut"), (ii) goi 0x9F {acc@+1, ten moi@+0x21, ten cu@+0x41} dai 0x61 KENH 0 (goddess). Goddess_y (D:\ServerLinux\gateway, NGOAI 4 noi chi dinh, chi doc chuoi) co KQuery_ChangeRoleName: "UPDATE Role SET RoleName='%s', RoleData='%s' WHERE RoleName='%s'", check "SELECT COUNT(*) FROM RoleBack WHERE RoleName='%s' AND LastModify>='%s'", "RENAME_COMPLETE". Ket qua ve GameServer goi id 0xC0 dai 0x62 (0x081D7880): byte +0x61 = result; result!=0 -> tim player theo ten cu, goi script ChangeNameResult (chi khi con online); result==0 -> ghi lich su (0x081DA5C0) + chuyen tiep {0,0x9F,acc,ten} dai 0x62 KENH 2 (s3relay_y: "UPDATE Relation SET RoleName=..." L_RELATION_RENAME / L_TONGMEMBER_RENAME => relay tu cap nhat BAN BE + THANH VIEN BANG). Ca 2 nhanh gui 0x9E {acc} kenh 1 (mo khoa). Hau qua: bang hoi - script cam doi khi co bang; ban be/tong member - relay UPDATE theo ten; thu/xep hang - KHONG thay ma xu ly trong jx_linux_y (chua ket luan).
+
+(d) ForbitSyncName(nNpcIdx, n) 0x08103CF0: n==1 -> Npc[idx]+0x19d4=0 (CAM dong bo ten ra client, goi dong bo dung kieu 5 = an ten), n!=1 -> =1 (cho phep), roi goi lai dong bo NPC 0x807fbb0. Dung cho Dai Tu Sat (datusha.lua:275/311) an ten nguoi choi - KHONG lien quan doi ten.
+
+(e) CLIENT: khong can UI rieng. Linux Patch chi co hop nhap chuoi chung ui3_1024\ÊäÈë×Ö´®½çÃæ.ini (StringInput MaxLen=500) cho AskClientForString; ket qua bao bang Talk/Say; ten moi hien sau khi dang nhap lai. JX1 da co S2C_INPUT_BOX + callback (ScriptFuns.cpp:14261, KProtocolProcess.cpp:6482).
+
+(f) LOG: rolenamechangehis.ini o thu muc goc server ([Global] Count=N; section "Account_N": Account/OldName/NewName) - nap luc khoi dong (0x081DA120<-0x08051775) va ghi luc GameClose (0x081D9A90<-0x080512DE); tbLog:PlayerActionLog("SuDungTinhDanhChiLenhThanhCong") (lib\log.lua:87); KSG_ScriptOutputLog xac nhan rename_head/rolename_op/rename_func da duoc ExecuteCode.
+
+JX1 HIEN TRANG: KHONG co RenameRole/QueryRoleName/ChangeNameResult (grep Sources va script song = 0); Goddess chi 6 op (ClientNode.cpp:82-89), roledb MySQL khoa role_name + index acc_name (DBTable_MySQL.cpp:716,827,1182,1384) => doi ten = UPDATE khoa; co san AskClientForString, KickOutSelf (ScriptFuns.cpp:9916/15156), RoleNameFilter (Goddess/RoleNameFilter.cpp:35-84 dung o ClientNode.cpp:391).
+
+SO DO:
+ Item 30448 --(bit1 task2320, task3060)--> NPC Su Gia (spreader.lua)
+   |-- query --> AskClientForString --> QueryRoleName --[0x9C kenh0]--> Goddess
+   |                                         <--[0xBE len0x66]-- QueryNameResult(ten,kq) (rolename_op.lua)
+   '-- change --> AskClientForString --> RenameRole(new)
+                    |-> len<=31 & !=old -> list KPlayer+0x86d4 += KRoleRenameCmd -> KickOut(2)
+                    '-> logout "Del..quit" -> Execute: [0x9D acc,180 kenh1] + [0x9F acc,new,old kenh0]
+                            Goddess: UPDATE Role SET RoleName=new WHERE RoleName=old (+RoleBack check)
+                            <--[0xC0 len0x62 result]-- 0x081D7880
+                                  fail: ChangeNameResult (neu online) ; ok: history + [0x9F kenh2 -> relay cap nhat Relation/TongMember]
+                                  ca hai: [0x9E acc kenh1] mo khoa ; player relog sau 3 phut thay ten moi
+
+--- [1] (cao)
+Vat pham kich hoat: 'Tinh Danh Chi Lenh' G6/D1/P30448, script \script\vng_event\item\rename_func.lua; mo ta '1 lan doi ten, 7 ngay sau moi dung tiep'
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:3199 ; D:\ServerLinux\server1\script\activitysys\config\1054\variables.lua:29 (tbProp={6,1,30448,...})
+
+--- [2] (cao)
+Item chi BAT bit 1 cua task 2320 (TASKVALUE_BLEND) va ghi task 3060 = gio; cooldown 604800s (7 ngay); neu bit da bat thi bao 'da co 1 lan doi ten'; ghi log PlayerActionLog
+   BC: D:\ServerLinux\server1\script\vng_event\item\rename_func.lua:3-20
+
+--- [3] (cao)
+check_renamerole() = GetBit(GetTask(2320),1)==1; bit 2 = doi ten bang; bit 3 = boi thuong thanh chu
+   BC: D:\ServerLinux\server1\script\global\rename_head.lua:8-37
+
+--- [4] (cao)
+NPC Su Gia (spreader) co 3 muc: 'Dat lai ten cho nhan vat/about_rename_role', 'Dat lai ten cho bang hoi', 'doi ten khi chuyen Server moi/rename_role_tranfer' -> deu goi func_online_rename_role; thong bao 'chi co 1 co hoi duy nhat'
+   BC: D:\ServerLinux\server1\script\misc\spreader\spreader.lua:41-43,316-326 ; misc\lostgolditem\spreader\spreader.lua:34-36,309-319
+
+--- [5] (cao)
+Luong NPC: query_rolename -> AskClientForString(1..20 ky tu) -> QueryRoleName(ten); change_rolename2 tu choi neu GetTongName() tra nTongId~=0; on_change_rolename: neu ten moi == GetName() thi hoi lai, khac thi SetTask(3060, now) + RenameRole(ten); van ban bao 'ban se tu dong roi mang, sau 3 phut dang nhap lai'
+   BC: D:\ServerLinux\server1\script\misc\rename\rename_func.lua:13-60
+
+--- [6] (cao)
+Callback engine->script: QueryNameResult(newname, result 0 FREE/1 INVALID/2 USED) va ChangeNameResult(newname, result 0..4 SUCCESS/FAILURE/INVALID/USED/ONLINE) trong rolename_op.lua, hien bang Talk; file duoc engine nap truc tiep (chuoi duong dan trong binary)
+   BC: D:\ServerLinux\server1\script\global\rolename_op.lua:1-33 ; binary 0x082694D4 '\script\global\rolename_op.lua', 0x082694B1 'QueryNameResult', 0x082694C1 'ChangeNameResult'
+
+--- [7] (cao)
+Duong thu nghiem doiten.lua: khong can bit task, thu 50 Xu (CalcEquiproomItemCount(4,417,1,-1) >= 50) roi RenameRole + ConsumeEquiproomItem(50,4,417,1,1); van cam khi co bang hoi; duoc Include o thunghiem\main.lua:5, pgaming\testserver.lua:5, lenhbaitanthu.lua:11, mel\testserver.lua:27, mel\baivip.lua:11
+   BC: D:\ServerLinux\server1\script\global\general\thunghiem\doiten.lua:27-48
+
+--- [8] (cao)
+GM/NPC test goi RenameRole THANG khong dieu kien: AskClientForString('doitennv',...,1,100) -> RenameRole(strings)
+   BC: D:\ServerLinux\server1\script\global\gm\lbadmin.lua:1931-1936 ; global\gm\ex_lib_function.lua:445-450 ; global\thinh\npc\npc_vocong.lua:22,30-35 ; global\general\thunghiem\npc_thunghiem.lua:330-336
+
+--- [9] (trung)
+Khi login, login_hint.lua kiem tra check_renamerole() va nhac 'sat nhap may chu he thong da tu doi ten, den NPC Su gia doi lai' (bit 1 duoc tool sat nhap bat: libgoddesscfg.so co TASKVALUE_MASK_RENAME / TASKVALUE_BLEND / bSupportOnlineReName)
+   BC: D:\ServerLinux\server1\script\global\login_hint.lua:210-229 ; chuoi trong D:\ServerLinux\gateway\libgoddesscfg.so (ngoai 4 noi chi dinh, chi quet chuoi)
+
+--- [10] (cao)
+RenameRole(L) 0x0810A9C0: lua_gettop==1; PlayerIndex tu global (0x8107860, hop le 1..1199); lua_tostring(1); goi KPlayer::RenameRole(&Player[idx], sz) (0x80aa560); push 1/0
+   BC: disasm jx_linux_y 0x0810A9D2-0x0810AA47 (scratchpad t_rename_dump2.txt)
+
+--- [11] (cao)
+KPlayer::RenameRole 0x080AA560: strlen(new)>0x1F -> 0; strcmp(new, m_szName@+0x5974)==0 -> 0; else new KRoleRenameCmd (0xC byte, vtable 0x8256f18, typeinfo '14KRoleRenameCmd'){+4=player,+8=std::string ten moi} push_back vao list KPlayer+0x86d4; goi KickOut(player,2) 0x80a9140; return 1. KHONG doi ten tai cho, KHONG kiem tra rolename.flt tai GameServer
+   BC: disasm 0x080AA575-0x080AA61A ; 0x080A916C chuoi '[ShutdownClient]\tKick Out, ReasonId (%d) ' ; 0x08256F14 '14KRoleRenameCmd'
+
+--- [12] (cao)
+List lenh +0x86d4 duoc THUC THI luc logout: ham 'Del %s(%s): quit' 0x080C6680 goi 0x080AA4D0 (duyet list, goi vfn[0]=Execute 0x080AA630 roi vfn[1]=dtor 0x080BE280) truoc khi clear KPlayer (0x080B60A0)
+   BC: disasm 0x080C669F (call 0x80aa4d0), 0x080C671D chuoi 'Del %s(%s): quit', 0x080C6819 (call 0x80b60a0); 0x080AA4F8-0x080AA50B vong lap; vtable 0x08256F18 = {0x080AA630, 0x080BE280}
+
+--- [13] (cao)
+KRoleRenameCmd::Execute 0x080AA630 gui 2 goi qua doi tuong relay [0x82e8cac]+0x20030 vtbl+0xC Send(kenh, buf, len): (1) id 0x9D {account@+1 (KPlayer+0x264), dword 0xB4=180 @+0x21} len 0x25 kenh 1 (suy doan: khoa tai khoan 180s); (2) id 0x9F {account@+1, ten moi@+0x21, ten cu(+0x5974)@+0x41} len 0x61 kenh 0
+   BC: disasm 0x080AA641-0x080AA6FE
+
+--- [14] (cao)
+QueryRoleName(L) 0x0810AA50: strlen+1>0x20 -> tra 0 (ten toi da 31 byte); goi 0x9C {ten hoi@+0x21, ten minh@+0x41, PlayerIndex@+0x61} len 0x65 kenh 0; tra 1 ngay (BAT DONG BO)
+   BC: disasm 0x0810AAB5-0x0810AB46
+
+--- [15] (cao)
+Tra loi query: dispatcher 0x081D7A40 nhan id 0xBE -> 0x081D77E0 (len==0x66) -> 0x081D7740: Player[pkt+0x61] phai con dung ten (strncmp pkt+0x41 vs +0x5974, 0x1F) roi CallScript('\script\global\rolename_op.lua','QueryNameResult', ten pkt+0x21, byte pkt+0x65)
+   BC: disasm 0x081D7A6C-70,0x081D7B1D ; 0x081D77E6-F1 ; 0x081D7760-0x081D77CB
+
+--- [16] (cao)
+Tra loi rename: id 0xC0 len 0x62 -> 0x081D7880: byte pkt+0x61 = result; !=0 -> 0x081D7800 tim player theo ten cu pkt+0x41 (0x80c6010) va CallScript ChangeNameResult(pkt+0x21, result) (chi khi con online); ==0 -> 0x081DA5C0 (ghi lich su, map theo account) + 0x081D96C0 (goi {0,0x9F,acc@+2,ten moi@+0x22,ten cu@+0x42} len 0x62 kenh 2); ca 2 nhanh gui 0x9E {account} len 0x21 kenh 1 (mo khoa)
+   BC: disasm 0x081D7A76-78,0x081D7AF5 ; 0x081D7886-0x081D7968 ; 0x081D780A-6B ; 0x081D96CA-53
+
+--- [17] (cao)
+Nhat ky doi ten: file '\rolenamechangehis.ini' ([Global] Count=N; section '%s_%d' voi 'Account' -> 'Account_N': Account/OldName/NewName) - ghi o ham 0x081D9A90 (goi tu 0x08051280 nhanh 'GameClose'), nap o 0x081DA120 (goi tu 0x08051490 khoi dong); file hien tai Count=0
+   BC: disasm 0x081D9AAD-0x081D9BBB, 0x080512DE, 0x08051301 'GameClose', 0x081DA131-261, 0x08051775 ; D:\ServerLinux\server1\rolenamechangehis.ini (b'[Global]\r\nCount=0')
+
+--- [18] (trung)
+Bo loc ten nhan vat: \settings\rolename.flt (2207 byte, moi dong '=tu_cam' GBK, '@+GM'), duoc jx_linux_y tham chieu; hop le/trung ten quyet dinh o phia goddess/relay (ket qua INVALID/USED tra ve qua callback)
+   BC: binary 0x08251DEA '\settings\rolename.flt' ; D:\ServerLinux\server1\settings\rolename.flt ; 0x082698E0 'RoleName Error: %s' (ham 0x081DD8C0/0x081DE1C0)
+
+--- [19] (trung)
+Phia DB (goddess_y, NGOAI 4 noi chi dinh - chi quet chuoi, khong disasm): lop KQuery_ChangeRoleName/KQuery_QueryRoleName; SQL 'UPDATE Role SET RoleName=%s, RoleData=%s WHERE RoleName=%s'; 'SELECT COUNT(*) FROM RoleBack WHERE RoleName=%s AND LastModify>=%s' (chan ten cua nhan vat vua xoa); 'goddess_rolename.flt'; log '[OK]Insert Account[%s], Role[%s]: Rename to Role[%s]', 'RENAME_COMPLETE'. Bang Role PRIMARY KEY(RoleName(32)), INDEX(Account)
+   BC: chuoi trong D:\ServerLinux\gateway\goddess_y (quet regex)
+
+--- [20] (trung)
+Phia relay (s3relay_y / S2SRelay, NGOAI 4 noi chi dinh - chi quet chuoi): KQuery_Rename, 'UPDATE Relation SET RoleName=%s WHERE RoleName=%s', L_RELATION_RENAME, L_TONGMEMBER_RENAME (cap nhat ban be + thanh vien bang theo ten); S2SRelay co KRenameDaemon::RenameSubmit/QuerySubmitedName/RoleNameCrashCheck/CheckRoleNameValid/IsDataExistedInShareDB/CancelRenameSubmit (giu cho ten lien may chu)
+   BC: chuoi trong D:\ServerLinux\gateway\s3relay\s3relay_y va \S2SRelay (quet regex)
+
+--- [21] (cao)
+ForbitSyncName(nNpcIdx, n) 0x08103CF0: n==1 -> Npc[idx](stride 0x1a4c, base 0x836eae0)+0x19d4 = 0 (cam dong bo ten), n!=1 -> =1 (cho phep); sau do goi 0x807fbb0(pNpc,0) dong bo lai NPC; trong 0x807fbb0 neu +0x19d4 != 1 thi byte kieu ten = 5 (an ten). Dung cho Dai Tu Sat an ten nguoi choi, khong lien quan doi ten
+   BC: disasm 0x08103D52-0x08103D9E ; 0x0807FCAE-B9 ; D:\ServerLinux\server1\script\missions\datusha\datusha.lua:175,275,311 ; playertimer.lua:9
+
+--- [22] (cao)
+Client Linux: khong co UI rieng cho doi ten; chi dung hop nhap chuoi chung (AskClientForString) '\ui\ui3_1024\ÊäÈë×Ö´®½çÃæ.ini' ([StringInput] MaxLen=500, OkBtn/CancelBtn); grep toan bo Patch chi thay ChangeNameBtn cua pet va ChangeName cua bang
+   BC: D:\ServerLinux\Patch\ui\ui3_1024\ÊäÈë×Ö´®½çÃæ.ini:24-61 ; grep Patch (pet.ini:61, °ï»á´´½¨µ¥.ini:162)
+
+--- [23] (cao)
+Log script: tbLog:PlayerActionLog ghi WriteLog tab: gio, ngay, server, account, ten, phai, cap, bang, khoa log 'SuDungTinhDanhChiLenhThanhCong'; KSG_ScriptOutputLog xac nhan rename_head.lua / rolename_op.lua / rename_func.lua (ca 2) da duoc ExecuteCode khi server chay
+   BC: D:\ServerLinux\server1\script\lib\log.lua:87-99 ; D:\ServerLinux\server1\Logs\KSG_ScriptOutputLog_20260806.txt:2404,2921,4194,4195
+
+--- [24] (trung)
+Script Linux KHONG xoa bit 1 task 2320 sau khi doi ten thanh cong (ChangeNameResult chi Talk); bit 2 (bang) duoc xoa trong ChangeTongNameResult; vay 'chi 1 co hoi' cua nhan vat phai do phia goddess/tool xoa bit (khong thay trong 4 noi) - chua ket luan
+   BC: D:\ServerLinux\server1\script\global\rolename_op.lua:23-33 ; global\tongname_change.lua:5-9
+
+--- [25] (cao)
+rename_head.lua va rolename_op.lua bi COMMENT trong bang nap lib_data_table_filelua.lua (khong anh huong: engine nap rolename_op.lua truc tiep, rename_head duoc Include)
+   BC: D:\ServerLinux\server1\script\global\gm\lib_data_table_filelua.lua:67,70
+
+--- [26] (cao)
+JX1: KHONG dang ky RenameRole/QueryRoleName/ChangeNameResult/QueryNameResult (grep toan D:\GAMEDEVNEW\Sources chi ra AskClientForString); script song cung khong co (grep RenameRole|QueryRoleName|doitennv|rename_head|check_renamerole = 0)
+   BC: grep D:\GAMEDEVNEW\Sources (hit: ScriptFuns.cpp:14256-14283, 15336; KProtocolProcess.cpp:6480-6488) ; grep E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script = No matches
+
+--- [27] (cao)
+JX1 da co san khoi xay dung: AskClientForString (S2C_INPUT_BOX nType 1, callback nhan chuoi), KickOutSelf/KickOutSelf2, Goddess RoleNameFilter (rolename.flt) dung khi tao nhan vat
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:14261-14283,15336,9916,9934,15156-15157 ; Core\Src\KProtocolProcess.cpp:6476-6489 ; MultiServer\Goddess\RoleNameFilter.cpp:35-84 ; Goddess\ClientNode.cpp:391
+
+--- [28] (cao)
+JX1 Goddess chi co 6 op (getrolelist/createroleinfo/saveroleinfo/deleteplayer/getroleinfo/lock), khong co rename; roledb MySQL khoa chinh role_name, index acc_name => doi ten = UPDATE khoa + xoa/ghi lai, can op moi
+   BC: D:\GAMEDEVNEW\Sources\MultiServer\Goddess\ClientNode.cpp:82-89 ; Goddess\DBTable_MySQL.cpp:716,819,827,1182,1384 ; Goddess\IDBRoleServer.cpp:453,629,670
+
+################################################################################
+## agent4
+################################################################################
+KET LUAN: CO_TINH_NANG
+
+TOM TAT:
+TASK 4 (client + vat pham/du lieu). (a) Patch Linux (D:\ServerLinux\Patch): 172 ini ui3_1024 / 173 ui3_800, KHONG co cua so rieng cho doi ten (khong tep 改名/更名) hay doi phai (khong 转职/换门派); doi ten dung O NHAP CHUOI TONG QUAT ui\ui3_1024\输入字串界面.ini ([StringInput] Type=2 MaxLen=500, OkBtn/CancelBtn, anh \Spr\Ui3\特殊对话条\输入文字条2.spr) do server mo bang AskClientForString; doi phai dung menu NPC + 给予界面.ini (GiveItemUI). Client script trong Patch KHONG goi RenameRole/QueryRoleName (API server). Du lieu phai: settings\faction\门派设定.ini + factionskill.txt. (b) Vat pham Linux: DOI TEN = "Tinh Danh Chi Lenh" G6 D1 P30448 (magicscript.txt:3199, script \script\vng_event\item\rename_func.lua, 1 lan/7 ngay, forbititem.ini [Item_288] ForbitThrowAway=1) — item chi bat bit1 task 2320 + moc thoi gian task 3060, viec doi ten thuc su o NPC "Su gia" (template 87, addspreadernpc.lua:5-12) qua misc\rename\rename_func.lua: AskClientForString("on_change_rolename","",1,20,...) -> RenameRole(new_name); QueryRoleName de tra ten; cam khi co Bang hoi. Item cu "Di Danh Phu" P1534 (:1546) script yimingfu.lua DA MAT (chet). Ban thu nghiem doiten.lua:37-46 thu 50 "Tien dong" (4,417) roi RenameRole. DOI PHAI (dai nghe dau su) = "Tin vat mon phai" G6 D1 P1670 (:1682) + "Tin vat Duong Anh" P1671 (:1683) + "Tran phai linh dan" P1704 (:1716) + "Tran phai linh duoc" P1705 (:1717) + "Hoa Son Ky Thu" P4328 (:4787), hang so o script\misc\daiyitoushi\toushi_head.lua:75-78; nop tin vat qua GiveItemUI (toushi_function.lua:189), doi bang SetLastFactionNumber/SetFaction (:477/:483), task 1881/1882/1883/2604, cooldown 60 ngay. Tay tuy (reset diem) = P22/P2390/P2391/P30127 + RollbackSkill (taytuynhanh.lua:21) — KHONG phai doi phai. (c) VLTK Level Up: 36 pak; da quet slistcache/slistfree/1024/updatejx17/vng00; chua giai nen update*.pak, updatejx01-16, spr/resource/maps/skills. Bang chuoi 59A637DE KHONG co chuoi doi ten nhan vat (chi rename team/tong). magicscript VLTK (uid 61DBE5A6, da xac minh ten) co Di Danh Phu P1534, Tin vat mon phai P1670 "can thiet de chuyen mon phai", Tran phai linh duoc P1705 (script daiyitoushi\zhenpailingyao.lua) — KHONG co Tinh Danh Chi Lenh P30448. vng00.pak magicscript moi (uid 4FFECCC1:682) co buff "Dang doi doi ten nhan vat" G8 D680 (3 ngay, buff662.lua, NPC "Phu an su") + tooltip [BuffInfo_680] — VLTK dung co che doi ten cho 3 ngay, van khong co UI rieng. (d) JX1 S3Client DA CO: KUiGetString2 (UiGetString2.h:12-39, KWndEdit512, min1/max512, scheme UiGetString2.ini) mo boi GDCNI_OPEN_INPUT tu S2C_INPUT_BOX (GameSpaceChangedNotify.cpp:818-819), tra ve C2S_PLAYER_INPUT_INFO nAction[64]/nValue[32] (KProtocol.h:1917-1919) -> KProtocolProcess.cpp:6480-6486 goi callback voi chuoi; server DA dang ky OpenGetString (ScriptFuns.cpp:10790/15126) va AskClientForString (14261/15336) — script doi ten Linux dung duoc NGAY, gioi han: prompt <=31 byte (Value[32]), chuoi nhap <=63 byte, ten callback <=31. KUiGetString (KWndEdit32, 4..16) cho nhom chat/rao; KUiTongGetString cho ten bang; KUiNewPlayer.cpp:354-390 co luat kiem ten (6..16 ky tu, LoginDef.h:54-55; ASCII 0x21-0x7E hoac cap 2 byte, cam 0xA1A1) tai dung duoc; GiveItemUI da co (ScriptFuns.cpp:15694, client KUiAffairItem qua GDCNI_OPEN_AFFAIR_BOX :787-791, live dailogsay.lua:116-119). JX1 THIEU: RenameRole/QueryRoleName; Goddess roledb khoa theo TEN (IDBRoleServer.h GetRoleInfo/SaveRoleInfo/DeleteRole/GetAccountByUser theo strUser; loc ten CRoleNameFilter ClientNode.cpp:363/391) va khong co ham doi khoa. KET LUAN PORT: phia client KHONG can UI moi cho ca doi ten lan doi phai — tai dung menu NPC (Say) + AskClientForString->KUiGetString2 va GiveItemUI->KUiAffairItem; can them DU LIEU: item Tinh Danh Chi Lenh (icon tianbaokuling.spr) + Tin vat mon phai (zhuanzhiling.spr) + Tran phai linh dan/duoc (zhenpailingdan/zhenpailingyao.spr) [+ Tin vat Duong Anh nvtianwangling.spr, Hoa Son Ky Thu 23miji.spr] vao magicscript JX1 (P moi, kiem tra icon co trong pak client), muc forbititem, NPC Su gia (template 87) tai cac thanh, task id 2320(bit1/2)/3060/1881-1883/2604 phai quet trung, va (phia server/DB, TASK 3) ham RenameRole/QueryRoleName + doi khoa roledb o Goddess.
+
+--- [1] (cao)
+Patch Linux ui3_1024 co 172 ini (ui3_800: 173); khong co tep nao ten 改名/更名/换名/转职/换门派 -> khong co cua so rieng cho doi ten/doi phai. Co o nhap chuoi tong quat 输入字串界面.ini (Main 122x96, [Title], [StringInput] Type=2 MultiLine=0 MaxLen=500, [OkBtn]/[CancelBtn], anh \Spr\Ui3\特殊对话条\输入文字条2.spr) va 输入字串界面2.ini (MaxLen=32).
+   BC: D:\ServerLinux\Patch\ui\ui3_1024\输入字串界面.ini:5-61; 输入字串界面2.ini:24-34; danh sach thu muc ui3_1024 (t4_list_ui.py)
+
+--- [2] (cao)
+Trong toan bo Patch (script/settings/ui/users/vng_script), grep rename|RoleName|QueryRoleName|SetFaction|GetFaction|doiphai|taytuy chi trung: settings\item\004\magicscript.txt:3199 (item Tinh Danh Chi Lenh), ui 观战模式窗口.ini:66 [TextContent] RoleName=Xin nhap ten nguoi choi (che do quan chien), UiNewLogin\登陆过程提示.ini:146 [RoleName] (nhan). Khong co client script goi RenameRole/QueryRoleName; Patch\script\vng_event\item KHONG chua rename_func.lua (script item chay phia server).
+   BC: grep -rIl trong D:\ServerLinux\Patch; D:\ServerLinux\Patch\ui\ui3_1024\观战模式窗口.ini:65-67; UiNewLogin\登陆过程提示.ini:145-152; find Patch/script/vng_event
+
+--- [3] (cao)
+UiNewLogin\新建角色.ini (tao nhan vat) co muc [Name] voi Type=2 (o nhap ten) — mau bo cuc o nhap ten phia Linux client; du lieu mon phai client o settings\faction\门派设定.ini ([Name] New/Old; [0] shaolin Thieu Lam S_GOLD C_JUSTICE; [1] tianwang; [2] tangmen; [3] wudu; [4] emei; [5] cuiyan ...) va factionskill.txt.
+   BC: D:\ServerLinux\Patch\ui\ui3_1024\UiNewLogin\新建角色.ini:15-22; D:\ServerLinux\Patch\settings\faction\门派设定.ini:1-45; ls Patch/settings/faction
+
+--- [4] (cao)
+VAT PHAM DOI TEN (Linux VN): 'Tinh Danh Chi Lenh' Genre 6 DetailType 1 ParticularType 30448, icon \spr\item\script\tianbaokuling.spr, mo ta 'Su dung se nhan duoc 1 lan doi ten nhan vat. 7 ngay sau moi co the tiep tuc su dung', script \script\vng_event\item\rename_func.lua. Cot 4 magicscript = ParticularType (header: 名称/ItemGenre/DetailType/ParticularType). forbititem.ini [Item_288] Genre 6 D1 ParticulType 30448 (ParticulType2 30449) ForbitThrowAway=1, ForbitTrade=0, ForbitSell=0.
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:1 (header), :3199; D:\ServerLinux\server1\settings\forbititem.ini:3324-3336
+
+--- [5] (cao)
+Script item rename_func.lua (20 dong): neu bit1 cua task 2320 (TASKVALUE_BLEND) da =1 -> bao 'da co 1 lan doi ten, gap Su Gia'; neu GetCurServerTime < task 3060 + 604800 -> bao cho 7 ngay; nguoc lai SetTask(3060, now), SetBit(task 2320, bit1)=1, Msg2Player 'gap Su Gia o cac thon tran de doi ten', log 'SuDungTinhDanhChiLenhThanhCong'. Item KHONG goi RenameRole — chi cap quyen.
+   BC: D:\ServerLinux\server1\script\vng_event\item\rename_func.lua:3-20; D:\ServerLinux\server1\script\global\rename_head.lua:8,14-19; settings\task\player_task_def.txt:507 (2320 数据并服-是否需要改名等)
+
+--- [6] (cao)
+Luong doi ten thuc su: NPC 'Su gia' (template 87, dat o 8 map 20/53/121/99/100/101/174/153) chay misc\spreader\spreader.lua -> menu 'Dat lai ten cho nhan vat/about_rename_role' (:41) va 'Nguoi choi doi ten nhan vat khi chuyen Server moi/rename_role_tranfer' (:43) -> misc\rename\rename_func.lua: func_online_rename_role (check_renamerole bit1 task 2320) -> Say 3 lua chon; query_rolename: AskClientForString('on_query_rolename','',1,20,...) -> QueryRoleName(new_name); change_rolename2: cam neu GetTongName() co Bang hoi, AskClientForString('on_change_rolename','',1,20,'Xin nhap ten nhan vat moi vao'); on_change_rolename: neu GetName()==new_name thi tu choi, else SetTask(3060, now) + RenameRole(new_name). Loi thoai noi 'ban se tu dong roi mang, 3 phut sau dang nhap lai'.
+   BC: D:\ServerLinux\server1\script\global\addspreadernpc.lua:5-12; script\misc\spreader\spreader.lua:16,41-43,316-325; script\misc\rename\rename_func.lua:13-60
+
+--- [7] (cao)
+Cac diem goi RenameRole khac trong Linux: global\general\thunghiem\doiten.lua:37-46 (thu 50 'Tien dong' = item (4,417) — questkey.txt:419 'Tien dong' G4 D417 — bang CalcEquiproomItemCount(4,417,1,-1) roi RenameRole + ConsumeEquiproomItem(50,4,417,1,1)); npc_thunghiem.lua:330-336 (DoiTenNV -> AskClientForString('danhten','',1,100) -> RenameRole); thinh\npc\npc_vocong.lua:20,29-34 (menu 'Doi Ten Nhan Vat/doiten' -> RenameRole; cung menu co 'Tay Tuy', 'Chuyen Gioi' SetSex); gm\lbadmin.lua:1935; gm\ex_lib_function.lua:449. QueryRoleName: doiten.lua:17, rename_func.lua:31.
+   BC: D:\ServerLinux\server1\script\global\general\thunghiem\doiten.lua:12-48; settings\item\004\questkey.txt:419; script\global\general\thunghiem\npc_thunghiem.lua:330-336; script\global\thinh\npc\npc_vocong.lua:14-34; grep RenameRole toan script
+
+--- [8] (cao)
+Item doi ten cu 'Di Danh Phu' G6 D1 P1534 (icon yimingfu.spr, script \script\item\yimingfu.lua, han 28-10-2007) — script yimingfu.lua KHONG ton tai trong server1\script -> item chet. Ban goc TQ (magicscriptTQ.txt) con 易名符 P1534 (:1546) va 易名符 P5458 (:8080, script rename_talisman.lua, doi ten tai 易名大师 江津村 437/384) — P5458 va 门派信物 P4983 (:5604) KHONG co trong ban VN (file VN chi 4996 dong).
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:1546; magicscriptTQ.txt:1546,5604,8080; kiem tra ton tai script/item/yimingfu.lua va rename_talisman.lua (MISSING)
+
+--- [9] (cao)
+VAT PHAM DOI PHAI (dai nghe dau su) ban VN: 'Tin vat mon phai' G6 D1 P1670 (zhuanzhiling.spr, noscript, 'Vat pham can thiet de chuyen mon phai'); 'Tin vat Duong Anh' P1671 (nvtianwangling.spr, cho nu vao Thien Vuong); 'Tran phai linh dan' P1704 (zhenpailingdan.spr, +1 diem ky nang sau khi vao phai moi); 'Tran phai linh duoc' P1705 (zhenpailingyao.spr, +5 tiem nang, toi da 400); 'Hoa Son Ky Thu' P4328 (23miji.spr, can de vao Hoa Son). Hang so script: TB_TOUSHI_MENPAIXINWU={6,1,1670}, TB_TOUSHI_YANGYINGXINWU={6,1,1671}, TB_TOUSHI_ZHENPAILINGDAN={6,1,1704,1,0,0}, TB_TOUSHI_ZHENPAILINGYAO={6,1,1705,1,0,0}.
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:1682,1683,1716,1717,4787; script\misc\daiyitoushi\toushi_head.lua:75-78
+
+--- [10] (cao)
+Luong doi phai Linux (toushi_function.lua, include tu global\pgaming\npc\chuongmoncacphai\*.lua:8): toushiCheckApplyState can cap >=120 (:21); nop tin vat qua GiveItemUI('Trinh tin vat mon phai', ..., 'toushiApplyShowXinWu','OnCancel',1) (:189) -> GetGiveItemUnit/GetItemProp so voi {6,1,1670} (:206-209) -> RemoveItemByIndex + SetTask(TSK_TOUSHI_FLAG=1881,1) (:219-220); toushiTransSure: ConsumeItem tin vat Duong Anh (:318-321), ConsumeEquiproomItem(1,6,1,4328,1) cho Hoa Son (:332), toushiDoTransPlayer: SetLastFactionNumber (:477), SetFaction(szFacName) (:483), tang linh dan/linh duoc khoa (:503-504). Task: 1881 flag, 1882 dem dung linh dan, 1883 so lan chuyen, 2604 thoi diem chuyen gan nhat, cooldown 60 ngay (TOUSHI_COLDDOWN_TIME), 15 ma loi TB_TOUSHI_ERR_MSG. NPC chuong mon cu (thieulam.lua:122-166) van co xuat su/quay lai bang SetFaction('')/SetFaction('shaolin') + Pay(50000).
+   BC: D:\ServerLinux\server1\script\misc\daiyitoushi\toushi_function.lua:20-25,186-230,309-336,477-504; toushi_head.lua:43-99; script\global\pgaming\npc\chuongmoncacphai\thieulam.lua:8,28-66,122-166
+
+--- [11] (cao)
+'Tay tuy' o Linux = reset diem (khong phai doi phai): Tay Tuy Kinh G6 D1 P22 (xisui-jing.lua, tiem nang), Bach Ngoc P2390 / Tu Ngoc P2391 (nop xa phu vao dao tay tuy), Bac Dau Tay Tuy Don P30127 (tay diem ky nang trung sinh 4); map XISUIDAO 242|318 (map_type.txt:12); mission 10 clearskill (missions.txt:11, timertask.txt:21); thunghiem\taytuynhanh.lua: taydiemkynangok dung RollbackSkill() + AddMagicPoint (:18-34), taydiemtiemnangok reset str/dex/vit/eng theo he (:40-51).
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:25,2402,2403,2878; settings\map_type.txt:12; settings\task\missions.txt:11; script\global\general\thunghiem\taytuynhanh.lua:5-51; script\missions\clearskill\mission.lua:23-29
+
+--- [12] (cao)
+VLTK Level Up client: 36 pak trong data\ (1024.pak 15MB, slistcache 3.2MB, slistfree 0.5MB, vng00 112MB, update.pak 90MB, update01-04, updatejx01-17 den 1.7GB, spr 738MB, resource 238MB, maps 90MB, skills 39MB...). Da quet UCL toan bo: slistcache, slistfree, 1024, updatejx17, vng00 (entry <=3MB). CHUA GIAI NEN: update.pak, update01-04, updatejx01-16, spr, resource, maps, skills. Khong tim thay ten muc \ui\ui3_1024\输入字串界面.ini / UiGetString*.ini / 给予界面.ini trong bat ky pak nao (ten muc UI VLTK chua xac dinh).
+   BC: ls C:\Users\nguye\Level Up Games\Vo Lam Truyen Ky\data; scratchpad t4_vltk_scan.py, t4_uidcheck.py (name2id theo pakdump.py)
+
+--- [13] (cao)
+VLTK bang chuoi giao dien slistcache uid 59A637DE (63240 byte): KHONG co chuoi doi ten nhan vat; chi MSG_CHAT_RENAME_TEAM_FAIL (:855) va MSG_TONG_CHANGE_JOB_CALL_ERROR2 'Bang chu moi co the thay doi ten goi' (:966). Bang thoai NPC uid EE5FAD05: 15173 'Con Lon ... muon chuyen mon phai, ta se phe tat ca vo cong' (kich ban xuat su cu), 10508-11511 thoai tay tuy dao. Pet.ini (1024.pak uid A069D4C0) co [ChangeNameBtn] 'Doi ten hao huu' = doi ten PET, khong phai nhan vat.
+   BC: scratchpad slistcache.pak__59A637DE.bin:855,966; slistcache.pak__EE5FAD05.bin:509-513,1477-1489,5174; 1024.pak__A069D4C0.bin:56-70 (ScriptFile=\script\petsys\ui.lua)
+
+--- [14] (cao)
+VLTK magicscript (slistcache uid 61DBE5A6 = \settings\item\004\magicscript.txt, uid da xac minh bang name2id): :1546 Di Danh Phu P1534 (yimingfu.lua); :1682 Tin vat mon phai P1670 'Vat pham can thiet de chuyen mon phai'; :1717 Tran phai linh duoc P1705 script \script\item\daiyitoushi\zhenpailingyao.lua; :2402/2403 Bach Ngoc/Tu Ngoc; :2892 Bac Dau Tay Tuy Don P30127. KHONG co Tinh Danh Chi Lenh P30448/rename_func trong VLTK. vng00.pak magicscript moi hon (uid 4FFECCC1, 8638 dong) :682 '#Dang doi doi ten nhan vat' Genre 8 D680 (buff 259200 giay = 3 ngay, \script\item\buffend\buff662.lua, 'Da gap Phu an su xin phep Doi ten nhan vat, doi luc thich hop se doi'); tooltip [BuffInfo_680] Title 'Giai doan cho doi ten nhan vat' (vng00 uid 59CDE7EE:2106-2109 va FF0CD8FA:2106-2109) -> VLTK co co che doi ten cho 3 ngay qua NPC 'Phu an su', du lieu buff, khong co UI rieng.
+   BC: scratchpad slistcache.pak__61DBE5A6.bin:1546,1682,1717,2402,2403,2892; vng00.pak__4FFECCC1.bin:682; vng00.pak__59CDE7EE.bin:2106-2109; t4_uidcheck.py (61DBE5A6 = magicscript.txt)
+
+--- [15] (cao)
+JX1 S3Client DA CO o nhap chuoi do server mo: KUiGetString2 (OpenWindow(title, scriptIndex); KWndEdit512; m_nMinLen=1, m_nMaxLen=512; scheme 'UiGetString2.ini'); OnOk gui GOI_INPUT_INFO voi KUiInPutBoxCmd{nValue[32]=ten ham, nNum, szAction[64]=chuoi}; mo boi GDCNI_OPEN_INPUT (GameSpaceChangedNotify.cpp:818-819) khi nhan S2C_INPUT_BOX nType=1 (Value[32] prompt, Value1[32] ten ham). Server: LuaOpenGetString (ScriptFuns.cpp:10790, dang ky :15126) va LuaWllsAskClientForString (14261, dang ky :15336 'AskClientForString') deu gui s2c_inputbox nType 1; c2sInputCommand case 1 (KProtocolProcess.cpp:6463-6487) chep vao szStringInput[64] va khi m_bWllsAskStrArg=1 goi ExecuteScript(m_dwStrBoxId, m_szTaskExcuteFun, chuoi) -> callback nhan chuoi lam doi so 1, y het Linux. Gioi han: prompt <=31 byte, chuoi <=63 byte, ten callback <=31 (m_szTaskExcuteFun[32] KPlayer.h:589). Script song JX1 da dung AskClientForString o 4 tep (dailogsys/dailogsay.lua, missions/leaguematch/npc/{head,helper,officer}.lua).
+   BC: D:\GAMEDEVNEW\Sources\S3Client\Ui\UiCase\UiGetString2.h:12-39; UiGetString2.cpp:14,29-30,134-147; Core\Src\GameDataDef.h:841-846; Core\Src\KProtocol.h:1888-1890,1917-1919; Core\Src\ScriptFuns.cpp:10790-10824,14256-14284,15126,15336; Core\Src\KProtocolProcess.cpp:6463-6487; Core\Src\KPlayer.h:589,649,681; grep E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script
+
+--- [16] (cao)
+Cac o nhap khac co san o JX1 client: KUiGetString (UiGetString.h:14-44; KWndEdit32; nMinLen=4/nMaxLen=16 mac dinh; bNum; scheme 'UiGetString.ini'; callback noi bo ve cua so yeu cau — dung cho doi ten nhom chat UiChatCentre.cpp:670/679, rao ban UiItem.cpp:420, ten tep auto UiAutoPlay.cpp:4466); KUiTongGetString (UiTongGetString.h:14-43, ten bang, 4..16); KUiGetNumber (GDCNI_OPEN_INPUT2); KUiNewPlayer (UiNewPlayer.h:41 KWndEdit32 m_Name; UiNewPlayer.cpp:354-390 GetInputInfo: byte >0x80 phai di cap 2 byte va khong 0xA1A1, ASCII chi 0x21..0x7E, do dai LOGIN_ROLE_NAME_MIN_LEN=6..LOGIN_ROLE_NAME_MAX_LEN=16 (Login\LoginDef.h:54-55); _NAME_LEN=32 KProtocol.h:1315) — luat kiem ten nay tai dung duoc cho ten moi (nen kiem lai phia server).
+   BC: D:\GAMEDEVNEW\Sources\S3Client\Ui\UiCase\UiGetString.h:14-44; UiGetString.cpp:16,36-37,163-193; UiTongGetString.h:14-43; UiNewPlayer.h:41; UiNewPlayer.cpp:354-390; S3Client\Login\LoginDef.h:54-55; Core\Src\KProtocol.h:1315; grep KUiGetString::OpenWindow
+
+--- [17] (cao)
+JX1 DA CO GiveItemUI (LuaGiveItemUI dang ky ScriptFuns.cpp:15694; client KUiAffairItem mo boi GDCNI_OPEN_AFFAIR_BOX GameSpaceChangedNotify.cpp:787-791; script song dailogsys\dailogsay.lua:116-141 g_GiveItemUI/g_GiveItemUIBack) -> luong 'trinh tin vat mon phai' cua daiyitoushi (GiveItemUI + GetGiveItemUnit + GetItemProp + RemoveItemByIndex) co the tai dung, khong can UI moi. Linux Patch cung chi co 给予界面.ini (khong cua so rieng).
+   BC: D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp:15694; S3Client\Ui\GameSpaceChangedNotify.cpp:787-791; E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\server\script\dailogsys\dailogsay.lua:116-141; D:\ServerLinux\Patch\ui\ui3_1024 (给予界面.ini)
+
+--- [18] (cao)
+JX1 THIEU phia server/DB cho doi ten: ScriptFuns.cpp khong dang ky RenameRole/QueryRoleName/RenameTong; MultiServer (Goddess/Bishop/S3Relay) khong co ham rename. Goddess roledb khoa theo TEN nhan vat: IDBRoleServer.h GetRoleInfo(buf, strUser), SaveRoleInfo(buf, strUser, bAutoInsert), DeleteRole(strUser), GetAccountByUser(strUser), GetRoleListOfAccount(account,...); loc ten khi tao CRoleNameFilter g_fltRoleName.IsTextPass(BaseInfo.szName) (ClientNode.cpp:363,391). -> Port doi ten can them o Goddess: kiem ten trung + loc ten + chuyen ban ghi tu khoa cu sang khoa moi + cap nhat danh sach role cua tai khoan (thuoc TASK 3; phia client khong can gi them).
+   BC: grep D:\GAMEDEVNEW\Sources\Core\Src\ScriptFuns.cpp ("RenameRole"/"QueryRoleName": khong); MultiServer\Goddess\IDBRoleServer.h:11-24; MultiServer\Goddess\ClientNode.cpp:349-410,363,391,480-496; grep -ri RenameRole|ChangeRoleName MultiServer: khong co ma nguon
+
+--- [19] (cao)
+Patch la ban delta: thu muc spr\ui3\特殊对话条 chi co 输入文字条－拆分.spr; anh 输入文字条2.spr/－确定/－取消 ma 输入字串界面.ini tham chieu nam o client goc (khong trong Patch). JX1 dung scheme rieng UiGetString2.ini nen KHONG can lay anh nay.
+   BC: D:\ServerLinux\Patch\spr\ui3\特殊对话条 (t4_uidcheck.py); D:\ServerLinux\Patch\ui\ui3_1024\输入字串界面.ini:10,49,61
+
+--- [20] (trung)
+DU LIEU can them khi port (de xuat tu doi chieu): (1) magicscript JX1: Tinh Danh Chi Lenh (G6 D1, P moi, icon \spr\item\script\tianbaokuling.spr, script rename_func.lua) va bo doi phai Tin vat mon phai (zhuanzhiling.spr), Tin vat Duong Anh (nvtianwangling.spr), Tran phai linh dan (zhenpailingdan.spr), Tran phai linh duoc (zhenpailingyao.spr), Hoa Son Ky Thu (\spr\item\script\other\23miji.spr) — can kiem tra cac .spr nay co trong pak client JX1 (chua kiem, spr.pak VLTK chua giai nen); nho bay 'magicscript RECORD INDEX = ma item' cua JX1. (2) forbititem: muc ForbitThrowAway=1 cho item doi ten. (3) NPC 'Su gia' template 87 tai 8 thanh (addspreadernpc.lua) hoac gan menu vao NPC co san. (4) Task id 2320 (bit1 doi ten, bit2 doi ten bang, bit3 boi thuong thanh chu), 3060 (moc 7 ngay), 1881/1882/1883/2604 (doi phai) phai quet trung voi JX1 truoc khi dung. (5) Chuoi thoai/menu TCVN3 (Say/Talk) — khong can bang chuoi client.
+   BC: D:\ServerLinux\server1\settings\item\004\magicscript.txt:3199,1682,1683,1716,1717,4787; settings\forbititem.ini:3325-3336; script\global\addspreadernpc.lua:3-12; script\global\rename_head.lua:8-37; script\vng_event\item\rename_func.lua:3; script\misc\daiyitoushi\toushi_head.lua:45-52
+

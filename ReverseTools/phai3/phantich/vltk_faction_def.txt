@@ -1,0 +1,1121 @@
+# out/vltk/slistcache__script__faction_def.lua : 1120 dong
+    1| -- 注意：各个门派的定义，这份是lua的，C++的定义在\settings\faction_settings.ini
+    2| tbFacDef = {}
+    3| tbFacDef.nMaxFac = 13
+    4| tbFacDef.tbIds = {
+    5|     SHAOLIN     = 0,
+    6|     TIANWANG    = 1,
+    7|     TANGMEN     = 2,
+    8|     WUDU        = 3,
+    9|     EMEI        = 4,
+   10|     CUIYAN      = 5,
+   11|     GAIBANG     = 6,
+   12|     TIANREN     = 7,
+   13|     WUDANG      = 8,
+   14|     KUNLUN      = 9,
+   15|     HUASHAN     = 10,
+   16|     WUHUN       = 11,
+   17|     XIAOYAO     = 12,
+   18| }
+   19| 
+   20| tbFacDef.tbSchools = {
+   21| 	[1] = "Thiếu Lâm quyền pháp",
+   22| 	[2] = "Thiếu Lâm côn pháp",
+   23| 	[3] = "Thiếu Lâm đao pháp",
+   24| 	[4] = "Thiên Vương chùy pháp",
+   25| 	[5] = "Thiên Vương thương pháp",
+   26| 	[6] = "Thiên Vương đao pháp",
+   27| 	[7] = "Nga Mi kiếm pháp",
+   28| 	[8] = "Nga Mi chưởng pháp",
+   29| 	[9] = "Thúy Yên đao pháp",
+   30| 	[10] = "Thúy Yên song đao",
+   31| 	[11] = "Ngũ Độc chưởng pháp",
+   32| 	[12] = "Ngũ Độc đao pháp",
+   33| 	[13] = "Đường Môn Phi Đao",
+   34| 	[14] = "Đường Môn nỏ tiễn",
+   35| 	[15] = "Đường Môn phi tiêu",
+   36| 	[16] = "Cái Bang chưởng pháp",
+   37| 	[17] = "Cái Bang côn pháp",
+   38| 	[18] = "Thiên Nhẫn mâu pháp",
+   39| 	[19] = "Thiên Nhẫn đao pháp",
+   40| 	[20] = "Võ Đang quyền pháp",
+   41| 	[21] = "Võ Đang kiếm pháp",
+   42| 	[22] = "Côn Lôn đao pháp",
+   43| 	[23] = "Côn Lôn kiếm pháp",
+   44| 	[24] = "Hoa Sơn khí tông",
+   45| 	[25] = "Hoa Sơn kiếm tông",
+   46| 	[26] = "Võ Hồn Thuẫn Pháp",
+   47| 	[27] = "Võ Hồn Đao Pháp",
+   48|     [28] = "Tiêu Dao Kiếm Pháp",
+   49|     [29] = "Tiêu Dao Cầm Pháp",
+   50| }
+   51| 
+   52| tbFacDef.tbWholeInfoList =
+   53| {
+   54| --      [tbFacDef.tbIds.SHAOLIN] = {-- 
+   55| --          门派名, 门派ID, 阵营,   头衔ID, 属性
+   56| --          任务ID, 
+   57| --          137的变量,  137变量的值,        // 就这一项来说，搞不明白是做什么的，入门的时候设置
+   58| --          技能Tab,
+   59| --          入门公告,
+   60| --      },
+   61|     [tbFacDef.tbIds.SHAOLIN] = {-- 少林
+   62|         szFacName       = "shaolin",
+   63|         szFacChName     = "Thiếu Lâm phái",
+   64|         szFacShortName  = "Thiếu Lâm",
+   65|         szFacShortEng   = "sl",
+   66|         nFacNumb        = tbFacDef.tbIds.SHAOLIN,
+   67|         nCamp           = 1,
+   68|         nRankId         = 72,
+   69|         nSeries         = 0,
+   70|         nTaskId_Fact    = 7,
+   71|         nTaskId_90Skill = 122,
+   72|         nTaskId_137     = 137,
+   73|         nValue_137      = 67,
+   74|         n150TaskStep    = 6,
+   75|         nJinjieSkillID  = 1220,
+   76|         nFactionMapId   = 103,
+   77|         tbFactionMapPos = {1845,2983},
+   78|         szMsg           = "Kể từ hôm nay %s gia nhập môn phái Thiếu Lâm, sau này nhờ các huynh chỉ giáo!",
+   79|         tbSkillID       =
+   80|         {
+   81|             [10]    = {
+   82|                 14,     -- 行龙不雨[14]
+   83|                 10,     -- 金刚伏魔[10]（入门）
+   84|             },
+   85|             [20]    = {
+   86|                 8,      -- 少林拳法[8]
+   87|                 4,      -- 少林棍法[4]（10级）
+   88|                 6,      -- 少林刀法[6]（10级）
+   89|             },
+   90|             [30]    = {
+   91|                 15,     -- 不动明王[15]（20级）
+   92|             },
+   93|             [40]    = {
+   94|                 16,     -- 罗汉阵[16]（30级）
+   95|             },
+   96|             [50]    = {
+   97|                 20,     -- 狮子吼 [20]（40级）
+   98|             },
+   99|             [60]    = {
+  100|                 271,    -- 龙爪虎抓[271]
+  101|                 11,     -- 横扫六合 [11]（50级）
+  102|                 19,     -- 摩诃无量 [19]（50级）
+  103|             },
+  104|             [70]    = {
+  105|                 273,    -- 如来千叶[273]
+  106|                 21,     -- 易筋经[21]（60级）
+  107|             },
+  108|             [90]    = {
+  109|                 {318, 1, "Quyền pháp", "Đạt Ma Độ Giang"},   -- 达摩渡江[318]            添加熟练度技能 至少添加为1级
+  110|                 {319, 1, "Côn pháp", "Hoành Tảo Thiên Quân"},   -- 横扫千军[319]（90级）
+  111|                 {321, 1, "Đao pháp", "Vô Tướng Trảm "},     -- 无相斩  [321]（90级）
+  112|             },
+  113|             [120]   = {
+  114|                 {709, 1, "Thông dụng", "Đại Thừa Như Lai Chú"}
+  115|             },
+  116|             [150]   = {
+  117|                 {1055, 1, "Quyền pháp", "Đại Lực Kim Cang Chưởng"},  -- 大力金刚掌[318]          添加熟练度技能 至少添加为1级
+  118|                 {1056, 1, "Côn pháp", "Vi Đà Hiến Xử"},    -- 韦陀献杵[319]（90级）
+  119|                 {1057, 1, "Đao pháp", "Tam Giới Quy Thiền"},    -- 叁戒归禅[321]（90级）
+  120|             },
+  121|         },
+  122|         tbItemInfo      =
+  123|         {
+  124|             tbSkillBook90 = {
+  125|                 {"Thiếu Lâm Quyền Pháp. Quyển 1",56},
+  126|                 {"Thiếu Lâm Côn pháp. Quyển 2",57},
+  127|                 {"Thiếu Lâm Đao pháp. Quyển 3",58}
+  128|             },
+  129|         },
+  130|     },
+  131|     
+  132|     [tbFacDef.tbIds.TIANWANG] = {-- 天王
+  133|         szFacName       = "tianwang",
+  134|         szFacChName     = "Thiên Vương Bang",
+  135|         szFacShortName  = "Thiên Vương",
+  136|         szFacShortEng   = "tw",
+  137|         nFacNumb        = tbFacDef.tbIds.TIANWANG,
+  138|         nCamp           = 3,
+  139|         nRankId         = 69,
+  140|         nSeries         = 0,
+  141|         nTaskId_Fact    = 3,
+  142|         nTaskId_90Skill = 121,
+  143|         nTaskId_137     = 137,
+  144|         nValue_137      = 63,
+  145|         n150TaskStep    = 4,
+  146|         nJinjieSkillID  = 1221,
+  147|         nFactionMapId   = 59,
+  148|         tbFactionMapPos = {1552,3188},
+  149|         szMsg           = "Kể từ hôm nay %s gia nhập Thiên Vương, nhờ các sư huynh chỉ giáo!",
+  150|         tbSkillID       =
+  151|         {
+  152|             [10]    = {
+  153|                 34,     -- 惊雷斩[34]  （入门）
+  154|                 30,     -- 回风落雁[30]（入门）
+  155|                 29,     -- 斩龙诀[29]  （入门）
+  156|             },
+  157|             [20]    = {
+  158|                 26,     -- 天王锤法[26]（10级）
+  159|                 23,     -- 天王枪法[23]（10级）
+  160|                 24,     -- 天王刀法[24]（10级）
+  161|             },
+  162|             [30]    = {
+  163|                 33,     -- 静心诀[33]  （20级）
+  164|             },
+  165|             [40]    = {
+  166|                 37,     -- 泼风斩  [37]（30级）
+  167|                 35,     -- 阳关三叠[35]（30级）
+  168|                 31,     -- 行云诀  [31]（30级）
+  169|             },
+  170|             [50]    = {
+  171|                 40,     -- 断魂刺  [40]（40级）
+  172|             },
+  173|             [60]    = {
+  174|                 42,     -- 金钟罩  [42]（50级）
+  175|             },
+  176|             [70]    = {
+  177|                 32,     -- 无心斩  [32] （60级）
+  178|                 36,     -- 天王战意[36]（镇派）
+  179|                 41,     -- 血战八方[41] （60级）
+  180|                 324,    -- 乘龙诀  [324]（60级）
+  181|             },
+  182|             [90]    = {
+  183|                 {325, 1, "Chùy pháp", "Truy Phong Quyết "},     -- 追风诀  （90级）
+  184|                 {323, 1, "Thương pháp", "Truy Tinh Trục Nguyệt "},   -- 追星逐月（90级）
+  185|                 {322, 1, "Đao pháp", "Phá Thiên Trảm "},     -- 破天斩  （90级）
+  186|             },
+  187|             [120]   = {
+  188|                 {708, 1, "Thông dụng", "Đảo Hư Thiên"}    --
+  189|             },
+  190|             [150]   = {
+  191|                 {1059, 1, "Chùy pháp", "Tung Hoành Bát Hoang"},  -- 纵横八荒
+  192|                 {1060, 1, "Thương pháp", "Bá Vương Tạm Kim"},  -- 霸王錾金
+  193|                 {1058, 1, "Đao pháp", "Hào Hùng Trảm"},    -- 豪雄斩
+  194|             },
+  195|         },
+  196|         tbItemInfo      =
+  197|         {
+  198|             tbSkillBook90 = {
+  199|                 {"Thiên Vương Chùy Pháp. Quyển 1",37},
+  200|                 {"Thiên Vương Thương pháp. Quyển 2",38},
+  201|                 {"Thiên Vương Đao pháp.Quyển 3",39}
+  202|             },
+  203|         },
+  204|     },
+  205|     
+  206|     [tbFacDef.tbIds.TANGMEN] = {-- 唐门
+  207|         szFacName       = "tangmen",
+  208|         szFacChName     = "Đường Môn",
+  209|         szFacShortName  = "Đường Môn",
+  210|         szFacShortEng   = "tm",
+  211|         nFacNumb        = tbFacDef.tbIds.TANGMEN,
+  212|         nCamp           = 3,
+  213|         nRankId         = 76,
+  214|         nSeries         = 1,
+  215|         nTaskId_Fact    = 2,
+  216|         nTaskId_90Skill = 123,
+  217|         nTaskId_137     = 137,
+  218|         nValue_137      = 62,
+  219|         n150TaskStep    = 7,
+  220|         nJinjieSkillID  = 1223,
+  221|         nFactionMapId   = 25,
+  222|         tbFactionMapPos = {3982,5235},
+  223|         szMsg           = "Kể từ hôm nay, %s gia nhập Đường môn, cảm phiền các sư huynh sư tỷ chỉ giáo!",
+  224|         tbSkillID       =
+  225|         {
+  226|             [10]    = {
+  227|                 45,     -- 霹雳弹[45 ]（入门）
+  228|             },
+  229|             [20]    = {
+  230|                 43,     -- 唐门暗器[43 ]（10级）
+  231|                 347,    -- 地焰火[347]（10级）
+  232|             },
+  233|             [30]    = {
+  234|                 303,    -- 毒刺骨  [303]（20级）
+  235|             },
+  236|             [40]    = {
+  237|                 50,     -- 追心箭  [50 ]（30级）
+  238|                 54,     -- 漫天花雨[54 ]（30级）
+  239|                 47,     -- 夺魂镖  [47 ]（30级）
+  240|                 343,    -- 穿心刺  [343]（30级）
+  241|             },
+  242|             [50]    = {
+  243|                 345,    -- 寒冰刺  [345]（40级）
+  244|             },
+  245|             [60]    = {
+  246|                 349,    -- 雷击术[349]（50级）
+  247|             },
+  248|             [70]    = {
+  249|                 249,    -- 小李飞刀[249]（60级）
+  250|                 48,     -- 心眼  [48 ]（镇派）
+  251|                 58,     -- 天罗地网[58 ]（60级）
+  252|                 341,    -- 散花镖  [341]（60级）
+  253|             },
+  254|             [90]    = {
+  255|                 {339, 1, "Phi đao", "Nhiếp Hồn Nguyệt ảnh"},   -- 摄魂月影[339]（90级）
+  256|                 {302, 1, "Nỏ tiễn", "Bạo Vũ Lê Hoa"},   -- 暴雨梨花[302]（90级）
+  257|                 {342, 1, "Phi Tiêu", "Cửu Cung Phi Tinh"},   -- 九宫飞星[342]（90级）
+  258|                 {351, 0, "Thông dụng", "Loạn Hoàn Kích"},     -- 乱环击  [351]（90级）
+  259|             },
+  260|             [120]   = {
+  261|                 {710, 1, "Thông dụng", "Mê ảnh Tung"}
+  262|             },
+  263|             [150]   = {
+  264|                 {1069, 1, "Phi đao", "Vô ảnh Xuyên"},     -- 无影穿
+  265|                 {1070, 1, "Nỏ tiễn", "Thiết Liên Tứ Sát"},    -- 铁莲四杀
+  266|                 {1071, 1, "Phi Tiêu", "Càn Khôn Nhất Trịch"},    -- 乾坤一掷
+  267|                 {1110, 0, "Thông dụng", "Tích Lịch Loạn Hoàn Kích"},  -- 霹雳乱环击
+  268|             },
+  269|         },
+  270|         tbItemInfo      =
+  271|         {
+  272|             tbSkillBook90 = {
+  273|                 {"Phi Đao thuật. Nhiếp Hồn Nguyệt ảnh",45},
+  274|                 {"Tụ Tiễn thuật. Bạo Vũ Lê Hoa",27},
+  275|                 {"Phi Tiêu thuật. Cửu Cung Phi Tinh",46},
+  276|                 {"Hãm Tĩnh thuật.Loạn Hoàn Kích",28}
+  277|             },
+  278|         },
+  279|     },
+  280|     
+  281|     [tbFacDef.tbIds.WUDU] = {-- 五毒
+  282|         szFacName       = "wudu",
+  283|         szFacChName     = "Ngũ Độc Giáo",
+  284|         szFacShortName  = "Ngũ Độc",
+  285|         szFacShortEng   = "wu",
+  286|         nFacNumb        = tbFacDef.tbIds.WUDU,
+  287|         nCamp           = 2,
+  288|         nRankId         = 80,
+  289|         nSeries         = 1,
+  290|         nTaskId_Fact    = 10,
+  291|         nTaskId_90Skill = 124,
+  292|         nTaskId_137     = 137,
+  293|         nValue_137      = 70,
+  294|         n150TaskStep    = 5,
+  295|         nJinjieSkillID  = 1222,
+  296|         nFactionMapId   = 183,
+  297|         tbFactionMapPos = {1746,2673},
+  298|         szMsg           = "Kể từ hôm nay, %s gia nhập môn Ngũ Độc giáo, cảm phiền các sư huynh sư tỷ chỉ giáo!",
+  299|         tbSkillID       =
+  300|         {
+  301|             [10]    = {
+  302|                 63,     -- 毒砂掌  [63]（入门）
+  303|                 65,     -- 血刀毒杀[65]（入门）
+  304|             },
+  305|             [20]    = {
+  306|                 62,     -- 五毒掌法[62]（10级）
+  307|                 60,     -- 五毒刀法[60]（10级）
+  308|                 67,     -- 九天狂雷[67]（10级）
+  309|             },
+  310|             [30]    = {
+  311|                 70,     -- 赤焰蚀天[70]（20级）
+  312|                 66,     -- 杂难药经[66]（20级）
+  313|             },
+  314|             [40]    = {
+  315|                 68,     -- 幽冥骷髅[68 ]（30级）
+  316|                 384,    -- 百毒穿心[384]（30级）
+  317|                 64,     -- 冰蓝玄晶[64 ]（30级）
+  318|                 69,     -- 无形蛊  [69]（30级）
+  319|             },
+  320|             [50]    = {
+  321|                 356,    -- 穿衣破甲  [356]（40级）
+  322|                 73,     -- 万蛊蚀心[73 ]（40级）
+  323|             },
+  324|             [60]    = {
+  325|                 72,     -- 穿心毒刺[72]（50级）
+  326|                                         },
+  327|             [70]    = {
+  328|                 71,     -- 天罡地煞手[71 ]（60级）
+  329|                 75,     -- 五毒奇经[75]（镇派）
+  330|                 74,     -- 朱蛤青冥  [74 ]（60级）
+  331|             },
+  332|             [90]    = {
+  333|                 {353, 1, "Chưởng pháp", "Âm Phong Thực Cốt "},   -- 阴风蚀骨[353]（90级）
+  334|                 {355, 1, "Đao pháp", "Huyền Âm Trảm "},     -- 玄阴斩  [355]（90级）
+  335|                 {390, 0, "Thông dụng", "Đoạn Cân Hủ Cốt "},   -- 断筋腐骨[390]（90级）
+  336|             },
+  337|             [120]   = {
+  338|                 {711, 1, "Thông dụng", "Hấp Tinh Yểm"}
+  339|             },
+  340|             [150]   = {
+  341|                 {1066, 1, "Chưởng pháp", ""},  -- 形销骨立
+  342|                 {1067, 1, "Đao pháp", ""},  -- 幽魂噬影
+  343|             },
+  344|         },
+  345|         tbItemInfo      =
+  346|         {
+  347|             tbSkillBook90 = {
+  348|                 {"Ngũ Độc Chưởng Pháp. Quyển 1",47},
+  349|                 {"Ngũ Độc Đao pháp. Quyển 2",48},
+  350|                 {"Ngũ Độc Nhiếp Tâm thuật. Quyển 3",49}
+  351|             },
+  352|         },
+  353|     },
+  354|     
+  355|     [tbFacDef.tbIds.EMEI] = {-- 峨眉
+  356|         szFacName       = "emei",
+  357|         szFacChName     = "Nga My phái",
+  358|         szFacShortName  = "Nga Mi",
+  359|         szFacShortEng   = "em",
+  360|         nFacNumb        = tbFacDef.tbIds.EMEI,
+  361|         nCamp           = 1,
+  362|         nRankId         = 64,
+  363|         nSeries         = 2,
+  364|         nTaskId_Fact    = 1,
+  365|         nTaskId_90Skill = 125,
+  366|         nTaskId_137     = 137,
+  367|         nValue_137      = 61,
+  368|         n150TaskStep    = 7,
+  369|         nJinjieSkillID  = 1224,
+  370|         nFactionMapId   = 13,
+  371|         tbFactionMapPos = {1898,4978},
+  372|         szMsg           = "Kể từ hôm nay, %s gia nhập Nga My phái, cảm phiền các sư tỷ chỉ giáo",
+  373|         tbSkillID       =
+  374|         {
+  375|             [10]    = {
+  376|                 85,     -- 一叶知秋[85]（入门）
+  377|                 80,     -- 飘雪穿云[80]（入门）
+  378|             },
+  379|             [20]    = {
+  380|                 77,     -- 峨嵋剑法[77]（10级）
+  381|                 79,     -- 峨嵋掌法[79]（10级）
+  382|             },
+  383|             [30]    = {
+  384|                 93,     -- 慈航普渡[93]（20级）
+  385|             },
+  386|             [40]    = {
+  387|                 385,    -- 推窗望月[385]（30级）
+  388|                 82,     -- 四象同归[82]（30级）
+  389|                 89,     -- 梦蝶    [89]（30级）
+  390|             },
+  391|             [50]    = {
+  392|                 86,     -- 流水    [86 ]（40级）
+  393|             },
+  394|             [60]    = {
+  395|                 92,     -- 佛心慈佑[92]（50级）
+  396|             },
+  397|             [70]    = {
+  398|                 88,     -- 不灭不绝[88]（60级）
+  399|                 252,    -- 佛法无边[252]（镇派）
+  400|                 91,     -- 佛光普照[91]（60级）
+  401|                 282,    -- 清音梵唱[282]（60级）                          
+  402|             },
+  403|             [90]    = {
+  404|                 {328, 1, "Kiếm pháp", "Tam Nga Tề Tuyết "},   -- 三峨霁雪[328]（90级）
+  405|                 {380, 1, "Chưởng pháp", "Phong Sương Toái ảnh "},   -- 风霜碎影[380]（90级）
+  406|                 {332, 0, "Thông dụng", "Phổ Độ Chúng Sinh "},   -- 普渡众生[332]（90级）
+  407|             },
+  408|             [120]   = {
+  409|                 {712, 1, "Thông dụng", "Bế Nguyệt Phất Trần"}
+  410|             },
+  411|             [150]   = {
+  412|                 {1061, 1, "Kiếm pháp", "Kiếm Hoa Vãn Tinh"},  -- 剑花挽晶
+  413|                 {1062, 1, "Chưởng pháp", "Băng Vũ Lạc Tinh"},  -- 冰雨珞晶
+  414|                 {1114, 1, "Hỗ trợ", "Ngọc Tuyền Tâm Kinh"},  -- 玉泉心经
+  415|             },
+  416|         },
+  417|         tbItemInfo      =
+  418|         {
+  419|             tbSkillBook90 = {
+  420|                 {"Diệt Kiếm Mật Tịch",42},
+  421|                 {"Nga Mi  Phật Quang Chưởng Mật Tịch",43},
+  422|                 {"Phổ Độ Mật Tịch",59}
+  423|             },
+  424|         },
+  425|     },
+  426|     
+  427|     [tbFacDef.tbIds.CUIYAN] = {-- 翠烟
+  428|         szFacName       = "cuiyan", 
+  429|         szFacChName     = "Thúy Yên môn",
+  430|         szFacShortName  = "Thúy Yên",
+  431|         szFacShortEng   = "cy",
+  432|         nFacNumb        = tbFacDef.tbIds.CUIYAN,
+  433|         nCamp           = 3,
+  434|         nRankId         = 67,
+  435|         nSeries         = 2,
+  436|         nTaskId_Fact    = 6,
+  437|         nTaskId_90Skill = 126,
+  438|         nTaskId_137     = 137,
+  439|         nValue_137      = 66,
+  440|         n150TaskStep    = 6,
+  441|         nJinjieSkillID  = 1225,
+  442|         nFactionMapId   = 154,
+  443|         tbFactionMapPos = {403,1361},
+  444|         szMsg           = "Kể từ hôm nay, %s gia nhập Thúy Yên môn, cảm phiền các sư tỷ chỉ giáo!",
+  445|         tbSkillID       =
+  446|         {
+  447|             [10]    = {
+  448|                 99,     -- 风花雪月[99 ]（入门）
+  449|                 102,    -- 风卷残雪[102]（入门）
+  450|             },
+  451|             [20]    = {
+  452|                 95,     -- 翠烟刀法[95 ]（10级）
+  453|                 97,     -- 翠烟双刀[97 ]（10级）
+  454|             },
+  455|             [30]    = {
+  456|                 269,    -- 冰心倩影[269]（20级）
+  457|             },
+  458|             [40]    = {
+  459|                 105,    -- 雨打梨花[105]（30级）
+  460|                 113,    -- 浮云散雪[113]（30级）
+  461|             },
+  462|             [50]    = {
+  463|                 100,    -- 护体寒冰[100]（30级）
+  464|             },
+  465|             [60]    = {
+  466|                 109,    -- 雪影    [109]（40级）
+  467|             },
+  468|             [70]    = {
+  469|                 108,    -- 牧野流星[108]（60级）
+  470|                 114,    -- 冰骨雪心[114]（镇派）
+  471|                 111,    -- 碧海潮生[111]（60级）
+  472|             },
+  473|             [90]    = {
+  474|                 {336, 1, "Đao pháp", "Băng Tung Vô ảnh "},   -- 冰踪无影[336]（90级）
+  475|                 {337, 1, "Song đao", "Băng Tâm Tiên Tử  "},   -- 冰心仙子[337]（90级）
+  476|             },
+  477|             [120]   = {
+  478|                 {713, 1, "Thông dụng", "Ngự Tuyết ẩn"}
+  479|             },
+  480|             [150]   = {
+  481|                 {1063, 1, "Đao pháp", "Băng Tước Hoạt Kỳ"},  -- 冰雀越枝
+  482|                 {1065, 1, "Song đao", "Thủy Anh Man Tú"},  -- 水映曼秀
+  483|             },
+  484|         },
+  485|         tbItemInfo      =
+  486|         {
+  487|             tbSkillBook90 = {
+  488|                 {"Thúy Yên đao pháp",40},
+  489|                 {"Thúy Yên song đao",41}
+  490|             },
+  491|         },
+  492|     },
+  493|     
+  494|     [tbFacDef.tbIds.GAIBANG] = {-- 丐帮
+  495|         szFacName       = "gaibang",
+  496|         szFacChName     = "Cái Bang",
+  497|         szFacShortName  = "Cái Bang",
+  498|         szFacShortEng   = "gb",
+  499|         nFacNumb        = tbFacDef.tbIds.GAIBANG,
+  500|         nCamp           = 1,
+  501|         nRankId         = 78,
+  502|         nSeries         = 3,
+  503|         nTaskId_Fact    = 8,
+  504|         nTaskId_90Skill = 128,
+  505|         nTaskId_137     = 137,
+  506|         nValue_137      = 68,
+  507|         n150TaskStep    = 9,
+  508|         nJinjieSkillID  = 1227,
+  509|         nFactionMapId   = 115,
+  510|         tbFactionMapPos = {1501,3672},
+  511|         szMsg           = "Kể từ hôm nay, %s gia nhập Cái Bang, cảm phiền các tiền bối chỉ giáo!",
+  512|         tbSkillID       =
+  513|         {
+  514|             [10]    = {
+  515|                 122,    -- 见人伸手[122]（入门）
+  516|                 119,    -- 沿门托钵[119]（入门）
+  517|             },
+  518|             [20]    = {
+  519|                 116,    -- 丐帮掌法[116]（10级）
+  520|                 115,    -- 丐帮棒法[115]（10级）
+  521|             },
+  522|             [30]    = {
+  523|                 129,    -- 化险为夷[129]（20级）
+  524|             },
+  525|             [40]    = {
+  526|                 274,    -- 降龙掌[274]（30级）
+  527|                 124,    -- 打狗阵[124]（30级）
+  528|             },
+  529|             [50]    = {
+  530|                 277,    -- 滑不留手[277]（40级
+  531|             },
+  532|             [60]    = {
+  533|                 128,    -- 亢龙有悔[128]（50级）
+  534|                 125,    -- 棒打恶狗[125]（50级）
+  535|             },
+  536|             [70]    = {
+  537|                 130,    -- 醉蝶狂舞[130]（镇派）
+  538|                 360,    -- 逍遥功[360]（60级）
+  539|             },
+  540|             [90]    = {
+  541|                 {357, 1, "Chưởng pháp", "Phi Long Tại Thiên "},   -- 飞龙在天[357]（90级）
+  542|                 {359, 1, "Bổng pháp", "Thiên Hạ Vô Cẩu "},   -- 天下无狗[359]（90级）
+  543|             },
+  544|             [120]   = {
+  545|                 {714, 1, "Thông dụng", "Hỗn Thiên Khí Công"}
+  546|             },
+  547|             [150]   = {
+  548|                 {1073, 1, "Chưởng pháp", "Thời Thặng Lục Long"},  -- 时乘六龙
+  549|                 {1074, 1, "Bổng pháp", "Bổng Huýnh Lược Địa"},  -- 棒迥掠地
+  550|             },
+  551|         },
+  552|         tbItemInfo      =
+  553|         {
+  554|             tbSkillBook90 = {
+  555|                 {"Cái Bang chưởng pháp",54},
+  556|                 {"Cái Bang côn pháp",55}
+  557|             },
+  558|         },
+  559|     },
+  560|     
+  561|     [tbFacDef.tbIds.TIANREN] = {-- 天忍
+  562|         szFacName       = "tianren",
+  563|         szFacChName     = "Thiên Nhẫn Giáo",
+  564|         szFacShortName  = "Thiên Nhẫn",
+  565|         szFacShortEng   = "tr",
+  566|         nFacNumb        = tbFacDef.tbIds.TIANREN,
+  567|         nCamp           = 2,
+  568|         nRankId         = 81,
+  569|         nSeries         = 3,
+  570|         nTaskId_Fact    = 4,
+  571|         nTaskId_90Skill = 127,
+  572|         nTaskId_137     = 137,
+  573|         nValue_137      = 64,
+  574|         n150TaskStep    = 9,
+  575|         nJinjieSkillID  = 1226,
+  576|         nFactionMapId   = 49,
+  577|         tbFactionMapPos = {1644,3215},
+  578|         szMsg           = "Kể từ hôm nay, %s gia nhập Thiên Nhẫn giáo, bái kiến các sư huynh sư tỷ!",
+  579|         tbSkillID       =
+  580|         {
+  581|             [10]    = {
+  582|                 135,    -- 残阳如血[135]（入门）
+  583|                 145,    -- 弹指烈焰[145]（入门）
+  584|             },
+  585|             [20]    = {
+  586|                 132,    -- 天忍矛法[132]（10级）
+  587|                 131,    -- 天忍刀法[131]（10级）
+  588|                 136,    -- 火焚莲华[136]（10级）
+  589|             },
+  590|             [30]    = {
+  591|                 137,    --幻影飞狐[137]（20级）
+  592|             },
+  593|             [40]    = {
+  594|                 141,    -- 烈火情天[141]（30级）
+  595|                 138,    -- 推山填海[138]（30级）
+  596|                 140,    -- 飞鸿无迹[140]（30级）
+  597|             },
+  598|             [50]    = {
+  599|                 364,    -- 悲酥清风[364]（40级）
+  600|             },
+  601|             [60]    = {
+  602|                 143,    -- 厉魔夺魂[143]（50级）
+  603|             },
+  604|             [70]    = {
+  605|                 142,    -- 偷天换日[142]（60级）
+  606|                 150,    -- 天魔解体[150]（镇派）
+  607|                 148,    -- 魔焰七杀[148]（60级）
+  608|             },
+  609|             [90]    = {
+  610|                 {361, 1, "Thương pháp", "Vân Long Kích"},     -- 云龙击  [361]（90级）
+  611|                 {362, 1, "Đao pháp", "Thiên Ngoại Lưu Tinh"},   -- 天外流星[362]（90级）
+  612|                 {391, 0, "Thông dụng", "Nhiếp Hồn Loạn Tâm "},   -- 慑魂乱心[391]（90级）
+  613|             },
+  614|             [120]   = {
+  615|                 {715, 1, "Thông dụng", "Ma Âm Phệ Phách"}
+  616|             },
+  617|             [150]   = {
+  618|                 {1075, 1, "Thương pháp", "Giang Hải Nộ Lan"},  -- 江海怒澜
+  619|                 {1076, 1, "Đao pháp", "Tật Hỏa Liệu Nguyên"},  -- 疾火燎原
+  620|             },
+  621|         },
+  622|         tbItemInfo      =
+  623|         {
+  624|             tbSkillBook90 = {
+  625|                 {"Vân Long Kích. Mâu pháp",35},
+  626|                 {"Lưu Tinh. Đao pháp",36},
+  627|                 {"Nhiếp Hồn. Chú thuật",53}
+  628|             },
+  629|         },
+  630|     },
+  631|     
+  632|     [tbFacDef.tbIds.WUDANG] = {-- 武当
+  633|         szFacName       = "wudang",
+  634|         szFacChName     = "Võ Đang phái",
+  635|         szFacShortName  = "Võ Đang",
+  636|         szFacShortEng   = "wd",
+  637|         nFacNumb        = tbFacDef.tbIds.WUDANG,
+  638|         nCamp           = 1,
+  639|         nRankId         = 73,
+  640|         nSeries         = 4,
+  641|         nTaskId_Fact    = 5,
+  642|         nTaskId_90Skill = 129,
+  643|         nTaskId_137     = 137,
+  644|         nValue_137      = 65,
+  645|         n150TaskStep    = 5,
+  646|         nJinjieSkillID  = 1228,
+  647|         nFactionMapId   = 81,
+  648|         tbFactionMapPos = {1574,3224},
+  649|         szMsg           = "Kể từ hôm nay, %s gia nhập Võ Đang phái, tham kiến các sư huynh sư tỷ!",
+  650|         tbSkillID       =
+  651|         {
+  652|             [10]    = {
+  653|                 153,    -- 怒雷指  [153]（入门）
+  654|                 155,    -- 沧海明月[155]（入门）
+  655|             },
+  656|             [20]    = {
+  657|                 152,    -- 武当拳法[152]（10级）
+  658|                 151,    -- 武当剑法[151]（10级）
+  659|             },
+  660|             [30]    = {
+  661|                 159,    -- 七星阵  [159]（30级）
+  662|             },
+  663|             [40]    = {
+  664|                 164,    -- 剥及而复[164]（30级）
+  665|                 158,    -- 剑飞惊天[158]（30级）
+  666|             },
+  667|             [50]    = {
+  668|                 160,    -- 梯云纵  [160]（40级）
+  669|             },
+  670|             [60]    = {
+  671|                 157,    -- 坐望无我[157]（50级）
+  672|             },
+  673|             [70]    = {
+  674|                 165,    -- 无我无剑[165]（60级）
+  675|                 166,    -- 太极神功[166]（镇派）
+  676|                 267,    -- 三环套月[267]（60级）
+  677|             },
+  678|             [90]    = {
+  679|                 {365, 1, "Quyền pháp", "Thiên Địa Vô Cực "},   -- 天地无极[365]（90级）
+  680|                 {368, 1, "Kiếm pháp", "Nhân Kiếm Hợp Nhất  "},   -- 人剑合一[368]（90级）
+  681|             },
+  682|             [120]   = {
+  683|                 {716, 1, "Thông dụng", "Xuất ứ Bất Nhiễm"}
+  684|             },
+  685|             [150]   = {
+  686|                 {1078, 1, "Quyền pháp", "Tạo Hóa Thái Thanh"},  -- 造化太清
+  687|                 {1079, 1, "Kiếm pháp", "Kiếm Thùy Tinh Hà"},  -- 剑垂星河
+  688|             },
+  689|         },
+  690|         tbItemInfo      =
+  691|         {
+  692|             tbSkillBook90 = {
+  693|                 {"Thái Cực Quyền Phổ. Quyển 3",33},
+  694|                 {"Thái Cực Kiếm Phổ. Quyển 2",34}
+  695|             },
+  696|         },
+  697|     },
+  698|     
+  699|     [tbFacDef.tbIds.KUNLUN] = {-- 昆仑
+  700|         szFacName       = "kunlun",
+  701|         szFacChName     = "Côn Lôn phái",
+  702|         szFacShortName  = "Côn Lôn",
+  703|         szFacShortEng   = "kl",
+  704|         nFacNumb        = tbFacDef.tbIds.KUNLUN,
+  705|         nCamp           = 3,
+  706|         nRankId         = 75,
+  707|         nSeries         = 4,
+  708|         nTaskId_Fact    = 9,
+  709|         nTaskId_90Skill = 130,
+  710|         nTaskId_137     = 137,
+  711|         nValue_137      = 69,
+  712|         n150TaskStep    = 5,
+  713|         nJinjieSkillID  = 1229,
+  714|         nFactionMapId   = 131,
+  715|         tbFactionMapPos = {1582,3175},
+  716|         szMsg           = "Kể từ hôm nay, %s gia nhập Côn Lôn phái, bái kiến các vị đạo huynh!",
+  717|         tbSkillID       =
+  718|         {
+  719|             [10]    = {
+  720|                 169,    -- 呼风法  [169]（入门）
+  721|                 179,    -- 狂雷震地[179]（入门）
+  722|             },
+  723|             [20]    = {
+  724|                 167,    -- 昆仑刀法[167]（10级）
+  725|                 168,    -- 昆仑剑法[168]（10级）
+  726|                 392,    -- 缠字诀[392]（10级）
+  727|                 171,    -- 清风符  [171]（10级）
+  728|             },
+  729|             [30]    = {
+  730|                 174,    -- 羁绊符  [174]（20级）
+  731|             },
+  732|             [40]    = {
+  733|                 178,    -- 一气三清[178]（30级）
+  734|                 172,    -- 迅雷咒  [172]（30级）
+  735|                 393,    -- 缺少ID（30级）
+  736|                 173,    -- 天清地浊[173]（30级）
+  737|             },
+  738|             [50]    = {
+  739|                 175,    -- 欺寒傲雪[175]（40级）
+  740|                 181,    -- 弃心符  [181]（40级）
+  741|             },
+  742|             [60]    = {
+  743|                 176,    -- 狂风骤电[176]（50级）
+  744|                 90,     -- 迷踪幻影[90 ]（50级）
+  745|             },
+  746|             [70]    = {
+  747|                 275,    -- 霜傲昆仑[275]（镇派）
+  748|                 182,    -- 五雷正法[182]（60级）
+  749|                 630,   -- 第三资料片，增加昆仑新技能"玄天无极"
+  750|             },
+  751|             [90]    = {
+  752|                 {372, 1, "Đao pháp", "Ngạo Tuyết Tiêu Phong "},   -- 傲雪啸风[372]（90级）
+  753|                 {375, 1, "Kiếm pháp", "Lôi động Cửu Thiên "},   -- 雷动九天[375]（90级）
+  754|                 {394, 0, "Thông dụng", "Túy Tiên Tá Cốt"},   -- 醉仙错骨[394]（90级）
+  755|             },
+  756|             [120]   = {
+  757|                 {717, 1, "Thông dụng", "Lưỡng Nghi Chân Khí"}
+  758|             },
+  759|             [150]   = {
+  760|                 {1080, 1, "Đao pháp", "Cửu Thiên Cương Phong"},  -- 九天罡风
+  761|                 {1081, 1, "Kiếm pháp", "Thiên Lôi Chấn Nhạc"},  -- 天雷震岳
+  762|             },
+  763|         },
+  764|         tbItemInfo      =
+  765|         {
+  766|             tbSkillBook90 = {
+  767|                 {"Ngự Phong thuật",50},
+  768|                 {"Ngự Lôi thuật",51},
+  769|                 {"Ngự Tâm thuật",52}
+  770|             },
+  771|         },
+  772|     },
+  773|     [tbFacDef.tbIds.HUASHAN] = {-- 华山
+  774|         szFacName       = "huashan",
+  775|         szFacChName     = "Hoa Sơn phái",
+  776|         szFacShortName  = " Hoa Sơn",
+  777|         szFacShortEng   = "hs",
+  778|         nFacNumb        = tbFacDef.tbIds.HUASHAN,
+  779|         nCamp           = 3,
+  780|         nRankId         = 89,
+  781|         nSeries         = 2,
+  782|         nTaskId_Fact    = 3481, -- 门派任务变量
+  783|         nTaskId_90Skill = 3486, -- 90技能任务变量
+  784|         nTaskId_137     = 137 , -- 出师任务变量
+  785|         nValue_137      = 71  , -- 出师任务变量值
+  786|         n150TaskStep    = 9,    -- 150技能任务步骤
+  787|         nJinjieSkillID  = 1370, -- 进阶技能(浩然之气)
+  788|         nFactionMapId   = 987,
+  789|         tbFactionMapPos = {1346,3128},
+  790|         szMsg           = "%s bắt đầu từ hôm nay gia nhập phái Hoa Sơn, đến gặp và bái kiến các vị sư huynh, xin các vị chiếu cố!",
+  791|         tbSkillID       =
+  792|         {
+  793|             [10] = {
+  794|                 1347,   -- 白虹贯日(入门)
+  795|                 1372,   -- 清风送爽(入门)
+  796|             },
+  797|             [20] = {
+  798|                 1349,   -- 剑宗总诀(10级)
+  799|                 1374,   -- 龙扰身  (10级)
+  800|             },
+  801|             [30] = {
+  802|                 1350,   -- 养吾剑法(20级)
+  803|                 1375,   -- 海纳百川(20级)
+  804|             },
+  805|             [40] = {
+  806|                 1351,   -- 金雁横空(30级)
+  807|                 1376,   -- 龙旋剑气(30级)
+  808|             },
+  809|             [50] = {
+  810|                 1354,   -- 希夷剑法(40级)
+  811|                 1378,   -- 气震山河(40级)
+  812|             },
+  813|             [60] = {
+  814|                 1355,   -- 天坤倒悬(50级)
+  815|                 1379,   -- 气贯长虹(50级)
+  816|             },
+  817|             [70] = {
+  818|                 1358,   -- 幻眼云湮(镇派)
+  819|                 1360,   -- 苍松迎客(60级)
+  820|                 1380,   -- 摩云剑气(60级)
+  821|             },
+  822|             [90] = {
+  823|                 {1364, 1, "Hoa Sơn kiếm tông", "Đoạt Mệnh Liên Hoàn Tam Tiên Kiếm"},  -- 夺命连环三仙剑(90级)
+  824|                 {1382, 1, "Hoa Sơn khí tông", "Phách Thạch Phá Ngọc"},       -- 劈石破玉(90级)
+  825|             },
+  826|             [120] = {
+  827|                 {1365, 1, "Thông dụng", "Tử Hà Kiếm Khí"}                   -- 紫霞剑气(120级)
+  828|             },
+  829|             [150] = {
+  830|                 {1369, 1, "Hoa Sơn kiếm tông", "Cửu kiếm hợp nhất"},  -- 九剑合一
+  831|                 {1384, 1, "Hoa Sơn khí tông", "Thần Quang Toàn Nhiễu"},  -- 神光旋绕
+  832|             },
+  833|         },
+  834|         tbItemInfo      =
+  835|         {
+  836|             tbSkillBook90 = {
+  837|                 {"Hoa Sơn Kiếm Tông-Đoạt mệnh liên hoàn tam tiên kiếm", 4062},
+  838|                 {"Hoa Sơn Khí Tông-Bích Thạch Phá Ngọc", 4063}
+  839|             },
+  840|         },
+  841|     },
+  842|     [tbFacDef.tbIds.WUHUN] = {-- 武魂
+  843|         szFacName       = "wuhun",
+  844|         szFacChName     = "Vũ Hồn ",
+  845|         szFacShortName  = "Vũ Hồn",
+  846|         szFacShortEng   = "wh",
+  847|         nFacNumb        = tbFacDef.tbIds.WUHUN,
+  848|         nCamp           = 1,
+  849|         nRankId         = 90,
+  850|         nSeries         = 3,
+  851|         nTaskId_Fact    = 4406, -- 门派任务变量
+  852|         nTaskId_JMDZ    = 4405,
+  853|         nTaskValue_JMDZ = 30*256,
+  854|         nTaskId_90Skill = 4407, -- 90技能任务变量
+  855|         nTaskId_137     = 137 , -- 出师任务变量
+  856|         nValue_137      = 71  , -- 出师任务变量值
+  857|         n150TaskStep    = 3,
+  858|         nJinjieSkillID  = 1986, -- 进阶技能(精忠报国)
+  859|         nFactionMapId   = 1042,
+  860|         tbFactionMapPos = {1530,3251},
+  861|         szMsg           = "%s từ này gia nhập Vũ Hồn, đến bái kiến các vị sư huynh, xin các vị chiếu cố!",
+  862|         tbSkillID       =
+  863|         {
+  864|             [10] = {
+  865|                 1972,   -- 夺寨扬旗(入门)
+  866|                 1974,   -- 长缨挥斥(入门)
+  867|             },
+  868|             [20] = {
+  869|                 1964,   -- 武魂堂盾法(10级)
+  870|                 1975,   -- 武魂堂刀法  (10级)
+  871|             },
+  872|             [30] = {
+  873|                 1976,   -- 公忠秉性(20级)
+  874|             },
+  875|             [40] = {
+  876|                 1965,   -- 请缨提锐旅(30级)
+  877|                 1977,   -- 撼山击(30级)
+  878|             },
+  879|             [50] = {
+  880|                 1963,   -- 朝天阙(40级)
+  881|                 1979,   -- 怒劈天涯(40级)
+  882|             },
+  883|             [60] = {
+  884|                 1980,   -- 孤将百战酣(50级)
+  885|             },
+  886|             [70] = {
+  887|                 1982,   -- 武穆遗志(镇派)
+  888|                 1971,   -- 智勇超伦(60级)
+  889|                 1981,   -- 饥餐胡虏肉(60级)
+  890|             },
+  891|             [90] = {
+  892|                 {1967, 1, "Vũ Hồn hệ Thuẫn", "Trấn Biên Thùy"},  -- 镇边陲(90级)
+  893|                 {1983, 1, "Vũ Hồn hệ Đao", "Khát ẩm Hung Nô Huyết"},  -- 渴饮匈奴血(90级)
+  894|             },
+  895|             [120] = {
+  896|                 {1984, 1, "Thông dụng", "Trung Vu Lưu Phong"}                   -- 忠武流风(120级)
+  897|             },
+  898|             [150] = {
+  899|                 {1969, 1, "Vũ Hồn hệ Thuẫn", "Huy Sư Diệt Lỗ"},  -- 挥师灭虏
+  900|                 {1985, 1, "Vũ Hồn hệ Đao", "Trừ Gian Diệt Nịnh"},  -- 铲奸除佞
+  901|             },
+  902|         },
+  903|         tbItemInfo      =
+  904|         {
+  905|             tbSkillBook90 = {   -- 90级技能书道具名和ID,注意！要和技能表中90级技能的顺序一一对应！
+  906|                 {"Vũ Hồn Thuẫn Pháp#Trấn Biên Thùy",5106},
+  907|                 {"Vũ Hồn Đao Pháp#Khát ẩm Hung Nô Huyết",5107},
+  908|             },
+  909|         },
+  910|     },
+  911|     [tbFacDef.tbIds.XIAOYAO] = {-- 逍遥派
+  912|         bFactionIsOpen  = 1,
+  913|         szFacName       = "xiaoyao",
+  914|         szFacChName     = "Phái Tiêu Dao",
+  915|         szFacShortName  = "Tiêu Dao",
+  916|         szFacShortEng   = "xy",
+  917|         nFacNumb        = tbFacDef.tbIds.XIAOYAO,
+  918|         nCamp           = 3,
+  919|         nRankId         = 98,
+  920|         nSeries         = 4,
+  921|         nTaskId_Fact    = 4464, -- 门派任务变量
+  922|         nTaskId_JMDZ    = 4463,
+  923|         nTaskValue_JMDZ = 40*256,
+  924|         nTaskId_90Skill = 4465, -- 90技能任务变量
+  925|         nTaskId_137     = 137 , -- 出师任务变量
+  926|         nValue_137      = 71  , -- 出师任务变量值
+  927|         n150TaskStep    = 6,
+  928|         nJinjieSkillID  = 2132,  --深藏身名
+  929|         nFactionMapId   = 1057,
+  930|         tbFactionMapPos = {1584,3251},
+  931|         tbSchools       = {28,29},
+  932|         szMsg           = "%s từ hôm nay vào Phái Tiêu Dao, nay đến bái kiến các vị sư huynh, mong hãy chiếu cố!",
+  933|         szSelfCall      = "Bổn Môn",
+  934|         tbSkillID       =
+  935|         {
+  936|             [10] = {
+  937|                 2114,   -- 吴钩霜雪(入门)
+  938|                 2136,   -- 随意曲(入门)
+  939|             },
+  940|             [20] = {
+  941|                 2115,   -- 逍遥剑法(10级)
+  942|                 2137,   -- 逍遥琴法(10级)
+  943|             },
+  944|             [30] = {
+  945|                 2116,   -- 移宫换羽(20级)
+  946|             },
+  947|             [40] = {
+  948|                 2118,   -- 飒沓流星(30级)
+  949|                 2138,   -- 落雁平沙(30级)
+  950|             },
+  951|             [50] = {
+  952|                 2120,   -- 倚剑拂天(40级)
+  953|                 2140,   -- 广陵散(40级)
+  954|             },
+  955|             [60] = {
+  956|                 2121,   -- 银鞍白马(50级)
+  957|             },
+  958|             [70] = {
+  959|                 2123,   -- 千里独行(镇派)
+  960|                 2122,   -- 侠骨柔情(出师)
+  961|             },
+  962|             [90] = {
+  963|                 {2124, 1, "Tiêu Dao Kiếm Tông", "Kiếm Quyết Phù Vân"},  -- 剑决浮云(90级)
+  964|                 {2141, 1, "Tiêu Dao Cầm Tông", "Cao Sơn Lưu Thủy "},  -- 高山流水(90级)
+  965|             },
+  966|             [120] = {
+  967|                 {2127, 1, "Thông dụng", "Ăn Uống No Say"}                   -- 啖炙持觞(120级)
+  968|             },
+  969|             [150] = {
+  970|                 {2129, 1, "Tiêu Dao Kiếm Tông", "Thập Bộ Nhất Sát"},  -- 十步一杀
+  971|                 {2142, 1, "Tiêu Dao Cầm Tông", "Mai Hoa Tam Lộng"},  -- 梅花三弄
+  972|             },
+  973|         },
+  974|         tbItemInfo      =
+  975|         {
+  976|             tbSkillBook90 = {   -- 90级技能书道具名和ID,注意！要和技能表中90级技能的顺序一一对应！
+  977|                 {"Tiêu Dao Kiếm Pháp-Kiếm Quyết Phù Vân",5231},
+  978|                 {"Tiêu Dao Cầm Pháp-Cao Sơn Lưu Thủy",5232},
+  979|             },
+  980|             tbVipMaskIndex = {
+  981|                 [1] = 8767, -- 涅槃·炎凰面具
+  982|                 [2] = 8768, -- 无尽·炎凰面具
+  983|                 [3] = 8769, -- 天骄·炎凰面具
+  984|                 [4] = 8781, -- 无双·炎凰面具
+  985|             },
+  986|             tbVipWuXingYin = {
+  987|                 [0] = 8770, -- 至尊印鉴
+  988|                 [1] = 8771, -- 1★至尊印鉴
+  989|                 [2] = 8772, -- 2★至尊印鉴
+  990|                 [3] = 8773, -- 3★至尊印鉴
+  991|                 [4] = 8774, -- 4★至尊印鉴
+  992|                 [5] = 8775, -- 5★至尊印鉴
+  993|                 [6] = 8776, -- 6★至尊印鉴
+  994|                 [7] = 8777, -- 7★至尊印鉴
+  995|                 [8] = 8778, -- 8★至尊印鉴
+  996|                 [9] = 8779, -- 9★至尊印鉴
+  997|                 [10] = 8780, -- 10★至尊印鉴
+  998|             }
+  999|         },
+ 1000|     },
+ 1001| }
+ 1002| 
+ 1003| -- Include("\\script\\faction_def.lua")
+ 1004| -- 注意：全部下标是从0开始
+ 1005| function tbFacDef:MakeDefine()
+ 1006|     self.tbFacNames             = {}
+ 1007|     self.tbFacChNames           = {}
+ 1008|     self.tbFacShortName         = {}
+ 1009|     self.tbCamps                = {}
+ 1010|     self.tbRankIds              = {}
+ 1011|     self.tbSeriess              = {}
+ 1012|     self.tbFacTaskIds           = {}
+ 1013|     self.tbTaskId_90Skills      = {}
+ 1014|     self.tbTaskId_137s          = {}
+ 1015|     self.tbValue_137s           = {}
+ 1016|     self.tb150TaskSteps         = {}
+ 1017|     self.tbJinjieSkillIDs       = {}
+ 1018|     self.tbFacMapIds            = {}
+ 1019|     self.tbJoinMsgs             = {}
+ 1020|     self.tbSkills               = {}
+ 1021|     self.tbItemInfos            = {}
+ 1022|     self.tbFacName2TaskId       = {}
+ 1023|     self.tbFacName2RankId       = {}
+ 1024|     self.tbFacName2FacId        = {}
+ 1025|     self.tbFacChName2FacId      = {}
+ 1026|     self.tbFacMapPos            = {}
+ 1027|     self.tb90Skills             = {}
+ 1028|     self.tb120Skills            = {}
+ 1029|     self.tb150Skills            = {}
+ 1030|     self.tbVipMaskIndexs        = {}
+ 1031|     self.tbVipWuXingYins        = {}
+ 1032|     for _, tbFactionInfo in self.tbWholeInfoList do
+ 1033|         self.tbFacNames[tbFactionInfo.nFacNumb]             = tbFactionInfo.szFacName
+ 1034|         self.tbFacChNames[tbFactionInfo.nFacNumb]           = tbFactionInfo.szFacChName
+ 1035|         self.tbFacShortName[tbFactionInfo.nFacNumb]         = tbFactionInfo.szFacShortName
+ 1036|         self.tbCamps[tbFactionInfo.nFacNumb]                = tbFactionInfo.nCamp
+ 1037|         self.tbRankIds[tbFactionInfo.nFacNumb]              = tbFactionInfo.nRankId
+ 1038|         self.tbSeriess[tbFactionInfo.nFacNumb]              = tbFactionInfo.nSeries
+ 1039|         self.tbFacTaskIds[tbFactionInfo.nFacNumb]           = tbFactionInfo.nTaskId_Fact
+ 1040|         self.tbTaskId_90Skills[tbFactionInfo.nFacNumb]      = tbFactionInfo.nTaskId_90Skill
+ 1041|         self.tbTaskId_137s[tbFactionInfo.nFacNumb]          = tbFactionInfo.nTaskId_137
+ 1042|         self.tbValue_137s[tbFactionInfo.nFacNumb]           = tbFactionInfo.nValue_137
+ 1043|         self.tb150TaskSteps[tbFactionInfo.nFacNumb]         = tbFactionInfo.n150TaskStep
+ 1044|         self.tbJinjieSkillIDs[tbFactionInfo.nFacNumb]       = tbFactionInfo.nJinjieSkillID
+ 1045|         self.tbFacMapIds[tbFactionInfo.nFacNumb]            = tbFactionInfo.nFactionMapId
+ 1046|         self.tbJoinMsgs[tbFactionInfo.nFacNumb]             = tbFactionInfo.szMsg
+ 1047| 
+ 1048|         self.tbSkills[tbFactionInfo.nFacNumb]               = tbFactionInfo.tbSkillID
+ 1049| 
+ 1050|         self.tbItemInfos[tbFactionInfo.nFacNumb]            = tbFactionInfo.tbItemInfo
+ 1051| 
+ 1052|         self.tbFacName2TaskId[tbFactionInfo.szFacName]      = tbFactionInfo.nTaskId_Fact
+ 1053|         self.tbFacName2RankId[tbFactionInfo.szFacName]      = tbFactionInfo.nRankId
+ 1054|         self.tbFacName2FacId[tbFactionInfo.szFacName]       = tbFactionInfo.nFacNumb
+ 1055|         self.tbFacChName2FacId[tbFactionInfo.szFacChName]   = tbFactionInfo.nFacNumb
+ 1056| 
+ 1057|         self.tbFacMapPos[tbFactionInfo.nFacNumb]            = {tbFactionInfo.nFactionMapId, tbFactionInfo.tbFactionMapPos[1], tbFactionInfo.tbFactionMapPos[2]}
+ 1058| 
+ 1059|         self.tb90Skills[tbFactionInfo.nFacNumb]             = {}
+ 1060|         for _,tbSkillInfo in tbFactionInfo.tbSkillID[90] do
+ 1061|             tinsert(self.tb90Skills[tbFactionInfo.nFacNumb], tbSkillInfo[1])
+ 1062|         end
+ 1063|         self.tb120Skills[tbFactionInfo.nFacNumb]            = {}
+ 1064|         for _,tbSkillInfo in tbFactionInfo.tbSkillID[120] do
+ 1065|             tinsert(self.tb120Skills[tbFactionInfo.nFacNumb], tbSkillInfo[1])
+ 1066|         end
+ 1067|         self.tb150Skills[tbFactionInfo.nFacNumb]            = {}
+ 1068|         for _,tbSkillInfo in tbFactionInfo.tbSkillID[150] do
+ 1069|             tinsert(self.tb150Skills[tbFactionInfo.nFacNumb], tbSkillInfo[1])
+ 1070|         end
+ 1071| 
+ 1072|         -- self.tbVipMaskIndexs[tbFactionInfo.nFacNumb]        = tbFactionInfo.tbItemInfo.tbVipMaskIndex
+ 1073|         -- self.tbVipWuXingYins[tbFactionInfo.nFacNumb]        = tbFactionInfo.tbItemInfo.tbVipWuXingYin
+ 1074|     end
+ 1075| end
+ 1076| 
+ 1077| tbFacDef:MakeDefine()
+ 1078| 
+ 1079| function FacName2Id(szFacName)
+ 1080|     for key, value in tbFacDef.tbWholeInfoList do
+ 1081|         if value.szFacChName == szFacName then
+ 1082|             return key
+ 1083|         end
+ 1084|     end
+ 1085| 
+ 1086|     return -1;
+ 1087| end
+ 1088| 
+ 1089| function AddFacSkill(nFacId, nLv)
+ 1090|     if nFacId < 0 or nFacId >= tbFacDef.nMaxFac then
+ 1091|         return
+ 1092|     end
+ 1093|     if not tbFacDef.tbSkills[nFacId][nLv] then
+ 1094|         return
+ 1095|     end
+ 1096| 
+ 1097|     for _,tbSkillInfo in tbFacDef.tbSkills[nFacId][nLv] do
+ 1098|         local nSkillId = 0
+ 1099|         local nSkillLv = 0
+ 1100|         if type(tbSkillInfo) == "table" then
+ 1101|             nSkillId = tbSkillInfo[1]
+ 1102|             nSkillLv = tbSkillInfo[2]
+ 1103|         elseif type(tbSkillInfo) == "number" then
+ 1104|             nSkillId = tbSkillInfo
+ 1105|             nSkillLv = 0
+ 1106|         end
+ 1107|         if HaveMagic(nSkillId) == -1 then
+ 1108|             AddMagic(nSkillId,nSkillLv)
+ 1109|             AddSkillEvent(nFacId, nLv, nSkillId, nSkillLv)
+ 1110|         end
+ 1111|     end
+ 1112| 
+ 1113| 	DynamicExecute("\\script\\misc\\eventsys\\eventsys.lua", "EventSys:OnPlayerEvent", "OnLearnSkill", PlayerIndex, nLv)
+ 1114| end
+ 1115| 
+ 1116| function AddSkillEvent(nFacId, nLv, nSkillId, nSkillLv)
+ 1117|     if nLv == 90 then
+ 1118|         WriteLog("Player Get 90 Skill. szAccount = %s, szName = %s, nFacId = %d, nLv = %d, nSkillId = %d, nSkillLv = %d")
+ 1119|     end
+ 1120| end

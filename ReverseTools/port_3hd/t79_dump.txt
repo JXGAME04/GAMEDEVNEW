@@ -1,0 +1,543 @@
+### Tra bang dang ky (ten -> dia chi ham):
+  DropItem       bang@0x082E23F8 -> fn 0x081200B0
+  DropItemEx     bang@0x082E2400 -> fn 0x0811FD70
+  GetTeamSize    bang@0x082E22A0 -> fn 0x08115480
+  GetTeamMember  bang@0x082E22B0 -> fn 0x08115530
+  LeaveTeam      bang@0x082E22A8 -> fn 0x08121060
+  ApplyItemDice  bang@0x082E6A40 -> fn 0x081C1C40
+  RollItem       bang@0x082E6A50 -> fn 0x081C16D0
+  GetNpcPos      bang@0x082E2840 -> fn 0x081293F0
+
+======================================================================
+DropItemEx @ 0x0811FD70 (file 0xD7D70)
+======================================================================
+0x0811FD70  push     ebp
+0x0811FD71  mov      ebp, esp
+0x0811FD73  push     edi
+0x0811FD74  push     esi
+0x0811FD75  xor      esi, esi
+0x0811FD77  push     ebx
+0x0811FD78  sub      esp, 0x16c
+0x0811FD7E  mov      ebx, dword ptr [ebp + 8]
+0x0811FD81  mov      dword ptr [esp + 4], 1
+0x0811FD89  mov      dword ptr [esp], ebx
+0x0811FD8C  call     0x8232590
+0x0811FD91  cmp      eax, 3
+0x0811FD94  je       0x8120080
+0x0811FD9A  mov      dword ptr [esp], ebx
+0x0811FD9D  call     0x8232490
+0x0811FDA2  cmp      eax, 0xc
+0x0811FDA5  jle      0x811ffef
+0x0811FDAB  mov      dword ptr [esp + 4], 1
+0x0811FDB3  mov      dword ptr [esp], ebx
+0x0811FDB6  call     0x82338b0
+0x0811FDBB  mov      dword ptr [esp + 4], 2
+0x0811FDC3  mov      dword ptr [esp], ebx
+0x0811FDC6  fstp     qword ptr [ebp - 0xd8]
+0x0811FDCC  call     0x82338b0
+0x0811FDD1  mov      dword ptr [esp + 4], 3
+0x0811FDD9  mov      dword ptr [esp], ebx
+0x0811FDDC  fstp     qword ptr [ebp - 0xd0]
+0x0811FDE2  call     0x82338b0
+0x0811FDE7  mov      dword ptr [esp + 4], 4
+0x0811FDEF  mov      dword ptr [esp], ebx
+0x0811FDF2  fstp     qword ptr [ebp - 0xc8]
+0x0811FDF8  call     0x82338b0
+0x0811FDFD  mov      dword ptr [esp + 4], 1
+0x0811FE05  mov      dword ptr [esp], ebx
+0x0811FE08  fstp     qword ptr [ebp - 0xe0]
+0x0811FE0E  call     0x82324d0
+0x0811FE13  mov      dword ptr [esp + 4], 1
+0x0811FE1B  mov      dword ptr [esp], ebx
+0x0811FE1E  call     0x82324d0
+0x0811FE23  mov      dword ptr [esp + 4], 1
+0x0811FE2B  mov      dword ptr [esp], ebx
+0x0811FE2E  call     0x82324d0
+0x0811FE33  mov      dword ptr [esp + 4], 1
+0x0811FE3B  mov      dword ptr [esp], ebx
+0x0811FE3E  call     0x82324d0
+0x0811FE43  mov      dword ptr [esp + 8], esi
+0x0811FE47  mov      dword ptr [esp + 4], 0
+0x0811FE4F  mov      dword ptr [esp], ebx
+0x0811FE52  call     0x811f230
+0x0811FE57  test     eax, eax
+0x0811FE59  mov      dword ptr [ebp - 0xc0], eax
+0x0811FE5F  jle      0x811ffef
+0x0811FE65  fnstcw   word ptr [ebp - 0xaa]
+0x0811FE6B  fld      qword ptr [ebp - 0xd8]
+0x0811FE71  lea      edi, [esp + 0x20]
+0x0811FE75  movzx    eax, word ptr [ebp - 0xaa]
+0x0811FE7C  mov      ah, 0xc
+0x0811FE7E  mov      word ptr [ebp - 0xac], ax
+0x0811FE85  fldcw    word ptr [ebp - 0xac]
+0x0811FE8B  fistp    qword ptr [ebp - 0xb8]
+0x0811FE91  fldcw    word ptr [ebp - 0xaa]
+0x0811FE97  mov      esi, dword ptr [ebp - 0xb8]
+0x0811FE9D  fld      qword ptr [ebp - 0xd0]
+0x0811FEA3  fldcw    word ptr [ebp - 0xac]
+0x0811FEA9  fistp    qword ptr [ebp - 0xb8]
+0x0811FEAF  fldcw    word ptr [ebp - 0xaa]
+0x0811FEB5  mov      eax, dword ptr [ebp - 0xb8]
+0x0811FEBB  imul     ecx, esi, 0x63fc8
+0x0811FEC1  fld      qword ptr [ebp - 0xc8]
+0x0811FEC7  fldcw    word ptr [ebp - 0xac]
+0x0811FECD  fistp    qword ptr [ebp - 0xb8]
+0x0811FED3  fldcw    word ptr [ebp - 0xaa]
+0x0811FED9  mov      dword ptr [ebp - 0x20], eax
+0x0811FEDC  mov      eax, dword ptr [ebp - 0xb8]
+0x0811FEE2  mov      dword ptr [ebp - 0xe4], ecx
+0x0811FEE8  mov      dword ptr [ebp - 0x1c], eax
+0x0811FEEB  lea      eax, [ebp - 0x20]
+0x0811FEEE  mov      dword ptr [esp + 4], eax
+0x0811FEF2  mov      eax, dword ptr [0x8fc81e0]
+0x0811FEF7  add      eax, ecx
+0x0811FEF9  mov      dword ptr [esp], eax
+0x0811FEFC  call     0x80f0950
+0x0811FF01  lea      eax, [ebp - 0x24]
+0x0811FF04  mov      ecx, dword ptr [ebp - 0xe4]
+0x0811FF0A  mov      dword ptr [esp + 0x1c], eax
+0x0811FF0E  lea      eax, [ebp - 0x28]
+0x0811FF11  mov      dword ptr [esp + 0x18], eax
+0x0811FF15  lea      eax, [ebp - 0x2c]
+0x0811FF18  mov      dword ptr [esp + 0x14], eax
+0x0811FF1C  lea      eax, [ebp - 0x30]
+0x0811FF1F  mov      dword ptr [esp + 0x10], eax
+0x0811FF23  lea      eax, [ebp - 0x34]
+0x0811FF26  mov      dword ptr [esp + 0xc], eax
+0x0811FF2A  mov      eax, dword ptr [ebp - 0x1c]
+0x0811FF2D  add      ecx, dword ptr [0x8fc81e0]
+0x0811FF33  mov      dword ptr [ebp - 0x38], esi
+0x0811FF36  lea      esi, [ebp - 0xa4]
+0x0811FF3C  mov      dword ptr [esp + 8], eax
+0x0811FF40  mov      eax, dword ptr [ebp - 0x20]
+0x0811FF43  mov      dword ptr [esp], ecx
+0x0811FF46  mov      dword ptr [esp + 4], eax
+0x0811FF4A  call     0x80ef7f0
+0x0811FF4F  mov      eax, dword ptr [ebp - 0xc0]
+0x0811FF55  mov      dword ptr [esp + 4], esi
+0x0811FF59  mov      dword ptr [esp], eax
+0x0811FF5C  call     0x80a6290
+0x0811FF61  mov      eax, dword ptr [ebp - 0x38]
+0x0811FF64  mov      ecx, 0x1b
+0x0811FF69  rep movsd dword ptr es:[edi], dword ptr [esi]
+0x0811FF6B  imul     edx, dword ptr [ebp - 0xc0], 0x368
+0x0811FF75  mov      dword ptr [esp + 8], eax
+0x0811FF79  mov      eax, dword ptr [ebp - 0x34]
+0x0811FF7C  mov      dword ptr [esp + 0xc], eax
+0x0811FF80  mov      eax, dword ptr [ebp - 0x30]
+0x0811FF83  mov      dword ptr [esp + 0x10], eax
+0x0811FF87  mov      eax, dword ptr [ebp - 0x2c]
+0x0811FF8A  mov      dword ptr [esp + 0x14], eax
+0x0811FF8E  mov      eax, dword ptr [ebp - 0x28]
+0x0811FF91  mov      dword ptr [esp + 0x18], eax
+0x0811FF95  mov      eax, dword ptr [ebp - 0x24]
+0x0811FF98  mov      dword ptr [esp + 0x1c], eax
+0x0811FF9C  mov      eax, dword ptr [0x830d300]
+0x0811FFA1  mov      eax, dword ptr [edx + eax + 0x10]
+0x0811FFA5  mov      dword ptr [esp], 0x8baeba0
+0x0811FFAC  mov      dword ptr [esp + 4], eax
+0x0811FFB0  call     0x80a6a70
+0x0811FFB5  test     eax, eax
+0x0811FFB7  jle      0x811ffc1
+0x0811FFB9  cmp      eax, dword ptr [0x830ca60]
+0x0811FFBF  jl       0x8120010
+0x0811FFC1  mov      eax, dword ptr [ebp - 0xc0]
+0x0811FFC7  mov      dword ptr [esp + 0x10], 1
+0x0811FFCF  mov      dword ptr [esp + 0xc], 0
+0x0811FFD7  mov      dword ptr [esp + 8], 0
+0x0811FFDF  mov      dword ptr [esp + 4], eax
+0x0811FFE3  mov      dword ptr [esp], 0x830d420
+0x0811FFEA  call     0x806db90
+0x0811FFEF  fldz     
+0x0811FFF1  mov      dword ptr [esp], ebx
+0x0811FFF4  fstp     qword ptr [esp + 4]
+0x0811FFF8  call     0x8232d40
+0x0811FFFD  add      esp, 0x16c
+0x08120003  mov      eax, 1
+0x08120008  pop      ebx
+0x08120009  pop      esi
+0x0812000A  pop      edi
+0x0812000B  pop      ebp
+0x0812000C  ret      
+
+-- thong ke call cua DropItemEx:
+   call 0x0806DB90  x1
+   call 0x080A6290  x1
+   call 0x080A6A70  x1
+   call 0x080EF7F0  x1
+   call 0x080F0950  x1
+   call 0x0811F230  x1
+   call 0x08232490  x1
+   call 0x082324D0  x4
+   call 0x08232590  x1
+   call 0x08232D40  x1
+   call 0x082338B0  x4
+
+======================================================================
+DropItem @ 0x081200B0 (file 0xD80B0)
+======================================================================
+0x081200B0  push     ebp
+0x081200B1  mov      ebp, esp
+0x081200B3  push     edi
+0x081200B4  push     esi
+0x081200B5  xor      esi, esi
+0x081200B7  push     ebx
+0x081200B8  sub      esp, 0x16c
+0x081200BE  mov      ebx, dword ptr [ebp + 8]
+0x081200C1  mov      dword ptr [esp + 4], 1
+0x081200C9  mov      dword ptr [esp], ebx
+0x081200CC  call     0x8232590
+0x081200D1  cmp      eax, 3
+0x081200D4  je       0x8120428
+0x081200DA  mov      dword ptr [esp], ebx
+0x081200DD  call     0x8232490
+0x081200E2  cmp      eax, 9
+0x081200E5  jle      0x8120399
+0x081200EB  mov      dword ptr [esp + 4], 1
+0x081200F3  mov      dword ptr [esp], ebx
+0x081200F6  call     0x82338b0
+0x081200FB  fnstcw   word ptr [ebp - 0xaa]
+0x08120101  movzx    eax, word ptr [ebp - 0xaa]
+0x08120108  mov      ah, 0xc
+0x0812010A  mov      word ptr [ebp - 0xac], ax
+0x08120111  fldcw    word ptr [ebp - 0xac]
+0x08120117  fistp    qword ptr [ebp - 0xc8]
+0x0812011D  fldcw    word ptr [ebp - 0xaa]
+0x08120123  mov      edi, dword ptr [ebp - 0xc8]
+0x08120129  test     edi, edi
+0x0812012B  js       0x8120399
+0x08120131  mov      dword ptr [esp + 4], 2
+0x08120139  mov      dword ptr [esp], ebx
+0x0812013C  call     0x82338b0
+0x08120141  mov      dword ptr [esp + 4], 3
+0x08120149  mov      dword ptr [esp], ebx
+0x0812014C  fstp     qword ptr [ebp - 0xd8]
+0x08120152  call     0x82338b0
+0x08120157  mov      dword ptr [esp + 4], 4
+0x0812015F  mov      dword ptr [esp], ebx
+0x08120162  fstp     qword ptr [ebp - 0xd0]
+0x08120168  call     0x82338b0
+0x0812016D  mov      dword ptr [esp + 4], 1
+0x08120175  mov      dword ptr [esp], ebx
+0x08120178  fstp     qword ptr [ebp - 0xe0]
+0x0812017E  call     0x82324d0
+0x08120183  mov      dword ptr [esp + 4], 1
+0x0812018B  mov      dword ptr [esp], ebx
+0x0812018E  call     0x82324d0
+0x08120193  mov      dword ptr [esp + 4], 1
+0x0812019B  mov      dword ptr [esp], ebx
+0x0812019E  call     0x82324d0
+0x081201A3  mov      dword ptr [esp + 4], 1
+0x081201AB  mov      dword ptr [esp], ebx
+0x081201AE  call     0x82324d0
+0x081201B3  mov      dword ptr [esp], ebx
+0x081201B6  fild     dword ptr [0x9777f34]
+0x081201BC  fstp     qword ptr [esp + 4]
+0x081201C0  call     0x8232d40
+0x081201C5  mov      dword ptr [esp + 4], 1
+0x081201CD  mov      dword ptr [esp], ebx
+0x081201D0  call     0x8232530
+0x081201D5  mov      dword ptr [esp], ebx
+0x081201D8  fldz     
+0x081201DA  fstp     qword ptr [esp + 4]
+0x081201DE  call     0x8232d40
+0x081201E3  mov      dword ptr [esp + 4], 2
+0x081201EB  mov      dword ptr [esp], ebx
+0x081201EE  call     0x8232530
+0x081201F3  mov      dword ptr [esp], ebx
+0x081201F6  fldz     
+0x081201F8  fstp     qword ptr [esp + 4]
+0x081201FC  call     0x8232d40
+0x08120201  mov      dword ptr [esp + 4], 3
+0x08120209  mov      dword ptr [esp], ebx
+0x0812020C  call     0x8232530
+0x08120211  mov      dword ptr [esp + 8], esi
+0x08120215  mov      dword ptr [esp + 4], 0
+0x0812021D  mov      dword ptr [esp], ebx
+0x08120220  call     0x811f230
+0x08120225  test     eax, eax
+0x08120227  mov      dword ptr [ebp - 0xc0], eax
+0x0812022D  jle      0x8120450
+0x08120233  fnstcw   word ptr [ebp - 0xaa]
+0x08120239  fld      qword ptr [ebp - 0xd8]
+0x0812023F  imul     edi, edi, 0x63fc8
+0x08120245  lea      esi, [ebp - 0xa4]
+0x0812024B  movzx    eax, word ptr [ebp - 0xaa]
+0x08120252  mov      ah, 0xc
+0x08120254  mov      word ptr [ebp - 0xac], ax
+0x0812025B  fldcw    word ptr [ebp - 0xac]
+0x08120261  fistp    qword ptr [ebp - 0xb8]
+0x08120267  fldcw    word ptr [ebp - 0xaa]
+0x0812026D  mov      eax, dword ptr [ebp - 0xb8]
+0x08120273  fld      qword ptr [ebp - 0xd0]
+0x08120279  fldcw    word ptr [ebp - 0xac]
+0x0812027F  fistp    qword ptr [ebp - 0xb8]
+0x08120285  fldcw    word ptr [ebp - 0xaa]
+0x0812028B  mov      dword ptr [ebp - 0x20], eax
+0x0812028E  mov      eax, dword ptr [ebp - 0xb8]
+0x08120294  mov      dword ptr [ebp - 0x1c], eax
+0x08120297  lea      eax, [ebp - 0x20]
+0x0812029A  mov      dword ptr [esp + 4], eax
+0x0812029E  mov      eax, dword ptr [0x8fc81e0]
+0x081202A3  add      eax, edi
+0x081202A5  mov      dword ptr [esp], eax
+0x081202A8  call     0x80f0950
+0x081202AD  mov      eax, dword ptr [ebp - 0xc8]
+0x081202B3  add      edi, dword ptr [0x8fc81e0]
+0x081202B9  mov      dword ptr [ebp - 0x38], eax
+0x081202BC  lea      eax, [ebp - 0x24]
+0x081202BF  mov      dword ptr [esp + 0x1c], eax
+0x081202C3  lea      eax, [ebp - 0x28]
+0x081202C6  mov      dword ptr [esp + 0x18], eax
+0x081202CA  lea      eax, [ebp - 0x2c]
+0x081202CD  mov      dword ptr [esp + 0x14], eax
+0x081202D1  lea      eax, [ebp - 0x30]
+0x081202D4  mov      dword ptr [esp + 0x10], eax
+0x081202D8  lea      eax, [ebp - 0x34]
+0x081202DB  mov      dword ptr [esp + 0xc], eax
+0x081202DF  mov      eax, dword ptr [ebp - 0x1c]
+0x081202E2  mov      dword ptr [esp], edi
+0x081202E5  lea      edi, [esp + 0x20]
+0x081202E9  mov      dword ptr [esp + 8], eax
+0x081202ED  mov      eax, dword ptr [ebp - 0x20]
+0x081202F0  mov      dword ptr [esp + 4], eax
+0x081202F4  call     0x80ef7f0
+0x081202F9  mov      eax, dword ptr [ebp - 0xc0]
+0x081202FF  mov      dword ptr [esp + 4], esi
+0x08120303  mov      dword ptr [esp], eax
+0x08120306  call     0x80a6290
+0x0812030B  mov      ecx, 0x1b
+0x08120310  rep movsd dword ptr es:[edi], dword ptr [esi]
+0x08120312  mov      eax, dword ptr [ebp - 0x38]
+0x08120315  imul     edx, dword ptr [ebp - 0xc0], 0x368
+0x0812031F  mov      dword ptr [esp + 8], eax
+0x08120323  mov      eax, dword ptr [ebp - 0x34]
+0x08120326  mov      dword ptr [esp + 0xc], eax
+0x0812032A  mov      eax, dword ptr [ebp - 0x30]
+0x0812032D  mov      dword ptr [esp + 0x10], eax
+0x08120331  mov      eax, dword ptr [ebp - 0x2c]
+0x08120334  mov      dword ptr [esp + 0x14], eax
+0x08120338  mov      eax, dword ptr [ebp - 0x28]
+0x0812033B  mov      dword ptr [esp + 0x18], eax
+0x0812033F  mov      eax, dword ptr [ebp - 0x24]
+0x08120342  mov      dword ptr [esp + 0x1c], eax
+0x08120346  mov      eax, dword ptr [0x830d300]
+0x0812034B  mov      eax, dword ptr [edx + eax + 0x10]
+0x0812034F  mov      dword ptr [esp], 0x8baeba0
+0x08120356  mov      dword ptr [esp + 4], eax
+0x0812035A  call     0x80a6a70
+0x0812035F  test     eax, eax
+0x08120361  jle      0x812036b
+0x08120363  cmp      eax, dword ptr [0x830ca60]
+0x08120369  jl       0x81203b8
+0x0812036B  mov      eax, dword ptr [ebp - 0xc0]
+0x08120371  mov      dword ptr [esp + 0x10], 1
+0x08120379  mov      dword ptr [esp + 0xc], 0
+0x08120381  mov      dword ptr [esp + 8], 0
+0x08120389  mov      dword ptr [esp + 4], eax
+0x0812038D  mov      dword ptr [esp], 0x830d420
+0x08120394  call     0x806db90
+0x08120399  fldz     
+0x0812039B  fstp     qword ptr [esp + 4]
+0x0812039F  mov      dword ptr [esp], ebx
+0x081203A2  call     0x8232d40
+0x081203A7  add      esp, 0x16c
+0x081203AD  mov      eax, 1
+0x081203B2  pop      ebx
+0x081203B3  pop      esi
+0x081203B4  pop      edi
+0x081203B5  pop      ebp
+0x081203B6  ret      
+
+-- thong ke call cua DropItem:
+   call 0x0806DB90  x1
+   call 0x080A6290  x1
+   call 0x080A6A70  x1
+   call 0x080EF7F0  x1
+   call 0x080F0950  x1
+   call 0x0811F230  x1
+   call 0x08232490  x1
+   call 0x082324D0  x4
+   call 0x08232530  x3
+   call 0x08232590  x1
+   call 0x08232D40  x4
+   call 0x082338B0  x4
+
+======================================================================
+GetTeamSize @ 0x08115480 (file 0xCD480)
+======================================================================
+0x08115480  push     ebp
+0x08115481  mov      ebp, esp
+0x08115483  push     ebx
+0x08115484  sub      esp, 0x24
+0x08115487  mov      ebx, dword ptr [ebp + 8]
+0x0811548A  mov      dword ptr [esp], ebx
+0x0811548D  call     0x8232490
+0x08115492  test     eax, eax
+0x08115494  jle      0x81154f0
+0x08115496  mov      dword ptr [esp + 4], 1
+0x0811549E  mov      dword ptr [esp], ebx
+0x081154A1  call     0x82338b0
+0x081154A6  fnstcw   word ptr [ebp - 0xe]
+0x081154A9  movzx    eax, word ptr [ebp - 0xe]
+0x081154AD  mov      ah, 0xc
+0x081154AF  mov      word ptr [ebp - 0x10], ax
+0x081154B3  fldcw    word ptr [ebp - 0x10]
+0x081154B6  fistp    qword ptr [ebp - 0x18]
+0x081154B9  fldcw    word ptr [ebp - 0xe]
+0x081154BC  mov      eax, dword ptr [ebp - 0x18]
+0x081154BF  test     eax, eax
+0x081154C1  js       0x8115520
+0x081154C3  lea      eax, [eax + eax*2]
+0x081154C6  shl      eax, 4
+0x081154C9  mov      eax, dword ptr [eax + 0x8bb8708]
+0x081154CF  add      eax, 1
+0x081154D2  mov      dword ptr [ebp - 0xc], eax
+0x081154D5  fild     dword ptr [ebp - 0xc]
+0x081154D8  mov      dword ptr [esp], ebx
+0x081154DB  fstp     qword ptr [esp + 4]
+0x081154DF  call     0x8232d40
+0x081154E4  add      esp, 0x24
+0x081154E7  mov      eax, 1
+0x081154EC  pop      ebx
+0x081154ED  pop      ebp
+0x081154EE  ret      
+
+-- thong ke call cua GetTeamSize:
+   call 0x08232490  x1
+   call 0x08232D40  x1
+   call 0x082338B0  x1
+
+======================================================================
+GetTeamMember @ 0x08115530 (file 0xCD530)
+======================================================================
+0x08115530  push     ebp
+0x08115531  mov      ebp, esp
+0x08115533  sub      esp, 0x38
+0x08115536  mov      dword ptr [ebp - 0xc], ebx
+0x08115539  mov      ebx, dword ptr [ebp + 8]
+0x0811553C  mov      dword ptr [ebp - 8], esi
+0x0811553F  mov      dword ptr [ebp - 4], edi
+0x08115542  mov      dword ptr [esp], ebx
+0x08115545  call     0x8232490
+0x0811554A  test     eax, eax
+0x0811554C  jle      0x81155e8
+0x08115552  mov      dword ptr [esp + 4], 1
+0x0811555A  mov      dword ptr [esp], ebx
+0x0811555D  call     0x82338b0
+0x08115562  mov      dword ptr [esp], ebx
+0x08115565  fnstcw   word ptr [ebp - 0x1e]
+0x08115568  movzx    eax, word ptr [ebp - 0x1e]
+0x0811556C  mov      ah, 0xc
+0x0811556E  mov      word ptr [ebp - 0x20], ax
+0x08115572  fldcw    word ptr [ebp - 0x20]
+0x08115575  fistp    qword ptr [ebp - 0x28]
+0x08115578  fldcw    word ptr [ebp - 0x1e]
+0x0811557B  mov      esi, dword ptr [ebp - 0x28]
+0x0811557E  call     0x8107860
+0x08115583  test     esi, esi
+0x08115585  jle      0x81155e8
+0x08115587  test     eax, eax
+0x08115589  jle      0x81155e8
+0x0811558B  imul     eax, eax, 0x8788
+0x08115591  add      eax, dword ptr [0x8baee60]
+0x08115597  mov      ecx, dword ptr [eax + 0x5994]
+0x0811559D  test     ecx, ecx
+0x0811559F  je       0x81155e8
+0x081155A1  mov      eax, dword ptr [eax + 0x5998]
+0x081155A7  cmp      eax, -1
+0x081155AA  je       0x81155e8
+0x081155AC  sub      esi, 1
+0x081155AF  je       0x8115618
+0x081155B1  lea      edx, [eax + eax*2]
+0x081155B4  xor      edi, edi
+0x081155B6  shl      edx, 4
+0x081155B9  xor      ecx, ecx
+0x081155BB  add      edx, 0x8bb86ec
+0x081155C1  lea      esi, [esi]
+0x081155C8  mov      eax, dword ptr [edx]
+0x081155CA  cmp      eax, -1
+0x081155CD  je       0x81155d6
+0x081155CF  add      edi, 1
+0x081155D2  cmp      edi, esi
+0x081155D4  je       0x81155ed
+0x081155D6  add      ecx, 1
+0x081155D9  add      edx, 4
+0x081155DC  cmp      ecx, 7
+0x081155DF  jne      0x81155c8
+0x081155E1  jmp      0x81155ed
+0x081155E3  nop      
+0x081155E4  lea      esi, [esi]
+0x081155E8  mov      eax, 0xffffffff
+0x081155ED  mov      dword ptr [ebp - 0x1c], eax
+0x081155F0  fild     dword ptr [ebp - 0x1c]
+0x081155F3  mov      dword ptr [esp], ebx
+0x081155F6  fstp     qword ptr [esp + 4]
+0x081155FA  call     0x8232d40
+0x081155FF  mov      ebx, dword ptr [ebp - 0xc]
+0x08115602  mov      eax, 1
+0x08115607  mov      esi, dword ptr [ebp - 8]
+0x0811560A  mov      edi, dword ptr [ebp - 4]
+0x0811560D  mov      esp, ebp
+0x0811560F  pop      ebp
+0x08115610  ret      
+
+-- thong ke call cua GetTeamMember:
+   call 0x08107860  x1
+   call 0x08232490  x1
+   call 0x08232D40  x1
+   call 0x082338B0  x1
+
+======================================================================
+LeaveTeam @ 0x08121060 (file 0xD9060)
+======================================================================
+0x08121060  push     ebp
+0x08121061  mov      ebp, esp
+0x08121063  sub      esp, 0x18
+0x08121066  mov      eax, dword ptr [ebp + 8]
+0x08121069  mov      dword ptr [esp], eax
+0x0812106C  call     0x8107860
+0x08121071  test     eax, eax
+0x08121073  jle      0x8121089
+0x08121075  imul     eax, eax, 0x8788
+0x0812107B  add      eax, dword ptr [0x8baee60]
+0x08121081  mov      dword ptr [esp], eax
+0x08121084  call     0x80b7c60
+0x08121089  xor      eax, eax
+0x0812108B  leave    
+0x0812108C  ret      
+
+-- thong ke call cua LeaveTeam:
+   call 0x080B7C60  x1
+   call 0x08107860  x1
+
+======================================================================
+GetNpcPos @ 0x081293F0 (file 0xE13F0)
+======================================================================
+0x081293F0  push     ebp
+0x081293F1  mov      ebp, esp
+0x081293F3  sub      esp, 0x58
+0x081293F6  mov      dword ptr [ebp - 0xc], ebx
+0x081293F9  mov      ebx, dword ptr [ebp + 8]
+0x081293FC  mov      dword ptr [ebp - 8], esi
+0x081293FF  mov      dword ptr [ebp - 4], edi
+0x08129402  mov      dword ptr [esp], ebx
+0x08129405  call     0x8232490
+0x0812940A  cmp      eax, 1
+0x0812940D  je       0x8129438
+0x0812940F  fld1     
+0x08129411  fchs     
+0x08129413  mov      dword ptr [esp], ebx
+0x08129416  fstp     qword ptr [esp + 4]
+0x0812941A  call     0x8232d40
+0x0812941F  mov      ebx, dword ptr [ebp - 0xc]
+0x08129422  mov      eax, 1
+0x08129427  mov      esi, dword ptr [ebp - 8]
+0x0812942A  mov      edi, dword ptr [ebp - 4]
+0x0812942D  mov      esp, ebp
+0x0812942F  pop      ebp
+0x08129430  ret      
+
+-- thong ke call cua GetNpcPos:
+   call 0x08232490  x1
+   call 0x08232D40  x1
