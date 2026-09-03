@@ -2430,6 +2430,7 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 	// [S13c] khoang thoi gian giua hai goi tu-sync lien tiep (S13-KEO tinh buoc theo thoi gian that: vung dong
 	// KRegion::Activate chi sync 5 NPC/nhip/region => chinh chu ~1 goi/2 s, vung vang 18 goi/s)
 	static DWORD s_uS13LastSync = 0;
+	static DWORD s_uS13DashEnd = 0;	// [S13e] timeGetTime lan cuoi client con o trang thai luot/nhay (cua an han nan cung)
 	DWORD uS13Now = timeGetTime();
 	int nS13Dt = (s_uS13LastSync == 0) ? 55 : (int)(uS13Now - s_uS13LastSync);
 	s_uS13LastSync = uS13Now;
@@ -2558,7 +2559,20 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 		int nMeX = 0, nMeY = 0;
 		Npc[nNpcIdx].GetMpsPos(&nMeX, &nMeY);
 		const int nLech = g_GetDistance(nMeX, nMeY, (int)pSync->m_dwMapX, (int)pSync->m_dwMapY);
-		if (nLech >= 256)
+		// [S13e] CUA AN HAN DASH: chieu luot (1977 Ham Son Kich, 2118, 995...) client tu thi hanh ngay, may chu giu roi thi
+		// hanh tre 1-2 nhip => vai tram ms client di truoc 250-600 mps > nguong 256 => nan cung + StopPath = 'giut lui'.
+		// Do 03/09 sau S13: 12/12 cu S8-NAN con lai deu trong/ngay sau dash. Dang luot hoac vua luot < 600 ms thi KHONG nan,
+		// de may chu duoi kip (no cung dash toi cung diem); chi nan neu lech >= 512 (16 o) = dich chuyen that.
+		const BOOL bS13Dash = (Npc[nNpcIdx].m_Doing == do_runattack || Npc[nNpcIdx].m_Doing == do_blurmove
+			|| Npc[nNpcIdx].m_Doing == do_jump || Npc[nNpcIdx].m_Doing == do_jumpattack);
+		if (bS13Dash)
+			s_uS13DashEnd = uS13Now;
+		const BOOL bS13AnHan = bS13Dash || (s_uS13DashEnd != 0 && (int)(uS13Now - s_uS13DashEnd) < 600);
+		if (nLech >= 256 && bS13AnHan && nLech < 512)
+		{
+			AUTOLOG_EVERY(1000, "[S13-DASH-GRACE] lech=%d doing=%d saudash=%d ms -> khong nan, cho server duoi kip t=%u", nLech, (int)Npc[nNpcIdx].m_Doing, (int)(uS13Now - s_uS13DashEnd), SubWorld[0].m_dwCurrentTime);
+		}
+		else if (nLech >= 256)
 		{
 			// [S12-THEO 27/08] vua bi nan lon = nhieu kha nang server dang dieu khien minh
 			// (teleport/dat di): mo cua so 3000ms nghe lenh run/walk cho chinh minh.
@@ -2586,10 +2600,10 @@ void KProtocolProcess::SyncNpcMinPlayer(BYTE* pMsg) //Sync liªn tôc ch?player x?
 			SubWorld[0].StopPath();
 			return;
 		}
-		else if (nLech > S13_VUNGCHET
-			&& Npc[nNpcIdx].m_Doing != do_runattack && Npc[nNpcIdx].m_Doing != do_blurmove
-			&& Npc[nNpcIdx].m_Doing != do_jump && Npc[nNpcIdx].m_Doing != do_jumpattack
-			&& Npc[nNpcIdx].m_Doing != do_hurt && Npc[nNpcIdx].m_Doing != do_death)
+		// [S13e] CHI keo khi DUNG YEN: luc chay, phan lech chu yeu la dan truoc lanh + tre khoi dong chang, keo luc do lam hut
+		// toc do theo dot ('chay nhanh roi cham'); luc danh thi keo lam nhan vat truot va may danh (nguong 75 mps) roi ngoai
+		// tam roi chay lai. Dung yen thi hai ben cung dung => lech = lech THAT, keo ve la dung va it lo.
+		else if (nLech > S13_VUNGCHET && Npc[nNpcIdx].m_Doing == do_stand)
 		{
 			// [S13-KEO 03/09] HOA GIAI MEM: phan lech vuot vung chet keo ve phia may chu 1/S13_CHIA.
 			// Buoc <= (255-64)/8 = 24 mps < PAINT_INTERP_SNAP_DIST 64 => lop noi suy ve keo muot, mat
