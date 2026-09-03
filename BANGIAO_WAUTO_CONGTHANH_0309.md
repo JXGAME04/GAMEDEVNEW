@@ -16,7 +16,7 @@ cùng lúc** vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) t
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `a01a95ca` | `2.484.736` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) |
+| `CoreClient.dll.moi` | `c5a6aece` | `2.484.736` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) |
 | `Game.exe.moi` | `b8846266` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
 | `WAuto.exe.moi` | `b80fb551` | `412.160` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
 

@@ -8016,7 +8016,7 @@ static int TK_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 
 	// (03/09) may Cong Thanh Chien dang cam lai -> Tong Kim nhuong (hai may loai tru nhau;
 	// S3Client goi CT truoc TK nen binh thuong khong toi day, giu lam luoi do)
-	if (ea.nCTHold)
+	if (ea.nCTHold && pAp->bCongThanh)
 		return 0;
 	// LOA may chu la duong vao CHINH: admin doi gio trong TAB_TIME_TONG_KIM
 	// (lib_tktc.lua) la loa phat dung phut do va auto tu bam theo, khong can
@@ -9371,8 +9371,9 @@ static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
 		return 0;
-	// Tong Kim dang cam lai -> nhuong (hai may loai tru nhau)
-	if (ea.nTKHold)
+	// Tong Kim dang cam lai -> nhuong (hai may loai tru nhau). Kiem ca o bTongKim: tat o
+	// giua tran thi TK_Process khong duoc goi nua, nTKHold cu se ke lai mai (co chet)
+	if (ea.nTKHold && pAp->bTongKim)
 	{
 		if (ea.nCTPhase != CTP_OFF && ea.nCTPhase != CTP_DONE)
 			ea.nCTPhase = CTP_OFF;

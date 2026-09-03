@@ -491,8 +491,9 @@ static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 	const int nSelf = Player[nPlayerIdx].m_nIndex;
 	if (nSelf <= 0)
 		return 0;
-	// Tong Kim dang cam lai -> nhuong (hai may loai tru nhau)
-	if (ea.nTKHold)
+	// Tong Kim dang cam lai -> nhuong (hai may loai tru nhau). Kiem ca o bTongKim: tat o
+	// giua tran thi TK_Process khong duoc goi nua, nTKHold cu se ke lai mai (co chet)
+	if (ea.nTKHold && pAp->bTongKim)
 	{
 		if (ea.nCTPhase != CTP_OFF && ea.nCTPhase != CTP_DONE)
 			ea.nCTPhase = CTP_OFF;

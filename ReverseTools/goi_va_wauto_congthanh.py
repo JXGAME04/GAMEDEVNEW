@@ -201,7 +201,7 @@ def va_coreshell_cpp():
     t.them("\t// LOA may chu la duong vao CHINH: admin doi gio trong TAB_TIME_TONG_KIM",
            "\t// (03/09) may Cong Thanh Chien dang cam lai -> Tong Kim nhuong (hai may loai tru nhau;\n"
            "\t// S3Client goi CT truoc TK nen binh thuong khong toi day, giu lam luoi do)\n"
-           "\tif (ea.nCTHold)\n"
+           "\tif (ea.nCTHold && pAp->bCongThanh)\n"
            "\t\treturn 0;\n", sau=False)
     t.them("\t\t\t\tcase ATYPE_MAPSUKIEN:",
            "\t\t\t\tcase ATYPE_CONGTHANH:\n"
