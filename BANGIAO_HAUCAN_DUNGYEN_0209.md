@@ -112,6 +112,13 @@ Bản mới nằm cạnh bản đang chạy trong `E:\SourceTuanLe\SourceVs22\TE
 Ba tệp này là **một bộ đồng bộ** (struct `ChatItem` của FUSCHAT đi trong gói
 `s2c_diceitem`) ⇒ **phải swap CẢ BA cùng lúc**.
 
+> ⚠️ **Đây là MỘT bộ chung cho BA luồng việc, không phải ba bộ khác nhau** — cùng bộ 3 tệp
+> này được ghi ở `BANGIAO_VUHON_TIEUDAO_0209.md` mục 18.4 và `BANGIAO_DUNGLUYEN_HKMP_0209.md`
+> mục 6.5. Swap một lần là ăn cả ba. Chia trọn vẹn theo tệp nguồn:
+> `CoreServer.dll` ← `KItemDice.cpp` + `KPlayerBot.cpp` + `GameDataDef.h` ·
+> `CoreClient.dll` ← `CoreShell.cpp` + `GameDataDef.h` ·
+> `Game.exe` ← `UiPlayerBar` + `UiMsgCentrePad` + `GameDataDef.h`.
+
 ### Checklist swap
 
 1. **Thoát hẳn** mọi `Game.exe` và `WAuto.exe` (relog nhân vật KHÔNG đủ).
