@@ -14,6 +14,7 @@
 #ifndef _SERVER
 #include "CoreShell.h"
 #include "GameDataDef.h"
+#include "KSubWorldSet.h"	// GetGameVersion cho ChatItem.m_wVersion
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -187,9 +188,9 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 		if (szLine[0])
 		{
 			KMailUiAward* pA = &d.Award[d.nAwardCount];
-			char* szField[4] = { szLine, NULL, NULL, NULL };
+			char* szField[9] = { szLine, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 			int nField = 1;
-			for (char* q = szLine; *q && nField < 4; q++)
+			for (char* q = szLine; *q && nField < 9; q++)
 			{
 				if (*q == '|')
 				{
@@ -197,13 +198,42 @@ int LuaMail_UpdateMailDetail(Lua_State* L)
 					szField[nField++] = q + 1;
 				}
 			}
-			sCopyStr(pA->szIcon, sizeof(pA->szIcon), szField[0]);
-			sCopyStr(pA->szName, sizeof(pA->szName), szField[1]);
-			sCopyStr(pA->szDesc, sizeof(pA->szDesc), szField[2]);
-			pA->nCount = szField[3] ? atoi(szField[3]) : 1;
-			if (pA->nCount <= 0)
-				pA->nCount = 1;
-			d.nAwardCount++;
+			if (strcmp(szField[0], "item") == 0 && nField >= 8)
+			{
+				// item|genre|detail|particular|level|series|luck|so luong -> ChatItem cho GDI_ITEM_CHAT
+				pA->nKind = MAILAWARD_ITEM;
+				memset(&pA->Item, 0, sizeof(pA->Item));
+				pA->Item.m_nID = 0x7A000000 + d.nAwardCount + 1;	// khac 0 (CoreShell.cpp GDI_ITEM_CHAT tu choi id 0)
+				pA->Item.m_btGenre = (BYTE)atoi(szField[1]);
+				pA->Item.m_btDetail = (short)atoi(szField[2]);
+				pA->Item.m_btParticur = (short)atoi(szField[3]);
+				pA->Item.m_btLevel = (BYTE)atoi(szField[4]);
+				pA->Item.m_btSeries = (BYTE)atoi(szField[5]);
+				pA->Item.m_btLuck = (BYTE)atoi(szField[6]);
+				pA->nCount = atoi(szField[7]);
+				if (pA->nCount <= 0)
+					pA->nCount = 1;
+				pA->Item.m_bStack = (BYTE)(pA->nCount > 255 ? 255 : pA->nCount);
+				pA->Item.m_wVersion = (WORD)g_SubWorldSet.GetGameVersion();
+				pA->Item.m_nNature = 0;
+				pA->Item.m_nGoldId = 0;
+				pA->szIcon[0] = 0;
+				pA->szName[0] = 0;
+				pA->szDesc[0] = 0;
+				d.nAwardCount++;
+			}
+			else if (strcmp(szField[0], "icon") == 0 && nField >= 2)
+			{
+				// icon|duong dan|ten|mo ta|so luong
+				pA->nKind = MAILAWARD_ICON;
+				sCopyStr(pA->szIcon, sizeof(pA->szIcon), szField[1]);
+				sCopyStr(pA->szName, sizeof(pA->szName), szField[2]);
+				sCopyStr(pA->szDesc, sizeof(pA->szDesc), szField[3]);
+				pA->nCount = szField[4] ? atoi(szField[4]) : 1;
+				if (pA->nCount <= 0)
+					pA->nCount = 1;
+				d.nAwardCount++;
+			}
 		}
 		if (!pEnd)
 			break;

@@ -7,6 +7,8 @@
 #ifndef KMAILUIDEF_H
 #define KMAILUIDEF_H
 
+#include "GameDataDef.h"	// ChatItem
+
 #define MAILUI_MAX_AWARD		8
 #define MAILUI_MAX_MAIL			100		// MAILDEF.PLAYER_MAX_MAIL cua 2.0
 #define MAILUI_SENDER_LEN		64
@@ -72,12 +74,21 @@ struct KMailUiHeader
 	int		nSendTime;		// giay (time_t) gui
 };
 
+// Loai phan thuong (uimail.lua PackAwardInfo -> KMailClient.cpp):
+//   "icon|duong dan spr|ten|mo ta|so luong"            -> MAILAWARD_ICON (Ngan luong / xu / EXP)
+//   "item|genre|detail|particular|level|series|luck|so luong" -> MAILAWARD_ITEM (client dung lai vat pham tam
+//   bang duong GDI_ITEM_CHAT -> bieu tuong + chu giai that, y het KUiDiceItem)
+#define MAILAWARD_ICON		0
+#define MAILAWARD_ITEM		1
+
 struct KMailUiAward
 {
-	char	szIcon[MAILUI_ICON_LEN];	// duong dan .spr
+	int		nKind;						// MAILAWARD_*
+	char	szIcon[MAILUI_ICON_LEN];	// duong dan .spr (kind ICON)
 	char	szName[MAILUI_AWARD_NAME_LEN];
 	char	szDesc[MAILUI_AWARD_DESC_LEN];
 	int		nCount;
+	ChatItem	Item;					// kind ITEM: mo ta de client dung lai (GameDataDef.h)
 };
 
 struct KMailUiDetail

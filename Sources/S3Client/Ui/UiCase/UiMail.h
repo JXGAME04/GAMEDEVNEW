@@ -27,6 +27,7 @@ Description : [MAIL 03/09] Cua so HOP THU (viet lai theo client VLTK 2.0: KUiMai
 #include "../elem/wndtext.h"
 #include "../elem/WndScrollBar.h"
 #include "../elem/WndPage.h"
+#include "../elem/wndobjcontainer.h"
 #include "../../../core/src/KMailUiDef.h"
 
 #define MAILUI_ROW_COUNT		6		// 315 / 48
@@ -91,8 +92,10 @@ private:
 	KWndText80			m_ContentLabel;			// [MailContentLable]
 	KWndTextMail		m_Content;				// [MailContentValue]
 	KWndImage			m_AwardBg[MAILUI_MAX_AWARD];		// [MailAwardBgSpr]
-	KWndButton			m_AwardSpr[MAILUI_MAX_AWARD];		// [MailAwardItemSpr] anh vat pham + tooltip
+	KWndButton			m_AwardSpr[MAILUI_MAX_AWARD];		// [MailAwardItemSpr] anh (Ngan luong / xu / EXP) + tooltip
+	KWndObjectBox		m_AwardBox[MAILUI_MAX_AWARD];		// vat pham tam (GDI_ITEM_CHAT) - bieu tuong + chu giai that
 	KWndText32			m_AwardCount[MAILUI_MAX_AWARD];		// [MailAwardItemCount]
+	int					m_nAwardItemIdx[MAILUI_MAX_AWARD];	// chi so vat pham tam trong Item[] cua client (0 = khong)
 	int					m_nAwardLeft, m_nAwardTop, m_nAwardInterval;	// [MailAwardPos]
 	int					m_nAwardW, m_nAwardH;
 };

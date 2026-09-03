@@ -181,6 +181,8 @@ KUiMailDetail::KUiMailDetail()
     m_nAwardInterval = 28;
     m_nAwardW = 26;
     m_nAwardH = 26;
+    for (int i = 0; i < MAILUI_MAX_AWARD; i++)
+        m_nAwardItemIdx[i] = 0;
 }
 
 void KUiMailDetail::Build()
@@ -198,7 +200,22 @@ void KUiMailDetail::Build()
     {
         AddChild(&m_AwardBg[i]);
         AddChild(&m_AwardSpr[i]);
+        // vat pham tam: y het KUiDiceItem (o vat pham nguoi choi CHUA so huu - cam nhac/tha)
+        m_AwardBox[i].SetObjectGenre(CGOG_PLAYERSELLITEM);
+        AddChild(&m_AwardBox[i]);
+        m_AwardBox[i].SetContainerId(0);
+        m_AwardBox[i].EnablePickPut(false);
         AddChild(&m_AwardCount[i]);
+    }
+}
+
+// Nha vat pham tam cua o i (neu co)
+static void sReleaseAwardItem(int* pnIdx)
+{
+    if (pnIdx && *pnIdx > 0 && g_pCoreShell)
+    {
+        g_pCoreShell->GetGameData(GDI_ITEM_CHAT, false, *pnIdx);
+        *pnIdx = 0;
     }
 }
 
@@ -245,6 +262,9 @@ void KUiMailDetail::LoadScheme(const char* pScheme)
             m_AwardSpr[i].Init(&IniAward, "MailAwardItemSpr");
             m_AwardSpr[i].GetPosition(&l, &t);
             m_AwardSpr[i].SetPosition(nBaseX + l, nBaseY + t);
+            m_AwardBox[i].Init(&IniAward, "MailAwardItemSpr");
+            m_AwardBox[i].GetPosition(&l, &t);
+            m_AwardBox[i].SetPosition(nBaseX + l, nBaseY + t);
             m_AwardCount[i].Init(&IniAward, "MailAwardItemCount");
             m_AwardCount[i].GetPosition(&l, &t);
             m_AwardCount[i].SetPosition(nBaseX + l, nBaseY + t);
@@ -285,10 +305,33 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
 
     for (int i = 0; i < MAILUI_MAX_AWARD; i++)
     {
-        if (i < p->nAwardCount && p->Award[i].szIcon[0])
+        // nha vat pham tam cu truoc khi ve o moi
+        sReleaseAwardItem(&m_nAwardItemIdx[i]);
+        m_AwardBox[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
+        m_AwardBox[i].Hide();
+        m_AwardSpr[i].Hide();
+
+        if (i >= p->nAwardCount)
         {
-            const KMailUiAward* pA = &p->Award[i];
-            m_AwardBg[i].Show();
+            m_AwardBg[i].Hide();
+            m_AwardCount[i].Hide();
+            continue;
+        }
+        const KMailUiAward* pA = &p->Award[i];
+        m_AwardBg[i].Show();
+        if (pA->nKind == MAILAWARD_ITEM)
+        {
+            // dung lai vat pham trong Item[] cua client tu ChatItem (CoreShell.cpp GDI_ITEM_CHAT)
+            int nIdx = g_pCoreShell ? g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&pA->Item) : 0;
+            if (nIdx > 0)
+            {
+                m_nAwardItemIdx[i] = nIdx;
+                m_AwardBox[i].HoldObject(CGOG_PLAYERSELLITEM, (unsigned int)nIdx, 1, 1);
+                m_AwardBox[i].Show();
+            }
+        }
+        else if (pA->szIcon[0])
+        {
             m_AwardSpr[i].SetImage(ISI_T_SPR, pA->szIcon);
             m_AwardSpr[i].Show();
             char szTip[256];
@@ -298,18 +341,12 @@ void KUiMailDetail::Update(const KMailUiDetail* p)
                 _snprintf(szTip, sizeof(szTip) - 1, "%s", pA->szName);
             szTip[sizeof(szTip) - 1] = 0;
             m_AwardSpr[i].SetToolTipInfo(szTip, sizeof(szTip));
-            if (pA->nCount > 1)
-                m_AwardCount[i].SetIntText(pA->nCount);
-            else
-                m_AwardCount[i].SetText("");
-            m_AwardCount[i].Show();
         }
+        if (pA->nCount > 1)
+            m_AwardCount[i].SetIntText(pA->nCount);
         else
-        {
-            m_AwardBg[i].Hide();
-            m_AwardSpr[i].Hide();
-            m_AwardCount[i].Hide();
-        }
+            m_AwardCount[i].SetText("");
+        m_AwardCount[i].Show();
     }
 }
 
@@ -322,6 +359,9 @@ void KUiMailDetail::Clean()
     m_Content.SetText("");
     for (int i = 0; i < MAILUI_MAX_AWARD; i++)
     {
+        sReleaseAwardItem(&m_nAwardItemIdx[i]);
+        m_AwardBox[i].HoldObject(CGOG_NOTHING, 0, 0, 0);
+        m_AwardBox[i].Hide();
         m_AwardBg[i].Hide();
         m_AwardSpr[i].Hide();
         m_AwardCount[i].Hide();

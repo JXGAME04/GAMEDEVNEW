@@ -61,6 +61,7 @@
 #include "KJx2SharedStore.h"	// [MAIL 03/09] OB_* dung ca client
 #include "KScriptProtocol.h"	// [MAIL 03/09] kenh ScriptProtocol
 #include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
+#include "KMailServer.h"	// [MAIL 03/09 D3] kho thu MySQL (may chu)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14849,6 +14850,17 @@ TLua_Funcs GameScriptFuns[] =
 	{ "OB_PopString",	LuaOB_PopString },
 #else
 	{"SendScriptDataToPlayer",	LuaSendScriptDataToPlayer},
+	// [MAIL 03/09 D3] kho THU tren MySQL (KMailServer.cpp) - script\mail\mailmanager.lua dung
+	{"MailDB_Ready",	LuaMailDB_Ready},
+	{"MailDB_Send",	LuaMailDB_Send},
+	{"MailDB_Headers",	LuaMailDB_Headers},
+	{"MailDB_Get",	LuaMailDB_Get},
+	{"MailDB_SetState",	LuaMailDB_SetState},
+	{"MailDB_Delete",	LuaMailDB_Delete},
+	{"MailDB_Count",	LuaMailDB_Count},
+	{"MailDB_PollNew",	LuaMailDB_PollNew},
+	{"MailDB_MaxId",	LuaMailDB_MaxId},
+	{"MailDB_Sweep",	LuaMailDB_Sweep},
 #endif
 	{"GetProductRegion",LuaGetProductRegion},	// JX2 port
 	{"PutMessage", LuaSendMessageInfo},
