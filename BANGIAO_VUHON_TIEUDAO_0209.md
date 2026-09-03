@@ -772,8 +772,10 @@ Nếu sau này tự thêm dòng vào bảng: bảng **của ta 11 cột**, bản
 
 ### 23.4 CHECKLIST SWAP đợt 13
 
-1. `bin\server\CoreServer.dll.moi` — 18.276.864 byte, md5 `58c95058` (21:26).
-2. `bin\client\CoreClient.dll.moi` — 2.457.600 byte, md5 `a4c048dd` (21:26).
+1. `bin\server\CoreServer.dll.moi` — 18.276.864 byte, md5 `489d587d` (21:31).
+2. `bin\client\CoreClient.dll.moi` — 2.457.600 byte, md5 `7d31583f` (21:31).
+   Hai tệp này build ở **worktree sạch** `D:\GAMEDEVNEW_wt_vhtd13` từ đúng commit `eace424c`. Lý do: một phiên khác đang sửa `Sources\Core\Src\ipc_shared.h` (Chiêu kết hợp / Tiên chiêu của WAuto) trong cùng cây. Mốc giờ cho thấy họ ghi lúc 21:26:33, **sau** khi tôi link xong (21:26:15 và 21:26:19), và kích thước hai bản build trùng khít từng byte — nên bản cây chính vốn đã sạch. Vẫn lấy bản worktree cho chắc.
+   **Cảnh báo cho chủ:** phiên WAuto kia đang đổi `autoData` (cấu trúc lưu `APdata\<ID>.dat`). Khi họ giao `.moi`, bộ đó sẽ **thay thế** bộ này chứ không trộn — đừng swap lẫn hai bộ.
    **Hai tệp PHẢI swap CÙNG LÚC** (gói mạng mới). `Game.exe` **giữ nguyên** `f6a2229c` — gói mới nằm cuối dãy nên không dịch chuyển giá trị nào đang dùng.
 3. Dữ liệu đã ghi thẳng, **không cần build**: `settings\skills.txt` (server `2ae1a332` / client `6e0b63cd`) — hàng 1358 vòng sáng; bản cũ ở `.truoc_vongsang_0209`. Và `script\skill\huashan.lua` của đợt 12 (`e42d4f3b`).
 4. Trình tự: đặt hai `.moi` → `ChayGameServer.bat` → `ChoiGame.bat`.
