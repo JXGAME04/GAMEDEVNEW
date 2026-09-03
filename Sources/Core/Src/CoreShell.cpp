@@ -11854,6 +11854,39 @@ static int WA_MapSuKien(int nPlayerIdx)
 
 // Tra 1 = vua doi map, 2 = vua bi trap dich chuyen (deu da dung sach), 0 = binh
 // thuong. Goi o dau MOI nhip (ATYPE_CHECKTIME).
+// (02/09) MOT CUA DUY NHAT de hoi "chieu nay ban duoc ngay bay gio chua":
+//   (a) da hoc,  (b) het hoi chieu,  (c) DU TANG No (1976) / Am Luat (2116).
+// Luat (c) lay DUNG cua game - KNpc.cpp:2683 chan tai cho + hien thong bao khi
+// thieu tang; neu auto cu bam thi chi to spam "Khong du N tang ...". So tang cua
+// chinh minh do may chu dong bo xuong qua s2c_syncvhtd (KProtocolProcess.cpp:4487)
+// nen doc thang Npc[].HS_SpGet() la dung.
+// pnCanTang (co the NULL) tra ve SO TANG ma chieu do an - > 0 nghia la "chieu tang".
+static bool WA_ChieuSanSang(int nNpcIdx, int nSkillId, int* pnCanTang)
+{
+	if (pnCanTang)
+		*pnCanTang = 0;
+	if (nSkillId <= 0 || nNpcIdx <= 0 || nNpcIdx >= MAX_NPC)
+		return false;
+	int nIdx = Npc[nNpcIdx].m_SkillList.FindSame(nSkillId);
+	if (!nIdx)
+		return false;
+	if (Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].NextCastTime > SubWorld[0].m_dwCurrentTime)
+		return false;
+	KSkill* pS = (KSkill*)g_SkillManager.GetSkill(nSkillId,
+					Npc[nNpcIdx].m_SkillList.m_Skills[nIdx].SkillLevel);
+	if (!pS)
+		return false;
+	const int nKey = pS->GetCostSpKey();
+	if (nKey > 0)
+	{
+		if (pnCanTang)
+			*pnCanTang = pS->GetCostSp();
+		if (Npc[nNpcIdx].HS_SpGet(nKey) < pS->GetCostSp())
+			return false;
+	}
+	return true;
+}
+
 static int WA_DoiMapDungDi(int nPlayerIdx, UINT uCurTime)
 {
 	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
@@ -15227,28 +15260,49 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					// Tat o nay = dung dung chieu tay trai nguoi choi tu dat trong game.
 					int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
 					bool bComboCast = false;
+					int  nKheBan = -1;		// khe THUC SU duoc chon o nhip nay
+					bool bChenNo = false;	// chen ngang vi da du tang No / Am Luat
 					if(pApData->bCombo)
 					{
 						if(g_uComboNghi > uCurTime)
 							return 1;	// dang nghi theo o 'tre (ms)' cua khe vua ban
 						if(g_nComboKhe < 0 || g_nComboKhe > 5)
 							g_nComboKhe = 0;
-						for(int ct = 0; ct < 6; ++ct)
+						// (a) CHIEU AN TANG (No 1976 / Am Luat 2116) da DU TANG thi chen len
+						// ban ngay, khong doi toi luot xoay vong - chu game: "no khong tinh
+						// thoi gian hoi chieu ma tinh du no la danh".
+						if(pApData->bComboNoUT)
 						{
-							int ck = (g_nComboKhe + ct) % 6;
-							int nCId = pApData->nComboSkill[ck];
-							if(!nCId)
-								continue;
-							int nCIdx = Npc[nNpcIdx].m_SkillList.FindSame(nCId);
-							if(!nCIdx)
-								continue;
-							if(Npc[nNpcIdx].m_SkillList.m_Skills[nCIdx].NextCastTime
-									> SubWorld[0].m_dwCurrentTime)
-								continue;
-							nMainSkill = nCId;
-							g_nComboKhe = ck;
+							for(int ck = 0; ck < 6; ++ck)
+							{
+								int nCan = 0;
+								if(WA_ChieuSanSang(nNpcIdx, pApData->nComboSkill[ck], &nCan)
+								&& nCan > 0)
+								{
+									nKheBan = ck;
+									bChenNo = true;
+									break;
+								}
+							}
+						}
+						// (b) xoay vong binh thuong tu khe dang toi luot
+						if(nKheBan < 0)
+						{
+							for(int ct = 0; ct < 6; ++ct)
+							{
+								int ck = (g_nComboKhe + ct) % 6;
+								if(WA_ChieuSanSang(nNpcIdx, pApData->nComboSkill[ck], NULL))
+								{
+									nKheBan = ck;
+									break;
+								}
+							}
+						}
+						if(nKheBan >= 0)
+						{
+							nMainSkill = pApData->nComboSkill[nKheBan];
+							g_nComboKhe = bChenNo ? g_nComboKhe : nKheBan;
 							bComboCast = true;
-							break;
 						}
 					}
 					// o 'Doi voi tay trai N s' chi con song khi TAT bang ket hop
@@ -15339,16 +15393,23 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					// ben duoi (tam danh / len xuong ngua / ap sat). Nhip tien chieu KHONG
 					// day khe cua bang ket hop. Nhuong o LS/MS (mau/noi luc thap = khan cap).
 					bool bTCCast = false;
+					int  nTCCanBan = 0;	// > 0 = tien chieu la chieu AN TANG No / Am Luat
 					if(pApData->bTienChieu && pApData->nTCSkill && !bChecked
 					&& (!pApData->bTCChiNguoi || Npc[nTGNpcIdx].m_Kind == kind_player)
 					&& g_uTCHoiT <= uCurTime)
 					{
-						int nTCIdx = Npc[nNpcIdx].m_SkillList.FindSame(pApData->nTCSkill);
-						if(nTCIdx && Npc[nNpcIdx].m_SkillList.m_Skills[nTCIdx].NextCastTime
-								<= SubWorld[0].m_dwCurrentTime)
+						// WA_ChieuSanSang: da hoc + het hoi chieu + DU TANG No/Am Luat.
+						// Chieu tang chua du tang thi coi nhu chua san sang - khong bam,
+						// khoi bi client chan tai cho va spam "Khong du N tang ...".
+						int nTCCan = 0;
+						if(WA_ChieuSanSang(nNpcIdx, pApData->nTCSkill, &nTCCan))
 						{
 							const UINT uTgID = Npc[nTGNpcIdx].m_dwID;
-							if(pApData->nTCKieu == 1)
+							if(pApData->nTCKieu == 3)
+							{	// du tang No / Am Luat thi ban - khong theo dong ho
+								bTCCast = true;
+							}
+							else if(pApData->nTCKieu == 1)
 							{	// lap theo thoi gian
 								UINT uMs = (UINT)(pApData->nTCMs < 200 ? 200 : pApData->nTCMs);
 								if(!g_uTCLan || uCurTime - g_uTCLan >= uMs)
@@ -15368,10 +15429,11 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							{
 								nMainSkill = pApData->nTCSkill;
 								bComboCast = false;
+								nTCCanBan = nTCCan;
 							}
 						}
 					}
-					AUTOLOG_EVERY(3000, "[COMBO-STATE] bat=%d khe=%d chieu=%d nghi=%d | tc: bat=%d chieu=%d kieu=%d ban=%d hoi=%d muc=%u dist=%d", pApData->bCombo, g_nComboKhe, nMainSkill, (int)((g_uComboNghi > uCurTime) ? (g_uComboNghi - uCurTime) : 0), pApData->bTienChieu, pApData->nTCSkill, pApData->nTCKieu, (int)bTCCast, (int)((g_uTCHoiT > uCurTime) ? (g_uTCHoiT - uCurTime) / 1000 : 0), g_uTCMuc, nDist);
+					AUTOLOG_EVERY(3000, "[COMBO-STATE] bat=%d khe=%d/%d chenno=%d chieu=%d nghi=%d | tc: bat=%d chieu=%d kieu=%d ban=%d cantang=%d hoi=%d muc=%u dist=%d | tang: no=%d amluat=%d", pApData->bCombo, g_nComboKhe, nKheBan, (int)bChenNo, nMainSkill, (int)((g_uComboNghi > uCurTime) ? (g_uComboNghi - uCurTime) : 0), pApData->bTienChieu, pApData->nTCSkill, pApData->nTCKieu, (int)bTCCast, nTCCanBan, (int)((g_uTCHoiT > uCurTime) ? (g_uTCHoiT - uCurTime) / 1000 : 0), g_uTCMuc, nDist, Npc[nNpcIdx].HS_SpGet(1976), Npc[nNpcIdx].HS_SpGet(2116));
 					int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nMainSkill);
 					if(!nSkillIdx)
 						return 0;
@@ -15416,15 +15478,24 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							// chieu TRUOC khi xet dieu kien nen an oan mot luot (Class7.cs:1762).
 							g_uTCMuc = Npc[nTGNpcIdx].m_dwID;
 							g_uTCLan = uCurTime ? uCurTime : 1;
-							g_uTCHoiT = uCurTime + 1000 * (UINT)pApData->nTCHoi;
+							UINT uHoi = 1000 * (UINT)pApData->nTCHoi;
+							if(nTCCanBan > 0 && uHoi < 700)
+								uHoi = 700;	// chieu an tang: cho so tang moi dong bo ve
+							g_uTCHoiT = uCurTime + uHoi;
 						}
-						else if(bComboCast)
-						{	// day sang khe ke + nghi theo o 'tre (ms)' cua khe vua ban
-							int nTre = pApData->nComboDelay[g_nComboKhe];
+						else if(bComboCast && nKheBan >= 0)
+						{	// nghi theo o 'tre (ms)' cua khe VUA BAN
+							int nTre = pApData->nComboDelay[nKheBan];
 							if(nTre < 0)
 								nTre = 0;
+							if(bChenNo && nTre < 700)
+								nTre = 700;	// cho s2c_syncvhtd tra ve so tang moi da bi tru;
+											// khong cho thi ban them mot nhip vo ich vi client
+											// van con thay du tang.
 							g_uComboNghi = uCurTime + (UINT)nTre;
-							g_nComboKhe = (g_nComboKhe + 1) % 6;
+							// chen ngang thi GIU NGUYEN vong xoay, xong quay lai khe dang do
+							if(!bChenNo)
+								g_nComboKhe = (nKheBan + 1) % 6;
 						}
 					}
 					else

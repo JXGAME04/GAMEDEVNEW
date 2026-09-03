@@ -451,9 +451,10 @@ using namespace std;
 #define IDC_STRING_14_TCH	592
 #define IDC_EDITOR_14_TCH	593
 #define IDC_CHECKBOX_14_TCP	594
-#define IDC_GRP_TAB13		595
-#define IDC_SEP_13A			596
-#define IDC_INDEX_END			597
+#define IDC_CHECKBOX_14_NOUT	595
+#define IDC_GRP_TAB13		596
+#define IDC_SEP_13A			597
+#define IDC_INDEX_END			598
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
 #define IDD_NOPICK_DIALOG		601

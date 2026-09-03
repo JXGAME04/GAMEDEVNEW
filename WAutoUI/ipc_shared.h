@@ -330,6 +330,7 @@ struct autoData
 	int		nTCDist;		// kieu 2: KHONG phat khi khoang cach <= so nay
 	int		nTCHoi;			// hoi chieu rieng cua tien chieu (GIAY)
 	int		bTCChiNguoi;	// 1 = chi phat khi muc tieu la NGUOI CHOI
+	int		bComboNoUT;		// 1 = chieu an tang No/Am Luat du tang thi CHEN LEN ban ngay
 
 	autoData()
 	{
@@ -567,6 +568,7 @@ struct autoData
 		nTCDist = 120;
 		nTCHoi = 6;
 		bTCChiNguoi = 0;
+		bComboNoUT = 1;
 
 	}
 };
