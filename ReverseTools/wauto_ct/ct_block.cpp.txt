@@ -1,0 +1,1100 @@
+// ==================== AUTO CONG THANH CHIEN (03/09/2026) ====================
+// May trang thai cho NGUOI CHOI THAT (chua co he bot pb_Ctc* ben server):
+//   toi gio khai chien / nghe loa "cong thanh chien chinh thuc bat dau"
+//   -> di BO toi Xa Phu cua thanh (KHONG nhay map bang phu / SetPos - chu game 03/09:
+//      "khong tu dong nhay map phai toi dung npc de dang ky")
+//   -> thoai Xa Phu: "Di Chien truong cong thanh" -> doc ten 2 bang trong cau thoai
+//      ("ben cong<X>, ben thu<Y>") -> chon "Ben cong" / "Ben thu" theo bang cua minh
+//   -> hau phuong 222 (thu) / 223 (cong): dap o trap TAP KET (trap.lua -> JoinCamp)
+//   -> doanh trai map 221: dap trap cua doanh (ctrap1*/ctrap2*) -> FightState 1
+//   -> danh theo tab PK: nguoi khac phe trong tam nhin; het nguoi thi ben cong pha
+//      CONG (NPC 532) roi ha LONG TRU (NPC 528), ben thu canh tru / chiem lai (NPC 530)
+//   -> chet: hoi sinh ve doanh (FightState 0) -> dap trap ra lai
+//   -> het tran (loa "Chung cuoc" / bi keo ve hau phuong): Xa Phu hau phuong
+//      "Roi khoi dau truong" (ve diem luu) hoac "Nhung thanh thi da di qua" -> thanh chon.
+// So lieu (map, marker thoai, toa do cong/tru/doanh, O TRAP doc tu Region_S.dat) o
+// KCongThanhTables.h - SINH TU DONG boi ReverseTools/gen_congthanh_tables.py, dung go tay.
+// Dung chung voi khoi Tong Kim / Lien Dau: TK_O, TK_ThayDuoc, TK_ToiNpc, DT_*, LD_DiThanh.
+// Luat loai tru voi Tong Kim: CT_Process nhuong khi nTKHold, TK_Process nhuong khi nCTHold;
+// S3Client goi CT TRUOC TK (tran cong thanh moi tuan mot lan cho moi thanh).
+// Tra ve: 0 = tha may; 1 = dang cam lai (chan Da Tau / Hau can / di chuyen / phu ve);
+//         2 = trong tran (cam lai + giao muc tieu uNpcID cho may PK cua tab PK).
+
+enum CTPhase
+{
+	CTP_OFF = 0,	// ngoai cua so - tha may cho auto thuong
+	CTP_GO,			// toi gio: di toi Xa Phu trong thanh
+	CTP_XAPHU,		// thoai Xa Phu: "Di Chien truong cong thanh" -> chon phe
+	CTP_HAUPHUONG,	// map 222/223: dap o trap tap ket (JoinCamp)
+	CTP_DOANH,		// map 221, chua ra tran (FightState 0): dap trap cua doanh
+	CTP_FIGHT,		// map 221, dang ra tran: giao muc tieu cho may PK
+	CTP_END,		// hau phuong sau tran: Xa Phu roi map
+	CTP_VETHANH,	// da roi hau phuong: ve thanh da chon (LD_DiThanh)
+	CTP_DONE		// xong hom nay - tha may
+};
+
+#define CT_HANPHA		180000u		// han mot pha di duong / thoai (3 phut)
+#define CT_CHO_MO		60000u		// chua khai chien: hoi lai Xa Phu sau 60 giay
+#define CT_HAN_TRAN		100u		// phut: qua han nay ma van o map 221 = mission da dong -> ra
+#define CT_VISION_MIN	100
+#define CT_VISION_MAX	1200
+static int WA_MapSuKien(int nPlayerIdx);	// dinh nghia duoi (bang KMapSuKien.h)
+
+static void CT_Msg(int nPlayerIdx, const char* szMsg)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	UINT uNow = timeGetTime();
+	if (ea.uCTMsgT > uNow)
+		return;
+	ea.uCTMsgT = uNow + 1200;
+	try
+	{
+		l_pDataChangedNotifyFunc->ChannelMessageArrival(0, "[Công Thành]", (char*)szMsg, strlen(szMsg), TRUE);
+	}
+	catch (...) {}
+}
+
+static void CT_Pha(int nPlayerIdx, int nPha, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	ea.nCTPhase = nPha;
+	ea.nCTStep = 0;
+	ea.nCTTry = 0;
+	ea.uCTPhaseT = uCurTime;
+	ea.uCTNext = uCurTime + 400;
+	ea.uCTTrapT = 0;
+	ea.uCTDlgSeen = g_sDTCap.uDlgSeq;
+	if (nPha != CTP_FIGHT)
+	{
+		ea.uNpcID = 0;
+		ea.nCTMucTieu = 0;
+	}
+}
+
+// dong thoai dang mo: chon dong cuoi (thuong la "Khong ..."/"Ket thuc") hoac dong hop
+static void CT_Huy(int nPlayerIdx, int nAns)
+{
+	if (nAns > 0)
+		DT_Answer(nPlayerIdx, nAns - 1);
+	else
+		CoreDataChanged(GDCNI_UI_ACT, 1, 0);
+}
+
+static int CT_PhutServer(const autoData* pAp)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	int n = (int)st.wHour * 60 + (int)st.wMinute + pAp->nCTLech;
+	return ((n % 1440) + 1440) % 1440;
+}
+
+// yymmdd theo GIO MAY CHU (cong o Lech gio) - khoa "hom nay da chay"
+static int CT_NgayServer(const autoData* pAp)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	FILETIME ft;
+	SystemTimeToFileTime(&st, &ft);
+	ULARGE_INTEGER u;
+	u.LowPart = ft.dwLowDateTime;
+	u.HighPart = ft.dwHighDateTime;
+	u.QuadPart = (ULONGLONG)((LONGLONG)u.QuadPart + (LONGLONG)pAp->nCTLech * 600000000LL);
+	ft.dwLowDateTime = u.LowPart;
+	ft.dwHighDateTime = u.HighPart;
+	FileTimeToSystemTime(&ft, &st);
+	return ((int)st.wYear % 100) * 10000 + (int)st.wMonth * 100 + (int)st.wDay;
+}
+
+// 1 = dang trong cua so [gio:phut - som .. gio:phut + cua) theo gio may chu
+static int CT_TrongCua(const autoData* pAp)
+{
+	int nSom = pAp->nCTSom;
+	if (nSom < 0)
+		nSom = 0;
+	else if (nSom > 30)
+		nSom = 30;
+	int nCua = pAp->nCTCua;
+	if (nCua < 10)
+		nCua = 10;
+	else if (nCua > 180)
+		nCua = 180;
+	int nGio = pAp->nCTGio;
+	if (nGio < 0 || nGio > 23)
+		nGio = 20;
+	int nPhut = pAp->nCTPhut;
+	if (nPhut < 0 || nPhut > 59)
+		nPhut = 0;
+	int nCach = CT_PhutServer(pAp) - (nGio * 60 + nPhut);
+	if (nCach < -720)
+		nCach += 1440;
+	else if (nCach > 720)
+		nCach -= 1440;
+	return (nCach >= -nSom && nCach < nCua) ? 1 : 0;
+}
+
+static void CT_TenBang(int nPlayerIdx, char* szOut, int nMax)
+{
+	szOut[0] = 0;
+	if (!Player[nPlayerIdx].m_cTong.CheckIn())
+		return;
+	char szTmp[64];
+	memset(szTmp, 0, sizeof(szTmp));
+	Player[nPlayerIdx].m_cTong.GetTongName(szTmp);
+	g_StrCpyLen(szOut, szTmp, nMax);
+}
+
+// doc ten bang giua szMark va '>' trong cau thoai: "... ben cong<X>, ben thu<Y> ..."
+static void CT_LayTenBang(const char* szDlg, const char* szMark, char* szOut, int nMax)
+{
+	szOut[0] = 0;
+	const char* p = strstr(szDlg, szMark);
+	if (!p)
+		return;
+	p += strlen(szMark);
+	int n = 0;
+	while (*p && *p != '>' && n < nMax - 1)
+		szOut[n++] = *p++;
+	szOut[n] = 0;
+}
+
+static int CT_TrongKhu(int nMap)
+{
+	return (nMap == CT_MAP_TRAN || nMap == CT_MAP_HP_THU || nMap == CT_MAP_HP_CONG) ? 1 : 0;
+}
+
+static int CT_LaTrap(int nCx, int nCy, const CTPoint* pT, int nSo)
+{
+	for (int i = 0; i < nSo; ++i)
+		if ((int)pT[i].x == nCx && (int)pT[i].y == nCy)
+			return 1;
+	return 0;
+}
+
+// DAP TRAP. Trap chi kich khi id o DOI (KNpc::CheckTrap so m_TrapScriptID == dwTrap), dung
+// yen tren trap hay di doc theo dai trap khong kich lai. Buoc 0: di toi o trap gan nhat;
+// toi noi ma 2,5 giay khong co gi (khong doi map / khong thoai) -> buoc 1: lui ra mot o
+// KHONG phai trap cach 3 o, toi noi thi quay lai buoc 0 (vao lai tu o thuong = kich).
+static void CT_DapTrap(int nPlayerIdx, const CTPoint* pT, int nSo, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	int nX, nY;
+	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
+	int nBest = 0, nBestD = 0x7fffffff;
+	for (int i = 0; i < nSo; ++i)
+	{
+		int nD = g_GetDistance(nX, nY, TK_O((int)pT[i].x), TK_O((int)pT[i].y));
+		if (nD < nBestD)
+		{
+			nBestD = nD;
+			nBest = i;
+		}
+	}
+	const int tx = TK_O((int)pT[nBest].x);
+	const int ty = TK_O((int)pT[nBest].y);
+	if (ea.nCTStep == 1)
+	{
+		static const int adx[8] = { 3, -3, 0, 0, 3, -3, 3, -3 };
+		static const int ady[8] = { 0, 0, 3, -3, 3, -3, -3, 3 };
+		int ox = tx, oy = ty;
+		for (int d = 0; d < 8; ++d)
+		{
+			int cx = (int)pT[nBest].x + adx[d];
+			int cy = (int)pT[nBest].y + ady[d];
+			if (CT_LaTrap(cx, cy, pT, nSo))
+				continue;
+			BYTE b = SubWorld[0].TestBarrier(TK_O(cx) + 16, TK_O(cy) + 16);
+			if (b >= Obstacle_Normal && b <= Obstacle_JumpFly)
+				continue;
+			ox = TK_O(cx);
+			oy = TK_O(cy);
+			break;
+		}
+		if (DT_WalkTo(nPlayerIdx, ox, oy, 24, uCurTime))
+		{
+			ea.nCTStep = 0;
+			ea.uCTTrapT = 0;
+		}
+		return;
+	}
+	if (DT_WalkTo(nPlayerIdx, tx, ty, 24, uCurTime))
+	{
+		if (!ea.uCTTrapT)
+			ea.uCTTrapT = uCurTime;
+		else if (uCurTime - ea.uCTTrapT > 2500u)
+		{
+			ea.nCTStep = 1;
+			ea.uCTTrapT = 0;
+		}
+	}
+	else
+		ea.uCTTrapT = 0;
+}
+
+// NGUOI CHOI khac phe gan nhat co duong nhin (khuon TK_ChonDich; nhan dich bang CAMP -
+// JoinCamp dat SetCurCamp 1 thu / 2 cong va khong co to doi trong tran)
+static int CT_ChonDichNguoi(int nPlayerIdx, const autoData* pAp)
+{
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	int nTam = pAp->nPKVision;
+	if (nTam < CT_VISION_MIN)
+		nTam = CT_VISION_MIN;
+	else if (nTam > CT_VISION_MAX)
+		nTam = CT_VISION_MAX;
+	const int nCampMe = Npc[nSelf].m_CurrentCamp;
+	int nGan = 0, nGanD = 0x7fffffff;
+	int nMu = 0, nMuD = 0x7fffffff;
+	int nIdx = 0;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (nIdx == nSelf || !Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].m_Kind != kind_player)
+			continue;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		if (Npc[nIdx].m_CurrentCamp == nCampMe)
+			continue;
+		if (Npc[nIdx].m_CurrentCamp != 1 && Npc[nIdx].m_CurrentCamp != 2)
+			continue;
+		if (Player[nPlayerIdx].m_mAutoExcludeNpcID.find(Npc[nIdx].m_dwID) != Player[nPlayerIdx].m_mAutoExcludeNpcID.end())
+			continue;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		int nD = g_GetDistance(nX, nY, x, y);
+		if (nD > nTam)
+			continue;
+		if (nD < nMuD)
+		{
+			nMuD = nD;
+			nMu = nIdx;
+		}
+		if (!TK_ThayDuoc(nX, nY, x, y))
+			continue;
+		if (nD < nGanD)
+		{
+			nGanD = nD;
+			nGan = nIdx;
+		}
+	}
+	if (nGan)
+		return nGan;
+	if (nMu && nMuD <= 160)
+		return nMu;
+	return 0;
+}
+
+// NPC cong / tru (theo mau nTpl) dang song trong ban kinh nR o quanh o (cx, cy)
+static int CT_TimNpcTai(int nTpl, int cx, int cy, int nR)
+{
+	int nIdx = 0, x, y;
+	while (nIdx = NpcSet.GetNextIdx(nIdx))
+	{
+		if (!Npc[nIdx].m_dwID || Npc[nIdx].m_RegionIndex < 0)
+			continue;
+		if (Npc[nIdx].m_Kind == kind_player || Npc[nIdx].m_Kind == kind_dialoger)
+			continue;
+		if (Npc[nIdx].m_NpcSettingIdx != nTpl)
+			continue;
+		if (Npc[nIdx].m_Doing == do_death || Npc[nIdx].m_Doing == do_revive)
+			continue;
+		Npc[nIdx].GetMpsPos(&x, &y);
+		if (g_GetDistance(x, y, TK_O(cx), TK_O(cy)) <= TK_O(nR))
+			return nIdx;
+	}
+	return 0;
+}
+
+// tuan tra qua danh sach diem (cong roi tru): toi noi (6 o) thi sang diem ke
+static void CT_TuanTra(int nPlayerIdx, int nX, int nY, int* pnX, int* pnY)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nSo = CT_SO_CONG + CT_SO_TRU;
+	int k = ea.nCTMucTieu > 0 ? (ea.nCTMucTieu - 1) % nSo : 0;
+	const CTPoint& p = (k < CT_SO_CONG) ? g_CTCong[k] : g_CTTru[k - CT_SO_CONG];
+	if (g_GetDistance(nX, nY, TK_O((int)p.x), TK_O((int)p.y)) <= TK_O(6))
+		k = (k + 1) % nSo;
+	ea.nCTMucTieu = k + 1;
+	const CTPoint& q = (k < CT_SO_CONG) ? g_CTCong[k] : g_CTTru[k - CT_SO_CONG];
+	*pnX = TK_O((int)q.x);
+	*pnY = TK_O((int)q.y);
+}
+
+// Muc tieu theo phe / cau hinh khi KHONG co nguoi de danh. Tra NPC idx (giao cho may PK)
+// va/hoac diem den (*pnX, *pnY mps; 0 = dung yen). Ben cong: cong con song gan nhat ->
+// (toi sat ma khong thay cong = da vo) -> tru ben thu dang giu gan nhat. Ben thu: tru
+// bi chiem (NPC cong) thay duoc thi danh, khong thi dung canh mot tru (chia theo id).
+// Rao dong sau cong (AddObstacleObj) client KHONG biet, nen chi nham tru sau khi it nhat
+// mot cong da vo - luat "cong chua vo thi khong nham tru" (BANGIAO_BOT_CONGTHANH 3.3).
+static int CT_ChonMucTieu(int nPlayerIdx, const autoData* pAp, UINT uCurTime, int* pnX, int* pnY)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	int nX, nY, x, y;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+	*pnX = 0;
+	*pnY = 0;
+	if (ea.nCTPhe == 2)
+	{
+		if (pAp->nCTCong == 1)
+		{
+			CT_TuanTra(nPlayerIdx, nX, nY, pnX, pnY);
+			return 0;
+		}
+		int nCong = -1, nCongD = 0x7fffffff;
+		for (int i = 0; i < CT_SO_CONG; ++i)
+		{
+			if (ea.nCTCongChet & (1 << i))
+				continue;
+			int nD = g_GetDistance(nX, nY, TK_O((int)g_CTCong[i].x), TK_O((int)g_CTCong[i].y));
+			if (nD < nCongD)
+			{
+				nCongD = nD;
+				nCong = i;
+			}
+		}
+		if (nCong >= 0)
+		{
+			int nNpc = CT_TimNpcTai(CT_NPC_CONG, (int)g_CTCong[nCong].x, (int)g_CTCong[nCong].y, 8);
+			if (nNpc)
+			{
+				Npc[nNpc].GetMpsPos(&x, &y);
+				*pnX = x;
+				*pnY = y;
+				return nNpc;
+			}
+			if (nCongD <= TK_O(12))
+			{
+				ea.nCTCongChet |= (1 << nCong);
+				CT_Msg(nPlayerIdx, "<color=Cyan>Cổng đã vỡ - tiến vào đánh Long trụ.");
+				return 0;
+			}
+			*pnX = TK_O((int)g_CTCong[nCong].x);
+			*pnY = TK_O((int)g_CTCong[nCong].y);
+			return 0;
+		}
+		int nTru = -1, nTruD = 0x7fffffff;
+		for (int j = 0; j < CT_SO_TRU; ++j)
+		{
+			if (ea.nCTTruXong & (1 << j))
+				continue;
+			int nD = g_GetDistance(nX, nY, TK_O((int)g_CTTru[j].x), TK_O((int)g_CTTru[j].y));
+			if (nD < nTruD)
+			{
+				nTruD = nD;
+				nTru = j;
+			}
+		}
+		if (nTru >= 0)
+		{
+			int nNpc = CT_TimNpcTai(CT_NPC_TRU_THU, (int)g_CTTru[nTru].x, (int)g_CTTru[nTru].y, 8);
+			if (nNpc)
+			{
+				Npc[nNpc].GetMpsPos(&x, &y);
+				*pnX = x;
+				*pnY = y;
+				return nNpc;
+			}
+			if (CT_TimNpcTai(CT_NPC_TRU_CONG, (int)g_CTTru[nTru].x, (int)g_CTTru[nTru].y, 8) || nTruD <= TK_O(10))
+			{
+				ea.nCTTruXong |= (1 << nTru);	// da chiem (hoac chua dong bo) -> qua tru khac
+				return 0;
+			}
+			*pnX = TK_O((int)g_CTTru[nTru].x);
+			*pnY = TK_O((int)g_CTTru[nTru].y);
+			return 0;
+		}
+		ea.nCTTruXong = 0;		// ca ba da danh dau: quet lai (thu co the chiem lai)
+		return 0;
+	}
+	// ---- ben thu ----
+	if (pAp->nCTThu == 1)
+	{
+		CT_TuanTra(nPlayerIdx, nX, nY, pnX, pnY);
+		return 0;
+	}
+	int nBest = 0, nBestD = 0x7fffffff;
+	for (int j = 0; j < CT_SO_TRU; ++j)
+	{
+		int nNpc = CT_TimNpcTai(CT_NPC_TRU_CONG, (int)g_CTTru[j].x, (int)g_CTTru[j].y, 8);
+		if (!nNpc)
+			continue;
+		Npc[nNpc].GetMpsPos(&x, &y);
+		int nD = g_GetDistance(nX, nY, x, y);
+		if (nD < nBestD)
+		{
+			nBestD = nD;
+			nBest = nNpc;
+		}
+	}
+	if (nBest)
+	{
+		Npc[nBest].GetMpsPos(&x, &y);
+		*pnX = x;
+		*pnY = y;
+		return nBest;
+	}
+	// canh tru: chia deu 3 tru theo id nhan vat, moi 2 phut doi sang tru ke de xem co mat khong
+	int j = ea.nCTMucTieu > 0 ? (ea.nCTMucTieu - 1) % CT_SO_TRU : (int)(Player[nPlayerIdx].m_dwID % (DWORD)CT_SO_TRU);
+	if (!ea.uCTMucT)
+		ea.uCTMucT = uCurTime;
+	else if (uCurTime - ea.uCTMucT > 120000u)
+	{
+		j = (j + 1) % CT_SO_TRU;
+		ea.uCTMucT = uCurTime;
+	}
+	ea.nCTMucTieu = j + 1;
+	if (g_GetDistance(nX, nY, TK_O((int)g_CTTru[j].x), TK_O((int)g_CTTru[j].y)) > TK_O(6))
+	{
+		*pnX = TK_O((int)g_CTTru[j].x);
+		*pnY = TK_O((int)g_CTTru[j].y);
+	}
+	return 0;
+}
+
+// di toi Xa Phu cua map hien tai (bang tram g_MoveStation) roi mo thoai.
+// Tra: 1 vua go thoai; 0 dang di; -1 map nay khong co Xa Phu trong bang
+static int CT_ToiXaPhu(int nPlayerIdx, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	const int nMap = SubWorld[0].m_SubWorldID;
+	std::map<int, StationVector>::iterator itXa = g_MoveStation.find(nMap);
+	if (itXa == g_MoveStation.end() || itXa->second.empty())
+		return -1;
+	sStation& sXa = DT_TramGan(itXa->second, nPlayerIdx);
+	int nXaIdx = DT_FindNpcName(nPlayerIdx, "xa phu", sXa.x, sXa.y, 400);
+	if (nXaIdx)
+	{
+		int nX2, nY2, dX2, dY2;
+		Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX2, &nY2);
+		Npc[nXaIdx].GetMpsPos(&dX2, &dY2);
+		if (g_GetDistance(nX2, nY2, dX2, dY2) <= 128)
+		{
+			ea.uCTDlgSeen = g_sDTCap.uDlgSeq;
+			Player[nPlayerIdx].DialogNpc(nXaIdx);
+			return 1;
+		}
+		DT_WalkTo(nPlayerIdx, dX2, dY2, 96, uCurTime);
+		return 0;
+	}
+	DT_WalkTo(nPlayerIdx, sXa.x, sXa.y, 200, uCurTime);
+	return 0;
+}
+
+// ================== MAY CHINH CONG THANH ==================
+static int CT_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
+{
+	ExtAuto& ea = Player[nPlayerIdx].m_sExtAuto;
+	KDaTauCapture& cap = g_sDTCap;
+	const int nSelf = Player[nPlayerIdx].m_nIndex;
+	if (nSelf <= 0)
+		return 0;
+	// Tong Kim dang cam lai -> nhuong (hai may loai tru nhau)
+	if (ea.nTKHold)
+	{
+		if (ea.nCTPhase != CTP_OFF && ea.nCTPhase != CTP_DONE)
+			ea.nCTPhase = CTP_OFF;
+		ea.nCTHold = 0;
+		return 0;
+	}
+	const int nMap = SubWorld[0].m_SubWorldID;
+	int nX, nY;
+	Npc[nSelf].GetMpsPos(&nX, &nY);
+
+	// loa may chu: "<thanh> cong thanh chien chinh thuc bat dau!" (RunMission) mo cua so
+	// 95 phut; "Chung cuoc ..." (GameWin) = tran da ket thuc
+	int nTinMo = 0;
+	if (cap.uNewsSeq != ea.uCTNewsSeen)
+	{
+		ea.uCTNewsSeen = cap.uNewsSeq;
+		if (DT_Has(cap.szNews, CTM_NEWS_KHAICHIEN))
+		{
+			nTinMo = 1;
+			ea.nCTHetTran = 0;
+			ea.uCTMoT = uCurTime + 95u * 60000u;
+		}
+		else if (DT_Has(cap.szNews, CTM_NEWS_CHUNGCUOC))
+		{
+			ea.nCTHetTran = 1;
+			ea.uCTMoT = 0;
+		}
+	}
+	const int nLoaMo = (pAp->bCTLoa && uCurTime < ea.uCTMoT) ? 1 : 0;
+	const int nTrongCua = CT_TrongCua(pAp);
+	const int nNgay = CT_NgayServer(pAp);
+	const int bTrongKhu = CT_TrongKhu(nMap);
+	// loa MOI giua ngay (tran mo them / relog) -> xoa khoa "hom nay xong roi"
+	if (nTinMo && ea.nCTPhase == CTP_DONE)
+		ea.nCTKey = 0;
+
+	// dang chet: nut hoi sinh do S3Client bam (nBS != 0)
+	if (Npc[nSelf].m_Doing == do_death || Npc[nSelf].m_Doing == do_revive)
+	{
+		if (ea.nCTPhase == CTP_FIGHT || ea.nCTPhase == CTP_DOANH)
+		{
+			ea.uCTNext = uCurTime + 600;
+			return ea.nCTHold;
+		}
+		return ea.nCTPhase ? 1 : 0;
+	}
+	if (Player[nPlayerIdx].CheckTrading())
+		return ea.nCTPhase ? 1 : 0;
+
+	// ---- quyet dinh vao cuoc ----
+	if (ea.nCTPhase == CTP_OFF || ea.nCTPhase == CTP_DONE)
+	{
+		ea.nCTHold = 0;
+		if (ea.uCTNext > uCurTime)
+			return 0;
+		ea.uCTNext = uCurTime + 1500;
+		if (bTrongKhu)
+		{
+			// dang o khu cong thanh (relog giua tran / ket lai sau tran): nhan viec ngay
+			ea.nCTKey = nNgay;
+			ea.nCTBackMap = 0;
+			if (nMap == CT_MAP_TRAN)
+			{
+				ea.nCTPhe = (Npc[nSelf].m_CurrentCamp == 2) ? 2 : 1;
+				ea.nCTDaVao = 1;
+				CT_Pha(nPlayerIdx, Npc[nSelf].m_FightMode ? CTP_FIGHT : CTP_DOANH, uCurTime);
+			}
+			else
+			{
+				ea.nCTPhe = (nMap == CT_MAP_HP_CONG) ? 2 : 1;
+				CT_Pha(nPlayerIdx, (nTrongCua || nLoaMo) && !ea.nCTHetTran ? CTP_HAUPHUONG : CTP_END, uCurTime);
+			}
+			ea.nCTHold = 1;
+			return 1;
+		}
+		if (!nTrongCua && !nLoaMo)
+		{
+			ea.nCTPhase = CTP_OFF;
+			return 0;
+		}
+		if (ea.nCTPhase == CTP_DONE && ea.nCTKey == nNgay)
+			return 0;			// hom nay da chay xong (bo / het tran)
+		if (WA_MapSuKien(nPlayerIdx))
+			return 0;			// dang giua su kien khac (Tong Kim, Tin Su, Vuot ai...)
+		char szBang[32];
+		CT_TenBang(nPlayerIdx, szBang, sizeof(szBang));
+		if (!szBang[0] && pAp->nCTPhe == 0)
+		{
+			CT_Msg(nPlayerIdx, "<color=Yellow>Chưa có bang hội - không tự tham gia Công Thành Chiến.");
+			ea.nCTKey = nNgay;
+			ea.nCTPhase = CTP_DONE;
+			return 0;
+		}
+		ea.nCTKey = nNgay;
+		ea.nCTPhe = 0;
+		ea.szCTCong[0] = 0;
+		ea.szCTThu[0] = 0;
+		ea.nCTCongChet = 0;
+		ea.nCTTruXong = 0;
+		ea.nCTChet = 0;
+		ea.nCTDaVao = 0;
+		ea.nCTHetTran = 0;
+		ea.nCTBackMap = nMap;
+		ea.uLDHopT = 0;
+		CT_Pha(nPlayerIdx, CTP_GO, uCurTime);
+		ea.nCTHold = 1;
+		CT_Msg(nPlayerIdx, "<color=Cyan>Tới giờ Công Thành Chiến - đi tới Xa Phu đăng ký tham chiến.");
+		return 1;
+	}
+
+	if (ea.uCTNext > uCurTime)
+		return ea.nCTHold;
+	ea.uCTNext = uCurTime + 400;
+
+	// han pha: chi cac pha di duong / thoai (trong khu thi khong tinh)
+	if ((ea.nCTPhase == CTP_GO || ea.nCTPhase == CTP_XAPHU || ea.nCTPhase == CTP_END
+	  || ea.nCTPhase == CTP_VETHANH)
+	 && uCurTime - ea.uCTPhaseT > CT_HANPHA)
+	{
+		CT_Msg(nPlayerIdx, "<color=Yellow>Một bước của auto Công Thành kẹt quá 3 phút - bỏ lượt hôm nay.");
+		ea.nCTPhase = CTP_DONE;
+		ea.nCTHold = 0;
+		return 0;
+	}
+
+	switch (ea.nCTPhase)
+	{
+	case CTP_GO:
+	{
+		ea.nCTHold = 1;
+		if (bTrongKhu)
+		{
+			ea.nCTPhase = CTP_OFF;		// nhanh 'dang o khu' o tren se nhan viec
+			return 1;
+		}
+		int nDest = 0;
+		if (pAp->nCTThanh >= 0 && pAp->nCTThanh < LD_VE_COUNT)
+			nDest = (int)g_LDVeMap[pAp->nCTThanh];
+		if (nDest && nMap != nDest)
+		{
+			int nDi = LD_DiThanh(nPlayerIdx, pAp, nDest, uCurTime);
+			if (ea.uLDNext > uCurTime)
+				ea.uCTNext = ea.uLDNext;
+			if (nDi < 0)
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Không đi tới được thành đã chọn (hết phù / không thấy Xa Phu) - bỏ lượt hôm nay.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+			return 1;
+		}
+		ea.uLDHopT = 0;
+		int nR = CT_ToiXaPhu(nPlayerIdx, uCurTime);
+		if (nR < 0)
+		{
+			// map nay khong co Xa Phu (bai luyen cong): dung phu ve thanh roi di tiep
+			if (!DT_UsePortal(nPlayerIdx))
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Map này không có Xa Phu và không có phù về thành - bỏ lượt hôm nay.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+			CT_Msg(nPlayerIdx, "<color=Cyan>Dùng phù về thành rồi đi tới Xa Phu.");
+			ea.uCTNext = uCurTime + 4000;
+			return 1;
+		}
+		if (nR == 1)
+		{
+			CT_Pha(nPlayerIdx, CTP_XAPHU, uCurTime);
+			ea.uCTDlgSeen = cap.uDlgSeq;
+			ea.uCTNext = uCurTime + 800;
+		}
+		return 1;
+	}
+
+	case CTP_XAPHU:
+	{
+		ea.nCTHold = 1;
+		if (nMap == CT_MAP_HP_THU || nMap == CT_MAP_HP_CONG)
+		{
+			ea.nCTPhe = (nMap == CT_MAP_HP_CONG) ? 2 : 1;
+			CT_Msg(nPlayerIdx, "<color=Green>Đã tới hậu phương - đi tới cửa tập kết vào trận.");
+			CT_Pha(nPlayerIdx, CTP_HAUPHUONG, uCurTime);
+			return 1;
+		}
+		if (cap.uDlgSeq != ea.uCTDlgSeen)
+		{
+			ea.uCTDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[24];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 24);
+			int nOpt = DT_FindAns(apAns, nAns, CTM_OPT_DICHIENTRUONG);
+			if (nOpt >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nCTStep = 1;
+				ea.uCTNext = uCurTime + 2500;
+				return 1;
+			}
+			int nC = DT_FindAns(apAns, nAns, CTM_OPT_CONG);
+			int nT = DT_FindAns(apAns, nAns, CTM_OPT_THU);
+			if (nC >= 0 && nT >= 0)
+			{
+				CT_LayTenBang(szBuf, CTM_SAY_BENCONG, ea.szCTCong, sizeof(ea.szCTCong));
+				CT_LayTenBang(szBuf, CTM_SAY_BENTHU, ea.szCTThu, sizeof(ea.szCTThu));
+				char szBang[32];
+				CT_TenBang(nPlayerIdx, szBang, sizeof(szBang));
+				int nPhe = 0;
+				if (pAp->nCTPhe == 1)
+					nPhe = 2;
+				else if (pAp->nCTPhe == 2)
+					nPhe = 1;
+				else if (szBang[0] && ea.szCTCong[0] && strcmp(szBang, ea.szCTCong) == 0)
+					nPhe = 2;
+				else if (szBang[0] && ea.szCTThu[0] && strcmp(szBang, ea.szCTThu) == 0)
+					nPhe = 1;
+				if (!nPhe)
+				{
+					CT_Huy(nPlayerIdx, nAns);
+					char szTB[300];
+					sprintf(szTB, "<color=Yellow>Bang của mình không tham chiến trận này (công: %s / thủ: %s) - bỏ lượt hôm nay.",
+						ea.szCTCong, ea.szCTThu);
+					CT_Msg(nPlayerIdx, szTB);
+					ea.nCTPhase = CTP_DONE;
+					ea.nCTHold = 0;
+					return 0;
+				}
+				ea.nCTPhe = nPhe;
+				DT_Answer(nPlayerIdx, (nPhe == 2) ? nC : nT);
+				CT_Msg(nPlayerIdx, (nPhe == 2)
+					? "<color=Cyan>Đăng ký bên công - chờ Xa Phu đưa sang hậu phương."
+					: "<color=Cyan>Đăng ký bên thủ - chờ Xa Phu đưa sang hậu phương.");
+				ea.nCTStep = 2;
+				ea.uCTNext = uCurTime + 2500;
+				return 1;
+			}
+			if (DT_Has(szBuf, CTM_SAY_THANPHAN))
+			{
+				CT_Huy(nPlayerIdx, nAns);
+				CT_Msg(nPlayerIdx, "<color=Yellow>Xa Phu từ chối: thân phận chưa phù hợp (không thuộc bang tham chiến / không có lệnh bài) - bỏ lượt hôm nay.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+			// thoai la (menu khac cua Xa Phu) - dong roi go lai
+			CT_Huy(nPlayerIdx, nAns);
+			ea.uCTNext = uCurTime + 1200;
+			return 1;
+		}
+		if (ea.nCTStep == 1)
+		{
+			// da chon "Di Chien truong" ma khong co thoai tiep = chua co tran nao mo
+			ea.nCTStep = 0;
+			if (!nTrongCua && !nLoaMo)
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Hết cửa sổ mà không thấy trận công thành nào - bỏ lượt hôm nay.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+			CT_Msg(nPlayerIdx, "<color=Yellow>Chưa có trận công thành nào đang mở - 60 giây hỏi lại Xa Phu.");
+			ea.uCTPhaseT = uCurTime;		// dang cho dung gio, khong tinh la ket
+			ea.uCTNext = uCurTime + CT_CHO_MO;
+			return 1;
+		}
+		if (ea.nCTStep == 2)
+		{
+			// da chon phe ma van o thanh: bi tu choi (im lang) - thu lai vai lan
+			ea.nCTStep = 0;
+			if (++ea.nCTTry >= 5)
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Chọn phe xong vẫn không được đưa sang hậu phương - bỏ lượt hôm nay.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+			ea.uCTNext = uCurTime + 3000;
+			return 1;
+		}
+		{
+			int nR = CT_ToiXaPhu(nPlayerIdx, uCurTime);
+			if (nR == 1)
+				ea.uCTNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				CT_Pha(nPlayerIdx, CTP_GO, uCurTime);
+				return 1;
+			}
+		}
+		return 1;
+	}
+
+	case CTP_HAUPHUONG:
+	{
+		ea.nCTHold = 1;
+		if (nMap == CT_MAP_TRAN)
+		{
+			ea.nCTDaVao = 1;
+			ea.nCTPhe = (Npc[nSelf].m_CurrentCamp == 2) ? 2 : 1;
+			CT_Msg(nPlayerIdx, "<color=Green>Đã vào doanh trại - đi tới cửa doanh ra trận.");
+			CT_Pha(nPlayerIdx, Npc[nSelf].m_FightMode ? CTP_FIGHT : CTP_DOANH, uCurTime);
+			return 1;
+		}
+		if (nMap != CT_MAP_HP_THU && nMap != CT_MAP_HP_CONG)
+		{
+			CT_Pha(nPlayerIdx, CTP_GO, uCurTime);
+			return 1;
+		}
+		ea.nCTPhe = (nMap == CT_MAP_HP_CONG) ? 2 : 1;
+		if (cap.uDlgSeq != ea.uCTDlgSeen)
+		{
+			ea.uCTDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			CT_Huy(nPlayerIdx, nAns);
+			if (DT_Has(szBuf, CTM_SAY_TAPHOP))
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Trận chưa mở cửa - 30 giây đạp lại cửa tập kết.");
+				ea.uCTPhaseT = uCurTime;
+				ea.nCTStep = 1;
+				ea.uCTNext = uCurTime + 30000u;
+				return 1;
+			}
+			if (DT_Has(szBuf, CTM_SAY_QUANGAN))
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Vào bang chưa đủ 5 ngày nên chưa được tham chiến - ra Xa Phu rời hậu phương.");
+				CT_Pha(nPlayerIdx, CTP_END, uCurTime);
+				return 1;
+			}
+			if (DT_Has(szBuf, CTM_SAY_KHONGLENHBAI))
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Không có lệnh bài phe này - ra Xa Phu rời hậu phương.");
+				CT_Pha(nPlayerIdx, CTP_END, uCurTime);
+				return 1;
+			}
+			if (DT_Has(szBuf, CTM_SAY_DAYNGUOI))
+			{
+				CT_Msg(nPlayerIdx, "<color=Yellow>Phe đã đủ người - 60 giây thử lại.");
+				ea.uCTPhaseT = uCurTime;
+				ea.nCTStep = 1;
+				ea.uCTNext = uCurTime + 60000u;
+				return 1;
+			}
+			ea.uCTNext = uCurTime + 1500;
+			return 1;
+		}
+		// het tran (GameOver keo ve hau phuong) hoac lo dap trap ra khoi tran
+		if (ea.nCTDaVao)
+		{
+			if (ea.nCTHetTran || ++ea.nCTTry > 3)
+			{
+				CT_Msg(nPlayerIdx, "<color=Cyan>Hết trận Công Thành - rời hậu phương.");
+				CT_Pha(nPlayerIdx, CTP_END, uCurTime);
+				return 1;
+			}
+			ea.uCTNext = uCurTime + 20000u;	// lo ra khoi tran: dap lai cua tap ket (toi da 3 lan)
+		}
+		if (!nTrongCua && !nLoaMo)
+		{
+			CT_Msg(nPlayerIdx, "<color=Yellow>Hết cửa sổ mà trận không mở - rời hậu phương.");
+			CT_Pha(nPlayerIdx, CTP_END, uCurTime);
+			return 1;
+		}
+		CT_DapTrap(nPlayerIdx, g_CTTrapHP, CT_TRAPHP_COUNT, uCurTime);
+		return 1;
+	}
+
+	case CTP_DOANH:
+	{
+		ea.nCTHold = 1;
+		if (nMap == CT_MAP_HP_THU || nMap == CT_MAP_HP_CONG)
+		{
+			CT_Pha(nPlayerIdx, CTP_HAUPHUONG, uCurTime);
+			return 1;
+		}
+		if (nMap != CT_MAP_TRAN)
+		{
+			CT_Pha(nPlayerIdx, CTP_GO, uCurTime);
+			return 1;
+		}
+		ea.nCTDaVao = 1;
+		ea.nCTPhe = (Npc[nSelf].m_CurrentCamp == 2) ? 2 : 1;
+		if (Npc[nSelf].m_FightMode)
+		{
+			CT_Msg(nPlayerIdx, "<color=Green>Đã ra trận - đánh theo cấu hình tab PK.");
+			CT_Pha(nPlayerIdx, CTP_FIGHT, uCurTime);
+			return 2;
+		}
+		// dung 3 giay cho NPC / map dong bo sau khi vao doanh (hoac hoi sinh)
+		if (uCurTime - ea.uCTPhaseT < 3000u)
+			return 1;
+		if (ea.nCTPhe == 2)
+			CT_DapTrap(nPlayerIdx, g_CTTrapCong, CT_TRAPCONG_COUNT, uCurTime);
+		else
+			CT_DapTrap(nPlayerIdx, g_CTTrapThu, CT_TRAPTHU_COUNT, uCurTime);
+		return 1;
+	}
+
+	case CTP_FIGHT:
+	{
+		ea.nCTHold = 2;
+		if (nMap == CT_MAP_HP_THU || nMap == CT_MAP_HP_CONG)
+		{
+			CT_Msg(nPlayerIdx, "<color=Cyan>Rời chiến trường - về hậu phương.");
+			CT_Pha(nPlayerIdx, CTP_HAUPHUONG, uCurTime);
+			return 1;
+		}
+		if (nMap != CT_MAP_TRAN)
+		{
+			ea.nCTPhase = CTP_DONE;
+			ea.nCTHold = 0;
+			return 0;
+		}
+		if (!Npc[nSelf].m_FightMode)
+		{
+			++ea.nCTChet;		// hoi sinh ve doanh (hoac dap nham trap ve doanh)
+			CT_Pha(nPlayerIdx, CTP_DOANH, uCurTime);
+			return 1;
+		}
+		// tran da ket thuc (loa "Chung cuoc") / qua han tran ma van ke trong map -> ra trap ve hau phuong
+		if (ea.nCTHetTran || uCurTime - ea.uCTPhaseT > CT_HAN_TRAN * 60000u)
+		{
+			ea.uNpcID = 0;
+			if (ea.nCTPhe == 2)
+				CT_DapTrap(nPlayerIdx, g_CTTrapRaCong, CT_TRAPRACONG_COUNT, uCurTime);
+			else
+				CT_DapTrap(nPlayerIdx, g_CTTrapRaThu, CT_TRAPRATHU_COUNT, uCurTime);
+			return 1;
+		}
+		{
+			int nTG = CT_ChonDichNguoi(nPlayerIdx, pAp);
+			if (nTG)
+			{
+				ea.uNpcID = Npc[nTG].m_dwID;
+				g_ScenePlace.RemoveFlag();
+				ea.uCTNext = uCurTime + 300;
+				return 2;
+			}
+		}
+		{
+			int nDx = 0, nDy = 0;
+			int nTG = CT_ChonMucTieu(nPlayerIdx, pAp, uCurTime, &nDx, &nDy);
+			if (nTG)
+			{
+				ea.uNpcID = Npc[nTG].m_dwID;
+				ea.uCTNext = uCurTime + 300;
+				return 2;
+			}
+			ea.uNpcID = 0;
+			if (nDx || nDy)
+				DT_WalkTo(nPlayerIdx, nDx, nDy, TK_O(4), uCurTime);
+		}
+		return 2;
+	}
+
+	case CTP_END:
+	{
+		ea.nCTHold = 1;
+		if (nMap == CT_MAP_TRAN)
+		{
+			CT_Pha(nPlayerIdx, Npc[nSelf].m_FightMode ? CTP_FIGHT : CTP_DOANH, uCurTime);
+			return 1;
+		}
+		if (nMap != CT_MAP_HP_THU && nMap != CT_MAP_HP_CONG)
+		{
+			ea.uLDHopT = 0;
+			CT_Pha(nPlayerIdx, CTP_VETHANH, uCurTime);
+			return 1;
+		}
+		int nVe = pAp->nCTVe;
+		if (nVe < 0 || nVe > LD_VE_COUNT)
+			nVe = LD_VE_COUNT;
+		if (cap.uDlgSeq != ea.uCTDlgSeen)
+		{
+			ea.uCTDlgSeen = cap.uDlgSeq;
+			char szBuf[2048];
+			char* apAns[16];
+			g_StrCpyLen(szBuf, cap.szDlg, sizeof(szBuf));
+			int nAns = DT_Split(szBuf, apAns, 16);
+			int nOpt = -1;
+			const char* szTenThanh = (nVe < LD_VE_COUNT) ? DT_SapTownMenu((int)g_LDVeMap[nVe]) : NULL;
+			if (ea.nCTStep == 3 && szTenThanh && (nOpt = DT_FindAns(apAns, nAns, szTenThanh)) >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				CT_Msg(nPlayerIdx, "<color=Cyan>Xong Công Thành - nhờ Xa Phu đưa về thành đã chọn.");
+				ea.uCTNext = uCurTime + 2000;
+				return 1;
+			}
+			if (ea.nCTStep < 3 && szTenThanh && (nOpt = DT_FindAns(apAns, nAns, DTM_SAP_THANHTHI)) >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				ea.nCTStep = 3;
+				ea.uCTNext = uCurTime + 900;
+				return 1;
+			}
+			if (ea.nCTStep == 3)
+			{
+				// danh sach thanh khong co ten thanh do (chua tung di qua) -> roi bang duong diem luu
+				ea.nCTStep = 4;
+				CT_Huy(nPlayerIdx, nAns);
+				CT_Msg(nPlayerIdx, "<color=Yellow>Xa Phu không liệt kê thành đã chọn - rời đấu trường về điểm lưu rồi tự đi tiếp.");
+				ea.uCTNext = uCurTime + 1200;
+				return 1;
+			}
+			if ((nOpt = DT_FindAns(apAns, nAns, CTM_OPT_ROIDAUTRUONG)) >= 0)
+			{
+				DT_Answer(nPlayerIdx, nOpt);
+				CT_Msg(nPlayerIdx, "<color=Cyan>Xong Công Thành - rời đấu trường về điểm lưu.");
+				ea.uCTNext = uCurTime + 2000;
+				return 1;
+			}
+			CT_Huy(nPlayerIdx, nAns);
+			ea.uCTNext = uCurTime + 1200;
+			return 1;
+		}
+		{
+			int nBest = 0, nBestD = 0x7fffffff;
+			for (int i = 0; i < CT_XAPHU_HP_COUNT; ++i)
+			{
+				int nD = g_GetDistance(nX, nY, TK_O((int)g_CTXaPhuHP[i].x), TK_O((int)g_CTXaPhuHP[i].y));
+				if (nD < nBestD)
+				{
+					nBestD = nD;
+					nBest = i;
+				}
+			}
+			int nR = TK_ToiNpc(nPlayerIdx, "xa phu", (int)g_CTXaPhuHP[nBest].x, (int)g_CTXaPhuHP[nBest].y, uCurTime);
+			if (nR == 1)
+				ea.uCTNext = uCurTime + 900;
+			else if (nR < 0)
+			{
+				// vua bi keo ve, danh sach NPC can vai giay moi dong bo (khuon TKP_END)
+				if (++ea.nCTTry < 20)
+				{
+					ea.uCTNext = uCurTime + 400;
+					return 1;
+				}
+				// khong thay Xa Phu: hau phuong KHONG cam phu (NewWorldParam chi PARTNER_OFF)
+				if (DT_UsePortal(nPlayerIdx))
+				{
+					CT_Msg(nPlayerIdx, "<color=Yellow>Không thấy Xa Phu hậu phương - dùng phù về thành.");
+					ea.nCTTry = 0;
+					ea.uCTNext = uCurTime + 4000;
+					return 1;
+				}
+				CT_Msg(nPlayerIdx, "<color=Yellow>Không thấy Xa Phu để rời hậu phương và không có phù - trả máy tại chỗ.");
+				ea.nCTPhase = CTP_DONE;
+				ea.nCTHold = 0;
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	case CTP_VETHANH:
+	{
+		ea.nCTHold = 1;
+		if (bTrongKhu)
+		{
+			CT_Pha(nPlayerIdx, CTP_END, uCurTime);
+			return 1;
+		}
+		int nVe = pAp->nCTVe;
+		if (nVe < 0 || nVe >= LD_VE_COUNT)
+		{
+			CT_Msg(nPlayerIdx, "<color=Cyan>Xong Công Thành Chiến - trả máy lại cho auto cũ.");
+			ea.nCTPhase = CTP_DONE;
+			ea.nCTHold = 0;
+			return 0;
+		}
+		const int nDest = (int)g_LDVeMap[nVe];
+		if (nMap == nDest)
+		{
+			ea.uLDHopT = 0;
+			CT_Msg(nPlayerIdx, "<color=Cyan>Đã về tới thành đã chọn - trả máy lại cho auto cũ.");
+			ea.nCTPhase = CTP_DONE;
+			ea.nCTHold = 0;
+			return 0;
+		}
+		int nDi = LD_DiThanh(nPlayerIdx, pAp, nDest, uCurTime);
+		if (ea.uLDNext > uCurTime)
+			ea.uCTNext = ea.uLDNext;
+		if (nDi < 0)
+		{
+			ea.uLDHopT = 0;
+			CT_Msg(nPlayerIdx, "<color=Yellow>Không đi tới được thành đã chọn - trả máy tại chỗ.");
+			ea.nCTPhase = CTP_DONE;
+			ea.nCTHold = 0;
+			return 0;
+		}
+		return 1;
+	}
+
+	default:
+		ea.nCTPhase = CTP_OFF;
+		ea.nCTHold = 0;
+		return 0;
+	}
+}
+// ==================== HET AUTO CONG THANH CHIEN ====================

@@ -309,6 +309,30 @@ struct ExtAuto
 	UINT uSTNghiT;       // nghi den moc nay (giua 2 luot / cho boss hoi sinh)
 	UINT uSTThayT;       // moc gan nhat con THAY boss quanh diem spawn
 	UINT uSTVongT;       // moc bat dau VONG hien tai (chan ket vong pha nay doi pha kia)
+	// == Cong Thanh Chien (03/09/2026) - trang thai may ATYPE_CONGTHANH, POD (ATYPE_CLEAR memset) ==
+	int  nCTPhase;       // pha CTP_* (CoreShell.cpp)
+	int  nCTStep;        // buoc con trong pha (dap trap: 0 di toi / 1 lui ra)
+	int  nCTHold;        // 0 tha may / 1 cam lai / 2 trong tran (may PK danh uNpcID)
+	int  nCTTry;         // dem thu lai trong pha
+	int  nCTKey;         // yymmdd (gio may chu) ngay da chay xong / bo
+	int  nCTPhe;         // phe da vao: 1 = thu, 2 = cong
+	int  nCTBackMap;     // map truoc khi di (de bao cao)
+	int  nCTCongChet;    // bitmask cong da vo (bit i = cong i, ben cong)
+	int  nCTTruXong;     // bitmask tru da chiem / da xem (ben cong)
+	int  nCTMucTieu;     // tru dang canh / diem tuan tra (1-based), 0 = chua
+	int  nCTChet;        // so mang da chet trong tran
+	int  nCTDaVao;       // 1 = da tung dung tren map 221 trong luot nay
+	int  nCTHetTran;     // 1 = da nghe loa "Chung cuoc" (tran ket thuc)
+	UINT uCTNext;        // moc hanh dong ke tiep
+	UINT uCTPhaseT;      // moc vao pha (bat ket pha)
+	UINT uCTDlgSeen;     // uDlgSeq da xu ly
+	UINT uCTNewsSeen;    // uNewsSeq (tin toan may chu) da xu ly
+	UINT uCTMsgT;        // throttle bao trang thai
+	UINT uCTMoT;         // han cua so vao theo LOA khai chien (0 = khong co)
+	UINT uCTTrapT;       // moc dung tren o trap ma khong kich (de lui ra dap lai)
+	UINT uCTMucT;        // moc doi tru dang canh (ben thu)
+	char szCTCong[32];   // ten bang ben cong (doc tu thoai Xa Phu)
+	char szCTThu[32];    // ten bang ben thu
 	// == chung cho MOI may auto (25/08) ==
 	int  nMapCu;         // map cua nhip truoc; doi so = vua chuyen map -> DUNG di chuyen
 	int  nXCu;           // toa do nhip truoc (mps); nhay xa = bi TRAP dich chuyen
@@ -499,6 +523,29 @@ struct ExtAuto
 		uSTNghiT = 0;
 		uSTThayT = 0;
 		uSTVongT = 0;
+		nCTPhase = 0;
+		nCTStep = 0;
+		nCTHold = 0;
+		nCTTry = 0;
+		nCTKey = 0;
+		nCTPhe = 0;
+		nCTBackMap = 0;
+		nCTCongChet = 0;
+		nCTTruXong = 0;
+		nCTMucTieu = 0;
+		nCTChet = 0;
+		nCTDaVao = 0;
+		nCTHetTran = 0;
+		uCTNext = 0;
+		uCTPhaseT = 0;
+		uCTDlgSeen = 0;
+		uCTNewsSeen = 0;
+		uCTMsgT = 0;
+		uCTMoT = 0;
+		uCTTrapT = 0;
+		uCTMucT = 0;
+		szCTCong[0] = 0;
+		szCTThu[0] = 0;
 		nMapCu = 0;
 		nXCu = 0;
 		nYCu = 0;

@@ -454,25 +454,54 @@ using namespace std;
 #define IDC_CHECKBOX_14_NOUT	595
 #define IDC_GRP_TAB13		596
 #define IDC_SEP_13A			597
-#define IDC_INDEX_END			598
+// == tab 14 (Cong Thanh Chien, 03/09/2026) ==
+// PHAI lien mach 598..622 va < IDC_INDEX_END: ShowTab hien tab nay bang mot dai duy nhat.
+// Khoi ID ngoai dai (hop thoai roi, nut tab, dong trang thai) doi 600-615 -> 700-715 de
+// nuong cho; IDC_INDEX_END 598 -> 640.
+#define IDC_CHECKBOX_15_ON	598
+#define IDC_STRING_15_GIO	599
+#define IDC_EDITOR_15_GIO	600
+#define IDC_STRING_15_H		601
+#define IDC_EDITOR_15_PHUT	602
+#define IDC_STRING_15_LECH	603
+#define IDC_EDITOR_15_LECH	604
+#define IDC_STRING_15_SOM	605
+#define IDC_EDITOR_15_SOM	606
+#define IDC_STRING_15_CUA	607
+#define IDC_EDITOR_15_CUA	608
+#define IDC_STRING_15_BD	609
+#define IDC_COMBO_15_BD		610
+#define IDC_STRING_15_PHE	611
+#define IDC_COMBO_15_PHE	612
+#define IDC_STRING_15_CONG	613
+#define IDC_COMBO_15_CONG	614
+#define IDC_STRING_15_THU	615
+#define IDC_COMBO_15_THU	616
+#define IDC_STRING_15_VE	617
+#define IDC_COMBO_15_VE		618
+#define IDC_CHECKBOX_15_LOA	619
+#define IDC_GRP_TAB14		620
+#define IDC_SEP_14A			621
+#define IDC_SEP_14B			622
+#define IDC_INDEX_END			640
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
-#define IDD_SETSERIES_DIALOG	600
-#define IDD_NOPICK_DIALOG		601
-#define IDC_COMBO_SELNOPICK		602
-#define IDC_LIST_NOPICK			603
-#define IDC_BTN_NOPREMOVE		604
-#define IDC_LIST_SERIES			605
-#define IDC_BTN_SERUP			606
-#define IDC_BTN_SERDOWN			607
-#define IDC_STRING_HOMEPAGE		608
-#define IDC_TABBTN_9			609
-#define IDC_TABBTN_10			610
-#define IDC_TABBTN_11			611
+#define IDD_SETSERIES_DIALOG	700
+#define IDD_NOPICK_DIALOG		701
+#define IDC_COMBO_SELNOPICK		702
+#define IDC_LIST_NOPICK			703
+#define IDC_BTN_NOPREMOVE		704
+#define IDC_LIST_SERIES			705
+#define IDC_BTN_SERUP			706
+#define IDC_BTN_SERDOWN			707
+#define IDC_STRING_HOMEPAGE		708
+#define IDC_TABBTN_9			709
+#define IDC_TABBTN_10			710
+#define IDC_TABBTN_11			711
 // dong trang thai auto o chan cua so (NGOAI dai an/hien - luon hien)
-#define IDC_STRING_HD_L		612
-#define IDC_STRING_HD_V		613
-#define IDC_TABBTN_12		614
-#define IDC_TABBTN_13		615
+#define IDC_STRING_HD_L		712
+#define IDC_STRING_HD_V		713
+#define IDC_TABBTN_12		714
+#define IDC_TABBTN_13		715
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

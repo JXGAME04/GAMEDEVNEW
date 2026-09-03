@@ -331,6 +331,21 @@ struct autoData
 	int		nTCHoi;			// hoi chieu rieng cua tien chieu (GIAY)
 	int		bTCChiNguoi;	// 1 = chi phat khi muc tieu la NGUOI CHOI
 	int		bComboNoUT;		// 1 = chieu an tang No/Am Luat du tang thi CHEN LEN ban ngay
+	// == Cong Thanh Chien (03/09/2026) - PHAI o CUOI struct, truoc constructor ==
+	// (file APdata\<ID nhan vat>.dat ghi NGUYEN struct - them truong o GIUA la nat cau
+	//  hinh cua moi nguoi choi cu; LoadRoleData di tru theo offsetof(autoData, bCongThanh))
+	int		bCongThanh;		// bat/tat auto Cong Thanh Chien
+	int		nCTGio;			// gio khai chien (gio MAY CHU + nCTLech) - lich may chu 20h00
+	int		nCTPhut;
+	int		nCTLech;		// gio may chu lech gio may nay bao nhieu PHUT (co the am)
+	int		nCTSom;			// toi Xa Phu som may phut truoc gio khai chien
+	int		nCTCua;			// con vao tran trong bao nhieu phut sau moc gio (tran 90 phut)
+	int		nCTThanh;		// thanh toi gap Xa Phu: 0..6 theo g_LDVeMap, 7 = thanh dang dung
+	int		nCTPhe;			// 0 = tu theo bang hoi, 1 = ben cong, 2 = ben thu (khi co lenh bai)
+	int		nCTCong;		// ben cong: 0 = pha cong -> ha Long tru, 1 = chi danh nguoi
+	int		nCTThu;			// ben thu: 0 = canh Long tru / chiem lai, 1 = chi danh nguoi
+	int		nCTVe;			// het tran ve: 0..6 thanh theo g_LDVeMap, 7 = diem luu (Roi khoi dau truong)
+	int		bCTLoa;			// nghe loa "cong thanh chien chinh thuc bat dau" cua may chu la di ngay
 
 	autoData()
 	{
@@ -569,6 +584,18 @@ struct autoData
 		nTCHoi = 6;
 		bTCChiNguoi = 0;
 		bComboNoUT = 1;
+		bCongThanh = 0;
+		nCTGio = 20;
+		nCTPhut = 0;
+		nCTLech = 0;
+		nCTSom = 3;
+		nCTCua = 95;
+		nCTThanh = 7;
+		nCTPhe = 0;
+		nCTCong = 0;
+		nCTThu = 0;
+		nCTVe = 7;
+		bCTLoa = 1;
 
 	}
 };

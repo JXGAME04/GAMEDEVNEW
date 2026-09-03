@@ -827,26 +827,33 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	// [TongKim] uu tien cao nhat: toi khung gio thi may Tong Kim cam lai - Da Tau,
 	// Hau can, di chuyen va moi dieu kien phu ve thanh deu nhuong (map bao danh
 	// cam Than Hanh Phu). 0 = tha may; 1 = dang cam lai; 2 = dang trong tran.
+	// [CongThanh] (03/09) may Cong Thanh Chien - goi TRUOC Tong Kim: tran cong thanh
+	// moi tuan mot lan cho moi thanh, Tong Kim ngay 4 tran. Hai may loai tru nhau:
+	// CT_Process tu nhuong khi Tong Kim dang cam lai (nTKHold), TK_Process nhuong khi
+	// Cong Thanh dang cam lai (nCTHold). 0 = tha may; 1 = cam lai; 2 = trong tran.
+	int nCT = 0;
+	if(pApData->bCongThanh == 1)
+		nCT = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_CONGTHANH, (int)pApData);
 	int nTK = 0;
-	if(pApData->bTongKim == 1)
+	if(pApData->bTongKim == 1 && nCT == 0)
 		nTK = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_TONGKIM, (int)pApData);
 	// [LienDau] cung mot the voi Tong Kim, nhung Tong Kim uu tien hon: chi goi may
 	// Lien dau khi may Tong Kim dang THA MAY. nBS gop hai may lai (0 tha / 1 cam lai /
 	// 2 dang trong san) de moi cong tac nhuong quyen ben duoi chi kiem MOT bien.
 	int nLD = 0;
-	if(pApData->bLienDau == 1 && nTK == 0)
+	if(pApData->bLienDau == 1 && nTK == 0 && nCT == 0)
 		nLD = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_LIENDAU, (int)pApData);
 	// [HoatDong] Bach Nhan / Bang Chien / Tin Su - chay khi Tong Kim va Lien dau tha may
 	int nHD = 0;
 	if((pApData->bHDBachNhan == 1 || pApData->bHDBangChien == 1 || pApData->bHDTinSu == 1)
-		&& nTK == 0 && nLD == 0)
+		&& nTK == 0 && nLD == 0 && nCT == 0)
 		nHD = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_HOATDONG, (int)pApData);
 	// [SatThu] auto san boss Sat Thu + ghep Sat Thu Gian - chay khi Tong Kim,
 	// Lien dau va Hoat dong deu tha may (uu tien thap nhat trong 4 may hoat dong).
 	int nST = 0;
-	if(pApData->bSatThu == 1 && nTK == 0 && nLD == 0 && nHD == 0)
+	if(pApData->bSatThu == 1 && nTK == 0 && nLD == 0 && nHD == 0 && nCT == 0)
 		nST = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_SATTHU, (int)pApData);
-	const int nBS = nTK ? nTK : (nLD ? nLD : (nHD ? nHD : nST));
+	const int nBS = nCT ? nCT : (nTK ? nTK : (nLD ? nLD : (nHD ? nHD : nST)));
 	// [MapSuKien] (25/08) Dang dung tren MAP SU KIEN (Tong Kim, Phong Lang Do,
 	// Tin Su, cac hoat dong bang hoi, Vuot ai, pho ban...)? Khi do MOI auto TU DO
 	// phai nam im: khong Da Tau, khong tu di chuyen theo toa do, khong tu ve thanh
@@ -856,8 +863,8 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	const int nSK = g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_MAPSUKIEN, 0);
 	// (25/08) mot dong nhat ky cho CONG HOAT DONG: lan sau auto khong chay thi
 	// nhin day la biet ngay may nao tra gi, thay vi phai mo tung ham ra doan.
-	AUTOLOG_EVERY(5000, "[HD-GATE] nTK=%d nLD=%d nHD=%d nST=%d nBS=%d nSK=%d | bat: TK=%d LD=%d BN=%d BC=%d TS=%d ST=%d DT=%d",
-		nTK, nLD, nHD, nST, nBS, nSK, pApData->bTongKim, pApData->bLienDau,
+	AUTOLOG_EVERY(5000, "[HD-GATE] nCT=%d nTK=%d nLD=%d nHD=%d nST=%d nBS=%d nSK=%d | bat: CT=%d TK=%d LD=%d BN=%d BC=%d TS=%d ST=%d DT=%d",
+		nCT, nTK, nLD, nHD, nST, nBS, nSK, pApData->bCongThanh, pApData->bTongKim, pApData->bLienDau,
 		pApData->bHDBachNhan, pApData->bHDBangChien, pApData->bHDTinSu,
 		pApData->bSatThu, pApData->bDaTau);
 	// [TongKim] dang cam lai (di bao danh / trong tran) thi TU bam nut hoi sinh du
