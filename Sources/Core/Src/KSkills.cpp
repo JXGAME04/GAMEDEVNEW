@@ -3103,14 +3103,22 @@ static void VhtdAutoSkillDesc(const KMagicAttrib* pA, char* pszMsg)
 		sprintf(szLine, "Sinh l˘c th p c„ <color=orange>%d%%<color> t˚ l÷ xu t <color=blue>%s<color>\n", nRate, pEv->GetSkillName());
 	else if (pA->nAttribType == magic_autodeathskill)
 		sprintf(szLine, "Khi ch’t xu t <color=blue>%s<color>\n", pEv->GetSkillName());
+	// [VHTD 02/09y] autoreplyskill NGUOC nghia voi autoattackskill: KNpc.cpp:4835 ReplySkill do NAN NHAN quay so
+	// (trong ReceiveDamage), con 4837 AttackSkill do KE DANH quay so. Truoc gio hai loai dung chung cau
+	// "Don danh co R%% ty le xuat ..." -> 1364 Doat Menh hien nguoc nghia, chu dem don MINH VUNG RA nen tuong hong.
+	// Chuoi duoi ghep tu byte co san cua MagicDesc.ini (muc autoreplyskill, ban VLTK) - khong tu go chu Viet.
+	else if (pA->nAttribType == magic_autoreplyskill)
+		sprintf(szLine, "Khi bﬁ c´ng k›ch c„ <color=orange>%d%%<color> t˚ l÷ xu t <color=blue>%s<color>\n", nRate, pEv->GetSkillName());
 	else
 		sprintf(szLine, "ßﬂn Æ∏nh c„ <color=orange>%d%%<color> t˚ l÷ xu t <color=blue>%s<color>\n", nRate, pEv->GetSkillName());
 	strcat(pszMsg, szLine);
 	int nNum = pEv->GetChildSkillNum();
 	if (nNum > 1)
 	{
-		if (nSkillId == 1363 || nSkillId == 1368)
+		if (nSkillId == 1368)	// [VHTD 02/09y] chi 1368 moi THAT SU len 4..9 kiem (huashan.lua:340 skill_misslenum_v)
 			sprintf(szLine, "SË l≠Óng ki’m xu t ra: <color=orange>%d/9<color> ki’m\n", nNum);
+		else if (nSkillId == 1363)	// 1363 KHONG co skill_misslenum_v (ca ban ta lan VLTK) -> co dinh 3 kiem, mau so 9 la bia
+			sprintf(szLine, "SË l≠Óng ki’m xu t ra: <color=orange>%d<color> ki’m\n", nNum);
 		else
 			sprintf(szLine, "SË l≠Óng xu t ra: <color=orange>%d<color>\n", nNum);
 		strcat(pszMsg, szLine);
