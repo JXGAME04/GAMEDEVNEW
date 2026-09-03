@@ -568,3 +568,90 @@ Bảng dưới tính theo công thức của ta: băng sát gốc × (100 + 3 bu
 
 ### 21.4 Cần chủ xác nhận
 Trong client VLTK, khi chủ **bật cả ba khí trường** (Thanh Vân Tống Sảng, Long Huyền Kiếm Khí, Ma Vân Kiếm Khí) và **nội lực đầy**, con số lực tay có nhảy lên không, hay vẫn quanh 10-20k? Nếu vẫn quanh đó thì xác nhận VLTK đang chia 5; nếu nhảy lên gấp mấy lần thì cần đo lại.
+
+
+---
+
+## 22. ĐỢT 12 (02/09 ~21:00) — HẠ LỰC TAY NỘI CÔNG HOA SƠN: ĐÃ THI CÔNG CÁCH 1 + CÁCH 3
+
+Chủ chốt: *"phần để phái hoa sơn nội - ngoài đúng là của nó, đường nội công của phái hoa sơn khi tăng full hết kỹ năng full mạch cũng không hơn 20k lực tay"* → sau đó *"trước mắt làm 1 - 3 trước"*.
+
+Công cụ: `ReverseTools\phai3\vhtd_thicong\vhtd_data_patch12_luctay.py`, marker `[VHTD 02/09v]`.
+**Thuần dữ liệu Lua — KHÔNG build, KHÔNG swap `.moi`.** Chỉ cần khởi động lại GameServer.
+
+### 22.1 Vì sao bỏ cách 2
+
+Cách 2 (chia con số hiển thị cho 5 cho giống cách VLTK trình bày) **loại trừ lẫn nhau** với cách 1 và cách 3. Cách 1 và 3 hạ **sát thương thật** để ô lực tay đọc ra khoảng 10-18k. Cách 2 chỉ hạ **con số hiển thị**, sát thương thật giữ nguyên. Áp cả ba thì ô lực tay còn khoảng 2-3k, thấp xa mục tiêu 20k của chủ. Nên hiểu *"làm 1 - 3"* là **cách 1 và cách 3**.
+
+### 22.2 Cách 1 — trả băng gốc 1382 về dòng VLTK cũ
+
+Trong `SKILLS.pishi_poyu.colddamage_v` (Phách Thạch Phá Ngọc, chú thích gốc ghi "neihuashan150"), đảo chỗ hai cặp dòng: chú thích dòng đang dùng, bật lại dòng **chính VLTK đã tự chú thích sẵn**.
+
+```
+truoc:  --[1]={{1,200},{40,8000},{41,8000}},
+        [1]={{1,160},{25,12000*1.2},{40,24000*1.5}},
+sau:    [1]={{1,200},{40,8000},{41,8000}},
+        --[1]={{1,160},{25,12000*1.2},{40,24000*1.5}},
+```
+
+Băng gốc theo cấp: **11.433 → 4.000** (cấp 20) · 14.400 → 5.000 (cấp 25) · 21.600 → 6.000 (cấp 30).
+
+**Bối cảnh quan trọng — đây cũng là sửa hồi quy của chính tôi.** Bản vá đợt 6 của tôi thay **nguyên tệp** `huashan.lua` bằng bản client VLTK, kéo băng gốc 1382 lên **9,5 lần** so với bản `D:\ServerLinux` mà máy chủ vốn chạy. Đo lại từ các bản lưu:
+
+| Mốc | Băng gốc cấp 20 | Cấp 30 |
+|---|---|---|
+| `huashan.lua.truoc_vhtd_patch6_0209` (bản Linux, 03:57) | **1.200** | 3.072 |
+| Sau đợt 6/7 (bản VLTK, đến 13:17) | **11.433** | 21.600 |
+| Sau đợt 12 (dòng VLTK cũ) | **4.000** | 6.000 |
+
+Con số mới nằm giữa hai bản, giữ được nguồn gốc VLTK mà không kéo phái lên 9,5 lần.
+
+### 22.3 Cách 3 — bớt buff cộng phần trăm vào 1382
+
+Toàn bộ chỉ có **ba nguồn thật** bơm `addskilldamage1` vào 1382 (bảng thứ tư `moyun_jianqi1` là **dữ liệu mồ côi** — đã kiểm cả `skills.txt` server lẫn client, **không hàng nào** trỏ tới nó):
+
+| Bảng | Kỹ năng | Xử lý |
+|---|---|---|
+| `qingfeng_songshuang` | 1372 Thanh Vân Tống Sảng | **chú thích (bỏ)** |
+| `longxuan_jianqi1` | 1376 Long Huyền Kiếm Khí | **chú thích (bỏ)** |
+| `shenguang_xuanrao` | 1380 Ma Vân Kiếm Khí | **giữ lại** |
+
+Giữ 1380 vì đây là chiêu cấp cao nhất và gắn với cơ chế kích nổ đang làm dở. `manatoskill_enhance` của 1379 Khí Quán Trường Hồng (+100% khi đầy nội lực) **giữ nguyên**.
+
+Cách chú thích: thêm `--` ngay sau phần thụt lề của **từng dòng** trong khối. Không dùng lại kiểu nối `--` giữa dòng đã làm hỏng tệp ở đợt 7.
+
+### 22.4 Kết quả đo bằng lua4
+
+`MaxLevel` của cả 1372/1376/1380/1382/1383 đều là **20**, nên không có trang bị cộng cấp thì trần là dòng đầu.
+
+| Cấp 1382 | Băng gốc | Hệ số | Lực tay |
+|---|---|---|---|
+| **20 (trần)** | 4.000 | 260% | **10.400** |
+| 25 | 5.000 | 282% | 14.148 |
+| 30 | 6.000 | 305% | 18.355 |
+
+Cả ba mốc đều **dưới 20.000**, và mốc trần 10.400 khớp đúng con số *"hơn 10k 1 tí"* chủ đo trong client VLTK.
+
+### 22.5 Đính chính hồ sơ đợt 9 của tôi
+
+Hồ sơ cũ ghi **bốn** bảng bơm vào 1382 và có kể `qingyin_tiruilv1` (Vũ Hồn 1965). Đo lại: chỉ **ba** bảng thật, `moyun_jianqi1` mồ côi, và `1965` cũng **không** được hàng `skills.txt` nào dùng làm `LvlData`. Bảng lực tay ở mục 18.2 vì thế cao hơn thực tế ở hai cột cuối.
+
+### 22.6 Một lỗi thật phát hiện kèm — CHƯA VÁ, chờ chủ quyết
+
+Khí Quán Trường Hồng (1379) lệch giữa hai đường:
+- `KPlayer.cpp:9924` (bảng **hiển thị**) chỉ cộng khi nội lực **đầy 100%**.
+- `KNpc.cpp:4944` (**sát thương thật**) cộng **theo tỷ lệ** nội lực hiện có.
+
+Hậu quả: nội lực chưa đầy thì ô lực tay hiện **thấp hơn** sát thương thật. Client VLTK gốc cộng cả hai trường **không kèm điều kiện nội lực** nào, nên lệch này là của ta. Vá được nhưng phải sửa mã + build + swap, và sẽ **nâng** con số hiển thị lúc nội lực vơi — nên để chủ quyết sau khi nghiệm thu đợt 12.
+
+### 22.7 CHECKLIST NGHIỆM THU đợt 12
+
+1. **Không** có `.moi` nào trong đợt này. Không swap, không build.
+2. Đã ghi thẳng hai tệp, cùng md5 `e42d4f3b`:
+   `bin\server\script\skill\huashan.lua` và `bin\client\script\skill\huashan.lua`.
+   Bản cũ giữ ở `huashan.lua.truoc_luctay_0209`. Hoàn tác: `python vhtd_data_patch12_luctay.py --hoan-tac`.
+3. **Khởi động lại GameServer** (`ChayGameServer.bat`), người chơi **thoát vào lại** (đối tượng kỹ năng cache theo cấp).
+4. Nghiệm thu:
+   (a) Hoa Sơn nội, đủ kỹ năng, đầy nội lực → ô lực tay khoảng **10.400**, không còn 60k.
+   (b) Tooltip Thanh Vân Tống Sảng và Long Huyền Kiếm Khí **không còn** dòng hỗ trợ sát thương; Ma Vân Kiếm Khí **vẫn còn**.
+   (c) Ngoại công không đổi (khoảng 10k) → hai đường cân nhau.
