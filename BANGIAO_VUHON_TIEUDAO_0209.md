@@ -427,8 +427,14 @@ Phần trăm cộng thêm đến từ `addskilldamage1` trỏ vào 1382 của **
 
 > **CẢNH BÁO BUILD SONG SONG (lần 2 trong ngày):** bản build đầu của đợt này (19:30, `eaa0390c` / `21f903c7`) **ĐÃ BỊ NUỐT** phần dở dang của luồng công việc khác — họ sửa 7 tệp trong cùng cây `D:\GAMEDEVNEW` lúc 19:25–19:27 (FUSCHAT / Vân Cương 6 ô, gồm `CoreShell.cpp`, `GameDataDef.h`, `KItemDice.cpp`, `KPlayerBot.cpp`). **KHÔNG swap hai tệp đó.** Bản trong bảng dưới build lại từ `git worktree` tại đúng commit `65076c82`, không chứa mã của họ (đã đối chiếu: bản cây chung khác bản cây sạch, `CoreClient` lớn hơn 512 byte). Luật mới: `git status` trước mỗi lần build; có tệp sửa dở không phải của mình thì build ở worktree riêng.
 
-### 18.4 CHECKLIST SWAP đợt 9 (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; 2 tệp CÙNG LÚC, Game.exe giữ `5db988fc`)
-1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `ce444da3` (19:47, build từ cây sạch `D:\GAMEDEVNEW_wt_vhtd9`).
-2. `bin\client\CoreClient.dll.moi` — 2.455.040 byte, md5 `d1ec5e41` (19:47, build từ cây sạch).
-3. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
-4. Nghiệm thu: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát.
+### 18.4 CHECKLIST SWAP đợt 9 — **3 TỆP CÙNG LÚC** (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`)
+
+> **BẮT BUỘC 3 TỆP, KHÔNG PHẢI 2.** Phiên `wauto-6e` đang làm `[FUSCHAT 02/09]` ("trang bị dung luyện khi post lên kênh chat không hiện thông tin dung luyện") đã đổi cấu trúc `ChatItem` trong `GameDataDef.h`: thêm 6 ô Vân Cương (`m_nFusionP[6]` + `m_uFusionSeed[6]`), **105 → 153 byte**, và `NUM_INFO_ITEM_CHAT` **43 → 44**. `ChatItem` nằm trong gói `s2c_diceitem` nên máy chủ, client và Game.exe **phải cùng một cỡ**. Swap lệch = mọi link vật phẩm trong chat thành chữ thô và gói xúc xắc tách sai.
+>
+> Hai bản `ce444da3` / `d1ec5e41` tôi build lúc 19:47 lấy ở commit `65076c82` — **trước** phần FUSCHAT — nên **KHÔNG dùng nữa**. Bộ đúng do phiên `wauto-6e` build lại cả 3 tệp từ HEAD `431f2e50` (HEAD đã gồm cả hai luồng: đợt 9 Hoa Sơn của tôi và FUSCHAT của họ).
+
+1. `bin\server\CoreServer.dll.moi` — md5 do phiên `wauto-6e` điền.
+2. `bin\client\CoreClient.dll.moi` — md5 do phiên `wauto-6e` điền.
+3. `bin\client\Game.exe.moi` — md5 do phiên `wauto-6e` điền.
+4. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
+5. Nghiệm thu phần đợt 9: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát; (d) phần FUSCHAT: post trang bị đã dung luyện lên kênh chat → hiện đủ thông tin Vân Cương.
