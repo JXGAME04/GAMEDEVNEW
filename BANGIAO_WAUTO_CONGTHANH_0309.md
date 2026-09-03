@@ -11,23 +11,26 @@
 
 ## 1. Trạng thái — CHỜ SWAP + CHỜ CHỦ TEST (chưa test thật lần nào)
 
-Ba tệp `.moi` đặt sẵn ở `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client`. **Phải swap cả ba
-cùng lúc** vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) thêm 12 trường ở cuối.
+**Bốn** tệp `.moi`: ba ở `E:\SourceTuanLe\SourceVs22\TESTLOFFF_ONLINE\bin\client` + `CoreServer.dll.moi` ở `...\bin\server`.
+**Phải swap cả bốn cùng lúc**: ba tệp client vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) thêm 12 trường ở cuối;
+CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — chỉ lên một bên thì hai bên lệch cách xử lý lệnh.
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
 | `CoreClient.dll.moi` | `9976e63f` | `2.488.832` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) **+ vá S13 giựt tới/lùi của phiên wauto-6a (đè bản `96c3085d` lúc 13:50, build từ cùng `f2fa3c2b`; kèm `CoreServer.dll.moi cb4cf7f0` bên server — xem `BANGIAO_GIATLUI_PHUVE_FPS_0309.md` mục 10)** |
 | `Game.exe.moi` | `d3d626ba` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
+| `CoreServer.dll.moi` (**bin\server**) | `cb4cf7f0` | `18.277.888` | vá S13 phía máy chủ (khe lệnh di chuyển riêng + giữ-chờ cho người chơi thật — phiên wauto-6a, commit `4aad2613`); **bắt buộc lên cùng** `CoreClient.dll.moi 9976e63f` |
 
-### Checklist swap
+### Checklist swap (4 `.moi` cùng lúc — S13 hai bên phải cùng lên)
 
 1. Thoát **hẳn** `Game.exe` **và** `WAuto.exe` (Task Manager không còn tiến trình nào).
-2. Chạy `ChoiGame.bat` — nó tự đổi `CoreClient.dll.moi` → `CoreClient.dll` và `Game.exe.moi` → `Game.exe`.
-3. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
-4. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 3 chưa xong.
-5. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-6. Restart mà chưa làm bước 1-3 thì vẫn chạy bản cũ.
+2. Tắt `GameServer.exe` rồi chạy `bin\server\ChayGameServer.bat` — nó tự đổi `CoreServer.dll.moi` → `CoreServer.dll` (bản cũ giữ `.truoc`) và mở lại server.
+3. Chạy `bin\client\ChoiGame.bat` — nó tự đổi `CoreClient.dll.moi` → `CoreClient.dll` và `Game.exe.moi` → `Game.exe`.
+4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
+5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
+6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `9976e63f…`, `CoreServer.dll` = `cb4cf7f0…`.
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```
@@ -37,6 +40,7 @@ MSBuild D:\GAMEDEVNEW\Sources\S3Client\S3Client.vcxproj -p:Configuration=Release
 MSBuild E:\Src_Auto_Ngoai\WAuto\WAuto\WAuto.vcxproj -p:Configuration=Release -p:Platform=Win32
 ```
 Kết quả: `Sources\Core\ClientRelease\CoreClient.dll` · `Sources\S3Client\Release\Game.exe` · `E:\...\WAuto\Release\WAuto.exe`.
+Máy chủ (S13): `MSBuild Core.vcxproj -p:Configuration="Server Release" -p:Platform=x64` cùng cờ → `Sources\Core\x64\ServerRelease\CoreServer.dll`.
 
 ---
 
