@@ -294,3 +294,73 @@ Không đổi giao thức, không đổi cấu trúc save, không đụng client
 
 - `KPlayerBot.cpp` ~500-700 dòng (3 máy trạng thái + lệnh), `KJx2CityWar.cpp` +40 (`SignUpArenaC`), `KTongJX2.cpp` +30 (export gửi `STONG_CREATE_COMMAND`), `ScriptFuns.cpp` +6, `simcity_admin.lua` +80, `botbang.txt`. Không đổi giao thức (gói relay có sẵn), không đụng client.
 - Rủi ro: relay `Sleep(5)`/thành viên khi phát tin bang 150 người (~0,75 s chặn relay mỗi thao tác cấp bang — BANGIAO_BANGHOI.md:162) → so le thao tác, tránh giờ đông; 750 bản ghi thành viên bot trong DB relay; tên trùng → relay từ chối (log + đổi tên); bot chết/lạc giữa chiến dịch → hết hạn pha tự bỏ; quỹ tụt dưới 1 triệu → mất "cấp 18" → thầu bị từ chối (đồng hồ kiểm quỹ trước 18h, nạp bù).
+
+---
+
+## 6. (02/09 tối) THI CÔNG 5 BANG BOT — `ReverseTools\goi_va_bot_5bang.py` — CHỜ SWAP
+
+> Chủ: *"làm 1 - 6; 5 tên bất kỳ tuỳ bạn; giữ nguyên luật 5 ngày; quỹ thì hãy viết lệnh bài admin tôi sẽ tự nạp vào bang tôi muốn; hãy làm và phản biện và note đầy đủ lại"*. Câu 3 (cấp tối thiểu) chủ không nói → để **60** (= luật xuất sư của game, đổi trong `botbang.txt` cột CAPMIN). Câu 5 (2 bang thầu trùng thành) → mặc định **5 thành khác nhau**, muốn thử lôi đài thì sửa cột THANH cho trùng.
+
+### 6.1 Cái gì đã vá (1 tool idempotent, `--thu` = chỉ kiểm neo; mọi hunk C++ là ASCII, byte cao không đổi)
+
+| Tệp | Hunk | Nội dung |
+|---|---|---|
+| `KPlayerBot.cpp` | 13 | trường `nBangLoai` (0 PM cũ / 1 tạo bang / 2 xin vào bang bot / 3 đi thầu) + `nBangBotIdx` trong `PB_Bot` (reset ở 6 chỗ); khối `[BOTBANG5]` **trước** `pb_XinVaoBang`: bảng `s_bb[8]` nạp `\settings\simcity\botbang.txt` (KTabFile), `pb_BbUngVien`, `pb_BbLeaderIdx` (bang chủ = `btFigure 0` trong `mapMember` → `pb_FindBotByName`), `pb_BbXoaViec`, `pb_BbTaoXong`; trong `pb_XinVaoBang`: đầu hàm loại 1 không coi "bang mất", `m_nFlag = 1` = tạo xong; trước BƯỚC 5: loại 1 gửi `KTongJX2_SendCreateC` rồi chờ ≤ 60 s; khối **sau** `pb_XinVaoBang`: `pb_BangThau` (đi NPC Sứ Giả map 53 (1625,3170) script `sugia_congthanh` → `KJx2CityWar_SignUpArenaC`), `pb_BangNhip` (1 s: duyệt đơn / chiến dịch tuyển / 18h thầu), `PB_BangTao/Tuyen/CTC/Nap` + 7 `LuaPB_Bang*`; hook `pb_DriveBot` (`nBangPha == 2` → `pb_BangThau`), `PB_Breathe` (`pb_BangNhip`) |
+| `KTongJX2.cpp` | 1 | `KTongJX2_SendCreateC(nPlayerIdx, nCamp, szTen)` — đóng gói `STONG_CREATE_COMMAND` y hệt `KSOServer.cpp:4327-4341` (kể cả `m_wLength` cắt trước `m_btSex` — quirk gốc) → `g_NewProtocolProcess.PushMsgInTong` |
+| `KJx2CityWar.cpp/.h` | 14 + 1 | `sSignUpArena(Lua_State*)` → `sSignUpArena(int nPlayerIndex)` trả mã 0..10 (mọi `sMsgPlayer` giữ nguyên → người bấm menu thấy y cũ); wrapper Lua gọi `GetPlayerIndex(L)`; export `KJx2CityWar_SignUpArenaC`, `KJx2CityWar_GetState` |
+| `ScriptFuns.cpp` | 2 | đăng ký `PB_BangTao(n)` · `PB_BangTuyen(stt, mục)` · `PB_BangCTC(1/0/-1)` · `PB_BangNap(stt, lượng[, tongid])` · `PB_BangSo([1 = nạp lại])` · `PB_BangTen(stt)` · `PB_BangTT()` (trong `#ifdef _SERVER` cùng nhóm PB_*) |
+| `simcity_admin.lua` (+ mirror `jx1_edits`) | 2 | `PB_Menu` thêm "Bang hội bot" → `PB_BangMenu`: Xem trạng thái · Tạo 5 bang · Tuyển thành viên (menu 5 bang) · Bật/Tắt đấu thầu theo giờ · **Nạp quỹ bang** (chọn 5 bang bot hoặc "Bang của tôi" → 1/5/20/100 triệu) · Nạp lại botbang.txt. TCVN3 qua `vn()`, `lua4` parse sạch |
+| `settings\simcity\botbang.txt` (+ mirror `serverdata_jx2\settings\simcity`) | mới | `STT TEN CAMP THANH CAPMIN SONGUOI PHI`: 1 Thanh Long (chính, Tương Dương báo T5) · 2 Bạch Hổ (tà, Biện Kinh T6) · 3 Chu Tước (chính, Lâm An T7) · 4 Huyền Vũ (tà, Dương Châu CN) · 5 Kỳ Lân (trung lập, Thành Đô T2); cấp ≥ 60, 120 người, phí 1.000.000 |
+| `bin\multiserver\relay_config.ini` | 1 | `[tong] tongcap = 30 → 160` — **relay chỉ đọc lúc nạp/tạo bang → phải restart S3Relay** (chủ làm; tôi không tự restart) |
+
+Build: Core `Server Release|x64` PASS (0 error C, link PASS, `CoreServer.dll` 18.273.280 byte) + Core `Client Release|Win32` PASS (kiểm tệp dùng chung; client KHÔNG cần deploy — mã mới nằm trọn trong `#ifdef _SERVER`).
+
+### 6.2 Từng lệnh chạy thế nào (log `bot.log` tag `[BotBang5]`)
+
+1. **Tạo 5 bang** (`PB_BangTao(5)`): với mỗi dòng botbang.txt chưa có bang trên GS → chọn bot **cấp cao nhất** đủ điều kiện (`pb_BbUngVien`: đang luyện công, chưa bang, cấp ≥ CAPMIN, không sạp/TK/Dã Tẩu/nhóm người thật/đang xin bang) → `nBangLoai = 1` → bot rời nhóm, về map 53 cạnh NPC môn phái, đi bộ tới, **xuất sư** (vá việc 1), rồi gửi `STONG_CREATE_COMMAND` (log `gui lenh TAO BANG`) → relay tạo → GS `KPlayerTong::Create` → `m_nFlag = 1` → log `TAO BANG XONG` (`bb.nTao = 2`). Relay không trả lời sau 60 s (tên trùng, bot đã là bang chủ nơi khác, relay tắt) → `THAT BAI`, bấm Tạo lại (bot khác được chọn). Bang mới xuất hiện trong `g_TongJX2` (để tuyển) sau tick 30 s của relay (`JX2_TimerTick` → bảo trì ngày bang mới → `sJX2_BroadcastTong`).
+2. **Tuyển** (`PB_BangTuyen(stt, 0)` = tới SONGUOI): mỗi giây tối đa **8 bot cùng lúc** đang đi (so le 2 s/lượt, xoay vòng danh sách bot), mỗi bot đi đúng `pb_XinVaoBang` loại 2 (xuất sư → `APPLY_JOIN`), bang chủ bot **duyệt 1 đơn/giây** bằng `COP_ACCEPT_APPLY`; đơn của người thật → `COP_REFUSE_APPLY` (bang chỉ có bot); mã 5 (người xin online mà đã có bang khác) → từ chối để gỡ đơn kẹt. Dừng khi `mapMember.size() ≥ mục` (`TUYEN XONG`) hoặc đã giao quá mục + 30 bot (`DUNG` — xem tongcap / dòng HUY). Ước 150 bot ≈ 20-25 phút/bang.
+3. **Đấu thầu theo giờ** (`PB_BangCTC(1)`): mỗi 20 s, nếu giờ máy GS 18h00-18h55 và thứ = ngày báo danh của THANH (`s_nBbLich = {3,1,2,5,4,0,6}` cho thành 1..7) và `KJx2CityWar_GetState == SIGNUP` và chưa xử lý hôm nay → bang chủ bot (không TK/sạp/đang xin bang) `nBangPha = 2` → về map 53, đi tới Sứ Giả, gọi `KJx2CityWar_SignUpArenaC(city, PHI)` → log `DAU THAU ... ket qua N (lý do)`. Mã 0/5/6/7 → khoá tới hôm sau; mã khác (thiếu quỹ, chưa đủ 37 người, field 6 < 18, chưa SIGNUP) → thử lại sau 60 s khi còn trong cửa sổ.
+4. **Nạp quỹ** (`PB_BangNap`): `KTongJX2_AddMoneyC(id, lượng)` → gói tiền lên relay (relay chặn dưới 0) → GS thấy số mới ở lần đồng bộ tiền kế tiếp (vài giây). "Bang của tôi" dùng `GetTongName()` của admin đang cầm lệnh bài.
+
+### 6.3 Checklist chủ (theo thứ tự)
+
+1. Đặt `CoreServer.dll.moi` (mục 6.5) và **restart GameServer** (cũng nạp vá xuất sư việc 1).
+2. **Restart S3Relay** (đang chạy từ 01/09 22:45 ở `bin\multiserver`) để `tongcap = 160` có hiệu lực — không restart thì mỗi bang bot dừng ở 30 người và Tuyển sẽ báo `DUNG`.
+3. Lệnh bài admin → Bot người chơi thật → **Bang hội bot → Tạo 5 bang** → chờ 1-3 phút → **Xem trạng thái**: 5 dòng phải là `co ...` (`grep -a "BotBang5" bot.log | tail -40`: `TAO BANG XONG` ×5, `da co tren GS`).
+4. **Nạp quỹ bang** → chọn từng bang bot → 5 triệu (đủ ngưỡng exp 1 triệu + phí thầu 1 triệu + tiêu hao ~576 k/ngày); 750 s sau relay cộng exp (`tongjx2_menu` "KN bang" ≥ 120).
+5. **Tuyển thành viên** → từng bang (có thể bật cả 5, tổng 40 bot đang đi cùng lúc). Theo dõi `TUYEN XONG`.
+6. **Bật đấu thầu theo giờ**. Lịch gần nhất: Kỳ Lân/Thành Đô **T2 07/09 18h**, Thanh Long/Tương Dương **T5 03/09 18h** (nếu đã đủ 37 người + quỹ trước 18h), Bạch Hổ/Biện Kinh T6 04/09, Chu Tước/Lâm An T7 05/09, Huyền Vũ/Dương Châu CN 06/09. 19h thành vô chủ → khiêu chiến giả; 20h hôm sau → **chiếm thành không đánh** (log `[citywar]` + tin toàn server).
+7. Luật 5 ngày giữ nguyên → bot **thủ thành** được từ ngày D+5 sau khi vào bang (cần bot CTC mục 3 đợt 1-2, chưa làm).
+
+### 6.4 Giới hạn / ghi chú vận hành
+
+- Bang chủ bot cũng là bot luyện công bình thường; khi bị gọi Tống Kim lúc 18h thì đợt thầu chờ 20 s/lần tới khi rảnh (cửa sổ tới 18h55).
+- Bot tạo bang bị trừ 500.000 lượng ở `KPlayerTong::Create` (sàn 0) như người thật; không cần item 195.
+- Không tự "Chiêu mộ tự nhận" (tốn 10 triệu/lần lưu) — duyệt trực tiếp rẻ hơn và cho phép chặn người thật.
+- `PB_BangSo(1)` nạp lại botbang.txt sẽ xoá trạng thái chiến dịch tuyển đang chạy (bot đang đi vẫn đi nốt).
+- Đổi tên/thành trong botbang.txt sau khi bang đã tạo: tên mới = bang mới (id theo tên); giữ tên cũ nếu chỉ đổi thành.
+
+### 6.5 Phản biện (1 tác tử độc lập, đọc diff + đối chiếu KSOServer / S3Relay / KTongJX2 / KJx2CityWar) → vá đợt b `ReverseTools\goi_va_bot_5bang_b.py` (29 hunk KPlayerBot.cpp + 5 hunk Lua, chuỗi tái áp: 5bang → 5bang_b)
+
+| Mức | Phát hiện | Vá |
+|---|---|---|
+| CHẶN | `pb_DongBoBang` (10 s/con) `Clear()` hồ sơ bang khi bản sao relay chưa có bang/thành viên — mà relay chỉ phát bang MỚI ở tick 30 s (`JX2_TimerTick`) và thành viên MỚI ở tick `TimeLong` 750 s (`sJX2_BroadcastTong`) → bot vừa lập bang mất bang ngay (rồi "relay KHONG tao bang" sai), bot vừa được duyệt bị xoá rồi tuyển lại vô hạn | **Ân hạn 15 phút** (`b.uBangMatTu`, ms) trước khi Clear; đếm thành viên qua `m_cTong` của bot (`pb_BbDemBot`, được `SSOI_TONG_ADD` đặt ngay khi duyệt) cho chiến dịch tuyển + trạng thái |
+| CHẶN | Tống Kim 17:50 hằng ngày (`lib_tktc.lua:70`) gọi quân qua `pb_TkDuTuCach` — bang chủ bot (cấp cao nhất) bị kéo đi → mất cửa sổ đấu thầu 18h00-18h55 | `pb_TkDuTuCach` loại bot đang làm việc bang (`nBangPha`) và **bang chủ bang bot khi đang bật đấu thầu** (`pb_BbLaBangChu`) |
+| CAO | Sau restart `s_bbLoaded = 0`, `s_nPbBangCTC = 0` (biến tĩnh) → không duyệt đơn, không đấu thầu tới khi admin mở menu | `pb_BangNhip` tự nạp `botbang.txt`; cờ đấu thầu lưu **`\settings\simcity\botbang_ctc.txt`** (ghi khi bật/tắt, đọc lúc nạp) |
+| CAO | Bang NGƯỜI THẬT trùng tên trong botbang.txt bị chiếm dụng (tuyển bot vào, nạp tiền admin vào) | Trạng thái **4 = "BANG NGUOI!"**: chỉ coi là bang bot khi bang chủ (`btFigure 0`) là bot đang sống; Tạo/Tuyển/Nạp từ chối bang trạng thái 4 |
+| VỪA | `nFee` sàn 1.000.000 < `SignUpFee` nếu citywar.ini đặt cao hơn → luôn mã 10 | `nPhi = max(PHI, KJx2CityWar_GetSetting(0))` |
+| VỪA | Duyệt đơn mã ≠ 0 (2 = bản sao chưa có bang chủ, 3 = quyền) lặp + log 1 dòng/giây | `uDuyetNghi` nghỉ 30 s khi mã ≠ 0 |
+| VỪA | `PB_BangTT` tới ~1 KB, `LuaSelectUI` cắt 512 byte và lặng lẽ bỏ nhãn → menu mất "Quay lại" | cắt 360 byte, tên bang chủ `%.10s`; rút ngắn tiêu đề 3 menu Lua |
+| VỪA | "Nạp lại botbang.txt" `memset` khi bot đang mang `nBangBotIdx` → lệch chỉ số | từ chối nạp lại khi còn bot `nBangPha && nBangBotIdx >= 0` (Lua báo) |
+| THẤP | `uLogTick` trộn ms/khung; chờ relay chạy lại `PB_WalkTo` mỗi khung; tên bang chứa `/` `\|` vỡ menu | thống nhất ms; `nBangNghiToi` 1 s khi chờ; từ chối tên có `/` `\|` lúc nạp |
+| Ghi nhận, không sửa | `PB_BangNapK` toàn cục (2 admin cùng lúc có thể nạp nhầm bang); `KPlayerTong::Create` `DecMoney(500000)` quét sạch túi bot thiếu tiền; `CREATE_FAIL` của relay chỉ về client nên Core kết luận "THAT BAI" chung chung sau 60 s | — |
+
+Đã kiểm thấy ĐÚNG (tác tử): gói `STONG_CREATE_COMMAND` khớp `KSOServer.cpp:4327-4341` (kể cả quirk `m_btSex`), đường về `SSOI_TONG_CREATE` an toàn với khe cấp lại; `g_FileName2Id` = relay `g_String2Id` với tên TCVN3; ACCEPT/REFUSE và hàng đợi; vòng đời chỉ số (`m_dwID`); 6 chỗ reset `nBangLoai`; lịch `s_nBbLich`; NPC Sứ Giả; mọi hàm tĩnh định nghĩa trước chỗ dùng; Lua `SayEx`/`tinsert`/`GetTongName`.
+
+### 6.6 Binary chờ swap
+
+- `bin\server\CoreServer.dll.moi` = **`0ddd9c6a5e80`** (18:39, 18.276.352 byte) = HEAD `3f82936f` + việc 1 + 5 bang bot đợt a+b. Là **superset** của `.moi` cũ `e0e57d73` (phiên Vũ Hồn/Tiêu Dao 15:31, đã sao lưu `_moi_backup\CoreServer.dll.moi.vhtd_e0e57d73_1531`) — build từ cùng HEAD nên không mất gì của họ. Client (`CoreClient.dll.moi` / `Game.exe.moi`) giữ nguyên bản đang chờ của các phiên trước.
+- Đếm chuỗi trong `.moi`: `BotBang5` 33, `botbang_ctc.txt` 2, `BANG NGUOI!` 1, `khong thay qua 15 phut` 1 (đợt b đã vào binary).
+- Nghiệm thu nhanh sau restart: `grep -a "BotBang5" bot.log | tail -30` — dòng đầu tiên phải là `nap 5 bang bot tu \settings\simcity\botbang.txt` (tự nạp, không cần mở menu).
+
+**Bẫy tool vá gặp trong phiên (ghi để đừng lặp):** (1) neo regex viết bằng raw-string `\n` không khớp tệp CRLF → chuyển mọi `\n` thành `\r?\n` nhưng phải giữ `\\n` literal của chuỗi C/Lua (placeholder); (2) nhóm bắt `\1` mang sẵn `\r\n` rồi `nl()` → `\r\r\n` (16 CR lẻ, git coi tệp là binary); (3) `m.expand()` đổi `\n` trong chuỗi thay thế thành xuống dòng thật → vỡ literal C++/Lua ("unfinished string") — phải tự mở rộng `\1..\9`; đã phải `git checkout` KPlayerBot.cpp và áp lại chuỗi tool 1 → 2 (idempotent nên tái áp sạch).

@@ -1029,35 +1029,34 @@ static int sStartCityWar(int c)
 }
 
 // SignUp (GS 0x08058650 + R 0x0809AE32): 10 dieu kien (bo "khao nghiem")
-static void sSignUpArena(Lua_State* L, int c, int nFee)
+static int sSignUpArena(int nPlayerIndex, int c, int nFee)	// [BOTBANG5 02/09] tra ma (0 OK) - ca Lua lan bot dung
 {
-	int nPlayerIndex = GetPlayerIndex(L);
 	if (nPlayerIndex <= 0)
-		return;
+		return 1;
 	KJx2City* p = &s_Cities[c];
 	KJx2CityArena* pA = &s_Arena[c];
 	char szMsg[512];
 	const char* szTong = Player[nPlayerIndex].m_cTong.m_szName;
 	DWORD dwTongID = Player[nPlayerIndex].m_cTong.m_dwTongNameID;
 	if (!szTong[0] || !dwTongID)
-		return;		// (1) khong bang -> goc bo qua im lang
+		return 1;		// (1) khong bang -> goc bo qua im lang
 	KTongJX2Tong* pTong = g_TongJX2.FindTong(dwTongID);
 	if (!pTong)
 	{
 		sMsgPlayer(nPlayerIndex, CWS_WARN_TONGERROR);
-		return;
+		return 2;
 	}
 	char szMaster[64];
 	sMasterOfTong(szTong, szMaster, sizeof(szMaster));
 	if (strcmp(szMaster, Player[nPlayerIndex].m_PlayerName) != 0)
 	{
 		sMsgPlayer(nPlayerIndex, CWS_WARN_NOTTONGLEADER);
-		return;
+		return 3;
 	}
 	if (p->nState != JX2CW_STATE_SIGNUP)
 	{
 		sMsgPlayer(nPlayerIndex, CWS_WARN_SIGNUPTIMEOUT);
-		return;
+		return 4;
 	}
 	for (int i = 1; i <= 7; i++)
 	{
@@ -1069,7 +1068,7 @@ static void sSignUpArena(Lua_State* L, int c, int nFee)
 				if (s_Arena[i].vecTong[k] == szTong)
 				{
 					sMsgPlayer(nPlayerIndex, CWS_WARN_ALREADYSIGNUP);
-					return;
+					return 5;
 				}
 			}
 		}
@@ -1080,7 +1079,7 @@ static void sSignUpArena(Lua_State* L, int c, int nFee)
 		{
 			sprintf(szMsg, CWS_WARN_BECHALLENGER, s_Cities[i].szAreaName);
 			sMsgPlayer(nPlayerIndex, szMsg);
-			return;
+			return 6;
 		}
 	}
 	for (int i = 1; i <= 7; i++)
@@ -1089,26 +1088,26 @@ static void sSignUpArena(Lua_State* L, int c, int nFee)
 		{
 			sprintf(szMsg, CWS_WARN_BECITYOWNER, s_Cities[i].szAreaName);
 			sMsgPlayer(nPlayerIndex, szMsg);
-			return;
+			return 7;
 		}
 	}
 	if ((int)pTong->mapMember.size() < s_nSettings[4])
 	{
 		sprintf(szMsg, CWS_WARN_TOOFEWCROWS, s_nSettings[4]);
 		sMsgPlayer(nPlayerIndex, szMsg);
-		return;
+		return 8;
 	}
 	if ((int)g_TongJX2.GetField(dwTongID, 6) < s_nSettings[1])	// field 6 = cap bang (TONG_GetExpLevel)
 	{
 		sprintf(szMsg, CWS_WARN_LEVELLOW, s_nSettings[1]);
 		sMsgPlayer(nPlayerIndex, szMsg);
-		return;
+		return 9;
 	}
 	if (nFee < s_nSettings[0] || KTongJX2_GetMoneyC(dwTongID) < (__int64)nFee)	// so sanh CO DAU (phan bien)
 	{
 		sprintf(szMsg, CWS_WARN_NOTENOUGHFEE, nFee);
 		sMsgPlayer(nPlayerIndex, szMsg);
-		return;
+		return 10;
 	}
 	KTongJX2_AddMoneyC(dwTongID, -(__int64)nFee);
 	pA->vecTong.push_back(std::string(szTong));
@@ -1119,6 +1118,7 @@ static void sSignUpArena(Lua_State* L, int c, int nFee)
 	g_DebugLog((LPSTR)"KJx2CityWar[arena]: bang [%s] bao danh loi dai thanh %d, phi %d (nguoi %s)",
 		szTong, c, nFee, Player[nPlayerIndex].m_PlayerName);
 	sSaveMirror();
+	return 0;
 }
 
 // NotifyArenaResult (G 0x08122800 + R 0x0809D4F0): ghi ket qua, tin, ket cay -> challenger
@@ -1185,8 +1185,27 @@ int LuaSignUpCityWarArena(Lua_State* L)
 	sEnsureStore();
 	int c = sArgCity(L, 1);
 	if (c && Lua_GetTopIndex(L) >= 2 && Lua_IsNumber(L, 2))
-		sSignUpArena(L, c, (int)Lua_ValueToNumber(L, 2));
+		sSignUpArena(GetPlayerIndex(L), c, (int)Lua_ValueToNumber(L, 2));
 	return 0;
+}
+
+// [BOTBANG5 02/09] cho bot bang chu (KPlayerBot.cpp pb_BangThau): dau thau theo chi so nguoi choi,
+// cung 10 cua va cung thong bao nhu nguoi bam menu Su Gia; tra 0 OK / 1..10 ly do. Trang thai thanh
+// de bot chi di khi dang mo bao danh (JX2CW_STATE_SIGNUP).
+int KJx2CityWar_SignUpArenaC(int nPlayerIdx, int nCity, int nFee)
+{
+	sEnsureStore();
+	if (nCity < 1 || nCity > 7)
+		return 11;
+	return sSignUpArena(nPlayerIdx, nCity, nFee);
+}
+
+int KJx2CityWar_GetState(int nCity)
+{
+	sEnsureStore();
+	if (nCity < 1 || nCity > 7)
+		return -1;
+	return s_Cities[nCity].nState;
 }
 
 //////////////////////////////////////////////////////////////////////

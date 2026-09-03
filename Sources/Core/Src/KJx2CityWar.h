@@ -88,5 +88,10 @@ int  KJx2CityWar_GetSetting(int nIdx);    // 0 SignUpFee 1 MinTongLevel 2 MaxExc
                                           // 4 MinTongCrowNumber 5 StartSetTaxTime 6 EndSetTaxTime
                                           // 7 WarCycleValue 8 SupplyLineBuildScale
 
+// [BOTBANG5 02/09] cho bot bang chu (KPlayerBot.cpp): dau thau bang chi so nguoi choi (10 cua y het Lua),
+// tra 0 OK / 1..10 ly do (pb_BbTenKq); trang thai thanh JX2CW_STATE_* (-1 = sai id)
+int KJx2CityWar_SignUpArenaC(int nPlayerIdx, int nCity, int nFee);
+int KJx2CityWar_GetState(int nCity);
+
 #endif // _SERVER
 #endif // KJX2CITYWAR_H

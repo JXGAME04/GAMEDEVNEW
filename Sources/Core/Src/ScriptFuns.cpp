@@ -14035,6 +14035,14 @@ extern int LuaPB_SetNpcChan(Lua_State* L);
 extern int LuaPB_SetTongKim(Lua_State* L);
 extern int LuaPB_SetTongKimTran(Lua_State* L);
 extern int LuaPB_TongKimGoi(Lua_State* L);
+// [BOTBANG5 02/09] 5 bang bot: tao bang - tuyen - dau thau cong thanh - nap quy (KPlayerBot.cpp)
+extern int LuaPB_BangTao(Lua_State* L);
+extern int LuaPB_BangTuyen(Lua_State* L);
+extern int LuaPB_BangCTC(Lua_State* L);
+extern int LuaPB_BangNap(Lua_State* L);
+extern int LuaPB_BangSo(Lua_State* L);
+extern int LuaPB_BangTen(Lua_State* L);
+extern int LuaPB_BangTT(Lua_State* L);
 extern int PB_IsBot(int nPlayerIdx);
 
 // IsBot([nPlayerIdx]) -> 1 neu khe do la BOT do he KPlayerBot sinh ra, 0 neu KHONG.
@@ -15043,6 +15051,13 @@ TLua_Funcs GameScriptFuns[] =
 	{"PB_SetTongKim",	LuaPB_SetTongKim},	// (21/08) bot tu tham gia Tong Kim: 1=bat 0=tat -1=doc
 	{"PB_SetTongKimTran",	LuaPB_SetTongKimTran},	// tran so bot moi tran; 0 = KHONG gioi han
 	{"PB_TongKimGoi",	LuaPB_TongKimGoi},	// goi bot vao tran NGAY (lenh bai admin)
+	{"PB_BangTao",		LuaPB_BangTao},		// [BOTBANG5 02/09] (n) giao n bot cap cao nhat di lap n bang bot dau (botbang.txt)
+	{"PB_BangTuyen",	LuaPB_BangTuyen},	// (stt, muc) chien dich tuyen bot vao bang stt toi muc nguoi (0 = SONGUOI trong tep)
+	{"PB_BangCTC",		LuaPB_BangCTC},		// (1/0/-1) bat/tat/doc: 18h ngay bao danh bang chu bot di dau thau thanh muc tieu
+	{"PB_BangNap",		LuaPB_BangNap},		// (stt, luong[, tongid]) admin nap quy: stt 1..n bang bot, 0 = bang co tongid
+	{"PB_BangSo",		LuaPB_BangSo},		// ([1 = nap lai tep]) -> so bang bot
+	{"PB_BangTen",		LuaPB_BangTen},		// (stt) -> ten bang
+	{"PB_BangTT",		LuaPB_BangTT},		// () -> chuoi trang thai
 	{"IsBot",			LuaIsBot},
 	{"SetNpcTimer",		LuaSetNpcTimer},
 	{"GetNpcTimer",		LuaGetNpcTimer},

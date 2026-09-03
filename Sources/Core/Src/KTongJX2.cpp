@@ -566,6 +566,38 @@ static void sJX2_SendAddMemberByName(KTongJX2Tong* pTong, const char* pszName,
 	g_NewProtocolProcess.PushMsgInTong((const void*)&sAdd, (int)sAdd.m_wLength);
 }
 
+// [BOTBANG5 02/09] Bot lap bang: Core tu gui STONG_CREATE_COMMAND len relay y het GameServer.exe
+// KSOServer.cpp:4327-4341 lam cho nguoi that (ke ca m_wLength cat sau m_szBuffer - m_btSex nam sau
+// buffer nen relay doc ngoai goi, la quirk goc, giu nguyen de hai duong giong nhau). Duong tra ve
+// dung nguyen: relay enumS2C_TONG_CREATE_SUCCESS -> GS.exe SSOI_TONG_CREATE -> KPlayerTong::Create.
+// KHONG qua CheckCreateCondition (bot lead level 1); relay chi kiem ten <= 31 byte, ten bang / ten
+// bang chu chua ai dung (KTongSet.cpp CTongSet::Create).
+void KTongJX2_SendCreateC(int nPlayerIdx, int nCamp, const char* pszTongName)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER || !pszTongName || !pszTongName[0])
+		return;
+	if (Player[nPlayerIdx].m_nIndex <= 0 || Player[nPlayerIdx].m_dwID == 0)
+		return;
+	const int nTL = (int)strlen(pszTongName);
+	const int nPL = (int)strlen(Player[nPlayerIdx].m_PlayerName);
+	if (nTL > defTONG_NAME_MAX_LENGTH || nPL <= 0 || nTL + nPL > 63)
+		return;
+	STONG_CREATE_COMMAND sCreate;
+	memset(&sCreate, 0, sizeof(sCreate));
+	sCreate.ProtocolFamily = pf_tong;
+	sCreate.ProtocolID = enumC2S_TONG_CREATE;
+	sCreate.m_btCamp = (BYTE)nCamp;
+	sCreate.m_btSex = (BYTE)Npc[Player[nPlayerIdx].m_nIndex].m_nSex;
+	sCreate.m_dwParam = (DWORD)nPlayerIdx;
+	sCreate.m_dwPlayerNameID = g_FileName2Id(Player[nPlayerIdx].m_PlayerName);
+	sCreate.m_btPlayerNameLength = (BYTE)nPL;
+	sCreate.m_btTongNameLength = (BYTE)nTL;
+	memcpy(sCreate.m_szBuffer, pszTongName, nTL);
+	memcpy(&sCreate.m_szBuffer[nTL], Player[nPlayerIdx].m_PlayerName, nPL);
+	sCreate.m_wLength = (WORD)(sizeof(STONG_CREATE_COMMAND) - sizeof(sCreate.m_szBuffer) + nTL + nPL);
+	g_NewProtocolProcess.PushMsgInTong((const void*)&sCreate, (int)sCreate.m_wLength);
+}
+
 // Bao cho bang chu / nguoi co quyen thu nhan (1901) dang online biet co don moi.
 // Truoc day nop don xong TUYET DOI im lang: nguoi xin thay "da gui don" con
 // bang chu khong he hay biet, phai tu mo trang Chieu mo moi thay.

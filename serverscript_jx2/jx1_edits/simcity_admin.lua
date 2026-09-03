@@ -158,6 +158,7 @@ function PB_Menu()
 	"Ra thµnh b¸n s¹p/PB_SapMenu",
 	"Gäi vÒ thµnh - th«n/PB_VtMenu",
 	"Tham gia Tèng Kim/PB_TkMenu",
+	"Bang héi bot/PB_BangMenu",
 	"Quay l¹i SimCity/SC_Menu",
 	SC_END_SAY})
 end
@@ -196,6 +197,136 @@ function PB_VtMenu()
 	"T¾t (bot vÒ b·i luyÖn)/#PB_VeThanhBat(0)",
 	"Quay l¹i/PB_Menu",
 	SC_END_SAY})
+end
+
+-- ================= BANG HOI BOT (02/09) =================
+-- 5 bang toan bot (settings\simcity\botbang.txt): tao bang - tuyen thanh vien - dung 18h ngay bao danh
+-- dau thau cong thanh - admin nap quy. Ham C (KPlayerBot.cpp): PB_BangTao / PB_BangTuyen / PB_BangCTC /
+-- PB_BangNap / PB_BangSo / PB_BangTen / PB_BangTT. Xem bot.log muc [BotBang5].
+function PB_BangMenu()
+	local nBat = PB_BangCTC(-1)
+	local sBat = "T¾t"
+	if nBat == 1 then
+		sBat = "BËt"
+	end
+	SayEx({format("<color=yellow>Bang héi bot<color>\n§Êu thÇu c«ng thµnh theo giê (18h ngµy b¸o danh): <color=green>%s<color>", sBat),
+	"Xem tr¹ng th¸i c¸c bang bot/PB_BangXem",
+	"T¹o 5 bang (bot cÊp cao nhÊt lµm bang chñ)/PB_BangTaoGo",
+	"TuyÓn thµnh viªn/PB_BangTuyenMenu",
+	"BËt ®Êu thÇu theo giê/#PB_BangCTCBat(1)",
+	"T¾t ®Êu thÇu theo giê/#PB_BangCTCBat(0)",
+	"N¹p quü bang/PB_BangNapMenu",
+	"N¹p l¹i botbang.txt/PB_BangNapLai",
+	"Quay l¹i menu bot/PB_Menu",
+	SC_END_SAY})
+end
+
+function PB_BangXem()
+	local s = PB_BangTT()
+	if (s == nil or s == "") then
+		s = "(ch­a n¹p ®­îc botbang.txt)"
+	end
+	SayEx({"<color=yellow>Bang bot (stt.tªn tt ng­êi quü thµnh chñ)<color>\n"..s,
+	"Quay l¹i/PB_BangMenu",
+	SC_END_SAY})
+end
+
+function PB_BangTaoGo()
+	local n = PB_BangTao(5)
+	Msg2Player(format("§· giao %d bot ®i lËp bang (bot vÒ NPC m«n ph¸i xuÊt s­ råi lËp bang; xem bot.log [BotBang5]).", n))
+	PB_BangMenu()
+end
+
+function PB_BangTuyenMenu()
+	local t = {"<color=yellow>TuyÓn thµnh viªn<color>\nChän bang (môc tiªu theo botbang.txt; bot ®ñ cÊp, ch­a bang tù vÒ xin)"}
+	local n = PB_BangSo()
+	for i = 1, n do
+		tinsert(t, format("%s/#PB_BangTuyenGo(%d)", PB_BangTen(i), i))
+	end
+	tinsert(t, "Quay l¹i/PB_BangMenu")
+	tinsert(t, SC_END_SAY)
+	SayEx(t)
+end
+
+function PB_BangTuyenGo(k)
+	local n = PB_BangTuyen(k, 0)
+	if (n > 0) then
+		Msg2Player(format("Bang %s: b¾t ®Çu tuyÓn tíi %d thµnh viªn (xem bot.log [BotBang5]).", PB_BangTen(k), n))
+	elseif (n == -2) then
+		Msg2Player("Bang nµy ch­a cã trªn m¸y chñ (ch­a t¹o, hoÆc relay ch­a ®ång bé - chê 30 gi©y råi thö l¹i).")
+	else
+		Msg2Player("Sè thø tù bang kh«ng hîp lÖ.")
+	end
+	PB_BangMenu()
+end
+
+function PB_BangCTCBat(n)
+	PB_BangCTC(n)
+	if (n == 1) then
+		Msg2Player("§· bËt: 18h00-18h55 ngµy b¸o danh cña thµnh môc tiªu, bang chñ bot tíi Sø Gi¶ C«ng Thµnh ®Êu thÇu (cÇn ®ñ 37 ng­êi, quü > 1 triÖu ®ñ 750 gi©y, quü ®ñ phÝ).")
+	else
+		Msg2Player("§· t¾t ®Êu thÇu theo giê.")
+	end
+	PB_BangMenu()
+end
+
+function PB_BangNapLai()
+	local n = PB_BangSo(1)
+	-- [BOTBANG5b] -1 = con bot dang di lam viec bang
+	if (n < 0) then
+		Msg2Player("Ch­a n¹p l¹i ®­îc: cßn bot ®ang ®i lËp bang / xin bang / ®Êu thÇu. Thö l¹i sau.")
+	else
+		Msg2Player(format("§· n¹p l¹i botbang.txt: %d bang (chiÕn dÞch tuyÓn bÞ ®Æt l¹i).", n))
+	end
+	PB_BangMenu()
+end
+
+function PB_BangNapMenu()
+	local t = {"<color=yellow>N¹p quü bang<color>\nChän bang nhËn tiÒn"}
+	local n = PB_BangSo()
+	for i = 1, n do
+		tinsert(t, format("%s/#PB_BangNapChon(%d)", PB_BangTen(i), i))
+	end
+	tinsert(t, "Bang cña t«i/#PB_BangNapChon(0)")
+	tinsert(t, "Quay l¹i/PB_BangMenu")
+	tinsert(t, SC_END_SAY)
+	SayEx(t)
+end
+
+function PB_BangNapChon(k)
+	PB_BangNapK = k
+	local sTen = "bang cña t«i"
+	if (k > 0) then
+		sTen = PB_BangTen(k)
+	end
+	SayEx({format("<color=yellow>N¹p quü cho %s<color>\nChän sè tiÒn", sTen),
+	"1 triÖu l­îng/#PB_BangNapGo(1000000)",
+	"5 triÖu l­îng/#PB_BangNapGo(5000000)",
+	"20 triÖu l­îng/#PB_BangNapGo(20000000)",
+	"100 triÖu l­îng/#PB_BangNapGo(100000000)",
+	"Quay l¹i/PB_BangNapMenu",
+	SC_END_SAY})
+end
+
+function PB_BangNapGo(nLuong)
+	local k = PB_BangNapK or 0
+	local nTongID = 0
+	if (k == 0) then
+		local szTen, nID = GetTongName()
+		if (nID == nil or nID == 0) then
+			Msg2Player("B¹n ch­a cã bang héi.")
+			PB_BangNapMenu()
+			return
+		end
+		nTongID = nID
+	end
+	local r = PB_BangNap(k, nLuong, nTongID)
+	if (r == 1) then
+		Msg2Player(format("§· göi lÖnh n¹p %d l­îng vµo ng©n quü (bot.log [BotBang5]). Më l¹i Xem tr¹ng th¸i sau vµi gi©y.", nLuong))
+	else
+		Msg2Player("Kh«ng n¹p ®­îc: bang ch­a cã trªn m¸y chñ hoÆc sè tiÒn kh«ng hîp lÖ.")
+	end
+	PB_BangMenu()
 end
 
 -- ================= TONG KIM (21/08) =================

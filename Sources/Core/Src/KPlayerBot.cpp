@@ -244,6 +244,9 @@ struct PB_Bot
 	unsigned int nBangNghiToi;                // A* thua -> nghi toi moc nay
 	unsigned int nBangDoiMapTick;             // gion nhip ChangeWorld 3 giay
 	int          nBangThu;                    // so lan A* thua lien tiep
+	int          nBangLoai;                  // [BOTBANG5 02/09] 0 = xin bang theo PM; 1 = TAO bang bot; 2 = xin vao bang bot; 3 = di dau thau
+	int          nBangBotIdx;                // chi so bang bot trong s_bb (-1 = khong)
+	unsigned int uBangMatTu;                // [BOTBANG5b] GetTickCount ms tu luc ban sao relay KHONG thay bang/thanh vien (an han 15 phut)
 	// ---- gian dan (chu game 18/08: "len map check xung quanh co hon 20 bot thi
 	//      tu di chuyen di toa do xa de luyen") ----
 	unsigned int nDanKiemTick;                // lan kiem mat do gan nhat
@@ -1352,6 +1355,8 @@ void PB_OnRoleData(const PB_DB_RESULT* pRes)
 		b.uNhomNguoiLac = 0;  b.nTkRaXoay = 0;
 		b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
 		b.nBangTick = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;  b.nBangThu = 0;
+		b.nBangLoai = 0;  b.nBangBotIdx = -1;
+		b.uBangMatTu = 0;
 		// g_Random den tu engine.lib DUNG SAN (Lib/x64/Engine Server Release) va
 		// DONG BANG THEO GIAY: moi lan goi trong cung mot giay tra CUNG gia tri
 		// (log 16:05: 30 bot sinh cung giay deu gieo=68; ghi chu KSimCity.cpp:1329
@@ -7519,11 +7524,24 @@ static void pb_DongBoBang(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now, in
 	{
 		// bang giai tan / bot bi duoi luc offline. Xoa ho so bang; CO Y khong dong vao camp
 		// (bot con mang camp mon phai hoac camp tu do sau xuat su - doi o day la doi gameplay).
-		pb_Log("[BotBang] %s khong con la thanh vien bang %u -> xoa ho so bang\n",
+		// [BOTBANG5b 02/09] AN HAN 15 PHUT (phan bien CHAN 1-2): ban sao relay chi nhan bang MOI o tick
+		// 30 giay (JX2_TimerTick) va thanh vien MOI o tick TimeLong 750 giay (sJX2_BroadcastTong) - bot
+		// vua lap bang / vua duoc duyet ma xoa ngay la mat bang oan roi bi tuyen lai vo han.
+		const unsigned int uMs = (unsigned int)GetTickCount();
+		if (b.uBangMatTu == 0)
+		{
+			b.uBangMatTu = uMs ? uMs : 1;
+			return;
+		}
+		if (uMs - b.uBangMatTu < 900000u)
+			return;
+		pb_Log("[BotBang] %s khong con la thanh vien bang %u (ban sao relay khong thay qua 15 phut) -> xoa ho so bang\n",
 		       Player[nIdx].m_PlayerName, (unsigned int)dwId);
 		t.Clear();
+		b.uBangMatTu = 0;
 		return;
 	}
+	b.uBangMatTu = 0;
 	const int nCamp = (int)pT->btCamp;
 	const int bMoi = (!t.m_nFlag || t.m_nCamp != nCamp || t.m_szName[0] == 0
 	               || strcmp(t.m_szName, pT->szName) != 0
@@ -7562,6 +7580,269 @@ static void pb_DongBoBang(int nIdx, int nNpcIdx, PB_Bot& b, unsigned int now, in
 	}
 }
 
+
+// =====================================================================================
+// [BOTBANG5 02/09] NAM BANG BOT (chu game: "tao 5 bang cho bot, chi bot vao 5 bang nay, moi bang
+// 100-150 bot; tao bang - tuyen thanh vien - dung ngay dung gio dang ky cong thanh").
+// Cau hinh: \settings\simcity\botbang.txt (STT TEN CAMP THANH CAPMIN SONGUOI PHI, ten TCVN3 <= 12
+// byte = defTONG_NAME_MAX_LENGTH). Khong dung giao thuc moi:
+//  - TAO BANG: bot bang chu di dung luong xin bang (pb_XinVaoBang B1-B4: roi nhom, ve map 53, toi
+//    NPC mon phai, XUAT SU) roi Core gui STONG_CREATE_COMMAND len relay (KTongJX2_SendCreateC - y het
+//    GameServer.exe KSOServer.cpp:4327 lam cho nguoi that). Relay tra ve enumS2C_TONG_CREATE_SUCCESS
+//    -> SSOI_TONG_CREATE -> KPlayerTong::Create nhu thuong. Khong qua CheckCreateCondition vi bot
+//    co lead level 1 (KPlayer.cpp:175) - moi thu khac (cap, tien, item 195) relay khong kiem.
+//  - TUYEN: ung vien di pb_XinVaoBang (nBangLoai 2, khong PM) -> nop don (hang doi GS 64);
+//    bang chu bot duyet bang chinh COP_ACCEPT_APPLY (DoClientOpBody) 1 don/giay/bang; don cua
+//    NGUOI THAT -> COP_REFUSE_APPLY (bang chi co bot). Relay tongcap phai >= muc tieu.
+//  - DAU THAU: 18h00-18h55 ngay bao danh cua thanh muc tieu (TB_CTC6 timerserver_ctc.lua), state
+//    SIGNUP: bang chu bot toi NPC Su Gia Cong Thanh (map 53) roi KJx2CityWar_SignUpArenaC (10 cua y
+//    goc: bang chu, >= 37 nguoi, field 6 >= 18, quy >= phi...). Quy do chu game nap (PB_BangNap).
+// =====================================================================================
+extern void    KTongJX2_SendCreateC(int nPlayerIdx, int nCamp, const char* pszTongName);
+extern __int64 KTongJX2_GetMoneyC(DWORD dwTongID);
+extern void    KTongJX2_AddMoneyC(DWORD dwTongID, __int64 nDelta);
+extern int     KJx2CityWar_SignUpArenaC(int nPlayerIdx, int nCity, int nFee);
+extern int     KJx2CityWar_GetState(int nCity);
+extern int     KJx2CityWar_GetSetting(int nIdx);   // [BOTBANG5b] 0 = SignUpFee (citywar.ini)
+
+#define PB_BB_MAX          8
+#define PB_BB_FILE         "\\settings\\simcity\\botbang.txt"
+#define PB_BB_MAP_SUGIA    53                 // NPC Su Gia Cong Thanh (citywar_boot.lua:16)
+#define PB_BB_SUGIA_X      1625
+#define PB_BB_SUGIA_Y      3170
+#define PB_BB_SONG_SONG    8                  // so bot cung luc dang di xin vao MOT bang
+#define PB_BB_TAO_HAN_MS   60000              // cho relay tra loi lenh tao bang
+#define PB_BB_STATE_SIGNUP 1                  // = JX2CW_STATE_SIGNUP (KJx2CityWar.h)
+
+struct PB_BotBang
+{
+	int          nStt;
+	char         szTen[32];       // ten bang (byte TCVN3)
+	int          nCamp;           // 1 chinh / 2 ta / 3 trung lap
+	int          nThanh;          // thanh muc tieu 1..7 (0 = khong dau thau)
+	int          nCapMin;         // cap toi thieu bot vao bang
+	int          nSoNguoi;        // muc tieu so thanh vien (mac dinh cho PB_BangTuyen)
+	int          nPhi;            // phi dau thau (luong)
+	DWORD        dwTongID;        // g_FileName2Id(szTen)
+	int          nTao;            // 0 chua co; 1 dang tao; 2 da co tren GS; 3 tao that bai
+	int          nTaoLeaderIdx;   // bot duoc giao lam bang chu (luc dang tao)
+	DWORD        dwTaoLeaderID;
+	unsigned int uTaoGui;         // GetTickCount luc gui STONG_CREATE_COMMAND (0 = chua)
+	int          nTaoThu;
+	int          nTuyenMuc;       // > 0: chien dich tuyen dang chay, muc tieu so thanh vien
+	unsigned int uTuyenTick;
+	int          nTuyenDaGiao;
+	int          nThauNgay;       // yyyymmdd da xu ly dau thau (khong lap trong ngay)
+	int          nThauKq;
+	unsigned int uThauNghi;       // GetTickCount: thau that bai / dang di -> nghi toi moc nay
+	unsigned int uLogTick;        // gion log
+	unsigned int uDuyetNghi;      // [BOTBANG5b] ms: duyet don tra ma khac 0 -> nghi 30 giay (khoi spam)
+};
+static PB_BotBang s_bb[PB_BB_MAX];
+static int        s_bbCount = 0;
+static int        s_bbLoaded = 0;
+static int        s_nPbBangCTC = 0;       // cong tac dau thau theo gio
+// thu BAO DANH (%w, 0 = CN) cua tung thanh 1..7 = cot 1 TB_CTC6 (timerserver_ctc.lua:10)
+static const int  s_nBbLich[7] = { 3, 1, 2, 5, 4, 0, 6 };
+
+// [BOTBANG5b 02/09] co "dau thau theo gio" giu qua restart: \settings\simcity\botbang_ctc.txt ("1"/"0")
+static void pb_BbDuongCoCTC(char* szOut, int nMax)
+{
+	char szRoot[MAX_PATH];
+	szRoot[0] = 0;
+	g_GetRootPath(szRoot);
+	int nLen = (int)strlen(szRoot);
+	while (nLen > 0 && (szRoot[nLen - 1] == '\\' || szRoot[nLen - 1] == '/'))
+		szRoot[--nLen] = 0;
+	_snprintf(szOut, nMax - 1, "%s\\settings\\simcity\\botbang_ctc.txt", szRoot);
+	szOut[nMax - 1] = 0;
+}
+
+static int pb_BbDocCoCTC()
+{
+	char szPath[MAX_PATH * 2];
+	pb_BbDuongCoCTC(szPath, sizeof(szPath));
+	FILE* f = fopen(szPath, "r");
+	if (!f)
+		return 0;
+	int n = 0;
+	if (fscanf(f, "%d", &n) != 1)
+		n = 0;
+	fclose(f);
+	return n ? 1 : 0;
+}
+
+static void pb_BbGhiCoCTC(int nBat)
+{
+	char szPath[MAX_PATH * 2];
+	pb_BbDuongCoCTC(szPath, sizeof(szPath));
+	FILE* f = fopen(szPath, "w");
+	if (!f)
+	{
+		pb_Log("[BotBang5] khong ghi duoc %s\n", szPath);
+		return;
+	}
+	fprintf(f, "%d\n", nBat ? 1 : 0);
+	fclose(f);
+}
+
+static void pb_BbNap(int bLai)
+{
+	if (s_bbLoaded && !bLai)
+		return;
+	KTabFile tab;
+	memset(s_bb, 0, sizeof(s_bb));
+	s_bbCount = 0;
+	s_bbLoaded = 1;
+	if (!tab.Load((LPSTR)PB_BB_FILE))
+	{
+		pb_Log("[BotBang5] KHONG doc duoc %s\n", PB_BB_FILE);
+		return;
+	}
+	const int nH = tab.GetHeight();
+	for (int row = 2; row <= nH && s_bbCount < PB_BB_MAX; row++)   // row 1 = tieu de
+	{
+		PB_BotBang& bb = s_bb[s_bbCount];
+		tab.GetInteger(row, 1, 0, &bb.nStt);
+		tab.GetString(row, 2, (LPSTR)"", bb.szTen, sizeof(bb.szTen));
+		tab.GetInteger(row, 3, 3, &bb.nCamp);
+		tab.GetInteger(row, 4, 0, &bb.nThanh);
+		tab.GetInteger(row, 5, 60, &bb.nCapMin);
+		tab.GetInteger(row, 6, 120, &bb.nSoNguoi);
+		tab.GetInteger(row, 7, 1000000, &bb.nPhi);
+		bb.szTen[31] = 0;
+		if (!bb.szTen[0] || (int)strlen(bb.szTen) > defTONG_NAME_MAX_LENGTH)
+		{
+			pb_Log("[BotBang5] %s dong %d: ten bang rong hoac dai qua %d byte -> bo\n", PB_BB_FILE, row, defTONG_NAME_MAX_LENGTH);
+			continue;
+		}
+		if (bb.nCamp < 1 || bb.nCamp > 3)  bb.nCamp = 3;
+		if (bb.nThanh < 0 || bb.nThanh > 7) bb.nThanh = 0;
+		if (bb.nCapMin < 60)               bb.nCapMin = 60;      // xuat su doi cap >= 60 (thieulam.lua:19)
+		if (bb.nPhi < 1000000)             bb.nPhi = 1000000;    // citywar.ini SignUpFee
+		if (strchr(bb.szTen, '/') || strchr(bb.szTen, '|'))
+		{
+			pb_Log("[BotBang5] %s dong %d: ten bang chua '/' hoac '|' (vo nhan menu Say) -> bo\n", PB_BB_FILE, row);
+			continue;
+		}
+		bb.dwTongID = g_FileName2Id(bb.szTen);
+		bb.nTao = 0;                       // [BOTBANG5b] pb_BangNhip phan loai: 2 = bang bot (bang chu la bot) / 4 = bang NGUOI THAT trung ten
+		s_bbCount++;
+	}
+	pb_Log("[BotBang5] nap %d bang bot tu %s\n", s_bbCount, PB_BB_FILE);
+	s_nPbBangCTC = pb_BbDocCoCTC();   // [BOTBANG5b] co dau thau theo gio giu qua restart
+	if (s_nPbBangCTC)
+		pb_Log("[BotBang5] dau thau cong thanh theo gio: BAT (theo botbang_ctc.txt)\n");
+}
+
+// bot du tu cach vao bang bot / lam bang chu bang bot
+static int pb_BbUngVien(const PB_Bot& b, int nCapMin)
+{
+	if (b.nBanSap || b.nNhomNguoiIdx || b.nTk || b.nBangPha)   return 0;
+	if (b.nDtPha != DTB_NGHI)                                   return 0;  // dang lam Da Tau
+	if (b.nAi != PB_AI_FIGHT || b.nFaction < 0)                 return 0;
+	const int p = b.nPlayerIdx;
+	if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != b.dwID) return 0;
+	if (Player[p].m_cTong.m_nFlag)                              return 0;  // da co bang
+	const int n = Player[p].m_nIndex;
+	if (n <= 0 || n >= MAX_NPC || Npc[n].m_dwID == 0)           return 0;
+	if (Npc[n].m_Doing == do_death || Npc[n].m_Doing == do_revive) return 0;
+	if (Npc[n].m_Level < nCapMin)                               return 0;
+	return 1;
+}
+
+static PB_Bot* pb_BbBotCuaPlayer(int nPlayerIdx)
+{
+	if (nPlayerIdx <= 0 || nPlayerIdx >= MAX_PLAYER)
+		return NULL;
+	for (int i = 0; i < s_botCount; i++)
+		if (s_bots[i].nPlayerIdx == nPlayerIdx && Player[nPlayerIdx].m_dwID == s_bots[i].dwID)
+			return &s_bots[i];
+	return NULL;
+}
+
+// bang chu (btFigure 0) cua bang bot -> Player idx bot (0 = chua dong bo / bang chu khong phai bot)
+static int pb_BbLeaderIdx(const PB_BotBang& bb)
+{
+	KTongJX2Tong* pT = g_TongJX2.FindTong(bb.dwTongID);
+	if (!pT)
+		return 0;
+	for (std::map<DWORD, KTongJX2Member>::iterator it = pT->mapMember.begin(); it != pT->mapMember.end(); ++it)
+		if (it->second.btFigure == 0)
+			return pb_FindBotByName(it->second.szName);
+	return 0;
+}
+
+static void pb_BbXoaViec(PB_Bot& b)
+{
+	b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
+	b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+	b.nBangLoai = 0;  b.nBangBotIdx = -1;
+	b.walk.Reset();
+}
+
+// [BOTBANG5b 02/09] (phan bien CHAN 2) thanh vien MOI chi vao ban sao relay sau tick TimeLong 750 giay,
+// nhung SSOI_TONG_ADD dat m_cTong cua bot NGAY khi duyet -> dem theo m_cTong de chien dich tuyen khong
+// giao thua bot va "TUYEN XONG" dung luc.
+static int pb_BbDemBot(DWORD dwTongID)
+{
+	int n = 0;
+	for (int i = 0; i < s_botCount; i++)
+	{
+		const int p = s_bots[i].nPlayerIdx;
+		if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != s_bots[i].dwID)
+			continue;
+		if (Player[p].m_cTong.m_nFlag && Player[p].m_cTong.GetTongNameID() == dwTongID)
+			n++;
+	}
+	return n;
+}
+
+static int pb_BbSoNguoi(const PB_BotBang& bb)
+{
+	KTongJX2Tong* pT = g_TongJX2.FindTong(bb.dwTongID);
+	const int a = pT ? (int)pT->mapMember.size() : 0;
+	const int c = pb_BbDemBot(bb.dwTongID);
+	return (a > c) ? a : c;
+}
+
+// bot nay la BANG CHU cua mot bang bot -> khong keo di Tong Kim khi dang bat dau thau theo gio
+// (phan bien CHAN 3: Tong Kim 17:50 hang ngay nuot cua so 18h00-18h55)
+static int pb_BbLaBangChu(const PB_Bot& b)
+{
+	const int p = b.nPlayerIdx;
+	if (p <= 0 || p >= MAX_PLAYER || Player[p].m_dwID != b.dwID || !Player[p].m_cTong.m_nFlag)
+		return 0;
+	const DWORD dwId = Player[p].m_cTong.GetTongNameID();
+	for (int k = 0; k < s_bbCount; k++)
+		if (s_bb[k].dwTongID == dwId)
+			return (Player[p].m_cTong.m_nFigure == enumTONG_FIGURE_MASTER || pb_BbLeaderIdx(s_bb[k]) == p) ? 1 : 0;
+	return 0;
+}
+
+// relay da tra ve KPlayerTong::Create cho bot bang chu (m_cTong.m_nFlag = 1)
+static void pb_BbTaoXong(int nIdx, PB_Bot& b)
+{
+	const int k = b.nBangBotIdx;
+	if (k >= 0 && k < s_bbCount)
+	{
+		PB_BotBang& bb = s_bb[k];
+		if (Player[nIdx].m_cTong.GetTongNameID() == bb.dwTongID)
+		{
+			bb.nTao = 2;
+			pb_Log("[BotBang5] TAO BANG XONG: %s la bang chu bang '%s' (id %u, camp %d) - cho relay dong bo JX2 (<= 30 giay) roi moi tuyen duoc\n",
+			       Player[nIdx].m_PlayerName, bb.szTen, (unsigned int)bb.dwTongID, (int)Player[nIdx].m_cTong.m_nCamp);
+		}
+		else
+		{
+			bb.nTao = 3;
+			pb_Log("[BotBang5] %s co bang KHAC (id %u) trong luc dang tao bang '%s' -> bo\n",
+			       Player[nIdx].m_PlayerName, (unsigned int)Player[nIdx].m_cTong.GetTongNameID(), bb.szTen);
+		}
+	}
+	pb_BbXoaViec(b);
+}
+
 // [BOTBANG c 01/09] "da xuat su" = TASK_DUNGCHUNG2 (header\taskid.lua:26 = 4134, o [9] "xuat su");
 // factionhead.lua:32 xuatsu(): SetCamp(4)+SetCurCamp(4)+LeaveTeam()+SetTask(TASK_DUNGCHUNG2,1);
 // menu "Xuat su xuong nui/xuatsu" chi hien khi cap >= 60 va task = 0 (thieulam.lua:18-20).
@@ -7578,14 +7859,21 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 	if (b.nBangTick == 0)
 		b.nBangTick = now;
 	const int bDaCoBang = (Player[nIdx].m_cTong.m_nFlag != 0);
-	const int bBangMat  = (g_TongJX2.FindTong(b.dwBangID) == NULL);
+	// [BOTBANG5 02/09] nBangLoai 1 = bot dang TAO bang: bang chua ton tai tren GS (khong phai "bang mat"),
+	// va khi relay tra ve KPlayerTong::Create thi m_nFlag = 1 chinh la THANH CONG.
+	if (b.nBangLoai == 1 && bDaCoBang)
+	{
+		pb_BbTaoXong(nIdx, b);
+		return 0;
+	}
+	const int bBangMat  = (b.nBangLoai != 1) && (g_TongJX2.FindTong(b.dwBangID) == NULL);
 	if (now - b.nBangTick > (unsigned int)(GAME_FPS * 360) || bDaCoBang || bBangMat)
 	{
 		pb_Log("[BotBang] %s HUY xin vao bang %u (het han %d / da co bang %d / bang mat %d)\n",
 		       Player[nIdx].m_PlayerName, (unsigned int)b.dwBangID,
 		       (int)(now - b.nBangTick > (unsigned int)(GAME_FPS * 360)), bDaCoBang, bBangMat);
 		b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
-		b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+		b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;  b.nBangLoai = 0;  b.nBangBotIdx = -1;
 		b.walk.Reset();
 		return 0;
 	}
@@ -7663,7 +7951,7 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 			pb_Log("[BotBang] %s cap %d chua du %d de xuat su -> HUY xin vao bang %u\n",
 			       Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, PB_CAP_XUATSU, (unsigned int)b.dwBangID);
 			b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
-			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;  b.nBangLoai = 0;  b.nBangBotIdx = -1;
 			b.walk.Reset();
 			return 0;
 		}
@@ -7674,7 +7962,7 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 			       Player[nIdx].m_PlayerName, s_facNpc[nFac].szTen, PB_TASK_XUATSU,
 			       (int)Player[nIdx].m_cTask.GetSaveVal(PB_TASK_XUATSU));
 			b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
-			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;  b.nBangLoai = 0;  b.nBangBotIdx = -1;
 			b.walk.Reset();
 			return 0;
 		}
@@ -7683,6 +7971,38 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 		       (int)Npc[nNpcIdx].m_CurrentCamp, (unsigned int)b.dwBangID);
 		b.nBangNghiToi = now + (unsigned int)(GAME_FPS * 2);
 		return 1;
+	}
+	// [BOTBANG5 02/09] nBangLoai 1: da XUAT SU -> gui lenh TAO BANG len relay roi cho KPlayerTong::Create
+	// (bat o dau ham: m_nFlag = 1 -> pb_BbTaoXong). Relay tu choi (ten trung / bot da la bang chu noi
+	// khac) thi chi bao client (bot khong co) -> qua PB_BB_TAO_HAN_MS coi nhu THAT BAI.
+	if (b.nBangLoai == 1)
+	{
+		const int k = b.nBangBotIdx;
+		if (k < 0 || k >= s_bbCount)
+		{
+			pb_BbXoaViec(b);
+			return 0;
+		}
+		PB_BotBang& bb = s_bb[k];
+		const unsigned int uMs = (unsigned int)GetTickCount();
+		if (bb.uTaoGui == 0)
+		{
+			KTongJX2_SendCreateC(nIdx, bb.nCamp, bb.szTen);
+			bb.uTaoGui = uMs ? uMs : 1;
+			pb_Log("[BotBang5] %s (cap %d, camp %d) gui lenh TAO BANG '%s' (camp %d) len relay - cho tra loi\n",
+			       Player[nIdx].m_PlayerName, Npc[nNpcIdx].m_Level, (int)Npc[nNpcIdx].m_CurrentCamp, bb.szTen, bb.nCamp);
+			return 1;
+		}
+		if (uMs - bb.uTaoGui > (unsigned int)PB_BB_TAO_HAN_MS)
+		{
+			bb.nTao = 3;
+			pb_Log("[BotBang5] %s: relay KHONG tao bang '%s' sau %d giay (ten trung? bot da la bang chu noi khac? relay tat?) -> THAT BAI\n",
+			       Player[nIdx].m_PlayerName, bb.szTen, PB_BB_TAO_HAN_MS / 1000);
+			pb_BbXoaViec(b);
+			return 0;
+		}
+		b.nBangNghiToi = now + (unsigned int)GAME_FPS;   // [BOTBANG5b] 1 giay/lan kiem, khoi PB_WalkTo + do_stand moi khung
+		return 1;                          // dang cho relay
 	}
 	// ---- BUOC 5: nop don xin vao DUNG bang cua nguoi ru ----
 	TONG_JX2OP_COMMAND sCmd;
@@ -7697,9 +8017,502 @@ static int pb_XinVaoBang(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned in
 	pb_Log("[BotBang] %s nop don vao bang %s (id %u) tai NPC %s: ket qua=%d\n",
 	       Player[nIdx].m_PlayerName, szTen, (unsigned int)b.dwBangID, s_facNpc[nFac].szTen, nKq);
 	b.nBangPha = 0;  b.dwBangID = 0;  b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
-	b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+	b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;  b.nBangLoai = 0;  b.nBangBotIdx = -1;
 	b.walk.Reset();
 	return 0;
+}
+
+// [BOTBANG5 02/09] --------------------------------------------------------------------------
+static const char* pb_BbTenKq(int nKq)
+{
+	switch (nKq)
+	{
+	case 0:  return "OK - da bao danh dau thau";
+	case 1:  return "bot chua co bang (m_cTong trong)";
+	case 2:  return "bang khong co tren GS";
+	case 3:  return "bot khong phai bang chu";
+	case 4:  return "thanh khong o pha bao danh (18h-19h ngay bao danh)";
+	case 5:  return "bang da bao danh (thanh nay hoac thanh khac)";
+	case 6:  return "bang dang la khieu chien gia";
+	case 7:  return "bang dang la chu mot thanh";
+	case 8:  return "bang chua du 37 nguoi (MinTongCrowNumber)";
+	case 9:  return "cap bang (field 6 = kinh nghiem) chua du 18 - quy chua qua 1 trieu du 750 giay?";
+	case 10: return "quy bang khong du phi";
+	default: return "ma la";
+	}
+}
+
+// Bang chu bot di DAU THAU tai NPC Su Gia Cong Thanh (map 53). Tra 1 = dang ban, 0 = xong/huy.
+// Khuon pb_XinVaoBang: ChangeWorld so le, PB_WalkTo, A* thua 5 lan -> SetPos canh NPC.
+static int pb_BangThau(int nIdx, int nNpcIdx, int nSub, PB_Bot& b, unsigned int now, int nLech)
+{
+	if (b.nBangTick == 0)
+		b.nBangTick = now;
+	const int k = b.nBangBotIdx;
+	if (k < 0 || k >= s_bbCount || now - b.nBangTick > (unsigned int)(GAME_FPS * 300))
+	{
+		pb_Log("[BotBang5] %s HUY di dau thau (bang %d / het han 5 phut)\n", Player[nIdx].m_PlayerName, k);
+		pb_BbXoaViec(b);
+		return 0;
+	}
+	PB_BotBang& bb = s_bb[k];
+	if (pb_TrongNhom(nIdx))
+		pb_RoiNhomNguoi(nIdx, b, "di dau thau cong thanh");
+	const int nSubSg = g_SubWorldSet.SearchWorld(PB_BB_MAP_SUGIA);
+	if (nSubSg < 0 || nSubSg >= MAX_SUBWORLD)
+		return 1;
+	const int nSg = pb_TimNpc(nSubSg, "sugia_congthanh", PB_BB_SUGIA_X * 32, PB_BB_SUGIA_Y * 32);
+	if (nSg <= 0)
+	{
+		if ((unsigned int)GetTickCount() - bb.uLogTick > 30000)   // [BOTBANG5b] ms, cung don vi voi pb_BangNhip
+		{
+			bb.uLogTick = (unsigned int)GetTickCount();
+			pb_Log("[BotBang5] %s: KHONG thay NPC Su Gia Cong Thanh (sugia_congthanh) tren map %d\n",
+			       Player[nIdx].m_PlayerName, PB_BB_MAP_SUGIA);
+		}
+		return 1;
+	}
+	int nx = 0, ny = 0;
+	Npc[nSg].GetMpsPos(&nx, &ny);
+	if (nSubSg != nSub)
+	{
+		if (b.nBangDoiMapTick && now - b.nBangDoiMapTick < (unsigned int)(GAME_FPS * (3 + (nLech % 3))))
+			return 1;
+		b.nBangDoiMapTick = now;
+		int vx = 0, vy = 0;
+		if (pb_ODat(nSubSg, nx / 32, ny / 32, nLech, 8, &vx, &vy))
+		{
+			const int nRet = Npc[nNpcIdx].ChangeWorld(SubWorld[nSubSg].m_SubWorldID, vx, vy);
+			pb_Log("[BotBang5] %s dich chuyen ve map %d canh NPC Su Gia de dau thau thanh %d (ret=%d)\n",
+			       Player[nIdx].m_PlayerName, PB_BB_MAP_SUGIA, bb.nThanh, nRet);
+		}
+		b.walk.Reset();
+		return 1;
+	}
+	if (b.nBangNghiToi && now < b.nBangNghiToi)
+		return 1;
+	const int nW = PB_WalkTo(nNpcIdx, nx, ny, nSub, b.walk, PB_FAC_ARRIVE_MPS);
+	if (nW == 0)
+		return 1;
+	if (nW < 0)
+	{
+		b.walk.Reset();
+		b.nBangNghiToi = now + (unsigned int)PB_FAC_RETRY_TICK;
+		if (++b.nBangThu >= PB_FAC_MAX_RETRY)
+		{
+			int dx3 = 0, dy3 = 0;
+			if (pb_ODat(nSub, nx / 32, ny / 32, nLech, 6, &dx3, &dy3))
+				Npc[nNpcIdx].SetPos(dx3, dy3);
+			b.nBangThu = 0;
+		}
+		return 1;
+	}
+	Npc[nNpcIdx].SendCommand(do_stand);
+	int nPhi = bb.nPhi;                                      // [BOTBANG5b] phi >= SignUpFee citywar.ini (phan bien VUA 1)
+	if (nPhi < KJx2CityWar_GetSetting(0))
+		nPhi = KJx2CityWar_GetSetting(0);
+	const int nKq = KJx2CityWar_SignUpArenaC(nIdx, bb.nThanh, nPhi);
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	const int nToday = pTm ? ((pTm->tm_year + 1900) * 10000 + (pTm->tm_mon + 1) * 100 + pTm->tm_mday) : 0;
+	bb.nThauKq = nKq;
+	if (nKq == 0 || nKq == 5 || nKq == 6 || nKq == 7)
+		bb.nThauNgay = nToday;                                   // xong / khong con gi de thu hom nay
+	else
+		bb.uThauNghi = (unsigned int)GetTickCount() + 60000;    // thieu quy... -> 60 giay sau thu lai neu con trong cua so
+	pb_Log("[BotBang5] %s DAU THAU thanh %d cho bang '%s' phi %d: ket qua %d (%s), quy bang %I64d\n",
+	       Player[nIdx].m_PlayerName, bb.nThanh, bb.szTen, nPhi, nKq, pb_BbTenKq(nKq), KTongJX2_GetMoneyC(bb.dwTongID));
+	pb_BbXoaViec(b);
+	return 0;
+}
+
+// Nhip 1 giay: (1) bang chu bot duyet don, (2) chien dich tuyen, (3) 18h dau thau theo lich.
+static void pb_BangNhip()
+{
+	static DWORD s_dwMoc = 0;
+	const DWORD dwNow = GetTickCount();
+	if (s_dwMoc && dwNow - s_dwMoc < 1000)
+		return;
+	s_dwMoc = dwNow;
+	if (!s_bbLoaded)
+		pb_BbNap(0);                       // [BOTBANG5b] tu nap sau restart - khong cho admin mo menu (phan bien CAO 1)
+	if (s_botCount <= 0)
+		return;
+	static int s_nXoay = 0;
+	for (int k = 0; k < s_bbCount; k++)
+	{
+		PB_BotBang& bb = s_bb[k];
+		KTongJX2Tong* pT = g_TongJX2.FindTong(bb.dwTongID);
+		// dang tao ma bot bang chu da bo cuoc (HUY trong pb_XinVaoBang) va bang van chua co -> that bai
+		if (bb.nTao == 1 && !pT)
+		{
+			PB_Bot* pL = pb_BbBotCuaPlayer(bb.nTaoLeaderIdx);
+			if (!pL || pL->dwID != bb.dwTaoLeaderID || (pL->nBangPha == 0 && !Player[bb.nTaoLeaderIdx].m_cTong.m_nFlag))
+			{
+				bb.nTao = 3;
+				pb_Log("[BotBang5] tao bang '%s': bot bang chu bo cuoc giua chung (xem [BotBang] HUY) -> THAT BAI, bam Tao lai\n", bb.szTen);
+			}
+		}
+		if (!pT)
+			continue;
+		// [BOTBANG5b] (phan bien CAO 2) co tren GS nhung bang chu KHONG phai bot dang song = bang NGUOI THAT
+		// trung ten (hoac bang chu bot chua nap sau restart) -> khong tuyen / khong nap quy / khong dau thau
+		if (pb_BbLeaderIdx(bb) <= 0)
+		{
+			if (bb.nTao != 4)
+			{
+				bb.nTao = 4;
+				pb_Log("[BotBang5] bang '%s' (id %u) co tren GS nhung bang chu khong phai bot dang song -> coi la bang NGUOI THAT trung ten, KHONG dung (doi ten trong botbang.txt / cho bot bang chu nap)\n", bb.szTen, (unsigned int)bb.dwTongID);
+			}
+			continue;
+		}
+		if (bb.nTao != 2)
+		{
+			bb.nTao = 2;
+			pb_Log("[BotBang5] bang '%s' (id %u) da co tren GS, bang chu la bot: %d thanh vien (ban sao relay)\n", bb.szTen, (unsigned int)bb.dwTongID, (int)pT->mapMember.size());
+		}
+		// (1) duyet don: 1 don / giay / bang. Don cua NGUOI THAT -> tu choi (bang chi co bot - chu game).
+		if (pT->btApplyCount > 0 && (!bb.uDuyetNghi || (int)(dwNow - bb.uDuyetNghi) >= 0))
+		{
+			const int nL = pb_BbLeaderIdx(bb);
+			if (nL > 0)
+			{
+				char szAi[32];
+				memcpy(szAi, pT->szApplyName[0], 32);
+				szAi[31] = 0;
+				const DWORD dwAi = pT->dwApplyID[0];
+				const int bBot = (pb_FindBotByName(szAi) > 0) ? 1 : 0;
+				TONG_JX2OP_COMMAND sCmd;
+				memset(&sCmd, 0, sizeof(sCmd));
+				sCmd.m_btOp = bBot ? defTONG_JX2_COP_ACCEPT_APPLY : defTONG_JX2_COP_REFUSE_APPLY;
+				sCmd.m_dwTarget = dwAi;
+				int nKq = g_TongJX2.DoClientOpBody(nL, &sCmd);
+				if (nKq == 5 && bBot)
+				{
+					// nguoi xin dang online ma DA co bang khac: ACCEPT tra 5 KHONG xoa don -> don ket
+					// o dau hang mai. Tu choi de xoa.
+					sCmd.m_btOp = defTONG_JX2_COP_REFUSE_APPLY;
+					nKq = g_TongJX2.DoClientOpBody(nL, &sCmd);
+				}
+				pb_Log("[BotBang5] bang '%s': bang chu %s %s don cua %s%s (ket qua %d, con %d don, %d thanh vien)\n",
+				       bb.szTen, Player[nL].m_PlayerName, bBot ? "DUYET" : "TU CHOI", szAi,
+				       bBot ? "" : " (khong phai bot)", nKq, (int)pT->btApplyCount, (int)pT->mapMember.size());
+				bb.uDuyetNghi = (nKq == 0) ? 0 : (dwNow + 30000);   // [BOTBANG5b] ma 2 (ban sao chua co bang chu) / 3... -> nghi 30 giay (phan bien VUA 2)
+			}
+			else if (dwNow - bb.uLogTick > 30000)
+			{
+				bb.uLogTick = dwNow;
+				pb_Log("[BotBang5] bang '%s': co %d don nhung khong thay bang chu la bot dang song -> chua duyet\n",
+				       bb.szTen, (int)pT->btApplyCount);
+			}
+		}
+		// (2) chien dich tuyen
+		if (bb.nTuyenMuc > 0)
+		{
+			int nCo = (int)pT->mapMember.size();
+			{
+				const int nBot = pb_BbDemBot(bb.dwTongID);   // [BOTBANG5b] thanh vien MOI chi vao ban sao sau tick 750 giay
+				if (nBot > nCo)
+					nCo = nBot;
+			}
+			if (nCo >= bb.nTuyenMuc)
+			{
+				pb_Log("[BotBang5] bang '%s': TUYEN XONG %d/%d thanh vien (da giao %d bot)\n", bb.szTen, nCo, bb.nTuyenMuc, bb.nTuyenDaGiao);
+				bb.nTuyenMuc = 0;
+				continue;
+			}
+			if (bb.nTuyenDaGiao >= bb.nTuyenMuc + 30)
+			{
+				pb_Log("[BotBang5] bang '%s': da giao %d bot ma moi co %d/%d thanh vien -> DUNG (kiem tongcap relay_config.ini + dong [BotBang] HUY, roi Tuyen lai)\n",
+				       bb.szTen, bb.nTuyenDaGiao, nCo, bb.nTuyenMuc);
+				bb.nTuyenMuc = 0;
+				continue;
+			}
+			int nDang = 0;
+			for (int i = 0; i < s_botCount; i++)
+				if (s_bots[i].nBangPha == 1 && s_bots[i].nBangLoai == 2 && s_bots[i].nBangBotIdx == k)
+					nDang++;
+			if (nDang >= PB_BB_SONG_SONG)
+				continue;
+			if (bb.uTuyenTick && dwNow - bb.uTuyenTick < 2000)
+				continue;
+			int nChon = -1;
+			for (int j = 0; j < s_botCount; j++)
+			{
+				const int i = (s_nXoay + j) % s_botCount;
+				if (pb_BbUngVien(s_bots[i], bb.nCapMin))
+				{
+					nChon = i;
+					break;
+				}
+			}
+			s_nXoay = (nChon >= 0) ? (nChon + 1) % s_botCount : (s_nXoay + 1) % s_botCount;
+			if (nChon < 0)
+			{
+				if (dwNow - bb.uLogTick > 60000)
+				{
+					bb.uLogTick = dwNow;
+					pb_Log("[BotBang5] bang '%s': het bot du tu cach (cap >= %d, chua bang, dang luyen cong, khong sap/TK/Da Tau/nhom nguoi) - moi co %d/%d\n",
+					       bb.szTen, bb.nCapMin, nCo, bb.nTuyenMuc);
+				}
+				continue;
+			}
+			PB_Bot& b = s_bots[nChon];
+			b.nBangPha = 1;  b.nBangLoai = 2;  b.nBangBotIdx = k;  b.dwBangID = bb.dwTongID;
+			b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
+			b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+			bb.nTuyenDaGiao++;
+			bb.uTuyenTick = dwNow;
+			pb_Log("[BotBang5] bang '%s': giao %s (cap %d) di xin vao bang (%d/%d, dang di %d)\n",
+			       bb.szTen, Player[b.nPlayerIdx].m_PlayerName, Npc[Player[b.nPlayerIdx].m_nIndex].m_Level,
+			       nCo, bb.nTuyenMuc, nDang + 1);
+		}
+	}
+	// (3) dau thau theo gio: 18h00-18h55 ngay bao danh cua thanh muc tieu, state SIGNUP; kiem 20 giay/lan
+	static DWORD s_dwMocThau = 0;
+	if (!s_nPbBangCTC || dwNow - s_dwMocThau < 20000)
+		return;
+	s_dwMocThau = dwNow;
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	if (!pTm)
+		return;
+	const int nToday = (pTm->tm_year + 1900) * 10000 + (pTm->tm_mon + 1) * 100 + pTm->tm_mday;
+	if (pTm->tm_hour != 18 || pTm->tm_min > 55)
+		return;
+	for (int k = 0; k < s_bbCount; k++)
+	{
+		PB_BotBang& bb = s_bb[k];
+		if (bb.nTao != 2 || bb.nThanh < 1 || bb.nThanh > 7 || bb.nThauNgay == nToday)
+			continue;
+		if (s_nBbLich[bb.nThanh - 1] != pTm->tm_wday)
+			continue;
+		if (bb.uThauNghi && dwNow < bb.uThauNghi)
+			continue;
+		if (KJx2CityWar_GetState(bb.nThanh) != PB_BB_STATE_SIGNUP)
+			continue;
+		const int nL = pb_BbLeaderIdx(bb);
+		PB_Bot* pL = (nL > 0) ? pb_BbBotCuaPlayer(nL) : NULL;
+		if (!pL)
+		{
+			if (dwNow - bb.uLogTick > 60000)
+			{
+				bb.uLogTick = dwNow;
+				pb_Log("[BotBang5] 18h: bang '%s' khong co bang chu bot dang song -> khong dau thau thanh %d\n", bb.szTen, bb.nThanh);
+			}
+			continue;
+		}
+		if (pL->nBangPha || pL->nTk || pL->nBanSap)
+			continue;                       // dang ban (Tong Kim...) -> 20 giay sau thu lai
+		pL->nBangPha = 2;  pL->nBangLoai = 3;  pL->nBangBotIdx = k;  pL->dwBangID = bb.dwTongID;
+		pL->nBangNguoiIdx = 0;  pL->dwBangNguoiID = 0;
+		pL->nBangTick = 0;  pL->nBangThu = 0;  pL->nBangNghiToi = 0;  pL->nBangDoiMapTick = 0;
+		pL->walk.Reset();
+		bb.uThauNghi = dwNow + 120000;      // bot dang di - khong giao lai trong 2 phut
+		pb_Log("[BotBang5] 18h%02d: bang chu %s cua '%s' di dau thau thanh %d (phi %d, quy %I64d, %d thanh vien)\n",
+		       pTm->tm_min, Player[nL].m_PlayerName, bb.szTen, bb.nThanh, bb.nPhi,
+		       KTongJX2_GetMoneyC(bb.dwTongID), (int)(g_TongJX2.FindTong(bb.dwTongID) ? g_TongJX2.FindTong(bb.dwTongID)->mapMember.size() : 0));
+	}
+}
+
+// ---- lenh (lenh bai admin: simcity_admin.lua PB_BangMenu) ----
+int PB_BangTao(int nSo)
+{
+	pb_BbNap(0);
+	int nGiao = 0;
+	for (int k = 0; k < s_bbCount && nGiao < nSo; k++)
+	{
+		PB_BotBang& bb = s_bb[k];
+		if (g_TongJX2.FindTong(bb.dwTongID))
+		{
+			// [BOTBANG5b] da co: bang bot (bang chu la bot) -> bo qua; bang NGUOI THAT trung ten -> khong dung ten nay
+			if (pb_BbLeaderIdx(bb) > 0)
+				bb.nTao = 2;
+			else
+			{
+				bb.nTao = 4;
+				pb_Log("[BotBang5] tao bang '%s': ten da co tren GS ma bang chu khong phai bot -> bang NGUOI THAT trung ten, doi ten trong botbang.txt\n", bb.szTen);
+			}
+			continue;
+		}
+		if (bb.nTao == 1)
+			continue;                       // dang tao
+		int nBest = -1, nBestLv = -1;
+		for (int i = 0; i < s_botCount; i++)
+		{
+			if (!pb_BbUngVien(s_bots[i], bb.nCapMin))
+				continue;
+			const int lv = Npc[Player[s_bots[i].nPlayerIdx].m_nIndex].m_Level;
+			if (lv > nBestLv)
+			{
+				nBestLv = lv;
+				nBest = i;
+			}
+		}
+		if (nBest < 0)
+		{
+			pb_Log("[BotBang5] tao bang '%s': KHONG co bot du tu cach lam bang chu (cap >= %d, chua bang, dang luyen cong)\n", bb.szTen, bb.nCapMin);
+			continue;
+		}
+		PB_Bot& b = s_bots[nBest];
+		b.nBangPha = 1;  b.nBangLoai = 1;  b.nBangBotIdx = k;  b.dwBangID = bb.dwTongID;
+		b.nBangNguoiIdx = 0;  b.dwBangNguoiID = 0;
+		b.nBangTick = 0;  b.nBangThu = 0;  b.nBangNghiToi = 0;  b.nBangDoiMapTick = 0;
+		bb.nTao = 1;
+		bb.nTaoLeaderIdx = b.nPlayerIdx;
+		bb.dwTaoLeaderID = b.dwID;
+		bb.uTaoGui = 0;
+		bb.nTaoThu++;
+		nGiao++;
+		pb_Log("[BotBang5] TAO BANG '%s' (camp %d, thanh %d): giao %s (cap %d) ve NPC mon phai xuat su roi lap bang (lan %d)\n",
+		       bb.szTen, bb.nCamp, bb.nThanh, Player[b.nPlayerIdx].m_PlayerName, nBestLv, bb.nTaoThu);
+	}
+	return nGiao;
+}
+
+int PB_BangTuyen(int nStt, int nMuc)
+{
+	pb_BbNap(0);
+	const int k = nStt - 1;
+	if (k < 0 || k >= s_bbCount)
+		return -1;
+	PB_BotBang& bb = s_bb[k];
+	if (bb.nTao != 2 || !g_TongJX2.FindTong(bb.dwTongID))
+	{
+		pb_Log("[BotBang5] tuyen cho '%s': chua phai bang bot san sang (nTao %d) - chua tao / relay chua dong bo (<= 30 giay) / bang nguoi that trung ten\n", bb.szTen, bb.nTao);
+		return -2;
+	}
+	if (nMuc <= 0)
+		nMuc = bb.nSoNguoi;
+	bb.nTuyenMuc = nMuc;
+	bb.nTuyenDaGiao = 0;
+	bb.uTuyenTick = 0;
+	pb_Log("[BotBang5] bang '%s': BAT DAU TUYEN toi %d thanh vien (cap >= %d, %d bot/luot)\n", bb.szTen, nMuc, bb.nCapMin, PB_BB_SONG_SONG);
+	return nMuc;
+}
+
+int PB_BangCTC(int nBat)
+{
+	pb_BbNap(0);
+	if (nBat >= 0)
+	{
+		s_nPbBangCTC = nBat ? 1 : 0;
+		pb_BbGhiCoCTC(s_nPbBangCTC);   // [BOTBANG5b] giu qua restart
+		pb_Log("[BotBang5] dau thau cong thanh theo gio (18h00-18h55 ngay bao danh cua thanh muc tieu): %s\n", s_nPbBangCTC ? "BAT" : "TAT");
+	}
+	return s_nPbBangCTC;
+}
+
+// nStt 1..n = bang bot; nStt 0 = bang co NameID dwTongIDKhac (bang cua chinh admin - Lua GetTongName())
+int PB_BangNap(int nStt, int nLuong, unsigned int dwTongIDKhac)
+{
+	pb_BbNap(0);
+	if (nLuong <= 0 || nLuong > 2000000000)
+		return 0;
+	DWORD dwID = 0;
+	if (nStt >= 1 && nStt <= s_bbCount)
+	{
+		if (s_bb[nStt - 1].nTao != 2)
+			return 0;                      // [BOTBANG5b] khong nap vao bang chua tao / bang nguoi that trung ten
+		dwID = s_bb[nStt - 1].dwTongID;
+	}
+	else
+		dwID = (DWORD)dwTongIDKhac;
+	KTongJX2Tong* pT = dwID ? g_TongJX2.FindTong(dwID) : NULL;
+	if (!pT)
+		return 0;
+	const __int64 nTruoc = KTongJX2_GetMoneyC(dwID);
+	KTongJX2_AddMoneyC(dwID, (__int64)nLuong);
+	pb_Log("[BotBang5] ADMIN NAP QUY %d luong vao bang '%s' (id %u), quy truoc khi nap %I64d (relay dong bo lai sau vai giay)\n",
+	       nLuong, pT->szName, (unsigned int)dwID, nTruoc);
+	return 1;
+}
+
+static int pb_LuaSoNguyen(Lua_State* L, int nArg, int nMacDinh)
+{
+	if (Lua_GetTopIndex(L) >= nArg && Lua_IsNumber(L, nArg))
+		return (int)Lua_ValueToNumber(L, nArg);
+	return nMacDinh;
+}
+
+int LuaPB_BangTao(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_BangTao(pb_LuaSoNguyen(L, 1, PB_BB_MAX)));
+	return 1;
+}
+
+int LuaPB_BangTuyen(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_BangTuyen(pb_LuaSoNguyen(L, 1, 0), pb_LuaSoNguyen(L, 2, 0)));
+	return 1;
+}
+
+int LuaPB_BangCTC(Lua_State* L)
+{
+	Lua_PushNumber(L, PB_BangCTC(pb_LuaSoNguyen(L, 1, -1)));
+	return 1;
+}
+
+int LuaPB_BangNap(Lua_State* L)
+{
+	unsigned int dwKhac = 0;
+	if (Lua_GetTopIndex(L) >= 3 && Lua_IsNumber(L, 3))
+		dwKhac = (unsigned int)(double)Lua_ValueToNumber(L, 3);
+	Lua_PushNumber(L, PB_BangNap(pb_LuaSoNguyen(L, 1, 0), pb_LuaSoNguyen(L, 2, 0), dwKhac));
+	return 1;
+}
+
+// PB_BangSo([1 = nap lai botbang.txt]) -> so bang bot
+int LuaPB_BangSo(Lua_State* L)
+{
+	const int bLai = pb_LuaSoNguyen(L, 1, 0);
+	if (bLai)
+	{
+		// [BOTBANG5b] memset s_bb khi bot dang mang nBangBotIdx = lech chi so -> tu choi
+		for (int i = 0; i < s_botCount; i++)
+			if (s_bots[i].nBangPha && s_bots[i].nBangBotIdx >= 0)
+			{
+				pb_Log("[BotBang5] KHONG nap lai botbang.txt: con bot dang di lam viec bang (%s) - cho xong\n",
+				       Player[s_bots[i].nPlayerIdx].m_PlayerName);
+				Lua_PushNumber(L, -1);
+				return 1;
+			}
+	}
+	pb_BbNap(bLai);
+	Lua_PushNumber(L, s_bbCount);
+	return 1;
+}
+
+int LuaPB_BangTen(Lua_State* L)
+{
+	pb_BbNap(0);
+	const int k = pb_LuaSoNguyen(L, 1, 0);
+	Lua_PushString(L, (k >= 1 && k <= s_bbCount) ? s_bb[k - 1].szTen : (char*)"");
+	return 1;
+}
+
+// PB_BangTT() -> chuoi trang thai (ngan: Say/SayEx tran 512 byte)
+int LuaPB_BangTT(Lua_State* L)
+{
+	pb_BbNap(0);
+	static const char* s_szTao[5] = { "chua tao", "dang tao", "co", "LOI tao", "BANG NGUOI!" };   // [BOTBANG5b]
+	char sz[1024];
+	int nLen = 0;
+	sz[0] = 0;
+	for (int k = 0; k < s_bbCount && nLen < 360; k++)   // [BOTBANG5b] Say/SayEx tran 512 byte ke ca nhan
+	{
+		PB_BotBang& bb = s_bb[k];
+		KTongJX2Tong* pT = g_TongJX2.FindTong(bb.dwTongID);
+		const int nL = pb_BbLeaderIdx(bb);
+		nLen += sprintf(sz + nLen, "%d.%s %s %dng %I64dtr T%d %.10s%s\n",
+		                bb.nStt, bb.szTen, s_szTao[(bb.nTao >= 0 && bb.nTao <= 4) ? bb.nTao : 0],
+		                pb_BbSoNguoi(bb),
+		                pT ? KTongJX2_GetMoneyC(bb.dwTongID) / 1000000 : (__int64)0,
+		                bb.nThanh, nL > 0 ? Player[nL].m_PlayerName : "-",
+		                bb.nTuyenMuc > 0 ? " (tuyen)" : "");
+	}
+	Lua_PushString(L, sz);
+	return 1;
 }
 
 int PB_WhisperReply(const PB_WHISPER* p)
@@ -7776,7 +8589,7 @@ int PB_WhisperReply(const PB_WHISPER* p)
 		{
 			pB->nBangPha = 1;  pB->dwBangID = dwNg;
 			pB->nBangNguoiIdx = p->nSenderIdx;  pB->dwBangNguoiID = Player[p->nSenderIdx].m_dwID;
-			pB->nBangTick = 0;  pB->nBangThu = 0;  pB->nBangNghiToi = 0;  pB->nBangDoiMapTick = 0;
+			pB->nBangTick = 0;  pB->nBangThu = 0;  pB->nBangNghiToi = 0;  pB->nBangDoiMapTick = 0;  pB->nBangLoai = 0;  pB->nBangBotIdx = -1;
 			pb_Log("[BotBang] %s nhan PM ru vao bang %s (id %u) tu %s%s\n",
 			       Player[nBot].m_PlayerName, pTg->szName, (unsigned int)dwNg,
 			       Player[p->nSenderIdx].m_PlayerName,
@@ -8099,6 +8912,8 @@ static int pb_TkDuTuCach(const PB_Bot& b)
 	if (b.nBanSap)                                    return 0;  // chu game: bot ban sap KHONG bi goi
 	if (b.nNhomNguoiIdx)                              return 0;  // [BOTNHOM-NGUOI b] dang trong nhom nguoi that: khong keo di TK
 	if (b.nTk)                                        return 0;  // dang trong tran roi
+	if (b.nBangPha)                                   return 0;  // [BOTBANG5b] dang lap bang / xin bang / di dau thau
+	if (s_nPbBangCTC && pb_BbLaBangChu(b))            return 0;  // [BOTBANG5b] bang chu bang bot: TK 17:50 nuot cua so dau thau 18h (phan bien CHAN 3)
 	const int p = b.nPlayerIdx;
 	if (p <= 0 || p >= MAX_PLAYER)                    return 0;
 	if (Player[p].m_dwID != b.dwID)                   return 0;
@@ -10272,7 +11087,9 @@ static void pb_DriveBot(PB_Bot& b)
 	// [BOTBANG 01/09] sau Tong Kim (xong tran moi di), truoc ban sap / ve thanh / danh.
 	if (b.nBangPha)
 	{
-		if (pb_XinVaoBang(nIdx, nNpcIdx, nSub, b, nowAll, (int)(&b - s_bots)))
+		// [BOTBANG5 02/09] nBangPha 2 = bang chu bot di dau thau cong thanh (NPC Su Gia, map 53)
+		if (b.nBangPha == 2 ? pb_BangThau(nIdx, nNpcIdx, nSub, b, nowAll, (int)(&b - s_bots))
+		                    : pb_XinVaoBang(nIdx, nNpcIdx, nSub, b, nowAll, (int)(&b - s_bots)))
 			return;
 	}
 
@@ -11399,6 +12216,7 @@ void PB_Breathe()
 		pb_QuanLyNhom();
 		pb_DemNgoai();      // (20/08) do dem bot ngoai map, 30 giay/lan
 		pb_TkNhip();        // (21/08) canh gio Tong Kim + goi quan, 1 giay/lan
+		pb_BangNhip();      // [BOTBANG5 02/09] duyet don / chien dich tuyen / 18h dau thau, 1 giay/lan
 		pb_ChatTheGioi();
 
 		QueryPerformanceCounter(&liT1);
