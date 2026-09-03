@@ -516,3 +516,55 @@ Số liệu này trùng VLTK từng cột. Nếu chủ muốn 1360 tự đánh m
 ### 20.3 Hai mục engine đang điều tra
 - **Ma Vân Kiếm Khí không nổ, không biến mất khi kích hoạt Thần Quang Toàn Nhiễu**: hướng đã lộ — cả hàm kích nổ lẫn chỗ gọi nó đều nằm trong khối **chỉ biên dịch phía máy chủ**, nên client không kích nổ bản sao khí trường của nó: khí trường client sống tiếp đủ 20 giây (không biến mất) và sự kiện nổ 1411 không bắn trên client (không có hiệu ứng). Đang xác minh và tìm neo vá chính xác.
 - **Bóng mờ ngắn và giật + thiếu vòng sáng xanh dưới chân**: engine chỉ hạ được một ảnh mờ mỗi chu kỳ làm nhạt (`NowGetBlur` chỉ đúng khi bộ đếm về 0) nên vệt thưa và không đều; chiêu lướt thì hạ nhiều ảnh cùng lúc theo khoảng cách nên mượt. Vòng sáng dưới chân chưa rõ nguồn (`StateSpecialId` của 1358 bằng 0 ở **cả** ta và VLTK). Đang tìm trong pak.
+
+
+## 21. ĐỢT 12 (02/09 ~21:00) — "Lực tay nội công Hoa Sơn: full kỹ năng + full mạch cũng không hơn 20k"
+
+### 21.1 GỐC — tìm ra bằng cách mổ chính nhị phân client VLTK
+
+Hàm hiển thị "lực tay" của client VLTK nằm ở **`0x006EC360`** (tương đương `KPlayer::GetEchoDamage` của ta). Đọc mã máy:
+
+```
+006ec3bc  lea  ecx, [ebp + 0x114]        ; mảng 5 ô kỹ năng (0x114, 0x118, 0x11c, 0x120, 0x124)
+006ec3d8  mov  edx, [esp + 0x20]         ; ĐẦU VÒNG LẶP
+006ec3dc  mov  edi, [edx]                ;   lấy id kỹ năng của ô này
+006ec3de  test edi, edi
+006ec3e4  jne  0x6ec3f8                  ;   ô trống -> dùng kỹ năng đang cầm
+          ... tính sát thương cho kỹ năng đó ...
+006ec890  mov  eax, 0x66666667           ; CHIA 5
+006ec895  imul edi
+006ec89b  sar  edx, 1
+006ec8a4  add  [eax], ecx                ;   *nMin += dmgMin / 5
+006ec8a6  mov  eax, 0x66666667           ;   *nMax += dmgMax / 5
+006ec8c1  mov  eax, 0x66666667           ;   *nAR  += ar / 5
+006ec8dd  add  eax, 1
+006ec8e0  cmp  eax, 5
+006ec8e7  jl   0x6ec3d8                  ; LẶP ĐỦ 5 LẦN
+```
+
+**VLTK cộng sát thương chia 5, lặp qua 5 ô kỹ năng** — tức ô "Lực tay" của VLTK là **sát thương TRUNG BÌNH của cả thanh 5 kỹ năng**, không phải sát thương của một chiêu. Engine của ta hiển thị **trọn vẹn sát thương của DUY NHẤT kỹ năng tay trái**. Hai con số **không so sánh trực tiếp được**.
+
+`KPlayer` của ta **không có** mảng 5 ô này (chỉ có `m_nLeftSkillID` / `m_nRightSkillID`), tức đây là tính năng VLTK có mà máy chủ ta không có.
+
+### 21.2 Những gì đã loại trừ (không phải lỗi bên ta)
+- **Hệ số cộng thêm**: mổ nhị phân cho thấy VLTK áp `addskilldamage` **y hệt ta** — tra bảng ánh xạ nằm trong `KSkillList + 0xF14`, bảo trì tăng dần, **không** kiểm tra "buff đang bật", công thức `v × (100 + P) / 100`. Giả thuyết "VLTK không cộng phần này" đã **bị bác**.
+- **Dữ liệu**: `skills.txt` hàng 1372 / 1376 / 1379 / 1380 / 1382 trùng **114/114 cột** với VLTK; `huashan.lua` cũng trùng, và trùng luôn bản Linux.
+- **Cấp tối đa**: đã đính chính ở mục 19.3 — đường cong vượt cấp là để dành cho trang bị cộng cấp kỹ năng.
+
+### 21.3 Ba cần gạt để đạt mục tiêu ≤ 20.000 (đây là **cân bằng**, chờ chủ quyết — tôi không tự sửa)
+
+Bảng dưới tính theo công thức của ta: băng sát gốc × (100 + 3 buff + phần nội lực đầy) / 100.
+
+| Cấp kỹ năng | Băng sát gốc | Hệ số | **Hiện nay** | **Dùng dòng VLTK cũ** |
+|---|---|---|---|---|
+| 20 | 11.433 | +280 % | 43.445 | **15.200** |
+| 25 | 14.400 | +310 % | 59.040 | **20.500** |
+| 30 | 21.600 | +343 % | 95.688 | 26.580 |
+| 40 | 36.000 | +346 % | 160.560 | 35.680 |
+
+1. **Bật lại dòng VLTK đã tự chú thích trong `huashan.lua`** (`{1,200},{40,8000}` thay cho `{1,160},{25,14400},{40,36000}`). Đạt mục tiêu ≤ 20k tới khoảng cấp 25. **Thuần dữ liệu, không build, không swap `.moi`**, nhưng phải sửa **cả hai** tệp server + client rồi khởi động lại máy chủ. Đây là con số chính VLTK từng dùng trước khi họ nâng lên — **tôi khuyên dùng cách này** nếu chủ muốn hạ sát thương thật.
+2. **Chia hiển thị cho 5 để giống cách VLTK trình bày** — số sẽ về ~8.700. Nhưng chỉ đổi **con số hiện ra**, sát thương thật giữ nguyên, và bảng sẽ không còn phản ánh đúng sát thương. Cần sửa mã + build + swap.
+3. **Bớt buff cộng phần trăm**: gỡ `addskilldamage1 → 1382` ở một hoặc hai trong ba bảng (1372 / 1376 / 1380). Lệch khỏi VLTK.
+
+### 21.4 Cần chủ xác nhận
+Trong client VLTK, khi chủ **bật cả ba khí trường** (Thanh Vân Tống Sảng, Long Huyền Kiếm Khí, Ma Vân Kiếm Khí) và **nội lực đầy**, con số lực tay có nhảy lên không, hay vẫn quanh 10-20k? Nếu vẫn quanh đó thì xác nhận VLTK đang chia 5; nếu nhảy lên gấp mấy lần thì cần đo lại.
