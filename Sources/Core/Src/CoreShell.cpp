@@ -380,6 +380,11 @@ static MapStation g_ShopStation;
 static MapStation g_MoveStation;
 typedef std::map<int, sStation> MapOneStation;
 static MapOneStation g_CenterStation;
+// (02/09) Hau can (ATYPE_RETURN): gian nhip TINH LAI duong khi di bo toi tram
+// thuoc/tap hoa/xa phu. Khuon lay tu DT_WalkTo (CoreShell.cpp:3196) - xem chu
+// thich tai buoc 6/7/9. Client chi co MOT nhan vat nen de bien tep nhu cac bo
+// dem cua may Da Tau (g_nDTXaFuDi...), khong dong vao layout KPlayer.
+static UINT g_uHomePath = 0;
 static int g_GoMapID[] = 
 {
 	875,
@@ -16649,6 +16654,34 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					const autoData* pApData = (autoData*)nParam;
+					// (02/09) [HC-STATE] mot dong trang thai cho may Hau can. Truoc day day
+					// la may auto DUY NHAT khong co dong log nao (dong g_DebugLog goc o tren
+					// bi tat), ket o buoc nao chi con nuoc doan mo. Gian 3 giay; ATYPE_RETURN
+					// chi duoc goi khi nguoi choi bat 'Tu quay lai' nen log cung chi chay khi do.
+					{
+						int nLogX = 0, nLogY = 0, nLogTX = 0, nLogTY = 0;
+						Npc[nNpcIdx].GetMpsPos(&nLogX, &nLogY);
+						const int nLogCoTgt = SubWorld[0].HaveTarget(nLogTX, nLogTY) ? 1 : 0;
+						AUTOLOG_EVERY(3000, "[HC-STATE] buoc=%d sub=%d map=%d toi=(%d,%d) tram=%d "
+							"cotgt=%d tgt=(%d,%d) xatgt=%d sync=%d path=%d mokhoa=%d | bat: ban=%d "
+							"sua=%d rut=%d cat=%d thuoc=%d/%d/%d phu=%d giutien=%d xafu=%d/%d bando=%d/%d",
+							Player[nPlayerIdx].m_sExtAuto.nHomeStep,
+							Player[nPlayerIdx].m_sExtAuto.nSubStep,
+							SubWorld[0].m_SubWorldID, nLogX, nLogY,
+							Player[nPlayerIdx].m_sExtAuto.nCurShop,
+							nLogCoTgt, nLogTX, nLogTY,
+							nLogCoTgt ? g_GetDistance(nLogX, nLogY, nLogTX, nLogTY) : -1,
+							(int)((Player[nPlayerIdx].m_sExtAuto.uSyncTime > uCurTime)
+								? (Player[nPlayerIdx].m_sExtAuto.uSyncTime - uCurTime) : 0),
+							(int)((g_uHomePath > uCurTime)
+								? (g_uHomePath - uCurTime) : 0),
+							(int)Player[nPlayerIdx].m_CUnlocked,
+							pApData->bSellItem, pApData->bRepair, pApData->bWithdraw,
+							pApData->bSaveItem, pApData->bBuyLife, pApData->bBuyMana,
+							pApData->bBuyPois, pApData->bBuyTP, pApData->bHoldMoney,
+							pApData->bGoStation, pApData->nSelStation,
+							pApData->bGoMap, pApData->nSelMap);
+					}
 					if(Player[nPlayerIdx].m_sExtAuto.nHomeStep == 0)
 					{	//cÊt hoÆc qu¨ng mãn trªn tay nÕu cã
 						g_ScenePlace.RemoveFlag();
@@ -17018,25 +17051,28 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							{
 								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
 								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								g_uHomePath = 0;
 								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
 							}
 						}
 						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
 						{	//trªn ®­êng quay l¹i trung t©m
 							int x,y;
-							if(!SubWorld[0].HaveTarget(x, y))
+							sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+							// (02/09) KSubWorld::FindPath tra 2 = "dich khong toi duoc, di toi
+							// o gan nhat" va khi do ghi m_nTargetX/Y = O TRUNG GIAN, nen phep so
+							// dich duoi day KHONG BAO GIO trung. Ban cu coi lech dich la "co ai
+							// do doi duong" nen huy buoc (nSubStep = 0) - 300 ms mot lan, duong
+							// vua tinh xong lai bi huy => nhan vat dung im giua thanh. Lam nhu
+							// DT_WalkTo (CoreShell.cpp:3196): lech dich thi chi TINH LAI duong,
+							// gian 2,5 giay mot lan, khong huy buoc.
+							if(!SubWorld[0].HaveTarget(x, y) || c.x != x || c.y != y)
 							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								SubWorld[0].FindPath(c.x, c.y);
-							}
-							else
-							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								if(c.x != x || c.y != y)
+								if(g_uHomePath < uCurTime)
 								{
+									g_uHomePath = uCurTime + 2500;
 									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									SubWorld[0].FindPath(c.x, c.y);
 								}
 							}
 							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
@@ -17056,9 +17092,19 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
 								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
 								{
-									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									// (02/09) xem chu thich o nSubStep 1: FindPath tra 2 thi dich
+									// bao ve la O TRUNG GIAN chu khong phai toa do tram, nen o day
+									// chi TINH LAI duong toi dung tram (gian 2,5 giay) roi CHAY TIEP
+									// xuong phan do khoang cach ben duoi - de van nhan ra "da toi
+									// noi" khi duong chi den duoc gan tram.
+									if(g_uHomePath < uCurTime)
+									{
+										g_uHomePath = uCurTime + 2500;
+										g_ScenePlace.RemoveFlag();
+										SubWorld[0].FindPath(
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x,
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y);
+									}
 								}
 							}
 							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
@@ -17360,25 +17406,28 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							{
 								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
 								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								g_uHomePath = 0;
 								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
 							}
 						}
 						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
 						{	//trªn ®­êng quay l¹i trung t©m
 							int x,y;
-							if(!SubWorld[0].HaveTarget(x, y))
+							sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+							// (02/09) KSubWorld::FindPath tra 2 = "dich khong toi duoc, di toi
+							// o gan nhat" va khi do ghi m_nTargetX/Y = O TRUNG GIAN, nen phep so
+							// dich duoi day KHONG BAO GIO trung. Ban cu coi lech dich la "co ai
+							// do doi duong" nen huy buoc (nSubStep = 0) - 300 ms mot lan, duong
+							// vua tinh xong lai bi huy => nhan vat dung im giua thanh. Lam nhu
+							// DT_WalkTo (CoreShell.cpp:3196): lech dich thi chi TINH LAI duong,
+							// gian 2,5 giay mot lan, khong huy buoc.
+							if(!SubWorld[0].HaveTarget(x, y) || c.x != x || c.y != y)
 							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								SubWorld[0].FindPath(c.x, c.y);
-							}
-							else
-							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								if(c.x != x || c.y != y)
+								if(g_uHomePath < uCurTime)
 								{
+									g_uHomePath = uCurTime + 2500;
 									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									SubWorld[0].FindPath(c.x, c.y);
 								}
 							}
 							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
@@ -17398,9 +17447,19 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
 								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
 								{
-									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									// (02/09) xem chu thich o nSubStep 1: FindPath tra 2 thi dich
+									// bao ve la O TRUNG GIAN chu khong phai toa do tram, nen o day
+									// chi TINH LAI duong toi dung tram (gian 2,5 giay) roi CHAY TIEP
+									// xuong phan do khoang cach ben duoi - de van nhan ra "da toi
+									// noi" khi duong chi den duoc gan tram.
+									if(g_uHomePath < uCurTime)
+									{
+										g_uHomePath = uCurTime + 2500;
+										g_ScenePlace.RemoveFlag();
+										SubWorld[0].FindPath(
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x,
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y);
+									}
 								}
 							}
 							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
@@ -17588,25 +17647,28 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 							{
 								Player[nPlayerIdx].m_sExtAuto.nCurShop = nPos;
 								Player[nPlayerIdx].m_sExtAuto.uSyncTime = 0;
+								g_uHomePath = 0;
 								Player[nPlayerIdx].m_sExtAuto.nSubStep += 2;
 							}
 						}
 						else if(Player[nPlayerIdx].m_sExtAuto.nSubStep == 1)
 						{	//trªn ®­êng quay l¹i trung t©m
 							int x,y;
-							if(!SubWorld[0].HaveTarget(x, y))
+							sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
+							// (02/09) KSubWorld::FindPath tra 2 = "dich khong toi duoc, di toi
+							// o gan nhat" va khi do ghi m_nTargetX/Y = O TRUNG GIAN, nen phep so
+							// dich duoi day KHONG BAO GIO trung. Ban cu coi lech dich la "co ai
+							// do doi duong" nen huy buoc (nSubStep = 0) - 300 ms mot lan, duong
+							// vua tinh xong lai bi huy => nhan vat dung im giua thanh. Lam nhu
+							// DT_WalkTo (CoreShell.cpp:3196): lech dich thi chi TINH LAI duong,
+							// gian 2,5 giay mot lan, khong huy buoc.
+							if(!SubWorld[0].HaveTarget(x, y) || c.x != x || c.y != y)
 							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								SubWorld[0].FindPath(c.x, c.y);
-							}
-							else
-							{
-								sStation& c = g_CenterStation[SubWorld[0].m_SubWorldID];
-								if(c.x != x || c.y != y)
+								if(g_uHomePath < uCurTime)
 								{
+									g_uHomePath = uCurTime + 2500;
 									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									SubWorld[0].FindPath(c.x, c.y);
 								}
 							}
 							if(Player[nPlayerIdx].m_sExtAuto.uSyncTime < uCurTime)
@@ -17626,9 +17688,19 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 								if(v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x != x
 								|| v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y != y)
 								{
-									g_ScenePlace.RemoveFlag();
-									Player[nPlayerIdx].m_sExtAuto.nSubStep = 0;
-									return 0;
+									// (02/09) xem chu thich o nSubStep 1: FindPath tra 2 thi dich
+									// bao ve la O TRUNG GIAN chu khong phai toa do tram, nen o day
+									// chi TINH LAI duong toi dung tram (gian 2,5 giay) roi CHAY TIEP
+									// xuong phan do khoang cach ben duoi - de van nhan ra "da toi
+									// noi" khi duong chi den duoc gan tram.
+									if(g_uHomePath < uCurTime)
+									{
+										g_uHomePath = uCurTime + 2500;
+										g_ScenePlace.RemoveFlag();
+										SubWorld[0].FindPath(
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].x,
+											v[Player[nPlayerIdx].m_sExtAuto.nCurShop].y);
+									}
 								}
 							}
 							int nPos = Player[nPlayerIdx].m_sExtAuto.nCurShop;
