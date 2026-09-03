@@ -17,7 +17,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `9976e63f` | `2.488.832` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) **+ vá S13 giựt tới/lùi của phiên wauto-6a (đè bản `96c3085d` lúc 13:50, build từ cùng `f2fa3c2b`; kèm `CoreServer.dll.moi cb4cf7f0` bên server — xem `BANGIAO_GIATLUI_PHUVE_FPS_0309.md` mục 10)** |
+| `CoreClient.dll.moi` | `5b56367c` | `2.489.344` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) **+ vá S13 giựt tới/lùi của phiên wauto-6a (đè bản `96c3085d` lúc 13:50, build từ cùng `f2fa3c2b`; kèm `CoreServer.dll.moi cb4cf7f0` bên server — xem `BANGIAO_GIATLUI_PHUVE_FPS_0309.md` mục 10)** **+ S13e 811f93ac (14:17, chủ báo "chạy nhanh rồi chậm, đánh không trúng quái": KEO chỉ khi đứng yên + ân hạn 600 ms sau dash)**. Bộ 13:50 (CoreClient `9976e63f` · Game · WAuto · CoreServer) chủ ĐÃ swap lúc ~14:00 → lần này chỉ còn đổi `CoreClient.dll.moi`, ba tệp kia giữ nguyên. |
 | `Game.exe.moi` | `d3d626ba` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
 | `CoreServer.dll.moi` (**bin\server**) | `cb4cf7f0` | `18.277.888` | vá S13 phía máy chủ (khe lệnh di chuyển riêng + giữ-chờ cho người chơi thật — phiên wauto-6a, commit `4aad2613`); **bắt buộc lên cùng** `CoreClient.dll.moi 9976e63f` |
@@ -30,7 +30,7 @@ CoreServer vì vá S13 (giữ-chờ lệnh) nằm ở **cả hai bên** — ch�
 4. `ChoiGame.bat` **KHÔNG** đổi `WAuto.exe.moi`: đổi tay `WAuto.exe` cũ → `.truoc`, rồi `WAuto.exe.moi` → `WAuto.exe`.
 5. Mở WAuto → nhóm **Sự kiện** → phải thấy tab **"Công Thành"** (tab thứ 3 của nhóm). Không thấy = bước 4 chưa xong.
 6. Cấu hình cũ `APdata\<ID>.dat` **vẫn dùng được** — `LoadRoleData` di trú theo `offsetof(autoData, bCongThanh)`, tính năng mặc định **TẮT**.
-7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `9976e63f…`, `CoreServer.dll` = `cb4cf7f0…`.
+7. Restart mà chưa làm bước 1-4 thì vẫn chạy bản cũ. Kiểm nhanh: md5 `CoreClient.dll` = `5b56367c…`, `CoreServer.dll` = `cb4cf7f0…`.
 
 Build lại (đúng thứ tự, **tắt post-build** để không đè `bin\client` đang chạy):
 ```
