@@ -101,7 +101,7 @@ function chucnangadmin(itemIdx)
 		-- "LÊy M¸u/laymau001",
 		"Qu¶n lý m¸y chñ/system",
 		"Thu kenh ScriptProtocol (ECHO)/specho",	-- [MAIL 03/09]
-		"Göi th­ thö: tiÒn/xu/exp/mailtest1",	-- [MAIL 03/09]
+		"Göi th­ thö: tiÒn, xu, exp/mailtest1",	-- [MAIL 03/09]
 		"Göi th­ thö: cã vËt phÈm/mailtest2",	-- [MAIL 03/09]
 		"Chøc n¨ng chÝnh/manager",
 		"N¹p l¹i script/reloadfileEvent",
