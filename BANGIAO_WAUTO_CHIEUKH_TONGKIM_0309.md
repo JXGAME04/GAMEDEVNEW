@@ -102,7 +102,9 @@ là "áp sát mãi không gần thêm" → sau 4 giây `m_mAutoExcludeNpcID[dwID
 (~7752), `TK_XaBang` (~7920). Mỗi vòng khe đốt một đối thủ, mà một trận Tống Kim chỉ dài
 vài phút.
 
-**Đã vá:** thêm `|| nSkillRadius <= 0` ở 16086 + nhánh bắn theo toạ độ.
+**Đã vá** (`e32e68b2`): thêm nhánh bắn theo toạ độ `[PK-R0]`, và mở ngoại lệ cho watchdog.
+⚠️ **Ngoại lệ ấy sau đó phải sửa lại** — viết `|| nSkillRadius <= 0` để **reset** đồng hồ là sai,
+nó mở lại đúng căn bệnh `[FIX-6]` sinh ra để chữa. Bản đúng ở `4d7b1df6` — **xem mục 5.7**.
 
 ### 5.2 🔴 Ba luật khi bê logic từ `ATYPE_FIGHT` sang `ATYPE_PKFIGHT`
 
