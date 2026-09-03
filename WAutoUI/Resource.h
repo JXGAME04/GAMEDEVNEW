@@ -416,7 +416,44 @@ using namespace std;
 #define IDC_SEP_12A			559
 #define IDC_STRING_9_VE		560
 #define IDC_COMBO_9_VE		561
-#define IDC_INDEX_END			562
+// == tab 13 (Chieu ket hop + Tien chieu, 02/09/2026) ==
+// PHAI lien mach 562..594: ShowTab hien tab nay bang mot dai duy nhat.
+#define IDC_CHECKBOX_14_ON	562
+#define IDC_STRING_14_H1	563
+#define IDC_STRING_14_H2	564
+#define IDC_STRING_14_S1	565
+#define IDC_STRING_14_S2	566
+#define IDC_STRING_14_S3	567
+#define IDC_STRING_14_S4	568
+#define IDC_STRING_14_S5	569
+#define IDC_STRING_14_S6	570
+#define IDC_COMBO_14_S1		571
+#define IDC_COMBO_14_S2		572
+#define IDC_COMBO_14_S3		573
+#define IDC_COMBO_14_S4		574
+#define IDC_COMBO_14_S5		575
+#define IDC_COMBO_14_S6		576
+#define IDC_EDITOR_14_D1	577
+#define IDC_EDITOR_14_D2	578
+#define IDC_EDITOR_14_D3	579
+#define IDC_EDITOR_14_D4	580
+#define IDC_EDITOR_14_D5	581
+#define IDC_EDITOR_14_D6	582
+#define IDC_CHECKBOX_14_TC	583
+#define IDC_STRING_14_TCS	584
+#define IDC_COMBO_14_TCS	585
+#define IDC_STRING_14_TCK	586
+#define IDC_COMBO_14_TCK	587
+#define IDC_STRING_14_TCM	588
+#define IDC_EDITOR_14_TCM	589
+#define IDC_STRING_14_TCD	590
+#define IDC_EDITOR_14_TCD	591
+#define IDC_STRING_14_TCH	592
+#define IDC_EDITOR_14_TCH	593
+#define IDC_CHECKBOX_14_TCP	594
+#define IDC_GRP_TAB13		595
+#define IDC_SEP_13A			596
+#define IDC_INDEX_END			597
 // khoi ID ngoai dai an/hien (doi len nhuong cho cho khung/ke)
 #define IDD_SETSERIES_DIALOG	600
 #define IDD_NOPICK_DIALOG		601

@@ -315,6 +315,21 @@ struct autoData
 	int		nSTNghi;		// nghi bao nhieu PHUT giua 2 luot (0 = lien tuc)
 	// == Tong Kim ve thanh (26/08/2026) - het tran ve 1 trong 7 thanh ==
 	int		nTKVeThanh;		// 0..6 theo thu tu bang g_LDVeMap (PT/TD/DL/BK/TgD/DC/LA)
+	// == Chieu ket hop + Tien chieu (02/09/2026) - PHAI o cuoi struct ==
+	// Thay cho 3 o da BO o tab Chien dau: Ky nang tay trai / tay phai / tu ve.
+	// nSkillIdL, nSkillIdR, nSkillIdP GIU LAI lam cho trong (khong dung nua) - xoa
+	// mot truong o GIUA struct la lech offset moi truong phia sau, nat tep
+	// APdata cu cua MOI nguoi choi (xem ky uc wauto-luu-cau-hinh-apdata).
+	int		bCombo;			// bat bang CHIEU KET HOP (thay cho chieu goc tay trai)
+	int		nComboSkill[6];	// ma chieu tung khe, 0 = khe trong
+	int		nComboDelay[6];	// nghi bao nhieu ms sau khi ban xong khe do
+	int		bTienChieu;		// bat TIEN CHIEU (ban 1 chieu de truoc chieu chinh)
+	int		nTCSkill;		// ma chieu tien de
+	int		nTCKieu;		// 0 = 1 lan moi muc tieu moi; 1 = lap theo nTCMs; 2 = ngung khi ap sat
+	int		nTCMs;			// kieu 1: so ms giua 2 lan phat
+	int		nTCDist;		// kieu 2: KHONG phat khi khoang cach <= so nay
+	int		nTCHoi;			// hoi chieu rieng cua tien chieu (GIAY)
+	int		bTCChiNguoi;	// 1 = chi phat khi muc tieu la NGUOI CHOI
 
 	autoData()
 	{
@@ -539,6 +554,19 @@ struct autoData
 		bSTChoHS = 1;
 		nSTNghi = 0;
 		nTKVeThanh = 0;
+		bCombo = 0;
+		for(int cki = 0; cki < 6; ++cki)
+		{
+			nComboSkill[cki] = 0;
+			nComboDelay[cki] = 0;
+		}
+		bTienChieu = 0;
+		nTCSkill = 0;
+		nTCKieu = 0;
+		nTCMs = 8000;
+		nTCDist = 120;
+		nTCHoi = 6;
+		bTCChiNguoi = 0;
 
 	}
 };

@@ -1030,11 +1030,12 @@ void KMyApp::ExtAutoLoop(const autoData* pApData)
 	}
 	if(!pApData->bOnPK)
 	{
-		AUTOLOG_EVERY(5000, "[SKILL-SET] skL=%d skR=%d skB=%d skP=%d skC=%d cSec=%d skLS=%d/%d skMS=%d/%d", pApData->nSkillIdL, pApData->nSkillIdR, pApData->nSkillIdB, pApData->nSkillIdP, pApData->nSkillIdC, pApData->nSkillCSec, pApData->nSkillIdLS, pApData->nSLSPerc, pApData->nSkillIdMS, pApData->nSMSPerc);
-		if(pApData->nSkillIdL)
-		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_LEFTSKILL, pApData->nSkillIdL);
-		if(pApData->nSkillIdR)
-		g_pCoreShell->OperationRequest(GOI_AUTOPLAY_ACTION, ATYPE_RIGHTSKILL, pApData->nSkillIdR);
+		// (02/09) ba o "Ky nang tay trai / tay phai / tu ve" DA BO - WAuto khong con
+		// gan o chieu chuot trai/phai cua nhan vat nua (nguoi choi tu dat trong game).
+		// Chieu may danh thuong dung nay lay tu bang CHIEU KET HOP (tab 13), xu ly
+		// tron ven ben trong ATYPE_FIGHT. Hai case ATYPE_LEFTSKILL / ATYPE_RIGHTSKILL
+		// van giu trong CoreShell.h de KHONG danh so lai enum, nhung khong ai goi.
+		AUTOLOG_EVERY(5000, "[SKILL-SET] combo=%d khe=%d/%d/%d/%d/%d/%d skB=%d skC=%d cSec=%d skLS=%d/%d skMS=%d/%d tc=%d/%d kieu=%d ms=%d dist=%d hoi=%d nguoi=%d", pApData->bCombo, pApData->nComboSkill[0], pApData->nComboSkill[1], pApData->nComboSkill[2], pApData->nComboSkill[3], pApData->nComboSkill[4], pApData->nComboSkill[5], pApData->nSkillIdB, pApData->nSkillIdC, pApData->nSkillCSec, pApData->nSkillIdLS, pApData->nSLSPerc, pApData->nSkillIdMS, pApData->nSMSPerc, pApData->bTienChieu, pApData->nTCSkill, pApData->nTCKieu, pApData->nTCMs, pApData->nTCDist, pApData->nTCHoi, pApData->bTCChiNguoi);
 	}
 	else if(pApData->bDrawVision)
 	{
