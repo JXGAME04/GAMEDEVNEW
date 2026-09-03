@@ -657,6 +657,22 @@ void KUiMsgCentrePad::ChannelMessageArrival(int nChannelIndex, char* szSendName,
 		}
 		CItem.m_nPfPack[i] = atoi(szNum);
 	}
+	// [FUSCHAT 02/09] 44: truong nen 6 o Van Cuong (base 62, rong khi mon chua dung luyen).
+	// Buffer rieng FUSCHAT_MAX_STR vi truong nay dai toi 54 ky tu (szNum chi 16).
+	{
+		char szFus[FUSCHAT_MAX_STR];
+		ZeroMemory(szFus, sizeof(szFus));
+		nLeng = 0;
+		pszCheck1++;
+		while(1)
+		{
+			if(*pszCheck1 == ',' || *pszCheck1 == ']' || *pszCheck1 == 0 || nLeng >= (int)sizeof(szFus) - 1) break;
+			szFus[nLeng] = (*pszCheck1);
+			pszCheck1++;
+			nLeng++;
+		}
+		FUSCHAT_Giai(szFus, &CItem);
+	}
 
 	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);
 	if(nIdx)
@@ -1153,6 +1169,22 @@ void KUiMsgCentrePad::ShowMSNMessage(char* szName, const char* pMsgBuff, unsigne
 			nLeng++;
 		}
 		CItem.m_nPfPack[i] = atoi(szNum);
+	}
+	// [FUSCHAT 02/09] 44: truong nen 6 o Van Cuong (base 62, rong khi mon chua dung luyen).
+	// Buffer rieng FUSCHAT_MAX_STR vi truong nay dai toi 54 ky tu (szNum chi 16).
+	{
+		char szFus[FUSCHAT_MAX_STR];
+		ZeroMemory(szFus, sizeof(szFus));
+		nLeng = 0;
+		pszCheck1++;
+		while(1)
+		{
+			if(*pszCheck1 == ',' || *pszCheck1 == ']' || *pszCheck1 == 0 || nLeng >= (int)sizeof(szFus) - 1) break;
+			szFus[nLeng] = (*pszCheck1);
+			pszCheck1++;
+			nLeng++;
+		}
+		FUSCHAT_Giai(szFus, &CItem);
 	}
 
 	nIdx = g_pCoreShell->GetGameData(GDI_ITEM_CHAT, true, (int)&CItem);

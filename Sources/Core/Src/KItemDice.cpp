@@ -316,6 +316,12 @@ void KItemDice::FillItemDesc(ChatItem* pDesc)
     // [PFCHAT 02/09] 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) - cung khuon GDI_GET_ITEM_PARAM (CoreShell.cpp)
     for (int k = 0; k < 4; k++)
         pDesc->m_nPfPack[k] = Item[nIdx].GetPfPack(k);
+    // [FUSCHAT 02/09] 6 o Van Cuong da dung luyen - cung khuon GDI_GET_ITEM_PARAM
+    for (int k = 0; k < 6; k++)
+    {
+        pDesc->m_nFusionP[k]    = Item[nIdx].GetFusionP(k);
+        pDesc->m_uFusionSeed[k] = Item[nIdx].GetFusionSeed(k);
+    }
 }
 
 // szWho: ten nguoi vua gieo, chi dung khi btAction = DICE_ACT_NUMBER

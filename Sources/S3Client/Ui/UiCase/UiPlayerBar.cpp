@@ -2292,6 +2292,16 @@ void KUiPlayerBar::SetChatItem(ChatItem CItem, unsigned int uId)
 			m_pSelf->m_ChatItemInfo[nOffset] = ',';
 			nOffset++;
 		}
+		// [FUSCHAT 02/09] 44: 6 o Van Cuong nen thanh MOT truong base 62 (rong khi mon chua
+		// dung luyen, nen link do thuong chi dai them dung 1 dau phay) -> NUM_INFO_ITEM_CHAT = 44.
+		// Buffer rieng vi truong nay dai toi 54 ky tu, khong lot vao Buffer[16] o tren.
+		char szFus[FUSCHAT_MAX_STR];
+		FUSCHAT_Ma(&CItem, szFus);
+		strcat(&m_pSelf->m_ChatItemInfo[nOffset], szFus);
+		nOffset += strlen(szFus);
+		m_pSelf->m_ChatItemInfo[nOffset] = ',';
+		nOffset++;
+
 		m_pSelf->m_ChatItemInfo[nOffset] = ']';
 		nOffset++;
 

@@ -218,6 +218,6 @@ public:
 	static void		SetItemBtnPos(int nBtnNo,int X, int Y); // dat vi tri button chat
 private:
 	KWndPureTextBtn		m_ItemBtn[MAX_ITEMBUTTON];//Item rao ban
-	char			m_ChatItemInfo[320]; //thong tin item se duoc gui di - [PFCHAT 02/09] 128->320: them 4 o m_nPfPack (chuoi toi da ~264 ky tu)
+	char			m_ChatItemInfo[384]; //thong tin item se duoc gui di - [PFCHAT 02/09] 128->320 (4 o m_nPfPack); [FUSCHAT 02/09] 320->384: them truong Van Cuong toi da 54 ky tu
 	char			m_ItemName[64]; // ten item
 };

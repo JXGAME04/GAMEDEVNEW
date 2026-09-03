@@ -169,3 +169,88 @@ và/hoặc chèn cùng chỗ 2 loại khoáng trong 7 tệp bảng trên.
 4. Món HKMP ghép ở Thợ Rèn (`ghephkmp`) → dung luyện được tới 4 ô, nhận Văn Cương tới phẩm chất 10.
 5. Mặc/tháo → chỉ số đổi; thoát/vào lại → Văn Cương còn nguyên.
 6. Món `Hiệp Cốt Tình ý Kết` → vẫn báo mã 4 "trang bị không dung luyện được" (đúng phạm vi đã chốt).
+
+---
+
+## 6. ĐỢT 02/09 tối — "trang bị dung luyện khi post lên kênh chat không hiện thông tin dung luyện" (nhãn `[FUSCHAT 02/09]`)
+
+### 6.1 Gốc lỗi
+Cùng hệt gốc của `[PFCHAT 02/09]` (xem `BANGIAO_PHIPHONG_CAP13_3108.md` mục 6h), chỉ khác trường dữ liệu:
+
+Ctrl+click món đồ → `GDI_GET_ITEM_PARAM` đổ `KItem` sang struct `ChatItem` → `KUiPlayerBar::SetChatItem`
+gói thành **chuỗi các số cách nhau bằng dấu phẩy** `[…]` thay cho `<tên>` trong tin nhắn. Phía nhận
+(`UiMsgCentrePad.cpp`, hai bộ giải mã: kênh ~657 và chat mật ~1170) đọc lại từng số → `GDI_ITEM_CHAT`
+dựng một **item TẠM** rồi lấy tooltip từ item tạm đó.
+
+Chuỗi này **không mang `KItem::m_nFusionP[6]` / `m_uFusionSeed[6]`** → item tạm có 6 ô Văn Cương rỗng.
+`KItem::FUS_AppendDesc` (KItem.cpp:609) mở đầu bằng `if (GetFusionNum() <= 0) return;` nên **cắt sạch
+khối Văn Cương**: người xem không thấy dòng *"Số lượng Văn Cương đã dung luyện n / cap"* lẫn các dòng
+thuộc tính tím. Thuộc tính Văn Cương **sinh lại** từ cặp (P, seed) bằng LCG riêng `FUS_GenAttrib`, nên
+chỉ cần truyền đủ 2 số này là bên nhận dựng lại y hệt tooltip của chủ món.
+
+### 6.2 Vì sao KHÔNG ghi thẳng 12 số thập phân
+`KSOServer.cpp:2778` **vứt gói chat ≥ 255 byte**. 12 số (6 seed tới 10 chữ số) ăn **~90 ký tự của MỌI
+link** — kể cả món chưa dung luyện — nên link phi phong (đã ~162 ký tự) sẽ không còn chỗ cho chữ.
+
+Cách đã làm: nén 6 ô vào **MỘT trường base 62**, mỗi ô đã dung luyện = **9 ký tự**
+`[chỉ số ô (1) | P (2) | seed (6)]`; ô trống không ghi gì.
+
+| Trường hợp | Độ dài chuỗi `[...]` |
+|---|---|
+| Hoàng kim **chưa** dung luyện | 125 (chỉ dài thêm **đúng 1 dấu phẩy** so với trước) |
+| Hoàng kim dung luyện **4 ô** (trần HKMP) | 161 |
+| Dung luyện **6 ô** (trần tuyệt đối) | 179 |
+| Phi phong (không bao giờ dung luyện) | 162 (trước là 161) |
+
+Nghĩa là món dung luyện đầy vẫn ngắn hơn link phi phong hiện đang chạy tốt → chữ kèm theo còn
+~74 ký tự (kênh) / ~48 (chat mật).
+
+### 6.3 Đã vá — 7 tệp, build sạch `-t:Rebuild` (đổi header dùng chung `GameDataDef.h`)
+1. `Core\Src\GameDataDef.h` — `ChatItem` thêm `int m_nFusionP[6]` + `unsigned m_uFusionSeed[6]` **cuối
+   struct** (105 → 153 byte); `NUM_INFO_ITEM_CHAT` 43 → **44**; thêm bộ mã/giải `FUSCHAT_Ma` /
+   `FUSCHAT_Giai` (+ `FUSCHAT_TriSo`, `FUSCHAT_GhiSo`, `FUSCHAT_MAX_STR` = 64) đặt **sau
+   `#pragma pack(pop)`** để dùng chung cho cả Core lẫn S3Client.
+2. `Core\Src\CoreShell.cpp` — `GDI_GET_ITEM_PARAM` chép 6 (P, seed) từ item thật;
+   `GDI_ITEM_CHAT` gọi **`ClearFusion()` trước** rồi đổ vào item tạm.
+   *Vì sao phải ClearFusion*: `Gen_Equipment` **không** xoá `m_nFusionP` (chỉ `Gen_Fusion` có), nên khe
+   `Item[]` vừa thu hồi có thể còn số Văn Cương cũ → link đồ hiện Văn Cương ma. Đây là lỗi tiền tồn,
+   nay bịt luôn ở đường chat.
+   Ô có `P` lạ (`FUS_GetQuality(P) == 0`) bị bỏ qua → chuỗi hỏng không đội số ô "đã dung luyện".
+3. `S3Client\Ui\UiCase\UiPlayerBar.cpp` — `SetChatItem` ghi thêm trường 44 (đệm riêng `szFus`, vì
+   `Buffer[16]` không chứa nổi 54 ký tự).
+4. `S3Client\Ui\UiCase\UiPlayerBar.h` — `m_ChatItemInfo` 320 → **384**.
+5. `S3Client\Ui\UiCase\UiMsgCentrePad.cpp` — **hai** bộ giải mã đọc thêm trường 44 (chặn `nLeng` để
+   không tràn đệm).
+6. `Core\Src\KItemDice.cpp` — `FillItemDesc` (gói xúc xắc Viêm Đế) mang theo 6 ô.
+7. `Core\Src\KPlayerBot.cpp` — `pb_TaoLinkDo` ghi `"0,0,0,0,,"` (trường 44 **để rỗng**) để số dấu
+   phẩy vẫn khớp 44, link bot không thành chữ thô.
+
+**Tự kiểm**: mô phỏng python bộ mã/giải — **200.000 vòng quay ngẫu nhiên, 0 lệch**; biên 6 ô/seed
+32 bit = 54 ký tự, giải đúng; chuỗi rỗng / cắt giữa nhóm / ký tự lạ đều trả về 6 ô 0 (không đọc quá
+`\0`). Encoding: số byte cao 7 tệp giữ nguyên, FFFD = 0.
+
+### 6.4 ⚠️ RÀNG BUỘC SWAP
+`ChatItem` nằm trong gói `s2c_diceitem` (`KItemDice::FillItemDesc`) → gói lớn thêm 48 byte →
+**CoreServer.dll + CoreClient.dll + Game.exe PHẢI đổi tên cùng lúc**. Lệch bản = client tách gói
+xúc xắc sai. WAuto PC không dùng `ChatItem` (đã grep từ đợt PFCHAT).
+
+Tin nhắn link **cũ** (44 trường) còn trong lịch sử kênh, nếu được phát lại sau swap sẽ hiện thành
+chữ thô `[...]` — vô hại, tạm thời.
+
+### 6.5 CHECKLIST SWAP (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; **3 tệp CÙNG LÚC**)
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `06e7a2b6f61d` (19:33).
+2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `3e66c3caa8ab` (19:34).
+3. `bin\client\Game.exe.moi` — 1.377.792 byte, md5 `8ba5ded1a63d` (19:35).
+4. Bản đang chạy trước swap: CoreServer `244a3a18085d` · CoreClient `f73cd48037e0` · Game.exe
+   `5db988fc529f` (= HEAD, Vũ Hồn/Tiêu Dao đợt 8 vừa swap lúc ~19:3x). **Bộ mới = HEAD + vá này**
+   (superset, không rơi đợt nào trước).
+5. Không có tệp dữ liệu nào đổi ở đợt này.
+6. Nghiệm thu:
+   (a) Ctrl+click một món hoàng kim **đã dung luyện 2–4 ô** → gửi kênh → bấm tên món trong khung chat:
+       cửa sổ phải hiện *"Số lượng Văn Cương đã dung luyện n / cap"* + đúng n dòng tím
+       *"<thuộc tính> [Văn Cương cấp x]"*, **trùng khít tooltip của chủ món**. Thử từ máy khác nhận.
+   (b) Chat mật kèm link món đã dung luyện: như (a).
+   (c) Món hoàng kim **chưa** dung luyện → không hiện khối Văn Cương (đúng), và link vẫn mở được.
+   (d) Link phi phong 10 sao 13 đá → vẫn đủ như đợt PFCHAT.
+   (e) Link bot post lên kênh thế giới → vẫn bấm được (không thành chữ thô).
+   (f) Xúc xắc Viêm Đế: chia 1 món → ô hiện đúng icon + chú giải.

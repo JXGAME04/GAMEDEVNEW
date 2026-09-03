@@ -21,7 +21,9 @@
 #define		MAX_TEAM_MEMBER						7		
 #define		MAX_SENTENCE_LENGTH					256
 // [PFCHAT 02/09] 39 -> 43: chuoi item-chat [..] mang them 4 o m_nPfPack (sao/chuc phuc/13 lo da phi phong) sau 16 khe magic
-#define		NUM_INFO_ITEM_CHAT					43				//26 th玭g tin 頲 slipt trong string g鰅 甶
+// [FUSCHAT 02/09] 43 -> 44: them MOT truong nen (base 62) mang 6 o Van Cuong da dung luyen
+// (P + seed); truong rong = khong dung luyen -> link do thuong chi dai them 1 ky tu (dau phay).
+#define		NUM_INFO_ITEM_CHAT					44				//26 th玭g tin 頲 slipt trong string g鰅 甶
 #define		FILE_NAME_LENGTH					80
 #define		PLAYER_PICKUP_CLIENT_DISTANCE		75//63
 #define		defMAX_EXEC_OBJ_SCRIPT_DISTANCE		200
@@ -630,6 +632,11 @@ typedef struct
 	int		m_nNature; //goldequip
 	int		m_nMaxOptMultiply;
 	int		m_nPfPack[4];		// [PFCHAT 02/09] = KItem::m_nPfPack (sao/chuc phuc/13 lo da phi phong). Cuoi struct. LUU Y: ChatItem nam trong goi s2c_diceitem (Headers\KDiceProtocol.h) -> CoreServer + CoreClient swap CUNG LUC.
+	// [FUSCHAT 02/09] = KItem::m_nFusionP / m_uFusionSeed - 6 o Van Cuong da dung luyen.
+	// Phai bang KItem::FUS_MAX_SLOT (6). Cuoi struct nhu pfpack, va cung nam trong goi
+	// s2c_diceitem -> CoreServer + CoreClient + Game.exe swap CUNG LUC.
+	int		m_nFusionP[6];
+	unsigned	m_uFusionSeed[6];
 } ChatItem;
 
 struct KOneMsgInfo
@@ -647,6 +654,88 @@ struct KOneMsgInfo
 	char		 Msg[1];				//信息的内容
 };
 #pragma pack(pop) // fix loi post item sai opt
+
+// ======== [FUSCHAT 02/09] nen 6 o Van Cuong vao MOT truong cua chuoi item-chat ========
+// Vi sao khong ghi thang 12 so thap phan: GameServer vut goi chat >= 255 byte
+// (KSOServer.cpp:2778), ma 12 so (6 seed toi 10 chu so) an ~90 ky tu cua MOI link,
+// khong con cho cho chu nguoi choi go kem. Cach nen: moi o DA dung luyen = 9 ky tu
+// base 62 theo thu tu [chi so o (1) | P (2) | seed (6)]; o trong khong ghi gi, nen
+// mon khong dung luyen chi ton dung 1 dau phay ngan cach.
+#define	FUSCHAT_MAX_STR		64		// 6 o x 9 ky tu + '\0'
+
+// tra -1 neu khong phai chu so base 62 (dung lam ca cong tac kiem chuoi hong)
+inline int FUSCHAT_TriSo(char c)
+{
+	if (c >= '0' && c <= '9')	return c - '0';
+	if (c >= 'A' && c <= 'Z')	return c - 'A' + 10;
+	if (c >= 'a' && c <= 'z')	return c - 'a' + 36;
+	return -1;
+}
+
+inline void FUSCHAT_GhiSo(char* pszOut, unsigned uVal, int nKyTu)
+{
+	static const char szB62[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	for (int i = nKyTu - 1; i >= 0; i--)
+	{
+		pszOut[i] = szB62[uVal % 62];
+		uVal /= 62;
+	}
+}
+
+// 6 o cua ChatItem -> chuoi (co the rong). pszOut can FUSCHAT_MAX_STR byte.
+inline void FUSCHAT_Ma(const ChatItem* pItem, char* pszOut)
+{
+	if (!pszOut)
+		return;
+	pszOut[0] = 0;
+	if (!pItem)
+		return;
+	int nOff = 0;
+	for (int i = 0; i < 6; i++)
+	{
+		if (pItem->m_nFusionP[i] <= 0)
+			continue;
+		pszOut[nOff] = "0123456789"[i];		// chi so o 0..5
+		FUSCHAT_GhiSo(pszOut + nOff + 1, (unsigned)pItem->m_nFusionP[i], 2);
+		FUSCHAT_GhiSo(pszOut + nOff + 3, pItem->m_uFusionSeed[i], 6);
+		nOff += 9;
+	}
+	pszOut[nOff] = 0;
+}
+
+// Chuoi -> 6 o. Chuoi rong/hong/thieu ky tu: bo qua tu cho hong tro di (mon hien
+// nhu chua dung luyen o cac o do) - khong bao gio doc qua dau '\0'.
+inline void FUSCHAT_Giai(const char* pszIn, ChatItem* pItem)
+{
+	if (!pItem)
+		return;
+	for (int i = 0; i < 6; i++)
+	{
+		pItem->m_nFusionP[i] = 0;
+		pItem->m_uFusionSeed[i] = 0;
+	}
+	if (!pszIn)
+		return;
+	for (int nOff = 0; pszIn[nOff]; nOff += 9)
+	{
+		int j;
+		for (j = 0; j < 9; j++)
+		{
+			if (FUSCHAT_TriSo(pszIn[nOff + j]) < 0)
+				return;		// gap '\0' hoac ky tu la -> dung han
+		}
+		int nSlot = FUSCHAT_TriSo(pszIn[nOff]);
+		if (nSlot < 0 || nSlot >= 6)
+			return;
+		int nP = FUSCHAT_TriSo(pszIn[nOff + 1]) * 62 + FUSCHAT_TriSo(pszIn[nOff + 2]);
+		unsigned uSeed = 0;
+		for (j = 0; j < 6; j++)
+			uSeed = uSeed * 62 + (unsigned)FUSCHAT_TriSo(pszIn[nOff + 3 + j]);
+		pItem->m_nFusionP[nSlot] = nP;
+		pItem->m_uFusionSeed[nSlot] = uSeed;
+	}
+}
+// ======== het khoi FUSCHAT ========
 
 enum ITEMKIND
 {

@@ -2400,6 +2400,16 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 						// mon khac 4 o = 0 (KPlayerDBFuns.cpp ~736 da don) nen chep thang, hanh vi cu khong doi.
 						for (int nPf = 0; nPf < 4; nPf++)
 							Item[nItemIdx].SetPfPack(nPf, m_sInfo->m_nPfPack[nPf]);
+						// [FUSCHAT 02/09] 6 o Van Cuong: Gen_Equipment KHONG xoa m_nFusionP nen khe Item[]
+						// vua thu hoi co the con so cu -> ClearFusion truoc. Bo qua P la (FUS_GetQuality = 0)
+						// de chuoi chat hong khong dung len so o 'da dung luyen'.
+						Item[nItemIdx].ClearFusion();
+						for (int nFs = 0; nFs < 6; nFs++)
+						{
+							int nPFus = m_sInfo->m_nFusionP[nFs];
+							if (nPFus > 0 && KItem::FUS_GetQuality(nPFus) > 0)
+								Item[nItemIdx].SetFusion(nFs, nPFus, m_sInfo->m_uFusionSeed[nFs]);
+						}
 						nRet = nItemIdx;
 					}
 				}
@@ -2468,6 +2478,13 @@ int	KCoreShell::GetGameData(unsigned int uDataId, unsigned int uParam, int nPara
 			// [PFCHAT 02/09] mang theo sao/chuc phuc/13 lo da phi phong (4 o m_nPfPack) de ben nhan dung lai dung mon
 			for (int nPf = 0; nPf < 4; nPf++)
 				pInfo->m_nPfPack[nPf] = Item[nIdx].GetPfPack(nPf);
+			// [FUSCHAT 02/09] mang theo 6 o Van Cuong da dung luyen (P + seed) - thuoc tinh Van Cuong
+			// sinh lai tu (P, seed) nen ben nhan ve duoc y het tooltip cua chu mon.
+			for (int nFs = 0; nFs < 6; nFs++)
+			{
+				pInfo->m_nFusionP[nFs]    = Item[nIdx].GetFusionP(nFs);
+				pInfo->m_uFusionSeed[nFs] = Item[nIdx].GetFusionSeed(nFs);
+			}
 			nRet = 1;
 		}
 		break;

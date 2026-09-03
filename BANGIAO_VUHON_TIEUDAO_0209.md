@@ -424,8 +424,11 @@ Phần trăm cộng thêm đến từ `addskilldamage1` trỏ vào 1382 của **
 ### 18.3 Thập Bộ Nhất Sát (2129) — giữ đúng VLTK, không đổi
 Đã đối chiếu từng cột: đạn 642 (bán kính 8 ô, hồi sát thương 1 khung, đời 10 khung) và hàng kỹ năng 2129 **trùng 100 %** dữ liệu VLTK. Theo yêu cầu "làm đúng dữ liệu VLTK" → giữ nguyên, mỗi quái trong vòng tròn ăn 10 đòn đúng như bản gốc.
 
+
+> **CẢNH BÁO BUILD SONG SONG (lần 2 trong ngày):** bản build đầu của đợt này (19:30, `eaa0390c` / `21f903c7`) **ĐÃ BỊ NUỐT** phần dở dang của luồng công việc khác — họ sửa 7 tệp trong cùng cây `D:\GAMEDEVNEW` lúc 19:25–19:27 (FUSCHAT / Vân Cương 6 ô, gồm `CoreShell.cpp`, `GameDataDef.h`, `KItemDice.cpp`, `KPlayerBot.cpp`). **KHÔNG swap hai tệp đó.** Bản trong bảng dưới build lại từ `git worktree` tại đúng commit `65076c82`, không chứa mã của họ (đã đối chiếu: bản cây chung khác bản cây sạch, `CoreClient` lớn hơn 512 byte). Luật mới: `git status` trước mỗi lần build; có tệp sửa dở không phải của mình thì build ở worktree riêng.
+
 ### 18.4 CHECKLIST SWAP đợt 9 (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; 2 tệp CÙNG LÚC, Game.exe giữ `5db988fc`)
-1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `eaa0390c` (19:30).
-2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `21f903c7` (19:30).
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `ce444da3` (19:47, build từ cây sạch `D:\GAMEDEVNEW_wt_vhtd9`).
+2. `bin\client\CoreClient.dll.moi` — 2.455.040 byte, md5 `d1ec5e41` (19:47, build từ cây sạch).
 3. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
 4. Nghiệm thu: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát.

@@ -6950,13 +6950,14 @@ static void pb_NapChatTG()
 // ---------------------------------------------------------------------------
 // LINK DO trong chat: client JX1 CO SAN trinh doc token "[40 so phay nhau]"
 // (UiPlayerBar.cpp:2067-2219 phia go, UiMsgCentrePad.cpp:323 + CoreShell.cpp:8529
-// phia doc, NUM_INFO_ITEM_CHAT = 43 dau phay tu [PFCHAT 02/09]). Thu tu 44 truong:
+// phia doc, NUM_INFO_ITEM_CHAT = 44 dau phay tu [FUSCHAT 02/09]). Thu tu 45 truong:
 //   1 idTen  2 genre  3 detail  4 particular  5 series  6 level  7 luck
 //   8 version  9 randomSeed  10 idx  11 price  12 x  13 y  14 point  15 stack
 //   16 enchance  17 goldid  18 yearexp  19 lock  20 durability  21 hlock
 //   22 nature  23 maxOpt  24..39 generatorLevel[0..15] (MOI so deu co dau phay
 //   sau no, ke ca so cuoi, roi dong ngoac).
 //   40..43 m_nPfPack[0..3] = sao/chuc phuc/13 lo da phi phong ([PFCHAT 02/09]; mon tam cua bot: 0).
+//   44 chuoi nen 6 o Van Cuong ([FUSCHAT 02/09]; mon tam cua bot: RONG).
 // Tao mot mon TAM bang dung duong ItemSet.Add cua trao vu khi nhap mon, doc du
 // lieu that (seed/version/magic) de tooltip client dung ra mon that, roi huy.
 static void pb_TaoLinkDo(char* szOut, int nMax)
@@ -7016,8 +7017,10 @@ static void pb_TaoLinkDo(char* szOut, int nMax)
 		nViet += _snprintf(szOut + nViet, nMax - nViet - 1, "%d,",
 						   pTS->nGeneratorLevel[q]);
 	// [PFCHAT 02/09] 40..43: 4 o m_nPfPack - mon tam cua bot khong phai phi phong -> "0,0,0,0,"
+	// [FUSCHAT 02/09] 44: truong Van Cuong - mon tam cua bot khong dung luyen -> de RONG
+	// (chi them dung 1 dau phay; so dau phay phai khop NUM_INFO_ITEM_CHAT = 44).
 	if (nViet > 0 && nViet < nMax - 12)
-		nViet += _snprintf(szOut + nViet, nMax - nViet - 1, "0,0,0,0,");
+		nViet += _snprintf(szOut + nViet, nMax - nViet - 1, "0,0,0,0,,");
 	if (nViet > 0 && nViet < nMax - 2)
 	{
 		szOut[nViet]     = ']';
