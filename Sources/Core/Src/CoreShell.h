@@ -547,6 +547,8 @@ enum GAMEDATA_CHANGED_NOTIFY_INDEX
 	GDCNI_OPEN_MANTLE_WASH,
 	// [DUNGLUYEN 01/09] mo box DUNG LUYEN Van Cuong (van o CUOI enum)
 	GDCNI_OPEN_SMELT_BOX,
+	// [MAIL 03/09 D2] cua so THU: uParam = MAILUI_CMD_* (KMailUiDef.h), nParam = con tro / so. Dat CUOI enum.
+	GDCNI_MAIL_UI,
 };
 
 enum GAMEDEBUGCONTROL
@@ -875,6 +877,9 @@ enum GAMEOPERATION_INDEX
 
 	// [VHTD 02/09g] so tang No (1976) / Am Luat (2116) cua chinh minh: uParam = KHsSpView[nParam], tra so muc co tran > 0. Dat CUOI enum.
 	GDI_HS_SP,
+
+	// [MAIL 03/09 D2] cua so THU -> Lua uimail.lua (KMailClient.cpp): uParam = MAILUI_OP_MAKE(op, extra), nParam. Dat CUOI enum.
+	GOI_MAIL_UI,
 
 };
 

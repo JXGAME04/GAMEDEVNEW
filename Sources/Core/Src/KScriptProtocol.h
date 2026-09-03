@@ -44,6 +44,7 @@ int  LuaSendScriptDataToPlayer(Lua_State* L);
 #else
 void SP_OnClientRecv(BYTE* pMsg);					// KProtocolProcess::s2cScriptData
 int  LuaSendScriptDataToServer(Lua_State* L);
+int  SP_RunClientLua(const char* szScript, const char* szCall);	// [MAIL 03/09 D2] chay 1 cau Lua trong state cua script (nap neu chua)
 #endif
 int  LuaEnsureScript(Lua_State* L);
 

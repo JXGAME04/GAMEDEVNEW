@@ -60,6 +60,7 @@
 #include "KGameKV.h"
 #include "KJx2SharedStore.h"	// [MAIL 03/09] OB_* dung ca client
 #include "KScriptProtocol.h"	// [MAIL 03/09] kenh ScriptProtocol
+#include "KMailClient.h"	// [MAIL 03/09 D2] cua so thu (client)
 #ifndef WIN32
 typedef struct  _SYSTEMTIME
 {
@@ -14813,6 +14814,25 @@ TLua_Funcs GameScriptFuns[] =
 	// client: may chu da dang ky DynamicExecute + OB_* trong khoi _SERVER phia duoi
 	{"DynamicExecute",	LuaDynamicExecute},
 	{"SendScriptDataToServer",	LuaSendScriptDataToServer},
+	// [MAIL 03/09 D2] 15 ham 2.0 ma \script\ui\uimail.lua goi + 3 ham phu (KMailClient.cpp)
+	{"AddMailHeader",	LuaMail_AddMailHeader},
+	{"SetMailHeader",	LuaMail_SetMailHeader},
+	{"DeleteOneMail",	LuaMail_DeleteOneMail},
+	{"CleanMailAll",	LuaMail_CleanMailAll},
+	{"CleanMailList",	LuaMail_CleanMailList},
+	{"CleanMailDetail",	LuaMail_CleanMailDetail},
+	{"UpdateMailCount",	LuaMail_UpdateMailCount},
+	{"NewMailUIEventArrival",	LuaMail_NewMailUIEventArrival},
+	{"SwitchMailManager",	LuaMail_SwitchMailManager},
+	{"OpenMailWindow",	LuaMail_OpenMailWindow},
+	{"SetMailIconVisible",	LuaMail_SetMailIconVisible},
+	{"SelectMail",	LuaMail_SelectMail},
+	{"SetFilterText",	LuaMail_SetFilterText},
+	{"SetMailBntStatus",	LuaMail_SetMailBntStatus},
+	{"UpdateMailDetail",	LuaMail_UpdateMailDetail},
+	{"FormatTime2String",	LuaMail_FormatTime2String},
+	{"MailConfirm",	LuaMail_MailConfirm},
+	{"Msg2Player",	LuaMail_Msg2Player},	// client: thong bao he thong (may chu co ban rieng trong khoi _SERVER)
 	{ "OB_Create",	LuaOB_Create },
 	{ "OB_Release",	LuaOB_Release },
 	{ "OB_IsEmpty",	LuaOB_IsEmpty },
