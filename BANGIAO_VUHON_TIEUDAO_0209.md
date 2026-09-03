@@ -377,3 +377,55 @@ Tool: `vhtd_engine_patch8.py` (`[VHTD 02/09m]`), `vhtd_engine_patch9.py` (`[VHTD
 2. `bin\client\CoreClient.dll.moi` — 2.455.040 byte, md5 `f73cd480` (19:11).
 3. Không có tệp dữ liệu nào đổi ở đợt này.
 4. Nghiệm thu: (a) Thỉnh Anh Đề Nhuệ Lữ: vòng khiên to hiện đủ thời gian buff; (b) sạp hàng "bày bán": biển hiện lại; (c) Ma Vân Kiếm Khí rồi Thần Quang Toàn Nhiễu: khí trường nổ; (d) Kinh Đào Phách Ngạn / Trấn Biên Chuỳ / Trừ Gian Diệt Nịnh: bắn trúng liên tục, hết cảnh "đạn bay qua mà không mất máu"; (e) kiếm tự phóng Hoa Sơn không còn bay vào xác; (f) gửi lại log sau 5–10 phút để tôi đo lại tỷ lệ trúng.
+
+
+## 18. ĐỢT 9 (02/09 ~19:15–20:00) — 3 mục Hoa Sơn chủ giao
+
+Tool: `vhtd_engine_patch11.py` (`[VHTD 02/09r]`), `vhtd_data_patch9.py` (`[VHTD 02/09r]`).
+
+### 18.1 Bóng mờ Huyền Nhãn Vân Yên (1358) — ĐÃ VÁ
+
+**Gốc:** engine JX1 **đã có đủ** hệ vẽ bóng mờ theo khung — `KNpcRes::Draw` mỗi khung hạ một ảnh mờ khi cờ `m_nBlurState` bật, `KNpcBlur::ChangeAlpha` làm nhạt dần, `KNpcRes::SetBlur` bật/tắt (chiêu lướt Tạp Đạp Lưu Tinh và các chiêu `NeedShadow` đang dùng đúng hệ này). Nhưng thuộc tính `walkrunshadow` chỉ đi tới `m_WalkRun.nTime` rồi đồng bộ qua cờ `STATE_WALKRUN` sang client, và **không một dòng nào đọc để vẽ**: cả cây nguồn chỉ có 4 chỗ nhắc `m_WalkRun` (đặt, giảm mỗi khung, đóng gói đồng bộ, nhận gói) — không có chỗ vẽ.
+
+**Vá:** trong `KNpc::Activate` (client, chạy mỗi khung), khi nhân vật **đang đi hoặc chạy** thì bật/tắt bóng mờ theo `m_WalkRun.nTime`. Chỉ chạm ở trạng thái đi/chạy nên không đụng bóng mờ của chiêu `NeedShadow` (đặt trong `DoSkill`) và các chỗ tắt sẵn có. `walkrunshadow` là thuộc tính **duy nhất kỹ năng 1358 dùng** trong toàn bộ bảng kỹ năng → không chiêu cổ điển nào bị ảnh hưởng.
+
+**Kèm theo (dữ liệu):** hàng 1358 còn **thiếu 5 thuộc tính** so VLTK (đợt 6 chỉ đồng bộ 13 hàng khác): `me2firedamage_p`, `fire2medamage_p`, `anti_block_rate`, `fasthitrecover_yan_v`, `fatallystrikeres_p`, và `lifemax_p` → `lifemax_yan_p`. Đã đồng bộ. Cùng dịp sửa nốt 2 hàng Hoa Sơn còn lệch: **1349** Kiếm Tông Tổng Quyết (thiếu `attackspeed_yan_v`, `addcolddamage_v`, `anti_hitrecover`) và **1385** Thần Quang Toàn Nhiễu 2 (`sorbdamage_p` → `sorbdamage_yan_p`). Không đụng 2119 (giả định chờ chủ duyệt) và các chiêu BOSS/danh hiệu.
+
+### 18.2 Lực tay nội công 60k so ngoại công 10k — KHÔNG phải lỗi hiển thị
+
+Đã dò cả hai đường: công thức hiển thị (`KPlayer::GetEchoDamage`) và công thức sát thương thật của máy chủ (`KNpc::AppendSkillEffect`). Hai bên **khớp nhau**; chênh lệch nằm ở **dữ liệu**.
+
+**Nội công** — Phách Thạch Phá Ngọc (1382) dùng **số tuyệt đối** lấy nguyên từ VLTK (bảng `pishi_poyu`, chú thích ghi rõ "neihuashan150"): băng sát 11.433 ở cấp 20, 14.400 ở cấp 25, 21.600 ở cấp 30. Rồi nhân với tổng phần trăm cộng thêm:
+
+| Cấp | Không buff | 3 buff Hoa Sơn | 4 buff | 4 buff + Vũ Hồn 1965 |
+|---|---|---|---|---|
+| 20 | 11.433 | 43.445 | 50.305 | 57.165 |
+| 25 | 14.400 | 56.448 | 65.664 | 74.880 |
+| 30 | 21.600 | 87.912 | 102.816 | 117.720 |
+
+Phần trăm cộng thêm đến từ `addskilldamage1` trỏ vào 1382 của **bốn** bảng (Thanh Vân Tống Sảng 1372, Long Huyền Kiếm Khí 1376, Ma Vân Kiếm Khí 1380, Thần Quang Toàn Nhiễu 2 1385), mỗi cái **+60 %** ở cấp 20 và **+69 %** ở cấp 30, cộng `manatoskill_enhance` của Khí Quán Trường Hồng 1379 (**+100 %** cấp 20, +136 % cấp 30) khi đầy nội lực. Bảng Vũ Hồn `qingyin_tiruilv1` (Thỉnh Anh Đề Nhuệ Lữ 1965) **cũng** trỏ +60 % vào 1382 — điều này có sẵn trong dữ liệu VLTK, chỉ ảnh hưởng nhân vật test học nhiều phái.
+
+**Ngoại công** — Kim Nhạn Hoành Không (1351) dùng **phần trăm nhân lực tay vũ khí**: 880 % ở cấp 20, 1328 % ở cấp 30.
+
+| Cấp | Lực tay vũ khí 800 | 1.000 | 1.500 |
+|---|---|---|---|
+| 20 | 7.840 | 9.800 | 14.700 |
+| 30 | 11.424 | 14.280 | 21.420 |
+
+**Kết luận:** nội công là số cố định theo thang cấp 150 của VLTK, ngoại công là phần trăm nhân lực tay vũ khí **của máy chủ này**. Vũ khí ở đây khoảng 1.000 lực tay nên ngoại công ra ~10k, còn nội công giữ nguyên 60k. Ở VLTK gốc, vũ khí cấp 150 mạnh hơn nhiều nên hai bên cân nhau.
+
+**Hai điểm phụ đo được** (đều làm bảng hiển thị **thấp hơn** sát thương thật, không phải cao hơn): bảng hiển thị bỏ qua hệ số theo cấp trên 100 mà máy chủ có áp; và `manatoskill_enhance` bảng chỉ cộng khi nội lực **đầy tuyệt đối**, còn máy chủ cộng theo tỷ lệ nội lực hiện có.
+
+**Ba cần gạt nếu chủ muốn kéo nội công xuống** (tôi **không tự sửa**, đây là cân bằng):
+1. **Dùng lại dòng VLTK cũ đã bị chú thích ngay trong `huashan.lua`**: `{1,200},{40,8000}` thay cho `{1,160},{25,14400},{40,36000}` → cấp 20 còn **17.600** (4 buff), cấp 25 còn 22.800, cấp 30 còn 28.560. Đây là chính con số VLTK từng dùng trước khi họ nâng lên.
+2. **Bớt số buff cộng phần trăm**: bỏ `addskilldamage1` ở một hoặc hai trong bốn bảng.
+3. **Đổi cách tính**: hiện `GetAddSkillDamage` cộng phần trăm của một chiêu **chỉ cần đã học**, không cần đang bật buff. Đây là mã dùng chung cho **mọi phái** từ gốc JX1 (Thiếu Lâm, Cái Bang… đều dựa vào), đổi sẽ thay cân bằng toàn máy chủ nên tôi khuyên không đụng.
+
+### 18.3 Thập Bộ Nhất Sát (2129) — giữ đúng VLTK, không đổi
+Đã đối chiếu từng cột: đạn 642 (bán kính 8 ô, hồi sát thương 1 khung, đời 10 khung) và hàng kỹ năng 2129 **trùng 100 %** dữ liệu VLTK. Theo yêu cầu "làm đúng dữ liệu VLTK" → giữ nguyên, mỗi quái trong vòng tròn ăn 10 đòn đúng như bản gốc.
+
+### 18.4 CHECKLIST SWAP đợt 9 (chủ chạy `ChayGameServer.bat` / `ChoiGame.bat`; 2 tệp CÙNG LÚC, Game.exe giữ `5db988fc`)
+1. `bin\server\CoreServer.dll.moi` — 18.277.376 byte, md5 `eaa0390c` (19:30).
+2. `bin\client\CoreClient.dll.moi` — 2.455.552 byte, md5 `21f903c7` (19:30).
+3. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
+4. Nghiệm thu: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát.

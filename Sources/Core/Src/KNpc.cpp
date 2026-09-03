@@ -833,6 +833,13 @@ if (m_Kind == kind_player)  // míi thªm tõ src mobile
 		m_DataRes.SetPos(m_Index, nMpsX, nMpsY, m_Height, FALSE);
 	}
 
+	// [VHTD 02/09r] BONG MO khi di chuyen (walkrunshadow - Huyen Nhan Van Yen 1358, ky nang DUY NHAT dung thuoc tinh nay).
+	// Engine da co du he ve bong mo theo khung (KNpcRes::Draw ha mot anh mo moi khung khi m_nBlurState, KNpcBlur::ChangeAlpha
+	// lam nhat dan) nhung walkrunshadow chi di den m_WalkRun.nTime roi dong bo co STATE_WALKRUN - KHONG dong nao doc de ve.
+	// Chi cham khi dang di/chay nen khong dung toi bong mo cua chieu NeedShadow (dat trong DoSkill) va cac SetBlur(FALSE) san co.
+	if (m_Doing == do_walk || m_Doing == do_run)
+		m_DataRes.SetBlur(m_WalkRun.nTime > 0 ? TRUE : FALSE);
+
 	if (m_Kind == kind_bird || m_Kind == kind_mouse)
 		m_SyncSignal = SubWorld[0].m_dwCurrentTime;
 
