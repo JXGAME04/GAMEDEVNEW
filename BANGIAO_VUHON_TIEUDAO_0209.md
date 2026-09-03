@@ -865,3 +865,85 @@ Máy chủ cộng theo **tỷ lệ nội lực hiện có**, client chỉ cộng
    (b) Đứng yên → hết bóng (đúng).
    (c) **Chết thử một lần** → xác **không** nhả ảnh mờ chồng lên nhau.
    (d) Phù về thành → không có ảo ảnh (lá chắn cũ còn nguyên).
+
+
+---
+
+## 25. ĐỢT 15 (02/09 ~23:00) — BA CÂU HỎI VỀ ĐOẠT MỆNH LIÊN HOÀN TAM TIỄN KIẾM (1364)
+
+Công cụ `vhtd_engine_patch14.py`, marker `[VHTD 02/09y]`, commit `d422d1a0`. **Chỉ client.**
+
+Cả ba câu đều **không phải lỗi cơ chế**. Hai trong ba là **lỗi chữ hiển thị của chính khối `[VHTD 02/09i]`** tôi thêm cùng ngày.
+
+### 25.1 "Số lượng kiếm xuất ra: 3/9 kiếm" — mẫu số 9 là BỊA
+
+`KSkills.cpp` trong `VhtdAutoSkillDesc` gõ **cứng** số 9 và dùng chung cho cả hai kỹ năng:
+```cpp
+if (nSkillId == 1363 || nSkillId == 1368)
+    sprintf(szLine, "Số lượng kiếm xuất ra: <color=orange>%d/9<color> kiếm\n", nNum);
+```
+
+Đo dữ liệu đang chạy:
+
+| Kỹ năng | Có `skill_misslenum_v`? | Số kiếm |
+|---|---|---|
+| **1368 Độc Cô Cửu Kiếm** | **có** — `huashan.lua:340` `{{1,4},{20,9},{21,9}}` | **4 → 9 theo cấp** |
+| **1363 Thái Nhạc Tam Thanh Phong** | **không** (cả bản ta lẫn VLTK) | **cố định 3** |
+
+Nên "4/9"…"9/9" đúng cho 1368, còn "3/9" ở 1363 là mẫu số bịa → chủ tưởng đang thiếu 6 kiếm. **Đã tách**: "/9" chỉ còn cho 1368; 1363 in số kiếm trần.
+
+**Muốn 1363 thật sự lên 9 kiếm** thì phải thêm bảng `skill_misslenum_v` — **lệch VLTK** và sát thương gấp 3. Chờ chủ quyết, tôi không tự làm.
+
+### 25.2 "Đòn đánh có 10% tỷ lệ xuất…" — NGƯỢC NGHĨA
+
+`KNpc.cpp:4835-4837`, trong đường nhận sát thương:
+```cpp
+4835:  ReplySkill(nLauncher);              // NẠN NHÂN quay số  -> autoreplyskill = KHI BỊ ĐÁNH
+4837:  Npc[nLauncher].AttackSkill(m_Index); // KẺ ĐÁNH quay số   -> autoattackskill = KHI ĐÁNH RA
+```
+`ReplySkill` chỉ có **đúng một nơi gọi** và nó nằm trong đường nhận sát thương.
+
+Khối tooltip trước giờ cho **autoreplyskill và autoattackskill dùng chung** nhánh `else` = "Đòn đánh có R% tỷ lệ xuất TÊN". Nên 1364 hiện ngược nghĩa: chủ đếm số đòn **mình vung ra** rồi chờ 10% → thấy như chiêu hỏng. Thực tế phải **bị đánh** mới có lượt quay.
+
+Bản VLTK ghi đúng — `MagicDesc.ini` mục `autoreplyskill` = *"Khi bị công kích, lấy …% tỷ lệ tự động phóng thích…"*. **Đã thêm nhánh riêng** cho `magic_autoreplyskill`.
+
+**Chữ Việt ghép từ byte có sẵn**, không tự gõ: cụm "Khi bị công kích" lấy từ `MagicDesc.ini`, phần còn lại lấy nguyên từ chính dòng "Đòn đánh" đang có. Công cụ **tự kiểm lại bằng bảng TCVN3** trước khi ghi.
+
+**Bắt được lỗi chính tả của dữ liệu gốc:** `MagicDesc.ini` viết **"Khị bị công kích"** (byte `0xDE` = "ị"). Đã sửa đúng một byte thành "Khi" trong chuỗi mới. Tệp `MagicDesc.ini` **không đụng tới**.
+
+### 25.3 Tỷ lệ 10% — KHÔNG tính sai
+
+`g_RandPercent` dùng mẫu số **100**; hồi chiêu 90 khung ÷ 18 = **đúng 5 giây**. Khớp y ảnh chụp của chủ. Giải mã: `nRate = nValue[2] % 256`, `nWait = nValue[2] / 256`.
+
+Bản ta còn **rộng hơn VLTK gốc khoảng 3 lần cả hai mặt**:
+
+| | Tỷ lệ | Hồi chiêu |
+|---|---|---|
+| VLTK gốc (`vltk_raw` dòng 268) | 3% | 15 giây |
+| **Bản ta** (`huashan.lua:269`) | **10%** | **5 giây** |
+
+Cảm giác "rất thấp" đến từ **cơ chế phản đòn** chứ không từ con số. Kỳ vọng: ~10 đòn **ăn vào** mới nổ một lần, cộng khoá 5 giây.
+
+### 25.4 "Kiếm không bay ra" — CHƯA CHỐT ĐƯỢC, cần chủ thử lại
+
+Đã **loại** giả thuyết thiếu dữ liệu: đạn 418 có đủ **cả hai bên**, 57 cột trùng VLTK 100%, tệp ảnh có thật trong `updatejx14.pak` (80 khung / 16 hướng, khớp cột khai báo). Bốn hàng 1363/1364/1368/1369 trùng VLTK từng ô.
+
+Hai chiêu đi **chung một đường mã**, phát **chung một gói mạng**, vẽ bằng **chung một đoạn mã**. Khác biệt duy nhất là **thời điểm nổ**. Nhiều khả năng chủ **chưa từng thấy 1364 nổ lần nào** vì đang đi đánh chứ không bị đánh — máu quái tụt là do đòn thường.
+
+Cũng có khả năng lúc thấy kiếm bay là chủ **tự bấm** Độc Cô Cửu Kiếm trên thanh kỹ năng (chiêu chủ động thật) → phép so sánh không tương đương.
+
+**Chi tiết đúng VLTK nhưng dễ chớp mắt là hết:** ba viên kiếm sinh ra ở **chân người phóng** và có **0,55 giây đầu vô hình** (Độc Cô Cửu Kiếm chỉ 0,28 giây). Quái đứng sát thì viên giữa chạm và tan trong 1-2 khung. Không sửa.
+
+**Cách chủ tự phân định trong 1 phút:** đứng cho quái đánh mình (đừng đánh lại) khoảng 20-30 giây với buff 1364 bật. Nếu thấy kiếm bay ra → mọi thứ bình thường. Nếu **bị đánh nhiều mà vẫn không thấy kiếm** → lúc đó mới là lỗi thật, tôi điều tra tiếp.
+
+### 25.5 CHECKLIST SWAP đợt 15
+
+1. **Chỉ MỘT tệp**: `bin\client\CoreClient.dll.moi` — 2.461.184 byte, md5 `08bc4499` (22:59).
+   Bản này **đã gộp** cả bản vá bóng mờ `[VHTD 02/09x]` của đợt 14 — **thay cho** `6ef4dc70`, không swap cả hai.
+2. `CoreServer.dll` và `Game.exe` **giữ nguyên**.
+3. `WAuto.exe.moi` là của phiên khác, để họ swap riêng.
+4. Nghiệm thu:
+   (a) Tooltip 1364 giờ ghi **"Khi bị công kích có 10% tỷ lệ xuất Thái Nhạc Tam Thanh Phong"**.
+   (b) Dòng số kiếm của 1364 ghi **"3 kiếm"**, không còn "3/9".
+   (c) Tooltip Cửu Kiếm Hợp Nhất vẫn giữ **"Đòn đánh có …"** và **"N/9 kiếm"**.
+   (d) Bóng mờ Huyền Nhãn Vân Yên: chạy bộ **không đánh nhau** vẫn còn vệt; chết thử không nhả ảnh mờ.
