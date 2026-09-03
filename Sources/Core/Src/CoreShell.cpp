@@ -15262,10 +15262,22 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					bool bComboCast = false;
 					int  nKheBan = -1;		// khe THUC SU duoc chon o nhip nay
 					bool bChenNo = false;	// chen ngang vi da du tang No / Am Luat
-					if(pApData->bCombo)
+					// (02/09 - phan bien) Dang nghi giua 2 khe thi CHI hoan viec BAN, TUYET
+					// DOI khong duoc thoat ca nhip: ban truoc `return 1` o day cat luon chieu
+					// cuu mang (Sinh luc %/Noi luc %), cat khoi DANH TRA khi bi nguoi choi
+					// danh (Tho Dia Phu ve thanh / thoat game) va cat ca doan ap sat muc tieu
+					// - dung lop loi 'vong lap im lang' vua va o chu trinh Hau can.
+					bool bComboNghi = (pApData->bCombo && g_uComboNghi > uCurTime);
+					if(bComboNghi)
 					{
-						if(g_uComboNghi > uCurTime)
-							return 1;	// dang nghi theo o 'tre (ms)' cua khe vua ban
+						// day han 'khong gay sat thuong' ra sau luc nghi, neu khong bo chong-ket
+						// (CoreShell.cpp o tren) se tuong auto danh mai khong vao va CAM muc tieu
+						// 30 giay du chua he danh phat nao.
+						if(Player[nPlayerIdx].m_sExtAuto.uFDelayTime < g_uComboNghi + 2500)
+							Player[nPlayerIdx].m_sExtAuto.uFDelayTime = g_uComboNghi + 2500;
+					}
+					if(pApData->bCombo && !bComboNghi)
+					{
 						if(g_nComboKhe < 0 || g_nComboKhe > 5)
 							g_nComboKhe = 0;
 						// (a) CHIEU AN TANG (No 1976 / Am Luat 2116) da DU TANG thi chen len
@@ -15323,8 +15335,15 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					bool bChecked = false;
 					AUTOLOG_EVERY(1000, "[FIGHT-SKILLPICK] t=%u base=%d left=%d idC=%d chSw=%d chT=%u idB=%d idLS=%d/%d idMS=%d/%d hp%%=%d mp%%=%d", uCurTime, nMainSkill, Player[nPlayerIdx].GetLeftSkill(), pApData->nSkillIdC, Player[nPlayerIdx].m_sExtAuto.bChSkill, Player[nPlayerIdx].m_sExtAuto.uChSkillTime, pApData->nSkillIdB, pApData->nSkillIdLS, pApData->nSLSPerc, pApData->nSkillIdMS, pApData->nSMSPerc, (int)((double)Npc[nNpcIdx].m_CurrentLife*100.0/(Npc[nNpcIdx].m_CurrentLifeMax?Npc[nNpcIdx].m_CurrentLifeMax:1)), (int)((double)Npc[nNpcIdx].m_CurrentMana*100.0/(Npc[nNpcIdx].m_CurrentManaMax?Npc[nNpcIdx].m_CurrentManaMax:1)));
+					// (02/09 - phan bien) ba khoi de len nMainSkill duoi day PHAI ha bComboCast:
+					// neu khong, khe cua bang ket hop bi day sang khe ke va bi ap 'tre (ms)' cua
+					// mot khe THUC RA CHUA HE BAN.
 					if(pApData->nSkillIdB && Npc[nTGNpcIdx].m_Kind == kind_normal && Npc[nTGNpcIdx].m_Type != boss_none)
+					{
 						nMainSkill = pApData->nSkillIdB;
+						bComboCast = false;
+						nKheBan = -1;
+					}
 					if(pApData->nSkillIdLS)
 					{
 						int nAPerc = pApData->nSLSPerc;
@@ -15338,6 +15357,8 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						{
 							bChecked = true;
 							nMainSkill = pApData->nSkillIdLS;
+							bComboCast = false;
+							nKheBan = -1;
 						}
 					}
 					if(!bChecked && pApData->nSkillIdMS)
@@ -15353,6 +15374,8 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						{
 							bChecked = true;
 							nMainSkill = pApData->nSkillIdMS;
+							bComboCast = false;
+							nKheBan = -1;
 						}
 					}
 					if(Npc[nTGNpcIdx].m_Kind == kind_player && pApData->bFightBack)
@@ -15458,7 +15481,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					}
 					int nSkillRadius = pSkill->GetAttackRadius();
 					AUTOLOG_EVERY(500, "[FIGHT-EMIT] t=%u tgID=%u skill=%d dist=%d radius=%d appr=%d near=%d run=%d me=(%d,%d) tg=(%d,%d) meDoing=%d", uCurTime, Npc[nTGNpcIdx].m_dwID, nMainSkill, nDist, nSkillRadius, pApData->bApproach, pApData->nNearDist, Player[nPlayerIdx].m_RunStatus, nX, nY, x, y, (int)Npc[nNpcIdx].m_Doing);
-					if(pApData->bApproach)
+					// (02/09 - phan bien) KHONG kep ban kinh khi dang ban TIEN CHIEU: kieu 2
+					// doi nDist > nTCDist (mac dinh 120) moi ban, ma o 'Tiep can muc tieu' lai
+					// kep ban kinh xuong max(75, nNearDist) - neu nNearDist < nTCDist thi hai
+					// dieu kien khong bao gio cung dung => tien chieu chi ban duoc dung 1 lan
+					// roi thoi. Tien chieu phai duoc dung DUNG tam that cua chieu do.
+					if(pApData->bApproach && !bTCCast)
 					{
 						int nNearDist = pApData->nNearDist;
 						AUTOLOG_EVERY(2000, "[FIGHT-CLAMP] t=%u skill=%d rawRadius=%d cfgNear=%d useNear=%d dist=%d", uCurTime, nMainSkill, nSkillRadius, pApData->nNearDist, (nNearDist < 75 ? 75 : nNearDist), nDist);
@@ -15478,8 +15506,18 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					//   - ban THEO TOA DO (khuon co san cua may PK, CoreShell.cpp:15806)
 					//     chu khong theo chi so muc tieu: chieu tu len minh thi ban tai
 					//     cho dung, con chieu luot thi lay toa do muc tieu de luot toi.
+					// (02/09 - phan bien) trong cua so nghi giua 2 khe thi KHONG ban chieu
+					// thuong, NHUNG chieu cuu mang (bChecked = Sinh luc %/Noi luc %) va tien
+					// chieu van duoc ban - khan cap khong duoc cho. Cac phan khac cua nhip
+					// (danh tra, ap sat, di chuyen) da chay binh thuong o tren.
+					const bool bCamBan = (bComboNghi && !bChecked && !bTCCast);
 					bool bBanRoi = false;
-					if(nSkillRadius <= 0)
+					if(bCamBan)
+					{
+						if(nDist < nSkillRadius || nSkillRadius <= 0)
+							return 1;	// da trong tam, chi dung cho het nhip nghi
+					}
+					else if(nSkillRadius <= 0)
 					{
 						int nCX = x, nCY = y;		// mac dinh: huong ve muc tieu
 						if(pSkill->IsTargetSelf() && !pSkill->IsTargetEnemy())
@@ -15556,10 +15594,12 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					if(KNpc::g_DrawVision)
 					{
 						KNpc::g_DrawVisionSkill = KNpc::g_DrawVision;
-						// (02/09) o 'Ky nang tay trai' da bo -> ve vong theo chieu VUA ban
-						// cua bang ket hop; chua ban lan nao thi van lay chieu tay trai.
-						int nMainSkill = g_nComboSkillCuoi ? g_nComboSkillCuoi
-											: Player[nPlayerIdx].GetLeftSkill();
+						// (02/09 - phan bien) TRA LAI GetLeftSkill: ATYPE_DRAWVISION chi duoc goi
+						// o che do PK (S3Client.cpp, nhanh else cua if(!bOnPK)), ma may PK
+						// (ATYPE_PKFIGHT) KHONG dung bang chieu ket hop - no van lay GetLeftSkill.
+						// Lay g_nComboSkillCuoi (chi duoc ghi trong ATYPE_FIGHT = che do cay) se
+						// ve vong SAI ban kinh so voi chieu may PK that su dung.
+						int nMainSkill = Player[nPlayerIdx].GetLeftSkill();
 						int nSkillIdx = Npc[nNpcIdx].m_SkillList.FindSame(nMainSkill);
 						if(!nSkillIdx)
 							return 0;

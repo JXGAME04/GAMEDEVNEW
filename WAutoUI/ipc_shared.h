@@ -555,7 +555,7 @@ struct autoData
 		bSTChoHS = 1;
 		nSTNghi = 0;
 		nTKVeThanh = 0;
-		bCombo = 0;
+		bCombo = 1;
 		for(int cki = 0; cki < 6; ++cki)
 		{
 			nComboSkill[cki] = 0;
