@@ -16,7 +16,7 @@ cùng lúc** vì `struct autoData` (IPC WAuto ↔ Game.exe ↔ CoreClient.dll) t
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `96c3085d` | `2.486.272` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) |
+| `CoreClient.dll.moi` | `9976e63f` | `2.488.832` | máy `CT_Process` + bảng `KCongThanhTables.h` (superset bản `7efb5720` đang chạy) **+ vá S13 giựt tới/lùi của phiên wauto-6a (đè bản `96c3085d` lúc 13:50, build từ cùng `f2fa3c2b`; kèm `CoreServer.dll.moi cb4cf7f0` bên server — xem `BANGIAO_GIATLUI_PHUVE_FPS_0309.md` mục 10)** |
 | `Game.exe.moi` | `d3d626ba` | `1.378.304` | `S3Client.cpp` gọi máy CT trước Tống Kim (superset `0411771f` đang chạy) |
 | `WAuto.exe.moi` | `46fdc93f` | `413.696` | tab thứ 15 **"Công Thành"** (nhóm *Sự kiện*) |
 
