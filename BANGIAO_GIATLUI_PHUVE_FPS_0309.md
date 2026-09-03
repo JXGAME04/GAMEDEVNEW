@@ -960,3 +960,59 @@ SendCommand(do_run, …)` — chỉ tự đuổi khi khe rỗng (WAuto: đích r
 trúng/chiêu ~2,0; `[S12-THEO]` (nếu có) đích phải là phía quái. **Hồi quy phải soát**: nhân vật "tự nhích sát quái" khi đang
 đứng đánh (đích đuổi là vị trí quái, khoảng cách 0); máy chủ đi thẳng (`ServeMove`, không A*) — gặp tường thì đứng, chiêu kế
 thử lại (trước S13h máy chủ cũng đứng chỗ đó, không tệ hơn).
+
+## 10.9 SAU SWAP S13h (15:26) — chủ báo "vẫn còn giựt lùi" + "phù về đi tới rồi kéo lùi" → đo → S13i
+
+Bản chạy khi báo: server `7b3423c2` (S13h, GameServer 15:26:55), client `5b56367c`. Log `logsnap4\` (cl5/sv5, 17,6 phút client).
+
+### Số đo phiên S13h (so với S13e)
+
+| chỉ số | S13e | **S13h** |
+|---|---|---|
+| `[S8-NAN]`/phút | 3,1 | **1,08** (19 cú, lệch 257–348, 15/19 lúc `run`) |
+| đảo chiều > 120°/phút | 2,8 | **0,3** |
+| `[S13-KEO]` | 86 (stand) | 43 (stand) |
+| máy chủ tự đuổi `[S2-MELEE-TOOFAR-RUN]` | — | **3 lần/24 phút** ⇒ S13h ít khi kích hoạt; cải thiện phần lớn do bớt "giữ chiêu" |
+
+### Ba gốc mới (đều đo trên log, mỗi gốc có ca cụ thể)
+
+**G1 — máy chủ bắn vào XÁC (6/19 cú).** 4 cú đầu cùng một kịch bản: client `S2-CANCAST-DENY` + `E4_SKILL_ABORT people=0` (mục
+tiêu đã chết) rồi chạy sang quái khác ngay; máy chủ thi hành chiêu 1985 đang giữ vào `tgt … doing=10 life=0` (`S4-CAST`), hoạt ảnh
+~560 ms, rồi mới nhận lệnh chạy (trễ 560–830 ms) ⇒ tụt 270–330 mps ⇒ nắn lùi. Toàn phiên: **121/911 chiêu người chơi (13 %,
+5 lần/phút) vào mục tiêu chết**. Mã: `KNpcSet::GetRelation` bản client (`:1531`) trả `relation_none` khi `!IsAlive()`; nhánh máy chủ
+(`:1698+`) **không kiểm** ⇒ `CanCastSkill` cho qua.
+
+**G2 — máy chủ MẤT MỘT KHUNG mỗi lần đổi vùng (lệch trôi ~14 mps/s).** Đo đúng cách trên 25 đoạn chạy liên tục ≥ 2,5 s: lệch tăng
+p50 **14 mps/s** (p75 19) dù bước máy chủ khi cưỡi ngựa vẫn đúng 26 = client (bác giả thuyết tốc độ). Xét 1160 khoảng 2 khung (cả hai
+khung đều là cặp gói sync): máy chủ **thiếu bước 44 lần, 39/44 nằm trong ±400 ms của `[S6-LOADMAP]`** (client đổi cửa sổ vùng =
+người chơi vừa qua ranh vùng). Mã: `KSubWorld::NpcChangeRegion` máy chủ (`:2351`) `SetActiveFlag(TRUE)`; `KNpc::Activate` (`:645`)
+gặp cờ thì xoá + return; client xoá cờ đầu **mỗi** khung (`KSubWorld::Activate :1103`, `#ifndef _SERVER`), máy chủ **không** ⇒ NPC
+sang vùng chỉ số **nhỏ hơn** (đã duyệt) giữ cờ sang khung sau ⇒ mất một khung. Lỗi engine chung cho **mọi NPC máy chủ**.
+⚠️ Bẫy đo đã gặp: gói sync chính chủ tới client theo **cặp** (2 gói cùng khung client, vị trí máy chủ cách 1 bước) ⇒ đo "2 khung
+client = 1 bước máy chủ" cho ảo giác máy chủ nửa tốc độ; phải đo trên đoạn dài hoặc chỉ so khung-cặp với khung-cặp.
+
+**G3 — phù về: client vẫn chạy tới đích của MAP CŨ.** Phiên S13e (`logsnap3`) ca `t=751604180`: map 227 → 11, `vaolandau` +0 ms,
+**+404 ms `E4_MOVE_PATH npc=1 des=(43493,104034)`** (đích map cũ, `doing=3`), +692 ms `S8-NAN lech=257` kéo về = đúng "đi tới rồi kéo
+lùi". `LoadMap` mới chỉ `StopPath()` + xoá khe lệnh, **không đổi `m_Doing`/`m_DesX/Y`** ⇒ `OnRun/ServeMove` đi tiếp. Phiên S13h chỉ
+có 1 lần phù về (đang đứng) nên không tái hiện; 10 lần trong phiên S13e thì nhiều lần bị.
+
+Bổ sung từ wauto-c0: WAuto lên/xuống ngựa ~2,5 s/lần giữa lúc đánh (DT_WalkTo→DT_Ride vs máy PK/đánh) — không phải gốc giựt lùi
+(bước máy chủ khi cưỡi ngựa vẫn 26) nhưng cắt chiêu/đổi tốc; wauto-c0 sẽ vá bên WAuto sau khi chủ duyệt.
+
+### S13i/S13j — ba chỗ vá (build từ main `a2fa66ca` = có MAIL đợt 2 của wauto-d9)
+
+| | tệp | vá |
+|---|---|---|
+| A (server) | `KNpc.cpp` DoSkill, trước `switch(CanCastSkill)` | người thật, `nX==-1`, `!Npc[nY].IsAlive()` ⇒ log `[S13-XAC]`, `return` (không `DoStand`, giữ đang chạy) |
+| B (server) | `KSubWorld.cpp` `Activate` + `NpcChangeRegion` | **O(1)**: biến tĩnh `s_nS13iVungDangDuyet` = chỉ số vùng đang duyệt (−1 ngoài vòng, 0x7FFFFFFF khi duyệt danh sách VOID); `NpcChangeRegion` chỉ `SetActiveFlag(TRUE)` khi đích còn được duyệt trong cùng khung (đích ≥ vùng đang duyệt, hoặc đích = VOID). Bản đầu (S13i) dùng `ClearActivateFlagOfAllNpc()` mỗi khung ở `MainLoop`, phản biện chỉ ra chi phí O(kho NPC toàn 909 map) mỗi khung → đổi sang O(1) |
+| C (client) | `KProtocolProcess.cpp` SyncNpcMinPlayer nhánh `vaolandau` + nhánh region chưa nạp | đang `run/walk/runattack` ⇒ `SendCommand(do_stand)` (`DoStand` private, thi hành ở `ProcCommand` khung kế); lệnh đặt-đi của script tới sau vẫn vào khe di chuyển và thắng. Phản biện tìm 2 lỗi thật → **S13j**: (i) đang **lướt** (`do_runattack` tắt AI) thì nhánh AI-tắt vứt `do_stand` → `SetProcessAI(TRUE)` trước khi gửi; (ii) nhánh **cùng map** `LoadMap` không `StopPath` nên bộ theo-đường gửi lại `do_run` đè lệnh dừng → thêm `SubWorld[0].StopPath()` |
+
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **`f29e592e`** | 18.281.472 | tắt GameServer → `ChayGameServer.bat` |
+| `bin\client\CoreClient.dll.moi` | **`a4bcb831`** | 2.507.264 | thoát Game + WAuto → `ChoiGame.bat` (đổi luôn `Game.exe.moi c3daea6d` MAIL của wauto-d9) |
+
+**Nghiệm thu S13i**: `[S13-XAC]` xuất hiện ≈ 5 lần/phút và `S4-CAST` vào `life=0` = 0; lệch trôi trên đoạn chạy dài p50 ≈ 0 mps/s
+(±5); `[S8-NAN]` < 0,3/phút; phù về lúc đang chạy: không `E4_MOVE_PATH` đích map cũ, không `S8-NAN` trong 3 s sau `vaolandau`.
+Hồi quy soát: bot/quái đổi vùng mượt hơn (không xấu đi); người thật cast lên xác (hồi sinh/bốc xác?) — nếu có tính năng đó thì `[S13-XAC]`
+sẽ chặn, cần chủ báo.
