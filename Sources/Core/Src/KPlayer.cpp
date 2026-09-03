@@ -464,6 +464,16 @@ void	KPlayer::Active()
 	//
 	if(!Npc[m_nIndex].m_FightMode)
 	{
+		// [VHTD 02/09x] GOC cua "bong mo chay mot luc roi mat hien luon": lenh xoa ben duoi chay MOI NHIP khi
+		// nhan vat khong o tu the chien dau, ma JX1 TU ROI khoi tu the do sau vai giay khong danh -> no dam
+		// thang vao cong tac bong mo o KNpc::Activate [VHTD 02/09r] va luon thang.
+		// Bien thanh lenh QUYET DINH thay vi noi long: chi rieng luc DANG DI/CHAY va DANG co buff walkrunshadow
+		// (Huyen Nhan Van Yen 1358) thi bat bong mo; MOI truong hop con lai giu nguyen lenh xoa cu.
+		// Nho vay DUNG YEN / CHET / HOI SINH / PHU VE THANH van duoc la chan chong "ao anh" bao ve nhu truoc,
+		// va xac khong the nha anh mo (may chu ngung gui goi dong bo cho xac -> client se dong bang co bong mo).
+		if ((Npc[m_nIndex].m_Doing == do_walk || Npc[m_nIndex].m_Doing == do_run) && Npc[m_nIndex].m_WalkRun.nTime > 0)
+			Npc[m_nIndex].FkAutoSetBlur(TRUE);
+		else
 		Npc[m_nIndex].FkAutoSetBlur(FALSE); // fix lçi thiªn v­¬ng bang phï vÒ thµnh bÞ ¶o ¶nh
 	}
 	//
