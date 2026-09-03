@@ -16176,6 +16176,30 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 					g_ScenePlace.RemoveFlag();
 					int nSkillRadius = pSkill->GetAttackRadius();
 					AUTOLOG_EVERY(500, "[PK-EMIT] t=%u tgID=%u skill=%d dist=%d radius=%d follow=%d appr=%d near=%d cast=%d run=%d me=(%d,%d) tg=(%d,%d)", uCurTime, Npc[nTGNpcIdx].m_dwID, nMainSkill, nDist, nSkillRadius, pApData->bPKFollowTG, pApData->bPKAppr, pApData->nPKNearDist, (int)bCastState, Player[nPlayerIdx].m_RunStatus, nX, nY, x, y);
+					// (03/09 r2) PHEP KEP TAM PHAI DUNG TRUOC WATCHDOG - dung khuon may danh
+					// thuong (CoreShell.cpp:15757 kep ngay sau khi lay ban kinh).
+					// Truoc day khoi nay nam BEN TRONG nhanh bPKFollowTG, tuc SAU khoi
+					// [S9-BOMUCTIEU] ngay duoi, nen watchdog va phep ban dung HAI CAI THUOC
+					// khac nhau: watchdog so bang ban kinh THO con phep ban so bang ban kinh
+					// DA KEP. Hong that: chieu tam 400, o 'Tiep can' bat (kep con 75), dung
+					// cach muc tieu 200 => phep ban thay 200 >= 75 nen DI BO, con watchdog
+					// thay 200 < 400 nen tuong 'dang danh duoc' va XOA CO MOI NHIP => dong ho
+					// 4 giay khong bao gio du, nhan vat dam tuong duoi mai. Kep o day thi ca
+					// hai dung CHUNG mot thuoc: reset dung luc ban duoc, dem dung luc di bo.
+					// Them dieu kien bPKFollowTG vi khoi cu nam trong nhanh do: nhanh KHONG
+					// duoi theo phai giu ban kinh THO cho phep don dau [PK-MISSILE].
+					// Ban kinh nap vao nhanh duoi theo KHONG doi mot chut nao, chi tinh som hon.
+					// Luu y doc log: [PK-EMIT] o tren van in ban kinh THO (giu nguyen nghia
+					// truong nhat ky dang dung); tam that su = min(radius, max(75, near))
+					// khi appr=1.
+					if(pApData->bPKFollowTG && pApData->bPKAppr && !bCastState && !bTCCast)
+					{
+						int nNearDist = pApData->nPKNearDist;
+						if(nNearDist < 75)
+							nNearDist = 75;
+						if(nSkillRadius > nNearDist)
+							nSkillRadius = nNearDist;
+					}
 					// [FIX-6 26/08] BO MUC TIEU KHONG TOI DUOC.
 					// Chu game: 'di chuyen ra ngoai roi chay vao tuong khoang 30s roi moi di chuyen
 					// A* binh thuong lai'. Do that: thoi gian 'di nhieu ma khong toi dau' tang tu
@@ -16191,14 +16215,33 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						static UINT  s_uS9ApID = 0;	// muc tieu dang ap sat
 						static DWORD s_uS9ApT  = 0;	// moc lan cuoi CO tien bo
 						static int   s_nS9ApD  = 0;	// khoang cach tot nhat da dat
-						// (03/09) nSkillRadius <= 0 = chieu KHONG co tam danh (Tap Dap Luu
-						// Tinh 2118...). Voi loai do phep "nDist < nSkillRadius" khong bao gio
-						// dung, nen khoi nay tuong dang "ap sat mai khong gan them" roi CAM
-						// muc tieu 60 giay + return 0 - tuc la auto tu cam sach ca bai chien.
-						// Ban ngay tai cho (o duoi) nen phai tinh la DA DANH DUOC.
-						if (nDist < nSkillRadius || nSkillRadius <= 0)
+						if (nDist < nSkillRadius)
 						{
 							s_uS9ApID = 0;			// danh duoc roi - khong con ap sat
+						}
+						else if (nSkillRadius <= 0)
+						{
+							// (03/09 r2) [S9-R0-BOQUA] CHIEU KHONG CO TAM DANH: nhip nay
+							// KHONG DUNG VAO SO SACH - khong reset ma cung khong tinh la
+							// mot lan ap sat that bai. Sang 03/09 toi viet la RESET: sai.
+							// Nhip tam 0 chay nhanh [PK-R0] o duoi, ban TAI CHO theo toa do,
+							// KHONG he co do_walk/do_run - no khong dong gop gi vao viec ap
+							// sat, nen coi la 'danh duoc roi' la sai. Tu khi may PK dung BANG
+							// 6 KHE thi chi can MOT khe (hoac mot o Cast bua) la chieu tam 0
+							// la cu vai tram ms dong ho lai bi xoa mot lan => [S9-BOMUCTIEU]
+							// tat han, muc tieu sau tuong khong bao gio duoc bo: dam tuong
+							// vinh vien voi dung 0 sat thuong - CHINH LA can benh [FIX-6] sinh
+							// ra de chua. (Do tren settings\skills.txt: 797/1684 dong co
+							// AttackRadius <= 0, trong do 261 dong co StateSpecialId != 0 =
+							// dung loai hay nhet vao o Cast bua.)
+							// Bo qua thi dung ca hai dau: dong ho la THOI GIAN THAT
+							// (uCurTime - s_uS9ApT) chu khong dem so nhip, nen dong bang so
+							// sach o nhip tam 0 KHONG lam dung dong ho - nhip co ban kinh ke
+							// tiep van thay du 4 giay va van bo duoc muc tieu that su khong toi
+							// duoc. Con bang TOAN chieu tam 0 thi khoi nay khong chay lan nao =
+							// khong cam oan, dung y do ban dau; luoi an toan luc do la
+							// [TK-SAN-BO] (tang san Tong Kim tu cam 60 giay con no khong tim
+							// ra duong toi).
 						}
 						else if (s_uS9ApID != Npc[nTGNpcIdx].m_dwID)
 						{
@@ -16251,18 +16294,7 @@ int	KCoreShell::OperationRequest(unsigned int uOper, unsigned int uParam, int nP
 						}
 					}
 					else if(pApData->bPKFollowTG)
-					{
-						// (03/09) KHONG kep tam khi dang ban TIEN CHIEU: kep ban kinh xuong
-						// nPKNearDist lam tien chieu tam xa khong con ban lai duoc (dung loi
-						// da va o may danh thuong).
-						if(pApData->bPKAppr && !bCastState && !bTCCast)
-						{
-							int nNearDist = pApData->nPKNearDist;
-							if(nNearDist < 75)
-								nNearDist = 75;
-							if(nSkillRadius > nNearDist)
-								nSkillRadius = nNearDist;
-						}
+					{	// (03/09 r2) khoi kep tam da chuyen len TRUOC watchdog - xem tren
 						if(nDist < nSkillRadius)
 						{
 							if(!bCamBan)
