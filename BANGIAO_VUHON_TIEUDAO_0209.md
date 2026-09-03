@@ -301,7 +301,7 @@ Các thuộc tính VLTK khác mà 3 phái dùng (`_yan_`, enhancehit(effect)_rat
 1. `bin\server\CoreServer.dll.moi` — 18.253.312 byte, md5 `a4e813d3` (12:27).
 2. `bin\client\CoreClient.dll.moi` — 2.448.384 byte, md5 `42c8b9fc` (12:27).
 3. Dữ liệu đã ghi thẳng (đọc khi khởi động): `settings\npcs.txt` (server `b033b7e5` / client `28a98db6`), `settings\skills.txt` (server `a79be5ba` / client `e8e4b388`), `settings\missles.txt` (`f108af8d`), `script\skill\huashan.lua` (`53c90880` cả hai, bản VLTK tách bảng + 1364 5 s/10 %; bản cũ `.truoc_vhtd_patch6_0209`), `script\skill\wuhuntang.lua` (`64821f96`), `settings\MagicDesc.ini` (`65a11739`); client `ui\StatePos.ini` (`8ca86c8d`, BuffCount 154), `data\sprvuhontieudao3.pak` (18.807 byte, `f6e45f7f`), `package.ini` (`01e85ffa`, thêm `39=`).
-4. Nghiệm thu: (a) thành Tiêu Dao: sứ giả đúng hình, đứng yên, không đánh người, đứng cạnh máu không tụt; (b) góc trái: icon buff 24×24 đúng ô, hết icon "00s"; Thỉnh Anh Đề Nhuệ Lữ / Huy Sư Diệt Lỗ / Chiết Kích / Hãm Sơn Kích / Túy Tửu / Phất Y / Tiêu Dao Vũ dùng icon VLTK thật; (c) Nộ/Âm Luật 0 → bấm Tạp Đạp Lưu Tinh / Hãm Sơn Kích: đứng yên + "Không đủ N tầng ..."; (d) đủ 10 Âm Luật: lướt → nổ "Khởi" tại điểm đến + sát thương quanh 2 ô; (e) tooltip Tùy Ý Khúc có "Sát thương Lôi (theo nội lực tối đa): X"; (f) Hoa Sơn: tooltip Đoạt Mệnh Liên Hoàn Tam Tiên Kiếm cấp 20 = "Đòn đánh có 10% tỷ lệ xuất Thái Nhạc Tam Thanh Phong / Số lượng kiếm xuất ra: 3/9 kiếm / Thời gian hồi chiêu: 5 giây / Tầng thứ 2: … [cấp 20] 566 %…"; Cửu Kiếm Hợp Nhất tương tự (Độc Cô Cửu Kiếm 9/9 kiếm); Phách Thạch Phá Ngọc vòng 520, 4 đạn; Kim Nhạn Hoành Không 512; nhân vật Hoa Sơn cần **học lại** ở NPC test (bảng cấp 27); (g) tooltip 3 phái: hết dòng lạ, không còn "(Dương)"; (h) học 120/150 ở NPC test rồi mở bảng kỹ năng.
+4. Nghiệm thu: (a) thành Tiêu Dao: sứ giả đúng hình, đứng yên, không đánh người, đứng cạnh máu không tụt; (b) góc trái: icon buff 24×24 đúng ô, hết icon "00s"; Thỉnh Anh Đề Nhuệ Lữ / Huy Sư Diệt Lỗ / Chiết Kích / Hãm Sơn Kích / Túy Tửu / Phất Y / Tiêu Dao Vũ dùng icon VLTK thật; (c) Nộ/Âm Luật 0 → bấm Tạp Đạp Lưu Tinh / Hãm Sơn Kích: đứng yên + "Không đủ N tầng ..."; (d) đủ tầng Âm Luật (**6** tầng ở cấp 20 — xem đính chính mục 19): lướt → nổ "Khởi" tại điểm đến + sát thương quanh 2 ô; (e) tooltip Tùy Ý Khúc có "Sát thương Lôi (theo nội lực tối đa): X"; (f) Hoa Sơn: tooltip Đoạt Mệnh Liên Hoàn Tam Tiên Kiếm cấp 20 = "Đòn đánh có 10% tỷ lệ xuất Thái Nhạc Tam Thanh Phong / Số lượng kiếm xuất ra: 3/9 kiếm / Thời gian hồi chiêu: 5 giây / Tầng thứ 2: … [cấp 20] 566 %…"; Cửu Kiếm Hợp Nhất tương tự (Độc Cô Cửu Kiếm 9/9 kiếm); Phách Thạch Phá Ngọc vòng 520, 4 đạn; Kim Nhạn Hoành Không 512; nhân vật Hoa Sơn cần **học lại** ở NPC test (bảng cấp 27); (g) tooltip 3 phái: hết dòng lạ, không còn "(Dương)"; (h) học 120/150 ở NPC test rồi mở bảng kỹ năng.
 
 
 ## 16. ĐỢT 7 (02/09 ~13:15–15:30) — 11 mục chủ test sau swap đợt 5+6 + "log hết các phái mới"
@@ -448,3 +448,37 @@ Phần trăm cộng thêm đến từ `addskilldamage1` trỏ vào 1382 của **
    Bản đang chạy trước swap: CoreServer `244a3a18085d` · CoreClient `f73cd48037e0` · Game.exe `5db988fc529f`.)*
 4. Dữ liệu đã ghi thẳng: `settings\skills.txt` (server `734b92fd` / client `d7f9d0b3`) — 3 hàng 1349/1358/1385; bản cũ giữ ở `.truoc_vhtd_patch9_0209`. **Cần khởi động lại máy chủ** để nạp lại bảng kỹ năng.
 5. Nghiệm thu phần đợt 9: (a) bật Huyền Nhãn Vân Yên rồi chạy → có vệt bóng mờ phía sau, tắt buff thì hết; (b) tooltip 1358 có thêm các dòng kháng đỡ / giảm sát thương hệ Hỏa / kháng chí mạng; (c) Kiếm Tông Tổng Quyết có thêm tốc đánh và băng sát; (d) phần FUSCHAT: post trang bị đã dung luyện lên kênh chat → hiện đủ thông tin Vân Cương.
+
+
+## 19. ĐỢT 10 (02/09 ~20:00) — "Tạp Đạp Lưu Tinh giảm yêu cầu Âm Luật lại, bản gốc client VLTK đâu phải 10"
+
+### 19.1 Kết quả đo — **không phải lỗi, và dữ liệu ta đã đúng VLTK**
+
+Chi phí Âm Luật của 2118 **giảm dần theo cấp kỹ năng** (chạy bằng bộ Lua 4 của chính engine):
+
+| Cấp kỹ năng | 1 | 5 | 10 | 15 | **20** (tối đa) | 25 | 30+ |
+|---|---|---|---|---|---|---|---|
+| Tầng Âm Luật cần | 10 | 9 | 8 | 7 | **6** | 5 | 4 |
+
+- **Dữ liệu ta trùng VLTK 100 %** — so từng byte khối `cost_sp` của `xiaoyao.lua` ta với `vltk_raw/script__skill__xiaoyao.lua`: khít. Bản gốc VLTK **cũng** dùng `{{1,10},{30,4},{31,4}}` và **cũng** tự chú thích sẵn dòng `--{{1,8},{20,3},{21,3}}`. Vậy **10 đúng là con số của VLTK, nhưng ở cấp 1**.
+- Nhân vật test đang để 2118 ở **cấp 20** (log ghi `slotskill=2118 lv=20 addlv=0 curlv=20` cả server lẫn client) → engine chỉ đòi **6 tầng**.
+- Truy hết đường mã: cổng chặn (`KNpc.cpp:2677` server / `:2683` client) và lệnh trừ tầng (`:2699`) dùng **cùng một** đối tượng kỹ năng của cấp hiện tại; mỗi cấp là một đối tượng riêng; `KSkills.cpp:2212` xoá `m_nCostSp = 0` ngay đầu hàm nạp nên bản sao từ cấp 1 **không thể** mang số 10 sang (hỏng thì ra 0 = mất chặn, chứ không ra 10). `skills.txt` chỉ có một dòng 2118; chiêu con 2119 không khai `cost_sp`. Hai tệp `xiaoyao.lua` server/client giống hệt (`bda7f656`).
+
+**Số 10 đến từ đâu:** (a) **tooltip của kỹ năng chưa cộng điểm** — `CoreShell.cpp:1130` lấy cấp gốc, cấp 0 thì `KSkills.cpp:2863` vẽ mô tả theo **cấp 1** nên in "10 tầng Âm Luật"; đường học chuẩn thêm kỹ năng ở cấp 0 (`hocvocong.lua:736` = `{2118,0}`), NPC test cũng vậy. (b) Trùng hợp: **trần tích Âm Luật cũng đúng bằng 10 tầng**. (c) **Ghi chú sai của chính tôi** trong nghiệm thu đợt 5 — đã sửa ở mục 15.
+
+### 19.2 Nếu chủ vẫn muốn hạ — công cụ đã sẵn, **chưa chạy**
+
+`ReverseTools\phai3htd_thiconghtd_data_patch10_costsp.py` — bật dòng VLTK đã chú thích sẵn `{{1,8},{20,3},{21,3}}`:
+
+| Cấp | 1 | 10 | **20** | 30 |
+|---|---|---|---|---|
+| Hiện tại | 10 | 8 | **6** | 4 |
+| Sau khi đổi | 8 | 5 | **3** | 3 |
+
+- **Không phải build, không phải swap .moi** — thuần dữ liệu Lua. Nhưng sửa **cả hai** tệp server + client (đang giống hệt nhau), rồi **restart máy chủ và người chơi thoát vào lại** (đối tượng kỹ năng cache theo cấp).
+- **Không đụng phái khác**: chỉ 2118 dùng bảng `sataliuxing`. Thập Bộ Nhất Sát (2129) cố định 3, Lạc Nhạn Bình Sa (2138) cố định 8, ba chiêu Vũ Hồn dùng bảng riêng.
+- **Rủi ro cân bằng**: ba chiêu Tiêu Dao ăn chung kho 10 tầng (+1 mỗi lần tích). Hạ 2118 xuống 3 là **ngang Thập Bộ Nhất Sát**, mà 2118 là chiêu **lướt 280 đơn vị** → gần như lướt liên tục.
+- Chạy thử: `python vhtd_data_patch10_costsp.py --kiem` (đã chạy, ra đúng bảng trên). Ghi thật: bỏ `--kiem`. Trả lại như cũ: `--hoan-tac`. Công cụ tự nạp lại bằng lua4 trước khi ghi nên không thể làm hỏng tệp.
+
+### 19.3 Một lệch thiết kế của chính VLTK (chủ quyết)
+`MaxLevel` của 2118 là **20** (ta và VLTK giống nhau), nhưng đường cong chi phí `{{1,10},{30,4}}` được vẽ cho **30 cấp**. Nghĩa là người chơi **vĩnh viễn không chạm được mức 4 tầng** mà tác giả VLTK nhắm tới — thấp nhất chỉ tới 6. Nếu muốn đúng ý tác giả mà không đụng đường cong, có thể nâng `MaxLevel` 2118 từ 20 lên 30.
