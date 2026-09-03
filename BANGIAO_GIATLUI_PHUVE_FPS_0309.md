@@ -829,7 +829,7 @@ của bản họ; đã kiểm chuỗi `[Công Thành]` TCVN3 còn trong DLL (đi
 | `[S8-NAN]` / phút | 3,5 | **< 0,5** (chỉ còn teleport thật / bẫy script) |
 | ma trận trạng thái client×server khác nhau (`confus.py`) | 33,8 % | **giảm mạnh** (≤ 15 %) |
 | Δoffset khi bắt đầu chạy (`trans.py`) | +31 mps | ~0 |
-| `[S13-KEO]` `dem=` | — | có, tăng đều; `buoc` ≤ 64 |
+| `[S13-KEO]` `dem=` | — | có, tăng đều; `buoc` ≤ 40 |
 | `[S13-GIU-CHIEU]` phía server (`jx_auto_server.log`) | — | xuất hiện thay cho `S3-CMD-SWALLOW` của 91477 |
 | `[S13-XA]` | — | hiếm; xuất hiện đúng lúc đổi map |
 | **Hồi quy phải soát**: chiêu bị cắt (mana trừ mà không đánh), nhân vật tự chạy sau hồi sinh/teleport, bot/quái đổi hành vi | | không có |
