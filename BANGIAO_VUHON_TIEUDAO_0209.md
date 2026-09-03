@@ -790,3 +790,78 @@ Nếu sau này tự thêm dòng vào bảng: bảng **của ta 11 cột**, bản
 ### 23.5 Đính chính báo cáo điều tra
 
 Điểm neo "`KNpc.h` dòng 879 nằm sẵn trong `#ifdef _SERVER`" là **sai** — chỉ thị tiền xử lý gần nhất trước đó là `#endif` ở dòng 792. Đã theo đúng mẫu sẵn có của `HS_ResetBuffTime`: **khai báo** trong `.h` không guard, **định nghĩa** trong `.cpp` bên trong `#ifdef _SERVER`.
+
+
+---
+
+## 24. ĐỢT 14 (02/09 ~22:30) — BÓNG MỜ TẮT HẲN (ĐÃ VÁ) + LỰC TAY 1360 (KHÔNG PHẢI LỖI)
+
+Công cụ `vhtd_engine_patch13.py`, marker `[VHTD 02/09x]`, commit `936b9f29`.
+
+### 24.1 Bóng mờ "chạy một lúc rồi mất hiển luôn" — ĐÃ TÌM RA GỐC, ĐÃ VÁ
+
+Chủ báo sau khi swap đợt 13: *"Bóng mờ giờ hết bị rồi nhưng được 1 lúc nó mất hiển luôn."*
+
+**Gốc — KHÔNG phải lỗi đợt này.** `KPlayer.cpp` dòng 465-468, **nhánh client** của `KPlayer::Active()` (`#ifdef _SERVER` mở ở 390, `#else` ở 415 → dòng 465 là mã client). Mỗi nhịp:
+
+```cpp
+if(!Npc[m_nIndex].m_FightMode)
+    Npc[m_nIndex].FkAutoSetBlur(FALSE);   // fix lỗi thiên vương bang phù về thành bị ảo ảnh
+```
+
+`FkAutoSetBlur` (`KNpc.h:661`) chỉ là `m_DataRes.SetBlur(b)`.
+
+Đây là bản vá **cũ của đời trước** chống "ảo ảnh" khi phù về thành. Nhưng nó chạy **mỗi nhịp** và đâm thẳng vào công tắc bóng mờ `[VHTD 02/09r]` ở `KNpc::Activate`. **JX1 tự rơi khỏi tư thế chiến đấu sau vài giây không đánh** — đúng lúc đó lệnh xoá này thắng, bóng mờ tắt và không trở lại cho tới khi người chơi đánh nhau lại. Khớp chính xác triệu chứng.
+
+**Vá:** biến lệnh xoá thành lệnh **quyết định** thay vì nới lỏng nó:
+- đang **đi/chạy** và đang có buff `walkrunshadow` → **bật** bóng mờ
+- **mọi trường hợp còn lại** → giữ nguyên lệnh xoá cũ (lá chắn chống ảo ảnh)
+
+Điều kiện trùng khít với công tắc ở `KNpc::Activate` nên hai chỗ không còn đánh nhau. Giữ nguyên **từng byte** dòng gốc có chữ Việt TCVN3 — chỉ chèn dòng phía trước và biến nó thành thân của `else`.
+
+**Vì sao KHÔNG dùng phương án "nới lỏng"** (tắt lá chắn khi có buff 1358) — phương án đó đã bị phản biện bác và tôi rút lại: khi nhân vật **chết**, máy chủ ngừng gửi gói đồng bộ cho xác nên client **đóng băng** cờ bóng mờ ở giá trị bật → **xác liên tục nhả ảnh mờ chồng lên nhau** suốt màn hình hồi sinh. Đúng loại lỗi "ảo ảnh" mà bản vá cũ sinh ra để chặn. Cách quyết định không có rò này.
+
+**Ba giả thuyết khác đã BỎ sau khi đo:**
+
+| Giả thuyết | Kết luận |
+|---|---|
+| Hàm mới `HaBongMoNhipNay` kẹt đồng hồ / reset khi đổi bản đồ | **Bác.** Client chỉ có `MAX_SUBWORLD = 1`, `m_dwCurrentTime` chỉ tăng, không chỗ nào reset. |
+| Máy chủ không gửi lại cờ `STATE_WALKRUN` | **Bác.** `KNpc::NormalSync()` là hàm **duy nhất** dựng gói và chạy liên tục. |
+| Đánh lại 1358 không nạp lại bộ đếm `walkrunshadow` | Cơ chế **có thật** nhưng chỉ cắn sau đúng 300 giây, không giải thích triệu chứng; và chỗ định chèn là **lối ra chung có cả nhánh gỡ buff** → chèn vào sẽ tự tạo ra đúng lỗi đang đi chữa. **Gác lại.** |
+
+### 24.2 Lực tay Thượng Tùng Nghênh Khách (1360) = 1196 — ĐÚNG THEO VLTK, KHÔNG SỬA
+
+Đối chiếu **114 trên 114 cột** hàng 1360 (server = client = VLTK, lệch 0 cột) và bảng Lua `cangsong_yingke` **trùng từng ký tự** với VLTK. Bản `D:\ServerLinux` còn thấp hơn nữa (5% thay vì 20%).
+
+1360 **không phải chiêu sát thương** — nó là chiêu **công cụ**: phạm vi 480 (gần cả màn hình), và giá trị thật nằm ở chỗ nó bơm **+112%** cho 1363 và **+50%** cho 1368, kèm giảm hồi chiêu cho cả hai.
+
+| Kỹ năng | Yêu cầu cấp | Hệ số nhân vũ khí | Được bơm thêm | Lực tay ước tính |
+|---|---|---|---|---|
+| Bạch Hồng Quán Nhật | 10 | 75% | 0% | ~1.800 |
+| **Kim Nhạn Hoành Không (1351)** | **30** | **880%** | +60% | **~15.000** |
+| Thiên Thần Đảo Huyền (1355) | 50 | 133% | +50% | ~3.300 |
+| **Thượng Tùng Nghênh Khách (1360)** | **60** | **20%** | **+15%** | **~1.200** |
+
+Con số "trên 3k của kỹ năng cấp thấp hơn" chủ thấy chính là **1355 (cấp 50)**. **Yêu cầu cấp cao không đồng nghĩa sát thương cao** trong thiết kế VLTK.
+
+**Nếu chủ muốn nâng** (lệch khỏi VLTK, chờ chủ quyết): sửa `cangsong_yingke.physicsenhance_p` trong `huashan.lua`, **cả hai bản** server và client. Không build, không swap, chỉ restart. **Lưu ý bảng này dùng chung cho 1360/1361/1362** nên nâng là cả ba cùng tăng.
+
+### 24.3 Cần gạt nếu lực tay nội công 1382 tụt quá sâu
+
+Đợt 12 tôi chú thích **hai trong ba** khối bơm vào 1382, tức cắt **+180% → +60%**. Nếu chủ thấy sâu quá: mở lại **một** khối (ưu tiên `longxuan_jianqi1`) bằng cách bỏ `--` ở đầu 4 dòng → **+60%**. Sửa cả hai bản, không build, chỉ restart.
+
+### 24.4 Lệch client/server của Khí Quán Trường Hồng (1379) — GIỮ NGUYÊN, không vá
+
+Máy chủ cộng theo **tỷ lệ nội lực hiện có**, client chỉ cộng khi nội lực **đầy**. Lệch này **có thật**, nhưng bản vá đã bị phản biện bác và tôi rút lại: sửa client theo tỷ lệ sẽ làm ô lực tay **nhảy số liên tục theo thanh nội lực** (biên độ 1,5-2 lần), và ô lực tay đang chính là **cái thước** để nghiệm thu đợt hạ 60k → 10.4k — đổi thước giữa lúc đang đo là sai thời điểm.
+
+### 24.5 CHECKLIST SWAP đợt 14
+
+1. **Chỉ MỘT tệp**: `bin\client\CoreClient.dll.moi` — 2.460.160 byte, md5 `6ef4dc70` (22:29).
+2. `CoreServer.dll` và `Game.exe` **giữ nguyên** (chủ đã swap đợt 13: CoreServer `489d587d`).
+3. Bản này build từ HEAD gồm **cả phần WAuto của phiên khác** (`748257c3` / `e9bd182b` / `15c56493`) nên là **bản bao trùm** CoreClient đang chạy (`9cdafd5e`, 22:16) — swap đè lên được.
+4. `WAuto.exe.moi` (22:24) là của phiên kia, **không liên quan**, để họ swap riêng.
+5. Nghiệm thu:
+   (a) Bật Huyền Nhãn Vân Yên, chạy bộ **mà không đánh nhau** → vệt bóng mờ **vẫn còn**, không tắt sau vài giây nữa.
+   (b) Đứng yên → hết bóng (đúng).
+   (c) **Chết thử một lần** → xác **không** nhả ảnh mờ chồng lên nhau.
+   (d) Phù về thành → không có ảo ảnh (lá chắn cũ còn nguyên).
