@@ -480,5 +480,39 @@ Chi phí Âm Luật của 2118 **giảm dần theo cấp kỹ năng** (chạy b�
 - **Rủi ro cân bằng**: ba chiêu Tiêu Dao ăn chung kho 10 tầng (+1 mỗi lần tích). Hạ 2118 xuống 3 là **ngang Thập Bộ Nhất Sát**, mà 2118 là chiêu **lướt 280 đơn vị** → gần như lướt liên tục.
 - Chạy thử: `python vhtd_data_patch10_costsp.py --kiem` (đã chạy, ra đúng bảng trên). Ghi thật: bỏ `--kiem`. Trả lại như cũ: `--hoan-tac`. Công cụ tự nạp lại bằng lua4 trước khi ghi nên không thể làm hỏng tệp.
 
-### 19.3 Một lệch thiết kế của chính VLTK (chủ quyết)
-`MaxLevel` của 2118 là **20** (ta và VLTK giống nhau), nhưng đường cong chi phí `{{1,10},{30,4}}` được vẽ cho **30 cấp**. Nghĩa là người chơi **vĩnh viễn không chạm được mức 4 tầng** mà tác giả VLTK nhắm tới — thấp nhất chỉ tới 6. Nếu muốn đúng ý tác giả mà không đụng đường cong, có thể nâng `MaxLevel` 2118 từ 20 lên 30.
+### 19.3 ~~Một lệch thiết kế của chính VLTK~~ — **ĐÍNH CHÍNH: tôi kết luận sai**
+Tôi từng viết rằng `MaxLevel` của 2118 là 20 trong khi đường cong chi phí vẽ cho 30 cấp, nên "người chơi vĩnh viễn không chạm được mức 4 tầng". **Sai.** Engine có thuộc tính `allskill_v` (số 139) từ **trang bị cộng cấp mọi kỹ năng**: `KSkillList` cộng `m_nAllSkillV` vào `AddLevel`, và `CurrentSkillLevel = SkillLevel + AddLevel`. Mọi công thức đều dùng `CurrentSkillLevel`. Kiểm lại **toàn bộ 33 kỹ năng Hoa Sơn đều có đường cong vượt `MaxLevel`** — đó là thiết kế bình thường của VLTK, phần vượt dành cho trang bị cộng cấp. Không có gì phải sửa.
+
+
+## 20. ĐỢT 11 (02/09 ~20:30) — 4 mục chủ giao kèm ảnh tooltip Kiếm Tông Tổng Quyết
+
+### 20.1 "Kiếm Tông Tổng Quyết dư thuộc tính phải không?" — **ĐÚNG, và là hồi quy do tôi gây ra**
+
+Ảnh chủ gửi có **hai dòng "Tốc độ đánh – ngoại công: +7%" giống hệt nhau**. Gốc:
+- Hàng 1349 khai **cả** `attackspeed_yan_v` (biến thể "Dương") **lẫn** `attackspeed_v` — **đúng như VLTK**.
+- Nhưng engine ta ánh xạ hai cái vào **cùng một hàm xử lý** (`KNpcAttribModify.cpp:82` cho `attackspeed_yan_v` → `AttackSpeedV`; tương tự `lifemax_yan_p` → `LifeMaxP`…). VLTK có hệ âm/dương nên hai kho riêng; ta thì **cộng đôi cùng một chỉ số**.
+- Đợt 6 tôi còn bỏ hậu tố "(Dương)" trong bảng mô tả (theo quyết định của chủ ở đợt g) nên hai dòng không còn phân biệt được.
+
+**Đã vá (dữ liệu):** gỡ biến thể "Dương" ở **8 kỹ năng** mà đợt 6/đợt 9 của tôi đã thêm vào trong khi bản thường đã có sẵn — 1349 (tốc đánh), 1376 / 1381 / 1385 / 1971 (sinh lực tối đa), 1968 / 1970 (tốc đánh + tốc nội công), 1980 (tốc đánh). Từ nay mỗi chỉ số cộng **một lần**, tooltip còn một dòng.
+**Không đụng** 92 / 208 Phật Tâm Từ Hữu — chiêu cổ điển vốn đã khai cả hai từ trước, sửa là đổi cân bằng cũ.
+
+### 20.2 "Thượng Tùng Nghênh Khách lực tay chỉ 1196 trong khi kỹ năng cấp thấp hơn trên 3k"
+
+Không phải lỗi — đây là **kỹ năng hỗ trợ**, sát thương riêng thấp theo đúng thiết kế VLTK. Bảng `physicsenhance_p` ở cấp 20:
+
+| Kỹ năng | Cấp yêu cầu | physicsenhance_p | Lực tay ước tính (vũ khí ~1.000) |
+|---|---|---|---|
+| 1347 Bạch Hồng Quán Nhật | 10 | 75 % | ~1.750 |
+| 1351 Kim Nhạn Hoành Không | 30 | **880 %** | ~9.800 |
+| 1355 Thiên Thân Đảo Huyền | 50 | 133 % | ~2.330 |
+| **1360 Thượng Tùng Nghênh Khách** | **60** | **20 %** | **~1.200** (chủ thấy 1196 ✓) |
+| 1363 Thái Nhạc Tam Thanh Phong | 90 | 566 % | ~6.660 |
+| 1368 Độc Cô Cửu Kiếm | 150 | 600 % | ~7.000 |
+
+Giá trị của 1360 nằm ở chỗ khác: nó cộng **+112 %** cho Thái Nhạc Tam Thanh Phong và **+50 %** cho Độc Cô Cửu Kiếm (`addskilldamage1/2` trong bảng `cangsong_yingke`). Ô "Lực tay" chỉ hiện sát thương của **kỹ năng đang chọn ở tay trái**, nên nó không bao giờ phản ánh phần 1360 cộng cho hai chiêu kia. Muốn thấy hiệu quả thật thì so sát thương của Thái Nhạc Tam Thanh Phong khi có và không có 1360.
+
+Số liệu này trùng VLTK từng cột. Nếu chủ muốn 1360 tự đánh mạnh hơn thì đó là đổi cân bằng, cần chủ quyết.
+
+### 20.3 Hai mục engine đang điều tra
+- **Ma Vân Kiếm Khí không nổ, không biến mất khi kích hoạt Thần Quang Toàn Nhiễu**: hướng đã lộ — cả hàm kích nổ lẫn chỗ gọi nó đều nằm trong khối **chỉ biên dịch phía máy chủ**, nên client không kích nổ bản sao khí trường của nó: khí trường client sống tiếp đủ 20 giây (không biến mất) và sự kiện nổ 1411 không bắn trên client (không có hiệu ứng). Đang xác minh và tìm neo vá chính xác.
+- **Bóng mờ ngắn và giật + thiếu vòng sáng xanh dưới chân**: engine chỉ hạ được một ảnh mờ mỗi chu kỳ làm nhạt (`NowGetBlur` chỉ đúng khi bộ đếm về 0) nên vệt thưa và không đều; chiêu lướt thì hạ nhiều ảnh cùng lúc theo khoảng cách nên mượt. Vòng sáng dưới chân chưa rõ nguồn (`StateSpecialId` của 1358 bằng 0 ở **cả** ta và VLTK). Đang tìm trong pak.
