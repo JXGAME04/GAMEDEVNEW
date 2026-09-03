@@ -2749,10 +2749,16 @@ void KNpc::DoSkill(int nX, int nY)
 					Npc[nY].GetMpsPos(&nDesX, &nDesY);
 					if (IsPlayer())
 						AUTOLOG_IDX(m_Index, "[S2-MELEE-TOOFAR-RUN] npc=%d id=%u skill=%d tgt_idx=%d dist=%d radius=%d cong=%d curradius=%d chay_toi=(%d,%d) map=(%d,%d) doing=%d ngua=%d", m_Index, m_dwID, m_ActiveSkillID, nY, NpcSet.GetDistance(m_Index, nY), pSkill->GetAttackRadius(), pSkill->GetAttackRadius() + 20, m_CurrentAttackRadius, nDesX, nDesY, m_MapX, m_MapY, (int)m_Doing, (int)m_bRideHorse);
-					// [S13c] phan bien #2: voi nguoi choi that, lenh nay TRUOC S13 la MA CHET (bi dong cuoi ProcCommand
-					// xoa ngay trong cung luot). Khe di chuyen rieng lam no song lai CHI o may chu -> may chu tu duoi bam
-					// ma client khong biet = lech moi. Giu dung hieu luc cu; NPC khac (bot) van nhu truoc.
-					if (!S13_IsRealPlayer(this))
+					// [S13g 03/09] phan bien S13f #1 (do sau swap S13e): may chu DOI DI CHUYEN -> giut lui. Goc: WAuto chi gui
+					// run khi client NGOAI tam; khi client da toi tam va danh, may chu (tut sau) chi nhan chieu -> qua tam ->
+					// tu choi -> DUNG, khong co lenh nao de duoi kip -> lech >256 -> nan keo lui. Dong lenh duoi nay cua
+					// engine la MA CHET cho MOI loai NPC (DoSkill chi duoc goi tu ProcCommand, m_Command bi xoa ngay sau do);
+					// S13c con gac them cho nguoi choi that. Nho HAI KHE (S13), do_run nay vao khe di chuyen, KHONG bi xoa,
+					// va thi hanh ngay cung luot (AI van bat vi chua co hoat anh) -> may chu duoi kip client (client cung o
+					// canh muc tieu) -> het lech. NPC/bot: khe rong, m_Command van bi xoa nhu cu = khong doi.
+					// [S13h] phan bien (e): CHI tu duoi khi khe di chuyen RONG - client dang giu lenh chay/di rieng (lui, kite)
+					// thi y dinh cua client thang, khong de len.
+					if (s_S13Move[m_Index].CmdKind == do_none)
 						SendCommand(do_run, nDesX, nDesY);
 					return;
 				}

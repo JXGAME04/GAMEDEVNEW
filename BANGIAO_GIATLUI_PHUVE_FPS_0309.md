@@ -896,3 +896,67 @@ nên xem lại; engine có thể xét "không giữ chiêu vừa bị từ chố
 `[S13-KEO]` chỉ còn `doing=1`; tốc độ chạy đều (p10 ≥ 330 mps/s như sau S13, không còn đợt hụt); trúng/chiêu ~2,0 giữ nguyên.
 Nếu còn "đánh không trúng": bước kế là (a) không giữ chiêu vừa bị máy chủ từ chối / rà cấu hình 1967 của WAuto, (b) **F2**
 dash theo `s2c_skillcast` của máy chủ.
+
+## 10.8 SAU SWAP S13e (14:21) — chủ báo "hết chạy nhanh–chậm, còn di chuyển tới giựt lùi lại" → đo → S13f (BÁC) → S13g/h
+
+Bản đang chạy khi báo: client `5b56367c` (S13e), server `cb4cf7f0`. Phiên S13e 10,8 phút (`logsnap3\`, pid client 704).
+
+### Số đo phiên S13e
+
+| chỉ số | giá trị | nhận xét |
+|---|---|---|
+| cú đảo chiều > 120° khi đang chạy (`giutlui.py`) | **30 = 2,8/phút** | = cái chủ thấy; **20/30 có `[S8-NAN]` ngay trước** |
+| `[S8-NAN]` | 33 = 3,1/phút, **32/33 lúc `run`**, lệch **257–310** (vừa nhích qua 256) | lệch cộng dồn, không phải teleport |
+| `[S13-DASH-GRACE]` | 20 | ân hạn có chạy, nhưng nắn xảy ra **sau** ân hạn, lúc `run` |
+| `[S13-KEO]` | 86, **86/86 `doing=stand`** | S13e đúng — hết kéo lúc chạy/đánh (chủ xác nhận hết "nhanh–chậm") |
+| `[S12-THEO]` | 969 = 90/phút; 478 tiến / 31 lùi / 26 ngang | cửa sổ mở gần liên tục (33 cú nắn × 3 s + tự làm mới) nhưng đích phần lớn cùng hướng ⇒ không phải thủ phạm chính |
+| dash: client 162 đợt vs server `S4-CAST 1977` 158 | máy chủ dash đủ | **bác** giả thuyết "máy chủ mất dash" |
+| trễ máy chủ chấp nhận lệnh chạy | **p50 328 ms, p75 887, p90 1443, 44 % > 0,5 s** | trước S13: p50 217, 28 % ⇒ **XẤU HƠN** |
+| trước mỗi cú nắn, máy chủ không chạy đã | **p50 1,56 s, p90 2,8 s** | máy chủ đang `CAST 1985` liên tiếp / đứng |
+
+### 🔴 Gốc: MÁY CHỦ ĐÓI DI CHUYỂN — do chính S13c #2
+
+WAuto **chỉ gửi lệnh chạy khi client NGOÀI tầm** (`KPlayerAuto.cpp:1333-1341`, ≥5 khung/lần) và gửi chiêu khi client đã tới tầm.
+Máy chủ tụt sau vài ô ⇒ khi client tới tầm và đánh, máy chủ **chỉ còn nhận chiêu**, chiêu cận chiến ở máy chủ **quá tầm**
+(`CanCastSkill` = −1, `KSkills.cpp:366-372`) ⇒ từ chối ⇒ **đứng**, và **không có lệnh nào để đuổi kịp**. Sau ~1,5 s lệch > 256
+⇒ nắn cứng kéo client **lùi về chỗ máy chủ đứng** = "di chuyển tới rồi giựt lùi lại".
+
+Engine có sẵn dòng xử lý ca này: `DoSkill` case −1 (`#ifdef _SERVER`) → `SendCommand(do_run, target)` = NPC tự chạy tới mục
+tiêu. Nhưng (phản biện đính chính) nó là **mã chết cho MỌI loại NPC**: `DoSkill` chỉ được gọi từ `ProcCommand`, và dòng cuối
+`ProcCommand` xoá `m_Command` ngay sau đó. Hai khe của S13 làm nó sống lại cho người chơi thật; phản biện S13c #2 lo "máy chủ
+tự đuổi mà client không biết" nên tôi **gác** lại — **chính cái gác đó làm máy chủ đói**.
+
+### S13f — ĐÃ BUILD NHƯNG BỊ PHẢN BIỆN BÁC, ĐÃ GỠ (không swap)
+
+Thử "ý định mới nhất thắng" giữa hai khe (lệnh tới sau > 60 ms huỷ lệnh cũ ở khe kia) + bảo vệ chiêu dịch chuyển đang giữ +
+S12 chỉ làm mới khi thụ động. Phản biện (vòng 3) tìm **3 lỗi thật**: (1) huỷ theo thời điểm **đến** ≠ thi hành theo **thứ tự
+thời gian** của client; chiêu tới sau huỷ lệnh chạy nhưng chiêu đó ở máy chủ **bị từ chối quá tầm** ⇒ máy chủ vẫn đứng, còn
+hồi quy ca "client chạy tới tầm rồi bắn"; (2) bỏ chiêu thường khi dash đang giữ ⇒ client thi hành chiêu mà máy chủ bỏ (WAuto
+**không** gửi lại) = đánh hụt; (3) `NetCommandWalk` vẫn làm mới cửa sổ S12 vô điều kiện. ⇒ **gỡ toàn bộ S13f**, hai cây về
+đúng S13e (`811f93ac`, so byte = 0).
+
+### S13g + S13h — MỘT chỗ sửa (`KNpc.cpp`, `DoSkill` case −1, `#ifdef _SERVER`)
+
+Bỏ gác `if (!S13_IsRealPlayer(this))`: chiêu cận chiến quá tầm ⇒ máy chủ `SendCommand(do_run, target)` cho người chơi thật.
+Nhờ hai khe, `do_run` vào khe di chuyển (không bị xoá) và thi hành **ngay cùng lượt** tại `S13_Move` (`nAI && m_ProcessAI`
+vẫn 1 vì case −1 `return` trước `DoOrdinSkill`) ⇒ máy chủ chạy tới mục tiêu ⇒ đuổi kịp client (đang đứng cạnh mục tiêu) ⇒ hết
+lệch ⇒ hết nắn ⇒ hết giựt lùi. Client **không đổi mã** (khối nằm trong `#ifdef _SERVER`).
+
+Phản biện S13g (vòng 4, `KNpc.cpp:2749-2762`): (a) luồng đúng — `break` → `m_Command = do_none` → nhãn `S13_Move` → `RunTo`
+cùng lượt; (b) không vòng lặp xấu — `DoRun` có `if (m_Doing == do_run) return;` trước khi đặt lại khung ⇒ đang chạy chỉ đổi
+đích, không khựng; chi phí 1 gói `s2c_npcrun`/chiêu (~12/s lúc đuổi); (c) vọng về client bị `ConformIdx` loại, chỉ lọt cửa sổ
+S12 3 s sau nắn — khi đó đích ≈ vị trí quái = cùng hướng máy chủ (hội tụ, không giằng co); (d) bot/quái không đổi (khe rỗng,
+`m_Command` vẫn bị xoá như cũ); **(e) 1 lỗi thật → S13h**: khe di chuyển đang giữ lệnh chạy riêng của client (lùi/kite) mà
+chiêu thi hành ⇒ lệnh tự đuổi **đè** mất ý định client ⇒ lệch mới. Sửa: `if (s_S13Move[m_Index].CmdKind == do_none)
+SendCommand(do_run, …)` — chỉ tự đuổi khi khe rỗng (WAuto: đích run = vị trí quái nên tương đương; người chơi tay: client thắng).
+
+| tệp | md5 | kích thước | swap |
+|---|---|---|---|
+| `bin\server\CoreServer.dll.moi` | **`7b3423c2`** | 18.277.888 | **CẦN** — tắt GameServer → `ChayGameServer.bat` |
+| `bin\client\CoreClient.dll` | `5b56367c` (S13e, đang chạy) | | **không đổi** (bản build cùng đợt `ff6128da` chỉ khác dấu thời gian) |
+
+**Nghiệm thu S13h** (script `logsnap3\`): trễ máy chủ chấp nhận lệnh chạy p50 về ≤ 200 ms, > 0,5 s ≤ 15 %; `[S8-NAN]` < 0,5/phút;
+đảo chiều < 0,5/phút; `[S2-MELEE-TOOFAR-RUN]` phía server xuất hiện rồi **tắt** trong cùng chu kỳ (máy chủ tới tầm); dash 1:1;
+trúng/chiêu ~2,0; `[S12-THEO]` (nếu có) đích phải là phía quái. **Hồi quy phải soát**: nhân vật "tự nhích sát quái" khi đang
+đứng đánh (đích đuổi là vị trí quái, khoảng cách 0); máy chủ đi thẳng (`ServeMove`, không A*) — gặp tường thì đứng, chiêu kế
+thử lại (trước S13h máy chủ cũng đứng chỗ đó, không tệ hơn).
