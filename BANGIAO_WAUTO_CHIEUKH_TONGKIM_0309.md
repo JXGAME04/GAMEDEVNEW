@@ -13,7 +13,7 @@ Toàn bộ khối việc này **chưa được test lần nào**. Chủ game nó
 
 | Tệp | md5 | cỡ (byte) | Nội dung |
 |---|---|---|---|
-| `CoreClient.dll.moi` | `7fb3472f` | 2.466.816 | commit `e32e68b2` — gồm TẤT CẢ việc bên dưới |
+| `CoreClient.dll.moi` | `7efb5720` | 2.466.816 | commit `4d7b1df6` — gồm TẤT CẢ việc bên dưới |
 | `WAuto.exe.moi` | `d0efa1f5` | 403.968 | giao diện: bỏ 3 ô cũ, thêm tab 13 "Chiêu KH" |
 
 `Game.exe` (`0411771f`) **không đổi**, không cần đụng.
@@ -35,7 +35,7 @@ Toàn bộ khối việc này **chưa được test lần nào**. Chủ game nó
 | # | Việc | Ghi chú |
 |---|---|---|
 | 2.1 | **Chờ kết quả test của chủ game** | 5 mảng: bảng chiêu kết hợp, tiền chiêu, điều kiện Nộ/Âm Luật, Táp Đạp Lưu Tinh, Tống Kim tự tìm địch |
-| 2.2 | `CK-PK-03` — chống-kẹt loãng đi | Xem mục 6. Chưa vá **có chủ đích**, đã báo chủ game |
+| 2.2 | **3 câu hỏi chờ chủ game quyết** | Xem mục 6 — đều là đổi hành vi người dùng thấy được nên **không tự làm** |
 | 2.3 | Ổ "Mật khẩu rương" đang RỖNG | Nên bước "Cất đồ" của Hậu cần không chạy — việc cũ, xem `BANGIAO_HAUCAN_DUNGYEN_0209.md` |
 
 ---
@@ -56,6 +56,7 @@ Tất cả đã push lên `main`.
 | `3b23abe8` | Tống Kim: tầng săn `TK_SanNguoi` — tự tìm người/bot khác phe rồi tới đánh, thay cho việc chạy tới toạ độ sinh binh đoàn |
 | `b02736bd` | Tống Kim **r2**: nhận địch bằng **CAMP (màu phe)** y như bot, bỏ phép kẹp tầm |
 | `e32e68b2` | **Máy PK nhận cấu hình tab "Chiêu KH"** |
+| `4d7b1df6` | **Vá 2 lỗi của khối chống-kẹt `[S9-BOMUCTIEU]`** — xem mục 5.7 |
 
 ---
 
@@ -166,6 +167,32 @@ Không cần kẹp tầm: máy chủ vốn ngừng gửi gói NPC cách ≥ 40 �
 Tab **Tống Kim** = tìm mục tiêu + di chuyển. Tab **PK** = quét phạm vi + đánh.
 Thứ tự chọn chiêu trong máy PK, chủ game chốt: **Cast bùa > Chiêu KH > bỏ ô "Đổi chiêu"**.
 
+### 5.7 🔴 Watchdog và phép bắn phải dùng **chung một cái thước**
+
+Hai lỗi vá ở `4d7b1df6`, cùng một gốc: khối `[S9-BOMUCTIEU]` đo bằng một bán kính, phép
+bắn đo bằng bán kính khác.
+
+1. **Phép kẹp tầm phải đứng TRƯỚC watchdog.** Khối kẹp xuống `max(75, nPKNearDist)` vốn
+   nằm **bên trong** nhánh `bPKFollowTG`, tức **sau** watchdog. Chiêu tầm 400 + ô "Tiếp cận"
+   bật (kẹp còn 75) + đứng cách 200 ⇒ phép bắn thấy `200 >= 75` nên **đi bộ**, watchdog thấy
+   `200 < 400` nên **xoá cờ mỗi nhịp** ⇒ 4 giây không bao giờ đủ ⇒ đâm tường đuổi vĩnh viễn.
+   Máy đánh thường không dính vì nó kẹp **trước** mọi phép so.
+2. **Nhịp chiêu tầm 0 = nhịp KHÔNG TÍNH, không phải nhịp RESET.** Nhánh `[PK-R0]` bắn tại
+   chỗ theo toạ độ, **không hề có** `do_walk`/`do_run` — nó không đóng góp gì vào việc áp sát
+   nên coi là "đánh được rồi" là sai. **797/1684 dòng `skills.txt` có `AttackRadius <= 0`**
+   (261 dòng có `StateSpecialId != 0` = loại hay nhét vào ô Cast bùa) nên xác suất dính cao.
+   Để nhánh **rỗng** là đúng cả hai đầu: đồng hồ là **thời gian thật** (`uCurTime - s_uS9ApT`)
+   chứ không đếm số nhịp, nên đóng băng sổ sách ở nhịp tầm 0 không làm dừng đồng hồ.
+
+Chuỗi trạng thái đúng, 5 nhánh: `trong tầm → reset` / `tầm 0 → không tính` /
+`đổi mục tiêu → nạp cờ` / `gần thêm ≥ 1 ô → gia hạn` / `quá 4 giây → cấm 60 giây + return 0`.
+
+⚠️ **Tác dụng phụ đã báo chủ:** sau vá 1, ở cấu hình **"Tiếp cận" BẬT** + chiêu tầm xa,
+watchdog **sẽ nổ** — việc trước nay nó chưa từng làm. Đuổi một người chạy trốn cùng tốc độ
+mà 4 giây không rút được 1 ô sẽ bị **cấm 60 giây**. Ở cấu hình đó bot **đang không gây sát
+thương** (nó đi bộ, không bắn) nên đổi mục tiêu là lời — nhưng trận thưa người sẽ thấy bot
+"bỏ đi" 60 giây. Ô "Tiếp cận" **mặc định TẮT** nên phần lớn người chơi không thấy gì đổi.
+
 ### 5.6 Bẫy chung của dự án (nhắc lại)
 
 - **CẤM** Edit/Write tool trên tệp nguồn JX1 — dùng `python io.open(..., encoding='latin-1',
@@ -179,12 +206,26 @@ Thứ tự chọn chiêu trong máy PK, chủ game chốt: **Cast bùa > Chiêu 
 
 ---
 
-## 6. Điểm CÒN NỢ: `CK-PK-03` (đã báo chủ game, chưa vá)
+## 6. BA CÂU HỎI CHỜ CHỦ GAME QUYẾT (không tự làm)
 
-Bán kính đổi theo từng khe làm khối chống-kẹt 16086 **dễ reset hơn**, tức máy PK **chậm bỏ**
-một mục tiêu nấp sau tường hơn trước. Hướng sai này **an toàn** (không cấm oan) và Tống Kim
-vốn giao lại mục tiêu mỗi 300 ms, nên tạm để. Sửa nó phải đụng `[FIX-6]` (16072‑16081) vốn
-sinh ra để chữa bệnh khác — làm riêng một đợt nếu chủ game muốn.
+Cả ba đều **đổi hành vi người dùng thấy được**, nên theo luật 03/09 phải hỏi trước.
+
+**Q1 — Ô "Cast bùa" nhét chiêu tự buff thì bot đứng im buff mãi.**
+Khối CS1/CS2/CS3 chỉ kiểm *"mục tiêu đã dính state chưa"*, **không** kiểm đã học / hồi chiêu.
+Với chiêu buff lên **chính mình**, mục tiêu vĩnh viễn không mang state đó ⇒ `bCastState = true`
+mọi nhịp ⇒ bot đứng im buff mãi. Sửa đúng: bắt CS kiểm state **trên bản thân** với chiêu tự
+thân, hoặc chặn chiêu `AttackRadius <= 0` khỏi ô Cast bùa.
+
+**Q2 — Tạp Đạp Lưu Tinh 2118 đốt tầng Âm Luật không công.**
+`DoBlurMove` trả FALSE khi `nWantLength <= MIN_DOMELEE_RANGE` (20, `KNpc.cpp:2108`) hoặc bị
+chắn ngay mấy bước đầu (2131‑2135) ⇒ không lướt, không sát thương — nhưng `HS_SpCost` đã
+trừ ở `KNpc.cpp:2699`, **trước** chỗ kiểm `CastMeleeSkill(pSkill) == FALSE` (2869).
+`WA_ChieuSanSang` chỉ kiểm "đủ tầng" nên nó chọn lại ngay khi đủ ⇒ lặp. Vá nhẹ nhất: lọc khe
+khi `nDist <= 20`.
+
+**Q3 — `TK_ChonDich` giao lại mục tiêu mỗi 300 ms mà không có khoá.**
+`TK_SanNguoi` thì có (chỉ đổi khi con mới gần hơn 25%). Đổi mục tiêu liên tục cũng làm
+watchdog nạp lại cờ. Chép khuôn khoá sang là việc độc lập.
 
 ---
 
@@ -193,6 +234,7 @@ sinh ra để chữa bệnh khác — làm riêng một đợt nếu chủ game 
 | Đợt | Quy mô | Kết quả |
 |---|---|---|
 | 02/09 — bảng Chiêu KH | 33 phát hiện → 18 chốt | **6 lỗi thật**, vá ở `c5660cd5`. Nặng nhất: `return 1` trong cửa sổ nghỉ **cắt cả nhịp** → chặn chiêu cứu mạng, chặn đánh trả / Thổ Địa Phù, chặn cả áp sát — đúng lớp lỗi "vòng lặp im lặng" vừa vá ở Hậu cần |
+| 03/09 — `CK-PK-03` trên mã đã vá | 8 tác tử | **2 lỗi thật**, vá ở `4d7b1df6` — xem mục 5.7. Một trong hai là **hồi quy của chính tôi sáng cùng ngày**: ngoại lệ `|| nSkillRadius <= 0` thêm ở `e32e68b2` để chữa một bệnh đã **mở lại bệnh khác** |
 | 03/09 — máy PK nhận Chiêu KH | 32 tác tử, 20 rủi ro → 8 đem cãi | **2 sống sót**, cả hai đã xử trước khi vá (mục 5.1 và 5.2‑1). 6 cái bị bác ≥2/3 — **toàn bộ đề nghị "tách riêng biến `g_*` cho PK" đều bị bác** |
 
 **Luật rút ra:** phản biện nội bộ **không thay được một câu hỏi cho chủ game**. Tác tử chỉ
