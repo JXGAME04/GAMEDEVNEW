@@ -435,10 +435,12 @@ void KUiAuctionItemRow::Fill(const KAucUiItem* p)
 			// va con so trong do - truoc chi an ba cai nut, khung nhap van nam do trong tron.
 			m_ImgInput.Hide();
 			m_TxtOffer.Hide();
-			if (p->nBuyNow > 0)
-				m_BtnGetBack.Show();
-			else
-				m_BtnGetBack.Hide();
+			// [A36 04/09] chu: "khi dau gia len bang hoi thi khong go xuong duoc".
+			// Truoc day nut nay chi hien khi mon co GIA MUA NGAY (nBuyNow > 0), ma phien bang hoi
+			// truoc nay khong co gia mua ngay -> nut khong bao gio hien -> nguoi ban khong con duong
+			// rut mon ve. May chu thi khong he chan: AUC_OnRequestGetBack chi doi dung nguoi ban va
+			// chua ai tra gia, khong phan biet loai phien. Nut phai hien cho MOI mon cua chinh minh.
+			m_BtnGetBack.Show();
 		}
 		else
 		{
