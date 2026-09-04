@@ -38,6 +38,22 @@ static inline BOOL VhIsNewFactionSkill(int nSkillId) { return (nSkillId >= 1363 
 #include "KSG_StringProcess.h"
 #else
 #include "../../Engine/Src/KSG_StringProcess.h"
+
+#ifndef _SERVER
+// [REP3 03/09] [Client] MissleIndex=N : moi dan ky nang dung sprite/am thanh cua dong N (giu tham so bay cua dan goc)
+//   theo tuy chon MissleOpen+MissleIndex cua client VLTK 2.0 - mot hieu ung cho moi chieu khi dong nguoi.
+extern int   g_nWAOptMissleIndex;	// [REP3 03/09] tu CoreShell.cpp (WAuto tab Co ban)
+extern DWORD g_dwWAOptTime;
+static int REP3_MissleIndex()
+{
+	static int s_nIdx = -1;
+	if (s_nIdx < 0)
+		s_nIdx = (int)GetPrivateProfileIntA("Client", "MissleIndex", 0, ".\\config.ini");
+	if (g_dwWAOptTime && (GetTickCount() - g_dwWAOptTime) < 5000)	// [REP3 03/09] WAuto dang gui tuy chon -> ghi de config.ini
+		return g_nWAOptMissleIndex;
+	return s_nIdx;
+}
+#endif
 #endif
 
 TCollisionMatrix g_CollisionMatrix[64] =
@@ -356,15 +372,26 @@ BOOL KMissle::GetInfoFromTabFile(KITabFile * pMisslesSetting, int nMissleId)
 	m_usLightRadius = nLightRadius;
 	
 	pMisslesSetting->GetInteger(nRow, "MultiShow",		0, &m_bMultiShow, TRUE);
+	int nResRow = nRow;
+#ifndef _SERVER
+	// [REP3 03/09] MissleIndex: lay sprite/am thanh cua dong mau neu dong do co AnimFile1
+	if (REP3_MissleIndex() > 0 && REP3_MissleIndex() != nRow)
+	{
+		char szProbe[64] = "";
+		pMisslesSetting->GetString(REP3_MissleIndex(), "AnimFile1", "", szProbe, 64, TRUE);
+		if (szProbe[0])
+			nResRow = REP3_MissleIndex();
+	}
+#endif
 	for (int i  = 0; i < MAX_MISSLE_STATUS; i++)
 	{
 		sprintf(AnimFileCol, "AnimFile%d", i + 1);
 		sprintf(SndFileCol,  "SndFile%d", i + 1);
 		sprintf(AnimFileInfoCol, "AnimFileInfo%d", i + 1);
 		
-		pMisslesSetting->GetString(nRow, AnimFileCol,			"", m_MissleRes.m_MissleRes[i].AnimFileName, 64, TRUE);
-		pMisslesSetting->GetString(nRow, SndFileCol,			"", m_MissleRes.m_MissleRes[i].SndFileName, 64, TRUE);
-		pMisslesSetting->GetString(nRow, AnimFileInfoCol,		"", szAnimFileInfo, 100, TRUE);
+		pMisslesSetting->GetString(nResRow, AnimFileCol,			"", m_MissleRes.m_MissleRes[i].AnimFileName, 64, TRUE);
+		pMisslesSetting->GetString(nResRow, SndFileCol,			"", m_MissleRes.m_MissleRes[i].SndFileName, 64, TRUE);
+		pMisslesSetting->GetString(nResRow, AnimFileInfoCol,		"", szAnimFileInfo, 100, TRUE);
 		
 		//m_MissleRes.m_MissleRes[i].nInterval = 1;
 		//m_MissleRes.m_MissleRes[i].nDir = 16;
@@ -387,9 +414,9 @@ BOOL KMissle::GetInfoFromTabFile(KITabFile * pMisslesSetting, int nMissleId)
 		sprintf(SndFileCol,  "SndFileB%d", i + 1);
 		sprintf(AnimFileInfoCol, "AnimFileInfoB%d", i + 1);
 		
-		pMisslesSetting->GetString(nRow, AnimFileCol,			"", m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].AnimFileName, 64, TRUE);
-		pMisslesSetting->GetString(nRow, SndFileCol,			"", m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].SndFileName, 64, TRUE);
-		pMisslesSetting->GetString(nRow, AnimFileInfoCol,		"", szAnimFileInfo, 100, TRUE);
+		pMisslesSetting->GetString(nResRow, AnimFileCol,			"", m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].AnimFileName, 64, TRUE);
+		pMisslesSetting->GetString(nResRow, SndFileCol,			"", m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].SndFileName, 64, TRUE);
+		pMisslesSetting->GetString(nResRow, AnimFileInfoCol,		"", szAnimFileInfo, 100, TRUE);
 		
 		//m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].nInterval = 1;
 		//m_MissleRes.m_MissleRes[i + MAX_MISSLE_STATUS].nDir = 16;

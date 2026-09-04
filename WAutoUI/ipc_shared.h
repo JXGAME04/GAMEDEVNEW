@@ -17,6 +17,7 @@ enum PROTGAMEID
 	PRG_AUTOONOFF,
 	PRG_OPENNOPICK,
 	PRG_TEAMNAMELIST,
+	PRG_VITRI,		// (03/09) vi tri + muc tieu cua cua so (tinh nang Ac chinh), 300 ms/lan
 };
 
 enum PROTTOOLID
@@ -32,6 +33,7 @@ enum PROTTOOLID
 	PRT_GETTEAMAROUND,
 	PRT_ACTAUTOLG,
 	PRT_QUITGAME,	
+	PRT_HIENTHI,	// [REP3 03/09] tuy chon HIEN THI (NpcTheSame / MissleIndex) tu tab Co ban - gui moi luot, khong can tick auto
 };
 
 struct SharedState
@@ -349,6 +351,27 @@ struct autoData
 	int		bCTMua;			// (r3) mua Ngu Hoa Ngoc Lo o Tuy Quan duoc Y trong doanh truoc khi ra tran
 	int		nCTSoBinh;		// (r3) mua toi khi tui co du so binh nay (moi mang mot lan)
 	int		nCTCapBinh;		// (r3) cap binh 1..5 (shop 53: cap 5 = 3000 luong/binh)
+	// == HIEN THI khi dong nguoi (03/09/2026) - PHAI o cuoi struct, truoc constructor (APdata .dat ghi NGUYEN struct) ==
+	int		bWANpcTheSame;	// nguoi choi KHAC mac chung 1 bo giap/non, khong phi phong (client: NpcTheSame)
+	int		bWAMissle;		// bat: moi chieu dung chung 1 hieu ung dan (client: MissleIndex)
+	int		nWAMissleIndex;	// dong trong bang missles lam hieu ung chung (mac dinh 1)
+	// == AC CHINH (03/09/2026) - PHAI o cuoi struct, SAU khoi HIEN THI cua REP3 ==
+	// cau hinh (WAuto luu .dat):
+	int		bTimAcChinh;		// o "Tim ac chinh": ac phu di theo ac chinh khi cach hon nAcChinhKC
+	int		nAcChinhKC;			// mps, mac dinh 200 (auto Thai)
+	int		bAcChinhThanh;		// o "Tim trong thanh": 0 = ac chinh dung trong thanh thi khong theo
+	int		bCungMucTieu;		// o "Danh cung muc tieu ac chinh"
+	int		bAcChinhVaoMap;		// (dot 2, chua co UI) ac phu tu sang map ac chinh
+	char	szAcChinhTen[32];	// ten nhan vat ac chinh ma cua so nay theo ("" = khong)
+	// WAuto dien moi vong TRUOC khi gui IPCGameLoop (khong phai cau hinh):
+	int		nACLaChinh;			// 1 = cua so nay CHINH LA ac chinh
+	int		nACMap;
+	int		nACX;
+	int		nACY;
+	unsigned int uACMucTieu;	// dwID NPC ac chinh dang danh (0 = khong)
+	int		nACSong;
+	int		nACCamp;
+	unsigned int uACTuoi;		// ms ke tu lan WAuto nhan PRG_VITRI cuoi cua ac chinh (0 = chua co)
 
 	autoData()
 	{
@@ -602,6 +625,23 @@ struct autoData
 		bCTMua = 1;
 		nCTSoBinh = 10;
 		nCTCapBinh = 5;
+		bWANpcTheSame = 0;
+		bWAMissle = 0;
+		nWAMissleIndex = 1;
+		bTimAcChinh = 0;
+		nAcChinhKC = 200;
+		bAcChinhThanh = 0;
+		bCungMucTieu = 0;
+		bAcChinhVaoMap = 0;
+		szAcChinhTen[0] = 0;
+		nACLaChinh = 0;
+		nACMap = 0;
+		nACX = 0;
+		nACY = 0;
+		uACMucTieu = 0;
+		nACSong = 0;
+		nACCamp = 0;
+		uACTuoi = 0;
 
 	}
 };
@@ -609,6 +649,25 @@ struct autoData
 struct IPCGameLoop : public SharedState
 {
 	autoData setting;
+};
+
+// [REP3 03/09] tuy chon hien thi tu WAuto - goi nho gui moi luot GAMELOOPINTV cho moi game dang ket noi
+struct IPCHienThi : public SharedState
+{
+	int bNpcTheSame;	// 1 = nguoi choi khac mac chung 1 bo
+	int nMissleIndex;	// >0 = dong missles dung chung cho moi chieu, 0 = tat
+};
+
+// (03/09) AC CHINH: moi cua so gui vi tri + muc tieu len WAuto 300 ms/lan (CoreShell AC_GuiViTri)
+struct IPCViTri : public SharedState
+{
+	unsigned int dwPID;		// Player.m_dwID (khop gameNode.player.dwPID)
+	int  nMapId;
+	int  nX;				// mps
+	int  nY;
+	unsigned int uMucTieu;	// dwID NPC dang danh (uu tien ea.uNpcID cua auto, khong co thi m_nPeapleIdx); 0 = khong
+	int  bSong;				// con song (mau > 0, khong do_death/do_revive)
+	int  nCamp;				// m_CurrentCamp (Tong Kim: 1 Tong / 2 Kim)
 };
 
 struct IPCHideGame : public SharedState
