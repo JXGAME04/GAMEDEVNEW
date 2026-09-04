@@ -493,6 +493,9 @@ using namespace std;
 #define IDC_CHECKBOX_0_NTS	629
 #define IDC_CHECKBOX_0_MIS	630
 #define IDC_EDITOR_0_MIS	631
+// (04/09) tab 16 "Dang nhap" - PHAI nam trong [161,700) de ShowTab an/hien duoc
+#define IDC_GRP_TAB16		642
+#define IDC_SEP_16A			643
 // == tab 15 "Ac chinh" (03/09/2026): dai 632..641 lien mach, ShowTab hien ca dai ==
 #define IDC_GRP_TAB15		632
 #define IDC_STRING_16_AC	633
@@ -538,6 +541,11 @@ using namespace std;
 #define IDC_BTN_TOP_ACX		726
 #define IDC_BTN_TOP_Q		727
 #define IDC_SEP_TOP			728
+// (04/09) hang nut day kieu auto Thai (ngoai dai an/hien)
+#define IDC_BTN_BOT_ON		730
+#define IDC_BTN_BOT_OFF		731
+#define IDC_BTN_BOT_SYNC	732
+#define IDC_BTN_BOT_POS		733
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

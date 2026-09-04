@@ -1,4 +1,4 @@
-# BÀN GIAO 04/09/2026 — WAuto: dựng lại giao diện theo auto Thái Lan (vlhkmp), đợt 1–5
+# BÀN GIAO 04/09/2026 — WAuto: dựng lại giao diện theo auto Thái Lan (vlhkmp), đợt 1–6
 
 Phiên `wauto` (Claude Opus 5). Chủ giao: *"thiết kế lại toàn bộ giao diện Auto như Auto thailan… Các nút, các note hướng dẫn, vị trí tab tôi cần bạn làm giống vậy cho auto WAuto"*.
 
@@ -9,12 +9,12 @@ Cách làm: mổ giao diện auto Thái từ **mã C# WinForms** (`D:\Source_ANT
 
 | Tệp | md5 | Cỡ | Ghi chú |
 |---|---|---|---|
-| `bin\client\WAuto.exe.moi` | `77ccc22d` | `455.168` | đợt 1–5. **`ChoiGame.bat` KHÔNG đổi tệp này → đổi tay.** |
+| `bin\client\WAuto.exe.moi` | `742b6a9c` | `459.264` | **đợt 1–6** (bản 77ccc22d của đợt 1–5 đã bị thay). **`ChoiGame.bat` KHÔNG đổi tệp này → đổi tay.** |
 | `bin\client\WAuto.exe` | `72862beb` | đang chạy | bản Ác chính 03/09 (nền của đợt này). |
 | CoreClient.dll / Game.exe / CoreServer.dll | không đổi | | đợt này **chỉ sửa giao diện WAuto.exe**, không đụng game, không đụng `autoData`, không đụng IPC. |
 
 **Checklist swap:** tắt WAuto → đổi `WAuto.exe` thành `WAuto.exe.truoc` → đổi `WAuto.exe.moi` thành `WAuto.exe` → mở lại.
-**Lùi:** đổi ngược, hoặc build lại từ `WAuto.cpp.cu_0409_dot0` / `WAuto.rc.cu_0409_dot0` / `Resource.h.cu_0409_dot0` (bản trước đợt này, nằm cùng thư mục nguồn).
+**Lùi:** đổi ngược tên tệp, hoặc build lại từ `*.cu_0409_dot0` (bản trước toàn bộ đợt này). Bản nguồn sau đợt 6 lưu ở `*.sau_0409_dot6`, cùng thư mục nguồn.
 
 ## 2. Cửa sổ mới trông thế nào (so với ảnh auto Thái)
 
@@ -82,6 +82,17 @@ Cách làm: mổ giao diện auto Thái từ **mã C# WinForms** (`D:\Source_ANT
 ### Đợt 5 — 5 ô "Ác chính" lên vùng trên (giữ nguyên số ID)
 Combo ác chính, [v] Tìm ác chính, ô mps, nhãn mps, [v] Trong thành **dời lên hàng 2 và hàng 3**, chỉnh được ở **mọi tab** thay vì phải mở tab Ác chính. Vì **giữ nguyên ID (634–638)** nên không phải sửa một dòng nào ở lưu/nạp cấu hình, nạp combo, tooltip hay bảng màu. Chữ rút gọn ("Tìm ác chính", "Trong thành"), câu đầy đủ nằm trong tooltip và note. Tab Ác chính còn lại ô "Đánh cùng mục tiêu ác chính" + dòng trạng thái, chiều cao 244 → 208.
 
+### Đợt 6 — tách tab "Cơ bản" + hàng nút đáy + sửa lỗi tô màu khung
+- **Tách tab Cơ bản (cao 362) thành "Cơ bản" (280) + tab mới số 16 "Đăng nhập" (224)** → **hạ trần chiều cao cửa sổ**: tab cao nhất giờ là Chiêu KH (335) chứ không phải Cơ bản (362). Sau khi cộng phần dịch, cửa sổ cao nhất chỉ hơn bản cũ ~13 px thay vì ~64 px — **giải quyết rủi ro cắt đáy ở mục 5.1**.
+  - Tab **Cơ bản** giữ: bảng số liệu nhân vật, các ô ẩn cửa sổ / thoát game / hẹn giờ / tán gẫu, và khối "nhẹ máy" (mặc chung 1 bộ, chung hiệu ứng chiêu) — khối này được kéo lên lấp chỗ trống.
+  - Tab **Đăng nhập** (nhóm Cài đặt): "Cài đặt theo" + [Đồng bộ], [v] Tự động đăng nhập, "Nhân vật" + [Thêm vào], danh sách 8 nhân vật + [Xóa] [Xóa hết].
+  - **Không tạo một ID control nào**: 10 ô đăng nhập giữ nguyên số ID, chỉ đổi toạ độ ⇒ lưu/nạp cấu hình và tự-lưu khi gõ không phải sửa một dòng.
+- **Hàng nút đáy kiểu Thái**: **[Bật hết] [Tắt hết] [Đồng bộ] [Toạ độ]** (ID 730–733) chiếm **đúng chỗ** của dòng chữ "Võ Lâm Ngạo Thế" cũ nên **không tốn thêm một pixel chiều cao nào**. Chữ đó đã nằm trong vòng chữ chạy ở hàng 1.
+  - **Bật hết / Tắt hết**: tick hoặc bỏ tick auto cho mọi cửa sổ một lượt (Thái: [F9 all] / [TĐP all]).
+  - **Đồng bộ**: chép toàn bộ thiết lập của nhân vật đang chọn sang **mọi cửa sổ khác**, có hỏi xác nhận, **giữ riêng tên ác chính của từng cửa sổ**.
+  - **Toạ độ**: in bản đồ và toạ độ (x/256, y/512) của nhân vật đang chọn ra dòng HĐ (Thái: [Báo toạ độ]).
+- Sửa luôn một lỗi có sẵn: `IDC_GRP_TAB13` bị thiếu trong bảng tô màu khung nên tiêu đề khung tab "Chiêu KH" không được tô xanh.
+
 ## 4. Cách kiểm khi swap
 1. Mở WAuto: hàng 1 có chữ chạy + [A] [H] [Trợ giúp]; hàng 2 có combo chế độ + [Ác chính] + combo tên + [X]; hàng 3 có [v] Tìm ác chính + ô số + [v] Trong thành + [?].
 2. Bấm 4 nút nhóm: tên đúng **Điều khiển / Hậu cần / Cài đặt / Hoạt động**, tab con đúng bảng ở mục 3.
@@ -90,10 +101,13 @@ Combo ác chính, [v] Tìm ác chính, ô mps, nhãn mps, [v] Trong thành **d�
 5. Đổi tab qua lại 16 tab: **không control nào nhảy sai chỗ**, nhất là tab **Chiến đấu** và **PK** (hai tab có lệnh đặt chỗ chép cứng).
 6. Combo chế độ nhanh: chọn "TK" → nhảy sang tab TK và ô "Bật auto Tống Kim" tự tick.
 7. Ô "Tìm ác chính" ở hàng 3 chỉnh được khi đang mở bất kỳ tab nào; giá trị vẫn lưu đúng theo từng nhân vật.
+8. Nhóm **Cài đặt** có 2 tab: **Cơ bản** và **Đăng nhập**. Mở tab Đăng nhập: đủ "Cài đặt theo" + [Đồng bộ], [v] Tự động đăng nhập, "Nhân vật" + [Thêm vào], danh sách + [Xóa] [Xóa hết]; danh sách tự đăng nhập cũ vẫn còn nguyên.
+9. Hàng nút dưới cùng: [Bật hết] tick hết dòng trong danh sách, [Tắt hết] bỏ hết, [Toạ độ] in bản đồ và toạ độ ra dòng HĐ, [Đồng bộ] hỏi xác nhận rồi chép thiết lập sang các cửa sổ khác.
+10. Cửa sổ ở tab **Cơ bản** phải THẤP hơn trước (không còn khối đăng nhập); tab cao nhất giờ là **Chiêu KH**.
 
 ## 5. Bẫy và việc còn lại
-1. 🔴 **CHIỀU CAO CỬA SỔ**: dịch khối làm cửa sổ cao thêm ~64 px. Tab cao nhất là **Cơ bản** (≈837 px cả khung). Màn 1080p ở 100 % thì vừa; ở **125 %** có thể bị cắt đáy vì WAuto không khai báo DPI-aware. Cách chữa gốc là **đợt 6**: tách tab "Cơ bản" thành "Cơ bản" + "Đăng nhập" (hạ trần từ 362 xuống 335 đơn vị), chưa làm. Nếu chủ thấy cắt đáy thì báo, tôi làm đợt 6 ngay.
-2. Hàng nút đáy kiểu Thái ([Bật hết] [Tắt hết] [Đồng bộ] [Toạ độ]) thuộc **đợt 6**, chưa có.
+1. **CHIỀU CAO CỬA SỔ — đã xử lý ở đợt 6**: trần chiều cao nay là tab Chiêu KH (335 đơn vị) thay vì tab Cơ bản (362), nên cửa sổ cao nhất chỉ hơn bản trước khi làm giao diện mới khoảng 13 px. Nếu màn hình để tỷ lệ 150 % trở lên mà vẫn thấy cắt đáy thì báo, tôi hạ tiếp bằng cách tách tab Chiêu KH.
+2. Nút [Đồng bộ] ở hàng đáy ghi đè thiết lập của MỌI cửa sổ khác — có hỏi xác nhận, nhưng bấm nhầm rồi thì phải chỉnh lại tay.
 3. Chưa thêm tooltip cho 9 control mới (đã có note qua nút [?] và [H]).
 4. Đính chính: nút màu ngoài cùng bên phải của auto Thái chữ thật là **"Tài trợ"** (xoay banner quảng cáo), không phải "Trợ giúp". WAuto không có quảng cáo nên khe đó làm nút **Trợ giúp** thật, giữ đúng vị trí và màu.
 5. Ba thứ **cố ý không bắt chước**: giữ bề ngang 160 đơn vị (Thái hẹp hơn 16 px — hạ xuống phải nắn 472 control); giữ cơ chế một hộp thoại + ẩn/hiện theo dải ID (không chuyển sang TabControl lồng như Thái); giữ 277 tooltip.
@@ -102,6 +116,7 @@ Combo ác chính, [v] Tìm ác chính, ô mps, nhãn mps, [v] Trong thành **d�
 - `ReverseTools\goi_va_wauto_ui_thai_0409.py` — đợt 1 + 2
 - `ReverseTools\goi_va_wauto_ui_thai_0409_note.py` — đợt 3
 - `ReverseTools\goi_va_wauto_ui_thai_0409_tren.py` — đợt 4 + 5
+- `ReverseTools\goi_va_wauto_ui_thai_0409_dot6.py` — đợt 6
 
 Build: `msbuild WAuto.vcxproj -p:Configuration=Release -p:Platform=Win32` trong `E:\Src_Auto_Ngoai\WAuto\WAuto` → `Release\WAuto.exe`.
 **BẪY**: `WAuto.cpp` và `WAuto.rc` là UTF-16LE (đọc/ghi `io.open(..., encoding='utf-16', newline='')`), `Resource.h` là ASCII. Nhiều dòng "trống" trong `WAuto.cpp` thật ra là hai ký tự tab — neo vá phải theo DÒNG, không dùng khối cứng.
