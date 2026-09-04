@@ -549,9 +549,17 @@ int ChienLenh_Reload()
 			nLoi++;
 		}
 		// ---- LUAT 7, 8, 9: ngu phap + nhom vat pham + so am ----
+		// [CL 04/09 DOT2c] moc CHUA CO thuong (award rong) chi CANH BAO, khong lam hong ca cau hinh:
+		// chu tao du 24 moc tren web truoc roi dien thuong sau (14:19 nap bi tu choi vi 24 moc rong).
+		// Moc rong van hien tren cua so (khong bieu tuong), sNhanMoc tra 3 = khong cho nhan toi khi dien.
 		char szLoi[128];
-		int nMuc = sKiemChuoiAward(a.sAward, szLoi, sizeof(szLoi));
-		if (nMuc < 0)
+		int nMuc = a.sAward.empty() ? 0 : sKiemChuoiAward(a.sAward, szLoi, sizeof(szLoi));
+		if (a.sAward.empty())
+		{
+			_snprintf(szLog, sizeof(szLog) - 1, "CANH BAO moc %d: chua co thuong (award rong) - van nap, dien tren web sau", a.nIdx);
+			ChienLenh_Log(CL_LOG_CANHBAO, szLog);
+		}
+		else if (nMuc < 0)
 		{
 			_snprintf(szLog, sizeof(szLog) - 1, "LOI moc %d: %s", a.nIdx, szLoi);
 			ChienLenh_Log(CL_LOG_LOI, szLog);
@@ -1137,6 +1145,8 @@ static int sNhanMoc(int nIdx, int nMoc, int nBranch)
 	if (nMoc < 1 || nMoc > (int)s_Award.size())
 		return 0;
 	KCLAward& a = s_Award[nMoc - 1];
+	if (a.sAward.empty())
+		return 3;						// [CL 04/09 DOT2c] moc chua cau hinh thuong - cl_ui.lua bao rieng, khong dot moc
 	if (a.nBranch != nBranch)
 		return 0;						// moc nay khong thuoc nhanh do
 	if (nBranch == 1 && p.nVip != 1)
