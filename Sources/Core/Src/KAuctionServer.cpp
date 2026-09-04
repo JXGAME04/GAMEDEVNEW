@@ -745,8 +745,13 @@ static bool sEnsureWebTable()
 		g_DebugLog((LPSTR)"[DAUGIA-WEB] khong tao duoc bang auction_web_pool / auction_web_cfg");
 		return false;
 	}
-	// dong cau hinh duy nhat (id = 1); da co thi bo qua
-	g_MySQLDB.Exec("INSERT IGNORE INTO auction_web_cfg (id) VALUES (1)", 0, 0);
+	// dong cau hinh duy nhat (id = 1); da co thi bo qua. [W6] that bai thi KHONG danh dau san sang -> lan sau lam lai,
+	// khong thi bang co ma khong co dong cfg: AUCWEB_Cfg tra nil, vong quet im lang toi khi khoi dong lai.
+	if (!g_MySQLDB.Exec("INSERT IGNORE INTO auction_web_cfg (id) VALUES (1)", 0, 0))
+	{
+		g_DebugLog((LPSTR)"[DAUGIA-WEB] khong chen duoc dong auction_web_cfg id=1, se thu lai");
+		return false;
+	}
 	s_bWebTableOk = true;
 	return true;
 }
@@ -1063,6 +1068,8 @@ int LuaAUC_MakeRec(Lua_State* L)
 		nCount = 1;
 	if (nCount > 9999)
 		return sMakeRecFail(L, "so luong qua lon");
+	if (nGenre == item_fusion && nCount > 1)	// [W6] Gen_Fusion luon SetStackNum(1) (1 vien = 1 seed), ep im lang la lua admin
+		return sMakeRecFail(L, "van cuong khong xep chong, n phai = 1");
 
 	KItem it;
 	ZeroMemory(&it, sizeof(KItem));
@@ -1087,8 +1094,17 @@ int LuaAUC_MakeRec(Lua_State* L)
 		}
 		else
 		{
-			// khuon KItemSet::AddItemSet2 <- LuaAddItem: hat giong moi moi lan (Gen_Equipment tu boc)
-			bOk = ItemGen.Gen_Equipment(nDetail, nParticular, nSeries, nLevel, nML, nLuck, nVer, &it, 0, 0);
+			if (nDetail >= equip_signet)
+			{
+				// [W6] overload 10 tham so (khuon AddItem) khong co case cho signet/shipin/hoods/cloak (13-16);
+				// overload 9 tham so co nature (khuon KItemSet::Add / AddItem2) thi co - dung no cho cac loai nay.
+				bOk = ItemGen.Gen_Equipment(NATURE_NORMAL, nDetail, nParticular, nSeries, nLevel, nML, nLuck, nVer, &it);
+			}
+			else
+			{
+				// khuon KItemSet::AddItemSet2 <- LuaAddItem: hat giong moi moi lan (Gen_Equipment tu boc)
+				bOk = ItemGen.Gen_Equipment(nDetail, nParticular, nSeries, nLevel, nML, nLuck, nVer, &it, 0, 0);
+			}
 			it.SetMaxOptMultiply(KItemSet::genXOpt(nLuck));
 		}
 		break;
@@ -1117,6 +1133,10 @@ int LuaAUC_MakeRec(Lua_State* L)
 	}
 	if (!bOk || it.GetWidth() <= 0 || it.GetHeight() <= 0 || !it.GetName()[0])
 		return sMakeRecFail(L, "dung vat pham that bai (detail/particular/dong sai)");
+	// [W6 chong] mon KHONG xep chong (nMaxStack 0/1: bi kip, nhieu vat pham nhiem vu) ma nhan n > 1 thi san hien 'x N'
+	// nhung KItemList chi tru chong khi IsStack() -> dung mot lan la mat ca mon. Tu choi de admin sua n = 1.
+	if (it.GetMaxStackNum() <= 1 && it.GetStackNum() > 1)
+		return sMakeRecFail(L, "mon khong xep chong, n phai = 1");
 	if (it.GetMaxStackNum() > 0 && it.GetStackNum() > it.GetMaxStackNum())
 	{
 		char szS[64];
