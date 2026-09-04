@@ -8862,6 +8862,21 @@ static void AC_GuiViTri(int nPlayerIdx, UINT uCurTime)
 	SendDataToTool(&v, sizeof(IPCViTri));
 }
 
+// (04/09) ac chinh con song va tin con moi, NHUNG dang o MAP KHAC?
+// Tach rieng voi AC_CoAcChinh (von doi cung map) de con duong sang map ac chinh.
+static int AC_KhacMap(const autoData* pAp, int nMap)
+{
+	if (!pAp->szAcChinhTen[0] || pAp->nACLaChinh)
+		return 0;
+	if (!pAp->uACTuoi || (int)pAp->uACTuoi > AC_TUOI_MAX)
+		return 0;
+	if (!pAp->nACSong)
+		return 0;
+	if (pAp->nACMap <= 0 || pAp->nACMap == nMap)
+		return 0;
+	return 1;
+}
+
 // ac chinh hop le de theo (cung map, con song, tin con moi)?
 static int AC_CoAcChinh(const autoData* pAp, int nMap)
 {
@@ -8974,6 +8989,41 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		return ea.nACHold;
 	ea.uACNext = uCurTime + AC_NHIP;
 	const int nMap = SubWorld[0].m_SubWorldID;
+	// (04/09) AC CHINH O MAP KHAC: truoc day may tra 0 ngay -> ac phu dung yen chay auto
+	// thuong, dung nhu chu game bao "khong tu di den Xa Phu len map cua ac chinh".
+	// Nay bat o "Ac chinh o map khac thi tu qua Xa Phu sang" thi di bang may di duong
+	// san co LD_DiThanh (tu tim Xa Phu -> "nhung thanh thi da di qua" -> ten thanh).
+	if (pAp->bAcChinhVaoMap && pAp->bTimAcChinh && AC_KhacMap(pAp, nMap))
+	{
+		if (!DT_SapTownMenu(pAp->nACMap))
+		{	// map ac chinh khong co tuyen Xa Phu (bai quai ngoai thanh) - bao MOT LAN
+			if (ea.nACHold != 3)
+			{
+				char szB[160];
+				sprintf(szB, "<color=Yellow>Ac chÝnh ®ang ë map %d - map nµy kh«ng cã tuyÕn Xa Phu nªn kh«ng tù sang ®­îc.", pAp->nACMap);
+				DT_Msg(nPlayerIdx, szB);
+				ea.nACHold = 3;
+			}
+			return 0;
+		}
+		int nDi = LD_DiThanh(nPlayerIdx, pAp, pAp->nACMap, uCurTime);
+		if (ea.uLDNext > uCurTime)
+			ea.uACNext = ea.uLDNext;		// ton trong nhip noi bo cua LD_DiThanh
+		if (nDi < 0)
+		{
+			ea.uLDHopT = 0;
+			if (ea.nACHold != 3)
+			{
+				DT_Msg(nPlayerIdx, "<color=Yellow>Kh«ng sang ®­îc map cña ¸c chÝnh (hÕt ThÇn Hµnh Phï / kh«ng thÊy Xa Phu).");
+				ea.nACHold = 3;
+			}
+			return 0;
+		}
+		if (ea.nACHold != 1)
+			DT_Msg(nPlayerIdx, "<color=Cyan>Ac chÝnh ë map kh¸c - ®ang qua Xa Phu ®Ó sang.");
+		ea.nACHold = 1;
+		return 1;
+	}
 	if (!AC_CoAcChinh(pAp, nMap))
 	{
 		if (ea.nACHold)
@@ -8986,6 +9036,7 @@ static int AC_Process(int nPlayerIdx, const autoData* pAp, UINT uCurTime)
 		ea.nACHold = 0;
 		return 0;
 	}
+	ea.uLDHopT = 0;		// (04/09) da o cung map voi ac chinh - xoa dong ho di duong
 	int nX = 0, nY = 0;
 	Npc[Player[nPlayerIdx].m_nIndex].GetMpsPos(&nX, &nY);
 	if (AC_CungMucTieu(nPlayerIdx, pAp, uCurTime))
