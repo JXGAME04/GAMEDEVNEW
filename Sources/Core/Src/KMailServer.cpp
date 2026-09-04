@@ -181,19 +181,19 @@ int LuaMailDB_Ready(Lua_State* L)
 	return 1;
 }
 
-// MailDB_Send(szRole, szSender, szTitle, szContent, szAward, nAwardCount, nExpireSec, szSource) -> id / 0
-int LuaMailDB_Send(Lua_State* L)
+// [MAIL 04/09 D10] loi C++ (ham Lua ben duoi chi boc tham so). Xem KMailServer.h.
+int Mail_Send(const char* szRole, const char* szSender, const char* szTitle, const char* szContent,
+	const char* szAward, int nAwardCount, int nExpireSec, const char* szSource)
 {
-	const char* szRole = sArgStr(L, 1);
-	if (!szRole[0] || !sEnsureTable())
-	{
-		Lua_PushNumber(L, 0);
-		return 1;
-	}
+	if (!szRole || !szRole[0] || !sEnsureTable())
+		return 0;
+	if (!szSender) szSender = "";
+	if (!szTitle) szTitle = "";
+	if (!szContent) szContent = "";
+	if (!szAward) szAward = "";
+	if (!szSource) szSource = "";
 	int nNow = (int)time(NULL);
-	int nExpire = sArgInt(L, 7);
-	nExpire = (nExpire > 0) ? nNow + nExpire : nNow + MAILDB_DEF_EXPIRE;
-
+	int nExpire = (nExpireSec > 0) ? nNow + nExpireSec : nNow + MAILDB_DEF_EXPIRE;
 	// tran 100 thu: danh dau xoa thu CU NHAT (ly do OVERFLOW cua 2.0)
 	KMailCount c;
 	c.n = 0;
@@ -204,22 +204,29 @@ int LuaMailDB_Send(Lua_State* L)
 	{
 		g_MySQLDB.Exec("UPDATE mail SET state=4 WHERE role_name=? AND state<4 ORDER BY id LIMIT 1", pc, 1);
 	}
-
 	KDBParam p[9];
 	p[0] = KDBParam::S(szRole);
-	p[1] = KDBParam::S(sArgStr(L, 2));
-	p[2] = KDBParam::S(sArgStr(L, 3));
-	p[3] = KDBParam::S(sArgStr(L, 4));
-	p[4] = KDBParam::S(sArgStr(L, 5));
-	p[5] = KDBParam::I(sArgInt(L, 6));
+	p[1] = KDBParam::S(szSender);
+	p[2] = KDBParam::S(szTitle);
+	p[3] = KDBParam::S(szContent);
+	p[4] = KDBParam::S(szAward);
+	p[5] = KDBParam::I(nAwardCount);
 	p[6] = KDBParam::I(nNow);
 	p[7] = KDBParam::I(nExpire);
-	p[8] = KDBParam::S(sArgStr(L, 8));
+	p[8] = KDBParam::S(szSource);
 	__int64 nInsertId = 0;
 	bool bOk = g_MySQLDB.Exec(
 		"INSERT INTO mail (role_name, sender, title, content, award, award_count, state, send_time, expire_time, source)"
 		" VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)", p, 9, 0, &nInsertId);
-	Lua_PushNumber(L, bOk ? (double)nInsertId : 0);
+	return bOk ? (int)nInsertId : 0;
+}
+
+// MailDB_Send(szRole, szSender, szTitle, szContent, szAward, nAwardCount, nExpireSec, szSource) -> id / 0
+int LuaMailDB_Send(Lua_State* L)
+{
+	int nId = Mail_Send(sArgStr(L, 1), sArgStr(L, 2), sArgStr(L, 3), sArgStr(L, 4),
+		sArgStr(L, 5), sArgInt(L, 6), sArgInt(L, 7), sArgStr(L, 8));
+	Lua_PushNumber(L, (double)nId);
 	return 1;
 }
 

@@ -292,128 +292,31 @@ def patch_tinsu():
     wr(rel, s)
 
 
-# ------------------------------------------------------------------ 7. Bang hoi: phat luong (huodong_zongguan.lua + tong_luong.lua)
-def build_tong_luong():
-    e = "\r\n"
-    return e.join([
-        "-- tong_luong.lua - " + MARK + " PHAT LUONG BANG HOI qua thu (chu 03/09). Include vao state NPC Tong quan hoat dong",
-        "-- (scriptjx2\\tong_vn\\npc\\huodong_zongguan.lua). Bang chu chon muc luong moi thanh vien, tru quy bang (TONG_GetMoney),",
-        "-- moi thanh vien (ca offline) nhan 1 thu 'Luong bang hoi' dinh kem Ngan luong; 1 lan/ngay/bang (TONG task 1200 = yyyymmdd).",
-        INC,
-        "",
-        "TONGLUONG_MUC       = {10000, 50000, 100000, 500000}   -- Ngan luong moi thanh vien (menu)",
-        "TONGLUONG_TASK_NGAY = 1200                             -- TONG_GetTaskValue: ngay da phat (yyyymmdd)",
-        "TONGLUONG_HAN_NGAY  = 30",
-        "",
-        "function TongLuong_Menu(nTongID)",
-        "\tlocal nQuy = TONG_GetMoney(nTongID)",
-        "\tlocal nTV = TONG_GetMemberCount(nTongID, -1)",
-        "\tSay(\"<#>" + V("Tổng quản hoạt động: Bang chủ muốn làm gì?<enter>Quỹ bang: ") + "\"..nQuy..\"" + V(" Ngân lượng, thành viên: ") + "\"..nTV, 3,",
-        "\t\t\"" + V("Phát lương bang hội (qua thư)") + "/TongLuong_ChonMuc\",",
-        "\t\t\"" + V("Hoạt động bang") + "/TongLuong_HoatDongCu\",",
-        "\t\t\"" + V("Rời khỏi") + "/OnCancelTongLuong\")",
-        "end",
-        "",
-        "function OnCancelTongLuong()",
-        "end",
-        "",
-        "-- duong cu cua NPC (ws_huodong.lua USE_G_1) cho bang chu",
-        "function TongLuong_HoatDongCu()",
-        "\tlocal _, nTongID = GetTongName()",
-        "\tlocal nTypeID = wsGetTypeID(NAME_HUODONG)",
-        "\tlocal nWorkshopID = TWS_GetFirstWorkshop(nTongID, nTypeID)",
-        "\tUSE_G_1(nTongID, nWorkshopID)",
-        "end",
-        "",
-        "function TongLuong_ChonMuc()",
-        "\tlocal _, nTongID = GetTongName()",
-        "\tlocal nTV = TONG_GetMemberCount(nTongID, -1)",
-        "\tlocal m = TONGLUONG_MUC",
-        "\tSay(\"<#>" + V("Chọn mức lương mỗi thành viên (") + "\"..nTV..\"" + V(" người). Tổng trừ quỹ = mức x số thành viên.") + "\", 5,",
-        "\t\tm[1]..\"" + V(" Ngân lượng (tổng ") + "\"..(m[1] * nTV)..\")/#TongLuong_Phat(1)\",",
-        "\t\tm[2]..\"" + V(" Ngân lượng (tổng ") + "\"..(m[2] * nTV)..\")/#TongLuong_Phat(2)\",",
-        "\t\tm[3]..\"" + V(" Ngân lượng (tổng ") + "\"..(m[3] * nTV)..\")/#TongLuong_Phat(3)\",",
-        "\t\tm[4]..\"" + V(" Ngân lượng (tổng ") + "\"..(m[4] * nTV)..\")/#TongLuong_Phat(4)\",",
-        "\t\t\"" + V("Rời khỏi") + "/OnCancelTongLuong\")",
-        "end",
-        "",
-        "function TongLuong_Phat(nMuc)",
-        "\tlocal szTong, nTongID = GetTongName()",
-        "\tif nTongID == 0 or TONG_GetMaster(nTongID) ~= GetName() then",
-        "\t\tMsg2Player(\"" + V("Chỉ Bang chủ mới được phát lương.") + "\")",
-        "\t\treturn",
-        "\tend",
-        "\tlocal nMoiNguoi = TONGLUONG_MUC[nMuc] or 0",
-        "\tif nMoiNguoi <= 0 then",
-        "\t\treturn",
-        "\tend",
-        "\tlocal nHomNay = tonumber(GetLocalDate(\"%Y%m%d\")) or 0",
-        "\tif TONG_GetTaskValue(nTongID, TONGLUONG_TASK_NGAY) == nHomNay then",
-        "\t\tMsg2Player(\"" + V("Hôm nay bang đã phát lương rồi, mai hãy phát tiếp.") + "\")",
-        "\t\treturn",
-        "\tend",
-        "\tlocal tbTen = {}",
-        "\tlocal nMem = TONG_GetFirstMember(nTongID, -1)",
-        "\twhile nMem and nMem > 0 do",
-        "\t\tlocal szTen = TONGM_GetName(nTongID, nMem)",
-        "\t\tif szTen and szTen ~= \"\" then",
-        "\t\t\ttinsert(tbTen, szTen)",
-        "\t\tend",
-        "\t\tnMem = TONG_GetNextMember(nTongID, nMem, -1)",
-        "\tend",
-        "\tif getn(tbTen) == 0 then",
-        "\t\tMsg2Player(\"" + V("Bang chưa có thành viên.") + "\")",
-        "\t\treturn",
-        "\tend",
-        "\tlocal nTong = nMoiNguoi * getn(tbTen)",
-        "\tlocal nQuy = TONG_GetMoney(nTongID)",
-        "\tif nQuy < nTong then",
-        "\t\tMsg2Player(\"" + V("Quỹ bang không đủ: cần ") + "\"..nTong..\"" + V(" Ngân lượng, hiện có ") + "\"..nQuy..\".\")",
-        "\t\treturn",
-        "\tend",
-        "\tif TONG_ApplyAddMoney(nTongID, -nTong) ~= 1 then",
-        "\t\tMsg2Player(\"" + V("Trừ quỹ bang thất bại, hãy thử lại.") + "\")",
-        "\t\treturn",
-        "\tend",
-        "\tTONG_ApplySetTaskValue(nTongID, TONGLUONG_TASK_NGAY, nHomNay)",
-        "\tlocal nOk = 0",
-        "\tlocal szSender = \"" + V("Bang hội ") + "\"..szTong",
-        "\tlocal szND = \"" + V("Bang chủ ") + "\"..GetName()..\"" + V(" phát lương cho thành viên bang ") + "\"..szTong..\"" + V(".<enter>Lương kỳ này: ") + "\"..nMoiNguoi..\"" + V(" Ngân lượng, đính kèm trong thư.<enter>Trân trọng") + "\"",
-        "\tfor i = 1, getn(tbTen) do",
-        "\t\tlocal nId = MailManager_SendMail(tbTen[i], szSender, \"" + V("Lương bang hội") + "\", szND, \"money:\"..nMoiNguoi, TONGLUONG_HAN_NGAY, \"bangluong\")",
-        "\t\tif nId > 0 then",
-        "\t\t\tnOk = nOk + 1",
-        "\t\tend",
-        "\tend",
-        "\tTONG_ApplyAddEventRecord(nTongID, \"" + V("Bang chủ phát lương ") + "\"..nMoiNguoi..\"" + V(" Ngân lượng cho ") + "\"..nOk..\"" + V(" thành viên (tổng ") + "\"..nTong..\")\")",
-        "\tMsg2Player(\"" + V("Đã gửi lương ") + "\"..nMoiNguoi..\"" + V(" Ngân lượng cho ") + "\"..nOk..\"/\"..getn(tbTen)..\"" + V(" thành viên, trừ quỹ bang ") + "\"..nTong..\".\")",
-        "\tGhiLog(\"MAIL\", format(\"Bang %s: bang chu %s phat luong %d x %d thanh vien (ok %d), tru quy %d\", szTong, GetName(), nMoiNguoi, getn(tbTen), nOk, nTong))",
-        "end",
-        "",
-    ])
-
-
+# ------------------------------------------------------------------ 7. Bang hoi: GO menu NPC cua dot 9
+# [D10 04/09] Chu chot: KHONG dung NPC nua. Phat luong = hop "Phat ngan luong" co san cua bang hoi
+# (KUiTongGrant -> defTONG_JX2_COP_GRANT_GROUP -> KTongJX2.cpp goi Mail_Send). Ham nay GO dau vet dot 9.
 def patch_banghoi():
-    wr(r"scriptjx2\tong_vn\tong_luong.lua", build_tong_luong())
-    rel = r"scriptjx2\tong_vn\npc\huodong_zongguan.lua"
+    rel = r"scriptjx2\\tong_vn\\npc\\huodong_zongguan.lua"
     s = rd(rel)
     if MARK in s:
-        print("  da va:", rel)
-        return
-    e = eol(s)
-    old = "\tlocal nTypeID = wsGetTypeID(NAME_HUODONG)" + e + "\tlocal nWorkshopID = TWS_GetFirstWorkshop(nTongID, nTypeID)" + e + "\tUSE_G_1(nTongID, nWorkshopID)"
-    new = e.join([
-        "\t-- " + MARK + " bang chu: them menu phat luong bang hoi qua thu (thanh vien khac di duong cu)",
-        "\tif TONG_GetMaster(nTongID) == GetName() then",
-        "\t\tInclude(\"\\\\scriptjx2\\\\tong_vn\\\\tong_luong.lua\")",
-        "\t\tTongLuong_Menu(nTongID)",
-        "\t\treturn",
-        "\tend",
-        old,
-    ])
-    s = rep1(s, old, new, "huodong_zongguan")
-    wr(rel, s)
-
+        i0 = s.find("\t-- " + MARK + " bang chu: them menu phat luong")
+        i1 = s.find("\tlocal nTypeID = wsGetTypeID(NAME_HUODONG)")
+        if i0 < 0 or i1 <= i0:
+            raise AssertionError("huodong_zongguan: khong thay khoi dot 9 de go")
+        s = s[:i0] + s[i1:]
+        if MARK in s or "TongLuong" in s:
+            raise AssertionError("huodong_zongguan: van con dau vet dot 9")
+        wr(rel, s)
+    else:
+        print("  huodong_zongguan: da sach (khong con menu dot 9)")
+    for root in (SV, MIRROR):
+        pth = os.path.join(root, r"scriptjx2\\tong_vn\\tong_luong.lua")
+        if os.path.exists(pth):
+            if CHECK:
+                print("  (check) xoa", pth)
+            else:
+                os.remove(pth)
+                print("  xoa:", pth)
 
 if __name__ == "__main__":
     ok = True

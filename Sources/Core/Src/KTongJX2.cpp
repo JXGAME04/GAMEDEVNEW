@@ -20,6 +20,7 @@
 #include "LuaLib.h"
 #include "KPlayer.h"
 #include "KPlayerSet.h"
+#include "KMailServer.h"	// [MAIL 04/09 D10] phat luong bang hoi = gui thu
 #include "KProtocolProcess.h"
 #include <KProtocol.h>
 #include <KProtocolDef.h>
@@ -3585,8 +3586,10 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 					int nFig = (int)itM->second.btFigure;
 					if (nFig < 1 || nFig > 3)
 						continue;
-					if ((bOnline || bMoney) && sFindPlayerIdxByNameID(itM->first) <= 0)
-						continue;	// ngan luong bat buoc online (Earn truc tiep)
+					// [MAIL 04/09 D10] ngan luong KHONG con bat buoc online: tra bang THU (Mail_Send)
+					// nen nguoi offline van nhan duoc; o "chi phat nguoi con tren mang" van co tac dung.
+					if (bOnline && sFindPlayerIdxByNameID(itM->first) <= 0)
+						continue;
 					if (nCnt[nFig - 1] < 256)
 						dwIDs[nFig - 1][nCnt[nFig - 1]++] = itM->first;
 				}
@@ -3618,14 +3621,43 @@ int KTongJX2Mgr::DoClientOpBody(int nPlayerIdx, const void* pData)
 				__int64 nLai = nCo - nNeed;
 				pTong->mapField[3] = (DWORD)(nLai & 0xFFFFFFFF);
 				pTong->mapField[4] = (DWORD)((nLai >> 32) & 0xFFFFFFFF);
+				// [MAIL 04/09 D10] chu chot 04/09: phat luong o hop bang hoi = TU DONG GUI THU
+				// (truoc day Earn truc tiep nen nguoi offline mat luong). Moi thanh vien mot thu
+				// "money:N", nguoi gui = "Bang hoi <ten>", han 30 ngay, nguon 'bangluong'.
+				char szSender[96];
+				_snprintf(szSender, sizeof(szSender) - 1, "Bang héi %.48s", pTong->szName);
+				szSender[sizeof(szSender) - 1] = 0;
+				int nMailOk = 0, nMailFail = 0;
 				for (g = 0; g < 3; g++)
 				{
 					for (int m = 0; m < nCnt[g] && nPer[g] > 0; m++)
 					{
-						int nRIdx = sFindPlayerIdxByNameID(dwIDs[g][m]);
-						if (nRIdx > 0)
-							Player[nRIdx].Earn((int)nPer[g]);
+						std::map<DWORD, KTongJX2Member>::iterator itPay = pTong->mapMember.find(dwIDs[g][m]);
+						if (itPay == pTong->mapMember.end() || !itPay->second.szName[0])
+						{
+							nMailFail++;
+							continue;
+						}
+						char szAward[64], szContent[256];
+						_snprintf(szAward, sizeof(szAward) - 1, "money:%I64d", nPer[g]);
+						szAward[sizeof(szAward) - 1] = 0;
+						_snprintf(szContent, sizeof(szContent) - 1,
+							"Bang héi ph¸t l­¬ng kú nµy: %I64d Ng©n l­îng, ®Ýnh kÌm trong th­.<enter>Tr©n träng", nPer[g]);
+						szContent[sizeof(szContent) - 1] = 0;
+						if (Mail_Send(itPay->second.szName, szSender, "L­¬ng bang héi",
+								szContent, szAward, 1, 30 * 86400, "bangluong") > 0)
+							nMailOk++;
+						else
+							nMailFail++;
 					}
+				}
+				{
+					char szLog[192];
+					_snprintf(szLog, sizeof(szLog) - 1,
+						"Bang %.32s: phat luong qua thu, ok %d, that bai %d, tru quy %I64d",
+						pTong->szName, nMailOk, nMailFail, nNeed);
+					szLog[sizeof(szLog) - 1] = 0;
+					g_GhiLogHeThong("MAIL", szLog);
 				}
 			}
 			else
