@@ -361,6 +361,9 @@ void MailUi_OnRequest(unsigned int uParam, int nParam)
 			sprintf(szCall, "%s()", s_szConfirmFunc);
 		s_szConfirmFunc[0] = 0;
 		break;
+	case MAILUI_OP_RESET:
+		strcpy(szCall, "UIMail:Reset()");
+		break;
 	case MAILUI_OP_CLOSE:
 	default:
 		break;

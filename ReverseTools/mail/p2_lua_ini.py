@@ -122,6 +122,19 @@ def build_uimail():
              "    self.bHaveNewMail = 1" + e + "    self:ReCheckMailIconState()" + e +
              "    self:OpenMailWindow(1)   -- [MAIL 03/09 JX1 D4] co thu moi -> hien hop thu ngay" + e + "end",
              "NewMail auto open")
+    # 9) [D4] UIMail:Reset() - C++ goi khi thoat game (MAILUI_OP_RESET): state Lua song suot tien trinh, doi nhan vat phai xoa
+    s = rep1(s, "function UIMail:GetMinId()", e.join([
+        "-- [MAIL 03/09 JX1 D4] thoat game / doi nhan vat: xoa sach du lieu thu trong state (C++ KUiMail_OnGameExit -> MAILUI_OP_RESET)",
+        "function UIMail:Reset()",
+        "    self.tbMailList = {}",
+        "    self.tbMailCheckList = {}",
+        "    self.nCurrentId = 0",
+        "    self.bHaveNewMail = 0",
+        "    self.nCurSelectedFilterIndex = 1",
+        "end",
+        "",
+        "function UIMail:GetMinId()",
+    ]), "Reset")
     # 6) dau dau tep
     s = ("-- [MAIL 03/09] uimail.lua = ban client VLTK 2.0 (slistcl.pak uid 9565EFB1) + sua cho JX1 (tim \"[MAIL 03/09 JX1]\")." + e +
          "-- Cac ham C++ (KMailClient.cpp): OpenMailWindow AddMailHeader SetMailHeader DeleteOneMail CleanMailAll CleanMailList" + e +

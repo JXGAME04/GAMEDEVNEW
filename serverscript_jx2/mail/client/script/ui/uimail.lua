@@ -30,6 +30,15 @@ UIMail.bHaveNewMail = 0
 UIMail.nCurSelectedFilterIndex = 1
 
 -- 名字叫做MinId，其实不是最小ID，是给服务端，从这个ID开始全取下来的意思，是本地的最大ID
+-- [MAIL 03/09 JX1 D4] thoat game / doi nhan vat: xoa sach du lieu thu trong state (C++ KUiMail_OnGameExit -> MAILUI_OP_RESET)
+function UIMail:Reset()
+    self.tbMailList = {}
+    self.tbMailCheckList = {}
+    self.nCurrentId = 0
+    self.bHaveNewMail = 0
+    self.nCurSelectedFilterIndex = 1
+end
+
 function UIMail:GetMinId()
     local nMinId = 0
     for nId, tbHeader in self.tbMailList do

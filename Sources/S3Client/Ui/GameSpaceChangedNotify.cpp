@@ -499,6 +499,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 		Wnd_GameSpaceHandleInput(true);
 		KUiMsgCentrePad::ReleaseActivateChannelAll();
 		KUiMsgCentrePad::QueryAllChannel();
+		KUiMail_OnGameStart();	// [MAIL 03/09 D4] bieu tuong thu + hop thu cho toi khi vao game
 		KUiOptions2::LoadSetting(true, true);//add by phong kiÒu 24/08/2021
 	}
 	break;
@@ -907,6 +908,7 @@ int CoreDataChangedCallback(unsigned int uDataId, unsigned int uParam, int nPara
 	}
 	break;
 	case GDCNI_EXIT_GAME:
+		KUiMail_OnGameExit();	// [MAIL 03/09 D4] don hop thu + xoa danh sach trong state Lua truoc khi thoat
 		if (g_pCoreShell)
 		{
 			g_pCoreShell->OperationRequest(GOI_EXIT_GAME, 0, 0);

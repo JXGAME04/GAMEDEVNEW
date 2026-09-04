@@ -61,6 +61,12 @@ static void sMailLog(const char* szFmt, ...)
 KUiMailManager* KUiMailManager::ms_pSelf = NULL;
 KUiMailIcon*    KUiMailIcon::ms_pSelf = NULL;
 
+// [MAIL 03/09 D4] goi thu luc dang nhap (playerlogin.lua o dau KPlayer::LaunchPlayer) den TRUOC s2c_syncend =
+// GDCNI_GAME_START -> hoan hien bieu tuong / mo cua so toi khi vao game; thoat game thi don sach.
+static int s_bMailGameStarted = 0;
+static int s_bMailPendingOpen = 0;
+static int s_nMailPendingIcon = -1;
+
 static void sSendOp(int nOp, int nExtra, int nParam)
 {
     if (g_pCoreShell)
@@ -1038,10 +1044,62 @@ int KUiMailIcon::WndProc(unsigned int uMsg, unsigned int uParam, int nParam)
 //==================================================================
 // Core -> UI
 //==================================================================
+// [MAIL 03/09 D4] GDCNI_GAME_START: bieu tuong thu luon hien (nhap nhay neu da co thu chua doc) + mo hop thu neu may chu da bao
+void KUiMail_OnGameStart()
+{
+    s_bMailGameStarted = 1;
+    KUiMailIcon::SetVisible(s_nMailPendingIcon > 0 ? 1 : 0);
+    if (s_bMailPendingOpen)
+        KUiMailManager::OpenWindow();
+    sMailLog("[UI] GAME_START: icon=%d mo=%d", s_nMailPendingIcon, s_bMailPendingOpen);
+    s_bMailPendingOpen = 0;
+    s_nMailPendingIcon = -1;
+}
+
+// [MAIL 03/09 D4] GDCNI_EXIT_GAME: huy cua so + bieu tuong, xoa danh sach thu trong state Lua (doi nhan vat)
+void KUiMail_OnGameExit()
+{
+    s_bMailGameStarted = 0;
+    s_bMailPendingOpen = 0;
+    s_nMailPendingIcon = -1;
+    KUiMailManager::CloseWindow(true);
+    KUiMailIcon::Release();
+    sSendOp(MAILUI_OP_RESET, 0, 0);
+    sMailLog("[UI] EXIT_GAME: da don hop thu");
+}
+
+void KUiMailIcon::Release()
+{
+    if (ms_pSelf)
+    {
+        ms_pSelf->Destroy();
+        ms_pSelf = NULL;
+    }
+}
+
 void KUiMail_OnCoreCmd(unsigned int uCmd, int nParam)
 {
     KUiMailManager* pMgr;
     sMailLog("[UI] cmd=%u param=%d", uCmd, nParam);
+    if (!s_bMailGameStarted)
+    {
+        // [D4] chua GDCNI_GAME_START: chi ghi nho; lenh sua danh sach (cua so an) van chay binh thuong
+        switch (uCmd)
+        {
+        case MAILUI_CMD_OPEN:
+        case MAILUI_CMD_SWITCH_MANAGER:
+            s_bMailPendingOpen = 1;
+            return;
+        case MAILUI_CMD_ICON_VISIBLE:
+            s_nMailPendingIcon = nParam;
+            return;
+        case MAILUI_CMD_NEW_MAIL_BLINK:
+            s_nMailPendingIcon = 1;
+            return;
+        default:
+            break;
+        }
+    }
     switch (uCmd)
     {
     case MAILUI_CMD_ICON_VISIBLE:
