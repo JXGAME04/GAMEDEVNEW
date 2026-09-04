@@ -425,10 +425,30 @@ end
 
 -- API cho hoat dong / top tuan-thang / dua top: MailManager_SendMail(ten, nguoi gui, tieu de, noi dung, dinh kem, so ngay, nguon)
 -- noi dung xuong dong bang <enter>; dinh kem theo dinh dang o dau tep; tra id thu (0 = loi)
-function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nExpireDays, szSource)
-    local tbAward = MailManager_ParseAward(szAward or "")
+-- [D11 04/09] Dem so dinh kem KHONG dung ParseAward (ParseAward tao bang long nhau, goi tu day sau
+-- nhu ThuongTongKimQuaThu thi TRAN NGAN XEP Lua va lam dut ca ham thuong). Chi dem dau ';'.
+function MailManager_CountAward(szAward)
+    if type(szAward) ~= "string" or szAward == "" then
+        return 0
+    end
+    local n = 1
+    local i = 1
+    while 1 do
+        local a = strfind(szAward, ";", i, 1)
+        if not a then
+            break
+        end
+        n = n + 1
+        i = a + 1
+    end
+    return n
+end
+
+-- nAwardCount: so muc dinh kem (nguoi goi biet san thi truyen vao cho re; nil = tu dem)
+function MailManager_SendMail(szRole, szSender, szTitle, szContent, szAward, nExpireDays, szSource, nAwardCount)
+    local nCount = nAwardCount or MailManager_CountAward(szAward or "")
     local nId = MailDB_Send(szRole, szSender or MAILMGR_SENDER_SYS, szTitle or "", szContent or "", szAward or "",
-        getn(tbAward), (nExpireDays or 30) * 86400, szSource or "script")
+        nCount, (nExpireDays or 30) * 86400, szSource or "script")
     if nId > 0 then
         -- [D9b] bao thu moi trong STATE RIENG cua mailmanager.lua: goi truc tiep o day thi ngan xep Lua
         -- cua state goi (vd Da Tau: finish_exp > Prise_Chon > ... > tl_linkaward_mail) da sau, ObjBuffer
@@ -467,7 +487,7 @@ MAILMGR_ACTIVITY = {
 --   szRole nil/"" = nguoi choi dang goi script (PlayerIndex); szAward theo dinh dang dau tep; nDays mac dinh 30.
 -- Vi du (trong script hoat dong, sau Include("\\script\\mail\\mailmanager.lua")):
 --   MailManager_SendReward("tongkim", nil, "Thuong Tong Kim", "Chuc mung...<enter>Tran trong", "money:5000;exp:100000")
-function MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays)
+function MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays, nAwardCount)
     local szSender = MAILMGR_ACTIVITY[szActivity or ""] or szActivity or MAILMGR_SENDER_SYS
     if not szRole or szRole == "" then
         -- [D9b] bot khong can thu (khoi tao hang nghin dong rac trong bang mail)
@@ -476,7 +496,7 @@ function MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward,
         end
         szRole = GetName()
     end
-    return MailManager_SendMail(szRole, szSender, szTitle or szSender, szContent or "", szAward or "", nDays or 30, szActivity or "script")
+    return MailManager_SendMail(szRole, szSender, szTitle or szSender, szContent or "", szAward or "", nDays or 30, szActivity or "script", nAwardCount)
 end
 
 -- [D9] Dung chuoi award tu bang kieu templet (awardtemplet/item_jx1): moi phan tu la mot trong:
@@ -517,7 +537,7 @@ function MailManager_SendRewardTemplet(szActivity, szRole, szTitle, szContent, t
     if n <= 0 then
         return 0
     end
-    return MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays)
+    return MailManager_SendReward(szActivity, szRole, szTitle, szContent, szAward, nDays, n)
 end
 
 function MailManager_SendTest(nKind)
